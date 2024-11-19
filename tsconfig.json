@@ -1,0 +1,7 @@
+{
+  "compilerOptions": {
+    "lib": ["ES2015", "DOM", "ESNext.Disposable"],
+    "strict": true,
+    "noUncheckedIndexedAccess": true
+  }
+}
