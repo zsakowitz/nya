@@ -793,6 +793,14 @@ video {
   font-family: 'Comic Sans','Symbola','Times';
 }
 
+.font-\[\'Symbola\'\2c \'Times\'\2c serif\] {
+  font-family: 'Symbola','Times',serif;
+}
+
+.font-\[\'Symbola\'\2c \'Times\'\2c sans-serif\] {
+  font-family: 'Symbola','Times',sans-serif;
+}
+
 .text-\[115\%\] {
   font-size: 115%;
 }
@@ -811,6 +819,14 @@ video {
 
 .text-\[200\%\] {
   font-size: 200%;
+}
+
+.text-\[1\.265em\] {
+  font-size: 1.265em;
+}
+
+.text-\[1\.265rem\] {
+  font-size: 1.265rem;
 }
 
 .italic {

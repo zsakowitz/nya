@@ -8,7 +8,7 @@ export class CmdNum extends Token {
   }
 
   constructor(readonly text: string) {
-    super(text, h("span", "font-['Symbola']", t(text)))
+    super(text, h("span", undefined, t(text)))
   }
 
   intoAsciiMath(): string {

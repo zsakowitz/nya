@@ -7,7 +7,7 @@ export abstract class Op extends Token {
     readonly ctrlSeq: string,
     readonly html: string,
   ) {
-    super(ctrlSeq, h("span", "px-[.2em] font-['Symbola']", t(html)))
+    super(ctrlSeq, h("span", "px-[.2em] inline-block", t(html)))
   }
 }
 

@@ -31,10 +31,7 @@ export class Field {
 
   constructor(readonly exts: Exts) {
     this.el = this.block.el
-    this.el.classList.add(
-      "whitespace-nowrap",
-      "font-['Times','Symbola',sans-serif]",
-    )
+    this.el.classList.add("whitespace-nowrap", "font-['Symbola','Times',serif]")
   }
 
   type(input: string) {
