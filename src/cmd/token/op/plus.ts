@@ -1,9 +1,9 @@
 import { Op } from "."
-import { LEFT, type Cursor } from "../../../core"
+import { L, type Cursor } from "../../../model"
 
 export class CmdPlus extends Op {
   static createLeftOf(cursor: Cursor) {
-    new CmdPlus().insertAt(cursor, LEFT)
+    new CmdPlus().insertAt(cursor, L)
   }
 
   constructor() {

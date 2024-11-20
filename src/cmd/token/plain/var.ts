@@ -1,10 +1,10 @@
 import { Token } from ".."
-import { Cursor, LEFT } from "../../../core"
+import { Cursor, L } from "../../../model"
 import { h, t } from "../../../jsx"
 
 export class CmdVar extends Token {
   static createLeftOf(cursor: Cursor, input: string) {
-    new CmdVar(input).insertAt(cursor, LEFT)
+    new CmdVar(input).insertAt(cursor, L)
   }
 
   constructor(readonly text: string) {

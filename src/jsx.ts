@@ -6,57 +6,30 @@ export const U_NARY_PRODUCT = "\u220F"
 export const U_NARY_COPRODUCT = "\u2210"
 export const U_INTEGRAL = "\u222B"
 
-export type Clsx =
-  | string
-  | 0
-  | 0n
-  | false
-  | null
-  | undefined
-  | Clsx[]
-  | { readonly [x: string]: boolean }
-
-export function clsx(cl: Clsx): string {
-  if (!cl) {
-    return ""
-  }
-
-  if (Array.isArray(cl)) {
-    return cl.map(clsx).reduce((a, b) => (a && b ? a + " " + b : a || b), "")
-  }
-
-  if (typeof cl == "object") {
-    let o = ""
-    for (const key in cl) {
-      if (key && cl[key]) {
-        if (o) {
-          o += " "
-        }
-        o += key
-      }
-    }
-    return o
-  }
-
-  return cl
-}
-
 export function h<K extends keyof HTMLElementTagNameMap>(
   name: K,
-  cl?: Clsx,
+  cl?: string | Record<string, string>,
   ...children: ChildNode[]
 ): HTMLElementTagNameMap[K]
 
 export function h(
   name: string,
-  cl?: Clsx,
+  cl?: string | Record<string, string>,
   ...children: ChildNode[]
 ): HTMLElement
 
-export function h(name: string, cl?: Clsx, ...children: ChildNode[]) {
+export function h(
+  name: string,
+  cl?: string | Record<string, string>,
+  ...children: ChildNode[]
+) {
   const el = document.createElement(name)
-  if (cl) {
-    el.className = clsx(cl)
+  if (typeof cl == "string") {
+    el.className = cl
+  } else if (cl) {
+    for (const key in cl) {
+      el.setAttribute(key, cl[key]!)
+    }
   }
   for (const child of children) {
     el.appendChild(child)
@@ -66,4 +39,21 @@ export function h(name: string, cl?: Clsx, ...children: ChildNode[]) {
 
 export function t(text: string) {
   return document.createTextNode(text)
+}
+
+export function p(d: string) {
+  const el = document.createElementNS("http://www.w3.org/2000/svg", "path")
+  el.setAttribute("d", d)
+  return el
+}
+
+export function svg(viewBox: string, ...children: ChildNode[]) {
+  const el = document.createElementNS("http://www.w3.org/2000/svg", "svg")
+  el.setAttribute("preserveAspectRatio", "none")
+  el.setAttribute("viewBox", viewBox)
+  el.setAttribute("class", "fill-current absolute top-0 left-0 w-full h-full")
+  for (const child of children) {
+    el.appendChild(child)
+  }
+  return el
 }

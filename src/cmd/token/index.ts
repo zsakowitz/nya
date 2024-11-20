@@ -1,4 +1,4 @@
-import { Command, LEFT, RIGHT, type Cursor } from "../../core"
+import { Command, L, R, type Cursor } from "../../model"
 
 /** A token is a specialized command with no children. */
 export abstract class Token extends Command {
@@ -9,9 +9,9 @@ export abstract class Token extends Command {
   seek(clientX: number, cursor: Cursor) {
     const { left } = this.el.getBoundingClientRect()
     if (clientX - left < this.el.offsetWidth / 2) {
-      cursor.placeNextTo(this, LEFT)
+      cursor.moveTo(this, L)
     } else {
-      cursor.placeNextTo(this, RIGHT)
+      cursor.moveTo(this, R)
     }
   }
 }
