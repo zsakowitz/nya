@@ -603,6 +603,18 @@ video {
   margin-left: -1px;
 }
 
+.mt-4 {
+  margin-top: 1rem;
+}
+
+.mt-12 {
+  margin-top: 3rem;
+}
+
+.mt-8 {
+  margin-top: 2rem;
+}
+
 .block {
   display: block;
 }
@@ -731,6 +743,38 @@ video {
 
 .font-\[\'Times\'\] {
   font-family: 'Times';
+}
+
+.font-\[\] {
+  font-family: ;
+}
+
+.font-\[\'Symbola\'\2c \'Times\'\] {
+  font-family: 'Symbola','Times';
+}
+
+.font-\[\'Garamond\'\2c \'Symbola\'\2c \'Times\'\] {
+  font-family: 'Garamond','Symbola','Times';
+}
+
+.font-\[\'Carlito\'\2c \'Symbola\'\2c \'Times\'\] {
+  font-family: 'Carlito','Symbola','Times';
+}
+
+.font-\[\'Symbola\'\2c \'Symbola\'\2c \'Times\'\] {
+  font-family: 'Symbola','Symbola','Times';
+}
+
+.font-\[\'Garamond_MC\'\2c \'Symbola\'\2c \'Times\'\] {
+  font-family: 'Garamond MC','Symbola','Times';
+}
+
+.font-\[\'Comic_Sans_MS\'\2c \'Symbola\'\2c \'Times\'\] {
+  font-family: 'Comic Sans MS','Symbola','Times';
+}
+
+.font-\[\'Comic_Sans\'\2c \'Symbola\'\2c \'Times\'\] {
+  font-family: 'Comic Sans','Symbola','Times';
 }
 
 .text-\[115\%\] {

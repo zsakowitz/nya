@@ -159,7 +159,7 @@ export class CmdBrack extends Command<[Block]> {
   }
 
   intoLatex(): string {
-    return `\\left${PARENS[this.lhs].latex}\\right${PARENS[this.rhs].latex}`
+    return `\\left${PARENS[this.lhs].latex}${this.blocks[0].intoLatex()}\\right${PARENS[this.rhs].latex}`
   }
 
   intoScreenReadable(): string {

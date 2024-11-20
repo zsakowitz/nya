@@ -90,3 +90,15 @@ field.cursor.moveInside(field.block, L)
 field.type("/")
 field.type("4")
 field.type("3")
+field.type("/")
+field.type("2")
+field.type("/")
+field.type("1")
+
+// show latex
+{
+  const p = document.createElement("p")
+  p.textContent = field.block.intoLatex()
+  p.className = "font-['Carlito','Symbola','Times'] text-center mt-8"
+  document.body.appendChild(p)
+}
