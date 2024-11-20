@@ -1,4 +1,4 @@
-import { U_ZERO_WIDTH_SPACE, h, t } from "./jsx"
+import { h } from "./jsx"
 
 // Many properties are declared as `readonly` to prevent changes to them in
 // user-level code. However, these may change, in the same vein as DOM getters
@@ -137,7 +137,7 @@ interface CursorMut extends Cursor {
   parent: Block | null
 }
 
-/** A cursor belongs inside some block. */
+/** A `Cursor` provides a reference point for insertions and deletions. */
 export class Cursor {
   /** The command on the left side of this cursor. */
   get [L](): Command | null {
@@ -151,29 +151,12 @@ export class Cursor {
   /** The command on the right side of this cursor. Used as an anchor point. */
   readonly [R]: Command | null
 
-  /** The HTML element rendered by this cursor. */
-  readonly el = h(
-    "span",
-    "z-[1] border-l -ml-px relative inline-block border-current",
-    t(U_ZERO_WIDTH_SPACE),
-  )
-
   constructor(
     /** The block containing this cursor. */
     readonly parent: Block | null,
     before: Command | null,
   ) {
     this[R] = before
-  }
-
-  /** Removes this cursor from the DOM. */
-  unrender() {
-    this.el.remove()
-  }
-
-  /** Renders this cursor in an appropriate location in the DOM. */
-  render() {
-    this.parent?.el.insertBefore(this.el, this[R]?.el || null)
   }
 
   /** Moves this cursor to some side of a {@link Command `Command`}. */
@@ -202,7 +185,7 @@ export class Cursor {
 
   /** Creates a {@link Selection `Selection`} where this cursor is. */
   selection() {
-    return new Selection(this.parent, this[L], this[R], R)
+    return new Selection(this.parent, this[L], this[R])
   }
 }
 
@@ -212,7 +195,7 @@ interface SpanMut extends Span {
   [R]: Command | null
 }
 
-/** A span is a range in some block. */
+/** A range within a {@link Block `Block`}. */
 export class Span {
   /**
    * The {@link Command `Command`} to the left of this `Span`. Not included in
@@ -265,14 +248,6 @@ export class Span {
     }
   }
 
-  unrender() {
-    this.each(({ el }) => el.classList.remove("bg-blue-200"))
-  }
-
-  render() {
-    this.each(({ el }) => el.classList.add("bg-blue-200"))
-  }
-
   /** Creates a {@link Cursor `Cursor`} at one side of this `Span`. */
   cursor(side: Dir) {
     return new Cursor(this.parent, side == R ? this[R] : this.at(L))
@@ -281,22 +256,25 @@ export class Span {
 
 /** A {@link Span `Span`} with focus and anchor nodes. */
 export class Selection extends Span {
+  /** Which side of this `Selection` is the focus node. */
+  public focused: Dir
+
   constructor(
+    /** The {@link Block `Block`} containing this `Selection`. */
     readonly parent: Block | null,
-    lhs: Command | null,
-    rhs: Command | null,
-    public focused: Dir,
+    anchor: Command | null,
+    focus: Command | null,
   ) {
-    super(parent, lhs, rhs)
+    const dir = Command.dir(anchor, focus)
+    super(parent, dir == L ? focus : anchor, dir == L ? anchor : focus)
+    this.focused = dir
   }
 
-  extendWithin(dir: Dir) {
-    console.log("extending")
-
+  /** Moves the focus node of this `Selection`. */
+  moveFocus(dir: Dir) {
     const isCursor = this[L] ? this[L][R] == this[R] : !this[R]
 
     if (isCursor) {
-      console.log("is cursor")
       this.focused = dir
       if (this[dir]) {
         // It is a cursor anywhere else
@@ -312,11 +290,16 @@ export class Selection extends Span {
       ;(this as SpanMut)[this.focused] = this[dir]?.[dir] || null
     } else {
       ;(this as SpanMut)[this.focused] = this.at(this.focused)
-      console.log("doing nothing")
     }
   }
 
+  /**
+   * Flips which {@link Command `Command`} is the focus and which `Command` is
+   * the anchor.
+   */
   flip() {
+    const s = new globalThis.Selection()
+    s.collapse
     this.focused = this.focused == L ? R : L
   }
 }
@@ -329,6 +312,16 @@ interface CommandMut extends Command {
 
 /** A command is a single item inside a block. */
 export abstract class Command extends Node {
+  /** Returns the direction needed to travel from `anchor` to `focus`. */
+  static dir(anchor: Command | null, focus: Command | null): Dir {
+    while (anchor) {
+      if (anchor == focus) return R
+      anchor = anchor[R]
+    }
+
+    return L
+  }
+
   readonly [L]: Command | null = null
   readonly [R]: Command | null = null
   readonly parent: Block | null = null
