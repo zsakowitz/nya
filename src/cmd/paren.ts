@@ -1,5 +1,5 @@
-import { Command, L, R, type Block, type Cursor, type Dir } from "../model"
 import { h, p, svg } from "../jsx"
+import { Block, Command, L, R, type Cursor, type Dir } from "../model"
 
 const PARENS = {
   "[": {
@@ -80,26 +80,66 @@ export function matchParen(x: ParenAny) {
   }[x]
 }
 
-export class Paren extends Command {
+export class CmdBrack extends Command<[Block]> {
   static createLeftOf(cursor: Cursor, input: string) {
     if (!cursor.parent) return
 
     if (input == "(" || input == "[" || input == "{") {
       const rhs = matchParen(input satisfies ParenLhs)
 
-      ghost: {
-        const parent = cursor.parent.parent
+      const parent = cursor.parent.parent
 
-        if (
-          !(parent instanceof Paren && parent.rhs == rhs && parent.side == L)
-        ) {
-          break ghost
-        }
+      if (
+        parent instanceof CmdBrack &&
+        parent.rhs == rhs &&
+        parent.side == R &&
+        parent.parent
+      ) {
+        const block = cursor.span().extendTo(L).remove()
+        parent.parent.attach(block, null, R)
+        ;(parent as any).side = null // `.side` is only `readonly` in user code
+        parent.checkSvg(L)
+        // Repair cursor
+        cursor.moveInside(parent.blocks[0], R)
+        return
       }
+
+      const span = cursor.span().extendTo(R)
+      const brack = new CmdBrack(input, rhs, L, span.remove())
+      // The `span.remove()` call invalidates the cursor, so we need
+      // to fix it using the span (either side works, since it's empty)
+      cursor.setTo(span.cursor(L))
+      brack.insertAt(cursor, L)
+      cursor.moveInside(brack.blocks[0], L)
+    } else if (input == ")" || input == "]" || input == "}") {
+      const lhs = matchParen(input satisfies ParenRhs)
+
+      const parent = cursor.parent.parent
+
+      if (
+        parent instanceof CmdBrack &&
+        parent.lhs == lhs &&
+        parent.side == L &&
+        parent.parent
+      ) {
+        const block = cursor.span().extendTo(R).remove()
+        parent.parent.attach(block, null, L)
+        ;(parent as any).side = null // `.side` is only `readonly` in user code
+        parent.checkSvg(R)
+        // Repair cursor
+        cursor.moveTo(parent, R)
+        return
+      }
+
+      const span = cursor.span().extendTo(L)
+      const brack = new CmdBrack(lhs, input, R, span.remove())
+      // The `span.remove()` call invalidates the cursor, so we need
+      // to fix it using the span (either side works, since it's empty)
+      cursor.setTo(span.cursor(R))
+      brack.insertAt(cursor, R)
+      cursor.moveTo(brack, R)
     }
   }
-
-  readonly blocks!: [Block]
 
   constructor(
     readonly lhs: ParenLhs,
@@ -107,9 +147,11 @@ export class Paren extends Command {
     readonly side: Dir | null,
     block: Block,
   ) {
-    super("\\left" + PARENS[lhs].latex, Paren.render(lhs, rhs, side, block), [
-      block,
-    ])
+    super(
+      "\\left" + PARENS[lhs].latex,
+      CmdBrack.render(lhs, rhs, side, block),
+      [block],
+    )
   }
 
   intoAsciiMath(): string {
@@ -122,6 +164,24 @@ export class Paren extends Command {
 
   intoScreenReadable(): string {
     return `Bracket, ${this.lhs} ${this.blocks[0].intoScreenReadable()} , EndBracket ${this.rhs}`
+  }
+
+  checkSvg(side: Dir) {
+    const symbol = PARENS[side == L ? this.lhs : this.rhs]
+    const idx = side == L ? 0 : 2
+    this.el.children[idx]!.replaceWith(
+      h(
+        "span",
+        {
+          style: "width:" + symbol.width,
+          class:
+            "absolute top-0 bottom-[2px] inline-block " +
+            (side == L ? "left-0" : "right-0") +
+            (this.side == side || this.side == null ? "" : " opacity-20"),
+        },
+        symbol.html(),
+      ),
+    )
   }
 
   static render(lhs: ParenLhs, rhs: ParenRhs, side: Dir | null, block: Block) {

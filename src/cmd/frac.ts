@@ -1,8 +1,8 @@
-import { Block, Command, L, type Cursor } from "../model"
 import { U_ZERO_WIDTH_SPACE, h, t } from "../jsx"
+import { Block, Command, L, type Cursor } from "../model"
 import { CmdVar } from "./token/plain/var"
 
-export class CmdFrac extends Command {
+export class CmdFrac extends Command<[Block, Block]> {
   static createLeftOf(cursor: Cursor) {
     const a = new Block(null)
     const ac = cursor.clone()
@@ -15,7 +15,7 @@ export class CmdFrac extends Command {
     new CmdFrac([a, b]).insertAt(cursor, L)
   }
 
-  constructor(readonly blocks: [Block, Block]) {
+  constructor(blocks: [Block, Block]) {
     super(
       "\\frac",
       h(

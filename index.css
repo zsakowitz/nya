@@ -615,6 +615,10 @@ video {
   display: flex;
 }
 
+.contents {
+  display: contents;
+}
+
 .h-full {
   height: 100%;
 }
@@ -629,6 +633,24 @@ video {
 
 .w-full {
   width: 100%;
+}
+
+.scale-\[150\%\] {
+  --tw-scale-x: 150%;
+  --tw-scale-y: 150%;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+}
+
+.scale-\[115\%\] {
+  --tw-scale-x: 115%;
+  --tw-scale-y: 115%;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+}
+
+.scale-\[110\%\] {
+  --tw-scale-x: 110%;
+  --tw-scale-y: 110%;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
 }
 
 .flex-col {
@@ -662,6 +684,11 @@ video {
 .bg-blue-200 {
   --tw-bg-opacity: 1;
   background-color: rgb(191 219 254 / var(--tw-bg-opacity, 1));
+}
+
+.bg-sky-500 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(14 165 233 / var(--tw-bg-opacity, 1));
 }
 
 .fill-current {
@@ -704,6 +731,18 @@ video {
 
 .text-\[90\%\] {
   font-size: 90%;
+}
+
+.text-\[150\%\] {
+  font-size: 150%;
+}
+
+.text-\[120\%\] {
+  font-size: 120%;
+}
+
+.text-\[200\%\] {
+  font-size: 200%;
 }
 
 .italic {

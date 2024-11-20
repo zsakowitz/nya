@@ -41,21 +41,21 @@ export abstract class Node {
 }
 
 /**
- * Something with optional siblings. Also used to represent the ends of a
+ * Pointers to the {@link Command `Command`}s on either side of a
  * {@link Block `Block`}.
  */
-export interface Ends<T> {
-  /** The sibling towards the left. */
-  readonly [L]: T | null
+export interface Ends {
+  /** The leftmost {@link Command `Command`}. */
+  readonly [L]: Command | null
 
-  /** The sibling towards the right. */
-  readonly [R]: T | null
+  /** The rightmost {@link Command `Command`}. */
+  readonly [R]: Command | null
 }
 
 /** An interface used for type-safe changes to {@link Ends `Ends`}. */
-interface EndsMut<T> extends Ends<T> {
-  [L]: T | null
-  [R]: T | null
+interface EndsMut extends Ends {
+  [L]: Command | null
+  [R]: Command | null
 }
 
 /** An interface used for type-safe changes to {@link Block `Block`}. */
@@ -63,7 +63,7 @@ interface BlockMut extends Block {
   [L]: Block | null
   [R]: Block | null
   parent: Command | null
-  ends: EndsMut<Command>
+  ends: EndsMut
 }
 
 /** An expression. Contains zero or more {@link Command `Command`}s. */
@@ -75,7 +75,7 @@ export class Block extends Node {
   readonly [R]: Block | null = null
 
   /** The ends of the {@link Command `Command`}s contained in this block. */
-  readonly ends: Ends<Command> = { [L]: null, [R]: null }
+  readonly ends: Ends = { [L]: null, [R]: null }
 
   readonly el = h(
     "span",
@@ -97,6 +97,50 @@ export class Block extends Node {
       parent.blocks.push(this)
     } else {
       this[L] = null
+    }
+  }
+
+  /** Attaches another block onto a side of this one. */
+  attach(other: Block, command: Command | null, dir: Dir) {
+    if (!other.ends[L]) {
+      return
+    }
+
+    const lhs =
+      dir == L
+        ? command
+          ? command[L]
+          : this.ends[R]
+        : command
+          ? command
+          : null
+
+    if (lhs) {
+      ;(lhs as CommandMut)[R] = other.ends[L]
+    }
+
+    const rhs =
+      dir == R
+        ? command
+          ? command[R]
+          : this.ends[L]
+        : command
+          ? command
+          : null
+
+    if (rhs) {
+      ;(rhs as CommandMut)[L] = other.ends[R]
+    }
+
+    ;(other.ends[L] as CommandMut)[L] = lhs
+    ;(other.ends[R] as CommandMut)[R] = rhs
+
+    const domAnchor = rhs ? rhs.el : null
+    let el: Command | null = other.ends[L]
+    while (el) {
+      ;(el as CommandMut).parent = this
+      this.el.insertBefore(el.el, domAnchor)
+      el = el[R]
     }
   }
 
@@ -159,6 +203,23 @@ export class Cursor {
     this[R] = before
   }
 
+  /** Moves this cursor within its containing block. */
+  moveWithin(dir: Dir) {
+    if (dir == L) {
+      ;(this as CursorMut)[R] =
+        (this[R] ? this[R][L] || this.parent?.ends[L] : this.parent?.ends[R]) ||
+        null
+    } else {
+      ;(this as CursorMut)[R] = this[R]?.[R] || null
+    }
+  }
+
+  /** Moves this cursor to another cursor's position. */
+  setTo(other: Cursor) {
+    ;(this as CursorMut).parent = other.parent
+    ;(this as CursorMut)[R] = other[R]
+  }
+
   /** Moves this cursor to some side of a {@link Command `Command`}. */
   moveTo(el: Command, side: Dir) {
     ;(this as CursorMut).parent = el.parent
@@ -185,29 +246,36 @@ export class Cursor {
 
   /** Creates a {@link Selection `Selection`} where this cursor is. */
   selection() {
-    return new Selection(this.parent, this[L], this[R])
+    return new Selection(this.parent, this[L], this[R], R)
   }
 }
 
-/** An interface used for type-safe mutable changes to {@link Span `Span`}. */
-interface SpanMut extends Span {
-  [L]: Command | null
-  [R]: Command | null
-}
-
-/** A range within a {@link Block `Block`}. */
+/**
+ * A range within a {@link Block `Block`}.
+ *
+ * A `Span`'s two sides must be properly ordered, with `this[L]` strictly before
+ * `this[R]`, with both contained within `this.parent`.
+ */
 export class Span {
   /**
    * The {@link Command `Command`} to the left of this `Span`. Not included in
    * the `Span` itself.
+   *
+   * In regular nodes, `[L]` is readonly. However, a `Span` is merely a view
+   * over the tree, and has no invariants it maintains over other nodes. As
+   * such, its sides are mutable.
    */
+  [L]: Command | null;
 
-  readonly [L]: Command | null
   /**
    * The {@link Command `Command`} to the right of this `Span`. Not included in
    * the `Span` itself.
+   *
+   * In regular nodes, `[R]` is readonly. However, a `Span` is merely a view
+   * over the tree, and has no invariants it maintains over other nodes. As
+   * such, its sides are mutable.
    */
-  readonly [R]: Command | null
+  [R]: Command | null
 
   constructor(
     /** The {@link Block `Block`} containing this `Span`. */
@@ -252,44 +320,87 @@ export class Span {
   cursor(side: Dir) {
     return new Cursor(this.parent, side == R ? this[R] : this.at(L))
   }
+
+  /** Extends this `Span` to one end. */
+  extendTo(dir: Dir) {
+    this[dir] = null
+    return this
+  }
+
+  /**
+   * Removes the {@link Command `Command`}s contained by this `Span` from their
+   * surrounding block and moves them into a new {@link Block `Block`}. The
+   * `Span` will be a single point after the removal.
+   *
+   * Note that calling this when a cursor is attached to the leftmost element in
+   * the `Span` will likely cause errors. The caller must ensure any cursors in
+   * scope are properly updated.
+   */
+  remove() {
+    if (!this.parent || this.isCursor()) {
+      return new Block(null)
+    }
+
+    const block = new Block(null)
+    ;(block.ends as EndsMut)[L] = this.at(L)
+    ;(block.ends as EndsMut)[R] = this.at(R)
+    if (block.ends[L]) {
+      ;(block.ends[L] as CommandMut)[L] = null
+    }
+    if (block.ends[R]) {
+      ;(block.ends[R] as CommandMut)[R] = null
+    }
+    this.each((el) => {
+      ;(el as CommandMut).parent = block
+      block.el.appendChild(el.el)
+    })
+
+    if (this[L]) {
+      ;(this[L] as CommandMut)[R] = this[R]
+    } else {
+      ;(this.parent.ends as EndsMut)[L] = this[R]
+    }
+    if (this[R]) {
+      ;(this[R] as CommandMut)[L] = this[L]
+    } else {
+      ;(this.parent.ends as EndsMut)[R] = this[L]
+    }
+
+    return block
+  }
 }
 
 /** A {@link Span `Span`} with focus and anchor nodes. */
 export class Selection extends Span {
-  /** Which side of this `Selection` is the focus node. */
-  public focused: Dir
-
   constructor(
     /** The {@link Block `Block`} containing this `Selection`. */
     readonly parent: Block | null,
-    anchor: Command | null,
-    focus: Command | null,
+    lhs: Command | null,
+    rhs: Command | null,
+    /** Which side of this `Selection` is the focus node. */
+    public focused: Dir,
   ) {
-    const dir = Command.dir(anchor, focus)
-    super(parent, dir == L ? focus : anchor, dir == L ? anchor : focus)
-    this.focused = dir
+    super(parent, lhs, rhs)
   }
 
   /** Moves the focus node of this `Selection`. */
   moveFocus(dir: Dir) {
-    const isCursor = this[L] ? this[L][R] == this[R] : !this[R]
+    if (dir == R) {
+      throw new Error("cannot move R")
+    }
 
-    if (isCursor) {
+    if (this.isCursor()) {
       this.focused = dir
       if (this[dir]) {
-        // It is a cursor anywhere else
-        ;(this as SpanMut)[dir] = this[dir]![dir]
-        return
-      } else {
-        // It is a cursor at the end
-        return
+        this[dir] = this[dir]![dir]
       }
+      return
     }
 
     if (this.focused == dir) {
-      ;(this as SpanMut)[this.focused] = this[dir]?.[dir] || null
+      this[dir] = this[dir]?.[dir] || null
     } else {
-      ;(this as SpanMut)[this.focused] = this.at(this.focused)
+      this[this.focused] = this.at(this.focused)
     }
   }
 
@@ -298,8 +409,6 @@ export class Selection extends Span {
    * the anchor.
    */
   flip() {
-    const s = new globalThis.Selection()
-    s.collapse
     this.focused = this.focused == L ? R : L
   }
 }
@@ -311,12 +420,18 @@ interface CommandMut extends Command {
 }
 
 /** A command is a single item inside a block. */
-export abstract class Command extends Node {
+export abstract class Command<T extends Block[] = Block[]> extends Node {
   /** Returns the direction needed to travel from `anchor` to `focus`. */
-  static dir(anchor: Command | null, focus: Command | null): Dir {
-    while (anchor) {
+  static dir(anchor: Command, focus: Command): Dir {
+    if (!focus) {
+      return R
+    }
+
+    let a: Command | null = anchor
+
+    while (a) {
       if (anchor == focus) return R
-      anchor = anchor[R]
+      a = anchor[R]
     }
 
     return L
@@ -329,7 +444,7 @@ export abstract class Command extends Node {
   constructor(
     readonly ctrlSeq: string,
     readonly el: HTMLSpanElement,
-    readonly blocks: Block[],
+    readonly blocks: T,
   ) {
     super()
     for (let i = 0; i < blocks.length; i++) {
@@ -338,6 +453,11 @@ export abstract class Command extends Node {
       block[L] = blocks[i - 1] || null
       block[R] = blocks[i + 1] || null
     }
+  }
+
+  /** Whether this `Command` goes in the numerator of a fraction */
+  convertsToFrac(): boolean {
+    return true
   }
 
   insertAt(cursor: Cursor, dir: Dir) {
@@ -357,12 +477,12 @@ export abstract class Command extends Node {
     if (l) {
       ;(l as CommandMut)[R] = this
     } else {
-      ;(cursor.parent.ends as EndsMut<Command>)[L] = this
+      ;(cursor.parent.ends as EndsMut)[L] = this
     }
     if (r) {
       ;(r as CommandMut)[L] = this
     } else {
-      ;(cursor.parent.ends as EndsMut<Command>)[R] = this
+      ;(cursor.parent.ends as EndsMut)[R] = this
     }
   }
 }
