@@ -1,5 +1,5 @@
 import { CmdBrack } from "./cmd/paren"
-import { CmdPlus } from "./cmd/token/op/plus"
+import { CmdPm } from "./cmd/token/op/pm"
 import { CmdNum } from "./cmd/token/plain/num"
 import { Exts, Field } from "./field"
 import { Block, L, R } from "./model"
@@ -26,7 +26,7 @@ function test(name: string, f: () => void) {
 }
 
 test("some selection stuff", () => {
-  const field = new Field(new Exts().setDefault(CmdNum).set("+", CmdPlus))
+  const field = new Field(new Exts().setDefault(CmdNum).set("+", CmdPm))
   field.cursor.moveInside(field.block, L)
 
   const block = new Block(null)

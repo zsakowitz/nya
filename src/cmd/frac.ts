@@ -32,7 +32,7 @@ export class CmdFrac extends Command<[Block, Block]> {
       "\\frac",
       h(
         "span",
-        "text-[90%] text-center align-[-.4em] px-[.2em] inline-block",
+        "text-[90%] text-center align-[-.46em] px-[.2em] inline-block",
         h("span", "px-[.1em] block", num.el),
         h(
           "span",

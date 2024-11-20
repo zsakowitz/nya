@@ -3,7 +3,7 @@ import { ByRegex } from "./cmd/by-regex"
 import { CmdFrac } from "./cmd/frac"
 import { CmdNoop } from "./cmd/noop"
 import { CmdBrack } from "./cmd/paren"
-import { CmdPlus } from "./cmd/token/op/plus"
+import { OpCdot, OpMinus, OpPlus } from "./cmd/token/op"
 import { CmdNum } from "./cmd/token/plain/num"
 import { CmdVar } from "./cmd/token/plain/var"
 import { Exts, Field } from "./field"
@@ -20,7 +20,9 @@ const field = new Field(
         [/^[()[\]{}]$/, CmdBrack],
       ]),
     )
-    .set("+", CmdPlus)
+    .set("+", OpPlus)
+    .set("-", OpMinus)
+    .set("*", OpCdot)
     .set("/", CmdFrac),
 )
 
@@ -94,6 +96,13 @@ field.type("/")
 field.type("2")
 field.type("/")
 field.type("1")
+field.type("*")
+field.type("2")
+field.type("3")
+
+field.cursor.moveInside(field.block, R)
+field.type("*")
+field.type("3")
 
 // show latex
 {

@@ -627,6 +627,10 @@ video {
   display: inline-block;
 }
 
+.inline {
+  display: inline;
+}
+
 .flex {
   display: flex;
 }
@@ -729,8 +733,20 @@ video {
   text-align: center;
 }
 
+.align-middle {
+  vertical-align: middle;
+}
+
 .align-\[-\.4em\] {
   vertical-align: -.4em;
+}
+
+.align-\[-\.465em\] {
+  vertical-align: -.465em;
+}
+
+.align-\[-\.46em\] {
+  vertical-align: -.46em;
 }
 
 .font-\[\'Symbola\'\] {
@@ -849,4 +865,12 @@ video {
 .before\:\[line-height\:\.9\]::before {
   content: var(--tw-content);
   line-height: .9;
+}
+
+:where(.\[\:where\(\&\)\]\:inline-block) {
+  display: inline-block;
+}
+
+:where(.\[\:where\(\&\)\]\:align-middle) {
+  vertical-align: middle;
 }
