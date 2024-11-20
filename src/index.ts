@@ -20,7 +20,8 @@ const field = new Field(
         [/^[()[\]{}]$/, CmdBrack],
       ]),
     )
-    .set("+", CmdPlus),
+    .set("+", CmdPlus)
+    .set("/", CmdFrac),
 )
 
 // Set up field styles
@@ -42,7 +43,12 @@ field.cursor.moveInside(field.block, L)
   field.type("i")
   field.type("n")
   field.type("+")
-  CmdFrac.createLeftOf(field.cursor)
+  field.type("(")
+  field.type("2")
+  field.type("+")
+  field.type("3")
+  field.type(")")
+  field.type("/")
 }
 
 // add (3497)
@@ -80,3 +86,7 @@ field.cursor.moveInside(field.block, L)
   console.log(field.cursor)
   field.type("b")
 }
+
+field.type("/")
+field.type("4")
+field.type("3")

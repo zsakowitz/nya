@@ -10,6 +10,10 @@ export class CmdPlus extends Op {
     super("+", "+")
   }
 
+  endsImplicitGroup(): boolean {
+    return true
+  }
+
   intoAsciiMath(): string {
     return "+"
   }

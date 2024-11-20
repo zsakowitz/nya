@@ -607,6 +607,10 @@ video {
   display: block;
 }
 
+.\!block {
+  display: block !important;
+}
+
 .inline-block {
   display: inline-block;
 }
@@ -693,6 +697,10 @@ video {
 
 .fill-current {
   fill: currentColor;
+}
+
+.p-\[\.1em\] {
+  padding: .1em;
 }
 
 .px-\[\.1em\] {

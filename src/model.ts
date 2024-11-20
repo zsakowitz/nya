@@ -100,6 +100,11 @@ export class Block extends Node {
     }
   }
 
+  /** Returns whether this `Block` is empty. */
+  isEmpty() {
+    return this.ends[L] == null
+  }
+
   /** Attaches another block onto a side of this one. */
   attach(other: Block, command: Command | null, dir: Dir) {
     if (!other.ends[L]) {
@@ -455,9 +460,12 @@ export abstract class Command<T extends Block[] = Block[]> extends Node {
     }
   }
 
-  /** Whether this `Command` goes in the numerator of a fraction */
-  convertsToFrac(): boolean {
-    return true
+  /**
+   * Whether this `Command` ends an implicit multiplication group. Used when the
+   * user types `/` for a fraction or `\choose`.
+   */
+  endsImplicitGroup(): boolean {
+    return false
   }
 
   insertAt(cursor: Cursor, dir: Dir) {
