@@ -1,5 +1,15 @@
 import { U_ZERO_WIDTH_SPACE, h, t } from "../jsx"
-import { Block, Command, L, R, type Cursor, type Dir } from "../model"
+import {
+  Block,
+  Command,
+  D,
+  L,
+  R,
+  U,
+  type Cursor,
+  type Dir,
+  type VDir,
+} from "../model"
 import { CmdBrack } from "./brack"
 
 export class CmdFrac extends Command<[Block, Block]> {
@@ -8,7 +18,7 @@ export class CmdFrac extends Command<[Block, Block]> {
     while (span[L] && !span[L].endsImplicitGroup()) {
       span[L] = span[L][L]
     }
-    const block = span.remove()
+    const block = span.splice()
     cursor.setTo(span.cursor(L))
     const denom = new Block(null)
     const num =
@@ -61,5 +71,17 @@ export class CmdFrac extends Command<[Block, Block]> {
 
   moveOutOf(cursor: Cursor, towards: Dir): void {
     cursor.moveTo(this, towards)
+  }
+
+  vertInto(dir: VDir): Block {
+    return dir == U ? this.blocks[0] : this.blocks[1]
+  }
+
+  vertOutOf(dir: VDir, block: Block): Block | undefined {
+    if (dir == D && block == this.blocks[0]) {
+      return this.blocks[1]
+    } else if (dir == U && block == this.blocks[1]) {
+      return this.blocks[0]
+    }
   }
 }

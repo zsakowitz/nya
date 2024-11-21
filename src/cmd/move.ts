@@ -1,21 +1,20 @@
-import { L, R, type Init } from "../model"
+import { D, U, type Dir, type Init, type VDir } from "../model"
 
-export const CmdMoveLeft: Init = {
-  init(cursor) {
-    if (cursor[L]) {
-      cursor[L].moveInto(cursor, L)
-    } else if (cursor.parent?.parent) {
-      cursor.parent.parent.moveOutOf(cursor, L, cursor.parent)
+export function CmdMove(dir: Dir | VDir): Init {
+  if (dir == U || dir == D) {
+    return {
+      init(cursor) {
+        cursor.moveVert(dir)
+      },
     }
-  },
-}
-
-export const CmdMoveRight: Init = {
-  init(cursor) {
-    if (cursor[R]) {
-      cursor[R].moveInto(cursor, R)
-    } else if (cursor.parent?.parent) {
-      cursor.parent.parent.moveOutOf(cursor, R, cursor.parent)
+  } else {
+    return {
+      init(cursor) {
+        cursor.move(dir)
+      },
+      initOn(selection) {
+        return selection.cursor(dir)
+      },
     }
-  },
+  }
 }

@@ -5,12 +5,12 @@ import { CmdFrac } from "./cmd/frac"
 import { OpCdot, OpMinus, OpPlus } from "./cmd/leaf/op"
 import { CmdNumAutoSubscript } from "./cmd/leaf/plain/num"
 import { CmdVar } from "./cmd/leaf/plain/var"
-import { CmdMoveLeft, CmdMoveRight } from "./cmd/move"
+import { CmdMove } from "./cmd/move"
 import { CmdNoop } from "./cmd/noop"
 import { CmdSubSup } from "./cmd/supsub"
 import { Exts, Field } from "./field"
 import { h } from "./jsx"
-import { L } from "./model"
+import { D, L, R, U } from "./model"
 
 // Create field
 const field = new Field(
@@ -28,8 +28,10 @@ const field = new Field(
     .set("*", OpCdot)
     .set("/", CmdFrac)
     .set("^", CmdSubSup)
-    .set("ArrowLeft", CmdMoveLeft)
-    .set("ArrowRight", CmdMoveRight)
+    .set("ArrowLeft", CmdMove(L))
+    .set("ArrowRight", CmdMove(R))
+    .set("ArrowUp", CmdMove(U))
+    .set("ArrowDown", CmdMove(D))
     .set("_", CmdSubSup),
 )
 
@@ -38,9 +40,6 @@ field.el.classList.add("[line-height:1]", "text-[1.265rem]")
 document.body.className =
   "flex flex-col items-center justify-center min-h-screen"
 document.body.appendChild(field.el)
-
-// Move cursor to beginning of block
-field.cursor.moveIn(field.block, L)
 
 field.type("2")
 field.type("*")
@@ -100,9 +99,26 @@ field.type("3")
 field.type("a")
 field.type("2")
 field.type("ArrowLeft")
+field.type("ArrowLeft")
+field.type("ArrowLeft")
+field.type("ArrowLeft")
+field.type("ArrowLeft")
+field.type("ArrowLeft")
+field.type("ArrowLeft")
+field.type("ArrowLeft")
+field.sel.moveFocus(L)
+field.sel.moveFocus(R)
+field.sel.moveFocus(R)
+field.sel.moveFocus(R)
+field.sel.moveFocus(R)
+field.sel.moveFocus(R)
+field.sel.moveFocus(R)
+field.sel.moveFocus(R)
 
-const cursor = h(/*class=*/ "border-black p-0 m-0 -ml-px border-l")
-field.cursor.render(cursor)
+field.sel.each(({ el }) => el.classList.add("bg-blue-200"))
+field.sel
+  .cursor(field.sel.focused)
+  .render(h("border-black p-0 m-0 -ml-px border-l"))
 
 // show latex
 {

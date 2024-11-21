@@ -95,7 +95,7 @@ export class CmdBrack extends Command<[Block]> {
         parent.side == R &&
         parent.parent
       ) {
-        const block = cursor.span().extendTo(L).remove()
+        const block = cursor.span().extendToEnd(L).splice()
         parent.parent.attach(block, null, R)
         ;(parent as any).side = null // `.side` is only `readonly` in user code
         parent.checkSvg(L)
@@ -104,8 +104,8 @@ export class CmdBrack extends Command<[Block]> {
         return
       }
 
-      const span = cursor.span().extendTo(R)
-      const brack = new CmdBrack(input, rhs, L, span.remove())
+      const span = cursor.span().extendToEnd(R)
+      const brack = new CmdBrack(input, rhs, L, span.splice())
       // The `span.remove()` call invalidates the cursor, so we need
       // to fix it using the span (either side works, since it's empty)
       cursor.setTo(span.cursor(L))
@@ -122,7 +122,7 @@ export class CmdBrack extends Command<[Block]> {
         parent.side == L &&
         parent.parent
       ) {
-        const block = cursor.span().extendTo(R).remove()
+        const block = cursor.span().extendToEnd(R).splice()
         parent.parent.attach(block, null, L)
         ;(parent as any).side = null // `.side` is only `readonly` in user code
         parent.checkSvg(R)
@@ -131,8 +131,8 @@ export class CmdBrack extends Command<[Block]> {
         return
       }
 
-      const span = cursor.span().extendTo(L)
-      const brack = new CmdBrack(lhs, input, R, span.remove())
+      const span = cursor.span().extendToEnd(L)
+      const brack = new CmdBrack(lhs, input, R, span.splice())
       // The `span.remove()` call invalidates the cursor, so we need
       // to fix it using the span (either side works, since it's empty)
       cursor.setTo(span.cursor(R))

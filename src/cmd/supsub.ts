@@ -1,5 +1,15 @@
 import { U_ZERO_WIDTH_SPACE, h, t } from "../jsx"
-import { Block, Command, L, R, type Cursor, type Dir } from "../model"
+import {
+  Block,
+  Command,
+  D,
+  L,
+  R,
+  U,
+  type Cursor,
+  type Dir,
+  type VDir,
+} from "../model"
 
 export class CmdSubSup extends Command {
   static init(cursor: Cursor, input: string) {
@@ -104,88 +114,18 @@ export class CmdSubSup extends Command {
   moveOutOf(cursor: Cursor, towards: Dir): void {
     cursor.moveTo(this, towards)
   }
-}
 
-// function hi() {
-//   switch (0) {
-//     case "sub":
-//       return (
-//         <span
-//           class="mb-[-.2em] inline-block text-left align-[-.5em] text-[90%]"
-//           classList={{ "pr-[.2em]": symbol.spaceAfter }}
-//         >
-//           <span class="float-left block text-[80%]">
-//             <SymbolList
-//               symbols={symbol.contents}
-//               replaceSelf={(symbols, data) =>
-//                 replaceSelf([{ type: "sub", contents: symbols }], data)
-//               }
-//             />
-//           </span>
-//
-//           <span class="inline-block w-0">​</span>
-//         </span>
-//       )
-//     case "supsub":
-//       return (
-//         <span
-//           class="mb-[-.2em] inline-block text-left align-[-.5em] text-[90%]"
-//           classList={{ "pr-[.2em]": symbol.spaceAfter }}
-//         >
-//           <span class="block">
-//             <SymbolList
-//               symbols={symbol.sup}
-//               replaceSelf={(symbols, data) =>
-//                 replaceSelf(
-//                   [
-//                     {
-//                       type: "supsub",
-//                       sup: symbols,
-//                       sub: prepareSymbolList(symbol.sub, data),
-//                     },
-//                   ],
-//                   data,
-//                 )
-//               }
-//             />
-//           </span>
-//
-//           <span class="float-left block text-[80%]">
-//             <SymbolList
-//               symbols={symbol.sub}
-//               replaceSelf={(symbols, data) =>
-//                 replaceSelf(
-//                   [
-//                     {
-//                       type: "supsub",
-//                       sub: symbols,
-//                       sup: prepareSymbolList(symbol.sup, data),
-//                     },
-//                   ],
-//                   data,
-//                 )
-//               }
-//             />
-//           </span>
-//
-//           <span class="inline-block w-0">​​</span>
-//         </span>
-//       )
-//     case "sup":
-//       return (
-//         <span
-//           class="mb-[-.2em] inline-block text-left align-[.5em] text-[90%]"
-//           classList={{ "pr-[.2em]": symbol.spaceAfter }}
-//         >
-//           <span class="inline-block align-text-bottom">
-//             <SymbolList
-//               symbols={symbol.contents}
-//               replaceSelf={(symbols, data) =>
-//                 replaceSelf([{ type: "sup", contents: symbols }], data)
-//               }
-//             />
-//           </span>
-//         </span>
-//       )
-//   }
-// }
+  vertInto(dir: VDir): Block | undefined {
+    return (dir == U ? this.sup : this.sub) || void 0
+  }
+
+  vertOutOf(dir: VDir, block: Block): Block | undefined {
+    if (this.sub && this.sup) {
+      if (dir == U && block == this.sub) {
+        return this.sup
+      } else if (dir == D && block == this.sup) {
+        return this.sub
+      }
+    }
+  }
+}

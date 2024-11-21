@@ -1,5 +1,5 @@
 import { CmdBrack } from "./cmd/brack"
-import { CmdPm } from "./cmd/leaf/op/pm"
+import { OpPlus } from "./cmd/leaf/op"
 import { CmdNum } from "./cmd/leaf/plain/num"
 import { Exts, Field } from "./field"
 import { Block, L, R } from "./model"
@@ -26,26 +26,30 @@ function test(name: string, f: () => void) {
 }
 
 test("some selection stuff", () => {
-  const field = new Field(new Exts().setDefault(CmdNum).set("+", CmdPm))
-  field.cursor.moveIn(field.block, L)
+  const field = new Field(new Exts().setDefault(CmdNum).set("+", OpPlus))
+  field.sel.remove().moveIn(field.block, L)
 
   const block = new Block(null)
-  new CmdBrack("(", ")", null, block).insertAt(field.cursor, L)
-  field.cursor.moveIn(block, L)
+  new CmdBrack("(", ")", null, block).insertAt(field.sel.remove(), L)
+  field.sel.remove().moveIn(block, L)
   field.type("3")
   field.type("4")
   field.type("9")
   field.type("7")
 
-  const span = field.cursor.clone().moveIn(field.cursor.parent!, R).selection()
-  span.moveFocus(L)
-  span.moveFocus(L)
+  const span = field.sel
+    .remove()
+    .clone()
+    .moveIn(field.sel.remove().parent!, R)
+    .selection()
+  span.moveFocusWithin(L)
+  span.moveFocusWithin(L)
   span.flip()
-  span.moveFocus(L)
+  span.moveFocusWithin(L)
   span.each((el) => el.el.classList.add("bg-sky-500"))
   span.remove()
 
-  eq(field.cursor.parent, block)
+  eq(field.sel.remove().parent, block)
   is(block.ends[L] instanceof CmdNum)
   eq(block.ends[L].text, "3")
   is(block.ends[L][R] instanceof CmdNum)

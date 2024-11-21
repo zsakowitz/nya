@@ -10,8 +10,17 @@ export const L = -1
 /** Used across the system to represent the right side, or rightwards. */
 export const R = 1
 
+/** Used across the system to represent the top side, or upwards. */
+export const U = -2
+
+/** Used across the system to represent the bottom side, or downwards. */
+export const D = 2
+
 /** A direction or side. */
 export type Dir = -1 | 1
+
+/** A vertical direction or side. */
+export type VDir = -2 | 2
 
 /**
  * Something in the edit tree. In a math expression, this is either a
@@ -182,6 +191,22 @@ export class Block extends Node {
   cursor(end: Dir) {
     return new Cursor(this, end == R ? null : this.ends[L])
   }
+
+  /** Finds the {@link Command `Command`} closest to the given `clientX`. */
+  nodeAt(clientX: number): Command | null {
+    // We use binary search b/c it seems fun
+    // This is still technically O(n) in the number of child nodes
+    let el = this.ends[L]
+    while (el) {
+      const box = el.el.getBoundingClientRect()
+      const rhs = box.left + box.width
+      if (clientX < rhs) {
+        return el
+      }
+      el = el[R]
+    }
+    return null
+  }
 }
 
 /** An interface used for type-safe changes to {@link Cursor `Cursor`}s. */
@@ -216,6 +241,80 @@ export class Cursor {
   setTo(other: Cursor) {
     ;(this as CursorMut).parent = other.parent
     ;(this as CursorMut)[R] = other[R]
+  }
+
+  /** Moves this cursor in the given direction. */
+  move(dir: Dir) {
+    if (this[dir]) {
+      this[dir].moveInto(this, dir)
+    } else if (this.parent?.parent) {
+      this.parent.parent.moveOutOf(this, dir, this.parent)
+    }
+  }
+
+  /**
+   * Moves this `Cursor` in the given vertical direction. Returns `true` if the
+   * cursor moved.
+   */
+  moveVert(dir: VDir): boolean {
+    // Get the cursor's X position; we want to be as close to it as possible
+    const x = this.clientX()
+    // The cursor doesn't have an X position iff it is not in the DOM, and thus
+    // we may safely ignore the movement operation.
+    if (x == null) return false
+
+    // If a sub- or superscript is available on the RHS, take it
+    {
+      const into = this[R]?.vertInto(dir, x)
+      if (into) {
+        this.moveIn(into, L)
+        return true
+      }
+    }
+
+    // Else, if a sub- or superscript is available on the LHS, take it
+    {
+      const into = this[L]?.vertInto(dir, x)
+      if (into) {
+        this.moveIn(into, R)
+        return true
+      }
+    }
+
+    // Complex fun algorithm time
+
+    // Find the closest ancestor which defines a block we can move into
+    let block: Block | null | undefined = this.parent
+    let node: Block | undefined
+    while (block) {
+      if (!block.parent) {
+        return false
+      }
+
+      node = block.parent.vertOutOf(dir, block)
+      if (node) {
+        break
+      }
+
+      block = block.parent.parent
+    }
+
+    console.log({ block, node })
+    return true // TODO:
+  }
+
+  /**
+   * Gets the X-coordinate of this `Cursor` onscreen. Returns `null` if the
+   * `Cursor` is not attached to any element.
+   */
+  clientX() {
+    if (this[R]) {
+      return this[R].el.getBoundingClientRect().left
+    } else if (this.parent) {
+      return this.parent.el.getBoundingClientRect().right
+    } else {
+      return null
+    }
   }
 
   /** Moves this cursor to some side of a {@link Command `Command`}. */
@@ -286,7 +385,7 @@ export class Span {
 
   constructor(
     /** The {@link Block `Block`} containing this `Span`. */
-    readonly parent: Block | null,
+    public parent: Block | null,
     lhs: Command | null,
     rhs: Command | null,
   ) {
@@ -328,8 +427,41 @@ export class Span {
     return new Cursor(this.parent, side == R ? this[R] : this.at(L))
   }
 
+  /** Moves one side of this `Span` in a direction. */
+  move(side: Dir, towards: Dir) {
+    // If there is no parent, we cannot move anyway
+    if (!this.parent) return
+
+    const isCursor = this.isCursor()
+
+    // If we are a cursor, and we move the R node left, we will be in an invalid
+    // state. Thus, we must swap which node is moved.
+    if (isCursor && side != towards) {
+      side = side == L ? R : L
+    }
+
+    const willEscape =
+      side == towards ? this[side] == null : isCursor && this[towards] == null
+
+    // If we're going to escape, select the parent
+    if (willEscape) {
+      const command = this.parent.parent
+      if (!command) return
+
+      this.parent = command.parent
+      this[L] = command[L]
+      this[R] = command[R]
+      return
+    } else if (this[side]) {
+      this[side] = this[side]![towards]
+    } else {
+      // If we get here, side != towards
+      this[side] = this.parent.ends[side]
+    }
+  }
+
   /** Extends this `Span` to one end. */
-  extendTo(dir: Dir) {
+  extendToEnd(dir: Dir) {
     this[dir] = null
     return this
   }
@@ -343,7 +475,7 @@ export class Span {
    * the `Span` will likely cause errors. The caller must ensure any cursors in
    * scope are properly updated.
    */
-  remove() {
+  splice() {
     if (!this.parent || this.isCursor()) {
       return new Block(null)
     }
@@ -375,6 +507,31 @@ export class Span {
 
     return block
   }
+
+  /**
+   * Removes the {@link Command `Command`}s contained by this `Span` from their
+   * surrounding block. The `Span` will be a single point after the removal.
+   *
+   * Returns a {@link Cursor `Cursor`} at the location of the `Span`.
+   */
+  remove(): Cursor {
+    if (this.parent && !this.isCursor()) {
+      this.each((el) => el.el.remove())
+
+      if (this[L]) {
+        ;(this[L] as CommandMut)[R] = this[R]
+      } else {
+        ;(this.parent.ends as EndsMut)[L] = this[R]
+      }
+      if (this[R]) {
+        ;(this[R] as CommandMut)[L] = this[L]
+      } else {
+        ;(this.parent.ends as EndsMut)[R] = this[L]
+      }
+    }
+
+    return new Cursor(this.parent, this[R])
+  }
 }
 
 /** A {@link Span `Span`} with focus and anchor nodes. */
@@ -390,8 +547,11 @@ export class Selection extends Span {
     super(parent, lhs, rhs)
   }
 
-  /** Moves the focus node of this `Selection`. */
-  moveFocus(dir: Dir) {
+  /**
+   * Moves the focus node of this `Selection` within its containing
+   * {@link Block `Block`}.
+   */
+  moveFocusWithin(dir: Dir) {
     if (dir == R) {
       throw new Error("cannot move R")
     }
@@ -409,6 +569,14 @@ export class Selection extends Span {
     } else {
       this[this.focused] = this.at(this.focused)
     }
+  }
+
+  /** Moves the focus node in a given direction. */
+  moveFocus(dir: Dir) {
+    if (this.isCursor()) {
+      this.focused = dir
+    }
+    this.move(this.focused, dir)
   }
 
   /**
@@ -502,7 +670,46 @@ export abstract class Command<T extends Block[] = Block[]> extends Node {
       ;(cursor.parent.ends as EndsMut)[R] = this
     }
   }
+
+  /**
+   * Gets the {@link Block `Block`} that should be moved into when a vertical
+   * arrow key is pressed and the cursor attempts to move into this `Command`.
+   *
+   * The returned {@link Block `Block`} must be owned by this `Command`.
+   *
+   * This is used in two circumstances:
+   *
+   * 1. The cursor is to one side of this `Command`, and attempts to move up or
+   *    down.
+   * 2. The cursor is, say, in the denominator of `(3/4)/5`, next to the `5`, and
+   *    the user presses up.
+   */
+  vertInto(dir: VDir, clientX: number): Block | undefined {
+    return
+  }
+
+  /**
+   * Gets the {@link Block `Block`} that should be moved into when a vertical
+   * arrow key is pressed and the cursor is inside a `Block` owned by this
+   * `Command`.
+   *
+   * The returned {@link Block `Block`} must be owned by this `Command`.
+   *
+   * This is used, for instance, when the cursor is to the right of `3` in `⅜`
+   * and the user presses "Down".
+   */
+  vertOutOf(dir: VDir, block: Block): Block | undefined {
+    return
+  }
 }
 
-/** Something which can be initialized to the left side of a cursor. */
-export type Init = { init(cursor: Cursor, input: string): void }
+type InitRet = Cursor | Selection | undefined | void
+
+/**
+ * Something which can be initialized to the left side of a cursor or (possibly)
+ * on top of a selection.
+ */
+export type Init = {
+  init(cursor: Cursor, input: string): InitRet
+  initOn?(selection: Selection, input: string): InitRet
+}
