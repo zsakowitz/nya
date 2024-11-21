@@ -212,17 +212,6 @@ export class Cursor {
     this[R] = before
   }
 
-  /** Moves this cursor within its containing block. */
-  moveWithin(dir: Dir) {
-    if (dir == L) {
-      ;(this as CursorMut)[R] =
-        (this[R] ? this[R][L] || this.parent?.ends[L] : this.parent?.ends[R]) ||
-        null
-    } else {
-      ;(this as CursorMut)[R] = this[R]?.[R] || null
-    }
-  }
-
   /** Moves this cursor to another cursor's position. */
   setTo(other: Cursor) {
     ;(this as CursorMut).parent = other.parent
@@ -237,7 +226,7 @@ export class Cursor {
   }
 
   /** Moves this cursor to some side of a {@link Block `Block`}. */
-  moveInside(el: Block, side: Dir) {
+  moveIn(el: Block, side: Dir) {
     ;(this as CursorMut).parent = el
     ;(this as CursorMut)[R] = (side == L && el.ends[L]) || null
     return this
@@ -256,6 +245,15 @@ export class Cursor {
   /** Creates a {@link Selection `Selection`} where this cursor is. */
   selection() {
     return new Selection(this.parent, this[L], this[R], R)
+  }
+
+  /** Renders a DOM node at the cursor's position. */
+  render(el: HTMLElement) {
+    if (this.parent) {
+      this.parent.el.insertBefore(el, this[R] ? this[R].el : null)
+    } else {
+      el.remove()
+    }
   }
 }
 
@@ -464,6 +462,12 @@ export abstract class Command<T extends Block[] = Block[]> extends Node {
     }
   }
 
+  /** Moves the cursor into the given {@link Command `Command`}. */
+  abstract moveInto(cursor: Cursor, towards: Dir): void
+
+  /** Moves the cursor out of the passed {@link Block `Block`}. */
+  abstract moveOutOf(cursor: Cursor, towards: Dir, block: Block): void
+
   /**
    * Whether this `Command` ends an implicit multiplication group. Used when the
    * user types `/` for a fraction or `\choose`.
@@ -472,6 +476,7 @@ export abstract class Command<T extends Block[] = Block[]> extends Node {
     return false
   }
 
+  /** Inserts the `Command` to some side of a {@link Cursor `Cursor`}. */
   insertAt(cursor: Cursor, dir: Dir) {
     if (!cursor.parent) {
       this.el.remove()

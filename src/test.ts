@@ -1,6 +1,6 @@
-import { CmdBrack } from "./cmd/paren"
-import { CmdPm } from "./cmd/token/op/pm"
-import { CmdNum } from "./cmd/token/plain/num"
+import { CmdBrack } from "./cmd/brack"
+import { CmdPm } from "./cmd/leaf/op/pm"
+import { CmdNum } from "./cmd/leaf/plain/num"
 import { Exts, Field } from "./field"
 import { Block, L, R } from "./model"
 
@@ -27,20 +27,17 @@ function test(name: string, f: () => void) {
 
 test("some selection stuff", () => {
   const field = new Field(new Exts().setDefault(CmdNum).set("+", CmdPm))
-  field.cursor.moveInside(field.block, L)
+  field.cursor.moveIn(field.block, L)
 
   const block = new Block(null)
   new CmdBrack("(", ")", null, block).insertAt(field.cursor, L)
-  field.cursor.moveInside(block, L)
+  field.cursor.moveIn(block, L)
   field.type("3")
   field.type("4")
   field.type("9")
   field.type("7")
 
-  const span = field.cursor
-    .clone()
-    .moveInside(field.cursor.parent!, R)
-    .selection()
+  const span = field.cursor.clone().moveIn(field.cursor.parent!, R).selection()
   span.moveFocus(L)
   span.moveFocus(L)
   span.flip()

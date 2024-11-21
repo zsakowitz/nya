@@ -1,8 +1,8 @@
-import { Token } from "."
+import { Leaf } from "."
 import { h, t } from "../../jsx"
 import { L, type Cursor } from "../../model"
 
-export abstract class Op extends Token {
+export abstract class Op extends Leaf {
   constructor(
     readonly ctrlSeq: string,
     readonly html: string,

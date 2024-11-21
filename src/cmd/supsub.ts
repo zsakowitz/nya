@@ -1,28 +1,28 @@
 import { U_ZERO_WIDTH_SPACE, h, t } from "../jsx"
-import { Block, Command, L, R, type Cursor } from "../model"
+import { Block, Command, L, R, type Cursor, type Dir } from "../model"
 
 export class CmdSubSup extends Command {
   static init(cursor: Cursor, input: string) {
     if (input == "^") {
       const prev = cursor[L]
       if (prev instanceof CmdSubSup) {
-        cursor.moveInside(prev.create("sup"), R)
+        cursor.moveIn(prev.create("sup"), R)
         return
       }
 
       const block = new Block(null)
       new CmdSubSup(null, block).insertAt(cursor, L)
-      cursor.moveInside(block, R)
+      cursor.moveIn(block, R)
     } else if (input == "_") {
       const prev = cursor[L]
       if (prev instanceof CmdSubSup) {
-        cursor.moveInside(prev.create("sub"), R)
+        cursor.moveIn(prev.create("sub"), R)
         return
       }
 
       const block = new Block(null)
       new CmdSubSup(block, null).insertAt(cursor, L)
-      cursor.moveInside(block, R)
+      cursor.moveIn(block, R)
     }
   }
 
@@ -91,6 +91,18 @@ export class CmdSubSup extends Command {
       ;(this as any).el = next
     }
     return this[part]!
+  }
+
+  moveInto(cursor: Cursor, towards: Dir): void {
+    if (this.sup) {
+      cursor.moveIn(this.sup, towards == L ? R : L)
+    } else {
+      cursor.moveTo(this, towards)
+    }
+  }
+
+  moveOutOf(cursor: Cursor, towards: Dir): void {
+    cursor.moveTo(this, towards)
   }
 }
 

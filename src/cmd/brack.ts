@@ -100,7 +100,7 @@ export class CmdBrack extends Command<[Block]> {
         ;(parent as any).side = null // `.side` is only `readonly` in user code
         parent.checkSvg(L)
         // Repair cursor
-        cursor.moveInside(parent.blocks[0], R)
+        cursor.moveIn(parent.blocks[0], R)
         return
       }
 
@@ -110,7 +110,7 @@ export class CmdBrack extends Command<[Block]> {
       // to fix it using the span (either side works, since it's empty)
       cursor.setTo(span.cursor(L))
       brack.insertAt(cursor, L)
-      cursor.moveInside(brack.blocks[0], L)
+      cursor.moveIn(brack.blocks[0], L)
     } else if (input == ")" || input == "]" || input == "}") {
       const lhs = matchParen(input satisfies ParenRhs)
 
@@ -139,6 +139,41 @@ export class CmdBrack extends Command<[Block]> {
       brack.insertAt(cursor, R)
       cursor.moveTo(brack, R)
     }
+  }
+
+  static render(lhs: ParenLhs, rhs: ParenRhs, side: Dir | null, block: Block) {
+    const lhsSymbol = PARENS[lhs]
+    const rhsSymbol = PARENS[rhs]
+    return h(
+      // be set by init or parser
+
+      "relative inline-block",
+      h(
+        {
+          style: "width:" + lhsSymbol.width,
+          class:
+            "left-0 absolute top-0 bottom-[2px] inline-block" +
+            (side == R ? " opacity-20" : ""),
+        },
+        lhsSymbol.html(),
+      ),
+      h(
+        {
+          style: `margin-left:${lhsSymbol.width};margin-right:${rhsSymbol.width}`,
+          class: "my-[.1em] inline-block *:contents",
+        },
+        block.el,
+      ),
+      h(
+        {
+          style: "width:" + rhsSymbol.width,
+          class:
+            "right-0 absolute top-0 bottom-[2px] inline-block" +
+            (side == L ? " opacity-20" : ""),
+        },
+        rhsSymbol.html(),
+      ),
+    )
   }
 
   constructor(
@@ -183,38 +218,11 @@ export class CmdBrack extends Command<[Block]> {
     )
   }
 
-  static render(lhs: ParenLhs, rhs: ParenRhs, side: Dir | null, block: Block) {
-    const lhsSymbol = PARENS[lhs]
-    const rhsSymbol = PARENS[rhs]
-    return h(
-      // be set by init or parser
+  moveInto(cursor: Cursor, towards: Dir): void {
+    cursor.moveIn(this.blocks[0], towards == R ? L : R)
+  }
 
-      "relative inline-block",
-      h(
-        {
-          style: "width:" + lhsSymbol.width,
-          class:
-            "left-0 absolute top-0 bottom-[2px] inline-block" +
-            (side == R ? " opacity-20" : ""),
-        },
-        lhsSymbol.html(),
-      ),
-      h(
-        {
-          style: `margin-left:${lhsSymbol.width};margin-right:${rhsSymbol.width}`,
-          class: "my-[.1em] inline-block *:contents",
-        },
-        block.el,
-      ),
-      h(
-        {
-          style: "width:" + rhsSymbol.width,
-          class:
-            "right-0 absolute top-0 bottom-[2px] inline-block" +
-            (side == L ? " opacity-20" : ""),
-        },
-        rhsSymbol.html(),
-      ),
-    )
+  moveOutOf(cursor: Cursor, towards: Dir, block: Block): void {
+    cursor.moveTo(this, towards)
   }
 }

@@ -1,6 +1,6 @@
 import { U_ZERO_WIDTH_SPACE, h, t } from "../jsx"
-import { Block, Command, L, R, type Cursor } from "../model"
-import { CmdBrack } from "./paren"
+import { Block, Command, L, R, type Cursor, type Dir } from "../model"
+import { CmdBrack } from "./brack"
 
 export class CmdFrac extends Command<[Block, Block]> {
   static init(cursor: Cursor) {
@@ -21,9 +21,9 @@ export class CmdFrac extends Command<[Block, Block]> {
         : block
     new CmdFrac(num, denom).insertAt(cursor, L)
     if (num.isEmpty()) {
-      cursor.moveInside(num, R)
+      cursor.moveIn(num, R)
     } else {
-      cursor.moveInside(denom, L)
+      cursor.moveIn(denom, L)
     }
   }
 
@@ -53,5 +53,13 @@ export class CmdFrac extends Command<[Block, Block]> {
 
   reader(): string {
     return ` BeginFraction, ${this.blocks[0].reader()} Over, ${this.blocks[1].reader()} EndFraction `
+  }
+
+  moveInto(cursor: Cursor, towards: Dir): void {
+    cursor.moveIn(this.blocks[0], towards == R ? L : R)
+  }
+
+  moveOutOf(cursor: Cursor, towards: Dir): void {
+    cursor.moveTo(this, towards)
   }
 }

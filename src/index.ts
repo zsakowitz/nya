@@ -1,13 +1,15 @@
 import "../index.css"
+import { CmdBrack } from "./cmd/brack"
 import { ByRegex } from "./cmd/by-regex"
 import { CmdFrac } from "./cmd/frac"
+import { OpCdot, OpMinus, OpPlus } from "./cmd/leaf/op"
+import { CmdNumAutoSubscript } from "./cmd/leaf/plain/num"
+import { CmdVar } from "./cmd/leaf/plain/var"
+import { CmdMoveLeft, CmdMoveRight } from "./cmd/move"
 import { CmdNoop } from "./cmd/noop"
-import { CmdBrack } from "./cmd/paren"
 import { CmdSubSup } from "./cmd/supsub"
-import { OpCdot, OpMinus, OpPlus } from "./cmd/token/op"
-import { CmdNumAutoSubscript } from "./cmd/token/plain/num"
-import { CmdVar } from "./cmd/token/plain/var"
 import { Exts, Field } from "./field"
+import { h } from "./jsx"
 import { L } from "./model"
 
 // Create field
@@ -26,6 +28,8 @@ const field = new Field(
     .set("*", OpCdot)
     .set("/", CmdFrac)
     .set("^", CmdSubSup)
+    .set("ArrowLeft", CmdMoveLeft)
+    .set("ArrowRight", CmdMoveRight)
     .set("_", CmdSubSup),
 )
 
@@ -36,7 +40,7 @@ document.body.className =
 document.body.appendChild(field.el)
 
 // Move cursor to beginning of block
-field.cursor.moveInside(field.block, L)
+field.cursor.moveIn(field.block, L)
 
 field.type("2")
 field.type("*")
@@ -54,6 +58,51 @@ field.type("^")
 field.type("9")
 field.type("^")
 field.type("5")
+field.type("ArrowLeft")
+field.type("ArrowLeft")
+field.type("ArrowLeft")
+field.type("ArrowLeft")
+field.type("ArrowLeft")
+field.type("ArrowLeft")
+field.type("ArrowLeft")
+field.type("ArrowLeft")
+field.type("ArrowLeft")
+field.type("ArrowLeft")
+field.type("ArrowLeft")
+field.type("ArrowLeft")
+field.type("ArrowRight")
+field.type("ArrowRight")
+field.type("ArrowRight")
+field.type("ArrowRight")
+field.type("ArrowRight")
+field.type("ArrowRight")
+field.type("ArrowRight")
+field.type("ArrowRight")
+field.type("ArrowRight")
+field.type("ArrowRight")
+field.type("ArrowRight")
+field.type("ArrowRight")
+field.type("ArrowRight")
+field.type("ArrowRight")
+field.type("ArrowRight")
+field.type("+")
+field.type("3")
+field.type("4")
+field.type("/")
+field.type("5")
+field.type("ArrowRight")
+field.type("ArrowLeft")
+field.type("^")
+field.type("2")
+field.type("ArrowRight")
+field.type("ArrowRight")
+field.type("3")
+field.type("a")
+field.type("2")
+field.type("ArrowLeft")
+
+const cursor = h(/*class=*/ "border-black p-0 m-0 -ml-px border-l")
+field.cursor.render(cursor)
 
 // show latex
 {

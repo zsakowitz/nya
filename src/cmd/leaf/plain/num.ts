@@ -1,10 +1,10 @@
-import { Token } from ".."
+import { Leaf } from ".."
 import { h, t } from "../../../jsx"
 import { Block, Cursor, L, R, type Init } from "../../../model"
 import { CmdSubSup } from "../../supsub"
 import { CmdVar } from "./var"
 
-export class CmdNum extends Token {
+export class CmdNum extends Leaf {
   static init(cursor: Cursor, input: string) {
     new CmdNum(input).insertAt(cursor, L)
   }
