@@ -197,6 +197,10 @@ export class Block extends Node {
     // We use binary search b/c it seems fun
     // This is still technically O(n) in the number of child nodes
     let el = this.ends[L]
+    if (!el) return null
+    if (clientX < el.el.getBoundingClientRect().left) {
+      return null
+    }
     while (el) {
       const box = el.el.getBoundingClientRect()
       const rhs = box.left + box.width
@@ -213,6 +217,18 @@ export class Block extends Node {
 interface CursorMut extends Cursor {
   [R]: Command | null
   parent: Block | null
+}
+
+function pickSide(
+  el: { getBoundingClientRect(): DOMRect },
+  clientX: number,
+): Dir {
+  const box = el.getBoundingClientRect()
+  if (clientX < box.x + box.width / 2) {
+    return L
+  } else {
+    return R
+  }
 }
 
 /** A `Cursor` provides a reference point for insertions and deletions. */
@@ -259,6 +275,7 @@ export class Cursor {
   moveVert(dir: VDir): boolean {
     // Get the cursor's X position; we want to be as close to it as possible
     const x = this.clientX()
+
     // The cursor doesn't have an X position iff it is not in the DOM, and thus
     // we may safely ignore the movement operation.
     if (x == null) return false
@@ -291,16 +308,45 @@ export class Cursor {
         return false
       }
 
-      node = block.parent.vertOutOf(dir, block)
-      if (node) {
+      const ret = block.parent.vertOutOf(dir, block, this)
+      if (ret == true) {
+        return true
+      } else if (ret) {
+        node = ret
         break
       }
 
       block = block.parent.parent
     }
 
-    console.log({ block, node })
-    return true // TODO:
+    if (!node) {
+      return false
+    }
+
+    // Move into that node
+    while (true) {
+      const cmd: Command | null = node.nodeAt(x)
+
+      // If the block is empty or the cursor is too far to one side
+      if (!cmd) {
+        const side = pickSide(node.el, x)
+        this.moveIn(node, side)
+        return true
+      }
+
+      // Get the sub-block in it (e.g. one side of a fraction)
+      const subBlock: Block | undefined = cmd.vertInto(dir == U ? D : U, x)
+      if (subBlock) {
+        // If there is a sub-block, start the process from it
+        node = subBlock
+        continue
+      }
+
+      // If there is no block, move to the appropriate side of the block
+      const side = pickSide(cmd.el, x)
+      this.moveTo(cmd, side)
+      return true
+    }
   }
 
   /**
@@ -689,16 +735,16 @@ export abstract class Command<T extends Block[] = Block[]> extends Node {
   }
 
   /**
-   * Gets the {@link Block `Block`} that should be moved into when a vertical
-   * arrow key is pressed and the cursor is inside a `Block` owned by this
-   * `Command`.
+   * Moves out of a {@link Block `Block`} owned by this `Command`.
    *
-   * The returned {@link Block `Block`} must be owned by this `Command`.
+   * If a {@link Block `Block`} is returned, it must be owned by this `Command`,
+   * and the {@link Cursor `Cursor`} will be placed into it. If `true` is
+   * returned, `cursor` must be updated to a new position.
    *
    * This is used, for instance, when the cursor is to the right of `3` in `⅜`
    * and the user presses "Down".
    */
-  vertOutOf(dir: VDir, block: Block): Block | undefined {
+  vertOutOf(dir: VDir, block: Block, cursor: Cursor): Block | true | undefined {
     return
   }
 }

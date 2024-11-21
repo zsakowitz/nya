@@ -2,36 +2,48 @@ import { U_ZERO_WIDTH_SPACE, h, t } from "../jsx"
 import {
   Block,
   Command,
+  Cursor,
   D,
   L,
   R,
   U,
-  type Cursor,
   type Dir,
   type VDir,
 } from "../model"
 
-export class CmdSubSup extends Command {
+export class CmdSupSub extends Command {
   static init(cursor: Cursor, input: string) {
     if (input == "^") {
       const prev = cursor[L]
-      if (prev instanceof CmdSubSup) {
+      if (prev instanceof CmdSupSub) {
         cursor.moveIn(prev.create("sup"), R)
         return
       }
 
-      const block = new Block(null)
-      new CmdSubSup(null, block).insertAt(cursor, L)
-      cursor.moveIn(block, R)
-    } else if (input == "_") {
-      const prev = cursor[L]
-      if (prev instanceof CmdSubSup) {
-        cursor.moveIn(prev.create("sub"), R)
+      const next = cursor[R]
+      if (next instanceof CmdSupSub) {
+        cursor.moveIn(next.create("sup"), L)
         return
       }
 
       const block = new Block(null)
-      new CmdSubSup(block, null).insertAt(cursor, L)
+      new CmdSupSub(null, block).insertAt(cursor, L)
+      cursor.moveIn(block, R)
+    } else if (input == "_") {
+      const prev = cursor[L]
+      if (prev instanceof CmdSupSub) {
+        cursor.moveIn(prev.create("sub"), R)
+        return
+      }
+
+      const next = cursor[R]
+      if (next instanceof CmdSupSub) {
+        cursor.moveIn(next.create("sub"), L)
+        return
+      }
+
+      const block = new Block(null)
+      new CmdSupSub(block, null).insertAt(cursor, L)
       cursor.moveIn(block, R)
     }
   }
@@ -42,7 +54,7 @@ export class CmdSubSup extends Command {
   ) {
     super(
       sub ? "_" : "^",
-      CmdSubSup.html(sub, sup),
+      CmdSupSub.html(sub, sup),
       [sub, sup].filter((x) => x != null),
     )
   }
@@ -96,7 +108,7 @@ export class CmdSubSup extends Command {
   create(part: "sub" | "sup") {
     if (!this[part]) {
       ;(this as any)[part] = new Block(this)
-      const next = CmdSubSup.html(this.sub, this.sup)
+      const next = CmdSupSub.html(this.sub, this.sup)
       this.el.replaceWith(next)
       ;(this as any).el = next
     }
@@ -119,13 +131,40 @@ export class CmdSubSup extends Command {
     return (dir == U ? this.sup : this.sub) || void 0
   }
 
-  vertOutOf(dir: VDir, block: Block): Block | undefined {
-    if (this.sub && this.sup) {
-      if (dir == U && block == this.sub) {
+  vertOutOf(dir: VDir, block: Block, cursor: Cursor): Block | true | undefined {
+    if (dir == U && block == this.sub) {
+      if (this.sup) {
         return this.sup
-      } else if (dir == D && block == this.sup) {
+      }
+    } else if (dir == D && block == this.sup) {
+      if (this.sub) {
         return this.sub
       }
+    } else {
+      return
     }
+
+    // Move the cursor to some side of this `SupSub`
+
+    // If cursor[R] == null && cursor.parent.parent[R] == null and so on through when cursor.parent.parent... == this, move to the right
+    // Else, move to the left
+
+    let el: Command | Cursor | null | undefined = cursor
+    let moveToLeft = false
+    while (el) {
+      if (el[R] != null) {
+        moveToLeft = true
+        break
+      }
+
+      if (el == this) {
+        break
+      }
+
+      el = el.parent?.parent
+    }
+
+    cursor.moveTo(this, moveToLeft ? L : R)
+    return true
   }
 }

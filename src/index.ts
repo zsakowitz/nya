@@ -7,7 +7,7 @@ import { CmdNumAutoSubscript } from "./cmd/leaf/plain/num"
 import { CmdVar } from "./cmd/leaf/plain/var"
 import { CmdMove } from "./cmd/move"
 import { CmdNoop } from "./cmd/noop"
-import { CmdSubSup } from "./cmd/supsub"
+import { CmdSupSub } from "./cmd/supsub"
 import { Exts, Field } from "./field"
 import { h } from "./jsx"
 import { D, L, R, U } from "./model"
@@ -27,12 +27,12 @@ const field = new Field(
     .set("-", OpMinus)
     .set("*", OpCdot)
     .set("/", CmdFrac)
-    .set("^", CmdSubSup)
+    .set("^", CmdSupSub)
     .set("ArrowLeft", CmdMove(L))
     .set("ArrowRight", CmdMove(R))
     .set("ArrowUp", CmdMove(U))
     .set("ArrowDown", CmdMove(D))
-    .set("_", CmdSubSup),
+    .set("_", CmdSupSub),
 )
 
 // Set up field styles
@@ -106,14 +106,49 @@ field.type("ArrowLeft")
 field.type("ArrowLeft")
 field.type("ArrowLeft")
 field.type("ArrowLeft")
-field.sel.moveFocus(L)
-field.sel.moveFocus(R)
-field.sel.moveFocus(R)
-field.sel.moveFocus(R)
-field.sel.moveFocus(R)
-field.sel.moveFocus(R)
-field.sel.moveFocus(R)
-field.sel.moveFocus(R)
+field.type("ArrowRight")
+field.type("^")
+field.type("4")
+field.type("3")
+field.type("6")
+field.type("ArrowRight")
+field.type("/")
+field.type("2")
+field.type("/")
+field.type("3")
+field.type("ArrowRight")
+field.type("+")
+field.type("4")
+field.type("ArrowLeft")
+field.type("ArrowLeft")
+field.type("ArrowLeft")
+field.type("ArrowDown")
+field.type("ArrowLeft")
+field.type("ArrowUp")
+field.type("ArrowDown")
+field.type("ArrowUp")
+field.type("ArrowDown")
+field.type("ArrowDown")
+field.type("ArrowDown")
+field.type("4")
+field.type("3")
+field.type("2")
+field.type("1")
+field.type("9")
+field.type("3")
+field.type("4")
+field.type("2")
+field.type("ArrowUp")
+field.type("ArrowUp")
+field.type("ArrowUp")
+field.type("ArrowUp")
+field.type("ArrowLeft")
+field.type("ArrowLeft")
+field.type("ArrowLeft")
+field.type("ArrowLeft")
+field.type("ArrowLeft")
+field.type("ArrowLeft")
+field.type("ArrowLeft")
 
 field.sel.each(({ el }) => el.classList.add("bg-blue-200"))
 field.sel
