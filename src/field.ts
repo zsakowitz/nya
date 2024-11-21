@@ -1,20 +1,15 @@
-import { Block, Cursor } from "./model"
-
-export interface CommandConstructor {
-  createLeftOf(cursor: Cursor, input: string): void
-}
+import { Block, Cursor, type Init } from "./model"
 
 export class Exts {
-  private readonly cmds: { [x: string]: CommandConstructor } =
-    Object.create(null)
-  private default?: CommandConstructor
+  private readonly cmds: { [x: string]: Init } = Object.create(null)
+  private default?: Init
 
-  set<T extends CommandConstructor>(name: string, cmd: T) {
+  set(name: string, cmd: Init) {
     this.cmds[name] = cmd
     return this
   }
 
-  setDefault(cmd: CommandConstructor) {
+  setDefault(cmd: Init) {
     this.default = cmd
     return this
   }
@@ -31,10 +26,11 @@ export class Field {
 
   constructor(readonly exts: Exts) {
     this.el = this.block.el
-    this.el.classList.add("whitespace-nowrap", "font-['Symbola','Times',serif]")
+    this.el.className =
+      "cursor-text whitespace-nowrap font-['Symbola','Times',sans-serif] text-[1.265em] font-normal not-italic text-black transition [line-height:1] focus:outline-none dark:text-white [&_*]:cursor-text block"
   }
 
   type(input: string) {
-    this.exts.of(input)?.createLeftOf(this.cursor, input)
+    this.exts.of(input)?.init(this.cursor, input)
   }
 }

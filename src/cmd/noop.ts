@@ -1,3 +1,3 @@
 export class CmdNoop {
-  static createLeftOf() {}
+  static init() {}
 }

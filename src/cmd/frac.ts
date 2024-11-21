@@ -3,7 +3,7 @@ import { Block, Command, L, R, type Cursor } from "../model"
 import { CmdBrack } from "./paren"
 
 export class CmdFrac extends Command<[Block, Block]> {
-  static createLeftOf(cursor: Cursor) {
+  static init(cursor: Cursor) {
     const span = cursor.span()
     while (span[L] && !span[L].endsImplicitGroup()) {
       span[L] = span[L][L]
@@ -31,29 +31,27 @@ export class CmdFrac extends Command<[Block, Block]> {
     super(
       "\\frac",
       h(
-        "span",
         "text-[90%] text-center align-[-.46em] px-[.2em] inline-block",
-        h("span", "px-[.1em] block", num.el),
+        h("px-[.1em] block", num.el),
         h(
-          "span",
           "float-right w-full p-[.1em] border-t border-current block",
           denom.el,
         ),
-        h("span", "inline-block w-0", t(U_ZERO_WIDTH_SPACE)),
+        h("inline-block w-0", t(U_ZERO_WIDTH_SPACE)),
       ),
       [num, denom],
     )
   }
 
-  intoLatex(): string {
-    return `\\frac{${this.blocks[0].intoLatex()}}{${this.blocks[1].intoLatex()}}`
+  latex(): string {
+    return `\\frac{${this.blocks[0].latex()}}{${this.blocks[1].latex()}}`
   }
 
-  intoAsciiMath(): string {
-    return `(${this.blocks[0].intoAsciiMath()})/(${this.blocks[1].intoAsciiMath()})`
+  ascii(): string {
+    return `(${this.blocks[0].ascii()})/(${this.blocks[1].ascii()})`
   }
 
-  intoScreenReadable(): string {
-    return ` BeginFraction, ${this.blocks[0].intoScreenReadable()} Over, ${this.blocks[1].intoScreenReadable()} EndFraction `
+  reader(): string {
+    return ` BeginFraction, ${this.blocks[0].reader()} Over, ${this.blocks[1].reader()} EndFraction `
   }
 }

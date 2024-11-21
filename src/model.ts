@@ -31,13 +31,13 @@ export abstract class Node {
   abstract readonly el: HTMLSpanElement
 
   /** Reads this node in a screen-accessible format. */
-  abstract intoScreenReadable(): string
+  abstract reader(): string
 
   /** Writes this node in ASCII-style math. */
-  abstract intoAsciiMath(): string
+  abstract ascii(): string
 
   /** Writes this node in LaTeX. */
-  abstract intoLatex(): string
+  abstract latex(): string
 }
 
 /**
@@ -78,7 +78,6 @@ export class Block extends Node {
   readonly ends: Ends = { [L]: null, [R]: null }
 
   readonly el = h(
-    "span",
     "inline-block",
     // h(
     //   "span",
@@ -149,34 +148,39 @@ export class Block extends Node {
     }
   }
 
-  intoAsciiMath(): string {
+  ascii(): string {
     let ret = ""
     let el = this.ends[L]
     while (el) {
-      ret += el.intoAsciiMath()
+      ret += el.ascii()
       el = el[R]
     }
     return ret
   }
 
-  intoLatex(): string {
+  latex(): string {
     let ret = ""
     let el = this.ends[L]
     while (el) {
-      ret += el.intoLatex()
+      ret += el.latex()
       el = el[R]
     }
     return ret
   }
 
-  intoScreenReadable(): string {
+  reader(): string {
     let ret = ""
     let el = this.ends[L]
     while (el) {
-      ret += el.intoScreenReadable()
+      ret += el.reader()
       el = el[R]
     }
     return ret
+  }
+
+  /** Creates a {@link Cursor `Cursor`} pointing to the given end of this `Block`. */
+  cursor(end: Dir) {
+    return new Cursor(this, end == R ? null : this.ends[L])
   }
 }
 
@@ -494,3 +498,6 @@ export abstract class Command<T extends Block[] = Block[]> extends Node {
     }
   }
 }
+
+/** Something which can be initialized to the left side of a cursor. */
+export type Init = { init(cursor: Cursor, input: string): void }

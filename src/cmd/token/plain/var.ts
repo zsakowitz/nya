@@ -3,23 +3,23 @@ import { Cursor, L } from "../../../model"
 import { h, t } from "../../../jsx"
 
 export class CmdVar extends Token {
-  static createLeftOf(cursor: Cursor, input: string) {
+  static init(cursor: Cursor, input: string) {
     new CmdVar(input).insertAt(cursor, L)
   }
 
   constructor(readonly text: string) {
-    super(text, h("span", "italic font-['Times'] [line-height:.9]", t(text)))
+    super(text, h("italic font-['Times'] [line-height:.9]", t(text)))
   }
 
-  intoAsciiMath(): string {
+  ascii(): string {
     return this.text
   }
 
-  intoLatex(): string {
+  latex(): string {
     return this.text
   }
 
-  intoScreenReadable(): string {
+  reader(): string {
     return this.text
   }
 }

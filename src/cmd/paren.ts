@@ -81,7 +81,7 @@ export function matchParen(x: ParenAny) {
 }
 
 export class CmdBrack extends Command<[Block]> {
-  static createLeftOf(cursor: Cursor, input: string) {
+  static init(cursor: Cursor, input: string) {
     if (!cursor.parent) return
 
     if (input == "(" || input == "[" || input == "{") {
@@ -154,16 +154,16 @@ export class CmdBrack extends Command<[Block]> {
     )
   }
 
-  intoAsciiMath(): string {
-    return this.lhs + this.blocks[0].intoAsciiMath() + this.rhs
+  ascii(): string {
+    return this.lhs + this.blocks[0].ascii() + this.rhs
   }
 
-  intoLatex(): string {
-    return `\\left${PARENS[this.lhs].latex}${this.blocks[0].intoLatex()}\\right${PARENS[this.rhs].latex}`
+  latex(): string {
+    return `\\left${PARENS[this.lhs].latex}${this.blocks[0].latex()}\\right${PARENS[this.rhs].latex}`
   }
 
-  intoScreenReadable(): string {
-    return `Bracket, ${this.lhs} ${this.blocks[0].intoScreenReadable()} , EndBracket ${this.rhs}`
+  reader(): string {
+    return `Bracket, ${this.lhs} ${this.blocks[0].reader()} , EndBracket ${this.rhs}`
   }
 
   checkSvg(side: Dir) {
@@ -171,7 +171,6 @@ export class CmdBrack extends Command<[Block]> {
     const idx = side == L ? 0 : 2
     this.el.children[idx]!.replaceWith(
       h(
-        "span",
         {
           style: "width:" + symbol.width,
           class:
@@ -188,11 +187,10 @@ export class CmdBrack extends Command<[Block]> {
     const lhsSymbol = PARENS[lhs]
     const rhsSymbol = PARENS[rhs]
     return h(
-      // be set by createLeftOf or parser
-      "span",
+      // be set by init or parser
+
       "relative inline-block",
       h(
-        "span",
         {
           style: "width:" + lhsSymbol.width,
           class:
@@ -202,7 +200,6 @@ export class CmdBrack extends Command<[Block]> {
         lhsSymbol.html(),
       ),
       h(
-        "span",
         {
           style: `margin-left:${lhsSymbol.width};margin-right:${rhsSymbol.width}`,
           class: "my-[.1em] inline-block *:contents",
@@ -210,7 +207,6 @@ export class CmdBrack extends Command<[Block]> {
         block.el,
       ),
       h(
-        "span",
         {
           style: "width:" + rhsSymbol.width,
           class:

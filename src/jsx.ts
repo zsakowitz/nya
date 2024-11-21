@@ -6,24 +6,11 @@ export const U_NARY_PRODUCT = "\u220F"
 export const U_NARY_COPRODUCT = "\u2210"
 export const U_INTEGRAL = "\u222B"
 
-export function h<K extends keyof HTMLElementTagNameMap>(
-  name: K,
-  cl?: string | Record<string, string>,
-  ...children: ChildNode[]
-): HTMLElementTagNameMap[K]
-
 export function h(
-  name: string,
-  cl?: string | Record<string, string>,
-  ...children: ChildNode[]
-): HTMLElement
-
-export function h(
-  name: string,
   cl?: string | Record<string, string>,
   ...children: ChildNode[]
 ) {
-  const el = document.createElement(name)
+  const el = document.createElement("span")
   if (typeof cl == "string") {
     el.className = cl
   } else if (cl) {

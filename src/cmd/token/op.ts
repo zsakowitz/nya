@@ -7,7 +7,7 @@ export abstract class Op extends Token {
     readonly ctrlSeq: string,
     readonly html: string,
   ) {
-    super(ctrlSeq, h("span", "px-[.2em] inline-block", t(html)))
+    super(ctrlSeq, h("px-[.2em] inline-block cursor-text", t(html)))
   }
 }
 
@@ -19,7 +19,7 @@ export function op(
   endsImplicitGroup = false,
 ) {
   return class extends Op {
-    static createLeftOf(cursor: Cursor) {
+    static init(cursor: Cursor) {
       new this().insertAt(cursor, L)
     }
 
@@ -31,15 +31,15 @@ export function op(
       return endsImplicitGroup
     }
 
-    intoAsciiMath(): string {
+    ascii(): string {
       return ascii
     }
 
-    intoScreenReadable(): string {
+    reader(): string {
       return mathspeak
     }
 
-    intoLatex(): string {
+    latex(): string {
       return latex
     }
   }

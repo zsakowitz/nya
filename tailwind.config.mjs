@@ -1,3 +1,3 @@
 export default {
-  content: ["./src/**/*.ts"],
+  content: ["./src/**/*.{ts,postcss}"],
 }
