@@ -83,21 +83,30 @@ export class CmdSupSub extends Command {
   static html(sub: Block | null, sup: Block | null) {
     if (sup && !sub) {
       return h(
-        "mb-[-.2em] inline-block text-left align-[.5em] text-[90%]",
-        h("inline-block align-text-bottom", sup.el),
+        "",
+        h(
+          "mb-[-.2em] inline-block text-left align-[.5em] text-[90%] [.bg-blue-200>&]:bg-blue-200",
+          h("inline-block align-text-bottom", sup.el),
+        ),
       )
     } else if (sub && !sup) {
       return h(
-        "mb-[-.2em] inline-block text-left align-[-.5em] text-[90%]",
-        h("float-left block text-[80%]", sub.el),
-        h("inline-block w-0", t(U_ZERO_WIDTH_SPACE)),
+        "",
+        h(
+          "mb-[-.2em] inline-block text-left align-[-.5em] text-[90%] [.bg-blue-200>&]:bg-blue-200",
+          h("float-left block text-[80%]", sub.el),
+          h("inline-block w-0", t(U_ZERO_WIDTH_SPACE)),
+        ),
       )
     } else if (sub && sup) {
       return h(
-        "mb-[-.2em] inline-block text-left align-[-.5em] text-[90%]",
-        h("block", sup.el),
-        h("float-left block text-[80%]", sub.el),
-        h("inline-block w-0", t(U_ZERO_WIDTH_SPACE)),
+        "",
+        h(
+          "mb-[-.2em] inline-block text-left align-[-.5em] text-[90%] [.bg-blue-200>&]:bg-blue-200",
+          h("block", sup.el),
+          h("float-left block text-[80%]", sub.el),
+          h("inline-block w-0", t(U_ZERO_WIDTH_SPACE)),
+        ),
       )
     } else {
       return h()
@@ -166,5 +175,38 @@ export class CmdSupSub extends Command {
 
     cursor.moveTo(this, moveToLeft ? L : R)
     return true
+  }
+
+  delete(cursor: Cursor, from: Dir): void {
+    if (this.sub) {
+      if (this.sub.ends[from]) {
+        this.sub.ends[from].delete(cursor, from)
+        if (this.sub.ends[from] != null) {
+          return
+        }
+      } else if (this.sup) {
+        // the `readonly` is for outside users
+        ;(this as any).sub = null
+        const next = CmdSupSub.html(this.sub, this.sup)
+        this.el.replaceWith(next)
+        ;(this as any).el = next
+        return
+      }
+    }
+
+    if (this.sup) {
+      if (this.sup.ends[from]) {
+        cursor.moveIn(this.sup, from)
+      } else if (this.sub) {
+        // the `readonly` is for outside users
+        ;(this as any).sup = null
+        const next = CmdSupSub.html(this.sub, this.sup)
+        this.el.replaceWith(next)
+        ;(this as any).el = next
+      }
+    }
+
+    cursor.moveTo(this, R)
+    this.remove()
   }
 }

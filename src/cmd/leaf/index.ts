@@ -22,4 +22,8 @@ export abstract class Leaf extends Command<[]> {
   moveOutOf(): void {
     // Never called, since `Leaf` has no blocks
   }
+
+  delete(): void {
+    this.remove()
+  }
 }

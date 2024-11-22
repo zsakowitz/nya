@@ -128,7 +128,7 @@ export class Block extends Node {
           ? command
           : null
 
-    if (lhs) {
+    if (lhs && other.ends[L]) {
       ;(lhs as CommandMut)[R] = other.ends[L]
     }
 
@@ -141,12 +141,9 @@ export class Block extends Node {
           ? command
           : null
 
-    if (rhs) {
+    if (rhs && other.ends[R]) {
       ;(rhs as CommandMut)[L] = other.ends[R]
     }
-
-    ;(other.ends[L] as CommandMut)[L] = lhs
-    ;(other.ends[R] as CommandMut)[R] = rhs
 
     const domAnchor = rhs ? rhs.el : null
     let el: Command | null = other.ends[L]
@@ -155,6 +152,9 @@ export class Block extends Node {
       this.el.insertBefore(el.el, domAnchor)
       el = el[R]
     }
+
+    ;(other.ends[L] as CommandMut)[L] = lhs
+    ;(other.ends[R] as CommandMut)[R] = rhs
   }
 
   ascii(): string {
@@ -251,6 +251,17 @@ export class Cursor {
     before: Command | null,
   ) {
     this[R] = before
+  }
+
+  /** Attaches a {@link Block `Block`} to the given side of this `Cursor`. */
+  attach(block: Block, dir: Dir) {
+    if (!this.parent) return
+    if (!block.ends[L]) return
+
+    this.parent.attach(block, this[R], L)
+    if (dir == R) {
+      ;(this as CursorMut)[R] = block.ends[L]
+    }
   }
 
   /** Moves this cursor to another cursor's position. */
@@ -399,6 +410,18 @@ export class Cursor {
     } else {
       el.remove()
     }
+  }
+
+  /** Deletes in the given direction from this cursor's position. */
+  delete(dir: Dir) {
+    if (this[dir]) {
+      this[dir].delete(this, dir == R ? L : R)
+      return
+    }
+
+    if (!this.parent?.parent) return
+
+    this.parent.parent.deleteBlock(this, dir, this.parent)
   }
 }
 
@@ -583,8 +606,7 @@ export class Span {
 /** A {@link Span `Span`} with focus and anchor nodes. */
 export class Selection extends Span {
   constructor(
-    /** The {@link Block `Block`} containing this `Selection`. */
-    readonly parent: Block | null,
+    parent: Block | null,
     lhs: Command | null,
     rhs: Command | null,
     /** Which side of this `Selection` is the focus node. */
@@ -623,6 +645,64 @@ export class Selection extends Span {
       this.focused = dir
     }
     this.move(this.focused, dir)
+  }
+
+  /**
+   * Moves the focus node in a given direction quickly. Typically used when the
+   * user hits the up or down arrow keys.
+   */
+  moveFocusFast(dir: Dir) {
+    if (!this.parent) return
+
+    /**
+     * Case analysis (assuming dir == R)
+     *
+     * - Cursor at R edge................select containing command
+     * - Cursor not at R edge............extend to R edge
+     * - Focused==L; this.at(L)==null....not possible; would be cursor
+     * - Focused==L; this.at(L)!=null....\
+     *   This[L]=this[this.focused] and this[R]=null and this.focused=R
+     * - Focused==R; this[R]!=null.......extend to R edge
+     * - Focused==R; this[R]==null.......select containing command
+     */
+
+    if (this.isCursor()) {
+      this.focused = dir
+      if (this[dir]) {
+        this[dir] = null
+        return
+      } else {
+        // Fallthrough to select containing command
+      }
+    } else if (this.focused == dir) {
+      if (this[dir]) {
+        this[dir] = null
+        return
+      } else {
+        // Fallthrough to select containing command
+      }
+    } else {
+      const inv = this.focused
+      this[inv] = this[this.focused]
+      this[dir] = null
+      this.focused = dir
+      return
+    }
+
+    if (this.parent.parent) {
+      this.select(this.parent.parent, dir)
+    } else {
+      this[L] = null
+      this[R] = null
+    }
+  }
+
+  /** Selects the given {@link Command `Command`}. */
+  select(command: Command, dir: Dir) {
+    this.parent = command.parent
+    this[L] = command[L]
+    this[R] = command[R]
+    this.focused = dir
   }
 
   /**
@@ -747,15 +827,62 @@ export abstract class Command<T extends Block[] = Block[]> extends Node {
   vertOutOf(dir: VDir, block: Block, cursor: Cursor): Block | true | undefined {
     return
   }
+
+  /**
+   * Removes this `Command` from its containing {@link Block `Block`}.
+   * Invalidates {@link Cursor `Cursor`}s using this `Command` as an anchor.
+   */
+  remove() {
+    this.el.remove()
+    if (this[L]) {
+      ;(this[L] as CommandMut)[R] = this[R]
+    } else if (this.parent) {
+      ;(this.parent.ends as EndsMut)[L] = this[R]
+    }
+    if (this[R]) {
+      ;(this[R] as CommandMut)[L] = this[L]
+    } else if (this.parent) {
+      ;(this.parent.ends as EndsMut)[R] = this[L]
+    }
+  }
+
+  /** Takes the contents of a given {@link Block `Block`}. */
+  take(
+    index: 0 extends T["length"]
+      ? never
+      : 1 extends T["length"]
+        ? 0
+        : 2 extends T["length"]
+          ? 0 | 1
+          : number,
+  ) {
+    const block = this.blocks[index]
+    if (!block) throw new Error(`Block #${block} does not exist.`)
+    return new Span(block, null, null).splice()
+  }
+
+  /**
+   * Deletes this `Command` from the given direction. Called when the cursor is
+   * to one side of this `Command` and the user pressed "Backspace" or
+   * "Delete".
+   */
+  abstract delete(cursor: Cursor, from: Dir): void
+
+  /**
+   * Deletes the provided {@link Block `Block`} from the given direction in this
+   * `Command`. Called when the cursor is at the edge of a {@link Block `Block`}
+   * and the user presses "Backspace" or "Delete".
+   */
+  abstract deleteBlock(cursor: Cursor, at: Dir, block: Block): void
 }
 
-type InitRet = Cursor | Selection | undefined | void
+export type InitRet = Cursor | Selection | undefined | void
 
 /**
  * Something which can be initialized to the left side of a cursor or (possibly)
  * on top of a selection.
  */
-export type Init = {
-  init(cursor: Cursor, input: string): InitRet
-  initOn?(selection: Selection, input: string): InitRet
+export interface Init<E = KeyboardEvent | undefined> {
+  init(cursor: Cursor, input: string, event: E): InitRet
+  initOn?(selection: Selection, input: string, event: E): InitRet
 }

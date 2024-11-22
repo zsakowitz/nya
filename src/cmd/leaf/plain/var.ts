@@ -1,6 +1,6 @@
 import { Leaf } from ".."
-import { Cursor, L } from "../../../model"
 import { h, t } from "../../../jsx"
+import { Cursor, L } from "../../../model"
 
 export class CmdVar extends Leaf {
   static init(cursor: Cursor, input: string) {
@@ -8,7 +8,8 @@ export class CmdVar extends Leaf {
   }
 
   constructor(readonly text: string) {
-    super(text, h("italic font-['Times'] [line-height:.9]", t(text)))
+    // The wrapper ensures selections work fine
+    super(text, h("", h("italic font-['Times'] [line-height:.9]", t(text))))
   }
 
   ascii(): string {

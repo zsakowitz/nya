@@ -1,11 +1,11 @@
 import "../index.css"
 import { CmdBrack } from "./cmd/brack"
 import { ByRegex } from "./cmd/by-regex"
+import { CmdDelete, CmdMove } from "./cmd/control"
 import { CmdFrac } from "./cmd/frac"
 import { OpCdot, OpMinus, OpPlus } from "./cmd/leaf/op"
 import { CmdNumAutoSubscript } from "./cmd/leaf/plain/num"
 import { CmdVar } from "./cmd/leaf/plain/var"
-import { CmdMove } from "./cmd/move"
 import { CmdNoop } from "./cmd/noop"
 import { CmdSupSub } from "./cmd/supsub"
 import { Exts, Field } from "./field"
@@ -32,6 +32,7 @@ const field = new Field(
     .set("ArrowRight", CmdMove(R))
     .set("ArrowUp", CmdMove(U))
     .set("ArrowDown", CmdMove(D))
+    .set("Backspace", CmdDelete)
     .set("_", CmdSupSub),
 )
 
@@ -150,15 +151,21 @@ field.type("ArrowLeft")
 field.type("ArrowLeft")
 field.type("ArrowLeft")
 
-field.sel.each(({ el }) => el.classList.add("bg-blue-200"))
-field.sel
-  .cursor(field.sel.focused)
-  .render(h("border-black p-0 m-0 -ml-px border-l"))
+const cursor = h("border-black p-0 m-0 -ml-px border-l")
+render()
 
-// show latex
-{
-  const p = document.createElement("p")
-  p.textContent = field.block.latex()
-  p.className = "font-['Carlito','Symbola','Times'] text-center mt-8"
-  document.body.appendChild(p)
+function unrender() {
+  field.sel.each(({ el }) => el.classList.remove("bg-blue-200"))
+  cursor.remove()
 }
+
+function render() {
+  field.sel.each(({ el }) => el.classList.add("bg-blue-200"))
+  field.sel.cursor(field.sel.focused).render(cursor)
+}
+
+addEventListener("keydown", (x) => {
+  unrender()
+  field.type(x.key, x)
+  render()
+})

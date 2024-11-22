@@ -8,7 +8,7 @@ export const U_INTEGRAL = "\u222B"
 
 export function h(
   cl?: string | Record<string, string>,
-  ...children: ChildNode[]
+  ...children: (Node | string | null)[]
 ) {
   const el = document.createElement("span")
   if (typeof cl == "string") {
@@ -19,7 +19,9 @@ export function h(
     }
   }
   for (const child of children) {
-    el.appendChild(child)
+    if (child) {
+      el.append(child)
+    }
   }
   return el
 }

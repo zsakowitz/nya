@@ -41,8 +41,8 @@ export class CmdFrac extends Command<[Block, Block]> {
     super(
       "\\frac",
       h(
-        "text-[90%] text-center align-[-.46em] px-[.2em] inline-block",
-        h("px-[.1em] block", num.el),
+        "text-[90%] text-center align-[-.46em] px-[.2em] inline-block [.bg-blue-200>&]:bg-blue-200",
+        h("px-[.1em] block pt-[.1em]", num.el),
         h(
           "float-right w-full p-[.1em] border-t border-current block",
           denom.el,
@@ -82,6 +82,26 @@ export class CmdFrac extends Command<[Block, Block]> {
       return this.blocks[1]
     } else if (dir == U && block == this.blocks[1]) {
       return this.blocks[0]
+    }
+  }
+
+  delete(cursor: Cursor, from: Dir): void {
+    cursor.moveIn(this.blocks[1], from)
+  }
+
+  deleteBlock(cursor: Cursor, at: Dir, block: Block): void {
+    if (!cursor.parent) return
+    cursor.moveTo(this, R)
+    this.remove()
+    if (at == L && block == this.blocks[0]) {
+      cursor.attach(this.take(1), R)
+      cursor.attach(this.take(0), R)
+    } else if (at == R && block == this.blocks[1]) {
+      cursor.attach(this.take(0), L)
+      cursor.attach(this.take(1), L)
+    } else {
+      cursor.attach(this.take(1), R)
+      cursor.attach(this.take(0), L)
     }
   }
 }

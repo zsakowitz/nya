@@ -1,4 +1,4 @@
-import { Block, Cursor, R, Selection, type Init } from "./model"
+import { Block, Cursor, R, Selection, type Init, type InitRet } from "./model"
 
 export class Exts {
   private readonly cmds: { [x: string]: Init } = Object.create(null)
@@ -30,13 +30,15 @@ export class Field {
       "cursor-text whitespace-nowrap font-['Symbola','Times',sans-serif] text-[1.265em] font-normal not-italic text-black transition [line-height:1] focus:outline-none dark:text-white [&_*]:cursor-text block"
   }
 
-  init(init: Init, input: string) {
-    let temp: Cursor
-    const ret = this.sel.isCursor()
-      ? init.init((temp = this.sel.cursor(R)), input) || temp
-      : init.initOn
-        ? init.initOn(this.sel, input)
-        : init.init((temp = this.sel.remove()), input) || temp
+  init(init: Init, input: string, event?: KeyboardEvent) {
+    let ret: InitRet
+    if (this.sel.isCursor()) {
+      ret = init.init((ret = this.sel.cursor(R)), input, event) || ret
+    } else if (init.initOn) {
+      ret = init.initOn(this.sel, input, event)
+    } else {
+      ret = init.init((ret = this.sel.remove()), input, event) || ret
+    }
 
     if (ret) {
       if (ret instanceof Cursor) {
@@ -47,10 +49,10 @@ export class Field {
     }
   }
 
-  type(input: string) {
+  type(input: string, event?: KeyboardEvent) {
     const ext = this.exts.of(input)
     if (ext) {
-      this.init(ext, input)
+      this.init(ext, input, event)
     }
   }
 }

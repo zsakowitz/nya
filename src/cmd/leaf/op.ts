@@ -7,7 +7,7 @@ export abstract class Op extends Leaf {
     readonly ctrlSeq: string,
     readonly html: string,
   ) {
-    super(ctrlSeq, h("px-[.2em] inline-block cursor-text", t(html)))
+    super(ctrlSeq, h("", h("px-[.2em] inline-block cursor-text", t(html))))
   }
 }
 
