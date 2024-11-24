@@ -2,12 +2,15 @@ import "../../index.css"
 import { BIG_ALIASES, CmdBig } from "./cmd/big"
 import { CmdBrack } from "./cmd/brack"
 import { ByRegex } from "./cmd/by-regex"
-import { CmdDelete, CmdMove } from "./cmd/control"
+import { CmdDelete, CmdMove } from "./cmd/cursor"
 import { CmdFrac } from "./cmd/frac"
 import { OpEq, OpGt, OpLt } from "./cmd/leaf/cmp"
+import { CmdComma } from "./cmd/leaf/comma"
+import { CmdDot } from "./cmd/leaf/dot"
 import { CmdNumAutoSubscript } from "./cmd/leaf/num"
 import { OpCdot, OpMinus, OpPlus } from "./cmd/leaf/op"
 import { CmdVar } from "./cmd/leaf/var"
+import { CmdMap } from "./cmd/map"
 import { CmdNoop } from "./cmd/noop"
 import { CmdSupSub } from "./cmd/supsub"
 import { Exts, Field } from "./field"
@@ -48,6 +51,9 @@ const exts = new Exts()
   // other cmds
   .setAll(["_", "^"], CmdSupSub)
   .setAll(Object.keys(BIG_ALIASES), CmdBig)
+  .set("s", new CmdMap(CmdBig, () => "\\sum"))
+  .set(",", CmdComma)
+  .set(".", CmdDot)
   // movement ops
   .set("ArrowLeft", CmdMove(L))
   .set("ArrowRight", CmdMove(R))
