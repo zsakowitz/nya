@@ -1,6 +1,6 @@
-import { Leaf } from ".."
-import { h, t } from "../../../jsx"
-import { Cursor, L } from "../../../model"
+import { Leaf } from "."
+import { h, t } from "../../jsx"
+import { Cursor, L } from "../../model"
 
 export class CmdVar extends Leaf {
   static init(cursor: Cursor, input: string) {

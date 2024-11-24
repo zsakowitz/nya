@@ -8,33 +8,44 @@ import {
   U,
   type Cursor,
   type Dir,
+  type Selection,
   type VDir,
 } from "../model"
-import { CmdBrack } from "./brack"
+import { OpCeq, OpCmp } from "./leaf/cmp"
 
 export class CmdFrac extends Command<[Block, Block]> {
   static init(cursor: Cursor) {
+    if (
+      cursor[L] instanceof OpCeq &&
+      !cursor[L].neg &&
+      !(cursor[L] instanceof OpCmp && cursor[L].eq)
+    ) {
+      cursor[L].setNeg(true)
+      return
+    }
+
     const span = cursor.span()
     while (span[L] && !span[L].endsImplicitGroup()) {
       span[L] = span[L][L]
     }
-    const block = span.splice()
-    cursor.setTo(span.cursor(L))
+    const num = span.splice().unwrap()
     const denom = new Block(null)
-    const num =
-      !block.isEmpty() &&
-      block.ends[L] == block.ends[R] &&
-      block.ends[L] instanceof CmdBrack &&
-      block.ends[L].lhs == "(" &&
-      block.ends[L].rhs == ")"
-        ? block.ends[L].blocks[0]
-        : block
+    cursor.setTo(span.cursor(R))
     new CmdFrac(num, denom).insertAt(cursor, L)
     if (num.isEmpty()) {
       cursor.moveIn(num, R)
     } else {
-      cursor.moveIn(denom, L)
+      cursor.moveIn(denom, R)
     }
+  }
+
+  static initOn(selection: Selection) {
+    const cursor = selection.cursor(R)
+    const num = selection.splice().unwrap()
+    const denom = new Block(null)
+    new CmdFrac(num, denom).insertAt(cursor, L)
+    cursor.moveIn(denom, R)
+    return cursor
   }
 
   constructor(num: Block, denom: Block) {
@@ -91,17 +102,19 @@ export class CmdFrac extends Command<[Block, Block]> {
 
   deleteBlock(cursor: Cursor, at: Dir, block: Block): void {
     if (!cursor.parent) return
+
     cursor.moveTo(this, R)
     this.remove()
+
     if (at == L && block == this.blocks[0]) {
-      cursor.attach(this.take(1), R)
-      cursor.attach(this.take(0), R)
+      cursor.insert(this.blocks[1], R)
+      cursor.insert(this.blocks[0], R)
     } else if (at == R && block == this.blocks[1]) {
-      cursor.attach(this.take(0), L)
-      cursor.attach(this.take(1), L)
+      cursor.insert(this.blocks[0], L)
+      cursor.insert(this.blocks[1], L)
     } else {
-      cursor.attach(this.take(1), R)
-      cursor.attach(this.take(0), L)
+      cursor.insert(this.blocks[1], R)
+      cursor.insert(this.blocks[0], L)
     }
   }
 }

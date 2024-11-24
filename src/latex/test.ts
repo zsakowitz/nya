@@ -1,6 +1,6 @@
 import { CmdBrack } from "./cmd/brack"
 import { OpPlus } from "./cmd/leaf/op"
-import { CmdNum } from "./cmd/leaf/plain/num"
+import { CmdNum } from "./cmd/leaf/num"
 import { Exts, Field } from "./field"
 import { Block, L, R } from "./model"
 

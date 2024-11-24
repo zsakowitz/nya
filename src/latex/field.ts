@@ -9,6 +9,13 @@ export class Exts {
     return this
   }
 
+  setAll(names: string[], cmd: Init) {
+    for (const name of names) {
+      this.cmds[name] = cmd
+    }
+    return this
+  }
+
   setDefault(cmd: Init) {
     this.default = cmd
     return this
@@ -32,12 +39,15 @@ export class Field {
 
   init(init: Init, input: string, event?: KeyboardEvent) {
     let ret: InitRet
+
     if (this.sel.isCursor()) {
-      ret = init.init((ret = this.sel.cursor(R)), input, event) || ret
+      const cursor = this.sel.cursor(R)
+      ret = init.init(cursor, input, event) || cursor
     } else if (init.initOn) {
-      ret = init.initOn(this.sel, input, event)
+      ret = init.initOn(this.sel, input, event) || this.sel
     } else {
-      ret = init.init((ret = this.sel.remove()), input, event) || ret
+      const cursor = this.sel.remove()
+      ret = init.init(cursor, input, event) || cursor
     }
 
     if (ret) {

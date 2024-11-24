@@ -1,40 +1,63 @@
-import "../index.css"
+import "../../index.css"
+import { BIG_ALIASES, CmdBig } from "./cmd/big"
 import { CmdBrack } from "./cmd/brack"
 import { ByRegex } from "./cmd/by-regex"
 import { CmdDelete, CmdMove } from "./cmd/control"
 import { CmdFrac } from "./cmd/frac"
+import { OpEq, OpGt, OpLt } from "./cmd/leaf/cmp"
+import { CmdNumAutoSubscript } from "./cmd/leaf/num"
 import { OpCdot, OpMinus, OpPlus } from "./cmd/leaf/op"
-import { CmdNumAutoSubscript } from "./cmd/leaf/plain/num"
-import { CmdVar } from "./cmd/leaf/plain/var"
+import { CmdVar } from "./cmd/leaf/var"
 import { CmdNoop } from "./cmd/noop"
 import { CmdSupSub } from "./cmd/supsub"
 import { Exts, Field } from "./field"
 import { h } from "./jsx"
-import { D, L, R, U } from "./model"
+import { D, L, R, U, type Init } from "./model"
 
-// Create field
-const field = new Field(
-  new Exts()
-    .setDefault(
-      new ByRegex([
-        [/^\d$/, CmdNumAutoSubscript],
-        [/^\w$/, CmdVar],
-        [/^\s$/, CmdNoop],
-        [/^[()[\]{}]$/, CmdBrack],
-      ]),
-    )
-    .set("+", OpPlus)
-    .set("-", OpMinus)
-    .set("*", OpCdot)
-    .set("/", CmdFrac)
-    .set("^", CmdSupSub)
-    .set("ArrowLeft", CmdMove(L))
-    .set("ArrowRight", CmdMove(R))
-    .set("ArrowUp", CmdMove(U))
-    .set("ArrowDown", CmdMove(D))
-    .set("Backspace", CmdDelete)
-    .set("_", CmdSupSub),
-)
+const CmdPrompt: Init = {
+  init() {
+    const val = prompt("type a latex command")
+    if (!val) return
+    field.type("\\" + val)
+  },
+  initOn() {
+    const val = prompt("type a latex command")
+    if (!val) return
+    field.type("\\" + val)
+  },
+}
+
+const exts = new Exts()
+  .setDefault(
+    new ByRegex([
+      [/^\d$/, CmdNumAutoSubscript],
+      [/^\w$/, CmdVar],
+      [/^\s$/, CmdNoop],
+      [/^[()[\]{}]$/, CmdBrack],
+    ]),
+  )
+  // basic ops
+  .set("+", OpPlus)
+  .set("-", OpMinus)
+  .set("*", OpCdot)
+  .set("/", CmdFrac)
+  // equality ops
+  .set("=", OpEq)
+  .set("<", OpLt)
+  .set(">", OpGt)
+  // other cmds
+  .setAll(["_", "^"], CmdSupSub)
+  .setAll(Object.keys(BIG_ALIASES), CmdBig)
+  // movement ops
+  .set("ArrowLeft", CmdMove(L))
+  .set("ArrowRight", CmdMove(R))
+  .set("ArrowUp", CmdMove(U))
+  .set("ArrowDown", CmdMove(D))
+  .set("Backspace", CmdDelete)
+  // manual latex
+  .set("\\", CmdPrompt)
+
+const field = new Field(exts)
 
 // Set up field styles
 field.el.classList.add("[line-height:1]", "text-[1.265rem]")
@@ -86,7 +109,7 @@ field.type("ArrowRight")
 field.type("ArrowRight")
 field.type("ArrowRight")
 field.type("+")
-field.type("3")
+field.type("0")
 field.type("4")
 field.type("/")
 field.type("5")
@@ -150,18 +173,29 @@ field.type("ArrowLeft")
 field.type("ArrowLeft")
 field.type("ArrowLeft")
 field.type("ArrowLeft")
+field.type("\\sum")
+field.type("2")
+field.type("3")
+field.type("ArrowUp")
+field.type("4")
+field.type("9")
+field.type("ArrowRight")
+field.type("ArrowRight")
+field.type("n")
 
 const cursor = h("border-black p-0 m-0 -ml-px border-l")
 render()
 
 function unrender() {
   field.sel.each(({ el }) => el.classList.remove("bg-blue-200"))
+  cursor.parentElement?.classList.remove("bg-transparent")
   cursor.remove()
 }
 
 function render() {
   field.sel.each(({ el }) => el.classList.add("bg-blue-200"))
   field.sel.cursor(field.sel.focused).render(cursor)
+  cursor.parentElement?.classList.add("bg-transparent")
 }
 
 addEventListener("keydown", (x) => {

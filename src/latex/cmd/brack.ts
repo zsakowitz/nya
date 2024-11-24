@@ -225,4 +225,12 @@ export class CmdBrack extends Command<[Block]> {
   moveOutOf(cursor: Cursor, towards: Dir, block: Block): void {
     cursor.moveTo(this, towards)
   }
+
+  vertInto(): Block | undefined {
+    return this.blocks[0]
+  }
+
+  vertOutOf(): Block | true | undefined {
+    return
+  }
 }

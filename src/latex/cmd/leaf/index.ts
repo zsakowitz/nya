@@ -1,18 +1,9 @@
-import { Command, L, R, type Cursor, type Dir } from "../../model"
+import { Command, R, type Block, type Cursor, type Dir } from "../../model"
 
 /** A leaf is a specialized command with no children. */
 export abstract class Leaf extends Command<[]> {
   constructor(ctrlSeq: string, el: HTMLSpanElement) {
     super(ctrlSeq, el, [])
-  }
-
-  seek(clientX: number, cursor: Cursor) {
-    const { left } = this.el.getBoundingClientRect()
-    if (clientX - left < this.el.offsetWidth / 2) {
-      cursor.moveTo(this, L)
-    } else {
-      cursor.moveTo(this, R)
-    }
   }
 
   moveInto(cursor: Cursor, towards: Dir): void {
@@ -23,7 +14,22 @@ export abstract class Leaf extends Command<[]> {
     // Never called, since `Leaf` has no blocks
   }
 
-  delete(): void {
+  vertInto(): Block | undefined {
+    return
+  }
+
+  vertOutOf(): Block | true | undefined {
+    return
+  }
+
+  delete(cursor: Cursor, from: Dir): void {
+    if (cursor[R] == this) {
+      cursor.moveTo(this, R)
+    }
     this.remove()
+  }
+
+  deleteBlock(): void {
+    // never happens
   }
 }

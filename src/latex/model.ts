@@ -87,11 +87,7 @@ export class Block extends Node {
   readonly ends: Ends = { [L]: null, [R]: null }
 
   readonly el = h(
-    "inline-block",
-    // h(
-    //   "span",
-    //   "inline-block before:content-['c'] before:font-['Times'] before:[line-height:.9] before:italic",
-    // ),
+    "inline-block after:content-['c'] after:font-['Times'] after:[line-height:.9] after:italic after:text-transparent after:hidden",
   )
 
   constructor(
@@ -106,6 +102,27 @@ export class Block extends Node {
     } else {
       this[L] = null
     }
+    this.checkIfEmpty()
+  }
+
+  /**
+   * Unwraps a single layer of parentheses, if they are the only thing this
+   * `Block` contains. This is useful, as a user will often use them to group
+   * additions or subtractions, and doesn't actually want them to stick around.
+   *
+   * More generally, this unwraps any `Command` with a single `Block` where the
+   * `Command` returns `true` from its `isTransparentWrapper` method.
+   */
+  unwrap() {
+    if (
+      this.ends[L] == this.ends[R] &&
+      this.ends[L]?.blocks.length == 1 &&
+      this.ends[L].isTransparentWrapper()
+    ) {
+      return this.ends[L].blocks[0]!
+    } else {
+      return this
+    }
   }
 
   /** Returns whether this `Block` is empty. */
@@ -113,9 +130,60 @@ export class Block extends Node {
     return this.ends[L] == null
   }
 
-  /** Attaches another block onto a side of this one. */
-  attach(other: Block, command: Command | null, dir: Dir) {
-    if (!other.ends[L]) {
+  /** Updates the element's empty styles. */
+  checkIfEmpty() {
+    this.el.classList.toggle("after:hidden", !this.isEmpty())
+    this.el.classList.toggle("bg-[#0003]", this.isEmpty())
+  }
+
+  /**
+   * Inserts a block between two {@link Command `Command`}s. The `Command`s must
+   * be adjacent children of this `Block`, or the edit tree will become
+   * malformed.
+   */
+  insert(block: Block, lhs: Command | null, rhs: Command | null) {
+    // If the other block is empty, do nothing
+    if (block.isEmpty()) {
+      return
+    }
+
+    // Update our sibling and ends pointers
+    if (lhs) {
+      ;(lhs as CommandMut)[R] = block.ends[L]
+    } else {
+      ;(this.ends as EndsMut)[L] = block.ends[L]
+    }
+    if (rhs) {
+      ;(rhs as CommandMut)[L] = block.ends[R]
+    } else {
+      ;(this.ends as EndsMut)[R] = block.ends[R]
+    }
+
+    // Insert children into the DOM
+    {
+      const before = rhs ? rhs.el : null
+      let el: Command | null = block.ends[L]
+      while (el) {
+        this.el.insertBefore(el.el, before)
+        ;(el as CommandMut).parent = this
+        el = el[R]
+      }
+    }
+
+    // Update `block`'s sibling pointers
+    ;(block.ends[L] as CommandMut)[L] = lhs
+    ;(block.ends[R] as CommandMut)[R] = rhs
+
+    this.checkIfEmpty()
+    block.checkIfEmpty()
+  }
+
+  /**
+   * Attaches a block onto a side of a {@link Command `Command`} owned by this
+   * one.
+   */
+  attach(block: Block, command: Command | null, dir: Dir) {
+    if (block.isEmpty()) {
       return
     }
 
@@ -128,10 +196,6 @@ export class Block extends Node {
           ? command
           : null
 
-    if (lhs && other.ends[L]) {
-      ;(lhs as CommandMut)[R] = other.ends[L]
-    }
-
     const rhs =
       dir == R
         ? command
@@ -141,20 +205,7 @@ export class Block extends Node {
           ? command
           : null
 
-    if (rhs && other.ends[R]) {
-      ;(rhs as CommandMut)[L] = other.ends[R]
-    }
-
-    const domAnchor = rhs ? rhs.el : null
-    let el: Command | null = other.ends[L]
-    while (el) {
-      ;(el as CommandMut).parent = this
-      this.el.insertBefore(el.el, domAnchor)
-      el = el[R]
-    }
-
-    ;(other.ends[L] as CommandMut)[L] = lhs
-    ;(other.ends[R] as CommandMut)[R] = rhs
+    this.insert(block, lhs, rhs)
   }
 
   ascii(): string {
@@ -253,12 +304,12 @@ export class Cursor {
     this[R] = before
   }
 
-  /** Attaches a {@link Block `Block`} to the given side of this `Cursor`. */
-  attach(block: Block, dir: Dir) {
+  /** Inserts a {@link Block `Block`} on the given side of this `Cursor`. */
+  insert(block: Block, dir: Dir) {
     if (!this.parent) return
-    if (!block.ends[L]) return
+    if (block.isEmpty()) return
 
-    this.parent.attach(block, this[R], L)
+    this.parent.insert(block, this[L], this[R])
     if (dir == R) {
       ;(this as CursorMut)[R] = block.ends[L]
     }
@@ -478,16 +529,15 @@ export class Span {
   }
 
   /**
-   * Calls a function for each element in the `Span`, travelling towards the
-   * `dir` direction. Defaults to left-to-right order.
+   * Calls a function for each element in the `Span`, travelling from
+   * left-to-right.
    */
-  each(fn: (el: Command) => void, dir: Dir = R) {
-    let el = this.at(dir == L ? R : L)
-    let end = this[dir]
+  each(fn: (el: Command) => void) {
+    let el = this.at(L)
 
-    while (el && el != end) {
+    while (el && el != this[R]) {
       fn(el)
-      el = el[dir]
+      el = el[R]
     }
   }
 
@@ -574,6 +624,9 @@ export class Span {
       ;(this.parent.ends as EndsMut)[R] = this[L]
     }
 
+    this.parent.checkIfEmpty()
+    block.checkIfEmpty()
+
     return block
   }
 
@@ -597,6 +650,8 @@ export class Span {
       } else {
         ;(this.parent.ends as EndsMut)[R] = this[L]
       }
+
+      this.parent.checkIfEmpty()
     }
 
     return new Cursor(this.parent, this[R])
@@ -721,7 +776,10 @@ interface CommandMut extends Command {
 }
 
 /** A command is a single item inside a block. */
-export abstract class Command<T extends Block[] = Block[]> extends Node {
+export abstract class Command<
+  T extends Block[] = Block[],
+  C extends string = string,
+> extends Node {
   /** Returns the direction needed to travel from `anchor` to `focus`. */
   static dir(anchor: Command, focus: Command): Dir {
     if (!focus) {
@@ -743,7 +801,7 @@ export abstract class Command<T extends Block[] = Block[]> extends Node {
   readonly parent: Block | null = null
 
   constructor(
-    readonly ctrlSeq: string,
+    readonly ctrlSeq: C,
     readonly el: HTMLSpanElement,
     readonly blocks: T,
   ) {
@@ -756,11 +814,47 @@ export abstract class Command<T extends Block[] = Block[]> extends Node {
     }
   }
 
+  protected setEl(el: HTMLSpanElement) {
+    this.el.replaceWith(el)
+    ;(this as any).el = el
+  }
+
+  /** May invalidate {@link Cursor `Cursor`}s. */
+  replaceWith(command: Command) {
+    this.el.replaceWith(command.el)
+    if (this[L]) {
+      ;(this[L] as CommandMut)[R] = command
+    } else if (this.parent) {
+      ;(this.parent.ends as EndsMut)[L] = command
+    }
+    if (this[R]) {
+      ;(this[R] as CommandMut)[L] = command
+    } else if (this.parent) {
+      ;(this.parent.ends as EndsMut)[R] = command
+    }
+    ;(command as CommandMut)[L] = this[L]
+    ;(command as CommandMut)[R] = this[R]
+  }
+
   /** Moves the cursor into the given {@link Command `Command`}. */
   abstract moveInto(cursor: Cursor, towards: Dir): void
 
   /** Moves the cursor out of the passed {@link Block `Block`}. */
   abstract moveOutOf(cursor: Cursor, towards: Dir, block: Block): void
+
+  /**
+   * Whether this command is a simple transparent wrapper around its contents
+   * which does nothing except aid grouping. The only built-in `Command` for
+   * which this returns `true` is a `CmdBrack` where both ends are parentheses.
+   *
+   * Note that this `Command` must have exactly one child block for unwrapping
+   * to work.
+   *
+   * This is used in the {@link Block#unwrap `Block.unwrap`} method.
+   */
+  isTransparentWrapper(): boolean {
+    return false
+  }
 
   /**
    * Whether this `Command` ends an implicit multiplication group. Used when the
@@ -770,7 +864,24 @@ export abstract class Command<T extends Block[] = Block[]> extends Node {
     return false
   }
 
-  /** Inserts the `Command` to some side of a {@link Cursor `Cursor`}. */
+  /**
+   * Inserts the given {@link Block `Block`} to some side of this `Command`. Does
+   * nothing if this `Command` has no parent.
+   */
+  insert(block: Block, dir: Dir) {
+    if (!this.parent) return
+
+    if (dir == L) {
+      this.parent.insert(block, this[L], this)
+    } else {
+      this.parent.insert(block, this, this[R])
+    }
+  }
+
+  /**
+   * Inserts the `Command` to some side of a {@link Cursor `Cursor`}. Assumes the
+   * {@link Command `Command`} does not already have a parent block.
+   */
   insertAt(cursor: Cursor, dir: Dir) {
     if (!cursor.parent) {
       this.el.remove()
@@ -795,6 +906,8 @@ export abstract class Command<T extends Block[] = Block[]> extends Node {
     } else {
       ;(cursor.parent.ends as EndsMut)[R] = this
     }
+
+    cursor.parent.checkIfEmpty()
   }
 
   /**
@@ -810,9 +923,7 @@ export abstract class Command<T extends Block[] = Block[]> extends Node {
    * 2. The cursor is, say, in the denominator of `(3/4)/5`, next to the `5`, and
    *    the user presses up.
    */
-  vertInto(dir: VDir, clientX: number): Block | undefined {
-    return
-  }
+  abstract vertInto(dir: VDir, clientX: number): Block | undefined
 
   /**
    * Moves out of a {@link Block `Block`} owned by this `Command`.
@@ -824,9 +935,11 @@ export abstract class Command<T extends Block[] = Block[]> extends Node {
    * This is used, for instance, when the cursor is to the right of `3` in `⅜`
    * and the user presses "Down".
    */
-  vertOutOf(dir: VDir, block: Block, cursor: Cursor): Block | true | undefined {
-    return
-  }
+  abstract vertOutOf(
+    dir: VDir,
+    block: Block,
+    cursor: Cursor,
+  ): Block | true | undefined
 
   /**
    * Removes this `Command` from its containing {@link Block `Block`}.
@@ -844,21 +957,8 @@ export abstract class Command<T extends Block[] = Block[]> extends Node {
     } else if (this.parent) {
       ;(this.parent.ends as EndsMut)[R] = this[L]
     }
-  }
 
-  /** Takes the contents of a given {@link Block `Block`}. */
-  take(
-    index: 0 extends T["length"]
-      ? never
-      : 1 extends T["length"]
-        ? 0
-        : 2 extends T["length"]
-          ? 0 | 1
-          : number,
-  ) {
-    const block = this.blocks[index]
-    if (!block) throw new Error(`Block #${block} does not exist.`)
-    return new Span(block, null, null).splice()
+    this.parent?.checkIfEmpty()
   }
 
   /**

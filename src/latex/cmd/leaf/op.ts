@@ -5,9 +5,13 @@ import { L, type Cursor } from "../../model"
 export abstract class Op extends Leaf {
   constructor(
     readonly ctrlSeq: string,
-    readonly html: string,
+    html: string,
   ) {
     super(ctrlSeq, h("", h("px-[.2em] inline-block cursor-text", t(html))))
+  }
+
+  setHtml(html: string) {
+    this.setEl(h("", h("px-[.2em] inline-block cursor-text", t(html))))
   }
 }
 

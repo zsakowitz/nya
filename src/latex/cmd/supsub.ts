@@ -113,13 +113,17 @@ export class CmdSupSub extends Command {
     }
   }
 
+  redraw() {
+    const next = CmdSupSub.html(this.sub, this.sup)
+    this.el.replaceWith(next)
+    ;(this as any).el = next
+  }
+
   /** Creates the given part, or returns the block if it already exists. */
   create(part: "sub" | "sup") {
     if (!this[part]) {
       ;(this as any)[part] = new Block(this)
-      const next = CmdSupSub.html(this.sub, this.sup)
-      this.el.replaceWith(next)
-      ;(this as any).el = next
+      this.redraw()
     }
     return this[part]!
   }
@@ -179,34 +183,58 @@ export class CmdSupSub extends Command {
 
   delete(cursor: Cursor, from: Dir): void {
     if (this.sub) {
-      if (this.sub.ends[from]) {
-        this.sub.ends[from].delete(cursor, from)
-        if (this.sub.ends[from] != null) {
-          return
-        }
-      } else if (this.sup) {
-        // the `readonly` is for outside users
-        ;(this as any).sub = null
-        const next = CmdSupSub.html(this.sub, this.sup)
-        this.el.replaceWith(next)
-        ;(this as any).el = next
-        return
+      if (!this.sub.isEmpty()) {
+        this.sub.ends[from]!.delete(cursor, from)
       }
+
+      if (this.sub.isEmpty()) {
+        ;(this as any).sub = null
+        if (!this.sup) {
+          this.remove()
+          if (cursor[R] == this) {
+            cursor.moveTo(this, R)
+          }
+        } else {
+          this.redraw()
+        }
+      }
+
+      return
     }
 
     if (this.sup) {
-      if (this.sup.ends[from]) {
+      if (!this.sup.isEmpty()) {
         cursor.moveIn(this.sup, from)
-      } else if (this.sub) {
-        // the `readonly` is for outside users
-        ;(this as any).sup = null
-        const next = CmdSupSub.html(this.sub, this.sup)
-        this.el.replaceWith(next)
-        ;(this as any).el = next
+        return
       }
+      ;(this as any).sup = null
     }
 
-    cursor.moveTo(this, R)
+    if (cursor[R] == this) {
+      cursor.moveTo(this, R)
+    }
     this.remove()
+    return
+  }
+
+  deleteBlock(cursor: Cursor, at: Dir, block: Block): void {
+    if (block == this.sub) {
+      cursor.moveTo(this, L)
+      ;(this as any).sub = null
+      this.redraw()
+      cursor.insert(block, at == R ? L : R)
+    } else {
+      cursor.moveTo(this, R)
+      ;(this as any).sup = null
+      this.redraw()
+      cursor.insert(block, at == R ? L : R)
+    }
+
+    if (!(this.sub || this.sup)) {
+      if (cursor[R] == this) {
+        cursor.moveTo(this, R)
+      }
+      this.remove()
+    }
   }
 }
