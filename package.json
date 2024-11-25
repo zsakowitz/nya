@@ -14,6 +14,7 @@
     "semi": false,
     "plugins": [
       "prettier-plugin-jsdoc"
-    ]
+    ],
+    "experimentalTernaries": true
   }
 }

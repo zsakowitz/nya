@@ -98,7 +98,12 @@ function cmp(
     }
 
     constructor(neg: boolean, eq: boolean) {
-      const op = neg ? (eq ? negOrEq : normalNeg) : eq ? orEq : normal
+      const op =
+        neg ?
+          eq ? negOrEq
+          : normalNeg
+        : eq ? orEq
+        : normal
       super(neg, eq, op[0], op[2])
     }
 
@@ -107,46 +112,46 @@ function cmp(
     }
 
     html(): string {
-      const op = this.neg
-        ? this.eq
-          ? negOrEq
+      const op =
+        this.neg ?
+          this.eq ?
+            negOrEq
           : normalNeg
-        : this.eq
-          ? orEq
-          : normal
+        : this.eq ? orEq
+        : normal
       return op[2]
     }
 
     latex(): string {
-      const op = this.neg
-        ? this.eq
-          ? negOrEq
+      const op =
+        this.neg ?
+          this.eq ?
+            negOrEq
           : normalNeg
-        : this.eq
-          ? orEq
-          : normal
+        : this.eq ? orEq
+        : normal
       return op[0]
     }
 
     reader(): string {
-      const op = this.neg
-        ? this.eq
-          ? negOrEq
+      const op =
+        this.neg ?
+          this.eq ?
+            negOrEq
           : normalNeg
-        : this.eq
-          ? orEq
-          : normal
+        : this.eq ? orEq
+        : normal
       return op[1]
     }
 
     ascii(): string {
-      const op = this.neg
-        ? this.eq
-          ? negOrEq
+      const op =
+        this.neg ?
+          this.eq ?
+            negOrEq
           : normalNeg
-        : this.eq
-          ? orEq
-          : normal
+        : this.eq ? orEq
+        : normal
       return op[3]
     }
 

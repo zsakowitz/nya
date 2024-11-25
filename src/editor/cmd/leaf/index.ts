@@ -18,6 +18,10 @@ export abstract class Leaf extends Command<[]> {
     return
   }
 
+  vertFromSide(): Block | undefined {
+    return
+  }
+
   vertOutOf(): Block | true | undefined {
     return
   }

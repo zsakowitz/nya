@@ -145,8 +145,6 @@ export class CmdBrack extends Command<[Block]> {
     const lhsSymbol = PARENS[lhs]
     const rhsSymbol = PARENS[rhs]
     return h(
-      // be set by init or parser
-
       "relative inline-block",
       h(
         {
@@ -230,7 +228,7 @@ export class CmdBrack extends Command<[Block]> {
     return this.blocks[0]
   }
 
-  vertOutOf(): Block | true | undefined {
-    return
-  }
+  vertFromSide(): undefined {}
+
+  vertOutOf(): undefined {}
 }

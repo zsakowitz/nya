@@ -2,6 +2,7 @@
   "compilerOptions": {
     "lib": ["ES5", "DOM", "ESNext.Disposable"],
     "strict": true,
-    "noUncheckedIndexedAccess": true
+    "noUncheckedIndexedAccess": true,
+    "noEmit": true
   }
 }

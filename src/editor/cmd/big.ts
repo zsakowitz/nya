@@ -70,9 +70,8 @@ export class CmdBig extends Command<
 
   reader(): string {
     const tag = `${this.ctrlSeq[1]!.toUpperCase()}${this.ctrlSeq.slice(2)}`
-    const upper = this.blocks[1]
-      ? `${tag}Upper ${this.blocks[1].reader()} `
-      : ""
+    const upper =
+      this.blocks[1] ? `${tag}Upper ${this.blocks[1].reader()} ` : ""
     return ` ${tag} ${this.blocks[0].reader()} ${upper}End${tag} `
   }
 
@@ -86,6 +85,17 @@ export class CmdBig extends Command<
 
   vertInto(dir: VDir): Block | undefined {
     return dir == U ? this.blocks[1] : this.blocks[0]
+  }
+
+  vertFromSide(dir: VDir): Block {
+    if (dir == U) {
+      if (!this.blocks[1]) {
+        this.blocks[1] = new Block(this)
+        this.setEl(CmdBig.render(this.ctrlSeq, this.blocks[0], this.blocks[1]!))
+      }
+      return this.blocks[1]
+    }
+    return this.blocks[0]
   }
 
   vertOutOf(dir: VDir, block: Block): Block | true | undefined {

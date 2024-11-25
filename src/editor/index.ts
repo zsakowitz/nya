@@ -11,6 +11,7 @@ import { CmdNumAutoSubscript } from "./cmd/leaf/num"
 import { OpCdot, OpMinus, OpPlus } from "./cmd/leaf/op"
 import { CmdVar } from "./cmd/leaf/var"
 import { CmdMap } from "./cmd/map"
+import { CmdMatrix } from "./cmd/matrix"
 import { CmdNoop } from "./cmd/noop"
 import { CmdSupSub } from "./cmd/supsub"
 import { Exts, Field } from "./field"
@@ -52,6 +53,7 @@ const exts = new Exts()
   .setAll(["_", "^"], CmdSupSub)
   .setAll(Object.keys(BIG_ALIASES), CmdBig)
   .set("s", new CmdMap(CmdBig, () => "\\sum"))
+  .set("m", CmdMatrix)
   .set(",", CmdComma)
   .set(".", CmdDot)
   // movement ops
@@ -189,19 +191,19 @@ field.type("ArrowRight")
 field.type("ArrowRight")
 field.type("n")
 
-const cursor = h("border-black p-0 m-0 -ml-px border-l")
+const cursor = h("border-current p-0 m-0 -ml-px border-l")
 render()
 
 function unrender() {
-  field.sel.each(({ el }) => el.classList.remove("bg-blue-200"))
-  cursor.parentElement?.classList.remove("bg-transparent")
+  field.sel.each(({ el }) => el.classList.remove("bg-blue-950"))
+  cursor.parentElement?.classList.remove("!bg-transparent")
   cursor.remove()
 }
 
 function render() {
-  field.sel.each(({ el }) => el.classList.add("bg-blue-200"))
+  field.sel.each(({ el }) => el.classList.add("bg-blue-950"))
   field.sel.cursor(field.sel.focused).render(cursor)
-  cursor.parentElement?.classList.add("bg-transparent")
+  cursor.parentElement?.classList.add("!bg-transparent")
 }
 
 addEventListener("keydown", (x) => {

@@ -23,33 +23,6 @@ export type Dir = -1 | 1
 export type VDir = -2 | 2
 
 /**
- * Something in the edit tree. In a math expression, this is either a
- * {@link Block `Block`} or a {@link Command `Command`}.
- */
-export abstract class Node {
-  /** The parent of this node. */
-  abstract readonly parent: Node | null
-
-  /** The sibling towards the left. */
-  abstract readonly [L]: Node | null
-
-  /** The sibling towards the right. */
-  abstract readonly [R]: Node | null
-
-  /** The HTML element rendered by this node. */
-  abstract readonly el: HTMLSpanElement
-
-  /** Reads this node in a screen-accessible format. */
-  abstract reader(): string
-
-  /** Writes this node in ASCII-style math. */
-  abstract ascii(): string
-
-  /** Writes this node in LaTeX. */
-  abstract latex(): string
-}
-
-/**
  * Pointers to the {@link Command `Command`}s on either side of a
  * {@link Block `Block`}.
  */
@@ -76,12 +49,12 @@ interface BlockMut extends Block {
 }
 
 /** An expression. Contains zero or more {@link Command `Command`}s. */
-export class Block extends Node {
+export class Block {
   /** The block before this one. */
-  readonly [L]: Block | null
+  // readonly [L]: Block | null
 
   /** The block after this one. */
-  readonly [R]: Block | null = null
+  // readonly [R]: Block | null = null
 
   /** The ends of the {@link Command `Command`}s contained in this block. */
   readonly ends: Ends = { [L]: null, [R]: null }
@@ -94,13 +67,9 @@ export class Block extends Node {
     /** The command containing this block. */
     readonly parent: Command | null,
   ) {
-    super()
-
     if (parent) {
-      this[L] = parent.blocks[parent.blocks.length - 1] || null
       parent.blocks.push(this)
     } else {
-      this[L] = null
     }
     this.checkIfEmpty()
   }
@@ -133,7 +102,7 @@ export class Block extends Node {
   /** Updates the element's empty styles. */
   checkIfEmpty() {
     this.el.classList.toggle("after:hidden", !this.isEmpty())
-    this.el.classList.toggle("bg-[#0003]", this.isEmpty())
+    this.el.classList.toggle("bg-[#fff3]", this.isEmpty())
   }
 
   /**
@@ -188,22 +157,18 @@ export class Block extends Node {
     }
 
     const lhs =
-      dir == L
-        ? command
-          ? command[L]
-          : this.ends[R]
-        : command
-          ? command
-          : null
+      dir == L ?
+        command ? command[L]
+        : this.ends[R]
+      : command ? command
+      : null
 
     const rhs =
-      dir == R
-        ? command
-          ? command[R]
-          : this.ends[L]
-        : command
-          ? command
-          : null
+      dir == R ?
+        command ? command[R]
+        : this.ends[L]
+      : command ? command
+      : null
 
     this.insert(block, lhs, rhs)
   }
@@ -244,7 +209,7 @@ export class Block extends Node {
   }
 
   /** Finds the {@link Command `Command`} closest to the given `clientX`. */
-  nodeAt(clientX: number): Command | null {
+  commandAt(clientX: number): Command | null {
     // We use binary search b/c it seems fun
     // This is still technically O(n) in the number of child nodes
     let el = this.ends[L]
@@ -261,6 +226,10 @@ export class Block extends Node {
       el = el[R]
     }
     return null
+  }
+
+  toString() {
+    return this.latex()
   }
 }
 
@@ -344,7 +313,7 @@ export class Cursor {
 
     // If a sub- or superscript is available on the RHS, take it
     {
-      const into = this[R]?.vertInto(dir, x)
+      const into = this[R]?.vertFromSide(dir, x)
       if (into) {
         this.moveIn(into, L)
         return true
@@ -353,7 +322,7 @@ export class Cursor {
 
     // Else, if a sub- or superscript is available on the LHS, take it
     {
-      const into = this[L]?.vertInto(dir, x)
+      const into = this[L]?.vertFromSide(dir, x)
       if (into) {
         this.moveIn(into, R)
         return true
@@ -387,7 +356,7 @@ export class Cursor {
 
     // Move into that node
     while (true) {
-      const cmd: Command | null = node.nodeAt(x)
+      const cmd: Command | null = node.commandAt(x)
 
       // If the block is empty or the cursor is too far to one side
       if (!cmd) {
@@ -523,8 +492,8 @@ export class Span {
    * `Command` will be inside the `Span`, unless the `Span` is a
    */
   at(side: Dir): Command | null {
-    return this[side]
-      ? this[side]![side == R ? L : R]
+    return this[side] ?
+        this[side]![side == R ? L : R]
       : this.parent?.ends[side] || null
   }
 
@@ -775,11 +744,11 @@ interface CommandMut extends Command {
   parent: Block | null
 }
 
-/** A command is a single item inside a block. */
+/** A single item inside a {@link Block `Block`}. */
 export abstract class Command<
   T extends Block[] = Block[],
   C extends string = string,
-> extends Node {
+> {
   /** Returns the direction needed to travel from `anchor` to `focus`. */
   static dir(anchor: Command, focus: Command): Dir {
     if (!focus) {
@@ -796,16 +765,21 @@ export abstract class Command<
     return L
   }
 
+  /** The sibling towards the left. */
   readonly [L]: Command | null = null
+
+  /** The sibling towards the right. */
   readonly [R]: Command | null = null
+
+  /** The parent of this node. */
   readonly parent: Block | null = null
 
   constructor(
     readonly ctrlSeq: C,
+    /** The HTML element rendered by this node. */
     readonly el: HTMLSpanElement,
     readonly blocks: T,
   ) {
-    super()
     for (let i = 0; i < blocks.length; i++) {
       const block = blocks[i]! as BlockMut
       block.parent = this
@@ -813,6 +787,15 @@ export abstract class Command<
       block[R] = blocks[i + 1] || null
     }
   }
+
+  /** Reads this node in a screen-accessible format. */
+  abstract reader(): string
+
+  /** Writes this node in ASCII-style math. */
+  abstract ascii(): string
+
+  /** Writes this node in LaTeX. */
+  abstract latex(): string
 
   protected setEl(el: HTMLSpanElement) {
     this.el.replaceWith(el)
@@ -912,18 +895,20 @@ export abstract class Command<
 
   /**
    * Gets the {@link Block `Block`} that should be moved into when a vertical
-   * arrow key is pressed and the cursor attempts to move into this `Command`.
+   * arrow key is pressed from above or below this `Command` and the cursor
+   * attempts to move into it.
    *
    * The returned {@link Block `Block`} must be owned by this `Command`.
-   *
-   * This is used in two circumstances:
-   *
-   * 1. The cursor is to one side of this `Command`, and attempts to move up or
-   *    down.
-   * 2. The cursor is, say, in the denominator of `(3/4)/5`, next to the `5`, and
-   *    the user presses up.
    */
   abstract vertInto(dir: VDir, clientX: number): Block | undefined
+
+  /**
+   * Gets the {@link Block `Block`} that should be moved into when a vertical
+   * arrow key is pressed and the cursor is on one side of this `Command`.
+   *
+   * The returned {@link Block `Block`} must be owned by this `Command`.
+   */
+  abstract vertFromSide(dir: VDir, clientX: number): Block | undefined
 
   /**
    * Moves out of a {@link Block `Block`} owned by this `Command`.
@@ -974,8 +959,13 @@ export abstract class Command<
    * and the user presses "Backspace" or "Delete".
    */
   abstract deleteBlock(cursor: Cursor, at: Dir, block: Block): void
+
+  toString() {
+    return this.latex()
+  }
 }
 
+/** The updated cursor or selection created by {@link Init `Init`}. */
 export type InitRet = Cursor | Selection | undefined | void
 
 /**

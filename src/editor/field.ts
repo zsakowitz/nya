@@ -34,7 +34,7 @@ export class Field {
   constructor(readonly exts: Exts) {
     this.el = this.block.el
     this.el.className =
-      "cursor-text whitespace-nowrap font-['Symbola','Times',sans-serif] text-[1.265em] font-normal not-italic text-black transition [line-height:1] focus:outline-none dark:text-white [&_*]:cursor-text block"
+      "cursor-text whitespace-nowrap font-['Symbola','Times',sans-serif] text-[1.265em] font-normal not-italic transition [line-height:1] focus:outline-none [&_*]:cursor-text block"
   }
 
   init(init: Init, input: string, event?: KeyboardEvent) {
