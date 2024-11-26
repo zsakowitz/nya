@@ -42,8 +42,6 @@ interface EndsMut extends Ends {
 
 /** An interface used for type-safe changes to {@link Block `Block`}. */
 interface BlockMut extends Block {
-  [L]: Block | null
-  [R]: Block | null
   parent: Command | null
   ends: EndsMut
 }
@@ -102,7 +100,7 @@ export class Block {
   /** Updates the element's empty styles. */
   checkIfEmpty() {
     this.el.classList.toggle("after:hidden", !this.isEmpty())
-    this.el.classList.toggle("bg-[--empty]", this.isEmpty())
+    this.el.classList.toggle("bg-zlx-empty", this.isEmpty())
   }
 
   /**
@@ -789,8 +787,6 @@ export abstract class Command<
     for (let i = 0; i < blocks.length; i++) {
       const block = blocks[i]! as BlockMut
       block.parent = this
-      block[L] = blocks[i - 1] || null
-      block[R] = blocks[i + 1] || null
     }
   }
 
@@ -803,6 +799,59 @@ export abstract class Command<
   /** Writes this node in LaTeX. */
   abstract latex(): string
 
+  /** Moves the cursor into the given {@link Command `Command`}. */
+  abstract moveInto(cursor: Cursor, towards: Dir): void
+
+  /** Moves the cursor out of the passed {@link Block `Block`}. */
+  abstract moveOutOf(cursor: Cursor, towards: Dir, block: Block): void
+
+  /**
+   * Gets the {@link Block `Block`} that should be moved into when a vertical
+   * arrow key is pressed from above or below this `Command` and the cursor
+   * attempts to move into it.
+   *
+   * The returned {@link Block `Block`} must be owned by this `Command`.
+   */
+  abstract vertInto(dir: VDir, clientX: number): Block | undefined
+
+  /**
+   * Gets the {@link Block `Block`} that should be moved into when a vertical
+   * arrow key is pressed and the cursor is on one side of this `Command`.
+   *
+   * The returned {@link Block `Block`} must be owned by this `Command`.
+   */
+  abstract vertFromSide(dir: VDir, from: Dir): Block | undefined
+
+  /**
+   * Moves out of a {@link Block `Block`} owned by this `Command`.
+   *
+   * If a {@link Block `Block`} is returned, it must be owned by this `Command`,
+   * and the {@link Cursor `Cursor`} will be placed into it. If `true` is
+   * returned, `cursor` must be updated to a new position.
+   *
+   * This is used, for instance, when the cursor is to the right of `3` in `⅜`
+   * and the user presses "Down".
+   */
+  abstract vertOutOf(
+    dir: VDir,
+    block: Block,
+    cursor: Cursor,
+  ): Block | true | undefined
+
+  /**
+   * Deletes this `Command` from the given direction. Called when the cursor is
+   * to one side of this `Command` and the user pressed "Backspace" or
+   * "Delete".
+   */
+  abstract delete(cursor: Cursor, from: Dir): void
+
+  /**
+   * Deletes the provided {@link Block `Block`} from the given direction in this
+   * `Command`. Called when the cursor is at the edge of a {@link Block `Block`}
+   * and the user presses "Backspace" or "Delete".
+   */
+  abstract deleteBlock(cursor: Cursor, at: Dir, block: Block): void
+
   protected setEl(el: HTMLSpanElement) {
     this.el.replaceWith(el)
     ;(this as any).el = el
@@ -813,12 +862,6 @@ export abstract class Command<
     this.remove()
     this.parent?.insert(block, this[L], this[R])
   }
-
-  /** Moves the cursor into the given {@link Command `Command`}. */
-  abstract moveInto(cursor: Cursor, towards: Dir): void
-
-  /** Moves the cursor out of the passed {@link Block `Block`}. */
-  abstract moveOutOf(cursor: Cursor, towards: Dir, block: Block): void
 
   /**
    * Whether this command is a simple transparent wrapper around its contents
@@ -889,39 +932,6 @@ export abstract class Command<
   }
 
   /**
-   * Gets the {@link Block `Block`} that should be moved into when a vertical
-   * arrow key is pressed from above or below this `Command` and the cursor
-   * attempts to move into it.
-   *
-   * The returned {@link Block `Block`} must be owned by this `Command`.
-   */
-  abstract vertInto(dir: VDir, clientX: number): Block | undefined
-
-  /**
-   * Gets the {@link Block `Block`} that should be moved into when a vertical
-   * arrow key is pressed and the cursor is on one side of this `Command`.
-   *
-   * The returned {@link Block `Block`} must be owned by this `Command`.
-   */
-  abstract vertFromSide(dir: VDir, from: Dir): Block | undefined
-
-  /**
-   * Moves out of a {@link Block `Block`} owned by this `Command`.
-   *
-   * If a {@link Block `Block`} is returned, it must be owned by this `Command`,
-   * and the {@link Cursor `Cursor`} will be placed into it. If `true` is
-   * returned, `cursor` must be updated to a new position.
-   *
-   * This is used, for instance, when the cursor is to the right of `3` in `⅜`
-   * and the user presses "Down".
-   */
-  abstract vertOutOf(
-    dir: VDir,
-    block: Block,
-    cursor: Cursor,
-  ): Block | true | undefined
-
-  /**
    * Removes this `Command` from its containing {@link Block `Block`}.
    * Invalidates {@link Cursor `Cursor`}s using this `Command` as an anchor.
    */
@@ -940,20 +950,6 @@ export abstract class Command<
 
     this.parent?.checkIfEmpty()
   }
-
-  /**
-   * Deletes this `Command` from the given direction. Called when the cursor is
-   * to one side of this `Command` and the user pressed "Backspace" or
-   * "Delete".
-   */
-  abstract delete(cursor: Cursor, from: Dir): void
-
-  /**
-   * Deletes the provided {@link Block `Block`} from the given direction in this
-   * `Command`. Called when the cursor is at the edge of a {@link Block `Block`}
-   * and the user presses "Backspace" or "Delete".
-   */
-  abstract deleteBlock(cursor: Cursor, at: Dir, block: Block): void
 
   toString() {
     return this.latex()

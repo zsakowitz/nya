@@ -2,7 +2,7 @@ import "../../index.css"
 import { BIG_ALIASES, CmdBig } from "./cmd/big"
 import { CmdBrack } from "./cmd/brack"
 import { ByRegex } from "./cmd/by-regex"
-import { CmdDelete, CmdMove } from "./cmd/cursor"
+import { CmdBackspace, CmdDel, CmdMove, CmdTab } from "./cmd/cursor"
 import { CmdFrac } from "./cmd/frac"
 import { OpEq, OpGt, OpLt } from "./cmd/leaf/cmp"
 import { CmdComma } from "./cmd/leaf/comma"
@@ -61,7 +61,10 @@ const exts = new Exts()
   .set("ArrowRight", CmdMove(R))
   .set("ArrowUp", CmdMove(U))
   .set("ArrowDown", CmdMove(D))
-  .set("Backspace", CmdDelete)
+  .set("Backspace", CmdBackspace)
+  .set("Del", CmdDel)
+  .set("Delete", CmdDel)
+  .set("Tab", CmdTab)
   // manual latex
   .set("\\", CmdPrompt)
 
@@ -199,13 +202,13 @@ const cursor = h("border-current w-px -ml-px border-l")
 render()
 
 function unrender() {
-  field.sel.each(({ el }) => el.classList.remove("bg-[--selection]"))
+  field.sel.each(({ el }) => el.classList.remove("bg-zlx-selection"))
   cursor.parentElement?.classList.remove("!bg-transparent")
   cursor.remove()
 }
 
 function render() {
-  field.sel.each(({ el }) => el.classList.add("bg-[--selection]"))
+  field.sel.each(({ el }) => el.classList.add("bg-zlx-selection"))
   field.sel.cursor(field.sel.focused).render(cursor)
   cursor.parentElement?.classList.add("!bg-transparent")
   latex.textContent = field.block.latex()

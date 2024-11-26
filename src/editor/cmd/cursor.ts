@@ -1,6 +1,6 @@
 import { D, L, R, U, type Dir, type Init, type VDir } from "../model"
 
-export type InitControl = Init<{ shiftKey: boolean } | undefined>
+export type InitControl = Init
 
 export function CmdMove(
   dirMove: Dir | VDir,
@@ -45,15 +45,46 @@ export function CmdMove(
   }
 }
 
-export const CmdDelete: InitControl = {
-  init(cursor, _, event) {
-    if (event?.shiftKey) {
-      cursor.delete(R)
-    } else {
-      cursor.delete(L)
-    }
+export const CmdBackspace: InitControl = {
+  init(cursor) {
+    cursor.delete(L)
   },
   initOn(selection) {
     selection.remove()
+  },
+}
+
+export const CmdDel: InitControl = {
+  init(cursor) {
+    cursor.delete(R)
+  },
+  initOn(selection) {
+    selection.remove()
+  },
+}
+
+export const CmdTab: InitControl = {
+  init(cursor, _, event) {
+    const dir = event?.shiftKey ? L : R
+    if (!cursor.parent) {
+      return
+    }
+    if (!cursor.parent.parent) {
+      return
+    }
+    const index = cursor.parent.parent.blocks.indexOf(cursor.parent)
+    if (index == 0 && dir == L) {
+      cursor.moveTo(cursor.parent.parent, L)
+    } else if (dir == R && index == cursor.parent.parent.blocks.length - 1) {
+      cursor.moveTo(cursor.parent.parent, R)
+    } else {
+      cursor.moveIn(cursor.parent.parent.blocks[index + dir]!, dir == L ? R : L)
+    }
+  },
+  initOn(sel, _, event) {
+    const dir = event?.shiftKey ? L : R
+    const cursor = sel.cursor(dir)
+    CmdTab.init(cursor, _, event)
+    return cursor
   },
 }
