@@ -13,11 +13,11 @@ import { CmdMatrix } from "./cmd/math/matrix"
 import { CmdSupSub } from "./cmd/math/supsub"
 import { ByRegex } from "./cmd/util/by-regex"
 import { CmdBackspace, CmdDel, CmdMove, CmdTab } from "./cmd/util/cursor"
-import { CmdMap } from "./cmd/util/map"
 import { CmdNoop } from "./cmd/util/noop"
 import { Exts, Field } from "./field"
 import { h } from "./jsx"
 import { D, L, R, U, type Init } from "./model"
+import { WordMap } from "./options"
 
 const CmdPrompt: Init = {
   init() {
@@ -53,9 +53,9 @@ const exts = new Exts()
   // other cmds
   .setAll(["_", "^"], CmdSupSub)
   .setAll(Object.keys(BIG_ALIASES), CmdBig)
-  .set("s", new CmdMap(CmdBig, () => "\\sum"))
-  .set("m", CmdMatrix)
-  .set("f", CmdFor)
+  // .set("s", new CmdMap(CmdBig, () => "\\sum"))
+  // .set("m", CmdMatrix)
+  // .set("f", CmdFor)
   .set(",", CmdComma)
   .set(".", CmdDot)
   // movement ops
@@ -70,7 +70,14 @@ const exts = new Exts()
   // manual latex
   .set("\\", CmdPrompt)
 
-const field = new Field(exts)
+const field = new Field(exts, {
+  autoCmds: new WordMap<Init>([
+    ["sum", CmdBig],
+    ["prod", CmdBig],
+    ["matrix", CmdMatrix],
+    ["for", CmdFor],
+  ]),
+})
 
 // Set up field styles
 field.el.classList.add("[line-height:1]", "text-[1.265rem]")
