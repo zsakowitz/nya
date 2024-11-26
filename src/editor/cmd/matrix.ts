@@ -1,25 +1,21 @@
 import { h, p, svg } from "../jsx"
-import {
-  Block,
-  Command,
-  L,
-  R,
-  U,
-  type Cursor,
-  type Dir,
-  type VDir,
-} from "../model"
+import { Block, Command, Cursor, L, R, U, type Dir, type VDir } from "../model"
+import { CmdNum } from "./leaf/num"
 
 export type Coords = [row: number, col: number]
 
 export class CmdMatrix extends Command<Block[]> {
   static init(cursor: Cursor) {
-    new CmdMatrix(2, [
-      new Block(null),
-      new Block(null),
-      new Block(null),
-      new Block(null),
-    ]).insertAt(cursor, L)
+    const x1 = new Block(null)
+    new CmdNum("1").insertAt(new Cursor(x1, null), L)
+    const x2 = new Block(null)
+    new CmdNum("2").insertAt(new Cursor(x2, null), L)
+    const x3 = new Block(null)
+    new CmdNum("3").insertAt(new Cursor(x3, null), L)
+    const x4 = new Block(null)
+    new CmdNum("4").insertAt(new Cursor(x4, null), L)
+    new CmdMatrix(2, [x1, x2, x3, x4]).insertAt(cursor, L)
+    return x3.cursor(R)
   }
 
   static render(cols: number, blocks: Block[]) {
@@ -73,22 +69,13 @@ export class CmdMatrix extends Command<Block[]> {
   }
 
   insRow(index: number) {
-    console.log(
-      //this.cols,
-      "old",
-      this.blocks.map((x) => x.latex()),
-    )
-    this.blocks.splice(
+    const next = this.blocks.slice()
+    next.splice(
       index * this.cols,
       0,
       ...Array.from({ length: this.cols }, () => new Block(this)),
     )
-    console.log("added " + this.cols + " rows")
-    console.log(
-      //this.cols,
-      "new",
-      this.blocks.map((x) => x.latex()),
-    )
+    ;(this as any).blocks = next
     this.render()
   }
 
@@ -125,16 +112,12 @@ export class CmdMatrix extends Command<Block[]> {
     }
   }
 
-  vertInto(dir: VDir, clientX: number): Block | undefined {
-    console.log("CmdMatrix.vertInto")
-  }
-
-  vertOutOf(dir: VDir, block: Block): Block | true | undefined {
+  vertOutOf(dir: VDir, block: Block): Block | undefined {
     const index = this.blocks.indexOf(block)
-    console.error(index)
 
     const ret =
       dir == U ? this.blocks[index - this.cols] : this.blocks[index + this.cols]
+
     if (ret) {
       return ret
     }
@@ -144,13 +127,7 @@ export class CmdMatrix extends Command<Block[]> {
       return this.blocks[index]
     } else {
       this.insRow(this.rows)
-      const r = this.blocks[index + this.cols]
-      console.error(r)
-      return r
+      return this.blocks[index + this.cols]
     }
-
-    //     this.insRow(this.coords(index)[0])
-    //
-    //     return dir == U ? this.blocks[index - this.cols] : this.blocks[index]
   }
 }

@@ -340,7 +340,7 @@ export class Cursor {
       }
 
       const ret = block.parent.vertOutOf(dir, block, this)
-      if (ret == true) {
+      if (ret === true) {
         return true
       } else if (ret) {
         node = ret
