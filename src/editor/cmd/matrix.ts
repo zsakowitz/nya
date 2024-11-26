@@ -20,7 +20,7 @@ export class CmdMatrix extends Command<Block[]> {
     return h(
       "relative inline-block align-middle",
       h(
-        "left-[.15em] absolute top-0 bottom-[2px] inline-block w-[.25em] border-l border-y border-current",
+        "left-[.15em] absolute top-0 bottom-[2px] inline-block w-[.25em] border-l-[.05em] border-y-[.05em] border-current",
       ),
       h(
         {
