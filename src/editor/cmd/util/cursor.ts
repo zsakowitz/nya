@@ -1,14 +1,12 @@
 import { D, L, R, U, type Dir, type Init, type VDir } from "../../model"
 
-export type InitControl = Init
-
 export function CmdMove(
   dirMove: Dir | VDir,
   dirSelect: Dir = dirMove == L || dirMove == U ? L : R,
-): InitControl {
+): Init {
   if (dirMove == U || dirMove == D) {
     return {
-      init(cursor, _, ev) {
+      init(cursor, _, _0, ev) {
         if (ev?.shiftKey) {
           const sel = cursor.selection()
           sel.moveFocusFast(dirSelect)
@@ -17,7 +15,7 @@ export function CmdMove(
           cursor.moveVert(dirMove)
         }
       },
-      initOn(selection, _, event) {
+      initOn(selection, _, _0, event) {
         if (event?.shiftKey) {
           selection.moveFocusFast(dirSelect)
         }
@@ -25,7 +23,7 @@ export function CmdMove(
     }
   } else {
     return {
-      init(cursor, _, ev) {
+      init(cursor, _, _0, ev) {
         if (ev?.shiftKey) {
           const sel = cursor.selection()
           sel.moveFocus(dirSelect)
@@ -34,7 +32,7 @@ export function CmdMove(
           cursor.move(dirMove)
         }
       },
-      initOn(selection, _, event) {
+      initOn(selection, _, _0, event) {
         if (event?.shiftKey) {
           selection.moveFocus(dirSelect)
         } else {
@@ -45,7 +43,7 @@ export function CmdMove(
   }
 }
 
-export const CmdBackspace: InitControl = {
+export const CmdBackspace: Init = {
   init(cursor) {
     cursor.delete(L)
   },
@@ -54,7 +52,7 @@ export const CmdBackspace: InitControl = {
   },
 }
 
-export const CmdDel: InitControl = {
+export const CmdDel: Init = {
   init(cursor) {
     cursor.delete(R)
   },
@@ -63,8 +61,8 @@ export const CmdDel: InitControl = {
   },
 }
 
-export const CmdTab: InitControl = {
-  init(cursor, _, event) {
+export const CmdTab: Init = {
+  init(cursor, _, _0, event) {
     const dir = event?.shiftKey ? L : R
     if (!cursor.parent) {
       return
@@ -81,10 +79,10 @@ export const CmdTab: InitControl = {
       cursor.moveIn(cursor.parent.parent.blocks[index + dir]!, dir == L ? R : L)
     }
   },
-  initOn(sel, _, event) {
+  initOn(sel, _, _0, event) {
     const dir = event?.shiftKey ? L : R
     const cursor = sel.cursor(dir)
-    CmdTab.init(cursor, _, event)
+    CmdTab.init(cursor, _, _0, event)
     return cursor
   },
 }

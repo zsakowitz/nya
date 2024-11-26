@@ -1,4 +1,5 @@
 import type { Cursor, Init, InitRet, Selection } from "../../model"
+import type { Options } from "../../options"
 
 export class CmdMap<E> implements Init<E> {
   constructor(
@@ -10,11 +11,16 @@ export class CmdMap<E> implements Init<E> {
     }
   }
 
-  init(cursor: Cursor, input: string, event: E): InitRet {
-    return this.fn.init(cursor, this.tx(input), event)
+  init(cursor: Cursor, input: string, options: Options, event: E): InitRet {
+    return this.fn.init(cursor, this.tx(input), options, event)
   }
 
-  initOn?(selection: Selection, input: string, event: E): InitRet {
-    return this.fn.initOn!(selection, this.tx(input), event)
+  initOn?(
+    selection: Selection,
+    input: string,
+    options: Options,
+    event: E,
+  ): InitRet {
+    return this.fn.initOn!(selection, this.tx(input), options, event)
   }
 }

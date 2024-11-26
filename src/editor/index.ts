@@ -1,19 +1,20 @@
 import "../../index.css"
-import { BIG_ALIASES, CmdBig } from "./cmd/math/big"
-import { CmdBrack } from "./cmd/math/brack"
-import { ByRegex } from "./cmd/util/by-regex"
-import { CmdBackspace, CmdDel, CmdMove, CmdTab } from "./cmd/util/cursor"
-import { CmdFrac } from "./cmd/math/frac"
 import { OpEq, OpGt, OpLt } from "./cmd/leaf/cmp"
 import { CmdComma } from "./cmd/leaf/comma"
 import { CmdDot } from "./cmd/leaf/dot"
-import { CmdNumAutoSubscript } from "./cmd/leaf/num"
+import { CmdNum } from "./cmd/leaf/num"
 import { OpCdot, OpMinus, OpPlus } from "./cmd/leaf/op"
 import { CmdVar } from "./cmd/leaf/var"
-import { CmdMap } from "./cmd/util/map"
+import { CmdFor } from "./cmd/logic/for"
+import { BIG_ALIASES, CmdBig } from "./cmd/math/big"
+import { CmdBrack } from "./cmd/math/brack"
+import { CmdFrac } from "./cmd/math/frac"
 import { CmdMatrix } from "./cmd/math/matrix"
-import { CmdNoop } from "./cmd/util/noop"
 import { CmdSupSub } from "./cmd/math/supsub"
+import { ByRegex } from "./cmd/util/by-regex"
+import { CmdBackspace, CmdDel, CmdMove, CmdTab } from "./cmd/util/cursor"
+import { CmdMap } from "./cmd/util/map"
+import { CmdNoop } from "./cmd/util/noop"
 import { Exts, Field } from "./field"
 import { h } from "./jsx"
 import { D, L, R, U, type Init } from "./model"
@@ -34,7 +35,7 @@ const CmdPrompt: Init = {
 const exts = new Exts()
   .setDefault(
     new ByRegex([
-      [/^\d$/, CmdNumAutoSubscript],
+      [/^\d$/, CmdNum],
       [/^\w$/, CmdVar],
       [/^\s$/, CmdNoop],
       [/^[()[\]{}]$/, CmdBrack],
@@ -54,6 +55,7 @@ const exts = new Exts()
   .setAll(Object.keys(BIG_ALIASES), CmdBig)
   .set("s", new CmdMap(CmdBig, () => "\\sum"))
   .set("m", CmdMatrix)
+  .set("f", CmdFor)
   .set(",", CmdComma)
   .set(".", CmdDot)
   // movement ops
@@ -197,6 +199,18 @@ field.type("ArrowRight")
 field.type("ArrowRight")
 field.type("n")
 field.type("m")
+field.type("1")
+field.type("ArrowRight")
+field.type("2")
+field.type("ArrowDown")
+field.type("4")
+field.type("ArrowLeft")
+field.type("ArrowLeft")
+field.type("3")
+field.type("ArrowLeft")
+field.type("ArrowLeft")
+field.type("ArrowLeft")
+field.type("f")
 
 const cursor = h("border-current w-px -ml-px border-l")
 render()

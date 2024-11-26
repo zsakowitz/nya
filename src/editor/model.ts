@@ -1,4 +1,5 @@
 import { h } from "./jsx"
+import type { Options } from "./options"
 
 // Many properties are declared as `readonly` to prevent changes to them in
 // user-level code. However, these may change, in the same vein as DOM getters
@@ -753,6 +754,28 @@ export abstract class Command<
   T extends Block[] = Block[],
   C extends string = string,
 > {
+  /**
+   * Initializes this {@link Command `Command`} to the left side of the provided
+   * {@link Cursor `Cursor`}.
+   */
+  static init?(
+    cursor: Cursor,
+    input: string,
+    options: Options,
+    event: KeyboardEvent | undefined,
+  ): InitRet
+
+  /**
+   * Initializes this {@link Command `Command`} over a given
+   * {@link Selection `Selection`}.
+   */
+  static initOn?(
+    selection: Selection,
+    input: string,
+    options: Options,
+    event: KeyboardEvent | undefined,
+  ): InitRet
+
   /** Returns the direction needed to travel from `anchor` to `focus`. */
   static dir(anchor: Command, focus: Command): Dir {
     if (!focus) {
@@ -964,6 +987,11 @@ export type InitRet = Cursor | Selection | undefined | void
  * on top of a selection.
  */
 export interface Init<E = KeyboardEvent | undefined> {
-  init(cursor: Cursor, input: string, event: E): InitRet
-  initOn?(selection: Selection, input: string, event: E): InitRet
+  init(cursor: Cursor, input: string, options: Options, event: E): InitRet
+  initOn?(
+    selection: Selection,
+    input: string,
+    options: Options,
+    event: E,
+  ): InitRet
 }

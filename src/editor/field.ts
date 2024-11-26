@@ -1,4 +1,5 @@
 import { Block, Cursor, R, Selection, type Init, type InitRet } from "./model"
+import type { Options } from "./options"
 
 export class Exts {
   private readonly cmds: { [x: string]: Init } = Object.create(null)
@@ -31,7 +32,10 @@ export class Field {
   readonly block = new Block(null)
   sel: Selection = new Selection(this.block, null, null, R)
 
-  constructor(readonly exts: Exts) {
+  constructor(
+    readonly exts: Exts,
+    readonly options: Options = {},
+  ) {
     this.el = this.block.el
     this.el.className =
       "cursor-text whitespace-nowrap font-['Symbola','Times',sans-serif] text-[1.265em] font-normal not-italic transition [line-height:1] focus:outline-none [&_*]:cursor-text block"
@@ -42,12 +46,12 @@ export class Field {
 
     if (this.sel.isCursor()) {
       const cursor = this.sel.cursor(R)
-      ret = init.init(cursor, input, event) || cursor
+      ret = init.init(cursor, input, this.options, event) || cursor
     } else if (init.initOn) {
-      ret = init.initOn(this.sel, input, event) || this.sel
+      ret = init.initOn(this.sel, input, this.options, event) || this.sel
     } else {
       const cursor = this.sel.remove()
-      ret = init.init(cursor, input, event) || cursor
+      ret = init.init(cursor, input, this.options, event) || cursor
     }
 
     if (ret) {
