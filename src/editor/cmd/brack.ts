@@ -87,6 +87,17 @@ export class CmdBrack extends Command<[Block]> {
     if (input == "(" || input == "[" || input == "{") {
       const rhs = matchParen(input satisfies ParenLhs)
 
+      if (
+        cursor[R] instanceof CmdBrack &&
+        cursor[R].side == R &&
+        cursor[R].lhs == input &&
+        cursor[R].rhs == rhs
+      ) {
+        cursor[R].setSide(null)
+        cursor.moveIn(cursor[R].blocks[0], L)
+        return
+      }
+
       const parent = cursor.parent.parent
 
       if (
@@ -97,8 +108,7 @@ export class CmdBrack extends Command<[Block]> {
       ) {
         const block = cursor.span().extendToEnd(L).splice()
         parent.parent.attach(block, null, R)
-        ;(parent as any).side = null // `.side` is only `readonly` in user code
-        parent.checkSvg(L)
+        parent.setSide(null)
         // Repair cursor
         cursor.moveIn(parent.blocks[0], R)
         return
@@ -114,6 +124,16 @@ export class CmdBrack extends Command<[Block]> {
     } else if (input == ")" || input == "]" || input == "}") {
       const lhs = matchParen(input satisfies ParenRhs)
 
+      if (
+        cursor[L] instanceof CmdBrack &&
+        cursor[L].side == L &&
+        cursor[L].lhs == lhs &&
+        cursor[L].rhs == input
+      ) {
+        cursor[L].setSide(null)
+        return
+      }
+
       const parent = cursor.parent.parent
 
       if (
@@ -124,8 +144,7 @@ export class CmdBrack extends Command<[Block]> {
       ) {
         const block = cursor.span().extendToEnd(R).splice()
         parent.parent.attach(block, null, L)
-        ;(parent as any).side = null // `.side` is only `readonly` in user code
-        parent.checkSvg(R)
+        parent.setSide(null)
         // Repair cursor
         cursor.moveTo(parent, R)
         return
@@ -187,6 +206,13 @@ export class CmdBrack extends Command<[Block]> {
     )
   }
 
+  setSide(side: Dir | null) {
+    const old = this.side
+    ;(this as any).side = side
+    this.checkSvg(L)
+    this.checkSvg(R)
+  }
+
   ascii(): string {
     return this.lhs + this.blocks[0].ascii() + this.rhs
   }
@@ -231,4 +257,22 @@ export class CmdBrack extends Command<[Block]> {
   vertFromSide(): undefined {}
 
   vertOutOf(): undefined {}
+
+  delete(cursor: Cursor, from: Dir): void {
+    if (this.side == from) {
+      cursor.moveTo(this, R)
+      this.remove()
+      cursor.insert(this.blocks[0], from == L ? R : L)
+    } else {
+      this.setSide(from == L ? R : L)
+      this.checkSvg(from)
+      cursor.moveIn(this.blocks[0], from)
+    }
+  }
+
+  deleteBlock(cursor: Cursor, at: Dir): void {
+    cursor.moveTo(this, R)
+    this.remove()
+    cursor.insert(this.blocks[0], at == L ? R : L)
+  }
 }

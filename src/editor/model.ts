@@ -809,20 +809,9 @@ export abstract class Command<
   }
 
   /** May invalidate {@link Cursor `Cursor`}s. */
-  replaceWith(command: Command) {
-    this.el.replaceWith(command.el)
-    if (this[L]) {
-      ;(this[L] as CommandMut)[R] = command
-    } else if (this.parent) {
-      ;(this.parent.ends as EndsMut)[L] = command
-    }
-    if (this[R]) {
-      ;(this[R] as CommandMut)[L] = command
-    } else if (this.parent) {
-      ;(this.parent.ends as EndsMut)[R] = command
-    }
-    ;(command as CommandMut)[L] = this[L]
-    ;(command as CommandMut)[R] = this[R]
+  replaceWith(block: Block) {
+    this.remove()
+    this.parent?.insert(block, this[L], this[R])
   }
 
   /** Moves the cursor into the given {@link Command `Command`}. */
