@@ -1,4 +1,4 @@
-import { CmdBrack } from "./cmd/brack"
+import { CmdBrack } from "./cmd/math/brack"
 import { OpPlus } from "./cmd/leaf/op"
 import { CmdNum } from "./cmd/leaf/num"
 import { Exts, Field } from "./field"

@@ -1,4 +1,4 @@
-import type { Cursor, Init, InitRet, Selection } from "../model"
+import type { Cursor, Init, InitRet, Selection } from "../../model"
 
 export class CmdMap<E> implements Init<E> {
   constructor(

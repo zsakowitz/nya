@@ -1,4 +1,4 @@
-import type { Cursor, Init } from "../model"
+import type { Cursor, Init } from "../../model"
 
 export class ByRegex implements Init {
   readonly default

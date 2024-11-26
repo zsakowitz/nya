@@ -1,4 +1,4 @@
-import { U_ZERO_WIDTH_SPACE, h, t } from "../jsx"
+import { U_ZERO_WIDTH_SPACE, h, t } from "../../jsx"
 import {
   Block,
   Command,
@@ -9,7 +9,7 @@ import {
   U,
   type Dir,
   type VDir,
-} from "../model"
+} from "../../model"
 
 export class CmdSupSub extends Command {
   static init(cursor: Cursor, input: string) {

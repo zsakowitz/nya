@@ -1,5 +1,5 @@
-import { h, p, svg } from "../jsx"
-import { Block, Command, L, R, type Cursor, type Dir } from "../model"
+import { h, p, svg } from "../../jsx"
+import { Block, Command, L, R, type Cursor, type Dir } from "../../model"
 
 const PARENS = {
   "[": {

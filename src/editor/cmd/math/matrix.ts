@@ -1,5 +1,14 @@
-import { h } from "../jsx"
-import { Block, Command, Cursor, L, R, U, type Dir, type VDir } from "../model"
+import { h } from "../../jsx"
+import {
+  Block,
+  Command,
+  Cursor,
+  L,
+  R,
+  U,
+  type Dir,
+  type VDir,
+} from "../../model"
 
 export type Coords = [row: number, col: number]
 

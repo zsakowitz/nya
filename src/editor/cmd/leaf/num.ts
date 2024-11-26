@@ -1,7 +1,7 @@
 import { Leaf } from "."
 import { h, t } from "../../jsx"
 import { Block, Cursor, L, R, type Init } from "../../model"
-import { CmdSupSub } from "../supsub"
+import { CmdSupSub } from "../math/supsub"
 import { CmdVar } from "./var"
 
 export class CmdNum extends Leaf {

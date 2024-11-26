@@ -1,4 +1,4 @@
-import { h } from "../jsx"
+import { h } from "../../jsx"
 import {
   Block,
   Command,
@@ -9,9 +9,9 @@ import {
   type Cursor,
   type Dir,
   type VDir,
-} from "../model"
-import { OpEq } from "./leaf/cmp"
-import { CmdVar } from "./leaf/var"
+} from "../../model"
+import { OpEq } from "../leaf/cmp"
+import { CmdVar } from "../leaf/var"
 
 export const BIG_CMDS = {
   "\\sum": "∑",

@@ -1,4 +1,4 @@
-import { U_ZERO_WIDTH_SPACE, h, t } from "../jsx"
+import { U_ZERO_WIDTH_SPACE, h, t } from "../../jsx"
 import {
   Block,
   Command,
@@ -10,8 +10,8 @@ import {
   type Dir,
   type Selection,
   type VDir,
-} from "../model"
-import { OpCeq, OpCmp } from "./leaf/cmp"
+} from "../../model"
+import { OpCeq, OpCmp } from "../leaf/cmp"
 
 export class CmdFrac extends Command<[Block, Block]> {
   static init(cursor: Cursor) {

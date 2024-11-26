@@ -1,4 +1,4 @@
-import { D, L, R, U, type Dir, type Init, type VDir } from "../model"
+import { D, L, R, U, type Dir, type Init, type VDir } from "../../model"
 
 export type InitControl = Init
 
