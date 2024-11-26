@@ -1,21 +1,18 @@
-import { h, p, svg } from "../jsx"
+import { h } from "../jsx"
 import { Block, Command, Cursor, L, R, U, type Dir, type VDir } from "../model"
-import { CmdNum } from "./leaf/num"
 
 export type Coords = [row: number, col: number]
 
 export class CmdMatrix extends Command<Block[]> {
   static init(cursor: Cursor) {
-    const x1 = new Block(null)
-    new CmdNum("1").insertAt(new Cursor(x1, null), L)
-    const x2 = new Block(null)
-    new CmdNum("2").insertAt(new Cursor(x2, null), L)
-    const x3 = new Block(null)
-    new CmdNum("3").insertAt(new Cursor(x3, null), L)
-    const x4 = new Block(null)
-    new CmdNum("4").insertAt(new Cursor(x4, null), L)
-    new CmdMatrix(2, [x1, x2, x3, x4]).insertAt(cursor, L)
-    return x3.cursor(R)
+    const b1 = new Block(null)
+    new CmdMatrix(2, [
+      b1,
+      new Block(null),
+      new Block(null),
+      new Block(null),
+    ]).insertAt(cursor, L)
+    cursor.moveIn(b1, L)
   }
 
   static render(cols: number, blocks: Block[]) {
@@ -23,8 +20,7 @@ export class CmdMatrix extends Command<Block[]> {
     return h(
       "relative inline-block align-middle",
       h(
-        "left-0 absolute top-0 bottom-[2px] inline-block w-[.55em]",
-        svg("0 0 11 24", p("M8 0 L3 0 L3 24 L8 24 L8 23 L4 23 L4 1 L8 1")),
+        "left-[.15em] absolute top-0 bottom-[2px] inline-block w-[.25em] border-l border-y border-current",
       ),
       h(
         {
@@ -35,8 +31,7 @@ export class CmdMatrix extends Command<Block[]> {
         ...blocks.map((x) => x.el),
       ),
       h(
-        "right-0 absolute top-0 bottom-[2px] inline-block w-[.55em]",
-        svg("0 0 11 24", p("M3 0 L8 0 L8 24 L3 24 L3 23 L7 23 L7 1 L3 1")),
+        "right-[.15em] absolute top-0 bottom-[2px] inline-block w-[.25em] border-r-[.05em] border-y-[.05em] border-current",
       ),
     )
   }
@@ -75,16 +70,81 @@ export class CmdMatrix extends Command<Block[]> {
       0,
       ...Array.from({ length: this.cols }, () => new Block(this)),
     )
-    ;(this as any).blocks = next
-    this.render()
+    this.render(next)
   }
 
-  private render() {
+  insCol(index: number) {
+    const next = this.blocks.slice()
+    const rows = this.rows
+    for (let i = 0; i < rows; i++) {
+      next.splice(i * (this.cols + 1) + index, 0, new Block(this))
+    }
+    this.render(next, this.cols + 1)
+  }
+
+  delCol(index: number) {
+    const next = this.blocks.slice()
+    const rows = this.rows
+    for (let i = 0; i < rows; i++) {
+      next.splice(i * (this.cols - 1) + index, 1)
+    }
+    this.render(next, this.cols - 1)
+  }
+
+  col(col: number) {
+    return Array.from(
+      { length: this.rows },
+      (_, index) => this.blocks[index * this.cols + col]!,
+    )
+  }
+
+  private render(blocks = this.blocks, cols = this.cols) {
+    ;(this as any).blocks = blocks
+    ;(this as any).cols = cols
     this.setEl(CmdMatrix.render(this.cols, this.blocks))
   }
 
   latex(): string {
-    return "TODO:"
+    return `\\begin{matrix}${this.blocks
+      .map((block, index) => {
+        if (index % this.cols) {
+          return "&" + block.latex()
+        } else if (index) {
+          return "\\\\" + block.latex()
+        } else {
+          return block.latex()
+        }
+      })
+      .join("")}\\end{matrix}`
+  }
+
+  ascii(): string {
+    return `matrix(${this.blocks
+      .map((block, index) => {
+        const inner = `(${block.ascii()})`
+        if (index % this.cols) {
+          return `,${inner}`
+        } else if (index) {
+          return `;${inner}`
+        } else {
+          return inner
+        }
+      })
+      .join("")})`
+  }
+
+  reader(): string {
+    return ` BeginMatrix, ${this.blocks
+      .map((block, index) => {
+        if (index % this.cols) {
+          return ` MatrixCell ${block.reader()}`
+        } else if (index) {
+          return `, MatrixRow ${block.reader()}`
+        } else {
+          return block.reader()
+        }
+      })
+      .join("")}, EndMatrix`
   }
 
   moveInto(cursor: Cursor, towards: Dir): void {
@@ -97,22 +157,41 @@ export class CmdMatrix extends Command<Block[]> {
   moveOutOf(cursor: Cursor, towards: Dir, block: Block): void {
     const index = this.blocks.indexOf(block)
 
-    const adj =
-      towards == R ?
-        (index + 1) % this.cols ?
-          this.blocks[index + 1]
-        : null
-      : index % this.cols ? this.blocks[index - 1]
-      : null
+    const [row, col] = this.coords(index)
+
+    const adj = this.blocks[this.index(row, col + towards) ?? -1]
 
     if (adj) {
       cursor.moveIn(adj, towards == L ? R : L)
-    } else {
-      cursor.moveTo(this, towards)
+      return
     }
+
+    if (towards == L) {
+      if (this.col(0).every((x) => x.isEmpty())) {
+        if (this.cols > 1) {
+          this.delCol(0)
+        }
+      } else {
+        this.insCol(0)
+        cursor.moveIn(this.blocks[this.index(row, 0)!]!, L)
+        return
+      }
+    } else {
+      if (this.col(this.cols - 1).every((x) => x.isEmpty())) {
+        if (this.cols > 1) {
+          this.delCol(this.cols - 1)
+        }
+      } else {
+        this.insCol(this.cols)
+        cursor.moveIn(this.blocks[this.index(row, this.cols - 1)!]!, L)
+        return
+      }
+    }
+
+    cursor.moveTo(this, towards)
   }
 
-  vertOutOf(dir: VDir, block: Block): Block | undefined {
+  vertOutOf(dir: VDir, block: Block, cursor: Cursor): Block | undefined {
     const index = this.blocks.indexOf(block)
 
     const ret =
@@ -123,11 +202,84 @@ export class CmdMatrix extends Command<Block[]> {
     }
 
     if (dir == U) {
+      if (
+        this.rows > 1 &&
+        this.blocks.slice(0, this.cols).every((x) => x.isEmpty())
+      ) {
+        this.render(this.blocks.slice(this.cols))
+        cursor.moveIn(this.blocks[index]!, R)
+        return
+      }
       this.insRow(0)
       return this.blocks[index]
     } else {
+      if (
+        this.rows > 1 &&
+        this.blocks.slice(-this.cols).every((x) => x.isEmpty())
+      ) {
+        this.render(this.blocks.slice(0, -this.cols))
+        cursor.moveIn(this.blocks[index - this.cols]!, R)
+        return
+      }
       this.insRow(this.rows)
       return this.blocks[index + this.cols]
+    }
+  }
+
+  vertFromSide(dir: VDir, from: Dir): Block | undefined {
+    return this.blocks[
+      this.index(from == L ? 0 : this.cols - 1, dir == U ? 0 : this.rows - 1)!
+    ]
+  }
+
+  vertInto(dir: VDir, clientX: number): Block | undefined {
+    const row =
+      dir == U ? this.blocks.slice(0, this.cols) : this.blocks.slice(-this.cols)
+
+    let dist = Infinity
+    let ret: Block | undefined
+
+    for (const block of row) {
+      const [l, r] = block.bounds()
+      if (l <= clientX && clientX <= r) {
+        if (dist != 0) {
+          dist = 0
+          ret = block
+        }
+        break
+      }
+      const myDist = clientX < l ? l - clientX : clientX - r
+      if (myDist < dist) {
+        dist = myDist
+        ret = block
+      }
+    }
+
+    return ret
+  }
+
+  delete(cursor: Cursor, from: Dir): void {
+    cursor.moveIn(this.blocks[from == L ? 0 : this.cols - 1]!, from)
+  }
+
+  deleteBlock(cursor: Cursor, at: Dir, block: Block): void {
+    const [row, col] = this.coords(this.blocks.indexOf(block))
+
+    if (this.col(col).every((x) => x.isEmpty())) {
+      if (this.cols <= 1) {
+        cursor.moveTo(this, R)
+        this.remove()
+        return
+      }
+      this.delCol(col)
+      const next = Math.max(0, Math.min(this.cols - 1, at == R ? col : col - 1))
+      cursor.moveIn(this.blocks[this.index(row, next)!]!, at == L ? R : L)
+    } else if (col == 0 && at == L) {
+      cursor.moveTo(this, L)
+    } else if (col == this.cols - 1 && at == R) {
+      cursor.moveTo(this, R)
+    } else {
+      cursor.moveIn(this.blocks[this.index(row, col + at)!]!, at == L ? R : L)
     }
   }
 }

@@ -73,6 +73,9 @@ document.body.className =
   "flex flex-col items-center justify-center min-h-screen"
 document.body.appendChild(field.el)
 
+const latex = h("text-center block text-sm break-all px-8 text-balance mt-8")
+document.body.appendChild(latex)
+
 field.type("2")
 field.type("*")
 field.type("3")
@@ -190,20 +193,22 @@ field.type("9")
 field.type("ArrowRight")
 field.type("ArrowRight")
 field.type("n")
+field.type("m")
 
-const cursor = h("border-current p-0 m-0 -ml-px border-l")
+const cursor = h("border-current w-px -ml-px border-l")
 render()
 
 function unrender() {
-  field.sel.each(({ el }) => el.classList.remove("bg-blue-950"))
+  field.sel.each(({ el }) => el.classList.remove("bg-[--selection]"))
   cursor.parentElement?.classList.remove("!bg-transparent")
   cursor.remove()
 }
 
 function render() {
-  field.sel.each(({ el }) => el.classList.add("bg-blue-950"))
+  field.sel.each(({ el }) => el.classList.add("bg-[--selection]"))
   field.sel.cursor(field.sel.focused).render(cursor)
   cursor.parentElement?.classList.add("!bg-transparent")
+  latex.textContent = field.block.latex()
 }
 
 addEventListener("keydown", (x) => {

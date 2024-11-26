@@ -59,7 +59,7 @@ export function eop(
 }
 
 export const OpPlus = eop("+", " plus ")
-export const OpMinus = eop("-", " minus ")
+export const OpMinus = eop("–", " minus ")
 export const OpPm = eop("\\pm ", " plus-or-minus ", "±")
 export const OpMp = eop("\\mp ", " minus-or-plus ", "∓")
 

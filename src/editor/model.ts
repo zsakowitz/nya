@@ -102,7 +102,7 @@ export class Block {
   /** Updates the element's empty styles. */
   checkIfEmpty() {
     this.el.classList.toggle("after:hidden", !this.isEmpty())
-    this.el.classList.toggle("bg-[#fff3]", this.isEmpty())
+    this.el.classList.toggle("bg-[--empty]", this.isEmpty())
   }
 
   /**
@@ -206,6 +206,12 @@ export class Block {
   /** Creates a {@link Cursor `Cursor`} pointing to the given end of this `Block`. */
   cursor(end: Dir) {
     return new Cursor(this, end == R ? null : this.ends[L])
+  }
+
+  /** Finds the `clientX` values of the edges of this {@link Block `Block`}. */
+  bounds(): [left: number, right: number] {
+    const box = this.el.getBoundingClientRect()
+    return [box.left, box.left + box.width]
   }
 
   /** Finds the {@link Command `Command`} closest to the given `clientX`. */
@@ -313,7 +319,7 @@ export class Cursor {
 
     // If a sub- or superscript is available on the RHS, take it
     {
-      const into = this[R]?.vertFromSide(dir, x)
+      const into = this[R]?.vertFromSide(dir, L)
       if (into) {
         this.moveIn(into, L)
         return true
@@ -322,7 +328,7 @@ export class Cursor {
 
     // Else, if a sub- or superscript is available on the LHS, take it
     {
-      const into = this[L]?.vertFromSide(dir, x)
+      const into = this[L]?.vertFromSide(dir, R)
       if (into) {
         this.moveIn(into, R)
         return true
@@ -908,7 +914,7 @@ export abstract class Command<
    *
    * The returned {@link Block `Block`} must be owned by this `Command`.
    */
-  abstract vertFromSide(dir: VDir, clientX: number): Block | undefined
+  abstract vertFromSide(dir: VDir, from: Dir): Block | undefined
 
   /**
    * Moves out of a {@link Block `Block`} owned by this `Command`.
