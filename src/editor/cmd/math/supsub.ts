@@ -13,39 +13,35 @@ import {
 
 export class CmdSupSub extends Command {
   static init(cursor: Cursor, input: string) {
-    if (input == "^") {
-      const prev = cursor[L]
-      if (prev instanceof CmdSupSub) {
-        cursor.moveIn(prev.create("sup"), R)
-        return
-      }
+    const part =
+      input == "^" ? (["sup", U, null, true] as const)
+      : input == "_" ? (["sub", D, true, null] as const)
+      : null
 
-      const next = cursor[R]
-      if (next instanceof CmdSupSub) {
-        cursor.moveIn(next.create("sup"), L)
-        return
-      }
-
-      const block = new Block(null)
-      new CmdSupSub(null, block).insertAt(cursor, L)
-      cursor.moveIn(block, R)
-    } else if (input == "_") {
-      const prev = cursor[L]
-      if (prev instanceof CmdSupSub) {
-        cursor.moveIn(prev.create("sub"), R)
-        return
-      }
-
-      const next = cursor[R]
-      if (next instanceof CmdSupSub) {
-        cursor.moveIn(next.create("sub"), L)
-        return
-      }
-
-      const block = new Block(null)
-      new CmdSupSub(block, null).insertAt(cursor, L)
-      cursor.moveIn(block, R)
+    if (!part) {
+      return
     }
+
+    // Move into an existing sup-/subscript on the left side
+    const prev = cursor[L]
+    if (prev instanceof CmdSupSub) {
+      cursor.moveIn(prev.create(part[0]), R)
+      return
+    } else if (prev && prev.supSub(part[1], R, cursor)) {
+      return
+    }
+
+    // Move into an existing sup-/subscript on the right side
+    const next = cursor[R]
+    if (next instanceof CmdSupSub) {
+      cursor.moveIn(next.create(part[0]), L)
+      return
+    }
+
+    // Fallback to creating a new SupSub instance
+    const block = new Block(null)
+    new CmdSupSub(part[2] && block, part[3] && block).insertAt(cursor, L)
+    cursor.moveIn(block, R)
   }
 
   constructor(
@@ -57,6 +53,11 @@ export class CmdSupSub extends Command {
       CmdSupSub.html(sub, sup),
       [sub, sup].filter((x) => x != null),
     )
+  }
+
+  supSub(part: VDir, side: Dir, cursor: Cursor): boolean {
+    cursor.moveIn(this.create(part == U ? "sup" : "sub"), side)
+    return true
   }
 
   ascii(): string {

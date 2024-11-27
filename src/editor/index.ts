@@ -9,7 +9,9 @@ import { CmdFor } from "./cmd/logic/for"
 import { BIG_ALIASES, CmdBig } from "./cmd/math/big"
 import { CmdBrack } from "./cmd/math/brack"
 import { CmdFrac } from "./cmd/math/frac"
+import { CmdInt } from "./cmd/math/int"
 import { CmdMatrix } from "./cmd/math/matrix"
+import { CmdRoot } from "./cmd/math/root"
 import { CmdSupSub } from "./cmd/math/supsub"
 import { ByRegex } from "./cmd/util/by-regex"
 import { CmdBackspace, CmdDel, CmdMove, CmdTab } from "./cmd/util/cursor"
@@ -53,11 +55,10 @@ const exts = new Exts()
   // other cmds
   .setAll(["_", "^"], CmdSupSub)
   .setAll(Object.keys(BIG_ALIASES), CmdBig)
-  // .set("s", new CmdMap(CmdBig, () => "\\sum"))
-  // .set("m", CmdMatrix)
-  // .set("f", CmdFor)
   .set(",", CmdComma)
   .set(".", CmdDot)
+  .set("\\sqrt", CmdRoot)
+  .set("\\nthroot", CmdRoot)
   // movement ops
   .set("ArrowLeft", CmdMove(L))
   .set("ArrowRight", CmdMove(R))
@@ -73,10 +74,14 @@ const exts = new Exts()
 const field = new Field(exts, {
   autoCmds: new WordMap<Init>([
     ["sum", CmdBig],
+    ["int", CmdInt],
     ["prod", CmdBig],
     ["matrix", CmdMatrix],
     ["for", CmdFor],
+    ["sqrt", CmdRoot],
+    ["nthroot", CmdRoot],
   ]),
+  autoSubscriptNumbers: true,
 })
 
 // Set up field styles
@@ -204,8 +209,12 @@ field.type("4")
 field.type("9")
 field.type("ArrowRight")
 field.type("ArrowRight")
-field.type("n")
 field.type("m")
+field.type("a")
+field.type("t")
+field.type("r")
+field.type("i")
+field.type("x")
 field.type("1")
 field.type("ArrowRight")
 field.type("2")
@@ -218,6 +227,32 @@ field.type("ArrowLeft")
 field.type("ArrowLeft")
 field.type("ArrowLeft")
 field.type("f")
+field.type("o")
+field.type("r")
+field.type("x")
+field.type("^")
+field.type("2")
+field.type("Tab")
+field.type("Tab")
+field.type("i")
+field.type("Tab")
+field.type("[")
+field.type("1")
+field.type(".")
+field.type(".")
+field.type(".")
+field.type("1")
+field.type("0")
+field.type("]")
+field.type("Tab")
+field.type("n")
+field.type("ArrowLeft")
+field.type("ArrowLeft", new KeyboardEvent("keydown", { shiftKey: true }))
+field.type("ArrowLeft")
+field.type("i")
+field.type("n")
+field.type("t")
+field.type("2")
 
 const cursor = h("border-current w-px -ml-px border-l")
 render()

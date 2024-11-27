@@ -1,4 +1,4 @@
-import type { Cursor, Init } from "../../model"
+import type { Cursor, Init, InitRet, Selection } from "../../model"
 import type { Options } from "../../options"
 
 export class ByRegex implements Init {
@@ -19,10 +19,23 @@ export class ByRegex implements Init {
   ) {
     for (const [regex, cmd] of this.opts) {
       if (regex.test(input)) {
-        cmd.init(cursor, input, options, event)
-        return
+        return cmd.init(cursor, input, options, event)
       }
     }
-    this.default?.init(cursor, input, options, event)
+    return this.default?.init(cursor, input, options, event)
+  }
+
+  initOn(
+    selection: Selection,
+    input: string,
+    options: Options,
+    event: KeyboardEvent | undefined,
+  ): InitRet {
+    for (const [regex, cmd] of this.opts) {
+      if (regex.test(input)) {
+        return cmd.initOn?.(selection, input, options, event)
+      }
+    }
+    return this.default?.initOn?.(selection, input, options, event)
   }
 }

@@ -1,3 +1,4 @@
+import type { CmdFrac } from "./cmd/math/frac"
 import { h } from "./jsx"
 import type { Options } from "./options"
 
@@ -74,23 +75,41 @@ export class Block {
   }
 
   /**
-   * Unwraps a single layer of parentheses, if they are the only thing this
-   * `Block` contains. This is useful, as a user will often use them to group
-   * additions or subtractions, and doesn't actually want them to stick around.
+   * Unwraps a transparent `Block`, or returns the current one if that's not
+   * possible.
+   *
+   * A tangible example: if this `Block` only contains a single parenthesized
+   * expression, it will return the expression inside. Otherwise, `this` is
+   * returned.
+   *
+   * It is recommended that you call this when creating new `Command`s which
+   * take content from an existing `Block`, as a user may use parentheses solely
+   * for grouping (e.g. typing `(2+3)/5` when they really just want `2+3` over
+   * `5`).
    *
    * More generally, this unwraps any `Command` with a single `Block` where the
-   * `Command` returns `true` from its `isTransparentWrapper` method.
+   * `Command` returns `true` from its `isTransparentWrapper` method, and where
+   * no child command returns `true` from its `invalidatesTransparentWrapper`
+   * method.
    */
   unwrap() {
+    const el = this.ends[L]
     if (
-      this.ends[L] == this.ends[R] &&
-      this.ends[L]?.blocks.length == 1 &&
-      this.ends[L].isTransparentWrapper()
+      el &&
+      el == this.ends[R] &&
+      el.blocks.length == 1 &&
+      el.isTransparentWrapper()
     ) {
-      return this.ends[L].blocks[0]!
-    } else {
-      return this
+      const block = el.blocks[0]!
+      if (
+        !block.isEmpty() &&
+        !block.some((cmd) => cmd.invalidatesTransparentWrapper(el, block))
+      ) {
+        return block
+      }
     }
+
+    return this
   }
 
   /** Returns whether this `Block` is empty. */
@@ -213,6 +232,23 @@ export class Block {
     return [box.left, box.left + box.width]
   }
 
+  /**
+   * If this {@link Block `Block`} contains the given `clientX`, returns `0`.
+   * Otherwise, returns the distance from the closest block bound to the
+   * `clientX` value.
+   */
+  distanceTo(clientX: number): number {
+    const [lhs, rhs] = this.bounds()
+
+    if (clientX < lhs) {
+      return lhs - clientX
+    } else if (rhs < clientX) {
+      return clientX - rhs
+    } else {
+      return 0
+    }
+  }
+
   /** Finds the {@link Command `Command`} closest to the given `clientX`. */
   commandAt(clientX: number): Command | null {
     // We use binary search b/c it seems fun
@@ -235,6 +271,17 @@ export class Block {
 
   toString() {
     return this.latex()
+  }
+
+  some(fn: (command: Command) => unknown): boolean {
+    let el = this.ends[L]
+    while (el) {
+      if (fn(el)) {
+        return true
+      }
+      el = el[R]
+    }
+    return false
   }
 }
 
@@ -749,7 +796,44 @@ interface CommandMut extends Command {
   parent: Block | null
 }
 
-/** A single item inside a {@link Block `Block`}. */
+/**
+ * A single item inside a {@link Block `Block`}.
+ *
+ * Commands are required to implement many methods.
+ *
+ * The abstract method used for initialization are:
+ *
+ * - `static init?` to insert left of the cursor
+ * - `static initOn?` to insert on top of a selection
+ *
+ * The abstract methods used for output are:
+ *
+ * - `latex` to output LaTeX math
+ * - `ascii` to output ASCII math
+ * - `reader` to output screen-readable math
+ *
+ * The abstract methods used for movement are:
+ *
+ * - `moveInto` for moving left or right into `this`
+ * - `moveOutOf` for moving left or right out of a nested block
+ * - `tabInto` for moving left or right into the first nested block
+ * - `tabOutOf` for moving left or right into the next nested block
+ * - `vertFromSide` for moving up or down next to `this`
+ * - `vertInto` for moving up or down into `this`
+ * - `vertOutOf` for moving up or down out of a nested block
+ * - `subSup` for custom behavior when a subscript or superscript is inserted
+ *
+ * Note that the `move` methods are allowed to skip over certain nested blocks.
+ * For example, the `move` methods for {@linkcode CmdFrac} only move through the
+ * numerator by default. The `tab` methods, on the other hand, must move into
+ * and out of every nested block. Other than the difference of scope, the `tab`
+ * and `move` methods are practically identical.
+ *
+ * The abstract methods used for deletion are:
+ *
+ * - `delete` for pressing delete outside of `this`
+ * - `deleteBlock` for pressing delete at the edge of a nested block
+ */
 export abstract class Command<
   T extends Block[] = Block[],
   C extends string = string,
@@ -829,13 +913,46 @@ export abstract class Command<
   abstract moveOutOf(cursor: Cursor, towards: Dir, block: Block): void
 
   /**
-   * Gets the {@link Block `Block`} that should be moved into when a vertical
-   * arrow key is pressed from above or below this `Command` and the cursor
-   * attempts to move into it.
+   * Moves the cursor into the first {@link Block `Block`} owned by this
+   * `Command`, or to the other side.
    *
-   * The returned {@link Block `Block`} must be owned by this `Command`.
+   * The default implementation moves to the first {@link Block `Block`} in the
+   * stored `.blocks` array, or moves to the other end if there is no `Block`
+   * found.
    */
-  abstract vertInto(dir: VDir, clientX: number): Block | undefined
+  tabInto(cursor: Cursor, towards: Dir): void {
+    const block = this.blocks[towards == L ? this.blocks.length - 1 : 0]
+    if (block) {
+      cursor.moveIn(block, towards == L ? R : L)
+    } else {
+      cursor.moveTo(this, towards)
+    }
+  }
+
+  /**
+   * Moves the cursor out of the passed {@link Block `Block`}. This method must,
+   * upon being called after an initial {@linkcode Command.tabInto}, reach every
+   * {@link Block `Block`} contained by this `Command`. This is different than
+   * `tabOutOf`, which may not necessarily traverse every {@link Block `Block`}.
+   *
+   * For instance, the `tabInto` and `tabOutOf` methods on
+   * {@link CmdFrac `CmdFrac`} traverse both parts, but `moveInto` only traverses
+   * the numerator normally.
+   *
+   * The default implementation moves to the next {@link Block `Block`} in the
+   * stored `.blocks` array, or moves to the other end if there is no `Block`s
+   * are left.
+   */
+  tabOutOf(cursor: Cursor, towards: Dir, block: Block): void {
+    const index = this.blocks.indexOf(block)
+    if (index == 0 && towards == L) {
+      cursor.moveTo(this, L)
+    } else if (towards == R && index == this.blocks.length - 1) {
+      cursor.moveTo(this, R)
+    } else {
+      cursor.moveIn(this.blocks[index + towards]!, towards == L ? R : L)
+    }
+  }
 
   /**
    * Gets the {@link Block `Block`} that should be moved into when a vertical
@@ -844,6 +961,15 @@ export abstract class Command<
    * The returned {@link Block `Block`} must be owned by this `Command`.
    */
   abstract vertFromSide(dir: VDir, from: Dir): Block | undefined
+
+  /**
+   * Gets the {@link Block `Block`} that should be moved into when a vertical
+   * arrow key is pressed from above or below this `Command` and the cursor
+   * attempts to move into it.
+   *
+   * The returned {@link Block `Block`} must be owned by this `Command`.
+   */
+  abstract vertInto(dir: VDir, clientX: number): Block | undefined
 
   /**
    * Moves out of a {@link Block `Block`} owned by this `Command`.
@@ -875,6 +1001,18 @@ export abstract class Command<
    */
   abstract deleteBlock(cursor: Cursor, at: Dir, block: Block): void
 
+  /**
+   * Called if a {@linkcode CmdSupSub} is initialized to the right of another
+   * {@linkcode Command}. If this returns `true`, a subscript or superscript will
+   * not be created.
+   *
+   * This is used on the {@linkcode CmdBig} and {@linkcode CmdInt} commands, for
+   * example, to move into their appropriate subscripts and superscripts.
+   */
+  supSub(part: VDir, side: Dir, cursor: Cursor): boolean {
+    return false
+  }
+
   protected setEl(el: HTMLSpanElement) {
     this.el.replaceWith(el)
     ;(this as any).el = el
@@ -888,15 +1026,33 @@ export abstract class Command<
 
   /**
    * Whether this command is a simple transparent wrapper around its contents
-   * which does nothing except aid grouping. The only built-in `Command` for
-   * which this returns `true` is a `CmdBrack` where both ends are parentheses.
+   * which may safely be omitted (assuming proper order of operations is
+   * maintained). The only built-in `Command` for which this returns `true` is a
+   * `CmdBrack` where both ends are parentheses.
    *
    * Note that this `Command` must have exactly one child block for unwrapping
    * to work.
    *
-   * This is used in the {@link Block#unwrap `Block.unwrap`} method.
+   * This is used in the {@linkcode Block.unwrap} method.
    */
   isTransparentWrapper(): boolean {
+    return false
+  }
+
+  /**
+   * Whether this command stops a containing transparent wrapper from being
+   * transparent.
+   *
+   * The only built-in `Command` for which this returns `true` is a `CmdComma`,
+   * as it converts containing transparent parentheses into a point
+   * declaration.
+   *
+   * This is used in the {@linkcode Block.unwrap} method.
+   */
+  invalidatesTransparentWrapper(
+    wrapper: Command,
+    wrapperBlock: Block,
+  ): boolean {
     return false
   }
 
@@ -976,6 +1132,22 @@ export abstract class Command<
 
   toString() {
     return this.latex()
+  }
+
+  /** Finds the `clientX` values of the edges of this {@link Command `Command`}. */
+  bounds(): [left: number, right: number] {
+    const box = this.el.getBoundingClientRect()
+    return [box.left, box.left + box.width]
+  }
+
+  distanceToEdge(clientX: number): number {
+    const [lhs, rhs] = this.bounds()
+
+    if (clientX < lhs || rhs < clientX) {
+      return 0
+    } else {
+      return Math.min(clientX - lhs, rhs - clientX)
+    }
   }
 }
 

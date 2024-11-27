@@ -1,5 +1,16 @@
 import { h } from "../../jsx"
-import { Block, Command, Cursor, L, type Dir } from "../../model"
+import {
+  Block,
+  Command,
+  Cursor,
+  D,
+  L,
+  R,
+  U,
+  type Dir,
+  type VDir,
+} from "../../model"
+import { OpEq } from "../leaf/cmp"
 
 export class CmdFor extends Command<
   [bound: Block, source: Block, mapped: Block]
@@ -25,7 +36,7 @@ export class CmdFor extends Command<
             "text-[60%]",
             h("font-serif", "for "),
             bound.el,
-            h("font-serif", " in "),
+            new OpEq(false).el,
             source.el,
           ),
         ),
@@ -42,9 +53,47 @@ export class CmdFor extends Command<
   }
 
   moveOutOf(cursor: Cursor, towards: Dir, block: Block): void {
-    const next = this.blocks[this.blocks.indexOf(block) + towards]
-    if (next) {
-      cursor.moveIn(next, L)
+    if (towards == R && block == this.blocks[1]) {
+      cursor.moveIn(this.blocks[2], L)
+      return
+    }
+
+    if (towards == L && block == this.blocks[2]) {
+      cursor.moveIn(this.blocks[1], R)
+      return
+    }
+
+    cursor.moveTo(this, towards)
+  }
+
+  moveInto(cursor: Cursor, towards: Dir): void {
+    cursor.moveIn(this.blocks[0], towards == L ? R : L)
+  }
+
+  vertOutOf(dir: VDir, block: Block, cursor: Cursor): Block | true | undefined {
+    if (block == this.blocks[0]) {
+      if (dir == D) {
+        const x = cursor.clientX()!
+        const b1 = this.blocks[1].distanceTo(x)
+        const b2 = this.blocks[2].distanceTo(x)
+        if (b1 <= b2) {
+          return this.blocks[1]
+        } else {
+          return this.blocks[2]
+        }
+      }
+    } else if (dir == U) {
+      return this.blocks[0]
+    }
+  }
+
+  vertFromSide(dir: VDir, from: Dir): Block | undefined {
+    if (dir == D) {
+      if (from == L) {
+        return this.blocks[1]
+      } else {
+        return this.blocks[2]
+      }
     }
   }
 }

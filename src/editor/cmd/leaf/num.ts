@@ -7,20 +7,20 @@ import { CmdVar } from "./var"
 
 export class CmdNum extends Leaf {
   static init(cursor: Cursor, input: string, options: Options) {
+    const num = new CmdNum(input)
     if (options.autoSubscriptNumbers) {
       const left = cursor[L]
-      const num = new CmdNum(input)
       if (left instanceof CmdSupSub) {
         num.insertAt(left.create("sub").cursor(R), L)
+        return
       } else if (left instanceof CmdVar) {
         const sub = new Block(null)
         num.insertAt(sub.cursor(R), L)
         new CmdSupSub(sub, null).insertAt(cursor, L)
-      } else {
-        num.insertAt(cursor, L)
+        return
       }
     }
-    new CmdNum(input).insertAt(cursor, L)
+    num.insertAt(cursor, L)
   }
 
   constructor(readonly text: string) {

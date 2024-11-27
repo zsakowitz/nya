@@ -27,7 +27,7 @@ export interface Options {
    * declared as `1`, it will be treated as a prefix operator. Otherwise, it
    * will be treated as an infix operator.
    */
-  autoOpNames?: WordMap<1 | 2>
+  autoOpNames?: WordMap<0 | 2>
 }
 
 export class WordMap<T> {

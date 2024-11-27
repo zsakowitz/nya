@@ -1,7 +1,23 @@
 import { Leaf } from "."
 import { h, t } from "../../jsx"
-import { Cursor, L, R, Span } from "../../model"
+import { Cursor, L, R, Span, type Dir } from "../../model"
 import type { Options } from "../../options"
+
+/**
+ * The different kinds of {@linkcode CmdVar}-composed words which exist. These
+ * affect punctuation and parentheses.
+ *
+ * - `"var"` is suitable for variables like Desmos's `width` and `height`
+ * - `"prefix"` is suitable for functions like `sin` and `cos`
+ * - `"infix"` is suitable for operators like `for` and `with`
+ *
+ * Spacing of plus/minus signs and parentheses are specified below:
+ *
+ * - `"var"`: `+word` `2 + word` `word + 2` `(...)word(...)`
+ * - `"prefix"`: `+word` `2 + word` `word +2` `(...) word(...)`
+ * - `"infix"`: `2 + word` `word +2` `(...) word (...)`
+ */
+export type WordKind = "var" | "prefix" | "infix"
 
 export class CmdVar extends Leaf {
   static init(
@@ -42,9 +58,29 @@ export class CmdVar extends Leaf {
     }
   }
 
+  readonly kind: WordKind | null = null
+  readonly part: Dir | null = null
+
+  static render(text: string, kind: CmdVar["kind"], part: CmdVar["part"]) {
+    return h(
+      "",
+      h("font-['Times'] [line-height:.9]" + (kind ? "" : " italic"), t(text)),
+    )
+  }
+
   constructor(readonly text: string) {
     // The wrapper ensures selections work fine
-    super(text, h("", h("italic font-['Times'] [line-height:.9]", t(text))))
+    super(text, CmdVar.render(text, null, null))
+  }
+
+  private render(kind = this.kind, part = this.part) {
+    this.setEl(
+      CmdVar.render(
+        this.text,
+        ((this as any).kind = kind),
+        ((this as any).part = part),
+      ),
+    )
   }
 
   ascii(): string {

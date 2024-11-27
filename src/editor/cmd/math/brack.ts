@@ -1,5 +1,6 @@
 import { h, p, svg } from "../../jsx"
 import { Block, Command, L, R, type Cursor, type Dir } from "../../model"
+import { CmdComma } from "../leaf/comma"
 
 const PARENS = {
   "[": {
@@ -274,5 +275,13 @@ export class CmdBrack extends Command<[Block]> {
     cursor.moveTo(this, R)
     this.remove()
     cursor.insert(this.blocks[0], at == L ? R : L)
+  }
+
+  isTransparentWrapper(): boolean {
+    return (
+      this.lhs == "(" &&
+      this.rhs == ")" &&
+      !this.blocks[0].some((x) => x instanceof CmdComma)
+    )
   }
 }

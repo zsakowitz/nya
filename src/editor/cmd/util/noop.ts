@@ -1,3 +1,3 @@
 import type { Init } from "../../model"
 
-export const CmdNoop: Init = { init() {} }
+export const CmdNoop: Init = { init() {}, initOn() {} }

@@ -22,4 +22,8 @@ export class CmdComma extends Leaf {
   latex(): string {
     return ","
   }
+
+  invalidatesTransparentWrapper(): boolean {
+    return true
+  }
 }

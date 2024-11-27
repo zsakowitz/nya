@@ -70,14 +70,7 @@ export const CmdTab: Init = {
     if (!cursor.parent.parent) {
       return
     }
-    const index = cursor.parent.parent.blocks.indexOf(cursor.parent)
-    if (index == 0 && dir == L) {
-      cursor.moveTo(cursor.parent.parent, L)
-    } else if (dir == R && index == cursor.parent.parent.blocks.length - 1) {
-      cursor.moveTo(cursor.parent.parent, R)
-    } else {
-      cursor.moveIn(cursor.parent.parent.blocks[index + dir]!, dir == L ? R : L)
-    }
+    cursor.parent.parent.tabOutOf(cursor, dir, cursor.parent)
   },
   initOn(sel, _, _0, event) {
     const dir = event?.shiftKey ? L : R

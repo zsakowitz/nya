@@ -102,7 +102,7 @@ export class CmdBig extends Command<
     if (dir == U && block == this.blocks[0]) {
       if (!this.blocks[1]) {
         this.blocks[1] = new Block(this)
-        this.setEl(CmdBig.render(this.ctrlSeq, this.blocks[0], this.blocks[1]!))
+        this.setEl(CmdBig.render(this.ctrlSeq, this.blocks[0], this.blocks[1]))
       }
       return this.blocks[1]
     } else if (dir == D && block == this.blocks[1]) {
@@ -129,5 +129,18 @@ export class CmdBig extends Command<
     cursor.moveTo(this, R)
     cursor.insert(this.blocks[0], at == L ? R : L)
     this.remove()
+  }
+
+  endsImplicitGroup(): boolean {
+    return true
+  }
+
+  supSub(part: VDir, side: Dir, cursor: Cursor): boolean {
+    if (part == U && !this.blocks[1]) {
+      this.blocks[1] = new Block(this)
+      this.setEl(CmdBig.render(this.ctrlSeq, this.blocks[0], this.blocks[1]))
+    }
+    cursor.moveIn(this.blocks[part == U ? 1 : 0]!, side)
+    return true
   }
 }
