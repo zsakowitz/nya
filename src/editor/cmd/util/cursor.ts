@@ -24,20 +24,34 @@ export function CmdMove(
   } else {
     return {
       init(cursor, _, _0, ev) {
-        if (ev?.shiftKey) {
-          const sel = cursor.selection()
-          sel.moveFocus(dirSelect)
-          return sel
-        } else {
-          cursor.move(dirMove)
+        if (ev) {
+          if (ev.shiftKey && ev.altKey) {
+            const sel = cursor.selection()
+            sel.moveFocusByWord(dirSelect)
+            return sel
+          } else if (ev.shiftKey) {
+            const sel = cursor.selection()
+            sel.moveFocus(dirSelect)
+            return sel
+          } else if (ev.altKey) {
+            cursor.moveByWord(dirMove)
+            return cursor
+          }
         }
+
+        cursor.move(dirMove)
       },
-      initOn(selection, _, _0, event) {
-        if (event?.shiftKey) {
-          selection.moveFocus(dirSelect)
-        } else {
-          return selection.cursor(dirMove)
+      initOn(sel, _, _0, ev) {
+        if (ev && ev.shiftKey) {
+          if (ev.altKey) {
+            sel.moveFocusByWord(dirSelect)
+          } else {
+            sel.moveFocus(dirSelect)
+          }
+          return sel
         }
+
+        return sel.cursor(dirMove)
       },
     }
   }

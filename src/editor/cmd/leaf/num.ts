@@ -1,8 +1,9 @@
 import { Leaf } from "."
 import { h, t } from "../../jsx"
-import { Block, Cursor, L, R } from "../../model"
+import { Block, Cursor, L, R, type Dir } from "../../model"
 import type { Options } from "../../options"
 import { CmdSupSub } from "../math/supsub"
+import { CmdDot } from "./dot"
 import { CmdVar } from "./var"
 
 export class CmdNum extends Leaf {
@@ -37,5 +38,12 @@ export class CmdNum extends Leaf {
 
   reader(): string {
     return this.text
+  }
+
+  moveAcrossWord(cursor: Cursor, dir: Dir): void {
+    cursor.moveTo(this, dir)
+    while (cursor[dir] instanceof CmdNum || cursor[dir] instanceof CmdDot) {
+      cursor.moveTo(cursor[dir], dir)
+    }
   }
 }

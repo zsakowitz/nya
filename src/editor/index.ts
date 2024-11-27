@@ -253,6 +253,7 @@ field.type("i")
 field.type("n")
 field.type("t")
 field.type("2")
+field.type("ArrowDown")
 
 const cursor = h("border-current w-px -ml-px border-l")
 render()

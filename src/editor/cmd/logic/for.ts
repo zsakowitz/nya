@@ -87,13 +87,5 @@ export class CmdFor extends Command<
     }
   }
 
-  vertFromSide(dir: VDir, from: Dir): Block | undefined {
-    if (dir == D) {
-      if (from == L) {
-        return this.blocks[1]
-      } else {
-        return this.blocks[2]
-      }
-    }
-  }
+  vertFromSide(): undefined {}
 }

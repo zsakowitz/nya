@@ -24,31 +24,28 @@ export type Dir = -1 | 1
 /** A vertical direction or side. */
 export type VDir = -2 | 2
 
-/**
- * Pointers to the {@link Command `Command`}s on either side of a
- * {@link Block `Block`}.
- */
+/** Pointers to the {@linkcode Command}s on either side of a {@linkcode Block}. */
 export interface Ends {
-  /** The leftmost {@link Command `Command`}. */
+  /** The leftmost {@linkcode Command}. */
   readonly [L]: Command | null
 
-  /** The rightmost {@link Command `Command`}. */
+  /** The rightmost {@linkcode Command}. */
   readonly [R]: Command | null
 }
 
-/** An interface used for type-safe changes to {@link Ends `Ends`}. */
+/** An interface used for type-safe changes to {@linkcode Ends}. */
 interface EndsMut extends Ends {
   [L]: Command | null
   [R]: Command | null
 }
 
-/** An interface used for type-safe changes to {@link Block `Block`}. */
+/** An interface used for type-safe changes to {@linkcode Block}. */
 interface BlockMut extends Block {
   parent: Command | null
   ends: EndsMut
 }
 
-/** An expression. Contains zero or more {@link Command `Command`}s. */
+/** An expression. Contains zero or more {@linkcode Command}s. */
 export class Block {
   /** The block before this one. */
   // readonly [L]: Block | null
@@ -56,7 +53,7 @@ export class Block {
   /** The block after this one. */
   // readonly [R]: Block | null = null
 
-  /** The ends of the {@link Command `Command`}s contained in this block. */
+  /** The ends of the {@linkcode Command}s contained in this block. */
   readonly ends: Ends = { [L]: null, [R]: null }
 
   readonly el = h(
@@ -124,9 +121,8 @@ export class Block {
   }
 
   /**
-   * Inserts a block between two {@link Command `Command`}s. The `Command`s must
-   * be adjacent children of this `Block`, or the edit tree will become
-   * malformed.
+   * Inserts a block between two {@linkcode Command}s. The `Command`s must be
+   * adjacent children of this `Block`, or the edit tree will become malformed.
    */
   insert(block: Block, lhs: Command | null, rhs: Command | null) {
     // If the other block is empty, do nothing
@@ -165,10 +161,7 @@ export class Block {
     block.checkIfEmpty()
   }
 
-  /**
-   * Attaches a block onto a side of a {@link Command `Command`} owned by this
-   * one.
-   */
+  /** Attaches a block onto a side of a {@linkcode Command} owned by this one. */
   attach(block: Block, command: Command | null, dir: Dir) {
     if (block.isEmpty()) {
       return
@@ -221,19 +214,19 @@ export class Block {
     return ret
   }
 
-  /** Creates a {@link Cursor `Cursor`} pointing to the given end of this `Block`. */
+  /** Creates a {@linkcode Cursor} pointing to the given end of this `Block`. */
   cursor(end: Dir) {
     return new Cursor(this, end == R ? null : this.ends[L])
   }
 
-  /** Finds the `clientX` values of the edges of this {@link Block `Block`}. */
+  /** Finds the `clientX` values of the edges of this {@linkcode Block}. */
   bounds(): [left: number, right: number] {
     const box = this.el.getBoundingClientRect()
     return [box.left, box.left + box.width]
   }
 
   /**
-   * If this {@link Block `Block`} contains the given `clientX`, returns `0`.
+   * If this {@linkcode Block} contains the given `clientX`, returns `0`.
    * Otherwise, returns the distance from the closest block bound to the
    * `clientX` value.
    */
@@ -249,7 +242,7 @@ export class Block {
     }
   }
 
-  /** Finds the {@link Command `Command`} closest to the given `clientX`. */
+  /** Finds the {@linkcode Command} closest to the given `clientX`. */
   commandAt(clientX: number): Command | null {
     // We use binary search b/c it seems fun
     // This is still technically O(n) in the number of child nodes
@@ -285,7 +278,7 @@ export class Block {
   }
 }
 
-/** An interface used for type-safe changes to {@link Cursor `Cursor`}s. */
+/** An interface used for type-safe changes to {@linkcode Cursor}s. */
 interface CursorMut extends Cursor {
   [R]: Command | null
   parent: Block | null
@@ -305,6 +298,30 @@ function pickSide(
 
 /** A `Cursor` provides a reference point for insertions and deletions. */
 export class Cursor {
+  /**
+   * Returns the direction needed to get from `a` to `b`, or `0` if they are the
+   * same `Cursor`, or `null` if they do not share a common parent
+   * {@linkcode Block}.
+   */
+  static dir(a: Cursor, b: Cursor): Dir | 0 | null {
+    if (a.parent != b.parent) {
+      return null
+    }
+
+    if (a[R] == b[R]) {
+      return 0
+    }
+
+    let el = a[R]
+    while (el) {
+      el = el[R]
+      if (el == b[R]) {
+        return R
+      }
+    }
+    return L
+  }
+
   /** The command on the left side of this cursor. */
   get [L](): Command | null {
     if (this[R]) {
@@ -325,7 +342,7 @@ export class Cursor {
     this[R] = before
   }
 
-  /** Inserts a {@link Block `Block`} on the given side of this `Cursor`. */
+  /** Inserts a {@linkcode Block} on the given side of this `Cursor`. */
   insert(block: Block, dir: Dir) {
     if (!this.parent) return
     if (block.isEmpty()) return
@@ -348,6 +365,15 @@ export class Cursor {
       this[dir].moveInto(this, dir)
     } else if (this.parent?.parent) {
       this.parent.parent.moveOutOf(this, dir, this.parent)
+    }
+  }
+
+  /** Moves this cursor in the given direction by a contextual "word". */
+  moveByWord(dir: Dir) {
+    if (this[dir]) {
+      this[dir].moveAcrossWord(this, dir)
+    } else if (this.parent?.parent) {
+      this.moveTo(this.parent.parent, dir)
     }
   }
 
@@ -446,14 +472,14 @@ export class Cursor {
     }
   }
 
-  /** Moves this cursor to some side of a {@link Command `Command`}. */
+  /** Moves this cursor to some side of a {@linkcode Command}. */
   moveTo(el: Command, side: Dir) {
     ;(this as CursorMut).parent = el.parent
     ;(this as CursorMut)[R] = side == L ? el : el[R]
     return this
   }
 
-  /** Moves this cursor to some side of a {@link Block `Block`}. */
+  /** Moves this cursor to some side of a {@linkcode Block}. */
   moveIn(el: Block, side: Dir) {
     ;(this as CursorMut).parent = el
     ;(this as CursorMut)[R] = (side == L && el.ends[L]) || null
@@ -465,12 +491,12 @@ export class Cursor {
     return new Cursor(this.parent, this[R])
   }
 
-  /** Creates a {@link Span `Span`} where this cursor is. */
+  /** Creates a {@linkcode Span} where this cursor is. */
   span() {
     return new Span(this.parent, this[L], this[R])
   }
 
-  /** Creates a {@link Selection `Selection`} where this cursor is. */
+  /** Creates a {@linkcode Selection} where this cursor is. */
   selection() {
     return new Selection(this.parent, this[L], this[R], R)
   }
@@ -498,15 +524,15 @@ export class Cursor {
 }
 
 /**
- * A range within a {@link Block `Block`}.
+ * A range within a {@linkcode Block}.
  *
  * A `Span`'s two sides must be properly ordered, with `this[L]` strictly before
  * `this[R]`, with both contained within `this.parent`.
  */
 export class Span {
   /**
-   * The {@link Command `Command`} to the left of this `Span`. Not included in
-   * the `Span` itself.
+   * The {@linkcode Command} to the left of this `Span`. Not included in the
+   * `Span` itself.
    *
    * In regular nodes, `[L]` is readonly. However, a `Span` is merely a view
    * over the tree, and has no invariants it maintains over other nodes. As
@@ -515,8 +541,8 @@ export class Span {
   [L]: Command | null;
 
   /**
-   * The {@link Command `Command`} to the right of this `Span`. Not included in
-   * the `Span` itself.
+   * The {@linkcode Command} to the right of this `Span`. Not included in the
+   * `Span` itself.
    *
    * In regular nodes, `[R]` is readonly. However, a `Span` is merely a view
    * over the tree, and has no invariants it maintains over other nodes. As
@@ -525,7 +551,7 @@ export class Span {
   [R]: Command | null
 
   constructor(
-    /** The {@link Block `Block`} containing this `Span`. */
+    /** The {@linkcode Block} containing this `Span`. */
     public parent: Block | null,
     lhs: Command | null,
     rhs: Command | null,
@@ -540,7 +566,7 @@ export class Span {
   }
 
   /**
-   * Gets the {@link Command `Command`} at one side of this `Span`. The returned
+   * Gets the {@linkcode Command} at one side of this `Span`. The returned
    * `Command` will be inside the `Span`, unless the `Span` is a
    */
   at(side: Dir): Command | null {
@@ -562,7 +588,7 @@ export class Span {
     }
   }
 
-  /** Creates a {@link Cursor `Cursor`} at one side of this `Span`. */
+  /** Creates a {@linkcode Cursor} at one side of this `Span`. */
   cursor(side: Dir) {
     return new Cursor(this.parent, side == R ? this[R] : this.at(L))
   }
@@ -592,12 +618,60 @@ export class Span {
       this[L] = command[L]
       this[R] = command[R]
       return
-    } else if (this[side]) {
+    }
+
+    if (this[side]) {
       this[side] = this[side]![towards]
     } else {
       // If we get here, side != towards
       this[side] = this.parent.ends[side]
     }
+  }
+
+  /**
+   * Moves one side of this `Span` in a direction across a contextual "word".
+   * Returns `true` if the nodes' directions switched unexpectedly, where
+   * "unexpectedly" means "in a way that needs to be detected by
+   * {@linkcode Selection.moveFocusByWord}".
+   */
+  moveByWord(side: Dir, towards: Dir): boolean {
+    // If there is no parent, we cannot move anyway
+    if (!this.parent) return false
+
+    const isCursor = this.isCursor()
+
+    // If we are a cursor, and we move the R node left, we will be in an invalid
+    // state. Thus, we must swap which node is moved.
+    if (isCursor && side != towards) {
+      side = side == L ? R : L
+    }
+
+    const willEscape =
+      side == towards ? this[side] == null : isCursor && this[towards] == null
+
+    // If we're going to escape, select the parent
+    if (willEscape) {
+      const command = this.parent.parent
+      if (!command) return false
+
+      this.parent = command.parent
+      this[L] = command[L]
+      this[R] = command[R]
+      return false
+    }
+
+    const cursor = this.cursor(side)
+    cursor.moveByWord(towards)
+    this[side] = cursor[side]
+    if (Cursor.dir(this.cursor(L), this.cursor(R)) == L) {
+      const l = this[L]
+      const r = this[R]
+      this[L] = r ? r[L] : this.parent.ends[R]
+      this[R] = l ? l[R] : this.parent.ends[L]
+      return true
+    }
+
+    return false
   }
 
   /** Extends this `Span` to one end. */
@@ -607,9 +681,9 @@ export class Span {
   }
 
   /**
-   * Removes the {@link Command `Command`}s contained by this `Span` from their
-   * surrounding block and moves them into a new {@link Block `Block`}. The
-   * `Span` will be a single point after the removal.
+   * Removes the {@linkcode Command}s contained by this `Span` from their
+   * surrounding block and moves them into a new {@linkcode Block}. The `Span`
+   * will be a single point after the removal.
    *
    * Note that calling this when a cursor is attached to the leftmost element in
    * the `Span` will likely cause errors. The caller must ensure any cursors in
@@ -652,10 +726,10 @@ export class Span {
   }
 
   /**
-   * Removes the {@link Command `Command`}s contained by this `Span` from their
+   * Removes the {@linkcode Command}s contained by this `Span` from their
    * surrounding block. The `Span` will be a single point after the removal.
    *
-   * Returns a {@link Cursor `Cursor`} at the location of the `Span`.
+   * Returns a {@linkcode Cursor} at the location of the `Span`.
    */
   remove(): Cursor {
     if (this.parent && !this.isCursor()) {
@@ -679,7 +753,7 @@ export class Span {
   }
 }
 
-/** A {@link Span `Span`} with focus and anchor nodes. */
+/** A {@linkcode Span} with focus and anchor nodes. */
 export class Selection extends Span {
   constructor(
     parent: Block | null,
@@ -693,7 +767,7 @@ export class Selection extends Span {
 
   /**
    * Moves the focus node of this `Selection` within its containing
-   * {@link Block `Block`}.
+   * {@linkcode Block}.
    */
   moveFocusWithin(dir: Dir) {
     if (dir == R) {
@@ -721,6 +795,16 @@ export class Selection extends Span {
       this.focused = dir
     }
     this.move(this.focused, dir)
+  }
+
+  /** Moves the focus node in a given direction by a contextual "word". */
+  moveFocusByWord(dir: Dir) {
+    if (this.isCursor()) {
+      this.focused = dir
+    }
+    if (this.moveByWord(this.focused, dir)) {
+      this.focused = this.focused == R ? L : R
+    }
   }
 
   /**
@@ -773,7 +857,7 @@ export class Selection extends Span {
     }
   }
 
-  /** Selects the given {@link Command `Command`}. */
+  /** Selects the given {@linkcode Command}. */
   select(command: Command, dir: Dir) {
     this.parent = command.parent
     this[L] = command[L]
@@ -782,8 +866,8 @@ export class Selection extends Span {
   }
 
   /**
-   * Flips which {@link Command `Command`} is the focus and which `Command` is
-   * the anchor.
+   * Flips which {@linkcode Command} is the focus and which `Command` is the
+   * anchor.
    */
   flip() {
     this.focused = this.focused == L ? R : L
@@ -797,7 +881,7 @@ interface CommandMut extends Command {
 }
 
 /**
- * A single item inside a {@link Block `Block`}.
+ * A single item inside a {@linkcode Block}.
  *
  * Commands are required to implement many methods.
  *
@@ -814,6 +898,7 @@ interface CommandMut extends Command {
  *
  * The abstract methods used for movement are:
  *
+ * - `moveAcrossWord` for moving left or right across a contextual "word"
  * - `moveInto` for moving left or right into `this`
  * - `moveOutOf` for moving left or right out of a nested block
  * - `tabInto` for moving left or right into the first nested block
@@ -839,8 +924,8 @@ export abstract class Command<
   C extends string = string,
 > {
   /**
-   * Initializes this {@link Command `Command`} to the left side of the provided
-   * {@link Cursor `Cursor`}.
+   * Initializes this {@linkcode Command} to the left side of the provided
+   * {@linkcode Cursor}.
    */
   static init?(
     cursor: Cursor,
@@ -849,10 +934,7 @@ export abstract class Command<
     event: KeyboardEvent | undefined,
   ): InitRet
 
-  /**
-   * Initializes this {@link Command `Command`} over a given
-   * {@link Selection `Selection`}.
-   */
+  /** Initializes this {@linkcode Command} over a given {@linkcode Selection}. */
   static initOn?(
     selection: Selection,
     input: string,
@@ -906,17 +988,28 @@ export abstract class Command<
   /** Writes this node in LaTeX. */
   abstract latex(): string
 
-  /** Moves the cursor into the given {@link Command `Command`}. */
+  /**
+   * Moves the cursor across a "word". What this means can differ contextually,
+   * but it should at a minimum not change the `.parent` property of the
+   * `cursor` passed to it.
+   *
+   * This defaults to moving to the other end of this {@linkcode Command}.
+   */
+  moveAcrossWord(cursor: Cursor, dir: Dir): void {
+    cursor.moveTo(this, dir)
+  }
+
+  /** Moves the cursor into the given {@linkcode Command}. */
   abstract moveInto(cursor: Cursor, towards: Dir): void
 
-  /** Moves the cursor out of the passed {@link Block `Block`}. */
+  /** Moves the cursor out of the passed {@linkcode Block}. */
   abstract moveOutOf(cursor: Cursor, towards: Dir, block: Block): void
 
   /**
-   * Moves the cursor into the first {@link Block `Block`} owned by this
-   * `Command`, or to the other side.
+   * Moves the cursor into the first {@linkcode Block} owned by this `Command`,
+   * or to the other side.
    *
-   * The default implementation moves to the first {@link Block `Block`} in the
+   * The default implementation moves to the first {@linkcode Block} in the
    * stored `.blocks` array, or moves to the other end if there is no `Block`
    * found.
    */
@@ -930,18 +1023,17 @@ export abstract class Command<
   }
 
   /**
-   * Moves the cursor out of the passed {@link Block `Block`}. This method must,
-   * upon being called after an initial {@linkcode Command.tabInto}, reach every
-   * {@link Block `Block`} contained by this `Command`. This is different than
-   * `tabOutOf`, which may not necessarily traverse every {@link Block `Block`}.
+   * Moves the cursor out of the passed {@linkcode Block}. This method must, upon
+   * being called after an initial {@linkcode Command.tabInto}, reach every
+   * {@linkcode Block} contained by this `Command`. This is different than
+   * `tabOutOf`, which may not necessarily traverse every {@linkcode Block}.
    *
-   * For instance, the `tabInto` and `tabOutOf` methods on
-   * {@link CmdFrac `CmdFrac`} traverse both parts, but `moveInto` only traverses
-   * the numerator normally.
+   * For instance, the `tabInto` and `tabOutOf` methods on {@linkcode CmdFrac}
+   * traverse both parts, but `moveInto` only traverses the numerator normally.
    *
-   * The default implementation moves to the next {@link Block `Block`} in the
-   * stored `.blocks` array, or moves to the other end if there is no `Block`s
-   * are left.
+   * The default implementation moves to the next {@linkcode Block} in the stored
+   * `.blocks` array, or moves to the other end if there is no `Block`s are
+   * left.
    */
   tabOutOf(cursor: Cursor, towards: Dir, block: Block): void {
     const index = this.blocks.indexOf(block)
@@ -955,28 +1047,28 @@ export abstract class Command<
   }
 
   /**
-   * Gets the {@link Block `Block`} that should be moved into when a vertical
-   * arrow key is pressed and the cursor is on one side of this `Command`.
+   * Gets the {@linkcode Block} that should be moved into when a vertical arrow
+   * key is pressed and the cursor is on one side of this `Command`.
    *
-   * The returned {@link Block `Block`} must be owned by this `Command`.
+   * The returned {@linkcode Block} must be owned by this `Command`.
    */
   abstract vertFromSide(dir: VDir, from: Dir): Block | undefined
 
   /**
-   * Gets the {@link Block `Block`} that should be moved into when a vertical
-   * arrow key is pressed from above or below this `Command` and the cursor
-   * attempts to move into it.
+   * Gets the {@linkcode Block} that should be moved into when a vertical arrow
+   * key is pressed from above or below this `Command` and the cursor attempts
+   * to move into it.
    *
-   * The returned {@link Block `Block`} must be owned by this `Command`.
+   * The returned {@linkcode Block} must be owned by this `Command`.
    */
   abstract vertInto(dir: VDir, clientX: number): Block | undefined
 
   /**
-   * Moves out of a {@link Block `Block`} owned by this `Command`.
+   * Moves out of a {@linkcode Block} owned by this `Command`.
    *
-   * If a {@link Block `Block`} is returned, it must be owned by this `Command`,
-   * and the {@link Cursor `Cursor`} will be placed into it. If `true` is
-   * returned, `cursor` must be updated to a new position.
+   * If a {@linkcode Block} is returned, it must be owned by this `Command`, and
+   * the {@linkcode Cursor} will be placed into it. If `true` is returned,
+   * `cursor` must be updated to a new position.
    *
    * This is used, for instance, when the cursor is to the right of `3` in `⅜`
    * and the user presses "Down".
@@ -995,9 +1087,9 @@ export abstract class Command<
   abstract delete(cursor: Cursor, from: Dir): void
 
   /**
-   * Deletes the provided {@link Block `Block`} from the given direction in this
-   * `Command`. Called when the cursor is at the edge of a {@link Block `Block`}
-   * and the user presses "Backspace" or "Delete".
+   * Deletes the provided {@linkcode Block} from the given direction in this
+   * `Command`. Called when the cursor is at the edge of a {@linkcode Block} and
+   * the user presses "Backspace" or "Delete".
    */
   abstract deleteBlock(cursor: Cursor, at: Dir, block: Block): void
 
@@ -1018,7 +1110,7 @@ export abstract class Command<
     ;(this as any).el = el
   }
 
-  /** May invalidate {@link Cursor `Cursor`}s. */
+  /** May invalidate {@linkcode Cursor}s. */
   replaceWith(block: Block) {
     this.remove()
     this.parent?.insert(block, this[L], this[R])
@@ -1065,7 +1157,7 @@ export abstract class Command<
   }
 
   /**
-   * Inserts the given {@link Block `Block`} to some side of this `Command`. Does
+   * Inserts the given {@linkcode Block} to some side of this `Command`. Does
    * nothing if this `Command` has no parent.
    */
   insert(block: Block, dir: Dir) {
@@ -1079,8 +1171,8 @@ export abstract class Command<
   }
 
   /**
-   * Inserts the `Command` to some side of a {@link Cursor `Cursor`}. Assumes the
-   * {@link Command `Command`} does not already have a parent block.
+   * Inserts the `Command` to some side of a {@linkcode Cursor}. Assumes the
+   * {@linkcode Command} does not already have a parent block.
    */
   insertAt(cursor: Cursor, dir: Dir) {
     if (!cursor.parent) {
@@ -1111,8 +1203,8 @@ export abstract class Command<
   }
 
   /**
-   * Removes this `Command` from its containing {@link Block `Block`}.
-   * Invalidates {@link Cursor `Cursor`}s using this `Command` as an anchor.
+   * Removes this `Command` from its containing {@linkcode Block}. Invalidates
+   * {@linkcode Cursor}s using this `Command` as an anchor.
    */
   remove() {
     this.el.remove()
@@ -1134,7 +1226,7 @@ export abstract class Command<
     return this.latex()
   }
 
-  /** Finds the `clientX` values of the edges of this {@link Command `Command`}. */
+  /** Finds the `clientX` values of the edges of this {@linkcode Command}. */
   bounds(): [left: number, right: number] {
     const box = this.el.getBoundingClientRect()
     return [box.left, box.left + box.width]
@@ -1151,7 +1243,7 @@ export abstract class Command<
   }
 }
 
-/** The updated cursor or selection created by {@link Init `Init`}. */
+/** The updated cursor or selection created by {@linkcode Init}. */
 export type InitRet = Cursor | Selection | undefined | void
 
 /**
