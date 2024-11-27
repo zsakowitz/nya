@@ -807,6 +807,20 @@ export class Selection extends Span {
     }
   }
 
+  /** Moves the focus node to one end of the containing {@linkcode Block}. */
+  moveFocusToEnd(dir: Dir) {
+    if (!this.parent) return
+
+    if (this.focused == dir) {
+      this[this.focused] = null
+    } else {
+      const inv = dir == L ? R : L
+      this[inv] = this[dir] ? this[dir][inv] : this.parent.ends[dir]
+      this[dir] = null
+      this.focused = dir
+    }
+  }
+
   /**
    * Moves the focus node in a given direction quickly. Typically used when the
    * user hits the up or down arrow keys.

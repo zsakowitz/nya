@@ -4,6 +4,7 @@
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "noEmit": true,
-    "skipDefaultLibCheck": true
+    "skipDefaultLibCheck": true,
+    "noFallthroughCasesInSwitch": true
   }
 }
