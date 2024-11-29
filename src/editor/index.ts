@@ -6,6 +6,7 @@ import { CmdNum } from "./cmd/leaf/num"
 import { OpCdot, OpMinus, OpPlus } from "./cmd/leaf/op"
 import { CmdVar } from "./cmd/leaf/var"
 import { CmdFor } from "./cmd/logic/for"
+import { CmdPiecewise } from "./cmd/logic/piecewise"
 import { BIG_ALIASES, CmdBig } from "./cmd/math/big"
 import { CmdBrack } from "./cmd/math/brack"
 import { CmdFrac } from "./cmd/math/frac"
@@ -14,7 +15,14 @@ import { CmdMatrix } from "./cmd/math/matrix"
 import { CmdRoot } from "./cmd/math/root"
 import { CmdSupSub } from "./cmd/math/supsub"
 import { ByRegex } from "./cmd/util/by-regex"
-import { CmdBackspace, CmdDel, CmdMove, CmdTab } from "./cmd/util/cursor"
+import {
+  CmdBackspace,
+  CmdBreakCol,
+  CmdBreakRow,
+  CmdDel,
+  CmdMove,
+  CmdTab,
+} from "./cmd/util/cursor"
 import { CmdNoop } from "./cmd/util/noop"
 import { Exts, Field } from "./field"
 import { h } from "./jsx"
@@ -57,6 +65,8 @@ const exts = new Exts()
   .setAll(Object.keys(BIG_ALIASES), CmdBig)
   .set(",", CmdComma)
   .set(".", CmdDot)
+  .set("&", CmdBreakCol)
+  .set(";", CmdBreakRow)
   .set("\\sqrt", CmdRoot)
   .set("\\nthroot", CmdRoot)
   // movement ops
@@ -76,12 +86,15 @@ const exts = new Exts()
 const field = new Field(exts, {
   autoCmds: new WordMap<Init>([
     ["sum", CmdBig],
-    ["int", CmdInt],
     ["prod", CmdBig],
+    ["int", CmdInt],
     ["matrix", CmdMatrix],
     ["for", CmdFor],
     ["sqrt", CmdRoot],
     ["nthroot", CmdRoot],
+    ["cases", CmdPiecewise],
+    ["switch", CmdPiecewise],
+    ["piecewise", CmdPiecewise],
   ]),
   autoSubscriptNumbers: true,
 })
@@ -256,6 +269,65 @@ field.type("n")
 field.type("t")
 field.type("2")
 field.type("ArrowDown")
+field.type("ArrowRight")
+field.type("ArrowRight")
+field.type("ArrowRight")
+field.type("ArrowRight")
+field.type("+")
+field.type("^")
+field.type("4")
+field.type("Tab")
+field.type("ArrowLeft", new KeyboardEvent("keydown", { altKey: true }))
+field.type("ArrowLeft")
+field.type("+")
+field.type("p")
+field.type("i")
+field.type("e")
+field.type("c")
+field.type("e")
+field.type("w")
+field.type("i")
+field.type("s")
+field.type("e")
+field.type("m")
+field.type("a")
+field.type("t")
+field.type("r")
+field.type("i")
+field.type("x")
+field.type("1")
+field.type("ArrowRight")
+field.type("2")
+field.type("ArrowDown")
+field.type("4")
+field.type("ArrowLeft")
+field.type("ArrowLeft")
+field.type("3")
+field.type("ArrowLeft")
+field.type("5")
+field.type("ArrowLeft")
+field.type("ArrowLeft")
+field.type("8")
+field.type("ArrowUp")
+field.type("7")
+field.type("ArrowDown")
+field.type("ArrowRight")
+field.type("ArrowRight")
+field.type("ArrowRight")
+field.type("ArrowRight")
+field.type("ArrowRight")
+field.type("ArrowRight")
+field.type("ArrowRight")
+field.type("ArrowDown")
+field.type("2")
+field.type("7")
+field.type("^")
+field.type("8")
+field.type("^")
+field.type("9")
+field.type("/")
+field.type("3")
+field.type(";")
 
 const cursor = h("border-current w-px -ml-px border-l")
 render()
@@ -264,12 +336,15 @@ function unrender() {
   field.sel.each(({ el }) => el.classList.remove("bg-zlx-selection"))
   cursor.parentElement?.classList.remove("!bg-transparent")
   cursor.remove()
+  field.sel.parent?.checkIfEmpty()
 }
 
 function render() {
   field.sel.each(({ el }) => el.classList.add("bg-zlx-selection"))
   field.sel.cursor(field.sel.focused).render(cursor)
   cursor.parentElement?.classList.add("!bg-transparent")
+  field.sel.parent?.checkIfEmpty()
+  cursor.parentElement?.parentElement?.classList.remove("zlx-has-empty")
   latex.textContent = field.block.latex()
 }
 

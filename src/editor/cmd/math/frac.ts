@@ -11,15 +11,11 @@ import {
   type Selection,
   type VDir,
 } from "../../model"
-import { OpCeq, OpCmp } from "../leaf/cmp"
+import { OpCeq } from "../leaf/cmp"
 
 export class CmdFrac extends Command<[Block, Block]> {
   static init(cursor: Cursor) {
-    if (
-      cursor[L] instanceof OpCeq &&
-      !cursor[L].neg &&
-      !(cursor[L] instanceof OpCmp && cursor[L].eq)
-    ) {
+    if (cursor[L] instanceof OpCeq && !cursor[L].neg) {
       cursor[L].setNeg(true)
       return
     }
@@ -102,23 +98,5 @@ export class CmdFrac extends Command<[Block, Block]> {
 
   delete(cursor: Cursor, from: Dir): void {
     cursor.moveIn(this.blocks[1], from)
-  }
-
-  deleteBlock(cursor: Cursor, at: Dir, block: Block): void {
-    if (!cursor.parent) return
-
-    cursor.moveTo(this, R)
-    this.remove()
-
-    if (at == L && block == this.blocks[0]) {
-      cursor.insert(this.blocks[1], R)
-      cursor.insert(this.blocks[0], R)
-    } else if (at == R && block == this.blocks[1]) {
-      cursor.insert(this.blocks[0], L)
-      cursor.insert(this.blocks[1], L)
-    } else {
-      cursor.insert(this.blocks[1], R)
-      cursor.insert(this.blocks[0], L)
-    }
   }
 }

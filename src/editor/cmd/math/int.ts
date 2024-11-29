@@ -122,7 +122,24 @@ export class CmdInt extends Command<BlocksInt> {
     return true
   }
 
-  endsImplicitGroup(): boolean {
-    return true
+  reader(): string {
+    if (this.blocks.length == 2) {
+      return (
+        "\\int_{" +
+        this.blocks[0]!.reader() +
+        "}^{" +
+        this.blocks[1]!.reader() +
+        "}"
+      )
+    }
+
+    return "\\int"
+  }
+
+  ascii(): string {
+    if (this.blocks.length == 2) {
+      return `int((${this.blocks[0]!.ascii()}),(${this.blocks[1]!.ascii()}))`
+    }
+    return "int"
   }
 }

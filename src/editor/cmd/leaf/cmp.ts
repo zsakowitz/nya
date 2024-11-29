@@ -175,7 +175,7 @@ export class OpEq extends ceq(
 ) {
   static init(cursor: Cursor, input: string) {
     if (input == "=") {
-      if (cursor[L] instanceof OpCmp && !cursor[L].eq && !cursor[L].neg) {
+      if (cursor[L] instanceof OpCmp && !cursor[L].eq) {
         cursor[L].setEq(true)
         return
       }
@@ -189,12 +189,12 @@ export const OpLt = cmp(
   ["<", " is less than ", "<", "<"],
   ["≮", " is not less than ", "≮", "≮"],
   ["≤", " is less than or equal to ", "≤", "<="],
-  ["≮_", " is not less than or equal to ", "≮_", "≮_"],
+  ["≰", " is not less than or equal to ", "≰", "≰"],
 )
 
 export const OpGt = cmp(
   [">", " is greater than ", ">", ">"],
   ["≯", " is not greater than ", "≯", "≯"],
   ["≥", " is greater than or equal to ", "≥", ">="],
-  ["≯_", " is not greater than or equal to ", "≯_", "≯_"],
+  ["≱", " is not greater than or equal to ", "≱", "≱"],
 )

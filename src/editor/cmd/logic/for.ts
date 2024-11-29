@@ -49,7 +49,15 @@ export class CmdFor extends Command<
   }
 
   latex(): string {
-    return "TODO:"
+    return "\\text{no clue how to .latex() CmdFor yet}"
+  }
+
+  reader(): string {
+    return "\\text{no clue how to .reader() CmdFor yet}"
+  }
+
+  ascii(): string {
+    return "\\text{no clue how to .ascii() CmdFor yet}"
   }
 
   moveOutOf(cursor: Cursor, towards: Dir, block: Block): void {
@@ -88,4 +96,23 @@ export class CmdFor extends Command<
   }
 
   vertFromSide(): undefined {}
+
+  delete(cursor: Cursor, from: Dir): void {
+    cursor.moveIn(this.blocks[0], from)
+  }
+
+  vertInto(dir: VDir, clientX: number): Block | undefined {
+    if (dir == D) {
+      const b1 = this.blocks[1].distanceTo(clientX)
+      const b2 = this.blocks[2].distanceTo(clientX)
+
+      if (b1 <= b2) {
+        return this.blocks[1]
+      } else {
+        return this.blocks[2]
+      }
+    } else {
+      return this.blocks[0]
+    }
+  }
 }

@@ -160,3 +160,31 @@ export const CmdTab: Init = {
     return cursor
   },
 }
+
+export const CmdBreakCol: Init = {
+  init(cursor) {
+    let el = cursor.clone()
+    while (el.parent && el.parent.parent) {
+      if (el.parent.parent.insCol) {
+        el.parent.parent.insCol(el, el.parent, el[L] || !el[R] ? R : L)
+        return el
+      }
+
+      el.moveTo(el.parent.parent, R)
+    }
+  },
+}
+
+export const CmdBreakRow: Init = {
+  init(cursor) {
+    let el = cursor.clone()
+    while (el.parent && el.parent.parent) {
+      if (el.parent.parent.insRow) {
+        el.parent.parent.insRow(el, el.parent, null)
+        return el
+      }
+
+      el.moveTo(el.parent.parent, R)
+    }
+  },
+}

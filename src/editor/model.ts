@@ -118,6 +118,8 @@ export class Block {
   checkIfEmpty() {
     this.el.classList.toggle("after:hidden", !this.isEmpty())
     this.el.classList.toggle("bg-zlx-empty", this.isEmpty())
+    this.el.classList.toggle("zlx-empty", this.isEmpty())
+    this.el.parentElement?.classList.toggle("zlx-has-empty", this.isEmpty())
   }
 
   /**
@@ -1104,8 +1106,22 @@ export abstract class Command<
    * Deletes the provided {@linkcode Block} from the given direction in this
    * `Command`. Called when the cursor is at the edge of a {@linkcode Block} and
    * the user presses "Backspace" or "Delete".
+   *
+   * The default implementation replaces this {@linkcode Command} with its inner
+   * {@linkcode Block}s and maintains the cursor's location.
    */
-  abstract deleteBlock(cursor: Cursor, at: Dir, block: Block): void
+  deleteBlock(cursor: Cursor, at: Dir, block: Block) {
+    const index = this.blocks.indexOf(block)
+    cursor.moveTo(this, R)
+    this.remove()
+    for (let i = 0; i < index; i++) {
+      cursor.insert(this.blocks[i]!, L)
+    }
+    for (let i = this.blocks.length - 1; i > index; i--) {
+      cursor.insert(this.blocks[i]!, R)
+    }
+    cursor.insert(block, at == L ? R : L)
+  }
 
   /**
    * Called if a {@linkcode CmdSupSub} is initialized to the right of another
@@ -1246,6 +1262,10 @@ export abstract class Command<
     return [box.left, box.left + box.width]
   }
 
+  /**
+   * If the given `clientX` is outside this `Command`, returns `0`. Otherwise,
+   * returns distance in pixels to the closest edge.
+   */
   distanceToEdge(clientX: number): number {
     const [lhs, rhs] = this.bounds()
 
@@ -1255,6 +1275,20 @@ export abstract class Command<
       return Math.min(clientX - lhs, rhs - clientX)
     }
   }
+
+  /** Inserts a column to some side of a nested {@linkcode Block}. */
+  insCol?(cursor: Cursor, block: Block, dir: Dir): void
+
+  /** Splits a nested {@linkcode Block} in two. */
+  splitCol?(cursor: Cursor, block: Block): void
+
+  /**
+   * Inserts a row to some side of a nested {@linkcode Block}.
+   *
+   * If `dir` is `null`, the {@linkcode Command} must decide the proper
+   * direction.
+   */
+  insRow?(cursor: Cursor, block: Block, dir: VDir | null): void
 }
 
 /** The updated cursor or selection created by {@linkcode Init}. */

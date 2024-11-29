@@ -3,6 +3,7 @@ import {
   Block,
   Command,
   Cursor,
+  D,
   L,
   R,
   U,
@@ -37,7 +38,7 @@ export class CmdMatrix extends Command<Block[]> {
             "my-[.1em] inline-grid mx-[.55em] gap-y-[.1em] gap-x-[.4em] items-baseline",
           style: `grid-template-columns:repeat(${cols},auto)`,
         },
-        ...blocks.map((x) => x.el),
+        ...blocks.map((x) => h("inline-block text-center", x.el)),
       ),
       h(
         "right-[.15em] absolute top-0 bottom-[2px] inline-block w-[.25em] border-r border-y border-current",
@@ -72,7 +73,7 @@ export class CmdMatrix extends Command<Block[]> {
     return row * this.cols + col
   }
 
-  insRow(index: number) {
+  protected createRow(index: number) {
     const next = this.blocks.slice()
     next.splice(
       index * this.cols,
@@ -82,7 +83,7 @@ export class CmdMatrix extends Command<Block[]> {
     this.render(next)
   }
 
-  insCol(index: number) {
+  protected createCol(index: number) {
     const next = this.blocks.slice()
     const rows = this.rows
     for (let i = 0; i < rows; i++) {
@@ -181,7 +182,7 @@ export class CmdMatrix extends Command<Block[]> {
           this.delCol(0)
         }
       } else {
-        this.insCol(0)
+        this.createCol(0)
         cursor.moveIn(this.blocks[this.index(row, 0)!]!, L)
         return
       }
@@ -191,7 +192,7 @@ export class CmdMatrix extends Command<Block[]> {
           this.delCol(this.cols - 1)
         }
       } else {
-        this.insCol(this.cols)
+        this.createCol(this.cols)
         cursor.moveIn(this.blocks[this.index(row, this.cols - 1)!]!, L)
         return
       }
@@ -219,7 +220,7 @@ export class CmdMatrix extends Command<Block[]> {
         cursor.moveIn(this.blocks[index]!, R)
         return
       }
-      this.insRow(0)
+      this.createRow(0)
       return this.blocks[index]
     } else {
       if (
@@ -230,7 +231,7 @@ export class CmdMatrix extends Command<Block[]> {
         cursor.moveIn(this.blocks[index - this.cols]!, R)
         return
       }
-      this.insRow(this.rows)
+      this.createRow(this.rows)
       return this.blocks[index + this.cols]
     }
   }
@@ -290,5 +291,26 @@ export class CmdMatrix extends Command<Block[]> {
     } else {
       cursor.moveIn(this.blocks[this.index(row, col + at)!]!, at == L ? R : L)
     }
+  }
+
+  insCol(cursor: Cursor, block: Block, dir: Dir): void {
+    const index = this.blocks.indexOf(block)
+    const [row, col] = this.coords(index)
+
+    const inserted = dir == L ? col : col + 1
+    this.createCol(inserted)
+    cursor.moveIn(this.blocks[row * this.cols + inserted]!, L)
+  }
+
+  insRow(cursor: Cursor, block: Block, dir: VDir | null): void {
+    const index = this.blocks.indexOf(block)
+    const [row, col] = this.coords(index)
+
+    if (!dir) {
+      dir = col == 0 && !cursor[L] && cursor[R] ? U : D
+    }
+    const inserted = dir == U ? 0 : row + 1
+    this.createRow(inserted)
+    cursor.moveIn(this.blocks[inserted * this.cols]!, L)
   }
 }

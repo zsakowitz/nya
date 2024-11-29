@@ -2,23 +2,26 @@ import { h, p, svg } from "../../jsx"
 import { Block, Command, L, R, type Cursor, type Dir } from "../../model"
 import { CmdComma } from "../leaf/comma"
 
-const PARENS = {
+export const BRACKS = {
   "[": {
-    width: ".55em",
+    w: "w-[.55em]",
+    mx: "mx-[.55em]",
     latex: "[",
     html() {
       return svg("0 0 11 24", p("M8 0 L3 0 L3 24 L8 24 L8 23 L4 23 L4 1 L8 1"))
     },
   },
   "]": {
-    width: ".55em",
+    w: "w-[.55em]",
+    mx: "mx-[.55em]",
     latex: "]",
     html() {
       return svg("0 0 11 24", p("M3 0 L8 0 L8 24 L3 24 L3 23 L7 23 L7 1 L3 1"))
     },
   },
   "(": {
-    width: ".55em",
+    w: "w-[.55em]",
+    mx: "mx-[.55em]",
     latex: "(",
     html() {
       return svg(
@@ -28,7 +31,8 @@ const PARENS = {
     },
   },
   ")": {
-    width: ".55em",
+    w: "w-[.55em]",
+    mx: "mx-[.55em]",
     latex: ")",
     html() {
       return svg(
@@ -38,7 +42,8 @@ const PARENS = {
     },
   },
   "{": {
-    width: ".7em",
+    w: "w-[.7em]",
+    mx: "mx-[.7em]",
     latex: "\\{",
     html() {
       return svg(
@@ -50,7 +55,8 @@ const PARENS = {
     },
   },
   "}": {
-    width: ".7em",
+    w: "w-[.7em]",
+    mx: "mx-[.7em]",
     latex: "\\}",
     html() {
       return svg(
@@ -162,33 +168,23 @@ export class CmdBrack extends Command<[Block]> {
   }
 
   static render(lhs: ParenLhs, rhs: ParenRhs, side: Dir | null, block: Block) {
-    const lhsSymbol = PARENS[lhs]
-    const rhsSymbol = PARENS[rhs]
+    const lhsSymbol = BRACKS[lhs]
+    const rhsSymbol = BRACKS[rhs]
     return h(
       "relative inline-block",
       h(
-        {
-          style: "width:" + lhsSymbol.width,
-          class:
-            "left-0 absolute top-0 bottom-[2px] inline-block" +
-            (side == R ? " opacity-20" : ""),
-        },
+        "left-0 absolute top-0 bottom-[2px] inline-block" +
+          (side == R ? " opacity-20" : "") +
+          " " +
+          lhsSymbol.w,
+
         lhsSymbol.html(),
       ),
+      h("my-[.1em] inline-block *:contents " + lhsSymbol.mx, block.el),
       h(
-        {
-          style: `margin-left:${lhsSymbol.width};margin-right:${rhsSymbol.width}`,
-          class: "my-[.1em] inline-block *:contents",
-        },
-        block.el,
-      ),
-      h(
-        {
-          style: "width:" + rhsSymbol.width,
-          class:
-            "right-0 absolute top-0 bottom-[2px] inline-block" +
-            (side == L ? " opacity-20" : ""),
-        },
+        "right-0 absolute top-0 bottom-[2px] inline-block " +
+          rhsSymbol.w +
+          (side == L ? " opacity-20" : ""),
         rhsSymbol.html(),
       ),
     )
@@ -201,7 +197,7 @@ export class CmdBrack extends Command<[Block]> {
     block: Block,
   ) {
     super(
-      "\\left" + PARENS[lhs].latex,
+      "\\left" + BRACKS[lhs].latex,
       CmdBrack.render(lhs, rhs, side, block),
       [block],
     )
@@ -219,7 +215,7 @@ export class CmdBrack extends Command<[Block]> {
   }
 
   latex(): string {
-    return `\\left${PARENS[this.lhs].latex}${this.blocks[0].latex()}\\right${PARENS[this.rhs].latex}`
+    return `\\left${BRACKS[this.lhs].latex}${this.blocks[0].latex()}\\right${BRACKS[this.rhs].latex}`
   }
 
   reader(): string {
@@ -227,17 +223,15 @@ export class CmdBrack extends Command<[Block]> {
   }
 
   checkSvg(side: Dir) {
-    const symbol = PARENS[side == L ? this.lhs : this.rhs]
+    const symbol = BRACKS[side == L ? this.lhs : this.rhs]
     const idx = side == L ? 0 : 2
     this.el.children[idx]!.replaceWith(
       h(
-        {
-          style: "width:" + symbol.width,
-          class:
-            "absolute top-0 bottom-[2px] inline-block " +
-            (side == L ? "left-0" : "right-0") +
-            (this.side == side || this.side == null ? "" : " opacity-20"),
-        },
+        "absolute top-0 bottom-[2px] inline-block " +
+          symbol.w +
+          " " +
+          (side == L ? "left-0" : "right-0") +
+          (this.side == side || this.side == null ? "" : " opacity-20"),
         symbol.html(),
       ),
     )
