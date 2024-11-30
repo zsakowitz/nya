@@ -18,6 +18,7 @@
     "plugins": [
       "prettier-plugin-jsdoc"
     ],
-    "experimentalTernaries": true
+    "experimentalTernaries": true,
+    "proseWrap": "always"
   }
 }

@@ -899,9 +899,10 @@ interface CommandMut extends Command {
 /**
  * A single item inside a {@linkcode Block}.
  *
- * Commands are required to implement many methods.
+ * Commands are required to implement many methods. Methods marked with `?` are
+ * optional. Methods marked with `!` have default implementations.
  *
- * The abstract method used for initialization are:
+ * The abstract methods used for initialization are:
  *
  * - `static init?` to insert left of the cursor
  * - `static initOn?` to insert on top of a selection
@@ -914,15 +915,15 @@ interface CommandMut extends Command {
  *
  * The abstract methods used for movement are:
  *
- * - `moveAcrossWord` for moving left or right across a contextual "word"
+ * - `moveAcrossWord!` for moving left or right across a contextual "word"
  * - `moveInto` for moving left or right into `this`
  * - `moveOutOf` for moving left or right out of a nested block
- * - `tabInto` for moving left or right into the first nested block
- * - `tabOutOf` for moving left or right into the next nested block
+ * - `tabInto!` for moving left or right into the first nested block
+ * - `tabOutOf!` for moving left or right into the next nested block
  * - `vertFromSide` for moving up or down next to `this`
  * - `vertInto` for moving up or down into `this`
  * - `vertOutOf` for moving up or down out of a nested block
- * - `subSup` for custom behavior when a subscript or superscript is inserted
+ * - `subSup?` for custom behavior when a subscript or superscript is inserted
  *
  * Note that the `move` methods are allowed to skip over certain nested blocks.
  * For example, the `move` methods for {@linkcode CmdFrac} only move through the
@@ -930,10 +931,16 @@ interface CommandMut extends Command {
  * and out of every nested block. Other than the difference of scope, the `tab`
  * and `move` methods are practically identical.
  *
+ * The abstract methods used for multi-line and multi-column support are:
+ *
+ * - `insCol?` for inserting a column (say, in a matrix)
+ * - `insRow?` for inserting a row (say, in a matrix)
+ * - `splitCol?` for splitting a column (say, in a \begin{align*} implementation)
+ *
  * The abstract methods used for deletion are:
  *
  * - `delete` for pressing delete outside of `this`
- * - `deleteBlock` for pressing delete at the edge of a nested block
+ * - `deleteBlock!` for pressing delete at the edge of a nested block
  */
 export abstract class Command<
   T extends Block[] = Block[],
