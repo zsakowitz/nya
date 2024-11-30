@@ -112,7 +112,8 @@ const demos = {
 // Set up field styles
 document.body.className = "flex flex-col justify-center min-h-screen px-8"
 
-document.body.appendChild(
+document.body.append(
+  h("block text-center mb-2", "only keyboard works for now. have fun!"),
   h(
     "flex gap-1 justify-center",
     h("py-1 pr-1", "try:"),
