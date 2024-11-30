@@ -67,8 +67,6 @@ const exts = new Exts()
   .set(".", CmdDot)
   .set("&", CmdBreakCol)
   .set(";", CmdBreakRow)
-  .set("\\sqrt", CmdRoot)
-  .set("\\nthroot", CmdRoot)
   // movement ops
   .set("ArrowLeft", CmdMove(L))
   .set("Home", CmdMove(L, true))
@@ -83,30 +81,42 @@ const exts = new Exts()
   // manual latex
   .set("\\", CmdPrompt)
 
+const autoCmds = new WordMap<Init>([
+  ["sum", CmdBig],
+  ["prod", CmdBig],
+  ["int", CmdInt],
+  ["matrix", CmdMatrix],
+  ["for", CmdFor],
+  ["sqrt", CmdRoot],
+  ["nthroot", CmdRoot],
+  ["cases", CmdPiecewise],
+  ["switch", CmdPiecewise],
+  ["piecewise", CmdPiecewise],
+])
+
 const field = new Field(exts, {
-  autoCmds: new WordMap<Init>([
-    ["sum", CmdBig],
-    ["prod", CmdBig],
-    ["int", CmdInt],
-    ["matrix", CmdMatrix],
-    ["for", CmdFor],
-    ["sqrt", CmdRoot],
-    ["nthroot", CmdRoot],
-    ["cases", CmdPiecewise],
-    ["switch", CmdPiecewise],
-    ["piecewise", CmdPiecewise],
-  ]),
+  autoCmds,
   autoSubscriptNumbers: true,
 })
 
 // Set up field styles
-field.el.classList.add("[line-height:1]", "text-[1.265rem]")
-document.body.className =
-  "flex flex-col items-center justify-center min-h-screen"
-document.body.appendChild(field.el)
+document.body.className = "flex flex-col justify-center min-h-screen px-8"
+
+document.body.appendChild(
+  h(
+    "[line-height:1] text-[1.265rem] text-center overflow-auto p-8 -mx-8",
+    field.el,
+  ),
+)
 
 const latex = h("text-center block text-sm break-all px-8 text-balance mt-8")
 document.body.appendChild(latex)
+
+const ascii = h("text-center block text-sm break-all px-8 text-balance mt-4")
+document.body.appendChild(ascii)
+
+const reader = h("text-center block text-xs break-all px-8 text-balance mt-4")
+document.body.appendChild(reader)
 
 field.type("2")
 field.type("*")
@@ -318,13 +328,27 @@ field.type("ArrowRight")
 field.type("ArrowRight")
 field.type("ArrowRight")
 field.type("ArrowRight")
+field.type("ArrowRight")
+field.type("y")
+field.type(">")
+field.type("=")
+field.type("4")
 field.type("ArrowDown")
+field.type("ArrowLeft")
 field.type("2")
 field.type("7")
 field.type("^")
 field.type("8")
 field.type("^")
 field.type("9")
+field.type("/")
+field.type("3")
+field.type("Tab")
+field.type("Tab")
+field.type("Tab")
+field.type("Tab")
+field.type("x")
+field.type("<")
 field.type("/")
 field.type("3")
 field.type(";")
@@ -346,6 +370,8 @@ function render() {
   field.sel.parent?.checkIfEmpty()
   cursor.parentElement?.parentElement?.classList.remove("zlx-has-empty")
   latex.textContent = field.block.latex()
+  ascii.textContent = field.block.ascii()
+  reader.textContent = field.block.reader()
 }
 
 addEventListener("keydown", (x) => {
@@ -353,3 +379,24 @@ addEventListener("keydown", (x) => {
   field.type(x.key, x)
   render()
 })
+
+document.body.append(
+  h("font-semibold mt-8", "Available keys to press:"),
+  h(
+    "grid grid-cols-[repeat(auto-fill,minmax(6rem,1fr))] w-full ml-8",
+    ...exts
+      .getAll()
+      .sort()
+      .map((name) => h("", name))
+      .filter((x) => x != null),
+  ),
+  h("font-semibold mt-8", "Additional typable commands:"),
+  h(
+    "grid grid-cols-[repeat(auto-fill,minmax(6rem,1fr))] w-full ml-8",
+    ...autoCmds
+      .getAll()
+      .sort()
+      .map((name) => h("", name))
+      .filter((x) => x != null),
+  ),
+)

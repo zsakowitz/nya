@@ -56,4 +56,8 @@ export class WordMap<T> {
   get(word: string): T | undefined {
     return this.words[word]
   }
+
+  getAll() {
+    return Object.getOwnPropertyNames(this.words)
+  }
 }

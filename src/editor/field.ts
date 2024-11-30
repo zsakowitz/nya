@@ -5,6 +5,10 @@ export class Exts {
   private readonly cmds: { [x: string]: Init } = Object.create(null)
   private default?: Init
 
+  getAll(): string[] {
+    return Object.getOwnPropertyNames(this.cmds)
+  }
+
   set(name: string, cmd: Init) {
     this.cmds[name] = cmd
     return this
