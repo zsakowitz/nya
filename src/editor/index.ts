@@ -14,7 +14,7 @@ import { CmdInt } from "./cmd/math/int"
 import { CmdMatrix } from "./cmd/math/matrix"
 import { CmdRoot } from "./cmd/math/root"
 import { CmdSupSub } from "./cmd/math/supsub"
-import { CmuDigit } from "./cmd/uscript/leaf/digits"
+import { CmuSym } from "./cmd/uscript/leaf/digits"
 import { ByRegex } from "./cmd/util/by-regex"
 import {
   CmdBackspace,
@@ -50,7 +50,7 @@ const exts = new Exts()
   .setDefault(
     new ByRegex([
       [/^\d$/, CmdNum],
-      [/^uv?[0-9a-f]$/, new CmdMap(CmuDigit, (x) => x.slice(1))],
+      [/^u.+$/, new CmdMap(CmuSym, (x) => x.slice(1))],
       [/^\w$/, CmdVar],
       [/^\s$/, CmdNoop],
       [/^[()[\]{}]$/, CmdBrack],
@@ -110,8 +110,9 @@ const field = new Field(exts, {
 })
 
 const demos = {
-  uscript:
+  uscript1:
     "m a t r i x u0 uv0 ArrowRight u1 uv1 ArrowRight u2 uv2 ArrowRight u3 uv3 ArrowDown ArrowDown ; u4 uv4 ArrowRight u5 uv5 ArrowRight u6 uv6 ArrowRight u7 uv7 ; u8 uv8 ArrowRight u9 uv9 ArrowRight ua uva ArrowRight ub uvb ; uc uvc ArrowRight ud uvd ArrowRight ue uve ArrowRight uf uvf Tab / ( u0 u1 u2 u3 u4 u5 u6 u7 ) / uv0 uv1 uv2 uv3 uv4 uv5 uv6 uv7 ArrowRight / ( u8 u9 ua ub uc ud ue uf ) / uv8 uv9 uva uvb uvc uvd uve uvf",
+  uscript2: "u1 u+ uv2 u- u3",
   main: "2 * 3 a 4 5 6 8 ^ 9 2 3 ^ 9 ^ 5 ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight + 0 4 / 5 ArrowRight ArrowLeft ^ 2 ArrowRight ArrowRight 3 a 2 ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowRight ^ 4 3 6 ArrowRight / 2 / 3 ArrowRight + 4 ArrowLeft ArrowLeft ArrowLeft ArrowDown ArrowLeft ArrowUp ArrowDown ArrowUp ArrowDown ArrowDown ArrowDown 4 3 2 1 9 3 4 2 ArrowUp ArrowUp ArrowUp ArrowUp ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft \\sum 2 3 ArrowUp 4 9 ArrowRight ArrowRight m a t r i x 1 ArrowRight 2 ArrowDown 4 ArrowLeft ArrowLeft 3 ArrowLeft ArrowLeft ArrowLeft f o r x ^ 2 Tab Tab i Tab [ 1 . . . 1 0 ] Tab n ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft i n t 2 ArrowDown ArrowRight ArrowRight ArrowRight ArrowRight + ^ 4 Tab ArrowLeft ArrowLeft ArrowLeft ArrowLeft + p i e c e w i s e m a t r i x 1 ArrowRight 2 ArrowDown 4 ArrowLeft ArrowLeft 3 ArrowLeft 5 ArrowLeft ArrowLeft 8 ArrowUp 7 ArrowDown ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight y > = 4 ArrowDown ArrowLeft 2 7 ^ 8 ^ 9 / 3 Tab Tab Tab Tab x < / 3 ; 5",
   compare:
     "m a t r i x ArrowRight ArrowRight ArrowLeft 2 = 3 ; 2 = / 3 ; 2 < 3 ; 2 > 3 ; 2 < = 3 ; 2 > = 3 ; 2 < / 3 ; 2 > / 3 ; 2 < / = 3 ArrowDown 2 > = / 3",
@@ -141,7 +142,7 @@ document.body.append(
 
 document.body.appendChild(
   h(
-    "[line-height:1] text-[1.265rem text-[8rem] text-center overflow-auto p-8 -mx-8",
+    "[line-height:1] text-[2rem] text-center overflow-auto p-8 -mx-8",
     field.el,
   ),
 )
@@ -165,7 +166,7 @@ function exec(input: string) {
 
 const cursor = h("border-current w-px -ml-px border-l")
 
-exec(demos.uscript)
+exec(demos.uscript2)
 
 function unrender() {
   field.sel.each(({ el }) => el.classList.remove("bg-zlx-selection"))

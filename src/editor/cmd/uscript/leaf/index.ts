@@ -11,6 +11,10 @@ import {
 } from "../../../model"
 
 export abstract class CmuLeaf extends Command<[]> {
+  constructor(ctrlSeq: string, html: HTMLSpanElement) {
+    super(ctrlSeq, html, [])
+  }
+
   moveInto(cursor: Cursor, towards: Dir): void {
     cursor.moveTo(this, towards)
   }
@@ -54,7 +58,7 @@ export function leaf(
     }
 
     constructor() {
-      super(latex, h("", usvg(classes, viewBox, path)), [])
+      super(latex, h("", usvg(classes, viewBox, path)))
     }
   }
 }

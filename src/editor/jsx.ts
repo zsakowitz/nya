@@ -49,22 +49,26 @@ export function svg(viewBox: string, ...children: ChildNode[]) {
 
 export type ViewBox = `${number} ${number} ${number} ${number}`
 
-export function usvg(classes: string, viewBox: ViewBox, d: string) {
-  const STROKE = 0.4
+export function usvg(
+  classes: string,
+  viewBox: ViewBox,
+  d: string,
+  stroke = 0.4,
+) {
   const [x1, y1, w, h] = viewBox.split(" ").map(parseFloat)
   const el = document.createElementNS("http://www.w3.org/2000/svg", "svg")
   el.setAttribute("preserveAspectRatio", "none")
   el.setAttribute(
     "viewBox",
-    `${x1! - STROKE / 2} ${y1! - STROKE / 2} ${w! + STROKE} ${h! + STROKE}`,
+    `${x1! - stroke / 2} ${y1! - stroke / 2} ${w! + stroke} ${h! + stroke}`,
   )
   el.setAttribute("fill", "none")
   el.setAttribute("stroke", "currentColor")
-  el.setAttribute("stroke-width", "" + STROKE)
+  el.setAttribute("stroke-width", "" + stroke)
   el.setAttribute("stroke-linecap", "square")
   el.setAttribute("stroke-linejoin", "miter")
   el.setAttribute("stroke-miterlimit", "100")
-  el.setAttribute("class", classes + " outline outline-[0.1px] outline-red-500")
+  el.setAttribute("class", classes)
   el.appendChild(p(d))
   return el
 }

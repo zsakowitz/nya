@@ -566,10 +566,6 @@ video {
   position: relative;
 }
 
-.inset-0 {
-  inset: 0px;
-}
-
 .bottom-\[\.15em\] {
   bottom: .15em;
 }
@@ -714,23 +710,12 @@ video {
   display: contents;
 }
 
-.aspect-square {
-  aspect-ratio: 1 / 1;
+.h-3\.5 {
+  height: 0.875rem;
 }
 
-.size-4 {
-  width: 1rem;
-  height: 1rem;
-}
-
-.size-\[1em\] {
-  width: 1em;
+.h-\[1em\] {
   height: 1em;
-}
-
-.size-full {
-  width: 100%;
-  height: 100%;
 }
 
 .h-full {
@@ -740,14 +725,6 @@ video {
 .h-max {
   height: -moz-max-content;
   height: max-content;
-}
-
-.h-5 {
-  height: 1.25rem;
-}
-
-.h-\[1em\] {
-  height: 1em;
 }
 
 .min-h-screen {
@@ -780,10 +757,6 @@ video {
 
 .w-px {
   width: 1px;
-}
-
-.w-4 {
-  width: 1rem;
 }
 
 .min-w-\[\.5em\] {
@@ -907,37 +880,8 @@ video {
   background-color: var(--zlx-selection);
 }
 
-.bg-red-500 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(239 68 68 / var(--tw-bg-opacity, 1));
-}
-
 .fill-current {
   fill: currentColor;
-}
-
-.fill-none {
-  fill: none;
-}
-
-.stroke-current {
-  stroke: currentColor;
-}
-
-.stroke-2 {
-  stroke-width: 2;
-}
-
-.stroke-\[0\.1\] {
-  stroke-width: 0.1;
-}
-
-.stroke-\[0\.5\] {
-  stroke-width: 0.5;
-}
-
-.stroke-\[0\.3\] {
-  stroke-width: 0.3;
 }
 
 .p-8 {
@@ -976,6 +920,11 @@ video {
 .py-\[\.1em\] {
   padding-top: .1em;
   padding-bottom: .1em;
+}
+
+.px-\[\.1\] {
+  padding-left: .1;
+  padding-right: .1;
 }
 
 .pb-\[\.2em\] {
@@ -1058,22 +1007,6 @@ video {
   vertical-align: 1.3em;
 }
 
-.align-\[0em\] {
-  vertical-align: 0em;
-}
-
-.align-\[\.1em\] {
-  vertical-align: .1em;
-}
-
-.align-\[\.4em\] {
-  vertical-align: .4em;
-}
-
-.align-\[-\.4em\] {
-  vertical-align: -.4em;
-}
-
 .font-\[\'Symbola\'\2c \'Times\'\2c sans-serif\] {
   font-family: 'Symbola','Times',sans-serif;
 }
@@ -1088,10 +1021,6 @@ video {
 
 .text-\[1\.265em\] {
   font-size: 1.265em;
-}
-
-.text-\[1\.265rem\] {
-  font-size: 1.265rem;
 }
 
 .text-\[100\%\] {
@@ -1110,6 +1039,10 @@ video {
   font-size: 80%;
 }
 
+.text-\[8rem\] {
+  font-size: 8rem;
+}
+
 .text-\[90\%\] {
   font-size: 90%;
 }
@@ -1124,12 +1057,12 @@ video {
   line-height: 1rem;
 }
 
-.text-\[8rem\] {
-  font-size: 8rem;
+.text-\[1\.265rem\] {
+  font-size: 1.265rem;
 }
 
-.text-\[12rem\] {
-  font-size: 12rem;
+.text-\[2rem\] {
+  font-size: 2rem;
 }
 
 .font-normal {
@@ -1156,8 +1089,8 @@ video {
   outline-style: solid;
 }
 
-.outline-\[0\.1px\] {
-  outline-width: 0.1px;
+.outline-1 {
+  outline-width: 1px;
 }
 
 .outline-red-500 {
