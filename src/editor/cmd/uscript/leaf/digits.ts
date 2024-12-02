@@ -83,14 +83,14 @@ export class CmuSym extends CmuLeaf {
   }
 
   ascii(): string {
-    return this.digit
+    return "[redacted]"
   }
 
   latex(): string {
-    return this.digit
+    return "[redacted]"
   }
 
   reader(): string {
-    return this.digit
+    return "[redacted]"
   }
 }
