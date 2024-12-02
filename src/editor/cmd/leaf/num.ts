@@ -4,23 +4,27 @@ import { Block, Cursor, L, R, type Dir } from "../../model"
 import type { Options } from "../../options"
 import { CmdSupSub } from "../math/supsub"
 import { CmdDot } from "./dot"
-import { CmdVar } from "./var"
 
 export class CmdNum extends Leaf {
   static init(cursor: Cursor, input: string, options: Options) {
     const num = new CmdNum(input)
-    if (options.autoSubscriptNumbers) {
-      const left = cursor[L]
+    const left = cursor[L]
+
+    if (
+      left &&
+      options.autoSubscriptNumbers &&
+      options.autoSubscriptNumbers(left)
+    ) {
       if (left instanceof CmdSupSub) {
         num.insertAt(left.create("sub").cursor(R), L)
-        return
-      } else if (left instanceof CmdVar) {
+      } else {
         const sub = new Block(null)
         num.insertAt(sub.cursor(R), L)
         new CmdSupSub(sub, null).insertAt(cursor, L)
-        return
       }
+      return
     }
+
     num.insertAt(cursor, L)
   }
 

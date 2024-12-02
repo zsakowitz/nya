@@ -64,3 +64,4 @@ export const OpPm = eop("\\pm ", " plus-or-minus ", "±")
 export const OpMp = eop("\\mp ", " minus-or-plus ", "∓")
 
 export const OpCdot = eop("\\cdot ", " times ", "·", "*")
+export const OpDiv = eop("÷", " divided by ", "÷", "/")

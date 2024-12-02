@@ -1,14 +1,16 @@
-import type { Init } from "./model"
+import type { WordKind } from "./cmd/leaf/var"
+import type { Command, Init } from "./model"
 
+/** Configuration for various behaviors of {@linkcode Command}s. */
 export interface Options {
   /**
-   * If `true`, numbers typed directly after letters will be written as
-   * subscripts.
+   * If this returns `true` for a given {@linkcode Command}, a number typed
+   * directly after it will be turned into a subscript.
    */
-  autoSubscriptNumbers?: boolean
+  autoSubscriptNumbers?(command: Command): boolean
 
   /** If `true`, letter substitution will still occur in subscripts. */
-  letterSubInSubscripts?: boolean
+  autoCmdsInSubscripts?: boolean
 
   /**
    * If any word from `autoCmds` is typed, it will be automatically initialized
@@ -23,11 +25,12 @@ export interface Options {
   autoCmds?: WordMap<Init>
 
   /**
-   * An list of operator names which will be de-italicized. If the name is
-   * declared as `1`, it will be treated as a prefix operator. Otherwise, it
-   * will be treated as an infix operator.
+   * An list of words which will be de-italicized. The {@linkcode WordKind} is
+   * what kind of word the text will be treated as: variable, prefix operator,
+   * or infix operator. The {@linkcode WordKind} controls spacing; see its
+   * documentation for more details.
    */
-  autoOpNames?: WordMap<0 | 2>
+  wordNames?: WordMap<WordKind>
 }
 
 export class WordMap<T> {

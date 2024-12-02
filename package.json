@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "esb": "serve --watch --loader:.woff=file --loader:.ttf=file --loader:.woff2=file --loader:.svg=file --loader:.eot=file src/index.ts",
+    "esb": "serve --watch --loader:.woff=file --loader:.ttf=file --loader:.woff2=file --loader:.svg=file --loader:.eot=file src/editor/index.ts",
     "tw": "tailwindcss -i ./index.postcss -o ./index.css --watch",
     "build:esm": "esbuild --bundle --minify --format=esm --outfile=dist/index.mjs --loader:.woff=file --loader:.ttf=file --loader:.woff2=file --loader:.svg=file --loader:.eot=file src/editor/index.ts",
     "build:tw": "tailwindcss -i ./index.postcss -o ./index.css --minify",
