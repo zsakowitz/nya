@@ -12,8 +12,8 @@ export class CmdNum extends Leaf {
 
     if (
       left &&
-      options.autoSubscriptNumbers &&
-      options.autoSubscriptNumbers(left)
+      options.subscriptNumberAfter &&
+      options.subscriptNumberAfter(left)
     ) {
       if (left instanceof CmdSupSub) {
         num.insertAt(left.create("sub").cursor(R), L)

@@ -7,7 +7,7 @@ export interface Options {
    * If this returns `true` for a given {@linkcode Command}, a number typed
    * directly after it will be turned into a subscript.
    */
-  autoSubscriptNumbers?(command: Command): boolean
+  subscriptNumberAfter?(command: Command): boolean
 
   /** If `true`, letter substitution will still occur in subscripts. */
   autoCmdsInSubscripts?: boolean
@@ -30,7 +30,7 @@ export interface Options {
    * or infix operator. The {@linkcode WordKind} controls spacing; see its
    * documentation for more details.
    */
-  wordNames?: WordMap<WordKind>
+  words?: WordMap<WordKind>
 }
 
 export class WordMap<T> {

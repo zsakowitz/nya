@@ -61,7 +61,6 @@ export class CmdMatrix extends Command<Block[]> {
   }
 
   coords(index: number): Coords {
-    console.warn(index)
     return [Math.floor(index / this.cols), index % this.cols]
   }
 

@@ -1,7 +1,7 @@
 import { Leaf } from "."
 import { h, t } from "../../jsx"
 import { Cursor, L, R, Span, type Dir } from "../../model"
-import type { Options } from "../../options"
+import type { Options, WordMap } from "../../options"
 
 /**
  * The different kinds of {@linkcode CmdVar}-composed words which exist. These
@@ -56,6 +56,10 @@ export class CmdVar extends Leaf {
         leftmost = leftmost[R] as CmdVar
       }
     }
+
+    if (options.words) {
+      self.checkWords(options.words)
+    }
   }
 
   readonly kind: WordKind | null = null
@@ -64,7 +68,21 @@ export class CmdVar extends Leaf {
   static render(text: string, kind: CmdVar["kind"], part: CmdVar["part"]) {
     return h(
       "",
-      h("font-['Times'] [line-height:.9]" + (kind ? "" : " italic"), t(text)),
+      h(
+        "font-['Times'] [line-height:.9] " +
+          {
+            null: "italic",
+            var: "bg-red-200",
+            infix: "bg-green-200",
+            prefix: "bg-purple-200",
+          }[`${kind}`] +
+          {
+            null: "",
+            [L]: " underline",
+            [R]: " overline",
+          }[`${part}`],
+        t(text),
+      ),
     )
   }
 
@@ -74,6 +92,10 @@ export class CmdVar extends Leaf {
   }
 
   private render(kind = this.kind, part = this.part) {
+    if (this.kind == kind && this.part == part) {
+      return
+    }
+
     this.setEl(
       CmdVar.render(
         this.text,
@@ -81,6 +103,56 @@ export class CmdVar extends Leaf {
         ((this as any).part = part),
       ),
     )
+  }
+
+  private checkWords(words: WordMap<WordKind>) {
+    const vars: CmdVar[] = [this]
+
+    let lhs: CmdVar = this
+    while (lhs[L] instanceof CmdVar) {
+      lhs = lhs[L]
+      vars.push(lhs)
+    }
+    vars.reverse()
+
+    let rhs: CmdVar = this
+    while (rhs[R] instanceof CmdVar) {
+      rhs = rhs[R]
+      vars.push(rhs)
+    }
+
+    for (const cmd of vars) {
+      cmd.render(null, null)
+    }
+
+    const maxLen = words.maxLen
+    if (maxLen == 0) return
+
+    for (let i = 0; i < vars.length; i++) {
+      // `maxLen` might be shorter if we're near the end of the `vars` array
+      const max = Math.min(vars.length - i, maxLen)
+
+      const text: string[] = []
+      for (let j = 0; j < max; j++) {
+        text.push(vars[i + j]!.text)
+      }
+
+      for (let j = max; j > 1; j--, text.pop()) {
+        const full = text.join("")
+
+        const kind = words.get(full)
+        if (kind) {
+          console.log(kind)
+          vars[i]!.render(kind, L)
+          for (let k = i + 1; k < i + j - 1; k++) {
+            vars[k]!.render(kind, null)
+          }
+          vars[i + j - 1]!.render(kind, R)
+          i += j - 1
+          break
+        }
+      }
+    }
   }
 
   ascii(): string {
