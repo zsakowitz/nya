@@ -21,8 +21,8 @@ export class CmdDot extends Leaf {
     this.setEl(
       h(
         "nya-cmd-dot" +
-          (l && !r ? " nya-cmd-dot-r" : "") +
-          (r && !l ? " nya-cmd-dot-l" : "") +
+          (l && !r && this[R] ? " nya-cmd-dot-r" : "") +
+          (r && !l && this[L] ? " nya-cmd-dot-l" : "") +
           (prop ? " nya-cmd-dot-prop" : ""),
         ".",
       ),
