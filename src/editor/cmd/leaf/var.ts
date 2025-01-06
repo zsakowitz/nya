@@ -164,6 +164,12 @@ export class CmdVar extends Leaf {
   }
 
   latex(): string {
+    if (this.part == L) {
+      return "\\operatorname{" + this.text
+    }
+    if (this.part == R) {
+      return this.text + "}"
+    }
     return this.text
   }
 
