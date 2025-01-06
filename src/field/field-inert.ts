@@ -9,7 +9,7 @@ export interface FieldInitProps {
 
 /** A math field which registers no event listeners and is effectively inert. */
 export class FieldInert {
-  readonly contents
+  readonly el
   readonly block = new Block(null)
   sel: Selection = new Selection(this.block, null, null, R)
 
@@ -17,9 +17,22 @@ export class FieldInert {
     readonly exts: Exts,
     readonly options: Options,
   ) {
-    this.contents = this.block.el
-    this.contents.className =
-      "nya-display cursor-text whitespace-nowrap font-['Symbola','Times',sans-serif] text-[1.265em] font-normal not-italic transition [line-height:1] focus:outline-none [&_*]:cursor-text block select-none"
+    this.el = this.block.el
+    this.el.className =
+      "nya-display cursor-text whitespace-nowrap font-['Symbola','Times',sans-serif] text-[1.265em] font-normal not-italic transition [line-height:1] cursor-text block select-none inline-block"
+  }
+
+  setPrefix(block: Block | ((field: FieldInert) => void)) {
+    if (typeof block == "function") {
+      const field = new FieldInert(this.exts, this.options)
+      block(field)
+      block = field.block
+    }
+    while (block.el.children[0]) {
+      const node = block.el.children[block.el.children.length - 1]!
+      node.classList.add("nya-prefix")
+      this.el.insertBefore(node, this.el.firstChild)
+    }
   }
 
   init(init: Init, input: string, props?: FieldInitProps) {

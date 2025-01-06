@@ -39,12 +39,14 @@ body {
 }
 
 :is(.nya-cmd-op, .nya-cmd-word-r) + .nya-cmd-pm > *,
-:is(.nya-cmd-op, .nya-cmd-word-r) + .nya-cursor + .nya-cmd-pm > * {
+:is(.nya-cmd-op, .nya-cmd-word-r) + .nya-cursor + .nya-cmd-pm > *,
+.nya-cmd-op:first-child > *,
+.nya-cursor:first-child + .nya-cmd-op > * {
   @apply pl-0;
 }
 
-.nya-cmd-pm + .nya-cmd-word-l,
-.nya-cmd-pm + .nya-cursor + .nya-cmd-word-l {
+.nya-cmd-op + .nya-cmd-word-l,
+.nya-cmd-op + .nya-cursor + .nya-cmd-word-l {
   @apply pl-0;
 }
 
@@ -118,6 +120,27 @@ body {
   @apply pl-0;
 }
 
-.nya-cmd-word-r:has(+ .nya-cmd-dot-prop, + .nya-cursor + .nya-cmd-dot-prop) {
+.nya-cmd-word-r:has(
+    + .nya-cmd-dot-prop,
+    + .nya-cursor + .nya-cmd-dot-prop,
+    + .nya-cmd-op:not(.nya-cmd-pm),
+    + .nya-cursor + .nya-cmd-op:not(.nya-cmd-pm)
+  ) {
   @apply pr-0;
+}
+
+.nya-cmd-pm:first-child > *,
+.nya-cursor:first-child + .nya-cmp-pm > * {
+  @apply pr-0;
+}
+
+.nya-cmd-op:not(.nya-cmd-pm) + .nya-cmd-op:not(.nya-cmd-pm) > *,
+.nya-cmd-op:not(.nya-cmd-pm) + .nya-cursor + .nya-cmd-op:not(.nya-cmd-pm) > * {
+  @apply pl-[.1em];
+}
+
+.nya-cmd-op:not(.nya-cmd-pm):has(+ .nya-cmd-op:not(.nya-cmd-pm)) > *,
+.nya-cmd-op:not(.nya-cmd-pm):has(+ .nya-cursor + .nya-cmd-op:not(.nya-cmd-pm))
+  > * {
+  @apply pr-[.1em];
 }

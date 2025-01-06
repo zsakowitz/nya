@@ -1,5 +1,5 @@
 import { L, type Cursor, type Dir, type InitProps } from "../../model"
-import { Op } from "./op"
+import { Op, OpEqArrow, OpMinus, OpTo } from "./op"
 
 /** An `Op` which can be negated. */
 export abstract class OpCeq extends Op {
@@ -192,9 +192,27 @@ export const OpLt = cmp(
   ["≰", " is not less than or equal to ", "≰", "≰"],
 )
 
-export const OpGt = cmp(
+export class OpGt extends cmp(
   [">", " is greater than ", ">", ">"],
   ["≯", " is not greater than ", "≯", "≯"],
   ["≥", " is greater than or equal to ", "≥", ">="],
   ["≱", " is not greater than or equal to ", "≱", "≱"],
-)
+) {
+  static init(cursor: Cursor, props: InitProps) {
+    if (props.input == ">") {
+      if (cursor[L] instanceof OpEq && !cursor[L].neg) {
+        cursor[L].remove()
+        new OpEqArrow().insertAt(cursor, L)
+        return
+      }
+
+      if (cursor[L] instanceof OpMinus) {
+        cursor[L].remove()
+        new OpTo().insertAt(cursor, L)
+        return
+      }
+    }
+
+    return super.init(cursor, props)
+  }
+}

@@ -1380,6 +1380,16 @@ export abstract class Command<
     this.parent?.insert(block, this[L], this[R])
   }
 
+  /** Creates a {@linkcode Block} containing only this {@linkcode Command}. */
+  lone(): Block {
+    if (this.parent) {
+      this.remove()
+    }
+    const block = new Block(null)
+    this.insertAt(block.cursor(R), L)
+    return block
+  }
+
   /**
    * Whether this command is a simple transparent wrapper around its contents
    * which may safely be omitted (assuming proper order of operations is

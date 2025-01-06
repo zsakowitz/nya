@@ -1,6 +1,7 @@
 import { Leaf } from "."
 import { h, t } from "../../jsx"
-import { L, type Cursor } from "../../model"
+import { L, R, type Cursor, type Dir } from "../../model"
+import { OpEq } from "./cmp"
 
 export abstract class Op extends Leaf {
   constructor(
@@ -112,3 +113,31 @@ export const OpMinusPlus = opm("\\mp ", " minus-or-plus ", "∓")
 
 export const OpCdot = op("\\cdot ", " times ", "·", "*")
 export const OpDiv = op("÷", " divided by ", "÷", "/")
+export class OpTo extends op("\\to ", " becomes ", "→", "->") {
+  delete(cursor: Cursor, from: Dir): void {
+    if (from == R) {
+      const minus = new OpMinus()
+      this.replaceWith(minus.lone())
+      if (cursor[R] == this) {
+        cursor.moveTo(minus, L)
+      }
+      return
+    }
+
+    super.delete(cursor, from)
+  }
+}
+export class OpEqArrow extends op("⇒", " maps to ", "⇒", "=>") {
+  delete(cursor: Cursor, from: Dir): void {
+    if (from == R) {
+      const minus = new OpEq(false)
+      this.replaceWith(minus.lone())
+      if (cursor[R] == this) {
+        cursor.moveTo(minus, L)
+      }
+      return
+    }
+
+    super.delete(cursor, from)
+  }
+}

@@ -5,15 +5,15 @@ import type { Exts, Options } from "./options"
 
 export class Field extends FieldInert {
   readonly cursor = h(
-    "relative nya-cursor border-current w-px -ml-px border-l [.nya-display:has(.nya-cmd-prompt)_&]:hidden",
+    "relative nya-cursor border-current w-px -ml-px border-l [.nya-display:has(.nya-cmd-prompt)_&]:hidden [.nya-display:not(:focus)_&]:hidden",
   )
-  readonly field = h({ tabindex: "0" }, this.contents)
 
   constructor(exts: Exts, options: Options) {
     super(exts, options)
+    this.el.tabIndex = 0
 
     let isPointerDown = false
-    this.field.addEventListener("pointerdown", (event) => {
+    this.el.addEventListener("pointerdown", (event) => {
       isPointerDown = true
 
       const cursor = this.block.focus(event.clientX, event.clientY)
@@ -30,7 +30,7 @@ export class Field extends FieldInert {
       this.onAfterChange()
     })
     addEventListener("pointerup", () => (isPointerDown = false))
-    this.field.addEventListener("pointermove", (event) => {
+    this.el.addEventListener("pointermove", (event) => {
       if (!isPointerDown) return
 
       this.onBeforeChange()
@@ -42,11 +42,11 @@ export class Field extends FieldInert {
 
       this.onAfterChange()
     })
-    this.field.addEventListener(
+    this.el.addEventListener(
       "touchmove",
       (event) => isPointerDown && event.preventDefault(),
     )
-    this.field.addEventListener("keydown", (event) => {
+    this.el.addEventListener("keydown", (event) => {
       if (event.metaKey || event.ctrlKey) return
       const ext = this.exts.of(event.key)
       if (!ext) return
