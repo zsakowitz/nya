@@ -1,9 +1,22 @@
 import { Leaf } from "."
 import { h, t } from "../../jsx"
-import { L, R, type Cursor, type Dir } from "../../model"
+import { L, R, type Cursor, type Dir, type InitProps } from "../../model"
+import { CmdSupSub } from "../math/supsub"
 import { OpEq } from "./cmp"
 
 export abstract class Op extends Leaf {
+  /** Exits `SupSub` nodes when instructed to, following the passed `options.` */
+  static exitSupSub(cursor: Cursor, { options }: InitProps) {
+    if (
+      options.exitSubWithOp &&
+      cursor.parent?.parent instanceof CmdSupSub &&
+      cursor.parent.parent.sub == cursor.parent &&
+      !cursor[R]
+    ) {
+      cursor.moveTo(cursor.parent.parent, R)
+    }
+  }
+
   constructor(
     readonly ctrlSeq: string,
     html: string,
@@ -22,6 +35,21 @@ export abstract class Op extends Leaf {
 }
 
 export abstract class OpPm extends Leaf {
+  static exitSupSub(cursor: Cursor, { options }: InitProps) {
+    if (
+      (options.exitSubWithOp &&
+        cursor.parent?.parent instanceof CmdSupSub &&
+        cursor.parent.parent.sub == cursor.parent &&
+        !cursor[R]) ||
+      (options.exitSupWithPm &&
+        cursor.parent?.parent instanceof CmdSupSub &&
+        cursor.parent.parent.sup == cursor.parent &&
+        !cursor[R])
+    ) {
+      cursor.moveTo(cursor.parent.parent, R)
+    }
+  }
+
   static render(html: string) {
     return h("nya-cmd-op nya-cmd-pm", h("px-[.2em] inline-block", t(html)))
   }
@@ -46,7 +74,8 @@ export function op(
   endsImplicitGroup = true,
 ) {
   return class extends Op {
-    static init(cursor: Cursor) {
+    static init(cursor: Cursor, props: InitProps) {
+      this.exitSupSub(cursor, props)
       new this().insertAt(cursor, L)
     }
 
@@ -80,7 +109,8 @@ export function opm(
   endsImplicitGroup = true,
 ) {
   return class extends OpPm {
-    static init(cursor: Cursor) {
+    static init(cursor: Cursor, props: InitProps) {
+      this.exitSupSub(cursor, props)
       new this().insertAt(cursor, L)
     }
 

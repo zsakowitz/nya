@@ -186,6 +186,8 @@ export const words = new WordMap<WordKind>([
 export const options: Options = Object.freeze<Options>({
   autoCmds,
   words,
+  exitSubWithOp: true,
+  exitSupWithPm: true,
   subscriptNumberAfter(cmd) {
     return cmd instanceof CmdSupSub ?
         cmd[L] instanceof CmdVar && cmd[L].kind == null

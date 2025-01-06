@@ -10,6 +10,15 @@ const sheet = new Sheet(exts, { field: options })
 
 {
   const expr = new Expr(sheet)
+  expr.field.setPrefix((field) => {
+    field.typeEach("f ( z , c ) =")
+  })
+  expr.removable = false
+  expr.field.typeEach("z ^ 2 + c")
+}
+
+{
+  const expr = new Expr(sheet)
   expr.field.setPrefix(({ block }) => {
     const cursor = block.cursor(R)
     new CmdWord("var", "detail").insertAt(cursor, L)

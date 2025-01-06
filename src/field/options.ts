@@ -102,6 +102,12 @@ export interface Options {
   /** If `true`, letter substitution will still occur in subscripts. */
   autoCmdsInSubscripts?: boolean
 
+  /** If `true`, typing a `CmdOp` in a subscript will exit the subscript. */
+  exitSubWithOp?: boolean
+
+  /** If `true`, typing a `CmdPm` in a superscript will exit the superscript. */
+  exitSupWithPm?: boolean
+
   /**
    * If any word from `autoCmds` is typed, it will be automatically initialized
    * using the appropriate {@link Init `Init`} instance.

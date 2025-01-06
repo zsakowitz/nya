@@ -66,7 +66,10 @@ export class CmdVar extends Leaf {
       "nya-cmd-var" +
         (kind ? ` nya-cmd-word nya-cmd-word-${kind} nya-cmd-word${side}` : ""),
       h(
-        "font-['Times'] [line-height:.9]" + (kind == null ? " italic" : ""),
+        "font-['Times'] [line-height:.9]" +
+          (kind == null ? " italic" : "") +
+          // `relative` helps keep f above other letters, which is important in selections
+          (text == "f" ? " ml-[.1em] mr-[.1em] relative" : ""),
         t(text),
       ),
     )

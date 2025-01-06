@@ -42,7 +42,8 @@ function ceq(
   endsImplicitGroup = true,
 ) {
   return class extends OpCeq {
-    static init(cursor: Cursor, _props: InitProps) {
+    static init(cursor: Cursor, props: InitProps) {
+      this.exitSupSub(cursor, props)
       new this(false).insertAt(cursor, L)
     }
 
@@ -93,7 +94,8 @@ function cmp(
   endsImplicitGroup = true,
 ) {
   return class extends OpCmp {
-    static init(cursor: Cursor, _props: InitProps) {
+    static init(cursor: Cursor, props: InitProps) {
+      this.exitSupSub(cursor, props)
       new this(false, false).insertAt(cursor, L)
     }
 

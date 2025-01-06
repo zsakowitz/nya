@@ -1,6 +1,6 @@
 import { Field } from "../field/field"
 import { h } from "../field/jsx"
-import { D, U, type Dir, type VDir } from "../field/model"
+import { D, L, R, U, type Dir, type VDir } from "../field/model"
 import type { Exts, Options as FieldOptions } from "../field/options"
 
 export interface Options {
@@ -32,11 +32,39 @@ class ExprField extends Field {
   }
 
   onDelOut(towards: Dir): void {
-    if (!this.expr.field.block.isEmpty() || !this.expr.removable) {
+    console.log("del out")
+
+    if (!this.expr.field.block.isEmpty()) {
       return
     }
 
     const index = this.expr.index
+
+    if (this.expr.removable) {
+      this.expr.sheet.exprs.splice(index, 1)
+      this.expr.el.remove()
+      this.expr.sheet.checkIndices()
+    }
+
+    const nextIndex =
+      !this.expr.removable ?
+        towards == L ?
+          Math.max(0, index - 1)
+        : index + 1
+      : towards == L ? Math.max(0, index - 1)
+      : index
+
+    const next = this.expr.sheet.exprs[nextIndex]
+
+    if (next) {
+      next.field.onBeforeChange()
+      next.field.sel = next.field.block.cursor(towards == L ? R : L).selection()
+      next.field.onAfterChange(false)
+      next.field.el.focus()
+    } else {
+      const expr = new Expr(this.expr.sheet)
+      setTimeout(() => expr.field.el.focus())
+    }
   }
 }
 
@@ -45,7 +73,7 @@ export class Expr {
   readonly el
   readonly elIndex
 
-  removable = false
+  removable = true
   index
 
   constructor(readonly sheet: Sheet) {
@@ -134,14 +162,13 @@ export class Sheet {
 
   checkIndices() {
     for (let i = 0; i < this.exprs.length; i++) {
-      this.exprs[i]!.elIndex.textContent = "" + i
+      this.exprs[i]!.elIndex.textContent = i + 1 + ""
       this.exprs[i]!.index = i
     }
+    this.checkNextIndex()
   }
 
   checkNextIndex() {
-    ;(
-      this.elExpressions.lastChild as HTMLElement
-    ).children[0]!.children[0]!.textContent = this.exprs.length + 1 + ""
+    this.elNextIndex.textContent = this.exprs.length + 1 + ""
   }
 }

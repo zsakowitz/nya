@@ -718,6 +718,10 @@ video {
   margin-left: -.35em;
 }
 
+.ml-\[\.1em\] {
+  margin-left: .1em;
+}
+
 .ml-\[\.2em\] {
   margin-left: .2em;
 }
@@ -1326,10 +1330,6 @@ video {
   scroll-margin: 1rem;
 }
 
-.\[scroll-padding\:1rem\] {
-  scroll-padding: 1rem;
-}
-
 @font-face {
   font-family: Symbola;
 
@@ -1461,9 +1461,7 @@ body {
 }
 
 .nya-cmd-pm:first-child > *,
-.nya-cursor:first-child + .nya-cmd-pm > *,
-.nya-cmd-op:last-child > *,
-.nya-cmd-op:has(+ .nya-cursor:last-child) > * {
+.nya-cursor:first-child + .nya-cmd-pm > * {
   padding-right: 0px;
 }
 
