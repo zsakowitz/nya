@@ -652,6 +652,13 @@ export class Span {
     }
   }
 
+  /** Collects all elements in the `Span`, travelling from left-to-right. */
+  contents(): Command[] {
+    const ret: Command[] = []
+    this.each((el) => ret.push(el))
+    return ret
+  }
+
   /** Creates a {@linkcode Cursor} at one side of this `Span`. */
   cursor(side: Dir) {
     return new Cursor(this.parent, side == R ? this[R] : this.at(L))
@@ -827,11 +834,6 @@ export class Selection extends Span {
     const ag = anchor.parents().reverse()
     const fg = focus.parents().reverse()
 
-    console.log({
-      ag: ag.map((x) => x[0].el),
-      fg: fg.map((x) => x[0].el),
-    })
-
     const lastSharedParentIndex = Array.from(
       { length: Math.min(ag.length, fg.length) },
       (_, i) => {
@@ -856,7 +858,6 @@ export class Selection extends Span {
         fc = f
       } else {
         const toA = f.dirTo(a)!
-        console.log(toA == L ? "L" : "R")
         ac = a
         if (toA == L) {
           fc = f.cursor(R)
@@ -867,7 +868,6 @@ export class Selection extends Span {
     } else {
       if (f instanceof Cursor) {
         const toA = a.dirTo(f)!
-        console.log(toA == L ? "L" : "R")
         fc = f
         if (toA == L) {
           ac = a.cursor(R)
@@ -911,7 +911,7 @@ export class Selection extends Span {
     /** The true anchor of the `Selection`, which may be in an inner block. */
     public cachedAnchor = new Cursor(
       parent,
-      focused == L ? lhs : rhs?.[L] || null,
+      focused == L ? lhs?.[R] || null : rhs,
     ),
   ) {
     super(parent, lhs, rhs)
@@ -943,9 +943,43 @@ export class Selection extends Span {
 
   /** Moves the focus node in a given direction. */
   moveFocus(dir: Dir) {
+    if (!this.parent) return
+
+    // Special case for moving if the cached anchor is inside the selection
+    inner: if (!this.isCursor() && this.focused != dir) {
+      const parents = this.cachedAnchor.parents()
+      const contents = this.contents()
+      let inner
+      parent: {
+        for (const parent of parents) {
+          if (contents.indexOf(parent[0].parent!) != -1) {
+            inner = parent
+            break parent
+          }
+        }
+        break inner
+      }
+
+      console.log({
+        focused: this.focused,
+      })
+
+      const next = Selection.of(
+        this.cachedAnchor,
+        inner[0].cursor(this.focused),
+      )
+      this.parent = next.parent
+      this[L] = next[L]
+      this[R] = next[R]
+      this.focused = next.focused
+      this.cachedAnchor = next.cachedAnchor
+      return
+    }
+
     if (this.isCursor()) {
       this.focused = dir
     }
+
     this.move(this.focused, dir)
   }
 

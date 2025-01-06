@@ -230,7 +230,6 @@ function render() {
     block: "nearest",
     inline: "nearest",
   })
-  console.log(cursor)
 }
 
 addEventListener("keydown", (x) => {
