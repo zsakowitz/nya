@@ -8,9 +8,9 @@ import {
   U,
   type Cursor,
   type Dir,
+  type InitProps,
   type VDir,
 } from "../../model"
-import type { Options } from "../../options"
 import { focusEdge } from "../leaf"
 import { OpEq } from "../leaf/cmp"
 import { CmdVar } from "../leaf/var"
@@ -34,7 +34,7 @@ export class CmdBig extends Command<
   [sub: Block] | [sub: Block, sup: Block],
   BigCmd
 > {
-  static init(cursor: Cursor, input: string, options: Options) {
+  static init(cursor: Cursor, { input, options }: InitProps) {
     if (!(input in BIG_ALIASES)) return
 
     const seq = BIG_ALIASES[input]!

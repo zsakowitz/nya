@@ -4,7 +4,9 @@ import { Selection, type Init } from "./model"
 import type { Options } from "./options"
 
 export class Field extends Display {
-  readonly cursor = h("relative nya-cursor border-current w-px -ml-px border-l")
+  readonly cursor = h(
+    "relative nya-cursor border-current w-px -ml-px border-l [.nya-display:has(.nya-cmd-prompt)_&]:hidden",
+  )
   readonly field = h({ tabindex: "0" }, this.contents)
 
   constructor(exts: Exts, options: Options) {

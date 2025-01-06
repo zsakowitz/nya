@@ -1,6 +1,6 @@
 import { Leaf } from "."
 import { h, t } from "../../jsx"
-import { Cursor, L, R, Span, type Dir } from "../../model"
+import { Cursor, L, R, Span, type Dir, type InitProps } from "../../model"
 import type { Options, WordMap } from "../../options"
 
 /**
@@ -20,12 +20,8 @@ import type { Options, WordMap } from "../../options"
 export type WordKind = "var" | "prefix" | "infix"
 
 export class CmdVar extends Leaf {
-  static init(
-    cursor: Cursor,
-    input: string,
-    options: Options,
-    event: KeyboardEvent | undefined,
-  ) {
+  static init(cursor: Cursor, props: InitProps) {
+    const { input, options } = props
     const self = new CmdVar(input, options)
     self.insertAt(cursor, L)
     if (options.autoCmds) {
@@ -47,7 +43,7 @@ export class CmdVar extends Leaf {
         if (cmds.has(word)) {
           const cmd = cmds.get(word)!
           new Span(cursor.parent, leftmost[L], self[R]).remove()
-          cmd.init(cursor, "\\" + word, options, event)
+          cmd.init(cursor, { ...props, input: "\\" + word })
           return
         }
 

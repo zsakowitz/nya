@@ -788,6 +788,14 @@ video {
   min-width: .5em;
 }
 
+.min-w-\[6em\] {
+  min-width: 6em;
+}
+
+.min-w-\[3ch\] {
+  min-width: 3ch;
+}
+
 .scale-x-\[70\%\] {
   --tw-scale-x: 70%;
   transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
@@ -801,6 +809,10 @@ video {
   -webkit-user-select: none;
      -moz-user-select: none;
           user-select: none;
+}
+
+.resize {
+  resize: both;
 }
 
 .grid-cols-\[auto\2c auto\] {
@@ -913,6 +925,15 @@ video {
 
 .bg-zlx-selection {
   background-color: var(--zlx-selection);
+}
+
+.bg-slate-200 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(226 232 240 / var(--tw-bg-opacity, 1));
+}
+
+.bg-transparent {
+  background-color: transparent;
 }
 
 .fill-current {
@@ -1122,6 +1143,11 @@ video {
 
 .opacity-20 {
   opacity: 0.2;
+}
+
+.blur {
+  --tw-blur: blur(8px);
+  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
 }
 
 .filter {
@@ -1342,4 +1368,8 @@ body {
 
 .bg-zlx-selection>.\[\.bg-zlx-selection\>\&\]\:bg-zlx-selection {
   background-color: var(--zlx-selection);
+}
+
+.nya-display:has(.nya-cmd-prompt) .\[\.nya-display\:has\(\.nya-cmd-prompt\)_\&\]\:hidden {
+  display: none;
 }

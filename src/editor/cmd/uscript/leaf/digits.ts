@@ -1,6 +1,6 @@
 import { CmuLeaf } from "."
 import { h, usvg } from "../../../jsx"
-import { L, type Cursor, type InitRet } from "../../../model"
+import { L, type Cursor, type InitProps, type InitRet } from "../../../model"
 
 const Q = 2.1
 
@@ -53,7 +53,7 @@ const SYMS = {
 export type Sym = `${keyof typeof SYMS}`
 
 export class CmuSym extends CmuLeaf {
-  static init(cursor: Cursor, input: string): InitRet {
+  static init(cursor: Cursor, { input }: InitProps): InitRet {
     if (Object.keys(SYMS).indexOf(input) != -1) {
       new CmuSym(input as Sym).insertAt(cursor, L)
     }

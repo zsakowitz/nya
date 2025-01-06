@@ -27,24 +27,12 @@ import {
 } from "./cmd/util/cursor"
 import { CmdMap } from "./cmd/util/map"
 import { CmdNoop } from "./cmd/util/noop"
+import { CmdPrompt } from "./cmd/util/prompt"
 import { Exts } from "./display"
 import { Field } from "./field"
 import { h } from "./jsx"
 import { D, L, R, Selection, U, type Init } from "./model"
 import { WordMap } from "./options"
-
-const CmdPrompt: Init = {
-  init() {
-    const val = prompt("type a latex command")
-    if (!val) return
-    field.type("\\" + val)
-  },
-  initOn() {
-    const val = prompt("type a latex command")
-    if (!val) return
-    field.type("\\" + val)
-  },
-}
 
 const exts = new Exts()
   .setDefault(

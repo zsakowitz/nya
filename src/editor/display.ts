@@ -42,11 +42,16 @@ export class Display {
   ) {
     this.contents = this.block.el
     this.contents.className =
-      "cursor-text whitespace-nowrap font-['Symbola','Times',sans-serif] text-[1.265em] font-normal not-italic transition [line-height:1] focus:outline-none [&_*]:cursor-text block select-none"
+      "nya-display cursor-text whitespace-nowrap font-['Symbola','Times',sans-serif] text-[1.265em] font-normal not-italic transition [line-height:1] focus:outline-none [&_*]:cursor-text block select-none"
   }
 
   init(init: Init, input: string, event?: KeyboardEvent) {
-    this.sel = performInit(init, this.sel, input, this.options, event)
+    this.sel = performInit(init, this.sel, {
+      input,
+      event,
+      display: this,
+      options: this.options,
+    })
   }
 
   type(input: string, event?: KeyboardEvent) {

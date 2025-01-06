@@ -1,5 +1,13 @@
 import { h, p, svg } from "../../jsx"
-import { Block, Command, L, R, type Cursor, type Dir } from "../../model"
+import {
+  Block,
+  Command,
+  L,
+  R,
+  type Cursor,
+  type Dir,
+  type InitProps,
+} from "../../model"
 import { CmdComma } from "../leaf/comma"
 
 export const BRACKS = {
@@ -104,7 +112,7 @@ export function matchParen(x: ParenAny) {
 }
 
 export class CmdBrack extends Command<[Block]> {
-  static init(cursor: Cursor, input: string) {
+  static init(cursor: Cursor, { input }: InitProps) {
     if (!cursor.parent) return
 
     // TODO: handle absolute values better

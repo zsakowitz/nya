@@ -1,4 +1,4 @@
-import { L, type Cursor, type Dir } from "../../model"
+import { L, type Cursor, type Dir, type InitProps } from "../../model"
 import { Op } from "./op"
 
 /** An `Op` which can be negated. */
@@ -42,7 +42,7 @@ function ceq(
   endsImplicitGroup = true,
 ) {
   return class extends OpCeq {
-    static init(cursor: Cursor, input: string) {
+    static init(cursor: Cursor, _props: InitProps) {
       new this(false).insertAt(cursor, L)
     }
 
@@ -93,7 +93,7 @@ function cmp(
   endsImplicitGroup = true,
 ) {
   return class extends OpCmp {
-    static init(cursor: Cursor, input: string) {
+    static init(cursor: Cursor, _props: InitProps) {
       new this(false, false).insertAt(cursor, L)
     }
 
@@ -173,15 +173,15 @@ export class OpEq extends ceq(
   ["=", " is equal to ", "=", "="],
   ["≠", " is not equals to ", "≠", "≠"],
 ) {
-  static init(cursor: Cursor, input: string) {
-    if (input == "=") {
+  static init(cursor: Cursor, props: InitProps) {
+    if (props.input == "=") {
       if (cursor[L] instanceof OpCmp && !cursor[L].eq) {
         cursor[L].setEq(true)
         return
       }
     }
 
-    return super.init(cursor, input)
+    return super.init(cursor, props)
   }
 }
 

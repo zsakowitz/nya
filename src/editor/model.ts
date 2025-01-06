@@ -1,4 +1,5 @@
 import type { CmdFrac } from "./cmd/math/frac"
+import type { Display } from "./display"
 import { h } from "./jsx"
 import type { Options } from "./options"
 
@@ -1134,20 +1135,10 @@ export abstract class Command<
    * Initializes this {@linkcode Command} to the left side of the provided
    * {@linkcode Cursor}.
    */
-  static init?(
-    cursor: Cursor,
-    input: string,
-    options: Options,
-    event: KeyboardEvent | undefined,
-  ): InitRet
+  static init?(cursor: Cursor, input: InitProps): InitRet
 
   /** Initializes this {@linkcode Command} over a given {@linkcode Selection}. */
-  static initOn?(
-    selection: Selection,
-    input: string,
-    options: Options,
-    event: KeyboardEvent | undefined,
-  ): InitRet
+  static initOn?(selection: Selection, input: InitProps): InitRet
 
   /** Returns the direction needed to travel from `anchor` to `focus`. */
   static dir(anchor: Command, focus: Command): Dir {
@@ -1539,37 +1530,38 @@ export abstract class Command<
 /** The updated cursor or selection created by {@linkcode Init}. */
 export type InitRet = Cursor | Selection | undefined | void
 
+/** Proprties passed to an `.init()` call. */
+export interface InitProps<E = KeyboardEvent | undefined> {
+  input: string
+  options: Options
+  event: E
+  display: Display
+}
+
 /**
  * Something which can be initialized to the left side of a cursor or (possibly)
  * on top of a selection.
  */
 export interface Init<E = KeyboardEvent | undefined> {
-  init(cursor: Cursor, input: string, options: Options, event: E): InitRet
-  initOn?(
-    selection: Selection,
-    input: string,
-    options: Options,
-    event: E,
-  ): InitRet
+  init(cursor: Cursor, input: InitProps<E>): InitRet
+  initOn?(selection: Selection, input: InitProps<E>): InitRet
 }
 
 export function performInit<E>(
   init: Init<E>,
   selection: Selection,
-  input: string,
-  options: Options,
-  event: E,
+  props: InitProps<E>,
 ): Selection {
   let ret: Cursor | Selection
 
   if (selection.isCursor()) {
     const cursor = selection.cursor(R)
-    ret = init.init(cursor, input, options, event) || cursor
+    ret = init.init(cursor, props) || cursor
   } else if (init.initOn) {
-    ret = init.initOn(selection, input, options, event) || selection
+    ret = init.initOn(selection, props) || selection
   } else {
     const cursor = selection.remove()
-    ret = init.init(cursor, input, options, event) || cursor
+    ret = init.init(cursor, props) || cursor
   }
 
   if (ret instanceof Cursor) {

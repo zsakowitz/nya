@@ -2,10 +2,10 @@ import {
   performInit,
   type Cursor,
   type Init,
+  type InitProps,
   type InitRet,
   type Selection,
 } from "../../model"
-import type { Options } from "../../options"
 
 export class ByRegex implements Init {
   readonly default
@@ -17,33 +17,23 @@ export class ByRegex implements Init {
     this.default = defaultCmd
   }
 
-  init(
-    cursor: Cursor,
-    input: string,
-    options: Options,
-    event: KeyboardEvent | undefined,
-  ) {
+  init(cursor: Cursor, props: InitProps) {
     for (const [regex, cmd] of this.opts) {
-      if (regex.test(input)) {
-        return cmd.init(cursor, input, options, event)
+      if (regex.test(props.input)) {
+        return cmd.init(cursor, props)
       }
     }
-    return this.default?.init(cursor, input, options, event)
+    return this.default?.init(cursor, props)
   }
 
-  initOn(
-    selection: Selection,
-    input: string,
-    options: Options,
-    event: KeyboardEvent | undefined,
-  ): InitRet {
+  initOn(selection: Selection, props: InitProps): InitRet {
     for (const [regex, cmd] of this.opts) {
-      if (regex.test(input)) {
-        return performInit(cmd, selection, input, options, event)
+      if (regex.test(props.input)) {
+        return performInit(cmd, selection, props)
       }
     }
     if (this.default) {
-      return performInit(this.default, selection, input, options, event)
+      return performInit(this.default, selection, props)
     }
   }
 }

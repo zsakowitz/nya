@@ -6,6 +6,7 @@ import {
   R,
   type Cursor,
   type Dir,
+  type InitProps,
   type InitRet,
   type Selection,
   type VDir,
@@ -14,7 +15,7 @@ import {
 export class CmdRoot extends Command<
   [contents: Block] | [contents: Block, root: Block]
 > {
-  static init(cursor: Cursor, input: string): InitRet {
+  static init(cursor: Cursor, { input }: InitProps): InitRet {
     if (input == "\\nthroot") {
       const b1 = new Block(null)
       const b2 = new Block(null)
@@ -29,7 +30,7 @@ export class CmdRoot extends Command<
     return
   }
 
-  static initOn(selection: Selection, input: string): InitRet {
+  static initOn(selection: Selection, { input }: InitProps): InitRet {
     const inner = selection.splice().unwrap()
     const b1 = input == "\\nthroot" ? new Block(null) : null
     const cursor = selection.cursor(R)

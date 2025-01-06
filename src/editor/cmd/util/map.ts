@@ -2,10 +2,10 @@ import {
   performInit,
   type Cursor,
   type Init,
+  type InitProps,
   type InitRet,
   type Selection,
 } from "../../model"
-import type { Options } from "../../options"
 
 export class CmdMap<E> implements Init<E> {
   constructor(
@@ -13,16 +13,14 @@ export class CmdMap<E> implements Init<E> {
     readonly tx: (input: string) => string,
   ) {}
 
-  init(cursor: Cursor, input: string, options: Options, event: E): InitRet {
-    return this.fn.init(cursor, this.tx(input), options, event)
+  init(cursor: Cursor, props: InitProps<E>): InitRet {
+    return this.fn.init(cursor, { ...props, input: this.tx(props.input) })
   }
 
-  initOn(
-    selection: Selection,
-    input: string,
-    options: Options,
-    event: E,
-  ): InitRet {
-    return performInit(this.fn, selection, this.tx(input), options, event)
+  initOn(selection: Selection, props: InitProps<E>): InitRet {
+    return performInit(this.fn, selection, {
+      ...props,
+      input: this.tx(props.input),
+    })
   }
 }

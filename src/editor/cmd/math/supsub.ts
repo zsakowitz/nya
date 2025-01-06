@@ -8,12 +8,13 @@ import {
   R,
   U,
   type Dir,
+  type InitProps,
   type VDir,
 } from "../../model"
 import { focusEdge } from "../leaf"
 
 export class CmdSupSub extends Command {
-  static init(cursor: Cursor, input: string) {
+  static init(cursor: Cursor, { input }: InitProps) {
     const part =
       input == "^" ? (["sup", U, null, true] as const)
       : input == "_" ? (["sub", D, true, null] as const)

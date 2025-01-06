@@ -1,6 +1,6 @@
 import { Leaf } from "."
 import { h, hx } from "../../jsx"
-import { L, type Cursor } from "../../model"
+import { L, type Cursor, type InitProps } from "../../model"
 
 function brightness(rgb: string) {
   const r = parseInt(rgb.slice(1, 3), 16) / 256
@@ -31,7 +31,7 @@ export class CmdColor extends Leaf {
     }
   }
 
-  static init(cursor: Cursor, input: string) {
+  static init(cursor: Cursor, { input }: InitProps) {
     new CmdColor(CmdColor.parse(input)).insertAt(cursor, L)
   }
 

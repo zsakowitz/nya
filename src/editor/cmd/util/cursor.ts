@@ -25,8 +25,8 @@ export function CmdMove(dir: Dir | VDir, isHomeEnd = false): Init {
   if (dir == U || dir == D) {
     const dirSelect = dir == U ? L : R
     return {
-      init(cursor, _, _0, ev) {
-        if (ev?.shiftKey) {
+      init(cursor, { event }) {
+        if (event?.shiftKey) {
           const sel = cursor.selection()
           sel.moveFocusFast(dirSelect)
           return sel
@@ -34,7 +34,7 @@ export function CmdMove(dir: Dir | VDir, isHomeEnd = false): Init {
           cursor.moveVert(dir)
         }
       },
-      initOn(selection, _, _0, event) {
+      initOn(selection, { event }) {
         if (event?.shiftKey) {
           selection.moveFocusFast(dirSelect)
         }
@@ -42,23 +42,23 @@ export function CmdMove(dir: Dir | VDir, isHomeEnd = false): Init {
     }
   } else {
     return {
-      init(cursor, _, _0, ev) {
-        if (ev) {
+      init(cursor, { event }) {
+        if (event) {
           const action =
-            isHomeEnd ? !isMac() && (ev.ctrlKey ? "doc" : "line")
+            isHomeEnd ? !isMac() && (event.ctrlKey ? "doc" : "line")
             : isMac() ?
-              ev.metaKey && ev.altKey ? null
-              : ev.metaKey ? "line"
-              : ev.altKey ? "word"
+              event.metaKey && event.altKey ? null
+              : event.metaKey ? "line"
+              : event.altKey ? "word"
               : "char"
-            : ev.ctrlKey ? "word"
+            : event.ctrlKey ? "word"
             : "char"
 
           if (!action) {
             return
           }
 
-          if (ev.shiftKey) {
+          if (event.shiftKey) {
             const sel = cursor.selection()
             switch (action) {
               case "line":
@@ -76,7 +76,7 @@ export function CmdMove(dir: Dir | VDir, isHomeEnd = false): Init {
             return sel
           }
 
-          if (ev.altKey) {
+          if (event.altKey) {
             cursor.moveByWord(dir)
             return cursor
           }
@@ -84,23 +84,23 @@ export function CmdMove(dir: Dir | VDir, isHomeEnd = false): Init {
 
         cursor.move(dir)
       },
-      initOn(sel, _, _0, ev) {
-        if (ev) {
+      initOn(sel, { event }) {
+        if (event) {
           const action =
-            isHomeEnd ? !isMac() && (ev.ctrlKey ? "doc" : "line")
+            isHomeEnd ? !isMac() && (event.ctrlKey ? "doc" : "line")
             : isMac() ?
-              ev.metaKey && ev.altKey ? null
-              : ev.metaKey ? "line"
-              : ev.altKey ? "word"
+              event.metaKey && event.altKey ? null
+              : event.metaKey ? "line"
+              : event.altKey ? "word"
               : "char"
-            : ev.ctrlKey ? "word"
+            : event.ctrlKey ? "word"
             : "char"
 
           if (!action) {
             return
           }
 
-          if (ev.shiftKey) {
+          if (event.shiftKey) {
             switch (action) {
               case "line":
                 sel.moveFocusToEnd(dir)
@@ -143,7 +143,7 @@ export const CmdDel: Init = {
 }
 
 export const CmdTab: Init = {
-  init(cursor, _, _0, event) {
+  init(cursor, { event }) {
     const dir = event?.shiftKey ? L : R
     if (!cursor.parent) {
       return
@@ -153,10 +153,10 @@ export const CmdTab: Init = {
     }
     cursor.parent.parent.tabOutOf(cursor, dir, cursor.parent)
   },
-  initOn(sel, _, _0, event) {
-    const dir = event?.shiftKey ? L : R
+  initOn(sel, props) {
+    const dir = props.event?.shiftKey ? L : R
     const cursor = sel.cursor(dir)
-    CmdTab.init(cursor, _, _0, event)
+    CmdTab.init(cursor, props)
     return cursor
   },
 }

@@ -1,12 +1,11 @@
 import { Leaf } from "."
 import { h, t } from "../../jsx"
-import { Block, Cursor, L, R, type Dir } from "../../model"
-import type { Options } from "../../options"
+import { Block, Cursor, L, R, type Dir, type InitProps } from "../../model"
 import { CmdSupSub } from "../math/supsub"
 import { CmdDot } from "./dot"
 
 export class CmdNum extends Leaf {
-  static init(cursor: Cursor, input: string, options: Options) {
+  static init(cursor: Cursor, { input, options }: InitProps) {
     const num = new CmdNum(input)
     const left = cursor[L]
 
