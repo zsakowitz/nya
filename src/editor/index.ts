@@ -45,8 +45,6 @@ const CmdPrompt: Init = {
   },
 }
 
-const Q = 2.4
-
 const exts = new Exts()
   .setDefault(
     new ByRegex([
