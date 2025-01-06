@@ -24,7 +24,7 @@ export class FieldInert {
 
   init(init: Init, input: string, props?: FieldInitProps) {
     if (!props?.skipChangeHandlers) {
-      this.beforeChange?.()
+      this.onBeforeChange?.()
     }
 
     this.sel = performInit(init, this.sel, {
@@ -35,7 +35,7 @@ export class FieldInert {
     })
 
     if (!props?.skipChangeHandlers) {
-      this.afterChange?.()
+      this.onAfterChange?.()
     }
   }
 
@@ -46,6 +46,16 @@ export class FieldInert {
     }
   }
 
-  beforeChange?(): void
-  afterChange?(): void
+  typeEach(source: string) {
+    this.onBeforeChange?.()
+    this.sel = new Selection(this.block, null, null, R)
+    this.sel.remove()
+    source
+      .split(" ")
+      .forEach((input) => this.type(input, { skipChangeHandlers: true }))
+    this.onAfterChange?.()
+  }
+
+  onBeforeChange?(): void
+  onAfterChange?(): void
 }

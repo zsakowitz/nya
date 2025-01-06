@@ -2,15 +2,14 @@ import "../../index.css"
 import { autoCmds, exts, options } from "./defaults"
 import { Field } from "./field"
 import { h } from "./jsx"
-import { R, Selection } from "./model"
 
 const latex = h("text-center block text-sm break-all px-8 text-balance mt-8")
 const ascii = h("text-center block text-sm break-all px-8 text-balance mt-4")
 const reader = h("text-center block text-xs break-all px-8 text-balance mt-4")
 
 class MyField extends Field {
-  afterChange(): void {
-    super.afterChange()
+  onAfterChange(): void {
+    super.onAfterChange()
     latex.textContent = this.block.latex()
     ascii.textContent = this.block.ascii()
     reader.textContent = this.block.reader()
@@ -46,7 +45,7 @@ document.body.append(
       const x = document.createElement("button")
       x.textContent = name
       x.className = "bg-gray-300 rounded px-2 py-1"
-      x.onclick = () => exec(demos[name as keyof typeof demos])
+      x.onclick = () => field.typeEach(demos[name as keyof typeof demos])
       return x
     }),
   ),
@@ -59,17 +58,7 @@ document.body.appendChild(
   ),
 )
 
-function exec(input: string) {
-  field.beforeChange()
-  field.sel = new Selection(field.block, null, null, R)
-  field.sel.remove()
-  input
-    .split(" ")
-    .forEach((input) => field.type(input, { skipChangeHandlers: true }))
-  field.afterChange()
-}
-
-exec(demos.main)
+field.typeEach(demos.main)
 
 document.body.appendChild(latex)
 document.body.appendChild(ascii)

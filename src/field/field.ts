@@ -18,7 +18,7 @@ export class Field extends FieldInert {
 
       const cursor = this.block.focus(event.clientX, event.clientY)
 
-      this.beforeChange()
+      this.onBeforeChange()
 
       if (event.shiftKey) {
         event.preventDefault()
@@ -27,20 +27,20 @@ export class Field extends FieldInert {
         this.sel = cursor.selection()
       }
 
-      this.afterChange()
+      this.onAfterChange()
     })
     addEventListener("pointerup", () => (isPointerDown = false))
     this.field.addEventListener("pointermove", (event) => {
       if (!isPointerDown) return
 
-      this.beforeChange()
+      this.onBeforeChange()
 
       const cursor = this.block.focus(event.clientX, event.clientY)
 
       event.preventDefault()
       this.sel = Selection.of(this.sel.cachedAnchor, cursor)
 
-      this.afterChange()
+      this.onAfterChange()
     })
     this.field.addEventListener(
       "touchmove",
@@ -55,14 +55,14 @@ export class Field extends FieldInert {
     })
   }
 
-  beforeChange() {
+  onBeforeChange() {
     this.sel.each(({ el }) => el.classList.remove("bg-zlx-selection"))
     this.cursor.parentElement?.classList.remove("!bg-transparent")
     this.cursor.remove()
     this.sel.parent?.checkIfEmpty()
   }
 
-  afterChange() {
+  onAfterChange() {
     this.sel.each(({ el }) => el.classList.add("bg-zlx-selection"))
     this.sel.cursor(this.sel.focused).render(this.cursor)
     this.cursor.parentElement?.classList.add("!bg-transparent")
