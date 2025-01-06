@@ -1169,12 +1169,11 @@ body {
   padding-left: .2em;
 }
 
-:is(.nya-cmd-op, .nya-cmd-word-r:not(.nya-cmd-word-var)) + .nya-cmd-pm > *,
-:is(.nya-cmd-op, .nya-cmd-word-r:not(.nya-cmd-word-var))
-  + :where(.nya-cursor)
-  + .nya-cmd-pm
-  > * {
-  padding-right: 0px;
+:is(.nya-cmd-op, .nya-cmd-word-r:not(.nya-cmd-word-var)) {
+  & + .nya-cmd-pm > *,
+  & + :where(.nya-cursor) + .nya-cmd-pm > * {
+    padding-right: 0px;
+  }
 }
 
 :is(.nya-cmd-op, .nya-cmd-word-r) + .nya-cmd-pm > *,
