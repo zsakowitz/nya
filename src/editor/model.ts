@@ -1394,3 +1394,29 @@ export interface Init<E = KeyboardEvent | undefined> {
     event: E,
   ): InitRet
 }
+
+export function performInit<E>(
+  init: Init<E>,
+  selection: Selection,
+  input: string,
+  options: Options,
+  event: E,
+): Selection {
+  let ret: Cursor | Selection
+
+  if (selection.isCursor()) {
+    const cursor = selection.cursor(R)
+    ret = init.init(cursor, input, options, event) || cursor
+  } else if (init.initOn) {
+    ret = init.initOn(selection, input, options, event) || selection
+  } else {
+    const cursor = selection.remove()
+    ret = init.init(cursor, input, options, event) || cursor
+  }
+
+  if (ret instanceof Cursor) {
+    return ret.selection()
+  } else {
+    return ret
+  }
+}

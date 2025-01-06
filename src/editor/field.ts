@@ -1,4 +1,4 @@
-import { Block, Cursor, R, Selection, type Init, type InitRet } from "./model"
+import { Block, performInit, R, Selection, type Init } from "./model"
 import type { Options } from "./options"
 
 export class Exts {
@@ -46,25 +46,7 @@ export class Field {
   }
 
   init(init: Init, input: string, event?: KeyboardEvent) {
-    let ret: InitRet
-
-    if (this.sel.isCursor()) {
-      const cursor = this.sel.cursor(R)
-      ret = init.init(cursor, input, this.options, event) || cursor
-    } else if (init.initOn) {
-      ret = init.initOn(this.sel, input, this.options, event) || this.sel
-    } else {
-      const cursor = this.sel.remove()
-      ret = init.init(cursor, input, this.options, event) || cursor
-    }
-
-    if (ret) {
-      if (ret instanceof Cursor) {
-        this.sel = ret.selection()
-      } else {
-        this.sel = ret
-      }
-    }
+    this.sel = performInit(init, this.sel, input, this.options, event)
   }
 
   type(input: string, event?: KeyboardEvent) {
