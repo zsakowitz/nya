@@ -554,6 +554,18 @@ video {
   display: none;
 }
 
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
 .static {
   position: static;
 }
@@ -715,6 +727,20 @@ video {
   display: contents;
 }
 
+.aspect-square {
+  aspect-ratio: 1 / 1;
+}
+
+.size-6 {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.size-\[1em\] {
+  width: 1em;
+  height: 1em;
+}
+
 .h-3\.5 {
   height: 0.875rem;
 }
@@ -766,6 +792,14 @@ video {
 
 .w-px {
   width: 1px;
+}
+
+.w-\[2em\] {
+  width: 2em;
+}
+
+.w-\[1\.5em\] {
+  width: 1.5em;
 }
 
 .min-w-\[\.5em\] {
@@ -842,6 +876,22 @@ video {
   border-radius: 0.25rem;
 }
 
+.rounded-\[\.25em\] {
+  border-radius: .25em;
+}
+
+.rounded-\[\.125em\] {
+  border-radius: .125em;
+}
+
+.border {
+  border-width: 1px;
+}
+
+.border-2 {
+  border-width: 2px;
+}
+
 .border-y {
   border-top-width: 1px;
   border-bottom-width: 1px;
@@ -861,6 +911,11 @@ video {
 
 .border-current {
   border-color: currentColor;
+}
+
+.border-black {
+  --tw-border-opacity: 1;
+  border-color: rgb(0 0 0 / var(--tw-border-opacity, 1));
 }
 
 .border-t-current {
@@ -1026,6 +1081,70 @@ video {
   vertical-align: 1.3em;
 }
 
+.align-\[-\.1em\] {
+  vertical-align: -.1em;
+}
+
+.align-\[-\.01em\] {
+  vertical-align: -.01em;
+}
+
+.align-\[-\.02em\] {
+  vertical-align: -.02em;
+}
+
+.align-\[-\.015em\] {
+  vertical-align: -.015em;
+}
+
+.align-\[-\.0125em\] {
+  vertical-align: -.0125em;
+}
+
+.align-\[-\.0em\] {
+  vertical-align: -.0em;
+}
+
+.align-\[-1em\] {
+  vertical-align: -1em;
+}
+
+.align-\[\.1em\] {
+  vertical-align: .1em;
+}
+
+.align-\[\.01em\] {
+  vertical-align: .01em;
+}
+
+.align-\[\.02em\] {
+  vertical-align: .02em;
+}
+
+.align-\[\.015em\] {
+  vertical-align: .015em;
+}
+
+.align-\[\.0075em\] {
+  vertical-align: .0075em;
+}
+
+.align-\[\.01125em\] {
+  vertical-align: .01125em;
+}
+
+.align-\[0\.075em\] {
+  vertical-align: 0.075em;
+}
+
+.align-\[\.075em\] {
+  vertical-align: .075em;
+}
+
+.align-\[\.025em\] {
+  vertical-align: .025em;
+}
+
 .font-\[\'Symbola\'\2c \'Times\'\2c sans-serif\] {
   font-family: 'Symbola','Times',sans-serif;
 }
@@ -1036,6 +1155,10 @@ video {
 
 .font-serif {
   font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+}
+
+.font-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
 .text-\[1\.265em\] {
@@ -1076,6 +1199,18 @@ video {
   line-height: 1rem;
 }
 
+.text-\[50\%\] {
+  font-size: 50%;
+}
+
+.text-\[\.8em\] {
+  font-size: .8em;
+}
+
+.text-\[30\%\] {
+  font-size: 30%;
+}
+
 .font-normal {
   font-weight: 400;
 }
@@ -1090,6 +1225,11 @@ video {
 
 .not-italic {
   font-style: normal;
+}
+
+.text-white {
+  --tw-text-opacity: 1;
+  color: rgb(255 255 255 / var(--tw-text-opacity, 1));
 }
 
 .underline {
@@ -1141,11 +1281,6 @@ body {
   --zlx-selection: #bfdbfe;
 }
 
-:is(.nya-cmd-op, .nya-cmd-word-r) + .nya-cmd-pm > * {
-  padding-left: 0px;
-  padding-right: 0px;
-}
-
 .nya-cmd-word-r {
   padding-right: .2em;
 }
@@ -1154,19 +1289,31 @@ body {
   padding-left: .2em;
 }
 
-.nya-cmd-pm + .nya-cmd-word-l {
+:is(.nya-cmd-op, .nya-cmd-word-r) + .nya-cmd-pm > *,
+:is(.nya-cmd-op, .nya-cmd-word-r) + :where(.nya-cursor) + .nya-cmd-pm > * {
+  padding-left: 0px;
+  padding-right: 0px;
+}
+
+.nya-cmd-pm + .nya-cmd-word-l,
+.nya-cmd-pm + :where(.nya-cursor) + .nya-cmd-word-l {
   padding-left: 0px;
 }
 
-.nya-cmd-word-r:not(.nya-cmd-word-infix) + .nya-cmd-brack {
+.nya-cmd-word-r:not(.nya-cmd-word-infix) + .nya-cmd-brack,
+.nya-cmd-word-r:not(.nya-cmd-word-infix)
+  + :where(.nya-cursor)
+  + .nya-cmd-brack {
   margin-left: -.2em;
 }
 
-.nya-cmd-brack + .nya-cmd-word-l.nya-cmd-word-var {
+.nya-cmd-brack + .nya-cmd-word-l.nya-cmd-word-var,
+.nya-cmd-brack + :where(.nya-cursor) + .nya-cmd-word-l.nya-cmd-word-var {
   padding-left: 0px;
 }
 
-.nya-cmd-word-r + .nya-cmd-word-l {
+.nya-cmd-word-r + .nya-cmd-word-l,
+.nya-cmd-word-r + :where(.nya-cursor) + .nya-cmd-word-l {
   margin-left: -.2em;
 }
 

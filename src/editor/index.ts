@@ -1,5 +1,6 @@
 import "../../index.css"
 import { OpEq, OpGt, OpLt } from "./cmd/leaf/cmp"
+import { CmdColor } from "./cmd/leaf/color"
 import { CmdComma } from "./cmd/leaf/comma"
 import { CmdDot } from "./cmd/leaf/dot"
 import { CmdNum } from "./cmd/leaf/num"
@@ -86,6 +87,7 @@ const exts = new Exts()
   .set("Tab", CmdTab)
   // manual latex
   .set("\\", CmdPrompt)
+  .set("color", CmdColor)
 
 const autoCmds = new WordMap<Init>([
   ["sum", CmdBig],
@@ -98,6 +100,7 @@ const autoCmds = new WordMap<Init>([
   ["cases", CmdPiecewise],
   ["switch", CmdPiecewise],
   ["piecewise", CmdPiecewise],
+  ["color", CmdColor],
 ])
 
 const words = new WordMap<WordKind>([
@@ -148,7 +151,7 @@ const field = new Field(exts, {
 })
 
 const demos = {
-  main: "2 * 3 a 4 5 6 8 ^ 9 2 3 ^ 9 ^ 5 ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight + 0 4 / 5 ArrowRight ArrowLeft ^ 2 ArrowRight ArrowRight 3 a 2 ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowRight ^ 4 3 6 ArrowRight / 2 / 3 ArrowRight + 4 ArrowLeft ArrowLeft ArrowLeft ArrowDown ArrowLeft ArrowUp ArrowDown ArrowUp ArrowDown ArrowDown ArrowDown 4 3 2 1 9 3 4 2 ArrowUp ArrowUp ArrowUp ArrowUp ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft \\sum 2 3 ArrowUp 4 9 ArrowRight ArrowRight m a t r i x 1 ArrowRight 2 ArrowDown 4 ArrowLeft ArrowLeft 3 ArrowLeft ArrowLeft ArrowLeft f o r x ^ 2 Tab Tab i Tab [ 1 . . . 1 0 ] Tab n ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft i n t 2 ArrowDown ArrowRight ArrowRight ArrowRight ArrowRight + ^ 4 Tab ArrowLeft ArrowLeft ArrowLeft ArrowLeft + p i e c e w i s e m a t r i x 1 ArrowRight 2 ArrowDown 4 ArrowLeft ArrowLeft 3 ArrowLeft 5 ArrowLeft ArrowLeft 8 ArrowUp 7 ArrowDown ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight y > = 4 ArrowDown ArrowLeft 2 7 ^ 8 ^ 9 / 3 Tab Tab Tab Tab x < / 3 ; 5 s i n + 3 - c o s 2 b x 5 w i t h x = 5 w i d t h - 3 - - - 4 + + 5 + - 6 w i t h - 3 ; 5 + s i n 3 - c o s 2 b x 5 w i t h x = 5 - w i d t h 3 6 w i t h - 3 + - c o s 2 - c o s 3 ; ( 5 4 ) s i n ( 3 6 ) w i t h ( 7 8 ) w i d t h ( 8 9 ) w i d t h h e i g h t ; 2 * - 3 ; 2 ÷ - 3",
+  main: "2 * 3 a 4 5 6 8 ^ 9 2 3 ^ 9 ^ 5 ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight + 0 4 / 5 ArrowRight ArrowLeft ^ 2 ArrowRight ArrowRight 3 a 2 ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowRight ^ 4 3 6 ArrowRight / 2 / 3 ArrowRight + 4 ArrowLeft ArrowLeft ArrowLeft ArrowDown ArrowLeft ArrowUp ArrowDown ArrowUp ArrowDown ArrowDown ArrowDown 4 3 2 1 9 3 4 2 ArrowUp ArrowUp ArrowUp ArrowUp ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft \\sum 2 3 ArrowUp 4 9 ArrowRight ArrowRight m a t r i x 1 ArrowRight 2 ArrowDown 4 ArrowLeft ArrowLeft 3 ArrowLeft ArrowLeft ArrowLeft f o r x ^ 2 Tab Tab i Tab [ 1 . . . 1 0 ] Tab n ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft i n t 2 ArrowDown ArrowRight ArrowRight ArrowRight ArrowRight + ^ 4 Tab ArrowLeft ArrowLeft ArrowLeft ArrowLeft + p i e c e w i s e m a t r i x 1 ArrowRight 2 ArrowDown 4 ArrowLeft ArrowLeft 3 ArrowLeft 5 ArrowLeft ArrowLeft 8 ArrowUp 7 ArrowDown ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight y > = 4 ArrowDown ArrowLeft 2 7 ^ 8 ^ 9 / 3 Tab Tab Tab Tab x < / 3 ; 5 s i n + 3 - c o s 2 b x 5 w i t h x = 5 w i d t h - 3 - - - 4 + + 5 + - 6 w i t h - 3 ; 5 + s i n 3 - c o s 2 b x 5 w i t h x = 5 - w i d t h 3 6 w i t h - 3 + - c o s 2 - c o s 3 ; ( 5 4 ) s i n ( 3 6 ) w i t h ( 7 8 ) w i d t h ( 8 9 ) w i d t h h e i g h t ; 2 * - 3 ; 2 ÷ - 3 c o l o r",
   compare:
     "m a t r i x ArrowRight ArrowRight ArrowLeft 2 = 3 ; 2 = / 3 ; 2 < 3 ; 2 > 3 ; 2 < = 3 ; 2 > = 3 ; 2 < / 3 ; 2 > / 3 ; 2 < / = 3 ArrowDown 2 > = / 3",
   sigma:
@@ -202,7 +205,7 @@ function exec(input: string) {
   render()
 }
 
-const cursor = h("border-current w-px -ml-px border-l")
+const cursor = h("nya-cursor border-current w-px -ml-px border-l")
 
 exec(demos.main)
 

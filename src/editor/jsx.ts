@@ -10,7 +10,15 @@ export function h(
   cl?: string | Record<string, string>,
   ...children: (Node | string | null)[]
 ) {
-  const el = document.createElement("span")
+  return hx("span", cl, ...children)
+}
+
+export function hx<K extends keyof HTMLElementTagNameMap>(
+  name: K,
+  cl?: string | Record<string, string>,
+  ...children: (Node | string | null)[]
+) {
+  const el = document.createElement(name)
   if (typeof cl == "string") {
     el.className = cl
   } else if (cl) {

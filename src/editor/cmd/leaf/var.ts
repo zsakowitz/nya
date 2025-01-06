@@ -143,10 +143,9 @@ export class CmdVar extends Leaf {
 
       for (let j = max; j > 1; j--, text.pop()) {
         const full = text.join("")
-
         const kind = words.get(full)
+
         if (kind) {
-          console.log(kind)
           vars[i]!.render(kind, L)
           for (let k = i + 1; k < i + j - 1; k++) {
             vars[k]!.render(kind, null)
@@ -177,9 +176,34 @@ export class CmdVar extends Leaf {
     return this.text
   }
 
-  onSiblingChange(dir: Dir): void {
+  onSiblingChange(): void {
     if (this.options.words) {
       this.checkWords(this.options.words)
+    }
+  }
+
+  moveAcrossWord(cursor: Cursor, dir: Dir): void {
+    if (!this.kind) {
+      super.moveAcrossWord(cursor, dir)
+      return
+    }
+
+    if (dir == L) {
+      do {
+        cursor.move(L)
+      } while (
+        cursor[L] instanceof CmdVar &&
+        cursor[L].kind &&
+        (cursor[R] as CmdVar).part != L
+      )
+    } else {
+      do {
+        cursor.move(R)
+      } while (
+        cursor[R] instanceof CmdVar &&
+        cursor[R].kind &&
+        (cursor[L] as CmdVar).part != R
+      )
     }
   }
 }
