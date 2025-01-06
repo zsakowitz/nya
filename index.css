@@ -876,6 +876,10 @@ video {
   border-radius: .125em;
 }
 
+.border {
+  border-width: 1px;
+}
+
 .border-y {
   border-top-width: 1px;
   border-bottom-width: 1px;
@@ -893,6 +897,14 @@ video {
   border-top-width: 1px;
 }
 
+.border-dashed {
+  border-style: dashed;
+}
+
+.border-dotted {
+  border-style: dotted;
+}
+
 .border-current {
   border-color: currentColor;
 }
@@ -903,11 +915,6 @@ video {
 
 .\!bg-transparent {
   background-color: transparent !important;
-}
-
-.bg-\[red\] {
-  --tw-bg-opacity: 1;
-  background-color: rgb(255 0 0 / var(--tw-bg-opacity, 1));
 }
 
 .bg-gray-300 {
@@ -935,11 +942,6 @@ video {
 
 .bg-zlx-selection {
   background-color: var(--zlx-selection);
-}
-
-.bg-\[orange\] {
-  --tw-bg-opacity: 1;
-  background-color: rgb(255 165 0 / var(--tw-bg-opacity, 1));
 }
 
 .fill-current {

@@ -918,6 +918,17 @@ export class Selection extends Span {
     super(parent, lhs, rhs)
   }
 
+  /** Creates a clone of `this`. */
+  clone() {
+    return new Selection(
+      this.parent,
+      this[L],
+      this[R],
+      this.focused,
+      this.cachedAnchor,
+    )
+  }
+
   /**
    * Moves the focus node of this `Selection` within its containing
    * {@linkcode Block}.

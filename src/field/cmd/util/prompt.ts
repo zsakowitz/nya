@@ -1,29 +1,110 @@
+import type { Display } from "../../display"
 import { h, hx } from "../../jsx"
-import { L, type Cursor, type InitProps, type InitRet } from "../../model"
+import {
+  L,
+  R,
+  Selection,
+  type Cursor,
+  type InitProps,
+  type InitRet,
+} from "../../model"
 import type { Options } from "../../options"
 import { Leaf } from "../leaf"
 
 export class CmdPrompt extends Leaf {
-  static init(cursor: Cursor, { options }: InitProps): InitRet {
-    new CmdPrompt(options).insertAt(cursor, L)
+  static init(cursor: Cursor, { options, display }: InitProps): InitRet {
+    const prompt = new CmdPrompt(
+      options,
+      display,
+      cursor.selection().clone(),
+      document.activeElement,
+    )
+    prompt.insertAt(cursor, L)
   }
 
-  constructor(readonly options: Options) {
+  static initOn(
+    selection: Selection,
+    { options, display }: InitProps,
+  ): InitRet {
+    const prompt = new CmdPrompt(
+      options,
+      display,
+      selection.clone(),
+      document.activeElement,
+    )
+    prompt.insertAt(selection.cursor(R), L)
+    return new Selection(
+      selection.parent,
+      selection[L],
+      prompt,
+      R,
+      selection.cachedAnchor,
+    )
+  }
+
+  constructor(
+    readonly options: Options,
+    readonly display: Display,
+    readonly selection: Selection,
+    readonly active: Element | null,
+  ) {
     const field = hx("input", "bg-transparent min-w-[3ch] focus:outline-none")
+    field.addEventListener("keydown", onKeyDown)
+    field.addEventListener("input", resize)
+    field.addEventListener("blur", onBlur)
+    resize()
+
+    const form = hx("form", "contents", field)
+    form.addEventListener("submit", (ev) => {
+      ev.preventDefault()
+      field.removeEventListener("blur", onBlur)
+      if (field.value) {
+        this.confirm(field.value)
+      }
+    })
+
+    super(
+      "\\text{typing...}",
+      h("border border-dotted border-current nya-cmd-prompt", "\\", form),
+    )
+    const self = this
+
+    setTimeout(() => field.focus())
+
     function resize() {
       field.style.width = "0"
       field.style.width = field.scrollWidth + "px"
     }
-    field.addEventListener("keydown", (event) => {
+
+    function onBlur() {
+      self.cancel()
+    }
+
+    function onKeyDown(event: KeyboardEvent) {
       event.stopPropagation()
-    })
-    field.addEventListener("input", resize)
-    resize()
-    field.focus()
-    field.addEventListener("blur", () => {
-      this.remove()
-    })
-    super("\\text{typing...}", h("bg-slate-200 nya-cmd-prompt", "\\", field))
+
+      if (event.key == "Backspace" && field.value == "") {
+        field.removeEventListener("blur", onBlur)
+        self.cancel()
+      }
+    }
+  }
+
+  cancel() {
+    this.display.beforeChange?.()
+    this.display.sel = this.selection
+    this.remove()
+    this.display.afterChange?.()
+    ;(this.active as HTMLElement)?.focus()
+  }
+
+  confirm(name: string) {
+    this.display.beforeChange?.()
+    this.display.sel = this.selection
+    this.remove()
+    this.display.type("\\" + name)
+    this.display.afterChange?.()
+    ;(this.active as HTMLElement)?.focus()
   }
 
   reader(): string {

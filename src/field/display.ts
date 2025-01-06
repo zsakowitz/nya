@@ -31,6 +31,11 @@ export class Exts {
   }
 }
 
+export interface DisplayInitProps {
+  event?: KeyboardEvent
+  skipChangeHandlers?: boolean
+}
+
 export class Display {
   readonly contents
   readonly block = new Block(null)
@@ -45,19 +50,30 @@ export class Display {
       "nya-display cursor-text whitespace-nowrap font-['Symbola','Times',sans-serif] text-[1.265em] font-normal not-italic transition [line-height:1] focus:outline-none [&_*]:cursor-text block select-none"
   }
 
-  init(init: Init, input: string, event?: KeyboardEvent) {
+  init(init: Init, input: string, props?: DisplayInitProps) {
+    if (!props?.skipChangeHandlers) {
+      this.beforeChange?.()
+    }
+
     this.sel = performInit(init, this.sel, {
       input,
-      event,
+      event: props?.event,
       display: this,
       options: this.options,
     })
-  }
 
-  type(input: string, event?: KeyboardEvent) {
-    const ext = this.exts.of(input)
-    if (ext) {
-      this.init(ext, input, event)
+    if (!props?.skipChangeHandlers) {
+      this.afterChange?.()
     }
   }
+
+  type(input: string, props?: DisplayInitProps) {
+    const ext = this.exts.of(input)
+    if (ext) {
+      this.init(ext, input, props)
+    }
+  }
+
+  beforeChange?(): void
+  afterChange?(): void
 }

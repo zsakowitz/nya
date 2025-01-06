@@ -1,6 +1,6 @@
 import { Display, type Exts } from "./display"
 import { h } from "./jsx"
-import { Selection, type Init } from "./model"
+import { Selection } from "./model"
 import type { Options } from "./options"
 
 export class Field extends Display {
@@ -18,7 +18,7 @@ export class Field extends Display {
 
       const cursor = this.block.focus(event.clientX, event.clientY)
 
-      this.hideCursor()
+      this.beforeChange()
 
       if (event.shiftKey) {
         event.preventDefault()
@@ -27,20 +27,20 @@ export class Field extends Display {
         this.sel = cursor.selection()
       }
 
-      this.showCursor()
+      this.afterChange()
     })
     addEventListener("pointerup", () => (isPointerDown = false))
     this.field.addEventListener("pointermove", (event) => {
       if (!isPointerDown) return
 
-      this.hideCursor()
+      this.beforeChange()
 
       const cursor = this.block.focus(event.clientX, event.clientY)
 
       event.preventDefault()
       this.sel = Selection.of(this.sel.cachedAnchor, cursor)
 
-      this.showCursor()
+      this.afterChange()
     })
     this.field.addEventListener(
       "touchmove",
@@ -51,18 +51,18 @@ export class Field extends Display {
       const ext = this.exts.of(event.key)
       if (!ext) return
       event.preventDefault()
-      this.init(ext, event.key, event)
+      this.init(ext, event.key, { event })
     })
   }
 
-  hideCursor() {
+  beforeChange() {
     this.sel.each(({ el }) => el.classList.remove("bg-zlx-selection"))
     this.cursor.parentElement?.classList.remove("!bg-transparent")
     this.cursor.remove()
     this.sel.parent?.checkIfEmpty()
   }
 
-  showCursor() {
+  afterChange() {
     this.sel.each(({ el }) => el.classList.add("bg-zlx-selection"))
     this.sel.cursor(this.sel.focused).render(this.cursor)
     this.cursor.parentElement?.classList.add("!bg-transparent")
@@ -73,11 +73,5 @@ export class Field extends Display {
       block: "nearest",
       inline: "nearest",
     })
-  }
-
-  init(init: Init, input: string, event?: KeyboardEvent): void {
-    this.hideCursor()
-    super.init(init, input, event)
-    this.showCursor()
   }
 }

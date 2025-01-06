@@ -188,8 +188,8 @@ const ascii = h("text-center block text-sm break-all px-8 text-balance mt-4")
 const reader = h("text-center block text-xs break-all px-8 text-balance mt-4")
 
 class MyField extends Field {
-  showCursor(): void {
-    super.showCursor()
+  afterChange(): void {
+    super.afterChange()
     latex.textContent = this.block.latex()
     ascii.textContent = this.block.ascii()
     reader.textContent = this.block.reader()
@@ -247,11 +247,13 @@ document.body.appendChild(
 )
 
 function exec(input: string) {
-  field.hideCursor()
+  field.beforeChange()
   field.sel = new Selection(field.block, null, null, R)
   field.sel.remove()
-  input.split(" ").forEach((input) => field.type(input))
-  field.showCursor()
+  input
+    .split(" ")
+    .forEach((input) => field.type(input, { skipChangeHandlers: true }))
+  field.afterChange()
 }
 
 exec(demos.main)
