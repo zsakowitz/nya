@@ -6,6 +6,7 @@ export const BRACKS = {
   "[": {
     w: "w-[.55em]",
     mx: "mx-[.55em]",
+    size: 0.55,
     latex: "[",
     html() {
       return svg("0 0 11 24", p("M8 0 L3 0 L3 24 L8 24 L8 23 L4 23 L4 1 L8 1"))
@@ -14,6 +15,7 @@ export const BRACKS = {
   "]": {
     w: "w-[.55em]",
     mx: "mx-[.55em]",
+    size: 0.55,
     latex: "]",
     html() {
       return svg("0 0 11 24", p("M3 0 L8 0 L8 24 L3 24 L3 23 L7 23 L7 1 L3 1"))
@@ -22,6 +24,7 @@ export const BRACKS = {
   "(": {
     w: "w-[.55em]",
     mx: "mx-[.55em]",
+    size: 0.55,
     latex: "(",
     html() {
       return svg(
@@ -33,6 +36,7 @@ export const BRACKS = {
   ")": {
     w: "w-[.55em]",
     mx: "mx-[.55em]",
+    size: 0.55,
     latex: ")",
     html() {
       return svg(
@@ -44,6 +48,7 @@ export const BRACKS = {
   "{": {
     w: "w-[.7em]",
     mx: "mx-[.7em]",
+    size: 0.7,
     latex: "\\{",
     html() {
       return svg(
@@ -57,6 +62,7 @@ export const BRACKS = {
   "}": {
     w: "w-[.7em]",
     mx: "mx-[.7em]",
+    size: 0.7,
     latex: "\\}",
     html() {
       return svg(
@@ -70,6 +76,7 @@ export const BRACKS = {
   "|": {
     w: "w-[.4em]",
     mx: "mx-[.4em]",
+    size: 0.4,
     latex: "|",
     html() {
       return svg("0 0 10 54", p("M4.4 0 L4.4 54 L5.6 54 L5.6 0"))
@@ -287,5 +294,17 @@ export class CmdBrack extends Command<[Block]> {
       this.rhs == ")" &&
       !this.blocks[0].some((x) => x instanceof CmdComma)
     )
+  }
+
+  focus(x: number, y: number): Cursor {
+    const [lhs, rhs] = this.bounds()
+    if (x < lhs + this.em(BRACKS[this.lhs].size / 2)) {
+      return this.cursor(L)
+    }
+    if (x > rhs - this.em(BRACKS[this.rhs].size / 2)) {
+      return this.cursor(R)
+    }
+
+    return this.blocks[0].focus(x, y)
   }
 }

@@ -15,6 +15,11 @@ export abstract class CmuLeaf extends Command<[]> {
     super(ctrlSeq, html, [])
   }
 
+  focus(x: number, _y: number): Cursor {
+    const [lhs, rhs] = this.bounds()
+    return this.cursor(x < (lhs + rhs) / 2 ? L : R)
+  }
+
   moveInto(cursor: Cursor, towards: Dir): void {
     cursor.moveTo(this, towards)
   }

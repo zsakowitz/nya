@@ -242,6 +242,12 @@ addEventListener("keydown", (x) => {
   })
 })
 
+field.el.addEventListener("mousedown", (event) => {
+  unrender()
+  field.sel = field.block.focus(event.clientX, event.clientY).selection()
+  render()
+})
+
 document.body.append(
   h("font-semibold mt-8", "Available keys to press:"),
   h(

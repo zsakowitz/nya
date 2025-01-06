@@ -10,6 +10,7 @@ import {
   type Dir,
   type VDir,
 } from "../../model"
+import { focusLeaf } from "../leaf"
 
 export class CmdSupSub extends Command {
   static init(cursor: Cursor, input: string) {
@@ -240,6 +241,26 @@ export class CmdSupSub extends Command {
         cursor.moveTo(this, R)
       }
       this.remove()
+    }
+  }
+
+  focus(x: number, y: number): Cursor {
+    if (this.sub && !this.sup) {
+      return this.sub.focus(x, y)
+    }
+
+    if (this.sup && !this.sub) {
+      return this.sup.focus(x, y)
+    }
+
+    if (!(this.sub && this.sup)) {
+      return focusLeaf(this, x)
+    }
+
+    if (this.sup.distanceToY(y) <= this.sub.distanceToY(y)) {
+      return this.sup.focus(x, y)
+    } else {
+      return this.sub.focus(x, y)
     }
   }
 }

@@ -11,6 +11,7 @@ import {
   type InitRet,
   type VDir,
 } from "../../model"
+import { focusLeaf } from "../leaf"
 
 export type BlocksInt = [sub: Block, sup: Block] | []
 
@@ -141,5 +142,17 @@ export class CmdInt extends Command<BlocksInt> {
       return `int((${this.blocks[0]!.ascii()}),(${this.blocks[1]!.ascii()}))`
     }
     return "int"
+  }
+
+  focus(x: number, y: number): Cursor {
+    if (this.blocks[0]?.contains(x, y)) {
+      return this.blocks[0].focus(x, y)
+    }
+
+    if (this.blocks[1]?.contains(x, y)) {
+      return this.blocks[1].focus(x, y)
+    }
+
+    return focusLeaf(this, x)
   }
 }

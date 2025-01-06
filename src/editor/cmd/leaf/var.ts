@@ -71,17 +71,6 @@ export class CmdVar extends Leaf {
         (kind ? ` nya-cmd-word nya-cmd-word-${kind} nya-cmd-word${side} ` : ""),
       h(
         "font-['Times'] [line-height:.9]" + (kind == null ? " italic" : ""),
-        // + {
-        // null: "italic",
-        // var: "bg-red-200",
-        // infix: "bg-green-200",
-        // prefix: "bg-purple-200",
-        // }[`${kind}`] +
-        // {
-        // null: "",
-        // [L]: " underline",
-        // [R]: " overline",
-        // }[`${part}`],
         t(text),
       ),
     )

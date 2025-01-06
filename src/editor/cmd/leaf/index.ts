@@ -1,4 +1,9 @@
-import { Command, R, type Block, type Cursor, type Dir } from "../../model"
+import { Command, Cursor, L, R, type Block, type Dir } from "../../model"
+
+export function focusLeaf(command: Command, x: number) {
+  const [lhs, rhs] = command.bounds()
+  return command.cursor(x < (lhs + rhs) / 2 ? L : R)
+}
 
 /** A leaf is a specialized command with no children. */
 export abstract class Leaf extends Command<[]> {
@@ -34,6 +39,10 @@ export abstract class Leaf extends Command<[]> {
   }
 
   deleteBlock(): void {
-    // never happens
+    // Never called, since `Leaf` has no blocks
+  }
+
+  focus(this: Command, x: number, _y: number): Cursor {
+    return focusLeaf(this, x)
   }
 }

@@ -11,6 +11,7 @@ import {
   type Selection,
   type VDir,
 } from "../../model"
+import { focusLeaf } from "../leaf"
 import { OpCeq } from "../leaf/cmp"
 
 export class CmdFrac extends Command<[Block, Block]> {
@@ -98,5 +99,17 @@ export class CmdFrac extends Command<[Block, Block]> {
 
   delete(cursor: Cursor, from: Dir): void {
     cursor.moveIn(this.blocks[1], from)
+  }
+
+  focus(x: number, y: number): Cursor {
+    if (this.distanceToEdge(x) < this.em(0.1)) {
+      return focusLeaf(this, x)
+    }
+
+    if (this.blocks[0].distanceToY(y) < this.blocks[1].distanceToY(y)) {
+      return this.blocks[0].focus(x, y)
+    } else {
+      return this.blocks[1].focus(x, y)
+    }
   }
 }

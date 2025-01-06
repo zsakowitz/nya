@@ -11,6 +11,7 @@ import {
   type VDir,
 } from "../../model"
 import type { Options } from "../../options"
+import { focusLeaf } from "../leaf"
 import { OpEq } from "../leaf/cmp"
 import { CmdVar } from "../leaf/var"
 
@@ -143,5 +144,20 @@ export class CmdBig extends Command<
     }
     cursor.moveIn(this.blocks[part == U ? 1 : 0]!, side)
     return true
+  }
+
+  focus(x: number, y: number): Cursor {
+    if (
+      this.distanceToEdge(x) < this.em(0.1) ||
+      this.distanceToEdge(x) < this.blocks[0].distanceTo(x)
+    ) {
+      return focusLeaf(this, x)
+    }
+
+    if (this.blocks[1] && y <= this.blocks[1].bounds()[3]) {
+      return this.blocks[1].focus(x, y)
+    }
+
+    return this.blocks[0].focus(x, y)
   }
 }

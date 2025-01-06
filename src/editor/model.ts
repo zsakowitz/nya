@@ -47,12 +47,6 @@ interface BlockMut extends Block {
 
 /** An expression. Contains zero or more {@linkcode Command}s. */
 export class Block {
-  /** The block before this one. */
-  // readonly [L]: Block | null
-
-  /** The block after this one. */
-  // readonly [R]: Block | null = null
-
   /** The ends of the {@linkcode Command}s contained in this block. */
   readonly ends: Ends = { [L]: null, [R]: null }
 
@@ -66,9 +60,33 @@ export class Block {
   ) {
     if (parent) {
       parent.blocks.push(this)
-    } else {
     }
     this.checkIfEmpty()
+  }
+
+  /** Creates a cursor focused at the given position in this {@linkcode Block}. */
+  focus(x: number, y: number): Cursor {
+    if (this.isEmpty()) {
+      return new Cursor(this, null)
+    }
+
+    const [lhs, rhs] = this.bounds()
+    console.log({
+      latex: this.latex(),
+      lhs,
+      x,
+      rhs,
+    })
+
+    let el = this.ends[L]
+    while (el) {
+      if (x < el.bounds()[1]) {
+        return el.focus(x, y)
+      }
+      el = el[R]
+    }
+
+    return this.ends[R]!.focus(x, y)
   }
 
   /**
@@ -227,9 +245,9 @@ export class Block {
   }
 
   /** Finds the `clientX` values of the edges of this {@linkcode Block}. */
-  bounds(): [left: number, right: number] {
+  bounds(): [left: number, right: number, top: number, bottom: number] {
     const box = this.el.getBoundingClientRect()
-    return [box.left, box.left + box.width]
+    return [box.left, box.left + box.width, box.top, box.top + box.height]
   }
 
   /**
@@ -244,6 +262,29 @@ export class Block {
       return lhs - clientX
     } else if (rhs < clientX) {
       return clientX - rhs
+    } else {
+      return 0
+    }
+  }
+
+  /** Returns whether this {@linkcode Block} contains the given point. */
+  contains(clientX: number, clientY: number): boolean {
+    const [lhs, rhs, ts, bs] = this.bounds()
+    return lhs <= clientX && clientX <= rhs && ts <= clientY && clientY <= bs
+  }
+
+  /**
+   * If this {@linkcode Block} contains the given `clientY`, returns `0`.
+   * Otherwise, returns the distance from the closest block bound to the
+   * `clientY` value.
+   */
+  distanceToY(clientY: number): number {
+    const [, , top, bottom] = this.bounds()
+
+    if (clientY < top) {
+      return top - clientY
+    } else if (bottom < clientY) {
+      return clientY - bottom
     } else {
       return 0
     }
@@ -390,7 +431,7 @@ export class Cursor {
    */
   moveVert(dir: VDir): boolean {
     // Get the cursor's X position; we want to be as close to it as possible
-    const x = this.clientX()
+    const x = this.screenX()
 
     // The cursor doesn't have an X position iff it is not in the DOM, and thus
     // we may safely ignore the movement operation.
@@ -469,7 +510,7 @@ export class Cursor {
    * Gets the X-coordinate of this `Cursor` onscreen. Returns `null` if the
    * `Cursor` is not attached to any element.
    */
-  clientX() {
+  screenX() {
     if (this[R]) {
       return this[R].el.getBoundingClientRect().left
     } else if (this.parent) {
@@ -1007,6 +1048,19 @@ export abstract class Command<
     }
   }
 
+  /**
+   * Returns the number of pixels a given quantity of `em` represent at this
+   * element's font size.
+   */
+  em(em: number) {
+    const size = getComputedStyle(this.el).fontSize
+    if (size.slice(-2) == "px") {
+      return parseFloat(size.slice(0, -2)) * em
+    } else {
+      return 16 * em
+    }
+  }
+
   /** Called after the edit tree is stabilized if `this[dir]` changed. */
   onSiblingChange?(dir: Dir): void
 
@@ -1051,6 +1105,11 @@ export abstract class Command<
     } else {
       cursor.moveTo(this, towards)
     }
+  }
+
+  /** Makes a {@linkcode Cursor} on the given side of this {@linkcode Command}. */
+  cursor(side: Dir): Cursor {
+    return new Cursor(this.parent, side == L ? this : this[R])
   }
 
   /**
@@ -1116,6 +1175,9 @@ export abstract class Command<
    * "Delete".
    */
   abstract delete(cursor: Cursor, from: Dir): void
+
+  /** Creates a {@linkcode Cursor} focused at the given location. */
+  abstract focus(x: number, y: number): Cursor
 
   /**
    * Deletes the provided {@linkcode Block} from the given direction in this
