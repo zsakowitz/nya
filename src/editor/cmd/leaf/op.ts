@@ -7,11 +7,40 @@ export abstract class Op extends Leaf {
     readonly ctrlSeq: string,
     html: string,
   ) {
-    super(ctrlSeq, h("", h("px-[.2em] inline-block cursor-text", t(html))))
+    super(
+      ctrlSeq,
+      h("nya-cmd-op", h("px-[.2em] inline-block cursor-text", t(html))),
+    )
   }
 
   setHtml(html: string) {
-    this.setEl(h("", h("px-[.2em] inline-block cursor-text", t(html))))
+    this.setEl(
+      h("nya-cmd-op", h("px-[.2em] inline-block cursor-text", t(html))),
+    )
+  }
+}
+
+export abstract class OpPm extends Leaf {
+  constructor(
+    readonly ctrlSeq: string,
+    html: string,
+  ) {
+    super(
+      ctrlSeq,
+      h(
+        "nya-cmd-op nya-cmd-pm",
+        h("px-[.2em] inline-block cursor-text", t(html)),
+      ),
+    )
+  }
+
+  setHtml(html: string) {
+    this.setEl(
+      h(
+        "nya-cmd-op nya-cmd-pm",
+        h("px-[.2em] inline-block cursor-text", t(html)),
+      ),
+    )
   }
 }
 
@@ -20,7 +49,7 @@ export function op(
   mathspeak: string,
   html = latex,
   ascii = html,
-  endsImplicitGroup = false,
+  endsImplicitGroup = true,
 ) {
   return class extends Op {
     static init(cursor: Cursor) {
@@ -49,19 +78,44 @@ export function op(
   }
 }
 
-export function eop(
+export function opm(
   latex: string,
   mathspeak: string,
   html = latex,
   ascii = html,
+  endsImplicitGroup = true,
 ) {
-  return op(latex, mathspeak, html, ascii, true)
+  return class extends OpPm {
+    static init(cursor: Cursor) {
+      new this().insertAt(cursor, L)
+    }
+
+    constructor() {
+      super(latex, html)
+    }
+
+    endsImplicitGroup(): boolean {
+      return endsImplicitGroup
+    }
+
+    ascii(): string {
+      return ascii
+    }
+
+    reader(): string {
+      return mathspeak
+    }
+
+    latex(): string {
+      return latex
+    }
+  }
 }
 
-export const OpPlus = eop("+", " plus ")
-export const OpMinus = eop("–", " minus ")
-export const OpPm = eop("\\pm ", " plus-or-minus ", "±")
-export const OpMp = eop("\\mp ", " minus-or-plus ", "∓")
+export const OpPlus = opm("+", " plus ")
+export const OpMinus = opm("–", " minus ")
+export const OpPlusMinus = opm("\\pm ", " plus-or-minus ", "±")
+export const OpMinusPlus = opm("\\mp ", " minus-or-plus ", "∓")
 
-export const OpCdot = eop("\\cdot ", " times ", "·", "*")
-export const OpDiv = eop("÷", " divided by ", "÷", "/")
+export const OpCdot = op("\\cdot ", " times ", "·", "*")
+export const OpDiv = op("÷", " divided by ", "÷", "/")

@@ -10,6 +10,7 @@ import {
   type Dir,
   type VDir,
 } from "../../model"
+import type { Options } from "../../options"
 import { OpEq } from "../leaf/cmp"
 import { CmdVar } from "../leaf/var"
 
@@ -32,14 +33,14 @@ export class CmdBig extends Command<
   [sub: Block] | [sub: Block, sup: Block],
   BigCmd
 > {
-  static init(cursor: Cursor, input: string) {
+  static init(cursor: Cursor, input: string, options: Options) {
     if (!(input in BIG_ALIASES)) return
 
     const seq = BIG_ALIASES[input]!
     const cmd = new CmdBig(seq, new Block(null), null)
     cmd.insertAt(cursor, L)
     cursor.moveIn(cmd.blocks[0], L)
-    new CmdVar("n").insertAt(cursor, L)
+    new CmdVar("n", options).insertAt(cursor, L)
     new OpEq(false).insertAt(cursor, L)
 
     return cursor

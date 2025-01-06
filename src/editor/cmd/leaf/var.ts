@@ -13,9 +13,9 @@ import type { Options, WordMap } from "../../options"
  *
  * Spacing of plus/minus signs and parentheses are specified below:
  *
- * - `"var"`: `+word` `2 + word` `word + 2` `(...)word(...)`
+ * - `"var"`: `+word` `2 + word` `word + 2` `word2` `(...)word(...)`
  * - `"prefix"`: `+word` `2 + word` `word +2` `(...) word(...)`
- * - `"infix"`: `2 + word` `word +2` `(...) word (...)`
+ * - `"infix"`: `2 word` `word 2` `word +` `(...) word (...)`
  */
 export type WordKind = "var" | "prefix" | "infix"
 
@@ -26,9 +26,8 @@ export class CmdVar extends Leaf {
     options: Options,
     event: KeyboardEvent | undefined,
   ) {
-    const self = new CmdVar(input)
+    const self = new CmdVar(input, options)
     self.insertAt(cursor, L)
-
     if (options.autoCmds) {
       const cmds = options.autoCmds
       const maxLen = cmds.maxLen
@@ -56,18 +55,19 @@ export class CmdVar extends Leaf {
         leftmost = leftmost[R] as CmdVar
       }
     }
-
-    if (options.words) {
-      self.checkWords(options.words)
-    }
   }
 
   readonly kind: WordKind | null = null
   readonly part: Dir | null = null
 
   static render(text: string, kind: CmdVar["kind"], part: CmdVar["part"]) {
+    const side =
+      part == L ? "-l"
+      : part == R ? "-r"
+      : ""
+
     return h(
-      "",
+      "nya-cmd-var" + (kind ? ` nya-cmd-word${side}` : ""),
       h(
         "font-['Times'] [line-height:.9] " +
           {
@@ -86,7 +86,10 @@ export class CmdVar extends Leaf {
     )
   }
 
-  constructor(readonly text: string) {
+  constructor(
+    readonly text: string,
+    readonly options: Options,
+  ) {
     // The wrapper ensures selections work fine
     super(text, CmdVar.render(text, null, null))
   }
@@ -165,5 +168,11 @@ export class CmdVar extends Leaf {
 
   reader(): string {
     return this.text
+  }
+
+  onSiblingChange(dir: Dir): void {
+    if (this.options.words) {
+      this.checkWords(this.options.words)
+    }
   }
 }

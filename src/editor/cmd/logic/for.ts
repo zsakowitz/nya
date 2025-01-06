@@ -25,7 +25,7 @@ export class CmdFor extends Command<
     super(
       "\\matrix",
       h(
-        "relative inline-block align-baseline",
+        "relative inline-block align-baseline nya-cmd-brack",
         h(
           "left-[.15em] absolute top-0 bottom-[2px] inline-block w-[.25em] border-l border-y border-current",
         ),

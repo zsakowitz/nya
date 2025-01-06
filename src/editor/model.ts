@@ -161,6 +161,11 @@ export class Block {
 
     this.checkIfEmpty()
     block.checkIfEmpty()
+
+    lhs?.onSiblingChange?.(R)
+    block.ends[L]?.onSiblingChange?.(L)
+    block.ends[R]?.onSiblingChange?.(R)
+    rhs?.onSiblingChange?.(L)
   }
 
   /** Attaches a block onto a side of a {@linkcode Command} owned by this one. */
@@ -1002,6 +1007,9 @@ export abstract class Command<
     }
   }
 
+  /** Called after the edit tree is stabilized if `this[dir]` changed. */
+  onSiblingChange?(dir: Dir): void
+
   /** Reads this node in a screen-accessible format. */
   abstract reader(): string
 
@@ -1128,6 +1136,12 @@ export abstract class Command<
       cursor.insert(this.blocks[i]!, R)
     }
     cursor.insert(block, at == L ? R : L)
+    this[L]?.onSiblingChange?.(R)
+    this[R]?.onSiblingChange?.(L)
+    for (const block of this.blocks) {
+      block.ends[L]?.onSiblingChange?.(L)
+      block.ends[R]?.onSiblingChange?.(R)
+    }
   }
 
   /**
@@ -1237,6 +1251,10 @@ export abstract class Command<
     }
 
     cursor.parent.checkIfEmpty()
+    this[L]?.onSiblingChange?.(R)
+    this[R]?.onSiblingChange?.(L)
+    this?.onSiblingChange?.(L)
+    this?.onSiblingChange?.(R)
   }
 
   /**
@@ -1257,6 +1275,8 @@ export abstract class Command<
     }
 
     this.parent?.checkIfEmpty()
+    this[L]?.onSiblingChange?.(R)
+    this[R]?.onSiblingChange?.(L)
   }
 
   toString() {

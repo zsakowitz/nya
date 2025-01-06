@@ -67,10 +67,18 @@ export const BRACKS = {
       )
     },
   },
+  "|": {
+    w: "w-[.4em]",
+    mx: "mx-[.4em]",
+    latex: "|",
+    html() {
+      return svg("0 0 10 54", p("M4.4 0 L4.4 54 L5.6 54 L5.6 0"))
+    },
+  },
 }
 
-export type ParenLhs = "(" | "[" | "{"
-export type ParenRhs = ")" | "]" | "}"
+export type ParenLhs = "(" | "[" | "{" | "|"
+export type ParenRhs = ")" | "]" | "}" | "|"
 export type ParenAny = ParenLhs | ParenRhs
 
 export function matchParen(x: ParenLhs): ParenRhs
@@ -84,6 +92,7 @@ export function matchParen(x: ParenAny) {
     ")": "(",
     "]": "[",
     "}": "{",
+    "|": "|",
   }[x]
 }
 
@@ -91,7 +100,8 @@ export class CmdBrack extends Command<[Block]> {
   static init(cursor: Cursor, input: string) {
     if (!cursor.parent) return
 
-    if (input == "(" || input == "[" || input == "{") {
+    // TODO: handle absolute values better
+    if (input == "(" || input == "[" || input == "{" || input == "|") {
       const rhs = matchParen(input satisfies ParenLhs)
 
       if (
@@ -171,7 +181,7 @@ export class CmdBrack extends Command<[Block]> {
     const lhsSymbol = BRACKS[lhs]
     const rhsSymbol = BRACKS[rhs]
     return h(
-      "relative inline-block",
+      "relative inline-block nya-cmd-brack",
       h(
         "left-0 absolute top-0 bottom-[2px] inline-block" +
           (side == R ? " opacity-20" : "") +

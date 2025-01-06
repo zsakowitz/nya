@@ -27,7 +27,7 @@ export class CmdPiecewise extends Command {
 
   static render(blocks: Block[]) {
     const el = h(
-      "relative inline-block text-left",
+      "relative inline-block text-left nya-cmd-brack",
       h(
         `absolute bottom-[2px] left-0 top-0 ${BRACKS["{"].w}`,
         BRACKS["{"].html(),
