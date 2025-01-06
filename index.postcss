@@ -21,9 +21,17 @@ body {
   @apply pl-[.2em];
 }
 
+:is(.nya-cmd-op, .nya-cmd-word-r:not(.nya-cmd-word-var)) + .nya-cmd-pm > *,
+:is(.nya-cmd-op, .nya-cmd-word-r:not(.nya-cmd-word-var))
+  + :where(.nya-cursor)
+  + .nya-cmd-pm
+  > * {
+  @apply pr-0;
+}
+
 :is(.nya-cmd-op, .nya-cmd-word-r) + .nya-cmd-pm > *,
 :is(.nya-cmd-op, .nya-cmd-word-r) + :where(.nya-cursor) + .nya-cmd-pm > * {
-  @apply px-0;
+  @apply pl-0;
 }
 
 .nya-cmd-pm + .nya-cmd-word-l,

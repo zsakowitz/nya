@@ -159,6 +159,8 @@ const demos = {
   uscript1:
     "m a t r i x u0 uv0 ArrowRight u1 uv1 ArrowRight u2 uv2 ArrowRight u3 uv3 ArrowDown ArrowDown ; u4 uv4 ArrowRight u5 uv5 ArrowRight u6 uv6 ArrowRight u7 uv7 ; u8 uv8 ArrowRight u9 uv9 ArrowRight ua uva ArrowRight ub uvb ; uc uvc ArrowRight ud uvd ArrowRight ue uve ArrowRight uf uvf Tab / ( u0 u1 u2 u3 u4 u5 u6 u7 ) / uv0 uv1 uv2 uv3 uv4 uv5 uv6 uv7 ArrowRight / ( u8 u9 ua ub uc ud ue uf ) / uv8 uv9 uva uvb uvc uvd uve uvf",
   uscript2: "u1 u+ uv2 u- u3",
+  words:
+    "m a t r i x ArrowRight Backspace 2 s i n 3 , 2 + s i n + 3 , ( 2 ) s i n ( 3 ) ; 2 w i t h 3 , ( 2 ) w i t h ( 3 ) ; 2 h e i g h t 3 , 2 + h e i g h t + 3 , ( 2 ) h e i g h t ( 3 ) ArrowDown 2+ 3 + + 3 - - - 4 + + + + + 5 + - 6",
 }
 
 // Set up field styles
