@@ -891,7 +891,7 @@ export class Selection extends Span {
       dir = L
     }
 
-    return new Selection(parent, ac[L], fc[R], dir)
+    return new Selection(parent, ac[L], fc[R], dir, anchor)
   }
 
   get anchor() {
@@ -908,6 +908,11 @@ export class Selection extends Span {
     rhs: Command | null,
     /** Which side of this `Selection` is the focus node. */
     public focused: Dir,
+    /** The true anchor of the `Selection`, which may be in an inner block. */
+    public cachedAnchor = new Cursor(
+      parent,
+      focused == L ? lhs : rhs?.[L] || null,
+    ),
   ) {
     super(parent, lhs, rhs)
   }

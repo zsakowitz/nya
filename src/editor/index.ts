@@ -251,7 +251,7 @@ field.el.addEventListener("pointerdown", (event) => {
 
   if (event.shiftKey) {
     event.preventDefault()
-    field.sel = Selection.of(field.sel.anchor, cursor)
+    field.sel = Selection.of(field.sel.cachedAnchor, cursor)
   } else {
     field.sel = cursor.selection()
   }
@@ -271,7 +271,7 @@ field.el.addEventListener("mousemove", (event) => {
   const cursor = field.block.focus(event.clientX, event.clientY)
 
   event.preventDefault()
-  field.sel = Selection.of(field.sel.anchor, cursor)
+  field.sel = Selection.of(field.sel.cachedAnchor, cursor)
 
   render()
 })
