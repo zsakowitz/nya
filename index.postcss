@@ -13,26 +13,6 @@ body {
   @apply bg-white text-black [--zlx-selection:theme("colors.blue.200")] [--zlx-empty:#0003];
 }
 
-/* .nya-cmd-op {
-  background: theme(colors.green.300);
-}
-
-.nya-cmd-pm {
-  background: theme(colors.orange.300);
-}
-
-.nya-cmd-brack {
-  background: theme(colors.rose.300);
-}
-
-.nya-cmd-var {
-  background: theme(colors.blue.300);
-}
-
-.nya-cmd-word {
-  background: theme(colors.purple.300);
-} */
-
 :is(.nya-cmd-op, .nya-cmd-word-r) + .nya-cmd-pm > * {
   @apply px-0;
 }
@@ -43,4 +23,20 @@ body {
 
 .nya-cmd-word-l {
   @apply pl-[.2em];
+}
+
+.nya-cmd-pm + .nya-cmd-word-l {
+  @apply pl-0;
+}
+
+.nya-cmd-word-r:not(.nya-cmd-word-infix) + .nya-cmd-brack {
+  @apply -ml-[.2em];
+}
+
+.nya-cmd-brack + .nya-cmd-word-l.nya-cmd-word-var {
+  @apply pl-0;
+}
+
+.nya-cmd-word-r + .nya-cmd-word-l {
+  @apply -ml-[.2em];
 }

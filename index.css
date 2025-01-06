@@ -1141,26 +1141,6 @@ body {
   --zlx-selection: #bfdbfe;
 }
 
-/* .nya-cmd-op {
-  background: theme(colors.green.300);
-}
-
-.nya-cmd-pm {
-  background: theme(colors.orange.300);
-}
-
-.nya-cmd-brack {
-  background: theme(colors.rose.300);
-}
-
-.nya-cmd-var {
-  background: theme(colors.blue.300);
-}
-
-.nya-cmd-word {
-  background: theme(colors.purple.300);
-} */
-
 :is(.nya-cmd-op, .nya-cmd-word-r) + .nya-cmd-pm > * {
   padding-left: 0px;
   padding-right: 0px;
@@ -1172,6 +1152,22 @@ body {
 
 .nya-cmd-word-l {
   padding-left: .2em;
+}
+
+.nya-cmd-pm + .nya-cmd-word-l {
+  padding-left: 0px;
+}
+
+.nya-cmd-word-r:not(.nya-cmd-word-infix) + .nya-cmd-brack {
+  margin-left: -.2em;
+}
+
+.nya-cmd-brack + .nya-cmd-word-l.nya-cmd-word-var {
+  padding-left: 0px;
+}
+
+.nya-cmd-word-r + .nya-cmd-word-l {
+  margin-left: -.2em;
 }
 
 .\*\:contents > * {
