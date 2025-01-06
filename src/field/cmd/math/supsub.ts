@@ -88,7 +88,7 @@ export class CmdSupSub extends Command {
       return h(
         "-cmd-supsub",
         h(
-          "mb-[-.2em] inline-block text-left align-[.5em] text-[90%] [.bg-zlx-selection>&]:bg-zlx-selection",
+          "mb-[-.2em] inline-block text-left align-[.5em] text-[90%] [.bg-nya-selection>&]:bg-nya-selection",
           h("inline-block align-text-bottom", sup.el),
         ),
       )
@@ -96,7 +96,7 @@ export class CmdSupSub extends Command {
       return h(
         "-cmd-supsub",
         h(
-          "mb-[-.2em] inline-block text-left align-[-.5em] text-[90%] [.bg-zlx-selection>&]:bg-zlx-selection",
+          "mb-[-.2em] inline-block text-left align-[-.5em] text-[90%] [.bg-nya-selection>&]:bg-nya-selection",
           h("float-left block text-[80%]", sub.el),
           h("inline-block w-0", t(U_ZERO_WIDTH_SPACE)),
         ),
@@ -105,7 +105,7 @@ export class CmdSupSub extends Command {
       return h(
         "-cmd-supsub",
         h(
-          "mb-[-.2em] inline-block text-left align-[-.5em] text-[90%] [.bg-zlx-selection>&]:bg-zlx-selection",
+          "mb-[-.2em] inline-block text-left align-[-.5em] text-[90%] [.bg-nya-selection>&]:bg-nya-selection",
           h("block", sup.el),
           h("float-left block text-[80%]", sub.el),
           h("inline-block w-0", t(U_ZERO_WIDTH_SPACE)),

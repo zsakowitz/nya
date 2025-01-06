@@ -42,7 +42,7 @@ export class CmdPiecewise extends Command {
             h(
               "inline-block py-[.1em]" +
                 (index % 2 ?
-                  " before:content-['if'] before:px-[0.2em] last:[&.zlx-has-empty]:before:content-['else'] last:[&.zlx-has-empty]:before:pr-0 last:[&.zlx-has-empty]:before:opacity-30 [&:last-child.zlx-has-empty>*]:hidden"
+                  " before:content-['if'] before:px-[0.2em] last:[&.nya-has-empty]:before:content-['else'] last:[&.nya-has-empty]:before:pr-0 last:[&.nya-has-empty]:before:opacity-30 [&:last-child.nya-has-empty>*]:hidden"
                 : ""),
               block.el,
             ),

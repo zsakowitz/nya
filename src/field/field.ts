@@ -74,18 +74,18 @@ export class Field extends FieldInert {
   }
 
   onBeforeChange() {
-    this.sel.each(({ el }) => el.classList.remove("bg-zlx-selection"))
+    this.sel.each(({ el }) => el.classList.remove("bg-nya-selection"))
     this.cursor.parentElement?.classList.remove("!bg-transparent")
     this.cursor.remove()
     this.sel.parent?.checkIfEmpty()
   }
 
   onAfterChange(wasChangeCanceled: boolean) {
-    this.sel.each(({ el }) => el.classList.add("bg-zlx-selection"))
+    this.sel.each(({ el }) => el.classList.add("bg-nya-selection"))
     this.sel.cursor(this.sel.focused).render(this.cursor)
     this.cursor.parentElement?.classList.add("!bg-transparent")
     this.sel.parent?.checkIfEmpty()
-    this.cursor.parentElement?.parentElement?.classList.remove("zlx-has-empty")
+    this.cursor.parentElement?.parentElement?.classList.remove("nya-has-empty")
     if (!wasChangeCanceled) {
       console.error("scrolling into view")
       this.cursor.scrollIntoView({
