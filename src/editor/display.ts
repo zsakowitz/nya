@@ -31,7 +31,7 @@ export class Exts {
   }
 }
 
-export class Field {
+export class Display {
   readonly el
   readonly block = new Block(null)
   sel: Selection = new Selection(this.block, null, null, R)

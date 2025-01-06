@@ -27,7 +27,7 @@ import {
 } from "./cmd/util/cursor"
 import { CmdMap } from "./cmd/util/map"
 import { CmdNoop } from "./cmd/util/noop"
-import { Exts, Field } from "./field"
+import { Exts, Display } from "./display"
 import { h } from "./jsx"
 import { D, L, R, Selection, U, type Init } from "./model"
 import { WordMap } from "./options"
@@ -138,7 +138,7 @@ const words = new WordMap<WordKind>([
   ["height", "var"],
 ])
 
-const field = new Field(exts, {
+const field = new Display(exts, {
   autoCmds,
   words,
   subscriptNumberAfter(cmd) {
