@@ -162,6 +162,13 @@ export class CmdVar extends Leaf {
   }
 
   reader(): string {
+    if (this.kind) {
+      if (this.part == L) {
+        return " " + this.text
+      } else if (this.part == R) {
+        return this.text + " "
+      }
+    }
     return this.text
   }
 

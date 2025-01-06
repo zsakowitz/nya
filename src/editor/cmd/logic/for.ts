@@ -10,6 +10,7 @@ import {
   type Dir,
   type VDir,
 } from "../../model"
+import { focusEdge } from "../leaf"
 import { OpEq } from "../leaf/cmp"
 
 export class CmdFor extends Command<
@@ -114,5 +115,26 @@ export class CmdFor extends Command<
     } else {
       return this.blocks[0]
     }
+  }
+
+  focus(x: number, y: number): Cursor {
+    if (this.distanceToEdge(x) < this.em(0.55 / 2)) {
+      return focusEdge(this, x)
+    }
+
+    const lower = Math.min(
+      this.blocks[1].bounds()[2],
+      this.blocks[2].bounds()[2],
+    )
+
+    if (y >= lower) {
+      if (this.blocks[1].distanceTo(x) < this.blocks[2].distanceTo(x)) {
+        return this.blocks[1].focus(x, y)
+      } else {
+        return this.blocks[2].focus(x, y)
+      }
+    }
+
+    return this.blocks[0].focus(x, y)
   }
 }

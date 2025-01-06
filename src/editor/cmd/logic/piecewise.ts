@@ -11,7 +11,9 @@ import {
   type InitRet,
   type VDir,
 } from "../../model"
+import { focusEdge } from "../leaf"
 import { BRACKS } from "../math/brack"
+import { closestGridCell } from "../math/matrix"
 
 export class CmdPiecewise extends Command {
   static init(cursor: Cursor): InitRet {
@@ -221,6 +223,24 @@ export class CmdPiecewise extends Command {
       return b0
     } else {
       return b1
+    }
+  }
+
+  focus(x: number, y: number): Cursor {
+    if (this.distanceToEdge(x) < this.em(0.7 / 2)) {
+      return focusEdge(this, x)
+    }
+
+    const [row, col] = closestGridCell(
+      this.el.children[1]!.children[0] as HTMLElement,
+      x,
+      y,
+    )
+    const block = this.blocks[2 * row + col]
+    if (block) {
+      return block.focus(x, y)
+    } else {
+      return focusEdge(this, x)
     }
   }
 }

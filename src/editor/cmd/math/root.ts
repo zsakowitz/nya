@@ -10,9 +10,10 @@ import {
   type Selection,
   type VDir,
 } from "../../model"
-import type { Options } from "../../options"
 
-export class CmdRoot extends Command<[Block] | [Block, Block]> {
+export class CmdRoot extends Command<
+  [contents: Block] | [contents: Block, root: Block]
+> {
   static init(cursor: Cursor, input: string): InitRet {
     if (input == "\\nthroot") {
       const b1 = new Block(null)
@@ -28,12 +29,7 @@ export class CmdRoot extends Command<[Block] | [Block, Block]> {
     return
   }
 
-  static initOn(
-    selection: Selection,
-    input: string,
-    options: Options,
-    event: KeyboardEvent | undefined,
-  ): InitRet {
+  static initOn(selection: Selection, input: string): InitRet {
     const inner = selection.splice().unwrap()
     const b1 = input == "\\nthroot" ? new Block(null) : null
     const cursor = selection.cursor(R)
@@ -214,6 +210,41 @@ export class CmdRoot extends Command<[Block] | [Block, Block]> {
     } else {
       cursor.insert(this.blocks[1], L)
       cursor.insert(this.blocks[0], R)
+    }
+  }
+
+  focus(x: number, y: number): Cursor {
+    if (this.blocks.length == 1) {
+      const [lhs, rhs] = this.bounds()
+      if (x <= lhs + this.em(0.45)) {
+        return this.cursor(L)
+      }
+      if (x >= rhs - this.em(0.05)) {
+        return this.cursor(R)
+      }
+      return this.blocks[0].focus(x, y)
+    }
+
+    const [rootLhs, rootRhs] = this.blocks[1].bounds()
+    const [innerLhs, innerRhs] = this.blocks[0].bounds()
+
+    if (rootLhs <= x) {
+      if (x <= (rootRhs + innerLhs) / 2) {
+        return this.blocks[1].focus(x, y)
+      } else if (x <= innerRhs + this.em(0.05)) {
+        return this.blocks[0].focus(x, y)
+      } else {
+        return this.cursor(R)
+      }
+    }
+
+    const [lhs] = this.bounds()
+    const edgeDist = x < lhs ? 0 : x - lhs
+    const rootDist = rootLhs - x
+    if (edgeDist < rootDist) {
+      return this.cursor(L)
+    } else {
+      return this.blocks[1].focus(x, y)
     }
   }
 }

@@ -1,6 +1,6 @@
 import { Command, Cursor, L, R, type Block, type Dir } from "../../model"
 
-export function focusLeaf(command: Command, x: number) {
+export function focusEdge(command: Command, x: number) {
   const [lhs, rhs] = command.bounds()
   return command.cursor(x < (lhs + rhs) / 2 ? L : R)
 }
@@ -43,6 +43,6 @@ export abstract class Leaf extends Command<[]> {
   }
 
   focus(this: Command, x: number, _y: number): Cursor {
-    return focusLeaf(this, x)
+    return focusEdge(this, x)
   }
 }

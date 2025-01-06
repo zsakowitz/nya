@@ -11,7 +11,7 @@ import {
   type VDir,
 } from "../../model"
 import type { Options } from "../../options"
-import { focusLeaf } from "../leaf"
+import { focusEdge } from "../leaf"
 import { OpEq } from "../leaf/cmp"
 import { CmdVar } from "../leaf/var"
 
@@ -151,7 +151,7 @@ export class CmdBig extends Command<
       this.distanceToEdge(x) < this.em(0.1) ||
       this.distanceToEdge(x) < this.blocks[0].distanceTo(x)
     ) {
-      return focusLeaf(this, x)
+      return focusEdge(this, x)
     }
 
     if (this.blocks[1] && y <= this.blocks[1].bounds()[3]) {

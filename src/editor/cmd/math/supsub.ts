@@ -10,7 +10,7 @@ import {
   type Dir,
   type VDir,
 } from "../../model"
-import { focusLeaf } from "../leaf"
+import { focusEdge } from "../leaf"
 
 export class CmdSupSub extends Command {
   static init(cursor: Cursor, input: string) {
@@ -245,6 +245,10 @@ export class CmdSupSub extends Command {
   }
 
   focus(x: number, y: number): Cursor {
+    if (this.outside(x)) {
+      return focusEdge(this, x)
+    }
+
     if (this.sub && !this.sup) {
       return this.sub.focus(x, y)
     }
@@ -254,7 +258,7 @@ export class CmdSupSub extends Command {
     }
 
     if (!(this.sub && this.sup)) {
-      return focusLeaf(this, x)
+      return focusEdge(this, x)
     }
 
     if (this.sup.distanceToY(y) <= this.sub.distanceToY(y)) {

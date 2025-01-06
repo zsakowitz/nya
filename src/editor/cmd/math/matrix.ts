@@ -10,8 +10,85 @@ import {
   type Dir,
   type VDir,
 } from "../../model"
+import { focusEdge } from "../leaf"
 
 export type Coords = [row: number, col: number]
+
+export function calcGridEntryBounds(
+  parent: HTMLElement,
+): [
+  rows: [top: number, bottom: number][],
+  cols: [left: number, right: number][],
+] {
+  const cs = getComputedStyle(parent)
+  if (cs.display.indexOf("grid") == -1) {
+    throw new Error(
+      "Cannot compute grid entry bounds when parent is not a grid.",
+    )
+  }
+
+  const rows = cs.gridTemplateRows.split(" ").map((x) => +x.slice(0, -2))
+  const cols = cs.gridTemplateColumns.split(" ").map((x) => +x.slice(0, -2))
+  const rowGap = cs.rowGap == "normal" ? 0 : +cs.rowGap.slice(0, -2)
+  const columnGap = cs.columnGap == "normal" ? 0 : +cs.columnGap.slice(0, -2)
+  const box = parent.getBoundingClientRect()
+  let x =
+    +cs.paddingLeft.slice(0, -2) + +cs.borderLeftWidth.slice(0, -2) + box.left
+  let y =
+    +cs.paddingTop.slice(0, -2) + +cs.borderTopWidth.slice(0, -2) + box.top
+
+  return [
+    rows.map((size) => {
+      const value: [number, number] = [y, (y += size)]
+      y += rowGap
+      return value
+    }),
+    cols.map((size) => {
+      const value: [number, number] = [x, (x += size)]
+      x += columnGap
+      return value
+    }),
+  ]
+}
+
+function closestOnAxis(
+  data: [start: number, end: number][],
+  value: number,
+): number {
+  if (value <= data[0]![0]) {
+    return 0
+  }
+
+  if (value >= data[data.length - 1]![1]) {
+    return data.length - 1
+  }
+
+  for (let i = 0; i < data.length; i++) {
+    const start = i == 0 ? data[i]![0] : (data[i]![0] + data[i - 1]![1]) / 2
+    const end =
+      i == data.length - 1 ? data[i]![1] : (data[i]![1] + data[i + 1]![0]) / 2
+
+    if (start <= value && value <= end) {
+      return i
+    }
+  }
+
+  return 0
+}
+
+export function closestGridCell(
+  parent: HTMLElement,
+  x: number,
+  y: number,
+): [row: number, col: number] {
+  const [rows, cols] = calcGridEntryBounds(parent)
+
+  if (rows.length == 0 || cols.length == 0) {
+    return [-1, -1]
+  }
+
+  return [closestOnAxis(rows, y), closestOnAxis(cols, x)]
+}
 
 export class CmdMatrix extends Command<Block[]> {
   static init(cursor: Cursor) {
@@ -311,5 +388,19 @@ export class CmdMatrix extends Command<Block[]> {
     const inserted = dir == U ? 0 : row + 1
     this.createRow(inserted)
     cursor.moveIn(this.blocks[inserted * this.cols]!, L)
+  }
+
+  focus(x: number, y: number): Cursor {
+    if (this.distanceToEdge(x) < this.em(0.55 / 2)) {
+      return focusEdge(this, x)
+    }
+
+    const [row, col] = closestGridCell(this.el.children[1] as HTMLElement, x, y)
+    const block = this.blocks[this.index(row, col)!]
+    if (block) {
+      return block.focus(x, y)
+    } else {
+      return focusEdge(this, x)
+    }
   }
 }

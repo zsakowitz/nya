@@ -11,7 +11,7 @@ import {
   type InitRet,
   type VDir,
 } from "../../model"
-import { focusLeaf } from "../leaf"
+import { focusEdge } from "../leaf"
 
 export type BlocksInt = [sub: Block, sup: Block] | []
 
@@ -125,13 +125,7 @@ export class CmdInt extends Command<BlocksInt> {
 
   reader(): string {
     if (this.blocks.length == 2) {
-      return (
-        "\\int_{" +
-        this.blocks[0]!.reader() +
-        "}^{" +
-        this.blocks[1]!.reader() +
-        "}"
-      )
+      return ` IntegralLowerBound ${this.blocks[0].reader()}, IntegralUpperBound ${this.blocks[1].reader()}, IntegralEnd `
     }
 
     return "\\int"
@@ -153,6 +147,6 @@ export class CmdInt extends Command<BlocksInt> {
       return this.blocks[1].focus(x, y)
     }
 
-    return focusLeaf(this, x)
+    return focusEdge(this, x)
   }
 }

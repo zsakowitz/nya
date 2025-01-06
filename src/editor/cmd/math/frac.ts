@@ -11,7 +11,7 @@ import {
   type Selection,
   type VDir,
 } from "../../model"
-import { focusLeaf } from "../leaf"
+import { focusEdge } from "../leaf"
 import { OpCeq } from "../leaf/cmp"
 
 export class CmdFrac extends Command<[Block, Block]> {
@@ -103,7 +103,7 @@ export class CmdFrac extends Command<[Block, Block]> {
 
   focus(x: number, y: number): Cursor {
     if (this.distanceToEdge(x) < this.em(0.1)) {
-      return focusLeaf(this, x)
+      return focusEdge(this, x)
     }
 
     if (this.blocks[0].distanceToY(y) < this.blocks[1].distanceToY(y)) {

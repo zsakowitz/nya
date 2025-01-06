@@ -70,14 +70,6 @@ export class Block {
       return new Cursor(this, null)
     }
 
-    const [lhs, rhs] = this.bounds()
-    console.log({
-      latex: this.latex(),
-      lhs,
-      x,
-      rhs,
-    })
-
     let el = this.ends[L]
     while (el) {
       if (x < el.bounds()[1]) {
@@ -1362,6 +1354,13 @@ export abstract class Command<
     } else {
       return Math.min(clientX - lhs, rhs - clientX)
     }
+  }
+
+  /** Returns whether the given `clientX` is outside this `Command`. */
+  outside(clientX: number): boolean {
+    const [lhs, rhs] = this.bounds()
+
+    return clientX < lhs || rhs < clientX
   }
 
   /** Inserts a column to some side of a nested {@linkcode Block}. */
