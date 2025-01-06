@@ -1,6 +1,7 @@
 import { Leaf } from "."
 import { h } from "../../jsx"
-import { L, type Cursor } from "../../model"
+import { L, R, type Cursor } from "../../model"
+import { CmdVar } from "./var"
 
 export class CmdDot extends Leaf {
   static init(cursor: Cursor) {
@@ -8,7 +9,28 @@ export class CmdDot extends Leaf {
   }
 
   constructor() {
-    super(",", h("", "."))
+    super(",", h("nya-cmd-dot", "."))
+    this.render()
+  }
+
+  render() {
+    const l = this[L] instanceof CmdDot
+    const r = this[R] instanceof CmdDot
+    const prop = !l && this[R] instanceof CmdVar
+
+    this.setEl(
+      h(
+        "nya-cmd-dot" +
+          (l && !r ? " nya-cmd-dot-r" : "") +
+          (r && !l ? " nya-cmd-dot-l" : "") +
+          (prop ? " nya-cmd-dot-prop" : ""),
+        ".",
+      ),
+    )
+  }
+
+  onSiblingChange(): void {
+    this.render()
   }
 
   reader(): string {
