@@ -32,16 +32,16 @@ export class Exts {
 }
 
 export class Display {
-  readonly el
+  readonly contents
   readonly block = new Block(null)
   sel: Selection = new Selection(this.block, null, null, R)
 
   constructor(
     readonly exts: Exts,
-    readonly options: Options = {},
+    readonly options: Options,
   ) {
-    this.el = this.block.el
-    this.el.className =
+    this.contents = this.block.el
+    this.contents.className =
       "cursor-text whitespace-nowrap font-['Symbola','Times',sans-serif] text-[1.265em] font-normal not-italic transition [line-height:1] focus:outline-none [&_*]:cursor-text block select-none"
   }
 

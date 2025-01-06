@@ -27,7 +27,8 @@ import {
 } from "./cmd/util/cursor"
 import { CmdMap } from "./cmd/util/map"
 import { CmdNoop } from "./cmd/util/noop"
-import { Exts, Display } from "./display"
+import { Exts } from "./display"
+import { Field } from "./field"
 import { h } from "./jsx"
 import { D, L, R, Selection, U, type Init } from "./model"
 import { WordMap } from "./options"
@@ -138,7 +139,20 @@ const words = new WordMap<WordKind>([
   ["height", "var"],
 ])
 
-const field = new Display(exts, {
+const latex = h("text-center block text-sm break-all px-8 text-balance mt-8")
+const ascii = h("text-center block text-sm break-all px-8 text-balance mt-4")
+const reader = h("text-center block text-xs break-all px-8 text-balance mt-4")
+
+class MyField extends Field {
+  showCursor(): void {
+    super.showCursor()
+    latex.textContent = this.block.latex()
+    ascii.textContent = this.block.ascii()
+    reader.textContent = this.block.reader()
+  }
+}
+
+const field = new MyField(exts, {
   autoCmds,
   words,
   subscriptNumberAfter(cmd) {
@@ -167,7 +181,7 @@ const demos = {
 document.body.className = "flex flex-col justify-center min-h-screen px-8"
 
 document.body.append(
-  h("block text-center mb-2", "only keyboard works for now. have fun!"),
+  h("block text-center mb-2", "mouse works now! finally lol"),
   h(
     "flex gap-1 justify-center",
     h("py-1 pr-1", "try:"),
@@ -184,96 +198,23 @@ document.body.append(
 document.body.appendChild(
   h(
     "[line-height:1] text-[2rem] text-center overflow-auto p-8 -mx-8",
-    field.el,
+    field.field,
   ),
 )
 
-const latex = h("text-center block text-sm break-all px-8 text-balance mt-8")
-document.body.appendChild(latex)
-
-const ascii = h("text-center block text-sm break-all px-8 text-balance mt-4")
-document.body.appendChild(ascii)
-
-const reader = h("text-center block text-xs break-all px-8 text-balance mt-4")
-document.body.appendChild(reader)
-
 function exec(input: string) {
-  unrender()
+  field.hideCursor()
   field.sel = new Selection(field.block, null, null, R)
   field.sel.remove()
   input.split(" ").forEach((input) => field.type(input))
-  render()
+  field.showCursor()
 }
-
-const cursor = h("relative nya-cursor border-current w-px -ml-px border-l")
 
 exec(demos.main)
 
-function unrender() {
-  field.sel.each(({ el }) => el.classList.remove("bg-zlx-selection"))
-  cursor.parentElement?.classList.remove("!bg-transparent")
-  cursor.remove()
-  field.sel.parent?.checkIfEmpty()
-}
-
-function render() {
-  field.sel.each(({ el }) => el.classList.add("bg-zlx-selection"))
-  field.sel.cursor(field.sel.focused).render(cursor)
-  cursor.parentElement?.classList.add("!bg-transparent")
-  field.sel.parent?.checkIfEmpty()
-  cursor.parentElement?.parentElement?.classList.remove("zlx-has-empty")
-  latex.textContent = field.block.latex()
-  ascii.textContent = field.block.ascii()
-  reader.textContent = field.block.reader()
-  cursor.scrollIntoView({
-    behavior: "instant",
-    block: "nearest",
-    inline: "nearest",
-  })
-}
-
-addEventListener("keydown", (x) => {
-  if (x.metaKey || x.ctrlKey) return
-  const ext = field.exts.of(x.key)
-  if (!ext) return
-  x.preventDefault()
-  unrender()
-  field.type(x.key, x)
-  render()
-})
-
-field.el.addEventListener("pointerdown", (event) => {
-  isMouseDown = true
-  unrender()
-
-  const cursor = field.block.focus(event.clientX, event.clientY)
-
-  if (event.shiftKey) {
-    event.preventDefault()
-    field.sel = Selection.of(field.sel.cachedAnchor, cursor)
-  } else {
-    field.sel = cursor.selection()
-  }
-
-  render()
-})
-
-addEventListener("mouseup", () => (isMouseDown = false))
-
-let isMouseDown = false
-
-field.el.addEventListener("mousemove", (event) => {
-  if (!isMouseDown) return
-
-  unrender()
-
-  const cursor = field.block.focus(event.clientX, event.clientY)
-
-  event.preventDefault()
-  field.sel = Selection.of(field.sel.cachedAnchor, cursor)
-
-  render()
-})
+document.body.appendChild(latex)
+document.body.appendChild(ascii)
+document.body.appendChild(reader)
 
 document.body.append(
   h("font-semibold mt-8", "Available keys to press:"),
