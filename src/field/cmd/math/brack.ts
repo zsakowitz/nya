@@ -7,6 +7,8 @@ import {
   type Cursor,
   type Dir,
   type InitProps,
+  type InitRet,
+  type Selection,
 } from "../../model"
 import { CmdComma } from "../leaf/comma"
 
@@ -15,6 +17,7 @@ export const BRACKS = {
     w: "w-[.55em]",
     mx: "mx-[.55em]",
     size: 0.55,
+    side: L as Dir | null,
     latex: "[",
     html() {
       return svg("0 0 11 24", p("M8 0 L3 0 L3 24 L8 24 L8 23 L4 23 L4 1 L8 1"))
@@ -24,6 +27,7 @@ export const BRACKS = {
     w: "w-[.55em]",
     mx: "mx-[.55em]",
     size: 0.55,
+    side: R as Dir | null,
     latex: "]",
     html() {
       return svg("0 0 11 24", p("M3 0 L8 0 L8 24 L3 24 L3 23 L7 23 L7 1 L3 1"))
@@ -33,6 +37,7 @@ export const BRACKS = {
     w: "w-[.55em]",
     mx: "mx-[.55em]",
     size: 0.55,
+    side: L as Dir | null,
     latex: "(",
     html() {
       return svg(
@@ -45,6 +50,7 @@ export const BRACKS = {
     w: "w-[.55em]",
     mx: "mx-[.55em]",
     size: 0.55,
+    side: R as Dir | null,
     latex: ")",
     html() {
       return svg(
@@ -57,6 +63,7 @@ export const BRACKS = {
     w: "w-[.7em]",
     mx: "mx-[.7em]",
     size: 0.7,
+    side: L as Dir | null,
     latex: "\\{",
     html() {
       return svg(
@@ -71,6 +78,7 @@ export const BRACKS = {
     w: "w-[.7em]",
     mx: "mx-[.7em]",
     size: 0.7,
+    side: R as Dir | null,
     latex: "\\}",
     html() {
       return svg(
@@ -85,6 +93,7 @@ export const BRACKS = {
     w: "w-[.4em]",
     mx: "mx-[.4em]",
     size: 0.4,
+    side: null as Dir | null,
     latex: "|",
     html() {
       return svg("0 0 10 54", p("M4.4 0 L4.4 54 L5.6 54 L5.6 0"))
@@ -111,12 +120,20 @@ export function matchParen(x: ParenAny) {
   }[x]
 }
 
+function is(brack: string, dir: typeof L): brack is ParenLhs
+function is(brack: string, dir: typeof R): brack is ParenRhs
+function is(brack: string, dir: Dir): boolean
+function is(brack: string, dir: Dir) {
+  if (!{}.hasOwnProperty.call(BRACKS, brack)) return false
+  const { side } = BRACKS[brack as ParenAny]
+  return side == dir || side == null
+}
+
 export class CmdBrack extends Command<[Block]> {
   static init(cursor: Cursor, { input }: InitProps) {
     if (!cursor.parent) return
 
-    // TODO: handle absolute values better
-    if (input == "(" || input == "[" || input == "{" || input == "|") {
+    if (is(input, L)) {
       const rhs = matchParen(input satisfies ParenLhs)
 
       if (
@@ -145,15 +162,9 @@ export class CmdBrack extends Command<[Block]> {
         cursor.moveIn(parent.blocks[0], R)
         return
       }
+    }
 
-      const span = cursor.span().extendToEnd(R)
-      const brack = new CmdBrack(input, rhs, L, span.splice())
-      // The `span.remove()` call invalidates the cursor, so we need
-      // to fix it using the span (either side works, since it's empty)
-      cursor.setTo(span.cursor(L))
-      brack.insertAt(cursor, L)
-      cursor.moveIn(brack.blocks[0], L)
-    } else if (input == ")" || input == "]" || input == "}") {
+    if (is(input, R)) {
       const lhs = matchParen(input satisfies ParenRhs)
 
       if (
@@ -181,7 +192,22 @@ export class CmdBrack extends Command<[Block]> {
         cursor.moveTo(parent, R)
         return
       }
+    }
 
+    if (is(input, L)) {
+      const rhs = matchParen(input satisfies ParenLhs)
+      const span = cursor.span().extendToEnd(R)
+      const brack = new CmdBrack(input, rhs, L, span.splice())
+      // The `span.remove()` call invalidates the cursor, so we need
+      // to fix it using the span (either side works, since it's empty)
+      cursor.setTo(span.cursor(L))
+      brack.insertAt(cursor, L)
+      cursor.moveIn(brack.blocks[0], L)
+      return
+    }
+
+    if (is(input, R)) {
+      const lhs = matchParen(input satisfies ParenRhs)
       const span = cursor.span().extendToEnd(L)
       const brack = new CmdBrack(lhs, input, R, span.splice())
       // The `span.remove()` call invalidates the cursor, so we need
@@ -189,7 +215,28 @@ export class CmdBrack extends Command<[Block]> {
       cursor.setTo(span.cursor(R))
       brack.insertAt(cursor, R)
       cursor.moveTo(brack, R)
+      return
     }
+  }
+
+  static initOn(selection: Selection, { input }: InitProps): InitRet {
+    if (!(is(input, L) || is(input, R))) {
+      return
+    }
+
+    const block = selection.splice()
+    const cursor = selection.cursor(R)
+
+    if (is(input, L)) {
+      const brack = new CmdBrack(input, matchParen(input), null, block)
+      brack.insertAt(cursor, L)
+      cursor.moveIn(block, L)
+    } else {
+      const brack = new CmdBrack(matchParen(input), input, null, block)
+      brack.insertAt(cursor, L)
+    }
+
+    return cursor
   }
 
   static render(lhs: ParenLhs, rhs: ParenRhs, side: Dir | null, block: Block) {

@@ -23,7 +23,10 @@ export class ByRegex implements Init {
         return cmd.init(cursor, props)
       }
     }
-    return this.default?.init(cursor, props)
+    if (this.default) {
+      return this.default.init(cursor, props)
+    }
+    return "browser"
   }
 
   initOn(selection: Selection, props: InitProps): InitRet {
@@ -35,5 +38,6 @@ export class ByRegex implements Init {
     if (this.default) {
       return performInit(this.default, selection, props)
     }
+    return "browser"
   }
 }

@@ -94,7 +94,7 @@ export class CmdPrompt extends Leaf {
     this.display.onBeforeChange?.()
     this.display.sel = this.selection
     this.remove()
-    this.display.onAfterChange?.()
+    this.display.onAfterChange?.(false)
     ;(this.active as HTMLElement)?.focus()
   }
 
@@ -103,7 +103,7 @@ export class CmdPrompt extends Leaf {
     this.display.sel = this.selection
     this.remove()
     this.display.type("\\" + name)
-    this.display.onAfterChange?.()
+    this.display.onAfterChange?.(false)
     ;(this.active as HTMLElement)?.focus()
   }
 

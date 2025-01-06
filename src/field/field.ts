@@ -1,3 +1,4 @@
+import { CmdSelectAll } from "./cmd/util/cursor"
 import { FieldInert } from "./field-inert"
 import { h } from "./jsx"
 import { Selection } from "./model"
@@ -27,7 +28,7 @@ export class Field extends FieldInert {
         this.sel = cursor.selection()
       }
 
-      this.onAfterChange()
+      this.onAfterChange(false)
     })
     addEventListener("pointerup", () => (isPointerDown = false))
     this.el.addEventListener("pointermove", (event) => {
@@ -40,19 +41,36 @@ export class Field extends FieldInert {
       event.preventDefault()
       this.sel = Selection.of(this.sel.cachedAnchor, cursor)
 
-      this.onAfterChange()
+      this.onAfterChange(false)
     })
     this.el.addEventListener(
       "touchmove",
       (event) => isPointerDown && event.preventDefault(),
     )
     this.el.addEventListener("keydown", (event) => {
-      if (event.metaKey || event.ctrlKey) return
+      if (event.metaKey || event.ctrlKey) {
+        if (event.key == "a") {
+          event.preventDefault()
+          this.init(CmdSelectAll, "")
+        }
+        return
+      }
       const ext = this.exts.of(event.key)
       if (!ext) return
-      event.preventDefault()
-      this.init(ext, event.key, { event })
+      if (this.init(ext, event.key, { event }) != "browser") {
+        event.preventDefault()
+      }
     })
+    this.el.addEventListener("focus", () => {
+      this.cursor.classList.add("[scroll-margin:1rem]")
+      this.cursor.scrollIntoView({
+        behavior: "instant",
+        block: "nearest",
+        inline: "nearest",
+      })
+      this.cursor.classList.remove("[scroll-margin:1rem]")
+    })
+    this.onAfterChange(false)
   }
 
   onBeforeChange() {
@@ -62,16 +80,19 @@ export class Field extends FieldInert {
     this.sel.parent?.checkIfEmpty()
   }
 
-  onAfterChange() {
+  onAfterChange(wasChangeCanceled: boolean) {
     this.sel.each(({ el }) => el.classList.add("bg-zlx-selection"))
     this.sel.cursor(this.sel.focused).render(this.cursor)
     this.cursor.parentElement?.classList.add("!bg-transparent")
     this.sel.parent?.checkIfEmpty()
     this.cursor.parentElement?.parentElement?.classList.remove("zlx-has-empty")
-    this.cursor.scrollIntoView({
-      behavior: "instant",
-      block: "nearest",
-      inline: "nearest",
-    })
+    if (!wasChangeCanceled) {
+      console.error("scrolling into view")
+      this.cursor.scrollIntoView({
+        behavior: "instant",
+        block: "nearest",
+        inline: "nearest",
+      })
+    }
   }
 }

@@ -13,13 +13,6 @@ export function h(
   return hx("span", cl, ...children)
 }
 
-export function d(
-  cl?: string | Record<string, string>,
-  ...children: (Node | string | null)[]
-) {
-  return hx("div", cl, ...children)
-}
-
 export function hx<K extends keyof HTMLElementTagNameMap>(
   name: K,
   cl?: string | Record<string, string>,

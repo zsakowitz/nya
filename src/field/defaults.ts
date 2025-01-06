@@ -38,7 +38,7 @@ export const exts = new Exts()
       [/^u.+$/, new CmdMap(CmuSym, (x) => x.slice(1))],
       [/^\w$/, CmdVar],
       [/^\s$/, CmdNoop],
-      [/^[()[\]{}]$/, CmdBrack],
+      [/^[()|[\]{}]$/, CmdBrack],
     ]),
   )
   // basic ops

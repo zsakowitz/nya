@@ -1,4 +1,12 @@
-import { Block, performInit, R, Selection, type Init } from "./model"
+import {
+  Block,
+  performInit,
+  R,
+  Selection,
+  type Dir,
+  type Init,
+  type VDir,
+} from "./model"
 import type { Exts, Options } from "./options"
 
 /** Props passed to `Display.init()` and `Display.type()`. */
@@ -35,21 +43,26 @@ export class FieldInert {
     }
   }
 
-  init(init: Init, input: string, props?: FieldInitProps) {
+  init(init: Init, input: string, props?: FieldInitProps): "browser" | null {
     if (!props?.skipChangeHandlers) {
       this.onBeforeChange?.()
     }
 
-    this.sel = performInit(init, this.sel, {
+    const value = performInit(init, this.sel, {
       input,
       event: props?.event,
       field: this,
       options: this.options,
     })
+    if (value != "browser") {
+      this.sel = value
+    }
 
     if (!props?.skipChangeHandlers) {
-      this.onAfterChange?.()
+      this.onAfterChange?.(value == "browser")
     }
+
+    return value == "browser" ? value : null
   }
 
   type(input: string, props?: FieldInitProps) {
@@ -66,9 +79,18 @@ export class FieldInert {
     source
       .split(" ")
       .forEach((input) => this.type(input, { skipChangeHandlers: true }))
-    this.onAfterChange?.()
+    this.onAfterChange?.(false)
   }
 
+  // Fired around `.init()` calls
   onBeforeChange?(): void
-  onAfterChange?(): void
+  onAfterChange?(wasChangeCanceled: boolean): void
+
+  // Fired when arrows navigate outside of the field
+  onMoveOut?(towards: Dir): void
+  onVertOut?(towards: VDir): void
+  onDelOut?(towards: Dir): void
+
+  /** Return `true` to override the browser's default behavior. */
+  onTabOut?(towards: Dir): boolean
 }

@@ -130,7 +130,9 @@ body {
 }
 
 .nya-cmd-pm:first-child > *,
-.nya-cursor:first-child + .nya-cmp-pm > * {
+.nya-cursor:first-child + .nya-cmd-pm > *,
+.nya-cmd-op:last-child > *,
+.nya-cmd-op:has(+ .nya-cursor:last-child) > * {
   @apply pr-0;
 }
 
@@ -143,4 +145,8 @@ body {
 .nya-cmd-op:not(.nya-cmd-pm):has(+ .nya-cursor + .nya-cmd-op:not(.nya-cmd-pm))
   > * {
   @apply pr-[.1em];
+}
+
+.nya-prefix {
+  @apply opacity-50;
 }

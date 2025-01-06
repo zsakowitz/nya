@@ -1,4 +1,14 @@
-import { D, L, R, U, type Dir, type Init, type VDir } from "../../model"
+import {
+  Cursor,
+  D,
+  L,
+  R,
+  Selection,
+  U,
+  type Dir,
+  type Init,
+  type VDir,
+} from "../../model"
 import { isMac } from "../../shortcut"
 
 /**
@@ -25,13 +35,13 @@ export function CmdMove(dir: Dir | VDir, isHomeEnd = false): Init {
   if (dir == U || dir == D) {
     const dirSelect = dir == U ? L : R
     return {
-      init(cursor, { event }) {
+      init(cursor, { event, field }) {
         if (event?.shiftKey) {
           const sel = cursor.selection()
           sel.moveFocusFast(dirSelect)
           return sel
         } else {
-          cursor.moveVert(dir)
+          if (!cursor.moveVert(dir)) field.onVertOut?.(dir)
         }
       },
       initOn(selection, { event }) {
@@ -42,7 +52,7 @@ export function CmdMove(dir: Dir | VDir, isHomeEnd = false): Init {
     }
   } else {
     return {
-      init(cursor, { event }) {
+      init(cursor, { event, field }) {
         if (event) {
           const action =
             isHomeEnd ? !isMac() && (event.ctrlKey ? "doc" : "line")
@@ -77,12 +87,12 @@ export function CmdMove(dir: Dir | VDir, isHomeEnd = false): Init {
           }
 
           if (event.altKey) {
-            cursor.moveByWord(dir)
-            return cursor
+            if (!cursor.moveByWord(dir)) field.onMoveOut?.(dir)
+            return
           }
         }
 
-        cursor.move(dir)
+        if (!cursor.move(dir)) field.onMoveOut?.(dir)
       },
       initOn(sel, { event }) {
         if (event) {
@@ -125,8 +135,8 @@ export function CmdMove(dir: Dir | VDir, isHomeEnd = false): Init {
 }
 
 export const CmdBackspace: Init = {
-  init(cursor) {
-    cursor.delete(L)
+  init(cursor, { field }) {
+    if (!cursor.delete(L)) field.onDelOut?.(L)
   },
   initOn(selection) {
     selection.remove()
@@ -134,8 +144,8 @@ export const CmdBackspace: Init = {
 }
 
 export const CmdDel: Init = {
-  init(cursor) {
-    cursor.delete(R)
+  init(cursor, { field }) {
+    if (!cursor.delete(R)) field.onDelOut?.(R)
   },
   initOn(selection) {
     selection.remove()
@@ -143,13 +153,10 @@ export const CmdDel: Init = {
 }
 
 export const CmdTab: Init = {
-  init(cursor, { event }) {
+  init(cursor, { event, field }) {
     const dir = event?.shiftKey ? L : R
-    if (!cursor.parent) {
-      return
-    }
-    if (!cursor.parent.parent) {
-      return
+    if (!cursor.parent?.parent) {
+      return field.onTabOut?.(dir) ? undefined : "browser"
     }
     cursor.parent.parent.tabOutOf(cursor, dir, cursor.parent)
   },
@@ -186,5 +193,14 @@ export const CmdBreakRow: Init = {
 
       el.moveTo(el.parent.parent, R)
     }
+  },
+}
+
+export const CmdSelectAll: Init = {
+  init(_, { field }) {
+    return new Selection(field.block, null, null, R, new Cursor(null, null))
+  },
+  initOn(_, { field }) {
+    return new Selection(field.block, null, null, R, new Cursor(null, null))
   },
 }

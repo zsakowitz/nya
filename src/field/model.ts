@@ -399,13 +399,19 @@ export class Cursor {
     ;(this as CursorMut)[R] = other[R]
   }
 
-  /** Moves this cursor in the given direction. */
-  move(dir: Dir) {
+  /**
+   * Moves this cursor in the given direction, returning whether any movement
+   * happened.
+   */
+  move(dir: Dir): boolean {
     if (this[dir]) {
       this[dir].moveInto(this, dir)
+      return true
     } else if (this.parent?.parent) {
       this.parent.parent.moveOutOf(this, dir, this.parent)
+      return true
     }
+    return false
   }
 
   /**
@@ -422,13 +428,20 @@ export class Cursor {
     return ret
   }
 
-  /** Moves this cursor in the given direction by a contextual "word". */
-  moveByWord(dir: Dir) {
+  /**
+   * Moves this cursor in the given direction by a contextual "word", returning
+   * whether any moving happened.
+   */
+  moveByWord(dir: Dir): boolean {
     if (this[dir]) {
       this[dir].moveAcrossWord(this, dir)
+      return true
     } else if (this.parent?.parent) {
       this.moveTo(this.parent.parent, dir)
+      return true
     }
+
+    return false
   }
 
   /**
@@ -575,16 +588,22 @@ export class Cursor {
     }
   }
 
-  /** Deletes in the given direction from this cursor's position. */
-  delete(dir: Dir) {
+  /**
+   * Deletes in the given direction from this cursor's position, returning
+   * whether any deletion happened.
+   */
+  delete(dir: Dir): boolean {
     if (this[dir]) {
       this[dir].delete(this, dir == R ? L : R)
-      return
+      return true
     }
 
-    if (!this.parent?.parent) return
+    if (!this.parent?.parent) {
+      return false
+    }
 
     this.parent.parent.deleteBlock(this, dir, this.parent)
+    return true
   }
 }
 
@@ -972,10 +991,6 @@ export class Selection extends Span {
         break inner
       }
 
-      console.log({
-        focused: this.focused,
-      })
-
       const next = Selection.of(
         this.cachedAnchor,
         inner[0].cursor(this.focused),
@@ -1146,10 +1161,10 @@ export abstract class Command<
    * Initializes this {@linkcode Command} to the left side of the provided
    * {@linkcode Cursor}.
    */
-  static init?(cursor: Cursor, input: InitProps): InitRet
+  static init?(cursor: Cursor, props: InitProps): InitRet
 
   /** Initializes this {@linkcode Command} over a given {@linkcode Selection}. */
-  static initOn?(selection: Selection, input: InitProps): InitRet
+  static initOn?(selection: Selection, props: InitProps): InitRet
 
   /** Returns the direction needed to travel from `anchor` to `focus`. */
   static dir(anchor: Command, focus: Command): Dir {
@@ -1549,7 +1564,7 @@ export abstract class Command<
 }
 
 /** The updated cursor or selection created by {@linkcode Init}. */
-export type InitRet = Cursor | Selection | undefined | void
+export type InitRet = Cursor | Selection | "browser" | undefined | void
 
 /** Proprties passed to an `.init()` call. */
 export interface InitProps<E = KeyboardEvent | undefined> {
@@ -1577,8 +1592,8 @@ export function performInit<E>(
   init: Init<E>,
   selection: Selection,
   props: InitProps<E>,
-): Selection {
-  let ret: Cursor | Selection
+): Selection | "browser" {
+  let ret: Cursor | Selection | "browser"
 
   if (selection.isCursor()) {
     const cursor = selection.cursor(R)

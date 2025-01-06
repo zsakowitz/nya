@@ -15,6 +15,7 @@ const sheet = new Sheet(exts, { field: options })
     new CmdWord("var", "detail").insertAt(cursor, L)
     new OpEq(false).insertAt(cursor, L)
   })
+  expr.removable = false
   expr.field.typeEach("5 0")
 }
 

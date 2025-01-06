@@ -8,8 +8,8 @@ const ascii = h("text-center block text-sm break-all px-8 text-balance mt-4")
 const reader = h("text-center block text-xs break-all px-8 text-balance mt-4")
 
 class MyField extends Field {
-  onAfterChange(): void {
-    super.onAfterChange()
+  onAfterChange(wasChangeCanceled: boolean): void {
+    super.onAfterChange(wasChangeCanceled)
     latex.textContent = this.block.latex()
     ascii.textContent = this.block.ascii()
     reader.textContent = this.block.reader()
