@@ -81,7 +81,7 @@ export class CmdFor extends Command<
   vertOutOf(dir: VDir, block: Block, cursor: Cursor): Block | true | undefined {
     if (block == this.blocks[0]) {
       if (dir == D) {
-        const x = cursor.screenX()!
+        const x = cursor.x()!
         const b1 = this.blocks[1].distanceTo(x)
         const b2 = this.blocks[2].distanceTo(x)
         if (b1 <= b2) {

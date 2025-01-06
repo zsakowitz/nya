@@ -268,23 +268,22 @@ export class Block {
   }
 
   /** Returns whether this {@linkcode Block} contains the given point. */
-  contains(clientX: number, clientY: number): boolean {
+  contains(x: number, y: number): boolean {
     const [lhs, rhs, ts, bs] = this.bounds()
-    return lhs <= clientX && clientX <= rhs && ts <= clientY && clientY <= bs
+    return lhs <= x && x <= rhs && ts <= y && y <= bs
   }
 
   /**
-   * If this {@linkcode Block} contains the given `clientY`, returns `0`.
-   * Otherwise, returns the distance from the closest block bound to the
-   * `clientY` value.
+   * If this {@linkcode Block} contains the given `y`, returns `0`. Otherwise,
+   * returns the distance from the closest block bound to the `y` value.
    */
-  distanceToY(clientY: number): number {
+  distanceToY(y: number): number {
     const [, , top, bottom] = this.bounds()
 
-    if (clientY < top) {
-      return top - clientY
-    } else if (bottom < clientY) {
-      return clientY - bottom
+    if (y < top) {
+      return top - y
+    } else if (bottom < y) {
+      return y - bottom
     } else {
       return 0
     }
@@ -431,7 +430,7 @@ export class Cursor {
    */
   moveVert(dir: VDir): boolean {
     // Get the cursor's X position; we want to be as close to it as possible
-    const x = this.screenX()
+    const x = this.x()
 
     // The cursor doesn't have an X position iff it is not in the DOM, and thus
     // we may safely ignore the movement operation.
@@ -510,7 +509,7 @@ export class Cursor {
    * Gets the X-coordinate of this `Cursor` onscreen. Returns `null` if the
    * `Cursor` is not attached to any element.
    */
-  screenX() {
+  x() {
     if (this[R]) {
       return this[R].el.getBoundingClientRect().left
     } else if (this.parent) {
