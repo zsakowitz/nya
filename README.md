@@ -49,7 +49,7 @@ The data model is basically a virtual DOM, albeit one with many changes:
 - Instead of handling all edge cases, the model relies on the programmer not to
   make many mistakes.
 
-The [`src/editor/model.ts`](src/editor/model.ts) file defines the entire data
+The [`src/field/model.ts`](src/field/model.ts) file defines the entire data
 model, if you want to look at the source instead. It's in a single file split
 into many classes and interfaces, as all the implementation details are highly
 coupled together.

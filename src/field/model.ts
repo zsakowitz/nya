@@ -1547,6 +1547,11 @@ export interface Init<E = KeyboardEvent | undefined> {
   initOn?(selection: Selection, input: InitProps<E>): InitRet
 }
 
+/**
+ * Calls `.initOn()` or `.init()` on a given {@linkcode Init}, passing the passed
+ * {@linkcode Selection} as a {@linkcode Selection} or {@linkcode Cursor} as
+ * appropriate. Returns a new, possibly modified selection.
+ */
 export function performInit<E>(
   init: Init<E>,
   selection: Selection,
