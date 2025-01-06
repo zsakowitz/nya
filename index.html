@@ -14,10 +14,5 @@
   </head>
   <body>
     <script type="module" src="/index.mjs"></script>
-    <script>
-      new EventSource("/esbuild").addEventListener("change", () =>
-        location.reload(),
-      )
-    </script>
   </body>
 </html>
