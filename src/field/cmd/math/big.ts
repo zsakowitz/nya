@@ -18,6 +18,7 @@ import { CmdVar } from "../leaf/var"
 export const BIG_CMDS = {
   "\\sum": "∑",
   "\\prod": "∏",
+  "\\coprod": "∐",
 } as const
 
 type BigCmd = keyof typeof BIG_CMDS
@@ -26,8 +27,10 @@ type BigSym = (typeof BIG_CMDS)[BigCmd]
 export const BIG_ALIASES: Record<(string & {}) | BigCmd | BigSym, BigCmd> = {
   "\\sum": "\\sum",
   "\\prod": "\\prod",
+  "\\coprod": "\\coprod",
   "∑": "\\sum",
   "∏": "\\prod",
+  "∐": "\\coprod",
 }
 
 export class CmdBig extends Command<

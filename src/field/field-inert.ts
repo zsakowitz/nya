@@ -1,42 +1,14 @@
 import { Block, performInit, R, Selection, type Init } from "./model"
-import type { Options } from "./options"
+import type { Exts, Options } from "./options"
 
-export class Exts {
-  private readonly cmds: { [x: string]: Init } = Object.create(null)
-  private default?: Init
-
-  getAll(): string[] {
-    return Object.getOwnPropertyNames(this.cmds)
-  }
-
-  set(name: string, cmd: Init) {
-    this.cmds[name] = cmd
-    return this
-  }
-
-  setAll(names: string[], cmd: Init) {
-    for (const name of names) {
-      this.cmds[name] = cmd
-    }
-    return this
-  }
-
-  setDefault(cmd: Init) {
-    this.default = cmd
-    return this
-  }
-
-  of(text: string) {
-    return this.cmds[text] || this.default
-  }
-}
-
-export interface DisplayInitProps {
+/** Props passed to `Display.init()` and `Display.type()`. */
+export interface FieldInitProps {
   event?: KeyboardEvent
   skipChangeHandlers?: boolean
 }
 
-export class Display {
+/** A math field which registers no event listeners and is effectively inert. */
+export class FieldInert {
   readonly contents
   readonly block = new Block(null)
   sel: Selection = new Selection(this.block, null, null, R)
@@ -50,7 +22,7 @@ export class Display {
       "nya-display cursor-text whitespace-nowrap font-['Symbola','Times',sans-serif] text-[1.265em] font-normal not-italic transition [line-height:1] focus:outline-none [&_*]:cursor-text block select-none"
   }
 
-  init(init: Init, input: string, props?: DisplayInitProps) {
+  init(init: Init, input: string, props?: FieldInitProps) {
     if (!props?.skipChangeHandlers) {
       this.beforeChange?.()
     }
@@ -58,7 +30,7 @@ export class Display {
     this.sel = performInit(init, this.sel, {
       input,
       event: props?.event,
-      display: this,
+      field: this,
       options: this.options,
     })
 
@@ -67,7 +39,7 @@ export class Display {
     }
   }
 
-  type(input: string, props?: DisplayInitProps) {
+  type(input: string, props?: FieldInitProps) {
     const ext = this.exts.of(input)
     if (ext) {
       this.init(ext, input, props)

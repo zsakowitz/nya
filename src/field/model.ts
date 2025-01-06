@@ -1,5 +1,5 @@
 import type { CmdFrac } from "./cmd/math/frac"
-import type { Display } from "./display"
+import type { FieldInert } from "./field-inert"
 import { h } from "./jsx"
 import type { Options } from "./options"
 
@@ -1546,7 +1546,7 @@ export interface InitProps<E = KeyboardEvent | undefined> {
   input: string
   options: Options
   event: E
-  display: Display
+  field: FieldInert
 }
 
 /**

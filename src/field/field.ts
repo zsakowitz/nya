@@ -1,9 +1,9 @@
-import { Display, type Exts } from "./display"
+import { FieldInert } from "./field-inert"
 import { h } from "./jsx"
 import { Selection } from "./model"
-import type { Options } from "./options"
+import type { Exts, Options } from "./options"
 
-export class Field extends Display {
+export class Field extends FieldInert {
   readonly cursor = h(
     "relative nya-cursor border-current w-px -ml-px border-l [.nya-display:has(.nya-cmd-prompt)_&]:hidden",
   )

@@ -1,4 +1,4 @@
-import type { Display } from "../../display"
+import type { FieldInert } from "../../field-inert"
 import { h, hx } from "../../jsx"
 import {
   L,
@@ -12,7 +12,7 @@ import type { Options } from "../../options"
 import { Leaf } from "../leaf"
 
 export class CmdPrompt extends Leaf {
-  static init(cursor: Cursor, { options, display }: InitProps): InitRet {
+  static init(cursor: Cursor, { options, field: display }: InitProps): InitRet {
     const prompt = new CmdPrompt(
       options,
       display,
@@ -24,7 +24,7 @@ export class CmdPrompt extends Leaf {
 
   static initOn(
     selection: Selection,
-    { options, display }: InitProps,
+    { options, field: display }: InitProps,
   ): InitRet {
     const prompt = new CmdPrompt(
       options,
@@ -44,7 +44,7 @@ export class CmdPrompt extends Leaf {
 
   constructor(
     readonly options: Options,
-    readonly display: Display,
+    readonly display: FieldInert,
     readonly selection: Selection,
     readonly active: Element | null,
   ) {

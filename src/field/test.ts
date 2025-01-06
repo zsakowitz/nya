@@ -1,8 +1,9 @@
-import { CmdBrack } from "./cmd/math/brack"
-import { OpPlus } from "./cmd/leaf/op"
 import { CmdNum } from "./cmd/leaf/num"
-import { Exts, Display } from "./display"
+import { OpPlus } from "./cmd/leaf/op"
+import { CmdBrack } from "./cmd/math/brack"
+import { FieldInert } from "./field-inert"
 import { Block, L, R } from "./model"
+import { Exts } from "./options"
 
 function eq<T>(a: T, b: T) {
   if (a !== b) {
@@ -26,7 +27,10 @@ function test(name: string, f: () => void) {
 }
 
 test("some selection stuff", () => {
-  const field = new Display(new Exts().setDefault(CmdNum).set("+", OpPlus))
+  const field = new FieldInert(
+    new Exts().setDefault(CmdNum).set("+", OpPlus),
+    {},
+  )
   field.sel.remove().moveIn(field.block, L)
 
   const block = new Block(null)
