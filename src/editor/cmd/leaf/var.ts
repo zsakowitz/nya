@@ -64,23 +64,24 @@ export class CmdVar extends Leaf {
     const side =
       part == L ? "-l"
       : part == R ? "-r"
-      : ""
+      : "-mid"
 
     return h(
-      "nya-cmd-var" + (kind ? ` nya-cmd-word${side}` : ""),
+      "nya-cmd-var" +
+        (kind ? ` nya-cmd-word nya-cmd-word-${kind} nya-cmd-word${side} ` : ""),
       h(
-        "font-['Times'] [line-height:.9] " +
-          {
-            null: "italic",
-            var: "bg-red-200",
-            infix: "bg-green-200",
-            prefix: "bg-purple-200",
-          }[`${kind}`] +
-          {
-            null: "",
-            [L]: " underline",
-            [R]: " overline",
-          }[`${part}`],
+        "font-['Times'] [line-height:.9]" + (kind == null ? " italic" : ""),
+        // + {
+        // null: "italic",
+        // var: "bg-red-200",
+        // infix: "bg-green-200",
+        // prefix: "bg-purple-200",
+        // }[`${kind}`] +
+        // {
+        // null: "",
+        // [L]: " underline",
+        // [R]: " overline",
+        // }[`${part}`],
         t(text),
       ),
     )

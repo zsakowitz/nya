@@ -21,26 +21,19 @@ export abstract class Op extends Leaf {
 }
 
 export abstract class OpPm extends Leaf {
+  static render(html: string) {
+    return h("nya-cmd-op nya-cmd-pm", h("px-[.2em] inline-block", t(html)))
+  }
+
   constructor(
     readonly ctrlSeq: string,
     html: string,
   ) {
-    super(
-      ctrlSeq,
-      h(
-        "nya-cmd-op nya-cmd-pm",
-        h("px-[.2em] inline-block cursor-text", t(html)),
-      ),
-    )
+    super(ctrlSeq, OpPm.render(html))
   }
 
   setHtml(html: string) {
-    this.setEl(
-      h(
-        "nya-cmd-op nya-cmd-pm",
-        h("px-[.2em] inline-block cursor-text", t(html)),
-      ),
-    )
+    this.setEl(OpPm.render(html))
   }
 }
 
@@ -113,7 +106,7 @@ export function opm(
 }
 
 export const OpPlus = opm("+", " plus ")
-export const OpMinus = opm("–", " minus ")
+export const OpMinus = opm("-", " minus ")
 export const OpPlusMinus = opm("\\pm ", " plus-or-minus ", "±")
 export const OpMinusPlus = opm("\\mp ", " minus-or-plus ", "∓")
 
