@@ -100,6 +100,14 @@ body {
   @apply pr-0;
 }
 
+.nya-cmd-word-r:has(
+    + .nya-cmd-dot:last-child,
+    + .nya-cmd-dot + .nya-cursor:last-child,
+    + .nya-cursor + .nya-cmd-dot:last-child
+  ) {
+  @apply pr-0;
+}
+
 .nya-cmd-dot-r + .nya-cmd-word-l,
 .nya-cmd-dot-r + .nya-cursor + .nya-cmd-word-l {
   @apply pl-0;
@@ -110,6 +118,6 @@ body {
   @apply pl-0;
 }
 
-.nya-cmd-word-r:has(+ .nya-cmd-dot-prop, .nya-cursor + .nya-cmd-dot-prop) {
+.nya-cmd-word-r:has(+ .nya-cmd-dot-prop, + .nya-cursor + .nya-cmd-dot-prop) {
   @apply pr-0;
 }
