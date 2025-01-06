@@ -407,6 +407,20 @@ export class Cursor {
     }
   }
 
+  /**
+   * Gets a list of ancestors of this `Cursor`, starting with
+   * `this.parent?.parent?.parent`.
+   */
+  parents(): [block: Block, child: Command | Cursor][] {
+    const ret: [block: Block, child: Command | Cursor][] = []
+    let el: Command | Cursor | null | undefined = this
+    while (el && el.parent) {
+      ret.push([el.parent, el])
+      el = el.parent?.parent
+    }
+    return ret
+  }
+
   /** Moves this cursor in the given direction by a contextual "word". */
   moveByWord(dir: Dir) {
     if (this[dir]) {
@@ -523,6 +537,17 @@ export class Cursor {
     ;(this as CursorMut).parent = el
     ;(this as CursorMut)[R] = (side == L && el.ends[L]) || null
     return this
+  }
+
+  /** Prints a debug representation of this cursor. */
+  debug() {
+    return (
+      (this[L]?.[L]?.latex() ?? "") +
+      (this[L]?.latex() ?? "") +
+      " <|> " +
+      (this[R]?.latex() ?? "") +
+      (this[R]?.[R]?.latex() ?? "")
+    )
   }
 
   /** Creates a copy of this cursor in the same place. */
@@ -794,6 +819,89 @@ export class Span {
 
 /** A {@linkcode Span} with focus and anchor nodes. */
 export class Selection extends Span {
+  static of(anchor: Cursor, focus: Cursor): Selection {
+    if (!(anchor.parent && focus.parent)) {
+      throw new Error("'Selection.of' must be passed in-tree cursors.")
+    }
+
+    const ag = anchor.parents().reverse()
+    const fg = focus.parents().reverse()
+
+    console.log({
+      ag: ag.map((x) => x[0].el),
+      fg: fg.map((x) => x[0].el),
+    })
+
+    const lastSharedParentIndex = Array.from(
+      { length: Math.min(ag.length, fg.length) },
+      (_, i) => {
+        const anchor = ag[i]!
+        const focus = fg[i]!
+        return anchor[0] == focus[0]
+      },
+    ).lastIndexOf(true)
+
+    if (lastSharedParentIndex == -1) {
+      throw new Error("The two cursors do not share an ancestor.")
+    }
+
+    const [parent, a] = ag[lastSharedParentIndex]!
+    const [, f] = fg[lastSharedParentIndex]!
+
+    let ac: Cursor, fc: Cursor
+
+    if (a instanceof Cursor) {
+      if (f instanceof Cursor) {
+        ac = a
+        fc = f
+      } else {
+        const toA = f.dirTo(a)!
+        console.log(toA == L ? "L" : "R")
+        ac = a
+        if (toA == L) {
+          fc = f.cursor(R)
+        } else {
+          fc = f.cursor(L)
+        }
+      }
+    } else {
+      if (f instanceof Cursor) {
+        const toA = a.dirTo(f)!
+        console.log(toA == L ? "L" : "R")
+        fc = f
+        if (toA == L) {
+          ac = a.cursor(R)
+        } else {
+          ac = a.cursor(L)
+        }
+      } else {
+        if (Command.dir(a, f) == L) {
+          ac = a.cursor(R)
+          fc = f.cursor(L)
+        } else {
+          ac = a.cursor(L)
+          fc = f.cursor(R)
+        }
+      }
+    }
+
+    let dir: Dir = R
+    if (Cursor.dir(ac, fc) != R) {
+      ;[ac, fc] = [fc, ac]
+      dir = L
+    }
+
+    return new Selection(parent, ac[L], fc[R], dir)
+  }
+
+  get anchor() {
+    return this.cursor(this.focused == L ? R : L)
+  }
+
+  get focus() {
+    return this.cursor(this.focused)
+  }
+
   constructor(
     parent: Block | null,
     lhs: Command | null,
@@ -1011,8 +1119,8 @@ export abstract class Command<
     let a: Command | null = anchor
 
     while (a) {
-      if (anchor == focus) return R
-      a = anchor[R]
+      if (a == focus) return R
+      a = a[R]
     }
 
     return L
@@ -1050,6 +1158,17 @@ export abstract class Command<
     } else {
       return 16 * em
     }
+  }
+
+  /**
+   * Returns the direction needed to get from `this` to `cursor`, or `null` if
+   * they do not share a common parent {@linkcode Block}.
+   */
+  dirTo(cursor: Cursor): Dir | null {
+    const dir = Cursor.dir(this.cursor(L), cursor)
+    if (dir == null) return null
+    if (dir == 0) return L
+    return dir
   }
 
   /** Called after the edit tree is stabilized if `this[dir]` changed. */

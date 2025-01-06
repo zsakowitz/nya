@@ -203,7 +203,7 @@ function exec(input: string) {
   render()
 }
 
-const cursor = h("nya-cursor border-current w-px -ml-px border-l")
+const cursor = h("relative nya-cursor border-current w-px -ml-px border-l")
 
 exec(demos.main)
 
@@ -223,6 +223,12 @@ function render() {
   latex.textContent = field.block.latex()
   ascii.textContent = field.block.ascii()
   reader.textContent = field.block.reader()
+  cursor.scrollIntoView({
+    behavior: "instant",
+    block: "nearest",
+    inline: "nearest",
+  })
+  console.log(cursor)
 }
 
 addEventListener("keydown", (x) => {
@@ -233,16 +239,38 @@ addEventListener("keydown", (x) => {
   unrender()
   field.type(x.key, x)
   render()
-  cursor.scrollIntoView({
-    behavior: "instant",
-    block: "nearest",
-    inline: "nearest",
-  })
 })
 
-field.el.addEventListener("mousedown", (event) => {
+field.el.addEventListener("pointerdown", (event) => {
+  isMouseDown = true
   unrender()
-  field.sel = field.block.focus(event.clientX, event.clientY).selection()
+
+  const cursor = field.block.focus(event.clientX, event.clientY)
+
+  if (event.shiftKey) {
+    event.preventDefault()
+    field.sel = Selection.of(field.sel.anchor, cursor)
+  } else {
+    field.sel = cursor.selection()
+  }
+
+  render()
+})
+
+addEventListener("mouseup", () => (isMouseDown = false))
+
+let isMouseDown = false
+
+field.el.addEventListener("mousemove", (event) => {
+  if (!isMouseDown) return
+
+  unrender()
+
+  const cursor = field.block.focus(event.clientX, event.clientY)
+
+  event.preventDefault()
+  field.sel = Selection.of(field.sel.anchor, cursor)
+
   render()
 })
 

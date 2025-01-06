@@ -824,6 +824,12 @@ video {
   cursor: text;
 }
 
+.select-none {
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
+}
+
 .grid-cols-\[auto\2c auto\] {
   grid-template-columns: auto auto;
 }
