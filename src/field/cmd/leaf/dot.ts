@@ -9,7 +9,7 @@ export class CmdDot extends Leaf {
   }
 
   constructor() {
-    super(",", h("nya-cmd-dot", "."))
+    super(",", h("-cmd-dot", "."))
     this.render()
   }
 
@@ -20,10 +20,10 @@ export class CmdDot extends Leaf {
 
     this.setEl(
       h(
-        "nya-cmd-dot" +
-          (l && !r && this[R] ? " nya-cmd-dot-r" : "") +
-          (r && !l && this[L] ? " nya-cmd-dot-l" : "") +
-          (prop ? " nya-cmd-dot-prop" : ""),
+        "-cmd-dot" +
+          (l && !r && this[R] ? " -cmd-dot-r" : "") +
+          (r && !l && this[L] ? " -cmd-dot-l" : "") +
+          (prop ? " -cmd-dot-prop" : ""),
         ".",
       ),
     )

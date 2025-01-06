@@ -27,7 +27,7 @@ export class FieldInert {
   ) {
     this.el = this.block.el
     this.el.className =
-      "nya-display cursor-text whitespace-nowrap font-['Symbola','Times',sans-serif] text-[1.265em] font-normal not-italic transition [line-height:1] cursor-text block select-none inline-block"
+      "-display cursor-text whitespace-nowrap font-['Symbola','Times',sans-serif] text-[1.265em] font-normal not-italic transition [line-height:1] cursor-text block select-none inline-block"
   }
 
   setPrefix(block: Block | ((field: FieldInert) => void)) {
@@ -38,7 +38,7 @@ export class FieldInert {
     }
     while (block.el.children[0]) {
       const node = block.el.children[block.el.children.length - 1]!
-      node.classList.add("nya-prefix")
+      node.classList.add("-prefix")
       this.el.insertBefore(node, this.el.firstChild)
     }
   }

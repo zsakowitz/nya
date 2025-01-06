@@ -23,14 +23,12 @@ export abstract class Op extends Leaf {
   ) {
     super(
       ctrlSeq,
-      h("nya-cmd-op", h("px-[.2em] inline-block cursor-text", t(html))),
+      h("-cmd-op", h("px-[.2em] inline-block cursor-text", t(html))),
     )
   }
 
   setHtml(html: string) {
-    this.setEl(
-      h("nya-cmd-op", h("px-[.2em] inline-block cursor-text", t(html))),
-    )
+    this.setEl(h("-cmd-op", h("px-[.2em] inline-block cursor-text", t(html))))
   }
 }
 
@@ -51,7 +49,7 @@ export abstract class OpPm extends Leaf {
   }
 
   static render(html: string) {
-    return h("nya-cmd-op nya-cmd-pm", h("px-[.2em] inline-block", t(html)))
+    return h("-cmd-op -cmd-pm", h("px-[.2em] inline-block", t(html)))
   }
 
   constructor(

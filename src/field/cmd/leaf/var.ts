@@ -63,8 +63,8 @@ export class CmdVar extends Leaf {
       : "-mid"
 
     return h(
-      "nya-cmd-var" +
-        (kind ? ` nya-cmd-word nya-cmd-word-${kind} nya-cmd-word${side}` : ""),
+      "-cmd-var" +
+        (kind ? ` -cmd-word -cmd-word-${kind} -cmd-word${side}` : ""),
       h(
         "font-['Times'] [line-height:.9]" +
           (kind == null ? " italic" : "") +

@@ -1009,8 +1009,8 @@ video {
   border-style: dotted;
 }
 
-.border-\[color\:--nya-focus\] {
-  border-color: var(--nya-focus);
+.border-\[color\:---focus\] {
+  border-color: var(---focus);
 }
 
 .border-current {
@@ -1314,8 +1314,8 @@ video {
   transition-duration: 150ms;
 }
 
-.\[--nya-focus\:theme\(colors\.blue\.400\)\] {
-  --nya-focus: #60a5fa;
+.\[---focus\:theme\(colors\.blue\.400\)\] {
+  ---focus: #60a5fa;
 }
 
 .\[line-height\:\.9\] {
@@ -1347,136 +1347,135 @@ body {
   --zlx-selection: #bfdbfe;
 }
 
-.nya-cmd-word-r {
+.-cmd-word-r {
   padding-right: .2em;
   &:last-child,
-  &:has(+ .nya-cursor:last-child) {
+  &:has(+ .-cursor:last-child) {
     padding-right: 0px;
   }
 }
 
-.nya-cmd-word-l {
+.-cmd-word-l {
   padding-left: .2em;
   &:first-child,
-  .nya-cursor:first-child + & {
+  .-cursor:first-child + & {
     padding-left: 0px;
   }
 }
 
-:is(.nya-cmd-op, .nya-cmd-word-r:not(.nya-cmd-word-var)) {
-  & + .nya-cmd-pm > *,
-  & + .nya-cursor + .nya-cmd-pm > * {
+:is(.-cmd-op, .-cmd-word-r:not(.-cmd-word-var)) {
+  & + .-cmd-pm > *,
+  & + .-cursor + .-cmd-pm > * {
     padding-right: 0px;
   }
 }
 
-:is(.nya-cmd-op, .nya-cmd-word-r) + .nya-cmd-pm > *,
-:is(.nya-cmd-op, .nya-cmd-word-r) + .nya-cursor + .nya-cmd-pm > *,
-.nya-cmd-op:first-child > *,
-.nya-cursor:first-child + .nya-cmd-op > * {
+:is(.-cmd-op, .-cmd-word-r) + .-cmd-pm > *,
+:is(.-cmd-op, .-cmd-word-r) + .-cursor + .-cmd-pm > *,
+.-cmd-op:first-child > *,
+.-cursor:first-child + .-cmd-op > * {
   padding-left: 0px;
 }
 
-.nya-cmd-op + .nya-cmd-word-l,
-.nya-cmd-op + .nya-cursor + .nya-cmd-word-l {
+.-cmd-op + .-cmd-word-l,
+.-cmd-op + .-cursor + .-cmd-word-l {
   padding-left: 0px;
 }
 
-.nya-cmd-word-r:not(.nya-cmd-word-infix):has(
-    + .nya-cmd-brack,
-    + .nya-cursor + .nya-cmd-brack
+.-cmd-word-r:not(.-cmd-word-infix):has(
+    + .-cmd-brack,
+    + .-cursor + .-cmd-brack
   ) {
   padding-right: 0px;
 }
 
-.nya-cmd-brack + .nya-cmd-word-l.nya-cmd-word-var,
-.nya-cmd-brack + .nya-cursor + .nya-cmd-word-l.nya-cmd-word-var {
+.-cmd-brack + .-cmd-word-l.-cmd-word-var,
+.-cmd-brack + .-cursor + .-cmd-word-l.-cmd-word-var {
   padding-left: 0px;
 }
 
-.nya-cmd-word-r:has(+ .nya-cursor + .nya-cmd-word-l, + .nya-cmd-word-l) {
+.-cmd-word-r:has(+ .-cursor + .-cmd-word-l, + .-cmd-word-l) {
   padding-right: .1em;
 }
 
-.nya-cmd-word-r + .nya-cmd-word-l,
-.nya-cmd-word-r + .nya-cursor + .nya-cmd-word-l {
+.-cmd-word-r + .-cmd-word-l,
+.-cmd-word-r + .-cursor + .-cmd-word-l {
   padding-left: .1em;
 }
 
-.nya-cmd-word-r:not(.nya-cmd-word-infix):has(
-    + .nya-cmd-supsub,
-    + .nya-cursor + .nya-cmd-supsub
+.-cmd-word-r:not(.-cmd-word-infix):has(
+    + .-cmd-supsub,
+    + .-cursor + .-cmd-supsub
   ) {
   padding-right: 0px;
 }
 
-.nya-cmd-word-r:not(.nya-cmd-word-infix) + .nya-cmd-supsub,
-.nya-cmd-word-r:not(.nya-cmd-word-infix) + .nya-cursor + .nya-cmd-supsub {
+.-cmd-word-r:not(.-cmd-word-infix) + .-cmd-supsub,
+.-cmd-word-r:not(.-cmd-word-infix) + .-cursor + .-cmd-supsub {
   padding-right: .2em;
   &:last-child,
-  &:has(+ .nya-cursor:last-child),
-  &:has(+ .nya-cmd-brack),
-  &:has(+ .nya-cursor + .nya-cmd-brack) {
+  &:has(+ .-cursor:last-child),
+  &:has(+ .-cmd-brack),
+  &:has(+ .-cursor + .-cmd-brack) {
     padding-right: 0px;
   }
 }
 
-.nya-cmd-dot-l {
+.-cmd-dot-l {
   padding-left: .14em;
 }
 
-.nya-cmd-dot-r {
+.-cmd-dot-r {
   padding-right: .14em;
 }
 
-.nya-cmd-word-r:has(+ .nya-cmd-dot-l, + .nya-cursor + .nya-cmd-dot-l) {
+.-cmd-word-r:has(+ .-cmd-dot-l, + .-cursor + .-cmd-dot-l) {
   padding-right: 0px;
 }
 
-.nya-cmd-word-r:has(
-    + .nya-cmd-dot:last-child,
-    + .nya-cmd-dot + .nya-cursor:last-child,
-    + .nya-cursor + .nya-cmd-dot:last-child
+.-cmd-word-r:has(
+    + .-cmd-dot:last-child,
+    + .-cmd-dot + .-cursor:last-child,
+    + .-cursor + .-cmd-dot:last-child
   ) {
   padding-right: 0px;
 }
 
-.nya-cmd-dot-r + .nya-cmd-word-l,
-.nya-cmd-dot-r + .nya-cursor + .nya-cmd-word-l {
+.-cmd-dot-r + .-cmd-word-l,
+.-cmd-dot-r + .-cursor + .-cmd-word-l {
   padding-left: 0px;
 }
 
-.nya-cmd-dot-prop + .nya-cmd-word-l,
-.nya-cmd-dot-prop + .nya-cursor + .nya-cmd-word-l {
+.-cmd-dot-prop + .-cmd-word-l,
+.-cmd-dot-prop + .-cursor + .-cmd-word-l {
   padding-left: 0px;
 }
 
-.nya-cmd-word-r:has(
-    + .nya-cmd-dot-prop,
-    + .nya-cursor + .nya-cmd-dot-prop,
-    + .nya-cmd-op:not(.nya-cmd-pm),
-    + .nya-cursor + .nya-cmd-op:not(.nya-cmd-pm)
+.-cmd-word-r:has(
+    + .-cmd-dot-prop,
+    + .-cursor + .-cmd-dot-prop,
+    + .-cmd-op:not(.-cmd-pm),
+    + .-cursor + .-cmd-op:not(.-cmd-pm)
   ) {
   padding-right: 0px;
 }
 
-.nya-cmd-pm:first-child > *,
-.nya-cursor:first-child + .nya-cmd-pm > * {
+.-cmd-pm:first-child > *,
+.-cursor:first-child + .-cmd-pm > * {
   padding-right: 0px;
 }
 
-.nya-cmd-op:not(.nya-cmd-pm) + .nya-cmd-op:not(.nya-cmd-pm) > *,
-.nya-cmd-op:not(.nya-cmd-pm) + .nya-cursor + .nya-cmd-op:not(.nya-cmd-pm) > * {
+.-cmd-op:not(.-cmd-pm) + .-cmd-op:not(.-cmd-pm) > *,
+.-cmd-op:not(.-cmd-pm) + .-cursor + .-cmd-op:not(.-cmd-pm) > * {
   padding-left: .1em;
 }
 
-.nya-cmd-op:not(.nya-cmd-pm):has(+ .nya-cmd-op:not(.nya-cmd-pm)) > *,
-.nya-cmd-op:not(.nya-cmd-pm):has(+ .nya-cursor + .nya-cmd-op:not(.nya-cmd-pm))
-  > * {
+.-cmd-op:not(.-cmd-pm):has(+ .-cmd-op:not(.-cmd-pm)) > *,
+.-cmd-op:not(.-cmd-pm):has(+ .-cursor + .-cmd-op:not(.-cmd-pm)) > * {
   padding-right: .1em;
 }
 
-.nya-prefix {
+.-prefix {
   opacity: 0.5;
 }
 
@@ -1525,8 +1524,8 @@ body {
   line-height: .9;
 }
 
-.focus-within\:border-\[color\:--nya-focus\]:focus-within {
-  border-color: var(--nya-focus);
+.focus-within\:border-\[color\:---focus\]:focus-within {
+  border-color: var(---focus);
 }
 
 .focus\:outline-none:focus {
@@ -1542,8 +1541,8 @@ body {
   border-color: transparent;
 }
 
-.group:focus-within .group-focus-within\:bg-\[color\:--nya-focus\] {
-  background-color: var(--nya-focus);
+.group:focus-within .group-focus-within\:bg-\[color\:---focus\] {
+  background-color: var(---focus);
 }
 
 .group:focus-within .group-focus-within\:text-white {
@@ -1574,14 +1573,14 @@ body {
   display: none;
 }
 
+.-display:has(.-cmd-prompt) .\[\.-display\:has\(\.-cmd-prompt\)_\&\]\:hidden {
+  display: none;
+}
+
+.-display:not(:focus) .\[\.-display\:not\(\:focus\)_\&\]\:hidden {
+  display: none;
+}
+
 .bg-zlx-selection>.\[\.bg-zlx-selection\>\&\]\:bg-zlx-selection {
   background-color: var(--zlx-selection);
-}
-
-.nya-display:has(.nya-cmd-prompt) .\[\.nya-display\:has\(\.nya-cmd-prompt\)_\&\]\:hidden {
-  display: none;
-}
-
-.nya-display:not(:focus) .\[\.nya-display\:not\(\:focus\)_\&\]\:hidden {
-  display: none;
 }

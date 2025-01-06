@@ -11,7 +11,7 @@ export class CmdWord extends Leaf {
     super(
       text,
       h(
-        `nya-cmd-var nya-cmd-word nya-cmd-word-${kind} nya-cmd-word-l nya-cmd-word-r`,
+        `-cmd-var -cmd-word -cmd-word-${kind} -cmd-word-l -cmd-word-r`,
         h("font-['Times'] [line-height:.9]", t(text)),
       ),
     )

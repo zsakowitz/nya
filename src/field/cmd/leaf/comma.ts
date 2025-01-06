@@ -8,7 +8,7 @@ export class CmdComma extends Leaf {
   }
 
   constructor() {
-    super(",", h("nya-cmd-op pr-[.1em]", ","))
+    super(",", h("-cmd-op pr-[.1em]", ","))
   }
 
   reader(): string {

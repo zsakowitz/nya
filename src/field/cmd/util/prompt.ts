@@ -65,7 +65,7 @@ export class CmdPrompt extends Leaf {
 
     super(
       "\\text{typing...}",
-      h("border border-dotted border-current nya-cmd-prompt", "\\", form),
+      h("border border-dotted border-current -cmd-prompt", "\\", form),
     )
     const self = this
 
