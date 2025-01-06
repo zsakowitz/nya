@@ -1250,6 +1250,15 @@ body {
   padding-left: 0px;
 }
 
+.nya-cmd-dot-prop + .nya-cmd-word-l,
+.nya-cmd-dot-prop + .nya-cursor + .nya-cmd-word-l {
+  padding-left: 0px;
+}
+
+.nya-cmd-word-r:has(+ .nya-cmd-dot-prop, .nya-cursor + .nya-cmd-dot-prop) {
+  padding-right: 0px;
+}
+
 .\*\:contents > * {
   display: contents;
 }

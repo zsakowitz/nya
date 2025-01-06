@@ -104,3 +104,12 @@ body {
 .nya-cmd-dot-r + .nya-cursor + .nya-cmd-word-l {
   @apply pl-0;
 }
+
+.nya-cmd-dot-prop + .nya-cmd-word-l,
+.nya-cmd-dot-prop + .nya-cursor + .nya-cmd-word-l {
+  @apply pl-0;
+}
+
+.nya-cmd-word-r:has(+ .nya-cmd-dot-prop, .nya-cursor + .nya-cmd-dot-prop) {
+  @apply pr-0;
+}
