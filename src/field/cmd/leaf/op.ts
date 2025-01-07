@@ -108,7 +108,7 @@ export function op(
 }
 
 export function opp(
-  latex: PuncBinary,
+  latex: PuncBinary & string,
   mathspeak: string,
   html?: string,
   ascii?: string,

@@ -3,6 +3,7 @@ import type { BigCmd } from "../field/cmd/math/big"
 import type { ParenLhs, ParenRhs } from "../field/cmd/math/brack"
 import { pass1_suffixes } from "./pass1.suffixes"
 import { pass2_implicits } from "./pass2.implicits"
+import { pass3_ordering } from "./pass3.ordering"
 
 /** A punctuation token which can either be a prefix or an infix. */
 export type PuncPm = "+" | "-" | "\\pm " | "\\mp "
@@ -225,6 +226,11 @@ export type Punc =
   | { type: "infix"; kind: PuncBinary }
   | { type: "pm"; kind: PuncPm }
 
+/** An infix punctuation token. */
+export type PuncInfix =
+  | { type: "infix"; kind: PuncBinary }
+  | { type: "pm"; kind: PuncPm }
+
 /** A binary operation derived from infix operators. */
 export type OpBinary = Exclude<PuncBinary, ",">
 
@@ -262,7 +268,7 @@ export type Node = Token
 export function tokensToAst(tokens: Token[]): Node {
   tokens = pass1_suffixes(tokens)
   tokens = pass2_implicits(tokens)
-  return tokens as any
+  return pass3_ordering(tokens)
 }
 
 /**
