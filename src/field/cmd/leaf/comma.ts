@@ -9,7 +9,7 @@ export class CmdComma extends Leaf {
   }
 
   constructor() {
-    super(",", h("nya-cmd-op pr-[.1em]", ","))
+    super(",", h("nya-cmd-op nya-cmd-comma pr-[.1em]", ","))
   }
 
   reader(): string {
@@ -29,6 +29,13 @@ export class CmdComma extends Leaf {
   }
 
   ir(tokens: Token[]): void {
+    const last = tokens[tokens.length - 1]
+    if (
+      last?.type == "punc" &&
+      (last.value.kind == ".." || last.value.kind == "...")
+    ) {
+      tokens.push({ type: "void" })
+    }
     tokens.push({ type: "punc", value: { type: "infix", kind: "," } })
   }
 }

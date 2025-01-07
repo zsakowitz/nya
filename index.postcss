@@ -103,6 +103,10 @@ body {
   @apply pr-[.14em];
 }
 
+.nya-cmd-dot-r:has(+ .nya-cmd-comma, + :where(.nya-cursor) + .nya-cmd-comma) {
+  @apply pr-0;
+}
+
 .nya-cmd-word-r:has(+ .nya-cmd-dot-l, + :where(.nya-cursor) + .nya-cmd-dot-l) {
   @apply pr-0;
 }

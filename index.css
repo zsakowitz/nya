@@ -1467,6 +1467,10 @@ body {
   padding-right: .14em;
 }
 
+.nya-cmd-dot-r:has(+ .nya-cmd-comma, + :where(.nya-cursor) + .nya-cmd-comma) {
+  padding-right: 0px;
+}
+
 .nya-cmd-word-r:has(+ .nya-cmd-dot-l, + :where(.nya-cursor) + .nya-cmd-dot-l) {
   padding-right: 0px;
 }
