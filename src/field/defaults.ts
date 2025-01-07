@@ -15,7 +15,7 @@ import { CmdInt } from "./cmd/math/int"
 import { CmdMatrix } from "./cmd/math/matrix"
 import { CmdRoot } from "./cmd/math/root"
 import { CmdSupSub } from "./cmd/math/supsub"
-import { CmuSym } from "./cmd/uscript/leaf/digits"
+import { CmuSym } from "./cmd/uscript/leaf/sym"
 import { ByRegex } from "./cmd/util/by-regex"
 import {
   CmdBackspace,

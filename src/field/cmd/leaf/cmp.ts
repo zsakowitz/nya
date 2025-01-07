@@ -1,3 +1,4 @@
+import type { PuncCmp, PuncEq, Token } from "../../../ast/token"
 import { L, type Cursor, type Dir, type InitProps } from "../../model"
 import { Op, OpEqArrow, OpMinus, OpTo } from "./op"
 
@@ -36,11 +37,14 @@ export abstract class OpCmp extends OpCeq {
   }
 }
 
-function ceq(
-  eq: [latex: string, reader: string, html: string, ascii: string],
-  ne: [latex: string, reader: string, html: string, ascii: string],
-  endsImplicitGroup = true,
-) {
+type Data = readonly [
+  latex: string,
+  reader: string,
+  html: string,
+  ascii: string,
+]
+
+function ceq(kind: PuncEq, eq: Data, ne: Data, endsImplicitGroup = true) {
   return class extends OpCeq {
     static init(cursor: Cursor, props: InitProps) {
       this.exitSupSub(cursor, props)
@@ -83,16 +87,36 @@ function ceq(
       }
       super.delete(cursor, from)
     }
+
+    ir(tokens: Token[]): void {
+      tokens.push({ type: "punc", value: { type: "eq", kind, neg: this.neg } })
+    }
   }
 }
 
 function cmp(
-  normal: [latex: string, reader: string, html: string, ascii: string],
-  normalNeg: [latex: string, reader: string, html: string, ascii: string],
-  orEq: [latex: string, reader: string, html: string, ascii: string],
-  negOrEq: [latex: string, reader: string, html: string, ascii: string],
+  kind: PuncCmp,
+  normal: Data,
+  normalNeg: Data,
+  orEq: Data,
+  negOrEq: Data,
   endsImplicitGroup = true,
 ) {
+  Object.freeze(normal)
+  Object.freeze(normalNeg)
+  Object.freeze(orEq)
+  Object.freeze(negOrEq)
+
+  function getOp(neg: boolean, eq: boolean) {
+    return (
+      neg ?
+        eq ? negOrEq
+        : normalNeg
+      : eq ? orEq
+      : normal
+    )
+  }
+
   return class extends OpCmp {
     static init(cursor: Cursor, props: InitProps) {
       this.exitSupSub(cursor, props)
@@ -100,13 +124,12 @@ function cmp(
     }
 
     constructor(neg: boolean, eq: boolean) {
-      const op =
-        neg ?
-          eq ? negOrEq
-          : normalNeg
-        : eq ? orEq
-        : normal
+      const op = getOp(neg, eq)
       super(neg, eq, op[0], op[2])
+    }
+
+    private get op() {
+      return getOp(this.neg, this.eq)
     }
 
     endsImplicitGroup(): boolean {
@@ -114,47 +137,19 @@ function cmp(
     }
 
     html(): string {
-      const op =
-        this.neg ?
-          this.eq ?
-            negOrEq
-          : normalNeg
-        : this.eq ? orEq
-        : normal
-      return op[2]
+      return this.op[2]
     }
 
     latex(): string {
-      const op =
-        this.neg ?
-          this.eq ?
-            negOrEq
-          : normalNeg
-        : this.eq ? orEq
-        : normal
-      return op[0]
+      return this.op[0]
     }
 
     reader(): string {
-      const op =
-        this.neg ?
-          this.eq ?
-            negOrEq
-          : normalNeg
-        : this.eq ? orEq
-        : normal
-      return op[1]
+      return this.op[1]
     }
 
     ascii(): string {
-      const op =
-        this.neg ?
-          this.eq ?
-            negOrEq
-          : normalNeg
-        : this.eq ? orEq
-        : normal
-      return op[3]
+      return this.op[3]
     }
 
     delete(cursor: Cursor, from: Dir): void {
@@ -168,10 +163,18 @@ function cmp(
       }
       super.delete(cursor, from)
     }
+
+    ir(tokens: Token[]): void {
+      tokens.push({
+        type: "punc",
+        value: { type: "cmp", kind, neg: this.neg, eq: this.eq },
+      })
+    }
   }
 }
 
 export class OpEq extends ceq(
+  "=",
   ["=", " is equal to ", "=", "="],
   ["≠", " is not equals to ", "≠", "≠"],
 ) {
@@ -188,6 +191,7 @@ export class OpEq extends ceq(
 }
 
 export const OpLt = cmp(
+  "<",
   ["<", " is less than ", "<", "<"],
   ["≮", " is not less than ", "≮", "≮"],
   ["≤", " is less than or equal to ", "≤", "<="],
@@ -195,6 +199,7 @@ export const OpLt = cmp(
 )
 
 export class OpGt extends cmp(
+  ">",
   [">", " is greater than ", ">", ">"],
   ["≯", " is not greater than ", "≯", "≯"],
   ["≥", " is greater than or equal to ", "≥", ">="],

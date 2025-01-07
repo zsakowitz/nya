@@ -1,3 +1,4 @@
+import type { Token } from "../../../ast/token"
 import { h, p, svg } from "../../jsx"
 import {
   Block,
@@ -361,5 +362,14 @@ export class CmdBrack extends Command<[Block]> {
     }
 
     return this.blocks[0].focus(x, y)
+  }
+
+  ir(tokens: Token[]): void {
+    tokens.push({
+      type: "group",
+      lhs: this.lhs,
+      rhs: this.rhs,
+      value: this.blocks[0].ast(),
+    })
   }
 }

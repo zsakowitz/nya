@@ -1,4 +1,3 @@
-import { h, usvg, type ViewBox } from "../../../jsx"
 import {
   Command,
   L,
@@ -6,7 +5,6 @@ import {
   type Block,
   type Cursor,
   type Dir,
-  type InitRet,
   type VDir,
 } from "../../../model"
 
@@ -35,35 +33,4 @@ export abstract class CmuLeaf extends Command<[]> {
   vertFromSide(dir: VDir, from: Dir): undefined {}
   vertInto(dir: VDir, clientX: number): undefined {}
   vertOutOf(dir: VDir, block: Block, cursor: Cursor): undefined {}
-}
-
-export function leaf(
-  classes: string,
-  viewBox: ViewBox,
-  path: string,
-  latex: string,
-  reader: string,
-  ascii: string,
-) {
-  return class extends CmuLeaf {
-    static init(cursor: Cursor): InitRet {
-      new this().insertAt(cursor, L)
-    }
-
-    ascii(): string {
-      return ascii
-    }
-
-    reader(): string {
-      return reader
-    }
-
-    latex(): string {
-      return latex
-    }
-
-    constructor() {
-      super(latex, h("", usvg(classes, viewBox, path)))
-    }
-  }
 }

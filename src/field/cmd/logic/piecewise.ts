@@ -1,3 +1,4 @@
+import type { Token } from "../../../ast/token"
 import { h } from "../../jsx"
 import {
   Block,
@@ -242,5 +243,19 @@ export class CmdPiecewise extends Command {
     } else {
       return focusEdge(this, x)
     }
+  }
+
+  ir(tokens: Token[]): void {
+    const pieces = []
+    for (let i = 0; i < this.blocks.length - 1; i += 2) {
+      pieces.push({
+        value: this.blocks[i]!.ast(),
+        condition: this.blocks[i + 1]!.ast(),
+      })
+    }
+    tokens.push({
+      type: "piecewise",
+      pieces,
+    })
   }
 }

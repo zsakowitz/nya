@@ -1,4 +1,5 @@
 import { Leaf } from "."
+import type { Token } from "../../../ast/token"
 import { h } from "../../jsx"
 import { L, type Cursor } from "../../model"
 
@@ -25,5 +26,9 @@ export class CmdComma extends Leaf {
 
   invalidatesTransparentWrapper(): boolean {
     return true
+  }
+
+  ir(tokens: Token[]): void {
+    tokens.push({ type: "punc", value: "," })
   }
 }

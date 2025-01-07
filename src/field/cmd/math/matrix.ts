@@ -1,3 +1,4 @@
+import type { Token } from "../../../ast/token"
 import { h } from "../../jsx"
 import {
   Block,
@@ -403,5 +404,13 @@ export class CmdMatrix extends Command<Block[]> {
     } else {
       return focusEdge(this, x)
     }
+  }
+
+  ir(tokens: Token[]): void {
+    tokens.push({
+      type: "matrix",
+      cols: this.cols,
+      values: this.blocks.map((block) => block.ast()),
+    })
   }
 }

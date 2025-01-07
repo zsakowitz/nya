@@ -1,11 +1,12 @@
 import { CmuLeaf } from "."
+import type { Token } from "../../../../ast/token"
 import { h, usvg } from "../../../jsx"
 import { L, type Cursor, type InitProps, type InitRet } from "../../../model"
 
 const Q = 2.1
 
 // Symbols are grouped by kind and general shape
-const SYMS = {
+const SYM = {
   // Plain digits
 
   0: `M 1.75 ${2 - Q} a ${Q} ${Q} 180 0 0 0 ${2 * Q} a ${Q} ${Q} 180 0 0 0-${2 * Q}`,
@@ -50,30 +51,30 @@ const SYMS = {
   "-": "M 0 4 A 1.7 1.7 0 0 1 3.5 4 M 1.75 2.3 V 0",
 }
 
-export type Sym = `${keyof typeof SYMS}`
+export type Sym = `${keyof typeof SYM}`
 
 export class CmuSym extends CmuLeaf {
   static init(cursor: Cursor, { input }: InitProps): InitRet {
-    if (Object.keys(SYMS).indexOf(input) != -1) {
+    if (Object.keys(SYM).indexOf(input) != -1) {
       new CmuSym(input as Sym).insertAt(cursor, L)
     }
   }
 
-  constructor(readonly digit: Sym) {
+  constructor(readonly sym: Sym) {
     super(
-      digit,
+      sym,
       h(
         "inline-block p-[.1em]",
         usvg(
           "overflow-visible inline-block h-[1em] align-[-.2em]",
-          /[0-9a-f]/.test(digit[digit.length - 1]!) ?
-            digit[0] == "v" ?
+          /[0-9a-f]/.test(sym[sym.length - 1]!) ?
+            sym[0] == "v" ?
               "-0.5 -0.5 4 5"
             : "0 -0.5 3.5 5"
           : "0 0 3.5 4",
-          SYMS[digit],
-          /[0-9a-f]/.test(digit[digit.length - 1]!) ?
-            digit[0] == "v" ?
+          SYM[sym],
+          /[0-9a-f]/.test(sym[sym.length - 1]!) ?
+            sym[0] == "v" ?
               0.4 * (5 / 4)
             : 0.4 * (5 / 4)
           : 0.4,
@@ -92,5 +93,26 @@ export class CmuSym extends CmuLeaf {
 
   reader(): string {
     return "[redacted]"
+  }
+
+  ir(tokens: Token[]): void {
+    switch (true) {
+      case this.sym == "+" || this.sym == "-":
+        tokens.push({ type: "punc", value: { type: "pm", kind: this.sym } })
+        break
+
+      case this.sym[0] == "v":
+        tokens.push({ type: "var", value: this.sym })
+        break
+
+      default:
+        const last = tokens[tokens.length - 1]
+        if (last?.type == "num16") {
+          tokens.pop()
+          tokens.push({ type: "num16", value: last.value + this.sym })
+        } else {
+          tokens.push({ type: "num16", value: this.sym })
+        }
+    }
   }
 }

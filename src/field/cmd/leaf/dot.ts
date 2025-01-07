@@ -1,4 +1,5 @@
 import { Leaf } from "."
+import type { Token } from "../../../ast/token"
 import { h } from "../../jsx"
 import { L, R, type Cursor } from "../../model"
 import { CmdVar } from "./var"
@@ -43,5 +44,9 @@ export class CmdDot extends Leaf {
 
   latex(): string {
     return ","
+  }
+
+  ir(tokens: Token[]): void {
+    tokens.push({ type: "punc", value: "." })
   }
 }

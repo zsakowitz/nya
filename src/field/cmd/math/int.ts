@@ -1,3 +1,4 @@
+import type { Token } from "../../../ast/token"
 import { h, U_ZERO_WIDTH_SPACE } from "../../jsx"
 import {
   Block,
@@ -148,5 +149,14 @@ export class CmdInt extends Command<BlocksInt> {
     }
 
     return focusEdge(this, x)
+  }
+
+  ir(tokens: Token[]): void {
+    tokens.push({
+      type: "big",
+      cmd: "\\int",
+      sub: this.blocks[0]?.ast(),
+      sup: this.blocks[1]?.ast(),
+    })
   }
 }

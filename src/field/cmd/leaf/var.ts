@@ -1,4 +1,5 @@
 import { Leaf } from "."
+import type { Token } from "../../../ast/token"
 import { h, t } from "../../jsx"
 import { Cursor, L, R, Span, type Dir, type InitProps } from "../../model"
 import type { Options, WordMap } from "../../options"
@@ -200,5 +201,26 @@ export class CmdVar extends Leaf {
         (cursor[L] as CmdVar).part != R
       )
     }
+  }
+
+  ir(tokens: Token[]): void {
+    if (this.kind) {
+      if (this.part == L) {
+        tokens.push({ type: "var", value: this.text })
+        return
+      }
+
+      const last = tokens[tokens.length - 1]
+      if (last && last.type == "var") {
+        tokens.pop()
+        tokens.push({ type: "var", value: last.value + this.text })
+      } else {
+        tokens.push({ type: "var", value: this.text })
+      }
+
+      return
+    }
+
+    tokens.push({ type: "var", value: this.text })
   }
 }

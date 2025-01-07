@@ -1,4 +1,5 @@
 import { Leaf } from "."
+import type { Token } from "../../../ast/token"
 import { h, t } from "../../jsx"
 import type { WordKind } from "./var"
 
@@ -27,5 +28,9 @@ export class CmdWord extends Leaf {
 
   reader(): string {
     return " " + this.text + " "
+  }
+
+  ir(tokens: Token[]): void {
+    tokens.push({ type: "var", value: this.text })
   }
 }

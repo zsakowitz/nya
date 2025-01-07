@@ -1,4 +1,5 @@
 import { Leaf } from "."
+import type { Punc, PuncPm, PuncProd, Token } from "../../../ast/token"
 import { h, t } from "../../jsx"
 import { L, R, type Cursor, type Dir, type InitProps } from "../../model"
 import { CmdSupSub } from "../math/supsub"
@@ -65,6 +66,7 @@ export abstract class OpPm extends Leaf {
 }
 
 export function op(
+  punc: Punc,
   latex: string,
   mathspeak: string,
   html = latex,
@@ -96,13 +98,34 @@ export function op(
     latex(): string {
       return latex
     }
+
+    ir(tokens: Token[]): void {
+      tokens.push({ type: "punc", value: punc })
+    }
   }
 }
 
-export function opm(
-  latex: string,
+export function opp(
+  latex: PuncProd,
   mathspeak: string,
-  html = latex,
+  html?: string,
+  ascii?: string,
+  endsImplicitGroup?: boolean,
+) {
+  return op(
+    { type: "prod", kind: latex },
+    latex,
+    mathspeak,
+    html,
+    ascii,
+    endsImplicitGroup,
+  )
+}
+
+export function opm(
+  latex: PuncPm,
+  mathspeak: string,
+  html: string = latex,
   ascii = html,
   endsImplicitGroup = true,
 ) {
@@ -131,6 +154,10 @@ export function opm(
     latex(): string {
       return latex
     }
+
+    ir(tokens: Token[]): void {
+      tokens.push({ type: "punc", value: { type: "pm", kind: latex } })
+    }
   }
 }
 
@@ -139,9 +166,9 @@ export const OpMinus = opm("-", " minus ")
 export const OpPlusMinus = opm("\\pm ", " plus-or-minus ", "±")
 export const OpMinusPlus = opm("\\mp ", " minus-or-plus ", "∓")
 
-export const OpCdot = op("\\cdot ", " times ", "·", "*")
-export const OpDiv = op("÷", " divided by ", "÷", "/")
-export class OpTo extends op("\\to ", " becomes ", "→", "->") {
+export const OpCdot = opp("\\cdot ", " times ", "·", "*")
+export const OpDiv = opp("÷", " divided by ", "÷", "/")
+export class OpTo extends op("->", "\\to ", " becomes ", "→", "->") {
   delete(cursor: Cursor, from: Dir): void {
     if (from == R) {
       const minus = new OpMinus()
@@ -155,7 +182,7 @@ export class OpTo extends op("\\to ", " becomes ", "→", "->") {
     super.delete(cursor, from)
   }
 }
-export class OpEqArrow extends op("⇒", " maps to ", "⇒", "=>") {
+export class OpEqArrow extends op("=>", " maps to ", "⇒", "=>") {
   delete(cursor: Cursor, from: Dir): void {
     if (from == R) {
       const minus = new OpEq(false)

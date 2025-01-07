@@ -1,3 +1,4 @@
+import type { Token } from "../../../ast/token"
 import { h, p, svg } from "../../jsx"
 import {
   Block,
@@ -247,5 +248,13 @@ export class CmdRoot extends Command<
     } else {
       return this.blocks[1].focus(x, y)
     }
+  }
+
+  ir(tokens: Token[]): void {
+    tokens.push({
+      type: "root",
+      root: this.blocks[1]?.ast(),
+      contents: this.blocks[0].ast(),
+    })
   }
 }

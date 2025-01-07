@@ -1,4 +1,5 @@
 import { Leaf } from "."
+import type { Token } from "../../../ast/token"
 import { h, t } from "../../jsx"
 import { Block, Cursor, L, R, type Dir, type InitProps } from "../../model"
 import { CmdSupSub } from "../math/supsub"
@@ -47,6 +48,16 @@ export class CmdNum extends Leaf {
     cursor.moveTo(this, dir)
     while (cursor[dir] instanceof CmdNum || cursor[dir] instanceof CmdDot) {
       cursor.moveTo(cursor[dir], dir)
+    }
+  }
+
+  ir(tokens: Token[]): void {
+    const last = tokens[tokens.length - 1]
+    if (last && last.type == "num") {
+      tokens.pop()
+      tokens.push({ type: "num", value: last.value + this.text })
+    } else {
+      tokens.push({ type: "num", value: this.text })
     }
   }
 }

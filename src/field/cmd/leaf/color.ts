@@ -1,4 +1,5 @@
 import { Leaf } from "."
+import type { Token } from "../../../ast/token"
 import { h, hx } from "../../jsx"
 import { L, type Cursor, type InitProps } from "../../model"
 
@@ -40,6 +41,8 @@ export class CmdColor extends Leaf {
   private readonly elLabel
 
   constructor(readonly color: string) {
+    color = CmdColor.parse(color)
+
     const elLabel = h(
       "text-[30%] font-mono text-center w-full text-white inline-block",
       color.slice(1),
@@ -89,5 +92,21 @@ export class CmdColor extends Leaf {
 
   latex(): string {
     return `\\color{${this.color}}`
+  }
+
+  ir(tokens: Token[]): void {
+    const color = this.color
+    const r = parseInt(color.slice(1, 3), 16).toString()
+    const g = parseInt(color.slice(3, 5), 16).toString()
+    const b = parseInt(color.slice(5, 7), 16).toString()
+    tokens.push({
+      type: "call",
+      name: { type: "var", value: "rgb" },
+      args: [
+        { type: "num", value: r },
+        { type: "num", value: g },
+        { type: "num", value: b },
+      ],
+    })
   }
 }

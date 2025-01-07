@@ -1,3 +1,4 @@
+import type { Token } from "../../../ast/token"
 import type { FieldInert } from "../../field-inert"
 import { h, hx } from "../../jsx"
 import {
@@ -117,5 +118,9 @@ export class CmdPrompt extends Leaf {
 
   latex(): string {
     return "\\text{typing...}"
+  }
+
+  ir(_tokens: Token[]): void {
+    // Empty, as {@linkcode CmdPrompt} isn't a complete command
   }
 }

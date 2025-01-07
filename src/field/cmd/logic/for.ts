@@ -1,3 +1,4 @@
+import type { Token } from "../../../ast/token"
 import { h } from "../../jsx"
 import {
   Block,
@@ -14,7 +15,7 @@ import { focusEdge } from "../leaf"
 import { OpEq } from "../leaf/cmp"
 
 export class CmdFor extends Command<
-  [bound: Block, source: Block, mapped: Block]
+  [mapped: Block, bound: Block, source: Block]
 > {
   static init(cursor: Cursor) {
     const b1 = new Block(null)
@@ -136,5 +137,14 @@ export class CmdFor extends Command<
     }
 
     return this.blocks[0].focus(x, y)
+  }
+
+  ir(tokens: Token[]): void {
+    tokens.push({
+      type: "for",
+      mapped: this.blocks[0].ast(),
+      bound: this.blocks[1].ast(),
+      source: this.blocks[2].ast(),
+    })
   }
 }

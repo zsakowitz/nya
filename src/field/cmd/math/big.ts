@@ -1,3 +1,4 @@
+import type { Token } from "../../../ast/token"
 import { h } from "../../jsx"
 import {
   Block,
@@ -21,7 +22,7 @@ export const BIG_CMDS = {
   "\\coprod": "∐",
 } as const
 
-type BigCmd = keyof typeof BIG_CMDS
+export type BigCmd = keyof typeof BIG_CMDS
 type BigSym = (typeof BIG_CMDS)[BigCmd]
 
 export const BIG_ALIASES: Record<(string & {}) | BigCmd | BigSym, BigCmd> = {
@@ -162,5 +163,14 @@ export class CmdBig extends Command<
     }
 
     return this.blocks[0].focus(x, y)
+  }
+
+  ir(tokens: Token[]): void {
+    tokens.push({
+      type: "big",
+      cmd: this.ctrlSeq,
+      sub: this.blocks[0].ast(),
+      sup: this.blocks[1]?.ast(),
+    })
   }
 }

@@ -1,3 +1,4 @@
+import type { Token } from "../../../ast/token"
 import { U_ZERO_WIDTH_SPACE, h, t } from "../../jsx"
 import {
   Block,
@@ -111,5 +112,13 @@ export class CmdFrac extends Command<[Block, Block]> {
     } else {
       return this.blocks[1].focus(x, y)
     }
+  }
+
+  ir(tokens: Token[]): void {
+    tokens.push({
+      type: "frac",
+      a: this.blocks[0].ast(),
+      b: this.blocks[1].ast(),
+    })
   }
 }

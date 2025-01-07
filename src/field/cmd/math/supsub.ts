@@ -1,3 +1,4 @@
+import type { Token } from "../../../ast/token"
 import { U_ZERO_WIDTH_SPACE, h, t } from "../../jsx"
 import {
   Block,
@@ -266,6 +267,21 @@ export class CmdSupSub extends Command {
       return this.sup.focus(x, y)
     } else {
       return this.sub.focus(x, y)
+    }
+  }
+
+  ir(tokens: Token[]): void {
+    if (this.sub) {
+      const last = tokens[tokens.length - 1]
+      if (last && (last.type == "num" || last.type == "var")) {
+        tokens.pop()
+        tokens.push({ type: "sub", on: last, sub: this.sub.ast() })
+      } else {
+        tokens.push({ type: "lonesub", sub: this.sub.ast() })
+      }
+    }
+    if (this.sup) {
+      tokens.push({ type: "lonesup", sup: this.sup.ast() })
     }
   }
 }

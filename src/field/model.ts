@@ -1,3 +1,4 @@
+import { tokensToAst, type Node, type Token } from "../ast/token"
 import type { CmdFrac } from "./cmd/math/frac"
 import type { FieldInert } from "./field-inert"
 import { h } from "./jsx"
@@ -70,6 +71,22 @@ export class Block {
       parent.blocks.push(this)
     }
     this.checkIfEmpty()
+  }
+
+  /** Tokenizes this {@linkcode Block}'s contents as LaTeX. */
+  ir(): Token[] {
+    const tokens: Token[] = []
+    let el = this.ends[L]
+    while (el) {
+      el.ir(tokens)
+      el = el[R]
+    }
+    return tokens
+  }
+
+  /** Tokenizes this {@linkcode Block}'s contents into an AST. */
+  ast(): Node {
+    return tokensToAst(this.ir())
   }
 
   /** Creates a cursor focused at the given position in this {@linkcode Block}. */
@@ -1565,6 +1582,9 @@ export abstract class Command<
    * direction.
    */
   insRow?(cursor: Cursor, block: Block, dir: VDir | null): void
+
+  /** Tokenizes this {@linkcode Command}'s contents as LaTeX. */
+  abstract ir(tokens: Token[]): void
 }
 
 /** The updated cursor or selection created by {@linkcode Init}. */
