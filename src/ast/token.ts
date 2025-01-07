@@ -1,3 +1,4 @@
+import type { WordKind } from "../field/cmd/leaf/var"
 import type { BigCmd } from "../field/cmd/math/big"
 import type { ParenLhs, ParenRhs } from "../field/cmd/math/brack"
 import { pass1_suffixes } from "./pass1.suffixes"
@@ -218,7 +219,7 @@ export type Punc =
 export type Token =
   | { type: "void" }
   | { type: "num"; value: string; sub?: Node }
-  | { type: "var"; value: string; implicitFn: boolean; sub?: Node; sup?: Node }
+  | { type: "var"; value: string; kind: WordKind; sub?: Node; sup?: Node }
   | { type: "num16"; value: string }
   | { type: "punc"; value: Punc }
   | { type: "group"; lhs: ParenLhs; rhs: ParenRhs; value: Node }

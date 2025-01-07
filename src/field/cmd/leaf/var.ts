@@ -210,7 +210,7 @@ export class CmdVar extends Leaf {
         tokens.push({
           type: "var",
           value: this.text,
-          implicitFn: this.kind == "prefix",
+          kind: this.kind,
         })
         return
       }
@@ -222,13 +222,13 @@ export class CmdVar extends Leaf {
         tokens.push({
           type: "var",
           value: this.text,
-          implicitFn: this.kind == "prefix",
+          kind: this.kind,
         })
       }
 
       return
     }
 
-    tokens.push({ type: "var", value: this.text, implicitFn: false })
+    tokens.push({ type: "var", value: this.text, kind: "var" })
   }
 }

@@ -25,7 +25,7 @@ import {
 // BIG = big WORD
 
 function isAtom(token: Token | undefined) {
-  return isValueToken(token) && !(token.type == "var" && token.implicitFn)
+  return token?.type == "var" ? token.kind == "var" : isValueToken(token)
 }
 
 export function pass2_implicits(tokens: Token[]): Token[] {
@@ -67,7 +67,7 @@ export function pass2_implicits(tokens: Token[]): Token[] {
 
   function fn() {
     const token = tokens[tokens.length - 1]
-    if (token?.type == "var" && token.implicitFn) {
+    if (token?.type == "var" && token.kind == "prefix") {
       tokens.pop()
       return token
     }
@@ -83,7 +83,7 @@ export function pass2_implicits(tokens: Token[]): Token[] {
 
   function isNextFn() {
     const next = tokens[tokens.length - 1]
-    return next?.type == "var" && next.implicitFn
+    return next?.type == "var" && next.kind == "prefix"
   }
 
   function isNextBig() {

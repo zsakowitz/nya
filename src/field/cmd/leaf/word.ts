@@ -34,7 +34,7 @@ export class CmdWord extends Leaf {
     tokens.push({
       type: "var",
       value: this.text,
-      implicitFn: this.kind == "prefix",
+      kind: this.kind,
     })
   }
 }

@@ -15,7 +15,7 @@ export function pass1_suffixes(tokens: Token[]) {
     const self = tokens[i]!
     const next = tokens[i + 1]
 
-    // 2.3 .3 2. .min .sin² decimals and member accesses
+    // 2.3 .3 2. a.min a.sin² decimals and member accesses
     if (self.type == "punc" && self.value.kind == ".") {
       const PREV = prev && prev.type == "num" && prev.value.indexOf(".") == -1
       const NEXT = next && next.type == "num" && next.value.indexOf(".") == -1
