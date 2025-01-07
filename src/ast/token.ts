@@ -14,9 +14,8 @@ export type PuncBinary =
   | "base"
   | "\\and "
   | "\\or "
-  | "="
-  | "<"
-  | ">"
+  | { dir: "="; neg: boolean }
+  | { dir: "<" | ">"; eq: boolean; neg: boolean }
   | ".."
   | "..."
   | PuncPm
@@ -31,6 +30,14 @@ export type PuncBinary =
 
 /** A punctuation token which represents a unary operator. */
 export type PuncUnary = "\\neg " | PuncPm | "!"
+
+/** The string tags for all binary operators. */
+export type PuncBinaryStr =
+  PuncBinary extends infer T ?
+    T extends string ? T
+    : T extends { dir: infer U extends string } ? U
+    : never
+  : never
 
 /**
  * Additional elements and rules apply during parsing:
@@ -178,9 +185,7 @@ export const Precedence = Object.freeze({
 // 2 ∑n²             (2)(∑n²)
 
 export const PRECEDENCE_MAP = {
-  "!": Precedence.NotApplicable,
   ".": Precedence.NotApplicable,
-  "\\neg ": Precedence.NotApplicable,
   "\\uparrow ": Precedence.Exponential,
   "\\cdot ": Precedence.Product,
   "÷": Precedence.Product,
@@ -202,10 +207,16 @@ export const PRECEDENCE_MAP = {
   "\\Rightarrow ": Precedence.DoubleStruckRight,
   "\\to ": Precedence.Action,
   ",": Precedence.Comma,
-} satisfies Record<PuncUnary | PuncBinary, number>
+} satisfies Record<PuncBinaryStr, number>
 
-export const ASSOC_MAP: Readonly<Partial<Record<PuncUnary | PuncBinary, 1>>> =
-  {}
+/** Gets the predence of some operator. */
+export function getPrecedence(op: PuncBinary) {
+  if (typeof op == "string") {
+    return PRECEDENCE_MAP[op]
+  } else {
+    return PRECEDENCE_MAP[op.dir]
+  }
+}
 
 /** A punctuation token. */
 export type Punc =
@@ -213,6 +224,9 @@ export type Punc =
   | { type: "suffix"; kind: PuncUnary }
   | { type: "infix"; kind: PuncBinary }
   | { type: "pm"; kind: PuncPm }
+
+/** A binary operation derived from infix operators. */
+export type OpBinary = Exclude<PuncBinary, ",">
 
 /** A part of the AST's intermediate representation. */
 export type Token =
@@ -235,8 +249,9 @@ export type Token =
   | { type: "root"; contents: Node; root?: Node }
   | { type: "index"; on: Node; index: Node }
   | { type: "juxtaposed"; a: Node; b: Node }
-  | { type: "op"; kind: PuncBinary; a: Node; b: Node }
+  | { type: "op"; kind: OpBinary; a: Node; b: Node }
   | { type: "op"; kind: PuncUnary; a: Node; b?: undefined }
+  | { type: "commalist"; items: Node[] }
   | { type: "factorial"; on: Node; repeats: number }
   | { type: "error"; reason: string }
 

@@ -1513,6 +1513,10 @@ body {
   opacity: 0.5;
 }
 
+.nya-cmd-not > * {
+  padding-right: 0px;
+}
+
 .\*\:contents > * {
   display: contents;
 }

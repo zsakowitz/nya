@@ -29,6 +29,6 @@ export class CmdComma extends Leaf {
   }
 
   ir(tokens: Token[]): void {
-    tokens.push({ type: "punc", value: "," })
+    tokens.push({ type: "punc", value: { type: "infix", kind: "," } })
   }
 }

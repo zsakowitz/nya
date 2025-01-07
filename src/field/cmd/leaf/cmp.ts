@@ -1,6 +1,6 @@
-import type { PuncCmp, PuncEq, Token } from "../../../ast/token"
+import type { Token } from "../../../ast/token"
 import { L, type Cursor, type Dir, type InitProps } from "../../model"
-import { Op, OpRightarrow, OpMinus, OpTo } from "./op"
+import { Op, OpMinus, OpRightarrow, OpTo } from "./op"
 
 /** An `Op` which can be negated. */
 export abstract class OpCeq extends Op {
@@ -44,7 +44,7 @@ type Data = readonly [
   ascii: string,
 ]
 
-function ceq(kind: PuncEq, eq: Data, ne: Data, endsImplicitGroup = true) {
+function ceq(kind: "=", eq: Data, ne: Data, endsImplicitGroup = true) {
   return class extends OpCeq {
     static init(cursor: Cursor, props: InitProps) {
       this.exitSupSub(cursor, props)
@@ -89,13 +89,19 @@ function ceq(kind: PuncEq, eq: Data, ne: Data, endsImplicitGroup = true) {
     }
 
     ir(tokens: Token[]): void {
-      tokens.push({ type: "punc", value: { type: "eq", kind, neg: this.neg } })
+      tokens.push({
+        type: "punc",
+        value: {
+          type: "infix",
+          kind: { dir: kind, neg: this.neg },
+        },
+      })
     }
   }
 }
 
 function cmp(
-  kind: PuncCmp,
+  kind: "<" | ">",
   normal: Data,
   normalNeg: Data,
   orEq: Data,
@@ -167,7 +173,10 @@ function cmp(
     ir(tokens: Token[]): void {
       tokens.push({
         type: "punc",
-        value: { type: "cmp", kind, neg: this.neg, eq: this.eq },
+        value: {
+          type: "infix",
+          kind: { dir: kind, eq: this.eq, neg: this.neg },
+        },
       })
     }
   }

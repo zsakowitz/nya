@@ -102,7 +102,7 @@ export class CmuSym extends CmuLeaf {
         break
 
       case this.sym[0] == "v":
-        tokens.push({ type: "var", value: this.sym })
+        tokens.push({ type: "var", value: this.sym, kind: "var" })
         break
 
       default:

@@ -1,9 +1,10 @@
 import {
+  getPrecedence,
   isValueToken,
   Precedence,
-  PRECEDENCE_MAP,
   type Punc,
   type PuncBinary,
+  type PuncPm,
   type Token,
 } from "./token"
 
@@ -54,13 +55,21 @@ export function pass2_implicits(tokens: Token[]): Token[] {
     }
   }
 
-  function op(precedence: number) {
+  function op(
+    precedence: number,
+  ):
+    | undefined
+    | { type: "infix"; kind: Exclude<PuncBinary, ","> }
+    | { type: "pm"; kind: PuncPm } {
     const token = tokens[tokens.length - 1]
     if (
       token?.type == "punc" &&
-      PRECEDENCE_MAP[token.value.kind] == precedence
+      (token.value.type == "infix" || token.value.type == "pm") &&
+      getPrecedence(token.value.kind) == precedence &&
+      token.value.kind != ","
     ) {
       tokens.pop()
+      // @ts-expect-error We checked that it isn't a comma
       return token.value
     }
   }
@@ -167,7 +176,7 @@ export function pass2_implicits(tokens: Token[]): Token[] {
 
     let values = [first]
 
-    let exs: PuncBinary[] = []
+    let exs: Exclude<PuncBinary, ",">[] = []
     let ex
     while ((ex = op(Precedence.Exponential))) {
       if (ex.type != "infix") {

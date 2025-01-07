@@ -101,12 +101,19 @@ export class CmdColor extends Leaf {
     const b = parseInt(color.slice(5, 7), 16).toString()
     tokens.push({
       type: "call",
-      name: { type: "var", value: "rgb" },
-      args: [
-        { type: "num", value: r },
-        { type: "num", value: g },
-        { type: "num", value: b },
-      ],
+      name: {
+        type: "var",
+        value: "rgb",
+        kind: "var",
+      },
+      args: {
+        type: "commalist",
+        items: [
+          { type: "num", value: r },
+          { type: "num", value: g },
+          { type: "num", value: b },
+        ],
+      },
     })
   }
 }

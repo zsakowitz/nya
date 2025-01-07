@@ -29,6 +29,6 @@ export class CmdExclamation extends Leaf {
   }
 
   ir(tokens: Token[]): void {
-    tokens.push({ type: "punc", value: "," })
+    tokens.push({ type: "punc", value: { kind: "!", type: "suffix" } })
   }
 }

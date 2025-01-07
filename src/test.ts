@@ -42,10 +42,10 @@ function opt(f: () => string): string {
 }
 
 function wrap(x: string): string {
-  if (x.wrapped) {
+  if ((x as any).wrapped) {
     return x
   }
-  return Object.assign(new String("\\left(" + x + "\\right)"), {
+  return (Object as any).assign(new String("\\left(" + x + "\\right)"), {
     wrapped: true,
   })
 }
@@ -89,6 +89,3 @@ export function genSum(): string {
     wrap(many(() => choose(genProd, genFn, genSum)()))
   )
 }
-
-const t = genTerm()
-copy(t.replaceAll("\\left(", "").replaceAll("\\right)", "") + "\n" + t)
