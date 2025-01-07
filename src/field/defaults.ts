@@ -4,7 +4,15 @@ import { CmdColor } from "./cmd/leaf/color"
 import { CmdComma } from "./cmd/leaf/comma"
 import { CmdDot } from "./cmd/leaf/dot"
 import { CmdNum } from "./cmd/leaf/num"
-import { OpCdot, OpDiv, OpMinus, OpPlus } from "./cmd/leaf/op"
+import {
+  OpAnd,
+  OpCdot,
+  OpDiv,
+  OpMinus,
+  OpNeg,
+  OpOr,
+  OpPlus,
+} from "./cmd/leaf/op"
 import { CmdVar, type WordKind } from "./cmd/leaf/var"
 import { CmdFor } from "./cmd/logic/for"
 import { CmdPiecewise } from "./cmd/logic/piecewise"
@@ -88,6 +96,12 @@ export const autoCmds = new WordMap<Init>([
   ["switch", CmdPiecewise],
   ["piecewise", CmdPiecewise],
   ["color", CmdColor],
+  ["neg", OpNeg],
+  ["not", OpNeg],
+  ["and", OpAnd],
+  ["wedge", OpAnd],
+  ["or", OpOr],
+  ["vee", OpOr],
 ]).frozen()
 
 export const words = new WordMap<WordKind>([
@@ -181,6 +195,7 @@ export const words = new WordMap<WordKind>([
   ["unsign", "prefix"],
   ["nPr", "infix"],
   ["nCr", "infix"],
+  ["base", "infix"],
 ]).frozen()
 
 export const options: Options = Object.freeze<Options>({

@@ -33,8 +33,7 @@ new Expr(sheet).field
   .typeEach`p o l y g o n ( ( 2 , 3 ) , ( 7 , - 3 ) , ( 1 , 0 ) )`
 new Expr(sheet).field
   .typeEach`s i n ( a + b ) = s i n a c o s b + s i n b c o s a`
-new Expr(sheet).field
-  .typeEach`s i n ( a + b ) = s i n a c o s b + s i n b c o s a`
+new Expr(sheet).field.typeEach`n o t 2 = 3 + n o t 5 ( n o t 3 ) 4 n o t 4`
 new Expr(sheet).field
   .typeEach`( ) ArrowLeft s q r t f o r b l o c k i n t _ 3 ArrowUp 5 ArrowRight n t h r o o t s u m 1 ArrowUp 4 ArrowRight p r o d 2 ArrowUp 6 ArrowRight 8 ) / 7 ArrowRight ArrowRight m a t r i x a ArrowRight b ArrowDown c a s e s 9 ArrowRight x < y ArrowDown ArrowLeft 0 ArrowLeft ArrowLeft ArrowLeft c ArrowDown ArrowDown [ 1 , 2 , 3 , . . . , 5 0 ] ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft k`
 new Expr(sheet).field

@@ -12,7 +12,7 @@ export class CmdWord extends Leaf {
     super(
       text,
       h(
-        `-cmd-var -cmd-word -cmd-word-${kind} -cmd-word-l -cmd-word-r`,
+        `nya-cmd-var nya-cmd-word nya-cmd-word-${kind} nya-cmd-word-l nya-cmd-word-r`,
         h("font-['Times_New_Roman'] [line-height:.9]", t(text)),
       ),
     )

@@ -87,7 +87,7 @@ export class CmdSupSub extends Command {
   static html(sub: Block | null, sup: Block | null) {
     if (sup && !sub) {
       return h(
-        "-cmd-supsub",
+        "nya-cmd-supsub",
         h(
           "mb-[-.2em] inline-block text-left align-[.5em] text-[90%] [.bg-nya-selection>&]:bg-nya-selection",
           h("inline-block align-text-bottom", sup.el),
@@ -95,7 +95,7 @@ export class CmdSupSub extends Command {
       )
     } else if (sub && !sup) {
       return h(
-        "-cmd-supsub",
+        "nya-cmd-supsub",
         h(
           "mb-[-.2em] inline-block text-left align-[-.5em] text-[90%] [.bg-nya-selection>&]:bg-nya-selection",
           h("float-left block text-[80%]", sub.el),
@@ -104,7 +104,7 @@ export class CmdSupSub extends Command {
       )
     } else if (sub && sup) {
       return h(
-        "-cmd-supsub",
+        "nya-cmd-supsub",
         h(
           "mb-[-.2em] inline-block text-left align-[-.5em] text-[90%] [.bg-nya-selection>&]:bg-nya-selection",
           h("block", sup.el),

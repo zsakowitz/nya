@@ -13,137 +13,138 @@ body {
   @apply bg-white text-black [--nya-selection:theme("colors.blue.200")] [--nya-empty:#0003];
 }
 
-.-cmd-word-r {
+.nya-cmd-word-r {
   @apply pr-[.2em];
 
   &:last-child,
-  &:has(+ .-cursor:last-child) {
+  &:has(+ .nya-cursor:last-child) {
     @apply pr-0;
   }
 }
 
-.-cmd-word-l {
+.nya-cmd-word-l {
   @apply pl-[.2em];
 
   &:first-child,
-  .-cursor:first-child + & {
+  .nya-cursor:first-child + & {
     @apply pl-0;
   }
 }
 
-:is(.-cmd-op, .-cmd-word-r:not(.-cmd-word-var)) {
-  & + .-cmd-pm > *,
-  & + .-cursor + .-cmd-pm > * {
+:is(.nya-cmd-op, .nya-cmd-word-r:not(.nya-cmd-word-var)) {
+  & + .nya-cmd-pm > *,
+  & + .nya-cursor + .nya-cmd-pm > * {
     @apply pr-0;
   }
 }
 
-:is(.-cmd-op, .-cmd-word-r) + .-cmd-pm > *,
-:is(.-cmd-op, .-cmd-word-r) + .-cursor + .-cmd-pm > *,
-.-cmd-op:first-child > *,
-.-cursor:first-child + .-cmd-op > * {
+:is(.nya-cmd-op, .nya-cmd-word-r) + .nya-cmd-pm > *,
+:is(.nya-cmd-op, .nya-cmd-word-r) + .nya-cursor + .nya-cmd-pm > *,
+.nya-cmd-op:first-child > *,
+.nya-cursor:first-child + .nya-cmd-op > * {
   @apply pl-0;
 }
 
-.-cmd-op + .-cmd-word-l,
-.-cmd-op + .-cursor + .-cmd-word-l {
+.nya-cmd-op + .nya-cmd-word-l,
+.nya-cmd-op + .nya-cursor + .nya-cmd-word-l {
   @apply pl-0;
 }
 
-.-cmd-word-r:not(.-cmd-word-infix):has(
-    + .-cmd-brack,
-    + .-cursor + .-cmd-brack
+.nya-cmd-word-r:not(.nya-cmd-word-infix):has(
+    + .nya-cmd-brack,
+    + .nya-cursor + .nya-cmd-brack
   ) {
   @apply pr-0;
 }
 
-.-cmd-brack + .-cmd-word-l.-cmd-word-var,
-.-cmd-brack + .-cursor + .-cmd-word-l.-cmd-word-var {
+.nya-cmd-brack + .nya-cmd-word-l.nya-cmd-word-var,
+.nya-cmd-brack + .nya-cursor + .nya-cmd-word-l.nya-cmd-word-var {
   @apply pl-0;
 }
 
-.-cmd-word-r:has(+ .-cursor + .-cmd-word-l, + .-cmd-word-l) {
+.nya-cmd-word-r:has(+ .nya-cursor + .nya-cmd-word-l, + .nya-cmd-word-l) {
   @apply pr-[.1em];
 }
 
-.-cmd-word-r + .-cmd-word-l,
-.-cmd-word-r + .-cursor + .-cmd-word-l {
+.nya-cmd-word-r + .nya-cmd-word-l,
+.nya-cmd-word-r + .nya-cursor + .nya-cmd-word-l {
   @apply pl-[.1em];
 }
 
-.-cmd-word-r:not(.-cmd-word-infix):has(
-    + .-cmd-supsub,
-    + .-cursor + .-cmd-supsub
+.nya-cmd-word-r:not(.nya-cmd-word-infix):has(
+    + .nya-cmd-supsub,
+    + .nya-cursor + .nya-cmd-supsub
   ) {
   @apply pr-0;
 }
 
-.-cmd-word-r:not(.-cmd-word-infix) + .-cmd-supsub,
-.-cmd-word-r:not(.-cmd-word-infix) + .-cursor + .-cmd-supsub {
+.nya-cmd-word-r:not(.nya-cmd-word-infix) + .nya-cmd-supsub,
+.nya-cmd-word-r:not(.nya-cmd-word-infix) + .nya-cursor + .nya-cmd-supsub {
   @apply pr-[.2em];
 
   &:last-child,
-  &:has(+ .-cursor:last-child),
-  &:has(+ .-cmd-brack),
-  &:has(+ .-cursor + .-cmd-brack) {
+  &:has(+ .nya-cursor:last-child),
+  &:has(+ .nya-cmd-brack),
+  &:has(+ .nya-cursor + .nya-cmd-brack) {
     @apply pr-0;
   }
 }
 
-.-cmd-dot-l {
+.nya-cmd-dot-l {
   @apply pl-[.14em];
 }
 
-.-cmd-dot-r {
+.nya-cmd-dot-r {
   @apply pr-[.14em];
 }
 
-.-cmd-word-r:has(+ .-cmd-dot-l, + .-cursor + .-cmd-dot-l) {
+.nya-cmd-word-r:has(+ .nya-cmd-dot-l, + .nya-cursor + .nya-cmd-dot-l) {
   @apply pr-0;
 }
 
-.-cmd-word-r:has(
-    + .-cmd-dot:last-child,
-    + .-cmd-dot + .-cursor:last-child,
-    + .-cursor + .-cmd-dot:last-child
+.nya-cmd-word-r:has(
+    + .nya-cmd-dot:last-child,
+    + .nya-cmd-dot + .nya-cursor:last-child,
+    + .nya-cursor + .nya-cmd-dot:last-child
   ) {
   @apply pr-0;
 }
 
-.-cmd-dot-r + .-cmd-word-l,
-.-cmd-dot-r + .-cursor + .-cmd-word-l {
+.nya-cmd-dot-r + .nya-cmd-word-l,
+.nya-cmd-dot-r + .nya-cursor + .nya-cmd-word-l {
   @apply pl-0;
 }
 
-.-cmd-dot-prop + .-cmd-word-l,
-.-cmd-dot-prop + .-cursor + .-cmd-word-l {
+.nya-cmd-dot-prop + .nya-cmd-word-l,
+.nya-cmd-dot-prop + .nya-cursor + .nya-cmd-word-l {
   @apply pl-0;
 }
 
-.-cmd-word-r:has(
-    + .-cmd-dot-prop,
-    + .-cursor + .-cmd-dot-prop,
-    + .-cmd-op:not(.-cmd-pm),
-    + .-cursor + .-cmd-op:not(.-cmd-pm)
+.nya-cmd-word-r:has(
+    + .nya-cmd-dot-prop,
+    + .nya-cursor + .nya-cmd-dot-prop,
+    + .nya-cmd-op:not(.nya-cmd-pm),
+    + .nya-cursor + .nya-cmd-op:not(.nya-cmd-pm)
   ) {
   @apply pr-0;
 }
 
-.-cmd-pm:first-child > *,
-.-cursor:first-child + .-cmd-pm > * {
+.nya-cmd-pm:first-child > *,
+.nya-cursor:first-child + .nya-cmd-pm > * {
   @apply pr-0;
 }
 
-.-cmd-op:not(.-cmd-pm) + .-cmd-op:not(.-cmd-pm) > *,
-.-cmd-op:not(.-cmd-pm) + .-cursor + .-cmd-op:not(.-cmd-pm) > * {
+.nya-cmd-op:not(.nya-cmd-pm) + .nya-cmd-op:not(.nya-cmd-pm) > *,
+.nya-cmd-op:not(.nya-cmd-pm) + .nya-cursor + .nya-cmd-op:not(.nya-cmd-pm) > * {
   @apply pl-[.1em];
 }
 
-.-cmd-op:not(.-cmd-pm):has(+ .-cmd-op:not(.-cmd-pm)) > *,
-.-cmd-op:not(.-cmd-pm):has(+ .-cursor + .-cmd-op:not(.-cmd-pm)) > * {
+.nya-cmd-op:not(.nya-cmd-pm):has(+ .nya-cmd-op:not(.nya-cmd-pm)) > *,
+.nya-cmd-op:not(.nya-cmd-pm):has(+ .nya-cursor + .nya-cmd-op:not(.nya-cmd-pm))
+  > * {
   @apply pr-[.1em];
 }
 
-.-prefix {
+.nya-prefix {
   @apply opacity-50;
 }

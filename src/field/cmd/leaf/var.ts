@@ -25,6 +25,7 @@ export class CmdVar extends Leaf {
     const { input, options } = props
     const self = new CmdVar(input, options)
     self.insertAt(cursor, L)
+    if (self.kind != null) return
     if (options.autoCmds) {
       const cmds = options.autoCmds
       const maxLen = cmds.maxLen
@@ -64,8 +65,8 @@ export class CmdVar extends Leaf {
       : "-mid"
 
     return h(
-      "-cmd-var" +
-        (kind ? ` -cmd-word -cmd-word-${kind} -cmd-word${side}` : ""),
+      "nya-cmd-var" +
+        (kind ? ` nya-cmd-word nya-cmd-word-${kind} nya-cmd-word${side}` : ""),
       h(
         "font-['Times_New_Roman'] [line-height:.9]" +
           (kind == null ? " italic" : "") +

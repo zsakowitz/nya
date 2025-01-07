@@ -1,6 +1,12 @@
 import type { BigCmd } from "../field/cmd/math/big"
 import type { ParenLhs, ParenRhs } from "../field/cmd/math/brack"
 
+/** A combinator-like punctuation token. */
+export type PuncCombo = "\\and " | "\\or "
+
+/** A negation-like punctuation token. */
+export type PuncNeg = "\\neg "
+
 /** An equality-like punctuation token. */
 export type PuncEq = "="
 
@@ -13,17 +19,24 @@ export type PuncProd = "\\cdot " | "÷"
 /** A plus-or-minus-like punctuation token. */
 export type PuncPm = "+" | "-" | "\\pm " | "\\mp "
 
+/** A factorial-like punctuation token. */
+export type PuncFact = "!"
+
 /** A punctuation token. Listed here in approximate order of precedence. */
 export type Punc =
   | ","
   | "->"
   | "=>"
   | "." // "." has very low precedence in `a..b` and `a...b` ranges
+  | { type: "neg"; kind: PuncNeg }
+  | { type: "combo"; kind: PuncCombo }
   | { type: "eq"; kind: PuncEq; neg: boolean }
   | { type: "cmp"; kind: PuncCmp; neg: boolean; eq: boolean }
+  | { type: "pm"; kind: PuncPm } // "pm" have different precedence as prefixes and as infixes
   | { type: "prod"; kind: PuncProd }
-  | { type: "pm"; kind: PuncPm }
+  | { type: "pm"; kind: PuncPm } // "pm" have different precedence as prefixes and as infixes
   | "." // "." has very high precedence in `.property` accesses
+  | { type: "suffix"; kind: PuncFact }
 
 /** A part of the AST's intermediate representation. */
 export type Token = Readonly<

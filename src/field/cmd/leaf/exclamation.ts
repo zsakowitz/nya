@@ -3,9 +3,9 @@ import type { Token } from "../../../ast/token"
 import { h } from "../../jsx"
 import { L, type Cursor } from "../../model"
 
-export class CmdComma extends Leaf {
+export class CmdExclamation extends Leaf {
   static init(cursor: Cursor) {
-    new CmdComma().insertAt(cursor, L)
+    new CmdExclamation().insertAt(cursor, L)
   }
 
   constructor() {

@@ -1,5 +1,11 @@
 import { Leaf } from "."
-import type { Punc, PuncPm, PuncProd, Token } from "../../../ast/token"
+import type {
+  Punc,
+  PuncCombo,
+  PuncPm,
+  PuncProd,
+  Token,
+} from "../../../ast/token"
 import { h, t } from "../../jsx"
 import { L, R, type Cursor, type Dir, type InitProps } from "../../model"
 import { CmdSupSub } from "../math/supsub"
@@ -24,12 +30,14 @@ export abstract class Op extends Leaf {
   ) {
     super(
       ctrlSeq,
-      h("-cmd-op", h("px-[.2em] inline-block cursor-text", t(html))),
+      h("nya-cmd-op", h("px-[.2em] inline-block cursor-text", t(html))),
     )
   }
 
   setHtml(html: string) {
-    this.setEl(h("-cmd-op", h("px-[.2em] inline-block cursor-text", t(html))))
+    this.setEl(
+      h("nya-cmd-op", h("px-[.2em] inline-block cursor-text", t(html))),
+    )
   }
 }
 
@@ -50,7 +58,7 @@ export abstract class OpPm extends Leaf {
   }
 
   static render(html: string) {
-    return h("-cmd-op -cmd-pm", h("px-[.2em] inline-block", t(html)))
+    return h("nya-cmd-op nya-cmd-pm", h("px-[.2em] inline-block", t(html)))
   }
 
   constructor(
@@ -122,6 +130,23 @@ export function opp(
   )
 }
 
+export function opc(
+  latex: PuncCombo,
+  mathspeak: string,
+  html?: string,
+  ascii?: string,
+  endsImplicitGroup?: boolean,
+) {
+  return op(
+    { type: "combo", kind: latex },
+    latex,
+    mathspeak,
+    html,
+    ascii,
+    endsImplicitGroup,
+  )
+}
+
 export function opm(
   latex: PuncPm,
   mathspeak: string,
@@ -168,7 +193,52 @@ export const OpMinusPlus = opm("\\mp ", " minus-or-plus ", "∓")
 
 export const OpCdot = opp("\\cdot ", " times ", "·", "*")
 export const OpDiv = opp("÷", " divided by ", "÷", "/")
-export class OpTo extends op("->", "\\to ", " becomes ", "→", "->") {
+
+export const OpAnd = opc("\\and ", " and ", "∧", "∧", true)
+export const OpOr = opc("\\or ", " and ", "∧", "∧", true)
+
+export class OpNeg extends Leaf {
+  static init(cursor: Cursor, props: InitProps) {
+    new OpNeg().insertAt(cursor, L)
+  }
+
+  static render(html: string) {
+    return h(
+      "nya-cmd-op nya-cmd-pm nya-cmd-not",
+      h("px-[.2em] inline-block", t(html)),
+    )
+  }
+
+  constructor() {
+    super("\\neg ", OpNeg.render("¬"))
+  }
+
+  setHtml(html: string) {
+    this.setEl(OpNeg.render(html))
+  }
+
+  reader(): string {
+    return " not "
+  }
+
+  ascii(): string {
+    return " not "
+  }
+
+  latex(): string {
+    return "\\neg "
+  }
+
+  ir(tokens: Token[]): void {
+    tokens.push({ type: "punc", value: { type: "neg", kind: "\\neg " } })
+  }
+
+  endsImplicitGroup(): boolean {
+    return true
+  }
+}
+
+export class OpTo extends op("->", "\\to ", " becomes ", "→", "->", true) {
   delete(cursor: Cursor, from: Dir): void {
     if (from == R) {
       const minus = new OpMinus()
@@ -182,7 +252,7 @@ export class OpTo extends op("->", "\\to ", " becomes ", "→", "->") {
     super.delete(cursor, from)
   }
 }
-export class OpEqArrow extends op("=>", " maps to ", "⇒", "=>") {
+export class OpEqArrow extends op("=>", "⇒", " maps to ", "⇒", "=>", true) {
   delete(cursor: Cursor, from: Dir): void {
     if (from == R) {
       const minus = new OpEq(false)

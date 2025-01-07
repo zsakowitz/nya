@@ -38,7 +38,7 @@ export class FieldInert {
     }
     while (block.el.children[0]) {
       const node = block.el.children[block.el.children.length - 1]!
-      node.classList.add("-prefix")
+      node.classList.add("nya-prefix")
       this.el.insertBefore(node, this.el.firstChild)
     }
   }

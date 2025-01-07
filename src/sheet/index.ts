@@ -116,6 +116,18 @@ export class Expr {
         "absolute -inset-y-px right-0 left-0 border-2 border-[color:--nya-focus] hidden group-focus-within:block pointer-events-none",
       ),
     )
+    this.field.el.addEventListener("keydown", (event) => {
+      if (event.key == "Enter" && !event.ctrlKey && !event.metaKey) {
+        event.preventDefault()
+        const expr = new Expr(this.sheet)
+        this.sheet.exprs.splice(expr.index, 1)
+        this.sheet.exprs.splice(this.index + 1, 0, expr)
+        this.sheet.checkIndices()
+        const before = this.sheet.exprs[expr.index + 1]?.el ?? null
+        this.sheet.elExpressions.insertBefore(expr.el, before)
+        setTimeout(() => expr.field.el.focus())
+      }
+    })
     sheet.elExpressions.insertBefore(this.el, sheet.elExpressions.lastChild)
     this.sheet.checkNextIndex()
     this.index = this.sheet.exprs.length - 1
@@ -154,7 +166,7 @@ export class Sheet {
     const elExpressions = (this.elExpressions = h(
       "flex flex-col",
       (this.elNextExpr = h(
-        "grid grid-cols-[2.5rem,auto] relative pointer-cursor",
+        "grid grid-cols-[2.5rem,auto] relative pointernya-cursor",
         h(
           "inline-flex bg-slate-100 flex-col p-0.5 border-r border-slate-200",
           (this.elNextIndex = h(

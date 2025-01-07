@@ -6,7 +6,7 @@ import type { Exts, Options } from "./options"
 
 export class Field extends FieldInert {
   readonly cursor = h(
-    "relative -cursor border-current w-px -ml-px border-l [.-display:has(.-cmd-prompt)_&]:hidden [.-display:not(:focus)_&]:hidden",
+    "relative nya-cursor border-current w-px -ml-px border-l [.-display:has(.nya-cmd-prompt)_&]:hidden [.-display:not(:focus)_&]:hidden",
   )
 
   constructor(exts: Exts, options: Options) {
