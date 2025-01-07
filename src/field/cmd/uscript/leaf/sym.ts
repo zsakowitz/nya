@@ -96,23 +96,22 @@ export class CmuSym extends CmuLeaf {
   }
 
   ir(tokens: Token[]): void {
-    switch (true) {
-      case this.sym == "+" || this.sym == "-":
-        tokens.push({ type: "punc", value: { type: "pm", kind: this.sym } })
-        break
+    if (this.sym == "+" || this.sym == "-") {
+      tokens.push({ type: "punc", value: { type: "pm", kind: this.sym } })
+      return
+    }
 
-      case this.sym[0] == "v":
-        tokens.push({ type: "var", value: this.sym, kind: "var" })
-        break
+    if (this.sym[0] == "v") {
+      tokens.push({ type: "var", value: this.sym, kind: "var" })
+      return
+    }
 
-      default:
-        const last = tokens[tokens.length - 1]
-        if (last?.type == "num16") {
-          tokens.pop()
-          tokens.push({ type: "num16", value: last.value + this.sym })
-        } else {
-          tokens.push({ type: "num16", value: this.sym })
-        }
+    const last = tokens[tokens.length - 1]
+    if (last?.type == "num16") {
+      tokens.pop()
+      tokens.push({ type: "num16", value: last.value + this.sym })
+    } else {
+      tokens.push({ type: "num16", value: this.sym })
     }
   }
 }
