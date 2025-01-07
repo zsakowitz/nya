@@ -4,6 +4,7 @@ import {
   Command,
   Cursor,
   D,
+  getBoundingClientRect,
   L,
   R,
   U,
@@ -31,7 +32,7 @@ export function calcGridEntryBounds(
   const cols = cs.gridTemplateColumns.split(" ").map((x) => +x.slice(0, -2))
   const rowGap = cs.rowGap == "normal" ? 0 : +cs.rowGap.slice(0, -2)
   const columnGap = cs.columnGap == "normal" ? 0 : +cs.columnGap.slice(0, -2)
-  const box = parent.getBoundingClientRect()
+  const box = getBoundingClientRect(parent)
   let x =
     +cs.paddingLeft.slice(0, -2) + +cs.borderLeftWidth.slice(0, -2) + box.left
   let y =

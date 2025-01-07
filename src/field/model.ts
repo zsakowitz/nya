@@ -3,6 +3,13 @@ import type { FieldInert } from "./field-inert"
 import { h } from "./jsx"
 import type { Options } from "./options"
 
+const dummy = document.createElement("span")
+document.body.appendChild(dummy)
+
+export function getBoundingClientRect(el: Element) {
+  return el.getBoundingClientRect()
+}
+
 // Many properties are declared as `readonly` to prevent changes to them in
 // user-level code. However, these may change, in the same vein as DOM getters
 // such as `.nextElementSibling`.
@@ -239,7 +246,7 @@ export class Block {
 
   /** Finds the `clientX` values of the edges of this {@linkcode Block}. */
   bounds(): [left: number, right: number, top: number, bottom: number] {
-    const box = this.el.getBoundingClientRect()
+    const box = getBoundingClientRect(this.el)
     return [box.left, box.left + box.width, box.top, box.top + box.height]
   }
 
@@ -288,11 +295,11 @@ export class Block {
     // This is still technically O(n) in the number of child nodes
     let el = this.ends[L]
     if (!el) return null
-    if (clientX < el.el.getBoundingClientRect().left) {
+    if (clientX < getBoundingClientRect(el.el).left) {
       return null
     }
     while (el) {
-      const box = el.el.getBoundingClientRect()
+      const box = getBoundingClientRect(el.el)
       const rhs = box.left + box.width
       if (clientX < rhs) {
         return el
@@ -324,11 +331,8 @@ interface CursorMut extends Cursor {
   parent: Block | null
 }
 
-function pickSide(
-  el: { getBoundingClientRect(): DOMRect },
-  clientX: number,
-): Dir {
-  const box = el.getBoundingClientRect()
+function pickSide(el: Element, clientX: number): Dir {
+  const box = getBoundingClientRect(el)
   if (clientX < box.x + box.width / 2) {
     return L
   } else {
@@ -531,9 +535,9 @@ export class Cursor {
    */
   x() {
     if (this[R]) {
-      return this[R].el.getBoundingClientRect().left
+      return getBoundingClientRect(this[R].el).left
     } else if (this.parent) {
-      return this.parent.el.getBoundingClientRect().right
+      return getBoundingClientRect(this.parent.el).right
     } else {
       return null
     }
@@ -1523,7 +1527,7 @@ export abstract class Command<
 
   /** Finds the `clientX` values of the edges of this {@linkcode Command}. */
   bounds(): [left: number, right: number] {
-    const box = this.el.getBoundingClientRect()
+    const box = getBoundingClientRect(this.el)
     return [box.left, box.left + box.width]
   }
 

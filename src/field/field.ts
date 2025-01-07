@@ -87,7 +87,6 @@ export class Field extends FieldInert {
     this.sel.parent?.checkIfEmpty()
     this.cursor.parentElement?.parentElement?.classList.remove("nya-has-empty")
     if (!wasChangeCanceled) {
-      console.error("scrolling into view")
       this.cursor.scrollIntoView({
         behavior: "instant",
         block: "nearest",

@@ -72,7 +72,10 @@ export class FieldInert {
     }
   }
 
-  typeEach(source: string) {
+  typeEach(source: string | readonly string[]) {
+    if ((Array.isArray as (arg: any) => arg is readonly any[])(source)) {
+      source = source[0] || ""
+    }
     this.onBeforeChange?.()
     this.sel = new Selection(this.block, null, null, R)
     this.sel.remove()

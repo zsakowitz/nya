@@ -19,7 +19,17 @@ class ExprField extends Field {
     )
   }
 
+  onMoveOut(towards: Dir): void {
+    console.log("move out")
+  }
+
+  onTabOut(towards: Dir): boolean {
+    console.log("tab out")
+    return false
+  }
+
   onVertOut(towards: VDir): void {
+    console.log("vert out")
     const next =
       this.expr.sheet.exprs[this.expr.index + (towards == U ? -1 : 1)]
 
@@ -146,7 +156,7 @@ export class Sheet {
     })
 
     this.el = h(
-      "block fixed inset-0 grid grid-cols-[max(30%,300px),auto] select-none [--nya-focus:theme(colors.blue.400)]",
+      "block fixed inset-0 grid grid-cols-[max(50%,300px),auto] select-none [--nya-focus:theme(colors.blue.400)]",
       h(
         "block h-full overflow-y-auto border-r",
         h(
