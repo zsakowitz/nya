@@ -12,6 +12,7 @@ import {
   OpNeg,
   OpOr,
   OpPlus,
+  OpUpArrow,
 } from "./cmd/leaf/op"
 import { CmdVar, type WordKind } from "./cmd/leaf/var"
 import { CmdFor } from "./cmd/logic/for"
@@ -102,6 +103,7 @@ export const autoCmds = new WordMap<Init>([
   ["wedge", OpAnd],
   ["or", OpOr],
   ["vee", OpOr],
+  ["raise", OpUpArrow],
 ]).frozen()
 
 export const words = new WordMap<WordKind>([

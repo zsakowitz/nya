@@ -193,7 +193,9 @@ export class Sheet {
         "block h-full overflow-y-auto border-r",
         h(
           "flex flex-col",
-          h("h-12 w-full bg-slate-100 border-b border-slate-200 flex gap-8"),
+          h(
+            "block h-12 w-full bg-slate-100 border-b border-slate-200 flex gap-8",
+          ),
           elExpressions,
         ),
       ),

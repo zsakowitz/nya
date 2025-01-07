@@ -47,14 +47,13 @@ export type PuncUnary = "\\neg " | PuncPm | "!"
  */
 // prettier-ignore
 export const Precedence = Object.freeze({
-  NotApplicable:     -1, // 23!, dotted access
-  Exponential:       13, // x ↑ 3
-  Product:           12, // x ÷ y
-  Sum:               11, // 2 + 3
-  Range:             10, // 1...100
-  Comparison:         9, // x² < 3
-  Equality:           8, // x = 3
-  BoolNegate:         7, // ¬x
+  NotApplicable:     -1, // 23!, ¬x, dotted access
+  Exponential:       12, // x ↑ 3
+  Product:           11, // x ÷ y
+  Sum:               10, // 2 + 3
+  Range:              9, // 1...100
+  Comparison:         8, // x² < 3
+  Equality:           7, // x = 3
   BoolAnd:            6, // x ∧ y
   BoolOr:             5, // x ⋁ y
   WordInfix:          4, // 23 base 5
@@ -181,6 +180,7 @@ export const Precedence = Object.freeze({
 export const PRECEDENCE_MAP = {
   "!": Precedence.NotApplicable,
   ".": Precedence.NotApplicable,
+  "\\neg ": Precedence.NotApplicable,
   "\\uparrow ": Precedence.Exponential,
   "\\cdot ": Precedence.Product,
   "÷": Precedence.Product,
@@ -194,7 +194,6 @@ export const PRECEDENCE_MAP = {
   "<": Precedence.Comparison,
   ">": Precedence.Comparison,
   "=": Precedence.Equality,
-  "\\neg ": Precedence.BoolNegate,
   "\\and ": Precedence.BoolAnd,
   "\\or ": Precedence.BoolOr,
   base: Precedence.WordInfix,

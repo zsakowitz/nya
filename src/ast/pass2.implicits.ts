@@ -2,8 +2,8 @@ import {
   isValueToken,
   Precedence,
   PRECEDENCE_MAP,
+  type Punc,
   type PuncBinary,
-  type PuncPm,
   type Token,
 } from "./token"
 
@@ -65,6 +65,17 @@ export function pass2_implicits(tokens: Token[]): Token[] {
     }
   }
 
+  function prefix(): Prefix | undefined {
+    const token = tokens[tokens.length - 1]
+    if (
+      token?.type == "punc" &&
+      (token.value.type == "prefix" || token.value.type == "pm")
+    ) {
+      tokens.pop()
+      return token.value
+    }
+  }
+
   function fn() {
     const token = tokens[tokens.length - 1]
     if (token?.type == "var" && token.kind == "prefix") {
@@ -101,28 +112,27 @@ export function pass2_implicits(tokens: Token[]): Token[] {
     return ret
   }
 
-  function takeSigns(): PuncPm[] {
+  type Prefix = Extract<Punc, { type: "pm" | "prefix" }>
+
+  function takeSigns(): Prefix[] {
     let f
-    const pms: PuncPm[] = []
-    while ((f = op(Precedence.Sum)) && f.type == "pm") {
-      pms.push(f.kind)
+    const pms: Prefix[] = []
+    while ((f = prefix())) {
+      pms.push(f)
     }
     return pms
   }
 
-  function reduceSigns(signs: PuncPm[], value: Token): Token {
+  function reduceSigns(signs: Prefix[], value: Token): Token {
     return signs.reduceRight<Token>(
-      (a, b) => ({ type: "op", kind: b, a }),
+      (a, b) => ({ type: "op", kind: b.kind, a }),
       value,
     )
   }
 
-  function putBackSigns(signs: PuncPm[]) {
+  function putBackSigns(signs: Prefix[]) {
     tokens.push(
-      ...signs.reverse().map<Token>((x) => ({
-        type: "punc",
-        value: { kind: x, type: "pm" },
-      })),
+      ...signs.reverse().map<Token>((value) => ({ type: "punc", value })),
     )
   }
 
@@ -181,11 +191,13 @@ export function pass2_implicits(tokens: Token[]): Token[] {
     }
 
     while (exs.length) {
+      const b = values.pop()!
       values.push({
         type: "op",
         kind: exs.pop()!,
-        b: values.pop()!,
+        // instead of b\na, we store `a` so that the order in debug windows looks correct
         a: values.pop()!,
+        b,
       })
     }
 
@@ -216,7 +228,7 @@ export function pass2_implicits(tokens: Token[]): Token[] {
     const name = fn()
     if (!name) return
 
-    const nested: [PuncPm[], Token][] = []
+    const nested: [Prefix[], Token][] = []
 
     while (true) {
       const mySigns = takeSigns()
@@ -262,7 +274,7 @@ export function pass2_implicits(tokens: Token[]): Token[] {
         lhs = { type: "juxtaposed", a: lhs, b: f }
       }
 
-      return reduceSigns(mySigns, lhs)
+      return lhs
     }
   }
 
