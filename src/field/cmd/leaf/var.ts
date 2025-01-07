@@ -66,7 +66,7 @@ export class CmdVar extends Leaf {
       "-cmd-var" +
         (kind ? ` -cmd-word -cmd-word-${kind} -cmd-word${side}` : ""),
       h(
-        "font-['Times'] [line-height:.9]" +
+        "font-['Times_New_Roman'] [line-height:.9]" +
           (kind == null ? " italic" : "") +
           // `relative` helps keep f above other letters, which is important in selections
           (text == "f" ? " ml-[.1em] mr-[.1em] relative" : ""),

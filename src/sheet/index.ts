@@ -1,5 +1,5 @@
 import { Field } from "../field/field"
-import { h, p, svgx } from "../field/jsx"
+import { h, hx, p, svgx } from "../field/jsx"
 import { D, L, R, U, type Dir, type VDir } from "../field/model"
 import type { Exts, Options as FieldOptions } from "../field/options"
 
@@ -107,10 +107,6 @@ export class Expr {
   }
 }
 
-function logo() {
-  return h("relative aspect-square size-6", h("absolute size-1/5 bg-slate-300"))
-}
-
 export class Sheet {
   readonly exprs: Expr[] = []
 
@@ -118,6 +114,7 @@ export class Sheet {
   readonly elExpressions
   readonly elNextIndex
   readonly elNextExpr
+  readonly elLogo
 
   constructor(
     readonly exts: Exts,
@@ -135,7 +132,7 @@ export class Sheet {
           )),
         ),
         h(
-          "font-['Symbola','Times',sans-serif] [line-height:1] min-h-[3.265rem]",
+          "font-['Symbola','Times_New_Roman',sans-serif] [line-height:1] min-h-[3.265rem]",
         ),
         h(
           "absolute inset-0 size-full from-transparent to-white bg-gradient-to-b",
@@ -149,29 +146,26 @@ export class Sheet {
     })
 
     this.el = h(
-      "block fixed inset-0 grid grid-cols-[30%,auto] select-none [--nya-focus:theme(colors.blue.400)]",
+      "block fixed inset-0 grid grid-cols-[max(30%,300px),auto] select-none [--nya-focus:theme(colors.blue.400)]",
       h(
         "block h-full overflow-y-auto border-r",
         h(
           "flex flex-col",
-          h(
-            "h-12 w-full bg-slate-100 border-b border-slate-200 flex gap-8",
-            svgx(
-              "-1 -1 32 14",
-              "h-8 fill-transparent stroke-1 stroke-slate-400 [stroke-linejoin:round] [stroke-linecap:round]",
-              p(
-                "M 0 12 v -12 l 8 12 v -12 M 12 0 l 4 6 l 4 -6 m -4 6 v 6 M 22 12 l 4 -12 l 4 12 m -6.5 -4.5 h 5",
-              ),
-            ),
-            svgx(
-              "-1 -1 32 14",
-              "h-8 fill-transparent stroke-1 stroke-slate-400 [stroke-linejoin:round] [stroke-linecap:round]",
-              p("M 0 12 v -4 a "),
-            ),
-          ),
+          h("h-12 w-full bg-slate-100 border-b border-slate-200 flex gap-8"),
           elExpressions,
         ),
       ),
+      (this.elLogo = hx(
+        "button",
+        "absolute bottom-0 right-0 p-2",
+        svgx(
+          "0 0 20 16",
+          "w-8 fill-slate-400",
+          p(
+            "M7 0 5 0A1 1 0 004 1L4 3A1 1 0 005 4L7 4A1 1 0 008 3L8 1A1 1 0 007 0ZM3 8 1 8A1 1 0 000 9L0 11A1 1 0 001 12L3 12A1 1 0 014 13L4 15A1 1 0 005 16L7 16 7 16A1 1 0 008 15L8 13A1 1 0 019 12L11 12A1 1 0 0112 13L12 15A1 1 0 0013 16L15 16A1 1 0 0016 15L16 13A1 1 0 0117 12L19 12A1 1 0 0020 11L20 9A1 1 0 0019 8L17 8A1 1 0 0016 9L16 11A1 1 0 0115 12L13 12A1 1 0 0112 11L12 9A1 1 0 0011 8L9 8A1 1 0 008 9L8 11A1 1 0 017 12L5 12A1 1 0 014 11L4 9A1 1 0 003 8ZM15 0 13 0A1 1 0 0012 1L12 3A1 1 0 0013 4L15 4A1 1 0 0016 3L16 1A1 1 0 0015 0Z",
+          ),
+        ),
+      )),
     )
   }
 

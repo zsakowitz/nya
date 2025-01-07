@@ -31,7 +31,7 @@ const sheet = new Sheet(exts, { field: options })
 {
   const expr = new Expr(sheet)
   expr.field.typeEach("y = 2 x ^ 2 ArrowRight - 7 x + 3 ArrowLeft ArrowLeft")
-  setTimeout(() => expr.field.el.focus())
+  // setTimeout(() => expr.field.el.focus())
 }
 
 {

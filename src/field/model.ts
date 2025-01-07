@@ -52,7 +52,7 @@ export class Block {
   readonly ends: Ends = { [L]: null, [R]: null }
 
   readonly el = h(
-    "inline-block after:content-['c'] after:font-['Times'] after:[line-height:.9] after:italic after:text-transparent after:hidden",
+    "inline-block after:content-['c'] after:font-['Times_New_Roman'] after:[line-height:.9] after:italic after:text-transparent after:hidden",
   )
 
   constructor(
