@@ -1,4 +1,4 @@
-import { hx } from "../field/jsx"
+import { h, hx } from "../field/jsx"
 
 const THEME_MAIN_AXIS_WIDTH = 1.5
 const THEME_MAJOR_LINE_ALPHA = 0.3
@@ -530,6 +530,18 @@ export function onTouch(paper: Paper) {
     },
     { passive: false },
   )
+}
+
+export function drawTooltip(
+  paper: Paper,
+  tooltip: (mouse: MouseEvent, paper: Paper) => string,
+) {
+  const el = h("fixed bottom-0 right-0 bg-white whitespace-pre")
+  document.body.append(el)
+
+  paper.el.addEventListener("mousemove", (event) => {
+    el.textContent = tooltip(event, paper)
+  })
 }
 
 const hypot =
