@@ -51,5 +51,5 @@ export function pass3_ordering(tokens: Token[]): Token {
     output.push(ops.pop()!)
   }
 
-  return output as any
+  return { type: "rpn", nodes: output }
 }

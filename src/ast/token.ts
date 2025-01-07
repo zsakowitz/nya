@@ -131,7 +131,6 @@ export type Token =
   | { type: "num"; value: string; sub?: Node }
   | { type: "var"; value: string; kind: WordKind; sub?: Node; sup?: Node }
   | { type: "num16"; value: string }
-  | Punc
   | { type: "group"; lhs: ParenLhs; rhs: ParenRhs; value: Node }
   | { type: "sub"; sub: Node }
   | { type: "sup"; sup: Node }
@@ -150,7 +149,9 @@ export type Token =
   | { type: "op"; kind: PuncUnary; a: Node; b?: undefined }
   | { type: "commalist"; items: Node[] }
   | { type: "factorial"; on: Node; repeats: number | Node }
+  | { type: "rpn"; nodes: Node[] }
   | { type: "error"; reason: string }
+  | Punc
 
 /** A node in the final AST. */
 export type Node = Token
