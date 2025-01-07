@@ -1,6 +1,6 @@
 import type { PuncCmp, PuncEq, Token } from "../../../ast/token"
 import { L, type Cursor, type Dir, type InitProps } from "../../model"
-import { Op, OpEqArrow, OpMinus, OpTo } from "./op"
+import { Op, OpRightarrow, OpMinus, OpTo } from "./op"
 
 /** An `Op` which can be negated. */
 export abstract class OpCeq extends Op {
@@ -209,7 +209,7 @@ export class OpGt extends cmp(
     if (props.input == ">") {
       if (cursor[L] instanceof OpEq && !cursor[L].neg) {
         cursor[L].remove()
-        new OpEqArrow().insertAt(cursor, L)
+        new OpRightarrow().insertAt(cursor, L)
         return
       }
 

@@ -274,14 +274,26 @@ export class CmdSupSub extends Command {
     if (this.sub) {
       const last = tokens[tokens.length - 1]
       if (last && (last.type == "num" || last.type == "var")) {
-        tokens.pop()
-        tokens.push({ type: "sub", on: last, sub: this.sub.ast() })
+        if (last.sub) {
+          tokens.push({ type: "error", reason: "Double subscript." })
+          return
+        }
+        last.sub = this.sub.ast()
       } else {
-        tokens.push({ type: "lonesub", sub: this.sub.ast() })
+        tokens.push({ type: "sub", sub: this.sub.ast() })
       }
     }
     if (this.sup) {
-      tokens.push({ type: "lonesup", sup: this.sup.ast() })
+      const last = tokens[tokens.length - 1]
+      if (last && last.type == "var") {
+        if (last.sup) {
+          tokens.push({ type: "error", reason: "Double superscript." })
+          return
+        }
+        last.sup = this.sup.ast()
+      } else {
+        tokens.push({ type: "sup", sup: this.sup.ast() })
+      }
     }
   }
 }

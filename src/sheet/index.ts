@@ -27,19 +27,20 @@ class ExprField extends Field {
       "min-w-full",
       "focus:outline-none",
     )
+
+    this.el.addEventListener("focus", () => {
+      this.expr.sheet.onExprFocus?.(expr)
+    })
   }
 
-  onMoveOut(towards: Dir): void {
-    console.log("move out")
-  }
-
-  onTabOut(towards: Dir): boolean {
-    console.log("tab out")
-    return false
+  onAfterChange(wasChangeCanceled: boolean): void {
+    super.onAfterChange(wasChangeCanceled)
+    if (!wasChangeCanceled) {
+      this.expr?.sheet.onExprChange?.(this.expr)
+    }
   }
 
   onVertOut(towards: VDir): void {
-    console.log("vert out")
     const next =
       this.expr.sheet.exprs[this.expr.index + (towards == U ? -1 : 1)]
 
@@ -52,8 +53,6 @@ class ExprField extends Field {
   }
 
   onDelOut(towards: Dir): void {
-    console.log("del out")
-
     if (!this.expr.field.block.isEmpty()) {
       return
     }
@@ -148,19 +147,19 @@ export class Sheet {
   readonly elNextIndex
   readonly elNextExpr
   readonly elLogo
+  readonly elTokens
 
   constructor(
     readonly exts: Exts,
     readonly options: Options,
   ) {
+    this.paper.el.classList.add("size-full")
     doMatchSize(this.paper)
     doDrawCycle(this.paper)
     onWheel(this.paper)
     onScroll(this.paper)
     onPointer(this.paper)
     onTouch(this.paper)
-    this.paper.el.classList.add("size-full")
-    // this.paper.drawFns.push(drawBasicAxes)
     createDrawAxes(this.paper)
 
     const elExpressions = (this.elExpressions = h(
@@ -198,7 +197,8 @@ export class Sheet {
           elExpressions,
         ),
       ),
-      h("flex", this.paper.el),
+      (this.elTokens = hx("pre", "h-screen overflow-y-auto")),
+      // h("flex", this.paper.el),
       (this.elLogo = hx(
         "button",
         "absolute bottom-0 right-0 p-2",
@@ -223,5 +223,21 @@ export class Sheet {
 
   checkNextIndex() {
     this.elNextIndex.textContent = this.exprs.length + 1 + ""
+  }
+
+  onExprFocus?(expr: Expr): void {
+    this.elTokens.textContent = JSON.stringify(
+      expr.field.block.ast(),
+      undefined,
+      2,
+    )
+  }
+
+  onExprChange?(expr: Expr): void {
+    this.elTokens.textContent = JSON.stringify(
+      expr.field.block.ast(),
+      undefined,
+      2,
+    )
   }
 }

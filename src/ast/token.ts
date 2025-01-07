@@ -1,6 +1,6 @@
 import type { BigCmd } from "../field/cmd/math/big"
 import type { ParenLhs, ParenRhs } from "../field/cmd/math/brack"
-import type { Dir } from "../field/model"
+import { pass1_suffixes } from "./pass1.suffixes"
 
 /** A punctuation token which can either be a prefix or an infix. */
 export type PuncPm = "+" | "-" | "\\pm " | "\\mp "
@@ -20,8 +20,9 @@ export type PuncBinary =
   | PuncPm
   | "\\cdot "
   | "÷"
-  | "->"
-  | "=>"
+  | "mod"
+  | "\\to "
+  | "\\Rightarrow "
   | "."
   | ","
 
@@ -59,97 +60,97 @@ export const Precedence = Object.freeze({
   Comma:              0, // 2, 3
 })
 
-function parse_expression(tokens: Token[], min_precedence = 0) {
-  tokens = tokens.slice()
-  const result = parse_expression_1(parse_primary(), min_precedence)
-  return result ? [result, ...tokens] : tokens
+// function parse_expression(tokens: Token[], min_precedence = 0) {
+//   tokens = tokens.slice()
+//   const result = parse_expression_1(parse_primary(), min_precedence)
+//   return result ? [result, ...tokens] : tokens
+//
+//   function parse_primary() {
+//     return tokens.shift()
+//   }
+//
+//   function parse_expression_1(lhs: Token | undefined, min_precedence: number) {
+//     if (!lhs) {
+//       return
+//     }
+//     let lookahead = tokens[0]
+//     while (
+//       lookahead?.type == "punc" &&
+//       (lookahead.value.type == "infix" || lookahead.value.type == "pm") &&
+//       lookahead.value.precedence >= min_precedence
+//       // lookahead is a binary operator whose precedence is >= min_precedence
+//     ) {
+//       let op = lookahead.value
+//       parse_primary()
+//       let rhs = parse_primary()
+//       lookahead = tokens[0] // peek next token
+//       while (
+//         lookahead?.type == "punc" &&
+//         (lookahead.value.type == "infix" || lookahead.value.type == "pm") &&
+//         (lookahead.value.precedence > min_precedence ||
+//           (lookahead.value.assoc == 1 &&
+//             lookahead.value.precedence == min_precedence))
+//         //lookahead is a binary operator whose precedence is greater
+//         //     than op's, or a right-associative operator
+//         //   whose precedence is equal to op's
+//       ) {
+//         rhs = parse_expression_1(
+//           rhs,
+//           op.precedence + +(lookahead.value.precedence > op.precedence),
+//         ) // precedence of op + (1 if lookahead precedence is greater, else 0))
+//         lookahead = tokens[0]
+//       }
+//       if (!rhs) {
+//         return
+//       }
+//       lhs = { type: "op", kind: op.kind as PuncBinary, a: lhs!, b: rhs } // the result of applying op with operands lhs and rhs
+//     }
+//     return lhs
+//   }
+// }
 
-  function parse_primary() {
-    return tokens.shift()
-  }
-
-  function parse_expression_1(lhs: Token | undefined, min_precedence: number) {
-    if (!lhs) {
-      return
-    }
-    let lookahead = tokens[0]
-    while (
-      lookahead?.type == "punc" &&
-      (lookahead.value.type == "infix" || lookahead.value.type == "pm") &&
-      lookahead.value.precedence >= min_precedence
-      // lookahead is a binary operator whose precedence is >= min_precedence
-    ) {
-      let op = lookahead.value
-      parse_primary()
-      let rhs = parse_primary()
-      lookahead = tokens[0] // peek next token
-      while (
-        lookahead?.type == "punc" &&
-        (lookahead.value.type == "infix" || lookahead.value.type == "pm") &&
-        (lookahead.value.precedence > min_precedence ||
-          (lookahead.value.assoc == 1 &&
-            lookahead.value.precedence == min_precedence))
-        //lookahead is a binary operator whose precedence is greater
-        //     than op's, or a right-associative operator
-        //   whose precedence is equal to op's
-      ) {
-        rhs = parse_expression_1(
-          rhs,
-          op.precedence + +(lookahead.value.precedence > op.precedence),
-        ) // precedence of op + (1 if lookahead precedence is greater, else 0))
-        lookahead = tokens[0]
-      }
-      if (!rhs) {
-        return
-      }
-      lhs = { type: "op", kind: op.kind as PuncBinary, a: lhs!, b: rhs } // the result of applying op with operands lhs and rhs
-    }
-    return lhs
-  }
-}
-
-console.log(
-  JSON.stringify(
-    parse_expression(
-      [
-        { type: "num", value: "24" },
-        {
-          type: "punc",
-          value: {
-            type: "pm",
-            assoc: -1,
-            kind: "+",
-            precedence: Precedence.Sum,
-          },
-        },
-        { type: "num", value: "68" },
-        {
-          type: "punc",
-          value: {
-            type: "pm",
-            assoc: -1,
-            kind: "+",
-            precedence: Precedence.Sum,
-          },
-        },
-        { type: "num", value: "09" },
-        {
-          type: "punc",
-          value: {
-            type: "infix",
-            assoc: -1,
-            kind: "\\cdot ",
-            precedence: Precedence.Product,
-          },
-        },
-        { type: "num", value: "9" },
-      ],
-      Precedence.Sum,
-    ),
-    undefined,
-    2,
-  ),
-)
+// console.log(
+//   JSON.stringify(
+//     parse_expression(
+//       [
+//         { type: "num", value: "24" },
+//         {
+//           type: "punc",
+//           value: {
+//             type: "pm",
+//             assoc: -1,
+//             kind: "+",
+//             precedence: Precedence.Sum,
+//           },
+//         },
+//         { type: "num", value: "68" },
+//         {
+//           type: "punc",
+//           value: {
+//             type: "pm",
+//             assoc: -1,
+//             kind: "+",
+//             precedence: Precedence.Sum,
+//           },
+//         },
+//         { type: "num", value: "09" },
+//         {
+//           type: "punc",
+//           value: {
+//             type: "infix",
+//             assoc: -1,
+//             kind: "\\cdot ",
+//             precedence: Precedence.Product,
+//           },
+//         },
+//         { type: "num", value: "9" },
+//       ],
+//       Precedence.Sum,
+//     ),
+//     undefined,
+//     2,
+//   ),
+// )
 
 // rules governing implicits:
 //
@@ -173,38 +174,87 @@ console.log(
 // sin 2a            sin(2a)
 // 2 ∑n²             (2)(∑n²)
 
+export const PRECEDENCE_MAP: Readonly<Record<PuncUnary | PuncBinary, number>> =
+  {
+    "!": Precedence.Factorial,
+    ".": Precedence.MemberAccess,
+    "+": Precedence.Sum,
+    "-": Precedence.Sum,
+    "\\pm ": Precedence.Sum,
+    "\\mp ": Precedence.Sum,
+    "\\cdot ": Precedence.Product,
+    "÷": Precedence.Product,
+    mod: Precedence.Product,
+    "\\to ": Precedence.Action,
+    "\\Rightarrow ": Precedence.DoubleStruckRight,
+    ",": Precedence.Comma,
+    "..": Precedence.Range,
+    "...": Precedence.Range,
+    "<": Precedence.Comparison,
+    ">": Precedence.Comparison,
+    "=": Precedence.Equality,
+    "\\and ": Precedence.BoolAnd,
+    "\\neg ": Precedence.BoolNegate,
+    "\\or ": Precedence.BoolOr,
+    base: Precedence.WordInfix,
+    for: Precedence.WordInfix,
+    with: Precedence.WordInfix,
+  }
+
+export const ASSOC_MAP: Readonly<Partial<Record<PuncUnary | PuncBinary, 1>>> =
+  {}
+
+/** A punctuation token. */
 export type Punc =
-  | { type: "prefix"; kind: PuncUnary; precedence: number }
-  | { type: "suffix"; kind: PuncUnary; precedence: number }
-  | { type: "infix"; kind: PuncBinary; precedence: number; assoc: Dir }
-  | { type: "pm"; kind: PuncPm; precedence: number; assoc: Dir }
+  | { type: "prefix"; kind: PuncUnary }
+  | { type: "suffix"; kind: PuncUnary }
+  | { type: "infix"; kind: PuncBinary }
+  | { type: "pm"; kind: PuncPm }
 
 /** A part of the AST's intermediate representation. */
-export type Token = Readonly<
-  | { type: "num"; value: string }
+export type Token =
+  | { type: "num"; value: string; sub?: Node }
+  | { type: "var"; value: string; sub?: Node; sup?: Node }
   | { type: "num16"; value: string }
-  | { type: "var"; value: string }
   | { type: "punc"; value: Punc }
   | { type: "group"; lhs: ParenLhs; rhs: ParenRhs; value: Node }
-  | { type: "lonesub"; sub: Node }
-  | { type: "lonesup"; sup: Node }
-  | { type: "sub"; on: Node; sub: Node }
-  | { type: "call"; name: Node; on?: Node; args: Node[] }
+  | { type: "sub"; sub: Node }
+  | { type: "sup"; sup: Node }
+  | { type: "raise"; base: Node; exponent: Node }
+  | { type: "call"; on?: Node; name: Node; args: Node }
   | { type: "frac"; a: Node; b: Node }
   | { type: "for"; mapped: Node; bound: Node; source: Node }
   | { type: "piecewise"; pieces: { value: Node; condition: Node }[] }
   | { type: "matrix"; cols: number; values: Node[] }
-  | { type: "big"; cmd: BigCmd | "\\int"; sub?: Node; sup?: Node }
+  | { type: "bigsym"; cmd: BigCmd | "\\int"; sub?: Node; sup?: Node }
+  | { type: "big"; cmd: BigCmd | "\\int"; sub?: Node; sup?: Node; of: Node }
   | { type: "root"; contents: Node; root?: Node }
-  | { type: "error"; reason: string }
+  | { type: "index"; on: Node; index: Node }
   | { type: "op"; kind: PuncBinary; a: Node; b: Node }
   | { type: "op"; kind: PuncUnary; a: Node; b?: undefined }
->
+  | { type: "factorial"; on: Node; repeats: number }
+  | { type: "error"; reason: string }
 
 /** A node in the final AST. */
 export type Node = Token
 
 /** Parses a list of tokens into a complete AST. */
 export function tokensToAst(tokens: Token[]): Node {
-  return { type: "tokens", tokens } as any
+  pass1_suffixes(tokens)
+  return tokens as any
+}
+
+/**
+ * Returns whether the passed token is a value or not (e.g. can directly be
+ * computed as a mathematical expression). For instance, `23` is a token, but
+ * `.` is not.
+ */
+export function isValueToken(token: Token) {
+  return !(
+    token.type == "bigsym" ||
+    token.type == "error" ||
+    token.type == "punc" ||
+    token.type == "sub" ||
+    token.type == "sup"
+  )
 }

@@ -153,7 +153,7 @@ export class CmdInt extends Command<BlocksInt> {
 
   ir(tokens: Token[]): void {
     tokens.push({
-      type: "big",
+      type: "bigsym",
       cmd: "\\int",
       sub: this.blocks[0]?.ast(),
       sup: this.blocks[1]?.ast(),

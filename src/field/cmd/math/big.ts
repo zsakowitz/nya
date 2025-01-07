@@ -167,7 +167,7 @@ export class CmdBig extends Command<
 
   ir(tokens: Token[]): void {
     tokens.push({
-      type: "big",
+      type: "bigsym",
       cmd: this.ctrlSeq,
       sub: this.blocks[0].ast(),
       sup: this.blocks[1]?.ast(),

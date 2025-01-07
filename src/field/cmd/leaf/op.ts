@@ -1,11 +1,5 @@
 import { Leaf } from "."
-import type {
-  Punc,
-  PuncCombo,
-  PuncPm,
-  PuncProd,
-  Token,
-} from "../../../ast/token"
+import type { Punc, PuncBinary, PuncPm, Token } from "../../../ast/token"
 import { h, t } from "../../jsx"
 import { L, R, type Cursor, type Dir, type InitProps } from "../../model"
 import { CmdSupSub } from "../math/supsub"
@@ -74,7 +68,7 @@ export abstract class OpPm extends Leaf {
 }
 
 export function op(
-  punc: Punc,
+  punc: () => Punc,
   latex: string,
   mathspeak: string,
   html = latex,
@@ -108,37 +102,20 @@ export function op(
     }
 
     ir(tokens: Token[]): void {
-      tokens.push({ type: "punc", value: punc })
+      tokens.push({ type: "punc", value: punc() })
     }
   }
 }
 
 export function opp(
-  latex: PuncProd,
+  latex: PuncBinary,
   mathspeak: string,
   html?: string,
   ascii?: string,
   endsImplicitGroup?: boolean,
 ) {
   return op(
-    { type: "prod", kind: latex },
-    latex,
-    mathspeak,
-    html,
-    ascii,
-    endsImplicitGroup,
-  )
-}
-
-export function opc(
-  latex: PuncCombo,
-  mathspeak: string,
-  html?: string,
-  ascii?: string,
-  endsImplicitGroup?: boolean,
-) {
-  return op(
-    { type: "combo", kind: latex },
+    () => ({ type: "infix", kind: latex }),
     latex,
     mathspeak,
     html,
@@ -194,8 +171,8 @@ export const OpMinusPlus = opm("\\mp ", " minus-or-plus ", "∓")
 export const OpCdot = opp("\\cdot ", " times ", "·", "*")
 export const OpDiv = opp("÷", " divided by ", "÷", "/")
 
-export const OpAnd = opc("\\and ", " and ", "∧", "∧", true)
-export const OpOr = opc("\\or ", " and ", "∧", "∧", true)
+export const OpAnd = opp("\\and ", " and ", "∧", "∧", true)
+export const OpOr = opp("\\or ", " or ", "⋁", "⋁", true)
 
 export class OpNeg extends Leaf {
   static init(cursor: Cursor, props: InitProps) {
@@ -230,7 +207,7 @@ export class OpNeg extends Leaf {
   }
 
   ir(tokens: Token[]): void {
-    tokens.push({ type: "punc", value: { type: "neg", kind: "\\neg " } })
+    tokens.push({ type: "punc", value: { type: "prefix", kind: "\\neg " } })
   }
 
   endsImplicitGroup(): boolean {
@@ -238,7 +215,7 @@ export class OpNeg extends Leaf {
   }
 }
 
-export class OpTo extends op("->", "\\to ", " becomes ", "→", "->", true) {
+export class OpTo extends opp("\\to ", " becomes ", "→", "->", true) {
   delete(cursor: Cursor, from: Dir): void {
     if (from == R) {
       const minus = new OpMinus()
@@ -252,7 +229,13 @@ export class OpTo extends op("->", "\\to ", " becomes ", "→", "->", true) {
     super.delete(cursor, from)
   }
 }
-export class OpEqArrow extends op("=>", "⇒", " maps to ", "⇒", "=>", true) {
+export class OpRightarrow extends opp(
+  "\\Rightarrow ",
+  " maps to ",
+  "⇒",
+  "=>",
+  true,
+) {
   delete(cursor: Cursor, from: Dir): void {
     if (from == R) {
       const minus = new OpEq(false)

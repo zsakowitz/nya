@@ -820,6 +820,10 @@ video {
   height: max-content;
 }
 
+.h-screen {
+  height: 100vh;
+}
+
 .min-h-\[3\.265rem\] {
   min-height: 3.265rem;
 }

@@ -1,5 +1,5 @@
 import { Leaf } from "."
-import type { Token } from "../../../ast/token"
+import { Precedence, type Token } from "../../../ast/token"
 import { h } from "../../jsx"
 import { L, R, type Cursor } from "../../model"
 import { CmdVar } from "./var"
@@ -49,19 +49,26 @@ export class CmdDot extends Leaf {
   ir(tokens: Token[]): void {
     const last = tokens[tokens.length - 1]
     if (last?.type == "punc") {
-      if (last.value == ".") {
+      if (last.value.kind == ".") {
         tokens.pop()
-        tokens.push({ type: "punc", value: ".." })
+        tokens.push({
+          type: "punc",
+          value: { kind: "..", type: "infix" },
+        })
         return
       }
-
-      if (last.value == "..") {
+      if (last.value.kind == "..") {
         tokens.pop()
-        tokens.push({ type: "punc", value: "..." })
+        tokens.push({
+          type: "punc",
+          value: { kind: "...", type: "infix" },
+        })
         return
       }
     }
-
-    tokens.push({ type: "punc", value: "." })
+    tokens.push({
+      type: "punc",
+      value: { kind: ".", type: "infix" },
+    })
   }
 }
