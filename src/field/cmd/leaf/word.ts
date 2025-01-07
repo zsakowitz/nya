@@ -31,6 +31,10 @@ export class CmdWord extends Leaf {
   }
 
   ir(tokens: Token[]): void {
-    tokens.push({ type: "var", value: this.text })
+    tokens.push({
+      type: "var",
+      value: this.text,
+      implicitFn: this.kind == "prefix",
+    })
   }
 }

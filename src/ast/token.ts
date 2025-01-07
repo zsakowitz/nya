@@ -1,6 +1,7 @@
 import type { BigCmd } from "../field/cmd/math/big"
 import type { ParenLhs, ParenRhs } from "../field/cmd/math/brack"
 import { pass1_suffixes } from "./pass1.suffixes"
+import { pass2_implicits } from "./pass2.implicits"
 
 /** A punctuation token which can either be a prefix or an infix. */
 export type PuncPm = "+" | "-" | "\\pm " | "\\mp "
@@ -25,6 +26,7 @@ export type PuncBinary =
   | "\\Rightarrow "
   | "."
   | ","
+  | "\\uparrow "
 
 /** A punctuation token which represents a unary operator. */
 export type PuncUnary = "\\neg " | PuncPm | "!"
@@ -32,9 +34,11 @@ export type PuncUnary = "\\neg " | PuncPm | "!"
 /**
  * Additional elements and rules apply during parsing:
  *
- * 1. During {@linkcode Precedence.Factorial}, superscripts are parsed.
- * 2. After {@linkcode Precedence.MemberAccess}, function calls are parsed.
- * 3. Interspersed with {@linkcode Precedence.Product} and the prefix variants of
+ * 1. During {@linkcode Precedence.NotApplicable}, superscripts are parsed.
+ * 2. All {@linkcode Precedence.Exponential} operators are automatically
+ *    right-associative.
+ * 3. After {@linkcode Precedence.MemberAccess}, function calls are parsed.
+ * 4. Interspersed with {@linkcode Precedence.Product} and the prefix variants of
  *    {@linkcode Precedence.Sum}, implicit multiplication, implicit function
  *    calls, and big objects like summation notation and integrals are parsed.
  *    {@linkcode Precedence.Product} is parsed with a very different technique
@@ -42,8 +46,7 @@ export type PuncUnary = "\\neg " | PuncPm | "!"
  */
 // prettier-ignore
 export const Precedence = Object.freeze({
-  Factorial:         15, // 23!
-  MemberAccess:      14, // [1, 2, 3].min
+  NotApplicable:     -1, // 23!, dotted access
   Exponential:       13, // x ↑ 3
   Product:           12, // x ÷ y
   Sum:               11, // 2 + 3
@@ -163,9 +166,9 @@ export const Precedence = Object.freeze({
 //   big  = any big operator (∑, ∏, ∫)
 //
 // EXP = atom+ (ex pm* atom+)*
-// ATOMS = EXP (md pm* EXP)*
-// FN = (fn pm*)+ ATOMS
-// WORD = pm* ATOMS? FN*
+// MUL = EXP (md pm* EXP)*
+// FN = (fn pm*)+ MUL
+// WORD = pm* MUL? FN*
 // PHRASE = WORD (big WORD)*
 
 // Would be awesome if these things Just Worked™:
@@ -174,32 +177,32 @@ export const Precedence = Object.freeze({
 // sin 2a            sin(2a)
 // 2 ∑n²             (2)(∑n²)
 
-export const PRECEDENCE_MAP: Readonly<Record<PuncUnary | PuncBinary, number>> =
-  {
-    "!": Precedence.Factorial,
-    ".": Precedence.MemberAccess,
-    "+": Precedence.Sum,
-    "-": Precedence.Sum,
-    "\\pm ": Precedence.Sum,
-    "\\mp ": Precedence.Sum,
-    "\\cdot ": Precedence.Product,
-    "÷": Precedence.Product,
-    mod: Precedence.Product,
-    "\\to ": Precedence.Action,
-    "\\Rightarrow ": Precedence.DoubleStruckRight,
-    ",": Precedence.Comma,
-    "..": Precedence.Range,
-    "...": Precedence.Range,
-    "<": Precedence.Comparison,
-    ">": Precedence.Comparison,
-    "=": Precedence.Equality,
-    "\\and ": Precedence.BoolAnd,
-    "\\neg ": Precedence.BoolNegate,
-    "\\or ": Precedence.BoolOr,
-    base: Precedence.WordInfix,
-    for: Precedence.WordInfix,
-    with: Precedence.WordInfix,
-  }
+export const PRECEDENCE_MAP = {
+  "!": Precedence.NotApplicable,
+  ".": Precedence.NotApplicable,
+  "\\uparrow ": Precedence.Exponential,
+  "\\cdot ": Precedence.Product,
+  "÷": Precedence.Product,
+  mod: Precedence.Product,
+  "+": Precedence.Sum,
+  "-": Precedence.Sum,
+  "\\pm ": Precedence.Sum,
+  "\\mp ": Precedence.Sum,
+  "..": Precedence.Range,
+  "...": Precedence.Range,
+  "<": Precedence.Comparison,
+  ">": Precedence.Comparison,
+  "=": Precedence.Equality,
+  "\\neg ": Precedence.BoolNegate,
+  "\\and ": Precedence.BoolAnd,
+  "\\or ": Precedence.BoolOr,
+  base: Precedence.WordInfix,
+  for: Precedence.WordInfix,
+  with: Precedence.WordInfix,
+  "\\Rightarrow ": Precedence.DoubleStruckRight,
+  "\\to ": Precedence.Action,
+  ",": Precedence.Comma,
+} satisfies Record<PuncUnary | PuncBinary, number>
 
 export const ASSOC_MAP: Readonly<Partial<Record<PuncUnary | PuncBinary, 1>>> =
   {}
@@ -213,8 +216,9 @@ export type Punc =
 
 /** A part of the AST's intermediate representation. */
 export type Token =
+  | { type: "void" }
   | { type: "num"; value: string; sub?: Node }
-  | { type: "var"; value: string; sub?: Node; sup?: Node }
+  | { type: "var"; value: string; implicitFn: boolean; sub?: Node; sup?: Node }
   | { type: "num16"; value: string }
   | { type: "punc"; value: Punc }
   | { type: "group"; lhs: ParenLhs; rhs: ParenRhs; value: Node }
@@ -230,6 +234,7 @@ export type Token =
   | { type: "big"; cmd: BigCmd | "\\int"; sub?: Node; sup?: Node; of: Node }
   | { type: "root"; contents: Node; root?: Node }
   | { type: "index"; on: Node; index: Node }
+  | { type: "juxtaposed"; a: Node; b: Node }
   | { type: "op"; kind: PuncBinary; a: Node; b: Node }
   | { type: "op"; kind: PuncUnary; a: Node; b?: undefined }
   | { type: "factorial"; on: Node; repeats: number }
@@ -240,7 +245,8 @@ export type Node = Token
 
 /** Parses a list of tokens into a complete AST. */
 export function tokensToAst(tokens: Token[]): Node {
-  pass1_suffixes(tokens)
+  tokens = pass1_suffixes(tokens)
+  tokens = pass2_implicits(tokens)
   return tokens as any
 }
 
@@ -249,8 +255,9 @@ export function tokensToAst(tokens: Token[]): Node {
  * computed as a mathematical expression). For instance, `23` is a token, but
  * `.` is not.
  */
-export function isValueToken(token: Token) {
+export function isValueToken(token: Token | undefined) {
   return !(
+    token == null ||
     token.type == "bigsym" ||
     token.type == "error" ||
     token.type == "punc" ||

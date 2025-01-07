@@ -207,21 +207,28 @@ export class CmdVar extends Leaf {
   ir(tokens: Token[]): void {
     if (this.kind) {
       if (this.part == L) {
-        tokens.push({ type: "var", value: this.text })
+        tokens.push({
+          type: "var",
+          value: this.text,
+          implicitFn: this.kind == "prefix",
+        })
         return
       }
 
       const last = tokens[tokens.length - 1]
-      if (last && last.type == "var") {
-        tokens.pop()
-        tokens.push({ type: "var", value: last.value + this.text })
+      if (last && last.type == "var" && !last.sub && !last.sup) {
+        last.value += this.text
       } else {
-        tokens.push({ type: "var", value: this.text })
+        tokens.push({
+          type: "var",
+          value: this.text,
+          implicitFn: this.kind == "prefix",
+        })
       }
 
       return
     }
 
-    tokens.push({ type: "var", value: this.text })
+    tokens.push({ type: "var", value: this.text, implicitFn: false })
   }
 }

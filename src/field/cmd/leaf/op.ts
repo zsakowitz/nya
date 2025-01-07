@@ -174,6 +174,8 @@ export const OpDiv = opp("÷", " divided by ", "÷", "/")
 export const OpAnd = opp("\\and ", " and ", "∧", "∧", true)
 export const OpOr = opp("\\or ", " or ", "⋁", "⋁", true)
 
+export const OpUpArrow = opp("\\uparrow ", " up arrow ", "↑", "↑")
+
 export class OpNeg extends Leaf {
   static init(cursor: Cursor, props: InitProps) {
     new OpNeg().insertAt(cursor, L)

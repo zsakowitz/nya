@@ -125,4 +125,6 @@ export function pass1_suffixes(tokens: Token[]) {
       continue
     }
   }
+
+  return tokens
 }
