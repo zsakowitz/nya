@@ -816,6 +816,10 @@ video {
   height: max-content;
 }
 
+.h-8 {
+  height: 2rem;
+}
+
 .min-h-\[3\.265rem\] {
   min-height: 3.265rem;
 }
@@ -895,8 +899,8 @@ video {
   grid-template-columns: 2.5rem auto;
 }
 
-.grid-cols-\[300px\2c auto\] {
-  grid-template-columns: 300px auto;
+.grid-cols-\[30\%\2c auto\] {
+  grid-template-columns: 30% auto;
 }
 
 .grid-cols-\[auto\2c auto\] {
@@ -921,6 +925,10 @@ video {
 
 .gap-1 {
   gap: 0.25rem;
+}
+
+.gap-8 {
+  gap: 2rem;
 }
 
 .gap-x-\[\.4em\] {
@@ -1026,6 +1034,10 @@ video {
   border-color: transparent;
 }
 
+.border-\[color\:--nya-focus\] {
+  border-color: var(--nya-focus);
+}
+
 .border-t-current {
   border-top-color: currentColor;
 }
@@ -1077,6 +1089,30 @@ video {
 
 .fill-current {
   fill: currentColor;
+}
+
+.fill-transparent {
+  fill: transparent;
+}
+
+.stroke-current {
+  stroke: currentColor;
+}
+
+.stroke-slate-800 {
+  stroke: #1e293b;
+}
+
+.stroke-slate-500 {
+  stroke: #64748b;
+}
+
+.stroke-slate-400 {
+  stroke: #94a3b8;
+}
+
+.stroke-1 {
+  stroke-width: 1;
 }
 
 .p-0\.5 {
@@ -1318,6 +1354,14 @@ video {
   ---focus: #60a5fa;
 }
 
+.\[--focus\:theme\(colors\.blue\.400\)\] {
+  --focus: #60a5fa;
+}
+
+.\[--nya-focus\:theme\(colors\.blue\.400\)\] {
+  --nya-focus: #60a5fa;
+}
+
 .\[line-height\:\.9\] {
   line-height: .9;
 }
@@ -1328,6 +1372,14 @@ video {
 
 .\[scroll-margin\:1rem\] {
   scroll-margin: 1rem;
+}
+
+.\[stroke-linecap\:round\] {
+  stroke-linecap: round;
+}
+
+.\[stroke-linejoin\:round\] {
+  stroke-linejoin: round;
 }
 
 @font-face {
@@ -1528,6 +1580,10 @@ body {
   border-color: var(---focus);
 }
 
+.focus-within\:border-\[color\:--nya-focus\]:focus-within {
+  border-color: var(--nya-focus);
+}
+
 .focus\:outline-none:focus {
   outline: 2px solid transparent;
   outline-offset: 2px;
@@ -1543,6 +1599,10 @@ body {
 
 .group:focus-within .group-focus-within\:bg-\[color\:---focus\] {
   background-color: var(---focus);
+}
+
+.group:focus-within .group-focus-within\:bg-\[color\:--nya-focus\] {
+  background-color: var(--nya-focus);
 }
 
 .group:focus-within .group-focus-within\:text-white {

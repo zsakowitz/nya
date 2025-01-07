@@ -1,5 +1,5 @@
 import { Field } from "../field/field"
-import { h } from "../field/jsx"
+import { h, p, svgx } from "../field/jsx"
 import { D, L, R, U, type Dir, type VDir } from "../field/model"
 import type { Exts, Options as FieldOptions } from "../field/options"
 
@@ -80,9 +80,9 @@ export class Expr {
     this.sheet.exprs.push(this)
     this.field = new ExprField(this)
     this.el = h(
-      "border-b border-slate-200 grid grid-cols-[2.5rem,auto] relative group focus-within:border-[color:---focus]",
+      "border-b border-slate-200 grid grid-cols-[2.5rem,auto] relative group focus-within:border-[color:--nya-focus]",
       h(
-        "inline-flex bg-slate-100 flex-col p-0.5 group-focus-within:bg-[color:---focus] border-r border-slate-200 group-focus-within:border-transparent",
+        "inline-flex bg-slate-100 flex-col p-0.5 group-focus-within:bg-[color:--nya-focus] border-r border-slate-200 group-focus-within:border-transparent",
         (this.elIndex = h(
           "text-[65%] [line-height:1] text-slate-500 group-focus-within:text-white",
           "" + this.sheet.exprs.length,
@@ -93,7 +93,7 @@ export class Expr {
         this.field.el,
       ),
       h(
-        "absolute -inset-y-px right-0 left-0 border-2 border-[color:---focus] hidden group-focus-within:block pointer-events-none",
+        "absolute -inset-y-px right-0 left-0 border-2 border-[color:--nya-focus] hidden group-focus-within:block pointer-events-none",
       ),
     )
     sheet.elExpressions.insertBefore(this.el, sheet.elExpressions.lastChild)
@@ -145,14 +145,27 @@ export class Sheet {
     })
 
     this.el = h(
-      "block fixed inset-0 grid grid-cols-[300px,auto] select-none [---focus:theme(colors.blue.400)]",
+      "block fixed inset-0 grid grid-cols-[30%,auto] select-none [--nya-focus:theme(colors.blue.400)]",
       h(
         "block h-full overflow-y-auto border-r",
         h(
           "flex flex-col",
           h(
-            "h-12 w-full bg-slate-100 border-b border-slate-200",
-            "hello world",
+            "h-12 w-full bg-slate-100 border-b border-slate-200 flex gap-8",
+            svgx(
+              "-1 -1 32 14",
+              "h-8 fill-transparent stroke-1 stroke-slate-400 [stroke-linejoin:round] [stroke-linecap:round]",
+              p(
+                "M 0 12 v -12 l 8 12 v -12 M 12 0 l 4 6 l 4 -6 m -4 6 v 6 M 22 12 l 4 -12 l 4 12 m -6.5 -4.5 h 5",
+              ),
+            ),
+            svgx(
+              "-1 -1 32 14",
+              "h-8 fill-transparent stroke-1 stroke-slate-400 [stroke-linejoin:round] [stroke-linecap:round]",
+              p(
+                "M 0 12 v -12 l 8 12 v -12 M 12 0 l 4 6 l 4 -6 m -4 6 v 6 M 22 12 l 4 -12 l 4 12 m -6.5 -4.5 h 5",
+              ),
+            ),
           ),
           elExpressions,
         ),
