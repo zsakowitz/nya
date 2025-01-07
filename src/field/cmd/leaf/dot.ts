@@ -47,6 +47,21 @@ export class CmdDot extends Leaf {
   }
 
   ir(tokens: Token[]): void {
+    const last = tokens[tokens.length - 1]
+    if (last?.type == "punc") {
+      if (last.value == ".") {
+        tokens.pop()
+        tokens.push({ type: "punc", value: ".." })
+        return
+      }
+
+      if (last.value == "..") {
+        tokens.pop()
+        tokens.push({ type: "punc", value: "..." })
+        return
+      }
+    }
+
     tokens.push({ type: "punc", value: "." })
   }
 }

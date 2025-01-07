@@ -1,11 +1,14 @@
 import type { BigCmd } from "../field/cmd/math/big"
 import type { ParenLhs, ParenRhs } from "../field/cmd/math/brack"
 
-/** A combinator-like punctuation token. */
-export type PuncCombo = "\\and " | "\\or "
+/** A word-like punctuation token. */
+export type PuncWord = "for" | "with" | "base"
 
 /** A negation-like punctuation token. */
 export type PuncNeg = "\\neg "
+
+/** A combinator-like punctuation token. */
+export type PuncCombo = "\\and " | "\\or "
 
 /** An equality-like punctuation token. */
 export type PuncEq = "="
@@ -22,12 +25,31 @@ export type PuncPm = "+" | "-" | "\\pm " | "\\mp "
 /** A factorial-like punctuation token. */
 export type PuncFact = "!"
 
+/** A punctuation token which represents a binary operator. */
+export type PuncBinary =
+  | PuncWord
+  | PuncCombo
+  | PuncEq
+  | PuncCmp
+  | PuncPm
+  | PuncProd
+  | "->"
+  | "=>"
+  | "."
+  | ".."
+  | "..."
+
+/** A punctuation token which represents a unary operator. */
+export type PuncUnary = PuncNeg | PuncPm | PuncFact
+
 /** A punctuation token. Listed here in approximate order of precedence. */
 export type Punc =
   | ","
   | "->"
   | "=>"
-  | "." // "." has very low precedence in `a..b` and `a...b` ranges
+  | { type: "word"; kind: PuncWord }
+  | ".."
+  | "..."
   | { type: "neg"; kind: PuncNeg }
   | { type: "combo"; kind: PuncCombo }
   | { type: "eq"; kind: PuncEq; neg: boolean }
@@ -35,8 +57,14 @@ export type Punc =
   | { type: "pm"; kind: PuncPm } // "pm" have different precedence as prefixes and as infixes
   | { type: "prod"; kind: PuncProd }
   | { type: "pm"; kind: PuncPm } // "pm" have different precedence as prefixes and as infixes
-  | "." // "." has very high precedence in `.property` accesses
+  | "."
   | { type: "suffix"; kind: PuncFact }
+
+/** An operation. */
+export type Operation =
+  | { type: ","; items: Node[] }
+  | { type: "binary"; kind: PuncBinary; a: Node; b: Node }
+  | { type: "unary"; kind: PuncUnary; a: Node }
 
 /** A part of the AST's intermediate representation. */
 export type Token = Readonly<
