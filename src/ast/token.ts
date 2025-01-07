@@ -1,64 +1,39 @@
 import type { BigCmd } from "../field/cmd/math/big"
 import type { ParenLhs, ParenRhs } from "../field/cmd/math/brack"
 
-/** A word-like punctuation token. */
-export type PuncWord = "for" | "with" | "base"
-
-/** A negation-like punctuation token. */
-export type PuncNeg = "\\neg "
-
-/** A combinator-like punctuation token. */
-export type PuncCombo = "\\and " | "\\or "
-
-/** An equality-like punctuation token. */
-export type PuncEq = "="
-
-/** A comparison-like punctuation token. */
-export type PuncCmp = "<" | ">"
-
-/** A product/quotient/modulus-like punctuation token. */
-export type PuncProd = "\\cdot " | "÷"
-
-/** A plus-or-minus-like punctuation token. */
+/** A punctuation token which can either be a prefix or an infix. */
 export type PuncPm = "+" | "-" | "\\pm " | "\\mp "
-
-/** A factorial-like punctuation token. */
-export type PuncFact = "!"
 
 /** A punctuation token which represents a binary operator. */
 export type PuncBinary =
-  | PuncWord
-  | PuncCombo
-  | PuncEq
-  | PuncCmp
+  | "for"
+  | "with"
+  | "base"
+  | "\\and "
+  | "\\or "
+  | "="
+  | "<"
+  | ">"
+  | ".."
+  | "..."
   | PuncPm
-  | PuncProd
+  | "\\cdot "
+  | "÷"
   | "->"
   | "=>"
   | "."
-  | ".."
-  | "..."
 
 /** A punctuation token which represents a unary operator. */
-export type PuncUnary = PuncNeg | PuncPm | PuncFact
+export type PuncUnary = "\\neg " | PuncPm | "!"
 
-/** A punctuation token. Listed here in approximate order of precedence. */
+/** Negative precedence */
+export type PuncPrecedence = 2
+
 export type Punc =
-  | ","
-  | "->"
-  | "=>"
-  | { type: "word"; kind: PuncWord }
-  | ".."
-  | "..."
-  | { type: "neg"; kind: PuncNeg }
-  | { type: "combo"; kind: PuncCombo }
-  | { type: "eq"; kind: PuncEq; neg: boolean }
-  | { type: "cmp"; kind: PuncCmp; neg: boolean; eq: boolean }
-  | { type: "pm"; kind: PuncPm } // "pm" have different precedence as prefixes and as infixes
-  | { type: "prod"; kind: PuncProd }
-  | { type: "pm"; kind: PuncPm } // "pm" have different precedence as prefixes and as infixes
-  | "."
-  | { type: "suffix"; kind: PuncFact }
+  | { type: "prefix"; kind: PuncUnary; precedence: PuncPrecedence }
+  | { type: "suffix"; kind: PuncUnary; precedence: PuncPrecedence }
+  | { type: "infix"; kind: PuncBinary; precedence: PuncPrecedence }
+  | { type: "pm"; kind: PuncPm; precedence: PuncPrecedence }
 
 /** An operation. */
 export type Operation =
