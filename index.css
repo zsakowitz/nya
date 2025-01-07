@@ -1531,8 +1531,8 @@ body {
   padding-right: 0px;
 }
 
-.nya-cmd-dot + .nya-cmd-word-l,
-.nya-cmd-dot + :where(.nya-cursor) + .nya-cmd-word-l {
+.nya-cmd-dot + .nya-cmd-word-infix,
+.nya-cmd-dot + :where(.nya-cursor) + .nya-cmd-word-infix {
   padding-left: .2em;
 }
 

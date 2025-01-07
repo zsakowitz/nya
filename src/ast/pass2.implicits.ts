@@ -2,9 +2,9 @@ import {
   getPrecedence,
   isValueToken,
   Precedence,
-  type Punc,
   type PuncBinary,
   type PuncPm,
+  type PuncPrefix,
   type Token,
 } from "./token"
 
@@ -64,9 +64,9 @@ export function pass2_implicits(tokens: Token[]): Token[] {
     const token = tokens[tokens.length - 1]
     if (
       token?.type == "punc" &&
-      (token.value.type == "infix" || token.value.type == "pm") &&
-      getPrecedence(token.value.kind) == precedence &&
-      token.value.kind != ","
+      (token.kind == "infix" || token.kind == "pm") &&
+      getPrecedence(token.value) == precedence &&
+      token.value != ","
     ) {
       tokens.pop()
       // @ts-expect-error We checked that it isn't a comma
@@ -74,14 +74,14 @@ export function pass2_implicits(tokens: Token[]): Token[] {
     }
   }
 
-  function prefix(): Prefix | undefined {
+  function prefix(): PuncPrefix | undefined {
     const token = tokens[tokens.length - 1]
     if (
       token?.type == "punc" &&
-      (token.value.type == "prefix" || token.value.type == "pm")
+      (token.kind == "prefix" || token.kind == "pm")
     ) {
       tokens.pop()
-      return token.value
+      return token
     }
   }
 
@@ -121,28 +121,24 @@ export function pass2_implicits(tokens: Token[]): Token[] {
     return ret
   }
 
-  type Prefix = Extract<Punc, { type: "pm" | "prefix" }>
-
-  function takeSigns(): Prefix[] {
+  function takeSigns(): PuncPrefix[] {
     let f
-    const pms: Prefix[] = []
+    const pms: PuncPrefix[] = []
     while ((f = prefix())) {
       pms.push(f)
     }
     return pms
   }
 
-  function reduceSigns(signs: Prefix[], value: Token): Token {
+  function reduceSigns(signs: PuncPrefix[], value: Token): Token {
     return signs.reduceRight<Token>(
-      (a, b) => ({ type: "op", kind: b.kind, a }),
+      (a, b) => ({ type: "op", kind: b.value, a }),
       value,
     )
   }
 
-  function putBackSigns(signs: Prefix[]) {
-    tokens.push(
-      ...signs.reverse().map<Token>((value) => ({ type: "punc", value })),
-    )
+  function putBackSigns(signs: PuncPrefix[]) {
+    tokens.push(...signs.reverse())
   }
 
   function takeSeq(): Token | undefined {
@@ -237,7 +233,7 @@ export function pass2_implicits(tokens: Token[]): Token[] {
     const name = fn()
     if (!name) return
 
-    const nested: [Prefix[], Token][] = []
+    const nested: [PuncPrefix[], Token][] = []
 
     while (true) {
       const mySigns = takeSigns()

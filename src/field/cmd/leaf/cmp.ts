@@ -91,10 +91,8 @@ function ceq(kind: "=", eq: Data, ne: Data, endsImplicitGroup = true) {
     ir(tokens: Token[]): void {
       tokens.push({
         type: "punc",
-        value: {
-          type: "infix",
-          kind: { dir: kind, neg: this.neg },
-        },
+        kind: "infix",
+        value: { dir: kind, neg: this.neg },
       })
     }
   }
@@ -173,10 +171,8 @@ function cmp(
     ir(tokens: Token[]): void {
       tokens.push({
         type: "punc",
-        value: {
-          type: "infix",
-          kind: { dir: kind, eq: this.eq, neg: this.neg },
-        },
+        kind: "infix",
+        value: { dir: kind, eq: this.eq, neg: this.neg },
       })
     }
   }

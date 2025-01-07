@@ -49,17 +49,18 @@ export class CmdDot extends Leaf {
   ir(tokens: Token[]): void {
     const last = tokens[tokens.length - 1]
     if (last?.type == "punc") {
-      if (last.value.kind == "." || last.value.kind == "..") {
+      if (last.value == "." || last.value == "..") {
         tokens.pop()
         tokens.push({
           type: "punc",
-          value: { kind: `${last.value.kind}.`, type: "infix" },
+          value: `${last.value}.`,
+          kind: "infix",
         })
 
         const prev = tokens[tokens.length - 2]
         if (!prev) {
           tokens.splice(0, 0, { type: "void" })
-        } else if (prev.type == "punc" && prev.value.kind == ",") {
+        } else if (prev.type == "punc" && prev.value == ",") {
           tokens.splice(tokens.length - 1, 0, { type: "void" })
         }
         if (!this[R]) {
@@ -71,7 +72,8 @@ export class CmdDot extends Leaf {
     }
     tokens.push({
       type: "punc",
-      value: { kind: ".", type: "infix" },
+      value: ".",
+      kind: "infix",
     })
   }
 }

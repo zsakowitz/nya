@@ -16,7 +16,7 @@ export function pass1_suffixes(tokens: Token[]) {
     const next = tokens[i + 1]
 
     // 2.3 .3 2. a.min a.sin² decimals and member accesses
-    if (self.type == "punc" && self.value.kind == ".") {
+    if (self.type == "punc" && self.value == ".") {
       const PREV = prev && prev.type == "num" && prev.value.indexOf(".") == -1
       const NEXT = next && next.type == "num" && next.value.indexOf(".") == -1
 
@@ -116,10 +116,17 @@ export function pass1_suffixes(tokens: Token[]) {
       continue
     }
 
-    // 3! factorials
-    if (prev && self.type == "punc" && self.value.kind == "!") {
+    // 5!₂ factorials
+    if (prev && self.type == "punc" && self.value == "!") {
+      if (next?.type == "sub") {
+        tokens.splice(i, 2)
+        tokens[i - 1] = { type: "factorial", on: prev, repeats: next.sub }
+        i--
+        continue
+      }
+
       tokens.splice(i, 1)
-      if (prev.type == "factorial") {
+      if (prev.type == "factorial" && typeof prev.repeats == "number") {
         prev.repeats++
       } else {
         tokens[i - 1] = { type: "factorial", on: prev, repeats: 1 }

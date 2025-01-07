@@ -18,7 +18,7 @@ document.body.appendChild(sheet.el)
 
 {
   const expr = new Expr(sheet)
-  expr.field.setPrefix(({ block }) => {
+  expr.field.setPrefix(({ block, options }) => {
     const cursor = block.cursor(R)
     new CmdWord("var", "detail").insertAt(cursor, L)
     new OpEq(false).insertAt(cursor, L)

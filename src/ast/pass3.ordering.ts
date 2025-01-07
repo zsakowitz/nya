@@ -6,13 +6,19 @@ export function pass3_ordering(tokens: Token[]): Token {
   const output: Token[] = []
   const ops: PuncInfix[] = []
 
-  for (let i = 0; i < tokens.length; i++) {
-    if (i % 2 == 0) {
-      output.push(tokens.pop()!)
+  function pop() {
+    isValue = !isValue
+    return tokens.pop()
+  }
+
+  let isValue = true
+  while (tokens.length) {
+    if (isValue) {
+      output.push(pop()!)
       continue
     }
 
-    const o1 = tokens.pop()!
+    const o1 = pop()!
     if (o1.type != "punc") {
       return {
         type: "error",
@@ -20,10 +26,10 @@ export function pass3_ordering(tokens: Token[]): Token {
       }
     }
 
-    if (o1.value.type != "infix" && o1.value.type != "pm") {
+    if (o1.kind != "infix" && o1.kind != "pm") {
       return {
         type: "error",
-        reason: `Expected infix operator; found prefix or suffix '${o1.value.kind}'.`,
+        reason: `Expected infix operator; found prefix or suffix '${o1.value}'.`,
       }
     }
 
@@ -31,18 +37,18 @@ export function pass3_ordering(tokens: Token[]): Token {
     while (
       (o2 = tokens[tokens.length - 1]) &&
       o2.type == "punc" &&
-      (o2.value.type == "infix" || o2.value.type == "pm") &&
-      getPrecedence(o2.value.kind) >= getPrecedence(o1.value.kind)
+      (o2.kind == "infix" || o2.kind == "pm") &&
+      getPrecedence(o2.value) >= getPrecedence(o1.value)
     ) {
-      tokens.pop()
+      pop()
       output.push(o2)
     }
 
-    ops.push(o1.value)
+    ops.push(o1)
   }
 
   while (ops.length) {
-    output.push({ type: "punc", value: ops.pop()! })
+    output.push(ops.pop()!)
   }
 
   return output as any

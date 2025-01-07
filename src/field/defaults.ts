@@ -3,6 +3,7 @@ import { OpEq, OpGt, OpLt } from "./cmd/leaf/cmp"
 import { CmdColor } from "./cmd/leaf/color"
 import { CmdComma } from "./cmd/leaf/comma"
 import { CmdDot } from "./cmd/leaf/dot"
+import { CmdExclamation } from "./cmd/leaf/exclamation"
 import { CmdNum } from "./cmd/leaf/num"
 import {
   OpAnd,
@@ -65,6 +66,7 @@ export const exts = new Exts()
   .setAll(Object.keys(BIG_ALIASES), CmdBig)
   .set(",", CmdComma)
   .set(".", CmdDot)
+  .set("!", CmdExclamation)
   .set("&", CmdBreakCol)
   .set(";", CmdBreakRow)
   // movement ops

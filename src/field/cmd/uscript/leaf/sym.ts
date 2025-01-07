@@ -97,7 +97,7 @@ export class CmuSym extends CmuLeaf {
 
   ir(tokens: Token[]): void {
     if (this.sym == "+" || this.sym == "-") {
-      tokens.push({ type: "punc", value: { type: "pm", kind: this.sym } })
+      tokens.push({ type: "punc", kind: "pm", value: this.sym })
       return
     }
 

@@ -30,12 +30,9 @@ export class CmdComma extends Leaf {
 
   ir(tokens: Token[]): void {
     const last = tokens[tokens.length - 1]
-    if (
-      last?.type == "punc" &&
-      (last.value.kind == ".." || last.value.kind == "...")
-    ) {
+    if (last?.type == "punc" && (last.value == ".." || last.value == "...")) {
       tokens.push({ type: "void" })
     }
-    tokens.push({ type: "punc", value: { type: "infix", kind: "," } })
+    tokens.push({ type: "punc", kind: "infix", value: "," })
   }
 }

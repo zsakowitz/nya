@@ -9,19 +9,19 @@ export class CmdExclamation extends Leaf {
   }
 
   constructor() {
-    super(",", h("nya-cmd-op pr-[.1em]", ","))
+    super("!", h("nya-cmd-op", "!"))
   }
 
   reader(): string {
-    return " comma "
+    return " exclamation "
   }
 
   ascii(): string {
-    return ","
+    return "!"
   }
 
   latex(): string {
-    return ","
+    return "!"
   }
 
   invalidatesTransparentWrapper(): boolean {
@@ -29,6 +29,6 @@ export class CmdExclamation extends Leaf {
   }
 
   ir(tokens: Token[]): void {
-    tokens.push({ type: "punc", value: { kind: "!", type: "suffix" } })
+    tokens.push({ type: "punc", value: "!", kind: "suffix" })
   }
 }

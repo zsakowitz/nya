@@ -102,7 +102,7 @@ export function op(
     }
 
     ir(tokens: Token[]): void {
-      tokens.push({ type: "punc", value: punc() })
+      tokens.push(punc())
     }
   }
 }
@@ -115,7 +115,7 @@ export function opp(
   endsImplicitGroup?: boolean,
 ) {
   return op(
-    () => ({ type: "infix", kind: latex }),
+    () => ({ type: "punc", kind: "infix", value: latex }),
     latex,
     mathspeak,
     html,
@@ -158,7 +158,7 @@ export function opm(
     }
 
     ir(tokens: Token[]): void {
-      tokens.push({ type: "punc", value: { type: "pm", kind: latex } })
+      tokens.push({ type: "punc", kind: "pm", value: latex })
     }
   }
 }
@@ -209,7 +209,7 @@ export class OpNeg extends Leaf {
   }
 
   ir(tokens: Token[]): void {
-    tokens.push({ type: "punc", value: { type: "prefix", kind: "\\neg " } })
+    tokens.push({ type: "punc", kind: "prefix", value: "\\neg " })
   }
 
   endsImplicitGroup(): boolean {
