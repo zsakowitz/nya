@@ -277,6 +277,7 @@ export function isValueToken(token: Token | undefined) {
     token.type == "error" ||
     token.type == "punc" ||
     token.type == "sub" ||
-    token.type == "sup"
+    token.type == "sup" ||
+    (token.type == "var" && token.kind != "var")
   )
 }

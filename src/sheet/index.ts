@@ -122,9 +122,13 @@ export class Expr {
         this.sheet.exprs.splice(expr.index, 1)
         this.sheet.exprs.splice(this.index + 1, 0, expr)
         this.sheet.checkIndices()
-        const before = this.sheet.exprs[expr.index + 1]?.el ?? null
+        const before =
+          this.sheet.exprs[expr.index + 1]?.el ?? this.sheet.elNextExpr
         this.sheet.elExpressions.insertBefore(expr.el, before)
         setTimeout(() => expr.field.el.focus())
+        setTimeout(() =>
+          this.sheet.elNextExpr.scrollIntoView({ behavior: "instant" }),
+        )
       }
     })
     sheet.elExpressions.insertBefore(this.el, sheet.elExpressions.lastChild)

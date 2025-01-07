@@ -1383,7 +1383,7 @@ body {
 .nya-cmd-word-r {
   padding-right: .2em;
   &:last-child,
-  &:has(+ .nya-cursor:last-child) {
+  &:has(+ :where(.nya-cursor):last-child) {
     padding-right: 0px;
   }
 }
@@ -1391,65 +1391,70 @@ body {
 .nya-cmd-word-l {
   padding-left: .2em;
   &:first-child,
-  .nya-cursor:first-child + & {
+  :where(.nya-cursor):first-child + & {
     padding-left: 0px;
   }
 }
 
 :is(.nya-cmd-op, .nya-cmd-word-r:not(.nya-cmd-word-var)) {
   & + .nya-cmd-pm > *,
-  & + .nya-cursor + .nya-cmd-pm > * {
+  & + :where(.nya-cursor) + .nya-cmd-pm > * {
     padding-right: 0px;
   }
 }
 
 :is(.nya-cmd-op, .nya-cmd-word-r) + .nya-cmd-pm > *,
-:is(.nya-cmd-op, .nya-cmd-word-r) + .nya-cursor + .nya-cmd-pm > *,
+:is(.nya-cmd-op, .nya-cmd-word-r) + :where(.nya-cursor) + .nya-cmd-pm > *,
 .nya-cmd-op:first-child > *,
-.nya-cursor:first-child + .nya-cmd-op > * {
+:where(.nya-cursor):first-child + .nya-cmd-op > * {
   padding-left: 0px;
 }
 
 .nya-cmd-op + .nya-cmd-word-l,
-.nya-cmd-op + .nya-cursor + .nya-cmd-word-l {
+.nya-cmd-op + :where(.nya-cursor) + .nya-cmd-word-l {
   padding-left: 0px;
 }
 
 .nya-cmd-word-r:not(.nya-cmd-word-infix):has(
     + .nya-cmd-brack,
-    + .nya-cursor + .nya-cmd-brack
+    + :where(.nya-cursor) + .nya-cmd-brack
   ) {
   padding-right: 0px;
 }
 
 .nya-cmd-brack + .nya-cmd-word-l.nya-cmd-word-var,
-.nya-cmd-brack + .nya-cursor + .nya-cmd-word-l.nya-cmd-word-var {
+.nya-cmd-brack + :where(.nya-cursor) + .nya-cmd-word-l.nya-cmd-word-var {
   padding-left: 0px;
 }
 
-.nya-cmd-word-r:has(+ .nya-cursor + .nya-cmd-word-l, + .nya-cmd-word-l) {
+.nya-cmd-word-r:has(
+    + :where(.nya-cursor) + .nya-cmd-word-l,
+    + .nya-cmd-word-l
+  ) {
   padding-right: .1em;
 }
 
 .nya-cmd-word-r + .nya-cmd-word-l,
-.nya-cmd-word-r + .nya-cursor + .nya-cmd-word-l {
+.nya-cmd-word-r + :where(.nya-cursor) + .nya-cmd-word-l {
   padding-left: .1em;
 }
 
 .nya-cmd-word-r:not(.nya-cmd-word-infix):has(
     + .nya-cmd-supsub,
-    + .nya-cursor + .nya-cmd-supsub
+    + :where(.nya-cursor) + .nya-cmd-supsub
   ) {
   padding-right: 0px;
 }
 
 .nya-cmd-word-r:not(.nya-cmd-word-infix) + .nya-cmd-supsub,
-.nya-cmd-word-r:not(.nya-cmd-word-infix) + .nya-cursor + .nya-cmd-supsub {
+.nya-cmd-word-r:not(.nya-cmd-word-infix)
+  + :where(.nya-cursor)
+  + .nya-cmd-supsub {
   padding-right: .2em;
   &:last-child,
-  &:has(+ .nya-cursor:last-child),
+  &:has(+ :where(.nya-cursor):last-child),
   &:has(+ .nya-cmd-brack),
-  &:has(+ .nya-cursor + .nya-cmd-brack) {
+  &:has(+ :where(.nya-cursor) + .nya-cmd-brack) {
     padding-right: 0px;
   }
 }
@@ -1462,49 +1467,54 @@ body {
   padding-right: .14em;
 }
 
-.nya-cmd-word-r:has(+ .nya-cmd-dot-l, + .nya-cursor + .nya-cmd-dot-l) {
+.nya-cmd-word-r:has(+ .nya-cmd-dot-l, + :where(.nya-cursor) + .nya-cmd-dot-l) {
   padding-right: 0px;
 }
 
 .nya-cmd-word-r:has(
     + .nya-cmd-dot:last-child,
-    + .nya-cmd-dot + .nya-cursor:last-child,
-    + .nya-cursor + .nya-cmd-dot:last-child
+    + .nya-cmd-dot + :where(.nya-cursor):last-child,
+    + :where(.nya-cursor) + .nya-cmd-dot:last-child
   ) {
   padding-right: 0px;
 }
 
 .nya-cmd-dot-r + .nya-cmd-word-l,
-.nya-cmd-dot-r + .nya-cursor + .nya-cmd-word-l {
+.nya-cmd-dot-r + :where(.nya-cursor) + .nya-cmd-word-l {
   padding-left: 0px;
 }
 
 .nya-cmd-dot-prop + .nya-cmd-word-l,
-.nya-cmd-dot-prop + .nya-cursor + .nya-cmd-word-l {
+.nya-cmd-dot-prop + :where(.nya-cursor) + .nya-cmd-word-l {
   padding-left: 0px;
 }
 
 .nya-cmd-word-r:has(
     + .nya-cmd-dot-prop,
-    + .nya-cursor + .nya-cmd-dot-prop,
+    + :where(.nya-cursor) + .nya-cmd-dot-prop,
     + .nya-cmd-op:not(.nya-cmd-pm),
-    + .nya-cursor + .nya-cmd-op:not(.nya-cmd-pm)
+    + :where(.nya-cursor) + .nya-cmd-op:not(.nya-cmd-pm)
   ) {
   padding-right: 0px;
 }
 
 .nya-cmd-pm:first-child > *,
-.nya-cursor:first-child + .nya-cmd-pm > * {
+:where(.nya-cursor):first-child + .nya-cmd-pm > * {
   padding-right: 0px;
 }
 
 .nya-cmd-op:not(.nya-cmd-pm) + .nya-cmd-op:not(.nya-cmd-pm) > *,
-.nya-cmd-op:not(.nya-cmd-pm) + .nya-cursor + .nya-cmd-op:not(.nya-cmd-pm) > * {
+.nya-cmd-op:not(.nya-cmd-pm)
+  + :where(.nya-cursor)
+  + .nya-cmd-op:not(.nya-cmd-pm)
+  > * {
   padding-left: .1em;
 }
 
 .nya-cmd-op:not(.nya-cmd-pm):has(+ .nya-cmd-op:not(.nya-cmd-pm)) > *,
-.nya-cmd-op:not(.nya-cmd-pm):has(+ .nya-cursor + .nya-cmd-op:not(.nya-cmd-pm))
+.nya-cmd-op:not(.nya-cmd-pm):has(
+    + :where(.nya-cursor) + .nya-cmd-op:not(.nya-cmd-pm)
+  )
   > * {
   padding-right: .1em;
 }
@@ -1515,6 +1525,11 @@ body {
 
 .nya-cmd-not > * {
   padding-right: 0px;
+}
+
+.nya-cmd-dot + .nya-cmd-word-l,
+.nya-cmd-dot + :where(.nya-cursor) + .nya-cmd-word-l {
+  padding-left: .2em;
 }
 
 .\*\:contents > * {

@@ -46,7 +46,13 @@ export function pass1_suffixes(tokens: Token[]) {
       }
 
       // .min accesses
-      if (prev && isValueToken(prev) && next && next.type == "var") {
+      if (
+        prev &&
+        isValueToken(prev) &&
+        next &&
+        next.type == "var" &&
+        next.kind != "infix"
+      ) {
         const next2 = tokens[i + 2]
 
         // .min(...) calls
@@ -73,6 +79,40 @@ export function pass1_suffixes(tokens: Token[]) {
         continue
       }
 
+      continue
+    }
+
+    // member accesses after numbers ending in decimal points
+    if (
+      prev &&
+      prev.type == "num" &&
+      prev.value[prev.value.length - 1] == "." &&
+      self.type == "var" &&
+      self.kind != "infix"
+    ) {
+      prev.value = prev.value.slice(0, -1)
+
+      // .min(...) calls
+      if (next?.type == "group" && next.lhs == "(" && next.rhs == ")") {
+        tokens.splice(i, 2)
+        tokens[i - 1] = {
+          type: "call",
+          on: prev,
+          args: next.value,
+          name: self,
+        }
+        i--
+        continue
+      }
+
+      tokens.splice(i, 1)
+      tokens[i - 1] = {
+        type: "op",
+        kind: ".",
+        a: prev,
+        b: self,
+      }
+      i--
       continue
     }
 
