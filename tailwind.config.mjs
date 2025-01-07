@@ -3,8 +3,8 @@ export default {
   theme: {
     extend: {
       colors: {
-        "zlx-selection": "var(--zlx-selection)",
-        "zlx-empty": "var(--zlx-empty)",
+        "nya-selection": "var(--nya-selection)",
+        "nya-empty": "var(--nya-empty)",
       },
     },
   },

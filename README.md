@@ -1,21 +1,21 @@
-<h1 align="center"><code>nya</code></h1>
+<h1 align="center"><code></code></h1>
 
-Named after the Ithkuil root for writing, inscribing, and documenting[^1], `nya`
-is a replacement for the venerable [MathQuill](https://mathquill.com/) project,
+Named after the Ithkuil root for writing, inscribing, and documenting[^1], `` is
+a replacement for the venerable [MathQuill](https://mathquill.com/) project,
 which aimed to provide a clean and intuitive way to type math into webpages.
 
-`nya` differs from MathQuill in a few positive aspects:
+`` differs from MathQuill in a few positive aspects:
 
-- `nya` is built to be extended.
-- `nya` has first-class matrix and piecewise support.
-- `nya` has first-class multi-line expression support.
+- `` is built to be extended.
+- `` has first-class matrix and piecewise support.
+- `` has first-class multi-line expression support.
 
-There are also the downsides of `nya`:
+There are also the downsides of ``:
 
-- `nya` will not support sub-ES5 targets.
-- `nya` will not support IE.
-- `nya` does not yet support all of LaTeX.
-- `nya` does not yet have as much support for screen readers.
+- `` will not support sub-ES5 targets.
+- `` will not support IE.
+- `` does not yet support all of LaTeX.
+- `` does not yet have as much support for screen readers.
 
 # The Editor
 
@@ -49,7 +49,7 @@ The data model is basically a virtual DOM, albeit one with many changes:
 - Instead of handling all edge cases, the model relies on the programmer not to
   make many mistakes.
 
-The [`src/editor/model.ts`](src/editor/model.ts) file defines the entire data
+The [`src/field/model.ts`](src/field/model.ts) file defines the entire data
 model, if you want to look at the source instead. It's in a single file split
 into many classes and interfaces, as all the implementation details are highly
 coupled together.
