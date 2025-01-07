@@ -2,6 +2,16 @@ import { Field } from "../field/field"
 import { h, hx, p, svgx } from "../field/jsx"
 import { D, L, R, U, type Dir, type VDir } from "../field/model"
 import type { Exts, Options as FieldOptions } from "../field/options"
+import {
+  createDrawAxes,
+  doDrawCycle,
+  doMatchSize,
+  onPointer,
+  onScroll,
+  onTouch,
+  onWheel,
+  Paper,
+} from "./paper"
 
 export interface Options {
   field: FieldOptions
@@ -119,6 +129,7 @@ export class Expr {
 
 export class Sheet {
   readonly exprs: Expr[] = []
+  readonly paper = new Paper()
 
   readonly el
   readonly elExpressions
@@ -130,6 +141,16 @@ export class Sheet {
     readonly exts: Exts,
     readonly options: Options,
   ) {
+    doMatchSize(this.paper)
+    doDrawCycle(this.paper)
+    onWheel(this.paper)
+    onScroll(this.paper)
+    onPointer(this.paper)
+    onTouch(this.paper)
+    this.paper.el.classList.add("size-full")
+    // this.paper.drawFns.push(drawBasicAxes)
+    createDrawAxes(this.paper)
+
     const elExpressions = (this.elExpressions = h(
       "flex flex-col",
       (this.elNextExpr = h(
@@ -156,7 +177,7 @@ export class Sheet {
     })
 
     this.el = h(
-      "block fixed inset-0 grid grid-cols-[max(50%,300px),auto] select-none [--nya-focus:theme(colors.blue.400)]",
+      "block fixed inset-0 grid grid-cols-[400px_1fr] select-none [--nya-focus:theme(colors.blue.400)]",
       h(
         "block h-full overflow-y-auto border-r",
         h(
@@ -165,6 +186,7 @@ export class Sheet {
           elExpressions,
         ),
       ),
+      h("flex", this.paper.el),
       (this.elLogo = hx(
         "button",
         "absolute bottom-0 right-0 p-2",

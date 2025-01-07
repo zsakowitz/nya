@@ -46,6 +46,7 @@ export class Field extends FieldInert {
     this.el.addEventListener(
       "touchmove",
       (event) => isPointerDown && event.preventDefault(),
+      { passive: false },
     )
     this.el.addEventListener("keydown", (event) => {
       if (event.metaKey || event.ctrlKey) {
