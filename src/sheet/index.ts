@@ -107,6 +107,10 @@ export class Expr {
   }
 }
 
+function logo() {
+  return h("relative aspect-square size-6", h("absolute size-1/5 bg-slate-300"))
+}
+
 export class Sheet {
   readonly exprs: Expr[] = []
 
@@ -162,9 +166,7 @@ export class Sheet {
             svgx(
               "-1 -1 32 14",
               "h-8 fill-transparent stroke-1 stroke-slate-400 [stroke-linejoin:round] [stroke-linecap:round]",
-              p(
-                "M 0 12 v -12 l 8 12 v -12 M 12 0 l 4 6 l 4 -6 m -4 6 v 6 M 22 12 l 4 -12 l 4 12 m -6.5 -4.5 h 5",
-              ),
+              p("M 0 12 v -4 a "),
             ),
           ),
           elExpressions,
