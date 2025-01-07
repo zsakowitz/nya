@@ -426,10 +426,7 @@ export function onWheel(paper: Paper) {
       const paperCoords = paper.eventToPaper(event)
 
       paper.zoom(
-        {
-          x: snapX ? 0 : paperCoords.x,
-          y: snapY ? 0 : paperCoords.y,
-        },
+        { x: snapX ? 0 : paperCoords.x, y: snapY ? 0 : paperCoords.y },
         zoomScale,
       )
     },
@@ -473,13 +470,6 @@ export function onPointer(paper: Paper) {
     pointersDown++
     moveStart = paper.eventToPaper(event)
     paper.el.setPointerCapture(event.pointerId)
-  })
-
-  const el = document.createElement("div")
-  el.className = "fixed bottom-0 right-0 bg-white text-black text-xl z-20"
-  document.body.appendChild(el)
-  paper.el.addEventListener("mousemove", (event) => {
-    el.textContent = JSON.stringify(paper.eventToPaper(event))
   })
 
   function onPointerUp() {
