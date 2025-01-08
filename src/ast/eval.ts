@@ -288,6 +288,17 @@ export function go(token: Node, props: EvalProps): Value {
           split1((a) => Math.sqrt(a)),
         )
       }
+    case "op":
+      if (token.b) {
+        return evalBinary(
+          token.kind,
+          go(token.a, props),
+          go(token.b, props),
+          props,
+        )
+      } else {
+        return evalUnary(token.kind, go(token.a, props), props)
+      }
     case "group":
       if (token.lhs == "(" && token.rhs == ")") {
         return go(token.value, props)
@@ -307,10 +318,49 @@ export function go(token: Node, props: EvalProps): Value {
     case "big":
     case "index":
     case "juxtaposed":
-    case "op":
     case "commalist":
     case "error":
     case "punc":
       throw new Error(`The '${token.type}' node type is not implemented yet.`)
+  }
+}
+
+export function displayNum(num: LNumber): string {
+  if (num.type == "approx") {
+    return "~" + num.value
+  } else {
+    return num.n + (num.d == 1 ? "" : "/" + num.d)
+  }
+}
+
+export function displayComplex(num: LPoint): string {
+  let y = displayNum(num.y)
+  let sign = " + "
+  if (y[0] == "-") {
+    sign = " - "
+    y = y.slice(1)
+  }
+  const slash = y.indexOf("/")
+  if (slash != -1) {
+    y = y.slice(0, slash) + "i" + y.slice(slash)
+  } else {
+    y = y + "/"
+  }
+  return displayNum(num.x) + sign + y
+}
+
+export function display(value: Value): string {
+  if (value.type == "number") {
+    if (value.list) {
+      return "[" + value.value.map(displayNum).join(", ") + "]"
+    } else {
+      return displayNum(value.value)
+    }
+  } else {
+    if (value.list) {
+      return "[" + value.value.map(displayComplex).join(", ") + "]"
+    } else {
+      return displayComplex(value.value)
+    }
   }
 }

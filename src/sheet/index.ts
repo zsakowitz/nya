@@ -1,3 +1,4 @@
+import { defaultProps, display, go } from "../ast/eval"
 import { Field } from "../field/field"
 import { h, hx, p, svgx } from "../field/jsx"
 import { D, L, R, U, type Dir, type VDir } from "../field/model"
@@ -93,6 +94,7 @@ export class Expr {
   readonly el
   readonly elIndex
   readonly elValue
+  readonly elScroller
 
   removable = true
   index
@@ -111,10 +113,10 @@ export class Expr {
       ),
       h(
         "block w-full max-w-full",
-        h(
+        (this.elScroller = h(
           "block overflow-x-auto [&::-webkit-scrollbar]:hidden min-h-[3.265rem]",
           this.field.el,
-        ),
+        )),
         (this.elValue = h(
           "inline-block bg-slate-100 border border-slate-200 rounded",
           "23",
@@ -143,11 +145,16 @@ export class Expr {
     sheet.elExpressions.insertBefore(this.el, sheet.elExpressions.lastChild)
     this.sheet.checkNextIndex()
     this.index = this.sheet.exprs.length - 1
+    this.fitTo(400)
   }
 
   checkIndex() {
     this.elIndex.textContent = "" + this.sheet.exprs.indexOf(this)
     this.index = this.sheet.exprs.length - 1
+  }
+
+  fitTo(width: number) {
+    this.elScroller.style.maxWidth = `calc(${width}px - 2.5rem)`
   }
 }
 
@@ -194,6 +201,22 @@ export class Sheet {
         ),
       )),
     ))
+
+    let prevWidth = 0
+
+    new ResizeObserver(([entry]) => {
+      const width = entry?.borderBoxSize?.[0]?.inlineSize
+      if (width == null || width == prevWidth) {
+        return
+      }
+      prevWidth = width
+      for (const expr of this.exprs) {
+        expr.fitTo(width)
+      }
+    }).observe(this.elExpressions)
+    for (const expr of this.exprs) {
+      expr.fitTo(400)
+    }
 
     this.elNextExpr.addEventListener("mousedown", () => {
       const expr = new Expr(this)
@@ -251,5 +274,13 @@ export class Sheet {
       undefined,
       2,
     )
+    try {
+      const node = expr.field.block.ast()
+      const value = go(node, defaultProps)
+      expr.elValue.textContent = display(value)
+    } catch (e) {
+      expr.elValue.textContent =
+        e instanceof Error ? e.message : "error occurred"
+    }
   }
 }
