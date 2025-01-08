@@ -11,31 +11,33 @@ import type { FieldInert } from "../field/field-inert"
 import { Block, L, R, type Cursor } from "../field/model"
 import type { Node, PuncBinary, PuncUnary } from "./token"
 
+const ZERO = toNum(0)
+
 /** An approximate value, rounded by the errors of computers. */
-export interface LApprox {
+interface LApprox {
   readonly type: "approx"
   readonly value: number
 }
 
 /** An approximate value, rounded by the errors of computers. */
-export interface LExact {
+interface LExact {
   readonly type: "exact"
   readonly n: number
   readonly d: number
 }
 
 /** A number. Possibly an exact fraction. */
-export type LNumber = LApprox | LExact
+type LNumber = LApprox | LExact
 
 /** A point. Possibly with exact coordinates. */
-export interface LPoint {
+interface LPoint {
   readonly type: "point"
   readonly x: LNumber
   readonly y: LNumber
 }
 
 /** A single value returned from the evaluator. */
-export type Single =
+type Single =
   | { type: "number"; value: LNumber }
   | { type: "complex"; value: LPoint }
 
@@ -48,13 +50,13 @@ export type Value =
     : never
   : never
 
-export function isSafeInteger(value: number) {
+function safe(value: number) {
   return value == Math.floor(value) && Math.abs(value) < 0x20000000000000 // 2 ** 53
 }
 
-export function num(x: number | LNumber): LNumber {
+function toNum(x: number): LNumber {
   if (typeof x == "number") {
-    if (isSafeInteger(x)) {
+    if (safe(x)) {
       return { type: "exact", n: x, d: 1 }
     } else {
       return { type: "approx", value: x }
@@ -64,55 +66,34 @@ export function num(x: number | LNumber): LNumber {
   }
 }
 
-export function pt(x: number | LNumber, y: number | LNumber): LPoint {
-  return {
-    type: "point",
-    x: num(x),
-    y: num(y),
-  }
+function pt(x: LNumber, y: LNumber): LPoint {
+  return { type: "point", x, y }
 }
 
-export function aspt(z: number | LNumber | LPoint): LPoint {
-  if (typeof z == "object" && z.type == "point") return z
-  return pt(z, 0)
-}
-
-export function split(approx: (a: number, b: number) => number | Single) {
+function split(approx: (a: number, b: number) => Single) {
   return (a: Single, b: Single): Single => {
     if (a.type == "number" && b.type == "number") {
-      return single(
-        approx(
-          a.value.type == "approx" ? a.value.value : a.value.n / a.value.d,
-          b.value.type == "approx" ? b.value.value : b.value.n / b.value.d,
-        ),
+      return approx(
+        a.value.type == "approx" ? a.value.value : a.value.n / a.value.d,
+        b.value.type == "approx" ? b.value.value : b.value.n / b.value.d,
       )
     }
     throw new Error("Cannot compute anything involving complex numbers yet.")
   }
 }
 
-export function split1(approx: (a: number) => number | Single) {
+function split1(approx: (a: number) => Single) {
   return (a: Single): Single => {
     if (a.type == "number") {
-      return single(
-        approx(
-          a.value.type == "approx" ? a.value.value : a.value.n / a.value.d,
-        ),
+      return approx(
+        a.value.type == "approx" ? a.value.value : a.value.n / a.value.d,
       )
     }
     throw new Error("Cannot compute anything involving complex numbers yet.")
   }
 }
 
-export function single(value: number | Single): Single {
-  if (typeof value == "number") {
-    return { type: "number", value: num(value) }
-  } else {
-    return value
-  }
-}
-
-export function coerce(values: Single[]): Value {
+function coerce(values: Single[]): Value {
   if (values.every((x) => x.type == "number")) {
     return {
       type: "number",
@@ -124,13 +105,13 @@ export function coerce(values: Single[]): Value {
       type: "complex",
       list: true,
       value: values.map((x) =>
-        x.value.type == "point" ? x.value : pt(x.value, 1),
+        x.value.type == "point" ? x.value : pt(x.value, toNum(1)),
       ),
     }
   }
 }
 
-export function distribute(
+function distribute(
   a: Value,
   b: Value,
   go: (a: Single, b: Single) => Single,
@@ -163,7 +144,7 @@ export function distribute(
   }
 }
 
-export function distribute1(a: Value, go: (a: Single) => Single): Value {
+function distribute1(a: Value, go: (a: Single) => Single): Value {
   if (a.list) {
     return coerce(a.value.map((ai) => go({ type: a.type, value: ai } as any)))
   } else {
@@ -171,11 +152,7 @@ export function distribute1(a: Value, go: (a: Single) => Single): Value {
   }
 }
 
-export function zip<T>(
-  a: Value,
-  b: T[],
-  go: (a: Single, b: T) => Single,
-): Value {
+function zip<T>(a: Value, b: T[], go: (a: Single, b: T) => Single): Value {
   if (a.list) {
     return coerce(
       Array.from({ length: Math.min(a.value.length, b.length) }, (_, i) =>
@@ -188,12 +165,94 @@ export function zip<T>(
 }
 
 /** Props passed to the evaluator. */
-export interface EvalProps {
+interface EvalProps {
   /** Changed by the `base` operator. */
   currentBase: number | LNumber | LPoint
 
   /** Changed by variables, the `with` operator, and the `for` operator. */
   bindings: Record<string, Value>
+}
+
+function num(n: LNumber): number {
+  return n.type == "approx" ? n.value : n.n / n.d
+}
+
+function approx(value: number): LApprox {
+  return { type: "approx", value }
+}
+
+function point(n: Single): LPoint {
+  return n.type == "number" ? pt(n.value, ZERO) : n.value
+}
+
+const add = {
+  x(a: LExact, b: LExact): LExact | null {
+    const s1 = a.n * b.d
+    if (!safe(s1)) return null
+    const s2 = b.n * a.d
+    if (!safe(s2)) return null
+    const s3 = a.d * b.d
+    if (!safe(s3)) return null
+    const s4 = s1 + s2
+    if (!safe(s4)) return null
+    return { type: "exact", n: s4, d: s3 }
+  },
+  n(a: LNumber, b: LNumber): LNumber {
+    if (a.type == "exact" && b.type == "exact") {
+      const val = add.x(a, b)
+      if (val != null) return val
+    }
+
+    return approx(num(a) + num(b))
+  },
+  p(a: LPoint, b: LPoint): LPoint {
+    return pt(add.n(a.x, b.x), add.n(a.y, b.y))
+  },
+  s(a: Single, b: Single): Single {
+    if (a.type == "number" && b.type == "number") {
+      return { type: "number", value: add.n(a.value, b.value) }
+    } else {
+      return { type: "complex", value: add.p(point(a), point(b)) }
+    }
+  },
+  v(a: Value, b: Value): Value {
+    return distribute(a, b, add.s)
+  },
+}
+
+const sub = {
+  x(a: LExact, b: LExact): LExact | null {
+    const s1 = a.n * b.d
+    if (!safe(s1)) return null
+    const s2 = b.n * a.d
+    if (!safe(s2)) return null
+    const s3 = a.d * b.d
+    if (!safe(s3)) return null
+    const s4 = s1 - s2
+    if (!safe(s4)) return null
+    return { type: "exact", n: s4, d: s3 }
+  },
+  n(a: LNumber, b: LNumber): LNumber {
+    if (a.type == "exact" && b.type == "exact") {
+      const val = sub.x(a, b)
+      if (val != null) return val
+    }
+
+    return approx(num(a) - num(b))
+  },
+  p(a: LPoint, b: LPoint): LPoint {
+    return pt(sub.n(a.x, b.x), sub.n(a.y, b.y))
+  },
+  s(a: Single, b: Single): Single {
+    if (a.type == "number" && b.type == "number") {
+      return { type: "number", value: sub.n(a.value, b.value) }
+    } else {
+      return { type: "complex", value: sub.p(point(a), point(b)) }
+    }
+  },
+  v(a: Value, b: Value): Value {
+    return distribute(a, b, sub.s)
+  },
 }
 
 /** Default props passed to the evaluator. */
@@ -221,7 +280,7 @@ function parseNumber(text: string, base: number | LNumber | LPoint) {
 
   if (
     numericValue &&
-    isSafeInteger(numericValue) &&
+    safe(numericValue) &&
     2 <= numericValue &&
     numericValue <= 36 &&
     text.indexOf(".") == -1
@@ -234,7 +293,7 @@ function parseNumber(text: string, base: number | LNumber | LPoint) {
   )
 }
 
-export function evalBinary(
+function evalBinary(
   op: PuncBinary,
   an: Node,
   bn: Node,
@@ -244,36 +303,28 @@ export function evalBinary(
   const b = () => go(bn, props)
 
   switch (op) {
-    case "\u00F7":
-      return distribute(
-        a(),
-        b(),
-        split((a, b) => a / b),
-      )
     case "+":
-      return distribute(
-        a(),
-        b(),
-        split((a, b) => a + b),
-      )
+      return add.v(a(), b())
     case "-":
-      return distribute(
-        a(),
-        b(),
-        split((a, b) => a - b),
-      )
+      return sub.v(a(), b())
     case "juxtaposition":
     case "\\cdot ":
       return distribute(
         a(),
         b(),
-        split((a, b) => a * b),
+        split((a, b) => ({ type: "number", value: approx(a * b) })),
+      )
+    case "\u00F7":
+      return distribute(
+        a(),
+        b(),
+        split((a, b) => ({ type: "number", value: approx(a / b) })),
       )
     case "mod":
       return distribute(
         a(),
         b(),
-        split((a, b) => ((a % b) + b) % b),
+        split((a, b) => ({ type: "number", value: approx(((a % b) + b) % b) })),
       )
     case "base": {
       const base = go(bn, { ...props, currentBase: 10 })
@@ -283,16 +334,14 @@ export function evalBinary(
       return go(an, { ...props, currentBase: base.value })
     }
     case "\\pm ":
-      return distribute(
+      return add.v(
         a(),
         zip(b(), [identity, neg], (a, b) => b(a)),
-        split((a, b) => a + b),
       )
     case "\\mp ":
-      return distribute(
+      return add.v(
         a(),
         zip(b(), [neg, identity], (a, b) => b(a)),
-        split((a, b) => a + b),
       )
     case "for":
     case "with":
@@ -331,7 +380,7 @@ function neg(x: Single): Single {
       }
 }
 
-export function evalUnary(op: PuncUnary, an: Node, props: EvalProps): Value {
+function evalUnary(op: PuncUnary, an: Node, props: EvalProps): Value {
   const a = go(an, props)
 
   switch (op) {
@@ -355,7 +404,7 @@ export function evalUnary(op: PuncUnary, an: Node, props: EvalProps): Value {
  * `void`, returns an empty list. Otherwise, returns a list of the single passed
  * node.
  */
-export function list(node: Node): Node[] {
+function list(node: Node): Node[] {
   if (node.type == "commalist") {
     return node.items
   }
@@ -368,14 +417,14 @@ export function list(node: Node): Node[] {
 }
 
 /** Raises one value to the power of another value. */
-export function raise(a: Value, b: Value): Value {
+function raise(a: Value, b: Value): Value {
   return a
 }
 
-const PI: Value = { type: "number", list: false, value: num(Math.PI) }
-const TAU: Value = { type: "number", list: false, value: num(2 * Math.PI) }
-const E: Value = { type: "number", list: false, value: num(Math.E) }
-const INFINITY: Value = { type: "number", list: false, value: num(1 / 0) }
+const PI: Value = { type: "number", list: false, value: approx(Math.PI) }
+const TAU: Value = { type: "number", list: false, value: approx(2 * Math.PI) }
+const E: Value = { type: "number", list: false, value: approx(Math.E) }
+const INFINITY: Value = { type: "number", list: false, value: approx(1 / 0) }
 
 /** Evaluates a node. */
 export function go(node: Node, props: EvalProps): Value {
@@ -392,7 +441,7 @@ export function go(node: Node, props: EvalProps): Value {
       return {
         type: "number",
         list: false,
-        value: num(parseNumber(node.value, props.currentBase)),
+        value: toNum(parseNumber(node.value, props.currentBase)),
       }
     case "frac":
       return evalBinary("÷", node.a, node.b, props)
@@ -401,7 +450,10 @@ export function go(node: Node, props: EvalProps): Value {
         return distribute(
           go(node.contents, props),
           go(node.root, props),
-          split((a, b) => Math.pow(a, 1 / b)),
+          split((a, b) => ({
+            type: "number",
+            value: approx(Math.pow(a, 1 / b)),
+          })),
         )
       } else {
         return distribute1(
@@ -410,9 +462,16 @@ export function go(node: Node, props: EvalProps): Value {
             a < 0 ?
               {
                 type: "complex",
-                value: { type: "point", x: num(0), y: num(Math.sqrt(-a)) },
+                value: {
+                  type: "point",
+                  x: ZERO,
+                  y: safe(a) ? toNum(Math.sqrt(-a)) : approx(Math.sqrt(-a)),
+                },
               }
-            : Math.sqrt(a),
+            : {
+                type: "number",
+                value: safe(a) ? toNum(Math.sqrt(a)) : approx(Math.sqrt(a)),
+              },
           ),
         )
       }
@@ -487,7 +546,7 @@ export function go(node: Node, props: EvalProps): Value {
   throw new Error(`The '${node.type}' node type is not implemented yet.`)
 }
 
-export function displayDigits(cursor: Cursor, digits: string) {
+function displayDigits(cursor: Cursor, digits: string) {
   for (const digit of digits) {
     switch (digit) {
       case "∞":
@@ -505,7 +564,7 @@ export function displayDigits(cursor: Cursor, digits: string) {
   }
 }
 
-export function displayNum(
+function displayNum(
   cursor: Cursor,
   num: LNumber,
   forceSign?: boolean,
@@ -563,13 +622,13 @@ function isZero(x: number | LNumber | LPoint): boolean {
   }
 }
 
-export function displayComplex(cursor: Cursor, num: LPoint) {
+function displayComplex(cursor: Cursor, num: LPoint) {
   const showX = !isZero(num.x)
   if (showX) displayNum(cursor, num.x)
   displayNum(cursor, num.y, showX, true)
 }
 
-export function displayList<T>(
+function displayList<T>(
   cursor: Cursor,
   data: T[],
   display: (cursor: Cursor, value: T) => void,
@@ -587,7 +646,7 @@ export function displayList<T>(
   new CmdBrack("[", "]", null, block).insertAt(cursor, L)
 }
 
-export function isApproximate(value: Value): boolean {
+function isApproximate(value: Value): boolean {
   return value.list ?
       value.value.some(
         (value) =>
