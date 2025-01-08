@@ -265,11 +265,20 @@ export class Sheet {
       h(
         "block overflow-y-auto relative border-r",
         h(
-          "block h-12 w-full bg-slate-100 border-b border-slate-200 flex gap-8",
+          "block h-12 w-full bg-slate-100 border-b border-slate-200 flex gap-8 sticky top-0 z-10",
         ),
         elExpressions,
       ),
-      h("flex", this.paper.el),
+      h(
+        "flex relative",
+        this.paper.el,
+        h(
+          "absolute block top-0 bottom-0 left-0 w-1 from-slate-300/50 to-transparent bg-gradient-to-r",
+        ),
+        h(
+          "absolute block top-0 bottom-0 right-0 w-1 from-slate-300/50 to-transparent bg-gradient-to-l",
+        ),
+      ),
       this.elTokens,
       (this.elLogo = hx(
         "button",
