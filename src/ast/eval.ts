@@ -1,3 +1,11 @@
+import { OpEq, OpTilde } from "../field/cmd/leaf/cmp"
+import { CmdDot } from "../field/cmd/leaf/dot"
+import { CmdNum } from "../field/cmd/leaf/num"
+import { OpMinus, OpPlus } from "../field/cmd/leaf/op"
+import { CmdWord } from "../field/cmd/leaf/word"
+import { CmdFrac } from "../field/cmd/math/frac"
+import type { FieldInert } from "../field/field-inert"
+import { Block, L, R, type Cursor } from "../field/model"
 import type { Node, PuncBinary, PuncUnary } from "./token"
 
 /** An approximate value, rounded by the errors of computers. */
@@ -352,42 +360,75 @@ export function go(token: Node, props: EvalProps): Value {
   }
 }
 
-export function displayNum(num: LNumber): string {
+export function displayDigits(cursor: Cursor, digits: string) {
+  for (const digit of digits) {
+    switch (digit) {
+      case "-":
+        new OpMinus().insertAt(cursor, L)
+        break
+      case ".":
+        new CmdDot().insertAt(cursor, L)
+        break
+      default:
+        new CmdNum(digit).insertAt(cursor, L)
+    }
+  }
+}
+
+export function displayNum(cursor: Cursor, num: LNumber, i?: boolean) {
   if (num.type == "approx") {
-    return "~" + num.value
+    if (i && num.value >= 0) {
+      new OpPlus().insertAt(cursor, L)
+    }
+    new OpTilde(false).insertAt(cursor, L)
+    displayDigits(cursor, num.value + "")
+  } else if (num.d == 1) {
+    if (i && num.n >= 0) {
+      new OpPlus().insertAt(cursor, L)
+    }
+    displayDigits(cursor, num.n + "")
   } else {
-    return num.n + (num.d == 1 ? "" : "/" + num.d)
+    if (i && num.n >= 0) {
+      new OpPlus().insertAt(cursor, L)
+    }
+    const n = new Block(null)
+    const d = new Block(null)
+    if (num.n < 0) {
+      new OpMinus().insertAt(cursor, L)
+    }
+    new CmdFrac(n, d).insertAt(cursor, L)
+    displayDigits(n.cursor(R), (num.n < 0 ? -num.n : num.n) + "")
+    if (i) {
+      new CmdWord("i", "var", true).insertAt(n.cursor(R), L)
+      i = false
+    }
+    displayDigits(d.cursor(R), num.d + "")
+  }
+  if (i) {
+    new CmdWord("i", "var", true).insertAt(cursor, L)
   }
 }
 
-export function displayComplex(num: LPoint): string {
-  let y = displayNum(num.y)
-  let sign = " + "
-  if (y[0] == "-") {
-    sign = " - "
-    y = y.slice(1)
-  }
-  const slash = y.indexOf("/")
-  if (slash != -1) {
-    y = y.slice(0, slash) + "i" + y.slice(slash)
-  } else {
-    y = y + "/"
-  }
-  return displayNum(num.x) + sign + y
+export function displayComplex(cursor: Cursor, num: LPoint) {
+  displayNum(cursor, num.x)
+  displayNum(cursor, num.y, true)
 }
 
-export function display(value: Value): string {
+export function display(field: FieldInert, value: Value) {
+  field.block.clear()
+  const cursor = field.block.cursor(R)
+  new OpEq(false).insertAt(cursor, L)
   if (value.type == "number") {
     if (value.list) {
-      return "[" + value.value.map(displayNum).join(", ") + "]"
+      // return "[" + value.value.map(displayNum).join(", ") + "]"
     } else {
-      return displayNum(value.value)
+      displayNum(cursor, value.value)
     }
   } else {
     if (value.list) {
-      return "[" + value.value.map(displayComplex).join(", ") + "]"
+      // return "[" + value.value.map(displayComplex).join(", ") + "]"
     } else {
-      return displayComplex(value.value)
+      displayComplex(cursor, value.value)
     }
   }
 }

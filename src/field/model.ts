@@ -1,4 +1,4 @@
-import { tokensToAst, type Node, type Node } from "../ast/token"
+import { tokensToAst, type Node } from "../ast/token"
 import type { CmdFrac } from "./cmd/math/frac"
 import type { FieldInert } from "./field-inert"
 import { h } from "./jsx"
@@ -71,6 +71,11 @@ export class Block {
       parent.blocks.push(this)
     }
     this.checkIfEmpty()
+  }
+
+  /** Clears this {@linkcode Block}. */
+  clear() {
+    new Span(this, null, null).remove()
   }
 
   /** Tokenizes this {@linkcode Block}'s contents as LaTeX. */

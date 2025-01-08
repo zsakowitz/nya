@@ -15,7 +15,7 @@ export type PuncBinary =
   | "base"
   | "\\and "
   | "\\or "
-  | { dir: "="; neg: boolean }
+  | { dir: "=" | "~"; neg: boolean }
   | { dir: "<" | ">"; eq: boolean; neg: boolean }
   | ".."
   | "..."
@@ -88,6 +88,7 @@ export const PRECEDENCE_MAP = {
   "<": Precedence.Comparison,
   ">": Precedence.Comparison,
   "=": Precedence.Equality,
+  "~": Precedence.Equality,
   "\\and ": Precedence.BoolAnd,
   "\\or ": Precedence.BoolOr,
   base: Precedence.WordInfix,

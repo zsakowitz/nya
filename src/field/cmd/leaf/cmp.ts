@@ -1,4 +1,4 @@
-import type { Node } from "../../../ast/token"
+import type { Node, PuncBinary } from "../../../ast/token"
 import { L, type Cursor, type Dir, type InitProps } from "../../model"
 import { Op, OpMinus, OpRightarrow, OpTo } from "./op"
 
@@ -44,7 +44,15 @@ type Data = readonly [
   ascii: string,
 ]
 
-function ceq(kind: "=", eq: Data, ne: Data, endsImplicitGroup = true) {
+function ceq(
+  kind: Extract<
+    PuncBinary,
+    { dir: string; neg: boolean; eq?: undefined }
+  >["dir"],
+  eq: Data,
+  ne: Data,
+  endsImplicitGroup = true,
+) {
   return class extends OpCeq {
     static init(cursor: Cursor, props: InitProps) {
       this.exitSupSub(cursor, props)
@@ -99,7 +107,7 @@ function ceq(kind: "=", eq: Data, ne: Data, endsImplicitGroup = true) {
 }
 
 function cmp(
-  kind: "<" | ">",
+  kind: Extract<PuncBinary, { dir: string; neg: boolean; eq: boolean }>["dir"],
   normal: Data,
   normalNeg: Data,
   orEq: Data,
@@ -194,6 +202,12 @@ export class OpEq extends ceq(
     return super.init(cursor, props)
   }
 }
+
+export const OpTilde = ceq(
+  "~",
+  ["~", " tilde ", "~", "~"],
+  ["≁", " not-tilde ", "≁", "≁"],
+)
 
 export const OpLt = cmp(
   "<",

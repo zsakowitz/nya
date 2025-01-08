@@ -1,5 +1,6 @@
-import { defaultProps, display, go } from "../ast/eval"
+import { defaultProps, display, go, type Value } from "../ast/eval"
 import { Field } from "../field/field"
+import { FieldInert } from "../field/field-inert"
 import { h, hx, p, svgx } from "../field/jsx"
 import { D, L, R, U, type Dir, type VDir } from "../field/model"
 import type { Exts, Options as FieldOptions } from "../field/options"
@@ -94,6 +95,7 @@ export class Expr {
   readonly el
   readonly elIndex
   readonly elValue
+  readonly elValueError
   readonly elScroller
 
   removable = true
@@ -112,14 +114,14 @@ export class Expr {
         )),
       ),
       h(
-        "block w-full max-w-full",
+        "flex flex-col w-full max-w-full",
         (this.elScroller = h(
           "block overflow-x-auto [&::-webkit-scrollbar]:hidden min-h-[3.265rem]",
           this.field.el,
         )),
-        (this.elValue = h(
-          "inline-block bg-slate-100 border border-slate-200 rounded",
-          "23",
+        (this.elValue = new FieldInert(this.field.exts, this.field.options)).el,
+        (this.elValueError = h(
+          "block py-1 border-t border-dashed border-red-800 mx-1 px-1 italic text-red-800 hidden",
         )),
       ),
       h(
@@ -144,6 +146,31 @@ export class Expr {
     this.sheet.checkNextIndex()
     this.index = this.sheet.exprs.length - 1
     this.fitTo(400)
+    this.elValue.el.classList.add(
+      "block",
+      "bg-slate-100",
+      "border",
+      "border-slate-200",
+      "rounded",
+      "px-2",
+      "py-1",
+      "mx-2",
+      "mb-2",
+      "-mt-2",
+      "self-end",
+    )
+  }
+
+  displayEval(value: Value) {
+    this.elValue.el.classList.remove("hidden")
+    this.elValueError.classList.add("hidden")
+    display(this.elValue, value)
+  }
+
+  displayError(reason: Error) {
+    this.elValue.el.classList.add("hidden")
+    this.elValueError.classList.remove("hidden")
+    this.elValueError.textContent = reason.message
   }
 
   checkIndex() {
@@ -275,10 +302,9 @@ export class Sheet {
     try {
       const node = expr.field.block.ast()
       const value = go(node, defaultProps)
-      expr.elValue.textContent = display(value)
+      expr.displayEval(value)
     } catch (e) {
-      expr.elValue.textContent =
-        e instanceof Error ? e.message : "error occurred"
+      expr.displayError(e instanceof Error ? e : new Error(String(e)))
     }
   }
 }
