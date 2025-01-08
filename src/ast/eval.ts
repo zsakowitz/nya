@@ -19,7 +19,7 @@ interface LApprox {
   readonly value: number
 }
 
-/** An approximate value, rounded by the errors of computers. */
+/** An exact fraction, with the numerator and denominator reduced. */
 interface LExact {
   readonly type: "exact"
   readonly n: number
@@ -185,8 +185,91 @@ function point(n: Single): LPoint {
   return n.type == "number" ? pt(n.value, ZERO) : n.value
 }
 
-const add = {
-  x(a: LExact, b: LExact): LNumber | null {
+function op1(
+  getApprox: (a: number, ar: LNumber) => LNumber,
+  getPoint: (n: (a: LNumber) => LNumber, a: LPoint) => LPoint,
+  getExact: (a: LExact) => LNumber | null = (a) => getApprox(a.n / a.d, a),
+) {
+  function n(a: LNumber): LNumber {
+    if (a.type == "exact") {
+      const val = getExact(a)
+      if (val != null) return val
+    }
+
+    return getApprox(num(a), a)
+  }
+
+  function p(a: LPoint): LPoint {
+    return getPoint(n, a)
+  }
+
+  function s(a: Single): Single {
+    if (a.type == "number") {
+      return { type: "number", value: n(a.value) }
+    } else {
+      return { type: "complex", value: p(point(a)) }
+    }
+  }
+
+  return {
+    x: getExact,
+    n,
+    p,
+    s,
+    v(a: Value): Value {
+      return distribute1(a, s)
+    },
+  }
+}
+
+function op2(
+  getApprox: (a: number, b: number, ar: LNumber, br: LNumber) => LNumber,
+  getPoint: (
+    n: (a: LNumber, b: LNumber) => LNumber,
+    a: LPoint,
+    b: LPoint,
+  ) => LPoint,
+  getExact: (a: LExact, b: LExact) => LNumber | null = (a, b) =>
+    getApprox(a.n / a.d, b.n / b.d, a, b),
+) {
+  function n(a: LNumber, b: LNumber): LNumber {
+    if (a.type == "exact" && b.type == "exact") {
+      const val = getExact(a, b)
+      if (val != null) return val
+    }
+
+    return getApprox(num(a), num(b), a, b)
+  }
+
+  function p(a: LPoint, b: LPoint): LPoint {
+    return getPoint(n, a, b)
+  }
+
+  function s(a: Single, b: Single): Single {
+    if (a.type == "number" && b.type == "number") {
+      return { type: "number", value: n(a.value, b.value) }
+    } else {
+      return { type: "complex", value: p(point(a), point(b)) }
+    }
+  }
+
+  return {
+    x: getExact,
+    n,
+    p,
+    s,
+    v(a: Value, b: Value): Value {
+      return distribute(a, b, s)
+    },
+  }
+}
+
+const add = op2(
+  (a, b) => approx(a + b),
+  (n, a, b) => {
+    return pt(n(a.x, b.x), n(a.y, b.y))
+  },
+  (a, b) => {
     const s1 = a.n * b.d
     if (!safe(s1)) return null
     const s2 = b.n * a.d
@@ -197,31 +280,14 @@ const add = {
     if (!safe(s4)) return null
     return frac(s4, s3)
   },
-  n(a: LNumber, b: LNumber): LNumber {
-    if (a.type == "exact" && b.type == "exact") {
-      const val = add.x(a, b)
-      if (val != null) return val
-    }
+)
 
-    return approx(num(a) + num(b))
+const sub = op2(
+  (a, b) => approx(a - b),
+  (n, a, b) => {
+    return pt(n(a.x, b.x), n(a.y, b.y))
   },
-  p(a: LPoint, b: LPoint): LPoint {
-    return pt(add.n(a.x, b.x), add.n(a.y, b.y))
-  },
-  s(a: Single, b: Single): Single {
-    if (a.type == "number" && b.type == "number") {
-      return { type: "number", value: add.n(a.value, b.value) }
-    } else {
-      return { type: "complex", value: add.p(point(a), point(b)) }
-    }
-  },
-  v(a: Value, b: Value): Value {
-    return distribute(a, b, add.s)
-  },
-}
-
-const sub = {
-  x(a: LExact, b: LExact): LNumber | null {
+  (a, b) => {
     const s1 = a.n * b.d
     if (!safe(s1)) return null
     const s2 = b.n * a.d
@@ -232,28 +298,90 @@ const sub = {
     if (!safe(s4)) return null
     return frac(s4, s3)
   },
-  n(a: LNumber, b: LNumber): LNumber {
-    if (a.type == "exact" && b.type == "exact") {
-      const val = sub.x(a, b)
-      if (val != null) return val
+)
+
+const mul = op2(
+  (_, _0, a, b) => {
+    if ((a.type == "exact" && a.n == 0) || (b.type == "exact" && b.n == 0)) {
+      return frac(0, 1)
+    }
+    return approx(num(a) * num(b))
+  },
+  (n, { x: a, y: b }, { x: c, y: d }) => {
+    //   (a+bi)(c+di)
+    // = ac-bd + i(bc+ad)
+    return pt(sub.n(n(a, c), n(b, d)), add.n(n(b, c), n(a, d)))
+  },
+  (a, b) => {
+    const s1 = a.n * b.n
+    if (!safe(s1)) return null
+    const s2 = a.d * b.d
+    if (!safe(s2)) return null
+    return frac(s1, s2)
+  },
+)
+
+const div = op2(
+  (_, _0, a, b) => {
+    if (a.type == "exact" && a.n == 0) {
+      return frac(0, 1)
+    }
+    return approx(num(a) / num(b))
+  },
+  (n, { x: a, y: b }, { x: c, y: d }) => {
+    //   (a+bi) / (c+di)
+    // = (a+bi)(c-di) / (c+di)(c-di)
+    // = (a+bi)(c-di) / (c²-d²i²)
+    // = (a+bi)(c-di) / (c²+d²)
+    const x = add.n(mul.n(a, c), mul.n(b, d))
+    const y = sub.n(mul.n(b, c), mul.n(a, d))
+    const denom = add.n(mul.n(c, c), mul.n(d, d))
+    return pt(n(x, denom), n(y, denom))
+  },
+  (a, b) => {
+    const s1 = (a.n / gcd(a.n, b.d)) * b.d
+    if (!safe(s1)) return null
+    const s2 = (b.n / gcd(b.n, a.d)) * a.d
+    if (!safe(s2)) return null
+    return frac(s1, s2)
+  },
+)
+
+const hypot =
+  (Math as any).hypot ?? ((x: number, y: number) => Math.sqrt(x * x + y * y))
+
+const exp = op1(
+  (a) => approx(Math.E ** a),
+  (n, a) => {
+    const e = n(a.x)
+
+    return pt(
+      mul.n(e, approx(Math.cos(num(a.y)))),
+      mul.n(e, approx(Math.sin(num(a.y)))),
+    )
+  },
+)
+
+const pow = op2(
+  (a, b) => approx(a ** b),
+  (n, a, b) => {
+    if (isZero(a)) {
+      if (a.x.type == "exact" && b.x.type == "exact") {
+        return pt(ZERO, ZERO)
+      } else {
+        return pt(approx(0), approx(0))
+      }
     }
 
-    return approx(num(a) - num(b))
+    return exp.p(
+      mul.p(b, {
+        type: "point",
+        x: approx(Math.log(hypot(num(a.x), num(a.y)))),
+        y: approx(Math.atan2(num(a.y), num(a.x))),
+      }),
+    )
   },
-  p(a: LPoint, b: LPoint): LPoint {
-    return pt(sub.n(a.x, b.x), sub.n(a.y, b.y))
-  },
-  s(a: Single, b: Single): Single {
-    if (a.type == "number" && b.type == "number") {
-      return { type: "number", value: sub.n(a.value, b.value) }
-    } else {
-      return { type: "complex", value: sub.p(point(a), point(b)) }
-    }
-  },
-  v(a: Value, b: Value): Value {
-    return distribute(a, b, sub.s)
-  },
-}
+)
 
 /** Default props passed to the evaluator. */
 export const defaultProps: EvalProps = {
@@ -345,17 +473,9 @@ function evalBinary(
       return sub.v(a(), b())
     case "juxtaposition":
     case "\\cdot ":
-      return distribute(
-        a(),
-        b(),
-        split((a, b) => ({ type: "number", value: approx(a * b) })),
-      )
-    case "\u00F7":
-      return distribute(
-        a(),
-        b(),
-        split((a, b) => ({ type: "number", value: approx(a / b) })),
-      )
+      return mul.v(a(), b())
+    case "÷":
+      return div.v(a(), b())
     case "mod":
       return distribute(
         a(),
@@ -412,7 +532,7 @@ function neg(x: Single): Single {
       { type: "number", value: nneg(x.value) }
     : {
         type: "complex",
-        value: { type: "point", x: nneg(x.value.x), y: x.value.y },
+        value: { type: "point", x: nneg(x.value.x), y: nneg(x.value.y) },
       }
 }
 
@@ -450,11 +570,6 @@ function list(node: Node): Node[] {
   }
 
   return [node]
-}
-
-/** Raises one value to the power of another value. */
-function raise(a: Value, b: Value): Value {
-  return a
 }
 
 const PI: Value = { type: "number", list: false, value: approx(Math.PI) }
@@ -550,7 +665,7 @@ export function go(node: Node, props: EvalProps): Value {
 
       if (value) {
         if (node.sup) {
-          return raise(value, go(node.sup, props))
+          return pow.v(value, go(node.sup, props))
         } else {
           return value
         }
@@ -561,7 +676,7 @@ export function go(node: Node, props: EvalProps): Value {
     case "juxtaposed":
       return evalBinary("juxtaposition", node.a, node.b, props)
     case "raise":
-      return raise(go(node.base, props), go(node.exponent, props))
+      return pow.v(go(node.base, props), go(node.exponent, props))
     case "call": {
       if (node.on) break
       return evalBinary(
@@ -591,6 +706,9 @@ export function go(node: Node, props: EvalProps): Value {
 function displayDigits(cursor: Cursor, digits: string) {
   for (const digit of digits) {
     switch (digit) {
+      case "i":
+        new CmdWord("i", "var", true).insertAt(cursor, L)
+        break
       case "∞":
         new SymInfinity().insertAt(cursor, L)
         break
@@ -620,13 +738,13 @@ function displayNum(
     if (val == "Infinity") val = "∞"
     else if (val == "-Infinity") val = "-∞"
     else if (val == "NaN") val = "NaN"
-    else if (val.indexOf(".") == -1) val += "."
-    displayDigits(cursor, val)
+    else if (val.indexOf(".") == -1) val += ".0"
+    displayDigits(cursor, val + (i ? "i" : ""))
   } else if (num.d == 1) {
     if (forceSign && num.n >= 0) {
       new OpPlus().insertAt(cursor, L)
     }
-    displayDigits(cursor, num.n + "")
+    displayDigits(cursor, num.n + (i ? "i" : ""))
   } else {
     if (forceSign && num.n >= 0) {
       new OpPlus().insertAt(cursor, L)
@@ -637,15 +755,8 @@ function displayNum(
       new OpMinus().insertAt(cursor, L)
     }
     new CmdFrac(n, d).insertAt(cursor, L)
-    displayDigits(n.cursor(R), (num.n < 0 ? -num.n : num.n) + "")
-    if (i) {
-      new CmdWord("i", "var", true).insertAt(n.cursor(R), L)
-      i = false
-    }
+    displayDigits(n.cursor(R), (num.n < 0 ? -num.n : num.n) + (i ? "i" : ""))
     displayDigits(d.cursor(R), num.d + "")
-  }
-  if (i) {
-    new CmdWord("i", "var", true).insertAt(cursor, L)
   }
 }
 
@@ -704,6 +815,7 @@ function isApproximate(value: Value): boolean {
 export function display(field: FieldInert, value: Value) {
   field.block.clear()
   const cursor = field.block.cursor(R)
+
   if (isApproximate(value)) {
     new OpApprox(false).insertAt(cursor, L)
   } else {
