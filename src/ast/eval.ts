@@ -195,44 +195,53 @@ function parseNumber(text: string, base: number | LNumber | LPoint) {
 
 export function evalBinary(
   op: PuncBinary,
-  a: Value,
-  b: Value,
+  an: Node,
+  bn: Node,
   props: EvalProps,
 ): Value {
+  const a = () => go(an, props)
+  const b = () => go(bn, props)
+
   switch (op) {
     case "\u00F7":
       return distribute(
-        a,
-        b,
+        a(),
+        b(),
         split((a, b) => a / b),
       )
     case "+":
       return distribute(
-        a,
-        b,
+        a(),
+        b(),
         split((a, b) => a + b),
       )
     case "-":
       return distribute(
-        a,
-        b,
+        a(),
+        b(),
         split((a, b) => a - b),
       )
     case "\\cdot ":
       return distribute(
-        a,
-        b,
+        a(),
+        b(),
         split((a, b) => a * b),
       )
     case "mod":
       return distribute(
-        a,
-        b,
+        a(),
+        b(),
         split((a, b) => ((a % b) + b) % b),
       )
+    case "base": {
+      const base = b()
+      if (base.list) {
+        throw new Error("Cannot use a list as a base yet.")
+      }
+      return go(an, { ...props, currentBase: base.value })
+    }
     case "for":
     case "with":
-    case "base":
     case "\\and ":
     case "\\or ":
     case "..":
@@ -274,7 +283,7 @@ export function go(token: Node, props: EvalProps): Value {
         value: num(parseNumber(token.value, props.currentBase)),
       }
     case "frac":
-      return evalBinary("÷", go(token.a, props), go(token.b, props), props)
+      return evalBinary("÷", token.a, token.b, props)
     case "root":
       if (token.root) {
         return distribute(
@@ -290,15 +299,12 @@ export function go(token: Node, props: EvalProps): Value {
       }
     case "op":
       if (token.b) {
-        return evalBinary(
-          token.kind,
-          go(token.a, props),
-          go(token.b, props),
-          props,
-        )
+        return evalBinary(token.kind, token.a, token.b, props)
       } else {
         return evalUnary(token.kind, go(token.a, props), props)
       }
+    case "error":
+      throw new Error(token.reason)
     case "group":
       if (token.lhs == "(" && token.rhs == ")") {
         return go(token.value, props)
@@ -319,7 +325,6 @@ export function go(token: Node, props: EvalProps): Value {
     case "index":
     case "juxtaposed":
     case "commalist":
-    case "error":
     case "punc":
       throw new Error(`The '${token.type}' node type is not implemented yet.`)
   }

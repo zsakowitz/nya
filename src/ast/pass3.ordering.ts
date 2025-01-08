@@ -22,18 +22,18 @@ export function pass3_ordering(tokens: Node[]): Node {
       continue
     }
 
-    const o1 = pop()!
+    let o1 = pop()!
     if (o1.type != "punc") {
       return {
         type: "error",
-        reason: `Expected operator; found '${o1.type}'.`,
+        reason: `Expected operator; found '${o1.type}' (more: ${JSON.stringify(o1)}).`,
       }
     }
 
     if (o1.kind != "infix" && o1.kind != "pm") {
       return {
         type: "error",
-        reason: `Expected infix operator; found prefix or suffix '${o1.value}'.`,
+        reason: `Expected infix operator; found prefix or suffix '${o1.value}' (more: ${JSON.stringify(o1)}).`,
       }
     }
 

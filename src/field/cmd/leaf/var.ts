@@ -1,5 +1,5 @@
 import { Leaf } from "."
-import type { Node } from "../../../ast/token"
+import { PRECEDENCE_MAP, type Node, type PuncBinary } from "../../../ast/token"
 import { h, t } from "../../jsx"
 import { Cursor, L, R, Span, type Dir, type InitProps } from "../../model"
 import type { Options, WordMap } from "../../options"
@@ -215,14 +215,25 @@ export class CmdVar extends Leaf {
         return
       }
 
-      const last = tokens[tokens.length - 1]
+      let last = tokens[tokens.length - 1]
       if (last && last.type == "var" && !last.sub && !last.sup) {
         last.value += this.text
       } else {
+        tokens.push(
+          (last = {
+            type: "var",
+            value: this.text,
+            kind: this.kind,
+          }),
+        )
+      }
+
+      if (this.part == R && last.value in PRECEDENCE_MAP) {
+        tokens.pop()
         tokens.push({
-          type: "var",
-          value: this.text,
-          kind: this.kind,
+          type: "punc",
+          kind: "infix",
+          value: last.value as PuncBinary,
         })
       }
 
