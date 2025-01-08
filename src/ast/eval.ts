@@ -291,6 +291,14 @@ export function evalUnary(op: PuncUnary, a: Value, props: EvalProps): Value {
 export function go(token: Node, props: EvalProps): Value {
   switch (token.type) {
     case "num":
+      if (token.sub) {
+        return evalBinary(
+          "base",
+          { type: "num", value: token.value },
+          token.sub,
+          props,
+        )
+      }
       return {
         type: "number",
         list: false,
