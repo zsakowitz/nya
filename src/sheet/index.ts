@@ -255,8 +255,13 @@ export class Sheet {
       setTimeout(() => expr.field.el.focus())
     })
 
+    this.elTokens = hx(
+      "pre",
+      "h-screen overflow-y-auto bg-transparent text-sm border-l border-slate-200 px-2 py-2",
+    )
+
     this.el = h(
-      "block fixed inset-0 grid grid-cols-[400px_1fr] select-none [--nya-focus:theme(colors.blue.400)]",
+      "block fixed inset-0 grid grid-cols-[400px_1fr_400px] grid-rows-1 select-none [--nya-focus:theme(colors.blue.400)]",
       h(
         "block overflow-y-auto relative border-r",
         h(
@@ -264,8 +269,8 @@ export class Sheet {
         ),
         elExpressions,
       ),
-      (this.elTokens = hx("pre", "h-screen overflow-y-auto")),
       h("flex", this.paper.el),
+      this.elTokens,
       (this.elLogo = hx(
         "button",
         "absolute bottom-0 right-0 p-2",
