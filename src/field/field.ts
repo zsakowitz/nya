@@ -56,7 +56,7 @@ export class Field extends FieldInert {
         }
         return
       }
-      const ext = this.exts.of(event.key)
+      const ext = this.exts.get(event.key)
       if (!ext) return
       if (this.init(ext, event.key, { event }) != "browser") {
         event.preventDefault()

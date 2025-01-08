@@ -78,6 +78,11 @@ export class Block {
     new Span(this, null, null).remove()
   }
 
+  /** Splices the contents of this {@linkcode Block} from it and returns them. */
+  splice() {
+    return new Span(this, null, null).splice()
+  }
+
   /** Tokenizes this {@linkcode Block}'s contents as LaTeX. */
   ir(): Node[] {
     const tokens: Node[] = []

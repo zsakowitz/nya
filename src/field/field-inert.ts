@@ -66,7 +66,7 @@ export class FieldInert {
   }
 
   type(input: string, props?: FieldInitProps) {
-    const ext = this.exts.of(input)
+    const ext = this.exts.get(input)
     if (ext) {
       this.init(ext, input, props)
     }

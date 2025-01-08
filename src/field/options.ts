@@ -27,7 +27,7 @@ export class Exts {
     return this
   }
 
-  of(text: string) {
+  get(text: string) {
     return this.cmds[text] || this.default
   }
 
