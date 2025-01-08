@@ -178,14 +178,28 @@ export const defaultProps: EvalProps = {
 function parseNumber(text: string, base: number | LNumber | LPoint) {
   if (base == 10) return +text
 
+  const numericValue =
+    typeof base == "number" ? base
+    : base.type == "approx" ? base.value
+    : base.type == "exact" ? base.n / base.d
+    : (
+      base.y.type == "approx" ?
+        base.y.value == 0
+      : base.y.n == 0 && base.y.d != 0
+    ) ?
+      base.x.type == "approx" ?
+        base.x.value
+      : base.x.n / base.x.d
+    : null
+
   if (
-    typeof base == "number" &&
-    isSafeInteger(base) &&
-    2 <= base &&
-    base <= 36 &&
+    numericValue &&
+    isSafeInteger(numericValue) &&
+    2 <= numericValue &&
+    numericValue <= 36 &&
     text.indexOf(".") == -1
   ) {
-    return parseInt(text, base)
+    return parseInt(text, numericValue)
   }
 
   throw new Error(
@@ -234,7 +248,7 @@ export function evalBinary(
         split((a, b) => ((a % b) + b) % b),
       )
     case "base": {
-      const base = b()
+      const base = go(bn, { ...props, currentBase: 10 })
       if (base.list) {
         throw new Error("Cannot use a list as a base yet.")
       }
