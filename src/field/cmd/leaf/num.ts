@@ -1,5 +1,5 @@
 import { Leaf } from "."
-import type { Token } from "../../../ast/token"
+import type { Node } from "../../../ast/token"
 import { h, t } from "../../jsx"
 import { Block, Cursor, L, R, type Dir, type InitProps } from "../../model"
 import { CmdSupSub } from "../math/supsub"
@@ -51,7 +51,7 @@ export class CmdNum extends Leaf {
     }
   }
 
-  ir(tokens: Token[]): void {
+  ir(tokens: Node[]): void {
     const last = tokens[tokens.length - 1]
     if (last && last.type == "num") {
       tokens.pop()

@@ -1,5 +1,5 @@
 import { Leaf } from "."
-import type { Token } from "../../../ast/token"
+import type { Node } from "../../../ast/token"
 import { h, t } from "../../jsx"
 import type { WordKind } from "./var"
 
@@ -30,7 +30,7 @@ export class CmdWord extends Leaf {
     return " " + this.text + " "
   }
 
-  ir(tokens: Token[]): void {
+  ir(tokens: Node[]): void {
     tokens.push({
       type: "var",
       value: this.text,

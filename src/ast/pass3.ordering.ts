@@ -1,9 +1,14 @@
-import { getPrecedence, type PuncInfix, type Token } from "./token"
+import { getPrecedence, type Node, type PuncInfix } from "./token"
 
-export function pass3_ordering(tokens: Token[]): Token {
+export function pass3_ordering(tokens: Node[]): Node {
+  if (tokens.length == 0) {
+    return { type: "void" }
+  }
+
   tokens.reverse()
 
-  const output: Token[] = []
+  let isValue = false
+  const output: Node[] = [tokens.pop()!]
   const ops: PuncInfix[] = []
 
   function pop() {
@@ -11,7 +16,6 @@ export function pass3_ordering(tokens: Token[]): Token {
     return tokens.pop()
   }
 
-  let isValue = true
   while (tokens.length) {
     if (isValue) {
       output.push(pop()!)
@@ -41,15 +45,50 @@ export function pass3_ordering(tokens: Token[]): Token {
       getPrecedence(o2.value) >= getPrecedence(o1.value)
     ) {
       pop()
-      output.push(o2)
+
+      const a = output.pop()!
+      const b = output.pop()!
+      const op = o2.value
+      if (op == ",") {
+        if (a.type == "commalist") {
+          output.push(a)
+          a.items.push(b)
+        } else {
+          output.push({ type: "commalist", items: [a, b] })
+        }
+      } else {
+        output.push({ type: "op", kind: op, a, b })
+      }
     }
 
     ops.push(o1)
   }
 
   while (ops.length) {
-    output.push(ops.pop()!)
+    const op = ops.pop()!.value
+    const a = output.pop()!
+    const b = output.pop()!
+    if (op == ",") {
+      if (a.type == "commalist") {
+        output.push(a)
+        a.items.push(b)
+      } else {
+        output.push({ type: "commalist", items: [a, b] })
+      }
+    } else {
+      output.push({ type: "op", kind: op, a, b })
+    }
   }
 
-  return { type: "rpn", nodes: output }
+  const ret = output[0]
+
+  if (!ret) {
+    return {
+      type: "error",
+      reason:
+        "Highly invalid expression encountered. Please contact the authors of nya; this is definitely a bug.",
+    }
+  }
+
+  return ret
 }

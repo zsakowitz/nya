@@ -1,4 +1,4 @@
-import type { Token } from "../../../ast/token"
+import type { Node } from "../../../ast/token"
 import { h } from "../../jsx"
 import {
   Block,
@@ -139,7 +139,7 @@ export class CmdFor extends Command<
     return this.blocks[0].focus(x, y)
   }
 
-  ir(tokens: Token[]): void {
+  ir(tokens: Node[]): void {
     tokens.push({
       type: "for",
       mapped: this.blocks[0].ast(),

@@ -1,5 +1,5 @@
 import { Leaf } from "."
-import type { Token } from "../../../ast/token"
+import type { Node } from "../../../ast/token"
 import { h, t } from "../../jsx"
 import { Cursor, L, R, Span, type Dir, type InitProps } from "../../model"
 import type { Options, WordMap } from "../../options"
@@ -204,7 +204,7 @@ export class CmdVar extends Leaf {
     }
   }
 
-  ir(tokens: Token[]): void {
+  ir(tokens: Node[]): void {
     if (this.kind) {
       if (this.part == L) {
         tokens.push({

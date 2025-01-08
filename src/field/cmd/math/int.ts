@@ -1,4 +1,4 @@
-import type { Token } from "../../../ast/token"
+import type { Node } from "../../../ast/token"
 import { h, U_ZERO_WIDTH_SPACE } from "../../jsx"
 import {
   Block,
@@ -151,7 +151,7 @@ export class CmdInt extends Command<BlocksInt> {
     return focusEdge(this, x)
   }
 
-  ir(tokens: Token[]): void {
+  ir(tokens: Node[]): void {
     tokens.push({
       type: "bigsym",
       cmd: "\\int",

@@ -1,4 +1,4 @@
-import type { Token } from "../../../ast/token"
+import type { Node } from "../../../ast/token"
 import { U_ZERO_WIDTH_SPACE, h, t } from "../../jsx"
 import {
   Block,
@@ -114,7 +114,7 @@ export class CmdFrac extends Command<[Block, Block]> {
     }
   }
 
-  ir(tokens: Token[]): void {
+  ir(tokens: Node[]): void {
     tokens.push({
       type: "frac",
       a: this.blocks[0].ast(),

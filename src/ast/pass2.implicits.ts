@@ -5,7 +5,7 @@ import {
   type PuncBinary,
   type PuncPm,
   type PuncPrefix,
-  type Token,
+  type Node,
 } from "./token"
 
 // rules governing implicits:
@@ -25,18 +25,18 @@ import {
 // WORD = pm* (FN+ | MUL FN*)
 // BIG = big WORD
 
-function isAtom(token: Token | undefined) {
+function isAtom(token: Node | undefined) {
   return token?.type == "var" ? token.kind == "var" : isValueToken(token)
 }
 
-export function pass2_implicits(tokens: Token[]): Token[] {
+export function pass2_implicits(tokens: Node[]): Node[] {
   if (tokens.length == 0) {
     return [{ type: "void" }]
   }
 
   tokens.reverse()
 
-  const ret: Token[] = [takeWord()]
+  const ret: Node[] = [takeWord()]
   let i = 0
   while (tokens.length) {
     i++
@@ -130,8 +130,8 @@ export function pass2_implicits(tokens: Token[]): Token[] {
     return pms
   }
 
-  function reduceSigns(signs: PuncPrefix[], value: Token): Token {
-    return signs.reduceRight<Token>(
+  function reduceSigns(signs: PuncPrefix[], value: Node): Node {
+    return signs.reduceRight<Node>(
       (a, b) => ({ type: "op", kind: b.value, a }),
       value,
     )
@@ -141,7 +141,7 @@ export function pass2_implicits(tokens: Token[]): Token[] {
     tokens.push(...signs.reverse())
   }
 
-  function takeSeq(): Token | undefined {
+  function takeSeq(): Node | undefined {
     if (isNextBig()) {
       return takeBig()!
     }
@@ -161,7 +161,7 @@ export function pass2_implicits(tokens: Token[]): Token[] {
     )
   }
 
-  function takeExp(): Token {
+  function takeExp(): Node {
     let first = takeSeq()
     if (!first) {
       return {
@@ -209,7 +209,7 @@ export function pass2_implicits(tokens: Token[]): Token[] {
     return values[0]!
   }
 
-  function takeMul(): Token {
+  function takeMul(): Node {
     let lhs = takeExp()
     if (lhs.type == "error") {
       return lhs
@@ -229,11 +229,11 @@ export function pass2_implicits(tokens: Token[]): Token[] {
     return lhs
   }
 
-  function takeFn(): Token | undefined {
+  function takeFn(): Node | undefined {
     const name = fn()
     if (!name) return
 
-    const nested: [PuncPrefix[], Token][] = []
+    const nested: [PuncPrefix[], Node][] = []
 
     while (true) {
       const mySigns = takeSigns()
@@ -251,7 +251,7 @@ export function pass2_implicits(tokens: Token[]): Token[] {
     return {
       type: "call",
       name,
-      args: nested.reduceRight<Token>(
+      args: nested.reduceRight<Node>(
         (args, [signs, name]) =>
           reduceSigns(signs, { type: "call", name, args }),
         contents,
@@ -259,7 +259,7 @@ export function pass2_implicits(tokens: Token[]): Token[] {
     }
   }
 
-  function takeWord(): Token {
+  function takeWord(): Node {
     const mySigns = takeSigns()
     if (isNextFn()) {
       let lhs = takeFn()!
@@ -283,7 +283,7 @@ export function pass2_implicits(tokens: Token[]): Token[] {
     }
   }
 
-  function takeBig(): Token | undefined {
+  function takeBig(): Node | undefined {
     const head = big()
     if (!head) return
 

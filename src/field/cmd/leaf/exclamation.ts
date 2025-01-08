@@ -1,5 +1,5 @@
 import { Leaf } from "."
-import type { Token } from "../../../ast/token"
+import type { Node } from "../../../ast/token"
 import { h } from "../../jsx"
 import { L, type Cursor } from "../../model"
 
@@ -28,7 +28,7 @@ export class CmdExclamation extends Leaf {
     return true
   }
 
-  ir(tokens: Token[]): void {
+  ir(tokens: Node[]): void {
     tokens.push({ type: "punc", value: "!", kind: "suffix" })
   }
 }

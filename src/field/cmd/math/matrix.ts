@@ -1,4 +1,4 @@
-import type { Token } from "../../../ast/token"
+import type { Node } from "../../../ast/token"
 import { h } from "../../jsx"
 import {
   Block,
@@ -406,7 +406,7 @@ export class CmdMatrix extends Command<Block[]> {
     }
   }
 
-  ir(tokens: Token[]): void {
+  ir(tokens: Node[]): void {
     tokens.push({
       type: "matrix",
       cols: this.cols,

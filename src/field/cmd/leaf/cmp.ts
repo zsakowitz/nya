@@ -1,4 +1,4 @@
-import type { Token } from "../../../ast/token"
+import type { Node } from "../../../ast/token"
 import { L, type Cursor, type Dir, type InitProps } from "../../model"
 import { Op, OpMinus, OpRightarrow, OpTo } from "./op"
 
@@ -88,7 +88,7 @@ function ceq(kind: "=", eq: Data, ne: Data, endsImplicitGroup = true) {
       super.delete(cursor, from)
     }
 
-    ir(tokens: Token[]): void {
+    ir(tokens: Node[]): void {
       tokens.push({
         type: "punc",
         kind: "infix",
@@ -168,7 +168,7 @@ function cmp(
       super.delete(cursor, from)
     }
 
-    ir(tokens: Token[]): void {
+    ir(tokens: Node[]): void {
       tokens.push({
         type: "punc",
         kind: "infix",

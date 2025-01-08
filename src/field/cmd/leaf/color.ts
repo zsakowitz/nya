@@ -1,5 +1,5 @@
 import { Leaf } from "."
-import type { Token } from "../../../ast/token"
+import type { Node } from "../../../ast/token"
 import { h, hx } from "../../jsx"
 import { L, type Cursor, type InitProps } from "../../model"
 
@@ -94,7 +94,7 @@ export class CmdColor extends Leaf {
     return `\\color{${this.color}}`
   }
 
-  ir(tokens: Token[]): void {
+  ir(tokens: Node[]): void {
     const color = this.color
     const r = parseInt(color.slice(1, 3), 16).toString()
     const g = parseInt(color.slice(3, 5), 16).toString()

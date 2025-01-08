@@ -1,4 +1,4 @@
-import type { Token } from "../../../ast/token"
+import type { Node } from "../../../ast/token"
 import { h, p, svg } from "../../jsx"
 import {
   Block,
@@ -250,7 +250,7 @@ export class CmdRoot extends Command<
     }
   }
 
-  ir(tokens: Token[]): void {
+  ir(tokens: Node[]): void {
     tokens.push({
       type: "root",
       root: this.blocks[1]?.ast(),

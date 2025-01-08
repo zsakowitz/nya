@@ -1,4 +1,4 @@
-import type { Token } from "../../../ast/token"
+import type { Node } from "../../../ast/token"
 import { U_ZERO_WIDTH_SPACE, h, t } from "../../jsx"
 import {
   Block,
@@ -270,7 +270,7 @@ export class CmdSupSub extends Command {
     }
   }
 
-  ir(tokens: Token[]): void {
+  ir(tokens: Node[]): void {
     if (this.sub) {
       const last = tokens[tokens.length - 1]
       if (last && (last.type == "num" || last.type == "var")) {

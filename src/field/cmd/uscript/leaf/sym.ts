@@ -1,5 +1,5 @@
 import { CmuLeaf } from "."
-import type { Token } from "../../../../ast/token"
+import type { Node } from "../../../../ast/token"
 import { h, usvg } from "../../../jsx"
 import { L, type Cursor, type InitProps, type InitRet } from "../../../model"
 
@@ -95,7 +95,7 @@ export class CmuSym extends CmuLeaf {
     return "[redacted]"
   }
 
-  ir(tokens: Token[]): void {
+  ir(tokens: Node[]): void {
     if (this.sym == "+" || this.sym == "-") {
       tokens.push({ type: "punc", kind: "pm", value: this.sym })
       return

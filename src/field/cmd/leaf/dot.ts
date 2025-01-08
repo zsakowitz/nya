@@ -1,5 +1,5 @@
 import { Leaf } from "."
-import { type Token } from "../../../ast/token"
+import { type Node } from "../../../ast/token"
 import { h } from "../../jsx"
 import { L, R, type Cursor } from "../../model"
 import { CmdVar } from "./var"
@@ -46,7 +46,7 @@ export class CmdDot extends Leaf {
     return ","
   }
 
-  ir(tokens: Token[]): void {
+  ir(tokens: Node[]): void {
     const last = tokens[tokens.length - 1]
     if (last?.type == "punc") {
       if (last.value == "." || last.value == "..") {

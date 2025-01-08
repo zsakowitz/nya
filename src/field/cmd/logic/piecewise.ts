@@ -1,4 +1,4 @@
-import type { Token } from "../../../ast/token"
+import type { Node } from "../../../ast/token"
 import { h } from "../../jsx"
 import {
   Block,
@@ -245,7 +245,7 @@ export class CmdPiecewise extends Command {
     }
   }
 
-  ir(tokens: Token[]): void {
+  ir(tokens: Node[]): void {
     const pieces = []
     for (let i = 0; i < this.blocks.length - 1; i += 2) {
       pieces.push({

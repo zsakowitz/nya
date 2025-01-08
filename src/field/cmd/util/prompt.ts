@@ -1,4 +1,4 @@
-import type { Token } from "../../../ast/token"
+import type { Node } from "../../../ast/token"
 import type { FieldInert } from "../../field-inert"
 import { h, hx } from "../../jsx"
 import {
@@ -120,7 +120,7 @@ export class CmdPrompt extends Leaf {
     return "\\text{typing...}"
   }
 
-  ir(_tokens: Token[]): void {
+  ir(_tokens: Node[]): void {
     // Empty, as {@linkcode CmdPrompt} isn't a complete command
   }
 }

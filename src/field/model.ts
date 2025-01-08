@@ -1,4 +1,4 @@
-import { tokensToAst, type Node, type Token } from "../ast/token"
+import { tokensToAst, type Node, type Node } from "../ast/token"
 import type { CmdFrac } from "./cmd/math/frac"
 import type { FieldInert } from "./field-inert"
 import { h } from "./jsx"
@@ -74,8 +74,8 @@ export class Block {
   }
 
   /** Tokenizes this {@linkcode Block}'s contents as LaTeX. */
-  ir(): Token[] {
-    const tokens: Token[] = []
+  ir(): Node[] {
+    const tokens: Node[] = []
     let el = this.ends[L]
     while (el) {
       el.ir(tokens)
@@ -1584,7 +1584,7 @@ export abstract class Command<
   insRow?(cursor: Cursor, block: Block, dir: VDir | null): void
 
   /** Tokenizes this {@linkcode Command}'s contents as LaTeX. */
-  abstract ir(tokens: Token[]): void
+  abstract ir(tokens: Node[]): void
 }
 
 /** The updated cursor or selection created by {@linkcode Init}. */

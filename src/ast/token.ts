@@ -125,8 +125,11 @@ export type PuncPrefix =
 /** A binary operation derived from infix operators. */
 export type OpBinary = Exclude<PuncBinary, ",">
 
-/** A part of the AST's intermediate representation. */
-export type Token =
+/**
+ * A part of the AST. The intermediate representation is so close to the final
+ * representation that they're essentially merged.
+ */
+export type Node =
   | { type: "void" }
   | { type: "num"; value: string; sub?: Node }
   | { type: "var"; value: string; kind: WordKind; sub?: Node; sup?: Node }
@@ -149,15 +152,11 @@ export type Token =
   | { type: "op"; kind: PuncUnary; a: Node; b?: undefined }
   | { type: "commalist"; items: Node[] }
   | { type: "factorial"; on: Node; repeats: number | Node }
-  | { type: "rpn"; nodes: Node[] }
   | { type: "error"; reason: string }
   | Punc
 
-/** A node in the final AST. */
-export type Node = Token
-
 /** Parses a list of tokens into a complete AST. */
-export function tokensToAst(tokens: Token[]): Node {
+export function tokensToAst(tokens: Node[]): Node {
   tokens = pass1_suffixes(tokens)
   tokens = pass2_implicits(tokens)
   return pass3_ordering(tokens)
@@ -168,7 +167,7 @@ export function tokensToAst(tokens: Token[]): Node {
  * computed as a mathematical expression). For instance, `23` is a token, but
  * `.` is not.
  */
-export function isValueToken(token: Token | undefined) {
+export function isValueToken(token: Node | undefined) {
   return !(
     token == null ||
     token.type == "bigsym" ||

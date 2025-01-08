@@ -1,5 +1,5 @@
 import { Leaf } from "."
-import type { Token } from "../../../ast/token"
+import type { Node } from "../../../ast/token"
 import { h } from "../../jsx"
 import { L, type Cursor } from "../../model"
 
@@ -28,7 +28,7 @@ export class CmdComma extends Leaf {
     return true
   }
 
-  ir(tokens: Token[]): void {
+  ir(tokens: Node[]): void {
     const last = tokens[tokens.length - 1]
     if (last?.type == "punc" && (last.value == ".." || last.value == "...")) {
       tokens.push({ type: "void" })

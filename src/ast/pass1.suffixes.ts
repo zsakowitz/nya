@@ -1,4 +1,4 @@
-import { isValueToken, type Token } from "./token"
+import { isValueToken, type Node } from "./token"
 
 /**
  * Resolved in this pass:
@@ -9,7 +9,7 @@ import { isValueToken, type Token } from "./token"
  * - Function calls
  * - Indexing
  */
-export function pass1_suffixes(tokens: Token[]) {
+export function pass1_suffixes(tokens: Node[]) {
   for (let i = 0; i < tokens.length; i++) {
     const prev = tokens[i - 1]
     const self = tokens[i]!

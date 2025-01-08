@@ -1,5 +1,5 @@
 import { Leaf } from "."
-import type { Punc, PuncBinary, PuncPm, Token } from "../../../ast/token"
+import type { Punc, PuncBinary, PuncPm, Node } from "../../../ast/token"
 import { h, t } from "../../jsx"
 import { L, R, type Cursor, type Dir, type InitProps } from "../../model"
 import { CmdSupSub } from "../math/supsub"
@@ -101,7 +101,7 @@ export function op(
       return latex
     }
 
-    ir(tokens: Token[]): void {
+    ir(tokens: Node[]): void {
       tokens.push(punc())
     }
   }
@@ -157,7 +157,7 @@ export function opm(
       return latex
     }
 
-    ir(tokens: Token[]): void {
+    ir(tokens: Node[]): void {
       tokens.push({ type: "punc", kind: "pm", value: latex })
     }
   }
@@ -208,7 +208,7 @@ export class OpNeg extends Leaf {
     return "\\neg "
   }
 
-  ir(tokens: Token[]): void {
+  ir(tokens: Node[]): void {
     tokens.push({ type: "punc", kind: "prefix", value: "\\neg " })
   }
 
