@@ -2,11 +2,12 @@ import { OpApprox, OpEq } from "../field/cmd/leaf/cmp"
 import { CmdComma } from "../field/cmd/leaf/comma"
 import { CmdDot } from "../field/cmd/leaf/dot"
 import { CmdNum } from "../field/cmd/leaf/num"
-import { OpMinus, OpPlus } from "../field/cmd/leaf/op"
+import { OpMinus, OpPlus, OpTimes } from "../field/cmd/leaf/op"
 import { SymInfinity } from "../field/cmd/leaf/sym"
 import { CmdWord } from "../field/cmd/leaf/word"
 import { CmdBrack } from "../field/cmd/math/brack"
 import { CmdFrac } from "../field/cmd/math/frac"
+import { CmdSupSub } from "../field/cmd/math/supsub"
 import type { FieldInert } from "../field/field-inert"
 import { Block, L, R, type Cursor } from "../field/model"
 import type { Node, PuncBinary, PuncUnary } from "./token"
@@ -405,7 +406,21 @@ function frac(a: number, b: number): LNumber {
 }
 
 function parseNumber(text: string, base: number | LNumber | LPoint): LNumber {
-  if (base == 10) {
+  const numericValue =
+    typeof base == "number" ? base
+    : base.type == "approx" ? base.value
+    : base.type == "exact" ? base.n / base.d
+    : (
+      base.y.type == "approx" ?
+        base.y.value == 0
+      : base.y.n == 0 && base.y.d != 0
+    ) ?
+      base.x.type == "approx" ?
+        base.x.value
+      : base.x.n / base.x.d
+    : null
+
+  if (numericValue == 10) {
     const value = +text
     if (text[text.length - 1] == ".") text = text.slice(0, -1)
     if (text[0] == ".") text = "0" + text
@@ -423,20 +438,6 @@ function parseNumber(text: string, base: number | LNumber | LPoint): LNumber {
     }
   }
 
-  const numericValue =
-    typeof base == "number" ? base
-    : base.type == "approx" ? base.value
-    : base.type == "exact" ? base.n / base.d
-    : (
-      base.y.type == "approx" ?
-        base.y.value == 0
-      : base.y.n == 0 && base.y.d != 0
-    ) ?
-      base.x.type == "approx" ?
-        base.x.value
-      : base.x.n / base.x.d
-    : null
-
   if (
     numericValue &&
     safe(numericValue) &&
@@ -444,11 +445,15 @@ function parseNumber(text: string, base: number | LNumber | LPoint): LNumber {
     numericValue <= 36 &&
     text.indexOf(".") == -1
   ) {
-    return toNum(parseInt(text, numericValue))
+    const int = parseInt(text, numericValue)
+    if (int != int) {
+      throw new Error(`${text} is not valid in base ${numericValue}.`)
+    }
+    return toNum(int)
   }
 
   throw new Error(
-    "Bases other than 2-36 or on non-integers are not implemented yet.",
+    "Bases other than 2-36 and evaluating a non-integer in a particular base are not suppported yet.",
   )
 }
 
@@ -708,8 +713,19 @@ export function getOutputBase(
   }
 }
 
-function displayDigits(cursor: Cursor, digits: string, i?: boolean) {
-  for (const digit of digits) {
+function displayDigits(
+  cursor: Cursor,
+  digits: string,
+  imag?: boolean,
+  base?: string,
+) {
+  let wroteBase = false
+
+  if (digits == "1" && imag) digits = ""
+  if (digits == "-1" && imag) digits = "-"
+
+  loop: for (let i = 0; i < digits.length; i++) {
+    const digit = digits[i]!
     switch (digit) {
       case "∞":
         new SymInfinity().insertAt(cursor, L)
@@ -720,14 +736,58 @@ function displayDigits(cursor: Cursor, digits: string, i?: boolean) {
       case ".":
         new CmdDot().insertAt(cursor, L)
         break
+      case "e": {
+        writeBase()
+        if (imag) {
+          new CmdWord("i", "var", true).insertAt(cursor, L)
+          imag = false
+        }
+        new OpTimes().insertAt(cursor, L)
+        new CmdNum("1").insertAt(cursor, L)
+        new CmdNum("0").insertAt(cursor, L)
+        const sup = new Block(null)
+        new CmdSupSub(null, sup).insertAt(cursor, L)
+        {
+          const cursor = sup.cursor(R)
+          for (i++; i < digits.length; i++) {
+            const digit = digits[i]!
+            if (digit == "-") {
+              new OpMinus().insertAt(cursor, L)
+            } else if (digit != "+") {
+              new CmdNum(digit).insertAt(cursor, L)
+            }
+          }
+        }
+        break loop
+      }
       default:
         new CmdNum(digit).insertAt(cursor, L)
     }
   }
 
-  if (i) {
+  writeBase()
+
+  if (imag) {
     new CmdWord("i", "var", true).insertAt(cursor, L)
   }
+
+  function writeBase() {
+    if (!base) return
+    wroteBase = true
+    const sub = new Block(null)
+    new CmdSupSub(sub, null).insertAt(cursor, L)
+    new CmdNum(base).insertAt(sub.cursor(R), L)
+  }
+}
+
+function baseToStr(baseRaw: Base) {
+  const base =
+    typeof baseRaw == "number" ? baseRaw
+    : baseRaw.type == "approx" ? baseRaw.value
+    : baseRaw.type == "exact" && baseRaw.d == 1 ? baseRaw.n
+    : error("Complex bases are not supported yet.")
+
+  return base == 10 ? "" : base + ""
 }
 
 function displayNum(
@@ -736,7 +796,9 @@ function displayNum(
   base: Base,
   forceSign?: boolean,
   i?: boolean,
+  noBaseSubscript?: boolean,
 ) {
+  const sub = noBaseSubscript ? undefined : baseToStr(base)
   if (num.type == "approx") {
     if (forceSign && num.value >= 0) {
       new OpPlus().insertAt(cursor, L)
@@ -746,12 +808,12 @@ function displayNum(
     else if (val == "-Infinity") val = "-∞"
     else if (val == "NaN") val = "NaN"
     else if (val.indexOf(".") == -1) val += ".0"
-    displayDigits(cursor, val, i)
+    displayDigits(cursor, val, i, sub)
   } else if (num.d == 1) {
     if (forceSign && num.n >= 0) {
       new OpPlus().insertAt(cursor, L)
     }
-    displayDigits(cursor, numToBase(num.n, base), i)
+    displayDigits(cursor, numToBase(num.n, base), i, sub)
   } else {
     if (forceSign && num.n >= 0) {
       new OpPlus().insertAt(cursor, L)
@@ -762,8 +824,19 @@ function displayNum(
       new OpMinus().insertAt(cursor, L)
     }
     new CmdFrac(n, d).insertAt(cursor, L)
-    displayDigits(n.cursor(R), numToBase(num.n < 0 ? -num.n : num.n, base), i)
-    displayDigits(d.cursor(R), numToBase(num.d, base))
+    const num1 = num.n == 1 || num.n == -1
+    displayDigits(
+      n.cursor(R),
+      numToBase(num.n < 0 ? -num.n : num.n, base),
+      i,
+      sub && !(i && num1) ? sub : undefined,
+    )
+    displayDigits(
+      d.cursor(R),
+      numToBase(num.d, base),
+      undefined,
+      sub && i && num1 ? sub : undefined,
+    )
   }
 }
 
@@ -785,7 +858,7 @@ function isZero(x: number | LNumber | LPoint): boolean {
 function displayComplex(cursor: Cursor, num: LPoint, base: Base) {
   const showX = !isZero(num.x)
   if (showX) displayNum(cursor, num.x, base)
-  displayNum(cursor, num.y, base, showX, true)
+  displayNum(cursor, num.y, base, showX, true, showX)
 }
 
 function error(reason: string): never {

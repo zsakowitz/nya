@@ -10,6 +10,16 @@ import { Expr, Sheet } from "./index.js"
 const sheet = new Sheet(exts, { field: options })
 document.body.appendChild(sheet.el)
 
+new Expr(sheet).field.typeEach`e ^ i p i + 1`
+new Expr(sheet).field.typeEach`2 + 3`
+new Expr(sheet).field.typeEach`( 4 - 5 ) \\odot Enter ( 3 + 9 i )`
+new Expr(sheet).field.typeEach`2 / 3 ArrowRight i - s q r t 4`
+new Expr(sheet).field.typeEach`[ 2 , 3 ] \\times Enter [ 4 , 5 ]`
+new Expr(sheet).field.typeEach`( 5 m o d 6 ) ^ 7 . 3`
+new Expr(sheet).field.typeEach`- 2 * p i m o d 6`
+new Expr(sheet).field.typeEach`7 3 * 4 b a s e 1 5 b a s e 2`
+new Expr(sheet).field.typeEach`7 3 * 4 b a s e 1 5`
+
 {
   const expr = new Expr(sheet)
   expr.field.setPrefix((field) => {
