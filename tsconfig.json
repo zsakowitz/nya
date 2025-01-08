@@ -6,7 +6,6 @@
     "noEmit": true,
     "skipDefaultLibCheck": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true
   }

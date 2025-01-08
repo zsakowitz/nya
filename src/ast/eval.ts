@@ -186,7 +186,7 @@ function point(n: Single): LPoint {
 }
 
 const add = {
-  x(a: LExact, b: LExact): LExact | null {
+  x(a: LExact, b: LExact): LNumber | null {
     const s1 = a.n * b.d
     if (!safe(s1)) return null
     const s2 = b.n * a.d
@@ -195,7 +195,7 @@ const add = {
     if (!safe(s3)) return null
     const s4 = s1 + s2
     if (!safe(s4)) return null
-    return { type: "exact", n: s4, d: s3 }
+    return frac(s4, s3)
   },
   n(a: LNumber, b: LNumber): LNumber {
     if (a.type == "exact" && b.type == "exact") {
@@ -221,7 +221,7 @@ const add = {
 }
 
 const sub = {
-  x(a: LExact, b: LExact): LExact | null {
+  x(a: LExact, b: LExact): LNumber | null {
     const s1 = a.n * b.d
     if (!safe(s1)) return null
     const s2 = b.n * a.d
@@ -230,7 +230,7 @@ const sub = {
     if (!safe(s3)) return null
     const s4 = s1 - s2
     if (!safe(s4)) return null
-    return { type: "exact", n: s4, d: s3 }
+    return frac(s4, s3)
   },
   n(a: LNumber, b: LNumber): LNumber {
     if (a.type == "exact" && b.type == "exact") {
@@ -261,8 +261,44 @@ export const defaultProps: EvalProps = {
   bindings: Object.create(null),
 }
 
-function parseNumber(text: string, base: number | LNumber | LPoint) {
-  if (base == 10) return +text
+function gcd(a: number, b: number) {
+  for (let temp = b; b !== 0; ) {
+    b = a % b
+    a = temp
+    temp = b
+  }
+  return a
+}
+
+function frac(a: number, b: number): LNumber {
+  if (b == 0) return { type: "approx", value: a / b }
+  if (a == 0) return { type: "exact", n: 0, d: 1 }
+  if (b < 0) {
+    a = -a
+    b = -b
+  }
+  const divBy = gcd(a < 0 ? -a : a, b)
+  return { type: "exact", n: a / divBy, d: b / divBy }
+}
+
+function parseNumber(text: string, base: number | LNumber | LPoint): LNumber {
+  if (base == 10) {
+    const value = +text
+    if (text[text.length - 1] == ".") text = text.slice(0, -1)
+    if (text[0] == ".") text = "0" + text
+    if (text[0] == "-.") text = "-0." + text.slice(3)
+    if ("" + value == text) {
+      const decimal = text.indexOf(".")
+      if (decimal == -1) {
+        return { type: "exact", n: value, d: 1 }
+      } else {
+        const n = parseInt(text.replace(".", ""), 10)
+        return frac(n, 10 ** (text.length - decimal - 1))
+      }
+    } else {
+      return approx(value)
+    }
+  }
 
   const numericValue =
     typeof base == "number" ? base
@@ -285,7 +321,7 @@ function parseNumber(text: string, base: number | LNumber | LPoint) {
     numericValue <= 36 &&
     text.indexOf(".") == -1
   ) {
-    return parseInt(text, numericValue)
+    return toNum(parseInt(text, numericValue))
   }
 
   throw new Error(
@@ -424,6 +460,11 @@ function raise(a: Value, b: Value): Value {
 const PI: Value = { type: "number", list: false, value: approx(Math.PI) }
 const TAU: Value = { type: "number", list: false, value: approx(2 * Math.PI) }
 const E: Value = { type: "number", list: false, value: approx(Math.E) }
+const I: Value = {
+  type: "complex",
+  list: false,
+  value: { type: "point", x: ZERO, y: toNum(1) },
+}
 const INFINITY: Value = { type: "number", list: false, value: approx(1 / 0) }
 
 /** Evaluates a node. */
@@ -441,7 +482,7 @@ export function go(node: Node, props: EvalProps): Value {
       return {
         type: "number",
         list: false,
-        value: toNum(parseNumber(node.value, props.currentBase)),
+        value: parseNumber(node.value, props.currentBase),
       }
     case "frac":
       return evalBinary("÷", node.a, node.b, props)
@@ -503,6 +544,7 @@ export function go(node: Node, props: EvalProps): Value {
         : node.value == "π" ? PI
         : node.value == "τ" ? TAU
         : node.value == "e" ? E
+        : node.value == "i" ? I
         : node.value == "∞" ? INFINITY
         : null
 
