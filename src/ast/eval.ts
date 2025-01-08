@@ -508,6 +508,8 @@ function evalBinary(
         a(),
         zip(b(), [neg, identity], (a, b) => b(a)),
       )
+    case "\\uparrow ":
+      return pow.v(a(), b())
     case "for":
     case "with":
     case "\\and ":
@@ -518,7 +520,6 @@ function evalBinary(
     case "\\Rightarrow ":
     case ".":
     case ",":
-    case "\\uparrow ":
     default:
       throw new Error(
         `Cannot evaluate binary operator '${typeof op == "string" ? op : op.dir}' yet.`,
