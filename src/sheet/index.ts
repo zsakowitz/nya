@@ -203,17 +203,14 @@ export class Sheet {
     this.el = h(
       "block fixed inset-0 grid grid-cols-[400px_1fr] select-none [--nya-focus:theme(colors.blue.400)]",
       h(
-        "flex flex-col overflow-y-auto relative border-r",
+        "block overflow-y-auto relative border-r",
         h(
-          "block",
-          h(
-            "block h-12 w-full bg-slate-100 border-b border-slate-200 flex gap-8",
-          ),
-          elExpressions,
+          "block h-12 w-full bg-slate-100 border-b border-slate-200 flex gap-8",
         ),
+        elExpressions,
       ),
       (this.elTokens = hx("pre", "h-screen overflow-y-auto")),
-      // h("flex", this.paper.el),
+      h("flex", this.paper.el),
       (this.elLogo = hx(
         "button",
         "absolute bottom-0 right-0 p-2",
