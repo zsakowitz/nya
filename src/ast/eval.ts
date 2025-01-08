@@ -486,7 +486,19 @@ function evalBinary(
         split((a, b) => ({ type: "number", value: approx(((a % b) + b) % b) })),
       )
     case "base": {
-      const base = go(bn, { ...props, currentBase: 10 })
+      const base: Value =
+        (
+          bn.type == "var" &&
+          bn.kind == "var" &&
+          (bn.value == "mrrp" || bn.value == "meow")
+        ) ?
+          {
+            type: "number",
+            list: false,
+            value: { type: "exact", n: 10, d: 1, ...{ btw: bn.value } },
+          }
+        : go(bn, { ...props, currentBase: 10 })
+
       if (base.list) {
         throw new Error("Cannot use a list as a base yet.")
       }
@@ -644,7 +656,7 @@ export function go(node: Node, props: EvalProps): Value {
       }
       break
     case "var": {
-      const value =
+      const value: Value | null =
         node.sub ? null
         : node.value == "π" ? PI
         : node.value == "τ" ? TAU
@@ -697,11 +709,13 @@ export function go(node: Node, props: EvalProps): Value {
 export type Base = number | LNumber | LPoint
 
 /** Gets the base an expression should be displayed to the user in. */
-export function getOutputBase(
-  node: Node,
-  props: EvalProps,
-): number | LNumber | LPoint {
+export function getOutputBase(node: Node, props: EvalProps): Base {
   if (node.type == "op" && node.kind == "base" && node.b) {
+    if (node.b.type == "var" && node.b.kind == "var") {
+      if (node.b.value == "mrrp" || node.b.value == "meow") {
+        return { type: "exact", n: 10, d: 1, ...{ btw: node.b.value } }
+      }
+    }
     const value = go(node.b, props)
     if (value.list) {
       throw new Error("Cannot represent numbers in a list of bases.")
@@ -716,13 +730,19 @@ export function getOutputBase(
 function displayDigits(
   cursor: Cursor,
   digits: string,
+  base: Base,
   imag?: boolean,
-  base?: string,
+  shouldWriteBase?: boolean,
 ) {
-  let wroteBase = false
-
   if (digits == "1" && imag) digits = ""
   if (digits == "-1" && imag) digits = "-"
+
+  if (typeof base == "object" && "btw" in base && base.btw == "meow") {
+    digits = digits.replace(/\d/g, (x) => "mmrraaooww"[x as any]!)
+  }
+  if (typeof base == "object" && "btw" in base && base.btw == "mrrp") {
+    digits = digits.replace(/\d/g, (x) => "mmrrrrrrpp"[x as any]!)
+  }
 
   loop: for (let i = 0; i < digits.length; i++) {
     const digit = digits[i]!
@@ -772,11 +792,10 @@ function displayDigits(
   }
 
   function writeBase() {
-    if (!base) return
-    wroteBase = true
+    if (!shouldWriteBase) return
     const sub = new Block(null)
     new CmdSupSub(sub, null).insertAt(cursor, L)
-    new CmdNum(base).insertAt(sub.cursor(R), L)
+    new CmdNum(baseToStr(base)).insertAt(sub.cursor(R), L)
   }
 }
 
@@ -798,7 +817,6 @@ function displayNum(
   i?: boolean,
   noBaseSubscript?: boolean,
 ) {
-  const sub = noBaseSubscript ? undefined : baseToStr(base)
   if (num.type == "approx") {
     if (forceSign && num.value >= 0) {
       new OpPlus().insertAt(cursor, L)
@@ -808,12 +826,12 @@ function displayNum(
     else if (val == "-Infinity") val = "-∞"
     else if (val == "NaN") val = "NaN"
     else if (val.indexOf(".") == -1) val += ".0"
-    displayDigits(cursor, val, i, sub)
+    displayDigits(cursor, val, base, i, !noBaseSubscript)
   } else if (num.d == 1) {
     if (forceSign && num.n >= 0) {
       new OpPlus().insertAt(cursor, L)
     }
-    displayDigits(cursor, numToBase(num.n, base), i, sub)
+    displayDigits(cursor, numToBase(num.n, base), base, i, !noBaseSubscript)
   } else {
     if (forceSign && num.n >= 0) {
       new OpPlus().insertAt(cursor, L)
@@ -828,14 +846,16 @@ function displayNum(
     displayDigits(
       n.cursor(R),
       numToBase(num.n < 0 ? -num.n : num.n, base),
+      base,
       i,
-      sub && !(i && num1) ? sub : undefined,
+      !(i && num1) ? !noBaseSubscript : undefined,
     )
     displayDigits(
       d.cursor(R),
       numToBase(num.d, base),
+      base,
       undefined,
-      sub && i && num1 ? sub : undefined,
+      i && num1 ? !noBaseSubscript : false,
     )
   }
 }

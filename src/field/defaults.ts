@@ -230,6 +230,8 @@ export const words = new WordMap<WordKind>([
   ["intersection", "prefix"],
   ["segment", "prefix"],
   ["line", "prefix"],
+  ["mrrp", "var"],
+  ["meow", "var"],
   ["ray", "prefix"],
   ["vector", "prefix"],
   ["parallel", "prefix"],
