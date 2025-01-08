@@ -136,10 +136,8 @@ export class Expr {
         const before =
           this.sheet.exprs[expr.index + 1]?.el ?? this.sheet.elNextExpr
         this.sheet.elExpressions.insertBefore(expr.el, before)
+        setTimeout(() => before.scrollIntoView({ behavior: "instant" }))
         setTimeout(() => expr.field.el.focus())
-        setTimeout(() =>
-          this.sheet.elNextExpr.scrollIntoView({ behavior: "instant" }),
-        )
       }
     })
     sheet.elExpressions.insertBefore(this.el, sheet.elExpressions.lastChild)
