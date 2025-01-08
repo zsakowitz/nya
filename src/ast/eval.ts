@@ -165,9 +165,9 @@ function zip<T>(a: Value, b: T[], go: (a: Single, b: T) => Single): Value {
 }
 
 /** Props passed to the evaluator. */
-interface EvalProps {
+export interface EvalProps {
   /** Changed by the `base` operator. */
-  currentBase: number | LNumber | LPoint
+  currentBase: Base
 
   /** Changed by variables, the `with` operator, and the `for` operator. */
   bindings: Record<string, Value>
@@ -712,12 +712,29 @@ export function go(node: Node, props: EvalProps): Value {
   throw new Error(`The '${node.type}' node type is not implemented yet.`)
 }
 
-function displayDigits(cursor: Cursor, digits: string) {
+/** A base which can represent input and output values. */
+export type Base = number | LNumber | LPoint
+
+/** Gets the base an expression should be displayed to the user in. */
+export function getOutputBase(
+  node: Node,
+  props: EvalProps,
+): number | LNumber | LPoint {
+  if (node.type == "op" && node.kind == "base" && node.b) {
+    const value = go(node.b, props)
+    if (value.list) {
+      throw new Error("Cannot represent numbers in a list of bases.")
+    } else {
+      return value.value
+    }
+  } else {
+    return props.currentBase
+  }
+}
+
+function displayDigits(cursor: Cursor, digits: string, i?: boolean) {
   for (const digit of digits) {
     switch (digit) {
-      case "i":
-        new CmdWord("i", "var", true).insertAt(cursor, L)
-        break
       case "∞":
         new SymInfinity().insertAt(cursor, L)
         break
@@ -731,11 +748,16 @@ function displayDigits(cursor: Cursor, digits: string) {
         new CmdNum(digit).insertAt(cursor, L)
     }
   }
+
+  if (i) {
+    new CmdWord("i", "var", true).insertAt(cursor, L)
+  }
 }
 
 function displayNum(
   cursor: Cursor,
   num: LNumber,
+  base: Base,
   forceSign?: boolean,
   i?: boolean,
 ) {
@@ -743,17 +765,17 @@ function displayNum(
     if (forceSign && num.value >= 0) {
       new OpPlus().insertAt(cursor, L)
     }
-    let val = "" + num.value
+    let val = numToBase(num.value, base)
     if (val == "Infinity") val = "∞"
     else if (val == "-Infinity") val = "-∞"
     else if (val == "NaN") val = "NaN"
     else if (val.indexOf(".") == -1) val += ".0"
-    displayDigits(cursor, val + (i ? "i" : ""))
+    displayDigits(cursor, val, i)
   } else if (num.d == 1) {
     if (forceSign && num.n >= 0) {
       new OpPlus().insertAt(cursor, L)
     }
-    displayDigits(cursor, num.n + (i ? "i" : ""))
+    displayDigits(cursor, numToBase(num.n, base), i)
   } else {
     if (forceSign && num.n >= 0) {
       new OpPlus().insertAt(cursor, L)
@@ -764,8 +786,8 @@ function displayNum(
       new OpMinus().insertAt(cursor, L)
     }
     new CmdFrac(n, d).insertAt(cursor, L)
-    displayDigits(n.cursor(R), (num.n < 0 ? -num.n : num.n) + (i ? "i" : ""))
-    displayDigits(d.cursor(R), num.d + "")
+    displayDigits(n.cursor(R), numToBase(num.n < 0 ? -num.n : num.n, base), i)
+    displayDigits(d.cursor(R), numToBase(num.d, base))
   }
 }
 
@@ -784,16 +806,47 @@ function isZero(x: number | LNumber | LPoint): boolean {
   }
 }
 
-function displayComplex(cursor: Cursor, num: LPoint) {
+function displayComplex(cursor: Cursor, num: LPoint, base: Base) {
   const showX = !isZero(num.x)
-  if (showX) displayNum(cursor, num.x)
-  displayNum(cursor, num.y, showX, true)
+  if (showX) displayNum(cursor, num.x, base)
+  displayNum(cursor, num.y, base, showX, true)
+}
+
+function error(reason: string): never {
+  throw new Error(reason)
+}
+
+function numToBase(value: number, baseRaw: Base): string {
+  const base =
+    typeof baseRaw == "number" ? baseRaw
+    : baseRaw.type == "approx" ? baseRaw.value
+    : baseRaw.type == "exact" && baseRaw.d == 1 ? baseRaw.n
+    : error("Complex bases are not supported yet.")
+
+  if (!safe(base)) {
+    throw new Error("Decimal bases are not supported yet.")
+  }
+
+  if (base <= -2) {
+    throw new Error("Negative bases are not supported yet.")
+  }
+
+  if (base <= 1) {
+    throw new Error(`Base ${base} is not supported.`)
+  }
+
+  if (base > 36) {
+    throw new Error(`Base ${base} is not supported yet.`)
+  }
+
+  return value.toString(base)
 }
 
 function displayList<T>(
   cursor: Cursor,
   data: T[],
-  display: (cursor: Cursor, value: T) => void,
+  base: Base,
+  display: (cursor: Cursor, value: T, base: Base) => void,
 ) {
   const block = new Block(null)
   {
@@ -802,7 +855,7 @@ function displayList<T>(
       if (i != 0) {
         new CmdComma().insertAt(cursor, L)
       }
-      display(cursor, data[i]!)
+      display(cursor, data[i]!, base)
     }
   }
   new CmdBrack("[", "]", null, block).insertAt(cursor, L)
@@ -821,7 +874,7 @@ function isApproximate(value: Value): boolean {
           (value.value.x.type == "approx" || value.value.y.type == "approx"))
 }
 
-export function display(field: FieldInert, value: Value) {
+export function display(field: FieldInert, value: Value, base: Base) {
   field.block.clear()
   const cursor = field.block.cursor(R)
 
@@ -832,15 +885,15 @@ export function display(field: FieldInert, value: Value) {
   }
   if (value.type == "number") {
     if (value.list) {
-      displayList(cursor, value.value, displayNum)
+      displayList(cursor, value.value, base, displayNum)
     } else {
-      displayNum(cursor, value.value)
+      displayNum(cursor, value.value, base)
     }
   } else {
     if (value.list) {
-      displayList(cursor, value.value, displayComplex)
+      displayList(cursor, value.value, base, displayComplex)
     } else {
-      displayComplex(cursor, value.value)
+      displayComplex(cursor, value.value, base)
     }
   }
 }

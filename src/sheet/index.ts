@@ -1,4 +1,11 @@
-import { defaultProps, display, go, type Value } from "../ast/eval"
+import {
+  defaultProps,
+  display,
+  getOutputBase,
+  go,
+  type Base,
+  type Value,
+} from "../ast/eval"
 import { Field } from "../field/field"
 import { FieldInert } from "../field/field-inert"
 import { h, hx, p, svgx } from "../field/jsx"
@@ -161,10 +168,10 @@ export class Expr {
     )
   }
 
-  displayEval(value: Value) {
+  displayEval(value: Value, base: Base) {
     this.elValue.el.classList.remove("hidden")
     this.elValueError.classList.add("hidden")
-    display(this.elValue, value)
+    display(this.elValue, value, base)
   }
 
   displayError(reason: Error) {
@@ -302,7 +309,8 @@ export class Sheet {
     try {
       const node = expr.field.block.ast()
       const value = go(node, defaultProps)
-      expr.displayEval(value)
+      const base = getOutputBase(node, defaultProps)
+      expr.displayEval(value, base)
     } catch (e) {
       expr.displayError(e instanceof Error ? e : new Error(String(e)))
     }
