@@ -1,6 +1,6 @@
 import type { Node, PuncBinary } from "../../../ast/token"
 import { L, R, type Cursor, type Dir, type InitProps } from "../../model"
-import { Op, OpMinus, OpRightarrow, OpTo } from "./op"
+import { Op, OpMinus, OpDoubleRightArrow, OpRightArrow } from "./op"
 
 /** An `Op` which can be negated. */
 export abstract class OpCeq extends Op {
@@ -256,13 +256,13 @@ export class OpGt extends cmp(
     if (props.input == ">") {
       if (cursor[L] instanceof OpEq && !cursor[L].neg) {
         cursor[L].remove()
-        new OpRightarrow().insertAt(cursor, L)
+        new OpDoubleRightArrow().insertAt(cursor, L)
         return
       }
 
       if (cursor[L] instanceof OpMinus) {
         cursor[L].remove()
-        new OpTo().insertAt(cursor, L)
+        new OpRightArrow().insertAt(cursor, L)
         return
       }
     }

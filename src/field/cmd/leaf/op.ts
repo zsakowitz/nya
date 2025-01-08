@@ -1,5 +1,5 @@
 import { Leaf } from "."
-import type { Punc, PuncBinary, PuncPm, Node } from "../../../ast/token"
+import type { Node, Punc, PuncBinary, PuncPm } from "../../../ast/token"
 import { h, t } from "../../jsx"
 import { L, R, type Cursor, type Dir, type InitProps } from "../../model"
 import { CmdSupSub } from "../math/supsub"
@@ -169,6 +169,10 @@ export const OpPlusMinus = opm("\\pm ", " plus-or-minus ", "±")
 export const OpMinusPlus = opm("\\mp ", " minus-or-plus ", "∓")
 
 export const OpCdot = opp("\\cdot ", " times ", "·", "*")
+export const OpTimes = opp("\\times ", " cross ", "×", "*")
+export const OpOdot = opp("\\odot ", " encircled dot ", "⊙", "⊙")
+export const OpOtimes = opp("\\otimes ", " encircled cross ", "⊗", "⊗")
+
 export const OpDiv = opp("÷", " divided by ", "÷", "/")
 
 export const OpAnd = opp("\\and ", " and ", "∧", "∧", true)
@@ -177,7 +181,7 @@ export const OpOr = opp("\\or ", " or ", "⋁", "⋁", true)
 export const OpUpArrow = opp("\\uparrow ", " up arrow ", "↑", "↑")
 
 export class OpNeg extends Leaf {
-  static init(cursor: Cursor, props: InitProps) {
+  static init(cursor: Cursor, _props: InitProps) {
     new OpNeg().insertAt(cursor, L)
   }
 
@@ -217,7 +221,7 @@ export class OpNeg extends Leaf {
   }
 }
 
-export class OpTo extends opp("\\to ", " becomes ", "→", "->", true) {
+export class OpRightArrow extends opp("\\to ", " becomes ", "→", "->", true) {
   delete(cursor: Cursor, from: Dir): void {
     if (from == R) {
       const minus = new OpMinus()
@@ -231,7 +235,7 @@ export class OpTo extends opp("\\to ", " becomes ", "→", "->", true) {
     super.delete(cursor, from)
   }
 }
-export class OpRightarrow extends opp(
+export class OpDoubleRightArrow extends opp(
   "\\Rightarrow ",
   " maps to ",
   "⇒",

@@ -9,12 +9,17 @@ import {
   OpAnd,
   OpCdot,
   OpDiv,
+  OpDoubleRightArrow,
   OpMinus,
   OpMinusPlus,
   OpNeg,
+  OpOdot,
   OpOr,
+  OpOtimes,
   OpPlus,
   OpPlusMinus,
+  OpRightArrow,
+  OpTimes,
   OpUpArrow,
 } from "./cmd/leaf/op"
 import { SymInfinity, SymPi, SymTau } from "./cmd/leaf/sym"
@@ -86,8 +91,26 @@ export const exts = new Exts()
   .set("Tab", CmdTab)
   // manual latex
   .set("\\", CmdPrompt)
+  // our custom latex commands
   .set("\\color", CmdColor)
+  // latex commands
+  .set("\\pm", OpPlusMinus)
+  .set("\\mp", OpMinusPlus)
   .set("\\over", CmdFrac)
+  .set("\\cdot", OpCdot)
+  .set("\\times", OpTimes)
+  .set("\\odot", OpOdot)
+  .set("\\otimes", OpOtimes)
+  .set("\\and", OpAnd)
+  .set("\\wedge", OpAnd)
+  .set("\\or", OpOr)
+  .set("\\vee", OpOr)
+  .set("\\neg", OpNeg)
+  .set("\\not", OpNeg)
+  .set("\\uparrow", OpUpArrow)
+  .set("\\rightarrow", OpRightArrow)
+  .set("\\Rightarrow", OpDoubleRightArrow)
+  .set("\\to", OpUpArrow)
   .frozen()
 
 export const autoCmds = new WordMap<Init>([
@@ -202,6 +225,24 @@ export const words = new WordMap<WordKind>([
   ["polygon", "prefix"],
   ["distance", "prefix"],
   ["midpoint", "prefix"],
+  ["point", "prefix"],
+  ["glider", "prefix"],
+  ["intersection", "prefix"],
+  ["segment", "prefix"],
+  ["line", "prefix"],
+  ["ray", "prefix"],
+  ["vector", "prefix"],
+  ["parallel", "prefix"],
+  ["perpendicular", "prefix"],
+  ["bisector", "prefix"],
+  ["circle", "prefix"],
+  ["arc", "prefix"],
+  ["angle", "prefix"],
+  ["directedangle", "prefix"],
+  ["rotate", "prefix"],
+  ["dilate", "prefix"],
+  ["reflect", "prefix"],
+  ["translate", "prefix"],
 
   // Colors
   ["rgb", "prefix"],
@@ -219,6 +260,12 @@ export const words = new WordMap<WordKind>([
   ["nPr", "infix"],
   ["nCr", "infix"],
   ["base", "infix"],
+
+  // Complex numbers
+  ["real", "prefix"],
+  ["imag", "prefix"],
+  ["angle", "prefix"],
+  ["radius", "prefix"],
 ]).frozen()
 
 export const options: Options = Object.freeze<Options>({

@@ -321,6 +321,12 @@ const mul = op2(
   },
 )
 
+const odot = op2(
+  (_, _0, a, b) => mul.n(a, b),
+  (n, { x: a, y: b }, { x: c, y: d }) => pt(n(a, c), n(b, d)),
+  mul.x,
+)
+
 const div = op2(
   (_, _0, a, b) => {
     if (a.type == "exact" && a.n == 0) {
@@ -473,7 +479,10 @@ function evalBinary(
       return sub.v(a(), b())
     case "juxtaposition":
     case "\\cdot ":
+    case "\\times ":
       return mul.v(a(), b())
+    case "\\odot ":
+      return odot.v(a(), b())
     case "÷":
       return div.v(a(), b())
     case "mod":

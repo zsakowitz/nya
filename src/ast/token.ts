@@ -29,6 +29,9 @@ export type PuncBinary =
   | ","
   | "\\uparrow "
   | "juxtaposition"
+  | "\\times "
+  | "\\odot "
+  | "\\otimes "
 
 /** A punctuation token which represents a unary operator. */
 export type PuncUnary = "\\neg " | PuncPm | "!"
@@ -79,6 +82,9 @@ export const PRECEDENCE_MAP = {
   juxtaposition: Precedence.NotApplicable,
   "\\uparrow ": Precedence.Exponential,
   "\\cdot ": Precedence.Product,
+  "\\times ": Precedence.Product,
+  "\\odot ": Precedence.Product,
+  "\\otimes ": Precedence.Product,
   "÷": Precedence.Product,
   mod: Precedence.Product,
   "+": Precedence.Sum,
