@@ -17,7 +17,7 @@ import {
   OpPlusMinus,
   OpUpArrow,
 } from "./cmd/leaf/op"
-import { SymPi, SymTau } from "./cmd/leaf/sym"
+import { SymInfinity, SymPi, SymTau } from "./cmd/leaf/sym"
 import { CmdVar, type WordKind } from "./cmd/leaf/var"
 import { CmdFor } from "./cmd/logic/for"
 import { CmdPiecewise } from "./cmd/logic/piecewise"
@@ -123,6 +123,7 @@ export const autoCmds = new WordMap<Init>([
   // Symbols
   ["pi", SymPi],
   ["tau", SymTau],
+  ["infinity", SymInfinity],
 ]).frozen()
 
 export const words = new WordMap<WordKind>([

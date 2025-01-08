@@ -42,7 +42,11 @@ export class CmdBig extends Command<
     if (!(input in BIG_ALIASES)) return
 
     const seq = BIG_ALIASES[input]!
-    const cmd = new CmdBig(seq, new Block(null), null)
+    const cmd = new CmdBig(
+      seq,
+      new Block(null),
+      options.noAutoBigBound ? null : new Block(null),
+    )
     cmd.insertAt(cursor, L)
     cursor.moveIn(cmd.blocks[0], L)
     new CmdVar("n", options).insertAt(cursor, L)

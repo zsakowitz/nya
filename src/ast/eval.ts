@@ -1,8 +1,9 @@
-import { OpEq, OpTilde } from "../field/cmd/leaf/cmp"
+import { OpEq } from "../field/cmd/leaf/cmp"
 import { CmdComma } from "../field/cmd/leaf/comma"
 import { CmdDot } from "../field/cmd/leaf/dot"
 import { CmdNum } from "../field/cmd/leaf/num"
 import { OpMinus, OpPlus } from "../field/cmd/leaf/op"
+import { SymInfinity } from "../field/cmd/leaf/sym"
 import { CmdWord } from "../field/cmd/leaf/word"
 import { CmdBrack } from "../field/cmd/math/brack"
 import { CmdFrac } from "../field/cmd/math/frac"
@@ -365,35 +366,45 @@ export function list(node: Node): Node[] {
   return [node]
 }
 
+/** Raises one value to the power of another value. */
+export function raise(a: Value, b: Value): Value {
+  return a
+}
+
+const PI: Value = { type: "number", list: false, value: num(Math.PI) }
+const TAU: Value = { type: "number", list: false, value: num(2 * Math.PI) }
+const E: Value = { type: "number", list: false, value: num(Math.E) }
+const INFINITY: Value = { type: "number", list: false, value: num(1 / 0) }
+
 /** Evaluates a node. */
-export function go(token: Node, props: EvalProps): Value {
-  switch (token.type) {
+export function go(node: Node, props: EvalProps): Value {
+  switch (node.type) {
     case "num":
-      if (token.sub) {
+      if (node.sub) {
         return evalBinary(
           "base",
-          { type: "num", value: token.value },
-          token.sub,
+          { type: "num", value: node.value },
+          node.sub,
           props,
         )
       }
       return {
         type: "number",
         list: false,
-        value: num(parseNumber(token.value, props.currentBase)),
+        value: num(parseNumber(node.value, props.currentBase)),
       }
     case "frac":
-      return evalBinary("÷", token.a, token.b, props)
+      return evalBinary("÷", node.a, node.b, props)
     case "root":
-      if (token.root) {
+      if (node.root) {
         return distribute(
-          go(token.contents, props),
-          go(token.root, props),
+          go(node.contents, props),
+          go(node.root, props),
           split((a, b) => Math.pow(a, 1 / b)),
         )
       } else {
         return distribute1(
-          go(token.contents, props),
+          go(node.contents, props),
           split1((a) =>
             a < 0 ?
               {
@@ -405,20 +416,20 @@ export function go(token: Node, props: EvalProps): Value {
         )
       }
     case "op":
-      if (token.b) {
-        return evalBinary(token.kind, token.a, token.b, props)
+      if (node.b) {
+        return evalBinary(node.kind, node.a, node.b, props)
       } else {
-        return evalUnary(token.kind, token.a, props)
+        return evalUnary(node.kind, node.a, props)
       }
     case "error":
-      throw new Error(token.reason)
+      throw new Error(node.reason)
     case "group":
-      if (token.lhs == "(" && token.rhs == ")") {
-        return go(token.value, props)
+      if (node.lhs == "(" && node.rhs == ")") {
+        return go(node.value, props)
       }
-      if (token.lhs == "[" && token.rhs == "]") {
+      if (node.lhs == "[" && node.rhs == "]") {
         return coerce(
-          list(token.value).map((x) => {
+          list(node.value).map((x) => {
             const value = go(x, props)
             if (value.list == false) return value
             throw new Error("Cannot store a list inside a list.")
@@ -426,10 +437,28 @@ export function go(token: Node, props: EvalProps): Value {
         )
       }
       break
+    case "var": {
+      const value =
+        node.sub ? null
+        : node.value == "π" ? PI
+        : node.value == "τ" ? TAU
+        : node.value == "e" ? E
+        : node.value == "∞" ? INFINITY
+        : null
+
+      if (value) {
+        if (node.sup) {
+          return raise(value, go(node.sup, props))
+        } else {
+          return value
+        }
+      }
+
+      break
+    }
     case "factorial":
     case "raise":
     case "void":
-    case "var":
     case "num16":
     case "sub":
     case "sup":
@@ -444,12 +473,15 @@ export function go(token: Node, props: EvalProps): Value {
     case "commalist":
     case "punc":
   }
-  throw new Error(`The '${token.type}' node type is not implemented yet.`)
+  throw new Error(`The '${node.type}' node type is not implemented yet.`)
 }
 
 export function displayDigits(cursor: Cursor, digits: string) {
   for (const digit of digits) {
     switch (digit) {
+      case "∞":
+        new SymInfinity().insertAt(cursor, L)
+        break
       case "-":
         new OpMinus().insertAt(cursor, L)
         break
@@ -462,20 +494,29 @@ export function displayDigits(cursor: Cursor, digits: string) {
   }
 }
 
-export function displayNum(cursor: Cursor, num: LNumber, i?: boolean) {
+export function displayNum(
+  cursor: Cursor,
+  num: LNumber,
+  forceSign?: boolean,
+  i?: boolean,
+) {
   if (num.type == "approx") {
-    if (i && num.value >= 0) {
+    if (forceSign && num.value >= 0) {
       new OpPlus().insertAt(cursor, L)
     }
-    new OpTilde(false).insertAt(cursor, L)
-    displayDigits(cursor, num.value + "")
+    let val = "" + num.value
+    if (val == "Infinity") val = "∞"
+    else if (val == "-Infinity") val = "-∞"
+    else if (val == "NaN") val = "NaN"
+    else if (val.indexOf(".") == -1) val += "."
+    displayDigits(cursor, val)
   } else if (num.d == 1) {
-    if (i && num.n >= 0) {
+    if (forceSign && num.n >= 0) {
       new OpPlus().insertAt(cursor, L)
     }
     displayDigits(cursor, num.n + "")
   } else {
-    if (i && num.n >= 0) {
+    if (forceSign && num.n >= 0) {
       new OpPlus().insertAt(cursor, L)
     }
     const n = new Block(null)
@@ -496,9 +537,25 @@ export function displayNum(cursor: Cursor, num: LNumber, i?: boolean) {
   }
 }
 
+function isZero(x: number | LNumber | LPoint): boolean {
+  if (typeof x == "number") {
+    return x == 0
+  }
+
+  switch (x.type) {
+    case "approx":
+      return x.value == 0
+    case "exact":
+      return x.n == 0 && x.d != 0
+    case "point":
+      return isZero(x.x) && isZero(x.y)
+  }
+}
+
 export function displayComplex(cursor: Cursor, num: LPoint) {
-  displayNum(cursor, num.x)
-  displayNum(cursor, num.y, true)
+  const showX = !isZero(num.x)
+  if (showX) displayNum(cursor, num.x)
+  displayNum(cursor, num.y, showX, true)
 }
 
 export function displayList<T>(

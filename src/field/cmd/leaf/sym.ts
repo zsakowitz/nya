@@ -9,16 +9,18 @@ export function sym(
   text: string,
   ascii: string,
 ) {
+  const clsx =
+    text == "∞" ?
+      "[line-height:1] relative top-[-.05em]"
+    : "font-['Times_New_Roman'] [line-height:.9]"
+
   return class extends Leaf {
     static init(cursor: Cursor, _props: InitProps): InitRet {
       new this().insertAt(cursor, L)
     }
 
     constructor() {
-      super(
-        latex,
-        h("", h("font-['Times_New_Roman'] [line-height:.9]", t(text))),
-      )
+      super(latex, h("", h(clsx, t(text))))
     }
 
     ascii(): string {
@@ -45,3 +47,4 @@ export function sym(
 
 export const SymPi = sym("\\pi ", " pi ", "π", "pi")
 export const SymTau = sym("\\tau ", " tau ", "τ", "tau")
+export const SymInfinity = sym("\\infinity ", " infinity ", "∞", "infinity")

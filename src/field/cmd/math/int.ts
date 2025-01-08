@@ -9,6 +9,7 @@ import {
   U,
   type Cursor,
   type Dir,
+  type InitProps,
   type InitRet,
   type VDir,
 } from "../../model"
@@ -17,11 +18,15 @@ import { focusEdge } from "../leaf"
 export type BlocksInt = [sub: Block, sup: Block] | []
 
 export class CmdInt extends Command<BlocksInt> {
-  static init(cursor: Cursor): InitRet {
-    // const b0 = new Block(null)
-    // new CmdInt([b0, new Block(null)]).insertAt(cursor, L)
-    // cursor.moveIn(b0, R)
-    new CmdInt([]).insertAt(cursor, L)
+  static init(cursor: Cursor, { options }: InitProps): InitRet {
+    if (options.noAutoIntBound) {
+      new CmdInt([]).insertAt(cursor, L)
+      return
+    }
+
+    const b0 = new Block(null)
+    new CmdInt([b0, new Block(null)]).insertAt(cursor, L)
+    cursor.moveIn(b0, R)
   }
 
   static render(blocks: BlocksInt) {
@@ -113,6 +118,23 @@ export class CmdInt extends Command<BlocksInt> {
       cursor.moveTo(this, R)
     }
     this.remove()
+  }
+
+  deleteBlock(cursor: Cursor, at: Dir, block: Block): void {
+    if (
+      this.blocks.length == 2 &&
+      this.blocks[0].isEmpty() &&
+      this.blocks[1].isEmpty()
+    ) {
+      const block = new Block(null)
+      const next = new CmdInt([])
+      next.insertAt(block.cursor(R), L)
+      this.replaceWith(block)
+      cursor.moveTo(next, R)
+      return
+    }
+
+    super.deleteBlock(cursor, at, block)
   }
 
   supSub(part: VDir, side: Dir, cursor: Cursor): boolean {

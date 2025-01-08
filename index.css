@@ -665,6 +665,14 @@ video {
   top: 1px;
 }
 
+.top-\[-\.1em\] {
+  top: -.1em;
+}
+
+.top-\[-\.05em\] {
+  top: -.05em;
+}
+
 .z-\[1\] {
   z-index: 1;
 }

@@ -108,6 +108,12 @@ export interface Options {
   /** If `true`, typing a `CmdPm` in a superscript will exit the superscript. */
   exitSupWithPm?: boolean
 
+  /** If `true`, integrals will default to having no bounds. */
+  noAutoIntBound?: boolean
+
+  /** If `true`, big symbols will default to having no upper bound. */
+  noAutoBigBound?: boolean
+
   /**
    * If any word from `autoCmds` is typed, it will be automatically initialized
    * using the appropriate {@link Init `Init`} instance.
