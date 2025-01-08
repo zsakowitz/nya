@@ -793,9 +793,12 @@ function displayDigits(
 
   function writeBase() {
     if (!shouldWriteBase) return
+    shouldWriteBase = false
+    const str = baseToStr(base)
+    if (str.length == 0) return
     const sub = new Block(null)
     new CmdSupSub(sub, null).insertAt(cursor, L)
-    new CmdNum(baseToStr(base)).insertAt(sub.cursor(R), L)
+    new CmdNum(str).insertAt(sub.cursor(R), L)
   }
 }
 

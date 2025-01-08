@@ -27,7 +27,7 @@ export class FieldInert {
   ) {
     this.el = this.block.el
     this.el.className =
-      "-display cursor-text whitespace-nowrap font-['Symbola','Times_New_Roman',sans-serif] text-[1.265em] font-normal not-italic transition [line-height:1] cursor-text block select-none inline-block"
+      "nya-display cursor-text whitespace-nowrap font-['Symbola','Times_New_Roman',sans-serif] text-[1.265em] font-normal not-italic transition [line-height:1] cursor-text block select-none inline-block"
   }
 
   setPrefix(block: Block | ((field: FieldInert) => void)) {

@@ -265,7 +265,15 @@ export class Sheet {
       h(
         "block overflow-y-auto relative border-r",
         h(
-          "block h-12 w-full bg-slate-100 border-b border-slate-200 flex gap-8 sticky top-0 z-10",
+          "flex flex-col h-16 w-full bg-slate-100 border-b border-slate-200 sticky top-0 z-10 items-center justify-center",
+          h(
+            "font-['Symbola','Times_New_Roman',serif] text-2xl leading-tight text-slate-500",
+            "project nya",
+          ),
+          h(
+            "font-['Symbola','Times_New_Roman',serif] text-sm leading-none italic text-slate-500",
+            REMARKS[Math.floor(REMARKS.length * Math.random())]!,
+          ),
         ),
         elExpressions,
       ),
@@ -330,3 +338,26 @@ export class Sheet {
     }
   }
 }
+
+const REMARKS = [
+  "the graphpaper is only for aesthetics",
+  "it turned my laptop into molten metal!",
+  "sounds like a rhythm game",
+  "how to type hex digits 10-15? just don't!",
+  "oh god why doesn't it round 10^-16 to zero",
+  "nobody knows what the sidebar does",
+  "because you wanted desmos to be open source",
+  "its developers thought x≱y was more important than y=f(x)",
+  "what is the logo hiding",
+  "the ‘go to sleep’ node type is not implemented yet",
+  "nya? like the cat noise? (yes)",
+  "what even does ⊙ do",
+  "it can write decimals in base 5, but not read them",
+  "it has uscript support",
+  "easier to extend than a tungsten cube",
+  "variables are for silly people",
+  "my favorite color palette: modern house",
+  "i still don't know why it exists",
+  "they added \\over before y=2",
+  "mrrp meow",
+]
