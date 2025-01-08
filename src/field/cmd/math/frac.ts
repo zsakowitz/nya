@@ -115,6 +115,31 @@ export class CmdFrac extends Command<[Block, Block]> {
   }
 
   ir(tokens: Node[]): void {
+    const a = this.blocks[0].ast()
+    const b = this.blocks[1].ast()
+
+    const last = tokens[tokens.length - 1]
+    if (
+      last &&
+      last.type == "num" &&
+      !last.sub &&
+      last.value.indexOf(".") == -1 &&
+      a.type == "num" &&
+      !a.sub &&
+      a.value.indexOf(".") == -1 &&
+      b.type == "num" &&
+      !b.sub &&
+      b.value.indexOf(".") == -1
+    ) {
+      tokens.pop()
+      tokens.push({
+        type: "mixed",
+        integer: last.value,
+        a: a.value,
+        b: b.value,
+      })
+    }
+
     tokens.push({
       type: "frac",
       a: this.blocks[0].ast(),

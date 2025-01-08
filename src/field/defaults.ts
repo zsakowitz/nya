@@ -10,11 +10,14 @@ import {
   OpCdot,
   OpDiv,
   OpMinus,
+  OpMinusPlus,
   OpNeg,
   OpOr,
   OpPlus,
+  OpPlusMinus,
   OpUpArrow,
 } from "./cmd/leaf/op"
+import { SymPi, SymTau } from "./cmd/leaf/sym"
 import { CmdVar, type WordKind } from "./cmd/leaf/var"
 import { CmdFor } from "./cmd/logic/for"
 import { CmdPiecewise } from "./cmd/logic/piecewise"
@@ -87,18 +90,26 @@ export const exts = new Exts()
   .frozen()
 
 export const autoCmds = new WordMap<Init>([
+  // Big operators
   ["sum", CmdBig],
   ["prod", CmdBig],
   ["coprod", CmdBig],
   ["int", CmdInt],
+
+  // Additional commands
   ["matrix", CmdMatrix],
   ["forblock", CmdFor],
   ["sqrt", CmdRoot],
   ["nthroot", CmdRoot],
+  ["color", CmdColor],
+
+  // Various names for piecewise
   ["cases", CmdPiecewise],
   ["switch", CmdPiecewise],
   ["piecewise", CmdPiecewise],
-  ["color", CmdColor],
+  ["pieces", CmdPiecewise],
+
+  // Operators
   ["neg", OpNeg],
   ["not", OpNeg],
   ["and", OpAnd],
@@ -106,6 +117,12 @@ export const autoCmds = new WordMap<Init>([
   ["or", OpOr],
   ["vee", OpOr],
   ["raise", OpUpArrow],
+  ["plusminus", OpPlusMinus],
+  ["minusplus", OpMinusPlus],
+
+  // Symbols
+  ["pi", SymPi],
+  ["tau", SymTau],
 ]).frozen()
 
 export const words = new WordMap<WordKind>([

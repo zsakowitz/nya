@@ -1,8 +1,10 @@
 import { OpEq, OpTilde } from "../field/cmd/leaf/cmp"
+import { CmdComma } from "../field/cmd/leaf/comma"
 import { CmdDot } from "../field/cmd/leaf/dot"
 import { CmdNum } from "../field/cmd/leaf/num"
 import { OpMinus, OpPlus } from "../field/cmd/leaf/op"
 import { CmdWord } from "../field/cmd/leaf/word"
+import { CmdBrack } from "../field/cmd/math/brack"
 import { CmdFrac } from "../field/cmd/math/frac"
 import type { FieldInert } from "../field/field-inert"
 import { Block, L, R, type Cursor } from "../field/model"
@@ -168,6 +170,22 @@ export function distribute1(a: Value, go: (a: Single) => Single): Value {
   }
 }
 
+export function zip<T>(
+  a: Value,
+  b: T[],
+  go: (a: Single, b: T) => Single,
+): Value {
+  if (a.list) {
+    return coerce(
+      Array.from({ length: Math.min(a.value.length, b.length) }, (_, i) =>
+        go({ type: a.type, value: a.value[i]! } as any, b[i]!),
+      ),
+    )
+  } else {
+    return coerce(b.map((bi) => go(a, bi)))
+  }
+}
+
 /** Props passed to the evaluator. */
 export interface EvalProps {
   /** Changed by the `base` operator. */
@@ -262,14 +280,24 @@ export function evalBinary(
       }
       return go(an, { ...props, currentBase: base.value })
     }
+    case "\\pm ":
+      return distribute(
+        a(),
+        zip(b(), [identity, neg], (a, b) => b(a)),
+        split((a, b) => a + b),
+      )
+    case "\\mp ":
+      return distribute(
+        a(),
+        zip(b(), [neg, identity], (a, b) => b(a)),
+        split((a, b) => a + b),
+      )
     case "for":
     case "with":
     case "\\and ":
     case "\\or ":
     case "..":
     case "...":
-    case "\\pm ":
-    case "\\mp ":
     case "\\to ":
     case "\\Rightarrow ":
     case ".":
@@ -282,17 +310,59 @@ export function evalBinary(
   }
 }
 
-export function evalUnary(op: PuncUnary, a: Value, props: EvalProps): Value {
+function nneg(x: LNumber): LNumber {
+  return x.type == "approx" ?
+      { type: "approx", value: -x.value }
+    : { type: "exact", n: -x.n, d: x.d }
+}
+
+function identity<T>(x: T) {
+  return x
+}
+
+function neg(x: Single): Single {
+  return x.type == "number" ?
+      { type: "number", value: nneg(x.value) }
+    : {
+        type: "complex",
+        value: { type: "point", x: nneg(x.value.x), y: x.value.y },
+      }
+}
+
+export function evalUnary(op: PuncUnary, an: Node, props: EvalProps): Value {
+  const a = go(an, props)
+
   switch (op) {
-    case "\\neg ":
     case "+":
+      return a
     case "-":
+      return distribute1(a, neg)
     case "\\pm ":
+      return zip(a, [identity, neg], (a, b) => b(a))
     case "\\mp ":
+      return zip(a, [neg, identity], (a, b) => b(a))
+    case "\\neg ":
     case "!":
     default:
       throw new Error(`Cannot evaluate unary operator '${op}' yet.`)
   }
+}
+
+/**
+ * If the passed node is a `commalist`, returns all of its nodes. If it is a
+ * `void`, returns an empty list. Otherwise, returns a list of the single passed
+ * node.
+ */
+export function list(node: Node): Node[] {
+  if (node.type == "commalist") {
+    return node.items
+  }
+
+  if (node.type == "void") {
+    return []
+  }
+
+  return [node]
 }
 
 /** Evaluates a node. */
@@ -324,14 +394,21 @@ export function go(token: Node, props: EvalProps): Value {
       } else {
         return distribute1(
           go(token.contents, props),
-          split1((a) => Math.sqrt(a)),
+          split1((a) =>
+            a < 0 ?
+              {
+                type: "complex",
+                value: { type: "point", x: num(0), y: num(Math.sqrt(-a)) },
+              }
+            : Math.sqrt(a),
+          ),
         )
       }
     case "op":
       if (token.b) {
         return evalBinary(token.kind, token.a, token.b, props)
       } else {
-        return evalUnary(token.kind, go(token.a, props), props)
+        return evalUnary(token.kind, token.a, props)
       }
     case "error":
       throw new Error(token.reason)
@@ -339,6 +416,16 @@ export function go(token: Node, props: EvalProps): Value {
       if (token.lhs == "(" && token.rhs == ")") {
         return go(token.value, props)
       }
+      if (token.lhs == "[" && token.rhs == "]") {
+        return coerce(
+          list(token.value).map((x) => {
+            const value = go(x, props)
+            if (value.list == false) return value
+            throw new Error("Cannot store a list inside a list.")
+          }),
+        )
+      }
+      break
     case "factorial":
     case "raise":
     case "void":
@@ -356,8 +443,8 @@ export function go(token: Node, props: EvalProps): Value {
     case "juxtaposed":
     case "commalist":
     case "punc":
-      throw new Error(`The '${token.type}' node type is not implemented yet.`)
   }
+  throw new Error(`The '${token.type}' node type is not implemented yet.`)
 }
 
 export function displayDigits(cursor: Cursor, digits: string) {
@@ -414,19 +501,37 @@ export function displayComplex(cursor: Cursor, num: LPoint) {
   displayNum(cursor, num.y, true)
 }
 
+export function displayList<T>(
+  cursor: Cursor,
+  data: T[],
+  display: (cursor: Cursor, value: T) => void,
+) {
+  const block = new Block(null)
+  {
+    const cursor = block.cursor(R)
+    for (let i = 0; i < data.length; i++) {
+      if (i != 0) {
+        new CmdComma().insertAt(cursor, L)
+      }
+      display(cursor, data[i]!)
+    }
+  }
+  new CmdBrack("[", "]", null, block).insertAt(cursor, L)
+}
+
 export function display(field: FieldInert, value: Value) {
   field.block.clear()
   const cursor = field.block.cursor(R)
   new OpEq(false).insertAt(cursor, L)
   if (value.type == "number") {
     if (value.list) {
-      // return "[" + value.value.map(displayNum).join(", ") + "]"
+      displayList(cursor, value.value, displayNum)
     } else {
       displayNum(cursor, value.value)
     }
   } else {
     if (value.list) {
-      // return "[" + value.value.map(displayComplex).join(", ") + "]"
+      displayList(cursor, value.value, displayComplex)
     } else {
       displayComplex(cursor, value.value)
     }

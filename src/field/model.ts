@@ -1592,6 +1592,11 @@ export abstract class Command<
   abstract ir(tokens: Node[]): void
 }
 
+export interface Command {
+  /** If present, allows this node to be replaced with `options.autoCmds`. */
+  readonly autoCmd?: string
+}
+
 /** The updated cursor or selection created by {@linkcode Init}. */
 export type InitRet = Cursor | Selection | "browser" | undefined | void
 

@@ -154,6 +154,7 @@ export type Node =
   | { type: "raise"; base: Node; exponent: Node }
   | { type: "call"; on?: Node; name: Node; args: Node }
   | { type: "frac"; a: Node; b: Node }
+  | { type: "mixed"; integer: string; a: string; b: string }
   | { type: "for"; mapped: Node; bound: Node; source: Node }
   | { type: "piecewise"; pieces: { value: Node; condition: Node }[] }
   | { type: "matrix"; cols: number; values: Node[] }

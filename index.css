@@ -1400,6 +1400,14 @@ video {
   font-style: normal;
 }
 
+.leading-none {
+  line-height: 1;
+}
+
+.leading-tight {
+  line-height: 1.25;
+}
+
 .text-slate-500 {
   --tw-text-opacity: 1;
   color: rgb(100 116 139 / var(--tw-text-opacity, 1));

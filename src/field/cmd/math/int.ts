@@ -159,4 +159,10 @@ export class CmdInt extends Command<BlocksInt> {
       sup: this.blocks[1]?.ast(),
     })
   }
+
+  get autoCmd() {
+    if (this.blocks.length == 0) {
+      return "int"
+    }
+  }
 }

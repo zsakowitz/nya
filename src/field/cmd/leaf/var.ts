@@ -1,7 +1,15 @@
 import { Leaf } from "."
 import { PRECEDENCE_MAP, type Node, type PuncBinary } from "../../../ast/token"
 import { h, t } from "../../jsx"
-import { Cursor, L, R, Span, type Dir, type InitProps } from "../../model"
+import {
+  Cursor,
+  L,
+  R,
+  Span,
+  type Command,
+  type Dir,
+  type InitProps,
+} from "../../model"
 import type { Options, WordMap } from "../../options"
 
 /**
@@ -32,11 +40,11 @@ export class CmdVar extends Leaf {
       if (!maxLen) return
 
       // Gather as many `CmdVar`s as possible (but only up to `maxLen`)
-      let leftmost = self
+      let leftmost: Command = self
       const text = [self.text]
-      while (leftmost[L] instanceof CmdVar && text.length < maxLen) {
+      while (text.length < maxLen && leftmost[L]?.autoCmd) {
         leftmost = leftmost[L]
-        text.unshift(leftmost.text)
+        text.unshift(leftmost.autoCmd!)
       }
 
       // Try each combination
@@ -50,7 +58,7 @@ export class CmdVar extends Leaf {
         }
 
         text.shift()
-        leftmost = leftmost[R] as CmdVar
+        leftmost = leftmost[R]!
       }
     }
   }
@@ -241,5 +249,9 @@ export class CmdVar extends Leaf {
     }
 
     tokens.push({ type: "var", value: this.text, kind: "var" })
+  }
+
+  get autoCmd(): string {
+    return this.text
   }
 }

@@ -121,7 +121,7 @@ export class Expr {
         )),
         (this.elValue = new FieldInert(this.field.exts, this.field.options)).el,
         (this.elValueError = h(
-          "block py-1 border-t border-dashed border-red-800 mx-1 px-1 italic text-red-800 hidden",
+          "leading-tight block pb-1 -mt-2 mx-1 px-1 italic text-red-800 hidden",
         )),
       ),
       h(
