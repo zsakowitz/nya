@@ -93,3 +93,5 @@ new Expr(sheet).field.typeEach`u1 u+ uv2 u- u3`
   finalField.sel = finalField.block.cursor(R).selection()
   finalField.onAfterChange(false)
 }
+
+sheet.exprs[0]!.field.el.focus()

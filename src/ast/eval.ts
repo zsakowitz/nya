@@ -1,4 +1,4 @@
-import { OpEq } from "../field/cmd/leaf/cmp"
+import { OpApprox, OpEq } from "../field/cmd/leaf/cmp"
 import { CmdComma } from "../field/cmd/leaf/comma"
 import { CmdDot } from "../field/cmd/leaf/dot"
 import { CmdNum } from "../field/cmd/leaf/num"
@@ -262,6 +262,7 @@ export function evalBinary(
         b(),
         split((a, b) => a - b),
       )
+    case "juxtaposition":
     case "\\cdot ":
       return distribute(
         a(),
@@ -456,20 +457,30 @@ export function go(node: Node, props: EvalProps): Value {
 
       break
     }
-    case "factorial":
+    case "juxtaposed":
+      return evalBinary("juxtaposition", node.a, node.b, props)
     case "raise":
+      return raise(go(node.base, props), go(node.exponent, props))
+    case "call": {
+      if (node.on) break
+      return evalBinary(
+        "juxtaposition",
+        node.name,
+        { type: "group", lhs: "(", rhs: ")", value: node.args },
+        props,
+      )
+    }
+    case "factorial":
     case "void":
     case "num16":
     case "sub":
     case "sup":
-    case "call":
     case "for":
     case "piecewise":
     case "matrix":
     case "bigsym":
     case "big":
     case "index":
-    case "juxtaposed":
     case "commalist":
     case "punc":
   }
@@ -576,10 +587,27 @@ export function displayList<T>(
   new CmdBrack("[", "]", null, block).insertAt(cursor, L)
 }
 
+export function isApproximate(value: Value): boolean {
+  return value.list ?
+      value.value.some(
+        (value) =>
+          value.type == "approx" ||
+          (value.type == "point" &&
+            (value.x.type == "approx" || value.y.type == "approx")),
+      )
+    : value.value.type == "approx" ||
+        (value.value.type == "point" &&
+          (value.value.x.type == "approx" || value.value.y.type == "approx"))
+}
+
 export function display(field: FieldInert, value: Value) {
   field.block.clear()
   const cursor = field.block.cursor(R)
-  new OpEq(false).insertAt(cursor, L)
+  if (isApproximate(value)) {
+    new OpApprox(false).insertAt(cursor, L)
+  } else {
+    new OpEq(false).insertAt(cursor, L)
+  }
   if (value.type == "number") {
     if (value.list) {
       displayList(cursor, value.value, displayNum)

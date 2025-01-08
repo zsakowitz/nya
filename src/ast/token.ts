@@ -15,7 +15,7 @@ export type PuncBinary =
   | "base"
   | "\\and "
   | "\\or "
-  | { dir: "=" | "~"; neg: boolean }
+  | { dir: "=" | "~" | "≈"; neg: boolean }
   | { dir: "<" | ">"; eq: boolean; neg: boolean }
   | ".."
   | "..."
@@ -28,6 +28,7 @@ export type PuncBinary =
   | "."
   | ","
   | "\\uparrow "
+  | "juxtaposition"
 
 /** A punctuation token which represents a unary operator. */
 export type PuncUnary = "\\neg " | PuncPm | "!"
@@ -75,6 +76,7 @@ export const Precedence = Object.freeze({
 export const PRECEDENCE_MAP = {
   __proto__: null,
   ".": Precedence.NotApplicable,
+  juxtaposition: Precedence.NotApplicable,
   "\\uparrow ": Precedence.Exponential,
   "\\cdot ": Precedence.Product,
   "÷": Precedence.Product,
@@ -89,6 +91,7 @@ export const PRECEDENCE_MAP = {
   ">": Precedence.Comparison,
   "=": Precedence.Equality,
   "~": Precedence.Equality,
+  "≈": Precedence.Equality,
   "\\and ": Precedence.BoolAnd,
   "\\or ": Precedence.BoolOr,
   base: Precedence.WordInfix,

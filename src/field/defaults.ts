@@ -1,5 +1,5 @@
 import "../../index.css"
-import { OpEq, OpGt, OpLt } from "./cmd/leaf/cmp"
+import { OpEq, OpGt, OpLt, OpTilde } from "./cmd/leaf/cmp"
 import { CmdColor } from "./cmd/leaf/color"
 import { CmdComma } from "./cmd/leaf/comma"
 import { CmdDot } from "./cmd/leaf/dot"
@@ -61,6 +61,7 @@ export const exts = new Exts()
   .set("÷", OpDiv)
   // equality ops
   .set("=", OpEq)
+  .set("~", OpTilde)
   .set("<", OpLt)
   .set(">", OpGt)
   // other cmds

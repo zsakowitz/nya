@@ -1,5 +1,5 @@
 import type { Node, PuncBinary } from "../../../ast/token"
-import { L, type Cursor, type Dir, type InitProps } from "../../model"
+import { L, R, type Cursor, type Dir, type InitProps } from "../../model"
 import { Op, OpMinus, OpRightarrow, OpTo } from "./op"
 
 /** An `Op` which can be negated. */
@@ -203,11 +203,39 @@ export class OpEq extends ceq(
   }
 }
 
-export const OpTilde = ceq(
+export class OpTilde extends ceq(
   "~",
   ["~", " tilde ", "~", "~"],
   ["≁", " not-tilde ", "≁", "≁"],
-)
+) {
+  static init(cursor: Cursor, props: InitProps): void {
+    if (cursor[L] instanceof OpTilde && !cursor[L].neg) {
+      cursor[L].remove()
+      new OpApprox(false).insertAt(cursor, L)
+    } else {
+      super.init(cursor, props)
+    }
+  }
+}
+
+export class OpApprox extends ceq(
+  "≈",
+  ["≈", " approximately equal to ", "≈", "≈"],
+  ["≉", " not approximately equal to ", "≉", "≉"],
+) {
+  delete(cursor: Cursor, from: Dir): void {
+    if (!this.neg && from == R) {
+      const tilde = new OpTilde(false)
+      tilde.insertAt(this.cursor(L), L)
+      this.remove()
+      if (cursor[R] == this) {
+        cursor.moveTo(tilde, L)
+      }
+    } else {
+      super.delete(cursor, from)
+    }
+  }
+}
 
 export const OpLt = cmp(
   "<",
