@@ -2,10 +2,11 @@ import {
   getPrecedence,
   isValueToken,
   Precedence,
-  type PuncBinary,
-  type PuncPm,
-  type PuncPrefix,
   type Node,
+  type PuncBinary,
+  type PuncInfix,
+  type PuncInfixNoComma,
+  type PuncPrefix,
 } from "./token"
 
 // rules governing implicits:
@@ -57,10 +58,7 @@ export function pass2_implicits(tokens: Node[]): Node[] {
 
   function op(
     precedence: number,
-  ):
-    | undefined
-    | { type: "infix"; kind: Exclude<PuncBinary, ","> }
-    | { type: "pm"; kind: PuncPm } {
+  ): Exclude<PuncInfixNoComma, { value: "," }> | undefined {
     const token = tokens[tokens.length - 1]
     if (
       token?.type == "punc" &&
@@ -69,8 +67,7 @@ export function pass2_implicits(tokens: Node[]): Node[] {
       token.value != ","
     ) {
       tokens.pop()
-      // @ts-expect-error We checked that it isn't a comma
-      return token.value
+      return token satisfies PuncInfix as PuncInfixNoComma
     }
   }
 
@@ -175,20 +172,21 @@ export function pass2_implicits(tokens: Node[]): Node[] {
     let exs: Exclude<PuncBinary, ",">[] = []
     let ex
     while ((ex = op(Precedence.Exponential))) {
-      if (ex.type != "infix") {
+      if (ex.kind != "infix") {
         return {
           type: "error",
           reason:
-            "Non-infix operators cannot be parsed with exponential-level precedence.",
+            "Non-infix operators cannot be parsed with exponential-level precedence. " +
+            JSON.stringify(ex),
         }
       }
-      exs.push(ex.kind)
+      exs.push(ex.value)
 
       const next = takeSeq()
       if (!next) {
         return {
           type: "error",
-          reason: `The '${ex.kind}' operator needs a value on both sides.`,
+          reason: `The '${ex.value}' operator needs a value on both sides.`,
         }
       }
 
@@ -217,13 +215,7 @@ export function pass2_implicits(tokens: Node[]): Node[] {
 
     let md
     while ((md = op(Precedence.Product))) {
-      if (md.type != "infix") {
-        return {
-          type: "error",
-          reason: "Operators with product-level precedence must be infixes.",
-        }
-      }
-      lhs = { type: "op", kind: md.kind, a: lhs, b: takeExp() }
+      lhs = { type: "op", kind: md.value, a: lhs, b: takeExp() }
     }
 
     return lhs

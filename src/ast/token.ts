@@ -117,6 +117,11 @@ export type PuncInfix =
   | { type: "punc"; kind: "infix"; value: PuncBinary }
   | { type: "punc"; kind: "pm"; value: PuncPm }
 
+/** A prefix punctuation token. */
+export type PuncInfixNoComma =
+  | { type: "punc"; kind: "infix"; value: Exclude<PuncBinary, ","> }
+  | { type: "punc"; kind: "pm"; value: PuncPm }
+
 /** An infix punctuation token. */
 export type PuncPrefix =
   | { type: "punc"; kind: "prefix"; value: PuncUnary }
