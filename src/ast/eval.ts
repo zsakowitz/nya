@@ -78,18 +78,7 @@ function split(approx: (a: number, b: number) => Single) {
         b.value.type == "approx" ? b.value.value : b.value.n / b.value.d,
       )
     }
-    throw new Error("Cannot compute anything involving complex numbers yet.")
-  }
-}
-
-function split1(approx: (a: number) => Single) {
-  return (a: Single): Single => {
-    if (a.type == "number") {
-      return approx(
-        a.value.type == "approx" ? a.value.value : a.value.n / a.value.d,
-      )
-    }
-    throw new Error("Cannot compute anything involving complex numbers yet.")
+    throw new Error("The `mod` function does not work on complex numbers.")
   }
 }
 
@@ -613,33 +602,19 @@ export function go(node: Node, props: EvalProps): Value {
       return evalBinary("÷", node.a, node.b, props)
     case "root":
       if (node.root) {
-        return distribute(
+        return pow.v(
           go(node.contents, props),
-          go(node.root, props),
-          split((a, b) => ({
-            type: "number",
-            value: approx(Math.pow(a, 1 / b)),
-          })),
-        )
-      } else {
-        return distribute1(
-          go(node.contents, props),
-          split1((a) =>
-            a < 0 ?
-              {
-                type: "complex",
-                value: {
-                  type: "point",
-                  x: ZERO,
-                  y: safe(a) ? toNum(Math.sqrt(-a)) : approx(Math.sqrt(-a)),
-                },
-              }
-            : {
-                type: "number",
-                value: safe(a) ? toNum(Math.sqrt(a)) : approx(Math.sqrt(a)),
-              },
+          div.v(
+            { type: "number", list: false, value: frac(1, 0) },
+            go(node.root, props),
           ),
         )
+      } else {
+        return pow.v(go(node.contents, props), {
+          type: "number",
+          list: false,
+          value: frac(1, 2),
+        })
       }
     case "op":
       if (node.b) {
