@@ -43,7 +43,12 @@ export class Paper {
   readonly drawFns: ((paper: Paper) => void)[] = []
 
   constructor(
-    public rawBounds: Bounds = { xmin: -10, xmax: 10, ymin: -10, ymax: 10 },
+    public rawBounds: Bounds = {
+      xmin: -10.5,
+      xmax: 10.5,
+      ymin: -10.5,
+      ymax: 10.5,
+    },
     public autofit = true,
   ) {}
 
