@@ -824,6 +824,10 @@ video {
   height: 100vh;
 }
 
+.h-auto {
+  height: auto;
+}
+
 .min-h-\[3\.265rem\] {
   min-height: 3.265rem;
 }
@@ -872,6 +876,10 @@ video {
   width: 1px;
 }
 
+.w-\[400px\] {
+  width: 400px;
+}
+
 .min-w-\[\.5em\] {
   min-width: .5em;
 }
@@ -882,6 +890,18 @@ video {
 
 .min-w-full {
   min-width: 100%;
+}
+
+.max-w-full {
+  max-width: 100%;
+}
+
+.max-w-\[400px\] {
+  max-width: 400px;
+}
+
+.flex-1 {
+  flex: 1 1 0%;
 }
 
 .scale-x-\[70\%\] {

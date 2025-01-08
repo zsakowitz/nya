@@ -89,8 +89,10 @@ class ExprField extends Field {
 
 export class Expr {
   readonly field
+
   readonly el
   readonly elIndex
+  readonly elValue
 
   removable = true
   index
@@ -99,7 +101,7 @@ export class Expr {
     this.sheet.exprs.push(this)
     this.field = new ExprField(this)
     this.el = h(
-      "border-b border-slate-200 grid grid-cols-[2.5rem,auto] relative group focus-within:border-[color:--nya-focus]",
+      "border-b border-slate-200 grid grid-cols-[2.5rem,auto] relative group focus-within:border-[color:--nya-focus] max-w-full",
       h(
         "inline-flex bg-slate-100 flex-col p-0.5 group-focus-within:bg-[color:--nya-focus] border-r border-slate-200 group-focus-within:border-transparent",
         (this.elIndex = h(
@@ -108,8 +110,15 @@ export class Expr {
         )),
       ),
       h(
-        "inline-block overflow-x-auto [&::-webkit-scrollbar]:hidden min-h-[3.265rem]",
-        this.field.el,
+        "block w-full max-w-full",
+        h(
+          "block overflow-x-auto [&::-webkit-scrollbar]:hidden min-h-[3.265rem]",
+          this.field.el,
+        ),
+        (this.elValue = h(
+          "inline-block bg-slate-100 border border-slate-200 rounded",
+          "23",
+        )),
       ),
       h(
         "absolute -inset-y-px right-0 left-0 border-2 border-[color:--nya-focus] hidden group-focus-within:block pointer-events-none",
@@ -167,7 +176,7 @@ export class Sheet {
     createDrawAxes(this.paper)
 
     const elExpressions = (this.elExpressions = h(
-      "flex flex-col",
+      "block",
       (this.elNextExpr = h(
         "grid grid-cols-[2.5rem,auto] relative pointernya-cursor",
         h(
@@ -194,9 +203,9 @@ export class Sheet {
     this.el = h(
       "block fixed inset-0 grid grid-cols-[400px_1fr] select-none [--nya-focus:theme(colors.blue.400)]",
       h(
-        "block h-full overflow-y-auto border-r",
+        "flex flex-col overflow-y-auto relative border-r",
         h(
-          "flex flex-col",
+          "block",
           h(
             "block h-12 w-full bg-slate-100 border-b border-slate-200 flex gap-8",
           ),
