@@ -171,3 +171,8 @@ body {
 .nya-cmd-dot + :where(.nya-cursor) + .nya-cmd-word-infix {
   @apply pl-[.2em];
 }
+
+.nya-cmd-comma + .nya-cmd-comma,
+.nya-cmd-comma + .nya-cursor + .nya-cmd-comma {
+  @apply pl-[.4em];
+}

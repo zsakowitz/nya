@@ -6,6 +6,7 @@ import {
   type Base,
   type Value,
 } from "../ast/eval"
+import { defaultProps2, glsl } from "../ast/eval2"
 import { Field } from "../field/field"
 import { FieldInert } from "../field/field-inert"
 import { h, hx, p, svgx } from "../field/jsx"
@@ -188,6 +189,46 @@ export class Expr {
   fitTo(width: number) {
     this.elScroller.style.maxWidth = `calc(${width}px - 2.5rem)`
   }
+
+  debug() {
+    const node = this.field.block.ast()
+
+    this.sheet.elTokens.textContent = JSON.stringify(node, undefined, 2)
+
+    try {
+      const value = go(node, defaultProps)
+      const base = getOutputBase(node, defaultProps)
+      this.displayEval(value, base)
+    } catch (e) {
+      this.displayError(e instanceof Error ? e : new Error(String(e)))
+    }
+
+    try {
+      const props = defaultProps2()
+      const { expr, ...value } = glsl(node, props)
+      this.sheet.elGlsl.textContent =
+        JSON.stringify(value, undefined, 2) +
+        "\n" +
+        props.ctx.helpers.helpers +
+        props.ctx.block +
+        "\n" +
+        expr
+      this.sheet.elGlsl.classList.remove(
+        "text-red-800",
+        "font-sans",
+        "text-base",
+        "italic",
+      )
+    } catch (e) {
+      this.sheet.elGlsl.textContent = e instanceof Error ? e.message : String(e)
+      this.sheet.elGlsl.classList.add(
+        "text-red-800",
+        "font-sans",
+        "text-base",
+        "italic",
+      )
+    }
+  }
 }
 
 export class Sheet {
@@ -200,6 +241,7 @@ export class Sheet {
   readonly elNextExpr
   readonly elLogo
   readonly elTokens
+  readonly elGlsl
 
   constructor(
     readonly exts: Exts,
@@ -257,7 +299,12 @@ export class Sheet {
 
     this.elTokens = hx(
       "pre",
-      "h-screen overflow-y-auto bg-transparent text-sm border-l border-slate-200 px-2 py-2",
+      "overflow-y-auto text-sm border-l border-slate-200 px-2 py-2 border-t",
+    )
+
+    this.elGlsl = hx(
+      "pre",
+      "overflow-y-auto text-sm border-l border-slate-200 px-2 py-2",
     )
 
     this.el = h(
@@ -287,7 +334,7 @@ export class Sheet {
           "absolute block top-0 bottom-0 right-0 w-1 from-slate-300/50 to-transparent bg-gradient-to-l",
         ),
       ),
-      this.elTokens,
+      h("grid grid-rows-2 grid-cols-1", this.elGlsl, this.elTokens),
       (this.elLogo = hx(
         "button",
         "absolute bottom-0 right-0 p-2",
@@ -315,27 +362,11 @@ export class Sheet {
   }
 
   onExprFocus?(expr: Expr): void {
-    this.elTokens.textContent = JSON.stringify(
-      expr.field.block.ast(),
-      undefined,
-      2,
-    )
+    expr.debug()
   }
 
   onExprChange?(expr: Expr): void {
-    this.elTokens.textContent = JSON.stringify(
-      expr.field.block.ast(),
-      undefined,
-      2,
-    )
-    try {
-      const node = expr.field.block.ast()
-      const value = go(node, defaultProps)
-      const base = getOutputBase(node, defaultProps)
-      expr.displayEval(value, base)
-    } catch (e) {
-      expr.displayError(e instanceof Error ? e : new Error(String(e)))
-    }
+    expr.debug()
   }
 }
 
@@ -347,7 +378,7 @@ const REMARKS = [
   "oh god why doesn't it round 10^-16 to zero",
   "nobody knows what the sidebar does",
   "because you wanted desmos to be open source",
-  "its developers thought x≱y was more important than y=f(x)",
+  "its developers thought ≱ was useful",
   "what is the logo hiding",
   "the ‘go to sleep’ node type is not implemented yet",
   "nya? like the cat noise? (yes)",
@@ -365,4 +396,7 @@ const REMARKS = [
   "it’s shaders for the rest of us",
   "tbh it’s only so sakawi can say ‘nya’ more",
   "car <3",
+  "where bedtime is 29:00",
+  "brought to you by sleep deprivation",
+  "sponsored by zSnout",
 ]

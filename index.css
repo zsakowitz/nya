@@ -829,10 +829,6 @@ video {
   height: max-content;
 }
 
-.h-screen {
-  height: 100vh;
-}
-
 .min-h-\[3\.265rem\] {
   min-height: 3.265rem;
 }
@@ -920,6 +916,10 @@ video {
   resize: both;
 }
 
+.grid-cols-1 {
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
 .grid-cols-\[2\.5rem\2c auto\] {
   grid-template-columns: 2.5rem auto;
 }
@@ -934,6 +934,10 @@ video {
 
 .grid-rows-1 {
   grid-template-rows: repeat(1, minmax(0, 1fr));
+}
+
+.grid-rows-2 {
+  grid-template-rows: repeat(2, minmax(0, 1fr));
 }
 
 .flex-col {
@@ -1278,6 +1282,10 @@ video {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
+.font-sans {
+  font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
 .font-serif {
   font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
 }
@@ -1321,6 +1329,11 @@ video {
 
 .text-\[90\%\] {
   font-size: 90%;
+}
+
+.text-base {
+  font-size: 1rem;
+  line-height: 1.5rem;
 }
 
 .text-sm {
@@ -1571,6 +1584,11 @@ body {
 .nya-cmd-dot + .nya-cmd-word-infix,
 .nya-cmd-dot + :where(.nya-cursor) + .nya-cmd-word-infix {
   padding-left: .2em;
+}
+
+.nya-cmd-comma + .nya-cmd-comma,
+.nya-cmd-comma + .nya-cursor + .nya-cmd-comma {
+  padding-left: .4em;
 }
 
 .\*\:contents > * {

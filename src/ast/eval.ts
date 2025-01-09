@@ -95,7 +95,7 @@ function coerce(values: Single[]): Value {
       type: "complex",
       list: true,
       value: values.map((x) =>
-        x.value.type == "point" ? x.value : pt(x.value, toNum(1)),
+        x.value.type == "point" ? x.value : pt(x.value, toNum(0)),
       ),
     }
   }
@@ -405,7 +405,10 @@ function frac(a: number, b: number): LNumber {
   return { type: "exact", n: a / divBy, d: b / divBy }
 }
 
-function parseNumber(text: string, base: number | LNumber | LPoint): LNumber {
+export function parseNumber(
+  text: string,
+  base: number | LNumber | LPoint,
+): LNumber {
   const numericValue =
     typeof base == "number" ? base
     : base.type == "approx" ? base.value
