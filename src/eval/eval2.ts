@@ -179,12 +179,17 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
     }
     case "frac":
       return DIV.glsl(props.ctx, glsl(node.a, props), glsl(node.b, props))
+    case "raise":
+      return POW.glsl(
+        props.ctx,
+        glsl(node.base, props),
+        glsl(node.exponent, props),
+      )
     case "piecewise":
     case "void":
     case "num16":
     case "sub":
     case "sup":
-    case "raise":
     case "mixed":
     case "for":
     case "matrix":
