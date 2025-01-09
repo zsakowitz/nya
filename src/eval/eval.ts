@@ -461,7 +461,7 @@ export function parseNumber(
 }
 
 function evalBinary(
-  op: PuncBinary,
+  op: PuncBinary["value"],
   an: Node,
   bn: Node,
   props: EvalProps,

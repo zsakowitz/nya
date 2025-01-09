@@ -4,8 +4,8 @@ import {
   Precedence,
   type Node,
   type PuncBinary,
+  type PuncBinaryNoComma,
   type PuncInfix,
-  type PuncInfixNoComma,
   type PuncPrefix,
 } from "./token"
 
@@ -58,16 +58,16 @@ export function pass2_implicits(tokens: Node[]): Node[] {
 
   function op(
     precedence: number,
-  ): Exclude<PuncInfixNoComma, { value: "," }> | undefined {
+  ): Exclude<PuncBinaryNoComma, { value: "," }> | undefined {
     const token = tokens[tokens.length - 1]
     if (
       token?.type == "punc" &&
-      (token.kind == "infix" || token.kind == "pm") &&
+      (token.kind == "infix" || token.kind == "pm" || token.kind == "cmp") &&
       getPrecedence(token.value) == precedence &&
       token.value != ","
     ) {
       tokens.pop()
-      return token satisfies PuncInfix as PuncInfixNoComma
+      return token satisfies PuncBinary as PuncBinaryNoComma
     }
   }
 
@@ -169,7 +169,7 @@ export function pass2_implicits(tokens: Node[]): Node[] {
 
     let values = [first]
 
-    let exs: Exclude<PuncBinary, ",">[] = []
+    let exs: Exclude<PuncInfix, ",">[] = []
     let ex
     while ((ex = op(Precedence.Exponential))) {
       if (ex.kind != "infix") {

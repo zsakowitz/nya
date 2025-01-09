@@ -14,7 +14,7 @@ export type PuncCmp =
   | { dir: "<" | ">"; eq: boolean; neg: boolean }
 
 /** A punctuation token which represents a binary operator. */
-export type PuncBinary =
+export type PuncInfix =
   | "for"
   | "with"
   | "base"
@@ -22,7 +22,6 @@ export type PuncBinary =
   | "\\or "
   | ".."
   | "..."
-  | PuncPm
   | "\\cdot "
   | "÷"
   | "mod"
@@ -35,18 +34,12 @@ export type PuncBinary =
   | "\\times "
   | "\\odot "
   | "\\otimes "
-  | PuncCmp
 
 /** A punctuation token which represents a unary operator. */
 export type PuncUnary = "\\neg " | PuncPm | "!"
 
 /** The string tags for all binary operators. */
-export type PuncBinaryStr =
-  PuncBinary extends infer T ?
-    T extends string ? T
-    : T extends { dir: infer U extends string } ? U
-    : never
-  : never
+export type PuncBinaryStr = PuncInfix | PuncPm | PuncCmp["dir"]
 
 /**
  * Additional elements and rules apply during parsing:
@@ -99,9 +92,9 @@ export const PRECEDENCE_MAP = {
   "...": Precedence.Range,
   "<": Precedence.Comparison,
   ">": Precedence.Comparison,
-  "=": Precedence.Equality,
-  "~": Precedence.Equality,
-  "≈": Precedence.Equality,
+  "=": Precedence.Comparison,
+  "~": Precedence.Comparison,
+  "≈": Precedence.Comparison,
   "\\and ": Precedence.BoolAnd,
   "\\or ": Precedence.BoolOr,
   base: Precedence.WordInfix,
@@ -119,7 +112,7 @@ export const PRECEDENCE_MAP = {
 } as Record<PuncBinaryStr, number>
 
 /** Gets the precedence of some operator. */
-export function getPrecedence(op: PuncBinary) {
+export function getPrecedence(op: PuncBinary["value"]) {
   if (typeof op == "string") {
     return PRECEDENCE_MAP[op] ?? Precedence.WordInfix
   } else {
@@ -131,17 +124,19 @@ export function getPrecedence(op: PuncBinary) {
 export type Punc =
   | { type: "punc"; kind: "prefix"; value: PuncUnary }
   | { type: "punc"; kind: "suffix"; value: PuncUnary }
-  | { type: "punc"; kind: "infix"; value: PuncBinary }
+  | { type: "punc"; kind: "infix"; value: PuncInfix }
+  | { type: "punc"; kind: "cmp"; value: PuncCmp }
   | { type: "punc"; kind: "pm"; value: PuncPm }
 
-/** A prefix punctuation token. */
-export type PuncInfix =
-  | { type: "punc"; kind: "infix"; value: PuncBinary }
+/** A binary punctuation token. */
+export type PuncBinary =
+  | { type: "punc"; kind: "infix"; value: PuncInfix }
+  | { type: "punc"; kind: "cmp"; value: PuncCmp }
   | { type: "punc"; kind: "pm"; value: PuncPm }
 
-/** A prefix punctuation token. */
-export type PuncInfixNoComma =
-  | { type: "punc"; kind: "infix"; value: Exclude<PuncBinary, ","> }
+/** A binary punctuation token. */
+export type PuncBinaryNoComma =
+  | { type: "punc"; kind: "infix"; value: Exclude<PuncInfix, ","> }
   | { type: "punc"; kind: "pm"; value: PuncPm }
 
 /** An infix punctuation token. */
@@ -150,7 +145,7 @@ export type PuncPrefix =
   | { type: "punc"; kind: "pm"; value: PuncPm }
 
 /** A binary operation derived from infix operators. */
-export type OpBinary = Exclude<PuncBinary, ",">
+export type OpBinary = Exclude<PuncBinary["value"], ",">
 
 /**
  * A part of the AST. The intermediate representation is so close to the final
@@ -179,7 +174,7 @@ export type Node =
   | { type: "op"; kind: OpBinary; a: Node; b: Node }
   | { type: "op"; kind: PuncUnary; a: Node; b?: undefined }
   | { type: "commalist"; items: Node[] }
-  | { type: "cmplist"; items: Node[]; ops: PuncBinary[] }
+  | { type: "cmplist"; items: Node[]; ops: PuncCmp[] }
   | { type: "factorial"; on: Node; repeats: number | Node }
   | { type: "error"; reason: string }
   | Punc

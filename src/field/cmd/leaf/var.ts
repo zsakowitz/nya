@@ -2,7 +2,7 @@ import { Leaf } from "."
 import {
   PRECEDENCE_MAP,
   type Node,
-  type PuncBinary,
+  type PuncInfix,
 } from "../../../eval/ast/token"
 import { h, t } from "../../jsx"
 import {
@@ -245,7 +245,7 @@ export class CmdVar extends Leaf {
         tokens.push({
           type: "punc",
           kind: "infix",
-          value: last.value as PuncBinary,
+          value: last.value as PuncInfix,
         })
       }
 

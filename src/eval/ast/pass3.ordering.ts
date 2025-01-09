@@ -1,4 +1,4 @@
-import { getPrecedence, type Node, type PuncInfix } from "./token"
+import { getPrecedence, type Node, type PuncBinary } from "./token"
 
 export function pass3_ordering(tokens: Node[]): Node {
   if (tokens.length == 0) {
@@ -9,7 +9,7 @@ export function pass3_ordering(tokens: Node[]): Node {
 
   let isValue = false
   const output: Node[] = [tokens.pop()!]
-  const ops: PuncInfix[] = []
+  const ops: PuncBinary[] = []
 
   function pop() {
     isValue = !isValue
@@ -30,7 +30,7 @@ export function pass3_ordering(tokens: Node[]): Node {
       }
     }
 
-    if (o1.kind != "infix" && o1.kind != "pm") {
+    if (o1.kind != "infix" && o1.kind != "pm" && o1.kind != "cmp") {
       return {
         type: "error",
         reason: `Expected infix operator; found prefix or suffix '${o1.value}' (more: ${JSON.stringify(o1)}).`,
@@ -40,8 +40,6 @@ export function pass3_ordering(tokens: Node[]): Node {
     let o2
     while (
       (o2 = ops[ops.length - 1]) &&
-      o2.type == "punc" &&
-      (o2.kind == "infix" || o2.kind == "pm") &&
       getPrecedence(o2.value) >= getPrecedence(o1.value)
     ) {
       ops.pop()
@@ -59,22 +57,38 @@ export function pass3_ordering(tokens: Node[]): Node {
   const stack: Node[] = []
 
   for (const node of output) {
-    if (node.type == "punc" && (node.kind == "infix" || node.kind == "pm")) {
-      const b = stack.pop()!
-      const a = stack.pop()!
-      if (node.value == ",") {
-        if (a.type == "commalist") {
-          a.items.push(b)
-          stack.push(a)
-        } else {
-          stack.push({ type: "commalist", items: [a, b] })
-        }
-      } else {
-        stack.push({ type: "op", kind: node.value, a, b })
-      }
-    } else {
+    if (node.type != "punc" || node.kind == "prefix" || node.kind == "suffix") {
       stack.push(node)
+      continue
     }
+
+    const b = stack.pop()!
+    const a = stack.pop()!
+
+    if (node.kind == "cmp") {
+      if (a.type == "cmplist") {
+        a.items.push(b)
+        a.ops.push(node.value)
+        stack.push(a)
+      } else {
+        stack.push({ type: "cmplist", items: [a, b], ops: [node.value] })
+      }
+
+      continue
+    }
+
+    if (node.value == ",") {
+      if (a.type == "commalist") {
+        a.items.push(b)
+        stack.push(a)
+      } else {
+        stack.push({ type: "commalist", items: [a, b] })
+      }
+
+      continue
+    }
+
+    stack.push({ type: "op", kind: node.value, a, b })
   }
 
   const ret = stack[0]

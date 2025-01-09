@@ -1,6 +1,6 @@
-import type { Node, PuncBinary } from "../../../eval/ast/token"
+import type { Node, PuncCmp } from "../../../eval/ast/token"
 import { L, R, type Cursor, type Dir, type InitProps } from "../../model"
-import { Op, OpMinus, OpDoubleRightArrow, OpRightArrow } from "./op"
+import { Op, OpDoubleRightArrow, OpMinus, OpRightArrow } from "./op"
 
 /** An `Op` which can be negated. */
 export abstract class OpCeq extends Op {
@@ -45,10 +45,7 @@ type Data = readonly [
 ]
 
 function ceq(
-  kind: Extract<
-    PuncBinary,
-    { dir: string; neg: boolean; eq?: undefined }
-  >["dir"],
+  kind: Extract<PuncCmp, { dir: string; neg: boolean; eq?: undefined }>["dir"],
   eq: Data,
   ne: Data,
   endsImplicitGroup = true,
@@ -99,7 +96,7 @@ function ceq(
     ir(tokens: Node[]): void {
       tokens.push({
         type: "punc",
-        kind: "infix",
+        kind: "cmp",
         value: { dir: kind, neg: this.neg },
       })
     }
@@ -107,7 +104,7 @@ function ceq(
 }
 
 function cmp(
-  kind: Extract<PuncBinary, { dir: string; neg: boolean; eq: boolean }>["dir"],
+  kind: Extract<PuncCmp, { dir: string; neg: boolean; eq: boolean }>["dir"],
   normal: Data,
   normalNeg: Data,
   orEq: Data,
@@ -179,7 +176,7 @@ function cmp(
     ir(tokens: Node[]): void {
       tokens.push({
         type: "punc",
-        kind: "infix",
+        kind: "cmp",
         value: { dir: kind, eq: this.eq, neg: this.neg },
       })
     }

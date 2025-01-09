@@ -1,5 +1,5 @@
 import { Leaf } from "."
-import type { Node, Punc, PuncBinary, PuncPm } from "../../../eval/ast/token"
+import type { Node, Punc, PuncInfix, PuncPm } from "../../../eval/ast/token"
 import { h, t } from "../../jsx"
 import { L, R, type Cursor, type Dir, type InitProps } from "../../model"
 import { CmdSupSub } from "../math/supsub"
@@ -108,7 +108,7 @@ export function op(
 }
 
 export function opp(
-  latex: PuncBinary & string,
+  latex: PuncInfix & string,
   mathspeak: string,
   html?: string,
   ascii?: string,
