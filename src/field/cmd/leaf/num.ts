@@ -1,5 +1,5 @@
 import { Leaf } from "."
-import type { Node } from "../../../ast/token"
+import type { Node } from "../../../eval/ast/token"
 import { h, t } from "../../jsx"
 import { Block, Cursor, L, R, type Dir, type InitProps } from "../../model"
 import { CmdSupSub } from "../math/supsub"

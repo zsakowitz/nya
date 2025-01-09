@@ -1,12 +1,17 @@
-import type { WordKind } from "../field/cmd/leaf/var"
-import type { BigCmd } from "../field/cmd/math/big"
-import type { ParenLhs, ParenRhs } from "../field/cmd/math/brack"
+import type { WordKind } from "../../field/cmd/leaf/var"
+import type { BigCmd } from "../../field/cmd/math/big"
+import type { ParenLhs, ParenRhs } from "../../field/cmd/math/brack"
 import { pass1_suffixes } from "./pass1.suffixes"
 import { pass2_implicits } from "./pass2.implicits"
 import { pass3_ordering } from "./pass3.ordering"
 
 /** A punctuation token which can either be a prefix or an infix. */
 export type PuncPm = "+" | "-" | "\\pm " | "\\mp "
+
+/** A punctuation token which represents a binary comparison operator. */
+export type PuncCmp =
+  | { dir: "=" | "~" | "≈"; neg: boolean }
+  | { dir: "<" | ">"; eq: boolean; neg: boolean }
 
 /** A punctuation token which represents a binary operator. */
 export type PuncBinary =
@@ -15,8 +20,6 @@ export type PuncBinary =
   | "base"
   | "\\and "
   | "\\or "
-  | { dir: "=" | "~" | "≈"; neg: boolean }
-  | { dir: "<" | ">"; eq: boolean; neg: boolean }
   | ".."
   | "..."
   | PuncPm
@@ -32,6 +35,7 @@ export type PuncBinary =
   | "\\times "
   | "\\odot "
   | "\\otimes "
+  | PuncCmp
 
 /** A punctuation token which represents a unary operator. */
 export type PuncUnary = "\\neg " | PuncPm | "!"
@@ -175,6 +179,7 @@ export type Node =
   | { type: "op"; kind: OpBinary; a: Node; b: Node }
   | { type: "op"; kind: PuncUnary; a: Node; b?: undefined }
   | { type: "commalist"; items: Node[] }
+  | { type: "cmplist"; items: Node[]; ops: PuncBinary[] }
   | { type: "factorial"; on: Node; repeats: number | Node }
   | { type: "error"; reason: string }
   | Punc

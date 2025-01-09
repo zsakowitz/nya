@@ -1,4 +1,4 @@
-import type { Node } from "../../../ast/token"
+import type { Node } from "../../../eval/ast/token"
 import { h, U_ZERO_WIDTH_SPACE } from "../../jsx"
 import {
   Block,
@@ -75,11 +75,11 @@ export class CmdInt extends Command<BlocksInt> {
     }
   }
 
-  moveOutOf(cursor: Cursor, towards: Dir, block: Block): void {
+  moveOutOf(cursor: Cursor, towards: Dir, _block: Block): void {
     cursor.moveTo(this, towards)
   }
 
-  vertFromSide(dir: VDir, from: Dir): Block | undefined {
+  vertFromSide(dir: VDir, _from: Dir): Block | undefined {
     if (!this.blocks.length) {
       this.render([new Block(this), new Block(this)])
     }
@@ -99,7 +99,11 @@ export class CmdInt extends Command<BlocksInt> {
     }
   }
 
-  vertOutOf(dir: VDir, block: Block, cursor: Cursor): Block | true | undefined {
+  vertOutOf(
+    dir: VDir,
+    block: Block,
+    _cursor: Cursor,
+  ): Block | true | undefined {
     if (dir == U && block == this.blocks[0]) {
       return this.blocks[1]!
     }

@@ -1,4 +1,4 @@
-import type { Node } from "../../../ast/token"
+import type { Node } from "../../../eval/ast/token"
 import { h } from "../../jsx"
 import {
   Block,
@@ -142,7 +142,11 @@ export class CmdPiecewise extends Command {
 
   vertFromSide(): undefined {}
 
-  vertOutOf(dir: VDir, block: Block, cursor: Cursor): Block | true | undefined {
+  vertOutOf(
+    dir: VDir,
+    block: Block,
+    _cursor: Cursor,
+  ): Block | true | undefined {
     const index = this.blocks.indexOf(block)
     const next = this.blocks[index + dir] // `VDir`'s values are convenient here
     if (next) {

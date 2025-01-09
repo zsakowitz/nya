@@ -1,30 +1,19 @@
-export type SApprox = { type: "approx"; value: number }
-export type SExact = { type: "exact"; n: number; d: number }
-export type SReal = SApprox | SExact
-
-export type SPoint = { type: "point"; x: SReal; y: SReal }
-export type SColor = { type: "color"; r: SReal; g: SReal; b: SReal }
-
-export type VReal = { type: "real"; value: SReal }
-export type VComplex = { type: "complex"; value: SPoint }
-export type VColor = { type: "color"; value: SColor }
-
-export type Val = VReal | VComplex | VColor
-export type Value = Expand<
-  Val extends infer T ?
-    T extends { value: unknown } ?
-      | (T & { list: false })
-      | (Omit<T, "value"> & { value: T["value"][]; list: true })
-    : never
-  : never
->
-export type Expand<T> = T extends infer U ? { [K in keyof U]: U[K] } : never
-
-export type Ty = Val["type"]
-export type Type = { type: Ty; list: boolean | number }
-
-export type GlslVal = { expr: string; type: Ty }
-export type GlslValue = { expr: string; type: Ty; list: boolean | number }
+import {
+  type GlslVal,
+  type GlslValue,
+  type JsVal,
+  type JsValue,
+  type SExact,
+  type SPoint,
+  type SReal,
+  type Ty,
+  type TyName,
+  type Type,
+  list,
+  listTy,
+  tyToGlsl,
+  typeToGlsl,
+} from "./ty"
 
 export class GlslHelpers {
   readonly helpers = ""
@@ -56,88 +45,71 @@ export class GlslContext {
   declare(source: TemplateStringsArray) {
     this.helpers.declare(source)
   }
+
+  map(
+    from: GlslValue & { list: number },
+    to: Ty,
+    via: (item: string) => string,
+  ) {
+    const src = this.name()
+    const idx = this.name()
+    const dst = this.name()
+    this.block += `${typeToGlsl(from)} ${src} = ${from.expr};\n`
+    this.block += `${tyToGlsl(to)}[${from.list}] ${dst};\n`
+    this.block += `for (int ${idx} = 0; ${idx} < ${from.list}; ${idx}++) {\n`
+    this.block += `${dst}[${idx}] = ${via(`${src}[${idx}]`)};\n`
+    this.block += `}\n`
+    return dst
+  }
 }
 
 export type As<T extends readonly unknown[], U> = { readonly [K in keyof T]: U }
 
+export type Build<T, N extends number, U extends readonly any[] = []> =
+  U["length"] extends N ? U : Build<T, N, [...U, T]>
+
 export interface Fn<T extends readonly unknown[]> {
-  js(...values: As<T, Value>): Value
+  js(...values: As<T, JsValue>): JsValue
   type(...args: As<T, Type>): Type
   glsl(ctx: GlslContext, ...values: As<T, GlslValue>): GlslValue
 }
 
-function list(values: string[]): string {
-  if (values.length == 0) {
-    return "nothing"
-  }
-
-  if (values.length == 1) {
-    return values[0]!
-  }
-
-  if (values.length == 2) {
-    return values[0]! + " and " + values[1]!
-  }
-
-  return values.slice(0, -1).join(", ") + ", and " + values[values.length - 1]!
-}
-
-export function tyToGlsl(ty: Ty) {
-  return (
-    ty == "real" ? "float"
-    : ty == "complex" ? "vec2"
-    : ty == "color" ? "vec4"
-    : (() => {
-        throw new Error(`Unknown type '${ty}'`)
-      })()
-  )
-}
-
-export function typeToGlsl(ty: Type) {
-  if (ty.list === true) {
-    throw new Error("Dynamically-sized lists are not supported in shaders.")
-  }
-
-  if (ty.list === false) {
-    return tyToGlsl(ty.type)
-  }
-
-  return tyToGlsl(ty.type) + "[" + ty.list + "]"
-}
-
 export interface Op<T extends readonly unknown[]> {
-  ty(...vals: (Ty | undefined)[]): Ty | null
-  js(...vals: As<T, Val>): Val | null
+  ty(...vals: (Ty | undefined)[]): TyName | null
+  js(...vals: As<T, JsVal>): JsVal | null
   glsl(ctx: GlslContext, ...vals: As<T, GlslVal>): string | null
 }
 
-export function op<T extends readonly unknown[]>(
+/** Creates a {@linkcode Fn} which operates on lists by distributing over them. */
+export function fnDist<T extends readonly unknown[]>(
   name: string,
   props: Op<T>,
 ): Fn<readonly unknown[]>
 
-export function op(
+export function fnDist(
   name: string,
   props: Op<readonly unknown[]>,
 ): Fn<readonly unknown[]> {
-  function ty(...tys: Ty[]): Ty {
+  return { glsl, js, type }
+
+  function ty(...tys: Ty[]): TyName {
     const ret = props.ty(...tys)
     if (ret != null) return ret
 
-    throw new Error(`'${name}' cannot be applied to ${list(tys.map((x) => x))}`)
+    throw new Error(`'${name}' cannot be applied to ${listTy(tys)}`)
   }
 
   function type(...tys: Type[]): Type {
     if (tys.every((x) => x.list === false)) {
-      return { type: ty(...tys.map((x) => x.type)), list: false }
+      return { type: ty(...tys), list: false }
     }
 
     if (tys.some((x) => x.list === true)) {
-      return { type: ty(...tys.map((x) => x.type)), list: true }
+      return { type: ty(...tys), list: true }
     }
 
     return {
-      type: ty(...tys.map((x) => x.type)),
+      type: ty(...tys),
       list: tys.reduce(
         (a, b) =>
           Math.min(
@@ -202,7 +174,7 @@ export function op(
     return { ...ty, expr: ret }
   }
 
-  function jsSingle(...values: Val[]): Val {
+  function jsSingle(...values: JsVal[]): JsVal {
     const ret = props.js(...values)
     if (ret != null) return ret
 
@@ -211,7 +183,7 @@ export function op(
     )
   }
 
-  function js(...values: Value[]): Value {
+  function js(...values: JsValue[]): JsValue {
     const ty = type(...values)
 
     if (values.every((x) => !x.list)) {
@@ -238,45 +210,53 @@ export function op(
       value,
     } as any
   }
-
-  return {
-    glsl,
-    js,
-    type,
-  }
 }
 
-export interface JsOp<T extends readonly unknown[]> {
+export interface OpJs<T extends readonly unknown[]> {
   approx(values: As<T, number>, raw: As<T, SReal>): SReal
   exact?(...exacts: As<T, SExact>): SReal | null
-  point(this: JsOp2<T>, ...points: As<T, SPoint>): SPoint
-  other?(this: JsOp2<T>, ...values: As<T, Val>): Val | null
+  point(this: OpJsExt<T>, ...points: As<T, SPoint>): SPoint
+  other?(this: OpJsExt<T>, ...values: As<T, JsVal>): JsVal | null
 }
 
-export interface JsOp2<T extends readonly unknown[]> extends JsOp<T> {
+/**
+ * The {@linkcode OpJsExt.real} function is installed on every {@linkcode OpJs}
+ * instance automatically; this interface declares that it always exists, but
+ * stops the user from having to provide it.
+ */
+export interface OpJsExt<T extends readonly unknown[]> extends OpJs<T> {
   real(...values: As<T, SReal>): SReal
 }
 
-export interface GlslOp<T extends readonly unknown[]> {
+export interface OpGlsl<T extends readonly unknown[]> {
   real(ctx: GlslContext, ...inputs: As<T, string>): string
   complex(ctx: GlslContext, ...inputs: As<T, string>): string
   other?(ctx: GlslContext, ...values: As<T, GlslVal>): string | null
 }
 
-export function numOp<T extends readonly unknown[]>(
-  name: string,
-  js: JsOp<T>,
-  glsl: GlslOp<T>,
-  otherTy?: (...values: As<T, Ty>) => Ty | null,
-): Fn<T>
+export interface FnNum<T extends readonly unknown[]> extends Fn<T> {
+  real(...values: As<T, SReal>): SReal
+  complex(...args: As<T, SPoint>): SPoint
+}
 
-export function numOp(
+/**
+ * Creates a {@linkcode Fn} which operates on lists by distributing over them and
+ * which is primarily used on real and complex values.
+ */
+export function fnNum<T extends readonly unknown[]>(
+  name: string,
+  js: OpJs<T>,
+  glsl: OpGlsl<T>,
+  otherTy?: (...values: As<T, Ty>) => Ty | null,
+): FnNum<T>
+
+export function fnNum(
   name: string,
   js: {
     approx(values: number[], raw: SReal[]): SReal
     point(...points: SPoint[]): SPoint
     exact?(...exacts: SExact[]): SReal | null
-    other?(...values: Val[]): Val | null
+    other?(...values: JsVal[]): JsVal | null
   },
   glsl: {
     real(ctx: GlslContext, ...inputs: string[]): string
@@ -284,8 +264,8 @@ export function numOp(
     other?(ctx: GlslContext, ...values: GlslVal[]): string | null
   },
   otherTy?: (...values: Ty[]) => Ty | null,
-): Fn<any[]> {
-  ;(js as JsOp2<any[]>).real = jsReal
+): FnNum<any[]> {
+  ;(js as OpJsExt<any[]>).real = jsReal
 
   const approx = js.approx.bind(js)
   const point = js.point.bind(js)
@@ -296,25 +276,29 @@ export function numOp(
   const complex = glsl.complex.bind(glsl)
   const glslOther = glsl.other?.bind(glsl)
 
-  return op(name, {
-    ty,
-    js: jsSingle,
-    glsl: glslSingle,
-  })
+  return {
+    ...fnDist(name, {
+      ty,
+      js: jsSingle,
+      glsl: glslSingle,
+    }),
+    complex: point,
+    real: jsReal,
+  }
 
-  function ty(...tys: Ty[]): Ty {
-    if (tys.every((x) => x == "real")) {
+  function ty(...tys: Ty[]): TyName {
+    if (tys.every((x) => x.type == "real")) {
       return "real"
     }
 
-    if (tys.every((x) => x == "real" || x == "complex")) {
+    if (tys.every((x) => x.type == "real" || x.type == "complex")) {
       return "complex"
     }
 
     const ret = otherTy?.(...tys)
-    if (ret != null) return ret
+    if (ret != null) return ret.type
 
-    throw new Error(`'${name}' cannot be applied to ${list(tys.map((x) => x))}`)
+    throw new Error(`'${name}' cannot be applied to ${listTy(tys)}`)
   }
 
   function jsReal(...values: SReal[]): SReal {
@@ -329,7 +313,7 @@ export function numOp(
     )
   }
 
-  function jsSingle(...values: Val[]): Val {
+  function jsSingle(...values: JsVal[]): JsVal {
     if (values.every((x) => x.type == "real")) {
       return { type: "real", value: jsReal(...values.map((x) => x.value)) }
     }
@@ -376,52 +360,4 @@ export function numOp(
       `'${name}' cannot be applied to ${list(values.map((x) => x.type))} in a shader`,
     )
   }
-}
-
-export function approx(value: number): SApprox {
-  return { type: "approx", value }
-}
-
-function gcd(a: number, b: number) {
-  for (let temp = b; b !== 0; ) {
-    b = a % b
-    a = temp
-    temp = b
-  }
-  return a
-}
-
-export function frac(a: number, b: number): SReal {
-  if (b == 0) return { type: "approx", value: a / b }
-  if (a == 0) return { type: "exact", n: 0, d: 1 }
-  if (b < 0) {
-    a = -a
-    b = -b
-  }
-  const divBy = gcd(a < 0 ? -a : a, b)
-  return { type: "exact", n: a / divBy, d: b / divBy }
-}
-
-export function safe(value: number) {
-  return (
-    typeof value == "number" &&
-    value == Math.floor(value) &&
-    Math.abs(value) < 0x20000000000000
-  ) // 2 ** 53
-}
-
-export function real(x: number): SReal {
-  if (typeof x == "number") {
-    if (safe(x)) {
-      return { type: "exact", n: x, d: 1 }
-    } else {
-      return { type: "approx", value: x }
-    }
-  } else {
-    return x
-  }
-}
-
-export function pt(x: SReal, y: SReal): SPoint {
-  return { type: "point", x, y }
 }

@@ -1,5 +1,9 @@
 import { Leaf } from "."
-import { PRECEDENCE_MAP, type Node, type PuncBinary } from "../../../ast/token"
+import {
+  PRECEDENCE_MAP,
+  type Node,
+  type PuncBinary,
+} from "../../../eval/ast/token"
 import { h, t } from "../../jsx"
 import {
   Cursor,

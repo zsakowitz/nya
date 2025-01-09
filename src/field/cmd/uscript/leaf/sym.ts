@@ -1,5 +1,5 @@
 import { CmuLeaf } from "."
-import type { Node } from "../../../../ast/token"
+import type { Node } from "../../../../eval/ast/token"
 import { h, usvg } from "../../../jsx"
 import { L, type Cursor, type InitProps, type InitRet } from "../../../model"
 
