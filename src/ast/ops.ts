@@ -32,8 +32,8 @@ export const ADD = numOp<[0, 0]>(
 )
 
 export const RGB = op<[0, 0, 0]>("rgb", {
-  ty(r, g, b) {
-    if (r == "real" && g == "real" && b == "real") {
+  ty(r, g, b, a) {
+    if (r == "real" && g == "real" && b == "real" && a == null) {
       return "color"
     }
     return null

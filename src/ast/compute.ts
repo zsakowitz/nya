@@ -106,7 +106,7 @@ export function typeToGlsl(ty: Type) {
 }
 
 export interface Op<T extends readonly unknown[]> {
-  ty(...vals: As<T, Ty>): Ty | null
+  ty(...vals: (Ty | undefined)[]): Ty | null
   js(...vals: As<T, Val>): Val | null
   glsl(ctx: GlslContext, ...vals: As<T, GlslVal>): string | null
 }
@@ -114,7 +114,7 @@ export interface Op<T extends readonly unknown[]> {
 export function op<T extends readonly unknown[]>(
   name: string,
   props: Op<T>,
-): Fn<T>
+): Fn<readonly unknown[]>
 
 export function op(
   name: string,
@@ -212,7 +212,10 @@ export function op(
   }
 
   function js(...values: Value[]): Value {
+    const ty = type(...values)
+
     if (values.every((x) => !x.list)) {
+      // `ty` must be computed by now so we can perform argument count validation
       return { ...jsSingle(...values), list: false }
     }
 
@@ -231,10 +234,9 @@ export function op(
     )
 
     return {
-      type: ty(...values.map((x) => x.type)),
-      list: true,
+      ...ty,
       value,
-    }
+    } as any
   }
 
   return {

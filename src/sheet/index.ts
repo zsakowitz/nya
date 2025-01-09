@@ -133,7 +133,7 @@ export class Expr {
         )),
       ),
       h(
-        "absolute -inset-y-px right-0 left-0 border-2 border-[color:--nya-focus] hidden group-focus-within:block pointer-events-none",
+        "absolute -inset-y-px right-0 left-0 border-2 border-[color:--nya-focus] hidden group-focus-within:block pointer-events-none [:first-child>&]:top-0",
       ),
     )
     this.field.el.addEventListener("keydown", (event) => {

@@ -1588,7 +1588,7 @@ body {
 
 .nya-cmd-comma + .nya-cmd-comma,
 .nya-cmd-comma + .nya-cursor + .nya-cmd-comma {
-  padding-left: .4em;
+  padding-left: 1ch;
 }
 
 .\*\:contents > * {
@@ -1695,4 +1695,8 @@ body {
 
 .nya-display:not(:focus) .\[\.nya-display\:not\(\:focus\)_\&\]\:hidden {
   display: none;
+}
+
+:first-child>.\[\:first-child\>\&\]\:top-0 {
+  top: 0px;
 }

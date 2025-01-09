@@ -10,7 +10,7 @@ import {
   type SReal,
   type Value,
 } from "./compute"
-import { ADD } from "./ops"
+import { ADD, RGB } from "./ops"
 import type { Node } from "./token"
 
 export interface EvalProps {
@@ -169,6 +169,10 @@ function list(values: string[]): string {
   return values.slice(0, -1).join(", ") + ", and " + values[values.length - 1]!
 }
 
+/**
+ * Forcibly treats `node` as a comma-separated list, and gets its contained
+ * nodes.
+ */
 function commalist(node: Node): Node[] {
   if (node.type == "commalist") {
     return node.items.slice()
@@ -179,6 +183,18 @@ function commalist(node: Node): Node[] {
   }
 
   return [node]
+}
+
+/**
+ * Like {@linkcode commalist}, but will remove a single layer of parentheses if
+ * they exist.
+ */
+function fnargs(node: Node): Node[] {
+  if (node.type == "group" && node.lhs == "(" && node.rhs == ")") {
+    node = node.value
+  }
+
+  return commalist(node)
 }
 
 function coerce(values: GlslVal[], message: `${string}%%${string}`): GlslValue {
@@ -225,8 +241,11 @@ function glslCall(
   asMethod: boolean,
   props: EvalProps,
 ): GlslValue {
+  const evald = () => args.map((arg) => glsl(arg, props))
+
   switch (name) {
     case "rgb":
+      return RGB.glsl(props.ctx, ...evald())
   }
   throw new Error(`The '${name}' function is not supported in shaders yet.`)
 }
@@ -277,7 +296,7 @@ export function glsl(node: Node, props: EvalProps): GlslValue {
         !node.name.sub &&
         !node.name.sup
       ) {
-        const args = commalist(node)
+        const args = fnargs(node.args)
         if (node.on) {
           args.unshift(node.on)
         }
