@@ -897,6 +897,10 @@ video {
   max-width: 100%;
 }
 
+.grow {
+  flex-grow: 1;
+}
+
 .scale-x-\[70\%\] {
   --tw-scale-x: 70%;
   transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));

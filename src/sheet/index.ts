@@ -360,4 +360,9 @@ const REMARKS = [
   "i still don't know why it exists",
   "they added \\over before y=2",
   "mrrp meow",
+  "how even do you grow the piecewise function",
+  "it’s like ithkuil decomposer, but totally different",
+  "it’s shaders for the rest of us",
+  "tbh it’s only so sakawi can say ‘nya’ more",
+  "car <3",
 ]
