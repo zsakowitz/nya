@@ -98,6 +98,11 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
             return MUL.glsl(props.ctx, glsl(node.a, props), glsl(node.b, props))
           case "÷":
             return DIV.glsl(props.ctx, glsl(node.a, props), glsl(node.b, props))
+          case "base":
+            return glsl(node.a, {
+              ...props,
+              base: asNumericBase(js(node.b, props)),
+            })
         }
       }
       break
