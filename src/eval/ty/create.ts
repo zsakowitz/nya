@@ -1,4 +1,13 @@
-import type { SApprox, SPoint, SReal } from "."
+import type { SApprox, SExact, SPoint, SReal } from "."
+import { safe } from "../util"
+
+export function num(value: SApprox | SExact): number {
+  if (value.type == "exact") {
+    return value.n / value.d
+  }
+
+  return value.value
+}
 
 export function approx(value: number): SApprox {
   return { type: "approx", value }
@@ -22,14 +31,6 @@ export function frac(a: number, b: number): SReal {
   }
   const divBy = gcd(a < 0 ? -a : a, b)
   return { type: "exact", n: a / divBy, d: b / divBy }
-}
-
-export function safe(value: number) {
-  return (
-    typeof value == "number" &&
-    value == Math.floor(value) &&
-    Math.abs(value) < 0x20000000000000
-  ) // 2 ** 53
 }
 
 export function real(x: number): SReal {

@@ -1,5 +1,7 @@
-import { fnDist, fnNum } from "./fn"
-import { approx, frac, pt, real, safe } from "./ty/create"
+import { fnDist, fnNum, type GlslContext } from "./fn"
+import { isZero } from "./ty/check"
+import { approx, frac, num, pt, real } from "./ty/create"
+import { hypot, safe } from "./util"
 
 export const ADD = fnNum<[0, 0]>(
   "+",
@@ -63,6 +65,16 @@ export const SUB = fnNum<[0, 0]>(
   },
 )
 
+function declareMul(ctx: GlslContext) {
+  ctx.declare`vec2 _helper_mul(vec2 a, vec2 b) {
+  return vec2(
+    a.x * b.x - a.y * b.y,
+    a.y * b.x + a.x * b.y
+  );
+}
+`
+}
+
 export const MUL = fnNum<[0, 0]>(
   "·",
   {
@@ -87,20 +99,14 @@ export const MUL = fnNum<[0, 0]>(
       return `(${a} * ${b})`
     },
     complex(ctx, a, b) {
-      ctx.declare`vec2 _helper_mul(vec2 a, vec2 b) {
-  return vec2(
-    a.x * b.x - a.y * b.y,
-    a.y * b.x + a.x * b.y
-  );
-}
-`
+      declareMul(ctx)
       return `_helper_mul(${a}, ${b})`
     },
   },
 )
 
 export const DIV = fnNum<[0, 0]>(
-  "·",
+  "÷",
   {
     approx([a, b], [ar]) {
       if (ar.type == "exact" && ar.n == 0 && b != 0) {
@@ -138,6 +144,108 @@ export const DIV = fnNum<[0, 0]>(
 }
 `
       return `_helper_div(${a}, ${b})`
+    },
+  },
+)
+
+function declareExp(ctx: GlslContext) {
+  ctx.declare`vec2 _helper_exp(vec2 a) {
+  return a.x * vec2(cos(a.y), sin(a.y));
+}
+`
+}
+
+export const EXP = fnNum<[0]>(
+  "exp",
+  {
+    approx([a]) {
+      return approx(Math.exp(a))
+    },
+    exact(a) {
+      if (a.n == 0) {
+        return real(1)
+      }
+      return null
+    },
+    point(a) {
+      const e = this.real(a.x)
+      const y = num(a.y)
+
+      return pt(
+        MUL.real(e, approx(Math.cos(y))),
+        MUL.real(e, approx(Math.sin(y))),
+      )
+    },
+  },
+  {
+    real(_, a) {
+      return `exp(${a})`
+    },
+    complex(ctx, a) {
+      declareExp(ctx)
+      return `_helper_exp(${a})`
+    },
+  },
+)
+
+function declareLnUnchecked(ctx: GlslContext) {
+  ctx.declare`vec2 _helper_ln_unchecked(vec2 z) {
+  return vec2(log(length(z)), atan(z.y, z.x));
+}
+`
+}
+
+export const POW = fnNum<[0, 0]>(
+  "^",
+  {
+    approx([a, b]) {
+      return approx(a ** b)
+    },
+    point(a, b) {
+      if (isZero(b)) {
+        if (b.x.type == "exact" && b.y.type == "exact") {
+          return pt(real(1), real(0))
+        } else {
+          return pt(approx(1), approx(0))
+        }
+      }
+
+      if (isZero(a)) {
+        if (a.x.type == "exact" && a.y.type == "exact") {
+          return pt(real(0), real(0))
+        } else {
+          return pt(approx(0), approx(0))
+        }
+      }
+
+      return EXP.complex(
+        MUL.complex(
+          b,
+          pt(
+            approx(Math.log(hypot(num(a.x), num(a.y)))),
+            approx(Math.atan2(num(a.y), num(a.x))),
+          ),
+        ),
+      )
+    },
+  },
+  {
+    real(_, a, b) {
+      return `pow(${a}, ${b})`
+    },
+    complex(ctx, a, b) {
+      declareMul(ctx)
+      declareExp(ctx)
+      declareLnUnchecked(ctx)
+      ctx.declare`vec2 _helper_pow(vec2 a, vec2 b) {
+  if (a == vec2(0)) {
+    return vec2(0);
+  } else {
+    return _helper_exp(_helper_mul(b, _helper_ln_unchecked(a)));
+  }
+}
+`
+      return `_helper_pow(${a}, ${b})`
     },
   },
 )

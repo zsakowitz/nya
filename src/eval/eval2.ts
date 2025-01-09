@@ -1,8 +1,8 @@
 import { commalist, fnargs } from "./ast/collect"
 import type { Node } from "./ast/token"
 import { asNumericBase, parseNumberGlsl, parseNumberJs } from "./base"
-import { GlslContext, GlslHelpers } from "./fn"
-import { ADD, DIV, MUL, RGB, SUB } from "./ops"
+import { GlslContext, GlslHelpers, type Build } from "./fn"
+import { ADD, DIV, EXP, MUL, POW, RGB, SUB } from "./ops"
 import type { GlslValue, JsValue, SReal } from "./ty"
 import { listGlsl } from "./ty/coerce"
 import { real } from "./ty/create"
@@ -67,13 +67,25 @@ function glslCall(
   _asMethod: boolean,
   props: PropsGlsl,
 ): GlslValue {
-  const evald = () => args.map((arg) => glsl(arg, props))
-
   switch (name) {
     case "rgb":
-      return RGB.glsl(props.ctx, ...evald())
+      return RGB.glsl(props.ctx, ...evaln(3))
+    case "exp":
+      return EXP.glsl(props.ctx, ...evaln(1))
   }
+
   throw new Error(`The '${name}' function is not supported in shaders yet.`)
+
+  function evald() {
+    return args.map((arg) => glsl(arg, props))
+  }
+
+  function evaln<N extends number>(value: N): Build<GlslValue, N> {
+    if (args.length == value) {
+      return evald() as any
+    }
+    throw new Error(`The '${name}' function needs ${value} arguments.`)
+  }
 }
 
 export function glsl(node: Node, props: PropsGlsl): GlslValue {
@@ -142,10 +154,11 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
       break
     case "juxtaposed":
       return MUL.glsl(props.ctx, glsl(node.a, props), glsl(node.b, props))
-    case "var":
+    case "var": {
+      if (node.sub) break
+
       const value: GlslValue | null =
-        node.sub ? null
-        : node.value == "π" ? { type: "real", expr: Math.PI + "", list: false }
+        node.value == "π" ? { type: "real", expr: Math.PI + "", list: false }
         : node.value == "τ" ?
           { type: "real", expr: 2 * Math.PI + "", list: false }
         : node.value == "e" ? { type: "real", expr: Math.E + "", list: false }
@@ -156,13 +169,14 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
 
       if (value) {
         if (node.sup) {
-          break
+          return POW.glsl(props.ctx, value, glsl(node.sup, props))
         } else {
           return value
         }
       }
 
       break
+    }
     case "frac":
       return DIV.glsl(props.ctx, glsl(node.a, props), glsl(node.b, props))
     case "piecewise":

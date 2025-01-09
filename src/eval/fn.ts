@@ -65,6 +65,9 @@ export class GlslContext {
 
 export type As<T extends readonly unknown[], U> = { readonly [K in keyof T]: U }
 
+export type Build<T, N extends number, U extends readonly any[] = []> =
+  U["length"] extends N ? U : Build<T, N, [...U, T]>
+
 export interface Fn<T extends readonly unknown[]> {
   js(...values: As<T, JsValue>): JsValue
   type(...args: As<T, Type>): Type

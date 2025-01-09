@@ -399,4 +399,5 @@ const REMARKS = [
   "where bedtime is 29:00",
   "brought to you by sleep deprivation",
   "sponsored by zSnout",
+  "in awe of the desmos team tbh",
 ]
