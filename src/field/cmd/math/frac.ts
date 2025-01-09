@@ -1,4 +1,4 @@
-import type { Node } from "../../../ast/token"
+import type { Node } from "../../../eval/ast/token"
 import { U_ZERO_WIDTH_SPACE, h, t } from "../../jsx"
 import {
   Block,

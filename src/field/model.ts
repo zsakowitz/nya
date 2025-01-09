@@ -1,4 +1,4 @@
-import { tokensToAst, type Node } from "../ast/token"
+import { tokensToAst, type Node } from "../eval/ast/token"
 import type { CmdFrac } from "./cmd/math/frac"
 import type { FieldInert } from "./field-inert"
 import { h } from "./jsx"

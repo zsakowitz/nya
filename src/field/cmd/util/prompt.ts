@@ -1,4 +1,4 @@
-import type { Node } from "../../../ast/token"
+import type { Node } from "../../../eval/ast/token"
 import type { FieldInert } from "../../field-inert"
 import { h, hx } from "../../jsx"
 import {

@@ -1,4 +1,4 @@
-import type { Node } from "../../../ast/token"
+import type { Node } from "../../../eval/ast/token"
 import { h, p, svg } from "../../jsx"
 import {
   Block,

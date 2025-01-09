@@ -5,8 +5,8 @@ import {
   go,
   type Base,
   type Value,
-} from "../ast/eval"
-import { defaultProps2, glsl } from "../ast/eval2"
+} from "../eval/eval"
+import { defaultProps as defaultProps2, glsl } from "../eval/eval2"
 import { Field } from "../field/field"
 import { FieldInert } from "../field/field-inert"
 import { h, hx, p, svgx } from "../field/jsx"

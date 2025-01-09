@@ -10,7 +10,7 @@ import { CmdFrac } from "../field/cmd/math/frac"
 import { CmdSupSub } from "../field/cmd/math/supsub"
 import type { FieldInert } from "../field/field-inert"
 import { Block, L, R, type Cursor } from "../field/model"
-import type { Node, PuncBinary, PuncUnary } from "./token"
+import type { Node, PuncBinary, PuncUnary } from "./ast/token"
 
 const ZERO = toNum(0)
 

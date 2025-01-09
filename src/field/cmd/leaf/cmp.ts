@@ -1,4 +1,4 @@
-import type { Node, PuncBinary } from "../../../ast/token"
+import type { Node, PuncBinary } from "../../../eval/ast/token"
 import { L, R, type Cursor, type Dir, type InitProps } from "../../model"
 import { Op, OpMinus, OpDoubleRightArrow, OpRightArrow } from "./op"
 

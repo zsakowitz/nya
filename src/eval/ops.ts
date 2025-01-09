@@ -1,6 +1,7 @@
-import { approx, frac, numOp, op, pt, safe } from "./compute"
+import { fnDist, fnNum } from "./fn"
+import { approx, frac, pt, safe } from "./ty/create"
 
-export const ADD = numOp<[0, 0]>(
+export const ADD = fnNum<[0, 0]>(
   "+",
   {
     approx([a, b]) {
@@ -31,9 +32,40 @@ export const ADD = numOp<[0, 0]>(
   },
 )
 
-export const RGB = op<[0, 0, 0]>("rgb", {
+export const MUL = fnNum<[0, 0]>(
+  "·",
+  {
+    approx([a, b]) {
+      return approx(a * b)
+    },
+    exact(a, b) {
+      const s1 = a.n * b.n
+      if (!safe(s1)) return null
+      const s2 = a.d * b.d
+      return frac(s1, s2)
+    },
+    point(a, b) {
+      return pt(this.real(a.x, b.x), this.real(a.y, b.y))
+    },
+  },
+  {
+    real(_, a, b) {
+      return `(${a} + ${b})`
+    },
+    complex(_, a, b) {
+      return `(${a} + ${b})`
+    },
+  },
+)
+
+export const RGB = fnDist<[0, 0, 0]>("rgb", {
   ty(r, g, b, a) {
-    if (r == "real" && g == "real" && b == "real" && a == null) {
+    if (
+      r?.type == "real" &&
+      g?.type == "real" &&
+      b?.type == "real" &&
+      a == null
+    ) {
       return "color"
     }
     return null

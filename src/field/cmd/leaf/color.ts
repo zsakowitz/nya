@@ -1,5 +1,5 @@
 import { Leaf } from "."
-import type { Node } from "../../../ast/token"
+import type { Node } from "../../../eval/ast/token"
 import { h, hx } from "../../jsx"
 import { L, type Cursor, type InitProps } from "../../model"
 

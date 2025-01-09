@@ -1,5 +1,5 @@
 import { Leaf } from "."
-import { type Node } from "../../../ast/token"
+import { type Node } from "../../../eval/ast/token"
 import { h } from "../../jsx"
 import { L, R, type Cursor } from "../../model"
 import { CmdVar } from "./var"
