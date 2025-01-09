@@ -2,7 +2,7 @@ import { commalist, fnargs } from "./ast/collect"
 import type { Node } from "./ast/token"
 import { asNumericBase, parseNumberGlsl, parseNumberJs } from "./base"
 import { GlslContext, GlslHelpers } from "./fn"
-import { ADD, RGB } from "./ops"
+import { ADD, DIV, MUL, RGB, SUB } from "./ops"
 import type { GlslValue, JsValue, SReal } from "./ty"
 import { listGlsl } from "./ty/coerce"
 import { real } from "./ty/create"
@@ -88,8 +88,17 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
         ),
       }
     case "op":
-      if (node.kind == "+" && node.b) {
-        return ADD.glsl(props.ctx, glsl(node.a, props), glsl(node.b, props))
+      if (node.b) {
+        switch (node.kind) {
+          case "+":
+            return ADD.glsl(props.ctx, glsl(node.a, props), glsl(node.b, props))
+          case "-":
+            return SUB.glsl(props.ctx, glsl(node.a, props), glsl(node.b, props))
+          case "\\cdot ":
+            return MUL.glsl(props.ctx, glsl(node.a, props), glsl(node.b, props))
+          case "÷":
+            return DIV.glsl(props.ctx, glsl(node.a, props), glsl(node.b, props))
+        }
       }
       break
     case "group":
@@ -126,14 +135,37 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
         return glslCall(node.name.value, args, !!node.on, props)
       }
       break
+    case "juxtaposed":
+      return MUL.glsl(props.ctx, glsl(node.a, props), glsl(node.b, props))
+    case "var":
+      const value: GlslValue | null =
+        node.sub ? null
+        : node.value == "π" ? { type: "real", expr: Math.PI + "", list: false }
+        : node.value == "τ" ?
+          { type: "real", expr: 2 * Math.PI + "", list: false }
+        : node.value == "e" ? { type: "real", expr: Math.E + "", list: false }
+        : node.value == "i" ?
+          { type: "complex", expr: "vec2(0, 1)", list: false }
+        : node.value == "∞" ? { type: "real", expr: "(1.0/0.0)", list: false }
+        : null
+
+      if (value) {
+        if (node.sup) {
+          break
+        } else {
+          return value
+        }
+      }
+
+      break
+    case "frac":
+      return DIV.glsl(props.ctx, glsl(node.a, props), glsl(node.b, props))
     case "piecewise":
     case "void":
-    case "var":
     case "num16":
     case "sub":
     case "sup":
     case "raise":
-    case "frac":
     case "mixed":
     case "for":
     case "matrix":
@@ -141,7 +173,6 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
     case "big":
     case "root":
     case "index":
-    case "juxtaposed":
     case "commalist":
     case "factorial":
     case "error":

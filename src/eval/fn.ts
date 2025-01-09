@@ -1,14 +1,14 @@
 import {
   type GlslVal,
   type GlslValue,
+  type JsVal,
+  type JsValue,
   type SExact,
   type SPoint,
   type SReal,
   type Ty,
   type TyName,
   type Type,
-  type JsVal,
-  type JsValue,
   list,
   listTy,
   tyToGlsl,
@@ -87,6 +87,8 @@ export function fnDist(
   name: string,
   props: Op<readonly unknown[]>,
 ): Fn<readonly unknown[]> {
+  return { glsl, js, type }
+
   function ty(...tys: Ty[]): TyName {
     const ret = props.ty(...tys)
     if (ret != null) return ret
@@ -205,12 +207,6 @@ export function fnDist(
       value,
     } as any
   }
-
-  return {
-    glsl,
-    js,
-    type,
-  }
 }
 
 export interface OpJs<T extends readonly unknown[]> {
@@ -235,6 +231,11 @@ export interface OpGlsl<T extends readonly unknown[]> {
   other?(ctx: GlslContext, ...values: As<T, GlslVal>): string | null
 }
 
+export interface FnNum<T extends readonly unknown[]> extends Fn<T> {
+  real(...values: As<T, SReal>): SReal
+  complex(...args: As<T, SPoint>): SPoint
+}
+
 /**
  * Creates a {@linkcode Fn} which operates on lists by distributing over them and
  * which is primarily used on real and complex values.
@@ -244,7 +245,7 @@ export function fnNum<T extends readonly unknown[]>(
   js: OpJs<T>,
   glsl: OpGlsl<T>,
   otherTy?: (...values: As<T, Ty>) => Ty | null,
-): Fn<T>
+): FnNum<T>
 
 export function fnNum(
   name: string,
@@ -260,7 +261,7 @@ export function fnNum(
     other?(ctx: GlslContext, ...values: GlslVal[]): string | null
   },
   otherTy?: (...values: Ty[]) => Ty | null,
-): Fn<any[]> {
+): FnNum<any[]> {
   ;(js as OpJsExt<any[]>).real = jsReal
 
   const approx = js.approx.bind(js)
@@ -272,11 +273,15 @@ export function fnNum(
   const complex = glsl.complex.bind(glsl)
   const glslOther = glsl.other?.bind(glsl)
 
-  return fnDist(name, {
-    ty,
-    js: jsSingle,
-    glsl: glslSingle,
-  })
+  return {
+    ...fnDist(name, {
+      ty,
+      js: jsSingle,
+      glsl: glslSingle,
+    }),
+    complex: point,
+    real: jsReal,
+  }
 
   function ty(...tys: Ty[]): TyName {
     if (tys.every((x) => x.type == "real")) {
