@@ -1411,7 +1411,7 @@ export abstract class Command<
    * This is used on the {@linkcode CmdBig} and {@linkcode CmdInt} commands, for
    * example, to move into their appropriate subscripts and superscripts.
    */
-  supSub(part: VDir, side: Dir, cursor: Cursor): boolean {
+  supSub(_part: VDir, _side: Dir, _cursor: Cursor): boolean {
     return false
   }
 
@@ -1462,8 +1462,8 @@ export abstract class Command<
    * This is used in the {@linkcode Block.unwrap} method.
    */
   invalidatesTransparentWrapper(
-    wrapper: Command,
-    wrapperBlock: Block,
+    _wrapper: Command,
+    _wrapperBlock: Block,
   ): boolean {
     return false
   }

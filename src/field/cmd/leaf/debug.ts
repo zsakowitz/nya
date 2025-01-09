@@ -19,5 +19,5 @@ export class CmdDebug extends Leaf {
     return ""
   }
 
-  ir(tokens: Node[]): void {}
+  ir(_tokens: Node[]): void {}
 }

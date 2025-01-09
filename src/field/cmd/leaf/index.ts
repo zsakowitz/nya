@@ -31,7 +31,7 @@ export abstract class Leaf extends Command<[]> {
     return
   }
 
-  delete(cursor: Cursor, from: Dir): void {
+  delete(cursor: Cursor, _from: Dir): void {
     if (cursor[R] == this) {
       cursor.moveTo(this, R)
     }

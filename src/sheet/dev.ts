@@ -31,7 +31,7 @@ new Expr(sheet).field.typeEach`7 3 * 4 b a s e 1 5`
 
 {
   const expr = new Expr(sheet)
-  expr.field.setPrefix(({ block, options }) => {
+  expr.field.setPrefix(({ block }) => {
     const cursor = block.cursor(R)
     new CmdWord("detail").insertAt(cursor, L)
     new OpEq(false).insertAt(cursor, L)

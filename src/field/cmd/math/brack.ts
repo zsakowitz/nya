@@ -277,7 +277,6 @@ export class CmdBrack extends Command<[Block]> {
   }
 
   setSide(side: Dir | null) {
-    const old = this.side
     ;(this as any).side = side
     this.checkSvg(L)
     this.checkSvg(R)
@@ -314,7 +313,7 @@ export class CmdBrack extends Command<[Block]> {
     cursor.moveIn(this.blocks[0], towards == R ? L : R)
   }
 
-  moveOutOf(cursor: Cursor, towards: Dir, block: Block): void {
+  moveOutOf(cursor: Cursor, towards: Dir, _block: Block): void {
     cursor.moveTo(this, towards)
   }
 
