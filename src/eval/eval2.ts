@@ -2,7 +2,7 @@ import { commalist, fnargs } from "./ast/collect"
 import type { Node } from "./ast/token"
 import { asNumericBase, parseNumberGlsl, parseNumberJs } from "./base"
 import { GlslContext, GlslHelpers, type Build } from "./fn"
-import { AND, DIV, EXP, MUL, opCmp, OPS, POW, RGB } from "./ops"
+import { AND, DIV, EXP, IMAG, MUL, opCmp, OPS, POW, REAL, RGB } from "./ops"
 import { typeToGlsl, type GlslValue, type JsValue, type SReal } from "./ty"
 import { coerceType, coerceValueGlsl, listGlsl } from "./ty/coerce"
 import { real } from "./ty/create"
@@ -110,6 +110,25 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
               ...props,
               base: asNumericBase(js(node.b, props)),
             })
+          case ".":
+            if (node.b.type == "var" && !node.b.sub && node.b.kind == "var") {
+              const value =
+                node.b.value == "x" || node.b.value == "real" ?
+                  REAL.glsl(props.ctx, glsl(node.a, props))
+                : node.b.value == "y" || node.b.value == "imag" ?
+                  IMAG.glsl(props.ctx, glsl(node.a, props))
+                : null
+
+              if (value == null) {
+                break
+              }
+
+              if (node.b.sup) {
+                return POW.glsl(props.ctx, value, glsl(node.b.sup, props))
+              } else {
+                return value
+              }
+            }
         }
         const op = OPS[node.kind]
         if (op) {
@@ -157,7 +176,8 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
       if (node.sub) break
 
       const value: GlslValue | null =
-        node.value == "π" ? { type: "real", expr: Math.PI + "", list: false }
+        node.value == "p" ? { type: "complex", expr: "v_coords", list: false }
+        : node.value == "π" ? { type: "real", expr: Math.PI + "", list: false }
         : node.value == "τ" ?
           { type: "real", expr: 2 * Math.PI + "", list: false }
         : node.value == "e" ? { type: "real", expr: Math.E + "", list: false }

@@ -291,6 +291,76 @@ export const POW = fnNum<[0, 0]>(
   },
 )
 
+export const REAL = fnDist<[0]>("real", {
+  ty(a, b) {
+    if (!a || b) {
+      return null
+    }
+    return a.type == "bool" || a.type == "complex" || a.type == "real" ?
+        "real"
+      : null
+  },
+  js(a) {
+    switch (a.type) {
+      case "bool":
+        return { type: "real", value: a.value ? real(1) : real(NaN) }
+      case "real":
+        return a
+      case "complex":
+        return { type: "real", value: a.value.x }
+      case "color":
+        return null
+    }
+  },
+  glsl(_, a) {
+    switch (a.type) {
+      case "bool":
+        return `(${a.expr} ? 1.0 : 0.0/0.0)`
+      case "real":
+        return a.expr
+      case "complex":
+        return `${a.expr}.x`
+      case "color":
+        return null
+    }
+  },
+})
+
+export const IMAG = fnDist<[0]>("imag", {
+  ty(a, b) {
+    if (!a || b) {
+      return null
+    }
+    return a.type == "bool" || a.type == "complex" || a.type == "real" ?
+        "real"
+      : null
+  },
+  js(a) {
+    switch (a.type) {
+      case "bool":
+        return { type: "real", value: a.value ? real(0) : real(NaN) }
+      case "real":
+        return { type: "real", value: real(0) }
+      case "complex":
+        return { type: "real", value: a.value.y }
+      case "color":
+        return null
+    }
+  },
+  glsl(_, a) {
+    switch (a.type) {
+      case "bool":
+        return `(${a.expr} ? 0.0 : 0.0/0.0)`
+      case "real":
+        return `0.0`
+      case "complex":
+        return `${a.expr}.y`
+      case "color":
+        return null
+    }
+  },
+})
+
 export const RGB = fnDist<[0, 0, 0]>("rgb", {
   ty(r, g, b, a) {
     if (
