@@ -83,7 +83,9 @@ export class CmdVar extends Leaf {
         "font-['Times_New_Roman'] [line-height:.9]" +
           (kind == null ? " italic" : "") +
           // `relative` helps keep f above other letters, which is important in selections
-          (text == "f" ? " ml-[.1em] mr-[.1em] relative" : ""),
+          (text == "f" ?
+            " mx-[.1em] [.nya-cmd-word>:where(&)]:mx-0 relative"
+          : ""),
         t(text),
       ),
     )
