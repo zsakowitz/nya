@@ -167,6 +167,8 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
         : node.value == "i" ?
           { type: "complex", expr: "vec2(0, 1)", list: false }
         : node.value == "∞" ? { type: "real", expr: "(1.0/0.0)", list: false }
+        : node.value == "true" ? { type: "bool", expr: "true", list: false }
+        : node.value == "false" ? { type: "bool", expr: "false", list: false }
         : null
 
       if (value) {
