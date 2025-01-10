@@ -9,11 +9,13 @@ import {
   type Ty,
   type TyName,
   type Type,
+  jsValueTy,
   list,
   listTy,
   tyToGlsl,
   typeToGlsl,
 } from "./ty"
+import { bool, pt, real } from "./ty/create"
 
 export class GlslHelpers {
   readonly helpers = ""
@@ -61,6 +63,19 @@ export class GlslContext {
     this.block += `}\n`
     return dst
   }
+
+  fork() {
+    return new GlslContext(this.helpers)
+  }
+
+  push(strings: TemplateStringsArray, ...interps: string[]) {
+    for (let i = 0; i < strings.length; i++) {
+      if (i != 0) {
+        this.block += interps[i - 1]
+      }
+      this.block += strings[i]
+    }
+  }
 }
 
 export type As<T extends readonly unknown[], U> = { readonly [K in keyof T]: U }
@@ -104,10 +119,6 @@ export function fnDist(
       return { type: ty(...tys), list: false }
     }
 
-    if (tys.some((x) => x.list === true)) {
-      return { type: ty(...tys), list: true }
-    }
-
     return {
       type: ty(...tys),
       list: tys.reduce(
@@ -140,10 +151,6 @@ export function fnDist(
         ...ty,
         expr: glslSingle(ctx, ...values),
       }
-    }
-
-    if (values.some((x) => x.list === true)) {
-      throw new Error("Dynamically sized lists are not allowed in shaders.")
     }
 
     const cached = values.map((value) => {
@@ -184,7 +191,7 @@ export function fnDist(
   }
 
   function js(...values: JsValue[]): JsValue {
-    const ty = type(...values)
+    const ty = type(...values.map(jsValueTy))
 
     if (values.every((x) => !x.list)) {
       // `ty` must be computed by now so we can perform argument count validation
@@ -212,23 +219,23 @@ export function fnDist(
   }
 }
 
-export interface OpJs<T extends readonly unknown[]> {
+export interface FnNumJs<T extends readonly unknown[]> {
   approx(values: As<T, number>, raw: As<T, SReal>): SReal
   exact?(...exacts: As<T, SExact>): SReal | null
-  point(this: OpJsExt<T>, ...points: As<T, SPoint>): SPoint
-  other?(this: OpJsExt<T>, ...values: As<T, JsVal>): JsVal | null
+  point(this: FnNumJsExt<T>, ...points: As<T, SPoint>): SPoint
+  other?(this: FnNumJsExt<T>, ...values: As<T, JsVal>): JsVal | null
 }
 
 /**
- * The {@linkcode OpJsExt.real} function is installed on every {@linkcode OpJs}
- * instance automatically; this interface declares that it always exists, but
- * stops the user from having to provide it.
+ * The {@linkcode FnNumJsExt.real} function is installed on every
+ * {@linkcode FnNumJs} instance automatically; this interface declares that it
+ * always exists, but stops the user from having to provide it.
  */
-export interface OpJsExt<T extends readonly unknown[]> extends OpJs<T> {
+export interface FnNumJsExt<T extends readonly unknown[]> extends FnNumJs<T> {
   real(...values: As<T, SReal>): SReal
 }
 
-export interface OpGlsl<T extends readonly unknown[]> {
+export interface FnNumGlsl<T extends readonly unknown[]> {
   real(ctx: GlslContext, ...inputs: As<T, string>): string
   complex(ctx: GlslContext, ...inputs: As<T, string>): string
   other?(ctx: GlslContext, ...values: As<T, GlslVal>): string | null
@@ -245,8 +252,8 @@ export interface FnNum<T extends readonly unknown[]> extends Fn<T> {
  */
 export function fnNum<T extends readonly unknown[]>(
   name: string,
-  js: OpJs<T>,
-  glsl: OpGlsl<T>,
+  js: FnNumJs<T>,
+  glsl: FnNumGlsl<T>,
   otherTy?: (...values: As<T, Ty>) => Ty | null,
 ): FnNum<T>
 
@@ -265,14 +272,14 @@ export function fnNum(
   },
   otherTy?: (...values: Ty[]) => Ty | null,
 ): FnNum<any[]> {
-  ;(js as OpJsExt<any[]>).real = jsReal
+  ;(js as FnNumJsExt<any[]>).real = jsReal
 
   const approx = js.approx.bind(js)
   const point = js.point.bind(js)
   const exact = js.exact?.bind(js)
   const jsOther = js.other?.bind(js)
 
-  const real = glsl.real.bind(glsl)
+  const glslReal = glsl.real.bind(glsl)
   const complex = glsl.complex.bind(glsl)
   const glslOther = glsl.other?.bind(glsl)
 
@@ -287,11 +294,15 @@ export function fnNum(
   }
 
   function ty(...tys: Ty[]): TyName {
-    if (tys.every((x) => x.type == "real")) {
+    if (tys.every((x) => x.type == "bool" || x.type == "real")) {
       return "real"
     }
 
-    if (tys.every((x) => x.type == "real" || x.type == "complex")) {
+    if (
+      tys.every(
+        (x) => x.type == "bool" || x.type == "real" || x.type == "complex",
+      )
+    ) {
       return "complex"
     }
 
@@ -314,16 +325,36 @@ export function fnNum(
   }
 
   function jsSingle(...values: JsVal[]): JsVal {
-    if (values.every((x) => x.type == "real")) {
-      return { type: "real", value: jsReal(...values.map((x) => x.value)) }
+    if (values.every((x) => x.type == "bool" || x.type == "real")) {
+      return {
+        type: "real",
+        value: jsReal(
+          ...values.map(
+            (x): SReal =>
+              x.type == "bool" ?
+                x.value ?
+                  real(1)
+                : real(NaN)
+              : x.value,
+          ),
+        ),
+      }
     }
 
-    if (values.every((x) => x.type == "real" || x.type == "complex")) {
+    if (
+      values.every(
+        (x) => x.type == "bool" || x.type == "real" || x.type == "complex",
+      )
+    ) {
       return {
         type: "complex",
         value: point(
           ...values.map<SPoint>((x) =>
-            x.type == "real" ?
+            x.type == "bool" ?
+              x.value ?
+                pt(real(1), real(0))
+              : pt(real(NaN), real(NaN))
+            : x.type == "real" ?
               { type: "point", x: x.value, y: { type: "exact", n: 0, d: 1 } }
             : x.value,
           ),
@@ -340,15 +371,26 @@ export function fnNum(
   }
 
   function glslSingle(ctx: GlslContext, ...values: GlslVal[]): string {
-    if (values.every((x) => x.type == "real")) {
-      return real(ctx, ...values.map((x) => x.expr))
+    if (values.every((x) => x.type == "bool" || x.type == "real")) {
+      return glslReal(
+        ctx,
+        ...values.map((x) =>
+          x.type == "bool" ? `(${x.expr} ? 1.0 : 0.0/0.0)` : x.expr,
+        ),
+      )
     }
 
-    if (values.every((x) => x.type == "real" || x.type == "complex")) {
+    if (
+      values.every(
+        (x) => x.type == "bool" || x.type == "real" || x.type == "complex",
+      )
+    ) {
       return complex(
         ctx,
         ...values.map((x) =>
-          x.type == "real" ? `vec2(${x.expr}, 0)` : x.expr,
+          x.type == "bool" ? `(${x.expr} ? vec2(1, 0) : vec2(0.0/0.0))`
+          : x.type == "real" ? `vec2(${x.expr}, 0)`
+          : x.expr,
         ),
       )
     }
@@ -360,4 +402,41 @@ export function fnNum(
       `'${name}' cannot be applied to ${list(values.map((x) => x.type))} in a shader`,
     )
   }
+}
+
+/**
+ * Creates a {@linkcode Fn} which operates on lists by distributing over them and
+ * which is only used on boolean values.
+ */
+export function fnBool<T extends readonly unknown[]>(
+  name: string,
+  js: (...args: As<T, boolean>) => boolean,
+  glsl: (ctx: GlslContext, ...args: As<T, string>) => string,
+): Fn<T>
+
+export function fnBool(
+  name: string,
+  js: (...args: boolean[]) => boolean,
+  glsl: (ctx: GlslContext, ...args: string[]) => string,
+): Fn<any[]> {
+  return fnDist(name, {
+    ty(...vals) {
+      if (vals.every((x) => x?.type == "bool")) {
+        return "bool"
+      }
+      return null
+    },
+    js(...vals) {
+      if (vals.every((x) => x.type == "bool")) {
+        return bool(js(...vals.map((x) => x.value)))
+      }
+      return null
+    },
+    glsl(ctx, ...vals) {
+      if (vals.every((x) => x.type == "bool")) {
+        return glsl(ctx, ...vals.map((x) => x.expr))
+      }
+      return null
+    },
+  })
 }

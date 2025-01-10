@@ -12,6 +12,13 @@ export type VColor = { type: "color"; value: SColor }
 export type VBool = { type: "bool"; value: boolean }
 
 export type JsVal = VReal | VComplex | VColor | VBool
+export type JsValList = Expand<
+  JsVal extends infer T ?
+    T extends { value: unknown } ?
+      Omit<T, "value"> & { value: T["value"][]; list: true }
+    : never
+  : never
+>
 export type JsValue = Expand<
   JsVal extends infer T ?
     T extends { value: unknown } ?
@@ -24,10 +31,10 @@ type Expand<T> = T extends infer U ? { [K in keyof U]: U[K] } : never
 
 export type TyName = JsVal["type"]
 export type Ty = { type: TyName }
-export type Type = { type: TyName; list: boolean | number }
+export type Type = { type: TyName; list: false | number }
 
 export type GlslVal = { expr: string; type: TyName }
-export type GlslValue = { expr: string; type: TyName; list: boolean | number }
+export type GlslValue = { expr: string; type: TyName; list: false | number }
 
 export function tyToGlsl(ty: Ty): string {
   return {
@@ -39,10 +46,6 @@ export function tyToGlsl(ty: Ty): string {
 }
 
 export function typeToGlsl(ty: Type) {
-  if (ty.list === true) {
-    throw new Error("Dynamically-sized lists are not supported in shaders.")
-  }
-
   if (ty.list === false) {
     return tyToGlsl(ty)
   }
@@ -68,4 +71,15 @@ export function list(values: string[]): string {
 
 export function listTy(values: Ty[]): string {
   return list(values.map((x) => x.type))
+}
+
+export function jsValueTy(value: JsValue): Type {
+  if (value.list == false) {
+    return value
+  }
+
+  return {
+    type: value.type,
+    list: value.value.length,
+  }
 }

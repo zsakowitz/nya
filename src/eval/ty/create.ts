@@ -1,4 +1,4 @@
-import type { SApprox, SExact, SPoint, SReal } from "."
+import type { SApprox, SExact, SPoint, SReal, VBool } from "."
 import { safe } from "../util"
 
 export function num(value: SApprox | SExact): number {
@@ -47,4 +47,8 @@ export function real(x: number): SReal {
 
 export function pt(x: SReal, y: SReal): SPoint {
   return { type: "point", x, y }
+}
+
+export function bool(x: boolean): VBool {
+  return { type: "bool", value: x }
 }

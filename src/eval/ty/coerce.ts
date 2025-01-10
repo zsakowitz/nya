@@ -3,6 +3,7 @@ import {
   type GlslVal,
   type GlslValue,
   type JsVal,
+  type JsValList,
   type JsValue,
   type Ty,
   type TyName,
@@ -93,7 +94,7 @@ export function coerceValGlsl(val: GlslVal, to: Ty): string {
   throw new Error(`Cannot coerce ${val.type} to ${to}.`)
 }
 
-export function listJs(vals: JsVal[]): JsValue {
+export function listJs(vals: JsVal[]): JsValList {
   if (vals.length == 0) {
     return { type: "real", list: true, value: [] }
   }
@@ -144,17 +145,12 @@ export function coerceType(types: Type[]): Type | null {
   }
 
   // Non-lists get coerced to lists of length 1
-  const lens = types.map((x) =>
-    x.list === false ? 1
-    : x.list === true ? true
-    : x.list,
-  )
+  const lens = types.map((x) => (x.list === false ? 1 : x.list))
 
-  const firstLen = lens[0]!
-
-  const len = lens.every((x) => x === firstLen) ? firstLen : true
-
-  return { list: len, type: ty.type }
+  return {
+    list: Math.min(...lens),
+    type: ty.type,
+  }
 }
 
 export function coerceValueJs(value: JsValue, to: Type): JsValue {
@@ -166,41 +162,20 @@ export function coerceValueJs(value: JsValue, to: Type): JsValue {
     return { ...coerceValJs(value, to), list: false }
   }
 
-  if (to.list === true) {
-    if (value.list && value.value.length === 0) {
-      return { ...to, value: [] } as any
-    }
-
-    const values = value.list ? value.value : [value.value]
-
-    return {
-      ...to,
-      value: values.map(
-        (item) =>
-          coerceValJs({ type: value.type, value: item } as any, to).value,
-      ),
-    } as any
-  }
-
   if (to.list === 0) {
-    if (!value.list || value.value.length) {
-      throw new Error("Cannot shrink the size of a list.")
-    }
-
     return { list: true, type: to.type, value: [] }
   }
 
   const values = value.list ? value.value : [value.value]
 
-  if (values.length != to.list) {
-    throw new Error("List sizes are different.")
-  }
-
   return {
     ...to,
-    value: values.map(
-      (item) => coerceValJs({ type: value.type, value: item } as any, to).value,
-    ),
+    value: values
+      .slice(0, to.list)
+      .map(
+        (item) =>
+          coerceValJs({ type: value.type, value: item } as any, to).value,
+      ),
   } as any
 }
 
@@ -217,15 +192,7 @@ export function coerceValueGlsl(
     return coerceValGlsl(value, to)
   }
 
-  if (to.list === true || value.list === true) {
-    throw new Error("Dynamically sized lists are not supported in shaders.")
-  }
-
   if (to.list === 0) {
-    if (value.list !== 0) {
-      throw new Error("Cannot shrink the size of a list.")
-    }
-
     return "[]"
   }
 
@@ -234,11 +201,7 @@ export function coerceValueGlsl(
       return `[${coerceValGlsl(value, to)}]`
     }
 
-    throw new Error("List sizes are different.")
-  }
-
-  if (value.list !== to.list) {
-    throw new Error("List sizes are different.")
+    throw new Error("Cannot grow a list.")
   }
 
   return ctx.map(value as any, to, (item) =>

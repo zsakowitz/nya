@@ -145,7 +145,7 @@ export type PuncPrefix =
   | { type: "punc"; kind: "pm"; value: PuncPm }
 
 /** A binary operation derived from infix operators. */
-export type OpBinary = Exclude<PuncBinary["value"], ",">
+export type OpBinary = Exclude<PuncInfix | PuncPm, ",">
 
 /**
  * A part of the AST. The intermediate representation is so close to the final

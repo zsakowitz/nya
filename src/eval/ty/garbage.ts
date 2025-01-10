@@ -35,10 +35,6 @@ export function garbageValueJs(ty: Type): JsValue {
     return { ...garbageValJs(ty), list: false }
   }
 
-  if (ty.list === true) {
-    return { type: ty.type, value: [], list: true }
-  }
-
   const val = garbageValJs(ty).value as any
 
   return {
@@ -51,10 +47,6 @@ export function garbageValueJs(ty: Type): JsValue {
 export function garbageValueGlsl(ty: Type): string {
   if (ty.list === false) {
     return garbageValGlsl(ty)
-  }
-
-  if (ty.list === true) {
-    throw new Error("Dynamically sized arrays are not allowed in shaders.")
   }
 
   const val = garbageValGlsl(ty)

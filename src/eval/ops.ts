@@ -1,6 +1,8 @@
-import { fnDist, fnNum, type GlslContext } from "./fn"
+import type { PuncCmp, PuncInfix, PuncPm } from "./ast/token"
+import { fnBool, fnDist, fnNum, type Fn, type GlslContext } from "./fn"
 import { isZero } from "./ty/check"
-import { approx, frac, num, pt, real } from "./ty/create"
+import { coerceTy, coerceValGlsl, listJs } from "./ty/coerce"
+import { approx, bool, frac, num, pt, real } from "./ty/create"
 import { hypot, safe } from "./util"
 
 export const ADD = fnNum<[0, 0]>(
@@ -317,3 +319,131 @@ export const RGB = fnDist<[0, 0, 0]>("rgb", {
     return null
   },
 })
+
+function createEq(negate: boolean) {
+  const name = negate ? "≠" : "="
+  const op = negate ? "!=" : "=="
+
+  return fnDist<[0, 0]>(name, {
+    ty(a, b, c) {
+      if (!a || !b || c) return null
+      // ensure they are coercible; ignore result
+      coerceTy([a, b])
+      return "bool"
+    },
+    js(a, b) {
+      const { type, value } = listJs([a, b])
+
+      switch (type) {
+        case "real":
+          return bool((num(value[0]!) == num(value[1]!)) != negate)
+        case "complex":
+          return bool(
+            (num(value[0]!.x) == num(value[1]!.x) &&
+              num(value[0]!.y) == num(value[1]!.y)) != negate,
+          )
+        case "color":
+          return bool(
+            (num(value[0]!.r) == num(value[1]!.r) &&
+              num(value[0]!.g) == num(value[1]!.g) &&
+              num(value[0]!.b) == num(value[1]!.b)) != negate,
+          )
+        case "bool":
+          return bool((value[0]! == value[1]!) != negate)
+      }
+    },
+    glsl(_, ar, br) {
+      const ty = coerceTy([ar, br])!
+      const a = coerceValGlsl(ar, ty)
+      const b = coerceValGlsl(br, ty)
+      return `(${a} ${op} ${b})`
+    },
+  })
+}
+
+export const EQ = createEq(false)
+export const NE = createEq(true)
+
+function createCmp(
+  negate: boolean,
+  cmp: (a: number, b: number) => boolean,
+  name: string,
+  glsl: string,
+): Fn<[0, 0]> {
+  return fnDist<[0, 0]>(name, {
+    ty(a, b, c) {
+      if (!a || !b || c) return null
+      // ensure they are coercible; ignore result
+      coerceTy([a, b])
+      return "bool"
+    },
+    js(a, b) {
+      const { type, value } = listJs([a, b])
+
+      switch (type) {
+        case "real":
+          return bool(cmp(num(value[0]!), num(value[1]!)) != negate)
+      }
+
+      return null
+    },
+    glsl(_, ar, br) {
+      const a = coerceValGlsl(ar, { type: "real" })
+      const b = coerceValGlsl(br, { type: "real" })
+      return `${negate ? "(!" : ""}(${a} ${glsl} ${b})${negate ? ")" : ""}`
+    },
+  })
+}
+
+export const LT = createCmp(false, (a, b) => a < b, "<", "<")
+export const LTE = createCmp(false, (a, b) => a <= b, "≤", "<=")
+export const NLT = createCmp(true, (a, b) => a < b, "not <", "<")
+export const NLTE = createCmp(true, (a, b) => a <= b, "not ≤", "<=")
+
+export const GT = createCmp(false, (a, b) => a > b, ">", "<")
+export const GTE = createCmp(false, (a, b) => a >= b, "≥", ">=")
+export const NGT = createCmp(true, (a, b) => a > b, "not >", "<")
+export const NGTE = createCmp(true, (a, b) => a >= b, "not ≥", ">=")
+
+// prettier-ignore
+export function opCmp(op: PuncCmp) {
+  switch (op.dir) {
+    case "=":
+      return op.neg ? NE : EQ
+    case "<":
+      return op.neg ? op.eq ? NLTE : NLT : op.eq ? LTE : LT
+    case ">":
+      return op.neg ? op.eq ? NGTE : NGT : op.eq ? GTE : GT
+    case "~":
+    case "≈":
+  }
+
+  throw new Error(`The ${op.dir} operator is not supported yet.`)
+}
+
+export const AND = fnBool<0[]>(
+  "and",
+  (...args) => args.every((x) => x),
+  (_, ...args) =>
+    args.length == 0 ? "true"
+    : args.length == 1 ? args[0]!
+    : `(${args.join(" && ")})`,
+)
+
+export const OR = fnBool<0[]>(
+  "or",
+  (...args) => args.some((x) => x),
+  (_, ...args) =>
+    args.length == 0 ? "false"
+    : args.length == 1 ? args[0]!
+    : `(${args.join(" || ")})`,
+)
+
+export const OPS: Partial<Record<PuncInfix | PuncPm, Fn<[0, 0]>>> = {
+  "+": ADD,
+  "-": SUB,
+  "\\cdot ": MUL,
+  "÷": DIV,
+  "\\and ": AND,
+  "\\or ": OR,
+}

@@ -2,10 +2,11 @@ import { commalist, fnargs } from "./ast/collect"
 import type { Node } from "./ast/token"
 import { asNumericBase, parseNumberGlsl, parseNumberJs } from "./base"
 import { GlslContext, GlslHelpers, type Build } from "./fn"
-import { ADD, DIV, EXP, MUL, POW, RGB, SUB } from "./ops"
-import type { GlslValue, JsValue, SReal } from "./ty"
-import { listGlsl } from "./ty/coerce"
+import { AND, DIV, EXP, MUL, opCmp, OPS, POW, RGB } from "./ops"
+import { typeToGlsl, type GlslValue, type JsValue, type SReal } from "./ty"
+import { coerceType, coerceValueGlsl, listGlsl } from "./ty/coerce"
 import { real } from "./ty/create"
+import { garbageValueGlsl } from "./ty/garbage"
 
 export interface PropsJs {
   base: SReal
@@ -104,19 +105,15 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
     case "op":
       if (node.b) {
         switch (node.kind) {
-          case "+":
-            return ADD.glsl(props.ctx, glsl(node.a, props), glsl(node.b, props))
-          case "-":
-            return SUB.glsl(props.ctx, glsl(node.a, props), glsl(node.b, props))
-          case "\\cdot ":
-            return MUL.glsl(props.ctx, glsl(node.a, props), glsl(node.b, props))
-          case "÷":
-            return DIV.glsl(props.ctx, glsl(node.a, props), glsl(node.b, props))
           case "base":
             return glsl(node.a, {
               ...props,
               base: asNumericBase(js(node.b, props)),
             })
+        }
+        const op = OPS[node.kind]
+        if (op) {
+          return op.glsl(props.ctx, glsl(node.a, props), glsl(node.b, props))
         }
       }
       break
@@ -189,7 +186,62 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
         glsl(node.base, props),
         glsl(node.exponent, props),
       )
-    case "piecewise":
+    case "cmplist":
+      return node.ops
+        .map((op, i) => {
+          const a = glsl(node.items[i]!, props)
+          const b = glsl(node.items[i + 1]!, props)
+          return opCmp(op).glsl(props.ctx, a, b)
+        })
+        .reduce((a, b) => AND.glsl(props.ctx, a, b))
+    case "piecewise": {
+      const name = props.ctx.name()
+
+      let isDefinitelyAssigned = false
+      const pieces = node.pieces.map(({ value, condition }, index) => {
+        if (index == node.pieces.length - 1 && condition.type == "void") {
+          isDefinitelyAssigned = true
+          condition = { type: "var", kind: "var", value: "true" }
+        }
+
+        const ctxCond = props.ctx.fork()
+        const cond = glsl(condition, { ...props, ctx: ctxCond })
+        if (cond.list !== false) {
+          throw new Error(
+            "Lists cannot be used as the condition for a piecewise function yet.",
+          )
+        }
+        if (cond.type != "bool") {
+          throw new Error(
+            "The 'if' clause in a piecewise function must be a condition like z = 2.",
+          )
+        }
+
+        const ctxValue = props.ctx.fork()
+        const val = glsl(value, { ...props, ctx: ctxValue })
+
+        return { ctxCond, ctxValue, value: val, cond }
+      })
+
+      const ret = coerceType(pieces.map((x) => x.value))!
+
+      props.ctx.block += `${typeToGlsl(ret)} ${name};\n`
+      let closers = ""
+      for (const { ctxCond, cond, ctxValue, value } of pieces) {
+        props.ctx.block += ctxCond.block
+        props.ctx.block += `if (${cond.expr}) {\n`
+        props.ctx.block += ctxValue.block
+        props.ctx.block += `${name} = ${coerceValueGlsl(props.ctx, value, ret)};\n`
+        props.ctx.block += `} else {\n`
+        closers += "}"
+      }
+      if (!isDefinitelyAssigned) {
+        props.ctx.block += `${name} = ${garbageValueGlsl(ret)};\n`
+      }
+      props.ctx.block += closers + "\n"
+
+      return { ...ret, expr: name }
+    }
     case "void":
     case "num16":
     case "sub":
