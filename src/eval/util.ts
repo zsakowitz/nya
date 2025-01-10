@@ -6,5 +6,5 @@ export function safe(value: number) {
   ) // 2 ** 53
 }
 
-export const hypot =
-  (Math as any).hypot ?? ((a: number, b: number) => Math.sqrt(a * a + b * b))
+export const hypot: (a: number, b: number) => number =
+  (Math as any).hypot ?? ((a, b) => Math.sqrt(a * a + b * b))

@@ -72,6 +72,8 @@ function glslCall(
       return RGB.glsl(props.ctx, ...evaln(3))
     case "exp":
       return EXP.glsl(props.ctx, ...evaln(1))
+    case "ln":
+      return EXP.glsl(props.ctx, ...evaln(1))
   }
 
   throw new Error(`The '${name}' function is not supported in shaders yet.`)

@@ -195,6 +195,45 @@ function declareLnUnchecked(ctx: GlslContext) {
 `
 }
 
+function declareLn(ctx: GlslContext) {
+  ctx.declare`vec2 _helper_ln(vec2 z) {
+  if (z == vec2(0)) {
+    return vec2(-1.0 / 0.0, 0);
+  }
+
+  return vec2(log(length(z)), atan(z.y, z.x));
+}
+`
+}
+
+export const LN = fnNum<[0]>(
+  "ln",
+  {
+    approx([a]) {
+      return approx(Math.log(a))
+    },
+    point(a) {
+      if (isZero(a)) {
+        return pt(real(-Infinity), real(0))
+      }
+
+      const x = num(a.x)
+      const y = num(a.y)
+
+      return pt(approx(Math.log(hypot(x, y))), approx(Math.atan2(y, x)))
+    },
+  },
+  {
+    real(_, a) {
+      return `log(${a})`
+    },
+    complex(ctx, z) {
+      declareLn(ctx)
+      return `_helper_ln(${z})`
+    },
+  },
+)
+
 export const POW = fnNum<[0, 0]>(
   "^",
   {
