@@ -2,13 +2,15 @@ import {
   listTy,
   type GlslVal,
   type GlslValue,
-  type Ty,
-  type Type,
   type JsVal,
   type JsValue,
+  type Ty,
+  type TyName,
+  type Type,
 } from "."
 import type { GlslContext } from "../fn"
-import { real } from "./create"
+import { pt, real } from "./create"
+import { garbageValJs } from "./garbage"
 
 /**
  * `null` means there were zero arguments. Any other coercion error will be
@@ -19,13 +21,21 @@ export function coerceTy(tys: Ty[]): Ty | null {
     return null
   }
 
-  const first = tys[0]!
+  const encountered: Partial<Record<TyName, number>> = Object.create(null)
 
-  if (tys.every((x) => x.type == first.type)) {
-    return first
+  for (const ty of tys) {
+    encountered[ty.type] = (encountered[ty.type] || 0) + 1
   }
 
-  if (tys.every((x) => x.type == "real" || x.type == "complex")) {
+  if (Object.keys(encountered).length == 1) {
+    return { type: Object.keys(encountered)[0] as TyName }
+  }
+
+  if (encountered.real && !encountered.complex && !encountered.color) {
+    return { type: "real" }
+  }
+
+  if (encountered.complex && !encountered.color) {
     return { type: "complex" }
   }
 
@@ -35,6 +45,22 @@ export function coerceTy(tys: Ty[]): Ty | null {
 export function coerceValJs(val: JsVal, to: Ty): JsVal {
   if (val.type == to.type) {
     return val
+  }
+
+  if (val.type == "bool" && to.type == "real") {
+    if (val.value) {
+      return { type: "real", value: real(1) }
+    } else {
+      return garbageValJs(to)
+    }
+  }
+
+  if (val.type == "bool" && to.type == "complex") {
+    if (val.value) {
+      return { type: "complex", value: pt(real(1), real(0)) }
+    } else {
+      return garbageValJs(to)
+    }
   }
 
   if (val.type == "real" && to.type == "complex") {
@@ -50,6 +76,14 @@ export function coerceValJs(val: JsVal, to: Ty): JsVal {
 export function coerceValGlsl(val: GlslVal, to: Ty): string {
   if (val.type == to.type) {
     return val.expr
+  }
+
+  if (val.type == "bool" && to.type == "real") {
+    return `(${val.expr} ? 1.0 : 0.0/0.0)`
+  }
+
+  if (val.type == "bool" && to.type == "complex") {
+    return `(${val.expr} ? vec2(1, 0) : vec2(0.0/0.0))`
   }
 
   if (val.type == "real" && to.type == "complex") {

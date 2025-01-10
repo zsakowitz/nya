@@ -267,7 +267,11 @@ export const words = new WordMap<WordKind>([
   ["real", "prefix"],
   ["imag", "prefix"],
   ["angle", "prefix"],
-  ["radius", "prefix"],
+  ["magnitude", "prefix"],
+
+  // Boolean utilities
+  ["false", "var"],
+  ["true", "var"],
 ]).frozen()
 
 export const options: Options = Object.freeze<Options>({

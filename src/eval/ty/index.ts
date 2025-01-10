@@ -4,12 +4,14 @@ export type SReal = SApprox | SExact
 
 export type SPoint = { type: "point"; x: SReal; y: SReal }
 export type SColor = { type: "color"; r: SReal; g: SReal; b: SReal }
+export type SBool = { type: "bool"; value: boolean }
 
 export type VReal = { type: "real"; value: SReal }
 export type VComplex = { type: "complex"; value: SPoint }
 export type VColor = { type: "color"; value: SColor }
+export type VBool = { type: "bool"; value: boolean }
 
-export type JsVal = VReal | VComplex | VColor
+export type JsVal = VReal | VComplex | VColor | VBool
 export type JsValue = Expand<
   JsVal extends infer T ?
     T extends { value: unknown } ?
@@ -27,15 +29,13 @@ export type Type = { type: TyName; list: boolean | number }
 export type GlslVal = { expr: string; type: TyName }
 export type GlslValue = { expr: string; type: TyName; list: boolean | number }
 
-export function tyToGlsl(ty: Ty) {
-  return (
-    ty.type == "real" ? "float"
-    : ty.type == "complex" ? "vec2"
-    : ty.type == "color" ? "vec4"
-    : (() => {
-        throw new Error(`Unknown type '${ty}'`)
-      })()
-  )
+export function tyToGlsl(ty: Ty): string {
+  return {
+    real: "float",
+    complex: "vec2",
+    color: "vec3",
+    bool: "bool",
+  }[ty.type]
 }
 
 export function typeToGlsl(ty: Type) {
