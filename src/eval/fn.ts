@@ -56,11 +56,11 @@ export class GlslContext {
     const src = this.name()
     const idx = this.name()
     const dst = this.name()
-    this.block += `${typeToGlsl(from)} ${src} = ${from.expr};\n`
-    this.block += `${tyToGlsl(to)}[${from.list}] ${dst};\n`
-    this.block += `for (int ${idx} = 0; ${idx} < ${from.list}; ${idx}++) {\n`
-    this.block += `${dst}[${idx}] = ${via(`${src}[${idx}]`)};\n`
-    this.block += `}\n`
+    this.push`${typeToGlsl(from)} ${src} = ${from.expr};\n`
+    this.push`${tyToGlsl(to)}[${from.list}] ${dst};\n`
+    this.push`for (int ${idx} = 0; ${idx} < ${from.list}; ${idx}++) {\n`
+    this.push`${dst}[${idx}] = ${via(`${src}[${idx}]`)};\n`
+    this.push`}\n`
     return dst
   }
 
@@ -68,7 +68,7 @@ export class GlslContext {
     return new GlslContext(this.helpers)
   }
 
-  push(strings: TemplateStringsArray, ...interps: string[]) {
+  push(strings: TemplateStringsArray, ...interps: (string | number)[]) {
     for (let i = 0; i < strings.length; i++) {
       if (i != 0) {
         this.block += interps[i - 1]
@@ -155,7 +155,7 @@ export function fnDist(
 
     const cached = values.map((value) => {
       const name = ctx.name()
-      ctx.block += `${typeToGlsl(value)} ${name} = ${value.expr};\n`
+      ctx.push`${typeToGlsl(value)} ${name} = ${value.expr};\n`
       return {
         type: value.type,
         list: value.list as number | false,
@@ -164,7 +164,7 @@ export function fnDist(
     })
 
     const ret = ctx.name()
-    ctx.block += `${typeToGlsl(ty)} ${ret};\n`
+    ctx.push`${typeToGlsl(ty)} ${ret};\n`
 
     const len = ty.list as number
     const index = ctx.name()
@@ -174,9 +174,9 @@ export function fnDist(
         expr: arg.list === false ? arg.expr : `${arg.expr}[${index}]`,
       }),
     )
-    ctx.block += `for (int ${index} = 0; ${index} < ${len}; ${index}++) {\n`
-    ctx.block += `${ret}[${index}] = ${glslSingle(ctx, ...args)};\n`
-    ctx.block += `}\n`
+    ctx.push`for (int ${index} = 0; ${index} < ${len}; ${index}++) {\n`
+    ctx.push`${ret}[${index}] = ${glslSingle(ctx, ...args)};\n`
+    ctx.push`}\n`
 
     return { ...ty, expr: ret }
   }

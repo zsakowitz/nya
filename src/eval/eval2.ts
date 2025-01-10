@@ -225,18 +225,18 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
 
       const ret = coerceType(pieces.map((x) => x.value))!
 
-      props.ctx.block += `${typeToGlsl(ret)} ${name};\n`
+      props.ctx.push`${typeToGlsl(ret)} ${name};\n`
       let closers = ""
       for (const { ctxCond, cond, ctxValue, value } of pieces) {
         props.ctx.block += ctxCond.block
-        props.ctx.block += `if (${cond.expr}) {\n`
+        props.ctx.push`if (${cond.expr}) {\n`
         props.ctx.block += ctxValue.block
-        props.ctx.block += `${name} = ${coerceValueGlsl(props.ctx, value, ret)};\n`
-        props.ctx.block += `} else {\n`
+        props.ctx.push`${name} = ${coerceValueGlsl(props.ctx, value, ret)};\n`
+        props.ctx.push`} else {\n`
         closers += "}"
       }
       if (!isDefinitelyAssigned) {
-        props.ctx.block += `${name} = ${garbageValueGlsl(ret)};\n`
+        props.ctx.push`${name} = ${garbageValueGlsl(ret)};\n`
       }
       props.ctx.block += closers + "\n"
 
