@@ -1014,6 +1014,14 @@ video {
   border-radius: .125em;
 }
 
+.rounded-\[\.25em\] {
+  border-radius: .25em;
+}
+
+.rounded-\[\.1875em\] {
+  border-radius: .1875em;
+}
+
 .border {
   border-width: 1px;
 }
