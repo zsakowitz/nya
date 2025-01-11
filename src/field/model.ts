@@ -88,7 +88,7 @@ export class Block {
     const tokens: Node[] = []
     let el = this.ends[L]
     while (el) {
-      el.ir(tokens)
+      if (el.ir(tokens)) break
       el = el[R]
     }
     return tokens
@@ -673,6 +673,22 @@ export class Span {
   ) {
     this[L] = lhs
     this[R] = rhs
+  }
+
+  /** Tokenizes this {@linkcode Span}'s contents into AST tokens. */
+  ir(): Node[] {
+    const tokens: Node[] = []
+    let el = this.at(L)
+    while (el && el != this[R]) {
+      if (el.ir(tokens)) break
+      el = el[R]
+    }
+    return tokens
+  }
+
+  /** Parses this {@linkcode Span}'s contents as a full AST. */
+  ast(): Node {
+    return tokensToAst(this.ir())
   }
 
   /** Returns `true` if this `Span` is a single point. */
@@ -1594,7 +1610,7 @@ export abstract class Command<
   insRow?(cursor: Cursor, block: Block, dir: VDir | null): void
 
   /** Tokenizes this {@linkcode Command}'s contents as LaTeX. */
-  abstract ir(tokens: Node[]): void
+  abstract ir(tokens: Node[]): true | void
 }
 
 export interface Command {

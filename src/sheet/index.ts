@@ -119,7 +119,7 @@ export class Expr {
       h(
         "flex flex-col w-full max-w-full",
         (this.elScroller = h(
-          "block overflow-x-auto [&::-webkit-scrollbar]:hidden min-h-[3.265rem]",
+          "block overflow-x-auto [&::-webkit-scrollbar]:hidden min-h-[3.265rem] max-w-[calc(var(--nya-sheet-sidebar)_-_2.5rem)]",
           this.field.el,
         )),
         (this.elValue = new FieldInert(this.field.exts, this.field.options)).el,
@@ -148,7 +148,6 @@ export class Expr {
     sheet.elExpressions.insertBefore(this.el, sheet.elExpressions.lastChild)
     this.sheet.checkNextIndex()
     this.index = this.sheet.exprs.length - 1
-    this.fitTo(400)
     this.elValue.el.classList.add(
       "block",
       "bg-slate-100",
@@ -181,10 +180,6 @@ export class Expr {
   checkIndex() {
     this.elIndex.textContent = "" + this.sheet.exprs.indexOf(this)
     this.index = this.sheet.exprs.length - 1
-  }
-
-  fitTo(width: number) {
-    this.elScroller.style.maxWidth = `calc(${width}px - 2.5rem)`
   }
 
   static id = 0
@@ -325,22 +320,6 @@ export class Sheet {
       )),
     ))
 
-    let prevWidth = 0
-
-    new ResizeObserver(([entry]) => {
-      const width = entry?.borderBoxSize?.[0]?.inlineSize
-      if (width == null || width == prevWidth) {
-        return
-      }
-      prevWidth = width
-      for (const expr of this.exprs) {
-        expr.fitTo(width)
-      }
-    }).observe(this.elExpressions)
-    for (const expr of this.exprs) {
-      expr.fitTo(400)
-    }
-
     this.elNextExpr.addEventListener("mousedown", () => {
       const expr = new Expr(this)
       setTimeout(() => expr.field.el.focus())
@@ -357,7 +336,7 @@ export class Sheet {
     )
 
     this.el = h(
-      "block fixed inset-0 grid grid-cols-[400px_1fr_400px] grid-rows-1 select-none [--nya-focus:theme(colors.blue.400)]",
+      "[--nya-sheet-sidebar:500px] block fixed inset-0 grid grid-cols-[var(--nya-sheet-sidebar)_1fr_400px] grid-rows-1 select-none [--nya-focus:theme(colors.blue.400)]",
       h(
         "block overflow-y-auto relative border-r",
         h(
@@ -368,7 +347,7 @@ export class Sheet {
           ),
           h(
             "font-['Symbola','Times_New_Roman',serif] text-sm leading-none italic text-slate-500",
-            REMARKS[Math.floor(REMARKS.length * Math.random())]!,
+            REMARK,
           ),
         ),
         elExpressions,
@@ -457,4 +436,7 @@ const REMARKS = [
   "brought to you by sleep deprivation",
   "sponsored by zSnout",
   "in awe of the desmos team tbh",
+  "where exp(x) was once defined as exp(x)=x 😭",
 ]
+
+const REMARK = REMARKS[Math.floor(REMARKS.length * Math.random())]!

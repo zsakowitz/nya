@@ -18,6 +18,8 @@ export type PuncInfix =
   | "for"
   | "with"
   | "base"
+  | "while"
+  | "until"
   | "\\and "
   | "\\or "
   | ".."
@@ -65,10 +67,10 @@ export const Precedence = Object.freeze({
   Equality:           7, // x = 3
   BoolAnd:            6, // x ∧ y
   BoolOr:             5, // x ⋁ y
-  WordInfix:          4, // 23 base 5
-  DoubleStruckRight:  3, // x => 4x
-  DoubleStruckBiDi:   2, // a <=> b
-  Action:             1, // a -> a + 1
+  DoubleStruckRight:  4, // x => 4x
+  DoubleStruckBiDi:   3, // a <=> b
+  Action:             2, // a -> a + 1
+  WordInfix:          1, // 23 base 5
   Comma:              0, // 2, 3
 })
 
@@ -97,11 +99,13 @@ export const PRECEDENCE_MAP = {
   "≈": Precedence.Comparison,
   "\\and ": Precedence.BoolAnd,
   "\\or ": Precedence.BoolOr,
+  "\\Rightarrow ": Precedence.DoubleStruckRight,
+  "\\to ": Precedence.Action,
   base: Precedence.WordInfix,
   for: Precedence.WordInfix,
   with: Precedence.WordInfix,
-  "\\Rightarrow ": Precedence.DoubleStruckRight,
-  "\\to ": Precedence.Action,
+  until: Precedence.WordInfix,
+  while: Precedence.WordInfix,
   ",": Precedence.Comma,
 } satisfies Record<PuncBinaryStr, number> & {
   // TypeScript really needs to learn that __proto__ is special, but it hasn't yet.
@@ -155,6 +159,7 @@ export type Node =
   | { type: "void" }
   | { type: "num"; value: string; sub?: Node }
   | { type: "var"; value: string; kind: WordKind; sub?: Node; sup?: Node }
+  | { type: "magicvar"; value: string; sub?: Node; sup?: Node; contents: Node }
   | { type: "num16"; value: string }
   | { type: "group"; lhs: ParenLhs; rhs: ParenRhs; value: Node }
   | { type: "sub"; sub: Node }

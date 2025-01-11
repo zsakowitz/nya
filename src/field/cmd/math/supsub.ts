@@ -251,6 +251,19 @@ export class CmdSupSub extends Command {
       return focusEdge(this, x)
     }
 
+    const pr = +(
+      getComputedStyle(this.el).paddingRight.match(/^(.+)px$/)?.[1] || 0
+    )
+
+    console.log({
+      x,
+      pr,
+      r: this.bounds()[1] - pr / 2,
+    })
+    if (x > this.bounds()[1] - pr / 2) {
+      return this.cursor(R)
+    }
+
     if (this.sub && !this.sup) {
       return this.sub.focus(x, y)
     }

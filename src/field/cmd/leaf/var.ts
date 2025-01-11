@@ -14,7 +14,8 @@ import {
   type Dir,
   type InitProps,
 } from "../../model"
-import type { Options, WordMap } from "../../options"
+import { Options, WordMap } from "../../options"
+import { CmdSupSub } from "../math/supsub"
 
 /**
  * The different kinds of {@linkcode CmdVar}-composed words which exist. These
@@ -30,7 +31,7 @@ import type { Options, WordMap } from "../../options"
  * - `"prefix"`: `+word` `2 + word` `word +2` `(...) word(...)`
  * - `"infix"`: `2 word` `word 2` `word +` `(...) word (...)`
  */
-export type WordKind = "var" | "prefix" | "infix"
+export type WordKind = "var" | "prefix" | "magicprefix" | "infix"
 
 export class CmdVar extends Leaf {
   static init(cursor: Cursor, props: InitProps) {
@@ -75,6 +76,7 @@ export class CmdVar extends Leaf {
       part == L ? "-l"
       : part == R ? "-r"
       : "-mid"
+    if (kind == "magicprefix") kind = "prefix"
 
     return h(
       "nya-cmd-var" +
@@ -218,7 +220,26 @@ export class CmdVar extends Leaf {
     }
   }
 
-  ir(tokens: Node[]): void {
+  ir(tokens: Node[]): true | void {
+    if (this.kind == "magicprefix") {
+      let value = this.text
+      let el: CmdVar = this
+      while (el[R] instanceof CmdVar) {
+        el = el[R]
+        value += el.text
+        if (el.part == R) break
+      }
+      const ss = el?.[R] instanceof CmdSupSub ? el[R] : null
+      tokens.push({
+        type: "magicvar",
+        value,
+        sub: ss?.sub?.ast(),
+        sup: ss?.sup?.ast(),
+        contents: new Span(this.parent, ss || el, null).ast(),
+      })
+      return true
+    }
+
     if (this.kind) {
       if (this.part == L) {
         tokens.push({

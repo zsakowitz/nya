@@ -275,6 +275,12 @@ export const words = new WordMap<WordKind>([
 
   // Debug utilities
   ["debugquadrant", "prefix"],
+
+  // Iteration
+  ["iterate", "magicprefix"],
+  ["trace", "magicprefix"],
+  ["while", "infix"],
+  ["until", "infix"],
 ]).frozen()
 
 export const options: Options = Object.freeze<Options>({

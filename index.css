@@ -699,6 +699,11 @@ video {
   margin-right: 0.5rem;
 }
 
+.mx-\[\.1em\] {
+  margin-left: .1em;
+  margin-right: .1em;
+}
+
 .mx-\[\.4em\] {
   margin-left: .4em;
   margin-right: .4em;
@@ -737,10 +742,6 @@ video {
 
 .ml-\[-\.35em\] {
   margin-left: -.35em;
-}
-
-.ml-\[\.1em\] {
-  margin-left: .1em;
 }
 
 .ml-\[\.2em\] {
@@ -889,12 +890,12 @@ video {
   min-width: 100%;
 }
 
-.max-w-full {
-  max-width: 100%;
+.max-w-\[calc\(var\(--nya-sheet-sidebar\)_-_2\.5rem\)\] {
+  max-width: calc(var(--nya-sheet-sidebar) - 2.5rem);
 }
 
-.shrink {
-  flex-shrink: 1;
+.max-w-full {
+  max-width: 100%;
 }
 
 .grow {
@@ -928,12 +929,12 @@ video {
   grid-template-columns: 2.5rem auto;
 }
 
-.grid-cols-\[400px_1fr_400px\] {
-  grid-template-columns: 400px 1fr 400px;
-}
-
 .grid-cols-\[auto\2c auto\] {
   grid-template-columns: auto auto;
+}
+
+.grid-cols-\[var\(--nya-sheet-sidebar\)_1fr_400px\] {
+  grid-template-columns: var(--nya-sheet-sidebar) 1fr 400px;
 }
 
 .grid-rows-1 {
@@ -1405,6 +1406,14 @@ video {
   --nya-focus: #60a5fa;
 }
 
+.\[--nya-sheet-sidebar\:400px\] {
+  --nya-sheet-sidebar: 400px;
+}
+
+.\[--nya-sheet-sidebar\:500px\] {
+  --nya-sheet-sidebar: 500px;
+}
+
 .\[line-height\:\.9\] {
   line-height: .9;
 }
@@ -1691,6 +1700,11 @@ body {
 
 .bg-nya-selection>.\[\.bg-nya-selection\>\&\]\:bg-nya-selection {
   background-color: var(--nya-selection);
+}
+
+.nya-cmd-word>:where(.\[\.nya-cmd-word\>\:where\(\&\)\]\:mx-0) {
+  margin-left: 0px;
+  margin-right: 0px;
 }
 
 .nya-display:has(.nya-cmd-prompt) .\[\.nya-display\:has\(\.nya-cmd-prompt\)_\&\]\:hidden {
