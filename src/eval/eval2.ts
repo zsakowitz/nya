@@ -1,20 +1,19 @@
 import { commalist, fnargs } from "./ast/collect"
 import type { Node } from "./ast/token"
 import { asNumericBase, parseNumberGlsl, parseNumberJs } from "./base"
-import { GlslContext, GlslHelpers, type Build } from "./fn"
+import { GlslContext, GlslHelpers } from "./fn"
 import {
   ABS,
   AND,
-  DEBUGQUADRANT,
   DIV,
-  EXP,
+  getNamedFn,
   IMAG,
   MUL,
   opCmp,
-  OPS,
+  OPS_BINARY,
   POW,
   REAL,
-  RGB,
+  SQRT,
 } from "./ops"
 import { typeToGlsl, type GlslValue, type JsValue, type SReal } from "./ty"
 import { coerceType, coerceValueGlsl, listGlsl, listJs } from "./ty/coerce"
@@ -42,27 +41,17 @@ function jsCall(
   _asMethod: boolean,
   props: PropsJs,
 ): JsValue {
-  switch (name) {
-    case "rgb":
-      return RGB.js(...evaln(3))
-    case "exp":
-      return EXP.js(...evaln(1))
-    case "ln":
-      return EXP.js(...evaln(1))
+  const fn = getNamedFn(name)
+
+  if (!fn) {
+    throw new Error(`The '${name}' function is not supported yet.`)
   }
 
-  throw new Error(`The '${name}' function is not supported in shaders yet.`)
-
-  function evald() {
-    return args.map((arg) => js(arg, props))
+  if (args.length != fn[0]) {
+    throw new Error(`The '${name}' function needs ${fn[0]} arguments.`)
   }
 
-  function evaln<N extends number>(value: N): Build<JsValue, N> {
-    if (args.length == value) {
-      return evald() as any
-    }
-    throw new Error(`The '${name}' function needs ${value} arguments.`)
-  }
+  return fn[1].js(...args.map((arg) => js(arg, props)))
 }
 
 export function js(node: Node, props: PropsJs): JsValue {
@@ -104,12 +93,22 @@ export function js(node: Node, props: PropsJs): JsValue {
               }
             }
         }
-        const op = OPS[node.kind]
+        const op = OPS_BINARY[node.kind]
         if (op) {
           return op.js(js(node.a, props), js(node.b, props))
         }
+        throw new Error(`The operator '${node.kind}' is not supported yet.`)
+      } else {
+        switch (node.kind) {
+          case "\\neg ":
+          case "+":
+          case "-":
+          case "\\pm ":
+          case "\\mp ":
+          case "!":
+        }
+        throw new Error(`The operator '${node.kind}' is not supported yet.`)
       }
-      break
     case "group":
       if (node.lhs == "(" && node.rhs == ")") {
         return js(node.value, props)
@@ -175,7 +174,7 @@ export function js(node: Node, props: PropsJs): JsValue {
         }
       }
 
-      break
+      throw new Error(`The variable '${node.value}' is not usable yet.`)
     }
     case "frac":
       return DIV.js(js(node.a, props), js(node.b, props))
@@ -191,6 +190,15 @@ export function js(node: Node, props: PropsJs): JsValue {
         .reduce((a, b) => AND.js(a, b))
     case "piecewise":
       throw new Error("Piecewises are not supported outside of shaders yet.")
+    case "root":
+      if (node.root) {
+        return POW.js(
+          js(node.contents, props),
+          DIV.js(vreal(1), js(node.root, props)),
+        )
+      } else {
+        return SQRT.js(js(node.contents, props))
+      }
     case "void":
     case "num16":
     case "sub":
@@ -200,7 +208,6 @@ export function js(node: Node, props: PropsJs): JsValue {
     case "matrix":
     case "bigsym":
     case "big":
-    case "root":
     case "index":
     case "commalist":
     case "factorial":
@@ -208,7 +215,7 @@ export function js(node: Node, props: PropsJs): JsValue {
     case "punc":
   }
 
-  throw new Error(`Node type '${node.type}' is not implemented for shaders yet`)
+  throw new Error(`Node type '${node.type}' is not implemented yet.`)
 }
 
 function glslCall(
@@ -217,29 +224,17 @@ function glslCall(
   _asMethod: boolean,
   props: PropsGlsl,
 ): GlslValue {
-  switch (name) {
-    case "rgb":
-      return RGB.glsl(props.ctx, ...evaln(3))
-    case "exp":
-      return EXP.glsl(props.ctx, ...evaln(1))
-    case "ln":
-      return EXP.glsl(props.ctx, ...evaln(1))
-    case "debugquadrant":
-      return DEBUGQUADRANT.glsl(props.ctx, ...evaln(1))
+  const fn = getNamedFn(name)
+
+  if (!fn) {
+    throw new Error(`The '${name}' function is not supported in shaders yet.`)
   }
 
-  throw new Error(`The '${name}' function is not supported in shaders yet.`)
-
-  function evald() {
-    return args.map((arg) => glsl(arg, props))
+  if (args.length != fn[0]) {
+    throw new Error(`The '${name}' function needs ${fn[0]} arguments.`)
   }
 
-  function evaln<N extends number>(value: N): Build<GlslValue, N> {
-    if (args.length == value) {
-      return evald() as any
-    }
-    throw new Error(`The '${name}' function needs ${value} arguments.`)
-  }
+  return fn[1].glsl(props.ctx, ...args.map((arg) => glsl(arg, props)))
 }
 
 export function glsl(node: Node, props: PropsGlsl): GlslValue {
@@ -281,7 +276,7 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
               }
             }
         }
-        const op = OPS[node.kind]
+        const op = OPS_BINARY[node.kind]
         if (op) {
           return op.glsl(props.ctx, glsl(node.a, props), glsl(node.b, props))
         }
@@ -433,5 +428,7 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
     case "punc":
   }
 
-  throw new Error(`Node type '${node.type}' is not implemented for shaders yet`)
+  throw new Error(
+    `Node type '${node.type}' is not implemented for shaders yet.`,
+  )
 }

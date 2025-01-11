@@ -1,4 +1,4 @@
-import type { PuncCmp, PuncInfix, PuncPm } from "./ast/token"
+import type { PuncCmp, PuncInfix, PuncPm, PuncUnary } from "./ast/token"
 import { fnBool, fnDist, fnNum, type Fn, type GlslContext } from "./fn"
 import { isZero } from "./ty/check"
 import { coerceTy, coerceValGlsl, coerceValJs, listJs } from "./ty/coerce"
@@ -117,6 +117,32 @@ export const MUL = fnNum<[0, 0]>(
   },
 )
 
+export const ODOT = fnNum<[0, 0]>(
+  "⊙",
+  {
+    approx([a, b]) {
+      return approx(a * b)
+    },
+    exact(a, b) {
+      const s1 = a.n * b.n
+      if (!safe(s1)) return null
+      const s2 = a.d * b.d
+      return frac(s1, s2)
+    },
+    point({ x: a, y: b }, { x: c, y: d }) {
+      return pt(this.real(a, c), this.real(b, d))
+    },
+  },
+  {
+    real(_, a, b) {
+      return `(${a} * ${b})`
+    },
+    complex(_, a, b) {
+      return `(${a} * ${b})`
+    },
+  },
+)
+
 export const DIV = fnNum<[0, 0]>(
   "÷",
   {
@@ -156,6 +182,36 @@ export const DIV = fnNum<[0, 0]>(
 }
 `
       return `_helper_div(${a}, ${b})`
+    },
+  },
+)
+
+export const MOD = fnNum<[0, 0]>(
+  "mod",
+  {
+    approx([a, b], [ar]) {
+      if (ar.type == "exact" && ar.n == 0 && b != 0) {
+        return real(0)
+      }
+      return approx(((a % b) + b) % b)
+    },
+    point() {
+      throw new Error(
+        "The 'mod' operator cannot be applied to complex numbers.",
+      )
+    },
+  },
+  {
+    real(ctx, a, b) {
+      ctx.declare`float _helper_mod(float a, float b) {
+  return (a % b + b) % b
+}`
+      return `_helper_mod(${a}, ${b})`
+    },
+    complex() {
+      throw new Error(
+        "The 'mod' operator cannot be applied to complex numbers.",
+      )
     },
   },
 )
@@ -305,6 +361,50 @@ export const POW = fnNum<[0, 0]>(
 }
 `
       return `_helper_pow(${a}, ${b})`
+    },
+  },
+)
+
+export const SQRT = fnNum<[0]>(
+  "sqrt",
+  {
+    approx([a]) {
+      return approx(Math.sqrt(a))
+    },
+    exact(a) {
+      const sn = Math.sqrt(a.n)
+      const sd = Math.sqrt(a.d)
+      if (sn == Math.floor(sn) && sd == Math.floor(sd)) {
+        return frac(sn, sd)
+      } else {
+        return approx(sn / sd)
+      }
+    },
+    point(a) {
+      return EXP.complex(
+        pt(
+          approx(Math.log(hypot(num(a.x), num(a.y))) / 2),
+          approx(Math.atan2(num(a.y), num(a.x)) / 2),
+        ),
+      )
+    },
+  },
+  {
+    real(_, a) {
+      return `sqrt(${a})`
+    },
+    complex(ctx, a) {
+      declareExp(ctx)
+      ctx.declare`vec2 _helper_sqrt(vec2 a) {
+  return _helper_exp(
+    vec2(
+      log(length(a)),
+      atan(a.y, a.x)
+    ) / 2.0
+  );
+}
+`
+      return `_helper_sqrt(${a})`
     },
   },
 )
@@ -552,15 +652,6 @@ export const OR = fnBool<0[]>(
     : `(${args.join(" || ")})`,
 )
 
-export const OPS: Partial<Record<PuncInfix | PuncPm, Fn<[0, 0]>>> = {
-  "+": ADD,
-  "-": SUB,
-  "\\cdot ": MUL,
-  "÷": DIV,
-  "\\and ": AND,
-  "\\or ": OR,
-}
-
 export const DEBUGQUADRANT = fnDist<[0]>("debugquadrant", {
   ty(a) {
     if (a.type != "complex") {
@@ -583,3 +674,31 @@ export const DEBUGQUADRANT = fnDist<[0]>("debugquadrant", {
     return `_helper_debugquadrant(${a.expr})`
   },
 })
+
+export const OPS_BINARY: Partial<Record<PuncInfix | PuncPm, Fn<[0, 0]>>> = {
+  "+": ADD,
+  "-": SUB,
+  "\\cdot ": MUL,
+  "÷": DIV,
+  "\\and ": AND,
+  "\\or ": OR,
+  mod: MOD,
+  "\\odot ": ODOT,
+}
+
+export const OPS_UNARY: Partial<Record<PuncUnary | PuncPm, Fn<[0]>>> = {}
+
+const NAMED_FNS: Record<string, [number, Fn<0[]>]> = {
+  debugquadrant: [1, DEBUGQUADRANT],
+  rgb: [3, RGB],
+  real: [1, REAL],
+  imag: [1, IMAG],
+  exp: [1, EXP],
+  ln: [1, LN],
+}
+
+export function getNamedFn(name: string) {
+  if ({}.hasOwnProperty.call(NAMED_FNS, name)) {
+    return NAMED_FNS[name]!
+  }
+}

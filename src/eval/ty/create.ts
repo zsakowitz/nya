@@ -1,7 +1,7 @@
-import type { SApprox, SExact, SPoint, SReal, VBool, VReal } from "."
+import type { SApprox, SPoint, SReal, VBool, VReal } from "."
 import { safe } from "../util"
 
-export function num(value: SApprox | SExact): number {
+export function num(value: SReal): number {
   if (value.type == "exact") {
     return value.n / value.d
   }

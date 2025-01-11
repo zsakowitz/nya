@@ -1,9 +1,9 @@
 import type { JsValue, SReal } from "./ty"
-import { approx, frac } from "./ty/create"
+import { approx, frac, num } from "./ty/create"
 import { safe } from "./util"
 
 export function parseNumberJs(text: string, base: SReal): SReal {
-  const numericValue = base.type == "exact" ? base.n / base.d : base.value
+  const numericValue = num(base)
 
   if (numericValue == 10) {
     const value = +text
