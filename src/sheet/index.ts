@@ -211,20 +211,15 @@ export class Expr {
       const frag = `
           precision mediump float;
 ${props.ctx.helpers.helpers}void main() {
-${props.ctx.block}gl_FragColor = vec4(${expr}, 0.5);
+${props.ctx.block}gl_FragColor = vec4(${expr} / 255.0, 1);
 }`
-      this.sheet.elGlsl.textContent = "frag"
+      this.sheet.elGlsl.textContent = frag
       this.sheet.regl.clear({
         color: [0, 0, 0, 1],
         depth: 1,
       })
       this.sheet.regl({
-        frag: `
-  precision mediump float;
-  uniform vec4 color;
-  void main () {
-    gl_FragColor = color;
-  }`,
+        frag,
 
         vert: `
   precision mediump float;
