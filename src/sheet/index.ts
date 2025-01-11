@@ -191,7 +191,15 @@ export class Expr {
     this.elScroller.style.maxWidth = `calc(${width}px - 2.5rem)`
   }
 
+  static id = 0
+
   debug() {
+    const myId = ++Expr.id
+    requestAnimationFrame(() => {
+      if (myId == Expr.id) {
+        this.debug()
+      }
+    })
     const node = this.field.block.ast()
 
     this.sheet.elTokens.textContent = JSON.stringify(node, undefined, 2)
@@ -205,11 +213,10 @@ export class Expr {
     }
 
     try {
-      this.sheet.regl
       const props = defaultProps2()
-      const { expr, ...value } = glsl(node, props)
-      const frag = `
-          precision mediump float;
+      const { expr } = glsl(node, props)
+      const frag = `precision mediump float;
+varying vec2 v_coords;
 ${props.ctx.helpers.helpers}void main() {
 ${props.ctx.block}gl_FragColor = vec4(${expr} / 255.0, 1);
 }`
@@ -221,18 +228,31 @@ ${props.ctx.block}gl_FragColor = vec4(${expr} / 255.0, 1);
       this.sheet.regl({
         frag,
 
-        vert: `
-  precision mediump float;
-  attribute vec2 position;
-  void main () {
-    gl_Position = vec4(position, 0, 1);
-  }`,
+        vert: `precision mediump float;
+attribute vec2 position;
+attribute vec2 a_coords;
+varying vec2 v_coords;
+void main () {
+  v_coords = a_coords;
+  gl_Position = vec4(position, 0, 1);
+}`,
 
         attributes: {
           position: [
-            [-1, 0],
-            [0, -1],
+            [-1, 1],
+            [-1, -1],
             [1, 1],
+            [1, -1],
+            [-1, -1],
+            [1, 1],
+          ],
+          a_coords: [
+            [this.sheet.paper.bounds().xmin, this.sheet.paper.bounds().ymax],
+            [this.sheet.paper.bounds().xmin, this.sheet.paper.bounds().ymin],
+            [this.sheet.paper.bounds().xmax, this.sheet.paper.bounds().ymax],
+            [this.sheet.paper.bounds().xmax, this.sheet.paper.bounds().ymin],
+            [this.sheet.paper.bounds().xmin, this.sheet.paper.bounds().ymin],
+            [this.sheet.paper.bounds().xmax, this.sheet.paper.bounds().ymax],
           ],
         },
 
@@ -240,7 +260,7 @@ ${props.ctx.block}gl_FragColor = vec4(${expr} / 255.0, 1);
           color: [1, 0, 0, 1],
         },
 
-        count: 3,
+        count: 6,
       })()
 
       this.sheet.elGlsl.classList.remove(
