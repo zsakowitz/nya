@@ -150,7 +150,7 @@ export function pass1_suffixes(tokens: Node[]) {
       self.type == "group" &&
       self.lhs == "(" &&
       self.rhs == ")" &&
-      isValueToken(prev)
+      (isValueToken(prev) || (prev.type == "var" && prev.kind == "prefix"))
     ) {
       tokens.splice(i, 1)
       tokens[i - 1] = { type: "call", name: prev, args: self.value }
