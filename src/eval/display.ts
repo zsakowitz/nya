@@ -1,4 +1,5 @@
 import { OpApprox, OpEq } from "../field/cmd/leaf/cmp"
+import { CmdColor } from "../field/cmd/leaf/color"
 import { CmdComma } from "../field/cmd/leaf/comma"
 import { CmdDot } from "../field/cmd/leaf/dot"
 import { CmdNum } from "../field/cmd/leaf/num"
@@ -306,5 +307,18 @@ export function display(field: FieldInert, value: JsValue, base: SReal) {
       })
       break
     case "color":
+      displayValue(cursor, value, base, (cursor, value) => {
+        const f = (x: SReal) => {
+          const v = Math.min(255, Math.max(0, Math.floor(num(x)))).toString(16)
+          if (v.length == 1) return "0" + v
+          return v
+        }
+
+        new CmdColor("#" + f(value.r) + f(value.g) + f(value.b)).insertAt(
+          cursor,
+          L,
+        )
+      })
+      break
   }
 }

@@ -830,6 +830,14 @@ video {
   height: max-content;
 }
 
+.h-\[2em\] {
+  height: 2em;
+}
+
+.h-\[1\.5em\] {
+  height: 1.5em;
+}
+
 .min-h-\[3\.265rem\] {
   min-height: 3.265rem;
 }
@@ -1187,6 +1195,11 @@ video {
   padding-bottom: .1em;
 }
 
+.px-\[\.em\] {
+  padding-left: .em;
+  padding-right: .em;
+}
+
 .pb-1 {
   padding-bottom: 0.25rem;
 }
@@ -1269,6 +1282,54 @@ video {
 
 .align-\[1\.3em\] {
   vertical-align: 1.3em;
+}
+
+.align-\[-0\.225\] {
+  vertical-align: -0.225;
+}
+
+.align-\[-0\.225em\] {
+  vertical-align: -0.225em;
+}
+
+.align-\[0\.275em\] {
+  vertical-align: 0.275em;
+}
+
+.align-\[\.275em\] {
+  vertical-align: .275em;
+}
+
+.align-\[\.15em\] {
+  vertical-align: .15em;
+}
+
+.align-\[\.175em\] {
+  vertical-align: .175em;
+}
+
+.align-\[\.2em\] {
+  vertical-align: .2em;
+}
+
+.align-\[\.1em\] {
+  vertical-align: .1em;
+}
+
+.align-\[\.0em\] {
+  vertical-align: .0em;
+}
+
+.align-\[0em\] {
+  vertical-align: 0em;
+}
+
+.align-\[-\.1em\] {
+  vertical-align: -.1em;
+}
+
+.align-\[-\.15em\] {
+  vertical-align: -.15em;
 }
 
 .font-\[\'Symbola\'\2c \'Times_New_Roman\'\2c sans-serif\] {
@@ -1404,10 +1465,6 @@ video {
 
 .\[--nya-focus\:theme\(colors\.blue\.400\)\] {
   --nya-focus: #60a5fa;
-}
-
-.\[--nya-sheet-sidebar\:400px\] {
-  --nya-sheet-sidebar: 400px;
 }
 
 .\[--nya-sheet-sidebar\:500px\] {

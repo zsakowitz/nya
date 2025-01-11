@@ -44,7 +44,7 @@ export class CmdColor extends Leaf {
     color = CmdColor.parse(color)
 
     const elLabel = h(
-      "text-[30%] font-mono text-center w-full text-white inline-block",
+      "text-[60%] font-mono text-center w-full text-white align-[-.15em] inline-flex px-[.4em]",
       color.slice(1),
     )
 
@@ -55,7 +55,7 @@ export class CmdColor extends Leaf {
     })
 
     const elColor = h(
-      "inline-block h-[1em] w-[1.5em] align-[.025em] rounded-[.125em]",
+      "inline-block h-[1.5em] align-[.15em] py-[.1em] my-[.1em] rounded-[.125em]",
       elField,
       elLabel,
     )
