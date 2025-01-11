@@ -2,7 +2,19 @@ import { commalist, fnargs } from "./ast/collect"
 import type { Node } from "./ast/token"
 import { asNumericBase, parseNumberGlsl, parseNumberJs } from "./base"
 import { GlslContext, GlslHelpers, type Build } from "./fn"
-import { AND, DIV, EXP, IMAG, MUL, opCmp, OPS, POW, REAL, RGB } from "./ops"
+import {
+  ABS,
+  AND,
+  DIV,
+  EXP,
+  IMAG,
+  MUL,
+  opCmp,
+  OPS,
+  POW,
+  REAL,
+  RGB,
+} from "./ops"
 import { typeToGlsl, type GlslValue, type JsValue, type SReal } from "./ty"
 import { coerceType, coerceValueGlsl, listGlsl } from "./ty/coerce"
 import { real } from "./ty/create"
@@ -153,6 +165,9 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
           throw new Error("Cannot store a list inside another list.")
         }
         return listGlsl(args)
+      }
+      if (node.lhs == "|" && node.rhs == "|") {
+        return ABS.glsl(props.ctx, glsl(node.value, props))
       }
       break
     case "call":

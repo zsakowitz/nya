@@ -22,6 +22,7 @@ import {
   onWheel,
   Paper,
 } from "./paper"
+import { doMatchReglSize } from "./regl"
 import regl = require("regl")
 
 export interface Options {
@@ -240,7 +241,9 @@ void main () {
             [-1, -1],
             [1, 1],
           ],
-          a_coords: this.sheet.regl.prop("a_coords"),
+          a_coords: this.sheet.regl.prop<{ a_coords: number[][] }, "a_coords">(
+            "a_coords",
+          ),
         },
 
         count: 6,
@@ -378,12 +381,11 @@ export class Sheet {
       ),
       h(
         "relative",
-        (this.elShaderCanvas = hx("canvas", {
-          width: "200",
-          height: "400",
-          class: "absolute inset-0 size-full pointer-events-none",
-        })),
-        (this.paper.el.classList.add("absolute", "inset-0"), this.paper.el),
+        (this.elShaderCanvas = hx(
+          "canvas",
+          "absolute inset-0 size-full pointer-events-none",
+        )),
+        this.paper.el,
         h(
           "absolute block top-0 bottom-0 left-0 w-1 from-slate-300/50 to-transparent bg-gradient-to-r",
         ),
@@ -405,7 +407,9 @@ export class Sheet {
       )),
     )
 
-    this.regl = regl(this.elShaderCanvas)
+    this.regl = regl({ canvas: this.elShaderCanvas, pixelRatio: 1 })
+    doMatchReglSize(this.elShaderCanvas, this.regl)
+    this.paper.el.classList.add("absolute", "inset-0")
   }
 
   checkIndices() {

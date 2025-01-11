@@ -522,9 +522,9 @@ export const LTE = createCmp(false, (a, b) => a <= b, "≤", "<=")
 export const NLT = createCmp(true, (a, b) => a < b, "not <", "<")
 export const NLTE = createCmp(true, (a, b) => a <= b, "not ≤", "<=")
 
-export const GT = createCmp(false, (a, b) => a > b, ">", "<")
+export const GT = createCmp(false, (a, b) => a > b, ">", ">")
 export const GTE = createCmp(false, (a, b) => a >= b, "≥", ">=")
-export const NGT = createCmp(true, (a, b) => a > b, "not >", "<")
+export const NGT = createCmp(true, (a, b) => a > b, "not >", ">")
 export const NGTE = createCmp(true, (a, b) => a >= b, "not ≥", ">=")
 
 // prettier-ignore
