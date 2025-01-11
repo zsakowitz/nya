@@ -35,4 +35,8 @@ export class CmdComma extends Leaf {
     }
     tokens.push({ type: "punc", kind: "infix", value: "," })
   }
+
+  endsImplicitGroup(): boolean {
+    return true
+  }
 }

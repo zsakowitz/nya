@@ -1,5 +1,6 @@
 import { Leaf } from "."
 import {
+  Precedence,
   PRECEDENCE_MAP,
   type Node,
   type PuncInfix,
@@ -280,5 +281,24 @@ export class CmdVar extends Leaf {
 
   get autoCmd(): string {
     return this.text
+  }
+
+  endsImplicitGroup(): boolean {
+    if (this.kind == "magicprefix") {
+      return true
+    }
+    if (this.kind != "infix") {
+      return false
+    }
+    let el: CmdVar = this
+    let text = this.text
+    while (el.part != L && el[L] instanceof CmdVar) {
+      text = el[L].text + text
+      el = el[L]
+    }
+    return (
+      {}.hasOwnProperty.call(PRECEDENCE_MAP, text) &&
+      PRECEDENCE_MAP[text as keyof typeof PRECEDENCE_MAP] <= Precedence.Sum
+    )
   }
 }
