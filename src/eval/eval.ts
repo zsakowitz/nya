@@ -78,7 +78,7 @@ export function js(node: Node, props: PropsJs): JsValue {
         case "base":
           return js(node.a, {
             ...props,
-            base: asNumericBase(js(node.b, props)),
+            base: asNumericBase(js(node.b, { ...props, base: real(10) })),
           })
         case ".":
           if (node.b.type == "var" && !node.b.sub && node.b.kind == "var") {
@@ -258,7 +258,7 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
         case "base":
           return glsl(node.a, {
             ...props,
-            base: asNumericBase(js(node.b, props)),
+            base: asNumericBase(js(node.b, { ...props, base: real(10) })),
           })
         case ".":
           if (node.b.type == "var" && !node.b.sub && node.b.kind == "var") {
