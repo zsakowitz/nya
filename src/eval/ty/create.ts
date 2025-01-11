@@ -53,14 +53,14 @@ export function bool(x: boolean): VBool {
   return { type: "bool", value: x }
 }
 
-export function vapprox(value: number): VReal {
-  return { type: "real", value: approx(value) }
+export function vapprox(value: number): VReal & { list: false } {
+  return { type: "real", value: approx(value), list: false }
 }
 
-export function vfrac(a: number, b: number): VReal {
-  return { type: "real", value: frac(a, b) }
+export function vfrac(a: number, b: number): VReal & { list: false } {
+  return { type: "real", value: frac(a, b), list: false }
 }
 
-export function vreal(value: number): VReal {
-  return { type: "real", value: real(value) }
+export function vreal(value: number): VReal & { list: false } {
+  return { type: "real", value: real(value), list: false }
 }

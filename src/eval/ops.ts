@@ -162,7 +162,7 @@ export const DIV = fnNum<[0, 0]>(
 
 function declareExp(ctx: GlslContext) {
   ctx.declare`vec2 _helper_exp(vec2 a) {
-  return a.x * vec2(cos(a.y), sin(a.y));
+  return exp(a.x) * vec2(cos(a.y), sin(a.y));
 }
 `
 }
@@ -292,7 +292,15 @@ export const POW = fnNum<[0, 0]>(
   if (a == vec2(0)) {
     return vec2(0);
   } else {
-    return _helper_exp(_helper_mul(b, _helper_ln_unchecked(a)));
+    return _helper_exp(
+      _helper_mul(
+        b,
+        vec2(
+          log(length(a)),
+          atan(a.y, a.x)
+        )
+      )
+    );
   }
 }
 `
@@ -302,10 +310,7 @@ export const POW = fnNum<[0, 0]>(
 )
 
 export const REAL = fnDist<[0]>("real", {
-  ty(a, b) {
-    if (!a || b) {
-      return null
-    }
+  ty(a) {
     return a.type == "bool" || a.type == "complex" || a.type == "real" ?
         "real"
       : null
@@ -337,10 +342,7 @@ export const REAL = fnDist<[0]>("real", {
 })
 
 export const IMAG = fnDist<[0]>("imag", {
-  ty(a, b) {
-    if (!a || b) {
-      return null
-    }
+  ty(a) {
     return a.type == "bool" || a.type == "complex" || a.type == "real" ?
         "real"
       : null
@@ -372,13 +374,8 @@ export const IMAG = fnDist<[0]>("imag", {
 })
 
 export const RGB = fnDist<[0, 0, 0]>("rgb", {
-  ty(r, g, b, a) {
-    if (
-      r?.type == "real" &&
-      g?.type == "real" &&
-      b?.type == "real" &&
-      a == null
-    ) {
+  ty(r, g, b) {
+    if (r.type == "real" && g.type == "real" && b.type == "real") {
       return "color"
     }
     return null
@@ -401,11 +398,7 @@ export const RGB = fnDist<[0, 0, 0]>("rgb", {
 })
 
 export const ABS = fnDist<[0]>("abs", {
-  ty(a, b) {
-    if (!a || b) {
-      return null
-    }
-
+  ty(a) {
     if (a.type == "color") {
       return null
     }
@@ -447,8 +440,7 @@ function createEq(negate: boolean) {
   const op = negate ? "!=" : "=="
 
   return fnDist<[0, 0]>(name, {
-    ty(a, b, c) {
-      if (!a || !b || c) return null
+    ty(a, b) {
       // ensure they are coercible; ignore result
       coerceTy([a, b])
       return "bool"
@@ -493,8 +485,7 @@ function createCmp(
   glsl: string,
 ): Fn<[0, 0]> {
   return fnDist<[0, 0]>(name, {
-    ty(a, b, c) {
-      if (!a || !b || c) return null
+    ty(a, b) {
       // ensure they are coercible; ignore result
       coerceTy([a, b])
       return "bool"
@@ -569,3 +560,26 @@ export const OPS: Partial<Record<PuncInfix | PuncPm, Fn<[0, 0]>>> = {
   "\\and ": AND,
   "\\or ": OR,
 }
+
+export const DEBUGQUADRANT = fnDist<[0]>("debugquadrant", {
+  ty(a) {
+    if (a.type != "complex") {
+      throw new Error("'debugquadrant' only operates on complex values.")
+    }
+    return "color"
+  },
+  js() {
+    throw new Error("'debugquadrant' can only run in shaders.")
+  },
+  glsl(ctx, a) {
+    ctx.declare`vec3 _helper_debugquadrant(vec2 z) {
+  return vec3(
+    (z.x < v_coords.x ? 255.0 : 0.0),
+    (z.y < v_coords.y ? 255.0 : 0.0),
+    255.0
+  );
+}`
+
+    return `_helper_debugquadrant(${a.expr})`
+  },
+})

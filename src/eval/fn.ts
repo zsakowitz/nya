@@ -90,7 +90,7 @@ export interface Fn<T extends readonly unknown[]> {
 }
 
 export interface Op<T extends readonly unknown[]> {
-  ty(...vals: (Ty | undefined)[]): TyName | null
+  ty(...vals: As<T, Ty>): TyName | null
   js(...vals: As<T, JsVal>): JsVal | null
   glsl(ctx: GlslContext, ...vals: As<T, GlslVal>): string | null
 }
@@ -99,7 +99,7 @@ export interface Op<T extends readonly unknown[]> {
 export function fnDist<T extends readonly unknown[]>(
   name: string,
   props: Op<T>,
-): Fn<readonly unknown[]>
+): Fn<T>
 
 export function fnDist(
   name: string,

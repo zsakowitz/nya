@@ -5,6 +5,7 @@ import { GlslContext, GlslHelpers, type Build } from "./fn"
 import {
   ABS,
   AND,
+  DEBUGQUADRANT,
   DIV,
   EXP,
   IMAG,
@@ -16,8 +17,8 @@ import {
   RGB,
 } from "./ops"
 import { typeToGlsl, type GlslValue, type JsValue, type SReal } from "./ty"
-import { coerceType, coerceValueGlsl, listGlsl } from "./ty/coerce"
-import { real } from "./ty/create"
+import { coerceType, coerceValueGlsl, listGlsl, listJs } from "./ty/coerce"
+import { pt, real, vreal } from "./ty/create"
 import { garbageValueGlsl } from "./ty/garbage"
 
 export interface PropsJs {
@@ -35,7 +36,36 @@ export function defaultProps(): PropsGlsl {
   }
 }
 
-export function js(node: Node, props: PropsGlsl): JsValue {
+function jsCall(
+  name: string,
+  args: Node[],
+  _asMethod: boolean,
+  props: PropsJs,
+): JsValue {
+  switch (name) {
+    case "rgb":
+      return RGB.js(...evaln(3))
+    case "exp":
+      return EXP.js(...evaln(1))
+    case "ln":
+      return EXP.js(...evaln(1))
+  }
+
+  throw new Error(`The '${name}' function is not supported in shaders yet.`)
+
+  function evald() {
+    return args.map((arg) => js(arg, props))
+  }
+
+  function evaln<N extends number>(value: N): Build<JsValue, N> {
+    if (args.length == value) {
+      return evald() as any
+    }
+    throw new Error(`The '${name}' function needs ${value} arguments.`)
+  }
+}
+
+export function js(node: Node, props: PropsJs): JsValue {
   switch (node.type) {
     case "num":
       return {
@@ -47,31 +77,138 @@ export function js(node: Node, props: PropsGlsl): JsValue {
         ),
       }
     case "op":
-    case "void":
-    case "var":
-    case "num16":
+      if (node.b) {
+        switch (node.kind) {
+          case "base":
+            return js(node.a, {
+              ...props,
+              base: asNumericBase(js(node.b, props)),
+            })
+          case ".":
+            if (node.b.type == "var" && !node.b.sub && node.b.kind == "var") {
+              const value =
+                node.b.value == "x" || node.b.value == "real" ?
+                  REAL.js(js(node.a, props))
+                : node.b.value == "y" || node.b.value == "imag" ?
+                  IMAG.js(js(node.a, props))
+                : null
+
+              if (value == null) {
+                break
+              }
+
+              if (node.b.sup) {
+                return POW.js(value, js(node.b.sup, props))
+              } else {
+                return value
+              }
+            }
+        }
+        const op = OPS[node.kind]
+        if (op) {
+          return op.js(js(node.a, props), js(node.b, props))
+        }
+      }
+      break
     case "group":
+      if (node.lhs == "(" && node.rhs == ")") {
+        return js(node.value, props)
+      }
+      if (node.lhs == "[" && node.rhs == "]") {
+        const args = commalist(node.value).map((item) => js(item, props))
+        if (args.length == 0) {
+          return {
+            type: "real",
+            list: true,
+            value: [],
+          }
+        }
+        if (args.every((x) => x.list === false)) {
+          return listJs(args)
+        }
+        throw new Error("Cannot store a list inside another list.")
+      }
+      if (node.lhs == "|" && node.rhs == "|") {
+        return ABS.js(js(node.value, props))
+      }
+      break
+    case "call":
+      if (
+        !node.on &&
+        node.name.type == "var" &&
+        node.name.kind == "prefix" &&
+        !node.name.sub &&
+        !node.name.sup
+      ) {
+        const args = fnargs(node.args)
+        if (node.on) {
+          args.unshift(node.on)
+        }
+        return jsCall(node.name.value, args, !!node.on, props)
+      }
+      break
+    case "juxtaposed":
+      return MUL.js(js(node.a, props), js(node.b, props))
+    case "var": {
+      if (node.sub) break
+
+      const value: JsValue | null =
+        node.value == "p" ?
+          (() => {
+            throw new Error("Cannot access point coordinates outside a shader.")
+          })()
+        : node.value == "π" ? vreal(Math.PI)
+        : node.value == "τ" ? vreal(2 * Math.PI)
+        : node.value == "e" ? vreal(Math.E)
+        : node.value == "i" ?
+          { type: "complex", value: pt(real(0), real(1)), list: false }
+        : node.value == "∞" ? vreal(Infinity)
+        : node.value == "true" ? { type: "bool", value: true, list: false }
+        : node.value == "false" ? { type: "bool", value: false, list: false }
+        : null
+
+      if (value) {
+        if (node.sup) {
+          return POW.js(value, js(node.sup, props))
+        } else {
+          return value
+        }
+      }
+
+      break
+    }
+    case "frac":
+      return DIV.js(js(node.a, props), js(node.b, props))
+    case "raise":
+      return POW.js(js(node.base, props), js(node.exponent, props))
+    case "cmplist":
+      return node.ops
+        .map((op, i) => {
+          const a = js(node.items[i]!, props)
+          const b = js(node.items[i + 1]!, props)
+          return opCmp(op).js(a, b)
+        })
+        .reduce((a, b) => AND.js(a, b))
+    case "piecewise":
+      throw new Error("Piecewises are not supported outside of shaders yet.")
+    case "void":
+    case "num16":
     case "sub":
     case "sup":
-    case "raise":
-    case "call":
-    case "frac":
     case "mixed":
     case "for":
-    case "piecewise":
     case "matrix":
     case "bigsym":
     case "big":
     case "root":
     case "index":
-    case "juxtaposed":
     case "commalist":
     case "factorial":
     case "error":
     case "punc":
   }
 
-  throw new Error(`Node type '${node.type}' is not implemented yet`)
+  throw new Error(`Node type '${node.type}' is not implemented for shaders yet`)
 }
 
 function glslCall(
@@ -87,6 +224,8 @@ function glslCall(
       return EXP.glsl(props.ctx, ...evaln(1))
     case "ln":
       return EXP.glsl(props.ctx, ...evaln(1))
+    case "debugquadrant":
+      return DEBUGQUADRANT.glsl(props.ctx, ...evaln(1))
   }
 
   throw new Error(`The '${name}' function is not supported in shaders yet.`)

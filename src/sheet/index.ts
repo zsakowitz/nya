@@ -1,12 +1,5 @@
-import {
-  defaultProps,
-  display,
-  getOutputBase,
-  go,
-  type Base,
-  type Value,
-} from "../eval/eval"
-import { defaultProps as defaultProps2, glsl } from "../eval/eval2"
+import { defaultProps as defaultProps2, glsl, js } from "../eval/eval2"
+import type { JsValue } from "../eval/ty"
 import { Field } from "../field/field"
 import { FieldInert } from "../field/field-inert"
 import { h, hx, p, svgx } from "../field/jsx"
@@ -171,10 +164,12 @@ export class Expr {
     )
   }
 
-  displayEval(value: Value, base: Base) {
+  displayEval(value: JsValue) {
     this.elValue.el.classList.remove("hidden")
     this.elValueError.classList.add("hidden")
-    display(this.elValue, value, base)
+    this.elValue.el.textContent = JSON.stringify(value)
+    // this.elValue.block
+    // display(this.elValue, value, base)
   }
 
   displayError(reason: Error) {
@@ -200,9 +195,8 @@ export class Expr {
     this.sheet.elTokens.textContent = JSON.stringify(node, undefined, 2)
 
     try {
-      const value = go(node, defaultProps)
-      const base = getOutputBase(node, defaultProps)
-      this.displayEval(value, base)
+      const value = js(node, defaultProps2())
+      this.displayEval(value)
     } catch (e) {
       this.displayError(e instanceof Error ? e : new Error(String(e)))
     }

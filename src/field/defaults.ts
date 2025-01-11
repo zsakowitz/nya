@@ -272,6 +272,9 @@ export const words = new WordMap<WordKind>([
   // Boolean utilities
   ["false", "var"],
   ["true", "var"],
+
+  // Debug utilities
+  ["debugquadrant", "prefix"],
 ]).frozen()
 
 export const options: Options = Object.freeze<Options>({
