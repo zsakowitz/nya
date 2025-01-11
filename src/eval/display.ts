@@ -300,7 +300,11 @@ export function display(field: FieldInert, value: JsValue, base: SReal) {
     case "complex":
       displayValue(cursor, value, base, displayComplex)
       break
-    case "color":
     case "bool":
+      displayValue(cursor, value, base, (cursor, value) => {
+        new CmdWord(value + "", "var").insertAt(cursor, L)
+      })
+      break
+    case "color":
   }
 }

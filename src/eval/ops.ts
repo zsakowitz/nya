@@ -117,6 +117,32 @@ export const MUL = fnNum<[0, 0]>(
   },
 )
 
+export const CROSS = fnNum<[0, 0]>(
+  "cross product",
+  {
+    approx([a, b]) {
+      return approx(a * b)
+    },
+    exact(a, b) {
+      const s1 = a.n * b.n
+      if (!safe(s1)) return null
+      const s2 = a.d * b.d
+      return frac(s1, s2)
+    },
+    point() {
+      throw new Error("Cannot calculate a cross product of complex numbers.")
+    },
+  },
+  {
+    real(_, a, b) {
+      return `(${a} * ${b})`
+    },
+    complex() {
+      throw new Error("Cannot calculate a cross product of complex numbers.")
+    },
+  },
+)
+
 export const ODOT = fnNum<[0, 0]>(
   "⊙",
   {
@@ -727,6 +753,7 @@ export const OPS_BINARY: Partial<Record<PuncInfix | PuncPm, Fn<[0, 0]>>> = {
   "\\or ": OR,
   mod: MOD,
   "\\odot ": ODOT,
+  "\\times ": CROSS,
 }
 
 export const OPS_UNARY: Partial<Record<PuncUnary | PuncPm, Fn<[0]>>> = {
