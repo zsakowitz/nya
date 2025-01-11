@@ -20,7 +20,7 @@ export type PuncInfix =
   | "base"
   | "while"
   | "until"
-  | "initial"
+  | "from"
   | "\\and "
   | "\\or "
   | ".."
@@ -108,7 +108,7 @@ export const PRECEDENCE_MAP = {
   with: Precedence.WordInfix,
   until: Precedence.WordInfix,
   while: Precedence.WordInfix,
-  initial: Precedence.WordInfix,
+  from: Precedence.WordInfix,
 } satisfies Record<PuncBinaryStr, number> & {
   // TypeScript really needs to learn that __proto__ is special, but it hasn't yet.
   // And probably never will. Even though it's standardized.

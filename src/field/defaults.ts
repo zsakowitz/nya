@@ -282,7 +282,7 @@ export const words = new WordMap<WordKind>([
   ["trace", "magicprefix"],
   ["while", "infix"],
   ["until", "infix"],
-  ["initial", "infix"],
+  ["from", "infix"],
 ]).frozen()
 
 export const options: Options = Object.freeze<Options>({

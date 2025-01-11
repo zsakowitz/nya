@@ -18,8 +18,8 @@ export function iterateJs(data: Iterate, props: PropsJs): JsValue {
   }
 
   let value: JsValue =
-    data.initial ?
-      js(data.initial, props)
+    data.from ?
+      js(data.from, props)
     : { type: "real", list: false, value: frac(0, 1) }
 
   for (let i = 0; i < limit; i++) {
@@ -67,26 +67,26 @@ export function iterateGlsl(data: Iterate, props: PropsGlsl): GlslValue {
     throw new Error("'iterate' expressions must have a finite limit.")
   }
 
-  const initial: GlslValue =
-    data.initial ?
-      glsl(data.initial, props)
+  const from: GlslValue =
+    data.from ?
+      glsl(data.from, props)
     : { expr: "0.0", type: "real", list: false }
 
   const name: GlslValue = {
     expr: `_nya_var_${data.name}`,
-    list: initial.list,
-    type: initial.type,
+    list: from.list,
+    type: from.type,
   }
 
   const index = props.ctx.name()
 
-  props.ctx.push`${typeToGlsl(initial)} ${name.expr} = ${initial.expr};\n`
+  props.ctx.push`${typeToGlsl(from)} ${name.expr} = ${from.expr};\n`
   props.ctx.push`for (int ${index} = 0; ${index} < ${limit}; ${index}++) {\n`
   props.bindings.with(data.name, name, () => {
     const next = glsl(data.expr, props)
     if (next.list != name.list || next.type != name.type) {
       throw new Error(
-        "The iteration expression and initial value must be the same type.",
+        "The iteration expression and initial value must be the same type in shaders.",
       )
     }
     props.ctx.push`${name.expr} = ${next.expr};\n`

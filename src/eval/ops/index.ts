@@ -230,8 +230,9 @@ export const MOD = fnNum<[0, 0]>(
   {
     real(ctx, a, b) {
       ctx.declare`float _helper_mod(float a, float b) {
-  return (a % b + b) % b
-}`
+  return mod(mod(a, b) + b, b);
+}
+`
       return `_helper_mod(${a}, ${b})`
     },
     complex() {
@@ -537,9 +538,34 @@ export const RGB = fnDist<[0, 0, 0]>("rgb", {
   },
   glsl(_, r, g, b) {
     if (r.type == "real" && g.type == "real" && b.type == "real") {
-      return `vec3(${r.expr}, ${g.expr}, ${b.expr})`
+      return `(vec3(${r.expr}, ${g.expr}, ${b.expr}) / 255.0)`
     }
     return null
+  },
+})
+
+export const HSV = fnDist<[0, 0, 0]>("hsv", {
+  ty(h, s, v) {
+    if (h.type == "real" && s.type == "real" && v.type == "real") {
+      return "color"
+    }
+    return null
+  },
+  js(h, s, v) {
+    throw new Error("")
+  },
+  glsl(ctx, h, s, v) {
+    if (!(h.type == "real" && s.type == "real" && v.type == "real")) {
+      return null
+    }
+    ctx.declare`const vec4 _helper_hsv_const = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+
+vec3 _helper_hsv(vec3 c) {
+  vec3 p = abs(fract(c.xxx + _helper_hsv_const.xyz) * 6.0 - _helper_hsv_const.www);
+  return c.z * mix(_helper_hsv_const.xxx, clamp(p - _helper_hsv_const.xxx, 0.0, 1.0), c.y);
+}
+`
+    return `_helper_hsv(vec3(${h.expr}, ${s.expr}, ${v.expr}) / vec3(360.0, 1.0, 1.0))`
   },
 })
 
@@ -575,6 +601,67 @@ export const ABS = fnDist<[0]>("abs", {
         return `length(${a.expr})`
       case "bool":
         return `(${a.expr} ? 1.0 : 0.0/0.0)`
+      case "color":
+        return null
+    }
+  },
+})
+
+export const ANGLE = fnDist<[0]>("angle", {
+  ty(a) {
+    if (a.type == "color") {
+      return null
+    }
+
+    return "real"
+  },
+  js(a) {
+    switch (a.type) {
+      case "real":
+        if (isNaN(num(a.value))) {
+          return vapprox(NaN)
+        } else if (num(a.value) < 0) {
+          return vapprox(Math.PI)
+        } else {
+          return vfrac(0, 1)
+        }
+      case "complex":
+        return vapprox(Math.atan2(num(a.value.y), num(a.value.x)))
+      case "bool":
+        if (a.value) {
+          return vfrac(0, 1)
+        } else {
+          return vapprox(NaN)
+        }
+      case "color":
+        return null
+    }
+  },
+  glsl(ctx, a) {
+    switch (a.type) {
+      case "real":
+        ctx.declare`float _helper_angle(float x) {
+  if (isnan(x)) {
+    return 0.0/0.0;
+  } else if (x < 0.0) {
+    return 3.141592653589793;
+  } else {
+    return 0.0;
+  }
+}
+`
+        return `_helper_angle(${a.expr})`
+      case "complex":
+        ctx.declare`float _helper_angle(vec2 x) {
+  if (x.x == 0.0) {
+    return 0.0;
+  }
+  return atan(x.y, x.x);
+}
+`
+        return `length(${a.expr})`
+      case "bool":
+        return `(${a.expr} ? 0.0 : 0.0/0.0)`
       case "color":
         return null
     }
@@ -784,10 +871,12 @@ export const OPS_UNARY: Partial<Record<PuncUnary | PuncPm, Fn<[0]>>> = {
 const NAMED_FNS: Record<string, [number, Fn<0[]>]> = {
   debugquadrant: [1, DEBUGQUADRANT],
   rgb: [3, RGB],
+  hsv: [3, HSV],
   real: [1, REAL],
   imag: [1, IMAG],
   exp: [1, EXP],
   ln: [1, LN],
+  angle: [1, ANGLE],
 }
 
 export function getNamedFn(name: string) {

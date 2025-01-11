@@ -28,7 +28,7 @@ export interface Iterate {
   name: string
   expr: Node
   limit: Node
-  initial: Node | undefined
+  from: Node | undefined
   condition: { type: "while" | "until"; value: Node } | undefined
 }
 
@@ -47,7 +47,7 @@ function parseIterate({
     throw new Error("'iterate' expressions cannot take subscripts.")
   }
 
-  let initial: Iterate["initial"]
+  let from: Iterate["from"]
   let condition: Iterate["condition"]
 
   loop: while (contents.type == "op") {
@@ -56,14 +56,14 @@ function parseIterate({
     switch (contents.kind) {
       case "\\to ":
         break loop
-      case "initial":
-        if (initial) {
+      case "from":
+        if (from) {
           throw new Error(
-            "'iterate' expressions can only have one 'initial ...' clause.",
+            "'iterate' expressions can only have one 'from ...' clause.",
           )
         }
 
-        initial = contents.b
+        from = contents.b
         contents = contents.a
         continue
       case "while":
@@ -83,7 +83,7 @@ function parseIterate({
     }
 
     throw new Error(
-      "'iterate' expressions look like 'iterate z->z²+c', with optional 'initial ...' and 'while ...' clauses afterwards.",
+      "'iterate' expressions look like 'iterate z->z²+c', with optional 'from ...' and 'while ...' clauses afterwards.",
     )
   }
 
@@ -103,7 +103,7 @@ function parseIterate({
     name: id(contents.a),
     expr: contents.b,
     limit,
-    initial,
+    from,
     condition,
   }
 }

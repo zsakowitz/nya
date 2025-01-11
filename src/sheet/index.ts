@@ -203,7 +203,7 @@ export class Expr {
       const frag = `precision mediump float;
 varying vec2 v_coords;
 ${props.ctx.helpers.helpers}void main() {
-${props.ctx.block}gl_FragColor = vec4(${expr} / 255.0, 1);
+${props.ctx.block}gl_FragColor = vec4(vec3(${expr}), 1);
 }`
       this.sheet.elGlsl.textContent = frag
       this.sheet.regl.clear({
