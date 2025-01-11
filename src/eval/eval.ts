@@ -195,6 +195,8 @@ export function js(node: Node, props: PropsJs): JsValue {
       } else {
         return SQRT.js(js(node.contents, props))
       }
+    case "error":
+      throw new Error(node.reason)
     case "void":
     case "num16":
     case "sub":
@@ -207,7 +209,7 @@ export function js(node: Node, props: PropsJs): JsValue {
     case "index":
     case "commalist":
     case "factorial":
-    case "error":
+
     case "punc":
   }
 
@@ -412,6 +414,8 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
 
       return { ...ret, expr: name }
     }
+    case "error":
+      throw new Error(node.reason)
     case "void":
     case "num16":
     case "sub":
@@ -425,7 +429,6 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
     case "index":
     case "commalist":
     case "factorial":
-    case "error":
     case "punc":
   }
 
