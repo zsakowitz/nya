@@ -194,12 +194,6 @@ export class Expr {
   static id = 0
 
   debug() {
-    const myId = ++Expr.id
-    requestAnimationFrame(() => {
-      if (myId == Expr.id) {
-        this.debug()
-      }
-    })
     const node = this.field.block.ast()
 
     this.sheet.elTokens.textContent = JSON.stringify(node, undefined, 2)
@@ -225,7 +219,7 @@ ${props.ctx.block}gl_FragColor = vec4(${expr} / 255.0, 1);
         color: [0, 0, 0, 1],
         depth: 1,
       })
-      this.sheet.regl({
+      const program = this.sheet.regl({
         frag,
 
         vert: `precision mediump float;
@@ -246,6 +240,15 @@ void main () {
             [-1, -1],
             [1, 1],
           ],
+          a_coords: this.sheet.regl.prop("a_coords"),
+        },
+
+        count: 6,
+      })
+      const myId = ++Expr.id
+      const draw = () => {
+        if (myId != Expr.id) return
+        program({
           a_coords: [
             [this.sheet.paper.bounds().xmin, this.sheet.paper.bounds().ymax],
             [this.sheet.paper.bounds().xmin, this.sheet.paper.bounds().ymin],
@@ -254,14 +257,10 @@ void main () {
             [this.sheet.paper.bounds().xmin, this.sheet.paper.bounds().ymin],
             [this.sheet.paper.bounds().xmax, this.sheet.paper.bounds().ymax],
           ],
-        },
-
-        uniforms: {
-          color: [1, 0, 0, 1],
-        },
-
-        count: 6,
-      })()
+        })
+        requestAnimationFrame(draw)
+      }
+      draw()
 
       this.sheet.elGlsl.classList.remove(
         "text-red-800",
@@ -378,13 +377,13 @@ export class Sheet {
         elExpressions,
       ),
       h(
-        "grid grid-cols-1 grid-rows-2 relative",
-        this.paper.el,
+        "relative",
         (this.elShaderCanvas = hx("canvas", {
-          width: "400",
+          width: "200",
           height: "400",
-          class: "size-full",
+          class: "absolute inset-0 size-full pointer-events-none",
         })),
+        (this.paper.el.classList.add("absolute", "inset-0"), this.paper.el),
         h(
           "absolute block top-0 bottom-0 left-0 w-1 from-slate-300/50 to-transparent bg-gradient-to-r",
         ),
