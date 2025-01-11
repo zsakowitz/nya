@@ -22,6 +22,7 @@ import {
   onWheel,
   Paper,
 } from "./paper"
+import regl = require("regl")
 
 export interface Options {
   field: FieldOptions
@@ -204,15 +205,49 @@ export class Expr {
     }
 
     try {
+      this.sheet.regl
       const props = defaultProps2()
       const { expr, ...value } = glsl(node, props)
-      this.sheet.elGlsl.textContent =
-        JSON.stringify(value, undefined, 2) +
-        "\n" +
-        props.ctx.helpers.helpers +
-        props.ctx.block +
-        "\n" +
-        expr
+      const frag = `
+          precision mediump float;
+${props.ctx.helpers.helpers}void main() {
+${props.ctx.block}gl_FragColor = vec4(${expr}, 0.5);
+}`
+      this.sheet.elGlsl.textContent = "frag"
+      this.sheet.regl.clear({
+        color: [0, 0, 0, 1],
+        depth: 1,
+      })
+      this.sheet.regl({
+        frag: `
+  precision mediump float;
+  uniform vec4 color;
+  void main () {
+    gl_FragColor = color;
+  }`,
+
+        vert: `
+  precision mediump float;
+  attribute vec2 position;
+  void main () {
+    gl_Position = vec4(position, 0, 1);
+  }`,
+
+        attributes: {
+          position: [
+            [-1, 0],
+            [0, -1],
+            [1, 1],
+          ],
+        },
+
+        uniforms: {
+          color: [1, 0, 0, 1],
+        },
+
+        count: 3,
+      })()
+
       this.sheet.elGlsl.classList.remove(
         "text-red-800",
         "font-sans",
@@ -242,6 +277,9 @@ export class Sheet {
   readonly elLogo
   readonly elTokens
   readonly elGlsl
+  readonly elShaderCanvas
+
+  readonly regl
 
   constructor(
     readonly exts: Exts,
@@ -325,8 +363,13 @@ export class Sheet {
         elExpressions,
       ),
       h(
-        "flex relative",
+        "grid grid-cols-1 grid-rows-2 relative",
         this.paper.el,
+        (this.elShaderCanvas = hx("canvas", {
+          width: "400",
+          height: "400",
+          class: "size-full",
+        })),
         h(
           "absolute block top-0 bottom-0 left-0 w-1 from-slate-300/50 to-transparent bg-gradient-to-r",
         ),
@@ -347,6 +390,8 @@ export class Sheet {
         ),
       )),
     )
+
+    this.regl = regl(this.elShaderCanvas)
   }
 
   checkIndices() {
