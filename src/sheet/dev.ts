@@ -10,6 +10,7 @@ import { Expr, Sheet } from "./index.js"
 const sheet = new Sheet(exts, { field: options })
 document.body.appendChild(sheet.el)
 
+new Expr(sheet).field.typeEach`r g b ( 1 2 8 , 2 5 5 , 0 )`
 new Expr(sheet).field.typeEach`e ^ i p i + 1`
 new Expr(sheet).field.typeEach`2 + 3`
 new Expr(sheet).field.typeEach`( 4 - 5 ) \\odot Enter ( 3 + 9 i )`
