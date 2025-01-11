@@ -1,8 +1,18 @@
 import type { PuncCmp, PuncInfix, PuncPm } from "./ast/token"
 import { fnBool, fnDist, fnNum, type Fn, type GlslContext } from "./fn"
 import { isZero } from "./ty/check"
-import { coerceTy, coerceValGlsl, listJs } from "./ty/coerce"
-import { approx, bool, frac, num, pt, real } from "./ty/create"
+import { coerceTy, coerceValGlsl, coerceValJs, listJs } from "./ty/coerce"
+import {
+  approx,
+  bool,
+  frac,
+  num,
+  pt,
+  real,
+  vapprox,
+  vfrac,
+  vreal,
+} from "./ty/create"
 import { hypot, safe } from "./util"
 
 export const ADD = fnNum<[0, 0]>(
@@ -303,7 +313,7 @@ export const REAL = fnDist<[0]>("real", {
   js(a) {
     switch (a.type) {
       case "bool":
-        return { type: "real", value: a.value ? real(1) : real(NaN) }
+        return vreal(a.value ? 1 : NaN)
       case "real":
         return a
       case "complex":
@@ -387,6 +397,48 @@ export const RGB = fnDist<[0, 0, 0]>("rgb", {
       return `vec3(${r.expr}, ${g.expr}, ${b.expr})`
     }
     return null
+  },
+})
+
+export const ABS = fnDist<[0]>("abs", {
+  ty(a, b) {
+    if (!a || b) {
+      return null
+    }
+
+    if (a.type == "color") {
+      return null
+    }
+
+    return "real"
+  },
+  js(a) {
+    switch (a.type) {
+      case "real":
+        if (a.value.type == "exact") {
+          return vfrac(Math.abs(a.value.n), a.value.d)
+        } else {
+          return vapprox(Math.abs(a.value.value))
+        }
+      case "complex":
+        return vapprox(hypot(num(a.value.x), num(a.value.y)))
+      case "bool":
+        return coerceValJs(a, { type: "real" })
+      case "color":
+        return null
+    }
+  },
+  glsl(_, a) {
+    switch (a.type) {
+      case "real":
+        return `abs(${a.expr})`
+      case "complex":
+        return `length(${a.expr})`
+      case "bool":
+        return `(${a.expr} ? 1.0 : 0.0/0.0)`
+      case "color":
+        return null
+    }
   },
 })
 
