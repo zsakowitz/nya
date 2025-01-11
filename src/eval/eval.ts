@@ -18,7 +18,7 @@ import {
   REAL,
   SQRT,
 } from "./ops"
-import { iterateJs } from "./ops/iterate"
+import { iterateGlsl, iterateJs } from "./ops/iterate"
 import { typeToGlsl, type GlslValue, type JsValue, type SReal } from "./ty"
 import { coerceType, coerceValueGlsl, listGlsl, listJs } from "./ty/coerce"
 import { real, vreal } from "./ty/create"
@@ -443,6 +443,15 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
         return POW.glsl(props.ctx, value, glsl(node.sup, props))
       }
 
+      const value = props.bindings.get(id(node))
+      if (value) {
+        if (node.sup) {
+          return POW.glsl(props.ctx, value, glsl(node.sup, props))
+        } else {
+          return value
+        }
+      }
+
       throw new Error(`The variable '${node.value}' is not defined.`)
     }
     case "frac":
@@ -512,6 +521,10 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
     case "error":
       throw new Error(node.reason)
     case "magicvar":
+      if (node.value == "iterate") {
+        return iterateGlsl(parseIterate(node), props)
+      }
+      break
     case "void":
     case "num16":
     case "sub":
