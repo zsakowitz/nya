@@ -70,8 +70,8 @@ export const Precedence = Object.freeze({
   DoubleStruckRight:  4, // x => 4x
   DoubleStruckBiDi:   3, // a <=> b
   Action:             2, // a -> a + 1
-  WordInfix:          1, // 23 base 5
-  Comma:              0, // 2, 3
+  Comma:              1, // 2, 3
+  WordInfix:          0, // 3 base 4   // commas and word infixes are special-cased; they're weird
 })
 
 /** A map from binary operators to their precedences. */
@@ -101,12 +101,12 @@ export const PRECEDENCE_MAP = {
   "\\or ": Precedence.BoolOr,
   "\\Rightarrow ": Precedence.DoubleStruckRight,
   "\\to ": Precedence.Action,
+  ",": Precedence.Comma,
   base: Precedence.WordInfix,
   for: Precedence.WordInfix,
   with: Precedence.WordInfix,
   until: Precedence.WordInfix,
   while: Precedence.WordInfix,
-  ",": Precedence.Comma,
 } satisfies Record<PuncBinaryStr, number> & {
   // TypeScript really needs to learn that __proto__ is special, but it hasn't yet.
   // And probably never will. Even though it's standardized.
@@ -118,9 +118,9 @@ export const PRECEDENCE_MAP = {
 /** Gets the precedence of some operator. */
 export function getPrecedence(op: PuncBinary["value"]) {
   if (typeof op == "string") {
-    return PRECEDENCE_MAP[op] ?? Precedence.WordInfix
+    return PRECEDENCE_MAP[op] ?? Precedence.Comma
   } else {
-    return PRECEDENCE_MAP[op.dir] ?? Precedence.WordInfix
+    return PRECEDENCE_MAP[op.dir] ?? Precedence.Comma
   }
 }
 
@@ -151,6 +151,15 @@ export type PuncPrefix =
 /** A binary operation derived from infix operators. */
 export type OpBinary = Exclude<PuncInfix | PuncPm, ",">
 
+/** A variable or word in the AST. */
+export type Var = {
+  type: "var"
+  value: string
+  kind: WordKind
+  sub?: Node
+  sup?: Node
+}
+
 /**
  * A part of the AST. The intermediate representation is so close to the final
  * representation that they're essentially merged.
@@ -158,7 +167,7 @@ export type OpBinary = Exclude<PuncInfix | PuncPm, ",">
 export type Node =
   | { type: "void" }
   | { type: "num"; value: string; sub?: Node }
-  | { type: "var"; value: string; kind: WordKind; sub?: Node; sup?: Node }
+  | Var
   | { type: "magicvar"; value: string; sub?: Node; sup?: Node; contents: Node }
   | { type: "num16"; value: string }
   | { type: "group"; lhs: ParenLhs; rhs: ParenRhs; value: Node }

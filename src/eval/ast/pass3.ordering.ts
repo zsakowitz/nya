@@ -1,4 +1,4 @@
-import { getPrecedence, type Node, type PuncBinary } from "./token"
+import { getPrecedence, Precedence, type Node, type PuncBinary } from "./token"
 
 export function pass3_ordering(tokens: Node[]): Node {
   if (tokens.length == 0) {
@@ -85,6 +85,21 @@ export function pass3_ordering(tokens: Node[]): Node {
         stack.push({ type: "commalist", items: [a, b] })
       }
 
+      continue
+    }
+
+    if (
+      getPrecedence(node.value) == Precedence.WordInfix &&
+      a.type == "commalist" &&
+      a.items.length > 1
+    ) {
+      stack.push(a)
+      a.items[a.items.length - 1] = {
+        type: "op",
+        kind: node.value,
+        a: a.items[a.items.length - 1]!,
+        b,
+      }
       continue
     }
 

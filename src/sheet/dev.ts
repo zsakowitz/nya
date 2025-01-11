@@ -10,6 +10,8 @@ import { Expr, Sheet } from "./index.js"
 const sheet = new Sheet(exts, { field: options })
 document.body.appendChild(sheet.el)
 
+new Expr(sheet).field.typeEach`2 , 3 w i t h 4 , 5 b a s e 7 , 8`
+
 new Expr(sheet).field
   .typeEach`p i e c e s r g b ( 1 2 8 , 2 5 5 , 0 ) ArrowRight | p | < 3 ArrowDown p . y < 4 ; r g b ( 0 , 2 5 5 , 1 2 8 ) ArrowUp r g b ( 2 5 5 , 2 5 5 , 0 )`
 

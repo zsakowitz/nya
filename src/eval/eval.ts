@@ -1,6 +1,8 @@
 import { commalist, fnargs } from "./ast/collect"
 import type { Node } from "./ast/token"
 import { asNumericBase, parseNumberGlsl, parseNumberJs } from "./base"
+import { Bindings } from "./binding"
+import { BUILTINS } from "./builtins"
 import { GlslContext, GlslHelpers } from "./fn"
 import {
   ABS,
@@ -18,21 +20,52 @@ import {
 } from "./ops"
 import { typeToGlsl, type GlslValue, type JsValue, type SReal } from "./ty"
 import { coerceType, coerceValueGlsl, listGlsl, listJs } from "./ty/coerce"
-import { pt, real, vreal } from "./ty/create"
+import { real, vreal } from "./ty/create"
 import { garbageValueGlsl } from "./ty/garbage"
 
-export interface PropsJs {
+// export interface Iterate {
+//   name: string
+//   expr: Node
+//   limit: Node
+//   initial: Node
+// }
+//
+// function parseIterate({
+//   contents,
+//   sub,
+//   sup,
+// }: Extract<Node, { type: "magicvar" }>) {
+//   if (!sup) {
+//     throw new Error(
+//       "Maximum iteration count should be a superscript (try iterate⁵⁰).",
+//     )
+//   }
+//
+//   if (sub && !sup) {
+//     throw new Error("Cannot ")
+//   }
+// }
+
+export interface Props {
   base: SReal
 }
 
-export interface PropsGlsl extends PropsJs {
+export interface PropsJs extends Props {
+  /** JS bindings must be values. */
+  bindings: Bindings<JsValue>
+}
+
+export interface PropsGlsl extends Props {
   ctx: GlslContext
+  /** GLSL bindings must contain variable names and be properly typed. */
+  bindings: Bindings<GlslValue>
 }
 
 export function defaultProps(): PropsGlsl {
   return {
     base: real(10),
     ctx: new GlslContext(new GlslHelpers()),
+    bindings: new Bindings(),
   }
 }
 
@@ -145,32 +178,17 @@ export function js(node: Node, props: PropsJs): JsValue {
     case "juxtaposed":
       return MUL.js(js(node.a, props), js(node.b, props))
     case "var": {
-      if (node.sub) break
+      builtin: {
+        if (node.sub) break builtin
 
-      const value: JsValue | null =
-        node.value == "p" ?
-          (() => {
-            throw new Error("Cannot access point coordinates outside a shader.")
-          })()
-        : node.value == "π" ? vreal(Math.PI)
-        : node.value == "τ" ? vreal(2 * Math.PI)
-        : node.value == "e" ? vreal(Math.E)
-        : node.value == "i" ?
-          { type: "complex", value: pt(real(0), real(1)), list: false }
-        : node.value == "∞" ? vreal(Infinity)
-        : node.value == "true" ? { type: "bool", value: true, list: false }
-        : node.value == "false" ? { type: "bool", value: false, list: false }
-        : null
+        const value = BUILTINS[node.value]?.js
+        if (!value) break builtin
 
-      if (value) {
-        if (node.sup) {
-          return POW.js(value, js(node.sup, props))
-        } else {
-          return value
-        }
+        if (!node.sup) return value
+        return POW.js(value, js(node.sup, props))
       }
 
-      throw new Error(`The variable '${node.value}' is not usable yet.`)
+      throw new Error(`The variable '${node.value}' is not defined.`)
     }
     case "frac":
       return DIV.js(js(node.a, props), js(node.b, props))
@@ -243,7 +261,9 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
         list: false,
         expr: parseNumberGlsl(
           node.value,
-          node.sub ? asNumericBase(js(node.sub, props)) : props.base,
+          node.sub ?
+            asNumericBase(js(node.sub, { ...props, bindings: new Bindings() }))
+          : props.base,
         ),
       }
     case "op":
@@ -258,7 +278,13 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
         case "base":
           return glsl(node.a, {
             ...props,
-            base: asNumericBase(js(node.b, { ...props, base: real(10) })),
+            base: asNumericBase(
+              js(node.b, {
+                ...props,
+                base: real(10),
+                bindings: new Bindings(),
+              }),
+            ),
           })
         case ".":
           if (node.b.type == "var" && !node.b.sub && node.b.kind == "var") {
@@ -325,30 +351,17 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
     case "juxtaposed":
       return MUL.glsl(props.ctx, glsl(node.a, props), glsl(node.b, props))
     case "var": {
-      if (node.sub) break
+      builtin: {
+        if (node.sub) break builtin
 
-      const value: GlslValue | null =
-        node.value == "p" ? { type: "complex", expr: "v_coords", list: false }
-        : node.value == "π" ? { type: "real", expr: Math.PI + "", list: false }
-        : node.value == "τ" ?
-          { type: "real", expr: 2 * Math.PI + "", list: false }
-        : node.value == "e" ? { type: "real", expr: Math.E + "", list: false }
-        : node.value == "i" ?
-          { type: "complex", expr: "vec2(0, 1)", list: false }
-        : node.value == "∞" ? { type: "real", expr: "(1.0/0.0)", list: false }
-        : node.value == "true" ? { type: "bool", expr: "true", list: false }
-        : node.value == "false" ? { type: "bool", expr: "false", list: false }
-        : null
+        const value = BUILTINS[node.value]?.glsl
+        if (!value) break builtin
 
-      if (value) {
-        if (node.sup) {
-          return POW.glsl(props.ctx, value, glsl(node.sup, props))
-        } else {
-          return value
-        }
+        if (!node.sup) return value
+        return POW.glsl(props.ctx, value, glsl(node.sup, props))
       }
 
-      break
+      throw new Error(`The variable '${node.value}' is not defined.`)
     }
     case "frac":
       return DIV.glsl(props.ctx, glsl(node.a, props), glsl(node.b, props))

@@ -289,9 +289,12 @@ export const options: Options = Object.freeze<Options>({
   words,
   exitSubWithOp: true,
   exitSupWithPm: true,
-  subscriptNumberAfter(cmd) {
-    return cmd instanceof CmdSupSub ?
-        cmd[L] instanceof CmdVar && cmd[L].kind == null
-      : cmd instanceof CmdVar && cmd.kind == null
-  },
+  subscriptNumberAfter: (cmd) =>
+    !(
+      cmd.parent?.parent instanceof CmdSupSub &&
+      cmd.parent == cmd.parent.parent.sub
+    ) &&
+    (cmd instanceof CmdSupSub ?
+      cmd[L] instanceof CmdVar && cmd[L].kind == null
+    : cmd instanceof CmdVar && cmd.kind == null),
 })

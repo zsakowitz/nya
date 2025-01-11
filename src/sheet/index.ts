@@ -186,7 +186,16 @@ export class Expr {
   debug() {
     const node = this.field.block.ast()
 
-    this.sheet.elTokens.textContent = JSON.stringify(node, undefined, 2)
+    this.sheet.elTokens.textContent = JSON.stringify(
+      node,
+      (k, v) => {
+        if (typeof v == "object" && v != null && v.type == "num") {
+          return +v.value
+        }
+        return v
+      },
+      2,
+    )
 
     try {
       const props = defaultProps2()
@@ -438,6 +447,7 @@ const REMARKS = [
   "sponsored by zSnout",
   "in awe of the desmos team tbh",
   "where exp(x) was once defined as exp(x)=x 😭",
+  "its order of operations is so cursed",
 ]
 
 const REMARK = REMARKS[Math.floor(REMARKS.length * Math.random())]!
