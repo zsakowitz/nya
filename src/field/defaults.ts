@@ -143,6 +143,7 @@ export const autoCmds = new WordMap<Init>([
   ["raise", OpUpArrow],
   ["plusminus", OpPlusMinus],
   ["minusplus", OpMinusPlus],
+  ["cross", OpTimes],
 
   // Symbols
   ["pi", SymPi],
