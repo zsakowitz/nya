@@ -675,6 +675,49 @@ export const DEBUGQUADRANT = fnDist<[0]>("debugquadrant", {
   },
 })
 
+export const POS = fnNum<[0]>(
+  "+",
+  {
+    approx(_, [a]) {
+      return a
+    },
+    point(a) {
+      return a
+    },
+  },
+  {
+    complex(_, a) {
+      return a
+    },
+    real(_, a) {
+      return a
+    },
+  },
+)
+
+export const NEG = fnNum<[0]>(
+  "-",
+  {
+    approx(a) {
+      return approx(-a)
+    },
+    exact({ n, d }) {
+      return frac(-n, d)
+    },
+    point({ x, y }) {
+      return pt(this.real(x), this.real(y))
+    },
+  },
+  {
+    complex(_, a) {
+      return `(-${a})`
+    },
+    real(_, a) {
+      return `(-${a})`
+    },
+  },
+)
+
 export const OPS_BINARY: Partial<Record<PuncInfix | PuncPm, Fn<[0, 0]>>> = {
   "+": ADD,
   "-": SUB,
@@ -686,7 +729,10 @@ export const OPS_BINARY: Partial<Record<PuncInfix | PuncPm, Fn<[0, 0]>>> = {
   "\\odot ": ODOT,
 }
 
-export const OPS_UNARY: Partial<Record<PuncUnary | PuncPm, Fn<[0]>>> = {}
+export const OPS_UNARY: Partial<Record<PuncUnary | PuncPm, Fn<[0]>>> = {
+  "+": POS,
+  "-": NEG,
+}
 
 const NAMED_FNS: Record<string, [number, Fn<0[]>]> = {
   debugquadrant: [1, DEBUGQUADRANT],

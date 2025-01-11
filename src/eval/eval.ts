@@ -11,6 +11,7 @@ import {
   MUL,
   opCmp,
   OPS_BINARY,
+  OPS_UNARY,
   POW,
   REAL,
   SQRT,
@@ -66,49 +67,44 @@ export function js(node: Node, props: PropsJs): JsValue {
         ),
       }
     case "op":
-      if (node.b) {
-        switch (node.kind) {
-          case "base":
-            return js(node.a, {
-              ...props,
-              base: asNumericBase(js(node.b, props)),
-            })
-          case ".":
-            if (node.b.type == "var" && !node.b.sub && node.b.kind == "var") {
-              const value =
-                node.b.value == "x" || node.b.value == "real" ?
-                  REAL.js(js(node.a, props))
-                : node.b.value == "y" || node.b.value == "imag" ?
-                  IMAG.js(js(node.a, props))
-                : null
-
-              if (value == null) {
-                break
-              }
-
-              if (node.b.sup) {
-                return POW.js(value, js(node.b.sup, props))
-              } else {
-                return value
-              }
-            }
-        }
-        const op = OPS_BINARY[node.kind]
+      if (!node.b) {
+        const op = OPS_UNARY[node.kind]
         if (op) {
-          return op.js(js(node.a, props), js(node.b, props))
-        }
-        throw new Error(`The operator '${node.kind}' is not supported yet.`)
-      } else {
-        switch (node.kind) {
-          case "\\neg ":
-          case "+":
-          case "-":
-          case "\\pm ":
-          case "\\mp ":
-          case "!":
+          return op.js(js(node.a, props))
         }
         throw new Error(`The operator '${node.kind}' is not supported yet.`)
       }
+      switch (node.kind) {
+        case "base":
+          return js(node.a, {
+            ...props,
+            base: asNumericBase(js(node.b, props)),
+          })
+        case ".":
+          if (node.b.type == "var" && !node.b.sub && node.b.kind == "var") {
+            const value =
+              node.b.value == "x" || node.b.value == "real" ?
+                REAL.js(js(node.a, props))
+              : node.b.value == "y" || node.b.value == "imag" ?
+                IMAG.js(js(node.a, props))
+              : null
+
+            if (value == null) {
+              break
+            }
+
+            if (node.b.sup) {
+              return POW.js(value, js(node.b.sup, props))
+            } else {
+              return value
+            }
+          }
+      }
+      const op = OPS_BINARY[node.kind]
+      if (op) {
+        return op.js(js(node.a, props), js(node.b, props))
+      }
+      throw new Error(`The operator '${node.kind}' is not supported yet.`)
     case "group":
       if (node.lhs == "(" && node.rhs == ")") {
         return js(node.value, props)
@@ -249,39 +245,44 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
         ),
       }
     case "op":
-      if (node.b) {
-        switch (node.kind) {
-          case "base":
-            return glsl(node.a, {
-              ...props,
-              base: asNumericBase(js(node.b, props)),
-            })
-          case ".":
-            if (node.b.type == "var" && !node.b.sub && node.b.kind == "var") {
-              const value =
-                node.b.value == "x" || node.b.value == "real" ?
-                  REAL.glsl(props.ctx, glsl(node.a, props))
-                : node.b.value == "y" || node.b.value == "imag" ?
-                  IMAG.glsl(props.ctx, glsl(node.a, props))
-                : null
-
-              if (value == null) {
-                break
-              }
-
-              if (node.b.sup) {
-                return POW.glsl(props.ctx, value, glsl(node.b.sup, props))
-              } else {
-                return value
-              }
-            }
-        }
-        const op = OPS_BINARY[node.kind]
+      if (!node.b) {
+        const op = OPS_UNARY[node.kind]
         if (op) {
-          return op.glsl(props.ctx, glsl(node.a, props), glsl(node.b, props))
+          return op.glsl(props.ctx, glsl(node.a, props))
         }
+        throw new Error(`The operator '${node.kind}' is not supported yet.`)
       }
-      break
+      switch (node.kind) {
+        case "base":
+          return glsl(node.a, {
+            ...props,
+            base: asNumericBase(js(node.b, props)),
+          })
+        case ".":
+          if (node.b.type == "var" && !node.b.sub && node.b.kind == "var") {
+            const value =
+              node.b.value == "x" || node.b.value == "real" ?
+                REAL.glsl(props.ctx, glsl(node.a, props))
+              : node.b.value == "y" || node.b.value == "imag" ?
+                IMAG.glsl(props.ctx, glsl(node.a, props))
+              : null
+
+            if (value == null) {
+              break
+            }
+
+            if (node.b.sup) {
+              return POW.glsl(props.ctx, value, glsl(node.b.sup, props))
+            } else {
+              return value
+            }
+          }
+      }
+      const op = OPS_BINARY[node.kind]
+      if (op) {
+        return op.glsl(props.ctx, glsl(node.a, props), glsl(node.b, props))
+      }
+      throw new Error(`The operator '${node.kind}' is not supported yet.`)
     case "group":
       if (node.lhs == "(" && node.rhs == ")") {
         return glsl(node.value, props)
