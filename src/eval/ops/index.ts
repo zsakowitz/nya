@@ -1,7 +1,7 @@
-import type { PuncCmp, PuncInfix, PuncPm, PuncUnary } from "./ast/token"
-import { fnBool, fnDist, fnNum, type Fn, type GlslContext } from "./fn"
-import { isZero } from "./ty/check"
-import { coerceTy, coerceValGlsl, coerceValJs, listJs } from "./ty/coerce"
+import type { PuncCmp, PuncInfix, PuncPm, PuncUnary } from "../ast/token"
+import { fnBool, fnDist, fnNum, type Fn, type GlslContext } from "../fn"
+import { isZero } from "../ty/check"
+import { coerceTy, coerceValGlsl, coerceValJs, listJs } from "../ty/coerce"
 import {
   approx,
   bool,
@@ -12,8 +12,8 @@ import {
   vapprox,
   vfrac,
   vreal,
-} from "./ty/create"
-import { hypot, safe } from "./util"
+} from "../ty/create"
+import { hypot, safe } from "../util"
 
 export const ADD = fnNum<[0, 0]>(
   "+",

@@ -1,7 +1,7 @@
 import { commalist, fnargs } from "./ast/collect"
 import type { Node } from "./ast/token"
 import { asNumericBase, parseNumberGlsl, parseNumberJs } from "./base"
-import { Bindings } from "./binding"
+import { Bindings, id } from "./binding"
 import { BUILTINS } from "./builtins"
 import { GlslContext, GlslHelpers } from "./fn"
 import {
@@ -18,33 +18,95 @@ import {
   REAL,
   SQRT,
 } from "./ops"
+import { iterateJs } from "./ops/iterate"
 import { typeToGlsl, type GlslValue, type JsValue, type SReal } from "./ty"
 import { coerceType, coerceValueGlsl, listGlsl, listJs } from "./ty/coerce"
 import { real, vreal } from "./ty/create"
 import { garbageValueGlsl } from "./ty/garbage"
 
-// export interface Iterate {
-//   name: string
-//   expr: Node
-//   limit: Node
-//   initial: Node
-// }
-//
-// function parseIterate({
-//   contents,
-//   sub,
-//   sup,
-// }: Extract<Node, { type: "magicvar" }>) {
-//   if (!sup) {
-//     throw new Error(
-//       "Maximum iteration count should be a superscript (try iterate⁵⁰).",
-//     )
-//   }
-//
-//   if (sub && !sup) {
-//     throw new Error("Cannot ")
-//   }
-// }
+export interface Iterate {
+  name: string
+  expr: Node
+  limit: Node
+  initial: Node | undefined
+  condition: { type: "while" | "until"; value: Node } | undefined
+}
+
+function parseIterate({
+  contents,
+  sub,
+  sup: limit,
+}: Extract<Node, { type: "magicvar" }>): Iterate {
+  if (!limit) {
+    throw new Error(
+      "Maximum iteration count should be a superscript (try iterate⁵⁰).",
+    )
+  }
+
+  if (sub && !limit) {
+    throw new Error("'iterate' expressions cannot take subscripts.")
+  }
+
+  let initial: Iterate["initial"]
+  let condition: Iterate["condition"]
+
+  loop: while (contents.type == "op") {
+    if (!contents.b) break
+
+    switch (contents.kind) {
+      case "\\to ":
+        break loop
+      case "initial":
+        if (initial) {
+          throw new Error(
+            "'iterate' expressions can only have one 'initial ...' clause.",
+          )
+        }
+
+        initial = contents.b
+        contents = contents.a
+        continue
+      case "while":
+      case "until":
+        if (condition) {
+          throw new Error(
+            "'iterate' expressions can only have one 'while ...' or 'until ...' clause.",
+          )
+        }
+
+        condition = {
+          type: contents.kind,
+          value: contents.b,
+        }
+        contents = contents.a
+        continue
+    }
+
+    throw new Error(
+      "'iterate' expressions look like 'iterate z->z²+c', with optional 'initial ...' and 'while ...' clauses afterwards.",
+    )
+  }
+
+  if (contents.type == "group" && contents.lhs == "(" && contents.rhs == ")") {
+    contents = contents.value
+  }
+
+  if (!(contents.type == "op" && contents.b && contents.kind == "\\to ")) {
+    throw new Error("'iterate' expressions look like 'iterate⁵⁰ z→z²+c'.")
+  }
+
+  if (contents.a.type != "var" || contents.a.kind != "var" || contents.a.sup) {
+    throw new Error("The left side of a -> expression must be a variable name.")
+  }
+
+  return {
+    name: id(contents.a),
+    expr: contents.b,
+    limit,
+    initial,
+    condition,
+  }
+}
 
 export interface Props {
   base: SReal
@@ -61,7 +123,14 @@ export interface PropsGlsl extends Props {
   bindings: Bindings<GlslValue>
 }
 
-export function defaultProps(): PropsGlsl {
+export function defaultPropsJs(): PropsJs {
+  return {
+    base: real(10),
+    bindings: new Bindings(),
+  }
+}
+
+export function defaultPropsGlsl(): PropsGlsl {
   return {
     base: real(10),
     ctx: new GlslContext(new GlslHelpers()),
@@ -188,6 +257,15 @@ export function js(node: Node, props: PropsJs): JsValue {
         return POW.js(value, js(node.sup, props))
       }
 
+      const value = props.bindings.get(id(node))
+      if (value) {
+        if (node.sup) {
+          return POW.js(value, js(node.sup, props))
+        } else {
+          return value
+        }
+      }
+
       throw new Error(`The variable '${node.value}' is not defined.`)
     }
     case "frac":
@@ -215,6 +293,11 @@ export function js(node: Node, props: PropsJs): JsValue {
       }
     case "error":
       throw new Error(node.reason)
+    case "magicvar":
+      if (node.value == "iterate") {
+        return iterateJs(parseIterate(node), props)
+      }
+      break
     case "void":
     case "num16":
     case "sub":
@@ -227,7 +310,6 @@ export function js(node: Node, props: PropsJs): JsValue {
     case "index":
     case "commalist":
     case "factorial":
-
     case "punc":
   }
 
@@ -429,6 +511,7 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
     }
     case "error":
       throw new Error(node.reason)
+    case "magicvar":
     case "void":
     case "num16":
     case "sub":

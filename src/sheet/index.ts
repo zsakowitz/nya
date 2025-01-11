@@ -1,5 +1,5 @@
 import { display, getOutputBase } from "../eval/display"
-import { defaultProps as defaultProps2, glsl, js } from "../eval/eval"
+import { defaultPropsGlsl, defaultPropsJs, glsl, js } from "../eval/eval"
 import type { JsValue, SReal } from "../eval/ty"
 import { Field } from "../field/field"
 import { FieldInert } from "../field/field-inert"
@@ -125,7 +125,7 @@ export class Expr {
         )),
         (this.elValue = new FieldInert(this.field.exts, this.field.options)).el,
         (this.elValueError = h(
-          "leading-tight block pb-1 -mt-2 mx-1 px-1 italic text-red-800 hidden",
+          "leading-tight block pb-1 -mt-2 mx-1 px-1 italic text-red-800 hidden whitespace-pre-wrap",
         )),
       ),
       h(
@@ -186,19 +186,10 @@ export class Expr {
   debug() {
     const node = this.field.block.ast()
 
-    this.sheet.elTokens.textContent = JSON.stringify(
-      node,
-      (k, v) => {
-        if (typeof v == "object" && v != null && v.type == "num") {
-          return +v.value
-        }
-        return v
-      },
-      2,
-    )
+    this.sheet.elTokens.textContent = JSON.stringify(node, undefined, 2)
 
     try {
-      const props = defaultProps2()
+      const props = defaultPropsJs()
       const value = js(node, props)
       const base = getOutputBase(node, props)
       this.displayEval(value, base)
@@ -207,7 +198,7 @@ export class Expr {
     }
 
     try {
-      const props = defaultProps2()
+      const props = defaultPropsGlsl()
       const { expr } = glsl(node, props)
       const frag = `precision mediump float;
 varying vec2 v_coords;

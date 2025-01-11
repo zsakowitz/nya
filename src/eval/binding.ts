@@ -13,21 +13,20 @@ function hex(text: string) {
   return ret
 }
 
-export class Bindings<T> {
-  static id(name: Var) {
-    return hex(name.value) + (name.sub ? "_" + hex(subscript(name.sub)) : "")
-  }
+export function id(name: Var) {
+  return hex(name.value) + (name.sub ? "_" + hex(subscript(name.sub)) : "")
+}
 
+export class Bindings<T> {
   constructor(
     private data: Record<string, T | undefined> = Object.create(null),
   ) {}
 
-  get(name: Var): T | undefined {
-    return this.data[Bindings.id(name)]
+  get(id: string): T | undefined {
+    return this.data[id]
   }
 
-  with<U>(name: Var, value: T, fn: () => U): U {
-    const id = Bindings.id(name)
+  with<U>(id: string, value: T, fn: () => U): U {
     const oldValue = this.data[id]
     this.data[id] = value
     try {
@@ -38,7 +37,7 @@ export class Bindings<T> {
   }
 }
 
-export function parseBindingVar(node: Node): [Var, Node] {
+export function parseBindingVar(node: Node): [string, Node] {
   if (
     !(
       node.type == "cmplist" &&
@@ -55,5 +54,5 @@ export function parseBindingVar(node: Node): [Var, Node] {
     throw new Error("A 'with' statement looks like 'with a = 3'.")
   }
 
-  return [node.items[0], node.items[1]]
+  return [id(node.items[0]), node.items[1]]
 }
