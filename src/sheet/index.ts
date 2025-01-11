@@ -1,5 +1,5 @@
 import { display, getOutputBase } from "../eval/display"
-import { defaultProps as defaultProps2, glsl, js } from "../eval/eval2"
+import { defaultProps as defaultProps2, glsl, js } from "../eval/eval"
 import type { JsValue, SReal } from "../eval/ty"
 import { Field } from "../field/field"
 import { FieldInert } from "../field/field-inert"
