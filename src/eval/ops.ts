@@ -331,8 +331,28 @@ export const LN = fnNum<[0]>(
 export const POW = fnNum<[0, 0]>(
   "^",
   {
-    approx([a, b]) {
+    approx([a, b], [ar, br]) {
+      if (br.type == "exact" && br.n == 0) {
+        return frac(1, 0)
+      }
+      if (ar.type == "exact" && ar.n == 0) {
+        return frac(0, 0)
+      }
+      // FIXME: things like cube roots don't work reliably for negative numbers
       return approx(a ** b)
+    },
+    exact(a, b) {
+      let n = a.n ** b.n
+      if (!safe(n)) return null
+      n **= 1 / b.d
+      if (!safe(n)) return null
+
+      let d = a.d ** b.n
+      if (!safe(d)) return null
+      d **= 1 / b.d
+      if (!safe(d)) return null
+
+      return frac(n, d)
     },
     point(a, b) {
       if (isZero(b)) {
