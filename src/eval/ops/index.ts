@@ -169,6 +169,16 @@ export const ODOT = fnNum<[0, 0]>(
   },
 )
 
+function declareDiv(ctx: GlslContext) {
+  ctx.declare`vec2 _helper_div(vec2 a, vec2 b) {
+  return vec2(
+    a.x * b.x + a.y * b.y,
+    a.y * b.x - a.x * b.y
+  ) / (b.x * b.x + b.y * b.y);
+}
+`
+}
+
 export const DIV = fnNum<[0, 0]>(
   "÷",
   {
@@ -200,13 +210,7 @@ export const DIV = fnNum<[0, 0]>(
       return `(${a} / ${b})`
     },
     complex(ctx, a, b) {
-      ctx.declare`vec2 _helper_div(vec2 a, vec2 b) {
-  return vec2(
-    a.x * b.x + a.y * b.y,
-    a.y * b.x - a.x * b.y
-  ) / (b.x * b.x + b.y * b.y);
-}
-`
+      declareDiv(ctx)
       return `_helper_div(${a}, ${b})`
     },
   },
@@ -921,23 +925,6 @@ export const INTOCOLOR = fnDist<[0]>("intocolor", {
   },
 })
 
-export const OPS_BINARY: Partial<Record<PuncInfix | PuncPm, Fn<[0, 0]>>> = {
-  "+": ADD,
-  "-": SUB,
-  "\\cdot ": MUL,
-  "÷": DIV,
-  "\\and ": AND,
-  "\\or ": OR,
-  mod: MOD,
-  "\\odot ": ODOT,
-  "\\times ": CROSS,
-}
-
-export const OPS_UNARY: Partial<Record<PuncUnary | PuncPm, Fn<[0]>>> = {
-  "+": POS,
-  "-": NEG,
-}
-
 export const UNSIGN = fnNum<[0]>(
   "unsign",
   {
@@ -962,6 +949,118 @@ export const UNSIGN = fnNum<[0]>(
   },
 )
 
+function declareSin(ctx: GlslContext) {
+  ctx.declare`vec2 _helper_sin(vec2 z) {
+  return vec2(sin(z.x) * cosh(z.y), cos(z.x) * sinh(z.y));
+}
+`
+}
+
+export const SIN = fnNum<[0]>(
+  "sin",
+  {
+    approx([a]) {
+      return approx(Math.sin(a))
+    },
+    point(a) {
+      return pt(
+        approx(Math.sin(num(a.x)) * Math.cosh(num(a.y))),
+        approx(Math.cos(num(a.x)) * Math.sinh(num(a.y))),
+      )
+    },
+  },
+  {
+    real(_, a) {
+      return `sin(${a})`
+    },
+    complex(ctx, a) {
+      declareSin(ctx)
+      return `_helper_sin(${a})`
+    },
+  },
+)
+
+function declareCos(ctx: GlslContext) {
+  ctx.declare`vec2 _helper_cos(vec2 z) {
+  return vec2(cos(z.x) * cosh(z.y), -sin(z.x) * sinh(z.y));
+}
+`
+}
+
+export const COS = fnNum<[0]>(
+  "cos",
+  {
+    approx([a]) {
+      return approx(Math.cos(a))
+    },
+    point(a) {
+      return pt(
+        approx(Math.cos(num(a.x)) * Math.cosh(num(a.y))),
+        approx(-Math.sin(num(a.x)) * Math.sinh(num(a.y))),
+      )
+    },
+  },
+  {
+    real(_, a) {
+      return `cos(${a})`
+    },
+    complex(ctx, a) {
+      declareCos(ctx)
+      return `_helper_cos(${a})`
+    },
+  },
+)
+
+export const TAN = fnNum<[0]>(
+  "tan",
+  {
+    approx([a]) {
+      return approx(Math.tan(a))
+    },
+    point(a) {
+      return DIV.complex(SIN.complex(a), COS.complex(a))
+    },
+  },
+  {
+    real(_, a) {
+      return `tan(${a})`
+    },
+    complex(ctx, a) {
+      declareSin(ctx)
+      declareCos(ctx)
+      declareDiv(ctx)
+      ctx.declare`vec2 _helper_tan(vec2 z) {
+  return _helper_div(_helper_sin(z), _helper_cos(z));
+}
+`
+      return `_helper_tan(${a})`
+    },
+  },
+)
+
+export function getNamedFn(name: string) {
+  if ({}.hasOwnProperty.call(NAMED_FNS, name)) {
+    return NAMED_FNS[name]!
+  }
+}
+
+export const OPS_BINARY: Partial<Record<PuncInfix | PuncPm, Fn<[0, 0]>>> = {
+  "+": ADD,
+  "-": SUB,
+  "\\cdot ": MUL,
+  "÷": DIV,
+  "\\and ": AND,
+  "\\or ": OR,
+  mod: MOD,
+  "\\odot ": ODOT,
+  "\\times ": CROSS,
+}
+
+export const OPS_UNARY: Partial<Record<PuncUnary | PuncPm, Fn<[0]>>> = {
+  "+": POS,
+  "-": NEG,
+}
+
 const NAMED_FNS: Record<string, [number, Fn<0[]>]> = {
   debugquadrant: [1, DEBUGQUADRANT],
   rgb: [3, RGB],
@@ -972,10 +1071,7 @@ const NAMED_FNS: Record<string, [number, Fn<0[]>]> = {
   exp: [1, EXP],
   ln: [1, LN],
   angle: [1, ANGLE],
-}
-
-export function getNamedFn(name: string) {
-  if ({}.hasOwnProperty.call(NAMED_FNS, name)) {
-    return NAMED_FNS[name]!
-  }
+  sin: [1, SIN],
+  cos: [1, COS],
+  tan: [1, TAN],
 }
