@@ -13,7 +13,7 @@ import {
   list,
   listTy,
   tyToGlsl,
-  typeToGlsl,
+  varDeclToGlsl,
 } from "./ty"
 import { bool, pt, real } from "./ty/create"
 
@@ -56,7 +56,7 @@ export class GlslContext {
     const src = this.name()
     const idx = this.name()
     const dst = this.name()
-    this.push`${typeToGlsl(from)} ${src} = ${from.expr};\n`
+    this.push`${varDeclToGlsl(from, src)} = ${from.expr};\n`
     this.push`${tyToGlsl(to)}[${from.list}] ${dst};\n`
     this.push`for (int ${idx} = 0; ${idx} < ${from.list}; ${idx}++) {\n`
     this.push`${dst}[${idx}] = ${via(`${src}[${idx}]`)};\n`
@@ -155,7 +155,7 @@ export function fnDist(
 
     const cached = values.map((value) => {
       const name = ctx.name()
-      ctx.push`${typeToGlsl(value)} ${name} = ${value.expr};\n`
+      ctx.push`${varDeclToGlsl(value, name)} = ${value.expr};\n`
       return {
         type: value.type,
         list: value.list as number | false,
@@ -164,7 +164,7 @@ export function fnDist(
     })
 
     const ret = ctx.name()
-    ctx.push`${typeToGlsl(ty)} ${ret};\n`
+    ctx.push`${varDeclToGlsl(ty, ret)};\n`
 
     const len = ty.list as number
     const index = ctx.name()

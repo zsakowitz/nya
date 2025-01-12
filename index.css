@@ -933,12 +933,16 @@ video {
   grid-template-columns: auto auto;
 }
 
-.grid-cols-\[var\(--nya-sheet-sidebar\)_1fr\] {
-  grid-template-columns: var(--nya-sheet-sidebar) 1fr;
+.grid-cols-\[var\(--nya-sheet-sidebar\)_1fr_200px\] {
+  grid-template-columns: var(--nya-sheet-sidebar) 1fr 200px;
 }
 
 .grid-rows-1 {
   grid-template-rows: repeat(1, minmax(0, 1fr));
+}
+
+.grid-rows-2 {
+  grid-template-rows: repeat(2, minmax(0, 1fr));
 }
 
 .flex-col {
@@ -1397,12 +1401,8 @@ video {
   --nya-focus: #60a5fa;
 }
 
-.\[--nya-sheet-sidebar\:400px\] {
-  --nya-sheet-sidebar: 400px;
-}
-
-.\[--nya-sheet-sidebar\:800px\] {
-  --nya-sheet-sidebar: 800px;
+.\[--nya-sheet-sidebar\:600px\] {
+  --nya-sheet-sidebar: 600px;
 }
 
 .\[line-height\:\.9\] {

@@ -343,7 +343,7 @@ export class Sheet {
     )
 
     this.el = h(
-      "[--nya-sheet-sidebar:800px] block fixed inset-0 grid grid-cols-[var(--nya-sheet-sidebar)_1fr] grid-rows-1 select-none [--nya-focus:theme(colors.blue.400)]",
+      "[--nya-sheet-sidebar:600px] block fixed inset-0 grid grid-cols-[var(--nya-sheet-sidebar)_1fr_200px] grid-rows-1 select-none [--nya-focus:theme(colors.blue.400)]",
       h(
         "block overflow-y-auto relative border-r",
         h(
@@ -373,6 +373,7 @@ export class Sheet {
         //   "absolute block top-0 bottom-0 right-0 w-1 from-slate-300/50 to-transparent bg-gradient-to-l",
         // ),
       ),
+      h("grid grid-rows-2", this.elGlsl, this.elTokens),
       (this.elLogo = hx(
         "button",
         "absolute bottom-0 right-0 p-2",

@@ -19,7 +19,7 @@ import {
   SQRT,
 } from "./ops"
 import { iterateGlsl, iterateJs, parseIterate } from "./ops/iterate"
-import { typeToGlsl, type GlslValue, type JsValue, type SReal } from "./ty"
+import { varDeclToGlsl, type GlslValue, type JsValue, type SReal } from "./ty"
 import { coerceType, coerceValueGlsl, listGlsl, listJs } from "./ty/coerce"
 import { num, real, vreal } from "./ty/create"
 import { garbageValJs, garbageValueGlsl } from "./ty/garbage"
@@ -314,7 +314,7 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
           const [bound, valueNode] = parseBindingVar(node.b)
           const value = glsl(valueNode, props)
           const name = props.ctx.name()
-          props.ctx.push`${typeToGlsl(value)} ${name} = ${value.expr};\n`
+          props.ctx.push`${varDeclToGlsl(value, name)} = ${value.expr};\n`
           return props.bindings.with(bound, { ...value, expr: name }, () =>
             glsl(node.a, props),
           )
@@ -445,7 +445,7 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
 
       const ret = coerceType(pieces.map((x) => x.value))!
 
-      props.ctx.push`${typeToGlsl(ret)} ${name};\n`
+      props.ctx.push`${varDeclToGlsl(ret, name)};\n`
       let closers = ""
       for (const { ctxCond, cond, ctxValue, value } of pieces) {
         props.ctx.block += ctxCond.block

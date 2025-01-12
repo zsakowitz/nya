@@ -45,12 +45,8 @@ export function tyToGlsl(ty: Ty): string {
   }[ty.type]
 }
 
-export function typeToGlsl(ty: Type) {
-  if (ty.list === false) {
-    return tyToGlsl(ty)
-  }
-
-  return `${tyToGlsl(ty)}[${ty.list}]`
+export function varDeclToGlsl(type: Type, name: string): string {
+  return `${tyToGlsl(type)} ${name}${type.list === false ? "" : `[${type.list}]`}`
 }
 
 export function list(values: string[]): string {

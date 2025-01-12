@@ -1,7 +1,7 @@
 import type { Node } from "../ast/token"
 import { Bindings, id } from "../binding"
 import { glsl, js, type PropsGlsl, type PropsJs } from "../eval"
-import { typeToGlsl, type GlslValue, type JsValue } from "../ty"
+import { varDeclToGlsl, type GlslValue, type JsValue } from "../ty"
 import { frac, num } from "../ty/create"
 import { safe } from "../util"
 
@@ -182,7 +182,7 @@ export function iterateGlsl(data: Iterate, props: PropsGlsl): GlslValue {
 
   const count = props.ctx.name()
 
-  props.ctx.push`${typeToGlsl(from)} ${name.expr} = ${from.expr};\n`
+  props.ctx.push`${varDeclToGlsl(from, name.expr)} = ${from.expr};\n`
   {
     const index = props.ctx.name()
     props.ctx.push`int ${index}, ${count};\n`
