@@ -204,10 +204,12 @@ export class Expr {
       if (value.list) {
         throw new Error("Cannot draw a list of colors.")
       }
-      const frag = `precision highp float;
-varying vec2 v_coords;
+      const frag = `#version 300 es
+precision highp float;
+in vec2 v_coords;
+out vec4 color;
 ${props.ctx.helpers.helpers}void main() {
-${props.ctx.block}gl_FragColor = ${value.expr};
+${props.ctx.block}color = ${value.expr};
 }`
       this.sheet.elGlsl.textContent = frag
       this.sheet.regl.clear({
@@ -217,10 +219,11 @@ ${props.ctx.block}gl_FragColor = ${value.expr};
       const program = this.sheet.regl({
         frag,
 
-        vert: `precision highp float;
-attribute vec2 position;
-attribute vec2 a_coords;
-varying vec2 v_coords;
+        vert: `#version 300 es
+precision highp float;
+in vec2 position;
+in vec2 a_coords;
+out vec2 v_coords;
 void main () {
   v_coords = a_coords;
   gl_Position = vec4(position, 0, 1);
@@ -387,7 +390,11 @@ export class Sheet {
       )),
     )
 
-    this.regl = regl({ canvas: this.elShaderCanvas, pixelRatio: 1 })
+    this.regl = regl({
+      canvas: this.elShaderCanvas,
+      gl: this.elShaderCanvas.getContext("webgl2")!,
+      pixelRatio: 1,
+    })
     doMatchReglSize(this.elShaderCanvas, this.regl)
     this.paper.el.classList.add("absolute", "inset-0")
   }

@@ -897,8 +897,7 @@ export const NEG = fnNum<[0]>(
 )
 
 export const INTOCOLOR = fnDist<[0]>("intocolor", {
-  ty(a) {
-    if (a.type == "complex") return null
+  ty() {
     return "color"
   },
   js() {
@@ -920,7 +919,7 @@ export const INTOCOLOR = fnDist<[0]>("intocolor", {
           ).expr
         }, 1.0)`
       case "complex":
-        return null
+        return `vec4(${DEBUGQUADRANT.glsl1(ctx, a).expr}, 1)`
     }
   },
 })
@@ -1038,6 +1037,37 @@ export const TAN = fnNum<[0]>(
   },
 )
 
+export const DOT = fnDist<[0, 0]>("dot product", {
+  ty(a, b) {
+    if (a.type == "complex" && b.type == "complex") {
+      return "real"
+    }
+    return null
+  },
+  js(a, b) {
+    if (a.type != "complex" || b.type != "complex") {
+      return null
+    }
+    return {
+      type: "real",
+      value: ADD.real(
+        MUL.real(a.value.x, b.value.x),
+        MUL.real(a.value.y, NEG.real(b.value.y)),
+      ),
+    }
+  },
+  glsl(ctx, a, b) {
+    if (a.type != "complex" || b.type != "complex") {
+      return null
+    }
+    ctx.declare`float _helper_dot(vec2 a, vec2 b) {
+  return dot(a, vec2(b.x, -b.y));
+}
+`
+    return `_helper_dot(${a.expr}, ${b.expr})`
+  },
+})
+
 export function getNamedFn(name: string) {
   if ({}.hasOwnProperty.call(NAMED_FNS, name)) {
     return NAMED_FNS[name]!
@@ -1074,4 +1104,6 @@ const NAMED_FNS: Record<string, [number, Fn<0[]>]> = {
   sin: [1, SIN],
   cos: [1, COS],
   tan: [1, TAN],
+  dot: [2, DOT],
+  magnitude: [1, ABS],
 }

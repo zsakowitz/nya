@@ -89,6 +89,12 @@ export interface Fn<T extends readonly unknown[]> {
   glsl(ctx: GlslContext, ...values: As<T, GlslValue>): GlslValue
 }
 
+export interface FnDist<T extends readonly unknown[]> extends Fn<T> {
+  js1(...values: As<T, JsVal>): JsVal
+  ty(...args: As<T, Ty>): TyName
+  glsl1(ctx: GlslContext, ...values: As<T, GlslVal>): GlslVal
+}
+
 export interface Op<T extends readonly unknown[]> {
   ty(...vals: As<T, Ty>): TyName | null
   js(...vals: As<T, JsVal>): JsVal | null
@@ -99,13 +105,25 @@ export interface Op<T extends readonly unknown[]> {
 export function fnDist<T extends readonly unknown[]>(
   name: string,
   props: Op<T>,
-): Fn<T>
+): FnDist<T>
 
 export function fnDist(
   name: string,
   props: Op<readonly unknown[]>,
-): Fn<readonly unknown[]> {
-  return { glsl, js, type }
+): FnDist<readonly unknown[]> {
+  return {
+    glsl,
+    js,
+    type,
+    ty,
+    js1: jsSingle,
+    glsl1(ctx, ...values) {
+      return {
+        type: ty(...values),
+        expr: glslSingle(ctx, ...values),
+      }
+    },
+  }
 
   function ty(...tys: Ty[]): TyName {
     const ret = props.ty(...tys)
