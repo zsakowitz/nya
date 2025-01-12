@@ -21,8 +21,8 @@ import {
 import { iterateGlsl, iterateJs, parseIterate } from "./ops/iterate"
 import { typeToGlsl, type GlslValue, type JsValue, type SReal } from "./ty"
 import { coerceType, coerceValueGlsl, listGlsl, listJs } from "./ty/coerce"
-import { real, vreal } from "./ty/create"
-import { garbageValueGlsl } from "./ty/garbage"
+import { num, real, vreal } from "./ty/create"
+import { garbageValJs, garbageValueGlsl } from "./ty/garbage"
 
 export interface Props {
   base: SReal
@@ -223,6 +223,25 @@ export function js(node: Node, props: PropsJs): JsValue {
       break
     case "void":
       throw new Error("Empty expression.")
+    case "index": {
+      const on = js(node.on, props)
+      if (!on.list) {
+        throw new Error("Cannot index on a non-list.")
+      }
+      const index = js(node.index, props)
+      if (index.list) {
+        throw new Error("Cannot index with a list yet.")
+      }
+      if (index.type != "real") {
+        throw new Error("Indexes must be numbers for now.")
+      }
+      const value = num(index.value) - 1
+      return {
+        ...on,
+        list: false,
+        value: on.value[value] ?? garbageValJs(on).value,
+      } as any
+    }
     case "num16":
     case "sub":
     case "sup":
@@ -231,7 +250,6 @@ export function js(node: Node, props: PropsJs): JsValue {
     case "matrix":
     case "bigsym":
     case "big":
-    case "index":
     case "commalist":
     case "factorial":
     case "punc":
@@ -332,17 +350,10 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
       }
       if (node.lhs == "[" && node.rhs == "]") {
         const args = commalist(node.value).map((item) => glsl(item, props))
-        if (args.length == 0) {
-          return {
-            type: "real",
-            expr: "[]",
-            list: 0,
-          }
-        }
         if (args.some((x) => x.list !== false)) {
           throw new Error("Cannot store a list inside another list.")
         }
-        return listGlsl(args)
+        return listGlsl(props.ctx, args)
       }
       if (node.lhs == "|" && node.rhs == "|") {
         return ABS.glsl(props.ctx, glsl(node.value, props))
@@ -460,6 +471,29 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
       break
     case "void":
       throw new Error("Empty expression.")
+    case "index":
+      const on = glsl(node.on, props)
+      if (on.list === false) {
+        throw new Error("Cannot index on a non-list.")
+      }
+      const indexVal = js(node.index, { ...props, bindings: new Bindings() })
+      if (indexVal.list) {
+        throw new Error("Cannot index with a list yet.")
+      }
+      if (indexVal.type != "real") {
+        throw new Error("Indices must be numbers for now.")
+      }
+      const index = num(indexVal.value)
+      if (index != Math.floor(index) || index <= 0 || index > on.list) {
+        throw new Error(
+          `Index ${index} is out-of-bounds on list of length ${on.list}.`,
+        )
+      }
+      return {
+        type: on.type,
+        list: false,
+        expr: `${on.expr}[${index - 1}]`,
+      }
     case "num16":
     case "sub":
     case "sup":
@@ -469,7 +503,6 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
     case "bigsym":
     case "big":
     case "root":
-    case "index":
     case "commalist":
     case "factorial":
     case "punc":

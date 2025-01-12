@@ -110,18 +110,21 @@ export function listJs(vals: JsVal[]): JsValList {
   }
 }
 
-export function listGlsl(vals: GlslVal[]): GlslValue {
+export function listGlsl(ctx: GlslContext, vals: GlslVal[]): GlslValue {
+  const name = ctx.name()
+  ctx.push`float ${name}[${vals.length}];\n`
+
   if (vals.length == 0) {
-    return { type: "real", list: 0, expr: "[]" }
+    return { type: "real", list: 0, expr: name }
   }
 
   const ty = coerceTy(vals)!
 
-  return {
-    type: ty.type,
-    list: vals.length,
-    expr: "[" + vals.map((val) => coerceValGlsl(val, ty)).join(", ") + "]",
+  for (let i = 0; i < vals.length; i++) {
+    ctx.push`${name}[${i}] = ${coerceValGlsl(vals[i]!, ty)};\n`
   }
+
+  return { type: ty.type, list: vals.length, expr: name }
 }
 
 /**
