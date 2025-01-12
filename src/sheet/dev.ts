@@ -12,7 +12,7 @@ document.body.appendChild(sheet.el)
 
 new Expr(sheet).field.typeEach`\
 r g b ( a [ 1 ] , a [ 2 ] , a [ 3 ] ) \
-w i t h a = ( 0 . 4 5 s i n 5 a + 0 . 5 ) 3 6 0 \
+w i t h a = ( 0 . 4 5 s i n 5 a + 0 . 5 ) 2 5 5 \
 w i t h a = | [ x , y , z ] | / n ArrowRight \
 w i t h x = r e a l ( a [ 4 ] ) w i t h y = i m a g ( a [ 4 ] ) w i t h z = r e a l ( a [ 5 ] ) w i t h n = i m a g ( a [ 5 ] ) w i t h a = ( i t e r a t e ^ 5 0 ArrowRight a - > ( [ z , s , r , a [ 4 ] + d o t ( z - s , s - r ) + i d o t ( z - s , z - s ) , a [ 5 ] + d o t ( z - r , z - r ) + i ] w i t h z = a [ 1 ] ^ 2 + p w i t h s = a [ 1 ] w i t h r = a [ 2 ] ) w h i l e ( | ArrowLeft Backspace ArrowRight a [ 1 ] | < = 2 f r o m [ 0 i , 0 i , 0 i , 0 i , 0 i ] )`
 new Expr(sheet).field
