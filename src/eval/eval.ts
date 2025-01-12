@@ -257,6 +257,15 @@ export function js(node: Node, props: PropsJs): JsValue {
     case "juxtaposed":
       return MUL.js(js(node.a, props), js(node.b, props))
     case "var": {
+      const value = props.bindings.get(id(node))
+      if (value) {
+        if (node.sup) {
+          return POW.js(value, js(node.sup, props))
+        } else {
+          return value
+        }
+      }
+
       builtin: {
         if (node.sub) break builtin
 
@@ -265,15 +274,6 @@ export function js(node: Node, props: PropsJs): JsValue {
 
         if (!node.sup) return value
         return POW.js(value, js(node.sup, props))
-      }
-
-      const value = props.bindings.get(id(node))
-      if (value) {
-        if (node.sup) {
-          return POW.js(value, js(node.sup, props))
-        } else {
-          return value
-        }
       }
 
       throw new Error(`The variable '${node.value}' is not defined.`)
@@ -455,6 +455,15 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
     case "juxtaposed":
       return MUL.glsl(props.ctx, glsl(node.a, props), glsl(node.b, props))
     case "var": {
+      const value = props.bindings.get(id(node))
+      if (value) {
+        if (node.sup) {
+          return POW.glsl(props.ctx, value, glsl(node.sup, props))
+        } else {
+          return value
+        }
+      }
+
       builtin: {
         if (node.sub) break builtin
 
@@ -463,15 +472,6 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
 
         if (!node.sup) return value
         return POW.glsl(props.ctx, value, glsl(node.sup, props))
-      }
-
-      const value = props.bindings.get(id(node))
-      if (value) {
-        if (node.sup) {
-          return POW.glsl(props.ctx, value, glsl(node.sup, props))
-        } else {
-          return value
-        }
       }
 
       throw new Error(`The variable '${node.value}' is not defined.`)

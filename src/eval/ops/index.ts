@@ -938,10 +938,35 @@ export const OPS_UNARY: Partial<Record<PuncUnary | PuncPm, Fn<[0]>>> = {
   "-": NEG,
 }
 
+export const UNSIGN = fnNum<[0]>(
+  "unsign",
+  {
+    approx(_, [a]) {
+      if (a.type == "approx") {
+        return approx(Math.abs(a.value))
+      } else {
+        return frac(Math.abs(a.n), Math.abs(a.d))
+      }
+    },
+    point({ x, y }) {
+      return pt(this.real(x), this.real(y))
+    },
+  },
+  {
+    real(_, a) {
+      return `abs(${a})`
+    },
+    complex(_, a) {
+      return `abs(${a})`
+    },
+  },
+)
+
 const NAMED_FNS: Record<string, [number, Fn<0[]>]> = {
   debugquadrant: [1, DEBUGQUADRANT],
   rgb: [3, RGB],
   hsv: [3, HSV],
+  unsign: [1, UNSIGN],
   real: [1, REAL],
   imag: [1, IMAG],
   exp: [1, EXP],

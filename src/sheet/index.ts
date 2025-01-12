@@ -366,12 +366,12 @@ export class Sheet {
           "absolute inset-0 size-full pointer-events-none",
         )),
         this.paper.el,
-        h(
-          "absolute block top-0 bottom-0 left-0 w-1 from-slate-300/50 to-transparent bg-gradient-to-r",
-        ),
-        h(
-          "absolute block top-0 bottom-0 right-0 w-1 from-slate-300/50 to-transparent bg-gradient-to-l",
-        ),
+        // h(
+        //   "absolute block top-0 bottom-0 left-0 w-1 from-slate-300/50 to-transparent bg-gradient-to-r",
+        // ),
+        // h(
+        //   "absolute block top-0 bottom-0 right-0 w-1 from-slate-300/50 to-transparent bg-gradient-to-l",
+        // ),
       ),
       h("grid grid-rows-2 grid-cols-1", this.elGlsl, this.elTokens),
       (this.elLogo = hx(
