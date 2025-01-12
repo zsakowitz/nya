@@ -11,7 +11,7 @@ const sheet = new Sheet(exts, { field: options })
 document.body.appendChild(sheet.el)
 
 new Expr(sheet).field
-  .typeEach`p i e c e s r g b ( 0 , 0 , 0 ) ArrowRight a = 1 0 0 ArrowDown ArrowLeft h s v ( - 3 6 0 a / 1 0 0 ArrowRight , 1 , 1 ) ArrowRight ArrowRight w i t h a = i t e r a t e . c o u n t ^ 1 0 0 ArrowRight z - > z ^ 2 + p f r o m 0 i w h i l e | z | < = 2`
+  .typeEach`p i e c e s r g b ( 6 4 , 6 4 , 6 4 ) ArrowRight a = 1 0 0 ArrowDown ArrowLeft h s v ( - 3 6 0 a / 1 0 0 ArrowRight , 1 , 1 ) ArrowRight ArrowRight w i t h a = i t e r a t e . c o u n t ^ 1 0 0 ArrowRight z - > z ^ 2 + p f r o m 0 i w h i l e | z | < = 2`
 new Expr(sheet).field
   .typeEach`h s v ( 3 6 0 | i t e r a t e ^ 5 0 ArrowRight z - > z ^ 2 + p / 8 ArrowRight w h i l e ( | p | ArrowLeft ArrowLeft ArrowLeft Backspace ArrowRight ArrowRight ArrowRight < = 1 6 f r o m 0 i | , 1 , 1 )`
 new Expr(sheet).field
