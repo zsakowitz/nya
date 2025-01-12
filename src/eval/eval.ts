@@ -18,100 +18,11 @@ import {
   REAL,
   SQRT,
 } from "./ops"
-import { iterateGlsl, iterateJs } from "./ops/iterate"
+import { iterateGlsl, iterateJs, parseIterate } from "./ops/iterate"
 import { typeToGlsl, type GlslValue, type JsValue, type SReal } from "./ty"
 import { coerceType, coerceValueGlsl, listGlsl, listJs } from "./ty/coerce"
 import { real, vreal } from "./ty/create"
 import { garbageValueGlsl } from "./ty/garbage"
-
-export interface Iterate {
-  name: string
-  expr: Node
-  limit: Node
-  from: Node | undefined
-  prop: "count" | "trace" | undefined
-  condition: { type: "while" | "until"; value: Node } | undefined
-}
-
-function parseIterate({
-  contents,
-  sub,
-  sup: limit,
-  prop,
-}: Extract<Node, { type: "magicvar" }>): Iterate {
-  if (!(prop == null || prop == "count" || prop == "trace")) {
-    throw new Error("'iterate' expressions look like 'iterate⁵⁰ z->z²+p'")
-  }
-
-  if (!limit) {
-    throw new Error("Set a maximum iteration count (try iterate⁵⁰).")
-  }
-
-  if (sub && !limit) {
-    throw new Error("'iterate' expressions cannot take subscripts.")
-  }
-
-  let from: Iterate["from"]
-  let condition: Iterate["condition"]
-
-  loop: while (contents.type == "op") {
-    if (!contents.b) break
-
-    switch (contents.kind) {
-      case "\\to ":
-        break loop
-      case "from":
-        if (from) {
-          throw new Error(
-            "'iterate' expressions can only have one 'from ...' clause.",
-          )
-        }
-
-        from = contents.b
-        contents = contents.a
-        continue
-      case "while":
-      case "until":
-        if (condition) {
-          throw new Error(
-            "'iterate' expressions can only have one 'while ...' or 'until ...' clause.",
-          )
-        }
-
-        condition = {
-          type: contents.kind,
-          value: contents.b,
-        }
-        contents = contents.a
-        continue
-    }
-
-    throw new Error(
-      "'iterate' expressions look like 'iterate z->z²+c', with optional 'from ...' and 'while ...' clauses afterwards.",
-    )
-  }
-
-  if (contents.type == "group" && contents.lhs == "(" && contents.rhs == ")") {
-    contents = contents.value
-  }
-
-  if (!(contents.type == "op" && contents.b && contents.kind == "\\to ")) {
-    throw new Error("'iterate' expressions look like 'iterate⁵⁰ z→z²+c'.")
-  }
-
-  if (contents.a.type != "var" || contents.a.kind != "var" || contents.a.sup) {
-    throw new Error("The left side of a -> expression must be a variable name.")
-  }
-
-  return {
-    name: id(contents.a),
-    expr: contents.b,
-    limit,
-    from,
-    condition,
-    prop,
-  }
-}
 
 export interface Props {
   base: SReal
