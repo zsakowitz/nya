@@ -206,6 +206,11 @@ export function js(node: Node, props: PropsJs): JsValue {
               return value
             }
           }
+          break
+        case "with":
+          const [bound, valueNode] = parseBindingVar(node.b)
+          const value = js(valueNode, props)
+          return props.bindings.with(bound, value, () => js(node.a, props))
       }
       const op = OPS_BINARY[node.kind]
       if (op) {
@@ -306,6 +311,7 @@ export function js(node: Node, props: PropsJs): JsValue {
       }
       break
     case "void":
+      throw new Error("Empty expression.")
     case "num16":
     case "sub":
     case "sup":
@@ -378,7 +384,7 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
         case "with": {
           const [bound, valueNode] = parseBindingVar(node.b)
           const value = glsl(valueNode, props)
-          const name = `_nya_var_${bound}`
+          const name = props.ctx.name()
           props.ctx.push`${typeToGlsl(value)} ${name} = ${value.expr};\n`
           return props.bindings.with(bound, { ...value, expr: name }, () =>
             glsl(node.a, props),
@@ -542,6 +548,7 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
       }
       break
     case "void":
+      throw new Error("Empty expression.")
     case "num16":
     case "sub":
     case "sup":

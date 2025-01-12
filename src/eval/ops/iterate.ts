@@ -85,7 +85,7 @@ export function iterateGlsl(data: Iterate, props: PropsGlsl): GlslValue {
     : { expr: "0.0", type: "real", list: false }
 
   const name: GlslValue = {
-    expr: `_nya_var_${data.name}`,
+    expr: props.ctx.name(),
     list: from.list,
     type: from.type,
   }
