@@ -83,6 +83,22 @@ export function iterateGlsl(data: Iterate, props: PropsGlsl): GlslValue {
   props.ctx.push`${typeToGlsl(from)} ${name.expr} = ${from.expr};\n`
   props.ctx.push`for (int ${index} = 0; ${index} < ${limit}; ${index}++) {\n`
   props.bindings.with(data.name, name, () => {
+    if (data.condition) {
+      const cond = glsl(data.condition.value, props)
+      if (cond.type != "bool") {
+        throw new Error(
+          `'${data.condition.type} ...' clauses need a condition, like '${data.condition.type} x < 2'.`,
+        )
+      }
+      if (cond.list !== false) {
+        throw new Error(
+          `'${data.condition.type} ...' conditions cannot be lists.`,
+        )
+      }
+      props.ctx
+        .push`if (${data.condition.type == "while" ? "!" : ""}(${cond.expr})) break;\n`
+    }
+
     const next = glsl(data.expr, props)
     if (next.list != name.list || next.type != name.type) {
       throw new Error(

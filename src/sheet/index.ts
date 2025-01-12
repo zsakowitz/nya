@@ -1,5 +1,6 @@
 import { display, getOutputBase } from "../eval/display"
 import { defaultPropsGlsl, defaultPropsJs, glsl, js } from "../eval/eval"
+import { INTOCOLOR } from "../eval/ops"
 import type { JsValue, SReal } from "../eval/ty"
 import { Field } from "../field/field"
 import { FieldInert } from "../field/field-inert"
@@ -199,11 +200,14 @@ export class Expr {
 
     try {
       const props = defaultPropsGlsl()
-      const { expr } = glsl(node, props)
-      const frag = `precision mediump float;
+      const value = INTOCOLOR.glsl(props.ctx, glsl(node, props))
+      if (value.list) {
+        throw new Error("Cannot draw a list of colors.")
+      }
+      const frag = `precision highp float;
 varying vec2 v_coords;
 ${props.ctx.helpers.helpers}void main() {
-${props.ctx.block}gl_FragColor = vec4(vec3(${expr}), 1);
+${props.ctx.block}gl_FragColor = ${value.expr};
 }`
       this.sheet.elGlsl.textContent = frag
       this.sheet.regl.clear({
@@ -213,7 +217,7 @@ ${props.ctx.block}gl_FragColor = vec4(vec3(${expr}), 1);
       const program = this.sheet.regl({
         frag,
 
-        vert: `precision mediump float;
+        vert: `precision highp float;
 attribute vec2 position;
 attribute vec2 a_coords;
 varying vec2 v_coords;
@@ -260,6 +264,7 @@ void main () {
         "font-sans",
         "text-base",
         "italic",
+        "whitespace-pre-wrap",
       )
     } catch (e) {
       this.sheet.elGlsl.textContent = e instanceof Error ? e.message : String(e)
@@ -268,6 +273,7 @@ void main () {
         "font-sans",
         "text-base",
         "italic",
+        "whitespace-pre-wrap",
       )
     }
   }

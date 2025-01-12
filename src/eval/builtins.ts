@@ -14,6 +14,18 @@ export const BUILTINS = {
     },
     glsl: { type: "complex", expr: "v_coords", list: false },
   },
+  x: {
+    get js(): never {
+      throw new Error("Cannot access pixel coordinates outside of shaders.")
+    },
+    glsl: { type: "real", expr: "v_coords.x", list: false },
+  },
+  y: {
+    get js(): never {
+      throw new Error("Cannot access pixel coordinates outside of shaders.")
+    },
+    glsl: { type: "real", expr: "v_coords.y", list: false },
+  },
   π: {
     js: { type: "real", value: real(Math.PI), list: false },
     glsl: { type: "real", expr: Math.PI + "", list: false },

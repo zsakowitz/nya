@@ -548,18 +548,6 @@ export function onTouch(paper: Paper) {
   )
 }
 
-export function drawTooltip(
-  paper: Paper,
-  tooltip: (mouse: MouseEvent, paper: Paper) => string,
-) {
-  const el = h("fixed bottom-0 right-0 bg-white whitespace-pre")
-  document.body.append(el)
-
-  paper.el.addEventListener("mousemove", (event) => {
-    el.textContent = tooltip(event, paper)
-  })
-}
-
 const hypot =
   "hypot" in Math ?
     (Math.hypot as (a: number, b: number) => number)

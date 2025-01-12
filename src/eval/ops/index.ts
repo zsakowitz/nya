@@ -551,8 +551,52 @@ export const HSV = fnDist<[0, 0, 0]>("hsv", {
     }
     return null
   },
-  js(h, s, v) {
-    throw new Error("")
+  js(hr, sr, vr) {
+    if (!(hr.type == "real" && sr.type == "real" && vr.type == "real")) {
+      return null
+    }
+    const h = num(hr.value) / 360
+    const s = num(sr.value)
+    const v = num(vr.value)
+
+    // https://stackoverflow.com/questions/17242144/javascript-convert-hsb-hsv-color-to-rgb-accurately
+    let r, g, b
+    let i = Math.floor(h * 6)
+    let f = h * 6 - i
+    let p = v * (1 - s)
+    let q = v * (1 - f * s)
+    let t = v * (1 - (1 - f) * s)
+    switch (i % 6) {
+      case 0:
+        ;(r = v), (g = t), (b = p)
+        break
+      case 1:
+        ;(r = q), (g = v), (b = p)
+        break
+      case 2:
+        ;(r = p), (g = v), (b = t)
+        break
+      case 3:
+        ;(r = p), (g = q), (b = v)
+        break
+      case 4:
+        ;(r = t), (g = p), (b = v)
+        break
+      case 5:
+        ;(r = v), (g = p), (b = q)
+        break
+      default:
+        throw new Error("Never occurs.")
+    }
+    return {
+      type: "color",
+      value: {
+        type: "color",
+        r: real(255.0 * r),
+        g: real(255.0 * g),
+        b: real(255.0 * b),
+      },
+    }
   },
   glsl(ctx, h, s, v) {
     if (!(h.type == "real" && s.type == "real" && v.type == "real")) {
@@ -653,13 +697,10 @@ export const ANGLE = fnDist<[0]>("angle", {
         return `_helper_angle(${a.expr})`
       case "complex":
         ctx.declare`float _helper_angle(vec2 x) {
-  if (x.x == 0.0) {
-    return 0.0;
-  }
   return atan(x.y, x.x);
 }
 `
-        return `length(${a.expr})`
+        return `_helper_angle(${a.expr})`
       case "bool":
         return `(${a.expr} ? 0.0 : 0.0/0.0)`
       case "color":
@@ -850,6 +891,35 @@ export const NEG = fnNum<[0]>(
     },
   },
 )
+
+export const INTOCOLOR = fnDist<[0]>("intocolor", {
+  ty(a) {
+    if (a.type == "complex") return null
+    return "color"
+  },
+  js() {
+    throw new Error("Cannot plot colors outside of a shader.")
+  },
+  glsl(ctx, a) {
+    switch (a.type) {
+      case "bool":
+        return `(${a.expr} ? vec4(vec3(0x2d, 0x70, 0xb3) / 255.0, 1.0) : vec4(0))`
+      case "color":
+        return `vec4(${a.expr}, 1.0)`
+      case "real":
+        return `vec4(${
+          HSV.glsl(
+            ctx,
+            { ...a, list: false },
+            { expr: "1.0", list: false, type: "real" },
+            { expr: "1.0", list: false, type: "real" },
+          ).expr
+        }, 1.0)`
+      case "complex":
+        return null
+    }
+  },
+})
 
 export const OPS_BINARY: Partial<Record<PuncInfix | PuncPm, Fn<[0, 0]>>> = {
   "+": ADD,

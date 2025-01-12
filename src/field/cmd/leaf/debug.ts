@@ -4,7 +4,7 @@ import { h } from "../../jsx"
 
 export class CmdDebug extends Leaf {
   constructor(readonly data: string) {
-    super("", h("inline-block px-[.4em] text-[25%] whitespace-pre", data))
+    super("", h("inline-block px-[.4em] text-[25%] whitespace-pre-wrap", data))
   }
 
   latex(): string {

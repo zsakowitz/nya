@@ -281,7 +281,9 @@ export function js(node: Node, props: PropsJs): JsValue {
         })
         .reduce((a, b) => AND.js(a, b))
     case "piecewise":
-      throw new Error("Piecewises are not supported outside of shaders yet.")
+      throw new Error(
+        "Piecewise functions are not supported outside of shaders yet.",
+      )
     case "root":
       if (node.root) {
         return POW.js(
