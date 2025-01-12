@@ -17,6 +17,7 @@ import {
 } from "../../model"
 import { Options, WordMap } from "../../options"
 import { CmdSupSub } from "../math/supsub"
+import { CmdDot } from "./dot"
 
 /**
  * The different kinds of {@linkcode CmdVar}-composed words which exist. These
@@ -224,16 +225,33 @@ export class CmdVar extends Leaf {
   ir(tokens: Node[]): true | void {
     if (this.kind == "magicprefix") {
       let value = this.text
-      let el: CmdVar = this
+      let el: Command = this
+      let prop: string | undefined
       while (el[R] instanceof CmdVar) {
-        el = el[R]
-        value += el.text
-        if (el.part == R) break
+        const name = (el = el[R])
+        value += name.text
+        if (name.part == R) break
+      }
+      if (el[R] instanceof CmdDot) {
+        if (el[R][R] instanceof CmdVar) {
+          let nextEl: CmdVar = el[R][R]
+          let value = nextEl.text
+          if (nextEl.kind != null) {
+            while (nextEl[R] instanceof CmdVar) {
+              nextEl = nextEl[R]
+              value += nextEl.text
+              if (nextEl.part == R) break
+            }
+          }
+          prop = value
+          el = nextEl
+        }
       }
       const ss = el?.[R] instanceof CmdSupSub ? el[R] : null
       tokens.push({
         type: "magicvar",
         value,
+        prop,
         sub: ss?.sub?.ast(),
         sup: ss?.sup?.ast(),
         contents: new Span(this.parent, ss || el, null).ast(),

@@ -10,6 +10,7 @@ import { Expr, Sheet } from "./index.js"
 const sheet = new Sheet(exts, { field: options })
 document.body.appendChild(sheet.el)
 
+new Expr(sheet).field.typeEach`i t e r a t e . c o u n t`
 new Expr(sheet).field
   .typeEach`h s v ( 3 6 0 | i t e r a t e ^ 5 0 ArrowRight z - > z ^ 2 + p / 8 ArrowRight w h i l e ( | p | ArrowLeft ArrowLeft ArrowLeft Backspace ArrowRight ArrowRight ArrowRight < = 1 6 f r o m 0 i | , 1 , 1 )`
 new Expr(sheet).field

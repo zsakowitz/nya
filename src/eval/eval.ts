@@ -1,7 +1,7 @@
 import { commalist, fnargs } from "./ast/collect"
 import type { Node } from "./ast/token"
 import { asNumericBase, parseNumberGlsl, parseNumberJs } from "./base"
-import { Bindings, id } from "./binding"
+import { Bindings, id, parseBindingVar } from "./binding"
 import { BUILTINS } from "./builtins"
 import { GlslContext, GlslHelpers } from "./fn"
 import {
@@ -29,6 +29,7 @@ export interface Iterate {
   expr: Node
   limit: Node
   from: Node | undefined
+  prop: "count" | "trace" | undefined
   condition: { type: "while" | "until"; value: Node } | undefined
 }
 
@@ -36,11 +37,14 @@ function parseIterate({
   contents,
   sub,
   sup: limit,
+  prop,
 }: Extract<Node, { type: "magicvar" }>): Iterate {
+  if (!(prop == null || prop == "count" || prop == "trace")) {
+    throw new Error("'iterate' expressions look like 'iterate⁵⁰ z->z²+p'")
+  }
+
   if (!limit) {
-    throw new Error(
-      "Maximum iteration count should be a superscript (try iterate⁵⁰).",
-    )
+    throw new Error("Set a maximum iteration count (try iterate⁵⁰).")
   }
 
   if (sub && !limit) {
@@ -105,6 +109,7 @@ function parseIterate({
     limit,
     from,
     condition,
+    prop,
   }
 }
 
@@ -370,6 +375,15 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
               }),
             ),
           })
+        case "with": {
+          const [bound, valueNode] = parseBindingVar(node.b)
+          const value = glsl(valueNode, props)
+          const name = `_nya_var_${bound}`
+          props.ctx.push`${typeToGlsl(value)} ${name} = ${value.expr};\n`
+          return props.bindings.with(bound, { ...value, expr: name }, () =>
+            glsl(node.a, props),
+          )
+        }
         case ".":
           if (node.b.type == "var" && !node.b.sub && node.b.kind == "var") {
             const value =

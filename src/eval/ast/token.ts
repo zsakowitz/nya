@@ -163,6 +163,19 @@ export type Var = {
 }
 
 /**
+ * A magic word in the AST; something like `iterate` which consumes all
+ * succeeding tokens and voids the concept of precedence entirely.
+ */
+export type MagicVar = {
+  type: "magicvar"
+  value: string
+  sub?: Node
+  sup?: Node
+  prop?: string
+  contents: Node
+}
+
+/**
  * A part of the AST. The intermediate representation is so close to the final
  * representation that they're essentially merged.
  */
@@ -170,7 +183,7 @@ export type Node =
   | { type: "void" }
   | { type: "num"; value: string; sub?: Node }
   | Var
-  | { type: "magicvar"; value: string; sub?: Node; sup?: Node; contents: Node }
+  | MagicVar
   | { type: "num16"; value: string }
   | { type: "group"; lhs: ParenLhs; rhs: ParenRhs; value: Node }
   | { type: "sub"; sub: Node }

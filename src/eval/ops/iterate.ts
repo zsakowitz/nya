@@ -5,6 +5,12 @@ import { frac, num } from "../ty/create"
 import { safe } from "../util"
 
 export function iterateJs(data: Iterate, props: PropsJs): JsValue {
+  if (data.prop) {
+    throw new Error(
+      "Only plain 'iterate' expressions are supported outside of shaders.",
+    )
+  }
+
   const limitVal = js(data.limit, props)
   if (limitVal.list) {
     throw new Error("'iterate' expressions must have a single limit.")
@@ -52,6 +58,12 @@ export function iterateJs(data: Iterate, props: PropsJs): JsValue {
 }
 
 export function iterateGlsl(data: Iterate, props: PropsGlsl): GlslValue {
+  if (data.prop == "trace") {
+    throw new Error(
+      "Only 'iterate' and 'iterate.count' expressions are supported in shaders.",
+    )
+  }
+
   const limitVal = js(data.limit, { ...props, bindings: new Bindings() })
   if (limitVal.list) {
     throw new Error("'iterate' expressions must have a single limit.")
@@ -78,36 +90,46 @@ export function iterateGlsl(data: Iterate, props: PropsGlsl): GlslValue {
     type: from.type,
   }
 
-  const index = props.ctx.name()
+  const count = props.ctx.name()
 
   props.ctx.push`${typeToGlsl(from)} ${name.expr} = ${from.expr};\n`
-  props.ctx.push`for (int ${index} = 0; ${index} < ${limit}; ${index}++) {\n`
-  props.bindings.with(data.name, name, () => {
-    if (data.condition) {
-      const cond = glsl(data.condition.value, props)
-      if (cond.type != "bool") {
+  {
+    const index = props.ctx.name()
+    props.ctx.push`int ${index}, ${count};\n`
+    props.ctx.push`for (int ${index} = 0; ${index} < ${limit}; ${index}++) {\n`
+    props.ctx.push`${count}++;\n`
+    props.bindings.with(data.name, name, () => {
+      if (data.condition) {
+        const cond = glsl(data.condition.value, props)
+        if (cond.type != "bool") {
+          throw new Error(
+            `'${data.condition.type} ...' clauses need a condition, like '${data.condition.type} x < 2'.`,
+          )
+        }
+        if (cond.list !== false) {
+          throw new Error(
+            `'${data.condition.type} ...' conditions cannot be lists.`,
+          )
+        }
+        props.ctx
+          .push`if (${data.condition.type == "while" ? "!" : ""}(${cond.expr})) break;\n`
+      }
+
+      const next = glsl(data.expr, props)
+      if (next.list != name.list || next.type != name.type) {
         throw new Error(
-          `'${data.condition.type} ...' clauses need a condition, like '${data.condition.type} x < 2'.`,
+          "The iteration expression and initial value must be the same type in shaders.",
         )
       }
-      if (cond.list !== false) {
-        throw new Error(
-          `'${data.condition.type} ...' conditions cannot be lists.`,
-        )
-      }
-      props.ctx
-        .push`if (${data.condition.type == "while" ? "!" : ""}(${cond.expr})) break;\n`
-    }
+      props.ctx.push`${name.expr} = ${next.expr};\n`
+    })
+    props.ctx.push`}\n`
+  }
 
-    const next = glsl(data.expr, props)
-    if (next.list != name.list || next.type != name.type) {
-      throw new Error(
-        "The iteration expression and initial value must be the same type in shaders.",
-      )
-    }
-    props.ctx.push`${name.expr} = ${next.expr};\n`
-  })
-  props.ctx.push`}\n`
-
-  return name
+  switch (data.prop) {
+    case "count":
+      return { type: "real", list: false, expr: `float(${count})` }
+    case undefined:
+      return name
+  }
 }

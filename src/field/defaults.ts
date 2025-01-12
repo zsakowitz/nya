@@ -279,7 +279,7 @@ export const words = new WordMap<WordKind>([
 
   // Iteration
   ["iterate", "magicprefix"],
-  ["trace", "magicprefix"],
+  ["trace", "var"],
   ["while", "infix"],
   ["until", "infix"],
   ["from", "infix"],
