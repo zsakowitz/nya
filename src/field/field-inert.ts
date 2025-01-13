@@ -79,9 +79,15 @@ export class FieldInert {
     this.onBeforeChange?.()
     this.sel = new Selection(this.block, null, null, R)
     this.sel.remove()
-    source
-      .split(" ")
-      .forEach((input) => this.type(input, { skipChangeHandlers: true }))
+    for (const input of source.split(/\s+/)) {
+      if (/^[a-z]+$/.test(input)) {
+        for (const char of input) {
+          this.type(char, { skipChangeHandlers: true })
+        }
+      } else {
+        this.type(input, { skipChangeHandlers: true })
+      }
+    }
     this.onAfterChange?.(false)
   }
 

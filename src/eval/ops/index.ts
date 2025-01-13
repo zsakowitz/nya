@@ -1068,9 +1068,101 @@ export const DOT = fnDist<[0, 0]>("dot product", {
   },
 })
 
-export function getNamedFn(name: string) {
-  if ({}.hasOwnProperty.call(NAMED_FNS, name)) {
-    return NAMED_FNS[name]!
+export const MAX = fnDist<0[]>("max", {
+  ty(...args) {
+    return args.every((x) => x.type == "real") ? "real" : null
+  },
+  js(...vals) {
+    if (!vals.every((x) => x.type == "real")) return null
+    return {
+      type: "real",
+      value: vals
+        .map((x) => x.value)
+        .reduce((a, b) => (num(a) > num(b) ? a : b), approx(-Infinity)),
+    }
+  },
+  glsl(_, ...vals) {
+    if (!vals.every((x) => x.type == "real")) return null
+    if (vals.length == 0) {
+      return "(-1.0/0.0)"
+    } else {
+      return vals.map((x) => x.expr).reduce((a, b) => `max(${a}, ${b})`)
+    }
+  },
+})
+
+export const MIN = fnDist<0[]>("min", {
+  ty(...args) {
+    return args.every((x) => x.type == "real") ? "real" : null
+  },
+  js(...vals) {
+    if (!vals.every((x) => x.type == "real")) return null
+    return {
+      type: "real",
+      value: vals
+        .map((x) => x.value)
+        .reduce((a, b) => (num(a) < num(b) ? a : b), approx(Infinity)),
+    }
+  },
+  glsl(_, ...vals) {
+    if (!vals.every((x) => x.type == "real")) return null
+    if (vals.length == 0) {
+      return "(1.0/0.0)"
+    } else {
+      return vals.map((x) => x.expr).reduce((a, b) => `min(${a}, ${b})`)
+    }
+  },
+})
+
+export const OKLAB = fnDist<[0, 0, 0]>("oklab", {
+  ty(a, b, c) {
+    if (a.type == "real" && b.type == "real" && c.type == "real") {
+      return "color"
+    }
+    return null
+  },
+  js() {
+    throw new Error("Cannot compute oklab() colors outside of shaders.")
+  },
+  glsl(ctx, a, b, c) {
+    if (a.type != "real" || b.type != "real" || c.type != "real") {
+      return null
+    }
+    ctx.declare`// https://github.com/patriciogonzalezvivo/lygia/blob/main/color/space/oklab2rgb.glsl
+const mat3 _helper_oklab_OKLAB2RGB_A = mat3(
+  1.0,           1.0,           1.0,
+  0.3963377774, -0.1055613458, -0.0894841775,
+  0.2158037573, -0.0638541728, -1.2914855480);
+const mat3 _helper_oklab_OKLAB2RGB_B = mat3(
+  4.0767416621, -1.2684380046, -0.0041960863,
+  -3.3077115913, 2.6097574011, -0.7034186147,
+  0.2309699292, -0.3413193965, 1.7076147010);
+vec3 _helper_oklab(const in vec3 oklab) {
+  vec3 lms = _helper_oklab_OKLAB2RGB_A * oklab;
+  return _helper_oklab_OKLAB2RGB_B * (lms * lms * lms);
+}
+`
+    return `_helper_oklab(vec3(${a.expr}, ${b.expr}, ${c.expr}))`
+  },
+})
+
+export function getNamedFn(name: string, argCount: number) {
+  if ({}.hasOwnProperty.call(NAMED_FNS_CONST_ARGLEN, name)) {
+    const fn = NAMED_FNS_CONST_ARGLEN[name]!
+    if (argCount != fn[0]) {
+      throw new Error(`The '${name}' function needs ${fn[0]} arguments.`)
+    }
+    return fn[1]
+  }
+
+  if ({}.hasOwnProperty.call(NAMED_FNS_VAR_ARGLEN, name)) {
+    const fn = NAMED_FNS_VAR_ARGLEN[name]!
+    if (!fn[0](argCount)) {
+      throw new Error(
+        `The '${name}' function does not take ${argCount} arguments.`,
+      )
+    }
+    return fn[1]
   }
 }
 
@@ -1091,7 +1183,13 @@ export const OPS_UNARY: Partial<Record<PuncUnary | PuncPm, Fn<[0]>>> = {
   "-": NEG,
 }
 
-const NAMED_FNS: Record<string, [number, Fn<0[]>]> = {
+const NAMED_FNS_VAR_ARGLEN: Record<string, [(x: number) => boolean, Fn<0[]>]> =
+  {
+    max: [() => true, MAX],
+    min: [() => true, MIN],
+  }
+
+const NAMED_FNS_CONST_ARGLEN: Record<string, [number, Fn<0[]>]> = {
   debugquadrant: [1, DEBUGQUADRANT],
   rgb: [3, RGB],
   hsv: [3, HSV],
@@ -1106,4 +1204,5 @@ const NAMED_FNS: Record<string, [number, Fn<0[]>]> = {
   tan: [1, TAN],
   dot: [2, DOT],
   magnitude: [1, ABS],
+  oklab: [3, OKLAB],
 }

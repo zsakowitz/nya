@@ -10,11 +10,20 @@ import { Expr, Sheet } from "./index.js"
 const sheet = new Sheet(exts, { field: options })
 document.body.appendChild(sheet.el)
 
-new Expr(sheet).field.typeEach`\
-r g b ( a [ 1 ] , a [ 2 ] , a [ 3 ] ) \
-w i t h a = ( 0 . 4 5 s i n 5 a + 0 . 5 ) 2 5 5 \
-w i t h a = | [ x , y , z ] | / n ArrowRight \
-w i t h x = r e a l ( a [ 4 ] ) w i t h y = i m a g ( a [ 4 ] ) w i t h z = r e a l ( a [ 5 ] ) w i t h n = i m a g ( a [ 5 ] ) w i t h a = ( i t e r a t e ^ 5 0 ArrowRight a - > ( [ z , s , r , a [ 4 ] + d o t ( z - s , s - r ) + i d o t ( z - s , z - s ) , a [ 5 ] + d o t ( z - r , z - r ) + i ] w i t h z = a [ 1 ] ^ 2 + p w i t h s = a [ 1 ] w i t h r = a [ 2 ] ) w h i l e ( | ArrowLeft Backspace ArrowRight a [ 1 ] | < = 2 f r o m [ 0 i , 0 i , 0 i , 0 i , 0 i ] )`
+new Expr(sheet).field.typeEach`
+r g b ( a [ 1 ] , a [ 2 ] , a [ 3 ] )
+withseq list
+  x = real a [ 4 ] ;
+  y = imag a [ 4 ] ;
+  z = real a [ 5 ] ;
+  n = imag a [ 5 ] ;
+  a = | [ x , y , z ] | / n ArrowRight ;
+  a = ( 0 . 4 5 s i n 5 a + 0 . 5 ) 2 5 5
+ArrowRight
+with a = ( i t e r a t e ^ 5 0 ArrowRight a - > ( [ z , s , r , a [ 4 ] + d o t ( z - s , s - r ) + i d o t ( z - s , z - s ) , a [ 5 ] + d o t ( z - r , z - r ) + i ]
+with z = a [ 1 ] ^ 2 + p
+with s = a [ 1 ]
+with r = a [ 2 ] ) w h i l e ( | ArrowLeft Backspace ArrowRight a [ 1 ] | < = 2 f r o m [ 0 i , 0 i , 0 i , 0 i , 0 i ] )`
 new Expr(sheet).field
   .typeEach`h s v ( 3 6 0 | i t e r a t e ^ 5 0 ArrowRight z - > z ^ 2 + p / 8 ArrowRight w h i l e ( | p | ArrowLeft ArrowLeft ArrowLeft Backspace ArrowRight ArrowRight ArrowRight < = 1 6 f r o m 0 i | , 1 , 1 )`
 new Expr(sheet).field

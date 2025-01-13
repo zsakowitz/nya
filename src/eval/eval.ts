@@ -60,17 +60,13 @@ function jsCall(
   _asMethod: boolean,
   props: PropsJs,
 ): JsValue {
-  const fn = getNamedFn(name)
+  const fn = getNamedFn(name, args.length)
 
   if (!fn) {
     throw new Error(`The '${name}' function is not supported yet.`)
   }
 
-  if (args.length != fn[0]) {
-    throw new Error(`The '${name}' function needs ${fn[0]} arguments.`)
-  }
-
-  return fn[1].js(...args.map((arg) => js(arg, props)))
+  return fn.js(...args.map((arg) => js(arg, props)))
 }
 
 export function js(node: Node, props: PropsJs): JsValue {
@@ -281,17 +277,13 @@ function glslCall(
   _asMethod: boolean,
   props: PropsGlsl,
 ): GlslValue {
-  const fn = getNamedFn(name)
+  const fn = getNamedFn(name, args.length)
 
   if (!fn) {
     throw new Error(`The '${name}' function is not supported in shaders yet.`)
   }
 
-  if (args.length != fn[0]) {
-    throw new Error(`The '${name}' function needs ${fn[0]} arguments.`)
-  }
-
-  return fn[1].glsl(props.ctx, ...args.map((arg) => glsl(arg, props)))
+  return fn.glsl(props.ctx, ...args.map((arg) => glsl(arg, props)))
 }
 
 export function glsl(node: Node, props: PropsGlsl): GlslValue {
