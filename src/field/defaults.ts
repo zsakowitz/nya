@@ -254,6 +254,7 @@ export const words = new WordMap<WordKind>([
   ["rgb", "prefix"],
   ["hsv", "prefix"],
   ["oklab", "prefix"],
+  ["oklch", "prefix"],
 
   // Number theory
   ["lcm", "prefix"],

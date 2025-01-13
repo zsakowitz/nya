@@ -10,7 +10,13 @@ export function garbageValJs(ty: Ty): JsVal {
     case "color":
       return {
         type: "color",
-        value: { type: "color", r: real(NaN), g: real(NaN), b: real(NaN) },
+        value: {
+          type: "color",
+          r: real(0),
+          g: real(0),
+          b: real(0),
+          a: real(0),
+        },
       }
     case "bool":
       return { type: "bool", value: false }
@@ -24,7 +30,7 @@ export function garbageValGlsl(ty: Ty): string {
     case "complex":
       return "vec2(.0/.0)"
     case "color":
-      return "vec3(.0/.0)"
+      return "vec4(0)"
     case "bool":
       return "false"
   }

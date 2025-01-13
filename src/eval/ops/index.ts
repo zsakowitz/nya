@@ -13,6 +13,7 @@ import {
   vfrac,
   vreal,
 } from "../ty/create"
+import { garbageValJs } from "../ty/garbage"
 import { hypot, safe } from "../util"
 
 export const ADD = fnNum<[0, 0]>(
@@ -105,6 +106,21 @@ export const MUL = fnNum<[0, 0]>(
         ADD.real(this.real(b, c), this.real(a, d)),
       )
     },
+    other(a, b) {
+      if (a.type == "bool" && b.type == "color") {
+        ;[a, b] = [b, a]
+      }
+
+      if (!(a.type == "color" && b.type == "bool")) {
+        return null
+      }
+
+      if (b.value) {
+        return a
+      } else {
+        return garbageValJs({ type: "color" })
+      }
+    },
   },
   {
     real(_, a, b) {
@@ -114,6 +130,27 @@ export const MUL = fnNum<[0, 0]>(
       declareMul(ctx)
       return `_helper_mul(${a}, ${b})`
     },
+    other(_, a, b) {
+      if (a.type == "bool" && b.type == "color") {
+        return `(float(${a.expr}) * ${b.expr})`
+      }
+
+      if (a.type == "color" && b.type == "bool") {
+        return `(${a.expr} * float(${b.expr}))`
+      }
+
+      return null
+    },
+  },
+  (a, b) => {
+    if (
+      (a.type == "color" && b.type == "bool") ||
+      (a.type == "bool" && b.type == "color")
+    ) {
+      return { type: "color" }
+    }
+
+    return null
   },
 )
 
@@ -535,14 +572,20 @@ export const RGB = fnDist<[0, 0, 0]>("rgb", {
     if (r.type == "real" && g.type == "real" && b.type == "real") {
       return {
         type: "color",
-        value: { type: "color", r: r.value, g: g.value, b: b.value },
+        value: {
+          type: "color",
+          r: r.value,
+          g: g.value,
+          b: b.value,
+          a: real(1),
+        },
       }
     }
     return null
   },
   glsl(_, r, g, b) {
     if (r.type == "real" && g.type == "real" && b.type == "real") {
-      return `(vec3(${r.expr}, ${g.expr}, ${b.expr}) / 255.0)`
+      return `vec4(vec3(${r.expr}, ${g.expr}, ${b.expr}) / 255.0, 1.0)`
     }
     return null
   },
@@ -599,6 +642,7 @@ export const HSV = fnDist<[0, 0, 0]>("hsv", {
         r: real(255.0 * r),
         g: real(255.0 * g),
         b: real(255.0 * b),
+        a: real(1),
       },
     }
   },
@@ -613,7 +657,7 @@ vec3 _helper_hsv(vec3 c) {
   return c.z * mix(_helper_hsv_const.xxx, clamp(p - _helper_hsv_const.xxx, 0.0, 1.0), c.y);
 }
 `
-    return `_helper_hsv(vec3(${h.expr}, ${s.expr}, ${v.expr}) / vec3(360.0, 1.0, 1.0))`
+    return `vec4(_helper_hsv(vec3(${h.expr}, ${s.expr}, ${v.expr}) / vec3(360.0, 1.0, 1.0)), 1.0)`
   },
 })
 
@@ -841,11 +885,12 @@ export const DEBUGQUADRANT = fnDist<[0]>("debugquadrant", {
     throw new Error("'debugquadrant' can only run in shaders.")
   },
   glsl(ctx, a) {
-    ctx.declare`vec3 _helper_debugquadrant(vec2 z) {
-  return vec3(
+    ctx.declare`vec4 _helper_debugquadrant(vec2 z) {
+  return vec4(
     (z.x < v_coords.x ? 255.0 : 0.0),
     (z.y < v_coords.y ? 255.0 : 0.0),
-    255.0
+    255.0,
+    1.0
   );
 }`
 
@@ -908,18 +953,16 @@ export const INTOCOLOR = fnDist<[0]>("intocolor", {
       case "bool":
         return `(${a.expr} ? vec4(vec3(0x2d, 0x70, 0xb3) / 255.0, 1.0) : vec4(0))`
       case "color":
-        return `vec4(${a.expr}, 1.0)`
+        return a.expr
       case "real":
-        return `vec4(${
-          HSV.glsl(
-            ctx,
-            { ...a, list: false },
-            { expr: "1.0", list: false, type: "real" },
-            { expr: "1.0", list: false, type: "real" },
-          ).expr
-        }, 1.0)`
+        return HSV.glsl(
+          ctx,
+          { ...a, list: false },
+          { expr: "1.0", list: false, type: "real" },
+          { expr: "1.0", list: false, type: "real" },
+        ).expr
       case "complex":
-        return `vec4(${DEBUGQUADRANT.glsl1(ctx, a).expr}, 1)`
+        return DEBUGQUADRANT.glsl1(ctx, a).expr
     }
   },
 })
@@ -1142,7 +1185,7 @@ vec3 _helper_oklab(const in vec3 oklab) {
   return _helper_oklab_OKLAB2RGB_B * (lms * lms * lms);
 }
 `
-    return `_helper_oklab(vec3(${a.expr}, ${b.expr}, ${c.expr}))`
+    return `vec4(_helper_oklab(vec3(${a.expr}, ${b.expr}, ${c.expr})), 1.0)`
   },
 })
 
@@ -1161,14 +1204,14 @@ export const OKLCH = fnDist<[0, 0, 0]>("oklch", {
       return null
     }
     const hname = ctx.name()
-    ctx.push`vec2 ${hname} = ${h.expr};`
+    ctx.push`float ${hname} = ${h.expr};`
     const cname = ctx.name()
-    ctx.push`vec2 ${cname} = ${c.expr};`
+    ctx.push`float ${cname} = ${c.expr};`
     return OKLAB.glsl1(
       ctx,
       l,
-      { type: "real", expr: `(${hname} * cos(${cname}))` },
-      { type: "real", expr: `(${hname} * sin(${cname}))` },
+      { type: "real", expr: `(${cname} * cos(${hname}))` },
+      { type: "real", expr: `(${cname} * sin(${hname}))` },
     ).expr
   },
 })

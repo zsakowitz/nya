@@ -3,7 +3,7 @@ export type SExact = { type: "exact"; n: number; d: number }
 export type SReal = SApprox | SExact
 
 export type SPoint = { type: "point"; x: SReal; y: SReal }
-export type SColor = { type: "color"; r: SReal; g: SReal; b: SReal }
+export type SColor = { type: "color"; r: SReal; g: SReal; b: SReal; a: SReal }
 export type SBool = { type: "bool"; value: boolean }
 
 export type VReal = { type: "real"; value: SReal }
@@ -40,7 +40,7 @@ export function tyToGlsl(ty: Ty): string {
   return {
     real: "float",
     complex: "vec2",
-    color: "vec3",
+    color: "vec4",
     bool: "bool",
   }[ty.type]
 }

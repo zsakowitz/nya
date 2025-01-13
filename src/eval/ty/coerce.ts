@@ -11,7 +11,7 @@ import {
   type Type,
 } from "."
 import type { GlslContext } from "../fn"
-import { pt, real } from "./create"
+import { pt, real, vreal } from "./create"
 import { garbageValJs } from "./garbage"
 
 /**
@@ -47,25 +47,18 @@ export function coerceTy(tys: Ty[]): Ty | null {
 export function coerceValJs(val: JsVal, to: Ty): JsVal {
   if (val.type == to.type) {
     return val
-  }
-
-  if (val.type == "bool" && to.type == "real") {
-    if (val.value) {
-      return { type: "real", value: real(1) }
-    } else {
+  } else if (val.type == "bool") {
+    if (!val.value) {
       return garbageValJs(to)
     }
-  }
 
-  if (val.type == "bool" && to.type == "complex") {
-    if (val.value) {
-      return { type: "complex", value: pt(real(1), real(0)) }
-    } else {
-      return garbageValJs(to)
+    switch (to.type) {
+      case "real":
+        return vreal(1)
+      case "complex":
+        return { type: "complex", value: pt(real(1), real(0)) }
     }
-  }
-
-  if (val.type == "real" && to.type == "complex") {
+  } else if (val.type == "real" && to.type == "complex") {
     return {
       type: "complex",
       value: { type: "point", x: val.value, y: real(0) },
