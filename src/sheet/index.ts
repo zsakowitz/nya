@@ -317,7 +317,7 @@ export class Sheet {
       (this.elNextExpr = h(
         "grid grid-cols-[2.5rem,auto] relative pointernya-cursor",
         h(
-          "inline-flex bg-slate-100 flex-col p-0.5 border-r border-slate-200",
+          "inline-flex bg-slate-100 flex-col p-0.5",
           (this.elNextIndex = h(
             "text-[65%] [line-height:1] text-slate-500",
             "1",
@@ -348,9 +348,9 @@ export class Sheet {
     )
 
     this.el = h(
-      "[--nya-sheet-sidebar:600px] block fixed inset-0 grid grid-cols-[var(--nya-sheet-sidebar)_1fr_200px] grid-rows-1 select-none [--nya-focus:theme(colors.blue.400)]",
+      "block fixed inset-0 grid grid-cols-[600px_1fr_200px] grid-rows-1 select-none [--nya-focus:theme(colors.blue.400)]",
       h(
-        "block overflow-y-auto relative border-r",
+        "block overflow-y-auto relative border-r border-slate-200",
         h(
           "flex flex-col h-16 w-full bg-slate-100 border-b border-slate-200 sticky top-0 z-10 items-center justify-center",
           h(
@@ -371,12 +371,12 @@ export class Sheet {
           "absolute inset-0 size-full pointer-events-none",
         )),
         this.paper.el,
-        // h(
-        //   "absolute block top-0 bottom-0 left-0 w-1 from-slate-300/50 to-transparent bg-gradient-to-r",
-        // ),
-        // h(
-        //   "absolute block top-0 bottom-0 right-0 w-1 from-slate-300/50 to-transparent bg-gradient-to-l",
-        // ),
+        h(
+          "absolute block top-0 bottom-0 left-0 w-1 from-slate-950/10 to-transparent bg-gradient-to-r",
+        ),
+        h(
+          "absolute block top-0 bottom-0 right-0 w-1 from-slate-950/10 to-transparent bg-gradient-to-l",
+        ),
       ),
       h("grid grid-rows-2", this.elGlsl, this.elTokens),
       (this.elLogo = hx(
@@ -399,6 +399,12 @@ export class Sheet {
     })
     doMatchReglSize(this.elShaderCanvas, this.regl)
     this.paper.el.classList.add("absolute", "inset-0")
+
+    new ResizeObserver((entries) => {
+      const entry = entries[0]!
+      const { width } = entry.contentRect
+      this.el.style.setProperty("--nya-sheet-sidebar", width + "px")
+    }).observe(this.elExpressions)
   }
 
   checkIndices() {

@@ -44,10 +44,10 @@ export class Paper {
 
   constructor(
     public rawBounds: Bounds = {
-      xmin: -2,
-      xmax: 0.5,
-      ymin: -1.25,
-      ymax: 1.25,
+      xmin: -2.05,
+      xmax: 0.55,
+      ymin: -1.3,
+      ymax: 1.3,
     },
     public autofit = true,
   ) {}

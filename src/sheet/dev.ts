@@ -10,6 +10,7 @@ import { Expr, Sheet } from "./index.js"
 const sheet = new Sheet(exts, { field: options })
 document.body.appendChild(sheet.el)
 
+new Expr(sheet).field.typeEach`rgb ( 2 5 5 , 2 5 5 , 2 5 5 )`
 new Expr(sheet).field.typeEach`
 r g b ( a [ 1 ] , a [ 2 ] , a [ 3 ] )
 withseq list
