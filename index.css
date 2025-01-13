@@ -1630,14 +1630,29 @@ body {
   color: transparent;
 }
 
+.after\:opacity-30::after {
+  content: var(--tw-content);
+  opacity: 0.3;
+}
+
 .after\:content-\[\'c\'\]::after {
   --tw-content: 'c';
+  content: var(--tw-content);
+}
+
+.after\:content-\[\'\2c \'\]::after {
+  --tw-content: ',';
   content: var(--tw-content);
 }
 
 .after\:\[line-height\:\.9\]::after {
   content: var(--tw-content);
   line-height: .9;
+}
+
+.last\:after\:hidden:last-child::after {
+  content: var(--tw-content);
+  display: none;
 }
 
 .focus-within\:border-\[color\:--nya-focus\]:focus-within {

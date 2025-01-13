@@ -25,6 +25,7 @@ import {
 import { SymInfinity, SymPi, SymTau } from "./cmd/leaf/sym"
 import { CmdVar, type WordKind } from "./cmd/leaf/var"
 import { CmdFor } from "./cmd/logic/for"
+import { CmdList } from "./cmd/logic/list"
 import { CmdPiecewise } from "./cmd/logic/piecewise"
 import { BIG_ALIASES, CmdBig } from "./cmd/math/big"
 import { CmdBrack } from "./cmd/math/brack"
@@ -126,6 +127,7 @@ export const autoCmds = new WordMap<Init>([
   ["sqrt", CmdRoot],
   ["nthroot", CmdRoot],
   ["color", CmdColor],
+  ["list", CmdList],
 
   // Various names for piecewise
   ["cases", CmdPiecewise],
@@ -164,6 +166,7 @@ export const words = new WordMap<WordKind>([
   // Standard infixes
   ["for", "infix"],
   ["with", "infix"],
+  ["withseq", "infix"],
 
   // Trig functions
   ["sin", "prefix"],

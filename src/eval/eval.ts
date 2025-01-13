@@ -1,7 +1,7 @@
 import { commalist, fnargs } from "./ast/collect"
 import type { Node } from "./ast/token"
 import { asNumericBase, parseNumberGlsl, parseNumberJs } from "./base"
-import { Bindings, id, parseBindingVar } from "./binding"
+import { Bindings, id, parseBindingVars } from "./binding"
 import { BUILTINS } from "./builtins"
 import { GlslContext, GlslHelpers } from "./fn"
 import {
@@ -118,10 +118,27 @@ export function js(node: Node, props: PropsJs): JsValue {
             }
           }
           break
-        case "with":
-          const [bound, valueNode] = parseBindingVar(node.b)
-          const value = js(valueNode, props)
-          return props.bindings.with(bound, value, () => js(node.a, props))
+        case "with": {
+          const bindings = parseBindingVars(node.b)
+          const result: Record<string, JsValue> = {}
+          for (const [id, node, name] of bindings) {
+            if (id in result) {
+              throw new Error(
+                `Variable '${name}' declared twice. Maybe you want a 'withseq ...' clause instead of 'with ...'?`,
+              )
+            }
+            result[id] = js(node, props)
+          }
+          return props.bindings.withAll(result, () => js(node.a, props))
+        }
+        case "withseq": {
+          const bindings = parseBindingVars(node.b)
+          const result: Record<string, JsValue> = {}
+          for (const [name, node] of bindings) {
+            result[name] = props.bindings.withAll(result, () => js(node, props))
+          }
+          return props.bindings.withAll(result, () => js(node.a, props))
+        }
       }
       const op = OPS_BINARY[node.kind]
       if (op) {
@@ -311,13 +328,27 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
             ),
           })
         case "with": {
-          const [bound, valueNode] = parseBindingVar(node.b)
-          const value = glsl(valueNode, props)
-          const name = props.ctx.name()
-          props.ctx.push`${varDeclToGlsl(value, name)} = ${value.expr};\n`
-          return props.bindings.with(bound, { ...value, expr: name }, () =>
-            glsl(node.a, props),
-          )
+          const bindings = parseBindingVars(node.b)
+          const result: Record<string, GlslValue> = Object.create(null)
+          for (const [id, node, name] of bindings) {
+            if (id in result) {
+              throw new Error(
+                `Variable '${name}' declared twice. Maybe you want a 'withseq ...' clause instead of 'with ...'?`,
+              )
+            }
+            result[id] = glsl(node, props)
+          }
+          return props.bindings.withAll(result, () => glsl(node.a, props))
+        }
+        case "withseq": {
+          const bindings = parseBindingVars(node.b)
+          const result: Record<string, GlslValue> = {}
+          for (const [name, node] of bindings) {
+            result[name] = props.bindings.withAll(result, () =>
+              glsl(node, props),
+            )
+          }
+          return props.bindings.withAll(result, () => glsl(node.a, props))
         }
         case ".":
           if (node.b.type == "var" && !node.b.sub && node.b.kind == "var") {

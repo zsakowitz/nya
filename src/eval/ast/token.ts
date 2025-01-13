@@ -17,6 +17,7 @@ export type PuncCmp =
 export type PuncInfix =
   | "for"
   | "with"
+  | "withseq"
   | "base"
   | "while"
   | "until"
@@ -106,6 +107,7 @@ export const PRECEDENCE_MAP = {
   base: Precedence.WordInfix,
   for: Precedence.WordInfix,
   with: Precedence.WordInfix,
+  withseq: Precedence.WordInfix,
   until: Precedence.WordInfix,
   while: Precedence.WordInfix,
   from: Precedence.WordInfix,

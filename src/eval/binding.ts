@@ -1,3 +1,4 @@
+import { commalist } from "./ast/collect"
 import type { Node, Var } from "./ast/token"
 import { subscript } from "./text"
 
@@ -26,6 +27,21 @@ export class Bindings<T> {
     return this.data[id]
   }
 
+  withAll<U>(data: Record<string, T>, fn: () => U): U {
+    const old: Record<string, T | undefined> = {}
+    try {
+      for (const key in data) {
+        old[key] = this.data[key]
+        this.data[key] = data[key]
+      }
+      return fn()
+    } finally {
+      for (const key in old) {
+        this.data[key] = old[key]
+      }
+    }
+  }
+
   with<U>(id: string, value: T, fn: () => U): U {
     const oldValue = this.data[id]
     this.data[id] = value
@@ -37,7 +53,9 @@ export class Bindings<T> {
   }
 }
 
-export function parseBindingVar(node: Node): [string, Node] {
+export type Binding = [id: string, contents: Node, name: string]
+
+export function parseBindingVar(node: Node): Binding {
   if (
     !(
       node.type == "cmplist" &&
@@ -54,5 +72,17 @@ export function parseBindingVar(node: Node): [string, Node] {
     throw new Error("A 'with' statement looks like 'with a = 3'.")
   }
 
-  return [id(node.items[0]), node.items[1]]
+  return [
+    id(node.items[0]),
+    node.items[1],
+    node.items[0].value +
+      (node.items[0].sub ? subscript(node.items[0].sub) : ""),
+  ]
+}
+
+export function parseBindingVars(node: Node): Binding[] {
+  if (node.type == "group" && node.lhs == "[" && node.rhs == "]") {
+    node = node.value
+  }
+  return commalist(node).map(parseBindingVar)
 }
