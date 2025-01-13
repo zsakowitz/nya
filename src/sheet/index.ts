@@ -210,7 +210,8 @@ in vec2 v_coords;
 out vec4 color;
 ${props.ctx.helpers.helpers}void main() {
 ${props.ctx.block}color = ${value.expr};
-}`
+}
+`
       this.sheet.elGlsl.textContent = frag
       this.sheet.regl.clear({
         color: [0, 0, 0, 1],
@@ -224,10 +225,11 @@ precision highp float;
 in vec2 position;
 in vec2 a_coords;
 out vec2 v_coords;
-void main () {
+void main() {
   v_coords = a_coords;
   gl_Position = vec4(position, 0, 1);
-}`,
+}
+`,
 
         attributes: {
           position: [

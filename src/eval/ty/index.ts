@@ -65,7 +65,7 @@ export function list(values: string[]): string {
   return values.slice(0, -1).join(", ") + ", and " + values[values.length - 1]!
 }
 
-export function listTy(values: Ty[]): string {
+export function listTy(values: readonly Ty[]): string {
   return list(values.map((x) => x.type))
 }
 

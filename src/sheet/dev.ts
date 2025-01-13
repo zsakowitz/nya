@@ -25,7 +25,11 @@ with z = a [ 1 ] ^ 2 + p
 with s = a [ 1 ]
 with r = a [ 2 ] ) w h i l e ( | ArrowLeft Backspace ArrowRight a [ 1 ] | < = 2 f r o m [ 0 i , 0 i , 0 i , 0 i , 0 i ] )`
 new Expr(sheet).field
-  .typeEach`h s v ( 3 6 0 | i t e r a t e ^ 5 0 ArrowRight z - > z ^ 2 + p / 8 ArrowRight w h i l e ( | p | ArrowLeft ArrowLeft ArrowLeft Backspace ArrowRight ArrowRight ArrowRight < = 1 6 f r o m 0 i | , 1 , 1 )`
+  .typeEach`a * ( valid a and y > 0 and 0 < x < 1 ) with a = oklch ( . 8 , y , 3 6 0 x )`
+new Expr(sheet).field
+  .typeEach`h s v ( 3 6 0 | i t e r a t e ^ 5 0 ArrowRight z - > z ^ 2 + p w h i l e ( | p | ArrowLeft ArrowLeft ArrowLeft Backspace ArrowRight ArrowRight ArrowRight < = 2 f r o m 0 i | , 1 , 1 )`
+new Expr(sheet).field
+  .typeEach`firstvalid ( oklch ( . 4 , y , 3 6 0 x ) , oklch ( . 5 , y , 3 6 0 x ) , oklch ( . 6 , y , 3 6 0 x ) , oklch ( . 7 , y , 3 6 0 x ) , oklch ( . 8 , y , 3 6 0 x ) , oklch ( . 9 , y , 3 6 0 x ) , oklch ( . 9 5 , y , 3 6 0 x ) )`
 new Expr(sheet).field
   .typeEach`p i e c e s r g b ( 1 2 8 , 2 5 5 , 0 ) ArrowRight | p | < . 5 ArrowDown y < . 7 ; r g b ( 0 , 2 5 5 , 1 2 8 ) ArrowUp r g b ( 2 5 5 , 2 5 5 , 0 )`
 

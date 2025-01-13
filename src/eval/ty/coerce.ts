@@ -18,7 +18,7 @@ import { garbageValJs } from "./garbage"
  * `null` means there were zero arguments. Any other coercion error will be
  * thrown.
  */
-export function coerceTy(tys: Ty[]): Ty | null {
+export function coerceTy(tys: readonly Ty[]): Ty | null {
   if (!tys.length) {
     return null
   }

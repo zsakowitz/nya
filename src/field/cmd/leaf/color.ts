@@ -104,7 +104,7 @@ export class CmdColor extends Leaf {
       name: {
         type: "var",
         value: "rgb",
-        kind: "var",
+        kind: "prefix",
       },
       args: {
         type: "commalist",

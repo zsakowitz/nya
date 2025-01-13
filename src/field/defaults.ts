@@ -256,6 +256,10 @@ export const words = new WordMap<WordKind>([
   ["oklab", "prefix"],
   ["oklch", "prefix"],
 
+  // Custom functions
+  ["valid", "prefix"],
+  ["firstvalid", "prefix"],
+
   // Number theory
   ["lcm", "prefix"],
   ["gcd", "prefix"],

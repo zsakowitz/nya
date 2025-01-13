@@ -1,5 +1,6 @@
 import type { PuncCmp, PuncInfix, PuncPm, PuncUnary } from "../ast/token"
 import { fnBool, fnDist, fnNum, type Fn, type GlslContext } from "../fn"
+import { tyToGlsl } from "../ty"
 import { isZero } from "../ty/check"
 import { coerceTy, coerceValGlsl, coerceValJs, listJs } from "../ty/coerce"
 import {
@@ -13,7 +14,7 @@ import {
   vfrac,
   vreal,
 } from "../ty/create"
-import { garbageValJs } from "../ty/garbage"
+import { garbageValGlsl, garbageValJs } from "../ty/garbage"
 import { hypot, safe } from "../util"
 
 export const ADD = fnNum<[0, 0]>(
@@ -892,7 +893,8 @@ export const DEBUGQUADRANT = fnDist<[0]>("debugquadrant", {
     255.0,
     1.0
   );
-}`
+}
+`
 
     return `_helper_debugquadrant(${a.expr})`
   },
@@ -1204,15 +1206,122 @@ export const OKLCH = fnDist<[0, 0, 0]>("oklch", {
       return null
     }
     const hname = ctx.name()
-    ctx.push`float ${hname} = ${h.expr};`
+    ctx.push`float ${hname} = ${h.expr} / 360.0 * ${2 * Math.PI};\n`
     const cname = ctx.name()
-    ctx.push`float ${cname} = ${c.expr};`
+    ctx.push`float ${cname} = ${c.expr};\n`
     return OKLAB.glsl1(
       ctx,
       l,
       { type: "real", expr: `(${cname} * cos(${hname}))` },
       { type: "real", expr: `(${cname} * sin(${hname}))` },
     ).expr
+  },
+})
+
+export const VALID = fnDist<[0]>("valid", {
+  ty() {
+    return "bool"
+  },
+  js(a) {
+    switch (a.type) {
+      case "bool":
+        return bool(true)
+      case "real": {
+        const value = num(a.value)
+        return bool(isFinite(value))
+      }
+      case "complex": {
+        const x = num(a.value.x)
+        const y = num(a.value.y)
+        return bool(isFinite(x) && isFinite(y))
+      }
+      case "color": {
+        const r = num(a.value.r)
+        const g = num(a.value.g)
+        const b = num(a.value.b)
+        const x = num(a.value.a)
+        return bool(
+          0 <= r &&
+            r <= 255 &&
+            0 <= g &&
+            g <= 255 &&
+            0 <= b &&
+            b <= 255 &&
+            0 <= x &&
+            x <= 1,
+        )
+      }
+    }
+  },
+  glsl(ctx, a) {
+    switch (a.type) {
+      case "bool":
+        return "true"
+      case "real": {
+        const name = ctx.name()
+        ctx.push`float ${name} = ${a.expr};\n`
+        return `(!isinf(${name}) && !isnan(${name}))`
+      }
+      case "complex": {
+        const name = ctx.name()
+        ctx.push`vec2 ${name} = ${a.expr};\n`
+        return `(!isinf(${name}.x) && !isnan(${name}.x) && !isinf(${name}.y) && !isnan(${name}.y))`
+      }
+      case "color": {
+        const name = ctx.name()
+        ctx.push`vec4 ${name} = ${a.expr};\n`
+        return `(0.0 <= ${name}.x && ${name}.x <= 1.0 && 0.0 <= ${name}.y && ${name}.y <= 1.0 && 0.0 <= ${name}.z && ${name}.z <= 1.0 && 0.0 <= ${name}.w && ${name}.w <= 1.0)`
+      }
+    }
+  },
+})
+
+export const FIRSTVALID = fnDist<0[]>("firstvalid", {
+  ty(...vals) {
+    try {
+      return coerceTy(vals)?.type ?? "real"
+    } catch (e) {
+      throw new Error("Arguments to 'firstvalid' must be the same type.")
+    }
+  },
+  js(...vals) {
+    if (!vals.length) {
+      return garbageValJs({ type: "real" })
+    }
+    const ty = coerceTy(vals)!
+    for (const valUncoerced of vals) {
+      const val = coerceValJs(valUncoerced, ty)
+      const res = VALID.js1(val)
+      if (res.type == "bool" && res.value) {
+        return val
+      }
+    }
+    return garbageValJs(ty)
+  },
+  glsl(ctx, ...vals) {
+    if (!vals.length) {
+      return garbageValGlsl({ type: "real" })
+    }
+    const ty = coerceTy(vals)!
+    const ret = ctx.name()
+    ctx.push`${tyToGlsl(ty)} ${ret};\n`
+    let closing = ""
+    for (const valUncoerced of vals) {
+      const val = coerceValGlsl(valUncoerced, ty)
+      const name = ctx.name()
+      ctx.push`${tyToGlsl(ty)} ${name} = ${val};\n`
+      const res = VALID.glsl1(ctx, { type: ty.type, expr: name })
+      if (res.type != "bool") {
+        throw new Error(
+          "'valid' returned a non-boolean value. This is a bug; please report it.",
+        )
+      }
+      ctx.push`if (${res.expr}) { ${ret} = ${name}; } else {\n`
+      closing += "}"
+    }
+    ctx.push`${ret} = ${garbageValGlsl(ty)};\n`
+    ctx.push`${closing}\n`
+    return ret
   },
 })
 
@@ -1257,6 +1366,7 @@ const NAMED_FNS_VAR_ARGLEN: Record<string, [(x: number) => boolean, Fn<0[]>]> =
   {
     max: [() => true, MAX],
     min: [() => true, MIN],
+    firstvalid: [() => true, FIRSTVALID],
   }
 
 const NAMED_FNS_CONST_ARGLEN: Record<string, [number, Fn<0[]>]> = {
@@ -1276,4 +1386,5 @@ const NAMED_FNS_CONST_ARGLEN: Record<string, [number, Fn<0[]>]> = {
   magnitude: [1, ABS],
   oklab: [3, OKLAB],
   oklch: [3, OKLCH],
+  valid: [1, VALID],
 }
