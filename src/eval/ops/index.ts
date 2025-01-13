@@ -1146,6 +1146,33 @@ vec3 _helper_oklab(const in vec3 oklab) {
   },
 })
 
+export const OKLCH = fnDist<[0, 0, 0]>("oklch", {
+  ty(a, b, c) {
+    if (a.type == "real" && b.type == "real" && c.type == "real") {
+      return "color"
+    }
+    return null
+  },
+  js() {
+    throw new Error("Cannot compute oklch() colors outside of shaders.")
+  },
+  glsl(ctx, l, c, h) {
+    if (l.type != "real" || c.type != "real" || c.type != "real") {
+      return null
+    }
+    const hname = ctx.name()
+    ctx.push`vec2 ${hname} = ${h.expr};`
+    const cname = ctx.name()
+    ctx.push`vec2 ${cname} = ${c.expr};`
+    return OKLAB.glsl1(
+      ctx,
+      l,
+      { type: "real", expr: `(${hname} * cos(${cname}))` },
+      { type: "real", expr: `(${hname} * sin(${cname}))` },
+    ).expr
+  },
+})
+
 export function getNamedFn(name: string, argCount: number) {
   if ({}.hasOwnProperty.call(NAMED_FNS_CONST_ARGLEN, name)) {
     const fn = NAMED_FNS_CONST_ARGLEN[name]!
@@ -1205,4 +1232,5 @@ const NAMED_FNS_CONST_ARGLEN: Record<string, [number, Fn<0[]>]> = {
   dot: [2, DOT],
   magnitude: [1, ABS],
   oklab: [3, OKLAB],
+  oklch: [3, OKLCH],
 }

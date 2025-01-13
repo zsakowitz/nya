@@ -95,6 +95,11 @@ export interface FnDist<T extends readonly unknown[]> extends Fn<T> {
   glsl1(ctx: GlslContext, ...values: As<T, GlslVal>): GlslVal
 }
 
+export interface FnNum<T extends readonly unknown[]> extends FnDist<T> {
+  real(...values: As<T, SReal>): SReal
+  complex(...args: As<T, SPoint>): SPoint
+}
+
 export interface Op<T extends readonly unknown[]> {
   ty(...vals: As<T, Ty>): TyName | null
   js(...vals: As<T, JsVal>): JsVal | null
@@ -257,11 +262,6 @@ export interface FnNumGlsl<T extends readonly unknown[]> {
   real(ctx: GlslContext, ...inputs: As<T, string>): string
   complex(ctx: GlslContext, ...inputs: As<T, string>): string
   other?(ctx: GlslContext, ...values: As<T, GlslVal>): string | null
-}
-
-export interface FnNum<T extends readonly unknown[]> extends Fn<T> {
-  real(...values: As<T, SReal>): SReal
-  complex(...args: As<T, SPoint>): SPoint
 }
 
 /**
