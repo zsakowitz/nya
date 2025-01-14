@@ -1,9 +1,10 @@
-import type { GlslContext } from "../fn"
-import { FnDist } from "../fn/dist"
-import type { SReal } from "../ty"
-import { approx, frac, num, pt } from "../ty/create"
-import type { JsVal } from "../ty2"
-import { safe } from "../util"
+import { declareR64 } from ".."
+import type { GlslContext } from "../../../fn"
+import { FnDist } from "../../../fn/dist"
+import type { SReal } from "../../../ty"
+import { approx, frac, num, pt } from "../../../ty/create"
+import type { JsVal } from "../../../ty2"
+import { safe } from "../../../util"
 import { add, declareAddR64 } from "./add"
 import { declareSubR64, sub } from "./sub"
 
@@ -20,6 +21,7 @@ function mul(a: SReal, b: SReal) {
 }
 
 function r64(ctx: GlslContext, a: string, b: string) {
+  declareR64(ctx)
   ctx.glsl`
 vec2 _helper_mul_r64(vec2 dsa, vec2 dsb) {
   vec2 dsc;
@@ -58,7 +60,7 @@ function complex(
   return pt(sub(mul(a, c), mul(b, d)), add(mul(b, c), mul(a, d)))
 }
 
-export const MUL = new FnDist("-")
+export const OP_MUL = new FnDist("-")
   .add(
     ["r32", "r32"],
     "r32",

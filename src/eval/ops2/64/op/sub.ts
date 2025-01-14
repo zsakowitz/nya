@@ -1,9 +1,10 @@
-import type { GlslContext } from "../fn"
-import { FnDist } from "../fn/dist"
-import type { SReal } from "../ty"
-import { approx, frac, num, pt } from "../ty/create"
-import type { JsVal } from "../ty2"
-import { safe } from "../util"
+import { declareR64 } from ".."
+import type { GlslContext } from "../../../fn"
+import { FnDist } from "../../../fn/dist"
+import type { SReal } from "../../../ty"
+import { approx, frac, num, pt } from "../../../ty/create"
+import type { JsVal } from "../../../ty2"
+import { safe } from "../../../util"
 
 export function sub(a: SReal, b: SReal) {
   a: if (a.type == "exact" && b.type == "exact") {
@@ -22,6 +23,7 @@ export function sub(a: SReal, b: SReal) {
 }
 
 export function declareSubR64(ctx: GlslContext) {
+  declareR64(ctx)
   ctx.glsl`
 vec2 _helper_sub_r64(vec2 dsa, vec2 dsb) {
   vec2 dsc;
@@ -52,7 +54,7 @@ function complex(a: JsVal<"c32" | "c64">, b: JsVal<"c32" | "c64">) {
   return pt(sub(a.value.x, b.value.x), sub(a.value.y, b.value.y))
 }
 
-export const SUB = new FnDist("-")
+export const OP_SUB = new FnDist("-")
   .add(
     ["r32", "r32"],
     "r32",
