@@ -80,7 +80,7 @@ export const SUB = fnNum<[0, 0]>(
 )
 
 function declareMul(ctx: GlslContext) {
-  ctx.declare`vec2 _helper_mul(vec2 a, vec2 b) {
+  ctx.glsl`vec2 _helper_mul(vec2 a, vec2 b) {
   return vec2(
     a.x * b.x - a.y * b.y,
     a.y * b.x + a.x * b.y
@@ -208,7 +208,7 @@ export const ODOT = fnNum<[0, 0]>(
 )
 
 function declareDiv(ctx: GlslContext) {
-  ctx.declare`vec2 _helper_div(vec2 a, vec2 b) {
+  ctx.glsl`vec2 _helper_div(vec2 a, vec2 b) {
   return vec2(
     a.x * b.x + a.y * b.y,
     a.y * b.x - a.x * b.y
@@ -271,7 +271,7 @@ export const MOD = fnNum<[0, 0]>(
   },
   {
     real(ctx, a, b) {
-      ctx.declare`float _helper_mod(float a, float b) {
+      ctx.glsl`float _helper_mod(float a, float b) {
   return mod(mod(a, b) + b, b);
 }
 `
@@ -286,7 +286,7 @@ export const MOD = fnNum<[0, 0]>(
 )
 
 function declareExp(ctx: GlslContext) {
-  ctx.declare`vec2 _helper_exp(vec2 a) {
+  ctx.glsl`vec2 _helper_exp(vec2 a) {
   return exp(a.x) * vec2(cos(a.y), sin(a.y));
 }
 `
@@ -326,14 +326,14 @@ export const EXP = fnNum<[0]>(
 )
 
 function declareLnUnchecked(ctx: GlslContext) {
-  ctx.declare`vec2 _helper_ln_unchecked(vec2 z) {
+  ctx.glsl`vec2 _helper_ln_unchecked(vec2 z) {
   return vec2(log(length(z)), atan(z.y, z.x));
 }
 `
 }
 
 function declareLn(ctx: GlslContext) {
-  ctx.declare`vec2 _helper_ln(vec2 z) {
+  ctx.glsl`vec2 _helper_ln(vec2 z) {
   if (z == vec2(0)) {
     return vec2(-1.0 / 0.0, 0);
   }
@@ -433,7 +433,7 @@ export const POW = fnNum<[0, 0]>(
       declareMul(ctx)
       declareExp(ctx)
       declareLnUnchecked(ctx)
-      ctx.declare`vec2 _helper_pow(vec2 a, vec2 b) {
+      ctx.glsl`vec2 _helper_pow(vec2 a, vec2 b) {
   if (a == vec2(0)) {
     return vec2(0);
   } else {
@@ -484,7 +484,7 @@ export const SQRT = fnNum<[0]>(
     },
     complex(ctx, a) {
       declareExp(ctx)
-      ctx.declare`vec2 _helper_sqrt(vec2 a) {
+      ctx.glsl`vec2 _helper_sqrt(vec2 a) {
   return _helper_exp(
     vec2(
       log(length(a)),
@@ -651,7 +651,7 @@ export const HSV = fnDist<[0, 0, 0]>("hsv", {
     if (!(h.type == "real" && s.type == "real" && v.type == "real")) {
       return null
     }
-    ctx.declare`const vec4 _helper_hsv_const = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+    ctx.glsl`const vec4 _helper_hsv_const = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
 
 vec3 _helper_hsv(vec3 c) {
   vec3 p = abs(fract(c.xxx + _helper_hsv_const.xyz) * 6.0 - _helper_hsv_const.www);
@@ -733,7 +733,7 @@ export const ANGLE = fnDist<[0]>("angle", {
   glsl(ctx, a) {
     switch (a.type) {
       case "real":
-        ctx.declare`float _helper_angle(float x) {
+        ctx.glsl`float _helper_angle(float x) {
   if (isnan(x)) {
     return 0.0/0.0;
   } else if (x < 0.0) {
@@ -745,7 +745,7 @@ export const ANGLE = fnDist<[0]>("angle", {
 `
         return `_helper_angle(${a.expr})`
       case "complex":
-        ctx.declare`float _helper_angle(vec2 x) {
+        ctx.glsl`float _helper_angle(vec2 x) {
   return atan(x.y, x.x);
 }
 `
@@ -886,7 +886,7 @@ export const DEBUGQUADRANT = fnDist<[0]>("debugquadrant", {
     throw new Error("'debugquadrant' can only run in shaders.")
   },
   glsl(ctx, a) {
-    ctx.declare`vec4 _helper_debugquadrant(vec2 z) {
+    ctx.glsl`vec4 _helper_debugquadrant(vec2 z) {
   return vec4(
     (z.x < v_coords.x ? 255.0 : 0.0),
     (z.y < v_coords.y ? 255.0 : 0.0),
@@ -994,7 +994,7 @@ export const UNSIGN = fnNum<[0]>(
 )
 
 function declareSin(ctx: GlslContext) {
-  ctx.declare`vec2 _helper_sin(vec2 z) {
+  ctx.glsl`vec2 _helper_sin(vec2 z) {
   return vec2(sin(z.x) * cosh(z.y), cos(z.x) * sinh(z.y));
 }
 `
@@ -1025,7 +1025,7 @@ export const SIN = fnNum<[0]>(
 )
 
 function declareCos(ctx: GlslContext) {
-  ctx.declare`vec2 _helper_cos(vec2 z) {
+  ctx.glsl`vec2 _helper_cos(vec2 z) {
   return vec2(cos(z.x) * cosh(z.y), -sin(z.x) * sinh(z.y));
 }
 `
@@ -1073,7 +1073,7 @@ export const TAN = fnNum<[0]>(
       declareSin(ctx)
       declareCos(ctx)
       declareDiv(ctx)
-      ctx.declare`vec2 _helper_tan(vec2 z) {
+      ctx.glsl`vec2 _helper_tan(vec2 z) {
   return _helper_div(_helper_sin(z), _helper_cos(z));
 }
 `
@@ -1105,7 +1105,7 @@ export const DOT = fnDist<[0, 0]>("dot product", {
     if (a.type != "complex" || b.type != "complex") {
       return null
     }
-    ctx.declare`float _helper_dot(vec2 a, vec2 b) {
+    ctx.glsl`float _helper_dot(vec2 a, vec2 b) {
   return dot(a, vec2(b.x, -b.y));
 }
 `
@@ -1173,7 +1173,7 @@ export const OKLAB = fnDist<[0, 0, 0]>("oklab", {
     if (a.type != "real" || b.type != "real" || c.type != "real") {
       return null
     }
-    ctx.declare`// https://github.com/patriciogonzalezvivo/lygia/blob/main/color/space/oklab2rgb.glsl
+    ctx.glsl`// https://github.com/patriciogonzalezvivo/lygia/blob/main/color/space/oklab2rgb.glsl
 const mat3 _helper_oklab_OKLAB2RGB_A = mat3(
   1.0,           1.0,           1.0,
   0.3963377774, -0.1055613458, -0.0894841775,

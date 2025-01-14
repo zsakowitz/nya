@@ -16,6 +16,8 @@ import {
   varDeclToGlsl,
 } from "./ty"
 import { bool, pt, real } from "./ty/create"
+import type { GlslVal as GlslVal2 } from "./ty2"
+import { TY_INFO } from "./ty2/info"
 
 export class GlslHelpers {
   readonly helpers = ""
@@ -44,7 +46,7 @@ export class GlslContext {
     return this.helpers.name()
   }
 
-  declare(source: TemplateStringsArray) {
+  glsl(source: TemplateStringsArray) {
     this.helpers.declare(source)
   }
 
@@ -80,6 +82,12 @@ export class GlslContext {
       }
       this.block += strings[i]
     }
+  }
+
+  cache(val: GlslVal2): string {
+    const name = this.name()
+    this.push`${TY_INFO[val.type].glsl} ${name} = ${val.expr};\n`
+    return name
   }
 }
 

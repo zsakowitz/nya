@@ -330,7 +330,7 @@ void main() {
   vec2 py = cy;
 
   int n = 0;
-  for (int i=0;i<200;i++) {
+  for (int i=0;i<500;i++) {
     if (add(mul(cx, cx), mul(cy, cy)).x > 4.0) {
       break;
     }

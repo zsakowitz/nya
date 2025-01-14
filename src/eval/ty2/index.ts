@@ -16,6 +16,8 @@ export interface Tys {
 
 export type TyName = keyof Tys
 
+export type Val = Tys[keyof Tys]
+
 export interface Ty<T extends TyName = TyName> {
   readonly type: T
 }
@@ -28,12 +30,15 @@ export interface GlslVal<T extends TyName = TyName> extends Ty<T> {
   readonly expr: string
 }
 
+export interface List<L extends false | number = false | number> {
+  readonly list: L
+}
+
 export interface Type<
   T extends TyName = TyName,
   L extends false | number = false | number,
-> extends Ty<T> {
-  readonly list: L
-}
+> extends Ty<T>,
+    List<L> {}
 
 export type JsValue<T extends TyName = TyName> =
   | (Type<T, false> & { value: Tys[T] })

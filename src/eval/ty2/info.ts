@@ -26,12 +26,12 @@ export type TyInfoMap = {
 // heuristic to ensure we don't create any cycles.
 export const TY_INFO: TyInfoMap = {
   c32: {
-    name: "complex number",
+    name: "complex number (lowres)",
     glsl: "vec2",
     coerce: {},
   },
   c64: {
-    name: "complex number",
+    name: "complex number (precise)",
     glsl: "vec4",
     coerce: {
       c32: {
@@ -45,7 +45,7 @@ export const TY_INFO: TyInfoMap = {
     },
   },
   r32: {
-    name: "real number",
+    name: "real number (lowres)",
     glsl: "float",
     coerce: {
       c32: {
@@ -59,7 +59,7 @@ export const TY_INFO: TyInfoMap = {
     },
   },
   r64: {
-    name: "real number",
+    name: "real number (precise)",
     glsl: "vec2",
     coerce: {
       r32: {
