@@ -19,7 +19,7 @@ import {
   REAL,
   SQRT,
 } from "./ops"
-import { iterateGlsl, iterateJs, parseIterate } from "./ops/iterate2"
+import { iterateGlsl, iterateJs, parseIterate } from "./ops/iterate"
 import { varDeclToGlsl, type GlslValue, type JsValue, type SReal } from "./ty"
 import { coerceType, coerceValueGlsl, listGlsl, listJs } from "./ty/coerce"
 import { num, real, vreal } from "./ty/create"

@@ -1,7 +1,7 @@
 import type { Node } from "./ast/token"
 import { parseBindings } from "./binding"
 import { glsl, js, type PropsGlsl, type PropsJs } from "./eval"
-import { isIterate, iterateGlsl, iterateJs, parseIterate } from "./ops/iterate2"
+import { isIterate, iterateGlsl, iterateJs, parseIterate } from "./ops/iterate"
 import type { GlslValue, JsValue } from "./ty"
 
 export function withBindingsJs(
