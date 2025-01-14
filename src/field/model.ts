@@ -1611,9 +1611,18 @@ export abstract class Command<
 
   /** Tokenizes this {@linkcode Command}'s contents as LaTeX. */
   abstract ir(tokens: Node[]): true | void
+
+  /**
+   * Called when a comma is typed. Return `true` if action was taken to prevent
+   * a comma from being inserted; otherwise, a comma is typed like normal.
+   *
+   * If the method is not implemented, a comma is typed as normal.
+   */
+  insComma?(cursor: Cursor, block: Block): true | undefined
 }
 
 export interface Command {
+  // Declared in an interface so it can be a getter or a property
   /** If present, allows this node to be replaced with `options.autoCmds`. */
   readonly autoCmd?: string
 }

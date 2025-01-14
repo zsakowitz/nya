@@ -150,4 +150,14 @@ export class CmdList extends Command {
     this.render(next)
     cursor.moveIn(b0, L)
   }
+
+  insComma(cursor: Cursor, block: Block): true | undefined {
+    const index = this.blocks.indexOf(block)
+    const next = this.blocks.slice()
+    const b0 = new Block(this)
+    next.splice(index + 1, 0, b0)
+    this.render(next)
+    cursor.moveIn(b0, L)
+    return true
+  }
 }

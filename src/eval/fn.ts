@@ -68,6 +68,11 @@ export class GlslContext {
     return new GlslContext(this.helpers)
   }
 
+  /**
+   * Better than `ctx.block += ...` because += will ignore any additions made
+   * while the RHS executes, whereas .push will first write any additions made
+   * in the RHS, then add the final value of the template literal.
+   */
   push(strings: TemplateStringsArray, ...interps: (string | number)[]) {
     for (let i = 0; i < strings.length; i++) {
       if (i != 0) {

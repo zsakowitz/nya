@@ -51,14 +51,14 @@ body {
 }
 
 .nya-cmd-word-r:not(.nya-cmd-word-infix):has(
-    + .nya-cmd-brack,
-    + :where(.nya-cursor) + .nya-cmd-brack
+    + .nya-cmd-paren,
+    + :where(.nya-cursor) + .nya-cmd-paren
   ) {
   @apply pr-0;
 }
 
-.nya-cmd-brack + .nya-cmd-word-l.nya-cmd-word-var,
-.nya-cmd-brack + :where(.nya-cursor) + .nya-cmd-word-l.nya-cmd-word-var {
+.nya-cmd-paren + .nya-cmd-word-l.nya-cmd-word-var,
+.nya-cmd-paren + :where(.nya-cursor) + .nya-cmd-word-l.nya-cmd-word-var {
   @apply pl-0;
 }
 
@@ -89,8 +89,8 @@ body {
 
   &:last-child,
   &:has(+ :where(.nya-cursor):last-child),
-  &:has(+ .nya-cmd-brack),
-  &:has(+ :where(.nya-cursor) + .nya-cmd-brack) {
+  &:has(+ .nya-cmd-paren),
+  &:has(+ :where(.nya-cursor) + .nya-cmd-paren) {
     @apply pr-0;
   }
 }

@@ -929,16 +929,12 @@ video {
   grid-template-columns: 2.5rem auto;
 }
 
-.grid-cols-\[auto\2c auto\] {
-  grid-template-columns: auto auto;
-}
-
-.grid-cols-\[var\(--nya-sheet-sidebar\)_1fr_200px\] {
-  grid-template-columns: var(--nya-sheet-sidebar) 1fr 200px;
-}
-
 .grid-cols-\[600px_1fr_200px\] {
   grid-template-columns: 600px 1fr 200px;
+}
+
+.grid-cols-\[auto\2c auto\] {
+  grid-template-columns: auto auto;
 }
 
 .grid-rows-1 {
@@ -1064,18 +1060,6 @@ video {
   border-color: transparent;
 }
 
-.border-black\/20 {
-  border-color: rgb(0 0 0 / 0.2);
-}
-
-.border-black\/10 {
-  border-color: rgb(0 0 0 / 0.1);
-}
-
-.border-slate-950\/10 {
-  border-color: rgb(2 6 23 / 0.1);
-}
-
 .border-t-current {
   border-top-color: currentColor;
 }
@@ -1106,15 +1090,6 @@ video {
   background-color: transparent;
 }
 
-.bg-slate-950\/10 {
-  background-color: rgb(2 6 23 / 0.1);
-}
-
-.bg-slate-200 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(226 232 240 / var(--tw-bg-opacity, 1));
-}
-
 .bg-gradient-to-b {
   background-image: linear-gradient(to bottom, var(--tw-gradient-stops));
 }
@@ -1127,27 +1102,15 @@ video {
   background-image: linear-gradient(to right, var(--tw-gradient-stops));
 }
 
-.from-slate-300\/50 {
-  --tw-gradient-from: rgb(203 213 225 / 0.5) var(--tw-gradient-from-position);
-  --tw-gradient-to: rgb(203 213 225 / 0) var(--tw-gradient-to-position);
+.from-slate-950\/10 {
+  --tw-gradient-from: rgb(2 6 23 / 0.1) var(--tw-gradient-from-position);
+  --tw-gradient-to: rgb(2 6 23 / 0) var(--tw-gradient-to-position);
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
 }
 
 .from-transparent {
   --tw-gradient-from: transparent var(--tw-gradient-from-position);
   --tw-gradient-to: rgb(0 0 0 / 0) var(--tw-gradient-to-position);
-  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
-}
-
-.from-slate-950\/20 {
-  --tw-gradient-from: rgb(2 6 23 / 0.2) var(--tw-gradient-from-position);
-  --tw-gradient-to: rgb(2 6 23 / 0) var(--tw-gradient-to-position);
-  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
-}
-
-.from-slate-950\/10 {
-  --tw-gradient-from: rgb(2 6 23 / 0.1) var(--tw-gradient-from-position);
-  --tw-gradient-to: rgb(2 6 23 / 0) var(--tw-gradient-to-position);
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
 }
 
@@ -1231,10 +1194,6 @@ video {
   padding-left: .15em;
 }
 
-.pr-\[\.1em\] {
-  padding-right: .1em;
-}
-
 .pr-\[\.2em\] {
   padding-right: .2em;
 }
@@ -1245,10 +1204,6 @@ video {
 
 .pt-px {
   padding-top: 1px;
-}
-
-.pr-px {
-  padding-right: 1px;
 }
 
 .text-left {
@@ -1442,10 +1397,6 @@ video {
   --nya-focus: #60a5fa;
 }
 
-.\[--nya-sheet-sidebar\:600px\] {
-  --nya-sheet-sidebar: 600px;
-}
-
 .\[line-height\:\.9\] {
   line-height: .9;
 }
@@ -1511,14 +1462,14 @@ body {
 }
 
 .nya-cmd-word-r:not(.nya-cmd-word-infix):has(
-    + .nya-cmd-brack,
-    + :where(.nya-cursor) + .nya-cmd-brack
+    + .nya-cmd-paren,
+    + :where(.nya-cursor) + .nya-cmd-paren
   ) {
   padding-right: 0px;
 }
 
-.nya-cmd-brack + .nya-cmd-word-l.nya-cmd-word-var,
-.nya-cmd-brack + :where(.nya-cursor) + .nya-cmd-word-l.nya-cmd-word-var {
+.nya-cmd-paren + .nya-cmd-word-l.nya-cmd-word-var,
+.nya-cmd-paren + :where(.nya-cursor) + .nya-cmd-word-l.nya-cmd-word-var {
   padding-left: 0px;
 }
 
@@ -1548,8 +1499,8 @@ body {
   padding-right: .2em;
   &:last-child,
   &:has(+ :where(.nya-cursor):last-child),
-  &:has(+ .nya-cmd-brack),
-  &:has(+ :where(.nya-cursor) + .nya-cmd-brack) {
+  &:has(+ .nya-cmd-paren),
+  &:has(+ :where(.nya-cursor) + .nya-cmd-paren) {
     padding-right: 0px;
   }
 }
@@ -1671,29 +1622,14 @@ body {
   color: transparent;
 }
 
-.after\:opacity-30::after {
-  content: var(--tw-content);
-  opacity: 0.3;
-}
-
 .after\:content-\[\'c\'\]::after {
   --tw-content: 'c';
-  content: var(--tw-content);
-}
-
-.after\:content-\[\'\2c \'\]::after {
-  --tw-content: ',';
   content: var(--tw-content);
 }
 
 .after\:\[line-height\:\.9\]::after {
   content: var(--tw-content);
   line-height: .9;
-}
-
-.last\:after\:hidden:last-child::after {
-  content: var(--tw-content);
-  display: none;
 }
 
 .focus-within\:border-\[color\:--nya-focus\]:focus-within {

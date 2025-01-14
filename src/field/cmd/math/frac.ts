@@ -138,6 +138,7 @@ export class CmdFrac extends Command<[Block, Block]> {
         a: a.value,
         b: b.value,
       })
+      return
     }
 
     tokens.push({

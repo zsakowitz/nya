@@ -458,8 +458,12 @@ const REMARKS = [
   "brought to you by sleep deprivation",
   "sponsored by zSnout",
   "in awe of the desmos team tbh",
-  "where exp(x) was once defined as exp(x)=x 😭",
+  "we once defined eˣ to just be x 😭",
   "its order of operations is so cursed",
+  "now with vertical lists!",
+  "first class support for typing matrices",
+  "oklch >>> hsv",
+  "our fractals are so good it’s silly",
 ]
 
 const REMARK = REMARKS[Math.floor(REMARKS.length * Math.random())]!

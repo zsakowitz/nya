@@ -1,11 +1,12 @@
 import { commalist, fnargs } from "./ast/collect"
 import type { Node } from "./ast/token"
 import { asNumericBase, parseNumberGlsl, parseNumberJs } from "./base"
-import { Bindings, id, parseBindingVars } from "./binding"
+import { Bindings, id } from "./binding"
 import { BUILTINS } from "./builtins"
 import { GlslContext, GlslHelpers } from "./fn"
 import {
   ABS,
+  ADD,
   AND,
   DIV,
   getNamedFn,
@@ -18,11 +19,12 @@ import {
   REAL,
   SQRT,
 } from "./ops"
-import { iterateGlsl, iterateJs, parseIterate } from "./ops/iterate"
+import { iterateGlsl, iterateJs, parseIterate } from "./ops/iterate2"
 import { varDeclToGlsl, type GlslValue, type JsValue, type SReal } from "./ty"
 import { coerceType, coerceValueGlsl, listGlsl, listJs } from "./ty/coerce"
 import { num, real, vreal } from "./ty/create"
 import { garbageValJs, garbageValueGlsl } from "./ty/garbage"
+import { withBindingsGlsl, withBindingsJs } from "./with"
 
 export interface Props {
   base: SReal
@@ -92,7 +94,16 @@ export function js(node: Node, props: PropsJs): JsValue {
         case "base":
           return js(node.a, {
             ...props,
-            base: asNumericBase(js(node.b, { ...props, base: real(10) })),
+            base:
+              (
+                node.b.type == "var" &&
+                node.b.kind == "var" &&
+                !node.b.sub &&
+                !node.b.sup &&
+                (node.b.value == "mrrp" || node.b.value == "meow")
+              ) ?
+                real(10)
+              : asNumericBase(js(node.b, { ...props, base: real(10) })),
           })
         case ".":
           if (node.b.type == "var" && !node.b.sub && node.b.kind == "var") {
@@ -114,26 +125,12 @@ export function js(node: Node, props: PropsJs): JsValue {
             }
           }
           break
-        case "with": {
-          const bindings = parseBindingVars(node.b)
-          const result: Record<string, JsValue> = {}
-          for (const [id, node, name] of bindings) {
-            if (id in result) {
-              throw new Error(
-                `Variable '${name}' declared twice. Maybe you want a 'withseq ...' clause instead of 'with ...'?`,
-              )
-            }
-            result[id] = js(node, props)
-          }
-          return props.bindings.withAll(result, () => js(node.a, props))
-        }
+        case "with":
         case "withseq": {
-          const bindings = parseBindingVars(node.b)
-          const result: Record<string, JsValue> = {}
-          for (const [name, node] of bindings) {
-            result[name] = props.bindings.withAll(result, () => js(node, props))
-          }
-          return props.bindings.withAll(result, () => js(node.a, props))
+          return props.bindings.withAll(
+            withBindingsJs(node.b, node.kind == "withseq", props),
+            () => js(node.a, props),
+          )
         }
       }
       const op = OPS_BINARY[node.kind]
@@ -231,7 +228,13 @@ export function js(node: Node, props: PropsJs): JsValue {
       throw new Error(node.reason)
     case "magicvar":
       if (node.value == "iterate") {
-        return iterateJs(parseIterate(node), props)
+        const parsed = parseIterate(node, { source: "expr" })
+        const { data, count } = iterateJs(parsed, { eval: props, seq: false })
+        if (parsed.retval == "count") {
+          return vreal(count)
+        } else {
+          return data[parsed.retval!.id]!
+        }
       }
       break
     case "void":
@@ -255,15 +258,29 @@ export function js(node: Node, props: PropsJs): JsValue {
         value: on.value[value] ?? garbageValJs(on).value,
       } as any
     }
-    case "num16":
+    case "commalist":
+      throw new Error("Lists must be surrounded by square brackets.")
     case "sub":
+      throw new Error("Invalid subscript.")
     case "sup":
+      throw new Error("Lone superscript.")
     case "mixed":
+      return {
+        type: "real",
+        list: false,
+        value: ADD.real(
+          parseNumberJs(node.integer, props.base),
+          DIV.real(
+            parseNumberJs(node.a, props.base),
+            parseNumberJs(node.b, props.base),
+          ),
+        ),
+      }
+    case "num16":
     case "for":
     case "matrix":
     case "bigsym":
     case "big":
-    case "commalist":
     case "factorial":
     case "punc":
   }
@@ -311,36 +328,29 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
         case "base":
           return glsl(node.a, {
             ...props,
-            base: asNumericBase(
-              js(node.b, {
-                ...props,
-                base: real(10),
-                bindings: new Bindings(),
-              }),
-            ),
+            base:
+              (
+                node.b.type == "var" &&
+                node.b.kind == "var" &&
+                !node.b.sub &&
+                !node.b.sup &&
+                (node.b.value == "mrrp" || node.b.value == "meow")
+              ) ?
+                real(10)
+              : asNumericBase(
+                  js(node.b, {
+                    ...props,
+                    base: real(10),
+                    bindings: new Bindings(),
+                  }),
+                ),
           })
-        case "with": {
-          const bindings = parseBindingVars(node.b)
-          const result: Record<string, GlslValue> = Object.create(null)
-          for (const [id, node, name] of bindings) {
-            if (id in result) {
-              throw new Error(
-                `Variable '${name}' declared twice. Maybe you want a 'withseq ...' clause instead of 'with ...'?`,
-              )
-            }
-            result[id] = glsl(node, props)
-          }
-          return props.bindings.withAll(result, () => glsl(node.a, props))
-        }
+        case "with":
         case "withseq": {
-          const bindings = parseBindingVars(node.b)
-          const result: Record<string, GlslValue> = {}
-          for (const [name, node] of bindings) {
-            result[name] = props.bindings.withAll(result, () =>
-              glsl(node, props),
-            )
-          }
-          return props.bindings.withAll(result, () => glsl(node.a, props))
+          return props.bindings.withAll(
+            withBindingsGlsl(node.b, node.kind == "withseq", props),
+            () => glsl(node.a, props),
+          )
         }
         case ".":
           if (node.b.type == "var" && !node.b.sub && node.b.kind == "var") {
@@ -489,7 +499,13 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
       throw new Error(node.reason)
     case "magicvar":
       if (node.value == "iterate") {
-        return iterateGlsl(parseIterate(node), props)
+        const parsed = parseIterate(node, { source: "expr" })
+        const { data, count } = iterateGlsl(parsed, { eval: props, seq: false })
+        if (parsed.retval == "count") {
+          return count
+        } else {
+          return data[parsed.retval!.id]!
+        }
       }
       break
     case "void":
@@ -517,16 +533,31 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
         list: false,
         expr: `${on.expr}[${index - 1}]`,
       }
-    case "num16":
+    case "commalist":
+      throw new Error("Lists must be surrounded by square brackets.")
     case "sub":
+      throw new Error("Invalid subscript.")
     case "sup":
+      throw new Error("Lone superscript.")
     case "mixed":
+      return {
+        ...ADD.glsl1(
+          props.ctx,
+          { expr: parseNumberGlsl(node.integer, props.base), type: "real" },
+          DIV.glsl1(
+            props.ctx,
+            { expr: parseNumberGlsl(node.a, props.base), type: "real" },
+            { expr: parseNumberGlsl(node.b, props.base), type: "real" },
+          ),
+        ),
+        list: false,
+      }
+    case "num16":
     case "for":
     case "matrix":
     case "bigsym":
     case "big":
     case "root":
-    case "commalist":
     case "factorial":
     case "punc":
   }

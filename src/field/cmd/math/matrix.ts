@@ -380,6 +380,22 @@ export class CmdMatrix extends Command<Block[]> {
     cursor.moveIn(this.blocks[row * this.cols + inserted]!, L)
   }
 
+  insComma(cursor: Cursor, block: Block): true | undefined {
+    const index = this.blocks.indexOf(block)
+    const [row, col] = this.coords(index)
+    {
+      const next = this.index(row, col + 1)
+      if (next != null) {
+        cursor.moveIn(this.blocks[next]!, L)
+        return true
+      }
+    }
+    const inserted = col + 1
+    this.createCol(inserted)
+    cursor.moveIn(this.blocks[row * this.cols + inserted]!, L)
+    return true
+  }
+
   insRow(cursor: Cursor, block: Block, dir: VDir | null): void {
     const index = this.blocks.indexOf(block)
     const [row, col] = this.coords(index)

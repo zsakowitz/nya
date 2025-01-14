@@ -5,11 +5,15 @@ import { L, type Cursor } from "../../model"
 
 export class CmdComma extends Leaf {
   static init(cursor: Cursor) {
+    if (cursor.parent?.parent?.insComma?.(cursor, cursor.parent)) {
+      return
+    }
+
     new CmdComma().insertAt(cursor, L)
   }
 
   constructor() {
-    super(",", h("nya-cmd-op nya-cmd-comma pr-[.1em]", ","))
+    super(",", h("nya-cmd-op nya-cmd-comma pr-[.2em]", ","))
   }
 
   reader(): string {

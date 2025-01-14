@@ -49,7 +49,7 @@ export function varDeclToGlsl(type: Type, name: string): string {
   return `${tyToGlsl(type)} ${name}${type.list === false ? "" : `[${type.list}]`}`
 }
 
-export function list(values: string[]): string {
+export function list(values: string[], conj = "and"): string {
   if (values.length == 0) {
     return "nothing"
   }
@@ -59,10 +59,12 @@ export function list(values: string[]): string {
   }
 
   if (values.length == 2) {
-    return values[0]! + " and " + values[1]!
+    return values[0]! + ` ${conj} ` + values[1]!
   }
 
-  return values.slice(0, -1).join(", ") + ", and " + values[values.length - 1]!
+  return (
+    values.slice(0, -1).join(", ") + `, ${conj} ` + values[values.length - 1]!
+  )
 }
 
 export function listTy(values: readonly Ty[]): string {

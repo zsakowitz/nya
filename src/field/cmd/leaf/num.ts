@@ -17,6 +17,9 @@ export class CmdNum extends Leaf {
     ) {
       if (left instanceof CmdSupSub) {
         num.insertAt(left.create("sub").cursor(R), L)
+      } else if (cursor[R] instanceof CmdSupSub) {
+        num.insertAt(cursor[R].create("sub").cursor(L), L)
+        cursor.moveTo(cursor[R], R)
       } else {
         const sub = new Block(null)
         num.insertAt(sub.cursor(R), L)

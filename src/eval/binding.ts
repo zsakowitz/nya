@@ -14,8 +14,8 @@ function hex(text: string) {
   return ret
 }
 
-export function id(name: Var) {
-  return hex(name.value) + (name.sub ? "_" + hex(subscript(name.sub)) : "")
+export function id(name: Pick<Var, "value" | "sub">) {
+  return hex(name.value) + (name.sub ? "SUB" + hex(subscript(name.sub)) : "")
 }
 
 export class Bindings<T> {
@@ -55,6 +55,10 @@ export class Bindings<T> {
 
 export type Binding = [id: string, contents: Node, name: string]
 
+export function name(node: Pick<Var, "value" | "sub">) {
+  return node.value + (node.sub ? subscript(node.sub) : "")
+}
+
 export function parseBindingVar(node: Node): Binding {
   if (
     !(
@@ -72,6 +76,26 @@ export function parseBindingVar(node: Node): Binding {
     throw new Error("A 'with' statement looks like 'with a = 3'.")
   }
 
+  return [id(node.items[0]), node.items[1], name(node.items[0])]
+}
+
+export function tryParseBindingVar(node: Node): Binding | undefined {
+  if (
+    !(
+      node.type == "cmplist" &&
+      node.items.length == 2 &&
+      node.ops.length == 1 &&
+      node.ops[0]?.dir == "=" &&
+      !node.ops[0].neg &&
+      node.items[0]?.type == "var" &&
+      node.items[0].kind == "var" &&
+      !node.items[0].sup &&
+      node.items[1]
+    )
+  ) {
+    return
+  }
+
   return [
     id(node.items[0]),
     node.items[1],
@@ -80,9 +104,31 @@ export function parseBindingVar(node: Node): Binding {
   ]
 }
 
-export function parseBindingVars(node: Node): Binding[] {
+export function parseUpdateVar(node: Node): Binding {
+  if (
+    !(
+      node.type == "op" &&
+      node.b &&
+      node.a.type == "var" &&
+      !node.a.sup &&
+      node.a.kind == "var"
+    )
+  ) {
+    throw new Error("An update expression looks like 'a->a+2'.")
+  }
+
+  return [
+    id(node.a),
+    node.b,
+    node.a.value + (node.a.sub ? subscript(node.a.sub) : ""),
+  ]
+}
+
+export function parseBindings(node: Node, f?: undefined): Binding[]
+export function parseBindings<T>(node: Node, f: (node: Node) => T): T[]
+export function parseBindings(node: Node, f = parseBindingVar): any[] {
   if (node.type == "group" && node.lhs == "[" && node.rhs == "]") {
     node = node.value
   }
-  return commalist(node).map(parseBindingVar)
+  return commalist(node).map(f)
 }
