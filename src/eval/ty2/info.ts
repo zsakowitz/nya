@@ -1,4 +1,4 @@
-import type { TyNames } from "."
+import type { Tys } from "."
 import type { GlslContext } from "../fn"
 import { real } from "../ty/create"
 
@@ -9,7 +9,7 @@ export interface TyInfo<T> {
 }
 
 export type TyCoerceMap<T> = {
-  [K in keyof TyNames]?: TyCoerce<T, TyNames[K]>
+  [K in keyof Tys]?: TyCoerce<T, Tys[K]>
 }
 
 export interface TyCoerce<T, U> {
@@ -18,7 +18,7 @@ export interface TyCoerce<T, U> {
 }
 
 export type TyInfoMap = {
-  [K in keyof TyNames]: TyInfo<TyNames[K]>
+  [K in keyof Tys]: TyInfo<Tys[K]>
 }
 
 // Types are listed in coercion order, so later declared types can only coerce
