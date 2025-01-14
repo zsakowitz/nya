@@ -10,25 +10,16 @@ import { Expr, Sheet } from "./index.js"
 const sheet = new Sheet(exts, { field: options })
 document.body.appendChild(sheet.el)
 
-new Expr(sheet).field.typeEach`rgb ( 2 5 5 , 2 5 5 , 2 5 5 )`
-new Expr(sheet).field.typeEach`
-r g b ( a [ 1 ] , a [ 2 ] , a [ 3 ] )
-withseq list
-  x = real a [ 4 ] ;
-  y = imag a [ 4 ] ;
-  z = real a [ 5 ] ;
-  n = imag a [ 5 ] ;
-  a = | [ x , y , z ] | / n ArrowRight ;
-  a = ( 0 . 4 5 s i n 5 a + 0 . 5 ) 2 5 5
-ArrowRight
-with a = ( i t e r a t e ^ 5 0 ArrowRight a - > ( [ z , s , r , a [ 4 ] + d o t ( z - s , s - r ) + i d o t ( z - s , z - s ) , a [ 5 ] + d o t ( z - r , z - r ) + i ]
-with z = a [ 1 ] ^ 2 + p
-with s = a [ 1 ]
-with r = a [ 2 ] ) w h i l e ( | ArrowLeft Backspace ArrowRight a [ 1 ] | < = 2 f r o m [ 0 i , 0 i , 0 i , 0 i , 0 i ] )`
 new Expr(sheet).field
-  .typeEach`a * ( valid a and y > 0 and 0 < x < 1 ) with a = oklch ( . 8 , y , 3 6 0 x )`
+  .typeEach`rgb ( a [ 1 ] , a [ 2 ] , a [ 3 ] ) w i t h a = 2 5 5 * ( 0 . 4 5 s i n ( 5 | [ a , b , c ] | / n ArrowLeft ArrowLeft Backspace ArrowRight Tab Tab + 0 . 5 ) withseq iterate ^ 5 0 ArrowRight list r - > s , s - > z , z - > z ^ 2 + p ,
+a - > a + d o t ( z - s , s - r ) ,
+b - > b + d o t ( z - s , z - s ) ,
+c - > c + d o t ( z - s , z - r ) ,
+n - > n + 1 ArrowRight while | z | < = 2 from list r = 0 i , s = 0 i , z = 0 i ArrowRight`
 new Expr(sheet).field
-  .typeEach`h s v ( 3 6 0 | i t e r a t e ^ 5 0 ArrowRight z - > z ^ 2 + p w h i l e ( | p | ArrowLeft ArrowLeft ArrowLeft Backspace ArrowRight ArrowRight ArrowRight < = 2 f r o m 0 i | , 1 , 1 )`
+  .typeEach`a * ( valid a and y > 0 and - 1 < x < 0 ) with a = oklch ( . 8 , y , 3 6 0 x )`
+new Expr(sheet).field
+  .typeEach`h s v ( 3 6 0 | i t e r a t e ^ 5 0 ArrowRight z - > z ^ 2 + p w h i l e ( | z | ArrowLeft ArrowLeft ArrowLeft Backspace ArrowRight ArrowRight ArrowRight < = 2 f r o m 0 i | , 1 , 1 )`
 new Expr(sheet).field
   .typeEach`firstvalid ( oklch ( . 4 , y , 3 6 0 x ) , oklch ( . 5 , y , 3 6 0 x ) , oklch ( . 6 , y , 3 6 0 x ) , oklch ( . 7 , y , 3 6 0 x ) , oklch ( . 8 , y , 3 6 0 x ) , oklch ( . 9 , y , 3 6 0 x ) , oklch ( . 9 5 , y , 3 6 0 x ) )`
 new Expr(sheet).field

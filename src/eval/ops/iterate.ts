@@ -353,6 +353,7 @@ export function iterateGlsl(
     }
     ctx.push`${queue}`
   })
+  ctx.push`${count.expr}++;\n`
   ctx.push`}\n`
 
   return { data: values, count }
