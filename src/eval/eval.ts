@@ -21,7 +21,7 @@ import type { GlslValue, JsValue, SReal } from "./ty"
 import { isReal, listGlsl, listJs } from "./ty/coerce"
 import { frac, num, real } from "./ty/create"
 import { TY_INFO } from "./ty/info"
-import { split } from "./ty/split"
+import { splitValue } from "./ty/split"
 
 export interface Props {
   base: SReal
@@ -483,12 +483,7 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
           parseNumberJs(node.b, props.base).value,
         ),
       )
-      const [a, b] = split(num(value))
-      return {
-        type: "r64",
-        list: false,
-        expr: `vec2(${a.toExponential()}, ${b.toExponential()})`,
-      }
+      return splitValue(num(value))
     case "root":
       if (node.root) {
         return OP_RAISE.glsl(

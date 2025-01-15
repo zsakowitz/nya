@@ -1,8 +1,7 @@
-import type { SReal } from "./ty"
-import { approx, frac, num } from "./ty/create"
-import type { GlslValue, JsValue } from "./ty"
+import type { GlslValue, JsValue, SReal } from "./ty"
 import { canCoerce, coerceValJs } from "./ty/coerce"
-import { split } from "./ty/split"
+import { approx, frac, num } from "./ty/create"
+import { splitValue } from "./ty/split"
 import { safe } from "./util"
 
 export function asNumericBase(value: JsValue): SReal {
@@ -109,8 +108,7 @@ export function parseNumberGlslVal(text: string, base: SReal): string {
   if (value == 0 / 0) {
     return `vec2(0.0/0.0)`
   }
-  const [high, low] = split(value)
-  return `vec2(${high.toExponential()}, ${low.toExponential()})`
+  return splitValue(value).expr
 }
 
 export function parseNumberGlsl(

@@ -1,15 +1,10 @@
-import { pt, real } from "../ty/create"
 import type { GlslValue, JsValue } from "../ty"
+import { pt, real } from "../ty/create"
+import { splitDual } from "../ty/split"
 
 export interface Builtin {
   js: JsValue
   glsl: GlslValue
-}
-
-function split(x: number) {
-  const high = new Float32Array([x])[0]!
-  const low = x - high
-  return `vec2(${high.toPrecision()}, ${low.toPrecision()})`
 }
 
 export const VARS: Record<string, Builtin> = {
@@ -31,18 +26,9 @@ export const VARS: Record<string, Builtin> = {
     },
     glsl: { type: "r64", expr: "v_coords.zw", list: false },
   },
-  π: {
-    js: { type: "r64", value: real(Math.PI), list: false },
-    glsl: { type: "r64", expr: split(Math.PI), list: false },
-  },
-  τ: {
-    js: { type: "r64", value: real(2 * Math.PI), list: false },
-    glsl: { type: "r64", expr: split(2 * Math.PI), list: false },
-  },
-  e: {
-    js: { type: "r64", value: real(Math.E), list: false },
-    glsl: { type: "r64", expr: split(Math.E), list: false },
-  },
+  π: splitDual(Math.PI),
+  τ: splitDual(Math.PI * 2),
+  e: splitDual(Math.E),
   i: {
     js: { type: "c64", value: pt(real(0), real(1)), list: false },
     glsl: { type: "c64", expr: "vec4(0, 0, 1, 0)", list: false },

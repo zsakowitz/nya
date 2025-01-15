@@ -3,9 +3,8 @@ import { defaultPropsGlsl, defaultPropsJs, glsl, js } from "../eval/eval"
 import { FN_INTOCOLOR } from "../eval/ops/fn/intocolor"
 import { declareAddR64 } from "../eval/ops/op/add"
 import { declareMulR64 } from "../eval/ops/op/mul"
-import type { SReal } from "../eval/ty"
-import type { JsValue } from "../eval/ty"
-import { split } from "../eval/ty/split"
+import type { JsValue, SReal } from "../eval/ty"
+import { splitRaw } from "../eval/ty/split"
 import { Field } from "../field/field"
 import { FieldInert } from "../field/field-inert"
 import { h, hx, p, svgx } from "../field/jsx"
@@ -270,9 +269,9 @@ void main() {
         if (myId != Expr.id) return
         const { xmax, xmin, ymin } = this.sheet.paper.bounds()
         program({
-          u_scale: split((xmax - xmin) / this.sheet.paper.el.width),
-          u_cx: split(xmin),
-          u_cy: split(ymin),
+          u_scale: splitRaw((xmax - xmin) / this.sheet.paper.el.width),
+          u_cx: splitRaw(xmin),
+          u_cy: splitRaw(ymin),
         })
         requestAnimationFrame(draw)
       }
