@@ -9,16 +9,7 @@ pow
 sqrt            
 abs             only r64, could be exact for pythagorean triples, perf
 angle           
-eq              
-ne              
-lte             
-nlt             
-nlte            
-gt              
-gte             
-ngt             
-ngte            
-and             
+<, >, etc.      issues with nan on 64-bit
 or              
 debugquadrant   
 pos             
