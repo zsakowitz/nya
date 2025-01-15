@@ -74,6 +74,7 @@ export const OP_CDOT = new FnDist("·")
   .add(["c64", "c64"], "c64", complex, (ctx, a, b) => {
     declareAddR64(ctx)
     declareSubR64(ctx)
+    declareMulR64(ctx)
     ctx.glsl`
 vec4 _helper_mul_c64(vec4 a, vec4 b) {
   return vec4(

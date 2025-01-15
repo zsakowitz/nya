@@ -10,6 +10,7 @@ import { FN_REAL } from "./ops2/64/fn/real"
 import { pickCmp } from "./ops2/64/op/cmp"
 import { OP_CDOT } from "./ops2/64/op/mul"
 import { OP_AND } from "./ops2/bool/op/and"
+import { iterateGlsl, iterateJs, parseIterate } from "./ops2/iterate"
 import { VARS } from "./ops2/vars"
 import type { SReal } from "./ty"
 import { num, real } from "./ty/create"
@@ -220,17 +221,16 @@ export function js(node: Node, props: PropsJs): JsValue {
     case "error":
       throw new Error(node.reason)
     case "magicvar":
-      throw new Error("no magicvar yet")
-    // if (node.value == "iterate") {
-    //   const parsed = parseIterate(node, { source: "expr" })
-    //   const { data, count } = iterateJs(parsed, { eval: props, seq: false })
-    //   if (parsed.retval == "count") {
-    //     return vreal(count)
-    //   } else {
-    //     return data[parsed.retval!.id]!
-    //   }
-    // }
-    // break
+      if (node.value == "iterate") {
+        const parsed = parseIterate(node, { source: "expr" })
+        const { data, count } = iterateJs(parsed, { eval: props, seq: false })
+        if (parsed.retval == "count") {
+          return { type: "r64", list: false, value: real(count) }
+        } else {
+          return data[parsed.retval!.id]!
+        }
+      }
+      break
     case "void":
       throw new Error("Empty expression.")
     case "index": {
@@ -496,17 +496,16 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
     case "error":
       throw new Error(node.reason)
     case "magicvar":
-      throw new Error("no magicvar yet")
-    // if (node.value == "iterate") {
-    //   const parsed = parseIterate(node, { source: "expr" })
-    //   const { data, count } = iterateGlsl(parsed, { eval: props, seq: false })
-    //   if (parsed.retval == "count") {
-    //     return count
-    //   } else {
-    //     return data[parsed.retval!.id]!
-    //   }
-    // }
-    // break
+      if (node.value == "iterate") {
+        const parsed = parseIterate(node, { source: "expr" })
+        const { data, count } = iterateGlsl(parsed, { eval: props, seq: false })
+        if (parsed.retval == "count") {
+          return count
+        } else {
+          return data[parsed.retval!.id]!
+        }
+      }
+      break
     case "void":
       throw new Error("Empty expression.")
     case "index":
