@@ -3,6 +3,7 @@ import type { FnDist } from "../fn/dist"
 
 import { FN_CMP } from "./fn/cmp"
 import { FN_DOT } from "./fn/dot"
+import { FN_HSV } from "./fn/hsv"
 import { FN_IMAG } from "./fn/imag"
 import { FN_INTOCOLOR } from "./fn/intocolor"
 import { FN_REAL } from "./fn/real"
@@ -24,6 +25,7 @@ export const FNS: Record<string, FnDist> = {
   dot: FN_DOT,
   sin: FN_SIN,
   unsign: FN_UNSIGN,
+  hsv: FN_HSV,
 }
 Object.setPrototypeOf(FNS, null)
 
@@ -34,7 +36,7 @@ export const OP_BINARY: Partial<Record<OpBinary, FnDist>> = {
   "+": OP_ADD,
   "-": OP_SUB,
   "\\cdot ": OP_CDOT,
-  "÷": OP_DIV,
   "\\and ": OP_AND,
+  "÷": OP_DIV,
 }
 Object.setPrototypeOf(OP_BINARY, null)

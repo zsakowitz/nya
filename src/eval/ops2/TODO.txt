@@ -7,7 +7,6 @@ exp
 ln              
 pow             
 sqrt            
-hsv(a)          
 abs             only r64, could be exact for pythagorean triples, perf
 angle           
 eq              
@@ -35,5 +34,3 @@ oklab
 oklch           
 valid           
 firstvalid      
-ops_binary      
-ops_unary       
