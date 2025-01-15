@@ -16,6 +16,7 @@ import { FN_UNSIGN } from "./fn/unsign"
 import { OP_ADD } from "./op/add"
 import { OP_AND } from "./op/and"
 import { OP_DIV } from "./op/div"
+import { OP_MOD } from "./op/mod"
 import { OP_CDOT } from "./op/mul"
 import { OP_NEG } from "./op/neg"
 import { OP_ODOT } from "./op/odot"
@@ -54,5 +55,6 @@ export const OP_BINARY: Partial<Record<OpBinary, FnDist>> = {
   "÷": OP_DIV,
   "\\odot ": OP_ODOT,
   juxtaposition: OP_CDOT,
+  mod: OP_MOD,
 }
 Object.setPrototypeOf(OP_BINARY, null)
