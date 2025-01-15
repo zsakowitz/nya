@@ -66,23 +66,6 @@ function complex(
 
 export const OP_CDOT = new FnDist("·")
   .add(
-    ["r32", "r32"],
-    "r32",
-    (a, b) => mul(a.value, b.value),
-    (_, a, b) => `(${a.expr} * ${b.expr})`,
-  )
-  .add(["c32", "c32"], "c32", complex, (ctx, a, b) => {
-    ctx.glsl`
-vec2 _helper_mul_c32(vec2 a, vec2 b) {
-  return vec2(
-    a.x * b.x - a.y * b.y,
-    a.y * b.x + a.x * b.y
-  );
-}
-`
-    return `_helper_mul_c32(${a.expr}, ${b.expr})`
-  })
-  .add(
     ["r64", "r64"],
     "r64",
     (a, b) => mul(a.value, b.value),
@@ -100,4 +83,21 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
 }
 `
     return `_helper_mul_c64(${a.expr}, ${b.expr})`
+  })
+  .add(
+    ["r32", "r32"],
+    "r32",
+    (a, b) => mul(a.value, b.value),
+    (_, a, b) => `(${a.expr} * ${b.expr})`,
+  )
+  .add(["c32", "c32"], "c32", complex, (ctx, a, b) => {
+    ctx.glsl`
+vec2 _helper_mul_c32(vec2 a, vec2 b) {
+  return vec2(
+    a.x * b.x - a.y * b.y,
+    a.y * b.x + a.x * b.y
+  );
+}
+`
+    return `_helper_mul_c32(${a.expr}, ${b.expr})`
   })

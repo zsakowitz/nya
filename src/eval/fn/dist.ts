@@ -38,6 +38,15 @@ export class FnDist {
 
   constructor(private readonly name: string) {}
 
+  /**
+   * Adds an overload to this function. Note that overloads are preferred in the
+   * order they are declared, so order _does_ matter.
+   *
+   * In particular, if a `c32` or `r32` overload is declared before its
+   * corresponding `c64` or `r64` overload, the 64-bit overload will never be
+   * used, as the inputs will coerce to `c32` before attempting to match the
+   * `c64` overload.
+   */
   add<const T extends readonly TyName[], const R extends TyName>(
     params: T,
     ret: R,

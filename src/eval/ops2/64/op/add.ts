@@ -56,13 +56,6 @@ function complex(a: JsVal<"c32" | "c64">, b: JsVal<"c32" | "c64">) {
 
 export const OP_ADD = new FnDist("+")
   .add(
-    ["r32", "r32"],
-    "r32",
-    (a, b) => add(a.value, b.value),
-    (_, a, b) => `(${a.expr} + ${b.expr})`,
-  )
-  .add(["c32", "c32"], "c32", complex, (_, a, b) => `(${a.expr} + ${b.expr})`)
-  .add(
     ["r64", "r64"],
     "r64",
     (a, b) => add(a.value, b.value),
@@ -73,3 +66,10 @@ export const OP_ADD = new FnDist("+")
     const b = ctx.cache(br)
     return `vec4(${r64(ctx, `${a}.xy`, `${b}.xy`)}, ${r64(ctx, `${a}.zw`, `${b}.zw`)})`
   })
+  .add(
+    ["r32", "r32"],
+    "r32",
+    (a, b) => add(a.value, b.value),
+    (_, a, b) => `(${a.expr} + ${b.expr})`,
+  )
+  .add(["c32", "c32"], "c32", complex, (_, a, b) => `(${a.expr} + ${b.expr})`)
