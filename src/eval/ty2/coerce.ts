@@ -1,7 +1,17 @@
-import type { GlslVal, JsVal, List, Ty, TyName, Type, Val } from "."
+import type {
+  GlslVal,
+  GlslValue,
+  JsVal,
+  JsValue,
+  List,
+  Ty,
+  TyName,
+  Type,
+  Val,
+} from "."
 import type { GlslContext } from "../fn"
 import { list } from "../ty"
-import { TY_INFO, type TyCoerce } from "./info"
+import { TY_INFO, type TyCoerce, type TyCoerceMap } from "./info"
 
 export function canCoerce(src: TyName, dst: TyName): boolean {
   return src == dst || {}.hasOwnProperty.call(TY_INFO[src].coerce, dst)
@@ -33,6 +43,40 @@ export function coerceTy(tys: readonly Ty[]): TyName {
   throw new Error(
     `Cannot coerce ${list(tys.map((x) => TY_INFO[x.type].name))}.`,
   )
+}
+
+export function listJs(vals: JsValue[]): JsValue {
+  if (!vals.every((x) => x.list === false)) {
+    throw new Error("Cannot store lists inside other lists.")
+  }
+
+  const type = coerceTy(vals)
+
+  return {
+    type,
+    list: vals.length,
+    value: vals.map((x) =>
+      (TY_INFO[x.type].coerce as TyCoerceMap<Val>)[type]!.js(x.value),
+    ),
+  }
+}
+
+export function listGlsl(ctx: GlslContext, vals: GlslValue[]): GlslValue {
+  if (!vals.every((x) => x.list === false)) {
+    throw new Error("Cannot store lists inside other lists.")
+  }
+
+  const type = coerceTy(vals)
+  const ret = ctx.name()
+  ctx.push`${TY_INFO[type].glsl} ${ret}[${vals.length}];\n`
+
+  for (let i = 0; i < vals.length; i++) {
+    ctx.push`${ret}[${i}] = ${(
+      TY_INFO[vals[i]!.type].coerce as TyCoerceMap<Val>
+    )[type]!.glsl(vals[i]!.expr, ctx)};\n`
+  }
+
+  return { type, list: vals.length, expr: ret }
 }
 
 /** Useful for distributing across lists. */

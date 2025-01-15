@@ -1,4 +1,4 @@
-import { fnargs } from "./ast/collect"
+import { commalist, fnargs } from "./ast/collect"
 import type { Node } from "./ast/token"
 import { asNumericBase, parseNumberGlsl, parseNumberJs } from "./base2"
 import { Bindings, id } from "./binding"
@@ -7,15 +7,17 @@ import { FNS, OP_BINARY, OP_UNARY } from "./ops2"
 import { OP_RAISE } from "./ops2/32/op/pow"
 import { FN_IMAG } from "./ops2/64/fn/imag"
 import { FN_REAL } from "./ops2/64/fn/real"
+import { OP_ABS } from "./ops2/64/op/abs"
 import { pickCmp } from "./ops2/64/op/cmp"
 import { OP_CDOT } from "./ops2/64/op/mul"
 import { OP_AND } from "./ops2/bool/op/and"
 import { iterateGlsl, iterateJs, parseIterate } from "./ops2/iterate"
 import { VARS } from "./ops2/vars"
+import { withBindingsGlsl, withBindingsJs } from "./ops2/with"
 import type { SReal } from "./ty"
 import { num, real } from "./ty/create"
 import type { GlslValue, JsValue } from "./ty2"
-import { coerceType, isReal } from "./ty2/coerce"
+import { coerceType, isReal, listGlsl, listJs } from "./ty2/coerce"
 import { declareGlsl } from "./ty2/decl"
 import { TY_INFO } from "./ty2/info"
 
@@ -116,11 +118,10 @@ export function js(node: Node, props: PropsJs): JsValue {
           break
         case "with":
         case "withseq": {
-          throw new Error("no with yet")
-          // return props.bindings.withAll(
-          //   withBindingsJs(node.b, node.kind == "withseq", props),
-          //   () => js(node.a, props),
-          // )
+          return props.bindings.withAll(
+            withBindingsJs(node.b, node.kind == "withseq", props),
+            () => js(node.a, props),
+          )
         }
       }
       const op = OP_BINARY[node.kind]
@@ -133,23 +134,10 @@ export function js(node: Node, props: PropsJs): JsValue {
         return js(node.value, props)
       }
       if (node.lhs == "[" && node.rhs == "]") {
-        throw new Error("no lists yet")
-        // const args = commalist(node.value).map((item) => js(item, props))
-        // if (args.length == 0) {
-        //   return {
-        //     type: "bool",
-        //     list: 0,
-        //     value: [],
-        //   }
-        // }
-        // if (args.every((x) => x.list === false)) {
-        //   return listJs(args)
-        // }
-        // throw new Error("Cannot store a list inside another list.")
+        return listJs(commalist(node.value).map((item) => js(item, props)))
       }
       if (node.lhs == "|" && node.rhs == "|") {
-        throw new Error("no abs yet")
-        // return ABS.js(js(node.value, props))
+        return OP_ABS.js(js(node.value, props))
       }
       break
     case "call":
@@ -340,11 +328,10 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
           })
         case "with":
         case "withseq": {
-          throw new Error("no with yet")
-          // return props.bindings.withAll(
-          //   withBindingsGlsl(node.b, node.kind == "withseq", props),
-          //   () => glsl(node.a, props),
-          // )
+          return props.bindings.withAll(
+            withBindingsGlsl(node.b, node.kind == "withseq", props),
+            () => glsl(node.a, props),
+          )
         }
         case ".":
           if (node.b.type == "var" && !node.b.sub && node.b.kind == "var") {
@@ -375,18 +362,16 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
       if (node.lhs == "(" && node.rhs == ")") {
         return glsl(node.value, props)
       }
-      break // TODO:
-    // if (node.lhs == "[" && node.rhs == "]") {
-    //   const args = commalist(node.value).map((item) => glsl(item, props))
-    //   if (args.some((x) => x.list !== false)) {
-    //     throw new Error("Cannot store a list inside another list.")
-    //   }
-    //   return listGlsl(props.ctx, args)
-    // }
-    // if (node.lhs == "|" && node.rhs == "|") {
-    //   return ABS.glsl(props.ctx, glsl(node.value, props))
-    // }
-    // break
+      if (node.lhs == "[" && node.rhs == "]") {
+        return listGlsl(
+          props.ctx,
+          commalist(node.value).map((item) => glsl(item, props)),
+        )
+      }
+      if (node.lhs == "|" && node.rhs == "|") {
+        return OP_ABS.glsl(props.ctx, glsl(node.value, props))
+      }
+      break
     case "call":
       if (
         !node.on &&

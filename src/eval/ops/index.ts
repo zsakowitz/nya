@@ -1095,9 +1095,9 @@ export const DOT = fnDist<[0, 0]>("dot product", {
     }
     return {
       type: "real",
-      value: ADD.real(
+      value: SUB.real(
         MUL.real(a.value.x, b.value.x),
-        MUL.real(a.value.y, NEG.real(b.value.y)),
+        MUL.real(a.value.y, b.value.y),
       ),
     }
   },

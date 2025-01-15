@@ -3,6 +3,7 @@ import type { FnDist } from "../fn/dist"
 import { FN_INTOCOLOR } from "./32/fn/intocolor"
 import { FN_RGB } from "./32/fn/rgb"
 import { FN_CMP } from "./64/fn/cmp"
+import { FN_DOT } from "./64/fn/dot"
 import { FN_IMAG } from "./64/fn/imag"
 import { FN_REAL } from "./64/fn/real"
 import { OP_ADD } from "./64/op/add"
@@ -16,6 +17,7 @@ export const FNS: Record<string, FnDist> = {
   imag: FN_IMAG,
   real: FN_REAL,
   intocolor: FN_INTOCOLOR,
+  dot: FN_DOT,
 }
 Object.setPrototypeOf(FNS, null)
 

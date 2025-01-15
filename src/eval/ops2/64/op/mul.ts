@@ -8,7 +8,7 @@ import { safe } from "../../../util"
 import { add, declareAddR64 } from "./add"
 import { declareSubR64, sub } from "./sub"
 
-function mul(a: SReal, b: SReal) {
+export function mul(a: SReal, b: SReal) {
   a: if (a.type == "exact" && b.type == "exact") {
     const s1 = a.n * b.n
     if (!safe(s1)) break a

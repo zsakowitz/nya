@@ -1,3 +1,4 @@
+import type { GlslContext } from "../../../fn"
 import { FnDist } from "../../../fn/dist"
 import type { SReal } from "../../../ty"
 import { num, real } from "../../../ty/create"
@@ -12,9 +13,8 @@ function js(a: { value: SReal }, b: { value: SReal }) {
   )
 }
 
-export const FN_CMP = new FnDist("cmp")
-  .add(["r64", "r64"], "r32", js, (ctx, a, b) => {
-    ctx.glsl`
+export function declareCmpR64(ctx: GlslContext) {
+  ctx.glsl`
 float _helper_cmp_r64(vec2 a, vec2 b) {
   if (a.x < b.x) {
     return -1.0;
@@ -29,6 +29,11 @@ float _helper_cmp_r64(vec2 a, vec2 b) {
   }
 }
 `
+}
+
+export const FN_CMP = new FnDist("cmp")
+  .add(["r64", "r64"], "r32", js, (ctx, a, b) => {
+    declareCmpR64(ctx)
     return `_helper_cmp_r64(${a.expr}, ${b.expr})`
   })
   .add(["r32", "r32"], "r32", js, (ctx, a, b) => {
