@@ -232,13 +232,9 @@ function getLimit(node: Node, props: PropsJs): number {
 }
 
 function jsShouldBreak(
-  condition: IterateCondition | undefined,
+  condition: IterateCondition,
   props: DoIterateProps<PropsJs>,
 ): boolean {
-  if (!condition) {
-    return false
-  }
-
   const val = js(condition.value, props.eval)
   if (val.list) {
     throw new Error(
@@ -267,7 +263,12 @@ export function iterateJs(
 
   let i = 0
   for (; i < limit; i++) {
-    if (jsShouldBreak(iterate.condition, props)) {
+    if (
+      iterate.condition &&
+      props.eval.bindings.withAll(values, () =>
+        jsShouldBreak(iterate.condition!, props),
+      )
+    ) {
       break
     }
 

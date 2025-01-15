@@ -19,7 +19,7 @@ n - > n + 1 ArrowRight while z . x z . x + z . y z . y < 4 from list r = 0 i , s
 new Expr(sheet).field
   .typeEach`a * ( valid a and y > 0 and - 1 < x < 0 ) with a = oklch ( . 8 , y , 3 6 0 x )`
 new Expr(sheet).field
-  .typeEach`h s v ( 3 6 0 | i t e r a t e ^ 5 0 ArrowRight z - > z ^ 2 + p w h i l e ( | z | ArrowLeft ArrowLeft ArrowLeft Backspace ArrowRight ArrowRight ArrowRight < = 2 f r o m 0 i | , 1 , 1 )`
+  .typeEach`h s v ( 3 6 0 | i t e r a t e ^ 2 0 ArrowRight z - > z ^ 2 + p w h i l e ( | z | ArrowLeft ArrowLeft ArrowLeft Backspace ArrowRight ArrowRight ArrowRight < = 2 f r o m 0 i | , 1 , 1 )`
 new Expr(sheet).field
   .typeEach`firstvalid ( oklch ( . 4 , y , 3 6 0 x ) , oklch ( . 5 , y , 3 6 0 x ) , oklch ( . 6 , y , 3 6 0 x ) , oklch ( . 7 , y , 3 6 0 x ) , oklch ( . 8 , y , 3 6 0 x ) , oklch ( . 9 , y , 3 6 0 x ) , oklch ( . 9 5 , y , 3 6 0 x ) )`
 new Expr(sheet).field
