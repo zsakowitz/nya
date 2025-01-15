@@ -1,4 +1,4 @@
-import { FnDist } from "../../../fn/dist"
+import { FnDist } from "../../fn/dist"
 
 export const OP_AND = new FnDist("and").add(
   ["bool", "bool"],

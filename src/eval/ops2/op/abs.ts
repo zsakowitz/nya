@@ -1,7 +1,7 @@
-import type { GlslContext } from "../../../fn"
-import { FnDist } from "../../../fn/dist"
-import type { SReal } from "../../../ty"
-import { approx, frac, num } from "../../../ty/create"
+import type { GlslContext } from "../../fn"
+import { FnDist } from "../../fn/dist"
+import type { SReal } from "../../ty"
+import { approx, frac, num } from "../../ty/create"
 import { declareCmpR64 } from "../fn/cmp"
 import { declareSubR64 } from "./sub"
 

@@ -1,6 +1,6 @@
-import type { GlslContext } from "../../../fn"
-import { FnDist } from "../../../fn/dist"
-import { approx, num, pt } from "../../../ty/create"
+import type { GlslContext } from "../../fn"
+import { FnDist } from "../../fn/dist"
+import { approx, num, pt } from "../../ty/create"
 
 function declareSin(ctx: GlslContext) {
   ctx.glsl`vec2 _helper_sin(vec2 z) {

@@ -1,4 +1,4 @@
-import { FnDist } from "../../../fn/dist"
+import { FnDist } from "../../fn/dist"
 
 export const OP_RAISE = new FnDist("^").add(
   ["c32", "c32"],

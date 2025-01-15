@@ -1,5 +1,5 @@
-import { FnDist } from "../../../fn/dist"
-import { pt } from "../../../ty/create"
+import { FnDist } from "../../fn/dist"
+import { pt } from "../../ty/create"
 import { abs, abs64 } from "../op/abs"
 
 export const FN_UNSIGN = new FnDist("unsign")

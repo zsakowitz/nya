@@ -1,7 +1,7 @@
-import type { GlslContext } from "../../../fn"
-import { FnDist } from "../../../fn/dist"
-import type { SReal } from "../../../ty"
-import { num, real } from "../../../ty/create"
+import type { GlslContext } from "../../fn"
+import { FnDist } from "../../fn/dist"
+import type { SReal } from "../../ty"
+import { num, real } from "../../ty/create"
 
 function js(a: { value: SReal }, b: { value: SReal }) {
   const ar = num(a.value)

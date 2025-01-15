@@ -1,4 +1,4 @@
-import { FnDist } from "../../../fn/dist"
+import { FnDist } from "../../fn/dist"
 
 function err(): never {
   throw new Error("Cannot plot colors outside of a shader.")

@@ -1,6 +1,6 @@
-import type { PuncCmp } from "../../../ast/token"
-import { FnDist } from "../../../fn/dist"
-import { num } from "../../../ty/create"
+import type { PuncCmp } from "../../ast/token"
+import { FnDist } from "../../fn/dist"
+import { num } from "../../ty/create"
 import { FN_CMP } from "../fn/cmp"
 
 export const OP_LT = new FnDist("<")

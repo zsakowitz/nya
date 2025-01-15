@@ -1,5 +1,5 @@
-import { FnDist } from "../../../fn/dist"
-import { approx, num } from "../../../ty/create"
+import { FnDist } from "../../fn/dist"
+import { approx, num } from "../../ty/create"
 
 export const OP_DIV = new FnDist("/").add(
   ["r32", "r32"],
