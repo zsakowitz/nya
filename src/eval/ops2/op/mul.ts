@@ -3,6 +3,7 @@ import { FnDist } from "../../fn/dist"
 import type { SReal } from "../../ty"
 import { approx, frac, num, pt } from "../../ty/create"
 import type { JsVal } from "../../ty2"
+import { TY_INFO } from "../../ty2/info"
 import { safe } from "../../util"
 import { declareR64 } from "../r64"
 import { add, declareAddR64 } from "./add"
@@ -106,3 +107,15 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
     declareMulC32(ctx)
     return `_helper_mul_c32(${a.expr}, ${b.expr})`
   })
+  .add(
+    ["color", "bool"],
+    "color",
+    (a, b) => (b.value ? a.value : TY_INFO.color.garbage.js),
+    (_, a, b) => `(${b.expr} ? ${a.expr} : ${TY_INFO.color.garbage.glsl})`,
+  )
+  .add(
+    ["bool", "color"],
+    "color",
+    (b, a) => (b.value ? a.value : TY_INFO.color.garbage.js),
+    (_, b, a) => `(${b.expr} ? ${a.expr} : ${TY_INFO.color.garbage.glsl})`,
+  )
