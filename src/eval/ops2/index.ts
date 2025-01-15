@@ -8,6 +8,7 @@ import { FN_CMP } from "./64/fn/cmp"
 import { FN_DOT } from "./64/fn/dot"
 import { FN_IMAG } from "./64/fn/imag"
 import { FN_REAL } from "./64/fn/real"
+import { FN_UNSIGN } from "./64/fn/unsign"
 import { OP_ADD } from "./64/op/add"
 import { OP_CDOT } from "./64/op/mul"
 import { OP_SUB } from "./64/op/sub"
@@ -21,6 +22,7 @@ export const FNS: Record<string, FnDist> = {
   intocolor: FN_INTOCOLOR,
   dot: FN_DOT,
   sin: FN_SIN,
+  unsign: FN_UNSIGN,
 }
 Object.setPrototypeOf(FNS, null)
 

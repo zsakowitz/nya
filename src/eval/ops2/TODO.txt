@@ -1,0 +1,39 @@
+op name         status (todo, only real/32/r64/approx/etc., lacking functionality)
+cross           
+odot            
+div             
+mod             
+exp             
+ln              
+pow             
+sqrt            
+hsv(a)          
+abs             only r64, could be exact for pythagorean triples, perf
+angle           
+eq              
+ne              
+lte             
+nlt             
+nlte            
+gt              
+gte             
+ngt             
+ngte            
+and             
+or              
+debugquadrant   
+pos             
+neg             
+intocolor       
+unsign          perf
+sin             only 32
+cos             
+tan             
+max             
+min             
+oklab           
+oklch           
+valid           
+firstvalid      
+ops_binary      
+ops_unary       
