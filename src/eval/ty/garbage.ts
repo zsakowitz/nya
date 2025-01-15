@@ -1,6 +1,7 @@
 import type { JsVal, JsValue, Ty, Type } from "."
 import { pt, real } from "./create"
 
+export function garbageValJs(ty: Ty): JsVal
 export function garbageValJs(ty: Ty): JsVal {
   switch (ty.type) {
     case "real":

@@ -6,6 +6,7 @@ import { FN_CMP } from "./fn/cmp"
 import { FN_COS } from "./fn/cos"
 import { FN_DEBUGQUADRANT } from "./fn/debugquadrant"
 import { FN_DOT } from "./fn/dot"
+import { FN_FIRSTVALID } from "./fn/firstvalid"
 import { FN_HSV } from "./fn/hsv"
 import { FN_IMAG } from "./fn/imag"
 import { FN_INTOCOLOR } from "./fn/intocolor"
@@ -18,6 +19,7 @@ import { FN_RGB } from "./fn/rgb"
 import { FN_SIN } from "./fn/sin"
 import { FN_TAN } from "./fn/tan"
 import { FN_UNSIGN } from "./fn/unsign"
+import { FN_VALID } from "./fn/valid"
 import { OP_ADD } from "./op/add"
 import { OP_AND } from "./op/and"
 import { OP_DIV } from "./op/div"
@@ -47,6 +49,8 @@ export const FNS: Record<string, FnDist> = {
   oklab: FN_OKLAB,
   oklch: FN_OKLCH,
   angle: FN_ANGLE,
+  valid: FN_VALID,
+  firstvalid: FN_FIRSTVALID,
 }
 Object.setPrototypeOf(FNS, null)
 

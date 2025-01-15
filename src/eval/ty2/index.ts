@@ -16,7 +16,7 @@ export interface Tys {
 
 export type TyName = keyof Tys
 
-export type Val = Tys[keyof Tys]
+export type Val<T extends TyName = TyName> = Tys[T]
 
 export interface Ty<T extends TyName = TyName> {
   readonly type: T

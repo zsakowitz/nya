@@ -30,7 +30,7 @@ export type JsValue = Expand<
 type Expand<T> = T extends infer U ? { [K in keyof U]: U[K] } : never
 
 export type TyName = JsVal["type"]
-export type Ty = { type: TyName }
+export type Ty<T extends TyName = TyName> = { type: T }
 export type Type = { type: TyName; list: false | number }
 
 export type GlslVal = { expr: string; type: TyName }
