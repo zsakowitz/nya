@@ -3,7 +3,7 @@ import type { Node } from "./ast/token"
 import { asNumericBase, parseNumberGlsl, parseNumberJs } from "./base"
 import { Bindings, id } from "./binding"
 import { BUILTINS } from "./builtins"
-import { GlslContext, GlslHelpers } from "./fn"
+import { GlslContext } from "./fn"
 import {
   ABS,
   ADD,
@@ -39,21 +39,6 @@ export interface PropsGlsl extends Props {
   ctx: GlslContext
   /** GLSL bindings must contain variable names and be properly typed. */
   bindings: Bindings<GlslValue>
-}
-
-export function defaultPropsJs(): PropsJs {
-  return {
-    base: real(10),
-    bindings: new Bindings(),
-  }
-}
-
-export function defaultPropsGlsl(): PropsGlsl {
-  return {
-    base: real(10),
-    ctx: new GlslContext(new GlslHelpers()),
-    bindings: new Bindings(),
-  }
 }
 
 function jsCall(
