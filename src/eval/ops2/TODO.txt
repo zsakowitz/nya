@@ -1,3 +1,9 @@
+operations which have not been written at all
+op name
+-------
+± ∓
+
+operations which have issues but are complete bit- and complex-wise
 op name         status (todo, only real/32/r64/approx/etc., lacking functionality)
 -------         ------------------------------------------------------------------
 intocolor       real and complex don't work
