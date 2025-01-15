@@ -14,6 +14,7 @@ import { OP_ADD } from "./op/add"
 import { OP_AND } from "./op/and"
 import { OP_DIV } from "./op/div"
 import { OP_CDOT } from "./op/mul"
+import { OP_OR } from "./op/or"
 import { OP_SUB } from "./op/sub"
 
 export const FNS: Record<string, FnDist> = {
@@ -37,6 +38,7 @@ export const OP_BINARY: Partial<Record<OpBinary, FnDist>> = {
   "-": OP_SUB,
   "\\cdot ": OP_CDOT,
   "\\and ": OP_AND,
+  "\\or ": OP_OR,
   "÷": OP_DIV,
 }
 Object.setPrototypeOf(OP_BINARY, null)
