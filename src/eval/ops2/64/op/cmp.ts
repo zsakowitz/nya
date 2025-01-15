@@ -1,3 +1,4 @@
+import type { PuncCmp } from "../../../ast/token"
 import { FnDist } from "../../../fn/dist"
 import { num } from "../../../ty/create"
 import { FN_CMP } from "../fn/cmp"
@@ -15,3 +16,13 @@ export const OP_LT = new FnDist("<")
     (a, b) => num(a.value) < num(b.value),
     (ctx, a, b) => `(${FN_CMP.glsl1(ctx, a, b)} == -1.0)`,
   )
+
+export function pickCmp(op: PuncCmp) {
+  switch (op.dir) {
+    case "<":
+      if (!op.neg && !op.eq) {
+        return OP_LT
+      }
+  }
+  throw new Error("That comparison operator is not supported yet.")
+}

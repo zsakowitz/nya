@@ -40,10 +40,16 @@ export interface Type<
 > extends Ty<T>,
     List<L> {}
 
-export type JsValue<T extends TyName = TyName> =
-  | (Type<T, false> & { value: Tys[T] })
-  | (Type<T, number> & { value: Tys[T][] })
+export type JsValue<
+  T extends TyName = TyName,
+  L extends false | number = false | number,
+> =
+  | (L extends false ? Type<T, L> & { value: Tys[T] } : never)
+  | (L extends number ? Type<T, L> & { value: Tys[T][] } : never)
 
-export interface GlslValue<T extends TyName = TyName> extends Type<T> {
+export interface GlslValue<
+  T extends TyName = TyName,
+  L extends false | number = false | number,
+> extends Type<T, L> {
   readonly expr: string
 }

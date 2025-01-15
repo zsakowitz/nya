@@ -20,8 +20,7 @@ function mul(a: SReal, b: SReal) {
   return approx(num(a) * num(b))
 }
 
-function r64(ctx: GlslContext, a: string, b: string) {
-  declareR64(ctx)
+export function declareMulR64(ctx: GlslContext) {
   ctx.glsl`
 vec2 _helper_mul_r64(vec2 dsa, vec2 dsb) {
   vec2 dsc;
@@ -50,6 +49,11 @@ vec2 _helper_mul_r64(vec2 dsa, vec2 dsb) {
   return dsc;
 }
 `
+}
+
+function r64(ctx: GlslContext, a: string, b: string) {
+  declareR64(ctx)
+  declareMulR64(ctx)
   return `_helper_mul_r64(${a}, ${b})`
 }
 
@@ -60,7 +64,7 @@ function complex(
   return pt(sub(mul(a, c), mul(b, d)), add(mul(b, c), mul(a, d)))
 }
 
-export const OP_MUL = new FnDist("-")
+export const OP_CDOT = new FnDist("·")
   .add(
     ["r32", "r32"],
     "r32",

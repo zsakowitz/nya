@@ -6,6 +6,10 @@ export interface TyInfo<T> {
   name: string
   glsl: string
   coerce: TyCoerceMap<T>
+  garbage: {
+    js: T
+    glsl: string
+  }
 }
 
 export type TyCoerceMap<T> = {
@@ -28,11 +32,19 @@ export const TY_INFO: TyInfoMap = {
   c32: {
     name: "complex number (lowres)",
     glsl: "vec2",
+    garbage: {
+      js: { type: "point", x: real(NaN), y: real(NaN) },
+      glsl: "vec2(0.0/0.0)",
+    },
     coerce: {},
   },
   c64: {
     name: "complex number (precise)",
     glsl: "vec4",
+    garbage: {
+      js: { type: "point", x: real(NaN), y: real(NaN) },
+      glsl: "vec4(0.0/0.0)",
+    },
     coerce: {
       c32: {
         js(self) {
@@ -47,6 +59,10 @@ export const TY_INFO: TyInfoMap = {
   r32: {
     name: "real number (lowres)",
     glsl: "float",
+    garbage: {
+      js: real(NaN),
+      glsl: "(0.0/0.0)",
+    },
     coerce: {
       c32: {
         js(self) {
@@ -61,6 +77,10 @@ export const TY_INFO: TyInfoMap = {
   r64: {
     name: "real number (precise)",
     glsl: "vec2",
+    garbage: {
+      js: real(NaN),
+      glsl: "vec2(0.0/0.0)",
+    },
     coerce: {
       r32: {
         js(self) {
@@ -91,6 +111,10 @@ export const TY_INFO: TyInfoMap = {
   bool: {
     name: "true/false value",
     glsl: "bool",
+    garbage: {
+      js: false,
+      glsl: "false",
+    },
     coerce: {
       r32: {
         js(self) {
@@ -133,6 +157,10 @@ export const TY_INFO: TyInfoMap = {
   color: {
     name: "color",
     glsl: "vec4",
+    garbage: {
+      js: { type: "color", r: real(0), g: real(0), b: real(0), a: real(0) },
+      glsl: "vec4(0)",
+    },
     coerce: {},
   },
 }

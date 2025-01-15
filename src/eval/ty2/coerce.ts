@@ -61,6 +61,7 @@ export function coerceType(types: readonly Type[]): Type {
   }
 }
 
+export function coerceValJs<T extends TyName>(val: JsVal, to: T): JsVal<T>
 export function coerceValJs(val: JsVal, to: TyName): JsVal {
   if (val.type == to) {
     return val
@@ -101,4 +102,10 @@ export function coerceValGlsl(
     type: to,
     expr: coercion.glsl(val.expr, ctx),
   }
+}
+
+export function isReal(val: JsVal): val is JsVal<"r32" | "r64">
+export function isReal(val: GlslVal): val is GlslVal<"r32" | "r64">
+export function isReal(val: { type: unknown }): val is { type: "r32" | "r64" } {
+  return val.type === "r32" || val.type === "r64"
 }
