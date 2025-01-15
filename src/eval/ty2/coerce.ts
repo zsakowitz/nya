@@ -146,6 +146,88 @@ export function coerceValGlsl(
   }
 }
 
+export function coerceValueJs(value: JsValue, to: Type): JsValue {
+  if (to.list === false) {
+    if (value.list !== false) {
+      throw new Error("Cannot coerce from a list to a non-list.")
+    }
+
+    return { ...coerceValJs(value, to.type), list: false }
+  }
+
+  if (to.list === 0) {
+    return {
+      type: to.type,
+      list: 0,
+      value: [],
+    }
+  }
+
+  if (value.list === false) {
+    if (to.list === 1) {
+      return {
+        type: to.type,
+        list: 1,
+        value: [coerceValJs(value, to.type).value],
+      }
+    }
+
+    throw new Error("Cannot grow a list.")
+  }
+
+  return {
+    type: to.type,
+    list: to.list,
+    value: value.value.map(
+      (val) => coerceValJs({ value: val, type: value.type }, to.type).value,
+    ),
+  }
+}
+
+export function coerceValueGlsl(
+  ctx: GlslContext,
+  value: GlslValue,
+  to: Type,
+): string {
+  if (to.list === false) {
+    if (value.list !== false) {
+      throw new Error("Cannot coerce from a list to a non-list.")
+    }
+
+    return coerceValGlsl(ctx, value, to.type).expr
+  }
+
+  const ret = ctx.name()
+  ctx.push`${TY_INFO[to.type].glsl} ${ret}[${to.list}];\n`
+
+  if (to.list === 0) {
+    return ret
+  }
+
+  if (value.list === false) {
+    if (to.list === 1) {
+      ctx.push`${ret}[0] = ${coerceValGlsl(ctx, value, to.type).expr};\n`
+      return ret
+    }
+
+    throw new Error("Cannot grow a list.")
+  }
+
+  const index = ctx.name()
+  const cached = ctx.cache(value)
+  ctx.push`for (int ${index} = 0; ${index} < ${to.list}; ${index}++) {\n`
+  ctx.push`${ret}[${index}] = ${
+    coerceValGlsl(
+      ctx,
+      { expr: `${cached}[${index}]`, type: value.type },
+      to.type,
+    ).expr
+  };`
+  ctx.push`}\n`
+
+  return ret
+}
+
 export function isReal(val: JsVal): val is JsVal<"r32" | "r64">
 export function isReal(val: GlslVal): val is GlslVal<"r32" | "r64">
 export function isReal(val: { type: unknown }): val is { type: "r32" | "r64" } {

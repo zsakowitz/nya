@@ -14,13 +14,13 @@ import { pickCmp } from "./ops2/op/cmp"
 import { div, OP_DIV } from "./ops2/op/div"
 import { OP_CDOT } from "./ops2/op/mul"
 import { OP_RAISE } from "./ops2/op/raise"
+import { piecewiseGlsl, piecewiseJs } from "./ops2/piecewise"
 import { VARS } from "./ops2/vars"
 import { withBindingsGlsl, withBindingsJs } from "./ops2/with"
 import type { SReal } from "./ty"
 import { frac, num, real } from "./ty/create"
 import type { GlslValue, JsValue } from "./ty2"
-import { coerceType, isReal, listGlsl, listJs } from "./ty2/coerce"
-import { declareGlsl } from "./ty2/decl"
+import { isReal, listGlsl, listJs } from "./ty2/coerce"
 import { TY_INFO } from "./ty2/info"
 import { split } from "./ty2/split"
 
@@ -195,9 +195,7 @@ export function js(node: Node, props: PropsJs): JsValue {
         })
         .reduce((a, b) => OP_AND.js(a, b))
     case "piecewise":
-      throw new Error(
-        "Piecewise functions are not supported outside of shaders yet.",
-      )
+      return piecewiseJs(node.pieces, props)
     case "root":
       if (node.root) {
         return OP_RAISE.js(
@@ -432,56 +430,8 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
           return pickCmp(op).glsl(props.ctx, a, b)
         })
         .reduce((a, b) => OP_AND.glsl(props.ctx, a, b))
-    case "piecewise": {
-      const name = props.ctx.name()
-
-      let isDefinitelyAssigned = false
-      const pieces = node.pieces.map(({ value, condition }, index) => {
-        if (index == node.pieces.length - 1 && condition.type == "void") {
-          isDefinitelyAssigned = true
-          condition = { type: "var", kind: "var", value: "true" }
-        }
-
-        const ctxCond = props.ctx.fork()
-        const cond = glsl(condition, { ...props, ctx: ctxCond })
-        if (cond.list !== false) {
-          throw new Error(
-            "Lists cannot be used as the condition for a piecewise function yet.",
-          )
-        }
-        if (cond.type != "bool") {
-          throw new Error(
-            "The 'if' clause in a piecewise function must be a condition like z = 2.",
-          )
-        }
-
-        const ctxValue = props.ctx.fork()
-        const val = glsl(value, { ...props, ctx: ctxValue })
-
-        return { ctxCond, ctxValue, value: val, cond }
-      })
-
-      const ret = coerceType(pieces.map((x) => x.value))!
-
-      props.ctx.push`${declareGlsl(ret, name)};\n`
-      let closers = ""
-      throw new Error("no piecewises yet")
-      // for (const { ctxCond, cond, ctxValue, value } of pieces) {
-      // props.ctx.block += ctxCond.block
-      // props.ctx.push`if (${cond.expr}) {\n`
-      // props.ctx.block += ctxValue.block
-      // props.ctx.push`${name} = ${coerceValueGlsl(props.ctx, value, ret)};\n`
-      // props.ctx.push`} else {\n`
-      // closers += "}"
-      // }
-      if (!isDefinitelyAssigned) {
-        throw new Error("piecewises without definite assignment?? not yet")
-        // props.ctx.push`${name} = ${garbageValueGlsl(props.ctx, ret)};\n`
-      }
-      props.ctx.block += closers + "\n"
-
-      return { ...ret, expr: name }
-    }
+    case "piecewise":
+      return piecewiseGlsl(node.pieces, props)
     case "error":
       throw new Error(node.reason)
     case "magicvar":

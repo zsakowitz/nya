@@ -50,6 +50,6 @@ export const OP_RAISE = new FnDist("^").add(
   }
 }
 `
-    return `_helper_pow_c32(${a}, ${b})`
+    return `_helper_pow_c32(${a.expr}, ${b.expr})`
   },
 )
