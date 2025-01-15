@@ -1,5 +1,5 @@
 import { pt, real } from "../ty/create"
-import type { GlslValue, JsValue } from "../ty2"
+import type { GlslValue, JsValue } from "../ty"
 
 export interface Builtin {
   js: JsValue

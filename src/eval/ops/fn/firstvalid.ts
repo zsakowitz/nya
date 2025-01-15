@@ -1,5 +1,5 @@
 import { FnDistVar } from "../../fn/dist"
-import { TY_INFO } from "../../ty2/info"
+import { TY_INFO } from "../../ty/info"
 import { FN_VALID } from "./valid"
 
 export const FN_FIRSTVALID = new FnDistVar("firstvalid")

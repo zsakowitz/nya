@@ -15,8 +15,8 @@ import type { Node } from "./ast/token"
 import { js, type PropsJs } from "./eval"
 import type { SColor, SPoint, SReal } from "./ty"
 import { num, real } from "./ty/create"
-import type { JsVal, JsValue } from "./ty2"
-import { isReal } from "./ty2/coerce"
+import type { JsVal, JsValue } from "./ty"
+import { isReal } from "./ty/coerce"
 import { safe } from "./util"
 
 export function getOutputBase(node: Node, props: PropsJs): SReal {

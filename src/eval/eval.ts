@@ -17,12 +17,11 @@ import { OP_RAISE } from "./ops/op/raise"
 import { piecewiseGlsl, piecewiseJs } from "./ops/piecewise"
 import { VARS } from "./ops/vars"
 import { withBindingsGlsl, withBindingsJs } from "./ops/with"
-import type { SReal } from "./ty"
+import type { GlslValue, JsValue, SReal } from "./ty"
+import { isReal, listGlsl, listJs } from "./ty/coerce"
 import { frac, num, real } from "./ty/create"
-import type { GlslValue, JsValue } from "./ty2"
-import { isReal, listGlsl, listJs } from "./ty2/coerce"
-import { TY_INFO } from "./ty2/info"
-import { split } from "./ty2/split"
+import { TY_INFO } from "./ty/info"
+import { split } from "./ty/split"
 
 export interface Props {
   base: SReal

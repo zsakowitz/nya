@@ -8,16 +8,11 @@ import type {
   TyName,
   Tys,
   Val,
-} from "../ty2"
-import {
-  canCoerce,
-  coerceValGlsl,
-  coerceValJs,
-  unifyLists,
-} from "../ty2/coerce"
-import { listTy } from "../ty2/debug"
-import { declareGlsl } from "../ty2/decl"
-import { TY_INFO } from "../ty2/info"
+} from "../ty"
+import { canCoerce, coerceValGlsl, coerceValJs, unifyLists } from "../ty/coerce"
+import { listTy } from "../ty/debug"
+import { declareGlsl } from "../ty/decl"
+import { TY_INFO } from "../ty/info"
 
 /** A single overload of a `FnDist` function. */
 export interface FnDistOverload<Q extends TyName = TyName> {

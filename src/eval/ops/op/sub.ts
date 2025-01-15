@@ -2,7 +2,7 @@ import type { GlslContext } from "../../fn"
 import { FnDist } from "../../fn/dist"
 import type { SReal } from "../../ty"
 import { approx, frac, num, pt } from "../../ty/create"
-import type { JsVal } from "../../ty2"
+import type { JsVal } from "../../ty"
 import { safe } from "../../util"
 import { declareR64 } from "../r64"
 

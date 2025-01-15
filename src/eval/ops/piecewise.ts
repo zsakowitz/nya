@@ -1,9 +1,9 @@
 import type { Piece } from "../ast/token"
 import { glsl, js, type PropsGlsl, type PropsJs } from "../eval"
-import type { GlslValue, JsValue, Val } from "../ty2"
-import { coerceType, coerceValueGlsl, coerceValueJs } from "../ty2/coerce"
-import { declareGlsl } from "../ty2/decl"
-import { garbageValueGlsl, garbageValueJs } from "../ty2/garbage"
+import type { GlslValue, JsValue, Val } from "../ty"
+import { coerceType, coerceValueGlsl, coerceValueJs } from "../ty/coerce"
+import { declareGlsl } from "../ty/decl"
+import { garbageValueGlsl, garbageValueJs } from "../ty/garbage"
 
 export function piecewiseJs(piecesRaw: Piece[], props: PropsJs): JsValue {
   const pieces = piecesRaw.map(({ value, condition }, index) => {

@@ -1,5 +1,5 @@
-import type { GlslVal as GlslVal2 } from "./ty2"
-import { TY_INFO } from "./ty2/info"
+import type { GlslVal as GlslVal2 } from "./ty"
+import { TY_INFO } from "./ty/info"
 
 export class GlslHelpers {
   readonly helpers = ""

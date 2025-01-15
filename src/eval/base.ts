@@ -1,8 +1,8 @@
 import type { SReal } from "./ty"
 import { approx, frac, num } from "./ty/create"
-import type { GlslValue, JsValue } from "./ty2"
-import { canCoerce, coerceValJs } from "./ty2/coerce"
-import { split } from "./ty2/split"
+import type { GlslValue, JsValue } from "./ty"
+import { canCoerce, coerceValJs } from "./ty/coerce"
+import { split } from "./ty/split"
 import { safe } from "./util"
 
 export function asNumericBase(value: JsValue): SReal {

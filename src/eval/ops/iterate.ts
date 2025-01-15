@@ -9,11 +9,11 @@ import {
   type Binding,
 } from "../binding"
 import { glsl, js, type PropsGlsl, type PropsJs } from "../eval"
+import type { GlslValue, JsValue } from "../ty"
 import { list } from "../ty"
+import { isReal } from "../ty/coerce"
 import { num } from "../ty/create"
-import type { GlslValue, JsValue } from "../ty2"
-import { isReal } from "../ty2/coerce"
-import { declareGlsl } from "../ty2/decl"
+import { declareGlsl } from "../ty/decl"
 
 export interface IterateVar {
   id: string

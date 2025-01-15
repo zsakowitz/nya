@@ -2,7 +2,7 @@ import type { GlslContext } from "../../fn"
 import { FnDist } from "../../fn/dist"
 import type { SColor } from "../../ty"
 import { frac, num, real } from "../../ty/create"
-import type { JsVal } from "../../ty2"
+import type { JsVal } from "../../ty"
 
 function doHsv(
   hr: JsVal<"r32">,
