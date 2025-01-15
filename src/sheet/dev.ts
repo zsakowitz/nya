@@ -11,11 +11,11 @@ const sheet = new Sheet(exts, { field: options })
 document.body.appendChild(sheet.el)
 
 new Expr(sheet).field
-  .typeEach`rgb ( a [ 1 ] , a [ 2 ] , a [ 3 ] ) w i t h a = 2 5 5 * ( 0 . 4 5 s i n ( 5 | [ a , b , c ] | / n ArrowLeft ArrowLeft Backspace ArrowRight Tab Tab + 0 . 5 ) withseq iterate ^ 5 0 ArrowRight list r - > s , s - > z , z - > z ^ 2 + p ,
+  .typeEach`rgb ( a [ 1 ] , a [ 2 ] , a [ 3 ] ) w i t h a = 2 5 5 * ( 0 . 4 5 s i n ( 5 | [ a , b , c ] | / n ArrowLeft ArrowLeft Backspace ArrowRight Tab Tab + 0 . 5 ) withseq iterate ^ 5 0 ArrowRight list r - > s , s - > z , z - > z z + p ,
 a - > a + d o t ( z - s , s - r ) ,
 b - > b + d o t ( z - s , z - s ) ,
 c - > c + d o t ( z - s , z - r ) ,
-n - > n + 1 ArrowRight while | z | < = 2 from list r = 0 i , s = 0 i , z = 0 i ArrowRight`
+n - > n + 1 ArrowRight while z . x z . x + z . y z . y < 4 from list r = 0 i , s = 0 i , z = 0 i ArrowRight`
 new Expr(sheet).field
   .typeEach`a * ( valid a and y > 0 and - 1 < x < 0 ) with a = oklch ( . 8 , y , 3 6 0 x )`
 new Expr(sheet).field

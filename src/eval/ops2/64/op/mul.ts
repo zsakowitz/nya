@@ -1,4 +1,4 @@
-import { declareR64 } from ".."
+import { declareR64 } from "../r64"
 import type { GlslContext } from "../../../fn"
 import { FnDist } from "../../../fn/dist"
 import type { SReal } from "../../../ty"

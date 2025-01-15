@@ -224,8 +224,8 @@ function getLimit(node: Node, props: PropsJs): number {
     throw new Error("Limit of 'iterate' must be a number.")
   }
   const real = Math.floor(num(value.value))
-  if (!(0 <= real && real <= 100)) {
-    throw new Error("Limit of 'iterate' must be between 0 and 100.")
+  if (!(0 <= real && real <= 1000)) {
+    throw new Error("Limit of 'iterate' must be between 0 and 1000.")
   }
 
   return real

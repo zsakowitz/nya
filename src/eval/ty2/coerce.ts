@@ -71,9 +71,7 @@ export function listGlsl(ctx: GlslContext, vals: GlslValue[]): GlslValue {
   ctx.push`${TY_INFO[type].glsl} ${ret}[${vals.length}];\n`
 
   for (let i = 0; i < vals.length; i++) {
-    ctx.push`${ret}[${i}] = ${(
-      TY_INFO[vals[i]!.type].coerce as TyCoerceMap<Val>
-    )[type]!.glsl(vals[i]!.expr, ctx)};\n`
+    ctx.push`${ret}[${i}] = ${coerceValGlsl(ctx, vals[i]!, type).expr};\n`
   }
 
   return { type, list: vals.length, expr: ret }

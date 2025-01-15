@@ -2,6 +2,8 @@ import type { OpBinary, PuncUnary } from "../ast/token"
 import type { FnDist } from "../fn/dist"
 import { FN_INTOCOLOR } from "./32/fn/intocolor"
 import { FN_RGB } from "./32/fn/rgb"
+import { FN_SIN } from "./32/fn/sin"
+import { OP_DIV } from "./32/op/div"
 import { FN_CMP } from "./64/fn/cmp"
 import { FN_DOT } from "./64/fn/dot"
 import { FN_IMAG } from "./64/fn/imag"
@@ -18,6 +20,7 @@ export const FNS: Record<string, FnDist> = {
   real: FN_REAL,
   intocolor: FN_INTOCOLOR,
   dot: FN_DOT,
+  sin: FN_SIN,
 }
 Object.setPrototypeOf(FNS, null)
 
@@ -28,6 +31,7 @@ export const OP_BINARY: Partial<Record<OpBinary, FnDist>> = {
   "+": OP_ADD,
   "-": OP_SUB,
   "\\cdot ": OP_CDOT,
+  "÷": OP_DIV,
   "\\and ": OP_AND,
 }
 Object.setPrototypeOf(OP_BINARY, null)

@@ -4,6 +4,7 @@ import { asNumericBase, parseNumberGlsl, parseNumberJs } from "./base2"
 import { Bindings, id } from "./binding"
 import { GlslContext, GlslHelpers } from "./fn"
 import { FNS, OP_BINARY, OP_UNARY } from "./ops2"
+import { OP_DIV } from "./ops2/32/op/div"
 import { OP_RAISE } from "./ops2/32/op/pow"
 import { FN_IMAG } from "./ops2/64/fn/imag"
 import { FN_REAL } from "./ops2/64/fn/real"
@@ -180,8 +181,7 @@ export function js(node: Node, props: PropsJs): JsValue {
       throw new Error(`The variable '${node.value}' is not defined.`)
     }
     case "frac":
-      throw new Error("no frac yet")
-    // return DIV.js(js(node.a, props), js(node.b, props))
+      return OP_DIV.js(js(node.a, props), js(node.b, props))
     case "raise":
       return OP_RAISE.js(js(node.base, props), js(node.exponent, props))
     case "cmplist":
@@ -235,10 +235,10 @@ export function js(node: Node, props: PropsJs): JsValue {
       }
       const value = num(index.value) - 1
       return {
-        ...on,
+        type: on.type,
         list: false,
         value: on.value[value] ?? TY_INFO[on.type].garbage.js,
-      } as any
+      }
     }
     case "commalist":
       throw new Error("Lists must be surrounded by square brackets.")
@@ -412,8 +412,7 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
       throw new Error(`The variable '${node.value}' is not defined.`)
     }
     case "frac":
-      throw new Error("no frac yet")
-    // return DIV.glsl(props.ctx, glsl(node.a, props), glsl(node.b, props))
+      return OP_DIV.glsl(props.ctx, glsl(node.a, props), glsl(node.b, props))
     case "raise":
       return OP_RAISE.glsl(
         props.ctx,
@@ -494,29 +493,28 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
     case "void":
       throw new Error("Empty expression.")
     case "index":
-      throw new Error("no index yet")
-    // const on = glsl(node.on, props)
-    // if (on.list === false) {
-    //   throw new Error("Cannot index on a non-list.")
-    // }
-    // const indexVal = js(node.index, { ...props, bindings: new Bindings() })
-    // if (indexVal.list) {
-    //   throw new Error("Cannot index with a list yet.")
-    // }
-    // if (!isReal(indexVal)) {
-    //   throw new Error("Indices must be numbers for now.")
-    // }
-    // const index = num(indexVal.value)
-    // if (index != Math.floor(index) || index <= 0 || index > on.list) {
-    //   throw new Error(
-    //     `Index ${index} is out-of-bounds on list of length ${on.list}.`,
-    //   )
-    // }
-    // return {
-    //   type: on.type,
-    //   list: false,
-    //   expr: `${on.expr}[${index - 1}]`,
-    // }
+      const on = glsl(node.on, props)
+      if (on.list === false) {
+        throw new Error("Cannot index on a non-list.")
+      }
+      const indexVal = js(node.index, { ...props, bindings: new Bindings() })
+      if (indexVal.list !== false) {
+        throw new Error("Cannot index with a list yet.")
+      }
+      if (!isReal(indexVal)) {
+        throw new Error("Indices must be numbers for now.")
+      }
+      const index = num(indexVal.value)
+      if (index != Math.floor(index) || index <= 0 || index > on.list) {
+        throw new Error(
+          `Index ${index} is out-of-bounds on list of length ${on.list}.`,
+        )
+      }
+      return {
+        type: on.type,
+        list: false,
+        expr: `${on.expr}[${index - 1}]`,
+      }
     case "commalist":
       throw new Error("Lists must be surrounded by square brackets.")
     case "sub":
