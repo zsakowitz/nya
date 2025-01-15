@@ -199,6 +199,7 @@ export class Expr {
       const base = getOutputBase(node, props)
       this.displayEval(value, base)
     } catch (e) {
+      console.error(e)
       this.displayError(e instanceof Error ? e : new Error(String(e)))
     }
 
@@ -285,6 +286,7 @@ void main() {
         "whitespace-pre-wrap",
       )
     } catch (e) {
+      console.error(e)
       this.sheet.elGlsl.textContent = e instanceof Error ? e.message : String(e)
       this.sheet.elGlsl.classList.add(
         "text-red-800",

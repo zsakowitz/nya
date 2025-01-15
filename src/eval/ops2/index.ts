@@ -10,6 +10,7 @@ import { FN_FIRSTVALID } from "./fn/firstvalid"
 import { FN_HSV } from "./fn/hsv"
 import { FN_IMAG } from "./fn/imag"
 import { FN_INTOCOLOR } from "./fn/intocolor"
+import { FN_LN } from "./fn/ln"
 import { FN_MAX } from "./fn/max"
 import { FN_MIN } from "./fn/min"
 import { FN_OKLAB } from "./fn/oklab"
@@ -22,6 +23,7 @@ import { FN_UNSIGN } from "./fn/unsign"
 import { FN_VALID } from "./fn/valid"
 import { OP_ADD } from "./op/add"
 import { OP_AND } from "./op/and"
+import { OP_CROSS } from "./op/cross"
 import { OP_DIV } from "./op/div"
 import { OP_MOD } from "./op/mod"
 import { OP_CDOT } from "./op/mul"
@@ -51,6 +53,7 @@ export const FNS: Record<string, FnDist> = {
   angle: FN_ANGLE,
   valid: FN_VALID,
   firstvalid: FN_FIRSTVALID,
+  ln: FN_LN,
 }
 Object.setPrototypeOf(FNS, null)
 
@@ -70,5 +73,6 @@ export const OP_BINARY: Partial<Record<OpBinary, FnDist>> = {
   "\\odot ": OP_ODOT,
   juxtaposition: OP_CDOT,
   mod: OP_MOD,
+  "\\times ": OP_CROSS,
 }
 Object.setPrototypeOf(OP_BINARY, null)

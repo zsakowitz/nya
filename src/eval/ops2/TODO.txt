@@ -1,8 +1,6 @@
 op name         status (todo, only real/32/r64/approx/etc., lacking functionality)
 -------         ------------------------------------------------------------------
 intocolor       real and complex don't work
-cross           
-ln              
 unsign          perf
 <, >, etc.      issues with nan on 64-bit
 iterate         can't handle changing types in webgl
@@ -25,3 +23,4 @@ angle
 sqrt            could be exact
 valid
 firstvalid
+ln              only complex

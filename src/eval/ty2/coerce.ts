@@ -56,7 +56,9 @@ export function listJs(vals: JsValue[]): JsValue {
     type,
     list: vals.length,
     value: vals.map((x) =>
-      (TY_INFO[x.type].coerce as TyCoerceMap<Val>)[type]!.js(x.value),
+      x.type == type ?
+        x.value
+      : (TY_INFO[x.type].coerce as TyCoerceMap<Val>)[type]!.js(x.value),
     ),
   }
 }
