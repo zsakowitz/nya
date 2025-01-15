@@ -69,7 +69,7 @@ export const FN_HSV = new FnDist("hsv")
     (hr, sr, vr) => doHsv(hr, sr, vr, { type: "r32", value: frac(1, 1) }),
     (ctx, hr, sr, vr) => {
       declareHsv(ctx)
-      return `vec4(_helper_hsv(${hr.expr}, ${sr.expr}, ${vr.expr}), 1)`
+      return `vec4(_helper_hsv(vec3(${hr.expr} / 360.0, ${sr.expr}, ${vr.expr})), 1)`
     },
   )
   .add(
@@ -78,6 +78,6 @@ export const FN_HSV = new FnDist("hsv")
     (hr, sr, vr, ar) => doHsv(hr, sr, vr, ar),
     (ctx, hr, sr, vr, ar) => {
       declareHsv(ctx)
-      return `vec4(_helper_hsv(${hr.expr}, ${sr.expr}, ${vr.expr}), ${ar.expr})`
+      return `vec4(_helper_hsv(vec3(${hr.expr} / 360.0, ${sr.expr}, ${vr.expr})), ${ar.expr})`
     },
   )
