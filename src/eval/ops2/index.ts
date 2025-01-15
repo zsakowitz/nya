@@ -3,6 +3,7 @@ import type { FnDist } from "../fn/dist"
 
 import { FN_CMP } from "./fn/cmp"
 import { FN_COS } from "./fn/cos"
+import { FN_DEBUGQUADRANT } from "./fn/debugquadrant"
 import { FN_DOT } from "./fn/dot"
 import { FN_HSV } from "./fn/hsv"
 import { FN_IMAG } from "./fn/imag"
@@ -34,6 +35,7 @@ export const FNS: Record<string, FnDist> = {
   hsv: FN_HSV,
   cos: FN_COS,
   tan: FN_TAN,
+  debugquadrant: FN_DEBUGQUADRANT,
 }
 Object.setPrototypeOf(FNS, null)
 

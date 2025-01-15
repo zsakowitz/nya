@@ -31,7 +31,10 @@ export interface FnDistOverload {
  * `FnDist` are functions which take a fixed number of arguments of
  * predetermined type, and return some value of predetermined type. They
  * distribute across lists, returning a list of the shortest length of their
- * inputs.
+ * inputs. Overloads are added via the {@linkcode FnDist.add} method.
+ *
+ * Note that overloads are resolved in the order they are declared, so declare
+ * real overloads before complex ones, and 64-bit overloads before 32-bit ones.
  */
 export class FnDist {
   private readonly o: FnDistOverload[] = []

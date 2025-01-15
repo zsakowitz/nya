@@ -52,6 +52,17 @@ vec2 _helper_mul_r64(vec2 dsa, vec2 dsb) {
 `
 }
 
+export function declareMulC32(ctx: GlslContext) {
+  ctx.glsl`
+vec2 _helper_mul_c32(vec2 a, vec2 b) {
+  return vec2(
+    a.x * b.x - a.y * b.y,
+    a.y * b.x + a.x * b.y
+  );
+}
+`
+}
+
 export function mulR64(ctx: GlslContext, a: string, b: string) {
   declareMulR64(ctx)
   return `_helper_mul_r64(${a}, ${b})`
@@ -92,13 +103,6 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
     (_, a, b) => `(${a.expr} * ${b.expr})`,
   )
   .add(["c32", "c32"], "c32", complex, (ctx, a, b) => {
-    ctx.glsl`
-vec2 _helper_mul_c32(vec2 a, vec2 b) {
-  return vec2(
-    a.x * b.x - a.y * b.y,
-    a.y * b.x + a.x * b.y
-  );
-}
-`
+    declareMulC32(ctx)
     return `_helper_mul_c32(${a.expr}, ${b.expr})`
   })
