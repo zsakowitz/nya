@@ -4,7 +4,6 @@ intocolor       real and complex don't work
 cross           
 ln              
 sqrt            
-angle           
 valid           
 firstvalid      
 unsign          perf
@@ -24,3 +23,4 @@ exp
 mod
 max
 min
+angle

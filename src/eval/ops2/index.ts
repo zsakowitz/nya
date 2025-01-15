@@ -1,5 +1,6 @@
 import type { OpBinary, PuncUnary } from "../ast/token"
 import type { FnDist } from "../fn/dist"
+import { FN_ANGLE } from "./fn/angle"
 
 import { FN_CMP } from "./fn/cmp"
 import { FN_COS } from "./fn/cos"
@@ -45,6 +46,7 @@ export const FNS: Record<string, FnDist> = {
   max: FN_MAX,
   oklab: FN_OKLAB,
   oklch: FN_OKLCH,
+  angle: FN_ANGLE,
 }
 Object.setPrototypeOf(FNS, null)
 
