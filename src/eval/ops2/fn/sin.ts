@@ -1,12 +1,20 @@
 import type { GlslContext } from "../../fn"
 import { FnDist } from "../../fn/dist"
+import type { SPoint } from "../../ty"
 import { approx, num, pt } from "../../ty/create"
 
-function declareSin(ctx: GlslContext) {
+export function declareSin(ctx: GlslContext) {
   ctx.glsl`vec2 _helper_sin(vec2 z) {
   return vec2(sin(z.x) * cosh(z.y), cos(z.x) * sinh(z.y));
 }
 `
+}
+
+export function sinPt(a: SPoint) {
+  return pt(
+    approx(Math.sin(num(a.x)) * Math.cosh(num(a.y))),
+    approx(Math.cos(num(a.x)) * Math.sinh(num(a.y))),
+  )
 }
 
 export const FN_SIN = new FnDist("sin")
@@ -19,11 +27,7 @@ export const FN_SIN = new FnDist("sin")
   .add(
     ["c32"],
     "c32",
-    (a) =>
-      pt(
-        approx(Math.sin(num(a.value.x)) * Math.cosh(num(a.value.y))),
-        approx(Math.cos(num(a.value.x)) * Math.sinh(num(a.value.y))),
-      ),
+    (a) => sinPt(a.value),
     (ctx, a) => {
       declareSin(ctx)
       return `_helper_sin(${a})`

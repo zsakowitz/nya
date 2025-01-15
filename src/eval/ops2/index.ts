@@ -2,6 +2,7 @@ import type { OpBinary, PuncUnary } from "../ast/token"
 import type { FnDist } from "../fn/dist"
 
 import { FN_CMP } from "./fn/cmp"
+import { FN_COS } from "./fn/cos"
 import { FN_DOT } from "./fn/dot"
 import { FN_HSV } from "./fn/hsv"
 import { FN_IMAG } from "./fn/imag"
@@ -9,6 +10,7 @@ import { FN_INTOCOLOR } from "./fn/intocolor"
 import { FN_REAL } from "./fn/real"
 import { FN_RGB } from "./fn/rgb"
 import { FN_SIN } from "./fn/sin"
+import { FN_TAN } from "./fn/tan"
 import { FN_UNSIGN } from "./fn/unsign"
 import { OP_ADD } from "./op/add"
 import { OP_AND } from "./op/and"
@@ -27,6 +29,8 @@ export const FNS: Record<string, FnDist> = {
   sin: FN_SIN,
   unsign: FN_UNSIGN,
   hsv: FN_HSV,
+  cos: FN_COS,
+  tan: FN_TAN,
 }
 Object.setPrototypeOf(FNS, null)
 
