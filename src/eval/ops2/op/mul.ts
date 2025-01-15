@@ -21,6 +21,7 @@ export function mul(a: SReal, b: SReal) {
 }
 
 export function declareMulR64(ctx: GlslContext) {
+  declareR64(ctx)
   ctx.glsl`
 vec2 _helper_mul_r64(vec2 dsa, vec2 dsb) {
   vec2 dsc;
@@ -51,8 +52,7 @@ vec2 _helper_mul_r64(vec2 dsa, vec2 dsb) {
 `
 }
 
-function r64(ctx: GlslContext, a: string, b: string) {
-  declareR64(ctx)
+export function mulR64(ctx: GlslContext, a: string, b: string) {
   declareMulR64(ctx)
   return `_helper_mul_r64(${a}, ${b})`
 }
@@ -69,7 +69,7 @@ export const OP_CDOT = new FnDist("·")
     ["r64", "r64"],
     "r64",
     (a, b) => mul(a.value, b.value),
-    (ctx, a, b) => r64(ctx, a.expr, b.expr),
+    (ctx, a, b) => mulR64(ctx, a.expr, b.expr),
   )
   .add(["c64", "c64"], "c64", complex, (ctx, a, b) => {
     declareAddR64(ctx)

@@ -17,6 +17,7 @@ import { OP_AND } from "./op/and"
 import { OP_DIV } from "./op/div"
 import { OP_CDOT } from "./op/mul"
 import { OP_NEG } from "./op/neg"
+import { OP_ODOT } from "./op/odot"
 import { OP_OR } from "./op/or"
 import { OP_POS } from "./op/pos"
 import { OP_SUB } from "./op/sub"
@@ -49,5 +50,7 @@ export const OP_BINARY: Partial<Record<OpBinary, FnDist>> = {
   "\\and ": OP_AND,
   "\\or ": OP_OR,
   "÷": OP_DIV,
+  "\\odot ": OP_ODOT,
+  juxtaposition: OP_CDOT,
 }
 Object.setPrototypeOf(OP_BINARY, null)
