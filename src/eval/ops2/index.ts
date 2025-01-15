@@ -16,7 +16,9 @@ import { OP_ADD } from "./op/add"
 import { OP_AND } from "./op/and"
 import { OP_DIV } from "./op/div"
 import { OP_CDOT } from "./op/mul"
+import { OP_NEG } from "./op/neg"
 import { OP_OR } from "./op/or"
+import { OP_POS } from "./op/pos"
 import { OP_SUB } from "./op/sub"
 
 export const FNS: Record<string, FnDist> = {
@@ -34,7 +36,10 @@ export const FNS: Record<string, FnDist> = {
 }
 Object.setPrototypeOf(FNS, null)
 
-export const OP_UNARY: Partial<Record<PuncUnary, FnDist>> = {}
+export const OP_UNARY: Partial<Record<PuncUnary, FnDist>> = {
+  "-": OP_NEG,
+  "+": OP_POS,
+}
 Object.setPrototypeOf(OP_UNARY, null)
 
 export const OP_BINARY: Partial<Record<OpBinary, FnDist>> = {

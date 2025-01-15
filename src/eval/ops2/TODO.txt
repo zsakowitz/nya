@@ -10,8 +10,6 @@ pow
 sqrt            
 angle           
 debugquadrant   
-pos             
-neg             
 max             
 min             
 oklab           
