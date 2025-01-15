@@ -5,8 +5,6 @@ cross
 ln              
 sqrt            
 angle           
-max             
-min             
 oklab           
 oklch           
 valid           
@@ -26,3 +24,5 @@ debugquadrant
 raise           cube roots on -8 et al don't work
 exp
 mod
+max
+min
