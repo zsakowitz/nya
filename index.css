@@ -1458,14 +1458,14 @@ body {
 }
 
 .nya-cmd-word-r:not(.nya-cmd-word-infix):has(
-    + .nya-cmd-paren,
-    + :where(.nya-cursor) + .nya-cmd-paren
+    + .nya-cmd-brack,
+    + :where(.nya-cursor) + .nya-cmd-brack
   ) {
   padding-right: 0px;
 }
 
-.nya-cmd-paren + .nya-cmd-word-l.nya-cmd-word-var,
-.nya-cmd-paren + :where(.nya-cursor) + .nya-cmd-word-l.nya-cmd-word-var {
+.nya-cmd-brack + .nya-cmd-word-l.nya-cmd-word-var,
+.nya-cmd-brack + :where(.nya-cursor) + .nya-cmd-word-l.nya-cmd-word-var {
   padding-left: 0px;
 }
 
@@ -1491,12 +1491,31 @@ body {
 .nya-cmd-word-r:not(.nya-cmd-word-infix) + .nya-cmd-supsub,
 .nya-cmd-word-r:not(.nya-cmd-word-infix)
   + :where(.nya-cursor)
+  + .nya-cmd-supsub,
+.nya-cmd-word-r:not(.nya-cmd-word-infix)
+  + .nya-cmd-dot
+  + .nya-cmd-var
+  + .nya-cmd-supsub,
+.nya-cmd-word-r:not(.nya-cmd-word-infix)
+  + :where(.nya-cursor)
+  + .nya-cmd-dot
+  + .nya-cmd-var
+  + .nya-cmd-supsub,
+.nya-cmd-word-r:not(.nya-cmd-word-infix)
+  + .nya-cmd-dot
+  + :where(.nya-cursor)
+  + .nya-cmd-var
+  + .nya-cmd-supsub,
+.nya-cmd-word-r:not(.nya-cmd-word-infix)
+  + .nya-cmd-dot
+  + .nya-cmd-var
+  + :where(.nya-cursor)
   + .nya-cmd-supsub {
   padding-right: .2em;
   &:last-child,
   &:has(+ :where(.nya-cursor):last-child),
-  &:has(+ .nya-cmd-paren),
-  &:has(+ :where(.nya-cursor) + .nya-cmd-paren) {
+  &:has(+ .nya-cmd-brack),
+  &:has(+ :where(.nya-cursor) + .nya-cmd-brack) {
     padding-right: 0px;
   }
 }

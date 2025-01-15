@@ -199,7 +199,6 @@ export class Expr {
       const base = getOutputBase(node, props)
       this.displayEval(value, base)
     } catch (e) {
-      console.error(e)
       this.displayError(e instanceof Error ? e : new Error(String(e)))
     }
 
@@ -209,175 +208,23 @@ export class Expr {
       if (value.list) {
         throw new Error("Cannot draw a list of colors.")
       }
-      const frag1 = `#version 300 es
-            precision highp float;
-      
-            float times_frc(float a, float b) {
-              return mix(0.0, a * b, b != 0.0 ? 1.0 : 0.0);
-            }
-      
-            float plus_frc(float a, float b) {
-              return mix(a, a + b, b != 0.0 ? 1.0 : 0.0);
-            }
-      
-            float minus_frc(float a, float b) {
-              return mix(a, a - b, b != 0.0 ? 1.0 : 0.0);
-            }
-      
-            // Double emulation based on GLSL Mandelbrot Shader by Henry Thasler (www.thasler.org/blog)
-            //
-            // Emulation based on Fortran-90 double-single package. See http://crd.lbl.gov/~dhbailey/mpdist/
-            // Substract: res = ds_add(a, b) => res = a + b
-            vec2 add (vec2 dsa, vec2 dsb) {
-              vec2 dsc;
-              float t1, t2, e;
-      
-              t1 = plus_frc(dsa.x, dsb.x);
-              e = minus_frc(t1, dsa.x);
-              t2 = plus_frc(plus_frc(plus_frc(minus_frc(dsb.x, e), minus_frc(dsa.x, minus_frc(t1, e))), dsa.y), dsb.y);
-              dsc.x = plus_frc(t1, t2);
-              dsc.y = minus_frc(t2, minus_frc(dsc.x, t1));
-              return dsc;
-            }
-      
-            // Substract: res = ds_sub(a, b) => res = a - b
-            vec2 sub (vec2 dsa, vec2 dsb) {
-              vec2 dsc;
-              float e, t1, t2;
-      
-              t1 = minus_frc(dsa.x, dsb.x);
-              e = minus_frc(t1, dsa.x);
-              t2 = minus_frc(plus_frc(plus_frc(minus_frc(minus_frc(0.0, dsb.x), e), minus_frc(dsa.x, minus_frc(t1, e))), dsa.y), dsb.y);
-      
-              dsc.x = plus_frc(t1, t2);
-              dsc.y = minus_frc(t2, minus_frc(dsc.x, t1));
-              return dsc;
-            }
-      
-            // Compare: res = -1 if a < b
-            //              = 0 if a == b
-            //              = 1 if a > b
-            float cmp(vec2 dsa, vec2 dsb) {
-              if (dsa.x < dsb.x) {
-                return -1.;
-              }
-              if (dsa.x > dsb.x) {
-                return 1.;
-              }
-              if (dsa.y < dsb.y) {
-                return -1.;
-              }
-              if (dsa.y > dsb.y) {
-                return 1.;
-              }
-              return 0.;
-            }
-      
-            // Multiply: res = ds_mul(a, b) => res = a * b
-            vec2 mul (vec2 dsa, vec2 dsb) {
-              vec2 dsc;
-              float c11, c21, c2, e, t1, t2;
-              float a1, a2, b1, b2, cona, conb, split = 8193.;
-      
-              cona = times_frc(dsa.x, split);
-              conb = times_frc(dsb.x, split);
-              a1 = minus_frc(cona, minus_frc(cona, dsa.x));
-              b1 = minus_frc(conb, minus_frc(conb, dsb.x));
-              a2 = minus_frc(dsa.x, a1);
-              b2 = minus_frc(dsb.x, b1);
-      
-              c11 = times_frc(dsa.x, dsb.x);
-              c21 = plus_frc(times_frc(a2, b2), plus_frc(times_frc(a2, b1), plus_frc(times_frc(a1, b2), minus_frc(times_frc(a1, b1), c11))));
-      
-              c2 = plus_frc(times_frc(dsa.x, dsb.y), times_frc(dsa.y, dsb.x));
-      
-              t1 = plus_frc(c11, c2);
-              e = minus_frc(t1, c11);
-              t2 = plus_frc(plus_frc(times_frc(dsa.y, dsb.y), plus_frc(minus_frc(c2, e), minus_frc(c11, minus_frc(t1, e)))), c21);
-      
-              dsc.x = plus_frc(t1, t2);
-              dsc.y = minus_frc(t2, minus_frc(dsc.x, t1));
-      
-              return dsc;
-            }
-      
-            // create double-single number from float
-            vec2 set(float a) {
-              return vec2(a, 0.0);
-            }
-      
-            vec4 mul(vec4 A, vec4 B) {
-              // (a+bi) * (c+di)
-              // ac-bd + i(bc+ad)
-              vec2 a = A.xy;
-              vec2 b = A.zw;
-              vec2 c = B.xy;
-              vec2 d = B.zw;
-              return vec4(
-                sub(mul(a,c), mul(b,d)),
-                add(mul(b,c), mul(a,d))
-              );
-            }
-      
-            uniform vec2 u_scale;
-            uniform vec2 u_cx;
-            uniform vec2 u_cy;
-            out vec4 color;
-            vec4 v_coords;
-            void main() {
-              vec2 e_tx = set(gl_FragCoord.x);
-              vec2 e_ty = set(gl_FragCoord.y);
-      
-              // compute position in complex plane from current pixel
-              vec2 cx = add(u_cx, mul(e_tx, u_scale));
-              vec2 cy = add(u_cy, mul(e_ty, u_scale));
-              vec2 px = cx;
-              vec2 py = cy;
-      
-              int n = 0;
-              for (int i=0;i<200;i++) {
-                if (add(mul(cx, cx), mul(cy, cy)).x > 4.0) {
-                  break;
-                }
-                n++;
-                vec4 c = mul(vec4(cx, cy), vec4(cx, cy));
-                cx = add(c.xy, px);
-                cy = add(c.zw, py);
-              }
-      
-            if (n == 50) {
-              color = vec4(1);
-            } else {
-              color = vec4(vec3(1.0 - float(n) / 50.0, 0, 0),1);
-              }
-            }
-            `
-      const frag2 = `#version 300 es
-      precision highp float;
-      in vec2 v_coords;
-      out vec4 color;
-      ${props.ctx.helpers.helpers}void main() {
-      ${props.ctx.block}color = ${value.expr};
-      }
-      `
       declareAddR64(props.ctx)
       declareMulR64(props.ctx)
       const frag = (this.sheet.elGlsl.textContent = `#version 300 es
-      precision highp float;
-      out vec4 color;
-      vec4 v_coords;
-      uniform vec2 u_scale;
-      uniform vec2 u_cx;
-      uniform vec2 u_cy;
-      ${props.ctx.helpers.helpers}void main() {
-        vec2 e_tx = vec2(gl_FragCoord.x, 0);
-        vec2 e_ty = vec2(gl_FragCoord.y, 0);
-        v_coords = vec4(
-          _helper_add_r64(u_cx, _helper_mul_r64(e_tx, u_scale)),
-          _helper_add_r64(u_cy, _helper_mul_r64(e_ty, u_scale))
-        );
-      
-      ${props.ctx.block}color = ${value.expr};
+precision highp float;
+out vec4 color;
+vec4 v_coords;
+uniform vec2 u_scale;
+uniform vec2 u_cx;
+uniform vec2 u_cy;
+${props.ctx.helpers.helpers}void main() {
+vec2 e_tx = vec2(gl_FragCoord.x, 0);
+vec2 e_ty = vec2(gl_FragCoord.y, 0);
+v_coords = vec4(
+  _helper_add_r64(u_cx, _helper_mul_r64(e_tx, u_scale)),
+  _helper_add_r64(u_cy, _helper_mul_r64(e_ty, u_scale))
+);
+${props.ctx.block}color = ${value.expr};
       }
       `)
       this.sheet.regl.clear({
@@ -438,7 +285,6 @@ void main() {
         "whitespace-pre-wrap",
       )
     } catch (e) {
-      console.error(e)
       this.sheet.elGlsl.textContent = e instanceof Error ? e.message : String(e)
       this.sheet.elGlsl.classList.add(
         "text-red-800",
