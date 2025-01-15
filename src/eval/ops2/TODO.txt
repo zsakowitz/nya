@@ -5,8 +5,6 @@ cross
 ln              
 sqrt            
 angle           
-oklab           
-oklch           
 valid           
 firstvalid      
 unsign          perf

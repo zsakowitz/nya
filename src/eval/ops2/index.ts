@@ -8,6 +8,10 @@ import { FN_DOT } from "./fn/dot"
 import { FN_HSV } from "./fn/hsv"
 import { FN_IMAG } from "./fn/imag"
 import { FN_INTOCOLOR } from "./fn/intocolor"
+import { FN_MAX } from "./fn/max"
+import { FN_MIN } from "./fn/min"
+import { FN_OKLAB } from "./fn/oklab"
+import { FN_OKLCH } from "./fn/oklch"
 import { FN_REAL } from "./fn/real"
 import { FN_RGB } from "./fn/rgb"
 import { FN_SIN } from "./fn/sin"
@@ -37,6 +41,10 @@ export const FNS: Record<string, FnDist> = {
   cos: FN_COS,
   tan: FN_TAN,
   debugquadrant: FN_DEBUGQUADRANT,
+  min: FN_MIN,
+  max: FN_MAX,
+  oklab: FN_OKLAB,
+  oklch: FN_OKLCH,
 }
 Object.setPrototypeOf(FNS, null)
 
