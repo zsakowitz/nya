@@ -8,6 +8,7 @@ valid
 firstvalid      
 unsign          perf
 <, >, etc.      issues with nan on 64-bit
+iterate         can't handle changing types in webgl
 
 operations which are only 32 or only r64 (r32/r64/c32 only, but not c64)
 op name         status (todo, only real/r64/approx/etc., lacking functionality)

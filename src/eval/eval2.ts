@@ -8,19 +8,21 @@ import { FN_IMAG } from "./ops2/fn/imag"
 import { FN_REAL } from "./ops2/fn/real"
 import { iterateGlsl, iterateJs, parseIterate } from "./ops2/iterate"
 import { OP_ABS } from "./ops2/op/abs"
+import { add } from "./ops2/op/add"
 import { OP_AND } from "./ops2/op/and"
 import { pickCmp } from "./ops2/op/cmp"
-import { OP_DIV } from "./ops2/op/div"
+import { div, OP_DIV } from "./ops2/op/div"
 import { OP_CDOT } from "./ops2/op/mul"
 import { OP_RAISE } from "./ops2/op/raise"
 import { VARS } from "./ops2/vars"
 import { withBindingsGlsl, withBindingsJs } from "./ops2/with"
 import type { SReal } from "./ty"
-import { num, real } from "./ty/create"
+import { frac, num, real } from "./ty/create"
 import type { GlslValue, JsValue } from "./ty2"
 import { coerceType, isReal, listGlsl, listJs } from "./ty2/coerce"
 import { declareGlsl } from "./ty2/decl"
 import { TY_INFO } from "./ty2/info"
+import { split } from "./ty2/split"
 
 export interface Props {
   base: SReal
@@ -197,15 +199,21 @@ export function js(node: Node, props: PropsJs): JsValue {
         "Piecewise functions are not supported outside of shaders yet.",
       )
     case "root":
-      throw new Error("no root yet")
-    // if (node.root) {
-    //   return POW.js(
-    //     js(node.contents, props),
-    //     DIV.js(vreal(1), js(node.root, props)),
-    //   )
-    // } else {
-    //   return SQRT.js(js(node.contents, props))
-    // }
+      if (node.root) {
+        return OP_RAISE.js(
+          js(node.contents, props),
+          OP_DIV.js(
+            { list: false, type: "r64", value: frac(1, 1) },
+            js(node.root, props),
+          ),
+        )
+      } else {
+        return OP_RAISE.js(js(node.contents, props), {
+          list: false,
+          type: "r64",
+          value: frac(1, 2),
+        })
+      }
     case "error":
       throw new Error(node.reason)
     case "magicvar":
@@ -247,20 +255,17 @@ export function js(node: Node, props: PropsJs): JsValue {
     case "sup":
       throw new Error("Lone superscript.")
     case "mixed":
-      throw new Error("no mixed yet")
-    // return OP_ADD.js1(
-    //   parseNumberJs(node.integer, props.base),
-    // ) {
-    //   type: "real",
-    //   list: false,
-    //   value: ADD.real(
-    //     parseNumberJs(node.integer, props.base),
-    //     DIV.real(
-    //       parseNumberJs(node.a, props.base),
-    //       parseNumberJs(node.b, props.base),
-    //     ),
-    //   ),
-    // }
+      return {
+        type: "r64",
+        list: false,
+        value: add(
+          parseNumberJs(node.integer, props.base).value,
+          div(
+            parseNumberJs(node.a, props.base).value,
+            parseNumberJs(node.b, props.base).value,
+          ),
+        ),
+      }
     case "num16":
     case "for":
     case "matrix":
@@ -522,25 +527,42 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
     case "sup":
       throw new Error("Lone superscript.")
     case "mixed":
-      throw new Error("no mixed yet")
-    // return {
-    //   ...ADD.glsl1(
-    //     props.ctx,
-    //     { expr: parseNumberGlsl(node.integer, props.base), type: "real" },
-    //     DIV.glsl1(
-    //       props.ctx,
-    //       { expr: parseNumberGlsl(node.a, props.base), type: "real" },
-    //       { expr: parseNumberGlsl(node.b, props.base), type: "real" },
-    //     ),
-    //   ),
-    //   list: false,
-    // }
+      const value = add(
+        parseNumberJs(node.integer, props.base).value,
+        div(
+          parseNumberJs(node.a, props.base).value,
+          parseNumberJs(node.b, props.base).value,
+        ),
+      )
+      const [a, b] = split(num(value))
+      return {
+        type: "r64",
+        list: false,
+        expr: `vec2(${a.toExponential()}, ${b.toExponential()})`,
+      }
+    case "root":
+      if (node.root) {
+        return OP_RAISE.glsl(
+          props.ctx,
+          glsl(node.contents, props),
+          OP_DIV.glsl(
+            props.ctx,
+            { list: false, type: "r64", expr: "vec2(1, 0)" },
+            glsl(node.root, props),
+          ),
+        )
+      } else {
+        return OP_RAISE.glsl(props.ctx, glsl(node.contents, props), {
+          list: false,
+          type: "r64",
+          expr: "vec2(0.5, 0)",
+        })
+      }
     case "num16":
     case "for":
     case "matrix":
     case "bigsym":
     case "big":
-    case "root":
     case "factorial":
     case "punc":
   }
