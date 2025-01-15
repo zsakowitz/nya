@@ -1,21 +1,17 @@
 op name         status (todo, only real/32/r64/approx/etc., lacking functionality)
+div             only r32
+intocolor       real and complex don't work
 cross           
 odot            
-div             
 mod             
 exp             
 ln              
 pow             
 sqrt            
-abs             only r64, could be exact for pythagorean triples, perf
 angle           
-<, >, etc.      issues with nan on 64-bit
 debugquadrant   
 pos             
 neg             
-intocolor       
-unsign          perf
-sin             only 32
 cos             
 tan             
 max             
@@ -24,3 +20,7 @@ oklab
 oklch           
 valid           
 firstvalid      
+unsign          perf
+sin             only 32
+abs             only r64, could be exact for pythagorean triples, perf
+<, >, etc.      issues with nan on 64-bit
