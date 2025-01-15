@@ -10,7 +10,6 @@ sqrt
 abs             only r64, could be exact for pythagorean triples, perf
 angle           
 <, >, etc.      issues with nan on 64-bit
-or              
 debugquadrant   
 pos             
 neg             
