@@ -1,5 +1,5 @@
 import type { Piece } from "../ast/token"
-import { glsl, js, type PropsGlsl, type PropsJs } from "../eval2"
+import { glsl, js, type PropsGlsl, type PropsJs } from "../eval"
 import type { GlslValue, JsValue, Val } from "../ty2"
 import { coerceType, coerceValueGlsl, coerceValueJs } from "../ty2/coerce"
 import { declareGlsl } from "../ty2/decl"
