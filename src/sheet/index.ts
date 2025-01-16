@@ -1,4 +1,4 @@
-import { faHomeLg, faMinus, faPlus } from "@fortawesome/free-solid-svg-icons"
+import { faHomeLg } from "@fortawesome/free-solid-svg-icons"
 import { display, getOutputBase } from "../eval/display"
 import { defaultPropsGlsl, defaultPropsJs, glsl, js } from "../eval/eval"
 import { FN_INTOCOLOR } from "../eval/ops/fn/intocolor"
