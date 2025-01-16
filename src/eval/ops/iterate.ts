@@ -9,8 +9,11 @@ import {
   type Binding,
 } from "../binding"
 import { glsl, js, type PropsGlsl, type PropsJs } from "../eval"
-import { list, varDeclToGlsl, type GlslValue, type JsValue } from "../ty"
+import type { GlslValue, JsValue } from "../ty"
+import { list } from "../ty"
+import { isReal } from "../ty/coerce"
 import { num } from "../ty/create"
+import { declareGlsl } from "../ty/decl"
 
 export interface IterateVar {
   id: string
@@ -214,28 +217,24 @@ export interface DoIterateProps<T> {
 
 function getLimit(node: Node, props: PropsJs): number {
   const value = js(node, props)
-  if (value.list) {
+  if (value.list !== false) {
     throw new Error("Limit of 'iterate' must be a single number.")
   }
-  if (value.type != "real") {
+  if (!isReal(value)) {
     throw new Error("Limit of 'iterate' must be a number.")
   }
   const real = Math.floor(num(value.value))
-  if (!(0 <= real && real <= 100)) {
-    throw new Error("Limit of 'iterate' must be between 0 and 100.")
+  if (!(0 <= real && real <= 1000)) {
+    throw new Error("Limit of 'iterate' must be between 0 and 1000.")
   }
 
   return real
 }
 
 function jsShouldBreak(
-  condition: IterateCondition | undefined,
+  condition: IterateCondition,
   props: DoIterateProps<PropsJs>,
 ): boolean {
-  if (!condition) {
-    return false
-  }
-
   const val = js(condition.value, props.eval)
   if (val.list) {
     throw new Error(
@@ -264,7 +263,12 @@ export function iterateJs(
 
   let i = 0
   for (; i < limit; i++) {
-    if (jsShouldBreak(iterate.condition, props)) {
+    if (
+      iterate.condition &&
+      props.eval.bindings.withAll(values, () =>
+        jsShouldBreak(iterate.condition!, props),
+      )
+    ) {
       break
     }
 
@@ -319,12 +323,12 @@ export function iterateGlsl(
   for (const [id, from] of iterate.from) {
     const value = glsl(from, props.eval)
     const name = ctx.name()
-    ctx.push`${varDeclToGlsl(value, name)} = ${value.expr};\n`
+    ctx.push`${declareGlsl(value, name)} = ${value.expr};\n`
     values[id] = { ...value, expr: name }
   }
 
-  const count: GlslValue = { type: "real", expr: ctx.name(), list: false }
-  ctx.push`float ${count.expr};\n`
+  const count = ctx.name()
+  ctx.push`int ${count};\n`
   const index = ctx.name()
   ctx.push`for (int ${index} = 0; ${index} < ${limit}; ${index}++) {\n`
   props.eval.bindings.withAll(values, () => {
@@ -353,8 +357,15 @@ export function iterateGlsl(
     }
     ctx.push`${queue}`
   })
-  ctx.push`${count.expr}++;\n`
+  ctx.push`${count}++;\n`
   ctx.push`}\n`
 
-  return { data: values, count }
+  return {
+    data: values,
+    count: {
+      type: "r64",
+      expr: `vec2(${count}, 0)`,
+      list: false,
+    },
+  }
 }

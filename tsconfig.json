@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "lib": ["ES6", "DOM", "ESNext.Disposable"],
+    "lib": ["ES6", "DOM"],
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "noEmit": true,

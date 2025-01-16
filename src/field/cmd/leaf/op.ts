@@ -12,7 +12,8 @@ export abstract class Op extends Leaf {
       options.exitSubWithOp &&
       cursor.parent?.parent instanceof CmdSupSub &&
       cursor.parent.parent.sub == cursor.parent &&
-      !cursor[R]
+      !cursor[R] &&
+      cursor[L]
     ) {
       cursor.moveTo(cursor.parent.parent, R)
     }
@@ -41,11 +42,13 @@ export abstract class OpPm extends Leaf {
       (options.exitSubWithOp &&
         cursor.parent?.parent instanceof CmdSupSub &&
         cursor.parent.parent.sub == cursor.parent &&
-        !cursor[R]) ||
+        !cursor[R] &&
+        cursor[L]) ||
       (options.exitSupWithPm &&
         cursor.parent?.parent instanceof CmdSupSub &&
         cursor.parent.parent.sup == cursor.parent &&
-        !cursor[R])
+        !cursor[R] &&
+        cursor[L])
     ) {
       cursor.moveTo(cursor.parent.parent, R)
     }

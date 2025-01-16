@@ -1,8 +1,22 @@
-import type { JsValue, SReal } from "./ty"
+import type { GlslValue, JsValue, SReal } from "./ty"
+import { canCoerce, coerceValJs } from "./ty/coerce"
 import { approx, frac, num } from "./ty/create"
+import { splitValue } from "./ty/split"
 import { safe } from "./util"
 
-export function parseNumberJs(text: string, base: SReal): SReal {
+export function asNumericBase(value: JsValue): SReal {
+  if (value.list !== false) {
+    throw new Error("Currently, only single real numbers can be bases.")
+  }
+
+  if (!canCoerce(value.type, "r32")) {
+    throw new Error("Currently, only real numbers can be bases.")
+  }
+
+  return coerceValJs(value, "r32").value
+}
+
+export function parseNumberJsVal(text: string, base: SReal): SReal {
   const numericValue = num(base)
 
   if (numericValue == 10) {
@@ -46,6 +60,17 @@ export function parseNumberJs(text: string, base: SReal): SReal {
   )
 }
 
+export function parseNumberJs(
+  text: string,
+  base: SReal,
+): JsValue<"r64", false> {
+  return {
+    type: "r64",
+    list: false,
+    value: parseNumberJsVal(text, base),
+  }
+}
+
 function parseNumberGlslInner(text: string, base: SReal): number {
   const numericValue = base.type == "exact" ? base.n / base.d : base.value
 
@@ -72,28 +97,27 @@ function parseNumberGlslInner(text: string, base: SReal): number {
   )
 }
 
-export function parseNumberGlsl(text: string, base: SReal): string {
+export function parseNumberGlslVal(text: string, base: SReal): string {
   const value = parseNumberGlslInner(text, base)
   if (value == 1 / 0) {
-    return `(1.0/0.0)`
+    return `vec2(1.0/0.0, 0)`
   }
   if (value == -1 / 0) {
-    return `(-1.0/0.0)`
+    return `vec2(-1.0/0.0, 0)`
   }
   if (value == 0 / 0) {
-    return `(0.0/0.0)`
+    return `vec2(0.0/0.0)`
   }
-  return value.toExponential()
+  return splitValue(value).expr
 }
 
-export function asNumericBase(value: JsValue): SReal {
-  if (value.list) {
-    throw new Error("Currently, only single real numbers can be bases.")
+export function parseNumberGlsl(
+  text: string,
+  base: SReal,
+): GlslValue<"r64", false> {
+  return {
+    type: "r64",
+    list: false,
+    expr: parseNumberGlslVal(text, base),
   }
-
-  if (value.type != "real") {
-    throw new Error("Currently, only real numbers can be bases.")
-  }
-
-  return value.value
 }

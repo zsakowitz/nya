@@ -860,6 +860,11 @@ export class Span {
     this.parent.checkIfEmpty()
     block.checkIfEmpty()
 
+    block.ends[L]?.onSiblingChange?.(L)
+    this[L]?.onSiblingChange?.(R)
+    block.ends[R]?.onSiblingChange?.(R)
+    this[R]?.onSiblingChange?.(L)
+
     return block
   }
 

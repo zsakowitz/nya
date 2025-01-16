@@ -1,61 +1,28 @@
-import type { JsVal, JsValue, Ty, Type } from "."
-import { pt, real } from "./create"
+import type { TyName, Type, Val } from "."
+import type { GlslContext } from "../fn"
+import { TY_INFO } from "./info"
 
-export function garbageValJs(ty: Ty): JsVal {
-  switch (ty.type) {
-    case "real":
-      return { type: "real", value: real(NaN) }
-    case "complex":
-      return { type: "complex", value: pt(real(NaN), real(NaN)) }
-    case "color":
-      return {
-        type: "color",
-        value: {
-          type: "color",
-          r: real(0),
-          g: real(0),
-          b: real(0),
-          a: real(0),
-        },
-      }
-    case "bool":
-      return { type: "bool", value: false }
+export function garbageValueGlsl(ctx: GlslContext, type: Type): string {
+  if (type.list === false) {
+    return TY_INFO[type.type].garbage.glsl
   }
+
+  const ret = ctx.name()
+  const index = ctx.name()
+  ctx.push`${TY_INFO[type.type].glsl} ${ret}[${type.list}];\n`
+  ctx.push`for (int ${index} = 0; ${index} < ${type.list}; ${index}++) {\n`
+  ctx.push`${ret}[${index}] = ${TY_INFO[type.type].glsl};\n`
+  ctx.push`}\n`
+  return ret
 }
 
-export function garbageValGlsl(ty: Ty): string {
-  switch (ty.type) {
-    case "real":
-      return "(.0/.0)"
-    case "complex":
-      return "vec2(.0/.0)"
-    case "color":
-      return "vec4(0)"
-    case "bool":
-      return "false"
-  }
-}
-
-export function garbageValueJs(ty: Type): JsValue {
-  if (ty.list === false) {
-    return { ...garbageValJs(ty), list: false }
+export function garbageValueJs(type: Type<TyName, false>): Val
+export function garbageValueJs(type: Type<TyName, number>): Val[]
+export function garbageValueJs(type: Type): Val | Val[]
+export function garbageValueJs(type: Type): Val | Val[] {
+  if (type.list === false) {
+    return TY_INFO[type.type].garbage.js
   }
 
-  const val = garbageValJs(ty).value as any
-
-  return {
-    type: ty.type,
-    value: Array.from({ length: ty.list }, () => val),
-    list: true,
-  }
-}
-
-export function garbageValueGlsl(ty: Type): string {
-  if (ty.list === false) {
-    return garbageValGlsl(ty)
-  }
-
-  const val = garbageValGlsl(ty)
-
-  return "[" + Array.from({ length: ty.list }, () => val).join(",") + "]"
+  return Array<Val>(type.list).fill(TY_INFO[type.type].garbage.js)
 }

@@ -2,29 +2,26 @@ import { commalist, fnargs } from "./ast/collect"
 import type { Node } from "./ast/token"
 import { asNumericBase, parseNumberGlsl, parseNumberJs } from "./base"
 import { Bindings, id } from "./binding"
-import { BUILTINS } from "./builtins"
 import { GlslContext, GlslHelpers } from "./fn"
-import {
-  ABS,
-  ADD,
-  AND,
-  DIV,
-  getNamedFn,
-  IMAG,
-  MUL,
-  opCmp,
-  OPS_BINARY,
-  OPS_UNARY,
-  POW,
-  REAL,
-  SQRT,
-} from "./ops"
+import { FNS, OP_BINARY, OP_UNARY } from "./ops"
+import { FN_IMAG } from "./ops/fn/imag"
+import { FN_REAL } from "./ops/fn/real"
 import { iterateGlsl, iterateJs, parseIterate } from "./ops/iterate"
-import { varDeclToGlsl, type GlslValue, type JsValue, type SReal } from "./ty"
-import { coerceType, coerceValueGlsl, listGlsl, listJs } from "./ty/coerce"
-import { num, real, vreal } from "./ty/create"
-import { garbageValJs, garbageValueGlsl } from "./ty/garbage"
-import { withBindingsGlsl, withBindingsJs } from "./with"
+import { OP_ABS } from "./ops/op/abs"
+import { add } from "./ops/op/add"
+import { OP_AND } from "./ops/op/and"
+import { pickCmp } from "./ops/op/cmp"
+import { div, OP_DIV } from "./ops/op/div"
+import { OP_CDOT } from "./ops/op/mul"
+import { OP_RAISE } from "./ops/op/raise"
+import { piecewiseGlsl, piecewiseJs } from "./ops/piecewise"
+import { VARS } from "./ops/vars"
+import { withBindingsGlsl, withBindingsJs } from "./ops/with"
+import type { GlslValue, JsValue, SReal } from "./ty"
+import { isReal, listGlsl, listJs } from "./ty/coerce"
+import { frac, num, real } from "./ty/create"
+import { TY_INFO } from "./ty/info"
+import { splitValue } from "./ty/split"
 
 export interface Props {
   base: SReal
@@ -62,7 +59,7 @@ function jsCall(
   _asMethod: boolean,
   props: PropsJs,
 ): JsValue {
-  const fn = getNamedFn(name, args.length)
+  const fn = FNS[name]
 
   if (!fn) {
     throw new Error(`The '${name}' function is not supported yet.`)
@@ -74,17 +71,13 @@ function jsCall(
 export function js(node: Node, props: PropsJs): JsValue {
   switch (node.type) {
     case "num":
-      return {
-        type: "real",
-        list: false,
-        value: parseNumberJs(
-          node.value,
-          node.sub ? asNumericBase(js(node.sub, props)) : props.base,
-        ),
-      }
+      return parseNumberJs(
+        node.value,
+        node.sub ? asNumericBase(js(node.sub, props)) : props.base,
+      )
     case "op":
       if (!node.b) {
-        const op = OPS_UNARY[node.kind]
+        const op = OP_UNARY[node.kind]
         if (op) {
           return op.js(js(node.a, props))
         }
@@ -109,9 +102,9 @@ export function js(node: Node, props: PropsJs): JsValue {
           if (node.b.type == "var" && !node.b.sub && node.b.kind == "var") {
             const value =
               node.b.value == "x" || node.b.value == "real" ?
-                REAL.js(js(node.a, props))
+                FN_REAL.js(js(node.a, props))
               : node.b.value == "y" || node.b.value == "imag" ?
-                IMAG.js(js(node.a, props))
+                FN_IMAG.js(js(node.a, props))
               : null
 
             if (value == null) {
@@ -119,7 +112,7 @@ export function js(node: Node, props: PropsJs): JsValue {
             }
 
             if (node.b.sup) {
-              return POW.js(value, js(node.b.sup, props))
+              return OP_RAISE.js(value, js(node.b.sup, props))
             } else {
               return value
             }
@@ -133,7 +126,7 @@ export function js(node: Node, props: PropsJs): JsValue {
           )
         }
       }
-      const op = OPS_BINARY[node.kind]
+      const op = OP_BINARY[node.kind]
       if (op) {
         return op.js(js(node.a, props), js(node.b, props))
       }
@@ -143,21 +136,10 @@ export function js(node: Node, props: PropsJs): JsValue {
         return js(node.value, props)
       }
       if (node.lhs == "[" && node.rhs == "]") {
-        const args = commalist(node.value).map((item) => js(item, props))
-        if (args.length == 0) {
-          return {
-            type: "real",
-            list: true,
-            value: [],
-          }
-        }
-        if (args.every((x) => x.list === false)) {
-          return listJs(args)
-        }
-        throw new Error("Cannot store a list inside another list.")
+        return listJs(commalist(node.value).map((item) => js(item, props)))
       }
       if (node.lhs == "|" && node.rhs == "|") {
-        return ABS.js(js(node.value, props))
+        return OP_ABS.js(js(node.value, props))
       }
       break
     case "call":
@@ -176,12 +158,12 @@ export function js(node: Node, props: PropsJs): JsValue {
       }
       break
     case "juxtaposed":
-      return MUL.js(js(node.a, props), js(node.b, props))
+      return OP_CDOT.js(js(node.a, props), js(node.b, props))
     case "var": {
       const value = props.bindings.get(id(node))
       if (value) {
         if (node.sup) {
-          return POW.js(value, js(node.sup, props))
+          return OP_RAISE.js(value, js(node.sup, props))
         } else {
           return value
         }
@@ -190,39 +172,44 @@ export function js(node: Node, props: PropsJs): JsValue {
       builtin: {
         if (node.sub) break builtin
 
-        const value = BUILTINS[node.value]?.js
+        const value = VARS[node.value]?.js
         if (!value) break builtin
 
         if (!node.sup) return value
-        return POW.js(value, js(node.sup, props))
+        return OP_RAISE.js(value, js(node.sup, props))
       }
 
       throw new Error(`The variable '${node.value}' is not defined.`)
     }
     case "frac":
-      return DIV.js(js(node.a, props), js(node.b, props))
+      return OP_DIV.js(js(node.a, props), js(node.b, props))
     case "raise":
-      return POW.js(js(node.base, props), js(node.exponent, props))
+      return OP_RAISE.js(js(node.base, props), js(node.exponent, props))
     case "cmplist":
       return node.ops
         .map((op, i) => {
           const a = js(node.items[i]!, props)
           const b = js(node.items[i + 1]!, props)
-          return opCmp(op).js(a, b)
+          return pickCmp(op).js(a, b)
         })
-        .reduce((a, b) => AND.js(a, b))
+        .reduce((a, b) => OP_AND.js(a, b))
     case "piecewise":
-      throw new Error(
-        "Piecewise functions are not supported outside of shaders yet.",
-      )
+      return piecewiseJs(node.pieces, props)
     case "root":
       if (node.root) {
-        return POW.js(
+        return OP_RAISE.js(
           js(node.contents, props),
-          DIV.js(vreal(1), js(node.root, props)),
+          OP_DIV.js(
+            { list: false, type: "r64", value: frac(1, 1) },
+            js(node.root, props),
+          ),
         )
       } else {
-        return SQRT.js(js(node.contents, props))
+        return OP_RAISE.js(js(node.contents, props), {
+          list: false,
+          type: "r64",
+          value: frac(1, 2),
+        })
       }
     case "error":
       throw new Error(node.reason)
@@ -231,7 +218,7 @@ export function js(node: Node, props: PropsJs): JsValue {
         const parsed = parseIterate(node, { source: "expr" })
         const { data, count } = iterateJs(parsed, { eval: props, seq: false })
         if (parsed.retval == "count") {
-          return vreal(count)
+          return { type: "r64", list: false, value: real(count) }
         } else {
           return data[parsed.retval!.id]!
         }
@@ -245,18 +232,18 @@ export function js(node: Node, props: PropsJs): JsValue {
         throw new Error("Cannot index on a non-list.")
       }
       const index = js(node.index, props)
-      if (index.list) {
+      if (index.list !== false) {
         throw new Error("Cannot index with a list yet.")
       }
-      if (index.type != "real") {
+      if (!isReal(index)) {
         throw new Error("Indexes must be numbers for now.")
       }
       const value = num(index.value) - 1
       return {
-        ...on,
+        type: on.type,
         list: false,
-        value: on.value[value] ?? garbageValJs(on).value,
-      } as any
+        value: on.value[value] ?? TY_INFO[on.type].garbage.js,
+      }
     }
     case "commalist":
       throw new Error("Lists must be surrounded by square brackets.")
@@ -266,13 +253,13 @@ export function js(node: Node, props: PropsJs): JsValue {
       throw new Error("Lone superscript.")
     case "mixed":
       return {
-        type: "real",
+        type: "r64",
         list: false,
-        value: ADD.real(
-          parseNumberJs(node.integer, props.base),
-          DIV.real(
-            parseNumberJs(node.a, props.base),
-            parseNumberJs(node.b, props.base),
+        value: add(
+          parseNumberJs(node.integer, props.base).value,
+          div(
+            parseNumberJs(node.a, props.base).value,
+            parseNumberJs(node.b, props.base).value,
           ),
         ),
       }
@@ -294,7 +281,7 @@ function glslCall(
   _asMethod: boolean,
   props: PropsGlsl,
 ): GlslValue {
-  const fn = getNamedFn(name, args.length)
+  const fn = FNS[name]
 
   if (!fn) {
     throw new Error(`The '${name}' function is not supported in shaders yet.`)
@@ -306,19 +293,15 @@ function glslCall(
 export function glsl(node: Node, props: PropsGlsl): GlslValue {
   switch (node.type) {
     case "num":
-      return {
-        type: "real",
-        list: false,
-        expr: parseNumberGlsl(
-          node.value,
-          node.sub ?
-            asNumericBase(js(node.sub, { ...props, bindings: new Bindings() }))
-          : props.base,
-        ),
-      }
+      return parseNumberGlsl(
+        node.value,
+        node.sub ?
+          asNumericBase(js(node.sub, { ...props, bindings: new Bindings() }))
+        : props.base,
+      )
     case "op":
       if (!node.b) {
-        const op = OPS_UNARY[node.kind]
+        const op = OP_UNARY[node.kind]
         if (op) {
           return op.glsl(props.ctx, glsl(node.a, props))
         }
@@ -356,9 +339,9 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
           if (node.b.type == "var" && !node.b.sub && node.b.kind == "var") {
             const value =
               node.b.value == "x" || node.b.value == "real" ?
-                REAL.glsl(props.ctx, glsl(node.a, props))
+                FN_REAL.glsl(props.ctx, glsl(node.a, props))
               : node.b.value == "y" || node.b.value == "imag" ?
-                IMAG.glsl(props.ctx, glsl(node.a, props))
+                FN_IMAG.glsl(props.ctx, glsl(node.a, props))
               : null
 
             if (value == null) {
@@ -366,13 +349,13 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
             }
 
             if (node.b.sup) {
-              return POW.glsl(props.ctx, value, glsl(node.b.sup, props))
+              return OP_RAISE.glsl(props.ctx, value, glsl(node.b.sup, props))
             } else {
               return value
             }
           }
       }
-      const op = OPS_BINARY[node.kind]
+      const op = OP_BINARY[node.kind]
       if (op) {
         return op.glsl(props.ctx, glsl(node.a, props), glsl(node.b, props))
       }
@@ -382,14 +365,13 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
         return glsl(node.value, props)
       }
       if (node.lhs == "[" && node.rhs == "]") {
-        const args = commalist(node.value).map((item) => glsl(item, props))
-        if (args.some((x) => x.list !== false)) {
-          throw new Error("Cannot store a list inside another list.")
-        }
-        return listGlsl(props.ctx, args)
+        return listGlsl(
+          props.ctx,
+          commalist(node.value).map((item) => glsl(item, props)),
+        )
       }
       if (node.lhs == "|" && node.rhs == "|") {
-        return ABS.glsl(props.ctx, glsl(node.value, props))
+        return OP_ABS.glsl(props.ctx, glsl(node.value, props))
       }
       break
     case "call":
@@ -408,12 +390,12 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
       }
       break
     case "juxtaposed":
-      return MUL.glsl(props.ctx, glsl(node.a, props), glsl(node.b, props))
+      return OP_CDOT.glsl(props.ctx, glsl(node.a, props), glsl(node.b, props))
     case "var": {
       const value = props.bindings.get(id(node))
       if (value) {
         if (node.sup) {
-          return POW.glsl(props.ctx, value, glsl(node.sup, props))
+          return OP_RAISE.glsl(props.ctx, value, glsl(node.sup, props))
         } else {
           return value
         }
@@ -422,19 +404,19 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
       builtin: {
         if (node.sub) break builtin
 
-        const value = BUILTINS[node.value]?.glsl
+        const value = VARS[node.value]?.glsl
         if (!value) break builtin
 
         if (!node.sup) return value
-        return POW.glsl(props.ctx, value, glsl(node.sup, props))
+        return OP_RAISE.glsl(props.ctx, value, glsl(node.sup, props))
       }
 
       throw new Error(`The variable '${node.value}' is not defined.`)
     }
     case "frac":
-      return DIV.glsl(props.ctx, glsl(node.a, props), glsl(node.b, props))
+      return OP_DIV.glsl(props.ctx, glsl(node.a, props), glsl(node.b, props))
     case "raise":
-      return POW.glsl(
+      return OP_RAISE.glsl(
         props.ctx,
         glsl(node.base, props),
         glsl(node.exponent, props),
@@ -444,57 +426,11 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
         .map((op, i) => {
           const a = glsl(node.items[i]!, props)
           const b = glsl(node.items[i + 1]!, props)
-          return opCmp(op).glsl(props.ctx, a, b)
+          return pickCmp(op).glsl(props.ctx, a, b)
         })
-        .reduce((a, b) => AND.glsl(props.ctx, a, b))
-    case "piecewise": {
-      const name = props.ctx.name()
-
-      let isDefinitelyAssigned = false
-      const pieces = node.pieces.map(({ value, condition }, index) => {
-        if (index == node.pieces.length - 1 && condition.type == "void") {
-          isDefinitelyAssigned = true
-          condition = { type: "var", kind: "var", value: "true" }
-        }
-
-        const ctxCond = props.ctx.fork()
-        const cond = glsl(condition, { ...props, ctx: ctxCond })
-        if (cond.list !== false) {
-          throw new Error(
-            "Lists cannot be used as the condition for a piecewise function yet.",
-          )
-        }
-        if (cond.type != "bool") {
-          throw new Error(
-            "The 'if' clause in a piecewise function must be a condition like z = 2.",
-          )
-        }
-
-        const ctxValue = props.ctx.fork()
-        const val = glsl(value, { ...props, ctx: ctxValue })
-
-        return { ctxCond, ctxValue, value: val, cond }
-      })
-
-      const ret = coerceType(pieces.map((x) => x.value))!
-
-      props.ctx.push`${varDeclToGlsl(ret, name)};\n`
-      let closers = ""
-      for (const { ctxCond, cond, ctxValue, value } of pieces) {
-        props.ctx.block += ctxCond.block
-        props.ctx.push`if (${cond.expr}) {\n`
-        props.ctx.block += ctxValue.block
-        props.ctx.push`${name} = ${coerceValueGlsl(props.ctx, value, ret)};\n`
-        props.ctx.push`} else {\n`
-        closers += "}"
-      }
-      if (!isDefinitelyAssigned) {
-        props.ctx.push`${name} = ${garbageValueGlsl(ret)};\n`
-      }
-      props.ctx.block += closers + "\n"
-
-      return { ...ret, expr: name }
-    }
+        .reduce((a, b) => OP_AND.glsl(props.ctx, a, b))
+    case "piecewise":
+      return piecewiseGlsl(node.pieces, props)
     case "error":
       throw new Error(node.reason)
     case "magicvar":
@@ -516,10 +452,10 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
         throw new Error("Cannot index on a non-list.")
       }
       const indexVal = js(node.index, { ...props, bindings: new Bindings() })
-      if (indexVal.list) {
+      if (indexVal.list !== false) {
         throw new Error("Cannot index with a list yet.")
       }
-      if (indexVal.type != "real") {
+      if (!isReal(indexVal)) {
         throw new Error("Indices must be numbers for now.")
       }
       const index = num(indexVal.value)
@@ -540,24 +476,37 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
     case "sup":
       throw new Error("Lone superscript.")
     case "mixed":
-      return {
-        ...ADD.glsl1(
-          props.ctx,
-          { expr: parseNumberGlsl(node.integer, props.base), type: "real" },
-          DIV.glsl1(
-            props.ctx,
-            { expr: parseNumberGlsl(node.a, props.base), type: "real" },
-            { expr: parseNumberGlsl(node.b, props.base), type: "real" },
-          ),
+      const value = add(
+        parseNumberJs(node.integer, props.base).value,
+        div(
+          parseNumberJs(node.a, props.base).value,
+          parseNumberJs(node.b, props.base).value,
         ),
-        list: false,
+      )
+      return splitValue(num(value))
+    case "root":
+      if (node.root) {
+        return OP_RAISE.glsl(
+          props.ctx,
+          glsl(node.contents, props),
+          OP_DIV.glsl(
+            props.ctx,
+            { list: false, type: "r64", expr: "vec2(1, 0)" },
+            glsl(node.root, props),
+          ),
+        )
+      } else {
+        return OP_RAISE.glsl(props.ctx, glsl(node.contents, props), {
+          list: false,
+          type: "r64",
+          expr: "vec2(0.5, 0)",
+        })
       }
     case "num16":
     case "for":
     case "matrix":
     case "bigsym":
     case "big":
-    case "root":
     case "factorial":
     case "punc":
   }

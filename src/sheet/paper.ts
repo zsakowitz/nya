@@ -125,17 +125,6 @@ export class Paper {
   }
 }
 
-export function doMatchCanvasSize(el: HTMLCanvasElement) {
-  function resize() {
-    const scale = globalThis.devicePixelRatio ?? 1
-    el.width = el.clientWidth * scale
-    el.height = el.clientHeight * scale
-  }
-
-  resize()
-  new ResizeObserver(resize).observe(el)
-}
-
 export function doMatchSize(paper: Paper) {
   function resize() {
     const scale = globalThis.devicePixelRatio ?? 1

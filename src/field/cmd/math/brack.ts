@@ -5,6 +5,7 @@ import {
   Command,
   L,
   R,
+  Span,
   type Cursor,
   type Dir,
   type InitProps,
@@ -335,7 +336,9 @@ export class CmdBrack extends Command<[Block]> {
     } else {
       this.setSide(from == L ? R : L)
       this.checkSvg(from)
+      const spliced = new Span(this.parent, this, null).splice()
       cursor.moveIn(this.blocks[0], from)
+      cursor.insert(spliced, from)
     }
   }
 
@@ -372,5 +375,13 @@ export class CmdBrack extends Command<[Block]> {
       rhs: this.rhs,
       value: this.blocks[0].ast(),
     })
+  }
+
+  onSiblingChange(dir: Dir): void {
+    if (dir == R && this.side == L && this[R]) {
+      this.setSide(null)
+    } else if (dir == L && this.side == R && this[L]) {
+      this.setSide(null)
+    }
   }
 }

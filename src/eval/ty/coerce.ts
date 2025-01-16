@@ -1,180 +1,189 @@
-import {
-  listTy,
-  tyToGlsl,
-  type GlslVal,
-  type GlslValue,
-  type JsVal,
-  type JsValList,
-  type JsValue,
-  type Ty,
-  type TyName,
-  type Type,
+import type {
+  GlslVal,
+  GlslValue,
+  JsVal,
+  JsValue,
+  List,
+  Ty,
+  TyName,
+  Type,
+  Val,
 } from "."
+import { list } from "."
 import type { GlslContext } from "../fn"
-import { pt, real, vreal } from "./create"
-import { garbageValJs } from "./garbage"
+import { TY_INFO, type TyCoerce, type TyCoerceMap } from "./info"
 
-/**
- * `null` means there were zero arguments. Any other coercion error will be
- * thrown.
- */
-export function coerceTy(tys: readonly Ty[]): Ty | null {
-  if (!tys.length) {
-    return null
+export function canCoerce(src: TyName, dst: TyName): boolean {
+  return src == dst || {}.hasOwnProperty.call(TY_INFO[src].coerce, dst)
+}
+
+/** Useful for assembling lists. */
+export function coerceTy(tys: readonly Ty[]): TyName {
+  // We need to pick *something*, so why not "bool"?
+  // Could make a special "never" type, but it seems so useless.
+  if (tys.length == 0) {
+    return "bool"
   }
 
-  const encountered: Partial<Record<TyName, number>> = Object.create(null)
+  const possible = Object.create(null)
 
   for (const ty of tys) {
-    encountered[ty.type] = (encountered[ty.type] || 0) + 1
-  }
-
-  if (Object.keys(encountered).length == 1) {
-    return { type: Object.keys(encountered)[0] as TyName }
-  }
-
-  if (encountered.real && !encountered.complex && !encountered.color) {
-    return { type: "real" }
-  }
-
-  if (encountered.complex && !encountered.color) {
-    return { type: "complex" }
-  }
-
-  throw new Error(`Cannot coerce ${listTy(tys)}.`)
-}
-
-export function coerceValJs(val: JsVal, to: Ty): JsVal {
-  if (val.type == to.type) {
-    return val
-  } else if (val.type == "bool") {
-    if (!val.value) {
-      return garbageValJs(to)
-    }
-
-    switch (to.type) {
-      case "real":
-        return vreal(1)
-      case "complex":
-        return { type: "complex", value: pt(real(1), real(0)) }
-    }
-  } else if (val.type == "real" && to.type == "complex") {
-    return {
-      type: "complex",
-      value: { type: "point", x: val.value, y: real(0) },
+    possible[ty.type] = (possible[ty.type] || 0) + 1
+    for (const coerce in TY_INFO[ty.type]) {
+      possible[coerce] = (possible[coerce] || 0) + 1
     }
   }
 
-  throw new Error(`Cannot coerce ${val.type} to ${to}.`)
+  for (const key in possible) {
+    if (possible[key] == tys.length) {
+      return key as TyName
+    }
+  }
+
+  throw new Error(
+    `Cannot coerce ${list(tys.map((x) => TY_INFO[x.type].name))}.`,
+  )
 }
 
-export function coerceValGlsl(val: GlslVal, to: Ty): string {
-  if (val.type == to.type) {
-    return val.expr
+export function listJs(vals: JsValue[]): JsValue {
+  if (!vals.every((x) => x.list === false)) {
+    throw new Error("Cannot store lists inside other lists.")
   }
 
-  if (val.type == "bool" && to.type == "real") {
-    return `(${val.expr} ? 1.0 : 0.0/0.0)`
-  }
-
-  if (val.type == "bool" && to.type == "complex") {
-    return `(${val.expr} ? vec2(1, 0) : vec2(0.0/0.0))`
-  }
-
-  if (val.type == "real" && to.type == "complex") {
-    return `vec2(${val.expr}, 0)`
-  }
-
-  throw new Error(`Cannot coerce ${val.type} to ${to}.`)
-}
-
-export function listJs(vals: JsVal[]): JsValList {
-  if (vals.length == 0) {
-    return { type: "real", list: true, value: [] }
-  }
-
-  const ty = coerceTy(vals)!
+  const type = coerceTy(vals)
 
   return {
-    type: ty.type,
-    list: true,
-    value: vals.map(
-      (val) => coerceValJs(val, ty).value,
-    ) satisfies JsVal["value"][] as any,
+    type,
+    list: vals.length,
+    value: vals.map((x) =>
+      x.type == type ?
+        x.value
+      : (TY_INFO[x.type].coerce as TyCoerceMap<Val>)[type]!.js(x.value),
+    ),
   }
 }
 
-export function listGlsl(ctx: GlslContext, vals: GlslVal[]): GlslValue {
-  const name = ctx.name()
-
-  if (vals.length == 0) {
-    ctx.push`float ${name}[0];\n`
-    return { type: "real", list: 0, expr: name }
+export function listGlsl(ctx: GlslContext, vals: GlslValue[]): GlslValue {
+  if (!vals.every((x) => x.list === false)) {
+    throw new Error("Cannot store lists inside other lists.")
   }
 
-  const ty = coerceTy(vals)!
-  ctx.push`${tyToGlsl(ty)} ${name}[${vals.length}];\n`
+  const type = coerceTy(vals)
+  const ret = ctx.name()
+  ctx.push`${TY_INFO[type].glsl} ${ret}[${vals.length}];\n`
 
   for (let i = 0; i < vals.length; i++) {
-    ctx.push`${name}[${i}] = ${coerceValGlsl(vals[i]!, ty)};\n`
+    ctx.push`${ret}[${i}] = ${coerceValGlsl(ctx, vals[i]!, type).expr};\n`
   }
 
-  return { type: ty.type, list: vals.length, expr: name }
+  return { type, list: vals.length, expr: ret }
 }
 
-/**
- * `null` means there were zero arguments. Any other coercion error will be
- * thrown.
- */
-export function coerceType(types: Type[]): Type | null {
-  if (!types.length) {
-    return null
-  }
-
-  const ty = coerceTy(types.filter((x) => x.list !== 0))!
-
-  // Everything is length zero, so we can pick any type
-  if (ty == null) {
-    return { list: 0, type: types[0]!.type }
-  }
-
+/** Useful for distributing across lists. */
+export function unifyLists(types: readonly List[]): number | false {
+  // Also covers the .length == 0 case
   if (types.every((x) => x.list === false)) {
-    return { list: false, type: ty.type }
+    return false
   }
 
-  // Non-lists get coerced to lists of length 1
-  const lens = types.map((x) => (x.list === false ? 1 : x.list))
+  // Like for empty lists, it doesn't matter what we pick
+  if (types.some((x) => x.list === 0)) {
+    return 0
+  }
+
+  return types.reduce(
+    (a, b) => Math.min(a, b.list === false ? Infinity : b.list),
+    Infinity,
+  )
+}
+
+/** Useful for piecewise-like functions. */
+export function coerceType(types: readonly Type[]): Type {
+  return {
+    type: coerceTy(types),
+    list: unifyLists(types),
+  }
+}
+
+export function coerceValJs<T extends TyName>(val: JsVal, to: T): JsVal<T>
+export function coerceValJs(val: JsVal, to: TyName): JsVal {
+  if (val.type == to) {
+    return val
+  }
+
+  const coercion: TyCoerce<Val, Val> | undefined = TY_INFO[val.type].coerce[to]
+
+  if (!coercion) {
+    throw new Error(
+      `Cannot coerce from ${TY_INFO[val.type].name} to ${TY_INFO[to].name}.`,
+    )
+  }
 
   return {
-    list: Math.min(...lens),
-    type: ty.type,
+    type: to,
+    value: coercion.js(val.value),
+  }
+}
+
+export function coerceValGlsl(
+  ctx: GlslContext,
+  val: GlslVal,
+  to: TyName,
+): GlslVal {
+  if (val.type == to) {
+    return val
+  }
+
+  const coercion: TyCoerce<Val, Val> | undefined = TY_INFO[val.type].coerce[to]
+
+  if (!coercion) {
+    throw new Error(
+      `Cannot coerce from ${TY_INFO[val.type].name} to ${TY_INFO[to].name}.`,
+    )
+  }
+
+  return {
+    type: to,
+    expr: coercion.glsl(val.expr, ctx),
   }
 }
 
 export function coerceValueJs(value: JsValue, to: Type): JsValue {
   if (to.list === false) {
-    if (value.list) {
+    if (value.list !== false) {
       throw new Error("Cannot coerce from a list to a non-list.")
     }
 
-    return { ...coerceValJs(value, to), list: false }
+    return { ...coerceValJs(value, to.type), list: false }
   }
 
   if (to.list === 0) {
-    return { list: true, type: to.type, value: [] }
+    return {
+      type: to.type,
+      list: 0,
+      value: [],
+    }
   }
 
-  const values = value.list ? value.value : [value.value]
+  if (value.list === false) {
+    if (to.list === 1) {
+      return {
+        type: to.type,
+        list: 1,
+        value: [coerceValJs(value, to.type).value],
+      }
+    }
+
+    throw new Error("Cannot grow a list.")
+  }
 
   return {
-    ...to,
-    value: values
-      .slice(0, to.list)
-      .map(
-        (item) =>
-          coerceValJs({ type: value.type, value: item } as any, to).value,
-      ),
-  } as any
+    type: to.type,
+    list: to.list,
+    value: value.value.map(
+      (val) => coerceValJs({ value: val, type: value.type }, to.type).value,
+    ),
+  }
 }
 
 export function coerceValueGlsl(
@@ -187,22 +196,42 @@ export function coerceValueGlsl(
       throw new Error("Cannot coerce from a list to a non-list.")
     }
 
-    return coerceValGlsl(value, to)
+    return coerceValGlsl(ctx, value, to.type).expr
   }
 
+  const ret = ctx.name()
+  ctx.push`${TY_INFO[to.type].glsl} ${ret}[${to.list}];\n`
+
   if (to.list === 0) {
-    return "[]"
+    return ret
   }
 
   if (value.list === false) {
     if (to.list === 1) {
-      return `[${coerceValGlsl(value, to)}]`
+      ctx.push`${ret}[0] = ${coerceValGlsl(ctx, value, to.type).expr};\n`
+      return ret
     }
 
     throw new Error("Cannot grow a list.")
   }
 
-  return ctx.map(value as any, to, (item) =>
-    coerceValGlsl({ expr: item, type: value.type }, to),
-  )
+  const index = ctx.name()
+  const cached = ctx.cache(value)
+  ctx.push`for (int ${index} = 0; ${index} < ${to.list}; ${index}++) {\n`
+  ctx.push`${ret}[${index}] = ${
+    coerceValGlsl(
+      ctx,
+      { expr: `${cached}[${index}]`, type: value.type },
+      to.type,
+    ).expr
+  };`
+  ctx.push`}\n`
+
+  return ret
+}
+
+export function isReal(val: JsVal): val is JsVal<"r32" | "r64">
+export function isReal(val: GlslVal): val is GlslVal<"r32" | "r64">
+export function isReal(val: { type: unknown }): val is { type: "r32" | "r64" } {
+  return val.type === "r32" || val.type === "r64"
 }

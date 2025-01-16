@@ -1,7 +1,10 @@
 import { display, getOutputBase } from "../eval/display"
 import { defaultPropsGlsl, defaultPropsJs, glsl, js } from "../eval/eval"
-import { INTOCOLOR } from "../eval/ops"
+import { FN_INTOCOLOR } from "../eval/ops/fn/intocolor"
+import { declareAddR64 } from "../eval/ops/op/add"
+import { declareMulR64 } from "../eval/ops/op/mul"
 import type { JsValue, SReal } from "../eval/ty"
+import { splitRaw } from "../eval/ty/split"
 import { Field } from "../field/field"
 import { FieldInert } from "../field/field-inert"
 import { h, hx, p, svgx } from "../field/jsx"
@@ -94,13 +97,37 @@ class ExprField extends Field {
   }
 }
 
+let k = 0
+export function circle() {
+  const KINDS = ["shader"] as const
+  const kind = KINDS[k++ % KINDS.length]!
+  switch (kind) {
+    case "shader":
+      // prettier-ignore
+      return h(
+        "relative block bg-white size-8 rounded-full mx-0.5 overflow-clip group-focus-within:outline outline-2 outline-blue-500",
+        h("size-[27.27%] top-[00.00%] left-[00.00%] absolute bg-red-300 rounded-br-[25%]"),
+        h("size-[27.27%] top-[00.00%] left-[36.36%] absolute bg-yellow-300 rounded-b-[25%]"),
+        h("size-[27.27%] top-[00.00%] left-[72.72%] absolute bg-fuchsia-300 rounded-bl-[25%]"),
+        h("size-[27.27%] top-[36.36%] left-[00.00%] absolute bg-blue-300 rounded-r-[25%]"),
+        h("size-[27.27%] top-[36.36%] left-[36.36%] absolute bg-slate-400 rounded-[25%]"),
+        h("size-[27.27%] top-[36.36%] left-[72.72%] absolute bg-green-300 rounded-l-[25%]"),
+        h("size-[27.27%] top-[72.72%] left-[00.00%] absolute bg-slate-300 rounded-tr-[25%]"),
+        h("size-[27.27%] top-[72.72%] left-[36.36%] absolute bg-purple-300 rounded-t-[25%]"),
+        h("size-[27.27%] top-[72.72%] left-[72.72%] absolute bg-orange-300 rounded-tl-[25%]"),
+      )
+  }
+}
+
 export class Expr {
   readonly field
 
   readonly el
   readonly elIndex
+  readonly elCircle
   readonly elValue
   readonly elValueError
+  readonly elGlslError
   readonly elScroller
 
   removable = true
@@ -117,6 +144,7 @@ export class Expr {
           "text-[65%] [line-height:1] text-slate-500 group-focus-within:text-white",
           "" + this.sheet.exprs.length,
         )),
+        (this.elCircle = circle()),
       ),
       h(
         "flex flex-col w-full max-w-full",
@@ -127,6 +155,9 @@ export class Expr {
         (this.elValue = new FieldInert(this.field.exts, this.field.options)).el,
         (this.elValueError = h(
           "leading-tight block pb-1 -mt-2 mx-1 px-1 italic text-red-800 hidden whitespace-pre-wrap",
+        )),
+        (this.elGlslError = h(
+          "leading-tight block pb-1 -mt-2 mx-1 px-1 italic text-yellow-800 hidden whitespace-pre-wrap",
         )),
       ),
       h(
@@ -187,32 +218,41 @@ export class Expr {
   debug() {
     const node = this.field.block.ast()
 
-    this.sheet.elTokens.textContent = JSON.stringify(node, undefined, 2)
-
     try {
       const props = defaultPropsJs()
       const value = js(node, props)
       const base = getOutputBase(node, props)
       this.displayEval(value, base)
     } catch (e) {
+      console.error(e)
       this.displayError(e instanceof Error ? e : new Error(String(e)))
     }
 
     try {
       const props = defaultPropsGlsl()
-      const value = INTOCOLOR.glsl(props.ctx, glsl(node, props))
+      const value = FN_INTOCOLOR.glsl(props.ctx, glsl(node, props))
       if (value.list) {
         throw new Error("Cannot draw a list of colors.")
       }
+      declareAddR64(props.ctx)
+      declareMulR64(props.ctx)
       const frag = `#version 300 es
 precision highp float;
-in vec2 v_coords;
 out vec4 color;
+vec4 v_coords;
+uniform vec2 u_scale;
+uniform vec2 u_cx;
+uniform vec2 u_cy;
 ${props.ctx.helpers.helpers}void main() {
+vec2 e_tx = vec2(gl_FragCoord.x, 0);
+vec2 e_ty = vec2(gl_FragCoord.y, 0);
+v_coords = vec4(
+  _helper_add_r64(u_cx, _helper_mul_r64(e_tx, u_scale)),
+  _helper_add_r64(u_cy, _helper_mul_r64(e_ty, u_scale))
+);
 ${props.ctx.block}color = ${value.expr};
-}
-`
-      this.sheet.elGlsl.textContent = frag
+      }
+      `
       this.sheet.regl.clear({
         color: [0, 0, 0, 1],
         depth: 1,
@@ -223,10 +263,7 @@ ${props.ctx.block}color = ${value.expr};
         vert: `#version 300 es
 precision highp float;
 in vec2 position;
-in vec2 a_coords;
-out vec2 v_coords;
 void main() {
-  v_coords = a_coords;
   gl_Position = vec4(position, 0, 1);
 }
 `,
@@ -240,9 +277,15 @@ void main() {
             [-1, -1],
             [1, 1],
           ],
-          a_coords: this.sheet.regl.prop<{ a_coords: number[][] }, "a_coords">(
-            "a_coords",
-          ),
+        },
+
+        uniforms: {
+          // @ts-expect-error regl types this badly
+          u_scale: this.sheet.regl.prop("u_scale"),
+          // @ts-expect-error regl types this badly
+          u_cx: this.sheet.regl.prop("u_cx"),
+          // @ts-expect-error regl types this badly
+          u_cy: this.sheet.regl.prop("u_cy"),
         },
 
         count: 6,
@@ -250,36 +293,23 @@ void main() {
       const myId = ++Expr.id
       const draw = () => {
         if (myId != Expr.id) return
+        const { xmax, xmin, ymin } = this.sheet.paper.bounds()
         program({
-          a_coords: [
-            [this.sheet.paper.bounds().xmin, this.sheet.paper.bounds().ymax],
-            [this.sheet.paper.bounds().xmin, this.sheet.paper.bounds().ymin],
-            [this.sheet.paper.bounds().xmax, this.sheet.paper.bounds().ymax],
-            [this.sheet.paper.bounds().xmax, this.sheet.paper.bounds().ymin],
-            [this.sheet.paper.bounds().xmin, this.sheet.paper.bounds().ymin],
-            [this.sheet.paper.bounds().xmax, this.sheet.paper.bounds().ymax],
-          ],
+          u_scale: splitRaw(
+            (xmax - xmin) / this.sheet.regl._gl.drawingBufferWidth,
+          ),
+          u_cx: splitRaw(xmin),
+          u_cy: splitRaw(ymin),
         })
         requestAnimationFrame(draw)
       }
       draw()
 
-      this.sheet.elGlsl.classList.remove(
-        "text-red-800",
-        "font-sans",
-        "text-base",
-        "italic",
-        "whitespace-pre-wrap",
-      )
+      this.elGlslError.classList.add("hidden")
     } catch (e) {
-      this.sheet.elGlsl.textContent = e instanceof Error ? e.message : String(e)
-      this.sheet.elGlsl.classList.add(
-        "text-red-800",
-        "font-sans",
-        "text-base",
-        "italic",
-        "whitespace-pre-wrap",
-      )
+      console.error(e)
+      this.elGlslError.textContent = e instanceof Error ? e.message : String(e)
+      this.elGlslError.classList.remove("hidden")
     }
   }
 }
@@ -293,11 +323,13 @@ export class Sheet {
   readonly elNextIndex
   readonly elNextExpr
   readonly elLogo
-  readonly elTokens
-  readonly elGlsl
   readonly elShaderCanvas
+  readonly elPixelRatio
 
   readonly regl
+
+  readonly pixelRatio
+  readonly setPixelRatio
 
   constructor(
     readonly exts: Exts,
@@ -337,18 +369,8 @@ export class Sheet {
       setTimeout(() => expr.field.el.focus())
     })
 
-    this.elTokens = hx(
-      "pre",
-      "overflow-y-auto text-sm border-l border-slate-200 px-2 py-2 border-t",
-    )
-
-    this.elGlsl = hx(
-      "pre",
-      "overflow-y-auto text-sm border-l border-slate-200 px-2 py-2",
-    )
-
     this.el = h(
-      "block fixed inset-0 grid grid-cols-[600px_1fr_200px] grid-rows-1 select-none [--nya-focus:theme(colors.blue.400)]",
+      "block fixed inset-0 grid grid-cols-[600px_1fr] grid-rows-1 select-none [--nya-focus:theme(colors.blue.400)]",
       h(
         "block overflow-y-auto relative border-r border-slate-200",
         h(
@@ -368,17 +390,30 @@ export class Sheet {
         "relative",
         (this.elShaderCanvas = hx(
           "canvas",
-          "absolute inset-0 size-full pointer-events-none",
+          "absolute inset-0 size-full pointer-events-none [image-rendering:pixelated]",
         )),
         this.paper.el,
         h(
           "absolute block top-0 bottom-0 left-0 w-1 from-slate-950/10 to-transparent bg-gradient-to-r",
         ),
         h(
-          "absolute block top-0 bottom-0 right-0 w-1 from-slate-950/10 to-transparent bg-gradient-to-l",
+          "absolute flex flex-col top-2 right-2",
+          h(
+            "flex w-48 bg-white h-8 outline outline-black/10 rounded shadow",
+            (this.elPixelRatio = hx("input", {
+              type: "range",
+              min: "1",
+              max: "16",
+              step: "any",
+              class: "flex-1 m-auto mx-4",
+            })),
+          ),
+          // h(
+          //   "flex size-8 border shadow border-slate-300 bg-slate-100 rounded",
+          //   fa(faHomeLg, "m-auto size-4 fill-slate-500"),
+          // ),
         ),
       ),
-      h("grid grid-rows-2", this.elGlsl, this.elTokens),
       (this.elLogo = hx(
         "button",
         "absolute bottom-0 right-0 p-2",
@@ -397,7 +432,14 @@ export class Sheet {
       gl: this.elShaderCanvas.getContext("webgl2")!,
       pixelRatio: 1,
     })
-    doMatchReglSize(this.elShaderCanvas, this.regl)
+    ;[this.pixelRatio, this.setPixelRatio] = doMatchReglSize(
+      this.elShaderCanvas,
+      this.regl,
+    )
+    this.elPixelRatio.value = "" + this.pixelRatio()
+    this.elPixelRatio.addEventListener("input", () => {
+      this.setPixelRatio(+this.elPixelRatio.value)
+    })
     this.paper.el.classList.add("absolute", "inset-0")
 
     new ResizeObserver((entries) => {
@@ -464,6 +506,9 @@ const REMARKS = [
   "first class support for typing matrices",
   "oklch >>> hsv",
   "our fractals are so good it’s silly",
+  "currently on type system #3",
+  "where numbers come in three precision levels",
+  "even our colors can be approximate",
 ]
 
 const REMARK = REMARKS[Math.floor(REMARKS.length * Math.random())]!

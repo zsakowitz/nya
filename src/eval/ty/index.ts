@@ -4,50 +4,6 @@ export type SReal = SApprox | SExact
 
 export type SPoint = { type: "point"; x: SReal; y: SReal }
 export type SColor = { type: "color"; r: SReal; g: SReal; b: SReal; a: SReal }
-export type SBool = { type: "bool"; value: boolean }
-
-export type VReal = { type: "real"; value: SReal }
-export type VComplex = { type: "complex"; value: SPoint }
-export type VColor = { type: "color"; value: SColor }
-export type VBool = { type: "bool"; value: boolean }
-
-export type JsVal = VReal | VComplex | VColor | VBool
-export type JsValList = Expand<
-  JsVal extends infer T ?
-    T extends { value: unknown } ?
-      Omit<T, "value"> & { value: T["value"][]; list: true }
-    : never
-  : never
->
-export type JsValue = Expand<
-  JsVal extends infer T ?
-    T extends { value: unknown } ?
-      | (T & { list: false })
-      | (Omit<T, "value"> & { value: T["value"][]; list: true })
-    : never
-  : never
->
-type Expand<T> = T extends infer U ? { [K in keyof U]: U[K] } : never
-
-export type TyName = JsVal["type"]
-export type Ty = { type: TyName }
-export type Type = { type: TyName; list: false | number }
-
-export type GlslVal = { expr: string; type: TyName }
-export type GlslValue = { expr: string; type: TyName; list: false | number }
-
-export function tyToGlsl(ty: Ty): string {
-  return {
-    real: "float",
-    complex: "vec2",
-    color: "vec4",
-    bool: "bool",
-  }[ty.type]
-}
-
-export function varDeclToGlsl(type: Type, name: string): string {
-  return `${tyToGlsl(type)} ${name}${type.list === false ? "" : `[${type.list}]`}`
-}
 
 export function list(values: string[], conj = "and"): string {
   if (values.length == 0) {
@@ -67,17 +23,56 @@ export function list(values: string[], conj = "and"): string {
   )
 }
 
-export function listTy(values: readonly Ty[]): string {
-  return list(values.map((x) => x.type))
+/**
+ * Augment this interface to declare additional types.
+ *
+ * Be sure to also extend the `TY_INFO` variable.
+ */
+export interface Tys {
+  r32: SReal
+  r64: SReal
+  c32: SPoint
+  c64: SPoint
+  bool: boolean
+  color: SColor
 }
 
-export function jsValueTy(value: JsValue): Type {
-  if (value.list == false) {
-    return value
-  }
+export type TyName = keyof Tys
 
-  return {
-    type: value.type,
-    list: value.value.length,
-  }
+export type Val<T extends TyName = TyName> = Tys[T]
+
+export interface Ty<T extends TyName = TyName> {
+  readonly type: T
+}
+
+export interface JsVal<T extends TyName = TyName> extends Ty<T> {
+  readonly value: Tys[T]
+}
+
+export interface GlslVal<T extends TyName = TyName> extends Ty<T> {
+  readonly expr: string
+}
+
+export interface List<L extends false | number = false | number> {
+  readonly list: L
+}
+
+export interface Type<
+  T extends TyName = TyName,
+  L extends false | number = false | number,
+> extends Ty<T>,
+    List<L> {}
+
+export type JsValue<
+  T extends TyName = TyName,
+  L extends false | number = false | number,
+> =
+  | (L extends false ? Type<T, L> & { value: Tys[T] } : never)
+  | (L extends number ? Type<T, L> & { value: Tys[T][] } : never)
+
+export interface GlslValue<
+  T extends TyName = TyName,
+  L extends false | number = false | number,
+> extends Type<T, L> {
+  readonly expr: string
 }

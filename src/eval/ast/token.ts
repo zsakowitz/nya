@@ -177,6 +177,8 @@ export type MagicVar = {
   contents: Node
 }
 
+export type Piece = { value: Node; condition: Node }
+
 /**
  * A part of the AST. The intermediate representation is so close to the final
  * representation that they're essentially merged.
@@ -195,7 +197,7 @@ export type Node =
   | { type: "frac"; a: Node; b: Node }
   | { type: "mixed"; integer: string; a: string; b: string }
   | { type: "for"; mapped: Node; bound: Node; source: Node }
-  | { type: "piecewise"; pieces: { value: Node; condition: Node }[] }
+  | { type: "piecewise"; pieces: Piece[] }
   | { type: "matrix"; cols: number; values: Node[] }
   | { type: "bigsym"; cmd: BigCmd | "\\int"; sub?: Node; sup?: Node }
   | { type: "big"; cmd: BigCmd | "\\int"; sub?: Node; sup?: Node; of: Node }

@@ -13,8 +13,10 @@ import type { FieldInert } from "../field/field-inert"
 import { Block, type Cursor, L, R } from "../field/model"
 import type { Node } from "./ast/token"
 import { js, type PropsJs } from "./eval"
-import type { JsVal, JsValue, SPoint, SReal } from "./ty"
+import type { SColor, SPoint, SReal } from "./ty"
 import { num, real } from "./ty/create"
+import type { JsVal, JsValue } from "./ty"
+import { isReal } from "./ty/coerce"
 import { safe } from "./util"
 
 export function getOutputBase(node: Node, props: PropsJs): SReal {
@@ -29,10 +31,10 @@ export function getOutputBase(node: Node, props: PropsJs): SReal {
       return { ...{ btw: node.b.value }, ...real(10) }
     }
     const value = js(node.b, { ...props, base: real(10) })
-    if (value.list) {
+    if (value.list !== false) {
       throw new Error("Cannot output in a list of bases yet.")
     }
-    if (value.type != "real") {
+    if (!isReal(value)) {
       throw new Error("Cannot output in a non-real base yet.")
     }
     return value.value
@@ -248,15 +250,20 @@ function realIsApprox(real: SReal) {
 
 function valIsApprox(val: JsVal) {
   switch (val.type) {
-    case "real":
-      return realIsApprox(val.value)
-    case "complex":
-      return realIsApprox(val.value.x) || realIsApprox(val.value.y)
+    case "r32":
+    case "r64":
+      return realIsApprox(val.value as SReal)
+    case "c32":
+    case "c64":
+      return (
+        realIsApprox((val.value as SPoint).x) ||
+        realIsApprox((val.value as SPoint).y)
+      )
     case "color":
       return (
-        realIsApprox(val.value.r) ||
-        realIsApprox(val.value.g) ||
-        realIsApprox(val.value.b)
+        realIsApprox((val.value as SColor).r) ||
+        realIsApprox((val.value as SColor).g) ||
+        realIsApprox((val.value as SColor).b)
       )
     case "bool":
       return false
@@ -264,7 +271,7 @@ function valIsApprox(val: JsVal) {
 }
 
 function isApproximate(value: JsValue): boolean {
-  return value.list ?
+  return value.list !== false ?
       value.value.some((val) =>
         valIsApprox({ type: value.type, value: val } as any),
       )
@@ -273,11 +280,11 @@ function isApproximate(value: JsValue): boolean {
 
 function displayValue<T>(
   cursor: Cursor,
-  value: { list: true; value: T[] } | { list: false; value: T },
+  value: { list: number; value: T[] } | { list: false; value: T },
   base: SReal,
   fn: (cursor: Cursor, num: T, base: SReal) => void,
 ) {
-  if (value.list) {
+  if (value.list !== false) {
     displayList(cursor, value.value, base, fn)
   } else {
     fn(cursor, value.value, base)
@@ -295,19 +302,26 @@ export function display(field: FieldInert, value: JsValue, base: SReal) {
   }
 
   switch (value.type) {
-    case "real":
-      displayValue(cursor, value, base, displayNum)
+    case "r32":
+    case "r64":
+      displayValue(cursor, value as JsValue<"r32" | "r64">, base, displayNum)
       break
-    case "complex":
-      displayValue(cursor, value, base, displayComplex)
+    case "c32":
+    case "c64":
+      displayValue(
+        cursor,
+        value as JsValue<"c32" | "c64">,
+        base,
+        displayComplex,
+      )
       break
     case "bool":
-      displayValue(cursor, value, base, (cursor, value) => {
+      displayValue(cursor, value as JsValue<"bool">, base, (cursor, value) => {
         new CmdWord(value + "", "var").insertAt(cursor, L)
       })
       break
     case "color":
-      displayValue(cursor, value, base, (cursor, value) => {
+      displayValue(cursor, value as JsValue<"color">, base, (cursor, value) => {
         const f = (x: SReal) => {
           const v = Math.min(255, Math.max(0, Math.floor(num(x)))).toString(16)
           if (v.length == 1) return "0" + v
