@@ -8,7 +8,6 @@ export function doMatchReglSize(
   if (window.devicePixelRatio > 1) {
     ratio = window.devicePixelRatio
   }
-  ratio *= 2
 
   function resize() {
     const scale = (window.devicePixelRatio ?? 1) / ratio
