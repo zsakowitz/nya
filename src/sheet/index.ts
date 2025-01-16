@@ -129,6 +129,7 @@ export class Expr {
   readonly elCircle
   readonly elValue
   readonly elValueError
+  readonly elGlslError
   readonly elScroller
 
   removable = true
@@ -156,6 +157,9 @@ export class Expr {
         (this.elValue = new FieldInert(this.field.exts, this.field.options)).el,
         (this.elValueError = h(
           "leading-tight block pb-1 -mt-2 mx-1 px-1 italic text-red-800 hidden whitespace-pre-wrap",
+        )),
+        (this.elGlslError = h(
+          "leading-tight block pb-1 -mt-2 mx-1 px-1 italic text-yellow-800 hidden whitespace-pre-wrap",
         )),
       ),
       h(
@@ -226,8 +230,6 @@ export class Expr {
       this.displayError(e instanceof Error ? e : new Error(String(e)))
     }
 
-    return
-
     try {
       const props = defaultPropsGlsl()
       const value = FN_INTOCOLOR.glsl(props.ctx, glsl(node, props))
@@ -295,7 +297,9 @@ void main() {
         if (myId != Expr.id) return
         const { xmax, xmin, ymin } = this.sheet.paper.bounds()
         program({
-          u_scale: splitRaw((xmax - xmin) / this.sheet.paper.el.width),
+          u_scale: splitRaw(
+            (xmax - xmin) / this.sheet.regl._gl.drawingBufferWidth,
+          ),
           u_cx: splitRaw(xmin),
           u_cy: splitRaw(ymin),
         })
@@ -303,17 +307,11 @@ void main() {
       }
       draw()
 
-      this.elGlsl.classList.add("hidden")
+      this.elGlslError.classList.add("hidden")
     } catch (e) {
       console.error(e)
-      this.elGlsl.textContent = e instanceof Error ? e.message : String(e)
-      this.elGlsl.classList.add(
-        "text-yellow-800",
-        "font-sans",
-        "text-base",
-        "italic",
-        "whitespace-pre-wrap",
-      )
+      this.elGlslError.textContent = e instanceof Error ? e.message : String(e)
+      this.elGlslError.classList.remove("hidden")
     }
   }
 }
@@ -390,7 +388,7 @@ export class Sheet {
         "relative",
         (this.elShaderCanvas = hx(
           "canvas",
-          "absolute inset-0 size-full pointer-events-none",
+          "absolute inset-0 size-full pointer-events-none [image-rendering:pixelated]",
         )),
         this.paper.el,
         h(
@@ -422,7 +420,7 @@ export class Sheet {
       gl: this.elShaderCanvas.getContext("webgl2")!,
       pixelRatio: 1,
     })
-    doMatchReglSize(this.elShaderCanvas, this.regl)
+    doMatchReglSize(this.elShaderCanvas, this.regl, this.paper)
     this.paper.el.classList.add("absolute", "inset-0")
 
     new ResizeObserver((entries) => {

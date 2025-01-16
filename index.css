@@ -1768,6 +1768,10 @@ video {
   --nya-focus: #60a5fa;
 }
 
+.\[image-rendering\:pixelated\] {
+  image-rendering: pixelated;
+}
+
 .\[line-height\:\.9\] {
   line-height: .9;
 }

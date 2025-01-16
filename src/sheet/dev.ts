@@ -15,7 +15,7 @@ new Expr(sheet).field
 a - > a + d o t ( z - s , s - r ) ,
 b - > b + d o t ( z - s , z - s ) ,
 c - > c + d o t ( z - s , z - r ) ,
-n - > n + 1 ArrowRight while z . x z . x + z . y z . y < 4 from list r = 0 i , s = 0 i , z = 0 i ArrowRight`
+n - > n + 1 ArrowRight while z . x z . x + z . y z . y < 4 from list r = 0 i , s = 0 i , z = 0 i , a = 0 / 1 ; b = 0 / 1 ; c = 0 / 1 ArrowRight ArrowRight`
 new Expr(sheet).field
   .typeEach`a * ( valid a and y > 0 and - 1 < x < 0 ) with a = oklch ( . 8 , y , 3 6 0 x )`
 new Expr(sheet).field
