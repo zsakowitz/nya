@@ -1,4 +1,3 @@
-import { faHomeLg } from "@fortawesome/free-solid-svg-icons"
 import { display, getOutputBase } from "../eval/display"
 import { defaultPropsGlsl, defaultPropsJs, glsl, js } from "../eval/eval"
 import { FN_INTOCOLOR } from "../eval/ops/fn/intocolor"
@@ -6,7 +5,6 @@ import { declareAddR64 } from "../eval/ops/op/add"
 import { declareMulR64 } from "../eval/ops/op/mul"
 import type { JsValue, SReal } from "../eval/ty"
 import { splitRaw } from "../eval/ty/split"
-import { fa } from "../field/fa"
 import { Field } from "../field/field"
 import { FieldInert } from "../field/field-inert"
 import { h, hx, p, svgx } from "../field/jsx"
@@ -326,8 +324,12 @@ export class Sheet {
   readonly elNextExpr
   readonly elLogo
   readonly elShaderCanvas
+  readonly elPixelRatio
 
   readonly regl
+
+  readonly pixelRatio
+  readonly setPixelRatio
 
   constructor(
     readonly exts: Exts,
@@ -397,9 +399,19 @@ export class Sheet {
         h(
           "absolute flex flex-col top-2 right-2",
           h(
-            "flex size-8 border shadow border-slate-300 bg-slate-100 rounded",
-            fa(faHomeLg, "m-auto size-4 fill-slate-500"),
+            "flex w-48 bg-white h-8 outline outline-black/10 rounded shadow",
+            (this.elPixelRatio = hx("input", {
+              type: "range",
+              min: "1",
+              max: "16",
+              step: "any",
+              class: "flex-1 m-auto mx-4",
+            })),
           ),
+          // h(
+          //   "flex size-8 border shadow border-slate-300 bg-slate-100 rounded",
+          //   fa(faHomeLg, "m-auto size-4 fill-slate-500"),
+          // ),
         ),
       ),
       (this.elLogo = hx(
@@ -420,7 +432,14 @@ export class Sheet {
       gl: this.elShaderCanvas.getContext("webgl2")!,
       pixelRatio: 1,
     })
-    doMatchReglSize(this.elShaderCanvas, this.regl, this.paper)
+    ;[this.pixelRatio, this.setPixelRatio] = doMatchReglSize(
+      this.elShaderCanvas,
+      this.regl,
+    )
+    this.elPixelRatio.value = "" + this.pixelRatio()
+    this.elPixelRatio.addEventListener("input", () => {
+      this.setPixelRatio(+this.elPixelRatio.value)
+    })
     this.paper.el.classList.add("absolute", "inset-0")
 
     new ResizeObserver((entries) => {

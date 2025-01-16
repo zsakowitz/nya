@@ -1,24 +1,17 @@
 import type { Regl } from "regl"
-import type { Paper } from "./paper"
 
 export function doMatchReglSize(
   canvas: HTMLCanvasElement,
   regl: Regl,
-  paper: Paper,
-) {
-  setInterval(() => {
-    const scale = Math.min(
-      devicePixelRatio,
-      paper.rawBounds.xmax - paper.rawBounds.xmin,
-    )
-    canvas.width = canvas.clientWidth * scale
-    canvas.height = canvas.clientHeight * scale
-    regl.poll()
-  })
+): [get: () => number, set: (value: number) => void] {
+  let ratio = 1
+  if (window.devicePixelRatio > 1) {
+    ratio = window.devicePixelRatio
+  }
+  ratio *= 2
 
-  return
   function resize() {
-    const scale = 1 / 4
+    const scale = (window.devicePixelRatio ?? 1) / ratio
     canvas.width = canvas.clientWidth * scale
     canvas.height = canvas.clientHeight * scale
     regl.poll()
@@ -26,4 +19,20 @@ export function doMatchReglSize(
 
   resize()
   new ResizeObserver(resize).observe(canvas)
+
+  let queued = false
+  return [
+    () => ratio,
+    (newRatio: number) => {
+      if (newRatio < 1) return
+      if (!Number.isFinite(newRatio)) return
+      ratio = newRatio
+      if (queued) return
+      queued = true
+      setTimeout(() => {
+        queued = false
+        resize()
+      })
+    },
+  ]
 }
