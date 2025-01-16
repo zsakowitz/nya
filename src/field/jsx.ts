@@ -45,11 +45,13 @@ export function p(d: string) {
 }
 
 export function svg(viewBox: string, ...children: ChildNode[]) {
-  return svgx(
+  const el = svgx(
     viewBox,
     "fill-current absolute top-0 left-0 w-full h-full",
     ...children,
   )
+  el.setAttribute("preserveAspectRatio", "none")
+  return el
 }
 
 export function svgx(
@@ -58,7 +60,6 @@ export function svgx(
   ...children: ChildNode[]
 ) {
   const el = document.createElementNS("http://www.w3.org/2000/svg", "svg")
-  el.setAttribute("preserveAspectRatio", "none")
   el.setAttribute("viewBox", viewBox)
   el.setAttribute("class", className)
   for (const child of children) {

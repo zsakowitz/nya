@@ -1,3 +1,4 @@
+import { faHomeLg, faMinus, faPlus } from "@fortawesome/free-solid-svg-icons"
 import { display, getOutputBase } from "../eval/display"
 import { defaultPropsGlsl, defaultPropsJs, glsl, js } from "../eval/eval"
 import { FN_INTOCOLOR } from "../eval/ops/fn/intocolor"
@@ -5,6 +6,7 @@ import { declareAddR64 } from "../eval/ops/op/add"
 import { declareMulR64 } from "../eval/ops/op/mul"
 import type { JsValue, SReal } from "../eval/ty"
 import { splitRaw } from "../eval/ty/split"
+import { fa } from "../field/fa"
 import { Field } from "../field/field"
 import { FieldInert } from "../field/field-inert"
 import { h, hx, p, svgx } from "../field/jsx"
@@ -97,6 +99,28 @@ class ExprField extends Field {
   }
 }
 
+let k = 0
+export function circle() {
+  const KINDS = ["shader"] as const
+  const kind = KINDS[k++ % KINDS.length]!
+  switch (kind) {
+    case "shader":
+      // prettier-ignore
+      return h(
+        "relative block bg-white size-8 rounded-full mx-0.5 overflow-clip group-focus-within:outline outline-2 outline-blue-500",
+        h("size-[27.27%] top-[00.00%] left-[00.00%] absolute bg-red-300 rounded-br-[25%]"),
+        h("size-[27.27%] top-[00.00%] left-[36.36%] absolute bg-yellow-300 rounded-b-[25%]"),
+        h("size-[27.27%] top-[00.00%] left-[72.72%] absolute bg-fuchsia-300 rounded-bl-[25%]"),
+        h("size-[27.27%] top-[36.36%] left-[00.00%] absolute bg-blue-300 rounded-r-[25%]"),
+        h("size-[27.27%] top-[36.36%] left-[36.36%] absolute bg-slate-400 rounded-[25%]"),
+        h("size-[27.27%] top-[36.36%] left-[72.72%] absolute bg-green-300 rounded-l-[25%]"),
+        h("size-[27.27%] top-[72.72%] left-[00.00%] absolute bg-slate-300 rounded-tr-[25%]"),
+        h("size-[27.27%] top-[72.72%] left-[36.36%] absolute bg-purple-300 rounded-t-[25%]"),
+        h("size-[27.27%] top-[72.72%] left-[72.72%] absolute bg-orange-300 rounded-tl-[25%]"),
+      )
+  }
+}
+
 export class Expr {
   readonly field
 
@@ -121,19 +145,7 @@ export class Expr {
           "text-[65%] [line-height:1] text-slate-500 group-focus-within:text-white",
           "" + this.sheet.exprs.length,
         )),
-        // prettier-ignore
-        (this.elCircle = h(
-          "relative block bg-white size-8 rounded-full mx-0.5 overflow-clip",
-          h("size-[27.27%] top-[00.00%] left-[00.00%] absolute bg-red-300 rounded-br-[25%]"),
-          h("size-[27.27%] top-[00.00%] left-[36.36%] absolute bg-yellow-300 rounded-b-[25%]"),
-          h("size-[27.27%] top-[00.00%] left-[72.72%] absolute bg-fuchsia-300 rounded-bl-[25%]"),
-          h("size-[27.27%] top-[36.36%] left-[00.00%] absolute bg-blue-300 rounded-r-[25%]"),
-          h("size-[27.27%] top-[36.36%] left-[36.36%] absolute bg-slate-400 rounded-[25%]"),
-          h("size-[27.27%] top-[36.36%] left-[72.72%] absolute bg-green-300 rounded-l-[25%]"),
-          h("size-[27.27%] top-[72.72%] left-[00.00%] absolute bg-slate-300 rounded-tr-[25%]"),
-          h("size-[27.27%] top-[72.72%] left-[36.36%] absolute bg-purple-300 rounded-t-[25%]"),
-          h("size-[27.27%] top-[72.72%] left-[72.72%] absolute bg-orange-300 rounded-tl-[25%]"),
-        )),
+        (this.elCircle = circle()),
       ),
       h(
         "flex flex-col w-full max-w-full",
@@ -204,8 +216,6 @@ export class Expr {
   debug() {
     const node = this.field.block.ast()
 
-    this.sheet.elTokens.textContent = JSON.stringify(node, undefined, 2)
-
     try {
       const props = defaultPropsJs()
       const value = js(node, props)
@@ -226,7 +236,7 @@ export class Expr {
       }
       declareAddR64(props.ctx)
       declareMulR64(props.ctx)
-      const frag = (this.sheet.elGlsl.textContent = `#version 300 es
+      const frag = `#version 300 es
 precision highp float;
 out vec4 color;
 vec4 v_coords;
@@ -242,7 +252,7 @@ v_coords = vec4(
 );
 ${props.ctx.block}color = ${value.expr};
       }
-      `)
+      `
       this.sheet.regl.clear({
         color: [0, 0, 0, 1],
         depth: 1,
@@ -293,18 +303,12 @@ void main() {
       }
       draw()
 
-      this.sheet.elGlsl.classList.remove(
-        "text-red-800",
-        "font-sans",
-        "text-base",
-        "italic",
-        "whitespace-pre-wrap",
-      )
+      this.elGlsl.classList.add("hidden")
     } catch (e) {
       console.error(e)
-      this.sheet.elGlsl.textContent = e instanceof Error ? e.message : String(e)
-      this.sheet.elGlsl.classList.add(
-        "text-red-800",
+      this.elGlsl.textContent = e instanceof Error ? e.message : String(e)
+      this.elGlsl.classList.add(
+        "text-yellow-800",
         "font-sans",
         "text-base",
         "italic",
@@ -323,8 +327,6 @@ export class Sheet {
   readonly elNextIndex
   readonly elNextExpr
   readonly elLogo
-  readonly elTokens
-  readonly elGlsl
   readonly elShaderCanvas
 
   readonly regl
@@ -367,18 +369,8 @@ export class Sheet {
       setTimeout(() => expr.field.el.focus())
     })
 
-    this.elTokens = hx(
-      "pre",
-      "overflow-y-auto text-sm border-l border-slate-200 px-2 py-2 border-t",
-    )
-
-    this.elGlsl = hx(
-      "pre",
-      "overflow-y-auto text-sm border-l border-slate-200 px-2 py-2",
-    )
-
     this.el = h(
-      "block fixed inset-0 grid grid-cols-[600px_1fr_200px] grid-rows-1 select-none [--nya-focus:theme(colors.blue.400)]",
+      "block fixed inset-0 grid grid-cols-[600px_1fr] grid-rows-1 select-none [--nya-focus:theme(colors.blue.400)]",
       h(
         "block overflow-y-auto relative border-r border-slate-200",
         h(
@@ -405,10 +397,13 @@ export class Sheet {
           "absolute block top-0 bottom-0 left-0 w-1 from-slate-950/10 to-transparent bg-gradient-to-r",
         ),
         h(
-          "absolute block top-0 bottom-0 right-0 w-1 from-slate-950/10 to-transparent bg-gradient-to-l",
+          "absolute flex flex-col top-2 right-2",
+          h(
+            "flex size-8 border shadow border-slate-300 bg-slate-100 rounded",
+            fa(faHomeLg, "m-auto size-4 fill-slate-500"),
+          ),
         ),
       ),
-      h("grid grid-rows-2", this.elGlsl, this.elTokens),
       (this.elLogo = hx(
         "button",
         "absolute bottom-0 right-0 p-2",
