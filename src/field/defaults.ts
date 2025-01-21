@@ -259,6 +259,7 @@ export const words = new WordMap<WordKind>([
   // Custom functions
   ["valid", "prefix"],
   ["firstvalid", "prefix"],
+  ["screendistance", "prefix"],
 
   // Number theory
   ["lcm", "prefix"],

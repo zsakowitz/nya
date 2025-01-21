@@ -13,10 +13,9 @@ import type { FieldInert } from "../field/field-inert"
 import { Block, type Cursor, L, R } from "../field/model"
 import type { Node } from "./ast/token"
 import { js, type PropsJs } from "./eval"
-import type { SColor, SPoint, SReal } from "./ty"
-import { num, real } from "./ty/create"
-import type { JsVal, JsValue } from "./ty"
+import type { JsVal, JsValue, SColor, SPoint, SReal } from "./ty"
 import { isReal } from "./ty/coerce"
+import { num, real } from "./ty/create"
 import { safe } from "./util"
 
 export function getOutputBase(node: Node, props: PropsJs): SReal {
@@ -248,13 +247,15 @@ function realIsApprox(real: SReal) {
   return real.type == "approx"
 }
 
-function valIsApprox(val: JsVal) {
+function valIsApprox(val: JsVal): boolean {
   switch (val.type) {
     case "r32":
     case "r64":
       return realIsApprox(val.value as SReal)
     case "c32":
     case "c64":
+    case "point32":
+    case "point64":
       return (
         realIsApprox((val.value as SPoint).x) ||
         realIsApprox((val.value as SPoint).y)
@@ -313,6 +314,22 @@ export function display(field: FieldInert, value: JsValue, base: SReal) {
         value as JsValue<"c32" | "c64">,
         base,
         displayComplex,
+      )
+      break
+    case "point32":
+    case "point64":
+      displayValue(
+        cursor,
+        value as JsValue<"point32" | "point64">,
+        base,
+        (cursor, num, base) => {
+          const block = new Block(null)
+          new CmdBrack("(", ")", null, block).insertAt(cursor, L)
+          const inner = block.cursor(R)
+          displayNum(inner, num.x, base)
+          new CmdComma().insertAt(inner, L)
+          displayNum(inner, num.y, base, false, false, true)
+        },
       )
       break
     case "bool":

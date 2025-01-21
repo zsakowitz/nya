@@ -740,6 +740,11 @@ video {
   margin-right: 0.5rem;
 }
 
+.mx-4 {
+  margin-left: 1rem;
+  margin-right: 1rem;
+}
+
 .mx-\[\.1em\] {
   margin-left: .1em;
   margin-right: .1em;
@@ -763,11 +768,6 @@ video {
 .my-\[\.1em\] {
   margin-top: .1em;
   margin-bottom: .1em;
-}
-
-.mx-4 {
-  margin-left: 1rem;
-  margin-right: 1rem;
 }
 
 .-ml-px {
@@ -878,6 +878,10 @@ video {
   height: 0.875rem;
 }
 
+.h-8 {
+  height: 2rem;
+}
+
 .h-\[1\.5em\] {
   height: 1.5em;
 }
@@ -895,10 +899,6 @@ video {
   height: max-content;
 }
 
-.h-8 {
-  height: 2rem;
-}
-
 .min-h-\[3\.265rem\] {
   min-height: 3.265rem;
 }
@@ -909,6 +909,10 @@ video {
 
 .w-1 {
   width: 0.25rem;
+}
+
+.w-48 {
+  width: 12rem;
 }
 
 .w-8 {
@@ -941,14 +945,6 @@ video {
 
 .w-px {
   width: 1px;
-}
-
-.w-32 {
-  width: 8rem;
-}
-
-.w-48 {
-  width: 12rem;
 }
 
 .min-w-\[\.5em\] {
@@ -1349,11 +1345,6 @@ video {
   padding-bottom: .1em;
 }
 
-.px-4 {
-  padding-left: 1rem;
-  padding-right: 1rem;
-}
-
 .pb-1 {
   padding-bottom: 0.25rem;
 }
@@ -1558,16 +1549,12 @@ video {
   outline-width: 2px;
 }
 
-.outline-blue-500 {
-  outline-color: #3b82f6;
-}
-
-.outline-black\/50 {
-  outline-color: rgb(0 0 0 / 0.5);
-}
-
 .outline-black\/10 {
   outline-color: rgb(0 0 0 / 0.1);
+}
+
+.outline-blue-500 {
+  outline-color: #3b82f6;
 }
 
 .blur {
@@ -1879,21 +1866,6 @@ body {
   outline-style: solid;
 }
 
-.last\:\[\&\.nja-has-empty\]\:before\:pr-0.nja-has-empty:last-child::before {
-  content: var(--tw-content);
-  padding-right: 0px;
-}
-
-.last\:\[\&\.nja-has-empty\]\:before\:opacity-30.nja-has-empty:last-child::before {
-  content: var(--tw-content);
-  opacity: 0.3;
-}
-
-.last\:\[\&\.nja-has-empty\]\:before\:content-\[\'else\'\].nja-has-empty:last-child::before {
-  --tw-content: 'else';
-  content: var(--tw-content);
-}
-
 .last\:\[\&\.nya-has-empty\]\:before\:pr-0.nya-has-empty:last-child::before {
   content: var(--tw-content);
   padding-right: 0px;
@@ -1913,21 +1885,12 @@ body {
   display: none;
 }
 
-.\[\&\:last-child\.nja-has-empty\>\*\]\:hidden:last-child.nja-has-empty>* {
-  display: none;
-}
-
 .\[\&\:last-child\.nya-has-empty\>\*\]\:hidden:last-child.nya-has-empty>* {
   display: none;
 }
 
 .bg-nya-selection>.\[\.bg-nya-selection\>\&\]\:bg-nya-selection {
   background-color: var(--nya-selection);
-}
-
-.nja-cmd-word>:where(.\[\.nja-cmd-word\>\:where\(\&\)\]\:mx-0) {
-  margin-left: 0px;
-  margin-right: 0px;
 }
 
 .nya-cmd-word>:where(.\[\.nya-cmd-word\>\:where\(\&\)\]\:mx-0) {

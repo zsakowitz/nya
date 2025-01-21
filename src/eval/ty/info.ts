@@ -30,7 +30,7 @@ export type TyInfoMap = {
 // heuristic to ensure we don't create any cycles.
 export const TY_INFO: TyInfoMap = {
   c32: {
-    name: "complex number (lowres)",
+    name: "complex number",
     glsl: "vec2",
     garbage: {
       js: { type: "point", x: real(NaN), y: real(NaN) },
@@ -39,7 +39,7 @@ export const TY_INFO: TyInfoMap = {
     coerce: {},
   },
   c64: {
-    name: "complex number (precise)",
+    name: "complex number",
     glsl: "vec4",
     garbage: {
       js: { type: "point", x: real(NaN), y: real(NaN) },
@@ -57,7 +57,7 @@ export const TY_INFO: TyInfoMap = {
     },
   },
   r32: {
-    name: "real number (lowres)",
+    name: "real number",
     glsl: "float",
     garbage: {
       js: real(NaN),
@@ -75,7 +75,7 @@ export const TY_INFO: TyInfoMap = {
     },
   },
   r64: {
-    name: "real number (precise)",
+    name: "real number",
     glsl: "vec2",
     garbage: {
       js: real(NaN),
@@ -162,6 +162,33 @@ export const TY_INFO: TyInfoMap = {
       glsl: "vec4(0.0/0.0)",
     },
     coerce: {},
+  },
+  point32: {
+    name: "point",
+    glsl: "vec2",
+    garbage: {
+      js: { type: "point", x: real(NaN), y: real(NaN) },
+      glsl: "vec2(0.0/0.0)",
+    },
+    coerce: {},
+  },
+  point64: {
+    name: "point",
+    glsl: "vec4",
+    garbage: {
+      js: { type: "point", x: real(NaN), y: real(NaN) },
+      glsl: "vec4(0.0/0.0)",
+    },
+    coerce: {
+      point32: {
+        js(self) {
+          return self
+        },
+        glsl(self) {
+          return `${self}.xz`
+        },
+      },
+    },
   },
 }
 

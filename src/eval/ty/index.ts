@@ -35,6 +35,10 @@ export interface Tys {
   c64: SPoint
   bool: boolean
   color: SColor
+
+  // Geometry
+  point32: SPoint
+  point64: SPoint
 }
 
 export type TyName = keyof Tys

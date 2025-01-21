@@ -15,6 +15,7 @@ import { FN_MAX } from "./fn/max"
 import { FN_MIN } from "./fn/min"
 import { FN_OKLAB } from "./fn/oklab"
 import { FN_OKLCH } from "./fn/oklch"
+import { FN_SCREENDISTANCE } from "./fn/screendistance"
 import { FN_REAL } from "./fn/real"
 import { FN_RGB } from "./fn/rgb"
 import { FN_SIN } from "./fn/sin"
@@ -54,6 +55,7 @@ export const FNS: Record<string, FnDist> = {
   valid: FN_VALID,
   firstvalid: FN_FIRSTVALID,
   ln: FN_LN,
+  screendistance: FN_SCREENDISTANCE,
 }
 Object.setPrototypeOf(FNS, null)
 

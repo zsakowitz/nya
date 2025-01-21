@@ -243,6 +243,7 @@ vec4 v_coords;
 uniform vec2 u_scale;
 uniform vec2 u_cx;
 uniform vec2 u_cy;
+uniform vec4 u_px_size;
 ${props.ctx.helpers.helpers}void main() {
 vec2 e_tx = vec2(gl_FragCoord.x, 0);
 vec2 e_ty = vec2(gl_FragCoord.y, 0);
@@ -280,12 +281,14 @@ void main() {
         },
 
         uniforms: {
-          // @ts-expect-error regl types this badly
+          // @ts-expect-error regl requires generics in weird places
           u_scale: this.sheet.regl.prop("u_scale"),
-          // @ts-expect-error regl types this badly
+          // @ts-expect-error
           u_cx: this.sheet.regl.prop("u_cx"),
-          // @ts-expect-error regl types this badly
+          // @ts-expect-error
           u_cy: this.sheet.regl.prop("u_cy"),
+          // @ts-expect-error
+          u_px_size: this.sheet.regl.prop("u_px_size"),
         },
 
         count: 6,
@@ -293,13 +296,17 @@ void main() {
       const myId = ++Expr.id
       const draw = () => {
         if (myId != Expr.id) return
-        const { xmax, xmin, ymin } = this.sheet.paper.bounds()
+        const { xmax, xmin, ymin, ymax } = this.sheet.paper.bounds()
         program({
           u_scale: splitRaw(
             (xmax - xmin) / this.sheet.regl._gl.drawingBufferWidth,
           ),
           u_cx: splitRaw(xmin),
           u_cy: splitRaw(ymin),
+          u_px_size: [
+            ...splitRaw(this.sheet.paper.el.clientWidth / (xmax - xmin)),
+            ...splitRaw(this.sheet.paper.el.clientHeight / (ymax - ymin)),
+          ],
         })
         requestAnimationFrame(draw)
       }

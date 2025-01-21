@@ -13,3 +13,15 @@ export const FN_REAL = new FnDist("real")
     (a) => a.value.x,
     (_, a) => `${a.expr}.x`,
   )
+  .add(
+    ["point64"],
+    "r64",
+    (a) => a.value.x,
+    (_, a) => `${a.expr}.xy`,
+  )
+  .add(
+    ["point32"],
+    "r32",
+    (a) => a.value.x,
+    (_, a) => `${a.expr}.x`,
+  )

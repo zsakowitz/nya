@@ -13,6 +13,7 @@ import { OP_AND } from "./ops/op/and"
 import { pickCmp } from "./ops/op/cmp"
 import { div, OP_DIV } from "./ops/op/div"
 import { OP_CDOT } from "./ops/op/mul"
+import { OP_POINT } from "./ops/op/point"
 import { OP_RAISE } from "./ops/op/raise"
 import { piecewiseGlsl, piecewiseJs } from "./ops/piecewise"
 import { VARS } from "./ops/vars"
@@ -133,6 +134,9 @@ export function js(node: Node, props: PropsJs): JsValue {
       throw new Error(`The operator '${node.kind}' is not supported yet.`)
     case "group":
       if (node.lhs == "(" && node.rhs == ")") {
+        if (node.value.type == "commalist") {
+          return OP_POINT.js(...node.value.items.map((x) => js(x, props)))
+        }
         return js(node.value, props)
       }
       if (node.lhs == "[" && node.rhs == "]") {
@@ -362,6 +366,12 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
       throw new Error(`The operator '${node.kind}' is not supported yet.`)
     case "group":
       if (node.lhs == "(" && node.rhs == ")") {
+        if (node.value.type == "commalist") {
+          return OP_POINT.glsl(
+            props.ctx,
+            ...node.value.items.map((x) => glsl(x, props)),
+          )
+        }
         return glsl(node.value, props)
       }
       if (node.lhs == "[" && node.rhs == "]") {
