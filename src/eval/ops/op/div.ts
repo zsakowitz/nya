@@ -1,12 +1,21 @@
 import type { GlslContext } from "../../fn"
 import { FnDist } from "../../fn/dist"
 import type { SPoint, SReal } from "../../ty"
-import { approx, num, pt } from "../../ty/create"
+import { approx, frac, num, pt } from "../../ty/create"
+import { safe } from "../../util"
 import { add } from "./add"
 import { mul } from "./mul"
 import { sub } from "./sub"
 
 export function div(a: SReal, b: SReal): SReal {
+  a: if (a.type == "exact" && b.type == "exact") {
+    const s1 = a.n * b.d
+    if (!safe(s1)) break a
+    const s2 = b.n * a.d
+    if (!safe(s2)) break a
+    return frac(s1, s2)
+  }
+
   return approx(num(a) / num(b))
 }
 

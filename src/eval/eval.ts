@@ -4,8 +4,6 @@ import { asNumericBase, parseNumberGlsl, parseNumberJs } from "./base"
 import { Bindings, id } from "./binding"
 import { GlslContext, GlslHelpers } from "./fn"
 import { FNS, OP_BINARY, OP_UNARY } from "./ops"
-import { FN_IMAG } from "./ops/fn/imag"
-import { FN_REAL } from "./ops/fn/real"
 import { iterateGlsl, iterateJs, parseIterate } from "./ops/iterate"
 import { OP_ABS } from "./ops/op/abs"
 import { add } from "./ops/op/add"
@@ -15,6 +13,8 @@ import { div, OP_DIV } from "./ops/op/div"
 import { OP_CDOT } from "./ops/op/mul"
 import { OP_POINT } from "./ops/op/point"
 import { OP_RAISE } from "./ops/op/raise"
+import { OP_X } from "./ops/op/x"
+import { OP_Y } from "./ops/op/y"
 import { piecewiseGlsl, piecewiseJs } from "./ops/piecewise"
 import { VARS } from "./ops/vars"
 import { withBindingsGlsl, withBindingsJs } from "./ops/with"
@@ -100,22 +100,24 @@ export function js(node: Node, props: PropsJs): JsValue {
               : asNumericBase(js(node.b, { ...props, base: real(10) })),
           })
         case ".":
-          if (node.b.type == "var" && !node.b.sub && node.b.kind == "var") {
-            const value =
-              node.b.value == "x" || node.b.value == "real" ?
-                FN_REAL.js(js(node.a, props))
-              : node.b.value == "y" || node.b.value == "imag" ?
-                FN_IMAG.js(js(node.a, props))
-              : null
+          if (node.b.type == "var" && !node.b.sub) {
+            if (node.b.kind == "var") {
+              const value =
+                node.b.value == "x" ? OP_X.js(js(node.a, props))
+                : node.b.value == "y" ? OP_Y.js(js(node.a, props))
+                : null
 
-            if (value == null) {
-              break
-            }
+              if (value == null) {
+                break
+              }
 
-            if (node.b.sup) {
-              return OP_RAISE.js(value, js(node.b.sup, props))
-            } else {
-              return value
+              if (node.b.sup) {
+                return OP_RAISE.js(value, js(node.b.sup, props))
+              } else {
+                return value
+              }
+            } else if (node.b.kind == "prefix") {
+              return jsCall(node.b.value, [node.a], true, props)
             }
           }
           break
@@ -148,7 +150,6 @@ export function js(node: Node, props: PropsJs): JsValue {
       break
     case "call":
       if (
-        !node.on &&
         node.name.type == "var" &&
         node.name.kind == "prefix" &&
         !node.name.sub &&
@@ -340,22 +341,25 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
           )
         }
         case ".":
-          if (node.b.type == "var" && !node.b.sub && node.b.kind == "var") {
-            const value =
-              node.b.value == "x" || node.b.value == "real" ?
-                FN_REAL.glsl(props.ctx, glsl(node.a, props))
-              : node.b.value == "y" || node.b.value == "imag" ?
-                FN_IMAG.glsl(props.ctx, glsl(node.a, props))
-              : null
+          if (node.b.type == "var" && !node.b.sub) {
+            if (node.b.kind == "var") {
+              const value =
+                node.b.value == "x" ? OP_X.glsl(props.ctx, glsl(node.a, props))
+                : node.b.value == "y" ?
+                  OP_Y.glsl(props.ctx, glsl(node.a, props))
+                : null
 
-            if (value == null) {
-              break
-            }
+              if (value == null) {
+                break
+              }
 
-            if (node.b.sup) {
-              return OP_RAISE.glsl(props.ctx, value, glsl(node.b.sup, props))
-            } else {
-              return value
+              if (node.b.sup) {
+                return OP_RAISE.glsl(props.ctx, value, glsl(node.b.sup, props))
+              } else {
+                return value
+              }
+            } else if (node.b.kind == "prefix") {
+              return glslCall(node.b.value, [node.a], true, props)
             }
           }
       }
@@ -386,7 +390,6 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
       break
     case "call":
       if (
-        !node.on &&
         node.name.type == "var" &&
         node.name.kind == "prefix" &&
         !node.name.sub &&

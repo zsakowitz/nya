@@ -1,14 +1,14 @@
 import { FnDist } from "../../fn/dist"
 
-export const FN_IMAG = new FnDist("imag")
+export const OP_Y = new FnDist(".y")
   .add(
-    ["c64"],
+    ["point64"],
     "r64",
     (a) => a.value.y,
     (_, a) => `${a.expr}.zw`,
   )
   .add(
-    ["c32"],
+    ["point32"],
     "r32",
     (a) => a.value.y,
     (_, a) => `${a.expr}.y`,
