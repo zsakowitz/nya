@@ -1,7 +1,7 @@
 import { FnDist } from "../../fn/dist"
 import { approx, num } from "../../ty/create"
 
-export const FN_ANGLE = new FnDist("angle").add(
+export const FN_ARG = new FnDist("arg").add(
   ["c32"],
   "r32",
   ({ value: a }) => approx(Math.atan2(num(a.y), num(a.x))),

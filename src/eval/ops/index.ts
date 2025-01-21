@@ -1,7 +1,7 @@
 import type { OpBinary, PuncUnary } from "../ast/token"
 import type { FnDist } from "../fn/dist"
-import { FN_ANGLE } from "./fn/angle"
 
+import { FN_ARG } from "./fn/arg"
 import { FN_CMP } from "./fn/cmp"
 import { FN_COS } from "./fn/cos"
 import { FN_DEBUGQUADRANT } from "./fn/debugquadrant"
@@ -15,13 +15,14 @@ import { FN_MAX } from "./fn/max"
 import { FN_MIN } from "./fn/min"
 import { FN_OKLAB } from "./fn/oklab"
 import { FN_OKLCH } from "./fn/oklch"
-import { FN_SCREENDISTANCE } from "./fn/screendistance"
 import { FN_REAL } from "./fn/real"
 import { FN_RGB } from "./fn/rgb"
+import { FN_SCREENDISTANCE } from "./fn/screendistance"
 import { FN_SIN } from "./fn/sin"
 import { FN_TAN } from "./fn/tan"
 import { FN_UNSIGN } from "./fn/unsign"
 import { FN_VALID } from "./fn/valid"
+
 import { OP_ADD } from "./op/add"
 import { OP_AND } from "./op/and"
 import { OP_CROSS } from "./op/cross"
@@ -51,7 +52,7 @@ export const FNS: Record<string, FnDist> = {
   max: FN_MAX,
   oklab: FN_OKLAB,
   oklch: FN_OKLCH,
-  angle: FN_ANGLE,
+  arg: FN_ARG,
   valid: FN_VALID,
   firstvalid: FN_FIRSTVALID,
   ln: FN_LN,

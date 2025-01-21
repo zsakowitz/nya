@@ -276,8 +276,7 @@ export const words = new WordMap<WordKind>([
   // Complex numbers
   ["real", "prefix"],
   ["imag", "prefix"],
-  ["angle", "prefix"],
-  ["magnitude", "prefix"],
+  ["arg", "prefix"],
   ["dot", "prefix"],
 
   // Boolean utilities
