@@ -15,7 +15,7 @@ export function pass1_suffixes(tokens: Node[]) {
     const self = tokens[i]!
     const next = tokens[i + 1]
 
-    // 2.3 .3 2. a.min a.sin² decimals and member accesses
+    // 2.3 .3 2. 2.3.min a.min a.sin² decimals and member accesses
     if (self.type == "punc" && self.value == ".") {
       const PREV = prev && prev.type == "num" && prev.value.indexOf(".") == -1
       const NEXT = next && next.type == "num" && next.value.indexOf(".") == -1
@@ -82,7 +82,7 @@ export function pass1_suffixes(tokens: Node[]) {
       continue
     }
 
-    // member accesses after numbers ending in decimal points
+    // member accesses after numbers ending in decimal points (like 2.min)
     if (
       prev &&
       prev.type == "num" &&
@@ -92,28 +92,11 @@ export function pass1_suffixes(tokens: Node[]) {
     ) {
       prev.value = prev.value.slice(0, -1)
 
-      // .min(...) calls
-      if (next?.type == "group" && next.lhs == "(" && next.rhs == ")") {
-        tokens.splice(i, 2)
-        tokens[i - 1] = {
-          type: "call",
-          on: prev,
-          args: next.value,
-          name: self,
-        }
-        i--
-        continue
-      }
+      throw new Error(
+        `Unable to tell if ${prev.value}.${self.value} should be ${self.value}(${prev.value}) or ${prev.value} * ${self.value}(something else). Either write ${prev.value}.0.${self.value} or ${prev.value} ${self.value} to help project nya understand your intent.
 
-      tokens.splice(i, 1)
-      tokens[i - 1] = {
-        type: "op",
-        kind: ".",
-        a: prev,
-        b: self,
-      }
-      i--
-      continue
+(Desmos would interpret it as ${prev.value} * ${self.value} ..., but project nya would use ${self.value}(${prev.value}), so this error stops your Desmos graphs from being misinterpreted in project nya.)`,
+      )
     }
 
     // 5!₂ factorials

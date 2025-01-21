@@ -216,7 +216,13 @@ export class Expr {
   static id = 0
 
   debug() {
-    const node = this.field.block.ast()
+    try {
+      var node = this.field.block.ast()
+    } catch (e) {
+      console.error(e)
+      this.displayError(e instanceof Error ? e : new Error(String(e)))
+      return
+    }
 
     try {
       const props = defaultPropsJs()
@@ -225,6 +231,7 @@ export class Expr {
       this.displayEval(value, base)
     } catch (e) {
       console.error(e)
+      this.elGlslError.classList.add("hidden")
       this.displayError(e instanceof Error ? e : new Error(String(e)))
     }
 
