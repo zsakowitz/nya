@@ -1,15 +1,19 @@
-import type { Tys } from "."
+import type { SPoint, SReal, Tys } from "."
+import { CmdColor } from "../../field/cmd/leaf/color"
+import { CmdComma } from "../../field/cmd/leaf/comma"
+import { CmdWord } from "../../field/cmd/leaf/word"
+import { CmdBrack } from "../../field/cmd/math/brack"
+import { Block, L, R } from "../../field/model"
 import type { GlslContext } from "../fn"
-import { real } from "../ty/create"
+import { num, real } from "../ty/create"
+import type { Write } from "./display"
 
 export interface TyInfo<T> {
   name: string
   glsl: string
+  garbage: { js: T; glsl: string }
   coerce: TyCoerceMap<T>
-  garbage: {
-    js: T
-    glsl: string
-  }
+  write: Write<T>
 }
 
 export type TyCoerceMap<T> = {
@@ -25,6 +29,38 @@ export type TyInfoMap = {
   [K in keyof Tys]: TyInfo<Tys[K]>
 }
 
+const WRITE_COMPLEX: Write<SPoint> = {
+  isApprox(value) {
+    return value.x.type == "approx" || value.y.type == "approx"
+  },
+  display(value, props) {
+    props.complex(value)
+  },
+}
+
+const WRITE_REAL: Write<SReal> = {
+  isApprox(value) {
+    return value.type == "approx"
+  },
+  display(value, props) {
+    props.num(value)
+  },
+}
+
+const WRITE_POINT: Write<SPoint> = {
+  isApprox(value) {
+    return value.x.type == "approx" || value.y.type == "approx"
+  },
+  display(value, props) {
+    const block = new Block(null)
+    new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
+    const inner = props.at(block.cursor(R))
+    inner.num(value.x)
+    new CmdComma().insertAt(inner.cursor, L)
+    inner.num(value.y)
+  },
+}
+
 // Types are listed in coercion order, so later declared types can only coerce
 // types declared above. This isn't checked or anything, but it's a good
 // heuristic to ensure we don't create any cycles.
@@ -37,6 +73,7 @@ export const TY_INFO: TyInfoMap = {
       glsl: "vec2(0.0/0.0)",
     },
     coerce: {},
+    write: WRITE_COMPLEX,
   },
   c64: {
     name: "complex number",
@@ -55,6 +92,7 @@ export const TY_INFO: TyInfoMap = {
         },
       },
     },
+    write: WRITE_COMPLEX,
   },
   r32: {
     name: "real number",
@@ -73,6 +111,7 @@ export const TY_INFO: TyInfoMap = {
         },
       },
     },
+    write: WRITE_REAL,
   },
   r64: {
     name: "real number",
@@ -107,6 +146,7 @@ export const TY_INFO: TyInfoMap = {
         },
       },
     },
+    write: WRITE_REAL,
   },
   bool: {
     name: "true/false value",
@@ -153,6 +193,14 @@ export const TY_INFO: TyInfoMap = {
         },
       },
     },
+    write: {
+      isApprox() {
+        return false
+      },
+      display(value, props) {
+        new CmdWord("" + value, "var").insertAt(props.cursor, L)
+      },
+    },
   },
   color: {
     name: "color",
@@ -162,6 +210,28 @@ export const TY_INFO: TyInfoMap = {
       glsl: "vec4(0.0/0.0)",
     },
     coerce: {},
+    write: {
+      isApprox(value) {
+        return (
+          value.r.type == "approx" ||
+          value.g.type == "approx" ||
+          value.b.type == "approx" ||
+          value.a.type == "approx"
+        )
+      },
+      display(value, props) {
+        const f = (x: SReal) => {
+          const v = Math.min(255, Math.max(0, Math.floor(num(x)))).toString(16)
+          if (v.length == 1) return "0" + v
+          return v
+        }
+
+        new CmdColor("#" + f(value.r) + f(value.g) + f(value.b)).insertAt(
+          props.cursor,
+          L,
+        )
+      },
+    },
   },
   point32: {
     name: "point",
@@ -171,6 +241,7 @@ export const TY_INFO: TyInfoMap = {
       glsl: "vec2(0.0/0.0)",
     },
     coerce: {},
+    write: WRITE_POINT,
   },
   point64: {
     name: "point",
@@ -189,6 +260,7 @@ export const TY_INFO: TyInfoMap = {
         },
       },
     },
+    write: WRITE_POINT,
   },
 }
 

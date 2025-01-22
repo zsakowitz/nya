@@ -1,9 +1,9 @@
-import { display, getOutputBase } from "../eval/display"
 import { defaultPropsGlsl, defaultPropsJs, glsl, js } from "../eval/eval"
 import { FN_INTOCOLOR } from "../eval/ops/fn/intocolor"
 import { declareAddR64 } from "../eval/ops/op/add"
 import { declareMulR64 } from "../eval/ops/op/mul"
 import type { JsValue, SReal } from "../eval/ty"
+import { display, outputBase } from "../eval/ty/display"
 import { splitRaw } from "../eval/ty/split"
 import { Field } from "../field/field"
 import { FieldInert } from "../field/field-inert"
@@ -227,7 +227,7 @@ export class Expr {
     try {
       const props = defaultPropsJs()
       const value = js(node, props)
-      const base = getOutputBase(node, props)
+      const base = outputBase(node, props)
       this.displayEval(value, base)
     } catch (e) {
       console.error(e)
