@@ -96,7 +96,15 @@ export class Block {
 
   /** Tokenizes this {@linkcode Block}'s contents into an AST. */
   ast(): Node {
-    return tokensToAst(this.ir())
+    return tokensToAst(this.ir(), false)
+  }
+
+  /**
+   * Tokenizes this {@linkcode Block}'s contents into an AST, possibly with a
+   * top-level binding.
+   */
+  expr(): Node {
+    return tokensToAst(this.ir(), true)
   }
 
   /** Creates a cursor focused at the given position in this {@linkcode Block}. */
@@ -688,7 +696,7 @@ export class Span {
 
   /** Parses this {@linkcode Span}'s contents as a full AST. */
   ast(): Node {
-    return tokensToAst(this.ir())
+    return tokensToAst(this.ir(), false)
   }
 
   /** Returns `true` if this `Span` is a single point. */

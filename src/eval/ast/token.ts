@@ -162,6 +162,9 @@ export type Var = {
   sup?: Node
 }
 
+/** A plain, user-assignable variable. */
+export type PlainVar = Var & { sup?: undefined; kind: "var" }
+
 /**
  * A magic word in the AST; something like `iterate` which consumes all
  * succeeding tokens and voids the concept of precedence entirely.
@@ -208,10 +211,49 @@ export type Node =
   | { type: "cmplist"; items: Node[]; ops: PuncCmp[] }
   | { type: "factorial"; on: Node; repeats: number | Node }
   | { type: "error"; reason: string }
+  | { type: "binding"; on: PlainVar; args?: Node; value: Node }
   | Punc
 
 /** Parses a list of tokens into a complete AST. */
-export function tokensToAst(tokens: Node[]): Node {
+export function tokensToAst(tokens: Node[], maybeBinding: boolean): Node {
+  if (
+    maybeBinding &&
+    tokens[0]?.type == "var" &&
+    !tokens[0].sup &&
+    tokens[0].kind == "var" &&
+    tokens[1]?.type == "punc" &&
+    tokens[1].kind == "cmp" &&
+    tokens[1].value.dir == "=" &&
+    !tokens[1].value.neg
+  ) {
+    return {
+      type: "binding",
+      on: tokens[0] as any,
+      value: tokensToAst(tokens.slice(2), false),
+    }
+  }
+
+  if (
+    maybeBinding &&
+    tokens[0]?.type == "var" &&
+    !tokens[0].sup &&
+    tokens[0].kind == "var" &&
+    tokens[1]?.type == "group" &&
+    tokens[1].lhs == "(" &&
+    tokens[1].rhs == ")" &&
+    tokens[2]?.type == "punc" &&
+    tokens[2].kind == "cmp" &&
+    tokens[2].value.dir == "=" &&
+    !tokens[2].value.neg
+  ) {
+    return {
+      type: "binding",
+      on: tokens[0] as any,
+      args: tokens[1].value,
+      value: tokensToAst(tokens.slice(2), false),
+    }
+  }
+
   tokens = pass1_suffixes(tokens)
   tokens = pass2_implicits(tokens)
   return pass3_ordering(tokens)
