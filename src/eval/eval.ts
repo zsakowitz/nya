@@ -10,7 +10,7 @@ import { add } from "./ops/op/add"
 import { OP_AND } from "./ops/op/and"
 import { pickCmp } from "./ops/op/cmp"
 import { div, OP_DIV } from "./ops/op/div"
-import { OP_CDOT } from "./ops/op/mul"
+import { OP_JUXTAPOSE } from "./ops/op/juxtapose"
 import { OP_POINT } from "./ops/op/point"
 import { OP_RAISE } from "./ops/op/raise"
 import { OP_X } from "./ops/op/x"
@@ -163,7 +163,12 @@ export function js(node: Node, props: PropsJs): JsValue {
       }
       break
     case "juxtaposed":
-      return OP_CDOT.js(js(node.a, props), js(node.b, props))
+      if (node.nodes.length == 0) {
+        throw new Error("Cannot juxtapose zero nodes.")
+      }
+      return node.nodes
+        .map((x) => js(x, props))
+        .reduce((a, b) => OP_JUXTAPOSE.js(a, b))
     case "var": {
       const value = props.bindings.get(id(node))
       if (value) {
@@ -403,7 +408,12 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
       }
       break
     case "juxtaposed":
-      return OP_CDOT.glsl(props.ctx, glsl(node.a, props), glsl(node.b, props))
+      if (node.nodes.length == 0) {
+        throw new Error("Cannot juxtapose zero nodes.")
+      }
+      return node.nodes
+        .map((x) => glsl(x, props))
+        .reduce((a, b) => OP_JUXTAPOSE.glsl(props.ctx, a, b))
     case "var": {
       const value = props.bindings.get(id(node))
       if (value) {

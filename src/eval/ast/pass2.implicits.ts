@@ -154,7 +154,7 @@ export function pass2_implicits(tokens: Node[]): Node[] {
 
     return reduceSigns(
       signs,
-      atoms.reduce((a, b) => ({ type: "juxtaposed", a, b })),
+      atoms.length == 1 ? atoms[0]! : { type: "juxtaposed", nodes: atoms },
     )
   }
 
@@ -257,21 +257,31 @@ export function pass2_implicits(tokens: Node[]): Node[] {
       let lhs = takeFn()!
       let f
       while ((f = takeFn())) {
-        lhs = { type: "juxtaposed", a: lhs, b: f }
+        if (lhs.type == "juxtaposed") {
+          lhs.nodes.push(f)
+        } else {
+          lhs = { type: "juxtaposed", nodes: [lhs, f] }
+        }
       }
       return reduceSigns(mySigns, lhs)
     } else {
       putBackSigns(mySigns)
 
-      let lhs = takeMul()
+      const lhs = takeMul()
       if (lhs.type == "error") return lhs
+
+      const nodes: Node[] = [lhs]
 
       let f
       while ((f = takeFn())) {
-        lhs = { type: "juxtaposed", a: lhs, b: f }
+        nodes.push(f)
       }
 
-      return lhs
+      if (nodes.length == 1) {
+        return lhs
+      } else {
+        return { type: "juxtaposed", nodes }
+      }
     }
   }
 

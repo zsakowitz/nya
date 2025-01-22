@@ -11,7 +11,7 @@ export function subscript(node: Node): string {
     case "magicvar":
       return node.value
     case "juxtaposed":
-      return subscript(node.a) + subscript(node.b)
+      return node.nodes.map((x) => subscript(x)).reduce((a, b) => a + b, "")
     case "num16":
     case "group":
     case "sub":

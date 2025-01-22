@@ -74,7 +74,6 @@ export const OP_BINARY: Partial<Record<OpBinary, FnDist>> = {
   "\\or ": OP_OR,
   "÷": OP_DIV,
   "\\odot ": OP_ODOT,
-  juxtaposition: OP_CDOT,
   mod: OP_MOD,
   "\\times ": OP_CROSS,
 }

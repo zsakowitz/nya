@@ -15,7 +15,7 @@ import type { Node } from "./ast/token"
 import { js, type PropsJs } from "./eval"
 import type { JsVal, JsValue, SColor, SPoint, SReal } from "./ty"
 import { isReal } from "./ty/coerce"
-import { num, real } from "./ty/create"
+import { frac, num, real } from "./ty/create"
 import { safe } from "./util"
 
 export function getOutputBase(node: Node, props: PropsJs): SReal {
@@ -47,7 +47,6 @@ function displayDigits(
   digits: string,
   base: SReal,
   imag?: boolean,
-  shouldWriteBase?: boolean,
 ) {
   if (digits == "1" && imag) digits = ""
   if (digits == "-1" && imag) digits = "-"
@@ -72,7 +71,10 @@ function displayDigits(
         new CmdDot().insertAt(cursor, L)
         break
       case "e": {
-        writeBase()
+        if (digits[i + 1] != "+" && digits[i + 1] != "-") {
+          new CmdNum(digit).insertAt(cursor, L)
+          break
+        }
         if (imag) {
           new CmdWord("i", "var", true).insertAt(cursor, L)
           imag = false
@@ -100,26 +102,9 @@ function displayDigits(
     }
   }
 
-  writeBase()
-
   if (imag) {
     new CmdWord("i", "var", true).insertAt(cursor, L)
   }
-
-  function writeBase() {
-    if (!shouldWriteBase) return
-    shouldWriteBase = false
-    const str = baseToStr(base)
-    if (str.length == 0) return
-    const sub = new Block(null)
-    new CmdSupSub(sub, null).insertAt(cursor, L)
-    new CmdNum(str).insertAt(sub.cursor(R), L)
-  }
-}
-
-function baseToStr(baseRaw: SReal) {
-  const base = num(baseRaw)
-  return base == 10 ? "" : base + ""
 }
 
 function displayNum(
@@ -128,7 +113,6 @@ function displayNum(
   base: SReal,
   forceSign?: boolean,
   i?: boolean,
-  noBaseSubscript?: boolean,
 ) {
   if (num.type == "approx") {
     if (forceSign && num.value >= 0) {
@@ -139,12 +123,12 @@ function displayNum(
     else if (val == "-Infinity") val = "-∞"
     else if (val == "NaN") val = "NaN"
     else if (val.indexOf(".") == -1) val += ".0"
-    displayDigits(cursor, val, base, i, !noBaseSubscript)
+    displayDigits(cursor, val, base, i)
   } else if (num.d == 1) {
     if (forceSign && num.n >= 0) {
       new OpPlus().insertAt(cursor, L)
     }
-    displayDigits(cursor, numToBase(num.n, base), base, i, !noBaseSubscript)
+    displayDigits(cursor, numToBase(num.n, base), base, i)
   } else {
     if (forceSign && num.n >= 0) {
       new OpPlus().insertAt(cursor, L)
@@ -155,21 +139,13 @@ function displayNum(
       new OpMinus().insertAt(cursor, L)
     }
     new CmdFrac(n, d).insertAt(cursor, L)
-    const num1 = num.n == 1 || num.n == -1
     displayDigits(
       n.cursor(R),
       numToBase(num.n < 0 ? -num.n : num.n, base),
       base,
       i,
-      !(i && num1) ? !noBaseSubscript : undefined,
     )
-    displayDigits(
-      d.cursor(R),
-      numToBase(num.d, base),
-      base,
-      undefined,
-      i && num1 ? !noBaseSubscript : false,
-    )
+    displayDigits(d.cursor(R), numToBase(num.d, base), base, undefined)
   }
 }
 
@@ -191,11 +167,21 @@ function isZero(x: number | SReal | SPoint): boolean {
 function displayComplex(cursor: Cursor, num: SPoint, base: SReal) {
   const showX = !isZero(num.x)
   if (showX) displayNum(cursor, num.x, base)
-  displayNum(cursor, num.y, base, showX, true, showX)
+  displayNum(cursor, num.y, base, showX, true)
 }
 
-function error(reason: string): never {
-  throw new Error(reason)
+function canWriteBase(baseRaw: SReal): boolean {
+  const base =
+    typeof baseRaw == "number" ? baseRaw
+    : baseRaw.type == "approx" ? baseRaw.value
+    : baseRaw.type == "exact" && baseRaw.d == 1 ? baseRaw.n
+    : null
+
+  if (base == null || !safe(base) || base <= 1 || base > 36) {
+    return false
+  }
+
+  return true
 }
 
 function numToBase(value: number, baseRaw: SReal): string {
@@ -203,22 +189,10 @@ function numToBase(value: number, baseRaw: SReal): string {
     typeof baseRaw == "number" ? baseRaw
     : baseRaw.type == "approx" ? baseRaw.value
     : baseRaw.type == "exact" && baseRaw.d == 1 ? baseRaw.n
-    : error("Complex bases are not supported yet.")
+    : null
 
-  if (!safe(base)) {
-    throw new Error("Decimal bases are not supported yet.")
-  }
-
-  if (base <= -2) {
-    throw new Error("Negative bases are not supported yet.")
-  }
-
-  if (base <= 1) {
-    throw new Error(`SReal ${base} is not supported.`)
-  }
-
-  if (base > 36) {
-    throw new Error(`SReal ${base} is not supported yet.`)
+  if (base == null || !safe(base) || base <= 1 || base > 36) {
+    return value.toString(10)
   }
 
   return value.toString(base)
@@ -328,7 +302,7 @@ export function display(field: FieldInert, value: JsValue, base: SReal) {
           const inner = block.cursor(R)
           displayNum(inner, num.x, base)
           new CmdComma().insertAt(inner, L)
-          displayNum(inner, num.y, base, false, false, true)
+          displayNum(inner, num.y, base, false, false)
         },
       )
       break
@@ -351,5 +325,10 @@ export function display(field: FieldInert, value: JsValue, base: SReal) {
         )
       })
       break
+  }
+
+  if (canWriteBase(base)) {
+    new CmdWord("base", "infix").insertAt(cursor, L)
+    displayNum(cursor, base, frac(10, 1))
   }
 }

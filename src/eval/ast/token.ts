@@ -34,7 +34,6 @@ export type PuncInfix =
   | "."
   | ","
   | "\\uparrow "
-  | "juxtaposition"
   | "\\times "
   | "\\odot "
   | "\\otimes "
@@ -80,7 +79,6 @@ export const Precedence = Object.freeze({
 export const PRECEDENCE_MAP = {
   __proto__: null,
   ".": Precedence.NotApplicable,
-  juxtaposition: Precedence.NotApplicable,
   "\\uparrow ": Precedence.Exponential,
   "\\cdot ": Precedence.Product,
   "\\times ": Precedence.Product,
@@ -203,7 +201,7 @@ export type Node =
   | { type: "big"; cmd: BigCmd | "\\int"; sub?: Node; sup?: Node; of: Node }
   | { type: "root"; contents: Node; root?: Node }
   | { type: "index"; on: Node; index: Node }
-  | { type: "juxtaposed"; a: Node; b: Node }
+  | { type: "juxtaposed"; nodes: Node[] }
   | { type: "op"; kind: OpBinary; a: Node; b: Node }
   | { type: "op"; kind: PuncUnary; a: Node; b?: undefined }
   | { type: "commalist"; items: Node[] }

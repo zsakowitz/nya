@@ -36,7 +36,7 @@ export interface FnDistOverload<Q extends TyName = TyName> {
  * {@linkcode FnDist.add} and properly emitted in return types.
  */
 export class FnDist<Q extends TyName = TyName> {
-  private readonly o: FnDistOverload<Q>[] = []
+  private o: FnDistOverload<Q>[] = []
 
   constructor(private readonly name: string) {}
 
@@ -180,6 +180,12 @@ export class FnDist<Q extends TyName = TyName> {
     ctx.push`}\n`
 
     return { type: overload.type, list, expr: ret }
+  }
+
+  withName(name: string) {
+    const dist = new FnDist<Q>(name)
+    dist.o = this.o
+    return dist
   }
 }
 
