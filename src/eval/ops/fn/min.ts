@@ -1,4 +1,4 @@
-import { FnDistVar } from "../../fn/dist"
+import { FnDistVar } from "../dist"
 import { num } from "../../ty/create"
 
 export const FN_MIN = new FnDistVar("min").add(

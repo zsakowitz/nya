@@ -1,4 +1,4 @@
-import { FnDist } from "../../fn/dist"
+import { FnDist } from "../dist"
 import { real } from "../../ty/create"
 
 export const FN_RGB = new FnDist("rgb")

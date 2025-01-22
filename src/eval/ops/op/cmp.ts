@@ -1,5 +1,5 @@
 import type { PuncCmp } from "../../ast/token"
-import { FnDist } from "../../fn/dist"
+import { FnDist } from "../dist"
 import { num } from "../../ty/create"
 import { FN_CMP } from "../fn/cmp"
 

@@ -1,4 +1,4 @@
-import { FnDist } from "../../fn/dist"
+import { FnDist } from "../dist"
 import { mul, mulR64 } from "./mul"
 
 export const OP_CROSS = new FnDist("cross multiply")

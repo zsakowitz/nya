@@ -1,5 +1,5 @@
 import type { GlslContext } from "../../fn"
-import { FnDist } from "../../fn/dist"
+import { FnDist } from "../dist"
 
 export function oklab(ctx: GlslContext, a: string, b: string, c: string) {
   ctx.glsl`// https://github.com/patriciogonzalezvivo/lygia/blob/main/color/space/oklab2rgb.glsl

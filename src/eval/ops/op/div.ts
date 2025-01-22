@@ -1,5 +1,5 @@
 import type { GlslContext } from "../../fn"
-import { FnDist } from "../../fn/dist"
+import { FnDist } from "../dist"
 import type { SPoint, SReal } from "../../ty"
 import { approx, frac, num, pt } from "../../ty/create"
 import { safe } from "../../util"

@@ -1,4 +1,4 @@
-import { FnDistVar } from "../../fn/dist"
+import { FnDistVar } from "../dist"
 import { TY_INFO } from "../../ty/info"
 import { FN_VALID } from "./valid"
 

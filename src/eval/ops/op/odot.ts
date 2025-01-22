@@ -1,4 +1,4 @@
-import { FnDist } from "../../fn/dist"
+import { FnDist } from "../dist"
 import { pt } from "../../ty/create"
 import { declareMulR64, mul, mulR64 } from "./mul"
 

@@ -1,4 +1,4 @@
-import { FnDist } from "../../fn/dist"
+import { FnDist } from "../dist"
 import type { SPoint } from "../../ty"
 import { isZero } from "../../ty/check"
 import { approx, num, pt, real } from "../../ty/create"

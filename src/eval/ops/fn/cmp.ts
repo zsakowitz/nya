@@ -1,5 +1,5 @@
 import type { GlslContext } from "../../fn"
-import { FnDist } from "../../fn/dist"
+import { FnDist } from "../dist"
 import type { SReal } from "../../ty"
 import { num, real } from "../../ty/create"
 

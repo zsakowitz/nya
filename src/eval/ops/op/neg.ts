@@ -1,4 +1,4 @@
-import { FnDist } from "../../fn/dist"
+import { FnDist } from "../dist"
 import type { SReal } from "../../ty"
 import { approx, frac, pt } from "../../ty/create"
 

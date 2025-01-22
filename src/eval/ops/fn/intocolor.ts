@@ -1,4 +1,4 @@
-import { FnDist } from "../../fn/dist"
+import { FnDist } from "../dist"
 import { FN_DEBUGQUADRANT } from "./debugquadrant"
 import { FN_HSV } from "./hsv"
 

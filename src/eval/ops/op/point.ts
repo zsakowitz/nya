@@ -1,4 +1,4 @@
-import { FnDist } from "../../fn/dist"
+import { FnDist } from "../dist"
 import { pt } from "../../ty/create"
 
 export const OP_POINT = new FnDist("point")

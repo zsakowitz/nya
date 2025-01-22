@@ -1,4 +1,4 @@
-import { FnDist } from "../../fn/dist"
+import { FnDist } from "../dist"
 
 export const OP_X = new FnDist(".x")
   .add(

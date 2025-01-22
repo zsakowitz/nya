@@ -1,4 +1,4 @@
-import { FnDist } from "../../fn/dist"
+import { FnDist } from "../dist"
 import { num } from "../../ty/create"
 
 export const FN_VALID = new FnDist<"bool">("valid")

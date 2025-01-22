@@ -1,4 +1,4 @@
-import { FnDist } from "../../fn/dist"
+import { FnDist } from "../dist"
 import { approx, num } from "../../ty/create"
 import { declareDiv, divPt } from "../op/div"
 import { cosPt, declareCos } from "./cos"

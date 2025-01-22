@@ -1,5 +1,5 @@
 import type { OpBinary, PuncUnary } from "../ast/token"
-import type { FnDist } from "../fn/dist"
+import type { FnDist } from "./dist"
 
 import { FN_ARG } from "./fn/arg"
 import { FN_CMP } from "./fn/cmp"

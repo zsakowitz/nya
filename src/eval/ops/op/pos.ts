@@ -1,4 +1,4 @@
-import { FnDist } from "../../fn/dist"
+import { FnDist } from "../dist"
 
 // prettier-ignore
 export const OP_POS = new FnDist("+")

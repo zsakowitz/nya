@@ -1,4 +1,4 @@
-import { FnDist } from "../../fn/dist"
+import { FnDist } from "../dist"
 import { pt } from "../../ty/create"
 import { abs, abs64 } from "../op/abs"
 
