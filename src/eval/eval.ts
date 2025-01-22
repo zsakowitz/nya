@@ -155,7 +155,7 @@ export function js(node: Node, props: PropsJs): JsValue {
         !node.name.sub &&
         !node.name.sup
       ) {
-        const args = fnargs(node.args)
+        const args = node.on ? commalist(node.args) : fnargs(node.args)
         if (node.on) {
           args.unshift(node.on)
         }
@@ -400,7 +400,7 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
         !node.name.sub &&
         !node.name.sup
       ) {
-        const args = fnargs(node.args)
+        const args = node.on ? commalist(node.args) : fnargs(node.args)
         if (node.on) {
           args.unshift(node.on)
         }

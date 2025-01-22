@@ -1,5 +1,4 @@
 - intersection
-- parallel
 - perpendicular
 - anglebisector
 - arc

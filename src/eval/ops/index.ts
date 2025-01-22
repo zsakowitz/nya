@@ -17,6 +17,7 @@ import { FN_FIRSTVALID } from "./fn/firstvalid"
 import { FN_CIRCLE } from "./fn/geo/circle"
 import { FN_LINE } from "./fn/geo/line"
 import { FN_MIDPOINT } from "./fn/geo/midpoint"
+import { FN_PARALLEL } from "./fn/geo/parallel"
 import { FN_RAY } from "./fn/geo/ray"
 import { FN_SEGMENT } from "./fn/geo/segment"
 import { FN_VECTOR } from "./fn/geo/vector"
@@ -73,6 +74,7 @@ export const FNS: Record<string, Fn> = {
   ray: FN_RAY,
   line: FN_LINE,
   midpoint: FN_MIDPOINT,
+  parallel: FN_PARALLEL,
 }
 Object.setPrototypeOf(FNS, null)
 
