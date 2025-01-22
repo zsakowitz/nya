@@ -1,10 +1,11 @@
 import type { GlslContext } from "../../fn"
-import { FnDist } from "../dist"
 import type { SReal } from "../../ty"
 import { approx, frac, num } from "../../ty/create"
+import { FnDist } from "../dist"
 import { declareCmpR64 } from "../fn/cmp"
 import { declareSubR64 } from "./sub"
 
+// TODO: could be exact for pythag triples
 export function abs(v: SReal): SReal {
   if (v.type == "exact") {
     return frac(Math.abs(v.n), v.d)
@@ -13,6 +14,7 @@ export function abs(v: SReal): SReal {
   }
 }
 
+// TODO: perf could probs be drastically improved
 export function abs64(ctx: GlslContext, x: string) {
   declareCmpR64(ctx)
   declareSubR64(ctx)

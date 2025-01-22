@@ -1,9 +1,9 @@
 import type { OpBinary, PuncUnary } from "../ast/token"
-import type { FnDist } from "./dist"
+import type { GlslContext } from "../fn"
+import type { GlslValue, JsValue } from "../ty"
 
 import { FN_CMP } from "./fn/cmp"
 import { FN_HSV } from "./fn/color/hsv"
-import { FN_INTOCOLOR } from "./fn/color/intocolor"
 import { FN_OKLAB } from "./fn/color/oklab"
 import { FN_OKLCH } from "./fn/color/oklch"
 import { FN_RGB } from "./fn/color/rgb"
@@ -40,12 +40,16 @@ import { OP_OR } from "./op/or"
 import { OP_POS } from "./op/pos"
 import { OP_SUB } from "./op/sub"
 
-export const FNS: Record<string, FnDist> = {
+export interface Fn {
+  js(...args: JsValue[]): JsValue
+  glsl(ctx: GlslContext, ...args: GlslValue[]): GlslValue
+}
+
+export const FNS: Record<string, Fn> = {
   rgb: FN_RGB,
   cmp: FN_CMP,
   imag: FN_IMAG,
   real: FN_REAL,
-  intocolor: FN_INTOCOLOR,
   dot: FN_DOT,
   sin: FN_SIN,
   unsign: FN_UNSIGN,
@@ -70,13 +74,13 @@ export const FNS: Record<string, FnDist> = {
 }
 Object.setPrototypeOf(FNS, null)
 
-export const OP_UNARY: Partial<Record<PuncUnary, FnDist>> = {
+export const OP_UNARY: Partial<Record<PuncUnary, Fn>> = {
   "-": OP_NEG,
   "+": OP_POS,
 }
 Object.setPrototypeOf(OP_UNARY, null)
 
-export const OP_BINARY: Partial<Record<OpBinary, FnDist>> = {
+export const OP_BINARY: Partial<Record<OpBinary, Fn>> = {
   "+": OP_ADD,
   "-": OP_SUB,
   "\\cdot ": OP_CDOT,

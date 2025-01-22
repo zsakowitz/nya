@@ -18,6 +18,7 @@ export const OP_RAISE = new FnDist("^")
         return real(0)
       }
 
+      // TODO: things like (-8) ** (1/3) don't work
       // TODO: use approx and exact better
       return real(num(a.value) ** num(b.value))
     },

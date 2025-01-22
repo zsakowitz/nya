@@ -15,6 +15,8 @@ import { isReal } from "../ty/coerce"
 import { num } from "../ty/create"
 import { declareGlsl } from "../ty/decl"
 
+// TODO: can't handle changing types in webgl
+
 export interface IterateVar {
   id: string
   name: string

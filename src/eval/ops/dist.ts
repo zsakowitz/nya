@@ -1,3 +1,4 @@
+import type { Fn } from "."
 import { GlslContext } from "../fn"
 import type {
   GlslVal,
@@ -35,7 +36,7 @@ export interface FnDistOverload<Q extends TyName = TyName> {
  * a specific value, which will be enforced in the `ret` parameter to
  * {@linkcode FnDist.add} and properly emitted in return types.
  */
-export class FnDist<Q extends TyName = TyName> {
+export class FnDist<Q extends TyName = TyName> implements Fn {
   private o: FnDistOverload<Q>[] = []
 
   constructor(private readonly name: string) {}

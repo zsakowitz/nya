@@ -32,6 +32,7 @@ float _helper_cmp_r64(vec2 a, vec2 b) {
 }
 
 export const FN_CMP = new FnDist("cmp")
+  // TODO: NaN probably outputs 0 in r64
   .add(["r64", "r64"], "r32", js, (ctx, a, b) => {
     declareCmpR64(ctx)
     return `_helper_cmp_r64(${a.expr}, ${b.expr})`

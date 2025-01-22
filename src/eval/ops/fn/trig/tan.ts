@@ -19,6 +19,7 @@ export const FN_TAN = new FnDist("tan")
       declareDiv(ctx)
       declareSin(ctx)
       declareCos(ctx)
+      // TODO: this probably has lots of redundant terms
       ctx.glsl`vec2 _helper_tan(vec2 a) {
   return _helper_div(_helper_sin(a), _helper_cos(a));
 }
