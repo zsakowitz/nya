@@ -236,7 +236,7 @@ export function tokensToAst(tokens: Node[], maybeBinding: boolean): Node {
   ) {
     return {
       type: "binding",
-      name: tokens[0] as any,
+      name: tokens[0] as PlainVar,
       value: tokensToAst(tokens.slice(2), false),
     }
   }
@@ -256,7 +256,7 @@ export function tokensToAst(tokens: Node[], maybeBinding: boolean): Node {
   ) {
     return {
       type: "binding",
-      name: tokens[0] as any,
+      name: tokens[0] as PlainVar,
       args: tokens[1].value,
       value: tokensToAst(tokens.slice(2), false),
     }

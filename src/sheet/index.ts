@@ -139,6 +139,7 @@ export class Expr {
   readonly elValue
   readonly elValueError
   readonly elGlslError
+  readonly elBindingStatus
   readonly elScroller
 
   binding?: AstBinding
@@ -171,6 +172,9 @@ export class Expr {
         )),
         (this.elGlslError = h(
           "leading-tight block pb-1 -mt-2 mx-1 px-1 italic text-yellow-800 hidden whitespace-pre-wrap",
+        )),
+        (this.elBindingStatus = h(
+          "leading-tight block pb-1 -mt-2 mx-1 px-1 italic text-blue-800 hidden whitespace-pre-wrap",
         )),
       ),
       h(
@@ -231,19 +235,28 @@ export class Expr {
       var node = this.field.block.expr()
     } catch {
       this.binding = undefined
+      this.elBindingStatus.classList.remove("hidden")
+      this.elBindingStatus.textContent = "error while computing binding"
       return
     }
 
     if (node.type == "binding") {
       this.binding = node
+      this.elBindingStatus.classList.remove("hidden")
+      this.elBindingStatus.textContent =
+        "binding detected for " + name(node.name)
     } else {
       this.binding = undefined
+      this.elBindingStatus.classList.add("hidden")
     }
   }
 
   debug() {
     try {
-      var node = this.field.block.ast()
+      var node = this.field.block.expr()
+      if (node.type == "binding") {
+        node = node.value
+      }
     } catch (e) {
       console.error(e)
       this.displayError(e instanceof Error ? e : new Error(String(e)))
@@ -580,6 +593,7 @@ export class Sheet {
       this.exprs.forEach((x) => x.checkBinding())
       this.exprs.forEach((x) => x.debug())
       this.queued!.debug()
+      this.queued = undefined
     })
   }
 
