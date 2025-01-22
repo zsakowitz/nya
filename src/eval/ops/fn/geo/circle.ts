@@ -24,6 +24,6 @@ export const FN_CIRCLE = new FnDist("circle")
     }),
     (ctx, ar, b) => {
       const a = ctx.cache(ar)
-      return `vec3(${a}, length(${a} - ${b.expr})`
+      return `vec3(${a}, length(${a} - ${b.expr}))`
     },
   )
