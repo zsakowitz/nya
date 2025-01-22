@@ -30,6 +30,6 @@ export const FN_INTOCOLOR = new FnDist<"color">("intocolor")
   .add(["circle32"], "color", err, (ctx, ar) => {
     const a = ctx.cache(ar)
     return bool(
-      `distance(v_coords.xz, ${a}.xy) * u_px_per_unit.x >= ${a}.z * u_px_per_unit.x && distance(v_coords.xz, ${a}.xy) * u_px_per_unit.x <= ${a}.z * u_px_per_unit.x + 4.`,
+      `distance(v_coords.xz, ${a}.xy) * u_px_per_unit.x >= ${a}.z * u_px_per_unit.x - 2. && distance(v_coords.xz, ${a}.xy) * u_px_per_unit.x <= ${a}.z * u_px_per_unit.x + 2.`,
     )
   })
