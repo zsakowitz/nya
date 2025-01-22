@@ -1,6 +1,7 @@
 import { FnDist } from "../dist"
 import { FN_HSV } from "../fn/color/hsv"
 import { FN_DEBUGPOINT } from "../fn/debugpoint"
+import { FN_SCREENDISTANCE } from "../fn/screendistance"
 
 function err(): never {
   throw new Error("Cannot plot colors outside of a shader.")
@@ -32,4 +33,45 @@ export const OP_PLOT = new FnDist<"color">("plot")
     return bool(
       `distance(v_coords.xz, ${a}.xy) * u_px_per_unit.x >= ${a}.z * u_px_per_unit.x - 2. && distance(v_coords.xz, ${a}.xy) * u_px_per_unit.x <= ${a}.z * u_px_per_unit.x + 2.`,
     )
+  })
+  .add(["line32"], "color", err, (ctx, raw) => {
+    const a = ctx.cache(raw)
+    const ax = `${a}.x`
+    const ay = `${a}.y`
+    const bx = `${a}.z`
+    const by = `${a}.w`
+    const px = `v_coords.x`
+    const py = `v_coords.z`
+    const x = ctx.cache({
+      type: "r32",
+      expr: `
+(
+  (
+    (${py} - ${ay}) * (${bx} - ${ax}) * (${by} - ${ay})
+      + ${ax} * (${by} - ${ay}) * (${by} - ${ay})
+      + ${px} * (${bx} - ${ax}) * (${bx} - ${ax})
+  ) / (
+    (${by} - ${ay}) * (${by} - ${ay})
+      + (${bx} - ${ax}) * (${bx} - ${ax})
+  )
+)`,
+    })
+    const y = ctx.cache({
+      type: "r32",
+      expr: `((${x} - ${ax}) * ((${by} - ${ay}) / (${bx} - ${ax})) + ${ay})`,
+    })
+    const dist = ctx.cache(
+      FN_SCREENDISTANCE.glsl1(
+        ctx,
+        {
+          type: "c32",
+          expr: `vec2(${x}, ${y})`,
+        },
+        {
+          type: "c32",
+          expr: `v_coords.xz`,
+        },
+      ),
+    )
+    return bool(`${dist} < 2.`)
   })

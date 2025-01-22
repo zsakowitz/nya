@@ -1,4 +1,4 @@
-import type { GlslVal as GlslVal2 } from "./ty"
+import type { GlslVal } from "./ty"
 import { TY_INFO } from "./ty/info"
 
 export class GlslHelpers {
@@ -50,7 +50,7 @@ export class GlslContext {
     }
   }
 
-  cache(val: GlslVal2): string {
+  cache(val: GlslVal): string {
     const name = this.name()
     this.push`${TY_INFO[val.type].glsl} ${name} = ${val.expr};\n`
     return name

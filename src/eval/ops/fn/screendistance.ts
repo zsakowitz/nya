@@ -1,6 +1,6 @@
 import { FnDist } from "../dist"
 
-export const FN_SCREENDISTANCE = new FnDist("screendistance").add(
+export const FN_SCREENDISTANCE = new FnDist<"r32">("screendistance").add(
   ["c32", "c32"],
   "r32",
   () => {
