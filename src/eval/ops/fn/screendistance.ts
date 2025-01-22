@@ -7,6 +7,6 @@ export const FN_SCREENDISTANCE = new FnDist("screendistance").add(
     throw new Error("Cannot calculate screendistance outside of shaders.")
   },
   (_, a, b) => {
-    return `length((${a.expr} - ${b.expr}) * u_px_per_graph.xz)`
+    return `length((${a.expr} - ${b.expr}) * u_px_per_unit.xz)`
   },
 )

@@ -29,5 +29,7 @@ export const FN_INTOCOLOR = new FnDist<"color">("intocolor")
   .add(["point32"], "color", err, (ctx, a) => FN_DEBUGPOINT.glsl1(ctx, a).expr)
   .add(["circle32"], "color", err, (ctx, ar) => {
     const a = ctx.cache(ar)
-    return bool(`distance(v_coords.xz, ${a}.xy) <= ${a}.z`)
+    return bool(
+      `distance(v_coords.xz, ${a}.xy) * u_px_per_unit.x >= ${a}.z * u_px_per_unit.x && distance(v_coords.xz, ${a}.xy) * u_px_per_unit.x <= ${a}.z * u_px_per_unit.x + 4.`,
+    )
   })
