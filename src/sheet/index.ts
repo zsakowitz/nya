@@ -1,5 +1,5 @@
 import { defaultPropsGlsl, defaultPropsJs, glsl, js } from "../eval/eval"
-import { FN_INTOCOLOR } from "../eval/ops/fn/color/intocolor"
+import { OP_PLOT } from "../eval/ops/op/plot"
 import { declareAddR64 } from "../eval/ops/op/add"
 import { declareMulR64 } from "../eval/ops/op/mul"
 import type { JsValue, SReal } from "../eval/ty"
@@ -237,7 +237,7 @@ export class Expr {
 
     try {
       const props = defaultPropsGlsl()
-      const value = FN_INTOCOLOR.glsl(props.ctx, glsl(node, props))
+      const value = OP_PLOT.glsl(props.ctx, glsl(node, props))
       if (value.list) {
         throw new Error("Cannot draw a list of colors.")
       }
