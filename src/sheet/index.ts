@@ -228,7 +228,7 @@ export class Expr {
 
   checkBinding() {
     try {
-      var node = this.field.block.ast()
+      var node = this.field.block.expr()
     } catch {
       this.binding = undefined
       return
