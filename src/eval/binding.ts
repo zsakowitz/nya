@@ -28,27 +28,41 @@ export class Bindings<T> {
   }
 
   withAll<U>(data: Record<string, T>, fn: () => U): U {
-    const old: Record<string, T | undefined> = {}
+    const old: Record<string, PropertyDescriptor | undefined> =
+      Object.create(null)
     try {
       for (const key in data) {
-        old[key] = this.data[key]
-        this.data[key] = data[key]
+        old[key] = Object.getOwnPropertyDescriptor(this.data, key)
+        Object.defineProperty(
+          this.data,
+          key,
+          Object.getOwnPropertyDescriptor(data, key)!,
+        )
       }
       return fn()
     } finally {
       for (const key in old) {
-        this.data[key] = old[key]
+        const desc = old[key]
+        if (desc) {
+          Object.defineProperty(this.data, key, desc)
+        } else {
+          delete this.data[key]
+        }
       }
     }
   }
 
   with<U>(id: string, value: T, fn: () => U): U {
-    const oldValue = this.data[id]
+    const desc = Object.getOwnPropertyDescriptor(this.data, id)
     this.data[id] = value
     try {
       return fn()
     } finally {
-      this.data[id] = oldValue
+      if (desc) {
+        Object.defineProperty(this.data, id, desc)
+      } else {
+        delete this.data[id]
+      }
     }
   }
 }

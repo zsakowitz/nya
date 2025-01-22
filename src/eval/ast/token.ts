@@ -180,6 +180,14 @@ export type MagicVar = {
 
 export type Piece = { value: Node; condition: Node }
 
+/** A top-level binding in the AST. */
+export type AstBinding = {
+  type: "binding"
+  name: PlainVar
+  args?: Node
+  value: Node
+}
+
 /**
  * A part of the AST. The intermediate representation is so close to the final
  * representation that they're essentially merged.
@@ -211,7 +219,7 @@ export type Node =
   | { type: "cmplist"; items: Node[]; ops: PuncCmp[] }
   | { type: "factorial"; on: Node; repeats: number | Node }
   | { type: "error"; reason: string }
-  | { type: "binding"; on: PlainVar; args?: Node; value: Node }
+  | AstBinding
   | Punc
 
 /** Parses a list of tokens into a complete AST. */
@@ -228,7 +236,7 @@ export function tokensToAst(tokens: Node[], maybeBinding: boolean): Node {
   ) {
     return {
       type: "binding",
-      on: tokens[0] as any,
+      name: tokens[0] as any,
       value: tokensToAst(tokens.slice(2), false),
     }
   }
@@ -248,7 +256,7 @@ export function tokensToAst(tokens: Node[], maybeBinding: boolean): Node {
   ) {
     return {
       type: "binding",
-      on: tokens[0] as any,
+      name: tokens[0] as any,
       args: tokens[1].value,
       value: tokensToAst(tokens.slice(2), false),
     }

@@ -1,8 +1,17 @@
-import { defaultPropsGlsl, defaultPropsJs, glsl, js } from "../eval/eval"
-import { OP_PLOT } from "../eval/ops/op/plot"
+import type { AstBinding } from "../eval/ast/token"
+import { Bindings, id, name } from "../eval/binding"
+import {
+  defaultPropsGlsl,
+  defaultPropsJs,
+  glsl,
+  js,
+  type PropsGlsl,
+  type PropsJs,
+} from "../eval/eval"
 import { declareAddR64 } from "../eval/ops/op/add"
 import { declareMulR64 } from "../eval/ops/op/mul"
-import type { JsValue, SReal } from "../eval/ty"
+import { OP_PLOT } from "../eval/ops/op/plot"
+import type { GlslValue, JsValue, SReal } from "../eval/ty"
 import { display, outputBase } from "../eval/ty/display"
 import { splitRaw } from "../eval/ty/split"
 import { Field } from "../field/field"
@@ -120,6 +129,8 @@ export function circle() {
 }
 
 export class Expr {
+  static id = 0
+
   readonly field
 
   readonly el
@@ -129,6 +140,8 @@ export class Expr {
   readonly elValueError
   readonly elGlslError
   readonly elScroller
+
+  binding?: AstBinding
 
   removable = true
   index
@@ -213,7 +226,20 @@ export class Expr {
     this.index = this.sheet.exprs.length - 1
   }
 
-  static id = 0
+  checkBinding() {
+    try {
+      var node = this.field.block.ast()
+    } catch {
+      this.binding = undefined
+      return
+    }
+
+    if (node.type == "binding") {
+      this.binding = node
+    } else {
+      this.binding = undefined
+    }
+  }
 
   debug() {
     try {
@@ -225,7 +251,7 @@ export class Expr {
     }
 
     try {
-      const props = defaultPropsJs()
+      const props = this.sheet.propsJs()
       const value = js(node, props)
       const base = outputBase(node, props)
       this.displayEval(value, base)
@@ -236,7 +262,7 @@ export class Expr {
     }
 
     try {
-      const props = defaultPropsGlsl()
+      const props = this.sheet.propsGlsl()
       const value = OP_PLOT.glsl(props.ctx, glsl(node, props))
       if (value.list) {
         throw new Error("Cannot draw a list of colors.")
@@ -463,6 +489,68 @@ export class Sheet {
     }).observe(this.elExpressions)
   }
 
+  propsJs() {
+    const map: Record<string, JsValue | undefined> = Object.create(null)
+    const bindings = new Bindings(map)
+    const props: PropsJs = { ...defaultPropsJs(), bindings }
+    for (const expr of this.exprs) {
+      if (!expr.binding || expr.binding.args) {
+        continue
+      }
+
+      const myId = id(expr.binding.name)
+      const myName = name(expr.binding.name)
+      const value = expr.binding.value
+      Object.defineProperty(map, myId, {
+        configurable: true,
+        enumerable: true,
+        get() {
+          try {
+            return js(value, props)
+          } catch (e) {
+            if (e instanceof RangeError && e.message.includes("stack")) {
+              throw new Error(`Cycle detected when accessing ${myName}.`)
+            } else {
+              throw e
+            }
+          }
+        },
+      })
+    }
+    return props
+  }
+
+  propsGlsl() {
+    const map: Record<string, GlslValue | undefined> = Object.create(null)
+    const bindings = new Bindings(map)
+    const props: PropsGlsl = { ...defaultPropsGlsl(), bindings }
+    for (const expr of this.exprs) {
+      if (!expr.binding || expr.binding.args) {
+        continue
+      }
+
+      const myId = id(expr.binding.name)
+      const myName = name(expr.binding.name)
+      const value = expr.binding.value
+      Object.defineProperty(map, myId, {
+        configurable: true,
+        enumerable: true,
+        get() {
+          try {
+            return glsl(value, props)
+          } catch (e) {
+            if (e instanceof RangeError && e.message.includes("stack")) {
+              throw new Error(`Cycle detected when accessing ${myName}.`)
+            } else {
+              throw e
+            }
+          }
+        },
+      })
+    }
+    return props
+  }
+
   checkIndices() {
     for (let i = 0; i < this.exprs.length; i++) {
       this.exprs[i]!.elIndex.textContent = i + 1 + ""
@@ -475,12 +563,29 @@ export class Sheet {
     this.elNextIndex.textContent = this.exprs.length + 1 + ""
   }
 
-  onExprFocus?(expr: Expr): void {
+  onExprFocus(expr: Expr): void {
     expr.debug()
   }
 
-  onExprChange?(expr: Expr): void {
+  queued: Expr | undefined
+
+  queue(expr: Expr) {
+    if (this.queued) {
+      this.queued = expr
+      return
+    } else {
+      this.queued = expr
+    }
+    setTimeout(() => {
+      this.exprs.forEach((x) => x.checkBinding())
+      this.exprs.forEach((x) => x.debug())
+      this.queued!.debug()
+    })
+  }
+
+  onExprChange(expr: Expr): void {
     expr.debug()
+    this.queue(expr)
   }
 }
 
