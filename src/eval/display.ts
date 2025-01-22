@@ -327,7 +327,7 @@ export function display(field: FieldInert, value: JsValue, base: SReal) {
       break
   }
 
-  if (canWriteBase(base)) {
+  if (canWriteBase(base) && num(base) != 10) {
     new CmdWord("base", "infix").insertAt(cursor, L)
     displayNum(cursor, base, frac(10, 1))
   }
