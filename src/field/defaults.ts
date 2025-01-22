@@ -284,7 +284,7 @@ export const words = new WordMap<WordKind>([
   ["true", "var"],
 
   // Debug utilities
-  ["debugquadrant", "prefix"],
+  ["debugpoint", "prefix"],
 
   // Iteration
   ["iterate", "magicprefix"],

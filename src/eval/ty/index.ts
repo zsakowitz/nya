@@ -37,8 +37,14 @@ export interface Tys {
   color: SColor
 
   // Geometry
+
   point32: SPoint
   point64: SPoint
+  line32: [SPoint, SPoint]
+  ray32: [SPoint, SPoint]
+  segment32: [SPoint, SPoint]
+  vector32: [SPoint, SPoint]
+  circle32: { center: SPoint; radius: SReal }
 }
 
 export type TyName = keyof Tys

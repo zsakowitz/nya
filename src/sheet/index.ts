@@ -250,7 +250,7 @@ vec4 v_coords;
 uniform vec2 u_scale;
 uniform vec2 u_cx;
 uniform vec2 u_cy;
-uniform vec4 u_px_size;
+uniform vec4 u_px_per_graph;
 ${props.ctx.helpers.helpers}void main() {
 vec2 e_tx = vec2(gl_FragCoord.x, 0);
 vec2 e_ty = vec2(gl_FragCoord.y, 0);
@@ -295,7 +295,7 @@ void main() {
           // @ts-expect-error
           u_cy: this.sheet.regl.prop("u_cy"),
           // @ts-expect-error
-          u_px_size: this.sheet.regl.prop("u_px_size"),
+          u_px_per_graph: this.sheet.regl.prop("u_px_per_graph"),
         },
 
         count: 6,
@@ -310,7 +310,7 @@ void main() {
           ),
           u_cx: splitRaw(xmin),
           u_cy: splitRaw(ymin),
-          u_px_size: [
+          u_px_per_graph: [
             ...splitRaw(this.sheet.paper.el.clientWidth / (xmax - xmin)),
             ...splitRaw(this.sheet.paper.el.clientHeight / (ymax - ymin)),
           ],

@@ -1,7 +1,7 @@
 import type { GlslContext } from "../../fn"
-import { FnDist } from "../dist"
 import type { GlslVal, JsVal, SColor } from "../../ty"
 import { frac, num, real } from "../../ty/create"
+import { FnDist } from "../dist"
 
 function js(a: JsVal<"c32" | "point32">): SColor {
   return {
@@ -14,7 +14,7 @@ function js(a: JsVal<"c32" | "point32">): SColor {
 }
 
 function glsl(ctx: GlslContext, a: GlslVal<"c32" | "point32">): string {
-  ctx.glsl`vec4 _helper_debugquadrant_c32(vec2 z) {
+  ctx.glsl`vec4 _helper_debugpoint_c32(vec2 z) {
   return vec4(
     sign(v_coords.x - z.x) / 2.0 + 0.5,
     sign(v_coords.z - z.y) / 2.0 + 0.5,
@@ -23,9 +23,9 @@ function glsl(ctx: GlslContext, a: GlslVal<"c32" | "point32">): string {
   );
 }
 `
-  return `_helper_debugquadrant_c32(${a.expr})`
+  return `_helper_debugpoint_c32(${a.expr})`
 }
 
-export const FN_DEBUGQUADRANT = new FnDist("debugquadrant")
+export const FN_DEBUGPOINT = new FnDist("debugpoint")
   .add(["c32"], "color", js, glsl)
   .add(["point32"], "color", js, glsl)

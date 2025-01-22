@@ -1,5 +1,5 @@
 import { FnDist } from "../../dist"
-import { FN_DEBUGQUADRANT } from "../debugquadrant"
+import { FN_DEBUGPOINT } from "../debugpoint"
 import { FN_HSV } from "./hsv"
 
 function err(): never {
@@ -25,10 +25,9 @@ export const FN_INTOCOLOR = new FnDist<"color">("intocolor")
         { type: "r32", expr: "1.0" },
       ).expr,
   )
-  .add(["c32"], "color", err, (ctx, a) => FN_DEBUGQUADRANT.glsl1(ctx, a).expr)
-  .add(
-    ["point32"],
-    "color",
-    err,
-    (ctx, a) => FN_DEBUGQUADRANT.glsl1(ctx, a).expr,
-  )
+  .add(["c32"], "color", err, (ctx, a) => FN_DEBUGPOINT.glsl1(ctx, a).expr)
+  .add(["point32"], "color", err, (ctx, a) => FN_DEBUGPOINT.glsl1(ctx, a).expr)
+  .add(["circle32"], "color", err, (ctx, ar) => {
+    const a = ctx.cache(ar)
+    return bool(`distance(v_coords.xz, ${a}.xy) <= ${a}.z`)
+  })

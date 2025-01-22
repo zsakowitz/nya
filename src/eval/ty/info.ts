@@ -8,10 +8,15 @@ import type { GlslContext } from "../fn"
 import { num, real } from "../ty/create"
 import type { Write } from "./display"
 
+export interface Garbage<T> {
+  js: T
+  glsl: string
+}
+
 export interface TyInfo<T> {
   name: string
   glsl: string
-  garbage: { js: T; glsl: string }
+  garbage: Garbage<T>
   coerce: TyCoerceMap<T>
   write: Write<T>
 }
@@ -61,6 +66,31 @@ const WRITE_POINT: Write<SPoint> = {
   },
 }
 
+const NANPT: SPoint = { type: "point", x: real(NaN), y: real(NaN) }
+
+function lineInfo(name: string): TyInfo<[SPoint, SPoint]> {
+  return {
+    name,
+    glsl: "vec4",
+    garbage: { js: [NANPT, NANPT], glsl: "vec4(0.0/0.0)" },
+    coerce: {},
+    write: {
+      isApprox(value) {
+        return value.some((x) => x.x.type == "approx" || x.y.type == "approx")
+      },
+      display(value, props) {
+        new CmdWord(name, "prefix").insertAt(props.cursor, L)
+        const block = new Block(null)
+        new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
+        const inner = props.at(block.cursor(R))
+        WRITE_POINT.display(value[0], inner)
+        new CmdComma().insertAt(inner.cursor, L)
+        WRITE_POINT.display(value[1], inner)
+      },
+    },
+  }
+}
+
 // Types are listed in coercion order, so later declared types can only coerce
 // types declared above. This isn't checked or anything, but it's a good
 // heuristic to ensure we don't create any cycles.
@@ -68,20 +98,14 @@ export const TY_INFO: TyInfoMap = {
   c32: {
     name: "complex number",
     glsl: "vec2",
-    garbage: {
-      js: { type: "point", x: real(NaN), y: real(NaN) },
-      glsl: "vec2(0.0/0.0)",
-    },
+    garbage: { js: NANPT, glsl: "vec2(0.0/0.0)" },
     coerce: {},
     write: WRITE_COMPLEX,
   },
   c64: {
     name: "complex number",
     glsl: "vec4",
-    garbage: {
-      js: { type: "point", x: real(NaN), y: real(NaN) },
-      glsl: "vec4(0.0/0.0)",
-    },
+    garbage: { js: NANPT, glsl: "vec4(0.0/0.0)" },
     coerce: {
       c32: {
         js(self) {
@@ -97,10 +121,7 @@ export const TY_INFO: TyInfoMap = {
   r32: {
     name: "real number",
     glsl: "float",
-    garbage: {
-      js: real(NaN),
-      glsl: "(0.0/0.0)",
-    },
+    garbage: { js: real(NaN), glsl: "(0.0/0.0)" },
     coerce: {
       c32: {
         js(self) {
@@ -116,10 +137,7 @@ export const TY_INFO: TyInfoMap = {
   r64: {
     name: "real number",
     glsl: "vec2",
-    garbage: {
-      js: real(NaN),
-      glsl: "vec2(0.0/0.0)",
-    },
+    garbage: { js: real(NaN), glsl: "vec2(0.0/0.0)" },
     coerce: {
       r32: {
         js(self) {
@@ -151,10 +169,7 @@ export const TY_INFO: TyInfoMap = {
   bool: {
     name: "true/false value",
     glsl: "bool",
-    garbage: {
-      js: false,
-      glsl: "false",
-    },
+    garbage: { js: false, glsl: "false" },
     coerce: {
       r32: {
         js(self) {
@@ -174,9 +189,7 @@ export const TY_INFO: TyInfoMap = {
       },
       c32: {
         js(self) {
-          return self ?
-              { type: "point", x: real(1), y: real(0) }
-            : { type: "point", x: real(NaN), y: real(NaN) }
+          return self ? { type: "point", x: real(1), y: real(0) } : NANPT
         },
         glsl(self) {
           return `(${self} ? vec2(1, 0) : vec2(0.0/0.0))`
@@ -184,9 +197,7 @@ export const TY_INFO: TyInfoMap = {
       },
       c64: {
         js(self) {
-          return self ?
-              { type: "point", x: real(1), y: real(0) }
-            : { type: "point", x: real(NaN), y: real(NaN) }
+          return self ? { type: "point", x: real(1), y: real(0) } : NANPT
         },
         glsl(self) {
           return `(${self} ? vec4(1, 0, 0, 0) : vec4(0.0/0.0))`
@@ -236,20 +247,14 @@ export const TY_INFO: TyInfoMap = {
   point32: {
     name: "point",
     glsl: "vec2",
-    garbage: {
-      js: { type: "point", x: real(NaN), y: real(NaN) },
-      glsl: "vec2(0.0/0.0)",
-    },
+    garbage: { js: NANPT, glsl: "vec2(0.0/0.0)" },
     coerce: {},
     write: WRITE_POINT,
   },
   point64: {
     name: "point",
     glsl: "vec4",
-    garbage: {
-      js: { type: "point", x: real(NaN), y: real(NaN) },
-      glsl: "vec4(0.0/0.0)",
-    },
+    garbage: { js: NANPT, glsl: "vec4(0.0/0.0)" },
     coerce: {
       point32: {
         js(self) {
@@ -261,6 +266,37 @@ export const TY_INFO: TyInfoMap = {
       },
     },
     write: WRITE_POINT,
+  },
+  line32: lineInfo("line"),
+  segment32: lineInfo("segment"),
+  ray32: lineInfo("ray"),
+  vector32: lineInfo("vector"),
+  circle32: {
+    name: "circle",
+    glsl: "vec3",
+    garbage: {
+      js: { center: NANPT, radius: real(NaN) },
+      glsl: "vec3(0.0/0.0)",
+    },
+    coerce: {},
+    write: {
+      isApprox(value) {
+        return (
+          value.center.x.type == "approx" ||
+          value.center.y.type == "approx" ||
+          value.radius.type == "approx"
+        )
+      },
+      display(value, props) {
+        new CmdWord("circle", "prefix").insertAt(props.cursor, L)
+        const block = new Block(null)
+        new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
+        const inner = props.at(block.cursor(R))
+        WRITE_POINT.display(value.center, inner)
+        new CmdComma().insertAt(inner.cursor, L)
+        inner.num(value.radius)
+      },
+    },
   },
 }
 

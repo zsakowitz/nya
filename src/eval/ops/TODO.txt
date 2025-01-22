@@ -19,7 +19,7 @@ cos
 tan             perf
 abs             perf, could be exact for pythagorean triples
 div
-debugquadrant
+debugpoint
 raise           cube roots on -8 et al don't work
 exp
 mod
