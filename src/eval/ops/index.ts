@@ -15,6 +15,7 @@ import { FN_UNSIGN } from "./fn/complex/unsign"
 import { FN_DEBUGPOINT } from "./fn/debugpoint"
 import { FN_FIRSTVALID } from "./fn/firstvalid"
 import { FN_CIRCLE } from "./fn/geo/circle"
+import { FN_DISTANCE } from "./fn/geo/distance"
 import { FN_LINE } from "./fn/geo/line"
 import { FN_MIDPOINT } from "./fn/geo/midpoint"
 import { FN_PARALLEL } from "./fn/geo/parallel"
@@ -75,6 +76,7 @@ export const FNS: Record<string, Fn> = {
   line: FN_LINE,
   midpoint: FN_MIDPOINT,
   parallel: FN_PARALLEL,
+  distance: FN_DISTANCE,
 }
 Object.setPrototypeOf(FNS, null)
 
