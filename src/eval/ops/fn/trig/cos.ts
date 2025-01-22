@@ -1,7 +1,7 @@
-import type { GlslContext } from "../../fn"
-import { FnDist } from "../dist"
-import type { SPoint } from "../../ty"
-import { approx, num, pt } from "../../ty/create"
+import type { GlslContext } from "../../../fn"
+import { FnDist } from "../../dist"
+import type { SPoint } from "../../../ty"
+import { approx, num, pt } from "../../../ty/create"
 
 export function declareCos(ctx: GlslContext) {
   ctx.glsl`vec2 _helper_cos(vec2 z) {

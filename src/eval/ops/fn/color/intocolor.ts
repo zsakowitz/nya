@@ -1,5 +1,5 @@
-import { FnDist } from "../dist"
-import { FN_DEBUGQUADRANT } from "./debugquadrant"
+import { FnDist } from "../../dist"
+import { FN_DEBUGQUADRANT } from "../debugquadrant"
 import { FN_HSV } from "./hsv"
 
 function err(): never {

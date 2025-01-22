@@ -1,18 +1,12 @@
-import type { GlslContext } from "../../fn"
-import { FnDist } from "../dist"
-import type { SColor } from "../../ty"
-import { frac, num, real } from "../../ty/create"
-import type { JsVal } from "../../ty"
+import type { GlslContext } from "../../../fn"
+import type { SColor, SReal } from "../../../ty"
+import { frac, num, real } from "../../../ty/create"
+import { FnDist } from "../../dist"
 
-function doHsv(
-  hr: JsVal<"r32">,
-  sr: JsVal<"r32">,
-  vr: JsVal<"r32">,
-  ar: JsVal<"r32">,
-): SColor {
-  const h = num(hr.value) / 360
-  const s = num(sr.value)
-  const v = num(vr.value)
+export function hsv(hr: SReal, sr: SReal, vr: SReal, a: SReal): SColor {
+  const h = num(hr) / 360
+  const s = num(sr)
+  const v = num(vr)
 
   // https://stackoverflow.com/questions/17242144/javascript-convert-hsb-hsv-color-to-rgb-accurately
   let r, g, b
@@ -48,11 +42,11 @@ function doHsv(
     r: real(255.0 * r),
     g: real(255.0 * g),
     b: real(255.0 * b),
-    a: ar.value,
+    a,
   }
 }
 
-function declareHsv(ctx: GlslContext) {
+export function declareHsv(ctx: GlslContext) {
   ctx.glsl`const vec4 _helper_hsv_const = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
 
 vec3 _helper_hsv(vec3 c) {
@@ -66,7 +60,7 @@ export const FN_HSV = new FnDist("hsv")
   .add(
     ["r32", "r32", "r32"],
     "color",
-    (hr, sr, vr) => doHsv(hr, sr, vr, { type: "r32", value: frac(1, 1) }),
+    (hr, sr, vr) => hsv(hr.value, sr.value, vr.value, frac(1, 1)),
     (ctx, hr, sr, vr) => {
       declareHsv(ctx)
       return `vec4(_helper_hsv(vec3(${hr.expr} / 360.0, ${sr.expr}, ${vr.expr})), 1)`
@@ -75,7 +69,7 @@ export const FN_HSV = new FnDist("hsv")
   .add(
     ["r32", "r32", "r32", "r32"],
     "color",
-    (hr, sr, vr, ar) => doHsv(hr, sr, vr, ar),
+    (hr, sr, vr, ar) => hsv(hr.value, sr.value, vr.value, ar.value),
     (ctx, hr, sr, vr, ar) => {
       declareHsv(ctx)
       return `vec4(_helper_hsv(vec3(${hr.expr} / 360.0, ${sr.expr}, ${vr.expr})), ${ar.expr})`

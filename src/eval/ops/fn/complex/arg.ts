@@ -1,5 +1,5 @@
-import { FnDist } from "../dist"
-import { approx, num } from "../../ty/create"
+import { FnDist } from "../../dist"
+import { approx, num } from "../../../ty/create"
 
 export const FN_ARG = new FnDist("arg").add(
   ["c32"],

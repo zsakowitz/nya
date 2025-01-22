@@ -1,5 +1,5 @@
 import { defaultPropsGlsl, defaultPropsJs, glsl, js } from "../eval/eval"
-import { FN_INTOCOLOR } from "../eval/ops/fn/intocolor"
+import { FN_INTOCOLOR } from "../eval/ops/fn/color/intocolor"
 import { declareAddR64 } from "../eval/ops/op/add"
 import { declareMulR64 } from "../eval/ops/op/mul"
 import type { JsValue, SReal } from "../eval/ty"

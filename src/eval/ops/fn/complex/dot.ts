@@ -1,6 +1,6 @@
-import { FnDist } from "../dist"
-import { declareMulR64, mul } from "../op/mul"
-import { declareSubR64, sub } from "../op/sub"
+import { FnDist } from "../../dist"
+import { declareMulR64, mul } from "../../op/mul"
+import { declareSubR64, sub } from "../../op/sub"
 
 export const FN_DOT = new FnDist("dot")
   .add(

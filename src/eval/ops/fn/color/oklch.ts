@@ -1,4 +1,4 @@
-import { FnDist } from "../dist"
+import { FnDist } from "../../dist"
 import { oklab } from "./oklab"
 
 export const FN_OKLCH = new FnDist("oklch").add(

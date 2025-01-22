@@ -1,20 +1,8 @@
-import { FnDist } from "../dist"
-import { pt } from "../../ty/create"
-import { abs, abs64 } from "../op/abs"
+import { FnDist } from "../../dist"
+import { pt } from "../../../ty/create"
+import { abs, abs64 } from "../../op/abs"
 
 export const FN_UNSIGN = new FnDist("unsign")
-  .add(
-    ["r64"],
-    "r64",
-    (a) => abs(a.value),
-    (ctx, a) => abs64(ctx, a.expr),
-  )
-  .add(
-    ["r32"],
-    "r32",
-    (a) => abs(a.value),
-    (_, a) => `abs(${a.expr})`,
-  )
   .add(
     ["c64"],
     "c64",
