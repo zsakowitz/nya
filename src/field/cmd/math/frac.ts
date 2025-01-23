@@ -1,5 +1,6 @@
 import type { Node } from "../../../eval/ast/token"
 import { U_ZERO_WIDTH_SPACE, h, t } from "../../jsx"
+import type { LatexParser } from "../../latex"
 import {
   Block,
   Command,
@@ -14,6 +15,8 @@ import {
 } from "../../model"
 import { focusEdge } from "../leaf"
 import { OpCeq } from "../leaf/cmp"
+import { OpDiv } from "../leaf/op"
+import { CmdUnknown } from "../leaf/unknown"
 
 export class CmdFrac extends Command<[Block, Block]> {
   static init(cursor: Cursor) {
@@ -44,6 +47,16 @@ export class CmdFrac extends Command<[Block, Block]> {
     new CmdFrac(num, denom).insertAt(cursor, L)
     cursor.moveIn(denom, R)
     return cursor
+  }
+
+  static fromLatex(cmd: string, parser: LatexParser): Command {
+    if (cmd == "/") {
+      return new OpDiv()
+    } else if (cmd == "\\frac") {
+      return new CmdFrac(parser.arg(), parser.arg())
+    } else {
+      return new CmdUnknown(cmd)
+    }
   }
 
   constructor(num: Block, denom: Block) {

@@ -1,5 +1,6 @@
 import type { Node } from "../../../eval/ast/token"
 import { h, p, svg } from "../../jsx"
+import type { LatexParser } from "../../latex"
 import {
   Block,
   Command,
@@ -40,6 +41,13 @@ export class CmdRoot extends Command<
       cursor.moveIn(b1, L)
     }
     return cursor
+  }
+
+  static fromLatex(_cmd: string, parser: LatexParser): Command {
+    const root =
+      parser.peek() == "[" ? (parser.argMaybe("["), parser.until("]")) : null
+    const body = parser.arg()
+    return new this(body, root)
   }
 
   static render(body: Block, root: Block | null) {

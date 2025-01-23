@@ -1,5 +1,5 @@
 import "../../index.css"
-import { OpEq, OpGt, OpLt, OpTilde } from "./cmd/leaf/cmp"
+import { OpApprox, OpEq, OpGt, OpLt, OpTilde } from "./cmd/leaf/cmp"
 import { CmdColor } from "./cmd/leaf/color"
 import { CmdComma } from "./cmd/leaf/comma"
 import { CmdDot } from "./cmd/leaf/dot"
@@ -24,11 +24,16 @@ import {
 } from "./cmd/leaf/op"
 import { SymInfinity, SymPi, SymTau } from "./cmd/leaf/sym"
 import { CmdVar, type WordKind } from "./cmd/leaf/var"
-import { CmdFor } from "./cmd/logic/for"
 import { CmdList } from "./cmd/logic/list"
 import { CmdPiecewise } from "./cmd/logic/piecewise"
 import { BIG_ALIASES, CmdBig } from "./cmd/math/big"
-import { CmdBrack } from "./cmd/math/brack"
+import {
+  BRACKS,
+  CmdBrack,
+  matchParen,
+  type ParenLhs,
+  type ParenRhs,
+} from "./cmd/math/brack"
 import { CmdFrac } from "./cmd/math/frac"
 import { CmdInt } from "./cmd/math/int"
 import { CmdMatrix } from "./cmd/math/matrix"
@@ -47,7 +52,8 @@ import {
 import { CmdMap } from "./cmd/util/map"
 import { CmdNoop } from "./cmd/util/noop"
 import { CmdPrompt } from "./cmd/util/prompt"
-import { D, L, R, U, type Init } from "./model"
+import { LatexInit } from "./latex"
+import { Block, D, L, R, U, type Init } from "./model"
 import { Exts, WordMap, type Options } from "./options"
 
 export const exts = new Exts()
@@ -111,7 +117,7 @@ export const exts = new Exts()
   .set("\\uparrow", OpUpArrow)
   .set("\\rightarrow", OpRightArrow)
   .set("\\Rightarrow", OpDoubleRightArrow)
-  .set("\\to", OpUpArrow)
+  .set("\\to", OpRightArrow)
   .frozen()
 
 export const autoCmds = new WordMap<Init>([
@@ -123,7 +129,6 @@ export const autoCmds = new WordMap<Init>([
 
   // Additional commands
   ["matrix", CmdMatrix],
-  ["forblock", CmdFor],
   ["sqrt", CmdRoot],
   ["nthroot", CmdRoot],
   ["color", CmdColor],
@@ -307,3 +312,113 @@ export const options: Options = Object.freeze<Options>({
       cmd[L] instanceof CmdVar && cmd[L].kind == null
     : cmd instanceof CmdVar && cmd.kind == null),
 })
+
+export const latexCmds = new WordMap<LatexInit>([
+  ["0", CmdNum],
+  ["1", CmdNum],
+  ["2", CmdNum],
+  ["3", CmdNum],
+  ["4", CmdNum],
+  ["5", CmdNum],
+  ["6", CmdNum],
+  ["7", CmdNum],
+  ["8", CmdNum],
+  ["9", CmdNum],
+  ["a", CmdVar],
+  ["b", CmdVar],
+  ["c", CmdVar],
+  ["d", CmdVar],
+  ["e", CmdVar],
+  ["f", CmdVar],
+  ["g", CmdVar],
+  ["h", CmdVar],
+  ["i", CmdVar],
+  ["j", CmdVar],
+  ["k", CmdVar],
+  ["l", CmdVar],
+  ["m", CmdVar],
+  ["n", CmdVar],
+  ["o", CmdVar],
+  ["p", CmdVar],
+  ["q", CmdVar],
+  ["r", CmdVar],
+  ["s", CmdVar],
+  ["t", CmdVar],
+  ["u", CmdVar],
+  ["v", CmdVar],
+  ["w", CmdVar],
+  ["x", CmdVar],
+  ["y", CmdVar],
+  ["z", CmdVar],
+  [
+    "\\operatorname",
+    {
+      fromLatex(_, parser) {
+        return parser.argMaybe() || new Block(null)
+      },
+    },
+  ],
+  [
+    "\\left",
+    {
+      fromLatex(_, parser) {
+        const lhsRaw = parser.peek()
+        const lhs =
+          (
+            lhsRaw &&
+            lhsRaw in BRACKS &&
+            BRACKS[lhsRaw as keyof typeof BRACKS].side != R
+          ) ?
+            ((parser.i += lhsRaw.length), lhsRaw as ParenLhs)
+          : null
+        const contents = parser.until("\\right")
+        const rhsRaw = parser.peek()
+        const rhs =
+          (
+            rhsRaw &&
+            rhsRaw in BRACKS &&
+            BRACKS[rhsRaw as keyof typeof BRACKS].side != L
+          ) ?
+            ((parser.i += rhsRaw.length), rhsRaw as ParenRhs)
+          : null
+        if (lhs && rhs) {
+          return new CmdBrack(lhs, rhs, null, contents)
+        } else if (lhs) {
+          return new CmdBrack(lhs, matchParen(lhs), null, contents)
+        } else if (rhs) {
+          return new CmdBrack(matchParen(rhs), rhs, null, contents)
+        } else {
+          return new CmdBrack("(", ")", null, contents)
+        }
+      },
+    },
+  ],
+  ["\\frac", CmdFrac],
+  ["\\pi", SymPi],
+  ["\\infinity", SymInfinity],
+  ["\\tau", SymTau],
+
+  ["\\neq", OpEq],
+  ["\\sim", OpTilde],
+  ["\\approx", OpApprox],
+  ["\\nless", OpLt],
+  ["\\leq", OpLt],
+  ["\\nleq", OpLt],
+  ["\\ngtr", OpGt],
+  ["\\geq", OpGt],
+  ["\\ngeq", OpGt],
+  // TODO: \\not
+  ["\\neg", OpNeg],
+  ["\\sqrt", CmdRoot],
+])
+
+for (const key of exts.getAll()) {
+  const init = exts.get(key)!
+  if ("fromLatex" in init) {
+    latexCmds.set(key, init as LatexInit)
+  }
+}
+
+latexCmds.set("\\sum", CmdBig)
+
+latexCmds.frozen()

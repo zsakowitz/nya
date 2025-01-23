@@ -102,6 +102,7 @@ export const BRACKS = {
     },
   },
 }
+Object.setPrototypeOf(BRACKS, null)
 
 export type ParenLhs = "(" | "[" | "{" | "|"
 export type ParenRhs = ")" | "]" | "}" | "|"

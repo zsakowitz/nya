@@ -1,5 +1,6 @@
 import type { Node } from "../../../eval/ast/token"
 import { U_ZERO_WIDTH_SPACE, h, t } from "../../jsx"
+import type { LatexParser } from "../../latex"
 import {
   Block,
   Command,
@@ -13,6 +14,7 @@ import {
   type VDir,
 } from "../../model"
 import { focusEdge } from "../leaf"
+import { CmdUnknown } from "../leaf/unknown"
 
 export class CmdSupSub extends Command {
   static init(cursor: Cursor, { input }: InitProps) {
@@ -45,6 +47,20 @@ export class CmdSupSub extends Command {
     const block = new Block(null)
     new CmdSupSub(part[2] && block, part[3] && block).insertAt(cursor, L)
     cursor.moveIn(block, R)
+  }
+
+  static fromLatex(cmd: string, parser: LatexParser): Command {
+    if (cmd == "_") {
+      const sub = parser.arg()
+      const sup = parser.peek() == "^" ? (parser.i++, parser.arg()) : null
+      return new this(sub, sup)
+    } else if (cmd == "^") {
+      const sup = parser.arg()
+      const sub = parser.peek() == "_" ? (parser.i++, parser.arg()) : null
+      return new this(sub, sup)
+    } else {
+      return new CmdUnknown(cmd)
+    }
   }
 
   constructor(
@@ -255,11 +271,6 @@ export class CmdSupSub extends Command {
       getComputedStyle(this.el).paddingRight.match(/^(.+)px$/)?.[1] || 0
     )
 
-    console.log({
-      x,
-      pr,
-      r: this.bounds()[1] - pr / 2,
-    })
     if (x > this.bounds()[1] - pr / 2) {
       return this.cursor(R)
     }

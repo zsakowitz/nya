@@ -1,12 +1,17 @@
 import { Leaf } from "."
 import { type Node } from "../../../eval/ast/token"
 import { h } from "../../jsx"
-import { L, R, type Cursor } from "../../model"
+import type { LatexParser } from "../../latex"
+import { L, R, type Command, type Cursor } from "../../model"
 import { CmdVar } from "./var"
 
 export class CmdDot extends Leaf {
   static init(cursor: Cursor) {
     new CmdDot().insertAt(cursor, L)
+  }
+
+  static fromLatex(_cmd: string, _parser: LatexParser): Command {
+    return new this()
   }
 
   constructor() {
@@ -35,15 +40,15 @@ export class CmdDot extends Leaf {
   }
 
   reader(): string {
-    return " comma "
+    return " dot "
   }
 
   ascii(): string {
-    return ","
+    return "."
   }
 
   latex(): string {
-    return ","
+    return "."
   }
 
   ir(tokens: Node[]): void {

@@ -1,7 +1,16 @@
 import { Leaf } from "."
 import type { Node } from "../../../eval/ast/token"
 import { h, t } from "../../jsx"
-import { Block, Cursor, L, R, type Dir, type InitProps } from "../../model"
+import type { LatexParser } from "../../latex"
+import {
+  Block,
+  Cursor,
+  L,
+  R,
+  type Command,
+  type Dir,
+  type InitProps,
+} from "../../model"
 import { CmdSupSub } from "../math/supsub"
 import { CmdDot } from "./dot"
 
@@ -29,6 +38,10 @@ export class CmdNum extends Leaf {
     }
 
     num.insertAt(cursor, L)
+  }
+
+  static fromLatex(cmd: string, _parser: LatexParser): Command {
+    return new this(cmd)
   }
 
   constructor(readonly text: string) {

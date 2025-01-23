@@ -1,7 +1,14 @@
 import { Leaf } from "."
 import type { Node } from "../../../eval/ast/token"
 import { h, t } from "../../jsx"
-import { L, type Cursor, type InitProps, type InitRet } from "../../model"
+import type { LatexParser } from "../../latex"
+import {
+  L,
+  type Command,
+  type Cursor,
+  type InitProps,
+  type InitRet,
+} from "../../model"
 
 export function sym(
   latex: string,
@@ -17,6 +24,10 @@ export function sym(
   return class extends Leaf {
     static init(cursor: Cursor, _props: InitProps): InitRet {
       new this().insertAt(cursor, L)
+    }
+
+    static fromLatex(_cmd: string, _parser: LatexParser): Command {
+      return new this()
     }
 
     constructor() {

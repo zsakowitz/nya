@@ -48,9 +48,11 @@ export class Exts {
 /** A map from strings to values. Caches the maximum word length. */
 export class WordMap<T> {
   private readonly words: Readonly<Record<string, T>> = Object.create(null)
+  private readonly default?: T
   readonly maxLen
 
-  constructor(words: [string, T][]) {
+  constructor(words: [string, T][], defaultValue?: T) {
+    this.default = defaultValue
     let maxLen = 0
     for (const [key, value] of words) {
       ;(this.words as any)[key] = value
@@ -70,7 +72,7 @@ export class WordMap<T> {
   }
 
   get(word: string): T | undefined {
-    return this.words[word]
+    return this.words[word] ?? this.default
   }
 
   getAll() {

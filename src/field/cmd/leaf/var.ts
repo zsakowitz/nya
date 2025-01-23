@@ -6,6 +6,7 @@ import {
   type PuncInfix,
 } from "../../../eval/ast/token"
 import { h, t } from "../../jsx"
+import type { LatexParser } from "../../latex"
 import {
   Cursor,
   L,
@@ -70,8 +71,9 @@ export class CmdVar extends Leaf {
     }
   }
 
-  readonly kind: WordKind | null = null
-  readonly part: Dir | null = null
+  static fromLatex(cmd: string, parser: LatexParser): Command {
+    return new this(cmd, parser.options)
+  }
 
   static render(text: string, kind: CmdVar["kind"], part: CmdVar["part"]) {
     const side =
@@ -94,6 +96,9 @@ export class CmdVar extends Leaf {
       ),
     )
   }
+
+  readonly kind: WordKind | null = null
+  readonly part: Dir | null = null
 
   constructor(
     readonly text: string,

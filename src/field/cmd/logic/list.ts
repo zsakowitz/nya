@@ -61,15 +61,15 @@ export class CmdList extends Command {
   }
 
   latex(): string {
-    return "\\text{no clue how to .latex() CmdList yet}"
+    return `\\left[${this.blocks.map((x) => x.latex()).join(",")}\\right]`
   }
 
   reader(): string {
-    return "\\text{no clue how to .reader() CmdList yet}"
+    return ` List ${this.blocks.map((x) => x.reader()).join(" comma ")} EndList `
   }
 
   ascii(): string {
-    return "\\text{no clue how to .ascii() CmdList yet}"
+    return `[${this.blocks.map((x) => x.ascii()).join(",")}]`
   }
 
   moveOutOf(cursor: Cursor, towards: Dir): void {

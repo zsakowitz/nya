@@ -2,6 +2,7 @@ import { tokensToAst, type Node } from "../eval/ast/token"
 import type { CmdFrac } from "./cmd/math/frac"
 import type { FieldInert } from "./field-inert"
 import { h } from "./jsx"
+import type { LatexParser } from "./latex"
 import type { Options } from "./options"
 
 const dummy = document.createElement("span")
@@ -71,6 +72,11 @@ export class Block {
       parent.blocks.push(this)
     }
     this.checkIfEmpty()
+  }
+
+  /** Inserts `this` on the given side of the given {@linkcode Cursor}. */
+  insertAt(cursor: Cursor, dir: Dir) {
+    cursor.insert(this, dir)
   }
 
   /** Clears this {@linkcode Block}. */
@@ -1225,6 +1231,9 @@ export abstract class Command<
 
   /** Initializes this {@linkcode Command} over a given {@linkcode Selection}. */
   static initOn?(selection: Selection, props: InitProps): InitRet
+
+  /** Initializes this {@linkcode Command} from LaTeX. */
+  static fromLatex?(cmd: string, parser: LatexParser): Command
 
   /** Returns the direction needed to travel from `anchor` to `focus`. */
   static dir(anchor: Command, focus: Command): Dir {

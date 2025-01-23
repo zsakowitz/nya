@@ -1,5 +1,6 @@
 import type { Node } from "../../../eval/ast/token"
 import { h } from "../../jsx"
+import type { LatexParser } from "../../latex"
 import {
   Block,
   Command,
@@ -14,6 +15,7 @@ import {
 } from "../../model"
 import { focusEdge } from "../leaf"
 import { OpEq } from "../leaf/cmp"
+import { CmdUnknown } from "../leaf/unknown"
 import { CmdVar } from "../leaf/var"
 
 export const BIG_CMDS = {
@@ -62,6 +64,28 @@ export class CmdBig extends Command<
       h("relative block text-[200%]", BIG_CMDS[ctrlSeq]),
       h("float-right block w-full text-[80%]", sub.el),
     )
+  }
+
+  static fromLatex(cmd: string, parser: LatexParser): Command {
+    if (!(cmd in BIG_ALIASES)) {
+      return new CmdUnknown(cmd)
+    }
+    let sub = null
+    let sup = null
+    for (let i = 0; i < 2; i++) {
+      switch (parser.peek()) {
+        case "_":
+          if (sub) break
+          parser.i++
+          sub = parser.arg()
+          break
+        case "^":
+          if (sup) break
+          parser.i++
+          sup = parser.arg()
+      }
+    }
+    return new this(BIG_ALIASES[cmd]!, sub ?? new Block(null), sup)
   }
 
   constructor(ctrlSeq: BigCmd, sub: Block, sup: Block | null) {

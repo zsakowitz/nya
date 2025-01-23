@@ -14,9 +14,11 @@ import { OP_PLOT } from "../eval/ops/op/plot"
 import type { GlslValue, JsValue, SReal } from "../eval/ty"
 import { display, outputBase } from "../eval/ty/display"
 import { splitRaw } from "../eval/ty/split"
+import { latexCmds } from "../field/defaults"
 import { Field } from "../field/field"
 import { FieldInert } from "../field/field-inert"
 import { h, hx, p, svgx } from "../field/jsx"
+import { LatexParser } from "../field/latex"
 import { D, L, R, U, type Dir, type VDir } from "../field/model"
 import type { Exts, Options as FieldOptions } from "../field/options"
 import {
@@ -137,6 +139,7 @@ export class Expr {
   readonly elIndex
   readonly elCircle
   readonly elValue
+  readonly elLatex
   readonly elValueError
   readonly elGlslError
   readonly elBindingStatus
@@ -167,6 +170,7 @@ export class Expr {
           this.field.el,
         )),
         (this.elValue = new FieldInert(this.field.exts, this.field.options)).el,
+        (this.elLatex = new FieldInert(this.field.exts, this.field.options)).el,
         (this.elValueError = h(
           "leading-tight block pb-1 -mt-2 mx-1 px-1 italic text-red-800 hidden whitespace-pre-wrap",
         )),
@@ -210,6 +214,25 @@ export class Expr {
       "mb-2",
       "-mt-2",
       "self-end",
+      "overflow-x-auto",
+      "[&::-webkit-scrollbar]:hidden",
+      "max-w-[calc(var(--nya-sheet-sidebar)_-_3.5rem)]",
+    )
+    this.elLatex.el.classList.add(
+      "text-[0.8rem]",
+      "block",
+      "bg-slate-100",
+      "border",
+      "border-slate-200",
+      "rounded",
+      "px-2",
+      "py-1",
+      "mx-2",
+      "mb-2",
+      "self-end",
+      "overflow-x-auto",
+      "[&::-webkit-scrollbar]:hidden",
+      "max-w-[calc(var(--nya-sheet-sidebar)_-_3.5rem)]",
     )
   }
 
@@ -252,6 +275,19 @@ export class Expr {
   }
 
   debug() {
+    try {
+      const latex = this.field.block.latex()
+      const reparsed = new LatexParser(
+        latexCmds,
+        this.field.options,
+        latex,
+      ).parse()
+      this.elLatex.block.clear()
+      this.elLatex.block.insert(reparsed, null, null)
+    } catch (e) {
+      console.error(e)
+    }
+
     try {
       var node = this.field.block.expr()
       if (node.type == "binding") {
@@ -642,6 +678,7 @@ const REMARKS = [
   "currently on type system #3",
   "where numbers come in three precision levels",
   "even our colors can be approximate",
+  "you can choose LaTeX parsing or— THE SECOND ONE",
 ]
 
 const REMARK = REMARKS[Math.floor(REMARKS.length * Math.random())]!

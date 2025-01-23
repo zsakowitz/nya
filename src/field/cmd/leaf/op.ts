@@ -1,7 +1,15 @@
 import { Leaf } from "."
 import type { Node, Punc, PuncInfix, PuncPm } from "../../../eval/ast/token"
 import { h, t } from "../../jsx"
-import { L, R, type Cursor, type Dir, type InitProps } from "../../model"
+import type { LatexParser } from "../../latex"
+import {
+  L,
+  R,
+  type Command,
+  type Cursor,
+  type Dir,
+  type InitProps,
+} from "../../model"
 import { CmdSupSub } from "../math/supsub"
 import { OpEq } from "./cmp"
 
@@ -79,6 +87,10 @@ export function op(
   endsImplicitGroup = true,
 ) {
   return class extends Op {
+    static fromLatex(_cmd: string, _parser: LatexParser): Command {
+      return new this()
+    }
+
     static init(cursor: Cursor, props: InitProps) {
       this.exitSupSub(cursor, props)
       new this().insertAt(cursor, L)
@@ -140,6 +152,10 @@ export function opm(
       new this().insertAt(cursor, L)
     }
 
+    static fromLatex(_cmd: string, _parser: LatexParser): Command {
+      return new this()
+    }
+
     constructor() {
       super(latex, html)
     }
@@ -186,6 +202,10 @@ export const OpUpArrow = opp("\\uparrow ", " up arrow ", "↑", "↑")
 export class OpNeg extends Leaf {
   static init(cursor: Cursor, _props: InitProps) {
     new OpNeg().insertAt(cursor, L)
+  }
+
+  static fromLatex(_cmd: string, _parser: LatexParser): Command {
+    return new this()
   }
 
   static render(html: string) {

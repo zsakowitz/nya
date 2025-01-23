@@ -91,7 +91,12 @@ export class CmdColor extends Leaf {
   }
 
   latex(): string {
-    return `\\color{${this.color}}`
+    const color = CmdColor.parse(this.color)
+    // TODO: make this also copy as a color node
+    return `\\operatorname{rgb}(\
+${parseInt(color.slice(1, 3), 16)},\
+${parseInt(color.slice(3, 5), 16)},\
+${parseInt(color.slice(5, 7), 16)})`
   }
 
   ir(tokens: Node[]): void {
