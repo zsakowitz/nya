@@ -220,6 +220,7 @@ export class Expr {
       "nya-expr-value",
     )
     this.elLatex.el.classList.add(
+      "text-[0.8rem]",
       "block",
       "bg-slate-100",
       "border",

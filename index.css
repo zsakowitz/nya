@@ -1562,6 +1562,10 @@ video {
   line-height: 1.25rem;
 }
 
+.text-\[0\.8rem\] {
+  font-size: 0.8rem;
+}
+
 .font-normal {
   font-weight: 400;
 }
