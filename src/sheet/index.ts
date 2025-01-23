@@ -217,9 +217,9 @@ export class Expr {
       "overflow-x-auto",
       "[&::-webkit-scrollbar]:hidden",
       "max-w-[calc(var(--nya-sheet-sidebar)_-_3.5rem)]",
+      "nya-expr-value",
     )
     this.elLatex.el.classList.add(
-      "text-[0.8rem]",
       "block",
       "bg-slate-100",
       "border",
@@ -229,6 +229,9 @@ export class Expr {
       "py-1",
       "mx-2",
       "mb-2",
+      "[.nya-expr-value.hidden+&]:-mt-2",
+      "*:opacity-30",
+      "text-slate-600",
       "self-end",
       "overflow-x-auto",
       "[&::-webkit-scrollbar]:hidden",
@@ -307,7 +310,16 @@ export class Expr {
     } catch (e) {
       console.error(e)
       this.elGlslError.classList.add("hidden")
-      this.displayError(e instanceof Error ? e : new Error(String(e)))
+      if (
+        String(e).includes(
+          "Cannot access pixel coordinates outside of shaders.",
+        )
+      ) {
+        this.elValueError.classList.add("hidden")
+        this.elValue.el.classList.add("hidden")
+      } else {
+        this.displayError(e instanceof Error ? e : new Error(String(e)))
+      }
     }
 
     try {

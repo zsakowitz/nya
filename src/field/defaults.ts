@@ -80,6 +80,7 @@ export const exts = new Exts()
   .set("/", CmdFrac)
   .setAll(["_", "^"], CmdSupSub)
   .setAll(Object.keys(BIG_ALIASES), CmdBig)
+  .set("\\int", CmdInt)
   .set(",", CmdComma)
   .set(".", CmdDot)
   .set("!", CmdExclamation)
@@ -418,7 +419,5 @@ for (const key of exts.getAll()) {
     latexCmds.set(key, init as LatexInit)
   }
 }
-
-latexCmds.set("\\sum", CmdBig)
 
 latexCmds.frozen()

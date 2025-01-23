@@ -1,5 +1,6 @@
 import type { Node } from "../../../eval/ast/token"
 import { h, U_ZERO_WIDTH_SPACE } from "../../jsx"
+import type { LatexParser } from "../../latex"
 import {
   Block,
   Command,
@@ -27,6 +28,27 @@ export class CmdInt extends Command<BlocksInt> {
     const b0 = new Block(null)
     new CmdInt([b0, new Block(null)]).insertAt(cursor, L)
     cursor.moveIn(b0, R)
+  }
+
+  static fromLatex(_cmd: string, parser: LatexParser): Command {
+    let sub = null
+    let sup = null
+    for (let i = 0; i < 2; i++) {
+      switch (parser.peek()) {
+        case "_":
+          if (sub) break
+          parser.i++
+          sub = parser.arg()
+          break
+        case "^":
+          if (sup) break
+          parser.i++
+          sup = parser.arg()
+      }
+    }
+    return new this(
+      sub || sup ? [sub ?? new Block(null), sup ?? new Block(null)] : [],
+    )
   }
 
   static render(blocks: BlocksInt) {
