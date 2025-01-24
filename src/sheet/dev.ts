@@ -1,10 +1,8 @@
-import { OpEq } from "../field/cmd/leaf/cmp.js"
 import { CmdColor } from "../field/cmd/leaf/color.js"
-import { CmdWord } from "../field/cmd/leaf/word.js"
 import { CmdPrompt } from "../field/cmd/util/prompt.js"
 import { autoCmds, exts, options } from "../field/defaults.js"
 import { FieldInert } from "../field/field-inert.js"
-import { L, R } from "../field/model.js"
+import { R } from "../field/model.js"
 import { Expr, Sheet } from "./index.js"
 
 const sheet = new Sheet(exts, { field: options })
@@ -22,7 +20,6 @@ expr`a\cdot \left(valida\and y>0\and -1<x<0\right)witha=oklch\left(.8,y,360x\rig
 expr`hsv\left(360\left|iterate^{20}z\to z^{2}+pwhile\left|z\right|\leq 2from\frac{0i}{1}\right|,1,1\right)`
 expr`firstvalid\left(oklch\left(.4,y,360x\right),oklch\left(.5,y,360x\right),oklch\left(.6,y,360x\right),oklch\left(.7,y,360x\right),oklch\left(.8,y,360x\right),oklch\left(.9,y,360x\right),oklch\left(.95,y,360x\right)\right)`
 expr`\begin{cases}rgb\left(128,255,0\right)&\left|p\right|<.5\\rgb\left(255,255,0\right)&y<.7\\rgb\left(0,255,128\right)&\end{cases}`
-
 expr`e^{i\pi }+1`
 expr`2+3`
 expr`\left(4-5\right)\odot \left(3+9i\right)`
@@ -32,27 +29,8 @@ expr`\left(5mod6\right)^{7.3}`
 expr`-2\cdot \pi mod6`
 expr`73\cdot 4base15base2`
 expr`73\cdot 4base15`
-
-{
-  const expr = new Expr(sheet)
-  expr.field.setPrefix((field) => {
-    field.typeLatex(String.raw`f\left(z,c\right)=`)
-  })
-  expr.removable = false
-  expr.field.typeLatex(String.raw`z^2+c`)
-}
-
-{
-  const expr = new Expr(sheet)
-  expr.field.setPrefix(({ block }) => {
-    const cursor = block.cursor(R)
-    new CmdWord("detail").insertAt(cursor, L)
-    new OpEq(false).insertAt(cursor, L)
-  })
-  expr.removable = false
-  expr.field.typeLatex(String.raw`50`)
-}
-
+expr`z^2+c`.field.setPrefix((x) => x.latex`f\left(z,c\right)=`)
+expr`z^2+c`.field.setPrefix((x) => x.latex`detail=`)
 expr`y=2x^{2}-7z+3`
 expr`polygon\left(\left(2,3\right),\left(7,-3\right),\left(1,0\right)\right)`
 expr`sin\left(a+b\right)=sinacosb+sinbcosa`

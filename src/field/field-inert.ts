@@ -83,6 +83,10 @@ export class FieldInert {
     this.onAfterChange?.(false)
   }
 
+  latex(source: { raw: readonly string[] }) {
+    this.typeLatex(source.raw[0] || "")
+  }
+
   // Fired around `.init()` calls
   onBeforeChange?(): void
   onAfterChange?(wasChangeCanceled: boolean): void
