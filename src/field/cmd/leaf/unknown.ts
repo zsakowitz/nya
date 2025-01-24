@@ -3,8 +3,9 @@ import type { Node } from "../../../eval/ast/token"
 import { h } from "../../jsx"
 
 /**
- * Returned when invalid LaTeX is parsed, to alert the user to the error instead
- * of silently failing.
+ * Returned when invalid LaTeX is parsed or when LaTeX is parsed but it cannot
+ * be understood using the given command set, to alert the user to the error
+ * instead of silently failing.
  */
 export class CmdUnknown extends Leaf {
   constructor(readonly source: string) {

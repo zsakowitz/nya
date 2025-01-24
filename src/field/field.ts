@@ -1,4 +1,4 @@
-import { CmdSelectAll } from "./cmd/util/cursor"
+import { CmdCopy, CmdCut, CmdSelectAll } from "./cmd/util/cursor"
 import { FieldInert } from "./field-inert"
 import { h } from "./jsx"
 import { Selection } from "./model"
@@ -50,9 +50,17 @@ export class Field extends FieldInert {
     )
     this.el.addEventListener("keydown", (event) => {
       if (event.metaKey || event.ctrlKey) {
-        if (event.key == "a") {
+        if (event.metaKey && event.ctrlKey) {
+          return
+        }
+        const ev = {
+          a: CmdSelectAll,
+          c: CmdCopy,
+          x: CmdCut,
+        }[event.key]
+        if (ev) {
           event.preventDefault()
-          this.init(CmdSelectAll, "")
+          this.init(ev, "")
         }
         return
       }
@@ -60,6 +68,12 @@ export class Field extends FieldInert {
       if (!ext) return
       if (this.init(ext, event.key, { event }) != "browser") {
         event.preventDefault()
+      }
+    })
+    addEventListener("paste", ({ clipboardData }) => {
+      if (document.activeElement == this.el) {
+        const text = clipboardData?.getData("text/plain") ?? ""
+        this.typeLatex(text)
       }
     })
     this.el.addEventListener("focus", () => {

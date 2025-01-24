@@ -1,5 +1,7 @@
+import { LatexParser } from "./latex"
 import {
   Block,
+  L,
   performInit,
   R,
   Selection,
@@ -88,6 +90,15 @@ export class FieldInert {
         this.type(input, { skipChangeHandlers: true })
       }
     }
+    this.onAfterChange?.(false)
+  }
+
+  typeLatex(source: string) {
+    this.onBeforeChange?.()
+    const block = new LatexParser(this.options, source).parse()
+    const cursor = this.sel.remove()
+    cursor.insert(block, L)
+    this.sel = cursor.selection()
     this.onAfterChange?.(false)
   }
 

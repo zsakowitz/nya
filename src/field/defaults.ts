@@ -52,8 +52,8 @@ import {
 import { CmdMap } from "./cmd/util/map"
 import { CmdNoop } from "./cmd/util/noop"
 import { CmdPrompt } from "./cmd/util/prompt"
-import { LatexInit } from "./latex"
-import { Block, D, L, R, U, type Init } from "./model"
+import { LatexEnvs, LatexInit } from "./latex"
+import { D, L, R, U, type Init } from "./model"
 import { Exts, WordMap, type Options } from "./options"
 
 export const exts = new Exts()
@@ -119,7 +119,7 @@ export const exts = new Exts()
   .set("\\rightarrow", OpRightArrow)
   .set("\\Rightarrow", OpDoubleRightArrow)
   .set("\\to", OpRightArrow)
-  .frozen()
+  .freeze()
 
 export const autoCmds = new WordMap<Init>([
   // Big operators
@@ -157,7 +157,7 @@ export const autoCmds = new WordMap<Init>([
   ["pi", SymPi],
   ["tau", SymTau],
   ["infinity", SymInfinity],
-]).frozen()
+]).freeze()
 
 export const words = new WordMap<WordKind>([
   // Standard functions
@@ -297,22 +297,7 @@ export const words = new WordMap<WordKind>([
   ["while", "infix"],
   ["until", "infix"],
   ["from", "infix"],
-]).frozen()
-
-export const options: Options = Object.freeze<Options>({
-  autoCmds,
-  words,
-  exitSubWithOp: true,
-  exitSupWithPm: true,
-  subscriptNumberAfter: (cmd) =>
-    !(
-      cmd.parent?.parent instanceof CmdSupSub &&
-      cmd.parent == cmd.parent.parent.sub
-    ) &&
-    (cmd instanceof CmdSupSub ?
-      cmd[L] instanceof CmdVar && cmd[L].kind == null
-    : cmd instanceof CmdVar && cmd.kind == null),
-})
+]).freeze()
 
 export const latexCmds = new WordMap<LatexInit>([
   ["0", CmdNum],
@@ -355,7 +340,7 @@ export const latexCmds = new WordMap<LatexInit>([
     "\\operatorname",
     {
       fromLatex(_, parser) {
-        return parser.argMaybe() || new Block(null)
+        return parser.arg()
       },
     },
   ],
@@ -411,6 +396,15 @@ export const latexCmds = new WordMap<LatexInit>([
   // TODO: \\not
   ["\\neg", OpNeg],
   ["\\sqrt", CmdRoot],
+  [
+    "\\begin",
+    new LatexEnvs([
+      ["matrix", CmdMatrix],
+      ["list", CmdList],
+      ["cases", CmdPiecewise],
+      ["piecewise", CmdPiecewise],
+    ]).freeze(),
+  ],
 ])
 
 for (const key of exts.getAll()) {
@@ -420,4 +414,20 @@ for (const key of exts.getAll()) {
   }
 }
 
-latexCmds.frozen()
+latexCmds.freeze()
+
+export const options: Options = Object.freeze<Options>({
+  autoCmds,
+  words,
+  latexCmds,
+  exitSubWithOp: true,
+  exitSupWithPm: true,
+  subscriptNumberAfter: (cmd) =>
+    !(
+      cmd.parent?.parent instanceof CmdSupSub &&
+      cmd.parent == cmd.parent.parent.sub
+    ) &&
+    (cmd instanceof CmdSupSub ?
+      cmd[L] instanceof CmdVar && cmd[L].kind == null
+    : cmd instanceof CmdVar && cmd.kind == null),
+})

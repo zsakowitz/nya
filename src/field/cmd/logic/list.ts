@@ -1,5 +1,6 @@
 import type { Node } from "../../../eval/ast/token"
 import { h } from "../../jsx"
+import type { LatexParser } from "../../latex"
 import {
   Block,
   Command,
@@ -37,6 +38,15 @@ export class CmdList extends Command {
     )
   }
 
+  static fromLatex(cmd: string, parser: LatexParser): Command {
+    return new this(
+      parser
+        .env(cmd, 1)
+        .map((x) => x[0])
+        .filter((x) => x != null),
+    )
+  }
+
   constructor(blocks: Block[]) {
     super("[", CmdList.render(blocks), blocks)
   }
@@ -61,7 +71,7 @@ export class CmdList extends Command {
   }
 
   latex(): string {
-    return `\\left[${this.blocks.map((x) => x.latex()).join(",")}\\right]`
+    return `\\begin{list}${this.blocks.map((x) => x.latex()).join("\\\\")}\\end{list}`
   }
 
   reader(): string {

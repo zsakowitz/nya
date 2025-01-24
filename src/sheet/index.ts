@@ -14,7 +14,6 @@ import { OP_PLOT } from "../eval/ops/op/plot"
 import type { GlslValue, JsValue, SReal } from "../eval/ty"
 import { display, outputBase } from "../eval/ty/display"
 import { splitRaw } from "../eval/ty/split"
-import { latexCmds } from "../field/defaults"
 import { Field } from "../field/field"
 import { FieldInert } from "../field/field-inert"
 import { h, hx, p, svgx } from "../field/jsx"
@@ -281,11 +280,7 @@ export class Expr {
   debug() {
     try {
       const latex = this.field.block.latex()
-      const reparsed = new LatexParser(
-        latexCmds,
-        this.field.options,
-        latex,
-      ).parse()
+      const reparsed = new LatexParser(this.field.options, latex).parse()
       this.elLatex.block.clear()
       this.elLatex.block.insert(reparsed, null, null)
     } catch (e) {

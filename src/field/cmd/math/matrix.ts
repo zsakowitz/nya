@@ -1,5 +1,6 @@
 import type { Node } from "../../../eval/ast/token"
 import { h } from "../../jsx"
+import type { LatexParser } from "../../latex"
 import {
   Block,
   Command,
@@ -122,6 +123,19 @@ export class CmdMatrix extends Command<Block[]> {
       h(
         "right-[.15em] absolute top-0 bottom-[2px] inline-block w-[.25em] border-r border-y border-current",
       ),
+    )
+  }
+
+  static fromLatex(cmd: string, parser: LatexParser): Command {
+    const grid = parser.env(cmd)
+    const cols = grid.reduce((a, b) => Math.max(a, b.length), 0)
+    return new this(
+      cols,
+      Array.from({ length: cols * grid.length }, (_, i) => {
+        const col = i % cols
+        const row = Math.floor(i / cols)
+        return grid[row]?.[col] ?? new Block(null)
+      }),
     )
   }
 

@@ -204,3 +204,22 @@ export const CmdSelectAll: Init = {
     return new Selection(field.block, null, null, R, new Cursor(null, null))
   },
 }
+
+export const CmdCopy: Init = {
+  init() {
+    // do not adjust clipboard on empty selection
+  },
+  initOn(selection) {
+    navigator.clipboard.writeText(selection.latex())
+  },
+}
+
+export const CmdCut: Init = {
+  init() {
+    // do not adjust clipboard on empty selection
+  },
+  initOn(selection) {
+    navigator.clipboard.writeText(selection.latex())
+    selection.splice()
+  },
+}

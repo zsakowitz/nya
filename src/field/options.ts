@@ -1,4 +1,5 @@
 import type { WordKind } from "./cmd/leaf/var"
+import type { LatexInit } from "./latex"
 import type { Command, Init } from "./model"
 
 /** A container for various initializables. */
@@ -31,7 +32,7 @@ export class Exts {
     return this.cmds[text] || this.default
   }
 
-  frozen() {
+  freeze() {
     Object.freeze(this)
     Object.freeze(this.cmds)
     return this
@@ -79,7 +80,7 @@ export class WordMap<T> {
     return Object.getOwnPropertyNames(this.words)
   }
 
-  frozen() {
+  freeze() {
     Object.freeze(this)
     Object.freeze(this.words)
     return this
@@ -135,4 +136,12 @@ export interface Options {
    * documentation for more details.
    */
   words?: WordMap<WordKind>
+
+  /**
+   * A list of LaTeX commands and characters to accept when pasting LaTeX text.
+   * Should match the LaTeX outputted by all commands.
+   *
+   * If not present, pasting will not be supported.
+   */
+  latexCmds?: WordMap<LatexInit>
 }

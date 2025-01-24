@@ -689,6 +689,17 @@ export class Span {
     this[R] = rhs
   }
 
+  /** Gets the contents of this {@linkcode Span} as LaTeX. */
+  latex(): string {
+    let latex = ""
+    let el = this.at(L)
+    while (el && el != this[R]) {
+      latex += el.latex()
+      el = el[R]
+    }
+    return latex
+  }
+
   /** Tokenizes this {@linkcode Span}'s contents into AST tokens. */
   ir(): Node[] {
     const tokens: Node[] = []
@@ -1665,8 +1676,8 @@ export interface InitProps<E = KeyboardEvent | undefined> {
  * on top of a selection.
  */
 export interface Init<E = KeyboardEvent | undefined> {
-  init(cursor: Cursor, input: InitProps<E>): InitRet
-  initOn?(selection: Selection, input: InitProps<E>): InitRet
+  init(cursor: Cursor, props: InitProps<E>): InitRet
+  initOn?(selection: Selection, props: InitProps<E>): InitRet
 }
 
 /**

@@ -1229,6 +1229,11 @@ video {
   border-color: transparent;
 }
 
+.border-red-500 {
+  --tw-border-opacity: 1;
+  border-color: rgb(239 68 68 / var(--tw-border-opacity, 1));
+}
+
 .border-t-current {
   border-top-color: currentColor;
 }
@@ -1373,6 +1378,10 @@ video {
 
 .p-\[\.1em\] {
   padding: .1em;
+}
+
+.p-1 {
+  padding: 0.25rem;
 }
 
 .px-1 {

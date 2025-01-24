@@ -1,5 +1,6 @@
 import type { Node } from "../../../eval/ast/token"
 import { h } from "../../jsx"
+import type { LatexParser } from "../../latex"
 import {
   Block,
   Command,
@@ -57,6 +58,24 @@ export class CmdPiecewise extends Command {
     )
     blocks.map((x) => x.checkIfEmpty())
     return el
+  }
+
+  static fromLatex(cmd: string, parser: LatexParser): Command {
+    const blocks: Block[] = []
+    for (const [a, b] of parser.env(cmd, 2)) {
+      if (!a) continue
+
+      blocks.push(a)
+      if (b) {
+        blocks.push(b)
+      } else {
+        blocks.push(new Block(null))
+      }
+    }
+    if (blocks.length == 0) {
+      blocks.push(new Block(null), new Block(null))
+    }
+    return new this(blocks)
   }
 
   constructor(blocks: Block[]) {
