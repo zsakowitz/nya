@@ -111,10 +111,7 @@ class ExprField extends Field {
   }
 }
 
-let k = 0
-export function circle() {
-  const KINDS = ["shader"] as const
-  const kind = KINDS[k++ % KINDS.length]!
+export function circle(kind: "shader" | "empty") {
   switch (kind) {
     case "shader":
       // prettier-ignore
@@ -129,6 +126,10 @@ export function circle() {
         h("size-[27.27%] top-[72.72%] left-[00.00%] absolute bg-slate-300 rounded-tr-[25%]"),
         h("size-[27.27%] top-[72.72%] left-[36.36%] absolute bg-purple-300 rounded-t-[25%]"),
         h("size-[27.27%] top-[72.72%] left-[72.72%] absolute bg-orange-300 rounded-tl-[25%]"),
+      )
+    case "empty":
+      return h(
+        "relative block bg-slate-100 size-8 rounded-full mx-0.5 border-4 border-slate-300",
       )
   }
 }
@@ -230,7 +231,7 @@ export class Expr {
           "text-[65%] [line-height:1] text-slate-500 group-focus-within:text-white",
           "" + this.sheet.exprs.length,
         )),
-        (this.elCircle = circle()),
+        (this.elCircle = circle("empty")),
       ),
       h("flex flex-col w-full max-w-full", this.elScroller, this.slider.el),
       h(
