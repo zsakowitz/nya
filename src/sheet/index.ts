@@ -11,7 +11,6 @@ import {
 import { declareAddR64 } from "../eval/ops/op/add"
 import { declareMulR64 } from "../eval/ops/op/mul"
 import { OP_PLOT } from "../eval/ops/op/plot"
-import { round } from "../eval/round"
 import type { GlslValue, JsValue, SReal } from "../eval/ty"
 import { frac, real } from "../eval/ty/create"
 import { Display, display, outputBase } from "../eval/ty/display"
@@ -164,7 +163,6 @@ export class ExprSlider {
     this.slider.step = 0
     this.slider.el.className += " px-1 pb-2 pt-2 -mt-2 cursor-pointer"
     this.slider.onInput = (value) => {
-      value = round(value)
       if (!this.expr.binding) return
       const v = this.expr.binding.name
       this.expr.field.block.clear()
