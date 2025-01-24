@@ -111,7 +111,9 @@ class ExprField extends Field {
   }
 }
 
-export function circle(kind: "shader" | "empty") {
+export type CircleKind = "shader" | "empty"
+
+export function circle(kind: CircleKind) {
   switch (kind) {
     case "shader":
       // prettier-ignore
@@ -129,7 +131,7 @@ export function circle(kind: "shader" | "empty") {
       )
     case "empty":
       return h(
-        "relative block bg-slate-100 size-8 rounded-full mx-0.5 border-4 border-slate-300",
+        "relative block bg-slate-100 size-8 rounded-full mx-0.5 border-4 border-slate-300 group-focus-within:border-blue-500",
       )
   }
 }
@@ -158,7 +160,7 @@ export class ExprSlider {
       this.slider.el,
       this.fmax.el,
     )
-    this.bounds(-10, 10)
+    this.bounds(0, 1)
     this.slider.step = 0
     this.slider.el.className += " px-1 pb-2 pt-2 -mt-2 cursor-pointer"
     this.slider.onInput = (value) => {
@@ -231,9 +233,14 @@ export class Expr {
           "text-[65%] [line-height:1] text-slate-500 group-focus-within:text-white",
           "" + this.sheet.exprs.length,
         )),
-        (this.elCircle = circle("empty")),
+        (this.elCircle = h("contents", circle("empty"))),
       ),
-      h("flex flex-col w-full max-w-full", this.elScroller, this.slider.el),
+      h(
+        "flex flex-col w-full max-w-full",
+        this.elScroller,
+        this.slider.el,
+        this.elValue.el,
+      ),
       h(
         "absolute -inset-y-px right-0 left-0 border-2 border-[color:--nya-focus] hidden group-focus-within:block pointer-events-none [:first-child>&]:top-0",
       ),
@@ -272,6 +279,18 @@ export class Expr {
       "max-w-[calc(var(--nya-sheet-sidebar)_-_3.5rem)]",
       "nya-expr-value",
     )
+    this.elCircle.addEventListener("click", () => {
+      this.sheet.exprs.forEach((x) => x.setCircle("empty"))
+      this.setCircle("shader")
+      this.plot()
+    })
+  }
+
+  setCircle(kind: CircleKind) {
+    while (this.elCircle.firstChild) {
+      this.elCircle.firstChild.remove()
+    }
+    this.elCircle.appendChild(circle(kind))
   }
 
   displayEval(value: JsValue, base: SReal) {
@@ -293,6 +312,7 @@ export class Expr {
 
   checkBinding() {
     this.slider.el.classList.add("hidden")
+    this.elValue.el.classList.remove("!hidden")
 
     try {
       var node = this.field.block.expr()
@@ -308,6 +328,7 @@ export class Expr {
       this.binding = node
       if (!this.binding.args) {
         this.slider.el.classList.remove("hidden")
+        this.elValue.el.classList.add("!hidden")
       }
     } else {
       this.binding = undefined
@@ -346,7 +367,17 @@ export class Expr {
       }
     }
 
+    if (this.isPlotActive) {
+      this.plot()
+    }
+  }
+
+  isPlotActive = false
+  plot() {
+    this.sheet.exprs.forEach((x) => (x.isPlotActive = false))
+    this.isPlotActive = true
     try {
+      const node = this.field.block.ast()
       const props = this.sheet.propsGlsl()
       const value = OP_PLOT.glsl(props.ctx, glsl(node, props))
       if (value.list) {

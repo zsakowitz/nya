@@ -866,6 +866,10 @@ video {
   display: none;
 }
 
+.\!hidden {
+  display: none !important;
+}
+
 .size-0\.5 {
   width: 0.125rem;
   height: 0.125rem;
@@ -1970,6 +1974,16 @@ body {
 
 .group:focus-within .group-focus-within\:border-transparent {
   border-color: transparent;
+}
+
+.group:focus-within .group-focus-within\:border-blue-500 {
+  --tw-border-opacity: 1;
+  border-color: rgb(59 130 246 / var(--tw-border-opacity, 1));
+}
+
+.group:focus-within .group-focus-within\:border-blue-600 {
+  --tw-border-opacity: 1;
+  border-color: rgb(37 99 235 / var(--tw-border-opacity, 1));
 }
 
 .group:focus-within .group-focus-within\:bg-\[color\:--nya-focus\] {
