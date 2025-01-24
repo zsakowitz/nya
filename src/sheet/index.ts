@@ -7,7 +7,7 @@ import {
   js,
   type PropsGlsl,
   type PropsJs,
-} from "../eval/eval"
+} from "../eval/context"
 import { declareAddR64 } from "../eval/ops/op/add"
 import { declareMulR64 } from "../eval/ops/op/mul"
 import { OP_PLOT } from "../eval/ops/op/plot"

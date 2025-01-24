@@ -8,7 +8,7 @@ import {
   tryParseBindingVar,
   type Binding,
 } from "../binding"
-import { glsl, js, type PropsGlsl, type PropsJs } from "../eval"
+import { glsl, js, type PropsGlsl, type PropsJs } from "../context"
 import type { GlslValue, JsValue } from "../ty"
 import { list } from "../ty"
 import { isReal } from "../ty/coerce"
