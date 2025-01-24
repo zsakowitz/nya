@@ -606,7 +606,6 @@ export class Sheet {
       this.queued = expr
     }
     setTimeout(() => {
-      this.exprs.forEach((x) => x.checkBinding())
       this.exprs.forEach((x) => x.debug())
       this.queued!.debug()
       this.queued = undefined
@@ -614,7 +613,7 @@ export class Sheet {
   }
 
   onExprChange(expr: Expr): void {
-    expr.debug()
+    expr.checkBinding()
     this.queue(expr)
   }
 }

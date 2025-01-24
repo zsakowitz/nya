@@ -26,14 +26,14 @@ export function pass3_ordering(tokens: Node[]): Node {
     if (o1.type != "punc") {
       return {
         type: "error",
-        reason: `Expected operator; found '${o1.type}' (more: ${JSON.stringify(o1)}).`,
+        reason: `Expected operator; found '${o1.type}'.`,
       }
     }
 
     if (o1.kind != "infix" && o1.kind != "pm" && o1.kind != "cmp") {
       return {
         type: "error",
-        reason: `Expected infix operator; found prefix or suffix '${o1.value}' (more: ${JSON.stringify(o1)}).`,
+        reason: `Expected infix operator; found prefix or suffix '${o1.value}'.`,
       }
     }
 
