@@ -12,7 +12,7 @@ import { declareAddR64 } from "../eval/ops/op/add"
 import { declareMulR64 } from "../eval/ops/op/mul"
 import { OP_PLOT } from "../eval/ops/op/plot"
 import type { GlslValue, JsValue, SReal } from "../eval/ty"
-import { frac, real } from "../eval/ty/create"
+import { frac, num, real } from "../eval/ty/create"
 import { Display, display, outputBase } from "../eval/ty/display"
 import { splitRaw } from "../eval/ty/split"
 import { OpEq } from "../field/cmd/leaf/cmp"
@@ -159,17 +159,18 @@ export class ExprSlider {
       this.slider.el,
       this.fmax.el,
     )
-    this.bounds(0, 1)
-    this.slider.step = 0
+    this.bounds(real(0), real(10))
+    this.slider.step = frac(1, 100)
     this.slider.el.className += " px-1 pb-2 pt-2 -mt-2 cursor-pointer"
-    this.slider.onInput = (value) => {
+    this.slider.onInput = () => {
+      const value = this.slider.value
       if (!this.expr.binding) return
       const v = this.expr.binding.name
       this.expr.field.block.clear()
       const cursor = this.expr.field.block.cursor(R)
       CmdVar.leftOf(cursor, v, expr.field.options)
       new OpEq(false).insertAt(cursor, L)
-      new Display(cursor, frac(10, 1)).value(value)
+      new Display(cursor, frac(10, 1)).value(num(value))
       expr.sheet.onExprChange(expr)
     }
   }
@@ -182,10 +183,10 @@ export class ExprSlider {
     return this.slider.max
   }
 
-  bounds(min: number, max: number) {
+  bounds(min: SReal, max: SReal) {
     this.slider.bounds(min, max)
-    new Display(this.fmin.sel.remove(), real(10)).value(this.slider.min)
-    new Display(this.fmax.sel.remove(), real(10)).value(this.slider.max)
+    new Display(this.fmin.sel.remove(), real(10)).value(num(this.slider.min))
+    new Display(this.fmax.sel.remove(), real(10)).value(num(this.slider.max))
   }
 }
 
