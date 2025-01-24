@@ -210,7 +210,11 @@ export class Slider {
 
   get value() {
     if (isZero(this._step)) {
-      return this._value
+      const step = frac(
+        1,
+        10 ** Math.floor(Math.log10(this.elInner.clientWidth + 1)),
+      )
+      return mul(frac(Math.round(num(div(this._value, step))), 1), step)
     } else {
       return add(
         mul(

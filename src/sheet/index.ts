@@ -160,7 +160,7 @@ export class ExprSlider {
       this.fmax.el,
     )
     this.bounds(real(0), real(10))
-    this.slider.step = frac(1, 100)
+    this.slider.step = frac(0, 1)
     this.slider.el.className += " px-1 pb-2 pt-2 -mt-2 cursor-pointer"
     this.slider.onInput = () => {
       const value = this.slider.value
