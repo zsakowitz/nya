@@ -17,7 +17,6 @@ import { splitRaw } from "../eval/ty/split"
 import { Field } from "../field/field"
 import { FieldInert } from "../field/field-inert"
 import { h, hx, p, svgx } from "../field/jsx"
-import { LatexParser } from "../field/latex"
 import { D, L, R, U, type Dir, type VDir } from "../field/model"
 import type { Exts, Options as FieldOptions } from "../field/options"
 import {
@@ -138,7 +137,6 @@ export class Expr {
   readonly elIndex
   readonly elCircle
   readonly elValue
-  readonly elLatex
   readonly elValueError
   readonly elGlslError
   readonly elBindingStatus
@@ -169,7 +167,6 @@ export class Expr {
           this.field.el,
         )),
         (this.elValue = new FieldInert(this.field.exts, this.field.options)).el,
-        (this.elLatex = new FieldInert(this.field.exts, this.field.options)).el,
         (this.elValueError = h(
           "leading-tight block pb-1 -mt-2 mx-1 px-1 italic text-red-800 hidden whitespace-pre-wrap",
         )),
@@ -218,25 +215,6 @@ export class Expr {
       "max-w-[calc(var(--nya-sheet-sidebar)_-_3.5rem)]",
       "nya-expr-value",
     )
-    this.elLatex.el.classList.add(
-      "text-[0.8rem]",
-      "block",
-      "bg-slate-100",
-      "border",
-      "border-slate-200",
-      "rounded",
-      "px-2",
-      "py-1",
-      "mx-2",
-      "mb-2",
-      "[.nya-expr-value.hidden+&]:-mt-2",
-      "*:opacity-30",
-      "text-slate-600",
-      "self-end",
-      "overflow-x-auto",
-      "[&::-webkit-scrollbar]:hidden",
-      "max-w-[calc(var(--nya-sheet-sidebar)_-_3.5rem)]",
-    )
   }
 
   displayEval(value: JsValue, base: SReal) {
@@ -266,7 +244,10 @@ export class Expr {
       return
     }
 
-    if (node.type == "binding") {
+    if (
+      node.type == "binding" &&
+      ["x", "y", "p"].indexOf(name(node.name)) == -1
+    ) {
       this.binding = node
       this.elBindingStatus.classList.remove("hidden")
       this.elBindingStatus.textContent =
@@ -278,15 +259,6 @@ export class Expr {
   }
 
   debug() {
-    try {
-      const latex = this.field.block.latex()
-      const reparsed = new LatexParser(this.field.options, latex).parse()
-      this.elLatex.block.clear()
-      this.elLatex.block.insert(reparsed, null, null)
-    } catch (e) {
-      console.error(e)
-    }
-
     try {
       var node = this.field.block.expr()
       if (node.type == "binding") {

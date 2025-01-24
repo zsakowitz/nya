@@ -16,26 +16,28 @@ function go(source: string | readonly string[]) {
   return expr
 }
 
-go`circle ( ( 2 , 3 ) , 4 )`
-go`rgb ( a [ 1 ] , a [ 2 ] , a [ 3 ] ) w i t h a = 2 5 5 * ( 0 . 4 5 s i n ( 5 | [ a , b , c ] | / n ArrowLeft ArrowLeft Backspace ArrowRight Tab Tab + 0 . 5 ) withseq iterate ^ 5 0 ArrowRight list r - > s , s - > z , z - > z z + p ,
-a - > a + d o t ( z - s , s - r ) ,
-b - > b + d o t ( z - s , z - s ) ,
-c - > c + d o t ( z - s , z - r ) ,
-n - > n + 1 ArrowRight while z . real z . real + z . imag z . imag < 4 from list r = 0 i , s = 0 i , z = 0 i , a = 0 / 1 ; b = 0 / 1 ; c = 0 / 1 ArrowRight ArrowRight`
-go`a * ( valid a and y > 0 and - 1 < x < 0 ) with a = oklch ( . 8 , y , 3 6 0 x )`
-go`h s v ( 3 6 0 | i t e r a t e ^ 2 0 ArrowRight z - > z ^ 2 + p w h i l e ( | z | ArrowLeft ArrowLeft ArrowLeft Backspace ArrowRight ArrowRight ArrowRight < = 2 f r o m 0 i / 1 ArrowRight | , 1 , 1 )`
-go`firstvalid ( oklch ( . 4 , y , 3 6 0 x ) , oklch ( . 5 , y , 3 6 0 x ) , oklch ( . 6 , y , 3 6 0 x ) , oklch ( . 7 , y , 3 6 0 x ) , oklch ( . 8 , y , 3 6 0 x ) , oklch ( . 9 , y , 3 6 0 x ) , oklch ( . 9 5 , y , 3 6 0 x ) )`
-go`p i e c e s r g b ( 1 2 8 , 2 5 5 , 0 ) ArrowRight | p | < . 5 ArrowDown y < . 7 ; r g b ( 0 , 2 5 5 , 1 2 8 ) ArrowUp r g b ( 2 5 5 , 2 5 5 , 0 )`
+function latex(source: { raw: readonly string[] }) {
+  const expr = new Expr(sheet)
+  expr.field.typeLatex(source.raw[0]!)
+  return expr
+}
 
-go`e ^ i p i + 1`
-go`2 + 3`
-go`( 4 - 5 ) \\odot Enter ( 3 + 9 i )`
-go`2 / 3 ArrowRight i - s q r t 4`
-go`[ 2 , 3 ] \\times Enter [ 4 , 5 ]`
-go`( 5 m o d 6 ) ^ 7 . 3`
-go`- 2 * p i m o d 6`
-go`7 3 * 4 b a s e 1 5 b a s e 2`
-go`7 3 * 4 b a s e 1 5`
+latex`circle\left(\left(2,3\right),4\right)`
+latex`rgb\left(a\left[1\right],a\left[2\right],a\left[3\right]\right)witha=255\cdot \left(0.45sin\frac{5\left|\left[a,b,c\right]\right|}{n}+0.5\right)withseqiterate^{50}\begin{list}r\to s\\s\to z\\z\to zz+p\\a\to a+dot\left(z-s,s-r\right)\\b\to b+dot\left(z-s,z-s\right)\\c\to c+dot\left(z-s,z-r\right)\\n\to n+1\end{list}whilez.realz.real+z.imagz.imag<4from\begin{list}r=0i\\s=0i\\z=0i\\a=\frac{0}{1}\\b=\frac{0}{1}\\c=\frac{0}{1}\end{list}`
+latex`a\cdot \left(valida\and y>0\and -1<x<0\right)witha=oklch\left(.8,y,360x\right)`
+latex`hsv\left(360\left|iterate^{20}z\to z^{2}+pwhile\left|z\right|\leq 2from\frac{0i}{1}\right|,1,1\right)`
+latex`firstvalid\left(oklch\left(.4,y,360x\right),oklch\left(.5,y,360x\right),oklch\left(.6,y,360x\right),oklch\left(.7,y,360x\right),oklch\left(.8,y,360x\right),oklch\left(.9,y,360x\right),oklch\left(.95,y,360x\right)\right)`
+latex`\begin{cases}rgb\left(128,255,0\right)&\left|p\right|<.5\\rgb\left(255,255,0\right)&y<.7\\rgb\left(0,255,128\right)&\end{cases}`
+
+latex`e^{i\pi }+1`
+latex`2+3`
+latex`\left(4-5\right)\odot \left(3+9i\right)`
+latex`\frac{2}{3}i-\sqrt{4}`
+latex`\left[2,3\right]\times \left[4,5\right]`
+latex`\left(5mod6\right)^{7.3}`
+latex`-2\cdot \pi mod6`
+latex`73\cdot 4base15base2`
+latex`73\cdot 4base15`
 
 {
   const expr = new Expr(sheet)
@@ -57,17 +59,16 @@ go`7 3 * 4 b a s e 1 5`
   expr.field.typeEach("5 0")
 }
 
-new Expr(sheet).field //
-  .typeEach`y = 2 x ^ 2 - 7 z + 3`
-go`p o l y g o n ( ( 2 , 3 ) , ( 7 , - 3 ) , ( 1 , 0 ) )`
-go`s i n ( a + b ) = s i n a c o s b + s i n b c o s a`
-go`n o t 2 = 3 + n o t 5 ( n o t 3 ) 4 n o t 4`
-go`( ) ArrowLeft s q r t i n t 3 ArrowUp 5 ArrowRight n t h r o o t s u m 1 ArrowUp 4 ArrowRight p r o d 2 ArrowUp 6 ArrowRight 8 ) / 7 ArrowRight ArrowRight m a t r i x a ArrowRight b ArrowDown c a s e s 9 ArrowRight x < y ArrowDown ArrowLeft 0 ArrowLeft ArrowLeft ArrowLeft c ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft k`
-go`m a t r i x ArrowRight Backspace 2 s i n 3 , 2 + s i n + 3 , ( 2 ) s i n ( 3 ) ; 2 w i t h 3 , 2 w i t h + 3 , ( 2 ) w i t h ( 3 ) ; 2 h e i g h t 3 , 2 + h e i g h t + 3 , ( 2 ) h e i g h t ( 3 ) ArrowDown 2+ 3 + + 3 - - - 4 + + + + + 5 + - 6`
+latex`y=2x^{2}-7z+3`
+latex`polygon\left(\left(2,3\right),\left(7,-3\right),\left(1,0\right)\right)`
+latex`sin\left(a+b\right)=sinacosb+sinbcosa`
+latex`\neg 2=3+\neg 5\left(\neg 3\right)4\neg 4`
+latex`\left(\sqrt{\int_{3}^{5k}\sqrt[\frac{\sum_{n=1}^{4}\prod_{n=2}^{6}8}{7}]{\begin{matrix}a&b\\c&\begin{cases}9&x<y\\0&\end{cases}\end{matrix}}}\right)`
+latex`\begin{matrix}2sin3&2+sin+3&\left(2\right)sin\left(3\right)\\2with3&2with+3&\left(2\right)with\left(3\right)\\2height3&2+height+3&\left(2\right)height\left(3\right)\\&&3++3---4+++++5+-6\end{matrix}`
 go`m a t r i x u0 uv0 ArrowRight u1 uv1 ArrowRight u2 uv2 ArrowRight u3 uv3 ArrowDown ArrowLeft ArrowLeft ArrowLeft u4 uv4 ArrowRight u5 uv5 ArrowRight u6 uv6 ArrowRight u7 uv7 ; u8 uv8 ArrowRight u9 uv9 ArrowRight ua uva ArrowRight ub uvb ; uc uvc ArrowRight ud uvd ArrowRight ue uve ArrowRight uf uvf Tab / ( u0 u1 u2 u3 u4 u5 u6 u7 ) / uv0 uv1 uv2 uv3 uv4 uv5 uv6 uv7 ArrowRight / ( u8 u9 ua ub uc ud ue uf ) / uv8 uv9 uva uvb uvc uvd uve uvf`
-go`2 * 3 a 4 5 6 8 ^ 9 2 3 ^ 9 ^ 5 ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight + 0 4 / 5 ArrowRight ArrowLeft ^ 2 ArrowRight ArrowRight 3 a 2 ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowRight ^ 4 3 6 ArrowRight / 2 / 3 ArrowRight + 4 ArrowLeft ArrowLeft ArrowLeft ArrowDown ArrowLeft ArrowUp ArrowDown ArrowUp ArrowDown ArrowDown ArrowDown 4 3 2 1 9 3 4 2 ArrowUp ArrowUp ArrowUp ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft \\sum 2 3 ArrowUp 4 9 ArrowRight ArrowRight m a t r i x 1 ArrowRight 2 ArrowDown 4 ArrowLeft ArrowLeft 3 ArrowLeft ArrowLeft ArrowLeft x ^ 2 n ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft ArrowLeft i n t Backspace 2 ArrowDown ArrowRight ArrowRight ArrowRight ArrowRight + ^ 4 Tab ArrowLeft ArrowLeft ArrowLeft ArrowLeft + p i e c e w i s e m a t r i x 1 ArrowRight 2 ArrowDown 4 ArrowLeft ArrowLeft 3 ArrowLeft 5 / 4 ArrowLeft ArrowLeft ArrowLeft 8 ArrowUp 7 ArrowDown ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight ArrowRight y > = 4 ArrowDown ArrowLeft 2 7 ^ 8 ^ 9 / 3 Tab Tab Tab Tab x < / 3 ; 5 s i n + 3 - c o s 2 b x 5 w i t h x = 5 w i d t h - 3 ; 5 + s i n 3 - c o s 2 b x 5 w i t h x = 5 - w i d t h 3 6 ; ( 5 4 ) s i n ( 3 6 ) w i t h ( 7 8 ) w i d t h h e i g h t ( 8 9 ) ; 2 * - 3 - 3 + - c o s 2 - c o s 3 ; 2 ÷ - 3 - - - 4 + + 5 + - 6 ; l o g _ 3 ArrowRight 7 ; s i n ^ 2 ArrowRight 5 + s i n ^ 2 ArrowRight ( 5 ) [ 1 . . . 1 0 0 ] s i n . . . 4 . . . s i n . 3 ; w i n d o w . w i d t h + s i n . h 2 + [ 2 , 8 , 9 ] . m i n w i d t h = w i d t h`
-go`s u m s u m s u m s u m s u m 1 1 ArrowRight ArrowLeft ArrowUp s u m 1 0 ArrowUp s u m 9 ArrowUp ArrowUp s u m 8 ArrowUp s u m 7 ArrowUp ArrowUp s u m 6 ArrowUp s u m 5 ArrowUp ArrowUp s u m 4 ArrowUp s u m 3 ArrowUp ArrowUp s u m 2 ArrowUp s u m 1`
-go`m a t r i x ArrowRight ArrowRight ArrowLeft 2 = 3 ; 2 = / 3 ; 2 < 3 ; 2 > 3 ; 2 < = 3 ; 2 > = 3 ; 2 < / 3 ; 2 > / 3 ; 2 < / = 3 ArrowDown 2 > = / 3`
+latex`2\cdot 3a_{4568}^{923^{9^{5}}}+\frac{0\sum_{n=23}^{49}4\int 2\left[x^{2}fori=\left[1...10\right]\right]n\begin{matrix}1&2\\3&4\end{matrix}^{\frac{4362}{\frac{2}{3}+4}}}{4321+\begin{cases}\begin{matrix}7&1&2\\8&\frac{5}{4}3&4\end{matrix}&y\geq 4\\27^{8^{\frac{9}{3}}}&x\nless 3\\5sin+3-cos2bx_{5}withx=5width-3&\\5+sin3-cos2bx_{5}withx=5-width36&\\\left(54\right)sin\left(36\right)with\left(78\right)widthheight\left(89\right)&\\2\cdot -3-3+-cos2-cos3&\\2÷-3---4++5+-6&\\log_{3}7&\\sin^{2}5+sin^{2}\left(5\right)\left[1...100\right]sin...4...sin.3&\\window.width+sin.h_{2}+\left[2,8,9\right].minwidth=width&\end{cases}+^{4}93425}3a_{2}`
+latex`\sum_{n=\sum_{n=\sum_{n=\sum_{n=\sum_{n=11}^{}}^{\sum_{n=10}^{\sum_{n=9}^{}}}}^{\sum_{n=8}^{\sum_{n=7}^{}}}}^{\sum_{n=6}^{\sum_{n=5}^{}}}}^{\sum_{n=4}^{\sum_{n=3}^{\sum_{n=2}^{\sum_{n=1}^{}}}}}`
+latex`\begin{matrix}2=3\\2\neq 3\\2<3\\2>3\\2\leq 3\\2\geq 3\\2\nless 3\\2\ngtr 3\\2\nleq 3\\2\ngeq 3\end{matrix}`
 go`u1 u+ uv2 u- u3`
 
 {
