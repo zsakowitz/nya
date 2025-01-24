@@ -1,5 +1,5 @@
 import type { TyName, Type, Val } from "."
-import type { GlslContext } from "../fn"
+import type { GlslContext } from "../lib/fn"
 import { TY_INFO } from "./info"
 
 export function garbageValueGlsl(ctx: GlslContext, type: Type): string {

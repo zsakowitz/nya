@@ -1,5 +1,5 @@
 import type { SApprox, SPoint, SReal } from "."
-import { safe } from "../util"
+import { safe } from "../lib/util"
 
 export function num(value: SReal): number {
   if (value.type == "exact") {

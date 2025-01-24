@@ -1,8 +1,8 @@
-import { add } from "./ops/op/add"
-import type { GlslValue, JsValue, SExact, SReal } from "./ty"
-import { canCoerce, coerceValJs } from "./ty/coerce"
-import { approx, frac, num } from "./ty/create"
-import { splitValue } from "./ty/split"
+import { add } from "../ops/op/add"
+import type { GlslValue, JsValue, SExact, SReal } from "../ty"
+import { canCoerce, coerceValJs } from "../ty/coerce"
+import { approx, frac, num } from "../ty/create"
+import { splitValue } from "../ty/split"
 import { safe } from "./util"
 
 export function asNumericBase(value: JsValue): SReal {

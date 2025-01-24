@@ -6,7 +6,7 @@ import {
   type PuncInfix,
   type Var,
 } from "../../../eval/ast/token"
-import { subscript } from "../../../eval/text"
+import { subscript } from "../../../eval/lib/text"
 import { h, t } from "../../jsx"
 import type { LatexParser } from "../../latex"
 import {

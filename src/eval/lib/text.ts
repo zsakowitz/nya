@@ -1,4 +1,4 @@
-import type { Node } from "./ast/token"
+import type { Node } from "../ast/token"
 
 export function subscript(node: Node): string {
   switch (node.type) {

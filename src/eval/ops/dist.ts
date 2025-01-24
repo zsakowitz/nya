@@ -1,5 +1,5 @@
 import type { Fn } from "."
-import { GlslContext } from "../fn"
+import { GlslContext } from "../lib/fn"
 import type {
   GlslVal,
   GlslValue,

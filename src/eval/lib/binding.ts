@@ -1,5 +1,5 @@
-import { commalist } from "./ast/collect"
-import type { Node, Var } from "./ast/token"
+import { commalist } from "../ast/collect"
+import type { Node, Var } from "../ast/token"
 import { subscript } from "./text"
 
 const encoder = new TextEncoder()

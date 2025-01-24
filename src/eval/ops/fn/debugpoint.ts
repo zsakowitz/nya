@@ -1,4 +1,4 @@
-import type { GlslContext } from "../../fn"
+import type { GlslContext } from "../../lib/fn"
 import type { GlslVal, JsVal, SColor } from "../../ty"
 import { frac, num, real } from "../../ty/create"
 import { FnDist } from "../dist"

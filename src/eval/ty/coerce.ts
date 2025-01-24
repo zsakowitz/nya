@@ -10,7 +10,7 @@ import type {
   Val,
 } from "."
 import { list } from "."
-import type { GlslContext } from "../fn"
+import type { GlslContext } from "../lib/fn"
 import { TY_INFO, type TyCoerce, type TyCoerceMap } from "./info"
 
 export function canCoerce(src: TyName, dst: TyName): boolean {

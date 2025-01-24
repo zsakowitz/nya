@@ -1,5 +1,5 @@
 import type { OpBinary, PuncUnary } from "../ast/token"
-import type { GlslContext } from "../fn"
+import type { GlslContext } from "../lib/fn"
 import type { GlslValue, JsValue } from "../ty"
 
 import { FN_CMP } from "./fn/cmp"

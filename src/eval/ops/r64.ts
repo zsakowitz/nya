@@ -1,4 +1,4 @@
-import type { GlslContext } from "../fn"
+import type { GlslContext } from "../lib/fn"
 
 export function declareR64(ctx: GlslContext) {
   ctx.glsl`

@@ -1,4 +1,4 @@
-import type { GlslContext } from "../../../fn"
+import type { GlslContext } from "../../../lib/fn"
 import { FnDist } from "../../dist"
 import type { SPoint } from "../../../ty"
 import { approx, num, pt } from "../../../ty/create"

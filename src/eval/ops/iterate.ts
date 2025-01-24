@@ -7,7 +7,7 @@ import {
   parseUpdateVar,
   tryParseBindingVar,
   type Binding,
-} from "../binding"
+} from "../lib/binding"
 import { glsl, type PropsGlsl } from "../context/glsl"
 import { js, type PropsJs } from "../context/js"
 import type { GlslValue, JsValue } from "../ty"

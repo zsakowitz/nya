@@ -1,4 +1,4 @@
-import type { GlslContext } from "../../../fn"
+import type { GlslContext } from "../../../lib/fn"
 import { FnDist } from "../../dist"
 
 export function oklab(ctx: GlslContext, a: string, b: string, c: string) {

@@ -1,9 +1,9 @@
-import type { GlslContext } from "../../fn"
+import type { GlslContext } from "../../lib/fn"
 import { FnDist } from "../dist"
 import type { SReal } from "../../ty"
 import { approx, frac, num, pt } from "../../ty/create"
 import type { JsVal } from "../../ty"
-import { safe } from "../../util"
+import { safe } from "../../lib/util"
 import { declareR64 } from "../r64"
 
 export function sub(a: SReal, b: SReal) {

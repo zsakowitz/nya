@@ -1,5 +1,5 @@
 import type { Node } from "../ast/token"
-import { parseBindings } from "../binding"
+import { parseBindings } from "../lib/binding"
 import { glsl, type PropsGlsl } from "../context/glsl"
 import { js, type PropsJs } from "../context/js"
 import type { GlslValue, JsValue } from "../ty"
