@@ -74,25 +74,6 @@ export class FieldInert {
     }
   }
 
-  typeEach(source: string | readonly string[]) {
-    if ((Array.isArray as (arg: any) => arg is readonly any[])(source)) {
-      source = source[0] || ""
-    }
-    this.onBeforeChange?.()
-    this.sel = new Selection(this.block, null, null, R)
-    this.sel.remove()
-    for (const input of source.split(/\s+/)) {
-      if (/^[a-z]+$/.test(input)) {
-        for (const char of input) {
-          this.type(char, { skipChangeHandlers: true })
-        }
-      } else {
-        this.type(input, { skipChangeHandlers: true })
-      }
-    }
-    this.onAfterChange?.(false)
-  }
-
   typeLatex(source: string) {
     this.onBeforeChange?.()
     const block = new LatexParser(this.options, source).parse()

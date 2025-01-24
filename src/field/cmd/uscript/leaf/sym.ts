@@ -1,7 +1,15 @@
 import { CmuLeaf } from "."
 import type { Node } from "../../../../eval/ast/token"
 import { h, usvg } from "../../../jsx"
-import { L, type Cursor, type InitProps, type InitRet } from "../../../model"
+import type { LatexParser } from "../../../latex"
+import {
+  L,
+  type Command,
+  type Cursor,
+  type InitProps,
+  type InitRet,
+} from "../../../model"
+import { CmdUnknown } from "../../leaf/unknown"
 
 const Q = 2.1
 
@@ -50,6 +58,7 @@ const SYM = {
   "+": "M 0 0 A 1.7 1.7 0 0 0 3.5 0 M 1.75 1.7 V 4",
   "-": "M 0 4 A 1.7 1.7 0 0 1 3.5 4 M 1.75 2.3 V 0",
 }
+Object.setPrototypeOf(SYM, null)
 
 export type Sym = `${keyof typeof SYM}`
 
@@ -60,9 +69,18 @@ export class CmuSym extends CmuLeaf {
     }
   }
 
+  static fromLatex(cmd: string, parser: LatexParser): Command {
+    const kind = (cmd == "\\uxv" ? "v" : "") + parser.text()
+    if (kind in SYM) {
+      return new this(kind as Sym)
+    } else {
+      return new CmdUnknown("\\" + kind)
+    }
+  }
+
   constructor(readonly sym: Sym) {
     super(
-      sym,
+      "\\ux",
       h(
         "inline-block p-[.1em]",
         usvg(
@@ -88,7 +106,7 @@ export class CmuSym extends CmuLeaf {
   }
 
   latex(): string {
-    return "[redacted]"
+    return "\\ux" + this.sym
   }
 
   reader(): string {

@@ -10,12 +10,6 @@ import { Expr, Sheet } from "./index.js"
 const sheet = new Sheet(exts, { field: options })
 document.body.appendChild(sheet.el)
 
-function go(source: string | readonly string[]) {
-  const expr = new Expr(sheet)
-  expr.field.typeEach(source)
-  return expr
-}
-
 function latex(source: { raw: readonly string[] }) {
   const expr = new Expr(sheet)
   expr.field.typeLatex(source.raw[0]!)
@@ -42,10 +36,10 @@ latex`73\cdot 4base15`
 {
   const expr = new Expr(sheet)
   expr.field.setPrefix((field) => {
-    field.typeEach("f ( z , c ) =")
+    field.typeLatex(String.raw`f\left(z,c\right)=`)
   })
   expr.removable = false
-  expr.field.typeEach("z ^ 2 + c")
+  expr.field.typeLatex(String.raw`z^2+c`)
 }
 
 {
@@ -56,7 +50,7 @@ latex`73\cdot 4base15`
     new OpEq(false).insertAt(cursor, L)
   })
   expr.removable = false
-  expr.field.typeEach("5 0")
+  expr.field.typeLatex(String.raw`50`)
 }
 
 latex`y=2x^{2}-7z+3`
@@ -65,11 +59,11 @@ latex`sin\left(a+b\right)=sinacosb+sinbcosa`
 latex`\neg 2=3+\neg 5\left(\neg 3\right)4\neg 4`
 latex`\left(\sqrt{\int_{3}^{5k}\sqrt[\frac{\sum_{n=1}^{4}\prod_{n=2}^{6}8}{7}]{\begin{matrix}a&b\\c&\begin{cases}9&x<y\\0&\end{cases}\end{matrix}}}\right)`
 latex`\begin{matrix}2sin3&2+sin+3&\left(2\right)sin\left(3\right)\\2with3&2with+3&\left(2\right)with\left(3\right)\\2height3&2+height+3&\left(2\right)height\left(3\right)\\&&3++3---4+++++5+-6\end{matrix}`
-go`m a t r i x u0 uv0 ArrowRight u1 uv1 ArrowRight u2 uv2 ArrowRight u3 uv3 ArrowDown ArrowLeft ArrowLeft ArrowLeft u4 uv4 ArrowRight u5 uv5 ArrowRight u6 uv6 ArrowRight u7 uv7 ; u8 uv8 ArrowRight u9 uv9 ArrowRight ua uva ArrowRight ub uvb ; uc uvc ArrowRight ud uvd ArrowRight ue uve ArrowRight uf uvf Tab / ( u0 u1 u2 u3 u4 u5 u6 u7 ) / uv0 uv1 uv2 uv3 uv4 uv5 uv6 uv7 ArrowRight / ( u8 u9 ua ub uc ud ue uf ) / uv8 uv9 uva uvb uvc uvd uve uvf`
+latex`\frac{\begin{matrix}\ux0&\ux1\uxv1&\ux2\uxv2&\ux3\uxv3\\\ux4\uxv4&\ux5\uxv5&\ux6\uxv6&\ux7\uxv7\\\ux8&\ux9&&\end{matrix}}{\frac{\frac{\ux0\ux1\ux2\ux3\ux4\ux5\ux6\ux7}{\uxv1\uxv2\uxv3\uxv4\uxv5\uxv6\uxv7}}{\ux8\ux9}}`
 latex`2\cdot 3a_{4568}^{923^{9^{5}}}+\frac{0\sum_{n=23}^{49}4\int 2\left[x^{2}fori=\left[1...10\right]\right]n\begin{matrix}1&2\\3&4\end{matrix}^{\frac{4362}{\frac{2}{3}+4}}}{4321+\begin{cases}\begin{matrix}7&1&2\\8&\frac{5}{4}3&4\end{matrix}&y\geq 4\\27^{8^{\frac{9}{3}}}&x\nless 3\\5sin+3-cos2bx_{5}withx=5width-3&\\5+sin3-cos2bx_{5}withx=5-width36&\\\left(54\right)sin\left(36\right)with\left(78\right)widthheight\left(89\right)&\\2\cdot -3-3+-cos2-cos3&\\2÷-3---4++5+-6&\\log_{3}7&\\sin^{2}5+sin^{2}\left(5\right)\left[1...100\right]sin...4...sin.3&\\window.width+sin.h_{2}+\left[2,8,9\right].minwidth=width&\end{cases}+^{4}93425}3a_{2}`
 latex`\sum_{n=\sum_{n=\sum_{n=\sum_{n=\sum_{n=11}^{}}^{\sum_{n=10}^{\sum_{n=9}^{}}}}^{\sum_{n=8}^{\sum_{n=7}^{}}}}^{\sum_{n=6}^{\sum_{n=5}^{}}}}^{\sum_{n=4}^{\sum_{n=3}^{\sum_{n=2}^{\sum_{n=1}^{}}}}}`
 latex`\begin{matrix}2=3\\2\neq 3\\2<3\\2>3\\2\leq 3\\2\geq 3\\2\nless 3\\2\ngtr 3\\2\nleq 3\\2\ngeq 3\end{matrix}`
-go`u1 u+ uv2 u- u3`
+latex`\ux1\ux+\uxv2\ux-\ux3`
 
 {
   const { field: finalField } = new Expr(sheet)

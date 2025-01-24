@@ -405,6 +405,8 @@ export const latexCmds = new WordMap<LatexInit>([
       ["piecewise", CmdPiecewise],
     ]).freeze(),
   ],
+  ["\\ux", CmuSym],
+  ["\\uxv", CmuSym],
 ])
 
 for (const key of exts.getAll()) {
