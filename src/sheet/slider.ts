@@ -52,8 +52,9 @@ export class Slider {
     this.updateScroller()
     this.updateSteps()
     this.elNative.addEventListener("input", () => {
-      this._value = +this.elNative.value
+      const v = (this._value = +this.elNative.value)
       this.updateScroller()
+      this.onInput?.(v)
     })
     let dragging = false
     addEventListener(
@@ -105,6 +106,7 @@ export class Slider {
     this._value = val
     this.elNative.value = "" + val
     this.updateScroller()
+    this.onInput?.(val)
   }
 
   private clamp(value: number) {
@@ -177,7 +179,7 @@ export class Slider {
   }
 
   set step(v) {
-    if (v > 0 && isFinite(v)) {
+    if (v >= 0 && isFinite(v)) {
       this._step = v
     }
     this.updateSteps()
@@ -213,6 +215,16 @@ export class Slider {
     }
   }
 
+  get value() {
+    return this._value
+  }
+
+  set value(v) {
+    this._value = v
+    this.updateScroller()
+    this.elNative.value = "" + this._value
+  }
+
   bounds(min: number, max: number) {
     if (isFinite(min) && isFinite(max) && min < max) {
       this._min = min
@@ -223,4 +235,6 @@ export class Slider {
       this.elNative.max = "" + max
     }
   }
+
+  onInput?(value: number): void
 }

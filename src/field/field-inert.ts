@@ -1,3 +1,4 @@
+import { twMerge } from "tailwind-merge"
 import { LatexParser } from "./latex"
 import {
   Block,
@@ -26,10 +27,13 @@ export class FieldInert {
   constructor(
     readonly exts: Exts,
     readonly options: Options,
+    className?: string,
   ) {
     this.el = this.block.el
-    this.el.className =
-      "nya-display cursor-text whitespace-nowrap font-['Symbola','Times_New_Roman',sans-serif] text-[1.265em] font-normal not-italic transition [line-height:1] cursor-text block select-none inline-block"
+    this.el.className = twMerge(
+      "nya-display cursor-text whitespace-nowrap font-['Symbola','Times_New_Roman',serif] text-[1.265em] font-normal not-italic transition [line-height:1] cursor-text block select-none inline-block",
+      className,
+    )
   }
 
   setPrefix(block: Block | ((field: FieldInert) => void)) {

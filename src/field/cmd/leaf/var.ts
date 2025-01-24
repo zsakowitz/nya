@@ -4,10 +4,13 @@ import {
   PRECEDENCE_MAP,
   type Node,
   type PuncInfix,
+  type Var,
 } from "../../../eval/ast/token"
+import { subscript } from "../../../eval/text"
 import { h, t } from "../../jsx"
 import type { LatexParser } from "../../latex"
 import {
+  Block,
   Cursor,
   L,
   R,
@@ -19,6 +22,7 @@ import {
 import { Options, WordMap } from "../../options"
 import { CmdSupSub } from "../math/supsub"
 import { CmdDot } from "./dot"
+import { CmdNum } from "./num"
 
 /**
  * The different kinds of {@linkcode CmdVar}-composed words which exist. These
@@ -68,6 +72,27 @@ export class CmdVar extends Leaf {
         text.shift()
         leftmost = leftmost[R]!
       }
+    }
+  }
+
+  static leftOf(
+    cursor: Cursor,
+    token: Var & { sup?: undefined },
+    options: Options,
+  ) {
+    for (const char of token.value) {
+      new CmdVar(char, options).insertAt(cursor, L)
+    }
+    if (token.sub) {
+      const sub = new Block(null)
+      const subc = sub.cursor(R)
+      for (const char of subscript(token.sub)) {
+        ;(/\d/.test(char) ?
+          new CmdNum(char)
+        : new CmdVar(char, options)
+        ).insertAt(subc, L)
+      }
+      new CmdSupSub(sub, null).insertAt(cursor, L)
     }
   }
 

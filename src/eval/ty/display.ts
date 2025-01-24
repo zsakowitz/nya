@@ -121,14 +121,20 @@ export class Display {
     return new Display(cursor, this.base)
   }
 
+  value(num: number) {
+    let val = this.numToBase(num)
+    if (val == "Infinity") val = "∞"
+    else if (val == "-Infinity") val = "-∞"
+    this.digits(val)
+  }
+
   num(num: SReal, imaginary?: boolean) {
     const { cursor } = this
     if (num.type == "approx") {
       let val = this.numToBase(num.value)
       if (val == "Infinity") val = "∞"
       else if (val == "-Infinity") val = "-∞"
-      else if (val == "NaN") val = "NaN"
-      else if (val.indexOf(".") == -1) val += ".0"
+      else if (val != "NaN" && val.indexOf(".") == -1) val += ".0"
       this.digits(val, imaginary)
     } else if (num.d == 1) {
       this.digits(this.numToBase(num.n), imaginary)
