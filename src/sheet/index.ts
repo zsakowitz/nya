@@ -1,13 +1,7 @@
 import type { AstBinding } from "../eval/ast/token"
 import { Bindings, id, name } from "../eval/binding"
-import {
-  defaultPropsGlsl,
-  defaultPropsJs,
-  glsl,
-  js,
-  type PropsGlsl,
-  type PropsJs,
-} from "../eval/context"
+import { defaultPropsGlsl, glsl, type PropsGlsl } from "../eval/context/glsl"
+import { defaultPropsJs, js, type PropsJs } from "../eval/context/js"
 import { declareAddR64 } from "../eval/ops/op/add"
 import { declareMulR64 } from "../eval/ops/op/mul"
 import { OP_PLOT } from "../eval/ops/op/plot"
