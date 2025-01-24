@@ -159,8 +159,6 @@ export class ExprSlider {
       this.slider.el,
       this.fmax.el,
     )
-    this.bounds(real(0), real(10))
-    this.slider.step = frac(0, 1)
     this.slider.el.className += " px-1 pb-2 pt-2 -mt-2 cursor-pointer"
     this.slider.onInput = () => {
       const value = this.slider.value
@@ -173,6 +171,7 @@ export class ExprSlider {
       new Display(cursor, frac(10, 1)).value(num(value))
       expr.sheet.onExprChange(expr)
     }
+    this.display()
   }
 
   get min() {
@@ -185,6 +184,10 @@ export class ExprSlider {
 
   bounds(min: SReal, max: SReal) {
     this.slider.bounds(min, max)
+    this.display()
+  }
+
+  private display() {
     new Display(this.fmin.sel.remove(), real(10)).value(num(this.slider.min))
     new Display(this.fmax.sel.remove(), real(10)).value(num(this.slider.max))
   }
