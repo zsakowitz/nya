@@ -14,7 +14,8 @@ function expr(source: { raw: readonly string[] }) {
   return expr
 }
 
-expr`circle\left(\left(2,3\right),4\right)`
+expr`a=.7`
+expr`circle\left(\left(2,3\right),a+4\right)`.plot()
 expr`rgb\left(a\left[1\right],a\left[2\right],a\left[3\right]\right)witha=255\cdot \left(0.45sin\frac{5\left|\left[a,b,c\right]\right|}{n}+0.5\right)withseqiterate^{50}\begin{list}r\to s\\s\to z\\z\to zz+p\\a\to a+dot\left(z-s,s-r\right)\\b\to b+dot\left(z-s,z-s\right)\\c\to c+dot\left(z-s,z-r\right)\\n\to n+1\end{list}whilez.realz.real+z.imagz.imag<4from\begin{list}r=0i\\s=0i\\z=0i\\a=\frac{0}{1}\\b=\frac{0}{1}\\c=\frac{0}{1}\end{list}`
 expr`a\cdot \left(valida\and y>0\and -1<x<0\right)witha=oklch\left(.8,y,360x\right)`
 expr`hsv\left(360\left|iterate^{20}z\to z^{2}+pwhile\left|z\right|\leq 2from\frac{0i}{1}\right|,1,1\right)`

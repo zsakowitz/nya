@@ -12,8 +12,11 @@ import { declareAddR64 } from "../eval/ops/op/add"
 import { declareMulR64 } from "../eval/ops/op/mul"
 import { OP_PLOT } from "../eval/ops/op/plot"
 import type { GlslValue, JsValue, SReal } from "../eval/ty"
-import { display, outputBase } from "../eval/ty/display"
+import { frac, real } from "../eval/ty/create"
+import { Display, display, outputBase } from "../eval/ty/display"
 import { splitRaw } from "../eval/ty/split"
+import { OpEq } from "../field/cmd/leaf/cmp"
+import { CmdVar } from "../field/cmd/leaf/var"
 import { Field } from "../field/field"
 import { FieldInert } from "../field/field-inert"
 import { h, hx, p, svgx } from "../field/jsx"
@@ -30,6 +33,7 @@ import {
   Paper,
 } from "./paper"
 import { doMatchReglSize } from "./regl"
+import { Slider } from "./slider"
 import regl = require("regl")
 
 export interface Options {
@@ -106,10 +110,9 @@ class ExprField extends Field {
   }
 }
 
-let k = 0
-export function circle() {
-  const KINDS = ["shader"] as const
-  const kind = KINDS[k++ % KINDS.length]!
+export type CircleKind = "shader" | "empty"
+
+export function circle(kind: CircleKind) {
   switch (kind) {
     case "shader":
       // prettier-ignore
@@ -125,6 +128,64 @@ export function circle() {
         h("size-[27.27%] top-[72.72%] left-[36.36%] absolute bg-purple-300 rounded-t-[25%]"),
         h("size-[27.27%] top-[72.72%] left-[72.72%] absolute bg-orange-300 rounded-tl-[25%]"),
       )
+    case "empty":
+      return h(
+        "relative block bg-slate-100 size-8 rounded-full mx-0.5 border-4 border-slate-300 group-focus-within:border-blue-500",
+      )
+  }
+}
+
+export class ExprSlider {
+  private readonly slider = new Slider()
+
+  private readonly fmin
+  private readonly fmax
+  readonly el
+
+  constructor(readonly expr: Expr) {
+    this.fmin = new FieldInert(
+      this.expr.field.exts,
+      this.expr.field.options,
+      "pb-2 font-sans",
+    )
+    this.fmax = new FieldInert(
+      this.expr.field.exts,
+      this.expr.field.options,
+      "pb-2 font-sans",
+    )
+    this.el = h(
+      "flex text-[0.7rem] items-center text-slate-500 px-3 -mt-2",
+      this.fmin.el,
+      this.slider.el,
+      this.fmax.el,
+    )
+    this.bounds(0, 1)
+    this.slider.step = 0
+    this.slider.el.className += " px-1 pb-2 pt-2 -mt-2 cursor-pointer"
+    this.slider.onInput = (value) => {
+      if (!this.expr.binding) return
+      const v = this.expr.binding.name
+      this.expr.field.block.clear()
+      const cursor = this.expr.field.block.cursor(R)
+      CmdVar.leftOf(cursor, v, expr.field.options)
+      new OpEq(false).insertAt(cursor, L)
+      new Display(cursor, frac(10, 1)).value(value)
+      expr.sheet.onExprChange(expr)
+    }
+  }
+
+  get min() {
+    return this.slider.min
+  }
+
+  get max() {
+    return this.slider.max
+  }
+
+  bounds(min: number, max: number) {
+    this.slider.bounds(min, max)
+    new Display(this.fmin.sel.remove(), real(10)).value(this.slider.min)
+    new Display(this.fmax.sel.remove(), real(10)).value(this.slider.max)
   }
 }
 
@@ -139,8 +200,8 @@ export class Expr {
   readonly elValue
   readonly elValueError
   readonly elGlslError
-  readonly elBindingStatus
   readonly elScroller
+  readonly slider
 
   binding?: AstBinding
 
@@ -150,6 +211,18 @@ export class Expr {
   constructor(readonly sheet: Sheet) {
     this.sheet.exprs.push(this)
     this.field = new ExprField(this)
+    this.slider = new ExprSlider(this)
+    this.elValue = new FieldInert(this.field.exts, this.field.options)
+    this.elValueError = h(
+      "leading-tight block pb-1 -mt-2 mx-1 px-1 italic text-red-800 hidden whitespace-pre-wrap",
+    )
+    this.elGlslError = h(
+      "leading-tight block pb-1 -mt-2 mx-1 px-1 italic text-yellow-800 hidden whitespace-pre-wrap",
+    )
+    this.elScroller = h(
+      "block overflow-x-auto [&::-webkit-scrollbar]:hidden min-h-[3.265rem] max-w-[calc(var(--nya-sheet-sidebar)_-_2.5rem)]",
+      this.field.el,
+    )
     this.el = h(
       "border-b border-slate-200 grid grid-cols-[2.5rem,auto] relative group focus-within:border-[color:--nya-focus] max-w-full",
       h(
@@ -158,24 +231,13 @@ export class Expr {
           "text-[65%] [line-height:1] text-slate-500 group-focus-within:text-white",
           "" + this.sheet.exprs.length,
         )),
-        (this.elCircle = circle()),
+        (this.elCircle = h("contents", circle("empty"))),
       ),
       h(
         "flex flex-col w-full max-w-full",
-        (this.elScroller = h(
-          "block overflow-x-auto [&::-webkit-scrollbar]:hidden min-h-[3.265rem] max-w-[calc(var(--nya-sheet-sidebar)_-_2.5rem)]",
-          this.field.el,
-        )),
-        (this.elValue = new FieldInert(this.field.exts, this.field.options)).el,
-        (this.elValueError = h(
-          "leading-tight block pb-1 -mt-2 mx-1 px-1 italic text-red-800 hidden whitespace-pre-wrap",
-        )),
-        (this.elGlslError = h(
-          "leading-tight block pb-1 -mt-2 mx-1 px-1 italic text-yellow-800 hidden whitespace-pre-wrap",
-        )),
-        (this.elBindingStatus = h(
-          "leading-tight block pb-1 -mt-2 mx-1 px-1 italic text-blue-800 hidden whitespace-pre-wrap",
-        )),
+        this.elScroller,
+        this.slider.el,
+        this.elValue.el,
       ),
       h(
         "absolute -inset-y-px right-0 left-0 border-2 border-[color:--nya-focus] hidden group-focus-within:block pointer-events-none [:first-child>&]:top-0",
@@ -215,6 +277,18 @@ export class Expr {
       "max-w-[calc(var(--nya-sheet-sidebar)_-_3.5rem)]",
       "nya-expr-value",
     )
+    this.elCircle.addEventListener("click", () => {
+      this.sheet.exprs.forEach((x) => x.setCircle("empty"))
+      this.setCircle("shader")
+      this.plot()
+    })
+  }
+
+  setCircle(kind: CircleKind) {
+    while (this.elCircle.firstChild) {
+      this.elCircle.firstChild.remove()
+    }
+    this.elCircle.appendChild(circle(kind))
   }
 
   displayEval(value: JsValue, base: SReal) {
@@ -235,12 +309,13 @@ export class Expr {
   }
 
   checkBinding() {
+    this.slider.el.classList.add("hidden")
+    this.elValue.el.classList.remove("!hidden")
+
     try {
       var node = this.field.block.expr()
     } catch {
       this.binding = undefined
-      this.elBindingStatus.classList.remove("hidden")
-      this.elBindingStatus.textContent = "error while computing binding"
       return
     }
 
@@ -249,12 +324,12 @@ export class Expr {
       ["x", "y", "p"].indexOf(name(node.name)) == -1
     ) {
       this.binding = node
-      this.elBindingStatus.classList.remove("hidden")
-      this.elBindingStatus.textContent =
-        "binding detected for " + name(node.name)
+      if (!this.binding.args) {
+        this.slider.el.classList.remove("hidden")
+        this.elValue.el.classList.add("!hidden")
+      }
     } else {
       this.binding = undefined
-      this.elBindingStatus.classList.add("hidden")
     }
   }
 
@@ -290,7 +365,17 @@ export class Expr {
       }
     }
 
+    if (this.isPlotActive) {
+      this.plot()
+    }
+  }
+
+  isPlotActive = false
+  plot() {
+    this.sheet.exprs.forEach((x) => (x.isPlotActive = false))
+    this.isPlotActive = true
     try {
+      const node = this.field.block.ast()
       const props = this.sheet.propsGlsl()
       const value = OP_PLOT.glsl(props.ctx, glsl(node, props))
       if (value.list) {
@@ -657,7 +742,11 @@ const REMARKS = [
   "currently on type system #3",
   "where numbers come in three precision levels",
   "even our colors can be approximate",
-  "you can choose LaTeX parsing or— THE SECOND ONE",
+  "“you can choose LaTeX parsing or”— “THE SECOND ONE”",
+  "copy-paste easy to implement: famous last words",
+  "the error messages are doubled because why not",
+  "experience the joy of floating point numbers",
+  "lines are impossible",
 ]
 
 const REMARK = REMARKS[Math.floor(REMARKS.length * Math.random())]!
