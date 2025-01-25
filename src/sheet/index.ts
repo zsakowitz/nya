@@ -1,5 +1,6 @@
 import { glsl } from "../eval/glsl"
 import { js } from "../eval/js"
+import { hex } from "../eval/lib/binding"
 import { declareAddR64 } from "../eval/ops/op/add"
 import { declareMulR64 } from "../eval/ops/op/mul"
 import { OP_PLOT } from "../eval/ops/op/plot"
@@ -313,7 +314,9 @@ export class Expr {
   }
 
   debug() {
-    this.elDebugs.textContent = +this.elDebugs.textContent! + 1 + ""
+    if (this.circle == "shader") {
+      this.sheet.replot = true
+    }
 
     this.elValue.el.classList.add("hidden")
     this.elValue.el.classList.remove("!hidden")
@@ -323,6 +326,16 @@ export class Expr {
       this.slider.el.classList.remove("hidden")
       this.elValue.el.classList.add("!hidden")
     }
+
+    if (
+      this.field.deps.ids[hex("p")] ||
+      this.field.deps.ids[hex("x")] ||
+      this.field.deps.ids[hex("y")]
+    ) {
+      return
+    }
+
+    this.elDebugs.textContent = +this.elDebugs.textContent! + 1 + ""
 
     try {
       var node = this.field.block.expr()
@@ -352,10 +365,6 @@ export class Expr {
       } else {
         this.displayError(e instanceof Error ? e : new Error(String(e)))
       }
-    }
-
-    if (this.circle == "shader") {
-      this.sheet.replot = true
     }
   }
 

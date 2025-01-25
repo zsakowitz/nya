@@ -4,7 +4,7 @@ import { subscript } from "./text"
 
 const encoder = new TextEncoder()
 
-function hex(text: string) {
+export function hex(text: string) {
   const bytes = encoder.encode(text)
   let ret = ""
   for (let i = 0; i < bytes.length; i++) {

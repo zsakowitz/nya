@@ -5,6 +5,7 @@ import { splitDual } from "../ty/split"
 export interface Builtin {
   js: JsValue
   glsl: GlslValue
+  dynamic?: boolean
 }
 
 export const VARS: Record<string, Builtin> = {
@@ -13,18 +14,21 @@ export const VARS: Record<string, Builtin> = {
       throw new Error("Cannot access pixel coordinates outside of shaders.")
     },
     glsl: { type: "c64", expr: "v_coords", list: false },
+    dynamic: true,
   },
   x: {
     get js(): never {
       throw new Error("Cannot access pixel coordinates outside of shaders.")
     },
     glsl: { type: "r64", expr: "v_coords.xy", list: false },
+    dynamic: true,
   },
   y: {
     get js(): never {
       throw new Error("Cannot access pixel coordinates outside of shaders.")
     },
     glsl: { type: "r64", expr: "v_coords.zw", list: false },
+    dynamic: true,
   },
   π: splitDual(Math.PI),
   τ: splitDual(Math.PI * 2),

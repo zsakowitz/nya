@@ -109,7 +109,9 @@ export function deps(node: Node, deps: Deps) {
       builtin: {
         if (node.sub) break builtin
 
-        const value = VARS[node.value]?.glsl
+        const builtin = VARS[node.value]
+        if (builtin?.dynamic) break builtin
+        const value = builtin?.glsl
         if (!value) break builtin
 
         if (node.sup) {
