@@ -8,8 +8,8 @@ import { frac, num, real } from "../eval/ty/create"
 import { h, hx } from "../field/jsx"
 
 export class Slider {
-  private _min = real(-10)
-  private _max = real(10)
+  private _min = real(0)
+  private _max = real(1)
   private _step = real(0)
   private _steps = 0
   private _value = real(1)
