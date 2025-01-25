@@ -1,10 +1,11 @@
 import type { Node } from "../eval/ast/token"
 import { deps, Deps } from "../eval/deps"
-import { defaultPropsGlsl, glsl } from "../eval/glsl"
+import { defaultPropsGlsl, glsl, type PropsGlsl } from "../eval/glsl"
 import { defaultPropsJs, js, type PropsJs } from "../eval/js"
 import { Bindings, name, tryId } from "../eval/lib/binding"
 import { GlslContext, GlslHelpers } from "../eval/lib/fn"
 import type { GlslValue, JsValue } from "../eval/ty"
+import { TY_INFO } from "../eval/ty/info"
 import { Field } from "../field/field"
 import type { Exts, Options } from "../field/options"
 
@@ -50,6 +51,17 @@ export class Scope {
       return self.bindingsJs
     },
   }))(this)
+
+  propsGlsl(): PropsGlsl {
+    const self = this
+    return {
+      ...defaultPropsGlsl(),
+      get bindings() {
+        return self.bindingsGlsl
+      },
+      ctx: new GlslContext(this.helpers),
+    }
+  }
 
   flush() {
     for (const field of this.fields) {
@@ -115,15 +127,16 @@ export class Scope {
           configurable: true,
           enumerable: true,
           get: () => {
-            throw new Error("variables are hard in shaders srry")
-
             if (valueGlsl) return valueGlsl
 
             const props = defaultPropsGlsl()
             const ctx = (props.ctx = new GlslContext(this.helpers))
             const rawValue = glsl(node, props)
             const name = ctx.name()
-            ctx.helpers.helpers += `void `
+            ctx.helpers.helpers += `${TY_INFO[rawValue.type].glsl}${rawValue.list !== false ? `[${rawValue.list}]` : ""} ${name}() {
+  ${ctx.block}
+  return ${rawValue.expr};
+}`
             return (valueGlsl = { ...rawValue, expr: `${name}()` })
           },
         })
@@ -153,6 +166,8 @@ export class Scope {
         })
       }
     }
+    this.bindingsJs = new Bindings(bindingsJs)
+    this.bindingsGlsl = new Bindings(bindingsGlsl)
 
     for (const field of this.fields) {
       field.dirtyAst = false

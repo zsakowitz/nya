@@ -1,10 +1,9 @@
-import { defaultPropsGlsl, glsl, type PropsGlsl } from "../eval/glsl"
-import { defaultPropsJs, js, type PropsJs } from "../eval/js"
-import { Bindings, id, name } from "../eval/lib/binding"
+import { glsl } from "../eval/glsl"
+import { js } from "../eval/js"
 import { declareAddR64 } from "../eval/ops/op/add"
 import { declareMulR64 } from "../eval/ops/op/mul"
 import { OP_PLOT } from "../eval/ops/op/plot"
-import type { GlslValue, JsValue, SReal } from "../eval/ty"
+import type { JsValue, SReal } from "../eval/ty"
 import { frac, num, real } from "../eval/ty/create"
 import { Display, display, outputBase } from "../eval/ty/display"
 import { splitRaw } from "../eval/ty/split"
@@ -584,65 +583,11 @@ export class Sheet {
   }
 
   propsJs() {
-    const map: Record<string, JsValue | undefined> = Object.create(null)
-    const bindings = new Bindings(map)
-    const props: PropsJs = { ...defaultPropsJs(), bindings }
-    for (const expr of this.exprs) {
-      if (!expr.binding || expr.binding.args) {
-        continue
-      }
-
-      const myId = id(expr.binding.name)
-      const myName = name(expr.binding.name)
-      const value = expr.binding.value
-      Object.defineProperty(map, myId, {
-        configurable: true,
-        enumerable: true,
-        get() {
-          try {
-            return js(value, props)
-          } catch (e) {
-            if (e instanceof RangeError && e.message.includes("stack")) {
-              throw new Error(`Cycle detected when accessing ${myName}.`)
-            } else {
-              throw e
-            }
-          }
-        },
-      })
-    }
-    return props
+    return this.scope.propsJs
   }
 
   propsGlsl() {
-    const map: Record<string, GlslValue | undefined> = Object.create(null)
-    const bindings = new Bindings(map)
-    const props: PropsGlsl = { ...defaultPropsGlsl(), bindings }
-    for (const expr of this.exprs) {
-      if (!expr.binding || expr.binding.args) {
-        continue
-      }
-
-      const myId = id(expr.binding.name)
-      const myName = name(expr.binding.name)
-      const value = expr.binding.value
-      Object.defineProperty(map, myId, {
-        configurable: true,
-        enumerable: true,
-        get() {
-          try {
-            return glsl(value, props)
-          } catch (e) {
-            if (e instanceof RangeError && e.message.includes("stack")) {
-              throw new Error(`Cycle detected when accessing ${myName}.`)
-            } else {
-              throw e
-            }
-          }
-        },
-      })
-    }
-    return props
+    return this.scope.propsGlsl()
   }
 
   checkIndices() {
