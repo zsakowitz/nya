@@ -1,7 +1,7 @@
 import type { AstBinding } from "../eval/ast/token"
-import { Bindings, id, name } from "../eval/lib/binding"
 import { defaultPropsGlsl, glsl, type PropsGlsl } from "../eval/glsl"
 import { defaultPropsJs, js, type PropsJs } from "../eval/js"
+import { Bindings, id, name } from "../eval/lib/binding"
 import { declareAddR64 } from "../eval/ops/op/add"
 import { declareMulR64 } from "../eval/ops/op/mul"
 import { OP_PLOT } from "../eval/ops/op/plot"
@@ -11,11 +11,11 @@ import { Display, display, outputBase } from "../eval/ty/display"
 import { splitRaw } from "../eval/ty/split"
 import { OpEq } from "../field/cmd/leaf/cmp"
 import { CmdVar } from "../field/cmd/leaf/var"
-import { Field } from "../field/field"
 import { FieldInert } from "../field/field-inert"
 import { h, hx, p, svgx } from "../field/jsx"
 import { D, L, R, U, type Dir, type VDir } from "../field/model"
 import type { Exts, Options as FieldOptions } from "../field/options"
+import { FieldComputed, Scope } from "./deps"
 import {
   createDrawAxes,
   doDrawCycle,
@@ -34,9 +34,9 @@ export interface Options {
   field: FieldOptions
 }
 
-class ExprField extends Field {
+class ExprField extends FieldComputed {
   constructor(readonly expr: Expr) {
-    super(expr.sheet.exts, expr.sheet.options.field)
+    super(expr.sheet.scope)
 
     this.el.classList.add(
       "border-[1rem]",
@@ -50,11 +50,9 @@ class ExprField extends Field {
     })
   }
 
-  onAfterChange(wasChangeCanceled: boolean): void {
-    super.onAfterChange(wasChangeCanceled)
-    if (!wasChangeCanceled) {
-      this.expr?.sheet.onExprChange?.(this.expr)
-    }
+  recompute(): void {
+    this.expr.elRecomps.textContent = +this.expr.elRecomps.textContent! + 1 + ""
+    this.expr.sheet.onExprChange?.(this.expr)
   }
 
   onVertOut(towards: VDir): void {
@@ -193,6 +191,7 @@ export class Expr {
   readonly field
 
   readonly el
+  readonly elRecomps
   readonly elIndex
   readonly elCircle
   readonly elValue
@@ -208,6 +207,7 @@ export class Expr {
 
   constructor(readonly sheet: Sheet) {
     this.sheet.exprs.push(this)
+    this.elRecomps = h("", "0")
     this.field = new ExprField(this)
     this.slider = new ExprSlider(this)
     this.elValue = new FieldInert(this.field.exts, this.field.options)
@@ -229,6 +229,7 @@ export class Expr {
           "text-[65%] [line-height:1] text-slate-500 group-focus-within:text-white",
           "" + this.sheet.exprs.length,
         )),
+        this.elRecomps,
         (this.elCircle = h("contents", circle("empty"))),
       ),
       h(
@@ -338,7 +339,7 @@ export class Expr {
         node = node.value
       }
     } catch (e) {
-      console.error(e)
+      console.warn(e)
       this.displayError(e instanceof Error ? e : new Error(String(e)))
       return
     }
@@ -349,7 +350,7 @@ export class Expr {
       const base = outputBase(node, props)
       this.displayEval(value, base)
     } catch (e) {
-      console.error(e)
+      console.warn(e)
       this.elGlslError.classList.add("hidden")
       if (
         String(e).includes(
@@ -459,7 +460,7 @@ void main() {
 
       this.elGlslError.classList.add("hidden")
     } catch (e) {
-      console.error(e)
+      console.warn(e)
       this.elGlslError.textContent = e instanceof Error ? e.message : String(e)
       this.elGlslError.classList.remove("hidden")
     }
@@ -467,6 +468,8 @@ void main() {
 }
 
 export class Sheet {
+  readonly scope
+
   readonly exprs: Expr[] = []
   readonly paper = new Paper()
 
@@ -487,6 +490,7 @@ export class Sheet {
     readonly exts: Exts,
     readonly options: Options,
   ) {
+    this.scope = new Scope(this.exts, this.options.field)
     this.paper.el.classList.add("size-full")
     doMatchSize(this.paper)
     doDrawCycle(this.paper)

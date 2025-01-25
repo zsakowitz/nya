@@ -1,5 +1,6 @@
 import type { Node } from "../eval/ast/token"
-import { Deps } from "../eval/deps"
+import { deps, Deps } from "../eval/deps"
+import { tryId } from "../eval/lib/binding"
 import { Field } from "../field/field"
 import type { Exts, Options } from "../field/options"
 
@@ -32,78 +33,96 @@ export class Scope {
   /** A map from binding IDs to the fields which define them. */
   private readonly defs: Record<string, FieldComputed[]> = Object.create(null)
 
-  /**
-   * A map from binding IDs to the fields which depend on them.
-   *
-   * Does not include recursive dependencies.
-   */
+  /** A map from binding IDs to the fields which mention them. */
   private readonly deps: Record<string, FieldComputed[]> = Object.create(null)
 
-  flush() {}
+  flush() {
+    for (const field of this.fields) {
+      if (!field.dirtyAst) continue
+      field.error = undefined
 
-  //   flush() {
-  //     for (const field of this.fields) {
-  //       if (!field.dirtyAst) continue
-  //       field.error = undefined
-  //
-  //       const prevAst = field.ast
-  //       try {
-  //         var nextAst = field.block.ast()
-  //       } catch (e) {
-  //         field.error = toError(e)
-  //         continue
-  //       }
-  //
-  //       const prevBinding =
-  //         prevAst.type == "binding" ? tryId(prevAst.name) : undefined
-  //       try {
-  //         var nextBinding =
-  //           nextAst.type == "binding" ? id(nextAst.name) : undefined
-  //       } catch (e) {
-  //         field.error = toError(e)
-  //         continue
-  //       }
-  //
-  //       if (prevBinding!=next)
-  //     }
-  //   }
+      this.untrack(field)
+      try {
+        field.ast = field.block.expr()
+        field.id = undefined
+        if (field.ast.type == "binding") {
+          const id = tryId(field.ast.name)
+          if (id) {
+            field.id = id
+          }
+        }
+        const myDeps = new Deps()
+        deps(field.ast, myDeps)
+        field.deps = myDeps
+      } catch (e) {
+        field.error = toError(e)
+        continue
+      }
+      this.retrack(field)
+    }
 
-  //   flush() {
-  //     // recomputing the graph is probably expensive, and most changes are just
-  //     // updating expression values, so defer updates unless actually needed
-  //     let recomputeGraph = false
-  //
-  //     for (const field of this.changes) {
-  //       field.error = undefined
-  //
-  //       try {
-  //         // scoped try-catch blocks prevent erroring on previously malformed input
-  //         const prevId =
-  //           field.ast.type == "binding" ? tryId(field.ast.name) : undefined
-  //         const prevDeps = field.deps
-  //         field.ast = field.block.expr()
-  //         const nextId =
-  //           field.ast.type == "binding" ? id(field.ast.name) : undefined
-  //         const nextDeps = new DepTracker()
-  //         deps(field.ast, nextDeps)
-  //         field.ast = field.block.expr()
-  //
-  //         if (prevId !== nextId) {
-  //           recomputeGraph = true
-  //           if (prevId) {
-  //             const p = this.bound[prevId]!
-  //             p.splice(p.indexOf(field), 1)
-  //           }
-  //           if (nextId) {
-  //             ;(this.bound[nextId] ??= []).push(field)
-  //           }
-  //         }
-  //       } catch (e) {
-  //         field.error = toError(e)
-  //       }
-  //     }
-  //     this.changes = []
-  //   }
+    let prev = 0
+    let dirty = 0
+    for (const field of this.fields) {
+      if (field.dirtyValue) dirty++
+    }
+    while (prev != dirty) {
+      prev = dirty
+      for (const field of this.fields) {
+        if (!(field.dirtyValue && field.id)) continue
+        for (const dependent of this.deps[field.id] || []) {
+          if (dependent.dirtyValue) continue
+          dependent.dirtyValue = true
+          dirty++
+        }
+      }
+    }
+
+    for (const field of this.fields) {
+      field.dirtyAst = false
+      if (field.dirtyValue) {
+        field.dirtyValue = false
+        field.recompute?.()
+      }
+    }
+  }
+
+  untrack(field: FieldComputed) {
+    if (field.id) {
+      const def = this.defs[field.id]
+      if (def) {
+        const idx = def.indexOf(field)
+        if (idx != -1) {
+          def.splice(idx, 1)
+        }
+      }
+    }
+
+    for (const id in field.deps.ids) {
+      const dep = this.deps[id]
+      if (!dep) continue
+      const idx = dep.indexOf(field)
+      if (idx == -1) continue
+      dep.splice(idx, 1)
+    }
+  }
+
+  retrack(field: FieldComputed) {
+    if (field.id) {
+      const def = (this.defs[field.id] ??= [])
+      const idx = def.indexOf(field)
+      if (idx == -1) {
+        def.push(field)
+      }
+    }
+
+    for (const id in field.deps.ids) {
+      const dep = (this.deps[id] ??= [])
+      const idx = dep.indexOf(field)
+      if (idx != -1) continue
+      dep.push(field)
+    }
+  }
 }
 
 export class FieldComputed extends Field {
@@ -118,14 +137,17 @@ export class FieldComputed extends Field {
   /** The cached AST of this field. */
   ast: Node = { type: "void" }
 
+  /** The last LaTeX of this field. */
+  private _latex = ""
+
+  /** The cached binding ID defined by this field. */
+  id: string | undefined
+
   /**
    * If not null, the error message encountered during parsing or evaluation of
    * this field.
    */
   error: string | undefined
-
-  /** Any fields which depend on the value of this one. */
-  dependents: FieldComputed[] = []
 
   /** Whether the AST needs to be recomputed. */
   dirtyAst = false
@@ -133,16 +155,21 @@ export class FieldComputed extends Field {
   /** Whether the value needs to be recomputed. */
   dirtyValue = false
 
+  onBeforeChange(): void {
+    super.onBeforeChange()
+    this._latex = this.block.latex()
+  }
+
   onAfterChange(wasChangeCanceled: boolean): void {
     super.onAfterChange(wasChangeCanceled)
-    if (wasChangeCanceled) return
-    this.dirtyAst = true
-    this.dirtyValue = true
-    for (const x of this.dependents) {
-      x.dirtyValue = true
+    if (wasChangeCanceled || this.block.latex() == this._latex) return
+    this.dirtyAst = this.dirtyValue = true
+    if (this.scope) {
+      this.scope.queueUpdate()
     }
-    this.scope.queueUpdate()
   }
+
+  recompute?(): void
 }
 
 function toError(err: unknown) {
