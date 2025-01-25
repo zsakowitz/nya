@@ -218,7 +218,7 @@ export const TY_INFO: TyInfoMap = {
     glsl: "vec4",
     garbage: {
       js: { type: "color", r: real(0), g: real(0), b: real(0), a: real(0) },
-      glsl: "vec4(0.0/0.0)",
+      glsl: "vec4(0)",
     },
     coerce: {},
     write: {

@@ -198,6 +198,19 @@ export class Expr {
   removable = true
   index
 
+  private _kind: CircleKind = "empty"
+  get circle() {
+    return this._kind
+  }
+  set circle(v) {
+    this._kind = v
+    while (this.elCircle.firstChild) {
+      this.elCircle.firstChild.remove()
+    }
+    this.elCircle.appendChild(circle(v))
+    this.sheet.replot = true
+  }
+
   constructor(readonly sheet: Sheet) {
     this.sheet.exprs.push(this)
     this.elDebugs = h("ml-auto", "")
@@ -221,7 +234,7 @@ export class Expr {
           (this.elIndex = h("", "" + this.sheet.exprs.length)),
           this.elDebugs,
         ),
-        (this.elCircle = h("contents", circle("empty"))),
+        (this.elCircle = h("contents", circle(this.circle))),
         h(
           "inline-flex group-focus-within:text-white",
 
@@ -274,17 +287,12 @@ export class Expr {
       "nya-expr-value",
     )
     this.elCircle.addEventListener("click", () => {
-      this.sheet.exprs.forEach((x) => x.setCircle("empty"))
-      this.setCircle("shader")
-      this.plot()
+      if (this.circle == "empty") {
+        this.circle = "shader"
+      } else {
+        this.circle = "empty"
+      }
     })
-  }
-
-  setCircle(kind: CircleKind) {
-    while (this.elCircle.firstChild) {
-      this.elCircle.firstChild.remove()
-    }
-    this.elCircle.appendChild(circle(kind))
   }
 
   displayEval(value: JsValue, base: SReal) {
@@ -346,16 +354,13 @@ export class Expr {
       }
     }
 
-    if (this.isPlotActive) {
-      this.plot()
+    if (this.circle == "shader") {
+      this.sheet.replot = true
     }
   }
 
-  isPlotActive = false
-  plot() {
+  compilePlot(): [block: string, expr: string] | undefined {
     this.elPlots.textContent = +this.elPlots.textContent! + 1 + ""
-    this.sheet.exprs.forEach((x) => (x.isPlotActive = false))
-    this.isPlotActive = true
     try {
       const node = this.field.block.ast()
       const props = this.sheet.scope.propsGlsl()
@@ -365,81 +370,7 @@ export class Expr {
       }
       declareAddR64(props.ctx)
       declareMulR64(props.ctx)
-      const frag = `#version 300 es
-precision highp float;
-out vec4 color;
-vec4 v_coords;
-uniform vec2 u_scale;
-uniform vec2 u_cx;
-uniform vec2 u_cy;
-uniform vec4 u_px_per_unit;
-${props.ctx.helpers.helpers}void main() {
-vec2 e_tx = vec2(gl_FragCoord.x, 0);
-vec2 e_ty = vec2(gl_FragCoord.y, 0);
-v_coords = vec4(
-  _helper_add_r64(u_cx, _helper_mul_r64(e_tx, u_scale)),
-  _helper_add_r64(u_cy, _helper_mul_r64(e_ty, u_scale))
-);
-${props.ctx.block}color = ${value.expr};
-      }
-      `
-      this.sheet.regl.clear({
-        color: [0, 0, 0, 1],
-        depth: 1,
-      })
-      const program = this.sheet.regl({
-        frag,
-
-        vert: `#version 300 es
-precision highp float;
-in vec2 position;
-void main() {
-  gl_Position = vec4(position, 0, 1);
-}
-`,
-
-        attributes: {
-          position: [
-            [-1, 1],
-            [-1, -1],
-            [1, 1],
-            [1, -1],
-            [-1, -1],
-            [1, 1],
-          ],
-        },
-
-        uniforms: {
-          // @ts-expect-error regl requires generics in weird places
-          u_scale: this.sheet.regl.prop("u_scale"),
-          // @ts-expect-error
-          u_cx: this.sheet.regl.prop("u_cx"),
-          // @ts-expect-error
-          u_cy: this.sheet.regl.prop("u_cy"),
-          // @ts-expect-error
-          u_px_per_unit: this.sheet.regl.prop("u_px_per_unit"),
-        },
-
-        count: 6,
-      })
-      const myId = ++Expr.id
-      const draw = () => {
-        if (myId != Expr.id) return
-        const { xmax, xmin, ymin, ymax } = this.sheet.paper.bounds()
-        program({
-          u_scale: splitRaw(
-            (xmax - xmin) / this.sheet.regl._gl.drawingBufferWidth,
-          ),
-          u_cx: splitRaw(xmin),
-          u_cy: splitRaw(ymin),
-          u_px_per_unit: [
-            ...splitRaw(this.sheet.paper.el.clientWidth / (xmax - xmin)),
-            ...splitRaw(this.sheet.paper.el.clientHeight / (ymax - ymin)),
-          ],
-        })
-        requestAnimationFrame(draw)
-      }
-      draw()
+      return [props.ctx.block, value.expr]
     } catch (e) {
       console.error(e)
       this.displayError(e instanceof Error ? e : new Error(String(e)))
@@ -471,6 +402,8 @@ export class Sheet {
 
   readonly pixelRatio
   readonly setPixelRatio
+
+  replot = false
 
   constructor(
     readonly exts: Exts,
@@ -584,6 +517,94 @@ export class Sheet {
       const { width } = entry.contentRect
       this.el.style.setProperty("--nya-sheet-sidebar", width + "px")
     }).observe(this.elExpressions)
+
+    const global = this.regl({
+      attributes: {
+        position: [
+          [-1, 1],
+          [-1, -1],
+          [1, 1],
+          [1, -1],
+          [-1, -1],
+          [1, 1],
+        ],
+      },
+
+      uniforms: {
+        // @ts-expect-error regl requires generics in weird places
+        u_scale: this.regl.prop("u_scale"),
+        // @ts-expect-error
+        u_cx: this.regl.prop("u_cx"),
+        // @ts-expect-error
+        u_cy: this.regl.prop("u_cy"),
+        // @ts-expect-error
+        u_px_per_unit: this.regl.prop("u_px_per_unit"),
+      },
+    })
+
+    let program: regl.DrawCommand | undefined
+    let cleared = false
+
+    this.regl.frame(() => {
+      const shaders = this.exprs.filter((x) => x.circle == "shader")
+      if (!cleared) this.regl.clear({ color: [0, 0, 0, 0], depth: 1 })
+      cleared = true
+      if (shaders.length == 0) return
+
+      const { xmax, xmin, ymin, ymax } = this.paper.bounds()
+      const uniforms = {
+        u_scale: splitRaw((xmax - xmin) / this.regl._gl.drawingBufferWidth),
+        u_cx: splitRaw(xmin),
+        u_cy: splitRaw(ymin),
+        u_px_per_unit: [
+          ...splitRaw(this.paper.el.clientWidth / (xmax - xmin)),
+          ...splitRaw(this.paper.el.clientHeight / (ymax - ymin)),
+        ],
+      }
+      if (!program || this.replot) {
+        const compiled = this.exprs
+          .map((x) => x.circle == "shader" && x.compilePlot())
+          .filter((x) => x != null && x != false)
+        const frag = `#version 300 es
+precision highp float;
+out vec4 color;
+vec4 v_coords;
+uniform vec2 u_scale;
+uniform vec2 u_cx;
+uniform vec2 u_cy;
+uniform vec4 u_px_per_unit;
+vec4 _nya_helper_compose(vec4 base, vec4 added) {
+  float w = 1. - (1. - added.w) * (1. - base.w);
+  return vec4(
+    ((added.xyz * added.w / w) + (base.xyz * base.w * (1. - added.w) / w)),
+    w
+  );
+}
+${this.scope.helpers.helpers}void main() {
+vec2 e_tx = vec2(gl_FragCoord.x, 0);
+vec2 e_ty = vec2(gl_FragCoord.y, 0);
+v_coords = vec4(
+  _helper_add_r64(u_cx, _helper_mul_r64(e_tx, u_scale)),
+  _helper_add_r64(u_cy, _helper_mul_r64(e_ty, u_scale))
+);
+${compiled.map((x) => x[0]).join("")}color = ${compiled.map((x) => x[1]).reduce((a, b) => `_nya_helper_compose(${a},${b})`)};
+      }
+      `
+        program = this.regl({
+          frag,
+          vert: `#version 300 es
+precision highp float;
+in vec2 position;
+void main() {
+  gl_Position = vec4(position, 0, 1);
+}
+`,
+          count: 6,
+        })
+        this.replot = false
+      }
+      global(uniforms, () => program!())
+    })
   }
 
   checkIndices() {

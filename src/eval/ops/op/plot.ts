@@ -8,7 +8,7 @@ function err(): never {
 }
 
 function bool(x: string) {
-  return `(${x} ? vec4(vec3(0x2d, 0x70, 0xb3) / 255.0, 1.0) : vec4(0))`
+  return `(${x} ? vec4(vec3(0x2d, 0x70, 0xb3) / 255.0, 1) : vec4(0))`
 }
 
 export const OP_PLOT = new FnDist<"color">("plot")
