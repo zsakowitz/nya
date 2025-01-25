@@ -1,6 +1,7 @@
 import type { WordKind } from "../../field/cmd/leaf/var"
 import type { BigCmd } from "../../field/cmd/math/big"
 import type { ParenLhs, ParenRhs } from "../../field/cmd/math/brack"
+import { VARS } from "../ops/vars"
 import { pass1_suffixes } from "./pass1.suffixes"
 import { pass2_implicits } from "./pass2.implicits"
 import { pass3_ordering } from "./pass3.ordering"
@@ -228,36 +229,25 @@ export function tokensToAst(tokens: Node[], maybeBinding: boolean): Node {
     tokens[0]?.type == "var" &&
     !tokens[0].sup &&
     tokens[0].kind == "var" &&
-    tokens[1]?.type == "punc" &&
-    tokens[1].kind == "cmp" &&
-    tokens[1].value.dir == "=" &&
-    !tokens[1].value.neg
+    (tokens[0].sub || !(tokens[0].value in VARS)) &&
+    ((tokens[1]?.type == "punc" &&
+      tokens[1].kind == "cmp" &&
+      tokens[1].value.dir == "=" &&
+      !tokens[1].value.neg) ||
+      (tokens[1]?.type == "group" &&
+        tokens[1].lhs == "(" &&
+        tokens[1].rhs == ")" &&
+        tokens[2]?.type == "punc" &&
+        tokens[2].kind == "cmp" &&
+        tokens[2].value.dir == "=" &&
+        !tokens[2].value.neg))
   ) {
+    const args = tokens[1].type == "group" ? tokens[1].value : undefined
     return {
       type: "binding",
       name: tokens[0] as PlainVar,
-      value: tokensToAst(tokens.slice(2), false),
-    }
-  }
-
-  if (
-    maybeBinding &&
-    tokens[0]?.type == "var" &&
-    !tokens[0].sup &&
-    tokens[0].kind == "var" &&
-    tokens[1]?.type == "group" &&
-    tokens[1].lhs == "(" &&
-    tokens[1].rhs == ")" &&
-    tokens[2]?.type == "punc" &&
-    tokens[2].kind == "cmp" &&
-    tokens[2].value.dir == "=" &&
-    !tokens[2].value.neg
-  ) {
-    return {
-      type: "binding",
-      name: tokens[0] as PlainVar,
-      args: tokens[1].value,
-      value: tokensToAst(tokens.slice(2), false),
+      args,
+      value: tokensToAst(tokens.slice(args ? 3 : 2), false),
     }
   }
 

@@ -185,7 +185,6 @@ export class Expr {
   readonly field
 
   readonly el
-  readonly elRecomps
   readonly elIndex
   readonly elCircle
   readonly elValue
@@ -193,12 +192,16 @@ export class Expr {
   readonly elScroller
   readonly slider
 
+  readonly elDebugs
+  readonly elPlots
+
   removable = true
   index
 
   constructor(readonly sheet: Sheet) {
     this.sheet.exprs.push(this)
-    this.elRecomps = h("ml-auto", "0")
+    this.elDebugs = h("ml-auto", "")
+    this.elPlots = h("ml-auto", "")
     this.field = new ExprField(this)
     this.slider = new ExprSlider(this)
     this.elValue = new FieldInert(this.field.exts, this.field.options)
@@ -212,19 +215,25 @@ export class Expr {
     this.el = h(
       "border-b border-slate-200 grid grid-cols-[2.5rem,auto] relative group focus-within:border-[color:--nya-focus] max-w-full",
       h(
-        "inline-flex bg-slate-100 flex-col p-0.5 group-focus-within:bg-[color:--nya-focus] border-r border-slate-200 group-focus-within:border-transparent",
+        "inline-flex bg-slate-100 flex-col p-0.5 group-focus-within:bg-[color:--nya-focus] border-r border-slate-200 group-focus-within:border-transparent text-[65%] [line-height:1] text-slate-500",
         h(
-          "inline-flex text-[65%] [line-height:1] text-slate-500 group-focus-within:text-white",
+          "inline-flex group-focus-within:text-white",
           (this.elIndex = h("", "" + this.sheet.exprs.length)),
-          this.elRecomps,
+          this.elDebugs,
         ),
         (this.elCircle = h("contents", circle("empty"))),
+        h(
+          "inline-flex group-focus-within:text-white",
+
+          this.elPlots,
+        ),
       ),
       h(
         "flex flex-col w-full max-w-full",
         this.elScroller,
         this.slider.el,
         this.elValue.el,
+        this.elError,
       ),
       h(
         "absolute -inset-y-px right-0 left-0 border-2 border-[color:--nya-focus] hidden group-focus-within:block pointer-events-none [:first-child>&]:top-0",
@@ -296,7 +305,7 @@ export class Expr {
   }
 
   debug() {
-    this.elRecomps.textContent = +this.elRecomps.textContent! + 1 + ""
+    this.elDebugs.textContent = +this.elDebugs.textContent! + 1 + ""
 
     this.elValue.el.classList.add("hidden")
     this.elValue.el.classList.remove("!hidden")
@@ -344,6 +353,7 @@ export class Expr {
 
   isPlotActive = false
   plot() {
+    this.elPlots.textContent = +this.elPlots.textContent! + 1 + ""
     this.sheet.exprs.forEach((x) => (x.isPlotActive = false))
     this.isPlotActive = true
     try {
@@ -431,7 +441,7 @@ void main() {
       }
       draw()
     } catch (e) {
-      console.warn(e)
+      console.error(e)
       this.displayError(e instanceof Error ? e : new Error(String(e)))
     }
   }
