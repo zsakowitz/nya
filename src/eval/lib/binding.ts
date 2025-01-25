@@ -18,6 +18,12 @@ export function id(name: Pick<Var, "value" | "sub">) {
   return hex(name.value) + (name.sub ? "SUB" + hex(subscript(name.sub)) : "")
 }
 
+export function tryId(name: Pick<Var, "value" | "sub">) {
+  try {
+    return hex(name.value) + (name.sub ? "SUB" + hex(subscript(name.sub)) : "")
+  } catch {}
+}
+
 export class Bindings<T> {
   constructor(
     private data: Record<string, T | undefined> = Object.create(null),

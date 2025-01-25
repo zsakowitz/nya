@@ -1,5 +1,5 @@
 import type { Node } from "../ast/token"
-import type { DepTracker } from "../deps"
+import type { Deps } from "../deps"
 import { glsl, type PropsGlsl } from "../glsl"
 import { js, type PropsJs } from "../js"
 import { parseBindings } from "../lib/binding"
@@ -77,7 +77,7 @@ export function withBindingsGlsl(
 export function withBindingsDeps(
   rhs: Node,
   seq: boolean,
-  deps: DepTracker,
+  deps: Deps,
 ): string[] {
   if (isIterate(rhs)) {
     const parsed = parseIterate(rhs, { source: seq ? "withseq" : "with" })

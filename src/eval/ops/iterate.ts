@@ -1,5 +1,5 @@
 import type { MagicVar, Node } from "../ast/token"
-import type { DepTracker } from "../deps"
+import type { Deps } from "../deps"
 import { glsl, type PropsGlsl } from "../glsl"
 import { js, type PropsJs } from "../js"
 import {
@@ -374,7 +374,7 @@ export function iterateGlsl(
   }
 }
 
-export function iterateDeps(iterate: Iterate, deps: DepTracker): string[] {
+export function iterateDeps(iterate: Iterate, deps: Deps): string[] {
   deps.add(iterate.limit)
 
   const ids = iterate.update.map((x) => x[0])

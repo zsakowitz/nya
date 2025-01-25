@@ -4,13 +4,13 @@ import { iterateDeps, parseIterate } from "./ops/iterate"
 import { VARS } from "./ops/vars"
 import { withBindingsDeps } from "./ops/with"
 
-export class DepTracker {
-  private readonly deps: Record<string, true> = Object.create(null)
+export class Deps {
+  readonly ids: Record<string, true> = Object.create(null)
   private readonly bound: Record<string, true | undefined> = Object.create(null)
 
   private trackByLabel(name: string) {
     if (this.bound[name]) return
-    this.deps[name] = true
+    this.ids[name] = true
   }
 
   track(ast: Bound) {
@@ -55,7 +55,7 @@ export class DepTracker {
   }
 }
 
-export function deps(node: Node, deps: DepTracker) {
+export function deps(node: Node, deps: Deps) {
   switch (node.type) {
     case "num":
       if (node.sub) {

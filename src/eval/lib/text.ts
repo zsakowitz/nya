@@ -20,7 +20,6 @@ export function subscript(node: Node): string {
     case "call":
     case "frac":
     case "mixed":
-    case "for":
     case "piecewise":
     case "matrix":
     case "bigsym":
