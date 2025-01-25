@@ -280,7 +280,6 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
         })
       }
     case "num16":
-    case "for":
     case "matrix":
     case "bigsym":
     case "big":

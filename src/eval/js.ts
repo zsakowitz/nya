@@ -255,7 +255,6 @@ export function js(node: Node, props: PropsJs): JsValue {
         ),
       }
     case "num16":
-    case "for":
     case "matrix":
     case "bigsym":
     case "big":

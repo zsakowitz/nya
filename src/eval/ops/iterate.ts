@@ -1,4 +1,7 @@
 import type { MagicVar, Node } from "../ast/token"
+import type { DepTracker } from "../deps"
+import { glsl, type PropsGlsl } from "../glsl"
+import { js, type PropsJs } from "../js"
 import {
   Bindings,
   id,
@@ -8,8 +11,6 @@ import {
   tryParseBindingVar,
   type Binding,
 } from "../lib/binding"
-import { glsl, type PropsGlsl } from "../glsl"
-import { js, type PropsJs } from "../js"
 import type { GlslValue, JsValue } from "../ty"
 import { list } from "../ty"
 import { isReal } from "../ty/coerce"
@@ -371,4 +372,25 @@ export function iterateGlsl(
       list: false,
     },
   }
+}
+
+export function iterateDeps(iterate: Iterate, deps: DepTracker): string[] {
+  deps.add(iterate.limit)
+
+  const ids = iterate.update.map((x) => x[0])
+
+  for (const [, node] of iterate.from) {
+    deps.add(node)
+  }
+
+  deps.withBoundIds(ids, () => {
+    for (const [, node] of iterate.update) {
+      deps.add(node)
+    }
+    if (iterate.condition) {
+      deps.add(iterate.condition.value)
+    }
+  })
+
+  return ids
 }

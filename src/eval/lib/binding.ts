@@ -69,7 +69,9 @@ export class Bindings<T> {
 
 export type Binding = [id: string, contents: Node, name: string]
 
-export function name(node: Pick<Var, "value" | "sub">) {
+export type Bound = Pick<Var, "value" | "sub">
+
+export function name(node: Bound) {
   return node.value + (node.sub ? subscript(node.sub) : "")
 }
 

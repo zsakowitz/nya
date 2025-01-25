@@ -205,7 +205,6 @@ export type Node =
   | { type: "call"; on?: Node; name: Node; args: Node }
   | { type: "frac"; a: Node; b: Node }
   | { type: "mixed"; integer: string; a: string; b: string }
-  | { type: "for"; mapped: Node; bound: Node; source: Node }
   | { type: "piecewise"; pieces: Piece[] }
   | { type: "matrix"; cols: number; values: Node[] }
   | { type: "bigsym"; cmd: BigCmd | "\\int"; sub?: Node; sup?: Node }

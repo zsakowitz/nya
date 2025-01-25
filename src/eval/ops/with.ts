@@ -1,9 +1,16 @@
 import type { Node } from "../ast/token"
-import { parseBindings } from "../lib/binding"
+import type { DepTracker } from "../deps"
 import { glsl, type PropsGlsl } from "../glsl"
 import { js, type PropsJs } from "../js"
+import { parseBindings } from "../lib/binding"
 import type { GlslValue, JsValue } from "../ty"
-import { isIterate, iterateGlsl, iterateJs, parseIterate } from "./iterate"
+import {
+  isIterate,
+  iterateDeps,
+  iterateGlsl,
+  iterateJs,
+  parseIterate,
+} from "./iterate"
 
 export function withBindingsJs(
   rhs: Node,
@@ -65,4 +72,31 @@ export function withBindingsGlsl(
   }
 
   return result
+}
+
+export function withBindingsDeps(
+  rhs: Node,
+  seq: boolean,
+  deps: DepTracker,
+): string[] {
+  if (isIterate(rhs)) {
+    const parsed = parseIterate(rhs, { source: seq ? "withseq" : "with" })
+    return iterateDeps(parsed, deps)
+  }
+
+  const bindings = parseBindings(rhs)
+  const bound: string[] = []
+
+  if (seq) {
+    for (const [id, node] of bindings) {
+      deps.withBoundIds(bound, () => deps.add(node))
+      bound.push(id)
+    }
+    return bound
+  } else {
+    for (const [, node] of bindings) {
+      deps.add(node)
+    }
+    return bindings.map((x) => x[0])
+  }
 }
