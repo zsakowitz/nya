@@ -45,7 +45,6 @@ class ExprField extends FieldComputed {
   }
 
   recompute(): void {
-    this.expr.elRecomps.textContent = +this.expr.elRecomps.textContent! + 1 + ""
     this.expr.debug()
   }
 
@@ -157,7 +156,6 @@ export class ExprSlider {
       new Display(cursor, frac(10, 1)).value(num(value))
       this.expr.field.dirtyAst = this.expr.field.dirtyValue = true
       this.expr.field.scope.queueUpdate()
-      this.expr.debug()
     }
     this.display()
   }
@@ -298,6 +296,8 @@ export class Expr {
   }
 
   debug() {
+    this.elRecomps.textContent = +this.elRecomps.textContent! + 1 + ""
+
     this.elValue.el.classList.add("hidden")
     this.elValue.el.classList.remove("!hidden")
     this.slider.el.classList.add("hidden")
@@ -319,7 +319,7 @@ export class Expr {
     }
 
     try {
-      const props = this.sheet.propsJs()
+      const props = this.sheet.scope.propsJs
       const value = js(node, props)
       const base = outputBase(node, props)
       this.displayEval(value, base)
@@ -348,7 +348,7 @@ export class Expr {
     this.isPlotActive = true
     try {
       const node = this.field.block.ast()
-      const props = this.sheet.propsGlsl()
+      const props = this.sheet.scope.propsGlsl()
       const value = OP_PLOT.glsl(props.ctx, glsl(node, props))
       if (value.list) {
         throw new Error("Cannot draw a list of colors.")
@@ -582,14 +582,6 @@ export class Sheet {
     }).observe(this.elExpressions)
   }
 
-  propsJs() {
-    return this.scope.propsJs
-  }
-
-  propsGlsl() {
-    return this.scope.propsGlsl()
-  }
-
   checkIndices() {
     for (let i = 0; i < this.exprs.length; i++) {
       this.exprs[i]!.elIndex.textContent = i + 1 + ""
@@ -600,22 +592,6 @@ export class Sheet {
 
   checkNextIndex() {
     this.elNextIndex.textContent = this.exprs.length + 1 + ""
-  }
-
-  queued: Expr | undefined
-
-  queue(expr: Expr) {
-    if (this.queued) {
-      this.queued = expr
-      return
-    } else {
-      this.queued = expr
-    }
-    setTimeout(() => {
-      this.exprs.forEach((x) => x.debug())
-      this.queued!.debug()
-      this.queued = undefined
-    })
   }
 }
 
