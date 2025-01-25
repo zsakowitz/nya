@@ -25,13 +25,13 @@ import { TY_INFO } from "./ty/info"
 export interface PropsJs {
   base: SReal
   /** JS bindings must be values. */
-  bindings: Bindings<JsValue>
+  bindingsJs: Bindings<JsValue>
 }
 
 export function defaultPropsJs(): PropsJs {
   return {
     base: real(10),
-    bindings: new Bindings(),
+    bindingsJs: new Bindings(),
   }
 }
 
@@ -67,19 +67,28 @@ export function js(node: Node, props: PropsJs): JsValue {
       }
       switch (node.kind) {
         case "base":
-          return js(node.a, {
-            ...props,
-            base:
-              (
-                node.b.type == "var" &&
-                node.b.kind == "var" &&
-                !node.b.sub &&
-                !node.b.sup &&
-                (node.b.value == "mrrp" || node.b.value == "meow")
-              ) ?
-                real(10)
-              : asNumericBase(js(node.b, { ...props, base: real(10) })),
-          })
+          return js(
+            node.a,
+            Object.create(props, {
+              base: {
+                value:
+                  (
+                    node.b.type == "var" &&
+                    node.b.kind == "var" &&
+                    !node.b.sub &&
+                    !node.b.sup &&
+                    (node.b.value == "mrrp" || node.b.value == "meow")
+                  ) ?
+                    real(10)
+                  : asNumericBase(
+                      js(
+                        node.b,
+                        Object.create(props, { base: { value: real(10) } }),
+                      ),
+                    ),
+              },
+            }),
+          )
         case ".":
           if (node.b.type == "var" && !node.b.sub) {
             if (node.b.kind == "var") {
@@ -104,7 +113,7 @@ export function js(node: Node, props: PropsJs): JsValue {
           break
         case "with":
         case "withseq": {
-          return props.bindings.withAll(
+          return props.bindingsJs.withAll(
             withBindingsJs(node.b, node.kind == "withseq", props),
             () => js(node.a, props),
           )
@@ -151,7 +160,7 @@ export function js(node: Node, props: PropsJs): JsValue {
         .map((x) => js(x, props))
         .reduce((a, b) => OP_JUXTAPOSE.js(a, b))
     case "var": {
-      const value = props.bindings.get(id(node))
+      const value = props.bindingsJs.get(id(node))
       if (value) {
         if (node.sup) {
           return OP_RAISE.js(value, js(node.sup, props))

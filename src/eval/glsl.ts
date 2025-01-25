@@ -19,7 +19,7 @@ import { OP_Y } from "./ops/op/y"
 import { piecewiseGlsl } from "./ops/piecewise"
 import { VARS } from "./ops/vars"
 import { withBindingsGlsl } from "./ops/with"
-import type { GlslValue, SReal } from "./ty"
+import type { GlslValue, JsValue, SReal } from "./ty"
 import { isReal, listGlsl } from "./ty/coerce"
 import { num, real } from "./ty/create"
 import { splitValue } from "./ty/split"
@@ -29,6 +29,7 @@ export interface PropsGlsl {
   ctx: GlslContext
   /** GLSL bindings must contain variable names and be properly typed. */
   bindings: Bindings<GlslValue>
+  bindingsJs: Bindings<JsValue>
 }
 
 export function defaultPropsGlsl(): PropsGlsl {
@@ -36,6 +37,7 @@ export function defaultPropsGlsl(): PropsGlsl {
     base: real(10),
     ctx: new GlslContext(new GlslHelpers()),
     bindings: new Bindings(),
+    bindingsJs: new Bindings(),
   }
 }
 
@@ -59,9 +61,7 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
     case "num":
       return parseNumberGlsl(
         node.value,
-        node.sub ?
-          asNumericBase(js(node.sub, { ...props, bindings: new Bindings() }))
-        : props.base,
+        node.sub ? asNumericBase(js(node.sub, props)) : props.base,
       )
     case "op":
       if (!node.b) {
@@ -73,25 +73,28 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
       }
       switch (node.kind) {
         case "base":
-          return glsl(node.a, {
-            ...props,
-            base:
-              (
-                node.b.type == "var" &&
-                node.b.kind == "var" &&
-                !node.b.sub &&
-                !node.b.sup &&
-                (node.b.value == "mrrp" || node.b.value == "meow")
-              ) ?
-                real(10)
-              : asNumericBase(
-                  js(node.b, {
-                    ...props,
-                    base: real(10),
-                    bindings: new Bindings(),
-                  }),
-                ),
-          })
+          return glsl(
+            node.a,
+            Object.create(props, {
+              base: {
+                value:
+                  (
+                    node.b.type == "var" &&
+                    node.b.kind == "var" &&
+                    !node.b.sub &&
+                    !node.b.sup &&
+                    (node.b.value == "mrrp" || node.b.value == "meow")
+                  ) ?
+                    real(10)
+                  : asNumericBase(
+                      js(
+                        node.b,
+                        Object.create(props, { base: { value: real(10) } }),
+                      ),
+                    ),
+              },
+            }),
+          )
         case "with":
         case "withseq": {
           return props.bindings.withAll(
@@ -228,7 +231,7 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
       if (on.list === false) {
         throw new Error("Cannot index on a non-list.")
       }
-      const indexVal = js(node.index, { ...props, bindings: new Bindings() })
+      const indexVal = js(node.index, props)
       if (indexVal.list !== false) {
         throw new Error("Cannot index with a list yet.")
       }

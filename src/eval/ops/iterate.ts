@@ -3,7 +3,6 @@ import type { Deps } from "../deps"
 import { glsl, type PropsGlsl } from "../glsl"
 import { js, type PropsJs } from "../js"
 import {
-  Bindings,
   id,
   name,
   parseBindings,
@@ -269,7 +268,7 @@ export function iterateJs(
   for (; i < limit; i++) {
     if (
       iterate.condition &&
-      props.eval.bindings.withAll(values, () =>
+      props.eval.bindingsJs.withAll(values, () =>
         jsShouldBreak(iterate.condition!, props),
       )
     ) {
@@ -278,12 +277,12 @@ export function iterateJs(
 
     if (props.seq) {
       for (const [id, update] of iterate.update) {
-        values[id] = props.eval.bindings.withAll(values, () =>
+        values[id] = props.eval.bindingsJs.withAll(values, () =>
           js(update, props.eval),
         )
       }
     } else {
-      props.eval.bindings.withAll(values, () => {
+      props.eval.bindingsJs.withAll(values, () => {
         for (const [id, update] of iterate.update) {
           values[id] = js(update, props.eval)
         }
@@ -317,10 +316,7 @@ export function iterateGlsl(
   iterate: Iterate,
   props: DoIterateProps<PropsGlsl>,
 ): { data: Record<string, GlslValue>; count: GlslValue } {
-  const limit = getLimit(iterate.limit, {
-    ...props.eval,
-    bindings: new Bindings(),
-  })
+  const limit = getLimit(iterate.limit, props.eval)
   const { ctx } = props.eval
 
   const values: Record<string, GlslValue> = Object.create(null)

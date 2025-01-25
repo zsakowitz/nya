@@ -47,7 +47,7 @@ export class Scope {
 
   readonly propsJs: PropsJs = ((self) => ({
     ...defaultPropsJs(),
-    get bindings() {
+    get bindingsJs() {
       return self.bindingsJs
     },
   }))(this)
@@ -58,6 +58,9 @@ export class Scope {
       ...defaultPropsGlsl(),
       get bindings() {
         return self.bindingsGlsl
+      },
+      get bindingsJs() {
+        return self.bindingsJs
       },
       ctx: new GlslContext(this.helpers),
     }

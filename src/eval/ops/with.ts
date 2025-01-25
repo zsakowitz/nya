@@ -27,7 +27,7 @@ export function withBindingsJs(
 
   if (seq) {
     for (const [id, node] of bindings) {
-      result[id] = props.bindings.withAll(result, () => js(node, props))
+      result[id] = props.bindingsJs.withAll(result, () => js(node, props))
     }
   } else {
     for (const [id, node, name] of bindings) {
