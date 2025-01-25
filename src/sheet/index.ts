@@ -1,4 +1,3 @@
-import type { AstBinding } from "../eval/ast/token"
 import { defaultPropsGlsl, glsl, type PropsGlsl } from "../eval/glsl"
 import { defaultPropsJs, js, type PropsJs } from "../eval/js"
 import { Bindings, id, name } from "../eval/lib/binding"
@@ -44,15 +43,11 @@ class ExprField extends FieldComputed {
       "min-w-full",
       "focus:outline-none",
     )
-
-    this.el.addEventListener("focus", () => {
-      this.expr.sheet.onExprFocus?.(expr)
-    })
   }
 
   recompute(): void {
     this.expr.elRecomps.textContent = +this.expr.elRecomps.textContent! + 1 + ""
-    this.expr.sheet.onExprChange?.(this.expr)
+    this.expr.debug()
   }
 
   onVertOut(towards: VDir): void {
@@ -154,14 +149,16 @@ export class ExprSlider {
     this.slider.el.className += " px-1 pb-2 pt-2 -mt-2 cursor-pointer"
     this.slider.onInput = () => {
       const value = this.slider.value
-      if (!this.expr.binding) return
-      const v = this.expr.binding.name
+      if (this.expr.field.ast.type != "binding") return
+      const v = this.expr.field.ast.name
       this.expr.field.block.clear()
       const cursor = this.expr.field.block.cursor(R)
       CmdVar.leftOf(cursor, v, expr.field.options)
       new OpEq(false).insertAt(cursor, L)
       new Display(cursor, frac(10, 1)).value(num(value))
-      expr.sheet.onExprChange(expr)
+      this.expr.field.dirtyAst = this.expr.field.dirtyValue = true
+      this.expr.field.scope.queueUpdate()
+      this.expr.debug()
     }
     this.display()
   }
@@ -195,12 +192,9 @@ export class Expr {
   readonly elIndex
   readonly elCircle
   readonly elValue
-  readonly elValueError
-  readonly elGlslError
+  readonly elError
   readonly elScroller
   readonly slider
-
-  binding?: AstBinding
 
   removable = true
   index
@@ -211,11 +205,8 @@ export class Expr {
     this.field = new ExprField(this)
     this.slider = new ExprSlider(this)
     this.elValue = new FieldInert(this.field.exts, this.field.options)
-    this.elValueError = h(
+    this.elError = h(
       "leading-tight block pb-1 -mt-2 mx-1 px-1 italic text-red-800 hidden whitespace-pre-wrap",
-    )
-    this.elGlslError = h(
-      "leading-tight block pb-1 -mt-2 mx-1 px-1 italic text-yellow-800 hidden whitespace-pre-wrap",
     )
     this.elScroller = h(
       "block overflow-x-auto [&::-webkit-scrollbar]:hidden min-h-[3.265rem] max-w-[calc(var(--nya-sheet-sidebar)_-_2.5rem)]",
@@ -292,14 +283,14 @@ export class Expr {
 
   displayEval(value: JsValue, base: SReal) {
     this.elValue.el.classList.remove("hidden")
-    this.elValueError.classList.add("hidden")
+    this.elError.classList.add("hidden")
     display(this.elValue, value, base)
   }
 
   displayError(reason: Error) {
     this.elValue.el.classList.add("hidden")
-    this.elValueError.classList.remove("hidden")
-    this.elValueError.textContent = reason.message
+    this.elError.classList.remove("hidden")
+    this.elError.textContent = reason.message
   }
 
   checkIndex() {
@@ -307,32 +298,10 @@ export class Expr {
     this.index = this.sheet.exprs.length - 1
   }
 
-  checkBinding() {
-    this.slider.el.classList.add("hidden")
-    this.elValue.el.classList.remove("!hidden")
-
-    try {
-      var node = this.field.block.expr()
-    } catch {
-      this.binding = undefined
-      return
-    }
-
-    if (
-      node.type == "binding" &&
-      ["x", "y", "p"].indexOf(name(node.name)) == -1
-    ) {
-      this.binding = node
-      if (!this.binding.args) {
-        this.slider.el.classList.remove("hidden")
-        this.elValue.el.classList.add("!hidden")
-      }
-    } else {
-      this.binding = undefined
-    }
-  }
-
   debug() {
+    this.elValue.el.classList.add("hidden")
+    this.slider.el.classList.add("hidden")
+
     try {
       var node = this.field.block.expr()
       if (node.type == "binding") {
@@ -351,13 +320,12 @@ export class Expr {
       this.displayEval(value, base)
     } catch (e) {
       console.warn(e)
-      this.elGlslError.classList.add("hidden")
       if (
         String(e).includes(
           "Cannot access pixel coordinates outside of shaders.",
         )
       ) {
-        this.elValueError.classList.add("hidden")
+        this.elError.classList.add("hidden")
         this.elValue.el.classList.add("hidden")
       } else {
         this.displayError(e instanceof Error ? e : new Error(String(e)))
@@ -457,12 +425,15 @@ void main() {
         requestAnimationFrame(draw)
       }
       draw()
-
-      this.elGlslError.classList.add("hidden")
     } catch (e) {
       console.warn(e)
-      this.elGlslError.textContent = e instanceof Error ? e.message : String(e)
-      this.elGlslError.classList.remove("hidden")
+      this.displayError(e instanceof Error ? e : new Error(String(e)))
+    }
+  }
+
+  get binding() {
+    if (this.field.ast.type == "binding") {
+      return this.field.ast
     }
   }
 }
@@ -680,10 +651,6 @@ export class Sheet {
     this.elNextIndex.textContent = this.exprs.length + 1 + ""
   }
 
-  onExprFocus(expr: Expr): void {
-    expr.debug()
-  }
-
   queued: Expr | undefined
 
   queue(expr: Expr) {
@@ -698,11 +665,6 @@ export class Sheet {
       this.queued!.debug()
       this.queued = undefined
     })
-  }
-
-  onExprChange(expr: Expr): void {
-    expr.checkBinding()
-    this.queue(expr)
   }
 }
 

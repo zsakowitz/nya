@@ -814,6 +814,10 @@ video {
   margin-left: .9em;
 }
 
+.ml-auto {
+  margin-left: auto;
+}
+
 .mr-\[-\.6em\] {
   margin-right: -.6em;
 }
@@ -824,10 +828,6 @@ video {
 
 .mt-px {
   margin-top: 1px;
-}
-
-.ml-auto {
-  margin-left: auto;
 }
 
 .\!block {
@@ -1083,14 +1083,6 @@ video {
 
 .justify-center {
   justify-content: center;
-}
-
-.gap-2 {
-  gap: 0.5rem;
-}
-
-.gap-\[\.2em\] {
-  gap: .2em;
 }
 
 .gap-x-\[\.4em\] {

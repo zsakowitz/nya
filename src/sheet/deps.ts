@@ -1,6 +1,9 @@
 import type { Node } from "../eval/ast/token"
 import { deps, Deps } from "../eval/deps"
-import { tryId } from "../eval/lib/binding"
+import { js, type PropsJs } from "../eval/js"
+import { Bindings, name, tryId } from "../eval/lib/binding"
+import type { JsValue } from "../eval/ty"
+import { real } from "../eval/ty/create"
 import { Field } from "../field/field"
 import type { Exts, Options } from "../field/options"
 
@@ -35,6 +38,14 @@ export class Scope {
 
   /** A map from binding IDs to the fields which mention them. */
   private readonly deps: Record<string, FieldComputed[]> = Object.create(null)
+
+  bindingsJs = new Bindings<JsValue>()
+  propsJs: PropsJs = ((self) => ({
+    base: real(10),
+    get bindings() {
+      return self.bindingsJs
+    },
+  }))(this)
 
   flush() {
     for (const field of this.fields) {
@@ -76,6 +87,34 @@ export class Scope {
           dependent.dirtyValue = true
           dirty++
         }
+      }
+    }
+
+    const bindings = Object.create(null)
+    for (const def in this.defs) {
+      const field = this.defs[def]!.map(
+        (x) => x.ast as Node & { type: "binding" },
+      )
+      if (field.length == 1) {
+        const node = field[0]!.value
+        let value: JsValue | undefined
+        Object.defineProperty(bindings, def, {
+          configurable: true,
+          enumerable: true,
+          get: () => (value ??= js(node, this.propsJs)),
+        })
+      } else {
+        Object.defineProperty(bindings, def, {
+          configurable: true,
+          enumerable: true,
+          get: () => {
+            throw new Error(
+              "Multiple definitions for " +
+                ((field[0] && name(field[0]?.name)) || def) +
+                ".",
+            )
+          },
+        })
       }
     }
 
