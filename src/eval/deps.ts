@@ -61,25 +61,25 @@ export function deps(node: Node, deps: Deps) {
       if (node.sub) {
         deps.add(node.sub)
       }
-      break
+      return
     case "op":
       if (!node.b) {
         deps.add(node.a)
-        break
+        return
       }
       if (node.kind == "with" || node.kind == "withseq") {
         deps.withBoundIds(
           withBindingsDeps(node.b, node.kind == "withseq", deps),
           () => deps.add(node.a),
         )
-        break
+        return
       }
       deps.add(node.a)
       deps.add(node.b)
-      break
+      return
     case "group":
       deps.add(node.value)
-      break
+      return
     case "call":
       if (
         node.name.type == "var" &&
@@ -92,18 +92,18 @@ export function deps(node: Node, deps: Deps) {
           deps.add(node.on)
         }
       }
-      break
+      return
     case "juxtaposed":
       for (const x of node.nodes) {
         deps.add(x)
       }
-      break
+      return
     case "var": {
       if (deps.isBound(id(node))) {
         if (node.sup) {
           deps.add(node.sup)
         }
-        break
+        return
       }
 
       builtin: {
@@ -115,34 +115,34 @@ export function deps(node: Node, deps: Deps) {
         if (node.sup) {
           deps.add(node.sup)
         }
-        break
+        return
       }
 
-      deps.add(node)
+      deps.track(node)
       if (node.sup) {
         deps.add(node.sup)
       }
-      break
+      return
     }
     case "frac":
       deps.add(node.a)
       deps.add(node.b)
-      break
+      return
     case "raise":
       deps.add(node.base)
       deps.add(node.exponent)
-      break
+      return
     case "cmplist":
       for (const item of node.items) {
         deps.add(item)
       }
-      break
+      return
     case "piecewise":
       for (const { condition, value } of node.pieces) {
         deps.add(condition)
         deps.add(value)
       }
-      break
+      return
     case "error":
       throw new Error(node.reason)
     case "magicvar":
@@ -150,56 +150,57 @@ export function deps(node: Node, deps: Deps) {
         const parsed = parseIterate(node, { source: "expr" })
         iterateDeps(parsed, deps)
       }
-      break
+      return
     case "void":
-      break
+      return
     case "index":
       deps.add(node.on)
       deps.add(node.index)
-      break
+      return
     case "commalist":
       for (const item of node.items) {
         deps.add(item)
       }
-      break
+      return
     case "sub":
       throw new Error("Invalid subscript.")
     case "sup":
       deps.add(node.sup)
-      break
+      return
     case "mixed":
-      break
+      return
     case "root":
       if (node.root) {
         deps.add(node.root)
       }
       deps.add(node.contents)
-      break
+      return
     case "num16":
-      break
+      return
     case "matrix":
       for (const value of node.values) {
         deps.add(value)
       }
-      break
+      return
     // @ts-expect-error fallthrough is intentional
     case "big":
       deps.add(node.of)
     case "bigsym":
       if (node.sub) deps.add(node.sub)
       if (node.sup) deps.add(node.sup)
-      break
+      return
     case "factorial":
       deps.add(node.on)
       if (typeof node.repeats != "number") {
         deps.add(node.repeats)
       }
-      break
+      return
     case "punc":
-      break
+      return
+    case "binding":
+      deps.add(node.value)
+      return
   }
 
-  throw new Error(
-    `Node type '${node.type}' is not implemented for shaders yet.`,
-  )
+  node satisfies never
 }

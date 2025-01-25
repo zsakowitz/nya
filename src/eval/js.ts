@@ -254,12 +254,6 @@ export function js(node: Node, props: PropsJs): JsValue {
           ),
         ),
       }
-    case "num16":
-    case "matrix":
-    case "bigsym":
-    case "big":
-    case "factorial":
-    case "punc":
   }
 
   throw new Error(`Node type '${node.type}' is not implemented yet.`)

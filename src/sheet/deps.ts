@@ -55,6 +55,7 @@ export class Scope {
         deps(field.ast, myDeps)
         field.deps = myDeps
       } catch (e) {
+        console.warn(e)
         field.error = toError(e)
         continue
       }

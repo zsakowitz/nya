@@ -279,12 +279,6 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
           expr: "vec2(0.5, 0)",
         })
       }
-    case "num16":
-    case "matrix":
-    case "bigsym":
-    case "big":
-    case "factorial":
-    case "punc":
   }
 
   throw new Error(

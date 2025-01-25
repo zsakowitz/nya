@@ -207,7 +207,7 @@ export class Expr {
 
   constructor(readonly sheet: Sheet) {
     this.sheet.exprs.push(this)
-    this.elRecomps = h("", "0")
+    this.elRecomps = h("ml-auto", "0")
     this.field = new ExprField(this)
     this.slider = new ExprSlider(this)
     this.elValue = new FieldInert(this.field.exts, this.field.options)
@@ -225,11 +225,11 @@ export class Expr {
       "border-b border-slate-200 grid grid-cols-[2.5rem,auto] relative group focus-within:border-[color:--nya-focus] max-w-full",
       h(
         "inline-flex bg-slate-100 flex-col p-0.5 group-focus-within:bg-[color:--nya-focus] border-r border-slate-200 group-focus-within:border-transparent",
-        (this.elIndex = h(
-          "text-[65%] [line-height:1] text-slate-500 group-focus-within:text-white",
-          "" + this.sheet.exprs.length,
-        )),
-        this.elRecomps,
+        h(
+          "inline-flex text-[65%] [line-height:1] text-slate-500 group-focus-within:text-white",
+          (this.elIndex = h("", "" + this.sheet.exprs.length)),
+          this.elRecomps,
+        ),
         (this.elCircle = h("contents", circle("empty"))),
       ),
       h(
@@ -491,6 +491,7 @@ export class Sheet {
     readonly options: Options,
   ) {
     this.scope = new Scope(this.exts, this.options.field)
+    Object.assign(globalThis, { scope: this.scope })
     this.paper.el.classList.add("size-full")
     doMatchSize(this.paper)
     doDrawCycle(this.paper)
