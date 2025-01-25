@@ -320,6 +320,7 @@ export class Expr {
 
     this.elValue.el.classList.add("hidden")
     this.elValue.el.classList.remove("!hidden")
+    this.elError.classList.add("hidden")
     this.slider.el.classList.add("hidden")
 
     if (this.field.ast.type == "binding" && !this.field.ast.args) {
