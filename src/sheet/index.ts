@@ -300,7 +300,13 @@ export class Expr {
 
   debug() {
     this.elValue.el.classList.add("hidden")
+    this.elValue.el.classList.remove("!hidden")
     this.slider.el.classList.add("hidden")
+
+    if (this.field.ast.type == "binding" && !this.field.ast.args) {
+      this.slider.el.classList.remove("hidden")
+      this.elValue.el.classList.add("!hidden")
+    }
 
     try {
       var node = this.field.block.expr()

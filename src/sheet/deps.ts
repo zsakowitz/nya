@@ -1,9 +1,10 @@
 import type { Node } from "../eval/ast/token"
 import { deps, Deps } from "../eval/deps"
-import { js, type PropsJs } from "../eval/js"
+import { defaultPropsGlsl, glsl } from "../eval/glsl"
+import { defaultPropsJs, js, type PropsJs } from "../eval/js"
 import { Bindings, name, tryId } from "../eval/lib/binding"
-import type { JsValue } from "../eval/ty"
-import { real } from "../eval/ty/create"
+import { GlslContext, GlslHelpers } from "../eval/lib/fn"
+import type { GlslValue, JsValue } from "../eval/ty"
 import { Field } from "../field/field"
 import type { Exts, Options } from "../field/options"
 
@@ -40,8 +41,11 @@ export class Scope {
   private readonly deps: Record<string, FieldComputed[]> = Object.create(null)
 
   bindingsJs = new Bindings<JsValue>()
-  propsJs: PropsJs = ((self) => ({
-    base: real(10),
+  bindingsGlsl = new Bindings<GlslValue>()
+  readonly helpers = new GlslHelpers()
+
+  readonly propsJs: PropsJs = ((self) => ({
+    ...defaultPropsJs(),
     get bindings() {
       return self.bindingsJs
     },
@@ -90,29 +94,61 @@ export class Scope {
       }
     }
 
-    const bindings = Object.create(null)
+    const bindingsJs: Record<string, JsValue> = Object.create(null)
+    const bindingsGlsl: Record<string, GlslValue> = Object.create(null)
     for (const def in this.defs) {
       const field = this.defs[def]!.map(
         (x) => x.ast as Node & { type: "binding" },
       )
       if (field.length == 1) {
         const node = field[0]!.value
-        let value: JsValue | undefined
-        Object.defineProperty(bindings, def, {
+
+        let valueJs: JsValue | undefined
+        Object.defineProperty(bindingsJs, def, {
           configurable: true,
           enumerable: true,
-          get: () => (value ??= js(node, this.propsJs)),
+          get: () => (valueJs ??= js(node, this.propsJs)),
         })
-      } else {
-        Object.defineProperty(bindings, def, {
+
+        let valueGlsl: GlslValue | undefined
+        Object.defineProperty(bindingsGlsl, def, {
           configurable: true,
           enumerable: true,
           get: () => {
-            throw new Error(
-              "Multiple definitions for " +
-                ((field[0] && name(field[0]?.name)) || def) +
-                ".",
-            )
+            throw new Error("variables are hard in shaders srry")
+
+            if (valueGlsl) return valueGlsl
+
+            const props = defaultPropsGlsl()
+            const ctx = (props.ctx = new GlslContext(this.helpers))
+            const rawValue = glsl(node, props)
+            const name = ctx.name()
+            ctx.helpers.helpers += `void `
+            return (valueGlsl = { ...rawValue, expr: `${name}()` })
+          },
+        })
+      } else {
+        let myName = def
+        try {
+          if (field[0]) {
+            myName = name(field[0].name)
+          }
+        } catch {}
+        const err = `Multiple definitions for ${myName}.`
+
+        Object.defineProperty(bindingsJs, def, {
+          configurable: true,
+          enumerable: true,
+          get() {
+            throw new Error(err)
+          },
+        })
+
+        Object.defineProperty(bindingsGlsl, def, {
+          configurable: true,
+          enumerable: true,
+          get() {
+            throw new Error(err)
           },
         })
       }
