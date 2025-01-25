@@ -531,16 +531,7 @@ export class Sheet {
         ),
         h(
           "absolute flex flex-col top-2 right-2",
-          h(
-            "flex w-48 bg-white h-8 outline outline-black/10 rounded shadow",
-            (this.elPixelRatio = hx("input", {
-              type: "range",
-              min: "1",
-              max: "16",
-              step: "any",
-              class: "flex-1 m-auto mx-4",
-            })),
-          ),
+          (this.elPixelRatio = new Slider()).el,
           // h(
           //   "flex size-8 border shadow border-slate-300 bg-slate-100 rounded",
           //   fa(faHomeLg, "m-auto size-4 fill-slate-500"),
@@ -569,10 +560,13 @@ export class Sheet {
       this.elShaderCanvas,
       this.regl,
     )
-    this.elPixelRatio.value = "" + this.pixelRatio()
-    this.elPixelRatio.addEventListener("input", () => {
-      this.setPixelRatio(+this.elPixelRatio.value)
-    })
+    this.elPixelRatio.el.className =
+      "block w-48 bg-white outline outline-black/30 rounded-full p-1"
+    this.elPixelRatio.bounds(real(1), real(16))
+    this.elPixelRatio.value = real(this.pixelRatio())
+    this.elPixelRatio.onInput = () => {
+      this.setPixelRatio(num(this.elPixelRatio.value))
+    }
     this.paper.el.classList.add("absolute", "inset-0")
 
     new ResizeObserver((entries) => {
