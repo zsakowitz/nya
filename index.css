@@ -781,6 +781,11 @@ video {
   margin-bottom: .1em;
 }
 
+.mx-\[\.2em\] {
+  margin-left: .2em;
+  margin-right: .2em;
+}
+
 .-ml-px {
   margin-left: -1px;
 }
@@ -987,6 +992,10 @@ video {
 
 .w-px {
   width: 1px;
+}
+
+.w-\[\.2em\] {
+  width: .2em;
 }
 
 .min-w-\[\.5em\] {

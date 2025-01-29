@@ -84,6 +84,7 @@ export const exts = new Exts()
   .set(",", CmdComma)
   .set(".", CmdDot)
   .set("!", CmdExclamation)
+  .set("¡", CmdBrack)
   .set("&", CmdBreakCol)
   .set(";", CmdBreakRow)
   // movement ops

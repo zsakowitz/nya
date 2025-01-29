@@ -584,6 +584,8 @@ uniform vec2 u_cx;
 uniform vec2 u_cy;
 uniform vec4 u_px_per_unit;
 vec4 _nya_helper_compose(vec4 base, vec4 added) {
+  if (base.w == 0.) return added;
+  if (added.w == 0.) return base;
   float w = 1. - (1. - added.w) * (1. - base.w);
   return vec4(
     ((added.xyz * added.w / w) + (base.xyz * base.w * (1. - added.w) / w)),

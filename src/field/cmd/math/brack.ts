@@ -19,7 +19,7 @@ export const BRACKS = {
     w: "w-[.55em]",
     mx: "mx-[.55em]",
     size: 0.55,
-    side: L as Dir | null,
+    side: L,
     latex: "[",
     html() {
       return svg("0 0 11 24", p("M8 0 L3 0 L3 24 L8 24 L8 23 L4 23 L4 1 L8 1"))
@@ -29,7 +29,7 @@ export const BRACKS = {
     w: "w-[.55em]",
     mx: "mx-[.55em]",
     size: 0.55,
-    side: R as Dir | null,
+    side: R,
     latex: "]",
     html() {
       return svg("0 0 11 24", p("M3 0 L8 0 L8 24 L3 24 L3 23 L7 23 L7 1 L3 1"))
@@ -39,7 +39,7 @@ export const BRACKS = {
     w: "w-[.55em]",
     mx: "mx-[.55em]",
     size: 0.55,
-    side: L as Dir | null,
+    side: L,
     latex: "(",
     html() {
       return svg(
@@ -52,7 +52,7 @@ export const BRACKS = {
     w: "w-[.55em]",
     mx: "mx-[.55em]",
     size: 0.55,
-    side: R as Dir | null,
+    side: R,
     latex: ")",
     html() {
       return svg(
@@ -65,7 +65,7 @@ export const BRACKS = {
     w: "w-[.7em]",
     mx: "mx-[.7em]",
     size: 0.7,
-    side: L as Dir | null,
+    side: L,
     latex: "\\{",
     html() {
       return svg(
@@ -80,7 +80,7 @@ export const BRACKS = {
     w: "w-[.7em]",
     mx: "mx-[.7em]",
     size: 0.7,
-    side: R as Dir | null,
+    side: R,
     latex: "\\}",
     html() {
       return svg(
@@ -95,17 +95,57 @@ export const BRACKS = {
     w: "w-[.4em]",
     mx: "mx-[.4em]",
     size: 0.4,
-    side: null as Dir | null,
+    side: null,
     latex: "|",
     html() {
       return svg("0 0 10 54", p("M4.4 0 L4.4 54 L5.6 54 L5.6 0"))
     },
   },
-}
+  "¡": {
+    w: "w-[.4em]",
+    mx: "mx-[.4em]",
+    size: 0.4,
+    side: L,
+    latex: "¡",
+    html() {
+      return svg(
+        "-10 0 30.645 71.583",
+        p(
+          "M 0.049 66.504 L 3.907 20.899 A 6.07 6.07 0 0 1 4.016 20.152 Q 4.191 19.348 4.574 18.989 A 1.056 1.056 0 0 1 5.323 18.702 A 1.09 1.09 0 0 1 6.295 19.289 Q 6.642 19.863 6.739 20.997 L 10.596 66.504 L 10.596 66.993 Q 10.596 68.946 9.131 70.215 A 5.821 5.821 0 0 1 5.323 71.583 A 5.821 5.821 0 0 1 1.514 70.215 A 4.051 4.051 0 0 1 0.058 67.294 A 5.005 5.005 0 0 1 0.049 66.993 L 0.049 66.504 Z M 9.033 1.515 A 5.119 5.119 0 0 0 5.323 0.001 A 6.136 6.136 0 0 0 5.254 0.001 A 5.12 5.12 0 0 0 1.563 1.563 A 6.317 6.317 0 0 0 1.514 1.612 A 5.089 5.089 0 0 0 0 5.298 A 5.273 5.273 0 0 0 0.268 6.993 A 5.234 5.234 0 0 0 1.563 9.034 A 6.247 6.247 0 0 0 1.612 9.082 A 5.119 5.119 0 0 0 5.323 10.596 A 6.136 6.136 0 0 0 5.391 10.596 A 5.12 5.12 0 0 0 9.082 9.034 A 6.317 6.317 0 0 0 9.131 8.985 A 5.089 5.089 0 0 0 10.645 5.298 A 5.273 5.273 0 0 0 10.377 3.604 A 5.234 5.234 0 0 0 9.082 1.563 A 6.247 6.247 0 0 0 9.033 1.515 Z",
+        ),
+      )
+    },
+  },
+  "!": {
+    w: "w-[.4em]",
+    mx: "mx-[.4em]",
+    size: 0.4,
+    side: R,
+    latex: "!",
+    html() {
+      return svg(
+        "-10 0 30.645 71.583",
+        p(
+          "M 3.907 50.586 L 0.049 5.078 L 0.049 4.59 Q 0.049 2.637 1.514 1.367 A 5.821 5.821 0 0 1 5.323 0 A 5.821 5.821 0 0 1 9.131 1.367 A 4.051 4.051 0 0 1 10.587 4.289 A 5.005 5.005 0 0 1 10.596 4.59 L 10.596 5.078 L 6.739 50.684 A 6.07 6.07 0 0 1 6.629 51.431 Q 6.455 52.235 6.072 52.594 A 1.056 1.056 0 0 1 5.323 52.881 A 1.09 1.09 0 0 1 4.35 52.294 Q 4.003 51.72 3.907 50.586 Z M 9.033 62.501 A 5.119 5.119 0 0 0 5.323 60.987 A 6.136 6.136 0 0 0 5.254 60.987 A 5.12 5.12 0 0 0 1.563 62.549 A 6.317 6.317 0 0 0 1.514 62.598 A 5.089 5.089 0 0 0 0 66.284 A 5.273 5.273 0 0 0 0.268 67.979 A 5.234 5.234 0 0 0 1.563 70.02 A 6.247 6.247 0 0 0 1.612 70.068 A 5.119 5.119 0 0 0 5.323 71.582 A 6.136 6.136 0 0 0 5.391 71.582 A 5.12 5.12 0 0 0 9.082 70.02 A 6.317 6.317 0 0 0 9.131 69.971 A 5.089 5.089 0 0 0 10.645 66.284 A 5.273 5.273 0 0 0 10.377 64.59 A 5.234 5.234 0 0 0 9.082 62.549 A 6.247 6.247 0 0 0 9.033 62.501 Z",
+        ),
+      )
+    },
+  },
+} satisfies Record<
+  ParenLhs | ParenRhs,
+  {
+    w: `w-${string}`
+    mx: `mx-${string}`
+    size: number
+    side: Dir | null
+    latex: string
+    html(): SVGSVGElement
+  }
+>
 Object.setPrototypeOf(BRACKS, null)
 
-export type ParenLhs = "(" | "[" | "{" | "|"
-export type ParenRhs = ")" | "]" | "}" | "|"
+export type ParenLhs = "(" | "[" | "{" | "|" | "¡"
+export type ParenRhs = ")" | "]" | "}" | "|" | "!"
 export type ParenAny = ParenLhs | ParenRhs
 
 export function matchParen(x: ParenLhs): ParenRhs
@@ -120,6 +160,8 @@ export function matchParen(x: ParenAny) {
     "]": "[",
     "}": "{",
     "|": "|",
+    "!": "¡",
+    "¡": "!",
   }[x]
 }
 
@@ -246,9 +288,7 @@ export class CmdBrack extends Command<[Block]> {
     const lhsSymbol = BRACKS[lhs]
     const rhsSymbol = BRACKS[rhs]
     return h(
-      lhs == "(" && rhs == ")" ?
-        "relative inline-block nya-cmd-brack nya-cmd-paren"
-      : "relative inline-block nya-cmd-brack",
+      "relative inline-block nya-cmd-brack",
       h(
         "left-0 absolute top-0 bottom-[2px] inline-block" +
           (side == R ? " opacity-20" : "") +

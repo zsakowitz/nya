@@ -154,3 +154,14 @@ export function parseBindings(node: Node, f = parseBindingVar): any[] {
   }
   return commalist(node).map(f)
 }
+
+export type BindingArgs = Record<string, Node | null>
+
+export class BindingFn {
+  constructor(
+    readonly id: string,
+    readonly name: string,
+    readonly value: Node,
+    readonly args: Node,
+  ) {}
+}
