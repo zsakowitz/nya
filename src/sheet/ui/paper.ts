@@ -1,4 +1,4 @@
-import { hx } from "../field/jsx"
+import { hx } from "../../field/jsx"
 
 const THEME_MAIN_AXIS_WIDTH = 1.5
 const THEME_MAJOR_LINE_ALPHA = 0.3

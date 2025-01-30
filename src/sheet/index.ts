@@ -18,6 +18,9 @@ import { h, hx, p, svgx } from "../field/jsx"
 import { Block, D, L, R, U, type Dir, type VDir } from "../field/model"
 import type { Exts, Options as FieldOptions } from "../field/options"
 import { FieldComputed, Scope } from "./deps"
+import { doMatchReglSize } from "./regl"
+import { REMARK } from "./remark"
+import { Slider } from "./slider"
 import {
   createDrawAxes,
   doDrawCycle,
@@ -28,9 +31,7 @@ import {
   registerPanAndZoom,
   type Point,
   type PointerHandlers,
-} from "./paper"
-import { doMatchReglSize } from "./regl"
-import { Slider } from "./slider"
+} from "./ui/paper"
 import regl = require("regl")
 
 export interface Options {
@@ -186,8 +187,6 @@ export class ExprSlider {
 }
 
 export class Expr {
-  static id = 0
-
   readonly field
 
   readonly el
@@ -435,9 +434,9 @@ export class SheetHandlers
     expr.field.scope.queueUpdate()
   }
 
-  onDragEnd(to: Point, data: SheetHandlerData): void {}
+  onDragEnd(): void {}
 
-  onHover(at: Point): void {}
+  onHover(): void {}
 }
 
 export class Sheet {
@@ -467,7 +466,6 @@ export class Sheet {
     readonly options: Options,
   ) {
     this.scope = new Scope(this.exts, this.options.field)
-    Object.assign(globalThis, { scope: this.scope })
     this.paper.el.classList.add("size-full")
     doMatchSize(this.paper)
     doDrawCycle(this.paper)
@@ -704,51 +702,3 @@ void main() {
     this.elNextIndex.textContent = this.exprs.length + 1 + ""
   }
 }
-
-const REMARKS = [
-  "the graphpaper is only for aesthetics",
-  "it turned my laptop into molten metal!",
-  "sounds like a rhythm game",
-  "how to type hex digits 10-15? just don't!",
-  "oh god why doesn't it round 10^-16 to zero",
-  "nobody knows what the sidebar does",
-  "because you wanted desmos to be open source",
-  "its developers thought ≱ was useful",
-  "what is the logo hiding",
-  "the ‘go to sleep’ node type is not implemented yet",
-  "nya? like the cat noise? (yes)",
-  "what even does ⊙ do",
-  "it can write decimals in base 5, but not read them",
-  "it has uscript support",
-  "easier to extend than a tungsten cube",
-  "variables are for silly people",
-  "my favorite color palette: modern house",
-  "i still don't know why it exists",
-  "they added \\over before y=2",
-  "mrrp meow",
-  "how even do you grow the piecewise function",
-  "it’s like ithkuil decomposer, but totally different",
-  "it’s shaders for the rest of us",
-  "tbh it’s only so sakawi can say ‘nya’ more",
-  "car <3",
-  "where bedtime is 29:00",
-  "brought to you by sleep deprivation",
-  "sponsored by zSnout",
-  "in awe of the desmos team tbh",
-  "we once defined eˣ to just be x 😭",
-  "its order of operations is so cursed",
-  "now with vertical lists!",
-  "first class support for typing matrices",
-  "oklch >>> hsv",
-  "our fractals are so good it’s silly",
-  "currently on type system #3",
-  "where numbers come in three precision levels",
-  "even our colors can be approximate",
-  "“you can choose LaTeX parsing or”— “THE SECOND ONE”",
-  "copy-paste easy to implement: famous last words",
-  "the error messages are doubled because why not",
-  "experience the joy of floating point numbers",
-  "lines are impossible",
-]
-
-const REMARK = REMARKS[Math.floor(REMARKS.length * Math.random())]!
