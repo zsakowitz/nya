@@ -5,27 +5,25 @@ import { FnDist } from "../dist"
 import { declareExp, FN_EXP } from "../fn/exp"
 import { declareMulC32, OP_CDOT } from "./mul"
 
-export function exp10(val: SReal): SReal {
-  return real(10 ** num(val))
+export function raise(a: SReal, b: SReal): SReal {
+  if (isZero(b)) {
+    return real(1)
+  }
+
+  if (isZero(a)) {
+    return real(0)
+  }
+
+  // TODO: things like (-8) ** (1/3) don't work
+  // TODO: use approx and exact better
+  return real(num(a) ** num(b))
 }
 
 export const OP_RAISE = new FnDist("^")
   .add(
     ["r32", "r32"],
     "r32",
-    (a, b) => {
-      if (isZero(b.value)) {
-        return real(1)
-      }
-
-      if (isZero(a.value)) {
-        return real(0)
-      }
-
-      // TODO: things like (-8) ** (1/3) don't work
-      // TODO: use approx and exact better
-      return real(num(a.value) ** num(b.value))
-    },
+    (a, b) => raise(a.value, b.value),
     (_, a, b) => {
       return `pow(${a.expr}, ${b.expr})`
     },

@@ -3,9 +3,9 @@ import type { Node } from "../../../eval/ast/token"
 import { parseNumberJs } from "../../../eval/lib/base"
 import { mul } from "../../../eval/ops/op/mul"
 import { neg } from "../../../eval/ops/op/neg"
-import { exp10 } from "../../../eval/ops/op/raise"
+import { raise } from "../../../eval/ops/op/raise"
 import type { SReal } from "../../../eval/ty"
-import { frac, num } from "../../../eval/ty/create"
+import { frac, num, real } from "../../../eval/ty/create"
 import { Display } from "../../../eval/ty/display"
 import { OpEq } from "../../../field/cmd/leaf/cmp"
 import { CmdVar } from "../../../field/cmd/leaf/var"
@@ -29,7 +29,15 @@ export class ExprSlider extends Slider {
     const cursor = field.block.cursor(R)
     CmdVar.leftOf(cursor, this.expr.state.name, field.options)
     new OpEq(false).insertAt(cursor, L)
-    new Display(cursor, frac(10, 1)).value(num(this.value))
+    const base = this.expr.state.base
+    new Display(cursor, base || frac(10, 1)).value(num(this.value))
+    if (base) {
+      new CmdVar("b", field.options).insertAt(cursor, L)
+      new CmdVar("a", field.options).insertAt(cursor, L)
+      new CmdVar("s", field.options).insertAt(cursor, L)
+      new CmdVar("e", field.options).insertAt(cursor, L)
+      new Display(cursor, frac(10, 1)).value(num(base))
+    }
     this.expr.field.onAfterChange(false)
   }
 }
@@ -49,7 +57,7 @@ function totallyPlainNum(node: Node): SReal | null {
   return null
 }
 
-export function plainNum(node: Node): SReal | null {
+function readPlainNum(node: Node, base: SReal): SReal | null {
   let isNeg = false
   if (node.type == "op" && !node.b && node.kind == "-") {
     isNeg = true
@@ -69,10 +77,31 @@ export function plainNum(node: Node): SReal | null {
     if (a == null) return null
     const b = totallyPlainNum(node.b.exponent)
     if (b == null) return null
-    value = mul(a, exp10(b))
+    value = mul(a, raise(base, b))
   } else {
     value = totallyPlainNum(node)
   }
 
   return value && isNeg ? neg(value) : value
+}
+
+export function readSlider(
+  node: Node,
+): { value: SReal; base: SReal | null } | null {
+  if (
+    node.type == "op" &&
+    node.kind == "base" &&
+    node.b.type == "num" &&
+    !node.b.sub &&
+    node.b.value.indexOf(".") == -1
+  ) {
+    const base = real(+node.b.value)
+    const value = readPlainNum(node.a, base)
+    if (value == null) return null
+    return { value, base }
+  } else {
+    const value = readPlainNum(node, frac(10, 1))
+    if (value == null) return null
+    return { value, base: null }
+  }
 }

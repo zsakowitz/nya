@@ -12,11 +12,11 @@ import { R } from "../../../field/model"
 import { h } from "../../../jsx"
 import type { Sheet } from "../sheet"
 import { Field } from "./field"
-import { ExprSlider, plainNum } from "./slider"
+import { ExprSlider, readSlider } from "./slider"
 
 export type ExprState =
   | { type: "error"; reason: string }
-  | { type: "slider"; name: PlainVar; value: SReal }
+  | { type: "slider"; name: PlainVar; value: SReal; base: SReal | null }
   | { type: "js"; value: JsValue; base: SReal }
   | { type: "glsl"; ctx: GlslContext; value: GlslValue }
 
@@ -45,7 +45,7 @@ export class Expr {
       .latex`-10`
     ;(this.smax = new FieldInert(sheet.exts, sheet.options, "font-sans pb-2"))
       .latex`10`
-    this.slider.bounds(real(-10), real(1e32))
+    this.slider.bounds(real(-10), real(10))
     this.field = new Field(
       this,
       "block overflow-x-auto [&::-webkit-scrollbar]:hidden min-h-[3.265rem] max-w-[calc(var(--nya-sidebar)_-_2.5rem)] p-4",
@@ -95,9 +95,14 @@ export class Expr {
     let node = this.field.ast
 
     if (node.type == "binding" && !node.args) {
-      const sliderValue = plainNum(node.value)
+      const sliderValue = readSlider(node.value)
       if (sliderValue) {
-        this.state = { type: "slider", name: node.name, value: sliderValue }
+        this.state = {
+          type: "slider",
+          name: node.name,
+          value: sliderValue.value,
+          base: sliderValue.base,
+        }
         return
       }
     }
