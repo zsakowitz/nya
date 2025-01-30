@@ -1,6 +1,6 @@
 import { Leaf } from "."
 import type { Node } from "../../../eval/ast/token"
-import { h } from "../../jsx"
+import { h } from "../../../jsx"
 
 export class CmdDebug extends Leaf {
   constructor(readonly data: string) {

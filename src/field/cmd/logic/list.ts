@@ -1,5 +1,5 @@
 import type { Node } from "../../../eval/ast/token"
-import { h } from "../../jsx"
+import { h } from "../../../jsx"
 import type { LatexParser } from "../../latex"
 import {
   Block,

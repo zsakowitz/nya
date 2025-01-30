@@ -1,6 +1,6 @@
 import { Leaf } from "."
 import type { Node } from "../../../eval/ast/token"
-import { h, t } from "../../jsx"
+import { h, t } from "../../../jsx"
 import type { WordKind } from "./var"
 
 export class CmdWord extends Leaf {

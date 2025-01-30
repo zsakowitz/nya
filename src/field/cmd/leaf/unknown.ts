@@ -1,6 +1,6 @@
 import { Leaf } from "."
 import type { Node } from "../../../eval/ast/token"
-import { h } from "../../jsx"
+import { h } from "../../../jsx"
 
 /**
  * Returned when invalid LaTeX is parsed or when LaTeX is parsed but it cannot

@@ -5,7 +5,7 @@ import { sub } from "../eval/ops/op/sub"
 import type { SReal } from "../eval/ty"
 import { isZero } from "../eval/ty/check"
 import { frac, num, real } from "../eval/ty/create"
-import { h, hx } from "../field/jsx"
+import { h, hx } from "../jsx"
 
 export class Slider {
   private _min = real(0)

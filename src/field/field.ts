@@ -1,6 +1,6 @@
 import { CmdCopy, CmdCut, CmdSelectAll } from "./cmd/util/cursor"
 import { FieldInert } from "./field-inert"
-import { h } from "./jsx"
+import { h } from "../jsx"
 import { Selection } from "./model"
 import type { Exts, Options } from "./options"
 

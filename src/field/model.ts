@@ -1,7 +1,7 @@
 import { tokensToAst, type Node } from "../eval/ast/token"
 import type { CmdFrac } from "./cmd/math/frac"
 import type { FieldInert } from "./field-inert"
-import { h } from "./jsx"
+import { h } from "../jsx"
 import type { LatexParser } from "./latex"
 import type { Options } from "./options"
 

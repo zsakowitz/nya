@@ -1,6 +1,6 @@
 import { Leaf } from "."
 import type { Node, Punc, PuncInfix, PuncPm } from "../../../eval/ast/token"
-import { h, t } from "../../jsx"
+import { h, t } from "../../../jsx"
 import type { LatexParser } from "../../latex"
 import {
   L,
