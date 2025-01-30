@@ -13,7 +13,15 @@ export class Scope {
   constructor(
     readonly exts: Exts,
     readonly options: Options,
-  ) {}
+  ) {
+    const self = this
+    this.propsJs = {
+      ...defaultPropsJs(),
+      get bindingsJs() {
+        return self.bindingsJs
+      },
+    }
+  }
 
   /** All fields controlled by this evaluation scope. */
   private readonly fields: FieldComputed[] = []
@@ -44,13 +52,7 @@ export class Scope {
   bindingsJs = new Bindings<JsValue>()
   bindingsGlsl = new Bindings<GlslValue>()
   readonly helpers = new GlslHelpers()
-
-  readonly propsJs: PropsJs = ((self) => ({
-    ...defaultPropsJs(),
-    get bindingsJs() {
-      return self.bindingsJs
-    },
-  }))(this)
+  readonly propsJs: PropsJs
 
   propsGlsl(): PropsGlsl {
     const self = this
@@ -220,8 +222,11 @@ export class Scope {
 }
 
 export class FieldComputed extends Field {
-  constructor(readonly scope: Scope) {
-    super(scope.exts, scope.options)
+  constructor(
+    readonly scope: Scope,
+    className?: string,
+  ) {
+    super(scope.exts, scope.options, className)
     scope.adopt(this)
   }
 

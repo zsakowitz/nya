@@ -2,8 +2,11 @@ import type { Expr } from "."
 import { FieldComputed } from "../../deps"
 
 export class Field extends FieldComputed {
-  constructor(readonly expr: Expr) {
-    super(expr.sheet.scope)
+  constructor(
+    readonly expr: Expr,
+    className?: string,
+  ) {
+    super(expr.sheet.scope, className)
   }
 
   recompute(): void {

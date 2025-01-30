@@ -87,8 +87,8 @@ export class FieldInert {
     this.onAfterChange?.(false)
   }
 
-  latex(source: { raw: readonly string[] }) {
-    this.typeLatex(source.raw[0] || "")
+  latex(source: { raw: readonly string[] }, ...interps: string[]) {
+    this.typeLatex(String.raw(source, ...interps))
   }
 
   // Fired around `.init()` calls

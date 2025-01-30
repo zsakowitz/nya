@@ -1,9 +1,13 @@
-import { FnDist } from "../dist"
-import type { SPoint } from "../../ty"
+import type { SPoint, SReal } from "../../ty"
 import { isZero } from "../../ty/check"
 import { approx, num, pt, real } from "../../ty/create"
+import { FnDist } from "../dist"
 import { declareExp, FN_EXP } from "../fn/exp"
 import { declareMulC32, OP_CDOT } from "./mul"
+
+export function exp10(val: SReal): SReal {
+  return real(10 ** num(val))
+}
 
 export const OP_RAISE = new FnDist("^")
   .add(

@@ -1,3 +1,4 @@
+import { twMerge } from "tailwind-merge"
 import { add } from "../eval/ops/op/add"
 import { div } from "../eval/ops/op/div"
 import { mul } from "../eval/ops/op/mul"
@@ -26,9 +27,9 @@ export class Slider {
    */
   el
 
-  constructor() {
+  constructor(className?: string) {
     this.el = h(
-      "block w-full",
+      twMerge("block w-full", className),
       (this.elInner = h(
         "group/nya-slider block w-full px-[0.5625rem] py-[0.5625rem] relative cursor-pointer",
         (this.elNative = hx("input", {

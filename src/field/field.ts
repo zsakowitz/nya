@@ -1,6 +1,6 @@
+import { h } from "../jsx"
 import { CmdCopy, CmdCut, CmdSelectAll } from "./cmd/util/cursor"
 import { FieldInert } from "./field-inert"
-import { h } from "../jsx"
 import { Selection } from "./model"
 import type { Exts, Options } from "./options"
 
@@ -9,8 +9,8 @@ export class Field extends FieldInert {
     "relative nya-cursor border-current w-px -ml-px border-l [.nya-display:has(.nya-cmd-prompt)_&]:hidden [.nya-display:not(:focus)_&]:hidden",
   )
 
-  constructor(exts: Exts, options: Options) {
-    super(exts, options)
+  constructor(exts: Exts, options: Options, className?: string) {
+    super(exts, options, className)
     this.el.tabIndex = 0
 
     let isPointerDown = false
