@@ -49,7 +49,7 @@ export class Expr {
     this.sheet.elExpressions.appendChild(this.el)
   }
 
-  recompute() {
+  compute() {
     this.state = { type: "error", reason: "Currently computing." }
 
     let node = this.field.ast
@@ -95,4 +95,6 @@ export class Expr {
       this.state = { type: "error", reason: msg }
     }
   }
+
+  display() {}
 }
