@@ -1026,6 +1026,16 @@ video {
   flex-grow: 1;
 }
 
+.rotate-90 {
+  --tw-rotate: 90deg;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+}
+
+.-rotate-90 {
+  --tw-rotate: -90deg;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+}
+
 .scale-x-\[70\%\] {
   --tw-scale-x: 70%;
   transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
@@ -1037,6 +1047,10 @@ video {
 
 .cursor-text {
   cursor: text;
+}
+
+.touch-none {
+  touch-action: none;
 }
 
 .select-none {
@@ -1710,6 +1724,10 @@ video {
 
 .\[scroll-margin\:1rem\] {
   scroll-margin: 1rem;
+}
+
+.\[touch-action\:none\] {
+  touch-action: none;
 }
 
 @font-face {

@@ -46,7 +46,7 @@ export class Slider {
           )),
         )),
         h(
-          "absolute top-0 left-0 right-6 h-6",
+          "absolute top-0 left-0 right-6 h-6 touch-none",
           (this.elScroller = h(
             "absolute block size-6 rounded-full bg-blue-500/40 top-0 left-0 flex group/nya-scroller group-focus-within/nya-slider:ring-2 ring-offset-2 ring-blue-500/40",
             h(
@@ -65,7 +65,7 @@ export class Slider {
     })
     let dragging = false
     addEventListener(
-      "mouseup",
+      "pointerup",
       () => {
         dragging = false
         this.elScroller.classList.remove("nya-scrolleractive")
@@ -73,7 +73,7 @@ export class Slider {
       { passive: true },
     )
     this.el.addEventListener(
-      "mousedown",
+      "pointerdown",
       (event) => {
         dragging = true
         this.elScroller.classList.add("nya-scrolleractive")
@@ -90,7 +90,7 @@ export class Slider {
       { passive: true },
     )
     addEventListener(
-      "mousemove",
+      "pointermove",
       (event) => dragging && this.setByPageX(event.pageX),
       { passive: true },
     )

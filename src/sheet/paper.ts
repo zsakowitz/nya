@@ -144,11 +144,6 @@ export function doDrawCycle(paper: Paper) {
   })()
 }
 
-const log10 =
-  "log10" in Math ?
-    (Math.log10 as any)
-  : (value: number) => Math.log(value) / Math.LN10
-
 export function createDrawAxes(paper: Paper) {
   const ctx = paper.ctx
 
@@ -192,7 +187,7 @@ export function createDrawAxes(paper: Paper) {
     const graphUnitsInGridlineSize =
       (MIN_GRIDLINE_SIZE * graphSize) / canvasSize
 
-    const exp = 10 ** Math.floor(log10(graphUnitsInGridlineSize))
+    const exp = 10 ** Math.floor(Math.log10(graphUnitsInGridlineSize))
     const mantissa = graphUnitsInGridlineSize / exp
     if (mantissa < 2) {
       return { minor: 2 * exp, major: 10 * exp }
@@ -278,7 +273,7 @@ export function createDrawAxes(paper: Paper) {
 
   function toString(value: number): string {
     if (Math.abs(value) <= 0.0001 || Math.abs(value) >= 10 ** 8) {
-      const exp = Math.floor(log10(Math.abs(value)))
+      const exp = Math.floor(Math.log10(Math.abs(value)))
       const mantissa = value / 10 ** exp
 
       return `${(+mantissa.toPrecision(15)).toString()}×10${superscript(
@@ -445,99 +440,180 @@ export function onScroll(paper: Paper) {
   })
 }
 
-export function onPointer(paper: Paper) {
-  let moveStart: Point | undefined
-  let pointersDown = 0
+/**
+ * Whether the points refer to clientX/clientY values or paper values depends on
+ * which function is used to register them. Consult its documentation.
+ */
+export interface PointerHandlers<T, X extends null | undefined = never> {
+  onDragStart(at: Point): T | X
+  onDragMove(to: Point, data: T): void
+  onDragEnd(to: Point, data: T): void
 
-  paper.el.addEventListener("pointermove", (event) => {
-    event.preventDefault()
-
-    if (pointersDown != 1) {
-      return
-    }
-
-    if (!moveStart) {
-      return
-    }
-
-    const { x, y } = paper.eventToPaper(event)
-    const { ymin: top, xmax: right, ymax: bottom, xmin: left } = paper.rawBounds
-
-    paper.rawBounds = {
-      ymin: top - (y - moveStart.y),
-      xmax: right - (x - moveStart.x),
-      ymax: bottom - (y - moveStart.y),
-      xmin: left - (x - moveStart.x),
-    }
-  })
-
-  paper.el.addEventListener("pointerdown", (event) => {
-    pointersDown++
-    moveStart = paper.eventToPaper(event)
-    paper.el.setPointerCapture(event.pointerId)
-  })
-
-  function onPointerUp() {
-    pointersDown--
-
-    if (pointersDown < 0) {
-      pointersDown = 0
-    }
-
-    moveStart = undefined
-  }
-
-  document.addEventListener("pointerup", onPointerUp)
-  document.addEventListener("contextmenu", onPointerUp)
+  /** Called if a pointer which isn't down is brought over the {@linkcode Paper}. */
+  onHover(at: Point): void
 }
 
-export function onTouch(paper: Paper) {
-  let previousDistance: number | undefined
+/**
+ * Registers handlers on a {@linkcode Paper}'s canvas. Passed points will refer
+ * to offsetX/offsetY.
+ */
+export function registerOffsetHandlers<T>(
+  paper: Paper,
+  hx: PointerHandlers<T>,
+) {
+  const ptrs = new Map<number, [start: Point, data: T]>()
+
+  paper.el.addEventListener("contextmenu", (event) => {
+    event.preventDefault()
+  })
+
+  paper.el.classList.add("touch-none")
 
   paper.el.addEventListener(
-    "touchmove",
+    "pointerdown",
+    (event) => {
+      event.pointerId
+      paper.el.setPointerCapture(event.pointerId)
+      event.preventDefault()
+      const pt: Point = { x: event.offsetX, y: event.offsetY }
+      const data = hx.onDragStart(pt)
+      ptrs.set(event.pointerId, [pt, data])
+    },
+    { passive: false },
+  )
+
+  paper.el.addEventListener(
+    "pointermove",
     (event) => {
       event.preventDefault()
+      const pt: Point = { x: event.offsetX, y: event.offsetY }
 
-      const { touches } = event
-      const a = touches[0]
-      const b = touches[1]
-      const c = touches[2]
+      const initial = ptrs.get(event.pointerId)
+      if (initial) {
+        hx.onDragMove(pt, initial[1])
+      } else {
+        hx.onHover(pt)
+      }
+    },
+    { passive: false },
+  )
 
-      if (!a || c) {
-        return
+  paper.el.addEventListener("pointerup", (event) => {
+    event.preventDefault()
+    const pt: Point = { x: event.offsetX, y: event.offsetY }
+    const initial = ptrs.get(event.pointerId)
+    if (!initial) return
+    hx.onDragEnd(pt, initial[1])
+    ptrs.delete(event.pointerId)
+  })
+}
+
+export function registerPanAndZoom<T>(
+  paper: Paper,
+  hx: PointerHandlers<T, null | undefined>,
+) {
+  let nextId = 0
+  let allowMovement = false
+  const ptrs = new Map<number, DataSelf>()
+
+  type DataSelf = { type: "self"; id: number; from: Point; offset: Point }
+  type Data = { type: "user"; user: NonNullable<T> } | DataSelf
+
+  let previousDistance: number | undefined
+
+  function onDragMove(to: Point, data: DataSelf) {
+    if (!ptrs.has(data.id)) {
+      ptrs.set(data.id, data)
+    }
+    data.offset = to
+
+    if (!allowMovement) return
+
+    if (ptrs.size == 1) {
+      const { x, y } = paper.offsetToPaper(to)
+      const { ymin, xmax, ymax, xmin } = paper.rawBounds
+
+      paper.rawBounds = {
+        ymin: ymin - (y - data.from.y),
+        xmax: xmax - (x - data.from.x),
+        ymax: ymax - (y - data.from.y),
+        xmin: xmin - (x - data.from.x),
       }
 
-      if (!b) {
-        return
-      }
+      return
+    }
 
-      const { x, y } = paper.el.getBoundingClientRect()
+    if (ptrs.size == 2) {
+      document.querySelector("#debugcount")!.textContent =
+        +document.querySelector("#debugcount")!.textContent! + 1 + ""
+      const v = ptrs.values()
+      const a = v.next().value!
+      const b = v.next().value!
 
-      const distance = hypot(b.clientX - a.clientX, b.clientY - a.clientY)
+      const distance = Math.hypot(
+        b.offset.x - a.offset.x,
+        b.offset.y - a.offset.y,
+      )
 
       if (!previousDistance) {
         previousDistance = distance
         return
       }
 
-      const xCenter = (a.clientX - x + b.clientX - x) / 2
-      const yCenter = (a.clientY - y + b.clientY - y) / 2
+      const xCenter = (a.offset.x + b.offset.x) / 2
+      const yCenter = (a.offset.y + b.offset.y) / 2
       const center = paper.offsetToPaper({ x: xCenter, y: yCenter })
 
       if (distance > previousDistance) {
-        paper.zoom(center, 0.9)
+        paper.zoom(center, 0.948)
       } else {
-        paper.zoom(center, 1.1)
+        paper.zoom(center, 1.048)
       }
 
       previousDistance = distance
-    },
-    { passive: false },
-  )
-}
+    }
+  }
 
-const hypot =
-  "hypot" in Math ?
-    (Math.hypot as (a: number, b: number) => number)
-  : (a: number, b: number) => Math.sqrt(a * a + b * b)
+  registerOffsetHandlers<Data>(paper, {
+    onDragStart(at) {
+      const paperAt = paper.offsetToPaper(at)
+      const user = hx.onDragStart(paperAt)
+      if (user != null) {
+        return { type: "user", user }
+      }
+
+      const data: DataSelf = {
+        type: "self",
+        id: ++nextId,
+        from: paperAt,
+        offset: at,
+      }
+      ptrs.set(data.id, data)
+      if (ptrs.size == 1) {
+        allowMovement = true
+      }
+      return data
+    },
+    onDragMove(to, data) {
+      if (data.type == "user") {
+        hx.onDragMove(paper.offsetToPaper(to), data.user)
+        return
+      }
+
+      onDragMove(to, data)
+    },
+    onDragEnd(to, data) {
+      if (data.type == "user") {
+        hx.onDragEnd(paper.offsetToPaper(to), data.user)
+        return
+      }
+
+      allowMovement = false
+      onDragMove(to, data)
+      ptrs.delete(data.id)
+    },
+    onHover(at) {
+      hx.onHover(paper.offsetToPaper(at))
+    },
+  })
+}

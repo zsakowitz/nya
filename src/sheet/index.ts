@@ -19,11 +19,10 @@ import {
   createDrawAxes,
   doDrawCycle,
   doMatchSize,
-  onPointer,
   onScroll,
-  onTouch,
   onWheel,
   Paper,
+  registerPanAndZoom,
 } from "./paper"
 import { doMatchReglSize } from "./regl"
 import { Slider } from "./slider"
@@ -426,8 +425,15 @@ export class Sheet {
     doDrawCycle(this.paper)
     onWheel(this.paper)
     onScroll(this.paper)
-    onPointer(this.paper)
-    onTouch(this.paper)
+    this.paper.el.classList.add("touch-none")
+    registerPanAndZoom(this.paper, {
+      onDragStart() {},
+      onDragMove() {},
+      onDragEnd() {},
+      onHover() {},
+    })
+    // onPointer(this.paper)
+    // onTouch(this.paper)
     createDrawAxes(this.paper)
 
     const elExpressions = (this.elExpressions = h(
@@ -463,7 +469,8 @@ export class Sheet {
           "flex flex-col h-16 w-full bg-slate-100 border-b border-slate-200 sticky top-0 z-10 items-center justify-center",
           h(
             "font-['Symbola','Times_New_Roman',serif] text-2xl leading-tight text-slate-500",
-            "project nya",
+            "project nya ",
+            h({ id: "debugcount" }, "0"),
           ),
           h(
             "font-['Symbola','Times_New_Roman',serif] text-sm leading-none italic text-slate-500",
