@@ -42,6 +42,10 @@ const REMARKS = [
   "the error messages are doubled because why not",
   "experience the joy of floating point numbers",
   "lines are impossible",
+  "most of these are outdated. enjoy them anyway >:3",
+  "generic pointer events my beloved",
+  "more blue than expected",
+  "everything has been coded at least twice",
 ]
 
 export const REMARK = REMARKS[Math.floor(REMARKS.length * Math.random())]!

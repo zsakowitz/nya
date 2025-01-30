@@ -8,24 +8,27 @@ export interface Builtin {
   dynamic?: boolean
 }
 
+export const ERR_COORDS_USED_OUTSIDE_GLSL =
+  "Cannot access pixel coordinates outside of shaders."
+
 export const VARS: Record<string, Builtin> = {
   p: {
     get js(): never {
-      throw new Error("Cannot access pixel coordinates outside of shaders.")
+      throw new Error(ERR_COORDS_USED_OUTSIDE_GLSL)
     },
     glsl: { type: "c64", expr: "v_coords", list: false },
     dynamic: true,
   },
   x: {
     get js(): never {
-      throw new Error("Cannot access pixel coordinates outside of shaders.")
+      throw new Error(ERR_COORDS_USED_OUTSIDE_GLSL)
     },
     glsl: { type: "r64", expr: "v_coords.xy", list: false },
     dynamic: true,
   },
   y: {
     get js(): never {
-      throw new Error("Cannot access pixel coordinates outside of shaders.")
+      throw new Error(ERR_COORDS_USED_OUTSIDE_GLSL)
     },
     glsl: { type: "r64", expr: "v_coords.zw", list: false },
     dynamic: true,

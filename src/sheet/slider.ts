@@ -64,6 +64,7 @@ export class Slider {
       this.onInput?.()
     })
     let dragging = false
+    this.el.addEventListener("contextmenu", (ev) => ev.preventDefault())
     addEventListener(
       "pointerup",
       () => {

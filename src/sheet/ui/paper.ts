@@ -118,6 +118,7 @@ export class Paper {
       ymax: ymax + by.y,
       xmin: xmin + by.x,
     }
+    this.queue()
   }
 
   zoom(target: Point, scale: number) {
@@ -134,10 +135,21 @@ export class Paper {
       ymax: scale * (ymax - yCenter) + yAdj,
       xmin: scale * (xmin - xCenter) + xAdj,
     }
+    this.queue()
+  }
+
+  private queued = false
+
+  queue() {
+    if (this.queued) return
+    requestAnimationFrame(() => {
+      this.queued = false
+      this.draw()
+    })
   }
 }
 
-export function doMatchSize(paper: Paper) {
+export function matchSize(paper: Paper) {
   function resize() {
     const scale = globalThis.devicePixelRatio ?? 1
     paper.scale = scale
@@ -148,13 +160,6 @@ export function doMatchSize(paper: Paper) {
 
   resize()
   new ResizeObserver(resize).observe(paper.el)
-}
-
-export function doDrawCycle(paper: Paper) {
-  ;(function f() {
-    paper.draw()
-    requestAnimationFrame(f)
-  })()
 }
 
 export function createDrawAxes(paper: Paper) {
@@ -416,7 +421,7 @@ export function createDrawAxes(paper: Paper) {
   paper.drawFns.push(drawGridlines)
 }
 
-export function onWheel(paper: Paper) {
+function onWheel(paper: Paper) {
   paper.el.addEventListener(
     "wheel",
     (event: WheelEvent) => {
@@ -451,17 +456,16 @@ export function onWheel(paper: Paper) {
   )
 }
 
-export function onScroll(paper: Paper) {
+function onScroll(paper: Paper) {
   paper.el.addEventListener("scroll", (event) => event.preventDefault(), {
     passive: false,
   })
 }
 
-/**
- * Whether the points refer to clientX/clientY values or paper values depends on
- * which function is used to register them. Consult its documentation.
- */
-export interface PointerHandlers<T, X extends null | undefined = never> {
+export interface PointerHandlers<
+  T,
+  X extends null | undefined = null | undefined,
+> {
   onDragStart(at: Point): T | X
   onDragMove(to: Point, data: T): void
   onDragEnd(to: Point, data: T): void
@@ -474,9 +478,9 @@ export interface PointerHandlers<T, X extends null | undefined = never> {
  * Registers handlers on a {@linkcode Paper}'s canvas. Passed points will refer
  * to offsetX/offsetY.
  */
-export function registerOffsetHandlers<T>(
+function registerOffsetHandlers<T>(
   paper: Paper,
-  hx: PointerHandlers<T>,
+  hx: PointerHandlers<T, never>,
 ) {
   const ptrs = new Map<number, [start: Point, data: T]>()
 
@@ -525,10 +529,11 @@ export function registerOffsetHandlers<T>(
   })
 }
 
-export function registerPanAndZoom<T>(
-  paper: Paper,
-  hx: PointerHandlers<T, null | undefined>,
-) {
+/**
+ * Handlers are passed points in the paper's coordinate system, not in any DOM
+ * system.
+ */
+function registerPanAndZoom<T>(paper: Paper, hx: PointerHandlers<T>) {
   let nextId = 0
   let allowMovement = false
   const ptrs = new Map<number, DataSelf>()
@@ -625,4 +630,10 @@ export function registerPanAndZoom<T>(
       hx.onHover(paper.offsetToPaper(at))
     },
   })
+}
+
+export function makeInteractive<T>(paper: Paper, hx: PointerHandlers<T>) {
+  onWheel(paper)
+  onScroll(paper)
+  registerPanAndZoom(paper, hx)
 }

@@ -14,21 +14,18 @@ import { CmdComma } from "../field/cmd/leaf/comma"
 import { CmdVar } from "../field/cmd/leaf/var"
 import { CmdBrack } from "../field/cmd/math/brack"
 import { FieldInert } from "../field/field-inert"
-import { h, hx, p, svgx } from "../jsx"
 import { Block, D, L, R, U, type Dir, type VDir } from "../field/model"
 import type { Exts, Options as FieldOptions } from "../field/options"
+import { h, hx, p, svgx } from "../jsx"
 import { FieldComputed, Scope } from "./deps"
 import { doMatchReglSize } from "./regl"
 import { REMARK } from "./remark"
 import { Slider } from "./slider"
 import {
   createDrawAxes,
-  doDrawCycle,
-  doMatchSize,
-  onScroll,
-  onWheel,
+  makeInteractive,
+  matchSize,
   Paper,
-  registerPanAndZoom,
   type Point,
   type PointerHandlers,
 } from "./ui/paper"
@@ -466,13 +463,9 @@ export class Sheet {
     readonly options: Options,
   ) {
     this.scope = new Scope(this.exts, this.options.field)
-    this.paper.el.classList.add("size-full")
-    doMatchSize(this.paper)
-    doDrawCycle(this.paper)
-    onWheel(this.paper)
-    onScroll(this.paper)
-    this.paper.el.classList.add("touch-none")
-    registerPanAndZoom(this.paper, this.handlers)
+    this.paper.el.classList.add("size-full", "touch-none")
+    matchSize(this.paper)
+    makeInteractive(this.paper, this.handlers)
     createDrawAxes(this.paper)
     this.paper.drawFns.push((paper) => {
       for (const expr of this.exprs) {
