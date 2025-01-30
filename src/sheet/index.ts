@@ -9,10 +9,12 @@ import { frac, num, real } from "../eval/ty/create"
 import { Display, display, outputBase } from "../eval/ty/display"
 import { splitRaw } from "../eval/ty/split"
 import { OpEq } from "../field/cmd/leaf/cmp"
+import { CmdComma } from "../field/cmd/leaf/comma"
 import { CmdVar } from "../field/cmd/leaf/var"
+import { CmdBrack } from "../field/cmd/math/brack"
 import { FieldInert } from "../field/field-inert"
 import { h, hx, p, svgx } from "../field/jsx"
-import { D, L, R, U, type Dir, type VDir } from "../field/model"
+import { Block, D, L, R, U, type Dir, type VDir } from "../field/model"
 import type { Exts, Options as FieldOptions } from "../field/options"
 import { FieldComputed, Scope } from "./deps"
 import {
@@ -23,6 +25,8 @@ import {
   onWheel,
   Paper,
   registerPanAndZoom,
+  type Point,
+  type PointerHandlers,
 } from "./paper"
 import { doMatchReglSize } from "./regl"
 import { Slider } from "./slider"
@@ -382,7 +386,11 @@ export class Expr {
       return [props.ctx.block, value.expr]
     } catch (e) {
       console.error(e)
-      this.displayError(e instanceof Error ? e : new Error(String(e)))
+      try {
+        this.displayError(e instanceof Error ? e : new Error(String(e)))
+      } catch (e) {
+        console.error(e)
+      }
     }
   }
 
@@ -391,6 +399,41 @@ export class Expr {
       return this.field.ast
     }
   }
+}
+
+interface SheetHandlerData extends Expr {}
+
+export class SheetHandlers
+  implements PointerHandlers<SheetHandlerData, null | undefined>
+{
+  constructor(readonly sheet: Sheet) {}
+
+  onDragStart(at: Point): SheetHandlerData | null | undefined {
+    if (Math.hypot(at.x, at.y) < 5) {
+      return this.sheet.exprs[0]
+    }
+  }
+
+  onDragMove(to: Point, data: SheetHandlerData): void {
+    const expr = data
+    if (expr.field.ast.type != "binding") return
+    const v = expr.field.ast.name
+    expr.field.block.clear()
+    const cursor = expr.field.block.cursor(R)
+    CmdVar.leftOf(cursor, v, expr.field.options)
+    new OpEq(false).insertAt(cursor, L)
+    const contents = new Block(null)
+    new CmdBrack("(", ")", null, contents).insertAt(cursor, L)
+    new Display(contents.cursor(R), frac(10, 1)).value(to.x)
+    new CmdComma().insertAt(contents.cursor(R), L)
+    new Display(contents.cursor(R), frac(10, 1)).value(to.y)
+    expr.field.dirtyAst = expr.field.dirtyValue = true
+    expr.field.scope.queueUpdate()
+  }
+
+  onDragEnd(to: Point, data: SheetHandlerData): void {}
+
+  onHover(at: Point): void {}
 }
 
 export class Sheet {
@@ -411,6 +454,7 @@ export class Sheet {
 
   readonly pixelRatio
   readonly setPixelRatio
+  readonly handlers = new SheetHandlers(this)
 
   replot = false
 
@@ -426,12 +470,7 @@ export class Sheet {
     onWheel(this.paper)
     onScroll(this.paper)
     this.paper.el.classList.add("touch-none")
-    registerPanAndZoom(this.paper, {
-      onDragStart() {},
-      onDragMove() {},
-      onDragEnd() {},
-      onHover() {},
-    })
+    registerPanAndZoom(this.paper, this.handlers)
     createDrawAxes(this.paper)
 
     const elExpressions = (this.elExpressions = h(
@@ -559,6 +598,7 @@ export class Sheet {
 
     let program: regl.DrawCommand | undefined
     let cleared = false
+    let skip = false
 
     this.regl.frame(() => {
       const shaders = this.exprs.filter((x) => x.circle == "shader")
@@ -580,6 +620,13 @@ export class Sheet {
         const compiled = this.exprs
           .map((x) => x.circle == "shader" && x.compilePlot())
           .filter((x) => x != null && x != false)
+        if (compiled.length == 0) {
+          skip = true
+          this.replot = false
+          return
+        } else {
+          skip = false
+        }
         const frag = `#version 300 es
 precision highp float;
 out vec4 color;
@@ -605,8 +652,7 @@ v_coords = vec4(
   _helper_add_r64(u_cy, _helper_mul_r64(e_ty, u_scale))
 );
 ${compiled.map((x) => x[0]).join("")}color = ${compiled.map((x) => x[1]).reduce((a, b) => `_nya_helper_compose(${a},${b})`)};
-      }
-      `
+      }`
         program = this.regl({
           frag,
           vert: `#version 300 es
@@ -620,6 +666,7 @@ void main() {
         })
         this.replot = false
       }
+      if (skip) return
       global(uniforms, () => program!())
     })
   }
