@@ -618,14 +618,14 @@ export class Sheet {
       cleared = true
       if (shaders.length == 0) return
 
-      const { xmax, xmin, ymin, ymax } = this.paper.bounds()
+      const { xmin, w, ymin, h } = this.paper.bounds()
       const uniforms = {
-        u_scale: splitRaw((xmax - xmin) / this.regl._gl.drawingBufferWidth),
+        u_scale: splitRaw(w / this.regl._gl.drawingBufferWidth),
         u_cx: splitRaw(xmin),
         u_cy: splitRaw(ymin),
         u_px_per_unit: [
-          ...splitRaw(this.paper.el.clientWidth / (xmax - xmin)),
-          ...splitRaw(this.paper.el.clientHeight / (ymax - ymin)),
+          ...splitRaw(this.paper.el.clientWidth / w),
+          ...splitRaw(this.paper.el.clientHeight / h),
         ],
       }
       if (!program || this.replot) {

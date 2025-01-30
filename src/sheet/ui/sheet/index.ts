@@ -119,5 +119,9 @@ export class Sheet {
         this.elExpressions.clientWidth + "px",
       ),
     ).observe(this.elExpressions)
+
+    this.paper.el.addEventListener("mousemove", (event) => {
+      console.log(this.paper.eventToPaper(event))
+    })
   }
 }

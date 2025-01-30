@@ -27,9 +27,9 @@ const THEME_ZOOM_ZERO_SNAP_DISTANCE = 16
 
 export interface Bounds {
   readonly xmin: number
-  readonly xmax: number
+  readonly w: number
   readonly ymin: number
-  readonly ymax: number
+  readonly h: number
 }
 
 export interface Point {
@@ -47,26 +47,24 @@ export class Paper {
   constructor(
     public rawBounds: Bounds = {
       xmin: -2.05,
-      xmax: 0.55,
+      w: 2.6,
       ymin: -1.3,
-      ymax: 1.3,
+      h: 2.6,
     },
     public autofit = true,
   ) {}
 
   bounds(): Bounds {
     if (this.autofit) {
-      const { xmin, xmax, ymin, ymax } = this.rawBounds
-
-      const ymid = (ymin + ymax) / 2
-      const xdiff = xmax - xmin
-      const ydiff = ((this.el.height / this.el.width) * xdiff) / 2
+      const { xmin, w, ymin, h } = this.rawBounds
+      const ymid = ymin + h / 2
+      const ydiff = ((this.el.height / this.el.width) * w) / 2
 
       return {
         xmin,
-        xmax,
+        w,
         ymin: ymid - ydiff,
-        ymax: ymid + ydiff,
+        h: 2 * ydiff,
       }
     } else {
       return this.rawBounds
@@ -76,26 +74,26 @@ export class Paper {
   offsetToPaper(offset: Point): Point {
     const px = offset.x / this.el.offsetWidth
     const py = offset.y / this.el.offsetHeight
-    const { xmin, xmax, ymin, ymax } = this.bounds()
+    const { xmin, w, ymin, h } = this.bounds()
     return {
-      x: xmin * (1 - px) + xmax * px,
-      y: ymin * py + ymax * (1 - py),
+      x: xmin + w * px,
+      y: ymin + h * (1 - py),
     }
   }
 
   paperToCanvas({ x, y }: Point): Point {
-    const { xmin, xmax, ymin, ymax } = this.bounds()
+    const { xmin, w, ymin, h } = this.bounds()
     return {
-      x: ((x - xmin) / (xmax - xmin)) * this.el.width,
-      y: (1 - (y - ymin) / (ymax - ymin)) * this.el.height,
+      x: ((x - xmin) / w) * this.el.width,
+      y: (1 - (y - ymin) / h) * this.el.height,
     }
   }
 
   paperToOffset({ x, y }: Point): Point {
-    const { xmin, xmax, ymin, ymax } = this.bounds()
+    const { xmin, w, ymin, h } = this.bounds()
     return {
-      x: ((x - xmin) / (xmax - xmin)) * this.el.clientWidth,
-      y: (1 - (y - ymin) / (ymax - ymin)) * this.el.clientHeight,
+      x: ((x - xmin) / w) * this.el.clientWidth,
+      y: (1 - (y - ymin) / h) * this.el.clientHeight,
     }
   }
 
@@ -111,29 +109,34 @@ export class Paper {
   }
 
   shift(by: Point) {
-    const { ymin, xmax, ymax, xmin } = this.rawBounds
+    const { xmin, w, ymin, h } = this.rawBounds
     this.rawBounds = {
-      ymin: ymin + by.y,
-      xmax: xmax + by.x,
-      ymax: ymax + by.y,
       xmin: xmin + by.x,
+      ymin: ymin + by.y,
+      w,
+      h,
     }
     this.queue()
   }
 
   zoom(target: Point, scale: number) {
-    const { ymin, xmax, ymax, xmin } = this.rawBounds
+    const { xmin, w, ymin, h } = this.rawBounds
 
-    const xCenter = (xmin + xmax) / 2
-    const yCenter = (ymin + ymax) / 2
+    const xCenter = xmin + w / 2
+    const yCenter = ymin + h / 2
     const xAdj = (target.x - xCenter) * (1 - scale) + xCenter
     const yAdj = (target.y - yCenter) * (1 - scale) + yCenter
 
+    const xmin2 = scale * (xmin - xCenter) + xAdj
+    const xmax2 = scale * (xmin + w - xCenter) + xAdj
+    const ymin2 = scale * (ymin - yCenter) + yAdj
+    const ymax2 = scale * (ymin + h - yCenter) + yAdj
+
     this.rawBounds = {
-      ymin: scale * (ymin - yCenter) + yAdj,
-      xmax: scale * (xmax - xCenter) + xAdj,
-      ymax: scale * (ymax - yCenter) + yAdj,
-      xmin: scale * (xmin - xCenter) + xAdj,
+      xmin: xmin2,
+      w: xmax2 - xmin2,
+      ymin: ymin2,
+      h: ymax2 - ymin2,
     }
     this.queue()
   }
@@ -217,8 +220,7 @@ export function createDrawAxes(paper: Paper) {
   }
 
   function drawGridlinesX() {
-    const { xmin, xmax } = paper.bounds()
-    const w = xmax - xmin
+    const { xmin, w } = paper.bounds()
     const { minor, major } = getGridlineSize(w, paper.el.width)
 
     ctx.strokeStyle = "black"
@@ -227,7 +229,7 @@ export function createDrawAxes(paper: Paper) {
     ctx.beginPath()
     ctx.globalAlpha = THEME_MAJOR_LINE_ALPHA
     const majorStart = Math.floor(xmin / major) * major
-    const majorEnd = Math.ceil(xmax / major) * major
+    const majorEnd = Math.ceil((xmin + w) / major) * major
     for (let line = majorStart; line < majorEnd; line += major) {
       const { x } = paperToCanvas(line, 0)
       drawScreenLineX(x, scale())
@@ -236,7 +238,7 @@ export function createDrawAxes(paper: Paper) {
     ctx.beginPath()
     ctx.globalAlpha = THEME_MINOR_LINE_ALPHA
     const minorStart = Math.floor(xmin / minor) * minor
-    const minorEnd = Math.ceil(xmax / minor) * minor
+    const minorEnd = Math.ceil((xmin + w) / minor) * minor
     for (let line = minorStart; line < minorEnd; line += minor) {
       const { x } = paperToCanvas(line, 0)
       drawScreenLineX(x, 1 * scale())
@@ -246,8 +248,7 @@ export function createDrawAxes(paper: Paper) {
   }
 
   function drawGridlinesY() {
-    const { ymin, ymax } = paper.bounds()
-    const h = ymax - ymin
+    const { ymin, h } = paper.bounds()
     const { minor, major } = getGridlineSize(h, paper.el.height)
 
     ctx.strokeStyle = "black"
@@ -256,7 +257,7 @@ export function createDrawAxes(paper: Paper) {
     ctx.beginPath()
     ctx.globalAlpha = THEME_MAJOR_LINE_ALPHA
     const majorStart = Math.floor(ymin / major) * major
-    const majorEnd = Math.ceil(ymax / major) * major
+    const majorEnd = Math.ceil((ymin + h) / major) * major
     for (let line = majorStart; line < majorEnd; line += major) {
       const { y } = paperToCanvas(0, line)
       drawScreenLineY(y, 1 * scale())
@@ -265,7 +266,7 @@ export function createDrawAxes(paper: Paper) {
     ctx.beginPath()
     ctx.globalAlpha = THEME_MINOR_LINE_ALPHA
     const minorStart = Math.floor(ymin / minor) * minor
-    const minorEnd = Math.ceil(ymax / minor) * minor
+    const minorEnd = Math.ceil((ymin + h) / minor) * minor
     for (let line = minorStart; line < minorEnd; line += minor) {
       const { y } = paperToCanvas(0, line)
       drawScreenLineY(y, 1 * scale())
@@ -303,8 +304,7 @@ export function createDrawAxes(paper: Paper) {
   }
 
   function drawAxisNumbersX() {
-    const { xmin, xmax } = paper.bounds()
-    const w = xmax - xmin
+    const { xmin, w } = paper.bounds()
     const { major } = getGridlineSize(w, paper.el.width)
 
     ctx.beginPath()
@@ -316,7 +316,7 @@ export function createDrawAxes(paper: Paper) {
     ctx.font = `${THEME_AXIS_NUMBER_SIZE * scale()}rem sans-serif`
 
     const majorStart = Math.floor(xmin / major)
-    const majorEnd = Math.ceil(xmax / major)
+    const majorEnd = Math.ceil((xmin + w) / major)
 
     const zeroMetrics = ctx.measureText("0")
     const letterSize =
@@ -364,8 +364,7 @@ export function createDrawAxes(paper: Paper) {
   }
 
   function drawAxisNumbersY() {
-    const { ymin, ymax } = paper.bounds()
-    const h = ymax - ymin
+    const { ymin, h } = paper.bounds()
     const { major } = getGridlineSize(h, paper.el.height)
 
     ctx.beginPath()
@@ -377,7 +376,7 @@ export function createDrawAxes(paper: Paper) {
     ctx.font = `${THEME_AXIS_NUMBER_SIZE * scale()}rem sans-serif`
 
     const majorStart = Math.floor(ymin / major)
-    const majorEnd = Math.ceil(ymax / major)
+    const majorEnd = Math.ceil((ymin + h) / major)
 
     for (let line = majorStart; line < majorEnd; line++) {
       if (line == 0) {
