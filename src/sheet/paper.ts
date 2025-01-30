@@ -108,19 +108,29 @@ export class Paper {
     return this.offsetToPaper({ x: event.offsetX, y: event.offsetY })
   }
 
-  zoom(target: Point, scale: number) {
-    const { ymin: top, xmax: right, ymax: bottom, xmin: left } = this.rawBounds
+  shift(by: Point) {
+    const { ymin, xmax, ymax, xmin } = this.rawBounds
+    this.rawBounds = {
+      ymin: ymin + by.y,
+      xmax: xmax + by.x,
+      ymax: ymax + by.y,
+      xmin: xmin + by.x,
+    }
+  }
 
-    const xCenter = (left + right) / 2
-    const yCenter = (top + bottom) / 2
+  zoom(target: Point, scale: number) {
+    const { ymin, xmax, ymax, xmin } = this.rawBounds
+
+    const xCenter = (xmin + xmax) / 2
+    const yCenter = (ymin + ymax) / 2
     const xAdj = (target.x - xCenter) * (1 - scale) + xCenter
     const yAdj = (target.y - yCenter) * (1 - scale) + yCenter
 
     this.rawBounds = {
-      ymin: scale * (top - yCenter) + yAdj,
-      xmax: scale * (right - xCenter) + xAdj,
-      ymax: scale * (bottom - yCenter) + yAdj,
-      xmin: scale * (left - xCenter) + xAdj,
+      ymin: scale * (ymin - yCenter) + yAdj,
+      xmax: scale * (xmax - xCenter) + xAdj,
+      ymax: scale * (ymax - yCenter) + yAdj,
+      xmin: scale * (xmin - xCenter) + xAdj,
     }
   }
 }
@@ -420,8 +430,12 @@ export function onWheel(paper: Paper) {
         1.002 - (Math.sqrt(Math.abs(event.deltaY)) * -sign) / 100
 
       const { x: x0, y: y0 } = paper.paperToOffset({ x: 0, y: 0 })
-      const snapX = Math.abs(x0 - event.offsetX) < THEME_ZOOM_ZERO_SNAP_DISTANCE
-      const snapY = Math.abs(y0 - event.offsetY) < THEME_ZOOM_ZERO_SNAP_DISTANCE
+      const snapX =
+        zoomScale < 1 &&
+        Math.abs(x0 - event.offsetX) < THEME_ZOOM_ZERO_SNAP_DISTANCE
+      const snapY =
+        zoomScale < 1 &&
+        Math.abs(y0 - event.offsetY) < THEME_ZOOM_ZERO_SNAP_DISTANCE
 
       const paperCoords = paper.eventToPaper(event)
 
@@ -531,15 +545,7 @@ export function registerPanAndZoom<T>(
 
     if (ptrs.size == 1) {
       const { x, y } = paper.offsetToPaper(to)
-      const { ymin, xmax, ymax, xmin } = paper.rawBounds
-
-      paper.rawBounds = {
-        ymin: ymin - (y - data.from.y),
-        xmax: xmax - (x - data.from.x),
-        ymax: ymax - (y - data.from.y),
-        xmin: xmin - (x - data.from.x),
-      }
-
+      paper.shift({ y: data.from.y - y, x: data.from.x - x })
       return
     }
 

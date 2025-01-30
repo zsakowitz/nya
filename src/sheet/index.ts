@@ -432,8 +432,6 @@ export class Sheet {
       onDragEnd() {},
       onHover() {},
     })
-    // onPointer(this.paper)
-    // onTouch(this.paper)
     createDrawAxes(this.paper)
 
     const elExpressions = (this.elExpressions = h(
