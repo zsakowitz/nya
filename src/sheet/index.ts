@@ -4,9 +4,10 @@ import { hex } from "../eval/lib/binding"
 import { declareAddR64 } from "../eval/ops/op/add"
 import { declareMulR64 } from "../eval/ops/op/mul"
 import { OP_PLOT } from "../eval/ops/op/plot"
-import type { JsValue, SReal } from "../eval/ty"
+import type { JsValue, SReal, Val } from "../eval/ty"
 import { frac, num, real } from "../eval/ty/create"
 import { Display, display, outputBase } from "../eval/ty/display"
+import { TY_INFO, type TyInfo } from "../eval/ty/info"
 import { splitRaw } from "../eval/ty/split"
 import { OpEq } from "../field/cmd/leaf/cmp"
 import { CmdComma } from "../field/cmd/leaf/comma"
@@ -49,6 +50,7 @@ class ExprField extends FieldComputed {
   }
 
   recompute(): void {
+    this.expr.value = undefined
     this.expr.debug()
   }
 
@@ -199,6 +201,7 @@ export class Expr {
   readonly elDebugs
   readonly elPlots
 
+  value: JsValue | undefined
   removable = true
   index
 
@@ -355,6 +358,7 @@ export class Expr {
     try {
       const props = this.sheet.scope.propsJs
       const value = js(node, props)
+      this.value = value
       const base = outputBase(node, props)
       this.displayEval(value, base)
     } catch (e) {
@@ -472,6 +476,23 @@ export class Sheet {
     this.paper.el.classList.add("touch-none")
     registerPanAndZoom(this.paper, this.handlers)
     createDrawAxes(this.paper)
+    this.paper.drawFns.push((paper) => {
+      for (const expr of this.exprs) {
+        if (!expr.value) continue
+        const { plot } = TY_INFO[expr.value.type] as TyInfo<Val>
+        if (!plot) continue
+
+        if (expr.value.list === false) {
+          plot.canvas(expr.value.value, paper)
+        } else {
+          if (expr.value.value.length <= 100) {
+            for (const val of expr.value.value) {
+              plot.canvas(val, paper)
+            }
+          }
+        }
+      }
+    })
 
     const elExpressions = (this.elExpressions = h(
       "block",
@@ -652,7 +673,7 @@ v_coords = vec4(
   _helper_add_r64(u_cy, _helper_mul_r64(e_ty, u_scale))
 );
 ${compiled.map((x) => x[0]).join("")}color = ${compiled.map((x) => x[1]).reduce((a, b) => `_nya_helper_compose(${a},${b})`)};
-      }`
+}`
         program = this.regl({
           frag,
           vert: `#version 300 es

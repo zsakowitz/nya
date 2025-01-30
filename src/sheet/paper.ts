@@ -42,6 +42,8 @@ export class Paper {
   readonly ctx = this.el.getContext("2d")!
   readonly drawFns: ((paper: Paper) => void)[] = []
 
+  scale = 0
+
   constructor(
     public rawBounds: Bounds = {
       xmin: -2.05,
@@ -138,6 +140,7 @@ export class Paper {
 export function doMatchSize(paper: Paper) {
   function resize() {
     const scale = globalThis.devicePixelRatio ?? 1
+    paper.scale = scale
     paper.el.width = paper.el.clientWidth * scale
     paper.el.height = paper.el.clientHeight * scale
     paper.draw()

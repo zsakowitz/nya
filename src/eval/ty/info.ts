@@ -4,6 +4,7 @@ import { CmdComma } from "../../field/cmd/leaf/comma"
 import { CmdWord } from "../../field/cmd/leaf/word"
 import { CmdBrack } from "../../field/cmd/math/brack"
 import { Block, L, R } from "../../field/model"
+import { Paper } from "../../sheet/paper"
 import type { GlslContext } from "../lib/fn"
 import { num, real } from "../ty/create"
 import type { Write } from "./display"
@@ -19,6 +20,11 @@ export interface TyInfo<T> {
   garbage: Garbage<T>
   coerce: TyCoerceMap<T>
   write: Write<T>
+  plot?: Plot<T>
+}
+
+export interface Plot<T> {
+  canvas(value: T, paper: Paper): void
 }
 
 export type TyCoerceMap<T> = {
@@ -66,6 +72,27 @@ const WRITE_POINT: Write<SPoint> = {
   },
 }
 
+const PLOT_POINT: Plot<SPoint> = {
+  canvas(value, paper) {
+    const x = num(value.x)
+    const y = num(value.y)
+    if (!(isFinite(x) && isFinite(y))) return
+
+    const offset = paper.paperToCanvas({ x, y })
+    const { ctx, scale } = paper
+
+    ctx.beginPath()
+    ctx.fillStyle = "#ff000040"
+    ctx.arc(offset.x, offset.y, 12 * scale, 0, 2 * Math.PI)
+    ctx.fill()
+
+    ctx.beginPath()
+    ctx.fillStyle = "red"
+    ctx.arc(offset.x, offset.y, 3 * scale, 0, 2 * Math.PI)
+    ctx.fill()
+  },
+}
+
 const NANPT: SPoint = { type: "point", x: real(NaN), y: real(NaN) }
 
 function lineInfo(name: string): TyInfo<[SPoint, SPoint]> {
@@ -101,6 +128,7 @@ export const TY_INFO: TyInfoMap = {
     garbage: { js: NANPT, glsl: "vec2(0.0/0.0)" },
     coerce: {},
     write: WRITE_COMPLEX,
+    plot: PLOT_POINT,
   },
   c64: {
     name: "complex number",
@@ -117,6 +145,7 @@ export const TY_INFO: TyInfoMap = {
       },
     },
     write: WRITE_COMPLEX,
+    plot: PLOT_POINT,
   },
   r32: {
     name: "real number",
@@ -250,6 +279,7 @@ export const TY_INFO: TyInfoMap = {
     garbage: { js: NANPT, glsl: "vec2(0.0/0.0)" },
     coerce: {},
     write: WRITE_POINT,
+    plot: PLOT_POINT,
   },
   point64: {
     name: "point",
@@ -266,6 +296,7 @@ export const TY_INFO: TyInfoMap = {
       },
     },
     write: WRITE_POINT,
+    plot: PLOT_POINT,
   },
   line32: lineInfo("line"),
   segment32: lineInfo("segment"),
