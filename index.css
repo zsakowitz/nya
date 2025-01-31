@@ -2251,6 +2251,42 @@ body {
   display: none;
 }
 
+.nya-expr:focus-within .\[\.nya-expr\:focus-within_\&\:not\(\:focus-within\)\]\:sr-only:not(:focus-within) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.nya-expr:focus-within .\[\.nya-expr\:focus-within_\&\]\:sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.nya-expr:not(:focus-within) .\[\.nya-expr\:not\(\:focus-within\)_\&\]\:sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
 .nya-scrolleractive .\[\.nya-scrolleractive_\&\]\:size-6 {
   width: 1.5rem;
   height: 1.5rem;
@@ -2258,6 +2294,18 @@ body {
 
 :first-child>.\[\:first-child\>\&\]\:top-0 {
   top: 0px;
+}
+
+:focus-within>.\[\:focus-within\>\&\:not\(\:focus-within\)\]\:sr-only:not(:focus-within) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }
 
 :focus-within>.\[\:focus-within\>\&\]\:block {

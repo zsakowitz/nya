@@ -56,7 +56,7 @@ export class Expr {
       "block hidden mx-1 -mt-2 px-1 pb-1 leading-tight italic text-red-800 whitespace-pre-wrap font-sans pointer-events-none",
     )
     this.el = h(
-      "grid grid-cols-[2.5rem_auto] border-r border-b border-slate-200 relative",
+      "grid grid-cols-[2.5rem_auto] border-r border-b border-slate-200 relative nya-expr",
 
       // grey side of expression
       h(

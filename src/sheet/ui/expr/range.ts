@@ -51,13 +51,13 @@ export class ExprRangeControls {
     this.scrubber.bounds(real(-10), real(10))
 
     this.elSlider = h(
-      "flex text-[0.6rem] items-center text-slate-500 px-3 -mt-3",
+      "flex text-[0.6rem] items-center text-slate-500 px-3 -mt-3 [.nya-expr:focus-within_&:not(:focus-within)]:sr-only",
       this.minDisplay.el,
       this.scrubber.el,
       this.maxDisplay.el,
     )
     this.elBounds = h(
-      "block -mt-2 px-4 leading-none pb-2 text-[1.265em]",
+      "block -mt-2 px-4 leading-none pb-2 text-[1.265em] [.nya-expr:not(:focus-within)_&]:sr-only [:focus-within>&:not(:focus-within)]:sr-only",
       this.min.el,
       " ",
       new OpLt(false, true).el,
@@ -69,6 +69,6 @@ export class ExprRangeControls {
       this.step.el,
     )
 
-    this.el = h("contents", this.elBounds)
+    this.el = h("contents", this.elBounds, this.elSlider)
   }
 }
