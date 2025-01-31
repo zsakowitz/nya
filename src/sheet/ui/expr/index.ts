@@ -88,7 +88,7 @@ export class Expr {
 
       // focus ring
       h(
-        "hidden absolute -inset-y-px inset-x-0 [:first-child>&]:top-0 border-2 border-blue-400 [:focus-within>&]:block",
+        "hidden absolute -inset-y-px inset-x-0 [:first-child>&]:top-0 border-2 border-blue-400 [:focus-within>&]:block pointer-events-none",
       ),
     )
     this.sheet.elExpressions.appendChild(this.el)
