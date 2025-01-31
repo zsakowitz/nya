@@ -311,6 +311,7 @@ export const latexCmds = new WordMap<LatexInit>([
   ["7", CmdNum],
   ["8", CmdNum],
   ["9", CmdNum],
+  ["\\digit", CmdNum],
   ["a", CmdVar],
   ["b", CmdVar],
   ["c", CmdVar],

@@ -40,7 +40,10 @@ export class CmdNum extends Leaf {
     num.insertAt(cursor, L)
   }
 
-  static fromLatex(cmd: string, _parser: LatexParser): Command {
+  static fromLatex(cmd: string, parser: LatexParser): Command {
+    if (cmd == "\\digit") {
+      return new this(parser.text())
+    }
     return new this(cmd)
   }
 
@@ -53,7 +56,11 @@ export class CmdNum extends Leaf {
   }
 
   latex(): string {
-    return this.text
+    if ("0" <= this.text && this.text <= "9") {
+      return this.text
+    } else {
+      return `\\digit{${this.text}}`
+    }
   }
 
   reader(): string {

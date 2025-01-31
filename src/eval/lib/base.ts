@@ -23,6 +23,12 @@ export function digitValue(char: string, base: SExact) {
       throw new Error(`The digit ${char} is invalid in base ${base.n}.`)
     }
     return +char
+  } else if ("a" <= char && char <= "z") {
+    const val = char.charCodeAt(0) - "a".charCodeAt(0) + 10
+    if (val >= Math.abs(base.n)) {
+      throw new Error(`The digit ${char} is invalid in base ${base.n}.`)
+    }
+    return val
   } else {
     throw new Error(`Unknown digit ${char}.`)
   }

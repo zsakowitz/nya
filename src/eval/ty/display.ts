@@ -30,8 +30,8 @@ export class Display {
     private readonly base: SReal,
   ) {}
 
-  protected digits(digits: string, imaginary?: boolean) {
-    const { base, cursor } = this
+  protected odigits(digits: string, imaginary?: boolean) {
+    const { base } = this
 
     if (typeof base == "object" && "btw" in base && base.btw == "meow") {
       digits = digits.replace(/\d/g, (x) => "mmrraaooww"[x as any]!)
@@ -39,6 +39,12 @@ export class Display {
     if (typeof base == "object" && "btw" in base && base.btw == "mrrp") {
       digits = digits.replace(/\d/g, (x) => "mmrrrrrrpp"[x as any]!)
     }
+
+    this.digits(digits, imaginary)
+  }
+
+  digits(digits: string, imaginary?: boolean) {
+    const { cursor } = this
 
     loop: for (let i = 0; i < digits.length; i++) {
       const digit = digits[i]!
@@ -125,7 +131,40 @@ export class Display {
     let val = this.numToBase(num)
     if (val == "Infinity") val = "∞"
     else if (val == "-Infinity") val = "-∞"
-    this.digits(val)
+    this.odigits(val)
+  }
+
+  decimal(num: SReal) {
+    if (num.type == "approx") {
+      this.value(num.value)
+      return
+    }
+
+    let n = num.n
+    if (n == 0) {
+      this.odigits("0")
+      return
+    }
+    if (n < 0) {
+      this.odigits("-")
+      n = -n
+    }
+    let d = num.d
+
+    const wholePart = (n - (n % d)) / d
+    this.odigits(this.numToBase(wholePart))
+
+    n = n % d
+
+    if (n == 0) return
+
+    if (n != 0) {
+      this.odigits(".")
+
+      for (let i = 0; i < 17; i++) {
+        if (n == 0) break
+      }
+    }
   }
 
   num(num: SReal, imaginary?: boolean) {
@@ -135,9 +174,9 @@ export class Display {
       if (val == "Infinity") val = "∞"
       else if (val == "-Infinity") val = "-∞"
       else if (val != "NaN" && val.indexOf(".") == -1) val += ".0"
-      this.digits(val, imaginary)
+      this.odigits(val, imaginary)
     } else if (num.d == 1) {
-      this.digits(this.numToBase(num.n), imaginary)
+      this.odigits(this.numToBase(num.n), imaginary)
     } else {
       const n = new Block(null)
       const d = new Block(null)
@@ -147,9 +186,9 @@ export class Display {
       const frac = new CmdFrac(n, d)
       frac.insertAt(cursor, L)
       this.cursor.moveIn(n, R)
-      this.digits(this.numToBase(num.n < 0 ? -num.n : num.n), imaginary)
+      this.odigits(this.numToBase(num.n < 0 ? -num.n : num.n), imaginary)
       this.cursor.moveIn(d, R)
-      this.digits(this.numToBase(num.d))
+      this.odigits(this.numToBase(num.d))
       this.cursor.moveTo(frac, R)
     }
   }

@@ -1,4 +1,5 @@
 import { twMerge } from "tailwind-merge"
+import { safe } from "../eval/lib/util"
 import { add } from "../eval/ops/op/add"
 import { div } from "../eval/ops/op/div"
 import { mul } from "../eval/ops/op/mul"
@@ -6,6 +7,8 @@ import { sub } from "../eval/ops/op/sub"
 import type { SReal } from "../eval/ty"
 import { isZero } from "../eval/ty/check"
 import { frac, num, real } from "../eval/ty/create"
+import { Display } from "../eval/ty/display"
+import type { Cursor } from "../field/model"
 import { h, hx } from "../jsx"
 
 export class Slider {
@@ -13,6 +16,7 @@ export class Slider {
   private _max = real(1)
   private _step = real(0)
   private _steps = 0
+  private _base = 10
   private _value = real(1)
 
   private elNative
@@ -210,12 +214,34 @@ export class Slider {
     return this._max
   }
 
+  get base() {
+    return frac(this._base, 1)
+  }
+
+  set base(v: SReal) {
+    if (v.type == "exact" && v.d == 1 && v.n >= 2) {
+      this._base = v.n
+    } else {
+      this._base = 10
+    }
+  }
+
+  private virtualStepExp() {
+    return Math.floor(
+      Math.log(
+        (this.elInner.clientWidth * (globalThis.devicePixelRatio ?? 1)) /
+          (num(this._max) - num(this._min)),
+      ) / Math.log(this._base),
+    )
+  }
+
+  private virtualStep() {
+    return frac(1, this._base ** this.virtualStepExp())
+  }
+
   get value() {
     if (isZero(this._step)) {
-      const step = frac(
-        1,
-        10 ** Math.floor(Math.log10(this.elInner.clientWidth + 1)),
-      )
+      const step = this.virtualStep()
       return mul(frac(Math.round(num(div(this._value, step))), 1), step)
     } else {
       return add(
@@ -246,6 +272,33 @@ export class Slider {
       this.elNative.min = "" + num(min)
       this.elNative.max = "" + num(max)
     }
+  }
+
+  display(cursor: Cursor, baseRaw: SReal) {
+    const base = num(baseRaw)
+
+    if (!isZero(this._step) || !(safe(base) && 2 <= base && base <= 36)) {
+      new Display(cursor, baseRaw || frac(10, 1)).value(num(this.value))
+      return
+    }
+
+    const display = new Display(cursor, baseRaw || frac(10, 1))
+    const step = this.virtualStep()
+    const stepExp = this.virtualStepExp()
+    let main = Math.round(num(div(this._value, step)))
+    if (main < 0) {
+      display.digits("-")
+      main = -main
+    }
+    let str = BigInt(main).toString(base)
+    console.log(step)
+    if (stepExp > 0) {
+      str = (str.slice(0, -stepExp) || "0") + "." + str.slice(-stepExp)
+    } else if (stepExp < 0) {
+      str += "0".repeat(-stepExp)
+    }
+
+    display.digits(str)
   }
 
   onInput?(): void

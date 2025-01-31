@@ -5,7 +5,7 @@ import { id } from "../../../eval/lib/binding"
 import type { GlslContext } from "../../../eval/lib/fn"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "../../../eval/ops/vars"
 import type { GlslValue, JsValue, SReal } from "../../../eval/ty"
-import { real } from "../../../eval/ty/create"
+import { frac, real } from "../../../eval/ty/create"
 import { Display, outputBase } from "../../../eval/ty/display"
 import { FieldInert } from "../../../field/field-inert"
 import { R } from "../../../field/model"
@@ -92,57 +92,55 @@ export class Expr {
   compute() {
     this.state = { type: "error", reason: "Currently computing." }
 
-    let node = this.field.ast
-
-    if (node.type == "binding" && !node.args) {
-      const sliderValue = readSlider(node.value)
-      if (sliderValue) {
-        this.state = {
-          type: "slider",
-          name: node.name,
-          value: sliderValue.value,
-          base: sliderValue.base,
-        }
-        return
-      }
-    }
-
-    if (node.type == "binding") {
-      node = node.value
-    }
-
-    js: if (
-      !(
-        this.field.deps.isBound(ID_X) &&
-        this.field.deps.isBound(ID_Y) &&
-        this.field.deps.isBound(ID_P)
-      )
-    ) {
-      try {
-        this.state = {
-          type: "js",
-          value: js(node, this.sheet.scope.propsJs),
-          base: outputBase(node, this.sheet.scope.propsJs),
-        }
-        return
-      } catch (e) {
-        if (e instanceof Error && e.message == ERR_COORDS_USED_OUTSIDE_GLSL) {
-          break js
-        }
-
-        console.warn("[expr eval js]", e)
-        const msg = e instanceof Error ? e.message : String(e)
-        this.state = { type: "error", reason: msg }
-        return
-      }
-    }
-
     try {
+      let node = this.field.ast
+
+      if (node.type == "binding" && !node.args) {
+        const sliderValue = readSlider(node.value)
+        if (sliderValue) {
+          this.state = {
+            type: "slider",
+            name: node.name,
+            value: sliderValue.value,
+            base: sliderValue.base,
+          }
+          this.slider.base = sliderValue.base || frac(10, 1)
+          return
+        }
+      }
+
+      if (node.type == "binding") {
+        node = node.value
+      }
+
+      if (
+        !(
+          this.field.deps.isBound(ID_X) &&
+          this.field.deps.isBound(ID_Y) &&
+          this.field.deps.isBound(ID_P)
+        )
+      ) {
+        try {
+          this.state = {
+            type: "js",
+            value: js(node, this.sheet.scope.propsJs),
+            base: outputBase(node, this.sheet.scope.propsJs),
+          }
+          return
+        } catch (e) {
+          if (
+            !(e instanceof Error && e.message == ERR_COORDS_USED_OUTSIDE_GLSL)
+          ) {
+            throw e
+          }
+        }
+      }
+
       const props = this.sheet.scope.propsGlsl()
       const value = glsl(node, props)
       this.state = { type: "glsl", ctx: props.ctx, value }
     } catch (e) {
-      console.warn("[expr eval glsl]", e)
+      console.warn("[expr eval]")
       const msg = e instanceof Error ? e.message : String(e)
       this.state = { type: "error", reason: msg }
     }
@@ -160,7 +158,9 @@ export class Expr {
         break
       case "slider":
         this.elSlider.classList.remove("hidden")
-        this.slider.value = this.state.value
+        // if (this.state.value != this.slider.value) {
+        //   this.slider.value = this.state.value
+        // }
         break
       case "js":
         this.value.block.clear()

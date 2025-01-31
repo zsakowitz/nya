@@ -30,7 +30,7 @@ export class ExprSlider extends Slider {
     CmdVar.leftOf(cursor, this.expr.state.name, field.options)
     new OpEq(false).insertAt(cursor, L)
     const base = this.expr.state.base
-    new Display(cursor, base || frac(10, 1)).value(num(this.value))
+    this.display(cursor, base || frac(10, 1))
     if (base) {
       new CmdVar("b", field.options).insertAt(cursor, L)
       new CmdVar("a", field.options).insertAt(cursor, L)
@@ -38,6 +38,8 @@ export class ExprSlider extends Slider {
       new CmdVar("e", field.options).insertAt(cursor, L)
       new Display(cursor, frac(10, 1)).value(num(base))
     }
+    this.expr.state.value = this.value
+    this.expr.field.sel = cursor.selection()
     this.expr.field.onAfterChange(false)
   }
 }
@@ -95,10 +97,11 @@ export function readSlider(
     !node.b.sub &&
     node.b.value.indexOf(".") == -1
   ) {
-    const base = real(+node.b.value)
-    const value = readPlainNum(node.a, base)
+    const base = +node.b.value
+    if (!(2 <= base && base <= 36)) return null
+    const value = readPlainNum(node.a, real(base))
     if (value == null) return null
-    return { value, base }
+    return { value, base: real(base) }
   } else {
     const value = readPlainNum(node, frac(10, 1))
     if (value == null) return null
