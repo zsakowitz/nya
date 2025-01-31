@@ -163,8 +163,7 @@ export const CmdTab: Init = {
   initOn(sel, props) {
     const dir = props.event?.shiftKey ? L : R
     const cursor = sel.cursor(dir)
-    CmdTab.init(cursor, props)
-    return cursor
+    return CmdTab.init(cursor, props) || cursor
   },
 }
 

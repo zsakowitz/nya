@@ -12,16 +12,10 @@ export class Field extends FieldInert {
   constructor(exts: Exts, options: Options, className?: string) {
     super(exts, options, className)
     this.makeActive()
-    this.onAfterChange(false)
+    this.showCursor()
   }
 
-  isActive = false
-
-  makeInactive() {}
-
   makeActive() {
-    this.makeInactive()
-
     this.el.tabIndex = 0
 
     const onPointerDown = (event: PointerEvent) => {
@@ -89,6 +83,7 @@ export class Field extends FieldInert {
       this.typeLatex(text)
     }
     const onFocus = () => {
+      this.showCursor(false)
       this.cursor.classList.add("[scroll-margin:1rem]")
       this.cursor.scrollIntoView({
         behavior: "instant",
@@ -96,6 +91,9 @@ export class Field extends FieldInert {
         inline: "nearest",
       })
       this.cursor.classList.remove("[scroll-margin:1rem]")
+    }
+    const onBlur = () => {
+      this.onBeforeChange()
     }
 
     let isPointerDown = false
@@ -106,17 +104,21 @@ export class Field extends FieldInert {
     this.el.addEventListener("keydown", onKeyDown)
     this.el.addEventListener("paste", onPaste)
     this.el.addEventListener("focus", onFocus)
-    this.isActive = true
+    this.el.addEventListener("blur", onBlur)
+  }
 
-    this.makeInactive = () => {
-      this.el.removeEventListener("pointerdown", onPointerDown)
-      removeEventListener("pointerup", onPointerUp)
-      this.el.removeEventListener("pointermove", onPointerMove)
-      this.el.removeEventListener("touchmove", onTouchMove)
-      this.el.removeEventListener("keydown", onKeyDown)
-      this.el.removeEventListener("paste", onPaste)
-      this.el.removeEventListener("focus", onFocus)
-      this.isActive = false
+  showCursor(scrollIntoView = true) {
+    this.sel.each(({ el }) => el.classList.add("bg-nya-selection"))
+    this.sel.cursor(this.sel.focused).render(this.cursor)
+    this.sel.parent?.checkIfEmpty()
+    this.cursor.classList.toggle("text-transparent", !this.sel.isEmpty())
+    this.cursor.parentElement?.classList.add("!bg-transparent")
+    if (scrollIntoView) {
+      this.cursor.scrollIntoView({
+        behavior: "instant",
+        block: "nearest",
+        inline: "nearest",
+      })
     }
   }
 
@@ -128,20 +130,6 @@ export class Field extends FieldInert {
   }
 
   onAfterChange(wasChangeCanceled: boolean) {
-    if (!this.isActive) {
-      return
-    }
-    this.sel.each(({ el }) => el.classList.add("bg-nya-selection"))
-    this.sel.cursor(this.sel.focused).render(this.cursor)
-    this.cursor.parentElement?.classList.add("!bg-transparent")
-    this.sel.parent?.checkIfEmpty()
-    this.cursor.parentElement?.parentElement?.classList.remove("nya-has-empty")
-    if (!wasChangeCanceled) {
-      this.cursor.scrollIntoView({
-        behavior: "instant",
-        block: "nearest",
-        inline: "nearest",
-      })
-    }
+    this.showCursor(!wasChangeCanceled)
   }
 }

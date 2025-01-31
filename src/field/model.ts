@@ -1,7 +1,7 @@
 import { tokensToAst, type Node } from "../eval/ast/token"
+import { h } from "../jsx"
 import type { CmdFrac } from "./cmd/math/frac"
 import type { FieldInert } from "./field-inert"
-import { h } from "../jsx"
 import type { LatexParser } from "./latex"
 import type { Options } from "./options"
 
@@ -176,8 +176,11 @@ export class Block {
   /** Updates the element's empty styles. */
   checkIfEmpty() {
     this.el.classList.toggle("after:hidden", !this.isEmpty())
-    this.el.classList.toggle("bg-nya-empty", this.isEmpty())
-    this.el.classList.toggle("nya-empty", this.isEmpty())
+    this.el.classList.toggle(
+      "bg-nya-empty",
+      this.isEmpty() && this.parent != null,
+    )
+    this.el.classList.toggle("nya-empty", this.isEmpty() && this.parent != null)
     this.el.parentElement?.classList.toggle("nya-has-empty", this.isEmpty())
   }
 
@@ -723,7 +726,7 @@ export class Span {
 
   /**
    * Gets the {@linkcode Command} at one side of this `Span`. The returned
-   * `Command` will be inside the `Span`, unless the `Span` is a
+   * `Command` will be inside the `Span`, unless the `Span` is a cursor.
    */
   at(side: Dir): Command | null {
     return this[side] ?
@@ -754,6 +757,11 @@ export class Span {
   /** Creates a {@linkcode Cursor} at one side of this `Span`. */
   cursor(side: Dir) {
     return new Cursor(this.parent, side == R ? this[R] : this.at(L))
+  }
+
+  /** Returns whether this {@linkcode Span} is empty. */
+  isEmpty(): boolean {
+    return this.at(L) == this[R]
   }
 
   /** Moves one side of this `Span` in a direction. */
