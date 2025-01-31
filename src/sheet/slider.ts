@@ -291,8 +291,8 @@ export class Slider {
       main = -main
     }
     let str = BigInt(main).toString(base)
-    console.log(step)
     if (stepExp > 0) {
+      str = str.padStart(stepExp, "0")
       str = (str.slice(0, -stepExp) || "0") + "." + str.slice(-stepExp)
     } else if (stepExp < 0) {
       str += "0".repeat(-stepExp)
