@@ -9,7 +9,7 @@ import { frac, real } from "../../../eval/ty/create"
 import { Display, outputBase } from "../../../eval/ty/display"
 import { FieldInert } from "../../../field/field-inert"
 import { R } from "../../../field/model"
-import { h } from "../../../jsx"
+import { h, t } from "../../../jsx"
 import type { Sheet } from "../sheet"
 import { Field } from "./field"
 import { ExprSlider, readSlider } from "./slider"
@@ -27,7 +27,7 @@ const ID_P = id({ value: "p" })
 export class Expr {
   readonly field
   readonly el
-  readonly elIndex = h("font-sans text-slate-500 text-[65%] leading-none", "1")
+  readonly elIndex = t("1")
 
   readonly slider = new ExprSlider(this, "px-1 pb-2 pt-2 -mt-2 cursor-pointer")
   readonly smin
@@ -48,7 +48,7 @@ export class Expr {
     this.slider.bounds(real(0), real(1))
     this.field = new Field(
       this,
-      "block overflow-x-auto [&::-webkit-scrollbar]:hidden min-h-[3.265rem] max-w-[calc(var(--nya-sidebar)_-_2.5rem)] p-4",
+      "block overflow-x-auto [&::-webkit-scrollbar]:hidden min-h-[3.265rem] max-w-[calc(var(--nya-sidebar)_-_2.5rem)] p-4 focus:outline-none",
     )
     this.value = new FieldInert(
       sheet.exts,
@@ -69,11 +69,11 @@ export class Expr {
       this.smax.el,
     )
     this.el = h(
-      "grid grid-cols-[2.5rem_auto] border-r border-b border-slate-200",
+      "grid grid-cols-[2.5rem_auto] border-r border-b border-slate-200 relative",
 
       // grey side of expression
       h(
-        "inline-flex bg-slate-100 flex-col p-0.5 border-r border-slate-200",
+        "inline-flex bg-slate-100 flex-col p-0.5 border-r border-slate-200 font-sans text-slate-500 text-[65%] leading-none [:focus-within>&]:bg-blue-400 [:focus-within>&]:text-white [:focus-within>&]:border-blue-400",
         this.elIndex,
       ),
 
@@ -84,6 +84,11 @@ export class Expr {
         this.elValue,
         this.elError,
         this.elSlider,
+      ),
+
+      // focus ring
+      h(
+        "hidden absolute -inset-y-px inset-x-0 [:first-child>&]:top-0 border-2 border-blue-400 [:focus-within>&]:block",
       ),
     )
     this.sheet.elExpressions.appendChild(this.el)
