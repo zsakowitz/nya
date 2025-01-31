@@ -1086,6 +1086,10 @@ video {
   max-width: 6rem;
 }
 
+.max-w-\[calc\(var\(--nya-sidebar\)_-_2\.5rem_-_1px\)\] {
+  max-width: calc(var(--nya-sidebar) - 2.5rem - 1px);
+}
+
 .flex-1 {
   flex: 1 1 0%;
 }
@@ -1787,6 +1791,16 @@ video {
 
 .text-transparent {
   color: transparent;
+}
+
+.text-slate-900 {
+  --tw-text-opacity: 1;
+  color: rgb(15 23 42 / var(--tw-text-opacity, 1));
+}
+
+.text-slate-800 {
+  --tw-text-opacity: 1;
+  color: rgb(30 41 59 / var(--tw-text-opacity, 1));
 }
 
 .opacity-20 {

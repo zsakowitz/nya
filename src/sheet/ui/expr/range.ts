@@ -65,7 +65,7 @@ export class ExprRangeControls {
       new OpLt(false, true).el,
       " ",
       this.max.el,
-      h("ml-4 font-sans text-sm text-slate-700", "Step: "),
+      h("ml-4 font-sans text-sm text-slate-800", "Step: "),
       this.step.el,
     )
 

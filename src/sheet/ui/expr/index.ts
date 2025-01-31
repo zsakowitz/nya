@@ -41,7 +41,7 @@ export class Expr {
     this.slider = new ExprRangeControls(this)
     this.field = new Field(
       this,
-      "block overflow-x-auto [&::-webkit-scrollbar]:hidden min-h-[3.265rem] max-w-[calc(var(--nya-sidebar)_-_2.5rem)] p-4 focus:outline-none",
+      "block overflow-x-auto [&::-webkit-scrollbar]:hidden min-h-[3.265rem] max-w-[calc(var(--nya-sidebar)_-_2.5rem_-_1px)] p-4 focus:outline-none",
     )
     this.value = new FieldInert(
       sheet.exts,
