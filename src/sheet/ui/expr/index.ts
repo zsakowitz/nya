@@ -5,14 +5,15 @@ import { id } from "../../../eval/lib/binding"
 import type { GlslContext } from "../../../eval/lib/fn"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "../../../eval/ops/vars"
 import type { GlslValue, JsValue, SReal } from "../../../eval/ty"
-import { frac, num, real } from "../../../eval/ty/create"
+import { frac, num } from "../../../eval/ty/create"
 import { Display, outputBase } from "../../../eval/ty/display"
 import { FieldInert } from "../../../field/field-inert"
 import { R } from "../../../field/model"
 import { h, t } from "../../../jsx"
 import type { Sheet } from "../sheet"
 import { Field } from "./field"
-import { ExprScrubber, readSlider } from "./scrubber"
+import { ExprRangeControls } from "./range"
+import { readSlider } from "./scrubber"
 
 export type ExprState =
   | { type: "error"; reason: string }
@@ -29,26 +30,15 @@ export class Expr {
   readonly el
   readonly elIndex = t("1")
 
-  readonly slider = new ExprScrubber(
-    this,
-    "px-1 pb-2 pt-2 -mt-2 cursor-pointer",
-  )
-  readonly smin
-  readonly smax
-
+  readonly slider
   readonly value
   readonly elValue
   readonly elError
-  readonly elSlider
 
   state: ExprState = { type: "error", reason: "Not computed yet." }
 
   constructor(readonly sheet: Sheet) {
-    ;(this.smin = new FieldInert(sheet.exts, sheet.options, "font-sans pb-2"))
-      .latex`-10`
-    ;(this.smax = new FieldInert(sheet.exts, sheet.options, "font-sans pb-2"))
-      .latex`10`
-    this.slider.bounds(real(-10), real(10))
+    this.slider = new ExprRangeControls(this)
     this.field = new Field(
       this,
       "block overflow-x-auto [&::-webkit-scrollbar]:hidden min-h-[3.265rem] max-w-[calc(var(--nya-sidebar)_-_2.5rem)] p-4 focus:outline-none",
@@ -65,12 +55,6 @@ export class Expr {
     this.elError = h(
       "block hidden mx-1 -mt-2 px-1 pb-1 leading-tight italic text-red-800 whitespace-pre-wrap font-sans pointer-events-none",
     )
-    this.elSlider = h(
-      "flex hidden text-[0.6rem] items-center text-slate-500 px-3 -mt-3",
-      this.smin.el,
-      this.slider.el,
-      this.smax.el,
-    )
     this.el = h(
       "grid grid-cols-[2.5rem_auto] border-r border-b border-slate-200 relative",
 
@@ -86,7 +70,7 @@ export class Expr {
         this.field.el,
         this.elValue,
         this.elError,
-        this.elSlider,
+        this.slider.el,
       ),
 
       // focus ring
@@ -107,7 +91,7 @@ export class Expr {
         const sv = readSlider(node.value)
         if (sv) {
           this.state = { ...sv, type: "slider", name: node.name }
-          this.slider.base = sv.base || frac(10, 1)
+          this.slider.scrubber.base = sv.base || frac(10, 1)
           return
         }
       }
@@ -152,7 +136,7 @@ export class Expr {
   display() {
     this.elValue.classList.add("hidden")
     this.elError.classList.add("hidden")
-    this.elSlider.classList.add("hidden")
+    this.slider.el.classList.add("hidden")
 
     switch (this.state.type) {
       case "error":
@@ -160,9 +144,9 @@ export class Expr {
         this.elError.textContent = this.state.reason
         break
       case "slider":
-        this.elSlider.classList.remove("hidden")
-        if (num(this.state.value) != num(this.slider.value)) {
-          this.slider.value = this.state.value
+        this.slider.el.classList.remove("hidden")
+        if (num(this.state.value) != num(this.slider.scrubber.value)) {
+          this.slider.scrubber.value = this.state.value
         }
         break
       case "js":

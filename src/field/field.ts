@@ -11,10 +11,22 @@ export class Field extends FieldInert {
 
   constructor(exts: Exts, options: Options, className?: string) {
     super(exts, options, className)
+    this.makeActive()
+    this.onAfterChange(false)
+  }
+
+  isActive = false
+
+  makeInactive() {}
+
+  makeActive() {
+    this.makeInactive()
+
     this.el.tabIndex = 0
 
-    let isPointerDown = false
-    this.el.addEventListener("pointerdown", (event) => {
+    const onPointerDown = (event: PointerEvent) => {
+      this.el.setPointerCapture(event.pointerId)
+
       isPointerDown = true
 
       const cursor = this.block.focus(event.clientX, event.clientY)
@@ -29,9 +41,11 @@ export class Field extends FieldInert {
       }
 
       this.onAfterChange(false)
-    })
-    addEventListener("pointerup", () => (isPointerDown = false))
-    this.el.addEventListener("pointermove", (event) => {
+    }
+    const onPointerUp = () => {
+      isPointerDown = false
+    }
+    const onPointerMove = (event: PointerEvent) => {
       if (!isPointerDown) return
 
       this.onBeforeChange()
@@ -42,13 +56,13 @@ export class Field extends FieldInert {
       this.sel = Selection.of(this.sel.cachedAnchor, cursor)
 
       this.onAfterChange(false)
-    })
-    this.el.addEventListener(
-      "touchmove",
-      (event) => isPointerDown && event.preventDefault(),
-      { passive: false },
-    )
-    this.el.addEventListener("keydown", (event) => {
+    }
+    const onTouchMove = (event: TouchEvent) => {
+      if (isPointerDown) {
+        event.preventDefault()
+      }
+    }
+    const onKeyDown = (event: KeyboardEvent) => {
       if (event.metaKey || event.ctrlKey) {
         if (event.metaKey && event.ctrlKey) {
           return
@@ -69,14 +83,12 @@ export class Field extends FieldInert {
       if (this.init(ext, event.key, { event }) != "browser") {
         event.preventDefault()
       }
-    })
-    addEventListener("paste", ({ clipboardData }) => {
-      if (document.activeElement == this.el) {
-        const text = clipboardData?.getData("text/plain") ?? ""
-        this.typeLatex(text)
-      }
-    })
-    this.el.addEventListener("focus", () => {
+    }
+    const onPaste = ({ clipboardData }: ClipboardEvent) => {
+      const text = clipboardData?.getData("text/plain") ?? ""
+      this.typeLatex(text)
+    }
+    const onFocus = () => {
       this.cursor.classList.add("[scroll-margin:1rem]")
       this.cursor.scrollIntoView({
         behavior: "instant",
@@ -84,8 +96,28 @@ export class Field extends FieldInert {
         inline: "nearest",
       })
       this.cursor.classList.remove("[scroll-margin:1rem]")
-    })
-    this.onAfterChange(false)
+    }
+
+    let isPointerDown = false
+    this.el.addEventListener("pointerdown", onPointerDown)
+    addEventListener("pointerup", onPointerUp)
+    this.el.addEventListener("pointermove", onPointerMove)
+    this.el.addEventListener("touchmove", onTouchMove, { passive: false })
+    this.el.addEventListener("keydown", onKeyDown)
+    this.el.addEventListener("paste", onPaste)
+    this.el.addEventListener("focus", onFocus)
+    this.isActive = true
+
+    this.makeInactive = () => {
+      this.el.removeEventListener("pointerdown", onPointerDown)
+      removeEventListener("pointerup", onPointerUp)
+      this.el.removeEventListener("pointermove", onPointerMove)
+      this.el.removeEventListener("touchmove", onTouchMove)
+      this.el.removeEventListener("keydown", onKeyDown)
+      this.el.removeEventListener("paste", onPaste)
+      this.el.removeEventListener("focus", onFocus)
+      this.isActive = false
+    }
   }
 
   onBeforeChange() {
@@ -96,6 +128,9 @@ export class Field extends FieldInert {
   }
 
   onAfterChange(wasChangeCanceled: boolean) {
+    if (!this.isActive) {
+      return
+    }
     this.sel.each(({ el }) => el.classList.add("bg-nya-selection"))
     this.sel.cursor(this.sel.focused).render(this.cursor)
     this.cursor.parentElement?.classList.add("!bg-transparent")
