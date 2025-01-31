@@ -12,7 +12,7 @@ import { CmdVar } from "../../../field/cmd/leaf/var"
 import { L, R } from "../../../field/model"
 import { Slider } from "../../slider"
 
-export class ExprSlider extends Slider {
+export class ExprScrubber extends Slider {
   constructor(
     readonly expr: Expr,
     className?: string,

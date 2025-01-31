@@ -12,7 +12,7 @@ import { R } from "../../../field/model"
 import { h, t } from "../../../jsx"
 import type { Sheet } from "../sheet"
 import { Field } from "./field"
-import { ExprSlider, readSlider } from "./slider"
+import { ExprScrubber, readSlider } from "./slider"
 
 export type ExprState =
   | { type: "error"; reason: string }
@@ -29,7 +29,10 @@ export class Expr {
   readonly el
   readonly elIndex = t("1")
 
-  readonly slider = new ExprSlider(this, "px-1 pb-2 pt-2 -mt-2 cursor-pointer")
+  readonly slider = new ExprScrubber(
+    this,
+    "px-1 pb-2 pt-2 -mt-2 cursor-pointer",
+  )
   readonly smin
   readonly smax
 
