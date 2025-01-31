@@ -44,7 +44,7 @@ export class ExprSlider extends Slider {
   }
 }
 
-function totallyPlainNum(node: Node): SReal | null {
+function totallyPlainNum(node: Node, base: SReal): SReal | null {
   let isNeg = false
   if (node.type == "op" && !node.b && node.kind == "-") {
     isNeg = true
@@ -52,7 +52,7 @@ function totallyPlainNum(node: Node): SReal | null {
   }
 
   if (node.type == "num" && !node.sub) {
-    const { value } = parseNumberJs(node.value, frac(10, 1))
+    const { value } = parseNumberJs(node.value, base)
     return isNeg ? neg(value) : value
   }
 
@@ -75,13 +75,13 @@ function readPlainNum(node: Node, base: SReal): SReal | null {
     !node.b.base.sub &&
     node.b.base.value == "10"
   ) {
-    const a = totallyPlainNum(node.a)
+    const a = totallyPlainNum(node.a, base)
     if (a == null) return null
-    const b = totallyPlainNum(node.b.exponent)
+    const b = totallyPlainNum(node.b.exponent, base)
     if (b == null) return null
     value = mul(a, raise(base, b))
   } else {
-    value = totallyPlainNum(node)
+    value = totallyPlainNum(node, base)
   }
 
   return value && isNeg ? neg(value) : value

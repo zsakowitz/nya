@@ -5,7 +5,7 @@ import { id } from "../../../eval/lib/binding"
 import type { GlslContext } from "../../../eval/lib/fn"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "../../../eval/ops/vars"
 import type { GlslValue, JsValue, SReal } from "../../../eval/ty"
-import { frac, real } from "../../../eval/ty/create"
+import { frac, num, real } from "../../../eval/ty/create"
 import { Display, outputBase } from "../../../eval/ty/display"
 import { FieldInert } from "../../../field/field-inert"
 import { R } from "../../../field/model"
@@ -101,15 +101,10 @@ export class Expr {
       let node = this.field.ast
 
       if (node.type == "binding" && !node.args) {
-        const sliderValue = readSlider(node.value)
-        if (sliderValue) {
-          this.state = {
-            type: "slider",
-            name: node.name,
-            value: sliderValue.value,
-            base: sliderValue.base,
-          }
-          this.slider.base = sliderValue.base || frac(10, 1)
+        const sv = readSlider(node.value)
+        if (sv) {
+          this.state = { ...sv, type: "slider", name: node.name }
+          this.slider.base = sv.base || frac(10, 1)
           return
         }
       }
@@ -163,9 +158,9 @@ export class Expr {
         break
       case "slider":
         this.elSlider.classList.remove("hidden")
-        // if (this.state.value != this.slider.value) {
-        //   this.slider.value = this.state.value
-        // }
+        if (num(this.state.value) != num(this.slider.value)) {
+          this.slider.value = this.state.value
+        }
         break
       case "js":
         this.value.block.clear()
