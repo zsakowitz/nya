@@ -1,4 +1,5 @@
 import type { Regl } from "regl"
+import regl from "regl"
 import { GlslHelpers } from "../../../eval/lib/fn"
 import { num, real } from "../../../eval/ty/create"
 import { Exts, Options } from "../../../field/options"
@@ -9,7 +10,6 @@ import { REMARK } from "../../remark"
 import { Slider } from "../../slider"
 import { createDrawAxes, makeInteractive, matchSize, Paper } from "../paper"
 import { Handlers } from "./handler"
-import regl = require("regl")
 
 export class Sheet {
   readonly pixelRatio

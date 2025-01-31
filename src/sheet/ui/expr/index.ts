@@ -42,10 +42,10 @@ export class Expr {
 
   constructor(readonly sheet: Sheet) {
     ;(this.smin = new FieldInert(sheet.exts, sheet.options, "font-sans pb-2"))
-      .latex`-10`
+      .latex`0`
     ;(this.smax = new FieldInert(sheet.exts, sheet.options, "font-sans pb-2"))
-      .latex`10`
-    this.slider.bounds(real(-10), real(10))
+      .latex`1`
+    this.slider.bounds(real(0), real(1))
     this.field = new Field(
       this,
       "block overflow-x-auto [&::-webkit-scrollbar]:hidden min-h-[3.265rem] max-w-[calc(var(--nya-sidebar)_-_2.5rem)] p-4",

@@ -1,3 +1,4 @@
+import regl from "regl"
 import { glsl } from "../eval/glsl"
 import { js } from "../eval/js"
 import { hex } from "../eval/lib/binding"
@@ -29,7 +30,6 @@ import {
   type Point,
   type PointerHandlers,
 } from "./ui/paper"
-import regl = require("regl")
 
 export interface Options {
   field: FieldOptions

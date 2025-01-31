@@ -227,7 +227,7 @@ export class Slider {
   }
 
   private virtualStepExp() {
-    return Math.floor(
+    return Math.ceil(
       Math.log(
         (this.elInner.clientWidth * (globalThis.devicePixelRatio ?? 1)) /
           (num(this._max) - num(this._min)),
