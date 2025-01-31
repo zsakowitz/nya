@@ -12,7 +12,7 @@ import { R } from "../../../field/model"
 import { h, t } from "../../../jsx"
 import type { Sheet } from "../sheet"
 import { Field } from "./field"
-import { ExprScrubber, readSlider } from "./slider"
+import { ExprScrubber, readSlider } from "./scrubber"
 
 export type ExprState =
   | { type: "error"; reason: string }
