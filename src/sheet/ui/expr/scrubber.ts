@@ -9,7 +9,8 @@ import { frac, num, real } from "../../../eval/ty/create"
 import { Display } from "../../../eval/ty/display"
 import { OpEq } from "../../../field/cmd/leaf/cmp"
 import { CmdVar } from "../../../field/cmd/leaf/var"
-import { L, R } from "../../../field/model"
+import { CmdSupSub } from "../../../field/cmd/math/supsub"
+import { Block, L, R } from "../../../field/model"
 import { Slider } from "../../slider"
 
 export class ExprScrubber extends Slider {
@@ -32,11 +33,9 @@ export class ExprScrubber extends Slider {
     const base = this.expr.state.base
     this.display(cursor, base || frac(10, 1))
     if (base) {
-      new CmdVar("b", field.options).insertAt(cursor, L)
-      new CmdVar("a", field.options).insertAt(cursor, L)
-      new CmdVar("s", field.options).insertAt(cursor, L)
-      new CmdVar("e", field.options).insertAt(cursor, L)
-      new Display(cursor, frac(10, 1)).value(num(base))
+      const sub = new Block(null)
+      new CmdSupSub(sub, null).insertAt(cursor, L)
+      new Display(sub.cursor(R), frac(10, 1)).value(num(base))
     }
     this.expr.state.value = this.value
     this.expr.field.sel = cursor.selection()
@@ -59,12 +58,26 @@ function totallyPlainNum(node: Node, base: SReal): SReal | null {
   return null
 }
 
-function readPlainNum(node: Node, base: SReal): SReal | null {
+function readPlainNum(
+  node: Node,
+  base: SReal | null,
+): { value: SReal; base: SReal | null } | null {
   let isNeg = false
   if (node.type == "op" && !node.b && node.kind == "-") {
     isNeg = true
     node = node.a
   }
+
+  if (!base && node.type == "num" && node.sub) {
+    const base = totallyPlainNum(node.sub, real(10))
+    if (base == null) return null
+    const value = totallyPlainNum({ type: "num", value: node.value }, base)
+    if (value == null) return null
+    return { value: isNeg ? neg(value) : value, base }
+  }
+
+  const baseRaw = base
+  base ||= real(10)
 
   let value
   if (
@@ -83,8 +96,9 @@ function readPlainNum(node: Node, base: SReal): SReal | null {
   } else {
     value = totallyPlainNum(node, base)
   }
+  if (value == null) return null
 
-  return value && isNeg ? neg(value) : value
+  return { value: isNeg ? neg(value) : value, base: baseRaw }
 }
 
 export function readSlider(
@@ -101,10 +115,10 @@ export function readSlider(
     if (!(2 <= base && base <= 36)) return null
     const value = readPlainNum(node.a, real(base))
     if (value == null) return null
-    return { value, base: real(base) }
+    return { value: value.value, base: real(base) }
   } else {
-    const value = readPlainNum(node, frac(10, 1))
+    const value = readPlainNum(node, null)
     if (value == null) return null
-    return { value, base: null }
+    return value
   }
 }
