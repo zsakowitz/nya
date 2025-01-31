@@ -294,6 +294,12 @@ export class Slider {
     if (stepExp > 0) {
       str = str.padStart(stepExp, "0")
       str = (str.slice(0, -stepExp) || "0") + "." + str.slice(-stepExp)
+      while (str[str.length - 1] == "0") {
+        str = str.slice(0, -1)
+      }
+      if (str[str.length - 1] == ".") {
+        str = str.slice(0, -1)
+      }
     } else if (stepExp < 0) {
       str += "0".repeat(-stepExp)
     }

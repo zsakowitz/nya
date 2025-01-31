@@ -20,10 +20,10 @@ export class ExprRangeControls {
     const { exts, options } = expr.sheet
     this.min = new Field(expr)
     this.minDisplay = new FieldInert(exts, options, "font-sans pb-2")
-    this.minDisplay.latex`-1e6`
+    this.minDisplay.latex`-10`
     this.max = new Field(expr)
     this.maxDisplay = new FieldInert(exts, options, "font-sans pb-2")
-    this.maxDisplay.latex`1e6`
+    this.maxDisplay.latex`10`
     this.step = new Field(expr)
     this.scrubber = new ExprScrubber(
       expr,
@@ -37,7 +37,7 @@ export class ExprRangeControls {
       this.maxDisplay.el,
     )
 
-    this.scrubber.bounds(real(-1e6), real(1e6))
+    this.scrubber.bounds(real(-10), real(10))
 
     this.el = h("contents", this.elSlider)
   }
