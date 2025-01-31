@@ -1,6 +1,6 @@
 import { Leaf } from "."
 import type { Node } from "../../../eval/ast/token"
-import { h, t } from "../../../jsx"
+import { h } from "../../../jsx"
 import type { LatexParser } from "../../latex"
 import {
   Block,
@@ -48,7 +48,7 @@ export class CmdNum extends Leaf {
   }
 
   constructor(readonly text: string) {
-    super(text, h("", t(text)))
+    super(text, h("", text))
   }
 
   ascii(): string {

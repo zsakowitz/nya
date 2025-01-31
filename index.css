@@ -989,6 +989,10 @@ video {
   width: .95em;
 }
 
+.w-\[1ch\] {
+  width: 1ch;
+}
+
 .w-\[calc\(var\(--nya-sidebar\)_-_2\.5rem_-_1px\)\] {
   width: calc(var(--nya-sidebar) - 2.5rem - 1px);
 }
@@ -1011,6 +1015,10 @@ video {
 
 .min-w-full {
   min-width: 100%;
+}
+
+.max-w-\[1ch\] {
+  max-width: 1ch;
 }
 
 .max-w-\[calc\(var\(--nya-sheet-sidebar\)_-_2\.5rem\)\] {
@@ -1039,6 +1047,11 @@ video {
 
 .scale-x-\[70\%\] {
   --tw-scale-x: 70%;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+}
+
+.scale-x-100 {
+  --tw-scale-x: 1;
   transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
 }
 
@@ -1751,6 +1764,14 @@ video {
 
 .\[line-height\:1\] {
   line-height: 1;
+}
+
+.\[scale\:75\%_100\%\] {
+  scale: 75% 100%;
+}
+
+.\[scale\:80\%_100\%\] {
+  scale: 80% 100%;
 }
 
 .\[scroll-margin\:1rem\] {
