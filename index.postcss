@@ -9,8 +9,60 @@
 
 :root,
 body {
-  /* @apply bg-black text-white [--nya-selection:theme("colors.blue.950")] [--nya-empty:#fff3]; */
-  @apply bg-white text-black [--nya-selection:theme("colors.blue.200")] [--nya-empty:#0003];
+  --nya-bg: white;
+  --nya-text: black;
+  --nya-selection: theme("colors.blue.200");
+  --nya-empty: #0003;
+  --nya-bg-sidebar: theme("colors.slate.100");
+  --nya-border: theme("colors.slate.200");
+  --nya-slider-zero: theme("colors.slate.400");
+  --nya-expr-index: theme("colors.slate.500");
+  --nya-expr-focus: theme("colors.blue.400");
+  --nya-expr-focus-index: theme("colors.white");
+  --nya-pixel-ratio: #0003;
+  --nya-latex-error: theme("colors.red.500");
+  --nya-range-step: theme("colors.slate.800");
+  --nya-range-bounds: theme("colors.slate.500");
+  --nya-range-error: theme("colors.red.400");
+  --nya-expr-error: theme("colors.red.800");
+  --nya-title: theme("colors.slate.500");
+  --nya-sidebar-shadow: #0206170a;
+  --nya-paper-axis-number-stroke: white;
+  --nya-paper-axis-number-onscreen: black;
+  --nya-paper-axis-number-offscreen: #8e8e8e;
+  --nya-paper-screen-line: black;
+  color-scheme: light;
+
+  @apply bg-[--nya-bg] text-[--nya-text];
+}
+
+@media (prefers-color-scheme: dark) {
+  :root,
+  body {
+    --nya-bg: theme("colors.slate.950");
+    --nya-text: theme("colors.slate.300");
+    --nya-selection: theme("colors.blue.900");
+    --nya-empty: #fff3;
+    --nya-bg-sidebar: theme("colors.slate.900");
+    --nya-border: theme("colors.slate.800");
+    --nya-slider-zero: theme("colors.slate.400");
+    --nya-expr-index: theme("colors.slate.500");
+    --nya-expr-focus: theme("colors.blue.800");
+    --nya-expr-focus-index: theme("colors.white");
+    --nya-pixel-ratio: #fff3;
+    --nya-latex-error: theme("colors.red.500");
+    --nya-range-step: theme("colors.slate.300");
+    --nya-range-bounds: theme("colors.slate.500");
+    --nya-range-error: theme("colors.red.400");
+    --nya-expr-error: #f87171d0;
+    --nya-title: theme("colors.slate.400");
+    --nya-sidebar-shadow: #e2e8f00a;
+    --nya-paper-axis-number-stroke: black;
+    --nya-paper-axis-number-onscreen: white;
+    --nya-paper-axis-number-offscreen: #8e8e8e;
+    --nya-paper-screen-line: theme("colors.slate.600");
+    color-scheme: dark;
+  }
 }
 
 .nya-cmd-word-r {

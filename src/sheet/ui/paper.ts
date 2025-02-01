@@ -1,15 +1,20 @@
 import { hx } from "../../jsx"
+import { onTheme, theme } from "../theme"
 
 const THEME_MAIN_AXIS_WIDTH = 1.5
 const THEME_MAJOR_LINE_ALPHA = 0.3
 const THEME_MINOR_LINE_ALPHA = 0.1
 
 const THEME_AXIS_NUMBER_SIZE = 0.875
-const THEME_AXIS_NUMBER_STROKE_COLOR = "white"
+const THEME_AXIS_NUMBER_STROKE_COLOR = () =>
+  theme("--nya-paper-axis-number-stroke", "white")
 const THEME_AXIS_NUMBER_STROKE_WIDTH = 4
-const THEME_AXIS_NUMBER_ONSCREEN = "black"
-const THEME_AXIS_NUMBER_OFFSCREEN = "#8e8e8e"
+const THEME_AXIS_NUMBER_ONSCREEN = () =>
+  theme("--nya-paper-axis-number-onscreen", "black")
+const THEME_AXIS_NUMBER_OFFSCREEN = () =>
+  theme("--nya-paper-axis-number-offscreen", "#8e8e8e")
 const THEME_AXIS_NUMBER_NEGATIVE_X_OFFSET = -2.5
+const THEME_AXIS_STROKE = () => theme("--nya-paper-screen-line", "black")
 
 const THEME_ZOOM_ZERO_SNAP_DISTANCE = 16
 // const THEME_MINIMUM_WIDTH = 10 ** -10
@@ -52,7 +57,9 @@ export class Paper {
       h: 2.6,
     },
     public autofit = true,
-  ) {}
+  ) {
+    onTheme(() => this.queue())
+  }
 
   bounds(): Bounds {
     if (this.autofit) {
@@ -177,7 +184,7 @@ export function createDrawAxes(paper: Paper) {
   }
 
   function drawScreenLineX(x: number, w: number) {
-    ctx.strokeStyle = "black"
+    ctx.strokeStyle = THEME_AXIS_STROKE()
     ctx.lineWidth = w
     ctx.beginPath()
     ctx.moveTo(x, 0)
@@ -186,7 +193,7 @@ export function createDrawAxes(paper: Paper) {
   }
 
   function drawScreenLineY(y: number, h: number) {
-    ctx.strokeStyle = "black"
+    ctx.strokeStyle = THEME_AXIS_STROKE()
     ctx.lineWidth = h
     ctx.beginPath()
     ctx.moveTo(0, y)
@@ -223,7 +230,7 @@ export function createDrawAxes(paper: Paper) {
     const { xmin, w } = paper.bounds()
     const { minor, major } = getGridlineSize(w, paper.el.width)
 
-    ctx.strokeStyle = "black"
+    ctx.strokeStyle = THEME_AXIS_STROKE()
     ctx.lineWidth = scale()
 
     ctx.beginPath()
@@ -251,7 +258,7 @@ export function createDrawAxes(paper: Paper) {
     const { ymin, h } = paper.bounds()
     const { minor, major } = getGridlineSize(h, paper.el.height)
 
-    ctx.strokeStyle = "black"
+    ctx.strokeStyle = THEME_AXIS_STROKE()
     ctx.lineWidth = scale()
 
     ctx.beginPath()
@@ -309,7 +316,7 @@ export function createDrawAxes(paper: Paper) {
 
     ctx.beginPath()
 
-    ctx.strokeStyle = THEME_AXIS_NUMBER_STROKE_COLOR
+    ctx.strokeStyle = THEME_AXIS_NUMBER_STROKE_COLOR()
     ctx.lineWidth = THEME_AXIS_NUMBER_STROKE_WIDTH * scale()
     ctx.textAlign = "center"
     ctx.textBaseline = "top"
@@ -330,9 +337,9 @@ export function createDrawAxes(paper: Paper) {
       : "middle"
 
     if (pos == "middle") {
-      ctx.fillStyle = THEME_AXIS_NUMBER_ONSCREEN
+      ctx.fillStyle = THEME_AXIS_NUMBER_ONSCREEN()
     } else {
-      ctx.fillStyle = THEME_AXIS_NUMBER_OFFSCREEN
+      ctx.fillStyle = THEME_AXIS_NUMBER_OFFSCREEN()
 
       if (pos == "bottom") {
         ctx.textBaseline = "bottom"
@@ -369,7 +376,7 @@ export function createDrawAxes(paper: Paper) {
 
     ctx.beginPath()
 
-    ctx.strokeStyle = THEME_AXIS_NUMBER_STROKE_COLOR
+    ctx.strokeStyle = THEME_AXIS_NUMBER_STROKE_COLOR()
     ctx.lineWidth = THEME_AXIS_NUMBER_STROKE_WIDTH * scale()
     ctx.textAlign = "right"
     ctx.textBaseline = "middle"
@@ -392,17 +399,17 @@ export function createDrawAxes(paper: Paper) {
 
       if (xleft < 6 * scale()) {
         ctx.textAlign = "left"
-        ctx.fillStyle = THEME_AXIS_NUMBER_OFFSCREEN
+        ctx.fillStyle = THEME_AXIS_NUMBER_OFFSCREEN()
         ctx.strokeText(value, 6 * scale(), y)
         ctx.fillText(value, 6 * scale(), y)
       } else if (x > paper.el.width - 6 * scale()) {
         ctx.textAlign = "right"
-        ctx.fillStyle = THEME_AXIS_NUMBER_OFFSCREEN
+        ctx.fillStyle = THEME_AXIS_NUMBER_OFFSCREEN()
         ctx.strokeText(value, paper.el.width - 6 * scale(), y)
         ctx.fillText(value, paper.el.width - 6 * scale(), y)
       } else {
         ctx.textAlign = "right"
-        ctx.fillStyle = THEME_AXIS_NUMBER_ONSCREEN
+        ctx.fillStyle = THEME_AXIS_NUMBER_ONSCREEN()
         ctx.strokeText(value, x, y)
         ctx.fillText(value, x, y)
       }

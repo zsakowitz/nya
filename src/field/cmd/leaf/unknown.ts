@@ -9,7 +9,7 @@ import { h } from "../../../jsx"
  */
 export class CmdUnknown extends Leaf {
   constructor(readonly source: string) {
-    super("\\unknown ", h("text-red-500", source))
+    super("\\unknown ", h("text-[--nya-latex-error]", source))
   }
 
   reader(): string {

@@ -39,14 +39,11 @@ export class RangeControls {
 
   constructor(readonly expr: Expr) {
     const { exts, options } = expr.sheet
-    const CLSX =
-      "text-[1rem] p-1 pr-2 border-b border-slate-200 min-w-12 max-w-24 min-h-[calc(1.5rem_+_1px)] focus:outline-none focus:border-b-blue-400 focus:border-b-2 [&::-webkit-scrollbar]:hidden overflow-x-auto align-middle focus:-mb-px"
-    this.min = new Field(this, CLSX)
-    this.min.leaf = true
-    this.max = new Field(this, CLSX)
-    this.max.leaf = true
-    this.step = new Field(this, CLSX)
-    this.step.leaf = true
+    this.minDisplay = new FieldInert(exts, options, "font-sans pb-2")
+    this.maxDisplay = new FieldInert(exts, options, "font-sans pb-2")
+    this.min = new Field(this, this.minDisplay)
+    this.max = new Field(this, this.maxDisplay)
+    this.step = new Field(this)
     for (const field of [this.min, this.max, this.step]) {
       field.el.addEventListener("focus", () => {
         field.onBeforeChange()
@@ -54,8 +51,6 @@ export class RangeControls {
         field.onAfterChange(false)
       })
     }
-    this.minDisplay = new FieldInert(exts, options, "font-sans pb-2")
-    this.maxDisplay = new FieldInert(exts, options, "font-sans pb-2")
     this.name = new FieldInert(exts, options, "text-[1em]")
 
     this.scrubber = new ExprScrubber(
@@ -71,7 +66,7 @@ export class RangeControls {
     this.scrubber.bounds(real(-10), real(10))
 
     this.elSlider = h(
-      "flex text-[0.6rem] items-center text-slate-500 px-3 -mt-3 [.nya-expr:focus-within_&:not(:focus-within)]:sr-only",
+      "flex text-[0.6rem] items-center text-[--nya-range-bounds] px-3 -mt-3 [.nya-expr:focus-within_&:not(:focus-within)]:sr-only",
       this.minDisplay.el,
       this.scrubber.el,
       this.maxDisplay.el,
@@ -85,7 +80,7 @@ export class RangeControls {
       new OpLt(false, true).el,
       " ",
       this.max.el,
-      h("ml-4 font-sans text-sm text-slate-800", "Step: "),
+      h("ml-4 font-sans text-sm text-[--nya-range-step]", "Step: "),
       this.step.el,
     )
 

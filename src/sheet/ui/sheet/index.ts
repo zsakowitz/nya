@@ -25,7 +25,7 @@ export class Sheet {
   readonly el
   readonly elExpressions = h("flex flex-col")
   readonly elNextIndex = h(
-    "font-sans text-slate-500 text-[65%] leading-none",
+    "font-sans text-[--nya-expr-index] text-[65%] leading-none",
     "1",
   )
 
@@ -63,7 +63,7 @@ export class Sheet {
 
     // dom
     this.glPixelRatio.el.className =
-      "block w-48 bg-white outline outline-black/30 rounded-full p-1"
+      "block w-48 bg-[--nya-bg] outline outline-[--nya-pixel-ratio] rounded-full p-1"
     this.el = h(
       "fixed inset-0 grid grid-cols-[400px_1fr] grid-rows-1 select-none",
 
@@ -73,7 +73,7 @@ export class Sheet {
 
         // title bar
         h(
-          "sticky top-0 w-full flex flex-col bg-slate-100 border-b border-r border-slate-200 px-4 text-center text-slate-500 py-2 z-10",
+          "sticky top-0 w-full flex flex-col bg-[--nya-bg-sidebar] border-b border-r border-[--nya-border] px-4 text-center text-[--nya-title] py-2 z-10",
           h("text-2xl leading-tight", "project nya"),
           h("italic text-sm leading-none", REMARK),
         ),
@@ -83,11 +83,11 @@ export class Sheet {
 
         // fake expression
         h(
-          "relative grid grid-cols-[2.5rem_auto] min-h-[3.625rem] border-r border-slate-200",
+          "relative grid grid-cols-[2.5rem_auto] min-h-[3.625rem] border-r border-[--nya-border]",
 
           // grey side of expression
           h(
-            "inline-flex bg-slate-100 flex-col p-0.5 border-r border-slate-200",
+            "inline-flex bg-[--nya-bg-sidebar] flex-col p-0.5 border-r border-[--nya-border]",
             this.elNextIndex,
           ),
 
@@ -95,11 +95,11 @@ export class Sheet {
           // TODO: make this clickable
 
           // cover
-          h("absolute inset-0 from-transparent to-white bg-gradient-to-b"),
+          h("absolute inset-0 from-transparent to-[--nya-bg] bg-gradient-to-b"),
         ),
 
         // right border on remainder of the flexbox
-        h("flex-1 border-r border-slate-200"),
+        h("flex-1 border-r border-[--nya-border]"),
       ),
 
       // paper
@@ -108,7 +108,7 @@ export class Sheet {
         canvas,
         this.paper.el,
         h(
-          "absolute block top-0 bottom-0 left-0 w-1 from-slate-950/10 to-transparent bg-gradient-to-r",
+          "absolute block top-0 bottom-0 left-0 w-1 from-[--nya-sidebar-shadow] to-transparent bg-gradient-to-r",
         ),
         h("absolute flex flex-col top-2 right-2", this.glPixelRatio.el),
       ),

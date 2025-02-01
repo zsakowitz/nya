@@ -45,7 +45,7 @@ export class Slider {
           value: "" + this._value,
         })),
         (this.elStepsOuter = h(
-          "relative block w-full h-1.5 bg-slate-200 rounded-full",
+          "relative block w-full h-1.5 bg-[--nya-border] rounded-full",
           (this.elSteps = h(
             "absolute block top-0.5 h-0.5 left-0.5 right-1 rounded-full",
           )),
@@ -165,14 +165,16 @@ export class Slider {
     const steps = (this._steps = (max - min) / step)
     if (0 < steps && steps <= 100) {
       for (let i = 0; i <= steps; i++) {
-        const el = h("absolute top-0 size-0.5 bg-white rounded-full")
+        const el = h("absolute top-0 size-0.5 bg-[--nya-bg] rounded-full")
         el.style.left = 100 * (i / steps) + "%"
         this.elSteps.appendChild(el)
       }
     }
     const zero = -min / (max - min)
     if (0 <= zero && zero <= 1) {
-      const el = h("absolute top-0 size-0.5 bg-slate-400 rounded-full")
+      const el = h(
+        "absolute top-0 size-0.5 bg-[--nya-slider-zero] rounded-full",
+      )
       el.style.left = 100 * zero + "%"
       this.elSteps.appendChild(el)
     }

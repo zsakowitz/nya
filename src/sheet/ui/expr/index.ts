@@ -45,21 +45,21 @@ export class Expr {
     this.value = new FieldInert(
       sheet.exts,
       sheet.options,
-      "bg-slate-100 border border-slate-200 px-2 py-1 rounded",
+      "bg-[--nya-bg-sidebar] border border-[--nya-border] px-2 py-1 rounded",
     )
     this.elValue = h(
       "flex px-2 pb-2 -mt-2 w-[calc(var(--nya-sidebar)_-_2.5rem_-_1px)] overflow-x-auto [&::-webkit-scrollbar]:hidden hidden justify-end",
       this.value.el,
     )
     this.elError = h(
-      "block hidden mx-1 -mt-2 px-1 pb-1 leading-tight italic text-red-800 whitespace-pre-wrap font-sans pointer-events-none",
+      "block hidden mx-1 -mt-2 px-1 pb-1 leading-tight italic text-[--nya-expr-error] whitespace-pre-wrap font-sans pointer-events-none",
     )
     this.el = h(
-      "grid grid-cols-[2.5rem_auto] border-r border-b border-slate-200 relative nya-expr",
+      "grid grid-cols-[2.5rem_auto] border-r border-b border-[--nya-border] relative nya-expr",
 
       // grey side of expression
       h(
-        "inline-flex bg-slate-100 flex-col p-0.5 border-r border-slate-200 font-sans text-slate-500 text-[65%] leading-none [:focus-within>&]:bg-blue-400 [:focus-within>&]:text-white [:focus-within>&]:border-blue-400",
+        "inline-flex bg-[--nya-bg-sidebar] flex-col p-0.5 border-r border-[--nya-border] font-sans text-[--nya-expr-index] text-[65%] leading-none [:focus-within>&]:bg-[--nya-expr-focus] [:focus-within>&]:text-[--nya-expr-focus-index] [:focus-within>&]:border-[--nya-expr-focus]",
         this.elIndex,
       ),
 
@@ -74,7 +74,7 @@ export class Expr {
 
       // focus ring
       h(
-        "hidden absolute -inset-y-px inset-x-0 [:first-child>&]:top-0 border-2 border-blue-400 [:focus-within>&]:block pointer-events-none",
+        "hidden absolute -inset-y-px inset-x-0 [:first-child>&]:top-0 border-2 border-[--nya-expr-focus] [:focus-within>&]:block pointer-events-none",
       ),
     )
     this.sheet.elExpressions.appendChild(this.el)

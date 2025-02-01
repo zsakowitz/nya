@@ -18,7 +18,10 @@ export class CmdEOF extends Leaf {
   constructor(readonly expected: string) {
     super(
       "\\error ",
-      h("px-[.1em]", h("text-red-500 border border-current px-1", "EOF")),
+      h(
+        "px-[.1em]",
+        h("text-[--nya-latex-error] border border-current px-1", "EOF"),
+      ),
     )
   }
 

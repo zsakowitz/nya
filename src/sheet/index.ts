@@ -119,7 +119,7 @@ export function circle(kind: CircleKind) {
       )
     case "empty":
       return h(
-        "relative block bg-slate-100 size-8 rounded-full mx-0.5 border-4 border-slate-300 group-focus-within:border-blue-500",
+        "relative block bg-[--nya-bg-sidebar] size-8 rounded-full mx-0.5 border-4 border-slate-300 group-focus-within:border-blue-500",
       )
   }
 }
@@ -229,9 +229,9 @@ export class Expr {
       this.field.el,
     )
     this.el = h(
-      "border-b border-slate-200 grid grid-cols-[2.5rem,auto] relative group focus-within:border-[color:--nya-focus] max-w-full",
+      "border-b border-[--nya-border] grid grid-cols-[2.5rem,auto] relative group focus-within:border-[color:--nya-focus] max-w-full",
       h(
-        "inline-flex bg-slate-100 flex-col p-0.5 group-focus-within:bg-[color:--nya-focus] border-r border-slate-200 group-focus-within:border-transparent text-[65%] [line-height:1] text-slate-500",
+        "inline-flex bg-[--nya-bg-sidebar] flex-col p-0.5 group-focus-within:bg-[color:--nya-focus] border-r border-[--nya-border] group-focus-within:border-transparent text-[65%] [line-height:1] text-slate-500",
         h(
           "inline-flex group-focus-within:text-white",
           (this.elIndex = h("", "" + this.sheet.exprs.length)),
@@ -274,9 +274,9 @@ export class Expr {
     this.index = this.sheet.exprs.length - 1
     this.elValue.el.classList.add(
       "block",
-      "bg-slate-100",
+      "bg-[--nya-bg-sidebar]",
       "border",
-      "border-slate-200",
+      "border-[--nya-border]",
       "rounded",
       "px-2",
       "py-1",
@@ -490,7 +490,7 @@ export class Sheet {
       (this.elNextExpr = h(
         "grid grid-cols-[2.5rem,auto] relative pointernya-cursor",
         h(
-          "inline-flex bg-slate-100 flex-col p-0.5",
+          "inline-flex bg-[--nya-bg-sidebar] flex-col p-0.5",
           (this.elNextIndex = h(
             "text-[65%] [line-height:1] text-slate-500",
             "1",
@@ -513,9 +513,9 @@ export class Sheet {
     this.el = h(
       "block fixed inset-0 grid grid-cols-[600px_1fr] grid-rows-1 select-none [--nya-focus:theme(colors.blue.400)]",
       h(
-        "block overflow-y-auto relative border-r border-slate-200",
+        "block overflow-y-auto relative border-r border-[--nya-border]",
         h(
-          "flex flex-col h-16 w-full bg-slate-100 border-b border-slate-200 sticky top-0 z-10 items-center justify-center",
+          "flex flex-col h-16 w-full bg-[--nya-bg-sidebar] border-b border-[--nya-border] sticky top-0 z-10 items-center justify-center",
           h(
             "font-['Symbola','Times_New_Roman',serif] text-2xl leading-tight text-slate-500",
             "project nya ",
@@ -542,7 +542,7 @@ export class Sheet {
           "absolute flex flex-col top-2 right-2",
           (this.elPixelRatio = new Slider()).el,
           // h(
-          //   "flex size-8 border shadow border-slate-300 bg-slate-100 rounded",
+          //   "flex size-8 border shadow border-slate-300 bg-[--nya-bg-sidebar] rounded",
           //   fa(faHomeLg, "m-auto size-4 fill-slate-500"),
           // ),
         ),
