@@ -1,4 +1,3 @@
-import type { PlainVar } from "../../../eval/ast/token"
 import { glsl } from "../../../eval/glsl"
 import { js } from "../../../eval/js"
 import { id } from "../../../eval/lib/binding"
@@ -12,14 +11,14 @@ import { R } from "../../../field/model"
 import { h, t } from "../../../jsx"
 import type { Sheet } from "../sheet"
 import { Field } from "./field"
-import { ExprRangeControls } from "./range"
+import { RangeControls, type RangeState } from "./range"
 import { readSlider } from "./scrubber"
 
 export type ExprState =
   | { type: "error"; reason: string }
-  | { type: "slider"; name: PlainVar; value: SReal; base: SReal | null }
   | { type: "js"; value: JsValue; base: SReal }
   | { type: "glsl"; ctx: GlslContext; value: GlslValue }
+  | RangeState
 
 const ID_X = id({ value: "x" })
 const ID_Y = id({ value: "y" })
@@ -38,7 +37,7 @@ export class Expr {
   state: ExprState = { type: "error", reason: "Not computed yet." }
 
   constructor(readonly sheet: Sheet) {
-    this.slider = new ExprRangeControls(this)
+    this.slider = new RangeControls(this)
     this.field = new Field(
       this,
       "block overflow-x-auto [&::-webkit-scrollbar]:hidden min-h-[3.265rem] max-w-[calc(var(--nya-sidebar)_-_2.5rem_-_1px)] p-4 focus:outline-none",
@@ -90,7 +89,7 @@ export class Expr {
       if (node.type == "binding" && !node.args) {
         const sv = readSlider(node.value)
         if (sv) {
-          this.state = { ...sv, type: "slider", name: node.name }
+          this.state = { ...sv, type: "range", name: node.name }
           this.slider.scrubber.base = sv.base || frac(10, 1)
           return
         }
@@ -143,7 +142,7 @@ export class Expr {
         this.elError.classList.remove("hidden")
         this.elError.textContent = this.state.reason
         break
-      case "slider":
+      case "range":
         this.slider.el.classList.remove("hidden")
         if (num(this.state.value) != num(this.slider.scrubber.value)) {
           this.slider.scrubber.value = this.state.value

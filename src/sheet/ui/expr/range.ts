@@ -1,4 +1,6 @@
 import type { Expr } from "."
+import type { PlainVar } from "../../../eval/ast/token"
+import type { SReal } from "../../../eval/ty"
 import { real } from "../../../eval/ty/create"
 import { OpLt } from "../../../field/cmd/leaf/cmp"
 import { FieldInert } from "../../../field/field-inert"
@@ -7,7 +9,14 @@ import { h } from "../../../jsx"
 import { Field } from "./field"
 import { ExprScrubber } from "./scrubber"
 
-export class ExprRangeControls {
+export interface RangeState {
+  type: "range"
+  name: PlainVar
+  value: SReal
+  base: SReal | null
+}
+
+export class RangeControls {
   readonly min
   private readonly minDisplay
   readonly max
