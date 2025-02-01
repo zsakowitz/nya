@@ -75,7 +75,7 @@ export class Scope {
 
       this.untrack(field)
       try {
-        field.ast = field.block.expr()
+        field.ast = field.block.expr(!field.leaf)
         field.id = undefined
         if (field.ast.type == "binding") {
           const id = tryId(field.ast.name)
@@ -229,6 +229,9 @@ export class FieldComputed extends Field {
     super(scope.exts, scope.options, className)
     scope.adopt(this)
   }
+
+  /** If `true`, this field is not allowed to define bindings. */
+  leaf = false
 
   /** The cached dependencies of this field. */
   deps = new Deps()

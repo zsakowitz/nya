@@ -11,14 +11,14 @@ import { R } from "../../../field/model"
 import { h, t } from "../../../jsx"
 import type { Sheet } from "../sheet"
 import { Field } from "./field"
-import { RangeControls, type RangeState } from "./range"
-import { readSlider } from "./scrubber"
+import { RangeControls, type ExprRangeState } from "./range"
+import { readSlider } from "./range/scrubber"
 
 export type ExprState =
   | { type: "error"; reason: string }
   | { type: "js"; value: JsValue; base: SReal }
   | { type: "glsl"; ctx: GlslContext; value: GlslValue }
-  | RangeState
+  | ExprRangeState
 
 const ID_X = id({ value: "x" })
 const ID_Y = id({ value: "y" })

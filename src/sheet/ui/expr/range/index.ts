@@ -1,19 +1,25 @@
-import type { Expr } from "."
-import type { PlainVar } from "../../../eval/ast/token"
-import type { SReal } from "../../../eval/ty"
-import { real } from "../../../eval/ty/create"
-import { OpLt } from "../../../field/cmd/leaf/cmp"
-import { FieldInert } from "../../../field/field-inert"
-import { L, Selection } from "../../../field/model"
-import { h } from "../../../jsx"
+import type { Expr } from ".."
+import type { PlainVar } from "../../../../eval/ast/token"
+import type { SReal } from "../../../../eval/ty"
+import { real } from "../../../../eval/ty/create"
+import { OpLt } from "../../../../field/cmd/leaf/cmp"
+import { FieldInert } from "../../../../field/field-inert"
+import { L, Selection } from "../../../../field/model"
+import { h } from "../../../../jsx"
 import { Field } from "./field"
 import { ExprScrubber } from "./scrubber"
 
-export interface RangeState {
+export interface ExprRangeState {
   type: "range"
   name: PlainVar
   value: SReal
   base: SReal | null
+}
+
+export interface RangeState {
+  min: SReal | string
+  max: SReal | string
+  step: SReal | string | null
 }
 
 export class RangeControls {
@@ -29,13 +35,18 @@ export class RangeControls {
   private readonly elSlider
   private readonly elBounds
 
+  // readonly state
+
   constructor(readonly expr: Expr) {
     const { exts, options } = expr.sheet
     const CLSX =
       "text-[1rem] p-1 pr-2 border-b border-slate-200 min-w-12 max-w-24 min-h-[calc(1.5rem_+_1px)] focus:outline-none focus:border-b-blue-400 focus:border-b-2 [&::-webkit-scrollbar]:hidden overflow-x-auto align-middle focus:-mb-px"
-    this.min = new Field(expr, CLSX)
-    this.max = new Field(expr, CLSX)
-    this.step = new Field(expr, CLSX)
+    this.min = new Field(this, CLSX)
+    this.min.leaf = true
+    this.max = new Field(this, CLSX)
+    this.max.leaf = true
+    this.step = new Field(this, CLSX)
+    this.step.leaf = true
     for (const field of [this.min, this.max, this.step]) {
       field.el.addEventListener("focus", () => {
         field.onBeforeChange()

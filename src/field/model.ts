@@ -109,8 +109,8 @@ export class Block {
    * Tokenizes this {@linkcode Block}'s contents into an AST, possibly with a
    * top-level binding.
    */
-  expr(): Node {
-    return tokensToAst(this.ir(), true)
+  expr(maybeBinding = true): Node {
+    return tokensToAst(this.ir(), maybeBinding)
   }
 
   /** Creates a cursor focused at the given position in this {@linkcode Block}. */

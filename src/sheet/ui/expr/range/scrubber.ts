@@ -1,17 +1,17 @@
-import type { Expr } from "."
-import type { Node } from "../../../eval/ast/token"
-import { parseNumberJs } from "../../../eval/lib/base"
-import { mul } from "../../../eval/ops/op/mul"
-import { neg } from "../../../eval/ops/op/neg"
-import { raise } from "../../../eval/ops/op/raise"
-import type { SReal } from "../../../eval/ty"
-import { frac, num, real } from "../../../eval/ty/create"
-import { Display } from "../../../eval/ty/display"
-import { OpEq } from "../../../field/cmd/leaf/cmp"
-import { CmdVar } from "../../../field/cmd/leaf/var"
-import { CmdSupSub } from "../../../field/cmd/math/supsub"
-import { Block, L, R } from "../../../field/model"
-import { Slider } from "../../slider"
+import type { Expr } from ".."
+import type { Node } from "../../../../eval/ast/token"
+import { parseNumberJs } from "../../../../eval/lib/base"
+import { mul } from "../../../../eval/ops/op/mul"
+import { neg } from "../../../../eval/ops/op/neg"
+import { raise } from "../../../../eval/ops/op/raise"
+import type { SReal } from "../../../../eval/ty"
+import { frac, num, real } from "../../../../eval/ty/create"
+import { Display } from "../../../../eval/ty/display"
+import { OpEq } from "../../../../field/cmd/leaf/cmp"
+import { CmdVar } from "../../../../field/cmd/leaf/var"
+import { CmdSupSub } from "../../../../field/cmd/math/supsub"
+import { Block, L, R } from "../../../../field/model"
+import { Slider } from "../../../slider"
 
 export class ExprScrubber extends Slider {
   constructor(
@@ -22,7 +22,7 @@ export class ExprScrubber extends Slider {
   }
 
   onInput(): void {
-    if (this.expr.state.type != "slider") return
+    if (this.expr.state.type != "range") return
 
     const { field } = this.expr
     this.expr.field.onBeforeChange()
