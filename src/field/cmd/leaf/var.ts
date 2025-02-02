@@ -7,7 +7,7 @@ import {
   type Var,
 } from "../../../eval/ast/token"
 import { subscript } from "../../../eval/lib/text"
-import { h, t } from "../../../jsx"
+import { h } from "../../../jsx"
 import type { LatexParser } from "../../latex"
 import {
   Block,
@@ -117,7 +117,7 @@ export class CmdVar extends Leaf {
           (text == "f" ?
             " mx-[.1em] [.nya-cmd-word>:where(&)]:mx-0 relative"
           : ""),
-        t(text),
+        text,
       ),
     )
   }

@@ -11,7 +11,7 @@ import { CmdVar } from "../../../field/cmd/leaf/var"
 import { fa } from "../../../field/fa"
 import { FieldInert } from "../../../field/field-inert"
 import { R } from "../../../field/model"
-import { h, t } from "../../../jsx"
+import { h } from "../../../jsx"
 import type { Sheet } from "../sheet"
 import { Field } from "./field"
 import { RangeControls, type ExprRangeState } from "./range"
@@ -30,7 +30,7 @@ const ID_P = id({ value: "p" })
 export class Expr {
   readonly field
   readonly el
-  readonly elIndex = t("1")
+  readonly elIndex
 
   readonly slider
   readonly value
@@ -66,7 +66,7 @@ export class Expr {
       // grey side of expression
       h(
         "inline-flex bg-[--nya-bg-sidebar] flex-col p-0.5 border-r border-[--nya-border] font-sans text-[--nya-expr-index] text-[65%] leading-none [:focus-within>&]:bg-[--nya-expr-focus] [:focus-within>&]:text-[--nya-expr-focus-index] [:focus-within>&]:border-[--nya-expr-focus]",
-        this.elIndex,
+        (this.elIndex = h("")),
         fa(
           faWarning,
           "hidden mx-auto size-6 fill-[--nya-icon-error] [.nya-expr-error_&]:block",

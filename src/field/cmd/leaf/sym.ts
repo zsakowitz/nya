@@ -1,6 +1,6 @@
 import { Leaf } from "."
 import type { Node } from "../../../eval/ast/token"
-import { h, t } from "../../../jsx"
+import { h } from "../../../jsx"
 import type { LatexParser } from "../../latex"
 import {
   L,
@@ -31,7 +31,7 @@ export function sym(
     }
 
     constructor() {
-      super(latex, h("", h(clsx, t(text))))
+      super(latex, h("", h(clsx, text)))
     }
 
     ascii(): string {

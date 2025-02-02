@@ -153,7 +153,7 @@ export class Scope {
             return (valueGlsl = { ...rawValue, expr: `${name}()` })
           },
         })
-      } else {
+      } else if (field.length) {
         let myName = def
         try {
           if (field[0]) {

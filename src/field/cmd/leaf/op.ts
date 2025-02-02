@@ -1,6 +1,6 @@
 import { Leaf } from "."
 import type { Node, Punc, PuncInfix, PuncPm } from "../../../eval/ast/token"
-import { h, t } from "../../../jsx"
+import { h } from "../../../jsx"
 import type { LatexParser } from "../../latex"
 import {
   L,
@@ -33,14 +33,12 @@ export abstract class Op extends Leaf {
   ) {
     super(
       ctrlSeq,
-      h("nya-cmd-op", h("px-[.2em] inline-block cursor-text", t(html))),
+      h("nya-cmd-op", h("px-[.2em] inline-block cursor-text", html)),
     )
   }
 
   setHtml(html: string) {
-    this.setEl(
-      h("nya-cmd-op", h("px-[.2em] inline-block cursor-text", t(html))),
-    )
+    this.setEl(h("nya-cmd-op", h("px-[.2em] inline-block cursor-text", html)))
   }
 }
 
@@ -63,7 +61,7 @@ export abstract class OpPm extends Leaf {
   }
 
   static render(html: string) {
-    return h("nya-cmd-op nya-cmd-pm", h("px-[.2em] inline-block", t(html)))
+    return h("nya-cmd-op nya-cmd-pm", h("px-[.2em] inline-block", html))
   }
 
   constructor(
@@ -211,7 +209,7 @@ export class OpNeg extends Leaf {
   static render(html: string) {
     return h(
       "nya-cmd-op nya-cmd-pm nya-cmd-not",
-      h("px-[.2em] inline-block", t(html)),
+      h("px-[.2em] inline-block", html),
     )
   }
 

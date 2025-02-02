@@ -2,7 +2,7 @@ import { commalist, fnargs } from "./ast/collect"
 import type { Node } from "./ast/token"
 import { js } from "./js"
 import { asNumericBase, parseNumberGlsl, parseNumberJs } from "./lib/base"
-import { Bindings, id } from "./lib/binding"
+import { Bindings, id, name } from "./lib/binding"
 import { GlslContext, GlslHelpers } from "./lib/fn"
 import { FNS, OP_BINARY, OP_UNARY } from "./ops"
 import { iterateGlsl, parseIterate } from "./ops/iterate"
@@ -191,7 +191,13 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
         return OP_RAISE.glsl(props.ctx, value, glsl(node.sup, props))
       }
 
-      throw new Error(`The variable '${node.value}' is not defined.`)
+      let n
+      try {
+        n = name(node)
+      } catch {
+        n = node.value + (node.sub ? "..." : "")
+      }
+      throw new Error(`The variable '${n}' is not defined.`)
     }
     case "frac":
       return OP_DIV.glsl(props.ctx, glsl(node.a, props), glsl(node.b, props))

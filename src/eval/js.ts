@@ -1,7 +1,7 @@
 import { commalist, fnargs } from "./ast/collect"
 import type { Node } from "./ast/token"
 import { asNumericBase, parseNumberJs } from "./lib/base"
-import { Bindings, id } from "./lib/binding"
+import { Bindings, id, name } from "./lib/binding"
 import { FNS, OP_BINARY, OP_UNARY } from "./ops"
 import { iterateJs, parseIterate } from "./ops/iterate"
 import { OP_ABS } from "./ops/op/abs"
@@ -179,7 +179,13 @@ export function js(node: Node, props: PropsJs): JsValue {
         return OP_RAISE.js(value, js(node.sup, props))
       }
 
-      throw new Error(`The variable '${node.value}' is not defined.`)
+      let n
+      try {
+        n = name(node)
+      } catch {
+        n = node.value + (node.sub ? "..." : "")
+      }
+      throw new Error(`The variable '${n}' is not defined.`)
     }
     case "frac":
       return OP_DIV.js(js(node.a, props), js(node.b, props))

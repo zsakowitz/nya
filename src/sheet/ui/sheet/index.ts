@@ -123,7 +123,7 @@ export class Sheet {
   checkIndices() {
     for (let i = 0; i < this.exprs.length; i++) {
       const expr = this.exprs[i]!
-      expr.elIndex.data = i + 1 + ""
+      expr.elIndex.textContent = i + 1 + ""
     }
     this.elNextIndex.textContent = this.exprs.length + 1 + ""
   }

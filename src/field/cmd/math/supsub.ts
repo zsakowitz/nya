@@ -1,5 +1,5 @@
 import type { Node } from "../../../eval/ast/token"
-import { U_ZERO_WIDTH_SPACE, h, t } from "../../../jsx"
+import { U_ZERO_WIDTH_SPACE, h } from "../../../jsx"
 import type { LatexParser } from "../../latex"
 import {
   Block,
@@ -115,7 +115,7 @@ export class CmdSupSub extends Command {
         h(
           "mb-[-.2em] inline-block text-left align-[-.5em] text-[90%] [.bg-nya-selection>&]:bg-nya-selection",
           h("float-left block text-[80%]", sub.el),
-          h("inline-block w-0", t(U_ZERO_WIDTH_SPACE)),
+          h("inline-block w-0", U_ZERO_WIDTH_SPACE),
         ),
       )
     } else if (sub && sup) {
@@ -125,7 +125,7 @@ export class CmdSupSub extends Command {
           "mb-[-.2em] inline-block text-left align-[-.5em] text-[90%] [.bg-nya-selection>&]:bg-nya-selection",
           h("block", sup.el),
           h("float-left block text-[80%]", sub.el),
-          h("inline-block w-0", t(U_ZERO_WIDTH_SPACE)),
+          h("inline-block w-0", U_ZERO_WIDTH_SPACE),
         ),
       )
     } else {

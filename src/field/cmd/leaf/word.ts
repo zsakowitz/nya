@@ -1,6 +1,6 @@
 import { Leaf } from "."
 import type { Node } from "../../../eval/ast/token"
-import { h, t } from "../../../jsx"
+import { h } from "../../../jsx"
 import type { WordKind } from "./var"
 
 export class CmdWord extends Leaf {
@@ -17,7 +17,7 @@ export class CmdWord extends Leaf {
           (italic ? "italic" : (
             `nya-cmd-word nya-cmd-word-${kind} nya-cmd-word-l nya-cmd-word-r`
           )),
-        h("font-['Times_New_Roman'] [line-height:.9]", t(text)),
+        h("font-['Times_New_Roman'] [line-height:.9]", text),
       ),
     )
   }
