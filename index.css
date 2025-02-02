@@ -734,6 +734,18 @@ video {
   z-index: 1;
 }
 
+.order-1 {
+  order: 1;
+}
+
+.order-2 {
+  order: 2;
+}
+
+.order-3 {
+  order: 3;
+}
+
 .float-right {
   float: right;
 }
@@ -781,6 +793,11 @@ video {
   margin-right: .7em;
 }
 
+.mx-auto {
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .my-\[\.1em\] {
   margin-top: .1em;
   margin-bottom: .1em;
@@ -796,10 +813,6 @@ video {
 
 .-mt-2 {
   margin-top: -0.5rem;
-}
-
-.-mt-3 {
-  margin-top: -0.75rem;
 }
 
 .mb-2 {
@@ -966,10 +979,6 @@ video {
   min-height: 3.625rem;
 }
 
-.min-h-\[calc\(1\.5rem_\+_1px\)\] {
-  min-height: calc(1.5rem + 1px);
-}
-
 .w-0 {
   width: 0px;
 }
@@ -1018,10 +1027,6 @@ video {
   width: 1px;
 }
 
-.min-w-12 {
-  min-width: 3rem;
-}
-
 .min-w-\[\.5em\] {
   min-width: .5em;
 }
@@ -1032,10 +1037,6 @@ video {
 
 .min-w-full {
   min-width: 100%;
-}
-
-.max-w-24 {
-  max-width: 6rem;
 }
 
 .max-w-\[calc\(var\(--nya-sheet-sidebar\)_-_2\.5rem\)\] {
@@ -1438,6 +1439,10 @@ video {
   --tw-gradient-to: #fff var(--tw-gradient-to-position);
 }
 
+.fill-\[--nya-icon-error\] {
+  fill: var(--nya-icon-error);
+}
+
 .fill-current {
   fill: currentColor;
 }
@@ -1546,10 +1551,6 @@ video {
   padding-left: .15em;
 }
 
-.pr-2 {
-  padding-right: 0.5rem;
-}
-
 .pr-\[\.2em\] {
   padding-right: .2em;
 }
@@ -1651,10 +1652,6 @@ video {
   line-height: 2rem;
 }
 
-.text-\[0\.6rem\] {
-  font-size: 0.6rem;
-}
-
 .text-\[0\.7rem\] {
   font-size: 0.7rem;
 }
@@ -1669,10 +1666,6 @@ video {
 
 .text-\[1em\] {
   font-size: 1em;
-}
-
-.text-\[1rem\] {
-  font-size: 1rem;
 }
 
 .text-\[200\%\] {
@@ -1734,10 +1727,6 @@ video {
 
 .text-\[--nya-latex-error\] {
   color: var(--nya-latex-error);
-}
-
-.text-\[--nya-range-bounds\] {
-  color: var(--nya-range-bounds);
 }
 
 .text-\[--nya-range-step\] {
@@ -1824,14 +1813,6 @@ video {
   filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
 }
 
-.transition {
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-backdrop-filter;
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-backdrop-filter;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
-}
-
 .transition-\[width\2c height\] {
   transition-property: width,height;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
@@ -1875,6 +1856,10 @@ body {
   --nya-slider-zero: #94a3b8;
   --nya-expr-index: #64748b;
   --nya-expr-focus: #60a5fa;
+  --nya-icon-error: #ef4444;
+  .nya-expr:focus-within {
+    --nya-icon-error: #172554;
+  }
   --nya-expr-focus-index: #fff;
   --nya-pixel-ratio: #0003;
   --nya-latex-error: #ef4444;
@@ -1905,6 +1890,10 @@ body {
     --nya-slider-zero: #94a3b8;
     --nya-expr-index: #64748b;
     --nya-expr-focus: #1e40af;
+    --nya-icon-error: #ef4444;
+    .nya-expr:focus-within {
+      --nya-icon-error: #dbeafe;
+    }
     --nya-expr-focus-index: #fff;
     --nya-pixel-ratio: #fff3;
     --nya-latex-error: #ef4444;
@@ -2102,6 +2091,139 @@ body {
   padding-left: 1ch;
 }
 
+/* slider */
+
+.nya-range-bound {
+  border-color: var(--nya-border);
+}
+
+:where(
+    .nya-expr:not(:focus-within),
+    .nya-expr:has(.nya-range-scrubber:focus-within)
+  )
+  :where(.nya-range:not(.nya-range-error)) {
+  & {
+    margin-top: -0.75rem;
+  }
+  & {
+    align-items: center;
+  }
+  & {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+  & {
+    font-size: 0.6rem;
+  }
+  & {
+    color: var(--nya-range-bounds);
+  }
+  :where(&) {
+    display: flex;
+  }
+  .nya-range-bound {
+    padding-bottom: 0.5rem;
+  }
+  .nya-range-bound {
+    font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  }
+  .nya-range-bounds {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+  .nya-range-bounds {
+    display: block;
+  }
+}
+
+:where(
+    .nya-expr:focus-within:not(:has(.nya-range-scrubber:focus-within))
+      .nya-range,
+    .nya-range-error
+  ) {
+  & {
+    margin-top: -0.5rem;
+  }
+  & {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  & {
+    padding-bottom: 0.5rem;
+  }
+  & {
+    font-size: 1.265em;
+  }
+  & {
+    line-height: 1;
+  }
+  .nya-range-bound {
+    min-height: calc(1.5rem + 1px);
+  }
+  .nya-range-bound {
+    min-width: 3rem;
+  }
+  .nya-range-bound {
+    max-width: 6rem;
+  }
+  .nya-range-bound {
+    overflow-x: auto;
+  }
+  .nya-range-bound {
+    border-bottom-width: 1px;
+  }
+  .nya-range-bound {
+    padding: 0.25rem;
+  }
+  .nya-range-bound {
+    padding-right: 0.5rem;
+  }
+  .nya-range-bound {
+    vertical-align: middle;
+  }
+  .nya-range-bound {
+    font-size: 1rem;
+  }
+  .nya-range-bound:focus {
+    margin-bottom: -1px;
+  }
+  .nya-range-bound:focus {
+    border-bottom-width: 2px;
+  }
+  .nya-range-bound:focus {
+    border-bottom-color: var(--nya-expr-focus);
+  }
+  .nya-range-bound:focus {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+  }
+  .nya-range-bound::-webkit-scrollbar {
+    display: none;
+  }
+  .nya-range-scrubber {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+}
+
+.nya-range-error .nya-range-bound {
+  border-bottom-width: 2px;
+}
+
 .\*\:contents > * {
   display: contents;
 }
@@ -2151,20 +2273,8 @@ body {
   border-color: var(--nya-focus);
 }
 
-.focus\:-mb-px:focus {
-  margin-bottom: -1px;
-}
-
-.focus\:border-b-2:focus {
-  border-bottom-width: 2px;
-}
-
 .focus\:\!border-b-\[--nya-range-error\]:focus {
   border-bottom-color: var(--nya-range-error) !important;
-}
-
-.focus\:border-b-\[--nya-expr-focus\]:focus {
-  border-bottom-color: var(--nya-expr-focus);
 }
 
 .focus\:outline-none:focus {
@@ -2249,28 +2359,8 @@ body {
   display: none;
 }
 
-.nya-expr:focus-within .\[\.nya-expr\:focus-within_\&\:not\(\:focus-within\)\]\:sr-only:not(:focus-within) {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border-width: 0;
-}
-
-.nya-expr:not(:focus-within) .\[\.nya-expr\:not\(\:focus-within\)_\&\]\:sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border-width: 0;
+.nya-expr-error .\[\.nya-expr-error_\&\]\:block {
+  display: block;
 }
 
 .nya-scrolleractive .\[\.nya-scrolleractive_\&\]\:size-6 {
@@ -2280,18 +2370,6 @@ body {
 
 :first-child>.\[\:first-child\>\&\]\:top-0 {
   top: 0px;
-}
-
-:focus-within>.\[\:focus-within\>\&\:not\(\:focus-within\)\]\:sr-only:not(:focus-within) {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border-width: 0;
 }
 
 :focus-within>.\[\:focus-within\>\&\]\:block {

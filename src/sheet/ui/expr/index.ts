@@ -1,3 +1,4 @@
+import { faWarning } from "@fortawesome/free-solid-svg-icons/faWarning"
 import { glsl } from "../../../eval/glsl"
 import { js } from "../../../eval/js"
 import { id } from "../../../eval/lib/binding"
@@ -6,6 +7,7 @@ import { ERR_COORDS_USED_OUTSIDE_GLSL } from "../../../eval/ops/vars"
 import type { GlslValue, JsValue, SReal } from "../../../eval/ty"
 import { frac, num } from "../../../eval/ty/create"
 import { Display, outputBase } from "../../../eval/ty/display"
+import { fa } from "../../../field/fa"
 import { FieldInert } from "../../../field/field-inert"
 import { R } from "../../../field/model"
 import { h, t } from "../../../jsx"
@@ -37,6 +39,9 @@ export class Expr {
   state: ExprState = { type: "error", reason: "Not computed yet." }
 
   constructor(readonly sheet: Sheet) {
+    this.el = h(
+      "grid grid-cols-[2.5rem_auto] border-r border-b border-[--nya-border] relative nya-expr",
+    )
     this.slider = new RangeControls(this)
     this.field = new Field(
       this,
@@ -54,13 +59,16 @@ export class Expr {
     this.elError = h(
       "block hidden mx-1 -mt-2 px-1 pb-1 leading-tight italic text-[--nya-expr-error] whitespace-pre-wrap font-sans pointer-events-none",
     )
-    this.el = h(
-      "grid grid-cols-[2.5rem_auto] border-r border-b border-[--nya-border] relative nya-expr",
 
+    this.el.append(
       // grey side of expression
       h(
         "inline-flex bg-[--nya-bg-sidebar] flex-col p-0.5 border-r border-[--nya-border] font-sans text-[--nya-expr-index] text-[65%] leading-none [:focus-within>&]:bg-[--nya-expr-focus] [:focus-within>&]:text-[--nya-expr-focus-index] [:focus-within>&]:border-[--nya-expr-focus]",
         this.elIndex,
+        fa(
+          faWarning,
+          "hidden mx-auto size-6 fill-[--nya-icon-error] [.nya-expr-error_&]:block",
+        ),
       ),
 
       // main expression body
@@ -135,18 +143,31 @@ export class Expr {
   display() {
     this.elValue.classList.add("hidden")
     this.elError.classList.add("hidden")
+    this.el.classList.remove("nya-expr-error")
+    if (this.state.type == "range") {
+      if (num(this.state.value) != num(this.slider.scrubber.value)) {
+        this.slider.scrubber.value = this.state.value
+      }
+      this.slider.relink()
+      if (
+        typeof this.slider.min.value == "string" ||
+        typeof this.slider.max.value == "string" ||
+        typeof this.slider.step.value == "string"
+      ) {
+        this.el.classList.add("nya-expr-error")
+      }
+      this.slider.el.classList.remove("hidden")
+      return
+    }
+
     this.slider.el.classList.add("hidden")
+    this.slider.unlink()
 
     switch (this.state.type) {
       case "error":
+        this.el.classList.add("nya-expr-error")
         this.elError.classList.remove("hidden")
         this.elError.textContent = this.state.reason
-        break
-      case "range":
-        this.slider.el.classList.remove("hidden")
-        if (num(this.state.value) != num(this.slider.scrubber.value)) {
-          this.slider.scrubber.value = this.state.value
-        }
         break
       case "js":
         this.value.block.clear()

@@ -31,7 +31,7 @@ export class FieldInert {
   ) {
     this.el = this.block.el
     this.el.className = twMerge(
-      "nya-display cursor-text whitespace-nowrap font-['Symbola','Times_New_Roman',serif] text-[1.265em] font-normal not-italic transition [line-height:1] cursor-text block select-none inline-block",
+      "nya-display cursor-text whitespace-nowrap font-['Symbola','Times_New_Roman',serif] text-[1.265em] font-normal not-italic [line-height:1] cursor-text block select-none inline-block",
       className,
     )
   }

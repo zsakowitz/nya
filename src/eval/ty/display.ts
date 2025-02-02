@@ -134,39 +134,6 @@ export class Display {
     this.odigits(val)
   }
 
-  decimal(num: SReal) {
-    if (num.type == "approx") {
-      this.value(num.value)
-      return
-    }
-
-    let n = num.n
-    if (n == 0) {
-      this.odigits("0")
-      return
-    }
-    if (n < 0) {
-      this.odigits("-")
-      n = -n
-    }
-    let d = num.d
-
-    const wholePart = (n - (n % d)) / d
-    this.odigits(this.numToBase(wholePart))
-
-    n = n % d
-
-    if (n == 0) return
-
-    if (n != 0) {
-      this.odigits(".")
-
-      for (let i = 0; i < 17; i++) {
-        if (n == 0) break
-      }
-    }
-  }
-
   num(num: SReal, imaginary?: boolean) {
     const { cursor } = this
     if (num.type == "approx") {

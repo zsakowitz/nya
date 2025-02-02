@@ -1,9 +1,9 @@
+import { twMerge } from "tailwind-merge"
 import type { RangeControls } from "."
 import { js } from "../../../../eval/js"
 import type { SReal } from "../../../../eval/ty"
 import { coerceValJs } from "../../../../eval/ty/coerce"
 import { TY_INFO } from "../../../../eval/ty/info"
-import type { FieldInert } from "../../../../field/field-inert"
 import { FieldComputed } from "../../../deps"
 
 const RED = [
@@ -18,17 +18,19 @@ export class Field extends FieldComputed {
 
   constructor(
     readonly controls: RangeControls,
-    readonly output?: FieldInert,
+    readonly className?: string,
   ) {
     super(
       controls.expr.sheet.scope,
-      "text-[1rem] p-1 pr-2 border-b border-[--nya-border] min-w-12 max-w-24 min-h-[calc(1.5rem_+_1px)] focus:outline-none focus:border-b-[--nya-expr-focus] focus:border-b-2 [&::-webkit-scrollbar]:hidden overflow-x-auto align-middle focus:-mb-px",
+      twMerge("nya-range-bound", className),
+      true,
     )
     this.leaf = true
   }
 
   recompute(): void {
     this.el.classList.remove(...RED)
+    this.controls.el.classList.remove("nya-range-error")
 
     if (this.ast.type == "void") {
       this.value = null
@@ -53,6 +55,7 @@ export class Field extends FieldComputed {
     } catch (e) {
       console.warn("[range bound eval]", e)
       this.el.classList.add(...RED)
+      this.controls.el.classList.add("nya-range-error")
       this.value = e instanceof Error ? e.message : String(e)
     }
   }

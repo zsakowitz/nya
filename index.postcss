@@ -18,6 +18,10 @@ body {
   --nya-slider-zero: theme("colors.slate.400");
   --nya-expr-index: theme("colors.slate.500");
   --nya-expr-focus: theme("colors.blue.400");
+  --nya-icon-error: theme("colors.red.500");
+  .nya-expr:focus-within {
+    --nya-icon-error: theme("colors.blue.950");
+  }
   --nya-expr-focus-index: theme("colors.white");
   --nya-pixel-ratio: #0003;
   --nya-latex-error: theme("colors.red.500");
@@ -48,6 +52,10 @@ body {
     --nya-slider-zero: theme("colors.slate.400");
     --nya-expr-index: theme("colors.slate.500");
     --nya-expr-focus: theme("colors.blue.800");
+    --nya-icon-error: theme("colors.red.500");
+    .nya-expr:focus-within {
+      --nya-icon-error: theme("colors.blue.100");
+    }
     --nya-expr-focus-index: theme("colors.white");
     --nya-pixel-ratio: #fff3;
     --nya-latex-error: theme("colors.red.500");
@@ -246,4 +254,50 @@ body {
 .nya-cmd-comma + .nya-cmd-comma,
 .nya-cmd-comma + .nya-cursor + .nya-cmd-comma {
   @apply pl-[1ch];
+}
+
+/* slider */
+
+.nya-range-bound {
+  @apply border-[--nya-border];
+}
+
+:where(
+    .nya-expr:not(:focus-within),
+    .nya-expr:has(.nya-range-scrubber:focus-within)
+  )
+  :where(.nya-range:not(.nya-range-error)) {
+  & {
+    @apply [:where(&)]:flex text-[0.6rem] items-center text-[--nya-range-bounds] px-3 -mt-3;
+  }
+
+  .nya-range-bound {
+    @apply font-sans pb-2;
+  }
+
+  .nya-range-bounds {
+    @apply sr-only block;
+  }
+}
+
+:where(
+    .nya-expr:focus-within:not(:has(.nya-range-scrubber:focus-within))
+      .nya-range,
+    .nya-range-error
+  ) {
+  & {
+    @apply -mt-2 px-4 leading-none pb-2 text-[1.265em];
+  }
+
+  .nya-range-bound {
+    @apply text-[1rem] p-1 pr-2 border-b min-w-12 max-w-24 min-h-[calc(1.5rem_+_1px)] focus:outline-none focus:border-b-[--nya-expr-focus] focus:border-b-2 [&::-webkit-scrollbar]:hidden overflow-x-auto align-middle focus:-mb-px;
+  }
+
+  .nya-range-scrubber {
+    @apply sr-only;
+  }
+}
+
+.nya-range-error .nya-range-bound {
+  @apply border-b-2;
 }

@@ -27,7 +27,18 @@ export class Scope {
   private readonly fields: FieldComputed[] = []
 
   adopt(field: FieldComputed) {
+    if (this.fields.includes(field)) return
+
     this.fields.push(field)
+    this.queueUpdate()
+  }
+
+  disown(field: FieldComputed) {
+    const idx = this.fields.indexOf(field)
+    if (idx == -1) return
+
+    this.fields.splice(idx, 1)
+    this.untrack(field)
     this.queueUpdate()
   }
 
@@ -225,9 +236,14 @@ export class FieldComputed extends Field {
   constructor(
     readonly scope: Scope,
     className?: string,
+    unlinked?: boolean,
   ) {
     super(scope.exts, scope.options, className)
-    scope.adopt(this)
+    if (unlinked) {
+      this.linked = false
+    } else {
+      scope.adopt(this)
+    }
   }
 
   /** If `true`, this field is not allowed to define bindings. */
@@ -259,16 +275,41 @@ export class FieldComputed extends Field {
 
   onBeforeChange(): void {
     super.onBeforeChange()
+    if (!this.linked) return
     this._latex = this.block.latex()
   }
 
   onAfterChange(wasChangeCanceled: boolean): void {
     super.onAfterChange(wasChangeCanceled)
+    if (!this.linked) return
     if (wasChangeCanceled || this.block.latex() == this._latex) return
     this.dirtyAst = this.dirtyValue = true
     if (this.scope) {
       this.scope.queueUpdate()
     }
+  }
+
+  linked = true
+
+  /**
+   * Removes this field from its containing scope, so that it will stop
+   * receiving and triggering updates.
+   */
+  unlink() {
+    if (!this.linked) return
+    this.scope.disown(this)
+    this.linked = false
+  }
+
+  /**
+   * Removes this field from its containing scope, so that it will stop
+   * receiving and triggering updates.
+   */
+  relink() {
+    if (this.linked) return
+    this.dirtyAst = this.dirtyValue = true
+    this.scope.adopt(this)
+    this.linked = true
   }
 
   recompute?(): void
