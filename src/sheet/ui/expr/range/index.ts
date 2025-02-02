@@ -79,7 +79,6 @@ export class RangeControls {
   linked = false
 
   unlink() {
-    console.log("unlinking")
     if (!this.linked) return
     this.linked = false
     this.min.unlink()
@@ -88,7 +87,6 @@ export class RangeControls {
   }
 
   relink() {
-    console.log("relinking")
     if (this.linked) return
     this.linked = true
     this.min.relink()

@@ -7,6 +7,7 @@ import { ERR_COORDS_USED_OUTSIDE_GLSL } from "../../../eval/ops/vars"
 import type { GlslValue, JsValue, SReal } from "../../../eval/ty"
 import { frac, num } from "../../../eval/ty/create"
 import { Display, outputBase } from "../../../eval/ty/display"
+import { CmdVar } from "../../../field/cmd/leaf/var"
 import { fa } from "../../../field/fa"
 import { FieldInert } from "../../../field/field-inert"
 import { R } from "../../../field/model"
@@ -149,6 +150,13 @@ export class Expr {
         this.slider.scrubber.value = this.state.value
       }
       this.slider.relink()
+      this.slider.name.block.clear()
+      CmdVar.leftOf(
+        this.slider.name.block.cursor(R),
+        this.state.name,
+        this.field.options,
+      )
+      this.state.name
       if (
         typeof this.slider.min.value == "string" ||
         typeof this.slider.max.value == "string" ||

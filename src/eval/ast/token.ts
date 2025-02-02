@@ -1,6 +1,7 @@
 import type { WordKind } from "../../field/cmd/leaf/var"
 import type { BigCmd } from "../../field/cmd/math/big"
 import type { ParenLhs, ParenRhs } from "../../field/cmd/math/brack"
+import { isSubscript } from "../lib/text"
 import { VARS } from "../ops/vars"
 import { pass1_suffixes } from "./pass1.suffixes"
 import { pass2_implicits } from "./pass2.implicits"
@@ -229,7 +230,7 @@ export function tokensToAst(tokens: Node[], maybeBinding: boolean): Node {
     tokens[0]?.type == "var" &&
     !tokens[0].sup &&
     tokens[0].kind == "var" &&
-    (tokens[0].sub || !(tokens[0].value in VARS)) &&
+    (tokens[0].sub ? isSubscript(tokens[0].sub) : !(tokens[0].value in VARS)) &&
     ((tokens[1]?.type == "punc" &&
       tokens[1].kind == "cmp" &&
       tokens[1].value.dir == "=" &&
