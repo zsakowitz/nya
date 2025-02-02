@@ -8,6 +8,7 @@ import { Scope } from "../../deps"
 import { doMatchReglSize } from "../../regl"
 import { REMARK } from "../../remark"
 import { Slider } from "../../slider"
+import type { Expr } from "../expr"
 import { createDrawAxes, makeInteractive, matchSize, Paper } from "../paper"
 import { Handlers } from "./handler"
 
@@ -21,6 +22,7 @@ export class Sheet {
   readonly helpers = new GlslHelpers()
   readonly scope: Scope
   readonly regl: Regl
+  readonly exprs: Expr[] = []
 
   readonly el
   readonly elExpressions = h("flex flex-col")
@@ -119,5 +121,23 @@ export class Sheet {
         this.elExpressions.clientWidth + "px",
       ),
     ).observe(this.elExpressions)
+  }
+
+  checkIndices() {
+    for (let i = 0; i < this.exprs.length; i++) {
+      const expr = this.exprs[i]!
+      expr.elIndex.data = i + 1 + ""
+    }
+    this.elNextIndex.textContent = this.exprs.length + 1 + ""
+  }
+
+  private _queued = false
+  queueIndices() {
+    if (this._queued) return
+    setTimeout(() => {
+      this._queued = false
+      this.checkIndices()
+    })
+    this._queued = true
   }
 }

@@ -40,6 +40,8 @@ export class Expr {
   state: ExprState = { type: "error", reason: "Not computed yet." }
 
   constructor(readonly sheet: Sheet) {
+    sheet.exprs.push(this)
+    sheet.queueIndices()
     this.el = h(
       "grid grid-cols-[2.5rem_auto] border-r border-b border-[--nya-border] relative nya-expr",
     )

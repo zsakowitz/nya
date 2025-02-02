@@ -1858,7 +1858,7 @@ body {
   --nya-expr-focus: #60a5fa;
   --nya-icon-error: #ef4444;
   .nya-expr:focus-within {
-    --nya-icon-error: #172554;
+    --nya-icon-error: #fff;
   }
   --nya-expr-focus-index: #fff;
   --nya-pixel-ratio: #0003;
