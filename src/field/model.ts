@@ -462,10 +462,7 @@ export class Cursor {
     return false
   }
 
-  /**
-   * Gets a list of ancestors of this `Cursor`, starting with
-   * `this.parent?.parent?.parent`.
-   */
+  /** Gets a list of ancestors of this `Cursor`, starting with `this.parent`. */
   parents(): [block: Block, child: Command | Cursor][] {
     const ret: [block: Block, child: Command | Cursor][] = []
     let el: Command | Cursor | null | undefined = this
@@ -1061,31 +1058,26 @@ export class Selection extends Span {
   moveFocus(dir: Dir) {
     if (!this.parent) return
 
-    // Special case for moving if the cached anchor is inside the selection
-    inner: if (!this.isCursor() && this.focused != dir) {
-      const parents = this.cachedAnchor.parents()
-      const contents = this.contents()
-      let inner
-      parent: {
-        for (const parent of parents) {
-          if (contents.indexOf(parent[0].parent!) != -1) {
-            inner = parent
-            break parent
-          }
-        }
-        break inner
-      }
+    // If the selection's focus is about to move onto something containing the
+    // cached anchor, we want it to move to the corresponding side of the
+    // container instead.
 
-      const next = Selection.of(
-        this.cachedAnchor,
-        inner[0].cursor(this.focused),
-      )
-      this.parent = next.parent
-      this[L] = next[L]
-      this[R] = next[R]
-      this.focused = next.focused
-      this.cachedAnchor = next.cachedAnchor
-      return
+    if (!this.isCursor() && this.focused != dir && this.focus[dir]) {
+      const adjacent = this.focus[dir]
+      const parents = this.cachedAnchor.parents()
+      for (const [block] of parents) {
+        if (block.parent == adjacent) {
+          const next = Selection.of(
+            this.cachedAnchor,
+            block.cursor(dir == L ? R : L),
+          )
+          this[L] = next[L]
+          this[R] = next[R]
+          this.focused = next.focused
+          this.parent = next.parent
+          return
+        }
+      }
     }
 
     if (this.isCursor()) {

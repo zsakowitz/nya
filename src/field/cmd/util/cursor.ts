@@ -72,8 +72,7 @@ export function CmdMove(dir: Dir | VDir, isHomeEnd = false): Init {
             const sel = cursor.selection()
             switch (action) {
               case "line":
-                sel.moveFocusToEnd(dir)
-                break
+                return Selection.of(sel.cachedAnchor, field.block.cursor(dir))
               case "word":
                 sel.moveFocusByWord(dir)
                 break
