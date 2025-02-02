@@ -69,7 +69,10 @@ export class CmdNum extends Leaf {
 
   moveAcrossWord(cursor: Cursor, dir: Dir): void {
     cursor.moveTo(this, dir)
-    while (cursor[dir] instanceof CmdNum || cursor[dir] instanceof CmdDot) {
+    while (
+      cursor[dir] instanceof CmdNum ||
+      (cursor[dir] instanceof CmdDot && !(cursor[dir][dir] instanceof CmdDot))
+    ) {
       cursor.moveTo(cursor[dir], dir)
     }
   }

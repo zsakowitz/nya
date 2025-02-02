@@ -45,8 +45,11 @@ import {
   CmdBackspace,
   CmdBreakCol,
   CmdBreakRow,
+  CmdCopy,
+  CmdCut,
   CmdDel,
   CmdMove,
+  CmdSelectAll,
   CmdTab,
 } from "./cmd/util/cursor"
 import { CmdMap } from "./cmd/util/map"
@@ -133,6 +136,9 @@ export const shortcutExts = new Exts()
   .set("Del", CmdDel)
   .set("Delete", CmdDel)
   .set("Tab", CmdTab)
+  .set("x", CmdCut)
+  .set("c", CmdCopy)
+  .set("a", CmdSelectAll)
   .freeze()
 
 export const autoCmds = new WordMap<Init>([

@@ -1,7 +1,6 @@
 import { h } from "../jsx"
-import { CmdCopy, CmdCut, CmdMove, CmdSelectAll } from "./cmd/util/cursor"
 import { FieldInert } from "./field-inert"
-import { L, R, Selection } from "./model"
+import { Selection } from "./model"
 import type { Options } from "./options"
 
 export class Field extends FieldInert {
@@ -61,20 +60,11 @@ export class Field extends FieldInert {
         if (event.metaKey && event.ctrlKey) {
           return
         }
-        const ev = {
-          a: CmdSelectAll,
-          c: CmdCopy,
-          x: CmdCut,
-          get ArrowLeft() {
-            return CmdMove(L)
-          },
-          get ArrowRight() {
-            return CmdMove(R)
-          },
-        }[event.key]
-        if (ev) {
+        const ext = this.options.shortcutExts.get(event.key)
+        if (!ext) return
+        const result = this.init(ext, event.key, { event })
+        if (result != "browser") {
           event.preventDefault()
-          this.init(ev, event.key, { event })
         }
         return
       }

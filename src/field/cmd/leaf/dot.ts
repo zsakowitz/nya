@@ -2,7 +2,8 @@ import { Leaf } from "."
 import { type Node } from "../../../eval/ast/token"
 import { h } from "../../../jsx"
 import type { LatexParser } from "../../latex"
-import { L, R, type Command, type Cursor } from "../../model"
+import { L, R, type Command, type Cursor, type Dir } from "../../model"
+import { CmdNum } from "./num"
 import { CmdVar } from "./var"
 
 export class CmdDot extends Leaf {
@@ -80,5 +81,22 @@ export class CmdDot extends Leaf {
       value: ".",
       kind: "infix",
     })
+  }
+
+  moveAcrossWord(cursor: Cursor, dir: Dir): void {
+    cursor.moveTo(this, dir)
+    if (cursor[dir] instanceof CmdDot) {
+      while (cursor[dir] instanceof CmdDot) {
+        cursor.moveTo(cursor[dir], dir)
+      }
+    } else {
+      while (
+        cursor[dir] instanceof CmdNum ||
+        (cursor[dir] instanceof CmdDot &&
+          !((cursor[dir] as CmdDot)[dir] instanceof CmdDot))
+      ) {
+        cursor.moveTo(cursor[dir], dir)
+      }
+    }
   }
 }

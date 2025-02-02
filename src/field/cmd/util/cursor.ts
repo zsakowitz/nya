@@ -86,13 +86,22 @@ export function CmdMove(dir: Dir | VDir, isHomeEnd = false): Init {
             return sel
           }
 
-          if (event.altKey) {
-            if (!cursor.moveByWord(dir)) field.onMoveOut?.(dir)
-            return
+          switch (action) {
+            case "line":
+              cursor.moveIn(field.block, dir)
+              return
+            case "word":
+              cursor.moveByWord(dir)
+              return
+            case "char":
+            case "doc":
+            // TODO:
           }
         }
 
-        if (!cursor.move(dir)) field.onMoveOut?.(dir)
+        if (!cursor.move(dir)) {
+          field.onMoveOut?.(dir)
+        }
       },
       initOn(sel, { event }) {
         if (event) {
