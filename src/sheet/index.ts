@@ -16,7 +16,7 @@ import { CmdVar } from "../field/cmd/leaf/var"
 import { CmdBrack } from "../field/cmd/math/brack"
 import { FieldInert } from "../field/field-inert"
 import { Block, D, L, R, U, type Dir, type VDir } from "../field/model"
-import type { Exts, Options as FieldOptions } from "../field/options"
+import type { Options as FieldOptions } from "../field/options"
 import { h, hx, p, svgx } from "../jsx"
 import { FieldComputed, Scope } from "./deps"
 import { doMatchReglSize } from "./regl"
@@ -132,16 +132,8 @@ export class ExprSlider {
   readonly el
 
   constructor(readonly expr: Expr) {
-    this.fmin = new FieldInert(
-      this.expr.field.exts,
-      this.expr.field.options,
-      "pb-2 font-sans",
-    )
-    this.fmax = new FieldInert(
-      this.expr.field.exts,
-      this.expr.field.options,
-      "pb-2 font-sans",
-    )
+    this.fmin = new FieldInert(this.expr.field.options, "pb-2 font-sans")
+    this.fmax = new FieldInert(this.expr.field.options, "pb-2 font-sans")
     this.el = h(
       "flex text-[0.7rem] items-center text-slate-500 px-3 -mt-2",
       this.fmin.el,
@@ -220,7 +212,7 @@ export class Expr {
     this.elPlots = h("ml-auto", "")
     this.field = new ExprField(this)
     this.slider = new ExprSlider(this)
-    this.elValue = new FieldInert(this.field.exts, this.field.options)
+    this.elValue = new FieldInert(this.field.options)
     this.elError = h(
       "leading-tight block pb-1 -mt-2 mx-1 px-1 italic text-red-800 hidden whitespace-pre-wrap",
     )
@@ -458,11 +450,8 @@ export class Sheet {
 
   replot = false
 
-  constructor(
-    readonly exts: Exts,
-    readonly options: Options,
-  ) {
-    this.scope = new Scope(this.exts, this.options.field)
+  constructor(readonly options: Options) {
+    this.scope = new Scope(this.options.field)
     this.paper.el.classList.add("size-full", "touch-none")
     matchSize(this.paper)
     makeInteractive(this.paper, this.handlers)

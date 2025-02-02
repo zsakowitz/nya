@@ -32,7 +32,6 @@ export class RangeControls {
   readonly el
 
   constructor(readonly expr: Expr) {
-    const { exts, options } = expr.sheet
     this.min = new Field(this, "order-1")
     this.max = new Field(this, "order-3")
     this.step = new Field(this)
@@ -43,7 +42,7 @@ export class RangeControls {
         field.onAfterChange(false)
       })
     }
-    this.name = new FieldInert(exts, options, "text-[1em]")
+    this.name = new FieldInert(expr.sheet.options, "text-[1em]")
 
     this.scrubber = new ExprScrubber(
       expr,

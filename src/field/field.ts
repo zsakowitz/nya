@@ -1,16 +1,16 @@
 import { h } from "../jsx"
-import { CmdCopy, CmdCut, CmdSelectAll } from "./cmd/util/cursor"
+import { CmdCopy, CmdCut, CmdMove, CmdSelectAll } from "./cmd/util/cursor"
 import { FieldInert } from "./field-inert"
-import { Selection } from "./model"
-import type { Exts, Options } from "./options"
+import { L, R, Selection } from "./model"
+import type { Options } from "./options"
 
 export class Field extends FieldInert {
   readonly cursor = h(
     "relative nya-cursor border-current w-px -ml-px border-l [.nya-display:has(.nya-cmd-prompt)_&]:hidden [.nya-display:not(:focus)_&]:hidden",
   )
 
-  constructor(exts: Exts, options: Options, className?: string) {
-    super(exts, options, className)
+  constructor(options: Options, className?: string) {
+    super(options, className)
     this.makeActive()
     this.showCursor()
   }
@@ -65,14 +65,20 @@ export class Field extends FieldInert {
           a: CmdSelectAll,
           c: CmdCopy,
           x: CmdCut,
+          get ArrowLeft() {
+            return CmdMove(L)
+          },
+          get ArrowRight() {
+            return CmdMove(R)
+          },
         }[event.key]
         if (ev) {
           event.preventDefault()
-          this.init(ev, "")
+          this.init(ev, event.key, { event })
         }
         return
       }
-      const ext = this.exts.get(event.key)
+      const ext = this.options.exts.get(event.key)
       if (!ext) return
       if (this.init(ext, event.key, { event }) != "browser") {
         event.preventDefault()

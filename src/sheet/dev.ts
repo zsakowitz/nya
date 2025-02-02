@@ -1,8 +1,8 @@
-import { exts, options } from "../field/defaults.js"
+import { options } from "../field/defaults.js"
 import { Expr } from "./ui/expr/index.js"
 import { Sheet } from "./ui/sheet/index.js"
 
-const sheet = new Sheet(exts, options)
+const sheet = new Sheet(options)
 document.body.appendChild(sheet.el)
 
 function expr(source: { raw: readonly string[] }) {

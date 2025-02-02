@@ -10,7 +10,7 @@ import {
   type Init,
   type VDir,
 } from "./model"
-import type { Exts, Options } from "./options"
+import type { Options } from "./options"
 
 /** Props passed to `Display.init()` and `Display.type()`. */
 export interface FieldInitProps {
@@ -25,7 +25,6 @@ export class FieldInert {
   sel: Selection = new Selection(this.block, null, null, R)
 
   constructor(
-    readonly exts: Exts,
     readonly options: Options,
     className?: string,
   ) {
@@ -38,7 +37,7 @@ export class FieldInert {
 
   setPrefix(block: Block | ((field: FieldInert) => void)) {
     if (typeof block == "function") {
-      const field = new FieldInert(this.exts, this.options)
+      const field = new FieldInert(this.options)
       block(field)
       block = field.block
     }
@@ -72,7 +71,7 @@ export class FieldInert {
   }
 
   type(input: string, props?: FieldInitProps) {
-    const ext = this.exts.get(input)
+    const ext = this.options.exts.get(input)
     if (ext) {
       this.init(ext, input, props)
     }

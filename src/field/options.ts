@@ -96,6 +96,15 @@ export class WordMap<T> {
 
 /** Configuration for various behaviors of {@linkcode Command}s. */
 export interface Options {
+  /** Characters and LaTeX commands which can be typed. */
+  exts: Exts
+
+  /**
+   * Characters and LaTeX commands which can be typed, even with a Ctrl or Meta
+   * key present.
+   */
+  shortcutExts: Exts
+
   /**
    * If this returns `true` for a given {@linkcode Command}, a number typed
    * directly after it will be turned into a subscript.

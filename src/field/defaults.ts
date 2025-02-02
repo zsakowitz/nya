@@ -122,6 +122,19 @@ export const exts = new Exts()
   .set("\\to", OpRightArrow)
   .freeze()
 
+export const shortcutExts = new Exts()
+  .set("ArrowLeft", CmdMove(L))
+  .set("Home", CmdMove(L, true))
+  .set("ArrowRight", CmdMove(R))
+  .set("End", CmdMove(R, true))
+  .set("ArrowUp", CmdMove(U))
+  .set("ArrowDown", CmdMove(D))
+  .set("Backspace", CmdBackspace)
+  .set("Del", CmdDel)
+  .set("Delete", CmdDel)
+  .set("Tab", CmdTab)
+  .freeze()
+
 export const autoCmds = new WordMap<Init>([
   // Big operators
   ["sum", CmdBig],
@@ -421,17 +434,22 @@ for (const key of exts.getAll()) {
 latexCmds.freeze()
 
 export const options: Options = Object.freeze<Options>({
+  exts,
+  shortcutExts,
   autoCmds,
   words,
   latexCmds,
   exitSubWithOp: true,
   exitSupWithPm: true,
-  subscriptNumberAfter: (cmd) =>
-    !(
-      cmd.parent?.parent instanceof CmdSupSub &&
-      cmd.parent == cmd.parent.parent.sub
-    ) &&
-    (cmd instanceof CmdSupSub ?
-      cmd[L] instanceof CmdVar && cmd[L].kind == null
-    : cmd instanceof CmdVar && cmd.kind == null),
+  subscriptNumberAfter(cmd) {
+    return (
+      !(
+        cmd.parent?.parent instanceof CmdSupSub &&
+        cmd.parent == cmd.parent.parent.sub
+      ) &&
+      (cmd instanceof CmdSupSub ?
+        cmd[L] instanceof CmdVar && cmd[L].kind == null
+      : cmd instanceof CmdVar && cmd.kind == null)
+    )
+  },
 })

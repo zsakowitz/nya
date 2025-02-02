@@ -2,7 +2,7 @@ import type { Regl } from "regl"
 import regl from "regl"
 import { GlslHelpers } from "../../../eval/lib/fn"
 import { num, real } from "../../../eval/ty/create"
-import { Exts, Options } from "../../../field/options"
+import { Options } from "../../../field/options"
 import { h, hx } from "../../../jsx"
 import { Scope } from "../../deps"
 import { doMatchReglSize } from "../../regl"
@@ -31,11 +31,8 @@ export class Sheet {
     "1",
   )
 
-  constructor(
-    readonly exts: Exts,
-    readonly options: Options,
-  ) {
-    this.scope = new Scope(exts, options)
+  constructor(readonly options: Options) {
+    this.scope = new Scope(options)
 
     // prepare js context
     this.paper.el.classList.add(

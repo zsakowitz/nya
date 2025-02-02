@@ -51,7 +51,6 @@ export class Expr {
       "block overflow-x-auto [&::-webkit-scrollbar]:hidden min-h-[3.265rem] max-w-[calc(var(--nya-sidebar)_-_2.5rem_-_1px)] p-4 focus:outline-none",
     )
     this.value = new FieldInert(
-      sheet.exts,
       sheet.options,
       "bg-[--nya-bg-sidebar] border border-[--nya-border] px-2 py-1 rounded",
     )

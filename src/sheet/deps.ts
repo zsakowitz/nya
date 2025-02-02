@@ -7,13 +7,10 @@ import { GlslContext, GlslHelpers } from "../eval/lib/fn"
 import type { GlslValue, JsValue } from "../eval/ty"
 import { TY_INFO } from "../eval/ty/info"
 import { Field } from "../field/field"
-import type { Exts, Options } from "../field/options"
+import type { Options } from "../field/options"
 
 export class Scope {
-  constructor(
-    readonly exts: Exts,
-    readonly options: Options,
-  ) {
+  constructor(readonly options: Options) {
     const self = this
     this.propsJs = {
       ...defaultPropsJs(),
@@ -238,7 +235,7 @@ export class FieldComputed extends Field {
     className?: string,
     unlinked?: boolean,
   ) {
-    super(scope.exts, scope.options, className)
+    super(scope.options, className)
     if (unlinked) {
       this.linked = false
     } else {
