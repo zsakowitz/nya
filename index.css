@@ -2218,10 +2218,6 @@ body {
   }
 }
 
-.nya-range-error .nya-range-bound {
-  border-bottom-width: 2px;
-}
-
 .\*\:contents > * {
   display: contents;
 }
@@ -2359,6 +2355,10 @@ body {
 
 .nya-expr-error .\[\.nya-expr-error_\&\]\:block {
   display: block;
+}
+
+.nya-range-error .\[\.nya-range-error_\&\]\:border-b-2 {
+  border-bottom-width: 2px;
 }
 
 .nya-scrolleractive .\[\.nya-scrolleractive_\&\]\:size-6 {

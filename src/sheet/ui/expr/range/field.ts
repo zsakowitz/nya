@@ -11,6 +11,7 @@ const RED = [
   "-mb-px",
   "focus:!border-b-[--nya-range-error]",
   "!border-b-[--nya-range-error]",
+  "[.nya-range-error_&]:border-b-2",
 ]
 
 export class Field extends FieldComputed {
