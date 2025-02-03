@@ -1,7 +1,7 @@
 import type { Expr } from ".."
 import type { PlainVar } from "../../../../eval/ast/token"
 import type { SReal } from "../../../../eval/ty"
-import { real } from "../../../../eval/ty/create"
+import { num } from "../../../../eval/ty/create"
 import { OpLt } from "../../../../field/cmd/leaf/cmp"
 import { FieldInert } from "../../../../field/field-inert"
 import { L, Selection } from "../../../../field/model"
@@ -49,11 +49,6 @@ export class RangeControls {
       "nya-range-scrubber px-1 pb-2 pt-2 -mt-2 cursor-pointer order-2",
     )
 
-    this.min.latex`-10`
-    this.max.latex`10`
-    this.name.latex`a`
-    this.scrubber.bounds(real(-10), real(10))
-
     this.el = h(
       "nya-range",
       this.min.el,
@@ -73,23 +68,50 @@ export class RangeControls {
       ),
       this.scrubber.el,
     )
+
+    this.min.latex`-10`
+    this.max.latex`10`
+    this.min.ast = this.min.block.ast()
+    this.max.ast = this.max.block.ast()
   }
 
-  linked = false
-
   unlink() {
-    if (!this.linked) return
-    this.linked = false
     this.min.unlink()
     this.max.unlink()
     this.step.unlink()
   }
 
   relink() {
-    if (this.linked) return
-    this.linked = true
     this.min.relink()
     this.max.relink()
     this.step.relink()
+  }
+
+  setBoundsAppropriately() {
+    if (this.min.dirtyValue) {
+      this.min.recomputeRaw()
+    }
+    if (this.max.dirtyValue) {
+      this.max.recomputeRaw()
+    }
+    if (this.step.dirtyValue) {
+      this.step.recomputeRaw()
+    }
+
+    if (
+      this.min.value &&
+      this.max.value &&
+      typeof this.min.value != "string" &&
+      typeof this.max.value != "string"
+    ) {
+      const nmin = num(this.min.value)
+      const nmax = num(this.max.value)
+
+      if (nmin <= nmax) {
+        this.scrubber.bounds(this.min.value, this.max.value)
+      } else {
+        this.min.setError("Bounds must be in order.")
+      }
+    }
   }
 }

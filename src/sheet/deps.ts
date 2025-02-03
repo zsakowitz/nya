@@ -25,7 +25,6 @@ export class Scope {
 
   adopt(field: FieldComputed) {
     if (this.fields.includes(field)) return
-
     this.fields.push(field)
     this.queueUpdate()
   }
@@ -33,7 +32,6 @@ export class Scope {
   disown(field: FieldComputed) {
     const idx = this.fields.indexOf(field)
     if (idx == -1) return
-
     this.fields.splice(idx, 1)
     this.untrack(field)
     this.queueUpdate()
@@ -94,6 +92,7 @@ export class Scope {
         const myDeps = new Deps()
         deps(field.ast, myDeps)
         field.deps = myDeps
+        field.dirtyAst = false
       } catch (e) {
         console.warn(e)
         field.error = toError(e)
@@ -183,7 +182,6 @@ export class Scope {
     this.bindingsGlsl = new Bindings(bindingsGlsl)
 
     for (const field of this.fields) {
-      field.dirtyAst = false
       if (field.dirtyValue) {
         field.dirtyValue = false
         field.recompute?.()

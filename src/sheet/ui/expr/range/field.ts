@@ -3,6 +3,7 @@ import type { RangeControls } from "."
 import { js } from "../../../../eval/js"
 import type { SReal } from "../../../../eval/ty"
 import { coerceValJs } from "../../../../eval/ty/coerce"
+import { num } from "../../../../eval/ty/create"
 import { TY_INFO } from "../../../../eval/ty/info"
 import { FieldComputed } from "../../../deps"
 
@@ -29,7 +30,14 @@ export class Field extends FieldComputed {
     this.leaf = true
   }
 
-  recompute(): void {
+  setError(e: unknown) {
+    console.warn("[range bound eval]", e)
+    this.el.classList.add(...RED)
+    this.controls.el.classList.add("nya-range-error")
+    this.value = e instanceof Error ? e.message : String(e)
+  }
+
+  recomputeRaw(): void {
     this.el.classList.remove(...RED)
     this.controls.el.classList.remove("nya-range-error")
 
@@ -52,12 +60,23 @@ export class Field extends FieldComputed {
           `Cannot use a ${TY_INFO[value.type].name} as a slider bound. Try using any number.`,
         )
       }
+      const native = num(r32.value)
+      if (native !== native) {
+        throw new Error("Slider bounds may not be undefined.")
+      }
+      if (!isFinite(native)) {
+        throw new Error("Slider bounds may not be infinite.")
+      }
       this.value = r32.value
     } catch (e) {
-      console.warn("[range bound eval]", e)
-      this.el.classList.add(...RED)
-      this.controls.el.classList.add("nya-range-error")
-      this.value = e instanceof Error ? e.message : String(e)
+      this.setError(e)
     }
+
+    this.dirtyValue = false
+  }
+
+  recompute(): void {
+    this.recomputeRaw()
+    this.controls.setBoundsAppropriately()
   }
 }
