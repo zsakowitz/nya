@@ -22,12 +22,13 @@ export const EXT_EVAL = defineExt({
       return
     }
 
-    const block = store.get(expr).field.block
+    const { field, el } = store.get(expr)
+    const { block } = field
     block.clear()
     new Display(block.cursor(R), expr.js.base).output(expr.js.value)
-    return block
+    return el
   },
   el(data) {
-    return data.el
+    return data
   },
 })

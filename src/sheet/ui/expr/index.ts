@@ -105,7 +105,9 @@ export class Expr {
           return
         }
       }
+
       this.state = { ok: true, ext: null, data: {} }
+      this.elOutput.appendChild(h(JSON.stringify(this.state)))
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e)
       console.warn("[compute]", msg)
@@ -135,7 +137,7 @@ export class Expr {
       this.elError.classList.add("hidden")
       this.el.classList.remove("nya-expr-error")
 
-      const el = this.state.ext.el?.({ expr: this, data: this.state.data })
+      const el = this.state.ext.el?.(this.state.data)
       if (el != this.elOutput.firstChild) {
         while (this.elOutput.firstChild) {
           this.elOutput.firstChild.remove()

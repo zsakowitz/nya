@@ -94,7 +94,8 @@ export class Scope {
         field.deps = myDeps
         field.dirtyAst = false
       } catch (e) {
-        console.warn(e)
+        const msg = e instanceof Error ? e.message : String(e)
+        console.warn("[deps]", msg)
         field.error = toError(e)
         continue
       }
