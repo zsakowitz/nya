@@ -6,6 +6,7 @@ import { Display, outputBase } from "../../../eval/ty/display"
 import { FieldInert } from "../../../field/field-inert"
 import { R } from "../../../field/model"
 import { h } from "../../../jsx"
+import type { TyExt, TyExtProps, TyInitProps } from "../ty"
 
 const ID_X = id({ value: "x" })
 const ID_Y = id({ value: "y" })
@@ -23,8 +24,9 @@ const store = new Store((e) => {
   return { field, el }
 })
 
-export const EXT_EVAL = defineExt({
-  id: "eval",
+export const EXT_EVAL = defineExt<
+  { ext: null } | { ext: TyExt<{}>; props: TyExtProps<{}> }
+>({
   data(expr) {
     if (
       expr.field.deps.isBound(ID_X) ||
@@ -42,10 +44,19 @@ export const EXT_EVAL = defineExt({
 
       const value = js(ast, expr.field.scope.propsJs)
       const base = outputBase(ast, expr.field.scope.propsJs)
+
+      const props: TyInitProps<{}> = { expr, value, base }
+      for (const ext of expr.sheet.props.tyExts.exts) {
+        const data = ext.data(props)
+        if (data != null) {
+          return { ext, props: { ...props, data } }
+        }
+      }
+
       const block = store.get(expr).field.block
       block.clear()
       new Display(block.cursor(R), base).output(value)
-      return 0
+      return { ext: null }
     } catch (e) {
       if (!(e instanceof Error && e.message == ERR_COORDS_USED_OUTSIDE_GLSL)) {
         throw e
@@ -53,6 +64,9 @@ export const EXT_EVAL = defineExt({
     }
   },
   el(props) {
+    if (props.data.ext) {
+      return props.data.ext.el?.(props.data.props)
+    }
     return store.get(props.expr).el
   },
 })

@@ -1,13 +1,13 @@
 import { CmdColor } from "../field/cmd/leaf/color.js"
 import { CmdPrompt } from "../field/cmd/util/prompt.js"
-import { autos, options } from "../field/defaults.js"
+import { autos } from "../field/defaults.js"
 import { FieldInert } from "../field/field-inert.js"
 import { R } from "../field/model.js"
-import { exts } from "./ext/defaults.js"
+import { props } from "./defaults.js"
 import { Expr } from "./ui/expr/index.js"
 import { Sheet } from "./ui/sheet/index.js"
 
-const sheet = new Sheet(options, exts)
+const sheet = new Sheet(props)
 document.body.appendChild(sheet.el)
 
 function expr(source: { raw: readonly string[] }) {

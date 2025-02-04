@@ -7,9 +7,6 @@ export interface ExtProps<T extends {}> {
 
 /** An extension to an expression in the sheet interface. */
 export interface Ext<T extends {}> {
-  /** The ID of this extension, for state-saving purposes. */
-  id: string
-
   /**
    * Attempts to use this extension on a {@linkcode Expr}. May result in:
    *
@@ -19,13 +16,8 @@ export interface Ext<T extends {}> {
    */
   data(expr: Expr): T | null | undefined
 
-  /** Returns an HTML element which will be appended below the {@linkcode Expr}. */
   el?(props: ExtProps<T>): HTMLElement | undefined
-
-  /** Plots any 2D components this extension renders. */
   // plot2d?(props: ExtProps<T>, paper: Paper): void
-
-  /** Generates shader code to render this element on the shader. */
   // plotGl?(props: ExtProps<T>, helpers: GlslHelpers): GlslResult | null
 }
 
@@ -33,20 +25,17 @@ export function defineExt<T extends {}>(ext: Ext<T>) {
   return ext
 }
 
-export class Exts {
-  readonly exts: Ext<{}>[] = []
-  readonly map: Record<string, Ext<{}>> = Object.create(null)
+export class Exts<T> {
+  readonly exts: T[] = []
 
-  add(ext: Ext<{}>) {
+  add(ext: T) {
     this.exts.push(ext)
-    this.map[ext.id] = ext
     return this
   }
 
   freeze() {
     Object.freeze(this)
     Object.freeze(this.exts)
-    Object.freeze(this.map)
     return this
   }
 }

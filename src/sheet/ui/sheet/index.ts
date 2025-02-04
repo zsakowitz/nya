@@ -5,13 +5,20 @@ import { num, real } from "../../../eval/ty/create"
 import { Options } from "../../../field/options"
 import { h, hx } from "../../../jsx"
 import { Scope } from "../../deps"
-import type { Exts } from "../../ext"
+import type { Ext, Exts } from "../../ext"
+import type { TyExt } from "../../ext/ty"
 import { doMatchReglSize } from "../../regl"
 import { REMARK } from "../../remark"
 import { Slider } from "../../slider"
 import type { Expr } from "../expr"
 import { createDrawAxes, makeInteractive, matchSize, Paper } from "../paper"
 import { Handlers } from "./handler"
+
+export interface Props {
+  readonly options: Options
+  readonly exts: Exts<Ext<{}>>
+  readonly tyExts: Exts<TyExt<{}>>
+}
 
 export class Sheet {
   readonly pixelRatio
@@ -32,10 +39,9 @@ export class Sheet {
     "1",
   )
 
-  constructor(
-    readonly options: Options,
-    readonly exts: Exts,
-  ) {
+  readonly options
+  constructor(readonly props: Props) {
+    const options = (this.options = props.options)
     this.scope = new Scope(options)
 
     // prepare js context

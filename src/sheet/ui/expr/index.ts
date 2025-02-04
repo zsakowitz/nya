@@ -59,7 +59,7 @@ export class Expr {
     this.state = { ok: false, reason: "Currently computing." }
 
     try {
-      for (const ext of this.sheet.exts.exts) {
+      for (const ext of this.sheet.props.exts.exts) {
         const data = ext.data(this)
         if (data != null) {
           this.state = { ok: true, ext, data }
