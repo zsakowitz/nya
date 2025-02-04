@@ -30,7 +30,7 @@ export class LatexParser {
     readonly options: Options,
     private readonly source: string,
   ) {
-    this.cmds = options.latexCmds || new WordMap([])
+    this.cmds = options.latex || new WordMap([])
   }
 
   _i = 0

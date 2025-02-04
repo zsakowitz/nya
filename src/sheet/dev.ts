@@ -1,4 +1,8 @@
-import { options } from "../field/defaults.js"
+import { CmdColor } from "../field/cmd/leaf/color.js"
+import { CmdPrompt } from "../field/cmd/util/prompt.js"
+import { autos, options } from "../field/defaults.js"
+import { FieldInert } from "../field/field-inert.js"
+import { R } from "../field/model.js"
 import { Expr } from "./ui/expr/index.js"
 import { Sheet } from "./ui/sheet/index.js"
 
@@ -43,47 +47,45 @@ expr`\sum_{n=\sum_{n=\sum_{n=\sum_{n=\sum_{n=11}^{}}^{\sum_{n=10}^{\sum_{n=9}^{}
 expr`\begin{matrix}2=3\\2\neq 3\\2<3\\2>3\\2\leq 3\\2\geq 3\\2\nless 3\\2\ngtr 3\\2\nleq 3\\2\ngeq 3\end{matrix}`
 expr`\ux1\ux+\uxv2\ux-\ux3`
 
-// {
-//   const { field: finalField } = new Expr(sheet)
-//   const field = new FieldInert(finalField.exts, finalField.options)
-//
-//   finalField.onBeforeChange()
-//   const { exts } = finalField
-//   for (const key of exts.getAll()) {
-//     const ext = exts.get(key)!
-//     if (ext == CmdColor || ext == CmdPrompt) continue
-//     field.sel = field.block.cursor(R).selection()
-//     field.init(ext, key, { skipChangeHandlers: true })
-//
-//     finalField.block.insert(
-//       field.block.splice(),
-//       finalField.block.ends[R],
-//       null,
-//     )
-//   }
-//   finalField.sel = finalField.block.cursor(R).selection()
-//   finalField.onAfterChange(false)
-// }
-//
-// {
-//   const { field: finalField } = new Expr(sheet)
-//   const field = new FieldInert(finalField.exts, finalField.options)
-//
-//   finalField.onBeforeChange()
-//   for (const key of autoCmds.getAll()) {
-//     const ext = autoCmds.get(key)!
-//     if (ext == CmdColor || ext == CmdPrompt) continue
-//     field.sel = field.block.cursor(R).selection()
-//     field.init(ext, "\\" + key, { skipChangeHandlers: true })
-//
-//     finalField.block.insert(
-//       field.block.splice(),
-//       finalField.block.ends[R],
-//       null,
-//     )
-//   }
-//   finalField.sel = finalField.block.cursor(R).selection()
-//   finalField.onAfterChange(false)
-// }
-//
-// sheet.exprs[0]!.field.el.focus()
+{
+  const { field: finalField } = new Expr(sheet)
+  const field = new FieldInert(finalField.options)
+
+  finalField.onBeforeChange()
+  const inits = finalField.options.inits
+  for (const key of inits.getAll()) {
+    const ext = inits.get(key)!
+    if (ext == CmdColor || ext == CmdPrompt) continue
+    field.sel = field.block.cursor(R).selection()
+    field.init(ext, key, { skipChangeHandlers: true })
+
+    finalField.block.insert(
+      field.block.splice(),
+      finalField.block.ends[R],
+      null,
+    )
+  }
+  finalField.sel = finalField.block.cursor(R).selection()
+  finalField.onAfterChange(false)
+}
+
+{
+  const { field: finalField } = new Expr(sheet)
+  const field = new FieldInert(finalField.options)
+
+  finalField.onBeforeChange()
+  for (const key of autos.getAll()) {
+    const ext = autos.get(key)!
+    if (ext == CmdColor || ext == CmdPrompt) continue
+    field.sel = field.block.cursor(R).selection()
+    field.init(ext, "\\" + key, { skipChangeHandlers: true })
+
+    finalField.block.insert(
+      field.block.splice(),
+      finalField.block.ends[R],
+      null,
+    )
+  }
+  finalField.sel = finalField.block.cursor(R).selection()
+  finalField.onAfterChange(false)
+}

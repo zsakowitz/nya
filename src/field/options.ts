@@ -3,7 +3,7 @@ import type { LatexInit } from "./latex"
 import type { Command, Init } from "./model"
 
 /** A container for various initializables. */
-export class Exts {
+export class Inits {
   private readonly cmds: { [x: string]: Init } = Object.create(null)
   private default?: Init
 
@@ -39,10 +39,10 @@ export class Exts {
   }
 
   clone() {
-    const exts = new Exts()
-    exts.default = this.default
-    ;(exts as any).cmds = { ...this.cmds }
-    return exts
+    const inits = new Inits()
+    inits.default = this.default
+    ;(inits as any).cmds = { ...this.cmds }
+    return inits
   }
 }
 
@@ -97,13 +97,30 @@ export class WordMap<T> {
 /** Configuration for various behaviors of {@linkcode Command}s. */
 export interface Options {
   /** Characters and LaTeX commands which can be typed. */
-  exts: Exts
+  inits: Inits
+
+  /** Characters which can be typed as part of Ctrl/Cmd shortcuts. */
+  shortcuts: Inits
 
   /**
-   * Characters and LaTeX commands which can be typed, even with a Ctrl or Meta
-   * key present.
+   * If any word from `autos` is typed, it will be automatically initialized
+   * using the appropriate {@link Init `Init`} instance.
+   *
+   * For instance, mapping `"sum"` to `CmdBig` will make it so that if the user
+   * types `s` `u` `m`, it will be replaced by a summation symbol.
+   *
+   * The `Init` will be passed as input what has been typed, plus an initial
+   * backslash.
    */
-  shortcutExts: Exts
+  autos?: WordMap<Init>
+
+  /**
+   * A list of LaTeX commands and characters to accept when pasting LaTeX text.
+   * Should match the LaTeX outputted by all commands.
+   *
+   * If not present, pasting will not be supported.
+   */
+  latex?: WordMap<LatexInit>
 
   /**
    * If this returns `true` for a given {@linkcode Command}, a number typed
@@ -127,30 +144,10 @@ export interface Options {
   noAutoBigBound?: boolean
 
   /**
-   * If any word from `autoCmds` is typed, it will be automatically initialized
-   * using the appropriate {@link Init `Init`} instance.
-   *
-   * For instance, mapping `"sum"` to `CmdBig` will make it so that if the user
-   * types `s` `u` `m`, it will be replaced by a summation symbol.
-   *
-   * The `Init` will be passed as input what has been typed, plus an initial
-   * backslash.
-   */
-  autoCmds?: WordMap<Init>
-
-  /**
    * An list of words which will be de-italicized. The {@linkcode WordKind} is
    * what kind of word the text will be treated as: variable, prefix operator,
    * or infix operator. The {@linkcode WordKind} controls spacing; see its
    * documentation for more details.
    */
   words?: WordMap<WordKind>
-
-  /**
-   * A list of LaTeX commands and characters to accept when pasting LaTeX text.
-   * Should match the LaTeX outputted by all commands.
-   *
-   * If not present, pasting will not be supported.
-   */
-  latexCmds?: WordMap<LatexInit>
 }

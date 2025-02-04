@@ -46,8 +46,8 @@ export class CmdVar extends Leaf {
     const self = new CmdVar(input, options)
     self.insertAt(cursor, L)
     if (self.kind != null) return
-    if (options.autoCmds) {
-      const cmds = options.autoCmds
+    if (options.autos) {
+      const cmds = options.autos
       const maxLen = cmds.maxLen
       if (!maxLen) return
 

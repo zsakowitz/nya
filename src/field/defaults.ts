@@ -57,9 +57,9 @@ import { CmdNoop } from "./cmd/util/noop"
 import { CmdPrompt } from "./cmd/util/prompt"
 import { LatexEnvs, LatexInit } from "./latex"
 import { D, L, R, U, type Init } from "./model"
-import { Exts, WordMap, type Options } from "./options"
+import { Inits, WordMap, type Options } from "./options"
 
-export const exts = new Exts()
+export const inits = new Inits()
   .setDefault(
     new ByRegex([
       [/^\d$/, CmdNum],
@@ -125,7 +125,7 @@ export const exts = new Exts()
   .set("\\to", OpRightArrow)
   .freeze()
 
-export const shortcutExts = new Exts()
+export const shortcuts = new Inits()
   .set("ArrowLeft", CmdMove(L))
   .set("Home", CmdMove(L, true))
   .set("ArrowRight", CmdMove(R))
@@ -141,7 +141,7 @@ export const shortcutExts = new Exts()
   .set("a", CmdSelectAll)
   .freeze()
 
-export const autoCmds = new WordMap<Init>([
+export const autos = new WordMap<Init>([
   // Big operators
   ["sum", CmdBig],
   ["prod", CmdBig],
@@ -319,7 +319,7 @@ export const words = new WordMap<WordKind>([
   ["from", "infix"],
 ]).freeze()
 
-export const latexCmds = new WordMap<LatexInit>([
+export const latex = new WordMap<LatexInit>([
   ["0", CmdNum],
   ["1", CmdNum],
   ["2", CmdNum],
@@ -430,21 +430,21 @@ export const latexCmds = new WordMap<LatexInit>([
   ["\\uxv", CmuSym],
 ])
 
-for (const key of exts.getAll()) {
-  const init = exts.get(key)!
+for (const key of inits.getAll()) {
+  const init = inits.get(key)!
   if ("fromLatex" in init) {
-    latexCmds.set(key, init as LatexInit)
+    latex.set(key, init as LatexInit)
   }
 }
 
-latexCmds.freeze()
+latex.freeze()
 
 export const options: Options = Object.freeze<Options>({
-  exts,
-  shortcutExts,
-  autoCmds,
+  inits,
+  shortcuts,
+  autos,
+  latex,
   words,
-  latexCmds,
   exitSubWithOp: true,
   exitSupWithPm: true,
   subscriptNumberAfter(cmd) {
