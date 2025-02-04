@@ -28,7 +28,7 @@ export const EXT_SEGMENT = defineExt({
 
       ctx.beginPath()
       ctx.lineWidth = 3 * scale
-      ctx.strokeStyle = "#00c000cc"
+      ctx.strokeStyle = "#2d70b3cc"
       ctx.moveTo(o1.x, o1.y)
       ctx.lineTo(o2.x, o2.y)
       ctx.stroke()

@@ -28,13 +28,13 @@ export const EXT_POINT = defineExt({
       const { ctx, scale } = paper
 
       ctx.beginPath()
-      ctx.fillStyle = "#ff000040"
+      ctx.fillStyle = "#6042a659"
       ctx.arc(offset.x, offset.y, 12 * scale, 0, 2 * Math.PI)
       ctx.fill()
 
       ctx.beginPath()
-      ctx.fillStyle = "red"
-      ctx.arc(offset.x, offset.y, 3 * scale, 0, 2 * Math.PI)
+      ctx.fillStyle = "#6042a6"
+      ctx.arc(offset.x, offset.y, 4 * scale, 0, 2 * Math.PI)
       ctx.fill()
     }
   },
