@@ -63,26 +63,26 @@ export interface GlslVal<T extends TyName = TyName> extends Ty<T> {
   readonly expr: string
 }
 
-export interface List<L extends false | number = false | number> {
+export interface List<L extends number | false = number | false> {
   readonly list: L
 }
 
 export interface Type<
   T extends TyName = TyName,
-  L extends false | number = false | number,
+  L extends number | false = number | false,
 > extends Ty<T>,
     List<L> {}
 
 export type JsValue<
   T extends TyName = TyName,
-  L extends false | number = false | number,
+  L extends number | false = number | false,
 > =
   | (L extends false ? Type<T, L> & { value: Tys[T] } : never)
   | (L extends number ? Type<T, L> & { value: Tys[T][] } : never)
 
 export interface GlslValue<
   T extends TyName = TyName,
-  L extends false | number = false | number,
+  L extends number | false = number | false,
 > extends Type<T, L> {
   readonly expr: string
 }

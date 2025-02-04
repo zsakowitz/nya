@@ -2,23 +2,16 @@ import type { Regl } from "regl"
 import regl from "regl"
 import { GlslHelpers } from "../../../eval/lib/fn"
 import { num, real } from "../../../eval/ty/create"
-import { Options } from "../../../field/options"
+import type { Options } from "../../../field/options"
 import { h, hx } from "../../../jsx"
 import { Scope } from "../../deps"
-import type { Ext, Exts } from "../../ext"
-import type { TyExt } from "../../ext/ty"
+import type { Exts } from "../../ext"
 import { doMatchReglSize } from "../../regl"
 import { REMARK } from "../../remark"
 import { Slider } from "../../slider"
 import type { Expr } from "../expr"
 import { createDrawAxes, makeInteractive, matchSize, Paper } from "../paper"
 import { Handlers } from "./handler"
-
-export interface Props {
-  readonly options: Options
-  readonly exts: Exts<Ext<{}>>
-  readonly tyExts: Exts<TyExt<{}>>
-}
 
 export class Sheet {
   readonly pixelRatio
@@ -39,9 +32,10 @@ export class Sheet {
     "1",
   )
 
-  readonly options
-  constructor(readonly props: Props) {
-    const options = (this.options = props.options)
+  constructor(
+    readonly options: Options,
+    readonly exts: Exts,
+  ) {
     this.scope = new Scope(options)
 
     // prepare js context
@@ -54,6 +48,15 @@ export class Sheet {
     matchSize(this.paper)
     makeInteractive(this.paper, this.handlers)
     createDrawAxes(this.paper)
+    this.paper.drawFns.push(() => {
+      for (const e of this.exprs) {
+        if (e.state.ok) {
+          if (e.state.ext?.plot2d) {
+            e.state.ext.plot2d(e.state.data, this.paper)
+          }
+        }
+      }
+    })
 
     // prepare glsl context
     const canvas = hx(

@@ -1,11 +1,6 @@
 import { Expr } from "../ui/expr"
 import type { Paper } from "../ui/paper"
 
-export interface ExtProps<T extends {}> {
-  expr: Expr
-  data: NoInfer<T>
-}
-
 /** An extension to an expression in the sheet interface. */
 export interface Ext<T extends {}> {
   /**
@@ -17,19 +12,19 @@ export interface Ext<T extends {}> {
    */
   data(expr: Expr): T | null | undefined
 
-  el?(props: ExtProps<T>): HTMLElement | undefined
-  plot2d?(props: ExtProps<T>, paper: Paper): void
-  // plotGl?(props: ExtProps<T>, helpers: GlslHelpers): GlslResult | null
+  el?(data: T): HTMLElement | undefined
+  plot2d?(data: T, paper: Paper): void
+  // plotGl?(data: T, helpers: GlslHelpers): GlslResult | null
 }
 
 export function defineExt<T extends {}>(ext: Ext<T>) {
   return ext
 }
 
-export class Exts<T> {
-  readonly exts: T[] = []
+export class Exts {
+  constructor(readonly exts: Ext<{}>[] = []) {}
 
-  add(ext: T) {
+  add(ext: Ext<{}>) {
     this.exts.push(ext)
     return this
   }
@@ -41,6 +36,7 @@ export class Exts<T> {
   }
 }
 
+/** Useful for persisting init-once values based on an {@linkcode Expr}. */
 export class Store<T extends {}> {
   data = new WeakMap<Expr, T>()
 

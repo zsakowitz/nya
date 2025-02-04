@@ -1,8 +1,5 @@
-import { Ext, Exts } from "."
-import { EXT_EVAL } from "./exts/eval"
-import type { TyExt } from "./ty"
-import { TY_EXT_POINT } from "./ty/point"
+import { Exts } from "."
+import { EXT_POINT } from "./exts/00-point"
+import { EXT_EVAL } from "./exts/01-eval"
 
-export const exts = new Exts<Ext<{}>>().add(EXT_EVAL).freeze()
-
-export const tyExts = new Exts<TyExt<{}>>().add(TY_EXT_POINT).freeze()
+export const exts = new Exts([EXT_POINT, EXT_EVAL]).freeze()

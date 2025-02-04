@@ -98,7 +98,7 @@ export class Expr {
     try {
       this.computeJs()
 
-      for (const ext of this.sheet.props.exts.exts) {
+      for (const ext of this.sheet.exts.exts) {
         const data = ext.data(this)
         if (data != null) {
           this.state = { ok: true, ext, data }
