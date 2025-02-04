@@ -1,11 +1,11 @@
-import { defineExt, Store } from "."
-import { js } from "../../eval/js"
-import { id } from "../../eval/lib/binding"
-import { ERR_COORDS_USED_OUTSIDE_GLSL } from "../../eval/ops/vars"
-import { Display, outputBase } from "../../eval/ty/display"
-import { FieldInert } from "../../field/field-inert"
-import { R } from "../../field/model"
-import { h } from "../../jsx"
+import { defineExt, Store } from ".."
+import { js } from "../../../eval/js"
+import { id } from "../../../eval/lib/binding"
+import { ERR_COORDS_USED_OUTSIDE_GLSL } from "../../../eval/ops/vars"
+import { Display, outputBase } from "../../../eval/ty/display"
+import { FieldInert } from "../../../field/field-inert"
+import { R } from "../../../field/model"
+import { h } from "../../../jsx"
 
 const ID_X = id({ value: "x" })
 const ID_Y = id({ value: "y" })
