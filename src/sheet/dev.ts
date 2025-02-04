@@ -17,6 +17,7 @@ function expr(source: { raw: readonly string[] }) {
 }
 
 expr`q_3=\left(.4,.5\right)`
+expr`segment\left(\left(0,0\right),\left(2,3\right)\right)`
 expr`q_2=0.1base2`
 expr`q_4=0.\digit q\digit 5base36`
 expr`a\cdot \left(valida\and y>0\and -1<x<0\right)witha=oklch\left(q_2,y,360x\right)`
