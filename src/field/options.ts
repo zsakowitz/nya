@@ -94,7 +94,7 @@ export class WordMap<T> {
   }
 }
 
-/** Configuration for various behaviors of {@linkcode Command}s. */
+/** Configuration for various behaviors of math fields. */
 export interface Options {
   /** Characters and LaTeX commands which can be typed. */
   inits: Inits
