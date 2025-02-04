@@ -3,10 +3,11 @@ import { CmdPrompt } from "../field/cmd/util/prompt.js"
 import { autos, options } from "../field/defaults.js"
 import { FieldInert } from "../field/field-inert.js"
 import { R } from "../field/model.js"
+import { exts } from "./ext/defaults.js"
 import { Expr } from "./ui/expr/index.js"
 import { Sheet } from "./ui/sheet/index.js"
 
-const sheet = new Sheet(options)
+const sheet = new Sheet(options, exts)
 document.body.appendChild(sheet.el)
 
 function expr(source: { raw: readonly string[] }) {

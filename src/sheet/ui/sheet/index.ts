@@ -5,6 +5,7 @@ import { num, real } from "../../../eval/ty/create"
 import { Options } from "../../../field/options"
 import { h, hx } from "../../../jsx"
 import { Scope } from "../../deps"
+import type { Exts } from "../../ext"
 import { doMatchReglSize } from "../../regl"
 import { REMARK } from "../../remark"
 import { Slider } from "../../slider"
@@ -31,7 +32,10 @@ export class Sheet {
     "1",
   )
 
-  constructor(readonly options: Options) {
+  constructor(
+    readonly options: Options,
+    readonly exts: Exts,
+  ) {
     this.scope = new Scope(options)
 
     // prepare js context
