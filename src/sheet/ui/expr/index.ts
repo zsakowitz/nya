@@ -1,43 +1,22 @@
 import { faWarning } from "@fortawesome/free-solid-svg-icons/faWarning"
-import { glsl } from "../../../eval/glsl"
-import { js } from "../../../eval/js"
-import { id } from "../../../eval/lib/binding"
-import type { GlslContext } from "../../../eval/lib/fn"
-import { ERR_COORDS_USED_OUTSIDE_GLSL } from "../../../eval/ops/vars"
-import type { GlslValue, JsValue, SReal } from "../../../eval/ty"
-import { frac, num } from "../../../eval/ty/create"
-import { Display, outputBase } from "../../../eval/ty/display"
-import { CmdVar } from "../../../field/cmd/leaf/var"
 import { fa } from "../../../field/fa"
-import { FieldInert } from "../../../field/field-inert"
-import { R } from "../../../field/model"
 import { h } from "../../../jsx"
+import type { Ext } from "../../ext"
 import type { Sheet } from "../sheet"
 import { Field } from "./field"
-import { RangeControls, type ExprRangeState } from "./range"
-import { readSlider } from "./range/scrubber"
 
 export type ExprState =
-  | { type: "error"; reason: string }
-  | { type: "js"; value: JsValue; base: SReal }
-  | { type: "glsl"; ctx: GlslContext; value: GlslValue }
-  | ExprRangeState
-
-const ID_X = id({ value: "x" })
-const ID_Y = id({ value: "y" })
-const ID_P = id({ value: "p" })
+  | { ok: false; reason: string }
+  | { ok: true; ext: Ext<{}> | null; data: {} }
 
 export class Expr {
   readonly field
   readonly el
   readonly elIndex
-
-  readonly slider
-  readonly value
-  readonly elValue
+  readonly elOutput
   readonly elError
 
-  state: ExprState = { type: "error", reason: "Not computed yet." }
+  state: ExprState = { ok: false, reason: "Not computed yet." }
 
   constructor(readonly sheet: Sheet) {
     sheet.exprs.push(this)
@@ -45,19 +24,11 @@ export class Expr {
     this.el = h(
       "grid grid-cols-[2.5rem_auto] border-r border-b border-[--nya-border] relative nya-expr",
     )
-    this.slider = new RangeControls(this)
     this.field = new Field(
       this,
       "block overflow-x-auto [&::-webkit-scrollbar]:hidden min-h-[3.265rem] max-w-[calc(var(--nya-sidebar)_-_2.5rem_-_1px)] p-4 focus:outline-none",
     )
-    this.value = new FieldInert(
-      sheet.options,
-      "bg-[--nya-bg-sidebar] border border-[--nya-border] px-2 py-1 rounded",
-    )
-    this.elValue = h(
-      "flex px-2 pb-2 -mt-2 w-[calc(var(--nya-sidebar)_-_2.5rem_-_1px)] overflow-x-auto [&::-webkit-scrollbar]:hidden hidden justify-end",
-      this.value.el,
-    )
+    this.elOutput = h("contents")
     this.elError = h(
       "block hidden mx-1 -mt-2 px-1 pb-1 leading-tight italic text-[--nya-expr-error] whitespace-pre-wrap font-sans pointer-events-none",
     )
@@ -74,13 +45,7 @@ export class Expr {
       ),
 
       // main expression body
-      h(
-        "flex flex-col",
-        this.field.el,
-        this.elValue,
-        this.elError,
-        this.slider.el,
-      ),
+      h("flex flex-col", this.field.el, this.elOutput, this.elError),
 
       // focus ring
       h(
@@ -91,100 +56,64 @@ export class Expr {
   }
 
   compute() {
-    this.state = { type: "error", reason: "Currently computing." }
+    this.state = { ok: false, reason: "Currently computing." }
 
     try {
-      let node = this.field.ast
-
-      if (node.type == "binding" && !node.args) {
-        const sv = readSlider(node.value)
-        if (sv) {
-          this.state = { ...sv, type: "range", name: node.name }
-          this.slider.scrubber.base = sv.base || frac(10, 1)
+      for (const ext of this.sheet.exts.exts) {
+        const data = ext.data(this)
+        if (data != null) {
+          this.state = { ok: true, ext, data }
           return
         }
       }
-
-      if (node.type == "binding") {
-        node = node.value
-      }
-
-      if (
-        !(
-          this.field.deps.isBound(ID_X) &&
-          this.field.deps.isBound(ID_Y) &&
-          this.field.deps.isBound(ID_P)
-        )
-      ) {
-        try {
-          this.state = {
-            type: "js",
-            value: js(node, this.sheet.scope.propsJs),
-            base: outputBase(node, this.sheet.scope.propsJs),
-          }
-          return
-        } catch (e) {
-          if (
-            !(e instanceof Error && e.message == ERR_COORDS_USED_OUTSIDE_GLSL)
-          ) {
-            throw e
-          }
-        }
-      }
-
-      const props = this.sheet.scope.propsGlsl()
-      const value = glsl(node, props)
-      this.state = { type: "glsl", ctx: props.ctx, value }
+      this.state = { ok: true, ext: null, data: {} }
     } catch (e) {
-      console.warn("[expr eval]")
       const msg = e instanceof Error ? e.message : String(e)
-      this.state = { type: "error", reason: msg }
+      console.warn("[compute]", msg)
+      this.state = { ok: false, reason: msg }
     }
   }
 
   display() {
-    this.elValue.classList.add("hidden")
-    this.elError.classList.add("hidden")
-    this.el.classList.remove("nya-expr-error")
-    if (this.state.type == "range") {
-      if (num(this.state.value) != num(this.slider.scrubber.value)) {
-        this.slider.scrubber.value = this.state.value
+    if (!this.state.ok) {
+      while (this.elOutput.firstChild) {
+        this.elOutput.firstChild.remove()
       }
-      this.slider.relink()
-      this.slider.name.block.clear()
-      CmdVar.leftOf(
-        this.slider.name.block.cursor(R),
-        this.state.name,
-        this.field.options,
-      )
-      this.state.name
-      if (
-        typeof this.slider.min.value == "string" ||
-        typeof this.slider.max.value == "string" ||
-        typeof this.slider.step.value == "string"
-      ) {
-        this.el.classList.add("nya-expr-error")
-      }
-      this.slider.el.classList.remove("hidden")
+      this.elError.classList.remove("hidden")
+      this.elError.textContent = this.state.reason
       return
     }
 
-    this.slider.el.classList.add("hidden")
-    this.slider.unlink()
+    if (this.state.ext == null) {
+      this.elError.classList.add("hidden")
+      while (this.elOutput.firstChild) {
+        this.elOutput.firstChild.remove()
+      }
+      return
+    }
 
-    switch (this.state.type) {
-      case "error":
-        this.el.classList.add("nya-expr-error")
-        this.elError.classList.remove("hidden")
-        this.elError.textContent = this.state.reason
-        break
-      case "js":
-        this.value.block.clear()
-        const cursor = this.value.block.cursor(R)
-        new Display(cursor, this.state.base).output(this.state.value)
-        this.elValue.classList.remove("hidden")
-        break
-      case "glsl":
+    try {
+      this.elError.classList.add("hidden")
+      this.el.classList.remove("nya-expr-error")
+
+      const el = this.state.ext.el?.({ expr: this, data: this.state.data })
+      if (el != this.elOutput.firstChild) {
+        while (this.elOutput.firstChild) {
+          this.elOutput.firstChild.remove()
+        }
+      }
+      if (el) {
+        this.elOutput.appendChild(el)
+      }
+    } catch (e) {
+      while (this.elOutput.firstChild) {
+        this.elOutput.firstChild.remove()
+      }
+      const msg = e instanceof Error ? e.message : String(e)
+      console.warn("[display]", msg)
+      this.elError.classList.remove("hidden")
+      this.elError.textContent = msg
+      this.state = { ok: false, reason: msg }
     }
   }
 }

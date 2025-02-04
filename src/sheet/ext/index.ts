@@ -1,12 +1,12 @@
 import { Expr } from "../ui/expr"
 
-export interface ExtProps<T> {
+export interface ExtProps<T extends {}> {
   expr: Expr
   data: NoInfer<T>
 }
 
 /** An extension to an expression in the sheet interface. */
-export interface Ext<T> {
+export interface Ext<T extends {}> {
   /** The ID of this extension, for state-saving purposes. */
   id: string
 
@@ -17,7 +17,7 @@ export interface Ext<T> {
    * - A non-nullish value to claim the {@linkcode Expr} by this extension
    * - A thrown error to display an error under the expression
    */
-  getState(expr: Expr): T | null | undefined
+  data(expr: Expr): T | null | undefined
 
   /** Returns an HTML element which will be appended below the {@linkcode Expr}. */
   el?(props: ExtProps<T>): HTMLElement | undefined
@@ -29,21 +29,24 @@ export interface Ext<T> {
   // plotGl?(props: ExtProps<T>, helpers: GlslHelpers): GlslResult | null
 }
 
-export function defineExt<T>(ext: Ext<T>) {
+export function defineExt<T extends {}>(ext: Ext<T>) {
   return ext
 }
 
 export class Exts {
-  readonly exts: Ext<unknown>[] = []
+  readonly exts: Ext<{}>[] = []
+  readonly map: Record<string, Ext<{}>> = Object.create(null)
 
-  add(ext: Ext<unknown>) {
+  add(ext: Ext<{}>) {
     this.exts.push(ext)
+    this.map[ext.id] = ext
     return this
   }
 
   freeze() {
     Object.freeze(this)
     Object.freeze(this.exts)
+    Object.freeze(this.map)
     return this
   }
 }
