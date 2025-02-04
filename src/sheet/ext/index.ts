@@ -1,10 +1,7 @@
-import type { Expr } from "./expr"
+import type { Expr } from "../ui/expr"
 
 export interface ExtProps<T> {
-  /** The expression the extension is currently applying to. */
   expr: Expr
-
-  /** The data saved in this expression's state. */
   data: T
 }
 
