@@ -1,4 +1,5 @@
 import { Expr } from "../ui/expr"
+import type { Paper } from "../ui/paper"
 
 export interface ExtProps<T extends {}> {
   expr: Expr
@@ -17,7 +18,7 @@ export interface Ext<T extends {}> {
   data(expr: Expr): T | null | undefined
 
   el?(props: ExtProps<T>): HTMLElement | undefined
-  // plot2d?(props: ExtProps<T>, paper: Paper): void
+  plot2d?(props: ExtProps<T>, paper: Paper): void
   // plotGl?(props: ExtProps<T>, helpers: GlslHelpers): GlslResult | null
 }
 

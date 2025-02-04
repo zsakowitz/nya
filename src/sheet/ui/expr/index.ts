@@ -1,9 +1,18 @@
 import { faWarning } from "@fortawesome/free-solid-svg-icons/faWarning"
+import { js } from "../../../eval/js"
+import { id } from "../../../eval/lib/binding"
+import { ERR_COORDS_USED_OUTSIDE_GLSL } from "../../../eval/ops/vars"
+import type { JsValue, SReal } from "../../../eval/ty"
+import { outputBase } from "../../../eval/ty/display"
 import { fa } from "../../../field/fa"
 import { h } from "../../../jsx"
 import type { Ext } from "../../ext"
 import type { Sheet } from "../sheet"
 import { Field } from "./field"
+
+const ID_X = id({ value: "x" })
+const ID_Y = id({ value: "y" })
+const ID_P = id({ value: "p" })
 
 export type ExprState =
   | { ok: false; reason: string }
@@ -55,10 +64,40 @@ export class Expr {
     this.sheet.elExpressions.appendChild(this.el)
   }
 
+  js: { value: JsValue; base: SReal } | undefined
+  computeJs() {
+    this.js = undefined
+
+    if (
+      this.field.deps.isBound(ID_X) ||
+      this.field.deps.isBound(ID_Y) ||
+      this.field.deps.isBound(ID_P)
+    ) {
+      return
+    }
+
+    try {
+      let ast = this.field.ast
+      if (ast.type == "binding") {
+        ast = ast.value
+      }
+
+      const value = js(ast, this.field.scope.propsJs)
+      const base = outputBase(ast, this.field.scope.propsJs)
+      this.js = { value, base }
+    } catch (e) {
+      if (!(e instanceof Error && e.message == ERR_COORDS_USED_OUTSIDE_GLSL)) {
+        throw e
+      }
+    }
+  }
+
   compute() {
     this.state = { ok: false, reason: "Currently computing." }
 
     try {
+      this.computeJs()
+
       for (const ext of this.sheet.props.exts.exts) {
         const data = ext.data(this)
         if (data != null) {

@@ -1,5 +1,6 @@
 import type { JsValue, SReal } from "../../eval/ty"
 import { Expr } from "../ui/expr"
+import type { Paper } from "../ui/paper"
 
 export interface TyExtProps<T extends {}> {
   expr: Expr
@@ -25,7 +26,7 @@ export interface TyExt<T extends {}> {
   data(props: TyInitProps<T>): T | null | undefined
 
   el?(props: TyExtProps<T>): HTMLElement | undefined
-  // plot2d?(props: ExtProps<T>, paper: Paper): void
+  plot2d?(props: TyExtProps<T>, paper: Paper): void
   // plotGl?(props: ExtProps<T>, helpers: GlslHelpers): GlslResult | null
 }
 
