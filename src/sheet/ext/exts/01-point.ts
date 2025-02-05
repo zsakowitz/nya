@@ -1,23 +1,62 @@
 import { defineExt, Store } from ".."
+import type { Node } from "../../../eval/ast/token"
 import { each, type JsValue } from "../../../eval/ty"
 import { frac, num, unpt } from "../../../eval/ty/create"
 import { Display } from "../../../eval/ty/display"
 import { OpEq } from "../../../field/cmd/leaf/cmp"
 import { CmdComma } from "../../../field/cmd/leaf/comma"
+import { OpMinus } from "../../../field/cmd/leaf/op"
 import { CmdVar } from "../../../field/cmd/leaf/var"
 import { CmdBrack } from "../../../field/cmd/math/brack"
-import { Block, L, R } from "../../../field/model"
+import { Block, L, R, Span } from "../../../field/model"
 import { Transition } from "../../transition"
 
 const color = new Store(
   (expr) => new Transition(3.5, () => expr.sheet.paper.queue()),
 )
 
+export function draggerNum(node: Node) {
+  if (node.type == "num") {
+    return node.span
+  }
+
+  if (
+    node.type == "op" &&
+    !node.b &&
+    node.a.type == "num" &&
+    node.kind == "-" &&
+    node.a.span
+  ) {
+    if (node.a.span[L] instanceof OpMinus) {
+      return new Span(node.a.span.parent, node.a.span[L][L], node.a.span[R])
+    }
+  }
+}
+
+export function draggers(node: Node) {
+  if (node.type == "binding") {
+    node = node.value
+  }
+
+  if (
+    node.type == "group" &&
+    node.lhs == "(" &&
+    node.rhs == ")" &&
+    node.value.type == "commalist" &&
+    node.value.items.length == 2
+  ) {
+    const x = draggerNum(node.value.items[0]!)
+    const y = draggerNum(node.value.items[1]!)
+    if (x && y) return { x, y }
+    return
+  }
+
+  // if (node.type == 'op' && )
+}
+
 export const EXT_POINT = defineExt({
   data(expr) {
     const value = expr.js?.value
-
-    color.get(expr)
 
     if (
       value &&

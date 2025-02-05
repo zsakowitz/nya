@@ -1,6 +1,7 @@
+import { safe } from "../../lib/util"
 import type { SPoint, SReal } from "../../ty"
 import { isZero } from "../../ty/check"
-import { approx, num, pt, real } from "../../ty/create"
+import { approx, frac, num, pt, real } from "../../ty/create"
 import { FnDist } from "../dist"
 import { declareExp, FN_EXP } from "../fn/exp"
 import { declareMulC32, OP_CDOT } from "./mul"
@@ -12,6 +13,13 @@ export function raise(a: SReal, b: SReal): SReal {
 
   if (isZero(a)) {
     return real(0)
+  }
+
+  if (a.type == "exact") {
+    const n = a.n ** num(b)
+    const d = a.d ** num(b)
+    if (safe(n) && safe(d)) return frac(n, d)
+    return real(n / d)
   }
 
   // TODO: things like (-8) ** (1/3) don't work

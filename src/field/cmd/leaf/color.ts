@@ -114,9 +114,9 @@ ${parseInt(color.slice(5, 7), 16)})`
       args: {
         type: "commalist",
         items: [
-          { type: "num", value: r },
-          { type: "num", value: g },
-          { type: "num", value: b },
+          { type: "num", value: r, span: null },
+          { type: "num", value: g, span: null },
+          { type: "num", value: b, span: null },
         ],
       },
     })

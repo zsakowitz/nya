@@ -49,7 +49,10 @@ function readExp(
   if (!base && node.type == "num" && node.sub) {
     const base = readSigned(node.sub, real(10))
     if (base == null) return null
-    const value = readSigned({ type: "num", value: node.value }, base)
+    const value = readSigned(
+      { type: "num", value: node.value, span: null },
+      base,
+    )
     if (value == null) return null
     return { value: isNeg ? neg(value) : value, base }
   }

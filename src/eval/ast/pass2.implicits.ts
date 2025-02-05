@@ -128,6 +128,18 @@ export function pass2_implicits(tokens: Node[]): Node[] {
   }
 
   function reduceSigns(signs: PuncPrefix[], value: Node): Node {
+    if (
+      signs.length >= 1 &&
+      value.type == "num" &&
+      value.value[0] != "-" &&
+      value.value[0] != "+"
+    ) {
+      const last = signs[signs.length - 1]
+      if (last?.value == "+" || last?.value == "-") {
+        value.value = last.value + value.value
+        signs.pop()
+      }
+    }
     return signs.reduceRight<Node>(
       (a, b) => ({ type: "op", kind: b.value, a }),
       value,

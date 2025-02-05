@@ -1,6 +1,7 @@
 import type { WordKind } from "../../field/cmd/leaf/var"
 import type { BigCmd } from "../../field/cmd/math/big"
 import type { ParenLhs, ParenRhs } from "../../field/cmd/math/brack"
+import type { Span } from "../../field/model"
 import { isSubscript } from "../lib/text"
 import { VARS } from "../ops/vars"
 import { pass1_suffixes } from "./pass1.suffixes"
@@ -134,23 +135,23 @@ export type Punc =
   | { type: "punc"; kind: "suffix"; value: PuncUnary }
   | { type: "punc"; kind: "infix"; value: PuncInfix }
   | { type: "punc"; kind: "cmp"; value: PuncCmp }
-  | { type: "punc"; kind: "pm"; value: PuncPm }
+  | { type: "punc"; kind: "pm"; value: PuncPm; span: Span }
 
 /** A binary punctuation token. */
 export type PuncBinary =
   | { type: "punc"; kind: "infix"; value: PuncInfix }
   | { type: "punc"; kind: "cmp"; value: PuncCmp }
-  | { type: "punc"; kind: "pm"; value: PuncPm }
+  | { type: "punc"; kind: "pm"; value: PuncPm; span: Span }
 
 /** A binary punctuation token. */
 export type PuncBinaryNoComma =
   | { type: "punc"; kind: "infix"; value: Exclude<PuncInfix, ","> }
-  | { type: "punc"; kind: "pm"; value: PuncPm }
+  | { type: "punc"; kind: "pm"; value: PuncPm; span: Span }
 
 /** An infix punctuation token. */
 export type PuncPrefix =
   | { type: "punc"; kind: "prefix"; value: PuncUnary }
-  | { type: "punc"; kind: "pm"; value: PuncPm }
+  | { type: "punc"; kind: "pm"; value: PuncPm; span: Span }
 
 /** A binary operation derived from infix operators. */
 export type OpBinary = Exclude<PuncInfix | PuncPm, ",">
@@ -196,7 +197,7 @@ export type AstBinding = {
  */
 export type Node =
   | { type: "void" }
-  | { type: "num"; value: string; sub?: Node }
+  | { type: "num"; value: string; sub?: Node; span: Span | null }
   | Var
   | MagicVar
   | { type: "num16"; value: string }

@@ -1,5 +1,4 @@
 import { twMerge } from "tailwind-merge"
-import { safe } from "../eval/lib/util"
 import { add } from "../eval/ops/op/add"
 import { div } from "../eval/ops/op/div"
 import { mul } from "../eval/ops/op/mul"
@@ -7,9 +6,9 @@ import { sub } from "../eval/ops/op/sub"
 import type { SReal } from "../eval/ty"
 import { isZero } from "../eval/ty/check"
 import { frac, num, real } from "../eval/ty/create"
-import { Display } from "../eval/ty/display"
 import type { Cursor } from "../field/model"
 import { h, hx } from "../jsx"
+import { virtualStepExp, write } from "./write"
 
 export class Slider {
   private _min = real(0)
@@ -229,11 +228,10 @@ export class Slider {
   }
 
   private virtualStepExp() {
-    return Math.ceil(
-      Math.log(
-        (this.elInner.clientWidth * (globalThis.devicePixelRatio ?? 1)) /
-          (num(this._max) - num(this._min)),
-      ) / Math.log(this._base),
+    return virtualStepExp(
+      (this.elInner.clientWidth * (globalThis.devicePixelRatio ?? 1)) /
+        (num(this._max) - num(this._min)),
+      this._base,
     )
   }
 
@@ -277,36 +275,7 @@ export class Slider {
   }
 
   display(cursor: Cursor, baseRaw: SReal) {
-    const base = num(baseRaw)
-
-    if (!isZero(this._step) || !(safe(base) && 2 <= base && base <= 36)) {
-      new Display(cursor, baseRaw || frac(10, 1)).value(num(this.value))
-      return
-    }
-
-    const display = new Display(cursor, baseRaw || frac(10, 1))
-    const step = this.virtualStep()
-    const stepExp = this.virtualStepExp()
-    let main = Math.round(num(div(this._value, step)))
-    if (main < 0) {
-      display.digits("-")
-      main = -main
-    }
-    let str = BigInt(main).toString(base)
-    if (stepExp > 0) {
-      str = str.padStart(stepExp, "0")
-      str = (str.slice(0, -stepExp) || "0") + "." + str.slice(-stepExp)
-      while (str[str.length - 1] == "0") {
-        str = str.slice(0, -1)
-      }
-      if (str[str.length - 1] == ".") {
-        str = str.slice(0, -1)
-      }
-    } else if (stepExp < 0) {
-      str += "0".repeat(-stepExp)
-    }
-
-    display.digits(str)
+    write(cursor, this._value, baseRaw, this.virtualStepExp())
   }
 
   onInput?(): void

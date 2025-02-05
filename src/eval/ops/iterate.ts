@@ -201,6 +201,7 @@ export function parseIterate(
         : from.values.find((x) => x[0] == id)?.[1])) || {
         type: "num",
         value: "0",
+        span: null,
       },
       name,
     ]),

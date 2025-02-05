@@ -5,6 +5,7 @@ import type { LatexParser } from "../../latex"
 import {
   L,
   R,
+  Span,
   type Command,
   type Cursor,
   type Dir,
@@ -175,7 +176,12 @@ export function opm(
     }
 
     ir(tokens: Node[]): void {
-      tokens.push({ type: "punc", kind: "pm", value: latex })
+      tokens.push({
+        type: "punc",
+        kind: "pm",
+        value: latex,
+        span: new Span(this.parent, this[L], this[R]),
+      })
     }
   }
 }

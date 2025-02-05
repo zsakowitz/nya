@@ -4,6 +4,8 @@ import { h, usvg } from "../../../../jsx"
 import type { LatexParser } from "../../../latex"
 import {
   L,
+  R,
+  Span,
   type Command,
   type Cursor,
   type InitProps,
@@ -115,7 +117,12 @@ export class CmuSym extends CmuLeaf {
 
   ir(tokens: Node[]): void {
     if (this.sym == "+" || this.sym == "-") {
-      tokens.push({ type: "punc", kind: "pm", value: this.sym })
+      tokens.push({
+        type: "punc",
+        kind: "pm",
+        value: this.sym,
+        span: new Span(this.parent, this[L], this[R]),
+      })
       return
     }
 

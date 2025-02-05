@@ -1,4 +1,5 @@
 import { add } from "../ops/op/add"
+import { neg } from "../ops/op/neg"
 import type { GlslValue, JsValue, SExact, SReal } from "../ty"
 import { canCoerce, coerceValJs } from "../ty/coerce"
 import { approx, frac, num } from "../ty/create"
@@ -34,6 +35,15 @@ function digitValue(char: string, base: SExact) {
 }
 
 function parseExact(text: string, base: SExact): SReal {
+  let isNeg = false
+
+  if (text[0] == "-") {
+    isNeg = true
+    text = text.slice(1)
+  } else if (text[0] == "+") {
+    text = text.slice(1)
+  }
+
   const [a, b] = text.split(".") as [string, string?]
 
   let total = frac(0, 1)
@@ -52,7 +62,7 @@ function parseExact(text: string, base: SExact): SReal {
     }
   }
 
-  return total
+  return isNeg ? neg(total) : total
 }
 
 function parse(text: string, base: SReal): SReal {

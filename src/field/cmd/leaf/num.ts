@@ -7,6 +7,7 @@ import {
   Cursor,
   L,
   R,
+  Span,
   type Command,
   type Dir,
   type InitProps,
@@ -81,9 +82,20 @@ export class CmdNum extends Leaf {
     const last = tokens[tokens.length - 1]
     if (last && last.type == "num") {
       tokens.pop()
-      tokens.push({ type: "num", value: last.value + this.text })
+      if (last.span) {
+        last.span[R] = this[R]
+      }
+      tokens.push({
+        type: "num",
+        value: last.value + this.text,
+        span: last.span,
+      })
     } else {
-      tokens.push({ type: "num", value: this.text })
+      tokens.push({
+        type: "num",
+        value: this.text,
+        span: new Span(this.parent, this[L], this[R]),
+      })
     }
   }
 }
