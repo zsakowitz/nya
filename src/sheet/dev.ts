@@ -18,9 +18,9 @@ function expr(source: { raw: readonly string[] }) {
 
 expr`A=\left(.4,.5\right)`
 expr`B=\left(0,0\right)`
-expr`C=segment\left(A,B\right)`
-expr`D=\left(.3,.4\right)`
-expr`parallel\left(C,D\right)`
+expr`C=\left(.3,.4\right)`
+expr`\begin{cases}\operatorname{rgb}\left(255,0,0\right)&\left|z-A\right|=\operatorname{min}\left(\left|z-A\right|,\left|z-B\right|,\left|z-C\right|\right)\\\operatorname{rgb}\left(0,255,0\right)&\end{cases}\operatorname{with}z=\left(\operatorname{iterate}^{10}z\to z-\frac{\left(z-A\right)\cdot \left(z-B\right)\cdot \left(z-C\right)}{3z^{2}-2\cdot \left(A+B+C\right)z+\left(AB+BC+CA\right)}\operatorname{from}z=\frac{p}{1}\right)\operatorname{with}\begin{list}A=A.x+iA.y\\B=B.x+iB.y\\C=C.x+iC.y\end{list}`
+expr`parallel\left(Q,C\right)`
 expr`q_2=0.1base2`
 expr`q_4=0.\digit q\digit 5base36`
 expr`a\cdot \left(valida\and y>0\and -1<x<0\right)witha=oklch\left(q_2,y,360x\right)`

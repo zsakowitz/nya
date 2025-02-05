@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+  .bg-nya-empty:where(:not(.nya-display)) {
+    @apply bg-[--nya-empty];
+  }
+}
+
 @font-face {
   font-family: Symbola;
   src: url("./fonts/Symbola.woff") format("woff");

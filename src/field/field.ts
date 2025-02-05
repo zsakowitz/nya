@@ -14,7 +14,7 @@ export class Field extends FieldInert {
     this.showCursor()
   }
 
-  makeActive() {
+  private makeActive() {
     this.el.tabIndex = 0
 
     const onPointerDown = (event: PointerEvent) => {
@@ -103,12 +103,13 @@ export class Field extends FieldInert {
     this.el.addEventListener("blur", onBlur)
   }
 
-  showCursor(scrollIntoView = true) {
-    this.sel.each(({ el }) => el.classList.add("bg-nya-selection"))
+  private showCursor(scrollIntoView = true) {
+    this.sel.each(({ el }) => el.classList.add("bg-[--nya-selection]"))
     this.sel.cursor(this.sel.focused).render(this.cursor)
     this.sel.parent?.checkIfEmpty()
     this.cursor.classList.toggle("text-transparent", !this.sel.isEmpty())
     this.cursor.parentElement?.classList.add("!bg-transparent")
+    this.cursor.parentElement?.parentElement?.classList.remove("nya-has-empty")
     if (scrollIntoView) {
       this.cursor.scrollIntoView({
         behavior: "instant",
@@ -119,7 +120,7 @@ export class Field extends FieldInert {
   }
 
   onBeforeChange() {
-    this.sel.each(({ el }) => el.classList.remove("bg-nya-selection"))
+    this.sel.each(({ el }) => el.classList.remove("bg-[--nya-selection]"))
     this.cursor.parentElement?.classList.remove("!bg-transparent")
     this.cursor.remove()
     this.sel.parent?.checkIfEmpty()

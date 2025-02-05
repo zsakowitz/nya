@@ -1247,6 +1247,10 @@ video {
   background-color: var(--nya-border);
 }
 
+.bg-\[--nya-selection\] {
+  background-color: var(--nya-selection);
+}
+
 .bg-\[--nya-slider-zero\] {
   background-color: var(--nya-slider-zero);
 }
@@ -1273,14 +1277,6 @@ video {
 .bg-green-300 {
   --tw-bg-opacity: 1;
   background-color: rgb(134 239 172 / var(--tw-bg-opacity, 1));
-}
-
-.bg-nya-empty {
-  background-color: var(--nya-empty);
-}
-
-.bg-nya-selection {
-  background-color: var(--nya-selection);
 }
 
 .bg-orange-300 {
@@ -1701,6 +1697,10 @@ video {
   transition-property: width;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
+}
+
+.bg-nya-empty:where(:not(.nya-display)) {
+  background-color: var(--nya-empty);
 }
 
 .\[image-rendering\:pixelated\] {
@@ -2187,7 +2187,7 @@ body {
   display: none;
 }
 
-.bg-nya-selection>.\[\.bg-nya-selection\>\&\]\:bg-nya-selection {
+.bg-[--nya-selection]>.\[\.bg-\[--nya-selection\]\>\&\]\:bg-\[--nya-selection\] {
   background-color: var(--nya-selection);
 }
 

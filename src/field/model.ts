@@ -176,11 +176,8 @@ export class Block {
   /** Updates the element's empty styles. */
   checkIfEmpty() {
     this.el.classList.toggle("after:hidden", !this.isEmpty())
-    this.el.classList.toggle(
-      "bg-nya-empty",
-      this.isEmpty() && this.parent != null,
-    )
-    this.el.classList.toggle("nya-empty", this.isEmpty() && this.parent != null)
+    this.el.classList.toggle("bg-nya-empty", this.isEmpty())
+    this.el.classList.toggle("nya-empty", this.isEmpty())
     this.el.parentElement?.classList.toggle("nya-has-empty", this.isEmpty())
   }
 
