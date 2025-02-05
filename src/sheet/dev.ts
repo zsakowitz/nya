@@ -29,7 +29,7 @@ show(
   expr`a\cdot \left(\operatorname{valid}a\and y>0\and -1<x<0\right)\operatorname{with}a=\operatorname{oklch}\left(\frac{q_{2}+10}{20},y,360x\right)`,
 )
 show(
-  expr`\operatorname{firstvalid}\operatorname{oklab}\left(0.7,.5\cdot \left(x+0.5\right),0.5\cdot \left(y+0.5\right)\right)`,
+  expr`\operatorname{firstvalid}\operatorname{oklab}\left(C.x+.4,.5\cdot \left(x+0.5\right),0.5\cdot \left(y+0.5\right)\right)`,
 )
 expr`circle\left(\left(2,3\right),q_2+4\right)`
 expr`rgb\left(a\left[1\right],a\left[2\right],a\left[3\right]\right)witha=255\cdot \left(0.45sin\frac{5\left|\left[a,b,c\right]\right|}{n}+0.5\right)withseqiterate^{50}\begin{list}r\to s\\s\to z\\z\to zz+p\\a\to a+dot\left(z-s,s-r\right)\\b\to b+dot\left(z-s,z-s\right)\\c\to c+dot\left(z-s,z-r\right)\\n\to n+1\end{list}whilez.realz.real+z.imagz.imag<4from\begin{list}r=0i\\s=0i\\z=0i\\a=\frac{0}{1}\\b=\frac{0}{1}\\c=\frac{0}{1}\end{list}`

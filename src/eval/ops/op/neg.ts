@@ -3,7 +3,7 @@ import type { SReal } from "../../ty"
 import { approx, frac, pt } from "../../ty/create"
 
 export function neg(a: SReal): SReal {
-  return a.type == "exact" ? frac(-a.n, a.d) : approx(-a)
+  return a.type == "exact" ? frac(-a.n, a.d) : approx(-a.value)
 }
 
 export const OP_NEG = new FnDist("negate")
