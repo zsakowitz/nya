@@ -18,15 +18,11 @@ export const EXT_CIRCLE = defineExt({
 
       if (!(isFinite(x) && isFinite(y) && isFinite(r) && r > 0)) continue
 
-      const pt = paper.paperToCanvas({ x, y })
-      const w = (r / paper.bounds().w) * paper.el.width
-      const h = (r / paper.bounds().h) * paper.el.height
       const { ctx, scale } = paper
-
       ctx.beginPath()
       ctx.lineWidth = 3 * scale
+      paper.circle({ x, y }, r)
       ctx.strokeStyle = "#388c46cc"
-      ctx.ellipse(pt.x, pt.y, w, h, 0, 0, 2 * Math.PI)
       ctx.stroke()
     }
   },

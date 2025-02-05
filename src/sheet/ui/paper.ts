@@ -115,6 +115,13 @@ export class Paper {
     return this.offsetToPaper({ x: event.offsetX, y: event.offsetY })
   }
 
+  canvasDistance(a: Point, b: Point) {
+    // TODO: optimize by not going through xmin and ymin
+    const pa = this.paperToCanvas(a)
+    const pb = this.paperToCanvas(b)
+    return Math.hypot(pa.x - pb.x, pa.y - pb.y)
+  }
+
   shift(by: Point) {
     const { xmin, w, ymin, h } = this.rawBounds
     this.rawBounds = {
@@ -156,6 +163,24 @@ export class Paper {
       this.queued = false
       this.draw()
     })
+  }
+
+  moveTo(pt: Point) {
+    const { x, y } = this.paperToCanvas(pt)
+    this.ctx.moveTo(x, y)
+  }
+
+  lineTo(pt: Point) {
+    const { x, y } = this.paperToCanvas(pt)
+    this.ctx.lineTo(x, y)
+  }
+
+  circle(pt: Point, r: number) {
+    const { x, y } = this.paperToCanvas(pt)
+    const { w, h } = this.bounds()
+    const rx = (r / w) * this.el.width
+    const ry = (r / h) * this.el.height
+    this.ctx.ellipse(x, y, rx, ry, 0, 0, 2 * Math.PI)
   }
 }
 

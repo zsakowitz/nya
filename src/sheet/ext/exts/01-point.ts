@@ -1,6 +1,12 @@
 import { defineExt } from ".."
 import { each, type JsValue } from "../../../eval/ty"
-import { num } from "../../../eval/ty/create"
+import { frac, num, unpt } from "../../../eval/ty/create"
+import { Display } from "../../../eval/ty/display"
+import { OpEq } from "../../../field/cmd/leaf/cmp"
+import { CmdComma } from "../../../field/cmd/leaf/comma"
+import { CmdVar } from "../../../field/cmd/leaf/var"
+import { CmdBrack } from "../../../field/cmd/math/brack"
+import { Block, L, R } from "../../../field/model"
 
 export const EXT_POINT = defineExt({
   data(expr) {
@@ -13,7 +19,11 @@ export const EXT_POINT = defineExt({
         value.type == "c32" ||
         value.type == "c64")
     ) {
-      return { value: value as JsValue<"c32" | "c64" | "point32" | "point64"> }
+      return {
+        value: value as JsValue<"c32" | "c64" | "point32" | "point64">,
+        paper: expr.sheet.paper,
+        expr,
+      }
     }
   },
   plot2d(data, paper) {
@@ -38,5 +48,42 @@ export const EXT_POINT = defineExt({
   },
   layer() {
     return 2
+  },
+  drag: {
+    start(data, at) {
+      if (data.value.list !== false) {
+        return
+      }
+      if (
+        data.paper.canvasDistance(at, unpt(data.value.value)) <=
+        12 * data.paper.scale
+      ) {
+        return {
+          expr: data.expr,
+          paper: data.paper,
+          name:
+            data.expr.field.ast.type == "binding" ?
+              data.expr.field.ast.name
+            : null,
+        }
+      }
+    },
+    move(data, to) {
+      const { block } = data.expr.field
+      block.clear()
+      if (data.name) {
+        CmdVar.leftOf(block.cursor(R), data.name, data.expr.field.options)
+        new OpEq(false).insertAt(block.cursor(R), L)
+      }
+      const inner = new Block(null)
+      new CmdBrack("(", ")", null, inner).insertAt(block.cursor(R), L)
+      const display = new Display(inner.cursor(R), frac(10, 1))
+      display.value(to.x)
+      new CmdComma().insertAt(inner.cursor(R), L)
+      display.value(to.y)
+      data.expr.field.sel = data.expr.field.block.cursor(R).selection()
+      data.expr.field.queueAstUpdate()
+    },
+    end() {},
   },
 })

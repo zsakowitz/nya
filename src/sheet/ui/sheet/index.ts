@@ -26,9 +26,7 @@ export class Sheet {
   readonly helpers = new GlslHelpers()
   readonly scope: Scope
   readonly regl: Regl
-
   readonly exprs: Expr[] = []
-  readonly exprsByLayer: Expr[] = []
 
   readonly el
   readonly elExpressions = h("flex flex-col")

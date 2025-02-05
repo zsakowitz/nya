@@ -277,8 +277,14 @@ export class FieldComputed extends Field {
 
   onAfterChange(wasChangeCanceled: boolean): void {
     super.onAfterChange(wasChangeCanceled)
+    if (!wasChangeCanceled) {
+      this.queueAstUpdate()
+    }
+  }
+
+  queueAstUpdate() {
     if (!this.linked) return
-    if (wasChangeCanceled || this.block.latex() == this._latex) return
+    if (this.block.latex() == this._latex) return
     this.dirtyAst = this.dirtyValue = true
     if (this.scope) {
       this.scope.queueUpdate()
