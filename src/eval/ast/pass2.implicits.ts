@@ -1,3 +1,4 @@
+import { L } from "../../field/model"
 import {
   getPrecedence,
   isValueToken,
@@ -137,6 +138,9 @@ export function pass2_implicits(tokens: Node[]): Node[] {
       const last = signs[signs.length - 1]
       if (last?.value == "+" || last?.value == "-") {
         value.value = last.value + value.value
+        if (value.span) {
+          value.span[L] = "span" in last ? last.span[L] : value.span[L]
+        }
         signs.pop()
       }
     }

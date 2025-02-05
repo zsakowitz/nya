@@ -16,6 +16,8 @@ import { FN_DEBUGPOINT } from "./fn/debugpoint"
 import { FN_FIRSTVALID } from "./fn/firstvalid"
 import { FN_CIRCLE } from "./fn/geo/circle"
 import { FN_DISTANCE } from "./fn/geo/distance"
+import { FN_GLIDER } from "./fn/geo/glider"
+import { FN_INTERSECTION } from "./fn/geo/intersection"
 import { FN_LINE } from "./fn/geo/line"
 import { FN_MIDPOINT } from "./fn/geo/midpoint"
 import { FN_PARALLEL } from "./fn/geo/parallel"
@@ -77,6 +79,8 @@ export const FNS: Record<string, Fn> = {
   midpoint: FN_MIDPOINT,
   parallel: FN_PARALLEL,
   distance: FN_DISTANCE,
+  intersection: FN_INTERSECTION,
+  glider: FN_GLIDER,
 }
 Object.setPrototypeOf(FNS, null)
 

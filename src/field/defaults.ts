@@ -146,7 +146,7 @@ export const autos = new WordMap<Init>([
   ["sum", CmdBig],
   ["prod", CmdBig],
   ["coprod", CmdBig],
-  ["int", CmdInt],
+  ["integral", CmdInt],
 
   // Additional commands
   ["matrix", CmdMatrix],
