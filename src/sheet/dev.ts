@@ -17,13 +17,12 @@ function expr(source: { raw: readonly string[] }) {
   return expr
 }
 
-expr`A=\left(.4,.5\right)`
+expr`A=\left(0.665,-0.149\right)`
 expr`B=\left(0,0\right)`
 expr`C=\left(.3,.4\right)`
 show(
-  expr`\begin{cases}\operatorname{rgb}\left(255,128,128\right)&\left|z-A\right|=\operatorname{min}\left(\left|z-A\right|,\left|z-B\right|,\left|z-C\right|\right)\\\operatorname{rgb}\left(128,255,128\right)&\left|z-B\right|=\operatorname{min}\left(\left|z-A\right|,\left|z-B\right|,\left|z-C\right|\right)\\\operatorname{rgb}\left(128,128,255\right)&\end{cases}\operatorname{with}z=\left(\operatorname{iterate}^{10}z\to z-\frac{\left(z-A\right)\cdot \left(z-B\right)\cdot \left(z-C\right)}{3z^{2}-2\cdot \left(A+B+C\right)z+\left(AB+BC+CA\right)}\operatorname{from}z=\frac{p}{1}\right)\operatorname{with}\begin{list}A=A.x+iA.y\\B=B.x+iB.y\\C=C.x+iC.y\end{list}`,
+  expr`\begin{cases}\operatorname{rgb}\left(255,128,128\right)&\left|z-A\right|=\operatorname{min}\left(\left|z-A\right|,\left|z-B\right|,\left|z-C\right|\right)\\\operatorname{rgb}\left(128,255,128\right)&\left|z-B\right|=\operatorname{min}\left(\left|z-A\right|,\left|z-B\right|,\left|z-C\right|\right)\\\operatorname{rgb}\left(128,128,255\right)&\end{cases}\operatorname{with}z=\left(\operatorname{iterate}^{20}z\to z-\frac{\left(z-A\right)\cdot \left(z-B\right)\cdot \left(z-C\right)}{3z^{2}-2\cdot \left(A+B+C\right)z+\left(AB+BC+CA\right)}\operatorname{from}z=\frac{p}{1}\right)\operatorname{with}\begin{list}A=A.x+iA.y\\B=B.x+iB.y\\C=C.x+iC.y\end{list}`,
 )
-expr`parallel\left(Q,C\right)`
 expr`q_2=0.1base2`
 expr`q_4=0.\digit q\digit 5base36`
 show(
