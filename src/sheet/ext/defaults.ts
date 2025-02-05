@@ -1,8 +1,8 @@
 import { Exts } from "."
-import { EXT_POINT } from "./exts/00-point"
-import { EXT_SEGMENT } from "./exts/00-segment"
-import { EXT_EVAL } from "./exts/01-eval"
-import { EXT_GLSL } from "./exts/02-shader"
+import { EXT_POINT } from "./exts/01-point"
+import { EXT_SEGMENT } from "./exts/01-segment"
+import { EXT_EVAL } from "./exts/02-eval"
+import { EXT_GLSL } from "./exts/03-shader"
 
 export const exts = new Exts([
   EXT_POINT,
