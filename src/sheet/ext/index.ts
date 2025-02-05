@@ -1,9 +1,9 @@
 import type { GlslHelpers, GlslResult } from "../../eval/lib/fn"
 import { Expr } from "../ui/expr"
-import type { Paper } from "../ui/paper"
+import type { Paper, Point } from "../ui/paper"
 
 /** An extension to an expression in the sheet interface. */
-export interface Ext<T extends {}> {
+export interface Ext<T extends {}, U extends {}> {
   /**
    * Attempts to use this extension on a {@linkcode Expr}. May result in:
    *
@@ -16,18 +16,39 @@ export interface Ext<T extends {}> {
   destroy?(data: T): void
   aside?(data: T): HTMLElement | undefined
   el?(data: T): HTMLElement | undefined
+
   plot2d?(data: T, paper: Paper): void
   plotGl?(data: T, helpers: GlslHelpers): GlslResult | undefined
+
+  /**
+   * Higher `layer` values are higher in the draw stack. When ties are
+   * encountered, later expressions are plotted higher.
+   *
+   * Extensions with higher layers also take precedence for hover and drag
+   * operations.
+   *
+   * GLSL plots are plotted below all 2D plots, despite the layer of the
+   * individual expressions.
+   */
+  layer?(data: T): number | undefined
+
+  drag?: {
+    start(data: T, at: Point): U | null | undefined
+    move(data: U, to: Point): void
+    end(data: U, at: Point): void
+  }
 }
 
-export function defineExt<T extends {}>(ext: Ext<T>) {
+export type AnyExt = Ext<{}, {}>
+
+export function defineExt<T extends {}, U extends {}>(ext: Ext<T, U>) {
   return ext
 }
 
 export class Exts {
-  constructor(readonly exts: Ext<{}>[] = []) {}
+  constructor(readonly exts: AnyExt[] = []) {}
 
-  add(ext: Ext<{}>) {
+  add(ext: AnyExt) {
     this.exts.push(ext)
     return this
   }
@@ -39,7 +60,11 @@ export class Exts {
   }
 }
 
-/** Useful for persisting init-once values based on an {@linkcode Expr}. */
+/**
+ * Useful for persisting values which should only be initialized once per
+ * {@linkcode Expr}. Essentially a thin wrapper over {@linkcode WeakMap} with
+ * auto-initialization designed specifically for {@linkcode Expr}.
+ */
 export class Store<T extends {}> {
   data = new WeakMap<Expr, T>()
 

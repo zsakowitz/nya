@@ -7,7 +7,7 @@ import type { JsValue, SReal } from "../../../eval/ty"
 import { outputBase } from "../../../eval/ty/display"
 import { fa } from "../../../field/fa"
 import { h } from "../../../jsx"
-import type { Ext } from "../../ext"
+import type { AnyExt } from "../../ext"
 import type { Sheet } from "../sheet"
 import { Field } from "./field"
 
@@ -17,7 +17,7 @@ const ID_P = id({ value: "p" })
 
 export type ExprState =
   | { ok: false; reason: string }
-  | { ok: true; ext: Ext<{}> | null; data: {} }
+  | { ok: true; ext: AnyExt | null; data: {} }
 
 export class Expr {
   readonly field
@@ -95,7 +95,10 @@ export class Expr {
     }
   }
 
+  layer = 0
   compute() {
+    let destroyed = false
+
     try {
       this.computeJs()
 
@@ -105,7 +108,9 @@ export class Expr {
           if (this.state.ok && this.state.ext && this.state.ext != ext) {
             this.state.ext.destroy?.(this.state.data)
           }
+          destroyed = true
           this.state = { ok: true, ext, data }
+          this.layer = ext.layer?.(data) ?? 0
           if (ext.plot2d) {
             this.sheet.paper.queue()
           }
@@ -113,11 +118,21 @@ export class Expr {
         }
       }
 
+      if (this.state.ok && this.state.ext) {
+        this.state.ext.destroy?.(this.state.data)
+      }
+      destroyed = true
       this.state = { ok: true, ext: null, data: {} }
+      this.layer = 0
       this.elOutput.appendChild(h(JSON.stringify(this.state)))
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e)
       console.warn("[compute]", msg)
+      if (!destroyed) {
+        if (this.state.ok && this.state.ext) {
+          this.state.ext.destroy?.(this.state.data)
+        }
+      }
       this.state = { ok: false, reason: msg }
     }
   }

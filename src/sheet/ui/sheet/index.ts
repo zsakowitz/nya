@@ -26,7 +26,9 @@ export class Sheet {
   readonly helpers = new GlslHelpers()
   readonly scope: Scope
   readonly regl: Regl
+
   readonly exprs: Expr[] = []
+  readonly exprsByLayer: Expr[] = []
 
   readonly el
   readonly elExpressions = h("flex flex-col")
@@ -52,11 +54,11 @@ export class Sheet {
     makeInteractive(this.paper, this.handlers)
     createDrawAxes(this.paper)
     this.paper.drawFns.push(() => {
-      for (const e of this.exprs) {
-        if (e.state.ok) {
-          if (e.state.ext?.plot2d) {
-            e.state.ext.plot2d(e.state.data, this.paper)
-          }
+      for (const e of this.exprs
+        .filter((x) => x.state.ok && x.state.ext?.plot2d != null)
+        .sort((a, b) => b.layer - a.layer)) {
+        if (e.state.ok && e.state.ext?.plot2d) {
+          e.state.ext.plot2d(e.state.data, this.paper)
         }
       }
     })
@@ -211,7 +213,11 @@ export class Sheet {
 
   private program: regl.DrawCommand | undefined
   private checkGlsl() {
-    const compiled = this.exprs.map((x) => x.glsl).filter((x) => x != null)
+    const compiled = this.exprs
+      .filter((x) => x.glsl != null)
+      .sort((a, b) => b.layer - a.layer)
+      .map((x) => x.glsl!)
+
     if (compiled.length == 0) {
       this.program = undefined
       return
