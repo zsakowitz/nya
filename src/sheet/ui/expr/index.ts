@@ -47,7 +47,7 @@ export class Expr {
     this.el.append(
       // grey side of expression
       h(
-        "inline-flex bg-[--nya-bg-sidebar] flex-col p-0.5 border-r border-[--nya-border] font-sans text-[--nya-expr-index] text-[65%] leading-none [:focus-within>&]:bg-[--nya-expr-focus] [:focus-within>&]:text-[--nya-expr-focus-index] [:focus-within>&]:border-[--nya-expr-focus]",
+        "inline-flex bg-[--nya-bg-sidebar] flex-col p-0.5 border-r border-[--nya-border] font-sans text-[--nya-expr-index] text-[65%] leading-none [:focus-within>&]:bg-[--nya-expr-focus] [:focus-within>&]:text-[--nya-expr-focus-index] [:focus-within>&]:border-[--nya-expr-focus] [:active>&]:bg-[--nya-expr-focus] [:active>&]:text-[--nya-expr-focus-index] [:active>&]:border-[--nya-expr-focus]",
         (this.elIndex = h("")),
         fa(
           faWarning,
@@ -61,7 +61,7 @@ export class Expr {
 
       // focus ring
       h(
-        "hidden absolute -inset-y-px inset-x-0 [:first-child>&]:top-0 border-2 border-[--nya-expr-focus] [:focus-within>&]:block pointer-events-none",
+        "hidden absolute -inset-y-px inset-x-0 [:first-child>&]:top-0 border-2 border-[--nya-expr-focus] pointer-events-none [:focus-within>&]:block [:active>&]:block",
       ),
     )
     this.sheet.elExpressions.appendChild(this.el)

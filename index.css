@@ -2217,6 +2217,22 @@ body {
   height: 1.5rem;
 }
 
+:active>.\[\:active\>\&\]\:block {
+  display: block;
+}
+
+:active>.\[\:active\>\&\]\:border-\[--nya-expr-focus\] {
+  border-color: var(--nya-expr-focus);
+}
+
+:active>.\[\:active\>\&\]\:bg-\[--nya-expr-focus\] {
+  background-color: var(--nya-expr-focus);
+}
+
+:active>.\[\:active\>\&\]\:text-\[--nya-expr-focus-index\] {
+  color: var(--nya-expr-focus-index);
+}
+
 :first-child>.\[\:first-child\>\&\]\:top-0 {
   top: 0px;
 }

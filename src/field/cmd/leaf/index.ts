@@ -42,7 +42,7 @@ export abstract class Leaf extends Command<[]> {
     // Never called, since `Leaf` has no blocks
   }
 
-  focus(this: Command, x: number, _y: number): Cursor {
+  focus(x: number, _y: number): Cursor {
     return focusEdge(this, x)
   }
 }
