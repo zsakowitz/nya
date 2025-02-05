@@ -1,4 +1,4 @@
-import { defineExt } from ".."
+import { defineExt, Store } from ".."
 import { each, type JsValue } from "../../../eval/ty"
 import { frac, num, unpt } from "../../../eval/ty/create"
 import { Display } from "../../../eval/ty/display"
@@ -7,6 +7,8 @@ import { CmdComma } from "../../../field/cmd/leaf/comma"
 import { CmdVar } from "../../../field/cmd/leaf/var"
 import { CmdBrack } from "../../../field/cmd/math/brack"
 import { Block, L, R } from "../../../field/model"
+
+const color = new Store(() => ({ x: "#6042a6" }))
 
 export const EXT_POINT = defineExt({
   data(expr) {
@@ -41,7 +43,7 @@ export const EXT_POINT = defineExt({
       ctx.fill()
 
       ctx.beginPath()
-      ctx.fillStyle = "#6042a6"
+      ctx.fillStyle = color.get(data.expr).x
       ctx.arc(offset.x, offset.y, 3.5 * scale, 0, 2 * Math.PI)
       ctx.fill()
     }
@@ -68,6 +70,9 @@ export const EXT_POINT = defineExt({
         }
       }
     },
+    cursor() {
+      return "move"
+    },
     move(data, to) {
       const { block } = data.expr.field
       block.clear()
@@ -85,5 +90,27 @@ export const EXT_POINT = defineExt({
       data.expr.field.queueAstUpdate()
     },
     end() {},
+  },
+  hover: {
+    on(data, at) {
+      if (data.value.list !== false) {
+        return
+      }
+      if (
+        data.paper.canvasDistance(at, unpt(data.value.value)) <=
+        12 * data.paper.scale
+      ) {
+        color.get(data.expr).x = "green"
+        data.paper.queue()
+        return data
+      }
+    },
+    cursor() {
+      return "move"
+    },
+    off(data) {
+      color.get(data.expr).x = "#6042a6"
+      data.paper.queue()
+    },
   },
 })

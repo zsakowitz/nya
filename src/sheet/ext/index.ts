@@ -2,8 +2,18 @@ import type { GlslHelpers, GlslResult } from "../../eval/lib/fn"
 import { Expr } from "../ui/expr"
 import type { Paper, Point } from "../ui/paper"
 
+export type CursorStyle = "default" | "pointer" | "text" | "move"
+
+export interface ExtPointers<T, U extends {}> {
+  /** Returning a non-nullish value captures the event. */
+  start(data: T, at: Point): U | null | undefined
+  cursor(data: U): CursorStyle
+  move(data: U, to: Point): void
+  end(data: U, at: Point): void
+}
+
 /** An extension to an expression in the sheet interface. */
-export interface Ext<T extends {}, U extends {}> {
+export interface Ext<T extends {}, U extends {}, V extends {}> {
   /**
    * Attempts to use this extension on a {@linkcode Expr}. May result in:
    *
@@ -33,15 +43,26 @@ export interface Ext<T extends {}, U extends {}> {
   layer?(data: T): number | undefined
 
   drag?: {
+    /** Returning a non-nullish value captures the event. */
     start(data: T, at: Point): U | null | undefined
+    cursor(data: U): CursorStyle
     move(data: U, to: Point): void
     end(data: U, at: Point): void
   }
+
+  hover?: {
+    /** Returning a non-nullish value captures the event. */
+    on(data: T, at: Point): V | null | undefined
+    cursor(data: V): CursorStyle
+    off(data: V): void
+  }
 }
 
-export type AnyExt = Ext<{}, {}>
+export type AnyExt = Ext<{}, {}, {}>
 
-export function defineExt<T extends {}, U extends {}>(ext: Ext<T, U>) {
+export function defineExt<T extends {}, U extends {}, V extends {}>(
+  ext: Ext<T, U, V>,
+) {
   return ext
 }
 

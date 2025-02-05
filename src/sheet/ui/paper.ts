@@ -494,26 +494,33 @@ function onScroll(paper: Paper) {
 }
 
 export interface PointerHandlers<
-  T,
+  T extends {},
+  U extends {},
   X extends null | undefined = null | undefined,
 > {
   onDragStart(at: Point): T | X
   onDragMove(to: Point, data: T): void
   onDragEnd(to: Point, data: T): void
 
-  /** Called if a pointer which isn't down is brought over the {@linkcode Paper}. */
-  onHover(at: Point): void
+  onHoverStart(at: Point): U | null | undefined
+  /** Return `true` to continue capturing the hover event. */
+  onHoverMove(to: Point, data: U): boolean
+  onHoverEnd(to: Point, data: U): void
+
+  /** Called when a pointer transitions from hovering to dragging. */
+  onUpgrade(at: Point, data: U): T | X
 }
 
 /**
  * Registers handlers on a {@linkcode Paper}'s canvas. Passed points will refer
  * to offsetX/offsetY.
  */
-function registerOffsetHandlers<T>(
+function registerOffsetHandlers<T extends {}, U extends {}>(
   paper: Paper,
-  hx: PointerHandlers<T, never>,
+  hx: PointerHandlers<T, U, never>,
 ) {
-  const ptrs = new Map<number, [start: Point, data: T]>()
+  const dragged = new Map<number, T>()
+  const hovered = new Map<number, U>()
 
   paper.el.addEventListener("contextmenu", (event) => {
     event.preventDefault()
@@ -524,12 +531,16 @@ function registerOffsetHandlers<T>(
   paper.el.addEventListener(
     "pointerdown",
     (event) => {
-      event.pointerId
       paper.el.setPointerCapture(event.pointerId)
       event.preventDefault()
       const pt: Point = { x: event.offsetX, y: event.offsetY }
-      const data = hx.onDragStart(pt)
-      ptrs.set(event.pointerId, [pt, data])
+
+      const hoverData = hovered.get(event.pointerId)
+      const dragData =
+        hoverData == null ?
+          hx.onDragStart(pt)
+        : (hovered.delete(event.pointerId), hx.onUpgrade(pt, hoverData))
+      dragged.set(event.pointerId, dragData)
     },
     { passive: false },
   )
@@ -540,11 +551,23 @@ function registerOffsetHandlers<T>(
       event.preventDefault()
       const pt: Point = { x: event.offsetX, y: event.offsetY }
 
-      const initial = ptrs.get(event.pointerId)
-      if (initial) {
-        hx.onDragMove(pt, initial[1])
-      } else {
-        hx.onHover(pt)
+      const dragData = dragged.get(event.pointerId)
+      if (dragData != null) {
+        hx.onDragMove(pt, dragData)
+        return
+      }
+
+      const hoverMoveData = hovered.get(event.pointerId)
+      if (hoverMoveData != null) {
+        const stayCaptured = hx.onHoverMove(pt, hoverMoveData)
+        if (stayCaptured) return
+
+        hovered.delete(event.pointerId)
+      }
+
+      const hoverData = hx.onHoverStart(pt)
+      if (hoverData != null) {
+        hovered.set(event.pointerId, hoverData)
       }
     },
     { passive: false },
@@ -553,10 +576,28 @@ function registerOffsetHandlers<T>(
   paper.el.addEventListener("pointerup", (event) => {
     event.preventDefault()
     const pt: Point = { x: event.offsetX, y: event.offsetY }
-    const initial = ptrs.get(event.pointerId)
-    if (!initial) return
-    hx.onDragEnd(pt, initial[1])
-    ptrs.delete(event.pointerId)
+
+    const hoverData = hovered.get(event.pointerId)
+    if (hoverData != null) {
+      hovered.delete(event.pointerId)
+      hx.onHoverEnd(pt, hoverData)
+    }
+
+    const dragData = dragged.get(event.pointerId)
+    if (dragData != null) {
+      dragged.delete(event.pointerId)
+      hx.onDragEnd(pt, dragData)
+    }
+  })
+
+  paper.el.addEventListener("pointerleave", (event) => {
+    const pt: Point = { x: event.offsetX, y: event.offsetY }
+
+    const hoverData = hovered.get(event.pointerId)
+    if (hoverData != null) {
+      hovered.delete(event.pointerId)
+      hx.onHoverEnd(pt, hoverData)
+    }
   })
 }
 
@@ -564,13 +605,16 @@ function registerOffsetHandlers<T>(
  * Handlers are passed points in the paper's coordinate system, not in any DOM
  * system.
  */
-function registerPanAndZoom<T>(paper: Paper, hx: PointerHandlers<T>) {
+function registerPanAndZoom<T extends {}, U extends {}>(
+  paper: Paper,
+  hx: PointerHandlers<T, U>,
+) {
   let nextId = 0
   let allowMovement = false
   const ptrs = new Map<number, DataSelf>()
 
   type DataSelf = { type: "self"; id: number; from: Point; offset: Point }
-  type Data = { type: "user"; user: NonNullable<T> } | DataSelf
+  type DataDrag = { type: "user"; user: T } | DataSelf
 
   let previousDistance: number | undefined
 
@@ -619,7 +663,7 @@ function registerPanAndZoom<T>(paper: Paper, hx: PointerHandlers<T>) {
     }
   }
 
-  registerOffsetHandlers<Data>(paper, {
+  registerOffsetHandlers<DataDrag, U>(paper, {
     onDragStart(at) {
       const paperAt = paper.offsetToPaper(at)
       const user = hx.onDragStart(paperAt)
@@ -657,13 +701,40 @@ function registerPanAndZoom<T>(paper: Paper, hx: PointerHandlers<T>) {
       onDragMove(to, data)
       ptrs.delete(data.id)
     },
-    onHover(at) {
-      hx.onHover(paper.offsetToPaper(at))
+    onHoverStart(at) {
+      return hx.onHoverStart(paper.offsetToPaper(at))
+    },
+    onHoverMove(to, data) {
+      return hx.onHoverMove(paper.offsetToPaper(to), data)
+    },
+    onHoverEnd(to, data) {
+      hx.onHoverEnd(paper.offsetToPaper(to), data)
+    },
+    onUpgrade(at, hoverData) {
+      const paperAt = paper.offsetToPaper(at)
+
+      const user = hx.onUpgrade(paperAt, hoverData)
+      if (user != null) return { type: "user", user }
+
+      const data: DataSelf = {
+        type: "self",
+        id: ++nextId,
+        from: paperAt,
+        offset: at,
+      }
+      ptrs.set(data.id, data)
+      if (ptrs.size == 1) {
+        allowMovement = true
+      }
+      return data
     },
   })
 }
 
-export function makeInteractive<T>(paper: Paper, hx: PointerHandlers<T>) {
+export function makeInteractive<T extends {}, U extends {}>(
+  paper: Paper,
+  hx: PointerHandlers<T, U>,
+) {
   onWheel(paper)
   onScroll(paper)
   registerPanAndZoom(paper, hx)
