@@ -13,6 +13,7 @@ export interface Ext<T extends {}> {
    */
   data(expr: Expr): T | null | undefined
 
+  aside?(data: T): HTMLElement | undefined
   el?(data: T): HTMLElement | undefined
   plot2d?(data: T, paper: Paper): void
   plotGl?(data: T, helpers: GlslHelpers): GlslResult | undefined

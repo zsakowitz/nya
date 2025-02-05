@@ -1,22 +1,41 @@
 import { defineExt, Store } from ".."
 import { glsl } from "../../../eval/glsl"
 import { OP_PLOT } from "../../../eval/ops/op/plot"
-import { hx } from "../../../jsx"
+import { h, hx } from "../../../jsx"
+import { circle } from "../../ui/expr/circle"
 
 const store = new Store((expr) => {
   let show = false
-  const field = hx("input", { type: "checkbox" })
+
+  const circEmpty = circle("empty")
+  const circShader = circle("shaderon")
+  circShader.classList.add("hidden")
+
+  const field = hx("input", { type: "checkbox", class: "sr-only" })
   field.checked = show
-  field.onchange = () => {
-    show = field.checked
-    expr.display()
-  }
-  const el = hx("label", "", "show?", field)
+  field.addEventListener("input", () => setShow(field.checked))
+
+  const el = hx(
+    "label",
+    "",
+    field,
+    h("sr-only", "plot this shader?"),
+    circEmpty,
+    circShader,
+  )
+
   return {
     el,
     get show() {
       return show
     },
+  }
+
+  function setShow(v: boolean) {
+    show = v
+    circEmpty.classList.toggle("hidden", show)
+    circShader.classList.toggle("hidden", !show)
+    expr.display()
   }
 })
 
@@ -32,7 +51,7 @@ export const EXT_GLSL = defineExt({
       },
     }
   },
-  el(data) {
+  aside(data) {
     return data.el
   },
   plotGl(data) {

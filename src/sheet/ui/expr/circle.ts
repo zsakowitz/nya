@@ -1,10 +1,10 @@
 import { h } from "../../../jsx"
 
-export type CircleKind = "shader" | "empty"
+export type CircleKind = "shaderon" | "empty"
 
-export function circle(kind: CircleKind) {
+export function circle(kind: CircleKind): HTMLSpanElement {
   switch (kind) {
-    case "shader":
+    case "shaderon":
       // prettier-ignore
       return h(
         "relative block bg-white size-8 rounded-full mx-0.5 overflow-clip group-focus-within:outline outline-2 outline-blue-500",

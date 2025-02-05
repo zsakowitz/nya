@@ -24,6 +24,7 @@ export class Expr {
   readonly el
   readonly elIndex
   readonly elOutput
+  readonly elAside
   readonly elError
 
   state: ExprState = { ok: false, reason: "Not computed yet." }
@@ -52,6 +53,7 @@ export class Expr {
           faWarning,
           "hidden mx-auto size-6 fill-[--nya-icon-error] [.nya-expr-error_&]:block",
         ),
+        (this.elAside = h("contents")),
       ),
 
       // main expression body
@@ -116,6 +118,21 @@ export class Expr {
     }
   }
 
+  clearEls() {
+    while (this.elOutput.firstChild) {
+      this.elOutput.firstChild.remove()
+    }
+    while (this.elAside.firstChild) {
+      this.elAside.firstChild.remove()
+    }
+  }
+
+  setError(reason: string) {
+    this.clearEls()
+    this.elError.classList.remove("hidden")
+    this.elError.textContent = reason
+  }
+
   glsl: GlslResult | undefined
   display() {
     if (this.glsl) {
@@ -124,19 +141,13 @@ export class Expr {
     }
 
     if (!this.state.ok) {
-      while (this.elOutput.firstChild) {
-        this.elOutput.firstChild.remove()
-      }
-      this.elError.classList.remove("hidden")
-      this.elError.textContent = this.state.reason
+      this.setError(this.state.reason)
       return
     }
 
     if (this.state.ext == null) {
+      this.clearEls()
       this.elError.classList.add("hidden")
-      while (this.elOutput.firstChild) {
-        this.elOutput.firstChild.remove()
-      }
       return
     }
 
@@ -144,30 +155,45 @@ export class Expr {
       this.elError.classList.add("hidden")
       this.el.classList.remove("nya-expr-error")
 
-      const el = this.state.ext.el?.(this.state.data)
-      if (el != this.elOutput.firstChild) {
-        while (this.elOutput.firstChild) {
-          this.elOutput.firstChild.remove()
+      // .aside()
+      {
+        const aside = this.state.ext.aside?.(this.state.data)
+        if (aside != this.elAside.firstChild) {
+          while (this.elAside.firstChild) {
+            this.elAside.firstChild.remove()
+          }
+          if (aside) {
+            this.elAside.appendChild(aside)
+          }
         }
       }
-      if (el) {
-        this.elOutput.appendChild(el)
+
+      // .el()
+      {
+        const el = this.state.ext.el?.(this.state.data)
+        if (el != this.elOutput.firstChild) {
+          while (this.elOutput.firstChild) {
+            this.elOutput.firstChild.remove()
+          }
+          if (el) {
+            this.elOutput.appendChild(el)
+          }
+        }
       }
 
-      const gl = this.state.ext.plotGl?.(this.state.data, this.sheet.helpers)
-      if (gl) {
-        this.glsl = gl
-        this.sheet.queueGlsl()
+      // .plotGl()
+      {
+        const gl = this.state.ext.plotGl?.(this.state.data, this.sheet.helpers)
+        if (gl) {
+          this.glsl = gl
+          this.sheet.queueGlsl()
+        }
       }
     } catch (e) {
-      while (this.elOutput.firstChild) {
-        this.elOutput.firstChild.remove()
-      }
       const msg = e instanceof Error ? e.message : String(e)
       console.warn("[display]", msg)
-      this.elError.classList.remove("hidden")
-      this.elError.textContent = msg
       this.state = { ok: false, reason: msg }
+      this.setError(msg)
     }
   }
 }

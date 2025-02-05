@@ -1322,6 +1322,11 @@ video {
   background-color: rgb(253 224 71 / var(--tw-bg-opacity, 1));
 }
 
+.bg-slate-200 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(226 232 240 / var(--tw-bg-opacity, 1));
+}
+
 .bg-gradient-to-b {
   background-image: linear-gradient(to bottom, var(--tw-gradient-stops));
 }
