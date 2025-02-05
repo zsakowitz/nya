@@ -108,6 +108,9 @@ export class Expr {
           if (this.state.ok && this.state.ext && this.state.ext != ext) {
             this.state.ext.destroy?.(this.state.data)
           }
+          if (this.state.ok && this.state.ext?.plot2d) {
+            this.sheet.paper.queue()
+          }
           destroyed = true
           this.state = { ok: true, ext, data }
           this.layer = ext.layer?.(data) ?? 0
@@ -121,6 +124,9 @@ export class Expr {
       if (this.state.ok && this.state.ext) {
         this.state.ext.destroy?.(this.state.data)
       }
+      if (this.state.ok && this.state.ext?.plot2d) {
+        this.sheet.paper.queue()
+      }
       destroyed = true
       this.state = { ok: true, ext: null, data: {} }
       this.layer = 0
@@ -131,6 +137,9 @@ export class Expr {
       if (!destroyed) {
         if (this.state.ok && this.state.ext) {
           this.state.ext.destroy?.(this.state.data)
+        }
+        if (this.state.ok && this.state.ext?.plot2d) {
+          this.sheet.paper.queue()
         }
       }
       this.state = { ok: false, reason: msg }

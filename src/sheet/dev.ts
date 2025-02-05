@@ -16,8 +16,11 @@ function expr(source: { raw: readonly string[] }) {
   return expr
 }
 
-expr`q_3=\left(.4,.5\right)`
-expr`segment\left(\left(0,0\right),\left(2,3\right)\right)`
+expr`A=\left(.4,.5\right)`
+expr`B=\left(0,0\right)`
+expr`C=segment\left(A,B\right)`
+expr`D=\left(.3,.4\right)`
+expr`parallel\left(C,D\right)`
 expr`q_2=0.1base2`
 expr`q_4=0.\digit q\digit 5base36`
 expr`a\cdot \left(valida\and y>0\and -1<x<0\right)witha=oklch\left(q_2,y,360x\right)`
@@ -26,7 +29,7 @@ expr`rgb\left(a\left[1\right],a\left[2\right],a\left[3\right]\right)witha=255\cd
 expr`hsv\left(360\left|iterate^{20}z\to z^{2}+pwhile\left|z\right|\leq 2from\frac{0i}{1}\right|,1,1\right)`
 expr`firstvalid\left(oklch\left(.4,y,360x\right),oklch\left(.5,y,360x\right),oklch\left(.6,y,360x\right),oklch\left(.7,y,360x\right),oklch\left(.8,y,360x\right),oklch\left(.9,y,360x\right),oklch\left(.95,y,360x\right)\right)`
 expr`\begin{cases}rgb\left(128,255,0\right)&\left|p\right|<.5\\rgb\left(255,255,0\right)&y<.7\\rgb\left(0,255,128\right)&\end{cases}`
-expr`e^{i\pi }+1`
+expr`e^{i\pi }`
 expr`2+3`
 expr`\left(4-5\right)\odot \left(3+9i\right)`
 expr`\frac{2}{3}i-\sqrt{4}`
