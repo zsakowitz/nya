@@ -2,5 +2,11 @@ import { Exts } from "."
 import { EXT_POINT } from "./exts/00-point"
 import { EXT_SEGMENT } from "./exts/00-segment"
 import { EXT_EVAL } from "./exts/01-eval"
+import { EXT_GLSL } from "./exts/02-shader"
 
-export const exts = new Exts([EXT_POINT, EXT_SEGMENT, EXT_EVAL]).freeze()
+export const exts = new Exts([
+  EXT_POINT,
+  EXT_SEGMENT,
+  EXT_EVAL,
+  EXT_GLSL,
+]).freeze()

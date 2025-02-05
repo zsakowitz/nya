@@ -1,3 +1,4 @@
+import type { GlslHelpers, GlslResult } from "../../eval/lib/fn"
 import { Expr } from "../ui/expr"
 import type { Paper } from "../ui/paper"
 
@@ -14,7 +15,7 @@ export interface Ext<T extends {}> {
 
   el?(data: T): HTMLElement | undefined
   plot2d?(data: T, paper: Paper): void
-  // plotGl?(data: T, helpers: GlslHelpers): GlslResult | null
+  plotGl?(data: T, helpers: GlslHelpers): GlslResult | undefined
 }
 
 export function defineExt<T extends {}>(ext: Ext<T>) {

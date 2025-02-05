@@ -1,7 +1,10 @@
 import type { Regl } from "regl"
 import regl from "regl"
-import { GlslHelpers } from "../../../eval/lib/fn"
+import { GlslContext, GlslHelpers } from "../../../eval/lib/fn"
+import { declareAddR64 } from "../../../eval/ops/op/add"
+import { declareMulR64 } from "../../../eval/ops/op/mul"
 import { num, real } from "../../../eval/ty/create"
+import { splitRaw } from "../../../eval/ty/split"
 import type { Options } from "../../../field/options"
 import { h, hx } from "../../../jsx"
 import { Scope } from "../../deps"
@@ -131,9 +134,11 @@ export class Sheet {
         this.elExpressions.clientWidth + "px",
       ),
     ).observe(this.elExpressions)
+
+    this.startGlslLoop()
   }
 
-  checkIndices() {
+  private checkIndices() {
     for (let i = 0; i < this.exprs.length; i++) {
       const expr = this.exprs[i]!
       expr.elIndex.textContent = i + 1 + ""
@@ -141,13 +146,126 @@ export class Sheet {
     this.elNextIndex.textContent = this.exprs.length + 1 + ""
   }
 
-  private _queued = false
+  private _qdIndices = false
   queueIndices() {
-    if (this._queued) return
+    if (this._qdIndices) return
     setTimeout(() => {
-      this._queued = false
+      this._qdIndices = false
       this.checkIndices()
     })
-    this._queued = true
+    this._qdIndices = true
+  }
+
+  private startGlslLoop() {
+    const global = this.regl({
+      attributes: {
+        position: [
+          [-1, 1],
+          [-1, -1],
+          [1, 1],
+          [1, -1],
+          [-1, -1],
+          [1, 1],
+        ],
+      },
+
+      uniforms: {
+        // @ts-expect-error regl requires generics in weird places
+        u_scale: this.regl.prop("u_scale"),
+        // @ts-expect-error
+        u_cx: this.regl.prop("u_cx"),
+        // @ts-expect-error
+        u_cy: this.regl.prop("u_cy"),
+        // @ts-expect-error
+        u_px_per_unit: this.regl.prop("u_px_per_unit"),
+      },
+    })
+
+    let cleared = false
+
+    this.regl.frame(() => {
+      if (!cleared) {
+        this.regl.clear({ color: [0, 0, 0, 0] })
+        cleared = true
+      }
+
+      const program = this.program
+      if (!program) return
+
+      const { xmin, w, ymin, h } = this.paper.bounds()
+      global(
+        {
+          u_scale: splitRaw(w / this.regl._gl.drawingBufferWidth),
+          u_cx: splitRaw(xmin),
+          u_cy: splitRaw(ymin),
+          u_px_per_unit: [
+            ...splitRaw(this.paper.el.clientWidth / w),
+            ...splitRaw(this.paper.el.clientHeight / h),
+          ],
+        },
+        () => program(),
+      )
+      cleared = false
+    })
+  }
+
+  private program: regl.DrawCommand | undefined
+  private checkGlsl() {
+    const compiled = this.exprs.map((x) => x.glsl).filter((x) => x != null)
+    if (compiled.length == 0) {
+      this.program = undefined
+      return
+    }
+
+    declareAddR64(new GlslContext(this.scope.helpers))
+    declareMulR64(new GlslContext(this.scope.helpers))
+    const frag = `#version 300 es
+precision highp float;
+out vec4 color;
+vec4 v_coords;
+uniform vec2 u_scale;
+uniform vec2 u_cx;
+uniform vec2 u_cy;
+uniform vec4 u_px_per_unit;
+vec4 _nya_helper_compose(vec4 base, vec4 added) {
+  if (base.w == 0.) return added;
+  if (added.w == 0.) return base;
+  float w = 1. - (1. - added.w) * (1. - base.w);
+  return vec4(
+    ((added.xyz * added.w / w) + (base.xyz * base.w * (1. - added.w) / w)),
+    w
+  );
+}
+${this.scope.helpers.helpers}void main() {
+vec2 e_tx = vec2(gl_FragCoord.x, 0);
+vec2 e_ty = vec2(gl_FragCoord.y, 0);
+v_coords = vec4(
+  _helper_add_r64(u_cx, _helper_mul_r64(e_tx, u_scale)),
+  _helper_add_r64(u_cy, _helper_mul_r64(e_ty, u_scale))
+);
+${compiled.map((x) => x[0].block).join("")}color = ${compiled.map((x) => x[1]).reduce((a, b) => `_nya_helper_compose(${a},${b})`)};
+      }
+      `
+    this.program = this.regl({
+      frag,
+      vert: `#version 300 es
+precision highp float;
+in vec2 position;
+void main() {
+  gl_Position = vec4(position, 0, 1);
+}
+`,
+      count: 6,
+    })
+  }
+
+  private _qdGlsl = false
+  queueGlsl() {
+    if (this._qdGlsl) return
+    setTimeout(() => {
+      this._qdGlsl = false
+      this.checkGlsl()
+    })
+    this._qdGlsl = true
   }
 }

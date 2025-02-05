@@ -1,6 +1,7 @@
 import { faWarning } from "@fortawesome/free-solid-svg-icons/faWarning"
 import { js } from "../../../eval/js"
 import { id } from "../../../eval/lib/binding"
+import type { GlslResult } from "../../../eval/lib/fn"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "../../../eval/ops/vars"
 import type { JsValue, SReal } from "../../../eval/ty"
 import { outputBase } from "../../../eval/ty/display"
@@ -115,7 +116,13 @@ export class Expr {
     }
   }
 
+  glsl: GlslResult | undefined
   display() {
+    if (this.glsl) {
+      this.glsl = undefined
+      this.sheet.queueGlsl()
+    }
+
     if (!this.state.ok) {
       while (this.elOutput.firstChild) {
         this.elOutput.firstChild.remove()
@@ -145,6 +152,12 @@ export class Expr {
       }
       if (el) {
         this.elOutput.appendChild(el)
+      }
+
+      const gl = this.state.ext.plotGl?.(this.state.data, this.sheet.helpers)
+      if (gl) {
+        this.glsl = gl
+        this.sheet.queueGlsl()
       }
     } catch (e) {
       while (this.elOutput.firstChild) {
