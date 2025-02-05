@@ -7,12 +7,17 @@ import { CmdComma } from "../../../field/cmd/leaf/comma"
 import { CmdVar } from "../../../field/cmd/leaf/var"
 import { CmdBrack } from "../../../field/cmd/math/brack"
 import { Block, L, R } from "../../../field/model"
+import { Transition } from "../../transition"
 
-const color = new Store(() => ({ x: "#6042a6" }))
+const color = new Store(
+  (expr) => new Transition(3.5, () => expr.sheet.paper.queue()),
+)
 
 export const EXT_POINT = defineExt({
   data(expr) {
     const value = expr.js?.value
+
+    color.get(expr)
 
     if (
       value &&
@@ -42,9 +47,10 @@ export const EXT_POINT = defineExt({
       ctx.arc(offset.x, offset.y, 12 * scale, 0, 2 * Math.PI)
       ctx.fill()
 
+      const inner = color.get(data.expr).get()
       ctx.beginPath()
-      ctx.fillStyle = color.get(data.expr).x
-      ctx.arc(offset.x, offset.y, 3.5 * scale, 0, 2 * Math.PI)
+      ctx.fillStyle = "#6042a6"
+      ctx.arc(offset.x, offset.y, inner * scale, 0, 2 * Math.PI)
       ctx.fill()
     }
   },
@@ -60,6 +66,7 @@ export const EXT_POINT = defineExt({
         data.paper.canvasDistance(at, unpt(data.value.value)) <=
         12 * data.paper.scale
       ) {
+        color.get(data.expr).set(12)
         return {
           expr: data.expr,
           paper: data.paper,
@@ -89,7 +96,9 @@ export const EXT_POINT = defineExt({
       data.expr.field.sel = data.expr.field.block.cursor(R).selection()
       data.expr.field.queueAstUpdate()
     },
-    end() {},
+    end(data) {
+      color.get(data.expr).set(3.5)
+    },
   },
   hover: {
     on(data, at) {
@@ -100,8 +109,7 @@ export const EXT_POINT = defineExt({
         data.paper.canvasDistance(at, unpt(data.value.value)) <=
         12 * data.paper.scale
       ) {
-        color.get(data.expr).x = "green"
-        data.paper.queue()
+        color.get(data.expr).set(12)
         return data
       }
     },
@@ -109,8 +117,7 @@ export const EXT_POINT = defineExt({
       return "move"
     },
     off(data) {
-      color.get(data.expr).x = "#6042a6"
-      data.paper.queue()
+      color.get(data.expr).set(3.5)
     },
   },
 })
