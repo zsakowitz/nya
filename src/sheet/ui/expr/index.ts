@@ -96,14 +96,15 @@ export class Expr {
   }
 
   compute() {
-    this.state = { ok: false, reason: "Currently computing." }
-
     try {
       this.computeJs()
 
       for (const ext of this.sheet.exts.exts) {
         const data = ext.data(this)
         if (data != null) {
+          if (this.state.ok && this.state.ext && this.state.ext != ext) {
+            this.state.ext.destroy?.(this.state.data)
+          }
           this.state = { ok: true, ext, data }
           return
         }
