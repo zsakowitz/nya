@@ -1,15 +1,11 @@
 import { defineExt, Store } from ".."
 import type { Node } from "../../../eval/ast/token"
 import { each, type JsValue } from "../../../eval/ty"
-import { frac, num, unpt } from "../../../eval/ty/create"
-import { Display } from "../../../eval/ty/display"
-import { OpEq } from "../../../field/cmd/leaf/cmp"
-import { CmdComma } from "../../../field/cmd/leaf/comma"
-import { OpMinus } from "../../../field/cmd/leaf/op"
-import { CmdVar } from "../../../field/cmd/leaf/var"
-import { CmdBrack } from "../../../field/cmd/math/brack"
-import { Block, L, R, Span } from "../../../field/model"
+import { num, unpt } from "../../../eval/ty/create"
+import { R } from "../../../field/model"
 import { Transition } from "../../transition"
+import { Writer } from "../../write"
+import { EXT_EVAL } from "./02-eval"
 
 const color = new Store(
   (expr) => new Transition(3.5, () => expr.sheet.paper.queue()),
@@ -18,18 +14,6 @@ const color = new Store(
 export function draggerNum(node: Node) {
   if (node.type == "num") {
     return node.span
-  }
-
-  if (
-    node.type == "op" &&
-    !node.b &&
-    node.a.type == "num" &&
-    node.kind == "-" &&
-    node.a.span
-  ) {
-    if (node.a.span[L] instanceof OpMinus) {
-      return new Span(node.a.span.parent, node.a.span[L][L], node.a.span[R])
-    }
   }
 }
 
@@ -47,16 +31,33 @@ export function draggers(node: Node) {
   ) {
     const x = draggerNum(node.value.items[0]!)
     const y = draggerNum(node.value.items[1]!)
-    if (x && y) return { x, y }
+    if (x && y) return { x: new Writer(x), y: new Writer(y) }
     return
   }
 
-  // if (node.type == 'op' && )
+  if (
+    node.type == "op" &&
+    node.kind == "+" &&
+    node.a.type == "num" &&
+    node.a.span &&
+    node.b?.type == "juxtaposed" &&
+    node.b.nodes.length == 2 &&
+    node.b.nodes[0]!.type == "num" &&
+    node.b.nodes[0]!.span &&
+    node.b.nodes[1]!.type == "var" &&
+    node.b.nodes[1]!.kind == "var" &&
+    node.b.nodes[1]!.value == "i" &&
+    !node.b.nodes[1]!.sub &&
+    !node.b.nodes[1]!.sup
+  ) {
+    return { x: new Writer(node.a.span), y: new Writer(node.b.nodes[0]!.span) }
+  }
 }
 
 export const EXT_POINT = defineExt({
   data(expr) {
     const value = expr.js?.value
+    const drag = draggers(expr.field.ast)
 
     if (
       value &&
@@ -69,8 +70,12 @@ export const EXT_POINT = defineExt({
         value: value as JsValue<"c32" | "c64" | "point32" | "point64">,
         paper: expr.sheet.paper,
         expr,
+        drag,
       }
     }
+  },
+  el(data) {
+    return EXT_EVAL.el!(EXT_EVAL.data(data.expr)!)
   },
   plot2d(data, paper) {
     for (const pt of each(data.value)) {
@@ -81,10 +86,12 @@ export const EXT_POINT = defineExt({
       const offset = paper.paperToCanvas({ x, y })
       const { ctx, scale } = paper
 
-      ctx.beginPath()
-      ctx.fillStyle = "#6042a659"
-      ctx.arc(offset.x, offset.y, 12 * scale, 0, 2 * Math.PI)
-      ctx.fill()
+      if (data.drag) {
+        ctx.beginPath()
+        ctx.fillStyle = "#6042a659"
+        ctx.arc(offset.x, offset.y, 12 * scale, 0, 2 * Math.PI)
+        ctx.fill()
+      }
 
       const inner = color.get(data.expr).get()
       ctx.beginPath()
@@ -98,14 +105,16 @@ export const EXT_POINT = defineExt({
   },
   drag: {
     start(data, at) {
-      if (data.value.list !== false) {
+      if (!data.drag || data.value.list !== false) {
         return
       }
+
       if (
         data.paper.canvasDistance(at, unpt(data.value.value)) <=
         12 * data.paper.scale
       ) {
         color.get(data.expr).set(12)
+
         return {
           expr: data.expr,
           paper: data.paper,
@@ -113,6 +122,8 @@ export const EXT_POINT = defineExt({
             data.expr.field.ast.type == "binding" ?
               data.expr.field.ast.name
             : null,
+          x: data.drag.x,
+          y: data.drag.y,
         }
       }
     },
@@ -120,18 +131,8 @@ export const EXT_POINT = defineExt({
       return "move"
     },
     move(data, to) {
-      const { block } = data.expr.field
-      block.clear()
-      if (data.name) {
-        CmdVar.leftOf(block.cursor(R), data.name, data.expr.field.options)
-        new OpEq(false).insertAt(block.cursor(R), L)
-      }
-      const inner = new Block(null)
-      new CmdBrack("(", ")", null, inner).insertAt(block.cursor(R), L)
-      const display = new Display(inner.cursor(R), frac(10, 1))
-      display.value(to.x)
-      new CmdComma().insertAt(inner.cursor(R), L)
-      display.value(to.y)
+      data.x.set(to.x, data.paper.el.width / data.paper.bounds().w)
+      data.y.set(to.y, data.paper.el.height / data.paper.bounds().h)
       data.expr.field.sel = data.expr.field.block.cursor(R).selection()
       data.expr.field.queueAstUpdate()
     },
@@ -141,9 +142,10 @@ export const EXT_POINT = defineExt({
   },
   hover: {
     on(data, at) {
-      if (data.value.list !== false) {
+      if (!data.drag || data.value.list !== false) {
         return
       }
+
       if (
         data.paper.canvasDistance(at, unpt(data.value.value)) <=
         12 * data.paper.scale

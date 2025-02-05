@@ -317,7 +317,7 @@ export class CmdVar extends Leaf {
         tokens.push({
           type: "punc",
           kind: "infix",
-          value: last.value as PuncInfix,
+          value: last.value as Exclude<PuncInfix, ".">,
         })
       }
 

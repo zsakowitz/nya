@@ -133,19 +133,22 @@ export function getPrecedence(op: PuncBinary["value"]) {
 export type Punc =
   | { type: "punc"; kind: "prefix"; value: PuncUnary }
   | { type: "punc"; kind: "suffix"; value: PuncUnary }
-  | { type: "punc"; kind: "infix"; value: PuncInfix }
+  | { type: "punc"; kind: "infix"; value: Exclude<PuncInfix, "."> }
+  | { type: "punc"; kind: "infix"; value: "."; span: Span }
   | { type: "punc"; kind: "cmp"; value: PuncCmp }
   | { type: "punc"; kind: "pm"; value: PuncPm; span: Span }
 
 /** A binary punctuation token. */
 export type PuncBinary =
-  | { type: "punc"; kind: "infix"; value: PuncInfix }
+  | { type: "punc"; kind: "infix"; value: Exclude<PuncInfix, "."> }
+  | { type: "punc"; kind: "infix"; value: "."; span: Span }
   | { type: "punc"; kind: "cmp"; value: PuncCmp }
   | { type: "punc"; kind: "pm"; value: PuncPm; span: Span }
 
 /** A binary punctuation token. */
 export type PuncBinaryNoComma =
-  | { type: "punc"; kind: "infix"; value: Exclude<PuncInfix, ","> }
+  | { type: "punc"; kind: "infix"; value: Exclude<PuncInfix, "." | ","> }
+  | { type: "punc"; kind: "infix"; value: "."; span: Span }
   | { type: "punc"; kind: "pm"; value: PuncPm; span: Span }
 
 /** An infix punctuation token. */

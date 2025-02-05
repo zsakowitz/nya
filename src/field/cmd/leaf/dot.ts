@@ -2,7 +2,7 @@ import { Leaf } from "."
 import { type Node } from "../../../eval/ast/token"
 import { h } from "../../../jsx"
 import type { LatexParser } from "../../latex"
-import { L, R, type Command, type Cursor, type Dir } from "../../model"
+import { L, R, Span, type Command, type Cursor, type Dir } from "../../model"
 import { CmdNum } from "./num"
 import { CmdVar } from "./var"
 
@@ -80,6 +80,7 @@ export class CmdDot extends Leaf {
       type: "punc",
       value: ".",
       kind: "infix",
+      span: new Span(this.parent, this[L], this[R]),
     })
   }
 

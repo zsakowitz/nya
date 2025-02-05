@@ -78,7 +78,7 @@ export abstract class OpPm extends Leaf {
 }
 
 export function op(
-  punc: () => Punc,
+  punc: (self: Op) => Punc,
   latex: string,
   mathspeak: string,
   html = latex,
@@ -116,7 +116,7 @@ export function op(
     }
 
     ir(tokens: Node[]): void {
-      tokens.push(punc())
+      tokens.push(punc(this))
     }
   }
 }
@@ -129,7 +129,12 @@ export function opp(
   endsImplicitGroup?: boolean,
 ) {
   return op(
-    () => ({ type: "punc", kind: "infix", value: latex }),
+    (self) => ({
+      type: "punc",
+      kind: "infix",
+      value: latex,
+      span: new Span(self.parent, self[L], self[R]),
+    }),
     latex,
     mathspeak,
     html,

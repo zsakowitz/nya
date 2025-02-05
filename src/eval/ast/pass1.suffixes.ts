@@ -1,3 +1,4 @@
+import { L, R } from "../../field/model"
 import { isValueToken, type Node } from "./token"
 
 /**
@@ -24,6 +25,12 @@ export function pass1_suffixes(tokens: Node[]) {
       if (PREV && NEXT && !prev.sub) {
         prev.sub = next.sub
         prev.value = prev.value + "." + next.value
+
+        if (prev.span && next.span) {
+          prev.span[R] = next.span[R]
+        } else {
+          prev.span = null
+        }
         tokens.splice(i, 2)
         i--
         continue
@@ -32,6 +39,9 @@ export function pass1_suffixes(tokens: Node[]) {
       // .3 decimals
       if (NEXT) {
         next.value = "." + next.value
+        if (next.span) {
+          next.span[L] = self.span[L]
+        }
         tokens.splice(i, 1)
         i--
         continue
@@ -40,6 +50,9 @@ export function pass1_suffixes(tokens: Node[]) {
       // 2. decimals
       if (PREV) {
         prev.value += "."
+        if (prev.span) {
+          prev.span[R] = self.span[R]
+        }
         tokens.splice(i, 1)
         i--
         continue

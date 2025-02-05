@@ -4,7 +4,7 @@ import { raise } from "../eval/ops/op/raise"
 import type { SReal } from "../eval/ty"
 import { frac, num, real } from "../eval/ty/create"
 import { Display } from "../eval/ty/display"
-import type { Cursor, Span } from "../field/model"
+import { type Cursor, type Span } from "../field/model"
 
 export function write(
   cursor: Cursor,
@@ -54,10 +54,22 @@ export function virtualStepExp(ratio: number, base: number) {
 export class Writer {
   constructor(readonly span: Span) {}
 
+  /**
+   * @param precision (total options the user can choose from) / (total space
+   *   available in math units)
+   */
   setExact(value: SReal, precision: number) {
     write(this.span.remove(), value, frac(10, 1), virtualStepExp(precision, 10))
+    // const inner = new Block(null)
+    // new CmdSupSub(inner, null).insertAt(this.span.cursor(R), L)
+    // new CmdNum("1").insertAt(inner.cursor(R), L)
+    // new CmdNum("0").insertAt(inner.cursor(R), L)
   }
 
+  /**
+   * @param precision (total options the user can choose from) / (total space
+   *   available in math units)
+   */
   set(value: number, precision: number) {
     this.setExact(real(value), precision)
   }
