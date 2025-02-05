@@ -104,7 +104,7 @@ export class Field extends FieldInert {
   }
 
   private showCursor(scrollIntoView = true) {
-    this.sel.each(({ el }) => el.classList.add("bg-[--nya-selection]"))
+    this.sel.each(({ el }) => el.classList.add("nya-selected"))
     this.sel.cursor(this.sel.focused).render(this.cursor)
     this.sel.parent?.checkIfEmpty()
     this.cursor.classList.toggle("text-transparent", !this.sel.isEmpty())
@@ -120,7 +120,7 @@ export class Field extends FieldInert {
   }
 
   onBeforeChange() {
-    this.sel.each(({ el }) => el.classList.remove("bg-[--nya-selection]"))
+    this.sel.each(({ el }) => el.classList.remove("nya-selected"))
     this.cursor.parentElement?.classList.remove("!bg-transparent")
     this.cursor.remove()
     this.sel.parent?.checkIfEmpty()

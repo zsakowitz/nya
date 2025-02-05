@@ -2,9 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer utilities {
+@layer components {
   .bg-nya-empty:where(:not(.nya-display)) {
     @apply bg-[--nya-empty];
+  }
+
+  .nya-selected {
+    background-color: var(--nya-selection);
   }
 }
 
