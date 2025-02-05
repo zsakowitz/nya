@@ -34,7 +34,7 @@ export const EXT_POINT = defineExt({
 
       ctx.beginPath()
       ctx.fillStyle = "#6042a6"
-      ctx.arc(offset.x, offset.y, 4 * scale, 0, 2 * Math.PI)
+      ctx.arc(offset.x, offset.y, 3 * scale, 0, 2 * Math.PI)
       ctx.fill()
     }
   },
