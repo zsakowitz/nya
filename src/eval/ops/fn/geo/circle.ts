@@ -1,13 +1,14 @@
 import { num, real } from "../../../ty/create"
 import { FnDist } from "../../dist"
+import { abs } from "../../op/abs"
 import { sub } from "../../op/sub"
 
 export const FN_CIRCLE = new FnDist("circle")
   .add(
     ["point32", "r32"],
     "circle32",
-    (a, b) => ({ center: a.value, radius: b.value }),
-    (_, a, b) => `vec3(${a.expr}, ${b.expr})`,
+    (a, b) => ({ center: a.value, radius: abs(b.value) }),
+    (_, a, b) => `vec3(${a.expr}, abs(${b.expr}))`,
   )
   .add(
     ["point32", "point32"],
