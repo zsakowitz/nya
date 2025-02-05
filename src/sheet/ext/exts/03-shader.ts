@@ -2,6 +2,7 @@ import { defineExt, Store } from ".."
 import { glsl } from "../../../eval/glsl"
 import { OP_PLOT } from "../../../eval/ops/op/plot"
 import { h, hx } from "../../../jsx"
+import type { Expr } from "../../ui/expr"
 import { circle } from "../../ui/expr/circle"
 
 const store = new Store((expr) => {
@@ -29,6 +30,9 @@ const store = new Store((expr) => {
     get show() {
       return show
     },
+    set show(v) {
+      setShow(v)
+    },
   }
 
   function setShow(v: boolean) {
@@ -38,6 +42,10 @@ const store = new Store((expr) => {
     expr.display()
   }
 })
+
+export function show(expr: Expr) {
+  store.get(expr).show = true
+}
 
 export const EXT_GLSL = defineExt({
   data(expr) {
