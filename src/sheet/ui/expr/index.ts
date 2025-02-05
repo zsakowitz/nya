@@ -106,6 +106,9 @@ export class Expr {
             this.state.ext.destroy?.(this.state.data)
           }
           this.state = { ok: true, ext, data }
+          if (ext.plot2d) {
+            this.sheet.paper.queue()
+          }
           return
         }
       }
