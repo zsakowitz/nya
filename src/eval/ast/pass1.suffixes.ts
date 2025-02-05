@@ -87,6 +87,7 @@ export function pass1_suffixes(tokens: Node[]) {
           kind: ".",
           a: prev,
           b: next,
+          span: null,
         }
         i--
         continue

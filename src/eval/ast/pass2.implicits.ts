@@ -213,6 +213,7 @@ export function pass2_implicits(tokens: Node[]): Node[] {
         // instead of b\na, we store `a` so that the order in debug windows looks correct
         a: values.pop()!,
         b,
+        span: null,
       })
     }
 
@@ -227,7 +228,13 @@ export function pass2_implicits(tokens: Node[]): Node[] {
 
     let md
     while ((md = op(Precedence.Product))) {
-      lhs = { type: "op", kind: md.value, a: lhs, b: takeExp() }
+      lhs = {
+        type: "op",
+        kind: md.value,
+        a: lhs,
+        b: takeExp(),
+        span: "span" in md ? md.span : null!,
+      }
     }
 
     return lhs

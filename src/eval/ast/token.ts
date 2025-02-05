@@ -218,7 +218,7 @@ export type Node =
   | { type: "root"; contents: Node; root?: Node }
   | { type: "index"; on: Node; index: Node }
   | { type: "juxtaposed"; nodes: Node[] }
-  | { type: "op"; kind: OpBinary; a: Node; b: Node }
+  | { type: "op"; kind: OpBinary; a: Node; b: Node; span: Span | null }
   | { type: "op"; kind: PuncUnary; a: Node; b?: undefined }
   | { type: "commalist"; items: Node[] }
   | { type: "cmplist"; items: Node[]; ops: PuncCmp[] }

@@ -99,11 +99,18 @@ export function pass3_ordering(tokens: Node[]): Node {
         kind: node.value,
         a: a.items[a.items.length - 1]!,
         b,
+        span: null,
       }
       continue
     }
 
-    stack.push({ type: "op", kind: node.value, a, b })
+    stack.push({
+      type: "op",
+      kind: node.value,
+      a,
+      b,
+      span: "span" in node ? node.span : null,
+    })
   }
 
   const ret = stack[0]
