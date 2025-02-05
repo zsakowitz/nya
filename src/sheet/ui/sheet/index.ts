@@ -56,7 +56,7 @@ export class Sheet {
     this.paper.drawFns.push(() => {
       for (const e of this.exprs
         .filter((x) => x.state.ok && x.state.ext?.plot2d != null)
-        .sort((a, b) => b.layer - a.layer)) {
+        .sort((a, b) => a.layer - b.layer)) {
         if (e.state.ok && e.state.ext?.plot2d) {
           e.state.ext.plot2d(e.state.data, this.paper)
         }
@@ -215,7 +215,7 @@ export class Sheet {
   private checkGlsl() {
     const compiled = this.exprs
       .filter((x) => x.glsl != null)
-      .sort((a, b) => b.layer - a.layer)
+      .sort((a, b) => a.layer - b.layer)
       .map((x) => x.glsl!)
 
     if (compiled.length == 0) {

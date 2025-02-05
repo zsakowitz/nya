@@ -1,5 +1,5 @@
 import { defineExt } from ".."
-import type { JsValue } from "../../../eval/ty"
+import { each, type JsValue } from "../../../eval/ty"
 import { num } from "../../../eval/ty/create"
 
 export const EXT_POINT = defineExt({
@@ -17,9 +17,7 @@ export const EXT_POINT = defineExt({
     }
   },
   plot2d(data, paper) {
-    for (const pt of data.value.list === false ?
-      [data.value.value]
-    : data.value.value) {
+    for (const pt of each(data.value)) {
       const x = num(pt.x)
       const y = num(pt.y)
       if (!(isFinite(x) && isFinite(y))) continue
@@ -37,5 +35,8 @@ export const EXT_POINT = defineExt({
       ctx.arc(offset.x, offset.y, 3.5 * scale, 0, 2 * Math.PI)
       ctx.fill()
     }
+  },
+  layer() {
+    return 2
   },
 })

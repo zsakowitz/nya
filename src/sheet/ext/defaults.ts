@@ -1,5 +1,6 @@
 import { Exts } from "."
 import { EXT_SLIDER } from "./exts/00-slider"
+import { EXT_CIRCLE } from "./exts/01-circle"
 import { EXT_POINT } from "./exts/01-point"
 import { EXT_SEGMENT } from "./exts/01-segment"
 import { EXT_EVAL } from "./exts/02-eval"
@@ -9,6 +10,7 @@ export const exts = new Exts([
   EXT_SLIDER,
   EXT_POINT,
   EXT_SEGMENT,
+  EXT_CIRCLE,
   EXT_EVAL,
   EXT_GLSL,
 ]).freeze()

@@ -1,5 +1,5 @@
 import { defineExt } from ".."
-import type { JsValue } from "../../../eval/ty"
+import { each, type JsValue } from "../../../eval/ty"
 import { num } from "../../../eval/ty/create"
 
 export const EXT_SEGMENT = defineExt({
@@ -11,9 +11,7 @@ export const EXT_SEGMENT = defineExt({
     }
   },
   plot2d(data, paper) {
-    for (const segment of data.value.list === false ?
-      [data.value.value]
-    : data.value.value) {
+    for (const segment of each(data.value)) {
       const x1 = num(segment[0].x)
       const y1 = num(segment[0].y)
       const x2 = num(segment[1].x)
@@ -33,5 +31,8 @@ export const EXT_SEGMENT = defineExt({
       ctx.lineTo(o2.x, o2.y)
       ctx.stroke()
     }
+  },
+  layer() {
+    return 1
   },
 })

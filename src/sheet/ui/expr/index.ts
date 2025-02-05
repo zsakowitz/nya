@@ -134,6 +134,7 @@ export class Expr {
         }
       }
       this.state = { ok: false, reason: msg }
+      this.layer = 0
     }
   }
 

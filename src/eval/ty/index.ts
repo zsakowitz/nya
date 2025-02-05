@@ -86,3 +86,7 @@ export interface GlslValue<
 > extends Type<T, L> {
   readonly expr: string
 }
+
+export function each<T extends TyName>(value: JsValue<T>): Tys[T][] {
+  return value.list === false ? [value.value] : value.value
+}
