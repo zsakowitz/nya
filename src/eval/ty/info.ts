@@ -337,8 +337,7 @@ export const TY_INFO: TyInfoMap = {
               "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
             ),
             h(
-              "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-['Symbola'] text-[120%] mt-[1px]",
-              "?",
+              "size-[16px] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-2 border-[#388c46] rounded-full",
             ),
           ),
           h(
@@ -347,8 +346,7 @@ export const TY_INFO: TyInfoMap = {
               "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
             ),
             h(
-              "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-['Symbola'] text-[120%] mt-[1px]",
-              "?",
+              "size-[16px] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#c74440] rounded-full",
             ),
           ),
         ),

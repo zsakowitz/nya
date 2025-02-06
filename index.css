@@ -1536,6 +1536,11 @@ video {
   border-color: rgb(203 213 225 / var(--tw-border-opacity, 1));
 }
 
+.border-\[\#388c46\] {
+  --tw-border-opacity: 1;
+  border-color: rgb(56 140 70 / var(--tw-border-opacity, 1));
+}
+
 .border-y-\[--nya-border\] {
   border-top-color: var(--nya-border);
   border-bottom-color: var(--nya-border);
@@ -1650,6 +1655,15 @@ video {
 
 .bg-\[--nya-body\] {
   background-color: var(--nya-body);
+}
+
+.bg-\[\#\] {
+  background-color: #;
+}
+
+.bg-\[\#c74440\] {
+  --tw-bg-opacity: 1;
+  background-color: rgb(199 68 64 / var(--tw-bg-opacity, 1));
 }
 
 .bg-gradient-to-b {
