@@ -1,6 +1,6 @@
 import type { GlslContext } from "../../../lib/fn"
 import type { GlslVal, SPoint, SReal } from "../../../ty"
-import { pt, real } from "../../../ty/create"
+import { num, pt, real } from "../../../ty/create"
 import { FnDist } from "../../dist"
 import { add } from "../../op/add"
 import { mul } from "../../op/mul"
@@ -24,4 +24,23 @@ export const FN_GLIDER = new FnDist("glider")
   .add(["segment32", "r32"], "point32", js, glsl)
   .add(["vector32", "r32"], "point32", js, glsl)
   .add(["ray32", "r32"], "point32", js, glsl)
-// .add(["circle32", "r32"], "point32", ({value:{center,radius}},b)=>{})
+  .add(
+    ["circle32", "r32"],
+    "point32",
+    ({ value: { center, radius } }, tr) => {
+      const x = num(center.x)
+      const y = num(center.y)
+      const r = num(radius)
+      const t = 2 * Math.PI * num(tr.value)
+
+      return pt(real(x + r * Math.cos(t)), real(y + r * Math.sin(t)))
+    },
+    (ctx, ar, tr) => {
+      const a = ctx.cache(ar)
+      const t = ctx.cache({
+        type: "r32",
+        expr: `(${tr.expr} * ${2 * Math.PI})`,
+      })
+      return `vec2(${a}.xy) + ${a}.z * vec2(cos(${t}), sin(${t}))`
+    },
+  )
