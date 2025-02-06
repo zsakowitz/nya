@@ -110,7 +110,7 @@ function lineInfo(
       return h(
         "",
         h(
-          "text-[#2d70b3] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-white inline-block relative border-2 border-current rounded-[4px] overflow-hidden",
+          "text-[#2d70b3] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px] overflow-hidden",
           h(
             "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
           ),
@@ -155,7 +155,7 @@ function iconPoint(hd: boolean) {
   return h(
     "",
     h(
-      "text-[#6042a6] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-white inline-block relative border-2 border-current rounded-[4px]",
+      "text-[#6042a6] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px]",
       h(
         "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
       ),
@@ -171,7 +171,7 @@ function iconComplex(hd: boolean) {
   return h(
     "",
     h(
-      "text-[#6042a6] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-white inline-block relative border-2 border-current rounded-[4px]",
+      "text-[#6042a6] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px]",
       h(
         "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
       ),
@@ -188,7 +188,7 @@ function iconReal(hd: boolean) {
   return h(
     "",
     h(
-      "text-[#000] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-white inline-block relative border-2 border-current rounded-[4px]",
+      "text-[#000] dark:text-[#888] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px]",
       h(
         "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
       ),
@@ -208,7 +208,7 @@ export function any(
     "",
     h(
       color +
-        " size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-white inline-block relative border-2 border-current rounded-[4px]",
+        " size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px]",
       h(
         "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
       ),
@@ -273,7 +273,7 @@ export const TY_INFO: TyInfoMap = {
         h(
           "size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] inline-block relative",
           h(
-            "text-[#c74440] bg-white inline-block absolute inset-0 border-2 border-current rounded-[4px]",
+            "text-[#c74440] bg-[--nya-bg] inline-block absolute inset-0 border-2 border-current rounded-[4px]",
             h(
               "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
             ),
@@ -282,7 +282,7 @@ export const TY_INFO: TyInfoMap = {
             ),
           ),
           h(
-            "text-[#388c46] bg-white inline-block absolute inset-0 border-2 border-current rounded-[4px] [clip-path:polygon(100%_100%,100%_0%,0%_100%)]",
+            "text-[#388c46] bg-[--nya-bg] inline-block absolute inset-0 border-2 border-current rounded-[4px] [clip-path:polygon(100%_100%,100%_0%,0%_100%)]",
             h(
               "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
             ),
@@ -449,7 +449,7 @@ export const TY_INFO: TyInfoMap = {
 
       function palette() {
         return h(
-          "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-[18px] bg-[conic-gradient(hsl(360_100%_50%),hsl(315_100%_50%),hsl(270_100%_50%),hsl(225_100%_50%),hsl(180_100%_50%),hsl(135_100%_50%),hsl(90_100%_50%),hsl(45_100%_50%),hsl(0_100%_50%))] -rotate-90 rounded-full",
+          "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-[18px] bg-[conic-gradient(hsl(360_100%_50%),hsl(315_100%_50%),hsl(270_100%_50%),hsl(225_100%_50%),hsl(180_100%_50%),hsl(135_100%_50%),hsl(90_100%_50%),hsl(45_100%_50%),hsl(0_100%_50%))] -rotate-90 rounded-full dark:opacity-50",
         )
       }
 
@@ -458,16 +458,16 @@ export const TY_INFO: TyInfoMap = {
         h(
           "size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] inline-block relative",
           make(
-            "text-[#388c46] bg-white inline-block absolute inset-0 border-2 border-current rounded-[4px]",
+            "text-[#388c46] bg-[--nya-bg] inline-block absolute inset-0 border-2 border-current rounded-[4px]",
           ),
           make(
-            "text-[#2d70b3] bg-white inline-block absolute inset-0 border-2 border-current rounded-[4px] [mask-image:linear-gradient(#000,transparent)]",
+            "text-[#2d70b3] bg-[--nya-bg] inline-block absolute inset-0 border-2 border-current rounded-[4px] [mask-image:linear-gradient(#000,transparent)]",
           ),
           make(
-            "text-[#c74440] bg-white inline-block absolute inset-0 border-2 border-current rounded-[4px] [mask-image:linear-gradient(to_right,#000,transparent)]",
+            "text-[#c74440] bg-[--nya-bg] inline-block absolute inset-0 border-2 border-current rounded-[4px] [mask-image:linear-gradient(to_right,#000,transparent)]",
           ),
           make(
-            "text-[#fa7e19] bg-white inline-block absolute inset-0 border-2 border-current rounded-[4px] [mask-image:linear-gradient(45deg,#000,transparent,transparent)]",
+            "text-[#fa7e19] bg-[--nya-bg] inline-block absolute inset-0 border-2 border-current rounded-[4px] [mask-image:linear-gradient(45deg,#000,transparent,transparent)]",
           ),
         ),
       )
@@ -523,7 +523,7 @@ export const TY_INFO: TyInfoMap = {
       return h(
         "",
         h(
-          "text-[#388c46] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-white inline-block relative border-2 border-current rounded-[4px]",
+          "text-[#388c46] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px]",
           h(
             "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
           ),

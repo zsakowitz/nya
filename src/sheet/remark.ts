@@ -37,7 +37,7 @@ const REMARKS = [
   "currently on type system #3",
   "where numbers come in three precision levels",
   "even our colors can be approximate",
-  "you can choose LaTeX parsing or— THE SECOND ONE",
+  "LaTeX parsing or— THE SECOND ONE",
   "copy-paste easy to implement: famous last words",
   "the error messages are doubled because why not",
   "experience the joy of floating point numbers",

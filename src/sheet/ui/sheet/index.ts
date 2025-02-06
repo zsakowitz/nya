@@ -1,4 +1,5 @@
 import { faBook } from "@fortawesome/free-solid-svg-icons/faBook"
+import { faListUl } from "@fortawesome/free-solid-svg-icons/faListUl"
 import type { Regl } from "regl"
 import regl from "regl"
 import { GlslContext, GlslHelpers } from "../../../eval/lib/fn"
@@ -29,7 +30,7 @@ import type { Expr } from "../expr"
 import { createDrawAxes, makeInteractive, matchSize, Paper } from "../paper"
 import { Handlers } from "./handler"
 
-function createDocs(className: string) {
+function createDocs(className: string, hide: () => void) {
   function makeDoc(fn: { name: string; label: string; docs(): Node[] }) {
     return h(
       "flex flex-col",
@@ -47,11 +48,20 @@ function createDocs(className: string) {
   }
 
   function title(label: string) {
+    const btn = hx(
+      "button",
+      "bg-[--nya-bg] border border-[--nya-border] size-8 flex rounded-md mb-0.5 -mt-0.5 -mr-1.5",
+      fa(faListUl, "size-4 m-auto fill-[--nya-title]"),
+    )
+
+    btn.addEventListener("click", hide)
+
     return h(
       "sticky top-0 z-10 bg-[--nya-bg] pt-2",
       h(
-        "block bg-[--nya-bg-sidebar] border border-[--nya-border] -mx-2 rounded-lg px-2 pt-1 font-['Symbola'] text-[1.265rem] text-center",
-        label,
+        "flex bg-[--nya-bg-sidebar] border border-[--nya-border] -mx-2 rounded-lg px-2 pt-1 font-['Symbola'] text-[1.265rem] text-center",
+        h("flex-1", label),
+        btn,
       ),
     )
   }
@@ -335,9 +345,6 @@ export class Sheet {
     "1",
   )
 
-  private readonly elSidebar
-  private readonly elDocs
-
   constructor(
     readonly options: Options,
     readonly exts: Exts,
@@ -384,9 +391,56 @@ export class Sheet {
       "block bg-[--nya-bg] h-full aspect-square -mr-2 flex items-center justify-center border border-[--nya-border] rounded-lg hover:bg-[--nya-sidebar] transition",
       fa(faBook, "size-6 fill-current"),
     )
+
+    const sidebar = h(
+      "font-['Symbola','Times_New_Roman',sans-serif] flex flex-col overflow-y-auto",
+
+      // title bar
+      h(
+        "sticky top-0 w-full flex bg-[--nya-bg-sidebar] border-b border-r border-[--nya-border] px-4 text-center text-[--nya-title] py-2 z-10",
+        h(
+          "flex flex-col flex-1",
+          h("text-2xl leading-tight", "project nya"),
+          h("italic text-sm leading-none", REMARK),
+        ),
+        switchToDocs,
+      ),
+
+      // main expression list
+      this.elExpressions,
+
+      // fake expression
+      h(
+        "relative grid grid-cols-[2.5rem_auto] min-h-[3.625rem] border-r border-[--nya-border]",
+
+        // grey side of expression
+        h(
+          "inline-flex bg-[--nya-bg-sidebar] flex-col p-0.5 border-r border-[--nya-border]",
+          this.elNextIndex,
+        ),
+
+        // main expression body
+        // TODO: make this clickable
+
+        // cover
+        h("absolute inset-0 from-transparent to-[--nya-bg] bg-gradient-to-b"),
+      ),
+
+      // right border on remainder of the flexbox
+      h("flex-1 border-r border-[--nya-border]"),
+    )
+
+    const docs = createDocs(
+      "flex flex-col overflow-y-auto px-4 pb-4 gap-2 border-r border-[--nya-border] hidden",
+      () => {
+        docs.classList.add("hidden")
+        sidebar.classList.remove("hidden")
+      },
+    )
+
     switchToDocs.addEventListener("click", () => {
-      this.elSidebar.classList.add("hidden")
-      this.elDocs.classList.remove("hidden")
+      sidebar.classList.add("hidden")
+      docs.classList.remove("hidden")
     })
 
     // dom
@@ -395,46 +449,9 @@ export class Sheet {
     this.el = h(
       "fixed inset-0 grid grid-cols-[400px_1fr] grid-rows-1 select-none",
 
-      (this.elSidebar = h(
-        "font-['Symbola','Times_New_Roman',sans-serif] flex flex-col overflow-y-auto",
+      sidebar,
+      docs,
 
-        // title bar
-        h(
-          "sticky top-0 w-full flex bg-[--nya-bg-sidebar] border-b border-r border-[--nya-border] px-4 text-center text-[--nya-title] py-2 z-10",
-          h(
-            "flex flex-col flex-1",
-            h("text-2xl leading-tight", "project nya"),
-            h("italic text-sm leading-none", REMARK),
-          ),
-          switchToDocs,
-        ),
-
-        // main expression list
-        this.elExpressions,
-
-        // fake expression
-        h(
-          "relative grid grid-cols-[2.5rem_auto] min-h-[3.625rem] border-r border-[--nya-border]",
-
-          // grey side of expression
-          h(
-            "inline-flex bg-[--nya-bg-sidebar] flex-col p-0.5 border-r border-[--nya-border]",
-            this.elNextIndex,
-          ),
-
-          // main expression body
-          // TODO: make this clickable
-
-          // cover
-          h("absolute inset-0 from-transparent to-[--nya-bg] bg-gradient-to-b"),
-        ),
-
-        // right border on remainder of the flexbox
-        h("flex-1 border-r border-[--nya-border]"),
-      )),
-      (this.elDocs = createDocs(
-        "flex flex-col overflow-y-auto px-4 pb-4 gap-2 border-l border-[--nya-border] hidden",
-      )),
       h(
         "relative",
         canvas,
@@ -594,12 +611,10 @@ void main() {
 }
 
 if (location.search.includes("?docsonly")) {
-  document.body.appendChild(
-    h(
-      "",
-      createDocs(
-        "fixed inset-0 *:*:relative first:*:*:[grid-column:1_/_-1] *:grid *:grid-cols-[repeat(auto-fill,minmax(400px,1fr))] overflow-y-auto px-4 pb-4 gap-2 border-l border-[--nya-border] z-20 bg-white",
-      ),
-    ),
+  const el = createDocs(
+    "fixed inset-0 *:*:relative first:*:*:[grid-column:1_/_-1] *:grid *:grid-cols-[repeat(auto-fill,minmax(400px,1fr))] overflow-y-auto px-4 pb-4 gap-2 z-20 bg-[--nya-bg]",
+    () => el.remove(),
   )
+
+  document.body.appendChild(el)
 }
