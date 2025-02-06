@@ -17,6 +17,14 @@ function expr(source: { raw: readonly string[] }) {
   return expr
 }
 
+expr`A_1=\left(2,3\right)`
+expr`A_2=\left(8,9\right)`
+expr`A_3=line\left(A_1,A_2\right)`
+expr`A_4=\left(5,5\right)`
+expr`A_5=\left(7,3\right)`
+expr`A_6=circle\left(A_4,A_5\right)`
+expr`A_7=intersection\left(A_6,A_3\right)`
+
 expr`A=0.665-0.149i`
 expr`B=0+0i`
 expr`C=.3+.4i`
