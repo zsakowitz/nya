@@ -287,7 +287,7 @@ function createDocs() {
   }
 
   return h(
-    "flex flex-col overflow-y-auto px-4 pb-4 gap-2",
+    "flex flex-col overflow-y-auto px-4 pb-4 gap-2 border-l border-[--nya-border]",
 
     secDataTypes(),
     secAdvancedOperators(),
@@ -404,6 +404,9 @@ export class Sheet {
         this.paper.el,
         h(
           "absolute block top-0 bottom-0 left-0 w-1 from-[--nya-sidebar-shadow] to-transparent bg-gradient-to-r",
+        ),
+        h(
+          "absolute block top-0 bottom-0 right-0 w-1 from-[--nya-sidebar-shadow] to-transparent bg-gradient-to-l",
         ),
         h("absolute flex flex-col top-2 right-2", this.glPixelRatio.el),
       ),

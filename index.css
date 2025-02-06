@@ -1682,6 +1682,10 @@ video {
   background-image: conic-gradient(hsl(360 100% 50%),hsl(315 100% 50%),hsl(270 100% 50%),hsl(225 100% 50%),hsl(180 100% 50%),hsl(135 100% 50%),hsl(90 100% 50%),hsl(45 100% 50%),hsl(0 100% 50%));
 }
 
+.bg-gradient-to-l {
+  background-image: linear-gradient(to left, var(--tw-gradient-stops));
+}
+
 .from-\[--nya-sidebar-shadow\] {
   --tw-gradient-from: var(--nya-sidebar-shadow) var(--tw-gradient-from-position);
   --tw-gradient-to: rgb(255 255 255 / 0) var(--tw-gradient-to-position);
