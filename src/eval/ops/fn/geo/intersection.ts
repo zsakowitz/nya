@@ -61,70 +61,131 @@ export const FN_INTERSECTION = new FnDist(
   "constructs the point where two objects intersect",
 )
 
+// line-line
 for (const a of ["line32", "ray32", "segment32", "vector32"] as const) {
   for (const b of ["line32", "ray32", "segment32", "vector32"] as const) {
     FN_INTERSECTION.add([a, b], "point32", (a, b) => js(a.value, b.value), glsl)
   }
 }
 
-function intersectJs(circ: Tys["circle32"], lin: Tys["line32"], index: -1 | 1) {
-  // https://stackoverflow.com/a/37225895
-  const cx = num(circ.center.x)
-  const cy = num(circ.center.y)
-  const r = num(circ.radius)
-  const x1 = num(lin[0].x)
-  const y1 = num(lin[0].y)
-  const x2 = num(lin[1].x)
-  const y2 = num(lin[1].y)
-  const v1 = { x: x2 - x1, y: y2 - y1 }
-  const v2 = { x: x1 - cx, y: y1 - cy }
-  const b = -2 * (v1.x * v2.x + v1.y * v2.y)
-  const c = 2 * (v1.x * v1.x + v1.y * v1.y)
-  const d = Math.sqrt(b * b - 2 * c * (v2.x * v2.x + v2.y * v2.y - r * r))
-  if (isNaN(d)) {
-    return pt(real(NaN), real(NaN))
+// line-circle
+{
+  function lineCircleJs(
+    circ: Tys["circle32"],
+    lin: Tys["line32"],
+    index: -1 | 1,
+  ) {
+    // https://stackoverflow.com/a/37225895
+    const cx = num(circ.center.x)
+    const cy = num(circ.center.y)
+    const r = num(circ.radius)
+    const x1 = num(lin[0].x)
+    const y1 = num(lin[0].y)
+    const x2 = num(lin[1].x)
+    const y2 = num(lin[1].y)
+    const v1 = { x: x2 - x1, y: y2 - y1 }
+    const v2 = { x: x1 - cx, y: y1 - cy }
+    const b = -2 * (v1.x * v2.x + v1.y * v2.y)
+    const c = 2 * (v1.x * v1.x + v1.y * v1.y)
+    const d = Math.sqrt(b * b - 2 * c * (v2.x * v2.x + v2.y * v2.y - r * r))
+    if (isNaN(d)) {
+      return pt(real(NaN), real(NaN))
+    }
+    const u1 = (b + index * d) / c
+    const returned = { x: x1 + v1.x * u1, y: y1 + v1.y * u1 }
+    return pt(real(returned.x), real(returned.y))
   }
-  const u1 = (b + index * d) / c
-  const returned = { x: x1 + v1.x * u1, y: y1 + v1.y * u1 }
-  return pt(real(returned.x), real(returned.y))
+
+  function lineCircleGlsl(
+    ctx: GlslContext,
+    circ: string,
+    lin: string,
+    index: -1 | 1,
+  ) {
+    // https://stackoverflow.com/a/37225895
+    const cx = `${circ}.x`
+    const cy = `${circ}.y`
+    const r = `${circ}.z`
+    const x1 = `${lin}.x`
+    const y1 = `${lin}.y`
+    const x2 = `${lin}.z`
+    const y2 = `${lin}.w`
+    const v1 = ctx.cached("point32", `vec2(${x2}-${x1},${y2}-${y1})`)
+    const v2 = ctx.cached("point32", `vec2(${x1}-${cx}, ${y1}-${cy})`)
+    const b = ctx.cached(
+      "r32",
+      `(-2. * (${v1}.x * ${v2}.x + ${v1}.y * ${v2}.y))`,
+    )
+    const c = ctx.cached(
+      "r32",
+      `(2. * (${v1}.x * ${v1}.x + ${v2}.y * ${v2}.y))`,
+    )
+    const d = ctx.cached(
+      "r32",
+      `sqrt(${b}*${b} - 2.0*${c}*(${v2}.x*${v2}.x+${v2}.y*${v2}.y-${r}*${r}))`,
+    )
+    return `(vec2(${x1},${y1}) + ${v1} * ((${b}${index == -1 ? "-" : "+"}${d})/${c}))`
+  }
+
+  for (const b of ["line32", "ray32", "segment32", "vector32"] as const) {
+    FN_INTERSECTION.add(
+      ["circle32", b],
+      "point32",
+      (a, b) => lineCircleJs(a.value, b.value, 1),
+      (ctx, a, b) => lineCircleGlsl(ctx, ctx.cache(a), ctx.cache(b), 1),
+    )
+    FN_INTERSECTION.add(
+      [b, "circle32"],
+      "point32",
+      (a, b) => lineCircleJs(b.value, a.value, -1),
+      (ctx, a, b) => lineCircleGlsl(ctx, ctx.cache(b), ctx.cache(a), -1),
+    )
+  }
 }
 
-function intersectGlsl(
-  ctx: GlslContext,
-  circ: string,
-  lin: string,
-  index: -1 | 1,
-) {
-  // https://stackoverflow.com/a/37225895
-  const cx = `${circ}.x`
-  const cy = `${circ}.y`
-  const r = `${circ}.z`
-  const x1 = `${lin}.x`
-  const y1 = `${lin}.y`
-  const x2 = `${lin}.z`
-  const y2 = `${lin}.w`
-  const v1 = ctx.cached("point32", `vec2(${x2}-${x1},${y2}-${y1})`)
-  const v2 = ctx.cached("point32", `vec2(${x1}-${cx}, ${y1}-${cy})`)
-  const b = ctx.cached("r32", `(-2. * (${v1}.x * ${v2}.x + ${v1}.y * ${v2}.y))`)
-  const c = ctx.cached("r32", `(2. * (${v1}.x * ${v1}.x + ${v2}.y * ${v2}.y))`)
-  const d = ctx.cached(
-    "r32",
-    `sqrt(${b}*${b} - 2.0*${c}*(${v2}.x*${v2}.x+${v2}.y*${v2}.y-${r}*${r}))`,
-  )
-  return `(vec2(${x1},${y1}) + ${v1} * ((${b}${index == -1 ? "-" : "+"}${d})/${c}))`
-}
+// circle-circle
+FN_INTERSECTION.add(
+  ["circle32", "circle32"],
+  "point32",
+  (ar, br) => {
+    // From Google's AI overview; I'm not sure of the original source
 
-for (const b of ["line32", "ray32", "segment32", "vector32"] as const) {
-  FN_INTERSECTION.add(
-    ["circle32", b],
-    "point32",
-    (a, b) => intersectJs(a.value, b.value, 1),
-    (ctx, a, b) => intersectGlsl(ctx, ctx.cache(a), ctx.cache(b), 1),
-  )
-  FN_INTERSECTION.add(
-    [b, "circle32"],
-    "point32",
-    (a, b) => intersectJs(b.value, a.value, -1),
-    (ctx, a, b) => intersectGlsl(ctx, ctx.cache(b), ctx.cache(a), -1),
-  )
-}
+    const x0 = num(ar.value.center.x)
+    const y0 = num(ar.value.center.y)
+    const r0 = num(ar.value.radius)
+
+    const x1 = num(br.value.center.x)
+    const y1 = num(br.value.center.y)
+    const r1 = num(br.value.radius)
+
+    // Calculate the distance between the centers of the circles
+    const dx = x1 - x0
+    const dy = y1 - y0
+    const d = Math.sqrt(dx * dx + dy * dy)
+
+    // Check for special cases
+    if (d > r0 + r1) {
+      // Circles do not intersect
+      return pt(real(NaN), real(NaN))
+    }
+    if (d < Math.abs(r0 - r1)) {
+      // One circle is contained within the other
+      return pt(real(NaN), real(NaN))
+    }
+    if (d === 0 && r0 === r1) {
+      // Circles are the same
+      return pt(real(NaN), real(NaN))
+    }
+
+    // Calculate the intersection points
+    const a = (r0 * r0 - r1 * r1 + d * d) / (2 * d)
+    const h = Math.sqrt(r0 * r0 - a * a)
+    const rx = -dy * (h / d)
+    const ry = dx * (h / d)
+
+    return pt(real(x0 + a * (dx / d) + rx), real(y0 + a * (dy / d) + ry))
+  },
+  () => {
+    throw new Error("Cannot compute circle intersections in shaders yet.")
+  },
+)
