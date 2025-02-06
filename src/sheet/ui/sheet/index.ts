@@ -1,6 +1,7 @@
 import type { Regl } from "regl"
 import regl from "regl"
 import { GlslContext, GlslHelpers } from "../../../eval/lib/fn"
+import { ALL_FNS } from "../../../eval/ops/dist"
 import { declareAddR64 } from "../../../eval/ops/op/add"
 import { declareMulR64 } from "../../../eval/ops/op/mul"
 import { num, real } from "../../../eval/ty/create"
@@ -81,7 +82,7 @@ export class Sheet {
     this.glPixelRatio.el.className =
       "block w-48 bg-[--nya-bg] outline outline-[--nya-pixel-ratio] rounded-full p-1"
     this.el = h(
-      "fixed inset-0 grid grid-cols-[400px_1fr] grid-rows-1 select-none",
+      "fixed inset-0 grid grid-cols-[400px_1fr_400px] grid-rows-1 select-none",
 
       // sidebar
       h(
@@ -127,6 +128,25 @@ export class Sheet {
           "absolute block top-0 bottom-0 left-0 w-1 from-[--nya-sidebar-shadow] to-transparent bg-gradient-to-r",
         ),
         h("absolute flex flex-col top-2 right-2", this.glPixelRatio.el),
+      ),
+
+      // docs
+      h(
+        "flex flex-col overflow-y-auto gap-4 px-4 py-4",
+        ...ALL_FNS.map((fn) =>
+          h(
+            "flex flex-col",
+            h(
+              "text-[1.265rem]/[1.15]",
+              ...(fn.name.match(/[a-z]+|[^a-z]+/g) || []).map((x) =>
+                x.match(/[a-z]/) ?
+                  h("font-['Times_New_Roman']", x)
+                : h("font-['Symbola']", x),
+              ),
+            ),
+            h("flex flex-col pl-4", ...fn.doc()),
+          ),
+        ),
       ),
     )
     new ResizeObserver(() =>
@@ -186,13 +206,8 @@ export class Sheet {
       },
     })
 
-    let cleared = false
-
     this.regl.frame(() => {
-      // if (!cleared) {
       this.regl.clear({ color: [0, 0, 0, 0] })
-      // cleared = true
-      // }
 
       const program = this.program
       if (!program) return
@@ -212,7 +227,6 @@ export class Sheet {
         },
         () => program(),
       )
-      cleared = false
     })
   }
 

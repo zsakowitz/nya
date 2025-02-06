@@ -1,4 +1,5 @@
-import type { Fn } from "."
+import { type Fn } from "."
+import { h } from "../../jsx"
 import { GlslContext } from "../lib/fn"
 import type {
   GlslVal,
@@ -41,7 +42,7 @@ export const ALL_FNS: FnDist[] = []
 export class FnDist<Q extends TyName = TyName> implements Fn {
   private o: FnDistOverload<Q>[] = []
 
-  constructor(private readonly name: string) {
+  constructor(readonly name: string) {
     ALL_FNS.push(this)
   }
 
@@ -191,6 +192,12 @@ export class FnDist<Q extends TyName = TyName> implements Fn {
     const dist = new FnDist<Q>(name)
     dist.o = this.o
     return dist
+  }
+
+  doc(): HTMLSpanElement[] {
+    return this.o.map((overload) => {
+      return h("", "(" + overload.params.join(", ") + ")", " → ", overload.type)
+    })
   }
 }
 

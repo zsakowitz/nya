@@ -60,7 +60,7 @@ export class Field extends FieldInert {
         if (event.metaKey && event.ctrlKey) {
           return
         }
-        const ext = this.options.shortcuts.get(event.key)
+        const ext = this.options.shortcuts?.get(event.key)
         if (!ext) return
         const result = this.init(ext, event.key, { event })
         if (result != "browser") {
@@ -68,7 +68,7 @@ export class Field extends FieldInert {
         }
         return
       }
-      const ext = this.options.inits.get(event.key)
+      const ext = this.options.inits?.get(event.key)
       if (!ext) return
       if (this.init(ext, event.key, { event }) != "browser") {
         event.preventDefault()

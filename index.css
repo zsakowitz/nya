@@ -1056,8 +1056,8 @@ video {
   grid-template-columns: 2.5rem auto;
 }
 
-.grid-cols-\[400px_1fr\] {
-  grid-template-columns: 400px 1fr;
+.grid-cols-\[400px_1fr_400px\] {
+  grid-template-columns: 400px 1fr 400px;
 }
 
 .grid-cols-\[auto\2c auto\] {
@@ -1082,6 +1082,10 @@ video {
 
 .justify-end {
   justify-content: flex-end;
+}
+
+.gap-4 {
+  gap: 1rem;
 }
 
 .gap-x-\[\.4em\] {
@@ -1429,6 +1433,11 @@ video {
   padding-bottom: 0.5625rem;
 }
 
+.py-4 {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
+
 .pb-1 {
   padding-bottom: 0.25rem;
 }
@@ -1459,6 +1468,10 @@ video {
 
 .pt-px {
   padding-top: 1px;
+}
+
+.pl-4 {
+  padding-left: 1rem;
 }
 
 .text-left {
@@ -1541,6 +1554,10 @@ video {
   font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
+.font-\[\'Symbola\'\] {
+  font-family: 'Symbola';
+}
+
 .text-2xl {
   font-size: 1.5rem;
   line-height: 2rem;
@@ -1587,8 +1604,41 @@ video {
   line-height: 1.25rem;
 }
 
+.text-lg {
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+}
+
+.text-\[1\.265rem\]\/\[4\] {
+  font-size: 1.265rem;
+  line-height: 4;
+}
+
+.text-\[1\.265rem\]\/4 {
+  font-size: 1.265rem;
+  line-height: 1rem;
+}
+
+.text-\[1\.265rem\]\/5 {
+  font-size: 1.265rem;
+  line-height: 1.25rem;
+}
+
+.text-\[1\.265rem\] {
+  font-size: 1.265rem;
+}
+
+.text-\[1\.265rem\]\/\[1\.15\] {
+  font-size: 1.265rem;
+  line-height: 1.15;
+}
+
 .font-normal {
   font-weight: 400;
+}
+
+.font-semibold {
+  font-weight: 600;
 }
 
 .italic {

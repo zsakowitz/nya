@@ -64,8 +64,8 @@ expr`\ux1\ux+\uxv2\ux-\ux3`
 
   finalField.onBeforeChange()
   const inits = finalField.options.inits
-  for (const key of inits.getAll()) {
-    const ext = inits.get(key)!
+  for (const key of inits?.getAll() || []) {
+    const ext = inits!.get(key)!
     if (ext == CmdColor || ext == CmdPrompt) continue
     field.sel = field.block.cursor(R).selection()
     field.init(ext, key, { skipChangeHandlers: true })

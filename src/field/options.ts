@@ -97,10 +97,10 @@ export class WordMap<T> {
 /** Configuration for various behaviors of math fields. */
 export interface Options {
   /** Characters and LaTeX commands which can be typed. */
-  inits: Inits
+  inits?: Inits
 
   /** Characters which can be typed as part of Ctrl/Cmd shortcuts. */
-  shortcuts: Inits
+  shortcuts?: Inits
 
   /**
    * If any word from `autos` is typed, it will be automatically initialized
