@@ -57,10 +57,8 @@ function createDocs() {
     return h("flex flex-col gap-4", title(label), ...data)
   }
 
-  return h(
-    "flex flex-col overflow-y-auto px-4 pb-4 gap-2",
-
-    section("advanced operators", [
+  function secAdvancedOperators() {
+    return section("advanced operators", [
       h(
         "flex flex-col",
         h(
@@ -188,9 +186,38 @@ function createDocs() {
           "sets <a> to some expression 50 times, starting with a=0, then returns <a>; if the “while” clause is ever false, returns <a> immediately",
         ),
       ),
-    ]),
+      h(
+        "flex flex-col",
+        h(
+          "text-[1.265rem]/[1.15]",
+          h(
+            "font-['Times_New_Roman']",
+            CmdBrack.render("(", ")", null, {
+              el: h(
+                "",
+                new CmdWord("iterate", "prefix").el,
+                CmdSupSub.render(null, { el: h("", new CmdNum("50").el) }),
+                new CmdWord("a", undefined, true).el,
+                new OpRightArrow().el,
+                TY_INFO.r32.icon(),
+                new CmdWord("until", "infix").el,
+                TY_INFO.bool.icon(),
+              ),
+            }),
+            new OpRightArrow().el,
+            TY_INFO.r32.icon(),
+          ),
+        ),
+        h(
+          "text-sm leading-tight text-slate-500",
+          "sets <a> to some expression 50 times, starting with a=0, then returns <a>; if the “until” clause is ever true, returns <a> immediately",
+        ),
+      ),
+    ])
+  }
 
-    section("data types", [
+  function secDataTypes() {
+    return section("data types", [
       h(
         "flex flex-col",
         ...Object.entries(TY_INFO)
@@ -211,21 +238,34 @@ function createDocs() {
             h("flex gap-1", info.icon(), info.name + " (high-res)"),
           ),
       ),
-    ]),
+    ])
+  }
 
-    section(
+  function secNamedFunctions() {
+    return section(
       "named functions",
       ALL_FNS.filter((x) => Object.values(FNS).includes(x))
         .sort((a, b) => (a.name < b.name ? -1 : 1))
         .map(makeDoc),
-    ),
+    )
+  }
 
-    section(
+  function secUnnamedFunctions() {
+    return section(
       "operators",
       ALL_FNS.filter((x) => !Object.values(FNS).includes(x))
         .sort((a, b) => (a.name < b.name ? -1 : 1))
         .map(makeDoc),
-    ),
+    )
+  }
+
+  return h(
+    "flex flex-col overflow-y-auto px-4 pb-4 gap-2",
+
+    secDataTypes(),
+    secAdvancedOperators(),
+    secNamedFunctions(),
+    secUnnamedFunctions(),
   )
 }
 
