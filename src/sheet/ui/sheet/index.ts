@@ -12,6 +12,7 @@ import type { Exts } from "../../ext"
 import { doMatchReglSize } from "../../regl"
 import { REMARK } from "../../remark"
 import { Slider } from "../../slider"
+import { isDark } from "../../theme"
 import type { Expr } from "../expr"
 import { createDrawAxes, makeInteractive, matchSize, Paper } from "../paper"
 import { Handlers } from "./handler"
@@ -178,6 +179,10 @@ export class Sheet {
         u_cy: this.regl.prop("u_cy"),
         // @ts-expect-error
         u_px_per_unit: this.regl.prop("u_px_per_unit"),
+        // @ts-expect-error
+        u_darkmul: this.regl.prop("u_darkmul"),
+        // @ts-expect-error
+        u_darkoffset: this.regl.prop("u_darkoffset"),
       },
     })
 
@@ -202,6 +207,8 @@ export class Sheet {
             ...splitRaw(this.paper.el.clientWidth / w),
             ...splitRaw(this.paper.el.clientHeight / h),
           ],
+          u_darkmul: isDark() ? [-1, -1, -1, 1] : [1, 1, 1, 1],
+          u_darkoffset: isDark() ? [1, 1, 1, 0] : [0, 0, 0, 0],
         },
         () => program(),
       )
@@ -227,6 +234,8 @@ export class Sheet {
 precision highp float;
 out vec4 color;
 vec4 v_coords;
+uniform vec4 u_darkmul;
+uniform vec4 u_darkoffset;
 uniform vec2 u_scale;
 uniform vec2 u_cx;
 uniform vec2 u_cy;

@@ -633,8 +633,6 @@ function registerPanAndZoom<T extends {}, U extends {}>(
     }
 
     if (ptrs.size == 2) {
-      document.querySelector("#debugcount")!.textContent =
-        +document.querySelector("#debugcount")!.textContent! + 1 + ""
       const v = ptrs.values()
       const a = v.next().value!
       const b = v.next().value!

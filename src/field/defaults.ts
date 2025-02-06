@@ -281,6 +281,7 @@ export const words = new WordMap<WordKind>([
   ["hsv", "prefix"],
   ["oklab", "prefix"],
   ["oklch", "prefix"],
+  ["invertdark", "prefix"],
 
   // Custom functions
   ["valid", "prefix"],

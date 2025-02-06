@@ -4,6 +4,7 @@ import type { GlslValue, JsValue } from "../ty"
 
 import { FN_CMP } from "./fn/cmp"
 import { FN_HSV } from "./fn/color/hsv"
+import { FN_INVERTDARK } from "./fn/color/invertdark"
 import { FN_OKLAB } from "./fn/color/oklab"
 import { FN_OKLCH } from "./fn/color/oklch"
 import { FN_RGB } from "./fn/color/rgb"
@@ -81,6 +82,7 @@ export const FNS: Record<string, Fn> = {
   distance: FN_DISTANCE,
   intersection: FN_INTERSECTION,
   glider: FN_GLIDER,
+  invertdark: FN_INVERTDARK,
 }
 Object.setPrototypeOf(FNS, null)
 
