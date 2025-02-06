@@ -225,4 +225,22 @@ export class Expr {
       this.setError(msg)
     }
   }
+
+  delete() {
+    const idx = this.sheet.exprs.indexOf(this)
+    if (idx == -1) return
+
+    this.sheet.exprs.splice(idx, 1)
+    if (this.state.ok) {
+      try {
+        this.state.ext?.destroy?.(this.state.data)
+      } catch {}
+    }
+
+    this.field.unlink()
+    this.sheet.queueGlsl()
+    this.sheet.queueIndices()
+    this.sheet.paper.queue()
+    this.el.remove()
+  }
 }

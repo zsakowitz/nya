@@ -1,5 +1,6 @@
 import { faBook } from "@fortawesome/free-solid-svg-icons/faBook"
 import { faListUl } from "@fortawesome/free-solid-svg-icons/faListUl"
+import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash"
 import type { Regl } from "regl"
 import regl from "regl"
 import { GlslContext, GlslHelpers } from "../../../eval/lib/fn"
@@ -388,8 +389,16 @@ export class Sheet {
 
     const switchToDocs = hx(
       "button",
-      "block bg-[--nya-bg] h-full aspect-square -mr-2 flex items-center justify-center border border-[--nya-border] rounded-lg hover:bg-[--nya-sidebar] transition",
-      fa(faBook, "size-6 fill-current"),
+      "bg-[--nya-bg] h-full flex items-center justify-center border border-[--nya-border] rounded-lg hover:bg-[--nya-sidebar] transition py-2 [line-height:1] gap-1",
+      fa(faBook, "size-4 fill-current"),
+      "Help",
+    )
+
+    const clearAll = hx(
+      "button",
+      "bg-[--nya-bg] h-full flex items-center justify-center border border-[--nya-border] rounded-lg hover:bg-[--nya-sidebar] transition py-2 [line-height:1] gap-1",
+      fa(faTrash, "size-4 fill-current"),
+      "Clear",
     )
 
     const sidebar = h(
@@ -397,13 +406,10 @@ export class Sheet {
 
       // title bar
       h(
-        "sticky top-0 w-full flex bg-[--nya-bg-sidebar] border-b border-r border-[--nya-border] px-4 text-center text-[--nya-title] py-2 z-10",
-        h(
-          "flex flex-col flex-1",
-          h("text-2xl leading-tight", "project nya"),
-          h("italic text-sm leading-none", REMARK),
-        ),
-        switchToDocs,
+        "sticky top-0 w-full flex flex-col bg-[--nya-bg-sidebar] border-b border-r border-[--nya-border] px-4 text-center text-[--nya-title] py-2 z-10",
+        h("text-2xl leading-tight", "project nya"),
+        h("italic text-sm leading-none", REMARK),
+        h("grid grid-cols-2 mt-2 -mx-2 gap-2", switchToDocs, clearAll),
       ),
 
       // main expression list
@@ -441,6 +447,12 @@ export class Sheet {
     switchToDocs.addEventListener("click", () => {
       sidebar.classList.add("hidden")
       docs.classList.remove("hidden")
+    })
+
+    clearAll.addEventListener("click", () => {
+      while (this.exprs[0]) {
+        this.exprs[0].delete()
+      }
     })
 
     // dom
