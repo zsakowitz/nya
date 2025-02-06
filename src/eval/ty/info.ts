@@ -270,6 +270,34 @@ export const TY_INFO: TyInfoMap = {
         new CmdWord("" + value, "var").insertAt(props.cursor, L)
       },
     },
+    icon() {
+      return h(
+        "",
+        h(
+          "size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] inline-block relative",
+          h(
+            "text-[#c74440] bg-white inline-block absolute inset-0 border-2 border-current rounded-[4px]",
+            h(
+              "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
+            ),
+            h(
+              "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-['Symbola'] text-[120%] mt-[1px]",
+              "?",
+            ),
+          ),
+          h(
+            "text-[#388c46] bg-white inline-block absolute inset-0 border-2 border-current rounded-[4px] [clip-path:polygon(100%_100%,100%_0%,0%_100%)]",
+            h(
+              "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
+            ),
+            h(
+              "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-['Symbola'] text-[120%] mt-[1px]",
+              "?",
+            ),
+          ),
+        ),
+      )
+    },
   },
   color: {
     name: "color",
@@ -300,6 +328,42 @@ export const TY_INFO: TyInfoMap = {
           L,
         )
       },
+    },
+    icon() {
+      function make(clsx: string) {
+        return h(
+          clsx,
+          h(
+            "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
+          ),
+          palette(),
+        )
+      }
+
+      function palette() {
+        return h(
+          "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-[18px] bg-[conic-gradient(hsl(360_100%_50%),hsl(315_100%_50%),hsl(270_100%_50%),hsl(225_100%_50%),hsl(180_100%_50%),hsl(135_100%_50%),hsl(90_100%_50%),hsl(45_100%_50%),hsl(0_100%_50%))] -rotate-90 rounded-full",
+        )
+      }
+
+      return h(
+        "",
+        h(
+          "size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] inline-block relative",
+          make(
+            "text-[#388c46] bg-white inline-block absolute inset-0 border-2 border-current rounded-[4px]",
+          ),
+          make(
+            "text-[#2d70b3] bg-white inline-block absolute inset-0 border-2 border-current rounded-[4px] [mask-image:linear-gradient(#000,transparent)]",
+          ),
+          make(
+            "text-[#c74440] bg-white inline-block absolute inset-0 border-2 border-current rounded-[4px] [mask-image:linear-gradient(to_right,#000,transparent)]",
+          ),
+          make(
+            "text-[#fa7e19] bg-white inline-block absolute inset-0 border-2 border-current rounded-[4px] [mask-image:linear-gradient(45deg,#000,transparent,transparent)]",
+          ),
+        ),
+      )
     },
   },
   point32: {
