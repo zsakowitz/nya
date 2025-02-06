@@ -17,6 +17,7 @@ import { FN_REAL } from "./fn/complex/real"
 import { FN_UNSIGN } from "./fn/complex/unsign"
 import { FN_DEBUGPOINT } from "./fn/debugpoint"
 import { FN_FIRSTVALID } from "./fn/firstvalid"
+import { FN_FORCESHADER } from "./fn/forceshader"
 import { FN_CIRCLE } from "./fn/geo/circle"
 import { FN_DISTANCE } from "./fn/geo/distance"
 import { FN_GLIDER } from "./fn/geo/glider"
@@ -87,6 +88,7 @@ export const FNS: Record<string, Fn> = {
   invertdark: FN_INVERTDARK,
   point: FN_POINT,
   complex: FN_COMPLEX,
+  forceshader: FN_FORCESHADER,
 }
 Object.setPrototypeOf(FNS, null)
 

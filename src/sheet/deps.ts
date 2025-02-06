@@ -156,7 +156,7 @@ export class Scope {
           get: () => {
             if (valueGlsl) return valueGlsl
 
-            const props = defaultPropsGlsl()
+            const props = this.propsGlsl()
             const ctx = (props.ctx = new GlslContext(this.helpers))
             const rawValue = glsl(node, props)
             const name = ctx.name()

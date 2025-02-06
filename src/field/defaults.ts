@@ -288,6 +288,7 @@ export const words = new WordMap<WordKind>([
   ["valid", "prefix"],
   ["firstvalid", "prefix"],
   ["screendistance", "prefix"],
+  ["forceshader", "prefix"],
 
   // Number theory
   ["lcm", "prefix"],

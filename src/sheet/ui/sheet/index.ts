@@ -141,6 +141,24 @@ function createDocs(className: string) {
           h(
             "font-['Times_New_Roman']",
             CmdBrack.render("(", ")", null, {
+              el: h("", new CmdWord("forceshader", "prefix").el, any()),
+            }),
+            new OpRightArrow().el,
+            any(),
+          ),
+        ),
+        h(
+          "text-sm leading-tight text-slate-500",
+          "forces the passed expression to be evaluated in a shader",
+        ),
+      ),
+      h(
+        "flex flex-col",
+        h(
+          "text-[1.265rem]/[1.15]",
+          h(
+            "font-['Times_New_Roman']",
+            CmdBrack.render("(", ")", null, {
               el: h(
                 "",
                 new CmdWord("iterate", "prefix").el,
