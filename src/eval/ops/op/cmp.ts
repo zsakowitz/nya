@@ -1,6 +1,6 @@
 import type { PuncCmp } from "../../ast/token"
-import { FnDist } from "../dist"
 import { num } from "../../ty/create"
+import { FnDist } from "../dist"
 import { FN_CMP } from "../fn/cmp"
 
 function createCmp(
@@ -33,11 +33,11 @@ const OP_GT = createCmp(">", (a, b) => a > b, ">", "==  1.0")
 const OP_LTE = createCmp("≤", (a, b) => a <= b, "<=", "!=  1.0")
 const OP_GTE = createCmp("≥", (a, b) => a >= b, ">=", "!= -1.0")
 
-const OP_NLT = createCmp("not <", (a, b) => !(a < b), "!<", "!= -1.0")
-const OP_NGT = createCmp("not >", (a, b) => !(a > b), "!>", "!=  1.0")
+const OP_NLT = createCmp("≮", (a, b) => !(a < b), "!<", "!= -1.0")
+const OP_NGT = createCmp("≯", (a, b) => !(a > b), "!>", "!=  1.0")
 
-const OP_NLTE = createCmp("not ≤", (a, b) => !(a <= b), "!<=", "==  1.0")
-const OP_NGTE = createCmp("not ≥", (a, b) => !(a >= b), "!>=", "== -1.0")
+const OP_NLTE = createCmp("≰", (a, b) => !(a <= b), "!<=", "==  1.0")
+const OP_NGTE = createCmp("≱", (a, b) => !(a >= b), "!>=", "== -1.0")
 
 const OP_EQ = createCmp("=", (a, b) => a == b, "==", "==  0.0")
 const OP_NE = createCmp("≠", (a, b) => a != b, "!==", "==  0.0")
