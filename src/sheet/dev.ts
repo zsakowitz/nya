@@ -17,6 +17,8 @@ function expr(source: { raw: readonly string[] }) {
   return expr
 }
 
+expr`J=\operatorname{line}\left(\left(0,0\right),\left(2,3\right)\right)`
+expr`\operatorname{perpendicular}\left(J,\left(2,3\right)\right)`
 expr`A=0.665-0.149i`
 expr`B=0+0i`
 expr`C=.3+.4i`

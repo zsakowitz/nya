@@ -25,6 +25,7 @@ import { FN_INTERSECTION } from "./fn/geo/intersection"
 import { FN_LINE } from "./fn/geo/line"
 import { FN_MIDPOINT } from "./fn/geo/midpoint"
 import { FN_PARALLEL } from "./fn/geo/parallel"
+import { FN_PERPENDICULAR } from "./fn/geo/perpendicular"
 import { FN_RAY } from "./fn/geo/ray"
 import { FN_SEGMENT } from "./fn/geo/segment"
 import { FN_VECTOR } from "./fn/geo/vector"
@@ -89,6 +90,7 @@ export const FNS: Record<string, Fn> = {
   point: FN_POINT,
   complex: FN_COMPLEX,
   forceshader: FN_FORCESHADER,
+  perpendicular: FN_PERPENDICULAR,
 }
 Object.setPrototypeOf(FNS, null)
 

@@ -16,7 +16,7 @@ function js(
 
 function glsl(ctx: GlslContext, ar: GlslVal, b: GlslVal) {
   const a = ctx.cache(ar)
-  return `mix(${a}.xy, ${a}.zw, ${b})`
+  return `mix(${a}.xy, ${a}.zw, ${b.expr})`
 }
 
 export const FN_GLIDER = new FnDist("glider", "constructs a point on an object")
