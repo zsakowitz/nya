@@ -5,21 +5,46 @@ import { js, jsCall, type PropsJs } from "./js"
 import { asNumericBase, parseNumberGlsl, parseNumberJs } from "./lib/base"
 import { id, name } from "./lib/binding"
 import { OP_BINARY, OP_UNARY } from "./ops"
+import { iterateGlsl, iterateJs, parseIterate } from "./ops/iterate"
 import { OP_ABS } from "./ops/op/abs"
+import { add } from "./ops/op/add"
+import { OP_AND } from "./ops/op/and"
+import { pickCmp } from "./ops/op/cmp"
+import { div, OP_DIV } from "./ops/op/div"
 import { OP_JUXTAPOSE } from "./ops/op/juxtapose"
 import { OP_POINT } from "./ops/op/point"
 import { OP_RAISE } from "./ops/op/raise"
 import { OP_X } from "./ops/op/x"
 import { OP_Y } from "./ops/op/y"
+import { piecewiseGlsl, piecewiseJs } from "./ops/piecewise"
 import { VARS } from "./ops/vars"
 import { withBindingsGlsl, withBindingsJs } from "./ops/with"
 import type { GlslValue, JsValue } from "./ty"
-import { listGlsl, listJs } from "./ty/coerce"
-import { real } from "./ty/create"
+import { isReal, listGlsl, listJs } from "./ty/coerce"
+import { frac, num, real } from "./ty/create"
+import { TY_INFO } from "./ty/info"
+import { splitValue } from "./ty/split"
 
 export interface AstTxr<T> {
   js(node: T, props: PropsJs): JsValue
   glsl(node: T, props: PropsGlsl): GlslValue
+}
+
+function joint<T>(fn: (node: T) => never): AstTxr<T> {
+  return {
+    js(node) {
+      return fn(node)
+    },
+    glsl(node) {
+      return fn(node)
+    },
+  }
+}
+
+function error<T>(data: TemplateStringsArray): AstTxr<T> {
+  return joint(() => {
+    throw new Error(data[0])
+  })
 }
 
 export const AST_TXRS: {
@@ -327,4 +352,202 @@ export const AST_TXRS: {
       throw new Error(`The variable '${n}' is not defined.`)
     },
   },
+  frac: {
+    js(node, props) {
+      return OP_DIV.js(js(node.a, props), js(node.b, props))
+    },
+    glsl(node, props) {
+      return OP_DIV.glsl(props.ctx, glsl(node.a, props), glsl(node.b, props))
+    },
+  },
+  raise: {
+    js(node, props) {
+      return OP_RAISE.js(js(node.base, props), js(node.exponent, props))
+    },
+    glsl(node, props) {
+      return OP_RAISE.glsl(
+        props.ctx,
+        glsl(node.base, props),
+        glsl(node.exponent, props),
+      )
+    },
+  },
+  cmplist: {
+    js(node, props) {
+      return node.ops
+        .map((op, i) => {
+          const a = js(node.items[i]!, props)
+          const b = js(node.items[i + 1]!, props)
+          return pickCmp(op).js(a, b)
+        })
+        .reduce((a, b) => OP_AND.js(a, b))
+    },
+    glsl(node, props) {
+      return node.ops
+        .map((op, i) => {
+          const a = glsl(node.items[i]!, props)
+          const b = glsl(node.items[i + 1]!, props)
+          return pickCmp(op).glsl(props.ctx, a, b)
+        })
+        .reduce((a, b) => OP_AND.glsl(props.ctx, a, b))
+    },
+  },
+  piecewise: {
+    js(node, props) {
+      return piecewiseJs(node.pieces, props)
+    },
+    glsl(node, props) {
+      return piecewiseGlsl(node.pieces, props)
+    },
+  },
+  error: joint(({ reason }) => {
+    throw new Error(reason)
+  }),
+  magicvar: {
+    js(node, props) {
+      if (node.value == "iterate") {
+        const parsed = parseIterate(node, { source: "expr" })
+        const { data, count } = iterateJs(parsed, { eval: props, seq: false })
+        if (parsed.retval == "count") {
+          return { type: "r64", list: false, value: real(count) }
+        } else {
+          return data[parsed.retval!.id]!
+        }
+      }
+      throw new Error(`The '${node.value}' operator is not supported yet.`)
+    },
+    glsl(node, props) {
+      if (node.value == "iterate") {
+        const parsed = parseIterate(node, { source: "expr" })
+        const { data, count } = iterateGlsl(parsed, { eval: props, seq: false })
+        if (parsed.retval == "count") {
+          return count
+        } else {
+          return data[parsed.retval!.id]!
+        }
+      }
+      throw new Error(`The '${node.value}' operator is not supported yet.`)
+    },
+  },
+  void: error`Empty expression.`,
+  index: {
+    js(node, props) {
+      const on = js(node.on, props)
+      if (!on.list) {
+        throw new Error("Cannot index on a non-list.")
+      }
+      const index = js(node.index, props)
+      if (index.list !== false) {
+        throw new Error("Cannot index with a list yet.")
+      }
+      if (!isReal(index)) {
+        throw new Error("Indexes must be numbers for now.")
+      }
+      const value = num(index.value) - 1
+      return {
+        type: on.type,
+        list: false,
+        value: on.value[value] ?? TY_INFO[on.type].garbage.js,
+      }
+    },
+    glsl(node, props) {
+      const on = glsl(node.on, props)
+      if (on.list === false) {
+        throw new Error("Cannot index on a non-list.")
+      }
+      const indexVal = js(node.index, props)
+      if (indexVal.list !== false) {
+        throw new Error("Cannot index with a list yet.")
+      }
+      if (!isReal(indexVal)) {
+        throw new Error("Indices must be numbers for now.")
+      }
+      const index = num(indexVal.value)
+      if (index != Math.floor(index) || index <= 0 || index > on.list) {
+        throw new Error(
+          `Index ${index} is out-of-bounds on list of length ${on.list}.`,
+        )
+      }
+      return {
+        type: on.type,
+        list: false,
+        expr: `${on.expr}[${index - 1}]`,
+      }
+    },
+  },
+  mixed: {
+    js(node, props) {
+      return {
+        type: "r64",
+        list: false,
+        value: add(
+          parseNumberJs(node.integer, props.base).value,
+          div(
+            parseNumberJs(node.a, props.base).value,
+            parseNumberJs(node.b, props.base).value,
+          ),
+        ),
+      }
+    },
+    glsl(node, props) {
+      const value = add(
+        parseNumberJs(node.integer, props.base).value,
+        div(
+          parseNumberJs(node.a, props.base).value,
+          parseNumberJs(node.b, props.base).value,
+        ),
+      )
+      return splitValue(num(value))
+    },
+  },
+  root: {
+    js(node, props) {
+      if (node.root) {
+        return OP_RAISE.js(
+          js(node.contents, props),
+          OP_DIV.js(
+            { list: false, type: "r64", value: frac(1, 1) },
+            js(node.root, props),
+          ),
+        )
+      } else {
+        return OP_RAISE.js(js(node.contents, props), {
+          list: false,
+          type: "r64",
+          value: frac(1, 2),
+        })
+      }
+    },
+    glsl(node, props) {
+      if (node.root) {
+        return OP_RAISE.glsl(
+          props.ctx,
+          glsl(node.contents, props),
+          OP_DIV.glsl(
+            props.ctx,
+            { list: false, type: "r64", expr: "vec2(1, 0)" },
+            glsl(node.root, props),
+          ),
+        )
+      } else {
+        return OP_RAISE.glsl(props.ctx, glsl(node.contents, props), {
+          list: false,
+          type: "r64",
+          expr: "vec2(0.5, 0)",
+        })
+      }
+    },
+  },
+  commalist: error`Lists must be surrounded by square brackets.`,
+  sub: error`Invalid subscript.`,
+  sup: error`Invalid superscript.`,
+  big: error`Summation and product notation is not supported yet.`,
+  bigsym: error`Invalid sum or product.`,
+  factorial: error`Factorials are not supported yet.`,
+  num16: error`UScript is not supported yet.`,
+  matrix: error`Matrices are not supported yet.`,
+  binding: error`Cannot evaluate a variable binding.`,
+  punc: joint((node) => {
+    throw new Error(`Unexpected operator '${node.value}'.`)
+  }),
 }
