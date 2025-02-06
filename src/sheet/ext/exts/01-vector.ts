@@ -26,11 +26,11 @@ export const EXT_VECTOR = defineExt({
 
       const dx = o2.x - o1.x
       const dy = o2.y - o1.y
-      const nx = (12 * scale * dx) / Math.hypot(dx, dy)
-      const ny = (12 * scale * dy) / Math.hypot(dx, dy)
+      const nx = (14 * scale * dx) / Math.hypot(dx, dy)
+      const ny = (14 * scale * dy) / Math.hypot(dx, dy)
       const ox = o2.x - nx
       const oy = o2.y - ny
-      const w = 0.5
+      const w = 0.4
 
       ctx.beginPath()
       ctx.lineWidth = 3 * scale
