@@ -1922,6 +1922,10 @@ video {
   font-family: 'Symbo;a';
 }
 
+.font-\[\] {
+  font-family: ;
+}
+
 .text-2xl {
   font-size: 1.5rem;
   line-height: 2rem;
@@ -2024,6 +2028,11 @@ video {
 
 .text-\[50\%\]\/\[1\] {
   font-size: 50%;
+  line-height: 1;
+}
+
+.text-\[120\%\]\/\[1\] {
+  font-size: 120%;
   line-height: 1;
 }
 

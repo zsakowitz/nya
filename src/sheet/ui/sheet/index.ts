@@ -2,12 +2,18 @@ import type { Regl } from "regl"
 import regl from "regl"
 import { GlslContext, GlslHelpers } from "../../../eval/lib/fn"
 import { FNS } from "../../../eval/ops"
-import { ALL_FNS, type FnDist } from "../../../eval/ops/dist"
+import { ALL_FNS } from "../../../eval/ops/dist"
 import { declareAddR64 } from "../../../eval/ops/op/add"
 import { declareMulR64 } from "../../../eval/ops/op/mul"
 import { num, real } from "../../../eval/ty/create"
-import { TY_INFO } from "../../../eval/ty/info"
+import { any, TY_INFO } from "../../../eval/ty/info"
 import { splitRaw } from "../../../eval/ty/split"
+import { OpEq } from "../../../field/cmd/leaf/cmp"
+import { CmdNum } from "../../../field/cmd/leaf/num"
+import { OpRightArrow } from "../../../field/cmd/leaf/op"
+import { CmdWord } from "../../../field/cmd/leaf/word"
+import { CmdBrack } from "../../../field/cmd/math/brack"
+import { CmdSupSub } from "../../../field/cmd/math/supsub"
 import type { Options } from "../../../field/options"
 import { h, hx } from "../../../jsx"
 import { Scope } from "../../deps"
@@ -21,7 +27,7 @@ import { createDrawAxes, makeInteractive, matchSize, Paper } from "../paper"
 import { Handlers } from "./handler"
 
 function createDocs() {
-  function doc(fn: FnDist) {
+  function makeDoc(fn: { name: string; label: string; docs(): Node[] }) {
     return h(
       "flex flex-col",
       h(
@@ -54,12 +60,143 @@ function createDocs() {
   return h(
     "flex flex-col overflow-y-auto px-4 pb-4 gap-2",
 
+    section("advanced operators", [
+      h(
+        "flex flex-col",
+        h(
+          "text-[1.265rem]/[1.15]",
+          h(
+            "font-['Times_New_Roman']",
+            CmdBrack.render("(", ")", null, {
+              el: h(
+                "",
+                any(),
+                new CmdWord("base", "infix").el,
+                TY_INFO.r32.icon(),
+              ),
+            }),
+            new OpRightArrow().el,
+            any(),
+          ),
+        ),
+        h(
+          "text-sm leading-tight text-slate-500",
+          "interprets <left side> as being in base <right side>",
+        ),
+      ),
+      h(
+        "flex flex-col",
+        h(
+          "text-[1.265rem]/[1.15]",
+          h(
+            "font-['Times_New_Roman']",
+            CmdBrack.render("(", ")", null, {
+              el: h(
+                "",
+                any(),
+                new CmdWord("with", "infix").el,
+                new CmdWord("a", undefined, true).el,
+                new OpEq(false).el,
+                any("text-[#2d70b3]"),
+              ),
+            }),
+            new OpRightArrow().el,
+            any(),
+          ),
+        ),
+        h(
+          "text-sm leading-tight text-slate-500",
+          "evaluates <left side> with <a> set to <right side>",
+        ),
+      ),
+      h(
+        "flex flex-col",
+        h(
+          "text-[1.265rem]/[1.15]",
+          h(
+            "font-['Times_New_Roman']",
+            CmdBrack.render("(", ")", null, {
+              el: h(
+                "",
+                new CmdWord("iterate", "prefix").el,
+                CmdSupSub.render(null, { el: h("", new CmdNum("50").el) }),
+                new CmdWord("a", undefined, true).el,
+                new OpRightArrow().el,
+                TY_INFO.r32.icon(),
+              ),
+            }),
+            new OpRightArrow().el,
+            TY_INFO.r32.icon(),
+          ),
+        ),
+        h(
+          "text-sm leading-tight text-slate-500",
+          "sets <a> to some expression 50 times, starting with a=0, then returns <a>",
+        ),
+      ),
+      h(
+        "flex flex-col",
+        h(
+          "text-[1.265rem]/[1.15]",
+          h(
+            "font-['Times_New_Roman']",
+            CmdBrack.render("(", ")", null, {
+              el: h(
+                "",
+                new CmdWord("iterate", "prefix").el,
+                CmdSupSub.render(null, { el: h("", new CmdNum("50").el) }),
+                new CmdWord("a", undefined, true).el,
+                new OpRightArrow().el,
+                any(),
+                new CmdWord("from", "infix").el,
+                any(),
+              ),
+            }),
+            new OpRightArrow().el,
+            any(),
+          ),
+        ),
+        h(
+          "text-sm leading-tight text-slate-500",
+          "sets <a> to some expression 50 times, starting with the expression after the word “from”, then returns <a>",
+        ),
+      ),
+      h(
+        "flex flex-col",
+        h(
+          "text-[1.265rem]/[1.15]",
+          h(
+            "font-['Times_New_Roman']",
+            CmdBrack.render("(", ")", null, {
+              el: h(
+                "",
+                new CmdWord("iterate", "prefix").el,
+                CmdSupSub.render(null, { el: h("", new CmdNum("50").el) }),
+                new CmdWord("a", undefined, true).el,
+                new OpRightArrow().el,
+                TY_INFO.r32.icon(),
+                new CmdWord("while", "infix").el,
+                TY_INFO.bool.icon(),
+              ),
+            }),
+            new OpRightArrow().el,
+            TY_INFO.r32.icon(),
+          ),
+        ),
+        h(
+          "text-sm leading-tight text-slate-500",
+          "sets <a> to some expression 50 times, starting with a=0, then returns <a>; if the “while” clause is ever false, returns <a> immediately",
+        ),
+      ),
+    ]),
+
     section("data types", [
       h(
         "flex flex-col",
         ...Object.entries(TY_INFO)
           .filter((x) => !x[0].endsWith("64"))
           .map(([, info]) => h("flex gap-1", info.icon(), info.name)),
+        h("flex gap-1", any(), "any type"),
       ),
       hx(
         "p",
@@ -80,14 +217,14 @@ function createDocs() {
       "named functions",
       ALL_FNS.filter((x) => Object.values(FNS).includes(x))
         .sort((a, b) => (a.name < b.name ? -1 : 1))
-        .map(doc),
+        .map(makeDoc),
     ),
 
     section(
       "operators",
       ALL_FNS.filter((x) => !Object.values(FNS).includes(x))
         .sort((a, b) => (a.name < b.name ? -1 : 1))
-        .map(doc),
+        .map(makeDoc),
     ),
   )
 }

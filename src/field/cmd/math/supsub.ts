@@ -69,7 +69,7 @@ export class CmdSupSub extends Command {
   ) {
     super(
       sub ? "_" : "^",
-      CmdSupSub.html(sub, sup),
+      CmdSupSub.render(sub, sup),
       [sub, sup].filter((x) => x != null),
     )
   }
@@ -100,7 +100,10 @@ export class CmdSupSub extends Command {
     )
   }
 
-  static html(sub: Block | null, sup: Block | null) {
+  static render(
+    sub: { el: HTMLSpanElement } | null,
+    sup: { el: HTMLSpanElement } | null,
+  ) {
     if (sup && !sub) {
       return h(
         "nya-cmd-supsub",
@@ -134,7 +137,7 @@ export class CmdSupSub extends Command {
   }
 
   redraw() {
-    const next = CmdSupSub.html(this.sub, this.sup)
+    const next = CmdSupSub.render(this.sub, this.sup)
     this.el.replaceWith(next)
     ;(this as any).el = next
   }

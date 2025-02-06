@@ -167,6 +167,25 @@ function iconReal(hd: boolean) {
   )
 }
 
+export function any(
+  color: "text-[#fa7e19]" | "text-[#2d70b3]" = "text-[#fa7e19]",
+) {
+  return h(
+    "",
+    h(
+      color +
+        " size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-white inline-block relative border-2 border-current rounded-[4px]",
+      h(
+        "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
+      ),
+      h(
+        "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-['Symbola'] text-[120%]/[1]",
+        "✨",
+      ),
+    ),
+  )
+}
+
 export const TY_INFO: TyInfoMap = {
   r32: {
     name: "real number",
