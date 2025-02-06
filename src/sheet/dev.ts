@@ -23,8 +23,6 @@ expr`C=.3+.4i`
 show(
   expr`\operatorname{invertdark}\begin{cases}\operatorname{rgb}\left(255,128,128,.4\right)&\left|z-A\right|=q\\\operatorname{rgb}\left(128,255,128,.4\right)&\left|z-B\right|=q\\\operatorname{rgb}\left(128,128,255,.4\right)&\end{cases}\operatorname{with}q=\operatorname{min}\left(\left|z-A\right|,\left|z-B\right|,\left|z-C\right|\right)\operatorname{with}z=\operatorname{iterate}^{20}z\to z-\frac{\left(z-A\right)\cdot \left(z-B\right)\cdot \left(z-C\right)}{3z^{2}-2\cdot \left(A+B+C\right)z+\left(AB+BC+CA\right)}\operatorname{from}z=\frac{p}{1}`,
 )
-expr`D=circle\left(A,B\right)`
-expr`glider\left(D,.2\right)`
 expr`q_2=0.1base2`
 expr`q_4=0.\digit q\digit 5base36`
 show(
@@ -33,7 +31,9 @@ show(
 show(
   expr`\operatorname{firstvalid}\operatorname{oklab}\left(C.x+.4,.5\cdot \left(x+0.5\right),0.5\cdot \left(y+0.5\right)\right)`,
 )
-expr`circle\left(\left(2,3\right),q_2+4\right)`
+expr`D=circle\left(\left(2,3\right),q_2+4\right)`
+expr`E=glider\left(D,-.367\right)`
+expr`circle\left(E,\left(0,0\right)\right)`
 expr`rgb\left(a\left[1\right],a\left[2\right],a\left[3\right]\right)witha=255\cdot \left(0.45sin\frac{5\left|\left[a,b,c\right]\right|}{n}+0.5\right)withseqiterate^{50}\begin{list}r\to s\\s\to z\\z\to zz+p\\a\to a+dot\left(z-s,s-r\right)\\b\to b+dot\left(z-s,z-s\right)\\c\to c+dot\left(z-s,z-r\right)\\n\to n+1\end{list}whilez.realz.real+z.imagz.imag<4from\begin{list}r=0i\\s=0i\\z=0i\\a=\frac{0}{1}\\b=\frac{0}{1}\\c=\frac{0}{1}\end{list}`
 expr`hsv\left(360\left|iterate^{20}z\to z^{2}+pwhile\left|z\right|\leq 2from\frac{0i}{1}\right|,1,1\right)`
 expr`firstvalid\left(oklch\left(.4,y,360x\right),oklch\left(.5,y,360x\right),oklch\left(.6,y,360x\right),oklch\left(.7,y,360x\right),oklch\left(.8,y,360x\right),oklch\left(.9,y,360x\right),oklch\left(.95,y,360x\right)\right)`
