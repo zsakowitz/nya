@@ -4,6 +4,7 @@ import { CmdComma } from "../../field/cmd/leaf/comma"
 import { CmdWord } from "../../field/cmd/leaf/word"
 import { CmdBrack } from "../../field/cmd/math/brack"
 import { Block, L, R } from "../../field/model"
+import { h } from "../../jsx"
 import type { Paper } from "../../sheet/ui/paper"
 import type { GlslContext } from "../lib/fn"
 import { num, real } from "../ty/create"
@@ -20,6 +21,7 @@ export interface TyInfo<T> {
   garbage: Garbage<T>
   coerce: TyCoerceMap<T>
   write: Write<T>
+  icon(): HTMLSpanElement
 }
 
 export interface Plot<T> {
@@ -96,6 +98,53 @@ function lineInfo(name: string): TyInfo<[SPoint, SPoint]> {
   }
 }
 
+function iconPoint() {
+  return h(
+    "",
+    h(
+      "text-[#6042a6] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-white inline-block relative border-2 border-current rounded-[4px]",
+      h(
+        "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
+      ),
+      h(
+        "size-[7px] bg-current absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
+      ),
+    ),
+  )
+}
+
+function iconComplex() {
+  return h(
+    "",
+    h(
+      "text-[#6042a6] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-white inline-block relative border-2 border-current rounded-[4px]",
+      h(
+        "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
+      ),
+      h(
+        "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-['Times_New_Roman'] italic text-[120%]",
+        "i",
+      ),
+    ),
+  )
+}
+
+function iconReal() {
+  return h(
+    "",
+    h(
+      "text-[#000] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-white inline-block relative border-2 border-current rounded-[4px]",
+      h(
+        "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
+      ),
+      h(
+        "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-['Times_New_Roman'] italic text-[120%]",
+        "x",
+      ),
+    ),
+  )
+}
+
 // Types are listed in coercion order, so later declared types can only coerce
 // types declared above. This isn't checked or anything, but it's a good
 // heuristic to ensure we don't create any cycles.
@@ -106,6 +155,7 @@ export const TY_INFO: TyInfoMap = {
     garbage: { js: NANPT, glsl: "vec2(0.0/0.0)" },
     coerce: {},
     write: WRITE_COMPLEX,
+    icon: iconComplex,
   },
   c64: {
     name: "complex number",
@@ -122,6 +172,7 @@ export const TY_INFO: TyInfoMap = {
       },
     },
     write: WRITE_COMPLEX,
+    icon: iconComplex,
   },
   r32: {
     name: "real number",
@@ -138,6 +189,7 @@ export const TY_INFO: TyInfoMap = {
       },
     },
     write: WRITE_REAL,
+    icon: iconReal,
   },
   r64: {
     name: "real number",
@@ -170,6 +222,7 @@ export const TY_INFO: TyInfoMap = {
       },
     },
     write: WRITE_REAL,
+    icon: iconReal,
   },
   bool: {
     name: "true/false value",
@@ -255,6 +308,7 @@ export const TY_INFO: TyInfoMap = {
     garbage: { js: NANPT, glsl: "vec2(0.0/0.0)" },
     coerce: {},
     write: WRITE_POINT,
+    icon: iconPoint,
   },
   point64: {
     name: "point",
@@ -271,6 +325,7 @@ export const TY_INFO: TyInfoMap = {
       },
     },
     write: WRITE_POINT,
+    icon: iconPoint,
   },
   line32: lineInfo("line"),
   segment32: lineInfo("segment"),

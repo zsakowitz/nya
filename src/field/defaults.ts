@@ -23,6 +23,7 @@ import {
   OpUpArrow,
 } from "./cmd/leaf/op"
 import { SymInfinity, SymPi, SymTau } from "./cmd/leaf/sym"
+import { CmdTyName } from "./cmd/leaf/tyname"
 import { CmdVar, type WordKind } from "./cmd/leaf/var"
 import { CmdList } from "./cmd/logic/list"
 import { CmdPiecewise } from "./cmd/logic/piecewise"
@@ -397,6 +398,7 @@ export const latex = new WordMap<LatexInit>([
   ],
   ["\\ux", CmuSym],
   ["\\uxv", CmuSym],
+  ["\\tyname", CmdTyName],
 ])
 
 for (const key of inits.getAll()) {
