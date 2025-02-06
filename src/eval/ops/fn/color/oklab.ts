@@ -1,7 +1,13 @@
 import type { GlslContext } from "../../../lib/fn"
 import { FnDist } from "../../dist"
 
-export function oklab(ctx: GlslContext, a: string, b: string, c: string) {
+export function oklab(
+  ctx: GlslContext,
+  a: string,
+  b: string,
+  c: string,
+  alpha: string,
+) {
   ctx.glsl`// https://github.com/patriciogonzalezvivo/lygia/blob/main/color/space/oklab2rgb.glsl
 const mat3 _helper_oklab_OKLAB2RGB_A = mat3(
   1.0,           1.0,           1.0,
@@ -16,14 +22,23 @@ vec3 _helper_oklab(const in vec3 oklab) {
   return _helper_oklab_OKLAB2RGB_B * (lms * lms * lms);
 }
 `
-  return `vec4(_helper_oklab(vec3(${a}, ${b}, ${c})), 1.0)`
+  return `vec4(_helper_oklab(vec3(${a}, ${b}, ${c})), ${alpha})`
 }
 
-export const FN_OKLAB = new FnDist("oklab").add(
-  ["r32", "r32", "r32"],
-  "color",
-  () => {
-    throw new Error("Cannot compute oklab() colors outside of shaders.")
-  },
-  (ctx, a, b, c) => oklab(ctx, a.expr, b.expr, c.expr),
-)
+export const FN_OKLAB = new FnDist("oklab")
+  .add(
+    ["r32", "r32", "r32"],
+    "color",
+    () => {
+      throw new Error("Cannot compute oklab() colors outside of shaders.")
+    },
+    (ctx, a, b, c) => oklab(ctx, a.expr, b.expr, c.expr, "1.0"),
+  )
+  .add(
+    ["r32", "r32", "r32", "r32"],
+    "color",
+    () => {
+      throw new Error("Cannot compute oklab() colors outside of shaders.")
+    },
+    (ctx, a, b, c, alpha) => oklab(ctx, a.expr, b.expr, c.expr, alpha.expr),
+  )

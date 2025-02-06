@@ -66,7 +66,7 @@ export class Sheet {
       "canvas",
       "absolute inset-0 size-full pointer-events-none [image-rendering:pixelated]",
     )
-    const gl = canvas.getContext("webgl2")!
+    const gl = canvas.getContext("webgl2", { premultipliedAlpha: false })!
     this.regl = regl({ canvas, gl })
 
     // prepare slider
@@ -184,10 +184,10 @@ export class Sheet {
     let cleared = false
 
     this.regl.frame(() => {
-      if (!cleared) {
-        this.regl.clear({ color: [0, 0, 0, 0] })
-        cleared = true
-      }
+      // if (!cleared) {
+      this.regl.clear({ color: [0, 0, 0, 0] })
+      // cleared = true
+      // }
 
       const program = this.program
       if (!program) return
