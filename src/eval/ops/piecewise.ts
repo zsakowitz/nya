@@ -8,11 +8,15 @@ import { garbageValueGlsl, garbageValueJs } from "../ty/garbage"
 
 export function piecewiseJs(piecesRaw: Piece[], props: PropsJs): JsValue {
   const pieces = piecesRaw.map(({ value, condition }, index) => {
-    if (index == piecesRaw.length - 1 && condition.type == "void") {
-      condition = { type: "var", kind: "var", value: "true" }
-    }
+    const cond: JsValue =
+      index == piecesRaw.length - 1 && condition.type == "void" ?
+        {
+          list: false,
+          type: "bool",
+          value: true,
+        }
+      : js(condition, props)
 
-    const cond = js(condition, props)
     if (cond.list !== false) {
       throw new Error(
         "Lists cannot be used as the condition for a piecewise function yet.",
@@ -46,13 +50,13 @@ export function piecewiseGlsl(piecesRaw: Piece[], props: PropsGlsl): GlslValue {
 
   let isDefinitelyAssigned = false
   const pieces = piecesRaw.map(({ value, condition }, index) => {
-    if (index == piecesRaw.length - 1 && condition.type == "void") {
-      isDefinitelyAssigned = true
-      condition = { type: "var", kind: "var", value: "true" }
-    }
-
     const ctxCond = props.ctx.fork()
-    const cond = glsl(condition, { ...props, ctx: ctxCond })
+    const cond: GlslValue =
+      index == piecesRaw.length - 1 && condition.type == "void" ?
+        ((isDefinitelyAssigned = true),
+        { expr: "true", list: false, type: "bool" })
+      : glsl(condition, { ...props, ctx: ctxCond })
+
     if (cond.list !== false) {
       throw new Error(
         "Lists cannot be used as the condition for a piecewise function yet.",

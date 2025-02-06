@@ -127,7 +127,12 @@ export class CmuSym extends CmuLeaf {
     }
 
     if (this.sym[0] == "v") {
-      tokens.push({ type: "var", value: this.sym, kind: "var" })
+      tokens.push({
+        type: "var",
+        value: this.sym,
+        kind: "var",
+        span: new Span(this.parent, this[L], this[R]),
+      })
       return
     }
 

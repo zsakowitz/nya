@@ -295,6 +295,7 @@ export class CmdVar extends Leaf {
           type: "var",
           value: this.text,
           kind: this.kind,
+          span: new Span(this.parent, this[L], this[R]),
         })
         return
       }
@@ -302,12 +303,16 @@ export class CmdVar extends Leaf {
       let last = tokens[tokens.length - 1]
       if (last && last.type == "var" && !last.sub && !last.sup) {
         last.value += this.text
+        if (last.span) {
+          last.span[R] = this[R]
+        }
       } else {
         tokens.push(
           (last = {
             type: "var",
             value: this.text,
             kind: this.kind,
+            span: new Span(this.parent, this[L], this[R]),
           }),
         )
       }
@@ -324,7 +329,12 @@ export class CmdVar extends Leaf {
       return
     }
 
-    tokens.push({ type: "var", value: this.text, kind: "var" })
+    tokens.push({
+      type: "var",
+      value: this.text,
+      kind: "var",
+      span: new Span(this.parent, this[L], this[R]),
+    })
   }
 
   get autoCmd(): string {

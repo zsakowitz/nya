@@ -1,6 +1,7 @@
 import { Leaf } from "."
 import type { Node } from "../../../eval/ast/token"
 import { h } from "../../../jsx"
+import { L, R, Span } from "../../model"
 import type { WordKind } from "./var"
 
 export class CmdWord extends Leaf {
@@ -47,6 +48,7 @@ export class CmdWord extends Leaf {
       type: "var",
       value: this.text,
       kind: this.kind,
+      span: new Span(this.parent, this[L], this[R]),
     })
   }
 }

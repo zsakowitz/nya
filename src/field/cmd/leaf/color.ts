@@ -110,6 +110,7 @@ ${parseInt(color.slice(5, 7), 16)})`
         type: "var",
         value: "rgb",
         kind: "prefix",
+        span: null,
       },
       args: {
         type: "commalist",

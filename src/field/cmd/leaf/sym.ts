@@ -4,6 +4,8 @@ import { h } from "../../../jsx"
 import type { LatexParser } from "../../latex"
 import {
   L,
+  R,
+  Span,
   type Command,
   type Cursor,
   type InitProps,
@@ -47,7 +49,12 @@ export function sym(
     }
 
     ir(tokens: Node[]): void {
-      tokens.push({ type: "var", kind: "var", value: text })
+      tokens.push({
+        type: "var",
+        kind: "var",
+        value: text,
+        span: new Span(this.parent, this[L], this[R]),
+      })
     }
 
     get autoCmd() {

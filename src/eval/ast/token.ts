@@ -166,6 +166,7 @@ export type Var = {
   kind: WordKind
   sub?: Node
   sup?: Node
+  span: Span | null
 }
 
 /** A plain, user-assignable variable. */
