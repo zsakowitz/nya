@@ -51,12 +51,6 @@ function getRayBounds(line: Tys["ray32"], paper: Paper): [Point, Point] | null {
     paper.paperToCanvas({ x: x1, y: y1 }),
     paper.paperToCanvas({ x: xmin, y: m * (xmin - x1) + y1 }),
   ]
-
-  //
-  //   return [
-  //     paper.paperToCanvas({ x: xmin, y: m * (xmin - x1) + y1 }),
-  //     paper.paperToCanvas({ x: xmin + w, y: m * (xmin + w - x1) + y1 }),
-  //   ]
 }
 
 export const EXT_RAY = defineExt({
