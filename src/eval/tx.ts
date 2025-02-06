@@ -1,9 +1,10 @@
+import type { Span } from "../field/model"
 import { commalist, fnargs } from "./ast/collect"
 import type { Node } from "./ast/token"
 import { glsl, glslCall, type PropsGlsl } from "./glsl"
 import { js, jsCall, type PropsJs } from "./js"
 import { asNumericBase, parseNumberGlsl, parseNumberJs } from "./lib/base"
-import { id, name } from "./lib/binding"
+import { id, name, type Bindings } from "./lib/binding"
 import { OP_BINARY, OP_UNARY } from "./ops"
 import { iterateGlsl, iterateJs, parseIterate } from "./ops/iterate"
 import { OP_ABS } from "./ops/op/abs"
@@ -28,15 +29,29 @@ import { splitValue } from "./ty/split"
 export interface AstTxr<T> {
   js(node: T, props: PropsJs): JsValue
   glsl(node: T, props: PropsGlsl): GlslValue
+  drag: DragTarget<T>
+}
+
+export interface PropsDragTarget {
+  bindingsDrag: Bindings<Node>
+}
+
+export interface DragTarget<T> {
+  num(node: T, props: PropsDragTarget): Span | null
 }
 
 function joint<T>(fn: (node: T) => never): AstTxr<T> {
   return {
     js(node) {
-      return fn(node)
+      fn(node)
     },
     glsl(node) {
-      return fn(node)
+      fn(node)
+    },
+    drag: {
+      num(node) {
+        fn(node)
+      },
     },
   }
 }
@@ -45,6 +60,16 @@ function error<T>(data: TemplateStringsArray): AstTxr<T> {
   return joint(() => {
     throw new Error(data[0])
   })
+}
+
+function dragNum(node: Node, props: PropsDragTarget) {
+  return AST_TXRS[node.type].drag.num(node as never, props)
+}
+
+const NO_DRAG: DragTarget<unknown> = {
+  num() {
+    return null
+  },
 }
 
 export const AST_TXRS: {
@@ -62,6 +87,11 @@ export const AST_TXRS: {
         node.value,
         node.sub ? asNumericBase(js(node.sub, props)) : props.base,
       )
+    },
+    drag: {
+      num(node) {
+        return node.span
+      },
     },
   },
   op: {
@@ -201,6 +231,11 @@ export const AST_TXRS: {
       }
       throw new Error(`The operator '${node.kind}' is not supported yet.`)
     },
+    drag: {
+      num() {
+        return null
+      },
+    },
   },
   group: {
     js(node, props) {
@@ -243,6 +278,14 @@ export const AST_TXRS: {
         `${node.lhs}...${node.rhs} brackets are not supported yet.`,
       )
     },
+    drag: {
+      num(node, props) {
+        if (node.lhs == "(" && node.rhs == ")") {
+          return dragNum(node.value, props)
+        }
+        return null
+      },
+    },
   },
   call: {
     js(node, props) {
@@ -275,6 +318,7 @@ export const AST_TXRS: {
       }
       throw new Error("Cannot call anything except built-in functions yet.")
     },
+    drag: NO_DRAG,
   },
   juxtaposed: {
     js(node, props) {
@@ -293,6 +337,7 @@ export const AST_TXRS: {
         .map((x) => glsl(x, props))
         .reduce((a, b) => OP_JUXTAPOSE.glsl(props.ctx, a, b))
     },
+    drag: NO_DRAG,
   },
   var: {
     js(node, props) {
@@ -351,6 +396,18 @@ export const AST_TXRS: {
       }
       throw new Error(`The variable '${n}' is not defined.`)
     },
+    drag: {
+      num(node, props) {
+        if (node.sup) return null
+
+        const value = props.bindingsDrag.get(id(node))
+        if (value) {
+          return dragNum(value, props)
+        }
+
+        return null
+      },
+    },
   },
   frac: {
     js(node, props) {
@@ -359,6 +416,7 @@ export const AST_TXRS: {
     glsl(node, props) {
       return OP_DIV.glsl(props.ctx, glsl(node.a, props), glsl(node.b, props))
     },
+    drag: NO_DRAG,
   },
   raise: {
     js(node, props) {
@@ -371,6 +429,7 @@ export const AST_TXRS: {
         glsl(node.exponent, props),
       )
     },
+    drag: NO_DRAG,
   },
   cmplist: {
     js(node, props) {
@@ -391,6 +450,7 @@ export const AST_TXRS: {
         })
         .reduce((a, b) => OP_AND.glsl(props.ctx, a, b))
     },
+    drag: NO_DRAG,
   },
   piecewise: {
     js(node, props) {
@@ -399,6 +459,7 @@ export const AST_TXRS: {
     glsl(node, props) {
       return piecewiseGlsl(node.pieces, props)
     },
+    drag: NO_DRAG,
   },
   error: joint(({ reason }) => {
     throw new Error(reason)
@@ -428,6 +489,7 @@ export const AST_TXRS: {
       }
       throw new Error(`The '${node.value}' operator is not supported yet.`)
     },
+    drag: NO_DRAG,
   },
   void: error`Empty expression.`,
   index: {
@@ -474,6 +536,7 @@ export const AST_TXRS: {
         expr: `${on.expr}[${index - 1}]`,
       }
     },
+    drag: NO_DRAG,
   },
   mixed: {
     js(node, props) {
@@ -499,6 +562,7 @@ export const AST_TXRS: {
       )
       return splitValue(num(value))
     },
+    drag: NO_DRAG,
   },
   root: {
     js(node, props) {
@@ -537,6 +601,7 @@ export const AST_TXRS: {
         })
       }
     },
+    drag: NO_DRAG,
   },
   commalist: error`Lists must be surrounded by square brackets.`,
   sub: error`Invalid subscript.`,
