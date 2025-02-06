@@ -33,7 +33,7 @@ function c32(
 
 export const FN_DOT = new FnDist(
   "dot",
-  "takes the dot product of two complex numbers or two points",
+  "takes the dot product of two complex numbers",
 )
   .add(
     ["c64", "c64"],
@@ -43,18 +43,6 @@ export const FN_DOT = new FnDist(
   )
   .add(
     ["c32", "c32"],
-    "r32",
-    (a, b) => sub(mul(a.value.x, b.value.x), mul(a.value.y, b.value.y)),
-    c32,
-  )
-  .add(
-    ["point64", "point64"],
-    "r64",
-    (a, b) => sub(mul(a.value.x, b.value.x), mul(a.value.y, b.value.y)),
-    c64,
-  )
-  .add(
-    ["point32", "point32"],
     "r32",
     (a, b) => sub(mul(a.value.x, b.value.x), mul(a.value.y, b.value.y)),
     c32,

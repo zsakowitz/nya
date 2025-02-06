@@ -27,7 +27,7 @@ import type { Expr } from "../expr"
 import { createDrawAxes, makeInteractive, matchSize, Paper } from "../paper"
 import { Handlers } from "./handler"
 
-function createDocs() {
+function createDocs(className: string) {
   function makeDoc(fn: { name: string; label: string; docs(): Node[] }) {
     return h(
       "flex flex-col",
@@ -287,8 +287,7 @@ function createDocs() {
   }
 
   return h(
-    "flex flex-col overflow-y-auto px-4 pb-4 gap-2 border-l border-[--nya-border]",
-
+    className,
     secDataTypes(),
     secAdvancedOperators(),
     secNamedFunctions(),
@@ -412,7 +411,9 @@ export class Sheet {
       ),
 
       // docs
-      createDocs(),
+      createDocs(
+        "flex flex-col overflow-y-auto px-4 pb-4 gap-2 border-l border-[--nya-border]",
+      ),
     )
     new ResizeObserver(() =>
       this.el.style.setProperty(
@@ -560,4 +561,15 @@ void main() {
     })
     this._qdGlsl = true
   }
+}
+
+if (location.search.includes("?docsonly")) {
+  document.body.appendChild(
+    h(
+      "",
+      createDocs(
+        "fixed inset-0 *:*:relative first:*:*:[grid-column:1_/_-1] *:grid *:grid-cols-[repeat(auto-fill,minmax(400px,1fr))] overflow-y-auto px-4 pb-4 gap-2 border-l border-[--nya-border] z-20 bg-white",
+      ),
+    ),
+  )
 }

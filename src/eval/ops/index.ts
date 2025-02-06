@@ -9,8 +9,10 @@ import { FN_OKLAB } from "./fn/color/oklab"
 import { FN_OKLCH } from "./fn/color/oklch"
 import { FN_RGB } from "./fn/color/rgb"
 import { FN_ARG } from "./fn/complex/arg"
+import { FN_COMPLEX } from "./fn/complex/complex"
 import { FN_DOT } from "./fn/complex/dot"
 import { FN_IMAG } from "./fn/complex/imag"
+import { FN_POINT } from "./fn/complex/point"
 import { FN_REAL } from "./fn/complex/real"
 import { FN_UNSIGN } from "./fn/complex/unsign"
 import { FN_DEBUGPOINT } from "./fn/debugpoint"
@@ -83,6 +85,8 @@ export const FNS: Record<string, Fn> = {
   intersection: FN_INTERSECTION,
   glider: FN_GLIDER,
   invertdark: FN_INVERTDARK,
+  point: FN_POINT,
+  complex: FN_COMPLEX,
 }
 Object.setPrototypeOf(FNS, null)
 

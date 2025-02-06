@@ -58,7 +58,7 @@ function glsl(ctx: GlslContext, ar: GlslVal, br: GlslVal): string {
 
 export const FN_INTERSECTION = new FnDist(
   "intersection",
-  "calculates the intersection between two lines",
+  "constructs the point where two objects intersect",
 )
 
 for (const a of ["line32", "ray32", "segment32", "vector32"] as const) {

@@ -23,6 +23,8 @@ expr`C=.3+.4i`
 show(
   expr`\operatorname{invertdark}\begin{cases}\operatorname{rgb}\left(255,128,128,.4\right)&\left|z-A\right|=q\\\operatorname{rgb}\left(128,255,128,.4\right)&\left|z-B\right|=q\\\operatorname{rgb}\left(128,128,255,.4\right)&\end{cases}\operatorname{with}q=\operatorname{min}\left(\left|z-A\right|,\left|z-B\right|,\left|z-C\right|\right)\operatorname{with}z=\operatorname{iterate}^{20}z\to z-\frac{\left(z-A\right)\cdot \left(z-B\right)\cdot \left(z-C\right)}{3z^{2}-2\cdot \left(A+B+C\right)z+\left(AB+BC+CA\right)}\operatorname{from}z=\frac{p}{1}`,
 )
+expr`F=\operatorname{line}\left(A.point,C.point\right)`
+expr`glider\left(F,.3\right)`
 expr`q_2=0.1base2`
 expr`q_4=0.\digit q\digit 5base36`
 show(

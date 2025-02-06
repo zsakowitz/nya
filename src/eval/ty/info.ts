@@ -82,7 +82,11 @@ const WRITE_POINT: Write<SPoint> = {
 
 const NANPT: SPoint = { type: "point", x: real(NaN), y: real(NaN) }
 
-function lineInfo(name: string, clsx: string): TyInfo<[SPoint, SPoint]> {
+function lineInfo(
+  name: string,
+  clsx: string,
+  glide: ((bound: number) => number) | null,
+): TyInfo<[SPoint, SPoint]> {
   return {
     name,
     glsl: "vec4",
@@ -114,6 +118,29 @@ function lineInfo(name: string, clsx: string): TyInfo<[SPoint, SPoint]> {
         ),
       )
     },
+    glide:
+      glide ?
+        (props) => {
+          const x1 = num(props.shape[0].x)
+          const y1 = num(props.shape[0].y)
+          const x2 = num(props.shape[1].x)
+          const y2 = num(props.shape[1].y)
+          const { x, y } = props.point
+
+          const B = Math.hypot(x1 - x, y1 - y)
+          const A = Math.hypot(x2 - x, y2 - y)
+          const C = Math.hypot(x1 - x2, y1 - y2)
+
+          const a = (C * C + B * B - A * A) / (2 * C)
+
+          return {
+            value: glide(a / C),
+            precision:
+              props.paper.canvasDistance({ x: x1, y: y1 }, { x: x2, y: y2 }) /
+              Math.hypot(x1 - x2, y1 - y2),
+          }
+        }
+      : undefined,
   }
 }
 
@@ -194,6 +221,79 @@ export function any(
 }
 
 export const TY_INFO: TyInfoMap = {
+  bool: {
+    name: "true/false value",
+    glsl: "bool",
+    garbage: { js: false, glsl: "false" },
+    coerce: {
+      r32: {
+        js(self) {
+          return self ? real(1) : real(NaN)
+        },
+        glsl(self) {
+          return `(${self} ? 1.0 : 0.0/0.0)`
+        },
+      },
+      r64: {
+        js(self) {
+          return self ? real(1) : real(NaN)
+        },
+        glsl(self) {
+          return `(${self} ? vec2(1, 0) : vec2(0.0/0.0))`
+        },
+      },
+      c32: {
+        js(self) {
+          return self ? { type: "point", x: real(1), y: real(0) } : NANPT
+        },
+        glsl(self) {
+          return `(${self} ? vec2(1, 0) : vec2(0.0/0.0))`
+        },
+      },
+      c64: {
+        js(self) {
+          return self ? { type: "point", x: real(1), y: real(0) } : NANPT
+        },
+        glsl(self) {
+          return `(${self} ? vec4(1, 0, 0, 0) : vec4(0.0/0.0))`
+        },
+      },
+    },
+    write: {
+      isApprox() {
+        return false
+      },
+      display(value, props) {
+        new CmdWord("" + value, "var").insertAt(props.cursor, L)
+      },
+    },
+    icon() {
+      return h(
+        "",
+        h(
+          "size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] inline-block relative",
+          h(
+            "text-[#c74440] bg-white inline-block absolute inset-0 border-2 border-current rounded-[4px]",
+            h(
+              "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
+            ),
+            h(
+              "size-[16px] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-2 border-[#388c46] rounded-full",
+            ),
+          ),
+          h(
+            "text-[#388c46] bg-white inline-block absolute inset-0 border-2 border-current rounded-[4px] [clip-path:polygon(100%_100%,100%_0%,0%_100%)]",
+            h(
+              "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
+            ),
+            h(
+              "size-[16px] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#c74440] rounded-full",
+            ),
+          ),
+        ),
+      )
+    },
+  },
   r32: {
     name: "real number",
     glsl: "float",
@@ -306,79 +406,6 @@ export const TY_INFO: TyInfoMap = {
       return iconPoint(true)
     },
   },
-  bool: {
-    name: "true/false value",
-    glsl: "bool",
-    garbage: { js: false, glsl: "false" },
-    coerce: {
-      r32: {
-        js(self) {
-          return self ? real(1) : real(NaN)
-        },
-        glsl(self) {
-          return `(${self} ? 1.0 : 0.0/0.0)`
-        },
-      },
-      r64: {
-        js(self) {
-          return self ? real(1) : real(NaN)
-        },
-        glsl(self) {
-          return `(${self} ? vec2(1, 0) : vec2(0.0/0.0))`
-        },
-      },
-      c32: {
-        js(self) {
-          return self ? { type: "point", x: real(1), y: real(0) } : NANPT
-        },
-        glsl(self) {
-          return `(${self} ? vec2(1, 0) : vec2(0.0/0.0))`
-        },
-      },
-      c64: {
-        js(self) {
-          return self ? { type: "point", x: real(1), y: real(0) } : NANPT
-        },
-        glsl(self) {
-          return `(${self} ? vec4(1, 0, 0, 0) : vec4(0.0/0.0))`
-        },
-      },
-    },
-    write: {
-      isApprox() {
-        return false
-      },
-      display(value, props) {
-        new CmdWord("" + value, "var").insertAt(props.cursor, L)
-      },
-    },
-    icon() {
-      return h(
-        "",
-        h(
-          "size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] inline-block relative",
-          h(
-            "text-[#c74440] bg-white inline-block absolute inset-0 border-2 border-current rounded-[4px]",
-            h(
-              "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
-            ),
-            h(
-              "size-[16px] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-2 border-[#388c46] rounded-full",
-            ),
-          ),
-          h(
-            "text-[#388c46] bg-white inline-block absolute inset-0 border-2 border-current rounded-[4px] [clip-path:polygon(100%_100%,100%_0%,0%_100%)]",
-            h(
-              "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
-            ),
-            h(
-              "size-[16px] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#c74440] rounded-full",
-            ),
-          ),
-        ),
-      )
-    },
-  },
   color: {
     name: "color",
     glsl: "vec4",
@@ -449,18 +476,22 @@ export const TY_INFO: TyInfoMap = {
   line32: lineInfo(
     "line",
     "w-[30px] h-0 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-t-2 border-current -rotate-[30deg]",
+    (x) => x,
   ),
   segment32: lineInfo(
     "segment",
     "w-[20px] h-0 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-t-2 border-current -rotate-[30deg]",
+    (x) => Math.max(0, Math.min(1, x)),
   ),
   ray32: lineInfo(
     "ray",
     "w-[30px] h-0 absolute rounded-full top-1/2 left-1/2 translate-x-[-10px] translate-y-[-3.5px] border-t-2 border-current -rotate-[30deg]",
+    (x) => Math.max(0, x),
   ),
   vector32: lineInfo(
     "vector",
     "w-[20px] h-0 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-t-2 border-current -rotate-[30deg] after:absolute after:content-['_'] after:bg-current after:top-[-4px] after:right-[-1px] after:bottom-[-2px] after:w-[6px] after:[clip-path:polygon(0%_0%,100%_50%,0%_100%)]",
+    null,
   ),
   circle32: {
     name: "circle",

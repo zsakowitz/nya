@@ -306,6 +306,8 @@ export const words = new WordMap<WordKind>([
   ["imag", "prefix"],
   ["arg", "prefix"],
   ["dot", "prefix"],
+  ["point", "prefix"],
+  ["complex", "prefix"],
 
   // Boolean utilities
   ["false", "var"],
