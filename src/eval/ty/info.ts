@@ -95,6 +95,20 @@ function lineInfo(name: string): TyInfo<[SPoint, SPoint]> {
         WRITE_POINT.display(value[1], inner)
       },
     },
+    icon() {
+      return h(
+        "",
+        h(
+          "text-[#2d70b3] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-white inline-block relative border-2 border-current rounded-[4px]",
+          h(
+            "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
+          ),
+          h(
+            "w-[20px] h-0 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-t-2 border-current -rotate-45",
+          ),
+        ),
+      )
+    },
   }
 }
 
@@ -420,6 +434,20 @@ export const TY_INFO: TyInfoMap = {
         new CmdComma().insertAt(inner.cursor, L)
         inner.num(value.radius)
       },
+    },
+    icon() {
+      return h(
+        "",
+        h(
+          "text-[#388c46] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-white inline-block relative border-2 border-current rounded-[4px]",
+          h(
+            "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
+          ),
+          h(
+            "size-[16px] absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-2 border-current",
+          ),
+        ),
+      )
     },
   },
 }
