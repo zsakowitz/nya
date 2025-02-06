@@ -313,6 +313,7 @@ export const words = new WordMap<WordKind>([
 
   // Debug utilities
   ["debugpoint", "prefix"],
+  ["cmp", "prefix"],
 
   // Iteration
   ["iterate", "magicprefix"],

@@ -1,7 +1,7 @@
 import type { GlslContext } from "../../../lib/fn"
-import type { GlslVal, Ty, Tys, Val } from "../../../ty"
+import type { GlslVal, Val } from "../../../ty"
 import { pt } from "../../../ty/create"
-import { FnDist, type FnDistOverload } from "../../dist"
+import { FnDist } from "../../dist"
 import { div } from "../../op/div"
 import { mul } from "../../op/mul"
 import { sub } from "../../op/sub"
@@ -56,31 +56,13 @@ function glsl(ctx: GlslContext, ar: GlslVal, br: GlslVal): string {
 ) / ((${x1} - ${x2}) * (${y3} - ${y4}) - (${y1} - ${y2}) * (${x3} - ${x4}))`
 }
 
-export const FN_INTERSECTION = new (class extends FnDist {
-  signature(args: Ty[]): FnDistOverload<keyof Tys> {
-    if (
-      args.length == 2 &&
-      (args[0]!.type == "line32" ||
-        args[0]!.type == "segment32" ||
-        args[0]!.type == "vector32" ||
-        args[0]!.type == "ray32") &&
-      (args[1]!.type == "line32" ||
-        args[1]!.type == "segment32" ||
-        args[1]!.type == "vector32" ||
-        args[1]!.type == "ray32")
-    ) {
-      return {
-        params: [args[0]!.type, args[1]!.type],
-        type: "point32",
-        js(a, b) {
-          return js(a.value as any, b.value as any)
-        },
-        glsl(ctx, a, b) {
-          return glsl(ctx, a, b)
-        },
-      }
-    }
-    return super.signature(args)
+export const FN_INTERSECTION = new FnDist(
+  "intersection",
+  "calculates the intersection between two lines",
+)
+
+for (const a of ["line32", "ray32", "segment32", "vector32"] as const) {
+  for (const b of ["line32", "ray32", "segment32", "vector32"] as const) {
+    FN_INTERSECTION.add([a, b], "point32", (a, b) => js(a.value, b.value), glsl)
   }
-})("intersection", "calculates the intersection between two lines")
-// TODO: update to "two shapes" once circles work
+}

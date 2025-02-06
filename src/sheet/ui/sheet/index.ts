@@ -1,7 +1,8 @@
 import type { Regl } from "regl"
 import regl from "regl"
 import { GlslContext, GlslHelpers } from "../../../eval/lib/fn"
-import { ALL_FNS } from "../../../eval/ops/dist"
+import { FNS } from "../../../eval/ops"
+import { ALL_FNS, type FnDist } from "../../../eval/ops/dist"
 import { declareAddR64 } from "../../../eval/ops/op/add"
 import { declareMulR64 } from "../../../eval/ops/op/mul"
 import { num, real } from "../../../eval/ty/create"
@@ -17,6 +18,36 @@ import { isDark } from "../../theme"
 import type { Expr } from "../expr"
 import { createDrawAxes, makeInteractive, matchSize, Paper } from "../paper"
 import { Handlers } from "./handler"
+
+function doc(fn: FnDist) {
+  return h(
+    "flex flex-col",
+    h(
+      "text-[1.265rem]/[1.15]",
+      ...(fn.name.match(/[a-z]+|[^a-z]+/g) || []).map((x) =>
+        x.match(/[a-z]/) ?
+          h("font-['Times_New_Roman']", x)
+        : h("font-['Symbola']", x),
+      ),
+    ),
+    h("text-sm leading-tight text-slate-500", fn.label),
+    h("flex flex-col pl-4 mt-1", ...fn.docs()),
+  )
+}
+
+function title(label: string) {
+  return h(
+    "sticky top-0 z-10 bg-[--nya-bg] pt-2",
+    h(
+      "block bg-[--nya-bg-sidebar] border border-[--nya-border] -mx-2 rounded-lg px-2 pt-1 font-['Symbola'] text-[1.265rem] text-center",
+      label,
+    ),
+  )
+}
+
+function section(label: string, data: Node[]) {
+  return h("flex flex-col gap-4", title(label), ...data)
+}
 
 export class Sheet {
   readonly pixelRatio
@@ -132,24 +163,20 @@ export class Sheet {
 
       // docs
       h(
-        "flex flex-col overflow-y-auto gap-4 px-4 py-4",
-        ...ALL_FNS.sort((a, b) => (a.name < b.name ? -1 : 1)).map((fn) =>
-          h(
-            "flex flex-col gap-1",
-            h(
-              "flex flex-col",
-              h(
-                "text-[1.265rem]/[1.15]",
-                ...(fn.name.match(/[a-z]+|[^a-z]+/g) || []).map((x) =>
-                  x.match(/[a-z]/) ?
-                    h("font-['Times_New_Roman']", x)
-                  : h("font-['Symbola']", x),
-                ),
-              ),
-              h("text-sm leading-tight text-slate-500", fn.label),
-            ),
-            h("flex flex-col pl-4", ...fn.docs()),
-          ),
+        "flex flex-col overflow-y-auto px-4 pb-4",
+
+        section(
+          "named functions",
+          ALL_FNS.filter((x) => Object.values(FNS).includes(x))
+            .sort((a, b) => (a.name < b.name ? -1 : 1))
+            .map(doc),
+        ),
+
+        section(
+          "operators",
+          ALL_FNS.filter((x) => !Object.values(FNS).includes(x))
+            .sort((a, b) => (a.name < b.name ? -1 : 1))
+            .map(doc),
         ),
       ),
     )
