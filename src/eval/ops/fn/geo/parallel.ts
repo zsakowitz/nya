@@ -5,7 +5,7 @@ import { FnDist } from "../../dist"
 import { add } from "../../op/add"
 import { sub } from "../../op/sub"
 
-type LineLike = "line32" | "segment32" | "vector32" | "ray32"
+type LineLike = "segment32" | "ray32" | "line32" | "vector32"
 
 const js = (
   { value: [A, B] }: JsVal<LineLike>,
@@ -26,7 +26,7 @@ export const FN_PARALLEL = new FnDist(
   "parallel",
   "creates a line parallel to an existing line which passes through some point",
 )
-  .add(["line32", "point32"], "line32", js, glsl)
-  .add(["ray32", "point32"], "line32", js, glsl)
   .add(["segment32", "point32"], "line32", js, glsl)
+  .add(["ray32", "point32"], "line32", js, glsl)
+  .add(["line32", "point32"], "line32", js, glsl)
   .add(["vector32", "point32"], "line32", js, glsl)

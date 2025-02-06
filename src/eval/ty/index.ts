@@ -40,9 +40,9 @@ export interface Tys {
 
   point32: SPoint
   point64: SPoint
-  line32: [SPoint, SPoint]
-  ray32: [SPoint, SPoint]
   segment32: [SPoint, SPoint]
+  ray32: [SPoint, SPoint]
+  line32: [SPoint, SPoint]
   vector32: [SPoint, SPoint]
   circle32: { center: SPoint; radius: SReal }
 }

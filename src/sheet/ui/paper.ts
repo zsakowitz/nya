@@ -17,6 +17,8 @@ const THEME_AXIS_NUMBER_NEGATIVE_X_OFFSET = -2.5
 const THEME_AXIS_STROKE = () => theme("--nya-paper-screen-line", "black")
 
 const THEME_ZOOM_ZERO_SNAP_DISTANCE = 16
+const MAX_GRIDLINES_MAJOR = 200
+const MAX_GRIDLINES_MINOR = MAX_GRIDLINES_MAJOR * 5
 // const THEME_MINIMUM_WIDTH = 10 ** -10
 // const THEME_MAXIMUM_WIDTH = 10 ** 30
 //
@@ -142,15 +144,21 @@ export class Paper {
     const yAdj = (target.y - yCenter) * (1 - scale) + yCenter
 
     const xmin2 = scale * (xmin - xCenter) + xAdj
-    const xmax2 = scale * (xmin + w - xCenter) + xAdj
     const ymin2 = scale * (ymin - yCenter) + yAdj
-    const ymax2 = scale * (ymin + h - yCenter) + yAdj
+    const w2 = scale * w
+    const h2 = scale * h
+
+    const ew = 1e-12 * Math.max(Math.abs(xmin2), Math.abs(xmin2 + w2))
+    const eh = 1e-12 * Math.max(Math.abs(ymin2), Math.abs(ymin2 + h2))
+    if (w2 <= ew || h2 <= eh || w2 >= 1e300 || h2 >= 1e300) {
+      return
+    }
 
     this.rawBounds = {
       xmin: xmin2,
-      w: xmax2 - xmin2,
+      w: w2,
       ymin: ymin2,
-      h: ymax2 - ymin2,
+      h: h2,
     }
     this.queue()
   }
@@ -262,7 +270,11 @@ export function createDrawAxes(paper: Paper) {
     ctx.globalAlpha = THEME_MAJOR_LINE_ALPHA
     const majorStart = Math.floor(xmin / major) * major
     const majorEnd = Math.ceil((xmin + w) / major) * major
-    for (let line = majorStart; line < majorEnd; line += major) {
+    for (
+      let line = majorStart, i = 0;
+      line < majorEnd && i < MAX_GRIDLINES_MAJOR;
+      line += major, i++
+    ) {
       const { x } = paperToCanvas(line, 0)
       drawScreenLineX(x, scale())
     }
@@ -271,7 +283,11 @@ export function createDrawAxes(paper: Paper) {
     ctx.globalAlpha = THEME_MINOR_LINE_ALPHA
     const minorStart = Math.floor(xmin / minor) * minor
     const minorEnd = Math.ceil((xmin + w) / minor) * minor
-    for (let line = minorStart; line < minorEnd; line += minor) {
+    for (
+      let line = minorStart, i = 0;
+      line < minorEnd && i < MAX_GRIDLINES_MINOR;
+      line += minor, i++
+    ) {
       const { x } = paperToCanvas(line, 0)
       drawScreenLineX(x, 1 * scale())
     }
@@ -290,7 +306,11 @@ export function createDrawAxes(paper: Paper) {
     ctx.globalAlpha = THEME_MAJOR_LINE_ALPHA
     const majorStart = Math.floor(ymin / major) * major
     const majorEnd = Math.ceil((ymin + h) / major) * major
-    for (let line = majorStart; line < majorEnd; line += major) {
+    for (
+      let line = majorStart, i = 0;
+      line < majorEnd && i < MAX_GRIDLINES_MAJOR;
+      line += major, i++
+    ) {
       const { y } = paperToCanvas(0, line)
       drawScreenLineY(y, 1 * scale())
     }
@@ -299,7 +319,11 @@ export function createDrawAxes(paper: Paper) {
     ctx.globalAlpha = THEME_MINOR_LINE_ALPHA
     const minorStart = Math.floor(ymin / minor) * minor
     const minorEnd = Math.ceil((ymin + h) / minor) * minor
-    for (let line = minorStart; line < minorEnd; line += minor) {
+    for (
+      let line = minorStart, i = 0;
+      line < minorEnd && i < MAX_GRIDLINES_MINOR;
+      line += minor, i++
+    ) {
       const { y } = paperToCanvas(0, line)
       drawScreenLineY(y, 1 * scale())
     }
@@ -371,7 +395,11 @@ export function createDrawAxes(paper: Paper) {
       }
     }
 
-    for (let line = majorStart; line < majorEnd; line++) {
+    for (
+      let line = majorStart, i = 0;
+      line < majorEnd && i < MAX_GRIDLINES_MAJOR;
+      line++, i++
+    ) {
       if (line == 0) {
         continue
       }
@@ -410,7 +438,11 @@ export function createDrawAxes(paper: Paper) {
     const majorStart = Math.floor(ymin / major)
     const majorEnd = Math.ceil((ymin + h) / major)
 
-    for (let line = majorStart; line < majorEnd; line++) {
+    for (
+      let line = majorStart, i = 0;
+      line < majorEnd && i < MAX_GRIDLINES_MAJOR;
+      line++, i++
+    ) {
       if (line == 0) {
         continue
       }

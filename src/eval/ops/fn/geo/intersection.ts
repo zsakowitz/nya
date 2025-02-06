@@ -62,8 +62,8 @@ export const FN_INTERSECTION = new FnDist(
 )
 
 // line-line
-for (const a of ["line32", "ray32", "segment32", "vector32"] as const) {
-  for (const b of ["line32", "ray32", "segment32", "vector32"] as const) {
+for (const a of ["segment32", "ray32", "line32"] as const) {
+  for (const b of ["segment32", "ray32", "line32"] as const) {
     FN_INTERSECTION.add([a, b], "point32", (a, b) => js(a.value, b.value), glsl)
   }
 }
@@ -127,7 +127,7 @@ for (const a of ["line32", "ray32", "segment32", "vector32"] as const) {
     return `(vec2(${x1},${y1}) + ${v1} * ((${b}${index == -1 ? "-" : "+"}${d})/${c}))`
   }
 
-  for (const b of ["line32", "ray32", "segment32", "vector32"] as const) {
+  for (const b of ["segment32", "ray32", "line32"] as const) {
     FN_INTERSECTION.add(
       ["circle32", b],
       "point32",

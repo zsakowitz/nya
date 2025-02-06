@@ -473,11 +473,6 @@ export const TY_INFO: TyInfoMap = {
       )
     },
   },
-  line32: lineInfo(
-    "line",
-    "w-[30px] h-0 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-t-2 border-current -rotate-[30deg]",
-    (x) => x,
-  ),
   segment32: lineInfo(
     "segment",
     "w-[20px] h-0 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-t-2 border-current -rotate-[30deg]",
@@ -487,6 +482,11 @@ export const TY_INFO: TyInfoMap = {
     "ray",
     "w-[30px] h-0 absolute rounded-full top-1/2 left-1/2 translate-x-[-10px] translate-y-[-3.5px] border-t-2 border-current -rotate-[30deg]",
     (x) => Math.max(0, x),
+  ),
+  line32: lineInfo(
+    "line",
+    "w-[30px] h-0 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-t-2 border-current -rotate-[30deg]",
+    (x) => x,
   ),
   vector32: lineInfo(
     "vector",
