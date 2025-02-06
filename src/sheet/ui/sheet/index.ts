@@ -1,3 +1,4 @@
+import { faBook } from "@fortawesome/free-solid-svg-icons/faBook"
 import type { Regl } from "regl"
 import regl from "regl"
 import { GlslContext, GlslHelpers } from "../../../eval/lib/fn"
@@ -15,6 +16,7 @@ import { CmdWord } from "../../../field/cmd/leaf/word"
 import { CmdPiecewise } from "../../../field/cmd/logic/piecewise"
 import { CmdBrack } from "../../../field/cmd/math/brack"
 import { CmdSupSub } from "../../../field/cmd/math/supsub"
+import { fa } from "../../../field/fa"
 import type { Options } from "../../../field/options"
 import { h, hx } from "../../../jsx"
 import { Scope } from "../../deps"
@@ -314,16 +316,17 @@ function createDocs(className: string) {
 }
 
 export class Sheet {
-  readonly pixelRatio
-  readonly setPixelRatio
-  readonly glPixelRatio = new Slider()
-
   readonly paper = new Paper()
-  readonly handlers = new Handlers(this)
   readonly helpers = new GlslHelpers()
   readonly scope: Scope
-  readonly regl: Regl
   readonly exprs: Expr[] = []
+
+  private readonly pixelRatio
+  private readonly setPixelRatio
+  private readonly glPixelRatio = new Slider()
+
+  private readonly handlers = new Handlers(this)
+  private readonly regl: Regl
 
   readonly el
   readonly elExpressions = h("flex flex-col")
@@ -331,6 +334,9 @@ export class Sheet {
     "font-sans text-[--nya-expr-index] text-[65%] leading-none",
     "1",
   )
+
+  private readonly elSidebar
+  private readonly elDocs
 
   constructor(
     readonly options: Options,
@@ -373,21 +379,34 @@ export class Sheet {
     this.glPixelRatio.onInput = () =>
       this.setPixelRatio(num(this.glPixelRatio.value))
 
+    const switchToDocs = hx(
+      "button",
+      "block bg-[--nya-bg] h-full aspect-square -mr-2 flex items-center justify-center border border-[--nya-border] rounded-lg hover:bg-[--nya-sidebar] transition",
+      fa(faBook, "size-6 fill-current"),
+    )
+    switchToDocs.addEventListener("click", () => {
+      this.elSidebar.classList.add("hidden")
+      this.elDocs.classList.remove("hidden")
+    })
+
     // dom
     this.glPixelRatio.el.className =
       "block w-48 bg-[--nya-bg] outline outline-[--nya-pixel-ratio] rounded-full p-1"
     this.el = h(
-      "fixed inset-0 grid grid-cols-[400px_1fr_400px] grid-rows-1 select-none",
+      "fixed inset-0 grid grid-cols-[400px_1fr] grid-rows-1 select-none",
 
-      // sidebar
-      h(
+      (this.elSidebar = h(
         "font-['Symbola','Times_New_Roman',sans-serif] flex flex-col overflow-y-auto",
 
         // title bar
         h(
-          "sticky top-0 w-full flex flex-col bg-[--nya-bg-sidebar] border-b border-r border-[--nya-border] px-4 text-center text-[--nya-title] py-2 z-10",
-          h("text-2xl leading-tight", "project nya"),
-          h("italic text-sm leading-none", REMARK),
+          "sticky top-0 w-full flex bg-[--nya-bg-sidebar] border-b border-r border-[--nya-border] px-4 text-center text-[--nya-title] py-2 z-10",
+          h(
+            "flex flex-col flex-1",
+            h("text-2xl leading-tight", "project nya"),
+            h("italic text-sm leading-none", REMARK),
+          ),
+          switchToDocs,
         ),
 
         // main expression list
@@ -412,9 +431,10 @@ export class Sheet {
 
         // right border on remainder of the flexbox
         h("flex-1 border-r border-[--nya-border]"),
-      ),
-
-      // paper
+      )),
+      (this.elDocs = createDocs(
+        "flex flex-col overflow-y-auto px-4 pb-4 gap-2 border-l border-[--nya-border] hidden",
+      )),
       h(
         "relative",
         canvas,
@@ -422,15 +442,7 @@ export class Sheet {
         h(
           "absolute block top-0 bottom-0 left-0 w-1 from-[--nya-sidebar-shadow] to-transparent bg-gradient-to-r",
         ),
-        h(
-          "absolute block top-0 bottom-0 right-0 w-1 from-[--nya-sidebar-shadow] to-transparent bg-gradient-to-l",
-        ),
         h("absolute flex flex-col top-2 right-2", this.glPixelRatio.el),
-      ),
-
-      // docs
-      createDocs(
-        "flex flex-col overflow-y-auto px-4 pb-4 gap-2 border-l border-[--nya-border]",
       ),
     )
     new ResizeObserver(() =>
