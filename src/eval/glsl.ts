@@ -41,7 +41,7 @@ export function defaultPropsGlsl(): PropsGlsl {
   }
 }
 
-function glslCall(
+export function glslCall(
   name: string,
   args: Node[],
   _asMethod: boolean,

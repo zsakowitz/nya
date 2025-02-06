@@ -35,7 +35,7 @@ export function defaultPropsJs(): PropsJs {
   }
 }
 
-function jsCall(
+export function jsCall(
   name: string,
   args: Node[],
   _asMethod: boolean,
