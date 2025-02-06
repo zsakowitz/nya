@@ -61,15 +61,15 @@ export const OP_SUB = new FnDist("-", "subtracts two values")
     (a, b) => sub(a.value, b.value),
     (ctx, a, b) => r64(ctx, a.expr, b.expr),
   )
-  .add(["c64", "c64"], "c64", complex, (ctx, ar, br) => {
-    const a = ctx.cache(ar)
-    const b = ctx.cache(br)
-    return `vec4(${r64(ctx, `${a}.xy`, `${b}.xy`)}, ${r64(ctx, `${a}.zw`, `${b}.zw`)})`
-  })
   .add(
     ["r32", "r32"],
     "r32",
     (a, b) => sub(a.value, b.value),
     (_, a, b) => `(${a.expr} - ${b.expr})`,
   )
+  .add(["c64", "c64"], "c64", complex, (ctx, ar, br) => {
+    const a = ctx.cache(ar)
+    const b = ctx.cache(br)
+    return `vec4(${r64(ctx, `${a}.xy`, `${b}.xy`)}, ${r64(ctx, `${a}.zw`, `${b}.zw`)})`
+  })
   .add(["c32", "c32"], "c32", complex, (_, a, b) => `(${a.expr} - ${b.expr})`)

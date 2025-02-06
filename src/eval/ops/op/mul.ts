@@ -82,6 +82,12 @@ export const OP_CDOT = new FnDist("·", "multiplies two values")
     (a, b) => mul(a.value, b.value),
     (ctx, a, b) => mulR64(ctx, a.expr, b.expr),
   )
+  .add(
+    ["r32", "r32"],
+    "r32",
+    (a, b) => mul(a.value, b.value),
+    (_, a, b) => `(${a.expr} * ${b.expr})`,
+  )
   .add(["c64", "c64"], "c64", complex, (ctx, a, b) => {
     declareAddR64(ctx)
     declareSubR64(ctx)
@@ -96,12 +102,6 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
 `
     return `_helper_mul_c64(${a.expr}, ${b.expr})`
   })
-  .add(
-    ["r32", "r32"],
-    "r32",
-    (a, b) => mul(a.value, b.value),
-    (_, a, b) => `(${a.expr} * ${b.expr})`,
-  )
   .add(["c32", "c32"], "c32", complex, (ctx, a, b) => {
     declareMulC32(ctx)
     return `_helper_mul_c32(${a.expr}, ${b.expr})`

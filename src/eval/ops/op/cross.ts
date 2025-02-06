@@ -1,10 +1,7 @@
 import { FnDist } from "../dist"
 import { mul, mulR64 } from "./mul"
 
-export const OP_CROSS = new FnDist(
-  "cross multiply",
-  "multiplies two real numbers",
-)
+export const OP_CROSS = new FnDist("×", "multiplies two real numbers")
   .add(
     ["r64", "r64"],
     "r64",
