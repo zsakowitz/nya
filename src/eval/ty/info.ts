@@ -540,8 +540,7 @@ export const TY_INFO: TyInfoMap = {
         props.point.x == x && props.point.y == y ?
           0
         : Math.atan2(props.point.y - y, props.point.x - x)
-      const circumPaper =
-        2 * Math.PI * Math.hypot(props.point.x - x, props.point.y - y)
+      const circumPaper = Math.hypot(props.point.x - x, props.point.y - y)
       const circumCanvas =
         2 * Math.PI * props.paper.canvasDistance(props.point, { x, y })
       return {

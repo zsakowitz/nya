@@ -17,14 +17,6 @@ function expr(source: { raw: readonly string[] }) {
   return expr
 }
 
-expr`A_1=\left(2,3\right)`
-expr`A_2=\left(8,9\right)`
-expr`A_3=line\left(A_1,A_2\right)`
-expr`A_4=\left(5,5\right)`
-expr`A_5=\left(7,3\right)`
-expr`A_6=circle\left(A_4,A_5\right)`
-expr`A_7=intersection\left(A_6,A_3\right)`
-
 expr`A=0.665-0.149i`
 expr`B=0+0i`
 expr`C=.3+.4i`
@@ -43,7 +35,8 @@ show(
 )
 expr`D=circle\left(\left(2,3\right),q_2+4\right)`
 expr`E=glider\left(D,-.367\right)`
-expr`circle\left(E,\left(0,0\right)\right)`
+expr`G=circle\left(E,\left(0,0\right)\right)`
+expr`intersection\left(D,G\right)`
 expr`rgb\left(a\left[1\right],a\left[2\right],a\left[3\right]\right)witha=255\cdot \left(0.45sin\frac{5\left|\left[a,b,c\right]\right|}{n}+0.5\right)withseqiterate^{50}\begin{list}r\to s\\s\to z\\z\to zz+p\\a\to a+dot\left(z-s,s-r\right)\\b\to b+dot\left(z-s,z-s\right)\\c\to c+dot\left(z-s,z-r\right)\\n\to n+1\end{list}whilez.realz.real+z.imagz.imag<4from\begin{list}r=0i\\s=0i\\z=0i\\a=\frac{0}{1}\\b=\frac{0}{1}\\c=\frac{0}{1}\end{list}`
 expr`hsv\left(360\left|iterate^{20}z\to z^{2}+pwhile\left|z\right|\leq 2from\frac{0i}{1}\right|,1,1\right)`
 expr`firstvalid\left(oklch\left(.4,y,360x\right),oklch\left(.5,y,360x\right),oklch\left(.6,y,360x\right),oklch\left(.7,y,360x\right),oklch\left(.8,y,360x\right),oklch\left(.9,y,360x\right),oklch\left(.95,y,360x\right)\right)`
