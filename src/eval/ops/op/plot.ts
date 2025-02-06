@@ -11,7 +11,10 @@ function bool(x: string) {
   return `(${x} ? vec4(vec3(0x2d, 0x70, 0xb3) / 255.0, 1) : vec4(0))`
 }
 
-export const OP_PLOT = new FnDist<"color">("plot")
+export const OP_PLOT = new FnDist<"color">(
+  "plot",
+  "converts an expression to the color it plots as a shader",
+)
   .add(["bool"], "color", err, (_, a) => bool(a.expr))
   .add(["color"], "color", err, (_, a) => a.expr)
   .add(

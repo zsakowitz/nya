@@ -3,7 +3,10 @@ import { FnDist } from "../../dist"
 import { add } from "../../op/add"
 import { div } from "../../op/div"
 
-export const FN_MIDPOINT = new FnDist("midpoint")
+export const FN_MIDPOINT = new FnDist(
+  "midpoint",
+  "constructs the midpoint of a line segment or between two points",
+)
   .add(
     ["point32", "point32"],
     "point32",

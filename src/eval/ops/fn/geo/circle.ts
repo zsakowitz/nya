@@ -3,7 +3,10 @@ import { FnDist } from "../../dist"
 import { abs } from "../../op/abs"
 import { sub } from "../../op/sub"
 
-export const FN_CIRCLE = new FnDist("circle")
+export const FN_CIRCLE = new FnDist(
+  "circle",
+  "constructs a circle given its center and either its numerical radius or a point on its circumference",
+)
   .add(
     ["point32", "r32"],
     "circle32",

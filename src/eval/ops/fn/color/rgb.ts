@@ -1,7 +1,10 @@
 import { FnDist } from "../../dist"
 import { real } from "../../../ty/create"
 
-export const FN_RGB = new FnDist("rgb")
+export const FN_RGB = new FnDist(
+  "rgb",
+  "creates a color given its red, green, and blue components",
+)
   .add(
     ["r32", "r32", "r32"],
     "color",

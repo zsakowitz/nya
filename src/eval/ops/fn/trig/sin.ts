@@ -17,7 +17,7 @@ export function sinPt(a: SPoint) {
   )
 }
 
-export const FN_SIN = new FnDist("sin")
+export const FN_SIN = new FnDist("sin", "takes the sine of an angle")
   .add(
     ["r32"],
     "r32",

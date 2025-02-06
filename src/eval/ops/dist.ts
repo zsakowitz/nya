@@ -1,4 +1,7 @@
 import { type Fn } from "."
+import { CmdComma } from "../../field/cmd/leaf/comma"
+import { OpRightArrow } from "../../field/cmd/leaf/op"
+import { CmdBrack } from "../../field/cmd/math/brack"
 import { h } from "../../jsx"
 import { GlslContext } from "../lib/fn"
 import type {
@@ -42,7 +45,10 @@ export const ALL_FNS: FnDist[] = []
 export class FnDist<Q extends TyName = TyName> implements Fn {
   private o: FnDistOverload<Q>[] = []
 
-  constructor(readonly name: string) {
+  constructor(
+    readonly name: string,
+    readonly label: string,
+  ) {
     ALL_FNS.push(this)
   }
 
@@ -188,15 +194,28 @@ export class FnDist<Q extends TyName = TyName> implements Fn {
     return { type: overload.type, list, expr: ret }
   }
 
-  withName(name: string) {
-    const dist = new FnDist<Q>(name)
+  withName(name: string, label: string) {
+    const dist = new FnDist<Q>(name, label)
     dist.o = this.o
     return dist
   }
 
-  doc(): HTMLSpanElement[] {
+  docs(): HTMLSpanElement[] {
     return this.o.map((overload) => {
-      return h("", "(" + overload.params.join(", ") + ")", " → ", overload.type)
+      const brack = CmdBrack.render("(", ")", null, {
+        el: h(
+          "",
+          ...overload.params
+            .flatMap((x) => [new CmdComma().el, TY_INFO[x].icon()])
+            .slice(1),
+        ),
+      })
+      return h(
+        "font-['Symbola'] text-[1.265rem]",
+        brack,
+        new OpRightArrow().el,
+        TY_INFO[overload.type].icon(),
+      )
     })
   }
 }

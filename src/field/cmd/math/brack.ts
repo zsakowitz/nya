@@ -284,7 +284,12 @@ export class CmdBrack extends Command<[Block]> {
     return cursor
   }
 
-  static render(lhs: ParenLhs, rhs: ParenRhs, side: Dir | null, block: Block) {
+  static render(
+    lhs: ParenLhs,
+    rhs: ParenRhs,
+    side: Dir | null,
+    block: { el: HTMLSpanElement },
+  ) {
     const lhsSymbol = BRACKS[lhs]
     const rhsSymbol = BRACKS[rhs]
     return h(

@@ -46,7 +46,7 @@ export function declareDiv(ctx: GlslContext) {
 `
 }
 
-export const OP_DIV = new FnDist("/")
+export const OP_DIV = new FnDist("/", "divides two values")
   .add(
     ["r32", "r32"],
     "r32",

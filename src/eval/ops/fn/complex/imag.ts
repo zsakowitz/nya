@@ -1,6 +1,9 @@
 import { FnDist } from "../../dist"
 
-export const FN_IMAG = new FnDist("imag")
+export const FN_IMAG = new FnDist(
+  "imag",
+  "gets the imaginary part of a complex number",
+)
   .add(
     ["c64"],
     "r64",

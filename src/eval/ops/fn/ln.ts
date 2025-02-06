@@ -3,7 +3,10 @@ import { isZero } from "../../ty/check"
 import { approx, num, pt, real } from "../../ty/create"
 
 // TODO: not implemented on reals
-export const FN_LN = new FnDist("ln").add(
+export const FN_LN = new FnDist(
+  "ln",
+  "takes the natural logarithm of a value",
+).add(
   ["c32"],
   "c32",
   ({ value: a }) => {

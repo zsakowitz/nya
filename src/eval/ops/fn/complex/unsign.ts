@@ -2,7 +2,10 @@ import { FnDist } from "../../dist"
 import { pt } from "../../../ty/create"
 import { abs, abs64 } from "../../op/abs"
 
-export const FN_UNSIGN = new FnDist("unsign")
+export const FN_UNSIGN = new FnDist(
+  "unsign",
+  "takes the absolute value of the components of a complex number",
+)
   .add(
     ["c64"],
     "c64",

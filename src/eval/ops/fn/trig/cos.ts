@@ -17,7 +17,7 @@ export function cosPt(a: SPoint): SPoint {
   )
 }
 
-export const FN_COS = new FnDist("cos")
+export const FN_COS = new FnDist("cos", "takes the cosine of an angle")
   .add(
     ["r32"],
     "r32",

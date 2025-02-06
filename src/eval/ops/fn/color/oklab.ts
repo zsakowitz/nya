@@ -25,7 +25,10 @@ vec3 _helper_oklab(const in vec3 oklab) {
   return `vec4(_helper_oklab(vec3(${a}, ${b}, ${c})), ${alpha})`
 }
 
-export const FN_OKLAB = new FnDist("oklab")
+export const FN_OKLAB = new FnDist(
+  "oklab",
+  "creates a color given its lightness, green-red, and blue-yellow components",
+)
   .add(
     ["r32", "r32", "r32"],
     "color",

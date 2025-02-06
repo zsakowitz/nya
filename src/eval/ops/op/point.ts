@@ -1,7 +1,10 @@
 import { FnDist } from "../dist"
 import { pt } from "../../ty/create"
 
-export const OP_POINT = new FnDist("point")
+export const OP_POINT = new FnDist(
+  "point",
+  "constructs a point from two coordinates",
+)
   .add(
     ["r64", "r64"],
     "point64",

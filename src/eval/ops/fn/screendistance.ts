@@ -1,6 +1,9 @@
 import { FnDist } from "../dist"
 
-export const FN_SCREENDISTANCE = new FnDist<"r32">("screendistance").add(
+export const FN_SCREENDISTANCE = new FnDist<"r32">(
+  "screendistance",
+  "calculates the distance between two points in terms of pixels on your screen, rather than graphpaper units",
+).add(
   ["c32", "c32"],
   "r32",
   () => {

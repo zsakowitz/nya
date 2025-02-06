@@ -1,4 +1,3 @@
-import { TY_INFO } from "../eval/ty/info.js"
 import { CmdColor } from "../field/cmd/leaf/color.js"
 import { CmdPrompt } from "../field/cmd/util/prompt.js"
 import { autos, options } from "../field/defaults.js"
@@ -18,13 +17,6 @@ function expr(source: { raw: readonly string[] }) {
   return expr
 }
 
-expr({
-  raw: [
-    Object.keys(TY_INFO)
-      .map((x) => `\\tyname{${x}}`)
-      .join(""),
-  ],
-})
 expr`A=0.665-0.149i`
 expr`B=0+0i`
 expr`C=.3+.4i`

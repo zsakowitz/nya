@@ -75,7 +75,7 @@ function complex(
   return pt(sub(mul(a, c), mul(b, d)), add(mul(b, c), mul(a, d)))
 }
 
-export const OP_CDOT = new FnDist("·")
+export const OP_CDOT = new FnDist("·", "multiplies two values")
   .add(
     ["r64", "r64"],
     "r64",

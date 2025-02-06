@@ -19,7 +19,10 @@ export function dist(a: SPoint, b: SPoint) {
   return sqrt(add(dx2, dy2))
 }
 
-export const FN_DISTANCE = new FnDist<"r32">("distance")
+export const FN_DISTANCE = new FnDist<"r32">(
+  "distance",
+  "calculates the distance between two objects",
+)
   // https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
   .add(
     ["line32", "point32"],

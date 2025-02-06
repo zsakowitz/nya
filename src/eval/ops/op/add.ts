@@ -1,9 +1,8 @@
 import type { GlslContext } from "../../lib/fn"
-import { FnDist } from "../dist"
-import type { SReal } from "../../ty"
-import { approx, frac, num, pt } from "../../ty/create"
-import type { JsVal } from "../../ty"
 import { safe } from "../../lib/util"
+import type { JsVal, SReal } from "../../ty"
+import { approx, frac, num, pt } from "../../ty/create"
+import { FnDist } from "../dist"
 import { declareR64 } from "../r64"
 
 export function add(a: SReal, b: SReal) {
@@ -50,11 +49,14 @@ function r64(ctx: GlslContext, a: string, b: string) {
   return `_helper_add_r64(${a}, ${b})`
 }
 
-function complex(a: JsVal<"c32" | "c64">, b: JsVal<"c32" | "c64">) {
+function complex(
+  a: JsVal<"c32" | "c64" | "point32" | "point64">,
+  b: JsVal<"c32" | "c64" | "point32" | "point64">,
+) {
   return pt(add(a.value.x, b.value.x), add(a.value.y, b.value.y))
 }
 
-export const OP_ADD = new FnDist("+")
+export const OP_ADD = new FnDist("+", "adds two values or points")
   .add(
     ["r64", "r64"],
     "r64",
@@ -66,6 +68,11 @@ export const OP_ADD = new FnDist("+")
     const b = ctx.cache(br)
     return `vec4(${r64(ctx, `${a}.xy`, `${b}.xy`)}, ${r64(ctx, `${a}.zw`, `${b}.zw`)})`
   })
+  .add(["point64", "point64"], "point64", complex, (ctx, ar, br) => {
+    const a = ctx.cache(ar)
+    const b = ctx.cache(br)
+    return `vec4(${r64(ctx, `${a}.xy`, `${b}.xy`)}, ${r64(ctx, `${a}.zw`, `${b}.zw`)})`
+  })
   .add(
     ["r32", "r32"],
     "r32",
@@ -73,3 +80,9 @@ export const OP_ADD = new FnDist("+")
     (_, a, b) => `(${a.expr} + ${b.expr})`,
   )
   .add(["c32", "c32"], "c32", complex, (_, a, b) => `(${a.expr} + ${b.expr})`)
+  .add(
+    ["point32", "point32"],
+    "point32",
+    complex,
+    (_, a, b) => `(${a.expr} + ${b.expr})`,
+  )

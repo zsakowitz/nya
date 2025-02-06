@@ -1,7 +1,10 @@
 import { FnDist } from "../dist"
 import { approx, num } from "../../ty/create"
 
-export const OP_MOD = new FnDist("mod").add(
+export const OP_MOD = new FnDist(
+  "mod",
+  "gets the remainder when dividing one value by another",
+).add(
   ["r32", "r32"],
   "r32",
   (ar, br) => {

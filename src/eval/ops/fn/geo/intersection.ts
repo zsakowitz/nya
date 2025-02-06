@@ -82,4 +82,5 @@ export const FN_INTERSECTION = new (class extends FnDist {
     }
     return super.signature(args)
   }
-})("intersection")
+})("intersection", "calculates the intersection between two lines")
+// TODO: update to "two shapes" once circles work

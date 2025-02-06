@@ -56,7 +56,10 @@ vec3 _helper_hsv(vec3 c) {
 `
 }
 
-export const FN_HSV = new FnDist("hsv")
+export const FN_HSV = new FnDist(
+  "hsv",
+  "creates a color given its hue (0-360), saturation (0-1), and value (0-1)",
+)
   .add(
     ["r32", "r32", "r32"],
     "color",

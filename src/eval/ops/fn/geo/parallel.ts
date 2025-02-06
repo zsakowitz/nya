@@ -22,7 +22,10 @@ const glsl = (
   return `vec4(${b}, ${b} + ${a}.zw - ${a}.xy)`
 }
 
-export const FN_PARALLEL = new FnDist("parallel")
+export const FN_PARALLEL = new FnDist(
+  "parallel",
+  "creates a line parallel to an existing line which passes through some point",
+)
   .add(["line32", "point32"], "line32", js, glsl)
   .add(["ray32", "point32"], "line32", js, glsl)
   .add(["segment32", "point32"], "line32", js, glsl)

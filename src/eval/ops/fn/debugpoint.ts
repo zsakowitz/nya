@@ -26,6 +26,9 @@ function glsl(ctx: GlslContext, a: GlslVal<"c32" | "point32">): string {
   return `_helper_debugpoint_c32(${a.expr})`
 }
 
-export const FN_DEBUGPOINT = new FnDist("debugpoint")
+export const FN_DEBUGPOINT = new FnDist(
+  "debugpoint",
+  "given some point p, returns a color depending on which side of the currently active shader pixel that point p is on",
+)
   .add(["c32"], "color", js, glsl)
   .add(["point32"], "color", js, glsl)

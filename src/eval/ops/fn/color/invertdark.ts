@@ -3,7 +3,10 @@ import { frac } from "../../../ty/create"
 import { FnDist } from "../../dist"
 import { sub } from "../../op/sub"
 
-export const FN_INVERTDARK = new FnDist("invertdark").add(
+export const FN_INVERTDARK = new FnDist(
+  "invertdark",
+  "inverts the passed color if the computer is set to dark mode; otherwise, returns it unchanged",
+).add(
   ["color"],
   "color",
   (a) => {

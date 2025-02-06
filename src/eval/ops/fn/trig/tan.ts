@@ -1,10 +1,10 @@
-import { FnDist } from "../../dist"
 import { approx, num } from "../../../ty/create"
+import { FnDist } from "../../dist"
 import { declareDiv, divPt } from "../../op/div"
 import { cosPt, declareCos } from "./cos"
 import { declareSin, sinPt } from "./sin"
 
-export const FN_TAN = new FnDist("tan")
+export const FN_TAN = new FnDist("tan", "takes the tangent of an angle")
   .add(
     ["r32"],
     "r32",

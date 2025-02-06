@@ -1,7 +1,10 @@
 import { FnDist } from "../../dist"
 import { oklab } from "./oklab"
 
-export const FN_OKLCH = new FnDist("oklch")
+export const FN_OKLCH = new FnDist(
+  "oklch",
+  "creates a color given its lightness, chromaticity, and hue components",
+)
   .add(
     ["r32", "r32", "r32"],
     "color",

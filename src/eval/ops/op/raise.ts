@@ -27,7 +27,7 @@ export function raise(a: SReal, b: SReal): SReal {
   return real(num(a) ** num(b))
 }
 
-export const OP_RAISE = new FnDist("^")
+export const OP_RAISE = new FnDist("^", "raises a value to an exponent")
   .add(
     ["r32", "r32"],
     "r32",

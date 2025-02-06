@@ -54,7 +54,7 @@ function complex(a: JsVal<"c32" | "c64">, b: JsVal<"c32" | "c64">) {
   return pt(sub(a.value.x, b.value.x), sub(a.value.y, b.value.y))
 }
 
-export const OP_SUB = new FnDist("-")
+export const OP_SUB = new FnDist("-", "subtracts two values")
   .add(
     ["r64", "r64"],
     "r64",

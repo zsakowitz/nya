@@ -19,7 +19,7 @@ function glsl(ctx: GlslContext, ar: GlslVal, b: GlslVal) {
   return `mix(${a}.xy, ${a}.zw, ${b})`
 }
 
-export const FN_GLIDER = new FnDist("glider")
+export const FN_GLIDER = new FnDist("glider", "constructs a point on an object")
   .add(["line32", "r32"], "point32", js, glsl)
   .add(["segment32", "r32"], "point32", js, glsl)
   .add(["vector32", "r32"], "point32", js, glsl)

@@ -31,7 +31,10 @@ float _helper_cmp_r64(vec2 a, vec2 b) {
 `
 }
 
-export const FN_CMP = new FnDist("cmp")
+export const FN_CMP = new FnDist(
+  "cmp",
+  "compares two numbers, returning -1, 0, or 1, depending on whether the first number is less than, equal to, or greater than the second number",
+)
   // TODO: NaN probably outputs 0 in r64
   .add(["r64", "r64"], "r32", js, (ctx, a, b) => {
     declareCmpR64(ctx)

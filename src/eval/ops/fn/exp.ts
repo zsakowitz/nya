@@ -10,7 +10,7 @@ export function declareExp(ctx: GlslContext) {
 `
 }
 
-export const FN_EXP = new FnDist("exp")
+export const FN_EXP = new FnDist("exp", "raises e to some value")
   .add(
     ["r32"],
     "r32",

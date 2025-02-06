@@ -133,18 +133,22 @@ export class Sheet {
       // docs
       h(
         "flex flex-col overflow-y-auto gap-4 px-4 py-4",
-        ...ALL_FNS.map((fn) =>
+        ...ALL_FNS.sort((a, b) => (a.name < b.name ? -1 : 1)).map((fn) =>
           h(
-            "flex flex-col",
+            "flex flex-col gap-1",
             h(
-              "text-[1.265rem]/[1.15]",
-              ...(fn.name.match(/[a-z]+|[^a-z]+/g) || []).map((x) =>
-                x.match(/[a-z]/) ?
-                  h("font-['Times_New_Roman']", x)
-                : h("font-['Symbola']", x),
+              "flex flex-col",
+              h(
+                "text-[1.265rem]/[1.15]",
+                ...(fn.name.match(/[a-z]+|[^a-z]+/g) || []).map((x) =>
+                  x.match(/[a-z]/) ?
+                    h("font-['Times_New_Roman']", x)
+                  : h("font-['Symbola']", x),
+                ),
               ),
+              h("text-sm leading-tight text-slate-500", fn.label),
             ),
-            h("flex flex-col pl-4", ...fn.doc()),
+            h("flex flex-col pl-4", ...fn.docs()),
           ),
         ),
       ),

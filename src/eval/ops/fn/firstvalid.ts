@@ -2,7 +2,10 @@ import { FnDistVar } from "../dist"
 import { TY_INFO } from "../../ty/info"
 import { FN_VALID } from "./valid"
 
-export const FN_FIRSTVALID = new FnDistVar("firstvalid")
+export const FN_FIRSTVALID = new FnDistVar(
+  "firstvalid",
+  "returns the first value which is valid for its type (the first finite number, the first color which is displayable, etc.)",
+)
   .add(
     ["color"],
     "color",

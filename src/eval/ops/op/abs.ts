@@ -28,7 +28,10 @@ export function abs64(ctx: GlslContext, x: string) {
   return `_helper_abs_r64(${x})`
 }
 
-export const OP_ABS = new FnDist("abs")
+export const OP_ABS = new FnDist(
+  "abs",
+  "takes the absolute value of a number, or gets the magnitude of a complex number",
+)
   .add(
     ["r64"],
     "r64",
@@ -43,6 +46,13 @@ export const OP_ABS = new FnDist("abs")
   )
   .add(
     ["c32"],
+    "r32",
+    // TODO: this is exact for some values
+    (a) => approx(Math.hypot(num(a.value.x), num(a.value.y))),
+    (_, a) => `length(${a.expr})`,
+  )
+  .add(
+    ["point32"],
     "r32",
     // TODO: this is exact for some values
     (a) => approx(Math.hypot(num(a.value.x), num(a.value.y))),

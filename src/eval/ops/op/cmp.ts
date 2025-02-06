@@ -12,7 +12,7 @@ function createCmp(
   const pre = glsl.startsWith("!") ? "!" : ""
   if (pre) glsl = glsl.slice(1) as any
 
-  return new FnDist(name)
+  return new FnDist(name, "compares two values")
     .add(
       ["r64", "r64"],
       "bool",
