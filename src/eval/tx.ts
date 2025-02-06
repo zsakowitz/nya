@@ -1,4 +1,4 @@
-import type { Span } from "../field/model"
+import { L, R, Span } from "../field/model"
 import { commalist, fnargs } from "./ast/collect"
 import type { Node } from "./ast/token"
 import { glsl, glslCall, type PropsGlsl } from "./glsl"
@@ -36,8 +36,17 @@ export interface PropsDragTarget {
   bindingsDrag: Bindings<Node>
 }
 
+export type NumResult = { span: Span; forceSign: boolean }
+
+export type PointResult =
+  // for when the X and Y coordinates are separate
+  | { type: "split"; x: NumResult | null; y: NumResult | null }
+  // for when the X and Y coordinates are part of a joint complex number
+  | { type: "complex"; span: Span }
+
 export interface DragTarget<T> {
   num(node: T, props: PropsDragTarget): Span | null
+  point(node: T, props: PropsDragTarget): PointResult | null
 }
 
 function joint<T>(fn: (node: T) => never): AstTxr<T> {
@@ -50,6 +59,9 @@ function joint<T>(fn: (node: T) => never): AstTxr<T> {
     },
     drag: {
       num(node) {
+        fn(node)
+      },
+      point(node) {
         fn(node)
       },
     },
@@ -66,8 +78,15 @@ function dragNum(node: Node, props: PropsDragTarget) {
   return AST_TXRS[node.type].drag.num(node as never, props)
 }
 
+function dragPoint(node: Node, props: PropsDragTarget) {
+  return AST_TXRS[node.type].drag.point(node as never, props)
+}
+
 const NO_DRAG: DragTarget<unknown> = {
   num() {
+    return null
+  },
+  point() {
     return null
   },
 }
@@ -91,6 +110,9 @@ export const AST_TXRS: {
     drag: {
       num(node) {
         return node.span
+      },
+      point() {
+        return null
       },
     },
   },
@@ -235,6 +257,33 @@ export const AST_TXRS: {
       num() {
         return null
       },
+      point(node) {
+        if (
+          node.b &&
+          node.a.type == "num" &&
+          node.a.span &&
+          (node.kind == "+" || node.kind == "-") &&
+          node.b.type == "juxtaposed" &&
+          node.b.nodes.length == 2 &&
+          node.b.nodes[1]!.type == "var" &&
+          node.b.nodes[1]!.value == "i" &&
+          node.b.nodes[1]!.span &&
+          node.b.nodes[0]!.type == "num"
+        ) {
+          if (node.a.span.parent != node.b.nodes[1]!.span.parent) {
+            return null
+          }
+          return {
+            type: "complex",
+            span: new Span(
+              node.a.span.parent,
+              node.a.span[L],
+              node.b.nodes[1]!.span[R],
+            ),
+          }
+        }
+        return null
+      },
     },
   },
   group: {
@@ -282,6 +331,25 @@ export const AST_TXRS: {
       num(node, props) {
         if (node.lhs == "(" && node.rhs == ")") {
           return dragNum(node.value, props)
+        }
+        return null
+      },
+      point(node, props) {
+        if (
+          node.lhs == "(" &&
+          node.rhs == ")" &&
+          node.value.type == "commalist" &&
+          node.value.items.length == 2
+        ) {
+          const x = dragNum(node.value.items[0]!, props)
+          const y = dragNum(node.value.items[1]!, props)
+          if (x || y) {
+            return {
+              type: "split",
+              x: x ? { forceSign: false, span: x } : null,
+              y: y ? { forceSign: false, span: y } : null,
+            }
+          }
         }
         return null
       },
@@ -403,6 +471,16 @@ export const AST_TXRS: {
         const value = props.bindingsDrag.get(id(node))
         if (value) {
           return dragNum(value, props)
+        }
+
+        return null
+      },
+      point(node, props) {
+        if (node.sup) return null
+
+        const value = props.bindingsDrag.get(id(node))
+        if (value) {
+          return dragPoint(value, props)
         }
 
         return null
