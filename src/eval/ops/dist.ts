@@ -23,6 +23,8 @@ export interface FnDistOverload<Q extends TyName = TyName> {
   glsl(ctx: GlslContext, ...args: GlslVal[]): string
 }
 
+export const ALL_FNS: FnDist[] = []
+
 /**
  * `FnDist` are functions which take a fixed number of arguments of
  * predetermined type, and return some value of predetermined type. They
@@ -39,7 +41,9 @@ export interface FnDistOverload<Q extends TyName = TyName> {
 export class FnDist<Q extends TyName = TyName> implements Fn {
   private o: FnDistOverload<Q>[] = []
 
-  constructor(private readonly name: string) {}
+  constructor(private readonly name: string) {
+    ALL_FNS.push(this)
+  }
 
   /**
    * Adds an overload to this function. Note that overloads are preferred in the
