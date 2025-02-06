@@ -2,6 +2,7 @@ import { defineExt, Store } from ".."
 import { dragPoint } from "../../../eval/tx"
 import { each, type JsValue } from "../../../eval/ty"
 import { frac, num, real, unpt } from "../../../eval/ty/create"
+import { TY_INFO } from "../../../eval/ty/info"
 import { CmdVar } from "../../../field/cmd/leaf/var"
 import { L, R } from "../../../field/model"
 import { Transition } from "../../transition"
@@ -129,6 +130,18 @@ export const EXT_POINT = defineExt({
             new CmdVar("i", data.expr.field.options).insertAt(cursor, L)
             drag.field.sel = drag.field.block.cursor(R).selection()
             drag.field.queueAstUpdate()
+          }
+          break
+        case "glider":
+          {
+            const { value, precision } = TY_INFO[drag.shape.type].glide!({
+              paper: data.paper,
+              point: to,
+              shape: drag.shape.value as never,
+            })
+            new Writer(drag.value.span.remove().span()).set(value, precision)
+            drag.value.field.sel = drag.value.field.block.cursor(R).selection()
+            drag.value.field.queueAstUpdate()
           }
           break
       }

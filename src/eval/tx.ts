@@ -21,7 +21,7 @@ import { OP_Y } from "./ops/op/y"
 import { piecewiseGlsl, piecewiseJs } from "./ops/piecewise"
 import { VARS } from "./ops/vars"
 import { withBindingsGlsl, withBindingsJs } from "./ops/with"
-import type { GlslValue, JsValue } from "./ty"
+import type { GlslValue, JsVal, JsValue } from "./ty"
 import { isReal, listGlsl, listJs } from "./ty/coerce"
 import { frac, num, real } from "./ty/create"
 import { TY_INFO } from "./ty/info"
@@ -36,6 +36,7 @@ export interface AstTxr<T> {
 export interface PropsDrag {
   bindingsDrag: Bindings<[FieldComputed, Node]>
   field: FieldComputed
+  js: PropsJs
 }
 
 export type DragResult = { span: Span; field: FieldComputed }
@@ -47,6 +48,7 @@ export type DragResultPoint =
   | { type: "split"; x: DragResultSigned | null; y: DragResultSigned | null }
   // for when the X and Y coordinates are part of a joint complex number
   | { type: "complex"; span: Span; field: FieldComputed }
+  | { type: "glider"; shape: JsVal; value: DragResult }
 
 export interface DragTarget<T> {
   num(node: T, props: PropsDrag): DragResult | null
@@ -397,7 +399,45 @@ export const AST_TXRS: {
       }
       throw new Error("Cannot call anything except built-in functions yet.")
     },
-    drag: NO_DRAG,
+    drag: {
+      num() {
+        return null
+      },
+      point(node, props) {
+        if (
+          !(
+            node.name.type == "var" &&
+            node.name.kind == "prefix" &&
+            !node.name.sub &&
+            !node.name.sup &&
+            node.name.value == "glider"
+          )
+        ) {
+          return null
+        }
+
+        const args = node.on ? commalist(node.args) : fnargs(node.args)
+        if (node.on) args.unshift(node.on)
+        if (args.length != 2) return null
+
+        const pos = dragNum(args[1]!, props)
+        if (!pos) return null
+
+        try {
+          var shape = js(args[0]!, props.js)
+          if (!TY_INFO[shape.type].glide) return null
+          if (shape.list !== false) return null
+        } catch {
+          return null
+        }
+
+        return {
+          type: "glider",
+          shape,
+          value: pos,
+        }
+      },
+    },
   },
   juxtaposed: {
     js(node, props) {

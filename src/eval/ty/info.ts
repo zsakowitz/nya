@@ -5,7 +5,7 @@ import { CmdWord } from "../../field/cmd/leaf/word"
 import { CmdBrack } from "../../field/cmd/math/brack"
 import { Block, L, R } from "../../field/model"
 import { h } from "../../jsx"
-import type { Paper } from "../../sheet/ui/paper"
+import type { Paper, Point } from "../../sheet/ui/paper"
 import type { GlslContext } from "../lib/fn"
 import { num, real } from "../ty/create"
 import type { Write } from "./display"
@@ -22,6 +22,13 @@ export interface TyInfo<T> {
   coerce: TyCoerceMap<T>
   write: Write<T>
   icon(): HTMLSpanElement
+  glide?(props: GlideProps<T>): { value: number; precision: number }
+}
+
+export interface GlideProps<T> {
+  shape: T
+  point: Point
+  paper: Paper
 }
 
 export interface Plot<T> {
@@ -494,6 +501,22 @@ export const TY_INFO: TyInfoMap = {
           ),
         ),
       )
+    },
+    glide(props) {
+      const x = num(props.shape.center.x)
+      const y = num(props.shape.center.y)
+      const angle =
+        props.point.x == x && props.point.y == y ?
+          0
+        : Math.atan2(props.point.y - y, props.point.x - x)
+      const circumPaper =
+        2 * Math.PI * Math.hypot(props.point.x - x, props.point.y - y)
+      const circumCanvas =
+        2 * Math.PI * props.paper.canvasDistance(props.point, { x, y })
+      return {
+        precision: circumCanvas / circumPaper,
+        value: angle / 2 / Math.PI,
+      }
     },
   },
 }

@@ -67,6 +67,7 @@ export class Scope {
     return {
       field,
       bindingsDrag: this.bindingsDrag,
+      js: this.propsJs,
     }
   }
 

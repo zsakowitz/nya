@@ -7,10 +7,10 @@ import { h } from "../../../jsx"
 const store = new Store((e) => {
   const field = new FieldInert(
     e.field.options,
-    "bg-[--nya-bg-sidebar] border border-[--nya-border] px-2 py-1 rounded",
+    "bg-[--nya-bg-sidebar] border border-[--nya-border] px-2 py-1 rounded ml-auto inline-block",
   )
   const el = h(
-    "flex px-2 pb-2 -mt-2 w-[calc(var(--nya-sidebar)_-_2.5rem_-_1px)] overflow-x-auto [&::-webkit-scrollbar]:hidden justify-end",
+    "flex px-2 pb-2 -mt-2 w-[calc(var(--nya-sidebar)_-_2.5rem_-_1px)] overflow-x-auto [&::-webkit-scrollbar]:hidden",
     field.el,
   )
   return { field, el }
