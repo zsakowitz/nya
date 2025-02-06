@@ -75,7 +75,7 @@ const WRITE_POINT: Write<SPoint> = {
 
 const NANPT: SPoint = { type: "point", x: real(NaN), y: real(NaN) }
 
-function lineInfo(name: string): TyInfo<[SPoint, SPoint]> {
+function lineInfo(name: string, clsx: string): TyInfo<[SPoint, SPoint]> {
   return {
     name,
     glsl: "vec4",
@@ -99,20 +99,25 @@ function lineInfo(name: string): TyInfo<[SPoint, SPoint]> {
       return h(
         "",
         h(
-          "text-[#2d70b3] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-white inline-block relative border-2 border-current rounded-[4px]",
+          "text-[#2d70b3] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-white inline-block relative border-2 border-current rounded-[4px] overflow-hidden",
           h(
             "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
           ),
-          h(
-            "w-[20px] h-0 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-t-2 border-current -rotate-45",
-          ),
+          h(clsx),
         ),
       )
     },
   }
 }
 
-function iconPoint() {
+function highRes() {
+  return h(
+    "absolute bottom-[.5px] right-[1px] font-['Symbola'] text-[50%]/[1]",
+    "+",
+  )
+}
+
+function iconPoint(hd: boolean) {
   return h(
     "",
     h(
@@ -123,11 +128,12 @@ function iconPoint() {
       h(
         "size-[7px] bg-current absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
       ),
+      hd ? highRes() : null,
     ),
   )
 }
 
-function iconComplex() {
+function iconComplex(hd: boolean) {
   return h(
     "",
     h(
@@ -139,11 +145,12 @@ function iconComplex() {
         "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-['Times_New_Roman'] italic text-[120%]",
         "i",
       ),
+      hd ? highRes() : null,
     ),
   )
 }
 
-function iconReal() {
+function iconReal(hd: boolean) {
   return h(
     "",
     h(
@@ -155,39 +162,12 @@ function iconReal() {
         "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-['Times_New_Roman'] italic text-[120%]",
         "x",
       ),
+      hd ? highRes() : null,
     ),
   )
 }
 
-// Types are listed in coercion order, so later declared types can only coerce
-// types declared above. This isn't checked or anything, but it's a good
-// heuristic to ensure we don't create any cycles.
 export const TY_INFO: TyInfoMap = {
-  c32: {
-    name: "complex number",
-    glsl: "vec2",
-    garbage: { js: NANPT, glsl: "vec2(0.0/0.0)" },
-    coerce: {},
-    write: WRITE_COMPLEX,
-    icon: iconComplex,
-  },
-  c64: {
-    name: "complex number",
-    glsl: "vec4",
-    garbage: { js: NANPT, glsl: "vec4(0.0/0.0)" },
-    coerce: {
-      c32: {
-        js(self) {
-          return self
-        },
-        glsl(self) {
-          return `${self}.xz`
-        },
-      },
-    },
-    write: WRITE_COMPLEX,
-    icon: iconComplex,
-  },
   r32: {
     name: "real number",
     glsl: "float",
@@ -203,7 +183,9 @@ export const TY_INFO: TyInfoMap = {
       },
     },
     write: WRITE_REAL,
-    icon: iconReal,
+    icon() {
+      return iconReal(false)
+    },
   },
   r64: {
     name: "real number",
@@ -236,7 +218,67 @@ export const TY_INFO: TyInfoMap = {
       },
     },
     write: WRITE_REAL,
-    icon: iconReal,
+    icon() {
+      return iconReal(true)
+    },
+  },
+  c32: {
+    name: "complex number",
+    glsl: "vec2",
+    garbage: { js: NANPT, glsl: "vec2(0.0/0.0)" },
+    coerce: {},
+    write: WRITE_COMPLEX,
+    icon() {
+      return iconComplex(false)
+    },
+  },
+  c64: {
+    name: "complex number",
+    glsl: "vec4",
+    garbage: { js: NANPT, glsl: "vec4(0.0/0.0)" },
+    coerce: {
+      c32: {
+        js(self) {
+          return self
+        },
+        glsl(self) {
+          return `${self}.xz`
+        },
+      },
+    },
+    write: WRITE_COMPLEX,
+    icon() {
+      return iconComplex(true)
+    },
+  },
+  point32: {
+    name: "point",
+    glsl: "vec2",
+    garbage: { js: NANPT, glsl: "vec2(0.0/0.0)" },
+    coerce: {},
+    write: WRITE_POINT,
+    icon() {
+      return iconPoint(false)
+    },
+  },
+  point64: {
+    name: "point",
+    glsl: "vec4",
+    garbage: { js: NANPT, glsl: "vec4(0.0/0.0)" },
+    coerce: {
+      point32: {
+        js(self) {
+          return self
+        },
+        glsl(self) {
+          return `${self}.xz`
+        },
+      },
+    },
+    write: WRITE_POINT,
+    icon() {
+      return iconPoint(true)
+    },
   },
   bool: {
     name: "true/false value",
@@ -380,35 +422,22 @@ export const TY_INFO: TyInfoMap = {
       )
     },
   },
-  point32: {
-    name: "point",
-    glsl: "vec2",
-    garbage: { js: NANPT, glsl: "vec2(0.0/0.0)" },
-    coerce: {},
-    write: WRITE_POINT,
-    icon: iconPoint,
-  },
-  point64: {
-    name: "point",
-    glsl: "vec4",
-    garbage: { js: NANPT, glsl: "vec4(0.0/0.0)" },
-    coerce: {
-      point32: {
-        js(self) {
-          return self
-        },
-        glsl(self) {
-          return `${self}.xz`
-        },
-      },
-    },
-    write: WRITE_POINT,
-    icon: iconPoint,
-  },
-  line32: lineInfo("line"),
-  segment32: lineInfo("segment"),
-  ray32: lineInfo("ray"),
-  vector32: lineInfo("vector"),
+  line32: lineInfo(
+    "line",
+    "w-[30px] h-0 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-t-2 border-current -rotate-[30deg]",
+  ),
+  segment32: lineInfo(
+    "segment",
+    "w-[20px] h-0 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-t-2 border-current -rotate-[30deg]",
+  ),
+  ray32: lineInfo(
+    "ray",
+    "w-[30px] h-0 absolute rounded-full top-1/2 left-1/2 translate-x-[-10px] translate-y-[-3.5px] border-t-2 border-current -rotate-[30deg]",
+  ),
+  vector32: lineInfo(
+    "vector",
+    "w-[20px] h-0 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-t-2 border-current -rotate-[30deg] after:absolute after:content-['_'] after:bg-current after:top-[-4px] after:right-[-1px] after:bottom-[-2px] after:w-[6px] after:[clip-path:polygon(0%_0%,100%_50%,0%_100%)]",
+  ),
   circle32: {
     name: "circle",
     glsl: "vec3",

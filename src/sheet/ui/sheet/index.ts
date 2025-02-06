@@ -6,6 +6,7 @@ import { ALL_FNS, type FnDist } from "../../../eval/ops/dist"
 import { declareAddR64 } from "../../../eval/ops/op/add"
 import { declareMulR64 } from "../../../eval/ops/op/mul"
 import { num, real } from "../../../eval/ty/create"
+import { TY_INFO } from "../../../eval/ty/info"
 import { splitRaw } from "../../../eval/ty/split"
 import type { Options } from "../../../field/options"
 import { h, hx } from "../../../jsx"
@@ -19,34 +20,76 @@ import type { Expr } from "../expr"
 import { createDrawAxes, makeInteractive, matchSize, Paper } from "../paper"
 import { Handlers } from "./handler"
 
-function doc(fn: FnDist) {
-  return h(
-    "flex flex-col",
-    h(
-      "text-[1.265rem]/[1.15]",
-      ...(fn.name.match(/[a-z]+|[^a-z]+/g) || []).map((x) =>
-        x.match(/[a-z]/) ?
-          h("font-['Times_New_Roman']", x)
-        : h("font-['Symbola']", x),
+function createDocs() {
+  function doc(fn: FnDist) {
+    return h(
+      "flex flex-col",
+      h(
+        "text-[1.265rem]/[1.15]",
+        ...(fn.name.match(/[a-z]+|[^a-z]+/g) || []).map((x) =>
+          x.match(/[a-z]/) ?
+            h("font-['Times_New_Roman']", x)
+          : h("font-['Symbola']", x),
+        ),
       ),
-    ),
-    h("text-sm leading-tight text-slate-500", fn.label),
-    h("flex flex-col pl-4 mt-1", ...fn.docs()),
-  )
-}
+      h("text-sm leading-tight text-slate-500", fn.label),
+      h("flex flex-col pl-4 mt-1", ...fn.docs()),
+    )
+  }
 
-function title(label: string) {
+  function title(label: string) {
+    return h(
+      "sticky top-0 z-10 bg-[--nya-bg] pt-2",
+      h(
+        "block bg-[--nya-bg-sidebar] border border-[--nya-border] -mx-2 rounded-lg px-2 pt-1 font-['Symbola'] text-[1.265rem] text-center",
+        label,
+      ),
+    )
+  }
+
+  function section(label: string, data: Node[]) {
+    return h("flex flex-col gap-4", title(label), ...data)
+  }
+
   return h(
-    "sticky top-0 z-10 bg-[--nya-bg] pt-2",
-    h(
-      "block bg-[--nya-bg-sidebar] border border-[--nya-border] -mx-2 rounded-lg px-2 pt-1 font-['Symbola'] text-[1.265rem] text-center",
-      label,
+    "flex flex-col overflow-y-auto px-4 pb-4 gap-2",
+
+    section("data types", [
+      h(
+        "flex flex-col",
+        ...Object.entries(TY_INFO)
+          .filter((x) => !x[0].endsWith("64"))
+          .map(([, info]) => h("flex gap-1", info.icon(), info.name)),
+      ),
+      hx(
+        "p",
+        "",
+        "When running in shaders, most values are low-resolution, causing early pixelation. Some data types, however, support high-resolution variants:",
+      ),
+      h(
+        "flex flex-col",
+        ...Object.entries(TY_INFO)
+          .filter((x) => x[0].endsWith("64"))
+          .map(([, info]) =>
+            h("flex gap-1", info.icon(), info.name + " (high-res)"),
+          ),
+      ),
+    ]),
+
+    section(
+      "named functions",
+      ALL_FNS.filter((x) => Object.values(FNS).includes(x))
+        .sort((a, b) => (a.name < b.name ? -1 : 1))
+        .map(doc),
+    ),
+
+    section(
+      "operators",
+      ALL_FNS.filter((x) => !Object.values(FNS).includes(x))
+        .sort((a, b) => (a.name < b.name ? -1 : 1))
+        .map(doc),
     ),
   )
-}
-
-function section(label: string, data: Node[]) {
-  return h("flex flex-col gap-4", title(label), ...data)
 }
 
 export class Sheet {
@@ -162,23 +205,7 @@ export class Sheet {
       ),
 
       // docs
-      h(
-        "flex flex-col overflow-y-auto px-4 pb-4",
-
-        section(
-          "named functions",
-          ALL_FNS.filter((x) => Object.values(FNS).includes(x))
-            .sort((a, b) => (a.name < b.name ? -1 : 1))
-            .map(doc),
-        ),
-
-        section(
-          "operators",
-          ALL_FNS.filter((x) => !Object.values(FNS).includes(x))
-            .sort((a, b) => (a.name < b.name ? -1 : 1))
-            .map(doc),
-        ),
-      ),
+      createDocs(),
     )
     new ResizeObserver(() =>
       this.el.style.setProperty(

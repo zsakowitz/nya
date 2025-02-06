@@ -201,23 +201,23 @@ export class FnDist<Q extends TyName = TyName> implements Fn {
   }
 
   docs(): HTMLSpanElement[] {
-    return this.o.map((overload) => {
-      const brack = CmdBrack.render("(", ")", null, {
-        el: h(
-          "",
-          ...overload.params
-            .flatMap((x) => [new CmdComma().el, TY_INFO[x].icon()])
-            .slice(1),
-        ),
-      })
-      return h(
-        "font-['Symbola'] text-[1.265rem]",
-        brack,
-        new OpRightArrow().el,
-        TY_INFO[overload.type].icon(),
-      )
-    })
+    return this.o.map((overload) => doc(overload.params, overload.type))
   }
+}
+
+export function doc(params: readonly TyName[], type: TyName) {
+  const brack = CmdBrack.render("(", ")", null, {
+    el: h(
+      "",
+      ...params.flatMap((x) => [new CmdComma().el, TY_INFO[x].icon()]).slice(1),
+    ),
+  })
+  return h(
+    "font-['Symbola'] text-[1.265rem]",
+    brack,
+    new OpRightArrow().el,
+    TY_INFO[type].icon(),
+  )
 }
 
 /**
