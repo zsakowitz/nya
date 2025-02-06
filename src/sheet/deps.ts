@@ -4,6 +4,7 @@ import { defaultPropsGlsl, glsl, type PropsGlsl } from "../eval/glsl"
 import { defaultPropsJs, js, type PropsJs } from "../eval/js"
 import { Bindings, name, tryId } from "../eval/lib/binding"
 import { GlslContext, GlslHelpers } from "../eval/lib/fn"
+import type { PropsDrag } from "../eval/tx"
 import type { GlslValue, JsValue } from "../eval/ty"
 import { TY_INFO } from "../eval/ty/info"
 import { Field } from "../field/field"
@@ -12,6 +13,7 @@ import type { Options } from "../field/options"
 export class Scope {
   constructor(readonly options: Options) {
     const self = this
+
     this.propsJs = {
       ...defaultPropsJs(),
       get bindingsJs() {
@@ -56,9 +58,17 @@ export class Scope {
   private readonly deps: Record<string, FieldComputed[]> = Object.create(null)
 
   bindingsJs = new Bindings<JsValue>()
+  bindingsDrag = new Bindings<[FieldComputed, Node]>()
   bindingsGlsl = new Bindings<GlslValue>()
   readonly helpers = new GlslHelpers()
   readonly propsJs: PropsJs
+
+  propsDrag(field: FieldComputed): PropsDrag {
+    return {
+      field,
+      bindingsDrag: this.bindingsDrag,
+    }
+  }
 
   propsGlsl(): PropsGlsl {
     const self = this
@@ -121,7 +131,10 @@ export class Scope {
 
     const bindingsJs: Record<string, JsValue> = Object.create(null)
     const bindingsGlsl: Record<string, GlslValue> = Object.create(null)
+    const bindingsDrag: Record<string, [FieldComputed, Node]> =
+      Object.create(null)
     for (const def in this.defs) {
+      const fields = this.defs[def]!
       const field = this.defs[def]!.map(
         (x) => x.ast as Node & { type: "binding" },
       )
@@ -153,6 +166,8 @@ export class Scope {
             return (valueGlsl = { ...rawValue, expr: `${name}()` })
           },
         })
+
+        bindingsDrag[def] = [fields[0]!, node]
       } else if (field.length) {
         let myName = def
         try {
@@ -177,9 +192,18 @@ export class Scope {
             throw new Error(err)
           },
         })
+
+        Object.defineProperty(bindingsDrag, def, {
+          configurable: true,
+          enumerable: true,
+          get() {
+            throw new Error(err)
+          },
+        })
       }
     }
     this.bindingsJs = new Bindings(bindingsJs)
+    this.bindingsDrag = new Bindings(bindingsDrag)
     this.bindingsGlsl = new Bindings(bindingsGlsl)
 
     for (const field of this.fields) {

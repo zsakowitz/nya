@@ -1,63 +1,25 @@
 import { defineExt, Store } from ".."
-import type { Node } from "../../../eval/ast/token"
+import { dragPoint } from "../../../eval/tx"
 import { each, type JsValue } from "../../../eval/ty"
-import { num, unpt } from "../../../eval/ty/create"
-import { R } from "../../../field/model"
+import { frac, num, real, unpt } from "../../../eval/ty/create"
+import { CmdVar } from "../../../field/cmd/leaf/var"
+import { L, R } from "../../../field/model"
 import { Transition } from "../../transition"
-import { Writer } from "../../write"
+import { virtualStepExp, write, Writer } from "../../write"
 import { EXT_EVAL } from "./02-eval"
 
 const color = new Store(
   (expr) => new Transition(3.5, () => expr.sheet.paper.queue()),
 )
 
-export function draggerNum(node: Node) {
-  if (node.type == "num") {
-    return node.span
-  }
-}
-
-export function draggers(node: Node) {
-  if (node.type == "binding") {
-    node = node.value
-  }
-
-  if (
-    node.type == "group" &&
-    node.lhs == "(" &&
-    node.rhs == ")" &&
-    node.value.type == "commalist" &&
-    node.value.items.length == 2
-  ) {
-    const x = draggerNum(node.value.items[0]!)
-    const y = draggerNum(node.value.items[1]!)
-    if (x && y) return { x: new Writer(x), y: new Writer(y) }
-    return
-  }
-
-  if (
-    node.type == "op" &&
-    node.kind == "+" &&
-    node.a.type == "num" &&
-    node.a.span &&
-    node.b?.type == "juxtaposed" &&
-    node.b.nodes.length == 2 &&
-    node.b.nodes[0]!.type == "num" &&
-    node.b.nodes[0]!.span &&
-    node.b.nodes[1]!.type == "var" &&
-    node.b.nodes[1]!.kind == "var" &&
-    node.b.nodes[1]!.value == "i" &&
-    !node.b.nodes[1]!.sub &&
-    !node.b.nodes[1]!.sup
-  ) {
-    return { x: new Writer(node.a.span), y: new Writer(node.b.nodes[0]!.span) }
-  }
-}
-
 export const EXT_POINT = defineExt({
   data(expr) {
     const value = expr.js?.value
-    const drag = draggers(expr.field.ast)
+
+    let node = expr.field.ast
+    if (node.type == "binding") node = node.value
+
+    const drag = dragPoint(node, expr.sheet.scope.propsDrag(expr.field))
 
     if (
       value &&
@@ -122,8 +84,7 @@ export const EXT_POINT = defineExt({
             data.expr.field.ast.type == "binding" ?
               data.expr.field.ast.name
             : null,
-          x: data.drag.x,
-          y: data.drag.y,
+          drag: data.drag,
         }
       }
     },
@@ -131,10 +92,46 @@ export const EXT_POINT = defineExt({
       return "move"
     },
     move(data, to) {
-      data.x.set(to.x, data.paper.el.width / data.paper.bounds().w)
-      data.y.set(to.y, data.paper.el.height / data.paper.bounds().h)
-      data.expr.field.sel = data.expr.field.block.cursor(R).selection()
-      data.expr.field.queueAstUpdate()
+      const { drag } = data
+
+      switch (drag.type) {
+        case "split":
+          if (drag.x) {
+            new Writer(drag.x.span.remove().span()).set(
+              to.x,
+              data.paper.el.width / data.paper.bounds().w,
+              drag.x.signed,
+            )
+            drag.x.field.sel = drag.x.field.block.cursor(R).selection()
+            drag.x.field.queueAstUpdate()
+          }
+
+          if (drag.y) {
+            new Writer(drag.y.span.remove().span()).set(
+              to.y,
+              data.paper.el.height / data.paper.bounds().h,
+              drag.y.signed,
+            )
+            drag.y.field.sel = drag.y.field.block.cursor(R).selection()
+            drag.y.field.queueAstUpdate()
+          }
+
+          break
+        case "complex":
+          {
+            const x = to.x
+            const xp = data.paper.el.width / data.paper.bounds().w
+            const y = to.y
+            const yp = data.paper.el.height / data.paper.bounds().h
+            const cursor = drag.span.remove()
+            write(cursor, real(x), frac(10, 1), virtualStepExp(xp, 10), false)
+            write(cursor, real(y), frac(10, 1), virtualStepExp(yp, 10), true)
+            new CmdVar("i", data.expr.field.options).insertAt(cursor, L)
+            drag.field.sel = drag.field.block.cursor(R).selection()
+            drag.field.queueAstUpdate()
+          }
+          break
+      }
     },
     end(data) {
       color.get(data.expr).set(3.5)

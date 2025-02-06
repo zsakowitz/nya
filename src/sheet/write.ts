@@ -11,11 +11,12 @@ export function write(
   value: SReal,
   baseRaw: SReal,
   stepExp: number,
+  signed = false,
 ) {
   const base = num(baseRaw)
 
   if (!(safe(base) && 2 <= base && base <= 36)) {
-    new Display(cursor, baseRaw || frac(10, 1)).value(num(value))
+    new Display(cursor, baseRaw || frac(10, 1)).value(num(value), signed)
     return
   }
 
@@ -25,6 +26,8 @@ export function write(
   if (main < 0) {
     display.digits("-")
     main = -main
+  } else if (signed) {
+    display.digits("+")
   }
   let str = BigInt(main).toString(base)
   if (stepExp > 0) {
@@ -58,8 +61,14 @@ export class Writer {
    * @param precision (total options the user can choose from) / (total space
    *   available in math units)
    */
-  setExact(value: SReal, precision: number) {
-    write(this.span.remove(), value, frac(10, 1), virtualStepExp(precision, 10))
+  setExact(value: SReal, precision: number, signed = false) {
+    write(
+      this.span.remove(),
+      value,
+      frac(10, 1),
+      virtualStepExp(precision, 10),
+      signed,
+    )
     // const inner = new Block(null)
     // new CmdSupSub(inner, null).insertAt(this.span.cursor(R), L)
     // new CmdNum("1").insertAt(inner.cursor(R), L)
@@ -69,8 +78,10 @@ export class Writer {
   /**
    * @param precision (total options the user can choose from) / (total space
    *   available in math units)
+   * @param signed Whether to forcefully add a + sign in the even that it
+   *   doesn't exist
    */
-  set(value: number, precision: number) {
-    this.setExact(real(value), precision)
+  set(value: number, precision: number, signed = false) {
+    this.setExact(real(value), precision, signed)
   }
 }

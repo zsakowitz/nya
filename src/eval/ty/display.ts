@@ -52,6 +52,9 @@ export class Display {
         case "∞":
           new SymInfinity().insertAt(cursor, L)
           break
+        case "+":
+          new OpPlus().insertAt(cursor, L)
+          break
         case "-":
           new OpMinus().insertAt(cursor, L)
           break
@@ -127,9 +130,11 @@ export class Display {
     return new Display(cursor, this.base)
   }
 
-  value(num: number) {
+  value(num: number, signed = false) {
     let val = this.numToBase(num)
+    if (signed && val[0] != "-") val = "+" + val
     if (val == "Infinity") val = "∞"
+    else if (val == "+Infinity") val = "+∞"
     else if (val == "-Infinity") val = "-∞"
     this.odigits(val)
   }

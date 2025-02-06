@@ -1,4 +1,5 @@
 import { L, R, Span } from "../field/model"
+import type { FieldComputed } from "../sheet/deps"
 import { commalist, fnargs } from "./ast/collect"
 import type { Node } from "./ast/token"
 import { glsl, glslCall, type PropsGlsl } from "./glsl"
@@ -32,21 +33,24 @@ export interface AstTxr<T> {
   drag: DragTarget<T>
 }
 
-export interface PropsDragTarget {
-  bindingsDrag: Bindings<Node>
+export interface PropsDrag {
+  bindingsDrag: Bindings<[FieldComputed, Node]>
+  field: FieldComputed
 }
 
-export type NumResult = { span: Span; forceSign: boolean }
+export type DragResult = { span: Span; field: FieldComputed }
 
-export type PointResult =
+export type DragResultSigned = DragResult & { signed: boolean }
+
+export type DragResultPoint =
   // for when the X and Y coordinates are separate
-  | { type: "split"; x: NumResult | null; y: NumResult | null }
+  | { type: "split"; x: DragResultSigned | null; y: DragResultSigned | null }
   // for when the X and Y coordinates are part of a joint complex number
-  | { type: "complex"; span: Span }
+  | { type: "complex"; span: Span; field: FieldComputed }
 
 export interface DragTarget<T> {
-  num(node: T, props: PropsDragTarget): Span | null
-  point(node: T, props: PropsDragTarget): PointResult | null
+  num(node: T, props: PropsDrag): DragResult | null
+  point(node: T, props: PropsDrag): DragResultPoint | null
 }
 
 function joint<T>(fn: (node: T) => never): AstTxr<T> {
@@ -74,11 +78,11 @@ function error<T>(data: TemplateStringsArray): AstTxr<T> {
   })
 }
 
-function dragNum(node: Node, props: PropsDragTarget) {
+function dragNum(node: Node, props: PropsDrag) {
   return AST_TXRS[node.type].drag.num(node as never, props)
 }
 
-function dragPoint(node: Node, props: PropsDragTarget) {
+export function dragPoint(node: Node, props: PropsDrag) {
   return AST_TXRS[node.type].drag.point(node as never, props)
 }
 
@@ -108,8 +112,14 @@ export const AST_TXRS: {
       )
     },
     drag: {
-      num(node) {
-        return node.span
+      num(node, props) {
+        if (node.span) {
+          return {
+            span: node.span,
+            field: props.field,
+          }
+        }
+        return null
       },
       point() {
         return null
@@ -257,7 +267,7 @@ export const AST_TXRS: {
       num() {
         return null
       },
-      point(node) {
+      point(node, props) {
         if (
           node.b &&
           node.a.type == "num" &&
@@ -280,6 +290,7 @@ export const AST_TXRS: {
               node.a.span[L],
               node.b.nodes[1]!.span[R],
             ),
+            field: props.field,
           }
         }
         return null
@@ -346,8 +357,8 @@ export const AST_TXRS: {
           if (x || y) {
             return {
               type: "split",
-              x: x ? { forceSign: false, span: x } : null,
-              y: y ? { forceSign: false, span: y } : null,
+              x: x && { ...x, signed: false },
+              y: y && { ...y, signed: false },
             }
           }
         }
@@ -470,7 +481,7 @@ export const AST_TXRS: {
 
         const value = props.bindingsDrag.get(id(node))
         if (value) {
-          return dragNum(value, props)
+          return dragNum(value[1], { ...props, field: value[0] })
         }
 
         return null
@@ -480,7 +491,7 @@ export const AST_TXRS: {
 
         const value = props.bindingsDrag.get(id(node))
         if (value) {
-          return dragPoint(value, props)
+          return dragPoint(value[1], { ...props, field: value[0] })
         }
 
         return null
