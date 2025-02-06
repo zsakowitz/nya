@@ -29,7 +29,7 @@ export class CmdPiecewise extends Command {
     cursor.moveIn(b0, R)
   }
 
-  static render(blocks: Block[]) {
+  static render(blocks: { el: HTMLSpanElement; checkIfEmpty?(): void }[]) {
     const el = h(
       "relative inline-block text-left nya-cmd-brack",
       h(
@@ -56,7 +56,7 @@ export class CmdPiecewise extends Command {
         BRACKS["}"].html(),
       ),
     )
-    blocks.map((x) => x.checkIfEmpty())
+    blocks.map((x) => x.checkIfEmpty?.())
     return el
   }
 

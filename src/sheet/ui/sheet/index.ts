@@ -12,6 +12,7 @@ import { OpEq } from "../../../field/cmd/leaf/cmp"
 import { CmdNum } from "../../../field/cmd/leaf/num"
 import { OpRightArrow } from "../../../field/cmd/leaf/op"
 import { CmdWord } from "../../../field/cmd/leaf/word"
+import { CmdPiecewise } from "../../../field/cmd/logic/piecewise"
 import { CmdBrack } from "../../../field/cmd/math/brack"
 import { CmdSupSub } from "../../../field/cmd/math/supsub"
 import type { Options } from "../../../field/options"
@@ -58,6 +59,8 @@ function createDocs() {
   }
 
   function secAdvancedOperators() {
+    let q
+
     return section("advanced operators", [
       h(
         "flex flex-col",
@@ -105,6 +108,30 @@ function createDocs() {
         h(
           "text-sm leading-tight text-slate-500",
           "evaluates <left side> with <a> set to <right side>",
+        ),
+      ),
+      h(
+        "flex flex-col",
+        h(
+          "text-[1.265rem]/[1.15]",
+          h(
+            "font-['Times_New_Roman']",
+            CmdPiecewise.render([
+              { el: any() },
+              { el: TY_INFO.bool.icon() },
+              { el: any() },
+              { el: TY_INFO.bool.icon() },
+              { el: any() },
+              { el: (q = h("")) },
+            ]),
+            (q.parentElement?.classList.add("nya-has-empty"),
+            new OpRightArrow().el),
+            any(),
+          ),
+        ),
+        h(
+          "text-sm leading-tight text-slate-500",
+          "piecewise function; returns the first value whose “if” condition is true",
         ),
       ),
       h(
