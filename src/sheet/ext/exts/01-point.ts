@@ -89,7 +89,15 @@ export const EXT_POINT = defineExt({
         }
       }
     },
-    cursor() {
+    cursor(data) {
+      if (data.drag.type == "split") {
+        return (
+          data.drag.x && !data.drag.y ? "ew-resize"
+          : data.drag.y && !data.drag.x ? "ns-resize"
+          : "move"
+        )
+      }
+
       return "move"
     },
     move(data, to) {
@@ -164,7 +172,17 @@ export const EXT_POINT = defineExt({
         return data
       }
     },
-    cursor() {
+    cursor(data) {
+      const drag = data.drag!
+
+      if (drag.type == "split") {
+        return (
+          drag.x && !drag.y ? "ew-resize"
+          : drag.y && !drag.x ? "ns-resize"
+          : "move"
+        )
+      }
+
       return "move"
     },
     off(data) {
