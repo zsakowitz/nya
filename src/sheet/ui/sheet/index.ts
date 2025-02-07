@@ -474,7 +474,7 @@ export class Sheet {
     })
 
     const sidebar = h(
-      "font-['Symbola','Times_New_Roman',sans-serif] flex flex-col overflow-y-auto",
+      "font-['Symbola','Times_New_Roman',sans-serif] flex flex-col overflow-y-auto row-span-2",
 
       // title bar
       h(
@@ -495,6 +495,10 @@ export class Sheet {
       h("flex-1 border-r border-[--nya-border]"),
     )
 
+    const toolbar = h(
+      "font-['Symbola','Times_New_Roman',sans-serif] flex overflow-x-auto h-12 min-h-12 bg-[--nya-bg-sidebar] border-b border-[--nya-border]",
+    )
+
     const docs = createDocs(
       "flex flex-col overflow-y-auto px-4 pb-4 gap-2 border-r border-[--nya-border] hidden",
       () => {
@@ -507,15 +511,19 @@ export class Sheet {
     this.glPixelRatio.el.className =
       "block w-48 bg-[--nya-bg] outline outline-[--nya-pixel-ratio] rounded-full p-1"
     this.el = h(
-      "fixed inset-0 grid grid-cols-[400px_1fr] grid-rows-1 select-none",
+      "fixed inset-0 grid grid-cols-[400px_1fr] grid-rows-[3rem_1fr] grid-rows-1 select-none",
 
       sidebar,
+      toolbar,
       docs,
 
       h(
         "relative",
         canvas,
         this.paper.el,
+        h(
+          "absolute block top-0 left-0 right-0 h-1 from-[--nya-sidebar-shadow] to-transparent bg-gradient-to-b",
+        ),
         h(
           "absolute block top-0 bottom-0 left-0 w-1 from-[--nya-sidebar-shadow] to-transparent bg-gradient-to-r",
         ),
