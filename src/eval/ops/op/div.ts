@@ -4,7 +4,8 @@ import type { SPoint, SReal } from "../../ty"
 import { approx, frac, num, pt } from "../../ty/create"
 import { FnDist } from "../dist"
 import { add } from "./add"
-import { mul } from "./mul"
+import { declareMulQ32, mul, mulQ32 } from "./mul"
+import { neg } from "./neg"
 import { sub } from "./sub"
 
 export function recip(a: SReal): SReal {
@@ -60,5 +61,26 @@ export const OP_DIV = new FnDist("÷", "divides two values")
     (ctx, a, b) => {
       declareDiv(ctx)
       return `_helper_div(${a.expr}, ${b.expr})`
+    },
+  )
+  .add(
+    ["q32", "q32"],
+    "q32",
+    (a, { value: [r, i, j, k] }) => {
+      const hyp = add(mul(r, r), add(mul(i, i), add(mul(j, j), mul(k, k))))
+      const ret = mulQ32(a.value, [r, neg(i), neg(j), neg(k)])
+      for (let i = 0; i < 3; i++) {
+        ret[i] = div(ret[i]!, hyp)
+      }
+      return ret
+    },
+    (ctx, a, b) => {
+      declareMulQ32(ctx)
+      ctx.glsl`vec4 _helper_div_q32(vec4 a, vec4 b) {
+  float hyp = b.x * b.x + b.y * b.y + b.z * b.z + b.w * b.w;
+  return _helper_mul_q32(a, b * vec4(1, -1, -1, -1)) / hyp;
+}
+`
+      return `_helper_div_q32(${a.expr}, ${b.expr})`
     },
   )

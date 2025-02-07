@@ -10,6 +10,7 @@ import { FN_OKLCH } from "./fn/color/oklch"
 import { FN_RGB } from "./fn/color/rgb"
 import { FN_ARG } from "./fn/complex/arg"
 import { FN_COMPLEX } from "./fn/complex/complex"
+import { FN_CONJ } from "./fn/complex/conj"
 import { FN_DOT } from "./fn/complex/dot"
 import { FN_IMAG } from "./fn/complex/imag"
 import { FN_POINT } from "./fn/complex/point"
@@ -91,6 +92,7 @@ export const FNS: Record<string, Fn> = {
   complex: FN_COMPLEX,
   forceshader: FN_FORCESHADER,
   perpendicular: FN_PERPENDICULAR,
+  conj: FN_CONJ,
 }
 Object.setPrototypeOf(FNS, null)
 

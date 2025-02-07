@@ -40,6 +40,22 @@ export const VARS: Record<string, Builtin> = {
     js: { type: "c64", value: pt(real(0), real(1)), list: false },
     glsl: { type: "c64", expr: "vec4(0, 0, 1, 0)", list: false },
   },
+  j: {
+    js: {
+      type: "q32",
+      value: [real(0), real(0), real(1), real(0)],
+      list: false,
+    },
+    glsl: { type: "q32", expr: "vec4(0, 0, 1, 0)", list: false },
+  },
+  k: {
+    js: {
+      type: "q32",
+      value: [real(0), real(0), real(0), real(1)],
+      list: false,
+    },
+    glsl: { type: "q32", expr: "vec4(0, 0, 0, 1)", list: false },
+  },
   "∞": {
     js: { type: "r64", value: real(Infinity), list: false },
     glsl: { type: "r64", expr: "vec2(1.0/0.0)", list: false },

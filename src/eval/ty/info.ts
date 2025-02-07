@@ -8,6 +8,7 @@ import { h } from "../../jsx"
 import type { Paper, Point } from "../../sheet/ui/paper"
 import type { GlslContext } from "../lib/fn"
 import { num, real } from "../ty/create"
+import { isZero } from "./check"
 import type { Write } from "./display"
 
 export interface Garbage<T> {
@@ -307,6 +308,14 @@ export const TY_INFO: TyInfoMap = {
           return `vec2(${self}, 0)`
         },
       },
+      q32: {
+        js(self) {
+          return [self, real(0), real(0), real(0)]
+        },
+        glsl(self) {
+          return `vec4(${self}, 0, 0, 0)`
+        },
+      },
     },
     write: WRITE_REAL,
     icon() {
@@ -342,6 +351,14 @@ export const TY_INFO: TyInfoMap = {
           return `vec2(${self}.x, 0)`
         },
       },
+      q32: {
+        js(self) {
+          return [self, real(0), real(0), real(0)]
+        },
+        glsl(self) {
+          return `vec4(${self}.x, 0, 0, 0)`
+        },
+      },
     },
     write: WRITE_REAL,
     icon() {
@@ -352,7 +369,16 @@ export const TY_INFO: TyInfoMap = {
     name: "complex number",
     glsl: "vec2",
     garbage: { js: NANPT, glsl: "vec2(0.0/0.0)" },
-    coerce: {},
+    coerce: {
+      q32: {
+        js(self) {
+          return [self.x, self.y, real(0), real(0)]
+        },
+        glsl(self) {
+          return `vec4(${self}, 0, 0)`
+        },
+      },
+    },
     write: WRITE_COMPLEX,
     icon() {
       return iconComplex(false)
@@ -369,6 +395,14 @@ export const TY_INFO: TyInfoMap = {
         },
         glsl(self) {
           return `${self}.xz`
+        },
+      },
+      q32: {
+        js(self) {
+          return [self.x, self.y, real(0), real(0)]
+        },
+        glsl(self) {
+          return `vec4(${self}.xz, 0, 0)`
         },
       },
     },
@@ -404,6 +438,70 @@ export const TY_INFO: TyInfoMap = {
     write: WRITE_POINT,
     icon() {
       return iconPoint(true)
+    },
+  },
+  q32: {
+    name: "quaternion",
+    glsl: "vec4",
+    garbage: {
+      js: [real(NaN), real(NaN), real(NaN), real(NaN)],
+      glsl: "vec4(0.0/0.0)",
+    },
+    coerce: {},
+    write: {
+      isApprox(value) {
+        return (
+          value[0].type == "approx" ||
+          value[1].type == "approx" ||
+          value[2].type == "approx" ||
+          value[3].type == "approx"
+        )
+      },
+      display(value, props) {
+        let wrote = false
+
+        if (!isZero(value[0])) {
+          wrote = true
+          props.num(value[0])
+        }
+
+        wrote
+
+        //         for (const [v, name] of [
+        //           [value[1], "i"],
+        //           [value[2], "j"],
+        //           [value[3], "k"],
+        //         ]) {
+        //           if (wrote) {
+        //             props.num()
+        //           }
+        //         }
+        //
+        //         new OpPlus().insertAt(props.cursor, L)
+        //         props.num(value[1])
+        //         new CmdWord("i", undefined, true).insertAt(props.cursor, L)
+        //         new OpPlus().insertAt(props.cursor, L)
+        //         props.num(value[2])
+        //         new CmdWord("j", undefined, true).insertAt(props.cursor, L)
+        //         new OpPlus().insertAt(props.cursor, L)
+        //         props.num(value[3])
+        //         new CmdWord("k", undefined, true).insertAt(props.cursor, L)
+      },
+    },
+    icon() {
+      return h(
+        "",
+        h(
+          "text-[oklch(0.518_0.253_323.949)] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px]",
+          h(
+            "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
+          ),
+          h(
+            "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-['Times_New_Roman'] italic text-[100%]",
+            "ijk",
+          ),
+        ),
+      )
     },
   },
   color: {

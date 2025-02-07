@@ -15,6 +15,9 @@ export class GlslHelpers {
     if (this.templateHelpers.indexOf(source) == -1) {
       this.templateHelpers.push(source)
       ;(this as any).helpers += source[0]!
+      if (!source[0]!.endsWith("\n")) {
+        console.error(source)
+      }
     }
   }
 }

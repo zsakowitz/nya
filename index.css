@@ -1962,6 +1962,28 @@ video {
   color: var(--nya-sheet-title);
 }
 
+.text-\[\#E60076\] {
+  --tw-text-opacity: 1;
+  color: rgb(230 0 118 / var(--tw-text-opacity, 1));
+}
+
+.text-\[\#e60076\] {
+  --tw-text-opacity: 1;
+  color: rgb(230 0 118 / var(--tw-text-opacity, 1));
+}
+
+.text-\[oklch\(0\.667_0\.295_322\.15\)\] {
+  color: oklch(0.667 0.295 322.15);
+}
+
+.text-\[oklch\(0\.74_0\.238_322\.16\)\] {
+  color: oklch(0.74 0.238 322.16);
+}
+
+.text-\[oklch\(0\.518_0\.253_323\.949\)\] {
+  color: oklch(0.518 0.253 323.949);
+}
+
 .opacity-20 {
   opacity: 0.2;
 }

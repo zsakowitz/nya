@@ -407,7 +407,10 @@ export class Sheet {
       // title bar
       h(
         "sticky top-0 w-full flex flex-col bg-[--nya-bg-sidebar] border-b border-r border-[--nya-border] px-4 text-center text-[--nya-title] py-2 z-10",
-        h("text-2xl leading-tight", "project nya"),
+        h(
+          "text-2xl leading-tight",
+          Math.random() < 1 / 1000 ? "nyaland" : "project nya",
+        ),
         h("italic text-sm leading-none", REMARK),
         h("grid grid-cols-2 mt-2 -mx-2 gap-2", switchToDocs, clearAll),
       ),
