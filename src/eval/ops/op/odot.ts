@@ -65,3 +65,16 @@ export const OP_ODOT = new FnDist(
       return `(${a.expr} * ${b.expr})`
     },
   )
+  .add(
+    ["q32", "q32"],
+    "q32",
+    (a, b) => [
+      mul(a.value[0], b.value[0]),
+      mul(a.value[1], b.value[1]),
+      mul(a.value[2], b.value[2]),
+      mul(a.value[3], b.value[3]),
+    ],
+    (_, a, b) => {
+      return `(${a.expr} * ${b.expr})`
+    },
+  )

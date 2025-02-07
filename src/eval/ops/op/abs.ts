@@ -58,3 +58,18 @@ export const OP_ABS = new FnDist(
     (a) => approx(Math.hypot(num(a.value.x), num(a.value.y))),
     (_, a) => `length(${a.expr})`,
   )
+  .add(
+    ["q32"],
+    "r32",
+    // TODO: this is exact for some values
+    (a) =>
+      approx(
+        Math.hypot(
+          num(a.value[0]),
+          num(a.value[1]),
+          num(a.value[2]),
+          num(a.value[3]),
+        ),
+      ),
+    (_, a) => `length(${a.expr})`,
+  )
