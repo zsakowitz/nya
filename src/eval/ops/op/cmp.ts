@@ -22,7 +22,7 @@ function createCmp(
     .add(
       ["r32", "r32"],
       "bool",
-      (a, b) => num(a.value) < num(b.value),
+      (a, b) => js(num(a.value), num(b.value)),
       (_, a, b) => `(${pre}(${a.expr} ${glsl} ${b.expr}))`,
     )
 }
