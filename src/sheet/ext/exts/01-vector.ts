@@ -6,8 +6,8 @@ export const EXT_VECTOR = defineExt({
   data(expr) {
     const value = expr.js?.value
 
-    if (value && value.type == "vector32") {
-      return { value: value as JsValue<"vector32"> }
+    if (value && value.type == "vector") {
+      return { value: value as JsValue<"vector"> }
     }
   },
   plot2d(data, paper) {

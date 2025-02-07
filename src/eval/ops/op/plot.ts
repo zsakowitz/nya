@@ -31,12 +31,12 @@ export const OP_PLOT = new FnDist<"color">(
   .add(["c32"], "color", err, (ctx, a) => FN_DEBUGPOINT.glsl1(ctx, a).expr)
   .add(["point32"], "color", err, (ctx, a) => FN_DEBUGPOINT.glsl1(ctx, a).expr)
   .add(["color"], "color", err, (_, a) => a.expr)
-  .add(["line32"], "color", err, (ctx, a) =>
+  .add(["line"], "color", err, (ctx, a) =>
     bool(
       `${FN_DISTANCE.glsl1(ctx, a, { type: "point32", expr: "v_coords.xz" }).expr} < 2. / u_px_per_unit.x`,
     ),
   )
-  .add(["circle32"], "color", err, (ctx, ar) => {
+  .add(["circle"], "color", err, (ctx, ar) => {
     const a = ctx.cache(ar)
     return bool(
       `distance(v_coords.xz, ${a}.xy) * u_px_per_unit.x >= ${a}.z * u_px_per_unit.x - 2. && distance(v_coords.xz, ${a}.xy) * u_px_per_unit.x <= ${a}.z * u_px_per_unit.x + 2.`,

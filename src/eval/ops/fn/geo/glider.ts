@@ -20,11 +20,11 @@ function glsl(ctx: GlslContext, ar: GlslVal, b: GlslVal) {
 }
 
 export const FN_GLIDER = new FnDist("glider", "constructs a point on an object")
-  .add(["segment32", "r32"], "point32", js, glsl)
-  .add(["ray32", "r32"], "point32", js, glsl)
-  .add(["line32", "r32"], "point32", js, glsl)
+  .add(["segment", "r32"], "point32", js, glsl)
+  .add(["ray", "r32"], "point32", js, glsl)
+  .add(["line", "r32"], "point32", js, glsl)
   .add(
-    ["circle32", "r32"],
+    ["circle", "r32"],
     "point32",
     ({ value: { center, radius } }, tr) => {
       const x = num(center.x)

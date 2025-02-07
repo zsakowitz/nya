@@ -18,7 +18,7 @@ export const FN_MIDPOINT = new FnDist(
     (_, a, b) => `((${a.expr} + ${b.expr}) / 2.0)`,
   )
   .add(
-    ["segment32"],
+    ["segment"],
     "point32",
     ({ value: [a, b] }) =>
       pt(div(add(a.x, b.x), real(2)), div(add(a.y, b.y), real(2))),

@@ -7,8 +7,8 @@ import { mul } from "../../op/mul"
 import { sub } from "../../op/sub"
 
 function js(
-  [{ x: x1, y: y1 }, { x: x2, y: y2 }]: Val<"line32">,
-  [{ x: x3, y: y3 }, { x: x4, y: y4 }]: Val<"line32">,
+  [{ x: x1, y: y1 }, { x: x2, y: y2 }]: Val<"line">,
+  [{ x: x3, y: y3 }, { x: x4, y: y4 }]: Val<"line">,
 ) {
   return pt(
     div(
@@ -62,19 +62,15 @@ export const FN_INTERSECTION = new FnDist(
 )
 
 // line-line
-for (const a of ["segment32", "ray32", "line32"] as const) {
-  for (const b of ["segment32", "ray32", "line32"] as const) {
+for (const a of ["segment", "ray", "line"] as const) {
+  for (const b of ["segment", "ray", "line"] as const) {
     FN_INTERSECTION.add([a, b], "point32", (a, b) => js(a.value, b.value), glsl)
   }
 }
 
 // line-circle
 {
-  function lineCircleJs(
-    circ: Tys["circle32"],
-    lin: Tys["line32"],
-    index: -1 | 1,
-  ) {
+  function lineCircleJs(circ: Tys["circle"], lin: Tys["line"], index: -1 | 1) {
     // https://stackoverflow.com/a/37225895
     const cx = num(circ.center.x)
     const cy = num(circ.center.y)
@@ -127,15 +123,15 @@ for (const a of ["segment32", "ray32", "line32"] as const) {
     return `(vec2(${x1},${y1}) + ${v1} * ((${b}${index == -1 ? "-" : "+"}${d})/${c}))`
   }
 
-  for (const b of ["segment32", "ray32", "line32"] as const) {
+  for (const b of ["segment", "ray", "line"] as const) {
     FN_INTERSECTION.add(
-      ["circle32", b],
+      ["circle", b],
       "point32",
       (a, b) => lineCircleJs(a.value, b.value, 1),
       (ctx, a, b) => lineCircleGlsl(ctx, ctx.cache(a), ctx.cache(b), 1),
     )
     FN_INTERSECTION.add(
-      [b, "circle32"],
+      [b, "circle"],
       "point32",
       (a, b) => lineCircleJs(b.value, a.value, -1),
       (ctx, a, b) => lineCircleGlsl(ctx, ctx.cache(b), ctx.cache(a), -1),
@@ -145,7 +141,7 @@ for (const a of ["segment32", "ray32", "line32"] as const) {
 
 // circle-circle
 FN_INTERSECTION.add(
-  ["circle32", "circle32"],
+  ["circle", "circle"],
   "point32",
   (ar, br) => {
     // From Google's AI overview; I'm not sure of the original source

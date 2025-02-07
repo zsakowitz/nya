@@ -3,7 +3,7 @@ import { each, type JsValue, type Tys } from "../../../eval/ty"
 import { num } from "../../../eval/ty/create"
 import type { Paper, Point } from "../../ui/paper"
 
-function getRayBounds(line: Tys["ray32"], paper: Paper): [Point, Point] | null {
+function getRayBounds(line: Tys["ray"], paper: Paper): [Point, Point] | null {
   const x1 = num(line[0].x)
   const y1 = num(line[0].y)
   const x2 = num(line[1].x)
@@ -57,8 +57,8 @@ export const EXT_RAY = defineExt({
   data(expr) {
     const value = expr.js?.value
 
-    if (value && value.type == "ray32") {
-      return { value: value as JsValue<"ray32"> }
+    if (value && value.type == "ray") {
+      return { value: value as JsValue<"ray"> }
     }
   },
   plot2d(data, paper) {

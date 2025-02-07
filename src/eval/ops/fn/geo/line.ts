@@ -5,7 +5,7 @@ export const FN_LINE = new FnDist(
   "constructs a line between two points",
 ).add(
   ["point32", "point32"],
-  "line32",
+  "line",
   (a, b) => [a.value, b.value],
   (_, a, b) => `vec4(${a.expr}, ${b.expr})`,
 )

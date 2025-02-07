@@ -3,7 +3,7 @@ import { each, type JsValue, type Tys } from "../../../eval/ty"
 import { num } from "../../../eval/ty/create"
 import type { Paper, Point } from "../../ui/paper"
 
-function getLineBounds(line: Tys["line32"], paper: Paper): [Point, Point] {
+function getLineBounds(line: Tys["line"], paper: Paper): [Point, Point] {
   const x1 = num(line[0].x)
   const y1 = num(line[0].y)
   const x2 = num(line[1].x)
@@ -29,8 +29,8 @@ export const EXT_LINE = defineExt({
   data(expr) {
     const value = expr.js?.value
 
-    if (value && value.type == "line32") {
-      return { value: value as JsValue<"line32"> }
+    if (value && value.type == "line") {
+      return { value: value as JsValue<"line"> }
     }
   },
   plot2d(data, paper) {

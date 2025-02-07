@@ -25,7 +25,7 @@ export const FN_DISTANCE = new FnDist<"r32">(
 )
   // https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
   .add(
-    ["line32", "point32"],
+    ["line", "point32"],
     "r32",
     (a, b) => {
       const x1 = a.value[0].x

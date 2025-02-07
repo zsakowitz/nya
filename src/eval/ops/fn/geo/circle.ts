@@ -33,8 +33,8 @@ export const FN_CIRCLE = new FnDist(
 )
   .add(
     ["point32", "r32"],
-    "circle32",
+    "circle",
     (a, b) => ({ center: a.value, radius: abs(b.value) }),
     (_, a, b) => `vec3(${a.expr}, abs(${b.expr}))`,
   )
-  .add(["point32", "point32"], "circle32", js, glsl)
+  .add(["point32", "point32"], "circle", js, glsl)

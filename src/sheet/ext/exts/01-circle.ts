@@ -6,8 +6,8 @@ export const EXT_CIRCLE = defineExt({
   data(expr) {
     const value = expr.js?.value
 
-    if (value && value.type == "circle32") {
-      return { value: value as JsValue<"circle32"> }
+    if (value && value.type == "circle") {
+      return { value: value as JsValue<"circle"> }
     }
   },
   plot2d(data, paper) {

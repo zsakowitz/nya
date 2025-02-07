@@ -14,11 +14,11 @@ export interface Tys {
 
   point32: SPoint
   point64: SPoint
-  segment32: [SPoint, SPoint]
-  ray32: [SPoint, SPoint]
-  line32: [SPoint, SPoint]
-  vector32: [SPoint, SPoint]
-  circle32: { center: SPoint; radius: SReal }
+  segment: [SPoint, SPoint]
+  ray: [SPoint, SPoint]
+  line: [SPoint, SPoint]
+  vector: [SPoint, SPoint]
+  circle: { center: SPoint; radius: SReal }
 }
 
 export type SApprox = { type: "approx"; value: number }

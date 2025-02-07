@@ -6,8 +6,8 @@ export const EXT_SEGMENT = defineExt({
   data(expr) {
     const value = expr.js?.value
 
-    if (value && value.type == "segment32") {
-      return { value: value as JsValue<"segment32"> }
+    if (value && value.type == "segment") {
+      return { value: value as JsValue<"segment"> }
     }
   },
   plot2d(data, paper) {
