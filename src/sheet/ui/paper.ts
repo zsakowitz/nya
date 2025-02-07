@@ -53,10 +53,10 @@ export class Paper {
 
   constructor(
     public rawBounds: Bounds = {
-      xmin: -10,
-      w: 20,
-      ymin: -10,
-      h: 20,
+      xmin: -10.2,
+      w: 20.4,
+      ymin: -10.2,
+      h: 20.4,
     },
     public autofit = true,
   ) {
