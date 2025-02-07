@@ -1,3 +1,4 @@
+import type { IconDefinition } from "@fortawesome/free-solid-svg-icons"
 import { faBook } from "@fortawesome/free-solid-svg-icons/faBook"
 import { faCopy } from "@fortawesome/free-solid-svg-icons/faCopy"
 import { faListUl } from "@fortawesome/free-solid-svg-icons/faListUl"
@@ -390,28 +391,64 @@ export class Sheet {
     this.glPixelRatio.onInput = () =>
       this.setPixelRatio(num(this.glPixelRatio.value))
 
-    const switchToDocs = hx(
-      "button",
-      "bg-[--nya-bg] h-full flex items-center justify-center border border-[--nya-border] rounded-lg hover:bg-[--nya-sidebar] transition py-2 [line-height:1] gap-1",
-      fa(faBook, "size-4 fill-current"),
-      "Help",
-    )
+    function btn(
+      icon: IconDefinition,
+      label: Node | string,
+      action: () => void,
+    ) {
+      const el = hx(
+        "button",
+        "flex flex-col h-full aspect-square [line-height:1] hover:bg-[--nya-sidebar-hover] hover:text-[--nya-title-dark] rounded",
+        h(
+          "flex flex-col m-auto",
+          fa(icon, "mx-auto size-5 fill-current"),
+          h("text-[80%]/[.5] mt-1.5 lowercase", label),
+        ),
+      )
+      el.addEventListener("click", action)
+      return el
+    }
 
-    const clearAll = hx(
-      "button",
-      "bg-[--nya-bg] h-full flex items-center justify-center border border-[--nya-border] rounded-lg hover:bg-[--nya-sidebar] transition py-2 [line-height:1] gap-1",
-      fa(faTrash, "size-4 fill-current"),
-      "Clear",
-    )
+    const switchToDocs = btn(faBook, "Help", () => {
+      docs.classList.remove("hidden")
+      sidebar.classList.add("hidden")
+    })
+
+    const clearAll = btn(faTrash, "Clear", () => {
+      while (this.exprs[0]) {
+        this.exprs[0].delete()
+      }
+    })
 
     const copyAllLabel = t("Copy")
 
-    const copyAll = hx(
-      "button",
-      "bg-[--nya-bg] h-full flex items-center justify-center border border-[--nya-border] rounded-lg hover:bg-[--nya-sidebar] transition py-2 [line-height:1] gap-1",
-      fa(faCopy, "size-4 fill-current"),
-      copyAllLabel,
-    )
+    let copyId = 0
+    const copyAll = btn(faCopy, copyAllLabel, async () => {
+      copyAllLabel.data = "Copying..."
+      const id = ++copyId
+      try {
+        await navigator.clipboard.writeText(
+          this.exprs.map((x) => x.field.block.latex()).join("\n"),
+        )
+        if (copyId == id) {
+          copyAllLabel.data = "Copied! ✅"
+          setTimeout(() => {
+            if (copyId == id) {
+              copyAllLabel.data = "Copy"
+            }
+          }, 3000)
+        }
+      } catch {
+        if (copyId == id) {
+          copyAllLabel.data = "Failed ❌"
+          setTimeout(() => {
+            if (copyId == id) {
+              copyAllLabel.data = "Copy"
+            }
+          }, 3000)
+        }
+      }
+    })
 
     const nextExpression = hx(
       "button",
@@ -441,13 +478,11 @@ export class Sheet {
 
       // title bar
       h(
-        "sticky top-0 w-full flex flex-col bg-[--nya-bg-sidebar] border-b border-r border-[--nya-border] px-4 text-center text-[--nya-title] py-2 z-10",
-        h(
-          "text-2xl leading-tight",
-          Math.random() < 1 / 1000 ? "nyaland" : "project nya",
-        ),
-        h("italic text-sm leading-none", REMARK),
-        h("grid grid-cols-3 mt-2 -mx-2 gap-2", switchToDocs, clearAll, copyAll),
+        "sticky top-0 w-full p-1 h-12 min-h-12 max-h-12 flex bg-[--nya-bg-sidebar] border-b border-r border-[--nya-border] text-center text-[--nya-title] z-10",
+        copyAll,
+        clearAll,
+        h("flex-1"),
+        switchToDocs,
       ),
 
       // main expression list
@@ -468,45 +503,6 @@ export class Sheet {
       },
     )
 
-    switchToDocs.addEventListener("click", () => {
-      sidebar.classList.add("hidden")
-      docs.classList.remove("hidden")
-    })
-
-    clearAll.addEventListener("click", () => {
-      while (this.exprs[0]) {
-        this.exprs[0].delete()
-      }
-    })
-
-    let copyId = 0
-    copyAll.addEventListener("click", async () => {
-      copyAllLabel.data = "Copying..."
-      const id = ++copyId
-      try {
-        await navigator.clipboard.writeText(
-          this.exprs.map((x) => x.field.block.latex()).join("\n"),
-        )
-        if (copyId == id) {
-          copyAllLabel.data = "Copied! ✅"
-          setTimeout(() => {
-            if (copyId == id) {
-              copyAllLabel.data = "Copy"
-            }
-          }, 3000)
-        }
-      } catch {
-        if (copyId == id) {
-          copyAllLabel.data = "Failed ❌"
-          setTimeout(() => {
-            if (copyId == id) {
-              copyAllLabel.data = "Copy"
-            }
-          }, 3000)
-        }
-      }
-    })
-
     // dom
     this.glPixelRatio.el.className =
       "block w-48 bg-[--nya-bg] outline outline-[--nya-pixel-ratio] rounded-full p-1"
@@ -524,6 +520,11 @@ export class Sheet {
           "absolute block top-0 bottom-0 left-0 w-1 from-[--nya-sidebar-shadow] to-transparent bg-gradient-to-r",
         ),
         h("absolute flex flex-col top-2 right-2", this.glPixelRatio.el),
+        h(
+          "absolute flex flex-col bottom-2 right-2 text-right font-['Symbola'] text-[--nya-title] pointer-events-none [-webkit-text-stroke:2px_var(--nya-bg)] [paint-order:stroke] opacity-30",
+          h("text-3xl/[1]", "project nya"),
+          h("italic text-sm leading-none", REMARK),
+        ),
       ),
     )
     new ResizeObserver(() =>

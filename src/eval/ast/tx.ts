@@ -123,6 +123,7 @@ export const AST_TXRS: {
     },
     drag: {
       num(node, props) {
+        // TODO: restrict numbers in sliders
         if (node.span) {
           return {
             span: node.span,
