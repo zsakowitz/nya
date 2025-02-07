@@ -2,7 +2,7 @@ import type { Node } from "./ast/token"
 import { Bindings } from "./lib/binding"
 import { GlslContext, GlslHelpers } from "./lib/fn"
 import { FNS } from "./ops"
-import { AST_TXRS } from "./tx"
+import { AST_TXRS } from "./ast/tx"
 import type { GlslValue, JsValue, SReal } from "./ty"
 import { real } from "./ty/create"
 

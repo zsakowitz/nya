@@ -1,5 +1,5 @@
 import { defineExt, Store } from ".."
-import { dragPoint } from "../../../eval/tx"
+import { dragPoint } from "../../../eval/ast/tx"
 import { each, type JsValue } from "../../../eval/ty"
 import { frac, num, real, unpt } from "../../../eval/ty/create"
 import { TY_INFO } from "../../../eval/ty/info"

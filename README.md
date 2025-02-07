@@ -55,18 +55,18 @@ Only important files are described here.
 
 - [src/eval/](src/eval/) evaluates expressions, and defines the AST and type
   system.
-  - [./ast/](src/eval/ast/) defines the AST and its parser.
-    - [./token.ts](src/eval/ast/token.ts) defines AST node kinds.
-  - [./ops/](src/eval/ops/) defines operators and functions.
-    - [./fn/](src/eval/ops/fn/) defines named user-callable functions.
-    - [./op/](src/eval/ops/op/) defines operators.
-    - [./index.ts](src/eval/ops/index.ts) provides a list of all operators and
+  - [ast/](src/eval/ast/) defines the AST and its parser.
+    - [token.ts](src/eval/ast/token.ts) defines AST node kinds.
+  - [ops/](src/eval/ops/) defines operators and functions.
+    - [fn/](src/eval/ops/fn/) defines named user-callable functions.
+    - [op/](src/eval/ops/op/) defines operators.
+    - [index.ts](src/eval/ops/index.ts) provides a list of all operators and
       functions.
-  - [./ty/](src/eval/ty/) defines the type system.
-    - [./index.ts](src/eval/ty/index.ts) defines what TypeScript types
-      correspond to `nya` types.
-    - [./info.ts](src/eval/ty/info.ts) defines lots of metadata associated with
-      each type.
+  - [ty/](src/eval/ty/) defines the type system.
+    - [index.ts](src/eval/ty/index.ts) defines what TypeScript types correspond
+      to `nya` types.
+    - [info.ts](src/eval/ty/info.ts) defines metadata associated with each type.
+  - [tx.ts](src/eval/ty/info.ts) defines metadata associated with each type.
 - [src/field/](src/field/) defines the math editor and everything which can be
   typed.
 - [src/sheet/](src/sheet/) draws the graph paper, and defines expression kinds
