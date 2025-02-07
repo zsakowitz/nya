@@ -69,7 +69,7 @@ export const OP_DIV = new FnDist("÷", "divides two values")
     (a, { value: [r, i, j, k] }) => {
       const hyp = add(mul(r, r), add(mul(i, i), add(mul(j, j), mul(k, k))))
       const ret = mulQ32(a.value, [r, neg(i), neg(j), neg(k)])
-      for (let i = 0; i < 3; i++) {
+      for (let i = 0; i < 4; i++) {
         ret[i] = div(ret[i]!, hyp)
       }
       return ret

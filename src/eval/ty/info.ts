@@ -465,27 +465,20 @@ export const TY_INFO: TyInfoMap = {
           props.num(value[0])
         }
 
-        wrote
+        for (const [v, tag] of [
+          [value[1], "i"],
+          [value[2], "j"],
+          [value[3], "k"],
+        ] as const) {
+          if (!isZero(v)) {
+            props.num(v, tag, wrote)
+            wrote = true
+          }
+        }
 
-        //         for (const [v, name] of [
-        //           [value[1], "i"],
-        //           [value[2], "j"],
-        //           [value[3], "k"],
-        //         ]) {
-        //           if (wrote) {
-        //             props.num()
-        //           }
-        //         }
-        //
-        //         new OpPlus().insertAt(props.cursor, L)
-        //         props.num(value[1])
-        //         new CmdWord("i", undefined, true).insertAt(props.cursor, L)
-        //         new OpPlus().insertAt(props.cursor, L)
-        //         props.num(value[2])
-        //         new CmdWord("j", undefined, true).insertAt(props.cursor, L)
-        //         new OpPlus().insertAt(props.cursor, L)
-        //         props.num(value[3])
-        //         new CmdWord("k", undefined, true).insertAt(props.cursor, L)
+        if (!wrote) {
+          props.digits("0")
+        }
       },
     },
     icon() {

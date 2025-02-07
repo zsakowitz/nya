@@ -30,7 +30,7 @@ export class Display {
     private readonly base: SReal,
   ) {}
 
-  protected odigits(digits: string, imaginary?: boolean) {
+  protected odigits(digits: string, tag?: string) {
     const { base } = this
 
     if (typeof base == "object" && "btw" in base && base.btw == "meow") {
@@ -40,10 +40,10 @@ export class Display {
       digits = digits.replace(/\d/g, (x) => "mmrrrrrrpp"[x as any]!)
     }
 
-    this.digits(digits, imaginary)
+    this.digits(digits, tag)
   }
 
-  digits(digits: string, imaginary?: boolean) {
+  digits(digits: string, tag?: string) {
     const { cursor } = this
 
     loop: for (let i = 0; i < digits.length; i++) {
@@ -66,9 +66,9 @@ export class Display {
             new CmdNum(digit).insertAt(cursor, L)
             break
           }
-          if (imaginary) {
-            new CmdWord("i", "var", true).insertAt(cursor, L)
-            imaginary = false
+          if (tag) {
+            new CmdWord(tag, "var", true).insertAt(cursor, L)
+            tag = undefined
           }
           new OpTimes().insertAt(cursor, L)
           new CmdNum("1").insertAt(cursor, L)
@@ -93,8 +93,8 @@ export class Display {
       }
     }
 
-    if (imaginary) {
-      new CmdWord("i", "var", true).insertAt(cursor, L)
+    if (tag) {
+      new CmdWord(tag, "var", true).insertAt(cursor, L)
     }
   }
 
@@ -139,29 +139,41 @@ export class Display {
     this.odigits(val)
   }
 
-  num(num: SReal, imaginary?: boolean) {
+  num(num: SReal, tag?: string, signed = false) {
     const { cursor } = this
     if (num.type == "approx") {
       let val = this.numToBase(num.value)
+      if (signed && val[0] != "-") val = "+" + val
       if (val == "Infinity") val = "∞"
       else if (val == "-Infinity") val = "-∞"
       else if (val != "NaN" && val.indexOf(".") == -1) val += ".0"
-      this.odigits(val, imaginary)
+      this.odigits(val, tag)
     } else if (num.d == 1) {
-      this.odigits(this.numToBase(num.n), imaginary)
+      let val = this.numToBase(num.n)
+      if (signed && val[0] != "-") val = "+" + val
+      if (tag && val == "+1") val = "+"
+      else if (tag && val == "-1") val = "-"
+      else if (tag && val == "1") val = ""
+      this.odigits(val, tag)
     } else {
       const n = new Block(null)
       const d = new Block(null)
       if (num.n < 0) {
         new OpMinus().insertAt(cursor, L)
+      } else if (signed) {
+        new OpPlus().insertAt(cursor, L)
       }
       const frac = new CmdFrac(n, d)
       frac.insertAt(cursor, L)
       this.cursor.moveIn(n, R)
-      this.odigits(this.numToBase(num.n < 0 ? -num.n : num.n), imaginary)
+      let val = this.numToBase(num.n < 0 ? -num.n : num.n)
+      this.odigits(val)
       this.cursor.moveIn(d, R)
       this.odigits(this.numToBase(num.d))
       this.cursor.moveTo(frac, R)
+      if (tag) {
+        new CmdWord(tag, undefined, true).insertAt(this.cursor, L)
+      }
     }
   }
 
@@ -169,11 +181,8 @@ export class Display {
     const showX = !isZero(value.x)
     if (showX) {
       this.num(value.x)
-      if (!(num(value.y) < 0)) {
-        new OpPlus().insertAt(this.cursor, L)
-      }
     }
-    this.num(value.y, true)
+    this.num(value.y, "i", showX)
   }
 
   private js1(val: JsVal) {
