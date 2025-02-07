@@ -31,10 +31,10 @@ expr`glider\left(F,.3\right)`
 expr`q_2=0.1base2`
 expr`q_4=0.\digit q\digit 5base36`
 show(
-  expr`a\cdot \left(\operatorname{valid}a\and y>0\and -1<x<0\right)\operatorname{with}a=\operatorname{oklch}\left(\frac{q_{2}+10}{20},y,360x\right)`,
+  expr`a\cdot \left(\operatorname{valid}a\and y>0\and -8<x<0\right)\operatorname{with}a=\operatorname{oklch}\left(\frac{q_{2}+10}{20},\frac{y}{8},\frac{360x}{8}\right)`,
 )
 show(
-  expr`\operatorname{firstvalid}\operatorname{oklab}\left(C.x+.4,.5\cdot \left(x+0.5\right),0.5\cdot \left(y+0.5\right)\right)`,
+  expr`\operatorname{firstvalid}\operatorname{oklab}\left(C.x+.4,.5\cdot \frac{x}{5}+0.25,0.5\cdot \frac{y}{5}+0.25\right)`,
 )
 expr`D=circle\left(\left(2,3\right),q_2+4\right)`
 expr`E=glider\left(D,-.367\right)`
