@@ -1,7 +1,6 @@
 import type { Sheet } from "."
 import type { AnyExt, CursorStyle } from "../../ext"
 import type { AnyPick } from "../../pick"
-import { PICK_POINT } from "../../pick/point"
 import type { Expr } from "../expr"
 import type { Point, PointerHandlers } from "../paper"
 
