@@ -14,7 +14,7 @@ function expr(source: { raw: readonly string[] }) {
 }
 
 if (location.href.includes("localhost")) {
-  expr`(2,3)`
+  expr`\left(2,3\right)`
 } else {
   expr`\operatorname{vector}\left(\left(-1,-.5\right),\left(-.5,1\right)\right)`
   expr`J=\operatorname{line}\left(\left(0,0\right),\left(2,3\right)\right)`
