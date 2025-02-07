@@ -1,4 +1,5 @@
 import { faBook } from "@fortawesome/free-solid-svg-icons/faBook"
+import { faCopy } from "@fortawesome/free-solid-svg-icons/faCopy"
 import { faListUl } from "@fortawesome/free-solid-svg-icons/faListUl"
 import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash"
 import type { Regl } from "regl"
@@ -20,7 +21,7 @@ import { CmdBrack } from "../../../field/cmd/math/brack"
 import { CmdSupSub } from "../../../field/cmd/math/supsub"
 import { fa } from "../../../field/fa"
 import type { Options } from "../../../field/options"
-import { h, hx } from "../../../jsx"
+import { h, hx, t } from "../../../jsx"
 import { Scope } from "../../deps"
 import type { Exts } from "../../ext"
 import { doMatchReglSize } from "../../regl"
@@ -401,6 +402,15 @@ export class Sheet {
       "Clear",
     )
 
+    const copyAllLabel = t("Copy")
+
+    const copyAll = hx(
+      "button",
+      "bg-[--nya-bg] h-full flex items-center justify-center border border-[--nya-border] rounded-lg hover:bg-[--nya-sidebar] transition py-2 [line-height:1] gap-1",
+      fa(faCopy, "size-4 fill-current"),
+      copyAllLabel,
+    )
+
     const nextExpression = hx(
       "button",
       "relative text-left grid grid-cols-[2.5rem_auto] min-h-[3.625rem] border-r border-[--nya-border] mb-24",
@@ -435,7 +445,7 @@ export class Sheet {
           Math.random() < 1 / 1000 ? "nyaland" : "project nya",
         ),
         h("italic text-sm leading-none", REMARK),
-        h("grid grid-cols-2 mt-2 -mx-2 gap-2", switchToDocs, clearAll),
+        h("grid grid-cols-3 mt-2 -mx-2 gap-2", switchToDocs, clearAll, copyAll),
       ),
 
       // main expression list
@@ -464,6 +474,34 @@ export class Sheet {
     clearAll.addEventListener("click", () => {
       while (this.exprs[0]) {
         this.exprs[0].delete()
+      }
+    })
+
+    let copyId = 0
+    copyAll.addEventListener("click", async () => {
+      copyAllLabel.data = "Copying..."
+      const id = ++copyId
+      try {
+        await navigator.clipboard.writeText(
+          this.exprs.map((x) => x.field.block.latex()).join("\n"),
+        )
+        if (copyId == id) {
+          copyAllLabel.data = "Copied! ✅"
+          setTimeout(() => {
+            if (copyId == id) {
+              copyAllLabel.data = "Copy"
+            }
+          }, 3000)
+        }
+      } catch {
+        if (copyId == id) {
+          copyAllLabel.data = "Failed ❌"
+          setTimeout(() => {
+            if (copyId == id) {
+              copyAllLabel.data = "Copy"
+            }
+          }, 3000)
+        }
       }
     })
 

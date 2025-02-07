@@ -63,4 +63,28 @@ export class Field extends FieldComputed {
       setTimeout(() => expr.field.el.focus())
     }
   }
+
+  onPaste(event: ClipboardEvent): void {
+    const data = event.clipboardData?.getData("text/plain") ?? ""
+    if (!data) return
+    const [self, ...rest] = data.split("\n")
+    this.typeLatex(self!)
+
+    if (!rest.length) return
+    const { exprs } = this.expr.sheet
+    let el = this.expr.el
+
+    let idx = exprs.indexOf(this.expr) + 1
+    if (!idx) idx = exprs.length
+    for (const latex of rest) {
+      const expr = new Expr(this.expr.sheet)
+      exprs.pop()
+      exprs.splice(idx, 0, expr)
+      expr.field.typeLatex(latex)
+      el.insertAdjacentElement("afterend", expr.el)
+      el = expr.el
+      idx++
+    }
+    this.expr.sheet.queueIndices()
+  }
 }

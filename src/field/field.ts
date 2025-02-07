@@ -74,10 +74,6 @@ export class Field extends FieldInert {
         event.preventDefault()
       }
     }
-    const onPaste = ({ clipboardData }: ClipboardEvent) => {
-      const text = clipboardData?.getData("text/plain") ?? ""
-      this.typeLatex(text)
-    }
     const onFocus = () => {
       this.showCursor(false)
       this.cursor.classList.add("[scroll-margin:1rem]")
@@ -98,9 +94,14 @@ export class Field extends FieldInert {
     this.el.addEventListener("pointermove", onPointerMove)
     this.el.addEventListener("touchmove", onTouchMove, { passive: false })
     this.el.addEventListener("keydown", onKeyDown)
-    this.el.addEventListener("paste", onPaste)
+    this.el.addEventListener("paste", (ev) => this.onPaste(ev))
     this.el.addEventListener("focus", onFocus)
     this.el.addEventListener("blur", onBlur)
+  }
+
+  onPaste(event: ClipboardEvent) {
+    const text = event.clipboardData?.getData("text/plain") ?? ""
+    this.typeLatex(text)
   }
 
   private showCursor(scrollIntoView = true) {
