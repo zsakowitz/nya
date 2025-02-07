@@ -51,12 +51,14 @@ available yet.
 # Repository Structure
 
 All important code is in [src/](src/), which is separated into three components.
-Only important files are described here.
+Only relatively important files, especially files which need to be edited to add
+new extensions, are noted here.
 
 - [src/eval/](src/eval/) evaluates expressions, and defines the AST and type
   system.
   - [ast/](src/eval/ast/) defines the AST and its parser.
     - [token.ts](src/eval/ast/token.ts) defines AST node kinds.
+    - [tx.ts](src/eval/ast/tx.ts) defines various methods to evaluate an AST.
   - [ops/](src/eval/ops/) defines operators and functions.
     - [fn/](src/eval/ops/fn/) defines named user-callable functions.
     - [op/](src/eval/ops/op/) defines operators.
@@ -66,11 +68,18 @@ Only important files are described here.
     - [index.ts](src/eval/ty/index.ts) defines what TypeScript types correspond
       to `nya` types.
     - [info.ts](src/eval/ty/info.ts) defines metadata associated with each type.
-  - [tx.ts](src/eval/ty/info.ts) defines metadata associated with each type.
 - [src/field/](src/field/) defines the math editor and everything which can be
   typed.
+  - [cmd/](src/field/cmd/) defines everything which can be rendered and typed in
+    a math field.
+  - [defaults.ts](src/field/defaults.ts) defines all standard extensions used in
+    `nya` math fields.
 - [src/sheet/](src/sheet/) draws the graph paper, and defines expression kinds
   (slider, point, etc.).
+  - [ext/defaults.ts](src/sheet/ext/defaults.ts) defines all standard extensions
+    used in the graph paper.
+  - [ext/exts/](src/sheet/ext/exts/) defines extensions which can render
+    expressions in the graph paper.
 
 # The Editor
 

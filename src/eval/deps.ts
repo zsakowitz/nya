@@ -55,6 +55,8 @@ export class Deps {
   }
 }
 
+// FIXME: deps should be an ast tx
+
 export function deps(node: Node, deps: Deps) {
   switch (node.type) {
     case "num":
