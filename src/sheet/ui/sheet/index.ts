@@ -481,7 +481,7 @@ export class Sheet {
         "sticky top-0 w-full p-1 h-12 min-h-12 max-h-12 flex bg-[--nya-bg-sidebar] border-b border-r border-[--nya-border] text-center text-[--nya-title] z-10",
         copyAll,
         clearAll,
-        h("flex-1"),
+        h("m-auto text-2xl", "project nya"),
         switchToDocs,
       ),
 

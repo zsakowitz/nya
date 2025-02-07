@@ -1858,6 +1858,21 @@ video {
   line-height: 1.25rem;
 }
 
+.text-3xl {
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+}
+
+.text-2xl {
+  font-size: 1.5rem;
+  line-height: 2rem;
+}
+
+.text-2xl\/\[1\] {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
 .font-normal {
   font-weight: 400;
 }
