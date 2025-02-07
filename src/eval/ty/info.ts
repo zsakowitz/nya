@@ -156,7 +156,8 @@ function iconPoint(hd: boolean) {
   return h(
     "",
     h(
-      "text-[#6042a6] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px]",
+      "text-[#6042a6] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-current rounded-[4px]" +
+        (hd ? " border-double border-[3px]" : " border-2"),
       h(
         "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
       ),
@@ -172,7 +173,8 @@ function iconComplex(hd: boolean) {
   return h(
     "",
     h(
-      "text-[#6042a6] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px]",
+      "text-[#6042a6] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-current rounded-[4px]" +
+        (hd ? " border-double border-[3px]" : " border-2"),
       h(
         "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
       ),
@@ -189,7 +191,8 @@ function iconReal(hd: boolean) {
   return h(
     "",
     h(
-      "text-[#000] dark:text-[#888] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px]",
+      "text-[#000] dark:text-[#888] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-current rounded-[4px]" +
+        (hd ? " border-double border-[3px]" : " border-2"),
       h(
         "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
       ),
