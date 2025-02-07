@@ -27,6 +27,7 @@ export class Expr {
   readonly elAside
   readonly elError
 
+  removable = true
   state: ExprState = { ok: false, reason: "Not computed yet." }
 
   constructor(readonly sheet: Sheet) {
@@ -65,6 +66,28 @@ export class Expr {
       ),
     )
     this.sheet.elExpressions.appendChild(this.el)
+
+    this.field.el.addEventListener("keydown", (event) => {
+      if (!(event.key == "Enter" && !event.ctrlKey && !event.metaKey)) return
+
+      const idx = this.sheet.exprs.indexOf(this)
+      if (idx == -1) return
+
+      event.preventDefault()
+      const expr = new Expr(this.sheet)
+      this.sheet.exprs.pop()
+      this.sheet.exprs.splice(idx + 1, 0, expr)
+      const exprIdx = idx + 1
+      this.sheet.queueIndices()
+      const before =
+        this.sheet.exprs[exprIdx + 1]?.el ?? this.sheet.elExpressions
+      this.sheet.elExpressions.insertBefore(
+        expr.el,
+        this.sheet.exprs[exprIdx + 1]?.el ?? null,
+      )
+      setTimeout(() => before.scrollIntoView({ behavior: "instant" }))
+      setTimeout(() => expr.field.el.focus())
+    })
   }
 
   js: { value: JsValue; base: SReal } | undefined
