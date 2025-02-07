@@ -860,6 +860,10 @@ video {
   margin-bottom: 0.125rem;
 }
 
+.mb-24 {
+  margin-bottom: 6rem;
+}
+
 .mb-\[-\.2em\] {
   margin-bottom: -.2em;
 }
@@ -906,14 +910,6 @@ video {
 
 .mt-px {
   margin-top: 1px;
-}
-
-.mb-48 {
-  margin-bottom: 12rem;
-}
-
-.mb-24 {
-  margin-bottom: 6rem;
 }
 
 .\!block {
@@ -1088,6 +1084,10 @@ video {
   width: .95em;
 }
 
+.w-\[16px\] {
+  width: 16px;
+}
+
 .w-\[20px\] {
   width: 20px;
 }
@@ -1106,10 +1106,6 @@ video {
 
 .w-px {
   width: 1px;
-}
-
-.w-\[16px\] {
-  width: 16px;
 }
 
 .min-w-\[\.5em\] {
@@ -1189,8 +1185,8 @@ video {
   resize: both;
 }
 
-.grid-cols-2 {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+.grid-cols-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .grid-cols-\[2\.5rem_auto\] {
@@ -1203,10 +1199,6 @@ video {
 
 .grid-cols-\[auto\2c auto\] {
   grid-template-columns: auto auto;
-}
-
-.grid-cols-3 {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .grid-rows-1 {
@@ -2006,10 +1998,6 @@ video {
 
 .\[clip-path\:polygon\(100\%_100\%\2c 100\%_0\%\2c 0\%_100\%\)\] {
   clip-path: polygon(100% 100%,100% 0%,0% 100%);
-}
-
-.\[fill-opacity\:0\.2\] {
-  fill-opacity: 0.2;
 }
 
 .\[image-rendering\:pixelated\] {

@@ -78,9 +78,7 @@ function joint<T>(fn: (node: T) => never): AstTxr<T> {
         fn(node)
       },
     },
-    deps(node) {
-      fn(node)
-    },
+    deps() {},
   }
 }
 
