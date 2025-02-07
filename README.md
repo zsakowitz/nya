@@ -1,4 +1,4 @@
-<h1 align="center"><code></code></h1>
+<h1 align="center"><code>nya</code></h1>
 
 Named after the Ithkuil root for writing, inscribing, and documenting[^1], `nya`
 is a replacement for the venerable [MathQuill](https://mathquill.com/) project,
