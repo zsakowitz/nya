@@ -62,7 +62,10 @@ export interface DragTarget<T> {
   point(node: T, props: PropsDrag): DragResultPoint | null
 }
 
-function joint<T>(fn: (node: T) => never): AstTxr<T> {
+function joint<T>(
+  fn: (node: T) => never,
+  deps: (node: T, deps: Deps) => void,
+): AstTxr<T> {
   return {
     js(node) {
       fn(node)
@@ -78,14 +81,26 @@ function joint<T>(fn: (node: T) => never): AstTxr<T> {
         fn(node)
       },
     },
-    deps() {},
+    deps,
   }
 }
 
-function error<T>(data: TemplateStringsArray): AstTxr<T> {
-  return joint(() => {
-    throw new Error(data[0])
-  })
+function errorAll<T>(data: TemplateStringsArray): AstTxr<T> {
+  return joint(
+    () => {
+      throw new Error(data[0])
+    },
+    () => {},
+  )
+}
+
+function error(
+  data: TemplateStringsArray,
+): <T>(f: (node: T, deps: Deps) => void) => AstTxr<T> {
+  return (f) =>
+    joint(() => {
+      throw new Error(data[0])
+    }, f)
 }
 
 function dragNum(node: Node, props: PropsDrag) {
@@ -687,9 +702,12 @@ export const AST_TXRS: {
       }
     },
   },
-  error: joint(({ reason }) => {
-    throw new Error(reason)
-  }),
+  error: joint(
+    ({ reason }) => {
+      throw new Error(reason)
+    },
+    () => {},
+  ),
   magicvar: {
     js(node, props) {
       if (node.value == "iterate") {
@@ -723,7 +741,7 @@ export const AST_TXRS: {
       }
     },
   },
-  void: error`Empty expression.`,
+  void: error`Empty expression.`(() => {}),
   index: {
     js(node, props) {
       const on = js(node.on, props)
@@ -846,16 +864,27 @@ export const AST_TXRS: {
       deps.add(node.contents)
     },
   },
-  commalist: error`Lists must be surrounded by square brackets.`,
-  sub: error`Invalid subscript.`,
-  sup: error`Invalid superscript.`,
-  big: error`Summation and product notation is not supported yet.`,
-  bigsym: error`Invalid sum or product.`,
-  factorial: error`Factorials are not supported yet.`,
-  num16: error`UScript is not supported yet.`,
-  matrix: error`Matrices are not supported yet.`,
-  binding: error`Cannot evaluate a variable binding.`,
-  punc: joint((node) => {
-    throw new Error(`Unexpected operator '${node.value}'.`)
-  }),
+  commalist: error`Lists must be surrounded by square brackets.`(
+    (node, deps) => {
+      for (const x of node.items) {
+        deps.add(x)
+      }
+    },
+  ),
+  sub: error`Invalid subscript.`((node, deps) => deps.add(node.sub)),
+  sup: error`Invalid superscript.`((node, deps) => deps.add(node.sup)),
+  big: errorAll`Summation and product notation is not supported yet.`,
+  bigsym: errorAll`Invalid sum or product.`,
+  factorial: errorAll`Factorials are not supported yet.`,
+  num16: errorAll`UScript is not supported yet.`,
+  matrix: errorAll`Matrices are not supported yet.`,
+  binding: error`Cannot evaluate a variable binding.`((node, deps) =>
+    deps.add(node.value),
+  ),
+  punc: joint(
+    (node) => {
+      throw new Error(`Unexpected operator '${node.value}'.`)
+    },
+    () => {},
+  ),
 }
