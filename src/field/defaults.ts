@@ -289,6 +289,7 @@ export const words = new WordMap<WordKind>([
   ["firstvalid", "prefix"],
   ["screendistance", "prefix"],
   ["forceshader", "prefix"],
+  ["cmp", "prefix"],
 
   // Number theory
   ["lcm", "prefix"],
@@ -309,6 +310,7 @@ export const words = new WordMap<WordKind>([
   ["dot", "prefix"],
   ["point", "prefix"],
   ["complex", "prefix"],
+  ["conj", "prefix"],
 
   // Boolean utilities
   ["false", "var"],
@@ -316,7 +318,6 @@ export const words = new WordMap<WordKind>([
 
   // Debug utilities
   ["debugpoint", "prefix"],
-  ["cmp", "prefix"],
 
   // Iteration
   ["iterate", "magicprefix"],
