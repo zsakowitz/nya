@@ -27,6 +27,6 @@ export const EXT_CIRCLE = defineExt({
     }
   },
   layer() {
-    return 1
+    return 2
   },
 })

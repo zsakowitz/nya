@@ -49,6 +49,6 @@ export const EXT_VECTOR = defineExt({
     }
   },
   layer() {
-    return 1
+    return 2
   },
 })

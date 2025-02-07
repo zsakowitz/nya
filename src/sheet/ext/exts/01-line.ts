@@ -55,6 +55,6 @@ export const EXT_LINE = defineExt({
     }
   },
   layer() {
-    return 1
+    return 2
   },
 })

@@ -33,6 +33,6 @@ export const EXT_SEGMENT = defineExt({
     }
   },
   layer() {
-    return 1
+    return 2
   },
 })

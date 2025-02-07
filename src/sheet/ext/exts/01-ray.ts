@@ -86,6 +86,6 @@ export const EXT_RAY = defineExt({
     }
   },
   layer() {
-    return 1
+    return 2
   },
 })

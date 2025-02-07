@@ -64,7 +64,7 @@ export const EXT_POINT = defineExt({
     }
   },
   layer() {
-    return 2
+    return 3
   },
   drag: {
     start(data, at) {
