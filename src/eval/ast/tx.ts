@@ -1,13 +1,17 @@
 import { L, R, Span } from "../../field/model"
 import type { FieldComputed } from "../../sheet/deps"
-import { commalist, fnargs } from "./collect"
-import type { Node } from "./token"
+import type { Deps } from "../deps"
 import { glsl, glslCall, type PropsGlsl } from "../glsl"
 import { js, jsCall, type PropsJs } from "../js"
 import { asNumericBase, parseNumberGlsl, parseNumberJs } from "../lib/base"
 import { id, name, type Bindings } from "../lib/binding"
 import { OP_BINARY, OP_UNARY } from "../ops"
-import { iterateGlsl, iterateJs, parseIterate } from "../ops/iterate"
+import {
+  iterateDeps,
+  iterateGlsl,
+  iterateJs,
+  parseIterate,
+} from "../ops/iterate"
 import { OP_ABS } from "../ops/op/abs"
 import { add } from "../ops/op/add"
 import { OP_AND } from "../ops/op/and"
@@ -20,16 +24,19 @@ import { OP_X } from "../ops/op/x"
 import { OP_Y } from "../ops/op/y"
 import { piecewiseGlsl, piecewiseJs } from "../ops/piecewise"
 import { VARS } from "../ops/vars"
-import { withBindingsGlsl, withBindingsJs } from "../ops/with"
+import { withBindingsDeps, withBindingsGlsl, withBindingsJs } from "../ops/with"
 import type { GlslValue, JsVal, JsValue } from "../ty"
 import { isReal, listGlsl, listJs } from "../ty/coerce"
 import { frac, num, real } from "../ty/create"
 import { TY_INFO } from "../ty/info"
 import { splitValue } from "../ty/split"
+import { commalist, fnargs } from "./collect"
+import type { Node } from "./token"
 
 export interface AstTxr<T> {
   js(node: T, props: PropsJs): JsValue
   glsl(node: T, props: PropsGlsl): GlslValue
+  deps(node: T, deps: Deps): void
   drag: DragTarget<T>
 }
 
@@ -70,6 +77,9 @@ function joint<T>(fn: (node: T) => never): AstTxr<T> {
       point(node) {
         fn(node)
       },
+    },
+    deps(node) {
+      fn(node)
     },
   }
 }
@@ -126,6 +136,12 @@ export const AST_TXRS: {
       point() {
         return null
       },
+    },
+    deps(node, deps) {
+      if (node.sub) {
+        deps.add(node.sub)
+      }
+      return
     },
   },
   op: {
@@ -298,6 +314,21 @@ export const AST_TXRS: {
         return null
       },
     },
+    deps(node, deps) {
+      if (!node.b) {
+        deps.add(node.a)
+        return
+      }
+      if (node.kind == "with" || node.kind == "withseq") {
+        deps.withBoundIds(
+          withBindingsDeps(node.b, node.kind == "withseq", deps),
+          () => deps.add(node.a),
+        )
+        return
+      }
+      deps.add(node.a)
+      deps.add(node.b)
+    },
   },
   group: {
     js(node, props) {
@@ -366,6 +397,9 @@ export const AST_TXRS: {
         }
         return null
       },
+    },
+    deps(node, deps) {
+      deps.add(node.value)
     },
   },
   call: {
@@ -438,6 +472,19 @@ export const AST_TXRS: {
         }
       },
     },
+    deps(node, deps) {
+      if (
+        node.name.type == "var" &&
+        node.name.kind == "prefix" &&
+        !node.name.sub &&
+        !node.name.sup
+      ) {
+        deps.add(node.args)
+        if (node.on) {
+          deps.add(node.on)
+        }
+      }
+    },
   },
   juxtaposed: {
     js(node, props) {
@@ -457,6 +504,11 @@ export const AST_TXRS: {
         .reduce((a, b) => OP_JUXTAPOSE.glsl(props.ctx, a, b))
     },
     drag: NO_DRAG,
+    deps(node, deps) {
+      for (const x of node.nodes) {
+        deps.add(x)
+      }
+    },
   },
   var: {
     js(node, props) {
@@ -537,6 +589,33 @@ export const AST_TXRS: {
         return null
       },
     },
+    deps(node, deps) {
+      if (deps.isBound(id(node))) {
+        if (node.sup) {
+          deps.add(node.sup)
+        }
+        return
+      }
+
+      builtin: {
+        if (node.sub) break builtin
+
+        const builtin = VARS[node.value]
+        if (builtin?.dynamic) break builtin
+        const value = builtin?.glsl
+        if (!value) break builtin
+
+        if (node.sup) {
+          deps.add(node.sup)
+        }
+        return
+      }
+
+      deps.track(node)
+      if (node.sup) {
+        deps.add(node.sup)
+      }
+    },
   },
   frac: {
     js(node, props) {
@@ -546,6 +625,10 @@ export const AST_TXRS: {
       return OP_DIV.glsl(props.ctx, glsl(node.a, props), glsl(node.b, props))
     },
     drag: NO_DRAG,
+    deps(node, deps) {
+      deps.add(node.a)
+      deps.add(node.b)
+    },
   },
   raise: {
     js(node, props) {
@@ -559,6 +642,10 @@ export const AST_TXRS: {
       )
     },
     drag: NO_DRAG,
+    deps(node, deps) {
+      deps.add(node.base)
+      deps.add(node.exponent)
+    },
   },
   cmplist: {
     js(node, props) {
@@ -580,6 +667,11 @@ export const AST_TXRS: {
         .reduce((a, b) => OP_AND.glsl(props.ctx, a, b))
     },
     drag: NO_DRAG,
+    deps(node, deps) {
+      for (const item of node.items) {
+        deps.add(item)
+      }
+    },
   },
   piecewise: {
     js(node, props) {
@@ -589,6 +681,12 @@ export const AST_TXRS: {
       return piecewiseGlsl(node.pieces, props)
     },
     drag: NO_DRAG,
+    deps(node, deps) {
+      for (const { condition, value } of node.pieces) {
+        deps.add(condition)
+        deps.add(value)
+      }
+    },
   },
   error: joint(({ reason }) => {
     throw new Error(reason)
@@ -619,6 +717,12 @@ export const AST_TXRS: {
       throw new Error(`The '${node.value}' operator is not supported yet.`)
     },
     drag: NO_DRAG,
+    deps(node, deps) {
+      if (node.value == "iterate") {
+        const parsed = parseIterate(node, { source: "expr" })
+        iterateDeps(parsed, deps)
+      }
+    },
   },
   void: error`Empty expression.`,
   index: {
@@ -666,6 +770,10 @@ export const AST_TXRS: {
       }
     },
     drag: NO_DRAG,
+    deps(node, deps) {
+      deps.add(node.on)
+      deps.add(node.index)
+    },
   },
   mixed: {
     js(node, props) {
@@ -692,6 +800,7 @@ export const AST_TXRS: {
       return splitValue(num(value))
     },
     drag: NO_DRAG,
+    deps() {},
   },
   root: {
     js(node, props) {
@@ -731,6 +840,12 @@ export const AST_TXRS: {
       }
     },
     drag: NO_DRAG,
+    deps(node, deps) {
+      if (node.root) {
+        deps.add(node.root)
+      }
+      deps.add(node.contents)
+    },
   },
   commalist: error`Lists must be surrounded by square brackets.`,
   sub: error`Invalid subscript.`,

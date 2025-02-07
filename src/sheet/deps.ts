@@ -1,10 +1,10 @@
 import type { Node } from "../eval/ast/token"
-import { deps, Deps } from "../eval/deps"
+import type { PropsDrag } from "../eval/ast/tx"
+import { Deps } from "../eval/deps"
 import { defaultPropsGlsl, glsl, type PropsGlsl } from "../eval/glsl"
 import { defaultPropsJs, js, type PropsJs } from "../eval/js"
 import { Bindings, name, tryId } from "../eval/lib/binding"
 import { GlslContext, GlslHelpers } from "../eval/lib/fn"
-import type { PropsDrag } from "../eval/ast/tx"
 import type { GlslValue, JsValue } from "../eval/ty"
 import { TY_INFO } from "../eval/ty/info"
 import { Field } from "../field/field"
@@ -101,7 +101,7 @@ export class Scope {
           }
         }
         const myDeps = new Deps()
-        deps(field.ast, myDeps)
+        myDeps.add(field.ast)
         field.deps = myDeps
         field.dirtyAst = false
       } catch (e) {
