@@ -17,6 +17,62 @@ There are also the downsides of `nya`:
 - `nya` does not yet support all of LaTeX.
 - `nya` does not yet have as much support for screen readers.
 
+# Extensibility
+
+`nya` follows the principle of “everything is an extension”. The very core of
+`nya` is hardcoded, but these things are all easily extensible and replaceable:
+
+- what the user can type
+- which LaTeX commands can be parsed
+- the expression AST
+- every operator
+- every function
+- the type system
+- what an expression in a graph sheet does
+- how values are displayed as text
+- how values are rendered to the canvas
+- how values are dragged
+
+Some example of extensions which can easily be incorporated into `nya`'s model:
+
+- An extension which allows symbolic algebra to be computed by acting as a proxy
+  for WolframAlpha.
+- An extension which provides octonion support (8-dimensional numbers) and
+  overloads all built-in operators to work on octonions.
+- An extension which allows a graph expression to evaluate to a video which is
+  them streamed live to social media.
+- An extension which allows slider values to be taken from the orientation of
+  the device.
+
+In the future, it's hoped that arbitrary extensions will be loadable directly
+from the graph paper. Since this poses possible security risks, it isn't
+available yet.
+
+# Repository Structure
+
+All important code is in [src/](src/), which is separated into three components.
+Only important files are described here.
+
+- [src/eval/](src/eval/) evaluates expressions, and defines the AST and type
+  system.
+  - [src/eval/ast/](src/eval/ast/) defines the AST and its parser.
+    - [src/eval/ast/token.ts](src/eval/ast/token.ts) defines AST node kinds.
+  - [src/eval/ops/](src/eval/ops/) defines operators and functions.
+    - [src/eval/ops/fn/](src/eval/ops/fn/) defines named user-callable
+      functions.
+    - [src/eval/ops/op/](src/eval/ops/op/) defines operators.
+    - [src/eval/ops/index.ts](src/eval/ops/index.ts) provides a list of all
+      operators and functions.
+  - [src/eval/ty/](src/eval/ty/) defines the type system.
+    - [src/eval/ty/index.ts](src/eval/ty/index.ts) defines what TypeScript types
+      correspond to `nya` types.
+    - [src/eval/ty/info.ts](src/eval/ty/info.ts) defines lots of metadata
+      associated with each type.
+- [src/field/](src/field/) defines the math editor and everything which can be
+  typed.
+- [src/sheet/](src/sheet/) draws the graph paper, and defines expression kinds
+  (slider, point, etc.).
+
 # The Editor
 
 ## High-level overview

@@ -1,3 +1,26 @@
+/**
+ * Augment this interface to declare additional types.
+ *
+ * Be sure to also extend the `TY_INFO` variable.
+ */
+export interface Tys {
+  r32: SReal
+  r64: SReal
+  c32: SPoint
+  c64: SPoint
+  q32: [SReal, SReal, SReal, SReal]
+  bool: boolean
+  color: SColor
+
+  point32: SPoint
+  point64: SPoint
+  segment32: [SPoint, SPoint]
+  ray32: [SPoint, SPoint]
+  line32: [SPoint, SPoint]
+  vector32: [SPoint, SPoint]
+  circle32: { center: SPoint; radius: SReal }
+}
+
 export type SApprox = { type: "approx"; value: number }
 export type SExact = { type: "exact"; n: number; d: number }
 export type SReal = SApprox | SExact
@@ -21,31 +44,6 @@ export function list(values: string[], conj = "and"): string {
   return (
     values.slice(0, -1).join(", ") + `, ${conj} ` + values[values.length - 1]!
   )
-}
-
-/**
- * Augment this interface to declare additional types.
- *
- * Be sure to also extend the `TY_INFO` variable.
- */
-export interface Tys {
-  r32: SReal
-  r64: SReal
-  c32: SPoint
-  c64: SPoint
-  q32: [SReal, SReal, SReal, SReal]
-  bool: boolean
-  color: SColor
-
-  // Geometry
-
-  point32: SPoint
-  point64: SPoint
-  segment32: [SPoint, SPoint]
-  ray32: [SPoint, SPoint]
-  line32: [SPoint, SPoint]
-  vector32: [SPoint, SPoint]
-  circle32: { center: SPoint; radius: SReal }
 }
 
 export type TyName = keyof Tys
