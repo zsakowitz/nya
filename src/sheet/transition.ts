@@ -1,5 +1,7 @@
 import { h } from "../jsx"
 
+// TODO: this is probably inefficient and should be reworked
+// but it's HILARIOUS so i may keep it just for comedic effect
 export class Transition {
   readonly el = h("transition-[width]")
 

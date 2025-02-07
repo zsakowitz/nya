@@ -65,12 +65,16 @@ export interface Ext<T extends {}, U extends {}, V extends {}, W extends {}> {
     off(data: V): void
   }
 
-  pick?: {
-    /** Returning a non-nullish value captures the event. */
-    on(data: T, at: Point, kind: TyName[]): W | null | undefined
+  select?: {
+    ty(data: T): TyName | null
+
+    // dim(data: T): void
+    // undim(data: T): void
+
+    on(data: T, at: Point): W | null | undefined
+    // off(data: W): void
     val(data: W): JsVal
-    expr(data: W): Block
-    off(data: W): void
+    ref(data: W): Block
   }
 }
 

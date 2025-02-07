@@ -1,9 +1,9 @@
-import type { Node } from "../eval/ast/token"
+import type { Node, Var } from "../eval/ast/token"
 import type { PropsDrag } from "../eval/ast/tx"
 import { Deps } from "../eval/deps"
 import { defaultPropsGlsl, glsl, type PropsGlsl } from "../eval/glsl"
 import { defaultPropsJs, js, type PropsJs } from "../eval/js"
-import { Bindings, name, tryId } from "../eval/lib/binding"
+import { Bindings, id, name, tryId } from "../eval/lib/binding"
 import { GlslContext, GlslHelpers } from "../eval/lib/fn"
 import type { GlslValue, JsValue } from "../eval/ty"
 import { TY_INFO } from "../eval/ty/info"
@@ -249,6 +249,25 @@ export class Scope {
       const idx = dep.indexOf(field)
       if (idx != -1) continue
       dep.push(field)
+    }
+  }
+
+  name(prefix: string) {
+    const existing = Object.entries(this.defs)
+      .filter((x) => x[1].length)
+      .map((x) => x[0])
+
+    for (let i = 1n; ; i++) {
+      const name: Var & { sup?: undefined } = {
+        type: "var",
+        kind: "var",
+        value: prefix,
+        sub: { type: "num", span: null, value: i.toString() },
+        span: null,
+      }
+      const myId = id(name)
+      if (existing.includes(myId)) continue
+      return name
     }
   }
 }

@@ -1,17 +1,37 @@
 import { defineExt, Store } from ".."
 import { dragPoint } from "../../../eval/ast/tx"
 import { each, type JsValue } from "../../../eval/ty"
-import { frac, num, real, unpt } from "../../../eval/ty/create"
+import { frac, real, unpt } from "../../../eval/ty/create"
 import { TY_INFO } from "../../../eval/ty/info"
+import { OpEq } from "../../../field/cmd/leaf/cmp"
 import { CmdVar } from "../../../field/cmd/leaf/var"
-import { L, R } from "../../../field/model"
+import { Block, L, R } from "../../../field/model"
 import { Transition } from "../../transition"
+import type { Paper, Point } from "../../ui/paper"
 import { virtualStepExp, write, Writer } from "../../write"
 import { EXT_EVAL } from "./02-eval"
 
 const color = new Store(
   (expr) => new Transition(3.5, () => expr.sheet.paper.queue()),
 )
+
+export function drawPoint(paper: Paper, at: Point, size = 3, halo?: boolean) {
+  const offset = paper.paperToCanvas(at)
+  if (!(isFinite(offset.x) && isFinite(offset.y))) return
+  const { ctx, scale } = paper
+
+  if (halo) {
+    ctx.beginPath()
+    ctx.fillStyle = "#6042a659"
+    ctx.arc(offset.x, offset.y, 12 * scale, 0, 2 * Math.PI)
+    ctx.fill()
+  }
+
+  ctx.beginPath()
+  ctx.fillStyle = "#6042a6"
+  ctx.arc(offset.x, offset.y, size * scale, 0, 2 * Math.PI)
+  ctx.fill()
+}
 
 export const EXT_POINT = defineExt({
   data(expr) {
@@ -42,25 +62,7 @@ export const EXT_POINT = defineExt({
   },
   plot2d(data, paper) {
     for (const pt of each(data.value)) {
-      const x = num(pt.x)
-      const y = num(pt.y)
-      if (!(isFinite(x) && isFinite(y))) continue
-
-      const offset = paper.paperToCanvas({ x, y })
-      const { ctx, scale } = paper
-
-      if (data.drag) {
-        ctx.beginPath()
-        ctx.fillStyle = "#6042a659"
-        ctx.arc(offset.x, offset.y, 12 * scale, 0, 2 * Math.PI)
-        ctx.fill()
-      }
-
-      const inner = color.get(data.expr).get()
-      ctx.beginPath()
-      ctx.fillStyle = "#6042a6"
-      ctx.arc(offset.x, offset.y, inner * scale, 0, 2 * Math.PI)
-      ctx.fill()
+      drawPoint(paper, unpt(pt), color.get(data.expr).get(), !!data.drag)
     }
   },
   layer() {
@@ -187,6 +189,44 @@ export const EXT_POINT = defineExt({
     },
     off(data) {
       color.get(data.expr).set(3.5)
+    },
+  },
+  select: {
+    ty(data) {
+      return data.value.type
+    },
+    on(data, at) {
+      if (!data.drag || data.value.list !== false) {
+        return
+      }
+
+      if (
+        data.paper.canvasDistance(at, unpt(data.value.value)) <=
+        12 * data.paper.scale
+      ) {
+        return data
+      }
+    },
+    val(data) {
+      return data.value
+    },
+    ref(data) {
+      if (data.expr.field.ast.type == "binding") {
+        const block = new Block(null)
+        CmdVar.leftOf(
+          block.cursor(R),
+          data.expr.field.ast.name,
+          data.expr.field.options,
+        )
+        return block
+      }
+      const name = data.expr.sheet.scope.name("p")
+      const c = data.expr.field.block.cursor(L)
+      CmdVar.leftOf(c, name, data.expr.field.options)
+      new OpEq(false).insertAt(c, L)
+      const block = new Block(null)
+      CmdVar.leftOf(block.cursor(R), name, data.expr.field.options)
+      return block
     },
   },
 })

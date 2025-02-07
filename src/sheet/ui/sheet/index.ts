@@ -10,6 +10,7 @@ import { FNS } from "../../../eval/ops"
 import { ALL_FNS } from "../../../eval/ops/dist"
 import { declareAddR64 } from "../../../eval/ops/op/add"
 import { declareMulR64 } from "../../../eval/ops/op/mul"
+import type { JsVal, TyName } from "../../../eval/ty"
 import { num, real } from "../../../eval/ty/create"
 import { any, TY_INFO } from "../../../eval/ty/info"
 import { splitRaw } from "../../../eval/ty/split"
@@ -21,6 +22,7 @@ import { CmdPiecewise } from "../../../field/cmd/logic/piecewise"
 import { CmdBrack } from "../../../field/cmd/math/brack"
 import { CmdSupSub } from "../../../field/cmd/math/supsub"
 import { fa } from "../../../field/fa"
+import type { Block } from "../../../field/model"
 import type { Options } from "../../../field/options"
 import { h, hx, t } from "../../../jsx"
 import { Scope } from "../../deps"
@@ -30,7 +32,13 @@ import { REMARK } from "../../remark"
 import { Slider } from "../../slider"
 import { isDark } from "../../theme"
 import { Expr } from "../expr"
-import { createDrawAxes, makeInteractive, matchSize, Paper } from "../paper"
+import {
+  createDrawAxes,
+  makeInteractive,
+  matchSize,
+  Paper,
+  type Point,
+} from "../paper"
 import { Handlers } from "./handler"
 
 function createDocs(className: string, hide: () => void) {
@@ -378,6 +386,7 @@ export class Sheet {
         }
       }
     })
+    this.paper.drawFns.push(() => this.handlers.onDraw())
 
     // prepare glsl context
     const canvas = hx(
@@ -685,7 +694,49 @@ void main() {
     })
     this._qdGlsl = true
   }
+
+  select<const K extends readonly TyName[]>(
+    at: Point,
+    tys: K,
+    limit: number,
+  ): Selected<K[number]>[] {
+    let ret = []
+
+    for (const expr of this.exprs
+      .slice()
+      .reverse()
+      .sort((a, b) => a.layer - b.layer)) {
+      if (!expr.state.ok) continue
+
+      const ext = expr.state.ext
+      if (!ext) continue
+
+      const select = ext.select
+      if (!select) continue
+      // it's fine for .includes(), since `null` won't be in the original list anyways
+      if (
+        !tys.includes(
+          select.ty(expr.state.data) satisfies TyName | null as TyName,
+        )
+      )
+        continue
+
+      const data = select.on(expr.state.data, at)
+      if (data == null) continue
+
+      const val = select.val(data)
+      if (!tys.includes(val.type)) continue
+      const ref = () => select.ref(data)
+
+      ret.push({ val, ref })
+      if (ret.length >= limit) return ret
+    }
+
+    return ret
+  }
 }
+
+export type Selected<K extends TyName> = { val: JsVal<K>; ref(): Block }
 
 if (location.search.includes("?docsonly")) {
   const el = createDocs(
