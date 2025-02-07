@@ -8,3 +8,4 @@ export const OP_POS = new FnDist("+", "unary plus; ensures the expression is num
   .add(["c32"], "c32", (a) => a.value, (_, a) => a.expr)
   .add(["point64"], "point64", (a) => a.value, (_, a) => a.expr)
   .add(["point32"], "point32", (a) => a.value, (_, a) => a.expr)
+  .add(["q32"], "q32", (a) => a.value, (_, a) => a.expr)
