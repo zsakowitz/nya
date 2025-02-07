@@ -364,6 +364,8 @@ export class Sheet {
     makeInteractive(this.paper, this.handlers)
     createDrawAxes(this.paper)
     this.paper.drawFns.push(() => {
+      this.paper.ctx.lineJoin = "round"
+      this.paper.ctx.lineCap = "round"
       for (const e of this.exprs
         .filter((x) => x.state.ok && x.state.ext?.plot2d != null)
         .sort((a, b) => a.layer - b.layer)) {

@@ -19,6 +19,7 @@ export interface Tys {
   line: [SPoint, SPoint]
   vector: [SPoint, SPoint]
   circle: { center: SPoint; radius: SReal }
+  polygon: SPoint[]
 }
 
 export type SApprox = { type: "approx"; value: number }

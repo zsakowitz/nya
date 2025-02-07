@@ -27,6 +27,7 @@ import { FN_LINE } from "./fn/geo/line"
 import { FN_MIDPOINT } from "./fn/geo/midpoint"
 import { FN_PARALLEL } from "./fn/geo/parallel"
 import { FN_PERPENDICULAR } from "./fn/geo/perpendicular"
+import { FN_POLYGON } from "./fn/geo/polygon"
 import { FN_RAY } from "./fn/geo/ray"
 import { FN_SEGMENT } from "./fn/geo/segment"
 import { FN_VECTOR } from "./fn/geo/vector"
@@ -93,6 +94,7 @@ export const FNS: Record<string, Fn> = {
   forceshader: FN_FORCESHADER,
   perpendicular: FN_PERPENDICULAR,
   conj: FN_CONJ,
+  polygon: FN_POLYGON,
 }
 Object.setPrototypeOf(FNS, null)
 

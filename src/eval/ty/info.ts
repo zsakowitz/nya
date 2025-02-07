@@ -640,6 +640,48 @@ export const TY_INFO: TyInfoMap = {
       }
     },
   },
+  polygon: {
+    name: "polygon",
+    get glsl(): never {
+      throw new Error("Cannot construct polygons in shaders.")
+    },
+    garbage: {
+      js: [],
+      get glsl(): never {
+        throw new Error("Cannot construct polygons in shaders.")
+      },
+    },
+    coerce: {},
+    write: {
+      isApprox(value) {
+        return value.some((x) => x.x.type == "approx" || x.y.type == "approx")
+      },
+      display(value, props) {
+        new CmdWord("polygon", "prefix").insertAt(props.cursor, L)
+        const inner = new Block(null)
+        const brack = new CmdBrack("(", ")", null, inner)
+        brack.insertAt(props.cursor, L)
+        let first = true
+        props = props.at(inner.cursor(R))
+        for (const pt of value) {
+          if (first) {
+            first = false
+          } else {
+            new CmdComma().insertAt(props.cursor, L)
+          }
+          const block = new Block(null)
+          new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
+          const inner = props.at(block.cursor(R))
+          inner.num(pt.x)
+          new CmdComma().insertAt(inner.cursor, L)
+          inner.num(pt.y)
+        }
+      },
+    },
+    icon() {
+      return h("", "ploygon")
+    },
+  },
 }
 
 Object.setPrototypeOf(TY_INFO, null)

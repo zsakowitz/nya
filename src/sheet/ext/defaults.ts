@@ -3,6 +3,7 @@ import { EXT_SLIDER } from "./exts/00-slider"
 import { EXT_CIRCLE } from "./exts/01-circle"
 import { EXT_LINE } from "./exts/01-line"
 import { EXT_POINT } from "./exts/01-point"
+import { EXT_POLYGON } from "./exts/01-polygon"
 import { EXT_RAY } from "./exts/01-ray"
 import { EXT_SEGMENT } from "./exts/01-segment"
 import { EXT_VECTOR } from "./exts/01-vector"
@@ -17,6 +18,7 @@ export const exts = new Exts([
   EXT_LINE,
   EXT_VECTOR,
   EXT_CIRCLE,
+  EXT_POLYGON,
   EXT_EVAL,
   EXT_GLSL,
 ]).freeze()
