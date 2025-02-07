@@ -497,6 +497,7 @@ export class Sheet {
 
     const toolbar = h(
       "font-['Symbola','Times_New_Roman',sans-serif] flex overflow-x-auto h-12 min-h-12 bg-[--nya-bg-sidebar] border-b border-[--nya-border]",
+      h("m-auto text-2xl text-[--nya-title]", "geometry tools coming soon!"),
     )
 
     const docs = createDocs(
