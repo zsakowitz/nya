@@ -908,6 +908,14 @@ video {
   margin-top: 1px;
 }
 
+.mb-48 {
+  margin-bottom: 12rem;
+}
+
+.mb-24 {
+  margin-bottom: 6rem;
+}
+
 .\!block {
   display: block !important;
 }

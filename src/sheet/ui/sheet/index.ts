@@ -27,7 +27,7 @@ import { doMatchReglSize } from "../../regl"
 import { REMARK } from "../../remark"
 import { Slider } from "../../slider"
 import { isDark } from "../../theme"
-import type { Expr } from "../expr"
+import { Expr } from "../expr"
 import { createDrawAxes, makeInteractive, matchSize, Paper } from "../paper"
 import { Handlers } from "./handler"
 
@@ -401,6 +401,29 @@ export class Sheet {
       "Clear",
     )
 
+    const nextExpression = hx(
+      "button",
+      "relative text-left grid grid-cols-[2.5rem_auto] min-h-[3.625rem] border-r border-[--nya-border] mb-24",
+
+      // grey side of expression
+      h(
+        "inline-flex bg-[--nya-bg-sidebar] flex-col p-0.5 border-r border-[--nya-border]",
+        this.elNextIndex,
+      ),
+
+      // main expression body
+      // TODO: make this clickable
+
+      // cover
+      h("absolute inset-0 from-transparent to-[--nya-bg] bg-gradient-to-b"),
+    )
+
+    nextExpression.addEventListener("click", () => {
+      const expr = new Expr(this)
+      setTimeout(() => nextExpression.scrollIntoView())
+      setTimeout(() => expr.field.el.focus())
+    })
+
     const sidebar = h(
       "font-['Symbola','Times_New_Roman',sans-serif] flex flex-col overflow-y-auto",
 
@@ -419,21 +442,7 @@ export class Sheet {
       this.elExpressions,
 
       // fake expression
-      h(
-        "relative grid grid-cols-[2.5rem_auto] min-h-[3.625rem] border-r border-[--nya-border]",
-
-        // grey side of expression
-        h(
-          "inline-flex bg-[--nya-bg-sidebar] flex-col p-0.5 border-r border-[--nya-border]",
-          this.elNextIndex,
-        ),
-
-        // main expression body
-        // TODO: make this clickable
-
-        // cover
-        h("absolute inset-0 from-transparent to-[--nya-bg] bg-gradient-to-b"),
-      ),
+      nextExpression,
 
       // right border on remainder of the flexbox
       h("flex-1 border-r border-[--nya-border]"),
