@@ -22,7 +22,7 @@ export const EXT_CIRCLE = defineExt({
       ctx.beginPath()
       ctx.lineWidth = 3 * scale
       paper.circle({ x, y }, r)
-      ctx.strokeStyle = "#388c46cc"
+      ctx.strokeStyle = "#388c46"
       ctx.stroke()
     }
   },

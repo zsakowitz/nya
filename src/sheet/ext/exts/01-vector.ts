@@ -34,13 +34,13 @@ export const EXT_VECTOR = defineExt({
 
       ctx.beginPath()
       ctx.lineWidth = 3 * scale
-      ctx.strokeStyle = "#2d70b3cc"
+      ctx.strokeStyle = "#2d70b3"
       ctx.moveTo(o1.x, o1.y)
       ctx.lineTo(ox, oy)
       ctx.stroke()
 
       ctx.beginPath()
-      ctx.fillStyle = "#2d70b3cc"
+      ctx.fillStyle = "#2d70b3"
       ctx.moveTo(o2.x, o2.y)
       ctx.lineTo(ox + w * ny, oy - w * nx)
       ctx.lineTo(ox - w * ny, oy + w * nx)

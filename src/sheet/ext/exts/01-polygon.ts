@@ -22,7 +22,7 @@ export const EXT_POLYGON = defineExt({
 
       ctx.beginPath()
       ctx.lineWidth = 3 * scale
-      ctx.strokeStyle = "#2d70b3cc"
+      ctx.strokeStyle = "#2d70b3"
       ctx.fillStyle = "#2d70b340"
       ctx.moveTo(pts[0]!.x, pts[0]!.y)
       for (const pt of pts.slice(1)) {
