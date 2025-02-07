@@ -500,7 +500,7 @@ export class Sheet {
     )
 
     const docs = createDocs(
-      "flex flex-col overflow-y-auto px-4 pb-4 gap-2 border-r border-[--nya-border] hidden",
+      "flex flex-col overflow-y-auto px-4 pb-4 gap-2 border-r border-[--nya-border] hidden row-span-2",
       () => {
         docs.classList.add("hidden")
         sidebar.classList.remove("hidden")
@@ -514,8 +514,8 @@ export class Sheet {
       "fixed inset-0 grid grid-cols-[400px_1fr] grid-rows-[3rem_1fr] grid-rows-1 select-none",
 
       sidebar,
-      toolbar,
       docs,
+      toolbar,
 
       h(
         "relative",
