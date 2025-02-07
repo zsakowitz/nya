@@ -1108,6 +1108,10 @@ video {
   width: 1px;
 }
 
+.w-\[16px\] {
+  width: 16px;
+}
+
 .min-w-\[\.5em\] {
   min-width: .5em;
 }
@@ -1557,6 +1561,18 @@ video {
   fill: currentColor;
 }
 
+.fill-none {
+  fill: none;
+}
+
+.stroke-current {
+  stroke: currentColor;
+}
+
+.stroke-2 {
+  stroke-width: 2;
+}
+
 .p-0\.5 {
   padding: 0.125rem;
 }
@@ -1992,6 +2008,10 @@ video {
   clip-path: polygon(100% 100%,100% 0%,0% 100%);
 }
 
+.\[fill-opacity\:0\.2\] {
+  fill-opacity: 0.2;
+}
+
 .\[image-rendering\:pixelated\] {
   image-rendering: pixelated;
 }
@@ -2021,6 +2041,10 @@ video {
 
 .\[scroll-margin\:1rem\] {
   scroll-margin: 1rem;
+}
+
+.\[stroke-linejoin\:round\] {
+  stroke-linejoin: round;
 }
 
 @font-face {

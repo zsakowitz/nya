@@ -4,7 +4,7 @@ import { CmdComma } from "../../field/cmd/leaf/comma"
 import { CmdWord } from "../../field/cmd/leaf/word"
 import { CmdBrack } from "../../field/cmd/math/brack"
 import { Block, L, R } from "../../field/model"
-import { h } from "../../jsx"
+import { h, p, svg, svgx } from "../../jsx"
 import type { Paper, Point } from "../../sheet/ui/paper"
 import type { GlslContext } from "../lib/fn"
 import { num, real } from "../ty/create"
@@ -679,7 +679,23 @@ export const TY_INFO: TyInfoMap = {
       },
     },
     icon() {
-      return h("", "ploygon")
+      return h(
+        "",
+        h(
+          "text-[#388c46] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px]",
+          h(
+            "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
+          ),
+          h(
+            "w-[16px] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
+            svgx(
+              "2.2 4.4 17.6 13.2",
+              "stroke-current fill-none overflow-visible [stroke-linejoin:round] stroke-2",
+              p("M 7.2 4.4 L 19.8 13.2 L 2.2 17.6 Z"),
+            ),
+          ),
+        ),
+      )
     },
   },
 }
