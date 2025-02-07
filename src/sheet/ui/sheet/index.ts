@@ -353,6 +353,7 @@ export class Sheet {
     readonly exts: Exts,
   ) {
     this.scope = new Scope(options)
+    Object.assign(globalThis, { scope: this.scope })
 
     // prepare js context
     this.paper.el.classList.add(
@@ -371,7 +372,9 @@ export class Sheet {
         .filter((x) => x.state.ok && x.state.ext?.plot2d != null)
         .sort((a, b) => a.layer - b.layer)) {
         if (e.state.ok && e.state.ext?.plot2d) {
-          e.state.ext.plot2d(e.state.data, this.paper)
+          try {
+            e.state.ext.plot2d(e.state.data, this.paper)
+          } catch {}
         }
       }
     })
