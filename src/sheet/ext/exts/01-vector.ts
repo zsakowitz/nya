@@ -45,6 +45,7 @@ export const EXT_VECTOR = defineExt({
       ctx.lineTo(ox + w * ny, oy - w * nx)
       ctx.lineTo(ox - w * ny, oy + w * nx)
       ctx.lineTo(o2.x, o2.y)
+      ctx.stroke()
       ctx.fill()
     }
   },
