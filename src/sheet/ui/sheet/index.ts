@@ -464,7 +464,7 @@ export class Sheet {
 
     const nextExpression = hx(
       "button",
-      "relative text-left grid grid-cols-[2.5rem_auto] min-h-[3.625rem] border-r border-[--nya-border] mb-24",
+      "relative text-left grid grid-cols-[2.5rem_auto] min-h-[3.625rem] border-r border-[--nya-border]",
 
       // grey side of expression
       h(
@@ -504,7 +504,7 @@ export class Sheet {
       nextExpression,
 
       // right border on remainder of the flexbox
-      h("flex-1 border-r border-[--nya-border]"),
+      h("flex-1 border-r min-h-24 border-[--nya-border]"),
     )
 
     const toolbar = h(

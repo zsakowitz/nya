@@ -25,10 +25,7 @@ type DataHover =
 export class Handlers implements PointerHandlers<DataDrag, DataHover> {
   readonly pointers: CursorStyle[] = []
 
-  pick?: { from: AnyPick; data: {}; found?: {} } = {
-    from: PICK_POINT,
-    data: {},
-  }
+  pick?: { from: AnyPick; data: {}; found?: {} }
 
   constructor(readonly sheet: Sheet) {}
 
