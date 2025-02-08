@@ -1,40 +1,129 @@
 import type { Sheet } from "."
-import type { AnyExt, CursorStyle } from "../../ext"
-import type { AnyPick } from "../../pick"
+import type { AnyExt, Cursor } from "../../ext"
+import type { AnyPick, Picker } from "../../pick/00-index"
+import { PICK_CIRCLE_P1 } from "../../pick/circle"
+import { PICK_LINE_P1 } from "../../pick/line"
+import { PICK_POINT } from "../../pick/point"
 import type { Expr } from "../expr"
 import type { Point, PointerHandlers } from "../paper"
 
-interface DataPick {
-  pick: true
+interface PickInactive {
+  active?: false
   from: AnyPick
   data: {}
-  found?: {}
 }
 
-interface DataDrag {
-  ext: AnyExt & { drag: {} }
+interface PickActive {
+  active: true
+  from: AnyPick
   data: {}
-  cursor: CursorStyle
+  at: Point | null
+  found: {} | null
 }
+
+type DataDrag =
+  | { pick?: false; ext: AnyExt & { drag: {} }; data: {}; cursor: Cursor }
+  | { pick: true }
 
 type DataHover =
   | { pick?: false; expr: Expr; ext: AnyExt & { hover: {} }; data: {} }
-  | DataPick
+  | { pick: true }
 
 export class Handlers implements PointerHandlers<DataDrag, DataHover> {
-  readonly pointers: CursorStyle[] = []
+  readonly pointers: Cursor[] = []
 
-  pick?: { from: AnyPick; data: {}; found?: {} }
+  private pick: PickInactive | PickActive | null = null
 
-  constructor(readonly sheet: Sheet) {}
+  constructor(readonly sheet: Sheet) {
+    addEventListener("keydown", (event) => {
+      if (event.altKey || event.ctrlKey || event.shiftKey || event.metaKey) {
+        return
+      }
 
-  onDraw() {
-    if (this.pick && this.pick.found) {
-      this.pick.from.draw(this.pick.data, this.pick.found, this.sheet)
+      const picker = {
+        p: PICK_POINT,
+        l: PICK_LINE_P1,
+        c: PICK_CIRCLE_P1,
+      }[event.key]
+
+      if (picker) {
+        this.setPick(picker, {})
+        event.preventDefault()
+      }
+    })
+  }
+
+  private lastMouse: Point | null = null
+
+  getPick() {
+    return this.pick
+  }
+
+  setPick<T extends {}, U extends {}>(pick: Picker<T, U>, data: T) {
+    const current = this.getPick()
+    let at
+    if (current) {
+      current.from.cancel(current.data)
+      this.sheet.paper.queue()
+      at = current.active && current.at
+    } else if (this.lastMouse) {
+      at = this.lastMouse
+    }
+
+    if (at) {
+      const found = pick.find(data, at, this.sheet)
+      this.pick = { active: true, at, from: pick as any, data, found }
+    } else {
+      this.pick = { active: false, data, from: pick as any }
+    }
+    this.sheet.paper.queue()
+  }
+
+  unsetPick() {
+    const current = this.getPick()
+    if (current) {
+      current.from.cancel(current.data)
+      this.sheet.paper.queue()
+    }
+    this.pick = null
+  }
+
+  draw() {
+    const current = this.getPick()
+    if (current?.active) {
+      current.from.draw(current.data, current.found, this.sheet)
     }
   }
 
+  private checkPick(at: Point) {
+    const current = this.getPick()
+    if (!current) return false
+
+    const found = current.from.find(current.data, at, this.sheet)
+    if (found == null) {
+      this.pick = {
+        active: false,
+        data: current.data,
+        from: current.from,
+      }
+    } else {
+      this.pick = { ...current, active: true, at, found }
+    }
+    this.sheet.paper.queue()
+    return true
+  }
+
   onDragStart(at: Point): DataDrag | null | undefined {
+    this.lastMouse = null
+
+    const current = this.getPick()
+    if (current) {
+      const found = current.from.find(current.data, at, this.sheet)
+      this.pick = { ...current, active: true, at, found }
+      this.sheet.paper.queue()
+      return { pick: true }
+    }
+
     for (const expr of this.sheet.exprs
       .filter(
         (x): x is typeof x & { state: { ok: true; ext: { drag: {} } } } =>
@@ -55,10 +144,38 @@ export class Handlers implements PointerHandlers<DataDrag, DataHover> {
   }
 
   onDragMove(to: Point, data: DataDrag): void {
+    this.lastMouse = null
+
+    if (data.pick) {
+      const current = this.getPick()
+      if (!current) return
+      const found = current.from.find(current.data, to, this.sheet)
+      this.pick = { ...current, active: true, at: to, found }
+      this.sheet.paper.queue()
+      return
+    }
+
     data.ext.drag.move(data.data, to)
   }
 
   onDragEnd(at: Point, data: DataDrag): void {
+    this.lastMouse = null
+
+    if (data.pick) {
+      const current = this.getPick()
+      if (!current) return
+
+      const found = current.from.find(current.data, at, this.sheet)
+      this.pick = null
+      if (found == null) {
+        current.from.cancel(current.data)
+      } else {
+        current.from.select(current.data, found, this.sheet)
+      }
+      this.sheet.paper.queue()
+      return
+    }
+
     const idx = this.pointers.lastIndexOf(data.cursor)
     if (idx != -1) this.pointers.splice(idx, 1)
     const cursor = this.pointers[this.pointers.length - 1]
@@ -68,14 +185,10 @@ export class Handlers implements PointerHandlers<DataDrag, DataHover> {
   }
 
   onHoverStart(at: Point): DataHover | null | undefined {
-    if (this.pick) {
-      this.pick.found = this.pick.from.find(this.pick.data, at, this.sheet)
-      this.sheet.paper.queue()
-      return {
-        pick: true,
-        data: this.pick.data,
-        from: this.pick.from,
-      }
+    this.lastMouse = null
+
+    if (this.checkPick(at)) {
+      return { pick: true }
     }
 
     for (const expr of this.sheet.exprs
@@ -93,14 +206,15 @@ export class Handlers implements PointerHandlers<DataDrag, DataHover> {
 
       return { expr, ext: expr.state.ext, data }
     }
+
+    this.lastMouse = at
   }
 
-  onHoverMove(to: Point, data: DataHover): boolean {
-    if (data.pick) {
-      data.found = data.from.find(data.data, to, this.sheet)
-      if (this.pick) this.pick = data
-      this.sheet.paper.queue()
-      return true
+  onHoverMove(at: Point, data: DataHover): boolean {
+    this.lastMouse = null
+
+    if (data.pick || this.pick) {
+      return this.checkPick(at)
     }
 
     for (const expr of this.sheet.exprs
@@ -109,7 +223,7 @@ export class Handlers implements PointerHandlers<DataDrag, DataHover> {
           x.state.ok && !!x.state.ext?.hover,
       )
       .sort((a, b) => b.layer - a.layer)) {
-      const hoverData = expr.state.ext.hover.on(expr.state.data, to)
+      const hoverData = expr.state.ext.hover.on(expr.state.data, at)
       if (hoverData == null) continue
 
       if (this.pointers.length == 0) {
@@ -129,13 +243,22 @@ export class Handlers implements PointerHandlers<DataDrag, DataHover> {
     data.ext.hover.off(data.data)
     this.sheet.el.style.cursor =
       this.pointers[this.pointers.length - 1] || "default"
+
+    this.lastMouse = at
     return false
   }
 
   onHoverEnd(_: Point, data: DataHover): void {
-    if (data.pick) {
-      data.found = undefined
-      if (this.pick) this.pick = data
+    this.lastMouse = null
+
+    const current = this.getPick()
+    if (current || data.pick) {
+      if (!current) return
+      this.pick = {
+        active: false,
+        data: current.data,
+        from: current.from,
+      }
       this.sheet.paper.queue()
       return
     }
@@ -146,16 +269,31 @@ export class Handlers implements PointerHandlers<DataDrag, DataHover> {
   }
 
   onUpgrade(at: Point, data: DataHover): DataDrag | null | undefined {
-    if (data.pick) {
-      const found = data.from.find(data.data, at, this.sheet)
-      data.from.select(data.data, found, this.sheet)
+    this.lastMouse = null
+
+    const current = this.getPick()
+    if (current || data.pick) {
+      if (!current) return
+      const found = current.from.find(current.data, at, this.sheet)
+      if (found == null) {
+        this.pick = {
+          active: false,
+          data: current.data,
+          from: current.from,
+        }
+      } else {
+        this.pick = { ...current, active: true, at, found }
+      }
       this.sheet.paper.queue()
-      return
+      return { pick: true }
     }
 
     data.ext.hover.off(data.data)
     this.sheet.el.style.cursor =
       this.pointers[this.pointers.length - 1] || "default"
-    return this.onDragStart(at)
+    const dragging = this.onDragStart(at)
+    if (dragging != null) return dragging
+
+    this.lastMouse = at
   }
 }

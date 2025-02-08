@@ -2,12 +2,12 @@ import type { Point } from "../ui/paper"
 import type { Sheet } from "../ui/sheet"
 
 /** Allows objects to be selected from the canvas. */
-export interface Picker<T extends {}, U extends {}> {
+export interface Picker<in T extends {}, in out U extends {}> {
   /** Finds an object at the cursor's location. */
-  find(data: T, at: Point, sheet: Sheet): U
+  find(data: T, at: Point, sheet: Sheet): U | null
 
   /** Draws both the found object and a ghost of the provisional final object. */
-  draw(data: T, value: U, sheet: Sheet): void
+  draw(data: T, value: U | null, sheet: Sheet): void
 
   /** Selects a given value. */
   select(data: T, value: U, sheet: Sheet): void

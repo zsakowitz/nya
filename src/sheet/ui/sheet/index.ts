@@ -27,6 +27,10 @@ import type { Options } from "../../../field/options"
 import { h, hx, t } from "../../../jsx"
 import { Scope } from "../../deps"
 import type { Exts } from "../../ext"
+import type { Picker } from "../../pick/00-index"
+import { PICK_CIRCLE_P1 } from "../../pick/circle"
+import { PICK_LINE_P1 } from "../../pick/line"
+import { PICK_POINT } from "../../pick/point"
 import { doMatchReglSize } from "../../regl"
 import { REMARK } from "../../remark"
 import { Slider } from "../../slider"
@@ -386,7 +390,7 @@ export class Sheet {
         }
       }
     })
-    this.paper.drawFns.push(() => this.handlers.onDraw())
+    this.paper.drawFns.push(() => this.handlers.draw())
 
     // prepare glsl context
     const canvas = hx(
@@ -507,9 +511,28 @@ export class Sheet {
       h("flex-1 border-r min-h-24 border-[--nya-border]"),
     )
 
+    const picker = <U extends {}>(
+      ty: TyName,
+      key: string,
+      picker: Picker<{}, U>,
+    ) => {
+      const btn = hx(
+        "button",
+        "flex flex-col w-12 hover:bg-[--nya-bg] border-x border-transparent hover:border-[--nya-border] focus:outline-none justify-center",
+        TY_INFO[ty].icon(),
+        // h("mt-0.5 -mb-px text-center text-[60%]/[1]", key),
+      )
+      btn.addEventListener("click", () => {
+        this.setPick(picker, {})
+      })
+      return btn
+    }
+
     const toolbar = h(
-      "font-['Symbola','Times_New_Roman',sans-serif] flex overflow-x-auto h-12 min-h-12 bg-[--nya-bg-sidebar] border-b border-[--nya-border]",
-      h("m-auto text-2xl text-[--nya-title]", "geometry tools coming soon!"),
+      "font-['Symbola','Times_New_Roman',sans-serif] flex overflow-x-auto h-12 min-h-12 bg-[--nya-bg-sidebar] border-b border-[--nya-border] first:*:ml-auto last:*:mr-auto",
+      picker("point32", "p", PICK_POINT),
+      picker("line", "l", PICK_LINE_P1),
+      picker("circle", "c", PICK_CIRCLE_P1),
     )
 
     const docs = createDocs(
@@ -556,6 +579,25 @@ export class Sheet {
     ).observe(this.elExpressions)
 
     this.startGlslLoop()
+
+    addEventListener("keydown", (event) => {
+      if (
+        this.handlers.getPick() &&
+        event.key == "Escape" &&
+        !(event.metaKey || event.shiftKey || event.altKey || event.ctrlKey)
+      ) {
+        event.preventDefault()
+        this.handlers.unsetPick()
+      }
+    })
+  }
+
+  setPick<T extends {}, U extends {}>(pick: Picker<T, U>, data: NoInfer<T>) {
+    this.handlers.setPick(pick, data)
+  }
+
+  unsetPick() {
+    this.handlers.unsetPick()
   }
 
   private checkIndices() {
@@ -736,7 +778,11 @@ void main() {
   }
 }
 
-export type Selected<K extends TyName> = { val: JsVal<K>; ref(): Block }
+export type Selected<K extends TyName> = {
+  val: JsVal<K>
+  ref(): Block
+  draw?(): void
+}
 
 if (location.search.includes("?docsonly")) {
   const el = createDocs(

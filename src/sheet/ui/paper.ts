@@ -531,13 +531,13 @@ export interface PointerHandlers<
   X extends null | undefined = null | undefined,
 > {
   onDragStart(at: Point): T | X
-  onDragMove(to: Point, data: T): void
-  onDragEnd(to: Point, data: T): void
+  onDragMove(at: Point, data: T): void
+  onDragEnd(at: Point, data: T): void
 
   onHoverStart(at: Point): U | null | undefined
   /** Return `true` to continue capturing the hover event. */
-  onHoverMove(to: Point, data: U): boolean
-  onHoverEnd(to: Point, data: U): void
+  onHoverMove(at: Point, data: U): boolean
+  onHoverEnd(at: Point, data: U): void
 
   /** Called when a pointer transitions from hovering to dragging. */
   onUpgrade(at: Point, data: U): T | X
@@ -553,6 +553,7 @@ function registerOffsetHandlers<T extends {}, U extends {}>(
 ) {
   const dragged = new Map<number, T>()
   const hovered = new Map<number, U>()
+  const last = new Map<number, Point>()
 
   paper.el.addEventListener("contextmenu", (event) => {
     event.preventDefault()
@@ -566,6 +567,7 @@ function registerOffsetHandlers<T extends {}, U extends {}>(
       paper.el.setPointerCapture(event.pointerId)
       event.preventDefault()
       const pt: Point = { x: event.offsetX, y: event.offsetY }
+      last.set(event.pointerId, pt)
 
       const hoverData = hovered.get(event.pointerId)
       const dragData =
@@ -582,6 +584,7 @@ function registerOffsetHandlers<T extends {}, U extends {}>(
     (event) => {
       event.preventDefault()
       const pt: Point = { x: event.offsetX, y: event.offsetY }
+      last.set(event.pointerId, pt)
 
       const dragData = dragged.get(event.pointerId)
       if (dragData != null) {
@@ -608,6 +611,7 @@ function registerOffsetHandlers<T extends {}, U extends {}>(
   paper.el.addEventListener("pointerup", (event) => {
     event.preventDefault()
     const pt: Point = { x: event.offsetX, y: event.offsetY }
+    last.set(event.pointerId, pt)
 
     const hoverData = hovered.get(event.pointerId)
     if (hoverData != null) {
@@ -624,6 +628,7 @@ function registerOffsetHandlers<T extends {}, U extends {}>(
 
   paper.el.addEventListener("pointerleave", (event) => {
     const pt: Point = { x: event.offsetX, y: event.offsetY }
+    last.set(event.pointerId, pt)
 
     const hoverData = hovered.get(event.pointerId)
     if (hoverData != null) {
@@ -637,7 +642,7 @@ function registerOffsetHandlers<T extends {}, U extends {}>(
  * Handlers are passed points in the paper's coordinate system, not in any DOM
  * system.
  */
-function registerPanAndZoom<T extends {}, U extends {}>(
+function registerPanAndZoom<T extends WeakKey, U extends WeakKey>(
   paper: Paper,
   hx: PointerHandlers<T, U>,
 ) {
@@ -713,32 +718,32 @@ function registerPanAndZoom<T extends {}, U extends {}>(
       }
       return data
     },
-    onDragMove(to, data) {
+    onDragMove(at, data) {
       if (data.type == "user") {
-        hx.onDragMove(paper.offsetToPaper(to), data.user)
+        hx.onDragMove(paper.offsetToPaper(at), data.user)
         return
       }
 
-      onDragMove(to, data)
+      onDragMove(at, data)
     },
-    onDragEnd(to, data) {
+    onDragEnd(at, data) {
       if (data.type == "user") {
-        hx.onDragEnd(paper.offsetToPaper(to), data.user)
+        hx.onDragEnd(paper.offsetToPaper(at), data.user)
         return
       }
 
       allowMovement = false
-      onDragMove(to, data)
+      onDragMove(at, data)
       ptrs.delete(data.id)
     },
     onHoverStart(at) {
       return hx.onHoverStart(paper.offsetToPaper(at))
     },
-    onHoverMove(to, data) {
-      return hx.onHoverMove(paper.offsetToPaper(to), data)
+    onHoverMove(at, data) {
+      return hx.onHoverMove(paper.offsetToPaper(at), data)
     },
-    onHoverEnd(to, data) {
-      hx.onHoverEnd(paper.offsetToPaper(to), data)
+    onHoverEnd(at, data) {
+      hx.onHoverEnd(paper.offsetToPaper(at), data)
     },
     onUpgrade(at, hoverData) {
       const paperAt = paper.offsetToPaper(at)
@@ -761,7 +766,7 @@ function registerPanAndZoom<T extends {}, U extends {}>(
   })
 }
 
-export function makeInteractive<T extends {}, U extends {}>(
+export function makeInteractive<T extends WeakKey, U extends WeakKey>(
   paper: Paper,
   hx: PointerHandlers<T, U>,
 ) {

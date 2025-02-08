@@ -15,7 +15,7 @@ const color = new Store(
   (expr) => new Transition(3.5, () => expr.sheet.paper.queue()),
 )
 
-export function drawPoint(paper: Paper, at: Point, size = 3, halo?: boolean) {
+export function drawPoint(paper: Paper, at: Point, size = 3.5, halo?: boolean) {
   const offset = paper.paperToCanvas(at)
   if (!(isFinite(offset.x) && isFinite(offset.y))) return
   const { ctx, scale } = paper
@@ -220,12 +220,17 @@ export const EXT_POINT = defineExt({
         )
         return block
       }
+
       const name = data.expr.sheet.scope.name("p")
       const c = data.expr.field.block.cursor(L)
       CmdVar.leftOf(c, name, data.expr.field.options)
       new OpEq(false).insertAt(c, L)
       const block = new Block(null)
       CmdVar.leftOf(block.cursor(R), name, data.expr.field.options)
+      data.expr.field.dirtyAst = data.expr.field.dirtyValue = true
+      data.expr.field.trackNameNow()
+      data.expr.field.scope.queueUpdate()
+
       return block
     },
   },

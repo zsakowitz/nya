@@ -4,7 +4,7 @@ import type { Block } from "../../field/model"
 import { Expr } from "../ui/expr"
 import type { Paper, Point } from "../ui/paper"
 
-export type CursorStyle =
+export type Cursor =
   | "default"
   | "pointer"
   | "text"
@@ -15,7 +15,7 @@ export type CursorStyle =
 export interface ExtPointers<T, U extends {}> {
   /** Returning a non-nullish value captures the event. */
   start(data: T, at: Point): U | null | undefined
-  cursor(data: U): CursorStyle
+  cursor(data: U): Cursor
   move(data: U, to: Point): void
   end(data: U, at: Point): void
 }
@@ -53,7 +53,7 @@ export interface Ext<T extends {}, U extends {}, V extends {}, W extends {}> {
   drag?: {
     /** Returning a non-nullish value captures the event. */
     start(data: T, at: Point): U | null | undefined
-    cursor(data: U): CursorStyle
+    cursor(data: U): Cursor
     move(data: U, to: Point): void
     end(data: U, at: Point): void
   }
@@ -61,7 +61,7 @@ export interface Ext<T extends {}, U extends {}, V extends {}, W extends {}> {
   hover?: {
     /** Returning a non-nullish value captures the event. */
     on(data: T, at: Point): V | null | undefined
-    cursor(data: V): CursorStyle
+    cursor(data: V): Cursor
     off(data: V): void
   }
 

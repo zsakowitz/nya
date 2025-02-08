@@ -25,6 +25,31 @@ function getLineBounds(line: Tys["line"], paper: Paper): [Point, Point] {
   ]
 }
 
+export function drawLine(line: Tys["line"], paper: Paper) {
+  const x1 = num(line[0].x)
+  const y1 = num(line[0].y)
+  const x2 = num(line[1].x)
+  const y2 = num(line[1].y)
+
+  if (!(isFinite(x1) && isFinite(y1) && isFinite(x2) && isFinite(y2))) {
+    return
+  }
+
+  const [o1, o2] = getLineBounds(line, paper)
+  if (!(isFinite(o1.x) && isFinite(o1.y) && isFinite(o2.x) && isFinite(o2.y))) {
+    return
+  }
+
+  const { ctx, scale } = paper
+
+  ctx.beginPath()
+  ctx.lineWidth = 3 * scale
+  ctx.strokeStyle = "#2d70b3"
+  ctx.moveTo(o1.x, o1.y)
+  ctx.lineTo(o2.x, o2.y)
+  ctx.stroke()
+}
+
 export const EXT_LINE = defineExt({
   data(expr) {
     const value = expr.js?.value
@@ -35,23 +60,7 @@ export const EXT_LINE = defineExt({
   },
   plot2d(data, paper) {
     for (const segment of each(data.value)) {
-      const x1 = num(segment[0].x)
-      const y1 = num(segment[0].y)
-      const x2 = num(segment[1].x)
-      const y2 = num(segment[1].y)
-
-      if (!(isFinite(x1) && isFinite(y1) && isFinite(x2) && isFinite(y2)))
-        continue
-
-      const [o1, o2] = getLineBounds(segment, paper)
-      const { ctx, scale } = paper
-
-      ctx.beginPath()
-      ctx.lineWidth = 3 * scale
-      ctx.strokeStyle = "#2d70b3"
-      ctx.moveTo(o1.x, o1.y)
-      ctx.lineTo(o2.x, o2.y)
-      ctx.stroke()
+      drawLine(segment, paper)
     }
   },
   layer() {

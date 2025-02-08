@@ -252,6 +252,24 @@ export class Scope {
     }
   }
 
+  trackNameNow(field: FieldComputed) {
+    if (field.leaf) return
+    if (!field.dirtyAst) return
+
+    const ast = field.block.expr(!field.leaf)
+    if (ast.type == "binding") {
+      var id = tryId(ast.name)
+    }
+
+    if (id) {
+      const def = (this.defs[id] ??= [])
+      const idx = def.indexOf(field)
+      if (idx == -1) {
+        def.push(field)
+      }
+    }
+  }
+
   name(prefix: string) {
     const existing = Object.entries(this.defs)
       .filter((x) => x[1].length)
@@ -333,6 +351,10 @@ export class FieldComputed extends Field {
     if (this.scope) {
       this.scope.queueUpdate()
     }
+  }
+
+  trackNameNow() {
+    this.scope.trackNameNow(this)
   }
 
   linked = true

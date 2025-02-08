@@ -1,7 +1,6 @@
 import { Leaf } from "."
 import type { TyName } from "../../../eval/ty"
 import { TY_INFO } from "../../../eval/ty/info"
-import { h } from "../../../jsx"
 import type { LatexParser } from "../../latex"
 import type { Command } from "../../model"
 import { CmdUnknown } from "./unknown"
@@ -17,7 +16,7 @@ export class CmdTyName extends Leaf {
   }
 
   constructor(readonly ty: TyName) {
-    super("\\tyname ", TY_INFO[ty].icon?.() || h("", ty))
+    super("\\tyname ", TY_INFO[ty].icon())
   }
 
   ascii(): string {
