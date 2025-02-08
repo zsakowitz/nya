@@ -1,9 +1,8 @@
-import type { Picker } from "."
-import { dist } from "../../eval/ops/fn/geo/distance"
+import { createPicker } from "."
 import { parallelJs } from "../../eval/ops/fn/geo/parallel"
 import { perpendicularJs } from "../../eval/ops/fn/geo/perpendicular"
-import { type JsVal, type TyName } from "../../eval/ty"
-import { num, unpt } from "../../eval/ty/create"
+import type { JsVal, TyName } from "../../eval/ty"
+import { unpt } from "../../eval/ty/create"
 import { OpEq } from "../../field/cmd/leaf/cmp"
 import { CmdComma } from "../../field/cmd/leaf/comma"
 import { CmdVar } from "../../field/cmd/leaf/var"
@@ -18,9 +17,114 @@ import { Expr } from "../ui/expr"
 import type { Selected, Sheet } from "../ui/sheet"
 import { virtualPoint } from "./point"
 
-export function createStandardPicker<
-  const K extends readonly (readonly TyName[])[],
->(
+export interface ExtByTy<T extends readonly TyName[]> {
+  readonly id: number
+
+  readonly output: { tag: string; fn: string } | null
+
+  draw(sheet: Sheet, args: { [K in keyof T]?: JsVal<T[K]> }): void
+
+  /**
+   * Return a list of type names to accept a new type. Return `true` to finish
+   * the construction and add it to the expression list.
+   */
+  next(args: { [K in keyof T]?: JsVal<T[K]> }): readonly TyName[] | null
+}
+
+export interface PropsByTy<T extends readonly TyName[] = readonly TyName[]> {
+  chosen: readonly Selected[]
+  next: readonly TyName[]
+  ext: ExtByTy<T>
+}
+
+export const PICK_BY_TY = createPicker<PropsByTy, Selected>({
+  id(data) {
+    return data.ext.id
+  },
+  find(data, at, sheet) {
+    const [hovered] = sheet.select(at, data.next, 1)
+
+    if (hovered) {
+      return hovered
+    } else if (data.next.some((x) => x == "point32" || x == "point64")) {
+      return virtualPoint(at, sheet)
+    } else {
+      return null
+    }
+  },
+  draw(data, value, sheet) {
+    const args = data.chosen.map((x) => x.val)
+    if (value) {
+      args.push(value.val)
+    }
+    data.ext.draw(sheet, args)
+
+    for (const el of data.chosen) {
+      el.draw?.()
+    }
+    if (value) {
+      value.draw?.()
+    }
+  },
+  select(data, value, sheet) {
+    const args = data.chosen.map((x) => x.val)
+    args.push(value.val)
+    const next = data.ext.next(args)
+
+    if (next != null) {
+      sheet.setPick(PICK_BY_TY, {
+        ext: data.ext,
+        next,
+        chosen: [...data.chosen, value],
+      })
+      return
+    }
+
+    if (data.ext.output) {
+      const argRefs = []
+      for (const arg of data.chosen) {
+        argRefs.push(arg.ref())
+      }
+      const valueRef = value.ref()
+
+      const expr = new Expr(sheet)
+      const name = sheet.scope.name(data.ext.output.tag)
+      const cursor = expr.field.block.cursor(R)
+      CmdVar.leftOf(cursor, name, expr.field.options)
+      new OpEq(false).insertAt(cursor, L)
+      for (const char of data.ext.output.fn) {
+        new CmdVar(char, sheet.options).insertAt(cursor, L)
+      }
+      const inner = new Block(null)
+      new CmdBrack("(", ")", null, inner).insertAt(cursor, L)
+      {
+        const cursor = inner.cursor(R)
+        for (const arg of argRefs) {
+          arg.insertAt(cursor, L)
+          new CmdComma().insertAt(cursor, L)
+        }
+        valueRef.insertAt(cursor, L)
+      }
+
+      expr.field.dirtyAst = expr.field.dirtyValue = true
+      expr.field.trackNameNow()
+      expr.field.scope.queueUpdate()
+    } else {
+      for (const arg of data.chosen) {
+        arg.ref()
+      }
+      value.ref()
+    }
+
+    const initial = data.ext.next([])
+    if (initial) {
+      sheet.setPick(PICK_BY_TY, { ext: data.ext, chosen: [], next: initial })
+    }
+  },
+  cancel() {},
+})
+
+function createExt<const K extends (readonly TyName[])[]>(
   tag: string,
   fn: string | null,
   steps: K,
@@ -34,129 +138,35 @@ export function createStandardPicker<
       : never
     }>
   ) => void,
-): Picker<{}, any>
-
-export function createStandardPicker(
-  tag: string,
-  fn: string | null,
-  steps: readonly (readonly TyName[])[],
-  draw: (sheet: Sheet, ...args: JsVal[]) => void,
-): Picker<{}, any> {
+): PropsByTy {
   if (steps.length == 0) {
-    throw new Error(
-      "'createStandardPicker' must have at least one stage specified.",
-    )
+    throw new Error("Cannot call 'createStandardPicker' with zero steps.")
   }
-
-  const stages: Picker<Selected[], Selected>[] = []
-  const id = Math.random()
-
-  for (let i = 0; i < steps.length; i++) {
-    const canBePoint = steps[i]?.some((x) => x == "point32" || x == "point64")
-    stages.push({
-      id,
-      find(_, at, sheet) {
-        const [hovered] = sheet.select(at, steps[i]!, 1)
-
-        if (hovered) {
-          return hovered
-        } else if (canBePoint) {
-          return virtualPoint(at, sheet)
-        } else {
-          return null
-        }
-      },
-      draw(data, value, sheet) {
-        const args = data.map((x) => x.val)
-        if (value) {
-          args.push(value.val)
-        }
-        draw(sheet, ...args)
-
-        for (const el of data) {
-          el.draw?.()
-        }
-        if (value) {
-          value.draw?.()
-        }
-      },
-      select:
-        i == steps.length - 1 ?
-          (data, value, sheet) => {
-            if (fn == null) {
-              for (const arg of data) {
-                arg.ref()
-              }
-              value.ref()
-              sheet.setPick(initial, [])
-              return
-            }
-
-            const argRefs = []
-            for (const arg of data) {
-              argRefs.push(arg.ref())
-            }
-            const valueRef = value.ref()
-
-            const expr = new Expr(sheet)
-            const name = sheet.scope.name(tag)
-            const cursor = expr.field.block.cursor(R)
-            CmdVar.leftOf(cursor, name, expr.field.options)
-            new OpEq(false).insertAt(cursor, L)
-            for (const char of fn) {
-              new CmdVar(char, sheet.options).insertAt(cursor, L)
-            }
-            const inner = new Block(null)
-            new CmdBrack("(", ")", null, inner).insertAt(cursor, L)
-            {
-              const cursor = inner.cursor(R)
-              for (const arg of argRefs) {
-                arg.insertAt(cursor, L)
-                new CmdComma().insertAt(cursor, L)
-              }
-              valueRef.insertAt(cursor, L)
-            }
-
-            expr.field.dirtyAst = expr.field.dirtyValue = true
-            expr.field.trackNameNow()
-            expr.field.scope.queueUpdate()
-
-            sheet.setPick(initial, [])
-          }
-        : (data, value, sheet) => {
-            sheet.setPick(stages[i + 1]!, [...data, value])
-          },
-      cancel() {},
-    })
-  }
-
-  const initial = stages[0]!
 
   return {
-    id,
-    find(_, at, sheet) {
-      return initial.find([], at, sheet)
-    },
-    draw(_, value, sheet) {
-      initial.draw([], value, sheet)
-    },
-    select(_, value, sheet) {
-      initial.select([], value, sheet)
-    },
-    cancel(_) {
-      initial.cancel([])
+    chosen: [],
+    next: steps[0]!,
+    ext: {
+      id: Math.random(),
+      output: fn ? { tag, fn } : null,
+      draw(sheet, args) {
+        draw(sheet, ...(args satisfies readonly (JsVal | undefined)[] as any))
+      },
+      next(args) {
+        return steps[args.length] ?? null
+      },
     },
   }
 }
 
-export const PICK_POINT = createStandardPicker(
+export const PICK_POINT = createExt(
   "p",
   null,
   [["point32", "point64"]],
   () => {},
 )
 
-export const PICK_LINE = createStandardPicker(
+export const PICK_LINE = createExt(
   "l",
   "line",
   [
@@ -170,7 +180,7 @@ export const PICK_LINE = createStandardPicker(
   },
 )
 
-export const PICK_SEGMENT = createStandardPicker(
+export const PICK_SEGMENT = createExt(
   "l",
   "segment",
   [
@@ -184,7 +194,7 @@ export const PICK_SEGMENT = createStandardPicker(
   },
 )
 
-export const PICK_RAY = createStandardPicker(
+export const PICK_RAY = createExt(
   "l",
   "ray",
   [
@@ -198,7 +208,7 @@ export const PICK_RAY = createStandardPicker(
   },
 )
 
-export const PICK_VECTOR = createStandardPicker(
+export const PICK_VECTOR = createExt(
   "l",
   "vector",
   [
@@ -212,30 +222,30 @@ export const PICK_VECTOR = createStandardPicker(
   },
 )
 
-export const PICK_CIRCLE = createStandardPicker(
+export const PICK_CIRCLE = createExt(
   "c",
   "circle",
   [
     ["point32", "point64"],
-    ["point32", "point64", "segment"],
+    ["point32", "point64"],
   ],
   (sheet, p1, p2) => {
     if (p1 && p2) {
       const center = unpt(p1.value)
 
-      if (p2.type == "segment") {
-        const radius = dist(p2.value[0], p2.value[1])
-        drawCircle(center, num(radius), sheet.paper)
-      } else {
-        const edge = unpt(p2.value)
-        const radius = Math.hypot(center.x - edge.x, center.y - edge.y)
-        drawCircle(center, radius, sheet.paper)
-      }
+      // if (p2.type == "segment") {
+      // const radius = dist(p2.value[0], p2.value[1])
+      // drawCircle(center, num(radius), sheet.paper)
+      // } else {
+      const edge = unpt(p2.value)
+      const radius = Math.hypot(center.x - edge.x, center.y - edge.y)
+      drawCircle(center, radius, sheet.paper)
+      // }
     }
   },
 )
 
-export const PICK_PERPENDICULAR = createStandardPicker(
+export const PICK_PERPENDICULAR = createExt(
   "l",
   "perpendicular",
   [
@@ -250,7 +260,7 @@ export const PICK_PERPENDICULAR = createStandardPicker(
   },
 )
 
-export const PICK_PARALLEL = createStandardPicker(
+export const PICK_PARALLEL = createExt(
   "l",
   "parallel",
   [

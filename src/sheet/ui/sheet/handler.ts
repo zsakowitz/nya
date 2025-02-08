@@ -2,6 +2,7 @@ import type { Sheet } from "."
 import type { AnyExt, Cursor } from "../../ext"
 import type { AnyPick, Picker } from "../../pick"
 import {
+  PICK_BY_TY,
   PICK_CIRCLE,
   PICK_LINE,
   PICK_PARALLEL,
@@ -10,6 +11,7 @@ import {
   PICK_RAY,
   PICK_SEGMENT,
   PICK_VECTOR,
+  type PropsByTy,
 } from "../../pick/normal"
 import type { Expr } from "../expr"
 import type { Point, PointerHandlers } from "../paper"
@@ -36,6 +38,17 @@ type DataHover =
   | { pick?: false; expr: Expr; ext: AnyExt & { hover: {} }; data: {} }
   | { pick: true }
 
+const ALL: Record<string, PropsByTy> = {
+  p: PICK_POINT,
+  s: PICK_SEGMENT,
+  r: PICK_RAY,
+  l: PICK_LINE,
+  v: PICK_VECTOR,
+  c: PICK_CIRCLE,
+  x: PICK_PERPENDICULAR,
+  z: PICK_PARALLEL,
+}
+
 export class Handlers implements PointerHandlers<DataDrag, DataHover> {
   readonly pointers: Cursor[] = []
 
@@ -47,19 +60,10 @@ export class Handlers implements PointerHandlers<DataDrag, DataHover> {
         return
       }
 
-      const picker = {
-        p: PICK_POINT,
-        s: PICK_SEGMENT,
-        r: PICK_RAY,
-        l: PICK_LINE,
-        v: PICK_VECTOR,
-        c: PICK_CIRCLE,
-        x: PICK_PERPENDICULAR,
-        z: PICK_PARALLEL,
-      }[event.key]
+      const picker = ALL[event.key]
 
       if (picker) {
-        this.setPick<{}, any>(picker satisfies Picker<{}, any>, {})
+        this.setPick(PICK_BY_TY, picker)
         event.preventDefault()
       }
     })

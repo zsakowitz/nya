@@ -15,7 +15,16 @@ const color = new Store(
   (expr) => new Transition(3.5, () => expr.sheet.paper.queue()),
 )
 
-export function drawPoint(paper: Paper, at: Point, size = 3.5, halo?: boolean) {
+export function drawPoint(
+  paper: Paper,
+  at: Point,
+  size?: number,
+  halo?: boolean,
+) {
+  if (size == null) {
+    size = halo ? 3.5 : 4
+  }
+
   const offset = paper.paperToCanvas(at)
   if (!(isFinite(offset.x) && isFinite(offset.y))) return
   const { ctx, scale } = paper
@@ -62,7 +71,12 @@ export const EXT_POINT = defineExt({
   },
   plot2d(data, paper) {
     for (const pt of each(data.value)) {
-      drawPoint(paper, unpt(pt), color.get(data.expr).get(), !!data.drag)
+      drawPoint(
+        paper,
+        unpt(pt),
+        data.drag ? color.get(data.expr).get() : 4,
+        !!data.drag,
+      )
     }
   },
   layer() {

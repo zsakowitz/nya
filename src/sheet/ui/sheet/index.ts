@@ -29,6 +29,7 @@ import { Scope } from "../../deps"
 import type { Exts } from "../../ext"
 import type { Picker } from "../../pick"
 import {
+  PICK_BY_TY,
   PICK_CIRCLE,
   PICK_LINE,
   PICK_PARALLEL,
@@ -37,6 +38,7 @@ import {
   PICK_RAY,
   PICK_SEGMENT,
   PICK_VECTOR,
+  type PropsByTy,
 } from "../../pick/normal"
 import { doMatchReglSize } from "../../regl"
 import { REMARK } from "../../remark"
@@ -521,14 +523,15 @@ export class Sheet {
     const checkPick: (() => void)[] = []
     this.handlers.onPickChange = () => checkPick.forEach((x) => x())
 
-    const picker = (icon: HTMLSpanElement, picker: Picker<{}, any>) => {
+    const picker = (icon: HTMLSpanElement, props: PropsByTy) => {
       const btn = hx(
         "button",
         "w-12 hover:bg-[--nya-bg] border-x border-transparent hover:border-[--nya-border] focus:outline-none -mr-px last:mr-0",
         icon,
       )
       checkPick.push(() => {
-        if (this.handlers.getPick()?.from.id == picker.id) {
+        const current = this.handlers.getPick()
+        if (current?.from.id(current.data) == props.ext.id) {
           btn.classList.add("bg-[--nya-bg]", "border-[--nya-border]")
           btn.classList.remove("border-transparent")
         } else {
@@ -537,7 +540,7 @@ export class Sheet {
         }
       })
       btn.addEventListener("click", () => {
-        this.setPick(picker, {})
+        this.setPick(PICK_BY_TY, props)
       })
       return btn
     }
