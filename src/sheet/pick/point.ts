@@ -1,3 +1,4 @@
+import type { Var } from "../../eval/ast/token"
 import { FN_GLIDER } from "../../eval/ops/fn/geo/glider"
 import { FN_INTERSECTION } from "../../eval/ops/fn/geo/intersection"
 import type { JsVal } from "../../eval/ty"
@@ -38,12 +39,16 @@ export function virtualPoint(at: Point, sheet: Sheet) {
       break intersection
     }
 
-    let ref: Block | undefined
+    let ref: Var & { sup?: undefined }
 
     return {
       val,
       ref() {
-        if (ref) return ref
+        if (ref) {
+          const ret = new Block(null)
+          CmdVar.leftOf(ret.cursor(R), ref, sheet.options)
+          return ret
+        }
 
         const r1 = o1.ref()
         const r2 = o2.ref()
@@ -68,10 +73,10 @@ export function virtualPoint(at: Point, sheet: Sheet) {
         expr.field.trackNameNow()
         expr.field.scope.queueUpdate()
 
+        ref = name
         const ret = new Block(null)
         CmdVar.leftOf(ret.cursor(R), name, sheet.options)
-
-        return (ref = ret)
+        return ret
       },
       draw() {
         drawPoint(sheet.paper, unpt(val.value), undefined, false)
@@ -100,12 +105,16 @@ export function virtualPoint(at: Point, sheet: Sheet) {
       break glider
     }
 
-    let ref: Block | undefined
+    let ref: Var & { sup?: undefined }
 
     return {
       val: position,
       ref() {
-        if (ref) return ref
+        if (ref) {
+          const ret = new Block(null)
+          CmdVar.leftOf(ret.cursor(R), ref, sheet.options)
+          return ret
+        }
 
         const o1 = obj.ref()
 
@@ -129,10 +138,10 @@ export function virtualPoint(at: Point, sheet: Sheet) {
         expr.field.trackNameNow()
         expr.field.scope.queueUpdate()
 
+        ref = name
         const ret = new Block(null)
         CmdVar.leftOf(ret.cursor(R), name, sheet.options)
-
-        return (ref = ret)
+        return ret
       },
       draw() {
         drawPoint(sheet.paper, unpt(position.value), undefined, true)
@@ -145,12 +154,16 @@ export function virtualPoint(at: Point, sheet: Sheet) {
     value: pt(real(at.x), real(at.y)),
   }
 
-  let ref: Block | undefined
+  let ref: Var & { sup?: undefined }
 
   return {
     val,
     ref() {
-      if (ref) return ref
+      if (ref) {
+        const ret = new Block(null)
+        CmdVar.leftOf(ret.cursor(R), ref, sheet.options)
+        return ret
+      }
 
       const expr = new Expr(sheet)
       const name = sheet.scope.name("p")
@@ -174,10 +187,11 @@ export function virtualPoint(at: Point, sheet: Sheet) {
       expr.field.trackNameNow()
       expr.field.scope.queueUpdate()
 
+      ref = name
       const ret = new Block(null)
       CmdVar.leftOf(ret.cursor(R), name, sheet.options)
 
-      return (ref = ret)
+      return ret
     },
     draw() {
       drawPoint(sheet.paper, at, undefined, true)

@@ -5,6 +5,7 @@ import {
   PICK_BY_TY,
   PICK_CIRCLE,
   PICK_LINE,
+  PICK_MIDPOINT,
   PICK_PARALLEL,
   PICK_PERPENDICULAR,
   PICK_POINT,
@@ -47,6 +48,7 @@ const ALL: Record<string, PropsByTy> = {
   c: PICK_CIRCLE,
   x: PICK_PERPENDICULAR,
   z: PICK_PARALLEL,
+  m: PICK_MIDPOINT,
 }
 
 export class Handlers implements PointerHandlers<DataDrag, DataHover> {
@@ -111,8 +113,12 @@ export class Handlers implements PointerHandlers<DataDrag, DataHover> {
 
   draw() {
     const current = this.getPick()
-    if (current?.active) {
-      current.from.draw(current.data, current.found, this.sheet)
+    if (current) {
+      current.from.draw(
+        current.data,
+        current.active ? current.found : null,
+        this.sheet,
+      )
     }
   }
 

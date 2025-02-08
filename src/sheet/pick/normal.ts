@@ -1,7 +1,7 @@
 import { createPicker } from "."
 import { parallelJs } from "../../eval/ops/fn/geo/parallel"
 import { perpendicularJs } from "../../eval/ops/fn/geo/perpendicular"
-import type { JsVal, TyName } from "../../eval/ty"
+import type { JsVal, SPoint, TyName } from "../../eval/ty"
 import { unpt } from "../../eval/ty/create"
 import { OpEq } from "../../field/cmd/leaf/cmp"
 import { CmdComma } from "../../field/cmd/leaf/comma"
@@ -10,6 +10,8 @@ import { CmdBrack } from "../../field/cmd/math/brack"
 import { Block, L, R } from "../../field/model"
 import { drawCircle } from "../ext/exts/01-circle"
 import { drawLine } from "../ext/exts/01-line"
+import { drawPoint } from "../ext/exts/01-point"
+import { drawPolygon } from "../ext/exts/01-polygon"
 import { drawRay } from "../ext/exts/01-ray"
 import { drawSegment } from "../ext/exts/01-segment"
 import { drawVector } from "../ext/exts/01-vector"
@@ -19,8 +21,9 @@ import { virtualPoint } from "./point"
 
 export interface ExtByTy<T extends readonly TyName[]> {
   readonly id: number
-
   readonly output: { tag: string; fn: string } | null
+
+  allowExistingPoint?(args: { [K in keyof T]?: JsVal<T[K]> }): boolean
 
   draw(sheet: Sheet, args: { [K in keyof T]?: JsVal<T[K]> }): void
 
@@ -42,11 +45,29 @@ export const PICK_BY_TY = createPicker<PropsByTy, Selected>({
     return data.ext.id
   },
   find(data, at, sheet) {
+    const maybePoint = data.next.some((x) => x == "point32" || x == "point64")
+
+    if (
+      maybePoint &&
+      data.ext.allowExistingPoint?.(data.chosen.map((x) => x.val))
+    ) {
+      for (const pt of data.chosen) {
+        if (pt.val.type == "point32" || pt.val.type == "point64") {
+          if (
+            sheet.paper.canvasDistance(at, unpt(pt.val.value as SPoint)) <=
+            12 * sheet.paper.scale
+          ) {
+            return pt
+          }
+        }
+      }
+    }
+
     const [hovered] = sheet.select(at, data.next, 1)
 
     if (hovered) {
       return hovered
-    } else if (data.next.some((x) => x == "point32" || x == "point64")) {
+    } else if (maybePoint) {
       return virtualPoint(at, sheet)
     } else {
       return null
@@ -85,7 +106,8 @@ export const PICK_BY_TY = createPicker<PropsByTy, Selected>({
       for (const arg of data.chosen) {
         argRefs.push(arg.ref())
       }
-      const valueRef = value.ref()
+      const valueRef =
+        args.slice(0, -1).includes(value.val) ? argRefs.pop()! : value.ref()
 
       const expr = new Expr(sheet)
       const name = sheet.scope.name(data.ext.output.tag)
@@ -274,3 +296,75 @@ export const PICK_PARALLEL = createExt(
     }
   },
 )
+
+export const PICK_MIDPOINT: PropsByTy = {
+  chosen: [],
+  next: ["point32", "point64", "segment"],
+  ext: {
+    id: Math.random(),
+    output: { tag: "p", fn: "midpoint" },
+    next(args) {
+      if (args.length == 0) {
+        return ["point32", "point64", "segment"]
+      }
+      if (args.length == 2) {
+        return null
+      }
+      return args[0]?.type == "segment" ? null : ["point32", "point64"]
+    },
+    draw(sheet, args) {
+      const [a, b] = args as
+        | []
+        | [JsVal<"segment">]
+        | [JsVal<"point32" | "point64">, JsVal<"point32" | "point64">]
+
+      let p1, p2
+      if (a?.type == "segment") {
+        p1 = unpt(a.value[0])
+        p2 = unpt(a.value[1])
+      } else if (a && b) {
+        p1 = unpt(a.value)
+        p2 = unpt(b.value)
+      } else {
+        return
+      }
+
+      drawPoint(sheet.paper, { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 })
+    },
+  },
+}
+
+export const PICK_POLYGON: PropsByTy = {
+  chosen: [],
+  next: ["point32", "point64"],
+  ext: {
+    id: Math.random(),
+    output: { tag: "P", fn: "polygon" },
+    allowExistingPoint(args) {
+      return args.length >= 2
+    },
+    next(args) {
+      if (args.length < 2) {
+        return ["point32", "point64"]
+      }
+      if (
+        args[0] == args[args.length - 1] ||
+        args[args.length - 2] == args[args.length - 1]
+      ) {
+        return null
+      }
+      return ["point32", "point64"]
+    },
+    draw(sheet, args) {
+      if (args.length < 2) return
+
+      const pts = args as JsVal<"point32" | "point64">[]
+
+      drawPolygon(
+        pts.map((x) => x.value),
+        sheet.paper,
+        false,
+      )
+    },
+  },
+}

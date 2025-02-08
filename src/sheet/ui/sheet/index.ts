@@ -32,9 +32,11 @@ import {
   PICK_BY_TY,
   PICK_CIRCLE,
   PICK_LINE,
+  PICK_MIDPOINT,
   PICK_PARALLEL,
   PICK_PERPENDICULAR,
   PICK_POINT,
+  PICK_POLYGON,
   PICK_RAY,
   PICK_SEGMENT,
   PICK_VECTOR,
@@ -546,13 +548,14 @@ export class Sheet {
     }
 
     const toolbar = h(
-      "font-['Symbola','Times_New_Roman',sans-serif] flex overflow-x-auto h-12 min-h-12 bg-[--nya-bg-sidebar] border-b border-[--nya-border] first:*:ml-auto last:*:mr-auto",
+      "font-['Symbola','Times_New_Roman',sans-serif] flex overflow-x-auto h-12 min-h-12 bg-[--nya-bg-sidebar] border-b border-[--nya-border] first:*:ml-auto last:*:mr-auto [&::-webkit-scrollbar]:hidden px-2",
       picker(TY_INFO.point32.icon(), PICK_POINT),
       picker(TY_INFO.segment.icon(), PICK_SEGMENT),
       picker(TY_INFO.ray.icon(), PICK_RAY),
       picker(TY_INFO.line.icon(), PICK_LINE),
       picker(TY_INFO.vector.icon(), PICK_VECTOR),
       picker(TY_INFO.circle.icon(), PICK_CIRCLE),
+      picker(TY_INFO.polygon.icon(), PICK_POLYGON),
       picker(
         h(
           "",
@@ -594,6 +597,30 @@ export class Sheet {
           ),
         ),
         PICK_PARALLEL,
+      ),
+      picker(
+        h(
+          "",
+          h(
+            "text-[#6042a6] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px] overflow-hidden",
+            h(
+              "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
+            ),
+            h(
+              "text-[#2d70b3] w-[20px] h-0 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-t-2 border-current -rotate-[30deg]",
+            ),
+            h(
+              "size-1 absolute rounded-full top-1/2 left-1/2 [transform:translate(-50%,-50%)_rotate(-30deg)_translate(-8px,0)] bg-[#6042a6]",
+            ),
+            h(
+              "size-1 absolute rounded-full top-1/2 left-1/2 [transform:translate(-50%,-50%)_rotate(-30deg)_translate(8px,0)] bg-[#6042a6]",
+            ),
+            h(
+              "size-[7px] absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#6042a6]",
+            ),
+          ),
+        ),
+        PICK_MIDPOINT,
       ),
     )
 

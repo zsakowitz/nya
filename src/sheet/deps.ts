@@ -256,9 +256,9 @@ export class Scope {
     if (field.leaf) return
     if (!field.dirtyAst) return
 
-    const ast = field.block.expr(!field.leaf)
-    if (ast.type == "binding") {
-      var id = tryId(ast.name)
+    field.ast = field.block.expr(!field.leaf)
+    if (field.ast.type == "binding") {
+      var id = tryId(field.ast.name)
     }
 
     if (id) {
@@ -367,6 +367,7 @@ export class FieldComputed extends Field {
     if (!this.linked) return
     this.scope.disown(this)
     this.linked = false
+    this.scope.queueUpdate()
   }
 
   /**
@@ -378,6 +379,7 @@ export class FieldComputed extends Field {
     this.dirtyAst = this.dirtyValue = true
     this.scope.adopt(this)
     this.linked = true
+    this.scope.queueUpdate()
   }
 
   recompute?(): void
