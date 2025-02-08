@@ -550,8 +550,48 @@ export class Sheet {
       picker(TY_INFO.line.icon(), PICK_LINE),
       picker(TY_INFO.vector.icon(), PICK_VECTOR),
       picker(TY_INFO.circle.icon(), PICK_CIRCLE),
-      picker(TY_INFO.line.icon(), PICK_PERPENDICULAR),
-      picker(TY_INFO.line.icon(), PICK_PARALLEL),
+      picker(
+        h(
+          "",
+          h(
+            "text-[#2d70b3] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px] overflow-hidden",
+            h(
+              "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
+            ),
+            h(
+              "w-[30px] h-0 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-t-2 border-current -rotate-[30deg]",
+            ),
+            h(
+              "w-[30px] h-0 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-t-2 border-current opacity-30 rotate-[60deg]",
+            ),
+            h(
+              "size-1 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#6042a6]",
+            ),
+          ),
+        ),
+        PICK_PERPENDICULAR,
+      ),
+      picker(
+        h(
+          "",
+          h(
+            "text-[#2d70b3] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px] overflow-hidden",
+            h(
+              "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
+            ),
+            h(
+              "w-[30px] h-0 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 translate-y-[calc(-50%_+_4px)] border-t-2 border-current -rotate-[30deg]",
+            ),
+            h(
+              "w-[30px] h-0 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 translate-y-[calc(-50%_-_4px)] border-t-2 border-current opacity-30 -rotate-[30deg]",
+            ),
+            h(
+              "size-1 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 translate-y-[calc(-50%_+_4px)] bg-[#6042a6]",
+            ),
+          ),
+        ),
+        PICK_PARALLEL,
+      ),
     )
 
     const docs = createDocs(
