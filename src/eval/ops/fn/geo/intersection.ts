@@ -56,7 +56,7 @@ function glsl(ctx: GlslContext, ar: GlslVal, br: GlslVal): string {
 ) / ((${x1} - ${x2}) * (${y3} - ${y4}) - (${y1} - ${y2}) * (${x3} - ${x4}))`
 }
 
-export const FN_INTERSECTION = new FnDist(
+export const FN_INTERSECTION = new FnDist<"point32">(
   "intersection",
   "constructs the point where two objects intersect",
 )

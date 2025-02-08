@@ -1,7 +1,9 @@
 import type { Picker } from "."
 import { dist } from "../../eval/ops/fn/geo/distance"
+import { FN_INTERSECTION } from "../../eval/ops/fn/geo/intersection"
+import { parallelJs } from "../../eval/ops/fn/geo/parallel"
 import { perpendicularJs } from "../../eval/ops/fn/geo/perpendicular"
-import type { JsVal, TyName } from "../../eval/ty"
+import { type JsVal, type TyName } from "../../eval/ty"
 import { num, unpt } from "../../eval/ty/create"
 import { OpEq } from "../../field/cmd/leaf/cmp"
 import { CmdComma } from "../../field/cmd/leaf/comma"
@@ -10,6 +12,7 @@ import { CmdBrack } from "../../field/cmd/math/brack"
 import { Block, L, R } from "../../field/model"
 import { drawCircle } from "../ext/exts/01-circle"
 import { drawLine } from "../ext/exts/01-line"
+import { drawPoint } from "../ext/exts/01-point"
 import { drawRay } from "../ext/exts/01-ray"
 import { drawSegment } from "../ext/exts/01-segment"
 import { drawVector } from "../ext/exts/01-vector"
@@ -237,11 +240,46 @@ export const PICK_CIRCLE = createStandardPicker(
 export const PICK_PERPENDICULAR = createStandardPicker(
   "l",
   "perpendicular",
-  [["line"], ["point32", "point64"]],
+  [
+    ["segment", "ray", "line", "vector"],
+    ["point32", "point64"],
+  ],
   (sheet, p1, p2) => {
     if (p1 && p2) {
       const line = perpendicularJs(p1, p2)
       drawLine(line, sheet.paper)
+    }
+  },
+)
+
+export const PICK_PARALLEL = createStandardPicker(
+  "l",
+  "parallel",
+  [
+    ["segment", "ray", "line", "vector"],
+    ["point32", "point64"],
+  ],
+  (sheet, p1, p2) => {
+    if (p1 && p2) {
+      const line = parallelJs(p1, p2)
+      drawLine(line, sheet.paper)
+    }
+  },
+)
+
+export const PICK_INTERSECTION = createStandardPicker(
+  "p",
+  "intersection",
+  [
+    ["segment", "ray", "line", "circle"],
+    ["segment", "ray", "line", "circle"],
+  ],
+  (sheet, p1, p2) => {
+    if (p1 && p2) {
+      try {
+        const pt = FN_INTERSECTION.js1(p1, p2)
+        drawPoint(sheet.paper, unpt(pt.value))
+      } catch {}
     }
   },
 )

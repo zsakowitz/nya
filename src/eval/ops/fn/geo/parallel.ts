@@ -7,10 +7,12 @@ import { sub } from "../../op/sub"
 
 type LineLike = "segment" | "ray" | "line" | "vector"
 
-const js = (
+export function parallelJs(
   { value: [A, B] }: JsVal<LineLike>,
   { value: b }: JsVal<"point32" | "point64">,
-): Val<"line"> => [b, pt(add(b.x, sub(B.x, A.x)), add(b.y, sub(B.y, A.y)))]
+): Val<"line"> {
+  return [b, pt(add(b.x, sub(B.x, A.x)), add(b.y, sub(B.y, A.y)))]
+}
 
 const glsl = (
   ctx: GlslContext,
@@ -26,7 +28,7 @@ export const FN_PARALLEL = new FnDist(
   "parallel",
   "creates a line parallel to an existing line which passes through some point",
 )
-  .add(["segment", "point32"], "line", js, glsl)
-  .add(["ray", "point32"], "line", js, glsl)
-  .add(["line", "point32"], "line", js, glsl)
-  .add(["vector", "point32"], "line", js, glsl)
+  .add(["segment", "point32"], "line", parallelJs, glsl)
+  .add(["ray", "point32"], "line", parallelJs, glsl)
+  .add(["line", "point32"], "line", parallelJs, glsl)
+  .add(["vector", "point32"], "line", parallelJs, glsl)

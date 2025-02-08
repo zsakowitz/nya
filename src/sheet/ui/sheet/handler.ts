@@ -3,7 +3,9 @@ import type { AnyExt, Cursor } from "../../ext"
 import type { AnyPick, Picker } from "../../pick"
 import {
   PICK_CIRCLE,
+  PICK_INTERSECTION,
   PICK_LINE,
+  PICK_PARALLEL,
   PICK_PERPENDICULAR,
   PICK_POINT,
   PICK_RAY,
@@ -42,7 +44,7 @@ export class Handlers implements PointerHandlers<DataDrag, DataHover> {
 
   constructor(readonly sheet: Sheet) {
     addEventListener("keydown", (event) => {
-      if (event.altKey || event.ctrlKey || event.shiftKey || event.metaKey) {
+      if (event.altKey || event.ctrlKey || event.metaKey) {
         return
       }
 
@@ -54,6 +56,8 @@ export class Handlers implements PointerHandlers<DataDrag, DataHover> {
         v: PICK_VECTOR,
         c: PICK_CIRCLE,
         x: PICK_PERPENDICULAR,
+        z: PICK_PARALLEL,
+        i: PICK_INTERSECTION,
       }[event.key]
 
       if (picker) {
