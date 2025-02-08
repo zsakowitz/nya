@@ -3,7 +3,6 @@ import type { AnyExt, Cursor } from "../../ext"
 import type { AnyPick, Picker } from "../../pick"
 import {
   PICK_CIRCLE,
-  PICK_INTERSECTION,
   PICK_LINE,
   PICK_PARALLEL,
   PICK_PERPENDICULAR,
@@ -57,7 +56,6 @@ export class Handlers implements PointerHandlers<DataDrag, DataHover> {
         c: PICK_CIRCLE,
         x: PICK_PERPENDICULAR,
         z: PICK_PARALLEL,
-        i: PICK_INTERSECTION,
       }[event.key]
 
       if (picker) {

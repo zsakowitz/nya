@@ -30,7 +30,6 @@ import type { Exts } from "../../ext"
 import type { Picker } from "../../pick"
 import {
   PICK_CIRCLE,
-  PICK_INTERSECTION,
   PICK_LINE,
   PICK_PARALLEL,
   PICK_PERPENDICULAR,
@@ -553,7 +552,6 @@ export class Sheet {
       picker(TY_INFO.circle.icon(), PICK_CIRCLE),
       picker(TY_INFO.line.icon(), PICK_PERPENDICULAR),
       picker(TY_INFO.line.icon(), PICK_PARALLEL),
-      picker(TY_INFO.point32.icon(), PICK_INTERSECTION),
     )
 
     const docs = createDocs(
