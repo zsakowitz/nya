@@ -10,30 +10,6 @@ import { Expr } from "../ui/expr"
 import type { Point } from "../ui/paper"
 import type { Sheet } from "../ui/sheet"
 import { Writer } from "../write"
-import { createPicker } from "./00-index"
-
-export const PICK_POINT = createPicker({
-  find(_, at, sheet) {
-    const [a] = sheet.select(at, ["point32", "point64"], 1)
-    if (a) return { type: "defined" as const, a }
-
-    return { type: "virtual" as const, at }
-  },
-  draw(_, value, sheet) {
-    if (value?.type == "virtual") {
-      drawPoint(sheet.paper, value.at, undefined, true)
-    }
-  },
-  select(_, value, sheet) {
-    if (value.type == "virtual") {
-      virtualPoint(value.at, sheet).ref()
-    } else {
-      value.a.ref()
-    }
-    sheet.setPick(PICK_POINT, {})
-  },
-  cancel(_) {},
-})
 
 export function virtualPoint(at: Point, sheet: Sheet) {
   const val: JsVal<"point64"> = {

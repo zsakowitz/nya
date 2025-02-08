@@ -27,10 +27,15 @@ import type { Options } from "../../../field/options"
 import { h, hx, t } from "../../../jsx"
 import { Scope } from "../../deps"
 import type { Exts } from "../../ext"
-import type { Picker } from "../../pick/00-index"
-import { PICK_CIRCLE_P1 } from "../../pick/circle"
-import { PICK_LINE_P1 } from "../../pick/line"
-import { PICK_POINT } from "../../pick/point"
+import type { Picker } from "../../pick"
+import {
+  PICK_CIRCLE,
+  PICK_LINE,
+  PICK_POINT,
+  PICK_RAY,
+  PICK_SEGMENT,
+  PICK_VECTOR,
+} from "../../pick/normal"
 import { doMatchReglSize } from "../../regl"
 import { REMARK } from "../../remark"
 import { Slider } from "../../slider"
@@ -511,17 +516,24 @@ export class Sheet {
       h("flex-1 border-r min-h-24 border-[--nya-border]"),
     )
 
-    const picker = <U extends {}>(
-      ty: TyName,
-      key: string,
-      picker: Picker<{}, U>,
-    ) => {
+    const checkPick: (() => void)[] = []
+    this.handlers.onPickChange = () => checkPick.forEach((x) => x())
+
+    const picker = (ty: TyName, picker: Picker<{}, any>) => {
       const btn = hx(
         "button",
-        "w-12 hover:bg-[--nya-bg] border-x border-transparent hover:border-[--nya-border] focus:outline-none",
+        "w-12 hover:bg-[--nya-bg] border-x border-transparent hover:border-[--nya-border] focus:outline-none -mr-px last:mr-0",
         TY_INFO[ty].icon(),
-        // h("mt-0.5 -mb-px text-center text-[60%]/[1]", key),
       )
+      checkPick.push(() => {
+        if (this.handlers.getPick()?.from.id == picker.id) {
+          btn.classList.add("bg-[--nya-bg]", "border-[--nya-border]")
+          btn.classList.remove("border-transparent")
+        } else {
+          btn.classList.remove("bg-[--nya-bg]", "border-[--nya-border]")
+          btn.classList.add("border-transparent")
+        }
+      })
       btn.addEventListener("click", () => {
         this.setPick(picker, {})
       })
@@ -530,9 +542,13 @@ export class Sheet {
 
     const toolbar = h(
       "font-['Symbola','Times_New_Roman',sans-serif] flex overflow-x-auto h-12 min-h-12 bg-[--nya-bg-sidebar] border-b border-[--nya-border] first:*:ml-auto last:*:mr-auto",
-      picker("point32", "p", PICK_POINT),
-      picker("line", "l", PICK_LINE_P1),
-      picker("circle", "c", PICK_CIRCLE_P1),
+      picker("point32", PICK_POINT),
+      picker("segment", PICK_SEGMENT),
+      picker("ray", PICK_RAY),
+      picker("line", PICK_LINE),
+      picker("vector", PICK_VECTOR),
+      picker("circle", PICK_CIRCLE),
+      // picker("perpendicular", PICK_PERPENDICULAR),
     )
 
     const docs = createDocs(
@@ -778,7 +794,7 @@ void main() {
   }
 }
 
-export type Selected<K extends TyName> = {
+export interface Selected<K extends TyName = TyName> {
   val: JsVal<K>
   ref(): Block
   draw?(): void

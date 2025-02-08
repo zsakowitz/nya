@@ -940,6 +940,10 @@ video {
   margin-bottom: -0.125rem;
 }
 
+.-mr-px {
+  margin-right: -1px;
+}
+
 .\!block {
   display: block !important;
 }
@@ -2642,6 +2646,10 @@ body {
 
 .first\:\*\:\*\:\[grid-column\:1_\/_-1\] > * > *:first-child {
   grid-column: 1 / -1;
+}
+
+.last\:mr-0:last-child {
+  margin-right: 0px;
 }
 
 .last\:\*\:mr-auto > *:last-child {

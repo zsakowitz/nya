@@ -4,6 +4,7 @@ import { num, real } from "../../../ty/create"
 import { FnDist } from "../../dist"
 import { abs } from "../../op/abs"
 import { sub } from "../../op/sub"
+import { dist } from "./distance"
 
 function js(a: JsVal<"point32" | "c32">, b: JsVal<"point32" | "c32">) {
   return {
@@ -36,5 +37,14 @@ export const FN_CIRCLE = new FnDist(
     "circle",
     (a, b) => ({ center: a.value, radius: abs(b.value) }),
     (_, a, b) => `vec3(${a.expr}, abs(${b.expr}))`,
+  )
+  .add(
+    ["point32", "segment"],
+    "circle",
+    (a, b) => ({ center: a.value, radius: dist(b.value[0], b.value[1]) }),
+    (ctx, a, br) => {
+      const b = ctx.cache(br)
+      return `vec3(${a.expr}, length(${b}.xy - ${b}.zw))`
+    },
   )
   .add(["point32", "point32"], "circle", js, glsl)

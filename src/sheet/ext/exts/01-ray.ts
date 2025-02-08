@@ -1,5 +1,5 @@
 import { defineExt } from ".."
-import { each, type JsValue, type Tys } from "../../../eval/ty"
+import { each, type JsValue, type SPoint, type Tys } from "../../../eval/ty"
 import { num } from "../../../eval/ty/create"
 import type { Paper, Point } from "../../ui/paper"
 
@@ -53,6 +53,34 @@ function getRayBounds(line: Tys["ray"], paper: Paper): [Point, Point] | null {
   ]
 }
 
+export function drawRay(ray: [SPoint, SPoint], paper: Paper) {
+  const x1 = num(ray[0].x)
+  const y1 = num(ray[0].y)
+  const x2 = num(ray[1].x)
+  const y2 = num(ray[1].y)
+
+  if (!(isFinite(x1) && isFinite(y1) && isFinite(x2) && isFinite(y2))) {
+    return
+  }
+
+  const bounds = getRayBounds(ray, paper)
+  if (!bounds) return
+
+  const [o1, o2] = bounds
+  if (!(isFinite(o1.x) && isFinite(o1.y) && isFinite(o2.x) && isFinite(o2.y))) {
+    return
+  }
+
+  const { ctx, scale } = paper
+
+  ctx.beginPath()
+  ctx.lineWidth = 3 * scale
+  ctx.strokeStyle = "#2d70b3"
+  ctx.moveTo(o1.x, o1.y)
+  ctx.lineTo(o2.x, o2.y)
+  ctx.stroke()
+}
+
 export const EXT_RAY = defineExt({
   data(expr) {
     const value = expr.js?.value
@@ -63,26 +91,7 @@ export const EXT_RAY = defineExt({
   },
   plot2d(data, paper) {
     for (const segment of each(data.value)) {
-      const x1 = num(segment[0].x)
-      const y1 = num(segment[0].y)
-      const x2 = num(segment[1].x)
-      const y2 = num(segment[1].y)
-
-      if (!(isFinite(x1) && isFinite(y1) && isFinite(x2) && isFinite(y2)))
-        continue
-
-      const bounds = getRayBounds(segment, paper)
-      if (!bounds) continue
-      const [o1, o2] = bounds
-
-      const { ctx, scale } = paper
-
-      ctx.beginPath()
-      ctx.lineWidth = 3 * scale
-      ctx.strokeStyle = "#2d70b3"
-      ctx.moveTo(o1.x, o1.y)
-      ctx.lineTo(o2.x, o2.y)
-      ctx.stroke()
+      drawRay(segment, paper)
     }
   },
   layer() {

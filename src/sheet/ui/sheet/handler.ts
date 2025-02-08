@@ -1,10 +1,15 @@
 import type { Sheet } from "."
 import type { AnyExt, Cursor } from "../../ext"
-import type { AnyPick, Picker } from "../../pick/00-index"
-import { PICK_CIRCLE_P1 } from "../../pick/circle"
-import { PICK_LINE_P1 } from "../../pick/line"
-import { PICK_PERPENDICULAR_P1 } from "../../pick/perpendicular"
-import { PICK_POINT } from "../../pick/point"
+import type { AnyPick, Picker } from "../../pick"
+import {
+  PICK_CIRCLE,
+  PICK_LINE,
+  PICK_PERPENDICULAR,
+  PICK_POINT,
+  PICK_RAY,
+  PICK_SEGMENT,
+  PICK_VECTOR,
+} from "../../pick/normal"
 import type { Expr } from "../expr"
 import type { Point, PointerHandlers } from "../paper"
 
@@ -43,9 +48,12 @@ export class Handlers implements PointerHandlers<DataDrag, DataHover> {
 
       const picker = {
         p: PICK_POINT,
-        l: PICK_LINE_P1,
-        c: PICK_CIRCLE_P1,
-        x: PICK_PERPENDICULAR_P1,
+        s: PICK_SEGMENT,
+        r: PICK_RAY,
+        l: PICK_LINE,
+        v: PICK_VECTOR,
+        c: PICK_CIRCLE,
+        x: PICK_PERPENDICULAR,
       }[event.key]
 
       if (picker) {
@@ -56,6 +64,8 @@ export class Handlers implements PointerHandlers<DataDrag, DataHover> {
   }
 
   private lastMouse: Point | null = null
+
+  onPickChange?(): void
 
   getPick() {
     return this.pick
@@ -75,8 +85,10 @@ export class Handlers implements PointerHandlers<DataDrag, DataHover> {
     if (at) {
       const found = pick.find(data, at, this.sheet)
       this.pick = { active: true, at, from: pick as any, data, found }
+      this.onPickChange?.()
     } else {
       this.pick = { active: false, data, from: pick as any }
+      this.onPickChange?.()
     }
     this.sheet.paper.queue()
   }
@@ -88,6 +100,7 @@ export class Handlers implements PointerHandlers<DataDrag, DataHover> {
       this.sheet.paper.queue()
     }
     this.pick = null
+    this.onPickChange?.()
   }
 
   draw() {
@@ -108,8 +121,10 @@ export class Handlers implements PointerHandlers<DataDrag, DataHover> {
         data: current.data,
         from: current.from,
       }
+      this.onPickChange?.()
     } else {
       this.pick = { ...current, active: true, at, found }
+      this.onPickChange?.()
     }
     this.sheet.paper.queue()
     return true
@@ -122,6 +137,7 @@ export class Handlers implements PointerHandlers<DataDrag, DataHover> {
     if (current) {
       const found = current.from.find(current.data, at, this.sheet)
       this.pick = { ...current, active: true, at, found }
+      this.onPickChange?.()
       this.sheet.paper.queue()
       return { pick: true }
     }
@@ -153,6 +169,7 @@ export class Handlers implements PointerHandlers<DataDrag, DataHover> {
       if (!current) return
       const found = current.from.find(current.data, to, this.sheet)
       this.pick = { ...current, active: true, at: to, found }
+      this.onPickChange?.()
       this.sheet.paper.queue()
       return
     }
@@ -169,6 +186,7 @@ export class Handlers implements PointerHandlers<DataDrag, DataHover> {
 
       const found = current.from.find(current.data, at, this.sheet)
       this.pick = null
+      this.onPickChange?.()
       if (found == null) {
         current.from.cancel(current.data)
       } else {
@@ -261,6 +279,7 @@ export class Handlers implements PointerHandlers<DataDrag, DataHover> {
         data: current.data,
         from: current.from,
       }
+      this.onPickChange?.()
       this.sheet.paper.queue()
       return
     }
@@ -286,6 +305,7 @@ export class Handlers implements PointerHandlers<DataDrag, DataHover> {
       } else {
         this.pick = { ...current, active: true, at, found }
       }
+      this.onPickChange?.()
       this.sheet.paper.queue()
       return { pick: true }
     }
