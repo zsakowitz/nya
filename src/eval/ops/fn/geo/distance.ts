@@ -28,6 +28,14 @@ export function distLinePt(
   return num / Math.hypot(x1 - x2, y1 - y2)
 }
 
+export function distCirclePt(center: Point, radius: Point, pt: Point) {
+  const x = pt.x - center.x
+  const y = pt.y - center.y
+  const angle = Math.atan2((y / radius.y) * radius.x, x)
+  const r = Math.hypot(Math.cos(angle) * radius.x, Math.sin(angle) * radius.y)
+  return Math.abs(Math.hypot(pt.x - center.x, pt.y - center.y) - r)
+}
+
 export const FN_DISTANCE = new FnDist<"r32">(
   "distance",
   "calculates the distance between two objects",

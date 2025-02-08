@@ -522,11 +522,11 @@ export class Sheet {
     const checkPick: (() => void)[] = []
     this.handlers.onPickChange = () => checkPick.forEach((x) => x())
 
-    const picker = (ty: TyName, picker: Picker<{}, any>) => {
+    const picker = (icon: HTMLSpanElement, picker: Picker<{}, any>) => {
       const btn = hx(
         "button",
         "w-12 hover:bg-[--nya-bg] border-x border-transparent hover:border-[--nya-border] focus:outline-none -mr-px last:mr-0",
-        TY_INFO[ty].icon(),
+        icon,
       )
       checkPick.push(() => {
         if (this.handlers.getPick()?.from.id == picker.id) {
@@ -545,15 +545,15 @@ export class Sheet {
 
     const toolbar = h(
       "font-['Symbola','Times_New_Roman',sans-serif] flex overflow-x-auto h-12 min-h-12 bg-[--nya-bg-sidebar] border-b border-[--nya-border] first:*:ml-auto last:*:mr-auto",
-      picker("point32", PICK_POINT),
-      picker("segment", PICK_SEGMENT),
-      picker("ray", PICK_RAY),
-      picker("line", PICK_LINE),
-      picker("vector", PICK_VECTOR),
-      picker("circle", PICK_CIRCLE),
-      picker("line", PICK_PERPENDICULAR),
-      picker("line", PICK_PARALLEL),
-      picker("point32", PICK_INTERSECTION),
+      picker(TY_INFO.point32.icon(), PICK_POINT),
+      picker(TY_INFO.segment.icon(), PICK_SEGMENT),
+      picker(TY_INFO.ray.icon(), PICK_RAY),
+      picker(TY_INFO.line.icon(), PICK_LINE),
+      picker(TY_INFO.vector.icon(), PICK_VECTOR),
+      picker(TY_INFO.circle.icon(), PICK_CIRCLE),
+      picker(TY_INFO.line.icon(), PICK_PERPENDICULAR),
+      picker(TY_INFO.line.icon(), PICK_PARALLEL),
+      picker(TY_INFO.point32.icon(), PICK_INTERSECTION),
     )
 
     const docs = createDocs(

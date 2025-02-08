@@ -33,9 +33,21 @@ export class Expr {
   constructor(readonly sheet: Sheet) {
     sheet.exprs.push(this)
     sheet.queueIndices()
-    this.el = h(
-      "grid grid-cols-[2.5rem_auto] border-r border-b border-[--nya-border] relative nya-expr",
-    )
+    this.el = h({
+      class:
+        "grid grid-cols-[2.5rem_auto] border-r border-b border-[--nya-border] relative nya-expr focus:outline-none",
+      tabindex: "-1",
+    })
+    this.el.addEventListener("keydown", (event) => {
+      if (event.altKey || event.ctrlKey || event.metaKey) {
+        return
+      }
+
+      if (event.key == "Backspace") {
+        event.preventDefault()
+        this.delete()
+      }
+    })
     this.field = new Field(
       this,
       "block overflow-x-auto [&::-webkit-scrollbar]:hidden min-h-[3.265rem] max-w-[calc(var(--nya-sidebar)_-_2.5rem_-_1px)] p-4 focus:outline-none",
@@ -265,5 +277,9 @@ export class Expr {
     this.sheet.queueIndices()
     this.sheet.paper.queue()
     this.el.remove()
+  }
+
+  focus() {
+    this.el.focus()
   }
 }

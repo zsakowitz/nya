@@ -22,4 +22,4 @@ export function createPicker<T extends {}, U extends {}>(picker: Picker<T, U>) {
   return picker
 }
 
-export type AnyPick = Picker<{}, any>
+export type AnyPick = Picker<{}, {}>

@@ -83,7 +83,7 @@ export const EXT_LINE = defineExt({
       const l2 = data.paper.paperToCanvas(unpt(data.value.value[1]))
       const pt = data.paper.paperToCanvas(at)
 
-      if (distLinePt([l1, l2], pt) <= 6 * data.paper.scale) {
+      if (distLinePt([l1, l2], pt) <= 12 * data.paper.scale) {
         return { ...data, value: data.value }
       }
     },

@@ -158,6 +158,7 @@ export const EXT_POINT = defineExt({
     },
     end(data) {
       color.get(data.expr).set(3.5)
+      data.expr.focus()
     },
   },
   hover: {

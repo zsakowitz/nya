@@ -1,6 +1,10 @@
 import { defineExt } from ".."
+import { distCirclePt } from "../../../eval/ops/fn/geo/distance"
 import { each, type JsValue } from "../../../eval/ty"
 import { num, unpt } from "../../../eval/ty/create"
+import { OpEq } from "../../../field/cmd/leaf/cmp"
+import { CmdVar } from "../../../field/cmd/leaf/var"
+import { Block, L, R } from "../../../field/model"
 import type { Paper, Point } from "../../ui/paper"
 
 export function drawCircle({ x, y }: Point, r: number, paper: Paper) {
@@ -21,7 +25,11 @@ export const EXT_CIRCLE = defineExt({
     const value = expr.js?.value
 
     if (value && value.type == "circle") {
-      return { value: value as JsValue<"circle"> }
+      return {
+        value: value as JsValue<"circle">,
+        paper: expr.sheet.paper,
+        expr,
+      }
     }
   },
   plot2d(data, paper) {
@@ -31,5 +39,52 @@ export const EXT_CIRCLE = defineExt({
   },
   layer() {
     return 2
+  },
+  select: {
+    ty() {
+      return "circle"
+    },
+    on(data, at) {
+      if (data.value.list !== false) {
+        return
+      }
+
+      const cx = data.paper.paperToCanvas(unpt(data.value.value.center))
+      const r = num(data.value.value.radius)
+      const rx = (r * data.paper.el.width) / data.paper.bounds().w
+      const ry = (r * data.paper.el.height) / data.paper.bounds().h
+      const pt = data.paper.paperToCanvas(at)
+      const dist = distCirclePt(cx, { x: rx, y: ry }, pt)
+
+      if (dist <= 12 * data.paper.scale) {
+        return { ...data, value: data.value }
+      }
+    },
+    val(data) {
+      return data.value
+    },
+    ref(data) {
+      if (data.expr.field.ast.type == "binding") {
+        const block = new Block(null)
+        CmdVar.leftOf(
+          block.cursor(R),
+          data.expr.field.ast.name,
+          data.expr.field.options,
+        )
+        return block
+      }
+
+      const name = data.expr.sheet.scope.name("c")
+      const c = data.expr.field.block.cursor(L)
+      CmdVar.leftOf(c, name, data.expr.field.options)
+      new OpEq(false).insertAt(c, L)
+      const block = new Block(null)
+      CmdVar.leftOf(block.cursor(R), name, data.expr.field.options)
+      data.expr.field.dirtyAst = data.expr.field.dirtyValue = true
+      data.expr.field.trackNameNow()
+      data.expr.field.scope.queueUpdate()
+
+      return block
+    },
   },
 })
