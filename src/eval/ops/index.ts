@@ -19,8 +19,10 @@ import { FN_UNSIGN } from "./fn/complex/unsign"
 import { FN_DEBUGPOINT } from "./fn/debugpoint"
 import { FN_FIRSTVALID } from "./fn/firstvalid"
 import { FN_FORCESHADER } from "./fn/forceshader"
+import { FN_CENTER } from "./fn/geo/center"
 import { FN_CIRCLE } from "./fn/geo/circle"
 import { FN_DISTANCE } from "./fn/geo/distance"
+import { FN_END } from "./fn/geo/end"
 import { FN_GLIDER } from "./fn/geo/glider"
 import { FN_INTERSECTION } from "./fn/geo/intersection"
 import { FN_LINE } from "./fn/geo/line"
@@ -28,9 +30,11 @@ import { FN_MIDPOINT } from "./fn/geo/midpoint"
 import { FN_PARALLEL } from "./fn/geo/parallel"
 import { FN_PERPENDICULAR } from "./fn/geo/perpendicular"
 import { FN_POLYGON } from "./fn/geo/polygon"
+import { FN_RADIUS } from "./fn/geo/radius"
 import { FN_RAY } from "./fn/geo/ray"
 import { FN_SEGMENT } from "./fn/geo/segment"
 import { FN_SEGMENTS } from "./fn/geo/segments"
+import { FN_START } from "./fn/geo/start"
 import { FN_VECTOR } from "./fn/geo/vector"
 import { FN_VERTICES } from "./fn/geo/vertices"
 import { FN_LN } from "./fn/ln"
@@ -99,6 +103,10 @@ export const FNS: Record<string, Fn> = {
   polygon: FN_POLYGON,
   segments: FN_SEGMENTS,
   vertices: FN_VERTICES,
+  start: FN_START,
+  end: FN_END,
+  radius: FN_RADIUS,
+  center: FN_CENTER,
 }
 Object.setPrototypeOf(FNS, null)
 
