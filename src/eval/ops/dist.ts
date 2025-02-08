@@ -18,6 +18,7 @@ import { canCoerce, coerceValGlsl, coerceValJs, unifyLists } from "../ty/coerce"
 import { listTy } from "../ty/debug"
 import { declareGlsl } from "../ty/decl"
 import { TY_INFO } from "../ty/info"
+import { ALL_DOCS } from "./docs"
 
 /** A single overload of a `FnDist` function. */
 export interface FnDistOverload<Q extends TyName = TyName> {
@@ -26,8 +27,6 @@ export interface FnDistOverload<Q extends TyName = TyName> {
   js(...args: JsVal[]): Val<Q>
   glsl(ctx: GlslContext, ...args: GlslVal[]): string
 }
-
-export const ALL_FNS: FnDist[] = []
 
 /**
  * `FnDist` are functions which take a fixed number of arguments of
@@ -49,7 +48,7 @@ export class FnDist<Q extends TyName = TyName> implements Fn {
     readonly name: string,
     readonly label: string,
   ) {
-    ALL_FNS.push(this)
+    ALL_DOCS.push(this)
   }
 
   /**
@@ -205,7 +204,7 @@ export class FnDist<Q extends TyName = TyName> implements Fn {
   }
 }
 
-export function doc(params: readonly TyName[], type: TyName) {
+export function doc(params: readonly TyName[], type: TyName, list = false) {
   const brack = CmdBrack.render("(", ")", null, {
     el: h(
       "",
@@ -216,7 +215,20 @@ export function doc(params: readonly TyName[], type: TyName) {
     "font-['Symbola'] text-[1.265rem]",
     brack,
     new OpRightArrow().el,
-    TY_INFO[type].icon(),
+    list ?
+      CmdBrack.render("[", "]", null, {
+        el: h(
+          "",
+          TY_INFO[type].icon(),
+          new CmdComma().el,
+          TY_INFO[type].icon(),
+          new CmdComma().el,
+          h("nya-cmd-dot nya-cmd-dot-l", "."),
+          h("nya-cmd-dot", "."),
+          h("nya-cmd-dot", "."),
+        ),
+      })
+    : TY_INFO[type].icon(),
   )
 }
 

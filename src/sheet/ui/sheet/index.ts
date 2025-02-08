@@ -7,7 +7,7 @@ import type { Regl } from "regl"
 import regl from "regl"
 import { GlslContext, GlslHelpers } from "../../../eval/lib/fn"
 import { FNS } from "../../../eval/ops"
-import { ALL_FNS } from "../../../eval/ops/dist"
+import { ALL_DOCS } from "../../../eval/ops/docs"
 import { declareAddR64 } from "../../../eval/ops/op/add"
 import { declareMulR64 } from "../../../eval/ops/op/mul"
 import type { JsVal, TyName } from "../../../eval/ty"
@@ -327,7 +327,7 @@ function createDocs(className: string, hide: () => void) {
   function secNamedFunctions() {
     return section(
       "named functions",
-      ALL_FNS.filter((x) => Object.values(FNS).includes(x))
+      ALL_DOCS.filter((x) => Object.values(FNS).includes(x as any))
         .sort((a, b) => (a.name < b.name ? -1 : 1))
         .map(makeDoc),
     )
@@ -336,7 +336,7 @@ function createDocs(className: string, hide: () => void) {
   function secUnnamedFunctions() {
     return section(
       "operators",
-      ALL_FNS.filter((x) => !Object.values(FNS).includes(x))
+      ALL_DOCS.filter((x) => !Object.values(FNS).includes(x as any))
         .sort((a, b) => (a.name < b.name ? -1 : 1))
         .map(makeDoc),
     )

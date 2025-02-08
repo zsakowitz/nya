@@ -30,7 +30,9 @@ import { FN_PERPENDICULAR } from "./fn/geo/perpendicular"
 import { FN_POLYGON } from "./fn/geo/polygon"
 import { FN_RAY } from "./fn/geo/ray"
 import { FN_SEGMENT } from "./fn/geo/segment"
+import { FN_SEGMENTS } from "./fn/geo/segments"
 import { FN_VECTOR } from "./fn/geo/vector"
+import { FN_VERTICES } from "./fn/geo/vertices"
 import { FN_LN } from "./fn/ln"
 import { FN_MAX } from "./fn/max"
 import { FN_MIN } from "./fn/min"
@@ -95,6 +97,8 @@ export const FNS: Record<string, Fn> = {
   perpendicular: FN_PERPENDICULAR,
   conj: FN_CONJ,
   polygon: FN_POLYGON,
+  segments: FN_SEGMENTS,
+  vertices: FN_VERTICES,
 }
 Object.setPrototypeOf(FNS, null)
 
