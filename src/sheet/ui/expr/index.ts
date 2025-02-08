@@ -39,7 +39,12 @@ export class Expr {
       tabindex: "-1",
     })
     this.el.addEventListener("keydown", (event) => {
-      if (event.altKey || event.ctrlKey || event.metaKey) {
+      if (
+        event.altKey ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.target != this.el
+      ) {
         return
       }
 
