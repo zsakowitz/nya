@@ -7,7 +7,7 @@ import { Block, L, R } from "../../field/model"
 import { h, p, svgx } from "../../jsx"
 import type { Paper, Point } from "../../sheet/ui/paper"
 import type { GlslContext } from "../lib/fn"
-import { num, real } from "../ty/create"
+import { num, real, unpt } from "../ty/create"
 import { isZero } from "./check"
 import type { Write } from "./display"
 
@@ -83,6 +83,25 @@ const WRITE_POINT: Write<SPoint> = {
 
 const NANPT: SPoint = { type: "point", x: real(NaN), y: real(NaN) }
 
+export function gliderOnLine(
+  [{ x: x1, y: y1 }, { x: x2, y: y2 }]: [Point, Point],
+  { x, y }: Point,
+  paper: Paper,
+) {
+  const B = Math.hypot(x1 - x, y1 - y)
+  const A = Math.hypot(x2 - x, y2 - y)
+  const C = Math.hypot(x1 - x2, y1 - y2)
+
+  const a = (C * C + B * B - A * A) / (2 * C)
+
+  return {
+    value: a / C,
+    precision:
+      paper.canvasDistance({ x: x1, y: y1 }, { x: x2, y: y2 }) /
+      Math.hypot(x1 - x2, y1 - y2),
+  }
+}
+
 function lineInfo(
   name: string,
   clsx: string,
@@ -122,23 +141,15 @@ function lineInfo(
     glide:
       glide ?
         (props) => {
-          const x1 = num(props.shape[0].x)
-          const y1 = num(props.shape[0].y)
-          const x2 = num(props.shape[1].x)
-          const y2 = num(props.shape[1].y)
-          const { x, y } = props.point
-
-          const B = Math.hypot(x1 - x, y1 - y)
-          const A = Math.hypot(x2 - x, y2 - y)
-          const C = Math.hypot(x1 - x2, y1 - y2)
-
-          const a = (C * C + B * B - A * A) / (2 * C)
+          const raw = gliderOnLine(
+            [unpt(props.shape[0]), unpt(props.shape[1])],
+            props.point,
+            props.paper,
+          )
 
           return {
-            value: glide(a / C),
-            precision:
-              props.paper.canvasDistance({ x: x1, y: y1 }, { x: x2, y: y2 }) /
-              Math.hypot(x1 - x2, y1 - y2),
+            value: glide(raw.value),
+            precision: raw.precision,
           }
         }
       : undefined,
