@@ -518,7 +518,7 @@ export class Sheet {
     ) => {
       const btn = hx(
         "button",
-        "flex flex-col w-12 hover:bg-[--nya-bg] border-x border-transparent hover:border-[--nya-border] focus:outline-none justify-center",
+        "w-12 hover:bg-[--nya-bg] border-x border-transparent hover:border-[--nya-border] focus:outline-none",
         TY_INFO[ty].icon(),
         // h("mt-0.5 -mb-px text-center text-[60%]/[1]", key),
       )
