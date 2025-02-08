@@ -196,7 +196,7 @@ export const EXT_POINT = defineExt({
       return data.value.type
     },
     on(data, at) {
-      if (!data.drag || data.value.list !== false) {
+      if (data.value.list !== false) {
         return
       }
 
@@ -204,7 +204,7 @@ export const EXT_POINT = defineExt({
         data.paper.canvasDistance(at, unpt(data.value.value)) <=
         12 * data.paper.scale
       ) {
-        return data
+        return { ...data, value: data.value }
       }
     },
     val(data) {

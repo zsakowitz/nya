@@ -31,12 +31,12 @@ export interface Ext<T extends {}, U extends {}, V extends {}, W extends {}> {
    */
   data(expr: Expr): T | null | undefined
 
-  destroy?(data: T): void
-  aside?(data: T): HTMLElement | undefined
-  el?(data: T): HTMLElement | undefined
+  destroy?(data: NoInfer<T>): void
+  aside?(data: NoInfer<T>): HTMLElement | undefined
+  el?(data: NoInfer<T>): HTMLElement | undefined
 
-  plot2d?(data: T, paper: Paper): void
-  plotGl?(data: T, helpers: GlslHelpers): GlslResult | undefined
+  plot2d?(data: NoInfer<T>, paper: Paper): void
+  plotGl?(data: NoInfer<T>, helpers: GlslHelpers): GlslResult | undefined
 
   /**
    * Higher `layer` values are higher in the draw stack. When ties are
@@ -48,11 +48,11 @@ export interface Ext<T extends {}, U extends {}, V extends {}, W extends {}> {
    * GLSL plots are plotted below all 2D plots, despite the layer of the
    * individual expressions.
    */
-  layer?(data: T): number | undefined
+  layer?(data: NoInfer<T>): number | undefined
 
   drag?: {
     /** Returning a non-nullish value captures the event. */
-    start(data: T, at: Point): U | null | undefined
+    start(data: NoInfer<T>, at: Point): U | null | undefined
     cursor(data: U): Cursor
     move(data: U, to: Point): void
     end(data: U, at: Point): void
@@ -60,18 +60,18 @@ export interface Ext<T extends {}, U extends {}, V extends {}, W extends {}> {
 
   hover?: {
     /** Returning a non-nullish value captures the event. */
-    on(data: T, at: Point): V | null | undefined
+    on(data: NoInfer<T>, at: Point): V | null | undefined
     cursor(data: V): Cursor
     off(data: V): void
   }
 
   select?: {
-    ty(data: T): TyName | null
+    ty(data: NoInfer<T>): TyName | null
 
-    // dim(data: T): void
-    // undim(data: T): void
+    // dim(data: NoInfer<T>): void
+    // undim(data: NoInfer<T>): void
 
-    on(data: T, at: Point): W | null | undefined
+    on(data: NoInfer<T>, at: Point): W | null | undefined
     // off(data: W): void
     val(data: W): JsVal
     ref(data: W): Block

@@ -3,6 +3,7 @@ import type { AnyExt, Cursor } from "../../ext"
 import type { AnyPick, Picker } from "../../pick/00-index"
 import { PICK_CIRCLE_P1 } from "../../pick/circle"
 import { PICK_LINE_P1 } from "../../pick/line"
+import { PICK_PERPENDICULAR_P1 } from "../../pick/perpendicular"
 import { PICK_POINT } from "../../pick/point"
 import type { Expr } from "../expr"
 import type { Point, PointerHandlers } from "../paper"
@@ -44,10 +45,11 @@ export class Handlers implements PointerHandlers<DataDrag, DataHover> {
         p: PICK_POINT,
         l: PICK_LINE_P1,
         c: PICK_CIRCLE_P1,
+        x: PICK_PERPENDICULAR_P1,
       }[event.key]
 
       if (picker) {
-        this.setPick(picker, {})
+        this.setPick<{}, any>(picker satisfies Picker<{}, any>, {})
         event.preventDefault()
       }
     })

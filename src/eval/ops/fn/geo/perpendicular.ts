@@ -1,5 +1,5 @@
 import type { GlslContext } from "../../../lib/fn"
-import type { GlslVal, JsVal, Val } from "../../../ty"
+import type { GlslVal, SPoint, Tys, Val } from "../../../ty"
 import { pt } from "../../../ty/create"
 import { FnDist } from "../../dist"
 import { add } from "../../op/add"
@@ -7,10 +7,12 @@ import { sub } from "../../op/sub"
 
 type LineLike = "segment" | "ray" | "line" | "vector"
 
-const js = (
-  { value: [A, B] }: JsVal<LineLike>,
-  { value: b }: JsVal<"point32" | "point64">,
-): Val<"line"> => [b, pt(add(b.x, sub(B.y, A.y)), sub(b.y, sub(B.x, A.x)))]
+export function perpendicularJs(
+  { value: [A, B] }: { value: Tys["line"] },
+  { value: b }: { value: SPoint },
+): Val<"line"> {
+  return [b, pt(add(b.x, sub(B.y, A.y)), sub(b.y, sub(B.x, A.x)))]
+}
 
 const glsl = (
   ctx: GlslContext,
@@ -26,7 +28,7 @@ export const FN_PERPENDICULAR = new FnDist(
   "perpendicular",
   "creates a line perpendicular to an existing line which passes through some point",
 )
-  .add(["segment", "point32"], "line", js, glsl)
-  .add(["ray", "point32"], "line", js, glsl)
-  .add(["line", "point32"], "line", js, glsl)
-  .add(["vector", "point32"], "line", js, glsl)
+  .add(["segment", "point32"], "line", perpendicularJs, glsl)
+  .add(["ray", "point32"], "line", perpendicularJs, glsl)
+  .add(["line", "point32"], "line", perpendicularJs, glsl)
+  .add(["vector", "point32"], "line", perpendicularJs, glsl)

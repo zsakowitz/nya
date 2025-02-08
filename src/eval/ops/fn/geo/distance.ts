@@ -1,3 +1,4 @@
+import type { Point } from "../../../../sheet/ui/paper"
 import type { SPoint, SReal } from "../../../ty"
 import { num, real } from "../../../ty/create"
 import { FnDist } from "../../dist"
@@ -17,6 +18,14 @@ export function dist(a: SPoint, b: SPoint) {
   const dx2 = mul(dx, dx)
   const dy2 = mul(dy, dy)
   return sqrt(add(dx2, dy2))
+}
+
+export function distLinePt(
+  [{ x: x1, y: y1 }, { x: x2, y: y2 }]: [Point, Point],
+  { x: x0, y: y0 }: Point,
+) {
+  const num = Math.abs((y2 - y1) * x0 - (x2 - x1) * y0 + (x2 * y1 - y2 * x1))
+  return num / Math.hypot(x1 - x2, y1 - y2)
 }
 
 export const FN_DISTANCE = new FnDist<"r32">(
