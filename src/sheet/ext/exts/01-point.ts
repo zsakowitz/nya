@@ -12,19 +12,10 @@ import { virtualStepExp, write, Writer } from "../../write"
 import { EXT_EVAL } from "./02-eval"
 
 const color = new Store(
-  (expr) => new Transition(3.5, () => expr.sheet.paper.queue()),
+  (expr) => new Transition(4, () => expr.sheet.paper.queue()),
 )
 
-export function drawPoint(
-  paper: Paper,
-  at: Point,
-  size?: number,
-  halo?: boolean,
-) {
-  if (size == null) {
-    size = halo ? 3.5 : 4
-  }
-
+export function drawPoint(paper: Paper, at: Point, size = 4, halo?: boolean) {
   const offset = paper.paperToCanvas(at)
   if (!(isFinite(offset.x) && isFinite(offset.y))) return
   const { ctx, scale } = paper
@@ -171,7 +162,7 @@ export const EXT_POINT = defineExt({
       }
     },
     end(data) {
-      color.get(data.expr).set(3.5)
+      color.get(data.expr).set(4)
       data.expr.focus()
     },
   },
@@ -203,7 +194,7 @@ export const EXT_POINT = defineExt({
       return "move"
     },
     off(data) {
-      color.get(data.expr).set(3.5)
+      color.get(data.expr).set(4)
     },
   },
   select: {
