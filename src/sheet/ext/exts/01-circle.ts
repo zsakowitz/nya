@@ -1,4 +1,4 @@
-import { defineExt, Prop } from ".."
+import { Prop } from ".."
 import { distCirclePt } from "../../../eval/ops/fn/geo/distance"
 import { each, type JsValue } from "../../../eval/ty"
 import { num, unpt } from "../../../eval/ty/create"
@@ -6,6 +6,7 @@ import { OpEq } from "../../../field/cmd/leaf/cmp"
 import { CmdVar } from "../../../field/cmd/leaf/var"
 import { Block, L, R } from "../../../field/model"
 import type { Paper, Point } from "../../ui/paper"
+import { defineHideable } from "../hideable"
 
 const SELECTED = new Prop(() => false)
 const DIMMED = new Prop(() => false)
@@ -46,7 +47,7 @@ export function drawCircle(
   }
 }
 
-export const EXT_CIRCLE = defineExt({
+export const EXT_CIRCLE = defineHideable({
   data(expr) {
     const value = expr.js?.value
 

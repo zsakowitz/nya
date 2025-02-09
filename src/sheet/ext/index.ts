@@ -108,16 +108,16 @@ export class Exts {
  * {@linkcode Expr}. Essentially a thin wrapper over {@linkcode WeakMap} with
  * auto-initialization designed specifically for {@linkcode Expr}.
  */
-export class Store<T extends {}> {
-  data = new WeakMap<Expr, T>()
+export class Store<T extends {}, U extends WeakKey = Expr> {
+  data = new WeakMap<U, T>()
 
-  constructor(readonly init: (expr: Expr) => T) {}
+  constructor(readonly init: (key: U) => T) {}
 
-  get(expr: Expr) {
-    const data = this.data.get(expr)
+  get(key: U) {
+    const data = this.data.get(key)
     if (data == null) {
-      const data = this.init(expr)
-      this.data.set(expr, data)
+      const data = this.init(key)
+      this.data.set(key, data)
       return data
     }
     return data

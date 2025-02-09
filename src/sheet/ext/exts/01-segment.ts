@@ -1,4 +1,4 @@
-import { defineExt, Prop } from ".."
+import { Prop } from ".."
 import { distLinePt } from "../../../eval/ops/fn/geo/distance"
 import { each, type JsValue, type SPoint } from "../../../eval/ty"
 import { num, unpt } from "../../../eval/ty/create"
@@ -7,6 +7,7 @@ import { OpEq } from "../../../field/cmd/leaf/cmp"
 import { CmdVar } from "../../../field/cmd/leaf/var"
 import { Block, L, R } from "../../../field/model"
 import type { Paper } from "../../ui/paper"
+import { defineHideable } from "../hideable"
 
 export function drawSegment(
   segment: [SPoint, SPoint],
@@ -55,7 +56,7 @@ export function drawSegment(
 const DIMMED = new Prop(() => false)
 const SELECTED = new Prop(() => false)
 
-export const EXT_SEGMENT = defineExt({
+export const EXT_SEGMENT = defineHideable({
   data(expr) {
     const value = expr.js?.value
 

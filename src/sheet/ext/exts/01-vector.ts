@@ -1,7 +1,7 @@
-import { defineExt } from ".."
 import { each, type JsValue, type SPoint } from "../../../eval/ty"
 import { unpt } from "../../../eval/ty/create"
 import type { Paper } from "../../ui/paper"
+import { defineHideable } from "../hideable"
 
 export function drawVector(vector: [SPoint, SPoint], paper: Paper) {
   const o1 = paper.paperToCanvas(unpt(vector[0]))
@@ -37,7 +37,7 @@ export function drawVector(vector: [SPoint, SPoint], paper: Paper) {
   ctx.fill()
 }
 
-export const EXT_VECTOR = defineExt({
+export const EXT_VECTOR = defineHideable({
   data(expr) {
     const value = expr.js?.value
 

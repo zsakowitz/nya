@@ -1,4 +1,4 @@
-import { defineExt, Prop, Store } from ".."
+import { Prop, Store } from ".."
 import { dragPoint } from "../../../eval/ast/tx"
 import { each, type JsValue } from "../../../eval/ty"
 import { frac, real, unpt } from "../../../eval/ty/create"
@@ -9,6 +9,7 @@ import { Block, L, R } from "../../../field/model"
 import { Transition } from "../../transition"
 import type { Paper, Point } from "../../ui/paper"
 import { virtualStepExp, write, Writer } from "../../write"
+import { defineHideable } from "../hideable"
 import { EXT_EVAL } from "./02-eval"
 
 const color = new Store(
@@ -50,7 +51,7 @@ export function drawPoint(
   }
 }
 
-export const EXT_POINT = defineExt({
+export const EXT_POINT = defineHideable({
   data(expr) {
     const value = expr.js?.value
 

@@ -1,4 +1,4 @@
-import { defineExt, Prop } from ".."
+import { Prop } from ".."
 import { distLinePt } from "../../../eval/ops/fn/geo/distance"
 import { each, type JsValue, type SPoint, type Tys } from "../../../eval/ty"
 import { num, unpt } from "../../../eval/ty/create"
@@ -7,6 +7,7 @@ import { OpEq } from "../../../field/cmd/leaf/cmp"
 import { CmdVar } from "../../../field/cmd/leaf/var"
 import { Block, L, R } from "../../../field/model"
 import { Paper, Point } from "../../ui/paper"
+import { defineHideable } from "../hideable"
 
 function getRayBounds(line: Tys["ray"], paper: Paper): [Point, Point] | null {
   const x1 = num(line[0].x)
@@ -112,7 +113,7 @@ export function drawRay(
 
 const DIMMED = new Prop(() => false)
 
-export const EXT_RAY = defineExt({
+export const EXT_RAY = defineHideable({
   data(expr) {
     const value = expr.js?.value
 

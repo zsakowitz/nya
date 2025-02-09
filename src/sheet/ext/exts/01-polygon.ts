@@ -1,4 +1,4 @@
-import { defineExt, Prop } from ".."
+import { Prop } from ".."
 import { distLinePt } from "../../../eval/ops/fn/geo/distance"
 import { each, type JsVal, type JsValue, type SPoint } from "../../../eval/ty"
 import { num, unpt } from "../../../eval/ty/create"
@@ -10,6 +10,7 @@ import { CmdVar } from "../../../field/cmd/leaf/var"
 import { CmdBrack } from "../../../field/cmd/math/brack"
 import { Block, L, R } from "../../../field/model"
 import type { Paper } from "../../ui/paper"
+import { defineHideable } from "../hideable"
 import { drawSegment } from "./01-segment"
 
 export function drawPolygon(
@@ -52,7 +53,7 @@ export function drawPolygon(
 const SELECTED = new Prop<[SPoint, SPoint] | null>(() => null)
 const DIMMED = new Prop(() => false)
 
-export const EXT_POLYGON = defineExt({
+export const EXT_POLYGON = defineHideable({
   data(expr) {
     const value = expr.js?.value
 

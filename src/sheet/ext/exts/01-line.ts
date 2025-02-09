@@ -1,4 +1,4 @@
-import { defineExt, Prop } from ".."
+import { Prop } from ".."
 import { distLinePt } from "../../../eval/ops/fn/geo/distance"
 import { each, type JsValue, type Tys } from "../../../eval/ty"
 import { num, unpt } from "../../../eval/ty/create"
@@ -6,6 +6,7 @@ import { OpEq } from "../../../field/cmd/leaf/cmp"
 import { CmdVar } from "../../../field/cmd/leaf/var"
 import { Block, L, R } from "../../../field/model"
 import type { Paper, Point } from "../../ui/paper"
+import { defineHideable } from "../hideable"
 
 function getLineBounds(line: Tys["line"], paper: Paper): [Point, Point] {
   const x1 = num(line[0].x)
@@ -79,7 +80,7 @@ export function drawLine(
 const SELECTED = new Prop(() => false)
 const DIMMED = new Prop(() => false)
 
-export const EXT_LINE = defineExt({
+export const EXT_LINE = defineHideable({
   data(expr) {
     const value = expr.js?.value
 
