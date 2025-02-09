@@ -1,4 +1,7 @@
 import type { Fn } from ".."
+import { CmdComma } from "../../../field/cmd/leaf/comma"
+import { CmdBrack } from "../../../field/cmd/math/brack"
+import { h } from "../../../jsx"
 import { coerceTy, coerceValueGlsl, coerceValueJs } from "../../ty/coerce"
 import { any, TY_INFO } from "../../ty/info"
 import { docByIcon } from "../dist"
@@ -40,7 +43,26 @@ export const FN_JOIN: Fn & WithDocs = {
     return { list: size, expr: name, type: ty }
   },
   docs() {
-    return [docByIcon([any(), any()], any(), true)]
+    const list = () =>
+      CmdBrack.render("[", "]", null, {
+        el: h(
+          "",
+          any(),
+          new CmdComma().el,
+          any(),
+          new CmdComma().el,
+          h("nya-cmd-dot nya-cmd-dot-l", "."),
+          h("nya-cmd-dot", "."),
+          h("nya-cmd-dot", "."),
+        ),
+      })
+
+    return [
+      docByIcon([any(), any()], any(), true),
+      docByIcon([list(), any()], any(), true),
+      docByIcon([any(), list()], any(), true),
+      docByIcon([list(), list()], any(), true),
+    ]
   },
 }
 
