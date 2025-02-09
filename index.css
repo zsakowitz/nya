@@ -1343,6 +1343,10 @@ video {
   grid-template-columns: auto auto;
 }
 
+.grid-cols-\[500px_1fr\] {
+  grid-template-columns: 500px 1fr;
+}
+
 .grid-rows-1 {
   grid-template-rows: repeat(1, minmax(0, 1fr));
 }
@@ -2040,6 +2044,10 @@ video {
   font-weight: 400;
 }
 
+.font-semibold {
+  font-weight: 600;
+}
+
 .lowercase {
   text-transform: lowercase;
 }
@@ -2126,6 +2134,24 @@ video {
 .text-white {
   --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity, 1));
+}
+
+.text-blue-500 {
+  --tw-text-opacity: 1;
+  color: rgb(59 130 246 / var(--tw-text-opacity, 1));
+}
+
+.text-slate-800 {
+  --tw-text-opacity: 1;
+  color: rgb(30 41 59 / var(--tw-text-opacity, 1));
+}
+
+.underline {
+  text-decoration-line: underline;
+}
+
+.underline-offset-2 {
+  text-underline-offset: 2px;
 }
 
 .opacity-20 {
@@ -2847,6 +2873,10 @@ body {
 
 .\[\&\:last-child\.nya-has-empty\>\*\]\:hidden:last-child.nya-has-empty>* {
   display: none;
+}
+
+.\[\&_p\+p\]\:-mt-2 p+p {
+  margin-top: -0.5rem;
 }
 
 .nya-cmd-word>:where(.\[\.nya-cmd-word\>\:where\(\&\)\]\:mx-0) {

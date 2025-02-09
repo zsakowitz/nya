@@ -93,3 +93,11 @@ export function usvg(
   el.appendChild(p(d))
   return el
 }
+
+export function a(href: string, ...children: (Node | string | null)[]) {
+  return hx(
+    "a",
+    { class: "text-blue-500 underline underline-offset-2", href },
+    ...children,
+  )
+}

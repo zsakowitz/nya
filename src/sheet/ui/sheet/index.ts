@@ -24,7 +24,7 @@ import { CmdSupSub } from "../../../field/cmd/math/supsub"
 import { fa } from "../../../field/fa"
 import type { Block } from "../../../field/model"
 import type { Options } from "../../../field/options"
-import { h, hx, t } from "../../../jsx"
+import { a, h, hx, t } from "../../../jsx"
 import { Scope } from "../../deps"
 import type { Exts } from "../../ext"
 import type { Picker } from "../../pick"
@@ -311,6 +311,179 @@ function createDocs(className: string, hide: () => void) {
     ])
   }
 
+  function secCredits() {
+    return section("credits", [
+      hx(
+        "p",
+        "",
+        "This site is a work in progress by ",
+        hx(
+          "a",
+          {
+            class: "text-blue-500 underline underline-offset-2",
+            href: "https://github.com/zsakowitz",
+          },
+          "sakawi",
+        ),
+        ". ",
+        hx(
+          "a",
+          {
+            class: "text-blue-500 underline underline-offset-2",
+            href: "https://github.com/zsakowitz/nya",
+          },
+          "Its source code",
+        ),
+        " is publicly available on GitHub.",
+      ),
+      hx(
+        "p",
+        "",
+        "Inspiration for project nya was taken primarily from Desmos. I love their tools, and I've always thought it would be fun to rebuild it, simply for my own enjoyment.",
+      ),
+      hx(
+        "p",
+        "",
+        "My original dream was simply to make a version of Desmos with complex numbers (they weren't added to Desmos until late 2024). But I never created that, since it never seemed worth it to rebuild a whole calculator app just for one tiny feature.",
+      ),
+      hx(
+        "p",
+        "",
+        "Later, I became obsessed with fractals (see the ",
+        a(
+          "https://v8.zsnout.com/fractal-gallery",
+          "fractal gallery on my main site, zSnout",
+        ),
+        " for interactive examples). I tried making some in Desmos, but they never matched up to my quality expectations, since Desmos wasn't built for fractals. So I brushed the thought aside.",
+      ),
+      hx(
+        "p",
+        "",
+        "But then, around November 2024, I had a realization. I'm a programmer. If I want Desmos to make fractals, I can just... make it do that. And the project just exploded from there. For the full details, scroll down to the changelog at the bottom of this page.",
+      ),
+      hx(
+        "p",
+        "",
+        "Hence, I present to you: ",
+        hx("strong", "font-semibold", "project nya"),
+        ". I hope you enjoy it.",
+      ),
+    ])
+  }
+
+  function secChangelog() {
+    return section("changelog", [
+      hx(
+        "p",
+        "",
+        "My original prototype was just ",
+        a(MASSIVE_URL(), "to slap Desmos onto my existing Fractal Explorer"),
+        ". It worked well, but it could only render one fractal. Since then, I've rebuilt every component of those original projects. Here are some highlights:",
+      ),
+      hx("p", "", "Nov. 18 was the day I started the project."),
+      hx(
+        "p",
+        "",
+        "Nov. 28 was the first day ",
+        a(
+          "https://ts-latex-ckprccic9-zsakowitzs-projects.vercel.app/",
+          "the project",
+        ),
+        " was accessible on the internet.",
+      ),
+      hx(
+        "p",
+        "",
+        "By Nov. 30, ",
+        a(
+          "https://ts-latex-1u30n8hl1-zsakowitzs-projects.vercel.app/",
+          "the math editor",
+        ),
+        " could type everything Desmos's can, and then some.",
+      ),
+      hx("p", "", "I took a month-long break during December."),
+      hx(
+        "p",
+        "",
+        "Jan. 6 was the first day ",
+        a(
+          "https://ts-latex-6bxt4jtun-zsakowitzs-projects.vercel.app/",
+          "the vision for a full calculator",
+        ),
+        " started to actually set in.",
+      ),
+      hx(
+        "p",
+        "",
+        "By Jan. 8, it could evaluate some expressions and had a graph paper ",
+        a("https://ts-latex-7q5154x8x-zsakowitzs-projects.vercel.app/", ""),
+        ". (I stole the graph paper from an old project, which saved a bit of time.)",
+      ),
+      hx(
+        "p",
+        "",
+        a(
+          "https://ts-latex-15r43kfip-zsakowitzs-projects.vercel.app/",
+          "On Jan. 10",
+        ),
+        ", it could render basic shaders.",
+      ),
+      hx(
+        "p",
+        "",
+        "On Jan. 11, iteration was supported enough to ",
+        a(
+          "https://ts-latex-ejtii37qi-zsakowitzs-projects.vercel.app/",
+          "render the Mandelbrot Set",
+        ),
+        ".",
+      ),
+      hx(
+        "p",
+        "",
+        "By Jan. 25, it could mimic high-precision numbers enough to ",
+        a(
+          "https://ts-latex-gvky3jt81-zsakowitzs-projects.vercel.app/",
+          "draw an incredibly high-resolution version of the Mandelbrot Set",
+        ),
+        ". (Drag the slider at the top-right to the left for less pixelation.)",
+      ),
+      hx(
+        "p",
+        "",
+        "By Feb. 5, it could draw objects directly from the CPU, and ",
+        a(
+          "https://ts-latex-1ggybmqd9-zsakowitzs-projects.vercel.app/",
+          "had variables with sliders",
+        ),
+        ".",
+      ),
+      hx(
+        "p",
+        "",
+        "On Feb. 6, I worked on adding ",
+        a(
+          "https://ts-latex-3n1xvcbem-zsakowitzs-projects.vercel.app/",
+          "built-in automatically-updating documentation",
+        ),
+        ".",
+      ),
+      hx(
+        "p",
+        "",
+        "As of Feb. 8, ",
+        a(
+          "https://ts-latex-oywr5or8t-zsakowitzs-projects.vercel.app/",
+          "basic geometric objects could be constructed",
+        ),
+        " without ever touching the expression list.",
+      ),
+    ])
+  }
+
+  const MASSIVE_URL = () =>
+    "https://v8-dm8n5plod-zsnout.vercel.app/desmos?desmosState=%7B%22version%22%3A11%2C%22randomSeed%22%3A%22bce40c91e3061790fd578740a10de9b1%22%2C%22graph%22%3A%7B%22viewport%22%3A%7B%22xmin%22%3A-21.818588115496738%2C%22ymin%22%3A-18.86552532798194%2C%22xmax%22%3A19.579211720093717%2C%22ymax%22%3A18.692962426082%7D%2C%22complex%22%3Atrue%7D%2C%22expressions%22%3A%7B%22list%22%3A%5B%7B%22type%22%3A%22expression%22%2C%22id%22%3A%22__fractal_explorer_c%22%2C%22color%22%3A%22%23c74440%22%2C%22latex%22%3A%22f_c%5C%5Cleft%28p%5C%5Cright%29%3Dp%22%2C%22hidden%22%3Atrue%7D%2C%7B%22type%22%3A%22expression%22%2C%22id%22%3A%22__fractal_explorer_z%22%2C%22color%22%3A%22%232d70b3%22%2C%22latex%22%3A%22f_z%5C%5Cleft%28p%5C%5Cright%29%3Dp%22%2C%22hidden%22%3Atrue%7D%2C%7B%22type%22%3A%22expression%22%2C%22id%22%3A%22__fractal_explorer_f%22%2C%22color%22%3A%22%23388c46%22%2C%22latex%22%3A%22f_%7Beq%7D%5C%5Cleft%28c%2Cz%2Cp%5C%5Cright%29%3Dz-%5C%5Cfrac%7B%5C%5Cleft%28z-A%5C%5Cright%29%5C%5Cleft%28z-B%5C%5Cright%29%5C%5Cleft%28z-C%5C%5Cright%29%7D%7BA%5C%5Cleft%28B%2BC-2z%5C%5Cright%29%2BB%5C%5Cleft%28C-2z%5C%5Cright%29%2Bz%5C%5Cleft%283z-2C%5C%5Cright%29%7D%22%2C%22hidden%22%3Atrue%7D%2C%7B%22type%22%3A%22expression%22%2C%22id%22%3A%222%22%2C%22color%22%3A%22%23c74440%22%2C%22latex%22%3A%22A%3D-10-5.2i%22%2C%22colorLatex%22%3A%22X%22%7D%2C%7B%22type%22%3A%22expression%22%2C%22id%22%3A%2221%22%2C%22color%22%3A%22%232d70b3%22%2C%22latex%22%3A%22B%3D0.9-3.74i%22%2C%22colorLatex%22%3A%22Y%22%7D%2C%7B%22type%22%3A%22expression%22%2C%22id%22%3A%2222%22%2C%22color%22%3A%22%23388c46%22%2C%22latex%22%3A%22C%3D-4.7%2B2i%22%2C%22colorLatex%22%3A%22Z%22%7D%2C%7B%22type%22%3A%22expression%22%2C%22id%22%3A%2241%22%2C%22color%22%3A%22%23c74440%22%2C%22latex%22%3A%22q%5C%5Cleft%28x%5C%5Cright%29%3D%5C%5Coperatorname%7Bhsv%7D%5C%5Cleft%28180-%5C%5Cfrac%7B360%7D%7B2%5C%5Cpi%7D%5C%5Carctan%5C%5Cleft%28%5C%5Coperatorname%7Bimag%7D%5C%5Cleft%28x%5C%5Cright%29%2C%5C%5Coperatorname%7Breal%7D%5C%5Cleft%28x%5C%5Cright%29%5C%5Cright%29%2C1%2C1%5C%5Cright%29%22%7D%2C%7B%22type%22%3A%22expression%22%2C%22id%22%3A%2242%22%2C%22color%22%3A%22%232d70b3%22%2C%22latex%22%3A%22Z%3Dq%5C%5Cleft%28C%5C%5Cright%29%22%7D%2C%7B%22type%22%3A%22expression%22%2C%22id%22%3A%2243%22%2C%22color%22%3A%22%23388c46%22%2C%22latex%22%3A%22Y%3Dq%5C%5Cleft%28B%5C%5Cright%29%22%7D%2C%7B%22type%22%3A%22expression%22%2C%22id%22%3A%2244%22%2C%22color%22%3A%22%236042a6%22%2C%22latex%22%3A%22X%3Dq%5C%5Cleft%28A%5C%5Cright%29%22%7D%2C%7B%22type%22%3A%22expression%22%2C%22id%22%3A%2246%22%2C%22color%22%3A%22%23000000%22%2C%22latex%22%3A%22P%3D11.25-2i%22%7D%2C%7B%22type%22%3A%22expression%22%2C%22id%22%3A%2247%22%2C%22color%22%3A%22%232d70b3%22%2C%22latex%22%3A%22f%5C%5Cleft%28z%5C%5Cright%29%3Df_%7Beq%7D%5C%5Cleft%28P%2Cz%2CP%5C%5Cright%29%22%7D%2C%7B%22type%22%3A%22expression%22%2C%22id%22%3A%2249%22%2C%22color%22%3A%22%236042a6%22%2C%22latex%22%3A%22s%5C%5Cleft%28z%2C0%5C%5Cright%29%3Dz%22%7D%2C%7B%22type%22%3A%22expression%22%2C%22id%22%3A%2250%22%2C%22color%22%3A%22%23000000%22%2C%22latex%22%3A%22s%5C%5Cleft%28z%2Cn%5C%5Cright%29%3Ds%5C%5Cleft%28%5C%5Coperatorname%7Bjoin%7D%5C%5Cleft%28z%2Cf%5C%5Cleft%28z%5C%5Cleft%5Bz.%5C%5Coperatorname%7Blength%7D%5C%5Cright%5D%5C%5Cright%29%5C%5Cright%29%2Cn-1%5C%5Cright%29%22%7D%2C%7B%22type%22%3A%22expression%22%2C%22id%22%3A%2248%22%2C%22color%22%3A%22%23000000%22%2C%22latex%22%3A%22s%5C%5Cleft%28%5C%5Cleft%5BP%5C%5Cright%5D%2C50%5C%5Cright%29%22%2C%22lines%22%3Atrue%7D%5D%7D%2C%22includeFunctionParametersInRandomSeed%22%3Atrue%7D&equation=%7E%7Ez-%5Cfrac%7B%5Cleft%28z-%5Cdesmos%7BA%7D%5Cright%29%5Cleft%28z-%5Cdesmos%7BB%7D%5Cright%29%5Cleft%28z-%5Cdesmos%7BC%7D%5Cright%29%7D%7B%5Cdesmos%7BA%7D%5Cleft%28%5Cdesmos%7BB%7D%2B%5Cdesmos%7BC%7D-2z%5Cright%29%2B%5Cdesmos%7BB%7D%5Cleft%28%5Cdesmos%7BC%7D-2z%5Cright%29%2Bz%5Cleft%283z-2%5Cdesmos%7BC%7D%5Cright%29%7D&inner_theme=plot&theme=plot&size=1e10&plot_size=9.999999578402807e-9"
+
   function secShaders() {
     return section("shaders", [
       hx(
@@ -361,11 +534,13 @@ function createDocs(className: string, hide: () => void) {
 
   return h(
     className,
+    secCredits(),
     secDataTypes(),
     secShaders(),
     secAdvancedOperators(),
     secNamedFunctions(),
     secUnnamedFunctions(),
+    secChangelog(),
   )
 }
 
@@ -454,7 +629,7 @@ export class Sheet {
       return el
     }
 
-    const switchToDocs = btn(faBook, "Help", () => {
+    const switchToDocs = btn(faBook, "Docs", () => {
       docs.classList.remove("hidden")
       sidebar.classList.add("hidden")
     })
@@ -476,7 +651,7 @@ export class Sheet {
           this.exprs.map((x) => x.field.block.latex()).join("\n"),
         )
         if (copyId == id) {
-          copyAllLabel.data = "Copied! ✅"
+          copyAllLabel.data = "Copied!"
           setTimeout(() => {
             if (copyId == id) {
               copyAllLabel.data = "Copy"
@@ -643,7 +818,7 @@ export class Sheet {
     )
 
     const docs = createDocs(
-      "flex flex-col overflow-y-auto px-4 pb-4 gap-2 border-r border-[--nya-border] hidden row-span-2",
+      "flex flex-col overflow-y-auto px-4 pb-4 gap-2 border-r border-[--nya-border] hidden row-span-2 [&_p+p]:-mt-2",
       () => {
         docs.classList.add("hidden")
         sidebar.classList.remove("hidden")
@@ -654,7 +829,7 @@ export class Sheet {
     this.glPixelRatio.el.className =
       "block w-48 bg-[--nya-bg] outline outline-[--nya-pixel-ratio] rounded-full p-1"
     this.el = h(
-      "fixed inset-0 grid grid-cols-[400px_1fr] grid-rows-[3rem_1fr] grid-rows-1 select-none",
+      "fixed inset-0 grid grid-cols-[500px_1fr] grid-rows-[3rem_1fr] grid-rows-1 select-none",
 
       sidebar,
       docs,
