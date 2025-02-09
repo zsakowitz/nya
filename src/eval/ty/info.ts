@@ -179,7 +179,8 @@ function iconPoint(hd: boolean) {
       "text-[#6042a6] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-current rounded-[4px]" +
         (hd ? " border-double border-[3px]" : " border-2"),
       h(
-        "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
+        "opacity-25 block bg-current absolute " +
+          (hd ? " -inset-[2px] rounded-[2px]" : "inset-0"),
       ),
       h(
         "size-[7px] bg-current absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
@@ -196,7 +197,8 @@ function iconComplex(hd: boolean) {
       "text-[#6042a6] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-current rounded-[4px]" +
         (hd ? " border-double border-[3px]" : " border-2"),
       h(
-        "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
+        "opacity-25 block bg-current absolute " +
+          (hd ? " -inset-[2px] rounded-[2px]" : "inset-0"),
       ),
       h(
         "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-['Times_New_Roman'] italic text-[120%]",
@@ -214,7 +216,8 @@ function iconReal(hd: boolean) {
       "text-[#000] dark:text-[#888] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-current rounded-[4px]" +
         (hd ? " border-double border-[3px]" : " border-2"),
       h(
-        "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
+        "opacity-25 block bg-current absolute " +
+          (hd ? " -inset-[2px] rounded-[2px]" : "inset-0"),
       ),
       h(
         "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-['Times_New_Roman'] italic text-[120%]",
