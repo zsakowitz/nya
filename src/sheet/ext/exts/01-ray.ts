@@ -1,4 +1,4 @@
-import { defineExt } from ".."
+import { defineExt, Prop } from ".."
 import { distLinePt } from "../../../eval/ops/fn/geo/distance"
 import { each, type JsValue, type SPoint, type Tys } from "../../../eval/ty"
 import { num, unpt } from "../../../eval/ty/create"
@@ -58,7 +58,13 @@ function getRayBounds(line: Tys["ray"], paper: Paper): [Point, Point] | null {
   ]
 }
 
-export function drawRay(ray: [SPoint, SPoint], paper: Paper) {
+const SELECTED = new Prop(() => false)
+
+export function drawRay(
+  ray: [SPoint, SPoint],
+  paper: Paper,
+  selected: boolean,
+) {
   const x1 = num(ray[0].x)
   const y1 = num(ray[0].y)
   const x2 = num(ray[1].x)
@@ -78,6 +84,15 @@ export function drawRay(ray: [SPoint, SPoint], paper: Paper) {
 
   const { ctx, scale } = paper
 
+  if (selected) {
+    ctx.beginPath()
+    ctx.lineWidth = 8 * scale
+    ctx.strokeStyle = "#2d70b360"
+    ctx.moveTo(o1.x, o1.y)
+    ctx.lineTo(o2.x, o2.y)
+    ctx.stroke()
+  }
+
   ctx.beginPath()
   ctx.lineWidth = 3 * scale
   ctx.strokeStyle = "#2d70b3"
@@ -96,7 +111,7 @@ export const EXT_RAY = defineExt({
   },
   plot2d(data, paper) {
     for (const segment of each(data.value)) {
-      drawRay(segment, paper)
+      drawRay(segment, paper, SELECTED.get(data.expr))
     }
   },
   layer() {
@@ -120,9 +135,13 @@ export const EXT_RAY = defineExt({
       if (distLinePt([l1, l2], pt) <= 12 * data.paper.scale) {
         const { value: index } = gliderOnLine([p1, p2], at, data.paper)
         if (0 <= index) {
+          SELECTED.set(data.expr, true)
           return { ...data, value: data.value }
         }
       }
+    },
+    off(data) {
+      SELECTED.set(data.expr, false)
     },
     val(data) {
       return data.value

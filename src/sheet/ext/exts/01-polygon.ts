@@ -1,7 +1,7 @@
-import { defineExt } from ".."
+import { defineExt, Prop } from ".."
 import { distLinePt } from "../../../eval/ops/fn/geo/distance"
 import { each, type JsVal, type JsValue, type SPoint } from "../../../eval/ty"
-import { num, rept, unpt } from "../../../eval/ty/create"
+import { num, unpt } from "../../../eval/ty/create"
 import { gliderOnLine } from "../../../eval/ty/info"
 import { OpEq } from "../../../field/cmd/leaf/cmp"
 import { CmdDot } from "../../../field/cmd/leaf/dot"
@@ -10,6 +10,7 @@ import { CmdVar } from "../../../field/cmd/leaf/var"
 import { CmdBrack } from "../../../field/cmd/math/brack"
 import { Block, L, R } from "../../../field/model"
 import type { Paper } from "../../ui/paper"
+import { drawSegment } from "./01-segment"
 
 export function drawPolygon(polygon: SPoint[], paper: Paper, closed: boolean) {
   const pts = polygon.map(({ x, y }) =>
@@ -35,6 +36,8 @@ export function drawPolygon(polygon: SPoint[], paper: Paper, closed: boolean) {
   ctx.stroke()
 }
 
+const SELECTED = new Prop<[SPoint, SPoint] | null>(() => null)
+
 export const EXT_POLYGON = defineExt({
   data(expr) {
     const value = expr.js?.value
@@ -48,6 +51,11 @@ export const EXT_POLYGON = defineExt({
     }
   },
   plot2d(data, paper) {
+    const highlight = SELECTED.get(data.expr)
+    if (highlight) {
+      drawSegment(highlight, paper, true)
+    }
+
     for (const polygon of each(data.value)) {
       drawPolygon(polygon, paper, true)
     }
@@ -68,8 +76,10 @@ export const EXT_POLYGON = defineExt({
       if (polygon.length < 2) return
 
       for (let i = 0; i < polygon.length; i++) {
-        const p1 = unpt(polygon[i]!)
-        const p2 = unpt(polygon[(i + 1) % polygon.length]!)
+        const r1 = polygon[i]!
+        const r2 = polygon[(i + 1) % polygon.length]!
+        const p1 = unpt(r1)
+        const p2 = unpt(r2)
         const l1 = data.paper.paperToCanvas(p1)
         const l2 = data.paper.paperToCanvas(p2)
         const pt = data.paper.paperToCanvas(at)
@@ -77,17 +87,21 @@ export const EXT_POLYGON = defineExt({
         if (distLinePt([l1, l2], pt) <= 12 * data.paper.scale) {
           const { value: index } = gliderOnLine([p1, p2], at, data.paper)
           if (0 <= index && index <= 1) {
+            SELECTED.set(data.expr, [r1, r2])
             return {
               ...data,
               value: {
                 type: "segment",
-                value: [rept(p1), rept(p2)],
+                value: [r1, r2],
               } satisfies JsVal<"segment">,
               index: i + 1,
             }
           }
         }
       }
+    },
+    off(data) {
+      SELECTED.set(data.expr, null)
     },
     val(data) {
       return data.value

@@ -1,4 +1,4 @@
-import { defineExt, Store } from ".."
+import { defineExt, Prop, Store } from ".."
 import { dragPoint } from "../../../eval/ast/tx"
 import { each, type JsValue } from "../../../eval/ty"
 import { frac, real, unpt } from "../../../eval/ty/create"
@@ -14,6 +14,8 @@ import { EXT_EVAL } from "./02-eval"
 const color = new Store(
   (expr) => new Transition(4, () => expr.sheet.paper.queue()),
 )
+
+const SELECTED = new Prop(() => false)
 
 export function drawPoint(paper: Paper, at: Point, size = 4, halo?: boolean) {
   const offset = paper.paperToCanvas(at)
@@ -65,7 +67,9 @@ export const EXT_POINT = defineExt({
       drawPoint(
         paper,
         unpt(pt),
-        data.drag ? color.get(data.expr).get() : 4,
+        SELECTED.get(data.expr) ? 6
+        : data.drag ? color.get(data.expr).get()
+        : 4,
         !!data.drag,
       )
     }
@@ -210,8 +214,12 @@ export const EXT_POINT = defineExt({
         data.paper.canvasDistance(at, unpt(data.value.value)) <=
         12 * data.paper.scale
       ) {
+        SELECTED.set(data.expr, true)
         return { ...data, value: data.value }
       }
+    },
+    off(data) {
+      SELECTED.set(data.expr, false)
     },
     val(data) {
       return data.value

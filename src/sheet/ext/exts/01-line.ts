@@ -1,4 +1,4 @@
-import { defineExt } from ".."
+import { defineExt, Prop } from ".."
 import { distLinePt } from "../../../eval/ops/fn/geo/distance"
 import { each, type JsValue, type Tys } from "../../../eval/ty"
 import { num, unpt } from "../../../eval/ty/create"
@@ -29,7 +29,7 @@ function getLineBounds(line: Tys["line"], paper: Paper): [Point, Point] {
   ]
 }
 
-export function drawLine(line: Tys["line"], paper: Paper) {
+export function drawLine(line: Tys["line"], paper: Paper, selected: boolean) {
   const x1 = num(line[0].x)
   const y1 = num(line[0].y)
   const x2 = num(line[1].x)
@@ -46,6 +46,15 @@ export function drawLine(line: Tys["line"], paper: Paper) {
 
   const { ctx, scale } = paper
 
+  if (selected) {
+    ctx.beginPath()
+    ctx.lineWidth = 8 * scale
+    ctx.strokeStyle = "#2d70b360"
+    ctx.moveTo(o1.x, o1.y)
+    ctx.lineTo(o2.x, o2.y)
+    ctx.stroke()
+  }
+
   ctx.beginPath()
   ctx.lineWidth = 3 * scale
   ctx.strokeStyle = "#2d70b3"
@@ -53,6 +62,8 @@ export function drawLine(line: Tys["line"], paper: Paper) {
   ctx.lineTo(o2.x, o2.y)
   ctx.stroke()
 }
+
+const SELECTED = new Prop(() => false)
 
 export const EXT_LINE = defineExt({
   data(expr) {
@@ -64,7 +75,7 @@ export const EXT_LINE = defineExt({
   },
   plot2d(data, paper) {
     for (const segment of each(data.value)) {
-      drawLine(segment, paper)
+      drawLine(segment, paper, SELECTED.get(data.expr))
     }
   },
   layer() {
@@ -84,8 +95,12 @@ export const EXT_LINE = defineExt({
       const pt = data.paper.paperToCanvas(at)
 
       if (distLinePt([l1, l2], pt) <= 12 * data.paper.scale) {
+        SELECTED.set(data.expr, true)
         return { ...data, value: data.value }
       }
+    },
+    off(data) {
+      SELECTED.set(data.expr, false)
     },
     val(data) {
       return data.value

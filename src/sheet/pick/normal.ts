@@ -197,7 +197,7 @@ export const PICK_LINE = createExt(
   ],
   (sheet, p1, p2) => {
     if (p1 && p2) {
-      drawLine([p1.value, p2.value], sheet.paper)
+      drawLine([p1.value, p2.value], sheet.paper, false)
     }
   },
 )
@@ -211,7 +211,7 @@ export const PICK_SEGMENT = createExt(
   ],
   (sheet, p1, p2) => {
     if (p1 && p2) {
-      drawSegment([p1.value, p2.value], sheet.paper)
+      drawSegment([p1.value, p2.value], sheet.paper, false)
     }
   },
 )
@@ -225,7 +225,7 @@ export const PICK_RAY = createExt(
   ],
   (sheet, p1, p2) => {
     if (p1 && p2) {
-      drawRay([p1.value, p2.value], sheet.paper)
+      drawRay([p1.value, p2.value], sheet.paper, false)
     }
   },
 )
@@ -254,15 +254,9 @@ export const PICK_CIRCLE = createExt(
   (sheet, p1, p2) => {
     if (p1 && p2) {
       const center = unpt(p1.value)
-
-      // if (p2.type == "segment") {
-      // const radius = dist(p2.value[0], p2.value[1])
-      // drawCircle(center, num(radius), sheet.paper)
-      // } else {
       const edge = unpt(p2.value)
       const radius = Math.hypot(center.x - edge.x, center.y - edge.y)
-      drawCircle(center, radius, sheet.paper)
-      // }
+      drawCircle(center, radius, sheet.paper, false)
     }
   },
 )
@@ -277,7 +271,7 @@ export const PICK_PERPENDICULAR = createExt(
   (sheet, p1, p2) => {
     if (p1 && p2) {
       const line = perpendicularJs(p1, p2)
-      drawLine(line, sheet.paper)
+      drawLine(line, sheet.paper, false)
     }
   },
 )
@@ -292,7 +286,7 @@ export const PICK_PARALLEL = createExt(
   (sheet, p1, p2) => {
     if (p1 && p2) {
       const line = parallelJs(p1, p2)
-      drawLine(line, sheet.paper)
+      drawLine(line, sheet.paper, false)
     }
   },
 )

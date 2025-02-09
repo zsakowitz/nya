@@ -72,7 +72,7 @@ export interface Ext<T extends {}, U extends {}, V extends {}, W extends {}> {
     // undim(data: NoInfer<T>): void
 
     on(data: NoInfer<T>, at: Point): W | null | undefined
-    // off(data: W): void
+    off(data: W): void
     val(data: W): JsVal
     ref(data: W): Block
   }
@@ -122,5 +122,38 @@ export class Store<T extends {}> {
       return data
     }
     return data
+  }
+}
+
+/**
+ * A wrapped around a {@linkcode Store} which stores an arbitrary property and
+ * re-renders the {@linkcode Expr}'s {@linkcode Paper} when that property's value
+ * changes.
+ */
+export class Prop<T> {
+  private store = new Store((expr) => {
+    let value = this.init(expr)
+
+    return {
+      get() {
+        return value
+      },
+      set(v: T) {
+        if (value != v) {
+          value = v
+          expr.sheet.paper.queue()
+        }
+      },
+    }
+  })
+
+  constructor(readonly init: (expr: Expr) => T) {}
+
+  get(expr: Expr) {
+    return this.store.get(expr).get()
+  }
+
+  set(expr: Expr, value: T) {
+    this.store.get(expr).set(value)
   }
 }

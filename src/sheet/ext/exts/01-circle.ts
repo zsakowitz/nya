@@ -1,4 +1,4 @@
-import { defineExt } from ".."
+import { defineExt, Prop } from ".."
 import { distCirclePt } from "../../../eval/ops/fn/geo/distance"
 import { each, type JsValue } from "../../../eval/ty"
 import { num, unpt } from "../../../eval/ty/create"
@@ -7,12 +7,28 @@ import { CmdVar } from "../../../field/cmd/leaf/var"
 import { Block, L, R } from "../../../field/model"
 import type { Paper, Point } from "../../ui/paper"
 
-export function drawCircle({ x, y }: Point, r: number, paper: Paper) {
+const SELECTED = new Prop(() => false)
+
+export function drawCircle(
+  { x, y }: Point,
+  r: number,
+  paper: Paper,
+  selected: boolean,
+) {
   if (!(isFinite(x) && isFinite(y) && isFinite(r) && r > 0)) {
     return
   }
 
   const { ctx, scale } = paper
+
+  if (selected) {
+    ctx.beginPath()
+    ctx.lineWidth = 8 * scale
+    paper.circle({ x, y }, r)
+    ctx.strokeStyle = "#388c4660"
+    ctx.stroke()
+  }
+
   ctx.beginPath()
   ctx.lineWidth = 3 * scale
   paper.circle({ x, y }, r)
@@ -34,7 +50,7 @@ export const EXT_CIRCLE = defineExt({
   },
   plot2d(data, paper) {
     for (const { center, radius } of each(data.value)) {
-      drawCircle(unpt(center), num(radius), paper)
+      drawCircle(unpt(center), num(radius), paper, SELECTED.get(data.expr))
     }
   },
   layer() {
@@ -57,8 +73,12 @@ export const EXT_CIRCLE = defineExt({
       const dist = distCirclePt(cx, { x: rx, y: ry }, pt)
 
       if (dist <= 12 * data.paper.scale) {
+        SELECTED.set(data.expr, true)
         return { ...data, value: data.value }
       }
+    },
+    off(data) {
+      SELECTED.set(data.expr, false)
     },
     val(data) {
       return data.value

@@ -826,11 +826,21 @@ void main() {
     this._qdGlsl = true
   }
 
+  private resetOn: (() => void)[] = []
+
+  clearSelect() {
+    this.resetOn.forEach((x) => x())
+    this.resetOn = []
+    this.paper.el.classList.remove("cursor-pointer")
+  }
+
   select<const K extends readonly TyName[]>(
     at: Point,
     tys: K,
     limit: number,
   ): Selected<K[number]>[] {
+    this.clearSelect()
+
     let ret = []
 
     for (const expr of this.exprs
@@ -854,7 +864,9 @@ void main() {
 
       const data = select.on(expr.state.data, at)
       if (data == null) continue
+      this.paper.el.classList.add("cursor-pointer")
 
+      this.resetOn.push(() => select.off?.(data))
       const val = select.val(data)
       if (!tys.includes(val.type)) continue
       const ref = () => select.ref(data)

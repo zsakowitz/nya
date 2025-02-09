@@ -1,4 +1,4 @@
-import { defineExt } from ".."
+import { defineExt, Prop } from ".."
 import { distLinePt } from "../../../eval/ops/fn/geo/distance"
 import { each, type JsValue, type SPoint } from "../../../eval/ty"
 import { num, unpt } from "../../../eval/ty/create"
@@ -8,7 +8,11 @@ import { CmdVar } from "../../../field/cmd/leaf/var"
 import { Block, L, R } from "../../../field/model"
 import type { Paper } from "../../ui/paper"
 
-export function drawSegment(segment: [SPoint, SPoint], paper: Paper) {
+export function drawSegment(
+  segment: [SPoint, SPoint],
+  paper: Paper,
+  selected: boolean,
+) {
   const x1 = num(segment[0].x)
   const y1 = num(segment[0].y)
   const x2 = num(segment[1].x)
@@ -22,6 +26,15 @@ export function drawSegment(segment: [SPoint, SPoint], paper: Paper) {
 
   const { ctx, scale } = paper
 
+  if (selected) {
+    ctx.beginPath()
+    ctx.lineWidth = 8 * scale
+    ctx.strokeStyle = "#2d70b360"
+    ctx.moveTo(o1.x, o1.y)
+    ctx.lineTo(o2.x, o2.y)
+    ctx.stroke()
+  }
+
   ctx.beginPath()
   ctx.lineWidth = 3 * scale
   ctx.strokeStyle = "#2d70b3"
@@ -29,6 +42,8 @@ export function drawSegment(segment: [SPoint, SPoint], paper: Paper) {
   ctx.lineTo(o2.x, o2.y)
   ctx.stroke()
 }
+
+const SELECTED = new Prop(() => false)
 
 export const EXT_SEGMENT = defineExt({
   data(expr) {
@@ -44,7 +59,7 @@ export const EXT_SEGMENT = defineExt({
   },
   plot2d(data, paper) {
     for (const segment of each(data.value)) {
-      drawSegment(segment, paper)
+      drawSegment(segment, paper, SELECTED.get(data.expr))
     }
   },
   layer() {
@@ -68,9 +83,14 @@ export const EXT_SEGMENT = defineExt({
       if (distLinePt([l1, l2], pt) <= 12 * data.paper.scale) {
         const { value: index } = gliderOnLine([p1, p2], at, data.paper)
         if (0 <= index && index <= 1) {
+          SELECTED.set(data.expr, true)
+          console.log("selecting")
           return { ...data, value: data.value }
         }
       }
+    },
+    off(data) {
+      SELECTED.set(data.expr, false)
     },
     val(data) {
       return data.value
