@@ -308,10 +308,27 @@ function createDocs(className: string, hide: () => void) {
           .map(([, info]) => h("flex gap-1", info.icon(), info.name)),
         h("flex gap-1", any(), "any type"),
       ),
+    ])
+  }
+
+  function secShaders() {
+    return section("shaders", [
       hx(
         "p",
         "",
-        "When running in shaders, most values are low-resolution, causing early pixelation. Some data types, however, support high-resolution variants:",
+        "If you reference the 'x', 'y', or 'p' variables in an expression, it becomes a ",
+        hx("em", "", "shader"),
+        ". A shader outputs a single color for every pixel on your screen, and can draw very complex shapes very quickly.",
+      ),
+      hx(
+        "p",
+        "",
+        "When running in shaders, most computations run at a lower precision than normal, since most devices can't handle higher precision values, which might lead to shaders appearing pixelated.",
+      ),
+      hx(
+        "p",
+        "",
+        "Some functions and operators, however, can run on high-precision variants. These operations can be up to 20x slower, but are much more accurate. Note that only these types have high-precision variants:",
       ),
       h(
         "flex flex-col",
@@ -345,6 +362,7 @@ function createDocs(className: string, hide: () => void) {
   return h(
     className,
     secDataTypes(),
+    secShaders(),
     secAdvancedOperators(),
     secNamedFunctions(),
     secUnnamedFunctions(),
