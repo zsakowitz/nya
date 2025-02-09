@@ -4,6 +4,7 @@ import { each, type JsValue } from "../../../eval/ty"
 import { frac, real, unpt } from "../../../eval/ty/create"
 import { TY_INFO } from "../../../eval/ty/info"
 import { OpEq } from "../../../field/cmd/leaf/cmp"
+import { CmdDot } from "../../../field/cmd/leaf/dot"
 import { CmdVar } from "../../../field/cmd/leaf/var"
 import { Block, L, R } from "../../../field/model"
 import { Transition } from "../../transition"
@@ -219,8 +220,8 @@ export const EXT_POINT = defineHideable({
     },
   },
   select: {
-    ty(data) {
-      return data.value.type
+    ty() {
+      return "point32"
     },
     dim(data) {
       DIMMED.set(data.expr, true)
@@ -245,7 +246,7 @@ export const EXT_POINT = defineHideable({
       SELECTED.set(data.expr, false)
     },
     val(data) {
-      return data.value
+      return { ...data.value, type: "point32" }
     },
     ref(data) {
       if (data.expr.field.ast.type == "binding") {
@@ -262,11 +263,19 @@ export const EXT_POINT = defineHideable({
       const c = data.expr.field.block.cursor(L)
       CmdVar.leftOf(c, name, data.expr.field.options)
       new OpEq(false).insertAt(c, L)
-      const block = new Block(null)
-      CmdVar.leftOf(block.cursor(R), name, data.expr.field.options)
       data.expr.field.dirtyAst = data.expr.field.dirtyValue = true
       data.expr.field.trackNameNow()
       data.expr.field.scope.queueUpdate()
+
+      const block = new Block(null)
+      const cursor = block.cursor(R)
+      CmdVar.leftOf(cursor, name, data.expr.field.options)
+      if (data.value.type.startsWith("c")) {
+        new CmdDot().insertAt(cursor, L)
+        for (const c of "point") {
+          new CmdVar(c, data.expr.field.options).insertAt(cursor, L)
+        }
+      }
 
       return block
     },
