@@ -827,19 +827,51 @@ void main() {
   }
 
   private resetOn: (() => void)[] = []
+  private resetDim: (() => void)[] = []
 
   clearSelect() {
     this.resetOn.forEach((x) => x())
     this.resetOn = []
     this.paper.el.classList.remove("cursor-pointer")
+
+    this.resetDim.forEach((x) => x())
+    this.resetDim = []
   }
 
+  checkDim(possible: readonly TyName[]) {
+    this.resetDim.forEach((x) => x())
+    this.resetDim = []
+
+    for (const expr of this.exprs) {
+      if (!(expr.state.ok && expr.state.ext?.select)) continue
+
+      const select = expr.state.ext.select
+      const data = expr.state.data
+
+      const ty = select.ty(data)
+      if (!ty) continue
+
+      if (!possible.includes(ty)) {
+        // FIXME: dim and undim aren't optional
+        select.dim?.(data)
+        this.resetDim.push(() => select.undim?.(data))
+      }
+    }
+  }
+
+  /**
+   * @param tys The types directly accepted by this operation.
+   * @param allPossible All possible types the operation might use, even if this
+   *   particular .select() call doesn't accept them.
+   */
   select<const K extends readonly TyName[]>(
     at: Point,
     tys: K,
     limit: number,
+    possible: readonly TyName[],
   ): Selected<K[number]>[] {
     this.clearSelect()
+    this.checkDim(possible)
 
     let ret = []
 
@@ -866,7 +898,7 @@ void main() {
       if (data == null) continue
       this.paper.el.classList.add("cursor-pointer")
 
-      this.resetOn.push(() => select.off?.(data))
+      this.resetOn.push(() => select.off(data))
       const val = select.val(data)
       if (!tys.includes(val.type)) continue
       const ref = () => select.ref(data)

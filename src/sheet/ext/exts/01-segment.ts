@@ -12,6 +12,7 @@ export function drawSegment(
   segment: [SPoint, SPoint],
   paper: Paper,
   selected: boolean,
+  dimmed: boolean,
 ) {
   const x1 = num(segment[0].x)
   const y1 = num(segment[0].y)
@@ -25,6 +26,10 @@ export function drawSegment(
   }
 
   const { ctx, scale } = paper
+
+  if (dimmed) {
+    ctx.globalAlpha = 0.3
+  }
 
   if (selected) {
     ctx.beginPath()
@@ -41,8 +46,13 @@ export function drawSegment(
   ctx.moveTo(o1.x, o1.y)
   ctx.lineTo(o2.x, o2.y)
   ctx.stroke()
+
+  if (dimmed) {
+    ctx.globalAlpha = 1
+  }
 }
 
+const DIMMED = new Prop(() => false)
 const SELECTED = new Prop(() => false)
 
 export const EXT_SEGMENT = defineExt({
@@ -59,7 +69,12 @@ export const EXT_SEGMENT = defineExt({
   },
   plot2d(data, paper) {
     for (const segment of each(data.value)) {
-      drawSegment(segment, paper, SELECTED.get(data.expr))
+      drawSegment(
+        segment,
+        paper,
+        SELECTED.get(data.expr),
+        DIMMED.get(data.expr),
+      )
     }
   },
   layer() {
@@ -68,6 +83,12 @@ export const EXT_SEGMENT = defineExt({
   select: {
     ty(data) {
       return data.value.type
+    },
+    dim(data) {
+      DIMMED.set(data.expr, true)
+    },
+    undim(data) {
+      DIMMED.set(data.expr, false)
     },
     on(data, at) {
       if (data.value.list !== false) {

@@ -16,7 +16,7 @@ import { drawRay } from "../ext/exts/01-ray"
 import { drawSegment } from "../ext/exts/01-segment"
 import { drawVector } from "../ext/exts/01-vector"
 import { Expr } from "../ui/expr"
-import type { Selected, Sheet } from "../ui/sheet"
+import { Selected, Sheet } from "../ui/sheet"
 import { virtualPoint } from "./point"
 
 export interface ExtByTy<T extends readonly TyName[]> {
@@ -44,6 +44,15 @@ export const PICK_BY_TY = createPicker<PropsByTy, Selected>({
   id(data) {
     return data.ext.id
   },
+  init(data, sheet) {
+    const maybePoint = data.next.some((x) => x == "point32" || x == "point64")
+
+    sheet.checkDim(
+      maybePoint ?
+        [...data.next, "point32", "point64", "line", "ray", "segment", "circle"]
+      : data.next,
+    )
+  },
   find(data, at, sheet) {
     const maybePoint = data.next.some((x) => x == "point32" || x == "point64")
 
@@ -63,7 +72,14 @@ export const PICK_BY_TY = createPicker<PropsByTy, Selected>({
       }
     }
 
-    const [hovered] = sheet.select(at, data.next, 1)
+    const [hovered] = sheet.select(
+      at,
+      data.next,
+      1,
+      maybePoint ?
+        [...data.next, "point32", "point64", "line", "ray", "segment", "circle"]
+      : data.next,
+    )
 
     if (hovered) {
       return hovered
@@ -211,7 +227,7 @@ export const PICK_SEGMENT = createExt(
   ],
   (sheet, p1, p2) => {
     if (p1 && p2) {
-      drawSegment([p1.value, p2.value], sheet.paper, false)
+      drawSegment([p1.value, p2.value], sheet.paper, false, false)
     }
   },
 )

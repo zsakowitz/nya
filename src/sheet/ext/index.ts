@@ -67,9 +67,8 @@ export interface Ext<T extends {}, U extends {}, V extends {}, W extends {}> {
 
   select?: {
     ty(data: NoInfer<T>): TyName | null
-
-    // dim(data: NoInfer<T>): void
-    // undim(data: NoInfer<T>): void
+    dim?(data: NoInfer<T>): void
+    undim?(data: NoInfer<T>): void
 
     on(data: NoInfer<T>, at: Point): W | null | undefined
     off(data: W): void

@@ -16,11 +16,22 @@ const color = new Store(
 )
 
 const SELECTED = new Prop(() => false)
+const DIMMED = new Prop(() => false)
 
-export function drawPoint(paper: Paper, at: Point, size = 4, halo?: boolean) {
+export function drawPoint(
+  paper: Paper,
+  at: Point,
+  size = 4,
+  halo?: boolean,
+  dimmed?: boolean,
+) {
   const offset = paper.paperToCanvas(at)
   if (!(isFinite(offset.x) && isFinite(offset.y))) return
   const { ctx, scale } = paper
+
+  if (dimmed) {
+    ctx.globalAlpha = 0.3
+  }
 
   if (halo) {
     ctx.beginPath()
@@ -33,6 +44,10 @@ export function drawPoint(paper: Paper, at: Point, size = 4, halo?: boolean) {
   ctx.fillStyle = "#6042a6"
   ctx.arc(offset.x, offset.y, size * scale, 0, 2 * Math.PI)
   ctx.fill()
+
+  if (dimmed) {
+    ctx.globalAlpha = 1
+  }
 }
 
 export const EXT_POINT = defineExt({
@@ -71,6 +86,7 @@ export const EXT_POINT = defineExt({
         : data.drag ? color.get(data.expr).get()
         : 4,
         !!data.drag,
+        DIMMED.get(data.expr),
       )
     }
   },
@@ -204,6 +220,12 @@ export const EXT_POINT = defineExt({
   select: {
     ty(data) {
       return data.value.type
+    },
+    dim(data) {
+      DIMMED.set(data.expr, true)
+    },
+    undim(data) {
+      DIMMED.set(data.expr, false)
     },
     on(data, at) {
       if (data.value.list !== false) {

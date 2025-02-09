@@ -16,7 +16,14 @@ import type { Sheet } from "../ui/sheet"
 import { Writer } from "../write"
 
 export function virtualPoint(at: Point, sheet: Sheet) {
-  const objs = sheet.select(at, ["line", "segment", "ray", "circle"], 2)
+  const objs = sheet.select(at, ["line", "segment", "ray", "circle"], 2, [
+    "line",
+    "segment",
+    "ray",
+    "circle",
+    "point32",
+    "point64",
+  ])
 
   intersection: if (objs.length == 2) {
     let o1 = objs[0]!

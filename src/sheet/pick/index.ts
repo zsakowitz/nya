@@ -4,6 +4,7 @@ import type { Sheet } from "../ui/sheet"
 /** Allows objects to be selected from the canvas. */
 export interface Picker<in T extends {}, in out U extends {}> {
   id(data: T): number
+  init(data: T, sheet: Sheet): void
 
   /** Finds an object at the cursor's location. */
   find(data: T, at: Point, sheet: Sheet): U | null

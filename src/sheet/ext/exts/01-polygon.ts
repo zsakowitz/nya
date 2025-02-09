@@ -53,7 +53,7 @@ export const EXT_POLYGON = defineExt({
   plot2d(data, paper) {
     const highlight = SELECTED.get(data.expr)
     if (highlight) {
-      drawSegment(highlight, paper, true)
+      drawSegment(highlight, paper, true, false)
     }
 
     for (const polygon of each(data.value)) {
