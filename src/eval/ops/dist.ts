@@ -205,11 +205,20 @@ export class FnDist<Q extends TyName = TyName> implements Fn {
 }
 
 export function doc(params: readonly TyName[], type: TyName, list = false) {
+  return docByIcon(
+    params.map((x) => TY_INFO[x].icon()),
+    TY_INFO[type].icon(),
+    list,
+  )
+}
+
+export function docByIcon(
+  params: HTMLSpanElement[],
+  type: HTMLSpanElement,
+  list = false,
+) {
   const brack = CmdBrack.render("(", ")", null, {
-    el: h(
-      "",
-      ...params.flatMap((x) => [new CmdComma().el, TY_INFO[x].icon()]).slice(1),
-    ),
+    el: h("", ...params.flatMap((x) => [new CmdComma().el, x]).slice(1)),
   })
   return h(
     "font-['Symbola'] text-[1.265rem]",
@@ -219,16 +228,16 @@ export function doc(params: readonly TyName[], type: TyName, list = false) {
       CmdBrack.render("[", "]", null, {
         el: h(
           "",
-          TY_INFO[type].icon(),
+          type.cloneNode(true),
           new CmdComma().el,
-          TY_INFO[type].icon(),
+          type,
           new CmdComma().el,
           h("nya-cmd-dot nya-cmd-dot-l", "."),
           h("nya-cmd-dot", "."),
           h("nya-cmd-dot", "."),
         ),
       })
-    : TY_INFO[type].icon(),
+    : type,
   )
 }
 

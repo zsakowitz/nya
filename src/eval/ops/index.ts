@@ -38,6 +38,7 @@ import { FN_SEGMENTS } from "./fn/geo/segments"
 import { FN_START } from "./fn/geo/start"
 import { FN_VECTOR } from "./fn/geo/vector"
 import { FN_VERTICES } from "./fn/geo/vertices"
+import { FN_JOIN } from "./fn/join"
 import { FN_LN } from "./fn/ln"
 import { FN_MAX } from "./fn/max"
 import { FN_MIN } from "./fn/min"
@@ -109,6 +110,7 @@ export const FNS: Record<string, Fn> = {
   radius: FN_RADIUS,
   center: FN_CENTER,
   component: FN_COMPONENT,
+  join: FN_JOIN,
 }
 Object.setPrototypeOf(FNS, null)
 

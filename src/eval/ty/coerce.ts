@@ -29,7 +29,7 @@ export function coerceTy(tys: readonly Ty[]): TyName {
 
   for (const ty of tys) {
     possible[ty.type] = (possible[ty.type] || 0) + 1
-    for (const coerce in TY_INFO[ty.type]) {
+    for (const coerce in TY_INFO[ty.type].coerce) {
       possible[coerce] = (possible[coerce] || 0) + 1
     }
   }
