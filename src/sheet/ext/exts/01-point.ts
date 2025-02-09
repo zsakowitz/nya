@@ -220,8 +220,13 @@ export const EXT_POINT = defineHideable({
     },
   },
   select: {
-    ty() {
-      return "point32"
+    ty(data) {
+      const ty = data.value.type
+      return (
+        ty == "c32" ? "point32"
+        : ty == "c64" ? "point64"
+        : ty
+      )
     },
     dim(data) {
       DIMMED.set(data.expr, true)
@@ -246,7 +251,14 @@ export const EXT_POINT = defineHideable({
       SELECTED.set(data.expr, false)
     },
     val(data) {
-      return { ...data.value, type: "point32" }
+      const ty = data.value.type
+      return {
+        ...data.value,
+        type:
+          ty == "c32" ? "point32"
+          : ty == "c64" ? "point64"
+          : ty,
+      }
     },
     ref(data) {
       if (data.expr.field.ast.type == "binding") {
