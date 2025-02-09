@@ -139,6 +139,20 @@ export class Expr {
   compute() {
     let destroyed = false
 
+    if (this.field.error != null) {
+      if (!destroyed) {
+        if (this.state.ok && this.state.ext) {
+          this.state.ext.destroy?.(this.state.data)
+        }
+        if (this.state.ok && this.state.ext?.plot2d) {
+          this.sheet.paper.queue()
+        }
+      }
+      this.state = { ok: false, reason: this.field.error }
+      this.layer = 0
+      return
+    }
+
     try {
       this.computeJs()
 

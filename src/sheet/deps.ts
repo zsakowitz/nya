@@ -108,6 +108,7 @@ export class Scope {
         const msg = e instanceof Error ? e.message : String(e)
         console.warn("[deps]", msg)
         field.error = toError(e)
+        field.recompute?.()
         continue
       }
       this.retrack(field)
