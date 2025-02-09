@@ -29,7 +29,12 @@ function getLineBounds(line: Tys["line"], paper: Paper): [Point, Point] {
   ]
 }
 
-export function drawLine(line: Tys["line"], paper: Paper, selected: boolean) {
+export function drawLine(
+  line: Tys["line"],
+  paper: Paper,
+  selected: boolean,
+  dimmed: boolean,
+) {
   const x1 = num(line[0].x)
   const y1 = num(line[0].y)
   const x2 = num(line[1].x)
@@ -46,6 +51,10 @@ export function drawLine(line: Tys["line"], paper: Paper, selected: boolean) {
 
   const { ctx, scale } = paper
 
+  if (dimmed) {
+    ctx.globalAlpha = 0.3
+  }
+
   if (selected) {
     ctx.beginPath()
     ctx.lineWidth = 8 * scale
@@ -61,9 +70,14 @@ export function drawLine(line: Tys["line"], paper: Paper, selected: boolean) {
   ctx.moveTo(o1.x, o1.y)
   ctx.lineTo(o2.x, o2.y)
   ctx.stroke()
+
+  if (dimmed) {
+    ctx.globalAlpha = 1
+  }
 }
 
 const SELECTED = new Prop(() => false)
+const DIMMED = new Prop(() => false)
 
 export const EXT_LINE = defineExt({
   data(expr) {
@@ -75,7 +89,7 @@ export const EXT_LINE = defineExt({
   },
   plot2d(data, paper) {
     for (const segment of each(data.value)) {
-      drawLine(segment, paper, SELECTED.get(data.expr))
+      drawLine(segment, paper, SELECTED.get(data.expr), DIMMED.get(data.expr))
     }
   },
   layer() {
@@ -84,6 +98,12 @@ export const EXT_LINE = defineExt({
   select: {
     ty(data) {
       return data.value.type
+    },
+    dim(data) {
+      DIMMED.set(data.expr, true)
+    },
+    undim(data) {
+      DIMMED.set(data.expr, false)
     },
     on(data, at) {
       if (data.value.list !== false) {

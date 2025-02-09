@@ -8,18 +8,24 @@ import { Block, L, R } from "../../../field/model"
 import type { Paper, Point } from "../../ui/paper"
 
 const SELECTED = new Prop(() => false)
+const DIMMED = new Prop(() => false)
 
 export function drawCircle(
   { x, y }: Point,
   r: number,
   paper: Paper,
   selected: boolean,
+  dimmed: boolean,
 ) {
   if (!(isFinite(x) && isFinite(y) && isFinite(r) && r > 0)) {
     return
   }
 
   const { ctx, scale } = paper
+
+  if (dimmed) {
+    ctx.globalAlpha = 0.3
+  }
 
   if (selected) {
     ctx.beginPath()
@@ -34,6 +40,10 @@ export function drawCircle(
   paper.circle({ x, y }, r)
   ctx.strokeStyle = "#388c46"
   ctx.stroke()
+
+  if (dimmed) {
+    ctx.globalAlpha = 1
+  }
 }
 
 export const EXT_CIRCLE = defineExt({
@@ -50,7 +60,13 @@ export const EXT_CIRCLE = defineExt({
   },
   plot2d(data, paper) {
     for (const { center, radius } of each(data.value)) {
-      drawCircle(unpt(center), num(radius), paper, SELECTED.get(data.expr))
+      drawCircle(
+        unpt(center),
+        num(radius),
+        paper,
+        SELECTED.get(data.expr),
+        DIMMED.get(data.expr),
+      )
     }
   },
   layer() {
@@ -59,6 +75,12 @@ export const EXT_CIRCLE = defineExt({
   select: {
     ty() {
       return "circle"
+    },
+    dim(data) {
+      DIMMED.set(data.expr, true)
+    },
+    undim(data) {
+      DIMMED.set(data.expr, false)
     },
     on(data, at) {
       if (data.value.list !== false) {

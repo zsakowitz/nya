@@ -12,13 +12,22 @@ import { Block, L, R } from "../../../field/model"
 import type { Paper } from "../../ui/paper"
 import { drawSegment } from "./01-segment"
 
-export function drawPolygon(polygon: SPoint[], paper: Paper, closed: boolean) {
+export function drawPolygon(
+  polygon: SPoint[],
+  paper: Paper,
+  closed: boolean,
+  dimmed: boolean,
+) {
   const pts = polygon.map(({ x, y }) =>
     paper.paperToCanvas({ x: num(x), y: num(y) }),
   )
   if (pts.length == 0) return
 
   const { ctx, scale } = paper
+
+  if (dimmed) {
+    ctx.globalAlpha = 0.3
+  }
 
   ctx.beginPath()
   ctx.lineWidth = 3 * scale
@@ -34,9 +43,14 @@ export function drawPolygon(polygon: SPoint[], paper: Paper, closed: boolean) {
   }
   ctx.fill()
   ctx.stroke()
+
+  if (dimmed) {
+    ctx.globalAlpha = 1
+  }
 }
 
 const SELECTED = new Prop<[SPoint, SPoint] | null>(() => null)
+const DIMMED = new Prop(() => false)
 
 export const EXT_POLYGON = defineExt({
   data(expr) {
@@ -57,7 +71,7 @@ export const EXT_POLYGON = defineExt({
     }
 
     for (const polygon of each(data.value)) {
-      drawPolygon(polygon, paper, true)
+      drawPolygon(polygon, paper, true, DIMMED.get(data.expr))
     }
   },
   layer() {
@@ -66,6 +80,12 @@ export const EXT_POLYGON = defineExt({
   select: {
     ty() {
       return "segment"
+    },
+    dim(data) {
+      DIMMED.set(data.expr, true)
+    },
+    undim(data) {
+      DIMMED.set(data.expr, false)
     },
     on(data, at) {
       if (data.value.list !== false) {

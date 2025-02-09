@@ -64,6 +64,7 @@ export function drawRay(
   ray: [SPoint, SPoint],
   paper: Paper,
   selected: boolean,
+  dimmed: boolean,
 ) {
   const x1 = num(ray[0].x)
   const y1 = num(ray[0].y)
@@ -84,6 +85,10 @@ export function drawRay(
 
   const { ctx, scale } = paper
 
+  if (dimmed) {
+    ctx.globalAlpha = 0.3
+  }
+
   if (selected) {
     ctx.beginPath()
     ctx.lineWidth = 8 * scale
@@ -99,7 +104,13 @@ export function drawRay(
   ctx.moveTo(o1.x, o1.y)
   ctx.lineTo(o2.x, o2.y)
   ctx.stroke()
+
+  if (dimmed) {
+    ctx.globalAlpha = 1
+  }
 }
+
+const DIMMED = new Prop(() => false)
 
 export const EXT_RAY = defineExt({
   data(expr) {
@@ -111,7 +122,7 @@ export const EXT_RAY = defineExt({
   },
   plot2d(data, paper) {
     for (const segment of each(data.value)) {
-      drawRay(segment, paper, SELECTED.get(data.expr))
+      drawRay(segment, paper, SELECTED.get(data.expr), DIMMED.get(data.expr))
     }
   },
   layer() {
@@ -120,6 +131,12 @@ export const EXT_RAY = defineExt({
   select: {
     ty(data) {
       return data.value.type
+    },
+    dim(data) {
+      DIMMED.set(data.expr, true)
+    },
+    undim(data) {
+      DIMMED.set(data.expr, false)
     },
     on(data, at) {
       if (data.value.list !== false) {

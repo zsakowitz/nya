@@ -852,9 +852,8 @@ void main() {
       if (!ty) continue
 
       if (!possible.includes(ty)) {
-        // FIXME: dim and undim aren't optional
-        select.dim?.(data)
-        this.resetDim.push(() => select.undim?.(data))
+        select.dim(data)
+        this.resetDim.push(() => select.undim(data))
       }
     }
   }

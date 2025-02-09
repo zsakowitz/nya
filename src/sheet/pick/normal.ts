@@ -213,7 +213,7 @@ export const PICK_LINE = createExt(
   ],
   (sheet, p1, p2) => {
     if (p1 && p2) {
-      drawLine([p1.value, p2.value], sheet.paper, false)
+      drawLine([p1.value, p2.value], sheet.paper, false, false)
     }
   },
 )
@@ -241,7 +241,7 @@ export const PICK_RAY = createExt(
   ],
   (sheet, p1, p2) => {
     if (p1 && p2) {
-      drawRay([p1.value, p2.value], sheet.paper, false)
+      drawRay([p1.value, p2.value], sheet.paper, false, false)
     }
   },
 )
@@ -272,7 +272,7 @@ export const PICK_CIRCLE = createExt(
       const center = unpt(p1.value)
       const edge = unpt(p2.value)
       const radius = Math.hypot(center.x - edge.x, center.y - edge.y)
-      drawCircle(center, radius, sheet.paper, false)
+      drawCircle(center, radius, sheet.paper, false, false)
     }
   },
 )
@@ -287,7 +287,7 @@ export const PICK_PERPENDICULAR = createExt(
   (sheet, p1, p2) => {
     if (p1 && p2) {
       const line = perpendicularJs(p1, p2)
-      drawLine(line, sheet.paper, false)
+      drawLine(line, sheet.paper, false, false)
     }
   },
 )
@@ -302,7 +302,7 @@ export const PICK_PARALLEL = createExt(
   (sheet, p1, p2) => {
     if (p1 && p2) {
       const line = parallelJs(p1, p2)
-      drawLine(line, sheet.paper, false)
+      drawLine(line, sheet.paper, false, false)
     }
   },
 )
@@ -373,6 +373,7 @@ export const PICK_POLYGON: PropsByTy = {
       drawPolygon(
         pts.map((x) => x.value),
         sheet.paper,
+        false,
         false,
       )
     },
