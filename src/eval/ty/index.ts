@@ -22,6 +22,27 @@ export interface Tys {
   polygon: SPoint[]
 }
 
+export interface TyComponents {
+  r32: never
+  r64: never
+  c32: "r32"
+  c64: "r64"
+  q32: "r32"
+  bool: never
+  color: "r32"
+
+  point32: "r32"
+  point64: "r64"
+  segment: never
+  ray: never
+  line: never
+  vector: never
+  circle: never
+  polygon: never
+}
+
+null! as TyComponents satisfies Record<TyName, TyName>
+
 export type SApprox = { type: "approx"; value: number }
 export type SExact = { type: "exact"; n: number; d: number }
 export type SReal = SApprox | SExact

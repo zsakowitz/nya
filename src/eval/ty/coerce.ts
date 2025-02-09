@@ -148,6 +148,10 @@ export function coerceValGlsl(
   }
 }
 
+export function coerceValueJs<T extends TyName = TyName>(
+  value: JsValue,
+  to: Type<T>,
+): JsValue<T>
 export function coerceValueJs(value: JsValue, to: Type): JsValue {
   if (to.list === false) {
     if (value.list !== false) {

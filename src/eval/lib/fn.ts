@@ -54,6 +54,10 @@ export class GlslContext {
   }
 
   cached(ty: TyName, val: string): string {
+    if (val.match(/^([A-Za-z_]+|\d+|\d*\.\d+|\d+\.)$/)) {
+      return val
+    }
+
     const name = this.name()
     this.push`${TY_INFO[ty].glsl} ${name} = ${val};\n`
     return name

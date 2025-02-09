@@ -1,4 +1,4 @@
-import type { SPoint, SReal, Tys } from "."
+import type { SPoint, SReal, TyComponents, TyName, Tys } from "."
 import { CmdColor } from "../../field/cmd/leaf/color"
 import { CmdComma } from "../../field/cmd/leaf/comma"
 import { CmdWord } from "../../field/cmd/leaf/word"
@@ -16,14 +16,21 @@ export interface Garbage<T> {
   glsl: string
 }
 
-export interface TyInfo<T> {
+export interface TyInfo<T, U extends TyName> {
   name: string
+  namePlural: string
   glsl: string
   garbage: Garbage<T>
   coerce: TyCoerceMap<T>
   write: Write<T>
   icon(): HTMLSpanElement
   glide?(props: GlideProps<T>): { value: number; precision: number }
+  components?: TyComponentInfo<T, U>
+}
+
+export interface TyComponentInfo<T, U extends TyName> {
+  ty: U
+  at: [(val: T) => Tys[U], (val: string) => string][]
 }
 
 export interface GlideProps<T> {
@@ -46,7 +53,7 @@ export interface TyCoerce<T, U> {
 }
 
 export type TyInfoMap = {
-  [K in keyof Tys]: TyInfo<Tys[K]>
+  [K in keyof Tys]: TyInfo<Tys[K], TyComponents[K]>
 }
 
 const WRITE_COMPLEX: Write<SPoint> = {
@@ -104,11 +111,13 @@ export function gliderOnLine(
 
 function lineInfo(
   name: string,
+  namePlural: string,
   clsx: string,
   glide: ((bound: number) => number) | null,
-): TyInfo<[SPoint, SPoint]> {
+): TyInfo<[SPoint, SPoint], never> {
   return {
     name,
+    namePlural,
     glsl: "vec4",
     garbage: { js: [NANPT, NANPT], glsl: "vec4(0.0/0.0)" },
     coerce: {},
@@ -238,6 +247,7 @@ export function any(
 export const TY_INFO: TyInfoMap = {
   bool: {
     name: "true/false value",
+    namePlural: "true/false values",
     glsl: "bool",
     garbage: { js: false, glsl: "false" },
     coerce: {
@@ -311,6 +321,7 @@ export const TY_INFO: TyInfoMap = {
   },
   r32: {
     name: "real number",
+    namePlural: "real numbers",
     glsl: "float",
     garbage: { js: real(NaN), glsl: "(0.0/0.0)" },
     coerce: {
@@ -338,6 +349,7 @@ export const TY_INFO: TyInfoMap = {
   },
   r64: {
     name: "real number",
+    namePlural: "real numbers",
     glsl: "vec2",
     garbage: { js: real(NaN), glsl: "vec2(0.0/0.0)" },
     coerce: {
@@ -381,6 +393,7 @@ export const TY_INFO: TyInfoMap = {
   },
   c32: {
     name: "complex number",
+    namePlural: "complex numbers",
     glsl: "vec2",
     garbage: { js: NANPT, glsl: "vec2(0.0/0.0)" },
     coerce: {
@@ -397,9 +410,17 @@ export const TY_INFO: TyInfoMap = {
     icon() {
       return iconComplex(false)
     },
+    components: {
+      ty: "r32",
+      at: [
+        [(x) => x.x, (x) => `${x}.x`],
+        [(x) => x.y, (x) => `${x}.y`],
+      ],
+    },
   },
   c64: {
     name: "complex number",
+    namePlural: "complex numbers",
     glsl: "vec4",
     garbage: { js: NANPT, glsl: "vec4(0.0/0.0)" },
     coerce: {
@@ -424,9 +445,17 @@ export const TY_INFO: TyInfoMap = {
     icon() {
       return iconComplex(true)
     },
+    components: {
+      ty: "r64",
+      at: [
+        [(x) => x.x, (x) => `${x}.xy`],
+        [(x) => x.y, (x) => `${x}.zw`],
+      ],
+    },
   },
   point32: {
     name: "point",
+    namePlural: "points",
     glsl: "vec2",
     garbage: { js: NANPT, glsl: "vec2(0.0/0.0)" },
     coerce: {},
@@ -434,9 +463,17 @@ export const TY_INFO: TyInfoMap = {
     icon() {
       return iconPoint(false)
     },
+    components: {
+      ty: "r32",
+      at: [
+        [(x) => x.x, (x) => `${x}.x`],
+        [(x) => x.y, (x) => `${x}.y`],
+      ],
+    },
   },
   point64: {
     name: "point",
+    namePlural: "points",
     glsl: "vec4",
     garbage: { js: NANPT, glsl: "vec4(0.0/0.0)" },
     coerce: {
@@ -453,9 +490,17 @@ export const TY_INFO: TyInfoMap = {
     icon() {
       return iconPoint(true)
     },
+    components: {
+      ty: "r64",
+      at: [
+        [(x) => x.x, (x) => `${x}.xy`],
+        [(x) => x.y, (x) => `${x}.zw`],
+      ],
+    },
   },
   q32: {
     name: "quaternion",
+    namePlural: "quaternions",
     glsl: "vec4",
     garbage: {
       js: [real(NaN), real(NaN), real(NaN), real(NaN)],
@@ -510,9 +555,19 @@ export const TY_INFO: TyInfoMap = {
         ),
       )
     },
+    components: {
+      ty: "r32",
+      at: [
+        [(x) => x[0], (x) => `${x}.x`],
+        [(x) => x[1], (x) => `${x}.y`],
+        [(x) => x[2], (x) => `${x}.z`],
+        [(x) => x[3], (x) => `${x}.w`],
+      ],
+    },
   },
   color: {
     name: "color",
+    namePlural: "colors",
     glsl: "vec4",
     garbage: {
       js: { type: "color", r: real(0), g: real(0), b: real(0), a: real(0) },
@@ -577,29 +632,43 @@ export const TY_INFO: TyInfoMap = {
         ),
       )
     },
+    components: {
+      ty: "r32",
+      at: [
+        [(x) => x.r, (x) => `(255.0 * ${x}.x)`],
+        [(x) => x.g, (x) => `(255.0 * ${x}.y)`],
+        [(x) => x.b, (x) => `(255.0 * ${x}.z)`],
+        [(x) => x.a, (x) => `${x}.w`],
+      ],
+    },
   },
   segment: lineInfo(
-    "segment",
+    "line segment",
+    "line segements",
     "w-[20px] h-0 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-t-2 border-current -rotate-[30deg]",
     (x) => Math.max(0, Math.min(1, x)),
   ),
   ray: lineInfo(
     "ray",
+    "rays",
     "w-[30px] h-0 absolute rounded-full top-1/2 left-1/2 translate-x-[-10px] translate-y-[-3.5px] border-t-2 border-current -rotate-[30deg]",
     (x) => Math.max(0, x),
   ),
   line: lineInfo(
     "line",
+    "lines",
     "w-[30px] h-0 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-t-2 border-current -rotate-[30deg]",
     (x) => x,
   ),
   vector: lineInfo(
     "vector",
+    "vectors",
     "w-[20px] h-0 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-t-2 border-current -rotate-[30deg] after:absolute after:content-['_'] after:bg-current after:top-[-4px] after:right-[-1px] after:bottom-[-2px] after:w-[6px] after:[clip-path:polygon(0%_0%,100%_50%,0%_100%)]",
     null,
   ),
   circle: {
     name: "circle",
+    namePlural: "circles",
     glsl: "vec3",
     garbage: {
       js: { center: NANPT, radius: real(NaN) },
@@ -656,6 +725,7 @@ export const TY_INFO: TyInfoMap = {
   },
   polygon: {
     name: "polygon",
+    namePlural: "polygons",
     get glsl(): never {
       throw new Error("Cannot construct polygons in shaders.")
     },

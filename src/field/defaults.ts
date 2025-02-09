@@ -293,6 +293,7 @@ export const words = new WordMap<WordKind>([
   ["cmp", "prefix"],
   ["mrrp", "var"],
   ["meow", "var"],
+  ["component", "prefix"],
 
   // Number theory
   ["lcm", "prefix"],

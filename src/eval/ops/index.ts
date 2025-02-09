@@ -16,6 +16,7 @@ import { FN_IMAG } from "./fn/complex/imag"
 import { FN_POINT } from "./fn/complex/point"
 import { FN_REAL } from "./fn/complex/real"
 import { FN_UNSIGN } from "./fn/complex/unsign"
+import { FN_COMPONENT } from "./fn/component"
 import { FN_DEBUGPOINT } from "./fn/debugpoint"
 import { FN_FIRSTVALID } from "./fn/firstvalid"
 import { FN_FORCESHADER } from "./fn/forceshader"
@@ -107,6 +108,7 @@ export const FNS: Record<string, Fn> = {
   end: FN_END,
   radius: FN_RADIUS,
   center: FN_CENTER,
+  component: FN_COMPONENT,
 }
 Object.setPrototypeOf(FNS, null)
 
