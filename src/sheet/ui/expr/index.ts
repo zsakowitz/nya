@@ -266,7 +266,10 @@ export class Expr {
 
       // .plotGl()
       {
-        const gl = this.state.ext.plotGl?.(this.state.data, this.sheet.helpers)
+        const gl = this.state.ext.plotGl?.(
+          this.state.data,
+          this.sheet.scope.helpers,
+        )
         if (gl) {
           this.glsl = gl
           this.sheet.queueGlsl()

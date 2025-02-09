@@ -5,7 +5,7 @@ import { faListUl } from "@fortawesome/free-solid-svg-icons/faListUl"
 import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash"
 import type { Regl } from "regl"
 import regl from "regl"
-import { GlslContext, GlslHelpers } from "../../../eval/lib/fn"
+import { GlslContext } from "../../../eval/lib/fn"
 import { FNS } from "../../../eval/ops"
 import { ALL_DOCS } from "../../../eval/ops/docs"
 import { declareAddR64 } from "../../../eval/ops/op/add"
@@ -546,7 +546,6 @@ function createDocs(className: string, hide: () => void) {
 
 export class Sheet {
   readonly paper = new Paper()
-  readonly helpers = new GlslHelpers()
   readonly scope: Scope
   readonly exprs: Expr[] = []
 

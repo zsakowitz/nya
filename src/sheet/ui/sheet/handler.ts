@@ -2,7 +2,6 @@ import type { Sheet } from "."
 import type { AnyExt, Cursor } from "../../ext"
 import type { AnyPick, Picker } from "../../pick"
 import {
-  PICK_BY_TY,
   PICK_CIRCLE,
   PICK_LINE,
   PICK_MIDPOINT,
@@ -56,20 +55,7 @@ export class Handlers implements PointerHandlers<DataDrag, DataHover> {
 
   private pick: PickInactive | PickActive | null = null
 
-  constructor(readonly sheet: Sheet) {
-    addEventListener("keydown", (event) => {
-      if (event.altKey || event.ctrlKey || event.metaKey) {
-        return
-      }
-
-      const picker = ALL[event.key]
-
-      if (picker) {
-        this.setPick(PICK_BY_TY, picker)
-        event.preventDefault()
-      }
-    })
-  }
+  constructor(readonly sheet: Sheet) {}
 
   private lastMouse: Point | null = null
 

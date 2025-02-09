@@ -8,6 +8,7 @@ export const FN_JOIN: Fn & WithDocs = {
   name: "join",
   label: "joins multiple lists into a single one",
   js(...args) {
+    args = args.filter((x) => x.list !== 0)
     const ty = coerceTy(args)
     console.log(ty)
     const items = args.flatMap((x) => {
@@ -17,6 +18,7 @@ export const FN_JOIN: Fn & WithDocs = {
     return { type: ty, list: items.length, value: items }
   },
   glsl(ctx, ...args) {
+    args = args.filter((x) => x.list !== 0)
     const ty = coerceTy(args)
     const size = args.reduce((a, b) => a + (b.list === false ? 1 : b.list), 0)
     const name = ctx.name()
@@ -31,7 +33,7 @@ export const FN_JOIN: Fn & WithDocs = {
       }
 
       for (let i = 0; i < arg.list; i++) {
-        ctx.push`${name}[${index}] = ${expr}[${i}];`
+        ctx.push`${name}[${index}] = ${expr}[${i}];\n`
         index++
       }
     }
