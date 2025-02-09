@@ -319,34 +319,6 @@ export const TY_INFO: TyInfoMap = {
       )
     },
   },
-  r32: {
-    name: "real number",
-    namePlural: "real numbers",
-    glsl: "float",
-    garbage: { js: real(NaN), glsl: "(0.0/0.0)" },
-    coerce: {
-      c32: {
-        js(self) {
-          return { type: "point", x: self, y: real(0) }
-        },
-        glsl(self) {
-          return `vec2(${self}, 0)`
-        },
-      },
-      q32: {
-        js(self) {
-          return [self, real(0), real(0), real(0)]
-        },
-        glsl(self) {
-          return `vec4(${self}, 0, 0, 0)`
-        },
-      },
-    },
-    write: WRITE_REAL,
-    icon() {
-      return iconReal(false)
-    },
-  },
   r64: {
     name: "real number",
     namePlural: "real numbers",
@@ -391,31 +363,32 @@ export const TY_INFO: TyInfoMap = {
       return iconReal(true)
     },
   },
-  c32: {
-    name: "complex number",
-    namePlural: "complex numbers",
-    glsl: "vec2",
-    garbage: { js: NANPT, glsl: "vec2(0.0/0.0)" },
+  r32: {
+    name: "real number",
+    namePlural: "real numbers",
+    glsl: "float",
+    garbage: { js: real(NaN), glsl: "(0.0/0.0)" },
     coerce: {
-      q32: {
+      c32: {
         js(self) {
-          return [self.x, self.y, real(0), real(0)]
+          return { type: "point", x: self, y: real(0) }
         },
         glsl(self) {
-          return `vec4(${self}, 0, 0)`
+          return `vec2(${self}, 0)`
+        },
+      },
+      q32: {
+        js(self) {
+          return [self, real(0), real(0), real(0)]
+        },
+        glsl(self) {
+          return `vec4(${self}, 0, 0, 0)`
         },
       },
     },
-    write: WRITE_COMPLEX,
+    write: WRITE_REAL,
     icon() {
-      return iconComplex(false)
-    },
-    components: {
-      ty: "r32",
-      at: [
-        [(x) => x.x, (x) => `${x}.x`],
-        [(x) => x.y, (x) => `${x}.y`],
-      ],
+      return iconReal(false)
     },
   },
   c64: {
@@ -453,15 +426,24 @@ export const TY_INFO: TyInfoMap = {
       ],
     },
   },
-  point32: {
-    name: "point",
-    namePlural: "points",
+  c32: {
+    name: "complex number",
+    namePlural: "complex numbers",
     glsl: "vec2",
     garbage: { js: NANPT, glsl: "vec2(0.0/0.0)" },
-    coerce: {},
-    write: WRITE_POINT,
+    coerce: {
+      q32: {
+        js(self) {
+          return [self.x, self.y, real(0), real(0)]
+        },
+        glsl(self) {
+          return `vec4(${self}, 0, 0)`
+        },
+      },
+    },
+    write: WRITE_COMPLEX,
     icon() {
-      return iconPoint(false)
+      return iconComplex(false)
     },
     components: {
       ty: "r32",
@@ -495,6 +477,24 @@ export const TY_INFO: TyInfoMap = {
       at: [
         [(x) => x.x, (x) => `${x}.xy`],
         [(x) => x.y, (x) => `${x}.zw`],
+      ],
+    },
+  },
+  point32: {
+    name: "point",
+    namePlural: "points",
+    glsl: "vec2",
+    garbage: { js: NANPT, glsl: "vec2(0.0/0.0)" },
+    coerce: {},
+    write: WRITE_POINT,
+    icon() {
+      return iconPoint(false)
+    },
+    components: {
+      ty: "r32",
+      at: [
+        [(x) => x.x, (x) => `${x}.x`],
+        [(x) => x.y, (x) => `${x}.y`],
       ],
     },
   },
