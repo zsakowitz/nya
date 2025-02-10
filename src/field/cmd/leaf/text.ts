@@ -4,9 +4,9 @@ import { h, hx } from "../../../jsx"
 import type { FieldInert } from "../../field-inert"
 import { toText, type LatexParser } from "../../latex"
 import {
+  Command,
   L,
   R,
-  type Command,
   type Cursor,
   type Dir,
   type InitProps,

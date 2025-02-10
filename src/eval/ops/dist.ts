@@ -87,7 +87,7 @@ export class FnDist<Q extends TyName = TyName> extends FnDistManual<Q> {
 
   withName(name: string, label: string) {
     const dist = new FnDist<Q>(name, label)
-    dist.o = this.o
+    dist.o = this.o.slice()
     return dist
   }
 

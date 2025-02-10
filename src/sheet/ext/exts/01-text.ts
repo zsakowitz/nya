@@ -33,7 +33,7 @@ export const EXT_TEXT = defineExt({
               segment.value,
               null,
             ).parse()
-            block.el.classList.add("font-['Symbola'] text-[110%]")
+            block.el.classList.add("font-['Symbola']", "text-[110%]")
             el.append(block.el)
           } catch {}
         }

@@ -36,7 +36,6 @@ export class Expr {
     this.el = h({
       class:
         "grid grid-cols-[2.5rem_auto] border-r border-b border-[--nya-border] relative nya-expr focus:outline-none",
-      tabindex: "-1",
     })
     this.el.addEventListener("keydown", (event) => {
       if (
@@ -65,7 +64,11 @@ export class Expr {
     this.el.append(
       // grey side of expression
       h(
-        "inline-flex bg-[--nya-bg-sidebar] flex-col p-0.5 border-r border-[--nya-border] font-sans text-[--nya-expr-index] text-[65%] leading-none [:focus-within>&]:bg-[--nya-expr-focus] [:focus-within>&]:text-[--nya-expr-focus-index] [:focus-within>&]:border-[--nya-expr-focus] [:active>&]:bg-[--nya-expr-focus] [:active>&]:text-[--nya-expr-focus-index] [:active>&]:border-[--nya-expr-focus]",
+        {
+          class:
+            "inline-flex bg-[--nya-bg-sidebar] flex-col p-0.5 border-r border-[--nya-border] font-sans text-[--nya-expr-index] text-[65%] leading-none [:focus-within>&]:bg-[--nya-expr-focus] [:focus-within>&]:text-[--nya-expr-focus-index] [:focus-within>&]:border-[--nya-expr-focus] [:active>&]:bg-[--nya-expr-focus] [:active>&]:text-[--nya-expr-focus-index] [:active>&]:border-[--nya-expr-focus]",
+          tabindex: "-1",
+        },
         (this.elIndex = h("")),
         fa(
           faWarning,
