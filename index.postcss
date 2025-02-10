@@ -306,6 +306,10 @@ body {
   }
 
   .nya-range-scrubber {
-    @apply hidden;
+    @apply sr-only;
   }
+}
+
+:where(.nya-range-error) .nya-range-scrubber {
+  @apply hidden;
 }

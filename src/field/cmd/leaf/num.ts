@@ -49,7 +49,7 @@ export class CmdNum extends Leaf {
   }
 
   constructor(readonly text: string) {
-    super(text, h("font-['Symbola']", text))
+    super(text, h("", text))
   }
 
   ascii(): string {

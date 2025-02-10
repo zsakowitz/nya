@@ -34,10 +34,7 @@ export abstract class Op extends Leaf {
   ) {
     super(
       ctrlSeq,
-      h(
-        "nya-cmd-op font-['Symbola']",
-        h("px-[.2em] inline-block cursor-text", html),
-      ),
+      h("nya-cmd-op", h("px-[.2em] inline-block cursor-text", html)),
     )
   }
 

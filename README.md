@@ -162,4 +162,4 @@ A future component of this project.
 
 [^1]:
     The root in question being `ň`, pronounced like the `ng` in `-ing`.
-    Technically `nga` would be a more accurate name, but it isn't as fun.
+    Technically `nga` would be a more accurate name, but it isn't as cute :3
