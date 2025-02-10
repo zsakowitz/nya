@@ -202,6 +202,7 @@ export type AstBinding = {
 export type Node =
   | { type: "void" }
   | { type: "num"; value: string; sub?: Node; span: Span | null }
+  | { type: "text"; value: string }
   | Var
   | MagicVar
   | { type: "num16"; value: string }

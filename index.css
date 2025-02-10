@@ -881,6 +881,11 @@ video {
   margin-right: -0.25rem;
 }
 
+.-mx-\[0\.5ch\] {
+  margin-left: -0.5ch;
+  margin-right: -0.5ch;
+}
+
 .-mb-px {
   margin-bottom: -1px;
 }
@@ -1420,6 +1425,10 @@ video {
   white-space: nowrap;
 }
 
+.whitespace-pre {
+  white-space: pre;
+}
+
 .whitespace-pre-wrap {
   white-space: pre-wrap;
 }
@@ -1815,6 +1824,11 @@ video {
   padding-bottom: 0.5625rem;
 }
 
+.px-\[0\.5ch\] {
+  padding-left: 0.5ch;
+  padding-right: 0.5ch;
+}
+
 .pb-1 {
   padding-bottom: 0.25rem;
 }
@@ -1945,6 +1959,10 @@ video {
 
 .font-sans {
   font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+.font-\[\] {
+  font-family: ;
 }
 
 .text-2xl {
@@ -2233,12 +2251,24 @@ video {
   -webkit-text-stroke: 2px var(--nya-bg);
 }
 
+.\[box-sizing\:content-box\] {
+  box-sizing: content-box;
+}
+
 .\[clip-path\:polygon\(100\%_100\%\2c 100\%_0\%\2c 0\%_100\%\)\] {
   clip-path: polygon(100% 100%,100% 0%,0% 100%);
 }
 
 .\[image-rendering\:pixelated\] {
   image-rendering: pixelated;
+}
+
+.\[letter-spacing\:0\.2\] {
+  letter-spacing: 0.2;
+}
+
+.\[letter-spacing\:2px\] {
+  letter-spacing: 2px;
 }
 
 .\[line-height\:\.9\] {

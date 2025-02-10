@@ -121,6 +121,7 @@ export class Field extends FieldInert {
   }
 
   onBeforeChange() {
+    super.onBeforeChange?.()
     this.sel.each(({ el }) => el.classList.remove("nya-selected"))
     this.cursor.parentElement?.classList.remove("!bg-transparent")
     this.cursor.remove()

@@ -254,3 +254,11 @@ export class LatexParser {
     return this.until("", true)
   }
 }
+
+export function toText(text: string) {
+  let ret = ""
+  for (const char of text) {
+    ret += char == "}" || char == "{" || char == "\\" ? "\\" + char : char
+  }
+  return ret
+}

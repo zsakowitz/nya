@@ -23,6 +23,7 @@ import {
   OpUpArrow,
 } from "./cmd/leaf/op"
 import { SymInfinity, SymPi, SymTau } from "./cmd/leaf/sym"
+import { CmdText } from "./cmd/leaf/text"
 import { CmdTyName } from "./cmd/leaf/tyname"
 import { CmdVar, type WordKind } from "./cmd/leaf/var"
 import { CmdList } from "./cmd/logic/list"
@@ -124,6 +125,8 @@ export const inits = new Inits()
   .set("\\rightarrow", OpRightArrow)
   .set("\\Rightarrow", OpDoubleRightArrow)
   .set("\\to", OpRightArrow)
+  .set('"', CmdText)
+  .set("“", CmdText)
   .freeze()
 
 export const shortcuts = new Inits()
@@ -408,6 +411,7 @@ export const latex = new WordMap<LatexInit>([
   ["\\ux", CmuSym],
   ["\\uxv", CmuSym],
   ["\\tyname", CmdTyName],
+  ["\\text", CmdText],
 ])
 
 for (const key of inits.getAll()) {

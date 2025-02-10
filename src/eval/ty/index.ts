@@ -20,6 +20,8 @@ export interface Tys {
   vector: [SPoint, SPoint]
   circle: { center: SPoint; radius: SReal }
   polygon: SPoint[]
+
+  str: string
 }
 
 export interface TyComponents {
@@ -39,6 +41,8 @@ export interface TyComponents {
   vector: never
   circle: never
   polygon: never
+
+  str: never
 }
 
 null! as TyComponents satisfies Record<TyName, TyName>
