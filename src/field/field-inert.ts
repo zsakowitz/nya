@@ -79,7 +79,7 @@ export class FieldInert {
 
   typeLatex(source: string) {
     this.onBeforeChange?.()
-    const block = new LatexParser(this.options, source).parse()
+    const block = new LatexParser(this.options, source, this).parse()
     const cursor = this.sel.remove()
     cursor.insert(block, L)
     this.sel = cursor.selection()

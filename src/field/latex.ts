@@ -1,5 +1,6 @@
 import { CmdEOF } from "./cmd/leaf/eof"
 import { CmdUnknown } from "./cmd/leaf/unknown"
+import type { FieldInert } from "./field-inert"
 import { Block, L, R, type Command } from "./model"
 import { Options, WordMap } from "./options"
 
@@ -29,6 +30,7 @@ export class LatexParser {
   constructor(
     readonly options: Options,
     private readonly source: string,
+    readonly field: FieldInert | null,
   ) {
     this.cmds = options.latex || new WordMap([])
   }

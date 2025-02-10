@@ -11,7 +11,6 @@ import {
   type Dir,
   type InitProps,
 } from "../../model"
-import { CmdUnknown } from "./unknown"
 
 export class CmdTextInert extends Leaf {
   static fromLatex(_cmd: string, parser: LatexParser): Command {
@@ -46,9 +45,13 @@ export class CmdText extends Leaf {
     text.input.focus()
   }
 
-  static fromLatex(_cmd: string, _parser: LatexParser): Command {
-    return new CmdUnknown("[cannot paste \\text yet]")
-    // return new this(parser.text())
+  static fromLatex(_cmd: string, parser: LatexParser): Command {
+    const text = parser.text()
+    if (parser.field) {
+      return new this(text, parser.field)
+    } else {
+      return new CmdTextInert(text)
+    }
   }
 
   input
