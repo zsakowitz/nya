@@ -1,4 +1,4 @@
-import type { JsVal, JsValue, SPoint, SReal } from "."
+import type { JsVal, JsValue, SReal } from "."
 import { OpApprox, OpEq } from "../../field/cmd/leaf/cmp"
 import { CmdComma } from "../../field/cmd/leaf/comma"
 import { CmdDot } from "../../field/cmd/leaf/dot"
@@ -130,13 +130,28 @@ export class Display {
     return new Display(cursor, this.base)
   }
 
-  value(num: number, signed = false) {
+  value(num: number, signed = false, tag?: string) {
     let val = this.numToBase(num)
     if (signed && val[0] != "-") val = "+" + val
     if (val == "Infinity") val = "∞"
     else if (val == "+Infinity") val = "+∞"
     else if (val == "-Infinity") val = "-∞"
-    this.odigits(val)
+    this.odigits(val, tag)
+  }
+
+  values(nums: [number, string][]) {
+    let wrote = false
+
+    for (const [num, tag] of nums) {
+      if (num != 0) {
+        this.value(num, wrote, tag)
+        wrote = true
+      }
+    }
+
+    if (!wrote) {
+      this.value(0)
+    }
   }
 
   num(num: SReal, tag?: string, signed = false) {
@@ -177,12 +192,19 @@ export class Display {
     }
   }
 
-  complex(value: SPoint) {
-    const showX = !isZero(value.x)
-    if (showX) {
-      this.num(value.x)
+  nums(nums: [SReal, string][]) {
+    let wrote = false
+
+    for (const [num, tag] of nums) {
+      if (!isZero(num)) {
+        this.num(num, tag, wrote)
+        wrote = true
+      }
     }
-    this.num(value.y, "i", showX)
+
+    if (!wrote) {
+      this.value(0)
+    }
   }
 
   plainVal(val: JsVal) {

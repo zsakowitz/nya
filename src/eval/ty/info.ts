@@ -9,7 +9,6 @@ import { h, p, svgx } from "../../jsx"
 import type { Paper, Point } from "../../sheet/ui/paper"
 import type { GlslContext } from "../lib/fn"
 import { num, real, unpt } from "../ty/create"
-import { isZero } from "./check"
 import type { Write } from "./display"
 
 export interface Garbage<T> {
@@ -62,7 +61,10 @@ const WRITE_COMPLEX: Write<SPoint> = {
     return value.x.type == "approx" || value.y.type == "approx"
   },
   display(value, props) {
-    props.complex(value)
+    props.nums([
+      [value.x, ""],
+      [value.y, "i"],
+    ])
   },
 }
 
@@ -521,27 +523,12 @@ export const TY_INFO: TyInfoMap = {
         )
       },
       display(value, props) {
-        let wrote = false
-
-        if (!isZero(value[0])) {
-          wrote = true
-          props.num(value[0])
-        }
-
-        for (const [v, tag] of [
+        props.nums([
+          [value[0], ""],
           [value[1], "i"],
           [value[2], "j"],
           [value[3], "k"],
-        ] as const) {
-          if (!isZero(v)) {
-            props.num(v, tag, wrote)
-            wrote = true
-          }
-        }
-
-        if (!wrote) {
-          props.digits("0")
-        }
+        ])
       },
     },
     icon() {
