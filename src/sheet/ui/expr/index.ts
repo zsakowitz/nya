@@ -23,9 +23,10 @@ export class Expr {
   readonly field
   readonly el
   readonly elIndex
-  readonly elOutput
-  readonly elAside
-  readonly elError
+  private readonly elOutput
+  private readonly elAside
+  private readonly elError
+  private readonly elFocus
 
   removable = true
   state: ExprState = { ok: false, reason: "Not computed yet." }
@@ -63,7 +64,7 @@ export class Expr {
 
     this.el.append(
       // grey side of expression
-      h(
+      (this.elFocus = h(
         {
           class:
             "inline-flex bg-[--nya-bg-sidebar] flex-col p-0.5 border-r border-[--nya-border] font-sans text-[--nya-expr-index] text-[65%] leading-none [:focus-within>&]:bg-[--nya-expr-focus] [:focus-within>&]:text-[--nya-expr-focus-index] [:focus-within>&]:border-[--nya-expr-focus] [:active>&]:bg-[--nya-expr-focus] [:active>&]:text-[--nya-expr-focus-index] [:active>&]:border-[--nya-expr-focus]",
@@ -75,8 +76,7 @@ export class Expr {
           "hidden mx-auto size-6 fill-[--nya-icon-error] [.nya-expr-error_&]:block",
         ),
         (this.elAside = h("contents")),
-      ),
-
+      )),
       // main expression body
       h("flex flex-col", this.field.el, this.elOutput, this.elError),
 
@@ -305,6 +305,6 @@ export class Expr {
   }
 
   focus() {
-    this.el.focus()
+    this.elFocus.focus()
   }
 }
