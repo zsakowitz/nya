@@ -1,23 +1,13 @@
-import { type Fn } from "."
 import { CmdComma } from "../../field/cmd/leaf/comma"
 import { OpRightArrow } from "../../field/cmd/leaf/op"
 import { CmdBrack } from "../../field/cmd/math/brack"
 import { h } from "../../jsx"
 import { GlslContext } from "../lib/fn"
-import type {
-  GlslVal,
-  GlslValue,
-  JsVal,
-  JsValue,
-  Ty,
-  TyName,
-  Tys,
-  Val,
-} from "../ty"
-import { canCoerce, coerceValGlsl, coerceValJs, unifyLists } from "../ty/coerce"
+import type { GlslVal, JsVal, Ty, TyName, Tys, Val } from "../ty"
+import { canCoerce } from "../ty/coerce"
 import { listTy } from "../ty/debug"
-import { declareGlsl } from "../ty/decl"
 import { TY_INFO } from "../ty/info"
+import { FnDistManual } from "./dist-manual"
 import { ALL_DOCS } from "./docs"
 
 /** A single overload of a `FnDist` function. */
@@ -41,13 +31,11 @@ export interface FnDistOverload<Q extends TyName = TyName> {
  * a specific value, which will be enforced in the `ret` parameter to
  * {@linkcode FnDist.add} and properly emitted in return types.
  */
-export class FnDist<Q extends TyName = TyName> implements Fn {
-  private o: FnDistOverload<Q>[] = []
+export class FnDist<Q extends TyName = TyName> extends FnDistManual<Q> {
+  o: FnDistOverload<Q>[] = []
 
-  constructor(
-    readonly name: string,
-    readonly label: string,
-  ) {
+  constructor(name: string, label: string) {
+    super(name, label)
     ALL_DOCS.push(this)
   }
 
@@ -95,102 +83,6 @@ export class FnDist<Q extends TyName = TyName> implements Fn {
     throw new Error(
       `Cannot call '${this.name}' with arguments of type ${listTy(args)}.`,
     )
-  }
-
-  js1(...args: JsVal[]): JsVal<Q> {
-    const overload = this.signature(args)
-
-    return {
-      type: overload.type,
-      value: overload.js(
-        ...args.map((x, i) => coerceValJs(x, overload.params[i]!)),
-      ),
-    }
-  }
-
-  glsl1(ctx: GlslContext, ...args: GlslVal[]): GlslVal<Q> {
-    const overload = this.signature(args)
-
-    return {
-      type: overload.type,
-      expr: overload.glsl(
-        ctx,
-        ...args.map((x, i) => coerceValGlsl(ctx, x, overload.params[i]!)),
-      ),
-    }
-  }
-
-  js(...args: JsValue[]): JsValue<Q> {
-    const overload = this.signature(args)
-    const list = unifyLists(args)
-
-    if (list === false) {
-      return {
-        type: overload.type,
-        list,
-        value: overload.js(
-          ...args.map((x, i) => coerceValJs(x as JsVal, overload.params[i]!)),
-        ),
-      }
-    }
-
-    return {
-      type: overload.type,
-      list,
-      value: Array.from({ length: list }, (_, j) =>
-        overload.js(
-          ...args.map((x, i) =>
-            coerceValJs(
-              x.list === false ? x : { type: x.type, value: x.value[j]! },
-              overload.params[i]!,
-            ),
-          ),
-        ),
-      ),
-    }
-  }
-
-  glsl(ctx: GlslContext, ...args: GlslValue[]): GlslValue<Q> {
-    const overload = this.signature(args)
-    const list = unifyLists(args)
-
-    if (list === false) {
-      return {
-        type: overload.type,
-        list,
-        expr: overload.glsl(
-          ctx,
-          ...args.map((x, i) =>
-            coerceValGlsl(ctx, x as GlslVal, overload.params[i]!),
-          ),
-        ),
-      }
-    }
-
-    const cached: GlslValue[] = args.map((arg) => {
-      const name = ctx.name()
-      ctx.push`${declareGlsl(arg, name)} = ${arg.expr};\n`
-      return { ...arg, expr: name }
-    })
-
-    const ret = ctx.name()
-    ctx.push`${TY_INFO[overload.type].glsl} ${ret}[${list}];\n`
-
-    const idx = ctx.name()
-    ctx.push`for (int ${idx} = 0; ${idx} < ${list}; ${idx}++) {\n`
-    ctx.push`${ret}[${idx}] = ${overload.glsl(
-      ctx,
-      ...cached.map((x, i) =>
-        coerceValGlsl(
-          ctx,
-          x.list === false ? x : { type: x.type, expr: `${x.expr}[${idx}]` },
-          overload.params[i]!,
-        ),
-      ),
-    )};\n`
-    ctx.push`}\n`
-
-    return { type: overload.type, list, expr: ret }
   }
 
   withName(name: string, label: string) {

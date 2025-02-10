@@ -297,6 +297,7 @@ export const words = new WordMap<WordKind>([
   ["mrrp", "var"],
   ["meow", "var"],
   ["component", "prefix"],
+  ["concat", "prefix"],
 
   // Number theory
   ["lcm", "prefix"],
