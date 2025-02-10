@@ -185,13 +185,13 @@ export class Display {
     this.num(value.y, "i", showX)
   }
 
-  private js1(val: JsVal) {
+  plainVal(val: JsVal) {
     TY_INFO[val.type].write.display(val.value as never, this)
   }
 
-  private js(value: JsValue) {
+  plainValue(value: JsValue) {
     if (value.list === false) {
-      this.js1(value)
+      this.plainVal(value)
     } else {
       const block = new Block(null)
       const brack = new CmdBrack("[", "]", null, block)
@@ -213,9 +213,15 @@ export class Display {
       : value.value.some((x) => TY_INFO[value.type].write.isApprox(x as never))
   }
 
-  output(value: JsValue) {
-    new (this.isApprox(value) ? OpApprox : OpEq)(false).insertAt(this.cursor, L)
-    this.js(value)
+  output(value: JsValue, eqSign = true) {
+    if (eqSign) {
+      new (this.isApprox(value) ? OpApprox : OpEq)(false).insertAt(
+        this.cursor,
+        L,
+      )
+    }
+
+    this.plainValue(value)
 
     if (this.canWriteBase() && num(this.base) != 10) {
       new CmdWord("base", "infix").insertAt(this.cursor, L)

@@ -2926,6 +2926,32 @@ body {
   display: block;
 }
 
+.nya-expr:has(.\[\.nya-expr\:has\(\&\)\:not\(\:focus-within\)_\&\]\:mt-0):not(:focus-within) .\[\.nya-expr\:has\(\&\)\:not\(\:focus-within\)_\&\]\:mt-0 {
+  margin-top: 0px;
+}
+
+.nya-expr:has(.\[\.nya-expr\:has\(\&\)\:not\(\:focus-within\)_\&\]\:p-4):not(:focus-within) .\[\.nya-expr\:has\(\&\)\:not\(\:focus-within\)_\&\]\:p-4 {
+  padding: 1rem;
+}
+
+.nya-expr:has(.\[\.nya-expr\:has\(\&\)\:not\(\:focus-within\)_\&\]\:px-4):not(:focus-within) .\[\.nya-expr\:has\(\&\)\:not\(\:focus-within\)_\&\]\:px-4 {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+.nya-expr:has(.\[\.nya-expr\:has\(\&\)\:not\(\:focus-within\)_\&\]\:py-3):not(:focus-within) .\[\.nya-expr\:has\(\&\)\:not\(\:focus-within\)_\&\]\:py-3 {
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+}
+
+.nya-expr:has(.\[\.nya-expr\:has\(\&\)\:not\(\:focus-within\)_\.nya-display\]\:hidden):not(:focus-within) .nya-display {
+  display: none;
+}
+
+.nya-expr:has(.\[\.nya-expr\:has\(\&\)\:not\(\:focus-within\)_\.nya-display\]\:p-4):not(:focus-within) .nya-display {
+  padding: 1rem;
+}
+
 .nya-range-error .\[\.nya-range-error_\&\]\:border-b-2 {
   border-bottom-width: 2px;
 }

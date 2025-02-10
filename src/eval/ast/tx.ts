@@ -891,7 +891,11 @@ export const AST_TXRS: {
     deps() {},
     drag: NO_DRAG,
     js(node) {
-      return { type: "str", value: node.value, list: false }
+      return {
+        type: "str",
+        value: [{ type: "plain", value: node.value }],
+        list: false,
+      }
     },
     glsl() {
       throw new Error("Arbitrary text is not supported in shaders.")

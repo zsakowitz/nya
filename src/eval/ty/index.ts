@@ -21,8 +21,10 @@ export interface Tys {
   circle: { center: SPoint; radius: SReal }
   polygon: SPoint[]
 
-  str: string
+  str: StrSegment[]
 }
+
+export type StrSegment = { type: "plain" | "latex"; value: string }
 
 export interface TyComponents {
   r32: never

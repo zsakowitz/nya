@@ -791,7 +791,7 @@ export const TY_INFO: TyInfoMap = {
     namePlural: "texts",
     coerce: {},
     garbage: {
-      js: "",
+      js: [],
       get glsl(): never {
         throw new Error("Arbitrary text is not supported in shaders.")
       },
@@ -804,7 +804,11 @@ export const TY_INFO: TyInfoMap = {
         return false
       },
       display(value, props) {
-        new CmdTextInert(value).insertAt(props.cursor, L)
+        new CmdTextInert(
+          value
+            .map((x) => (x.type == "latex" ? "$" + x.value + "$" : x.value))
+            .join(""),
+        ).insertAt(props.cursor, L)
       },
     },
     icon() {

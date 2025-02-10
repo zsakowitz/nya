@@ -15,8 +15,7 @@ export const FN_CONCAT = new (class extends FnDistManual<"str"> {
       params: args.map((x) => x.type),
       type: "str",
       js(...args) {
-        const values = args.map((x) => OP_TO_STR.js1(x).value)
-        return values.join("")
+        return args.flatMap((x) => OP_TO_STR.js1(x).value)
       },
       glsl() {
         throw new Error("Text cannot be created in shaders.")
@@ -34,3 +33,39 @@ export const FN_CONCAT = new (class extends FnDistManual<"str"> {
     ]
   }
 })()
+
+// FIXME: remove this
+// export const FN_CONCAT = new (class extends FnDistManual<"str"> {
+//   constructor() {
+//     super("concat", "concatenates one or more string-like values into a string")
+//     ALL_DOCS.push(this)
+//   }
+//
+//   signature(args: Ty[]): FnDistOverload<"str"> {
+//     return {
+//       params: args.map((x) => x.type),
+//       type: "str",
+//       js(...args) {
+//         return args.flatMap((x) => {
+//           if (x.type == "str") {
+//             return x.value as StrSegment[]
+//           }
+//
+//           const block = new Block(null)
+//           new Display(block.cursor(R), frac(10, 1)).plainVal(x)
+//           return [{ type: "latex", value: block.latex() }]
+//         })
+//       },
+//       glsl() {
+//         throw new Error("Text cannot be created in shaders.")
+//       },
+//     }
+//   }
+//
+//   docs() {
+//     return [
+//       docByIcon([any()], TY_INFO.str.icon()),
+//       docByIcon([any(), any("text-[#2d70b3]")], TY_INFO.str.icon()),
+//     ]
+//   }
+// })()
