@@ -67,7 +67,7 @@ export class Expr {
       (this.elFocus = h(
         {
           class:
-            "inline-flex bg-[--nya-bg-sidebar] flex-col p-0.5 border-r border-[--nya-border] font-sans text-[--nya-expr-index] text-[65%] leading-none [:focus-within>&]:bg-[--nya-expr-focus] [:focus-within>&]:text-[--nya-expr-focus-index] [:focus-within>&]:border-[--nya-expr-focus] [:active>&]:bg-[--nya-expr-focus] [:active>&]:text-[--nya-expr-focus-index] [:active>&]:border-[--nya-expr-focus]",
+            "inline-flex bg-[--nya-bg-sidebar] flex-col p-0.5 border-r border-[--nya-border] font-sans text-[--nya-expr-index] text-[65%] leading-none [:focus-within>&]:bg-[--nya-expr-focus] [:focus-within>&]:text-[--nya-expr-focus-index] [:focus-within>&]:border-[--nya-expr-focus] [:active>&]:bg-[--nya-expr-focus] [:active>&]:text-[--nya-expr-focus-index] [:active>&]:border-[--nya-expr-focus] focus:outline-none",
           tabindex: "-1",
         },
         (this.elIndex = h("")),
