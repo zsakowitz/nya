@@ -21,15 +21,6 @@ export const FN_VALID = new FnDist<"bool">(
     },
   )
   .add(
-    ["c32"],
-    "bool",
-    (a) => isFinite(num(a.value.x)) && isFinite(num(a.value.y)),
-    (ctx, ar) => {
-      const a = ctx.cache(ar)
-      return `(!isnan(${a}.x) && !isinf(${a}.x) && !isnan(${a}.y) && !isinf(${a}.y))`
-    },
-  )
-  .add(
     ["point32"],
     "bool",
     (a) => isFinite(num(a.value.x)) && isFinite(num(a.value.y)),

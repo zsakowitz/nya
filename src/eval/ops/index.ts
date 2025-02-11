@@ -8,14 +8,6 @@ import { FN_INVERTDARK } from "./fn/color/invertdark"
 import { FN_OKLAB } from "./fn/color/oklab"
 import { FN_OKLCH } from "./fn/color/oklch"
 import { FN_RGB } from "./fn/color/rgb"
-import { FN_ARG } from "./fn/complex/arg"
-import { FN_COMPLEX } from "./fn/complex/complex"
-import { FN_CONJ } from "./fn/complex/conj"
-import { FN_DOT } from "./fn/complex/dot"
-import { FN_IMAG } from "./fn/complex/imag"
-import { FN_POINT } from "./fn/complex/point"
-import { FN_REAL } from "./fn/complex/real"
-import { FN_UNSIGN } from "./fn/complex/unsign"
 import { FN_COMPONENT } from "./fn/component"
 import { FN_CONCAT } from "./fn/concat"
 import { FN_DEBUGPOINT } from "./fn/debugpoint"
@@ -47,6 +39,7 @@ import { FN_SCREENDISTANCE } from "./fn/screendistance"
 import { FN_COS } from "./fn/trig/cos"
 import { FN_SIN } from "./fn/trig/sin"
 import { FN_TAN } from "./fn/trig/tan"
+import { FN_UNSIGN } from "./fn/unsign"
 import { FN_VALID } from "./fn/valid"
 
 import { OP_ADD } from "./op/add"
@@ -69,9 +62,6 @@ export interface Fn {
 export const FNS: Record<string, Fn> = {
   rgb: FN_RGB,
   cmp: FN_CMP,
-  imag: FN_IMAG,
-  real: FN_REAL,
-  dot: FN_DOT,
   sin: FN_SIN,
   unsign: FN_UNSIGN,
   hsv: FN_HSV,
@@ -82,7 +72,6 @@ export const FNS: Record<string, Fn> = {
   max: FN_MAX,
   oklab: FN_OKLAB,
   oklch: FN_OKLCH,
-  arg: FN_ARG,
   valid: FN_VALID,
   firstvalid: FN_FIRSTVALID,
   ln: FN_LN,
@@ -98,11 +87,8 @@ export const FNS: Record<string, Fn> = {
   intersection: FN_INTERSECTION,
   glider: FN_GLIDER,
   invertdark: FN_INVERTDARK,
-  point: FN_POINT,
-  complex: FN_COMPLEX,
   forceshader: FN_FORCESHADER,
   perpendicular: FN_PERPENDICULAR,
-  conj: FN_CONJ,
   polygon: FN_POLYGON,
   segments: FN_SEGMENTS,
   vertices: FN_VERTICES,

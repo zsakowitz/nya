@@ -1,5 +1,4 @@
 import type { GlslContext } from "../eval/lib/fn"
-import { FN_CONJ } from "../eval/ops/fn/complex/conj"
 import { FN_UNSIGN } from "../eval/ops/fn/complex/unsign"
 import { abs, OP_ABS } from "../eval/ops/op/abs"
 import { add, OP_ADD } from "../eval/ops/op/add"
@@ -24,7 +23,7 @@ declare module "../eval/ty/index.js" {
   }
 }
 
-export const EXT_QUATERNION: Package = {
+export const PKG_NUM_QUATERNION: Package = {
   id: "nya:num-quaternion",
   name: "quaternions",
   label: "adds support for quaternions",

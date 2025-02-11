@@ -56,18 +56,6 @@ export type TyInfoMap = {
   [K in keyof Tys]: TyInfo<Tys[K], TyComponents[K]>
 }
 
-const WRITE_COMPLEX: Write<SPoint> = {
-  isApprox(value) {
-    return value.x.type == "approx" || value.y.type == "approx"
-  },
-  display(value, props) {
-    props.nums([
-      [value.x, ""],
-      [value.y, "i"],
-    ])
-  },
-}
-
 const WRITE_REAL: Write<SReal> = {
   isApprox(value) {
     return value.type == "approx"
@@ -168,7 +156,7 @@ function lineInfo(
   }
 }
 
-function highRes() {
+export function highRes() {
   return h(
     "absolute bottom-[.5px] right-[1px] font-['Symbola'] text-[50%]/[1]",
     "+",
@@ -187,25 +175,6 @@ function iconPoint(hd: boolean) {
       ),
       h(
         "size-[7px] bg-current absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
-      ),
-      hd ? highRes() : null,
-    ),
-  )
-}
-
-function iconComplex(hd: boolean) {
-  return h(
-    "",
-    h(
-      "text-[#6042a6] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-current rounded-[4px]" +
-        (hd ? " border-double border-[3px]" : " border-2"),
-      h(
-        "opacity-25 block bg-current absolute " +
-          (hd ? " -inset-[2px] rounded-[2px]" : "inset-0"),
-      ),
-      h(
-        "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-['Times_New_Roman'] italic text-[120%]",
-        "i",
       ),
       hd ? highRes() : null,
     ),
@@ -273,22 +242,6 @@ export const TY_INFO: TyInfoMap = {
           return `(${self} ? vec2(1, 0) : vec2(0.0/0.0))`
         },
       },
-      c32: {
-        js(self) {
-          return self ? { type: "point", x: real(1), y: real(0) } : NANPT
-        },
-        glsl(self) {
-          return `(${self} ? vec2(1, 0) : vec2(0.0/0.0))`
-        },
-      },
-      c64: {
-        js(self) {
-          return self ? { type: "point", x: real(1), y: real(0) } : NANPT
-        },
-        glsl(self) {
-          return `(${self} ? vec4(1, 0, 0, 0) : vec4(0.0/0.0))`
-        },
-      },
     },
     write: {
       isApprox() {
@@ -339,22 +292,6 @@ export const TY_INFO: TyInfoMap = {
           return `${self}.x`
         },
       },
-      c64: {
-        js(self) {
-          return { type: "point", x: self, y: real(0) }
-        },
-        glsl(self) {
-          return `vec4(${self}, vec2(0))`
-        },
-      },
-      c32: {
-        js(self) {
-          return { type: "point", x: self, y: real(0) }
-        },
-        glsl(self) {
-          return `vec2(${self}.x, 0)`
-        },
-      },
     },
     write: WRITE_REAL,
     icon() {
@@ -366,64 +303,10 @@ export const TY_INFO: TyInfoMap = {
     namePlural: "real numbers",
     glsl: "float",
     garbage: { js: real(NaN), glsl: "(0.0/0.0)" },
-    coerce: {
-      c32: {
-        js(self) {
-          return { type: "point", x: self, y: real(0) }
-        },
-        glsl(self) {
-          return `vec2(${self}, 0)`
-        },
-      },
-    },
+    coerce: {},
     write: WRITE_REAL,
     icon() {
       return iconReal(false)
-    },
-  },
-  c64: {
-    name: "complex number",
-    namePlural: "complex numbers",
-    glsl: "vec4",
-    garbage: { js: NANPT, glsl: "vec4(0.0/0.0)" },
-    coerce: {
-      c32: {
-        js(self) {
-          return self
-        },
-        glsl(self) {
-          return `${self}.xz`
-        },
-      },
-    },
-    write: WRITE_COMPLEX,
-    icon() {
-      return iconComplex(true)
-    },
-    components: {
-      ty: "r64",
-      at: [
-        [(x) => x.x, (x) => `${x}.xy`],
-        [(x) => x.y, (x) => `${x}.zw`],
-      ],
-    },
-  },
-  c32: {
-    name: "complex number",
-    namePlural: "complex numbers",
-    glsl: "vec2",
-    garbage: { js: NANPT, glsl: "vec2(0.0/0.0)" },
-    coerce: {},
-    write: WRITE_COMPLEX,
-    icon() {
-      return iconComplex(false)
-    },
-    components: {
-      ty: "r32",
-      at: [
-        [(x) => x.x, (x) => `${x}.x`],
-        [(x) => x.y, (x) => `${x}.y`],
-      ],
     },
   },
   point64: {

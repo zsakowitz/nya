@@ -1,5 +1,5 @@
 import type { GlslValue, JsValue } from "../ty"
-import { pt, real } from "../ty/create"
+import { real } from "../ty/create"
 import { splitDual } from "../ty/split"
 
 export interface Builtin {
@@ -12,34 +12,9 @@ export const ERR_COORDS_USED_OUTSIDE_GLSL =
   "Cannot access pixel coordinates outside of shaders."
 
 export const VARS: Record<string, Builtin> = {
-  p: {
-    get js(): never {
-      throw new Error(ERR_COORDS_USED_OUTSIDE_GLSL)
-    },
-    glsl: { type: "c64", expr: "v_coords", list: false },
-    dynamic: true,
-  },
-  x: {
-    get js(): never {
-      throw new Error(ERR_COORDS_USED_OUTSIDE_GLSL)
-    },
-    glsl: { type: "r64", expr: "v_coords.xy", list: false },
-    dynamic: true,
-  },
-  y: {
-    get js(): never {
-      throw new Error(ERR_COORDS_USED_OUTSIDE_GLSL)
-    },
-    glsl: { type: "r64", expr: "v_coords.zw", list: false },
-    dynamic: true,
-  },
   π: splitDual(Math.PI),
   τ: splitDual(Math.PI * 2),
   e: splitDual(Math.E),
-  i: {
-    js: { type: "c64", value: pt(real(0), real(1)), list: false },
-    glsl: { type: "c64", expr: "vec4(0, 0, 1, 0)", list: false },
-  },
   "∞": {
     js: { type: "r64", value: real(Infinity), list: false },
     glsl: { type: "r64", expr: "vec2(1.0/0.0)", list: false },

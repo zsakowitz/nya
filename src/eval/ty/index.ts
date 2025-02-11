@@ -6,8 +6,6 @@
 export interface Tys {
   r32: SReal
   r64: SReal
-  c32: SPoint
-  c64: SPoint
   bool: boolean
   color: SColor
 
@@ -28,9 +26,6 @@ export type StrSegment = { type: "plain" | "latex"; value: string }
 export interface TyComponents {
   r32: never
   r64: never
-  c32: "r32"
-  c64: "r64"
-  q32: "r32"
   bool: never
   color: "r32"
 

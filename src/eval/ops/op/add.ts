@@ -1,6 +1,6 @@
 import type { GlslContext } from "../../lib/fn"
 import { safe } from "../../lib/util"
-import type { JsVal, SReal } from "../../ty"
+import type { SReal } from "../../ty"
 import { approx, frac, num, pt } from "../../ty/create"
 import { FnDist } from "../dist"
 import { declareR64 } from "../r64"
@@ -44,16 +44,9 @@ vec2 _helper_add_r64(vec2 dsa, vec2 dsb) {
 `
 }
 
-function r64(ctx: GlslContext, a: string, b: string) {
+export function addR64(ctx: GlslContext, a: string, b: string) {
   declareAddR64(ctx)
   return `_helper_add_r64(${a}, ${b})`
-}
-
-function complex(
-  a: JsVal<"c32" | "c64" | "point32" | "point64">,
-  b: JsVal<"c32" | "c64" | "point32" | "point64">,
-) {
-  return pt(add(a.value.x, b.value.x), add(a.value.y, b.value.y))
 }
 
 export const OP_ADD = new FnDist("+", "adds two values or points")
@@ -61,7 +54,7 @@ export const OP_ADD = new FnDist("+", "adds two values or points")
     ["r64", "r64"],
     "r64",
     (a, b) => add(a.value, b.value),
-    (ctx, a, b) => r64(ctx, a.expr, b.expr),
+    (ctx, a, b) => addR64(ctx, a.expr, b.expr),
   )
   .add(
     ["r32", "r32"],
@@ -69,20 +62,19 @@ export const OP_ADD = new FnDist("+", "adds two values or points")
     (a, b) => add(a.value, b.value),
     (_, a, b) => `(${a.expr} + ${b.expr})`,
   )
-  .add(["c64", "c64"], "c64", complex, (ctx, ar, br) => {
-    const a = ctx.cache(ar)
-    const b = ctx.cache(br)
-    return `vec4(${r64(ctx, `${a}.xy`, `${b}.xy`)}, ${r64(ctx, `${a}.zw`, `${b}.zw`)})`
-  })
-  .add(["c32", "c32"], "c32", complex, (_, a, b) => `(${a.expr} + ${b.expr})`)
-  .add(["point64", "point64"], "point64", complex, (ctx, ar, br) => {
-    const a = ctx.cache(ar)
-    const b = ctx.cache(br)
-    return `vec4(${r64(ctx, `${a}.xy`, `${b}.xy`)}, ${r64(ctx, `${a}.zw`, `${b}.zw`)})`
-  })
+  .add(
+    ["point64", "point64"],
+    "point64",
+    (a, b) => pt(add(a.value.x, b.value.x), add(a.value.y, b.value.y)),
+    (ctx, ar, br) => {
+      const a = ctx.cache(ar)
+      const b = ctx.cache(br)
+      return `vec4(${addR64(ctx, `${a}.xy`, `${b}.xy`)}, ${addR64(ctx, `${a}.zw`, `${b}.zw`)})`
+    },
+  )
   .add(
     ["point32", "point32"],
     "point32",
-    complex,
+    (a, b) => pt(add(a.value.x, b.value.x), add(a.value.y, b.value.y)),
     (_, a, b) => `(${a.expr} + ${b.expr})`,
   )

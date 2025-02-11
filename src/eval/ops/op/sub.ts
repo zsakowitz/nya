@@ -1,7 +1,7 @@
 import type { GlslContext } from "../../lib/fn"
 import { safe } from "../../lib/util"
-import type { JsVal, SReal } from "../../ty"
-import { approx, frac, num, pt } from "../../ty/create"
+import type { SReal } from "../../ty"
+import { approx, frac, num } from "../../ty/create"
 import { FnDist } from "../dist"
 import { declareR64 } from "../r64"
 
@@ -44,13 +44,9 @@ vec2 _helper_sub_r64(vec2 dsa, vec2 dsb) {
 `
 }
 
-function r64(ctx: GlslContext, a: string, b: string) {
+export function subR64(ctx: GlslContext, a: string, b: string) {
   declareSubR64(ctx)
   return `_helper_sub_r64(${a}, ${b})`
-}
-
-function complex(a: JsVal<"c32" | "c64">, b: JsVal<"c32" | "c64">) {
-  return pt(sub(a.value.x, b.value.x), sub(a.value.y, b.value.y))
 }
 
 export const OP_SUB = new FnDist("-", "subtracts two values")
@@ -58,7 +54,7 @@ export const OP_SUB = new FnDist("-", "subtracts two values")
     ["r64", "r64"],
     "r64",
     (a, b) => sub(a.value, b.value),
-    (ctx, a, b) => r64(ctx, a.expr, b.expr),
+    (ctx, a, b) => subR64(ctx, a.expr, b.expr),
   )
   .add(
     ["r32", "r32"],
@@ -66,9 +62,3 @@ export const OP_SUB = new FnDist("-", "subtracts two values")
     (a, b) => sub(a.value, b.value),
     (_, a, b) => `(${a.expr} - ${b.expr})`,
   )
-  .add(["c64", "c64"], "c64", complex, (ctx, ar, br) => {
-    const a = ctx.cache(ar)
-    const b = ctx.cache(br)
-    return `vec4(${r64(ctx, `${a}.xy`, `${b}.xy`)}, ${r64(ctx, `${a}.zw`, `${b}.zw`)})`
-  })
-  .add(["c32", "c32"], "c32", complex, (_, a, b) => `(${a.expr} - ${b.expr})`)

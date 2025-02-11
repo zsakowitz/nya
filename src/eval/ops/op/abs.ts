@@ -45,13 +45,6 @@ export const OP_ABS = new FnDist(
     (_, a) => `abs(${a.expr})`,
   )
   .add(
-    ["c32"],
-    "r32",
-    // TODO: this is exact for some values
-    (a) => approx(Math.hypot(num(a.value.x), num(a.value.y))),
-    (_, a) => `length(${a.expr})`,
-  )
-  .add(
     ["point32"],
     "r32",
     // TODO: this is exact for some values

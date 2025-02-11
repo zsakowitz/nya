@@ -1,12 +1,10 @@
 import type { GlslContext } from "../../lib/fn"
 import { safe } from "../../lib/util"
-import type { JsVal, SReal } from "../../ty"
-import { approx, frac, num, pt } from "../../ty/create"
+import type { SReal } from "../../ty"
+import { approx, frac, num } from "../../ty/create"
 import { TY_INFO } from "../../ty/info"
 import { FnDist } from "../dist"
 import { declareR64 } from "../r64"
-import { add, declareAddR64 } from "./add"
-import { declareSubR64, sub } from "./sub"
 
 export function mul(a: SReal, b: SReal) {
   a: if (a.type == "exact" && b.type == "exact") {
@@ -68,13 +66,6 @@ export function mulR64(ctx: GlslContext, a: string, b: string) {
   return `_helper_mul_r64(${a}, ${b})`
 }
 
-function complex(
-  { value: { x: a, y: b } }: JsVal<"c32" | "c64">,
-  { value: { x: c, y: d } }: JsVal<"c32" | "c64">,
-) {
-  return pt(sub(mul(a, c), mul(b, d)), add(mul(b, c), mul(a, d)))
-}
-
 export const OP_CDOT = new FnDist("·", "multiplies two values")
   .add(
     ["r64", "r64"],
@@ -88,24 +79,6 @@ export const OP_CDOT = new FnDist("·", "multiplies two values")
     (a, b) => mul(a.value, b.value),
     (_, a, b) => `(${a.expr} * ${b.expr})`,
   )
-  .add(["c64", "c64"], "c64", complex, (ctx, a, b) => {
-    declareAddR64(ctx)
-    declareSubR64(ctx)
-    declareMulR64(ctx)
-    ctx.glsl`
-vec4 _helper_mul_c64(vec4 a, vec4 b) {
-  return vec4(
-    _helper_sub_r64(_helper_mul_r64(a.xy, b.xy), _helper_mul_r64(a.zw, b.zw)),
-    _helper_add_r64(_helper_mul_r64(a.zw, b.xy), _helper_mul_r64(a.xy, b.zw))
-  );
-}
-`
-    return `_helper_mul_c64(${a.expr}, ${b.expr})`
-  })
-  .add(["c32", "c32"], "c32", complex, (ctx, a, b) => {
-    declareMulC32(ctx)
-    return `_helper_mul_c32(${a.expr}, ${b.expr})`
-  })
   .add(
     ["color", "bool"],
     "color",

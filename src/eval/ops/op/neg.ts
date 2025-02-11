@@ -20,18 +20,6 @@ export const OP_NEG = new FnDist("-", "negates its input")
     (_, a) => `(-${a.expr})`,
   )
   .add(
-    ["c64"],
-    "c64",
-    (a) => pt(neg(a.value.x), neg(a.value.y)),
-    (_, a) => `(-${a.expr})`,
-  )
-  .add(
-    ["c32"],
-    "c32",
-    (a) => pt(neg(a.value.x), neg(a.value.y)),
-    (_, a) => `(-${a.expr})`,
-  )
-  .add(
     ["point64"],
     "point64",
     (a) => pt(neg(a.value.x), neg(a.value.y)),

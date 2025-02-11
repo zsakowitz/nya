@@ -6,7 +6,7 @@ import { abs } from "../../op/abs"
 import { sub } from "../../op/sub"
 import { dist } from "./distance"
 
-function js(a: JsVal<"point32" | "c32">, b: JsVal<"point32" | "c32">) {
+function js(a: JsVal<"point32">, b: JsVal<"point32">) {
   return {
     center: a.value,
     // TODO: use approx and exact better
@@ -19,11 +19,7 @@ function js(a: JsVal<"point32" | "c32">, b: JsVal<"point32" | "c32">) {
   }
 }
 
-function glsl(
-  ctx: GlslContext,
-  ar: GlslVal<"point32" | "c32">,
-  b: GlslVal<"point32" | "c32">,
-) {
+function glsl(ctx: GlslContext, ar: GlslVal<"point32">, b: GlslVal<"point32">) {
   const a = ctx.cache(ar)
   return `vec3(${a}, length(${a} - ${b.expr}))`
 }
