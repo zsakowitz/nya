@@ -104,70 +104,14 @@ export const EXT_QUATERNION: Package = {
         glsl: { type: "q32", expr: "vec4(0, 0, 0, 1)", list: false },
       },
     },
+    fns: {
+      unsign: FN_UNSIGN,
+      conj: FN_CONJ,
+    },
   },
+
+  remarks: ["it supports quaternions!"],
 }
-
-FN_CONJ.add(
-  ["q32"],
-  "q32",
-  (a) => [a.value[0], neg(a.value[1]), neg(a.value[2]), neg(a.value[3])],
-  (_, a) => `(${a} * vec4(1, -1, -1, -1))`,
-)
-
-OP_SUB.add(
-  ["q32", "q32"],
-  "q32",
-  (a, b) => [
-    sub(a.value[0], b.value[0]),
-    sub(a.value[1], b.value[1]),
-    sub(a.value[2], b.value[2]),
-    sub(a.value[3], b.value[3]),
-  ],
-  (_, a, b) => `(${a.expr} - ${b.expr})`,
-)
-
-OP_POS.add(
-  ["q32"],
-  "q32",
-  (a) => a.value,
-  (_, a) => a.expr,
-)
-
-OP_ODOT.add(
-  ["q32", "q32"],
-  "q32",
-  (a, b) => [
-    mul(a.value[0], b.value[0]),
-    mul(a.value[1], b.value[1]),
-    mul(a.value[2], b.value[2]),
-    mul(a.value[3], b.value[3]),
-  ],
-  (_, a, b) => {
-    return `(${a.expr} * ${b.expr})`
-  },
-)
-
-OP_DIV.add(
-  ["q32", "q32"],
-  "q32",
-  (a, { value: [r, i, j, k] }) => {
-    const hyp = add(mul(r, r), add(mul(i, i), add(mul(j, j), mul(k, k))))
-    const ret = mulQ32(a.value, [r, neg(i), neg(j), neg(k)])
-    for (let i = 0; i < 4; i++) {
-      ret[i] = div(ret[i]!, hyp)
-    }
-    return ret
-  },
-  (ctx, a, b) => {
-    declareMulQ32(ctx)
-    ctx.glsl`vec4 _helper_div_q32(vec4 a, vec4 b) {
-  float hyp = b.x * b.x + b.y * b.y + b.z * b.z + b.w * b.w;
-  return _helper_mul_q32(a, b * vec4(1, -1, -1, -1)) / hyp;
-}
-`
-    return `_helper_div_q32(${a.expr}, ${b.expr})`
-  },
-)
 
 function mulQ32(
   [a, b, c, d]: Tys["q32"],
@@ -225,13 +169,11 @@ function declareMulQ32(ctx: GlslContext) {
 `
 }
 
-OP_CDOT.add(
-  ["q32", "q32"],
+OP_POS.add(
+  ["q32"],
   "q32",
-  (a, b) => mulQ32(a.value, b.value),
-  () => {
-    throw new Error("skill issue")
-  },
+  (a) => a.value,
+  (_, a) => a.expr,
 )
 
 OP_NEG.add(
@@ -239,18 +181,6 @@ OP_NEG.add(
   "q32",
   (a) => a.value.map(neg) satisfies SReal[] as any,
   (_, a) => `(-${a.expr})`,
-)
-
-OP_ADD.add(
-  ["q32", "q32"],
-  "q32",
-  (a, b) => [
-    add(a.value[0], b.value[0]),
-    add(a.value[1], b.value[1]),
-    add(a.value[2], b.value[2]),
-    add(a.value[3], b.value[3]),
-  ],
-  (_, a, b) => `(${a.expr} + ${b.expr})`,
 )
 
 OP_ABS.add(
@@ -269,9 +199,85 @@ OP_ABS.add(
   (_, a) => `length(${a.expr})`,
 )
 
+OP_ADD.add(
+  ["q32", "q32"],
+  "q32",
+  (a, b) => [
+    add(a.value[0], b.value[0]),
+    add(a.value[1], b.value[1]),
+    add(a.value[2], b.value[2]),
+    add(a.value[3], b.value[3]),
+  ],
+  (_, a, b) => `(${a.expr} + ${b.expr})`,
+)
+
+OP_SUB.add(
+  ["q32", "q32"],
+  "q32",
+  (a, b) => [
+    sub(a.value[0], b.value[0]),
+    sub(a.value[1], b.value[1]),
+    sub(a.value[2], b.value[2]),
+    sub(a.value[3], b.value[3]),
+  ],
+  (_, a, b) => `(${a.expr} - ${b.expr})`,
+)
+
+OP_ODOT.add(
+  ["q32", "q32"],
+  "q32",
+  (a, b) => [
+    mul(a.value[0], b.value[0]),
+    mul(a.value[1], b.value[1]),
+    mul(a.value[2], b.value[2]),
+    mul(a.value[3], b.value[3]),
+  ],
+  (_, a, b) => {
+    return `(${a.expr} * ${b.expr})`
+  },
+)
+
+OP_CDOT.add(
+  ["q32", "q32"],
+  "q32",
+  (a, b) => mulQ32(a.value, b.value),
+  () => {
+    throw new Error("skill issue")
+  },
+)
+
+OP_DIV.add(
+  ["q32", "q32"],
+  "q32",
+  (a, { value: [r, i, j, k] }) => {
+    const hyp = add(mul(r, r), add(mul(i, i), add(mul(j, j), mul(k, k))))
+    const ret = mulQ32(a.value, [r, neg(i), neg(j), neg(k)])
+    for (let i = 0; i < 4; i++) {
+      ret[i] = div(ret[i]!, hyp)
+    }
+    return ret
+  },
+  (ctx, a, b) => {
+    declareMulQ32(ctx)
+    ctx.glsl`vec4 _helper_div_q32(vec4 a, vec4 b) {
+  float hyp = b.x * b.x + b.y * b.y + b.z * b.z + b.w * b.w;
+  return _helper_mul_q32(a, b * vec4(1, -1, -1, -1)) / hyp;
+}
+`
+    return `_helper_div_q32(${a.expr}, ${b.expr})`
+  },
+)
+
 FN_UNSIGN.add(
   ["q32"],
   "q32",
   (a) => [abs(a.value[0]), abs(a.value[1]), abs(a.value[2]), abs(a.value[3])],
   (_, a) => `abs(${a.expr})`,
+)
+
+FN_CONJ.add(
+  ["q32"],
+  "q32",
+  (a) => [a.value[0], neg(a.value[1]), neg(a.value[2]), neg(a.value[3])],
+  (_, a) => `(${a} * vec4(1, -1, -1, -1))`,
 )
