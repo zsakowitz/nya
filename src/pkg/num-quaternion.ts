@@ -18,6 +18,10 @@ declare module "../eval/ty/index.js" {
   interface Tys {
     q32: [SReal, SReal, SReal, SReal]
   }
+
+  interface TyComponents {
+    q32: "r32"
+  }
 }
 
 export const EXT_QUATERNION: Package = {
