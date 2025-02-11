@@ -2,8 +2,8 @@ import type { NodeName, Nodes } from "./eval/ast/token"
 import type { AstTxr } from "./eval/ast/tx"
 import type { Fn } from "./eval/ops"
 import type { Builtin } from "./eval/ops/vars"
-import type { TyComponents, TyName } from "./eval/ty"
-import type { TyInfo } from "./eval/ty/info"
+import type { TyComponents, TyName, Tys } from "./eval/ty"
+import type { TyCoerceMap, TyInfo } from "./eval/ty/info"
 import type { WordKind } from "./field/cmd/leaf/var"
 import type { LatexInit } from "./field/latex"
 import type { Init } from "./field/model"
@@ -27,8 +27,13 @@ export interface Package {
     options?: Partial<Options>
   }
 
-  ast?: {
-    ty?: Partial<{ [K in TyName]: TyInfo<K, TyComponents[K]> }>
+  ty?: {
+    info?: Partial<{ [K in TyName]: TyInfo<Tys[K], TyComponents[K]> }>
+    /** For adding coercions from already-defined types. */
+    coerce?: Partial<{ [T in TyName]: TyCoerceMap<Tys[T]> }>
+  }
+
+  eval?: {
     txrs?: Partial<{ [K in NodeName]: AstTxr<Nodes[K]> }>
     fns?: List<Fn>
     vars?: List<Builtin>

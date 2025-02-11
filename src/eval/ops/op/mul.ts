@@ -1,6 +1,6 @@
 import type { GlslContext } from "../../lib/fn"
 import { safe } from "../../lib/util"
-import type { JsVal, SReal, Tys } from "../../ty"
+import type { JsVal, SReal } from "../../ty"
 import { approx, frac, num, pt } from "../../ty/create"
 import { TY_INFO } from "../../ty/info"
 import { FnDist } from "../dist"
@@ -75,67 +75,6 @@ function complex(
   return pt(sub(mul(a, c), mul(b, d)), add(mul(b, c), mul(a, d)))
 }
 
-export function mulQ32(
-  [a, b, c, d]: Tys["q32"],
-  [e, f, g, h]: Tys["q32"],
-): Tys["q32"] {
-  //   (a+bi+cj+dk)(e+fi+gj+hk)
-  //
-  //   ae+afi+agj+ahk
-  // + bie+bifi+bigj+bihk
-  // + cje+cjfi+cjgj+cjhk
-  // + dke+dkfi+dkgj+dkhk
-  //
-  //   ae+afi+agj+ahk
-  // + bie-bf+bgk-bhj
-  // + cje-cfk-cg+chi
-  // + dke+dfj-dgi-dh
-  //
-  //   1(ae-bf-cg-dh)
-  // + i(af+be+ch-dg)
-  // + j(ag-bh+ce+df)
-  // + k(ah+bg-cf+de)
-
-  return [
-    sub(sub(sub(mul(a, e), mul(b, f)), mul(c, g)), mul(d, h)),
-    sub(add(add(mul(a, f), mul(b, e)), mul(c, h)), mul(d, g)),
-    add(add(sub(mul(a, g), mul(b, h)), mul(c, e)), mul(d, f)),
-    add(sub(add(mul(a, h), mul(b, g)), mul(c, f)), mul(d, e)),
-  ]
-}
-
-export function declareMulQ32(ctx: GlslContext) {
-  //   (a+bi+cj+dk)(e+fi+gj+hk)
-  //
-  //   1(ae-bf-cg-dh)
-  // + i(af+be+ch-dg)
-  // + j(ag-bh+ce+df)
-  // + k(ah+bg-cf+de)
-  ctx.glsl`vec4 _helper_mul_q32(vec4 x, vec4 y) {
-  float a = x.x;
-  float b = x.y;
-  float c = x.z;
-  float d = x.w;
-  float e = y.x;
-  float f = y.y;
-  float g = y.z;
-  float h = y.w;
-
-  return vec4(
-    a*e - b*f - c*g - d*h,
-    a*f + b*e + c*h - d*g,
-    a*g - b*h + c*e + d*f,
-    a*h + b*g - c*f + d*e
-  );
-}
-`
-}
-
-export function mulQ32Glsl(ctx: GlslContext, a: string, b: string): string {
-  declareMulQ32(ctx)
-  return `_helper_mul_q32(${a}, ${b})`
-}
-
 export const OP_CDOT = new FnDist("·", "multiplies two values")
   .add(
     ["r64", "r64"],
@@ -178,12 +117,4 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
     "color",
     (b, a) => (b.value ? a.value : TY_INFO.color.garbage.js),
     (_, b, a) => `(${b.expr} ? ${a.expr} : ${TY_INFO.color.garbage.glsl})`,
-  )
-  .add(
-    ["q32", "q32"],
-    "q32",
-    (a, b) => mulQ32(a.value, b.value),
-    () => {
-      throw new Error("skill issue")
-    },
   )

@@ -86,14 +86,3 @@ export const OP_ADD = new FnDist("+", "adds two values or points")
     complex,
     (_, a, b) => `(${a.expr} + ${b.expr})`,
   )
-  .add(
-    ["q32", "q32"],
-    "q32",
-    (a, b) => [
-      add(a.value[0], b.value[0]),
-      add(a.value[1], b.value[1]),
-      add(a.value[2], b.value[2]),
-      add(a.value[3], b.value[3]),
-    ],
-    (_, a, b) => `(${a.expr} + ${b.expr})`,
-  )

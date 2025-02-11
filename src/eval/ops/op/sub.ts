@@ -72,14 +72,3 @@ export const OP_SUB = new FnDist("-", "subtracts two values")
     return `vec4(${r64(ctx, `${a}.xy`, `${b}.xy`)}, ${r64(ctx, `${a}.zw`, `${b}.zw`)})`
   })
   .add(["c32", "c32"], "c32", complex, (_, a, b) => `(${a.expr} - ${b.expr})`)
-  .add(
-    ["q32", "q32"],
-    "q32",
-    (a, b) => [
-      sub(a.value[0], b.value[0]),
-      sub(a.value[1], b.value[1]),
-      sub(a.value[2], b.value[2]),
-      sub(a.value[3], b.value[3]),
-    ],
-    (_, a, b) => `(${a.expr} - ${b.expr})`,
-  )

@@ -8,7 +8,6 @@ export interface Tys {
   r64: SReal
   c32: SPoint
   c64: SPoint
-  q32: [SReal, SReal, SReal, SReal]
   bool: boolean
   color: SColor
 

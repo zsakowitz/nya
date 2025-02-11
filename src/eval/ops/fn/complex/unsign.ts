@@ -36,9 +36,3 @@ export const FN_UNSIGN = new FnDist(
     (a) => pt(abs(a.value.x), abs(a.value.y)),
     (_, a) => `abs(${a.expr})`,
   )
-  .add(
-    ["q32"],
-    "q32",
-    (a) => [abs(a.value[0]), abs(a.value[1]), abs(a.value[2]), abs(a.value[3])],
-    (_, a) => `abs(${a.expr})`,
-  )

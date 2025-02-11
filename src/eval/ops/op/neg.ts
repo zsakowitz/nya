@@ -43,9 +43,3 @@ export const OP_NEG = new FnDist("-", "negates its input")
     (a) => pt(neg(a.value.x), neg(a.value.y)),
     (_, a) => `(-${a.expr})`,
   )
-  .add(
-    ["q32"],
-    "q32",
-    (a) => a.value.map(neg) satisfies SReal[] as any,
-    (_, a) => `(-${a.expr})`,
-  )
