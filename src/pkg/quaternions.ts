@@ -214,7 +214,7 @@ function declareMulQ32(ctx: GlslContext) {
   float f = y.y;
   float g = y.z;
   float h = y.w;
-//
+
   return vec4(
     a*e - b*f - c*g - d*h,
     a*f + b*e + c*h - d*g,
@@ -268,7 +268,6 @@ OP_ABS.add(
     ),
   (_, a) => `length(${a.expr})`,
 )
-//
 
 FN_UNSIGN.add(
   ["q32"],
