@@ -1,10 +1,10 @@
-import type { GlslContext } from "../../../lib/fn"
-import type { GlslVal, SPoint, SReal } from "../../../ty"
-import { num, pt, real } from "../../../ty/create"
-import { FnDist } from "../../dist"
-import { add } from "../../op/add"
-import { mul } from "../../op/mul"
-import { sub } from "../../op/sub"
+import type { GlslContext } from "../../../eval/lib/fn"
+import { FnDist } from "../../../eval/ops/dist"
+import { add } from "../../../eval/ops/op/add"
+import { mul } from "../../../eval/ops/op/mul"
+import { sub } from "../../../eval/ops/op/sub"
+import type { GlslVal, SPoint, SReal } from "../../../eval/ty"
+import { num, pt, real } from "../../../eval/ty/create"
 
 function js(
   { value: [{ x: x1, y: y1 }, { x: x2, y: y2 }] }: { value: [SPoint, SPoint] },

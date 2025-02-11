@@ -1,5 +1,5 @@
 import { Prop } from ".."
-import { distCirclePt } from "../../../eval/ops/fn/geo/distance"
+import { distCirclePt } from "../../../pkg/geo/fn/distance"
 import { each, type JsValue } from "../../../eval/ty"
 import { num, unpt } from "../../../eval/ty/create"
 import { OpEq } from "../../../field/cmd/leaf/cmp"

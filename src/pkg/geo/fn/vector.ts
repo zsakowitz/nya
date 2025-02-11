@@ -1,4 +1,4 @@
-import { FnDist } from "../../dist"
+import { FnDist } from "../../../eval/ops/dist"
 
 export const FN_VECTOR = new FnDist(
   "vector",

@@ -1,6 +1,6 @@
 import { createPicker } from "."
-import { parallelJs } from "../../eval/ops/fn/geo/parallel"
-import { perpendicularJs } from "../../eval/ops/fn/geo/perpendicular"
+import { parallelJs } from "../../pkg/geo/fn/parallel"
+import { perpendicularJs } from "../../pkg/geo/fn/perpendicular"
 import type { JsVal, SPoint, TyName } from "../../eval/ty"
 import { unpt } from "../../eval/ty/create"
 import { OpEq } from "../../field/cmd/leaf/cmp"

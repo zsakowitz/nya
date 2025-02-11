@@ -1,12 +1,12 @@
-import type { Point } from "../../../../sheet/ui/paper"
-import type { SPoint, SReal } from "../../../ty"
-import { num, real } from "../../../ty/create"
-import { FnDist } from "../../dist"
-import { abs } from "../../op/abs"
-import { add } from "../../op/add"
-import { div } from "../../op/div"
-import { mul } from "../../op/mul"
-import { sub } from "../../op/sub"
+import { FnDist } from "../../../eval/ops/dist"
+import { abs } from "../../../eval/ops/op/abs"
+import { add } from "../../../eval/ops/op/add"
+import { div } from "../../../eval/ops/op/div"
+import { mul } from "../../../eval/ops/op/mul"
+import { sub } from "../../../eval/ops/op/sub"
+import type { SPoint, SReal } from "../../../eval/ty"
+import { num, real } from "../../../eval/ty/create"
+import type { Point } from "../../../sheet/ui/paper"
 
 export function sqrt(val: SReal) {
   return real(num(val) ** 0.5)

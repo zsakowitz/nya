@@ -1,6 +1,6 @@
 import type { Var } from "../../eval/ast/token"
-import { FN_GLIDER } from "../../eval/ops/fn/geo/glider"
-import { FN_INTERSECTION } from "../../eval/ops/fn/geo/intersection"
+import { FN_GLIDER } from "../../pkg/geo/fn/glider"
+import { FN_INTERSECTION } from "../../pkg/geo/fn/intersection"
 import type { JsVal } from "../../eval/ty"
 import { approx, num, pt, real, unpt } from "../../eval/ty/create"
 import { TY_INFO } from "../../eval/ty/info"

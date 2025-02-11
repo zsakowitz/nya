@@ -1,3 +1,4 @@
+import type { Package } from "."
 import type { GlslContext } from "../eval/lib/fn"
 import { FnDist } from "../eval/ops/dist"
 import { FN_DEBUGPOINT } from "../eval/ops/fn/debugpoint"
@@ -19,7 +20,6 @@ import { OP_PLOT, plotJs } from "../eval/ops/op/plot"
 import { OP_POS } from "../eval/ops/op/pos"
 import { OP_RAISE } from "../eval/ops/op/raise"
 import { declareSubR64, OP_SUB, sub, subR64 } from "../eval/ops/op/sub"
-import { OP_TO_STR } from "../eval/ops/op/tostr"
 import { OP_X } from "../eval/ops/op/x"
 import { OP_Y } from "../eval/ops/op/y"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "../eval/ops/vars"
@@ -30,7 +30,7 @@ import { Display, type Write } from "../eval/ty/display"
 import { highRes } from "../eval/ty/info"
 import { Block, R } from "../field/model"
 import { h } from "../jsx"
-import type { Package } from "."
+import { OP_TO_TEXT } from "./text"
 
 declare module "../eval/ty/index.js" {
   interface Tys {
@@ -347,9 +347,9 @@ FN_REAL.add(
   (_, a) => `${a.expr}.x`,
 )
 
-OP_TO_STR.add(
+OP_TO_TEXT.add(
   ["c32"],
-  "str",
+  "text",
   (a) => {
     const b = new Block(null)
     new Display(b.cursor(R), frac(10, 1)).nums([
@@ -359,7 +359,7 @@ OP_TO_STR.add(
     return [{ type: "latex", value: b.latex() }]
   },
   textGl,
-).add(["str"], "str", (a) => a.value, textGl)
+).add(["text"], "text", (a) => a.value, textGl)
 
 OP_SUB.add(["c64", "c64"], "c64", subC, (ctx, ar, br) => {
   const a = ctx.cache(ar)

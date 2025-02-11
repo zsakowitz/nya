@@ -1,4 +1,4 @@
-import { FnDistVar } from "../../dist"
+import { FnDistVar } from "../../../eval/ops/dist"
 
 function glsl(): never {
   throw new Error("Cannot construct polygons in shaders.")

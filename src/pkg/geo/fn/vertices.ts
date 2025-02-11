@@ -1,7 +1,7 @@
-import type { Fn } from "../.."
-import type { SPoint } from "../../../ty"
-import { doc } from "../../dist"
-import { ALL_DOCS, type WithDocs } from "../../docs"
+import type { Fn } from "../../../eval/ops"
+import { doc } from "../../../eval/ops/dist"
+import { ALL_DOCS, type WithDocs } from "../../../eval/ops/docs"
+import type { SPoint } from "../../../eval/ty"
 
 export const FN_VERTICES: Fn & WithDocs = {
   name: "vertices",

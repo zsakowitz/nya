@@ -1,10 +1,10 @@
-import type { GlslContext } from "../../../lib/fn"
-import type { GlslVal, Tys, Val } from "../../../ty"
-import { num, pt, real } from "../../../ty/create"
-import { FnDist } from "../../dist"
-import { div } from "../../op/div"
-import { mul } from "../../op/mul"
-import { sub } from "../../op/sub"
+import type { GlslContext } from "../../../eval/lib/fn"
+import { FnDist } from "../../../eval/ops/dist"
+import { div } from "../../../eval/ops/op/div"
+import { mul } from "../../../eval/ops/op/mul"
+import { sub } from "../../../eval/ops/op/sub"
+import type { GlslVal, Tys, Val } from "../../../eval/ty"
+import { num, pt, real } from "../../../eval/ty/create"
 
 function js(
   [{ x: x1, y: y1 }, { x: x2, y: y2 }]: Val<"line">,

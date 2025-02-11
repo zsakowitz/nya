@@ -23,6 +23,22 @@ import {
 import { h, hx, t } from "../jsx"
 import { defineExt, Store } from "../sheet/ext"
 
+declare module "../eval/ty/index.js" {
+  interface Tys {
+    text: TextSegment[]
+  }
+
+  interface TyComponents {
+    text: never
+  }
+}
+
+declare module "../eval/ast/token.js" {
+  interface Nodes {
+    text: { value: string }
+  }
+}
+
 export class CmdTextInert extends Leaf {
   static fromLatex(_cmd: string, parser: LatexParser): Command {
     return new this(parser.text())
@@ -152,22 +168,6 @@ export class CmdText extends Leaf {
       )
     }
     this.input.focus()
-  }
-}
-
-declare module "../eval/ty/index.js" {
-  interface Tys {
-    text: TextSegment[]
-  }
-
-  interface TyComponents {
-    text: never
-  }
-}
-
-declare module "../eval/ast/token.js" {
-  interface Nodes {
-    text: { value: string }
   }
 }
 
