@@ -10,5 +10,6 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "moduleResolution": "bundler"
-  }
+  },
+  "exclude": ["src/pkg/num-quaternion.ts"]
 }
