@@ -17,8 +17,6 @@ export interface Tys {
   vector: [SPoint, SPoint]
   circle: { center: SPoint; radius: SReal }
   polygon: SPoint[]
-
-  str: StrSegment[]
 }
 
 export type StrSegment = { type: "plain" | "latex"; value: string }
@@ -37,8 +35,6 @@ export interface TyComponents {
   vector: never
   circle: never
   polygon: never
-
-  str: never
 }
 
 null! as TyComponents satisfies Record<TyName, TyName>

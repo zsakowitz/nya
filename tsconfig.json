@@ -12,5 +12,9 @@
     "moduleResolution": "bundler"
   },
   "include": ["src/**/*"],
-  "exclude": ["src/pkg/num-complex.ts", "src/pkg/num-quaternion.ts"]
+  "exclude": [
+    "src/pkg/num-complex.ts",
+    "src/pkg/num-quaternion.ts",
+    "src/pkg/text.ts"
+  ]
 }

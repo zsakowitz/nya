@@ -1,7 +1,6 @@
 import type { SPoint, SReal, TyComponents, TyName, Tys } from "."
 import { CmdColor } from "../../field/cmd/leaf/color"
 import { CmdComma } from "../../field/cmd/leaf/comma"
-import { CmdTextInert } from "../../field/cmd/leaf/text"
 import { CmdWord } from "../../field/cmd/leaf/word"
 import { CmdBrack } from "../../field/cmd/math/brack"
 import { Block, L, R } from "../../field/model"
@@ -566,47 +565,6 @@ export const TY_INFO: TyInfoMap = {
               "stroke-current fill-none overflow-visible [stroke-linejoin:round] stroke-2",
               p("M 7.2 4.4 L 19.8 13.2 L 2.2 17.6 Z"),
             ),
-          ),
-        ),
-      )
-    },
-  },
-  str: {
-    name: "text",
-    namePlural: "texts",
-    coerce: {},
-    garbage: {
-      js: [],
-      get glsl(): never {
-        throw new Error("Arbitrary text is not supported in shaders.")
-      },
-    },
-    get glsl(): never {
-      throw new Error("Arbitrary text is not supported in shaders.")
-    },
-    write: {
-      isApprox() {
-        return false
-      },
-      display(value, props) {
-        new CmdTextInert(
-          value
-            .map((x) => (x.type == "latex" ? "$" + x.value + "$" : x.value))
-            .join(""),
-        ).insertAt(props.cursor, L)
-      },
-    },
-    icon() {
-      return h(
-        "",
-        h(
-          "text-[oklch(0.518_0.253_323.949)] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px]",
-          h(
-            "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
-          ),
-          h(
-            "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-['Symbola'] text-[100%] whitespace-pre",
-            "“ ”",
           ),
         ),
       )

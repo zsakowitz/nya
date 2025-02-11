@@ -6,7 +6,6 @@ import { EXT_POINT } from "./exts/01-point"
 import { EXT_POLYGON } from "./exts/01-polygon"
 import { EXT_RAY } from "./exts/01-ray"
 import { EXT_SEGMENT } from "./exts/01-segment"
-import { EXT_TEXT } from "./exts/01-text"
 import { EXT_VECTOR } from "./exts/01-vector"
 import { EXT_EVAL } from "./exts/02-eval"
 import { EXT_GLSL } from "./exts/03-shader"
@@ -20,7 +19,6 @@ export const exts = new Exts([
   EXT_VECTOR,
   EXT_CIRCLE,
   EXT_POLYGON,
-  EXT_TEXT,
   EXT_EVAL,
   EXT_GLSL,
 ]).freeze()

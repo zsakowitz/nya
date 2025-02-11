@@ -1,14 +1,11 @@
 import { options } from "../field/defaults.js"
-import { PKG_NUM_COMPLEX } from "../pkg/num-complex.js"
-import { PKG_NUM_QUATERNION } from "../pkg/num-quaternion.js"
 import { exts } from "./ext/defaults.js"
 import { show } from "./ext/exts/03-shader.js"
 import { SheetFactory } from "./factory.js"
 import { Expr } from "./ui/expr/index.js"
 
-const sheet = new SheetFactory(options, exts)
-  .load(PKG_NUM_COMPLEX)
-  .load(PKG_NUM_QUATERNION)
+const sheet = new SheetFactory(options)
+  .load({ id: "q", name: "q", label: "q", sheet: { exts: { 2: exts.exts } } })
   .create()
 document.body.appendChild(sheet.el)
 

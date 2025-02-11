@@ -199,7 +199,6 @@ export type AstBinding = {
 export interface Nodes {
   void: {}
   num: { value: string; sub?: Node; span: Span | null }
-  text: { value: string }
   var: Var
   magicvar: MagicVar
   num16: { value: string }

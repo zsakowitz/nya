@@ -1,7 +1,12 @@
+import type { NodeName, Nodes } from "../eval/ast/token"
+import type { AstTxr } from "../eval/ast/tx"
 import type { Fn } from "../eval/ops"
 import type { Builtin } from "../eval/ops/vars"
 import type { TyComponents, TyName, Tys } from "../eval/ty"
 import type { TyCoerceMap, TyInfo } from "../eval/ty/info"
+import type { LatexInit } from "../field/latex"
+import type { Init } from "../field/model"
+import type { AnyExt } from "../sheet/ext"
 import type { Sheet } from "../sheet/ui/sheet"
 
 export type List<T> = { readonly [x: string]: T }
@@ -11,15 +16,15 @@ export interface Package {
   name: string
   label: string
 
-  // field?: {
-  //   inits?: List<Init>
-  //   shortcuts?: List<Init>
-  //   autos?: List<Init>
-  //   /** All names in `eval.fns` are automatically included as prefix words. */
-  //   words?: List<WordKind>
-  //   latex?: List<LatexInit>
-  //   options?: Partial<Options>
-  // }
+  field?: {
+    inits?: List<Init>
+    //   shortcuts?: List<Init>
+    //   autos?: List<Init>
+    //   /** All names in `eval.fns` are automatically included as prefix words. */
+    //   words?: List<WordKind>
+    latex?: List<LatexInit>
+    //   options?: Partial<Options>
+  }
 
   ty?: {
     info?: Partial<{ [K in TyName]: TyInfo<Tys[K], TyComponents[K]> }>
@@ -28,17 +33,17 @@ export interface Package {
   }
 
   eval?: {
-    // txrs?: Partial<{ [K in NodeName]: AstTxr<Nodes[K]> }>
+    txrs?: Partial<{ [K in NodeName]: AstTxr<Nodes[K]> }>
     fns?: List<Fn>
     vars?: List<Builtin>
     // opUnary?: List<Fn>
     // opBinary?: List<Fn>
   }
 
-  // sheet?: {
-  //   exts?: List<AnyExt>
-  //   toolbar?: List<ToolbarItem>
-  // }
+  sheet?: {
+    exts?: Record<number, AnyExt[]>
+    // toolbar?: List<ToolbarItem>
+  }
 
   // remarks?: readonly string[]
 }

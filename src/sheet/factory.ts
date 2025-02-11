@@ -1,18 +1,25 @@
+import type { NodeName } from "../eval/ast/token"
+import { AST_TXRS } from "../eval/ast/tx"
 import { FNS } from "../eval/ops"
 import { VARS } from "../eval/ops/vars"
 import type { TyName } from "../eval/ty"
 import { TY_INFO, type TyCoerce } from "../eval/ty/info"
-import { WordMap, type Options } from "../field/options"
+import { Inits, WordMap, type Options } from "../field/options"
 import type { Package } from "../pkg"
-import type { Exts } from "./ext"
+import { Exts } from "./ext"
 import { Sheet } from "./ui/sheet"
 
 export class SheetFactory {
-  constructor(
-    readonly options: Options,
-    readonly exts: Exts,
-  ) {
-    this.options = { ...this.options, words: this.options.words?.clone() }
+  readonly exts: Record<number, Exts> = Object.create(null)
+
+  options
+  constructor(options: Options) {
+    this.options = {
+      ...options,
+      inits: options.inits?.clone() ?? new Inits(),
+      words: options.words?.clone() ?? new WordMap([]),
+      latex: options.latex?.clone() ?? new WordMap([]),
+    }
   }
 
   private loaded: string[] = []
@@ -48,7 +55,7 @@ export class SheetFactory {
     }
 
     for (const key in pkg.eval?.fns) {
-      ;(this.options.words ??= new WordMap([]))?.set(key, "prefix")
+      this.options.words?.set(key, "prefix")
       FNS[key] = pkg.eval.fns[key]!
     }
 
@@ -56,10 +63,36 @@ export class SheetFactory {
       VARS[key] = pkg.eval.vars[key]!
     }
 
+    for (const txr in pkg.eval?.txrs) {
+      AST_TXRS[txr as NodeName] = pkg.eval.txrs[txr as NodeName]! as any
+    }
+
+    for (const prec in pkg.sheet?.exts) {
+      const exts = (this.exts[prec as any] ??= new Exts())
+      for (const ext of pkg.sheet.exts[prec as any]!) {
+        exts.add(ext)
+      }
+    }
+
+    for (const key in pkg.field?.inits) {
+      this.options.inits.set(key, pkg.field.inits[key]!)
+    }
+
+    for (const key in pkg.field?.latex) {
+      this.options.latex.set(key, pkg.field.latex[key]!)
+    }
+
     return this
   }
 
   create() {
-    return new Sheet(this.options, this.exts)
+    return new Sheet(
+      this.options,
+      new Exts(
+        Object.entries(this.exts)
+          .sort((a, b) => +a[0] - +b[0])
+          .flatMap((x) => x[1].exts),
+      ),
+    )
   }
 }

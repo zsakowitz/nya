@@ -9,7 +9,6 @@ import { FN_OKLAB } from "./fn/color/oklab"
 import { FN_OKLCH } from "./fn/color/oklch"
 import { FN_RGB } from "./fn/color/rgb"
 import { FN_COMPONENT } from "./fn/component"
-import { FN_CONCAT } from "./fn/concat"
 import { FN_DEBUGPOINT } from "./fn/debugpoint"
 import { FN_FIRSTVALID } from "./fn/firstvalid"
 import { FN_FORCESHADER } from "./fn/forceshader"
@@ -98,7 +97,6 @@ export const FNS: Record<string, Fn> = {
   center: FN_CENTER,
   component: FN_COMPONENT,
   join: FN_JOIN,
-  concat: FN_CONCAT,
 }
 Object.setPrototypeOf(FNS, null)
 

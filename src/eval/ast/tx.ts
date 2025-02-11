@@ -111,7 +111,7 @@ export function dragPoint(node: Node, props: PropsDrag) {
   return AST_TXRS[node.type].drag.point(node as never, props)
 }
 
-const NO_DRAG: DragTarget<unknown> = {
+export const NO_DRAG: DragTarget<unknown> = {
   num() {
     return null
   },
@@ -887,18 +887,6 @@ export const AST_TXRS: {
     },
     () => {},
   ),
-  text: {
-    deps() {},
-    drag: NO_DRAG,
-    js(node) {
-      return {
-        type: "str",
-        value: [{ type: "plain", value: node.value }],
-        list: false,
-      }
-    },
-    glsl() {
-      throw new Error("Arbitrary text is not supported in shaders.")
-    },
-  },
-}
+} satisfies Partial<{
+  [K in Node["type"]]: AstTxr<Extract<Node, { type: K }>>
+}> as any as { [K in Node["type"]]: AstTxr<Extract<Node, { type: K }>> }
