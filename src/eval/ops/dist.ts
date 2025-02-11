@@ -33,6 +33,7 @@ export interface FnDistOverload<Q extends TyName = TyName> {
  */
 export class FnDist<Q extends TyName = TyName> extends FnDistManual<Q> {
   o: FnDistOverload<Q>[] = []
+  private parent?: FnDist<Q>
 
   constructor(name: string, label: string) {
     super(name, label)
@@ -80,14 +81,18 @@ export class FnDist<Q extends TyName = TyName> extends FnDistManual<Q> {
       return overload
     }
 
-    throw new Error(
-      `Cannot call '${this.name}' with arguments of type ${listTy(args)}.`,
-    )
+    if (this.parent) {
+      return this.parent.signature(args)
+    } else {
+      throw new Error(
+        `Cannot call '${this.name}' with arguments of type ${listTy(args)}.`,
+      )
+    }
   }
 
   withName(name: string, label: string) {
     const dist = new FnDist<Q>(name, label)
-    dist.o = this.o.slice()
+    dist.parent = this
     return dist
   }
 

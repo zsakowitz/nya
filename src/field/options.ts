@@ -87,7 +87,7 @@ export class WordMap<T> {
   }
 
   clone() {
-    const map = new WordMap([])
+    const map = new WordMap<T>([])
     ;(map as any).maxLen = this.maxLen
     ;(map as any).words = { ...this.words }
     return map
