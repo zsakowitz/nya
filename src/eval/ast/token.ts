@@ -195,39 +195,46 @@ export type AstBinding = {
   value: Node
 }
 
+/** All AST node types. This may be augmented. */
+export interface Nodes {
+  void: {}
+  num: { value: string; sub?: Node; span: Span | null }
+  text: { value: string }
+  var: Var
+  magicvar: MagicVar
+  num16: { value: string }
+  group: { lhs: ParenLhs; rhs: ParenRhs; value: Node }
+  sub: { sub: Node }
+  sup: { sup: Node }
+  raise: { base: Node; exponent: Node }
+  call: { on?: Node; name: Node; args: Node }
+  frac: { a: Node; b: Node }
+  mixed: { integer: string; a: string; b: string }
+  piecewise: { pieces: Piece[] }
+  matrix: { cols: number; values: Node[] }
+  bigsym: { cmd: BigCmd | "\\int"; sub?: Node; sup?: Node }
+  big: { cmd: BigCmd | "\\int"; sub?: Node; sup?: Node; of: Node }
+  root: { contents: Node; root?: Node }
+  index: { on: Node; index: Node }
+  juxtaposed: { nodes: Node[] }
+  op:
+    | { kind: OpBinary; a: Node; b: Node; span: Span | null }
+    | { kind: PuncUnary; a: Node; b?: undefined }
+  commalist: { items: Node[] }
+  cmplist: { items: Node[]; ops: PuncCmp[] }
+  factorial: { on: Node; repeats: number | Node }
+  error: { reason: string }
+  binding: AstBinding
+  punc: Punc
+}
+
+export type NodeName = keyof Nodes
+
 /**
  * A part of the AST. The intermediate representation is so close to the final
  * representation that they're essentially merged.
  */
-export type Node =
-  | { type: "void" }
-  | { type: "num"; value: string; sub?: Node; span: Span | null }
-  | { type: "text"; value: string }
-  | Var
-  | MagicVar
-  | { type: "num16"; value: string }
-  | { type: "group"; lhs: ParenLhs; rhs: ParenRhs; value: Node }
-  | { type: "sub"; sub: Node }
-  | { type: "sup"; sup: Node }
-  | { type: "raise"; base: Node; exponent: Node }
-  | { type: "call"; on?: Node; name: Node; args: Node }
-  | { type: "frac"; a: Node; b: Node }
-  | { type: "mixed"; integer: string; a: string; b: string }
-  | { type: "piecewise"; pieces: Piece[] }
-  | { type: "matrix"; cols: number; values: Node[] }
-  | { type: "bigsym"; cmd: BigCmd | "\\int"; sub?: Node; sup?: Node }
-  | { type: "big"; cmd: BigCmd | "\\int"; sub?: Node; sup?: Node; of: Node }
-  | { type: "root"; contents: Node; root?: Node }
-  | { type: "index"; on: Node; index: Node }
-  | { type: "juxtaposed"; nodes: Node[] }
-  | { type: "op"; kind: OpBinary; a: Node; b: Node; span: Span | null }
-  | { type: "op"; kind: PuncUnary; a: Node; b?: undefined }
-  | { type: "commalist"; items: Node[] }
-  | { type: "cmplist"; items: Node[]; ops: PuncCmp[] }
-  | { type: "factorial"; on: Node; repeats: number | Node }
-  | { type: "error"; reason: string }
-  | AstBinding
-  | Punc
+export type Node = { [K in NodeName]: Nodes[K] & { type: K } }[NodeName]
 
 /** Parses a list of tokens into a complete AST. */
 export function tokensToAst(tokens: Node[], maybeBinding: boolean): Node {
