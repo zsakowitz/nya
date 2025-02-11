@@ -21,7 +21,7 @@ declare module "../eval/ty/index.js" {
 }
 
 export const EXT_QUATERNION: Package = {
-  id: "nya:quaternion",
+  id: "nya:num-quaternion",
   name: "quaternions",
   label: "adds support for quaternions",
 
@@ -81,7 +81,46 @@ export const EXT_QUATERNION: Package = {
       },
     },
     coerce: {
-      // r32 r64 c32 c64
+      r32: {
+        q32: {
+          js(self) {
+            return [self, real(0), real(0), real(0)]
+          },
+          glsl(self) {
+            return `vec4(${self}, 0, 0, 0)`
+          },
+        },
+      },
+      r64: {
+        q32: {
+          js(self) {
+            return [self, real(0), real(0), real(0)]
+          },
+          glsl(self) {
+            return `vec4(${self}.x, 0, 0, 0)`
+          },
+        },
+      },
+      c32: {
+        q32: {
+          js(self) {
+            return [self.x, self.y, real(0), real(0)]
+          },
+          glsl(self) {
+            return `vec4(${self}, 0, 0)`
+          },
+        },
+      },
+      c64: {
+        q32: {
+          js(self) {
+            return [self.x, self.y, real(0), real(0)]
+          },
+          glsl(self) {
+            return `vec4(${self}.xz, 0, 0, 0)`
+          },
+        },
+      },
     },
   },
 
