@@ -123,6 +123,14 @@ export interface Options {
   latex?: WordMap<LatexInit>
 
   /**
+   * An list of words which will be de-italicized. The {@linkcode WordKind} is
+   * what kind of word the text will be treated as: variable, prefix operator,
+   * or infix operator. The {@linkcode WordKind} controls spacing; see its
+   * documentation for more details.
+   */
+  words?: WordMap<WordKind>
+
+  /**
    * If this returns `true` for a given {@linkcode Command}, a number typed
    * directly after it will be turned into a subscript.
    */
@@ -142,12 +150,4 @@ export interface Options {
 
   /** If `true`, big symbols will default to having no upper bound. */
   noAutoBigBound?: boolean
-
-  /**
-   * An list of words which will be de-italicized. The {@linkcode WordKind} is
-   * what kind of word the text will be treated as: variable, prefix operator,
-   * or infix operator. The {@linkcode WordKind} controls spacing; see its
-   * documentation for more details.
-   */
-  words?: WordMap<WordKind>
 }
