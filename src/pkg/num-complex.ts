@@ -30,7 +30,7 @@ import { Display, type Write } from "../eval/ty/display"
 import { highRes } from "../eval/ty/info"
 import { Block, R } from "../field/model"
 import { h } from "../jsx"
-import type { Package } from "../pkg"
+import type { Package } from "."
 
 declare module "../eval/ty/index.js" {
   interface Tys {
