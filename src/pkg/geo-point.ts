@@ -91,11 +91,13 @@ export const EXT_POINT = defineHideable({
 
     if (
       value &&
-      (value.type == "point32" || value.type == "point64")
-      // FIXME: bring back c32 and c64 support
+      (value.type == "point32" ||
+        value.type == "point64" ||
+        value.type == "c32" ||
+        value.type == "c64")
     ) {
       return {
-        value: value as JsValue<"point32" | "point64">,
+        value: value as JsValue<"point32" | "point64" | "c32" | "c64">,
         paper: expr.sheet.paper,
         expr,
         drag,
@@ -248,8 +250,11 @@ export const EXT_POINT = defineHideable({
   select: {
     ty(data) {
       const ty = data.value.type
-      // FIXME: pretend to be a point if actually a c32 or c64
-      return ty
+      return (
+        ty == "c32" ? "point32"
+        : ty == "c64" ? "point64"
+        : ty
+      )
     },
     dim(data) {
       DIMMED.set(data.expr, true)
@@ -277,8 +282,10 @@ export const EXT_POINT = defineHideable({
       const ty = data.value.type
       return {
         ...data.value,
-        // FIXME: pretend to be a point if c32 or c64
-        type: ty,
+        type:
+          ty == "c32" ? "point32"
+          : ty == "c64" ? "point64"
+          : ty,
       }
     },
     ref(data) {
@@ -387,6 +394,7 @@ export const PKG_GEO_POINT: Package = {
       screendistance: FN_SCREENDISTANCE,
     },
   },
+  sheet: { exts: { 1: [EXT_POINT] } },
 }
 
 function iconPoint(hd: boolean) {

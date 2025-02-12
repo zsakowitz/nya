@@ -1,4 +1,9 @@
 import { options } from "../field/defaults.js"
+import { PKG_GEO_POINT } from "../pkg/geo-point.js"
+import { PKG_GEOMETRY } from "../pkg/geo/index.js"
+import { PKG_NUM_COMPLEX } from "../pkg/num-complex.js"
+import { PKG_NUM_QUATERNION } from "../pkg/num-quaternion.js"
+import { PKG_TEXT } from "../pkg/text.js"
 import { EXT_SLIDER } from "./ext/exts/00-slider.js"
 import { EXT_EVAL } from "./ext/exts/02-eval.js"
 import { EXT_GLSL, show } from "./ext/exts/03-shader.js"
@@ -12,6 +17,11 @@ const sheet = new SheetFactory(options)
     label: "q",
     sheet: { exts: { 0: [EXT_SLIDER], 2: [EXT_EVAL], 3: [EXT_GLSL] } },
   })
+  .load(PKG_GEOMETRY)
+  .load(PKG_GEO_POINT)
+  .load(PKG_NUM_COMPLEX)
+  .load(PKG_NUM_QUATERNION)
+  .load(PKG_TEXT)
   .create()
 document.body.appendChild(sheet.el)
 
