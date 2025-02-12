@@ -12,6 +12,7 @@ import {
   iterateJs,
   parseIterate,
 } from "../ops/iterate"
+import { indexGlsl, indexJs } from "../ops/op"
 import { OP_ABS } from "../ops/op/abs"
 import { add } from "../ops/op/add"
 import { OP_AND } from "../ops/op/and"
@@ -26,7 +27,7 @@ import { piecewiseGlsl, piecewiseJs } from "../ops/piecewise"
 import { VARS } from "../ops/vars"
 import { withBindingsDeps, withBindingsGlsl, withBindingsJs } from "../ops/with"
 import type { GlslValue, JsVal, JsValue } from "../ty"
-import { isReal, listGlsl, listJs } from "../ty/coerce"
+import { listGlsl, listJs } from "../ty/coerce"
 import { frac, num, real } from "../ty/create"
 import { TY_INFO } from "../ty/info"
 import { splitValue } from "../ty/split"
@@ -744,47 +745,10 @@ export const AST_TXRS: {
   void: error`Empty expression.`(() => {}),
   index: {
     js(node, props) {
-      const on = js(node.on, props)
-      if (!on.list) {
-        throw new Error("Cannot index on a non-list.")
-      }
-      const index = js(node.index, props)
-      if (index.list !== false) {
-        throw new Error("Cannot index with a list yet.")
-      }
-      if (!isReal(index)) {
-        throw new Error("Indexes must be numbers for now.")
-      }
-      const value = num(index.value) - 1
-      return {
-        type: on.type,
-        list: false,
-        value: on.value[value] ?? TY_INFO[on.type].garbage.js,
-      }
+      return indexJs(js(node.on, props), js(node.index, props))
     },
     glsl(node, props) {
-      const on = glsl(node.on, props)
-      if (on.list === false) {
-        throw new Error("Cannot index on a non-list.")
-      }
-      const indexVal = js(node.index, props)
-      if (indexVal.list !== false) {
-        throw new Error("Cannot index with a list yet.")
-      }
-      if (!isReal(indexVal)) {
-        throw new Error("Indices must be numbers for now.")
-      }
-      const index = num(indexVal.value)
-      if (index != Math.floor(index) || index <= 0 || index > on.list) {
-        throw new Error(
-          `Index ${index} is out-of-bounds on list of length ${on.list}.`,
-        )
-      }
-      return {
-        type: on.type,
-        list: false,
-        expr: `${on.expr}[${index - 1}]`,
-      }
+      return indexGlsl(glsl(node.on, props), js(node.index, props))
     },
     drag: NO_DRAG,
     deps(node, deps) {

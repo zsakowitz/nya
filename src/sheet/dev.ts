@@ -1,5 +1,6 @@
 import { options } from "../field/defaults.js"
 import { PKG_BOOL } from "../pkg/bool.js"
+import { PKG_DROPDOWN } from "../pkg/dropdown.js"
 import { PKG_EVAL } from "../pkg/eval.js"
 import { PKG_GEO_POINT } from "../pkg/geo-point.js"
 import { PKG_GEOMETRY } from "../pkg/geo/index.js"
@@ -27,6 +28,7 @@ const sheet = new SheetFactory(options)
   .load(PKG_TEXT)
   .load(PKG_ITHKUIL)
   .load(PKG_MORE_COLOR)
+  .load(PKG_DROPDOWN)
   .create()
 document.body.appendChild(sheet.el)
 
