@@ -10,11 +10,6 @@ import { FN_DEBUGPOINT } from "./fn/debugpoint"
 import { FN_FIRSTVALID } from "./fn/firstvalid"
 import { FN_JOIN } from "./fn/join"
 import { FN_LN } from "./fn/ln"
-import { FN_MAX } from "./fn/max"
-import { FN_MIN } from "./fn/min"
-import { FN_COS } from "./fn/trig/cos"
-import { FN_SIN } from "./fn/trig/sin"
-import { FN_TAN } from "./fn/trig/tan"
 import { FN_UNSIGN } from "./fn/unsign"
 import { FN_VALID } from "./fn/valid"
 
@@ -38,14 +33,9 @@ export interface Fn {
 export const FNS: Record<string, Fn> = {
   rgb: FN_RGB,
   cmp: FN_CMP,
-  sin: FN_SIN,
   unsign: FN_UNSIGN,
   hsv: FN_HSV,
-  cos: FN_COS,
-  tan: FN_TAN,
   debugpoint: FN_DEBUGPOINT,
-  min: FN_MIN,
-  max: FN_MAX,
   valid: FN_VALID,
   firstvalid: FN_FIRSTVALID,
   ln: FN_LN,

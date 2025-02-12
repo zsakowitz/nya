@@ -1,12 +1,8 @@
 import type { Package } from "."
+import { FnDist, FnDistVar } from "../eval/ops/dist"
 import { declareCmpR64, FN_CMP } from "../eval/ops/fn/cmp"
 import { FN_HSV } from "../eval/ops/fn/color/hsv"
 import { FN_EXP } from "../eval/ops/fn/exp"
-import { FN_MAX } from "../eval/ops/fn/max"
-import { FN_MIN } from "../eval/ops/fn/min"
-import { FN_COS } from "../eval/ops/fn/trig/cos"
-import { FN_SIN } from "../eval/ops/fn/trig/sin"
-import { FN_TAN } from "../eval/ops/fn/trig/tan"
 import { FN_UNSIGN } from "../eval/ops/fn/unsign"
 import { FN_VALID } from "../eval/ops/fn/valid"
 import { abs, abs64, OP_ABS } from "../eval/ops/op/abs"
@@ -36,6 +32,12 @@ declare module "../eval/ty/index.js" {
     r64: never
   }
 }
+
+export const FN_SIN = new FnDist("sin", "takes the sine of an angle")
+export const FN_COS = new FnDist("cos", "takes the cosine of an angle")
+export const FN_TAN = new FnDist("tan", "takes the tangent of an angle")
+export const FN_MAX = new FnDistVar("max", "returns the maximum of its inputs")
+export const FN_MIN = new FnDistVar("min", "returns the minimum of its inputs")
 
 OP_ABS.add(
   ["r64"],
