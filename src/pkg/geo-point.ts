@@ -27,8 +27,10 @@ import { Prop, Store } from "../sheet/ext"
 import { defineHideable } from "../sheet/ext/hideable"
 import { Transition } from "../sheet/transition"
 import type { Paper, Point } from "../sheet/ui/paper"
+import type { Sheet } from "../sheet/ui/sheet"
 import { virtualStepExp, write, Writer } from "../sheet/write"
 import { EXT_EVAL } from "./eval"
+import { createPickByTy, PICK_BY_TY, picker } from "./geo/pick-normal"
 
 declare module "../eval/ty/index.js" {
   interface Tys {
@@ -337,6 +339,8 @@ const FN_SCREENDISTANCE = new FnDist<"r32">(
   },
 )
 
+const PICK_POINT = createPickByTy("p", null, [["point32", "point64"]], () => {})
+
 export const PKG_GEO_POINT: Package = {
   id: "nya:geo-point",
   name: "geometric points",
@@ -395,7 +399,17 @@ export const PKG_GEO_POINT: Package = {
       screendistance: FN_SCREENDISTANCE,
     },
   },
-  sheet: { exts: { 1: [EXT_POINT] } },
+  sheet: {
+    exts: {
+      1: [EXT_POINT],
+    },
+    toolbar: {
+      1: [picker(() => iconPoint(false), PICK_POINT)],
+    },
+    keys: {
+      p: (sheet: Sheet) => sheet.setPick(PICK_BY_TY, PICK_POINT),
+    },
+  },
 }
 
 function iconPoint(hd: boolean) {
