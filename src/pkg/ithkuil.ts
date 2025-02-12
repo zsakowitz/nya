@@ -12,6 +12,7 @@ import { L } from "../field/model"
 import { h, p, svgx } from "../jsx"
 import { defineExt } from "../sheet/ext"
 import { circle } from "../sheet/ui/expr/circle"
+import type { TextSegment } from "./text"
 
 declare module "../eval/ty" {
   interface Tys {
@@ -116,12 +117,19 @@ export const PKG_ITHKUIL: Package = {
         ["text"],
         "text",
         (a) => {
-          const source = a.value.map((x) => x.value).join("")
-          const parsed = parseWord(source)
-          if (!parsed) {
-            throw new Error("Failed to parse word.")
-          }
-          return [{ type: "plain", value: glossWord(parsed).short }]
+          const sourceRaw = a.value.map((x) => x.value).join("")
+          return sourceRaw
+            .split(/[-\s]+/)
+            .map<TextSegment>((source) => {
+              const parsed = parseWord(source)
+              if (!parsed) {
+                throw new Error(`Failed to parse ${source}.`)
+              }
+              return { type: "plain", value: glossWord(parsed).short }
+            })
+            .flatMap((x, i) =>
+              i == 0 ? [x] : [{ type: "plain", value: "\n" }, x],
+            )
         },
         err,
       ),
@@ -132,19 +140,26 @@ export const PKG_ITHKUIL: Package = {
         ["text"],
         "text",
         (str) => {
-          const source = str.value.map((x) => x.value).join("")
-          const recognized = recognize(source)
-          const [a, b, c, d, e] = unglossWord(recognized.gloss)
-          const unglossed = [c, b, d, e, a]
-          const success = unglossed.filter((x) => x.type == "success")
-          const error = unglossed.filter((x) => x.type == "error")
-          if (success[0]) {
-            return [{ type: "plain", value: wordToIthkuil(success[0].value) }]
-          } else if (error[0]) {
-            throw new Error(error[0].reason)
-          } else {
-            throw new Error(`Failed to parse '${str}'.`)
-          }
+          const sourceRaw = str.value.map((x) => x.value).join("")
+          return sourceRaw
+            .split(/\s/)
+            .map((source): TextSegment => {
+              const recognized = recognize(source)
+              const [a, b, c, d, e] = unglossWord(recognized.gloss)
+              const unglossed = [c, b, d, e, a]
+              const success = unglossed.filter((x) => x.type == "success")
+              const error = unglossed.filter((x) => x.type == "error")
+              if (success[0]) {
+                return { type: "plain", value: wordToIthkuil(success[0].value) }
+              } else if (error[0]) {
+                throw new Error(error[0].reason)
+              } else {
+                throw new Error(`Failed to parse '${str}'.`)
+              }
+            })
+            .flatMap((x, i) =>
+              i == 0 ? [x] : [{ type: "plain", value: "\n" }, x],
+            )
         },
         err,
       ),

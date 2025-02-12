@@ -222,7 +222,7 @@ const FN_CONCAT = new (class extends FnDistManual<"text"> {
 
 const store = new Store((expr) => {
   const el = h(
-    "block px-2 pb-1 -mt-2 w-[calc(var(--nya-sidebar)_-_2.5rem_-_1px)] overflow-x-auto [&::-webkit-scrollbar]:hidden font-sans [.nya-expr:has(&):not(:focus-within)_.nya-display]:sr-only [.nya-expr:has(&):not(:focus-within)_&]:px-4 [.nya-expr:has(&):not(:focus-within)_&]:py-3 [.nya-expr:has(&):not(:focus-within)_&]:mt-0",
+    "block px-2 pb-1 -mt-2 w-[calc(var(--nya-sidebar)_-_2.5rem_-_1px)] overflow-x-auto [&::-webkit-scrollbar]:hidden font-sans [.nya-expr:has(&):not(:focus-within)_.nya-display]:sr-only [.nya-expr:has(&):not(:focus-within)_&]:px-4 [.nya-expr:has(&):not(:focus-within)_&]:py-3 [.nya-expr:has(&):not(:focus-within)_&]:mt-0 [white-space:preserve_wrap]",
   )
   el.addEventListener("click", () => expr.field.el.focus())
   return el
@@ -354,7 +354,7 @@ export const PKG_TEXT: Package = {
   },
 }
 
-type TextSegment = { type: "plain" | "latex"; value: string }
+export type TextSegment = { type: "plain" | "latex"; value: string }
 
 OP_JUXTAPOSE.add(
   ["text", "text"],
