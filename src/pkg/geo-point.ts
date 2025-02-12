@@ -1,7 +1,7 @@
 import type { Package } from "."
 import { dragPoint } from "../eval/ast/tx"
 import { FnDist } from "../eval/ops/dist"
-import { FN_DEBUGPOINT } from "../eval/ops/fn/debugpoint"
+import { declareDebugPoint, FN_DEBUGPOINT } from "../eval/ops/fn/debugpoint"
 import { FN_UNSIGN } from "../eval/ops/fn/unsign"
 import { FN_VALID } from "../eval/ops/fn/valid"
 import { abs, abs64, OP_ABS } from "../eval/ops/op/abs"
@@ -14,6 +14,7 @@ import { OP_POINT } from "../eval/ops/op/point"
 import { OP_POS } from "../eval/ops/op/pos"
 import { OP_X } from "../eval/ops/op/x"
 import { OP_Y } from "../eval/ops/op/y"
+import { ERR_COORDS_USED_OUTSIDE_GLSL } from "../eval/ops/vars"
 import { each, type JsValue } from "../eval/ty"
 import { approx, frac, num, pt, real, unpt } from "../eval/ty/create"
 import { highRes, TY_INFO, WRITE_POINT } from "../eval/ty/info"
@@ -547,4 +548,13 @@ OP_POS.add(
   "point32",
   (a) => a.value,
   (_, a) => a.expr,
+)
+
+FN_DEBUGPOINT.add(
+  ["c32"],
+  "color",
+  () => {
+    throw new Error(ERR_COORDS_USED_OUTSIDE_GLSL)
+  },
+  (ctx, a) => declareDebugPoint(ctx, a),
 )

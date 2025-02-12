@@ -1,7 +1,7 @@
 import type { Package } from "."
 import type { GlslContext } from "../eval/lib/fn"
 import { FnDist } from "../eval/ops/dist"
-import { FN_DEBUGPOINT } from "../eval/ops/fn/debugpoint"
+import { declareDebugPoint, FN_DEBUGPOINT } from "../eval/ops/fn/debugpoint"
 import { declareExp, FN_EXP } from "../eval/ops/fn/exp"
 import { FN_LN } from "../eval/ops/fn/ln"
 import { FN_COS } from "../eval/ops/fn/trig/cos"
@@ -330,6 +330,15 @@ FN_REAL.add(
   "r32",
   (a) => a.value.x,
   (_, a) => `${a.expr}.x`,
+)
+
+FN_DEBUGPOINT.add(
+  ["c32"],
+  "color",
+  () => {
+    throw new Error(ERR_COORDS_USED_OUTSIDE_GLSL)
+  },
+  (ctx, a) => declareDebugPoint(ctx, a),
 )
 
 OP_TO_TEXT.add(
