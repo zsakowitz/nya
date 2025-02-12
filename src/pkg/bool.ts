@@ -20,7 +20,7 @@ OP_OR.add(
 export const PKG_BOOL: Package = {
   id: "nya:bool-ops",
   name: "boolean operations",
-  label: "adds support for operations on boolean values",
+  label: "adds basic support for boolean values",
 }
 
 FN_VALID.add(

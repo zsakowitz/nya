@@ -46,6 +46,7 @@ const REMARKS = [
   "generic pointer events my beloved",
   "more blue than expected",
   "everything has been coded at least twice",
+  "options to inits to exts to packages",
 ]
 
 export const REMARK = REMARKS[Math.floor(REMARKS.length * Math.random())]!

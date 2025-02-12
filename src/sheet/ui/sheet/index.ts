@@ -543,7 +543,7 @@ function createDocs(
     className,
     secCredits(),
     packages &&
-      section("packages", [
+      section(`packages (${packages.length} active)`, [
         h(
           "flex flex-col gap-2",
           ...packages

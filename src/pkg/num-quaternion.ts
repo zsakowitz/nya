@@ -27,7 +27,7 @@ declare module "../eval/ty/index.js" {
 export const PKG_NUM_QUATERNION: Package = {
   id: "nya:num-quaternion",
   name: "quaternions",
-  label: "adds support for quaternions",
+  label: "adds rudimentary support for quaternions",
 
   ty: {
     info: {
