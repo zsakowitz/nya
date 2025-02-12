@@ -32,7 +32,7 @@ function expr(source: { raw: readonly string[] }) {
 
 if (location.href.includes("localhost")) {
   expr`\left(2,3\right)`
-  expr`ikscript\text{hlaséi-rrala sakawi}`
+  expr`\operatorname{ikscript}\text{hlaséi-rrala sakawi}`
 } else {
   expr`ikscript\text{hlaséi-rrala sakawi}`
   expr`\operatorname{vector}\left(\left(-1,-.5\right),\left(-.5,1\right)\right)`

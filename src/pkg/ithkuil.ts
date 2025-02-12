@@ -6,9 +6,11 @@ import { CharacterRow, getBBox, textToScript } from "@zsnout/ithkuil/script"
 import { createRecognizer, unglossWord } from "@zsnout/ithkuil/ungloss"
 import type { Package } from "."
 import { FnDist } from "../eval/ops/dist"
+import { each, type JsValue } from "../eval/ty"
 import { Leaf } from "../field/cmd/leaf"
 import { L } from "../field/model"
 import { h, p, svgx } from "../jsx"
+import { defineExt } from "../sheet/ext"
 
 declare module "../eval/ty" {
   interface Tys {
@@ -170,6 +172,34 @@ export const PKG_ITHKUIL: Package = {
         },
         err,
       ),
+    },
+  },
+  sheet: {
+    exts: {
+      1: [
+        defineExt({
+          data(expr) {
+            if (expr.js?.value.type == "ikscript") {
+              return expr.js.value as JsValue<"ikscript">
+            }
+          },
+          el(data) {
+            return h(
+              "flex flex-col gap-6 pb-4 -mt-2",
+              ...each(data).map((x) => {
+                const el = x[1]
+                return h(
+                  {
+                    class: "px-4 inline-block *:h-[--h]",
+                    style: `--h:${(el.viewBox.baseVal.height / 70) * 2}rem`,
+                  },
+                  el,
+                )
+              }),
+            )
+          },
+        }),
+      ],
     },
   },
 }
