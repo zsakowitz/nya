@@ -48,6 +48,19 @@ In the future, it's hoped that arbitrary extensions will be loadable directly
 from the graph paper. Since this poses possible security risks, it isn't
 available yet.
 
+# Packages
+
+In `nya`, these extensions are called "packages". The [src/pkg/](src/pkg/)
+folder has many packages of various complexity, if you'd like to learn by
+looking at the code.
+
+Making a package is easy. Just export some variable with the type
+[`Package`](src/pkg/index.ts), then called `.load()` on it with
+[`SheetFactory`](src/sheet/factory.ts). For a list of the various abilities
+packages have, check out the interface signature for `Package`. There's a lot,
+and even more options are available through adding new typable commands, AST
+nodes and transformers, and [`Ext`](src/sheet/ext/index.ts)s for the graphpaper.
+
 # Repository Structure
 
 All important code is in [src/](src/), which is separated into three components.
