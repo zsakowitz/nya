@@ -1,4 +1,5 @@
 import type { Package } from "."
+import { FN_VALID } from "../eval/ops/fn/valid"
 import { OP_AND } from "../eval/ops/op/and"
 import { OP_OR } from "../eval/ops/op/or"
 
@@ -21,3 +22,10 @@ export const PKG_BOOL: Package = {
   name: "boolean operations",
   label: "adds support for operations on boolean values",
 }
+
+FN_VALID.add(
+  ["bool"],
+  "bool",
+  () => true,
+  () => "true",
+)

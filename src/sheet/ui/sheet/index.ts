@@ -50,6 +50,9 @@ function createDocs(
   packages: Package[] | null,
 ) {
   function makeDoc(fn: { name: string; label: string; docs(): Node[] }) {
+    const nodes = fn.docs()
+    if (nodes.length == 0) return null
+
     return h(
       "flex flex-col",
       h(
@@ -61,7 +64,7 @@ function createDocs(
         ),
       ),
       h("text-sm leading-tight text-slate-500", fn.label),
-      h("flex flex-col pl-4 mt-1", ...fn.docs()),
+      h("flex flex-col pl-4 mt-1", ...nodes),
     )
   }
 
@@ -521,7 +524,8 @@ function createDocs(
       "named functions",
       ALL_DOCS.filter((x) => Object.values(FNS).includes(x as any))
         .sort((a, b) => (a.name < b.name ? -1 : 1))
-        .map(makeDoc),
+        .map(makeDoc)
+        .filter((x) => x != null),
     )
   }
 
@@ -530,7 +534,8 @@ function createDocs(
       "operators",
       ALL_DOCS.filter((x) => !Object.values(FNS).includes(x as any))
         .sort((a, b) => (a.name < b.name ? -1 : 1))
-        .map(makeDoc),
+        .map(makeDoc)
+        .filter((x) => x != null),
     )
   }
 

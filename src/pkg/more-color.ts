@@ -1,8 +1,11 @@
 import type { Package } from "."
 import type { GlslContext } from "../eval/lib/fn"
 import { FnDist } from "../eval/ops/dist"
+import { FN_FIRSTVALID } from "../eval/ops/fn/firstvalid"
+import { FN_VALID } from "../eval/ops/fn/valid"
 import { sub } from "../eval/ops/op/sub"
-import { frac } from "../eval/ty/create"
+import { frac, num } from "../eval/ty/create"
+import { TY_INFO } from "../eval/ty/info"
 import { isDark } from "../sheet/theme"
 
 function oklab(
@@ -101,6 +104,7 @@ export const PKG_MORE_COLOR: Package = {
   label: "adds more functions for creating colors",
   eval: {
     fns: {
+      valid: FN_VALID,
       oklab: FN_OKLAB,
       oklch: FN_OKLCH,
       invertdark: new FnDist(
@@ -128,3 +132,50 @@ export const PKG_MORE_COLOR: Package = {
     },
   },
 }
+
+FN_VALID.add(
+  ["color"],
+  "bool",
+  ({ value: c }) => {
+    const r = num(c.r)
+    const g = num(c.g)
+    const b = num(c.b)
+    const a = num(c.a)
+    return (
+      0 <= r &&
+      r <= 255 &&
+      0 <= g &&
+      g <= 255 &&
+      0 <= b &&
+      b <= 255 &&
+      0 <= a &&
+      a <= 1
+    )
+  },
+  (ctx, ar) => {
+    const a = ctx.cache(ar)
+    return `(0.0 <= ${a}.x && ${a}.x <= 1.0 && 0.0 <= ${a}.y && ${a}.y <= 1.0 && 0.0 <= ${a}.z && ${a}.z <= 1.0 && 0.0 <= ${a}.w && ${a}.w <= 1.0)`
+  },
+)
+
+FN_FIRSTVALID.add(
+  ["color"],
+  "color",
+  (a) => (FN_VALID.js1(a).value ? a.value : TY_INFO.color.garbage.js),
+  (ctx, ar) => {
+    const a = ctx.cache(ar)
+    return `${FN_VALID.glsl1(ctx, { type: "color", expr: a }).expr} ? ${a} : ${TY_INFO.color.garbage.glsl}`
+  },
+).add(
+  ["color", "color"],
+  "color",
+  (a, b) =>
+    FN_VALID.js1(a).value ? a.value
+    : FN_VALID.js1(b).value ? b.value
+    : TY_INFO.color.garbage.js,
+  (ctx, ar, br) => {
+    const a = ctx.cache(ar)
+    const b = ctx.cache(br)
+    return `${FN_VALID.glsl1(ctx, { type: "color", expr: a }).expr} ? ${a} : ${FN_VALID.glsl1(ctx, { type: "color", expr: b }).expr} ? ${b} : ${TY_INFO.color.garbage.glsl}`
+  },
+)
