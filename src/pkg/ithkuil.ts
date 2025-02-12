@@ -16,6 +16,10 @@ declare module "../eval/ty" {
   interface Tys {
     ikscript: readonly [string, SVGSVGElement]
   }
+
+  interface TyComponents {
+    ikscript: never
+  }
 }
 
 class CmdIthkuilScript extends Leaf {
