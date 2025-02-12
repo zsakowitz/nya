@@ -15,6 +15,10 @@
   "exclude": [
     "src/pkg/num-complex.ts",
     "src/pkg/num-quaternion.ts",
-    "src/pkg/text.ts"
+    "src/pkg/text.ts",
+    "src/pkg/geo-point.ts",
+    "src/pkg/geo-point-extras.ts",
+    "src/pkg/geo/fn/**",
+    "src/sheet/ext/exts/**/*"
   ]
 }

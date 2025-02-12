@@ -8,15 +8,6 @@ export interface Tys {
   r64: SReal
   bool: boolean
   color: SColor
-
-  point32: SPoint
-  point64: SPoint
-  segment: [SPoint, SPoint]
-  ray: [SPoint, SPoint]
-  line: [SPoint, SPoint]
-  vector: [SPoint, SPoint]
-  circle: { center: SPoint; radius: SReal }
-  polygon: SPoint[]
 }
 
 export type StrSegment = { type: "plain" | "latex"; value: string }
@@ -26,15 +17,6 @@ export interface TyComponents {
   r64: never
   bool: never
   color: "r32"
-
-  point32: "r32"
-  point64: "r64"
-  segment: never
-  ray: never
-  line: never
-  vector: never
-  circle: never
-  polygon: never
 }
 
 null! as TyComponents satisfies Record<TyName, TyName>

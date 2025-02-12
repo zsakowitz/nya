@@ -1,6 +1,5 @@
 import { FnDist } from "../dist"
 import { FN_HSV } from "../fn/color/hsv"
-import { FN_DEBUGPOINT } from "../fn/debugpoint"
 
 export function plotJs(): never {
   throw new Error("Cannot plot colors outside of a shader.")
@@ -26,11 +25,5 @@ export const OP_PLOT = new FnDist<"color">(
         { type: "r32", expr: "1.0" },
         { type: "r32", expr: "1.0" },
       ).expr,
-  )
-  .add(
-    ["point32"],
-    "color",
-    plotJs,
-    (ctx, a) => FN_DEBUGPOINT.glsl1(ctx, a).expr,
   )
   .add(["color"], "color", plotJs, (_, a) => a.expr)

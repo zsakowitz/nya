@@ -16,7 +16,6 @@ import { FN_JOIN } from "./fn/join"
 import { FN_LN } from "./fn/ln"
 import { FN_MAX } from "./fn/max"
 import { FN_MIN } from "./fn/min"
-import { FN_SCREENDISTANCE } from "./fn/screendistance"
 import { FN_COS } from "./fn/trig/cos"
 import { FN_SIN } from "./fn/trig/sin"
 import { FN_TAN } from "./fn/trig/tan"
@@ -56,7 +55,6 @@ export const FNS: Record<string, Fn> = {
   valid: FN_VALID,
   firstvalid: FN_FIRSTVALID,
   ln: FN_LN,
-  screendistance: FN_SCREENDISTANCE,
   invertdark: FN_INVERTDARK,
   forceshader: FN_FORCESHADER,
   component: FN_COMPONENT,

@@ -1,6 +1,6 @@
 import type { GlslContext } from "../../lib/fn"
 import type { SReal } from "../../ty"
-import { approx, frac, num } from "../../ty/create"
+import { approx, frac } from "../../ty/create"
 import { FnDist } from "../dist"
 import { declareCmpR64 } from "../fn/cmp"
 import { declareSubR64 } from "./sub"
@@ -43,11 +43,4 @@ export const OP_ABS = new FnDist(
     "r32",
     (a) => abs(a.value),
     (_, a) => `abs(${a.expr})`,
-  )
-  .add(
-    ["point32"],
-    "r32",
-    // TODO: this is exact for some values
-    (a) => approx(Math.hypot(num(a.value.x), num(a.value.y))),
-    (_, a) => `length(${a.expr})`,
   )

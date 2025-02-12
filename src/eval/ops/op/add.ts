@@ -1,7 +1,7 @@
 import type { GlslContext } from "../../lib/fn"
 import { safe } from "../../lib/util"
 import type { SReal } from "../../ty"
-import { approx, frac, num, pt } from "../../ty/create"
+import { approx, frac, num } from "../../ty/create"
 import { FnDist } from "../dist"
 import { declareR64 } from "../r64"
 
@@ -60,21 +60,5 @@ export const OP_ADD = new FnDist("+", "adds two values or points")
     ["r32", "r32"],
     "r32",
     (a, b) => add(a.value, b.value),
-    (_, a, b) => `(${a.expr} + ${b.expr})`,
-  )
-  .add(
-    ["point64", "point64"],
-    "point64",
-    (a, b) => pt(add(a.value.x, b.value.x), add(a.value.y, b.value.y)),
-    (ctx, ar, br) => {
-      const a = ctx.cache(ar)
-      const b = ctx.cache(br)
-      return `vec4(${addR64(ctx, `${a}.xy`, `${b}.xy`)}, ${addR64(ctx, `${a}.zw`, `${b}.zw`)})`
-    },
-  )
-  .add(
-    ["point32", "point32"],
-    "point32",
-    (a, b) => pt(add(a.value.x, b.value.x), add(a.value.y, b.value.y)),
     (_, a, b) => `(${a.expr} + ${b.expr})`,
   )
