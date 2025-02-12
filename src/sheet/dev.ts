@@ -12,16 +12,20 @@ import { PKG_SELECT } from "../pkg/select.js"
 import { PKG_SHADER, show } from "../pkg/shader.js"
 import { PKG_SLIDER } from "../pkg/slider.js"
 import { PKG_TEXT } from "../pkg/text.js"
+import { PKG_TRIG_COMPLEX } from "../pkg/trig-complex.js"
+import { PKG_TRIG_REAL } from "../pkg/trig-real.js"
 import { SheetFactory } from "./factory.js"
 import { Expr } from "./ui/expr/index.js"
 
 const sheet = new SheetFactory(options)
   .load(PKG_REAL)
+  .load(PKG_TRIG_REAL)
   .load(PKG_BOOL)
   .load(PKG_EVAL)
   .load(PKG_SLIDER)
   .load(PKG_SHADER)
   .load(PKG_NUM_COMPLEX)
+  .load(PKG_TRIG_COMPLEX)
   .load(PKG_GEO_POINT)
   .load(PKG_GEOMETRY)
   .load(PKG_NUM_QUATERNION)

@@ -26,7 +26,6 @@ import { Display, type Write } from "../eval/ty/display"
 import { highRes } from "../eval/ty/info"
 import { Block, R } from "../field/model"
 import { h } from "../jsx"
-import { FN_COS, FN_SIN, FN_TAN } from "./num-real"
 import { OP_TO_TEXT } from "./text"
 
 declare module "../eval/ty/index.js" {
@@ -475,43 +474,6 @@ FN_COMPLEX.add(
     (_, a) => a.expr,
   )
 
-FN_SIN.add(
-  ["c32"],
-  "c32",
-  (a) => sinPt(a.value),
-  (ctx, a) => {
-    declareSin(ctx)
-    return `_helper_sin(${a})`
-  },
-)
-
-FN_COS.add(
-  ["c32"],
-  "c32",
-  (a) => cosPt(a.value),
-  (ctx, a) => {
-    declareCos(ctx)
-    return `_helper_cos(${a})`
-  },
-)
-
-FN_TAN.add(
-  ["c32"],
-  "c32",
-  (a) => divPt(sinPt(a.value), cosPt(a.value)),
-  (ctx, a) => {
-    declareDiv(ctx)
-    declareSin(ctx)
-    declareCos(ctx)
-    // TODO: this probably has lots of redundant terms
-    ctx.glsl`vec2 _helper_tan(vec2 a) {
-  return _helper_div(_helper_sin(a), _helper_cos(a));
-}
-`
-    return `_helper_tan(${a.expr})`
-  },
-)
-
 OP_ABS.add(
   ["c32"],
   "r32",
@@ -634,42 +596,42 @@ function mulC(
   return pt(sub(mul(a, c), mul(b, d)), add(mul(b, c), mul(a, d)))
 }
 
-function declareSin(ctx: GlslContext) {
+export function declareSin(ctx: GlslContext) {
   ctx.glsl`vec2 _helper_sin(vec2 z) {
   return vec2(sin(z.x) * cosh(z.y), cos(z.x) * sinh(z.y));
 }
 `
 }
 
-function sinPt(a: SPoint) {
+export function sinPt(a: SPoint) {
   return pt(
     approx(Math.sin(num(a.x)) * Math.cosh(num(a.y))),
     approx(Math.cos(num(a.x)) * Math.sinh(num(a.y))),
   )
 }
 
-function declareCos(ctx: GlslContext) {
+export function declareCos(ctx: GlslContext) {
   ctx.glsl`vec2 _helper_cos(vec2 z) {
   return vec2(cos(z.x) * cosh(z.y), -sin(z.x) * sinh(z.y));
 }
 `
 }
 
-function cosPt(a: SPoint): SPoint {
+export function cosPt(a: SPoint): SPoint {
   return pt(
     approx(Math.cos(num(a.x)) * Math.cosh(num(a.y))),
     approx(-Math.sin(num(a.x)) * Math.sinh(num(a.y))),
   )
 }
 
-function divPt({ x: a, y: b }: SPoint, { x: c, y: d }: SPoint): SPoint {
+export function divPt({ x: a, y: b }: SPoint, { x: c, y: d }: SPoint): SPoint {
   const x = add(mul(a, c), mul(b, d))
   const y = sub(mul(b, c), mul(a, d))
   const denom = add(mul(c, c), mul(d, d))
   return pt(div(x, denom), div(y, denom))
 }
 
-function declareDiv(ctx: GlslContext) {
+export function declareDiv(ctx: GlslContext) {
   ctx.glsl`vec2 _helper_div(vec2 a, vec2 b) {
   return vec2(
     a.x * b.x + a.y * b.y,

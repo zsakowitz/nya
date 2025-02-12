@@ -1,5 +1,5 @@
 import type { Package } from "."
-import { FnDist, FnDistVar } from "../eval/ops/dist"
+import { FnDistVar } from "../eval/ops/dist"
 import { declareCmpR64, FN_CMP } from "../eval/ops/fn/cmp"
 import { FN_HSV } from "../eval/ops/fn/color/hsv"
 import { FN_EXP } from "../eval/ops/fn/exp"
@@ -33,9 +33,6 @@ declare module "../eval/ty/index.js" {
   }
 }
 
-export const FN_SIN = new FnDist("sin", "takes the sine of an angle")
-export const FN_COS = new FnDist("cos", "takes the cosine of an angle")
-export const FN_TAN = new FnDist("tan", "takes the tangent of an angle")
 export const FN_MAX = new FnDistVar("max", "returns the maximum of its inputs")
 export const FN_MIN = new FnDistVar("min", "returns the minimum of its inputs")
 
@@ -196,27 +193,6 @@ OP_SUB.add(
   (_, a, b) => `(${a.expr} - ${b.expr})`,
 )
 
-FN_COS.add(
-  ["r32"],
-  "r32",
-  (a) => approx(Math.cos(num(a.value))),
-  (_, a) => `cos(${a.expr})`,
-)
-
-FN_SIN.add(
-  ["r32"],
-  "r32",
-  (a) => approx(Math.sin(num(a.value))),
-  (_, a) => `sin(${a.expr})`,
-)
-
-FN_TAN.add(
-  ["r32"],
-  "r32",
-  (a) => approx(Math.tan(num(a.value))),
-  (_, a) => `tan(${a.expr})`,
-)
-
 FN_EXP.add(
   ["r32"],
   "r32",
@@ -298,9 +274,6 @@ export const PKG_REAL: Package = {
   label: "adds support for real numbers",
   eval: {
     fns: {
-      cos: FN_COS,
-      sin: FN_SIN,
-      tan: FN_TAN,
       exp: FN_EXP,
       max: FN_MAX,
       min: FN_MIN,
