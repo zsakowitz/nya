@@ -556,6 +556,7 @@ function registerOffsetHandlers<T extends {}, U extends {}>(
   const last = new Map<number, Point>()
 
   paper.el.addEventListener("contextmenu", (event) => {
+    ;(document.activeElement as HTMLElement)?.blur?.()
     event.preventDefault()
   })
 
@@ -565,6 +566,7 @@ function registerOffsetHandlers<T extends {}, U extends {}>(
     "pointerdown",
     (event) => {
       paper.el.setPointerCapture(event.pointerId)
+      ;(document.activeElement as HTMLElement)?.blur?.()
       event.preventDefault()
       const pt: Point = { x: event.offsetX, y: event.offsetY }
       last.set(event.pointerId, pt)
