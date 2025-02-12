@@ -481,7 +481,7 @@ function createDocs(
           "https://github.com/zsakowitz/nya/tree/4d7dfd34cbcec061a9d0e0befe15fc259415b97e/src/pkg",
           "a robust package system had been implemented",
         ),
-        " to ensure further extension was not just possible, but ridiculously easy.",
+        " to ensure further extension was not just possible, but ridiculously easy. As a test, I tried to incorporate my preexisting Ithkuil tooling into project nya; it took only three minutes to incorporate the first of just three features.",
       ),
     ])
   }
