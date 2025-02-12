@@ -1,5 +1,3 @@
-import { Prop } from ".."
-import { distLinePt } from "../../../pkg/geo/fn/distance"
 import { each, type JsVal, type JsValue, type SPoint } from "../../../eval/ty"
 import { num, unpt } from "../../../eval/ty/create"
 import { gliderOnLine } from "../../../eval/ty/info"
@@ -9,9 +7,11 @@ import { CmdNum } from "../../../field/cmd/leaf/num"
 import { CmdVar } from "../../../field/cmd/leaf/var"
 import { CmdBrack } from "../../../field/cmd/math/brack"
 import { Block, L, R } from "../../../field/model"
-import type { Paper } from "../../ui/paper"
-import { defineHideable } from "../hideable"
-import { drawSegment } from "./01-segment"
+import { Prop } from "../../../sheet/ext"
+import { defineHideable } from "../../../sheet/ext/hideable"
+import type { Paper } from "../../../sheet/ui/paper"
+import { distLinePt } from "../fn/distance"
+import { drawSegment } from "./segment"
 
 export function drawPolygon(
   polygon: SPoint[],

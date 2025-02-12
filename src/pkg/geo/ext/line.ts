@@ -1,12 +1,12 @@
-import { Prop } from ".."
-import { distLinePt } from "../../../pkg/geo/fn/distance"
 import { each, type JsValue, type Tys } from "../../../eval/ty"
 import { num, unpt } from "../../../eval/ty/create"
 import { OpEq } from "../../../field/cmd/leaf/cmp"
 import { CmdVar } from "../../../field/cmd/leaf/var"
 import { Block, L, R } from "../../../field/model"
-import type { Paper, Point } from "../../ui/paper"
-import { defineHideable } from "../hideable"
+import { Prop } from "../../../sheet/ext"
+import { defineHideable } from "../../../sheet/ext/hideable"
+import type { Paper, Point } from "../../../sheet/ui/paper"
+import { distLinePt } from "../fn/distance"
 
 function getLineBounds(line: Tys["line"], paper: Paper): [Point, Point] {
   const x1 = num(line[0].x)

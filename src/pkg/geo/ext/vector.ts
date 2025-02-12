@@ -1,7 +1,7 @@
 import { each, type JsValue, type SPoint } from "../../../eval/ty"
 import { unpt } from "../../../eval/ty/create"
-import type { Paper } from "../../ui/paper"
-import { defineHideable } from "../hideable"
+import type { Paper } from "../../../sheet/ui/paper"
+import { defineHideable } from "../../../sheet/ext/hideable"
 
 export function drawVector(vector: [SPoint, SPoint], paper: Paper) {
   const o1 = paper.paperToCanvas(unpt(vector[0]))

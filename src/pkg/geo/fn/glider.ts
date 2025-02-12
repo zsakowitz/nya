@@ -1,3 +1,6 @@
+/// <reference path="../../geo-point.ts" />
+/// <reference path="../index.ts" />
+
 import type { GlslContext } from "../../../eval/lib/fn"
 import { FnDist } from "../../../eval/ops/dist"
 import { add } from "../../../eval/ops/op/add"

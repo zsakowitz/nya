@@ -7,7 +7,7 @@ import type { TyCoerceMap, TyInfo } from "../eval/ty/info"
 import type { LatexInit } from "../field/latex"
 import type { Init } from "../field/model"
 import type { AnyExt } from "../sheet/ext"
-import type { Sheet } from "../sheet/ui/sheet"
+import { type PropsByTy } from "../sheet/pick/normal"
 
 export type List<T> = { readonly [x: string]: T }
 
@@ -42,7 +42,8 @@ export interface Package {
 
   sheet?: {
     exts?: Record<number, AnyExt[]>
-    // toolbar?: List<ToolbarItem>
+    toolbar?: Record<number, ToolbarItem[]>
+    keys?: Record<string, PropsByTy>
   }
 
   // remarks?: readonly string[]
@@ -50,5 +51,12 @@ export interface Package {
 
 export interface ToolbarItem {
   icon(): HTMLSpanElement
-  onClick(sheet: Sheet): void
+  props: PropsByTy
+}
+
+export function toolbarPicker(
+  icon: () => HTMLSpanElement,
+  props: PropsByTy,
+): ToolbarItem {
+  return { icon, props }
 }

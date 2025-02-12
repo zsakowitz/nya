@@ -1,11 +1,17 @@
 import { options } from "../field/defaults.js"
-import { exts } from "./ext/defaults.js"
-import { show } from "./ext/exts/03-shader.js"
+import { EXT_SLIDER } from "./ext/exts/00-slider.js"
+import { EXT_EVAL } from "./ext/exts/02-eval.js"
+import { EXT_GLSL, show } from "./ext/exts/03-shader.js"
 import { SheetFactory } from "./factory.js"
 import { Expr } from "./ui/expr/index.js"
 
 const sheet = new SheetFactory(options)
-  .load({ id: "q", name: "q", label: "q", sheet: { exts: { 2: exts.exts } } })
+  .load({
+    id: "q",
+    name: "q",
+    label: "q",
+    sheet: { exts: { 0: [EXT_SLIDER], 2: [EXT_EVAL], 3: [EXT_GLSL] } },
+  })
   .create()
 document.body.appendChild(sheet.el)
 

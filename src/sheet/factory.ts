@@ -5,12 +5,15 @@ import { VARS } from "../eval/ops/vars"
 import type { TyName } from "../eval/ty"
 import { TY_INFO, type TyCoerce } from "../eval/ty/info"
 import { Inits, WordMap, type Options } from "../field/options"
-import type { Package } from "../pkg"
+import type { Package, ToolbarItem } from "../pkg"
 import { Exts } from "./ext"
+import type { PropsByTy } from "./pick/normal"
 import { Sheet } from "./ui/sheet"
 
 export class SheetFactory {
   readonly exts: Record<number, Exts> = Object.create(null)
+  readonly toolbar: Record<number, ToolbarItem[]> = Object.create(null)
+  readonly keys: Record<string, PropsByTy> = Object.create(null)
 
   options
   constructor(options: Options) {
@@ -74,6 +77,17 @@ export class SheetFactory {
       }
     }
 
+    for (const prec in pkg.sheet?.toolbar) {
+      const toolbar = (this.toolbar[prec as any] ??= [])
+      for (const ext of pkg.sheet.toolbar[prec as any]!) {
+        toolbar.push(ext)
+      }
+    }
+
+    for (const key in pkg.sheet?.keys) {
+      this.keys[key] = pkg.sheet.keys[key]!
+    }
+
     for (const key in pkg.field?.inits) {
       this.options.inits.set(key, pkg.field.inits[key]!)
     }
@@ -93,6 +107,10 @@ export class SheetFactory {
           .sort((a, b) => +a[0] - +b[0])
           .flatMap((x) => x[1].exts),
       ),
+      Object.entries(this.toolbar)
+        .sort((a, b) => +a[0] - +b[0])
+        .flatMap((x) => x[1]),
+      this.keys,
     )
   }
 }

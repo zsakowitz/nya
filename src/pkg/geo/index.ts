@@ -1,5 +1,5 @@
-import type { Package } from ".."
-import type { SPoint } from "../../eval/ty"
+import { toolbarPicker, type Package } from ".."
+import type { JsVal, SPoint, TyComponents, Tys } from "../../eval/ty"
 import { num, pt, real, unpt } from "../../eval/ty/create"
 import { gliderOnLine, WRITE_POINT, type TyInfo } from "../../eval/ty/info"
 import { CmdComma } from "../../field/cmd/leaf/comma"
@@ -7,6 +7,15 @@ import { CmdWord } from "../../field/cmd/leaf/word"
 import { CmdBrack } from "../../field/cmd/math/brack"
 import { Block, L, R } from "../../field/model"
 import { h, p, svgx } from "../../jsx"
+import { createPickByTy, type PropsByTy } from "../../sheet/pick/normal"
+import "../geo-point"
+import { drawPoint } from "../geo-point"
+import { drawCircle, EXT_CIRCLE } from "./ext/circle"
+import { drawLine, EXT_LINE } from "./ext/line"
+import { drawPolygon, EXT_POLYGON } from "./ext/polygon"
+import { drawRay, EXT_RAY } from "./ext/ray"
+import { drawSegment, EXT_SEGMENT } from "./ext/segment"
+import { drawVector, EXT_VECTOR } from "./ext/vector"
 import { FN_CENTER } from "./fn/center"
 import { FN_CIRCLE } from "./fn/circle"
 import { FN_DISTANCE } from "./fn/distance"
@@ -15,8 +24,8 @@ import { FN_GLIDER } from "./fn/glider"
 import { FN_INTERSECTION } from "./fn/intersection"
 import { FN_LINE } from "./fn/line"
 import { FN_MIDPOINT } from "./fn/midpoint"
-import { FN_PARALLEL } from "./fn/parallel"
-import { FN_PERPENDICULAR } from "./fn/perpendicular"
+import { FN_PARALLEL, parallelJs } from "./fn/parallel"
+import { FN_PERPENDICULAR, perpendicularJs } from "./fn/perpendicular"
 import { FN_POLYGON } from "./fn/polygon"
 import { FN_RADIUS } from "./fn/radius"
 import { FN_RAY } from "./fn/ray"
@@ -104,154 +113,340 @@ function lineInfo(
   }
 }
 
+const PICK_LINE = createPickByTy(
+  "l",
+  "line",
+  [
+    ["point32", "point64"],
+    ["point32", "point64"],
+  ],
+  (sheet, p1, p2) => {
+    if (p1 && p2) {
+      drawLine([p1.value, p2.value], sheet.paper, false, false)
+    }
+  },
+)
+
+const PICK_SEGMENT = createPickByTy(
+  "l",
+  "segment",
+  [
+    ["point32", "point64"],
+    ["point32", "point64"],
+  ],
+  (sheet, p1, p2) => {
+    if (p1 && p2) {
+      drawSegment([p1.value, p2.value], sheet.paper, false, false)
+    }
+  },
+)
+
+const PICK_RAY = createPickByTy(
+  "l",
+  "ray",
+  [
+    ["point32", "point64"],
+    ["point32", "point64"],
+  ],
+  (sheet, p1, p2) => {
+    if (p1 && p2) {
+      drawRay([p1.value, p2.value], sheet.paper, false, false)
+    }
+  },
+)
+
+const PICK_VECTOR = createPickByTy(
+  "l",
+  "vector",
+  [
+    ["point32", "point64"],
+    ["point32", "point64"],
+  ],
+  (sheet, p1, p2) => {
+    if (p1 && p2) {
+      drawVector([p1.value, p2.value], sheet.paper)
+    }
+  },
+)
+
+const PICK_CIRCLE = createPickByTy(
+  "c",
+  "circle",
+  [
+    ["point32", "point64"],
+    ["point32", "point64"],
+  ],
+  (sheet, p1, p2) => {
+    if (p1 && p2) {
+      const center = unpt(p1.value)
+      const edge = unpt(p2.value)
+      const radius = Math.hypot(center.x - edge.x, center.y - edge.y)
+      drawCircle(center, radius, sheet.paper, false, false)
+    }
+  },
+)
+
+const PICK_PERPENDICULAR = createPickByTy(
+  "l",
+  "perpendicular",
+  [
+    ["segment", "ray", "line", "vector"],
+    ["point32", "point64"],
+  ],
+  (sheet, p1, p2) => {
+    if (p1 && p2) {
+      const line = perpendicularJs(p1, p2)
+      drawLine(line, sheet.paper, false, false)
+    }
+  },
+)
+
+const PICK_PARALLEL = createPickByTy(
+  "l",
+  "parallel",
+  [
+    ["segment", "ray", "line", "vector"],
+    ["point32", "point64"],
+  ],
+  (sheet, p1, p2) => {
+    if (p1 && p2) {
+      const line = parallelJs(p1, p2)
+      drawLine(line, sheet.paper, false, false)
+    }
+  },
+)
+
+const PICK_MIDPOINT: PropsByTy = {
+  chosen: [],
+  next: ["point32", "point64", "segment"],
+  ext: {
+    id: Math.random(),
+    output: { tag: "p", fn: "midpoint" },
+    next(args) {
+      if (args.length == 0) {
+        return ["point32", "point64", "segment"]
+      }
+      if (args.length == 2) {
+        return null
+      }
+      return args[0]?.type == "segment" ? null : ["point32", "point64"]
+    },
+    draw(sheet, args) {
+      const [a, b] = args as
+        | []
+        | [JsVal<"segment">]
+        | [JsVal<"point32" | "point64">, JsVal<"point32" | "point64">]
+
+      let p1, p2
+      if (a?.type == "segment") {
+        p1 = unpt(a.value[0])
+        p2 = unpt(a.value[1])
+      } else if (a && b) {
+        p1 = unpt(a.value)
+        p2 = unpt(b.value)
+      } else {
+        return
+      }
+
+      drawPoint(sheet.paper, { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 })
+    },
+  },
+}
+
+const PICK_POLYGON: PropsByTy = {
+  chosen: [],
+  next: ["point32", "point64"],
+  ext: {
+    id: Math.random(),
+    output: { tag: "P", fn: "polygon" },
+    allowExistingPoint(args) {
+      return args.length >= 2
+    },
+    next(args) {
+      if (args.length < 2) {
+        return ["point32", "point64"]
+      }
+      if (
+        args[0] == args[args.length - 1] ||
+        args[args.length - 2] == args[args.length - 1]
+      ) {
+        return null
+      }
+      return ["point32", "point64"]
+    },
+    draw(sheet, args) {
+      if (args.length < 2) return
+
+      const pts = args as JsVal<"point32" | "point64">[]
+
+      drawPolygon(
+        pts.map((x) => x.value),
+        sheet.paper,
+        false,
+        false,
+      )
+    },
+  },
+}
+
+const INFO_SEGMENT = lineInfo(
+  "line segment",
+  "line segements",
+  "w-[20px] h-0 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-t-2 border-current -rotate-[30deg]",
+  (x) => Math.max(0, Math.min(1, x)),
+)
+
+const INFO_RAY = lineInfo(
+  "ray",
+  "rays",
+  "w-[30px] h-0 absolute rounded-full top-1/2 left-1/2 translate-x-[-10px] translate-y-[-3.5px] border-t-2 border-current -rotate-[30deg]",
+  (x) => Math.max(0, x),
+)
+
+const INFO_LINE = lineInfo(
+  "line",
+  "lines",
+  "w-[30px] h-0 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-t-2 border-current -rotate-[30deg]",
+  (x) => x,
+)
+
+const INFO_VECTOR = lineInfo(
+  "vector",
+  "vectors",
+  "w-[20px] h-0 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-t-2 border-current -rotate-[30deg] after:absolute after:content-['_'] after:bg-current after:top-[-4px] after:right-[-1px] after:bottom-[-2px] after:w-[6px] after:[clip-path:polygon(0%_0%,100%_50%,0%_100%)]",
+  null,
+)
+
+const INFO_CIRCLE: TyInfo<Tys["circle"], TyComponents["circle"]> = {
+  name: "circle",
+  namePlural: "circles",
+  glsl: "vec3",
+  garbage: {
+    js: { center: NANPT, radius: real(NaN) },
+    glsl: "vec3(0.0/0.0)",
+  },
+  coerce: {},
+  write: {
+    isApprox(value) {
+      return (
+        value.center.x.type == "approx" ||
+        value.center.y.type == "approx" ||
+        value.radius.type == "approx"
+      )
+    },
+    display(value, props) {
+      new CmdWord("circle", "prefix").insertAt(props.cursor, L)
+      const block = new Block(null)
+      new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
+      const inner = props.at(block.cursor(R))
+      WRITE_POINT.display(value.center, inner)
+      new CmdComma().insertAt(inner.cursor, L)
+      inner.num(value.radius)
+    },
+  },
+  icon() {
+    return h(
+      "",
+      h(
+        "text-[#388c46] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px]",
+        h(
+          "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
+        ),
+        h(
+          "size-[16px] absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-2 border-current",
+        ),
+      ),
+    )
+  },
+  glide(props) {
+    const x = num(props.shape.center.x)
+    const y = num(props.shape.center.y)
+    const angle =
+      props.point.x == x && props.point.y == y ?
+        0
+      : Math.atan2(props.point.y - y, props.point.x - x)
+    const circumPaper = Math.hypot(props.point.x - x, props.point.y - y)
+    const circumCanvas =
+      2 * Math.PI * props.paper.canvasDistance(props.point, { x, y })
+    return {
+      precision: circumCanvas / circumPaper,
+      value: angle / 2 / Math.PI,
+    }
+  },
+}
+
+const INFO_POLYGON: TyInfo<Tys["polygon"], TyComponents["polygon"]> = {
+  name: "polygon",
+  namePlural: "polygons",
+  get glsl(): never {
+    throw new Error("Cannot construct polygons in shaders.")
+  },
+  garbage: {
+    js: [],
+    get glsl(): never {
+      throw new Error("Cannot construct polygons in shaders.")
+    },
+  },
+  coerce: {},
+  write: {
+    isApprox(value) {
+      return value.some((x) => x.x.type == "approx" || x.y.type == "approx")
+    },
+    display(value, props) {
+      new CmdWord("polygon", "prefix").insertAt(props.cursor, L)
+      const inner = new Block(null)
+      const brack = new CmdBrack("(", ")", null, inner)
+      brack.insertAt(props.cursor, L)
+      let first = true
+      props = props.at(inner.cursor(R))
+      for (const pt of value) {
+        if (first) {
+          first = false
+        } else {
+          new CmdComma().insertAt(props.cursor, L)
+        }
+        const block = new Block(null)
+        new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
+        const inner = props.at(block.cursor(R))
+        inner.num(pt.x)
+        new CmdComma().insertAt(inner.cursor, L)
+        inner.num(pt.y)
+      }
+    },
+  },
+  icon() {
+    return h(
+      "",
+      h(
+        "text-[#388c46] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px]",
+        h(
+          "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
+        ),
+        h(
+          "w-[16px] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
+          svgx(
+            "2.2 4.4 17.6 13.2",
+            "stroke-current fill-none overflow-visible [stroke-linejoin:round] stroke-2",
+            p("M 7.2 4.4 L 19.8 13.2 L 2.2 17.6 Z"),
+          ),
+        ),
+      ),
+    )
+  },
+}
+
 export const PKG_GEOMETRY: Package = {
   id: "nya:geometry",
   name: "geometry",
   label: "adds geometric objects and geometric constructions",
   ty: {
     info: {
-      segment: lineInfo(
-        "line segment",
-        "line segements",
-        "w-[20px] h-0 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-t-2 border-current -rotate-[30deg]",
-        (x) => Math.max(0, Math.min(1, x)),
-      ),
-      ray: lineInfo(
-        "ray",
-        "rays",
-        "w-[30px] h-0 absolute rounded-full top-1/2 left-1/2 translate-x-[-10px] translate-y-[-3.5px] border-t-2 border-current -rotate-[30deg]",
-        (x) => Math.max(0, x),
-      ),
-      line: lineInfo(
-        "line",
-        "lines",
-        "w-[30px] h-0 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-t-2 border-current -rotate-[30deg]",
-        (x) => x,
-      ),
-      vector: lineInfo(
-        "vector",
-        "vectors",
-        "w-[20px] h-0 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-t-2 border-current -rotate-[30deg] after:absolute after:content-['_'] after:bg-current after:top-[-4px] after:right-[-1px] after:bottom-[-2px] after:w-[6px] after:[clip-path:polygon(0%_0%,100%_50%,0%_100%)]",
-        null,
-      ),
-      circle: {
-        name: "circle",
-        namePlural: "circles",
-        glsl: "vec3",
-        garbage: {
-          js: { center: NANPT, radius: real(NaN) },
-          glsl: "vec3(0.0/0.0)",
-        },
-        coerce: {},
-        write: {
-          isApprox(value) {
-            return (
-              value.center.x.type == "approx" ||
-              value.center.y.type == "approx" ||
-              value.radius.type == "approx"
-            )
-          },
-          display(value, props) {
-            new CmdWord("circle", "prefix").insertAt(props.cursor, L)
-            const block = new Block(null)
-            new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
-            const inner = props.at(block.cursor(R))
-            WRITE_POINT.display(value.center, inner)
-            new CmdComma().insertAt(inner.cursor, L)
-            inner.num(value.radius)
-          },
-        },
-        icon() {
-          return h(
-            "",
-            h(
-              "text-[#388c46] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px]",
-              h(
-                "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
-              ),
-              h(
-                "size-[16px] absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-2 border-current",
-              ),
-            ),
-          )
-        },
-        glide(props) {
-          const x = num(props.shape.center.x)
-          const y = num(props.shape.center.y)
-          const angle =
-            props.point.x == x && props.point.y == y ?
-              0
-            : Math.atan2(props.point.y - y, props.point.x - x)
-          const circumPaper = Math.hypot(props.point.x - x, props.point.y - y)
-          const circumCanvas =
-            2 * Math.PI * props.paper.canvasDistance(props.point, { x, y })
-          return {
-            precision: circumCanvas / circumPaper,
-            value: angle / 2 / Math.PI,
-          }
-        },
-      },
-      polygon: {
-        name: "polygon",
-        namePlural: "polygons",
-        get glsl(): never {
-          throw new Error("Cannot construct polygons in shaders.")
-        },
-        garbage: {
-          js: [],
-          get glsl(): never {
-            throw new Error("Cannot construct polygons in shaders.")
-          },
-        },
-        coerce: {},
-        write: {
-          isApprox(value) {
-            return value.some(
-              (x) => x.x.type == "approx" || x.y.type == "approx",
-            )
-          },
-          display(value, props) {
-            new CmdWord("polygon", "prefix").insertAt(props.cursor, L)
-            const inner = new Block(null)
-            const brack = new CmdBrack("(", ")", null, inner)
-            brack.insertAt(props.cursor, L)
-            let first = true
-            props = props.at(inner.cursor(R))
-            for (const pt of value) {
-              if (first) {
-                first = false
-              } else {
-                new CmdComma().insertAt(props.cursor, L)
-              }
-              const block = new Block(null)
-              new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
-              const inner = props.at(block.cursor(R))
-              inner.num(pt.x)
-              new CmdComma().insertAt(inner.cursor, L)
-              inner.num(pt.y)
-            }
-          },
-        },
-        icon() {
-          return h(
-            "",
-            h(
-              "text-[#388c46] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px]",
-              h(
-                "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
-              ),
-              h(
-                "w-[16px] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
-                svgx(
-                  "2.2 4.4 17.6 13.2",
-                  "stroke-current fill-none overflow-visible [stroke-linejoin:round] stroke-2",
-                  p("M 7.2 4.4 L 19.8 13.2 L 2.2 17.6 Z"),
-                ),
-              ),
-            ),
-          )
-        },
-      },
+      segment: INFO_SEGMENT,
+      ray: INFO_RAY,
+      line: INFO_LINE,
+      vector: INFO_VECTOR,
+      circle: INFO_CIRCLE,
+      polygon: INFO_POLYGON,
     },
   },
   eval: {
@@ -274,6 +469,100 @@ export const PKG_GEOMETRY: Package = {
       start: FN_START,
       vector: FN_VECTOR,
       vertices: FN_VERTICES,
+    },
+  },
+  sheet: {
+    exts: {
+      1: [EXT_CIRCLE, EXT_LINE, EXT_POLYGON, EXT_RAY, EXT_SEGMENT, EXT_VECTOR],
+    },
+    toolbar: {
+      1: [
+        toolbarPicker(INFO_SEGMENT.icon, PICK_SEGMENT),
+        toolbarPicker(INFO_RAY.icon, PICK_RAY),
+        toolbarPicker(INFO_LINE.icon, PICK_LINE),
+        toolbarPicker(INFO_VECTOR.icon, PICK_VECTOR),
+        toolbarPicker(INFO_CIRCLE.icon, PICK_CIRCLE),
+        toolbarPicker(INFO_POLYGON.icon, PICK_POLYGON),
+        toolbarPicker(
+          () =>
+            h(
+              "",
+              h(
+                "text-[#2d70b3] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px] overflow-hidden",
+                h(
+                  "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
+                ),
+                h(
+                  "w-[30px] h-0 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-t-2 border-current -rotate-[30deg]",
+                ),
+                h(
+                  "w-[30px] h-0 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-t-2 border-current opacity-30 rotate-[60deg]",
+                ),
+                h(
+                  "size-1 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#6042a6]",
+                ),
+              ),
+            ),
+          PICK_PERPENDICULAR,
+        ),
+        toolbarPicker(
+          () =>
+            h(
+              "",
+              h(
+                "text-[#2d70b3] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px] overflow-hidden",
+                h(
+                  "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
+                ),
+                h(
+                  "w-[30px] h-0 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 translate-y-[calc(-50%_+_4px)] border-t-2 border-current -rotate-[30deg]",
+                ),
+                h(
+                  "w-[30px] h-0 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 translate-y-[calc(-50%_-_4px)] border-t-2 border-current opacity-30 -rotate-[30deg]",
+                ),
+                h(
+                  "size-1 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 translate-y-[calc(-50%_+_4px)] bg-[#6042a6]",
+                ),
+              ),
+            ),
+          PICK_PARALLEL,
+        ),
+        toolbarPicker(
+          () =>
+            h(
+              "",
+              h(
+                "text-[#6042a6] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px] overflow-hidden",
+                h(
+                  "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
+                ),
+                h(
+                  "text-[#2d70b3] w-[20px] h-0 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-t-2 border-current -rotate-[30deg]",
+                ),
+                h(
+                  "size-1 absolute rounded-full top-1/2 left-1/2 [transform:translate(-50%,-50%)_rotate(-30deg)_translate(-8px,0)] bg-[#6042a6]",
+                ),
+                h(
+                  "size-1 absolute rounded-full top-1/2 left-1/2 [transform:translate(-50%,-50%)_rotate(-30deg)_translate(8px,0)] bg-[#6042a6]",
+                ),
+                h(
+                  "size-[7px] absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#6042a6]",
+                ),
+              ),
+            ),
+          PICK_MIDPOINT,
+        ),
+      ],
+    },
+    keys: {
+      s: PICK_SEGMENT,
+      r: PICK_RAY,
+      l: PICK_LINE,
+      v: PICK_VECTOR,
+      c: PICK_CIRCLE,
+      x: PICK_PERPENDICULAR,
+      z: PICK_PARALLEL,
+      m: PICK_MIDPOINT,
     },
   },
 }

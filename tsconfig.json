@@ -11,14 +11,12 @@
     "noUnusedParameters": true,
     "moduleResolution": "bundler"
   },
-  "include": ["src/**/*"],
-  "exclude": [
-    "src/pkg/num-complex.ts",
-    "src/pkg/num-quaternion.ts",
-    "src/pkg/text.ts",
-    "src/pkg/geo-point.ts",
-    "src/pkg/geo-point-extras.ts",
-    "src/pkg/geo/fn/**",
-    "src/sheet/ext/exts/**/*"
+  "include": [
+    "src/eval",
+    "src/field",
+    "src/sheet",
+    "src/index.ts",
+    "src/jsx.ts",
+    "src/stack.ts"
   ]
 }

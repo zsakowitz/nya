@@ -1,12 +1,12 @@
-import { Prop } from ".."
-import { distCirclePt } from "../../../pkg/geo/fn/distance"
+import { Prop } from "../../../sheet/ext"
+import { distCirclePt } from "../fn/distance"
 import { each, type JsValue } from "../../../eval/ty"
 import { num, unpt } from "../../../eval/ty/create"
 import { OpEq } from "../../../field/cmd/leaf/cmp"
 import { CmdVar } from "../../../field/cmd/leaf/var"
 import { Block, L, R } from "../../../field/model"
-import type { Paper, Point } from "../../ui/paper"
-import { defineHideable } from "../hideable"
+import type { Paper, Point } from "../../../sheet/ui/paper"
+import { defineHideable } from "../../../sheet/ext/hideable"
 
 const SELECTED = new Prop(() => false)
 const DIMMED = new Prop(() => false)

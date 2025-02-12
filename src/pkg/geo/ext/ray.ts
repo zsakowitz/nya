@@ -1,27 +1,85 @@
-import { Prop } from ".."
-import { distLinePt } from "../../../pkg/geo/fn/distance"
-import { each, type JsValue, type SPoint } from "../../../eval/ty"
+import { Prop } from "../../../sheet/ext"
+import { distLinePt } from "../fn/distance"
+import { each, type JsValue, type SPoint, type Tys } from "../../../eval/ty"
 import { num, unpt } from "../../../eval/ty/create"
 import { gliderOnLine } from "../../../eval/ty/info"
 import { OpEq } from "../../../field/cmd/leaf/cmp"
 import { CmdVar } from "../../../field/cmd/leaf/var"
 import { Block, L, R } from "../../../field/model"
-import type { Paper } from "../../ui/paper"
-import { defineHideable } from "../hideable"
+import { Paper, Point } from "../../../sheet/ui/paper"
+import { defineHideable } from "../../../sheet/ext/hideable"
 
-export function drawSegment(
-  segment: [SPoint, SPoint],
+function getRayBounds(line: Tys["ray"], paper: Paper): [Point, Point] | null {
+  const x1 = num(line[0].x)
+  const y1 = num(line[0].y)
+  const x2 = num(line[1].x)
+  const y2 = num(line[1].y)
+  const { xmin, w, ymin, h } = paper.bounds()
+
+  if (x1 == x2) {
+    if (y1 < y2) {
+      if (y1 > ymin + h) {
+        return null
+      }
+      return [
+        paper.paperToCanvas({ x: x1, y: y1 }),
+        paper.paperToCanvas({ x: x1, y: ymin + h }),
+      ]
+    }
+
+    if (y1 < ymin) {
+      return null
+    }
+    return [
+      paper.paperToCanvas({ x: x1, y: y1 }),
+      paper.paperToCanvas({ x: x1, y: ymin }),
+    ]
+  }
+
+  const m = (y2 - y1) / (x2 - x1)
+
+  if (x1 < x2) {
+    if (x1 > xmin + w) {
+      return null
+    }
+
+    return [
+      paper.paperToCanvas({ x: x1, y: y1 }),
+      paper.paperToCanvas({ x: xmin + w, y: m * (xmin + w - x1) + y1 }),
+    ]
+  }
+
+  if (x1 < xmin) {
+    return null
+  }
+
+  return [
+    paper.paperToCanvas({ x: x1, y: y1 }),
+    paper.paperToCanvas({ x: xmin, y: m * (xmin - x1) + y1 }),
+  ]
+}
+
+const SELECTED = new Prop(() => false)
+
+export function drawRay(
+  ray: [SPoint, SPoint],
   paper: Paper,
   selected: boolean,
   dimmed: boolean,
 ) {
-  const x1 = num(segment[0].x)
-  const y1 = num(segment[0].y)
-  const x2 = num(segment[1].x)
-  const y2 = num(segment[1].y)
+  const x1 = num(ray[0].x)
+  const y1 = num(ray[0].y)
+  const x2 = num(ray[1].x)
+  const y2 = num(ray[1].y)
 
-  const o1 = paper.paperToCanvas({ x: x1, y: y1 })
-  const o2 = paper.paperToCanvas({ x: x2, y: y2 })
+  if (!(isFinite(x1) && isFinite(y1) && isFinite(x2) && isFinite(y2))) {
+    return
+  }
+
+  const bounds = getRayBounds(ray, paper)
+  if (!bounds) return
+
+  const [o1, o2] = bounds
   if (!(isFinite(o1.x) && isFinite(o1.y) && isFinite(o2.x) && isFinite(o2.y))) {
     return
   }
@@ -54,28 +112,18 @@ export function drawSegment(
 }
 
 const DIMMED = new Prop(() => false)
-const SELECTED = new Prop(() => false)
 
-export const EXT_SEGMENT = defineHideable({
+export const EXT_RAY = defineHideable({
   data(expr) {
     const value = expr.js?.value
 
-    if (value && value.type == "segment") {
-      return {
-        value: value as JsValue<"segment">,
-        paper: expr.sheet.paper,
-        expr,
-      }
+    if (value && value.type == "ray") {
+      return { value: value as JsValue<"ray">, paper: expr.sheet.paper, expr }
     }
   },
   plot2d(data, paper) {
     for (const segment of each(data.value)) {
-      drawSegment(
-        segment,
-        paper,
-        SELECTED.get(data.expr),
-        DIMMED.get(data.expr),
-      )
+      drawRay(segment, paper, SELECTED.get(data.expr), DIMMED.get(data.expr))
     }
   },
   layer() {
@@ -104,9 +152,8 @@ export const EXT_SEGMENT = defineHideable({
 
       if (distLinePt([l1, l2], pt) <= 12 * data.paper.scale) {
         const { value: index } = gliderOnLine([p1, p2], at, data.paper)
-        if (0 <= index && index <= 1) {
+        if (0 <= index) {
           SELECTED.set(data.expr, true)
-          console.log("selecting")
           return { ...data, value: data.value }
         }
       }

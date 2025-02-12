@@ -1,6 +1,4 @@
 import { createPicker } from "."
-import { parallelJs } from "../../pkg/geo/fn/parallel"
-import { perpendicularJs } from "../../pkg/geo/fn/perpendicular"
 import type { JsVal, SPoint, TyName } from "../../eval/ty"
 import { unpt } from "../../eval/ty/create"
 import { OpEq } from "../../field/cmd/leaf/cmp"
@@ -8,13 +6,6 @@ import { CmdComma } from "../../field/cmd/leaf/comma"
 import { CmdVar } from "../../field/cmd/leaf/var"
 import { CmdBrack } from "../../field/cmd/math/brack"
 import { Block, L, R } from "../../field/model"
-import { drawCircle } from "../ext/exts/01-circle"
-import { drawLine } from "../ext/exts/01-line"
-import { drawPoint } from "../ext/exts/01-point"
-import { drawPolygon } from "../ext/exts/01-polygon"
-import { drawRay } from "../ext/exts/01-ray"
-import { drawSegment } from "../ext/exts/01-segment"
-import { drawVector } from "../ext/exts/01-vector"
 import { Expr } from "../ui/expr"
 import { Selected, Sheet } from "../ui/sheet"
 import { virtualPoint } from "./point"
@@ -162,7 +153,7 @@ export const PICK_BY_TY = createPicker<PropsByTy, Selected>({
   cancel() {},
 })
 
-function createExt<const K extends (readonly TyName[])[]>(
+export function createPickByTy<const K extends (readonly TyName[])[]>(
   tag: string,
   fn: string | null,
   steps: K,
@@ -195,187 +186,4 @@ function createExt<const K extends (readonly TyName[])[]>(
       },
     },
   }
-}
-
-export const PICK_POINT = createExt(
-  "p",
-  null,
-  [["point32", "point64"]],
-  () => {},
-)
-
-export const PICK_LINE = createExt(
-  "l",
-  "line",
-  [
-    ["point32", "point64"],
-    ["point32", "point64"],
-  ],
-  (sheet, p1, p2) => {
-    if (p1 && p2) {
-      drawLine([p1.value, p2.value], sheet.paper, false, false)
-    }
-  },
-)
-
-export const PICK_SEGMENT = createExt(
-  "l",
-  "segment",
-  [
-    ["point32", "point64"],
-    ["point32", "point64"],
-  ],
-  (sheet, p1, p2) => {
-    if (p1 && p2) {
-      drawSegment([p1.value, p2.value], sheet.paper, false, false)
-    }
-  },
-)
-
-export const PICK_RAY = createExt(
-  "l",
-  "ray",
-  [
-    ["point32", "point64"],
-    ["point32", "point64"],
-  ],
-  (sheet, p1, p2) => {
-    if (p1 && p2) {
-      drawRay([p1.value, p2.value], sheet.paper, false, false)
-    }
-  },
-)
-
-export const PICK_VECTOR = createExt(
-  "l",
-  "vector",
-  [
-    ["point32", "point64"],
-    ["point32", "point64"],
-  ],
-  (sheet, p1, p2) => {
-    if (p1 && p2) {
-      drawVector([p1.value, p2.value], sheet.paper)
-    }
-  },
-)
-
-export const PICK_CIRCLE = createExt(
-  "c",
-  "circle",
-  [
-    ["point32", "point64"],
-    ["point32", "point64"],
-  ],
-  (sheet, p1, p2) => {
-    if (p1 && p2) {
-      const center = unpt(p1.value)
-      const edge = unpt(p2.value)
-      const radius = Math.hypot(center.x - edge.x, center.y - edge.y)
-      drawCircle(center, radius, sheet.paper, false, false)
-    }
-  },
-)
-
-export const PICK_PERPENDICULAR = createExt(
-  "l",
-  "perpendicular",
-  [
-    ["segment", "ray", "line", "vector"],
-    ["point32", "point64"],
-  ],
-  (sheet, p1, p2) => {
-    if (p1 && p2) {
-      const line = perpendicularJs(p1, p2)
-      drawLine(line, sheet.paper, false, false)
-    }
-  },
-)
-
-export const PICK_PARALLEL = createExt(
-  "l",
-  "parallel",
-  [
-    ["segment", "ray", "line", "vector"],
-    ["point32", "point64"],
-  ],
-  (sheet, p1, p2) => {
-    if (p1 && p2) {
-      const line = parallelJs(p1, p2)
-      drawLine(line, sheet.paper, false, false)
-    }
-  },
-)
-
-export const PICK_MIDPOINT: PropsByTy = {
-  chosen: [],
-  next: ["point32", "point64", "segment"],
-  ext: {
-    id: Math.random(),
-    output: { tag: "p", fn: "midpoint" },
-    next(args) {
-      if (args.length == 0) {
-        return ["point32", "point64", "segment"]
-      }
-      if (args.length == 2) {
-        return null
-      }
-      return args[0]?.type == "segment" ? null : ["point32", "point64"]
-    },
-    draw(sheet, args) {
-      const [a, b] = args as
-        | []
-        | [JsVal<"segment">]
-        | [JsVal<"point32" | "point64">, JsVal<"point32" | "point64">]
-
-      let p1, p2
-      if (a?.type == "segment") {
-        p1 = unpt(a.value[0])
-        p2 = unpt(a.value[1])
-      } else if (a && b) {
-        p1 = unpt(a.value)
-        p2 = unpt(b.value)
-      } else {
-        return
-      }
-
-      drawPoint(sheet.paper, { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 })
-    },
-  },
-}
-
-export const PICK_POLYGON: PropsByTy = {
-  chosen: [],
-  next: ["point32", "point64"],
-  ext: {
-    id: Math.random(),
-    output: { tag: "P", fn: "polygon" },
-    allowExistingPoint(args) {
-      return args.length >= 2
-    },
-    next(args) {
-      if (args.length < 2) {
-        return ["point32", "point64"]
-      }
-      if (
-        args[0] == args[args.length - 1] ||
-        args[args.length - 2] == args[args.length - 1]
-      ) {
-        return null
-      }
-      return ["point32", "point64"]
-    },
-    draw(sheet, args) {
-      if (args.length < 2) return
-
-      const pts = args as JsVal<"point32" | "point64">[]
-
-      drawPolygon(
-        pts.map((x) => x.value),
-        sheet.paper,
-        false,
-        false,
-      )
-    },
-  },
 }

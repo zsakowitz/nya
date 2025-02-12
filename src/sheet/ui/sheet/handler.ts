@@ -1,19 +1,7 @@
 import type { Sheet } from "."
 import type { AnyExt, Cursor } from "../../ext"
 import type { AnyPick, Picker } from "../../pick"
-import {
-  PICK_BY_TY,
-  PICK_CIRCLE,
-  PICK_LINE,
-  PICK_MIDPOINT,
-  PICK_PARALLEL,
-  PICK_PERPENDICULAR,
-  PICK_POINT,
-  PICK_RAY,
-  PICK_SEGMENT,
-  PICK_VECTOR,
-  type PropsByTy,
-} from "../../pick/normal"
+import { PICK_BY_TY, type PropsByTy } from "../../pick/normal"
 import type { Expr } from "../expr"
 import type { Point, PointerHandlers } from "../paper"
 
@@ -39,24 +27,15 @@ type DataHover =
   | { pick?: false; expr: Expr; ext: AnyExt & { hover: {} }; data: {} }
   | { pick: true }
 
-const ALL: Record<string, PropsByTy> = {
-  p: PICK_POINT,
-  s: PICK_SEGMENT,
-  r: PICK_RAY,
-  l: PICK_LINE,
-  v: PICK_VECTOR,
-  c: PICK_CIRCLE,
-  x: PICK_PERPENDICULAR,
-  z: PICK_PARALLEL,
-  m: PICK_MIDPOINT,
-}
-
 export class Handlers implements PointerHandlers<DataDrag, DataHover> {
   readonly pointers: Cursor[] = []
 
   private pick: PickInactive | PickActive | null = null
 
-  constructor(readonly sheet: Sheet) {
+  constructor(
+    readonly sheet: Sheet,
+    readonly keys: Record<string, PropsByTy>,
+  ) {
     addEventListener("keydown", (ev) => {
       if (
         ev.metaKey ||
@@ -66,7 +45,8 @@ export class Handlers implements PointerHandlers<DataDrag, DataHover> {
       ) {
         return
       }
-      const pick = ALL[ev.key]
+
+      const pick = keys[ev.key]
       if (pick) {
         this.setPick(PICK_BY_TY, pick)
       }
