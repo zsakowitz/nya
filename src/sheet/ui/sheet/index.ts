@@ -473,16 +473,16 @@ function createDocs(
         ),
         " without ever touching the expression list.",
       ),
-      // hx(
-      //   "p",
-      //   "",
-      //   "As of Feb. 11, ",
-      //   a(
-      //     "https://ts-latex-oywr5or8t-zsakowitzs-projects.vercel.app/", (URL IS WRONG)
-      //     "a robust plugin system had been implemented",
-      //   ),
-      //   " to ensure further extension was always possible.",
-      // ),
+      hx(
+        "p",
+        "",
+        "As of Feb. 11, ",
+        a(
+          "https://github.com/zsakowitz/nya/tree/4d7dfd34cbcec061a9d0e0befe15fc259415b97e/src/pkg",
+          "a robust package system had been implemented",
+        ),
+        " to ensure further extension was not just possible, but ridiculously easy.",
+      ),
     ])
   }
 
