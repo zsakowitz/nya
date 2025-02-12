@@ -1,5 +1,4 @@
 import type { GlslContext } from "../../lib/fn"
-import type { GlslVal } from "../../ty"
 import { FnDist } from "../dist"
 
 export const FN_DEBUGPOINT = new FnDist(
@@ -9,7 +8,7 @@ export const FN_DEBUGPOINT = new FnDist(
 
 export function declareDebugPoint(
   ctx: GlslContext,
-  a: GlslVal<"c32" | "point32">,
+  a: { type: "c32" | "point32"; expr: string },
 ): string {
   ctx.glsl`vec4 _helper_debugpoint_c32(vec2 z) {
   return vec4(
