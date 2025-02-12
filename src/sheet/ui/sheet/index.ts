@@ -100,13 +100,13 @@ function createDocs(
         h(
           "text-[1.265rem]/[1.15]",
           h(
-            "font-['Times_New_Roman']",
+            "font-['Symbola']",
             CmdBrack.render("(", ")", null, {
               el: h(
                 "",
                 any(),
                 new CmdWord("base", "infix").el,
-                TY_INFO.r32.icon(),
+                TY_INFO.r32?.icon(),
               ),
             }),
             new OpRightArrow().el,
@@ -123,7 +123,7 @@ function createDocs(
         h(
           "text-[1.265rem]/[1.15]",
           h(
-            "font-['Times_New_Roman']",
+            "font-['Symbola']",
             CmdBrack.render("(", ")", null, {
               el: h(
                 "",
@@ -148,12 +148,12 @@ function createDocs(
         h(
           "text-[1.265rem]/[1.15]",
           h(
-            "font-['Times_New_Roman']",
+            "font-['Symbola']",
             CmdPiecewise.render([
               { el: any() },
-              { el: TY_INFO.bool.icon() },
+              { el: TY_INFO.bool?.icon() },
               { el: any() },
-              { el: TY_INFO.bool.icon() },
+              { el: TY_INFO.bool?.icon() },
               { el: any() },
               { el: (q = h("")) },
             ]),
@@ -172,25 +172,7 @@ function createDocs(
         h(
           "text-[1.265rem]/[1.15]",
           h(
-            "font-['Times_New_Roman']",
-            CmdBrack.render("(", ")", null, {
-              el: h("", new CmdWord("forceshader", "prefix").el, any()),
-            }),
-            new OpRightArrow().el,
-            any(),
-          ),
-        ),
-        h(
-          "text-sm leading-tight text-slate-500",
-          "forces the passed expression to be evaluated in a shader",
-        ),
-      ),
-      h(
-        "flex flex-col",
-        h(
-          "text-[1.265rem]/[1.15]",
-          h(
-            "font-['Times_New_Roman']",
+            "font-['Symbola']",
             CmdBrack.render("(", ")", null, {
               el: h(
                 "",
@@ -198,11 +180,11 @@ function createDocs(
                 CmdSupSub.render(null, { el: h("", new CmdNum("50").el) }),
                 new CmdWord("a", undefined, true).el,
                 new OpRightArrow().el,
-                TY_INFO.r32.icon(),
+                TY_INFO.r32?.icon(),
               ),
             }),
             new OpRightArrow().el,
-            TY_INFO.r32.icon(),
+            TY_INFO.r32?.icon(),
           ),
         ),
         h(
@@ -215,7 +197,7 @@ function createDocs(
         h(
           "text-[1.265rem]/[1.15]",
           h(
-            "font-['Times_New_Roman']",
+            "font-['Symbola']",
             CmdBrack.render("(", ")", null, {
               el: h(
                 "",
@@ -242,7 +224,7 @@ function createDocs(
         h(
           "text-[1.265rem]/[1.15]",
           h(
-            "font-['Times_New_Roman']",
+            "font-['Symbola']",
             CmdBrack.render("(", ")", null, {
               el: h(
                 "",
@@ -250,13 +232,13 @@ function createDocs(
                 CmdSupSub.render(null, { el: h("", new CmdNum("50").el) }),
                 new CmdWord("a", undefined, true).el,
                 new OpRightArrow().el,
-                TY_INFO.r32.icon(),
+                TY_INFO.r32?.icon(),
                 new CmdWord("while", "infix").el,
-                TY_INFO.bool.icon(),
+                TY_INFO.bool?.icon(),
               ),
             }),
             new OpRightArrow().el,
-            TY_INFO.r32.icon(),
+            TY_INFO.r32?.icon(),
           ),
         ),
         h(
@@ -269,7 +251,7 @@ function createDocs(
         h(
           "text-[1.265rem]/[1.15]",
           h(
-            "font-['Times_New_Roman']",
+            "font-['Symbola']",
             CmdBrack.render("(", ")", null, {
               el: h(
                 "",
@@ -277,13 +259,13 @@ function createDocs(
                 CmdSupSub.render(null, { el: h("", new CmdNum("50").el) }),
                 new CmdWord("a", undefined, true).el,
                 new OpRightArrow().el,
-                TY_INFO.r32.icon(),
+                TY_INFO.r32?.icon(),
                 new CmdWord("until", "infix").el,
-                TY_INFO.bool.icon(),
+                TY_INFO.bool?.icon(),
               ),
             }),
             new OpRightArrow().el,
-            TY_INFO.r32.icon(),
+            TY_INFO.r32?.icon(),
           ),
         ),
         h(
@@ -300,7 +282,7 @@ function createDocs(
         "flex flex-col",
         ...Object.entries(TY_INFO)
           .filter((x) => !x[0].endsWith("64"))
-          .map(([, info]) => h("flex gap-1", info.icon(), info.name)),
+          .map(([, info]) => h("flex gap-1", info?.icon(), info.name)),
         h("flex gap-1", any(), "any type"),
       ),
     ])
@@ -513,7 +495,7 @@ function createDocs(
         ...Object.entries(TY_INFO)
           .filter((x) => x[0].endsWith("64"))
           .map(([, info]) =>
-            h("flex gap-1", info.icon(), info.name + " (high-res)"),
+            h("flex gap-1", info?.icon(), info.name + " (high-res)"),
           ),
       ),
     ])

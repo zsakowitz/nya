@@ -3,9 +3,6 @@ import type { GlslContext } from "../lib/fn"
 import type { GlslValue, JsValue } from "../ty"
 
 import { FN_CMP } from "./fn/cmp"
-import { FN_HSV } from "./fn/color/hsv"
-import { FN_RGB } from "./fn/color/rgb"
-import { FN_COMPONENT } from "./fn/component"
 import { FN_DEBUGPOINT } from "./fn/debugpoint"
 import { FN_FIRSTVALID } from "./fn/firstvalid"
 import { FN_JOIN } from "./fn/join"
@@ -31,15 +28,12 @@ export interface Fn {
 }
 
 export const FNS: Record<string, Fn> = {
-  rgb: FN_RGB,
   cmp: FN_CMP,
   unsign: FN_UNSIGN,
-  hsv: FN_HSV,
   debugpoint: FN_DEBUGPOINT,
   valid: FN_VALID,
   firstvalid: FN_FIRSTVALID,
   ln: FN_LN,
-  component: FN_COMPONENT,
   join: FN_JOIN,
 }
 Object.setPrototypeOf(FNS, null)

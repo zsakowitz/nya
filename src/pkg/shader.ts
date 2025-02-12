@@ -1,11 +1,11 @@
 import type { Package } from "."
 import { glsl } from "../eval/glsl"
-import { OP_PLOT } from "../eval/ops/op/plot"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "../eval/ops/vars"
 import { h, hx } from "../jsx"
 import { Store, defineExt } from "../sheet/ext"
 import type { Expr } from "../sheet/ui/expr"
 import { circle } from "../sheet/ui/expr/circle"
+import { OP_PLOT } from "./color-core"
 
 const store = new Store((expr) => {
   let show = false

@@ -98,9 +98,9 @@ const FN_OKLCH = new FnDist(
     },
   )
 
-export const PKG_MORE_COLOR: Package = {
-  id: "nya:more-color",
-  name: "more color functions",
+export const PKG_COLOR_EXTRAS: Package = {
+  id: "nya:color-extras",
+  name: "color functions extended",
   label: "adds more functions for creating colors",
   eval: {
     fns: {

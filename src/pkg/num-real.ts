@@ -1,7 +1,9 @@
 import type { Package } from "."
-import { FnDist, FnDistVar } from "../eval/ops/dist"
+import { safe } from "../eval/lib/util"
+import { docByIcon, FnDist, FnDistVar } from "../eval/ops/dist"
+import { FnDistCaching, type FnDistOverload } from "../eval/ops/dist-manual"
+import { ALL_DOCS } from "../eval/ops/docs"
 import { declareCmpR64, FN_CMP } from "../eval/ops/fn/cmp"
-import { FN_HSV } from "../eval/ops/fn/color/hsv"
 import { FN_EXP } from "../eval/ops/fn/exp"
 import { FN_UNSIGN } from "../eval/ops/fn/unsign"
 import { FN_VALID } from "../eval/ops/fn/valid"
@@ -25,13 +27,17 @@ import { OP_MOD } from "../eval/ops/op/mod"
 import { mul, mulR64, OP_CDOT } from "../eval/ops/op/mul"
 import { neg, OP_NEG } from "../eval/ops/op/neg"
 import { OP_ODOT } from "../eval/ops/op/odot"
-import { OP_PLOT, plotJs } from "../eval/ops/op/plot"
 import { OP_POS } from "../eval/ops/op/pos"
 import { OP_RAISE, raise } from "../eval/ops/op/raise"
 import { OP_SUB, sub, subR64 } from "../eval/ops/op/sub"
-import type { SReal } from "../eval/ty"
+import type { SReal, Ty, TyName } from "../eval/ty"
+import { canCoerce, coerceValJs } from "../eval/ty/coerce"
 import { approx, frac, num, real } from "../eval/ty/create"
-import { TY_INFO } from "../eval/ty/info"
+import type { Write } from "../eval/ty/display"
+import { highRes, TY_INFO } from "../eval/ty/info"
+import { splitDual } from "../eval/ty/split"
+import { h } from "../jsx"
+import { FN_HSV, OP_PLOT, plotJs } from "./color-core"
 
 declare module "../eval/ty/index.js" {
   interface Tys {
@@ -317,10 +323,164 @@ addCmp(OP_NGTE, (a, b) => !(a >= b), "!>=", "== -1.0")
 addCmp(OP_EQ, (a, b) => a == b, "==", "==  0.0")
 addCmp(OP_NE, (a, b) => a != b, "!==", "==  0.0")
 
+export const FN_COMPONENT = new (class extends FnDistCaching {
+  constructor() {
+    super("component", "gets a component of a multidimensional value")
+    ALL_DOCS.push(this)
+  }
+
+  gen(args: Ty[]): FnDistOverload<TyName> {
+    if (args.length != 2) {
+      throw new Error("'component' expects two parameters.")
+    }
+    if (!canCoerce(args[1]!.type, "r32")) {
+      throw new Error(
+        "The second parameter to 'component' must be a real number.",
+      )
+    }
+
+    const ty = args[0]!.type
+    const info = TY_INFO[ty]
+    const comps = info.components
+    const name =
+      info.namePlural.slice(0, 1).toUpperCase() + info.namePlural.slice(1)
+
+    if (!comps) {
+      throw new Error(`${name} do not have components.`)
+    }
+
+    return {
+      params: [ty, args[1]!.type],
+      type: comps.ty,
+      js(a, b) {
+        const val = num(coerceValJs(b, "r32").value) - 1
+        let comp
+        if (!(safe(val) && (comp = comps.at[val]))) {
+          throw new Error(`${name} only have components 1-${comps.at.length}.`)
+        }
+
+        return comp[0](a.value as never)
+      },
+      glsl(_, a, b) {
+        const STATIC_INDEX =
+          /^(?:vec2\(([0-9e+-.]+), ?([0-9e+-.]+)\)\.x|(\d*.\d+|\d+.))$/
+        const match = STATIC_INDEX.exec(b.expr)
+
+        let staticIndex: number | null = null
+        if (match) {
+          if (match[1]) {
+            const real = +match[1]
+            const imag = +match[2]!
+            if (imag == 0) {
+              staticIndex = real
+            }
+          } else {
+            staticIndex = +match[3]!
+          }
+        }
+
+        if (staticIndex == null) {
+          throw new Error(
+            "The 'component' function's second argument must be a plain number in shaders; try 1 or 2 instead of computing a value.",
+          )
+        }
+
+        staticIndex--
+
+        if (
+          !(
+            safe(staticIndex) &&
+            0 <= staticIndex &&
+            staticIndex < comps.at.length
+          )
+        ) {
+          throw new Error(`${name} only have components 1-${comps.at.length}.`)
+        }
+
+        return comps.at[staticIndex]![1](a.expr)
+      },
+    }
+  }
+
+  docs() {
+    return Object.entries(TY_INFO)
+      .filter((x) => x[1].components != null)
+      .map(([_, info]) =>
+        docByIcon(
+          [info.icon(), TY_INFO.r32.icon()],
+          TY_INFO[info.components!.ty].icon(),
+        ),
+      )
+  }
+})()
+
+const WRITE_REAL: Write<SReal> = {
+  isApprox(value) {
+    return value.type == "approx"
+  },
+  display(value, props) {
+    props.num(value)
+  },
+}
+
+function iconReal(hd: boolean) {
+  return h(
+    "",
+    h(
+      "text-[#000] dark:text-[#888] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-current rounded-[4px]" +
+        (hd ? " border-double border-[3px]" : " border-2"),
+      h(
+        "opacity-25 block bg-current absolute " +
+          (hd ? " -inset-[2px] rounded-[2px]" : "inset-0"),
+      ),
+      h(
+        "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-['Times_New_Roman'] italic text-[120%]",
+        "x",
+      ),
+      hd ? highRes() : null,
+    ),
+  )
+}
+
 export const PKG_REAL: Package = {
   id: "nya:num-real",
   name: "real numbers",
   label: "adds support for real numbers",
+  ty: {
+    info: {
+      r64: {
+        name: "real number",
+        namePlural: "real numbers",
+        glsl: "vec2",
+        garbage: { js: real(NaN), glsl: "vec2(0.0/0.0)" },
+        coerce: {
+          r32: {
+            js(self) {
+              return self
+            },
+            glsl(self) {
+              return `${self}.x`
+            },
+          },
+        },
+        write: WRITE_REAL,
+        icon() {
+          return iconReal(true)
+        },
+      },
+      r32: {
+        name: "real number",
+        namePlural: "real numbers",
+        glsl: "float",
+        garbage: { js: real(NaN), glsl: "(0.0/0.0)" },
+        coerce: {},
+        write: WRITE_REAL,
+        icon() {
+          return iconReal(false)
+        },
+      },
+    },
+  },
   eval: {
     fns: {
       exp: FN_EXP,
@@ -329,6 +489,16 @@ export const PKG_REAL: Package = {
       unsign: FN_UNSIGN,
       valid: FN_VALID,
       cmp: FN_CMP,
+      component: FN_COMPONENT,
+    },
+    vars: {
+      π: splitDual(Math.PI),
+      τ: splitDual(Math.PI * 2),
+      e: splitDual(Math.E),
+      "∞": {
+        js: { type: "r64", value: real(Infinity), list: false },
+        glsl: { type: "r64", expr: "vec2(1.0/0.0)", list: false },
+      },
     },
   },
 }

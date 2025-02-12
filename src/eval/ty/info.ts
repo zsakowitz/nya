@@ -55,15 +55,6 @@ export type TyInfoMap = {
   [K in keyof Tys]: TyInfo<Tys[K], TyComponents[K]>
 }
 
-const WRITE_REAL: Write<SReal> = {
-  isApprox(value) {
-    return value.type == "approx"
-  },
-  display(value, props) {
-    props.num(value)
-  },
-}
-
 export const WRITE_POINT: Write<SPoint> = {
   isApprox(value) {
     return value.x.type == "approx" || value.y.type == "approx"
@@ -101,25 +92,6 @@ export function highRes() {
   return h(
     "absolute bottom-[.5px] right-[1px] font-['Symbola'] text-[50%]/[1]",
     "+",
-  )
-}
-
-function iconReal(hd: boolean) {
-  return h(
-    "",
-    h(
-      "text-[#000] dark:text-[#888] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-current rounded-[4px]" +
-        (hd ? " border-double border-[3px]" : " border-2"),
-      h(
-        "opacity-25 block bg-current absolute " +
-          (hd ? " -inset-[2px] rounded-[2px]" : "inset-0"),
-      ),
-      h(
-        "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-['Times_New_Roman'] italic text-[120%]",
-        "x",
-      ),
-      hd ? highRes() : null,
-    ),
   )
 }
 
@@ -199,37 +171,6 @@ export const TY_INFO: TyInfoMap = {
           ),
         ),
       )
-    },
-  },
-  r64: {
-    name: "real number",
-    namePlural: "real numbers",
-    glsl: "vec2",
-    garbage: { js: real(NaN), glsl: "vec2(0.0/0.0)" },
-    coerce: {
-      r32: {
-        js(self) {
-          return self
-        },
-        glsl(self) {
-          return `${self}.x`
-        },
-      },
-    },
-    write: WRITE_REAL,
-    icon() {
-      return iconReal(true)
-    },
-  },
-  r32: {
-    name: "real number",
-    namePlural: "real numbers",
-    glsl: "float",
-    garbage: { js: real(NaN), glsl: "(0.0/0.0)" },
-    coerce: {},
-    write: WRITE_REAL,
-    icon() {
-      return iconReal(false)
     },
   },
   color: {
