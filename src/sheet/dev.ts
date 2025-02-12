@@ -15,9 +15,9 @@ const sheet = new SheetFactory(options)
   .load(PKG_EVAL)
   .load(PKG_SLIDER)
   .load(PKG_SHADER)
-  .load(PKG_GEOMETRY)
-  .load(PKG_GEO_POINT)
   .load(PKG_NUM_COMPLEX)
+  .load(PKG_GEO_POINT)
+  .load(PKG_GEOMETRY)
   .load(PKG_NUM_QUATERNION)
   .load(PKG_TEXT)
   .load(PKG_ITHKUIL)
@@ -32,7 +32,9 @@ function expr(source: { raw: readonly string[] }) {
 
 if (location.href.includes("localhost")) {
   expr`\left(2,3\right)`
+  expr`ikscript\text{hlaséi-rrala sakawi}`
 } else {
+  expr`ikscript\text{hlaséi-rrala sakawi}`
   expr`\operatorname{vector}\left(\left(-1,-.5\right),\left(-.5,1\right)\right)`
   expr`J=\operatorname{line}\left(\left(0,0\right),\left(2,3\right)\right)`
   expr`\operatorname{perpendicular}\left(J,\left(2,3\right)\right)`
