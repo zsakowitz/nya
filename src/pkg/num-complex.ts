@@ -4,9 +4,6 @@ import { FnDist } from "../eval/ops/dist"
 import { declareDebugPoint, FN_DEBUGPOINT } from "../eval/ops/fn/debugpoint"
 import { declareExp, FN_EXP } from "../eval/ops/fn/exp"
 import { FN_LN } from "../eval/ops/fn/ln"
-import { FN_COS } from "../eval/ops/fn/trig/cos"
-import { FN_SIN } from "../eval/ops/fn/trig/sin"
-import { FN_TAN } from "../eval/ops/fn/trig/tan"
 import { FN_UNSIGN } from "../eval/ops/fn/unsign"
 import { FN_VALID } from "../eval/ops/fn/valid"
 import { abs, abs64, OP_ABS } from "../eval/ops/op/abs"
@@ -29,6 +26,7 @@ import { Display, type Write } from "../eval/ty/display"
 import { highRes } from "../eval/ty/info"
 import { Block, R } from "../field/model"
 import { h } from "../jsx"
+import { FN_COS, FN_SIN, FN_TAN } from "./num-real"
 import { OP_TO_TEXT } from "./text"
 
 declare module "../eval/ty/index.js" {
@@ -477,16 +475,6 @@ FN_COMPLEX.add(
     (_, a) => a.expr,
   )
 
-FN_COS.add(
-  ["c32"],
-  "c32",
-  (a) => cosPt(a.value),
-  (ctx, a) => {
-    declareCos(ctx)
-    return `_helper_cos(${a})`
-  },
-)
-
 FN_SIN.add(
   ["c32"],
   "c32",
@@ -494,6 +482,16 @@ FN_SIN.add(
   (ctx, a) => {
     declareSin(ctx)
     return `_helper_sin(${a})`
+  },
+)
+
+FN_COS.add(
+  ["c32"],
+  "c32",
+  (a) => cosPt(a.value),
+  (ctx, a) => {
+    declareCos(ctx)
+    return `_helper_cos(${a})`
   },
 )
 
