@@ -4,7 +4,6 @@ import { FnDist } from "../eval/ops/dist"
 import { FN_DEBUGPOINT } from "../eval/ops/fn/debugpoint"
 import { declareExp, FN_EXP } from "../eval/ops/fn/exp"
 import { FN_LN } from "../eval/ops/fn/ln"
-import { FN_SCREENDISTANCE } from "../eval/ops/fn/screendistance"
 import { FN_COS } from "../eval/ops/fn/trig/cos"
 import { FN_SIN } from "../eval/ops/fn/trig/sin"
 import { FN_TAN } from "../eval/ops/fn/trig/tan"
@@ -457,17 +456,6 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
   declareMulC32(ctx)
   return `_helper_mul_c32(${a.expr}, ${b.expr})`
 })
-
-FN_SCREENDISTANCE.add(
-  ["c32", "c32"],
-  "r32",
-  () => {
-    throw new Error("Cannot calculate screendistance outside of shaders.")
-  },
-  (_, a, b) => {
-    return `length((${a.expr} - ${b.expr}) * u_px_per_unit.xz)`
-  },
-)
 
 FN_COMPLEX.add(
   ["c64"],

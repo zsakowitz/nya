@@ -1,4 +1,4 @@
-import { toolbarPicker, type Package } from ".."
+import type { Package } from ".."
 import type { JsVal, SPoint, TyComponents, Tys } from "../../eval/ty"
 import { num, pt, real, unpt } from "../../eval/ty/create"
 import { gliderOnLine, WRITE_POINT, type TyInfo } from "../../eval/ty/info"
@@ -7,7 +7,6 @@ import { CmdWord } from "../../field/cmd/leaf/word"
 import { CmdBrack } from "../../field/cmd/math/brack"
 import { Block, L, R } from "../../field/model"
 import { h, p, svgx } from "../../jsx"
-import { createPickByTy, type PropsByTy } from "../../sheet/pick/normal"
 import "../geo-point"
 import { drawPoint } from "../geo-point"
 import { drawCircle, EXT_CIRCLE } from "./ext/circle"
@@ -34,6 +33,12 @@ import { FN_SEGMENTS } from "./fn/segments"
 import { FN_START } from "./fn/start"
 import { FN_VECTOR } from "./fn/vector"
 import { FN_VERTICES } from "./fn/vertices"
+import {
+  createPickByTy,
+  PICK_BY_TY,
+  picker,
+  type PropsByTy,
+} from "./pick-normal"
 
 declare module "../../eval/ty/index.js" {
   interface Tys {
@@ -477,13 +482,13 @@ export const PKG_GEOMETRY: Package = {
     },
     toolbar: {
       1: [
-        toolbarPicker(INFO_SEGMENT.icon, PICK_SEGMENT),
-        toolbarPicker(INFO_RAY.icon, PICK_RAY),
-        toolbarPicker(INFO_LINE.icon, PICK_LINE),
-        toolbarPicker(INFO_VECTOR.icon, PICK_VECTOR),
-        toolbarPicker(INFO_CIRCLE.icon, PICK_CIRCLE),
-        toolbarPicker(INFO_POLYGON.icon, PICK_POLYGON),
-        toolbarPicker(
+        picker(INFO_SEGMENT.icon, PICK_SEGMENT),
+        picker(INFO_RAY.icon, PICK_RAY),
+        picker(INFO_LINE.icon, PICK_LINE),
+        picker(INFO_VECTOR.icon, PICK_VECTOR),
+        picker(INFO_CIRCLE.icon, PICK_CIRCLE),
+        picker(INFO_POLYGON.icon, PICK_POLYGON),
+        picker(
           () =>
             h(
               "",
@@ -505,7 +510,7 @@ export const PKG_GEOMETRY: Package = {
             ),
           PICK_PERPENDICULAR,
         ),
-        toolbarPicker(
+        picker(
           () =>
             h(
               "",
@@ -527,7 +532,7 @@ export const PKG_GEOMETRY: Package = {
             ),
           PICK_PARALLEL,
         ),
-        toolbarPicker(
+        picker(
           () =>
             h(
               "",
@@ -555,14 +560,14 @@ export const PKG_GEOMETRY: Package = {
       ],
     },
     keys: {
-      s: PICK_SEGMENT,
-      r: PICK_RAY,
-      l: PICK_LINE,
-      v: PICK_VECTOR,
-      c: PICK_CIRCLE,
-      x: PICK_PERPENDICULAR,
-      z: PICK_PARALLEL,
-      m: PICK_MIDPOINT,
+      s: (sheet) => sheet.setPick(PICK_BY_TY, PICK_SEGMENT),
+      r: (sheet) => sheet.setPick(PICK_BY_TY, PICK_RAY),
+      l: (sheet) => sheet.setPick(PICK_BY_TY, PICK_LINE),
+      v: (sheet) => sheet.setPick(PICK_BY_TY, PICK_VECTOR),
+      c: (sheet) => sheet.setPick(PICK_BY_TY, PICK_CIRCLE),
+      x: (sheet) => sheet.setPick(PICK_BY_TY, PICK_PERPENDICULAR),
+      z: (sheet) => sheet.setPick(PICK_BY_TY, PICK_PARALLEL),
+      m: (sheet) => sheet.setPick(PICK_BY_TY, PICK_MIDPOINT),
     },
   },
 }

@@ -1,5 +1,5 @@
-import type { Point } from "../ui/paper"
-import type { Sheet } from "../ui/sheet"
+import type { Point } from "./ui/paper"
+import type { Sheet } from "./ui/sheet"
 
 /** Allows objects to be selected from the canvas. */
 export interface Picker<in T extends {}, in out U extends {}> {

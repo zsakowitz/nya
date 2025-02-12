@@ -29,7 +29,6 @@ import type { ToolbarItem } from "../../../pkg"
 import { Scope } from "../../deps"
 import type { Exts } from "../../ext"
 import type { Picker } from "../../pick"
-import { PICK_BY_TY, type PropsByTy } from "../../pick/normal"
 import { doMatchReglSize } from "../../regl"
 import { REMARK } from "../../remark"
 import { Slider } from "../../slider"
@@ -541,7 +540,7 @@ export class Sheet {
   private readonly setPixelRatio
   private readonly glPixelRatio = new Slider()
 
-  private readonly handlers
+  readonly handlers
   private readonly regl: Regl
 
   readonly el
@@ -555,9 +554,25 @@ export class Sheet {
     readonly options: Options,
     readonly exts: Exts,
     toolbarItems: ToolbarItem[],
-    keys: Record<string, PropsByTy>,
+    keys: Record<string, (sheet: Sheet) => void>,
   ) {
-    this.handlers = new Handlers(this, keys)
+    addEventListener("keydown", (ev) => {
+      if (
+        ev.metaKey ||
+        ev.ctrlKey ||
+        ev.altKey ||
+        document.activeElement?.classList.contains("nya-display")
+      ) {
+        return
+      }
+
+      const key = keys[ev.key]
+      if (key) {
+        key(this)
+      }
+    })
+
+    this.handlers = new Handlers(this)
     this.scope = new Scope(options)
     Object.assign(globalThis, { scope: this.scope })
 
@@ -705,35 +720,13 @@ export class Sheet {
       h("flex-1 border-r min-h-24 border-[--nya-border]"),
     )
 
-    const checkPick: (() => void)[] = []
-    this.handlers.onPickChange = () => checkPick.forEach((x) => x())
-
-    const picker = (icon: HTMLSpanElement, props: PropsByTy) => {
-      const btn = hx(
-        "button",
-        "w-12 hover:bg-[--nya-bg] border-x border-transparent hover:border-[--nya-border] focus:outline-none -mr-px last:mr-0",
-        icon,
-      )
-      checkPick.push(() => {
-        const current = this.handlers.getPick()
-        if (current?.from.id(current.data) == props.ext.id) {
-          btn.classList.add("bg-[--nya-bg]", "border-[--nya-border]")
-          btn.classList.remove("border-transparent")
-        } else {
-          btn.classList.remove("bg-[--nya-bg]", "border-[--nya-border]")
-          btn.classList.add("border-transparent")
-        }
-      })
-      btn.addEventListener("click", () => {
-        this.setPick(PICK_BY_TY, props)
-      })
-      return btn
-    }
-
-    const toolbar = h(
-      "font-['Symbola','Times_New_Roman',sans-serif] flex overflow-x-auto h-12 min-h-12 bg-[--nya-bg-sidebar] border-b border-[--nya-border] first:*:ml-auto last:*:mr-auto [&::-webkit-scrollbar]:hidden px-2",
-      ...toolbarItems.map((x) => picker(x.icon(), x.props)),
-    )
+    const toolbar =
+      toolbarItems.length ?
+        h(
+          "font-['Symbola','Times_New_Roman',sans-serif] flex overflow-x-auto h-12 min-h-12 bg-[--nya-bg-sidebar] border-b border-[--nya-border] first:*:ml-auto last:*:mr-auto [&::-webkit-scrollbar]:hidden px-2",
+          ...toolbarItems.map((x) => x(this)),
+        )
+      : null
 
     const docs = createDocs(
       "flex flex-col overflow-y-auto px-4 pb-4 gap-2 border-r border-[--nya-border] hidden row-span-2 [&_p+p]:-mt-2",
@@ -754,12 +747,13 @@ export class Sheet {
       toolbar,
 
       h(
-        "relative",
+        "relative" + (toolbar ? "" : " row-span-2"),
         canvas,
         this.paper.el,
-        h(
-          "absolute block top-0 left-0 right-0 h-1 from-[--nya-sidebar-shadow] to-transparent bg-gradient-to-b",
-        ),
+        toolbar &&
+          h(
+            "absolute block top-0 left-0 right-0 h-1 from-[--nya-sidebar-shadow] to-transparent bg-gradient-to-b",
+          ),
         h(
           "absolute block top-0 bottom-0 left-0 w-1 from-[--nya-sidebar-shadow] to-transparent bg-gradient-to-r",
         ),

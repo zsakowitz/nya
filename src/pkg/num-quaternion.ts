@@ -153,7 +153,7 @@ export const PKG_NUM_QUATERNION: Package = {
     },
   },
 
-  remarks: ["it supports quaternions!"],
+  // remarks: ["it supports quaternions!"],
 }
 
 function mulQ32(

@@ -7,13 +7,12 @@ import { TY_INFO, type TyCoerce } from "../eval/ty/info"
 import { Inits, WordMap, type Options } from "../field/options"
 import type { Package, ToolbarItem } from "../pkg"
 import { Exts } from "./ext"
-import type { PropsByTy } from "./pick/normal"
 import { Sheet } from "./ui/sheet"
 
 export class SheetFactory {
   readonly exts: Record<number, Exts> = Object.create(null)
   readonly toolbar: Record<number, ToolbarItem[]> = Object.create(null)
-  readonly keys: Record<string, PropsByTy> = Object.create(null)
+  readonly keys: Record<string, (sheet: Sheet) => void> = Object.create(null)
 
   options
   constructor(options: Options) {

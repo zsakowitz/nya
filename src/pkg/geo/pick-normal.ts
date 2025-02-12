@@ -1,4 +1,3 @@
-import { createPicker } from "."
 import type { JsVal, SPoint, TyName } from "../../eval/ty"
 import { unpt } from "../../eval/ty/create"
 import { OpEq } from "../../field/cmd/leaf/cmp"
@@ -6,9 +5,11 @@ import { CmdComma } from "../../field/cmd/leaf/comma"
 import { CmdVar } from "../../field/cmd/leaf/var"
 import { CmdBrack } from "../../field/cmd/math/brack"
 import { Block, L, R } from "../../field/model"
-import { Expr } from "../ui/expr"
-import { Selected, Sheet } from "../ui/sheet"
-import { virtualPoint } from "./point"
+import { hx } from "../../jsx"
+import { createPicker } from "../../sheet/pick"
+import { Expr } from "../../sheet/ui/expr"
+import type { Selected, Sheet } from "../../sheet/ui/sheet"
+import { virtualPoint } from "./pick-point"
 
 export interface ExtByTy<T extends readonly TyName[]> {
   readonly id: number
@@ -185,5 +186,29 @@ export function createPickByTy<const K extends (readonly TyName[])[]>(
         return steps[args.length] ?? null
       },
     },
+  }
+}
+
+export function picker(icon: () => HTMLSpanElement, props: PropsByTy) {
+  return (sheet: Sheet) => {
+    const btn = hx(
+      "button",
+      "w-12 hover:bg-[--nya-bg] border-x border-transparent hover:border-[--nya-border] focus:outline-none -mr-px last:mr-0",
+      icon(),
+    )
+    sheet.handlers.onPickChange.push(() => {
+      const current = sheet.handlers.getPick()
+      if (current?.from.id(current.data) == props.ext.id) {
+        btn.classList.add("bg-[--nya-bg]", "border-[--nya-border]")
+        btn.classList.remove("border-transparent")
+      } else {
+        btn.classList.remove("bg-[--nya-bg]", "border-[--nya-border]")
+        btn.classList.add("border-transparent")
+      }
+    })
+    btn.addEventListener("click", () => {
+      sheet.setPick(PICK_BY_TY, props)
+    })
+    return btn
   }
 }
