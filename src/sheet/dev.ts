@@ -1,4 +1,5 @@
 import { options } from "../field/defaults.js"
+import { PKG_BOOL } from "../pkg/bool.js"
 import { PKG_EVAL } from "../pkg/eval.js"
 import { PKG_GEO_POINT } from "../pkg/geo-point.js"
 import { PKG_GEOMETRY } from "../pkg/geo/index.js"
@@ -6,6 +7,7 @@ import { PKG_ITHKUIL } from "../pkg/ithkuil.js"
 import { PKG_MORE_COLOR } from "../pkg/more-color.js"
 import { PKG_NUM_COMPLEX } from "../pkg/num-complex.js"
 import { PKG_NUM_QUATERNION } from "../pkg/num-quaternion.js"
+import { PKG_REAL } from "../pkg/num-real.js"
 import { PKG_SHADER, show } from "../pkg/shader.js"
 import { PKG_SLIDER } from "../pkg/slider.js"
 import { PKG_TEXT } from "../pkg/text.js"
@@ -13,6 +15,8 @@ import { SheetFactory } from "./factory.js"
 import { Expr } from "./ui/expr/index.js"
 
 const sheet = new SheetFactory(options)
+  .load(PKG_REAL)
+  .load(PKG_BOOL)
   .load(PKG_EVAL)
   .load(PKG_SLIDER)
   .load(PKG_SHADER)

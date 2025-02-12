@@ -1,5 +1,4 @@
 import { FnDist } from "../dist"
-import { FN_HSV } from "../fn/color/hsv"
 
 export function plotJs(): never {
   throw new Error("Cannot plot colors outside of a shader.")
@@ -14,16 +13,4 @@ export const OP_PLOT = new FnDist<"color">(
   "converts an expression to the color it plots as a shader",
 )
   .add(["bool"], "color", plotJs, (_, a) => bool(a.expr))
-  .add(
-    ["r32"],
-    "color",
-    plotJs,
-    (ctx, a) =>
-      FN_HSV.glsl1(
-        ctx,
-        a,
-        { type: "r32", expr: "1.0" },
-        { type: "r32", expr: "1.0" },
-      ).expr,
-  )
   .add(["color"], "color", plotJs, (_, a) => a.expr)

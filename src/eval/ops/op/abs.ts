@@ -32,15 +32,3 @@ export const OP_ABS = new FnDist(
   "abs",
   "takes the absolute value of a number, or gets the magnitude of a complex number",
 )
-  .add(
-    ["r64"],
-    "r64",
-    (a) => abs(a.value),
-    (ctx, a) => abs64(ctx, a.expr),
-  )
-  .add(
-    ["r32"],
-    "r32",
-    (a) => abs(a.value),
-    (_, a) => `abs(${a.expr})`,
-  )

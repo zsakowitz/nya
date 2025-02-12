@@ -7,15 +7,3 @@ export function neg(a: SReal): SReal {
 }
 
 export const OP_NEG = new FnDist("-", "negates its input")
-  .add(
-    ["r64"],
-    "r64",
-    (a) => neg(a.value),
-    (_, a) => `(-${a.expr})`,
-  )
-  .add(
-    ["r32"],
-    "r32",
-    (a) => neg(a.value),
-    (_, a) => `(-${a.expr})`,
-  )

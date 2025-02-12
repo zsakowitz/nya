@@ -12,15 +12,6 @@ export const FN_VALID = new FnDist<"bool">(
     () => "true",
   )
   .add(
-    ["r32"],
-    "bool",
-    (a) => isFinite(num(a.value)),
-    (ctx, ar) => {
-      const a = ctx.cache(ar)
-      return `(!isnan(${a}) && !isinf(${a}))`
-    },
-  )
-  .add(
     ["color"],
     "bool",
     ({ value: c }) => {

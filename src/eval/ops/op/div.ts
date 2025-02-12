@@ -25,9 +25,4 @@ export function div(a: SReal, b: SReal): SReal {
   return approx(num(a) / num(b))
 }
 
-export const OP_DIV = new FnDist("÷", "divides two values").add(
-  ["r32", "r32"],
-  "r32",
-  (a, b) => div(a.value, b.value),
-  (_, a, b) => `(${a.expr} / ${b.expr})`,
-)
+export const OP_DIV = new FnDist("÷", "divides two values")

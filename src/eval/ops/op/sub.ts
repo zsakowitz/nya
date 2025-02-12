@@ -50,15 +50,3 @@ export function subR64(ctx: GlslContext, a: string, b: string) {
 }
 
 export const OP_SUB = new FnDist("-", "subtracts two values")
-  .add(
-    ["r64", "r64"],
-    "r64",
-    (a, b) => sub(a.value, b.value),
-    (ctx, a, b) => subR64(ctx, a.expr, b.expr),
-  )
-  .add(
-    ["r32", "r32"],
-    "r32",
-    (a, b) => sub(a.value, b.value),
-    (_, a, b) => `(${a.expr} - ${b.expr})`,
-  )

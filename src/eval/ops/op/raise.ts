@@ -25,11 +25,4 @@ export function raise(a: SReal, b: SReal): SReal {
   return real(num(a) ** num(b))
 }
 
-export const OP_RAISE = new FnDist("^", "raises a value to an exponent").add(
-  ["r32", "r32"],
-  "r32",
-  (a, b) => raise(a.value, b.value),
-  (_, a, b) => {
-    return `pow(${a.expr}, ${b.expr})`
-  },
-)
+export const OP_RAISE = new FnDist("^", "raises a value to an exponent")

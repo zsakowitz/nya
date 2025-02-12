@@ -1,5 +1,4 @@
 import type { GlslContext } from "../../lib/fn"
-import { approx, num } from "../../ty/create"
 import { FnDist } from "../dist"
 
 export function declareExp(ctx: GlslContext) {
@@ -9,9 +8,4 @@ export function declareExp(ctx: GlslContext) {
 `
 }
 
-export const FN_EXP = new FnDist("exp", "raises e to some value").add(
-  ["r32"],
-  "r32",
-  (a) => approx(Math.exp(num(a.value))),
-  (_, a) => `exp(${a.expr})`,
-)
+export const FN_EXP = new FnDist("exp", "raises e to some value")

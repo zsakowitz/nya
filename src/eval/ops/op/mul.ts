@@ -2,7 +2,6 @@ import type { GlslContext } from "../../lib/fn"
 import { safe } from "../../lib/util"
 import type { SReal } from "../../ty"
 import { approx, frac, num } from "../../ty/create"
-import { TY_INFO } from "../../ty/info"
 import { FnDist } from "../dist"
 import { declareR64 } from "../r64"
 
@@ -67,27 +66,3 @@ export function mulR64(ctx: GlslContext, a: string, b: string) {
 }
 
 export const OP_CDOT = new FnDist("·", "multiplies two values")
-  .add(
-    ["r64", "r64"],
-    "r64",
-    (a, b) => mul(a.value, b.value),
-    (ctx, a, b) => mulR64(ctx, a.expr, b.expr),
-  )
-  .add(
-    ["r32", "r32"],
-    "r32",
-    (a, b) => mul(a.value, b.value),
-    (_, a, b) => `(${a.expr} * ${b.expr})`,
-  )
-  .add(
-    ["color", "bool"],
-    "color",
-    (a, b) => (b.value ? a.value : TY_INFO.color.garbage.js),
-    (_, a, b) => `(${b.expr} ? ${a.expr} : ${TY_INFO.color.garbage.glsl})`,
-  )
-  .add(
-    ["bool", "color"],
-    "color",
-    (b, a) => (b.value ? a.value : TY_INFO.color.garbage.js),
-    (_, b, a) => `(${b.expr} ? ${a.expr} : ${TY_INFO.color.garbage.glsl})`,
-  )
