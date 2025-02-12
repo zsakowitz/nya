@@ -572,7 +572,7 @@ function createDocs(
   )
 }
 
-const DEFAULT_TO_VISIBLE_DOCS = true
+const DEFAULT_TO_VISIBLE_DOCS = false
 
 export class Sheet {
   readonly paper = new Paper()
