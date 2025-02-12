@@ -1,46 +1,20 @@
 import type { PuncCmp } from "../../ast/token"
-import { num } from "../../ty/create"
 import { FnDist } from "../dist"
-import { FN_CMP } from "../fn/cmp"
 
-function createCmp(
-  name: string,
-  js: (a: number, b: number) => boolean,
-  glsl: `${"" | "!"}${"<" | ">" | "<=" | ">=" | "=="}`,
-  glsl64: `${"==" | "!="} ${" 0.0" | " 1.0" | "-1.0"}`,
-) {
-  const pre = glsl.startsWith("!") ? "!" : ""
-  if (pre) glsl = glsl.slice(1) as any
+export const OP_LT = new FnDist("<", "compares two values via the < operator")
+export const OP_GT = new FnDist(">", "compares two values via the > operator")
 
-  return new FnDist(name, "compares two values")
-    .add(
-      ["r64", "r64"],
-      "bool",
-      (a, b) => js(num(a.value), num(b.value)),
-      (ctx, a, b) => `(${FN_CMP.glsl1(ctx, a, b).expr} ${glsl64})`,
-    )
-    .add(
-      ["r32", "r32"],
-      "bool",
-      (a, b) => js(num(a.value), num(b.value)),
-      (_, a, b) => `(${pre}(${a.expr} ${glsl} ${b.expr}))`,
-    )
-}
+export const OP_LTE = new FnDist("≤", "compares two values via the ≤ operator")
+export const OP_GTE = new FnDist("≥", "compares two values via the ≥ operator")
 
-const OP_LT = createCmp("<", (a, b) => a < b, "<", "== -1.0")
-const OP_GT = createCmp(">", (a, b) => a > b, ">", "==  1.0")
+export const OP_NLT = new FnDist("≮", "compares two values via the ≮ operator")
+export const OP_NGT = new FnDist("≯", "compares two values via the ≯ operator")
 
-const OP_LTE = createCmp("≤", (a, b) => a <= b, "<=", "!=  1.0")
-const OP_GTE = createCmp("≥", (a, b) => a >= b, ">=", "!= -1.0")
+export const OP_NLTE = new FnDist("≰", "compares two values via the ≰ operator")
+export const OP_NGTE = new FnDist("≱", "compares two values via the ≱ operator")
 
-const OP_NLT = createCmp("≮", (a, b) => !(a < b), "!<", "!= -1.0")
-const OP_NGT = createCmp("≯", (a, b) => !(a > b), "!>", "!=  1.0")
-
-const OP_NLTE = createCmp("≰", (a, b) => !(a <= b), "!<=", "==  1.0")
-const OP_NGTE = createCmp("≱", (a, b) => !(a >= b), "!>=", "== -1.0")
-
-const OP_EQ = createCmp("=", (a, b) => a == b, "==", "==  0.0")
-const OP_NE = createCmp("≠", (a, b) => a != b, "!==", "==  0.0")
+export const OP_EQ = new FnDist("=", "compares two values via the = operator")
+export const OP_NE = new FnDist("≠", "compares two values via the ≠ operator")
 
 export function pickCmp(op: PuncCmp) {
   switch (op.dir) {

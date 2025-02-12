@@ -1,5 +1,5 @@
 import type { Package } from "."
-import { FnDistVar } from "../eval/ops/dist"
+import { FnDist, FnDistVar } from "../eval/ops/dist"
 import { declareCmpR64, FN_CMP } from "../eval/ops/fn/cmp"
 import { FN_HSV } from "../eval/ops/fn/color/hsv"
 import { FN_EXP } from "../eval/ops/fn/exp"
@@ -7,6 +7,18 @@ import { FN_UNSIGN } from "../eval/ops/fn/unsign"
 import { FN_VALID } from "../eval/ops/fn/valid"
 import { abs, abs64, OP_ABS } from "../eval/ops/op/abs"
 import { add, addR64, OP_ADD } from "../eval/ops/op/add"
+import {
+  OP_EQ,
+  OP_GT,
+  OP_GTE,
+  OP_LT,
+  OP_LTE,
+  OP_NE,
+  OP_NGT,
+  OP_NGTE,
+  OP_NLT,
+  OP_NLTE,
+} from "../eval/ops/op/cmp"
 import { OP_CROSS } from "../eval/ops/op/cross"
 import { div, OP_DIV } from "../eval/ops/op/div"
 import { OP_MOD } from "../eval/ops/op/mod"
@@ -267,6 +279,43 @@ float _helper_cmp_r32(float a, float b) {
 `
   return `_helper_cmp_r32(${a.expr}, ${b.expr})`
 })
+
+function addCmp(
+  fn: FnDist,
+  js: (a: number, b: number) => boolean,
+  glsl: `${"" | "!"}${"<" | ">" | "<=" | ">=" | "=="}`,
+  glsl64: `${"==" | "!="} ${" 0.0" | " 1.0" | "-1.0"}`,
+) {
+  const pre = glsl.startsWith("!") ? "!" : ""
+  if (pre) glsl = glsl.slice(1) as any
+
+  fn.add(
+    ["r64", "r64"],
+    "bool",
+    (a, b) => js(num(a.value), num(b.value)),
+    (ctx, a, b) => `(${FN_CMP.glsl1(ctx, a, b).expr} ${glsl64})`,
+  ).add(
+    ["r32", "r32"],
+    "bool",
+    (a, b) => js(num(a.value), num(b.value)),
+    (_, a, b) => `(${pre}(${a.expr} ${glsl} ${b.expr}))`,
+  )
+}
+
+addCmp(OP_LT, (a, b) => a < b, "<", "== -1.0")
+addCmp(OP_GT, (a, b) => a > b, ">", "==  1.0")
+
+addCmp(OP_LTE, (a, b) => a <= b, "<=", "!=  1.0")
+addCmp(OP_GTE, (a, b) => a >= b, ">=", "!= -1.0")
+
+addCmp(OP_NLT, (a, b) => !(a < b), "!<", "!= -1.0")
+addCmp(OP_NGT, (a, b) => !(a > b), "!>", "!=  1.0")
+
+addCmp(OP_NLTE, (a, b) => !(a <= b), "!<=", "==  1.0")
+addCmp(OP_NGTE, (a, b) => !(a >= b), "!>=", "== -1.0")
+
+addCmp(OP_EQ, (a, b) => a == b, "==", "==  0.0")
+addCmp(OP_NE, (a, b) => a != b, "!==", "==  0.0")
 
 export const PKG_REAL: Package = {
   id: "nya:num-real",
