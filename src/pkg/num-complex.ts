@@ -121,7 +121,7 @@ export const PKG_NUM_COMPLEX: Package = {
             return pt(self, real(0))
           },
           glsl(self) {
-            return `vec2(${self}, 0, 0)`
+            return `vec4(${self}, 0, 0)`
           },
         },
       },

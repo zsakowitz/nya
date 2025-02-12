@@ -30,7 +30,7 @@ function expr(source: { raw: readonly string[] }) {
   return expr
 }
 
-if (location.href.includes("localhost")) {
+if (false && location.href.includes("localhost")) {
   expr`\left(2,3\right)`
   expr`\operatorname{ikscript}\text{hlaséi-rrala sakawi}`
 } else {
