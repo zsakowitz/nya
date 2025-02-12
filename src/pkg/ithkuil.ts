@@ -15,11 +15,11 @@ import { circle } from "../sheet/ui/expr/circle"
 
 declare module "../eval/ty" {
   interface Tys {
-    ikscript: readonly [string, SVGSVGElement]
+    ithkuilscript: readonly [string, SVGSVGElement]
   }
 
   interface TyComponents {
-    ikscript: never
+    ithkuilscript: never
   }
 }
 
@@ -66,7 +66,7 @@ export const PKG_ITHKUIL: Package = {
   label: "adds utilities for working with the language ithkuil",
   ty: {
     info: {
-      ikscript: {
+      ithkuilscript: {
         name: "ithkuil script",
         namePlural: "ithkuil scripts",
         coerce: {},
@@ -112,7 +112,7 @@ export const PKG_ITHKUIL: Package = {
   },
   eval: {
     fns: {
-      ikgloss: new FnDist("ikgloss", "glosses an ithkuil word").add(
+      ithkuilgloss: new FnDist("ithkuilgloss", "glosses an ithkuil word").add(
         ["text"],
         "text",
         (a) => {
@@ -125,7 +125,10 @@ export const PKG_ITHKUIL: Package = {
         },
         err,
       ),
-      ikungloss: new FnDist("ikungloss", "unglosses an ithkuil word").add(
+      ithkuilungloss: new FnDist(
+        "ithkuilungloss",
+        "unglosses an ithkuil word",
+      ).add(
         ["text"],
         "text",
         (str) => {
@@ -145,12 +148,12 @@ export const PKG_ITHKUIL: Package = {
         },
         err,
       ),
-      ikscript: new FnDist(
-        "ikscript",
+      ithkuilscript: new FnDist(
+        "ithkuilscript",
         "converts an ithkuil word into script form",
       ).add(
         ["text"],
-        "ikscript",
+        "ithkuilscript",
         (str) => {
           const source = str.value.map((x) => x.value).join("")
           const result = textToScript(source, {
@@ -184,12 +187,12 @@ export const PKG_ITHKUIL: Package = {
       1: [
         defineExt({
           data(expr) {
-            if (expr.js?.value.type == "ikscript") {
-              return { expr, value: expr.js.value as JsValue<"ikscript"> }
+            if (expr.js?.value.type == "ithkuilscript") {
+              return { expr, value: expr.js.value as JsValue<"ithkuilscript"> }
             }
           },
           aside() {
-            return circle("ikscript")
+            return circle("ithkuilscript")
           },
           el(data) {
             const el = h(

@@ -2,7 +2,7 @@ import { faQuoteLeft } from "@fortawesome/free-solid-svg-icons/faQuoteLeft"
 import { fa } from "../../../field/fa"
 import { h, p, svgx } from "../../../jsx"
 
-export type CircleKind = "shaderon" | "empty" | "ikscript" | "text"
+export type CircleKind = "shaderon" | "empty" | "ithkuilscript" | "text"
 
 export function circle(kind: CircleKind): HTMLSpanElement {
   switch (kind) {
@@ -24,7 +24,7 @@ export function circle(kind: CircleKind): HTMLSpanElement {
       return h(
         "relative block bg-[--nya-bg-sidebar] size-8 rounded-full mx-0.5 border-4 border-slate-300 group-focus-within:border-blue-500",
       )
-    case "ikscript":
+    case "ithkuilscript":
       return h(
         "relative block size-8 mx-0.5",
         svgx(
