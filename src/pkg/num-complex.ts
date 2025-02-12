@@ -203,20 +203,6 @@ export const PKG_NUM_COMPLEX: Package = {
         glsl: { type: "c64", expr: "v_coords", list: false },
         dynamic: true,
       },
-      x: {
-        get js(): never {
-          throw new Error(ERR_COORDS_USED_OUTSIDE_GLSL)
-        },
-        glsl: { type: "r64", expr: "v_coords.xy", list: false },
-        dynamic: true,
-      },
-      y: {
-        get js(): never {
-          throw new Error(ERR_COORDS_USED_OUTSIDE_GLSL)
-        },
-        glsl: { type: "r64", expr: "v_coords.zw", list: false },
-        dynamic: true,
-      },
       i: {
         js: { type: "c64", value: pt(real(0), real(1)), list: false },
         glsl: { type: "c64", expr: "vec4(0, 0, 1, 0)", list: false },

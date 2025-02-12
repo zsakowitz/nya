@@ -3,20 +3,19 @@ import { PKG_GEO_POINT } from "../pkg/geo-point.js"
 import { PKG_GEOMETRY } from "../pkg/geo/index.js"
 import { PKG_NUM_COMPLEX } from "../pkg/num-complex.js"
 import { PKG_NUM_QUATERNION } from "../pkg/num-quaternion.js"
+import { PKG_SHADER, show } from "../pkg/shader.js"
 import { PKG_TEXT } from "../pkg/text.js"
 import { EXT_SLIDER } from "./ext/exts/00-slider.js"
 import { EXT_EVAL } from "./ext/exts/02-eval.js"
-import { EXT_GLSL, show } from "./ext/exts/03-shader.js"
 import { SheetFactory } from "./factory.js"
 import { Expr } from "./ui/expr/index.js"
 
 const sheet = new SheetFactory(options)
   .load({
-    id: "q",
-    name: "q",
-    label: "q",
-    sheet: { exts: { 0: [EXT_SLIDER], 2: [EXT_EVAL], 3: [EXT_GLSL] } },
+    id: "nya:base",
+    sheet: { exts: { 0: [EXT_SLIDER], 2: [EXT_EVAL] } },
   })
+  .load(PKG_SHADER)
   .load(PKG_GEOMETRY)
   .load(PKG_GEO_POINT)
   .load(PKG_NUM_COMPLEX)

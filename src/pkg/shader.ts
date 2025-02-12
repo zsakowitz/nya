@@ -1,9 +1,11 @@
-import { defineExt, Store } from ".."
-import { glsl } from "../../../eval/glsl"
-import { OP_PLOT } from "../../../eval/ops/op/plot"
-import { h, hx } from "../../../jsx"
-import type { Expr } from "../../ui/expr"
-import { circle } from "../../ui/expr/circle"
+import type { Package } from "."
+import { glsl } from "../eval/glsl"
+import { OP_PLOT } from "../eval/ops/op/plot"
+import { ERR_COORDS_USED_OUTSIDE_GLSL } from "../eval/ops/vars"
+import { h, hx } from "../jsx"
+import { Store, defineExt } from "../sheet/ext"
+import type { Expr } from "../sheet/ui/expr"
+import { circle } from "../sheet/ui/expr/circle"
 
 const store = new Store((expr) => {
   let show = false
@@ -47,7 +49,7 @@ export function show(expr: Expr) {
   store.get(expr).show = true
 }
 
-export const EXT_GLSL = defineExt({
+const EXT_GLSL = defineExt({
   data(expr) {
     const data = store.get(expr)
 
@@ -78,3 +80,32 @@ export const EXT_GLSL = defineExt({
     return [props.ctx, value.expr]
   },
 })
+
+export const PKG_SHADER: Package = {
+  id: "nya:shader",
+  name: "shaders",
+  label: "allows shaders to be created with the x, y, and p variables",
+  eval: {
+    vars: {
+      x: {
+        get js(): never {
+          throw new Error(ERR_COORDS_USED_OUTSIDE_GLSL)
+        },
+        glsl: { type: "r64", expr: "v_coords.xy", list: false },
+        dynamic: true,
+      },
+      y: {
+        get js(): never {
+          throw new Error(ERR_COORDS_USED_OUTSIDE_GLSL)
+        },
+        glsl: { type: "r64", expr: "v_coords.zw", list: false },
+        dynamic: true,
+      },
+    },
+  },
+  sheet: {
+    exts: {
+      3: [EXT_GLSL],
+    },
+  },
+}

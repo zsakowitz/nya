@@ -27,7 +27,7 @@ export class SheetFactory {
   private loaded: string[] = []
   private queuedCoercions: Record<string, Record<string, TyCoerce<any, any>>> =
     Object.create(null)
-  load(pkg: Package) {
+  load(pkg: Omit<Package, "name" | "label">) {
     if (this.loaded.includes(pkg.id)) {
       return this
     }
