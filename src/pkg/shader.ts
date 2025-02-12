@@ -102,6 +102,19 @@ export const PKG_SHADER: Package = {
         dynamic: true,
       },
     },
+    fns: {
+      forceshader: {
+        js() {
+          throw new Error(ERR_COORDS_USED_OUTSIDE_GLSL)
+        },
+        glsl(_, ...args) {
+          if (args.length != 1) {
+            throw new Error("'forceshader' should be passed a single argument.")
+          }
+          return args[0]!
+        },
+      },
+    },
   },
   sheet: {
     exts: {

@@ -4,14 +4,10 @@ import type { GlslValue, JsValue } from "../ty"
 
 import { FN_CMP } from "./fn/cmp"
 import { FN_HSV } from "./fn/color/hsv"
-import { FN_INVERTDARK } from "./fn/color/invertdark"
-import { FN_OKLAB } from "./fn/color/oklab"
-import { FN_OKLCH } from "./fn/color/oklch"
 import { FN_RGB } from "./fn/color/rgb"
 import { FN_COMPONENT } from "./fn/component"
 import { FN_DEBUGPOINT } from "./fn/debugpoint"
 import { FN_FIRSTVALID } from "./fn/firstvalid"
-import { FN_FORCESHADER } from "./fn/forceshader"
 import { FN_JOIN } from "./fn/join"
 import { FN_LN } from "./fn/ln"
 import { FN_MAX } from "./fn/max"
@@ -50,13 +46,9 @@ export const FNS: Record<string, Fn> = {
   debugpoint: FN_DEBUGPOINT,
   min: FN_MIN,
   max: FN_MAX,
-  oklab: FN_OKLAB,
-  oklch: FN_OKLCH,
   valid: FN_VALID,
   firstvalid: FN_FIRSTVALID,
   ln: FN_LN,
-  invertdark: FN_INVERTDARK,
-  forceshader: FN_FORCESHADER,
   component: FN_COMPONENT,
   join: FN_JOIN,
 }

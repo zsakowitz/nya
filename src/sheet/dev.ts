@@ -3,6 +3,7 @@ import { PKG_EVAL } from "../pkg/eval.js"
 import { PKG_GEO_POINT } from "../pkg/geo-point.js"
 import { PKG_GEOMETRY } from "../pkg/geo/index.js"
 import { PKG_ITHKUIL } from "../pkg/ithkuil.js"
+import { PKG_MORE_COLOR } from "../pkg/more-color.js"
 import { PKG_NUM_COMPLEX } from "../pkg/num-complex.js"
 import { PKG_NUM_QUATERNION } from "../pkg/num-quaternion.js"
 import { PKG_SHADER, show } from "../pkg/shader.js"
@@ -21,6 +22,7 @@ const sheet = new SheetFactory(options)
   .load(PKG_NUM_QUATERNION)
   .load(PKG_TEXT)
   .load(PKG_ITHKUIL)
+  .load(PKG_MORE_COLOR)
   .create()
 document.body.appendChild(sheet.el)
 
