@@ -87,7 +87,7 @@ function createDocs(
     )
   }
 
-  function section(label: string, data: Node[]) {
+  function section(label: string, data: (Node | null)[]) {
     return h("flex flex-col gap-4", title(label), ...data)
   }
 
@@ -95,29 +95,7 @@ function createDocs(
     let q
 
     return section("advanced operators", [
-      h(
-        "flex flex-col",
-        h(
-          "text-[1.265rem]/[1.15]",
-          h(
-            "font-['Symbola']",
-            CmdBrack.render("(", ")", null, {
-              el: h(
-                "",
-                any(),
-                new CmdWord("base", "infix").el,
-                TY_INFO.r32?.icon(),
-              ),
-            }),
-            new OpRightArrow().el,
-            any(),
-          ),
-        ),
-        h(
-          "text-sm leading-tight text-slate-500",
-          "interprets <left side> as being in base <right side>",
-        ),
-      ),
+      // with
       h(
         "flex flex-col",
         h(
@@ -143,136 +121,170 @@ function createDocs(
           "evaluates <left side> with <a> set to <right side>",
         ),
       ),
-      h(
-        "flex flex-col",
+      // base
+      TY_INFO.r32 ?
         h(
-          "text-[1.265rem]/[1.15]",
+          "flex flex-col",
           h(
-            "font-['Symbola']",
-            CmdPiecewise.render([
-              { el: any() },
-              { el: TY_INFO.bool?.icon() },
-              { el: any() },
-              { el: TY_INFO.bool?.icon() },
-              { el: any() },
-              { el: (q = h("")) },
-            ]),
-            (q.parentElement?.classList.add("nya-has-empty"),
-            new OpRightArrow().el),
-            any(),
+            "text-[1.265rem]/[1.15]",
+            h(
+              "font-['Symbola']",
+              CmdBrack.render("(", ")", null, {
+                el: h(
+                  "",
+                  any(),
+                  new CmdWord("base", "infix").el,
+                  TY_INFO.r32?.icon(),
+                ),
+              }),
+              new OpRightArrow().el,
+              any(),
+            ),
           ),
-        ),
-        h(
-          "text-sm leading-tight text-slate-500",
-          "piecewise function; returns the first value whose “if” condition is true",
-        ),
-      ),
-      h(
-        "flex flex-col",
-        h(
-          "text-[1.265rem]/[1.15]",
           h(
-            "font-['Symbola']",
-            CmdBrack.render("(", ")", null, {
-              el: h(
-                "",
-                new CmdWord("iterate", "prefix").el,
-                CmdSupSub.render(null, { el: h("", new CmdNum("50").el) }),
-                new CmdWord("a", undefined, true).el,
+            "text-sm leading-tight text-slate-500",
+            "interprets <left side> as being in base <right side>",
+          ),
+        )
+      : null,
+      // piecewise
+      TY_INFO.bool ?
+        h(
+          "flex flex-col",
+          h(
+            "text-[1.265rem]/[1.15]",
+            h(
+              "font-['Symbola']",
+              CmdPiecewise.render([
+                { el: any() },
+                { el: TY_INFO.bool?.icon() },
+                { el: any() },
+                { el: TY_INFO.bool?.icon() },
+                { el: any() },
+                { el: (q = h("")) },
+              ]),
+              (q.parentElement?.classList.add("nya-has-empty"),
+              new OpRightArrow().el),
+              any(),
+            ),
+          ),
+          h(
+            "text-sm leading-tight text-slate-500",
+            "piecewise function; returns the first value whose “if” condition is true",
+          ),
+        )
+      : null,
+      ...(TY_INFO.r32 ?
+        [
+          // iterate
+          h(
+            "flex flex-col",
+            h(
+              "text-[1.265rem]/[1.15]",
+              h(
+                "font-['Symbola']",
+                CmdBrack.render("(", ")", null, {
+                  el: h(
+                    "",
+                    new CmdWord("iterate", "prefix").el,
+                    CmdSupSub.render(null, { el: h("", new CmdNum("50").el) }),
+                    new CmdWord("a", undefined, true).el,
+                    new OpRightArrow().el,
+                    TY_INFO.r32?.icon(),
+                  ),
+                }),
                 new OpRightArrow().el,
                 TY_INFO.r32?.icon(),
               ),
-            }),
-            new OpRightArrow().el,
-            TY_INFO.r32?.icon(),
+            ),
+            h(
+              "text-sm leading-tight text-slate-500",
+              "sets <a> to some expression 50 times, starting with a=0, then returns <a>",
+            ),
           ),
-        ),
-        h(
-          "text-sm leading-tight text-slate-500",
-          "sets <a> to some expression 50 times, starting with a=0, then returns <a>",
-        ),
-      ),
-      h(
-        "flex flex-col",
-        h(
-          "text-[1.265rem]/[1.15]",
           h(
-            "font-['Symbola']",
-            CmdBrack.render("(", ")", null, {
-              el: h(
-                "",
-                new CmdWord("iterate", "prefix").el,
-                CmdSupSub.render(null, { el: h("", new CmdNum("50").el) }),
-                new CmdWord("a", undefined, true).el,
+            "flex flex-col",
+            h(
+              "text-[1.265rem]/[1.15]",
+              h(
+                "font-['Symbola']",
+                CmdBrack.render("(", ")", null, {
+                  el: h(
+                    "",
+                    new CmdWord("iterate", "prefix").el,
+                    CmdSupSub.render(null, { el: h("", new CmdNum("50").el) }),
+                    new CmdWord("a", undefined, true).el,
+                    new OpRightArrow().el,
+                    any(),
+                    new CmdWord("from", "infix").el,
+                    any(),
+                  ),
+                }),
                 new OpRightArrow().el,
                 any(),
-                new CmdWord("from", "infix").el,
-                any(),
               ),
-            }),
-            new OpRightArrow().el,
-            any(),
+            ),
+            h(
+              "text-sm leading-tight text-slate-500",
+              "sets <a> to some expression 50 times, starting with the expression after the word “from”, then returns <a>",
+            ),
           ),
-        ),
-        h(
-          "text-sm leading-tight text-slate-500",
-          "sets <a> to some expression 50 times, starting with the expression after the word “from”, then returns <a>",
-        ),
-      ),
-      h(
-        "flex flex-col",
-        h(
-          "text-[1.265rem]/[1.15]",
           h(
-            "font-['Symbola']",
-            CmdBrack.render("(", ")", null, {
-              el: h(
-                "",
-                new CmdWord("iterate", "prefix").el,
-                CmdSupSub.render(null, { el: h("", new CmdNum("50").el) }),
-                new CmdWord("a", undefined, true).el,
+            "flex flex-col",
+            h(
+              "text-[1.265rem]/[1.15]",
+              h(
+                "font-['Symbola']",
+                CmdBrack.render("(", ")", null, {
+                  el: h(
+                    "",
+                    new CmdWord("iterate", "prefix").el,
+                    CmdSupSub.render(null, { el: h("", new CmdNum("50").el) }),
+                    new CmdWord("a", undefined, true).el,
+                    new OpRightArrow().el,
+                    TY_INFO.r32?.icon(),
+                    new CmdWord("while", "infix").el,
+                    TY_INFO.bool?.icon(),
+                  ),
+                }),
                 new OpRightArrow().el,
                 TY_INFO.r32?.icon(),
-                new CmdWord("while", "infix").el,
-                TY_INFO.bool?.icon(),
               ),
-            }),
-            new OpRightArrow().el,
-            TY_INFO.r32?.icon(),
+            ),
+            h(
+              "text-sm leading-tight text-slate-500",
+              "sets <a> to some expression 50 times, starting with a=0, then returns <a>; if the “while” clause is ever false, returns <a> immediately",
+            ),
           ),
-        ),
-        h(
-          "text-sm leading-tight text-slate-500",
-          "sets <a> to some expression 50 times, starting with a=0, then returns <a>; if the “while” clause is ever false, returns <a> immediately",
-        ),
-      ),
-      h(
-        "flex flex-col",
-        h(
-          "text-[1.265rem]/[1.15]",
           h(
-            "font-['Symbola']",
-            CmdBrack.render("(", ")", null, {
-              el: h(
-                "",
-                new CmdWord("iterate", "prefix").el,
-                CmdSupSub.render(null, { el: h("", new CmdNum("50").el) }),
-                new CmdWord("a", undefined, true).el,
+            "flex flex-col",
+            h(
+              "text-[1.265rem]/[1.15]",
+              h(
+                "font-['Symbola']",
+                CmdBrack.render("(", ")", null, {
+                  el: h(
+                    "",
+                    new CmdWord("iterate", "prefix").el,
+                    CmdSupSub.render(null, { el: h("", new CmdNum("50").el) }),
+                    new CmdWord("a", undefined, true).el,
+                    new OpRightArrow().el,
+                    TY_INFO.r32?.icon(),
+                    new CmdWord("until", "infix").el,
+                    TY_INFO.bool?.icon(),
+                  ),
+                }),
                 new OpRightArrow().el,
                 TY_INFO.r32?.icon(),
-                new CmdWord("until", "infix").el,
-                TY_INFO.bool?.icon(),
               ),
-            }),
-            new OpRightArrow().el,
-            TY_INFO.r32?.icon(),
+            ),
+            h(
+              "text-sm leading-tight text-slate-500",
+              "sets <a> to some expression 50 times, starting with a=0, then returns <a>; if the “until” clause is ever true, returns <a> immediately",
+            ),
           ),
-        ),
-        h(
-          "text-sm leading-tight text-slate-500",
-          "sets <a> to some expression 50 times, starting with a=0, then returns <a>; if the “until” clause is ever true, returns <a> immediately",
-        ),
-      ),
+        ]
+      : []),
     ])
   }
 

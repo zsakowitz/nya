@@ -3,6 +3,19 @@ import type { GlslContext } from "../eval/lib/fn"
 import { FnDist } from "../eval/ops/dist"
 import type { SColor, SReal } from "../eval/ty"
 import { frac, num, real } from "../eval/ty/create"
+import { CmdColor } from "../field/cmd/leaf/color"
+import { L } from "../field/model"
+import { h } from "../jsx"
+
+declare module "../eval/ty/index.js" {
+  interface Tys {
+    color: SColor
+  }
+
+  interface TyComponents {
+    color: "r32"
+  }
+}
 
 export const FN_RGB = new FnDist(
   "rgb",
@@ -123,6 +136,89 @@ export const PKG_COLOR_CORE: Package = {
   id: "nya:color-core",
   name: "color functions core",
   label: "adds very basic color functions",
+  ty: {
+    info: {
+      color: {
+        name: "color",
+        namePlural: "colors",
+        glsl: "vec4",
+        garbage: {
+          js: { type: "color", r: real(0), g: real(0), b: real(0), a: real(0) },
+          glsl: "vec4(0)",
+        },
+        coerce: {},
+        write: {
+          isApprox(value) {
+            return (
+              value.r.type == "approx" ||
+              value.g.type == "approx" ||
+              value.b.type == "approx" ||
+              value.a.type == "approx"
+            )
+          },
+          display(value, props) {
+            const f = (x: SReal) => {
+              const v = Math.min(255, Math.max(0, Math.floor(num(x)))).toString(
+                16,
+              )
+              if (v.length == 1) return "0" + v
+              return v
+            }
+
+            new CmdColor("#" + f(value.r) + f(value.g) + f(value.b)).insertAt(
+              props.cursor,
+              L,
+            )
+          },
+        },
+        icon() {
+          function make(clsx: string) {
+            return h(
+              clsx,
+              h(
+                "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
+              ),
+              palette(),
+            )
+          }
+
+          function palette() {
+            return h(
+              "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-[18px] bg-[conic-gradient(hsl(360_100%_50%),hsl(315_100%_50%),hsl(270_100%_50%),hsl(225_100%_50%),hsl(180_100%_50%),hsl(135_100%_50%),hsl(90_100%_50%),hsl(45_100%_50%),hsl(0_100%_50%))] -rotate-90 rounded-full dark:opacity-50",
+            )
+          }
+
+          return h(
+            "",
+            h(
+              "size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] inline-block relative",
+              make(
+                "text-[#388c46] bg-[--nya-bg] inline-block absolute inset-0 border-2 border-current rounded-[4px]",
+              ),
+              make(
+                "text-[#2d70b3] bg-[--nya-bg] inline-block absolute inset-0 border-2 border-current rounded-[4px] [mask-image:linear-gradient(#000,transparent)]",
+              ),
+              make(
+                "text-[#c74440] bg-[--nya-bg] inline-block absolute inset-0 border-2 border-current rounded-[4px] [mask-image:linear-gradient(to_right,#000,transparent)]",
+              ),
+              make(
+                "text-[#fa7e19] bg-[--nya-bg] inline-block absolute inset-0 border-2 border-current rounded-[4px] [mask-image:linear-gradient(45deg,#000,transparent,transparent)]",
+              ),
+            ),
+          )
+        },
+        components: {
+          ty: "r32",
+          at: [
+            [(x) => x.r, (x) => `(255.0 * ${x}.x)`],
+            [(x) => x.g, (x) => `(255.0 * ${x}.y)`],
+            [(x) => x.b, (x) => `(255.0 * ${x}.z)`],
+            [(x) => x.a, (x) => `${x}.w`],
+          ],
+        },
+      },
+    },
+  },
   eval: {
     fns: {
       rgb: FN_RGB,

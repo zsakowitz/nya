@@ -3,21 +3,9 @@
  *
  * Be sure to also extend the `TY_INFO` variable.
  */
-export interface Tys {
-  r32: SReal
-  r64: SReal
-  bool: boolean
-  color: SColor
-}
+export interface Tys {}
 
-export type StrSegment = { type: "plain" | "latex"; value: string }
-
-export interface TyComponents {
-  r32: never
-  r64: never
-  bool: never
-  color: "r32"
-}
+export interface TyComponents {}
 
 null! as TyComponents satisfies Record<TyName, TyName>
 

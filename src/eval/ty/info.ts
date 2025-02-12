@@ -1,13 +1,10 @@
-import type { SPoint, SReal, TyComponents, TyName, Tys } from "."
-import { CmdColor } from "../../field/cmd/leaf/color"
+import type { SPoint, TyComponents, TyName, Tys } from "."
 import { CmdComma } from "../../field/cmd/leaf/comma"
-import { CmdWord } from "../../field/cmd/leaf/word"
 import { CmdBrack } from "../../field/cmd/math/brack"
 import { Block, L, R } from "../../field/model"
 import { h } from "../../jsx"
 import type { Paper, Point } from "../../sheet/ui/paper"
 import type { GlslContext } from "../lib/fn"
-import { num, real } from "../ty/create"
 import type { Write } from "./display"
 
 export interface Garbage<T> {
@@ -114,142 +111,4 @@ export function any(
   )
 }
 
-export const TY_INFO: TyInfoMap = {
-  bool: {
-    name: "true/false value",
-    namePlural: "true/false values",
-    glsl: "bool",
-    garbage: { js: false, glsl: "false" },
-    coerce: {
-      r32: {
-        js(self) {
-          return self ? real(1) : real(NaN)
-        },
-        glsl(self) {
-          return `(${self} ? 1.0 : 0.0/0.0)`
-        },
-      },
-      r64: {
-        js(self) {
-          return self ? real(1) : real(NaN)
-        },
-        glsl(self) {
-          return `(${self} ? vec2(1, 0) : vec2(0.0/0.0))`
-        },
-      },
-    },
-    write: {
-      isApprox() {
-        return false
-      },
-      display(value, props) {
-        new CmdWord("" + value, "var").insertAt(props.cursor, L)
-      },
-    },
-    icon() {
-      return h(
-        "",
-        h(
-          "size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] inline-block relative",
-          h(
-            "text-[#c74440] bg-[--nya-bg] inline-block absolute inset-0 border-2 border-current rounded-[4px]",
-            h(
-              "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
-            ),
-            h(
-              "size-[16px] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-2 border-[#388c46] rounded-full",
-            ),
-          ),
-          h(
-            "text-[#388c46] bg-[--nya-bg] inline-block absolute inset-0 border-2 border-current rounded-[4px] [clip-path:polygon(100%_100%,100%_0%,0%_100%)]",
-            h(
-              "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
-            ),
-            h(
-              "size-[16px] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#c74440] rounded-full",
-            ),
-          ),
-        ),
-      )
-    },
-  },
-  color: {
-    name: "color",
-    namePlural: "colors",
-    glsl: "vec4",
-    garbage: {
-      js: { type: "color", r: real(0), g: real(0), b: real(0), a: real(0) },
-      glsl: "vec4(0)",
-    },
-    coerce: {},
-    write: {
-      isApprox(value) {
-        return (
-          value.r.type == "approx" ||
-          value.g.type == "approx" ||
-          value.b.type == "approx" ||
-          value.a.type == "approx"
-        )
-      },
-      display(value, props) {
-        const f = (x: SReal) => {
-          const v = Math.min(255, Math.max(0, Math.floor(num(x)))).toString(16)
-          if (v.length == 1) return "0" + v
-          return v
-        }
-
-        new CmdColor("#" + f(value.r) + f(value.g) + f(value.b)).insertAt(
-          props.cursor,
-          L,
-        )
-      },
-    },
-    icon() {
-      function make(clsx: string) {
-        return h(
-          clsx,
-          h(
-            "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
-          ),
-          palette(),
-        )
-      }
-
-      function palette() {
-        return h(
-          "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-[18px] bg-[conic-gradient(hsl(360_100%_50%),hsl(315_100%_50%),hsl(270_100%_50%),hsl(225_100%_50%),hsl(180_100%_50%),hsl(135_100%_50%),hsl(90_100%_50%),hsl(45_100%_50%),hsl(0_100%_50%))] -rotate-90 rounded-full dark:opacity-50",
-        )
-      }
-
-      return h(
-        "",
-        h(
-          "size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] inline-block relative",
-          make(
-            "text-[#388c46] bg-[--nya-bg] inline-block absolute inset-0 border-2 border-current rounded-[4px]",
-          ),
-          make(
-            "text-[#2d70b3] bg-[--nya-bg] inline-block absolute inset-0 border-2 border-current rounded-[4px] [mask-image:linear-gradient(#000,transparent)]",
-          ),
-          make(
-            "text-[#c74440] bg-[--nya-bg] inline-block absolute inset-0 border-2 border-current rounded-[4px] [mask-image:linear-gradient(to_right,#000,transparent)]",
-          ),
-          make(
-            "text-[#fa7e19] bg-[--nya-bg] inline-block absolute inset-0 border-2 border-current rounded-[4px] [mask-image:linear-gradient(45deg,#000,transparent,transparent)]",
-          ),
-        ),
-      )
-    },
-    components: {
-      ty: "r32",
-      at: [
-        [(x) => x.r, (x) => `(255.0 * ${x}.x)`],
-        [(x) => x.g, (x) => `(255.0 * ${x}.y)`],
-        [(x) => x.b, (x) => `(255.0 * ${x}.z)`],
-        [(x) => x.a, (x) => `${x}.w`],
-      ],
-    },
-  },
-} satisfies Partial<TyInfoMap> as any as TyInfoMap
-
-Object.setPrototypeOf(TY_INFO, null)
+export const TY_INFO: TyInfoMap = Object.create(null) as any
