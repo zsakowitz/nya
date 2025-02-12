@@ -11,6 +11,7 @@ import { Leaf } from "../field/cmd/leaf"
 import { L } from "../field/model"
 import { h, p, svgx } from "../jsx"
 import { defineExt } from "../sheet/ext"
+import { circle } from "../sheet/ui/expr/circle"
 
 declare module "../eval/ty" {
   interface Tys {
@@ -184,13 +185,16 @@ export const PKG_ITHKUIL: Package = {
         defineExt({
           data(expr) {
             if (expr.js?.value.type == "ikscript") {
-              return expr.js.value as JsValue<"ikscript">
+              return { expr, value: expr.js.value as JsValue<"ikscript"> }
             }
           },
+          aside() {
+            return circle("ikscript")
+          },
           el(data) {
-            return h(
-              "flex flex-col gap-6 pb-4 -mt-2",
-              ...each(data).map((x) => {
+            const el = h(
+              "flex flex-col gap-6 pb-4 -mt-2 [.nya-expr:has(&):not(:focus-within)_.nya-display]:sr-only [.nya-expr:has(&):not(:focus-within)_&]:py-3 [.nya-expr:has(&):not(:focus-within)_&]:mt-0",
+              ...each(data.value).map((x) => {
                 const el = x[1]
                 return h(
                   {
@@ -201,6 +205,8 @@ export const PKG_ITHKUIL: Package = {
                 )
               }),
             )
+            el.addEventListener("click", () => data.expr.field.el.focus())
+            return el
           },
         }),
       ],

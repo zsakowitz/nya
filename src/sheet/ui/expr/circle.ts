@@ -1,6 +1,8 @@
-import { h } from "../../../jsx"
+import { faQuoteLeft } from "@fortawesome/free-solid-svg-icons/faQuoteLeft"
+import { fa } from "../../../field/fa"
+import { h, p, svgx } from "../../../jsx"
 
-export type CircleKind = "shaderon" | "empty"
+export type CircleKind = "shaderon" | "empty" | "ikscript" | "text"
 
 export function circle(kind: CircleKind): HTMLSpanElement {
   switch (kind) {
@@ -21,6 +23,25 @@ export function circle(kind: CircleKind): HTMLSpanElement {
     case "empty":
       return h(
         "relative block bg-[--nya-bg-sidebar] size-8 rounded-full mx-0.5 border-4 border-slate-300 group-focus-within:border-blue-500",
+      )
+    case "ikscript":
+      return h(
+        "relative block size-8 mx-0.5",
+        svgx(
+          "-9.5367431640625e-7 -35.04999923706055 34.20000076293945 70.0999984741211",
+          "absolute top-1/2 left-1/2 h-[90%] -translate-x-1/2 -translate-y-1/2 fill-current",
+          p(
+            "M 8.449998474121093 -25.05 l 0 25 l -8.45 8.45 l 26.7 26.65 l 7.5 -7.5 l -25.5 -25.5 l 9.75 -9.7 l 0 -27.4 l -10 10 z",
+          ),
+        ),
+      )
+    case "text":
+      return h(
+        "relative block size-8 mx-0.5",
+        fa(
+          faQuoteLeft,
+          "absolute top-1/2 left-1/2 w-[50%] -translate-x-1/2 -translate-y-1/2 fill-current",
+        ),
       )
   }
 }
