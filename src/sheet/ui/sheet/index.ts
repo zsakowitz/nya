@@ -25,9 +25,10 @@ import { fa } from "../../../field/fa"
 import type { Block } from "../../../field/model"
 import type { Options } from "../../../field/options"
 import { a, h, hx, t } from "../../../jsx"
-import type { ToolbarItem } from "../../../pkg"
+import type { Package, ToolbarItem } from "../../../pkg"
 import { Scope } from "../../deps"
 import type { Exts } from "../../ext"
+import type { SheetFactory } from "../../factory"
 import type { Picker } from "../../pick"
 import { doMatchReglSize } from "../../regl"
 import { REMARK } from "../../remark"
@@ -43,7 +44,11 @@ import {
 } from "../paper"
 import { Handlers } from "./handler"
 
-function createDocs(className: string, hide: () => void) {
+function createDocs(
+  className: string,
+  hide: () => void,
+  packages: Package[] | null,
+) {
   function makeDoc(fn: { name: string; label: string; docs(): Node[] }) {
     return h(
       "flex flex-col",
@@ -465,6 +470,16 @@ function createDocs(className: string, hide: () => void) {
         ),
         " without ever touching the expression list.",
       ),
+      // hx(
+      //   "p",
+      //   "",
+      //   "As of Feb. 11, ",
+      //   a(
+      //     "https://ts-latex-oywr5or8t-zsakowitzs-projects.vercel.app/", (URL IS WRONG)
+      //     "a robust plugin system had been implemented",
+      //   ),
+      //   " to ensure further extension was always possible.",
+      // ),
     ])
   }
 
@@ -522,6 +537,27 @@ function createDocs(className: string, hide: () => void) {
   return h(
     className,
     secCredits(),
+    packages &&
+      section("packages", [
+        h(
+          "flex flex-col gap-2",
+          ...packages
+            .sort((a, b) =>
+              a.name < b.name ? -1
+              : a.name > b.name ? 1
+              : a.id < b.id ? -1
+              : a.id > b.id ? 1
+              : 0,
+            )
+            .map((pkg) =>
+              h(
+                "flex flex-col",
+                h("font-semibold", pkg.name),
+                h("text-[--nya-title-dark] text-sm pl-4", pkg.label),
+              ),
+            ),
+        ),
+      ]),
     secDataTypes(),
     secShaders(),
     secAdvancedOperators(),
@@ -530,6 +566,8 @@ function createDocs(className: string, hide: () => void) {
     secChangelog(),
   )
 }
+
+const DEFAULT_TO_VISIBLE_DOCS = true
 
 export class Sheet {
   readonly paper = new Paper()
@@ -555,6 +593,7 @@ export class Sheet {
     readonly exts: Exts,
     toolbarItems: ToolbarItem[],
     keys: Record<string, (sheet: Sheet) => void>,
+    readonly factory: SheetFactory,
   ) {
     addEventListener("keydown", (ev) => {
       if (
@@ -738,7 +777,13 @@ export class Sheet {
         docs.classList.add("hidden")
         sidebar.classList.remove("hidden")
       },
+      Object.values(factory.loaded),
     )
+
+    if (DEFAULT_TO_VISIBLE_DOCS) {
+      docs.classList.remove("hidden")
+      sidebar.classList.add("hidden")
+    }
 
     // dom
     this.glPixelRatio.el.className =
@@ -1029,6 +1074,7 @@ if (location.search.includes("?docsonly")) {
   const el = createDocs(
     "fixed inset-0 *:*:relative first:*:*:[grid-column:1_/_-1] *:grid *:grid-cols-[repeat(auto-fill,minmax(400px,1fr))] overflow-y-auto px-4 pb-4 gap-2 z-20 bg-[--nya-bg]",
     () => el.remove(),
+    null,
   )
 
   document.body.appendChild(el)

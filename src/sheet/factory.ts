@@ -24,14 +24,14 @@ export class SheetFactory {
     }
   }
 
-  private loaded: string[] = []
+  readonly loaded: Record<string, Package> = Object.create(null)
   private queuedCoercions: Record<string, Record<string, TyCoerce<any, any>>> =
     Object.create(null)
-  load(pkg: Omit<Package, "name" | "label">) {
-    if (this.loaded.includes(pkg.id)) {
+  load(pkg: Package) {
+    if (pkg.id in this.loaded) {
       return this
     }
-    this.loaded.push(pkg.id)
+    this.loaded[pkg.id] = pkg
 
     for (const k in pkg.ty?.info) {
       const key = k as TyName
@@ -42,12 +42,12 @@ export class SheetFactory {
       }
     }
 
-    for (const ___a in pkg.ty?.coerce) {
-      const src = ___a as TyName
+    for (const a in pkg.ty?.coerce) {
+      const src = a as TyName
       const map = pkg.ty.coerce[src]!
 
-      for (const ___b in map) {
-        const dst = ___b as TyName
+      for (const b in map) {
+        const dst = b as TyName
         if (src in TY_INFO) {
           ;(TY_INFO[src].coerce[dst] as any) = map[dst]!
         } else {
@@ -110,6 +110,9 @@ export class SheetFactory {
         .sort((a, b) => +a[0] - +b[0])
         .flatMap((x) => x[1]),
       this.keys,
+      this,
     )
   }
+
+  docs() {}
 }
