@@ -1,6 +1,5 @@
 import { options } from "../field/defaults.js"
 import { PKG_BOOL } from "../pkg/bool.js"
-import { PKG_DROPDOWN } from "../pkg/dropdown.js"
 import { PKG_EVAL } from "../pkg/eval.js"
 import { PKG_GEO_POINT } from "../pkg/geo-point.js"
 import { PKG_GEOMETRY } from "../pkg/geo/index.js"
@@ -9,6 +8,7 @@ import { PKG_MORE_COLOR } from "../pkg/more-color.js"
 import { PKG_NUM_COMPLEX } from "../pkg/num-complex.js"
 import { PKG_NUM_QUATERNION } from "../pkg/num-quaternion.js"
 import { PKG_REAL } from "../pkg/num-real.js"
+import { PKG_SELECT } from "../pkg/select.js"
 import { PKG_SHADER, show } from "../pkg/shader.js"
 import { PKG_SLIDER } from "../pkg/slider.js"
 import { PKG_TEXT } from "../pkg/text.js"
@@ -28,7 +28,7 @@ const sheet = new SheetFactory(options)
   .load(PKG_TEXT)
   .load(PKG_ITHKUIL)
   .load(PKG_MORE_COLOR)
-  .load(PKG_DROPDOWN)
+  .load(PKG_SELECT)
   .create()
 document.body.appendChild(sheet.el)
 
@@ -41,6 +41,7 @@ function expr(source: { raw: readonly string[] }) {
 if (location.href.includes("localhost")) {
   expr`\left(2,3\right)`
   expr`\operatorname{ithkuilscript}\text{hlaséi-rrala sakawi}`
+  expr`a=\operatorname{select}\left(\left[\text{hello},\text{world},\text{people}\right],\text{world}\right)`
 } else {
   expr`ithkuilscript\text{hlaséi-rrala sakawi}`
   expr`\operatorname{vector}\left(\left(-1,-.5\right),\left(-.5,1\right)\right)`
