@@ -1,25 +1,26 @@
 import { twMerge } from "tailwind-merge"
-import { defineExt, Store } from ".."
-import type { AstBinding, Node, PlainVar } from "../../../eval/ast/token"
-import { js } from "../../../eval/js"
-import { parseNumberJs } from "../../../eval/lib/base"
-import { mul } from "../../../eval/ops/op/mul"
-import { neg } from "../../../eval/ops/op/neg"
-import { raise } from "../../../eval/ops/op/raise"
-import type { SReal } from "../../../eval/ty"
-import { coerceValJs } from "../../../eval/ty/coerce"
-import { frac, num, real } from "../../../eval/ty/create"
-import { Display } from "../../../eval/ty/display"
-import { TY_INFO } from "../../../eval/ty/info"
-import { OpEq, OpLt } from "../../../field/cmd/leaf/cmp"
-import { CmdVar } from "../../../field/cmd/leaf/var"
-import { CmdSupSub } from "../../../field/cmd/math/supsub"
-import { FieldInert } from "../../../field/field-inert"
-import { Block, L, R, Selection } from "../../../field/model"
-import { h } from "../../../jsx"
-import { FieldComputed } from "../../deps"
-import { Slider as RawSlider } from "../../slider"
-import type { Expr } from "../../ui/expr"
+import type { Package } from "."
+import type { AstBinding, Node, PlainVar } from "../eval/ast/token"
+import { js } from "../eval/js"
+import { parseNumberJs } from "../eval/lib/base"
+import { mul } from "../eval/ops/op/mul"
+import { neg } from "../eval/ops/op/neg"
+import { raise } from "../eval/ops/op/raise"
+import type { SReal } from "../eval/ty"
+import { coerceValJs } from "../eval/ty/coerce"
+import { frac, num, real } from "../eval/ty/create"
+import { Display } from "../eval/ty/display"
+import { TY_INFO } from "../eval/ty/info"
+import { OpEq, OpLt } from "../field/cmd/leaf/cmp"
+import { CmdVar } from "../field/cmd/leaf/var"
+import { CmdSupSub } from "../field/cmd/math/supsub"
+import { FieldInert } from "../field/field-inert"
+import { Block, L, R, Selection } from "../field/model"
+import { h } from "../jsx"
+import { FieldComputed } from "../sheet/deps"
+import { defineExt, Store } from "../sheet/ext"
+import { Slider as RawSlider } from "../sheet/slider"
+import type { Expr } from "../sheet/ui/expr"
 
 function readSigned(node: Node, base: SReal): SReal | null {
   let isNeg = false
@@ -321,7 +322,7 @@ const store = new Store((expr) => {
   return new RangeControls(expr, (expr.field.ast as AstBinding).name)
 })
 
-export const EXT_SLIDER = defineExt({
+const EXT_SLIDER = defineExt({
   data(expr) {
     let ast = expr.field.ast
     if (ast.type != "binding") return
@@ -345,3 +346,14 @@ export const EXT_SLIDER = defineExt({
     return data.el
   },
 })
+
+export const PKG_SLIDER: Package = {
+  id: "nya:slider",
+  name: "sliders",
+  label: "adds a slider to numeric variables",
+  sheet: {
+    exts: {
+      0: [EXT_SLIDER],
+    },
+  },
+}

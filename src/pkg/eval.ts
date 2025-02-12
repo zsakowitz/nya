@@ -1,8 +1,9 @@
-import { defineExt, Store } from ".."
-import { Display } from "../../../eval/ty/display"
-import { FieldInert } from "../../../field/field-inert"
-import { R } from "../../../field/model"
-import { h } from "../../../jsx"
+import type { Package } from "."
+import { Display } from "../eval/ty/display"
+import { FieldInert } from "../field/field-inert"
+import { R } from "../field/model"
+import { h } from "../jsx"
+import { Store, defineExt } from "../sheet/ext"
 
 const store = new Store((e) => {
   const field = new FieldInert(
@@ -32,3 +33,14 @@ export const EXT_EVAL = defineExt({
     return data
   },
 })
+
+export const PKG_EVAL: Package = {
+  id: "nya:eval",
+  name: "evaluator",
+  label: "displays the result of an evaluated expression",
+  sheet: {
+    exts: {
+      2: [EXT_EVAL],
+    },
+  },
+}

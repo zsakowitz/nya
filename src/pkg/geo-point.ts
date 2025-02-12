@@ -23,11 +23,11 @@ import { CmdVar } from "../field/cmd/leaf/var"
 import { Block, L, R } from "../field/model"
 import { h } from "../jsx"
 import { Prop, Store } from "../sheet/ext"
-import { EXT_EVAL } from "../sheet/ext/exts/02-eval"
 import { defineHideable } from "../sheet/ext/hideable"
 import { Transition } from "../sheet/transition"
 import type { Paper, Point } from "../sheet/ui/paper"
 import { virtualStepExp, write, Writer } from "../sheet/write"
+import { EXT_EVAL } from "./eval"
 
 declare module "../eval/ty/index.js" {
   interface Tys {
