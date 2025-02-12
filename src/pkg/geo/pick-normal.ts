@@ -193,7 +193,7 @@ export function picker(icon: () => HTMLSpanElement, props: PropsByTy) {
   return (sheet: Sheet) => {
     const btn = hx(
       "button",
-      "w-12 hover:bg-[--nya-bg] border-x border-transparent hover:border-[--nya-border] focus:outline-none -mr-px last:mr-0",
+      "w-12 hover:bg-[--nya-bg] border-x border-transparent hover:border-[--nya-border] focus:outline-none -mr-px last:mr-0 focus:bg-[--nya-sidebar-hover]",
       icon(),
     )
     sheet.handlers.onPickChange.push(() => {

@@ -1,6 +1,15 @@
 import { type Fn } from "."
 import { GlslContext } from "../lib/fn"
-import type { GlslVal, GlslValue, JsVal, JsValue, Ty, TyName, Val } from "../ty"
+import type {
+  GlslVal,
+  GlslValue,
+  JsVal,
+  JsValue,
+  Ty,
+  TyName,
+  Tys,
+  Val,
+} from "../ty"
 import { coerceValGlsl, coerceValJs, unifyLists } from "../ty/coerce"
 import { declareGlsl } from "../ty/decl"
 import { TY_INFO } from "../ty/info"
@@ -122,5 +131,30 @@ export abstract class FnDistManual<Q extends TyName = TyName> implements Fn {
     ctx.push`}\n`
 
     return { type: overload.type, list, expr: ret }
+  }
+}
+
+export abstract class FnDistCaching<
+  Q extends TyName = TyName,
+> extends FnDistManual {
+  cached: Record<string, FnDistOverload<Q> | Error> = Object.create(null)
+
+  abstract gen(args: Ty[]): FnDistOverload<Q>
+
+  signature(args: Ty[]): FnDistOverload<keyof Tys> {
+    const name = args.map((x) => x.type).join(" ")
+    if (name in this.cached) {
+      const val = this.cached[name]!
+      if (val instanceof Error) {
+        throw val
+      } else {
+        return val
+      }
+    }
+    try {
+      return (this.cached[name] = this.gen(args))
+    } catch (e) {
+      throw (this.cached[name] = e instanceof Error ? e : new Error(String(e)))
+    }
   }
 }

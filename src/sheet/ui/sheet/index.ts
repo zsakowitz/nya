@@ -677,7 +677,11 @@ export class Sheet {
 
     const nextExpression = hx(
       "button",
-      "relative text-left grid grid-cols-[2.5rem_auto] min-h-[3.625rem] border-r border-[--nya-border]",
+      {
+        class:
+          "relative text-left grid grid-cols-[2.5rem_auto] min-h-[3.625rem] border-r border-[--nya-border]",
+        tabindex: "-1",
+      },
 
       // grey side of expression
       h(

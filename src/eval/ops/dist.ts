@@ -101,18 +101,10 @@ export class FnDist<Q extends TyName = TyName> extends FnDistManual<Q> {
   }
 }
 
-function delay(name: TyName) {
-  const span = document.createElement("span")
-  requestAnimationFrame(() => {
-    span.appendChild(TY_INFO[name].icon())
-  })
-  return span
-}
-
 export function doc(params: readonly TyName[], type: TyName, list = false) {
   return docByIcon(
-    params.map((x) => delay(x)),
-    delay(type),
+    params.map((x) => TY_INFO[x].icon()),
+    TY_INFO[type].icon(),
     list,
   )
 }

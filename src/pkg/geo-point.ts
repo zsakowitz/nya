@@ -342,24 +342,6 @@ export const PKG_GEO_POINT: Package = {
   label: "adds geometric points",
   ty: {
     info: {
-      point32: {
-        name: "point",
-        namePlural: "points",
-        glsl: "vec2",
-        garbage: { js: pt(real(NaN), real(NaN)), glsl: "vec2(0.0/0.0)" },
-        coerce: {},
-        write: WRITE_POINT,
-        icon() {
-          return iconPoint(false)
-        },
-        components: {
-          ty: "r32",
-          at: [
-            [(x) => x.x, (x) => `${x}.x`],
-            [(x) => x.y, (x) => `${x}.y`],
-          ],
-        },
-      },
       point64: {
         name: "point",
         namePlural: "points",
@@ -384,6 +366,24 @@ export const PKG_GEO_POINT: Package = {
           at: [
             [(x) => x.x, (x) => `${x}.xy`],
             [(x) => x.y, (x) => `${x}.zw`],
+          ],
+        },
+      },
+      point32: {
+        name: "point",
+        namePlural: "points",
+        glsl: "vec2",
+        garbage: { js: pt(real(NaN), real(NaN)), glsl: "vec2(0.0/0.0)" },
+        coerce: {},
+        write: WRITE_POINT,
+        icon() {
+          return iconPoint(false)
+        },
+        components: {
+          ty: "r32",
+          at: [
+            [(x) => x.x, (x) => `${x}.x`],
+            [(x) => x.y, (x) => `${x}.y`],
           ],
         },
       },
