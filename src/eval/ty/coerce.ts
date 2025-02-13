@@ -125,6 +125,12 @@ export function coerceValJs(val: JsVal, to: TyName): JsVal {
   }
 }
 
+export function coerceValGlsl<K extends TyName>(
+  ctx: GlslContext,
+  val: GlslVal,
+  to: K,
+): GlslVal<K>
+
 export function coerceValGlsl(
   ctx: GlslContext,
   val: GlslVal,

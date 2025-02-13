@@ -45,6 +45,7 @@ function expr(source: { raw: readonly string[] }) {
 }
 
 if (location.href.includes("localhost")) {
+  show(expr`y=x^2`)
   expr`\left(2,3\right)`
   expr`\operatorname{ithkuilscript}\text{hlaséi-rrala sakawi}`
   expr`b=.3`

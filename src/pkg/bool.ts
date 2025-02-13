@@ -87,4 +87,16 @@ export const PKG_BOOL: Package = {
       },
     },
   },
+  eval: {
+    vars: {
+      false: {
+        js: { type: "bool", value: false, list: false },
+        glsl: { type: "bool", expr: "false", list: false },
+      },
+      true: {
+        js: { type: "bool", value: true, list: false },
+        glsl: { type: "bool", expr: "true", list: false },
+      },
+    },
+  },
 }

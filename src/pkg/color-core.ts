@@ -99,6 +99,14 @@ export const PKG_COLOR_CORE: Package = {
   label: "adds very basic color functions",
   deps: [() => PKG_REAL, () => PKG_BOOL],
   init() {
+    OP_PLOT.add(
+      ["bool"],
+      "color",
+      plotJs,
+      (_, a) =>
+        `(${a.expr} ? vec4(0.1764705882, 0.4392156863, 0.7019607843,1) : vec4(0))`,
+    )
+
     FN_RGB.add(
       ["r32", "r32", "r32"],
       "color",
@@ -142,7 +150,18 @@ export const PKG_COLOR_CORE: Package = {
       },
     )
 
-    OP_PLOT.add(["color"], "color", plotJs, (_, a) => a.expr)
+    OP_PLOT.add(["color"], "color", plotJs, (_, a) => a.expr).add(
+      ["r32"],
+      "color",
+      plotJs,
+      (ctx, a) =>
+        FN_HSV.glsl1(
+          ctx,
+          a,
+          { type: "r32", expr: "1.0" },
+          { type: "r32", expr: "1.0" },
+        ).expr,
+    )
 
     OP_CDOT.add(
       ["color", "bool"],
@@ -246,16 +265,3 @@ export const PKG_COLOR_CORE: Package = {
     },
   },
 }
-
-OP_PLOT.add(
-  ["r32"],
-  "color",
-  plotJs,
-  (ctx, a) =>
-    FN_HSV.glsl1(
-      ctx,
-      a,
-      { type: "r32", expr: "1.0" },
-      { type: "r32", expr: "1.0" },
-    ).expr,
-)

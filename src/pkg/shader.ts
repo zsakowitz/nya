@@ -1,6 +1,10 @@
 import type { Package } from "."
 import { glsl } from "../eval/glsl"
+import { id } from "../eval/lib/binding"
+import { declareAddR64 } from "../eval/ops/op/add"
+import { OP_SUB } from "../eval/ops/op/sub"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "../eval/ops/vars"
+import { coerceValueGlsl } from "../eval/ty/coerce"
 import { h, hx } from "../jsx"
 import { Store, defineExt } from "../sheet/ext"
 import type { Expr } from "../sheet/ui/expr"
@@ -69,6 +73,80 @@ const EXT_GLSL = defineExt({
     if (!data.show) return
 
     let ast = data.expr.field.ast
+    if (
+      ast.type == "cmplist" &&
+      ast.ops.length == 1 &&
+      ast.ops[0]!.dir == "=" &&
+      !ast.ops[0]!.neg
+    ) {
+      const props = data.expr.sheet.scope.propsGlsl()
+      const lhs = ast.items[0]!
+      const rhs = ast.items[1]!
+
+      const val = coerceValueGlsl(
+        props.ctx,
+        OP_SUB.glsl(props.ctx, glsl(lhs, props), glsl(rhs, props)),
+        { type: "r32", list: false },
+      )
+
+      declareAddR64(props.ctx)
+      const valX = props.bindings.with(
+        id({ value: "x" }),
+        {
+          type: "r64",
+          expr: "_helper_add_r64(v_coords.xy, u_unit_per_px.xy)",
+          list: false,
+        },
+        () =>
+          props.bindings.with(
+            id({ value: "y" }),
+            {
+              type: "r64",
+              expr: "v_coords.zw",
+              list: false,
+            },
+            () =>
+              coerceValueGlsl(
+                props.ctx,
+                OP_SUB.glsl(props.ctx, glsl(lhs, props), glsl(rhs, props)),
+                { type: "r32", list: false },
+              ),
+          ),
+      )
+      const valY = props.bindings.with(
+        id({ value: "x" }),
+        {
+          type: "r64",
+          expr: "v_coords.xy",
+          list: false,
+        },
+        () =>
+          props.bindings.with(
+            id({ value: "y" }),
+            {
+              type: "r64",
+              expr: "_helper_add_r64(v_coords.zw, u_unit_per_px.zw)",
+              list: false,
+            },
+            () =>
+              coerceValueGlsl(
+                props.ctx,
+                OP_SUB.glsl(props.ctx, glsl(lhs, props), glsl(rhs, props)),
+                { type: "r32", list: false },
+              ),
+          ),
+      )
+
+      const a = props.ctx.cached("r32", val)
+      const x = props.ctx.cached("r32", valX)
+      const y = props.ctx.cached("r32", valY)
+
+      return [
+        props.ctx,
+        `(sign(${a}) * sign(${x}) == -1.0 || sign(${a}) * sign(${y}) == -1.0 ? vec4(0.1764705882, 0.4392156863, 0.7019607843,1) : vec4(0,0,0,0))`,
+      ]
+    }
+
     if (ast.type == "binding") {
       ast = ast.value
     }

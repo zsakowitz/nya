@@ -919,6 +919,8 @@ export class Sheet {
         // @ts-expect-error
         u_px_per_unit: this.regl.prop("u_px_per_unit"),
         // @ts-expect-error
+        u_unit_per_px: this.regl.prop("u_unit_per_px"),
+        // @ts-expect-error
         u_darkmul: this.regl.prop("u_darkmul"),
         // @ts-expect-error
         u_darkoffset: this.regl.prop("u_darkoffset"),
@@ -940,6 +942,10 @@ export class Sheet {
           u_px_per_unit: [
             ...splitRaw(this.paper.el.clientWidth / w),
             ...splitRaw(this.paper.el.clientHeight / h),
+          ],
+          u_unit_per_px: [
+            ...splitRaw(w / this.paper.el.clientWidth),
+            ...splitRaw(h / this.paper.el.clientHeight),
           ],
           u_darkmul: isDark() ? [-1, -1, -1, 1] : [1, 1, 1, 1],
           u_darkoffset: isDark() ? [1, 1, 1, 0] : [0, 0, 0, 0],
@@ -973,6 +979,7 @@ uniform vec2 u_scale;
 uniform vec2 u_cx;
 uniform vec2 u_cy;
 uniform vec4 u_px_per_unit;
+uniform vec4 u_unit_per_px;
 vec4 _nya_helper_compose(vec4 base, vec4 added) {
   if (base.w == 0.) return added;
   if (added.w == 0.) return base;
