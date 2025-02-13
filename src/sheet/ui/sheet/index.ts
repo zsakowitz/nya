@@ -524,7 +524,7 @@ function createDocs(
   }
 
   function secNamedVariables() {
-    return section("named variables", [
+    return section(`named variables (${Object.entries(VARS).length})`, [
       h(
         "flex flex-col",
         ...Object.entries(VARS)
@@ -547,9 +547,10 @@ function createDocs(
   }
 
   function secNamedFunctions() {
+    const fns = ALL_DOCS.filter((x) => Object.values(FNS).includes(x as any))
     return section(
-      "named functions",
-      ALL_DOCS.filter((x) => Object.values(FNS).includes(x as any))
+      `named functions (${fns.length})`,
+      fns
         .sort((a, b) => (a.name < b.name ? -1 : 1))
         .map(makeDoc)
         .filter((x) => x != null),
@@ -557,9 +558,10 @@ function createDocs(
   }
 
   function secUnnamedFunctions() {
+    const fns = ALL_DOCS.filter((x) => !Object.values(FNS).includes(x as any))
     return section(
-      "operators",
-      ALL_DOCS.filter((x) => !Object.values(FNS).includes(x as any))
+      `operators (${fns.length})`,
+      fns
         .sort((a, b) => (a.name < b.name ? -1 : 1))
         .map(makeDoc)
         .filter((x) => x != null),
