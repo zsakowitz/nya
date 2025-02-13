@@ -38,7 +38,6 @@ import { highRes, TY_INFO } from "../eval/ty/info"
 import { splitDual } from "../eval/ty/split"
 import { h } from "../jsx"
 import { PKG_BOOL } from "./bool"
-import { FN_HSV, OP_PLOT, PKG_COLOR_CORE, plotJs } from "./color-core"
 
 declare module "../eval/ty/index.js" {
   interface Tys {
@@ -307,19 +306,6 @@ export const PKG_REAL: Package = {
       (_, a, b) => `(${a.expr} * ${b.expr})`,
     )
 
-    OP_PLOT.add(
-      ["r32"],
-      "color",
-      plotJs,
-      (ctx, a) =>
-        FN_HSV.glsl1(
-          ctx,
-          a,
-          { type: "r32", expr: "1.0" },
-          { type: "r32", expr: "1.0" },
-        ).expr,
-    )
-
     OP_POS.add(
       ["r64"],
       "r64",
@@ -433,7 +419,7 @@ float _helper_cmp_r32(float a, float b) {
       return `_helper_cmp_r32(${a.expr}, ${b.expr})`
     })
   },
-  deps: [() => PKG_COLOR_CORE, () => PKG_BOOL],
+  deps: [() => PKG_BOOL],
   ty: {
     info: {
       r64: {

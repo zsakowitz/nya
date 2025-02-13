@@ -246,3 +246,16 @@ export const PKG_COLOR_CORE: Package = {
     },
   },
 }
+
+OP_PLOT.add(
+  ["r32"],
+  "color",
+  plotJs,
+  (ctx, a) =>
+    FN_HSV.glsl1(
+      ctx,
+      a,
+      { type: "r32", expr: "1.0" },
+      { type: "r32", expr: "1.0" },
+    ).expr,
+)

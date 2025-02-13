@@ -33,8 +33,12 @@ export class SheetFactory {
     }
     this.loaded[pkg.id] = pkg
 
-    for (const dep of pkg.deps || []) {
-      this.load(dep())
+    for (const getDep of pkg.deps || []) {
+      const dep = getDep()
+      if (!(dep.id in this.loaded)) {
+        console.log("loading " + dep.id + " from " + pkg.id)
+      }
+      this.load(dep)
     }
     pkg.init?.()
 
