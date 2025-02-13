@@ -37,7 +37,13 @@ import { REMARK } from "../../remark"
 import { Slider } from "../../slider"
 import { isDark } from "../../theme"
 import { Expr } from "../expr"
-import { makeInteractive, matchSize, Paper, type Point } from "../paper"
+import {
+  createDrawAxes,
+  makeInteractive,
+  matchSize,
+  Paper,
+  type Point,
+} from "../paper"
 import { Handlers } from "./handler"
 
 function createDocs(
@@ -653,7 +659,7 @@ export class Sheet {
     )
     matchSize(this.paper)
     makeInteractive(this.paper, this.handlers)
-    // createDrawAxes(this.paper)
+    createDrawAxes(this.paper)
     this.paper.drawFns.push(() => {
       this.paper.ctx.lineJoin = "round"
       this.paper.ctx.lineCap = "round"
