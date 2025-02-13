@@ -20,13 +20,13 @@ import { OP_Y } from "../eval/ops/op/y"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "../eval/ops/vars"
 import type { GlslVal, JsVal, SPoint } from "../eval/ty"
 import { isZero } from "../eval/ty/check"
-import { approx, frac, num, pt, real } from "../eval/ty/create"
-import { Display, type Write } from "../eval/ty/display"
+import { approx, num, pt, real } from "../eval/ty/create"
+import { type Write } from "../eval/ty/display"
 import { highRes } from "../eval/ty/info"
-import { Block, R } from "../field/model"
 import { h } from "../jsx"
 import { OP_PLOT, plotJs } from "./color-core"
-import { OP_TO_TEXT } from "./text"
+import { PKG_GEO_POINT } from "./geo-point"
+import { PKG_REAL } from "./num-real"
 
 declare module "../eval/ty/index.js" {
   interface Tys {
@@ -91,7 +91,333 @@ export const PKG_NUM_COMPLEX: Package = {
   id: "nya:num-complex",
   name: "complex numbers",
   label: "adds support for complex numbers",
+  init() {
+    FN_ARG.add(
+      ["c32"],
+      "r32",
+      ({ value: a }) => approx(Math.atan2(num(a.y), num(a.x))),
+      (ctx, ar) => {
+        const a = ctx.cache(ar)
+        return `atan(${a}.y, ${a}.x)`
+      },
+    )
 
+    FN_EXP.add(
+      ["c32"],
+      "c32",
+      ({ value: a }) => {
+        const e = approx(Math.exp(num(a.x)))
+        const y = num(a.y)
+
+        return pt(mul(e, approx(Math.cos(y))), mul(e, approx(Math.sin(y))))
+      },
+      (_, a) => `_helper_exp(${a.expr})`,
+    )
+
+    FN_LN.add(
+      ["c32"],
+      "c32",
+      ({ value: a }) => {
+        if (isZero(a)) {
+          return pt(real(-Infinity), real(0))
+        }
+
+        const x = num(a.x)
+        const y = num(a.y)
+
+        return pt(approx(Math.log(Math.hypot(x, y))), approx(Math.atan2(y, x)))
+      },
+      (ctx, a) => {
+        ctx.glsl`vec2 _helper_ln_c32(vec2 z) {
+  if (z == vec2(0)) {
+    return vec2(-1.0 / 0.0, 0);
+  }
+
+  return vec2(log(length(z)), atan(z.y, z.x));
+}
+`
+        return `_helper_ln_c32(${a.expr})`
+      },
+    )
+
+    FN_VALID.add(
+      ["c32"],
+      "bool",
+      (a) => isFinite(num(a.value.x)) && isFinite(num(a.value.y)),
+      (ctx, ar) => {
+        const a = ctx.cache(ar)
+        return `(!isnan(${a}.x) && !isinf(${a}.x) && !isnan(${a}.y) && !isinf(${a}.y))`
+      },
+    )
+
+    FN_CONJ.add(
+      ["c64"],
+      "c64",
+      (a) => pt(a.value.x, neg(a.value.y)),
+      (_, a) => `(${a} * vec4(1, 1, -1, -1))`,
+    ).add(
+      ["c32"],
+      "c32",
+      (a) => pt(a.value.x, neg(a.value.y)),
+      (_, a) => `(${a} * vec2(1, -1))`,
+    )
+
+    FN_DOT.add(
+      ["c64", "c64"],
+      "r64",
+      (a, b) => sub(mul(a.value.x, b.value.x), mul(a.value.y, b.value.y)),
+      dotC64,
+    ).add(
+      ["c32", "c32"],
+      "r32",
+      (a, b) => sub(mul(a.value.x, b.value.x), mul(a.value.y, b.value.y)),
+      dotC32,
+    )
+
+    FN_UNSIGN.add(
+      ["c64"],
+      "c64",
+      (a) => pt(abs(a.value.x), abs(a.value.y)),
+      (ctx, a) => {
+        const name = ctx.cache(a)
+        return `vec4(${abs64(ctx, `${name}.xy`)}, ${abs64(ctx, `${name}.zw`)})`
+      },
+    ).add(
+      ["c32"],
+      "c32",
+      (a) => pt(abs(a.value.x), abs(a.value.y)),
+      (_, a) => `abs(${a.expr})`,
+    )
+
+    FN_IMAG.add(
+      ["c64"],
+      "r64",
+      (a) => a.value.y,
+      (_, a) => `${a.expr}.zw`,
+    ).add(
+      ["c32"],
+      "r32",
+      (a) => a.value.y,
+      (_, a) => `${a.expr}.y`,
+    )
+
+    FN_REAL.add(
+      ["c64"],
+      "r64",
+      (a) => a.value.x,
+      (_, a) => `${a.expr}.xy`,
+    ).add(
+      ["c32"],
+      "r32",
+      (a) => a.value.x,
+      (_, a) => `${a.expr}.x`,
+    )
+
+    FN_DEBUGPOINT.add(
+      ["c32"],
+      "color",
+      () => {
+        throw new Error(ERR_COORDS_USED_OUTSIDE_GLSL)
+      },
+      (ctx, a) => declareDebugPoint(ctx, a),
+    )
+
+    OP_SUB.add(["c64", "c64"], "c64", subC, (ctx, ar, br) => {
+      const a = ctx.cache(ar)
+      const b = ctx.cache(br)
+      return `vec4(${subR64(ctx, `${a}.xy`, `${b}.xy`)}, ${subR64(ctx, `${a}.zw`, `${b}.zw`)})`
+    }).add(["c32", "c32"], "c32", subC, (_, a, b) => `(${a.expr} - ${b.expr})`)
+
+    OP_RAISE.add(
+      ["c32", "c32"],
+      "c32",
+      ({ value: a }, { value: b }) => {
+        if (isZero(b)) {
+          if (b.x.type == "exact" && b.y.type == "exact") {
+            return pt(real(1), real(0))
+          } else {
+            return pt(approx(1), approx(0))
+          }
+        }
+
+        if (isZero(a)) {
+          if (a.x.type == "exact" && a.y.type == "exact") {
+            return pt(real(0), real(0))
+          } else {
+            return pt(approx(0), approx(0))
+          }
+        }
+
+        return FN_EXP.js1(
+          OP_CDOT.js1(
+            { type: "c32", value: b },
+            {
+              type: "c32",
+              value: pt(
+                approx(Math.log(Math.hypot(num(a.x), num(a.y)))),
+                approx(Math.atan2(num(a.y), num(a.x))),
+              ),
+            },
+          ),
+        ).value as SPoint
+      },
+      (ctx, a, b) => {
+        declareMulC32(ctx)
+        declareExp(ctx)
+        ctx.glsl`vec2 _helper_pow_c32(vec2 a, vec2 b) {
+  if (a == vec2(0)) {
+    return vec2(0);
+  } else {
+    vec2 ln_a = vec2(log(length(a)), atan(a.y, a.x));
+    return _helper_exp(_helper_mul_c32(b, ln_a));
+  }
+}
+`
+        return `_helper_pow_c32(${a.expr}, ${b.expr})`
+      },
+    )
+
+    OP_ODOT.add(
+      ["c64", "c64"],
+      "c64",
+      (a, b) => pt(mul(a.value.x, b.value.x), mul(a.value.y, b.value.y)),
+      (ctx, a, b) => {
+        declareMulR64(ctx)
+        declareOdotC64(ctx)
+        return `_helper_odot_c64(${a.expr}, ${b.expr})`
+      },
+    ).add(
+      ["c32", "c32"],
+      "c32",
+      (a, b) => pt(mul(a.value.x, b.value.x), mul(a.value.y, b.value.y)),
+      (_, a, b) => {
+        return `(${a.expr} * ${b.expr})`
+      },
+    )
+
+    OP_ADD.add(["c64", "c64"], "c64", addC, (ctx, ar, br) => {
+      const a = ctx.cache(ar)
+      const b = ctx.cache(br)
+      return `vec4(${addR64(ctx, `${a}.xy`, `${b}.xy`)}, ${addR64(ctx, `${a}.zw`, `${b}.zw`)})`
+    }).add(["c32", "c32"], "c32", addC, (_, a, b) => `(${a.expr} + ${b.expr})`)
+
+    OP_CDOT.add(["c64", "c64"], "c64", mulC, (ctx, a, b) => {
+      declareAddR64(ctx)
+      declareSubR64(ctx)
+      declareMulR64(ctx)
+      ctx.glsl`
+vec4 _helper_mul_c64(vec4 a, vec4 b) {
+  return vec4(
+    _helper_sub_r64(_helper_mul_r64(a.xy, b.xy), _helper_mul_r64(a.zw, b.zw)),
+    _helper_add_r64(_helper_mul_r64(a.zw, b.xy), _helper_mul_r64(a.xy, b.zw))
+  );
+}
+`
+      return `_helper_mul_c64(${a.expr}, ${b.expr})`
+    }).add(["c32", "c32"], "c32", mulC, (ctx, a, b) => {
+      declareMulC32(ctx)
+      return `_helper_mul_c32(${a.expr}, ${b.expr})`
+    })
+
+    FN_COMPLEX.add(
+      ["c64"],
+      "c64",
+      (a) => a.value,
+      (_, a) => a.expr,
+    )
+      .add(
+        ["c32"],
+        "c32",
+        (a) => a.value,
+        (_, a) => a.expr,
+      )
+      .add(
+        ["point64"],
+        "c64",
+        (a) => a.value,
+        (_, a) => a.expr,
+      )
+      .add(
+        ["point32"],
+        "c32",
+        (a) => a.value,
+        (_, a) => a.expr,
+      )
+
+    OP_ABS.add(
+      ["c32"],
+      "r32",
+      // TODO: this is exact for some values
+      (a) => approx(Math.hypot(num(a.value.x), num(a.value.y))),
+      (_, a) => `length(${a.expr})`,
+    )
+
+    OP_DIV.add(
+      ["c32", "c32"],
+      "c32",
+      (a, b) => divPt(a.value, b.value),
+      (ctx, a, b) => {
+        declareDiv(ctx)
+        return `_helper_div(${a.expr}, ${b.expr})`
+      },
+    )
+
+    OP_NEG.add(
+      ["c64"],
+      "c64",
+      (a) => pt(neg(a.value.x), neg(a.value.y)),
+      (_, a) => `(-${a.expr})`,
+    ).add(
+      ["c32"],
+      "c32",
+      (a) => pt(neg(a.value.x), neg(a.value.y)),
+      (_, a) => `(-${a.expr})`,
+    )
+
+    OP_PLOT.add(
+      ["c32"],
+      "color",
+      plotJs,
+      (ctx, a) => FN_DEBUGPOINT.glsl1(ctx, a).expr,
+    )
+
+    OP_POS.add(
+      ["c64"],
+      "c64",
+      (a) => a.value,
+      (_, a) => a.expr,
+    ).add(
+      ["c32"],
+      "c32",
+      (a) => a.value,
+      (_, a) => a.expr,
+    )
+
+    OP_X.add(
+      ["c64"],
+      "r64",
+      (a) => a.value.x,
+      (_, a) => `${a.expr}.xy`,
+    ).add(
+      ["c32"],
+      "r32",
+      (a) => a.value.x,
+      (_, a) => `${a.expr}.x`,
+    )
+
+    OP_Y.add(
+      ["c64"],
+      "r64",
+      (a) => a.value.y,
+      (_, a) => `${a.expr}.zw`,
+    ).add(
+      ["c32"],
+      "r32",
+      (a) => a.value.y,
+      (_, a) => `${a.expr}.y`,
+    )
+  },
+  deps: [() => PKG_REAL, () => PKG_GEO_POINT],
   ty: {
     coerce: {
       r32: {
@@ -181,7 +507,6 @@ export const PKG_NUM_COMPLEX: Package = {
       },
     },
   },
-
   eval: {
     fns: {
       point: FN_POINT,
@@ -207,345 +532,6 @@ export const PKG_NUM_COMPLEX: Package = {
     },
   },
 }
-
-FN_ARG.add(
-  ["c32"],
-  "r32",
-  ({ value: a }) => approx(Math.atan2(num(a.y), num(a.x))),
-  (ctx, ar) => {
-    const a = ctx.cache(ar)
-    return `atan(${a}.y, ${a}.x)`
-  },
-)
-
-FN_EXP.add(
-  ["c32"],
-  "c32",
-  ({ value: a }) => {
-    const e = approx(Math.exp(num(a.x)))
-    const y = num(a.y)
-
-    return pt(mul(e, approx(Math.cos(y))), mul(e, approx(Math.sin(y))))
-  },
-  (_, a) => `_helper_exp(${a.expr})`,
-)
-
-FN_LN.add(
-  ["c32"],
-  "c32",
-  ({ value: a }) => {
-    if (isZero(a)) {
-      return pt(real(-Infinity), real(0))
-    }
-
-    const x = num(a.x)
-    const y = num(a.y)
-
-    return pt(approx(Math.log(Math.hypot(x, y))), approx(Math.atan2(y, x)))
-  },
-  (ctx, a) => {
-    ctx.glsl`vec2 _helper_ln_c32(vec2 z) {
-  if (z == vec2(0)) {
-    return vec2(-1.0 / 0.0, 0);
-  }
-
-  return vec2(log(length(z)), atan(z.y, z.x));
-}
-`
-    return `_helper_ln_c32(${a.expr})`
-  },
-)
-
-FN_VALID.add(
-  ["c32"],
-  "bool",
-  (a) => isFinite(num(a.value.x)) && isFinite(num(a.value.y)),
-  (ctx, ar) => {
-    const a = ctx.cache(ar)
-    return `(!isnan(${a}.x) && !isinf(${a}.x) && !isnan(${a}.y) && !isinf(${a}.y))`
-  },
-)
-
-FN_CONJ.add(
-  ["c64"],
-  "c64",
-  (a) => pt(a.value.x, neg(a.value.y)),
-  (_, a) => `(${a} * vec4(1, 1, -1, -1))`,
-).add(
-  ["c32"],
-  "c32",
-  (a) => pt(a.value.x, neg(a.value.y)),
-  (_, a) => `(${a} * vec2(1, -1))`,
-)
-
-FN_DOT.add(
-  ["c64", "c64"],
-  "r64",
-  (a, b) => sub(mul(a.value.x, b.value.x), mul(a.value.y, b.value.y)),
-  dotC64,
-).add(
-  ["c32", "c32"],
-  "r32",
-  (a, b) => sub(mul(a.value.x, b.value.x), mul(a.value.y, b.value.y)),
-  dotC32,
-)
-
-FN_UNSIGN.add(
-  ["c64"],
-  "c64",
-  (a) => pt(abs(a.value.x), abs(a.value.y)),
-  (ctx, a) => {
-    const name = ctx.cache(a)
-    return `vec4(${abs64(ctx, `${name}.xy`)}, ${abs64(ctx, `${name}.zw`)})`
-  },
-).add(
-  ["c32"],
-  "c32",
-  (a) => pt(abs(a.value.x), abs(a.value.y)),
-  (_, a) => `abs(${a.expr})`,
-)
-
-FN_IMAG.add(
-  ["c64"],
-  "r64",
-  (a) => a.value.y,
-  (_, a) => `${a.expr}.zw`,
-).add(
-  ["c32"],
-  "r32",
-  (a) => a.value.y,
-  (_, a) => `${a.expr}.y`,
-)
-
-FN_REAL.add(
-  ["c64"],
-  "r64",
-  (a) => a.value.x,
-  (_, a) => `${a.expr}.xy`,
-).add(
-  ["c32"],
-  "r32",
-  (a) => a.value.x,
-  (_, a) => `${a.expr}.x`,
-)
-
-FN_DEBUGPOINT.add(
-  ["c32"],
-  "color",
-  () => {
-    throw new Error(ERR_COORDS_USED_OUTSIDE_GLSL)
-  },
-  (ctx, a) => declareDebugPoint(ctx, a),
-)
-
-OP_TO_TEXT.add(
-  ["c32"],
-  "text",
-  (a) => {
-    const b = new Block(null)
-    new Display(b.cursor(R), frac(10, 1)).nums([
-      [a.value.x, ""],
-      [a.value.y, "i"],
-    ])
-    return [{ type: "latex", value: b.latex() }]
-  },
-  textGl,
-).add(["text"], "text", (a) => a.value, textGl)
-
-OP_SUB.add(["c64", "c64"], "c64", subC, (ctx, ar, br) => {
-  const a = ctx.cache(ar)
-  const b = ctx.cache(br)
-  return `vec4(${subR64(ctx, `${a}.xy`, `${b}.xy`)}, ${subR64(ctx, `${a}.zw`, `${b}.zw`)})`
-}).add(["c32", "c32"], "c32", subC, (_, a, b) => `(${a.expr} - ${b.expr})`)
-
-OP_RAISE.add(
-  ["c32", "c32"],
-  "c32",
-  ({ value: a }, { value: b }) => {
-    if (isZero(b)) {
-      if (b.x.type == "exact" && b.y.type == "exact") {
-        return pt(real(1), real(0))
-      } else {
-        return pt(approx(1), approx(0))
-      }
-    }
-
-    if (isZero(a)) {
-      if (a.x.type == "exact" && a.y.type == "exact") {
-        return pt(real(0), real(0))
-      } else {
-        return pt(approx(0), approx(0))
-      }
-    }
-
-    return FN_EXP.js1(
-      OP_CDOT.js1(
-        { type: "c32", value: b },
-        {
-          type: "c32",
-          value: pt(
-            approx(Math.log(Math.hypot(num(a.x), num(a.y)))),
-            approx(Math.atan2(num(a.y), num(a.x))),
-          ),
-        },
-      ),
-    ).value as SPoint
-  },
-  (ctx, a, b) => {
-    declareMulC32(ctx)
-    declareExp(ctx)
-    ctx.glsl`vec2 _helper_pow_c32(vec2 a, vec2 b) {
-  if (a == vec2(0)) {
-    return vec2(0);
-  } else {
-    vec2 ln_a = vec2(log(length(a)), atan(a.y, a.x));
-    return _helper_exp(_helper_mul_c32(b, ln_a));
-  }
-}
-`
-    return `_helper_pow_c32(${a.expr}, ${b.expr})`
-  },
-)
-
-OP_ODOT.add(
-  ["c64", "c64"],
-  "c64",
-  (a, b) => pt(mul(a.value.x, b.value.x), mul(a.value.y, b.value.y)),
-  (ctx, a, b) => {
-    declareMulR64(ctx)
-    declareOdotC64(ctx)
-    return `_helper_odot_c64(${a.expr}, ${b.expr})`
-  },
-).add(
-  ["c32", "c32"],
-  "c32",
-  (a, b) => pt(mul(a.value.x, b.value.x), mul(a.value.y, b.value.y)),
-  (_, a, b) => {
-    return `(${a.expr} * ${b.expr})`
-  },
-)
-
-OP_ADD.add(["c64", "c64"], "c64", addC, (ctx, ar, br) => {
-  const a = ctx.cache(ar)
-  const b = ctx.cache(br)
-  return `vec4(${addR64(ctx, `${a}.xy`, `${b}.xy`)}, ${addR64(ctx, `${a}.zw`, `${b}.zw`)})`
-}).add(["c32", "c32"], "c32", addC, (_, a, b) => `(${a.expr} + ${b.expr})`)
-
-OP_CDOT.add(["c64", "c64"], "c64", mulC, (ctx, a, b) => {
-  declareAddR64(ctx)
-  declareSubR64(ctx)
-  declareMulR64(ctx)
-  ctx.glsl`
-vec4 _helper_mul_c64(vec4 a, vec4 b) {
-  return vec4(
-    _helper_sub_r64(_helper_mul_r64(a.xy, b.xy), _helper_mul_r64(a.zw, b.zw)),
-    _helper_add_r64(_helper_mul_r64(a.zw, b.xy), _helper_mul_r64(a.xy, b.zw))
-  );
-}
-`
-  return `_helper_mul_c64(${a.expr}, ${b.expr})`
-}).add(["c32", "c32"], "c32", mulC, (ctx, a, b) => {
-  declareMulC32(ctx)
-  return `_helper_mul_c32(${a.expr}, ${b.expr})`
-})
-
-FN_COMPLEX.add(
-  ["c64"],
-  "c64",
-  (a) => a.value,
-  (_, a) => a.expr,
-)
-  .add(
-    ["c32"],
-    "c32",
-    (a) => a.value,
-    (_, a) => a.expr,
-  )
-  .add(
-    ["point64"],
-    "c64",
-    (a) => a.value,
-    (_, a) => a.expr,
-  )
-  .add(
-    ["point32"],
-    "c32",
-    (a) => a.value,
-    (_, a) => a.expr,
-  )
-
-OP_ABS.add(
-  ["c32"],
-  "r32",
-  // TODO: this is exact for some values
-  (a) => approx(Math.hypot(num(a.value.x), num(a.value.y))),
-  (_, a) => `length(${a.expr})`,
-)
-
-OP_DIV.add(
-  ["c32", "c32"],
-  "c32",
-  (a, b) => divPt(a.value, b.value),
-  (ctx, a, b) => {
-    declareDiv(ctx)
-    return `_helper_div(${a.expr}, ${b.expr})`
-  },
-)
-
-OP_NEG.add(
-  ["c64"],
-  "c64",
-  (a) => pt(neg(a.value.x), neg(a.value.y)),
-  (_, a) => `(-${a.expr})`,
-).add(
-  ["c32"],
-  "c32",
-  (a) => pt(neg(a.value.x), neg(a.value.y)),
-  (_, a) => `(-${a.expr})`,
-)
-
-OP_PLOT.add(
-  ["c32"],
-  "color",
-  plotJs,
-  (ctx, a) => FN_DEBUGPOINT.glsl1(ctx, a).expr,
-)
-
-OP_POS.add(
-  ["c64"],
-  "c64",
-  (a) => a.value,
-  (_, a) => a.expr,
-).add(
-  ["c32"],
-  "c32",
-  (a) => a.value,
-  (_, a) => a.expr,
-)
-
-OP_X.add(
-  ["c64"],
-  "r64",
-  (a) => a.value.x,
-  (_, a) => `${a.expr}.xy`,
-).add(
-  ["c32"],
-  "r32",
-  (a) => a.value.x,
-  (_, a) => `${a.expr}.x`,
-)
-
-OP_Y.add(
-  ["c64"],
-  "r64",
-  (a) => a.value.y,
-  (_, a) => `${a.expr}.zw`,
-).add(
-  ["c32"],
-  "r32",
-  (a) => a.value.y,
-  (_, a) => `${a.expr}.y`,
-)
 
 function dotC64(
   ctx: GlslContext,
@@ -574,11 +560,7 @@ function dotC32(
   return `_helper_dot_c32(${a.expr}, ${b.expr})`
 }
 
-function textGl(): never {
-  throw new Error("Arbitrary text is not supported in shaders.")
-}
-
-function subC(a: JsVal<"c32" | "c64">, b: JsVal<"c32" | "c64">) {
+export function subC(a: JsVal<"c32" | "c64">, b: JsVal<"c32" | "c64">) {
   return pt(sub(a.value.x, b.value.x), sub(a.value.y, b.value.y))
 }
 

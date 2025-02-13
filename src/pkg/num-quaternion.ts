@@ -12,7 +12,8 @@ import { OP_SUB, sub } from "../eval/ops/op/sub"
 import type { SReal, Tys } from "../eval/ty"
 import { approx, num, real } from "../eval/ty/create"
 import { h } from "../jsx"
-import { FN_CONJ } from "./num-complex"
+import { FN_CONJ, PKG_NUM_COMPLEX } from "./num-complex"
+import { PKG_REAL } from "./num-real"
 
 declare module "../eval/ty/index.js" {
   interface Tys {
@@ -28,7 +29,7 @@ export const PKG_NUM_QUATERNION: Package = {
   id: "nya:num-quaternion",
   name: "quaternions",
   label: "adds rudimentary support for quaternions",
-
+  deps: [() => PKG_REAL, () => PKG_NUM_COMPLEX],
   ty: {
     info: {
       q32: {

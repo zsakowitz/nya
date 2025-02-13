@@ -7,13 +7,11 @@ import { CmdComma } from "../../field/cmd/leaf/comma"
 import { CmdVar } from "../../field/cmd/leaf/var"
 import { CmdBrack } from "../../field/cmd/math/brack"
 import { Block, L, R } from "../../field/model"
-import { drawPoint } from "../geo-point"
-import { FN_GLIDER } from "./fn/glider"
-import { FN_INTERSECTION } from "./fn/intersection"
 import { Expr } from "../../sheet/ui/expr"
 import type { Point } from "../../sheet/ui/paper"
 import type { Sheet } from "../../sheet/ui/sheet"
 import { Writer } from "../../sheet/write"
+import { drawPoint, FN_GLIDER, FN_INTERSECTION } from "../geo-point"
 
 export function virtualPoint(at: Point, sheet: Sheet) {
   const objs = sheet.select(at, ["line", "segment", "ray", "circle"], 2, [

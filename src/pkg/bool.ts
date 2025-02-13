@@ -2,7 +2,6 @@ import type { Package } from "."
 import { FN_VALID } from "../eval/ops/fn/valid"
 import { OP_AND } from "../eval/ops/op/and"
 import { OP_OR } from "../eval/ops/op/or"
-import { real } from "../eval/ty/create"
 import { CmdWord } from "../field/cmd/leaf/word"
 import { L } from "../field/model"
 import { h } from "../jsx"
@@ -17,24 +16,32 @@ declare module "../eval/ty/index.js" {
   }
 }
 
-OP_AND.add(
-  ["bool", "bool"],
-  "bool",
-  (a, b) => a.value && b.value,
-  (_, a, b) => `(${a.expr} && ${b.expr})`,
-)
-
-OP_OR.add(
-  ["bool", "bool"],
-  "bool",
-  (a, b) => a.value || b.value,
-  (_, a, b) => `(${a.expr} || ${b.expr})`,
-)
-
 export const PKG_BOOL: Package = {
   id: "nya:bool-ops",
   name: "boolean operations",
   label: "adds basic support for boolean values",
+  init() {
+    OP_AND.add(
+      ["bool", "bool"],
+      "bool",
+      (a, b) => a.value && b.value,
+      (_, a, b) => `(${a.expr} && ${b.expr})`,
+    )
+
+    OP_OR.add(
+      ["bool", "bool"],
+      "bool",
+      (a, b) => a.value || b.value,
+      (_, a, b) => `(${a.expr} || ${b.expr})`,
+    )
+
+    FN_VALID.add(
+      ["bool"],
+      "bool",
+      () => true,
+      () => "true",
+    )
+  },
   ty: {
     info: {
       bool: {
@@ -42,24 +49,7 @@ export const PKG_BOOL: Package = {
         namePlural: "true/false values",
         glsl: "bool",
         garbage: { js: false, glsl: "false" },
-        coerce: {
-          r32: {
-            js(self) {
-              return self ? real(1) : real(NaN)
-            },
-            glsl(self) {
-              return `(${self} ? 1.0 : 0.0/0.0)`
-            },
-          },
-          r64: {
-            js(self) {
-              return self ? real(1) : real(NaN)
-            },
-            glsl(self) {
-              return `(${self} ? vec2(1, 0) : vec2(0.0/0.0))`
-            },
-          },
-        },
+        coerce: {},
         write: {
           isApprox() {
             return false
@@ -98,10 +88,3 @@ export const PKG_BOOL: Package = {
     },
   },
 }
-
-FN_VALID.add(
-  ["bool"],
-  "bool",
-  () => true,
-  () => "true",
-)

@@ -5,7 +5,8 @@ import { h, hx } from "../jsx"
 import { Store, defineExt } from "../sheet/ext"
 import type { Expr } from "../sheet/ui/expr"
 import { circle } from "../sheet/ui/expr/circle"
-import { OP_PLOT } from "./color-core"
+import { OP_PLOT, PKG_COLOR_CORE } from "./color-core"
+import { PKG_REAL } from "./num-real"
 
 const store = new Store((expr) => {
   let show = false
@@ -85,6 +86,7 @@ export const PKG_SHADER: Package = {
   id: "nya:shader",
   name: "shaders",
   label: "allows shaders to be created with the x, y, and p variables",
+  deps: [() => PKG_COLOR_CORE, () => PKG_REAL],
   eval: {
     vars: {
       x: {

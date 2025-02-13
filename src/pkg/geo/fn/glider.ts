@@ -2,12 +2,12 @@
 /// <reference path="../index.ts" />
 
 import type { GlslContext } from "../../../eval/lib/fn"
-import { FnDist } from "../../../eval/ops/dist"
 import { add } from "../../../eval/ops/op/add"
 import { mul } from "../../../eval/ops/op/mul"
 import { sub } from "../../../eval/ops/op/sub"
 import type { GlslVal, SPoint, SReal } from "../../../eval/ty"
 import { num, pt, real } from "../../../eval/ty/create"
+import { FN_GLIDER } from "../../geo-point"
 
 function js(
   { value: [{ x: x1, y: y1 }, { x: x2, y: y2 }] }: { value: [SPoint, SPoint] },
@@ -22,11 +22,7 @@ function glsl(ctx: GlslContext, ar: GlslVal, b: GlslVal) {
   return `mix(${a}.xy, ${a}.zw, ${b.expr})`
 }
 
-export const FN_GLIDER = new FnDist<"point32">(
-  "glider",
-  "constructs a point on an object",
-)
-  .add(["segment", "r32"], "point32", js, glsl)
+FN_GLIDER.add(["segment", "r32"], "point32", js, glsl)
   .add(["ray", "r32"], "point32", js, glsl)
   .add(["line", "r32"], "point32", js, glsl)
   .add(

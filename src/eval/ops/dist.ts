@@ -101,12 +101,17 @@ export class FnDist<Q extends TyName = TyName> extends FnDistManual<Q> {
   }
 }
 
+function icon(name: TyName) {
+  try {
+    return TY_INFO[name].icon()
+  } catch {
+    console.error()
+    return h("", name)
+  }
+}
+
 export function doc(params: readonly TyName[], type: TyName, list = false) {
-  return docByIcon(
-    params.map((x) => TY_INFO[x].icon()),
-    TY_INFO[type].icon(),
-    list,
-  )
+  return docByIcon(params.map(icon), icon(type), list)
 }
 
 export function docByIcon(

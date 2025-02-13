@@ -2,12 +2,12 @@
 /// <reference path="../index.ts" />
 
 import type { GlslContext } from "../../../eval/lib/fn"
-import { FnDist } from "../../../eval/ops/dist"
 import { div } from "../../../eval/ops/op/div"
 import { mul } from "../../../eval/ops/op/mul"
 import { sub } from "../../../eval/ops/op/sub"
 import type { GlslVal, Tys, Val } from "../../../eval/ty"
 import { num, pt, real } from "../../../eval/ty/create"
+import { FN_INTERSECTION } from "../../geo-point"
 
 function js(
   [{ x: x1, y: y1 }, { x: x2, y: y2 }]: Val<"line">,
@@ -58,11 +58,6 @@ function glsl(ctx: GlslContext, ar: GlslVal, br: GlslVal): string {
   (${x1} * ${y2} - ${y1} * ${x2}) * (${y3} - ${y4}) - (${y1} - ${y2}) * (${x3} * ${y4} - ${y3} - ${x4})
 ) / ((${x1} - ${x2}) * (${y3} - ${y4}) - (${y1} - ${y2}) * (${x3} - ${x4}))`
 }
-
-export const FN_INTERSECTION = new FnDist<"point32">(
-  "intersection",
-  "constructs the point where two objects intersect",
-)
 
 // line-line
 for (const a of ["segment", "ray", "line"] as const) {

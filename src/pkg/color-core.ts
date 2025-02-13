@@ -1,11 +1,15 @@
 import type { Package } from "."
 import type { GlslContext } from "../eval/lib/fn"
 import { FnDist } from "../eval/ops/dist"
+import { OP_CDOT } from "../eval/ops/op/mul"
 import type { SColor, SReal } from "../eval/ty"
 import { frac, num, real } from "../eval/ty/create"
+import { TY_INFO } from "../eval/ty/info"
 import { CmdColor } from "../field/cmd/leaf/color"
 import { L } from "../field/model"
 import { h } from "../jsx"
+import { PKG_BOOL } from "./bool"
+import { PKG_REAL } from "./num-real"
 
 declare module "../eval/ty/index.js" {
   interface Tys {
@@ -21,33 +25,8 @@ export const FN_RGB = new FnDist(
   "rgb",
   "creates a color given its red, green, and blue components",
 )
-  .add(
-    ["r32", "r32", "r32"],
-    "color",
-    (r, g, b) => ({
-      type: "color",
-      r: r.value,
-      g: g.value,
-      b: b.value,
-      a: real(1),
-    }),
-    (_, r, g, b) => `vec4(vec3(${r.expr}, ${g.expr}, ${b.expr}) / 255.0, 1)`,
-  )
-  .add(
-    ["r32", "r32", "r32", "r32"],
-    "color",
-    (r, g, b, a) => ({
-      type: "color",
-      r: r.value,
-      g: g.value,
-      b: b.value,
-      a: a.value,
-    }),
-    (_, r, g, b, a) =>
-      `vec4(vec3(${r.expr}, ${g.expr}, ${b.expr}) / 255.0, ${a.expr})`,
-  )
 
-export function hsv(hr: SReal, sr: SReal, vr: SReal, a: SReal): SColor {
+function hsv(hr: SReal, sr: SReal, vr: SReal, a: SReal): SColor {
   const h = num(hr) / 360
   const s = num(sr)
   const v = num(vr)
@@ -90,7 +69,7 @@ export function hsv(hr: SReal, sr: SReal, vr: SReal, a: SReal): SColor {
   }
 }
 
-export function declareHsv(ctx: GlslContext) {
+function declareHsv(ctx: GlslContext) {
   ctx.glsl`const vec4 _helper_hsv_const = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
 
 vec3 _helper_hsv(vec3 c) {
@@ -104,24 +83,6 @@ export const FN_HSV = new FnDist(
   "hsv",
   "creates a color given its hue (0-360), saturation (0-1), and value (0-1)",
 )
-  .add(
-    ["r32", "r32", "r32"],
-    "color",
-    (hr, sr, vr) => hsv(hr.value, sr.value, vr.value, frac(1, 1)),
-    (ctx, hr, sr, vr) => {
-      declareHsv(ctx)
-      return `vec4(_helper_hsv(vec3(${hr.expr} / 360.0, ${sr.expr}, ${vr.expr})), 1)`
-    },
-  )
-  .add(
-    ["r32", "r32", "r32", "r32"],
-    "color",
-    (hr, sr, vr, ar) => hsv(hr.value, sr.value, vr.value, ar.value),
-    (ctx, hr, sr, vr, ar) => {
-      declareHsv(ctx)
-      return `vec4(_helper_hsv(vec3(${hr.expr} / 360.0, ${sr.expr}, ${vr.expr})), ${ar.expr})`
-    },
-  )
 
 export function plotJs(): never {
   throw new Error("Cannot plot colors outside of a shader.")
@@ -130,12 +91,71 @@ export function plotJs(): never {
 export const OP_PLOT = new FnDist<"color">(
   "plot",
   "converts an expression to the color it plots as a shader",
-).add(["color"], "color", plotJs, (_, a) => a.expr)
+)
 
 export const PKG_COLOR_CORE: Package = {
   id: "nya:color-core",
   name: "color functions core",
   label: "adds very basic color functions",
+  deps: [() => PKG_REAL, () => PKG_BOOL],
+  init() {
+    FN_RGB.add(
+      ["r32", "r32", "r32"],
+      "color",
+      (r, g, b) => ({
+        type: "color",
+        r: r.value,
+        g: g.value,
+        b: b.value,
+        a: real(1),
+      }),
+      (_, r, g, b) => `vec4(vec3(${r.expr}, ${g.expr}, ${b.expr}) / 255.0, 1)`,
+    ).add(
+      ["r32", "r32", "r32", "r32"],
+      "color",
+      (r, g, b, a) => ({
+        type: "color",
+        r: r.value,
+        g: g.value,
+        b: b.value,
+        a: a.value,
+      }),
+      (_, r, g, b, a) =>
+        `vec4(vec3(${r.expr}, ${g.expr}, ${b.expr}) / 255.0, ${a.expr})`,
+    )
+
+    FN_HSV.add(
+      ["r32", "r32", "r32"],
+      "color",
+      (hr, sr, vr) => hsv(hr.value, sr.value, vr.value, frac(1, 1)),
+      (ctx, hr, sr, vr) => {
+        declareHsv(ctx)
+        return `vec4(_helper_hsv(vec3(${hr.expr} / 360.0, ${sr.expr}, ${vr.expr})), 1)`
+      },
+    ).add(
+      ["r32", "r32", "r32", "r32"],
+      "color",
+      (hr, sr, vr, ar) => hsv(hr.value, sr.value, vr.value, ar.value),
+      (ctx, hr, sr, vr, ar) => {
+        declareHsv(ctx)
+        return `vec4(_helper_hsv(vec3(${hr.expr} / 360.0, ${sr.expr}, ${vr.expr})), ${ar.expr})`
+      },
+    )
+
+    OP_PLOT.add(["color"], "color", plotJs, (_, a) => a.expr)
+
+    OP_CDOT.add(
+      ["color", "bool"],
+      "color",
+      (a, b) => (b.value ? a.value : TY_INFO.color.garbage.js),
+      (_, a, b) => `(${b.expr} ? ${a.expr} : ${TY_INFO.color.garbage.glsl})`,
+    ).add(
+      ["bool", "color"],
+      "color",
+      (b, a) => (b.value ? a.value : TY_INFO.color.garbage.js),
+      (_, b, a) => `(${b.expr} ? ${a.expr} : ${TY_INFO.color.garbage.glsl})`,
+    )
+  },
   ty: {
     info: {
       color: {

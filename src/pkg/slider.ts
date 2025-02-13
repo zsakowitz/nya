@@ -21,6 +21,7 @@ import { FieldComputed } from "../sheet/deps"
 import { defineExt, Store } from "../sheet/ext"
 import { Slider as RawSlider } from "../sheet/slider"
 import type { Expr } from "../sheet/ui/expr"
+import { PKG_REAL } from "./num-real"
 
 function readSigned(node: Node, base: SReal): SReal | null {
   let isNeg = false
@@ -351,6 +352,7 @@ export const PKG_SLIDER: Package = {
   id: "nya:slider",
   name: "sliders",
   label: "adds a slider to numeric variables",
+  deps: [() => PKG_REAL],
   sheet: {
     exts: {
       0: [EXT_SLIDER],

@@ -31,6 +31,7 @@ import { virtualStepExp, write, Writer } from "../sheet/write"
 import { OP_PLOT, plotJs } from "./color-core"
 import { EXT_EVAL } from "./eval"
 import { createPickByTy, PICK_BY_TY, picker } from "./geo/pick-normal"
+import { PKG_REAL } from "./num-real"
 
 declare module "../eval/ty/index.js" {
   interface Tys {
@@ -325,18 +326,19 @@ export const EXT_POINT = defineHideable({
   },
 })
 
+export const FN_GLIDER = new FnDist<"point32">(
+  "glider",
+  "constructs a point on an object",
+)
+
+export const FN_INTERSECTION = new FnDist<"point32">(
+  "intersection",
+  "constructs the point where two objects intersect",
+)
+
 const FN_SCREENDISTANCE = new FnDist<"r32">(
   "screendistance",
   "calculates the distance between two points in terms of pixels on your screen, rather than graphpaper units",
-).add(
-  ["point32", "point32"],
-  "r32",
-  () => {
-    throw new Error("Cannot calculate screendistance outside of shaders.")
-  },
-  (_, a, b) => {
-    return `length((${a.expr} - ${b.expr}) * u_px_per_unit.xz)`
-  },
 )
 
 const PICK_POINT = createPickByTy("p", null, [["point32", "point64"]], () => {})
@@ -345,6 +347,162 @@ export const PKG_GEO_POINT: Package = {
   id: "nya:geo-point",
   name: "geometric points",
   label: "adds geometric points",
+  deps: [() => PKG_REAL],
+  init() {
+    FN_SCREENDISTANCE.add(
+      ["point32", "point32"],
+      "r32",
+      () => {
+        throw new Error("Cannot calculate screendistance outside of shaders.")
+      },
+      (_, a, b) => {
+        return `length((${a.expr} - ${b.expr}) * u_px_per_unit.xz)`
+      },
+    )
+
+    OP_ADD.add(
+      ["point64", "point64"],
+      "point64",
+      (a, b) => pt(add(a.value.x, b.value.x), add(a.value.y, b.value.y)),
+      (ctx, ar, br) => {
+        const a = ctx.cache(ar)
+        const b = ctx.cache(br)
+        return `vec4(${addR64(ctx, `${a}.xy`, `${b}.xy`)}, ${addR64(ctx, `${a}.zw`, `${b}.zw`)})`
+      },
+    ).add(
+      ["point32", "point32"],
+      "point32",
+      (a, b) => pt(add(a.value.x, b.value.x), add(a.value.y, b.value.y)),
+      (_, a, b) => `(${a.expr} + ${b.expr})`,
+    )
+
+    FN_UNSIGN.add(
+      ["point64"],
+      "point64",
+      (a) => pt(abs(a.value.x), abs(a.value.y)),
+      (ctx, a) => {
+        const name = ctx.cache(a)
+        return `vec4(${abs64(ctx, `${name}.xy`)}, ${abs64(ctx, `${name}.zw`)})`
+      },
+    ).add(
+      ["point32"],
+      "point32",
+      (a) => pt(abs(a.value.x), abs(a.value.y)),
+      (_, a) => `abs(${a.expr})`,
+    )
+
+    OP_X.add(
+      ["point64"],
+      "r64",
+      (a) => a.value.x,
+      (_, a) => `${a.expr}.xy`,
+    ).add(
+      ["point32"],
+      "r32",
+      (a) => a.value.x,
+      (_, a) => `${a.expr}.x`,
+    )
+
+    OP_Y.add(
+      ["point64"],
+      "r64",
+      (a) => a.value.y,
+      (_, a) => `${a.expr}.zw`,
+    ).add(
+      ["point32"],
+      "r32",
+      (a) => a.value.y,
+      (_, a) => `${a.expr}.y`,
+    )
+
+    OP_PLOT.add(
+      ["point32"],
+      "color",
+      plotJs,
+      (ctx, a) => FN_DEBUGPOINT.glsl1(ctx, a).expr,
+    )
+
+    OP_ABS.add(
+      ["point32"],
+      "r32",
+      // TODO: this is exact for some values
+      (a) => approx(Math.hypot(num(a.value.x), num(a.value.y))),
+      (_, a) => `length(${a.expr})`,
+    )
+
+    OP_NEG.add(
+      ["point64"],
+      "point64",
+      (a) => pt(neg(a.value.x), neg(a.value.y)),
+      (_, a) => `(-${a.expr})`,
+    ).add(
+      ["point32"],
+      "point32",
+      (a) => pt(neg(a.value.x), neg(a.value.y)),
+      (_, a) => `(-${a.expr})`,
+    )
+
+    FN_VALID.add(
+      ["point32"],
+      "bool",
+      (a) => isFinite(num(a.value.x)) && isFinite(num(a.value.y)),
+      (ctx, ar) => {
+        const a = ctx.cache(ar)
+        return `(!isnan(${a}.x) && !isinf(${a}.x) && !isnan(${a}.y) && !isinf(${a}.y))`
+      },
+    )
+
+    OP_ODOT.add(
+      ["point64", "point64"],
+      "point64",
+      (a, b) => pt(mul(a.value.x, b.value.x), mul(a.value.y, b.value.y)),
+      (ctx, a, b) => {
+        declareMulR64(ctx)
+        declareOdotC64(ctx)
+        return `_helper_odot_c64(${a.expr}, ${b.expr})`
+      },
+    ).add(
+      ["point32", "point32"],
+      "point32",
+      (a, b) => pt(mul(a.value.x, b.value.x), mul(a.value.y, b.value.y)),
+      (_, a, b) => {
+        return `(${a.expr} * ${b.expr})`
+      },
+    )
+
+    OP_POINT.add(
+      ["r64", "r64"],
+      "point64",
+      (x, y) => pt(x.value, y.value),
+      (_, x, y) => `vec4(${x.expr}, ${y.expr})`,
+    ).add(
+      ["r32", "r32"],
+      "point32",
+      (x, y) => pt(x.value, y.value),
+      (_, x, y) => `vec2(${x.expr}, ${y.expr})`,
+    )
+
+    OP_POS.add(
+      ["point64"],
+      "point64",
+      (a) => a.value,
+      (_, a) => a.expr,
+    ).add(
+      ["point32"],
+      "point32",
+      (a) => a.value,
+      (_, a) => a.expr,
+    )
+
+    FN_DEBUGPOINT.add(
+      ["c32"],
+      "color",
+      () => {
+        throw new Error(ERR_COORDS_USED_OUTSIDE_GLSL)
+      },
+      (ctx, a) => declareDebugPoint(ctx, a),
+    )
+  },
   ty: {
     info: {
       point64: {
@@ -429,146 +587,3 @@ function iconPoint(hd: boolean) {
     ),
   )
 }
-
-OP_ADD.add(
-  ["point64", "point64"],
-  "point64",
-  (a, b) => pt(add(a.value.x, b.value.x), add(a.value.y, b.value.y)),
-  (ctx, ar, br) => {
-    const a = ctx.cache(ar)
-    const b = ctx.cache(br)
-    return `vec4(${addR64(ctx, `${a}.xy`, `${b}.xy`)}, ${addR64(ctx, `${a}.zw`, `${b}.zw`)})`
-  },
-).add(
-  ["point32", "point32"],
-  "point32",
-  (a, b) => pt(add(a.value.x, b.value.x), add(a.value.y, b.value.y)),
-  (_, a, b) => `(${a.expr} + ${b.expr})`,
-)
-
-FN_UNSIGN.add(
-  ["point64"],
-  "point64",
-  (a) => pt(abs(a.value.x), abs(a.value.y)),
-  (ctx, a) => {
-    const name = ctx.cache(a)
-    return `vec4(${abs64(ctx, `${name}.xy`)}, ${abs64(ctx, `${name}.zw`)})`
-  },
-).add(
-  ["point32"],
-  "point32",
-  (a) => pt(abs(a.value.x), abs(a.value.y)),
-  (_, a) => `abs(${a.expr})`,
-)
-
-OP_X.add(
-  ["point64"],
-  "r64",
-  (a) => a.value.x,
-  (_, a) => `${a.expr}.xy`,
-).add(
-  ["point32"],
-  "r32",
-  (a) => a.value.x,
-  (_, a) => `${a.expr}.x`,
-)
-
-OP_Y.add(
-  ["point64"],
-  "r64",
-  (a) => a.value.y,
-  (_, a) => `${a.expr}.zw`,
-).add(
-  ["point32"],
-  "r32",
-  (a) => a.value.y,
-  (_, a) => `${a.expr}.y`,
-)
-
-OP_PLOT.add(
-  ["point32"],
-  "color",
-  plotJs,
-  (ctx, a) => FN_DEBUGPOINT.glsl1(ctx, a).expr,
-)
-
-OP_ABS.add(
-  ["point32"],
-  "r32",
-  // TODO: this is exact for some values
-  (a) => approx(Math.hypot(num(a.value.x), num(a.value.y))),
-  (_, a) => `length(${a.expr})`,
-)
-
-OP_NEG.add(
-  ["point64"],
-  "point64",
-  (a) => pt(neg(a.value.x), neg(a.value.y)),
-  (_, a) => `(-${a.expr})`,
-).add(
-  ["point32"],
-  "point32",
-  (a) => pt(neg(a.value.x), neg(a.value.y)),
-  (_, a) => `(-${a.expr})`,
-)
-
-FN_VALID.add(
-  ["point32"],
-  "bool",
-  (a) => isFinite(num(a.value.x)) && isFinite(num(a.value.y)),
-  (ctx, ar) => {
-    const a = ctx.cache(ar)
-    return `(!isnan(${a}.x) && !isinf(${a}.x) && !isnan(${a}.y) && !isinf(${a}.y))`
-  },
-)
-
-OP_ODOT.add(
-  ["point64", "point64"],
-  "point64",
-  (a, b) => pt(mul(a.value.x, b.value.x), mul(a.value.y, b.value.y)),
-  (ctx, a, b) => {
-    declareMulR64(ctx)
-    declareOdotC64(ctx)
-    return `_helper_odot_c64(${a.expr}, ${b.expr})`
-  },
-).add(
-  ["point32", "point32"],
-  "point32",
-  (a, b) => pt(mul(a.value.x, b.value.x), mul(a.value.y, b.value.y)),
-  (_, a, b) => {
-    return `(${a.expr} * ${b.expr})`
-  },
-)
-
-OP_POINT.add(
-  ["r64", "r64"],
-  "point64",
-  (x, y) => pt(x.value, y.value),
-  (_, x, y) => `vec4(${x.expr}, ${y.expr})`,
-).add(
-  ["r32", "r32"],
-  "point32",
-  (x, y) => pt(x.value, y.value),
-  (_, x, y) => `vec2(${x.expr}, ${y.expr})`,
-)
-
-OP_POS.add(
-  ["point64"],
-  "point64",
-  (a) => a.value,
-  (_, a) => a.expr,
-).add(
-  ["point32"],
-  "point32",
-  (a) => a.value,
-  (_, a) => a.expr,
-)
-
-FN_DEBUGPOINT.add(
-  ["c32"],
-  "color",
-  () => {
-    throw new Error(ERR_COORDS_USED_OUTSIDE_GLSL)
-  },
-  (ctx, a) => declareDebugPoint(ctx, a),
-)

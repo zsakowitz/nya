@@ -16,6 +16,9 @@ export interface Package {
   name: string
   label: string
 
+  init?(): void
+  deps?: (() => Package)[]
+
   field?: {
     inits?: List<Init>
     //   shortcuts?: List<Init>

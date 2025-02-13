@@ -177,18 +177,31 @@ export class CmdText extends Leaf {
 export const OP_TO_TEXT = new FnDist<"text">(
   "to text",
   "converts a value into text",
-).add(
-  ["r32"],
-  "text",
-  (a) => {
-    const b = new Block(null)
-    new Display(b.cursor(R), frac(10, 1)).value(num(a.value))
-    return [{ type: "latex", value: b.latex() }]
-  },
-  () => {
-    err()
-  },
 )
+  .add(
+    ["r32"],
+    "text",
+    (a) => {
+      const b = new Block(null)
+      new Display(b.cursor(R), frac(10, 1)).value(num(a.value))
+      return [{ type: "latex", value: b.latex() }]
+    },
+    err,
+  )
+  .add(
+    ["c32"],
+    "text",
+    (a) => {
+      const b = new Block(null)
+      new Display(b.cursor(R), frac(10, 1)).nums([
+        [a.value.x, ""],
+        [a.value.y, "i"],
+      ])
+      return [{ type: "latex", value: b.latex() }]
+    },
+    err,
+  )
+  .add(["text"], "text", (a) => a.value, err)
 
 const FN_CONCAT = new (class extends FnDistManual<"text"> {
   constructor() {

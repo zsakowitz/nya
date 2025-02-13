@@ -7,8 +7,13 @@ import { CmdWord } from "../../field/cmd/leaf/word"
 import { CmdBrack } from "../../field/cmd/math/brack"
 import { Block, L, R } from "../../field/model"
 import { h, p, svgx } from "../../jsx"
-import "../geo-point"
-import { drawPoint } from "../geo-point"
+import {
+  drawPoint,
+  FN_GLIDER,
+  FN_INTERSECTION,
+  PKG_GEO_POINT,
+} from "../geo-point"
+import { PKG_REAL } from "../num-real"
 import { drawCircle, EXT_CIRCLE } from "./ext/circle"
 import { drawLine, EXT_LINE } from "./ext/line"
 import { drawPolygon, EXT_POLYGON } from "./ext/polygon"
@@ -19,8 +24,8 @@ import { FN_CENTER } from "./fn/center"
 import { FN_CIRCLE } from "./fn/circle"
 import { FN_DISTANCE } from "./fn/distance"
 import { FN_END } from "./fn/end"
-import { FN_GLIDER } from "./fn/glider"
-import { FN_INTERSECTION } from "./fn/intersection"
+import "./fn/glider"
+import "./fn/intersection"
 import { FN_LINE } from "./fn/line"
 import { FN_MIDPOINT } from "./fn/midpoint"
 import { FN_PARALLEL, parallelJs } from "./fn/parallel"
@@ -444,6 +449,7 @@ export const PKG_GEOMETRY: Package = {
   id: "nya:geometry",
   name: "geometry",
   label: "adds geometric objects and geometric constructions",
+  deps: [() => PKG_GEO_POINT, () => PKG_REAL],
   ty: {
     info: {
       segment: INFO_SEGMENT,

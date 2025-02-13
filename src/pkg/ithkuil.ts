@@ -12,7 +12,7 @@ import { L } from "../field/model"
 import { h, p, svgx } from "../jsx"
 import { defineExt } from "../sheet/ext"
 import { circle } from "../sheet/ui/expr/circle"
-import type { TextSegment } from "./text"
+import { PKG_TEXT, type TextSegment } from "./text"
 
 declare module "../eval/ty" {
   interface Tys {
@@ -65,6 +65,7 @@ export const PKG_ITHKUIL: Package = {
   id: "nya:ithkuil",
   name: "ithkuil utilities",
   label: "adds utilities for working with the language ithkuil",
+  deps: [() => PKG_TEXT],
   ty: {
     info: {
       ithkuilscript: {

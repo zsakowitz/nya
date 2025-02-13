@@ -33,6 +33,11 @@ export class SheetFactory {
     }
     this.loaded[pkg.id] = pkg
 
+    for (const dep of pkg.deps || []) {
+      this.load(dep())
+    }
+    pkg.init?.()
+
     for (const k in pkg.ty?.info) {
       const key = k as TyName
       TY_INFO[key] = pkg.ty.info[key]! as any
