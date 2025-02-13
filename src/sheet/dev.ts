@@ -48,6 +48,7 @@ if (location.href.includes("localhost")) {
   expr`\left(2,3\right)`
   expr`\operatorname{ithkuilscript}\text{hlaséi-rrala sakawi}`
   expr`a=\operatorname{select}\left(\left[\text{hello},\text{world},\text{people}\right],\text{world}\right)`
+  expr`b=.3`
 } else {
   expr`ithkuilscript\text{hlaséi-rrala sakawi}`
   expr`\operatorname{vector}\left(\left(-1,-.5\right),\left(-.5,1\right)\right)`

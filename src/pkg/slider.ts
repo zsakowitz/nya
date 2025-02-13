@@ -220,6 +220,12 @@ export class RangeControls {
         this.min.setError("Bounds must be in order.")
       }
     }
+
+    if (this.step.value == null) {
+      this.scrubber.step = frac(0, 1)
+    } else if (typeof this.step.value != "string") {
+      this.scrubber.step = this.step.value
+    }
   }
 }
 
