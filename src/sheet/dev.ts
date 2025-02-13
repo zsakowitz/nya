@@ -9,7 +9,6 @@ import { PKG_ITHKUIL } from "../pkg/ithkuil.js"
 import { PKG_NUM_COMPLEX } from "../pkg/num-complex.js"
 import { PKG_NUM_QUATERNION } from "../pkg/num-quaternion.js"
 import { PKG_REAL } from "../pkg/num-real.js"
-import { PKG_SELECT } from "../pkg/select.js"
 import { PKG_SHADER, show } from "../pkg/shader.js"
 import { PKG_SLIDER } from "../pkg/slider.js"
 import { PKG_TEXT } from "../pkg/text.js"
@@ -32,9 +31,8 @@ const sheet = new SheetFactory(options)
   .load(PKG_GEOMETRY)
   .load(PKG_NUM_QUATERNION)
   .load(PKG_TEXT)
-  .load(PKG_ITHKUIL)
   .load(PKG_COLOR_EXTRAS)
-  .load(PKG_SELECT)
+  .load(PKG_ITHKUIL)
   .create()
 document.body.appendChild(sheet.el)
 
@@ -47,7 +45,6 @@ function expr(source: { raw: readonly string[] }) {
 if (location.href.includes("localhost")) {
   expr`\left(2,3\right)`
   expr`\operatorname{ithkuilscript}\text{hlaséi-rrala sakawi}`
-  expr`a=\operatorname{select}\left(\left[\text{hello},\text{world},\text{people}\right],\text{world}\right)`
   expr`b=.3`
 } else {
   expr`ithkuilscript\text{hlaséi-rrala sakawi}`
