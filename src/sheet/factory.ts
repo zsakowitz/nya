@@ -66,14 +66,14 @@ export class SheetFactory {
     }
 
     for (const key in pkg.eval?.fns) {
-      if (this.options.words.has(key)) {
-        console.log(key)
-      }
-      this.options.words?.set(key, "prefix")
+      this.options.words.init(key, "prefix")
       FNS[key] = pkg.eval.fns[key]!
     }
 
     for (const key in pkg.eval?.vars) {
+      if (key.length > 1) {
+        this.options.words.init(key, "var")
+      }
       VARS[key] = pkg.eval.vars[key]!
     }
 

@@ -68,6 +68,13 @@ export class WordMap<T> {
     return this
   }
 
+  init(word: string, value: T): this {
+    if (this.has(word) && this.get(word) !== value) {
+      console.warn(`[wordmap] '${word}' set with different values`)
+    }
+    return this.set(word, value)
+  }
+
   has(word: string): boolean {
     return word in this.words
   }

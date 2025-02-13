@@ -1,6 +1,7 @@
 import { affixes, roots } from "@zsnout/ithkuil/data"
 import { wordToIthkuil } from "@zsnout/ithkuil/generate"
 import { glossWord } from "@zsnout/ithkuil/gloss"
+import { version } from "@zsnout/ithkuil/package.json"
 import { parseWord } from "@zsnout/ithkuil/parse"
 import { CharacterRow, getBBox, textToScript } from "@zsnout/ithkuil/script"
 import { createRecognizer, unglossWord } from "@zsnout/ithkuil/ungloss"
@@ -196,6 +197,18 @@ export const PKG_ITHKUIL: Package = {
         },
         err,
       ),
+    },
+    vars: {
+      ithkuilversion: {
+        js: {
+          type: "text",
+          list: false,
+          value: [{ type: "plain", value: version }],
+        },
+        get glsl(): never {
+          return err()
+        },
+      },
     },
   },
   sheet: {

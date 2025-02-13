@@ -617,8 +617,6 @@ export const AST_TXRS: {
 
         const builtin = VARS[node.value]
         if (builtin?.dynamic) break builtin
-        const value = builtin?.glsl
-        if (!value) break builtin
 
         if (node.sup) {
           deps.add(node.sup)
