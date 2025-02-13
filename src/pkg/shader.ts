@@ -83,67 +83,97 @@ const EXT_GLSL = defineExt({
       const lhs = ast.items[0]!
       const rhs = ast.items[1]!
 
-      const val = coerceValueGlsl(
-        props.ctx,
-        OP_SUB.glsl(props.ctx, glsl(lhs, props), glsl(rhs, props)),
-        { type: "r32", list: false },
-      )
-
       declareAddR64(props.ctx)
-      const valX = props.bindings.with(
-        id({ value: "x" }),
-        {
-          type: "r64",
-          expr: "_helper_add_r64(v_coords.xy, u_unit_per_px.xy)",
-          list: false,
-        },
-        () =>
-          props.bindings.with(
-            id({ value: "y" }),
-            {
-              type: "r64",
-              expr: "v_coords.zw",
-              list: false,
-            },
-            () =>
-              coerceValueGlsl(
-                props.ctx,
-                OP_SUB.glsl(props.ctx, glsl(lhs, props), glsl(rhs, props)),
-                { type: "r32", list: false },
-              ),
-          ),
+      const a = props.ctx.cached(
+        "r32",
+        coerceValueGlsl(
+          props.ctx,
+          OP_SUB.glsl(props.ctx, glsl(lhs, props), glsl(rhs, props)),
+          { type: "r32", list: false },
+        ),
       )
-      const valY = props.bindings.with(
-        id({ value: "x" }),
-        {
-          type: "r64",
-          expr: "v_coords.xy",
-          list: false,
-        },
-        () =>
-          props.bindings.with(
-            id({ value: "y" }),
-            {
-              type: "r64",
-              expr: "_helper_add_r64(v_coords.zw, u_unit_per_px.zw)",
-              list: false,
-            },
-            () =>
-              coerceValueGlsl(
-                props.ctx,
-                OP_SUB.glsl(props.ctx, glsl(lhs, props), glsl(rhs, props)),
-                { type: "r32", list: false },
-              ),
-          ),
+      const x = props.ctx.cached(
+        "r32",
+        props.bindings.with(
+          id({ value: "x" }),
+          {
+            type: "r64",
+            expr: "(v_coords.xy + dFdx(v_coords.xy))",
+            list: false,
+          },
+          () =>
+            props.bindings.with(
+              id({ value: "y" }),
+              {
+                type: "r64",
+                expr: "v_coords.zw",
+                list: false,
+              },
+              () =>
+                coerceValueGlsl(
+                  props.ctx,
+                  OP_SUB.glsl(props.ctx, glsl(lhs, props), glsl(rhs, props)),
+                  { type: "r32", list: false },
+                ),
+            ),
+        ),
       )
-
-      const a = props.ctx.cached("r32", val)
-      const x = props.ctx.cached("r32", valX)
-      const y = props.ctx.cached("r32", valY)
+      const y = props.ctx.cached(
+        "r32",
+        props.bindings.with(
+          id({ value: "x" }),
+          {
+            type: "r64",
+            expr: "v_coords.xy",
+            list: false,
+          },
+          () =>
+            props.bindings.with(
+              id({ value: "y" }),
+              {
+                type: "r64",
+                expr: "(v_coords.zw + dFdy(v_coords.zw))",
+                list: false,
+              },
+              () =>
+                coerceValueGlsl(
+                  props.ctx,
+                  OP_SUB.glsl(props.ctx, glsl(lhs, props), glsl(rhs, props)),
+                  { type: "r32", list: false },
+                ),
+            ),
+        ),
+      )
+      const y2 = props.ctx.cached(
+        "r32",
+        props.bindings.with(
+          id({ value: "x" }),
+          {
+            type: "r64",
+            expr: "(v_coords.xy + dFdx(v_coords.xy))",
+            list: false,
+          },
+          () =>
+            props.bindings.with(
+              id({ value: "y" }),
+              {
+                type: "r64",
+                expr: "(v_coords.zw + dFdy(v_coords.zw))",
+                list: false,
+              },
+              () =>
+                coerceValueGlsl(
+                  props.ctx,
+                  OP_SUB.glsl(props.ctx, glsl(lhs, props), glsl(rhs, props)),
+                  { type: "r32", list: false },
+                ),
+            ),
+        ),
+      )
 
       return [
         props.ctx,
-        `(sign(${a}) * sign(${x}) == -1.0 || sign(${a}) * sign(${y}) == -1.0 ? vec4(0.1764705882, 0.4392156863, 0.7019607843,1) : vec4(0,0,0,0))`,
+        `abs(sign(${a}) + sign(${x}) + sign(${y})) != 3. || abs(sign(${a}) + sign(${x}) + sign(${y2})) != 3. ? vec4(0.1764705882, 0.4392156863, 0.7019607843, 1) : vec4(0)`,
       ]
     }
 

@@ -104,7 +104,7 @@ export const PKG_COLOR_CORE: Package = {
       "color",
       plotJs,
       (_, a) =>
-        `(${a.expr} ? vec4(0.1764705882, 0.4392156863, 0.7019607843,1) : vec4(0))`,
+        `(${a.expr} ? vec4(0.1764705882, 0.4392156863, 0.7019607843, 1) : vec4(0))`,
     )
 
     FN_RGB.add(
