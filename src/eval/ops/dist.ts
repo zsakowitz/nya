@@ -101,7 +101,7 @@ export class FnDist<Q extends TyName = TyName> extends FnDistManual<Q> {
   }
 }
 
-function icon(name: TyName) {
+export function icon(name: TyName) {
   try {
     return TY_INFO[name].icon()
   } catch {

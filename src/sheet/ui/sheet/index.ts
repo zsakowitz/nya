@@ -7,10 +7,12 @@ import type { Regl } from "regl"
 import regl from "regl"
 import { GlslContext } from "../../../eval/lib/fn"
 import { FNS } from "../../../eval/ops"
+import { icon } from "../../../eval/ops/dist"
 import { ALL_DOCS } from "../../../eval/ops/docs"
 import { declareAddR64 } from "../../../eval/ops/op/add"
 import { declareMulR64 } from "../../../eval/ops/op/mul"
-import type { JsVal, TyName } from "../../../eval/ty"
+import { VARS } from "../../../eval/ops/vars"
+import type { JsVal, TyName, Type } from "../../../eval/ty"
 import { num, real } from "../../../eval/ty/create"
 import { any, TY_INFO } from "../../../eval/ty/info"
 import { splitRaw } from "../../../eval/ty/split"
@@ -49,20 +51,28 @@ function createDocs(
   hide: () => void,
   packages: Package[] | null,
 ) {
+  function makeDocName(name: string) {
+    return h(
+      "text-[1.265rem]/[1.15]",
+      ...(name.match(/[a-z]+|[^a-z]+/g) || []).map((x) =>
+        x.match(/\p{L}/u) ?
+          h(
+            "font-['Times_New_Roman']" +
+              (x.length === 1 && x.match(/[a-z]/) ? " italic" : ""),
+            x,
+          )
+        : h("font-['Symbola']", x),
+      ),
+    )
+  }
+
   function makeDoc(fn: { name: string; label: string; docs(): Node[] }) {
     const nodes = fn.docs()
     if (nodes.length == 0) return null
 
     return h(
       "flex flex-col",
-      h(
-        "text-[1.265rem]/[1.15]",
-        ...(fn.name.match(/[a-z]+|[^a-z]+/g) || []).map((x) =>
-          x.match(/[a-z]/) ?
-            h("font-['Times_New_Roman']", x)
-          : h("font-['Symbola']", x),
-        ),
-      ),
+      makeDocName(fn.name),
       h("text-sm leading-tight text-slate-500", fn.label),
       h("flex flex-col pl-4 mt-1", ...nodes),
     )
@@ -513,6 +523,29 @@ function createDocs(
     ])
   }
 
+  function secNamedVariables() {
+    return section("named variables", [
+      h(
+        "flex flex-col",
+        ...Object.entries(VARS)
+          .sort(([a], [b]) => a.length - b.length || (a < b ? -1 : 1))
+          .map(([name, a]) => {
+            let value: Type
+            try {
+              value = a.js
+            } catch {
+              value = a.glsl
+            }
+            return h(
+              "flex gap-2",
+              h("", icon(value.type)),
+              h("", makeDocName(name)),
+            )
+          }),
+      ),
+    ])
+  }
+
   function secNamedFunctions() {
     return section(
       "named functions",
@@ -560,6 +593,7 @@ function createDocs(
     secDataTypes(),
     secShaders(),
     secAdvancedOperators(),
+    secNamedVariables(),
     secNamedFunctions(),
     secUnnamedFunctions(),
     secChangelog(),
