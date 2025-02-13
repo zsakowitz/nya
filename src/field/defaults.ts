@@ -181,11 +181,6 @@ export const autos = new WordMap<Init>([
 ]).freeze()
 
 export const words = new WordMap<WordKind>([
-  // Standard functions
-  ["log", "prefix"],
-  ["ln", "prefix"],
-  ["exp", "prefix"],
-
   // Standard variables
   ["width", "var"],
   ["height", "var"],
@@ -195,42 +190,9 @@ export const words = new WordMap<WordKind>([
   ["with", "infix"],
   ["withseq", "infix"],
 
-  // Trig functions
-  ["sin", "prefix"],
-  ["sinh", "prefix"],
-  ["arcsin", "prefix"],
-  ["arcsinh", "prefix"],
-
-  ["cos", "prefix"],
-  ["cosh", "prefix"],
-  ["arccos", "prefix"],
-  ["arccosh", "prefix"],
-
-  ["tan", "prefix"],
-  ["tanh", "prefix"],
-  ["arctan", "prefix"],
-  ["arctanh", "prefix"],
-
-  ["sec", "prefix"],
-  ["sech", "prefix"],
-  ["arcsec", "prefix"],
-  ["arcsech", "prefix"],
-
-  ["csc", "prefix"],
-  ["csch", "prefix"],
-  ["arccsc", "prefix"],
-  ["arccsch", "prefix"],
-
-  ["cot", "prefix"],
-  ["coth", "prefix"],
-  ["arccot", "prefix"],
-  ["arccoth", "prefix"],
-
   // Statistics
   ["mean", "prefix"],
   ["median", "prefix"],
-  ["min", "prefix"],
-  ["max", "prefix"],
   ["quartile", "prefix"],
   ["quantile", "prefix"],
   ["stdev", "prefix"],
@@ -253,21 +215,7 @@ export const words = new WordMap<WordKind>([
   ["last", "prefix"],
 
   // Geometry
-  ["polygon", "prefix"],
-  ["distance", "prefix"],
-  ["midpoint", "prefix"],
-  ["point", "prefix"],
-  ["glider", "prefix"],
-  ["intersection", "prefix"],
-  ["segment", "prefix"],
-  ["segments", "prefix"],
-  ["line", "prefix"],
-  ["ray", "prefix"],
-  ["vector", "prefix"],
-  ["parallel", "prefix"],
-  ["perpendicular", "prefix"],
   ["bisector", "prefix"],
-  ["circle", "prefix"],
   ["arc", "prefix"],
   ["angle", "prefix"],
   ["anglebisector", "prefix"],
@@ -278,23 +226,9 @@ export const words = new WordMap<WordKind>([
   ["reflect", "prefix"],
   ["translate", "prefix"],
 
-  // Colors
-  ["rgb", "prefix"],
-  ["hsv", "prefix"],
-  ["oklab", "prefix"],
-  ["oklch", "prefix"],
-  ["invertdark", "prefix"],
-
   // Custom functions
-  ["valid", "prefix"],
-  ["firstvalid", "prefix"],
-  ["screendistance", "prefix"],
-  ["forceshader", "prefix"],
-  ["cmp", "prefix"],
   ["mrrp", "var"],
   ["meow", "var"],
-  ["component", "prefix"],
-  ["concat", "prefix"],
 
   // Number theory
   ["lcm", "prefix"],
@@ -303,19 +237,9 @@ export const words = new WordMap<WordKind>([
   ["floor", "prefix"],
   ["round", "prefix"],
   ["sign", "prefix"],
-  ["unsign", "prefix"],
   ["nPr", "infix"],
   ["nCr", "infix"],
   ["base", "infix"],
-
-  // Complex numbers
-  ["real", "prefix"],
-  ["imag", "prefix"],
-  ["arg", "prefix"],
-  ["dot", "prefix"],
-  ["point", "prefix"],
-  ["complex", "prefix"],
-  ["conj", "prefix"],
 
   // Boolean utilities
   ["false", "var"],
