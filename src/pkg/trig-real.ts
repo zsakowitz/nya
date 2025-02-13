@@ -38,7 +38,7 @@ export const FN_ARCCOT = new FnDist(
 export const PKG_TRIG_REAL: Package = {
   id: "nya:trig-real",
   name: "trigonometry",
-  label: "adds basic trig support for real numbers",
+  label: "adds standard trig functions for real numbers",
   init() {
     FN_SIN.add(
       ["r32"],

@@ -14,6 +14,7 @@ import { PKG_SLIDER } from "../pkg/slider.js"
 import { PKG_TEXT } from "../pkg/text.js"
 import { PKG_TRIG_COMPLEX } from "../pkg/trig-complex.js"
 import { PKG_TRIG_REAL } from "../pkg/trig-real.js"
+import { PKG_TRIG_HYPERBOLIC_REAL } from "../pkg/trigh-real.js"
 import { SheetFactory } from "./factory.js"
 import { Expr } from "./ui/expr/index.js"
 
@@ -33,6 +34,7 @@ const sheet = new SheetFactory(options)
   .load(PKG_TEXT)
   .load(PKG_COLOR_EXTRAS)
   .load(PKG_ITHKUIL)
+  .load(PKG_TRIG_HYPERBOLIC_REAL)
   .create()
 document.body.appendChild(sheet.el)
 

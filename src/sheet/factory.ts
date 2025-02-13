@@ -66,6 +66,9 @@ export class SheetFactory {
     }
 
     for (const key in pkg.eval?.fns) {
+      if (this.options.words.has(key)) {
+        console.log(key)
+      }
       this.options.words?.set(key, "prefix")
       FNS[key] = pkg.eval.fns[key]!
     }
