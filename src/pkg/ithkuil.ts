@@ -203,7 +203,7 @@ export const PKG_ITHKUIL: Package = {
         js: {
           type: "text",
           list: false,
-          value: [{ type: "plain", value: version }],
+          value: [{ type: "latex", value: version }],
         },
         get glsl(): never {
           return err()
