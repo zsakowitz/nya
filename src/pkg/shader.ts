@@ -84,97 +84,89 @@ const EXT_GLSL = defineExt({
       const rhs = ast.items[1]!
 
       declareAddR64(props.ctx)
-      const a = props.ctx.cached(
-        "r32",
-        coerceValueGlsl(
-          props.ctx,
-          OP_SUB.glsl(props.ctx, glsl(lhs, props), glsl(rhs, props)),
-          { type: "r32", list: false },
-        ),
-      )
-      const x = props.ctx.cached(
-        "r32",
-        props.bindings.with(
-          id({ value: "x" }),
-          {
-            type: "r64",
-            expr: "(v_coords.xy + dFdx(v_coords.xy))",
-            list: false,
-          },
-          () =>
-            props.bindings.with(
-              id({ value: "y" }),
-              {
-                type: "r64",
-                expr: "v_coords.zw",
-                list: false,
-              },
-              () =>
-                coerceValueGlsl(
-                  props.ctx,
-                  OP_SUB.glsl(props.ctx, glsl(lhs, props), glsl(rhs, props)),
-                  { type: "r32", list: false },
-                ),
-            ),
-        ),
-      )
-      const y = props.ctx.cached(
-        "r32",
-        props.bindings.with(
-          id({ value: "x" }),
-          {
-            type: "r64",
-            expr: "v_coords.xy",
-            list: false,
-          },
-          () =>
-            props.bindings.with(
-              id({ value: "y" }),
-              {
-                type: "r64",
-                expr: "(v_coords.zw + dFdy(v_coords.zw))",
-                list: false,
-              },
-              () =>
-                coerceValueGlsl(
-                  props.ctx,
-                  OP_SUB.glsl(props.ctx, glsl(lhs, props), glsl(rhs, props)),
-                  { type: "r32", list: false },
-                ),
-            ),
-        ),
-      )
-      const y2 = props.ctx.cached(
-        "r32",
-        props.bindings.with(
-          id({ value: "x" }),
-          {
-            type: "r64",
-            expr: "(v_coords.xy + dFdx(v_coords.xy))",
-            list: false,
-          },
-          () =>
-            props.bindings.with(
-              id({ value: "y" }),
-              {
-                type: "r64",
-                expr: "(v_coords.zw + dFdy(v_coords.zw))",
-                list: false,
-              },
-              () =>
-                coerceValueGlsl(
-                  props.ctx,
-                  OP_SUB.glsl(props.ctx, glsl(lhs, props), glsl(rhs, props)),
-                  { type: "r32", list: false },
-                ),
-            ),
-        ),
-      )
 
-      return [
-        props.ctx,
-        `abs(sign(${a}) + sign(${x}) + sign(${y})) != 3. || abs(sign(${a}) + sign(${x}) + sign(${y2})) != 3. ? vec4(0.1764705882, 0.4392156863, 0.7019607843, 1) : vec4(0)`,
-      ]
+      function go(dx: number, dy: number) {
+        const add = (a: string, b: string) => `(${a}+${b})`
+        const X2 = add("v_coords.xy", "dFdx(v_coords.xy)")
+        const Y2 = add("v_coords.zw", "dFdy(v_coords.zw)")
+        const offset = props.ctx.cachedNative(
+          "vec4",
+          `vec4(${dx.toExponential()} * u_unit_per_hpx.x, 0, ${dy.toExponential()} * u_unit_per_hpx.z, 0)`,
+        )
+        props.ctx.push`v_coords += ${offset};\n`
+        const a = props.ctx.cached(
+          "r32",
+          coerceValueGlsl(
+            props.ctx,
+            OP_SUB.glsl(props.ctx, glsl(lhs, props), glsl(rhs, props)),
+            { type: "r32", list: false },
+          ),
+        )
+        const x = props.ctx.cached(
+          "r32",
+          props.bindings.with(
+            id({ value: "x" }),
+            { type: "r64", expr: X2, list: false },
+            () =>
+              coerceValueGlsl(
+                props.ctx,
+                OP_SUB.glsl(props.ctx, glsl(lhs, props), glsl(rhs, props)),
+                { type: "r32", list: false },
+              ),
+          ),
+        )
+        const y = props.ctx.cached(
+          "r32",
+          props.bindings.with(
+            id({ value: "y" }),
+            { type: "r64", expr: Y2, list: false },
+            () =>
+              coerceValueGlsl(
+                props.ctx,
+                OP_SUB.glsl(props.ctx, glsl(lhs, props), glsl(rhs, props)),
+                { type: "r32", list: false },
+              ),
+          ),
+        )
+        const y2 = props.ctx.cached(
+          "r32",
+          props.bindings.with(
+            id({ value: "x" }),
+            { type: "r64", expr: X2, list: false },
+            () =>
+              props.bindings.with(
+                id({ value: "y" }),
+                { type: "r64", expr: Y2, list: false },
+                () =>
+                  coerceValueGlsl(
+                    props.ctx,
+                    OP_SUB.glsl(props.ctx, glsl(lhs, props), glsl(rhs, props)),
+                    { type: "r32", list: false },
+                  ),
+              ),
+          ),
+        )
+        const isEdge = props.ctx.cached(
+          "bool",
+          `(abs(sign(${a}) + sign(${x}) + sign(${y})) != 3. || abs(sign(${a}) + sign(${x}) + sign(${y2})) != 3.)`,
+        )
+        props.ctx.push`v_coords -= ${offset};\n`
+        return isEdge
+      }
+
+      const results = [-1.5, -1, 0, 1, 1.5]
+        .flatMap((a) =>
+          [-1.5, -1, 0, 1, 1.5].map((b) => ({ a, b, dist: Math.hypot(a, b) })),
+        )
+        .sort((a, b) => b.dist - a.dist)
+        .filter((a) => a.dist < 2)
+        .map(({ a, b }) => {
+          const result = go(a, b)
+          return `${result} ? vec4(0.1764705882, 0.4392156863, 0.7019607843, 1) : `
+        })
+        .join("")
+
+      return [props.ctx, `${results}vec4(0)`]
     }
 
     if (ast.type == "binding") {

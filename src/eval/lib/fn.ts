@@ -53,14 +53,18 @@ export class GlslContext {
     }
   }
 
-  cached(ty: TyName, val: string): string {
+  cachedNative(ty: string, val: string): string {
     if (val.match(/^([A-Za-z_]+|\d+|\d*\.\d+|\d+\.)$/)) {
       return val
     }
 
     const name = this.name()
-    this.push`${TY_INFO[ty].glsl} ${name} = ${val};\n`
+    this.push`${ty} ${name} = ${val};\n`
     return name
+  }
+
+  cached(ty: TyName, val: string): string {
+    return this.cachedNative(TY_INFO[ty].glsl, val)
   }
 
   cache(val: GlslVal): string {
