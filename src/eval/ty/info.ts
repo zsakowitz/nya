@@ -141,6 +141,19 @@ TY_INFO.never = {
       has() {
         return true
       },
+      getOwnPropertyDescriptor(_, prop) {
+        return {
+          configurable: true,
+          value: {
+            js() {
+              return TY_INFO[prop as TyName].garbage.js
+            },
+            glsl() {
+              return TY_INFO[prop as TyName].garbage.glsl
+            },
+          },
+        }
+      },
     },
   ),
   write: {

@@ -178,6 +178,7 @@ export const autos = new WordMap<Init>([
   ["pi", SymPi],
   ["tau", SymTau],
   ["infinity", SymInfinity],
+  ["infty", SymInfinity],
 ]).freeze()
 
 export const words = new WordMap<WordKind>([
