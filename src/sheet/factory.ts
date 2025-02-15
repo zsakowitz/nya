@@ -36,7 +36,7 @@ export class SheetFactory {
     for (const getDep of pkg.deps || []) {
       const dep = getDep()
       if (!(dep.id in this.loaded)) {
-        console.log("loading " + dep.id + " from " + pkg.id)
+        console.log(`[load] ${dep.id} from ${pkg.id}`)
       }
       this.load(dep)
     }

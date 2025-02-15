@@ -129,6 +129,7 @@ export class Field extends FieldInert {
   }
 
   onAfterChange(wasChangeCanceled: boolean) {
+    super.onAfterChange?.(wasChangeCanceled)
     this.showCursor(!wasChangeCanceled)
   }
 }

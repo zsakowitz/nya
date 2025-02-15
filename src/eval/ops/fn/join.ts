@@ -13,7 +13,6 @@ export const FN_JOIN: Fn & WithDocs = {
   js(...args) {
     args = args.filter((x) => x.list !== 0)
     const ty = coerceTy(args)
-    console.log(ty)
     const items = args.flatMap((x) => {
       x = coerceValueJs(x, { type: ty, list: x.list })
       return x.list === false ? [x.value] : x.value

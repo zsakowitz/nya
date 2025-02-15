@@ -313,3 +313,7 @@ body {
 :where(.nya-range-error) .nya-range-scrubber {
   @apply hidden;
 }
+
+.mq-frozen:before {
+  @apply absolute left-1/2 top-full inline-block h-[calc(0.75em_+_4px)] -translate-x-1/2 -translate-y-1/2 rounded bg-blue-500 px-[0.2em] text-[50%] text-blue-50 content-[--label];
+}

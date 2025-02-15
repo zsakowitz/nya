@@ -105,7 +105,7 @@ export function icon(name: TyName) {
   try {
     return TY_INFO[name].icon()
   } catch {
-    console.error()
+    console.error("[icon missing]", name)
     return h("", name)
   }
 }

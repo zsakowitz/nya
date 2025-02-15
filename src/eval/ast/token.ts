@@ -230,8 +230,15 @@ export interface Nodes {
 export type NodeName = keyof Nodes
 
 /**
- * A part of the AST. The intermediate representation is so close to the final
- * representation that they're essentially merged.
+ * An AST node.
+ *
+ * Because the command and block system takes care of most parsing ambiguities,
+ * the same node type is used for intermediate and final representations, just
+ * with different transforms applied.
+ *
+ * An intermediate tree is typically an array of nodes (so that `2+3,4` might be
+ * five tokens), but a final tree is just one (so that `2+3,4` would be
+ * `((2)+(3)),(4)`).
  */
 export type Node = { [K in NodeName]: Nodes[K] & { type: K } }[NodeName]
 

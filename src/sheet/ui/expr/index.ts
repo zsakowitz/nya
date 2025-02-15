@@ -38,7 +38,28 @@ export class Expr {
       class:
         "grid grid-cols-[2.5rem_auto] border-r border-b border-[--nya-border] relative nya-expr focus:outline-none",
     })
-    this.el.addEventListener("keydown", (event) => {
+    this.field = new Field(
+      this,
+      "block overflow-x-auto [&::-webkit-scrollbar]:hidden min-h-[3.265rem] max-w-[calc(var(--nya-sidebar)_-_2.5rem_-_1px)] p-4 focus:outline-none",
+    )
+    this.elOutput = h("contents")
+    this.elError = h(
+      "block hidden mx-1 -mt-2 px-1 pb-1 leading-tight italic text-[--nya-expr-error] whitespace-pre-wrap font-sans pointer-events-none",
+    )
+    this.elFocus = h(
+      {
+        class:
+          "inline-flex bg-[--nya-bg-sidebar] flex-col p-0.5 border-r border-[--nya-border] font-sans text-[--nya-expr-index] text-[65%] leading-none [:focus-within>&]:bg-[--nya-expr-focus] [:focus-within>&]:text-[--nya-expr-focus-index] [:focus-within>&]:border-[--nya-expr-focus] [:active>&]:bg-[--nya-expr-focus] [:active>&]:text-[--nya-expr-focus-index] [:active>&]:border-[--nya-expr-focus] focus:outline-none",
+        tabindex: "-1",
+      },
+      (this.elIndex = h("")),
+      fa(
+        faWarning,
+        "hidden mx-auto size-6 fill-[--nya-icon-error] [.nya-expr-error_&]:block",
+      ),
+      (this.elAside = h("contents")),
+    )
+    this.elFocus.addEventListener("keydown", (event) => {
       if (
         event.altKey ||
         event.ctrlKey ||
@@ -53,30 +74,11 @@ export class Expr {
         this.delete()
       }
     })
-    this.field = new Field(
-      this,
-      "block overflow-x-auto [&::-webkit-scrollbar]:hidden min-h-[3.265rem] max-w-[calc(var(--nya-sidebar)_-_2.5rem_-_1px)] p-4 focus:outline-none",
-    )
-    this.elOutput = h("contents")
-    this.elError = h(
-      "block hidden mx-1 -mt-2 px-1 pb-1 leading-tight italic text-[--nya-expr-error] whitespace-pre-wrap font-sans pointer-events-none",
-    )
 
     this.el.append(
       // grey side of expression
-      (this.elFocus = h(
-        {
-          class:
-            "inline-flex bg-[--nya-bg-sidebar] flex-col p-0.5 border-r border-[--nya-border] font-sans text-[--nya-expr-index] text-[65%] leading-none [:focus-within>&]:bg-[--nya-expr-focus] [:focus-within>&]:text-[--nya-expr-focus-index] [:focus-within>&]:border-[--nya-expr-focus] [:active>&]:bg-[--nya-expr-focus] [:active>&]:text-[--nya-expr-focus-index] [:active>&]:border-[--nya-expr-focus] focus:outline-none",
-          tabindex: "-1",
-        },
-        (this.elIndex = h("")),
-        fa(
-          faWarning,
-          "hidden mx-auto size-6 fill-[--nya-icon-error] [.nya-expr-error_&]:block",
-        ),
-        (this.elAside = h("contents")),
-      )),
+      this.elFocus,
+
       // main expression body
       h("flex flex-col", this.field.el, this.elOutput, this.elError),
 

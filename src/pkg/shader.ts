@@ -86,9 +86,9 @@ const EXT_GLSL = defineExt({
       declareAddR64(props.ctx)
 
       function go(dx: number, dy: number) {
-        const add = (a: string, b: string) => `(${a}+${b})`
-        const X2 = add("v_coords.xy", "dFdx(v_coords.xy)")
-        const Y2 = add("v_coords.zw", "dFdy(v_coords.zw)")
+        const add = (a: string, b: string) => `_helper_add_r64(${a},${b})`
+        const X2 = add("v_coords.xy", "u_unit_per_hpx.xy")
+        const Y2 = add("v_coords.zw", "u_unit_per_hpx.zw")
         const offset = props.ctx.cachedNative(
           "vec4",
           `vec4(${dx.toExponential()} * u_unit_per_hpx.x, 0, ${dy.toExponential()} * u_unit_per_hpx.z, 0)`,
@@ -154,12 +154,16 @@ const EXT_GLSL = defineExt({
         return isEdge
       }
 
-      const results = [-1.5, -1, 0, 1, 1.5]
+      const results = [-3, -2, -1, 0, 1, 2, 3]
         .flatMap((a) =>
-          [-1.5, -1, 0, 1, 1.5].map((b) => ({ a, b, dist: Math.hypot(a, b) })),
+          [-3, -2, -1, 0, 1, 2, 3].map((b) => ({
+            a,
+            b,
+            dist: Math.hypot(a, b),
+          })),
         )
         .sort((a, b) => b.dist - a.dist)
-        .filter((a) => a.dist < 2)
+        .filter((a) => a.dist < 3)
         .map(({ a, b }) => {
           const result = go(a, b)
           return `${result} ? vec4(0.1764705882, 0.4392156863, 0.7019607843, 1) : `

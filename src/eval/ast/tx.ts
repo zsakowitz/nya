@@ -605,29 +605,18 @@ export const AST_TXRS: {
       },
     },
     deps(node, deps) {
-      if (deps.isBound(id(node))) {
-        if (node.sup) {
-          deps.add(node.sup)
-        }
-        return
+      if (node.sup) {
+        deps.add(node.sup)
       }
 
-      builtin: {
-        if (node.sub) break builtin
-
-        const builtin = VARS[node.value]
-        if (builtin?.dynamic) break builtin
-
-        if (node.sup) {
-          deps.add(node.sup)
-        }
+      if (
+        deps.isBound(id(node)) ||
+        (!node.sub && node.value in VARS && !VARS[node.value]?.dynamic)
+      ) {
         return
       }
 
       deps.track(node)
-      if (node.sup) {
-        deps.add(node.sup)
-      }
     },
   },
   frac: {
@@ -851,4 +840,4 @@ export const AST_TXRS: {
   ),
 } satisfies Partial<{
   [K in Node["type"]]: AstTxr<Extract<Node, { type: K }>>
-}> as any as { [K in Node["type"]]: AstTxr<Extract<Node, { type: K }>> }
+}> as any

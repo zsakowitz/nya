@@ -50,6 +50,7 @@ if (location.href.includes("localhost")) {
   expr`\operatorname{ithkuilscript}\text{hlaséi-rrala sakawi}`
   expr`b=.3`
   expr`\operatorname{segment}\left(\left(-10.3,-1.19\right),\left(-5.32,5.75\right)\right)`
+  expr`b^2`
 } else {
   expr`ithkuilscript\text{hlaséi-rrala sakawi}`
   expr`\operatorname{vector}\left(\left(-1,-.5\right),\left(-.5,1\right)\right)`
