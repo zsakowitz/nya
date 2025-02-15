@@ -19,10 +19,8 @@ export function canCoerce(src: TyName, dst: TyName): boolean {
 
 /** Useful for assembling lists. */
 export function coerceTy(tys: readonly Ty[]): TyName {
-  // We need to pick *something*, so why not "bool"?
-  // Could make a special "never" type, but it seems so useless.
   if (tys.length == 0) {
-    return "bool"
+    return "never"
   }
 
   const possible = Object.create(null)

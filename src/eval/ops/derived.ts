@@ -3,6 +3,7 @@ import type { GlslVal, GlslValue, JsVal, JsValue, Ty, TyName } from "../ty"
 import { unifyLists } from "../ty/coerce"
 import { TY_INFO } from "../ty/info"
 
+// TODO: remove or use this
 export class FnDerived {
   constructor(
     readonly name: string,

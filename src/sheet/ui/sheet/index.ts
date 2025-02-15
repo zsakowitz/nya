@@ -299,7 +299,7 @@ function createDocs(
   }
 
   function secDataTypes() {
-    return section("data types", [
+    return section(`data types (${Object.entries(TY_INFO).length})`, [
       h(
         "flex flex-col",
         ...Object.entries(TY_INFO)

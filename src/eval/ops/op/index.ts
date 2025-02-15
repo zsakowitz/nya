@@ -4,7 +4,7 @@ import { num } from "../../ty/create"
 import { TY_INFO } from "../../ty/info"
 
 export function indexJs(on: JsValue, index: JsValue): JsValue {
-  if (!on.list) {
+  if (on.list === false) {
     throw new Error("Cannot index on a non-list.")
   }
   if (index.list !== false) {

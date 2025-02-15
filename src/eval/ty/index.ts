@@ -3,9 +3,13 @@
  *
  * Be sure to also extend the `TY_INFO` variable.
  */
-export interface Tys {}
+export interface Tys {
+  never: "__never"
+}
 
-export interface TyComponents {}
+export interface TyComponents {
+  never: never
+}
 
 null! as TyComponents satisfies Record<TyName, TyName>
 

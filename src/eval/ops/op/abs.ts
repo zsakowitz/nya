@@ -19,7 +19,7 @@ export function abs64(ctx: GlslContext, x: string) {
   declareCmpR64(ctx)
   declareSubR64(ctx)
   ctx.glsl`vec2 _helper_abs_r64(vec2 x) {
-  if (_helper_cmp_r64(vec2(0), x) == -1.0) {
+  if (_helper_cmp_r64(vec2(0), x) == 1.0) {
     x = _helper_sub_r64(vec2(0), x);
   }
   return x;

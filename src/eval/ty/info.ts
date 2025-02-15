@@ -1,5 +1,6 @@
 import type { SPoint, TyComponents, TyName, Tys } from "."
 import { CmdComma } from "../../field/cmd/leaf/comma"
+import { CmdWord } from "../../field/cmd/leaf/word"
 import { CmdBrack } from "../../field/cmd/math/brack"
 import { Block, L, R } from "../../field/model"
 import { h, p, svgx } from "../../jsx"
@@ -115,3 +116,53 @@ export function any(
 }
 
 export const TY_INFO: TyInfoMap = Object.create(null) as any
+
+TY_INFO.never = {
+  name: "never",
+  namePlural: "nevers",
+  garbage: {
+    js: "__never",
+    glsl: "false",
+  },
+  glsl: "bool",
+  coerce: new Proxy<TyCoerceMap<never>>(
+    {},
+    {
+      get(_, prop) {
+        return {
+          js() {
+            return TY_INFO[prop as TyName].garbage.js
+          },
+          glsl() {
+            return TY_INFO[prop as TyName].garbage.glsl
+          },
+        }
+      },
+      has() {
+        return true
+      },
+    },
+  ),
+  write: {
+    isApprox(_) {
+      return false
+    },
+    display(_, props) {
+      new CmdWord("undefined").insertAt(props.cursor, L)
+    },
+  },
+  icon() {
+    return h(
+      "",
+      h(
+        "text-[theme(colors.slate.500)] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px]",
+        h(
+          "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
+        ),
+        h(
+          "w-[30px] h-0 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-t-2 border-current -rotate-[45deg] border-dashed",
+        ),
+      ),
+    )
+  },
+}
