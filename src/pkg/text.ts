@@ -3,7 +3,7 @@ import type { Node } from "../eval/ast/token"
 import { NO_DRAG } from "../eval/ast/tx"
 import { safe } from "../eval/lib/util"
 import { doc, FnDist } from "../eval/ops/dist"
-import { FnDistManual, type FnDistOverload } from "../eval/ops/dist-manual"
+import { FnDistManual, type FnOverload } from "../eval/ops/dist-manual"
 import { ALL_DOCS } from "../eval/ops/docs"
 import { OP_JUXTAPOSE } from "../eval/ops/op/juxtapose"
 import { OP_CDOT } from "../eval/ops/op/mul"
@@ -209,7 +209,7 @@ const FN_CONCAT = new (class extends FnDistManual<"text"> {
     ALL_DOCS.push(this)
   }
 
-  signature(args: Ty[]): FnDistOverload<"text"> {
+  signature(args: Ty[]): FnOverload<"text"> {
     return {
       params: args.map((x) => x.type),
       type: "text",

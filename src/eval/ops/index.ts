@@ -4,7 +4,6 @@ import type { GlslValue, JsValue } from "../ty"
 
 import { FN_CMP } from "./fn/cmp"
 import { FN_DEBUGPOINT } from "./fn/debugpoint"
-import { FN_FIRSTVALID } from "./fn/firstvalid"
 import { FN_JOIN } from "./fn/join"
 import { FN_LN } from "./fn/ln"
 import { FN_UNSIGN } from "./fn/unsign"
@@ -32,7 +31,6 @@ export const FNS: Record<string, Fn> = {
   unsign: FN_UNSIGN,
   debugpoint: FN_DEBUGPOINT,
   valid: FN_VALID,
-  firstvalid: FN_FIRSTVALID,
   ln: FN_LN,
   join: FN_JOIN,
 }

@@ -74,25 +74,27 @@ export const PKG_COLOR_EXTRAS: Package = {
       },
     )
 
-    FN_FIRSTVALID.add(
-      ["color"],
+    FN_FIRSTVALID.addSpread(
       "color",
-      (a) => (FN_VALID.js1(a).value ? a.value : TY_INFO.color.garbage.js),
-      (ctx, ar) => {
-        const a = ctx.cache(ar)
-        return `${FN_VALID.glsl1(ctx, { type: "color", expr: a }).expr} ? ${a} : ${TY_INFO.color.garbage.glsl}`
+      1,
+      "color",
+      (...args) => {
+        for (const arg of args) {
+          if (FN_VALID.js1(arg).value) {
+            return arg.value
+          }
+        }
+        return TY_INFO.color.garbage.js
       },
-    ).add(
-      ["color", "color"],
-      "color",
-      (a, b) =>
-        FN_VALID.js1(a).value ? a.value
-        : FN_VALID.js1(b).value ? b.value
-        : TY_INFO.color.garbage.js,
-      (ctx, ar, br) => {
-        const a = ctx.cache(ar)
-        const b = ctx.cache(br)
-        return `${FN_VALID.glsl1(ctx, { type: "color", expr: a }).expr} ? ${a} : ${FN_VALID.glsl1(ctx, { type: "color", expr: b }).expr} ? ${b} : ${TY_INFO.color.garbage.glsl}`
+      (ctx, ...args) => {
+        return (
+          args
+            .map((arg) => {
+              const a = ctx.cache(arg)
+              return `${FN_VALID.glsl1(ctx, { type: "color", expr: a }).expr} ? ${a} : `
+            })
+            .join("") + TY_INFO.color.garbage.glsl
+        )
       },
     )
 
@@ -157,28 +159,38 @@ export const PKG_COLOR_EXTRAS: Package = {
       valid: FN_VALID,
       oklab: FN_OKLAB,
       oklch: FN_OKLCH,
-      invertdark: new FnDist(
-        "invertdark",
-        "inverts the passed color if the computer is set to dark mode; otherwise, returns it unchanged",
-      ).add(
-        ["color"],
-        "color",
-        (a) => {
-          if (isDark()) {
-            return {
-              type: "color",
-              r: sub(frac(255, 0), a.value.r),
-              g: sub(frac(255, 0), a.value.g),
-              b: sub(frac(255, 0), a.value.b),
-              a: a.value.a,
-            }
-          } else return a.value
-        },
-        (ctx, ar) => {
-          const a = ctx.cache(ar)
-          return `(u_darkmul * ${a} + u_darkoffset)`
-        },
-      ),
+      lightdark: new FnDist(
+        "lightdark",
+        "if a single color is passed, it will be inverted in dark mode; if two arguments are passed, the first is used for light mode and the second for dark mode",
+      )
+        .add(
+          ["color"],
+          "color",
+          (a) => {
+            if (isDark()) {
+              return {
+                type: "color",
+                r: sub(frac(255, 0), a.value.r),
+                g: sub(frac(255, 0), a.value.g),
+                b: sub(frac(255, 0), a.value.b),
+                a: a.value.a,
+              }
+            } else return a.value
+          },
+          (ctx, ar) => {
+            const a = ctx.cache(ar)
+            return `(u_darkmul * ${a} + u_darkoffset)`
+          },
+        )
+        .add(
+          ["color", "color"],
+          "color",
+          (a, b) => (isDark() ? b.value : a.value),
+          (_, a, b) => {
+            return `(u_is_dark ? ${b.expr} : ${a.expr})`
+          },
+        ),
+      firstvalid: FN_FIRSTVALID,
     },
   },
 }

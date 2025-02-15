@@ -1,12 +1,13 @@
 import type { Package } from "."
 import { safe } from "../eval/lib/util"
-import { docByIcon, FnDist, FnDistVar } from "../eval/ops/dist"
-import { FnDistCaching, type FnDistOverload } from "../eval/ops/dist-manual"
+import { docByIcon, FnDist } from "../eval/ops/dist"
+import { FnDistCaching, type FnOverload } from "../eval/ops/dist-manual"
 import { ALL_DOCS } from "../eval/ops/docs"
 import { declareCmpR64, FN_CMP } from "../eval/ops/fn/cmp"
 import { FN_EXP } from "../eval/ops/fn/exp"
 import { FN_UNSIGN } from "../eval/ops/fn/unsign"
 import { FN_VALID } from "../eval/ops/fn/valid"
+import { FnList } from "../eval/ops/list"
 import { abs, abs64, OP_ABS } from "../eval/ops/op/abs"
 import { add, addR64, OP_ADD } from "../eval/ops/op/add"
 import {
@@ -51,8 +52,8 @@ declare module "../eval/ty/index.js" {
   }
 }
 
-export const FN_MAX = new FnDistVar("max", "returns the maximum of its inputs")
-export const FN_MIN = new FnDistVar("min", "returns the minimum of its inputs")
+export const FN_MAX = new FnList("max", "returns the maximum of its inputs")
+export const FN_MIN = new FnList("min", "returns the minimum of its inputs")
 
 function cmpJs(a: { value: SReal }, b: { value: SReal }) {
   const ar = num(a.value)
@@ -92,7 +93,7 @@ export const FN_COMPONENT = new (class extends FnDistCaching {
     ALL_DOCS.push(this)
   }
 
-  gen(args: Ty[]): FnDistOverload<TyName> {
+  gen(args: Ty[]): FnOverload<TyName> {
     if (args.length != 2) {
       throw new Error("'component' expects two parameters.")
     }
@@ -346,18 +347,24 @@ export const PKG_REAL: Package = {
       (_, a) => `exp(${a.expr})`,
     )
 
-    FN_MAX.add(
-      ["r32", "r32"],
+    FN_MAX.addSpread(
       "r32",
-      (a, b) => (num(b.value) > num(a.value) ? b.value : a.value),
-      (_, a, b) => `max(${a.expr}, ${b.expr})`,
+      1,
+      "r32",
+      (...args) =>
+        args.map((x) => x.value).reduce((a, b) => (num(b) > num(a) ? b : a)),
+      (_, ...args) =>
+        args.map((x) => x.expr).reduce((a, b) => `max(${a}, ${b})`),
     )
 
-    FN_MIN.add(
-      ["r32", "r32"],
+    FN_MIN.addSpread(
       "r32",
-      (a, b) => (num(b.value) < num(a.value) ? b.value : a.value),
-      (_, a, b) => `min(${a.expr}, ${b.expr})`,
+      1,
+      "r32",
+      (...args) =>
+        args.map((x) => x.value).reduce((a, b) => (num(b) < num(a) ? b : a)),
+      (_, ...args) =>
+        args.map((x) => x.expr).reduce((a, b) => `min(${a}, ${b})`),
     )
 
     FN_UNSIGN.add(

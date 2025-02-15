@@ -15,8 +15,24 @@ import { declareGlsl } from "../ty/decl"
 import { TY_INFO } from "../ty/info"
 
 /** A single overload of a `FnDist` function. */
-export interface FnDistOverload<Q extends TyName = TyName> {
+export type FnOverload<Q extends TyName = TyName> =
+  | FnOverloadFixed<Q>
+  | FnOverloadVar<Q>
+
+/** A {@linkcode FnOverload} with a fixed-length argument count. */
+export interface FnOverloadFixed<Q extends TyName = TyName> {
+  param?: undefined
   params: readonly TyName[]
+  type: Q
+  js(...args: JsVal[]): Val<Q>
+  glsl(ctx: GlslContext, ...args: GlslVal[]): string
+}
+
+/** A {@linkcode FnOverload} with a variable-length argument count. */
+export interface FnOverloadVar<Q extends TyName = TyName> {
+  param: TyName
+  min: number
+  params?: undefined
   type: Q
   js(...args: JsVal[]): Val<Q>
   glsl(ctx: GlslContext, ...args: GlslVal[]): string
@@ -35,7 +51,7 @@ export abstract class FnDistManual<Q extends TyName = TyName> implements Fn {
     readonly label: string,
   ) {}
 
-  abstract signature(args: Ty[]): FnDistOverload<Q>
+  abstract signature(args: Ty[]): FnOverload<Q>
 
   js1(...args: JsVal[]): JsVal<Q> {
     const overload = this.signature(args)
@@ -43,7 +59,9 @@ export abstract class FnDistManual<Q extends TyName = TyName> implements Fn {
     return {
       type: overload.type,
       value: overload.js(
-        ...args.map((x, i) => coerceValJs(x, overload.params[i]!)),
+        ...args.map((x, i) =>
+          coerceValJs(x, overload.param ?? overload.params[i]!),
+        ),
       ),
     }
   }
@@ -55,7 +73,9 @@ export abstract class FnDistManual<Q extends TyName = TyName> implements Fn {
       type: overload.type,
       expr: overload.glsl(
         ctx,
-        ...args.map((x, i) => coerceValGlsl(ctx, x, overload.params[i]!)),
+        ...args.map((x, i) =>
+          coerceValGlsl(ctx, x, overload.param ?? overload.params[i]!),
+        ),
       ),
     }
   }
@@ -69,7 +89,9 @@ export abstract class FnDistManual<Q extends TyName = TyName> implements Fn {
         type: overload.type,
         list,
         value: overload.js(
-          ...args.map((x, i) => coerceValJs(x as JsVal, overload.params[i]!)),
+          ...args.map((x, i) =>
+            coerceValJs(x as JsVal, overload.param ?? overload.params[i]!),
+          ),
         ),
       }
     }
@@ -82,7 +104,7 @@ export abstract class FnDistManual<Q extends TyName = TyName> implements Fn {
           ...args.map((x, i) =>
             coerceValJs(
               x.list === false ? x : { type: x.type, value: x.value[j]! },
-              overload.params[i]!,
+              overload.param ?? overload.params[i]!,
             ),
           ),
         ),
@@ -101,7 +123,11 @@ export abstract class FnDistManual<Q extends TyName = TyName> implements Fn {
         expr: overload.glsl(
           ctx,
           ...args.map((x, i) =>
-            coerceValGlsl(ctx, x as GlslVal, overload.params[i]!),
+            coerceValGlsl(
+              ctx,
+              x as GlslVal,
+              overload.param ?? overload.params[i]!,
+            ),
           ),
         ),
       }
@@ -124,7 +150,7 @@ export abstract class FnDistManual<Q extends TyName = TyName> implements Fn {
         coerceValGlsl(
           ctx,
           x.list === false ? x : { type: x.type, expr: `${x.expr}[${idx}]` },
-          overload.params[i]!,
+          overload.param ?? overload.params[i]!,
         ),
       ),
     )};\n`
@@ -137,11 +163,12 @@ export abstract class FnDistManual<Q extends TyName = TyName> implements Fn {
 export abstract class FnDistCaching<
   Q extends TyName = TyName,
 > extends FnDistManual {
-  cached: Record<string, FnDistOverload<Q> | Error> = Object.create(null)
+  private readonly cached: Record<string, FnOverload<Q> | Error> =
+    Object.create(null)
 
-  abstract gen(args: Ty[]): FnDistOverload<Q>
+  abstract gen(args: Ty[]): FnOverload<Q>
 
-  signature(args: Ty[]): FnDistOverload<keyof Tys> {
+  signature(args: Ty[]): FnOverload<keyof Tys> {
     const name = args.map((x) => x.type).join(" ")
     if (name in this.cached) {
       const val = this.cached[name]!

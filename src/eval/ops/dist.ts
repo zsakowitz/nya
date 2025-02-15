@@ -3,20 +3,16 @@ import { OpRightArrow } from "../../field/cmd/leaf/op"
 import { CmdBrack } from "../../field/cmd/math/brack"
 import { h } from "../../jsx"
 import { GlslContext } from "../lib/fn"
-import type { GlslVal, JsVal, Ty, TyName, Tys, Val } from "../ty"
+import type { GlslVal, JsVal, Ty, TyName, Type, Tys } from "../ty"
 import { canCoerce } from "../ty/coerce"
 import { listTy } from "../ty/debug"
 import { TY_INFO } from "../ty/info"
-import { FnDistManual } from "./dist-manual"
+import {
+  FnDistManual,
+  type FnOverload,
+  type FnOverloadVar,
+} from "./dist-manual"
 import { ALL_DOCS } from "./docs"
-
-/** A single overload of a `FnDist` function. */
-export interface FnDistOverload<Q extends TyName = TyName> {
-  params: readonly TyName[]
-  type: Q
-  js(...args: JsVal[]): Val<Q>
-  glsl(ctx: GlslContext, ...args: GlslVal[]): string
-}
 
 /**
  * `FnDist` are functions which take a fixed number of arguments of
@@ -32,7 +28,7 @@ export interface FnDistOverload<Q extends TyName = TyName> {
  * {@linkcode FnDist.add} and properly emitted in return types.
  */
 export class FnDist<Q extends TyName = TyName> extends FnDistManual<Q> {
-  o: FnDistOverload<Q>[] = []
+  o: FnOverload<Q>[] = []
   private parent?: FnDist<Q>
 
   constructor(name: string, label: string) {
@@ -62,8 +58,35 @@ export class FnDist<Q extends TyName = TyName> extends FnDistManual<Q> {
     return this
   }
 
-  signature(args: Ty[]): FnDistOverload<Q> {
+  /** Adds a function which can take any number of arguments of a single type. */
+  addSpread<T extends TyName, R extends Q>(
+    param: T,
+    min: number,
+    ret: R,
+    js: (...args: JsVal<T>[]) => Tys[R],
+    glsl: (ctx: GlslContext, ...args: GlslVal<T>[]) => string,
+  ) {
+    this.o.push({ param, min, type: ret, js, glsl })
+    return this
+  }
+
+  signature(args: Ty[]): FnOverload<Q> {
     outer: for (const overload of this.o) {
+      if (overload.param != null) {
+        if (args.length < overload.min) {
+          continue
+        }
+
+        for (let i = 0; i < args.length; i++) {
+          const arg = args[i]!
+          if (!canCoerce(arg.type, overload.param)) {
+            continue outer
+          }
+        }
+
+        return overload
+      }
+
       const { params } = overload
 
       if (args.length != params.length) {
@@ -90,6 +113,28 @@ export class FnDist<Q extends TyName = TyName> extends FnDistManual<Q> {
     }
   }
 
+  signatureList(arg: Type<TyName, number>): FnOverloadVar<Q> {
+    for (const overload of this.o) {
+      if (overload.param == null || arg.list < overload.min) {
+        continue
+      }
+
+      if (!canCoerce(arg.type, overload.param)) {
+        continue
+      }
+
+      return overload
+    }
+
+    if (this.parent) {
+      return this.parent.signatureList(arg)
+    } else {
+      throw new Error(
+        `Cannot call '${this.name}' with a list of ${TY_INFO[arg.type].namePlural}.`,
+      )
+    }
+  }
+
   withName(name: string, label: string) {
     const dist = new FnDist<Q>(name, label)
     dist.parent = this
@@ -97,7 +142,11 @@ export class FnDist<Q extends TyName = TyName> extends FnDistManual<Q> {
   }
 
   docs(): HTMLSpanElement[] {
-    return this.o.map((overload) => doc(overload.params, overload.type))
+    return this.o.map((overload) =>
+      overload.param == null ?
+        doc(overload.params, overload.type)
+      : docList(overload.param, overload.min, overload.type),
+    )
   }
 }
 
@@ -114,11 +163,29 @@ export function doc(params: readonly TyName[], type: TyName, list = false) {
   return docByIcon(params.map(icon), icon(type), list)
 }
 
-export function docByIcon(
-  params: HTMLSpanElement[],
-  type: HTMLSpanElement,
+export function docList(
+  param: TyName,
+  min: number,
+  type: TyName,
   list = false,
 ) {
+  const pm = icon(param)
+  return docByIcon(
+    [
+      ...Array.from({ length: Math.max(min, 2) }, () => [
+        pm.cloneNode(true),
+        new CmdComma().el,
+      ]).flat(),
+      h("nya-cmd-dot nya-cmd-dot-l", "."),
+      h("nya-cmd-dot", "."),
+      h("nya-cmd-dot", "."),
+    ],
+    icon(type),
+    list,
+  )
+}
+
+export function docByIcon(params: Node[], type: Node, list = false) {
   const brack = CmdBrack.render("(", ")", null, {
     el: h("", ...params.flatMap((x) => [new CmdComma().el, x]).slice(1)),
   })
@@ -141,47 +208,4 @@ export function docByIcon(
       })
     : type,
   )
-}
-
-/**
- * `FnDistVar` are like `FnDist`, but will automatically resolve calls with
- * three or more arguments to nested two-argument calls by creating virtual
- * signatures on-the-fly.
- *
- * Calling `FnDistVar(a, b, c, d)` will thus return the value of
- * `FnDist(FnDist(FnDist(a, b), c), d)`.
- */
-export class FnDistVar<Q extends TyName = TyName> extends FnDist<Q> {
-  signature(args: Ty[]): FnDistOverload<Q> {
-    if (args.length <= 2) {
-      return super.signature(args)
-    }
-
-    let signature = super.signature([args[0]!, args[1]!])
-
-    for (let i = 2; i < args.length; i++) {
-      const self = super.signature([signature, args[i]!])
-      const prev = signature
-
-      signature = {
-        params: [...prev.params, self.params[self.params.length - 1]!],
-        type: self.type,
-        js(...args) {
-          return self.js(
-            { type: prev.type, value: prev.js(...args.slice(0, -1)) },
-            args[args.length - 1]!,
-          )
-        },
-        glsl(ctx, ...args) {
-          return self.glsl(
-            ctx,
-            { type: prev.type, expr: prev.glsl(ctx, ...args.slice(0, -1)) },
-            args[args.length - 1]!,
-          )
-        },
-      }
-    }
-
-    return signature
-  }
 }

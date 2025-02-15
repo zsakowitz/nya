@@ -190,7 +190,7 @@ export const PKG_ITHKUIL: Package = {
             source,
             svgx(
               box.x + " " + box.y + " " + box.width + " " + box.height,
-              "",
+              "fill-current",
               characters,
             ),
           ]

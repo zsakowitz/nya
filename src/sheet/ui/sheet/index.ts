@@ -924,6 +924,8 @@ export class Sheet {
         u_darkmul: this.regl.prop("u_darkmul"),
         // @ts-expect-error
         u_darkoffset: this.regl.prop("u_darkoffset"),
+        // @ts-expect-error
+        u_is_dark: this.regl.prop("u_is_dark"),
       },
     })
 
@@ -949,6 +951,7 @@ export class Sheet {
           ],
           u_darkmul: isDark() ? [-1, -1, -1, 1] : [1, 1, 1, 1],
           u_darkoffset: isDark() ? [1, 1, 1, 0] : [0, 0, 0, 0],
+          u_is_dark: isDark(),
         },
         () => program(),
       )
@@ -975,6 +978,7 @@ out vec4 color;
 vec4 v_coords;
 uniform vec4 u_darkmul;
 uniform vec4 u_darkoffset;
+uniform bool u_is_dark;
 uniform vec2 u_scale;
 uniform vec2 u_cx;
 uniform vec2 u_cy;
