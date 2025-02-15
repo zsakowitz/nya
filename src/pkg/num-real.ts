@@ -7,7 +7,6 @@ import { declareCmpR64, FN_CMP } from "../eval/ops/fn/cmp"
 import { FN_EXP } from "../eval/ops/fn/exp"
 import { FN_UNSIGN } from "../eval/ops/fn/unsign"
 import { FN_VALID } from "../eval/ops/fn/valid"
-import { FnList } from "../eval/ops/list"
 import { abs, abs64, OP_ABS } from "../eval/ops/op/abs"
 import { add, addR64, OP_ADD } from "../eval/ops/op/add"
 import {
@@ -51,9 +50,6 @@ declare module "../eval/ty/index.js" {
     r64: never
   }
 }
-
-export const FN_MAX = new FnList("max", "returns the maximum of its inputs")
-export const FN_MIN = new FnList("min", "returns the minimum of its inputs")
 
 function cmpJs(a: { value: SReal }, b: { value: SReal }) {
   const ar = num(a.value)
@@ -347,26 +343,6 @@ export const PKG_REAL: Package = {
       (_, a) => `exp(${a.expr})`,
     )
 
-    FN_MAX.addSpread(
-      "r32",
-      1,
-      "r32",
-      (...args) =>
-        args.map((x) => x.value).reduce((a, b) => (num(b) > num(a) ? b : a)),
-      (_, ...args) =>
-        args.map((x) => x.expr).reduce((a, b) => `max(${a}, ${b})`),
-    )
-
-    FN_MIN.addSpread(
-      "r32",
-      1,
-      "r32",
-      (...args) =>
-        args.map((x) => x.value).reduce((a, b) => (num(b) < num(a) ? b : a)),
-      (_, ...args) =>
-        args.map((x) => x.expr).reduce((a, b) => `min(${a}, ${b})`),
-    )
-
     FN_UNSIGN.add(
       ["r64"],
       "r64",
@@ -485,8 +461,6 @@ float _helper_cmp_r32(float a, float b) {
   eval: {
     fns: {
       exp: FN_EXP,
-      max: FN_MAX,
-      min: FN_MIN,
       unsign: FN_UNSIGN,
       valid: FN_VALID,
       cmp: FN_CMP,
