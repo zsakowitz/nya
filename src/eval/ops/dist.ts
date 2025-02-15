@@ -113,9 +113,13 @@ export class FnDist<Q extends TyName = TyName> extends FnDistManual<Q> {
     }
   }
 
+  /**
+   * The `min` parameter on spread overloads is not respected when calling
+   * `signatureList`; zero-length lists may be passed.
+   */
   signatureList(arg: Type<TyName, number>): FnOverloadVar<Q> {
     for (const overload of this.o) {
-      if (overload.param == null || arg.list < overload.min) {
+      if (overload.param == null) {
         continue
       }
 

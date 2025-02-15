@@ -7,6 +7,9 @@ import { FnDist } from "./dist"
 /**
  * A `FnList` is a function which normally operates on lists. It extends the
  * `FnDist` logic to spread the contents of a single list.
+ *
+ * The `min` parameter is not respected; zero-length lists may be passed to
+ * functions.
  */
 export class FnList<Q extends TyName = TyName> extends FnDist<Q> {
   js(...args: JsValue[]): JsValue<Q> {

@@ -11,6 +11,7 @@ import { PKG_NUM_QUATERNION } from "../pkg/num-quaternion.js"
 import { PKG_REAL } from "../pkg/num-real.js"
 import { PKG_SHADER, show } from "../pkg/shader.js"
 import { PKG_SLIDER } from "../pkg/slider.js"
+import { PKG_STATISTICS } from "../pkg/statistics.js"
 import { PKG_TEXT } from "../pkg/text.js"
 import { PKG_TRIG_COMPLEX } from "../pkg/trig-complex.js"
 import { PKG_TRIG_REAL } from "../pkg/trig-real.js"
@@ -35,6 +36,7 @@ const sheet = new SheetFactory(options)
   .load(PKG_COLOR_EXTRAS)
   .load(PKG_ITHKUIL)
   .load(PKG_TRIG_HYPERBOLIC_REAL)
+  .load(PKG_STATISTICS)
   .create()
 document.body.appendChild(sheet.el)
 
