@@ -65,20 +65,21 @@ class CmdIthkuilScript extends Leaf {
 
 const recognize = createRecognizer(affixes, roots)
 
-const CATEGORIES = Object.fromEntries(
-  Object.entries(generate)
-    .filter((x) => x[0].startsWith("ALL_"))
-    .map(([k, v]) => {
-      k = k.slice(4).toLowerCase().replace(/_/g, "")
-      if (k.endsWith("s")) k = k.slice(0, -1)
-      if (k == "slotxstresse") k = "slotxstress"
-      return [k, v] as const
-    })
-    .filter(
-      (a): a is readonly [string, string[] & any[]] =>
-        Array.isArray(a[1]) && a[1].every((x) => typeof x == "string"),
-    ),
-)
+const CATEGORIES_RAW = Object.entries(generate)
+  .filter((x) => x[0].startsWith("ALL_"))
+  .map(([k, v]) => {
+    k = k.slice(4).toLowerCase()
+    if (k.endsWith("s")) k = k.slice(0, -1)
+    if (k == "slot_x_stresse") k = "slot_x_stress"
+    if (k == "cases_skipping_degree_8") k = "case_skipping_degree_8"
+    return [k.replace(/_/g, ""), v, k.replace(/_/g, " ")] as const
+  })
+  .filter(
+    (a): a is readonly [string, string[] & any[], string] =>
+      Array.isArray(a[1]) && a[1].every((x) => typeof x == "string"),
+  )
+
+const CATEGORIES: Record<string, string[]> = Object.fromEntries(CATEGORIES_RAW)
 
 export const PKG_ITHKUIL: Package = {
   id: "nya:ithkuil",
@@ -231,7 +232,7 @@ export const PKG_ITHKUIL: Package = {
           const arg = args[0]! as JsVal<"text">
 
           const name = arg.value.map((x) => x.value).join("")
-          const category = CATEGORIES[name.toLowerCase().replace(/[_. ]/g, "")]
+          const category = CATEGORIES[name.toLowerCase().replace(/[_.\s]/g, "")]
           if (!category) {
             throw new Error(`The category '${name}' doesn't exist.`)
           }
@@ -261,9 +262,9 @@ export const PKG_ITHKUIL: Package = {
       ithkuilall: {
         js: {
           type: "text",
-          list: Object.keys(CATEGORIES).length,
-          value: Object.keys(CATEGORIES).map(
-            (name): Val<"text"> => [{ type: "plain", value: name }],
+          list: CATEGORIES_RAW.length,
+          value: CATEGORIES_RAW.map(
+            (name): Val<"text"> => [{ type: "plain", value: name[2] }],
           ),
         },
         get glsl(): never {
@@ -272,7 +273,7 @@ export const PKG_ITHKUIL: Package = {
         display(prop) {
           new OpEq(false).insertAt(prop.cursor, L)
           let first = true
-          for (const name of Object.keys(CATEGORIES)) {
+          for (const [, , name] of CATEGORIES_RAW) {
             if (first) {
               first = false
             } else {

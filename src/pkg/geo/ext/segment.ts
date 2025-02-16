@@ -1,13 +1,13 @@
-import { Prop } from "../../../sheet/ext"
-import { distLinePt } from "../fn/distance"
 import { each, type JsValue, type SPoint } from "../../../eval/ty"
 import { num, unpt } from "../../../eval/ty/create"
 import { gliderOnLine } from "../../../eval/ty/info"
 import { OpEq } from "../../../field/cmd/leaf/cmp"
 import { CmdVar } from "../../../field/cmd/leaf/var"
 import { Block, L, R } from "../../../field/model"
-import type { Paper } from "../../../sheet/ui/paper"
+import { Prop } from "../../../sheet/ext"
 import { defineHideable } from "../../../sheet/ext/hideable"
+import type { Paper } from "../../../sheet/ui/paper"
+import { distLinePt } from "../fn/distance"
 
 export function drawSegment(
   segment: [SPoint, SPoint],
@@ -106,7 +106,6 @@ export const EXT_SEGMENT = defineHideable({
         const { value: index } = gliderOnLine([p1, p2], at, data.paper)
         if (0 <= index && index <= 1) {
           SELECTED.set(data.expr, true)
-          console.log("selecting")
           return { ...data, value: data.value }
         }
       }

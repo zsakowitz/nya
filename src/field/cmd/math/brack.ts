@@ -292,8 +292,6 @@ export class CmdBrack extends Command<[Block]> {
   ) {
     const lhsSymbol = BRACKS[lhs]
     const rhsSymbol = BRACKS[rhs]
-    const name = `my-[.1em] inline-block *:contents ${lhsSymbol.mx} ${rhsSymbol.mx}`
-    console.log(name)
     return h(
       "relative inline-block nya-cmd-brack",
       h(
@@ -304,7 +302,10 @@ export class CmdBrack extends Command<[Block]> {
 
         lhsSymbol.html(),
       ),
-      h(name, block.el),
+      h(
+        `my-[.1em] inline-block *:contents ${lhsSymbol.mx} ${rhsSymbol.mx}`,
+        block.el,
+      ),
       h(
         "right-0 absolute top-0 bottom-[2px] inline-block " +
           rhsSymbol.w +

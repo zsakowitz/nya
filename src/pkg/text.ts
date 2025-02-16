@@ -7,7 +7,7 @@ import { FnDistManual, type FnOverload } from "../eval/ops/dist-manual"
 import { ALL_DOCS } from "../eval/ops/docs"
 import { OP_JUXTAPOSE } from "../eval/ops/op/juxtapose"
 import { OP_CDOT } from "../eval/ops/op/mul"
-import type { JsValue, Ty } from "../eval/ty"
+import { each, type JsValue, type Ty } from "../eval/ty"
 import { frac, num } from "../eval/ty/create"
 import { Display } from "../eval/ty/display"
 import { Leaf } from "../field/cmd/leaf"
@@ -235,7 +235,7 @@ const FN_CONCAT = new (class extends FnDistManual<"text"> {
 
 const store = new Store((expr) => {
   const el = h(
-    "block px-2 pb-1 -mt-2 w-[calc(var(--nya-sidebar)_-_2.5rem_-_1px)] overflow-x-auto [&::-webkit-scrollbar]:hidden font-sans [.nya-expr:has(&):not(:focus-within)_.nya-display]:sr-only [.nya-expr:has(&):not(:focus-within)_&]:px-4 [.nya-expr:has(&):not(:focus-within)_&]:py-3 [.nya-expr:has(&):not(:focus-within)_&]:mt-0 [white-space:preserve_wrap]",
+    "flex flex-col px-2 pb-1 -mt-2 w-[calc(var(--nya-sidebar)_-_2.5rem_-_1px)] overflow-x-auto [&::-webkit-scrollbar]:hidden font-sans [.nya-expr:has(&):not(:focus-within)_.nya-display]:sr-only [.nya-expr:has(&):not(:focus-within)_&]:px-4 [.nya-expr:has(&):not(:focus-within)_&]:py-3 [.nya-expr:has(&):not(:focus-within)_&]:mt-0 [white-space:preserve_wrap] [line-height:1.5] gap-2",
   )
   el.addEventListener("click", () => expr.field.el.focus())
   return el
@@ -243,19 +243,21 @@ const store = new Store((expr) => {
 
 const EXT_TEXT = defineExt({
   data(expr) {
-    if (expr.js?.value.type != "text" || expr.js.value.list !== false) {
+    if (expr.js?.value.type != "text") {
       return
     }
 
-    const value = expr.js.value as JsValue<"text", false>
+    const value = expr.js.value as JsValue<"text">
 
-    const el = store.get(expr)
-    while (el.firstChild) {
-      el.firstChild.remove()
+    const parent = store.get(expr)
+    while (parent.firstChild) {
+      parent.firstChild.remove()
     }
 
-    if (value.list === false) {
-      for (const segment of value.value) {
+    for (const text of each(value)) {
+      const el = h("")
+      parent.appendChild(el)
+      for (const segment of text) {
         if (segment.type == "plain") {
           el.append(t(segment.value))
         } else {
@@ -271,7 +273,8 @@ const EXT_TEXT = defineExt({
         }
       }
     }
-    return el
+
+    return parent
   },
   aside() {
     return circle("text")
