@@ -1,3 +1,12 @@
+## To Do
+
+- Statistics
+- Functions
+- Matrices
+- Tetration
+- Folders
+- Units
+
 ## Representing Known Accuracy of Values
 
 **Idea:** Report computed values to the correct amount of decimal places.

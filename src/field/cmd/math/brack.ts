@@ -17,7 +17,7 @@ import { CmdComma } from "../leaf/comma"
 export const BRACKS = {
   "[": {
     w: "w-[.55em]",
-    mx: "mx-[.55em]",
+    mx: "ml-[.55em]",
     size: 0.55,
     side: L,
     latex: "[",
@@ -27,7 +27,7 @@ export const BRACKS = {
   },
   "]": {
     w: "w-[.55em]",
-    mx: "mx-[.55em]",
+    mx: "mr-[.55em]",
     size: 0.55,
     side: R,
     latex: "]",
@@ -37,7 +37,7 @@ export const BRACKS = {
   },
   "(": {
     w: "w-[.55em]",
-    mx: "mx-[.55em]",
+    mx: "ml-[.55em]",
     size: 0.55,
     side: L,
     latex: "(",
@@ -50,7 +50,7 @@ export const BRACKS = {
   },
   ")": {
     w: "w-[.55em]",
-    mx: "mx-[.55em]",
+    mx: "mr-[.55em]",
     size: 0.55,
     side: R,
     latex: ")",
@@ -63,7 +63,7 @@ export const BRACKS = {
   },
   "{": {
     w: "w-[.7em]",
-    mx: "mx-[.7em]",
+    mx: "ml-[.7em]",
     size: 0.7,
     side: L,
     latex: "\\{",
@@ -78,7 +78,7 @@ export const BRACKS = {
   },
   "}": {
     w: "w-[.7em]",
-    mx: "mx-[.7em]",
+    mx: "mr-[.7em]",
     size: 0.7,
     side: R,
     latex: "\\}",
@@ -103,7 +103,7 @@ export const BRACKS = {
   },
   "¡": {
     w: "w-[.4em]",
-    mx: "mx-[.4em]",
+    mx: "ml-[.4em]",
     size: 0.4,
     side: L,
     latex: "¡",
@@ -118,7 +118,7 @@ export const BRACKS = {
   },
   "!": {
     w: "w-[.4em]",
-    mx: "mx-[.4em]",
+    mx: "mr-[.4em]",
     size: 0.4,
     side: R,
     latex: "!",
@@ -135,7 +135,7 @@ export const BRACKS = {
   ParenLhs | ParenRhs,
   {
     w: `w-${string}`
-    mx: `mx-${string}`
+    mx: `m${"l" | "r" | "x"}-${string}`
     size: number
     side: Dir | null
     latex: string
@@ -292,6 +292,8 @@ export class CmdBrack extends Command<[Block]> {
   ) {
     const lhsSymbol = BRACKS[lhs]
     const rhsSymbol = BRACKS[rhs]
+    const name = `my-[.1em] inline-block *:contents ${lhsSymbol.mx} ${rhsSymbol.mx}`
+    console.log(name)
     return h(
       "relative inline-block nya-cmd-brack",
       h(
@@ -302,7 +304,7 @@ export class CmdBrack extends Command<[Block]> {
 
         lhsSymbol.html(),
       ),
-      h("my-[.1em] inline-block *:contents " + lhsSymbol.mx, block.el),
+      h(name, block.el),
       h(
         "right-0 absolute top-0 bottom-[2px] inline-block " +
           rhsSymbol.w +

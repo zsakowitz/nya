@@ -72,18 +72,27 @@ export class FieldInert {
 
   type(input: string, props?: FieldInitProps) {
     const ext = this.options.inits?.get(input)
-    if (ext) {
-      this.init(ext, input, props)
+    if (ext && this.init(ext, input, props) !== "browser") {
+      return
     }
+
+    if (!input.startsWith("\\")) {
+      return
+    }
+    this.typeLatex(input, props?.skipChangeHandlers)
   }
 
-  typeLatex(source: string) {
-    this.onBeforeChange?.()
+  typeLatex(source: string, skipChangeHandlers?: boolean) {
+    if (!skipChangeHandlers) {
+      this.onBeforeChange?.()
+    }
     const block = new LatexParser(this.options, source, this).parse()
     const cursor = this.sel.remove()
     cursor.insert(block, L)
     this.sel = cursor.selection()
-    this.onAfterChange?.(false)
+    if (!skipChangeHandlers) {
+      this.onAfterChange?.(false)
+    }
   }
 
   latex(source: { raw: readonly string[] }, ...interps: string[]) {

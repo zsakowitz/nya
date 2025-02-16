@@ -121,7 +121,9 @@ export class LatexParser {
         this.i += next.length
         return inner
       }
-      inner.insert(this.argMaybe(next)!, inner.ends[R], null)
+      const arg = this.argMaybe(next)
+      if (!arg) break
+      inner.insert(arg, inner.ends[R], null)
     }
     if (!allowTermination) {
       new CmdEOF(end).insertAt(inner.cursor(R), L)
@@ -142,7 +144,9 @@ export class LatexParser {
         this.i += next.length
         return [inner, next as T]
       }
-      inner.insert(this.argMaybe(next)!, inner.ends[R], null)
+      const arg = this.argMaybe(next)
+      if (!arg) break
+      inner.insert(arg, inner.ends[R], null)
     }
     return [inner, null]
   }

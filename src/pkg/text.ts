@@ -224,7 +224,7 @@ const FN_CONCAT = new (class extends FnDistManual<"text"> {
 
   docs() {
     const ps = OP_TO_TEXT.o
-      .map((x) => (x.params.length == 1 ? x.params[0]! : null))
+      .map((x) => (x.params && x.params.length == 1 ? x.params[0]! : null))
       .filter((x) => x != null)
     return [
       ...ps.map((a) => doc([a], "text")),
@@ -314,11 +314,10 @@ export const PKG_TEXT: Package = {
             return false
           },
           display(value, props) {
-            new CmdTextInert(
-              value
-                .map((x) => (x.type == "latex" ? "$" + x.value + "$" : x.value))
-                .join(""),
-            ).insertAt(props.cursor, L)
+            new CmdTextInert(value.map((x) => x.value).join("")).insertAt(
+              props.cursor,
+              L,
+            )
           },
         },
         icon() {

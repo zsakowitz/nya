@@ -257,6 +257,7 @@ export const PKG_NUM_QUATERNION: Package = {
           list: false,
         },
         glsl: { type: "q32", expr: "vec4(0, 0, 1, 0)", list: false },
+        display: false,
       },
       k: {
         js: {
@@ -265,6 +266,7 @@ export const PKG_NUM_QUATERNION: Package = {
           list: false,
         },
         glsl: { type: "q32", expr: "vec4(0, 0, 0, 1)", list: false },
+        display: false,
       },
     },
     fns: {

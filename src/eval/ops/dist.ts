@@ -167,6 +167,24 @@ export function doc(params: readonly TyName[], type: TyName, list = false) {
   return docByIcon(params.map(icon), icon(type), list)
 }
 
+export function arrayEls(node: Node, min: number) {
+  return [
+    ...Array.from({ length: Math.max(2, min) }, () => [
+      node.cloneNode(true),
+      new CmdComma().el,
+    ]).flat(),
+    h("nya-cmd-dot nya-cmd-dot-l", "."),
+    h("nya-cmd-dot", "."),
+    h("nya-cmd-dot", "."),
+  ]
+}
+
+export function array(node: Node, min: number) {
+  return CmdBrack.render("[", "]", null, {
+    el: h("", ...arrayEls(node, min)),
+  })
+}
+
 export function docList(
   param: TyName,
   min: number,
@@ -176,13 +194,13 @@ export function docList(
   const pm = icon(param)
   return docByIcon(
     [
-      ...Array.from({ length: Math.max(min, 2) }, () => [
-        pm.cloneNode(true),
-        new CmdComma().el,
-      ]).flat(),
-      h("nya-cmd-dot nya-cmd-dot-l", "."),
-      h("nya-cmd-dot", "."),
-      h("nya-cmd-dot", "."),
+      ...Array.from({ length: Math.max(min, 2) }, () => pm.cloneNode(true)),
+      h(
+        "",
+        h("nya-cmd-dot nya-cmd-dot-l", "."),
+        h("nya-cmd-dot", "."),
+        h("nya-cmd-dot", "."),
+      ),
     ],
     icon(type),
     list,
@@ -197,19 +215,6 @@ export function docByIcon(params: Node[], type: Node, list = false) {
     "font-['Symbola'] text-[1.265rem]",
     brack,
     new OpRightArrow().el,
-    list ?
-      CmdBrack.render("[", "]", null, {
-        el: h(
-          "",
-          type.cloneNode(true),
-          new CmdComma().el,
-          type,
-          new CmdComma().el,
-          h("nya-cmd-dot nya-cmd-dot-l", "."),
-          h("nya-cmd-dot", "."),
-          h("nya-cmd-dot", "."),
-        ),
-      })
-    : type,
+    list ? array(type, 2) : type,
   )
 }

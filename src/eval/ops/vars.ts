@@ -1,9 +1,11 @@
 import type { GlslValue, JsValue } from "../ty"
+import type { Display } from "../ty/display"
 
 export interface Builtin {
   js: JsValue
   glsl: GlslValue
   dynamic?: boolean
+  display: boolean | ((display: Display) => void)
 }
 
 export const ERR_COORDS_USED_OUTSIDE_GLSL =

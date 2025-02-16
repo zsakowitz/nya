@@ -199,6 +199,7 @@ export const PKG_SHADER: Package = {
         },
         glsl: { type: "r64", expr: "v_coords.xy", list: false },
         dynamic: true,
+        display: false,
       },
       y: {
         get js(): never {
@@ -206,6 +207,7 @@ export const PKG_SHADER: Package = {
         },
         glsl: { type: "r64", expr: "v_coords.zw", list: false },
         dynamic: true,
+        display: false,
       },
     },
     fns: {

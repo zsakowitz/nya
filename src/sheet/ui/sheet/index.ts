@@ -13,7 +13,8 @@ import { declareAddR64 } from "../../../eval/ops/op/add"
 import { declareMulR64 } from "../../../eval/ops/op/mul"
 import { VARS } from "../../../eval/ops/vars"
 import type { JsVal, TyName, Type } from "../../../eval/ty"
-import { num, real } from "../../../eval/ty/create"
+import { frac, num, real } from "../../../eval/ty/create"
+import { Display } from "../../../eval/ty/display"
 import { any, TY_INFO } from "../../../eval/ty/info"
 import { splitRaw } from "../../../eval/ty/split"
 import { OpEq } from "../../../field/cmd/leaf/cmp"
@@ -24,7 +25,7 @@ import { CmdPiecewise } from "../../../field/cmd/logic/piecewise"
 import { CmdBrack } from "../../../field/cmd/math/brack"
 import { CmdSupSub } from "../../../field/cmd/math/supsub"
 import { fa } from "../../../field/fa"
-import type { Block } from "../../../field/model"
+import { Block, R } from "../../../field/model"
 import type { Options } from "../../../field/options"
 import { a, h, hx, t } from "../../../jsx"
 import type { Package, ToolbarItem } from "../../../pkg"
@@ -54,15 +55,9 @@ function createDocs(
   function makeDocName(name: string) {
     return h(
       "text-[1.265rem]/[1.15]",
-      ...(name.match(/[a-z]+|[^a-z]+/g) || []).map((x) =>
-        x.match(/\p{L}/u) ?
-          h(
-            "font-['Times_New_Roman']" +
-              (x.length === 1 && x.match(/[a-z]/) ? " italic" : ""),
-            x,
-          )
-        : h("font-['Symbola']", x),
-      ),
+      /^\p{L}+$/u.test(name) ?
+        new CmdWord(name, undefined, /^[a-z]$/.test(name)).el
+      : new CmdNum(name).el,
     )
   }
 
@@ -531,15 +526,31 @@ function createDocs(
           .sort(([a], [b]) => a.length - b.length || (a < b ? -1 : 1))
           .map(([name, a]) => {
             let value: Type
+            let js
             try {
-              value = a.js
+              js = value = a.js
             } catch {
               value = a.glsl
             }
+            let block
+            if (a.display) {
+              if (js) {
+                block = new Block(null)
+                const display = new Display(block.cursor(R), frac(10, 1))
+                if (typeof a.display == "function") {
+                  a.display(display)
+                } else {
+                  display.output(js)
+                }
+                block.el.insertBefore(makeDocName(name), block.el.firstChild)
+              } else {
+                block = { el: makeDocName(name) }
+              }
+            }
             return h(
-              "flex gap-2",
+              "flex gap-2 font-['Symbola'] text-[1.265rem] overflow-x-auto -mx-4 px-4 max-w-[calc(100%_+_2rem)] [&::-webkit-scrollbar]:hidden whitespace-nowrap",
               h("", icon(value.type)),
-              h("", makeDocName(name)),
+              h("", block?.el ?? makeDocName(name)),
             )
           }),
       ),

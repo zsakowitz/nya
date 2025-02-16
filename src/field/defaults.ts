@@ -307,6 +307,7 @@ export const latex = new WordMap<LatexInit>([
   ],
   ["\\frac", CmdFrac],
   ["\\pi", SymPi],
+  ["\\infty", SymInfinity],
   ["\\infinity", SymInfinity],
   ["\\tau", SymTau],
 

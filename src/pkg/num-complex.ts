@@ -524,10 +524,12 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
         },
         glsl: { type: "c64", expr: "v_coords", list: false },
         dynamic: true,
+        display: false,
       },
       i: {
         js: { type: "c64", value: pt(real(0), real(1)), list: false },
         glsl: { type: "c64", expr: "vec4(0, 0, 1, 0)", list: false },
+        display: false,
       },
     },
   },

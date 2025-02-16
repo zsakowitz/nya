@@ -1,4 +1,5 @@
 import { affixes, roots } from "@zsnout/ithkuil/data"
+import * as generate from "@zsnout/ithkuil/generate"
 import { wordToIthkuil } from "@zsnout/ithkuil/generate"
 import { glossWord } from "@zsnout/ithkuil/gloss"
 import { version } from "@zsnout/ithkuil/package.json"
@@ -7,13 +8,15 @@ import { CharacterRow, getBBox, textToScript } from "@zsnout/ithkuil/script"
 import { createRecognizer, unglossWord } from "@zsnout/ithkuil/ungloss"
 import type { Package } from "."
 import { FnDist } from "../eval/ops/dist"
-import { each, type JsValue } from "../eval/ty"
+import { each, type JsVal, type JsValue, type Val } from "../eval/ty"
 import { Leaf } from "../field/cmd/leaf"
+import { OpEq } from "../field/cmd/leaf/cmp"
+import { CmdComma } from "../field/cmd/leaf/comma"
 import { L } from "../field/model"
 import { h, p, svgx } from "../jsx"
 import { defineExt } from "../sheet/ext"
 import { circle } from "../sheet/ui/expr/circle"
-import { PKG_TEXT, type TextSegment } from "./text"
+import { CmdTextInert, PKG_TEXT, type TextSegment } from "./text"
 
 declare module "../eval/ty" {
   interface Tys {
@@ -61,6 +64,21 @@ class CmdIthkuilScript extends Leaf {
 }
 
 const recognize = createRecognizer(affixes, roots)
+
+const CATEGORIES = Object.fromEntries(
+  Object.entries(generate)
+    .filter((x) => x[0].startsWith("ALL_"))
+    .map(([k, v]) => {
+      k = k.slice(4).toLowerCase().replace(/_/g, "")
+      if (k.endsWith("s")) k = k.slice(0, -1)
+      if (k == "slotxstresse") k = "slotxstress"
+      return [k, v] as const
+    })
+    .filter(
+      (a): a is readonly [string, string[] & any[]] =>
+        Array.isArray(a[1]) && a[1].every((x) => typeof x == "string"),
+    ),
+)
 
 export const PKG_ITHKUIL: Package = {
   id: "nya:ithkuil",
@@ -197,6 +215,36 @@ export const PKG_ITHKUIL: Package = {
         },
         err,
       ),
+      ithkuil: {
+        js(...args) {
+          if (
+            !(
+              args.length == 1 &&
+              args[0]!.list === false &&
+              args[0]!.type == "text"
+            )
+          ) {
+            throw new Error(
+              "The 'ithkuil' function expects the name of a grammatical category.",
+            )
+          }
+          const arg = args[0]! as JsVal<"text">
+
+          const name = arg.value.map((x) => x.value).join("")
+          const category = CATEGORIES[name.toLowerCase().replace(/[_. ]/g, "")]
+          if (!category) {
+            throw new Error(`The category '${name}' doesn't exist.`)
+          }
+          return {
+            type: "text",
+            list: category?.length,
+            value: category.map(
+              (x): Val<"text"> => [{ type: "plain", value: x }],
+            ),
+          }
+        },
+        glsl: err,
+      },
     },
     vars: {
       ithkuilversion: {
@@ -207,6 +255,32 @@ export const PKG_ITHKUIL: Package = {
         },
         get glsl(): never {
           return err()
+        },
+        display: true,
+      },
+      ithkuilall: {
+        js: {
+          type: "text",
+          list: Object.keys(CATEGORIES).length,
+          value: Object.keys(CATEGORIES).map(
+            (name): Val<"text"> => [{ type: "plain", value: name }],
+          ),
+        },
+        get glsl(): never {
+          return err()
+        },
+        display(prop) {
+          new OpEq(false).insertAt(prop.cursor, L)
+          let first = true
+          for (const name of Object.keys(CATEGORIES)) {
+            if (first) {
+              first = false
+            } else {
+              new CmdComma().insertAt(prop.cursor, L)
+            }
+
+            new CmdTextInert(name).insertAt(prop.cursor, L)
+          }
         },
       },
     },

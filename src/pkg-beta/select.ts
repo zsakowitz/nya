@@ -1,4 +1,3 @@
-import type { Package } from "."
 import { fnargs } from "../eval/ast/collect"
 import { js } from "../eval/js"
 import { frac } from "../eval/ty/create"
@@ -7,6 +6,7 @@ import { OpEq } from "../field/cmd/leaf/cmp"
 import { CmdVar } from "../field/cmd/leaf/var"
 import { Block, L, R } from "../field/model"
 import { h, hx } from "../jsx"
+import type { Package } from "../pkg"
 import { defineExt, Store } from "../sheet/ext"
 
 const store = new Store(() => {

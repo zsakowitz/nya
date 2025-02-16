@@ -1,12 +1,17 @@
 import type { Package } from "."
 import { safe } from "../eval/lib/util"
 import { docByIcon, FnDist } from "../eval/ops/dist"
-import { FnDistCaching, type FnOverload } from "../eval/ops/dist-manual"
+import {
+  FnDistCaching,
+  type FnOverload,
+  type FnOverloadVar,
+} from "../eval/ops/dist-manual"
 import { ALL_DOCS } from "../eval/ops/docs"
 import { declareCmpR64, FN_CMP } from "../eval/ops/fn/cmp"
 import { FN_EXP } from "../eval/ops/fn/exp"
 import { FN_UNSIGN } from "../eval/ops/fn/unsign"
 import { FN_VALID } from "../eval/ops/fn/valid"
+import { FnList } from "../eval/ops/list"
 import { abs, abs64, OP_ABS } from "../eval/ops/op/abs"
 import { add, addR64, OP_ADD } from "../eval/ops/op/add"
 import {
@@ -30,7 +35,7 @@ import { OP_ODOT } from "../eval/ops/op/odot"
 import { OP_POS } from "../eval/ops/op/pos"
 import { OP_RAISE, raise } from "../eval/ops/op/raise"
 import { OP_SUB, sub, subR64 } from "../eval/ops/op/sub"
-import type { SReal, Ty, TyName } from "../eval/ty"
+import type { SReal, Ty, TyName, Type } from "../eval/ty"
 import { canCoerce, coerceValJs } from "../eval/ty/coerce"
 import { approx, frac, num, real } from "../eval/ty/create"
 import type { Write } from "../eval/ty/display"
@@ -465,6 +470,38 @@ float _helper_cmp_r32(float a, float b) {
       valid: FN_VALID,
       cmp: FN_CMP,
       component: FN_COMPONENT,
+      count: new (class extends FnList<"r64"> {
+        constructor() {
+          super("count", "counts the size of a list")
+        }
+
+        signature(args: Ty[]): FnOverload<"r64"> {
+          return {
+            params: args.map((x) => x.type),
+            type: "r64",
+            js() {
+              return real(args.length)
+            },
+            glsl() {
+              return `vec2(${args.length.toExponential()}, 0)`
+            },
+          }
+        }
+
+        signatureList(arg: Type<TyName, number>): FnOverloadVar<"r64"> {
+          return {
+            param: arg.type,
+            min: 0,
+            type: "r64",
+            js() {
+              return real(arg.list)
+            },
+            glsl() {
+              return `vec2(${arg.list.toExponential()}, 0)`
+            },
+          }
+        }
+      })(),
     },
     vars: {
       π: splitDual(Math.PI),
@@ -473,6 +510,7 @@ float _helper_cmp_r32(float a, float b) {
       "∞": {
         js: { type: "r64", value: real(Infinity), list: false },
         glsl: { type: "r64", expr: "vec2(1.0/0.0)", list: false },
+        display: false,
       },
     },
   },

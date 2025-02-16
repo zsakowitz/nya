@@ -1,4 +1,3 @@
-import {} from "mathjs"
 import type { Node } from "../eval/ast/token"
 import { NO_DRAG } from "../eval/ast/tx"
 import type { LatexParser } from "../field/latex"
@@ -112,7 +111,9 @@ export const PKG_CAS: Package = {
         deps() {
           // symbolic computations have no dependencies
         },
-        js(node, props) {},
+        js() {
+          throw new Error("Symbolic computation is not supported yet.")
+        },
         glsl() {
           throw new Error("Symbolic computation is not supported in shaders.")
         },

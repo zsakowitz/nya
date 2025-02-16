@@ -1,6 +1,6 @@
 import type { Node } from "../../../eval/ast/token"
-import type { FieldInert } from "../../field-inert"
 import { h, hx } from "../../../jsx"
+import type { FieldInert } from "../../field-inert"
 import {
   L,
   R,
@@ -103,7 +103,7 @@ export class CmdPrompt extends Leaf {
     this.display.onBeforeChange?.()
     this.display.sel = this.selection
     this.remove()
-    this.display.type("\\" + name)
+    this.display.type("\\" + name, { skipChangeHandlers: true })
     this.display.onAfterChange?.(false)
     ;(this.active as HTMLElement)?.focus()
   }
