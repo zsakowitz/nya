@@ -21,7 +21,7 @@ import { ERR_COORDS_USED_OUTSIDE_GLSL } from "../eval/ops/vars"
 import type { GlslVal, JsVal, SPoint } from "../eval/ty"
 import { isZero } from "../eval/ty/check"
 import { approx, num, pt, real } from "../eval/ty/create"
-import { type Write } from "../eval/ty/display"
+import { type TyWrite } from "../eval/ty/display"
 import { highRes } from "../eval/ty/info"
 import { h } from "../jsx"
 import { OP_PLOT, plotJs } from "./color-core"
@@ -75,7 +75,7 @@ export const FN_REAL = new FnDist(
   "gets the real part of a complex number",
 )
 
-const WRITE_COMPLEX: Write<SPoint> = {
+const WRITE_COMPLEX: TyWrite<SPoint> = {
   isApprox(value) {
     return value.x.type == "approx" || value.y.type == "approx"
   },

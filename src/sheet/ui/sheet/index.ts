@@ -659,7 +659,6 @@ export class Sheet {
 
     this.handlers = new Handlers(this)
     this.scope = new Scope(options)
-    Object.assign(globalThis, { scope: this.scope })
 
     // prepare js context
     this.paper.el.classList.add(

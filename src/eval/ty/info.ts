@@ -6,9 +6,9 @@ import { Block, L, R } from "../../field/model"
 import { h, p, svgx } from "../../jsx"
 import type { Paper, Point } from "../../sheet/ui/paper"
 import type { GlslContext } from "../lib/fn"
-import type { Write } from "./display"
+import type { TyWrite } from "./display"
 
-export interface Garbage<T> {
+export interface TyGarbage<T> {
   js: T
   glsl: string
 }
@@ -17,12 +17,17 @@ export interface TyInfo<T, U extends TyName> {
   name: string
   namePlural: string
   glsl: string
-  garbage: Garbage<T>
+  garbage: TyGarbage<T>
   coerce: TyCoerceMap<T>
-  write: Write<T>
+  write: TyWrite<T>
   icon(): HTMLSpanElement
-  glide?(props: GlideProps<T>): { value: number; precision: number }
+  glide?: TyGlide<T>
   components?: TyComponentInfo<T, U>
+}
+
+export type TyGlide<T> = (props: GlideProps<T>) => {
+  value: number
+  precision: number
 }
 
 export interface TyComponentInfo<T, U extends TyName> {
@@ -53,7 +58,7 @@ export type TyInfoMap = {
   [K in keyof Tys]: TyInfo<Tys[K], TyComponents[K]>
 }
 
-export const WRITE_POINT: Write<SPoint> = {
+export const WRITE_POINT: TyWrite<SPoint> = {
   isApprox(value) {
     return value.x.type == "approx" || value.y.type == "approx"
   },
@@ -141,9 +146,16 @@ TY_INFO.never = {
       has() {
         return true
       },
+      ownKeys() {
+        const keys = Object.keys(TY_INFO)
+        const idx = keys.indexOf("never")
+        if (idx != -1) keys.splice(idx, 1)
+        return keys
+      },
       getOwnPropertyDescriptor(_, prop) {
         return {
           configurable: true,
+          enumerable: true,
           value: {
             js() {
               return TY_INFO[prop as TyName].garbage.js

@@ -38,7 +38,7 @@ import { OP_SUB, sub, subR64 } from "../eval/ops/op/sub"
 import type { SReal, Ty, TyName, Type } from "../eval/ty"
 import { canCoerce, coerceValJs } from "../eval/ty/coerce"
 import { approx, frac, num, real } from "../eval/ty/create"
-import type { Write } from "../eval/ty/display"
+import type { TyWrite } from "../eval/ty/display"
 import { highRes, TY_INFO } from "../eval/ty/info"
 import { splitDual } from "../eval/ty/split"
 import { h } from "../jsx"
@@ -179,7 +179,7 @@ export const FN_COMPONENT = new (class extends FnDistCaching {
   }
 })()
 
-const WRITE_REAL: Write<SReal> = {
+const WRITE_REAL: TyWrite<SReal> = {
   isApprox(value) {
     return value.type == "approx"
   },

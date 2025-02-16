@@ -65,8 +65,6 @@ function parseExact(text: string, base: SExact): SReal {
   return isNeg ? neg(total) : total
 }
 
-Object.assign(globalThis, { parseExact })
-
 function parse(text: string, base: SReal): SReal {
   if (num(base) == 10) {
     const value = +text

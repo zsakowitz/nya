@@ -16,7 +16,7 @@ import { OP_Y } from "../eval/ops/op/y"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "../eval/ops/vars"
 import { each, type JsValue } from "../eval/ty"
 import { approx, frac, num, pt, real, unpt } from "../eval/ty/create"
-import { highRes, TY_INFO, WRITE_POINT } from "../eval/ty/info"
+import { highRes, TY_INFO, WRITE_POINT, type TyGlide } from "../eval/ty/info"
 import { OpEq } from "../field/cmd/leaf/cmp"
 import { CmdDot } from "../field/cmd/leaf/dot"
 import { CmdVar } from "../field/cmd/leaf/var"
@@ -203,11 +203,9 @@ export const EXT_POINT = defineHideable({
           break
         case "glider":
           {
-            const { value, precision } = TY_INFO[drag.shape.type].glide!({
-              paper: data.paper,
-              point: to,
-              shape: drag.shape.value as never,
-            })
+            const { value, precision } = (
+              TY_INFO[drag.shape.type].glide! as TyGlide<any>
+            )({ paper: data.paper, point: to, shape: drag.shape.value })
             new Writer(drag.value.span.remove().span()).set(value, precision)
             drag.value.field.sel = drag.value.field.block.cursor(R).selection()
             drag.value.field.queueAstUpdate()

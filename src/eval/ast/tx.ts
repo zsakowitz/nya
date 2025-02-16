@@ -4,7 +4,7 @@ import type { Deps } from "../deps"
 import { glsl, glslCall, type PropsGlsl } from "../glsl"
 import { js, jsCall, type PropsJs } from "../js"
 import { asNumericBase, parseNumberGlsl, parseNumberJs } from "../lib/base"
-import { id, name, type Bindings } from "../lib/binding"
+import { id, name, parseBindingVar, type Bindings } from "../lib/binding"
 import { OP_BINARY, OP_UNARY } from "../ops"
 import {
   iterateDeps,
@@ -192,6 +192,24 @@ export const AST_TXRS: {
               },
             }),
           )
+        case "for": {
+          const [id, contents] = parseBindingVar(node.b, "for")
+          const value = js(contents, props)
+          if (value.list === false) {
+            throw new Error(
+              "The variable on the right side of 'for' should be a list.",
+            )
+          }
+          return listJs(
+            value.value.map((v) =>
+              props.bindingsJs.with(
+                id,
+                { type: value.type, value: v, list: false },
+                () => js(node.a, props),
+              ),
+            ),
+          )
+        }
         case ".":
           if (node.b.type == "var" && !node.b.sub) {
             if (node.b.kind == "var") {
@@ -260,6 +278,35 @@ export const AST_TXRS: {
               },
             }),
           )
+        case "for":
+          const [id, contents] = parseBindingVar(node.b, "for")
+          const value = glsl(contents, props)
+          if (value.list === false) {
+            throw new Error(
+              "The variable on the right side of 'for' should be a list.",
+            )
+          }
+          const source = props.ctx.name()
+          props.ctx
+            .push`${TY_INFO[value.type].glsl} ${source}[${value.list}] = ${value.expr};\n`
+          const index = props.ctx.name()
+          const ctxVal = props.ctx.fork()
+          const val = props.bindings.with(
+            id,
+            { list: false, type: value.type, expr: `${source}[${index}]` },
+            () => glsl(node.a, { ...props, ctx: ctxVal }),
+          )
+          if (val.list !== false) {
+            throw new Error("Cannot store lists inside other lists.")
+          }
+          const ret = props.ctx.name()
+          props.ctx.push`${TY_INFO[val.type].glsl} ${ret}[${value.list}];\n`
+          props.ctx
+            .push`for (int ${index} = 0; ${index} < ${value.list}; ${index}++) {\n`
+          props.ctx.push`${ctxVal.block}`
+          props.ctx.push`${ret}[${index}] = ${val.expr};\n`
+          props.ctx.push`}\n`
+          return { expr: ret, list: value.list, type: val.type }
         case "with":
         case "withseq": {
           return props.bindings.withAll(
@@ -354,6 +401,9 @@ export const AST_TXRS: {
         return js(node.value, props)
       }
       if (node.lhs == "[" && node.rhs == "]") {
+        if (node.value.type == "op" && node.value.kind == "for") {
+          return js(node.value, props)
+        }
         return listJs(commalist(node.value).map((item) => js(item, props)))
       }
       if (node.lhs == "|" && node.rhs == "|") {
@@ -374,6 +424,9 @@ export const AST_TXRS: {
         return glsl(node.value, props)
       }
       if (node.lhs == "[" && node.rhs == "]") {
+        if (node.value.type == "op" && node.value.kind == "for") {
+          return glsl(node.value, props)
+        }
         return listGlsl(
           props.ctx,
           commalist(node.value).map((item) => glsl(item, props)),

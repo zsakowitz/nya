@@ -81,7 +81,7 @@ export function name(node: Bound) {
   return node.value + (node.sub ? subscript(node.sub) : "")
 }
 
-export function parseBindingVar(node: Node): Binding {
+export function parseBindingVar(node: Node, kind: "with" | "for"): Binding {
   if (
     !(
       node.type == "cmplist" &&
@@ -95,7 +95,9 @@ export function parseBindingVar(node: Node): Binding {
       node.items[1]
     )
   ) {
-    throw new Error("A 'with' statement looks like 'with a = 3'.")
+    throw new Error(
+      `A '${kind}' statement looks like '${kind == "with" ? "with a = 2" : "for a = [1, 2, 3]"}'.`,
+    )
   }
 
   return [id(node.items[0]), node.items[1], name(node.items[0])]
@@ -146,9 +148,7 @@ export function parseUpdateVar(node: Node): Binding {
   ]
 }
 
-export function parseBindings(node: Node, f?: undefined): Binding[]
-export function parseBindings<T>(node: Node, f: (node: Node) => T): T[]
-export function parseBindings(node: Node, f = parseBindingVar): any[] {
+export function parseBindings<T>(node: Node, f: (node: Node) => T): T[] {
   if (node.type == "group" && node.lhs == "[" && node.rhs == "]") {
     node = node.value
   }

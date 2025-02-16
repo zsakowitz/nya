@@ -19,7 +19,7 @@ import { isReal } from "./coerce"
 import { frac, num, real } from "./create"
 import { TY_INFO } from "./info"
 
-export interface Write<T> {
+export interface TyWrite<T> {
   display(value: T, props: Display): void
   isApprox(value: T): boolean
 }

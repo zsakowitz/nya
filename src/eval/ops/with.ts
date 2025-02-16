@@ -2,7 +2,7 @@ import type { Node } from "../ast/token"
 import type { Deps } from "../deps"
 import { glsl, type PropsGlsl } from "../glsl"
 import { js, type PropsJs } from "../js"
-import { parseBindings } from "../lib/binding"
+import { parseBindings, parseBindingVar } from "../lib/binding"
 import type { GlslValue, JsValue } from "../ty"
 import {
   isIterate,
@@ -22,7 +22,7 @@ export function withBindingsJs(
     return iterateJs(parsed, { eval: props, seq }).data
   }
 
-  const bindings = parseBindings(rhs)
+  const bindings = parseBindings(rhs, (node) => parseBindingVar(node, "with"))
   const result: Record<string, JsValue> = Object.create(null)
 
   if (seq) {
@@ -53,7 +53,7 @@ export function withBindingsGlsl(
     return iterateGlsl(parsed, { eval: props, seq }).data
   }
 
-  const bindings = parseBindings(rhs)
+  const bindings = parseBindings(rhs, (node) => parseBindingVar(node, "with"))
   const result: Record<string, GlslValue> = Object.create(null)
 
   if (seq) {
@@ -84,7 +84,7 @@ export function withBindingsDeps(
     return iterateDeps(parsed, deps)
   }
 
-  const bindings = parseBindings(rhs)
+  const bindings = parseBindings(rhs, (node) => parseBindingVar(node, "with"))
   const bound: string[] = []
 
   if (seq) {
