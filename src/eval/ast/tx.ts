@@ -4,7 +4,13 @@ import type { Deps } from "../deps"
 import { glsl, glslCall, type PropsGlsl } from "../glsl"
 import { js, jsCall, type PropsJs } from "../js"
 import { asNumericBase, parseNumberGlsl, parseNumberJs } from "../lib/base"
-import { id, name, parseBindingVar, type Bindings } from "../lib/binding"
+import {
+  id,
+  name,
+  parseBindings,
+  parseBindingVar,
+  type Bindings,
+} from "../lib/binding"
 import { OP_BINARY, OP_UNARY } from "../ops"
 import {
   iterateDeps,
@@ -26,7 +32,7 @@ import { OP_Y } from "../ops/op/y"
 import { piecewiseGlsl, piecewiseJs } from "../ops/piecewise"
 import { VARS } from "../ops/vars"
 import { withBindingsDeps, withBindingsGlsl, withBindingsJs } from "../ops/with"
-import type { GlslValue, JsVal, JsValue } from "../ty"
+import type { GlslValue, JsVal, JsValue, TyName } from "../ty"
 import { listGlsl, listJs } from "../ty/coerce"
 import { frac, num, real } from "../ty/create"
 import { TY_INFO } from "../ty/info"
@@ -193,20 +199,41 @@ export const AST_TXRS: {
             }),
           )
         case "for": {
-          const [id, contents] = parseBindingVar(node.b, "for")
-          const value = js(contents, props)
-          if (value.list === false) {
+          const bindings = parseBindings(node.b, (x) =>
+            parseBindingVar(x, "for"),
+          ).map(([id, contents]): [string, JsValue<TyName, number>] => {
+            const value = js(contents, props)
+            if (value.list === false) {
+              throw new Error(
+                "The variable on the right side of 'for' must be a list.",
+              )
+            }
+            return [id, value]
+          })
+          if (bindings.map((x) => x[0]).some((x, i, a) => a.indexOf(x) != i)) {
             throw new Error(
-              "The variable on the right side of 'for' should be a list.",
+              "The same variable cannot be bound twice on the right side of 'for'.",
+            )
+          }
+          type RX = Record<string, JsValue<TyName, false>>
+          let values: RX[] = [Object.create(null)]
+          for (const binding of bindings.reverse()) {
+            values = values.flatMap((v): RX[] =>
+              binding[1].value.map(
+                (x): RX => ({
+                  ...v,
+                  [binding[0]]: {
+                    list: false,
+                    type: binding[1].type,
+                    value: x,
+                  },
+                }),
+              ),
             )
           }
           return listJs(
-            value.value.map((v) =>
-              props.bindingsJs.with(
-                id,
-                { type: value.type, value: v, list: false },
-                () => js(node.a, props),
-              ),
+            values.map((v) =>
+              props.bindingsJs.withAll(v, () => js(node.a, props)),
             ),
           )
         }
@@ -278,35 +305,63 @@ export const AST_TXRS: {
               },
             }),
           )
-        case "for":
-          const [id, contents] = parseBindingVar(node.b, "for")
-          const value = glsl(contents, props)
-          if (value.list === false) {
+        case "for": {
+          const names: Record<string, GlslValue<TyName, false>> = Object.create(
+            null,
+          )
+          const bindings = parseBindings(node.b, (x) =>
+            parseBindingVar(x, "for"),
+          )
+            .map(([id, contents]) => {
+              const value = glsl(contents, props)
+              if (value.list === false) {
+                throw new Error(
+                  "The variable on the right side of 'for' must be a list.",
+                )
+              }
+              const cached = props.ctx.cacheValue(value)
+              const index = props.ctx.name()
+              names[id] = {
+                expr: `${cached}[${index}]`,
+                list: false,
+                type: value.type,
+              }
+              return {
+                id,
+                index,
+                value: {
+                  expr: cached,
+                  list: value.list,
+                  type: value.type,
+                } satisfies GlslValue<TyName, number>,
+                head: `for (int ${index} = 0; ${index} < ${value.list}; ${index}++) {\n`,
+              }
+            })
+            .reverse()
+          if (bindings.map((x) => x.id).some((x, i, a) => a.indexOf(x) != i)) {
             throw new Error(
-              "The variable on the right side of 'for' should be a list.",
+              "The same variable cannot be bound twice on the right side of 'for'.",
             )
           }
-          const source = props.ctx.name()
-          props.ctx
-            .push`${TY_INFO[value.type].glsl} ${source}[${value.list}] = ${value.expr};\n`
-          const index = props.ctx.name()
           const ctxVal = props.ctx.fork()
-          const val = props.bindings.with(
-            id,
-            { list: false, type: value.type, expr: `${source}[${index}]` },
-            () => glsl(node.a, { ...props, ctx: ctxVal }),
+          const val = props.bindings.withAll(names, () =>
+            glsl(node.a, { ...props, ctx: ctxVal }),
           )
           if (val.list !== false) {
             throw new Error("Cannot store lists inside other lists.")
           }
           const ret = props.ctx.name()
-          props.ctx.push`${TY_INFO[val.type].glsl} ${ret}[${value.list}];\n`
-          props.ctx
-            .push`for (int ${index} = 0; ${index} < ${value.list}; ${index}++) {\n`
+          const size = bindings.reduce((a, b) => a * b.value.list, 1)
+          props.ctx.push`${TY_INFO[val.type].glsl} ${ret}[${size}];\n`
+          for (const { head } of bindings) {
+            props.ctx.push`${head}`
+          }
           props.ctx.push`${ctxVal.block}`
-          props.ctx.push`${ret}[${index}] = ${val.expr};\n`
-          props.ctx.push`}\n`
-          return { expr: ret, list: value.list, type: val.type }
+          props.ctx
+            .push`${ret}[${bindings.reduce((a, b) => `(${a}) * ${b.value.list} + ${b.index}`, "0")}] = ${val.expr};\n`
+          props.ctx.push`${"}\n".repeat(bindings.length)}`
+          return { expr: ret, list: size, type: val.type }
+        }
         case "with":
         case "withseq": {
           return props.bindings.withAll(

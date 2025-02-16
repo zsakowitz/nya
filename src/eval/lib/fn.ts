@@ -1,4 +1,4 @@
-import type { GlslVal, TyName } from "../ty"
+import type { GlslVal, GlslValue, TyName } from "../ty"
 import { TY_INFO } from "../ty/info"
 
 export class GlslHelpers {
@@ -53,22 +53,27 @@ export class GlslContext {
     }
   }
 
-  cachedNative(ty: string, val: string): string {
+  cachedNative(ty: string, val: string, list?: number | false): string {
     if (val.match(/^([A-Za-z_]+|\d+|\d*\.\d+|\d+\.)$/)) {
       return val
     }
 
     const name = this.name()
-    this.push`${ty} ${name} = ${val};\n`
+    this
+      .push`${ty} ${name}${typeof list == "number" ? `[${list}]` : ""} = ${val};\n`
     return name
   }
 
-  cached(ty: TyName, val: string): string {
-    return this.cachedNative(TY_INFO[ty].glsl, val)
+  cached(ty: TyName, val: string, list?: number | false): string {
+    return this.cachedNative(TY_INFO[ty].glsl, val, list)
   }
 
   cache(val: GlslVal): string {
     return this.cached(val.type, val.expr)
+  }
+
+  cacheValue(val: GlslValue): string {
+    return this.cached(val.type, val.expr, val.list)
   }
 }
 
