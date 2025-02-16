@@ -1,9 +1,14 @@
 import { affixes, roots } from "@zsnout/ithkuil/data"
 import * as generate from "@zsnout/ithkuil/generate"
 import { wordToIthkuil } from "@zsnout/ithkuil/generate"
+import {
+  isLegalConsonantForm,
+  isLegalWordFinalConsonantForm,
+  isLegalWordInitialConsonantForm,
+} from "@zsnout/ithkuil/generate/phonotactics"
 import { glossWord } from "@zsnout/ithkuil/gloss"
 import { version } from "@zsnout/ithkuil/package.json"
-import { parseWord } from "@zsnout/ithkuil/parse"
+import { parseWord, transformWord } from "@zsnout/ithkuil/parse"
 import { CharacterRow, getBBox, textToScript } from "@zsnout/ithkuil/script"
 import { createRecognizer, unglossWord } from "@zsnout/ithkuil/ungloss"
 import type { Package } from "."
@@ -80,6 +85,13 @@ const CATEGORIES_RAW = Object.entries(generate)
   )
 
 const CATEGORIES: Record<string, string[]> = Object.fromEntries(CATEGORIES_RAW)
+
+function valid(x: string) {
+  return (
+    /^[bcçčdḑfghjklļmnňprřsštţvwxyzžż]+$/.test(x) &&
+    !x.split("").some((x, i, a) => a[i - 2] == a[i - 1] && a[i - 1] == x)
+  )
+}
 
 export const PKG_ITHKUIL: Package = {
   id: "nya:ithkuil",
@@ -216,7 +228,7 @@ export const PKG_ITHKUIL: Package = {
         },
         err,
       ),
-      ithkuil: {
+      ithkuilvalues: {
         js(...args) {
           if (
             !(
@@ -246,6 +258,42 @@ export const PKG_ITHKUIL: Package = {
         },
         glsl: err,
       },
+      ithkuilvalid: new FnDist(
+        "ithkuilvalid",
+        "checks if a consonant form is valid according to ithkuil phonotactics",
+      ).add(
+        ["text"],
+        "bool",
+        (v) => {
+          const val = transformWord(v.value.map((x) => x.value).join("")).word
+          return valid(val) && isLegalConsonantForm(val)
+        },
+        err,
+      ),
+      ithkuilvalidinitial: new FnDist(
+        "ithkuilvalidinitial",
+        "checks if a consonant form is valid word-initially according to ithkuil phonotactics",
+      ).add(
+        ["text"],
+        "bool",
+        (v) => {
+          const val = transformWord(v.value.map((x) => x.value).join("")).word
+          return valid(val) && isLegalWordInitialConsonantForm(val)
+        },
+        err,
+      ),
+      ithkuilvalidfinal: new FnDist(
+        "ithkuilvalidfinal",
+        "checks if a consonant form is valid word-finally according to ithkuil phonotactics",
+      ).add(
+        ["text"],
+        "bool",
+        (v) => {
+          const val = transformWord(v.value.map((x) => x.value).join("")).word
+          return valid(val) && isLegalWordFinalConsonantForm(val)
+        },
+        err,
+      ),
     },
     vars: {
       ithkuilversion: {
