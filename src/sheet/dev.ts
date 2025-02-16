@@ -90,6 +90,7 @@ if (location.href.includes("localhost")) {
   expr`-2\cdot \pi \operatorname{mod}6`
   expr`73\cdot 4\operatorname{base}15\operatorname{base}2`
   expr`73\cdot 4\operatorname{base}15`
+  expr`\left(\operatorname{iterate}.a^{A.\operatorname{count}}\begin{list}n\to n+1\\a\to a.\operatorname{concat}\left(\text{ },A\left[n\right]\right)\end{list}\operatorname{from}\begin{list}a=a.\operatorname{concat}\left(\text{ =}\right)\\n=1\end{list}\right)\operatorname{with}A=\operatorname{ithkuil}a\operatorname{for}a=\operatorname{ithkuilall}`
   expr`z^{2}+c`
   expr`z^{2}+c`
   expr`y=2x^{2}-7z+3`
