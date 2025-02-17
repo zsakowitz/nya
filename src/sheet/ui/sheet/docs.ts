@@ -308,7 +308,13 @@ function secPackages(list: PackageList) {
         `packages (showing ${list.count} of ${list.packages.length})`
       : `packages (${list.packages.length})`,
     null,
-    h("flex flex-col", ...els),
+    [
+      h(
+        "-mb-2",
+        "Select one or more packages to only show documentation about those packages.",
+      ),
+      h("flex flex-col", ...els),
+    ],
     true,
   )
 }
@@ -618,7 +624,7 @@ function secNamedVariables(list: PackageList) {
       const pkgs = list.packages
         .filter(
           (x) =>
-            x.eval?.fns && Object.values(x.eval.fns).includes(builtin as any),
+            x.eval?.vars && Object.values(x.eval.vars).includes(builtin as any),
         )
         .map((x) => x.id)
 
