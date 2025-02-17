@@ -7,7 +7,7 @@ export const U_NARY_COPRODUCT = "\u2210"
 export const U_INTEGRAL = "\u222B"
 
 export function h(
-  cl?: string | Record<string, string>,
+  cl?: string | Record<string, string | null>,
   ...children: (Node | string | null)[]
 ) {
   return hx("span", cl, ...children)
@@ -15,7 +15,7 @@ export function h(
 
 export function hx<K extends keyof HTMLElementTagNameMap>(
   name: K,
-  cl?: string | Record<string, string>,
+  cl?: string | Record<string, string | null>,
   ...children: (Node | string | null)[]
 ) {
   const el = document.createElement(name)
@@ -23,7 +23,9 @@ export function hx<K extends keyof HTMLElementTagNameMap>(
     el.className = cl
   } else if (cl) {
     for (const key in cl) {
-      el.setAttribute(key, cl[key]!)
+      if (cl[key]) {
+        el.setAttribute(key, cl[key])
+      }
     }
   }
   for (const child of children) {

@@ -47,7 +47,7 @@ function expr(source: { raw: readonly string[] }) {
 }
 
 if (location.href.includes("localhost")) {
-  expr`\operatorname{concat}\left(A,\text{.},C,\text{.},X,\text{.},P,\text{.},E\right)\operatorname{for}\begin{list}A=\operatorname{ithkuilvalues}\text{affiliation}\\C=\operatorname{ithkuilvalues}\text{configuration}\\X=\operatorname{ithkuilvalues}\text{extension}\\P=\operatorname{ithkuilvalues}\text{perspective}\\E=\operatorname{ithkuilvalues}\text{essence}\end{list}`
+  expr`world:2+3`
   expr`\left(\operatorname{iterate}.a^{A.\operatorname{count}}\begin{list}n\to n+1\\a\to a.\operatorname{concat}\left(\text{ },A\left[n\right]\right)\end{list}\operatorname{from}\begin{list}a=a.\operatorname{concat}\left(\text{ =}\right)\\n=1\end{list}\right)\operatorname{with}A=\operatorname{ithkuilvalues}a\operatorname{for}a=\operatorname{ithkuilall}`
   show(expr`y=x^2`)
   expr`\left(2,3\right)`
