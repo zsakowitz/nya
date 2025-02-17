@@ -199,6 +199,7 @@ export const OP_TO_TEXT = new FnDist<"text">(
   "to text",
   "converts a value into text",
 )
+  .add(["bool"], "text", (a) => [{ type: "latex", value: a.value + "" }], err)
   .add(
     ["r32"],
     "text",
