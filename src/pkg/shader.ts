@@ -194,6 +194,7 @@ export const PKG_SHADER: Package = {
   eval: {
     vars: {
       x: {
+        label: "x-coordinate of currently drawn shader pixel",
         get js(): never {
           throw new Error(ERR_COORDS_USED_OUTSIDE_GLSL)
         },
@@ -202,6 +203,7 @@ export const PKG_SHADER: Package = {
         display: false,
       },
       y: {
+        label: "y-coordinate of currently drawn shader pixel",
         get js(): never {
           throw new Error(ERR_COORDS_USED_OUTSIDE_GLSL)
         },

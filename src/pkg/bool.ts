@@ -90,11 +90,13 @@ export const PKG_BOOL: Package = {
   eval: {
     vars: {
       false: {
+        label: "result of a false statement (2=3, 7>9, √4=5)",
         js: { type: "bool", value: false, list: false },
         glsl: { type: "bool", expr: "false", list: false },
         display: false,
       },
       true: {
+        label: "result of a true statement (3=3, 7<9, √4=2)",
         js: { type: "bool", value: true, list: false },
         glsl: { type: "bool", expr: "true", list: false },
         display: false,

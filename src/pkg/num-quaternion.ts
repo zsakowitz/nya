@@ -251,6 +251,7 @@ export const PKG_NUM_QUATERNION: Package = {
   eval: {
     vars: {
       j: {
+        label: "a four-dimensional unit vector perpendicular to 1, i, and k",
         js: {
           type: "q32",
           value: [real(0), real(0), real(1), real(0)],
@@ -260,6 +261,7 @@ export const PKG_NUM_QUATERNION: Package = {
         display: false,
       },
       k: {
+        label: "a four-dimensional unit vector perpendicular to 1, i, and j",
         js: {
           type: "q32",
           value: [real(0), real(0), real(0), real(1)],

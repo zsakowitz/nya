@@ -612,14 +612,32 @@ function secNamedVariables(list: PackageList) {
       }
     }
     return h(
-      "flex gap-2 font-['Symbola'] text-[1.265rem] overflow-x-auto -mx-4 px-4 max-w-[calc(100%_+_2rem)] [&::-webkit-scrollbar]:hidden whitespace-nowrap",
+      "flex gap-2 font-['Symbola'] text-[1.265rem] overflow-x-auto -mx-4 px-4 max-w-[calc(100%_+_2rem)] [&::-webkit-scrollbar]:hidden whitespace-nowrap items-baseline",
       h("", icon(value.type)),
       h("", block?.el ?? makeDocName(name)),
+      h(
+        "text-[--nya-title-dark] text-sm pl-2 font-normal font-sans",
+        val.label,
+      ),
     )
   }
 
   const els = Object.entries(VARS)
-    .sort(([a], [b]) => (a < b ? -1 : 1))
+    // .sort(([a, ar], [b, br]) => {
+    //   try {
+    //     var av: Type = ar.js
+    //   } catch {
+    //     av = ar.glsl
+    //   }
+    //   try {
+    //     var bv: Type = br.js
+    //   } catch {
+    //     bv = br.glsl
+    //   }
+    //   const ak = Object.keys(TY_INFO).indexOf(av.type)
+    //   const bk = Object.keys(TY_INFO).indexOf(bv.type)
+    //   return ak - bk || (a < b ? -1 : 1)
+    // })
     .map(([name, builtin]) => {
       const pkgs = list.packages
         .filter(

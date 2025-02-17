@@ -6,6 +6,7 @@ export interface Builtin {
   glsl: GlslValue
   dynamic?: boolean
   display: boolean | ((display: Display) => void)
+  label: string
 }
 
 export const ERR_COORDS_USED_OUTSIDE_GLSL =

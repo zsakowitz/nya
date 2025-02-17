@@ -504,10 +504,17 @@ float _helper_cmp_r32(float a, float b) {
       })(),
     },
     vars: {
-      π: splitDual(Math.PI),
-      τ: splitDual(Math.PI * 2),
-      e: splitDual(Math.E),
+      π: splitDual(
+        Math.PI,
+        "ratio of any circle's circumference to its diameter",
+      ),
+      τ: splitDual(
+        Math.PI * 2,
+        "ratio of any circle's circumference to its radius",
+      ),
+      e: splitDual(Math.E, "euler's number"),
       "∞": {
+        label: "limit as a number increases without bound",
         js: { type: "r64", value: real(Infinity), list: false },
         glsl: { type: "r64", expr: "vec2(1.0/0.0)", list: false },
         display: false,

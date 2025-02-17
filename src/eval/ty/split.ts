@@ -15,13 +15,18 @@ export function splitValue(value: number): GlslValue<"r64", false> {
   }
 }
 
-export function splitDual(value: number): {
+export function splitDual(
+  value: number,
+  label: string,
+): {
+  label: string
   js: JsValue<"r64", false>
   glsl: GlslValue<"r64", false>
   display: true
 } {
   const glsl = splitValue(value)
   return {
+    label,
     glsl,
     js: {
       list: false,

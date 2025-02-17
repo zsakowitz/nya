@@ -519,6 +519,7 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
     },
     vars: {
       p: {
+        label: "coordinates of currently drawn shader pixel",
         get js(): never {
           throw new Error(ERR_COORDS_USED_OUTSIDE_GLSL)
         },
@@ -527,6 +528,7 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
         display: false,
       },
       i: {
+        label: "unit vector perpendicular to number line; a square root of -1",
         js: { type: "c64", value: pt(real(0), real(1)), list: false },
         glsl: { type: "c64", expr: "vec4(0, 0, 1, 0)", list: false },
         display: false,

@@ -16,7 +16,9 @@ import {
   unglossWord,
 } from "@zsnout/ithkuil/ungloss"
 import type { Package } from "."
-import { FnDist } from "../eval/ops/dist"
+import type { Fn } from "../eval/ops"
+import { doc, FnDist } from "../eval/ops/dist"
+import { ALL_DOCS, type WithDocs } from "../eval/ops/docs"
 import { each, type JsVal, type JsValue, type Val } from "../eval/ty"
 import { Leaf } from "../field/cmd/leaf"
 import { OpEq } from "../field/cmd/leaf/cmp"
@@ -96,6 +98,39 @@ function valid(x: string) {
     !x.split("").some((x, i, a) => a[i - 2] == a[i - 1] && a[i - 1] == x)
   )
 }
+
+const ithkuilvalues: Fn & WithDocs = {
+  name: "ithkuilvalues",
+  label:
+    "given the name of a grammatical category of ithkuil, returns all values it can take",
+  docs() {
+    return [doc(["text"], "text", true)]
+  },
+  js(...args) {
+    if (
+      !(args.length == 1 && args[0]!.list === false && args[0]!.type == "text")
+    ) {
+      throw new Error(
+        "The 'ithkuil' function expects the name of a grammatical category.",
+      )
+    }
+    const arg = args[0]! as JsVal<"text">
+
+    const name = arg.value.map((x) => x.value).join("")
+    const category = CATEGORIES[name.toLowerCase().replace(/[_.\s]/g, "")]
+    if (!category) {
+      throw new Error(`The category '${name}' doesn't exist.`)
+    }
+    return {
+      type: "text",
+      list: category?.length,
+      value: category.map((x): Val<"text"> => [{ type: "plain", value: x }]),
+    }
+  },
+  glsl: err,
+}
+
+ALL_DOCS.push(ithkuilvalues)
 
 export const PKG_ITHKUIL: Package = {
   id: "nya:ithkuil",
@@ -232,36 +267,7 @@ export const PKG_ITHKUIL: Package = {
         },
         err,
       ),
-      ithkuilvalues: {
-        js(...args) {
-          if (
-            !(
-              args.length == 1 &&
-              args[0]!.list === false &&
-              args[0]!.type == "text"
-            )
-          ) {
-            throw new Error(
-              "The 'ithkuil' function expects the name of a grammatical category.",
-            )
-          }
-          const arg = args[0]! as JsVal<"text">
-
-          const name = arg.value.map((x) => x.value).join("")
-          const category = CATEGORIES[name.toLowerCase().replace(/[_.\s]/g, "")]
-          if (!category) {
-            throw new Error(`The category '${name}' doesn't exist.`)
-          }
-          return {
-            type: "text",
-            list: category?.length,
-            value: category.map(
-              (x): Val<"text"> => [{ type: "plain", value: x }],
-            ),
-          }
-        },
-        glsl: err,
-      },
+      ithkuilvalues,
       ithkuilvalid: new FnDist(
         "ithkuilvalid",
         "checks if a consonant form is valid according to ithkuil phonotactics",
@@ -333,6 +339,7 @@ export const PKG_ITHKUIL: Package = {
     },
     vars: {
       ithkuilversion: {
+        label: "version of @zsnout/ithkuil currently in use",
         js: {
           type: "text",
           list: false,
@@ -344,6 +351,7 @@ export const PKG_ITHKUIL: Package = {
         display: true,
       },
       ithkuilall: {
+        label: "list of all grammatical categories in ithkuil",
         js: {
           type: "text",
           list: CATEGORIES_RAW.length,
