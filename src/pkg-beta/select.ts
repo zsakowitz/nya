@@ -95,8 +95,8 @@ const EXT_SELECT = defineExt({
 
 export const PKG_SELECT: Package = {
   id: "nya:select",
-  name: "single-choice fields",
-  label: "allows expressions to become single-choice fields",
+  name: "multiple-choice form fields",
+  label: null,
   eval: {
     fns: {
       select: {

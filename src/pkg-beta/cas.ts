@@ -96,7 +96,7 @@ export class CmdSymVar extends Command<[Block]> {
 export const PKG_CAS: Package = {
   id: "nya:cas",
   name: "symbolic computation",
-  label: "adds computation over symbolic variables",
+  label: "computation over symbolic variables",
   field: {
     inits: {
       $: CmdSymVar,

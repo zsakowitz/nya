@@ -189,7 +189,7 @@ const EXT_GLSL = defineExt({
 export const PKG_SHADER: Package = {
   id: "nya:shader",
   name: "shaders",
-  label: "allows shaders to be created with the x, y, and p variables",
+  label: "creates shaders with the x, y, and p variables",
   deps: [() => PKG_COLOR_CORE, () => PKG_REAL],
   eval: {
     vars: {
