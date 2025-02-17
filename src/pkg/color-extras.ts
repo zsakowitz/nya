@@ -46,7 +46,7 @@ const FN_OKLCH = new FnDist(
 export const PKG_COLOR_EXTRAS: Package = {
   id: "nya:color-extras",
   name: "color functions extended",
-  label: "adds more functions for creating colors",
+  label: "more functions for creating colors",
   deps: [() => PKG_COLOR_CORE],
   init() {
     FN_VALID.add(

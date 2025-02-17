@@ -38,7 +38,7 @@ declare module "../eval/ty/index.js" {
 
 declare module "../eval/ast/token.js" {
   interface Nodes {
-    text: { value: string }
+    text: { value: TextSegment[] }
   }
 }
 
@@ -64,7 +64,17 @@ export class CmdTextInert extends Leaf {
   }
 
   ir(tokens: Node[]): void {
-    tokens.push({ type: "text", value: this.value })
+    if (/^\$(?!\s).*\S\$$/.test(this.value)) {
+      tokens.push({
+        type: "text",
+        value: [{ type: "latex", value: this.value.slice(1, -1) }],
+      })
+    } else {
+      tokens.push({
+        type: "text",
+        value: [{ type: "plain", value: this.value }],
+      })
+    }
   }
 }
 
@@ -157,7 +167,17 @@ export class CmdText extends Leaf {
   }
 
   ir(tokens: Node[]): void {
-    tokens.push({ type: "text", value: this.input.value })
+    if (/^\$(?!\s).*\S\$$/.test(this.input.value)) {
+      tokens.push({
+        type: "text",
+        value: [{ type: "latex", value: this.input.value.slice(1, -1) }],
+      })
+    } else {
+      tokens.push({
+        type: "text",
+        value: [{ type: "plain", value: this.input.value }],
+      })
+    }
   }
 
   moveInto(cursor: Cursor, towards: Dir): void {
@@ -287,7 +307,7 @@ const EXT_TEXT = defineExt({
 export const PKG_TEXT: Package = {
   id: "nya:text",
   name: "text",
-  label: "adds support for writing and outputting text",
+  label: "writing and outputting text",
   field: {
     inits: {
       '"': CmdText,
@@ -347,11 +367,7 @@ export const PKG_TEXT: Package = {
         deps() {},
         drag: NO_DRAG,
         js(node) {
-          return {
-            type: "text",
-            value: [{ type: "plain", value: node.value }],
-            list: false,
-          }
+          return { type: "text", value: node.value, list: false }
         },
         glsl() {
           err()

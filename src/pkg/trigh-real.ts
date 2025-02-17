@@ -56,7 +56,7 @@ export const FN_ARCCOTH = new FnDist(
 export const PKG_TRIG_HYPERBOLIC_REAL: Package = {
   id: "nya:trigh-real",
   name: "hyperbolic trigonometry",
-  label: "adds hyperbolic trig functions for real numbers",
+  label: "hyperbolic trig on real numbers",
   init() {
     FN_SINH.add(
       ["r32"],

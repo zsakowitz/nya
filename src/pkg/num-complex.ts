@@ -90,7 +90,7 @@ const WRITE_COMPLEX: TyWrite<SPoint> = {
 export const PKG_NUM_COMPLEX: Package = {
   id: "nya:num-complex",
   name: "complex numbers",
-  label: "adds support for complex numbers",
+  label: "basic support for complex numbers",
   init() {
     FN_ARG.add(
       ["c32"],

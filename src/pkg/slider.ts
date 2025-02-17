@@ -357,7 +357,7 @@ const EXT_SLIDER = defineExt({
 export const PKG_SLIDER: Package = {
   id: "nya:slider",
   name: "sliders",
-  label: "adds a slider to numeric variables",
+  label: "sliders on numeric variables",
   deps: [() => PKG_REAL],
   sheet: {
     exts: {

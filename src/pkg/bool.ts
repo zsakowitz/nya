@@ -19,7 +19,7 @@ declare module "../eval/ty/index.js" {
 export const PKG_BOOL: Package = {
   id: "nya:bool-ops",
   name: "boolean operations",
-  label: "adds basic support for boolean values",
+  label: "basic support for boolean values",
   init() {
     OP_AND.add(
       ["bool", "bool"],

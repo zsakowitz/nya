@@ -210,7 +210,7 @@ function iconReal(hd: boolean) {
 export const PKG_REAL: Package = {
   id: "nya:num-real",
   name: "real numbers",
-  label: "adds support for real numbers",
+  label: "support for real numbers",
   init() {
     OP_ABS.add(
       ["r64"],

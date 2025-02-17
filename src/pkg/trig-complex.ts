@@ -13,7 +13,7 @@ import { FN_COS, FN_SIN, FN_TAN, PKG_TRIG_REAL } from "./trig-real"
 export const PKG_TRIG_COMPLEX: Package = {
   id: "nya:trig-complex",
   name: "trigonometry on complex numbers",
-  label: "adds standard trig functions for complex numbers",
+  label: null,
   deps: [() => PKG_TRIG_REAL, () => PKG_NUM_COMPLEX],
   eval: {
     fns: {

@@ -100,7 +100,7 @@ function valid(x: string) {
 export const PKG_ITHKUIL: Package = {
   id: "nya:ithkuil",
   name: "ithkuil utilities",
-  label: "adds utilities for working with the language ithkuil",
+  label: "functions for working with ithkuil",
   deps: [() => PKG_TEXT],
   ty: {
     info: {

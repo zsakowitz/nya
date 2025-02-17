@@ -448,7 +448,7 @@ const INFO_POLYGON: TyInfo<Tys["polygon"], TyComponents["polygon"]> = {
 export const PKG_GEOMETRY: Package = {
   id: "nya:geometry",
   name: "geometry",
-  label: "adds geometric objects and geometric constructions",
+  label: "geometric objects and constructions",
   deps: [() => PKG_GEO_POINT, () => PKG_REAL],
   ty: {
     info: {

@@ -37,7 +37,7 @@ export const EXT_EVAL = defineExt({
 export const PKG_EVAL: Package = {
   id: "nya:eval",
   name: "evaluator",
-  label: "displays the result of an evaluated expression",
+  label: "displays computed expressions",
   sheet: {
     exts: {
       2: [EXT_EVAL],

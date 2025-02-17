@@ -34,7 +34,7 @@ const max = new FnList("max", "returns the maximum of its inputs").addSpread(
 export const PKG_STATISTICS: Package = {
   id: "nya:statistics",
   name: "statistics",
-  label: "adds basic statistics functions",
+  label: "rudimentary statistics functions",
   deps: [() => PKG_REAL],
   eval: {
     fns: {

@@ -14,7 +14,7 @@ export type List<T> = { readonly [x: string]: T }
 export interface Package {
   id: string
   name: string
-  label: string
+  label: string | null
 
   init?(): void
   deps?: (() => Package)[]

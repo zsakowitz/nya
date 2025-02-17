@@ -96,7 +96,7 @@ export const OP_PLOT = new FnDist<"color">(
 export const PKG_COLOR_CORE: Package = {
   id: "nya:color-core",
   name: "color functions core",
-  label: "adds very basic color functions",
+  label: "rgb and hsv functions",
   deps: [() => PKG_REAL, () => PKG_BOOL],
   init() {
     OP_PLOT.add(

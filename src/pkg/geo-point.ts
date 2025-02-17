@@ -344,7 +344,7 @@ const PICK_POINT = createPickByTy("p", null, [["point32", "point64"]], () => {})
 export const PKG_GEO_POINT: Package = {
   id: "nya:geo-point",
   name: "geometric points",
-  label: "adds geometric points",
+  label: "geometric points in 2D",
   deps: [() => PKG_REAL],
   init() {
     FN_SCREENDISTANCE.add(
