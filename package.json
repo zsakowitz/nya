@@ -10,7 +10,7 @@
   "dependencies": {
     "@fortawesome/free-regular-svg-icons": "^6.7.2",
     "@fortawesome/free-solid-svg-icons": "^6.7.2",
-    "@zsnout/ithkuil": "^0.1.117",
+    "@zsnout/ithkuil": "^0.1.119",
     "mathjs": "^14.2.1",
     "regl": "^2.1.1",
     "tailwind": "^4.0.0",

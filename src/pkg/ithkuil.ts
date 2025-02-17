@@ -10,7 +10,11 @@ import { glossWord } from "@zsnout/ithkuil/gloss"
 import { version } from "@zsnout/ithkuil/package.json"
 import { parseWord, transformWord } from "@zsnout/ithkuil/parse"
 import { CharacterRow, getBBox, textToScript } from "@zsnout/ithkuil/script"
-import { createRecognizer, unglossWord } from "@zsnout/ithkuil/ungloss"
+import {
+  createRecognizer,
+  parseCaGloss,
+  unglossWord,
+} from "@zsnout/ithkuil/ungloss"
 import type { Package } from "."
 import { FnDist } from "../eval/ops/dist"
 import { each, type JsVal, type JsValue, type Val } from "../eval/ty"
@@ -294,6 +298,38 @@ export const PKG_ITHKUIL: Package = {
         },
         err,
       ),
+      ithkuilca: new FnDist(
+        "ithkuilca",
+        "generates an ithkuil CA form, optionally geminated",
+      )
+        .add(
+          ["text"],
+          "text",
+          (v) => {
+            const val = v.value.map((x) => x.value).join("")
+            const ca = parseCaGloss(val)
+            return [{ type: "plain", value: generate.caToIthkuil(ca) }]
+          },
+          err,
+        )
+        .add(
+          ["text", "bool"],
+          "text",
+          (v, b) => {
+            const val = v.value.map((x) => x.value).join("")
+            const ca = parseCaGloss(val)
+            return [
+              {
+                type: "plain",
+                value:
+                  b.value ?
+                    generate.geminatedCAToIthkuil(ca)
+                  : generate.caToIthkuil(ca),
+              },
+            ]
+          },
+          err,
+        ),
     },
     vars: {
       ithkuilversion: {
