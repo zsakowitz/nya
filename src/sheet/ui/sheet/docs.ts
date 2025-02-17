@@ -6,7 +6,7 @@ import { faFolderOpen } from "@fortawesome/free-solid-svg-icons/faFolderOpen"
 import { FNS } from "../../../eval/ops"
 import { icon } from "../../../eval/ops/dist"
 import { ALL_DOCS } from "../../../eval/ops/docs"
-import { VARS } from "../../../eval/ops/vars"
+import { VARS, type Builtin } from "../../../eval/ops/vars"
 import type { Type } from "../../../eval/ty"
 import { frac } from "../../../eval/ty/create"
 import { Display } from "../../../eval/ty/display"
@@ -42,32 +42,36 @@ export function btn(
 }
 
 class PackageList {
-  private readonly active = new Set<string>()
+  private readonly activePackages = new Set<string>()
   private readonly fns: (() => void)[] = []
 
-  constructor() {
+  constructor(readonly packages: Package[]) {
     queueMicrotask(() => this.fns.forEach((x) => x()))
   }
 
   set(name: string, active: boolean) {
-    if (active == this.active.has(name)) {
+    if (active == this.activePackages.has(name)) {
       return
     }
 
     if (active) {
-      this.active.add(name)
+      this.activePackages.add(name)
     } else {
-      this.active.delete(name)
+      this.activePackages.delete(name)
     }
     this.fns.forEach((x) => x())
   }
 
   get count() {
-    return this.active.size
+    return this.activePackages.size
+  }
+
+  get active() {
+    return this.count != 0
   }
 
   has(name: string) {
-    return this.active.size == 0 || this.active.has(name)
+    return this.activePackages.size == 0 || this.activePackages.has(name)
   }
 
   on(f: () => void) {
@@ -75,7 +79,7 @@ class PackageList {
   }
 
   with<T>(value: T, f: (value: T) => void): T {
-    this.fns.push(() => f(value))
+    this.on(() => f(value))
     return value
   }
 
@@ -100,20 +104,27 @@ class PackageList {
 }
 
 export function createDocs(hide: HTMLElement, packages: Package[]) {
-  const list = new PackageList()
+  const list = new PackageList(packages)
+
+  const nonPackageSpecific = h(
+    "",
+    secShaders(),
+    secAdvancedOperators(),
+    secUnnamedFunctions(),
+    secChangelog(),
+  )
 
   const el = h(
     "flex flex-col overflow-y-auto px-4 pb-4 gap-2 [&_p+p]:-mt-2",
     secCredits(),
-    secPackages(packages, list),
-    secDataTypes(),
-    secShaders(),
-    secAdvancedOperators(),
-    secNamedVariables(),
-    secNamedFunctions(),
-    secUnnamedFunctions(),
-    secChangelog(),
+    secPackages(list),
+    secDataTypes(list),
+    secNamedVariables(list),
+    secNamedFunctions(list),
+    nonPackageSpecific,
   )
+
+  list.on(() => nonPackageSpecific.classList.toggle("hidden", list.active))
 
   return h(
     "flex flex-col border-r border-[--nya-border] hidden row-span-2",
@@ -129,48 +140,6 @@ export function createDocs(hide: HTMLElement, packages: Package[]) {
       hide,
     ),
     el,
-  )
-}
-
-function secPackages(packages: Package[], list: PackageList) {
-  const els = packages
-    .sort((a, b) =>
-      a.name < b.name ? -1
-      : a.name > b.name ? 1
-      : a.id < b.id ? -1
-      : a.id > b.id ? 1
-      : 0,
-    )
-    .map((pkg) => {
-      const field = hx("input", { type: "checkbox", class: "sr-only" })
-      field.addEventListener("input", () => {
-        list.set(pkg.id, field.checked)
-      })
-      return hx(
-        "label",
-        "flex gap-2 items-center",
-        field,
-        h(
-          "size-4 border border-[--nya-border] rounded [:checked+&]:bg-[--nya-expr-focus] [:checked+&]:border-transparent flex",
-          fa(faCheck, "size-3 fill-current m-auto hidden [:checked+*_&]:block"),
-        ),
-        h(
-          "font-semibold",
-          pkg.name,
-          pkg.label &&
-            h("text-[--nya-title-dark] text-sm pl-4 font-normal", pkg.label),
-        ),
-      )
-    })
-
-  return list.section(
-    () =>
-      list.count ?
-        `packages (showing ${list.count} of ${packages.length})`
-      : `packages (${packages.length})`,
-    () => true,
-    h("flex flex-col", ...els),
-    true,
   )
 }
 
@@ -200,9 +169,9 @@ function title(label: string) {
   return {
     el: hx(
       "summary",
-      "[[open]_&]:sticky top-0 z-10 bg-[--nya-bg] pt-2 list-none [[data-nya-disabled=true]_&]:opacity-30",
+      "[[open]_&]:sticky top-0 z-10 bg-[--nya-bg] pt-2 list-none",
       h(
-        "flex bg-[--nya-bg-sidebar] border border-[--nya-border] -mx-2 rounded-lg px-2 pt-1 font-['Symbola'] text-[1.265rem] text-center items-center",
+        "flex bg-[--nya-bg-sidebar] border border-[--nya-border] -mx-2 rounded-lg px-2 pt-1 font-['Symbola'] text-[1.265rem] text-center items-center [[data-nya-disabled=true]_&]:opacity-30",
         h(
           "",
           fa(
@@ -240,6 +209,179 @@ function sectionEls(
 
 function section(label: string, data: Node | (Node | null)[], open?: boolean) {
   return sectionEls(label, data, open).el
+}
+
+function secCredits() {
+  return section("credits + why this exists", [
+    hx(
+      "p",
+      "",
+      "This site is a work in progress by ",
+      hx(
+        "a",
+        {
+          class: "text-blue-500 underline underline-offset-2",
+          href: "https://github.com/zsakowitz",
+        },
+        "sakawi",
+      ),
+      ". ",
+      hx(
+        "a",
+        {
+          class: "text-blue-500 underline underline-offset-2",
+          href: "https://github.com/zsakowitz/nya",
+        },
+        "Its source code",
+      ),
+      " is publicly available on GitHub.",
+    ),
+    hx(
+      "p",
+      "",
+      "Inspiration for project nya was taken primarily from Desmos. I love their tools, and I've always thought it would be fun to rebuild it, simply for my own enjoyment.",
+    ),
+    hx(
+      "p",
+      "",
+      "My original dream was simply to make a version of Desmos with complex numbers (they weren't added to Desmos until late 2024). But I never created that, since it never seemed worth it to rebuild a whole calculator app just for one tiny feature.",
+    ),
+    hx(
+      "p",
+      "",
+      "Later, I became obsessed with fractals (see the ",
+      a(
+        "https://v8.zsnout.com/fractal-gallery",
+        "fractal gallery on my main site, zSnout",
+      ),
+      " for interactive examples). I tried making some in Desmos, but they never matched up to my quality expectations, since Desmos wasn't built for fractals. So I brushed the thought aside.",
+    ),
+    hx(
+      "p",
+      "",
+      "But then, around November 2024, I had a realization. I'm a programmer. If I want Desmos to make fractals, I can just... make it do that. And the project just exploded from there. For the full details, scroll down to the changelog at the bottom of this page.",
+    ),
+    hx(
+      "p",
+      "",
+      "Hence, I present to you: ",
+      hx("strong", "font-semibold", "project nya"),
+      ". I hope you enjoy it.",
+    ),
+  ])
+}
+
+function secPackages(list: PackageList) {
+  const els = list.packages
+    .sort((a, b) =>
+      a.name < b.name ? -1
+      : a.name > b.name ? 1
+      : a.id < b.id ? -1
+      : a.id > b.id ? 1
+      : 0,
+    )
+    .map((pkg) => {
+      const field = hx("input", { type: "checkbox", class: "sr-only" })
+      field.addEventListener("input", () => {
+        list.set(pkg.id, field.checked)
+      })
+      return hx(
+        "label",
+        "flex gap-2 items-center",
+        field,
+        h(
+          "size-4 border border-[--nya-border] rounded [:checked+&]:bg-[--nya-expr-focus] [:checked+&]:border-transparent flex",
+          fa(faCheck, "size-3 fill-current m-auto hidden [:checked+*_&]:block"),
+        ),
+        h(
+          "font-semibold",
+          pkg.name,
+          pkg.label &&
+            h("text-[--nya-title-dark] text-sm pl-4 font-normal", pkg.label),
+        ),
+      )
+    })
+
+  return list.section(
+    () =>
+      list.active ?
+        `packages (showing ${list.count} of ${list.packages.length})`
+      : `packages (${list.packages.length})`,
+    null,
+    h("flex flex-col", ...els),
+    true,
+  )
+}
+
+function secDataTypes(list: PackageList) {
+  const els = Object.entries(TY_INFO)
+    .filter((x) => !x[0].endsWith("64"))
+    .map(([id, info]) => {
+      const pkgs = list.packages
+        .filter((x) => x.ty?.info && id in x.ty.info)
+        .map((x) => x.id)
+
+      const el = h("flex gap-1", info?.icon(), info.name)
+
+      let active = true
+      list.on(() => {
+        active = !list.active || pkgs.some((x) => list.has(x))
+        el.classList.toggle("hidden", !active)
+      })
+
+      return {
+        el,
+        source: list,
+        get active() {
+          return active
+        },
+      }
+    })
+
+  const count = () => els.reduce((a, b) => a + +b.active, 0)
+
+  return list.section(
+    () =>
+      list.active ? `data types (${count()})` : `data types (${els.length})`,
+    () => count() == 0,
+    h(
+      "flex flex-col",
+      ...els.map((x) => x.el),
+      list.with(h("flex gap-1", any(), "any type"), (el) =>
+        el.classList.toggle("hidden", list.active),
+      ),
+    ),
+  )
+}
+
+function secShaders() {
+  return section("shaders", [
+    hx(
+      "p",
+      "",
+      "If you reference the 'x', 'y', or 'p' variables in an expression, it becomes a ",
+      hx("em", "", "shader"),
+      ". A shader outputs a single color for every pixel on your screen, and can draw very complex shapes very quickly.",
+    ),
+    hx(
+      "p",
+      "",
+      "When running in shaders, most computations run at a lower precision than normal, since most devices can't handle higher precision values, which might lead to shaders appearing pixelated.",
+    ),
+    hx(
+      "p",
+      "",
+      "Some functions and operators, however, can run on high-precision variants. These operations can be up to 20x slower, but are much more accurate. Note that only these types have high-precision variants:",
+    ),
+    h(
+      "flex flex-col",
+      ...Object.entries(TY_INFO)
+        .filter((x) => x[0].endsWith("64"))
+        .map(([, info]) =>
+          h("flex gap-1", info?.icon(), info.name + " (high-res)"),
+        ),
+    ),
+  ])
 }
 
 function secAdvancedOperators() {
@@ -439,76 +581,128 @@ function secAdvancedOperators() {
   ])
 }
 
-function secDataTypes() {
-  return section(`data types (${Object.entries(TY_INFO).length})`, [
-    h(
-      "flex flex-col",
-      ...Object.entries(TY_INFO)
-        .filter((x) => !x[0].endsWith("64"))
-        .map(([, info]) => h("flex gap-1", info?.icon(), info.name)),
-      h("flex gap-1", any(), "any type"),
-    ),
-  ])
+function secNamedVariables(list: PackageList) {
+  function createEl(name: string, val: Builtin) {
+    let value: Type
+    let js
+    try {
+      js = value = val.js
+    } catch {
+      value = val.glsl
+    }
+    let block
+    if (val.display) {
+      if (js) {
+        block = new Block(null)
+        const display = new Display(block.cursor(R), frac(10, 1))
+        if (typeof val.display == "function") {
+          val.display(display)
+        } else {
+          display.output(js)
+        }
+        block.el.insertBefore(makeDocName(name), block.el.firstChild)
+      } else {
+        block = { el: makeDocName(name) }
+      }
+    }
+    return h(
+      "flex gap-2 font-['Symbola'] text-[1.265rem] overflow-x-auto -mx-4 px-4 max-w-[calc(100%_+_2rem)] [&::-webkit-scrollbar]:hidden whitespace-nowrap",
+      h("", icon(value.type)),
+      h("", block?.el ?? makeDocName(name)),
+    )
+  }
+
+  const els = Object.entries(VARS)
+    .sort(([a], [b]) => (a < b ? -1 : 1))
+    .map(([name, builtin]) => {
+      const pkgs = list.packages
+        .filter(
+          (x) =>
+            x.eval?.fns && Object.values(x.eval.fns).includes(builtin as any),
+        )
+        .map((x) => x.id)
+
+      const el = createEl(name, builtin)
+      if (!el) return null
+
+      let active = true
+      list.on(() => {
+        active = !list.active || pkgs.some((x) => list.has(x))
+        el.classList.toggle("hidden", !active)
+      })
+
+      return {
+        el,
+        source: list,
+        get active() {
+          return active
+        },
+      }
+    })
+    .filter((x) => x != null)
+
+  const count = () => els.reduce((a, b) => a + +b.active, 0)
+
+  return list.section(
+    () =>
+      list.active ?
+        `named variables (${count()})`
+      : `named variables (${els.length})`,
+    () => count() == 0,
+    h("flex flex-col", ...els.map((x) => x.el)),
+  )
 }
 
-function secCredits() {
-  return section("credits", [
-    hx(
-      "p",
-      "",
-      "This site is a work in progress by ",
-      hx(
-        "a",
-        {
-          class: "text-blue-500 underline underline-offset-2",
-          href: "https://github.com/zsakowitz",
+function secNamedFunctions(list: PackageList) {
+  const els = ALL_DOCS.filter((x) => Object.values(FNS).includes(x as any))
+    .sort((a, b) => (a.name < b.name ? -1 : 1))
+    .map((fn) => {
+      const pkgs = list.packages
+        .filter(
+          (x) => x.eval?.fns && Object.values(x.eval.fns).includes(fn as any),
+        )
+        .map((x) => x.id)
+
+      const el = makeDoc(fn)
+      if (!el) return null
+
+      let active = true
+      list.on(() => {
+        active = !list.active || pkgs.some((x) => list.has(x))
+        el.classList.toggle("hidden", !active)
+      })
+
+      return {
+        el,
+        source: list,
+        get active() {
+          return active
         },
-        "sakawi",
-      ),
-      ". ",
-      hx(
-        "a",
-        {
-          class: "text-blue-500 underline underline-offset-2",
-          href: "https://github.com/zsakowitz/nya",
-        },
-        "Its source code",
-      ),
-      " is publicly available on GitHub.",
-    ),
-    hx(
-      "p",
-      "",
-      "Inspiration for project nya was taken primarily from Desmos. I love their tools, and I've always thought it would be fun to rebuild it, simply for my own enjoyment.",
-    ),
-    hx(
-      "p",
-      "",
-      "My original dream was simply to make a version of Desmos with complex numbers (they weren't added to Desmos until late 2024). But I never created that, since it never seemed worth it to rebuild a whole calculator app just for one tiny feature.",
-    ),
-    hx(
-      "p",
-      "",
-      "Later, I became obsessed with fractals (see the ",
-      a(
-        "https://v8.zsnout.com/fractal-gallery",
-        "fractal gallery on my main site, zSnout",
-      ),
-      " for interactive examples). I tried making some in Desmos, but they never matched up to my quality expectations, since Desmos wasn't built for fractals. So I brushed the thought aside.",
-    ),
-    hx(
-      "p",
-      "",
-      "But then, around November 2024, I had a realization. I'm a programmer. If I want Desmos to make fractals, I can just... make it do that. And the project just exploded from there. For the full details, scroll down to the changelog at the bottom of this page.",
-    ),
-    hx(
-      "p",
-      "",
-      "Hence, I present to you: ",
-      hx("strong", "font-semibold", "project nya"),
-      ". I hope you enjoy it.",
-    ),
-  ])
+      }
+    })
+    .filter((x) => x != null)
+
+  const count = () => els.reduce((a, b) => a + +b.active, 0)
+
+  return list.section(
+    () =>
+      list.active ?
+        `named functions (${count()})`
+      : `named functions (${els.length})`,
+    () => count() == 0,
+    els.map((x) => x.el),
+  )
+}
+
+function secUnnamedFunctions() {
+  const fns = ALL_DOCS.filter((x) => !Object.values(FNS).includes(x as any))
+  return section(
+    `operators (${fns.length})`,
+    fns
+      .sort((a, b) => (a.name < b.name ? -1 : 1))
+      .map(makeDoc)
+      .filter((x) => x != null),
+  )
 }
 
 function secChangelog() {
@@ -629,97 +823,6 @@ function secChangelog() {
       " to ensure further extension was not just possible, but ridiculously easy. As a test, I tried to incorporate my preexisting Ithkuil tooling into project nya; it took only three minutes to incorporate the first of just three features.",
     ),
   ])
-}
-
-function secShaders() {
-  return section("shaders", [
-    hx(
-      "p",
-      "",
-      "If you reference the 'x', 'y', or 'p' variables in an expression, it becomes a ",
-      hx("em", "", "shader"),
-      ". A shader outputs a single color for every pixel on your screen, and can draw very complex shapes very quickly.",
-    ),
-    hx(
-      "p",
-      "",
-      "When running in shaders, most computations run at a lower precision than normal, since most devices can't handle higher precision values, which might lead to shaders appearing pixelated.",
-    ),
-    hx(
-      "p",
-      "",
-      "Some functions and operators, however, can run on high-precision variants. These operations can be up to 20x slower, but are much more accurate. Note that only these types have high-precision variants:",
-    ),
-    h(
-      "flex flex-col",
-      ...Object.entries(TY_INFO)
-        .filter((x) => x[0].endsWith("64"))
-        .map(([, info]) =>
-          h("flex gap-1", info?.icon(), info.name + " (high-res)"),
-        ),
-    ),
-  ])
-}
-
-function secNamedVariables() {
-  return section(`named variables (${Object.entries(VARS).length})`, [
-    h(
-      "flex flex-col",
-      ...Object.entries(VARS)
-        .sort(([a], [b]) => a.length - b.length || (a < b ? -1 : 1))
-        .map(([name, a]) => {
-          let value: Type
-          let js
-          try {
-            js = value = a.js
-          } catch {
-            value = a.glsl
-          }
-          let block
-          if (a.display) {
-            if (js) {
-              block = new Block(null)
-              const display = new Display(block.cursor(R), frac(10, 1))
-              if (typeof a.display == "function") {
-                a.display(display)
-              } else {
-                display.output(js)
-              }
-              block.el.insertBefore(makeDocName(name), block.el.firstChild)
-            } else {
-              block = { el: makeDocName(name) }
-            }
-          }
-          return h(
-            "flex gap-2 font-['Symbola'] text-[1.265rem] overflow-x-auto -mx-4 px-4 max-w-[calc(100%_+_2rem)] [&::-webkit-scrollbar]:hidden whitespace-nowrap",
-            h("", icon(value.type)),
-            h("", block?.el ?? makeDocName(name)),
-          )
-        }),
-    ),
-  ])
-}
-
-function secNamedFunctions() {
-  const fns = ALL_DOCS.filter((x) => Object.values(FNS).includes(x as any))
-  return section(
-    `named functions (${fns.length})`,
-    fns
-      .sort((a, b) => (a.name < b.name ? -1 : 1))
-      .map(makeDoc)
-      .filter((x) => x != null),
-  )
-}
-
-function secUnnamedFunctions() {
-  const fns = ALL_DOCS.filter((x) => !Object.values(FNS).includes(x as any))
-  return section(
-    `operators (${fns.length})`,
-    fns
-      .sort((a, b) => (a.name < b.name ? -1 : 1))
-      .map(makeDoc)
-      .filter((x) => x != null),
-  )
 }
 
 const MASSIVE_URL = () =>
