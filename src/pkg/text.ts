@@ -103,7 +103,7 @@ export class CmdText extends Leaf {
   ) {
     const input = hx(
       "input",
-      "relative focus:outline-none font-['Times_New_Roman'] bg-transparent -mx-[0.5ch] px-[0.5ch] [box-sizing:content-box]",
+      "relative focus:outline-none font-['Times_New_Roman'] bg-transparent -mx-[0.5ch] px-[0.5ch] [box-sizing:content-box] ![field-sizing:content]",
     )
     input.spellcheck = false
     input.value = value
@@ -146,6 +146,7 @@ export class CmdText extends Leaf {
         Math.max(1, input.scrollWidth - input.offsetWidth) + "px"
     }
     setTimeout(checkSize)
+    new IntersectionObserver(checkSize).observe(input)
     const ql = h("", "“")
     const qr = h("", "”")
     super("\\text", h("inline-block relative", ql, input, qr))
