@@ -117,6 +117,7 @@ export function createDocs(hide: HTMLElement, packages: Package[]) {
   const el = h(
     "flex flex-col overflow-y-auto px-4 pb-4 gap-2 [&_p+p]:-mt-2",
     secCredits(),
+    secWhy(),
     secPackages(list),
     secDataTypes(list),
     secNamedVariables(list),
@@ -215,7 +216,8 @@ function section(label: string, data: Node | (Node | null)[], open?: boolean) {
 }
 
 function secCredits() {
-  return section("credits + why this exists", [
+  return section(
+    "credits",
     hx(
       "p",
       "",
@@ -237,12 +239,18 @@ function secCredits() {
         },
         "Its source code",
       ),
-      " is publicly available on GitHub.",
+      " is publicly available on GitHub. Inspiration was taken primarily from Desmos.",
     ),
+    true,
+  )
+}
+
+function secWhy() {
+  return section("why this exists", [
     hx(
       "p",
       "",
-      "Inspiration for project nya was taken primarily from Desmos. I love their tools, and I've always thought it would be fun to rebuild it, simply for my own enjoyment.",
+      "I love Desmos's tools, and I've always thought it would be fun to rebuild it, simply for my own enjoyment.",
     ),
     hx(
       "p",
