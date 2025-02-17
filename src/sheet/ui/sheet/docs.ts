@@ -4,7 +4,7 @@ import { faCheck } from "@fortawesome/free-solid-svg-icons/faCheck"
 import { faFolderClosed } from "@fortawesome/free-solid-svg-icons/faFolderClosed"
 import { faFolderOpen } from "@fortawesome/free-solid-svg-icons/faFolderOpen"
 import { FNS } from "../../../eval/ops"
-import { icon } from "../../../eval/ops/dist"
+import { array, icon } from "../../../eval/ops/dist"
 import { ALL_DOCS } from "../../../eval/ops/docs"
 import { VARS, type Builtin } from "../../../eval/ops/vars"
 import type { Type } from "../../../eval/ty"
@@ -107,7 +107,7 @@ export function createDocs(hide: HTMLElement, packages: Package[]) {
   const list = new PackageList(packages)
 
   const nonPackageSpecific = h(
-    "",
+    "contents",
     secShaders(),
     secAdvancedOperators(),
     secUnnamedFunctions(),
@@ -124,7 +124,10 @@ export function createDocs(hide: HTMLElement, packages: Package[]) {
     nonPackageSpecific,
   )
 
-  list.on(() => nonPackageSpecific.classList.toggle("hidden", list.active))
+  list.on(() => {
+    nonPackageSpecific.classList.toggle("hidden", list.active)
+    nonPackageSpecific.classList.toggle("contents", !list.active)
+  })
 
   return h(
     "flex flex-col border-r border-[--nya-border] hidden row-span-2",
@@ -420,6 +423,32 @@ function secAdvancedOperators() {
         "evaluates <left side> with <a> set to <right side>",
       ),
     ),
+    // for
+    h(
+      "flex flex-col",
+      h(
+        "text-[1.265rem]/[1.15]",
+        h(
+          "font-['Symbola']",
+          CmdBrack.render("(", ")", null, {
+            el: h(
+              "",
+              any(),
+              new CmdWord("for", "infix").el,
+              new CmdWord("a", undefined, true).el,
+              new OpEq(false).el,
+              array(any("text-[#2d70b3]"), 2),
+            ),
+          }),
+          new OpRightArrow().el,
+          array(any(), 2),
+        ),
+      ),
+      h(
+        "text-sm leading-tight text-slate-500",
+        "evaluates <left side> with <a> set to each element of <right side> and returns a list of the results",
+      ),
+    ),
     // base
     TY_INFO.r32 ?
       h(
@@ -623,21 +652,6 @@ function secNamedVariables(list: PackageList) {
   }
 
   const els = Object.entries(VARS)
-    // .sort(([a, ar], [b, br]) => {
-    //   try {
-    //     var av: Type = ar.js
-    //   } catch {
-    //     av = ar.glsl
-    //   }
-    //   try {
-    //     var bv: Type = br.js
-    //   } catch {
-    //     bv = br.glsl
-    //   }
-    //   const ak = Object.keys(TY_INFO).indexOf(av.type)
-    //   const bk = Object.keys(TY_INFO).indexOf(bv.type)
-    //   return ak - bk || (a < b ? -1 : 1)
-    // })
     .map(([name, builtin]) => {
       const pkgs = list.packages
         .filter(
