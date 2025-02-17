@@ -940,6 +940,7 @@ export const AST_TXRS: {
   binding: error`Cannot evaluate a variable binding.`((node, deps) =>
     deps.add(node.value),
   ),
+  field: errorAll`Field notation is not supported yet.`,
   punc: joint(
     (node) => {
       throw new Error(`Unexpected operator '${node.value}'.`)

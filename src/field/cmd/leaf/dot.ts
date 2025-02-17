@@ -16,7 +16,7 @@ export class CmdDot extends Leaf {
   }
 
   constructor() {
-    super(",", h("nya-cmd-dot", "."))
+    super(".", h("nya-cmd-dot", "."))
     this.render()
   }
 

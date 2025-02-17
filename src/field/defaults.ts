@@ -1,5 +1,6 @@
 import "../../index.css"
 import { OpApprox, OpEq, OpGt, OpLt, OpTilde } from "./cmd/leaf/cmp"
+import { CmdColon } from "./cmd/leaf/colon"
 import { CmdColor } from "./cmd/leaf/color"
 import { CmdComma } from "./cmd/leaf/comma"
 import { CmdDot } from "./cmd/leaf/dot"
@@ -91,6 +92,7 @@ export const inits = new Inits()
   .set("¡", CmdBrack)
   .set("&", CmdBreakCol)
   .set(";", CmdBreakRow)
+  .set(":", CmdColon)
   // movement ops
   .set("ArrowLeft", CmdMove(L))
   .set("Home", CmdMove(L, true))

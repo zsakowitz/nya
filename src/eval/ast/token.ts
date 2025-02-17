@@ -200,6 +200,7 @@ export interface Nodes {
   void: {}
   num: { value: string; sub?: Node; span: Span | null }
   var: Var
+  field: { value: string; sub?: Node }
   magicvar: MagicVar
   num16: { value: string }
   group: { lhs: ParenLhs; rhs: ParenRhs; value: Node }
