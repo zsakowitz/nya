@@ -41,11 +41,71 @@ export function btn(
   return el
 }
 
+class PackageList {
+  private readonly active = new Set<string>()
+  private readonly fns: (() => void)[] = []
+
+  constructor() {
+    queueMicrotask(() => this.fns.forEach((x) => x()))
+  }
+
+  set(name: string, active: boolean) {
+    if (active == this.active.has(name)) {
+      return
+    }
+
+    if (active) {
+      this.active.add(name)
+    } else {
+      this.active.delete(name)
+    }
+    this.fns.forEach((x) => x())
+  }
+
+  get count() {
+    return this.active.size
+  }
+
+  has(name: string) {
+    return this.active.size == 0 || this.active.has(name)
+  }
+
+  on(f: () => void) {
+    this.fns.push(f)
+  }
+
+  with<T>(value: T, f: (value: T) => void): T {
+    this.fns.push(() => f(value))
+    return value
+  }
+
+  section(
+    label: () => string,
+    disabled: (() => boolean) | null,
+    data: Node | (Node | null)[],
+    open?: boolean,
+  ) {
+    const section = sectionEls(label(), data, open)
+    section.el.ariaDisabled = section.el.dataset.nyaDisabled =
+      disabled?.() ? "true" : "false"
+    this.on(() => {
+      console.log("running")
+      console.log(label())
+      section.label.textContent = label()
+      section.el.ariaDisabled = section.el.dataset.nyaDisabled =
+        disabled?.() ? "true" : "false"
+    })
+    return section.el
+  }
+}
+
 export function createDocs(hide: HTMLElement, packages: Package[]) {
+  const list = new PackageList()
+
   const el = h(
     "flex flex-col overflow-y-auto px-4 pb-4 gap-2 [&_p+p]:-mt-2",
     secCredits(),
-    secPackages(packages),
+    secPackages(packages, list),
     secDataTypes(),
     secShaders(),
     secAdvancedOperators(),
@@ -72,7 +132,7 @@ export function createDocs(hide: HTMLElement, packages: Package[]) {
   )
 }
 
-function secPackages(packages: Package[]) {
+function secPackages(packages: Package[], list: PackageList) {
   const els = packages
     .sort((a, b) =>
       a.name < b.name ? -1
@@ -83,6 +143,9 @@ function secPackages(packages: Package[]) {
     )
     .map((pkg) => {
       const field = hx("input", { type: "checkbox", class: "sr-only" })
+      field.addEventListener("input", () => {
+        list.set(pkg.id, field.checked)
+      })
       return hx(
         "label",
         "flex gap-2 items-center",
@@ -100,8 +163,12 @@ function secPackages(packages: Package[]) {
       )
     })
 
-  return section(
-    `packages (${packages.length})`,
+  return list.section(
+    () =>
+      list.count ?
+        `packages (showing ${list.count} of ${packages.length})`
+      : `packages (${packages.length})`,
+    () => true,
     h("flex flex-col", ...els),
     true,
   )
@@ -129,33 +196,50 @@ function makeDoc(fn: { name: string; label: string; docs(): Node[] }) {
 }
 
 function title(label: string) {
-  return hx(
-    "summary",
-    "[[open]_&]:sticky top-0 z-10 bg-[--nya-bg] pt-2 list-none",
-    h(
-      "flex bg-[--nya-bg-sidebar] border border-[--nya-border] -mx-2 rounded-lg px-2 pt-1 font-['Symbola'] text-[1.265rem] text-center items-center",
+  const el = h("flex-1", label)
+  return {
+    el: hx(
+      "summary",
+      "[[open]_&]:sticky top-0 z-10 bg-[--nya-bg] pt-2 list-none [[data-nya-disabled=true]_&]:opacity-30",
       h(
-        "",
-        fa(
-          faCaretRight,
-          "size-4 fill-[--nya-title] -mt-1 [[open]_&]:rotate-90 transition-transform",
+        "flex bg-[--nya-bg-sidebar] border border-[--nya-border] -mx-2 rounded-lg px-2 pt-1 font-['Symbola'] text-[1.265rem] text-center items-center",
+        h(
+          "",
+          fa(
+            faCaretRight,
+            "size-4 fill-[--nya-title] -mt-1 [[open]_&]:rotate-90 transition-transform",
+          ),
         ),
+        el,
       ),
-      h("flex-1", label),
     ),
-  )
+    label: el,
+  }
+}
+
+function sectionEls(
+  label: string,
+  data: Node | (Node | null)[],
+  open?: boolean,
+) {
+  const titleEl = title(label)
+
+  return {
+    el: hx(
+      "details",
+      {
+        class: "flex flex-col gap-4 -mb-6 open:-mb-2",
+        open: open ? "open" : null,
+      },
+      titleEl.el,
+      h("flex flex-col gap-4 pb-2", ...(Array.isArray(data) ? data : [data])),
+    ),
+    label: titleEl.label,
+  }
 }
 
 function section(label: string, data: Node | (Node | null)[], open?: boolean) {
-  return hx(
-    "details",
-    {
-      class: "flex flex-col gap-4 -mb-6 open:-mb-2",
-      open: open ? "open" : null,
-    },
-    title(label),
-    h("flex flex-col gap-4 pb-2", ...(Array.isArray(data) ? data : [data])),
-  )
+  return sectionEls(label, data, open).el
 }
 
 function secAdvancedOperators() {
