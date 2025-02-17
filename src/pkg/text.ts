@@ -255,9 +255,20 @@ const FN_CONCAT = new (class extends FnDistManual<"text"> {
 
 const store = new Store((expr) => {
   const el = h(
-    "flex flex-col px-2 pb-1 -mt-2 w-[calc(var(--nya-sidebar)_-_2.5rem_-_1px)] overflow-x-auto [&::-webkit-scrollbar]:hidden font-sans [.nya-expr:has(&):not(:focus-within)_.nya-display]:sr-only [.nya-expr:has(&):not(:focus-within)_&]:px-4 [.nya-expr:has(&):not(:focus-within)_&]:py-3 [.nya-expr:has(&):not(:focus-within)_&]:mt-0 [white-space:preserve_wrap] [line-height:1.5] gap-2 max-h-[400px]",
+    "flex flex-col px-2 pb-1 -mt-2 w-[calc(var(--nya-sidebar)_-_2.5rem_-_1px)] overflow-x-auto [&::-webkit-scrollbar]:hidden font-sans [.nya-expr:has(&):not(:focus-within)_.nya-display]:sr-only [.nya-expr:has(&):not(:focus-within)_&]:px-4 [.nya-expr:has(&):not(:focus-within)_&]:py-3 [.nya-expr:has(&):not(:focus-within)_&]:mt-0 [white-space:preserve_wrap] [line-height:1.5] gap-2 max-h-[400px] select-text nya-not-expr-focus-target",
   )
-  el.addEventListener("click", () => expr.field.el.focus())
+  let moved = false
+  el.addEventListener("pointerdown", () => {
+    moved = false
+  })
+  el.addEventListener("mousemove", () => {
+    moved = true
+  })
+  el.addEventListener("click", () => {
+    if (!moved) {
+      expr.field.el.focus()
+    }
+  })
   return el
 })
 

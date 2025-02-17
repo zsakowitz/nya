@@ -34,10 +34,9 @@ export class Expr {
   constructor(readonly sheet: Sheet) {
     sheet.exprs.push(this)
     sheet.queueIndices()
-    this.el = h({
-      class:
-        "grid grid-cols-[2.5rem_auto] border-r border-b border-[--nya-border] relative nya-expr focus:outline-none",
-    })
+    this.el = h(
+      "grid grid-cols-[2.5rem_auto] border-r border-b border-[--nya-border] relative nya-expr",
+    )
     this.field = new Field(
       this,
       "block overflow-x-auto [&::-webkit-scrollbar]:hidden min-h-[3.265rem] max-w-[calc(var(--nya-sidebar)_-_2.5rem_-_1px)] p-4 focus:outline-none",
@@ -49,7 +48,7 @@ export class Expr {
     this.elFocus = h(
       {
         class:
-          "inline-flex bg-[--nya-bg-sidebar] flex-col p-0.5 border-r border-[--nya-border] font-sans text-[--nya-expr-index] text-[65%] leading-none [:focus-within>&]:bg-[--nya-expr-focus] [:focus-within>&]:text-[--nya-expr-focus-index] [:focus-within>&]:border-[--nya-expr-focus] [:active>&]:bg-[--nya-expr-focus] [:active>&]:text-[--nya-expr-focus-index] [:active>&]:border-[--nya-expr-focus] focus:outline-none",
+          "nya-expr-bar inline-flex bg-[--nya-bg-sidebar] flex-col p-0.5 border-r border-[--nya-border] font-sans text-[--nya-expr-index] text-[65%] leading-none focus:outline-none",
         tabindex: "-1",
       },
       (this.elIndex = h("")),
