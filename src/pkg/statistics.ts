@@ -4,6 +4,7 @@ import type { Fn } from "../eval/ops"
 import { array, docByIcon, icon } from "../eval/ops/dist"
 import { ALL_DOCS, type WithDocs } from "../eval/ops/docs"
 import { FnList } from "../eval/ops/list"
+import { abs } from "../eval/ops/op/abs"
 import { add, addR64 } from "../eval/ops/op/add"
 import { div } from "../eval/ops/op/div"
 import { mul } from "../eval/ops/op/mul"
@@ -352,6 +353,33 @@ const FN_STDEVP = new FnList(
     )})`,
 )
 
+const FN_MAD = new FnList("mad", "mean absolute deviation").addSpread(
+  "r32",
+  "r32",
+  (...args) => {
+    if (args.length == 0) {
+      return real(NaN)
+    }
+
+    const mean = meanJs(args.map((x) => x.value))
+
+    const tad = args.reduce((a, b) => add(a, abs(sub(b.value, mean))), real(0))
+
+    return div(tad, frac(args.length, 1))
+  },
+  (ctx, ...args) => {
+    if (args.length == 0) {
+      return `(0.0/0.0)`
+    }
+
+    const mean = ctx.cached("r32", meanGlsl(args.map((x) => x.expr)))
+
+    const tad = args.map((a) => `abs(${a.expr} - ${mean})`).join(" + ")
+
+    return `(${tad} / ${args.length.toExponential()})`
+  },
+)
+
 export const PKG_STATISTICS: Package = {
   id: "nya:statistics",
   name: "statistics",
@@ -372,6 +400,7 @@ export const PKG_STATISTICS: Package = {
       stdevp: FN_STDEVP,
       stddev: FN_STDEV,
       stddevp: FN_STDEVP,
+      mad: FN_MAD,
     },
   },
 }
