@@ -4,7 +4,6 @@
 - trigh²
 - arctrig²
 - arctrigh²
-- mad
 - cov
 - covp
 - corr
