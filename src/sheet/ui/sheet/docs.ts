@@ -443,11 +443,11 @@ function secAdvancedOperators() {
               new CmdWord("for", "infix").el,
               new CmdWord("a", undefined, true).el,
               new OpEq(false).el,
-              array(any("text-[#2d70b3]"), 2),
+              array(any("text-[#2d70b3]")),
             ),
           }),
           new OpRightArrow().el,
-          array(any(), 2),
+          array(any()),
         ),
       ),
       h(

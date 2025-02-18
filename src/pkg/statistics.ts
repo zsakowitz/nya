@@ -168,7 +168,7 @@ const quartile: Fn & WithDocs = {
   name: "quartile",
   label: "computes a quartile of a data set",
   docs() {
-    return [docByIcon([array(icon("r32"), 2), icon("r32")], icon("r32"))]
+    return [docByIcon([array(icon("r32")), icon("r32")], icon("r32"))]
   },
 }
 

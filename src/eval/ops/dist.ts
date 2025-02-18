@@ -148,7 +148,7 @@ export class FnDist<Q extends TyName = TyName> extends FnDistManual<Q> {
     return this.o.map((overload) =>
       overload.param == null ?
         doc(overload.params, overload.type)
-      : docList(overload.param, 2, overload.type),
+      : docList(overload.param, overload.type),
     )
   }
 }
@@ -166,34 +166,29 @@ export function doc(params: readonly TyName[], type: TyName, list = false) {
   return docByIcon(params.map(icon), icon(type), list)
 }
 
-export function arrayEls(node: Node, min: number) {
+export function arrayEls(node: Node) {
   return [
-    ...Array.from({ length: Math.max(2, min) }, () => [
-      node.cloneNode(true),
-      new CmdComma().el,
-    ]).flat(),
+    node.cloneNode(true),
+    new CmdComma().el,
+    node.cloneNode(true),
+    new CmdComma().el,
     h("nya-cmd-dot nya-cmd-dot-l", "."),
     h("nya-cmd-dot", "."),
     h("nya-cmd-dot", "."),
   ]
 }
 
-export function array(node: Node, min: number) {
+export function array(node: Node) {
   return CmdBrack.render("[", "]", null, {
-    el: h("", ...arrayEls(node, min)),
+    el: h("", ...arrayEls(node)),
   })
 }
 
-export function docList(
-  param: TyName,
-  min: number,
-  type: TyName,
-  list = false,
-) {
-  const pm = icon(param)
+export function docList(param: TyName, type: TyName, list = false) {
   return docByIcon(
     [
-      ...Array.from({ length: Math.max(min, 2) }, () => pm.cloneNode(true)),
+      icon(param),
+      icon(param),
       h(
         "",
         h("nya-cmd-dot nya-cmd-dot-l", "."),
@@ -214,6 +209,6 @@ export function docByIcon(params: Node[], type: Node, list = false) {
     "font-['Symbola'] text-[1.265rem]",
     brack,
     new OpRightArrow().el,
-    list ? array(type, 2) : type,
+    list ? array(type) : type,
   )
 }

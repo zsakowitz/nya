@@ -1,4 +1,4 @@
-import type { Node, Nodes } from "./token"
+import type { Node } from "./token"
 
 /**
  * Forcibly treats `node` as a comma-separated list, and gets its contained
