@@ -1,0 +1,75 @@
+- trig^-1
+- trigh^-1
+- trig²
+- trigh²
+- arctrig²
+- arctrigh²
+- quartile
+- quantile
+- stdev
+- stdevp
+- var
+- varp
+- mad
+- cov
+- covp
+- corr
+- spearman
+- stats
+- sort
+- shuffle
+- unique
+- for
+- histogram
+- dotplot
+- boxplot
+- normaldist
+- tdist
+- poissondist
+- binomialdist
+- uniformdist
+- pdf
+- cdf
+- inversecdf
+- random
+- ttest
+- tscore
+- ittest
+- exp
+- ln
+- log
+- logb
+- d/dx
+- f’(x)
+- ∫
+- ∑
+- ∏
+- tone
+- lcm
+- gcd
+- mod
+- nPr
+- nCr
+- →
+- dot product (3d)
+- cross product (3d)
+- magnitude (3d)
+- theta
+- r
+- ~
+- width
+- height
+
+TODO FOR COMPLEX:
+
+- ceil
+- floor
+- round
+- sign
+- mean
+- median
+- total
+
+TODO FOR IMPROVEMENTS:
+
+- nthroot

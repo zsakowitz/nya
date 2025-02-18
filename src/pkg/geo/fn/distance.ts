@@ -71,3 +71,13 @@ export const FN_DISTANCE = new FnDist<"r32">(
       return `abs((${y2} - ${y1}) * ${x0} - (${x2} - ${x1}) * ${y0} + ${x2} * ${y1} - ${y2} * ${x1}) / distance(${a}.xy, ${a}.zw)`
     },
   )
+  .add(
+    ["point32", "point32"],
+    "r32",
+    (a, b) => dist(a.value, b.value),
+    (ctx, ar, br) => {
+      const a = ctx.cache(ar)
+      const b = ctx.cache(br)
+      return `hypot(${a}.x - ${b}.x, ${a}.y - ${b}.y)`
+    },
+  )
