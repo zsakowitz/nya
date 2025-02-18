@@ -1,4 +1,5 @@
 import { Leaf } from "."
+import type { Node } from "../../../eval/ast/token"
 import type { TyName } from "../../../eval/ty"
 import { TY_INFO } from "../../../eval/ty/info"
 import type { LatexParser } from "../../latex"
@@ -20,7 +21,7 @@ export class CmdTyName extends Leaf {
   }
 
   ascii(): string {
-    return ""
+    return `tyname(${this.ty})`
   }
 
   latex(): string {
@@ -31,5 +32,7 @@ export class CmdTyName extends Leaf {
     return ` Type ${this.ty} `
   }
 
-  ir(): true | void {}
+  ir(tokens: Node[]): true | void {
+    tokens.push({ type: "tyname", name: this.ty })
+  }
 }

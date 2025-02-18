@@ -491,7 +491,6 @@ float _helper_cmp_r32(float a, float b) {
         signatureList(arg: Type<TyName, number>): FnOverloadVar<"r64"> {
           return {
             param: arg.type,
-            min: 0,
             type: "r64",
             js() {
               return real(arg.list)

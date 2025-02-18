@@ -1,10 +1,14 @@
 import type { Package } from "."
 import { glsl } from "../eval/glsl"
 import { id } from "../eval/lib/binding"
+import { type Fn } from "../eval/ops"
+import { docByIcon } from "../eval/ops/dist"
+import { ALL_DOCS, type WithDocs } from "../eval/ops/docs"
 import { declareAddR64 } from "../eval/ops/op/add"
 import { OP_SUB } from "../eval/ops/op/sub"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "../eval/ops/vars"
 import { coerceValueGlsl } from "../eval/ty/coerce"
+import { any } from "../eval/ty/info"
 import { h, hx } from "../jsx"
 import { Store, defineExt } from "../sheet/ext"
 import type { Expr } from "../sheet/ui/expr"
@@ -186,6 +190,25 @@ const EXT_GLSL = defineExt({
   },
 })
 
+const forceshader: Fn & WithDocs = {
+  js() {
+    throw new Error(ERR_COORDS_USED_OUTSIDE_GLSL)
+  },
+  glsl(_, ...args) {
+    if (args.length != 1) {
+      throw new Error("'forceshader' should be passed a single argument.")
+    }
+    return args[0]!
+  },
+  docs() {
+    return [docByIcon([any()], any())]
+  },
+  name: "forceshader",
+  label: "forces the given expression to be executed in a shader",
+}
+
+ALL_DOCS.push(forceshader)
+
 export const PKG_SHADER: Package = {
   id: "nya:shader",
   name: "shaders",
@@ -213,17 +236,7 @@ export const PKG_SHADER: Package = {
       },
     },
     fns: {
-      forceshader: {
-        js() {
-          throw new Error(ERR_COORDS_USED_OUTSIDE_GLSL)
-        },
-        glsl(_, ...args) {
-          if (args.length != 1) {
-            throw new Error("'forceshader' should be passed a single argument.")
-          }
-          return args[0]!
-        },
-      },
+      forceshader,
     },
   },
   sheet: {

@@ -31,7 +31,6 @@ export interface FnOverloadFixed<Q extends TyName = TyName> {
 /** A {@linkcode FnOverload} with a variable-length argument count. */
 export interface FnOverloadVar<Q extends TyName = TyName> {
   param: TyName
-  min: number
   params?: undefined
   type: Q
   js(...args: JsVal[]): Val<Q>

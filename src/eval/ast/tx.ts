@@ -33,7 +33,7 @@ import { piecewiseGlsl, piecewiseJs } from "../ops/piecewise"
 import { VARS } from "../ops/vars"
 import { withBindingsDeps, withBindingsGlsl, withBindingsJs } from "../ops/with"
 import type { GlslValue, JsVal, JsValue, TyName } from "../ty"
-import { listGlsl, listJs } from "../ty/coerce"
+import { coerceValueGlsl, coerceValueJs, listGlsl, listJs } from "../ty/coerce"
 import { frac, num, real } from "../ty/create"
 import { TY_INFO } from "../ty/info"
 import { splitValue } from "../ty/split"
@@ -947,6 +947,31 @@ export const AST_TXRS: {
     },
     () => {},
   ),
+  tyname: errorAll`Cannot evaluate a raw type name.`,
+  tycoerce: {
+    deps(node, deps) {
+      deps.add(node.value)
+    },
+    drag: NO_DRAG,
+    glsl(node, props) {
+      const value = glsl(node.value, props)
+      return {
+        type: node.name,
+        list: value.list,
+        expr: coerceValueGlsl(props.ctx, value, {
+          type: node.name,
+          list: value.list,
+        }),
+      }
+    },
+    js(node, props) {
+      const value = js(node.value, props)
+      return coerceValueJs(value, {
+        type: node.name,
+        list: value.list,
+      })
+    },
+  },
 } satisfies Partial<{
   [K in Node["type"]]: AstTxr<Extract<Node, { type: K }>>
 }> as any

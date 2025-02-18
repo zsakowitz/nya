@@ -76,7 +76,6 @@ export const PKG_COLOR_EXTRAS: Package = {
 
     FN_FIRSTVALID.addSpread(
       "color",
-      1,
       "color",
       (...args) => {
         for (const arg of args) {

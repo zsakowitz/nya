@@ -81,3 +81,23 @@ export interface GlslValue<
 export function each<T extends TyName>(value: JsValue<T>): Tys[T][] {
   return value.list === false ? [value.value] : value.value
 }
+
+export function map<T extends TyName, U extends TyName>(
+  value: JsValue<T>,
+  type: U,
+  map: (value: Val<T>) => Tys[U],
+): JsValue<U> {
+  if (value.list === false) {
+    return {
+      type,
+      list: false,
+      value: map(value.value),
+    }
+  }
+
+  return {
+    type,
+    list: value.list,
+    value: value.value.map(map),
+  }
+}

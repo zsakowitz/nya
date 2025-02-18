@@ -40,7 +40,6 @@ export function virtualPoint(at: Point, sheet: Sheet) {
         val = i1
       }
     } catch {
-      console.log("failed intersection")
       break intersection
     }
 

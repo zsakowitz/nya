@@ -167,9 +167,7 @@ export const autos = new WordMap<Init>([
   // Operators
   ["neg", OpNeg],
   ["not", OpNeg],
-  ["and", OpAnd],
   ["wedge", OpAnd],
-  ["or", OpOr],
   ["vee", OpOr],
   ["raise", OpUpArrow],
   ["plusminus", OpPlusMinus],
@@ -194,9 +192,6 @@ export const words = new WordMap<WordKind>([
   ["withseq", "infix"],
 
   // Statistics
-  ["mean", "prefix"],
-  ["median", "prefix"],
-  ["quartile", "prefix"],
   ["quantile", "prefix"],
   ["stdev", "prefix"],
   ["stdevp", "prefix"],
@@ -207,8 +202,6 @@ export const words = new WordMap<WordKind>([
   ["corr", "prefix"],
   ["spearman", "prefix"],
   ["stats", "prefix"],
-  ["count", "prefix"],
-  ["total", "prefix"],
 
   // List operations
   ["join", "prefix"],
@@ -247,6 +240,8 @@ export const words = new WordMap<WordKind>([
   // Boolean utilities
   ["false", "var"],
   ["true", "var"],
+  ["and", "infix"],
+  ["or", "infix"],
 
   // Debug utilities
   ["debugpoint", "prefix"],
@@ -337,6 +332,7 @@ export const latex = new WordMap<LatexInit>([
   ["\\ux", CmuSym],
   ["\\uxv", CmuSym],
   ["\\tyname", CmdTyName],
+  ["\\ty", CmdTyName],
 ])
 
 for (const key of inits.getAll()) {

@@ -93,8 +93,6 @@ class PackageList {
     section.el.ariaDisabled = section.el.dataset.nyaDisabled =
       disabled?.() ? "true" : "false"
     this.on(() => {
-      console.log("running")
-      console.log(label())
       section.label.textContent = label()
       section.el.ariaDisabled = section.el.dataset.nyaDisabled =
         disabled?.() ? "true" : "false"

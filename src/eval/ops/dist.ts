@@ -61,19 +61,18 @@ export class FnDist<Q extends TyName = TyName> extends FnDistManual<Q> {
   /** Adds a function which can take any number of arguments of a single type. */
   addSpread<T extends TyName, R extends Q>(
     param: T,
-    min: number,
     ret: R,
     js: (...args: JsVal<T>[]) => Tys[R],
     glsl: (ctx: GlslContext, ...args: GlslVal<T>[]) => string,
   ) {
-    this.o.push({ param, min, type: ret, js, glsl })
+    this.o.push({ param, type: ret, js, glsl })
     return this
   }
 
   signature(args: Ty[]): FnOverload<Q> {
     outer: for (const overload of this.o) {
       if (overload.param != null) {
-        if (args.length < overload.min) {
+        if (args.length == 0) {
           continue
         }
 
@@ -149,7 +148,7 @@ export class FnDist<Q extends TyName = TyName> extends FnDistManual<Q> {
     return this.o.map((overload) =>
       overload.param == null ?
         doc(overload.params, overload.type)
-      : docList(overload.param, overload.min, overload.type),
+      : docList(overload.param, 2, overload.type),
     )
   }
 }

@@ -1,4 +1,4 @@
-import type { Node } from "./token"
+import type { Node, Nodes } from "./token"
 
 /**
  * Forcibly treats `node` as a comma-separated list, and gets its contained
@@ -21,9 +21,5 @@ export function commalist(node: Node): Node[] {
  * they exist.
  */
 export function fnargs(node: Node): Node[] {
-  if (node.type == "group" && node.lhs == "(" && node.rhs == ")") {
-    node = node.value
-  }
-
   return commalist(node)
 }

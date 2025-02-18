@@ -4,6 +4,7 @@ import type { ParenLhs, ParenRhs } from "../../field/cmd/math/brack"
 import type { Span } from "../../field/model"
 import { isSubscript } from "../lib/text"
 import { VARS } from "../ops/vars"
+import type { TyName } from "../ty"
 import { pass1_suffixes } from "./pass1.suffixes"
 import { pass2_implicits } from "./pass2.implicits"
 import { pass3_ordering } from "./pass3.ordering"
@@ -32,6 +33,8 @@ export type PuncInfix =
   | "\\cdot "
   | "÷"
   | "mod"
+  | "and"
+  | "or"
   | "\\to "
   | "\\Rightarrow "
   | "."
@@ -101,7 +104,9 @@ export const PRECEDENCE_MAP = {
   "~": Precedence.Comparison,
   "≈": Precedence.Comparison,
   "\\and ": Precedence.BoolAnd,
+  and: Precedence.BoolAnd,
   "\\or ": Precedence.BoolOr,
+  or: Precedence.BoolOr,
   "\\Rightarrow ": Precedence.DoubleStruckRight,
   "\\to ": Precedence.Action,
   ",": Precedence.Comma,
@@ -226,6 +231,8 @@ export interface Nodes {
   error: { reason: string }
   binding: AstBinding
   punc: Punc
+  tyname: { name: TyName }
+  tycoerce: { name: TyName; value: Node }
 }
 
 export type NodeName = keyof Nodes

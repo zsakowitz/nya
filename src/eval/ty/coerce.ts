@@ -152,10 +152,11 @@ export function coerceValGlsl(
   }
 }
 
-export function coerceValueJs<T extends TyName = TyName>(
-  value: JsValue,
+export function coerceValueJs<T extends TyName, L extends number | false>(
+  value: JsValue<TyName, L>,
   to: Type<T>,
-): JsValue<T>
+): JsValue<T, L | number>
+
 export function coerceValueJs(value: JsValue, to: Type): JsValue {
   if (to.list === false) {
     if (value.list !== false) {
@@ -236,6 +237,25 @@ export function coerceValueGlsl(
   ctx.push`}\n`
 
   return ret
+}
+
+export function coerceTyJs<T extends TyName, L extends number | false>(
+  value: JsValue<TyName, L>,
+  to: T,
+): JsValue<T, L> {
+  return coerceValueJs(value, { type: to, list: value.list }) as JsValue<T, L>
+}
+
+export function coerceTyGlsl<T extends TyName, L extends number | false>(
+  ctx: GlslContext,
+  value: GlslValue<TyName, L>,
+  to: T,
+): GlslValue<T, L> {
+  return {
+    expr: coerceValueGlsl(ctx, value, { type: to, list: value.list }),
+    list: value.list,
+    type: to,
+  }
 }
 
 export function isReal(val: JsVal): val is JsVal<"r32" | "r64">
