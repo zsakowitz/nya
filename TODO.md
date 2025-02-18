@@ -4,12 +4,6 @@
 - trigh²
 - arctrig²
 - arctrigh²
-- quartile
-- quantile
-- stdev
-- stdevp
-- var
-- varp
 - mad
 - cov
 - covp
@@ -68,6 +62,8 @@ TODO FOR COMPLEX:
 - mean
 - median
 - total
+- quartile
+- quantile
 
 TODO FOR IMPROVEMENTS:
 

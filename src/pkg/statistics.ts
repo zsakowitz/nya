@@ -1,4 +1,5 @@
 import type { Package } from "."
+import type { GlslContext } from "../eval/lib/fn"
 import type { Fn } from "../eval/ops"
 import { array, docByIcon, icon } from "../eval/ops/dist"
 import { ALL_DOCS, type WithDocs } from "../eval/ops/docs"
@@ -10,9 +11,10 @@ import { sub } from "../eval/ops/op/sub"
 import { map, type SReal } from "../eval/ty"
 import { canCoerce, coerceTyJs } from "../eval/ty/coerce"
 import { frac, num, real } from "../eval/ty/create"
+import { sqrt } from "./geo/fn/distance"
 import { PKG_REAL } from "./num-real"
 
-const min = new FnList("min", "returns the minimum of its inputs").addSpread(
+const FN_MIN = new FnList("min", "returns the minimum of its inputs").addSpread(
   "r32",
   "r32",
   (...args) =>
@@ -25,7 +27,7 @@ const min = new FnList("min", "returns the minimum of its inputs").addSpread(
     : `(0.0/0.0)`,
 )
 
-const max = new FnList("max", "returns the maximum of its inputs").addSpread(
+const FN_MAX = new FnList("max", "returns the maximum of its inputs").addSpread(
   "r32",
   "r32",
   (...args) =>
@@ -38,7 +40,7 @@ const max = new FnList("max", "returns the maximum of its inputs").addSpread(
     : `(0.0/0.0)`,
 )
 
-const total = new FnList("total", "returns the sum of its inputs")
+const FN_TOTAL = new FnList("total", "returns the sum of its inputs")
   .addSpread(
     "r64",
     "r64",
@@ -55,32 +57,49 @@ const total = new FnList("total", "returns the sum of its inputs")
     (_, ...args) => `(${args.map((x) => x.expr).join(" + ") || "0.0"})`,
   )
 
-const mean = new FnList("mean", "takes the arithmetic mean of its inputs")
+function meanJs(args: SReal[]): SReal {
+  if (args.length == 0) {
+    return real(NaN)
+  }
+
+  return div(
+    args.reduce((a, b) => add(a, b), real(0)),
+    frac(args.length, 1),
+  )
+}
+
+function meanGlslR64(ctx: GlslContext, args: string[]): string {
+  if (args.length == 0) {
+    return `vec2(0.0/0.0)`
+  }
+
+  return `(${args.reduce((a, b) => addR64(ctx, a, b))} / vec2(${args.length}))`
+}
+
+function meanGlsl(args: string[]): string {
+  if (args.length == 0) {
+    return `(0.0/0.0)`
+  }
+
+  return `((${args.join(" + ")}) / ${args.length.toExponential()})`
+}
+
+const FN_MEAN = new FnList("mean", "takes the arithmetic mean of its inputs")
   .addSpread(
     "r64",
     "r64",
-    (...args) =>
-      div(
-        args.reduce((a, b) => add(a, b.value), real(0)),
-        frac(args.length, 1),
-      ),
+    (...args) => meanJs(args.map((x) => x.value)),
     (ctx, ...args) =>
-      `(${
-        args.length ?
-          args.map((x) => x.expr).reduce((a, b) => addR64(ctx, a, b))
-        : "vec2(0)"
-      } / vec2(${args.length}))`,
+      meanGlslR64(
+        ctx,
+        args.map((x) => x.expr),
+      ),
   )
   .addSpread(
     "r32",
     "r32",
-    (...args) =>
-      div(
-        args.reduce((a, b) => add(a, b.value), real(0)),
-        frac(args.length, 1),
-      ),
-    (_, ...args) =>
-      `((${args.map((x) => x.expr).join(" + ") || "0.0"}) / ${args.length.toExponential()})`,
+    (...args) => meanJs(args.map((x) => x.value)),
+    (_, ...args) => meanGlsl(args.map((x) => x.expr)),
   )
 
 function sortJs(args: SReal[]) {
@@ -107,14 +126,17 @@ function raise(message: string) {
   }
 }
 
-const median = new FnList("median", "takes the median of its inputs").addSpread(
+const FN_MEDIAN = new FnList(
+  "median",
+  "takes the median of its inputs",
+).addSpread(
   "r32",
   "r32",
   (...args) => middleJs(sortJs(args.map((x) => x.value))),
   raise("Cannot compute 'median' in shaders yet."),
 )
 
-const quartile: Fn & WithDocs = {
+const FN_QUARTILE: Fn & WithDocs = {
   js(...args) {
     if (
       !(
@@ -174,9 +196,9 @@ const quartile: Fn & WithDocs = {
   },
 }
 
-ALL_DOCS.push(quartile)
+ALL_DOCS.push(FN_QUARTILE)
 
-const quantile: Fn & WithDocs = {
+const FN_QUANTILE: Fn & WithDocs = {
   js(...args) {
     if (
       !(
@@ -225,7 +247,110 @@ const quantile: Fn & WithDocs = {
   },
 }
 
-ALL_DOCS.push(quantile)
+ALL_DOCS.push(FN_QUANTILE)
+
+function varJs(args: SReal[], sample: boolean): SReal {
+  if (args.length == 0 || (sample && args.length == 1)) {
+    return real(NaN)
+  }
+
+  const mean = meanJs(args)
+
+  const devs = args.reduce((a, b) => {
+    const dev = sub(b, mean)
+    return add(a, mul(dev, dev))
+  }, real(0))
+
+  return div(devs, frac(args.length - +sample, 1))
+}
+
+function varGlsl(ctx: GlslContext, args: string[], sample: boolean): string {
+  if (args.length == 0 || (sample && args.length == 1)) {
+    return `(0.0/0.0)`
+  }
+
+  const mean = ctx.cached("r32", meanGlsl(args))
+
+  const devs = `(${args
+    .map((b) => {
+      const dev = ctx.cached("r32", `(${b} - ${mean})`)
+      return `${dev} * ${dev}`
+    })
+    .join(" + ")})`
+
+  return `(${devs} / ${(args.length - +sample).toExponential()})`
+}
+
+const FN_VAR = new FnList("var", "sample variance").addSpread(
+  "r32",
+  "r32",
+  (...args) =>
+    varJs(
+      args.map((x) => x.value),
+      true,
+    ),
+  (ctx, ...args) =>
+    varGlsl(
+      ctx,
+      args.map((x) => x.expr),
+      true,
+    ),
+)
+
+const FN_VARP = new FnList("varp", "population variance").addSpread(
+  "r32",
+  "r32",
+  (...args) =>
+    varJs(
+      args.map((x) => x.value),
+      false,
+    ),
+  (ctx, ...args) =>
+    varGlsl(
+      ctx,
+      args.map((x) => x.expr),
+      false,
+    ),
+)
+
+const FN_STDEV = new FnList("stdev", "sample standard deviation").addSpread(
+  "r32",
+  "r32",
+  (...args) =>
+    sqrt(
+      varJs(
+        args.map((x) => x.value),
+        true,
+      ),
+    ),
+  (ctx, ...args) =>
+    `sqrt(${varGlsl(
+      ctx,
+      args.map((x) => x.expr),
+      true,
+    )})`,
+)
+
+const FN_STDEVP = new FnList(
+  "stdevp",
+  "population standard deviation",
+).addSpread(
+  "r32",
+  "r32",
+  (...args) =>
+    sqrt(
+      varJs(
+        args.map((x) => x.value),
+        false,
+      ),
+    ),
+  (ctx, ...args) =>
+    `sqrt(${varGlsl(
+      ctx,
+      args.map((x) => x.expr),
+      false,
+    )})`,
+)
 
 export const PKG_STATISTICS: Package = {
   id: "nya:statistics",
@@ -234,13 +359,19 @@ export const PKG_STATISTICS: Package = {
   deps: [() => PKG_REAL],
   eval: {
     fns: {
-      min,
-      max,
-      total,
-      mean,
-      median,
-      quartile,
-      quantile,
+      min: FN_MIN,
+      max: FN_MAX,
+      total: FN_TOTAL,
+      mean: FN_MEAN,
+      median: FN_MEDIAN,
+      quartile: FN_QUARTILE,
+      quantile: FN_QUANTILE,
+      var: FN_VAR,
+      varp: FN_VARP,
+      stdev: FN_STDEV,
+      stdevp: FN_STDEVP,
+      stddev: FN_STDEV,
+      stddevp: FN_STDEVP,
     },
   },
 }
