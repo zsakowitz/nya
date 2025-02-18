@@ -19,7 +19,6 @@
 - sort
 - shuffle
 - unique
-- for
 - histogram
 - dotplot
 - boxplot
@@ -73,3 +72,4 @@ TODO FOR COMPLEX:
 TODO FOR IMPROVEMENTS:
 
 - nthroot
+- for
