@@ -9,6 +9,7 @@ import { PKG_ITHKUIL } from "../pkg/ithkuil.js"
 import { PKG_NUM_COMPLEX } from "../pkg/num-complex.js"
 import { PKG_NUM_QUATERNION } from "../pkg/num-quaternion.js"
 import { PKG_REAL } from "../pkg/num-real.js"
+import { PKG_NUMBER_THEORY } from "../pkg/number-theory.js"
 import { PKG_SHADER, show } from "../pkg/shader.js"
 import { PKG_SLIDER } from "../pkg/slider.js"
 import { PKG_STATISTICS } from "../pkg/statistics.js"
@@ -37,6 +38,7 @@ const sheet = new SheetFactory(options)
   .load(PKG_ITHKUIL)
   .load(PKG_TRIG_HYPERBOLIC_REAL)
   .load(PKG_STATISTICS)
+  .load(PKG_NUMBER_THEORY)
   .create()
 document.body.appendChild(sheet.el)
 

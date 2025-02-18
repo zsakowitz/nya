@@ -24,14 +24,21 @@ function gcd(a: number, b: number) {
 }
 
 export function frac(a: number, b: number): SReal {
-  if (b == 0) return { type: "approx", value: a / b }
-  if (a == 0) return { type: "exact", n: 0, d: 1 }
+  if (b == 0 || !safe(a) || !safe(b)) {
+    return { type: "approx", value: a / b }
+  }
+
+  if (a == 0) {
+    return { type: "exact", n: 0, d: 1 }
+  }
+
   if (b < 0) {
     a = -a
     b = -b
   }
-  const divBy = gcd(a < 0 ? -a : a, b)
-  return { type: "exact", n: a / divBy, d: b / divBy }
+
+  const denom = gcd(a < 0 ? -a : a, b)
+  return { type: "exact", n: a / denom, d: b / denom }
 }
 
 export function real(x: number): SReal {
