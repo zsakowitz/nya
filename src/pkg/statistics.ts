@@ -5,6 +5,8 @@ import { ALL_DOCS, type WithDocs } from "../eval/ops/docs"
 import { FnList } from "../eval/ops/list"
 import { add, addR64 } from "../eval/ops/op/add"
 import { div } from "../eval/ops/op/div"
+import { mul } from "../eval/ops/op/mul"
+import { sub } from "../eval/ops/op/sub"
 import { map, type SReal } from "../eval/ty"
 import { canCoerce, coerceTyJs } from "../eval/ty/coerce"
 import { frac, num, real } from "../eval/ty/create"
@@ -174,6 +176,57 @@ const quartile: Fn & WithDocs = {
 
 ALL_DOCS.push(quartile)
 
+const quantile: Fn & WithDocs = {
+  js(...args) {
+    if (
+      !(
+        args.length == 2 &&
+        canCoerce(args[0]!.type, "r32") &&
+        args[0]!.list !== false &&
+        canCoerce(args[1]!.type, "r32")
+      )
+    ) {
+      throw new Error("'quantile' expects a list and a quantile")
+    }
+
+    const list = coerceTyJs(args[0]!, "r32").value.slice()
+    const quantile = coerceTyJs(args[1]!, "r32")
+
+    if (list.length == 0) {
+      return map(quantile, "r32", () => real(NaN))
+    }
+    sortJs(list)
+
+    return map(quantile, "r32", (quartile) => {
+      let q = num(quartile)
+      if (!(0 <= q && q <= 1)) {
+        return real(NaN)
+      }
+
+      const mid = mul(quartile, frac(list.length - 1, 1))
+      const lhs = Math.floor(num(mid))
+      const rhs = Math.ceil(num(mid))
+
+      if (lhs == rhs) {
+        return list[lhs]!
+      }
+
+      return add(
+        mul(sub(frac(rhs, 1), mid), list[lhs]!),
+        mul(sub(mid, frac(lhs, 1)), list[rhs]!),
+      )
+    })
+  },
+  glsl: raise("Cannot compute 'quantile' in shaders yet."),
+  name: "quantile",
+  label: "computes a quantile of a data set",
+  docs() {
+    return [docByIcon([array(icon("r32")), icon("r32")], icon("r32"))]
+  },
+}
+
+ALL_DOCS.push(quantile)
+
 export const PKG_STATISTICS: Package = {
   id: "nya:statistics",
   name: "statistics",
@@ -187,6 +240,7 @@ export const PKG_STATISTICS: Package = {
       mean,
       median,
       quartile,
+      quantile,
     },
   },
 }

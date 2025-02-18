@@ -1,6 +1,7 @@
 import type { NodeName, Nodes } from "../eval/ast/token"
 import type { AstTxr } from "../eval/ast/tx"
 import type { Fn } from "../eval/ops"
+import type { WithDocs } from "../eval/ops/docs"
 import type { Builtin } from "../eval/ops/vars"
 import type { TyComponents, TyName, Tys } from "../eval/ty"
 import type { TyCoerceMap, TyInfo } from "../eval/ty/info"
@@ -37,7 +38,7 @@ export interface Package {
 
   eval?: {
     txrs?: Partial<{ [K in NodeName]: AstTxr<Nodes[K]> }>
-    fns?: List<Fn>
+    fns?: List<Fn & WithDocs>
     vars?: List<Builtin>
     // opUnary?: List<Fn>
     // opBinary?: List<Fn>
