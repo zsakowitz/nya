@@ -33,14 +33,13 @@ import {
   split,
 } from "../eval/ty/coerce"
 import { frac, num, real } from "../eval/ty/create"
-import { Display } from "../eval/ty/display"
 import { TY_INFO, type TyInfo } from "../eval/ty/info"
 import { Leaf } from "../field/cmd/leaf"
 import { BRACKS } from "../field/cmd/math/brack"
-import { FieldInert } from "../field/field-inert"
 import { Block, L, R } from "../field/model"
 import { h, hx } from "../jsx"
-import { defineExt, Store } from "../sheet/ext"
+import { defineExt } from "../sheet/ext"
+import { createMultiEval } from "./eval"
 import { sqrt } from "./geo/fn/distance"
 import { PKG_REAL } from "./num-real"
 
@@ -864,31 +863,7 @@ const TY_STATS: TyInfo<Tys["stats"], TyComponents["stats"]> = {
   },
 }
 
-const EXT_CLSX =
-  "bg-[--nya-bg-sidebar] border border-[--nya-border] px-2 py-1 border-l-0 last:rounded-r inline-block"
-
-const store = new Store(() => {
-  const labels = ["Min", "Q1", "Median", "Q3", "Max"].map((label) => {
-    const fields = h("contents")
-    return {
-      el: h(
-        "contents",
-        h(""),
-        h(
-          "bg-[--nya-bg-sidebar] border border-[--nya-border] px-2 rounded-l inline-block [line-height:1] flex items-center",
-          label,
-        ),
-        fields,
-      ),
-      fields,
-    }
-  })
-  const el = h(
-    "grid grid-cols-[1fr,auto] px-2 pb-2 -mt-2 w-[calc(var(--nya-sidebar)_-_2.5rem_-_1px)] overflow-x-auto [&::-webkit-scrollbar]:hidden gap-y-1",
-    ...labels.map((x) => x.el),
-  )
-  return { labels: labels.map((x) => x.fields), el }
-})
+const store = createMultiEval(["Min", "Q1", "Median", "Q3", "Max"])
 
 const EXT_STATS = defineExt({
   data(expr) {
@@ -896,46 +871,9 @@ const EXT_STATS = defineExt({
       return { expr, value: expr.js.value as JsValue<"stats"> }
     }
   },
-  el(data) {
-    const { el, labels } = store.get(data.expr)
-
-    const stats = each(data.value)
-
-    if (stats.length == 0) {
-      for (let i = 0; i < 5; i++) {
-        const label = labels[i]!
-        while (label.firstChild) {
-          label.firstChild.remove()
-        }
-
-        const { el } = new FieldInert(data.expr.field.options, EXT_CLSX)
-        label.appendChild(el)
-        el.classList.remove("text-[1.265em]")
-        el.classList.add("italic")
-        el.classList.remove("not-italic")
-        el.textContent = "no lists"
-      }
-
-      return el
-    }
-
-    for (let i = 0; i < 5; i++) {
-      const label = labels[i]!
-      while (label.firstChild) {
-        label.firstChild.remove()
-      }
-
-      for (const x of stats) {
-        const field = new FieldInert(data.expr.field.options, EXT_CLSX)
-        const display = new Display(field.block.cursor(R), frac(10, 1))
-        display.num(x[i]!)
-        label.appendChild(field.el)
-      }
-    }
-
-    el.style.gridTemplateColumns = `1fr auto${" auto".repeat(stats.length)}`
-
-    return el
+  el({ expr, value }) {
+    store.set(expr, each(value))
+    return store.el(expr)
   },
 })
 
