@@ -1,7 +1,8 @@
 import type { Package } from "."
+import { Precedence } from "../eval/ast/token"
+import { FnDist } from "../eval/ops/dist"
 import { FN_VALID } from "../eval/ops/fn/valid"
 import { OP_AND } from "../eval/ops/op/and"
-import { OP_OR } from "../eval/ops/op/or"
 import { CmdWord } from "../field/cmd/leaf/word"
 import { L } from "../field/model"
 import { h } from "../jsx"
@@ -15,6 +16,8 @@ declare module "../eval/ty/index.js" {
     bool: never
   }
 }
+
+const OP_OR = new FnDist("or", "returns true if either of its inputs are true")
 
 export const PKG_BOOL: Package = {
   id: "nya:bool-ops",
@@ -100,6 +103,14 @@ export const PKG_BOOL: Package = {
         js: { type: "bool", value: true, list: false },
         glsl: { type: "bool", expr: "true", list: false },
         display: false,
+      },
+    },
+    op: {
+      binary: {
+        "\\and ": { precedence: Precedence.BoolAnd, fn: OP_AND },
+        and: { precedence: Precedence.BoolAnd, fn: OP_AND },
+        "\\or ": { precedence: Precedence.BoolOr, fn: OP_OR },
+        or: { precedence: Precedence.BoolOr, fn: OP_OR },
       },
     },
   },

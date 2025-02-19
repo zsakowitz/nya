@@ -1,7 +1,6 @@
 import type { Package } from "."
 import type { GlslContext } from "../eval/lib/fn"
 import { FnDist } from "../eval/ops/dist"
-import { declareDebugPoint, FN_DEBUGPOINT } from "../eval/ops/fn/debugpoint"
 import { declareExp, FN_EXP } from "../eval/ops/fn/exp"
 import { FN_LN } from "../eval/ops/fn/ln"
 import { FN_UNSIGN } from "../eval/ops/fn/unsign"
@@ -25,7 +24,7 @@ import type { TyWrite } from "../eval/ty/display"
 import { highRes } from "../eval/ty/info"
 import { h } from "../jsx"
 import { OP_PLOT, plotJs } from "./color-core"
-import { PKG_GEO_POINT } from "./geo-point"
+import { declareDebugPoint, FN_DEBUGPOINT, PKG_GEO_POINT } from "./geo-point"
 import { PKG_REAL } from "./num-real"
 
 declare module "../eval/ty/index.js" {

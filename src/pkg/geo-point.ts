@@ -1,7 +1,7 @@
 import type { Package } from "."
 import { dragPoint } from "../eval/ast/tx"
+import type { GlslContext } from "../eval/lib/fn"
 import { FnDist } from "../eval/ops/dist"
-import { declareDebugPoint, FN_DEBUGPOINT } from "../eval/ops/fn/debugpoint"
 import { FN_UNSIGN } from "../eval/ops/fn/unsign"
 import { FN_VALID } from "../eval/ops/fn/valid"
 import { abs, abs64, OP_ABS } from "../eval/ops/op/abs"
@@ -341,6 +341,27 @@ const FN_SCREENDISTANCE = new FnDist<"r32">(
 
 const PICK_POINT = createPickByTy("p", null, [["point32", "point64"]], () => {})
 
+export const FN_DEBUGPOINT = new FnDist(
+  "debugpoint",
+  "given some point p, returns a color depending on which side of the currently active shader pixel that point p is on",
+)
+
+export function declareDebugPoint(
+  ctx: GlslContext,
+  a: { type: "c32" | "point32"; expr: string },
+): string {
+  ctx.glsl`vec4 _helper_debugpoint_c32(vec2 z) {
+  return vec4(
+    sign(v_coords.x - z.x) / 2.0 + 0.5,
+    sign(v_coords.z - z.y) / 2.0 + 0.5,
+    1,
+    1
+  );
+}
+`
+  return `_helper_debugpoint_c32(${a.expr})`
+}
+
 export const PKG_GEO_POINT: Package = {
   id: "nya:geo-point",
   name: "geometric points",
@@ -493,7 +514,7 @@ export const PKG_GEO_POINT: Package = {
     )
 
     FN_DEBUGPOINT.add(
-      ["c32"],
+      ["point32"],
       "color",
       () => {
         throw new Error(ERR_COORDS_USED_OUTSIDE_GLSL)
@@ -553,6 +574,7 @@ export const PKG_GEO_POINT: Package = {
   eval: {
     fns: {
       screendistance: FN_SCREENDISTANCE,
+      debugpoint: FN_DEBUGPOINT,
     },
   },
   sheet: {

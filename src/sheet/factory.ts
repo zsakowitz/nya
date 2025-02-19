@@ -1,6 +1,6 @@
-import type { NodeName } from "../eval/ast/token"
+import { PRECEDENCE_MAP, type NodeName } from "../eval/ast/token"
 import { AST_TXRS } from "../eval/ast/tx"
-import { FNS } from "../eval/ops"
+import { FNS, OP_BINARY } from "../eval/ops"
 import { VARS } from "../eval/ops/vars"
 import type { TyName } from "../eval/ty"
 import { TY_INFO, type TyCoerce } from "../eval/ty/info"
@@ -105,6 +105,14 @@ export class SheetFactory {
 
     for (const key in pkg.field?.latex) {
       this.options.latex.set(key, pkg.field.latex[key]!)
+    }
+
+    for (const key in pkg.eval?.op?.binary) {
+      if (/^[A-Za-z]+$/.test(key)) {
+        this.options.words.init(key, "infix")
+      }
+      OP_BINARY[key] = pkg.eval.op.binary[key]!.fn
+      PRECEDENCE_MAP[key] = pkg.eval.op.binary[key]!.precedence
     }
 
     return this

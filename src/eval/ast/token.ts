@@ -82,8 +82,7 @@ export const Precedence = Object.freeze({
 })
 
 /** A map from binary operators to their precedences. */
-export const PRECEDENCE_MAP = {
-  __proto__: null,
+export const PRECEDENCE_MAP: Record<string, number> = {
   ".": Precedence.NotApplicable,
   "\\uparrow ": Precedence.Exponential,
   "\\cdot ": Precedence.Product,
@@ -117,13 +116,8 @@ export const PRECEDENCE_MAP = {
   until: Precedence.WordInfix,
   while: Precedence.WordInfix,
   from: Precedence.WordInfix,
-} satisfies Record<PuncBinaryStr, number> & {
-  // TypeScript really needs to learn that __proto__ is special, but it hasn't yet.
-  // And probably never will. Even though it's standardized.
-  //
-  // cries
-  __proto__: null
-} as Record<PuncBinaryStr, number>
+}
+Object.setPrototypeOf(PRECEDENCE_MAP, null)
 
 /** Gets the precedence of some operator. */
 export function getPrecedence(op: PuncBinary["value"]) {

@@ -10,7 +10,7 @@ import type { Init } from "../field/model"
 import type { AnyExt } from "../sheet/ext"
 import type { Sheet } from "../sheet/ui/sheet"
 
-export type List<T> = { readonly [x: string]: T }
+export type List<T, K extends PropertyKey = string> = Readonly<Record<K, T>>
 
 export interface Package {
   id: string
@@ -38,10 +38,14 @@ export interface Package {
 
   eval?: {
     txrs?: Partial<{ [K in NodeName]: AstTxr<Nodes[K]> }>
-    fns?: List<Fn & WithDocs>
     vars?: List<Builtin>
-    // opUnary?: List<Fn>
-    // opBinary?: List<Fn>
+    fns?: List<Fn & WithDocs>
+    op?: {
+      binary?: List<{
+        precedence: number
+        fn: Fn & WithDocs
+      }>
+    }
   }
 
   sheet?: {

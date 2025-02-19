@@ -193,10 +193,7 @@ export const words = new WordMap<WordKind>([
 
   // List operations
   ["join", "prefix"],
-  ["sort", "prefix"],
   ["shuffle", "prefix"],
-  ["unique", "prefix"],
-  ["last", "prefix"],
 
   // Geometry
   ["bisector", "prefix"],
@@ -226,13 +223,8 @@ export const words = new WordMap<WordKind>([
   ["ln", "prefix"],
 
   // Boolean utilities
-  ["false", "var"],
-  ["true", "var"],
   ["and", "infix"],
   ["or", "infix"],
-
-  // Debug utilities
-  ["debugpoint", "prefix"],
 
   // Iteration
   ["iterate", "magicprefix"],
