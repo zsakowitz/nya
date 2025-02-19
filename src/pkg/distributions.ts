@@ -1,6 +1,6 @@
 import type { Package } from "."
+import { FnDist } from "../eval/ops/dist"
 import { real } from "../eval/ty/create"
-import { jsOnly } from "../eval/ty/info"
 import { g, h, p, svgx } from "../jsx"
 
 declare module "../eval/ty" {
@@ -21,17 +21,95 @@ declare module "../eval/ty" {
   }
 }
 
+const normaldist = new FnDist("normaldist", "creates a normal distribution")
+  .add(
+    [],
+    "normaldist",
+    () => [real(0), real(1)],
+    () => "vec2(0,1)",
+  )
+  .add(
+    ["r32"],
+    "normaldist",
+    (a) => [a.value, real(1)],
+    (_, a) => `vec2(${a.expr}, 1)`,
+  )
+  .add(
+    ["r32", "r32"],
+    "normaldist",
+    (a, b) => [a.value, b.value],
+    (_, a, b) => `vec2(${a.expr}, ${b.expr})`,
+  )
+
+const tdist = new FnDist("tdist", "creates a t-distribution").add(
+  ["r32"],
+  "tdist",
+  (a) => a.value,
+  (_, a) => a.expr,
+)
+
+const poissondist = new FnDist(
+  "poissondist",
+  "creates a Poisson distribution",
+).add(
+  ["r32"],
+  "poissondist",
+  (a) => a.value,
+  (_, a) => a.expr,
+)
+
+const binomialdist = new FnDist(
+  "binomialdist",
+  "creates a binomial distribution",
+)
+  .add(
+    ["r32"],
+    "binomialdist",
+    (a) => [a.value, real(0.5)],
+    (_, a) => `vec2(${a.expr}, 0.5)`,
+  )
+  .add(
+    ["r32", "r32"],
+    "binomialdist",
+    (a, b) => [a.value, b.value],
+    (_, a, b) => `vec2(${a.expr}, ${b.expr})`,
+  )
+
+const uniformdist = new FnDist("uniformdist", "creates a uniform distribution")
+  .add(
+    [],
+    "uniformdist",
+    () => [real(0), real(1)],
+    () => "vec2(0,1)",
+  )
+  .add(
+    ["r32"],
+    "uniformdist",
+    (a) => [a.value, real(1)],
+    (_, a) => `vec2(${a.expr}, 1)`,
+  )
+  .add(
+    ["r32", "r32"],
+    "uniformdist",
+    (a, b) => [a.value, b.value],
+    (_, a, b) => `vec2(${a.expr}, ${b.expr})`,
+  )
+
 export const PKG_DISTRIBUTIONS: Package = {
   id: "nya:distributions",
   name: "statistical distributions",
   label: null,
   ty: {
     info: {
-      normaldist: jsOnly("Distributions are not supported in shaders yet.", {
+      normaldist: {
         name: "normal distribution",
         namePlural: "normal distributions",
         coerce: {},
-        garbage: [real(NaN), real(NaN)],
+        glsl: "vec2",
+        garbage: {
+          js: [real(NaN), real(NaN)],
+          glsl: "vec2(0.0/0.0)",
+        },
         write: {
           isApprox(value) {
             return value.some((x) => x.type == "approx")
@@ -53,18 +131,24 @@ export const PKG_DISTRIBUTIONS: Package = {
                 svgx(
                   "-3 -4.6768178153 6 4.734125137329102",
                   "stroke-current fill-none overflow-visible [stroke-linejoin:round] [stroke-linecap:round] stroke-[.68px] size-full",
-                  p(D_NORMALDIST),
+                  p(
+                    "M -3 -0.05318218079999999 C -2.6666961 -0.1063596624 -2.3314068 -0.21846021599999998 -2 -0.647891604 C -1.6685932 -1.07732298 -1.3239836 -1.9629140399999998 -1 -2.90364864 C -0.67601635 -3.8443833599999997 -0.33333333 -4.78730736 0 -4.78730736 C 0.33333333 -4.78730736 0.67601635 -3.8443833599999997 1 -2.90364864 C 1.3239836 -1.9629140399999998 1.6685932 -1.07732298 2 -0.647891604 C 2.3314068 -0.21846021599999998 2.6666961 -0.1063596624 3 -0.05318218079999999",
+                  ),
                 ),
               ),
             ),
           )
         },
-      }),
-      tdist: jsOnly("Distributions are not supported in shaders yet.", {
+      },
+      tdist: {
         name: "t-distribution",
         namePlural: "t-distributions",
         coerce: {},
-        garbage: real(NaN),
+        glsl: "float",
+        garbage: {
+          js: real(NaN),
+          glsl: "(0.0/0.0)",
+        },
         write: {
           isApprox(value) {
             return value.type == "approx"
@@ -86,20 +170,27 @@ export const PKG_DISTRIBUTIONS: Package = {
                 svgx(
                   "-3 -4.6768178153 6 4.734125137329102",
                   "stroke-current fill-none overflow-visible [stroke-linejoin:round] [stroke-linecap:round] stroke-[.68px] size-full",
-                  p(D_NORMALDIST),
-                  p(D_TDIST1),
-                  // p(D_TDIST2),
+                  p(
+                    "M -3 -0.05318218079999999 C -2.6666961 -0.1063596624 -2.3314068 -0.21846021599999998 -2 -0.647891604 C -1.6685932 -1.07732298 -1.3239836 -1.9629140399999998 -1 -2.90364864 C -0.67601635 -3.8443833599999997 -0.33333333 -4.78730736 0 -4.78730736 C 0.33333333 -4.78730736 0.67601635 -3.8443833599999997 1 -2.90364864 C 1.3239836 -1.9629140399999998 1.6685932 -1.07732298 2 -0.647891604 C 2.3314068 -0.21846021599999998 2.6666961 -0.1063596624 3 -0.05318218079999999",
+                  ),
+                  p(
+                    "M -3 -0.238257564 C -2.6666767 -0.2693337 -2.3332784 -0.30875664 -2 -0.381390468 C -1.6667216 -0.454024284 -1.3325789 -0.539772312 -1 -0.808743228 C -0.66742112 -1.077714144 -0.33333333 -2.3697438 0 -2.3697438 C 0.33333333 -2.3697438 0.66742112 -1.077714144 1 -0.808743228 C 1.3325789 -0.539772312 1.6667216 -0.454024284 2 -0.381390468 C 2.3332784 -0.30875664 2.6666767 -0.2693337 3 -0.238257564",
+                  ),
                 ),
               ),
             ),
           )
         },
-      }),
-      poissondist: jsOnly("Distributions are not supported in shaders yet.", {
+      },
+      poissondist: {
         name: "Poisson distribution",
         namePlural: "Poisson distributions",
         coerce: {},
-        garbage: real(NaN),
+        glsl: "float",
+        garbage: {
+          js: real(NaN),
+          glsl: "(0.0/0.0)",
+        },
         write: {
           isApprox(value) {
             return value.type == "approx"
@@ -141,12 +232,16 @@ export const PKG_DISTRIBUTIONS: Package = {
             ),
           )
         },
-      }),
-      binomialdist: jsOnly("Distributions are not supported in shaders yet.", {
+      },
+      binomialdist: {
         name: "binomial distribution",
         namePlural: "binomial distributions",
         coerce: {},
-        garbage: [real(NaN), real(NaN)],
+        glsl: "vec2",
+        garbage: {
+          js: [real(NaN), real(NaN)],
+          glsl: "(0.0/0.0)",
+        },
         write: {
           isApprox(value) {
             return value.some((x) => x.type == "approx")
@@ -188,12 +283,16 @@ export const PKG_DISTRIBUTIONS: Package = {
             ),
           )
         },
-      }),
-      uniformdist: jsOnly("Distributions are not supported in shaders yet.", {
+      },
+      uniformdist: {
         name: "uniform distribution",
         namePlural: "uniform distributions",
         coerce: {},
-        garbage: [real(NaN), real(NaN)],
+        glsl: "vec2",
+        garbage: {
+          js: [real(NaN), real(NaN)],
+          glsl: "vec2(0.0/0.0)",
+        },
         write: {
           isApprox(value) {
             return value.some((x) => x.type == "approx")
@@ -228,13 +327,16 @@ export const PKG_DISTRIBUTIONS: Package = {
             ),
           )
         },
-      }),
+      },
+    },
+  },
+  eval: {
+    fns: {
+      normaldist,
+      tdist,
+      poissondist,
+      binomialdist,
+      uniformdist,
     },
   },
 }
-
-const D_NORMALDIST =
-  "M -3 -0.05318218079999999 C -2.6666961 -0.1063596624 -2.3314068 -0.21846021599999998 -2 -0.647891604 C -1.6685932 -1.07732298 -1.3239836 -1.9629140399999998 -1 -2.90364864 C -0.67601635 -3.8443833599999997 -0.33333333 -4.78730736 0 -4.78730736 C 0.33333333 -4.78730736 0.67601635 -3.8443833599999997 1 -2.90364864 C 1.3239836 -1.9629140399999998 1.6685932 -1.07732298 2 -0.647891604 C 2.3314068 -0.21846021599999998 2.6666961 -0.1063596624 3 -0.05318218079999999"
-
-const D_TDIST1 =
-  "M -3 -0.238257564 C -2.6666767 -0.2693337 -2.3332784 -0.30875664 -2 -0.381390468 C -1.6667216 -0.454024284 -1.3325789 -0.539772312 -1 -0.808743228 C -0.66742112 -1.077714144 -0.33333333 -2.3697438 0 -2.3697438 C 0.33333333 -2.3697438 0.66742112 -1.077714144 1 -0.808743228 C 1.3325789 -0.539772312 1.6667216 -0.454024284 2 -0.381390468 C 2.3332784 -0.30875664 2.6666767 -0.2693337 3 -0.238257564"
