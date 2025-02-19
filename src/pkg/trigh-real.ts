@@ -157,6 +157,12 @@ export const PKG_TRIG_HYPERBOLIC_REAL: Package = {
       arccsch: FN_ARCCSCH,
       arcsech: FN_ARCSECH,
       arccoth: FN_ARCCOTH,
+      "sinh^-1": FN_ARCSINH,
+      "cosh^-1": FN_ARCCOSH,
+      "tanh^-1": FN_ARCTANH,
+      "csch^-1": FN_ARCCSCH,
+      "sech^-1": FN_ARCSECH,
+      "coth^-1": FN_ARCCOTH,
     },
   },
 }

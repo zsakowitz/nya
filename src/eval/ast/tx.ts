@@ -11,6 +11,8 @@ import {
   parseBindingVar,
   type Bindings,
 } from "../lib/binding"
+import type { GlslContext } from "../lib/fn"
+import { safe } from "../lib/util"
 import { OP_BINARY, OP_UNARY } from "../ops"
 import {
   iterateDeps,
@@ -32,8 +34,21 @@ import { OP_Y } from "../ops/op/y"
 import { piecewiseGlsl, piecewiseJs } from "../ops/piecewise"
 import { VARS } from "../ops/vars"
 import { withBindingsDeps, withBindingsGlsl, withBindingsJs } from "../ops/with"
-import type { GlslValue, JsVal, JsValue, TyName } from "../ty"
-import { coerceValueGlsl, coerceValueJs, listGlsl, listJs } from "../ty/coerce"
+import {
+  each,
+  type GlslValue,
+  type JsVal,
+  type JsValue,
+  type TyName,
+} from "../ty"
+import {
+  canCoerce,
+  coerceTyJs,
+  coerceValueGlsl,
+  coerceValueJs,
+  listGlsl,
+  listJs,
+} from "../ty/coerce"
 import { frac, num, real } from "../ty/create"
 import { TY_INFO } from "../ty/info"
 import { splitValue } from "../ty/split"
@@ -125,6 +140,62 @@ export const NO_DRAG: DragTarget<unknown> = {
   point() {
     return null
   },
+}
+
+function invalidFnSup(): never {
+  throw new Error(
+    "Only -1 and positive integers are allowed as function superscripts.",
+  )
+}
+
+function fnExponentJs(raw: JsValue): JsValue<"r32"> {
+  if (!canCoerce(raw.type, "r32")) {
+    invalidFnSup()
+  }
+
+  const value = coerceTyJs(raw, "r32")
+  for (const valRaw of each(value)) {
+    const val = num(valRaw)
+    if (!(safe(val) && 1 < val)) {
+      invalidFnSup()
+    }
+  }
+
+  return value
+}
+
+function fnExponentGlsl(ctx: GlslContext, raw: JsValue): GlslValue<"r64"> {
+  if (!canCoerce(raw.type, "r32")) {
+    invalidFnSup()
+  }
+
+  const value = coerceTyJs(raw, "r32")
+  for (const valRaw of each(value)) {
+    const val = num(valRaw)
+    if (!(safe(val) && 1 < val)) {
+      invalidFnSup()
+    }
+  }
+
+  if (value.list === false) {
+    return {
+      type: "r64",
+      list: false,
+      expr: `vec2(${num(value.value)}, 0)`,
+    }
+  }
+
+  const expr = ctx.name()
+  ctx.push`vec2 ${expr}[${value.list}];\n`
+  for (let i = 0; i < value.list; i++) {
+    ctx.push`${expr}[${i}] = vec2(${num(value.value[i]!)}, 0);\n`
+  }
+
+  return {
+    type: "r64",
+    list: value.list,
+    expr,
+  }
 }
 
 export const AST_TXRS: {
@@ -530,30 +601,115 @@ export const AST_TXRS: {
       if (
         node.name.type == "var" &&
         node.name.kind == "prefix" &&
-        !node.name.sub &&
-        !node.name.sup
+        !node.name.sub
       ) {
+        const sup =
+          node.name.sup ?
+            (
+              (node.name.sup.type == "op" &&
+                node.name.sup.kind == "-" &&
+                !node.name.sup.b &&
+                node.name.sup.a.type == "num" &&
+                !node.name.sup.a.sub &&
+                node.name.sup.a.value == "1") ||
+              (node.name.sup.type == "num" &&
+                !node.name.sup.sub &&
+                node.name.sup.value == "-1")
+            ) ?
+              "^-1"
+            : (
+              node.name.sup.type == "num" &&
+              node.name.sup.value.indexOf(".") == -1
+            ) ?
+              fnExponentJs(
+                node.name.sup.sub ?
+                  js(node.name.sup, {
+                    ...props,
+                    base: asNumericBase(
+                      js(node.name.sup.sub, { ...props, base: frac(10, 1) }),
+                    ),
+                  })
+                : js(node.name.sup, props),
+              )
+            : invalidFnSup()
+          : null
+
         const args = node.on ? commalist(node.args) : fnargs(node.args)
         if (node.on) {
           args.unshift(node.on)
         }
-        return jsCall(node.name.value, args, !!node.on, props)
+
+        if (sup == "^-1") {
+          return jsCall(node.name.value + "^-1", args, !!node.on, props)
+        }
+
+        const value = jsCall(node.name.value, args, !!node.on, props)
+
+        if (sup == null) {
+          return value
+        }
+
+        return OP_RAISE.js(value, sup)
       }
+
       throw new Error("Cannot call anything except built-in functions yet.")
     },
     glsl(node, props) {
       if (
         node.name.type == "var" &&
         node.name.kind == "prefix" &&
-        !node.name.sub &&
-        !node.name.sup
+        !node.name.sub
       ) {
+        const sup =
+          node.name.sup ?
+            (
+              (node.name.sup.type == "op" &&
+                node.name.sup.kind == "-" &&
+                !node.name.sup.b &&
+                node.name.sup.a.type == "num" &&
+                !node.name.sup.a.sub &&
+                node.name.sup.a.value == "1") ||
+              (node.name.sup.type == "num" &&
+                !node.name.sup.sub &&
+                node.name.sup.value == "-1")
+            ) ?
+              "^-1"
+            : (
+              node.name.sup.type == "num" &&
+              node.name.sup.value.indexOf(".") == -1
+            ) ?
+              fnExponentGlsl(
+                props.ctx,
+                node.name.sup.sub ?
+                  js(node.name.sup, {
+                    ...props,
+                    base: asNumericBase(
+                      js(node.name.sup.sub, { ...props, base: frac(10, 1) }),
+                    ),
+                  })
+                : js(node.name.sup, props),
+              )
+            : invalidFnSup()
+          : null
+
         const args = node.on ? commalist(node.args) : fnargs(node.args)
         if (node.on) {
           args.unshift(node.on)
         }
-        return glslCall(node.name.value, args, !!node.on, props)
+
+        if (sup == "^-1") {
+          return glslCall(node.name.value + "^-1", args, !!node.on, props)
+        }
+
+        const value = glslCall(node.name.value, args, !!node.on, props)
+
+        if (sup == null) {
+          return value
+        }
+
+        return OP_RAISE.glsl(props.ctx, value, sup)
       }
+
       throw new Error("Cannot call anything except built-in functions yet.")
     },
     drag: {
