@@ -29,10 +29,8 @@ import {
   Paper,
   type Point,
 } from "../paper"
-import { btn, createDocs } from "./docs"
+import { btn, createDocs, DEFAULT_TO_VISIBLE_DOCS } from "./docs"
 import { Handlers } from "./handler"
-
-const DEFAULT_TO_VISIBLE_DOCS = location.href.includes("localhost")
 
 export class Sheet {
   readonly paper = new Paper()

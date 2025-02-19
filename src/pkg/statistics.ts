@@ -12,6 +12,7 @@ import { div } from "../eval/ops/op/div"
 import { mul } from "../eval/ops/op/mul"
 import { sub } from "../eval/ops/op/sub"
 import {
+  each,
   map,
   type GlslValue,
   type JsValue,
@@ -32,11 +33,15 @@ import {
   split,
 } from "../eval/ty/coerce"
 import { frac, num, real } from "../eval/ty/create"
+import { Display } from "../eval/ty/display"
 import { TY_INFO, type TyInfo } from "../eval/ty/info"
 import { Leaf } from "../field/cmd/leaf"
-import { BRACKS } from "../field/cmd/math/brack"
+import { CmdComma } from "../field/cmd/leaf/comma"
+import { BRACKS, CmdBrack } from "../field/cmd/math/brack"
+import { FieldInert } from "../field/field-inert"
 import { Block, L, R } from "../field/model"
 import { h, hx } from "../jsx"
+import { defineExt, Store } from "../sheet/ext"
 import { sqrt } from "./geo/fn/distance"
 import { PKG_REAL } from "./num-real"
 
@@ -860,6 +865,72 @@ const TY_STATS: TyInfo<Tys["stats"], TyComponents["stats"]> = {
   },
 }
 
+const store = new Store((e) => {
+  const labels = ["Min", "Q1", "Median", "Q3", "Max"].map((label) => {
+    const field = new FieldInert(
+      e.field.options,
+      "bg-[--nya-bg-sidebar] border border-[--nya-border] px-2 py-1 rounded-r inline-block",
+    )
+    return {
+      el: [
+        h(""),
+        h(
+          "bg-[--nya-bg-sidebar] border border-[--nya-border] px-2 py-1 rounded-l inline-block border-r-0 [line-height:1] flex items-center",
+          label,
+        ),
+        field.el,
+      ],
+      field,
+    }
+  })
+  const el = h(
+    "grid grid-cols-[1fr,auto,auto] px-2 pb-2 -mt-2 w-[calc(var(--nya-sidebar)_-_2.5rem_-_1px)] overflow-x-auto [&::-webkit-scrollbar]:hidden gap-y-1",
+    ...labels.flatMap((x) => x.el),
+  )
+  return { fields: labels.map((x) => x.field), el }
+})
+
+const EXT_STATS = defineExt({
+  data(expr) {
+    if (expr.js?.value.type == "stats") {
+      return { expr, value: expr.js.value as JsValue<"stats"> }
+    }
+  },
+  el(data) {
+    const { el, fields } = store.get(data.expr)
+
+    if (data.value.list === false) {
+      for (let i = 0; i < 5; i++) {
+        fields[i]!.block.clear()
+        const value = data.value.value[i]!
+        new Display(fields[i]!.block.cursor(R), frac(10, 1)).num(value)
+      }
+    } else {
+      for (let i = 0; i < 5; i++) {
+        fields[i]!.block.clear()
+        const block = new Block(null)
+        const display = new Display(block.cursor(R), frac(10, 1))
+        let first = true
+        for (const values of each(data.value)) {
+          if (first) {
+            first = false
+          } else {
+            new CmdComma().insertAt(display.cursor, L)
+          }
+          const value = values[i]!
+          display.num(value)
+        }
+        new CmdBrack("[", "]", null, block).insertAt(
+          fields[i]!.block.cursor(R),
+          L,
+        )
+      }
+    }
+
+    return el
+  },
+})
+
 export const PKG_STATISTICS: Package = {
   id: "nya:statistics",
   name: "statistics",
@@ -892,6 +963,11 @@ export const PKG_STATISTICS: Package = {
       stats: FN_STATS,
       ranks: FN_RANKS,
       spearman: FN_SPEARMAN,
+    },
+  },
+  sheet: {
+    exts: {
+      1: [EXT_STATS],
     },
   },
 }

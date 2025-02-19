@@ -23,6 +23,8 @@ import { Block, R } from "../../../field/model"
 import { a, h, hx } from "../../../jsx"
 import type { Package } from "../../../pkg"
 
+export const DEFAULT_TO_VISIBLE_DOCS = false
+
 export function btn(
   icon: IconDefinition,
   label: Node | string,
