@@ -15,6 +15,7 @@ import {
   type GlslValue,
   type JsValue,
   type SReal,
+  type TyComponents,
   type TyName,
   type Tys,
   type Val,
@@ -30,7 +31,7 @@ import {
   split,
 } from "../eval/ty/coerce"
 import { frac, num, real } from "../eval/ty/create"
-import { TY_INFO } from "../eval/ty/info"
+import { TY_INFO, type TyInfo } from "../eval/ty/info"
 import { Leaf } from "../field/cmd/leaf"
 import { BRACKS } from "../field/cmd/math/brack"
 import { Block, L, R } from "../field/model"
@@ -631,24 +632,17 @@ const FN_MAD = new FnList("mad", "mean absolute deviation").addSpread(
   },
 )
 
-function covJs(
-  a: JsValue<"r32", number>,
-  b: JsValue<"r32", number>,
-  sample: boolean,
-) {
-  if (a.list <= +sample) {
+function covJs(a: SReal[], b: SReal[], sample: boolean) {
+  if (a.length <= +sample) {
     return real(NaN)
   }
 
-  const ma = meanJs(a.value)
-  const mb = meanJs(b.value)
+  const ma = meanJs(a)
+  const mb = meanJs(b)
 
   return div(
-    a.value.reduce(
-      (c, a, i) => add(c, mul(sub(a, ma), sub(b.value[i]!, mb))),
-      real(0),
-    ),
-    frac(a.list - +sample, 1),
+    a.reduce((c, a, i) => add(c, mul(sub(a, ma), sub(b[i]!, mb))), real(0)),
+    frac(a.length - +sample, 1),
   )
 }
 
@@ -675,7 +669,7 @@ const FN_COV = new FnListList("cov", "sample covariance").add(
   "r32",
   "r32",
   "r32",
-  (a, b) => covJs(a, b, true),
+  (a, b) => covJs(a.value, b.value, true),
   (ctx, a, b) => covGlsl(ctx, a, b, true),
 )
 
@@ -683,7 +677,7 @@ const FN_COVP = new FnListList("covp", "population covariance").add(
   "r32",
   "r32",
   "r32",
-  (a, b) => covJs(a, b, false),
+  (a, b) => covJs(a.value, b.value, false),
   (ctx, a, b) => covGlsl(ctx, a, b, false),
 )
 
@@ -691,10 +685,85 @@ const FN_CORR = new FnListList("corr", "Pearson correlation coefficient").add(
   "r32",
   "r32",
   "r32",
-  (a, b) =>
-    div(covJs(a, b, true), mul(stdevJs(a.value, true), stdevJs(b.value, true))),
+  ({ value: a }, { value: b }) =>
+    div(covJs(a, b, true), mul(stdevJs(a, true), stdevJs(b, true))),
   (ctx, a, b) =>
     `(${covGlsl(ctx, a, b, true)} / (${stdevGlsl(ctx, split(a.list, a.expr), true)} * ${stdevGlsl(ctx, split(b.list, b.expr), true)}))`,
+)
+
+function ranksJs(data: SReal[]): SReal[] {
+  const sorted = data
+    .map((x, i) => ({ x: num(x), i }))
+    .sort((a, b) => a.x - b.x)
+
+  type Result = { position: number; count: number }
+  const ret = Array<Result>(data.length)
+
+  let last: { value: number; result: Result } | undefined
+  for (let pos = 0; pos < sorted.length; pos++) {
+    const { x, i } = sorted[pos]!
+
+    if (last?.value === x) {
+      ;(ret[i] = last.result).count++
+    } else {
+      const result: Result = { position: pos + 1, count: 1 }
+      last = { value: x, result }
+      ret[i] = result
+      continue
+    }
+  }
+
+  return ret.map((x) => frac(2 * x.position + (x.count - 1), 2))
+}
+
+const FN_RANKS: Fn & WithDocs = {
+  name: "ranks",
+  label: "computes the rank of each element of a list",
+  docs() {
+    return [docByIcon([array(icon("r32"))], icon("r32"), true)]
+  },
+  js(...args) {
+    const value =
+      (
+        args.length == 1 &&
+        args[0]!.list !== false &&
+        canCoerce(args[0]!.type, "r32")
+      ) ?
+        coerceTyJs(args[0]!, "r32").value
+      : (
+        args.length >= 1 &&
+        args.every(
+          (x): x is typeof x & { list: false } =>
+            x.list === false && canCoerce(args[0]!.type, "r32"),
+        )
+      ) ?
+        args.map((x) => coerceValJs(x, "r32").value)
+      : raise("'ranks' expects a single list of real numbers.")()
+
+    return {
+      type: "r32",
+      list: value.length,
+      value: ranksJs(value),
+    }
+  },
+  glsl: raise("Cannot compute 'ranks' in shaders yet."),
+}
+
+ALL_DOCS.push(FN_RANKS)
+
+const FN_SPEARMAN = new FnListList(
+  "spearman",
+  "Spearman's rank correlation coefficient",
+).add(
+  "r32",
+  "r32",
+  "r32",
+  ({ value: ar }, { value: br }) => {
+    const a = ranksJs(ar)
+    const b = ranksJs(br)
+    return div(covJs(a, b, true), mul(stdevJs(a, true), stdevJs(b, true)))
+  },
+  raise("Cannot compute 'spearman' in shaders yet."),
 )
 
 class CmdStats extends Leaf {
@@ -770,6 +839,55 @@ const FN_STATS = new FnList(
   raise("Cannot compute 'stats' in shaders yet."),
 )
 
+const TY_STATS: TyInfo<Tys["stats"], TyComponents["stats"]> = {
+  name: "five-number statistical summary",
+  namePlural: "five-number statistical summaries",
+  coerce: {},
+  garbage: {
+    js: [real(NaN), real(NaN), real(NaN), real(NaN), real(NaN)],
+    get glsl(): never {
+      throw new Error(
+        "Cannot create five-number statistical summaries in shaders.",
+      )
+    },
+  },
+  get glsl(): never {
+    throw new Error(
+      "Cannot create five-number statistical summaries in shaders.",
+    )
+  },
+  icon() {
+    return h(
+      "",
+      h(
+        "text-[rgb(199_68_64)] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px]",
+        h(
+          "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
+        ),
+        h(
+          "absolute top-1/2 left-1/2 -translate-x-1/2 translate-y-[calc(-50%_-_1.5px)] font-['Times_New_Roman'] italic text-[100%]",
+          "Q",
+          hx("sub", "", "x"),
+        ),
+      ),
+    )
+  },
+  write: {
+    isApprox(value) {
+      return value.some((x) => x.type == "approx")
+    },
+    display(value, props) {
+      new CmdStats(
+        value.map((value) => {
+          const block = new Block(null)
+          props.at(block.cursor(R)).num(value)
+          return block
+        }) satisfies Block[] as any,
+      ).insertAt(props.cursor, L)
+    },
+  },
+}
+
 export const PKG_STATISTICS: Package = {
   id: "nya:statistics",
   name: "statistics",
@@ -777,54 +895,7 @@ export const PKG_STATISTICS: Package = {
   deps: [() => PKG_REAL],
   ty: {
     info: {
-      stats: {
-        name: "five-number statistical summary",
-        namePlural: "five-number statistical summaries",
-        coerce: {},
-        garbage: {
-          js: [real(NaN), real(NaN), real(NaN), real(NaN), real(NaN)],
-          get glsl(): never {
-            throw new Error(
-              "Cannot create five-number statistical summaries in shaders.",
-            )
-          },
-        },
-        get glsl(): never {
-          throw new Error(
-            "Cannot create five-number statistical summaries in shaders.",
-          )
-        },
-        icon() {
-          return h(
-            "",
-            h(
-              "text-[rgb(199_68_64)] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px]",
-              h(
-                "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
-              ),
-              h(
-                "absolute top-1/2 left-1/2 -translate-x-1/2 translate-y-[calc(-50%_-_1.5px)] font-['Times_New_Roman'] italic text-[100%]",
-                "Q",
-                hx("sub", "", "x"),
-              ),
-            ),
-          )
-        },
-        write: {
-          isApprox(value) {
-            return value.some((x) => x.type == "approx")
-          },
-          display(value, props) {
-            new CmdStats(
-              value.map((value) => {
-                const block = new Block(null)
-                props.at(block.cursor(R)).num(value)
-                return block
-              }) satisfies Block[] as any,
-            ).insertAt(props.cursor, L)
-          },
-        },
-      },
+      stats: TY_STATS,
     },
   },
   eval: {
@@ -847,6 +918,8 @@ export const PKG_STATISTICS: Package = {
       covp: FN_COVP,
       corr: FN_CORR,
       stats: FN_STATS,
+      ranks: FN_RANKS,
+      spearman: FN_SPEARMAN,
     },
   },
 }
