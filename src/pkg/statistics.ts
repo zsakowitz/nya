@@ -1,4 +1,5 @@
 import type { Package } from "."
+import type { Node } from "../eval/ast/token"
 import type { GlslContext } from "../eval/lib/fn"
 import type { Fn } from "../eval/ops"
 import { array, docByIcon, icon } from "../eval/ops/dist"
@@ -15,6 +16,7 @@ import {
   type JsValue,
   type SReal,
   type TyName,
+  type Tys,
   type Val,
 } from "../eval/ty"
 import {
@@ -29,8 +31,22 @@ import {
 } from "../eval/ty/coerce"
 import { frac, num, real } from "../eval/ty/create"
 import { TY_INFO } from "../eval/ty/info"
+import { Leaf } from "../field/cmd/leaf"
+import { BRACKS } from "../field/cmd/math/brack"
+import { Block, L, R } from "../field/model"
+import { h, hx } from "../jsx"
 import { sqrt } from "./geo/fn/distance"
 import { PKG_REAL } from "./num-real"
+
+declare module "../eval/ty" {
+  interface Tys {
+    stats: [min: SReal, q1: SReal, median: SReal, q3: SReal, max: SReal]
+  }
+
+  interface TyComponents {
+    stats: never
+  }
+}
 
 export class FnListList implements Fn, WithDocs {
   readonly o: {
@@ -67,7 +83,7 @@ export class FnListList implements Fn, WithDocs {
     return this
   }
 
-  docs(): Node[] {
+  docs(): globalThis.Node[] {
     return this.o.map(({ a, b, ret }) =>
       docByIcon([array(icon(a)), array(icon(b))], icon(ret), true),
     )
@@ -176,7 +192,7 @@ export class FnListPlain implements Fn, WithDocs {
     return this
   }
 
-  docs(): Node[] {
+  docs(): globalThis.Node[] {
     return this.o.map(({ a, b, ret }) =>
       docByIcon([array(icon(a)), array(icon(b))], icon(ret), true),
     )
@@ -361,6 +377,47 @@ const FN_MEDIAN = new FnList(
   raise("Cannot compute 'median' in shaders yet."),
 )
 
+function quartile<L extends number | false>(
+  list: SReal[],
+  quartile: JsValue<"r32", L>,
+): JsValue<"r32", L> {
+  if (list.length == 0) {
+    return map(quartile, "r32", () => real(NaN))
+  }
+  sortJs(list)
+
+  return map(quartile, "r32", (quartile) => {
+    let q = num(quartile)
+    if (!(0 <= q && q <= 4)) {
+      return real(NaN)
+    }
+
+    q = Math.round(q)
+    switch (q) {
+      case 0:
+        return list[0]!
+      case 4:
+        return list[list.length - 1]!
+      case 2:
+        return middleJs(list)
+      case 1:
+        if (list.length % 2) {
+          return middleJs(list.slice(0, (list.length - 1) / 2))
+        } else {
+          return middleJs(list.slice(0, list.length / 2))
+        }
+      case 3:
+        if (list.length % 2) {
+          return middleJs(list.slice((list.length + 1) / 2))
+        } else {
+          return middleJs(list.slice(list.length / 2))
+        }
+    }
+
+    return real(NaN)
+  })
+}
+
 const FN_QUARTILE: Fn & WithDocs = {
   js(...args) {
     if (
@@ -374,44 +431,10 @@ const FN_QUARTILE: Fn & WithDocs = {
       throw new Error("'quartile' expects a list and a quartile")
     }
 
-    const list = coerceTyJs(args[0]!, "r32").value.slice()
-    const quartile = coerceTyJs(args[1]!, "r32")
-
-    if (list.length == 0) {
-      return map(quartile, "r32", () => real(NaN))
-    }
-    sortJs(list)
-
-    return map(quartile, "r32", (quartile) => {
-      let q = num(quartile)
-      if (!(0 <= q && q <= 4)) {
-        return real(NaN)
-      }
-
-      q = Math.round(q)
-      switch (q) {
-        case 0:
-          return list[0]!
-        case 4:
-          return list[list.length - 1]!
-        case 2:
-          return middleJs(list)
-        case 1:
-          if (list.length % 2) {
-            return middleJs(list.slice(0, (list.length - 1) / 2))
-          } else {
-            return middleJs(list.slice(0, list.length / 2))
-          }
-        case 3:
-          if (list.length % 2) {
-            return middleJs(list.slice((list.length + 1) / 2))
-          } else {
-            return middleJs(list.slice(list.length / 2))
-          }
-      }
-
-      return real(NaN)
-    })
+    return quartile(
+      coerceTyJs(args[0]!, "r32").value.slice(),
+      coerceTyJs(args[1]!, "r32"),
+    )
   },
   glsl: raise("Cannot compute 'quartile' in shaders yet."),
   name: "quartile",
@@ -674,11 +697,136 @@ const FN_CORR = new FnListList("corr", "Pearson correlation coefficient").add(
     `(${covGlsl(ctx, a, b, true)} / (${stdevGlsl(ctx, split(a.list, a.expr), true)} * ${stdevGlsl(ctx, split(b.list, b.expr), true)}))`,
 )
 
+class CmdStats extends Leaf {
+  constructor(readonly contents: [Block, Block, Block, Block, Block]) {
+    super(
+      "\\nyastats",
+      h(
+        "relative inline-block text-left nya-cmd-brack",
+        h(
+          `absolute bottom-[2px] left-0 top-0 ${BRACKS["{"].w}`,
+          BRACKS["{"].html(),
+        ),
+        h(
+          `my-[.1em] inline-block ${BRACKS["{"].mx} ${BRACKS["}"].mx}`,
+          h(
+            "inline-grid grid-cols-[auto,auto] gap-y-[.2em] align-middle items-baseline",
+            ...["min", "Q1", "median", "Q3", "max"].flatMap((label, i) => [
+              h(
+                "inline-block py-[.1em] pr-[.4em] font-['Times_New_Roman']",
+                label,
+              ),
+              h("inline-block py-[.1em]", contents[i]!.el),
+            ]),
+          ),
+        ),
+        h(
+          `absolute bottom-[2px] right-0 top-0 ${BRACKS["}"].w}`,
+          BRACKS["}"].html(),
+        ),
+      ),
+    )
+  }
+
+  ascii(): string {
+    return ""
+  }
+
+  latex(): string {
+    return ""
+  }
+
+  ir(_tokens: Node[]): true | void {}
+
+  reader(): string {
+    return ` Five Statistic Summary\
+, Min ${this.contents[0].reader()}\
+, Q1 ${this.contents[1].reader()}\
+, Median ${this.contents[2].reader()}\
+, Q3 ${this.contents[3].reader()}\
+, Max ${this.contents[4].reader()}\
+, End Five Statistic Summary `
+  }
+}
+
+const FN_STATS = new FnList(
+  "stats",
+  "computes a five-statistic summary",
+).addSpread(
+  "r32",
+  "stats",
+  (...args) => {
+    const { value } = quartile(
+      args.map((x) => x.value),
+      {
+        type: "r32",
+        list: 5,
+        value: [real(0), real(1), real(2), real(3), real(4)],
+      },
+    )
+
+    return value satisfies SReal[] as Tys["stats"]
+  },
+  raise("Cannot compute 'stats' in shaders yet."),
+)
+
 export const PKG_STATISTICS: Package = {
   id: "nya:statistics",
   name: "statistics",
   label: "rudimentary statistics functions",
   deps: [() => PKG_REAL],
+  ty: {
+    info: {
+      stats: {
+        name: "five-number statistical summary",
+        namePlural: "five-number statistical summaries",
+        coerce: {},
+        garbage: {
+          js: [real(NaN), real(NaN), real(NaN), real(NaN), real(NaN)],
+          get glsl(): never {
+            throw new Error(
+              "Cannot create five-number statistical summaries in shaders.",
+            )
+          },
+        },
+        get glsl(): never {
+          throw new Error(
+            "Cannot create five-number statistical summaries in shaders.",
+          )
+        },
+        icon() {
+          return h(
+            "",
+            h(
+              "text-[rgb(199_68_64)] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px]",
+              h(
+                "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
+              ),
+              h(
+                "absolute top-1/2 left-1/2 -translate-x-1/2 translate-y-[calc(-50%_-_1.5px)] font-['Times_New_Roman'] italic text-[100%]",
+                "Q",
+                hx("sub", "", "x"),
+              ),
+            ),
+          )
+        },
+        write: {
+          isApprox(value) {
+            return value.some((x) => x.type == "approx")
+          },
+          display(value, props) {
+            new CmdStats(
+              value.map((value) => {
+                const block = new Block(null)
+                props.at(block.cursor(R)).num(value)
+                return block
+              }) satisfies Block[] as any,
+            ).insertAt(props.cursor, L)
+          },
+        },
+      },
+    },
+  },
   eval: {
     fns: {
       min: FN_MIN,
@@ -698,6 +846,7 @@ export const PKG_STATISTICS: Package = {
       cov: FN_COV,
       covp: FN_COVP,
       corr: FN_CORR,
+      stats: FN_STATS,
     },
   },
 }

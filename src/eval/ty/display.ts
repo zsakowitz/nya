@@ -7,7 +7,6 @@ import { OpMinus, OpPlus, OpTimes } from "../../field/cmd/leaf/op"
 import { SymInfinity } from "../../field/cmd/leaf/sym"
 import { CmdWord } from "../../field/cmd/leaf/word"
 import { CmdBrack } from "../../field/cmd/math/brack"
-import { CmdFrac } from "../../field/cmd/math/frac"
 import { CmdSupSub } from "../../field/cmd/math/supsub"
 import type { FieldInert } from "../../field/field-inert"
 import { Block, L, R, type Cursor } from "../../field/model"
@@ -154,42 +153,15 @@ export class Display {
     }
   }
 
-  num(num: SReal, tag?: string, signed = false) {
-    const { cursor } = this
-    if (num.type == "approx") {
-      let val = this.numToBase(num.value)
-      if (signed && val[0] != "-") val = "+" + val
-      if (val == "Infinity") val = "∞"
-      else if (val == "-Infinity") val = "-∞"
-      else if (val != "NaN" && val.indexOf(".") == -1) val += ".0"
-      this.odigits(val, tag)
-    } else if (num.d == 1) {
-      let val = this.numToBase(num.n)
-      if (signed && val[0] != "-") val = "+" + val
-      if (tag && val == "+1") val = "+"
-      else if (tag && val == "-1") val = "-"
-      else if (tag && val == "1") val = ""
-      this.odigits(val, tag)
-    } else {
-      const n = new Block(null)
-      const d = new Block(null)
-      if (num.n < 0) {
-        new OpMinus().insertAt(cursor, L)
-      } else if (signed) {
-        new OpPlus().insertAt(cursor, L)
-      }
-      const frac = new CmdFrac(n, d)
-      frac.insertAt(cursor, L)
-      this.cursor.moveIn(n, R)
-      let val = this.numToBase(num.n < 0 ? -num.n : num.n)
-      this.odigits(val)
-      this.cursor.moveIn(d, R)
-      this.odigits(this.numToBase(num.d))
-      this.cursor.moveTo(frac, R)
-      if (tag) {
-        new CmdWord(tag, undefined, true).insertAt(this.cursor, L)
-      }
-    }
+  num(numRaw: SReal, tag?: string, signed = false) {
+    let val = this.numToBase(num(numRaw))
+    if (signed && val[0] != "-") val = "+" + val
+    if (val == "Infinity") val = "∞"
+    else if (val == "-Infinity") val = "-∞"
+    else if (numRaw.type == "approx" && val != "NaN" && val.indexOf(".") == -1)
+      val += ".0"
+    this.odigits(val, tag)
+    return
   }
 
   nums(nums: [SReal, string][]) {

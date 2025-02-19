@@ -34,7 +34,7 @@ export class Slider {
     this.el = h(
       twMerge("block w-full", className),
       (this.elInner = h(
-        "group/nya-slider block w-full px-[0.5625rem] py-[0.5625rem] relative cursor-pointer",
+        "group/nya-slider block w-full px-[.5625rem] py-[.5625rem] relative cursor-pointer",
         (this.elNative = hx("input", {
           class: "sr-only",
           type: "range",

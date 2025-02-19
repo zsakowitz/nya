@@ -40,7 +40,7 @@ export class CmdSymVar extends Command<[Block]> {
     super(
       "\\nyasym",
       h(
-        "mx-[0.1em] my-[0.1em] inline-block rounded border-2 border-blue-500 bg-blue-50 px-[0.2em] py-[0.1em] text-center text-blue-500 dark:bg-blue-950 [&.nya-selected]:bg-blue-500 [&.nya-selected]:text-blue-50 [.nya-selected_&]:bg-blue-500 [.nya-selected_&]:text-blue-50",
+        "mx-[.1em] my-[.1em] inline-block rounded border-2 border-blue-500 bg-blue-50 px-[.2em] py-[.1em] text-center text-blue-500 dark:bg-blue-950 [&.nya-selected]:bg-blue-500 [&.nya-selected]:text-blue-50 [.nya-selected_&]:bg-blue-500 [.nya-selected_&]:text-blue-50",
         block.el,
       ),
       [block],

@@ -39,12 +39,12 @@ export class CmdPiecewise extends Command {
       h(
         `my-[.1em] inline-block ${BRACKS["{"].mx} ${BRACKS["}"].mx}`,
         h(
-          "inline-grid grid-cols-[auto,auto] gap-y-[0.2em] align-middle items-baseline",
+          "inline-grid grid-cols-[auto,auto] gap-y-[.2em] align-middle items-baseline",
           ...blocks.map((block, index) =>
             h(
               "inline-block py-[.1em]" +
                 (index % 2 ?
-                  " before:content-['if'] before:px-[0.2em] last:[&.nya-has-empty]:before:content-['else'] last:[&.nya-has-empty]:before:pr-0 last:[&.nya-has-empty]:before:opacity-30 [&:last-child.nya-has-empty>*]:hidden"
+                  " before:content-['if'] before:px-[.2em] last:[&.nya-has-empty]:before:content-['else'] last:[&.nya-has-empty]:before:pr-0 last:[&.nya-has-empty]:before:opacity-30 [&:last-child.nya-has-empty>*]:hidden"
                 : ""),
               block.el,
             ),

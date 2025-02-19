@@ -82,22 +82,26 @@ export function each<T extends TyName>(value: JsValue<T>): Tys[T][] {
   return value.list === false ? [value.value] : value.value
 }
 
-export function map<T extends TyName, U extends TyName>(
-  value: JsValue<T>,
+export function map<
+  T extends TyName,
+  U extends TyName,
+  L extends number | false,
+>(
+  value: JsValue<T, L>,
   type: U,
   map: (value: Val<T>) => Tys[U],
-): JsValue<U> {
+): JsValue<U, L> {
   if (value.list === false) {
     return {
       type,
       list: false,
       value: map(value.value),
-    }
+    } satisfies JsValue<U, false> as any
   }
 
   return {
     type,
     list: value.list,
     value: value.value.map(map),
-  }
+  } satisfies JsValue<U, number> as any
 }

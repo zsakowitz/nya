@@ -103,7 +103,7 @@ export class CmdText extends Leaf {
   ) {
     const input = hx(
       "input",
-      "relative focus:outline-none font-['Times_New_Roman'] bg-transparent -mx-[0.5ch] px-[0.5ch] [box-sizing:content-box] ![field-sizing:content]",
+      "relative focus:outline-none font-['Times_New_Roman'] bg-transparent -mx-[.5ch] px-[.5ch] [box-sizing:content-box] ![field-sizing:content]",
     )
     input.spellcheck = false
     input.value = value
