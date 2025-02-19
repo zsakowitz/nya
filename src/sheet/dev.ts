@@ -6,6 +6,7 @@ import { PKG_EVAL } from "../pkg/eval.js"
 import { PKG_GEO_POINT } from "../pkg/geo-point.js"
 import { PKG_GEOMETRY } from "../pkg/geo/index.js"
 import { PKG_ITHKUIL } from "../pkg/ithkuil.js"
+import { PKG_LIST_EXTRAS } from "../pkg/list-extras.js"
 import { PKG_NUM_COMPLEX } from "../pkg/num-complex.js"
 import { PKG_NUM_QUATERNION } from "../pkg/num-quaternion.js"
 import { PKG_REAL } from "../pkg/num-real.js"
@@ -39,6 +40,7 @@ const sheet = new SheetFactory(options)
   .load(PKG_TRIG_HYPERBOLIC_REAL)
   .load(PKG_STATISTICS)
   .load(PKG_NUMBER_THEORY)
+  .load(PKG_LIST_EXTRAS)
   .create()
 document.body.appendChild(sheet.el)
 

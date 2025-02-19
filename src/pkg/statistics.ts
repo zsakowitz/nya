@@ -4,6 +4,7 @@ import type { GlslContext } from "../eval/lib/fn"
 import type { Fn } from "../eval/ops"
 import { array, docByIcon, icon } from "../eval/ops/dist"
 import { ALL_DOCS, type WithDocs } from "../eval/ops/docs"
+import { issue } from "../eval/ops/issue"
 import { FnList } from "../eval/ops/list"
 import { abs } from "../eval/ops/op/abs"
 import { add, addR64 } from "../eval/ops/op/add"
@@ -362,12 +363,6 @@ function middleJs(value: SReal[]): SReal {
   return div(add(lhs, rhs), real(2))
 }
 
-function raise(message: string) {
-  return (): never => {
-    throw new Error(message)
-  }
-}
-
 const FN_MEDIAN = new FnList(
   "median",
   "takes the median of its inputs",
@@ -375,7 +370,7 @@ const FN_MEDIAN = new FnList(
   "r32",
   "r32",
   (...args) => middleJs(sortJs(args.map((x) => x.value))),
-  raise("Cannot compute 'median' in shaders yet."),
+  issue("Cannot compute 'median' in shaders yet."),
 )
 
 function quartile<L extends number | false>(
@@ -437,7 +432,7 @@ const FN_QUARTILE: Fn & WithDocs = {
       coerceTyJs(args[1]!, "r32"),
     )
   },
-  glsl: raise("Cannot compute 'quartile' in shaders yet."),
+  glsl: issue("Cannot compute 'quartile' in shaders yet."),
   name: "quartile",
   label: "computes a quartile of a data set",
   docs() {
@@ -488,7 +483,7 @@ const FN_QUANTILE: Fn & WithDocs = {
       )
     })
   },
-  glsl: raise("Cannot compute 'quantile' in shaders yet."),
+  glsl: issue("Cannot compute 'quantile' in shaders yet."),
   name: "quantile",
   label: "computes a quantile of a data set",
   docs() {
@@ -691,7 +686,7 @@ const FN_CORR = new FnListList("corr", "Pearson correlation coefficient").add(
     `(${covGlsl(ctx, a, b, true)} / (${stdevGlsl(ctx, split(a.list, a.expr), true)} * ${stdevGlsl(ctx, split(b.list, b.expr), true)}))`,
 )
 
-function ranksJs(data: SReal[]): SReal[] {
+export function ranksJs(data: SReal[]): SReal[] {
   const sorted = data
     .map((x, i) => ({ x: num(x), i }))
     .sort((a, b) => a.x - b.x)
@@ -738,7 +733,7 @@ const FN_RANKS: Fn & WithDocs = {
         )
       ) ?
         args.map((x) => coerceValJs(x, "r32").value)
-      : raise("'ranks' expects a single list of real numbers.")()
+      : issue("'ranks' expects a single list of real numbers.")()
 
     return {
       type: "r32",
@@ -746,7 +741,7 @@ const FN_RANKS: Fn & WithDocs = {
       value: ranksJs(value),
     }
   },
-  glsl: raise("Cannot compute 'ranks' in shaders yet."),
+  glsl: issue("Cannot compute 'ranks' in shaders yet."),
 }
 
 ALL_DOCS.push(FN_RANKS)
@@ -763,7 +758,7 @@ const FN_SPEARMAN = new FnListList(
     const b = ranksJs(br)
     return div(covJs(a, b, true), mul(stdevJs(a, true), stdevJs(b, true)))
   },
-  raise("Cannot compute 'spearman' in shaders yet."),
+  issue("Cannot compute 'spearman' in shaders yet."),
 )
 
 class CmdStats extends Leaf {
@@ -836,7 +831,7 @@ const FN_STATS = new FnList(
 
     return value satisfies SReal[] as Tys["stats"]
   },
-  raise("Cannot compute 'stats' in shaders yet."),
+  issue("Cannot compute 'stats' in shaders yet."),
 )
 
 const TY_STATS: TyInfo<Tys["stats"], TyComponents["stats"]> = {

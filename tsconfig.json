@@ -9,7 +9,8 @@
     "noFallthroughCasesInSwitch": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "moduleResolution": "bundler"
+    "moduleResolution": "bundler",
+    "moduleDetection": "force"
   },
   "exclude": ["src/pkg-beta"]
 }
