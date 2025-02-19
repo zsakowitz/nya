@@ -189,9 +189,11 @@ export function coerceValueJs(value: JsValue, to: Type): JsValue {
   return {
     type: to.type,
     list: to.list,
-    value: value.value.map(
-      (val) => coerceValJs({ value: val, type: value.type }, to.type).value,
-    ),
+    value: value.value
+      .slice(0, to.list)
+      .map(
+        (val) => coerceValJs({ value: val, type: value.type }, to.type).value,
+      ),
   }
 }
 
@@ -225,7 +227,7 @@ export function coerceValueGlsl(
   }
 
   const index = ctx.name()
-  const cached = ctx.cache(value)
+  const cached = ctx.cacheValue(value)
   ctx.push`for (int ${index} = 0; ${index} < ${to.list}; ${index}++) {\n`
   ctx.push`${ret}[${index}] = ${
     coerceValGlsl(
@@ -262,4 +264,8 @@ export function isReal(val: JsVal): val is JsVal<"r32" | "r64">
 export function isReal(val: GlslVal): val is GlslVal<"r32" | "r64">
 export function isReal(val: { type: unknown }): val is { type: "r32" | "r64" } {
   return val.type === "r32" || val.type === "r64"
+}
+
+export function split(list: number, expr: string): string[] {
+  return Array.from({ length: list }, (_, i) => `${expr}[${i}]`)
 }

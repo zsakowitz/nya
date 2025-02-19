@@ -9,11 +9,134 @@ import { add, addR64 } from "../eval/ops/op/add"
 import { div } from "../eval/ops/op/div"
 import { mul } from "../eval/ops/op/mul"
 import { sub } from "../eval/ops/op/sub"
-import { map, type SReal } from "../eval/ty"
-import { canCoerce, coerceTyJs } from "../eval/ty/coerce"
+import {
+  map,
+  type GlslValue,
+  type JsValue,
+  type SReal,
+  type TyName,
+  type Val,
+} from "../eval/ty"
+import {
+  canCoerce,
+  coerceTyJs,
+  coerceValueGlsl,
+  coerceValueJs,
+  split,
+} from "../eval/ty/coerce"
 import { frac, num, real } from "../eval/ty/create"
+import { TY_INFO } from "../eval/ty/info"
 import { sqrt } from "./geo/fn/distance"
 import { PKG_REAL } from "./num-real"
+
+export class FnListList implements Fn, WithDocs {
+  readonly o: {
+    a: TyName
+    b: TyName
+    ret: TyName
+    js(a: JsValue<TyName, number>, b: JsValue<TyName, number>): Val
+    glsl(
+      ctx: GlslContext,
+      a: GlslValue<TyName, number>,
+      b: GlslValue<TyName, number>,
+    ): string
+  }[] = []
+
+  constructor(
+    readonly name: string,
+    readonly label: string,
+  ) {
+    ALL_DOCS.push(this)
+  }
+
+  add<A extends TyName, B extends TyName, R extends TyName>(
+    a: A,
+    b: B,
+    ret: R,
+    js: (a: JsValue<A, number>, b: JsValue<B, number>) => Val<R>,
+    glsl: (
+      ctx: GlslContext,
+      a: GlslValue<A, number>,
+      b: GlslValue<B, number>,
+    ) => string,
+  ) {
+    this.o.push({ a, b, ret, js, glsl })
+    return this
+  }
+
+  docs(): Node[] {
+    return this.o.map(({ a, b, ret }) =>
+      docByIcon([array(icon(a)), array(icon(b))], icon(ret), true),
+    )
+  }
+
+  js(...args: JsValue[]): JsValue {
+    if (
+      !(args.length == 2 && args[0]!.list !== false && args[1]!.list !== false)
+    ) {
+      throw new Error(`'${this.name}' expects two lists.`)
+    }
+
+    const a = args[0]!
+    const b = args[1]!
+    const list = Math.min(a.list, b.list)
+
+    for (const o of this.o) {
+      if (canCoerce(a.type, o.a) && canCoerce(b.type, o.b)) {
+        return {
+          list: false,
+          type: o.ret,
+          value: o.js(
+            coerceValueJs(a, { type: o.a, list }),
+            coerceValueJs(b, { type: o.b, list }),
+          ),
+        }
+      }
+    }
+
+    throw new Error(
+      `'${this.name}' cannot be called with lists of ${TY_INFO[a.type].namePlural} and ${TY_INFO[b.type].namePlural}`,
+    )
+  }
+
+  glsl(ctx: GlslContext, ...args: GlslValue[]): GlslValue {
+    if (
+      !(args.length == 2 && args[0]!.list !== false && args[1]!.list !== false)
+    ) {
+      throw new Error(`'${this.name}' expects two lists.`)
+    }
+
+    const a = args[0]! as GlslValue<TyName, number>
+    const b = args[1]! as GlslValue<TyName, number>
+    const list = Math.min(a.list, b.list)
+
+    for (const o of this.o) {
+      if (canCoerce(a.type, o.a) && canCoerce(b.type, o.b)) {
+        return {
+          list: false,
+          type: o.ret,
+          expr: o.glsl(
+            ctx,
+            {
+              expr: coerceValueGlsl(ctx, a, { type: o.a, list }),
+              type: o.a,
+              list,
+            },
+            {
+              expr: coerceValueGlsl(ctx, b, { type: o.b, list }),
+              type: o.b,
+              list,
+            },
+          ),
+        }
+      }
+    }
+
+    throw new Error(
+      `'${this.name}' cannot be called with lists of ${TY_INFO[a.type].namePlural} and ${TY_INFO[b.type].namePlural}`,
+    )
+  }
+}
 
 const FN_MIN = new FnList("min", "returns the minimum of its inputs").addSpread(
   "r32",
@@ -380,6 +503,79 @@ const FN_MAD = new FnList("mad", "mean absolute deviation").addSpread(
   },
 )
 
+const FN_COV: Fn & WithDocs = new FnListList("cov", "sample covariance").add(
+  "r32",
+  "r32",
+  "r32",
+  (a, b) => {
+    if (a.list <= 1) {
+      return real(NaN)
+    }
+
+    const ma = meanJs(a.value)
+    const mb = meanJs(b.value)
+
+    return div(
+      a.value.reduce(
+        (c, a, i) => add(c, mul(sub(a, ma), sub(b.value[i]!, mb))),
+        real(0),
+      ),
+      frac(a.list - 1, 1),
+    )
+  },
+  (ctx, a, b) => {
+    if (a.list <= 1) {
+      return `(0.0/0.0)`
+    }
+
+    const ma = ctx.cached("r32", meanGlsl(split(a.list, a.expr)))
+    const mb = ctx.cached("r32", meanGlsl(split(b.list, b.expr)))
+
+    return `((${Array.from(
+      { length: a.list },
+      (_, i) => `(${a.expr}[${i}] - ${ma}) * (${b.expr}[${i}] - ${mb})`,
+    ).join(" + ")}) / ${(a.list - 1).toExponential()})`
+  },
+)
+
+const FN_COVP: Fn & WithDocs = new FnListList(
+  "covp",
+  "population covariance",
+).add(
+  "r32",
+  "r32",
+  "r32",
+  (a, b) => {
+    if (a.list == 0) {
+      return real(NaN)
+    }
+
+    const ma = meanJs(a.value)
+    const mb = meanJs(b.value)
+
+    return div(
+      a.value.reduce(
+        (c, a, i) => add(c, mul(sub(a, ma), sub(b.value[i]!, mb))),
+        real(0),
+      ),
+      frac(a.list, 1),
+    )
+  },
+  (ctx, a, b) => {
+    if (a.list == 0) {
+      return `(0.0/0.0)`
+    }
+
+    const ma = ctx.cached("r32", meanGlsl(split(a.list, a.expr)))
+    const mb = ctx.cached("r32", meanGlsl(split(b.list, b.expr)))
+
+    return `((${Array.from(
+      { length: a.list },
+      (_, i) => `(${a.expr}[${i}] - ${ma}) * (${b.expr}[${i}] - ${mb})`,
+    ).join(" + ")}) / ${a.list.toExponential()})`
+  },
+)
+
 export const PKG_STATISTICS: Package = {
   id: "nya:statistics",
   name: "statistics",
@@ -401,6 +597,8 @@ export const PKG_STATISTICS: Package = {
       stddev: FN_STDEV,
       stddevp: FN_STDEVP,
       mad: FN_MAD,
+      cov: FN_COV,
+      covp: FN_COVP,
     },
   },
 }
