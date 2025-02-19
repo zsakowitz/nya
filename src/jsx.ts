@@ -46,6 +46,13 @@ export function p(d: string) {
   return el
 }
 
+export function g(className: string, ...children: ChildNode[]) {
+  const el = document.createElementNS("http://www.w3.org/2000/svg", "g")
+  el.setAttribute("class", className)
+  el.append(...children)
+  return el
+}
+
 export function svg(viewBox: string, ...children: ChildNode[]) {
   const el = svgx(
     viewBox,
