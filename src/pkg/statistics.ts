@@ -19,7 +19,10 @@ import {
 } from "../eval/ty"
 import {
   canCoerce,
+  coerceTyGlsl,
   coerceTyJs,
+  coerceValGlsl,
+  coerceValJs,
   coerceValueGlsl,
   coerceValueJs,
   split,
@@ -134,6 +137,104 @@ export class FnListList implements Fn, WithDocs {
 
     throw new Error(
       `'${this.name}' cannot be called with lists of ${TY_INFO[a.type].namePlural} and ${TY_INFO[b.type].namePlural}`,
+    )
+  }
+}
+
+export class FnListPlain implements Fn, WithDocs {
+  readonly o: {
+    a: TyName
+    b: TyName
+    ret: TyName
+    js(a: JsValue<TyName, number>, b: JsValue<TyName, false>): Val
+    glsl(
+      ctx: GlslContext,
+      a: GlslValue<TyName, number>,
+      b: GlslValue<TyName, false>,
+    ): string
+  }[] = []
+
+  constructor(
+    readonly name: string,
+    readonly label: string,
+  ) {
+    ALL_DOCS.push(this)
+  }
+
+  add<A extends TyName, B extends TyName, R extends TyName>(
+    a: A,
+    b: B,
+    ret: R,
+    js: (a: JsValue<A, number>, b: JsValue<B, false>) => Val<R>,
+    glsl: (
+      ctx: GlslContext,
+      a: GlslValue<A, number>,
+      b: GlslValue<B, false>,
+    ) => string,
+  ) {
+    this.o.push({ a, b, ret, js, glsl })
+    return this
+  }
+
+  docs(): Node[] {
+    return this.o.map(({ a, b, ret }) =>
+      docByIcon([array(icon(a)), array(icon(b))], icon(ret), true),
+    )
+  }
+
+  js(...args: JsValue[]): JsValue {
+    if (
+      !(args.length == 2 && args[0]!.list !== false && args[1]!.list === false)
+    ) {
+      throw new Error(`'${this.name}' expects a list and a non-list.`)
+    }
+
+    const a = args[0]!
+    const b = args[1]!
+
+    for (const o of this.o) {
+      if (canCoerce(a.type, o.a) && canCoerce(b.type, o.b)) {
+        return {
+          list: false,
+          type: o.ret,
+          value: o.js(coerceTyJs(a, o.a), {
+            ...coerceValJs(b, o.b),
+            list: false,
+          }),
+        }
+      }
+    }
+
+    throw new Error(
+      `'${this.name}' cannot be called with a list of ${TY_INFO[a.type].namePlural} and a ${TY_INFO[b.type].name}`,
+    )
+  }
+
+  glsl(ctx: GlslContext, ...args: GlslValue[]): GlslValue {
+    if (
+      !(args.length == 2 && args[0]!.list !== false && args[1]!.list !== false)
+    ) {
+      throw new Error(`'${this.name}' expects two lists.`)
+    }
+
+    const a = args[0]! as GlslValue<TyName, number>
+    const b = args[1]! as GlslValue<TyName, false>
+
+    for (const o of this.o) {
+      if (canCoerce(a.type, o.a) && canCoerce(b.type, o.b)) {
+        return {
+          list: false,
+          type: o.ret,
+          expr: o.glsl(ctx, coerceTyGlsl(ctx, a, o.a), {
+            ...coerceValGlsl(ctx, b, o.b),
+            list: false,
+          }),
+        }
+      }
+    }
+
+    throw new Error(
+      `'${this.name}' cannot be called with a list of ${TY_INFO[a.type].namePlural} and a ${TY_INFO[b.type].name}`,
     )
   }
 }
