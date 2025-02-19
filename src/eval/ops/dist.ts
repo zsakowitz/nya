@@ -112,11 +112,7 @@ export class FnDist<Q extends TyName = TyName> extends FnDistManual<Q> {
     }
   }
 
-  /**
-   * The `min` parameter on spread overloads is not respected when calling
-   * `signatureList`; zero-length lists may be passed.
-   */
-  signatureList(arg: Type<TyName, number>): FnOverloadVar<Q> {
+  trySignatureList(arg: Type<TyName, number>): FnOverloadVar<Q> | null {
     for (const overload of this.o) {
       if (overload.param == null) {
         continue
@@ -130,12 +126,21 @@ export class FnDist<Q extends TyName = TyName> extends FnDistManual<Q> {
     }
 
     if (this.parent) {
-      return this.parent.signatureList(arg)
+      return this.parent.trySignatureList(arg)
     } else {
-      throw new Error(
-        `Cannot call '${this.name}' with a list of ${TY_INFO[arg.type].namePlural}.`,
-      )
+      return null
     }
+  }
+
+  signatureList(arg: Type<TyName, number>): FnOverloadVar<Q> {
+    const signature = this.trySignatureList(arg)
+    if (signature) {
+      return signature
+    }
+
+    throw new Error(
+      `Cannot call '${this.name}' with a list of ${TY_INFO[arg.type].namePlural}.`,
+    )
   }
 
   withName(name: string, label: string) {

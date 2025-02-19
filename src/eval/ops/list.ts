@@ -18,7 +18,10 @@ export class FnList<Q extends TyName = TyName> extends FnDist<Q> {
     }
 
     const arg = args[0]!
-    const overload = this.signatureList(arg)
+    const overload = this.trySignatureList(arg)
+    if (!overload) {
+      return super.js(...args)
+    }
 
     return {
       type: overload.type,

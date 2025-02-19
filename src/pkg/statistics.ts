@@ -13,6 +13,7 @@ import { mul } from "../eval/ops/op/mul"
 import { sub } from "../eval/ops/op/sub"
 import {
   each,
+  join,
   map,
   type GlslValue,
   type JsValue,
@@ -260,29 +261,49 @@ export class FnListPlain implements Fn, WithDocs {
   }
 }
 
-const FN_MIN = new FnList("min", "returns the minimum of its inputs").addSpread(
-  "r32",
-  "r32",
-  (args) =>
-    args.length ?
-      args.map((x) => x).reduce((a, b) => (num(b) < num(a) ? b : a))
-    : real(NaN),
-  (_, ...args) =>
-    args.length ?
-      args.map((x) => x.expr).reduce((a, b) => `min(${a}, ${b})`)
-    : `(0.0/0.0)`,
-)
+const FN_MIN = new FnList("min", "returns the minimum of its inputs")
+  .addSpread(
+    "r32",
+    "r32",
+    (args) =>
+      args.length ?
+        args.map((x) => x).reduce((a, b) => (num(b) < num(a) ? b : a))
+      : real(NaN),
+    (_, ...args) =>
+      args.length ?
+        args.map((x) => x.expr).reduce((a, b) => `min(${a}, ${b})`)
+      : `(0.0/0.0)`,
+  )
+  .add(
+    ["stats"],
+    "r32",
+    (a) => a.value[0],
+    issue(
+      "Cannot compute 'min' of a five-number statistical summary in shaders.",
+    ),
+  )
 
-const FN_MAX = new FnList("max", "returns the maximum of its inputs").addSpread(
-  "r32",
-  "r32",
-  (args) =>
-    args.length ? args.reduce((a, b) => (num(b) > num(a) ? b : a)) : real(NaN),
-  (_, ...args) =>
-    args.length ?
-      args.map((x) => x.expr).reduce((a, b) => `max(${a}, ${b})`)
-    : `(0.0/0.0)`,
-)
+const FN_MAX = new FnList("max", "returns the maximum of its inputs")
+  .addSpread(
+    "r32",
+    "r32",
+    (args) =>
+      args.length ?
+        args.reduce((a, b) => (num(b) > num(a) ? b : a))
+      : real(NaN),
+    (_, ...args) =>
+      args.length ?
+        args.map((x) => x.expr).reduce((a, b) => `max(${a}, ${b})`)
+      : `(0.0/0.0)`,
+  )
+  .add(
+    ["stats"],
+    "r32",
+    (a) => a.value[4],
+    issue(
+      "Cannot compute 'max' of a five-number statistical summary in shaders.",
+    ),
+  )
 
 const FN_TOTAL = new FnList("total", "returns the sum of its inputs")
   .addSpread(
@@ -364,15 +385,21 @@ function middleJs(value: SReal[]): SReal {
   return div(add(lhs, rhs), real(2))
 }
 
-const FN_MEDIAN = new FnList(
-  "median",
-  "takes the median of its inputs",
-).addSpread(
-  "r32",
-  "r32",
-  (args) => middleJs(sortJs(args)),
-  issue("Cannot compute 'median' in shaders yet."),
-)
+const FN_MEDIAN = new FnList("median", "takes the median of its inputs")
+  .addSpread(
+    "r32",
+    "r32",
+    (args) => middleJs(sortJs(args)),
+    issue("Cannot compute 'median' in shaders yet."),
+  )
+  .add(
+    ["stats"],
+    "r32",
+    (a) => a.value[2],
+    issue(
+      "Cannot compute 'median' of a five-number statistical summary in shaders.",
+    ),
+  )
 
 function quartile<L extends number | false>(
   list: SReal[],
@@ -417,9 +444,28 @@ function quartile<L extends number | false>(
 
 const FN_QUARTILE: Fn & WithDocs = {
   js(...args) {
+    if (args.length != 2) {
+      throw new Error("'quartile' expects a list and a quartile")
+    }
+
+    if (canCoerce(args[0]!.type, "stats") && canCoerce(args[1]!.type, "r32")) {
+      return join(
+        [coerceTyJs(args[0]!, "stats"), coerceTyJs(args[1]!, "r32")],
+        "r32",
+        ({ value: stats }, { value: quartileRaw }) => {
+          const quartile = num(quartileRaw)
+
+          if (!(0 <= quartile && quartile <= 4)) {
+            return real(NaN)
+          }
+
+          return stats[Math.round(quartile)]!
+        },
+      )
+    }
+
     if (
       !(
-        args.length == 2 &&
         canCoerce(args[0]!.type, "r32") &&
         args[0]!.list !== false &&
         canCoerce(args[1]!.type, "r32")
@@ -835,7 +881,7 @@ const TY_STATS: TyInfo<Tys["stats"], TyComponents["stats"]> = {
     return h(
       "",
       h(
-        "text-[rgb(199_68_64)] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px]",
+        "text-[#c74440] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px]",
         h(
           "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
         ),

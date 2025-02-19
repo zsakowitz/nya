@@ -191,3 +191,43 @@ TY_INFO.never = {
     )
   },
 }
+
+export interface TyInfoJsOnly<T, U extends TyName> {
+  name: string
+  namePlural: string
+  garbage: T
+  coerce: { [K in TyName]?: (value: T) => Tys[K] }
+  write: TyWrite<T>
+  icon(): HTMLSpanElement
+  glide?: TyGlide<T>
+  components?: TyComponentInfo<T, U>
+}
+
+export function jsOnly<T, U extends TyName>(
+  reason: string,
+  info: TyInfoJsOnly<T, U>,
+): TyInfo<T, U> {
+  return {
+    ...info,
+    get glsl(): never {
+      throw new Error(reason)
+    },
+    garbage: {
+      js: info.garbage,
+      get glsl(): never {
+        throw new Error(reason)
+      },
+    },
+    coerce: Object.fromEntries(
+      Object.entries(info.coerce).map(([k, v]) => [
+        k,
+        {
+          js: v,
+          glsl() {
+            throw new Error(reason)
+          },
+        },
+      ]),
+    ),
+  }
+}

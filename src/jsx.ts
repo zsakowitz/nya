@@ -58,12 +58,18 @@ export function svg(viewBox: string, ...children: ChildNode[]) {
 
 export function svgx(
   viewBox: string,
-  className: string,
+  className: string | Record<string, string>,
   ...children: ChildNode[]
 ) {
   const el = document.createElementNS("http://www.w3.org/2000/svg", "svg")
   el.setAttribute("viewBox", viewBox)
-  el.setAttribute("class", className)
+  if (typeof className == "string") {
+    el.setAttribute("class", className)
+  } else {
+    for (const key in className) {
+      el.setAttribute(key, className[key]!)
+    }
+  }
   for (const child of children) {
     el.appendChild(child)
   }

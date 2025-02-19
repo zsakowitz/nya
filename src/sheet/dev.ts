@@ -2,6 +2,7 @@ import { options } from "../field/defaults.js"
 import { PKG_BOOL } from "../pkg/bool.js"
 import { PKG_COLOR_CORE } from "../pkg/color-core.js"
 import { PKG_COLOR_EXTRAS } from "../pkg/color-extras.js"
+import { PKG_DISTRIBUTIONS } from "../pkg/distributions.js"
 import { PKG_EVAL } from "../pkg/eval.js"
 import { PKG_GEO_POINT } from "../pkg/geo-point.js"
 import { PKG_GEOMETRY } from "../pkg/geo/index.js"
@@ -41,6 +42,7 @@ const sheet = new SheetFactory(options)
   .load(PKG_STATISTICS)
   .load(PKG_NUMBER_THEORY)
   .load(PKG_LIST_EXTRAS)
+  .load(PKG_DISTRIBUTIONS)
   .create()
 document.body.appendChild(sheet.el)
 

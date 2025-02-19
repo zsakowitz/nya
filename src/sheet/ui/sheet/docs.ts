@@ -23,7 +23,7 @@ import { Block, R } from "../../../field/model"
 import { a, h, hx } from "../../../jsx"
 import type { Package } from "../../../pkg"
 
-export const DEFAULT_TO_VISIBLE_DOCS = false
+export const DEFAULT_TO_VISIBLE_DOCS = true
 
 export function btn(
   icon: IconDefinition,
@@ -102,6 +102,9 @@ class PackageList {
     return section.el
   }
 }
+
+const OPEN_NORMAL = !location.href.includes("localhost")
+const OPEN_DATA_TYPES = location.href.includes("localhost")
 
 export function createDocs(hide: HTMLElement, packages: Package[]) {
   const list = new PackageList(packages)
@@ -241,7 +244,7 @@ function secCredits() {
       ),
       " is publicly available on GitHub. Inspiration was taken primarily from Desmos.",
     ),
-    true,
+    OPEN_NORMAL,
   )
 }
 
@@ -326,7 +329,7 @@ function secPackages(list: PackageList) {
       ),
       h("flex flex-col", ...els),
     ],
-    true,
+    OPEN_NORMAL,
   )
 }
 
@@ -368,6 +371,7 @@ function secDataTypes(list: PackageList) {
         el.classList.toggle("hidden", list.active),
       ),
     ),
+    OPEN_DATA_TYPES,
   )
 }
 

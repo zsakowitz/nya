@@ -1,3 +1,5 @@
+import { unifyLists } from "./coerce"
+
 /**
  * Augment this interface to declare additional types.
  *
@@ -104,4 +106,38 @@ export function map<
     list: value.list,
     value: value.value.map(map),
   } satisfies JsValue<U, number> as any
+}
+
+export function join<const T extends readonly JsValue[], U extends TyName>(
+  values: T,
+  ret: U,
+  map: (...args: { [K in keyof T]: JsVal<T[K]["type"]> }) => Val<U>,
+): JsValue<U>
+
+export function join(
+  values: JsValue[],
+  type: TyName,
+  map: (...args: JsVal[]) => Val,
+): JsValue {
+  const list = unifyLists(values)
+
+  if (list === false) {
+    return {
+      list: false,
+      type,
+      value: map(...(values as JsVal[])),
+    }
+  }
+
+  return {
+    list,
+    type,
+    value: Array.from({ length: list }, (_, j) =>
+      map(
+        ...values.map((x) =>
+          x.list === false ? x : { type: x.type, value: x.value[j]! },
+        ),
+      ),
+    ),
+  }
 }
