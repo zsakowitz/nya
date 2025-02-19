@@ -191,18 +191,6 @@ export const words = new WordMap<WordKind>([
   ["with", "infix"],
   ["withseq", "infix"],
 
-  // Statistics
-  ["quantile", "prefix"],
-  ["stdev", "prefix"],
-  ["stdevp", "prefix"],
-  ["var", "prefix"],
-  ["mad", "prefix"],
-  ["cov", "prefix"],
-  ["covp", "prefix"],
-  ["corr", "prefix"],
-  ["spearman", "prefix"],
-  ["stats", "prefix"],
-
   // List operations
   ["join", "prefix"],
   ["sort", "prefix"],
@@ -234,6 +222,8 @@ export const words = new WordMap<WordKind>([
   ["nPr", "infix"],
   ["nCr", "infix"],
   ["base", "infix"],
+  ["log", "infix"],
+  ["ln", "infix"],
 
   // Boolean utilities
   ["false", "var"],
