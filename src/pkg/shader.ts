@@ -1,7 +1,7 @@
 import type { Package } from "."
 import { glsl } from "../eval/glsl"
 import { id } from "../eval/lib/binding"
-import { type Fn } from "../eval/ops"
+import type { Fn } from "../eval/ops"
 import { docByIcon } from "../eval/ops/dist"
 import { ALL_DOCS, type WithDocs } from "../eval/ops/docs"
 import { declareAddR64 } from "../eval/ops/op/add"

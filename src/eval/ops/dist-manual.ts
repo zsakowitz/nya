@@ -1,4 +1,4 @@
-import { type Fn } from "."
+import type { Fn } from "."
 import { GlslContext } from "../lib/fn"
 import type {
   GlslVal,

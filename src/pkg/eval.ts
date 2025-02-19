@@ -1,5 +1,5 @@
 import type { Package } from "."
-import { type SReal } from "../eval/ty"
+import type { SReal } from "../eval/ty"
 import { frac } from "../eval/ty/create"
 import { Display } from "../eval/ty/display"
 import { FieldInert } from "../field/field-inert"

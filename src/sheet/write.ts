@@ -4,7 +4,7 @@ import { raise } from "../eval/ops/op/raise"
 import type { SReal } from "../eval/ty"
 import { frac, num, real } from "../eval/ty/create"
 import { Display } from "../eval/ty/display"
-import { type Cursor, type Span } from "../field/model"
+import type { Cursor, Span } from "../field/model"
 
 export function write(
   cursor: Cursor,
