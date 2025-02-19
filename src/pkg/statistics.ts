@@ -437,22 +437,28 @@ const FN_VARP = new FnList("varp", "population variance").addSpread(
     ),
 )
 
+function stdevJs(args: SReal[], sample: boolean) {
+  return sqrt(varJs(args, sample))
+}
+
+function stdevGlsl(ctx: GlslContext, args: string[], sample: boolean) {
+  return `sqrt(${varGlsl(ctx, args, sample)})`
+}
+
 const FN_STDEV = new FnList("stdev", "sample standard deviation").addSpread(
   "r32",
   "r32",
   (...args) =>
-    sqrt(
-      varJs(
-        args.map((x) => x.value),
-        true,
-      ),
+    stdevJs(
+      args.map((x) => x.value),
+      true,
     ),
   (ctx, ...args) =>
-    `sqrt(${varGlsl(
+    stdevGlsl(
       ctx,
       args.map((x) => x.expr),
       true,
-    )})`,
+    ),
 )
 
 const FN_STDEVP = new FnList(
@@ -462,18 +468,16 @@ const FN_STDEVP = new FnList(
   "r32",
   "r32",
   (...args) =>
-    sqrt(
-      varJs(
-        args.map((x) => x.value),
-        false,
-      ),
+    stdevJs(
+      args.map((x) => x.value),
+      false,
     ),
   (ctx, ...args) =>
-    `sqrt(${varGlsl(
+    stdevGlsl(
       ctx,
       args.map((x) => x.expr),
       false,
-    )})`,
+    ),
 )
 
 const FN_MAD = new FnList("mad", "mean absolute deviation").addSpread(
@@ -503,77 +507,70 @@ const FN_MAD = new FnList("mad", "mean absolute deviation").addSpread(
   },
 )
 
-const FN_COV: Fn & WithDocs = new FnListList("cov", "sample covariance").add(
+function covJs(
+  a: JsValue<"r32", number>,
+  b: JsValue<"r32", number>,
+  sample: boolean,
+) {
+  if (a.list <= +sample) {
+    return real(NaN)
+  }
+
+  const ma = meanJs(a.value)
+  const mb = meanJs(b.value)
+
+  return div(
+    a.value.reduce(
+      (c, a, i) => add(c, mul(sub(a, ma), sub(b.value[i]!, mb))),
+      real(0),
+    ),
+    frac(a.list - +sample, 1),
+  )
+}
+
+function covGlsl(
+  ctx: GlslContext,
+  a: GlslValue<"r32", number>,
+  b: GlslValue<"r32", number>,
+  sample: boolean,
+) {
+  if (a.list <= +sample) {
+    return `(0.0/0.0)`
+  }
+
+  const ma = ctx.cached("r32", meanGlsl(split(a.list, a.expr)))
+  const mb = ctx.cached("r32", meanGlsl(split(b.list, b.expr)))
+
+  return `((${Array.from(
+    { length: a.list },
+    (_, i) => `(${a.expr}[${i}] - ${ma}) * (${b.expr}[${i}] - ${mb})`,
+  ).join(" + ")}) / ${(a.list - +sample).toExponential()})`
+}
+
+const FN_COV = new FnListList("cov", "sample covariance").add(
   "r32",
   "r32",
   "r32",
-  (a, b) => {
-    if (a.list <= 1) {
-      return real(NaN)
-    }
-
-    const ma = meanJs(a.value)
-    const mb = meanJs(b.value)
-
-    return div(
-      a.value.reduce(
-        (c, a, i) => add(c, mul(sub(a, ma), sub(b.value[i]!, mb))),
-        real(0),
-      ),
-      frac(a.list - 1, 1),
-    )
-  },
-  (ctx, a, b) => {
-    if (a.list <= 1) {
-      return `(0.0/0.0)`
-    }
-
-    const ma = ctx.cached("r32", meanGlsl(split(a.list, a.expr)))
-    const mb = ctx.cached("r32", meanGlsl(split(b.list, b.expr)))
-
-    return `((${Array.from(
-      { length: a.list },
-      (_, i) => `(${a.expr}[${i}] - ${ma}) * (${b.expr}[${i}] - ${mb})`,
-    ).join(" + ")}) / ${(a.list - 1).toExponential()})`
-  },
+  (a, b) => covJs(a, b, true),
+  (ctx, a, b) => covGlsl(ctx, a, b, true),
 )
 
-const FN_COVP: Fn & WithDocs = new FnListList(
-  "covp",
-  "population covariance",
-).add(
+const FN_COVP = new FnListList("covp", "population covariance").add(
   "r32",
   "r32",
   "r32",
-  (a, b) => {
-    if (a.list == 0) {
-      return real(NaN)
-    }
+  (a, b) => covJs(a, b, false),
+  (ctx, a, b) => covGlsl(ctx, a, b, false),
+)
 
-    const ma = meanJs(a.value)
-    const mb = meanJs(b.value)
-
-    return div(
-      a.value.reduce(
-        (c, a, i) => add(c, mul(sub(a, ma), sub(b.value[i]!, mb))),
-        real(0),
-      ),
-      frac(a.list, 1),
-    )
-  },
-  (ctx, a, b) => {
-    if (a.list == 0) {
-      return `(0.0/0.0)`
-    }
-
-    const ma = ctx.cached("r32", meanGlsl(split(a.list, a.expr)))
-    const mb = ctx.cached("r32", meanGlsl(split(b.list, b.expr)))
-
-    return `((${Array.from(
-      { length: a.list },
-      (_, i) => `(${a.expr}[${i}] - ${ma}) * (${b.expr}[${i}] - ${mb})`,
-    ).join(" + ")}) / ${a.list.toExponential()})`
-  },
+const FN_CORR = new FnListList("corr", "Pearson correlation coefficient").add(
+  "r32",
+  "r32",
+  "r32",
+  (a, b) =>
+    div(covJs(a, b, true), mul(stdevJs(a.value, true), stdevJs(b.value, true))),
+  (ctx, a, b) =>
+    `(${covGlsl(ctx, a, b, true)} / (${stdevGlsl(ctx, split(a.list, a.expr), true)} * ${stdevGlsl(ctx, split(b.list, b.expr), true)}))`,
 )
 
 export const PKG_STATISTICS: Package = {
@@ -599,6 +596,7 @@ export const PKG_STATISTICS: Package = {
       mad: FN_MAD,
       cov: FN_COV,
       covp: FN_COVP,
+      corr: FN_CORR,
     },
   },
 }

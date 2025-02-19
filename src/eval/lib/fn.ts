@@ -69,10 +69,6 @@ export class GlslContext {
   }
 
   cache(val: GlslVal & { list?: false }): string {
-    if (typeof val.list == "number") {
-      console.error("cache on list")
-      throw new Error(".cache on list")
-    }
     return this.cached(val.type, val.expr)
   }
 
