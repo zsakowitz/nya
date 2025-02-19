@@ -1,0 +1,43 @@
+## a complete project nya task list
+
+to do list for functions is:
+❌ random, shuffle
+❌ visualizations
+❌ distributions
+❌ stat tests
+❌ logb
+❌ lcm, gcd, sign, nPr, nCr
+❌ way more geometry stuff
+❌ 3D points and vectors
+
+to do list for things to plot is:
+❌ f(x)
+❌ y = f(x) (this sort of works but not that well)
+❌ f(x, y) = g(x, y) (this sort of works but not that well)
+❌ (x(t), y(t))
+❌ a for 2<t<3
+❌ f(θ)
+❌ f(r, θ) = g(r, θ)
+
+to do list for features is:
+❌ actions
+❌ tickers
+❌ inequality borders
+❌ proper recursion
+❌ more stuff works in shaders
+❌ regressions
+❌ images
+❌ tone
+❌ 3D
+❌ functions
+❌ draggable expression list
+❌ persistent graph state
+😐 sliders
+
+to do list for non-desmos stuff is:
+❌ streaming video, audio, images, files
+❌ matrices
+❌ lambda functions
+❌ colors in display p3
+❌ fractal explorer package
+❌ tetration
