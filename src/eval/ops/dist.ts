@@ -62,7 +62,7 @@ export class FnDist<Q extends TyName = TyName> extends FnDistManual<Q> {
   addSpread<T extends TyName, R extends Q>(
     param: T,
     ret: R,
-    js: (...args: JsVal<T>[]) => Tys[R],
+    js: (value: Tys[T][]) => Tys[R],
     glsl: (ctx: GlslContext, ...args: GlslVal<T>[]) => string,
   ) {
     this.o.push({ param, type: ret, js, glsl })

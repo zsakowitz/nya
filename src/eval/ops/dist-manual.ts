@@ -33,7 +33,7 @@ export interface FnOverloadVar<Q extends TyName = TyName> {
   param: TyName
   params?: undefined
   type: Q
-  js(...args: JsVal[]): Val<Q>
+  js(args: Tys[TyName][]): Val<Q>
   glsl(ctx: GlslContext, ...args: GlslVal[]): string
 }
 
@@ -55,12 +55,19 @@ export abstract class FnDistManual<Q extends TyName = TyName> implements Fn {
   js1(...args: JsVal[]): JsVal<Q> {
     const overload = this.signature(args)
 
+    if (overload.param) {
+      return {
+        type: overload.type,
+        value: overload.js(
+          args.map((x) => coerceValJs(x, overload.param).value),
+        ),
+      }
+    }
+
     return {
       type: overload.type,
       value: overload.js(
-        ...args.map((x, i) =>
-          coerceValJs(x, overload.param ?? overload.params[i]!),
-        ),
+        ...args.map((x, i) => coerceValJs(x, overload.params[i]!)),
       ),
     }
   }
@@ -84,12 +91,38 @@ export abstract class FnDistManual<Q extends TyName = TyName> implements Fn {
     const list = unifyLists(args)
 
     if (list === false) {
+      if (overload.param) {
+        return {
+          type: overload.type,
+          value: overload.js(
+            args.map((x) => coerceValJs(x as JsVal, overload.param).value),
+          ),
+          list: false,
+        }
+      }
+
       return {
         type: overload.type,
         list,
         value: overload.js(
-          ...args.map((x, i) =>
-            coerceValJs(x as JsVal, overload.param ?? overload.params[i]!),
+          ...args.map((x, i) => coerceValJs(x as JsVal, overload.params[i]!)),
+        ),
+      }
+    }
+
+    if (overload.param) {
+      return {
+        type: overload.type,
+        list,
+        value: Array.from({ length: list }, (_, j) =>
+          overload.js(
+            args.map(
+              (x) =>
+                coerceValJs(
+                  x.list === false ? x : { type: x.type, value: x.value[j]! },
+                  overload.param,
+                ).value,
+            ),
           ),
         ),
       }

@@ -77,10 +77,10 @@ export const PKG_COLOR_EXTRAS: Package = {
     FN_FIRSTVALID.addSpread(
       "color",
       "color",
-      (...args) => {
+      (args) => {
         for (const arg of args) {
-          if (FN_VALID.js1(arg).value) {
-            return arg.value
+          if (FN_VALID.js1({ type: "color", value: arg }).value) {
+            return arg
           }
         }
         return TY_INFO.color.garbage.js

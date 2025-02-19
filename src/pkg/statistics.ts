@@ -260,9 +260,9 @@ export class FnListPlain implements Fn, WithDocs {
 const FN_MIN = new FnList("min", "returns the minimum of its inputs").addSpread(
   "r32",
   "r32",
-  (...args) =>
+  (args) =>
     args.length ?
-      args.map((x) => x.value).reduce((a, b) => (num(b) < num(a) ? b : a))
+      args.map((x) => x).reduce((a, b) => (num(b) < num(a) ? b : a))
     : real(NaN),
   (_, ...args) =>
     args.length ?
@@ -273,10 +273,8 @@ const FN_MIN = new FnList("min", "returns the minimum of its inputs").addSpread(
 const FN_MAX = new FnList("max", "returns the maximum of its inputs").addSpread(
   "r32",
   "r32",
-  (...args) =>
-    args.length ?
-      args.map((x) => x.value).reduce((a, b) => (num(b) > num(a) ? b : a))
-    : real(NaN),
+  (args) =>
+    args.length ? args.reduce((a, b) => (num(b) > num(a) ? b : a)) : real(NaN),
   (_, ...args) =>
     args.length ?
       args.map((x) => x.expr).reduce((a, b) => `max(${a}, ${b})`)
@@ -287,7 +285,7 @@ const FN_TOTAL = new FnList("total", "returns the sum of its inputs")
   .addSpread(
     "r64",
     "r64",
-    (...args) => args.reduce((a, b) => add(a, b.value), real(0)),
+    (args) => args.reduce((a, b) => add(a, b), real(0)),
     (ctx, ...args) =>
       args.length ?
         args.map((x) => x.expr).reduce((a, b) => addR64(ctx, a, b))
@@ -296,7 +294,7 @@ const FN_TOTAL = new FnList("total", "returns the sum of its inputs")
   .addSpread(
     "r32",
     "r32",
-    (...args) => args.reduce((a, b) => add(a, b.value), real(0)),
+    (args) => args.reduce((a, b) => add(a, b), real(0)),
     (_, ...args) => `(${args.map((x) => x.expr).join(" + ") || "0.0"})`,
   )
 
@@ -331,7 +329,7 @@ const FN_MEAN = new FnList("mean", "takes the arithmetic mean of its inputs")
   .addSpread(
     "r64",
     "r64",
-    (...args) => meanJs(args.map((x) => x.value)),
+    (args) => meanJs(args),
     (ctx, ...args) =>
       meanGlslR64(
         ctx,
@@ -341,7 +339,7 @@ const FN_MEAN = new FnList("mean", "takes the arithmetic mean of its inputs")
   .addSpread(
     "r32",
     "r32",
-    (...args) => meanJs(args.map((x) => x.value)),
+    (args) => meanJs(args),
     (_, ...args) => meanGlsl(args.map((x) => x.expr)),
   )
 
@@ -369,7 +367,7 @@ const FN_MEDIAN = new FnList(
 ).addSpread(
   "r32",
   "r32",
-  (...args) => middleJs(sortJs(args.map((x) => x.value))),
+  (args) => middleJs(sortJs(args)),
   issue("Cannot compute 'median' in shaders yet."),
 )
 
@@ -528,11 +526,7 @@ function varGlsl(ctx: GlslContext, args: string[], sample: boolean): string {
 const FN_VAR = new FnList("var", "sample variance").addSpread(
   "r32",
   "r32",
-  (...args) =>
-    varJs(
-      args.map((x) => x.value),
-      true,
-    ),
+  (args) => varJs(args, true),
   (ctx, ...args) =>
     varGlsl(
       ctx,
@@ -544,11 +538,7 @@ const FN_VAR = new FnList("var", "sample variance").addSpread(
 const FN_VARP = new FnList("varp", "population variance").addSpread(
   "r32",
   "r32",
-  (...args) =>
-    varJs(
-      args.map((x) => x.value),
-      false,
-    ),
+  (args) => varJs(args, false),
   (ctx, ...args) =>
     varGlsl(
       ctx,
@@ -568,11 +558,7 @@ function stdevGlsl(ctx: GlslContext, args: string[], sample: boolean) {
 const FN_STDEV = new FnList("stdev", "sample standard deviation").addSpread(
   "r32",
   "r32",
-  (...args) =>
-    stdevJs(
-      args.map((x) => x.value),
-      true,
-    ),
+  (args) => stdevJs(args, true),
   (ctx, ...args) =>
     stdevGlsl(
       ctx,
@@ -587,11 +573,7 @@ const FN_STDEVP = new FnList(
 ).addSpread(
   "r32",
   "r32",
-  (...args) =>
-    stdevJs(
-      args.map((x) => x.value),
-      false,
-    ),
+  (args) => stdevJs(args, false),
   (ctx, ...args) =>
     stdevGlsl(
       ctx,
@@ -603,15 +585,13 @@ const FN_STDEVP = new FnList(
 const FN_MAD = new FnList("mad", "mean absolute deviation").addSpread(
   "r32",
   "r32",
-  (...args) => {
+  (args) => {
     if (args.length == 0) {
       return real(NaN)
     }
 
-    const mean = meanJs(args.map((x) => x.value))
-
-    const tad = args.reduce((a, b) => add(a, abs(sub(b.value, mean))), real(0))
-
+    const mean = meanJs(args)
+    const tad = args.reduce((a, b) => add(a, abs(sub(b, mean))), real(0))
     return div(tad, frac(args.length, 1))
   },
   (ctx, ...args) => {
@@ -819,15 +799,12 @@ const FN_STATS = new FnList(
 ).addSpread(
   "r32",
   "stats",
-  (...args) => {
-    const { value } = quartile(
-      args.map((x) => x.value),
-      {
-        type: "r32",
-        list: 5,
-        value: [real(0), real(1), real(2), real(3), real(4)],
-      },
-    )
+  (args) => {
+    const { value } = quartile(args, {
+      type: "r32",
+      list: 5,
+      value: [real(0), real(1), real(2), real(3), real(4)],
+    })
 
     return value satisfies SReal[] as Tys["stats"]
   },
