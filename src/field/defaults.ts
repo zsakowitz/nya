@@ -222,10 +222,6 @@ export const words = new WordMap<WordKind>([
   ["log", "prefix"],
   ["ln", "prefix"],
 
-  // Boolean utilities
-  ["and", "infix"],
-  ["or", "infix"],
-
   // Iteration
   ["iterate", "magicprefix"],
   ["while", "infix"],
