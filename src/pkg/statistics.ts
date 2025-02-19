@@ -36,8 +36,7 @@ import { frac, num, real } from "../eval/ty/create"
 import { Display } from "../eval/ty/display"
 import { TY_INFO, type TyInfo } from "../eval/ty/info"
 import { Leaf } from "../field/cmd/leaf"
-import { CmdComma } from "../field/cmd/leaf/comma"
-import { BRACKS, CmdBrack } from "../field/cmd/math/brack"
+import { BRACKS } from "../field/cmd/math/brack"
 import { FieldInert } from "../field/field-inert"
 import { Block, L, R } from "../field/model"
 import { h, hx } from "../jsx"
@@ -865,29 +864,30 @@ const TY_STATS: TyInfo<Tys["stats"], TyComponents["stats"]> = {
   },
 }
 
-const store = new Store((e) => {
+const EXT_CLSX =
+  "bg-[--nya-bg-sidebar] border border-[--nya-border] px-2 py-1 border-l-0 last:rounded-r inline-block"
+
+const store = new Store(() => {
   const labels = ["Min", "Q1", "Median", "Q3", "Max"].map((label) => {
-    const field = new FieldInert(
-      e.field.options,
-      "bg-[--nya-bg-sidebar] border border-[--nya-border] px-2 py-1 rounded-r inline-block",
-    )
+    const fields = h("contents")
     return {
-      el: [
+      el: h(
+        "contents",
         h(""),
         h(
-          "bg-[--nya-bg-sidebar] border border-[--nya-border] px-2 py-1 rounded-l inline-block border-r-0 [line-height:1] flex items-center",
+          "bg-[--nya-bg-sidebar] border border-[--nya-border] px-2 rounded-l inline-block [line-height:1] flex items-center",
           label,
         ),
-        field.el,
-      ],
-      field,
+        fields,
+      ),
+      fields,
     }
   })
   const el = h(
-    "grid grid-cols-[1fr,auto,auto] px-2 pb-2 -mt-2 w-[calc(var(--nya-sidebar)_-_2.5rem_-_1px)] overflow-x-auto [&::-webkit-scrollbar]:hidden gap-y-1",
-    ...labels.flatMap((x) => x.el),
+    "grid grid-cols-[1fr,auto] px-2 pb-2 -mt-2 w-[calc(var(--nya-sidebar)_-_2.5rem_-_1px)] overflow-x-auto [&::-webkit-scrollbar]:hidden gap-y-1",
+    ...labels.map((x) => x.el),
   )
-  return { fields: labels.map((x) => x.field), el }
+  return { labels: labels.map((x) => x.fields), el }
 })
 
 const EXT_STATS = defineExt({
@@ -897,35 +897,43 @@ const EXT_STATS = defineExt({
     }
   },
   el(data) {
-    const { el, fields } = store.get(data.expr)
+    const { el, labels } = store.get(data.expr)
 
-    if (data.value.list === false) {
+    const stats = each(data.value)
+
+    if (stats.length == 0) {
       for (let i = 0; i < 5; i++) {
-        fields[i]!.block.clear()
-        const value = data.value.value[i]!
-        new Display(fields[i]!.block.cursor(R), frac(10, 1)).num(value)
-      }
-    } else {
-      for (let i = 0; i < 5; i++) {
-        fields[i]!.block.clear()
-        const block = new Block(null)
-        const display = new Display(block.cursor(R), frac(10, 1))
-        let first = true
-        for (const values of each(data.value)) {
-          if (first) {
-            first = false
-          } else {
-            new CmdComma().insertAt(display.cursor, L)
-          }
-          const value = values[i]!
-          display.num(value)
+        const label = labels[i]!
+        while (label.firstChild) {
+          label.firstChild.remove()
         }
-        new CmdBrack("[", "]", null, block).insertAt(
-          fields[i]!.block.cursor(R),
-          L,
-        )
+
+        const { el } = new FieldInert(data.expr.field.options, EXT_CLSX)
+        label.appendChild(el)
+        el.classList.remove("text-[1.265em]")
+        el.classList.add("italic")
+        el.classList.remove("not-italic")
+        el.textContent = "no lists"
+      }
+
+      return el
+    }
+
+    for (let i = 0; i < 5; i++) {
+      const label = labels[i]!
+      while (label.firstChild) {
+        label.firstChild.remove()
+      }
+
+      for (const x of stats) {
+        const field = new FieldInert(data.expr.field.options, EXT_CLSX)
+        const display = new Display(field.block.cursor(R), frac(10, 1))
+        display.num(x[i]!)
+        label.appendChild(field.el)
       }
     }
+
+    el.style.gridTemplateColumns = `1fr auto${" auto".repeat(stats.length)}`
 
     return el
   },
