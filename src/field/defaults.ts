@@ -222,8 +222,8 @@ export const words = new WordMap<WordKind>([
   ["nPr", "infix"],
   ["nCr", "infix"],
   ["base", "infix"],
-  ["log", "infix"],
-  ["ln", "infix"],
+  ["log", "prefix"],
+  ["ln", "prefix"],
 
   // Boolean utilities
   ["false", "var"],
