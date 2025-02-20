@@ -15,7 +15,6 @@ import {
   abs64,
   addR64,
   declareAddR64,
-  declareMulC32,
   declareMulR64,
   declareOdotC64,
   declareSubR64,
@@ -50,6 +49,17 @@ declare module "../eval/ty" {
     c32: "r32"
     c64: "r64"
   }
+}
+
+function declareMulC32(ctx: GlslContext) {
+  ctx.glsl`
+vec2 _helper_mul_c32(vec2 a, vec2 b) {
+  return vec2(
+    a.x * b.x - a.y * b.y,
+    a.y * b.x + a.x * b.y
+  );
+}
+`
 }
 
 function declareExp(ctx: GlslContext) {

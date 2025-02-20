@@ -1,6 +1,7 @@
 import type { Package } from "."
 import { js } from "../eval/js"
 import { asNumericBase, parseNumberGlsl, parseNumberJs } from "../eval/lib/base"
+import type { GlslContext } from "../eval/lib/fn"
 import { safe } from "../eval/lib/util"
 import { docByIcon, FnDist } from "../eval/ops/dist"
 import {
@@ -35,7 +36,7 @@ import {
   abs64,
   addR64,
   declareCmpR64,
-  mulR64,
+  declareMulR64,
   OP_ABS,
   OP_ADD,
   OP_CDOT,
@@ -261,6 +262,11 @@ export const FN_LOG10 = new FnDist(
   (a) => approx(Math.log10(num(a.value))),
   (_, a) => `(log(${a.expr}) / log(10.0))`,
 )
+
+export function mulR64(ctx: GlslContext, a: string, b: string) {
+  declareMulR64(ctx)
+  return `_helper_mul_r64(${a}, ${b})`
+}
 
 export const PKG_REAL: Package = {
   id: "nya:num-real",
