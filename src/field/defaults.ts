@@ -215,7 +215,6 @@ export const words = new WordMap<WordKind>([
   ["lcm", "prefix"],
   ["gcd", "prefix"],
   ["mod", "infix"],
-  ["sign", "prefix"],
   ["nPr", "infix"],
   ["nCr", "infix"],
   ["base", "infix"],
