@@ -113,7 +113,6 @@ export function createDocs(hide: HTMLElement, packages: Package[]) {
     "contents",
     secShaders(),
     secAdvancedOperators(),
-    secUnnamedFunctions(),
     secChangelog(),
   )
 
@@ -125,6 +124,7 @@ export function createDocs(hide: HTMLElement, packages: Package[]) {
     secDataTypes(list),
     secNamedVariables(list),
     secNamedFunctions(list),
+    secOperators(list),
     nonPackageSpecific,
   )
 
@@ -744,14 +744,48 @@ function secNamedFunctions(list: PackageList) {
   )
 }
 
-function secUnnamedFunctions() {
-  const fns = ALL_DOCS.filter((x) => !Object.values(FNS).includes(x as any))
-  return section(
-    `operators (${fns.length})`,
-    fns
-      .sort((a, b) => (a.name < b.name ? -1 : 1))
-      .map(makeDoc)
-      .filter((x) => x != null),
+function secOperators(list: PackageList) {
+  const els = ALL_DOCS.filter((x) => !Object.values(FNS).includes(x as any))
+    .sort((a, b) => (a.name < b.name ? -1 : 1))
+    .map((fn) => {
+      const pkgs = list.packages
+        .filter(
+          (x) =>
+            (x.eval?.op?.unary &&
+              Object.values(x.eval.op?.unary).includes(fn as any)) ||
+            (x.eval?.op?.binary &&
+              Object.values(x.eval.op?.binary)
+                .map((x) => x.fn)
+                .includes(fn as any)),
+        )
+        .map((x) => x.id)
+
+      const el = makeDoc(fn)
+      if (!el) return null
+
+      let active = true
+      list.on(() => {
+        active = !list.active || pkgs.some((x) => list.has(x))
+        el.classList.toggle("hidden", !active)
+      })
+
+      return {
+        el,
+        source: list,
+        get active() {
+          return active
+        },
+      }
+    })
+    .filter((x) => x != null)
+
+  const count = () => els.reduce((a, b) => a + +b.active, 0)
+
+  return list.section(
+    () =>
+      list.active ? `operators (${count()})` : `operators (${els.length})`,
+    () => count() == 0,
+    els.map((x) => x.el),
   )
 }
 
