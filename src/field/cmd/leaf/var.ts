@@ -3,6 +3,7 @@ import {
   Precedence,
   PRECEDENCE_MAP,
   type Node,
+  type PuncBinaryStr,
   type PuncInfix,
   type Var,
 } from "../../../eval/ast/token"
@@ -370,7 +371,7 @@ export class CmdVar extends Leaf {
     }
     return (
       {}.hasOwnProperty.call(PRECEDENCE_MAP, text) &&
-      PRECEDENCE_MAP[text]! <= Precedence.Sum
+      PRECEDENCE_MAP[text as PuncBinaryStr]! <= Precedence.Sum
     )
   }
 }
