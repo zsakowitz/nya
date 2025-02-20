@@ -6,14 +6,17 @@ import { js } from "../eval/js"
 import type { Fn } from "../eval/ops"
 import { docByIcon } from "../eval/ops/dist"
 import { type WithDocs, ALL_DOCS } from "../eval/ops/docs"
+import type { GlslValue, JsValue } from "../eval/ty"
 import {
   coerceTy,
   coerceValueGlsl,
   coerceValueJs,
+  isReal,
   listGlsl,
   listJs,
 } from "../eval/ty/coerce"
-import { TY_INFO, any } from "../eval/ty/info"
+import { num } from "../eval/ty/create"
+import { any, TY_INFO } from "../eval/ty/info"
 import { CmdComma } from "../field/cmd/leaf/comma"
 import { CmdBrack } from "../field/cmd/math/brack"
 import { h } from "../jsx"
@@ -78,6 +81,47 @@ export const FN_JOIN: Fn & WithDocs = {
 
 ALL_DOCS.push(FN_JOIN)
 
+function indexJs(on: JsValue, index: JsValue): JsValue {
+  if (on.list === false) {
+    throw new Error("Cannot index on a non-list.")
+  }
+  if (index.list !== false) {
+    throw new Error("Cannot index with a list yet.")
+  }
+  if (!isReal(index)) {
+    throw new Error("Indexes must be numbers for now.")
+  }
+  const value = num(index.value) - 1
+  return {
+    type: on.type,
+    list: false,
+    value: on.value[value] ?? TY_INFO[on.type].garbage.js,
+  }
+}
+
+function indexGlsl(on: GlslValue, indexVal: JsValue): GlslValue {
+  if (on.list === false) {
+    throw new Error("Cannot index on a non-list.")
+  }
+  if (indexVal.list !== false) {
+    throw new Error("Cannot index with a list yet.")
+  }
+  if (!isReal(indexVal)) {
+    throw new Error("Indices must be numbers for now.")
+  }
+  const index = num(indexVal.value)
+  if (index != Math.floor(index) || index <= 0 || index > on.list) {
+    throw new Error(
+      `Index ${index} is out-of-bounds on list of length ${on.list}.`,
+    )
+  }
+  return {
+    type: on.type,
+    list: false,
+    expr: `${on.expr}[${index - 1}]`,
+  }
+}
+
 export const PKG_CORE_LIST: Package = {
   id: "nya:core-list",
   name: "core list functionality",
@@ -105,6 +149,21 @@ export const PKG_CORE_LIST: Package = {
             )
           },
           drag: NO_DRAG,
+        },
+      },
+    },
+    txrs: {
+      index: {
+        js(node, props) {
+          return indexJs(js(node.on, props), js(node.index, props))
+        },
+        glsl(node, props) {
+          return indexGlsl(glsl(node.on, props), js(node.index, props))
+        },
+        drag: NO_DRAG,
+        deps(node, deps) {
+          deps.add(node.on)
+          deps.add(node.index)
         },
       },
     },

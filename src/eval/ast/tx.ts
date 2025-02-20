@@ -5,7 +5,6 @@ import type { Deps } from "../deps"
 import { glsl, type PropsGlsl } from "../glsl"
 import { js, type PropsJs } from "../js"
 import { type Bindings } from "../lib/binding"
-import { indexGlsl, indexJs } from "../ops/op"
 import { type GlslValue, type JsVal, type JsValue } from "../ty"
 import { coerceValueGlsl, coerceValueJs } from "../ty/coerce"
 import type { MagicVar, Node, NodeName, Nodes, PuncBinaryStr } from "./token"
@@ -184,19 +183,6 @@ export const AST_TXRS: { [K in NodeName]?: AstTxr<Nodes[K]> } = {
     },
   },
   void: error`Empty expression.`(() => {}),
-  index: {
-    js(node, props) {
-      return indexJs(js(node.on, props), js(node.index, props))
-    },
-    glsl(node, props) {
-      return indexGlsl(glsl(node.on, props), js(node.index, props))
-    },
-    drag: NO_DRAG,
-    deps(node, deps) {
-      deps.add(node.on)
-      deps.add(node.index)
-    },
-  },
   commalist: error`Lists must be surrounded by square brackets.`(
     (node, deps) => {
       for (const x of node.items) {
