@@ -47,6 +47,8 @@ const REMARKS = [
   "more blue than expected",
   "everything has been coded at least twice",
   "options to inits to exts to packages",
+  "sorry we keep taking down the site",
+  "now with quaternions!",
 ]
 
 export const REMARK = REMARKS[Math.floor(REMARKS.length * Math.random())]!

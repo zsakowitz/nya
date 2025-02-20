@@ -278,8 +278,6 @@ export const PKG_NUM_QUATERNION: Package = {
       conj: FN_CONJ,
     },
   },
-
-  // remarks: ["it supports quaternions!"],
 }
 
 function mulQ32(

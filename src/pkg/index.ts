@@ -52,8 +52,6 @@ export interface Package {
     toolbar?: Record<number, ToolbarItem[]>
     keys?: Record<string, (sheet: Sheet) => void>
   }
-
-  // remarks?: readonly string[]
 }
 
 export interface ToolbarItem {
