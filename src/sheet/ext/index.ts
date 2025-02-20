@@ -12,14 +12,6 @@ export type Cursor =
   | "ew-resize"
   | "ns-resize"
 
-export interface ExtPointers<T, U extends {}> {
-  /** Returning a non-nullish value captures the event. */
-  start(data: T, at: Point): U | null | undefined
-  cursor(data: U): Cursor
-  move(data: U, to: Point): void
-  end(data: U, at: Point): void
-}
-
 /** An extension to an expression in the sheet interface. */
 export interface Ext<T extends {}, U extends {}, V extends {}, W extends {}> {
   /**

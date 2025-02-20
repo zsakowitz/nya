@@ -146,7 +146,7 @@ Object.setPrototypeOf(BRACKS, null)
 
 export type ParenLhs = "(" | "[" | "{" | "|" | "¡"
 export type ParenRhs = ")" | "]" | "}" | "|" | "!"
-export type ParenAny = ParenLhs | ParenRhs
+type ParenAny = ParenLhs | ParenRhs
 
 export function matchParen(x: ParenLhs): ParenRhs
 export function matchParen(x: ParenRhs): ParenLhs

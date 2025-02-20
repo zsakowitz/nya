@@ -4,7 +4,7 @@ import { subscript } from "./text"
 
 const encoder = new TextEncoder()
 
-export function hex(text: string) {
+function hex(text: string) {
   const bytes = encoder.encode(text)
   let ret = ""
   for (let i = 0; i < bytes.length; i++) {
@@ -151,15 +151,4 @@ export function parseBindings<T>(node: Node, f: (node: Node) => T): T[] {
     node = node.value
   }
   return commalist(node).map(f)
-}
-
-export type BindingArgs = Record<string, Node | null>
-
-export class BindingFn {
-  constructor(
-    readonly id: string,
-    readonly name: string,
-    readonly value: Node,
-    readonly args: Node,
-  ) {}
 }

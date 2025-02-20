@@ -75,7 +75,7 @@ export class CmdTextInert extends Leaf {
   }
 }
 
-export class CmdText extends Leaf {
+class CmdText extends Leaf {
   static init(cursor: Cursor, props: InitProps) {
     const text = new CmdText("", props.field)
     text.insertAt(cursor, L)
@@ -192,10 +192,8 @@ export class CmdText extends Leaf {
   }
 }
 
-export const OP_TO_TEXT = new FnDist<"text">(
-  "to text",
-  "converts a value into text",
-)
+// TODO: automatically convert all values
+const OP_TO_TEXT = new FnDist<"text">("to text", "converts a value into text")
   .add(["bool"], "text", (a) => [{ type: "latex", value: a.value + "" }], err)
   .add(
     ["r32"],

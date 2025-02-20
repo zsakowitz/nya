@@ -3,54 +3,36 @@ import { FnDist } from "../eval/ops/dist"
 import { approx, num } from "../eval/ty/create"
 import { PKG_REAL } from "./num-real"
 
-export const FN_SINH = new FnDist(
-  "sinh",
-  "takes the hyperbolic sinhe of an angle",
-)
-export const FN_COSH = new FnDist(
-  "cosh",
-  "takes the hyperbolic coshine of an angle",
-)
-export const FN_TANH = new FnDist(
-  "tanh",
-  "takes the hyperbolic tanhgent of an angle",
-)
-export const FN_CSCH = new FnDist(
-  "csch",
-  "takes the hyperbolic coshecant of an angle",
-)
-export const FN_SECH = new FnDist(
-  "sech",
-  "takes the hyperbolic secant of an angle",
-)
-export const FN_COTH = new FnDist(
-  "coth",
-  "takes the hyperbolic cotanhgent of an angle",
-)
+const FN_SINH = new FnDist("sinh", "takes the hyperbolic sinhe of an angle")
+const FN_COSH = new FnDist("cosh", "takes the hyperbolic coshine of an angle")
+const FN_TANH = new FnDist("tanh", "takes the hyperbolic tanhgent of an angle")
+const FN_CSCH = new FnDist("csch", "takes the hyperbolic coshecant of an angle")
+const FN_SECH = new FnDist("sech", "takes the hyperbolic secant of an angle")
+const FN_COTH = new FnDist("coth", "takes the hyperbolic cotangent of an angle")
 
-export const FN_ARCSINH = new FnDist(
+const FN_ARCSINH = new FnDist(
   "arcsinh",
-  "takes the inverse hyperbolic sinhe of a value",
+  "takes the inverse hyperbolic sine of a value",
 )
-export const FN_ARCCOSH = new FnDist(
+const FN_ARCCOSH = new FnDist(
   "arccosh",
-  "takes the inverse hyperbolic coshine of a value",
+  "takes the inverse hyperbolic cosine of a value",
 )
-export const FN_ARCTANH = new FnDist(
+const FN_ARCTANH = new FnDist(
   "arctanh",
-  "takes the inverse hyperbolic tanhgent of a value",
+  "takes the inverse hyperbolic tangent of a value",
 )
-export const FN_ARCCSCH = new FnDist(
+const FN_ARCCSCH = new FnDist(
   "arccsch",
-  "takes the inverse hyperbolic coshecant of a value",
+  "takes the inverse hyperbolic cosecant of a value",
 )
-export const FN_ARCSECH = new FnDist(
+const FN_ARCSECH = new FnDist(
   "arcsech",
   "takes the inverse hyperbolic secant of a value",
 )
-export const FN_ARCCOTH = new FnDist(
+const FN_ARCCOTH = new FnDist(
   "arccoth",
-  "takes the inverse hyperbolic cotanhgent of a value",
+  "takes the inverse hyperbolic cotangent of a value",
 )
 
 export const PKG_TRIG_HYPERBOLIC_REAL: Package = {

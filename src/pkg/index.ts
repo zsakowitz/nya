@@ -17,7 +17,7 @@ import type { Init } from "../field/model"
 import type { AnyExt } from "../sheet/ext"
 import type { Sheet } from "../sheet/ui/sheet"
 
-export type List<T, K extends PropertyKey = string> = { readonly [_ in K]?: T }
+type List<T, K extends PropertyKey = string> = { readonly [_ in K]?: T }
 
 export interface Package {
   id: string

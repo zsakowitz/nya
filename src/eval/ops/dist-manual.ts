@@ -20,7 +20,7 @@ export type FnOverload<Q extends TyName = TyName> =
   | FnOverloadVar<Q>
 
 /** A {@linkcode FnOverload} with a fixed-length argument count. */
-export interface FnOverloadFixed<Q extends TyName = TyName> {
+interface FnOverloadFixed<Q extends TyName = TyName> {
   param?: undefined
   params: readonly TyName[]
   type: Q

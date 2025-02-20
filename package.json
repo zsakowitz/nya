@@ -14,7 +14,8 @@
     "mathjs": "^14.2.1",
     "regl": "^2.1.1",
     "tailwind": "^4.0.0",
-    "tailwind-merge": "^2.6.0"
+    "tailwind-merge": "^2.6.0",
+    "ts-unused-exports": "^11.0.1"
   },
   "devDependencies": {
     "esbuild": "^0.24.0",

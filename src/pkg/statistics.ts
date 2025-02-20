@@ -51,7 +51,7 @@ declare module "../eval/ty" {
   }
 }
 
-export class FnListList implements Fn, WithDocs {
+class FnListList implements Fn, WithDocs {
   readonly o: {
     a: TyName
     b: TyName
@@ -160,7 +160,7 @@ export class FnListList implements Fn, WithDocs {
   }
 }
 
-export class FnListPlain implements Fn, WithDocs {
+class FnListPlain implements Fn, WithDocs {
   readonly o: {
     a: TyName
     b: TyName
@@ -712,7 +712,7 @@ const FN_CORR = new FnListList("corr", "Pearson correlation coefficient").add(
     `(${covGlsl(ctx, a, b, true)} / (${stdevGlsl(ctx, split(a.list, a.expr), true)} * ${stdevGlsl(ctx, split(b.list, b.expr), true)}))`,
 )
 
-export function ranksJs(data: SReal[]): SReal[] {
+function ranksJs(data: SReal[]): SReal[] {
   const sorted = data
     .map((x, i) => ({ x: num(x), i }))
     .sort((a, b) => a.x - b.x)

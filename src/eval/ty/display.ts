@@ -8,7 +8,6 @@ import { SymInfinity } from "../../field/cmd/leaf/sym"
 import { CmdWord } from "../../field/cmd/leaf/word"
 import { CmdBrack } from "../../field/cmd/math/brack"
 import { CmdSupSub } from "../../field/cmd/math/supsub"
-import type { FieldInert } from "../../field/field-inert"
 import { Block, L, R, type Cursor } from "../../field/model"
 import type { Node } from "../ast/token"
 import { js, type PropsJs } from "../js"
@@ -246,10 +245,4 @@ export function outputBase(node: Node, props: PropsJs): SReal {
   }
 
   return real(10)
-}
-
-export function display(field: FieldInert, value: JsValue, base: SReal) {
-  field.block.clear()
-  const cursor = field.block.cursor(R)
-  new Display(cursor, base).output(value)
 }

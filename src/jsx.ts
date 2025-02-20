@@ -1,10 +1,4 @@
-export const U_NO_BREAK_SPACE = "\u00A0"
 export const U_ZERO_WIDTH_SPACE = "\u200B"
-export const U_DOT_ABOVE = "\u02D9"
-export const U_NARY_SUMMATION = "\u2211"
-export const U_NARY_PRODUCT = "\u220F"
-export const U_NARY_COPRODUCT = "\u2210"
-export const U_INTEGRAL = "\u222B"
 
 export function h(
   cl?: string | Record<string, string | null>,
@@ -83,11 +77,9 @@ export function svgx(
   return el
 }
 
-export type ViewBox = `${number} ${number} ${number} ${number}`
-
 export function usvg(
   classes: string,
-  viewBox: ViewBox,
+  viewBox: `${number} ${number} ${number} ${number}`,
   d: string,
   stroke = 0.4,
 ) {

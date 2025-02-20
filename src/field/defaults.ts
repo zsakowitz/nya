@@ -61,7 +61,7 @@ import { LatexEnvs, LatexInit } from "./latex"
 import { D, L, R, U, type Init } from "./model"
 import { Inits, WordMap, type Options } from "./options"
 
-export const inits = new Inits()
+const inits = new Inits()
   .setDefault(
     new ByRegex([
       [/^\d$/, CmdNum],
@@ -128,7 +128,7 @@ export const inits = new Inits()
   .set("\\to", OpRightArrow)
   .freeze()
 
-export const shortcuts = new Inits()
+const shortcuts = new Inits()
   .set("ArrowLeft", CmdMove(L))
   .set("Home", CmdMove(L, true))
   .set("ArrowRight", CmdMove(R))
@@ -144,7 +144,7 @@ export const shortcuts = new Inits()
   .set("a", CmdSelectAll)
   .freeze()
 
-export const autos = new WordMap<Init>([
+const autos = new WordMap<Init>([
   // Big operators
   ["sum", CmdBig],
   ["prod", CmdBig],
@@ -181,7 +181,7 @@ export const autos = new WordMap<Init>([
   ["infty", SymInfinity],
 ]).freeze()
 
-export const words = new WordMap<WordKind>([
+const words = new WordMap<WordKind>([
   // Standard variables
   ["width", "var"],
   ["height", "var"],
@@ -219,7 +219,7 @@ export const words = new WordMap<WordKind>([
   ["base", "infix"],
 ]).freeze()
 
-export const latex = new WordMap<LatexInit>([
+const latex = new WordMap<LatexInit>([
   ..."0123456789".split("").map((x): [string, typeof CmdNum] => [x, CmdNum]),
   ["\\digit", CmdNum],
   ..."ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"

@@ -15,9 +15,9 @@ import {
 } from "../../model"
 import { focusEdge } from "../leaf"
 
-export type Coords = [row: number, col: number]
+type Coords = [row: number, col: number]
 
-export function calcGridEntryBounds(
+function calcGridEntryBounds(
   parent: HTMLElement,
 ): [
   rows: [top: number, bottom: number][],

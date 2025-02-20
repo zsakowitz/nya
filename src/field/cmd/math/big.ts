@@ -18,7 +18,7 @@ import { OpEq } from "../leaf/cmp"
 import { CmdUnknown } from "../leaf/unknown"
 import { CmdVar } from "../leaf/var"
 
-export const BIG_CMDS = {
+const BIG_CMDS = {
   "\\sum": "∑",
   "\\prod": "∏",
   "\\coprod": "∐",

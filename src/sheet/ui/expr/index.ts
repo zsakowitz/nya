@@ -15,7 +15,7 @@ const ID_X = id({ value: "x" })
 const ID_Y = id({ value: "y" })
 const ID_P = id({ value: "p" })
 
-export type ExprState =
+type ExprState =
   | { ok: false; reason: string }
   | { ok: true; ext: AnyExt | null; data: {} }
 

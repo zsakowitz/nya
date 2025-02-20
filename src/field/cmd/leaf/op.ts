@@ -43,7 +43,7 @@ export abstract class Op extends Leaf {
   }
 }
 
-export abstract class OpPm extends Leaf {
+abstract class OpPm extends Leaf {
   static exitSupSub(cursor: Cursor, { options }: InitProps) {
     if (
       (options.exitSubWithOp &&
@@ -77,7 +77,7 @@ export abstract class OpPm extends Leaf {
   }
 }
 
-export function op(
+function op(
   punc: (self: Op) => Punc,
   latex: string,
   mathspeak: string,
@@ -121,7 +121,7 @@ export function op(
   }
 }
 
-export function opp(
+function opp(
   latex: Exclude<PuncInfix, ".">,
   mathspeak: string,
   html?: string,
@@ -143,7 +143,7 @@ export function opp(
   )
 }
 
-export function opm(
+function opm(
   latex: PuncPm,
   mathspeak: string,
   html: string = latex,

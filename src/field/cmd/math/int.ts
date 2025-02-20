@@ -16,7 +16,7 @@ import {
 } from "../../model"
 import { focusEdge } from "../leaf"
 
-export type BlocksInt = [sub: Block, sup: Block] | []
+type BlocksInt = [sub: Block, sup: Block] | []
 
 export class CmdInt extends Command<BlocksInt> {
   static init(cursor: Cursor, { options }: InitProps): InitRet {

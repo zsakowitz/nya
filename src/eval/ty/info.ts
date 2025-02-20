@@ -8,7 +8,7 @@ import type { Paper, Point } from "../../sheet/ui/paper"
 import type { GlslContext } from "../lib/fn"
 import type { TyWrite } from "./display"
 
-export interface TyGarbage<T> {
+interface TyGarbage<T> {
   js: T
   glsl: string
 }
@@ -30,19 +30,15 @@ export type TyGlide<T> = (props: GlideProps<T>) => {
   precision: number
 }
 
-export interface TyComponentInfo<T, U extends TyName> {
+interface TyComponentInfo<T, U extends TyName> {
   ty: U
   at: [(val: T) => Tys[U], (val: string) => string][]
 }
 
-export interface GlideProps<T> {
+interface GlideProps<T> {
   shape: T
   point: Point
   paper: Paper
-}
-
-export interface Plot<T> {
-  canvas(value: T, paper: Paper): void
 }
 
 export type TyCoerceMap<T> = {
@@ -54,7 +50,7 @@ export interface TyCoerce<T, U> {
   glsl(self: string, ctx: GlslContext): string
 }
 
-export type TyInfoMap = {
+type TyInfoMap = {
   [K in keyof Tys]: TyInfo<Tys[K], TyComponents[K]>
 }
 
@@ -190,44 +186,4 @@ TY_INFO.never = {
       ),
     )
   },
-}
-
-export interface TyInfoJsOnly<T, U extends TyName> {
-  name: string
-  namePlural: string
-  garbage: T
-  coerce: { [K in TyName]?: (value: T) => Tys[K] }
-  write: TyWrite<T>
-  icon(): HTMLSpanElement
-  glide?: TyGlide<T>
-  components?: TyComponentInfo<T, U>
-}
-
-export function jsOnly<T, U extends TyName>(
-  reason: string,
-  info: TyInfoJsOnly<T, U>,
-): TyInfo<T, U> {
-  return {
-    ...info,
-    get glsl(): never {
-      throw new Error(reason)
-    },
-    garbage: {
-      js: info.garbage,
-      get glsl(): never {
-        throw new Error(reason)
-      },
-    },
-    coerce: Object.fromEntries(
-      Object.entries(info.coerce).map(([k, v]) => [
-        k,
-        {
-          js: v,
-          glsl() {
-            throw new Error(reason)
-          },
-        },
-      ]),
-    ),
-  }
 }

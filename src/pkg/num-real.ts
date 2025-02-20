@@ -101,7 +101,7 @@ export const FN_UNSIGN = new FnDist(
   "takes the absolute value of the components of a value",
 )
 
-export const FN_COMPONENT = new (class extends FnDistCaching {
+const FN_COMPONENT = new (class extends FnDistCaching {
   constructor() {
     super("component", "gets a component of a multidimensional value")
     ALL_DOCS.push(this)

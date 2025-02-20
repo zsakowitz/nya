@@ -10,7 +10,7 @@ import { pass2_implicits } from "./pass2.implicits"
 import { pass3_ordering } from "./pass3.ordering"
 
 /** Tokens which can be parsed both as a binary infix and as a prefix. */
-export interface PuncListPm {
+interface PuncListPm {
   "+": 0
   "-": 0
   "\\pm ": 0
@@ -18,7 +18,7 @@ export interface PuncListPm {
 }
 
 /** Tokens which can be part of a comparison list. */
-export interface PuncListCmp {
+interface PuncListCmp {
   "cmp-eq": 0
   "cmp-tilde": 0
   "cmp-approx": 0
@@ -57,7 +57,7 @@ export interface PuncListInfix extends PuncListPm, PuncListCmp {
 }
 
 /** Tokens which can be unary prefix operators. */
-export interface PuncListPrefix extends PuncListPm {
+interface PuncListPrefix extends PuncListPm {
   "\\neg ": 0
 }
 
@@ -168,7 +168,7 @@ export type PuncPrefix =
   | { type: "punc"; kind: "pm"; value: PuncPm; span: Span }
 
 /** A binary operation derived from infix operators. */
-export type OpBinary = Exclude<PuncInfix | PuncPm, ",">
+type OpBinary = Exclude<PuncInfix | PuncPm, ",">
 
 /** A variable or word in the AST. */
 export type Var = {

@@ -29,7 +29,7 @@ export abstract class OpCeq extends Op {
 }
 
 /** An `Op` which can take an optional equals sign and which can be negated. */
-export abstract class OpCmp extends OpCeq {
+abstract class OpCmp extends OpCeq {
   constructor(
     neg: boolean,
     readonly eq: boolean,

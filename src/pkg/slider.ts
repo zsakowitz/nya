@@ -110,20 +110,7 @@ const RED = [
   "[.nya-range-error_&]:border-b-2",
 ]
 
-export interface ExprRangeState {
-  type: "range"
-  name: PlainVar
-  value: SReal
-  base: SReal | null
-}
-
-export interface RangeState {
-  min: SReal | string
-  max: SReal | string
-  step: SReal | string | null
-}
-
-export class RangeControls {
+class RangeControls {
   readonly min
   readonly max
   readonly step
@@ -227,7 +214,7 @@ export class RangeControls {
   }
 }
 
-export class Field extends FieldComputed {
+class Field extends FieldComputed {
   value: SReal | string | null = null
 
   constructor(

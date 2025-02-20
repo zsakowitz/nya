@@ -62,7 +62,7 @@ const SYM = {
 }
 Object.setPrototypeOf(SYM, null)
 
-export type Sym = `${keyof typeof SYM}`
+type Sym = `${keyof typeof SYM}`
 
 export class CmuSym extends CmuLeaf {
   static init(cursor: Cursor, { input }: InitProps): InitRet {

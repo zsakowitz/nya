@@ -12,12 +12,7 @@ import {
   type InitRet,
 } from "../../model"
 
-export function sym(
-  latex: string,
-  reader: string,
-  text: string,
-  ascii: string,
-) {
+function sym(latex: string, reader: string, text: string, ascii: string) {
   const clsx =
     text == "∞" ?
       "[line-height:1] relative top-[-.05em]"

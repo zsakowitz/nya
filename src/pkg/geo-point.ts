@@ -94,7 +94,7 @@ export function drawPoint(
   }
 }
 
-export const EXT_POINT = defineHideable({
+const EXT_POINT = defineHideable({
   data(expr) {
     const value = expr.js?.value
 
@@ -356,12 +356,12 @@ export const FN_DEBUGPOINT = new FnDist(
   "given some point p, returns a color depending on which side of the currently active shader pixel that point p is on",
 )
 
-export const OP_X = new FnDist(
+const OP_X = new FnDist(
   ".x",
   "accesses the x-coordinate of a point or complex number",
 )
 
-export const OP_Y = new FnDist(
+const OP_Y = new FnDist(
   ".y",
   "accesses the y-coordinate of a point or complex number",
 )

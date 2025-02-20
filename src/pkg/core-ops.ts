@@ -152,13 +152,13 @@ export function abs64(ctx: GlslContext, x: string) {
   return `_helper_abs_r64(${x})`
 }
 
-export function invalidFnSup(): never {
+function invalidFnSup(): never {
   throw new Error(
     "Only -1 and positive integers are allowed as function superscripts.",
   )
 }
 
-export function fnExponentJs(raw: JsValue): JsValue<"r32"> {
+function fnExponentJs(raw: JsValue): JsValue<"r32"> {
   if (!canCoerce(raw.type, "r32")) {
     invalidFnSup()
   }
@@ -174,10 +174,7 @@ export function fnExponentJs(raw: JsValue): JsValue<"r32"> {
   return value
 }
 
-export function fnExponentGlsl(
-  ctx: GlslContext,
-  raw: JsValue,
-): GlslValue<"r64"> {
+function fnExponentGlsl(ctx: GlslContext, raw: JsValue): GlslValue<"r64"> {
   if (!canCoerce(raw.type, "r32")) {
     invalidFnSup()
   }
@@ -237,7 +234,7 @@ export const OP_CROSS = new FnDist("×", "multiplies two real numbers")
 
 export const OP_DIV = new FnDist("÷", "divides two values")
 
-export const OP_JUXTAPOSE = OP_CDOT.withName(
+const OP_JUXTAPOSE = OP_CDOT.withName(
   "juxtapose",
   "multiplies two values which aren't separated by an operator",
 )

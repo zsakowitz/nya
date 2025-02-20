@@ -9,7 +9,7 @@ export function listTy(tys: Ty[], conj?: string) {
   )
 }
 
-export function listTyName(tys: TyName[], conj?: string) {
+function listTyName(tys: TyName[], conj?: string) {
   return list(
     tys.map((x) => TY_INFO[x].name),
     conj,

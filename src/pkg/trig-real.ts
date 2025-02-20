@@ -6,34 +6,16 @@ import { PKG_REAL } from "./num-real"
 export const FN_SIN = new FnDist("sin", "takes the sine of an angle")
 export const FN_COS = new FnDist("cos", "takes the cosine of an angle")
 export const FN_TAN = new FnDist("tan", "takes the tangent of an angle")
-export const FN_CSC = new FnDist("csc", "takes the cosecant of an angle")
-export const FN_SEC = new FnDist("sec", "takes the secant of an angle")
-export const FN_COT = new FnDist("cot", "takes the cotangent of an angle")
+const FN_CSC = new FnDist("csc", "takes the cosecant of an angle")
+const FN_SEC = new FnDist("sec", "takes the secant of an angle")
+const FN_COT = new FnDist("cot", "takes the cotangent of an angle")
 
-export const FN_ARCSIN = new FnDist(
-  "arcsin",
-  "takes the inverse sine of a value",
-)
-export const FN_ARCCOS = new FnDist(
-  "arccos",
-  "takes the inverse cosine of a value",
-)
-export const FN_ARCTAN = new FnDist(
-  "arctan",
-  "takes the inverse tangent of a value",
-)
-export const FN_ARCCSC = new FnDist(
-  "arccsc",
-  "takes the inverse cosecant of a value",
-)
-export const FN_ARCSEC = new FnDist(
-  "arcsec",
-  "takes the inverse secant of a value",
-)
-export const FN_ARCCOT = new FnDist(
-  "arccot",
-  "takes the inverse cotangent of a value",
-)
+const FN_ARCSIN = new FnDist("arcsin", "takes the inverse sine of a value")
+const FN_ARCCOS = new FnDist("arccos", "takes the inverse cosine of a value")
+const FN_ARCTAN = new FnDist("arctan", "takes the inverse tangent of a value")
+const FN_ARCCSC = new FnDist("arccsc", "takes the inverse cosecant of a value")
+const FN_ARCSEC = new FnDist("arcsec", "takes the inverse secant of a value")
+const FN_ARCCOT = new FnDist("arccot", "takes the inverse cotangent of a value")
 
 export const PKG_TRIG_REAL: Package = {
   id: "nya:trig-real",

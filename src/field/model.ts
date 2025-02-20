@@ -35,7 +35,7 @@ export type Dir = -1 | 1
 export type VDir = -2 | 2
 
 /** Pointers to the {@linkcode Command}s on either side of a {@linkcode Block}. */
-export interface Ends {
+interface Ends {
   /** The leftmost {@linkcode Command}. */
   readonly [L]: Command | null
 

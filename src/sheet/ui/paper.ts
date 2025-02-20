@@ -19,20 +19,8 @@ const THEME_AXIS_STROKE = () => theme("--nya-paper-screen-line", "black")
 const THEME_ZOOM_ZERO_SNAP_DISTANCE = 16
 const MAX_GRIDLINES_MAJOR = 200
 const MAX_GRIDLINES_MINOR = MAX_GRIDLINES_MAJOR * 5
-// const THEME_MINIMUM_WIDTH = 10 ** -10
-// const THEME_MAXIMUM_WIDTH = 10 ** 30
-//
-// const THEME_COLOR_RED = "#c74440"
-// const THEME_COLOR_BLUE = "#2d70b3"
-// const THEME_COLOR_GREEN = "#388c46"
-// const THEME_COLOR_ORANGE = "#fa7e19"
-// const THEME_COLOR_PURPLE = "#6042a6"
-// const THEME_COLOR_BLACK = "#000000"
-//
-// const THEME_DIRECT_XY_RESOLUTION = 0.1
-// const THEME_DIRECT_XY_MAX_DISTANCE = 128
 
-export interface Bounds {
+interface Bounds {
   readonly xmin: number
   readonly w: number
   readonly ymin: number

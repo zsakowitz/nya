@@ -2,9 +2,9 @@ import { faQuoteLeft } from "@fortawesome/free-solid-svg-icons/faQuoteLeft"
 import { fa } from "../../../field/fa"
 import { h, p, svgx } from "../../../jsx"
 
-export type CircleKind = "shaderon" | "empty" | "ithkuilscript" | "text"
-
-export function circle(kind: CircleKind): HTMLSpanElement {
+export function circle(
+  kind: "shaderon" | "empty" | "ithkuilscript" | "text",
+): HTMLSpanElement {
   switch (kind) {
     case "shaderon":
       // prettier-ignore

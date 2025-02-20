@@ -26,21 +26,21 @@ declare module "../eval/ast/token" {
 
 // TODO: can't handle changing types in webgl
 
-export interface IterateVar {
+interface IterateVar {
   id: string
   name: string
   update: Node
   from: Node | undefined
 }
 
-export interface IterateCondition {
+interface IterateCondition {
   type: "while" | "until"
   value: Node
 }
 
-export type IterateRetval = "count" | { id: string; name: string }
+type IterateRetval = "count" | { id: string; name: string }
 
-export interface Iterate {
+interface Iterate {
   update: Binding[]
   from: Binding[]
 
@@ -66,17 +66,17 @@ function parseFrom(value: Node): ValueOrList {
   return { type: "value", value }
 }
 
-export interface ParseIterateProps {
+interface ParseIterateProps {
   source: "expr" | "with" | "withseq"
 }
 
-export function isIterate(
+function isIterate(
   op: Node,
 ): op is Extract<typeof op, { type: "magicvar" }> & { value: "iterate" } {
   return op.type == "magicvar" && op.value == "iterate"
 }
 
-export function parseIterate(
+function parseIterate(
   { contents, prop, sub, sup }: MagicVar,
   props: ParseIterateProps,
 ): Iterate {
@@ -218,7 +218,7 @@ export function parseIterate(
   return iterate
 }
 
-export interface DoIterateProps<T> {
+interface DoIterateProps<T> {
   /**
    * Whether to evaluate updates in sequence. Defaults to `false`, for parallel
    * updates.
@@ -262,7 +262,7 @@ function jsShouldBreak(
   return (condition.type == "until") == val.value
 }
 
-export function iterateJs(
+function iterateJs(
   iterate: Iterate,
   props: DoIterateProps<PropsJs>,
 ): { data: Record<string, JsValue>; count: number } {
@@ -321,7 +321,7 @@ function glslShouldBreak(
   return (condition.type == "while" ? "!" : "") + val.expr
 }
 
-export function iterateGlsl(
+function iterateGlsl(
   iterate: Iterate,
   props: DoIterateProps<PropsGlsl>,
 ): { data: Record<string, GlslValue>; count: GlslValue } {
@@ -379,7 +379,7 @@ export function iterateGlsl(
   }
 }
 
-export function iterateDeps(iterate: Iterate, deps: Deps): string[] {
+function iterateDeps(iterate: Iterate, deps: Deps): string[] {
   deps.add(iterate.limit)
 
   const ids = iterate.update.map((x) => x[0])

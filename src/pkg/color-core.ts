@@ -8,8 +8,8 @@ import { CmdColor } from "../field/cmd/leaf/color"
 import { L } from "../field/model"
 import { h } from "../jsx"
 import { PKG_BOOL } from "./bool"
-import { PKG_REAL } from "./num-real"
 import { OP_CDOT } from "./core-ops"
+import { PKG_REAL } from "./num-real"
 
 declare module "../eval/ty" {
   interface Tys {
@@ -21,7 +21,7 @@ declare module "../eval/ty" {
   }
 }
 
-export const FN_RGB = new FnDist(
+const FN_RGB = new FnDist(
   "rgb",
   "creates a color given its red, green, and blue components",
 )
@@ -79,7 +79,7 @@ vec3 _helper_hsv(vec3 c) {
 `
 }
 
-export const FN_HSV = new FnDist(
+const FN_HSV = new FnDist(
   "hsv",
   "creates a color given its hue (0-360), saturation (0-1), and value (0-1)",
 )

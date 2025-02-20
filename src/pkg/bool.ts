@@ -145,7 +145,7 @@ export const FN_VALID = new FnDist<"bool">(
   "returns true if a value is valid for the given type (whether a number is finite, whether a color is displayable, etc.)",
 )
 
-export const FN_FIRSTVALID: Fn & WithDocs = {
+const FN_FIRSTVALID: Fn & WithDocs = {
   name: "firstvalid",
   label:
     "returns the first value which is valid for its type (the first finite number, the first color which is displayable, etc.)",

@@ -11,7 +11,7 @@ import { Expr } from "../../sheet/ui/expr"
 import type { Selected, Sheet } from "../../sheet/ui/sheet"
 import { virtualPoint } from "./pick-point"
 
-export interface ExtByTy<T extends readonly TyName[]> {
+interface ExtByTy<T extends readonly TyName[]> {
   readonly id: number
   readonly output: { tag: string; fn: string } | null
 

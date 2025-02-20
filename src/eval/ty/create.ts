@@ -60,7 +60,3 @@ export function pt(x: SReal, y: SReal): SPoint {
 export function unpt(pt: SPoint): Point {
   return { x: num(pt.x), y: num(pt.y) }
 }
-
-export function rept(pt: Point): SPoint {
-  return { type: "point", x: real(pt.x), y: real(pt.y) }
-}

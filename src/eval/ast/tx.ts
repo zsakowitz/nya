@@ -22,23 +22,23 @@ export interface PropsDrag {
   js: PropsJs
 }
 
-export type DragResult = { span: Span; field: FieldComputed }
+type DragResult = { span: Span; field: FieldComputed }
 
-export type DragResultSigned = DragResult & { signed: boolean }
+type DragResultSigned = DragResult & { signed: boolean }
 
-export type DragResultPoint =
+type DragResultPoint =
   // for when the X and Y coordinates are separate
   | { type: "split"; x: DragResultSigned | null; y: DragResultSigned | null }
   // for when the X and Y coordinates are part of a joint complex number
   | { type: "complex"; span: Span; field: FieldComputed }
   | { type: "glider"; shape: JsVal; value: DragResult }
 
-export interface DragTarget<T> {
+interface DragTarget<T> {
   num(node: T, props: PropsDrag): DragResult | null
   point(node: T, props: PropsDrag): DragResultPoint | null
 }
 
-export function joint<T>(
+function joint<T>(
   fn: (node: T) => never,
   deps: (node: T, deps: Deps) => void,
 ): AstTxr<T> {
@@ -61,7 +61,7 @@ export function joint<T>(
   }
 }
 
-export function errorAll<T>(data: TemplateStringsArray): AstTxr<T> {
+function errorAll<T>(data: TemplateStringsArray): AstTxr<T> {
   return joint(
     () => {
       throw new Error(data[0])
@@ -70,7 +70,7 @@ export function errorAll<T>(data: TemplateStringsArray): AstTxr<T> {
   )
 }
 
-export function error(
+function error(
   data: TemplateStringsArray,
 ): <T>(f: (node: T, deps: Deps) => void) => AstTxr<T> {
   return (f) =>

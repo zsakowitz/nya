@@ -21,7 +21,7 @@ import { CmdComma } from "../field/cmd/leaf/comma"
 import { CmdBrack } from "../field/cmd/math/brack"
 import { h } from "../jsx"
 
-export const FN_JOIN: Fn & WithDocs = {
+const FN_JOIN: Fn & WithDocs = {
   name: "join",
   label: "joins multiple lists into a single one",
   js(args) {

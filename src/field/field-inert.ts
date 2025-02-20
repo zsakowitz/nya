@@ -13,7 +13,7 @@ import {
 import type { Options } from "./options"
 
 /** Props passed to `Display.init()` and `Display.type()`. */
-export interface FieldInitProps {
+interface FieldInitProps {
   event?: KeyboardEvent
   skipChangeHandlers?: boolean
 }

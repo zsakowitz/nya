@@ -59,40 +59,31 @@ function declareExp(ctx: GlslContext) {
 `
 }
 
-export const FN_POINT = new FnDist(
-  "point",
-  "converts a complex number into a point",
-)
+const FN_POINT = new FnDist("point", "converts a complex number into a point")
 
-export const FN_ARG = new FnDist(
+const FN_ARG = new FnDist(
   "arg",
   "returns the angle between a point and the x-axis",
 )
 
-export const FN_COMPLEX = new FnDist(
+const FN_COMPLEX = new FnDist(
   "complex",
   "converts a point into a complex number",
 )
 
-export const FN_CONJ = new FnDist(
+const FN_CONJ = new FnDist(
   "conj",
   "takes the conjugate of a complex number or quaternion",
 )
 
-export const FN_DOT = new FnDist(
-  "dot",
-  "takes the dot product of two complex numbers",
-)
+const FN_DOT = new FnDist("dot", "takes the dot product of two complex numbers")
 
-export const FN_IMAG = new FnDist(
+const FN_IMAG = new FnDist(
   "imag",
   "gets the imaginary part of a complex number",
 )
 
-export const FN_REAL = new FnDist(
-  "real",
-  "gets the real part of a complex number",
-)
+const FN_REAL = new FnDist("real", "gets the real part of a complex number")
 
 const WRITE_COMPLEX: TyWrite<SPoint> = {
   isApprox(value) {
@@ -623,7 +614,7 @@ function dotC32(
   return `_helper_dot_c32(${a.expr}, ${b.expr})`
 }
 
-export function subC(a: JsVal<"c32" | "c64">, b: JsVal<"c32" | "c64">) {
+function subC(a: JsVal<"c32" | "c64">, b: JsVal<"c32" | "c64">) {
   return pt(sub(a.value.x, b.value.x), sub(a.value.y, b.value.y))
 }
 

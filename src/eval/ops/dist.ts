@@ -171,7 +171,7 @@ export function doc(params: readonly TyName[], type: TyName, list = false) {
   return docByIcon(params.map(icon), icon(type), list)
 }
 
-export function arrayEls(node: Node) {
+function arrayEls(node: Node) {
   return [
     node.cloneNode(true),
     new CmdComma().el,
@@ -189,7 +189,7 @@ export function array(node: Node) {
   })
 }
 
-export function docList(param: TyName, type: TyName, list = false) {
+function docList(param: TyName, type: TyName, list = false) {
   return docByIcon(
     [
       icon(param),
