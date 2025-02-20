@@ -1,12 +1,28 @@
 import type { Package } from "."
-import { Precedence } from "../eval/ast/token"
+import { Precedence, type Piece } from "../eval/ast/token"
 import { NO_DRAG } from "../eval/ast/tx"
+import { glsl, type PropsGlsl } from "../eval/glsl"
+import { js, type PropsJs } from "../eval/js"
 import type { Fn } from "../eval/ops"
 import { docByIcon, FnDist } from "../eval/ops/dist"
 import type { WithDocs } from "../eval/ops/docs"
-import { piecewiseGlsl, piecewiseJs } from "../eval/ops/piecewise"
-import { join, joinGlsl } from "../eval/ty"
-import { coerceTy, coerceTyGlsl, coerceTyJs } from "../eval/ty/coerce"
+import {
+  join,
+  joinGlsl,
+  type GlslValue,
+  type JsValue,
+  type Val,
+} from "../eval/ty"
+import {
+  coerceTy,
+  coerceTyGlsl,
+  coerceTyJs,
+  coerceType,
+  coerceValueGlsl,
+  coerceValueJs,
+} from "../eval/ty/coerce"
+import { declareGlsl } from "../eval/ty/decl"
+import { garbageValueGlsl, garbageValueJs } from "../eval/ty/garbage"
 import { any, TY_INFO } from "../eval/ty/info"
 import { CmdComma } from "../field/cmd/leaf/comma"
 import { CmdWord } from "../field/cmd/leaf/word"
@@ -32,6 +48,94 @@ declare module "../eval/ast/token" {
     and: 0
     or: 0
   }
+}
+
+function piecewiseJs(piecesRaw: Piece[], props: PropsJs): JsValue {
+  const pieces = piecesRaw.map(({ value, condition }, index) => {
+    const cond: JsValue =
+      index == piecesRaw.length - 1 && condition.type == "void" ?
+        {
+          list: false,
+          type: "bool",
+          value: true,
+        }
+      : js(condition, props)
+
+    if (cond.list !== false) {
+      throw new Error(
+        "Lists cannot be used as the condition for a piecewise function yet.",
+      )
+    }
+    if (cond.type != "bool") {
+      throw new Error(
+        "The 'if' clause in a piecewise function must be a condition like z = 2.",
+      )
+    }
+
+    return { value: js(value, props), cond }
+  })
+
+  const ret = coerceType(pieces.map((x) => x.value))
+  for (const { value, cond } of pieces) {
+    if (cond.value) {
+      return coerceValueJs(value, ret)
+    }
+  }
+
+  return {
+    type: ret.type,
+    list: ret.list as number,
+    value: garbageValueJs(ret) as Val[],
+  }
+}
+
+function piecewiseGlsl(piecesRaw: Piece[], props: PropsGlsl): GlslValue {
+  const name = props.ctx.name()
+
+  let isDefinitelyAssigned = false
+  const pieces = piecesRaw.map(({ value, condition }, index) => {
+    const ctxCond = props.ctx.fork()
+    const cond: GlslValue =
+      index == piecesRaw.length - 1 && condition.type == "void" ?
+        ((isDefinitelyAssigned = true),
+        { expr: "true", list: false, type: "bool" })
+      : glsl(condition, { ...props, ctx: ctxCond })
+
+    if (cond.list !== false) {
+      throw new Error(
+        "Lists cannot be used as the condition for a piecewise function yet.",
+      )
+    }
+    if (cond.type != "bool") {
+      throw new Error(
+        "The 'if' clause in a piecewise function must be a condition like z = 2.",
+      )
+    }
+
+    const ctxValue = props.ctx.fork()
+    const val = glsl(value, { ...props, ctx: ctxValue })
+
+    return { ctxCond, ctxValue, value: val, cond }
+  })
+
+  const ret = coerceType(pieces.map((x) => x.value))
+
+  props.ctx.push`${declareGlsl(ret, name)};\n`
+  let closers = ""
+  for (const { ctxCond, cond, ctxValue, value } of pieces) {
+    props.ctx.block += ctxCond.block
+    props.ctx.push`if (${cond.expr}) {\n`
+    props.ctx.block += ctxValue.block
+    props.ctx.push`${name} = ${coerceValueGlsl(props.ctx, value, ret)};\n`
+    props.ctx.push`} else {\n`
+    closers += "}"
+  }
+  if (!isDefinitelyAssigned) {
+    props.ctx.push`${name} = ${garbageValueGlsl(props.ctx, ret)};\n`
+  }
+  props.ctx.block += closers + "\n"
+
+  return { ...ret, expr: name }
 }
 
 const OP_OR = new FnDist("or", "returns true if either of its inputs are true")
