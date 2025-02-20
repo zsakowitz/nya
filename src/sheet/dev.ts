@@ -3,7 +3,7 @@ import { show } from "../show"
 import { SheetFactory } from "./factory"
 import { Expr } from "./ui/expr"
 
-const LOAD_EMPTY = true
+const LOAD_EMPTY = false
 const SHORT_EXPRS = true
 
 const factory = new SheetFactory(options)
