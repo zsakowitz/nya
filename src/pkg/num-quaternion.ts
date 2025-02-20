@@ -1,13 +1,10 @@
 import type { Package } from "."
 import type { GlslContext } from "../eval/lib/fn"
-import { FN_UNSIGN } from "../eval/ops/fn/unsign"
 import { OP_ABS } from "../eval/ops/op/abs"
 import type { SReal, Tys } from "../eval/ty"
 import { approx, num, real } from "../eval/ty/create"
 import { abs, add, div, mul, neg, sub } from "../eval/ty/ops"
 import { h } from "../jsx"
-import { FN_CONJ, PKG_NUM_COMPLEX } from "./num-complex"
-import { PKG_REAL } from "./num-real"
 import {
   OP_ADD,
   OP_CDOT,
@@ -17,6 +14,8 @@ import {
   OP_POS,
   OP_SUB,
 } from "./core-ops"
+import { FN_CONJ, PKG_NUM_COMPLEX } from "./num-complex"
+import { FN_UNSIGN, PKG_REAL } from "./num-real"
 
 declare module "../eval/ty" {
   interface Tys {

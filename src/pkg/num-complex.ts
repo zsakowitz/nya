@@ -1,10 +1,6 @@
 import type { Package } from "."
 import type { GlslContext } from "../eval/lib/fn"
 import { FnDist } from "../eval/ops/dist"
-import { declareExp, FN_EXP } from "../eval/ops/fn/exp"
-import { FN_LN } from "../eval/ops/fn/ln"
-import { FN_UNSIGN } from "../eval/ops/fn/unsign"
-import { FN_VALID } from "../eval/ops/fn/valid"
 import { OP_ABS } from "../eval/ops/op/abs"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "../eval/ops/vars"
 import type { GlslVal, JsVal, SPoint } from "../eval/ty"
@@ -14,9 +10,8 @@ import type { TyWrite } from "../eval/ty/display"
 import { highRes } from "../eval/ty/info"
 import { abs, add, div, mul, neg, sub } from "../eval/ty/ops"
 import { h } from "../jsx"
+import { FN_VALID } from "./bool"
 import { OP_PLOT, plotJs } from "./color-core"
-import { declareDebugPoint, FN_DEBUGPOINT, PKG_GEO_POINT } from "./geo-point"
-import { PKG_REAL } from "./num-real"
 import {
   abs64,
   addR64,
@@ -35,17 +30,26 @@ import {
   OP_SUB,
   subR64,
 } from "./core-ops"
+import { declareDebugPoint, FN_DEBUGPOINT, PKG_GEO_POINT } from "./geo-point"
+import { FN_EXP, FN_LN, FN_LOG10, FN_UNSIGN, PKG_REAL } from "./num-real"
 
 declare module "../eval/ty" {
   interface Tys {
-    c32: import("../eval/ty").SPoint
-    c64: import("../eval/ty").SPoint
+    c32: SPoint
+    c64: SPoint
   }
 
   interface TyComponents {
     c32: "r32"
     c64: "r64"
   }
+}
+
+function declareExp(ctx: GlslContext) {
+  ctx.glsl`vec2 _helper_exp(vec2 a) {
+  return exp(a.x) * vec2(cos(a.y), sin(a.y));
+}
+`
 }
 
 export const FN_POINT = new FnDist(
@@ -119,8 +123,22 @@ export const PKG_NUM_COMPLEX: Package = {
 
         return pt(mul(e, approx(Math.cos(y))), mul(e, approx(Math.sin(y))))
       },
-      (_, a) => `_helper_exp(${a.expr})`,
+      (ctx, a) => {
+        declareExp(ctx)
+        return `_helper_exp(${a.expr})`
+      },
     )
+
+    function declareLnC32(ctx: GlslContext) {
+      ctx.glsl`vec2 _helper_ln_c32(vec2 z) {
+  if (z == vec2(0)) {
+    return vec2(-1.0 / 0.0, 0);
+  }
+
+  return vec2(log(length(z)), atan(z.y, z.x));
+}
+`
+    }
 
     FN_LN.add(
       ["c32"],
@@ -136,15 +154,30 @@ export const PKG_NUM_COMPLEX: Package = {
         return pt(approx(Math.log(Math.hypot(x, y))), approx(Math.atan2(y, x)))
       },
       (ctx, a) => {
-        ctx.glsl`vec2 _helper_ln_c32(vec2 z) {
-  if (z == vec2(0)) {
-    return vec2(-1.0 / 0.0, 0);
-  }
-
-  return vec2(log(length(z)), atan(z.y, z.x));
-}
-`
+        declareLnC32(ctx)
         return `_helper_ln_c32(${a.expr})`
+      },
+    )
+
+    FN_LOG10.add(
+      ["c32"],
+      "c32",
+      ({ value: a }) => {
+        if (isZero(a)) {
+          return pt(real(-Infinity), real(0))
+        }
+
+        const x = num(a.x)
+        const y = num(a.y)
+
+        return pt(
+          approx(Math.log10(Math.hypot(x, y))),
+          approx(Math.atan2(y, x) / Math.LN10),
+        )
+      },
+      (ctx, a) => {
+        declareLnC32(ctx)
+        return `(_helper_ln_c32(${a.expr}) / vec2(log(10.0)))`
       },
     )
 

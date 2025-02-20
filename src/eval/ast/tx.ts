@@ -4,21 +4,11 @@ import type { Deps } from "../deps"
 import { glsl, type PropsGlsl } from "../glsl"
 import { js, type PropsJs } from "../js"
 import { type Bindings } from "../lib/binding"
-import type { GlslContext } from "../lib/fn"
-import { safe } from "../lib/util"
 import { indexGlsl, indexJs } from "../ops/op"
 import { OP_ABS } from "../ops/op/abs"
 import { OP_POINT } from "../ops/op/point"
-import { each, type GlslValue, type JsVal, type JsValue } from "../ty"
-import {
-  canCoerce,
-  coerceTyJs,
-  coerceValueGlsl,
-  coerceValueJs,
-  listGlsl,
-  listJs,
-} from "../ty/coerce"
-import { num } from "../ty/create"
+import { type GlslValue, type JsVal, type JsValue } from "../ty"
+import { coerceValueGlsl, coerceValueJs, listGlsl, listJs } from "../ty/coerce"
 import { commalist } from "./collect"
 import type { MagicVar, Node, NodeName, Nodes, PuncBinaryStr } from "./token"
 
@@ -115,65 +105,6 @@ export const NO_DRAG: DragTarget<unknown> = {
   point() {
     return null
   },
-}
-
-export function invalidFnSup(): never {
-  throw new Error(
-    "Only -1 and positive integers are allowed as function superscripts.",
-  )
-}
-
-export function fnExponentJs(raw: JsValue): JsValue<"r32"> {
-  if (!canCoerce(raw.type, "r32")) {
-    invalidFnSup()
-  }
-
-  const value = coerceTyJs(raw, "r32")
-  for (const valRaw of each(value)) {
-    const val = num(valRaw)
-    if (!(safe(val) && 1 < val)) {
-      invalidFnSup()
-    }
-  }
-
-  return value
-}
-
-export function fnExponentGlsl(
-  ctx: GlslContext,
-  raw: JsValue,
-): GlslValue<"r64"> {
-  if (!canCoerce(raw.type, "r32")) {
-    invalidFnSup()
-  }
-
-  const value = coerceTyJs(raw, "r32")
-  for (const valRaw of each(value)) {
-    const val = num(valRaw)
-    if (!(safe(val) && 1 < val)) {
-      invalidFnSup()
-    }
-  }
-
-  if (value.list === false) {
-    return {
-      type: "r64",
-      list: false,
-      expr: `vec2(${num(value.value)}, 0)`,
-    }
-  }
-
-  const expr = ctx.name()
-  ctx.push`vec2 ${expr}[${value.list}];\n`
-  for (let i = 0; i < value.list; i++) {
-    ctx.push`${expr}[${i}] = vec2(${num(value.value[i]!)}, 0);\n`
-  }
-
-  return {
-    type: "r64",
-    list: value.list,
-    expr,
-  }
 }
 
 export interface MagicVarTxr {

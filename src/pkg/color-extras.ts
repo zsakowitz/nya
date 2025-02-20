@@ -2,11 +2,11 @@ import type { Package } from "."
 import type { GlslContext } from "../eval/lib/fn"
 import { FnDist } from "../eval/ops/dist"
 import { FN_FIRSTVALID } from "../eval/ops/fn/firstvalid"
-import { FN_VALID } from "../eval/ops/fn/valid"
 import { frac, num } from "../eval/ty/create"
 import { TY_INFO } from "../eval/ty/info"
 import { sub } from "../eval/ty/ops"
 import { isDark } from "../sheet/theme"
+import { FN_VALID } from "./bool"
 import { PKG_COLOR_CORE } from "./color-core"
 
 function oklab(

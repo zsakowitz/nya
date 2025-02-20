@@ -2,8 +2,6 @@ import type { Package } from "."
 import { dragPoint } from "../eval/ast/tx"
 import type { GlslContext } from "../eval/lib/fn"
 import { FnDist } from "../eval/ops/dist"
-import { FN_UNSIGN } from "../eval/ops/fn/unsign"
-import { FN_VALID } from "../eval/ops/fn/valid"
 import { OP_ABS } from "../eval/ops/op/abs"
 import { OP_POINT } from "../eval/ops/op/point"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "../eval/ops/vars"
@@ -22,10 +20,8 @@ import { Transition } from "../sheet/transition"
 import type { Paper, Point } from "../sheet/ui/paper"
 import type { Sheet } from "../sheet/ui/sheet"
 import { virtualStepExp, write, Writer } from "../sheet/write"
+import { FN_VALID } from "./bool"
 import { OP_PLOT, plotJs } from "./color-core"
-import { EXT_EVAL } from "./eval"
-import { createPickByTy, PICK_BY_TY, picker } from "./geo/pick-normal"
-import { PKG_REAL } from "./num-real"
 import {
   abs64,
   addR64,
@@ -36,6 +32,9 @@ import {
   OP_ODOT,
   OP_POS,
 } from "./core-ops"
+import { EXT_EVAL } from "./eval"
+import { createPickByTy, PICK_BY_TY, picker } from "./geo/pick-normal"
+import { FN_UNSIGN, PKG_REAL } from "./num-real"
 
 declare module "../eval/ty" {
   interface Tys {

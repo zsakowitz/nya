@@ -9,10 +9,6 @@ import {
   type FnOverloadVar,
 } from "../eval/ops/dist-manual"
 import { ALL_DOCS } from "../eval/ops/docs"
-import { declareCmpR64, FN_CMP } from "../eval/ops/fn/cmp"
-import { FN_EXP } from "../eval/ops/fn/exp"
-import { FN_UNSIGN } from "../eval/ops/fn/unsign"
-import { FN_VALID } from "../eval/ops/fn/valid"
 import { FnList } from "../eval/ops/list"
 import { OP_ABS } from "../eval/ops/op/abs"
 import type { SReal, Ty, TyName, Type } from "../eval/ty"
@@ -23,7 +19,7 @@ import { highRes, TY_INFO } from "../eval/ty/info"
 import { abs, add, div, mul, neg, raise, sub } from "../eval/ty/ops"
 import { splitDual } from "../eval/ty/split"
 import { h } from "../jsx"
-import { PKG_BOOL } from "./bool"
+import { FN_VALID, PKG_BOOL } from "./bool"
 import {
   OP_EQ,
   OP_GT,
@@ -39,6 +35,7 @@ import {
 import {
   abs64,
   addR64,
+  declareCmpR64,
   mulR64,
   OP_ADD,
   OP_CDOT,
@@ -96,6 +93,13 @@ function addCmp(
     (_, a, b) => `(${pre}(${a.expr} ${glsl} ${b.expr}))`,
   )
 }
+
+export const FN_EXP = new FnDist("exp", "raises e to some value")
+
+export const FN_UNSIGN = new FnDist(
+  "unsign",
+  "takes the absolute value of the components of a value",
+)
 
 export const FN_COMPONENT = new (class extends FnDistCaching {
   constructor() {
@@ -215,6 +219,31 @@ function iconReal(hd: boolean) {
     ),
   )
 }
+
+const FN_CMP = new FnDist(
+  "cmp",
+  "compares two numbers, returning -1, 0, or 1, depending on whether the first number is less than, equal to, or greater than the second number",
+)
+
+export const FN_LN = new FnDist(
+  "ln",
+  "takes the natural logarithm of a value",
+).add(
+  ["r32"],
+  "r32",
+  (a) => approx(Math.log(num(a.value))),
+  (_, a) => `log(${a.expr})`,
+)
+
+export const FN_LOG10 = new FnDist(
+  "log",
+  "takes the base-10 logarithm of a value",
+).add(
+  ["r32"],
+  "r32",
+  (a) => approx(Math.log10(num(a.value))),
+  (_, a) => `(log(${a.expr}) / log(10.0))`,
+)
 
 export const PKG_REAL: Package = {
   id: "nya:num-real",
@@ -474,6 +503,8 @@ float _helper_cmp_r32(float a, float b) {
   },
   eval: {
     fns: {
+      ln: FN_LN,
+      log: FN_LOG10,
       exp: FN_EXP,
       unsign: FN_UNSIGN,
       valid: FN_VALID,

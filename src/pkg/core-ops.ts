@@ -1,22 +1,15 @@
 import type { Package } from "."
 import { commalist, fnargs } from "../eval/ast/collect"
 import { Precedence, type PuncUnary } from "../eval/ast/token"
-import {
-  dragNum,
-  dragPoint,
-  fnExponentGlsl,
-  fnExponentJs,
-  invalidFnSup,
-  NO_DRAG,
-} from "../eval/ast/tx"
+import { dragNum, dragPoint, NO_DRAG } from "../eval/ast/tx"
 import { glsl, glslCall } from "../eval/glsl"
 import { js, jsCall } from "../eval/js"
 import { asNumericBase, parseNumberJs } from "../eval/lib/base"
 import { id, name, parseBindings, parseBindingVar } from "../eval/lib/binding"
 import type { GlslContext } from "../eval/lib/fn"
+import { safe } from "../eval/lib/util"
 import { OP_BINARY, OP_UNARY } from "../eval/ops"
 import { FnDist } from "../eval/ops/dist"
-import { declareCmpR64 } from "../eval/ops/fn/cmp"
 import { declareR64 } from "../eval/ops/r64"
 import { VARS } from "../eval/ops/vars"
 import {
@@ -24,8 +17,8 @@ import {
   withBindingsGlsl,
   withBindingsJs,
 } from "../eval/ops/with"
-import type { GlslValue, JsValue, TyName } from "../eval/ty"
-import { listJs } from "../eval/ty/coerce"
+import { each, type GlslValue, type JsValue, type TyName } from "../eval/ty"
+import { canCoerce, coerceTyJs, listJs } from "../eval/ty/coerce"
 import { frac, num, real } from "../eval/ty/create"
 import { TY_INFO } from "../eval/ty/info"
 import { add, div } from "../eval/ty/ops"
@@ -157,6 +150,83 @@ export function abs64(ctx: GlslContext, x: string) {
 }
 `
   return `_helper_abs_r64(${x})`
+}
+
+export function invalidFnSup(): never {
+  throw new Error(
+    "Only -1 and positive integers are allowed as function superscripts.",
+  )
+}
+
+export function fnExponentJs(raw: JsValue): JsValue<"r32"> {
+  if (!canCoerce(raw.type, "r32")) {
+    invalidFnSup()
+  }
+
+  const value = coerceTyJs(raw, "r32")
+  for (const valRaw of each(value)) {
+    const val = num(valRaw)
+    if (!(safe(val) && 1 < val)) {
+      invalidFnSup()
+    }
+  }
+
+  return value
+}
+
+export function fnExponentGlsl(
+  ctx: GlslContext,
+  raw: JsValue,
+): GlslValue<"r64"> {
+  if (!canCoerce(raw.type, "r32")) {
+    invalidFnSup()
+  }
+
+  const value = coerceTyJs(raw, "r32")
+  for (const valRaw of each(value)) {
+    const val = num(valRaw)
+    if (!(safe(val) && 1 < val)) {
+      invalidFnSup()
+    }
+  }
+
+  if (value.list === false) {
+    return {
+      type: "r64",
+      list: false,
+      expr: `vec2(${num(value.value)}, 0)`,
+    }
+  }
+
+  const expr = ctx.name()
+  ctx.push`vec2 ${expr}[${value.list}];\n`
+  for (let i = 0; i < value.list; i++) {
+    ctx.push`${expr}[${i}] = vec2(${num(value.value[i]!)}, 0);\n`
+  }
+
+  return {
+    type: "r64",
+    list: value.list,
+    expr,
+  }
+}
+
+export function declareCmpR64(ctx: GlslContext) {
+  ctx.glsl`
+float _helper_cmp_r64(vec2 a, vec2 b) {
+  if (a.x < b.x) {
+    return -1.0;
+  } else if (a.x > b.x) {
+    return 1.0;
+  } else if (a.y < b.y) {
+    return -1.0;
+  } else if (a.y > b.y) {
+    return 1.0;
+  } else {
+    return 0.0;
+  }
+}
+`
 }
 
 export const OP_ADD = new FnDist("+", "adds two values or points")

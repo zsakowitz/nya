@@ -2,7 +2,6 @@ import type { Package } from "."
 import { Precedence } from "../eval/ast/token"
 import { NO_DRAG } from "../eval/ast/tx"
 import { FnDist } from "../eval/ops/dist"
-import { FN_VALID } from "../eval/ops/fn/valid"
 import { piecewiseGlsl, piecewiseJs } from "../eval/ops/piecewise"
 import { CmdWord } from "../field/cmd/leaf/word"
 import { L } from "../field/model"
@@ -29,6 +28,11 @@ declare module "../eval/ast/token" {
 }
 
 const OP_OR = new FnDist("or", "returns true if either of its inputs are true")
+
+export const FN_VALID = new FnDist<"bool">(
+  "valid",
+  "returns true if a value is valid for the given type (whether a number is finite, whether a color is displayable, etc.)",
+)
 
 export const PKG_BOOL: Package = {
   id: "nya:bool-ops",
@@ -123,6 +127,9 @@ export const PKG_BOOL: Package = {
         "\\or ": { precedence: Precedence.BoolOr, fn: OP_OR },
         or: { precedence: Precedence.BoolOr, fn: OP_OR },
       },
+    },
+    fns: {
+      valid: FN_VALID,
     },
     txrs: {
       piecewise: {
