@@ -117,11 +117,35 @@ export class Display {
       : baseRaw.type == "exact" && baseRaw.d == 1 ? baseRaw.n
       : null
 
-    if (base == null || !safe(base) || base <= 1 || base > 36) {
-      return value.toString(10)
+    if (
+      base == null ||
+      !safe(base) ||
+      !(2 <= base && base <= 36) ||
+      base == 10
+    ) {
+      let val = value.toPrecision(10)
+      if (val.includes(".")) {
+        if (val.includes("e")) {
+          while (val[val.indexOf("e") - 1] == "0") {
+            val =
+              val.slice(0, val.indexOf("e") - 2) + val.slice(val.indexOf("e"))
+          }
+        } else {
+          while (val[val.length - 1] == "0") {
+            val = val.slice(0, -1)
+          }
+        }
+      }
+      if (val.includes(".e")) {
+        val = val.replace(".e", "e")
+      }
+      if (val.endsWith(".")) {
+        val = val.slice(0, -1)
+      }
+      return val
     }
 
-    return value.toString(base)
+    return value.toString(base).replace(/\.\d{10}\d+/, (x) => x.slice(0, 11))
   }
 
   at(cursor: Cursor): Display {

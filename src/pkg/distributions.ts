@@ -1,6 +1,10 @@
 import type { Package } from "."
 import { FnDist } from "../eval/ops/dist"
 import { real } from "../eval/ty/create"
+import { CmdComma } from "../field/cmd/leaf/comma"
+import { CmdWord } from "../field/cmd/leaf/word"
+import { CmdBrack } from "../field/cmd/math/brack"
+import { Block, L, R } from "../field/model"
 import { g, h, p, svgx } from "../jsx"
 
 declare module "../eval/ty" {
@@ -114,8 +118,14 @@ export const PKG_DISTRIBUTIONS: Package = {
           isApprox(value) {
             return value.some((x) => x.type == "approx")
           },
-          display() {
-            throw new Error("Cannot write 'normaldist' yet.")
+          display([mean, stdev], props) {
+            new CmdWord("normaldist", "prefix").insertAt(props.cursor, L)
+            const block = new Block(null)
+            const inner = props.at(block.cursor(R))
+            inner.num(mean)
+            new CmdComma().insertAt(inner.cursor, L)
+            inner.num(stdev)
+            new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
           },
         },
         icon() {
@@ -153,8 +163,12 @@ export const PKG_DISTRIBUTIONS: Package = {
           isApprox(value) {
             return value.type == "approx"
           },
-          display() {
-            throw new Error("Cannot write 'tdist' yet.")
+          display(value, props) {
+            new CmdWord("tdist", "prefix").insertAt(props.cursor, L)
+            const block = new Block(null)
+            const inner = props.at(block.cursor(R))
+            inner.num(value)
+            new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
           },
         },
         icon() {
@@ -195,8 +209,12 @@ export const PKG_DISTRIBUTIONS: Package = {
           isApprox(value) {
             return value.type == "approx"
           },
-          display() {
-            throw new Error("Cannot write 'poissondist' yet.")
+          display(value, props) {
+            new CmdWord("poissondist", "prefix").insertAt(props.cursor, L)
+            const block = new Block(null)
+            const inner = props.at(block.cursor(R))
+            inner.num(value)
+            new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
           },
         },
         icon() {
@@ -246,8 +264,14 @@ export const PKG_DISTRIBUTIONS: Package = {
           isApprox(value) {
             return value.some((x) => x.type == "approx")
           },
-          display() {
-            throw new Error("Cannot write 'binomialdist' yet.")
+          display([a, b], props) {
+            new CmdWord("binomialdist", "prefix").insertAt(props.cursor, L)
+            const block = new Block(null)
+            const inner = props.at(block.cursor(R))
+            inner.num(a)
+            new CmdComma().insertAt(inner.cursor, L)
+            inner.num(b)
+            new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
           },
         },
         icon() {
@@ -297,8 +321,14 @@ export const PKG_DISTRIBUTIONS: Package = {
           isApprox(value) {
             return value.some((x) => x.type == "approx")
           },
-          display() {
-            throw new Error("Cannot write 'uniform' yet.")
+          display([min, max], props) {
+            new CmdWord("uniformdist", "prefix").insertAt(props.cursor, L)
+            const block = new Block(null)
+            const inner = props.at(block.cursor(R))
+            inner.num(min)
+            new CmdComma().insertAt(inner.cursor, L)
+            inner.num(max)
+            new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
           },
         },
         icon() {
