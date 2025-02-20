@@ -23,7 +23,7 @@ import { h, hx, t } from "../jsx"
 import { defineExt, Store } from "../sheet/ext"
 import { circle } from "../sheet/ui/expr/circle"
 
-declare module "../eval/ty/index.js" {
+declare module "../eval/ty" {
   interface Tys {
     text: TextSegment[]
   }
@@ -33,7 +33,7 @@ declare module "../eval/ty/index.js" {
   }
 }
 
-declare module "../eval/ast/token.js" {
+declare module "../eval/ast/token" {
   interface Nodes {
     text: { value: TextSegment[] }
   }

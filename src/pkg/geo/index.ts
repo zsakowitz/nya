@@ -45,7 +45,7 @@ import {
   type PropsByTy,
 } from "./pick-normal"
 
-declare module "../../eval/ty/index.js" {
+declare module "../../eval/ty" {
   interface Tys {
     segment: [SPoint, SPoint]
     ray: [SPoint, SPoint]

@@ -1,13 +1,13 @@
-import { options } from "../field/defaults.js"
-import { show } from "../show.js"
-import { SheetFactory } from "./factory.js"
-import { Expr } from "./ui/expr/index.js"
+import { options } from "../field/defaults"
+import { show } from "../show"
+import { SheetFactory } from "./factory"
+import { Expr } from "./ui/expr"
 
 const ADD_ALL = !location.href.includes("localhost")
 const factory = new SheetFactory(options)
 
 if (ADD_ALL) {
-  for (const pkg of (await import("../all.js")).ALL) {
+  for (const pkg of (await import("../all")).ALL) {
     factory.load(pkg)
   }
 }

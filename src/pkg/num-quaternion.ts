@@ -18,7 +18,7 @@ import {
   OP_SUB,
 } from "./core-ops"
 
-declare module "../eval/ty/index.js" {
+declare module "../eval/ty" {
   interface Tys {
     q32: [SReal, SReal, SReal, SReal]
   }

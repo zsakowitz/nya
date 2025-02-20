@@ -9,7 +9,7 @@ import { L } from "../field/model"
 import { h } from "../jsx"
 import { OP_AND } from "./core-cmp"
 
-declare module "../eval/ty/index.js" {
+declare module "../eval/ty" {
   interface Tys {
     bool: boolean
   }

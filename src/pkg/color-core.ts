@@ -11,7 +11,7 @@ import { PKG_BOOL } from "./bool"
 import { PKG_REAL } from "./num-real"
 import { OP_CDOT } from "./core-ops"
 
-declare module "../eval/ty/index.js" {
+declare module "../eval/ty" {
   interface Tys {
     color: SColor
   }

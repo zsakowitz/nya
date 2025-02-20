@@ -36,7 +36,7 @@ import {
   subR64,
 } from "./core-ops"
 
-declare module "../eval/ty/index.js" {
+declare module "../eval/ty" {
   interface Tys {
     c32: import("../eval/ty").SPoint
     c64: import("../eval/ty").SPoint

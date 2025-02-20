@@ -53,7 +53,7 @@ import {
   subR64,
 } from "./core-ops"
 
-declare module "../eval/ty/index.js" {
+declare module "../eval/ty" {
   interface Tys {
     r32: SReal
     r64: SReal

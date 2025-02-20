@@ -1,1 +1,1 @@
-import "./sheet/dev.js"
+import "./sheet/dev"
