@@ -54,7 +54,6 @@ function expr(source: { raw: readonly string[] }) {
 
 if (location.href.includes("localhost")) {
   expr`\operatorname{stats}\left(\left[1,2,3\right],\left[4,5,6\right]\right)`
-  expr`world:2+3`
   expr`\left(\operatorname{iterate}.a^{A.\operatorname{count}}\begin{list}n\to n+1\\a\to a.\operatorname{concat}\left(\text{ },A\left[n\right]\right)\end{list}\operatorname{from}\begin{list}a=a.\operatorname{concat}\left(\text{ =}\right)\\n=1\end{list}\right)\operatorname{with}A=\operatorname{ithkuilvalues}a\operatorname{for}a=\operatorname{ithkuilall}`
   show(expr`y=x^2`)
   expr`\left(2,3\right)`
