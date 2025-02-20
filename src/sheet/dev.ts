@@ -3,14 +3,14 @@ import { show } from "../show"
 import { SheetFactory } from "./factory"
 import { Expr } from "./ui/expr"
 
-// const ADD_ALL = !location.href.includes("localhost")
+const ADD_ALL = !location.href.includes("localhost")
 const factory = new SheetFactory(options)
 
-// if (ADD_ALL) {
-//   for (const pkg of (await import("../all")).ALL) {
-//     factory.load(pkg)
-//   }
-// }
+if (ADD_ALL) {
+  for (const pkg of (await import("../all")).ALL) {
+    factory.load(pkg)
+  }
+}
 
 const sheet = factory.create()
 document.body.appendChild(sheet.el)

@@ -1,11 +1,12 @@
-import type { Fn } from ".."
-import { CmdComma } from "../../../field/cmd/leaf/comma"
-import { CmdBrack } from "../../../field/cmd/math/brack"
-import { h } from "../../../jsx"
-import { coerceTy, coerceValueGlsl, coerceValueJs } from "../../ty/coerce"
-import { any, TY_INFO } from "../../ty/info"
-import { docByIcon } from "../dist"
-import { ALL_DOCS, type WithDocs } from "../docs"
+import type { Package } from "."
+import type { Fn } from "../eval/ops"
+import { docByIcon } from "../eval/ops/dist"
+import { type WithDocs, ALL_DOCS } from "../eval/ops/docs"
+import { coerceTy, coerceValueGlsl, coerceValueJs } from "../eval/ty/coerce"
+import { TY_INFO, any } from "../eval/ty/info"
+import { CmdComma } from "../field/cmd/leaf/comma"
+import { CmdBrack } from "../field/cmd/math/brack"
+import { h } from "../jsx"
 
 export const FN_JOIN: Fn & WithDocs = {
   name: "join",
@@ -66,3 +67,14 @@ export const FN_JOIN: Fn & WithDocs = {
 }
 
 ALL_DOCS.push(FN_JOIN)
+
+export const PKG_CORE_LIST: Package = {
+  id: "nya:core-list",
+  name: "core list functionality",
+  label: null,
+  eval: {
+    fns: {
+      join: FN_JOIN,
+    },
+  },
+}
