@@ -31,7 +31,14 @@ import {
   subR64,
 } from "./core-ops"
 import { declareDebugPoint, FN_DEBUGPOINT, PKG_GEO_POINT } from "./geo-point"
-import { FN_EXP, FN_LN, FN_LOG10, FN_UNSIGN, PKG_REAL } from "./num-real"
+import {
+  FN_EXP,
+  FN_LN,
+  FN_LOG10,
+  FN_SIGN,
+  FN_UNSIGN,
+  PKG_REAL,
+} from "./num-real"
 
 declare module "../eval/ty" {
   interface Tys {
@@ -112,6 +119,16 @@ export const PKG_NUM_COMPLEX: Package = {
         const a = ctx.cache(ar)
         return `atan(${a}.y, ${a}.x)`
       },
+    )
+
+    FN_SIGN.add(
+      ["c32"],
+      "c32",
+      ({ value: a }) => {
+        const denom = real(Math.hypot(num(a.x), num(a.y)))
+        return pt(div(a.x, denom), div(a.y, denom))
+      },
+      (_, a) => `normalize(${a.expr})`,
     )
 
     FN_EXP.add(

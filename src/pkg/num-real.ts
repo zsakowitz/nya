@@ -235,6 +235,23 @@ export const FN_LN = new FnDist(
   (_, a) => `log(${a.expr})`,
 )
 
+export const FN_SIGN = new FnDist("sign", "gets the sign of a number")
+  .add(
+    ["r64"],
+    "r64",
+    (a) => real(Math.sign(num(a.value))),
+    (ctx, a) => {
+      declareCmpR64(ctx)
+      return `_helper_cmp_r64(${a.expr}, vec2(0.0))`
+    },
+  )
+  .add(
+    ["r32"],
+    "r32",
+    (a) => real(Math.sign(num(a.value))),
+    (_, a) => `sign(${a.expr})`,
+  )
+
 export const FN_LOG10 = new FnDist(
   "log",
   "takes the base-10 logarithm of a value",
@@ -503,6 +520,7 @@ float _helper_cmp_r32(float a, float b) {
   },
   eval: {
     fns: {
+      sign: FN_SIGN,
       ln: FN_LN,
       log: FN_LOG10,
       exp: FN_EXP,
