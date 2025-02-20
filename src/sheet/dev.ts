@@ -2,6 +2,8 @@ import { options } from "../field/defaults.js"
 import { PKG_BOOL } from "../pkg/bool.js"
 import { PKG_COLOR_CORE } from "../pkg/color-core.js"
 import { PKG_COLOR_EXTRAS } from "../pkg/color-extras.js"
+import { PKG_CORE_CMP } from "../pkg/core-cmp.js"
+import { PKG_CORE_OPS } from "../pkg/core-ops.js"
 import { PKG_DISTRIBUTIONS } from "../pkg/distributions.js"
 import { PKG_EVAL } from "../pkg/eval.js"
 import { PKG_GEO_POINT } from "../pkg/geo-point.js"
@@ -12,19 +14,22 @@ import { PKG_NUM_COMPLEX } from "../pkg/num-complex.js"
 import { PKG_NUM_QUATERNION } from "../pkg/num-quaternion.js"
 import { PKG_REAL } from "../pkg/num-real.js"
 import { PKG_NUMBER_THEORY } from "../pkg/number-theory.js"
-import { PKG_OPS_CORE } from "../pkg/ops-core.js"
-import { PKG_SHADER, show } from "../pkg/shader.js"
+import { PKG_SHADER } from "../pkg/shader.js"
 import { PKG_SLIDER } from "../pkg/slider.js"
 import { PKG_STATISTICS } from "../pkg/statistics.js"
 import { PKG_TEXT } from "../pkg/text.js"
 import { PKG_TRIG_COMPLEX } from "../pkg/trig-complex.js"
 import { PKG_TRIG_REAL } from "../pkg/trig-real.js"
 import { PKG_TRIG_HYPERBOLIC_REAL } from "../pkg/trigh-real.js"
+// import { show } from "../pkg/shader.js"
 import { SheetFactory } from "./factory.js"
 import { Expr } from "./ui/expr/index.js"
 
+function show(_expr: Expr) {}
+
 const sheet = new SheetFactory(options)
-  .load(PKG_OPS_CORE)
+  .load(PKG_CORE_OPS)
+  .load(PKG_CORE_CMP)
   .load(PKG_BOOL)
   .load(PKG_REAL)
   .load(PKG_TRIG_REAL)

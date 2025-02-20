@@ -161,8 +161,6 @@ export function abs64(ctx: GlslContext, x: string) {
 
 export const OP_ADD = new FnDist("+", "adds two values or points")
 
-export const OP_AND = new FnDist("and", "returns true if both inputs are true")
-
 export const OP_CDOT = new FnDist("·", "multiplies two values")
 
 export const OP_CROSS = new FnDist("×", "multiplies two real numbers")
@@ -881,32 +879,6 @@ export const PKG_CORE_OPS: Package = {
         deps(node, deps) {
           deps.add(node.base)
           deps.add(node.exponent)
-        },
-      },
-      cmplist: {
-        js(node, props) {
-          return node.ops
-            .map((op, i) => {
-              const a = js(node.items[i]!, props)
-              const b = js(node.items[i + 1]!, props)
-              return OP_BINARY[op]!.js(a, b)
-            })
-            .reduce((a, b) => OP_AND.js(a, b))
-        },
-        glsl(node, props) {
-          return node.ops
-            .map((op, i) => {
-              const a = glsl(node.items[i]!, props)
-              const b = glsl(node.items[i + 1]!, props)
-              return OP_BINARY[op]!.glsl(props.ctx, a, b)
-            })
-            .reduce((a, b) => OP_AND.glsl(props.ctx, a, b))
-        },
-        drag: NO_DRAG,
-        deps(node, deps) {
-          for (const item of node.items) {
-            deps.add(item)
-          }
         },
       },
     },
