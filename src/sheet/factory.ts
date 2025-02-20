@@ -1,4 +1,8 @@
-import { PRECEDENCE_MAP, type NodeName } from "../eval/ast/token"
+import {
+  PRECEDENCE_MAP,
+  type NodeName,
+  type PuncInfix,
+} from "../eval/ast/token"
 import { AST_TXRS } from "../eval/ast/tx"
 import { FNS, OP_BINARY } from "../eval/ops"
 import { VARS } from "../eval/ops/vars"
@@ -107,7 +111,8 @@ export class SheetFactory {
       this.options.latex.set(key, pkg.field.latex[key]!)
     }
 
-    for (const key in pkg.eval?.op?.binary) {
+    for (const keyRaw in pkg.eval?.op?.binary) {
+      const key = keyRaw as PuncInfix
       if (/^[A-Za-z]+$/.test(key)) {
         this.options.words.init(key, "infix")
       }

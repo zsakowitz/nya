@@ -36,7 +36,7 @@ export interface PuncListCmp {
 }
 
 /** Tokens which can be binary operators. */
-export interface PuncListInfix {
+export interface PuncListInfix extends PuncListPm, PuncListCmp {
   for: 0
   with: 0
   withseq: 0
@@ -120,7 +120,7 @@ export const Precedence = Object.freeze({
 })
 
 /** A map from binary operators to their precedences. */
-export const PRECEDENCE_MAP: Record<string, number> = {
+export const PRECEDENCE_MAP: Partial<Record<PuncBinaryStr, number>> = {
   ".": Precedence.NotApplicable,
   "\\uparrow ": Precedence.Exponential,
   "\\cdot ": Precedence.Product,

@@ -57,9 +57,7 @@ export function pass2_implicits(tokens: Node[]): Node[] {
     }
   }
 
-  function op(
-    precedence: number,
-  ): Exclude<PuncBinaryNoComma, { value: "," }> | undefined {
+  function op(precedence: number): PuncBinaryNoComma | undefined {
     const token = tokens[tokens.length - 1]
     if (
       token?.type == "punc" &&

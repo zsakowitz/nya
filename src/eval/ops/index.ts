@@ -50,7 +50,7 @@ export const OP_UNARY: Partial<Record<PuncUnary, Fn>> = {
 }
 Object.setPrototypeOf(OP_UNARY, null)
 
-export const OP_BINARY: Partial<Record<string, Fn>> = {
+export const OP_BINARY: Partial<Record<PuncBinaryStr, Fn>> = {
   "+": OP_ADD,
   "-": OP_SUB,
   "\\cdot ": OP_CDOT,

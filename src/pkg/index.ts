@@ -1,4 +1,4 @@
-import type { NodeName, Nodes } from "../eval/ast/token"
+import type { NodeName, Nodes, PuncInfix } from "../eval/ast/token"
 import type { AstTxr } from "../eval/ast/tx"
 import type { Fn } from "../eval/ops"
 import type { WithDocs } from "../eval/ops/docs"
@@ -10,7 +10,7 @@ import type { Init } from "../field/model"
 import type { AnyExt } from "../sheet/ext"
 import type { Sheet } from "../sheet/ui/sheet"
 
-export type List<T, K extends PropertyKey = string> = Readonly<Record<K, T>>
+export type List<T, K extends PropertyKey = string> = { readonly [_ in K]?: T }
 
 export interface Package {
   id: string
@@ -41,10 +41,13 @@ export interface Package {
     vars?: List<Builtin>
     fns?: List<Fn & WithDocs>
     op?: {
-      binary?: List<{
-        precedence: number
-        fn: Fn & WithDocs
-      }>
+      binary?: List<
+        {
+          precedence: number
+          fn: Fn & WithDocs
+        },
+        PuncInfix
+      >
     }
   }
 
