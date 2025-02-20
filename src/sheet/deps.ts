@@ -3,7 +3,14 @@ import type { PropsDrag } from "../eval/ast/tx"
 import { Deps } from "../eval/deps"
 import { glsl, type PropsGlsl } from "../eval/glsl"
 import { js, type PropsJs } from "../eval/js"
-import { Bindings, id, name, tryId } from "../eval/lib/binding"
+import {
+  BindingFn,
+  Bindings,
+  id,
+  name,
+  tryId,
+  tryName,
+} from "../eval/lib/binding"
 import { GlslContext, GlslHelpers } from "../eval/lib/fn"
 import type { GlslValue, JsValue } from "../eval/ty"
 import { frac } from "../eval/ty/create"
@@ -60,9 +67,9 @@ export class Scope {
   /** A map from binding IDs to the fields which mention them. */
   private readonly deps: Record<string, FieldComputed[]> = Object.create(null)
 
-  bindingsJs!: Bindings<JsValue>
+  bindingsJs!: Bindings<JsValue | BindingFn>
   bindingsDrag!: Bindings<[FieldComputed, Node]>
-  bindingsGlsl!: Bindings<GlslValue>
+  bindingsGlsl!: Bindings<GlslValue | BindingFn>
   readonly helpers = new GlslHelpers()
   readonly propsJs: PropsJs
 
@@ -134,27 +141,75 @@ export class Scope {
       }
     }
 
-    const bindingsJs: Record<string, JsValue> = Object.create(null)
-    const bindingsGlsl: Record<string, GlslValue> = Object.create(null)
-    const bindingsDrag: Record<string, [FieldComputed, Node]> =
+    const bindingMapJs: Record<string, JsValue | BindingFn> =
       Object.create(null)
+    const bindingMapGlsl: Record<string, GlslValue | BindingFn> =
+      Object.create(null)
+    const bindingMapDrag: Record<string, [FieldComputed, Node]> =
+      Object.create(null)
+    const bindingsJs = new Bindings(bindingMapJs)
+    const bindingsDrag = new Bindings(bindingMapDrag)
+    const bindingsGlsl = new Bindings(bindingMapGlsl)
     for (const def in this.defs) {
       const fields = this.defs[def]!
       const field = this.defs[def]!.map(
         (x) => x.ast as Node & { type: "binding" },
       )
-      if (field.length == 1) {
-        const node = field[0]!.value
+
+      const first = field[0]
+      if (field.length == 1 && first?.params != null) {
+        const { value, params } = first
+
+        const fn = new BindingFn(
+          (values) => {
+            if (values.length != params.length) {
+              throw new Error(
+                `Function '${tryName(first.name)}' expects ${params.length} arguments.`,
+              )
+            }
+
+            const args: Record<string, JsValue> = Object.create(null)
+            for (let i = 0; i < params.length; i++) {
+              args[params[i]![0]] = values[i]!
+            }
+
+            return bindingsJs.withArgs(args, () => js(value, this.propsJs))
+          },
+          (ctx, values) => {
+            if (values.length != params.length) {
+              throw new Error(
+                `Function '${tryName(first.name)}' expects ${params.length} arguments.`,
+              )
+            }
+
+            const args: Record<string, GlslValue> = Object.create(null)
+            for (let i = 0; i < params.length; i++) {
+              args[params[i]![0]] = values[i]!
+            }
+
+            return bindingsGlsl.withArgs(args, () =>
+              glsl(value, { ...this.propsGlsl(), ctx }),
+            )
+          },
+        )
+
+        bindingMapJs[def] = fn
+        bindingMapGlsl[def] = fn
+      } else if (field.length == 1) {
+        const { value: node } = first!
 
         let valueJs: JsValue | undefined
-        Object.defineProperty(bindingsJs, def, {
+        Object.defineProperty(bindingMapJs, def, {
           configurable: true,
           enumerable: true,
-          get: () => (valueJs ??= js(node, this.propsJs)),
+          get: () =>
+            (valueJs ??= this.propsJs.bindingsJs.withoutArgs(() =>
+              js(node, this.propsJs),
+            )),
         })
 
         let valueGlsl: GlslValue | undefined
-        Object.defineProperty(bindingsGlsl, def, {
+        Object.defineProperty(bindingMapGlsl, def, {
           configurable: true,
           enumerable: true,
           get: () => {
@@ -172,7 +227,7 @@ export class Scope {
           },
         })
 
-        bindingsDrag[def] = [fields[0]!, node]
+        bindingMapDrag[def] = [fields[0]!, node]
       } else if (field.length) {
         let myName = def
         try {
@@ -182,7 +237,7 @@ export class Scope {
         } catch {}
         const err = `Multiple definitions for ${myName}.`
 
-        Object.defineProperty(bindingsJs, def, {
+        Object.defineProperty(bindingMapJs, def, {
           configurable: true,
           enumerable: true,
           get() {
@@ -190,7 +245,7 @@ export class Scope {
           },
         })
 
-        Object.defineProperty(bindingsGlsl, def, {
+        Object.defineProperty(bindingMapGlsl, def, {
           configurable: true,
           enumerable: true,
           get() {
@@ -198,7 +253,7 @@ export class Scope {
           },
         })
 
-        Object.defineProperty(bindingsDrag, def, {
+        Object.defineProperty(bindingMapDrag, def, {
           configurable: true,
           enumerable: true,
           get() {
@@ -207,9 +262,9 @@ export class Scope {
         })
       }
     }
-    this.bindingsJs = new Bindings(bindingsJs)
-    this.bindingsDrag = new Bindings(bindingsDrag)
-    this.bindingsGlsl = new Bindings(bindingsGlsl)
+    this.bindingsJs = bindingsJs
+    this.bindingsDrag = bindingsDrag
+    this.bindingsGlsl = bindingsGlsl
 
     for (const field of this.fields) {
       if (field.dirtyValue) {

@@ -1,5 +1,7 @@
 import { commalist } from "../ast/collect"
 import type { Node, Var } from "../ast/token"
+import type { GlslValue, JsValue } from "../ty"
+import type { GlslContext } from "./fn"
 import { subscript } from "./text"
 
 const encoder = new TextEncoder()
@@ -25,12 +27,13 @@ export function tryId(name: Pick<Var, "value" | "sub">) {
 }
 
 export class Bindings<T> {
-  private data: Record<string, T | undefined> = Object.create(null)
+  private viaWith: Record<string, T | undefined> = Object.create(null)
+  private viaArgs: Record<string, T> = Object.create(null)
 
-  constructor(private core: Record<string, T> = Object.create(null)) {}
+  constructor(private viaExprs: Record<string, T> = Object.create(null)) {}
 
   get(id: string): T | undefined {
-    return this.data[id] ?? this.core[id]
+    return this.viaArgs[id] ?? this.viaWith[id] ?? this.viaExprs[id]
   }
 
   withAll<U>(data: Record<string, T>, fn: () => U): U {
@@ -38,9 +41,9 @@ export class Bindings<T> {
       Object.create(null)
     try {
       for (const key in data) {
-        old[key] = Object.getOwnPropertyDescriptor(this.data, key)
+        old[key] = Object.getOwnPropertyDescriptor(this.viaWith, key)
         Object.defineProperty(
-          this.data,
+          this.viaWith,
           key,
           Object.getOwnPropertyDescriptor(data, key)!,
         )
@@ -50,35 +53,63 @@ export class Bindings<T> {
       for (const key in old) {
         const desc = old[key]
         if (desc) {
-          Object.defineProperty(this.data, key, desc)
+          Object.defineProperty(this.viaWith, key, desc)
         } else {
-          delete this.data[key]
+          delete this.viaWith[key]
         }
       }
     }
   }
 
   with<U>(id: string, value: T, fn: () => U): U {
-    const desc = Object.getOwnPropertyDescriptor(this.data, id)
-    this.data[id] = value
+    const desc = Object.getOwnPropertyDescriptor(this.viaWith, id)
+    this.viaWith[id] = value
     try {
       return fn()
     } finally {
       if (desc) {
-        Object.defineProperty(this.data, id, desc)
+        Object.defineProperty(this.viaWith, id, desc)
       } else {
-        delete this.data[id]
+        delete this.viaWith[id]
       }
     }
+  }
+
+  withArgs<U>(args: Record<string, T>, fn: () => U): U {
+    Object.setPrototypeOf(args, null)
+    const last = this.viaArgs
+    try {
+      this.viaArgs = args
+      return fn()
+    } finally {
+      this.viaArgs = last
+    }
+  }
+
+  withoutArgs<U>(fn: () => U): U {
+    return this.withArgs(Object.create(null), fn)
   }
 }
 
 export type Binding = [id: string, contents: Node, name: string]
+export type FnParam = [id: string, name: string]
 
 export type Bound = Pick<Var, "value" | "sub">
 
 export function name(node: Bound) {
   return node.value + (node.sub ? subscript(node.sub) : "")
+}
+
+export function tryName(node: Bound) {
+  try {
+    return name(node)
+  } catch {
+    try {
+      return id(node)
+    } catch {
+      return "<unnameable>"
+    }
+  }
 }
 
 export function parseBindingVar(node: Node, kind: "with" | "for"): Binding {
@@ -126,6 +157,14 @@ export function tryParseBindingVar(node: Node): Binding | undefined {
   ]
 }
 
+export function tryParseFnParam(node: Node): FnParam | undefined {
+  if (!(node.type == "var" && node.kind == "var" && !node.sup)) {
+    return
+  }
+
+  return [id(node), node.value + (node.sub ? subscript(node.sub) : "")]
+}
+
 export function parseUpdateVar(node: Node): Binding {
   if (
     !(
@@ -151,4 +190,11 @@ export function parseBindings<T>(node: Node, f: (node: Node) => T): T[] {
     node = node.value
   }
   return commalist(node).map(f)
+}
+
+export class BindingFn {
+  constructor(
+    readonly js: (args: JsValue[]) => JsValue,
+    readonly glsl: (ctx: GlslContext, args: GlslValue[]) => GlslValue,
+  ) {}
 }

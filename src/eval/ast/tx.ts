@@ -124,7 +124,7 @@ export const GROUP: Partial<
   Record<`${ParenLhs} ${ParenRhs}`, Omit<AstTxr<Node>, "deps">>
 > = Object.create(null)
 
-function group(node: { lhs: ParenLhs; rhs: ParenRhs }) {
+export function group(node: { lhs: ParenLhs; rhs: ParenRhs }) {
   const g = GROUP[`${node.lhs} ${node.rhs}`]
   if (!g) {
     throw new Error(`${node.lhs}...${node.rhs} brackets are not supported yet.`)

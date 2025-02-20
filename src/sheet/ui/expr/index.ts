@@ -157,6 +157,12 @@ export class Expr {
       return
     }
 
+    if (this.field.ast.type == "binding" && this.field.ast.params) {
+      this.state = { ok: true, ext: null, data: {} }
+      this.layer = 0
+      return
+    }
+
     try {
       this.computeJs()
 

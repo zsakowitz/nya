@@ -1,11 +1,19 @@
 import type { Package } from "."
 import { commalist, fnargs } from "../eval/ast/collect"
 import { Precedence, type PuncUnary } from "../eval/ast/token"
-import { dragNum, dragPoint, NO_DRAG } from "../eval/ast/tx"
+import { dragNum, dragPoint, group, NO_DRAG } from "../eval/ast/tx"
 import { glsl, glslCall } from "../eval/glsl"
 import { js, jsCall } from "../eval/js"
 import { asNumericBase, parseNumberJs } from "../eval/lib/base"
-import { id, name, parseBindings, parseBindingVar } from "../eval/lib/binding"
+import {
+  BindingFn,
+  id,
+  name,
+  parseBindings,
+  parseBindingVar,
+  tryId,
+  tryName,
+} from "../eval/lib/binding"
 import type { GlslContext } from "../eval/lib/fn"
 import { safe } from "../eval/lib/util"
 import { OP_BINARY, OP_UNARY } from "../eval/ops"
@@ -359,6 +367,11 @@ export const PKG_CORE_OPS: Package = {
       var: {
         js(node, props) {
           const value = props.bindingsJs.get(id(node))
+          if (value instanceof BindingFn) {
+            throw new Error(
+              `${tryName(node)} is a function; try using parentheses.`,
+            )
+          }
           if (value) {
             if (node.sup) {
               return OP_RAISE.js([value, js(node.sup, props)])
@@ -387,6 +400,11 @@ export const PKG_CORE_OPS: Package = {
         },
         glsl(node, props) {
           const value = props.bindings.get(id(node))
+          if (value instanceof BindingFn) {
+            throw new Error(
+              `${tryName(node)} is a function; try using parentheses.`,
+            )
+          }
           if (value) {
             if (node.sup) {
               return OP_RAISE.glsl(props.ctx, [value, glsl(node.sup, props)])
@@ -793,6 +811,40 @@ export const PKG_CORE_OPS: Package = {
             return OP_RAISE.js([value, sup])
           }
 
+          fn: if (node.name.type == "var" && node.name.kind == "var") {
+            if (node.name.sup) {
+              throw new Error(
+                "Superscripts are not allowed when calling user-defined functions.",
+              )
+            }
+
+            const id = tryId(node.name)
+            if (id == null) {
+              break fn
+            }
+
+            const value = props.bindingsJs.get(id)
+            if (!value) {
+              throw new Error(
+                `The variable '${tryName(node.name)}' is not defined.`,
+              )
+            } else if (value instanceof BindingFn) {
+              const args = node.on ? commalist(node.args) : fnargs(node.args)
+              if (node.on) {
+                args.unshift(node.on)
+              }
+
+              return value.js(args.map((node) => js(node, props)))
+            } else if (node.on) {
+              throw new Error(
+                `Cannot use dot notation on '${tryName(node.name)}', since it's not a function.`,
+              )
+            } else {
+              const rhs = group({ lhs: "(", rhs: ")" }).js(node.args, props)
+              return OP_JUXTAPOSE.js([value, rhs])
+            }
+          }
+
           throw new Error("Cannot call anything except built-in functions yet.")
         },
         glsl(node, props) {
@@ -854,6 +906,43 @@ export const PKG_CORE_OPS: Package = {
             return OP_RAISE.glsl(props.ctx, [value, sup])
           }
 
+          fn: if (node.name.type == "var" && node.name.kind == "var") {
+            if (node.name.sup) {
+              throw new Error(
+                "Superscripts are not allowed when calling user-defined functions.",
+              )
+            }
+
+            const id = tryId(node.name)
+            if (id == null) {
+              break fn
+            }
+
+            const value = props.bindings.get(id)
+            if (!value) {
+              throw new Error(
+                `The variable '${tryName(node.name)}' is not defined.`,
+              )
+            } else if (value instanceof BindingFn) {
+              const args = node.on ? commalist(node.args) : fnargs(node.args)
+              if (node.on) {
+                args.unshift(node.on)
+              }
+
+              return value.glsl(
+                props.ctx,
+                args.map((node) => glsl(node, props)),
+              )
+            } else if (node.on) {
+              throw new Error(
+                `Cannot use dot notation on '${tryName(node.name)}', since it's not a function.`,
+              )
+            } else {
+              const rhs = group({ lhs: "(", rhs: ")" }).glsl(node.args, props)
+              return OP_JUXTAPOSE.glsl(props.ctx, [value, rhs])
+            }
+          }
+
           throw new Error("Cannot call anything except built-in functions yet.")
         },
         drag: {
@@ -906,6 +995,19 @@ export const PKG_CORE_OPS: Package = {
             if (node.on) {
               deps.add(node.on)
             }
+            return
+          }
+
+          if (
+            node.name.type == "var" &&
+            node.name.kind == "var" &&
+            !node.name.sup
+          ) {
+            deps.add(node.args)
+            if (node.on) {
+              deps.add(node.on)
+            }
+            deps.track(node.name)
           }
         },
       },

@@ -1,6 +1,6 @@
 import type { Node } from "./ast/token"
 import { AST_TXRS } from "./ast/tx"
-import { Bindings } from "./lib/binding"
+import { Bindings, type BindingFn } from "./lib/binding"
 import { GlslContext } from "./lib/fn"
 import { FNS } from "./ops"
 import type { GlslValue, JsValue, SReal } from "./ty"
@@ -9,8 +9,8 @@ export interface PropsGlsl {
   base: SReal
   ctx: GlslContext
   /** GLSL bindings must contain variable names and be properly typed. */
-  bindings: Bindings<GlslValue>
-  bindingsJs: Bindings<JsValue>
+  bindings: Bindings<GlslValue | BindingFn>
+  bindingsJs: Bindings<JsValue | BindingFn>
 }
 
 export function glslCall(

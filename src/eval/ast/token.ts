@@ -2,9 +2,11 @@ import type { WordKind } from "../../field/cmd/leaf/var"
 import type { BigCmd } from "../../field/cmd/math/big"
 import type { ParenLhs, ParenRhs } from "../../field/cmd/math/brack"
 import type { Span } from "../../field/model"
+import { tryParseFnParam, type FnParam } from "../lib/binding"
 import { isSubscript } from "../lib/text"
 import { VARS } from "../ops/vars"
 import type { TyName } from "../ty"
+import { commalist } from "./collect"
 import { pass1_suffixes } from "./pass1.suffixes"
 import { pass2_implicits } from "./pass2.implicits"
 import { pass3_ordering } from "./pass3.ordering"
@@ -201,7 +203,7 @@ export type Piece = { value: Node; condition: Node }
 export type AstBinding = {
   type: "binding"
   name: PlainVar
-  args?: Node
+  params: FnParam[] | null
   value: Node
 }
 
@@ -257,7 +259,7 @@ export type Node = { [K in NodeName]: Nodes[K] & { type: K } }[NodeName]
 
 /** Parses a list of tokens into a complete AST. */
 export function tokensToAst(tokens: Node[], maybeBinding: boolean): Node {
-  if (
+  binding: if (
     maybeBinding &&
     tokens[0]?.type == "var" &&
     !tokens[0].sup &&
@@ -273,12 +275,37 @@ export function tokensToAst(tokens: Node[], maybeBinding: boolean): Node {
         tokens[2].kind == "cmp" &&
         tokens[2].value == "cmp-eq"))
   ) {
-    const args = tokens[1].type == "group" ? tokens[1].value : undefined
+    if (tokens[1].type == "group") {
+      const args = commalist(tokens[1].value).map((node) =>
+        tryParseFnParam(node),
+      )
+      if (!args.every((x) => x != null)) {
+        break binding
+      }
+
+      const used = new Set<string>()
+      for (const [id, name] of args) {
+        if (used.has(id)) {
+          throw new Error(
+            `Cannot use '${name}' for two parameters in the same function.`,
+          )
+        }
+        used.add(id)
+      }
+
+      return {
+        type: "binding",
+        name: tokens[0] as PlainVar,
+        params: args,
+        value: tokensToAst(tokens.slice(3), false),
+      }
+    }
+
     return {
       type: "binding",
       name: tokens[0] as PlainVar,
-      args,
-      value: tokensToAst(tokens.slice(args ? 3 : 2), false),
+      params: null,
+      value: tokensToAst(tokens.slice(2), false),
     }
   }
 
