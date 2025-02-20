@@ -25,12 +25,12 @@ export function tryId(name: Pick<Var, "value" | "sub">) {
 }
 
 export class Bindings<T> {
-  constructor(
-    private data: Record<string, T | undefined> = Object.create(null),
-  ) {}
+  private data: Record<string, T | undefined> = Object.create(null)
+
+  constructor(private core: Record<string, T> = Object.create(null)) {}
 
   get(id: string): T | undefined {
-    return this.data[id]
+    return this.data[id] ?? this.core[id]
   }
 
   withAll<U>(data: Record<string, T>, fn: () => U): U {

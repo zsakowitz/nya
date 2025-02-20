@@ -3,19 +3,11 @@ import { AST_TXRS } from "./ast/tx"
 import { Bindings } from "./lib/binding"
 import { FNS } from "./ops"
 import type { JsValue, SReal } from "./ty"
-import { real } from "./ty/create"
 
 export interface PropsJs {
   base: SReal
   /** JS bindings must be values. */
   bindingsJs: Bindings<JsValue>
-}
-
-export function defaultPropsJs(): PropsJs {
-  return {
-    base: real(10),
-    bindingsJs: new Bindings(),
-  }
 }
 
 export function jsCall(

@@ -1,11 +1,12 @@
 import type { Node, Var } from "../eval/ast/token"
 import type { PropsDrag } from "../eval/ast/tx"
 import { Deps } from "../eval/deps"
-import { defaultPropsGlsl, glsl, type PropsGlsl } from "../eval/glsl"
-import { defaultPropsJs, js, type PropsJs } from "../eval/js"
+import { glsl, type PropsGlsl } from "../eval/glsl"
+import { js, type PropsJs } from "../eval/js"
 import { Bindings, id, name, tryId } from "../eval/lib/binding"
 import { GlslContext, GlslHelpers } from "../eval/lib/fn"
 import type { GlslValue, JsValue } from "../eval/ty"
+import { frac } from "../eval/ty/create"
 import { TY_INFO } from "../eval/ty/info"
 import { Field } from "../field/field"
 import type { Options } from "../field/options"
@@ -15,11 +16,13 @@ export class Scope {
     const self = this
 
     this.propsJs = {
-      ...defaultPropsJs(),
+      base: frac(10, 1),
       get bindingsJs() {
         return self.bindingsJs
       },
     }
+
+    this.flush()
   }
 
   /** All fields controlled by this evaluation scope. */
@@ -57,9 +60,9 @@ export class Scope {
   /** A map from binding IDs to the fields which mention them. */
   private readonly deps: Record<string, FieldComputed[]> = Object.create(null)
 
-  bindingsJs = new Bindings<JsValue>()
-  bindingsDrag = new Bindings<[FieldComputed, Node]>()
-  bindingsGlsl = new Bindings<GlslValue>()
+  bindingsJs!: Bindings<JsValue>
+  bindingsDrag!: Bindings<[FieldComputed, Node]>
+  bindingsGlsl!: Bindings<GlslValue>
   readonly helpers = new GlslHelpers()
   readonly propsJs: PropsJs
 
@@ -74,7 +77,7 @@ export class Scope {
   propsGlsl(): PropsGlsl {
     const self = this
     return {
-      ...defaultPropsGlsl(),
+      base: frac(10, 1),
       get bindings() {
         return self.bindingsGlsl
       },
