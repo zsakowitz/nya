@@ -9,6 +9,7 @@ to do list for functions is:
 ❌ lcm, gcd, nPr, nCr
 ❌ way more geometry stuff
 ❌ 3D points and vectors
+❌ polygon([r32], [r32])
 
 to do list for things to plot is:
 ❌ f(x)
@@ -43,3 +44,24 @@ to do list for non-desmos stuff is:
 ❌ colors in display p3
 ❌ fractal explorer package
 ❌ tetration
+
+to do list for 110% compatiability is:
+❌ trigAngleMultiplier
+❌ rtxsqpone(r32) = r32^2 + 1
+❌ rtxsqmone(r32) = r32^2 - 1
+❌ hypot(r32, r32)
+❌ polyGamma
+❌ argmin
+❌ argmax
+❌ upperQuantileIndex
+❌ lowerQuantileIndex
+❌ upperQuartileIndex
+❌ lowerQuantileIndex
+❌ quartileIndex
+❌ [normal/t/poisson/etc.]cdf
+❌ [normal/t/poisson/etc.]pdf
+❌ inv[normal/t/poisson/etc.]
+❌ sqrt(x)
+❌ nthroot(x, y)
+❌ logbase(x, y)
+❌ factorial(x)
