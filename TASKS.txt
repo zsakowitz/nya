@@ -29,7 +29,7 @@ to do list for features is:
 ❌ images
 ❌ tone
 ❌ 3D
-❌ functions
+✅ functions
 ❌ draggable expression list
 ❌ persistent graph state
 ❌ construction menu
