@@ -32,6 +32,8 @@ to do list for features is:
 ❌ functions
 ❌ draggable expression list
 ❌ persistent graph state
+❌ construction menu
+❌ dependent geometry objects can be dragged
 😐 sliders
 
 to do list for non-desmos stuff is:
