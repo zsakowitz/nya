@@ -1,55 +1,18 @@
 import { options } from "../field/defaults.js"
-import { PKG_BOOL } from "../pkg/bool.js"
-import { PKG_COLOR_CORE } from "../pkg/color-core.js"
-import { PKG_COLOR_EXTRAS } from "../pkg/color-extras.js"
-import { PKG_CORE_CMP } from "../pkg/core-cmp.js"
-import { PKG_CORE_OPS } from "../pkg/core-ops.js"
-import { PKG_DISTRIBUTIONS } from "../pkg/distributions.js"
-import { PKG_EVAL } from "../pkg/eval.js"
-import { PKG_GEO_POINT } from "../pkg/geo-point.js"
-import { PKG_GEOMETRY } from "../pkg/geo/index.js"
-import { PKG_ITERATE } from "../pkg/iterate.js"
-import { PKG_ITHKUIL } from "../pkg/ithkuil.js"
-import { PKG_LIST_EXTRAS } from "../pkg/list-extras.js"
-import { PKG_NUM_COMPLEX } from "../pkg/num-complex.js"
-import { PKG_NUM_QUATERNION } from "../pkg/num-quaternion.js"
-import { PKG_REAL } from "../pkg/num-real.js"
-import { PKG_NUMBER_THEORY } from "../pkg/number-theory.js"
-import { PKG_SHADER, show } from "../pkg/shader.js"
-import { PKG_SLIDER } from "../pkg/slider.js"
-import { PKG_STATISTICS } from "../pkg/statistics.js"
-import { PKG_TEXT } from "../pkg/text.js"
-import { PKG_TRIG_COMPLEX } from "../pkg/trig-complex.js"
-import { PKG_TRIG_REAL } from "../pkg/trig-real.js"
-import { PKG_TRIG_HYPERBOLIC_REAL } from "../pkg/trigh-real.js"
+import { show } from "../show.js"
 import { SheetFactory } from "./factory.js"
 import { Expr } from "./ui/expr/index.js"
 
-const sheet = new SheetFactory(options)
-  .load(PKG_CORE_OPS)
-  .load(PKG_CORE_CMP)
-  .load(PKG_BOOL)
-  .load(PKG_REAL)
-  .load(PKG_TRIG_REAL)
-  .load(PKG_EVAL)
-  .load(PKG_SLIDER)
-  .load(PKG_COLOR_CORE)
-  .load(PKG_SHADER)
-  .load(PKG_GEO_POINT)
-  .load(PKG_NUM_COMPLEX)
-  .load(PKG_TRIG_COMPLEX)
-  .load(PKG_GEOMETRY)
-  .load(PKG_NUM_QUATERNION)
-  .load(PKG_TEXT)
-  .load(PKG_COLOR_EXTRAS)
-  .load(PKG_ITHKUIL)
-  .load(PKG_TRIG_HYPERBOLIC_REAL)
-  .load(PKG_STATISTICS)
-  .load(PKG_NUMBER_THEORY)
-  .load(PKG_LIST_EXTRAS)
-  .load(PKG_DISTRIBUTIONS)
-  .load(PKG_ITERATE)
-  .create()
+const ADD_ALL = !location.href.includes("localhost")
+const factory = new SheetFactory(options)
+
+if (ADD_ALL) {
+  for (const pkg of (await import("../all.js")).ALL) {
+    factory.load(pkg)
+  }
+}
+
+const sheet = factory.create()
 document.body.appendChild(sheet.el)
 
 function expr(source: { raw: readonly string[] }) {

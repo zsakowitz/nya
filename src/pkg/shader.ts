@@ -9,21 +9,19 @@ import { coerceValueGlsl } from "../eval/ty/coerce"
 import { any } from "../eval/ty/info"
 import { h, hx } from "../jsx"
 import { Store, defineExt } from "../sheet/ext"
-import type { Expr } from "../sheet/ui/expr"
 import { circle } from "../sheet/ui/expr/circle"
+import { PROP_SHOWN } from "../show"
 import { OP_PLOT, PKG_COLOR_CORE } from "./color-core"
-import { PKG_REAL } from "./num-real"
 import { OP_SUB, declareAddR64 } from "./core-ops"
+import { PKG_REAL } from "./num-real"
 
 const store = new Store((expr) => {
-  let show = false
-
   const circEmpty = circle("empty")
   const circShader = circle("shaderon")
   circShader.classList.add("hidden")
 
   const field = hx("input", { type: "checkbox", class: "sr-only" })
-  field.checked = show
+  field.checked = PROP_SHOWN.get(expr)
   field.addEventListener("input", () => setShow(field.checked))
 
   const el = hx(
@@ -38,7 +36,7 @@ const store = new Store((expr) => {
   return {
     el,
     get show() {
-      return show
+      return PROP_SHOWN.get(expr)
     },
     set show(v) {
       setShow(v)
@@ -46,16 +44,12 @@ const store = new Store((expr) => {
   }
 
   function setShow(v: boolean) {
-    show = v
-    circEmpty.classList.toggle("hidden", show)
-    circShader.classList.toggle("hidden", !show)
+    PROP_SHOWN.set(expr, v)
+    circEmpty.classList.toggle("hidden", v)
+    circShader.classList.toggle("hidden", !v)
     expr.display()
   }
 })
-
-export function show(expr: Expr) {
-  store.get(expr).show = true
-}
 
 const EXT_GLSL = defineExt({
   data(expr) {
