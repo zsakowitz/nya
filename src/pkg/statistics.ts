@@ -20,9 +20,7 @@ import {
 } from "../eval/ty"
 import {
   canCoerce,
-  coerceTyGlsl,
   coerceTyJs,
-  coerceValGlsl,
   coerceValJs,
   coerceValueGlsl,
   coerceValueJs,
