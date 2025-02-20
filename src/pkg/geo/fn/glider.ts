@@ -2,11 +2,9 @@
 /// <reference path="../index.ts" />
 
 import type { GlslContext } from "../../../eval/lib/fn"
-import { add } from "../../../eval/ops/op/add"
-import { mul } from "../../../eval/ops/op/mul"
-import { sub } from "../../../eval/ops/op/sub"
 import type { GlslVal, SPoint, SReal } from "../../../eval/ty"
 import { num, pt, real } from "../../../eval/ty/create"
+import { add, mul, sub } from "../../../eval/ty/ops"
 import { FN_GLIDER } from "../../geo-point"
 
 function js(

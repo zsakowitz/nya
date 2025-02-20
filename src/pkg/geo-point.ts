@@ -5,18 +5,12 @@ import { FnDist } from "../eval/ops/dist"
 import { FN_UNSIGN } from "../eval/ops/fn/unsign"
 import { FN_VALID } from "../eval/ops/fn/valid"
 import { abs, abs64, OP_ABS } from "../eval/ops/op/abs"
-import { add, addR64, OP_ADD } from "../eval/ops/op/add"
-import { declareMulR64, mul } from "../eval/ops/op/mul"
-import { neg, OP_NEG } from "../eval/ops/op/neg"
-import { declareOdotC64, OP_ODOT } from "../eval/ops/op/odot"
 import { OP_POINT } from "../eval/ops/op/point"
-import { OP_POS } from "../eval/ops/op/pos"
-import { OP_X } from "../eval/ops/op/x"
-import { OP_Y } from "../eval/ops/op/y"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "../eval/ops/vars"
 import { each, type JsValue } from "../eval/ty"
 import { approx, frac, num, pt, real, unpt } from "../eval/ty/create"
 import { highRes, TY_INFO, WRITE_POINT, type TyGlide } from "../eval/ty/info"
+import { add, mul, neg } from "../eval/ty/ops"
 import { OpEq } from "../field/cmd/leaf/cmp"
 import { CmdDot } from "../field/cmd/leaf/dot"
 import { CmdVar } from "../field/cmd/leaf/var"
@@ -32,8 +26,17 @@ import { OP_PLOT, plotJs } from "./color-core"
 import { EXT_EVAL } from "./eval"
 import { createPickByTy, PICK_BY_TY, picker } from "./geo/pick-normal"
 import { PKG_REAL } from "./num-real"
+import {
+  addR64,
+  declareMulR64,
+  declareOdotC64,
+  OP_ADD,
+  OP_NEG,
+  OP_ODOT,
+  OP_POS,
+} from "./ops-core"
 
-declare module "../eval/ty/index.js" {
+declare module "../eval/ty" {
   interface Tys {
     point32: SPoint
     point64: SPoint
@@ -42,6 +45,13 @@ declare module "../eval/ty/index.js" {
   interface TyComponents {
     point32: "r32"
     point64: "r64"
+  }
+}
+
+declare module "../eval/ast/token" {
+  interface PuncListSuffix {
+    ".x": 0
+    ".y": 0
   }
 }
 
@@ -346,6 +356,16 @@ export const FN_DEBUGPOINT = new FnDist(
   "given some point p, returns a color depending on which side of the currently active shader pixel that point p is on",
 )
 
+export const OP_X = new FnDist(
+  ".x",
+  "accesses the x-coordinate of a point or complex number",
+)
+
+export const OP_Y = new FnDist(
+  ".y",
+  "accesses the y-coordinate of a point or complex number",
+)
+
 export function declareDebugPoint(
   ctx: GlslContext,
   a: { type: "c32" | "point32"; expr: string },
@@ -575,6 +595,12 @@ export const PKG_GEO_POINT: Package = {
     fns: {
       screendistance: FN_SCREENDISTANCE,
       debugpoint: FN_DEBUGPOINT,
+    },
+    op: {
+      unary: {
+        ".x": OP_X,
+        ".y": OP_Y,
+      },
     },
   },
   sheet: {

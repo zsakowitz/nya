@@ -1,12 +1,9 @@
 import type { Package } from "."
 import type { Node } from "../eval/ast/token"
 import { NO_DRAG } from "../eval/ast/tx"
-import { safe } from "../eval/lib/util"
 import { doc, FnDist } from "../eval/ops/dist"
 import { FnDistManual, type FnOverload } from "../eval/ops/dist-manual"
 import { ALL_DOCS } from "../eval/ops/docs"
-import { OP_JUXTAPOSE } from "../eval/ops/op/juxtapose"
-import { OP_CDOT } from "../eval/ops/op/mul"
 import { each, type JsValue, type Ty } from "../eval/ty"
 import { frac, num } from "../eval/ty/create"
 import { Display } from "../eval/ty/display"
@@ -399,51 +396,6 @@ export const PKG_TEXT: Package = {
 }
 
 export type TextSegment = { type: "plain" | "latex"; value: string }
-
-OP_JUXTAPOSE.add(
-  ["text", "text"],
-  "text",
-  (a, b) => [...a.value, ...b.value],
-  () => {
-    throw new Error("Text cannot be created in shaders.")
-  },
-)
-
-OP_CDOT.add(
-  ["r32", "text"],
-  "text",
-  (a, b) => {
-    const av = Math.floor(num(a.value))
-    if (safe(av) && 0 <= av && av <= 10000) {
-      const ret = []
-      for (let i = 0; i < av; i++) {
-        ret.push(...b.value)
-      }
-      return ret
-    } else {
-      return []
-    }
-  },
-  err,
-)
-
-OP_CDOT.add(
-  ["text", "r32"],
-  "text",
-  (a, b) => {
-    const bv = Math.floor(num(b.value))
-    if (safe(bv) && 0 <= bv && bv <= 10000) {
-      const ret = []
-      for (let i = 0; i < bv; i++) {
-        ret.push(...a.value)
-      }
-      return ret
-    } else {
-      return []
-    }
-  },
-  err,
-)
 
 function err(): never {
   throw new Error("Text is not supported in shaders.")

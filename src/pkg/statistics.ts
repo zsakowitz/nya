@@ -7,10 +7,6 @@ import { ALL_DOCS, type WithDocs } from "../eval/ops/docs"
 import { issue } from "../eval/ops/issue"
 import { FnList } from "../eval/ops/list"
 import { abs } from "../eval/ops/op/abs"
-import { add, addR64 } from "../eval/ops/op/add"
-import { div } from "../eval/ops/op/div"
-import { mul } from "../eval/ops/op/mul"
-import { sub } from "../eval/ops/op/sub"
 import {
   each,
   join,
@@ -35,6 +31,7 @@ import {
 } from "../eval/ty/coerce"
 import { frac, num, real } from "../eval/ty/create"
 import { TY_INFO, type TyInfo } from "../eval/ty/info"
+import { add, div, mul, sub } from "../eval/ty/ops"
 import { Leaf } from "../field/cmd/leaf"
 import { BRACKS } from "../field/cmd/math/brack"
 import { Block, L, R } from "../field/model"
@@ -43,6 +40,7 @@ import { defineExt } from "../sheet/ext"
 import { createMultiEval } from "./eval"
 import { sqrt } from "./geo/fn/distance"
 import { PKG_REAL } from "./num-real"
+import { addR64 } from "./ops-core"
 
 declare module "../eval/ty" {
   interface Tys {

@@ -4,8 +4,6 @@ import { id } from "../eval/lib/binding"
 import type { Fn } from "../eval/ops"
 import { docByIcon } from "../eval/ops/dist"
 import { ALL_DOCS, type WithDocs } from "../eval/ops/docs"
-import { declareAddR64 } from "../eval/ops/op/add"
-import { OP_SUB } from "../eval/ops/op/sub"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "../eval/ops/vars"
 import { coerceValueGlsl } from "../eval/ty/coerce"
 import { any } from "../eval/ty/info"
@@ -15,6 +13,7 @@ import type { Expr } from "../sheet/ui/expr"
 import { circle } from "../sheet/ui/expr/circle"
 import { OP_PLOT, PKG_COLOR_CORE } from "./color-core"
 import { PKG_REAL } from "./num-real"
+import { OP_SUB, declareAddR64 } from "./ops-core"
 
 const store = new Store((expr) => {
   let show = false

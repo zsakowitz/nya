@@ -1,9 +1,8 @@
 import type { GlslContext } from "../../../eval/lib/fn"
 import { FnDist } from "../../../eval/ops/dist"
-import { add } from "../../../eval/ops/op/add"
-import { sub } from "../../../eval/ops/op/sub"
 import type { GlslVal, JsVal, Val } from "../../../eval/ty"
 import { pt } from "../../../eval/ty/create"
+import { add, sub } from "../../../eval/ty/ops"
 
 type LineLike = "segment" | "ray" | "line" | "vector"
 

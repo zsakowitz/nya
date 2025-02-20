@@ -1,8 +1,7 @@
-import { add } from "../ops/op/add"
-import { neg } from "../ops/op/neg"
 import type { GlslValue, JsValue, SExact, SReal } from "../ty"
 import { canCoerce, coerceValJs } from "../ty/coerce"
 import { approx, frac, num } from "../ty/create"
+import { add, neg } from "../ty/ops"
 import { splitValue } from "../ty/split"
 
 export function asNumericBase(value: JsValue): SReal {

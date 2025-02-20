@@ -1,7 +1,6 @@
 import type { Package } from "."
 import type { GlslContext } from "../eval/lib/fn"
 import { FnDist } from "../eval/ops/dist"
-import { OP_CDOT } from "../eval/ops/op/mul"
 import type { SColor, SReal } from "../eval/ty"
 import { frac, num, real } from "../eval/ty/create"
 import { TY_INFO } from "../eval/ty/info"
@@ -10,6 +9,7 @@ import { L } from "../field/model"
 import { h } from "../jsx"
 import { PKG_BOOL } from "./bool"
 import { PKG_REAL } from "./num-real"
+import { OP_CDOT } from "./ops-core"
 
 declare module "../eval/ty/index.js" {
   interface Tys {

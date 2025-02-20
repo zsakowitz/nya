@@ -6,26 +6,34 @@ import { FN_LN } from "../eval/ops/fn/ln"
 import { FN_UNSIGN } from "../eval/ops/fn/unsign"
 import { FN_VALID } from "../eval/ops/fn/valid"
 import { abs, abs64, OP_ABS } from "../eval/ops/op/abs"
-import { add, addR64, declareAddR64, OP_ADD } from "../eval/ops/op/add"
-import { div, OP_DIV } from "../eval/ops/op/div"
-import { declareMulC32, declareMulR64, mul, OP_CDOT } from "../eval/ops/op/mul"
-import { neg, OP_NEG } from "../eval/ops/op/neg"
-import { declareOdotC64, OP_ODOT } from "../eval/ops/op/odot"
-import { OP_POS } from "../eval/ops/op/pos"
-import { OP_RAISE } from "../eval/ops/op/raise"
-import { declareSubR64, OP_SUB, sub, subR64 } from "../eval/ops/op/sub"
-import { OP_X } from "../eval/ops/op/x"
-import { OP_Y } from "../eval/ops/op/y"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "../eval/ops/vars"
 import type { GlslVal, JsVal, SPoint } from "../eval/ty"
 import { isZero } from "../eval/ty/check"
 import { approx, num, pt, real } from "../eval/ty/create"
 import type { TyWrite } from "../eval/ty/display"
 import { highRes } from "../eval/ty/info"
+import { add, div, mul, neg, sub } from "../eval/ty/ops"
 import { h } from "../jsx"
 import { OP_PLOT, plotJs } from "./color-core"
 import { declareDebugPoint, FN_DEBUGPOINT, PKG_GEO_POINT } from "./geo-point"
 import { PKG_REAL } from "./num-real"
+import {
+  addR64,
+  declareAddR64,
+  declareMulC32,
+  declareMulR64,
+  declareOdotC64,
+  declareSubR64,
+  OP_ADD,
+  OP_CDOT,
+  OP_DIV,
+  OP_NEG,
+  OP_ODOT,
+  OP_POS,
+  OP_RAISE,
+  OP_SUB,
+  subR64,
+} from "./ops-core"
 
 declare module "../eval/ty/index.js" {
   interface Tys {
@@ -415,30 +423,6 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
       "c32",
       (a) => a.value,
       (_, a) => a.expr,
-    )
-
-    OP_X.add(
-      ["c64"],
-      "r64",
-      (a) => a.value.x,
-      (_, a) => `${a.expr}.xy`,
-    ).add(
-      ["c32"],
-      "r32",
-      (a) => a.value.x,
-      (_, a) => `${a.expr}.x`,
-    )
-
-    OP_Y.add(
-      ["c64"],
-      "r64",
-      (a) => a.value.y,
-      (_, a) => `${a.expr}.zw`,
-    ).add(
-      ["c32"],
-      "r32",
-      (a) => a.value.y,
-      (_, a) => `${a.expr}.y`,
     )
   },
   deps: [() => PKG_REAL, () => PKG_GEO_POINT],

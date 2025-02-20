@@ -1,9 +1,9 @@
+import { declareSubR64 } from "../../../pkg/ops-core"
 import type { GlslContext } from "../../lib/fn"
 import type { SReal } from "../../ty"
 import { approx, frac } from "../../ty/create"
 import { FnDist } from "../dist"
 import { declareCmpR64 } from "../fn/cmp"
-import { declareSubR64 } from "./sub"
 
 // TODO: could be exact for pythag triples
 export function abs(v: SReal): SReal {

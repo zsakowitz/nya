@@ -13,7 +13,6 @@ import { FN_UNSIGN } from "../eval/ops/fn/unsign"
 import { FN_VALID } from "../eval/ops/fn/valid"
 import { FnList } from "../eval/ops/list"
 import { abs, abs64, OP_ABS } from "../eval/ops/op/abs"
-import { add, addR64, OP_ADD } from "../eval/ops/op/add"
 import {
   OP_EQ,
   OP_GT,
@@ -26,23 +25,30 @@ import {
   OP_NLT,
   OP_NLTE,
 } from "../eval/ops/op/cmp"
-import { OP_CROSS } from "../eval/ops/op/cross"
-import { div, OP_DIV } from "../eval/ops/op/div"
-import { OP_MOD } from "../eval/ops/op/mod"
-import { mul, mulR64, OP_CDOT } from "../eval/ops/op/mul"
-import { neg, OP_NEG } from "../eval/ops/op/neg"
-import { OP_ODOT } from "../eval/ops/op/odot"
-import { OP_POS } from "../eval/ops/op/pos"
-import { OP_RAISE, raise } from "../eval/ops/op/raise"
-import { OP_SUB, sub, subR64 } from "../eval/ops/op/sub"
 import type { SReal, Ty, TyName, Type } from "../eval/ty"
 import { canCoerce, coerceValJs } from "../eval/ty/coerce"
 import { approx, frac, num, real } from "../eval/ty/create"
 import type { TyWrite } from "../eval/ty/display"
 import { highRes, TY_INFO } from "../eval/ty/info"
+import { add, div, mul, neg, raise, sub } from "../eval/ty/ops"
 import { splitDual } from "../eval/ty/split"
 import { h } from "../jsx"
 import { PKG_BOOL } from "./bool"
+import {
+  addR64,
+  mulR64,
+  OP_ADD,
+  OP_CDOT,
+  OP_CROSS,
+  OP_DIV,
+  OP_MOD,
+  OP_NEG,
+  OP_ODOT,
+  OP_POS,
+  OP_RAISE,
+  OP_SUB,
+  subR64,
+} from "./ops-core"
 
 declare module "../eval/ty/index.js" {
   interface Tys {

@@ -1,11 +1,8 @@
 import { FnDist } from "../../../eval/ops/dist"
 import { abs } from "../../../eval/ops/op/abs"
-import { add } from "../../../eval/ops/op/add"
-import { div } from "../../../eval/ops/op/div"
-import { mul } from "../../../eval/ops/op/mul"
-import { sub } from "../../../eval/ops/op/sub"
 import type { SPoint, SReal } from "../../../eval/ty"
 import { num, real } from "../../../eval/ty/create"
+import { add, div, mul, sub } from "../../../eval/ty/ops"
 import type { Point } from "../../../sheet/ui/paper"
 
 export function sqrt(val: SReal) {

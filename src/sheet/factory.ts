@@ -2,9 +2,10 @@ import {
   PRECEDENCE_MAP,
   type NodeName,
   type PuncInfix,
+  type PuncUnary,
 } from "../eval/ast/token"
 import { AST_TXRS } from "../eval/ast/tx"
-import { FNS, OP_BINARY } from "../eval/ops"
+import { FNS, OP_BINARY, OP_UNARY } from "../eval/ops"
 import { VARS } from "../eval/ops/vars"
 import type { TyName } from "../eval/ty"
 import { TY_INFO, type TyCoerce } from "../eval/ty/info"
@@ -118,6 +119,14 @@ export class SheetFactory {
       }
       OP_BINARY[key] = pkg.eval.op.binary[key]!.fn
       PRECEDENCE_MAP[key] = pkg.eval.op.binary[key]!.precedence
+    }
+
+    for (const keyRaw in pkg.eval?.op?.unary) {
+      const key = keyRaw as PuncUnary
+      if (/^[A-Za-z]+$/.test(key)) {
+        this.options.words.init(key, "prefix")
+      }
+      OP_UNARY[key] = pkg.eval.op.unary[key]!
     }
 
     return this

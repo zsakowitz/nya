@@ -1,4 +1,4 @@
-import type { NodeName, Nodes, PuncInfix } from "../eval/ast/token"
+import type { NodeName, Nodes, PuncInfix, PuncUnary } from "../eval/ast/token"
 import type { AstTxr } from "../eval/ast/tx"
 import type { Fn } from "../eval/ops"
 import type { WithDocs } from "../eval/ops/docs"
@@ -41,6 +41,7 @@ export interface Package {
     vars?: List<Builtin>
     fns?: List<Fn & WithDocs>
     op?: {
+      unary?: List<Fn & WithDocs, PuncUnary>
       binary?: List<
         {
           precedence: number

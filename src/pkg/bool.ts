@@ -2,10 +2,10 @@ import type { Package } from "."
 import { Precedence } from "../eval/ast/token"
 import { FnDist } from "../eval/ops/dist"
 import { FN_VALID } from "../eval/ops/fn/valid"
-import { OP_AND } from "../eval/ops/op/and"
 import { CmdWord } from "../field/cmd/leaf/word"
 import { L } from "../field/model"
 import { h } from "../jsx"
+import { OP_AND } from "./ops-core"
 
 declare module "../eval/ty/index.js" {
   interface Tys {

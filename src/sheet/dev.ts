@@ -12,6 +12,7 @@ import { PKG_NUM_COMPLEX } from "../pkg/num-complex.js"
 import { PKG_NUM_QUATERNION } from "../pkg/num-quaternion.js"
 import { PKG_REAL } from "../pkg/num-real.js"
 import { PKG_NUMBER_THEORY } from "../pkg/number-theory.js"
+import { PKG_OPS_CORE } from "../pkg/ops-core.js"
 import { PKG_SHADER, show } from "../pkg/shader.js"
 import { PKG_SLIDER } from "../pkg/slider.js"
 import { PKG_STATISTICS } from "../pkg/statistics.js"
@@ -23,6 +24,7 @@ import { SheetFactory } from "./factory.js"
 import { Expr } from "./ui/expr/index.js"
 
 const sheet = new SheetFactory(options)
+  .load(PKG_OPS_CORE)
   .load(PKG_BOOL)
   .load(PKG_REAL)
   .load(PKG_TRIG_REAL)

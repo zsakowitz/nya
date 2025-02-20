@@ -2,11 +2,9 @@
 /// <reference path="../index.ts" />
 
 import type { GlslContext } from "../../../eval/lib/fn"
-import { div } from "../../../eval/ops/op/div"
-import { mul } from "../../../eval/ops/op/mul"
-import { sub } from "../../../eval/ops/op/sub"
 import type { GlslVal, Tys, Val } from "../../../eval/ty"
 import { num, pt, real } from "../../../eval/ty/create"
+import { div, mul, sub } from "../../../eval/ty/ops"
 import { FN_INTERSECTION } from "../../geo-point"
 
 function js(

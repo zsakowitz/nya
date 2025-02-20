@@ -122,7 +122,7 @@ export function op(
 }
 
 export function opp(
-  latex: PuncInfix & string,
+  latex: Exclude<PuncInfix, ".">,
   mathspeak: string,
   html?: string,
   ascii?: string,

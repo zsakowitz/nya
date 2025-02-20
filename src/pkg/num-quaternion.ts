@@ -2,18 +2,21 @@ import type { Package } from "."
 import type { GlslContext } from "../eval/lib/fn"
 import { FN_UNSIGN } from "../eval/ops/fn/unsign"
 import { abs, OP_ABS } from "../eval/ops/op/abs"
-import { add, OP_ADD } from "../eval/ops/op/add"
-import { div, OP_DIV } from "../eval/ops/op/div"
-import { mul, OP_CDOT } from "../eval/ops/op/mul"
-import { neg, OP_NEG } from "../eval/ops/op/neg"
-import { OP_ODOT } from "../eval/ops/op/odot"
-import { OP_POS } from "../eval/ops/op/pos"
-import { OP_SUB, sub } from "../eval/ops/op/sub"
 import type { SReal, Tys } from "../eval/ty"
 import { approx, num, real } from "../eval/ty/create"
+import { add, div, mul, neg, sub } from "../eval/ty/ops"
 import { h } from "../jsx"
 import { FN_CONJ, PKG_NUM_COMPLEX } from "./num-complex"
 import { PKG_REAL } from "./num-real"
+import {
+  OP_ADD,
+  OP_CDOT,
+  OP_DIV,
+  OP_NEG,
+  OP_ODOT,
+  OP_POS,
+  OP_SUB,
+} from "./ops-core"
 
 declare module "../eval/ty/index.js" {
   interface Tys {
