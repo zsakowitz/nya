@@ -1,7 +1,9 @@
 import type { Package } from "."
 import { Precedence } from "../eval/ast/token"
+import { NO_DRAG } from "../eval/ast/tx"
 import { FnDist } from "../eval/ops/dist"
 import { FN_VALID } from "../eval/ops/fn/valid"
+import { piecewiseGlsl, piecewiseJs } from "../eval/ops/piecewise"
 import { CmdWord } from "../field/cmd/leaf/word"
 import { L } from "../field/model"
 import { h } from "../jsx"
@@ -14,6 +16,15 @@ declare module "../eval/ty/index.js" {
 
   interface TyComponents {
     bool: never
+  }
+}
+
+declare module "../eval/ast/token" {
+  interface PuncListInfix {
+    "\\and ": 0
+    "\\or ": 0
+    and: 0
+    or: 0
   }
 }
 
@@ -111,6 +122,23 @@ export const PKG_BOOL: Package = {
         and: { precedence: Precedence.BoolAnd, fn: OP_AND },
         "\\or ": { precedence: Precedence.BoolOr, fn: OP_OR },
         or: { precedence: Precedence.BoolOr, fn: OP_OR },
+      },
+    },
+    txrs: {
+      piecewise: {
+        js(node, props) {
+          return piecewiseJs(node.pieces, props)
+        },
+        glsl(node, props) {
+          return piecewiseGlsl(node.pieces, props)
+        },
+        drag: NO_DRAG,
+        deps(node, deps) {
+          for (const { condition, value } of node.pieces) {
+            deps.add(condition)
+            deps.add(value)
+          }
+        },
       },
     },
   },

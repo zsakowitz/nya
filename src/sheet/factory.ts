@@ -1,10 +1,11 @@
 import {
+  Precedence,
   PRECEDENCE_MAP,
   type NodeName,
   type PuncInfix,
   type PuncUnary,
 } from "../eval/ast/token"
-import { AST_TXRS } from "../eval/ast/tx"
+import { AST_TXRS, MAGIC_VARS } from "../eval/ast/tx"
 import { FNS, OP_BINARY, OP_UNARY } from "../eval/ops"
 import { VARS } from "../eval/ops/vars"
 import type { TyName } from "../eval/ty"
@@ -127,6 +128,18 @@ export class SheetFactory {
         this.options.words.init(key, "prefix")
       }
       OP_UNARY[key] = pkg.eval.op.unary[key]!
+    }
+
+    for (const key in pkg.eval?.op?.magic) {
+      if (/^[A-Za-z]+$/.test(key)) {
+        this.options.words.init(key, "magicprefix")
+      }
+      const magic = pkg.eval.op.magic[key]!
+      for (const key of magic.helpers || []) {
+        this.options.words.init(key, "infix")
+        PRECEDENCE_MAP[key] = Precedence.WordInfix
+      }
+      MAGIC_VARS[key] = magic
     }
 
     return this

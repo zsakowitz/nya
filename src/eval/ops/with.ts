@@ -1,25 +1,27 @@
 import type { Node } from "../ast/token"
+import { MAGIC_VARS } from "../ast/tx"
 import type { Deps } from "../deps"
 import { glsl, type PropsGlsl } from "../glsl"
 import { js, type PropsJs } from "../js"
 import { parseBindings, parseBindingVar } from "../lib/binding"
 import type { GlslValue, JsValue } from "../ty"
-import {
-  isIterate,
-  iterateDeps,
-  iterateGlsl,
-  iterateJs,
-  parseIterate,
-} from "./iterate"
 
 export function withBindingsJs(
   rhs: Node,
   seq: boolean,
   props: PropsJs,
 ): Record<string, JsValue> {
-  if (isIterate(rhs)) {
-    const parsed = parseIterate(rhs, { source: seq ? "withseq" : "with" })
-    return iterateJs(parsed, { eval: props, seq }).data
+  if (rhs.type == "magicvar") {
+    const mv = MAGIC_VARS[rhs.value]
+    if (!mv) {
+      throw new Error(`The '${rhs.value}' operator is not defined.`)
+    }
+    if (!mv.with) {
+      throw new Error(
+        `The '${rhs.value}' operator cannot be used after 'with'.`,
+      )
+    }
+    return mv.with.js(rhs, props, seq)
   }
 
   const bindings = parseBindings(rhs, (node) => parseBindingVar(node, "with"))
@@ -48,9 +50,17 @@ export function withBindingsGlsl(
   seq: boolean,
   props: PropsGlsl,
 ): Record<string, GlslValue> {
-  if (isIterate(rhs)) {
-    const parsed = parseIterate(rhs, { source: seq ? "withseq" : "with" })
-    return iterateGlsl(parsed, { eval: props, seq }).data
+  if (rhs.type == "magicvar") {
+    const mv = MAGIC_VARS[rhs.value]
+    if (!mv) {
+      throw new Error(`The '${rhs.value}' operator is not defined.`)
+    }
+    if (!mv.with) {
+      throw new Error(
+        `The '${rhs.value}' operator cannot be used after 'with'.`,
+      )
+    }
+    return mv.with.glsl(rhs, props, seq)
   }
 
   const bindings = parseBindings(rhs, (node) => parseBindingVar(node, "with"))
@@ -79,9 +89,17 @@ export function withBindingsDeps(
   seq: boolean,
   deps: Deps,
 ): string[] {
-  if (isIterate(rhs)) {
-    const parsed = parseIterate(rhs, { source: seq ? "withseq" : "with" })
-    return iterateDeps(parsed, deps)
+  if (rhs.type == "magicvar") {
+    const mv = MAGIC_VARS[rhs.value]
+    if (!mv) {
+      throw new Error(`The '${rhs.value}' operator is not defined.`)
+    }
+    if (!mv.with) {
+      throw new Error(
+        `The '${rhs.value}' operator cannot be used after 'with'.`,
+      )
+    }
+    return mv.with.deps(rhs, deps, seq)
   }
 
   const bindings = parseBindings(rhs, (node) => parseBindingVar(node, "with"))

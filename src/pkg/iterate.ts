@@ -1,20 +1,28 @@
-import type { MagicVar, Node } from "../ast/token"
-import type { Deps } from "../deps"
-import { glsl, type PropsGlsl } from "../glsl"
-import { js, type PropsJs } from "../js"
+import type { Package } from "."
+import type { MagicVar, Node } from "../eval/ast/token"
+import type { Deps } from "../eval/deps"
+import { type PropsGlsl, glsl } from "../eval/glsl"
+import { type PropsJs, js } from "../eval/js"
 import {
+  type Binding,
   id,
   name,
   parseBindings,
   parseUpdateVar,
   tryParseBindingVar,
-  type Binding,
-} from "../lib/binding"
-import type { GlslValue, JsValue } from "../ty"
-import { list } from "../ty"
-import { isReal } from "../ty/coerce"
-import { num } from "../ty/create"
-import { declareGlsl } from "../ty/decl"
+} from "../eval/lib/binding"
+import { type GlslValue, type JsValue, list } from "../eval/ty"
+import { isReal } from "../eval/ty/coerce"
+import { num, real } from "../eval/ty/create"
+import { declareGlsl } from "../eval/ty/decl"
+
+declare module "../eval/ast/token" {
+  interface PuncListInfix {
+    while: 0
+    until: 0
+    from: 0
+  }
+}
 
 // TODO: can't handle changing types in webgl
 
@@ -390,4 +398,85 @@ export function iterateDeps(iterate: Iterate, deps: Deps): string[] {
   })
 
   return ids
+}
+
+export const PKG_ITERATE: Package = {
+  id: "nya:iterate",
+  name: "iterate",
+  label: "easily repeat expressions",
+  eval: {
+    op: {
+      magic: {
+        iterate: {
+          helpers: ["while", "until", "from"],
+          js(node, props) {
+            if (node.value == "iterate") {
+              const parsed = parseIterate(node, { source: "expr" })
+              const { data, count } = iterateJs(parsed, {
+                eval: props,
+                seq: false,
+              })
+              if (parsed.retval == "count") {
+                return { type: "r64", list: false, value: real(count) }
+              } else {
+                return data[parsed.retval!.id]!
+              }
+            }
+            throw new Error(
+              `The '${node.value}' operator is not supported yet.`,
+            )
+          },
+          glsl(node, props) {
+            if (node.value == "iterate") {
+              const parsed = parseIterate(node, { source: "expr" })
+              const { data, count } = iterateGlsl(parsed, {
+                eval: props,
+                seq: false,
+              })
+              if (parsed.retval == "count") {
+                return count
+              } else {
+                return data[parsed.retval!.id]!
+              }
+            }
+            throw new Error(
+              `The '${node.value}' operator is not supported yet.`,
+            )
+          },
+          deps(node, deps) {
+            if (node.value == "iterate") {
+              const parsed = parseIterate(node, { source: "expr" })
+              iterateDeps(parsed, deps)
+            }
+          },
+          with: {
+            js(node, props, seq) {
+              return iterateJs(
+                parseIterate(node, { source: seq ? "withseq" : "with" }),
+                {
+                  seq,
+                  eval: props,
+                },
+              ).data
+            },
+            glsl(node, props, seq) {
+              return iterateGlsl(
+                parseIterate(node, { source: seq ? "withseq" : "with" }),
+                {
+                  seq,
+                  eval: props,
+                },
+              ).data
+            },
+            deps(node, deps, seq) {
+              return iterateDeps(
+                parseIterate(node, { source: seq ? "withseq" : "with" }),
+                deps,
+              )
+            },
+          },
+        },
+      },
+    },
+  },
 }

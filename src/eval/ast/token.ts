@@ -41,18 +41,11 @@ export interface PuncListInfix extends PuncListPm, PuncListCmp {
   with: 0
   withseq: 0
   base: 0
-  while: 0
-  until: 0
-  from: 0
-  "\\and ": 0
-  "\\or ": 0
   "..": 0
   "...": 0
   "\\cdot ": 0
   "÷": 0
   mod: 0
-  and: 0
-  or: 0
   "\\to ": 0
   "\\Rightarrow ": 0
   ".": 0
@@ -128,16 +121,6 @@ export const PRECEDENCE_MAP: Partial<Record<PuncBinaryStr, number>> = {
   "\\mp ": Precedence.Sum,
   "..": Precedence.Range,
   "...": Precedence.Range,
-  "cmp-lt": Precedence.Comparison,
-  "cmp-lte": Precedence.Comparison,
-  "cmp-nlt": Precedence.Comparison,
-  "cmp-nlte": Precedence.Comparison,
-  "cmp-gt": Precedence.Comparison,
-  "cmp-gte": Precedence.Comparison,
-  "cmp-ngt": Precedence.Comparison,
-  "cmp-ngte": Precedence.Comparison,
-  "cmp-eq": Precedence.Comparison,
-  "cmp-neq": Precedence.Comparison,
   "\\Rightarrow ": Precedence.DoubleStruckRight,
   "\\to ": Precedence.Action,
   ",": Precedence.Comma,
@@ -145,9 +128,6 @@ export const PRECEDENCE_MAP: Partial<Record<PuncBinaryStr, number>> = {
   for: Precedence.WordInfix,
   with: Precedence.WordInfix,
   withseq: Precedence.WordInfix,
-  until: Precedence.WordInfix,
-  while: Precedence.WordInfix,
-  from: Precedence.WordInfix,
 }
 Object.setPrototypeOf(PRECEDENCE_MAP, null)
 
@@ -208,7 +188,6 @@ export type PlainVar = Var & { sup?: undefined; kind: "var" }
  * succeeding tokens and voids the concept of precedence entirely.
  */
 export type MagicVar = {
-  type: "magicvar"
   value: string
   sub?: Node
   sup?: Node

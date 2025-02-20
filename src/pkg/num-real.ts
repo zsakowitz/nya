@@ -1,4 +1,6 @@
 import type { Package } from "."
+import { js } from "../eval/js"
+import { asNumericBase, parseNumberGlsl, parseNumberJs } from "../eval/lib/base"
 import { safe } from "../eval/lib/util"
 import { docByIcon, FnDist } from "../eval/ops/dist"
 import {
@@ -524,6 +526,43 @@ float _helper_cmp_r32(float a, float b) {
         js: { type: "r64", value: real(Infinity), list: false },
         glsl: { type: "r64", expr: "vec2(1.0/0.0)", list: false },
         display: false,
+      },
+    },
+    txrs: {
+      num: {
+        js(node, props) {
+          return parseNumberJs(
+            node.value,
+            node.sub ? asNumericBase(js(node.sub, props)) : props.base,
+          )
+        },
+        glsl(node, props) {
+          return parseNumberGlsl(
+            node.value,
+            node.sub ? asNumericBase(js(node.sub, props)) : props.base,
+          )
+        },
+        drag: {
+          num(node, props) {
+            // TODO: restrict numbers in sliders
+            if (node.span) {
+              return {
+                span: node.span,
+                field: props.field,
+              }
+            }
+            return null
+          },
+          point() {
+            return null
+          },
+        },
+        deps(node, deps) {
+          if (node.sub) {
+            deps.add(node.sub)
+          }
+          return
+        },
       },
     },
   },

@@ -3,20 +3,12 @@ import type { FieldComputed } from "../../sheet/deps"
 import type { Deps } from "../deps"
 import { glsl, type PropsGlsl } from "../glsl"
 import { js, type PropsJs } from "../js"
-import { asNumericBase, parseNumberGlsl, parseNumberJs } from "../lib/base"
 import { type Bindings } from "../lib/binding"
 import type { GlslContext } from "../lib/fn"
 import { safe } from "../lib/util"
-import {
-  iterateDeps,
-  iterateGlsl,
-  iterateJs,
-  parseIterate,
-} from "../ops/iterate"
 import { indexGlsl, indexJs } from "../ops/op"
 import { OP_ABS } from "../ops/op/abs"
 import { OP_POINT } from "../ops/op/point"
-import { piecewiseGlsl, piecewiseJs } from "../ops/piecewise"
 import { each, type GlslValue, type JsVal, type JsValue } from "../ty"
 import {
   canCoerce,
@@ -26,9 +18,9 @@ import {
   listGlsl,
   listJs,
 } from "../ty/coerce"
-import { num, real } from "../ty/create"
+import { num } from "../ty/create"
 import { commalist } from "./collect"
-import type { Node } from "./token"
+import type { MagicVar, Node, NodeName, Nodes, PuncBinaryStr } from "./token"
 
 export interface AstTxr<T> {
   js(node: T, props: PropsJs): JsValue
@@ -184,44 +176,25 @@ export function fnExponentGlsl(
   }
 }
 
-export const AST_TXRS: {
-  [K in Node["type"]]?: AstTxr<Extract<Node, { type: K }>>
-} = {
-  num: {
-    js(node, props) {
-      return parseNumberJs(
-        node.value,
-        node.sub ? asNumericBase(js(node.sub, props)) : props.base,
-      )
-    },
-    glsl(node, props) {
-      return parseNumberGlsl(
-        node.value,
-        node.sub ? asNumericBase(js(node.sub, props)) : props.base,
-      )
-    },
-    drag: {
-      num(node, props) {
-        // TODO: restrict numbers in sliders
-        if (node.span) {
-          return {
-            span: node.span,
-            field: props.field,
-          }
-        }
-        return null
-      },
-      point() {
-        return null
-      },
-    },
-    deps(node, deps) {
-      if (node.sub) {
-        deps.add(node.sub)
-      }
-      return
-    },
-  },
+export interface MagicVarTxr {
+  helpers?: readonly PuncBinaryStr[]
+  js: AstTxr<MagicVar>["js"]
+  glsl: AstTxr<MagicVar>["glsl"]
+  deps: AstTxr<MagicVar>["deps"]
+  with?: {
+    js(node: MagicVar, props: PropsJs, seq: boolean): Record<string, JsValue>
+    glsl(
+      node: MagicVar,
+      props: PropsGlsl,
+      seq: boolean,
+    ): Record<string, GlslValue>
+    deps(node: MagicVar, deps: Deps, seq: boolean): string[]
+  }
+}
+
+export const MAGIC_VARS: Record<string, MagicVarTxr> = Object.create(null)
+
+export const AST_TXRS: { [K in NodeName]?: AstTxr<Nodes[K]> } = {
   group: {
     js(node, props) {
       if (node.lhs == "(" && node.rhs == ")") {
@@ -300,21 +273,6 @@ export const AST_TXRS: {
       deps.add(node.value)
     },
   },
-  piecewise: {
-    js(node, props) {
-      return piecewiseJs(node.pieces, props)
-    },
-    glsl(node, props) {
-      return piecewiseGlsl(node.pieces, props)
-    },
-    drag: NO_DRAG,
-    deps(node, deps) {
-      for (const { condition, value } of node.pieces) {
-        deps.add(condition)
-        deps.add(value)
-      }
-    },
-  },
   error: joint(
     ({ reason }) => {
       throw new Error(reason)
@@ -323,34 +281,23 @@ export const AST_TXRS: {
   ),
   magicvar: {
     js(node, props) {
-      if (node.value == "iterate") {
-        const parsed = parseIterate(node, { source: "expr" })
-        const { data, count } = iterateJs(parsed, { eval: props, seq: false })
-        if (parsed.retval == "count") {
-          return { type: "r64", list: false, value: real(count) }
-        } else {
-          return data[parsed.retval!.id]!
-        }
+      if (node.value in MAGIC_VARS) {
+        return MAGIC_VARS[node.value]!.js(node as never, props)
       }
-      throw new Error(`The '${node.value}' operator is not supported yet.`)
+      throw new Error(`The '${node.value}' operator is not defined.`)
     },
     glsl(node, props) {
-      if (node.value == "iterate") {
-        const parsed = parseIterate(node, { source: "expr" })
-        const { data, count } = iterateGlsl(parsed, { eval: props, seq: false })
-        if (parsed.retval == "count") {
-          return count
-        } else {
-          return data[parsed.retval!.id]!
-        }
+      if (node.value in MAGIC_VARS) {
+        return MAGIC_VARS[node.value]!.glsl(node as never, props)
       }
-      throw new Error(`The '${node.value}' operator is not supported yet.`)
+      throw new Error(`The '${node.value}' operator is not defined.`)
     },
     drag: NO_DRAG,
     deps(node, deps) {
-      if (node.value == "iterate") {
-        const parsed = parseIterate(node, { source: "expr" })
-        iterateDeps(parsed, deps)
+      if (node.value in MAGIC_VARS) {
+        MAGIC_VARS[node.value]!.deps(node as never, deps)
+      } else {
+        throw new Error(`The '${node.value}' operator is not defined.`)
       }
     },
   },

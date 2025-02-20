@@ -221,12 +221,6 @@ export const words = new WordMap<WordKind>([
   ["base", "infix"],
   ["log", "prefix"],
   ["ln", "prefix"],
-
-  // Iteration
-  ["iterate", "magicprefix"],
-  ["while", "infix"],
-  ["until", "infix"],
-  ["from", "infix"],
 ]).freeze()
 
 export const latex = new WordMap<LatexInit>([

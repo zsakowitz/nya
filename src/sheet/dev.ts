@@ -8,24 +8,22 @@ import { PKG_DISTRIBUTIONS } from "../pkg/distributions.js"
 import { PKG_EVAL } from "../pkg/eval.js"
 import { PKG_GEO_POINT } from "../pkg/geo-point.js"
 import { PKG_GEOMETRY } from "../pkg/geo/index.js"
+import { PKG_ITERATE } from "../pkg/iterate.js"
 import { PKG_ITHKUIL } from "../pkg/ithkuil.js"
 import { PKG_LIST_EXTRAS } from "../pkg/list-extras.js"
 import { PKG_NUM_COMPLEX } from "../pkg/num-complex.js"
 import { PKG_NUM_QUATERNION } from "../pkg/num-quaternion.js"
 import { PKG_REAL } from "../pkg/num-real.js"
 import { PKG_NUMBER_THEORY } from "../pkg/number-theory.js"
-import { PKG_SHADER } from "../pkg/shader.js"
+import { PKG_SHADER, show } from "../pkg/shader.js"
 import { PKG_SLIDER } from "../pkg/slider.js"
 import { PKG_STATISTICS } from "../pkg/statistics.js"
 import { PKG_TEXT } from "../pkg/text.js"
 import { PKG_TRIG_COMPLEX } from "../pkg/trig-complex.js"
 import { PKG_TRIG_REAL } from "../pkg/trig-real.js"
 import { PKG_TRIG_HYPERBOLIC_REAL } from "../pkg/trigh-real.js"
-// import { show } from "../pkg/shader.js"
 import { SheetFactory } from "./factory.js"
 import { Expr } from "./ui/expr/index.js"
-
-function show(_expr: Expr) {}
 
 const sheet = new SheetFactory(options)
   .load(PKG_CORE_OPS)
@@ -50,6 +48,7 @@ const sheet = new SheetFactory(options)
   .load(PKG_NUMBER_THEORY)
   .load(PKG_LIST_EXTRAS)
   .load(PKG_DISTRIBUTIONS)
+  .load(PKG_ITERATE)
   .create()
 document.body.appendChild(sheet.el)
 
