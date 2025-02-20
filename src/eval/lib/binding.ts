@@ -87,8 +87,7 @@ export function parseBindingVar(node: Node, kind: "with" | "for"): Binding {
       node.type == "cmplist" &&
       node.items.length == 2 &&
       node.ops.length == 1 &&
-      node.ops[0]?.dir == "=" &&
-      !node.ops[0].neg &&
+      node.ops[0] == "cmp-eq" &&
       node.items[0]?.type == "var" &&
       node.items[0].kind == "var" &&
       !node.items[0].sup &&
@@ -109,8 +108,7 @@ export function tryParseBindingVar(node: Node): Binding | undefined {
       node.type == "cmplist" &&
       node.items.length == 2 &&
       node.ops.length == 1 &&
-      node.ops[0]?.dir == "=" &&
-      !node.ops[0].neg &&
+      node.ops[0] == "cmp-eq" &&
       node.items[0]?.type == "var" &&
       node.items[0].kind == "var" &&
       !node.items[0].sup &&

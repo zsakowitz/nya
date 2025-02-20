@@ -20,7 +20,7 @@ import {
   OP_GTE,
   OP_LT,
   OP_LTE,
-  OP_NE,
+  OP_NEQ,
   OP_NGT,
   OP_NGTE,
   OP_NLT,
@@ -386,7 +386,7 @@ export const PKG_REAL: Package = {
     addCmp(OP_NGTE, (a, b) => !(a >= b), "!>=", "== -1.0")
 
     addCmp(OP_EQ, (a, b) => a == b, "==", "==  0.0")
-    addCmp(OP_NE, (a, b) => a != b, "!==", "==  0.0")
+    addCmp(OP_NEQ, (a, b) => a != b, "!==", "==  0.0")
 
     FN_CMP.add(["r64", "r64"], "r32", cmpJs, (ctx, a, b) => {
       // TODO: NaN probably outputs 0 in r64

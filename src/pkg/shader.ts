@@ -80,8 +80,7 @@ const EXT_GLSL = defineExt({
     if (
       ast.type == "cmplist" &&
       ast.ops.length == 1 &&
-      ast.ops[0]!.dir == "=" &&
-      !ast.ops[0]!.neg
+      ast.ops[0]! == "cmp-eq"
     ) {
       const props = data.expr.sheet.scope.propsGlsl()
       const lhs = ast.items[0]!

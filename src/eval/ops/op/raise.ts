@@ -17,7 +17,6 @@ export function raise(a: SReal, b: SReal): SReal {
     const n = a.n ** num(b)
     const d = a.d ** num(b)
     if (safe(n) && safe(d)) return frac(n, d)
-    return real(n / d)
   }
 
   // TODO: things like (-8) ** (1/3) don't work

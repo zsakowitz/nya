@@ -14,8 +14,8 @@ export type PuncPm = "+" | "-" | "\\pm " | "\\mp "
 
 /** A punctuation token which represents a binary comparison operator. */
 export type PuncCmp =
-  | { dir: "=" | "~" | "≈"; neg: boolean }
-  | { dir: "<" | ">"; eq: boolean; neg: boolean }
+  | `cmp-${"" | "n"}${"eq" | "tilde" | "approx"}`
+  | `cmp-${"" | "n"}${"l" | "g"}t${"" | "e"}`
 
 /** A punctuation token which represents a binary operator. */
 export type PuncInfix =
@@ -48,7 +48,7 @@ export type PuncInfix =
 export type PuncUnary = "\\neg " | PuncPm | "!"
 
 /** The string tags for all binary operators. */
-export type PuncBinaryStr = PuncInfix | PuncPm | PuncCmp["dir"]
+export type PuncBinaryStr = PuncInfix | PuncPm | PuncCmp
 
 /**
  * Additional elements and rules apply during parsing:
@@ -97,11 +97,16 @@ export const PRECEDENCE_MAP: Record<string, number> = {
   "\\mp ": Precedence.Sum,
   "..": Precedence.Range,
   "...": Precedence.Range,
-  "<": Precedence.Comparison,
-  ">": Precedence.Comparison,
-  "=": Precedence.Comparison,
-  "~": Precedence.Comparison,
-  "≈": Precedence.Comparison,
+  "cmp-lt": Precedence.Comparison,
+  "cmp-lte": Precedence.Comparison,
+  "cmp-nlt": Precedence.Comparison,
+  "cmp-nlte": Precedence.Comparison,
+  "cmp-gt": Precedence.Comparison,
+  "cmp-gte": Precedence.Comparison,
+  "cmp-ngt": Precedence.Comparison,
+  "cmp-ngte": Precedence.Comparison,
+  "cmp-eq": Precedence.Comparison,
+  "cmp-neq": Precedence.Comparison,
   "\\and ": Precedence.BoolAnd,
   and: Precedence.BoolAnd,
   "\\or ": Precedence.BoolOr,
@@ -121,11 +126,11 @@ Object.setPrototypeOf(PRECEDENCE_MAP, null)
 
 /** Gets the precedence of some operator. */
 export function getPrecedence(op: PuncBinary["value"]) {
-  if (typeof op == "string") {
-    return PRECEDENCE_MAP[op] ?? Precedence.Comma
-  } else {
-    return PRECEDENCE_MAP[op.dir] ?? Precedence.Comma
+  const prec = PRECEDENCE_MAP[op]
+  if (prec == null) {
+    throw new Error(`The operator '${op}' isn't defined.`)
   }
+  return prec
 }
 
 /** A punctuation token. */
@@ -254,15 +259,13 @@ export function tokensToAst(tokens: Node[], maybeBinding: boolean): Node {
     (tokens[0].sub ? isSubscript(tokens[0].sub) : !(tokens[0].value in VARS)) &&
     ((tokens[1]?.type == "punc" &&
       tokens[1].kind == "cmp" &&
-      tokens[1].value.dir == "=" &&
-      !tokens[1].value.neg) ||
+      tokens[1].value == "cmp-eq") ||
       (tokens[1]?.type == "group" &&
         tokens[1].lhs == "(" &&
         tokens[1].rhs == ")" &&
         tokens[2]?.type == "punc" &&
         tokens[2].kind == "cmp" &&
-        tokens[2].value.dir == "=" &&
-        !tokens[2].value.neg))
+        tokens[2].value == "cmp-eq"))
   ) {
     const args = tokens[1].type == "group" ? tokens[1].value : undefined
     return {

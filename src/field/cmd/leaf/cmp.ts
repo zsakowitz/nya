@@ -50,14 +50,10 @@ type Data = readonly [
   reader: string,
   html: string,
   ascii: string,
+  kind: PuncCmp,
 ]
 
-function ceq(
-  kind: Extract<PuncCmp, { dir: string; neg: boolean; eq?: undefined }>["dir"],
-  eq: Data,
-  ne: Data,
-  endsImplicitGroup = true,
-) {
+function ceq(eq: Data, ne: Data, endsImplicitGroup = true) {
   return class extends OpCeq {
     static init(cursor: Cursor, props: InitProps) {
       this.exitSupSub(cursor, props)
@@ -110,17 +106,17 @@ function ceq(
     }
 
     ir(tokens: Node[]): void {
+      const op = this.neg ? ne : eq
       tokens.push({
         type: "punc",
         kind: "cmp",
-        value: { dir: kind, neg: this.neg },
+        value: op[4],
       })
     }
   }
 }
 
 function cmp(
-  kind: Extract<PuncCmp, { dir: string; neg: boolean; eq: boolean }>["dir"],
   normal: Data,
   normalNeg: Data,
   orEq: Data,
@@ -205,16 +201,15 @@ function cmp(
       tokens.push({
         type: "punc",
         kind: "cmp",
-        value: { dir: kind, eq: this.eq, neg: this.neg },
+        value: this.op[4],
       })
     }
   }
 }
 
 export class OpEq extends ceq(
-  "=",
-  ["=", " is equal to ", "=", "="],
-  ["\\neq ", " is not equals to ", "≠", "≠"],
+  ["=", " is equal to ", "=", "=", "cmp-eq"],
+  ["\\neq ", " is not equals to ", "≠", "≠", "cmp-neq"],
 ) {
   static init(cursor: Cursor, props: InitProps) {
     if (props.input == "=") {
@@ -229,9 +224,8 @@ export class OpEq extends ceq(
 }
 
 export class OpTilde extends ceq(
-  "~",
-  ["~", " tilde ", "~", "~"],
-  ["\\not\\sim ", " not-tilde ", "≁", "≁"],
+  ["~", " tilde ", "~", "~", "cmp-tilde"],
+  ["\\not\\sim ", " not-tilde ", "≁", "≁", "cmp-ntilde"],
 ) {
   static init(cursor: Cursor, props: InitProps): void {
     if (cursor[L] instanceof OpTilde && !cursor[L].neg) {
@@ -244,9 +238,8 @@ export class OpTilde extends ceq(
 }
 
 export class OpApprox extends ceq(
-  "≈",
-  ["≈", " approximately equal to ", "≈", "≈"],
-  ["\\not\\approx ", " not approximately equal to ", "≉", "≉"],
+  ["≈", " approximately equal to ", "≈", "≈", "cmp-approx"],
+  ["\\not\\approx ", " not approximately equal to ", "≉", "≉", "cmp-napprox"],
 ) {
   delete(cursor: Cursor, from: Dir): void {
     if (!this.neg && from == R) {
@@ -263,19 +256,17 @@ export class OpApprox extends ceq(
 }
 
 export const OpLt = cmp(
-  "<",
-  ["<", " is less than ", "<", "<"],
-  ["\\nless ", " is not less than ", "≮", "≮"],
-  ["\\leq ", " is less than or equal to ", "≤", "<="],
-  ["\\nleq ", " is not less than or equal to ", "≰", "≰"],
+  ["<", " is less than ", "<", "<", "cmp-lt"],
+  ["\\nless ", " is not less than ", "≮", "≮", "cmp-nlt"],
+  ["\\leq ", " is less than or equal to ", "≤", "<=", "cmp-lte"],
+  ["\\nleq ", " is not less than or equal to ", "≰", "≰", "cmp-nlte"],
 )
 
 export class OpGt extends cmp(
-  ">",
-  [">", " is greater than ", ">", ">"],
-  ["\\ngtr ", " is not greater than ", "≯", "≯"],
-  ["\\geq ", " is greater than or equal to ", "≥", ">="],
-  ["\\ngeq ", " is not greater than or equal to ", "≱", "≱"],
+  [">", " is greater than ", ">", ">", "cmp-gt"],
+  ["\\ngtr ", " is not greater than ", "≯", "≯", "cmp-ngt"],
+  ["\\geq ", " is greater than or equal to ", "≥", ">=", "cmp-gte"],
+  ["\\ngeq ", " is not greater than or equal to ", "≱", "≱", "cmp-ngte"],
 ) {
   static init(cursor: Cursor, props: InitProps) {
     if (props.input == ">") {

@@ -370,7 +370,7 @@ export class CmdVar extends Leaf {
     }
     return (
       {}.hasOwnProperty.call(PRECEDENCE_MAP, text) &&
-      PRECEDENCE_MAP[text as keyof typeof PRECEDENCE_MAP] <= Precedence.Sum
+      PRECEDENCE_MAP[text]! <= Precedence.Sum
     )
   }
 }
