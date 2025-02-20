@@ -13,7 +13,7 @@ import type { Expr } from "../sheet/ui/expr"
 import { circle } from "../sheet/ui/expr/circle"
 import { OP_PLOT, PKG_COLOR_CORE } from "./color-core"
 import { PKG_REAL } from "./num-real"
-import { OP_SUB, declareAddR64 } from "./ops-core"
+import { OP_SUB, declareAddR64 } from "./core-ops"
 
 const store = new Store((expr) => {
   let show = false

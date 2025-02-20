@@ -195,8 +195,8 @@ export const OP_RAISE = new FnDist("^", "raises a value to an exponent")
 
 export const OP_SUB = new FnDist("-", "subtracts two values")
 
-export const PKG_OPS_CORE: Package = {
-  id: "nya:ops-core",
+export const PKG_CORE_OPS: Package = {
+  id: "nya:core-ops",
   name: "basic operators",
   label: null,
   eval: {
@@ -674,7 +674,6 @@ export const PKG_OPS_CORE: Package = {
           deps.add(node.b)
         },
       },
-
       call: {
         js(node, props) {
           if (

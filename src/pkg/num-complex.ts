@@ -34,7 +34,7 @@ import {
   OP_RAISE,
   OP_SUB,
   subR64,
-} from "./ops-core"
+} from "./core-ops"
 
 declare module "../eval/ty/index.js" {
   interface Tys {

@@ -9,7 +9,7 @@ import { L } from "../field/model"
 import { h } from "../jsx"
 import { PKG_BOOL } from "./bool"
 import { PKG_REAL } from "./num-real"
-import { OP_CDOT } from "./ops-core"
+import { OP_CDOT } from "./core-ops"
 
 declare module "../eval/ty/index.js" {
   interface Tys {

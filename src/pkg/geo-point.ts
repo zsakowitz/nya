@@ -35,7 +35,7 @@ import {
   OP_NEG,
   OP_ODOT,
   OP_POS,
-} from "./ops-core"
+} from "./core-ops"
 
 declare module "../eval/ty" {
   interface Tys {

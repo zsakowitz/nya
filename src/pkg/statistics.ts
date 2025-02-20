@@ -39,7 +39,7 @@ import { defineExt } from "../sheet/ext"
 import { createMultiEval } from "./eval"
 import { sqrt } from "./geo/fn/distance"
 import { PKG_REAL } from "./num-real"
-import { addR64 } from "./ops-core"
+import { addR64 } from "./core-ops"
 
 declare module "../eval/ty" {
   interface Tys {

@@ -13,6 +13,15 @@ import { FN_UNSIGN } from "../eval/ops/fn/unsign"
 import { FN_VALID } from "../eval/ops/fn/valid"
 import { FnList } from "../eval/ops/list"
 import { OP_ABS } from "../eval/ops/op/abs"
+import type { SReal, Ty, TyName, Type } from "../eval/ty"
+import { canCoerce, coerceValJs } from "../eval/ty/coerce"
+import { approx, frac, num, real } from "../eval/ty/create"
+import type { TyWrite } from "../eval/ty/display"
+import { highRes, TY_INFO } from "../eval/ty/info"
+import { abs, add, div, mul, neg, raise, sub } from "../eval/ty/ops"
+import { splitDual } from "../eval/ty/split"
+import { h } from "../jsx"
+import { PKG_BOOL } from "./bool"
 import {
   OP_EQ,
   OP_GT,
@@ -24,16 +33,7 @@ import {
   OP_NGTE,
   OP_NLT,
   OP_NLTE,
-} from "../eval/ops/op/cmp"
-import type { SReal, Ty, TyName, Type } from "../eval/ty"
-import { canCoerce, coerceValJs } from "../eval/ty/coerce"
-import { approx, frac, num, real } from "../eval/ty/create"
-import type { TyWrite } from "../eval/ty/display"
-import { highRes, TY_INFO } from "../eval/ty/info"
-import { abs, add, div, mul, neg, raise, sub } from "../eval/ty/ops"
-import { splitDual } from "../eval/ty/split"
-import { h } from "../jsx"
-import { PKG_BOOL } from "./bool"
+} from "./core-cmp"
 import {
   abs64,
   addR64,
@@ -49,7 +49,7 @@ import {
   OP_RAISE,
   OP_SUB,
   subR64,
-} from "./ops-core"
+} from "./core-ops"
 
 declare module "../eval/ty/index.js" {
   interface Tys {

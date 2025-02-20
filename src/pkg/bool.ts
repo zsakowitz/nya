@@ -5,7 +5,7 @@ import { FN_VALID } from "../eval/ops/fn/valid"
 import { CmdWord } from "../field/cmd/leaf/word"
 import { L } from "../field/model"
 import { h } from "../jsx"
-import { OP_AND } from "./ops-core"
+import { OP_AND } from "./core-ops"
 
 declare module "../eval/ty/index.js" {
   interface Tys {

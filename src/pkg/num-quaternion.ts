@@ -16,7 +16,7 @@ import {
   OP_ODOT,
   OP_POS,
   OP_SUB,
-} from "./ops-core"
+} from "./core-ops"
 
 declare module "../eval/ty/index.js" {
   interface Tys {
