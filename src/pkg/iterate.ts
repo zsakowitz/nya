@@ -26,13 +26,6 @@ declare module "../eval/ast/token" {
 
 // TODO: can't handle changing types in webgl
 
-interface IterateVar {
-  id: string
-  name: string
-  update: Node
-  from: Node | undefined
-}
-
 interface IterateCondition {
   type: "while" | "until"
   value: Node
@@ -68,12 +61,6 @@ function parseFrom(value: Node): ValueOrList {
 
 interface ParseIterateProps {
   source: "expr" | "with" | "withseq"
-}
-
-function isIterate(
-  op: Node,
-): op is Extract<typeof op, { type: "magicvar" }> & { value: "iterate" } {
-  return op.type == "magicvar" && op.value == "iterate"
 }
 
 function parseIterate(

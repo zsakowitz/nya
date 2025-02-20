@@ -71,7 +71,7 @@ const FN_COMPLEX = new FnDist(
   "converts a point into a complex number",
 )
 
-const FN_CONJ = new FnDist(
+export const FN_CONJ = new FnDist(
   "conj",
   "takes the conjugate of a complex number or quaternion",
 )
