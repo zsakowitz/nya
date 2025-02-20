@@ -1,21 +1,45 @@
 <h1 align="center"><code>nya</code></h1>
 
-Named after the Ithkuil root for writing, inscribing, and documenting[^1], `nya`
-is a replacement for the venerable [MathQuill](https://mathquill.com/) project,
-which aimed to provide a clean and intuitive way to type math into webpages.
+project nya is a graphing calculator designed to be extended. It's 100%
+open-source (you can look at our code if you want), and adding new features is
+as simple as writing and including a single JavaScript file.
 
-`nya` differs from MathQuill in a few positive aspects:
+# Why choose project nya, as a user?
 
-- `nya` is built to be extended.
-- `nya` has first-class matrix and piecewise support.
-- `nya` has first-class multi-line expression support.
+**Totally new features:**
 
-There are also the downsides of `nya`:
+- Shaders (running an equation for every pixel on your screen)
+- Quaternions
+- Piecewise functions use multiple lines (type `cases`)
+- Lists can optionally span multiple lines (type `list`)
+- Ithkuil utilities (parsing and generating text in the language Ithkuil)
 
-- `nya` will not support sub-ES5 targets.
-- `nya` will not support IE.
-- `nya` does not yet support all of LaTeX.
-- `nya` does not yet have as much support for screen readers.
+**Improvements over Desmos:**
+
+- Cleaner grammar (`sin a cos b`, `[7, 9, 5].mad`, `sec arctan x`, `ln²|x|`)
+- Cleaner syntax (automatic spaces after commas, improved spacing around + and -
+  signs)
+- Fewer restrictions (lists can be >10,000 elements; functions like `stats` can
+  be used on multiple lists)
+- Includes both geometry tools _and_ complex numbers
+- Tells you if a value evaluated to infinity or NaN instead of writing
+  `undefined`
+- Modern color functions (oklab, oklch)
+- Outputs every value in a list[^2]
+
+**Downsides:**
+
+- It doesn't yet have 100% feature compatiability with Desmos.
+- It does not yet have as complete support for screen readers.
+
+[^2]:
+    This is no longer a unique feature; Desmos has recently added support for
+    displaying every element in a list. `nya`'s implementation was still first
+    though!
+
+<!-- # Why choose project nya, as a developer?
+
+TODO: write something here -->
 
 # Extensibility
 
@@ -172,7 +196,3 @@ A future component of this project.
 # The Graphing Software
 
 A future component of this project.
-
-[^1]:
-    The root in question being `ň`, pronounced like the `ng` in `-ing`.
-    Technically `nga` would be a more accurate name, but it isn't as cute :3
