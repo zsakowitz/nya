@@ -219,7 +219,6 @@ export const words = new WordMap<WordKind>([
   ["nPr", "infix"],
   ["nCr", "infix"],
   ["base", "infix"],
-  ["log", "prefix"],
 ]).freeze()
 
 export const latex = new WordMap<LatexInit>([
