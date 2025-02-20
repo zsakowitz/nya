@@ -1,7 +1,6 @@
 import type { Package } from "."
 import type { GlslContext } from "../eval/lib/fn"
 import { FnDist } from "../eval/ops/dist"
-import { OP_ABS } from "../eval/ops/op/abs"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "../eval/ops/vars"
 import type { GlslVal, JsVal, SPoint } from "../eval/ty"
 import { isZero } from "../eval/ty/check"
@@ -20,6 +19,7 @@ import {
   declareMulR64,
   declareOdotC64,
   declareSubR64,
+  OP_ABS,
   OP_ADD,
   OP_CDOT,
   OP_DIV,

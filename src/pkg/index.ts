@@ -1,10 +1,17 @@
-import type { NodeName, Nodes, PuncInfix, PuncUnary } from "../eval/ast/token"
+import type {
+  Node,
+  NodeName,
+  Nodes,
+  PuncInfix,
+  PuncUnary,
+} from "../eval/ast/token"
 import type { AstTxr, MagicVarTxr } from "../eval/ast/tx"
 import type { Fn } from "../eval/ops"
 import type { WithDocs } from "../eval/ops/docs"
 import type { Builtin } from "../eval/ops/vars"
 import type { TyComponents, TyName, Tys } from "../eval/ty"
 import type { TyCoerceMap, TyInfo } from "../eval/ty/info"
+import type { ParenLhs, ParenRhs } from "../field/cmd/math/brack"
 import type { LatexInit } from "../field/latex"
 import type { Init } from "../field/model"
 import type { AnyExt } from "../sheet/ext"
@@ -44,6 +51,7 @@ export interface Package {
       unary?: List<Fn & WithDocs, PuncUnary>
       binary?: List<{ precedence: number; fn: Fn & WithDocs }, PuncInfix>
       magic?: List<MagicVarTxr>
+      group?: List<Omit<AstTxr<Node>, "deps">, `${ParenLhs} ${ParenRhs}`>
     }
   }
 

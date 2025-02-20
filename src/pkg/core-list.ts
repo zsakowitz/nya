@@ -1,8 +1,18 @@
 import type { Package } from "."
+import { commalist } from "../eval/ast/collect"
+import { NO_DRAG } from "../eval/ast/tx"
+import { glsl } from "../eval/glsl"
+import { js } from "../eval/js"
 import type { Fn } from "../eval/ops"
 import { docByIcon } from "../eval/ops/dist"
 import { type WithDocs, ALL_DOCS } from "../eval/ops/docs"
-import { coerceTy, coerceValueGlsl, coerceValueJs } from "../eval/ty/coerce"
+import {
+  coerceTy,
+  coerceValueGlsl,
+  coerceValueJs,
+  listGlsl,
+  listJs,
+} from "../eval/ty/coerce"
 import { TY_INFO, any } from "../eval/ty/info"
 import { CmdComma } from "../field/cmd/leaf/comma"
 import { CmdBrack } from "../field/cmd/math/brack"
@@ -75,6 +85,28 @@ export const PKG_CORE_LIST: Package = {
   eval: {
     fns: {
       join: FN_JOIN,
+    },
+    op: {
+      group: {
+        "[ ]": {
+          js(node, props) {
+            if (node.type == "op" && node.kind == "for") {
+              return js(node, props)
+            }
+            return listJs(commalist(node).map((item) => js(item, props)))
+          },
+          glsl(node, props) {
+            if (node.type == "op" && node.kind == "for") {
+              return glsl(node, props)
+            }
+            return listGlsl(
+              props.ctx,
+              commalist(node).map((item) => glsl(item, props)),
+            )
+          },
+          drag: NO_DRAG,
+        },
+      },
     },
   },
 }

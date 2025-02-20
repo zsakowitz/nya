@@ -1,11 +1,11 @@
 import type { Package } from "."
 import type { GlslContext } from "../eval/lib/fn"
-import { OP_ABS } from "../eval/ops/op/abs"
 import type { SReal, Tys } from "../eval/ty"
 import { approx, num, real } from "../eval/ty/create"
 import { abs, add, div, mul, neg, sub } from "../eval/ty/ops"
 import { h } from "../jsx"
 import {
+  OP_ABS,
   OP_ADD,
   OP_CDOT,
   OP_DIV,

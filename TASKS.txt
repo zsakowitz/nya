@@ -6,7 +6,7 @@ to do list for functions is:
 ❌ distributions
 ❌ stat tests
 ❌ logb
-❌ lcm, gcd, sign, nPr, nCr
+❌ lcm, gcd, nPr, nCr
 ❌ way more geometry stuff
 ❌ 3D points and vectors
 

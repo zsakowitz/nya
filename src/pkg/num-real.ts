@@ -10,7 +10,6 @@ import {
 } from "../eval/ops/dist-manual"
 import { ALL_DOCS } from "../eval/ops/docs"
 import { FnList } from "../eval/ops/list"
-import { OP_ABS } from "../eval/ops/op/abs"
 import type { SReal, Ty, TyName, Type } from "../eval/ty"
 import { canCoerce, coerceValJs } from "../eval/ty/coerce"
 import { approx, frac, num, real } from "../eval/ty/create"
@@ -37,6 +36,7 @@ import {
   addR64,
   declareCmpR64,
   mulR64,
+  OP_ABS,
   OP_ADD,
   OP_CDOT,
   OP_CROSS,

@@ -2,8 +2,6 @@ import type { Package } from "."
 import { dragPoint } from "../eval/ast/tx"
 import type { GlslContext } from "../eval/lib/fn"
 import { FnDist } from "../eval/ops/dist"
-import { OP_ABS } from "../eval/ops/op/abs"
-import { OP_POINT } from "../eval/ops/op/point"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "../eval/ops/vars"
 import { each, type JsValue } from "../eval/ty"
 import { approx, frac, num, pt, real, unpt } from "../eval/ty/create"
@@ -27,9 +25,11 @@ import {
   addR64,
   declareMulR64,
   declareOdotC64,
+  OP_ABS,
   OP_ADD,
   OP_NEG,
   OP_ODOT,
+  OP_POINT,
   OP_POS,
 } from "./core-ops"
 import { EXT_EVAL } from "./eval"

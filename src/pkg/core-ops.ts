@@ -263,6 +263,16 @@ export const OP_RAISE = new FnDist("^", "raises a value to an exponent")
 
 export const OP_SUB = new FnDist("-", "subtracts two values")
 
+export const OP_POINT = new FnDist(
+  "construct point",
+  "constructs a point from two coordinates",
+)
+
+export const OP_ABS = new FnDist(
+  "abs",
+  "takes the absolute value of a number, or gets the magnitude of a complex number",
+)
+
 export const PKG_CORE_OPS: Package = {
   id: "nya:core-ops",
   name: "basic operators",
@@ -965,6 +975,53 @@ export const PKG_CORE_OPS: Package = {
         "\\odot ": { fn: OP_ODOT, precedence: Precedence.Product },
         mod: { fn: OP_MOD, precedence: Precedence.Product },
         "\\times ": { fn: OP_CROSS, precedence: Precedence.Product },
+      },
+      group: {
+        "( )": {
+          js(node, props) {
+            if (node.type == "commalist") {
+              return OP_POINT.js(...node.items.map((x) => js(x, props)))
+            }
+            return js(node, props)
+          },
+          glsl(node, props) {
+            if (node.type == "commalist") {
+              return OP_POINT.glsl(
+                props.ctx,
+                ...node.items.map((x) => glsl(x, props)),
+              )
+            }
+            return glsl(node, props)
+          },
+          drag: {
+            num(node, props) {
+              return dragNum(node, props)
+            },
+            point(node, props) {
+              if (node.type == "commalist" && node.items.length == 2) {
+                const x = dragNum(node.items[0]!, props)
+                const y = dragNum(node.items[1]!, props)
+                if (x || y) {
+                  return {
+                    type: "split",
+                    x: x && { ...x, signed: false },
+                    y: y && { ...y, signed: false },
+                  }
+                }
+              }
+              return null
+            },
+          },
+        },
+        "| |": {
+          js(node, props) {
+            return OP_ABS.js(js(node, props))
+          },
+          glsl(node, props) {
+            return OP_ABS.glsl(props.ctx, glsl(node, props))
+          },
+          drag: NO_DRAG,
+        },
       },
     },
   },

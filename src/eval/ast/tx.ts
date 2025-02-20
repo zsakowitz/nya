@@ -1,3 +1,4 @@
+import type { ParenLhs, ParenRhs } from "../../field/cmd/math/brack"
 import { Span } from "../../field/model"
 import type { FieldComputed } from "../../sheet/deps"
 import type { Deps } from "../deps"
@@ -5,11 +6,8 @@ import { glsl, type PropsGlsl } from "../glsl"
 import { js, type PropsJs } from "../js"
 import { type Bindings } from "../lib/binding"
 import { indexGlsl, indexJs } from "../ops/op"
-import { OP_ABS } from "../ops/op/abs"
-import { OP_POINT } from "../ops/op/point"
 import { type GlslValue, type JsVal, type JsValue } from "../ty"
-import { coerceValueGlsl, coerceValueJs, listGlsl, listJs } from "../ty/coerce"
-import { commalist } from "./collect"
+import { coerceValueGlsl, coerceValueJs } from "../ty/coerce"
 import type { MagicVar, Node, NodeName, Nodes, PuncBinaryStr } from "./token"
 
 export interface AstTxr<T> {
@@ -123,81 +121,34 @@ export interface MagicVarTxr {
   }
 }
 
+export const GROUP: Partial<
+  Record<`${ParenLhs} ${ParenRhs}`, Omit<AstTxr<Node>, "deps">>
+> = Object.create(null)
+
+function group(node: { lhs: ParenLhs; rhs: ParenRhs }) {
+  const g = GROUP[`${node.lhs} ${node.rhs}`]
+  if (!g) {
+    throw new Error(`${node.lhs}...${node.rhs} brackets are not supported yet.`)
+  }
+  return g
+}
+
 export const MAGIC_VARS: Record<string, MagicVarTxr> = Object.create(null)
 
 export const AST_TXRS: { [K in NodeName]?: AstTxr<Nodes[K]> } = {
   group: {
     js(node, props) {
-      if (node.lhs == "(" && node.rhs == ")") {
-        if (node.value.type == "commalist") {
-          return OP_POINT.js(...node.value.items.map((x) => js(x, props)))
-        }
-        return js(node.value, props)
-      }
-      if (node.lhs == "[" && node.rhs == "]") {
-        if (node.value.type == "op" && node.value.kind == "for") {
-          return js(node.value, props)
-        }
-        return listJs(commalist(node.value).map((item) => js(item, props)))
-      }
-      if (node.lhs == "|" && node.rhs == "|") {
-        return OP_ABS.js(js(node.value, props))
-      }
-      throw new Error(
-        `${node.lhs}...${node.rhs} brackets are not supported yet.`,
-      )
+      return group(node).js(node.value, props)
     },
     glsl(node, props) {
-      if (node.lhs == "(" && node.rhs == ")") {
-        if (node.value.type == "commalist") {
-          return OP_POINT.glsl(
-            props.ctx,
-            ...node.value.items.map((x) => glsl(x, props)),
-          )
-        }
-        return glsl(node.value, props)
-      }
-      if (node.lhs == "[" && node.rhs == "]") {
-        if (node.value.type == "op" && node.value.kind == "for") {
-          return glsl(node.value, props)
-        }
-        return listGlsl(
-          props.ctx,
-          commalist(node.value).map((item) => glsl(item, props)),
-        )
-      }
-      if (node.lhs == "|" && node.rhs == "|") {
-        return OP_ABS.glsl(props.ctx, glsl(node.value, props))
-      }
-      throw new Error(
-        `${node.lhs}...${node.rhs} brackets are not supported yet.`,
-      )
+      return group(node).glsl(node.value, props)
     },
     drag: {
       num(node, props) {
-        if (node.lhs == "(" && node.rhs == ")") {
-          return dragNum(node.value, props)
-        }
-        return null
+        return group(node).drag.num(node.value, props)
       },
       point(node, props) {
-        if (
-          node.lhs == "(" &&
-          node.rhs == ")" &&
-          node.value.type == "commalist" &&
-          node.value.items.length == 2
-        ) {
-          const x = dragNum(node.value.items[0]!, props)
-          const y = dragNum(node.value.items[1]!, props)
-          if (x || y) {
-            return {
-              type: "split",
-              x: x && { ...x, signed: false },
-              y: y && { ...y, signed: false },
-            }
-          }
-        }
-        return null
+        return group(node).drag.point(node.value, props)
       },
     },
     deps(node, deps) {

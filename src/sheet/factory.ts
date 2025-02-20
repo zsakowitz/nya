@@ -5,11 +5,12 @@ import {
   type PuncInfix,
   type PuncUnary,
 } from "../eval/ast/token"
-import { AST_TXRS, MAGIC_VARS } from "../eval/ast/tx"
+import { AST_TXRS, GROUP, MAGIC_VARS } from "../eval/ast/tx"
 import { FNS, OP_BINARY, OP_UNARY } from "../eval/ops"
 import { VARS } from "../eval/ops/vars"
 import type { TyName } from "../eval/ty"
 import { TY_INFO, type TyCoerce } from "../eval/ty/info"
+import type { ParenLhs, ParenRhs } from "../field/cmd/math/brack"
 import { Inits, WordMap, type Options } from "../field/options"
 import type { Package, ToolbarItem } from "../pkg"
 import { Exts } from "./ext"
@@ -140,6 +141,11 @@ export class SheetFactory {
         PRECEDENCE_MAP[key] = Precedence.WordInfix
       }
       MAGIC_VARS[key] = magic
+    }
+
+    for (const keyRaw in pkg.eval?.op?.group) {
+      const key = keyRaw as `${ParenLhs} ${ParenRhs}`
+      GROUP[key] = pkg.eval.op.group[key]!
     }
 
     return this
