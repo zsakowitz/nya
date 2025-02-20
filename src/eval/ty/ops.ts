@@ -92,3 +92,11 @@ export function div(a: SReal, b: SReal): SReal {
 
   return approx(num(a) / num(b))
 }
+
+export function abs(v: SReal): SReal {
+  if (v.type == "exact") {
+    return frac(Math.abs(v.n), v.d)
+  } else {
+    return approx(Math.abs(v.value))
+  }
+}

@@ -4,13 +4,13 @@ import type { GlslContext } from "../eval/lib/fn"
 import { FnDist } from "../eval/ops/dist"
 import { FN_UNSIGN } from "../eval/ops/fn/unsign"
 import { FN_VALID } from "../eval/ops/fn/valid"
-import { abs, abs64, OP_ABS } from "../eval/ops/op/abs"
+import { OP_ABS } from "../eval/ops/op/abs"
 import { OP_POINT } from "../eval/ops/op/point"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "../eval/ops/vars"
 import { each, type JsValue } from "../eval/ty"
 import { approx, frac, num, pt, real, unpt } from "../eval/ty/create"
 import { highRes, TY_INFO, WRITE_POINT, type TyGlide } from "../eval/ty/info"
-import { add, mul, neg } from "../eval/ty/ops"
+import { abs, add, mul, neg } from "../eval/ty/ops"
 import { OpEq } from "../field/cmd/leaf/cmp"
 import { CmdDot } from "../field/cmd/leaf/dot"
 import { CmdVar } from "../field/cmd/leaf/var"
@@ -27,6 +27,7 @@ import { EXT_EVAL } from "./eval"
 import { createPickByTy, PICK_BY_TY, picker } from "./geo/pick-normal"
 import { PKG_REAL } from "./num-real"
 import {
+  abs64,
   addR64,
   declareMulR64,
   declareOdotC64,

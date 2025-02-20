@@ -6,7 +6,6 @@ import { array, docByIcon, icon } from "../eval/ops/dist"
 import { ALL_DOCS, type WithDocs } from "../eval/ops/docs"
 import { issue } from "../eval/ops/issue"
 import { FnList } from "../eval/ops/list"
-import { abs } from "../eval/ops/op/abs"
 import {
   each,
   join,
@@ -31,7 +30,7 @@ import {
 } from "../eval/ty/coerce"
 import { frac, num, real } from "../eval/ty/create"
 import { TY_INFO, type TyInfo } from "../eval/ty/info"
-import { add, div, mul, sub } from "../eval/ty/ops"
+import { abs, add, div, mul, sub } from "../eval/ty/ops"
 import { Leaf } from "../field/cmd/leaf"
 import { BRACKS } from "../field/cmd/math/brack"
 import { Block, L, R } from "../field/model"

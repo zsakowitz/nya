@@ -45,7 +45,7 @@ export class Deps {
   }
 
   add(node: Node) {
-    AST_TXRS[node.type].deps(node as never, this)
+    AST_TXRS[node.type]?.deps(node as never, this)
   }
 
   isBound(id: string) {

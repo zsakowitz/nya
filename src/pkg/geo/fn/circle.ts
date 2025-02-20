@@ -1,9 +1,8 @@
 import type { GlslContext } from "../../../eval/lib/fn"
 import { FnDist } from "../../../eval/ops/dist"
-import { abs } from "../../../eval/ops/op/abs"
 import type { GlslVal, JsVal } from "../../../eval/ty"
 import { num, real } from "../../../eval/ty/create"
-import { sub } from "../../../eval/ty/ops"
+import { abs, sub } from "../../../eval/ty/ops"
 import { dist } from "./distance"
 
 function js(a: JsVal<"point32">, b: JsVal<"point32">) {

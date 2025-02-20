@@ -39,5 +39,9 @@ export function glslCall(
 }
 
 export function glsl(node: Node, props: PropsGlsl): GlslValue {
-  return AST_TXRS[node.type].glsl(node as never, props)
+  const txr = AST_TXRS[node.type]
+  if (!txr) {
+    throw new Error(`The '${node.type}' transformer is not defined.`)
+  }
+  return txr.glsl(node as never, props)
 }

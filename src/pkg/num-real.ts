@@ -12,7 +12,7 @@ import { FN_EXP } from "../eval/ops/fn/exp"
 import { FN_UNSIGN } from "../eval/ops/fn/unsign"
 import { FN_VALID } from "../eval/ops/fn/valid"
 import { FnList } from "../eval/ops/list"
-import { abs, abs64, OP_ABS } from "../eval/ops/op/abs"
+import { OP_ABS } from "../eval/ops/op/abs"
 import {
   OP_EQ,
   OP_GT,
@@ -30,11 +30,12 @@ import { canCoerce, coerceValJs } from "../eval/ty/coerce"
 import { approx, frac, num, real } from "../eval/ty/create"
 import type { TyWrite } from "../eval/ty/display"
 import { highRes, TY_INFO } from "../eval/ty/info"
-import { add, div, mul, neg, raise, sub } from "../eval/ty/ops"
+import { abs, add, div, mul, neg, raise, sub } from "../eval/ty/ops"
 import { splitDual } from "../eval/ty/split"
 import { h } from "../jsx"
 import { PKG_BOOL } from "./bool"
 import {
+  abs64,
   addR64,
   mulR64,
   OP_ADD,

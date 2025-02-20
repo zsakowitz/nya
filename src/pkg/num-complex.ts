@@ -5,19 +5,20 @@ import { declareExp, FN_EXP } from "../eval/ops/fn/exp"
 import { FN_LN } from "../eval/ops/fn/ln"
 import { FN_UNSIGN } from "../eval/ops/fn/unsign"
 import { FN_VALID } from "../eval/ops/fn/valid"
-import { abs, abs64, OP_ABS } from "../eval/ops/op/abs"
+import { OP_ABS } from "../eval/ops/op/abs"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "../eval/ops/vars"
 import type { GlslVal, JsVal, SPoint } from "../eval/ty"
 import { isZero } from "../eval/ty/check"
 import { approx, num, pt, real } from "../eval/ty/create"
 import type { TyWrite } from "../eval/ty/display"
 import { highRes } from "../eval/ty/info"
-import { add, div, mul, neg, sub } from "../eval/ty/ops"
+import { abs, add, div, mul, neg, sub } from "../eval/ty/ops"
 import { h } from "../jsx"
 import { OP_PLOT, plotJs } from "./color-core"
 import { declareDebugPoint, FN_DEBUGPOINT, PKG_GEO_POINT } from "./geo-point"
 import { PKG_REAL } from "./num-real"
 import {
+  abs64,
   addR64,
   declareAddR64,
   declareMulC32,

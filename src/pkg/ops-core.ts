@@ -16,6 +16,7 @@ import { id, name, parseBindings, parseBindingVar } from "../eval/lib/binding"
 import type { GlslContext } from "../eval/lib/fn"
 import { OP_BINARY, OP_UNARY } from "../eval/ops"
 import { FnDist } from "../eval/ops/dist"
+import { declareCmpR64 } from "../eval/ops/fn/cmp"
 import { declareR64 } from "../eval/ops/r64"
 import { VARS } from "../eval/ops/vars"
 import {
@@ -143,6 +144,19 @@ vec2 _helper_sub_r64(vec2 dsa, vec2 dsb) {
 export function subR64(ctx: GlslContext, a: string, b: string) {
   declareSubR64(ctx)
   return `_helper_sub_r64(${a}, ${b})`
+}
+
+export function abs64(ctx: GlslContext, x: string) {
+  declareCmpR64(ctx)
+  declareSubR64(ctx)
+  ctx.glsl`vec2 _helper_abs_r64(vec2 x) {
+  if (_helper_cmp_r64(vec2(0), x) == 1.0) {
+    x = _helper_sub_r64(vec2(0), x);
+  }
+  return x;
+}
+`
+  return `_helper_abs_r64(${x})`
 }
 
 export const OP_ADD = new FnDist("+", "adds two values or points")
