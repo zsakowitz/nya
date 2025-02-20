@@ -77,9 +77,4 @@ export class GlslContext {
   }
 }
 
-export type As<T extends readonly unknown[], U> = { readonly [K in keyof T]: U }
-
-export type Build<T, N extends number, U extends readonly any[] = []> =
-  U["length"] extends N ? U : Build<T, N, [...U, T]>
-
 export type GlslResult = readonly [block: GlslContext, expr: string]
