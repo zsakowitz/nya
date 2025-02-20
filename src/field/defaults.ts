@@ -192,7 +192,6 @@ export const words = new WordMap<WordKind>([
   ["withseq", "infix"],
 
   // List operations
-  ["join", "prefix"],
   ["shuffle", "prefix"],
 
   // Geometry

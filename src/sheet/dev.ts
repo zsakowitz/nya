@@ -3,7 +3,7 @@ import { show } from "../show"
 import { SheetFactory } from "./factory"
 import { Expr } from "./ui/expr"
 
-const ADD_ALL = !location.href.includes("localhost")
+const ADD_ALL = true || !location.href.includes("localhost")
 const factory = new SheetFactory(options)
 
 if (ADD_ALL) {
@@ -21,7 +21,7 @@ function expr(source: { raw: readonly string[] }) {
   return expr
 }
 
-if (location.href.includes("localhost")) {
+if (false && location.href.includes("localhost")) {
   expr`\operatorname{stats}\left(\left[1,2,3\right],\left[4,5,6\right]\right)`
   expr`\left(\operatorname{iterate}.a^{A.\operatorname{count}}\begin{list}n\to n+1\\a\to a.\operatorname{concat}\left(\text{ },A\left[n\right]\right)\end{list}\operatorname{from}\begin{list}a=a.\operatorname{concat}\left(\text{ =}\right)\\n=1\end{list}\right)\operatorname{with}A=\operatorname{ithkuilvalues}a\operatorname{for}a=\operatorname{ithkuilall}`
   show(expr`y=x^2`)

@@ -1,9 +1,7 @@
 import type { Package } from "."
 import type { GlslContext } from "../eval/lib/fn"
 import { FnDist } from "../eval/ops/dist"
-import { FN_FIRSTVALID } from "../eval/ops/fn/firstvalid"
 import { frac, num } from "../eval/ty/create"
-import { TY_INFO } from "../eval/ty/info"
 import { sub } from "../eval/ty/ops"
 import { isDark } from "../sheet/theme"
 import { FN_VALID } from "./bool"
@@ -71,29 +69,6 @@ export const PKG_COLOR_EXTRAS: Package = {
       (ctx, ar) => {
         const a = ctx.cache(ar)
         return `(0.0 <= ${a}.x && ${a}.x <= 1.0 && 0.0 <= ${a}.y && ${a}.y <= 1.0 && 0.0 <= ${a}.z && ${a}.z <= 1.0 && 0.0 <= ${a}.w && ${a}.w <= 1.0)`
-      },
-    )
-
-    FN_FIRSTVALID.addSpread(
-      "color",
-      "color",
-      (args) => {
-        for (const arg of args) {
-          if (FN_VALID.js1({ type: "color", value: arg }).value) {
-            return arg
-          }
-        }
-        return TY_INFO.color.garbage.js
-      },
-      (ctx, ...args) => {
-        return (
-          args
-            .map((arg) => {
-              const a = ctx.cache(arg)
-              return `${FN_VALID.glsl1(ctx, { type: "color", expr: a }).expr} ? ${a} : `
-            })
-            .join("") + TY_INFO.color.garbage.glsl
-        )
       },
     )
 
@@ -189,7 +164,6 @@ export const PKG_COLOR_EXTRAS: Package = {
             return `(u_is_dark ? ${b.expr} : ${a.expr})`
           },
         ),
-      firstvalid: FN_FIRSTVALID,
     },
   },
 }

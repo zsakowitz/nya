@@ -1,9 +1,16 @@
 import type { Package } from "."
 import { Precedence } from "../eval/ast/token"
 import { NO_DRAG } from "../eval/ast/tx"
-import { FnDist } from "../eval/ops/dist"
+import type { Fn } from "../eval/ops"
+import { docByIcon, FnDist } from "../eval/ops/dist"
+import type { WithDocs } from "../eval/ops/docs"
 import { piecewiseGlsl, piecewiseJs } from "../eval/ops/piecewise"
+import { join, joinGlsl } from "../eval/ty"
+import { coerceTy, coerceTyGlsl, coerceTyJs } from "../eval/ty/coerce"
+import { any, TY_INFO } from "../eval/ty/info"
+import { CmdComma } from "../field/cmd/leaf/comma"
 import { CmdWord } from "../field/cmd/leaf/word"
+import { CmdBrack } from "../field/cmd/math/brack"
 import { L } from "../field/model"
 import { h } from "../jsx"
 import { OP_AND } from "./core-cmp"
@@ -33,6 +40,74 @@ export const FN_VALID = new FnDist<"bool">(
   "valid",
   "returns true if a value is valid for the given type (whether a number is finite, whether a color is displayable, etc.)",
 )
+
+export const FN_FIRSTVALID: Fn & WithDocs = {
+  name: "firstvalid",
+  label:
+    "returns the first value which is valid for its type (the first finite number, the first color which is displayable, etc.)",
+  js(...args) {
+    const ty = coerceTy(args)
+
+    return join(
+      args.map((arg) => coerceTyJs(arg, ty)),
+      ty,
+      (...args) => {
+        for (const arg of args) {
+          if (FN_VALID.js1(arg).value) {
+            return arg.value
+          }
+        }
+
+        return TY_INFO[ty].garbage.js
+      },
+    )
+  },
+  glsl(ctx, ...args) {
+    const ty = coerceTy(args)
+
+    return joinGlsl(
+      ctx,
+      args.map((arg) => coerceTyGlsl(ctx, arg, ty)),
+      ty,
+      (...args) => {
+        const ret = ctx.name()
+        ctx.push`${TY_INFO[ty].glsl} ${ret};\n`
+
+        let close = ""
+        for (const arg of args) {
+          const value = ctx.cache(arg)
+          ctx.push`if (${FN_VALID.glsl1(ctx, { type: arg.type, expr: value }).expr}) { ${ret} = ${value} } else {\n`
+          close += "}"
+        }
+        ctx.push`${ret} = ${TY_INFO[ty].garbage.glsl}; ${close}\n`
+
+        return ret
+      },
+    )
+  },
+  docs() {
+    const list = () =>
+      CmdBrack.render("[", "]", null, {
+        el: h(
+          "",
+          any(),
+          new CmdComma().el,
+          any(),
+          new CmdComma().el,
+          h("nya-cmd-dot nya-cmd-dot-l", "."),
+          h("nya-cmd-dot", "."),
+          h("nya-cmd-dot", "."),
+        ),
+      })
+
+    return [
+      docByIcon([any(), any()], any(), true),
+      docByIcon([list(), any()], any(), true),
+      docByIcon([any(), list()], any(), true),
+      docByIcon([list(), list()], any(), true),
+    ]
+  },
+}
 
 export const PKG_BOOL: Package = {
   id: "nya:bool-ops",
@@ -130,6 +205,7 @@ export const PKG_BOOL: Package = {
     },
     fns: {
       valid: FN_VALID,
+      firstvalid: FN_FIRSTVALID,
     },
     txrs: {
       piecewise: {

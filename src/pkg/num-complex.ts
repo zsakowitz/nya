@@ -404,25 +404,25 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
 
     FN_POINT.add(
       ["c64"],
-      "c64",
+      "point64",
       (a) => a.value,
       (_, a) => a.expr,
     )
       .add(
         ["c32"],
-        "c32",
+        "point32",
         (a) => a.value,
         (_, a) => a.expr,
       )
       .add(
         ["point64"],
-        "c64",
+        "point64",
         (a) => a.value,
         (_, a) => a.expr,
       )
       .add(
         ["point32"],
-        "c32",
+        "point32",
         (a) => a.value,
         (_, a) => a.expr,
       )

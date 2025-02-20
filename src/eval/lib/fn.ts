@@ -54,7 +54,11 @@ export class GlslContext {
   }
 
   cachedNative(ty: string, val: string, list?: number | false): string {
-    if (val.match(/^([A-Za-z_]+|\d+|\d*\.\d+|\d+\.)$/)) {
+    if (
+      val.match(
+        /^(?:[A-Za-z_][A-Za-z0-9_]*(?:\[\d+\])?|\d+(?:\.\d*)?|\d*\.\d+)$/,
+      )
+    ) {
       return val
     }
 

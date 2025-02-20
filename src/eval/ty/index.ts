@@ -1,4 +1,6 @@
+import type { GlslContext } from "../lib/fn"
 import { unifyLists } from "./coerce"
+import { TY_INFO } from "./info"
 
 /**
  * Augment this interface to declare additional types.
@@ -140,4 +142,45 @@ export function join(
       ),
     ),
   }
+}
+
+export function joinGlsl<
+  const T extends readonly GlslValue[],
+  U extends TyName,
+>(
+  ctx: GlslContext,
+  values: T,
+  ret: U,
+  map: (...args: { [K in keyof T]: GlslVal<T[K]["type"]> }) => string,
+): GlslValue<U>
+
+export function joinGlsl(
+  ctx: GlslContext,
+  values: GlslValue[],
+  type: TyName,
+  map: (...args: GlslVal[]) => string,
+): GlslValue {
+  const list = unifyLists(values)
+
+  if (list === false) {
+    return {
+      list: false,
+      type,
+      expr: map(...(values as GlslVal[])),
+    }
+  }
+
+  const expr = ctx.name()
+  ctx.push`${TY_INFO[type].glsl} ${expr}[${list}];\n`
+  const args = values.map((x) => ({ ...x, expr: ctx.cacheValue(x) }))
+  const index = ctx.name()
+  ctx.push`for (int ${index} = 0; ${index} < ${list}; ${index}++) {\n`
+  ctx.push`${expr}[${index}] = ${map(
+    ...args.map((x) =>
+      x.list === false ? x : { type: x.type, expr: `${x.expr}[${index}]` },
+    ),
+  )};\n`
+  ctx.push`}\n`
+
+  return { list, type, expr }
 }
