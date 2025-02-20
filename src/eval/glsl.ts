@@ -35,7 +35,10 @@ export function glslCall(
     throw new Error(`The '${name}' function is not supported in shaders yet.`)
   }
 
-  return fn.glsl(props.ctx, ...args.map((arg) => glsl(arg, props)))
+  return fn.glsl(
+    props.ctx,
+    args.map((arg) => glsl(arg, props)),
+  )
 }
 
 export function glsl(node: Node, props: PropsGlsl): GlslValue {

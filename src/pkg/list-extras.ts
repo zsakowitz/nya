@@ -18,7 +18,7 @@ const FN_SORT: Fn & WithDocs = {
   docs() {
     return [docByIcon([array(icon("r32"))], icon("r32"), true)]
   },
-  js(...args) {
+  js(args) {
     const value =
       (
         args.length == 1 &&
@@ -53,7 +53,7 @@ const FN_UNIQUE: Fn & WithDocs = {
   docs() {
     return [docByIcon([array(icon("r32"))], icon("r32"), true)]
   },
-  js(...args) {
+  js(args) {
     const value =
       (
         args.length == 1 &&

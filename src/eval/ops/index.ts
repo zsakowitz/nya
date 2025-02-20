@@ -3,8 +3,8 @@ import type { GlslContext } from "../lib/fn"
 import type { GlslValue, JsValue } from "../ty"
 
 export interface Fn {
-  js(...args: JsValue[]): JsValue
-  glsl(ctx: GlslContext, ...args: GlslValue[]): GlslValue
+  js(args: JsValue[]): JsValue
+  glsl(ctx: GlslContext, args: GlslValue[]): GlslValue
 }
 
 export const FNS: Record<string, Fn> = Object.create(null)

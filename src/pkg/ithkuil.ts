@@ -106,7 +106,7 @@ const ithkuilvalues: Fn & WithDocs = {
   docs() {
     return [doc(["text"], "text", true)]
   },
-  js(...args) {
+  js(args) {
     if (
       !(args.length == 1 && args[0]!.list === false && args[0]!.type == "text")
     ) {

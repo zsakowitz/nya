@@ -30,7 +30,7 @@ export function jsCall(
     throw new Error(`The '${name}' function is not supported yet.`)
   }
 
-  return fn.js(...args.map((arg) => js(arg, props)))
+  return fn.js(args.map((arg) => js(arg, props)))
 }
 
 export function js(node: Node, props: PropsJs): JsValue {

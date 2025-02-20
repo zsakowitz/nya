@@ -9,13 +9,13 @@ export const FN_SEGMENTS: Fn & WithDocs = {
   docs() {
     return [doc(["polygon"], "segment", true)]
   },
-  js(...args) {
+  js(args) {
     if (args.length != 1) {
-      throw new Error("'segments' needs a single polygon.")
+      throw new Error("'segments' expects a single polygon.")
     }
     const arg = args[0]!
     if (arg.list !== false) {
-      throw new Error("'segments' needs a single polygon.")
+      throw new Error("'segments' expects a single polygon.")
     }
     const pts = arg.value as SPoint[]
     return {

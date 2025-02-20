@@ -12,15 +12,15 @@ import { FnDist } from "./dist"
  * functions.
  */
 export class FnList<Q extends TyName = TyName> extends FnDist<Q> {
-  js(...args: JsValue[]): JsValue<Q> {
+  js(args: JsValue[]): JsValue<Q> {
     if (!(args.length == 1 && args[0]!.list !== false)) {
-      return super.js(...args)
+      return super.js(args)
     }
 
     const arg = args[0]!
     const overload = this.trySignatureList(arg)
     if (!overload) {
-      return super.js(...args)
+      return super.js(args)
     }
 
     return {
@@ -35,14 +35,14 @@ export class FnList<Q extends TyName = TyName> extends FnDist<Q> {
     }
   }
 
-  glsl(ctx: GlslContext, ...args: GlslValue[]): GlslValue<Q> {
+  glsl(ctx: GlslContext, args: GlslValue[]): GlslValue<Q> {
     if (!(args.length == 1)) {
-      return super.glsl(ctx, ...args)
+      return super.glsl(ctx, args)
     }
 
     const arg = args[0]!
     if (arg.list === false) {
-      return super.glsl(ctx, ...args)
+      return super.glsl(ctx, args)
     }
 
     const overload = this.signatureList(arg satisfies Type as any)

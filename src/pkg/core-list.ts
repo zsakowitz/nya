@@ -24,7 +24,7 @@ import { h } from "../jsx"
 export const FN_JOIN: Fn & WithDocs = {
   name: "join",
   label: "joins multiple lists into a single one",
-  js(...args) {
+  js(args) {
     args = args.filter((x) => x.list !== 0)
     const ty = coerceTy(args)
     const items = args.flatMap((x) => {
@@ -33,7 +33,7 @@ export const FN_JOIN: Fn & WithDocs = {
     })
     return { type: ty, list: items.length, value: items }
   },
-  glsl(ctx, ...args) {
+  glsl(ctx, args) {
     args = args.filter((x) => x.list !== 0)
     const ty = coerceTy(args)
     const size = args.reduce((a, b) => a + (b.list === false ? 1 : b.list), 0)

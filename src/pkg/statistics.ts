@@ -36,10 +36,10 @@ import { BRACKS } from "../field/cmd/math/brack"
 import { Block, L, R } from "../field/model"
 import { h, hx } from "../jsx"
 import { defineExt } from "../sheet/ext"
+import { addR64 } from "./core-ops"
 import { createMultiEval } from "./eval"
 import { sqrt } from "./geo/fn/distance"
 import { PKG_REAL } from "./num-real"
-import { addR64 } from "./core-ops"
 
 declare module "../eval/ty" {
   interface Tys {
@@ -92,7 +92,7 @@ export class FnListList implements Fn, WithDocs {
     )
   }
 
-  js(...args: JsValue[]): JsValue {
+  js(args: JsValue[]): JsValue {
     if (
       !(args.length == 2 && args[0]!.list !== false && args[1]!.list !== false)
     ) {
@@ -121,7 +121,7 @@ export class FnListList implements Fn, WithDocs {
     )
   }
 
-  glsl(ctx: GlslContext, ...args: GlslValue[]): GlslValue {
+  glsl(ctx: GlslContext, args: GlslValue[]): GlslValue {
     if (
       !(args.length == 2 && args[0]!.list !== false && args[1]!.list !== false)
     ) {
@@ -201,7 +201,7 @@ export class FnListPlain implements Fn, WithDocs {
     )
   }
 
-  js(...args: JsValue[]): JsValue {
+  js(args: JsValue[]): JsValue {
     if (
       !(args.length == 2 && args[0]!.list !== false && args[1]!.list === false)
     ) {
@@ -229,7 +229,7 @@ export class FnListPlain implements Fn, WithDocs {
     )
   }
 
-  glsl(ctx: GlslContext, ...args: GlslValue[]): GlslValue {
+  glsl(ctx: GlslContext, args: GlslValue[]): GlslValue {
     if (
       !(args.length == 2 && args[0]!.list !== false && args[1]!.list !== false)
     ) {
@@ -440,7 +440,7 @@ function quartile<L extends number | false>(
 }
 
 const FN_QUARTILE: Fn & WithDocs = {
-  js(...args) {
+  js(args) {
     if (args.length != 2) {
       throw new Error("'quartile' expects a list and a quartile")
     }
@@ -487,7 +487,7 @@ const FN_QUARTILE: Fn & WithDocs = {
 ALL_DOCS.push(FN_QUARTILE)
 
 const FN_QUANTILE: Fn & WithDocs = {
-  js(...args) {
+  js(args) {
     if (
       !(
         args.length == 2 &&
@@ -743,7 +743,7 @@ const FN_RANKS: Fn & WithDocs = {
   docs() {
     return [docByIcon([array(icon("r32"))], icon("r32"), true)]
   },
-  js(...args) {
+  js(args) {
     const value =
       (
         args.length == 1 &&

@@ -86,7 +86,7 @@ export abstract class FnDistManual<Q extends TyName = TyName> implements Fn {
     }
   }
 
-  js(...args: JsValue[]): JsValue<Q> {
+  js(args: JsValue[]): JsValue<Q> {
     const overload = this.signature(args)
     const list = unifyLists(args)
 
@@ -144,7 +144,7 @@ export abstract class FnDistManual<Q extends TyName = TyName> implements Fn {
     }
   }
 
-  glsl(ctx: GlslContext, ...args: GlslValue[]): GlslValue<Q> {
+  glsl(ctx: GlslContext, args: GlslValue[]): GlslValue<Q> {
     const overload = this.signature(args)
     const list = unifyLists(args)
 

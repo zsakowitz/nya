@@ -9,13 +9,13 @@ export const FN_VERTICES: Fn & WithDocs = {
   docs() {
     return [doc(["polygon"], "segment", true)]
   },
-  js(...args) {
+  js(args) {
     if (args.length != 1) {
-      throw new Error("'vertices' needs a single polygon.")
+      throw new Error("'vertices' expects a single polygon.")
     }
     const arg = args[0]!
     if (arg.list !== false) {
-      throw new Error("'vertices' needs a single polygon.")
+      throw new Error("'vertices' expects a single polygon.")
     }
     return {
       type: "point64",

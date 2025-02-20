@@ -94,7 +94,7 @@ const EXT_GLSL = defineExt({
           "r32",
           coerceValueGlsl(
             props.ctx,
-            OP_SUB.glsl(props.ctx, glsl(lhs, props), glsl(rhs, props)),
+            OP_SUB.glsl(props.ctx, [glsl(lhs, props), glsl(rhs, props)]),
             { type: "r32", list: false },
           ),
         )
@@ -106,7 +106,7 @@ const EXT_GLSL = defineExt({
             () =>
               coerceValueGlsl(
                 props.ctx,
-                OP_SUB.glsl(props.ctx, glsl(lhs, props), glsl(rhs, props)),
+                OP_SUB.glsl(props.ctx, [glsl(lhs, props), glsl(rhs, props)]),
                 { type: "r32", list: false },
               ),
           ),
@@ -119,7 +119,7 @@ const EXT_GLSL = defineExt({
             () =>
               coerceValueGlsl(
                 props.ctx,
-                OP_SUB.glsl(props.ctx, glsl(lhs, props), glsl(rhs, props)),
+                OP_SUB.glsl(props.ctx, [glsl(lhs, props), glsl(rhs, props)]),
                 { type: "r32", list: false },
               ),
           ),
@@ -136,7 +136,10 @@ const EXT_GLSL = defineExt({
                 () =>
                   coerceValueGlsl(
                     props.ctx,
-                    OP_SUB.glsl(props.ctx, glsl(lhs, props), glsl(rhs, props)),
+                    OP_SUB.glsl(props.ctx, [
+                      glsl(lhs, props),
+                      glsl(rhs, props),
+                    ]),
                     { type: "r32", list: false },
                   ),
               ),
@@ -174,7 +177,7 @@ const EXT_GLSL = defineExt({
     }
 
     const props = data.expr.sheet.scope.propsGlsl()
-    const value = OP_PLOT.glsl(props.ctx, glsl(ast, props))
+    const value = OP_PLOT.glsl(props.ctx, [glsl(ast, props)])
     if (value.list !== false) {
       throw new Error("Shaders must return a single color.")
     }
@@ -186,7 +189,7 @@ const forceshader: Fn & WithDocs = {
   js() {
     throw new Error(ERR_COORDS_USED_OUTSIDE_GLSL)
   },
-  glsl(_, ...args) {
+  glsl(_, args) {
     if (args.length != 1) {
       throw new Error("'forceshader' should be passed a single argument.")
     }

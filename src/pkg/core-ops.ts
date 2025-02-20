@@ -286,7 +286,7 @@ export const PKG_CORE_OPS: Package = {
           }
           return node.nodes
             .map((x) => js(x, props))
-            .reduce((a, b) => OP_JUXTAPOSE.js(a, b))
+            .reduce((a, b) => OP_JUXTAPOSE.js([a, b]))
         },
         glsl(node, props) {
           if (node.nodes.length == 0) {
@@ -294,7 +294,7 @@ export const PKG_CORE_OPS: Package = {
           }
           return node.nodes
             .map((x) => glsl(x, props))
-            .reduce((a, b) => OP_JUXTAPOSE.glsl(props.ctx, a, b))
+            .reduce((a, b) => OP_JUXTAPOSE.glsl(props.ctx, [a, b]))
         },
         drag: NO_DRAG,
         deps(node, deps) {
@@ -333,38 +333,38 @@ export const PKG_CORE_OPS: Package = {
       root: {
         js(node, props) {
           if (node.root) {
-            return OP_RAISE.js(
+            return OP_RAISE.js([
               js(node.contents, props),
-              OP_DIV.js(
+              OP_DIV.js([
                 { list: false, type: "r64", value: frac(1, 1) },
                 js(node.root, props),
-              ),
-            )
+              ]),
+            ])
           } else {
-            return OP_RAISE.js(js(node.contents, props), {
-              list: false,
-              type: "r64",
-              value: frac(1, 2),
-            })
+            return OP_RAISE.js([
+              js(node.contents, props),
+              {
+                list: false,
+                type: "r64",
+                value: frac(1, 2),
+              },
+            ])
           }
         },
         glsl(node, props) {
           if (node.root) {
-            return OP_RAISE.glsl(
-              props.ctx,
+            return OP_RAISE.glsl(props.ctx, [
               glsl(node.contents, props),
-              OP_DIV.glsl(
-                props.ctx,
+              OP_DIV.glsl(props.ctx, [
                 { list: false, type: "r64", expr: "vec2(1, 0)" },
                 glsl(node.root, props),
-              ),
-            )
+              ]),
+            ])
           } else {
-            return OP_RAISE.glsl(props.ctx, glsl(node.contents, props), {
-              list: false,
-              type: "r64",
-              expr: "vec2(0.5, 0)",
-            })
+            return OP_RAISE.glsl(props.ctx, [
+              glsl(node.contents, props),
+              { list: false, type: "r64", expr: "vec2(0.5, 0)" },
+            ])
           }
         },
         drag: NO_DRAG,
@@ -380,7 +380,7 @@ export const PKG_CORE_OPS: Package = {
           const value = props.bindingsJs.get(id(node))
           if (value) {
             if (node.sup) {
-              return OP_RAISE.js(value, js(node.sup, props))
+              return OP_RAISE.js([value, js(node.sup, props)])
             } else {
               return value
             }
@@ -393,7 +393,7 @@ export const PKG_CORE_OPS: Package = {
             if (!value) break builtin
 
             if (!node.sup) return value
-            return OP_RAISE.js(value, js(node.sup, props))
+            return OP_RAISE.js([value, js(node.sup, props)])
           }
 
           let n
@@ -408,7 +408,7 @@ export const PKG_CORE_OPS: Package = {
           const value = props.bindings.get(id(node))
           if (value) {
             if (node.sup) {
-              return OP_RAISE.glsl(props.ctx, value, glsl(node.sup, props))
+              return OP_RAISE.glsl(props.ctx, [value, glsl(node.sup, props)])
             } else {
               return value
             }
@@ -421,7 +421,7 @@ export const PKG_CORE_OPS: Package = {
             if (!value) break builtin
 
             if (!node.sup) return value
-            return OP_RAISE.glsl(props.ctx, value, glsl(node.sup, props))
+            return OP_RAISE.glsl(props.ctx, [value, glsl(node.sup, props)])
           }
 
           let n
@@ -474,7 +474,7 @@ export const PKG_CORE_OPS: Package = {
           if (!node.b) {
             const op = OP_UNARY[node.kind]
             if (op) {
-              return op.js(js(node.a, props))
+              return op.js([js(node.a, props)])
             }
             throw new Error(`The operator '${node.kind}' is not supported yet.`)
           }
@@ -548,10 +548,10 @@ export const PKG_CORE_OPS: Package = {
                 if (node.b.kind == "var" && `.${node.b.value}` in OP_UNARY) {
                   const name = `.${node.b.value}` as PuncUnary
 
-                  const value = OP_UNARY[name]!.js(js(node.a, props))
+                  const value = OP_UNARY[name]!.js([js(node.a, props)])
 
                   if (node.b.sup) {
-                    return OP_RAISE.js(value, js(node.b.sup, props))
+                    return OP_RAISE.js([value, js(node.b.sup, props)])
                   } else {
                     return value
                   }
@@ -570,7 +570,7 @@ export const PKG_CORE_OPS: Package = {
           }
           const op = OP_BINARY[node.kind]
           if (op) {
-            return op.js(js(node.a, props), js(node.b, props))
+            return op.js([js(node.a, props), js(node.b, props)])
           }
           throw new Error(`The operator '${node.kind}' is not supported yet.`)
         },
@@ -578,7 +578,7 @@ export const PKG_CORE_OPS: Package = {
           if (!node.b) {
             const op = OP_UNARY[node.kind]
             if (op) {
-              return op.glsl(props.ctx, glsl(node.a, props))
+              return op.glsl(props.ctx, [glsl(node.a, props)])
             }
             throw new Error(`The operator '${node.kind}' is not supported yet.`)
           }
@@ -678,17 +678,15 @@ export const PKG_CORE_OPS: Package = {
                 if (node.b.kind == "var" && `.${node.b.value}` in OP_UNARY) {
                   const name = `.${node.b.value}` as PuncUnary
 
-                  const value = OP_UNARY[name]!.glsl(
-                    props.ctx,
+                  const value = OP_UNARY[name]!.glsl(props.ctx, [
                     glsl(node.a, props),
-                  )
+                  ])
 
                   if (node.b.sup) {
-                    return OP_RAISE.glsl(
-                      props.ctx,
+                    return OP_RAISE.glsl(props.ctx, [
                       value,
                       glsl(node.b.sup, props),
-                    )
+                    ])
                   } else {
                     return value
                   }
@@ -699,7 +697,10 @@ export const PKG_CORE_OPS: Package = {
           }
           const op = OP_BINARY[node.kind]
           if (op) {
-            return op.glsl(props.ctx, glsl(node.a, props), glsl(node.b, props))
+            return op.glsl(props.ctx, [
+              glsl(node.a, props),
+              glsl(node.b, props),
+            ])
           }
           throw new Error(`The operator '${node.kind}' is not supported yet.`)
         },
@@ -808,7 +809,7 @@ export const PKG_CORE_OPS: Package = {
               return value
             }
 
-            return OP_RAISE.js(value, sup)
+            return OP_RAISE.js([value, sup])
           }
 
           throw new Error("Cannot call anything except built-in functions yet.")
@@ -869,7 +870,7 @@ export const PKG_CORE_OPS: Package = {
               return value
             }
 
-            return OP_RAISE.glsl(props.ctx, value, sup)
+            return OP_RAISE.glsl(props.ctx, [value, sup])
           }
 
           throw new Error("Cannot call anything except built-in functions yet.")
@@ -929,14 +930,13 @@ export const PKG_CORE_OPS: Package = {
       },
       frac: {
         js(node, props) {
-          return OP_DIV.js(js(node.a, props), js(node.b, props))
+          return OP_DIV.js([js(node.a, props), js(node.b, props)])
         },
         glsl(node, props) {
-          return OP_DIV.glsl(
-            props.ctx,
+          return OP_DIV.glsl(props.ctx, [
             glsl(node.a, props),
             glsl(node.b, props),
-          )
+          ])
         },
         drag: NO_DRAG,
         deps(node, deps) {
@@ -946,14 +946,13 @@ export const PKG_CORE_OPS: Package = {
       },
       raise: {
         js(node, props) {
-          return OP_RAISE.js(js(node.base, props), js(node.exponent, props))
+          return OP_RAISE.js([js(node.base, props), js(node.exponent, props)])
         },
         glsl(node, props) {
-          return OP_RAISE.glsl(
-            props.ctx,
+          return OP_RAISE.glsl(props.ctx, [
             glsl(node.base, props),
             glsl(node.exponent, props),
-          )
+          ])
         },
         drag: NO_DRAG,
         deps(node, deps) {
@@ -980,7 +979,7 @@ export const PKG_CORE_OPS: Package = {
         "( )": {
           js(node, props) {
             if (node.type == "commalist") {
-              return OP_POINT.js(...node.items.map((x) => js(x, props)))
+              return OP_POINT.js(node.items.map((x) => js(x, props)))
             }
             return js(node, props)
           },
@@ -988,7 +987,7 @@ export const PKG_CORE_OPS: Package = {
             if (node.type == "commalist") {
               return OP_POINT.glsl(
                 props.ctx,
-                ...node.items.map((x) => glsl(x, props)),
+                node.items.map((x) => glsl(x, props)),
               )
             }
             return glsl(node, props)
@@ -1015,10 +1014,10 @@ export const PKG_CORE_OPS: Package = {
         },
         "| |": {
           js(node, props) {
-            return OP_ABS.js(js(node, props))
+            return OP_ABS.js([js(node, props)])
           },
           glsl(node, props) {
-            return OP_ABS.glsl(props.ctx, glsl(node, props))
+            return OP_ABS.glsl(props.ctx, [glsl(node, props)])
           },
           drag: NO_DRAG,
         },

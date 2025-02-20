@@ -45,7 +45,7 @@ export const FN_FIRSTVALID: Fn & WithDocs = {
   name: "firstvalid",
   label:
     "returns the first value which is valid for its type (the first finite number, the first color which is displayable, etc.)",
-  js(...args) {
+  js(args) {
     const ty = coerceTy(args)
 
     return join(
@@ -62,7 +62,7 @@ export const FN_FIRSTVALID: Fn & WithDocs = {
       },
     )
   },
-  glsl(ctx, ...args) {
+  glsl(ctx, args) {
     const ty = coerceTy(args)
 
     return joinGlsl(
