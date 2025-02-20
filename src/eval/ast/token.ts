@@ -9,43 +9,81 @@ import { pass1_suffixes } from "./pass1.suffixes"
 import { pass2_implicits } from "./pass2.implicits"
 import { pass3_ordering } from "./pass3.ordering"
 
+/** Tokens which can be parsed both as a binary infix and as a prefix. */
+export interface PuncListPm {
+  "+": 0
+  "-": 0
+  "\\pm ": 0
+  "\\mp ": 0
+}
+
+/** Tokens which can be part of a comparison list. */
+export interface PuncListCmp {
+  "cmp-eq": 0
+  "cmp-tilde": 0
+  "cmp-approx": 0
+  "cmp-neq": 0
+  "cmp-ntilde": 0
+  "cmp-napprox": 0
+  "cmp-lt": 0
+  "cmp-lte": 0
+  "cmp-gt": 0
+  "cmp-gte": 0
+  "cmp-nlt": 0
+  "cmp-nlte": 0
+  "cmp-ngt": 0
+  "cmp-ngte": 0
+}
+
+/** Tokens which can be binary operators. */
+export interface PuncListInfix {
+  for: 0
+  with: 0
+  withseq: 0
+  base: 0
+  while: 0
+  until: 0
+  from: 0
+  "\\and ": 0
+  "\\or ": 0
+  "..": 0
+  "...": 0
+  "\\cdot ": 0
+  "÷": 0
+  mod: 0
+  and: 0
+  or: 0
+  "\\to ": 0
+  "\\Rightarrow ": 0
+  ".": 0
+  ",": 0
+  "\\uparrow ": 0
+  "\\times ": 0
+  "\\odot ": 0
+  "\\otimes ": 0
+}
+
+/** Tokens which can be unary prefix operators. */
+export interface PuncListPrefix extends PuncListPm {
+  "\\neg ": 0
+}
+
+/** Tokens which can be unary suffix operators. */
+export interface PuncListSuffix {
+  "!": 0
+}
+
 /** A punctuation token which can either be a prefix or an infix. */
-export type PuncPm = "+" | "-" | "\\pm " | "\\mp "
+export type PuncPm = keyof PuncListPm
 
 /** A punctuation token which represents a binary comparison operator. */
-export type PuncCmp =
-  | `cmp-${"" | "n"}${"eq" | "tilde" | "approx"}`
-  | `cmp-${"" | "n"}${"l" | "g"}t${"" | "e"}`
+export type PuncCmp = keyof PuncListCmp
 
 /** A punctuation token which represents a binary operator. */
-export type PuncInfix =
-  | "for"
-  | "with"
-  | "withseq"
-  | "base"
-  | "while"
-  | "until"
-  | "from"
-  | "\\and "
-  | "\\or "
-  | ".."
-  | "..."
-  | "\\cdot "
-  | "÷"
-  | "mod"
-  | "and"
-  | "or"
-  | "\\to "
-  | "\\Rightarrow "
-  | "."
-  | ","
-  | "\\uparrow "
-  | "\\times "
-  | "\\odot "
-  | "\\otimes "
+export type PuncInfix = keyof PuncListInfix
 
 /** A punctuation token which represents a unary operator. */
-export type PuncUnary = "\\neg " | PuncPm | "!"
+export type PuncUnary = keyof PuncListPrefix | keyof PuncListSuffix
 
 /** The string tags for all binary operators. */
 export type PuncBinaryStr = PuncInfix | PuncPm | PuncCmp
