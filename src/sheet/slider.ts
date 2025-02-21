@@ -39,6 +39,7 @@ export class Slider {
           max: "" + this._max,
           step: "" + (this._step || "any"),
           value: "" + this._value,
+          autocomplete: "off",
         })),
         (this.elStepsOuter = h(
           "relative block w-full h-1.5 bg-[--nya-border] rounded-full",

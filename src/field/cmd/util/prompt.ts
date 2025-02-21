@@ -49,7 +49,10 @@ export class CmdPrompt extends Leaf {
     readonly selection: Selection,
     readonly active: Element | null,
   ) {
-    const field = hx("input", "bg-transparent min-w-[3ch] focus:outline-none")
+    const field = hx("input", {
+      class: "bg-transparent min-w-[3ch] focus:outline-none",
+      autocomplete: "off",
+    })
     field.addEventListener("keydown", onKeyDown)
     field.addEventListener("input", resize)
     field.addEventListener("blur", onBlur)

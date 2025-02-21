@@ -98,10 +98,11 @@ class CmdText extends Leaf {
     value = "",
     readonly field?: FieldInert,
   ) {
-    const input = hx(
-      "input",
-      "relative focus:outline-none font-['Times_New_Roman'] bg-transparent -mx-[.5ch] px-[.5ch] [box-sizing:content-box] ![field-sizing:content]",
-    )
+    const input = hx("input", {
+      class:
+        "relative focus:outline-none font-['Times_New_Roman'] bg-transparent -mx-[.5ch] px-[.5ch] [box-sizing:content-box] ![field-sizing:content]",
+      autocomplete: "off",
+    })
     input.spellcheck = false
     input.value = value
     if (field) {

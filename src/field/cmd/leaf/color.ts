@@ -52,6 +52,7 @@ export class CmdColor extends Leaf {
       type: "color",
       value: color,
       class: "sr-only",
+      autocomplete: "off",
     })
 
     const elColor = h(

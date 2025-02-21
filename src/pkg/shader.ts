@@ -20,7 +20,11 @@ const store = new Store((expr) => {
   const circShader = circle("shaderon")
   circShader.classList.add("hidden")
 
-  const field = hx("input", { type: "checkbox", class: "sr-only" })
+  const field = hx("input", {
+    type: "checkbox",
+    class: "sr-only",
+    autocomplete: "off",
+  })
   field.checked = PROP_SHOWN.get(expr)
   field.addEventListener("input", () => setShow(field.checked))
 

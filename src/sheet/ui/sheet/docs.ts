@@ -295,7 +295,11 @@ function secPackages(list: PackageList) {
       : 0,
     )
     .map((pkg) => {
-      const field = hx("input", { type: "checkbox", class: "sr-only" })
+      const field = hx("input", {
+        type: "checkbox",
+        class: "sr-only",
+        autocomplete: "off",
+      })
       field.addEventListener("input", () => {
         list.set(pkg.id, field.checked)
       })
