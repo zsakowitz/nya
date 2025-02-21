@@ -3,6 +3,7 @@ import type { JsVal, TyName } from "../../eval/ty"
 import type { Block } from "../../field/model"
 import { Expr } from "../ui/expr"
 import type { Paper, Point } from "../ui/paper"
+import type { Paper2 } from "../ui/paper2"
 
 export type Cursor =
   | "default"
@@ -26,6 +27,7 @@ export interface Ext<T extends {}, U extends {}, V extends {}, W extends {}> {
   destroy?(data: NoInfer<T>): void
   aside?(data: NoInfer<T>): HTMLElement | undefined
   el?(data: NoInfer<T>): HTMLElement | undefined
+  svg?(data: NoInfer<T>, paper: Paper2): void
 
   plot2d?(data: NoInfer<T>, paper: Paper): void
   plotGl?(data: NoInfer<T>, helpers: GlslHelpers): GlslResult | undefined
@@ -133,6 +135,7 @@ export class Prop<T> {
         if (value != v) {
           value = v
           expr.sheet.paper.queue()
+          expr.sheet.paper2.queue()
         }
       },
     }

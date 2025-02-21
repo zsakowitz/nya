@@ -151,6 +151,9 @@ export class Expr {
         if (this.state.ok && this.state.ext?.plot2d) {
           this.sheet.paper.queue()
         }
+        if (this.state.ok && this.state.ext?.svg) {
+          this.sheet.paper2.queue()
+        }
       }
       this.state = { ok: false, reason: this.field.error }
       this.layer = 0
@@ -175,11 +178,17 @@ export class Expr {
           if (this.state.ok && this.state.ext?.plot2d) {
             this.sheet.paper.queue()
           }
+          if (this.state.ok && this.state.ext?.svg) {
+            this.sheet.paper2.queue()
+          }
           destroyed = true
           this.state = { ok: true, ext, data }
           this.layer = ext.layer?.(data) ?? 0
           if (ext.plot2d) {
             this.sheet.paper.queue()
+          }
+          if (ext.svg) {
+            this.sheet.paper2.queue()
           }
           return
         }
@@ -190,6 +199,9 @@ export class Expr {
       }
       if (this.state.ok && this.state.ext?.plot2d) {
         this.sheet.paper.queue()
+      }
+      if (this.state.ok && this.state.ext?.svg) {
+        this.sheet.paper2.queue()
       }
       destroyed = true
       this.state = { ok: true, ext: null, data: {} }
@@ -204,6 +216,9 @@ export class Expr {
         }
         if (this.state.ok && this.state.ext?.plot2d) {
           this.sheet.paper.queue()
+        }
+        if (this.state.ok && this.state.ext?.svg) {
+          this.sheet.paper2.queue()
         }
       }
       this.state = { ok: false, reason: msg }
@@ -308,6 +323,7 @@ export class Expr {
     this.sheet.queueGlsl()
     this.sheet.queueIndices()
     this.sheet.paper.queue()
+    this.sheet.paper2.queue()
     this.el.remove()
   }
 

@@ -11,11 +11,12 @@ import { OpEq } from "../field/cmd/leaf/cmp"
 import { CmdDot } from "../field/cmd/leaf/dot"
 import { CmdVar } from "../field/cmd/leaf/var"
 import { Block, L, R } from "../field/model"
-import { h } from "../jsx"
+import { h, sx } from "../jsx"
 import { Prop, Store } from "../sheet/ext"
 import { defineHideable } from "../sheet/ext/hideable"
 import { Transition } from "../sheet/transition"
 import type { Paper, Point } from "../sheet/ui/paper"
+import type { Paper2 } from "../sheet/ui/paper2"
 import type { Sheet } from "../sheet/ui/sheet"
 import { virtualStepExp, write, Writer } from "../sheet/write"
 import { FN_VALID } from "./bool"
@@ -94,6 +95,41 @@ export function drawPoint(
   }
 }
 
+export function drawPoint2(
+  paper: Paper2,
+  at: Point,
+  size = 4,
+  halo?: boolean,
+  dimmed?: boolean,
+) {
+  const offset = paper.paperToCanvas(at)
+  if (!(isFinite(offset.x) && isFinite(offset.y))) return
+
+  // TODO: dimmed
+
+  if (halo) {
+    paper.append(
+      "point",
+      sx("circle", {
+        cx: offset.x,
+        cy: offset.y,
+        r: 12,
+        fill: "#6042a659",
+      }),
+    )
+  }
+
+  paper.append(
+    "point",
+    sx("circle", {
+      cx: offset.x,
+      cy: offset.y,
+      r: size,
+      fill: "#6042a6",
+    }),
+  )
+}
+
 const EXT_POINT = defineHideable({
   data(expr) {
     const value = expr.js?.value
@@ -124,6 +160,19 @@ const EXT_POINT = defineHideable({
   plot2d(data, paper) {
     for (const pt of each(data.value)) {
       drawPoint(
+        paper,
+        unpt(pt),
+        SELECTED.get(data.expr) ? 6
+        : data.drag ? color.get(data.expr).get()
+        : 4,
+        !!data.drag,
+        DIMMED.get(data.expr),
+      )
+    }
+  },
+  svg(data, paper) {
+    for (const pt of each(data.value)) {
+      drawPoint2(
         paper,
         unpt(pt),
         SELECTED.get(data.expr) ? 6

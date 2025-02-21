@@ -21,18 +21,15 @@ import { REMARK } from "../../remark"
 import { Slider } from "../../slider"
 import { isDark } from "../../theme"
 import { Expr } from "../expr"
-import {
-  createDrawAxes,
-  makeInteractive,
-  matchSize,
-  Paper,
-  type Point,
-} from "../paper"
+import { Paper, type Point } from "../paper"
+import { Paper2 } from "../paper2"
+import { createDrawAxes } from "../paper2/grid"
 import { btn, createDocs, DEFAULT_TO_VISIBLE_DOCS } from "./docs"
 import { Handlers } from "./handler"
 
 export class Sheet {
   readonly paper = new Paper()
+  readonly paper2 = new Paper2("absolute inset-0 size-full touch-none")
   readonly scope: Scope
   readonly exprs: Expr[] = []
 
@@ -83,23 +80,23 @@ export class Sheet {
       "inset-0",
       "absolute",
     )
-    matchSize(this.paper)
-    makeInteractive(this.paper, this.handlers)
-    createDrawAxes(this.paper)
-    this.paper.drawFns.push(() => {
-      this.paper.ctx.lineJoin = "round"
-      this.paper.ctx.lineCap = "round"
-      for (const e of this.exprs
-        .filter((x) => x.state.ok && x.state.ext?.plot2d != null)
-        .sort((a, b) => a.layer - b.layer)) {
-        if (e.state.ok && e.state.ext?.plot2d) {
+    // matchSize(this.paper)
+    // makeInteractive(this.paper, this.handlers)
+    createDrawAxes(this.paper2)
+    this.paper2.fns.push(() => {
+      for (const expr of this.exprs) {
+        if (expr.state.ok && expr.state.ext?.svg) {
           try {
-            e.state.ext.plot2d(e.state.data, this.paper)
-          } catch {}
+            expr.state.ext.svg(expr.state.data, this.paper2)
+          } catch (e) {
+            console.warn("[draw]", e)
+          }
+        } else {
+          console.log(expr.state)
         }
       }
     })
-    this.paper.drawFns.push(() => this.handlers.draw())
+    // this.paper.drawFns.push(() => this.handlers.draw())
 
     // prepare glsl context
     const canvas = hx(
@@ -240,7 +237,7 @@ export class Sheet {
       h(
         "relative" + (toolbar ? "" : " row-span-2"),
         canvas,
-        this.paper.el,
+        (this.paper2 as any).el,
         toolbar &&
           h(
             "absolute block top-0 left-0 right-0 h-1 from-[--nya-sidebar-shadow] to-transparent bg-gradient-to-b",
@@ -342,19 +339,21 @@ export class Sheet {
       const program = this.program
       if (!program) return
 
-      const { xmin, w, ymin, h } = this.paper.bounds()
+      const { xmin, w, ymin, h } = this.paper2.bounds()
       global(
         {
           u_scale: splitRaw(w / this.regl._gl.drawingBufferWidth),
           u_cx: splitRaw(xmin),
           u_cy: splitRaw(ymin),
           u_px_per_unit: [
-            ...splitRaw(this.paper.el.clientWidth / w),
-            ...splitRaw(this.paper.el.clientHeight / h),
+            ...splitRaw(this.paper2.width / w),
+            ...splitRaw(this.paper2.height / h),
           ],
           u_unit_per_hpx: [
-            ...splitRaw(w / this.paper.el.width),
-            ...splitRaw(h / this.paper.el.height),
+            ...splitRaw(w / (window.devicePixelRatio ?? 1) / this.paper2.width),
+            ...splitRaw(
+              h / (window.devicePixelRatio ?? 1) / this.paper2.height,
+            ),
           ],
           u_darkmul: isDark() ? [-1, -1, -1, 1] : [1, 1, 1, 1],
           u_darkoffset: isDark() ? [1, 1, 1, 0] : [0, 0, 0, 0],

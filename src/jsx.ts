@@ -108,3 +108,27 @@ export function a(href: string, ...children: (Node | string | null)[]) {
     ...children,
   )
 }
+
+// TODO: use sx for all SVG functions
+export function sx<K extends keyof SVGElementTagNameMap>(
+  name: K,
+  cl?: string | Record<string, string | number | null>,
+  ...children: (Node | null)[]
+) {
+  const el = document.createElementNS("http://www.w3.org/2000/svg", name)
+  if (typeof cl == "string") {
+    el.setAttribute("class", cl)
+  } else if (cl) {
+    for (const key in cl) {
+      if (cl[key]) {
+        el.setAttribute(key, "" + cl[key])
+      }
+    }
+  }
+  for (const child of children) {
+    if (child) {
+      el.append(child)
+    }
+  }
+  return el
+}
