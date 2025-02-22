@@ -49,7 +49,6 @@ export class Handlers implements PointerHandlers<DataDrag, DataHover> {
   }
 
   setPick<T extends {}, U extends {}>(pick: Picker<T, U>, data: T) {
-    this.sheet.clearSelect()
     pick.init(data, this.sheet)
 
     const current = this.getPick()
@@ -73,8 +72,6 @@ export class Handlers implements PointerHandlers<DataDrag, DataHover> {
   }
 
   unsetPick() {
-    this.sheet.clearSelect()
-
     const current = this.getPick()
     if (current) {
       current.from.cancel(current.data)

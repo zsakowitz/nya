@@ -36,9 +36,7 @@ export const PICK_BY_TY = createPicker<PropsByTy, Selected>({
   id(data) {
     return data.ext.id
   },
-  init(_, sheet) {
-    sheet.checkDim()
-  },
+  init() {},
   find(data, at, sheet) {
     const maybePoint = data.next.some((x) => x == "point32" || x == "point64")
 

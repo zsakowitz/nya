@@ -68,11 +68,25 @@ export function drawCircle2(
       stroke: "#388c46",
       "stroke-width": 3,
       "stroke-opacity": props.dimmed ? 0.3 : 1,
-      drag: props.drag,
-      pick: props.pick,
       class: props?.ghost ? "pointer-events-none" : undefined,
     }),
   )
+
+  if (props.pick || props.drag) {
+    paper.append(
+      "line",
+      sx("circle", {
+        cx,
+        cy,
+        r,
+        stroke: "transparent",
+        "stroke-width": 12,
+        drag: props.drag,
+        pick: props.pick,
+        class: props?.ghost ? "pointer-events-none" : undefined,
+      }),
+    )
+  }
 }
 
 export const EXT_CIRCLE = defineHideable({

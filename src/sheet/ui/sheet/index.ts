@@ -293,12 +293,12 @@ export class Sheet {
 
     addEventListener("keydown", (event) => {
       if (
-        this.handlers.getPick() &&
+        this.pick.isActive() &&
         event.key == "Escape" &&
         !(event.metaKey || event.shiftKey || event.altKey || event.ctrlKey)
       ) {
         event.preventDefault()
-        this.handlers.unsetPick()
+        this.pick.cancel()
       }
     })
   }
@@ -460,39 +460,22 @@ void main() {
     this._qdGlsl = true
   }
 
-  private resetOn: (() => void)[] = []
-  private resetDim: (() => void)[] = []
-
-  clearSelect() {
-    this.resetOn.forEach((x) => x())
-    this.resetOn = []
-    this.paper.el.classList.remove("cursor-pointer")
-
-    this.resetDim.forEach((x) => x())
-    this.resetDim = []
-  }
-
-  checkDim() {
-    this.resetDim.forEach((x) => x())
-    this.resetDim = []
-  }
-
   select<const K extends readonly TyName[]>(
     at: Point,
     tys: K,
   ): Selected<K[number]>[] {
-    this.clearSelect()
-    this.checkDim()
-
     const o = this.paper2.toOffset(at)
     const rect = this.paper2.el.createSVGRect()
     rect.x = o.x
     rect.y = o.y
-    const picks = Array.from(this.paper2.el.getIntersectionList(rect, null))
+    rect.width = 0.1
+    rect.height = 0.1
+    const picks = Array.from(
+      this.paper2.el.getIntersectionList(rect, this.paper2.el),
+    )
       .map((v) => HANDLER_PICK.get(v))
       .filter((x) => x != null)
       .filter((x) => tys.includes(x.val().type))
-
     return picks.map((x) => ({
       ref: x.ref,
       val: x.val(),

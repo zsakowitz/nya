@@ -78,6 +78,10 @@ export class PickHandler {
 
   private pick: { pick: AnyPick2; data: {}; found: {} | null } | undefined
 
+  isActive() {
+    return !!this.pick
+  }
+
   cancel() {
     if (this.pick) {
       try {

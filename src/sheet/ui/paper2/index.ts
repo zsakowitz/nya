@@ -259,9 +259,25 @@ export function segmentByOffset(
       stroke: "#2d70b3",
       "stroke-opacity": props?.dimmed ? 0.3 : 1,
       "stroke-linecap": "round",
-      drag: props?.drag,
-      pick: props?.pick,
       class: props?.ghost ? "pointer-events-none" : undefined,
     }),
   )
+
+  if (props?.drag || props?.pick) {
+    paper.append(
+      "line",
+      sx("line", {
+        x1: o1.x,
+        y1: o1.y,
+        x2: o2.x,
+        y2: o2.y,
+        "stroke-width": 12,
+        stroke: "transparent",
+        "stroke-linecap": "round",
+        drag: props?.drag,
+        pick: props?.pick,
+        class: props?.ghost ? "pointer-events-none" : undefined,
+      }),
+    )
+  }
 }
