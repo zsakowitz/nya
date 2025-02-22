@@ -1,6 +1,5 @@
 import type { GlslHelpers, GlslResult } from "../../eval/lib/fn"
 import { Expr } from "../ui/expr"
-import type { Paper } from "../ui/paper"
 import type { Paper2 } from "../ui/paper2"
 
 export type Cursor =
@@ -75,8 +74,7 @@ export class Store<T extends {}, U extends WeakKey = Expr> {
 
 /**
  * A wrapped around a {@linkcode Store} which stores an arbitrary property and
- * re-renders the {@linkcode Expr}'s {@linkcode Paper} when that property's value
- * changes.
+ * re-renders the paper when it changes.
  */
 export class Prop<T> {
   private store = new Store((expr) => {

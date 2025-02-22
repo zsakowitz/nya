@@ -4,7 +4,7 @@ import { CmdWord } from "../../field/cmd/leaf/word"
 import { CmdBrack } from "../../field/cmd/math/brack"
 import { Block, L, R } from "../../field/model"
 import { h, p, svgx } from "../../jsx"
-import type { Paper, Point } from "../../sheet/ui/paper"
+import type { Point } from "../../sheet/ui/paper"
 import type { Paper2 } from "../../sheet/ui/paper2"
 import type { GlslContext } from "../lib/fn"
 import type { TyWrite } from "./display"
@@ -70,25 +70,6 @@ export const WRITE_POINT: TyWrite<SPoint> = {
 }
 
 export function gliderOnLine(
-  [{ x: x1, y: y1 }, { x: x2, y: y2 }]: [Point, Point],
-  { x, y }: Point,
-  paper: Paper,
-) {
-  const B = Math.hypot(x1 - x, y1 - y)
-  const A = Math.hypot(x2 - x, y2 - y)
-  const C = Math.hypot(x1 - x2, y1 - y2)
-
-  const a = (C * C + B * B - A * A) / (2 * C)
-
-  return {
-    value: a / C,
-    precision:
-      paper.canvasDistance({ x: x1, y: y1 }, { x: x2, y: y2 }) /
-      Math.hypot(x1 - x2, y1 - y2),
-  }
-}
-
-export function gliderOnLine2(
   paper: Paper2,
   [{ x: x1, y: y1 }, { x: x2, y: y2 }]: [Point, Point],
   { x, y }: Point,

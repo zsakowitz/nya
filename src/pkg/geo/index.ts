@@ -1,7 +1,7 @@
 import type { Package } from ".."
 import type { JsVal, SPoint, TyComponents, Tys } from "../../eval/ty"
 import { num, pt, real, unpt } from "../../eval/ty/create"
-import { gliderOnLine2, WRITE_POINT, type TyInfo } from "../../eval/ty/info"
+import { gliderOnLine, WRITE_POINT, type TyInfo } from "../../eval/ty/info"
 import { CmdComma } from "../../field/cmd/leaf/comma"
 import { CmdWord } from "../../field/cmd/leaf/word"
 import { CmdBrack } from "../../field/cmd/math/brack"
@@ -104,7 +104,7 @@ function lineInfo(
     glide:
       glide ?
         (props) => {
-          const raw = gliderOnLine2(
+          const raw = gliderOnLine(
             props.paper,
             [unpt(props.shape[0]), unpt(props.shape[1])],
             props.point,
