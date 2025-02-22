@@ -14,7 +14,7 @@ import { Block, L, R } from "../field/model"
 import { h, sx } from "../jsx"
 import { Prop } from "../sheet/ext"
 import { defineHideable } from "../sheet/ext/hideable"
-import type { Paper, Point } from "../sheet/ui/paper"
+import type { Point } from "../sheet/ui/paper"
 import type { DrawProps, Paper2 } from "../sheet/ui/paper2"
 import { HANDLER_DRAG, HANDLER_PICK } from "../sheet/ui/paper2/interact"
 import type { Sheet } from "../sheet/ui/sheet"
@@ -60,38 +60,6 @@ const SELECTED = new Prop(() => false)
 const DIMMED = new Prop(() => false)
 
 export function drawPoint(
-  paper: Paper,
-  at: Point,
-  size = 4,
-  halo?: boolean,
-  dimmed?: boolean,
-) {
-  const offset = paper.paperToCanvas(at)
-  if (!(isFinite(offset.x) && isFinite(offset.y))) return
-  const { ctx, scale } = paper
-
-  if (dimmed) {
-    ctx.globalAlpha = 0.3
-  }
-
-  if (halo) {
-    ctx.beginPath()
-    ctx.fillStyle = "#6042a659"
-    ctx.arc(offset.x, offset.y, 12 * scale, 0, 2 * Math.PI)
-    ctx.fill()
-  }
-
-  ctx.beginPath()
-  ctx.fillStyle = "#6042a6"
-  ctx.arc(offset.x, offset.y, size * scale, 0, 2 * Math.PI)
-  ctx.fill()
-
-  if (dimmed) {
-    ctx.globalAlpha = 1
-  }
-}
-
-export function drawPoint2(
   paper: Paper2,
   props: {
     at: Point
@@ -255,7 +223,7 @@ const EXT_POINT = defineHideable({
               break
           }
         })
-      drawPoint2(paper, {
+      drawPoint(paper, {
         at: unpt(pt),
         dimmed: DIMMED.get(data.expr),
         size: SELECTED.get(data.expr) ? 6 : 4,

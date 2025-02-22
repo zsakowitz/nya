@@ -11,7 +11,7 @@ import { Expr } from "../../sheet/ui/expr"
 import type { Point } from "../../sheet/ui/paper"
 import type { Sheet } from "../../sheet/ui/sheet"
 import { Writer } from "../../sheet/write"
-import { drawPoint2, FN_GLIDER, FN_INTERSECTION } from "../geo-point"
+import { drawPoint, FN_GLIDER, FN_INTERSECTION } from "../geo-point"
 
 export function virtualPoint(at: Point, sheet: Sheet) {
   const objs = sheet.select(at, ["line", "segment", "ray", "circle"])
@@ -76,7 +76,7 @@ export function virtualPoint(at: Point, sheet: Sheet) {
         return ret
       },
       draw() {
-        drawPoint2(sheet.paper2, { at: unpt(val.value), pointer: true })
+        drawPoint(sheet.paper2, { at: unpt(val.value), pointer: true })
       },
     }
   }
@@ -141,7 +141,7 @@ export function virtualPoint(at: Point, sheet: Sheet) {
         return ret
       },
       draw() {
-        drawPoint2(sheet.paper2, {
+        drawPoint(sheet.paper2, {
           at: unpt(position.value),
           halo: true,
           pointer: true,
@@ -195,7 +195,7 @@ export function virtualPoint(at: Point, sheet: Sheet) {
       return ret
     },
     draw() {
-      drawPoint2(sheet.paper2, {
+      drawPoint(sheet.paper2, {
         at,
         halo: true,
         ghost: true,

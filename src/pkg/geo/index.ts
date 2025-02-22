@@ -264,7 +264,10 @@ const PICK_MIDPOINT: PropsByTy = {
         return
       }
 
-      drawPoint(sheet.paper, { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 })
+      drawPoint(sheet.paper2, {
+        at: { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 },
+        ghost: true,
+      })
     },
   },
 }
