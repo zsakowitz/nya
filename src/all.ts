@@ -9,6 +9,7 @@ import { PKG_DISTRIBUTIONS } from "./pkg/distributions"
 import { PKG_EVAL } from "./pkg/eval"
 import { PKG_GEOMETRY } from "./pkg/geo"
 import { PKG_GEO_POINT } from "./pkg/geo-point"
+import { PKG_GRIDLINES } from "./pkg/gridlines"
 import { PKG_ITERATE } from "./pkg/iterate"
 import { PKG_ITHKUIL } from "./pkg/ithkuil"
 import { PKG_LIST_EXTRAS } from "./pkg/list-extras"
@@ -49,4 +50,5 @@ export const ALL: Package[] = [
   PKG_LIST_EXTRAS,
   PKG_DISTRIBUTIONS,
   PKG_ITERATE,
+  PKG_GRIDLINES,
 ]

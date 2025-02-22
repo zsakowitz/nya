@@ -14,21 +14,26 @@ export interface Point {
   readonly y: number
 }
 
-interface Layers {
-  grid: 0
+interface LayerShared {
   line: 1
   point: 2
 }
 
-type Layer = keyof Layers
-const LAYERS: Partial<Record<keyof Layers, number>> = Object.create(null)
-LAYERS.grid = 0
-LAYERS.line = 1
-LAYERS.point = 2
+interface LayerExclusive {
+  grid: 0
+}
+
+const LAYER_SHARED: Partial<LayerShared> = Object.create(null)
+LAYER_SHARED.line = 1
+LAYER_SHARED.point = 2
+
+const LAYER_EXCLUSIVE: Partial<LayerExclusive> = Object.create(null)
+LAYER_EXCLUSIVE.grid = 0
 
 export class Paper {
   readonly el
-  private readonly layers = new Map<number, SVGGElement>()
+  private readonly layers = new Map<number, SVGElement>()
+  private readonly sharedLayers = new Map<number, SVGGElement>()
 
   readonly scale: number = 1
   readonly height: number = 0
@@ -90,6 +95,18 @@ export class Paper {
 
   readonly fns: (() => void)[] = []
 
+  private insert(index: number, el: SVGElement) {
+    let next: [number, SVGElement] | undefined
+    for (const [k, v] of this.layers) {
+      if (k > index && (!next || k < next[0])) {
+        next = [k, v]
+      }
+    }
+    const before = next?.[1] ?? null
+    this.el.insertBefore(el, before)
+    return el
+  }
+
   private layer(index: number) {
     const preexisting = this.layers.get(index)
     if (preexisting) {
@@ -97,32 +114,34 @@ export class Paper {
     }
 
     const layer = sx("g")
-    let next: [number, SVGGElement] | undefined
-    for (const [k, v] of this.layers) {
-      if (k > index && (!next || k < next[0])) {
-        next = [k, v]
-      }
-    }
-    const before = next?.[1] ?? null
-    this.el.insertBefore(layer, before)
+    this.insert(index, layer)
     this.layers.set(index, layer)
-
+    this.sharedLayers.set(index, layer)
     return layer
   }
 
-  append(layer: Layer, el: SVGElement) {
-    const index = LAYERS[layer]
+  claim(layer: keyof LayerExclusive, el: SVGElement) {
+    const index = LAYER_EXCLUSIVE[layer]
     if (index == null) {
-      throw new Error(`Layer '${layer}' is not defined.`)
+      throw new Error(`Exclusive layer '${layer}' is not defined.`)
+    }
+    if (this.layers.has(index)) {
+      throw new Error(`Exclusive layer '${layer}' has already been claimed.`)
+    }
+    this.insert(index, el)
+    this.layers.set(index, el)
+  }
+
+  append(layer: keyof LayerShared, el: SVGElement) {
+    const index = LAYER_SHARED[layer]
+    if (index == null) {
+      throw new Error(`Shared layer '${layer}' is not defined.`)
     }
     this.layer(index).appendChild(el)
   }
 
-  call = 0
   private draw() {
-    this.call++
-
-    for (const layer of this.layers.values()) {
+    for (const layer of this.sharedLayers.values()) {
       while (layer.firstChild) {
         layer.firstChild.remove()
       }

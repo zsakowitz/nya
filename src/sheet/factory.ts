@@ -152,7 +152,7 @@ export class SheetFactory {
   }
 
   create() {
-    return new Sheet(
+    const sheet = new Sheet(
       this.options,
       new Exts(
         Object.entries(this.exts)
@@ -165,6 +165,10 @@ export class SheetFactory {
       this.keys,
       this,
     )
+    for (const pkg of Object.values(this.loaded)) {
+      pkg.init?.(sheet)
+    }
+    return sheet
   }
 
   docs() {}

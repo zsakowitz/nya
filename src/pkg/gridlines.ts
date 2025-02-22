@@ -1,6 +1,7 @@
-import type { Paper } from "."
-import { hx, sx } from "../../../jsx"
-import { theme } from "../../theme"
+import type { Package } from "."
+import { hx, sx } from "../jsx"
+import { theme } from "../sheet/theme"
+import type { Paper } from "../sheet/ui/paper"
 
 const THEME_MAIN_AXIS_WIDTH = 1.5
 const THEME_MAJOR_LINE_ALPHA = 0.3
@@ -20,7 +21,7 @@ const THEME_AXIS_STROKE = () => theme("--nya-paper-screen-line", "black")
 const MAX_GRIDLINES_MAJOR = 200
 const MAX_GRIDLINES_MINOR = MAX_GRIDLINES_MAJOR * 5
 
-export function createDrawAxes(paper: Paper) {
+function createDrawAxes(paper: Paper) {
   const cv = hx("canvas")
   const ctx = cv.getContext("2d")!
 
@@ -313,6 +314,8 @@ export function createDrawAxes(paper: Paper) {
     cv,
   )
 
+  paper.claim("grid", obj)
+
   paper.fns.push(() => {
     obj.setAttribute("width", "" + paper.width)
     obj.setAttribute("height", "" + paper.height)
@@ -320,6 +323,14 @@ export function createDrawAxes(paper: Paper) {
     cv.height = paper.height * paper.scale
     cv.className = "fixed top-0 left-0 w-full h-full"
     drawGridlines()
-    paper.append("grid", obj)
   })
+}
+
+export const PKG_GRIDLINES: Package = {
+  id: "nya:gridlines",
+  name: "gridlines",
+  label: "draws a numbered grid below the graphs",
+  init(sheet) {
+    createDrawAxes(sheet.paper)
+  },
 }

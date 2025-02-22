@@ -20,7 +20,6 @@ import { Slider } from "../../slider"
 import { isDark } from "../../theme"
 import { Expr } from "../expr"
 import { Paper, type Point } from "../paper"
-import { createDrawAxes } from "../paper/grid"
 import { HANDLER_PICK, type PickProps } from "../paper/interact"
 import {
   registerDragHandler,
@@ -78,7 +77,6 @@ export class Sheet {
     registerWheelHandler(this.paper)
     registerDragHandler(this.paper)
     registerPinchHandler(this.paper)
-    createDrawAxes(this.paper)
     this.paper.fns.push(() => {
       for (const expr of this.exprs) {
         if (expr.state.ok && expr.state.ext?.svg) {

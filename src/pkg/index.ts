@@ -25,6 +25,7 @@ export interface Package {
   label: string | null
 
   load?(): void
+  init?(sheet: Sheet): void
   deps?: (() => Package)[]
 
   field?: {
