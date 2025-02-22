@@ -130,7 +130,7 @@ export class Paper2 {
     })
   }
 
-  paperToCanvas({ x, y }: Point): Point {
+  paperToOffset({ x, y }: Point): Point {
     const { xmin, w, ymin, h } = this.bounds()
     return {
       x: ((x - xmin) / w) * this.width,

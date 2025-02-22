@@ -29,7 +29,7 @@ export function createDrawAxes(paper: Paper2) {
   }
 
   function paperToCanvas(x: number, y: number) {
-    const pt = paper.paperToCanvas({ x, y })
+    const pt = paper.paperToOffset({ x, y })
     return {
       x: pt.x * scale(),
       y: pt.y * scale(),

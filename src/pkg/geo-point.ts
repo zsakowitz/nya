@@ -102,7 +102,7 @@ export function drawPoint2(
   halo?: boolean,
   dimmed?: boolean,
 ) {
-  const offset = paper.paperToCanvas(at)
+  const offset = paper.paperToOffset(at)
   if (!(isFinite(offset.x) && isFinite(offset.y))) return
 
   // TODO: dimmed
