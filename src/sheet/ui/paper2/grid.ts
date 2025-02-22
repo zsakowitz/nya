@@ -317,7 +317,6 @@ export function createDrawAxes(paper: Paper2) {
     cv.width = paper.width * paper.scale
     cv.height = paper.height * paper.scale
     cv.className = "fixed top-0 left-0 w-full h-full"
-    setInterval(drawGridlines)
     drawGridlines()
     paper.append("grid", obj)
   })
