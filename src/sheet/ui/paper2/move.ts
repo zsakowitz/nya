@@ -1,4 +1,5 @@
 import type { Paper2, Point } from "."
+import { PAPER2_DRAG, type Paper2DragProps } from "../../../jsx"
 
 const SNAP_DISTANCE = 16
 
@@ -37,6 +38,7 @@ export function registerWheelHandler(paper: Paper2) {
 export function registerDragHandler(paper: Paper2) {
   let initial: Point | undefined
   let ptrs = 0
+  let drag: Paper2DragProps | undefined
 
   paper.el.addEventListener(
     "pointermove",
@@ -44,6 +46,11 @@ export function registerDragHandler(paper: Paper2) {
       event.preventDefault()
 
       if (ptrs != 1) {
+        return
+      }
+
+      if (drag) {
+        drag(paper.eventToPaper(event), false)
         return
       }
 
@@ -65,24 +72,47 @@ export function registerDragHandler(paper: Paper2) {
     "pointerdown",
     (event) => {
       ptrs++
-      initial = paper.eventToPaper(event)
       paper.el.setPointerCapture(event.pointerId)
+      const at = paper.eventToPaper(event)
+
+      for (const el of event.composedPath()) {
+        const fn = PAPER2_DRAG.get(el as SVGElement)
+        if (fn) {
+          const props = fn(at)
+          if (props) {
+            drag = props
+            initial = undefined
+            return
+          }
+        }
+      }
+
+      initial = at
     },
     { passive: false },
   )
 
-  function onPointerUp() {
+  function onPointerUp(event?: PointerEvent) {
     ptrs--
 
     if (ptrs < 0) {
       ptrs = 0
     }
 
+    if (drag) {
+      if (event) {
+        try {
+          drag(paper.eventToPaper(event), true)
+        } catch {}
+      }
+      drag = undefined
+    }
+
     initial = undefined
   }
 
   addEventListener("pointerup", onPointerUp)
-  addEventListener("contextmenu", onPointerUp)
+  addEventListener("contextmenu", () => onPointerUp())
 }
 
 export function registerPinchHandler(paper: Paper2) {

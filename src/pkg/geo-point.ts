@@ -11,7 +11,7 @@ import { OpEq } from "../field/cmd/leaf/cmp"
 import { CmdDot } from "../field/cmd/leaf/dot"
 import { CmdVar } from "../field/cmd/leaf/var"
 import { Block, L, R } from "../field/model"
-import { g, h, sx } from "../jsx"
+import { h, PAPER2_DRAG, sx, type Paper2DragProps } from "../jsx"
 import { Prop, Store } from "../sheet/ext"
 import { defineHideable } from "../sheet/ext/hideable"
 import { Transition } from "../sheet/transition"
@@ -103,6 +103,7 @@ export function drawPoint2(
     halo?: boolean
     dimmed?: boolean
     hover?: boolean
+    drag?(at: Point): Paper2DragProps
   },
 ) {
   const offset = paper.toOffset(props.at)
@@ -122,8 +123,9 @@ export function drawPoint2(
   if (props.halo) {
     paper.append(
       "point",
-      g(
-        "group cursor-move",
+      sx(
+        "g",
+        { class: "group cursor-move", drag: props.drag },
         sx("circle", {
           cx: offset.x,
           cy: offset.y,
@@ -135,6 +137,9 @@ export function drawPoint2(
       ),
     )
   } else {
+    if (props.drag) {
+      PAPER2_DRAG.set(center, props.drag)
+    }
     paper.append("point", center)
   }
 }
@@ -168,6 +173,80 @@ const EXT_POINT = defineHideable({
   },
   svg(data, paper) {
     for (const pt of each(data.value)) {
+      const { drag } = data
+      const move =
+        drag &&
+        ((at: Point) => {
+          switch (drag.type) {
+            case "split":
+              if (drag.x) {
+                new Writer(drag.x.span.remove().span()).set(
+                  at.x,
+                  data.paper.el.width / data.paper.bounds().w,
+                  drag.x.signed,
+                )
+                drag.x.field.sel = drag.x.field.block.cursor(R).selection()
+                drag.x.field.queueAstUpdate()
+              }
+
+              if (drag.y) {
+                new Writer(drag.y.span.remove().span()).set(
+                  at.y,
+                  data.paper.el.height / data.paper.bounds().h,
+                  drag.y.signed,
+                )
+                drag.y.field.sel = drag.y.field.block.cursor(R).selection()
+                drag.y.field.queueAstUpdate()
+              }
+
+              break
+            case "complex":
+              {
+                const x = at.x
+                const xp = data.paper.el.width / data.paper.bounds().w
+                const y = at.y
+                const yp = data.paper.el.height / data.paper.bounds().h
+                const cursor = drag.span.remove()
+                write(
+                  cursor,
+                  real(x),
+                  frac(10, 1),
+                  virtualStepExp(xp, 10),
+                  false,
+                )
+                write(
+                  cursor,
+                  real(y),
+                  frac(10, 1),
+                  virtualStepExp(yp, 10),
+                  true,
+                )
+                new CmdVar("i", data.expr.field.options).insertAt(cursor, L)
+                drag.field.sel = drag.field.block.cursor(R).selection()
+                drag.field.queueAstUpdate()
+              }
+              break
+            case "glider":
+              {
+                const { value, precision } = (
+                  TY_INFO[drag.shape.type].glide! as TyGlide<any>
+                )({
+                  paper: data.paper,
+                  point: at,
+                  shape: drag.shape.value,
+                })
+                new Writer(drag.value.span.remove().span()).set(
+                  value,
+                  precision,
+                )
+                drag.value.field.sel = drag.value.field.block
+                  .cursor(R)
+                  .selection()
+                drag.value.field.queueAstUpdate()
+              }
+              break
+          }
+        })
       drawPoint2(paper, {
         at: unpt(pt),
         dimmed: DIMMED.get(data.expr),
@@ -175,8 +254,9 @@ const EXT_POINT = defineHideable({
           SELECTED.get(data.expr) ? 6
           : data.drag ? color.get(data.expr).get()
           : 4,
-        halo: !!data.drag,
-        hover: !!data.drag,
+        halo: !!drag,
+        hover: !!drag,
+        drag: move ? () => move : undefined,
       })
     }
   },

@@ -1,4 +1,5 @@
 import { sx } from "../../../jsx"
+import { onTheme } from "../../theme"
 
 interface Bounds {
   readonly xmin: number
@@ -58,6 +59,7 @@ export class Paper2 {
     }
     resize()
     new ResizeObserver(resize).observe(this.el)
+    onTheme(() => this.draw())
   }
 
   bounds(): Bounds {

@@ -29,6 +29,7 @@ export interface Ext<T extends {}, U extends {}, V extends {}, W extends {}> {
   el?(data: NoInfer<T>): HTMLElement | undefined
   svg?(data: NoInfer<T>, paper: Paper2): void
 
+  // TODO: remove plotGl as a special-cased function; it could be delegated to 'shader'
   plotGl?(data: NoInfer<T>, helpers: GlslHelpers): GlslResult | undefined
 
   drag?: {

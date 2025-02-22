@@ -1,3 +1,5 @@
+import type { Point } from "./sheet/ui/paper2"
+
 export const U_ZERO_WIDTH_SPACE = "\u200B"
 
 export function h(
@@ -111,14 +113,10 @@ export function a(href: string, ...children: (Node | string | null)[]) {
 
 export interface SVGProps {
   svg: {
-    class?: string
     fill?: string
   }
-  g: {
-    class?: string
-  }
+  g: {}
   path: {
-    class?: string
     d: string
     fill?: string
     stroke?: string
@@ -129,7 +127,6 @@ export interface SVGProps {
     "stroke-linejoin"?: "round"
   }
   line: {
-    class?: string
     x1: number
     y1: number
     x2: number
@@ -140,7 +137,6 @@ export interface SVGProps {
     "stroke-linecap"?: "round"
   }
   circle: {
-    class?: string
     cx: number
     cy: number
     r: number
@@ -151,7 +147,6 @@ export interface SVGProps {
     "stroke-opacity"?: number
   }
   foreignObject: {
-    class?: string
     x: number
     y: number
     width: number
@@ -159,35 +154,52 @@ export interface SVGProps {
   }
 }
 
+export interface SVGPropsGlobal {
+  class?: string
+  drag?(at: Point): Paper2DragProps | null
+}
+
 export type SVGClassOnlyElements = {
-  [K in keyof SVGProps]: { class?: string } extends SVGProps[K] ? K : never
+  [K in keyof SVGProps]: {} extends SVGProps[K] ? K : never
 }[keyof SVGProps]
 
 // TODO: use sx for all SVG functions
 
+export interface Paper2DragProps {
+  (at: Point, done: boolean): void
+}
+
+export const PAPER2_DRAG = new WeakMap<
+  SVGElement,
+  (at: Point) => Paper2DragProps | null
+>()
+
 export function sx<K extends keyof SVGProps>(
   name: K,
-  cl: SVGProps[K],
+  cl: SVGProps[K] & SVGPropsGlobal,
   ...children: (Node | null)[]
 ): SVGElementTagNameMap[K]
 
 export function sx<K extends SVGClassOnlyElements>(
   name: K,
-  cl?: string | SVGProps[K],
+  cl?: string | (SVGProps[K] & SVGPropsGlobal),
   ...children: (Node | null)[]
 ): SVGElementTagNameMap[K]
 
 export function sx(
   name: string,
-  cl?: string | Record<string, string | number | null>,
+  cl?: string | (Record<string, string | number | null> & SVGPropsGlobal),
   ...children: (Node | null)[]
 ) {
   const el = document.createElementNS("http://www.w3.org/2000/svg", name)
   if (typeof cl == "string") {
     el.setAttribute("class", cl)
   } else if (cl) {
+    if (cl.drag) {
+      PAPER2_DRAG.set(el, cl.drag)
+    }
     for (const key in cl) {
-      if (cl[key]) {
+      if (key != "drag" && cl[key]) {
         el.setAttribute(key, "" + cl[key])
       }
     }
