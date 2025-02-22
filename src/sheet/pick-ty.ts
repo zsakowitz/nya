@@ -40,8 +40,7 @@ export const PICK_TY: Picker<Data, Selected> = definePicker<Data, Selected>({
         for (const pt of data.vals) {
           if (pt.val.type == "point32" || pt.val.type == "point64") {
             if (
-              sheet.paper2.offsetDistance(at, unpt(pt.val.value as SPoint)) <=
-              12
+              sheet.paper.offsetDistance(at, unpt(pt.val.value as SPoint)) <= 12
             ) {
               return pt
             }

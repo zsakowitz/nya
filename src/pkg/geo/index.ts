@@ -128,7 +128,7 @@ const PICK_LINE = definePickTy(
   ],
   (sheet, p1, p2) => {
     if (p1 && p2) {
-      drawLine(sheet.paper2, unpt(p1.value), unpt(p2.value), { ghost: true })
+      drawLine(sheet.paper, unpt(p1.value), unpt(p2.value), { ghost: true })
     }
   },
 )
@@ -142,7 +142,7 @@ const PICK_SEGMENT = definePickTy(
   ],
   (sheet, p1, p2) => {
     if (p1 && p2) {
-      segmentByPaper(sheet.paper2, unpt(p1.value), unpt(p2.value), {
+      segmentByPaper(sheet.paper, unpt(p1.value), unpt(p2.value), {
         ghost: true,
       })
     }
@@ -158,7 +158,7 @@ const PICK_RAY = definePickTy(
   ],
   (sheet, p1, p2) => {
     if (p1 && p2) {
-      drawRay(sheet.paper2, unpt(p1.value), unpt(p2.value), {
+      drawRay(sheet.paper, unpt(p1.value), unpt(p2.value), {
         ghost: true,
       })
     }
@@ -174,7 +174,7 @@ const PICK_VECTOR = definePickTy(
   ],
   (sheet, p1, p2) => {
     if (p1 && p2) {
-      drawVector(sheet.paper2, unpt(p1.value), unpt(p2.value), {
+      drawVector(sheet.paper, unpt(p1.value), unpt(p2.value), {
         ghost: true,
       })
     }
@@ -192,7 +192,7 @@ const PICK_CIRCLE = definePickTy(
     if (p1 && p2) {
       const center = unpt(p1.value)
       const edge = unpt(p2.value)
-      drawCircle(sheet.paper2, {
+      drawCircle(sheet.paper, {
         at: center,
         r: Math.hypot(center.x - edge.x, center.y - edge.y),
         ghost: true,
@@ -211,7 +211,7 @@ const PICK_PERPENDICULAR = definePickTy(
   (sheet, p1, p2) => {
     if (p1 && p2) {
       const line = perpendicularJs(p1, p2)
-      drawLine(sheet.paper2, unpt(line[0]), unpt(line[1]), { ghost: true })
+      drawLine(sheet.paper, unpt(line[0]), unpt(line[1]), { ghost: true })
     }
   },
 )
@@ -226,7 +226,7 @@ const PICK_PARALLEL = definePickTy(
   (sheet, p1, p2) => {
     if (p1 && p2) {
       const line = parallelJs(p1, p2)
-      drawLine(sheet.paper2, unpt(line[0]), unpt(line[1]), { ghost: true })
+      drawLine(sheet.paper, unpt(line[0]), unpt(line[1]), { ghost: true })
     }
   },
 )
@@ -263,7 +263,7 @@ const PICK_MIDPOINT: Data = {
         return
       }
 
-      drawPoint(sheet.paper2, {
+      drawPoint(sheet.paper, {
         at: { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 },
         ghost: true,
       })
@@ -298,7 +298,7 @@ const PICK_POLYGON: Data = {
       const pts = args as JsVal<"point32" | "point64">[]
 
       drawPolygon(
-        sheet.paper2,
+        sheet.paper,
         pts.map((x) => unpt(x.value)),
         { closed: false, ghost: true },
       )

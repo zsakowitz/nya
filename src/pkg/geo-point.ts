@@ -137,7 +137,7 @@ const EXT_POINT = defineHideable({
     ) {
       return {
         value: value as JsValue<"point32" | "point64" | "c32" | "c64">,
-        paper2: expr.sheet.paper2,
+        paper2: expr.sheet.paper,
         expr,
         drag,
       }

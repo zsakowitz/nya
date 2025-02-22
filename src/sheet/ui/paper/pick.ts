@@ -6,15 +6,15 @@ export class PickHandler {
   readonly onChange: (() => void)[] = []
 
   constructor(readonly sheet: Sheet) {
-    sheet.paper2.fns.push(() => this.draw())
+    sheet.paper.fns.push(() => this.draw())
 
-    sheet.paper2.el.addEventListener(
+    sheet.paper.el.addEventListener(
       "pointermove",
       (event) => {
-        const at = (this.lastMouse = sheet.paper2.eventToPaper(event))
+        const at = (this.lastMouse = sheet.paper.eventToPaper(event))
         if (this.pick) {
           this.pick.found = this.pick.pick.find(this.pick.data, at, sheet)
-          this.sheet.paper2.queue()
+          this.sheet.paper.queue()
           event.stopImmediatePropagation()
         }
       },
@@ -23,25 +23,25 @@ export class PickHandler {
 
     let isDown = false
 
-    sheet.paper2.el.addEventListener(
+    sheet.paper.el.addEventListener(
       "pointerdown",
       (event) => {
-        const at = (this.lastMouse = sheet.paper2.eventToPaper(event))
+        const at = (this.lastMouse = sheet.paper.eventToPaper(event))
         if (this.pick) {
           this.pick.found = this.pick.pick.find(this.pick.data, at, sheet)
-          this.sheet.paper2.queue()
+          this.sheet.paper.queue()
           event.stopImmediatePropagation()
           isDown = true
-          sheet.paper2.el.setPointerCapture(event.pointerId)
+          sheet.paper.el.setPointerCapture(event.pointerId)
         }
       },
       { capture: true },
     )
 
-    sheet.paper2.el.addEventListener(
+    sheet.paper.el.addEventListener(
       "pointerup",
       (event) => {
-        const at = (this.lastMouse = sheet.paper2.eventToPaper(event))
+        const at = (this.lastMouse = sheet.paper.eventToPaper(event))
 
         if (!isDown) return
 
@@ -66,7 +66,7 @@ export class PickHandler {
       { capture: true },
     )
 
-    sheet.paper2.el.addEventListener("pointerleave", () => {
+    sheet.paper.el.addEventListener("pointerleave", () => {
       this.lastMouse = undefined
     })
   }
@@ -98,7 +98,7 @@ export class PickHandler {
         this.pick.pick.cancel(this.pick.data)
       } finally {
         this.pick = undefined
-        this.sheet.paper2.queue()
+        this.sheet.paper.queue()
         this.notify()
       }
     }
@@ -114,7 +114,7 @@ export class PickHandler {
     }
     this.cancel()
     this.pick = { pick, data, found: found ?? null }
-    this.sheet.paper2.queue()
+    this.sheet.paper.queue()
     this.notify()
   }
 

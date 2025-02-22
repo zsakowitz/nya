@@ -148,7 +148,7 @@ export class Expr {
           this.state.ext.destroy?.(this.state.data)
         }
         if (this.state.ok && this.state.ext?.svg) {
-          this.sheet.paper2.queue()
+          this.sheet.paper.queue()
         }
       }
       this.state = { ok: false, reason: this.field.error }
@@ -170,12 +170,12 @@ export class Expr {
             this.state.ext.destroy?.(this.state.data)
           }
           if (this.state.ok && this.state.ext?.svg) {
-            this.sheet.paper2.queue()
+            this.sheet.paper.queue()
           }
           destroyed = true
           this.state = { ok: true, ext, data }
           if (ext.svg) {
-            this.sheet.paper2.queue()
+            this.sheet.paper.queue()
           }
           return
         }
@@ -185,7 +185,7 @@ export class Expr {
         this.state.ext.destroy?.(this.state.data)
       }
       if (this.state.ok && this.state.ext?.svg) {
-        this.sheet.paper2.queue()
+        this.sheet.paper.queue()
       }
       destroyed = true
       this.state = { ok: true, ext: null, data: {} }
@@ -198,7 +198,7 @@ export class Expr {
           this.state.ext.destroy?.(this.state.data)
         }
         if (this.state.ok && this.state.ext?.svg) {
-          this.sheet.paper2.queue()
+          this.sheet.paper.queue()
         }
       }
       this.state = { ok: false, reason: msg }
@@ -301,7 +301,7 @@ export class Expr {
     this.field.unlink()
     this.sheet.queueGlsl()
     this.sheet.queueIndices()
-    this.sheet.paper2.queue()
+    this.sheet.paper.queue()
     this.el.remove()
   }
 

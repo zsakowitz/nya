@@ -77,7 +77,7 @@ export function virtualPoint(at: Point, sheet: Sheet) {
         return ret
       },
       draw() {
-        drawPoint(sheet.paper2, { at: unpt(val.value), pointer: true })
+        drawPoint(sheet.paper, { at: unpt(val.value), pointer: true })
       },
     }
   }
@@ -89,7 +89,7 @@ export function virtualPoint(at: Point, sheet: Sheet) {
     let index, position
     try {
       index = TY_INFO[obj.val.type].glide?.({
-        paper: sheet.paper2,
+        paper: sheet.paper,
         point: at,
         shape: obj.val.value as never,
       })
@@ -142,7 +142,7 @@ export function virtualPoint(at: Point, sheet: Sheet) {
         return ret
       },
       draw() {
-        drawPoint(sheet.paper2, {
+        drawPoint(sheet.paper, {
           at: unpt(position.value),
           halo: true,
           pointer: true,
@@ -176,13 +176,13 @@ export function virtualPoint(at: Point, sheet: Sheet) {
       new CmdBrack("(", ")", null, inner).insertAt(cursor, L)
       new Writer(inner.cursor(R).span()).set(
         at.x,
-        sheet.paper2.xPrecision,
+        sheet.paper.xPrecision,
         false,
       )
       new CmdComma().insertAt(inner.cursor(R), L)
       new Writer(inner.cursor(R).span()).set(
         at.y,
-        sheet.paper2.yPrecision,
+        sheet.paper.yPrecision,
         false,
       )
       expr.field.dirtyAst = expr.field.dirtyValue = true
@@ -196,7 +196,7 @@ export function virtualPoint(at: Point, sheet: Sheet) {
       return ret
     },
     draw() {
-      drawPoint(sheet.paper2, {
+      drawPoint(sheet.paper, {
         at,
         halo: true,
         ghost: true,

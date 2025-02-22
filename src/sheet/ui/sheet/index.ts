@@ -32,7 +32,7 @@ import { PickHandler } from "../paper/pick"
 import { btn, createDocs, DEFAULT_TO_VISIBLE_DOCS } from "./docs"
 
 export class Sheet {
-  readonly paper2 = new Paper("absolute inset-0 size-full touch-none")
+  readonly paper = new Paper("absolute inset-0 size-full touch-none")
   readonly scope: Scope
   readonly exprs: Expr[] = []
 
@@ -76,15 +76,15 @@ export class Sheet {
     this.scope = new Scope(options)
 
     // prepare js context
-    registerWheelHandler(this.paper2)
-    registerDragHandler(this.paper2)
-    registerPinchHandler(this.paper2)
-    createDrawAxes(this.paper2)
-    this.paper2.fns.push(() => {
+    registerWheelHandler(this.paper)
+    registerDragHandler(this.paper)
+    registerPinchHandler(this.paper)
+    createDrawAxes(this.paper)
+    this.paper.fns.push(() => {
       for (const expr of this.exprs) {
         if (expr.state.ok && expr.state.ext?.svg) {
           try {
-            expr.state.ext.svg(expr.state.data, this.paper2)
+            expr.state.ext.svg(expr.state.data, this.paper)
           } catch (e) {
             console.warn("[draw]", e)
           }
@@ -229,7 +229,7 @@ export class Sheet {
       h(
         "relative" + (toolbar ? "" : " row-span-2"),
         canvas,
-        this.paper2.el,
+        this.paper.el,
         toolbar &&
           h(
             "absolute block top-0 left-0 right-0 h-1 from-[--nya-sidebar-shadow] to-transparent bg-gradient-to-b",
@@ -323,19 +323,19 @@ export class Sheet {
       const program = this.program
       if (!program) return
 
-      const { xmin, w, ymin, h } = this.paper2.bounds()
+      const { xmin, w, ymin, h } = this.paper.bounds()
       global(
         {
           u_scale: splitRaw(w / this.regl._gl.drawingBufferWidth),
           u_cx: splitRaw(xmin),
           u_cy: splitRaw(ymin),
           u_px_per_unit: [
-            ...splitRaw(this.paper2.width / w),
-            ...splitRaw(this.paper2.height / h),
+            ...splitRaw(this.paper.width / w),
+            ...splitRaw(this.paper.height / h),
           ],
           u_unit_per_hpx: [
-            ...splitRaw(1 / this.paper2.xPrecision),
-            ...splitRaw(1 / this.paper2.yPrecision),
+            ...splitRaw(1 / this.paper.xPrecision),
+            ...splitRaw(1 / this.paper.yPrecision),
           ],
           u_darkmul: isDark() ? [-1, -1, -1, 1] : [1, 1, 1, 1],
           u_darkoffset: isDark() ? [1, 1, 1, 0] : [0, 0, 0, 0],
@@ -417,14 +417,14 @@ void main() {
     at: Point,
     tys: K,
   ): Selected<K[number]>[] {
-    const o = this.paper2.toOffset(at)
-    const rect = this.paper2.el.createSVGRect()
+    const o = this.paper.toOffset(at)
+    const rect = this.paper.el.createSVGRect()
     rect.x = o.x
     rect.y = o.y
     rect.width = 0.1
     rect.height = 0.1
     const picks = Array.from(
-      this.paper2.el.getIntersectionList(rect, this.paper2.el),
+      this.paper.el.getIntersectionList(rect, this.paper.el),
     )
       .map((v) => HANDLER_PICK.get(v))
       .filter((x) => x != null)
