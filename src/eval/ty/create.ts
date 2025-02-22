@@ -1,5 +1,5 @@
 import type { SApprox, SPoint, SReal } from "."
-import type { Point } from "../../sheet/ui/paper"
+import type { Point } from "../../sheet/ui/paper2"
 import { safe } from "../lib/util"
 
 export function num(value: SReal): number {

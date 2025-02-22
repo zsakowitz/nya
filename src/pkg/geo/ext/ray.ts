@@ -2,7 +2,7 @@ import { each, type JsValue } from "../../../eval/ty"
 import { unpt } from "../../../eval/ty/create"
 import { Prop } from "../../../sheet/ext"
 import { defineHideable } from "../../../sheet/ext/hideable"
-import { Point } from "../../../sheet/ui/paper"
+import { Point } from "../../../sheet/ui/paper2"
 import {
   segmentByOffset,
   type DrawProps,

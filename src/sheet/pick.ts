@@ -1,4 +1,4 @@
-import type { Point } from "./ui/paper"
+import type { Point } from "./ui/paper2"
 import type { Sheet } from "./ui/sheet"
 
 /** Allows objects to be selected from the canvas. */

@@ -3,7 +3,7 @@ import { num, unpt } from "../../../eval/ty/create"
 import { sx } from "../../../jsx"
 import { Prop } from "../../../sheet/ext"
 import { defineHideable } from "../../../sheet/ext/hideable"
-import type { Point } from "../../../sheet/ui/paper"
+import type { Point } from "../../../sheet/ui/paper2"
 import type { DrawProps, Paper2 } from "../../../sheet/ui/paper2"
 import { pick } from "./util"
 

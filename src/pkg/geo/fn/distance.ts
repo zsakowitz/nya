@@ -2,7 +2,7 @@ import { FnDist } from "../../../eval/ops/dist"
 import type { SPoint, SReal } from "../../../eval/ty"
 import { num, real } from "../../../eval/ty/create"
 import { abs, add, div, mul, sub } from "../../../eval/ty/ops"
-import type { Point } from "../../../sheet/ui/paper"
+import type { Point } from "../../../sheet/ui/paper2"
 
 export function sqrt(val: SReal) {
   return real(num(val) ** 0.5)
