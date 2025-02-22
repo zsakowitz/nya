@@ -10,7 +10,8 @@ const SHORT_EXPRS = true
 
 const factory = new SheetFactory(options)
 
-if (!(LOAD_EMPTY && location.href.includes("localhost"))) {
+const IS_DEV = "NYA_DEV" in globalThis
+if (!(LOAD_EMPTY && IS_DEV)) {
   for (const pkg of (await import("../all")).ALL) {
     factory.load(pkg)
   }
@@ -32,9 +33,6 @@ function expr(source: string) {
   }
 }
 
-const src =
-  SHORT_EXPRS && location.href.includes("localhost") ?
-    SRC_LOCALHOST
-  : SRC_STANDARD
+const src = SHORT_EXPRS && IS_DEV ? SRC_LOCALHOST : SRC_STANDARD
 
 src.split("\n").forEach((x) => x && expr(x))

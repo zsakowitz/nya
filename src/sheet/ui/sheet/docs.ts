@@ -103,8 +103,9 @@ class PackageList {
   }
 }
 
-const OPEN_NORMAL = !location.href.includes("localhost")
-const OPEN_DATA_TYPES = location.href.includes("localhost")
+const IS_DEV = "NYA_DEV" in globalThis
+const OPEN_NORMAL = !IS_DEV
+const OPEN_DATA_TYPES = IS_DEV
 
 export function createDocs(hide: HTMLElement, packages: Package[]) {
   const list = new PackageList(packages)
