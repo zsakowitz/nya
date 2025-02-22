@@ -11,9 +11,8 @@ export class PickHandler {
     sheet.paper.el.addEventListener(
       "pointermove",
       (event) => {
-        const at = (this.lastMouse = sheet.paper.eventToPaper(event))
+        this.pointer = sheet.paper.eventToPaper(event)
         if (this.pick) {
-          this.pick.found = this.pick.pick.find(this.pick.data, at, sheet)
           this.sheet.paper.queue()
           event.stopImmediatePropagation()
         }
@@ -26,9 +25,8 @@ export class PickHandler {
     sheet.paper.el.addEventListener(
       "pointerdown",
       (event) => {
-        const at = (this.lastMouse = sheet.paper.eventToPaper(event))
+        this.pointer = sheet.paper.eventToPaper(event)
         if (this.pick) {
-          this.pick.found = this.pick.pick.find(this.pick.data, at, sheet)
           this.sheet.paper.queue()
           event.stopImmediatePropagation()
           isDown = true
@@ -41,7 +39,7 @@ export class PickHandler {
     sheet.paper.el.addEventListener(
       "pointerup",
       (event) => {
-        const at = (this.lastMouse = sheet.paper.eventToPaper(event))
+        const at = (this.pointer = sheet.paper.eventToPaper(event))
 
         if (!isDown) return
 
@@ -60,18 +58,18 @@ export class PickHandler {
             return
           }
 
-          this.set(next.pick, next.data, next.pick.find(next.data, at, sheet))
+          this.set(next.pick, next.data)
         }
       },
       { capture: true },
     )
 
     sheet.paper.el.addEventListener("pointerleave", () => {
-      this.lastMouse = undefined
+      this.pointer = undefined
     })
   }
 
-  private lastMouse: Point | undefined
+  private pointer: Point | undefined
   private pick: { pick: AnyPick; data: {}; found: {} | null } | undefined
 
   isActive() {
@@ -104,23 +102,26 @@ export class PickHandler {
     }
   }
 
-  set<T extends {}, U extends {}>(
-    pick: Picker<T, U>,
-    data: T,
-    found?: U | null,
-  ) {
+  set<T extends {}, U extends {}>(pick: Picker<T, U>, data: T) {
     this.cancel()
     pick.init(data, this.sheet)
-    if (found === undefined && this.lastMouse) {
-      found = pick.find(data, this.lastMouse, this.sheet)
-    }
-    this.pick = { pick, data, found: found ?? null }
+    this.pick = { pick, data, found: null }
     this.sheet.paper.queue()
     this.notify()
   }
 
   draw() {
     if (this.pick) {
+      if (this.pointer) {
+        this.pick.found = this.pick.pick.find(
+          this.pick.data,
+          this.pointer,
+          this.sheet,
+        )
+      } else {
+        this.pick.found = null
+      }
+
       this.pick.pick.draw(this.pick.data, this.pick.found, this.sheet)
     }
   }

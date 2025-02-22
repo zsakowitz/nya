@@ -2,7 +2,7 @@ import { each, type JsValue } from "../../../eval/ty"
 import { num, unpt } from "../../../eval/ty/create"
 import { sx } from "../../../jsx"
 import { defineHideable } from "../../../sheet/ext/hideable"
-import type { DrawProps, Paper, Point } from "../../../sheet/ui/paper"
+import type { DrawLineProps, Paper, Point } from "../../../sheet/ui/paper"
 import { pick } from "./util"
 
 export function drawCircle(
@@ -10,7 +10,7 @@ export function drawCircle(
   props: {
     at: Point
     r: number
-  } & DrawProps,
+  } & DrawLineProps,
 ) {
   const { x: cx, y: cy } = paper.toOffset(props.at)
   const r = paper.toOffsetDelta({ x: props.r, y: 0 }).x
@@ -36,18 +36,33 @@ export function drawCircle(
   )
 
   if (props.pick || props.drag) {
-    const edge = sx("circle", {
+    const ring = sx("circle", {
       cx,
       cy,
       r,
       stroke: "transparent",
-      "stroke-width": 12,
-      drag: props.drag,
-      pick: props.pick,
+      "stroke-width": 8,
       class: clsx,
     })
-    paper.append("line", edge)
-    return edge
+    paper.append("line", ring)
+    paper.append(
+      "line",
+      sx("circle", {
+        cx,
+        cy,
+        r,
+        stroke: "transparent",
+        "stroke-width": 12,
+        drag: props.drag,
+        pick: props.pick && {
+          ...props.pick,
+          draw() {
+            ring.setAttribute("stroke", "#388c4660")
+          },
+        },
+        class: clsx,
+      }),
+    )
   }
 }
 
@@ -65,15 +80,10 @@ export const EXT_CIRCLE = defineHideable({
   },
   svg(data, paper) {
     for (const val of each(data.value)) {
-      const edge = drawCircle(paper, {
+      drawCircle(paper, {
         at: unpt(val.center),
         r: num(val.radius),
-        pick: {
-          ...pick(val, "c", data),
-          draw() {
-            edge!.style.stroke = "#388c4640"
-          },
-        },
+        pick: pick(val, "c", data),
         kind: "circle",
       })
     }

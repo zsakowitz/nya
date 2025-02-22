@@ -118,7 +118,10 @@ export class Paper {
     this.layer(index).appendChild(el)
   }
 
+  call = 0
   private draw() {
+    this.call++
+
     for (const layer of this.layers.values()) {
       while (layer.firstChild) {
         layer.firstChild.remove()
@@ -287,23 +290,36 @@ export function segmentByOffset(
   )
 
   if (props.drag || props.pick) {
-    const focus = sx("line", {
+    const ring = sx("line", {
       x1: o1.x,
       y1: o1.y,
       x2: o2.x,
       y2: o2.y,
-      "stroke-width": 12,
+      "stroke-width": 8,
       stroke: "transparent",
       "stroke-linecap": "round",
-      drag: props.drag,
-      pick: props.pick && {
-        ...props.pick,
-        draw() {
-          focus.setAttribute("stroke", "#2d70b3")
-        },
-      },
       class: clsx,
     })
-    paper.append("line", focus)
+    paper.append("line", ring)
+    paper.append(
+      "line",
+      sx("line", {
+        x1: o1.x,
+        y1: o1.y,
+        x2: o2.x,
+        y2: o2.y,
+        "stroke-width": 12,
+        stroke: "transparent",
+        "stroke-linecap": "round",
+        drag: props.drag,
+        pick: props.pick && {
+          ...props.pick,
+          draw() {
+            ring.setAttribute("stroke", "#2d70b360")
+          },
+        },
+        class: clsx,
+      }),
+    )
   }
 }
