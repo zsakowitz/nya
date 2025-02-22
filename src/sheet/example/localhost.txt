@@ -1,2 +1,3 @@
 \operatorname{circle}\left(\left(1,2\right),3\right)
 \operatorname{segment}\left(\left(0,6\right),\left(6,5\right)\right)
+\left(1,2\right)

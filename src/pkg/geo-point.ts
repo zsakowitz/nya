@@ -96,7 +96,7 @@ export function drawPoint(
           cy: offset.y,
           r: 12,
           fill: "#6042a659",
-          class: " picking-any:opacity-30 picking-point:opacity-100",
+          class: "picking-any:opacity-30 picking-point:opacity-100",
           drag: props.drag,
           pick: props.pick,
         }),

@@ -301,25 +301,24 @@ export function segmentByOffset(
       class: clsx,
     })
     paper.append("line", ring)
-    paper.append(
-      "line",
-      sx("line", {
-        x1: o1.x,
-        y1: o1.y,
-        x2: o2.x,
-        y2: o2.y,
-        "stroke-width": 12,
-        stroke: "transparent",
-        "stroke-linecap": "round",
-        drag: props.drag,
-        pick: props.pick && {
-          ...props.pick,
-          draw() {
-            ring.setAttribute("stroke", "#2d70b360")
-          },
+    const target = sx("line", {
+      x1: o1.x,
+      y1: o1.y,
+      x2: o2.x,
+      y2: o2.y,
+      "stroke-width": 12,
+      stroke: "transparent",
+      "stroke-linecap": "round",
+      drag: props.drag,
+      pick: props.pick && {
+        ...props.pick,
+        draw() {
+          ring.setAttribute("stroke", "#2d70b360")
+          target.classList.add("cursor-pointer")
         },
-        class: clsx,
-      }),
-    )
+      },
+      class: clsx,
+    })
+    paper.append("line", target)
   }
 }
