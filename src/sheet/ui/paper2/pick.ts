@@ -1,3 +1,4 @@
+import type { Point } from "."
 import type { AnyPick2, Picker2 } from "../../pick2"
 import type { Sheet } from "../sheet"
 
@@ -10,12 +11,9 @@ export class PickHandler {
     sheet.paper2.el.addEventListener(
       "pointermove",
       (event) => {
+        const at = (this.lastMouse = sheet.paper2.eventToPaper(event))
         if (this.pick) {
-          this.pick.found = this.pick.pick.find(
-            this.pick.data,
-            sheet.paper2.eventToPaper(event),
-            sheet,
-          )
+          this.pick.found = this.pick.pick.find(this.pick.data, at, sheet)
           this.sheet.paper2.queue()
           event.stopImmediatePropagation()
         }
@@ -28,12 +26,9 @@ export class PickHandler {
     sheet.paper2.el.addEventListener(
       "pointerdown",
       (event) => {
+        const at = (this.lastMouse = sheet.paper2.eventToPaper(event))
         if (this.pick) {
-          this.pick.found = this.pick.pick.find(
-            this.pick.data,
-            sheet.paper2.eventToPaper(event),
-            sheet,
-          )
+          this.pick.found = this.pick.pick.find(this.pick.data, at, sheet)
           this.sheet.paper2.queue()
           event.stopImmediatePropagation()
           isDown = true
@@ -46,16 +41,14 @@ export class PickHandler {
     sheet.paper2.el.addEventListener(
       "pointerup",
       (event) => {
+        const at = (this.lastMouse = sheet.paper2.eventToPaper(event))
+
         if (!isDown) return
 
         isDown = false
 
         if (this.pick) {
-          const found = this.pick.pick.find(
-            this.pick.data,
-            sheet.paper2.eventToPaper(event),
-            sheet,
-          )
+          const found = this.pick.pick.find(this.pick.data, at, sheet)
           if (found == null) {
             this.cancel()
             return
@@ -67,17 +60,18 @@ export class PickHandler {
             return
           }
 
-          this.set(
-            next.pick,
-            next.data,
-            next.pick.find(next.data, sheet.paper2.eventToPaper(event), sheet),
-          )
+          this.set(next.pick, next.data, next.pick.find(next.data, at, sheet))
         }
       },
       { capture: true },
     )
+
+    sheet.paper2.el.addEventListener("pointerleave", () => {
+      this.lastMouse = undefined
+    })
   }
 
+  private lastMouse: Point | undefined
   private pick: { pick: AnyPick2; data: {}; found: {} | null } | undefined
 
   isActive() {
@@ -113,10 +107,13 @@ export class PickHandler {
   set<T extends {}, U extends {}>(
     pick: Picker2<T, U>,
     data: T,
-    found: U | null = null,
+    found?: U | null,
   ) {
+    if (found === undefined && this.lastMouse) {
+      found = pick.find(data, this.lastMouse, this.sheet)
+    }
     this.cancel()
-    this.pick = { pick, data, found }
+    this.pick = { pick, data, found: found ?? null }
     this.sheet.paper2.queue()
     this.notify()
   }

@@ -5,7 +5,7 @@ import type { Regl } from "regl"
 import regl from "regl"
 import { GlslContext } from "../../../eval/lib/fn"
 import type { JsVal, TyName } from "../../../eval/ty"
-import { num, real, unpt } from "../../../eval/ty/create"
+import { num, real } from "../../../eval/ty/create"
 import { splitRaw } from "../../../eval/ty/split"
 import { Block } from "../../../field/model"
 import type { Options } from "../../../field/options"
@@ -16,14 +16,13 @@ import { Scope } from "../../deps"
 import type { Exts } from "../../ext"
 import type { SheetFactory } from "../../factory"
 import type { Picker } from "../../pick"
-import { PICK2 } from "../../pick2byty"
 import { doMatchReglSize } from "../../regl"
 import { REMARK } from "../../remark"
 import { Slider } from "../../slider"
 import { isDark } from "../../theme"
 import { Expr } from "../expr"
 import { Paper, type Point } from "../paper"
-import { Paper2, segmentByPaper } from "../paper2"
+import { Paper2 } from "../paper2"
 import { createDrawAxes } from "../paper2/grid"
 import { HANDLER_PICK } from "../paper2/interact"
 import {
@@ -101,35 +100,6 @@ export class Sheet {
       }
     })
     this.pick = new PickHandler(this)
-    addEventListener("keydown", (ev) => {
-      if (ev.key == "@") {
-        this.pick.set(PICK2, {
-          vals: [],
-          src: {
-            id: 23,
-            draw(sheet, args) {
-              if (args.length == 2) {
-                const [a, b] = args as [
-                  JsVal<"point32" | "point64">,
-                  JsVal<"point32" | "point64">,
-                ]
-                segmentByPaper(sheet.paper2, unpt(a.value), unpt(b.value), {
-                  ghost: true,
-                })
-              }
-            },
-            next(args) {
-              if (args.length < 2) {
-                return ["point32", "point64"]
-              }
-              return null
-            },
-            output: { fn: "segment", tag: "l" },
-          },
-          next: ["point32", "point64"],
-        })
-      }
-    })
 
     // prepare glsl context
     const canvas = hx(

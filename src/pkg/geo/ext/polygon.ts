@@ -11,7 +11,7 @@ import { Prop } from "../../../sheet/ext"
 import { defineHideable } from "../../../sheet/ext/hideable"
 import type { Expr } from "../../../sheet/ui/expr"
 import {
-  segmentByOffset,
+  segmentByPaper,
   type Paper2,
   type Point,
 } from "../../../sheet/ui/paper2"
@@ -59,9 +59,9 @@ export function drawPolygon(
   if (!props.ghost && props.pick) {
     const { pick } = props
     for (let i = 0; i < pts.length; i++) {
-      const p1 = pts[i]!
-      const p2 = pts[(i + 1) % pts.length]!
-      segmentByOffset(paper, p1, p2, {
+      const p1 = polygon[i]!
+      const p2 = polygon[(i + 1) % pts.length]!
+      segmentByPaper(paper, p1, p2, {
         dimmed: props.dimmed,
         pick: {
           val() {

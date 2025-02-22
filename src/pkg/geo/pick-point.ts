@@ -26,6 +26,7 @@ export function virtualPoint(at: Point, sheet: Sheet) {
       const i2 = FN_INTERSECTION.js1(o2.val, o1.val)
       const d1 = Math.hypot(at.x - num(i1.value.x), at.y - num(i1.value.y))
       const d2 = Math.hypot(at.x - num(i2.value.x), at.y - num(i2.value.y))
+      console.log(o1.val)
       if (d2 < d1) {
         ;[o2, o1] = [o1, o2]
         val = i2
