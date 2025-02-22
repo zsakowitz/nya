@@ -133,7 +133,7 @@ export class Paper2 {
     })
   }
 
-  paperToOffset({ x, y }: Point): Point {
+  toOffset({ x, y }: Point): Point {
     const { xmin, w, ymin, h } = this.bounds()
     return {
       x: ((x - xmin) / w) * this.width,
@@ -143,10 +143,10 @@ export class Paper2 {
 
   /** @deprecated */
   paperToCanvas(pt: Point): Point {
-    return this.paperToOffset(pt)
+    return this.toOffset(pt)
   }
 
-  offsetToPaper(offset: Point): Point {
+  toPaper(offset: Point): Point {
     const px = offset.x / this.width
     const py = offset.y / this.height
     const { xmin, w, ymin, h } = this.bounds()
@@ -154,17 +154,17 @@ export class Paper2 {
   }
 
   eventToPaper(event: { offsetX: number; offsetY: number }): Point {
-    return this.offsetToPaper({ x: event.offsetX, y: event.offsetY })
+    return this.toPaper({ x: event.offsetX, y: event.offsetY })
   }
 
-  offsetDeltaToPaper(offsetDelta: Point): Point {
+  toPaperDelta(offsetDelta: Point): Point {
     const px = offsetDelta.x / this.width
     const py = offsetDelta.y / this.height
     const { w, h } = this.bounds()
     return { x: w * px, y: -h * py }
   }
 
-  paperDeltaToOffset(paperDelta: Point): Point {
+  toOffsetDelta(paperDelta: Point): Point {
     const { w, h } = this.bounds()
     return {
       x: (paperDelta.x / w) * this.width,
@@ -221,12 +221,7 @@ export function segmentByPaper(
   p2: Point,
   props?: DrawProps,
 ) {
-  segmentByOffset(
-    paper,
-    paper.paperToOffset(p1),
-    paper.paperToOffset(p2),
-    props,
-  )
+  segmentByOffset(paper, paper.toOffset(p1), paper.toOffset(p2), props)
 }
 
 export function segmentByOffset(

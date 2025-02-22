@@ -105,7 +105,7 @@ export function drawPoint2(
     hover?: boolean
   },
 ) {
-  const offset = paper.paperToOffset(props.at)
+  const offset = paper.toOffset(props.at)
   if (!(isFinite(offset.x) && isFinite(offset.y))) return
 
   // TODO: dimmed

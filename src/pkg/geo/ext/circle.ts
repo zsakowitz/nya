@@ -68,14 +68,14 @@ export function drawCircle2(
     return
   }
 
-  const { x: cx, y: cy } = paper.paperToOffset(props.at)
+  const { x: cx, y: cy } = paper.toOffset(props.at)
 
   paper.append(
     "line",
     sx("circle", {
       cx,
       cy,
-      r: paper.paperDeltaToOffset({ x: props.r, y: 0 }).x,
+      r: paper.toOffsetDelta({ x: props.r, y: 0 }).x,
       stroke: "#388c46",
       "stroke-width": 3,
       "stroke-opacity": props.dimmed ? 0.3 : 1,

@@ -12,7 +12,7 @@ export function registerWheelHandler(paper: Paper2) {
           1 + Math.sign(event.deltaY) * Math.sqrt(Math.abs(event.deltaY)) * 0.03
         const point = { ...paper.eventToPaper(event) }
         if (scale < 1) {
-          const origin = paper.paperToOffset({ x: 0, y: 0 })
+          const origin = paper.toOffset({ x: 0, y: 0 })
           if (Math.abs(event.offsetX - origin.x) < SNAP_DISTANCE) {
             point.x = 0
           }
@@ -23,7 +23,7 @@ export function registerWheelHandler(paper: Paper2) {
         paper.zoom(point, scale)
       } else {
         paper.move(
-          paper.offsetDeltaToPaper({
+          paper.toPaperDelta({
             x: event.deltaX,
             y: event.deltaY,
           }),
@@ -118,7 +118,7 @@ export function registerPinchHandler(paper: Paper2) {
 
     const xCenter = (a.clientX + b.clientX) / 2 - x
     const yCenter = (a.clientY + b.clientY) / 2 - y
-    const center = paper.offsetToPaper({ x: xCenter, y: yCenter })
+    const center = paper.toPaper({ x: xCenter, y: yCenter })
 
     if (distance > previousDistance) {
       paper.zoom(center, 0.9)

@@ -56,7 +56,7 @@ export function drawPolygon2(
   polygon: Point[],
   props: DrawProps & { closed: boolean },
 ) {
-  const pts = polygon.map((pt) => paper.paperToOffset(pt))
+  const pts = polygon.map((pt) => paper.toOffset(pt))
   if (pts.length == 0) return
 
   const d =

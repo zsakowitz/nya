@@ -40,8 +40,8 @@ export function drawVector(vector: [SPoint, SPoint], paper: Paper) {
 }
 
 export function drawVector2(paper: Paper2, p1: Point, p2: Point) {
-  const o1 = paper.paperToOffset(p1)
-  const o2 = paper.paperToOffset(p2)
+  const o1 = paper.toOffset(p1)
+  const o2 = paper.toOffset(p2)
   if (!(isFinite(o1.x) && isFinite(o1.y) && isFinite(o2.x) && isFinite(o2.y))) {
     return
   }
