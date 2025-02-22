@@ -148,9 +148,6 @@ export class Expr {
         if (this.state.ok && this.state.ext) {
           this.state.ext.destroy?.(this.state.data)
         }
-        if (this.state.ok && this.state.ext?.plot2d) {
-          this.sheet.paper.queue()
-        }
         if (this.state.ok && this.state.ext?.svg) {
           this.sheet.paper2.queue()
         }
@@ -175,18 +172,12 @@ export class Expr {
           if (this.state.ok && this.state.ext && this.state.ext != ext) {
             this.state.ext.destroy?.(this.state.data)
           }
-          if (this.state.ok && this.state.ext?.plot2d) {
-            this.sheet.paper.queue()
-          }
           if (this.state.ok && this.state.ext?.svg) {
             this.sheet.paper2.queue()
           }
           destroyed = true
           this.state = { ok: true, ext, data }
           this.layer = ext.layer?.(data) ?? 0
-          if (ext.plot2d) {
-            this.sheet.paper.queue()
-          }
           if (ext.svg) {
             this.sheet.paper2.queue()
           }
@@ -196,9 +187,6 @@ export class Expr {
 
       if (this.state.ok && this.state.ext) {
         this.state.ext.destroy?.(this.state.data)
-      }
-      if (this.state.ok && this.state.ext?.plot2d) {
-        this.sheet.paper.queue()
       }
       if (this.state.ok && this.state.ext?.svg) {
         this.sheet.paper2.queue()
@@ -213,9 +201,6 @@ export class Expr {
       if (!destroyed) {
         if (this.state.ok && this.state.ext) {
           this.state.ext.destroy?.(this.state.data)
-        }
-        if (this.state.ok && this.state.ext?.plot2d) {
-          this.sheet.paper.queue()
         }
         if (this.state.ok && this.state.ext?.svg) {
           this.sheet.paper2.queue()
