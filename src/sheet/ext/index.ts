@@ -14,7 +14,7 @@ export type Cursor =
   | "ns-resize"
 
 /** An extension to an expression in the sheet interface. */
-export interface Ext<T extends {}, _U extends {}, V extends {}, W extends {}> {
+export interface Ext<T extends {}, _U extends {}, _V extends {}, W extends {}> {
   /**
    * Attempts to use this extension on a {@linkcode Expr}. May result in:
    *
@@ -31,13 +31,6 @@ export interface Ext<T extends {}, _U extends {}, V extends {}, W extends {}> {
 
   // TODO: remove plotGl as a special-cased function; it could be delegated to 'shader'
   plotGl?(data: NoInfer<T>, helpers: GlslHelpers): GlslResult | undefined
-
-  hover?: {
-    /** Returning a non-nullish value captures the event. */
-    on(data: NoInfer<T>, at: Point): V | null | undefined
-    cursor(data: V): Cursor
-    off(data: V): void
-  }
 
   select?: {
     ty(data: NoInfer<T>): TyName | null

@@ -260,37 +260,6 @@ const EXT_POINT = defineHideable({
       })
     }
   },
-  hover: {
-    on(data, at) {
-      if (!data.drag || data.value.list !== false) {
-        return
-      }
-
-      if (
-        data.paper.canvasDistance(at, unpt(data.value.value)) <=
-        12 * data.paper.scale
-      ) {
-        color.get(data.expr).set(12)
-        return data
-      }
-    },
-    cursor(data) {
-      const drag = data.drag!
-
-      if (drag.type == "split") {
-        return (
-          drag.x && !drag.y ? "ew-resize"
-          : drag.y && !drag.x ? "ns-resize"
-          : "move"
-        )
-      }
-
-      return "move"
-    },
-    off(data) {
-      color.get(data.expr).set(4)
-    },
-  },
   select: {
     ty(data) {
       const ty = data.value.type

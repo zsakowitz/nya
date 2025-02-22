@@ -175,20 +175,6 @@ export class Handlers implements PointerHandlers<DataDrag, DataHover> {
       return { pick: true }
     }
 
-    for (const expr of this.sheet.exprs.filter(
-      (x): x is typeof x & { state: { ok: true; ext: { hover: {} } } } =>
-        x.state.ok && !!x.state.ext?.hover,
-    )) {
-      const data = expr.state.ext.hover.on(expr.state.data, at)
-      if (data == null) continue
-
-      if (this.pointers.length == 0) {
-        this.sheet.el.style.cursor = expr.state.ext.hover.cursor(data)
-      }
-
-      return { expr, ext: expr.state.ext, data }
-    }
-
     this.lastMouse = at
   }
 
@@ -199,28 +185,6 @@ export class Handlers implements PointerHandlers<DataDrag, DataHover> {
       return this.checkPick(at)
     }
 
-    for (const expr of this.sheet.exprs.filter(
-      (x): x is typeof x & { state: { ok: true; ext: { hover: {} } } } =>
-        x.state.ok && !!x.state.ext?.hover,
-    )) {
-      const hoverData = expr.state.ext.hover.on(expr.state.data, at)
-      if (hoverData == null) continue
-
-      if (this.pointers.length == 0) {
-        this.sheet.el.style.cursor = expr.state.ext.hover.cursor(hoverData)
-      }
-
-      if (expr != data.expr) {
-        data.ext.hover.off(data.data)
-      }
-
-      data.expr = expr
-      data.ext = expr.state.ext
-      data.data = hoverData
-      return true
-    }
-
-    data.ext.hover.off(data.data)
     this.sheet.el.style.cursor =
       this.pointers[this.pointers.length - 1] || "default"
 
@@ -244,7 +208,6 @@ export class Handlers implements PointerHandlers<DataDrag, DataHover> {
       return
     }
 
-    data.ext.hover.off(data.data)
     this.sheet.el.style.cursor =
       this.pointers[this.pointers.length - 1] || "default"
   }
@@ -270,7 +233,6 @@ export class Handlers implements PointerHandlers<DataDrag, DataHover> {
       return { pick: true }
     }
 
-    data.ext.hover.off(data.data)
     this.sheet.el.style.cursor =
       this.pointers[this.pointers.length - 1] || "default"
     const dragging = this.onDragStart(at)
