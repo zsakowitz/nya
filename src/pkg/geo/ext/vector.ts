@@ -1,45 +1,10 @@
-import { each, type JsValue, type SPoint } from "../../../eval/ty"
+import { each, type JsValue } from "../../../eval/ty"
 import { unpt } from "../../../eval/ty/create"
 import { sx } from "../../../jsx"
 import { defineHideable } from "../../../sheet/ext/hideable"
-import type { Paper } from "../../../sheet/ui/paper"
 import type { DrawProps, Paper2, Point } from "../../../sheet/ui/paper2"
 
-export function drawVector(vector: [SPoint, SPoint], paper: Paper) {
-  const o1 = paper.paperToCanvas(unpt(vector[0]))
-  const o2 = paper.paperToCanvas(unpt(vector[1]))
-  if (!(isFinite(o1.x) && isFinite(o1.y) && isFinite(o2.x) && isFinite(o2.y))) {
-    return
-  }
-
-  const { ctx, scale } = paper
-
-  const dx = o2.x - o1.x
-  const dy = o2.y - o1.y
-  const nx = (14 * scale * dx) / Math.hypot(dx, dy)
-  const ny = (14 * scale * dy) / Math.hypot(dx, dy)
-  const ox = o2.x - nx
-  const oy = o2.y - ny
-  const w = 0.4
-
-  ctx.beginPath()
-  ctx.lineWidth = 3 * scale
-  ctx.strokeStyle = "#2d70b3"
-  ctx.moveTo(o1.x, o1.y)
-  ctx.lineTo(ox, oy)
-  ctx.stroke()
-
-  ctx.beginPath()
-  ctx.fillStyle = "#2d70b3"
-  ctx.moveTo(o2.x, o2.y)
-  ctx.lineTo(ox + w * ny, oy - w * nx)
-  ctx.lineTo(ox - w * ny, oy + w * nx)
-  ctx.lineTo(o2.x, o2.y)
-  ctx.stroke()
-  ctx.fill()
-}
-
-export function drawVector2(
+export function drawVector(
   paper: Paper2,
   p1: Point,
   p2: Point,
@@ -96,7 +61,7 @@ export const EXT_VECTOR = defineHideable({
   },
   svg(data, paper) {
     for (const val of each(data.value)) {
-      drawVector2(paper, unpt(val[0]), unpt(val[1]))
+      drawVector(paper, unpt(val[0]), unpt(val[1]))
     }
   },
 })

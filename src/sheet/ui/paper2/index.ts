@@ -144,14 +144,6 @@ export class Paper2 {
     }
   }
 
-  /**
-   * @deprecated Kept to avoid duplicating line and ray functions while
-   *   switching to SVG syntax
-   */
-  paperToCanvas(pt: Point): Point {
-    return this.toOffset(pt)
-  }
-
   toPaper(offset: Point): Point {
     const px = offset.x / this.width
     const py = offset.y / this.height

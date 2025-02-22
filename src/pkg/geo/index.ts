@@ -16,12 +16,12 @@ import {
   PKG_GEO_POINT,
 } from "../geo-point"
 import { PKG_REAL } from "../num-real"
-import { drawCircle2, EXT_CIRCLE } from "./ext/circle"
-import { drawLine2, EXT_LINE } from "./ext/line"
+import { drawCircle, EXT_CIRCLE } from "./ext/circle"
+import { drawLine, EXT_LINE } from "./ext/line"
 import { drawPolygon, EXT_POLYGON } from "./ext/polygon"
-import { drawRay2, EXT_RAY } from "./ext/ray"
+import { drawRay, EXT_RAY } from "./ext/ray"
 import { EXT_SEGMENT } from "./ext/segment"
-import { drawVector2, EXT_VECTOR } from "./ext/vector"
+import { drawVector, EXT_VECTOR } from "./ext/vector"
 import { FN_CENTER } from "./fn/center"
 import { FN_CIRCLE } from "./fn/circle"
 import { FN_DISTANCE } from "./fn/distance"
@@ -129,7 +129,7 @@ const PICK_LINE = definePick2(
   ],
   (sheet, p1, p2) => {
     if (p1 && p2) {
-      drawLine2(sheet.paper2, unpt(p1.value), unpt(p2.value), { ghost: true })
+      drawLine(sheet.paper2, unpt(p1.value), unpt(p2.value), { ghost: true })
     }
   },
 )
@@ -159,7 +159,7 @@ const PICK_RAY = definePick2(
   ],
   (sheet, p1, p2) => {
     if (p1 && p2) {
-      drawRay2(sheet.paper2, unpt(p1.value), unpt(p2.value), {
+      drawRay(sheet.paper2, unpt(p1.value), unpt(p2.value), {
         ghost: true,
       })
     }
@@ -175,7 +175,7 @@ const PICK_VECTOR = definePick2(
   ],
   (sheet, p1, p2) => {
     if (p1 && p2) {
-      drawVector2(sheet.paper2, unpt(p1.value), unpt(p2.value), {
+      drawVector(sheet.paper2, unpt(p1.value), unpt(p2.value), {
         ghost: true,
       })
     }
@@ -193,7 +193,7 @@ const PICK_CIRCLE = definePick2(
     if (p1 && p2) {
       const center = unpt(p1.value)
       const edge = unpt(p2.value)
-      drawCircle2(sheet.paper2, {
+      drawCircle(sheet.paper2, {
         at: center,
         r: Math.hypot(center.x - edge.x, center.y - edge.y),
         ghost: true,
@@ -212,7 +212,7 @@ const PICK_PERPENDICULAR = definePick2(
   (sheet, p1, p2) => {
     if (p1 && p2) {
       const line = perpendicularJs(p1, p2)
-      drawLine2(sheet.paper2, unpt(line[0]), unpt(line[1]), { ghost: true })
+      drawLine(sheet.paper2, unpt(line[0]), unpt(line[1]), { ghost: true })
     }
   },
 )
@@ -227,7 +227,7 @@ const PICK_PARALLEL = definePick2(
   (sheet, p1, p2) => {
     if (p1 && p2) {
       const line = parallelJs(p1, p2)
-      drawLine2(sheet.paper2, unpt(line[0]), unpt(line[1]), { ghost: true })
+      drawLine(sheet.paper2, unpt(line[0]), unpt(line[1]), { ghost: true })
     }
   },
 )

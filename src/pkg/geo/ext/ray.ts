@@ -1,8 +1,8 @@
-import { each, type JsValue, type SPoint } from "../../../eval/ty"
-import { num, unpt } from "../../../eval/ty/create"
+import { each, type JsValue } from "../../../eval/ty"
+import { unpt } from "../../../eval/ty/create"
 import { Prop } from "../../../sheet/ext"
 import { defineHideable } from "../../../sheet/ext/hideable"
-import { Paper, Point } from "../../../sheet/ui/paper"
+import { Point } from "../../../sheet/ui/paper"
 import {
   segmentByOffset,
   type DrawProps,
@@ -13,7 +13,7 @@ import { pick } from "./util"
 function getRayBounds(
   { x: x1, y: y1 }: Point,
   { x: x2, y: y2 }: Point,
-  paper: Paper | Paper2,
+  paper: Paper2,
 ): [Point, Point] | null {
   const { xmin, w, ymin, h } = paper.bounds()
 
@@ -23,8 +23,8 @@ function getRayBounds(
         return null
       }
       return [
-        paper.paperToCanvas({ x: x1, y: y1 }),
-        paper.paperToCanvas({ x: x1, y: ymin + h }),
+        paper.toOffset({ x: x1, y: y1 }),
+        paper.toOffset({ x: x1, y: ymin + h }),
       ]
     }
 
@@ -32,8 +32,8 @@ function getRayBounds(
       return null
     }
     return [
-      paper.paperToCanvas({ x: x1, y: y1 }),
-      paper.paperToCanvas({ x: x1, y: ymin }),
+      paper.toOffset({ x: x1, y: y1 }),
+      paper.toOffset({ x: x1, y: ymin }),
     ]
   }
 
@@ -45,8 +45,8 @@ function getRayBounds(
     }
 
     return [
-      paper.paperToCanvas({ x: x1, y: y1 }),
-      paper.paperToCanvas({ x: xmin + w, y: m * (xmin + w - x1) + y1 }),
+      paper.toOffset({ x: x1, y: y1 }),
+      paper.toOffset({ x: xmin + w, y: m * (xmin + w - x1) + y1 }),
     ]
   }
 
@@ -55,62 +55,12 @@ function getRayBounds(
   }
 
   return [
-    paper.paperToCanvas({ x: x1, y: y1 }),
-    paper.paperToCanvas({ x: xmin, y: m * (xmin - x1) + y1 }),
+    paper.toOffset({ x: x1, y: y1 }),
+    paper.toOffset({ x: xmin, y: m * (xmin - x1) + y1 }),
   ]
 }
 
 export function drawRay(
-  ray: [SPoint, SPoint],
-  paper: Paper,
-  selected: boolean,
-  dimmed: boolean,
-) {
-  const x1 = num(ray[0].x)
-  const y1 = num(ray[0].y)
-  const x2 = num(ray[1].x)
-  const y2 = num(ray[1].y)
-
-  if (!(isFinite(x1) && isFinite(y1) && isFinite(x2) && isFinite(y2))) {
-    return
-  }
-
-  const bounds = getRayBounds({ x: x1, y: y1 }, { x: x2, y: y2 }, paper)
-  if (!bounds) return
-
-  const [o1, o2] = bounds
-  if (!(isFinite(o1.x) && isFinite(o1.y) && isFinite(o2.x) && isFinite(o2.y))) {
-    return
-  }
-
-  const { ctx, scale } = paper
-
-  if (dimmed) {
-    ctx.globalAlpha = 0.3
-  }
-
-  if (selected) {
-    ctx.beginPath()
-    ctx.lineWidth = 8 * scale
-    ctx.strokeStyle = "#2d70b360"
-    ctx.moveTo(o1.x, o1.y)
-    ctx.lineTo(o2.x, o2.y)
-    ctx.stroke()
-  }
-
-  ctx.beginPath()
-  ctx.lineWidth = 3 * scale
-  ctx.strokeStyle = "#2d70b3"
-  ctx.moveTo(o1.x, o1.y)
-  ctx.lineTo(o2.x, o2.y)
-  ctx.stroke()
-
-  if (dimmed) {
-    ctx.globalAlpha = 1
-  }
-}
-
-export function drawRay2(
   paper: Paper2,
   p1: Point,
   p2: Point,
@@ -146,7 +96,7 @@ export const EXT_RAY = defineHideable({
   },
   svg(data, paper) {
     for (const val of each(data.value)) {
-      drawRay2(paper, unpt(val[0]), unpt(val[1]), {
+      drawRay(paper, unpt(val[0]), unpt(val[1]), {
         dimmed: DIMMED.get(data.expr),
         pick: pick(val, "l", data),
       })
