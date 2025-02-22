@@ -80,7 +80,7 @@ export function virtualPoint(at: Point, sheet: Sheet) {
         o2.draw()
         drawPoint(sheet.paper, {
           at: unpt(val.value),
-          pointer: true,
+          cursor: "pointer",
         })
       },
     }
@@ -150,7 +150,7 @@ export function virtualPoint(at: Point, sheet: Sheet) {
         drawPoint(sheet.paper, {
           at: unpt(position.value),
           halo: true,
-          pointer: true,
+          cursor: "pointer",
         })
       },
     }
@@ -163,6 +163,7 @@ export function virtualPoint(at: Point, sheet: Sheet) {
 
   let ref: Var & { sup?: undefined }
 
+  let center: SVGCircleElement | undefined
   return {
     val,
     ref() {
@@ -201,11 +202,17 @@ export function virtualPoint(at: Point, sheet: Sheet) {
       return ret
     },
     draw() {
-      drawPoint(sheet.paper, {
+      center = drawPoint(sheet.paper, {
         at,
         halo: true,
-        ghost: true,
+        cursor: "auto",
       })
+    },
+    drawFocus() {
+      if (!center) return
+      center.style.transition = "none"
+      center.style.r = "6"
+      center.parentElement!.style.cursor = "pointer"
     },
   }
 }

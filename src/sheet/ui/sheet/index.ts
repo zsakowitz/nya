@@ -7,7 +7,6 @@ import { GlslContext } from "../../../eval/lib/fn"
 import type { JsVal, TyName } from "../../../eval/ty"
 import { num, real } from "../../../eval/ty/create"
 import { splitRaw } from "../../../eval/ty/split"
-import { Block } from "../../../field/model"
 import type { Options } from "../../../field/options"
 import { h, hx, t } from "../../../jsx"
 import type { ToolbarItem } from "../../../pkg"
@@ -22,7 +21,7 @@ import { isDark } from "../../theme"
 import { Expr } from "../expr"
 import { Paper, type Point } from "../paper"
 import { createDrawAxes } from "../paper/grid"
-import { HANDLER_PICK } from "../paper/interact"
+import { HANDLER_PICK, type PickProps } from "../paper/interact"
 import {
   registerDragHandler,
   registerPinchHandler,
@@ -429,16 +428,11 @@ void main() {
       .map((v) => HANDLER_PICK.get(v))
       .filter((x) => x != null)
       .filter((x) => tys.includes(x.val().type))
-    return picks.map((x) => ({
-      ref: x.ref,
-      val: x.val(),
-      draw: x.draw,
-    }))
+    return picks.map((x) => ({ ...x, val: x.val() }))
   }
 }
 
-export interface Selected<K extends TyName = TyName> {
+export interface Selected<K extends TyName = TyName>
+  extends Omit<PickProps<K>, "val"> {
   val: JsVal<K>
-  ref(): Block
-  draw(): void
 }

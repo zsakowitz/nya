@@ -60,7 +60,7 @@ export function drawPoint(
     at: Point
     halo?: boolean
     hover?: boolean
-    pointer?: boolean
+    cursor?: "auto" | "pointer"
   } & Omit<DrawProps, "kind">,
 ) {
   const offset = paper.toOffset(props.at)
@@ -68,8 +68,9 @@ export function drawPoint(
 
   const ghost =
     props.ghost ? " pointer-events-none"
-    : props.pointer ? " cursor-pointer"
-    : ""
+    : props.cursor == "pointer" ? " cursor-pointer"
+    : props.cursor == "auto" ? ""
+    : " cursor-move"
 
   const center = sx("circle", {
     class:
@@ -89,9 +90,7 @@ export function drawPoint(
       "point",
       sx(
         "g",
-        {
-          class: "group cursor-move" + ghost,
-        },
+        { class: "group" + ghost },
         sx("circle", {
           cx: offset.x,
           cy: offset.y,

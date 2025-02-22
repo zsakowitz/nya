@@ -1,5 +1,5 @@
 import type { Point } from "."
-import type { JsVal } from "../../../eval/ty"
+import type { JsVal, TyName } from "../../../eval/ty"
 import type { Block } from "../../../field/model"
 
 export interface DragProps {
@@ -12,10 +12,11 @@ export interface DragFn {
 
 export const HANDLER_DRAG = new WeakMap<SVGElement, DragProps>()
 
-export interface PickProps {
-  val(): JsVal
+export interface PickProps<T extends TyName = TyName> {
+  val(): JsVal<T>
   ref(): Block
   draw(): void
+  drawFocus?(): void
 }
 
 export const HANDLER_PICK = new WeakMap<SVGElement, PickProps>()

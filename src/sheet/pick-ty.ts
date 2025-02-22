@@ -39,14 +39,12 @@ export const PICK_TY: Picker<Data, Selected> = definePicker<Data, Selected>({
     }
 
     if (data.next.includes("point32") || data.next.includes("point64")) {
-      if (data.src.allowExistingPoint?.(data.vals.map((x) => x.val))) {
-        for (const pt of data.vals) {
-          if (pt.val.type == "point32" || pt.val.type == "point64") {
-            if (
-              sheet.paper.offsetDistance(at, unpt(pt.val.value as SPoint)) <= 12
-            ) {
-              return pt
-            }
+      for (const pt of data.vals) {
+        if (pt.val.type == "point32" || pt.val.type == "point64") {
+          if (
+            sheet.paper.offsetDistance(at, unpt(pt.val.value as SPoint)) <= 12
+          ) {
+            return pt
           }
         }
       }
@@ -62,13 +60,23 @@ export const PICK_TY: Picker<Data, Selected> = definePicker<Data, Selected>({
       args.push(found.val)
     }
     data.src.draw(sheet, args)
-    for (const val of data.vals) {
+    for (const val of data.vals.filter((x, i, a) => a.indexOf(x) == i)) {
       val.draw()
     }
-    found?.draw()
+    if (found) {
+      if (data.vals.includes(found)) {
+        found.drawFocus?.()
+      } else {
+        found.draw()
+      }
+    }
   },
   select(data, found, sheet) {
     const args = data.vals.map((x) => x.val)
+    if (!data.src.allowExistingPoint?.(args) && data.vals.includes(found)) {
+      return { pick: PICK_TY, data }
+    }
+
     args.push(found.val)
     const next = data.src.next(args)
 
