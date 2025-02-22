@@ -77,7 +77,7 @@ export function drawPoint(
       (props.hover ?
         "transition-[r] group-hover:[r:12] picking-any:group-hover:[r:4]"
       : "transition-[r]") +
-      ghost +
+      (props.ghost ? " pointer-events-none" : "") +
       " picking-any:opacity-30 picking-point:opacity-100",
     cx: offset.x,
     cy: offset.y,
