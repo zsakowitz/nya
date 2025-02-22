@@ -6,13 +6,18 @@ import { Block, L, R } from "../../../field/model"
 import { Prop } from "../../../sheet/ext"
 import { defineHideable } from "../../../sheet/ext/hideable"
 import type { Paper, Point } from "../../../sheet/ui/paper"
+import {
+  segmentByOffset,
+  type DrawProps,
+  type Paper2,
+} from "../../../sheet/ui/paper2"
 import { distLinePt } from "../fn/distance"
 
-function getLineBounds(line: Tys["line"], paper: Paper): [Point, Point] {
-  const x1 = num(line[0].x)
-  const y1 = num(line[0].y)
-  const x2 = num(line[1].x)
-  const y2 = num(line[1].y)
+function getLineBounds(
+  { x: x1, y: y1 }: Point,
+  { x: x2, y: y2 }: Point,
+  paper: Paper | Paper2,
+): [Point, Point] {
   const { xmin, w, ymin, h } = paper.bounds()
 
   if (x1 == x2) {
@@ -45,7 +50,7 @@ export function drawLine(
     return
   }
 
-  const [o1, o2] = getLineBounds(line, paper)
+  const [o1, o2] = getLineBounds({ x: x1, y: y1 }, { x: x2, y: y2 }, paper)
   if (!(isFinite(o1.x) && isFinite(o1.y) && isFinite(o2.x) && isFinite(o2.y))) {
     return
   }
@@ -77,6 +82,20 @@ export function drawLine(
   }
 }
 
+export function drawLine2(
+  paper: Paper2,
+  p1: Point,
+  p2: Point,
+  props?: DrawProps,
+) {
+  const [o1, o2] = getLineBounds(p1, p2, paper)
+  if (!(isFinite(o1.x) && isFinite(o1.y) && isFinite(o2.x) && isFinite(o2.y))) {
+    return
+  }
+
+  segmentByOffset(paper, o1, o2, props)
+}
+
 const SELECTED = new Prop(() => false)
 const DIMMED = new Prop(() => false)
 
@@ -88,9 +107,11 @@ export const EXT_LINE = defineHideable({
       return { value: value as JsValue<"line">, expr, paper: expr.sheet.paper }
     }
   },
-  plot2d(data, paper) {
-    for (const segment of each(data.value)) {
-      drawLine(segment, paper, SELECTED.get(data.expr), DIMMED.get(data.expr))
+  svg(data, paper) {
+    for (const val of each(data.value)) {
+      drawLine2(paper, unpt(val[0]), unpt(val[1]), {
+        dimmed: DIMMED.get(data.expr),
+      })
     }
   },
   layer() {

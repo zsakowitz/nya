@@ -52,7 +52,7 @@ export function defineHideable<
   V extends {},
   W extends {},
 >(ext: Omit<Ext<T, U, V, W>, "aside">): Ext<T, U, V, W> {
-  const { plot2d } = ext
+  const { svg } = ext
   const map = new WeakMap<T, Expr>()
 
   return {
@@ -70,9 +70,9 @@ export function defineHideable<
         return CHECKBOX.get(expr).el
       }
     },
-    plot2d(data, paper) {
+    svg(data, paper) {
       if (!CHECKBOX.get(map.get(data)!).show) {
-        plot2d?.(data, paper)
+        svg?.(data, paper)
       }
     },
   }

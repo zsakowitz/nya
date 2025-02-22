@@ -117,7 +117,19 @@ export interface SVGProps {
   g: {
     class?: string
   }
+  path: {
+    class?: string
+    d: string
+    fill?: string
+    stroke?: string
+    "stroke-width"?: number
+    "fill-opacity"?: number
+    "stroke-opacity"?: number
+    "stroke-linecap"?: "round"
+    "stroke-linejoin"?: "round"
+  }
   line: {
+    class?: string
     x1: number
     y1: number
     x2: number

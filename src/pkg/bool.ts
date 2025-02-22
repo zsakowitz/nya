@@ -180,7 +180,7 @@ const FN_FIRSTVALID: Fn & WithDocs = {
         let close = ""
         for (const arg of args) {
           const value = ctx.cache(arg)
-          ctx.push`if (${FN_VALID.glsl1(ctx, { type: arg.type, expr: value }).expr}) { ${ret} = ${value} } else {\n`
+          ctx.push`if (${FN_VALID.glsl1(ctx, { type: arg.type, expr: value }).expr}) { ${ret} = ${value}; } else {\n`
           close += "}"
         }
         ctx.push`${ret} = ${TY_INFO[ty].garbage.glsl}; ${close}\n`

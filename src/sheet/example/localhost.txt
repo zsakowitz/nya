@@ -1,4 +1,6 @@
 \left(2,3\right)
+\operatorname{polygon}\left(\left(2,6\right),\left(4,6\right),\left(6,4\right),\left(1,-2\right)\right)
 \operatorname{circle}\left(\left(1,2\right),3\right)
 \operatorname{segment}\left(\left(1,2\right),\left(3,5\right)\right)
 \operatorname{ray}\left(\left(1,2\right),\left(4,0\right)\right)
+\operatorname{line}\left(\left(-4,0\right),\left(0,-2\right)\right)

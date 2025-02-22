@@ -7,11 +7,12 @@ import { CmdNum } from "../../../field/cmd/leaf/num"
 import { CmdVar } from "../../../field/cmd/leaf/var"
 import { CmdBrack } from "../../../field/cmd/math/brack"
 import { Block, L, R } from "../../../field/model"
+import { sx } from "../../../jsx"
 import { Prop } from "../../../sheet/ext"
 import { defineHideable } from "../../../sheet/ext/hideable"
 import type { Paper } from "../../../sheet/ui/paper"
+import type { DrawProps, Paper2, Point } from "../../../sheet/ui/paper2"
 import { distLinePt } from "../fn/distance"
-import { drawSegment } from "./segment"
 
 export function drawPolygon(
   polygon: SPoint[],
@@ -50,6 +51,34 @@ export function drawPolygon(
   }
 }
 
+export function drawPolygon2(
+  paper: Paper2,
+  polygon: Point[],
+  props: DrawProps & { closed: boolean },
+) {
+  const pts = polygon.map((pt) => paper.paperToOffset(pt))
+  if (pts.length == 0) return
+
+  const d =
+    `M ${pts[0]!.x} ${pts[0]!.y}` +
+    pts.slice(1).map(({ x, y }) => ` L ${x} ${y}`) +
+    (props.closed ? " Z" : "")
+
+  paper.append(
+    "line",
+    sx("path", {
+      d,
+      "stroke-width": 3,
+      stroke: "#2d70b3",
+      "stroke-linecap": "round",
+      "stroke-linejoin": "round",
+      fill: "#2d70b340",
+      "stroke-opacity": props.dimmed ? 0.3 : 1,
+      "fill-opacity": props.dimmed ? 0.3 : 1,
+    }),
+  )
+}
+
 const SELECTED = new Prop<[SPoint, SPoint] | null>(() => null)
 const DIMMED = new Prop(() => false)
 
@@ -65,14 +94,12 @@ export const EXT_POLYGON = defineHideable({
       }
     }
   },
-  plot2d(data, paper) {
-    const highlight = SELECTED.get(data.expr)
-    if (highlight) {
-      drawSegment(highlight, paper, true, false)
-    }
-
+  svg(data, paper) {
     for (const polygon of each(data.value)) {
-      drawPolygon(polygon, paper, true, DIMMED.get(data.expr))
+      drawPolygon2(paper, polygon.map(unpt), {
+        closed: true,
+        dimmed: DIMMED.get(data.expr),
+      })
     }
   },
   layer() {
