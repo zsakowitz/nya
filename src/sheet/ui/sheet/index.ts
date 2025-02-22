@@ -46,6 +46,7 @@ export class Sheet {
   private readonly setPixelRatio
   private readonly glPixelRatio = new Slider()
 
+  /** @deprecated */
   readonly handlers
   readonly pick
   private readonly regl: Regl

@@ -3,7 +3,7 @@ import { unpt } from "../../../eval/ty/create"
 import { sx } from "../../../jsx"
 import { defineHideable } from "../../../sheet/ext/hideable"
 import type { Paper } from "../../../sheet/ui/paper"
-import type { Paper2, Point } from "../../../sheet/ui/paper2"
+import type { DrawProps, Paper2, Point } from "../../../sheet/ui/paper2"
 
 export function drawVector(vector: [SPoint, SPoint], paper: Paper) {
   const o1 = paper.paperToCanvas(unpt(vector[0]))
@@ -39,7 +39,12 @@ export function drawVector(vector: [SPoint, SPoint], paper: Paper) {
   ctx.fill()
 }
 
-export function drawVector2(paper: Paper2, p1: Point, p2: Point) {
+export function drawVector2(
+  paper: Paper2,
+  p1: Point,
+  p2: Point,
+  props?: Pick<DrawProps, "ghost">,
+) {
   const o1 = paper.toOffset(p1)
   const o2 = paper.toOffset(p2)
   if (!(isFinite(o1.x) && isFinite(o1.y) && isFinite(o2.x) && isFinite(o2.y))) {
@@ -64,6 +69,7 @@ export function drawVector2(paper: Paper2, p1: Point, p2: Point) {
       "stroke-width": 3,
       stroke: "#2d70b3",
       "stroke-linecap": "round",
+      class: props?.ghost ? "pointer-events-none" : "",
     }),
   )
 
@@ -75,6 +81,7 @@ export function drawVector2(paper: Paper2, p1: Point, p2: Point) {
       stroke: "#2d70b3",
       fill: "#2d70b3",
       "stroke-linejoin": "round",
+      class: props?.ghost ? "pointer-events-none" : "",
     }),
   )
 }

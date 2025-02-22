@@ -2,6 +2,8 @@ import type { AnyPick2, Picker2 } from "../../pick2"
 import type { Sheet } from "../sheet"
 
 export class PickHandler {
+  readonly onChange: (() => void)[] = []
+
   constructor(readonly sheet: Sheet) {
     sheet.paper2.fns.push(() => this.draw())
 
@@ -82,6 +84,20 @@ export class PickHandler {
     return !!this.pick
   }
 
+  get id() {
+    return this.pick?.pick.id(this.pick.data) ?? null
+  }
+
+  private notify() {
+    for (const fn of this.onChange) {
+      try {
+        fn()
+      } catch (e) {
+        console.warn("[pick.notify]", e)
+      }
+    }
+  }
+
   cancel() {
     if (this.pick) {
       try {
@@ -89,6 +105,7 @@ export class PickHandler {
       } finally {
         this.pick = undefined
         this.sheet.paper2.queue()
+        this.notify()
       }
     }
   }
@@ -101,6 +118,7 @@ export class PickHandler {
     this.cancel()
     this.pick = { pick, data, found }
     this.sheet.paper2.queue()
+    this.notify()
   }
 
   draw() {

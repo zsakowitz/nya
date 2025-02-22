@@ -16,13 +16,13 @@ interface Source {
   draw(sheet: Sheet, args: JsVal[]): void
 }
 
-interface Data {
+export interface Data2 {
   vals: readonly Selected[]
   src: Source
   next: readonly TyName[]
 }
 
-export const PICK2: Picker2<Data, Selected> = definePicker<Data, Selected>({
+export const PICK2: Picker2<Data2, Selected> = definePicker<Data2, Selected>({
   id(data) {
     return data.src.id
   },
@@ -61,7 +61,7 @@ export const PICK2: Picker2<Data, Selected> = definePicker<Data, Selected>({
           src: data.src,
           next,
           vals: [...data.vals, found],
-        } satisfies Data,
+        } satisfies Data2,
       }
     }
 
@@ -112,8 +112,48 @@ export const PICK2: Picker2<Data, Selected> = definePicker<Data, Selected>({
         src: data.src,
         next: initial,
         vals: [],
-      } satisfies Data,
+      } satisfies Data2,
     }
   },
   cancel() {},
 })
+
+export function definePick2<
+  const K extends readonly [readonly TyName[], ...(readonly TyName[][])],
+>(
+  tag: string,
+  fn: string | null,
+  steps: K,
+  draw: (
+    sheet: Sheet,
+    ...args: Partial<{
+      [M in keyof K]: K[M][number] extends infer T ?
+        T extends infer U extends TyName ?
+          JsVal<U>
+        : never
+      : never
+    }>
+  ) => void,
+): Data2
+
+export function definePick2(
+  tag: string,
+  fn: string | null,
+  steps: readonly [readonly TyName[], ...(readonly TyName[][])],
+  draw: (sheet: Sheet, ...args: JsVal[]) => void,
+): Data2 {
+  return {
+    next: steps[0],
+    vals: [],
+    src: {
+      id: Math.random(),
+      output: fn == null ? null : { fn, tag },
+      next(args) {
+        return steps[args.length] ?? null
+      },
+      draw(sheet, args) {
+        draw(sheet, ...args)
+      },
+    },
+  }
+}

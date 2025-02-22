@@ -7,6 +7,7 @@ import { CmdBrack } from "../../field/cmd/math/brack"
 import { Block, L, R } from "../../field/model"
 import { hx } from "../../jsx"
 import { createPicker } from "../../sheet/pick"
+import { PICK2, type Data2 } from "../../sheet/pick2byty"
 import { Expr } from "../../sheet/ui/expr"
 import type { Selected, Sheet } from "../../sheet/ui/sheet"
 import { virtualPoint } from "./pick-point"
@@ -192,6 +193,29 @@ export function picker(icon: () => HTMLSpanElement, props: PropsByTy) {
     })
     btn.addEventListener("click", () => {
       sheet.setPick(PICK_BY_TY, props)
+    })
+    return btn
+  }
+}
+
+export function picker2(icon: () => HTMLSpanElement, props: Data2) {
+  return (sheet: Sheet) => {
+    const btn = hx(
+      "button",
+      "w-12 hover:bg-[--nya-bg] border-x border-transparent hover:border-[--nya-border] focus:outline-none -mr-px last:mr-0 focus-visible:bg-[--nya-sidebar-hover]",
+      icon(),
+    )
+    sheet.pick.onChange.push(() => {
+      if (sheet.pick.id == props.src.id) {
+        btn.classList.add("bg-[--nya-bg]", "border-[--nya-border]")
+        btn.classList.remove("border-transparent")
+      } else {
+        btn.classList.remove("bg-[--nya-bg]", "border-[--nya-border]")
+        btn.classList.add("border-transparent")
+      }
+    })
+    btn.addEventListener("click", () => {
+      sheet.pick.set(PICK2, props)
     })
     return btn
   }
