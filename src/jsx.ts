@@ -109,9 +109,51 @@ export function a(href: string, ...children: (Node | string | null)[]) {
   )
 }
 
+export interface SVGProps {
+  svg: {
+    class?: string
+  }
+  g: {
+    class?: string
+  }
+  circle: {
+    class?: string
+    cx: number
+    cy: number
+    r: number
+    fill?: string
+    stroke?: string
+    "fill-opacity"?: number
+  }
+  foreignObject: {
+    class?: string
+    x: number
+    y: number
+    width: number
+    height: number
+  }
+}
+
+export type SVGClassOnlyElements = {
+  [K in keyof SVGProps]: { class?: string } extends SVGProps[K] ? K : never
+}[keyof SVGProps]
+
 // TODO: use sx for all SVG functions
-export function sx<K extends keyof SVGElementTagNameMap>(
+
+export function sx<K extends keyof SVGProps>(
   name: K,
+  cl: SVGProps[K],
+  ...children: (Node | null)[]
+): SVGElementTagNameMap[K]
+
+export function sx<K extends SVGClassOnlyElements>(
+  name: K,
+  cl?: string | SVGProps[K],
+  ...children: (Node | null)[]
+): SVGElementTagNameMap[K]
+
+export function sx(
+  name: string,
   cl?: string | Record<string, string | number | null>,
   ...children: (Node | null)[]
 ) {

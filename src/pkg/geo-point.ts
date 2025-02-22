@@ -97,25 +97,29 @@ export function drawPoint(
 
 export function drawPoint2(
   paper: Paper2,
-  at: Point,
-  size = 4,
-  halo?: boolean,
-  dimmed?: boolean,
+  props: {
+    at: Point
+    size?: number
+    halo?: boolean
+    dimmed?: boolean
+    hover?: boolean
+  },
 ) {
-  const offset = paper.paperToOffset(at)
+  const offset = paper.paperToOffset(props.at)
   if (!(isFinite(offset.x) && isFinite(offset.y))) return
 
   // TODO: dimmed
 
   const center = sx("circle", {
-    class: halo ? "transition-[r] group-hover:[r:12]" : "transition-[r]",
+    class: props.hover ? "transition-[r] group-hover:[r:12]" : "transition-[r]",
     cx: offset.x,
     cy: offset.y,
-    r: size,
+    r: props.size ?? 4,
     fill: "#6042a6",
+    "fill-opacity": props.dimmed ? 0.3 : 1,
   })
 
-  if (halo) {
+  if (props.halo) {
     paper.append(
       "point",
       g(
@@ -125,6 +129,7 @@ export function drawPoint2(
           cy: offset.y,
           r: 12,
           fill: "#6042a659",
+          "fill-opacity": props.dimmed ? 0.3 : 1,
         }),
         center,
       ),
@@ -161,30 +166,18 @@ const EXT_POINT = defineHideable({
   el(data) {
     return EXT_EVAL.el!(EXT_EVAL.data(data.expr)!)
   },
-  plot2d(data, paper) {
-    for (const pt of each(data.value)) {
-      drawPoint(
-        paper,
-        unpt(pt),
-        SELECTED.get(data.expr) ? 6
-        : data.drag ? color.get(data.expr).get()
-        : 4,
-        !!data.drag,
-        DIMMED.get(data.expr),
-      )
-    }
-  },
   svg(data, paper) {
     for (const pt of each(data.value)) {
-      drawPoint2(
-        paper,
-        unpt(pt),
-        SELECTED.get(data.expr) ? 6
-        : data.drag ? color.get(data.expr).get()
-        : 4,
-        !!data.drag,
-        DIMMED.get(data.expr),
-      )
+      drawPoint2(paper, {
+        at: unpt(pt),
+        dimmed: DIMMED.get(data.expr),
+        size:
+          SELECTED.get(data.expr) ? 6
+          : data.drag ? color.get(data.expr).get()
+          : 4,
+        halo: !!data.drag,
+        hover: !!data.drag,
+      })
     }
   },
   layer() {
