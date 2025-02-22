@@ -11,7 +11,7 @@ import { OpEq } from "../field/cmd/leaf/cmp"
 import { CmdDot } from "../field/cmd/leaf/dot"
 import { CmdVar } from "../field/cmd/leaf/var"
 import { Block, L, R } from "../field/model"
-import { h, sx } from "../jsx"
+import { g, h, sx } from "../jsx"
 import { Prop, Store } from "../sheet/ext"
 import { defineHideable } from "../sheet/ext/hideable"
 import { Transition } from "../sheet/transition"
@@ -107,27 +107,31 @@ export function drawPoint2(
 
   // TODO: dimmed
 
+  const center = sx("circle", {
+    class: halo ? "transition-[r] group-hover:[r:12]" : "transition-[r]",
+    cx: offset.x,
+    cy: offset.y,
+    r: size,
+    fill: "#6042a6",
+  })
+
   if (halo) {
     paper.append(
       "point",
-      sx("circle", {
-        cx: offset.x,
-        cy: offset.y,
-        r: 12,
-        fill: "#6042a659",
-      }),
+      g(
+        "group cursor-move",
+        sx("circle", {
+          cx: offset.x,
+          cy: offset.y,
+          r: 12,
+          fill: "#6042a659",
+        }),
+        center,
+      ),
     )
+  } else {
+    paper.append("point", center)
   }
-
-  paper.append(
-    "point",
-    sx("circle", {
-      cx: offset.x,
-      cy: offset.y,
-      r: size,
-      fill: "#6042a6",
-    }),
-  )
 }
 
 const EXT_POINT = defineHideable({
