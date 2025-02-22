@@ -11,7 +11,7 @@ export interface Picker2<in T extends {}, in out U extends {}> {
   cancel(data: T): void
 }
 
-export interface PickerInit<T extends {}, U extends {}> {
+interface PickerInit<T extends {}, U extends {}> {
   pick: Picker2<T, U>
   data: T
 }
@@ -23,4 +23,4 @@ export function definePicker<T extends {}, U extends {}>(
 }
 
 export type AnyPick2 = Picker2<any, any>
-export type AnyPickInit = PickerInit<any, any>
+type AnyPickInit = PickerInit<any, any>

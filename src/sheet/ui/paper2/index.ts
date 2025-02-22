@@ -14,13 +14,13 @@ export interface Point {
   readonly y: number
 }
 
-export interface Layers {
+interface Layers {
   grid: 0
   line: 1
   point: 2
 }
 
-export type Layer = keyof Layers
+type Layer = keyof Layers
 const LAYERS: Partial<Record<keyof Layers, number>> = Object.create(null)
 LAYERS.grid = 0
 LAYERS.line = 1

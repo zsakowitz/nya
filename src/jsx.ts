@@ -116,7 +116,7 @@ export function a(href: string, ...children: (Node | string | null)[]) {
   )
 }
 
-export interface SVGProps {
+interface SVGProps {
   svg: {
     fill?: string
   }
@@ -159,13 +159,13 @@ export interface SVGProps {
   }
 }
 
-export interface SVGPropsGlobal {
+interface SVGPropsGlobal {
   class?: string
   drag?: DragProps
   pick?: PickProps
 }
 
-export type SVGClassOnlyElements = {
+type SVGClassOnlyElements = {
   [K in keyof SVGProps]: {} extends SVGProps[K] ? K : never
 }[keyof SVGProps]
 

@@ -2,23 +2,23 @@ import type { Paper2 } from "."
 import { hx, sx } from "../../../jsx"
 import { theme } from "../../theme"
 
-export const THEME_MAIN_AXIS_WIDTH = 1.5
-export const THEME_MAJOR_LINE_ALPHA = 0.3
-export const THEME_MINOR_LINE_ALPHA = 0.1
+const THEME_MAIN_AXIS_WIDTH = 1.5
+const THEME_MAJOR_LINE_ALPHA = 0.3
+const THEME_MINOR_LINE_ALPHA = 0.1
 
-export const THEME_AXIS_NUMBER_SIZE = 0.875
-export const THEME_AXIS_NUMBER_STROKE_COLOR = () =>
+const THEME_AXIS_NUMBER_SIZE = 0.875
+const THEME_AXIS_NUMBER_STROKE_COLOR = () =>
   theme("--nya-paper-axis-number-stroke", "white")
-export const THEME_AXIS_NUMBER_STROKE_WIDTH = 4
-export const THEME_AXIS_NUMBER_ONSCREEN = () =>
+const THEME_AXIS_NUMBER_STROKE_WIDTH = 4
+const THEME_AXIS_NUMBER_ONSCREEN = () =>
   theme("--nya-paper-axis-number-onscreen", "black")
-export const THEME_AXIS_NUMBER_OFFSCREEN = () =>
+const THEME_AXIS_NUMBER_OFFSCREEN = () =>
   theme("--nya-paper-axis-number-offscreen", "#8e8e8e")
-export const THEME_AXIS_NUMBER_NEGATIVE_X_OFFSET = -2.5
-export const THEME_AXIS_STROKE = () => theme("--nya-paper-screen-line", "black")
+const THEME_AXIS_NUMBER_NEGATIVE_X_OFFSET = -2.5
+const THEME_AXIS_STROKE = () => theme("--nya-paper-screen-line", "black")
 
-export const MAX_GRIDLINES_MAJOR = 200
-export const MAX_GRIDLINES_MINOR = MAX_GRIDLINES_MAJOR * 5
+const MAX_GRIDLINES_MAJOR = 200
+const MAX_GRIDLINES_MINOR = MAX_GRIDLINES_MAJOR * 5
 
 export function createDrawAxes(paper: Paper2) {
   const cv = hx("canvas")

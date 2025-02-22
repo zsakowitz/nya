@@ -2,14 +2,6 @@ import type { GlslHelpers, GlslResult } from "../../eval/lib/fn"
 import { Expr } from "../ui/expr"
 import type { Paper2 } from "../ui/paper2"
 
-export type Cursor =
-  | "default"
-  | "pointer"
-  | "text"
-  | "move"
-  | "ew-resize"
-  | "ns-resize"
-
 /** An extension to an expression in the sheet interface. */
 export interface Ext<T extends {}> {
   /**

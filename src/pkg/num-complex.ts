@@ -654,7 +654,7 @@ export function recipPt({ x: c, y: d }: SPoint): SPoint {
   return pt(div(c, denom), div(neg(d), denom))
 }
 
-export function declareDiv(ctx: GlslContext) {
+function declareDiv(ctx: GlslContext) {
   ctx.glsl`vec2 _helper_div(vec2 a, vec2 b) {
   return vec2(
     a.x * b.x + a.y * b.y,

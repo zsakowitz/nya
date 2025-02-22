@@ -116,12 +116,9 @@ ${interps
   }
 }
 
-export type GlslType =
-  `${"float" | "vec2" | "vec3" | "vec4"}${"" | `[${number}]`}`
-
 export type GlslResult = readonly [block: GlslContext, expr: string]
 
-export interface GlslFn<T extends readonly TyName[] = readonly TyName[]> {
+interface GlslFn<T extends readonly TyName[] = readonly TyName[]> {
   (ctx: GlslContext, ...args: { [K in keyof T]: GlslVal<T[K]> }): string
   glName: string
   load(ctx: GlslContext): void

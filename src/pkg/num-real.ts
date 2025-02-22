@@ -263,7 +263,7 @@ export const FN_LOG10 = new FnDist(
   (_, a) => `(log(${a.expr}) / log(10.0))`,
 )
 
-export function mulR64(ctx: GlslContext, a: string, b: string) {
+function mulR64(ctx: GlslContext, a: string, b: string) {
   declareMulR64(ctx)
   return `_helper_mul_r64(${a}, ${b})`
 }

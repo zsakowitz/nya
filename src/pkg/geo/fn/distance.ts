@@ -2,7 +2,6 @@ import { FnDist } from "../../../eval/ops/dist"
 import type { SPoint, SReal } from "../../../eval/ty"
 import { num, real } from "../../../eval/ty/create"
 import { abs, add, div, mul, sub } from "../../../eval/ty/ops"
-import type { Point } from "../../../sheet/ui/paper2"
 
 export function sqrt(val: SReal) {
   return real(num(val) ** 0.5)
@@ -14,22 +13,6 @@ export function dist(a: SPoint, b: SPoint) {
   const dx2 = mul(dx, dx)
   const dy2 = mul(dy, dy)
   return sqrt(add(dx2, dy2))
-}
-
-export function distLinePt(
-  [{ x: x1, y: y1 }, { x: x2, y: y2 }]: [Point, Point],
-  { x: x0, y: y0 }: Point,
-) {
-  const num = Math.abs((y2 - y1) * x0 - (x2 - x1) * y0 + (x2 * y1 - y2 * x1))
-  return num / Math.hypot(x1 - x2, y1 - y2)
-}
-
-export function distCirclePt(center: Point, radius: Point, pt: Point) {
-  const x = pt.x - center.x
-  const y = pt.y - center.y
-  const angle = Math.atan2((y / radius.y) * radius.x, x)
-  const r = Math.hypot(Math.cos(angle) * radius.x, Math.sin(angle) * radius.y)
-  return Math.abs(Math.hypot(pt.x - center.x, pt.y - center.y) - r)
 }
 
 export const FN_DISTANCE = new FnDist<"r32">(
