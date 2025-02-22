@@ -42,7 +42,10 @@ export class Paper2 {
     },
     private autofit = true,
   ) {
-    this.el = sx("svg", className)
+    this.el = sx("svg", {
+      class: className,
+      fill: "none",
+    })
     const resize = () => {
       this.el.setAttribute(
         "viewBox",
@@ -138,6 +141,11 @@ export class Paper2 {
     }
   }
 
+  /** @deprecated */
+  paperToCanvas(pt: Point): Point {
+    return this.paperToOffset(pt)
+  }
+
   offsetToPaper(offset: Point): Point {
     const px = offset.x / this.width
     const py = offset.y / this.height
@@ -154,6 +162,14 @@ export class Paper2 {
     const py = offsetDelta.y / this.height
     const { w, h } = this.bounds()
     return { x: w * px, y: -h * py }
+  }
+
+  paperDeltaToOffset(paperDelta: Point): Point {
+    const { w, h } = this.bounds()
+    return {
+      x: (paperDelta.x / w) * this.width,
+      y: -(paperDelta.y / h) * this.height,
+    }
   }
 
   move({ x, y }: Point) {
@@ -193,4 +209,47 @@ export class Paper2 {
 
     this.queue()
   }
+}
+
+export interface DrawProps {
+  dimmed?: boolean
+}
+
+export function segmentByPaper(
+  paper: Paper2,
+  p1: Point,
+  p2: Point,
+  props?: DrawProps,
+) {
+  segmentByOffset(
+    paper,
+    paper.paperToOffset(p1),
+    paper.paperToOffset(p2),
+    props,
+  )
+}
+
+export function segmentByOffset(
+  paper: Paper2,
+  o1: Point,
+  o2: Point,
+  props?: DrawProps,
+) {
+  if (!(isFinite(o1.x) && isFinite(o1.y) && isFinite(o2.x) && isFinite(o2.y))) {
+    return
+  }
+
+  paper.append(
+    "line",
+    sx("line", {
+      x1: o1.x,
+      y1: o1.y,
+      x2: o2.x,
+      y2: o2.y,
+      "stroke-width": 3,
+      stroke: "#2d70b3",
+      "stroke-opacity": props?.dimmed ? 0.3 : 1,
+      "stroke-linecap": "round",
+    }),
+  )
 }

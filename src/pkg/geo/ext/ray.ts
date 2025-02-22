@@ -1,19 +1,24 @@
-import { Prop } from "../../../sheet/ext"
-import { distLinePt } from "../fn/distance"
-import { each, type JsValue, type SPoint, type Tys } from "../../../eval/ty"
+import { each, type JsValue, type SPoint } from "../../../eval/ty"
 import { num, unpt } from "../../../eval/ty/create"
 import { gliderOnLine } from "../../../eval/ty/info"
 import { OpEq } from "../../../field/cmd/leaf/cmp"
 import { CmdVar } from "../../../field/cmd/leaf/var"
 import { Block, L, R } from "../../../field/model"
-import { Paper, Point } from "../../../sheet/ui/paper"
+import { Prop } from "../../../sheet/ext"
 import { defineHideable } from "../../../sheet/ext/hideable"
+import { Paper, Point } from "../../../sheet/ui/paper"
+import {
+  segmentByOffset,
+  type DrawProps,
+  type Paper2,
+} from "../../../sheet/ui/paper2"
+import { distLinePt } from "../fn/distance"
 
-function getRayBounds(line: Tys["ray"], paper: Paper): [Point, Point] | null {
-  const x1 = num(line[0].x)
-  const y1 = num(line[0].y)
-  const x2 = num(line[1].x)
-  const y2 = num(line[1].y)
+function getRayBounds(
+  { x: x1, y: y1 }: Point,
+  { x: x2, y: y2 }: Point,
+  paper: Paper | Paper2,
+): [Point, Point] | null {
   const { xmin, w, ymin, h } = paper.bounds()
 
   if (x1 == x2) {
@@ -76,7 +81,7 @@ export function drawRay(
     return
   }
 
-  const bounds = getRayBounds(ray, paper)
+  const bounds = getRayBounds({ x: x1, y: y1 }, { x: x2, y: y2 }, paper)
   if (!bounds) return
 
   const [o1, o2] = bounds
@@ -111,6 +116,30 @@ export function drawRay(
   }
 }
 
+export function drawRay2(
+  paper: Paper2,
+  p1: Point,
+  p2: Point,
+  props?: DrawProps,
+) {
+  const { x: x1, y: y1 } = p1
+  const { x: x2, y: y2 } = p2
+
+  if (!(isFinite(x1) && isFinite(y1) && isFinite(x2) && isFinite(y2))) {
+    return
+  }
+
+  const bounds = getRayBounds(p1, p2, paper)
+  if (!bounds) return
+
+  const [o1, o2] = bounds
+  if (!(isFinite(o1.x) && isFinite(o1.y) && isFinite(o2.x) && isFinite(o2.y))) {
+    return
+  }
+
+  segmentByOffset(paper, o1, o2, props)
+}
+
 const DIMMED = new Prop(() => false)
 
 export const EXT_RAY = defineHideable({
@@ -121,9 +150,11 @@ export const EXT_RAY = defineHideable({
       return { value: value as JsValue<"ray">, paper: expr.sheet.paper, expr }
     }
   },
-  plot2d(data, paper) {
-    for (const segment of each(data.value)) {
-      drawRay(segment, paper, SELECTED.get(data.expr), DIMMED.get(data.expr))
+  svg(data, paper) {
+    for (const val of each(data.value)) {
+      drawRay2(paper, unpt(val[0]), unpt(val[1]), {
+        dimmed: DIMMED.get(data.expr),
+      })
     }
   },
   layer() {

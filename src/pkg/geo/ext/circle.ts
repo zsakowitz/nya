@@ -1,12 +1,14 @@
-import { Prop } from "../../../sheet/ext"
-import { distCirclePt } from "../fn/distance"
 import { each, type JsValue } from "../../../eval/ty"
 import { num, unpt } from "../../../eval/ty/create"
 import { OpEq } from "../../../field/cmd/leaf/cmp"
 import { CmdVar } from "../../../field/cmd/leaf/var"
 import { Block, L, R } from "../../../field/model"
-import type { Paper, Point } from "../../../sheet/ui/paper"
+import { sx } from "../../../jsx"
+import { Prop } from "../../../sheet/ext"
 import { defineHideable } from "../../../sheet/ext/hideable"
+import type { Paper, Point } from "../../../sheet/ui/paper"
+import type { Paper2 } from "../../../sheet/ui/paper2"
+import { distCirclePt } from "../fn/distance"
 
 const SELECTED = new Prop(() => false)
 const DIMMED = new Prop(() => false)
@@ -47,6 +49,40 @@ export function drawCircle(
   }
 }
 
+export function drawCircle2(
+  paper: Paper2,
+  props: {
+    at: Point
+    r: number
+    dimmed?: boolean
+  },
+) {
+  if (
+    !(
+      isFinite(props.at.x) &&
+      isFinite(props.at.y) &&
+      isFinite(props.r) &&
+      props.r > 0
+    )
+  ) {
+    return
+  }
+
+  const { x: cx, y: cy } = paper.paperToOffset(props.at)
+
+  paper.append(
+    "line",
+    sx("circle", {
+      cx,
+      cy,
+      r: paper.paperDeltaToOffset({ x: props.r, y: 0 }).x,
+      stroke: "#388c46",
+      "stroke-width": 3,
+      "stroke-opacity": props.dimmed ? 0.3 : 1,
+    }),
+  )
+}
+
 export const EXT_CIRCLE = defineHideable({
   data(expr) {
     const value = expr.js?.value
@@ -59,15 +95,13 @@ export const EXT_CIRCLE = defineHideable({
       }
     }
   },
-  plot2d(data, paper) {
+  svg(data, paper) {
     for (const { center, radius } of each(data.value)) {
-      drawCircle(
-        unpt(center),
-        num(radius),
-        paper,
-        SELECTED.get(data.expr),
-        DIMMED.get(data.expr),
-      )
+      drawCircle2(paper, {
+        at: unpt(center),
+        r: num(radius),
+        dimmed: DIMMED.get(data.expr),
+      })
     }
   },
   layer() {

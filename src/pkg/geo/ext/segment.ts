@@ -7,6 +7,7 @@ import { Block, L, R } from "../../../field/model"
 import { Prop } from "../../../sheet/ext"
 import { defineHideable } from "../../../sheet/ext/hideable"
 import type { Paper } from "../../../sheet/ui/paper"
+import { segmentByPaper } from "../../../sheet/ui/paper2"
 import { distLinePt } from "../fn/distance"
 
 export function drawSegment(
@@ -68,14 +69,11 @@ export const EXT_SEGMENT = defineHideable({
       }
     }
   },
-  plot2d(data, paper) {
-    for (const segment of each(data.value)) {
-      drawSegment(
-        segment,
-        paper,
-        SELECTED.get(data.expr),
-        DIMMED.get(data.expr),
-      )
+  svg(data, paper) {
+    for (const val of each(data.value)) {
+      segmentByPaper(paper, unpt(val[0]), unpt(val[1]), {
+        dimmed: DIMMED.get(data.expr),
+      })
     }
   },
   layer() {

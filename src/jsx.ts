@@ -112,9 +112,20 @@ export function a(href: string, ...children: (Node | string | null)[]) {
 export interface SVGProps {
   svg: {
     class?: string
+    fill?: string
   }
   g: {
     class?: string
+  }
+  line: {
+    x1: number
+    y1: number
+    x2: number
+    y2: number
+    stroke?: string
+    "stroke-width"?: number
+    "stroke-opacity"?: number
+    "stroke-linecap"?: "round"
   }
   circle: {
     class?: string
@@ -124,6 +135,8 @@ export interface SVGProps {
     fill?: string
     stroke?: string
     "fill-opacity"?: number
+    "stroke-width"?: number
+    "stroke-opacity"?: number
   }
   foreignObject: {
     class?: string
