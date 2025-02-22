@@ -20,15 +20,15 @@ import { REMARK } from "../../remark"
 import { Slider } from "../../slider"
 import { isDark } from "../../theme"
 import { Expr } from "../expr"
-import { Paper2, type Point } from "../paper2"
-import { createDrawAxes } from "../paper2/grid"
-import { HANDLER_PICK } from "../paper2/interact"
+import { Paper2, type Point } from "../paper"
+import { createDrawAxes } from "../paper/grid"
+import { HANDLER_PICK } from "../paper/interact"
 import {
   registerDragHandler,
   registerPinchHandler,
   registerWheelHandler,
-} from "../paper2/move"
-import { PickHandler } from "../paper2/pick"
+} from "../paper/move"
+import { PickHandler } from "../paper/pick"
 import { btn, createDocs, DEFAULT_TO_VISIBLE_DOCS } from "./docs"
 
 export class Sheet {

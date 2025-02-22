@@ -1,6 +1,6 @@
 import type { GlslHelpers, GlslResult } from "../../eval/lib/fn"
 import { Expr } from "../ui/expr"
-import type { Paper2 } from "../ui/paper2"
+import type { Paper2 } from "../ui/paper"
 
 /** An extension to an expression in the sheet interface. */
 export interface Ext<T extends {}> {

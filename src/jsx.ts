@@ -3,7 +3,7 @@ import {
   HANDLER_PICK,
   type DragProps,
   type PickProps,
-} from "./sheet/ui/paper2/interact"
+} from "./sheet/ui/paper/interact"
 
 export const U_ZERO_WIDTH_SPACE = "\u200B"
 

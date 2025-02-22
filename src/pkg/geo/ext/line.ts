@@ -2,12 +2,12 @@ import { each, type JsValue } from "../../../eval/ty"
 import { unpt } from "../../../eval/ty/create"
 import { Prop } from "../../../sheet/ext"
 import { defineHideable } from "../../../sheet/ext/hideable"
-import type { Point } from "../../../sheet/ui/paper2"
+import type { Point } from "../../../sheet/ui/paper"
 import {
   segmentByOffset,
   type DrawProps,
   type Paper2,
-} from "../../../sheet/ui/paper2"
+} from "../../../sheet/ui/paper"
 import { pick } from "./util"
 
 function getLineBounds(

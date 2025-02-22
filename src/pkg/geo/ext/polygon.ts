@@ -14,7 +14,7 @@ import {
   segmentByPaper,
   type Paper2,
   type Point,
-} from "../../../sheet/ui/paper2"
+} from "../../../sheet/ui/paper"
 
 export function drawPolygon(
   paper: Paper2,

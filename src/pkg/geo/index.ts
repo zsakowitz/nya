@@ -8,7 +8,7 @@ import { CmdBrack } from "../../field/cmd/math/brack"
 import { Block, L, R } from "../../field/model"
 import { h, p, svgx } from "../../jsx"
 import { definePickTy, PICK_TY, toolbar, type Data } from "../../sheet/pick-ty"
-import { segmentByPaper } from "../../sheet/ui/paper2"
+import { segmentByPaper } from "../../sheet/ui/paper"
 import {
   drawPoint,
   FN_GLIDER,
