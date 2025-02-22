@@ -272,7 +272,7 @@ export const PKG_REAL: Package = {
   id: "nya:num-real",
   name: "real numbers",
   label: "support for real numbers",
-  init() {
+  load() {
     OP_ABS.add(
       ["r64"],
       "r64",

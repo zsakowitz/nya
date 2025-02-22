@@ -32,7 +32,7 @@ export const PKG_NUM_QUATERNION: Package = {
   name: "quaternions",
   label: "rudimentary support for quaternions",
   deps: [() => PKG_REAL, () => PKG_NUM_COMPLEX],
-  init() {
+  load() {
     OP_POS.add(
       ["q32"],
       "q32",

@@ -47,7 +47,7 @@ export class SheetFactory {
       }
       this.load(dep)
     }
-    pkg.init?.()
+    pkg.load?.()
 
     for (const k in pkg.ty?.info) {
       const key = k as TyName

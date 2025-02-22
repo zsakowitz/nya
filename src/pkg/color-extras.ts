@@ -46,7 +46,7 @@ export const PKG_COLOR_EXTRAS: Package = {
   name: "color functions extended",
   label: "more functions for creating colors",
   deps: [() => PKG_COLOR_CORE],
-  init() {
+  load() {
     FN_VALID.add(
       ["color"],
       "bool",

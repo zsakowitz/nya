@@ -39,7 +39,7 @@ export const PKG_TRIG_HYPERBOLIC_REAL: Package = {
   id: "nya:trigh-real",
   name: "hyperbolic trigonometry",
   label: "hyperbolic trig on real numbers",
-  init() {
+  load() {
     FN_SINH.add(
       ["r32"],
       "r32",

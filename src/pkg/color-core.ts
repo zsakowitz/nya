@@ -98,7 +98,7 @@ export const PKG_COLOR_CORE: Package = {
   name: "color functions core",
   label: "rgb and hsv functions",
   deps: [() => PKG_REAL, () => PKG_BOOL],
-  init() {
+  load() {
     OP_PLOT.add(
       ["bool"],
       "color",

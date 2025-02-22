@@ -330,7 +330,7 @@ export const PKG_GEO_POINT: Package = {
   name: "geometric points",
   label: "geometric points in 2D",
   deps: [() => PKG_REAL],
-  init() {
+  load() {
     FN_SCREENDISTANCE.add(
       ["point32", "point32"],
       "r32",

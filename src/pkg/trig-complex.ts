@@ -74,7 +74,7 @@ export const PKG_TRIG_COMPLEX: Package = {
       cot: FN_COT,
     },
   },
-  init() {
+  load() {
     FN_SIN.add(["c32"], "c32", (a) => sinJs(a.value), sinGl)
     FN_COS.add(["c32"], "c32", (a) => cosJs(a.value), cosGl)
     FN_TAN.add(["c32"], "c32", (a) => tanJs(a.value), tanGl)

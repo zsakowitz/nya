@@ -24,15 +24,13 @@ export interface Package {
   name: string
   label: string | null
 
-  init?(): void
+  load?(): void
   deps?: (() => Package)[]
 
   field?: {
     inits?: List<Init>
     //   shortcuts?: List<Init>
     //   autos?: List<Init>
-    //   /** All names in `eval.fns` are automatically included as prefix words. */
-    //   words?: List<WordKind>
     latex?: List<LatexInit>
     //   options?: Partial<Options>
   }

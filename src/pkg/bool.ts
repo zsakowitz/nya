@@ -217,7 +217,7 @@ export const PKG_BOOL: Package = {
   id: "nya:bool-ops",
   name: "boolean operations",
   label: "basic support for boolean values",
-  init() {
+  load() {
     OP_AND.add(
       ["bool", "bool"],
       "bool",

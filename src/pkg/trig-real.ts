@@ -21,7 +21,7 @@ export const PKG_TRIG_REAL: Package = {
   id: "nya:trig-real",
   name: "trigonometry",
   label: "trig on real numbers",
-  init() {
+  load() {
     FN_SIN.add(
       ["r32"],
       "r32",
