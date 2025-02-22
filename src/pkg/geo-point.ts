@@ -12,7 +12,6 @@ import { CmdDot } from "../field/cmd/leaf/dot"
 import { CmdVar } from "../field/cmd/leaf/var"
 import { Block, L, R } from "../field/model"
 import { h, sx } from "../jsx"
-import { Prop } from "../sheet/ext"
 import { defineHideable } from "../sheet/ext/hideable"
 import { definePickTy, PICK_TY, toolbar } from "../sheet/pick-ty"
 import type { DrawProps, Paper, Point } from "../sheet/ui/paper"
@@ -55,13 +54,10 @@ declare module "../eval/ast/token" {
   }
 }
 
-const SELECTED = new Prop(() => false)
-
 export function drawPoint(
   paper: Paper,
   props: {
     at: Point
-    size?: number
     halo?: boolean
     hover?: boolean
     pointer?: boolean
@@ -77,12 +73,14 @@ export function drawPoint(
 
   const center = sx("circle", {
     class:
-      (props.hover ? "transition-[r] group-hover:[r:12]" : "transition-[r]") +
+      (props.hover ?
+        "transition-[r] group-hover:[r:12] picking-any:group-hover:[r:4]"
+      : "transition-[r]") +
       ghost +
       " picking-any:opacity-30 picking-point:opacity-100",
     cx: offset.x,
     cy: offset.y,
-    r: props.size ?? 4,
+    r: 4,
     fill: "#6042a6",
   })
 
@@ -93,8 +91,6 @@ export function drawPoint(
         "g",
         {
           class: "group cursor-move" + ghost,
-          drag: props.drag,
-          pick: props.pick,
         },
         sx("circle", {
           cx: offset.x,
@@ -102,6 +98,8 @@ export function drawPoint(
           r: 12,
           fill: "#6042a659",
           class: " picking-any:opacity-30 picking-point:opacity-100",
+          drag: props.drag,
+          pick: props.pick,
         }),
         center,
       ),
@@ -225,7 +223,6 @@ const EXT_POINT = defineHideable({
 
       const center = drawPoint(paper, {
         at: unpt(pt),
-        size: SELECTED.get(data.expr) ? 6 : 4,
         halo: !!drag,
         hover: !!drag,
         drag: move ? () => move : undefined,
@@ -271,7 +268,9 @@ const EXT_POINT = defineHideable({
             return block
           },
           draw() {
-            center?.setAttribute("r", "6")
+            center!.style.transition = "none"
+            center!.style.r = "6"
+            center!.parentElement!.style.cursor = "pointer"
           },
         },
       })
