@@ -126,20 +126,6 @@ export class Handlers implements PointerHandlers<DataDrag, DataHover> {
       return { pick: true }
     }
 
-    for (const expr of this.sheet.exprs.filter(
-      (x): x is typeof x & { state: { ok: true; ext: { drag: {} } } } =>
-        x.state.ok && !!x.state.ext?.drag,
-    )) {
-      const data = expr.state.ext.drag.start(expr.state.data, at)
-      if (data == null) continue
-
-      const cursor = expr.state.ext.drag.cursor(data)
-      this.pointers.push(cursor)
-      this.sheet.el.style.cursor = cursor
-
-      return { ext: expr.state.ext, data, cursor }
-    }
-
     return
   }
 
@@ -155,8 +141,6 @@ export class Handlers implements PointerHandlers<DataDrag, DataHover> {
       this.sheet.paper.queue()
       return
     }
-
-    data.ext.drag.move(data.data, to)
   }
 
   onDragEnd(at: Point, data: DataDrag): void {
@@ -182,8 +166,6 @@ export class Handlers implements PointerHandlers<DataDrag, DataHover> {
     if (idx != -1) this.pointers.splice(idx, 1)
     const cursor = this.pointers[this.pointers.length - 1]
     this.sheet.el.style.cursor = cursor || "auto"
-
-    data.ext.drag.end(data.data, at)
   }
 
   onHoverStart(at: Point): DataHover | null | undefined {
