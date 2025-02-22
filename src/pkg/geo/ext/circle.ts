@@ -70,6 +70,7 @@ export function drawCircle2(
       "stroke-opacity": props.dimmed ? 0.3 : 1,
       drag: props.drag,
       pick: props.pick,
+      class: props?.ghost ? "pointer-events-none" : undefined,
     }),
   )
 }

@@ -226,6 +226,7 @@ export interface DrawProps {
   dimmed?: boolean
   drag?: DragProps
   pick?: PickProps
+  ghost?: boolean
 }
 
 export function segmentByPaper(
@@ -260,6 +261,7 @@ export function segmentByOffset(
       "stroke-linecap": "round",
       drag: props?.drag,
       pick: props?.pick,
+      class: props?.ghost ? "pointer-events-none" : undefined,
     }),
   )
 }

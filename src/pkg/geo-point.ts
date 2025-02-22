@@ -15,13 +15,8 @@ import { h, sx } from "../jsx"
 import { Prop } from "../sheet/ext"
 import { defineHideable } from "../sheet/ext/hideable"
 import type { Paper, Point } from "../sheet/ui/paper"
-import type { Paper2 } from "../sheet/ui/paper2"
-import {
-  HANDLER_DRAG,
-  HANDLER_PICK,
-  type DragProps,
-  type PickProps,
-} from "../sheet/ui/paper2/interact"
+import type { DrawProps, Paper2 } from "../sheet/ui/paper2"
+import { HANDLER_DRAG, HANDLER_PICK } from "../sheet/ui/paper2/interact"
 import type { Sheet } from "../sheet/ui/sheet"
 import { virtualStepExp, write, Writer } from "../sheet/write"
 import { FN_VALID } from "./bool"
@@ -102,17 +97,22 @@ export function drawPoint2(
     at: Point
     size?: number
     halo?: boolean
-    dimmed?: boolean
     hover?: boolean
-    drag?: DragProps
-    pick?: PickProps
-  },
+    pointer?: boolean
+  } & DrawProps,
 ) {
   const offset = paper.toOffset(props.at)
   if (!(isFinite(offset.x) && isFinite(offset.y))) return
 
+  const ghost =
+    props.ghost ? " pointer-events-none"
+    : props.pointer ? " cursor-pointer"
+    : ""
+
   const center = sx("circle", {
-    class: props.hover ? "transition-[r] group-hover:[r:12]" : "transition-[r]",
+    class:
+      (props.hover ? "transition-[r] group-hover:[r:12]" : "transition-[r]") +
+      ghost,
     cx: offset.x,
     cy: offset.y,
     r: props.size ?? 4,
@@ -125,7 +125,11 @@ export function drawPoint2(
       "point",
       sx(
         "g",
-        { class: "group cursor-move", drag: props.drag, pick: props.pick },
+        {
+          class: "group cursor-move" + ghost,
+          drag: props.drag,
+          pick: props.pick,
+        },
         sx("circle", {
           cx: offset.x,
           cy: offset.y,

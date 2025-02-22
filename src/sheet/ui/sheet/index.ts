@@ -5,7 +5,7 @@ import type { Regl } from "regl"
 import regl from "regl"
 import { GlslContext } from "../../../eval/lib/fn"
 import type { JsVal, TyName } from "../../../eval/ty"
-import { num, real } from "../../../eval/ty/create"
+import { num, real, unpt } from "../../../eval/ty/create"
 import { splitRaw } from "../../../eval/ty/split"
 import { Block } from "../../../field/model"
 import type { Options } from "../../../field/options"
@@ -16,13 +16,14 @@ import { Scope } from "../../deps"
 import type { Exts } from "../../ext"
 import type { SheetFactory } from "../../factory"
 import type { Picker } from "../../pick"
+import { PICK2 } from "../../pick2byty"
 import { doMatchReglSize } from "../../regl"
 import { REMARK } from "../../remark"
 import { Slider } from "../../slider"
 import { isDark } from "../../theme"
 import { Expr } from "../expr"
 import { Paper, type Point } from "../paper"
-import { Paper2 } from "../paper2"
+import { Paper2, segmentByPaper } from "../paper2"
 import { createDrawAxes } from "../paper2/grid"
 import { HANDLER_PICK } from "../paper2/interact"
 import {
@@ -30,6 +31,7 @@ import {
   registerPinchHandler,
   registerWheelHandler,
 } from "../paper2/move"
+import { PickHandler } from "../paper2/pick"
 import { btn, createDocs, DEFAULT_TO_VISIBLE_DOCS } from "./docs"
 import { Handlers } from "./handler"
 
@@ -45,6 +47,7 @@ export class Sheet {
   private readonly glPixelRatio = new Slider()
 
   readonly handlers
+  readonly pick
   private readonly regl: Regl
 
   readonly el
@@ -96,7 +99,36 @@ export class Sheet {
         }
       }
     })
-    // this.paper.drawFns.push(() => this.handlers.draw())
+    this.pick = new PickHandler(this)
+    addEventListener("keydown", (ev) => {
+      if (ev.key == "@") {
+        this.pick.set(PICK2, {
+          vals: [],
+          src: {
+            id: 23,
+            draw(sheet, args) {
+              if (args.length == 2) {
+                const [a, b] = args as [
+                  JsVal<"point32" | "point64">,
+                  JsVal<"point32" | "point64">,
+                ]
+                segmentByPaper(sheet.paper2, unpt(a.value), unpt(b.value), {
+                  ghost: true,
+                })
+              }
+            },
+            next(args) {
+              if (args.length < 2) {
+                return ["point32", "point64"]
+              }
+              return null
+            },
+            output: { fn: "segment", tag: "l" },
+          },
+          next: ["point32", "point64"],
+        })
+      }
+    })
 
     // prepare glsl context
     const canvas = hx(
@@ -453,9 +485,10 @@ void main() {
     this.checkDim()
 
     const o = this.paper2.toOffset(at)
-    const picks = Array.from(
-      this.paper2.el.getIntersectionList(new DOMRect(o.x, o.y, 0, 0), null),
-    )
+    const rect = this.paper2.el.createSVGRect()
+    rect.x = o.x
+    rect.y = o.y
+    const picks = Array.from(this.paper2.el.getIntersectionList(rect, null))
       .map((v) => HANDLER_PICK.get(v))
       .filter((x) => x != null)
       .filter((x) => tys.includes(x.val().type))
