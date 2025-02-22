@@ -139,41 +139,6 @@ export const PICK_BY_TY = createPicker<PropsByTy, Selected>({
   cancel() {},
 })
 
-export function createPickByTy<const K extends (readonly TyName[])[]>(
-  tag: string,
-  fn: string | null,
-  steps: K,
-  draw: (
-    sheet: Sheet,
-    ...args: Partial<{
-      [M in keyof K]: K[M][number] extends infer T ?
-        T extends infer U extends TyName ?
-          JsVal<U>
-        : never
-      : never
-    }>
-  ) => void,
-): PropsByTy {
-  if (steps.length == 0) {
-    throw new Error("Cannot call 'createStandardPicker' with zero steps.")
-  }
-
-  return {
-    chosen: [],
-    next: steps[0]!,
-    ext: {
-      id: Math.random(),
-      output: fn ? { tag, fn } : null,
-      draw(sheet, args) {
-        draw(sheet, ...(args satisfies readonly (JsVal | undefined)[] as any))
-      },
-      next(args) {
-        return steps[args.length] ?? null
-      },
-    },
-  }
-}
-
 export function picker(icon: () => HTMLSpanElement, props: PropsByTy) {
   return (sheet: Sheet) => {
     const btn = hx(
