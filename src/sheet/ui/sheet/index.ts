@@ -432,6 +432,7 @@ void main() {
     return picks.map((x) => ({
       ref: x.ref,
       val: x.val(),
+      draw: x.draw,
     }))
   }
 }
@@ -439,5 +440,5 @@ void main() {
 export interface Selected<K extends TyName = TyName> {
   val: JsVal<K>
   ref(): Block
-  draw?(): void
+  draw(): void
 }

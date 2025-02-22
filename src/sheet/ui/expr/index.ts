@@ -295,7 +295,9 @@ export class Expr {
     if (this.state.ok) {
       try {
         this.state.ext?.destroy?.(this.state.data)
-      } catch {}
+      } catch (e) {
+        console.warn("[expr.destroy]", e)
+      }
     }
 
     this.field.unlink()

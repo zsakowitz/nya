@@ -16,7 +16,9 @@ export function onTheme(cb: () => void) {
     if (!media) {
       media = matchMedia("(prefers-color-scheme: dark)")
     }
-  } catch {}
+  } catch (e) {
+    console.warn("[onTheme]", e)
+  }
 
   if (media) {
     media.addEventListener("change", cb)

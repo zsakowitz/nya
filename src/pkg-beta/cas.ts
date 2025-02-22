@@ -80,7 +80,7 @@ export class CmdSymVar extends Command<[Block]> {
   }
 
   focus(x: number, y: number): Cursor {
-    // FIXME: factor in borders and padding
+    // TODO: if user clicks the borders or padding, cursor should go to the side
     return this.blocks[0].focus(x, y)
   }
 

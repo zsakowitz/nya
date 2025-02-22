@@ -7,7 +7,6 @@ import { CmdVar } from "../../../field/cmd/leaf/var"
 import { CmdBrack } from "../../../field/cmd/math/brack"
 import { Block, L, R } from "../../../field/model"
 import { sx } from "../../../jsx"
-import { Prop } from "../../../sheet/ext"
 import { defineHideable } from "../../../sheet/ext/hideable"
 import type { Expr } from "../../../sheet/ui/expr"
 import { segmentByPaper, type Paper, type Point } from "../../../sheet/ui/paper"
@@ -58,7 +57,6 @@ export function drawPolygon(
       const p1 = polygon[i]!
       const p2 = polygon[(i + 1) % pts.length]!
       segmentByPaper(paper, p1, p2, {
-        dimmed: props.dimmed,
         pick: {
           val() {
             return { type: "segment", value: [rept(p1), rept(p2)] }
@@ -105,12 +103,11 @@ export function drawPolygon(
             return block
           },
         },
+        kind: "segment",
       })
     }
   }
 }
-
-const DIMMED = new Prop(() => false)
 
 export const EXT_POLYGON = defineHideable({
   data(expr) {
@@ -127,7 +124,6 @@ export const EXT_POLYGON = defineHideable({
     for (const polygon of each(data.value)) {
       drawPolygon(paper, polygon.map(unpt), {
         closed: true,
-        dimmed: DIMMED.get(data.expr),
         pick: { expr: data.expr },
       })
     }

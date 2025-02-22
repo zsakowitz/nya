@@ -103,7 +103,9 @@ export function registerDragHandler(paper: Paper) {
       if (event) {
         try {
           drag(paper.eventToPaper(event), true)
-        } catch {}
+        } catch (e) {
+          console.warn("[paper.drag]", e)
+        }
       }
       drag = undefined
     }

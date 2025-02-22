@@ -95,7 +95,7 @@ export class PickHandler {
   cancel() {
     if (this.pick) {
       try {
-        this.pick.pick.cancel(this.pick.data)
+        this.pick.pick.cancel(this.pick.data, this.sheet)
       } finally {
         this.pick = undefined
         this.sheet.paper.queue()
@@ -109,10 +109,11 @@ export class PickHandler {
     data: T,
     found?: U | null,
   ) {
+    this.cancel()
+    pick.init(data, this.sheet)
     if (found === undefined && this.lastMouse) {
       found = pick.find(data, this.lastMouse, this.sheet)
     }
-    this.cancel()
     this.pick = { pick, data, found: found ?? null }
     this.sheet.paper.queue()
     this.notify()

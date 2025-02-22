@@ -15,8 +15,7 @@ import { h, sx } from "../jsx"
 import { Prop } from "../sheet/ext"
 import { defineHideable } from "../sheet/ext/hideable"
 import { definePickTy, PICK_TY, toolbar } from "../sheet/pick-ty"
-import type { Point } from "../sheet/ui/paper"
-import type { DrawProps, Paper } from "../sheet/ui/paper"
+import type { DrawProps, Paper, Point } from "../sheet/ui/paper"
 import { HANDLER_DRAG, HANDLER_PICK } from "../sheet/ui/paper/interact"
 import type { Sheet } from "../sheet/ui/sheet"
 import { virtualStepExp, write, Writer } from "../sheet/write"
@@ -57,7 +56,6 @@ declare module "../eval/ast/token" {
 }
 
 const SELECTED = new Prop(() => false)
-const DIMMED = new Prop(() => false)
 
 export function drawPoint(
   paper: Paper,
@@ -67,7 +65,7 @@ export function drawPoint(
     halo?: boolean
     hover?: boolean
     pointer?: boolean
-  } & DrawProps,
+  } & Omit<DrawProps, "kind">,
 ) {
   const offset = paper.toOffset(props.at)
   if (!(isFinite(offset.x) && isFinite(offset.y))) return
@@ -80,12 +78,12 @@ export function drawPoint(
   const center = sx("circle", {
     class:
       (props.hover ? "transition-[r] group-hover:[r:12]" : "transition-[r]") +
-      ghost,
+      ghost +
+      " picking-any:opacity-30 picking-point:opacity-100",
     cx: offset.x,
     cy: offset.y,
     r: props.size ?? 4,
     fill: "#6042a6",
-    "fill-opacity": props.dimmed ? 0.3 : 1,
   })
 
   if (props.halo) {
@@ -103,7 +101,7 @@ export function drawPoint(
           cy: offset.y,
           r: 12,
           fill: "#6042a659",
-          "fill-opacity": props.dimmed ? 0.3 : 1,
+          class: " picking-any:opacity-30 picking-point:opacity-100",
         }),
         center,
       ),
@@ -117,6 +115,8 @@ export function drawPoint(
     }
     paper.append("point", center)
   }
+
+  return center
 }
 
 const EXT_POINT = defineHideable({
@@ -222,9 +222,9 @@ const EXT_POINT = defineHideable({
               break
           }
         })
-      drawPoint(paper, {
+
+      const center = drawPoint(paper, {
         at: unpt(pt),
-        dimmed: DIMMED.get(data.expr),
         size: SELECTED.get(data.expr) ? 6 : 4,
         halo: !!drag,
         hover: !!drag,
@@ -269,6 +269,9 @@ const EXT_POINT = defineHideable({
             }
 
             return block
+          },
+          draw() {
+            center?.setAttribute("r", "6")
           },
         },
       })

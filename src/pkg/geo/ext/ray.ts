@@ -1,11 +1,10 @@
 import { each, type JsValue } from "../../../eval/ty"
 import { unpt } from "../../../eval/ty/create"
-import { Prop } from "../../../sheet/ext"
 import { defineHideable } from "../../../sheet/ext/hideable"
-import { Point } from "../../../sheet/ui/paper"
 import {
+  Point,
   segmentByOffset,
-  type DrawProps,
+  type DrawLineProps,
   type Paper,
 } from "../../../sheet/ui/paper"
 import { pick } from "./util"
@@ -60,7 +59,12 @@ function getRayBounds(
   ]
 }
 
-export function drawRay(paper: Paper, p1: Point, p2: Point, props?: DrawProps) {
+export function drawRay(
+  paper: Paper,
+  p1: Point,
+  p2: Point,
+  props: DrawLineProps,
+) {
   const { x: x1, y: y1 } = p1
   const { x: x2, y: y2 } = p2
 
@@ -79,8 +83,6 @@ export function drawRay(paper: Paper, p1: Point, p2: Point, props?: DrawProps) {
   segmentByOffset(paper, o1, o2, props)
 }
 
-const DIMMED = new Prop(() => false)
-
 export const EXT_RAY = defineHideable({
   data(expr) {
     const value = expr.js?.value
@@ -92,8 +94,8 @@ export const EXT_RAY = defineHideable({
   svg(data, paper) {
     for (const val of each(data.value)) {
       drawRay(paper, unpt(val[0]), unpt(val[1]), {
-        dimmed: DIMMED.get(data.expr),
         pick: pick(val, "l", data),
+        kind: "ray",
       })
     }
   },

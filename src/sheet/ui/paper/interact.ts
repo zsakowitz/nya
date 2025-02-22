@@ -15,6 +15,7 @@ export const HANDLER_DRAG = new WeakMap<SVGElement, DragProps>()
 export interface PickProps {
   val(): JsVal
   ref(): Block
+  draw(): void
 }
 
 export const HANDLER_PICK = new WeakMap<SVGElement, PickProps>()

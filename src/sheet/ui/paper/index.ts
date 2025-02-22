@@ -53,7 +53,7 @@ export class Paper {
     private autofit = true,
   ) {
     this.el = sx("svg", {
-      class: className,
+      class: (className ?? "") + " nya-svg-display",
       fill: "none",
     })
     const resize = () => {
@@ -222,18 +222,29 @@ export class Paper {
   }
 }
 
-export interface DrawProps {
-  dimmed?: boolean
+export type DrawKind =
+  | "point"
+  | "line"
+  | "ray"
+  | "segment"
+  | "vector"
+  | "polygon"
+  | "circle"
+
+export type DrawProps = {
   drag?: DragProps
   pick?: PickProps
-  ghost?: boolean
+} & ({ ghost: true; kind?: never } | { ghost?: boolean; kind: DrawKind })
+
+export type DrawLineProps = Omit<DrawProps, "pick"> & {
+  pick?: Omit<PickProps, "draw">
 }
 
 export function segmentByPaper(
   paper: Paper,
   p1: Point,
   p2: Point,
-  props?: DrawProps,
+  props: DrawLineProps,
 ) {
   segmentByOffset(paper, paper.toOffset(p1), paper.toOffset(p2), props)
 }
@@ -242,11 +253,24 @@ export function segmentByOffset(
   paper: Paper,
   o1: Point,
   o2: Point,
-  props?: DrawProps,
+  props: DrawLineProps,
 ) {
   if (!(isFinite(o1.x) && isFinite(o1.y) && isFinite(o2.x) && isFinite(o2.y))) {
     return
   }
+
+  const clsx =
+    (props.ghost ? "pointer-events-none " : "") +
+    {
+      point: "picking-any:opacity-30 picking-point:opacity-100",
+      line: "picking-any:opacity-30 picking-line:opacity-100",
+      ray: "picking-any:opacity-30 picking-ray:opacity-100",
+      segment: "picking-any:opacity-30 picking-segment:opacity-100",
+      vector: "picking-any:opacity-30 picking-vector:opacity-100",
+      polygon: "picking-any:opacity-30 picking-polygon:opacity-100",
+      circle: "picking-any:opacity-30 picking-circle:opacity-100",
+      null: "",
+    }[props.kind ?? "null"]
 
   paper.append(
     "line",
@@ -257,27 +281,29 @@ export function segmentByOffset(
       y2: o2.y,
       "stroke-width": 3,
       stroke: "#2d70b3",
-      "stroke-opacity": props?.dimmed ? 0.3 : 1,
       "stroke-linecap": "round",
-      class: props?.ghost ? "pointer-events-none" : undefined,
+      class: clsx,
     }),
   )
 
-  if (props?.drag || props?.pick) {
-    paper.append(
-      "line",
-      sx("line", {
-        x1: o1.x,
-        y1: o1.y,
-        x2: o2.x,
-        y2: o2.y,
-        "stroke-width": 12,
-        stroke: "transparent",
-        "stroke-linecap": "round",
-        drag: props?.drag,
-        pick: props?.pick,
-        class: props?.ghost ? "pointer-events-none" : undefined,
-      }),
-    )
+  if (props.drag || props.pick) {
+    const focus = sx("line", {
+      x1: o1.x,
+      y1: o1.y,
+      x2: o2.x,
+      y2: o2.y,
+      "stroke-width": 12,
+      stroke: "transparent",
+      "stroke-linecap": "round",
+      drag: props.drag,
+      pick: props.pick && {
+        ...props.pick,
+        draw() {
+          focus.setAttribute("stroke", "#2d70b3")
+        },
+      },
+      class: clsx,
+    })
+    paper.append("line", focus)
   }
 }

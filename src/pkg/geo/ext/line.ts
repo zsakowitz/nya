@@ -1,13 +1,8 @@
 import { each, type JsValue } from "../../../eval/ty"
 import { unpt } from "../../../eval/ty/create"
-import { Prop } from "../../../sheet/ext"
 import { defineHideable } from "../../../sheet/ext/hideable"
-import type { Point } from "../../../sheet/ui/paper"
-import {
-  segmentByOffset,
-  type DrawProps,
-  type Paper,
-} from "../../../sheet/ui/paper"
+import type { DrawLineProps, Point } from "../../../sheet/ui/paper"
+import { segmentByOffset, type Paper } from "../../../sheet/ui/paper"
 import { pick } from "./util"
 
 function getLineBounds(
@@ -36,7 +31,7 @@ export function drawLine(
   paper: Paper,
   p1: Point,
   p2: Point,
-  props?: DrawProps,
+  props: DrawLineProps,
 ) {
   const [o1, o2] = getLineBounds(p1, p2, paper)
   if (!(isFinite(o1.x) && isFinite(o1.y) && isFinite(o2.x) && isFinite(o2.y))) {
@@ -45,8 +40,6 @@ export function drawLine(
 
   segmentByOffset(paper, o1, o2, props)
 }
-
-const DIMMED = new Prop(() => false)
 
 export const EXT_LINE = defineHideable({
   data(expr) {
@@ -59,8 +52,8 @@ export const EXT_LINE = defineHideable({
   svg(data, paper) {
     for (const val of each(data.value)) {
       drawLine(paper, unpt(val[0]), unpt(val[1]), {
-        dimmed: DIMMED.get(data.expr),
         pick: pick(val, "l", data),
+        kind: "line",
       })
     }
   },

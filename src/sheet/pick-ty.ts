@@ -29,6 +29,9 @@ export const PICK_TY: Picker<Data, Selected> = definePicker<Data, Selected>({
   id(data) {
     return data.src.id
   },
+  init(data, sheet) {
+    sheet.paper.el.dataset.nyaPicking = data.next.join(" ")
+  },
   find(data, at, sheet) {
     const [a] = sheet.select(at, data.next)
     if (a) {
@@ -60,9 +63,9 @@ export const PICK_TY: Picker<Data, Selected> = definePicker<Data, Selected>({
     }
     data.src.draw(sheet, args)
     for (const val of data.vals) {
-      val.draw?.()
+      val.draw()
     }
-    found?.draw?.()
+    found?.draw()
   },
   select(data, found, sheet) {
     const args = data.vals.map((x) => x.val)
@@ -130,7 +133,9 @@ export const PICK_TY: Picker<Data, Selected> = definePicker<Data, Selected>({
       } satisfies Data,
     }
   },
-  cancel() {},
+  cancel(_, sheet) {
+    delete sheet.paper.el.dataset.nyaPicking
+  },
 })
 
 export function definePickTy<

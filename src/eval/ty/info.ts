@@ -28,6 +28,7 @@ export interface TyInfo<T, U extends TyName> {
 
 export type TyGlide<T> = (props: GlideProps<T>) => {
   value: number
+  /** (possible values the user can choose) / (domain on paper) */
   precision: number
 }
 

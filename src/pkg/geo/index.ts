@@ -160,6 +160,7 @@ const PICK_RAY = definePickTy(
     if (p1 && p2) {
       drawRay(sheet.paper, unpt(p1.value), unpt(p2.value), {
         ghost: true,
+        kind: "ray",
       })
     }
   },
@@ -196,6 +197,7 @@ const PICK_CIRCLE = definePickTy(
         at: center,
         r: Math.hypot(center.x - edge.x, center.y - edge.y),
         ghost: true,
+        kind: "circle",
       })
     }
   },
@@ -382,11 +384,9 @@ const INFO_CIRCLE: TyInfo<Tys["circle"], TyComponents["circle"]> = {
       props.point.x == x && props.point.y == y ?
         0
       : Math.atan2(props.point.y - y, props.point.x - x)
-    const circumPaper = Math.hypot(props.point.x - x, props.point.y - y)
-    const circumCanvas =
-      2 * Math.PI * props.paper.offsetDistance(props.point, { x, y })
     return {
-      precision: circumCanvas / circumPaper,
+      precision:
+        2 * Math.PI * props.paper.offsetDistance(props.point, { x, y }),
       value: angle / 2 / Math.PI,
     }
   },
