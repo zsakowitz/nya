@@ -5,6 +5,7 @@ import { CmdBrack } from "../../field/cmd/math/brack"
 import { Block, L, R } from "../../field/model"
 import { h, p, svgx } from "../../jsx"
 import type { Paper, Point } from "../../sheet/ui/paper"
+import type { Paper2 } from "../../sheet/ui/paper2"
 import type { GlslContext } from "../lib/fn"
 import type { TyWrite } from "./display"
 
@@ -21,11 +22,16 @@ export interface TyInfo<T, U extends TyName> {
   coerce: TyCoerceMap<T>
   write: TyWrite<T>
   icon(): HTMLSpanElement
-  glide?: TyGlide<T>
+  glide2?: TyGlide2<T>
   components?: TyComponentInfo<T, U>
 }
 
 export type TyGlide<T> = (props: GlideProps<T>) => {
+  value: number
+  precision: number
+}
+
+export type TyGlide2<T> = (props: GlideProps2<T>) => {
   value: number
   precision: number
 }
@@ -39,6 +45,12 @@ interface GlideProps<T> {
   shape: T
   point: Point
   paper: Paper
+}
+
+interface GlideProps2<T> {
+  shape: T
+  point: Point
+  paper: Paper2
 }
 
 export type TyCoerceMap<T> = {
@@ -83,6 +95,25 @@ export function gliderOnLine(
     value: a / C,
     precision:
       paper.canvasDistance({ x: x1, y: y1 }, { x: x2, y: y2 }) /
+      Math.hypot(x1 - x2, y1 - y2),
+  }
+}
+
+export function gliderOnLine2(
+  paper: Paper2,
+  [{ x: x1, y: y1 }, { x: x2, y: y2 }]: [Point, Point],
+  { x, y }: Point,
+) {
+  const B = Math.hypot(x1 - x, y1 - y)
+  const A = Math.hypot(x2 - x, y2 - y)
+  const C = Math.hypot(x1 - x2, y1 - y2)
+
+  const a = (C * C + B * B - A * A) / (2 * C)
+
+  return {
+    value: a / C,
+    precision:
+      paper.offsetDistance({ x: x1, y: y1 }, { x: x2, y: y2 }) /
       Math.hypot(x1 - x2, y1 - y2),
   }
 }

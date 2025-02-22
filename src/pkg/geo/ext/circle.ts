@@ -1,16 +1,12 @@
 import { each, type JsValue } from "../../../eval/ty"
 import { num, unpt } from "../../../eval/ty/create"
-import { OpEq } from "../../../field/cmd/leaf/cmp"
-import { CmdVar } from "../../../field/cmd/leaf/var"
-import { Block, L, R } from "../../../field/model"
 import { sx } from "../../../jsx"
 import { Prop } from "../../../sheet/ext"
 import { defineHideable } from "../../../sheet/ext/hideable"
 import type { Paper, Point } from "../../../sheet/ui/paper"
-import type { Paper2 } from "../../../sheet/ui/paper2"
-import { distCirclePt } from "../fn/distance"
+import type { DrawProps, Paper2 } from "../../../sheet/ui/paper2"
+import { pick } from "./util"
 
-const SELECTED = new Prop(() => false)
 const DIMMED = new Prop(() => false)
 
 export function drawCircle(
@@ -54,31 +50,26 @@ export function drawCircle2(
   props: {
     at: Point
     r: number
-    dimmed?: boolean
-  },
+  } & DrawProps,
 ) {
-  if (
-    !(
-      isFinite(props.at.x) &&
-      isFinite(props.at.y) &&
-      isFinite(props.r) &&
-      props.r > 0
-    )
-  ) {
+  const { x: cx, y: cy } = paper.toOffset(props.at)
+  const r = paper.toOffsetDelta({ x: props.r, y: 0 }).x
+
+  if (!(isFinite(cx) && isFinite(cy) && isFinite(r) && r > 0)) {
     return
   }
-
-  const { x: cx, y: cy } = paper.toOffset(props.at)
 
   paper.append(
     "line",
     sx("circle", {
       cx,
       cy,
-      r: paper.toOffsetDelta({ x: props.r, y: 0 }).x,
+      r,
       stroke: "#388c46",
       "stroke-width": 3,
       "stroke-opacity": props.dimmed ? 0.3 : 1,
+      drag: props.drag,
+      pick: props.pick,
     }),
   )
 }
@@ -96,69 +87,13 @@ export const EXT_CIRCLE = defineHideable({
     }
   },
   svg(data, paper) {
-    for (const { center, radius } of each(data.value)) {
+    for (const val of each(data.value)) {
       drawCircle2(paper, {
-        at: unpt(center),
-        r: num(radius),
+        at: unpt(val.center),
+        r: num(val.radius),
         dimmed: DIMMED.get(data.expr),
+        pick: pick(val, "c", data),
       })
     }
-  },
-  select: {
-    ty() {
-      return "circle"
-    },
-    dim(data) {
-      DIMMED.set(data.expr, true)
-    },
-    undim(data) {
-      DIMMED.set(data.expr, false)
-    },
-    on(data, at) {
-      if (data.value.list !== false) {
-        return
-      }
-
-      const cx = data.paper.paperToCanvas(unpt(data.value.value.center))
-      const r = num(data.value.value.radius)
-      const rx = (r * data.paper.el.width) / data.paper.bounds().w
-      const ry = (r * data.paper.el.height) / data.paper.bounds().h
-      const pt = data.paper.paperToCanvas(at)
-      const dist = distCirclePt(cx, { x: rx, y: ry }, pt)
-
-      if (dist <= 12 * data.paper.scale) {
-        SELECTED.set(data.expr, true)
-        return { ...data, value: data.value }
-      }
-    },
-    off(data) {
-      SELECTED.set(data.expr, false)
-    },
-    val(data) {
-      return data.value
-    },
-    ref(data) {
-      if (data.expr.field.ast.type == "binding") {
-        const block = new Block(null)
-        CmdVar.leftOf(
-          block.cursor(R),
-          data.expr.field.ast.name,
-          data.expr.field.options,
-        )
-        return block
-      }
-
-      const name = data.expr.sheet.scope.name("c")
-      const c = data.expr.field.block.cursor(L)
-      CmdVar.leftOf(c, name, data.expr.field.options)
-      new OpEq(false).insertAt(c, L)
-      const block = new Block(null)
-      CmdVar.leftOf(block.cursor(R), name, data.expr.field.options)
-      data.expr.field.dirtyAst = data.expr.field.dirtyValue = true
-      data.expr.field.trackNameNow()
-      data.expr.field.scope.queueUpdate()
-
-      return block
-    },
   },
 })

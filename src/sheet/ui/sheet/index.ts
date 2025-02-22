@@ -24,6 +24,7 @@ import { Expr } from "../expr"
 import { Paper, type Point } from "../paper"
 import { Paper2 } from "../paper2"
 import { createDrawAxes } from "../paper2/grid"
+import { HANDLER_PICK } from "../paper2/interact"
 import {
   registerDragHandler,
   registerPinchHandler,
@@ -33,6 +34,7 @@ import { btn, createDocs, DEFAULT_TO_VISIBLE_DOCS } from "./docs"
 import { Handlers } from "./handler"
 
 export class Sheet {
+  /** @deprecated */
   readonly paper = new Paper()
   readonly paper2 = new Paper2("absolute inset-0 size-full touch-none")
   readonly scope: Scope
@@ -79,14 +81,6 @@ export class Sheet {
     this.scope = new Scope(options)
 
     // prepare js context
-    this.paper.el.classList.add(
-      "size-full",
-      "touch-none",
-      "inset-0",
-      "absolute",
-    )
-    // matchSize(this.paper)
-    // makeInteractive(this.paper, this.handlers)
     registerWheelHandler(this.paper2)
     registerDragHandler(this.paper2)
     registerPinchHandler(this.paper2)
@@ -170,15 +164,12 @@ export class Sheet {
 
       // grey side of expression
       h(
-        "inline-flex bg-[--nya-bg-sidebar] flex-col p-0.5 border-r border-[--nya-border]",
+        "inline-flex bg-gradient-to-b from-[--nya-bg-sidebar] to-transparent flex-col p-0.5 relative h-full",
         this.elNextIndex,
+        h(
+          "absolute right-0 inset-y-0 w-px from-[--nya-border] to-transparent bg-gradient-to-b",
+        ),
       ),
-
-      // main expression body
-      // TODO: make this clickable
-
-      // cover
-      h("absolute inset-0 from-transparent to-[--nya-bg] bg-gradient-to-b"),
     )
 
     nextExpression.addEventListener("click", () => {
@@ -449,72 +440,30 @@ void main() {
     this.resetDim = []
   }
 
-  checkDim(possible: readonly TyName[]) {
+  checkDim() {
     this.resetDim.forEach((x) => x())
     this.resetDim = []
-
-    for (const expr of this.exprs) {
-      if (!(expr.state.ok && expr.state.ext?.select)) continue
-
-      const select = expr.state.ext.select
-      const data = expr.state.data
-
-      const ty = select.ty(data)
-      if (!ty) continue
-
-      if (!possible.includes(ty)) {
-        select.dim(data)
-        this.resetDim.push(() => select.undim(data))
-      }
-    }
   }
 
-  /**
-   * @param tys The types directly accepted by this operation.
-   * @param allPossible All possible types the operation might use, even if this
-   *   particular .select() call doesn't accept them.
-   */
   select<const K extends readonly TyName[]>(
     at: Point,
     tys: K,
-    limit: number,
-    possible: readonly TyName[],
   ): Selected<K[number]>[] {
     this.clearSelect()
-    this.checkDim(possible)
+    this.checkDim()
 
-    let ret = []
+    const o = this.paper2.toOffset(at)
+    const picks = Array.from(
+      this.paper2.el.getIntersectionList(new DOMRect(o.x, o.y, 0, 0), null),
+    )
+      .map((v) => HANDLER_PICK.get(v))
+      .filter((x) => x != null)
+      .filter((x) => tys.includes(x.val().type))
 
-    for (const expr of this.exprs.slice().reverse()) {
-      if (!expr.state.ok) continue
-
-      const ext = expr.state.ext
-      if (!ext) continue
-
-      const select = ext.select
-      if (!select) continue
-      // it's fine for .includes(), since `null` won't be in the original list anyways
-      if (
-        !tys.includes(
-          select.ty(expr.state.data) satisfies TyName | null as TyName,
-        )
-      )
-        continue
-
-      const data = select.on(expr.state.data, at)
-      if (data == null) continue
-      this.paper.el.classList.add("cursor-pointer")
-
-      this.resetOn.push(() => select.off(data))
-      const val = select.val(data)
-      if (!tys.includes(val.type)) continue
-      const ref = () => select.ref(data)
-
-      ret.push({ val, ref })
-      if (ret.length >= limit) return ret
-    }
-
-    return ret
+    return picks.map((x) => ({
+      ref: x.ref,
+      val: x.val(),
+    }))
   }
 }
 

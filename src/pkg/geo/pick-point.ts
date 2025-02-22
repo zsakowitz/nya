@@ -11,19 +11,12 @@ import { Expr } from "../../sheet/ui/expr"
 import type { Point } from "../../sheet/ui/paper"
 import type { Sheet } from "../../sheet/ui/sheet"
 import { Writer } from "../../sheet/write"
-import { drawPoint, FN_GLIDER, FN_INTERSECTION } from "../geo-point"
+import { drawPoint, drawPoint2, FN_GLIDER, FN_INTERSECTION } from "../geo-point"
 
 export function virtualPoint(at: Point, sheet: Sheet) {
-  const objs = sheet.select(at, ["line", "segment", "ray", "circle"], 2, [
-    "line",
-    "segment",
-    "ray",
-    "circle",
-    "point32",
-    "point64",
-  ])
+  const objs = sheet.select(at, ["line", "segment", "ray", "circle"])
 
-  intersection: if (objs.length == 2) {
+  intersection: if (objs.length >= 2) {
     let o1 = objs[0]!
     let o2 = objs[1]!
 
@@ -94,8 +87,8 @@ export function virtualPoint(at: Point, sheet: Sheet) {
 
     let index, position
     try {
-      index = TY_INFO[obj.val.type].glide?.({
-        paper: sheet.paper,
+      index = TY_INFO[obj.val.type].glide2?.({
+        paper: sheet.paper2,
         point: at,
         shape: obj.val.value as never,
       })
@@ -198,7 +191,10 @@ export function virtualPoint(at: Point, sheet: Sheet) {
       return ret
     },
     draw() {
-      drawPoint(sheet.paper, at, undefined, true)
+      drawPoint2(sheet.paper2, {
+        at,
+        halo: true,
+      })
     },
   }
 }

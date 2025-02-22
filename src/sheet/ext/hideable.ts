@@ -46,12 +46,9 @@ const CHECKBOX = new Store((expr) => {
   }
 })
 
-export function defineHideable<
-  T extends WeakKey,
-  U extends {},
-  V extends {},
-  W extends {},
->(ext: Omit<Ext<T, U, V, W>, "aside">): Ext<T, U, V, W> {
+export function defineHideable<T extends WeakKey>(
+  ext: Omit<Ext<T>, "aside">,
+): Ext<T> {
   const { svg } = ext
   const map = new WeakMap<T, Expr>()
 

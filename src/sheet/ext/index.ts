@@ -1,8 +1,6 @@
 import type { GlslHelpers, GlslResult } from "../../eval/lib/fn"
-import type { JsVal, TyName } from "../../eval/ty"
-import type { Block } from "../../field/model"
 import { Expr } from "../ui/expr"
-import type { Paper, Point } from "../ui/paper"
+import type { Paper } from "../ui/paper"
 import type { Paper2 } from "../ui/paper2"
 
 export type Cursor =
@@ -14,7 +12,7 @@ export type Cursor =
   | "ns-resize"
 
 /** An extension to an expression in the sheet interface. */
-export interface Ext<T extends {}, _U extends {}, _V extends {}, W extends {}> {
+export interface Ext<T extends {}> {
   /**
    * Attempts to use this extension on a {@linkcode Expr}. May result in:
    *
@@ -29,29 +27,13 @@ export interface Ext<T extends {}, _U extends {}, _V extends {}, W extends {}> {
   el?(data: NoInfer<T>): HTMLElement | undefined
   svg?(data: NoInfer<T>, paper: Paper2): void
 
-  // TODO: remove plotGl as a special-cased function; it could be delegated to 'shader'
+  // TODO: remove plotGl as a special-cased function; it should be delegated to 'shader'
   plotGl?(data: NoInfer<T>, helpers: GlslHelpers): GlslResult | undefined
-
-  select?: {
-    ty(data: NoInfer<T>): TyName | null
-    dim(data: NoInfer<T>): void
-    undim(data: NoInfer<T>): void
-
-    on(data: NoInfer<T>, at: Point): W | null | undefined
-    off(data: W): void
-    val(data: W): JsVal
-    ref(data: W): Block
-  }
 }
 
-export type AnyExt = Ext<{}, {}, {}, {}>
+export type AnyExt = Ext<{}>
 
-export function defineExt<
-  T extends {},
-  U extends {},
-  V extends {},
-  W extends {},
->(ext: Ext<T, U, V, W>) {
+export function defineExt<T extends {}>(ext: Ext<T>) {
   return ext
 }
 

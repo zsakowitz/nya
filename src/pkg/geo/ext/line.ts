@@ -1,8 +1,5 @@
 import { each, type JsValue, type Tys } from "../../../eval/ty"
 import { num, unpt } from "../../../eval/ty/create"
-import { OpEq } from "../../../field/cmd/leaf/cmp"
-import { CmdVar } from "../../../field/cmd/leaf/var"
-import { Block, L, R } from "../../../field/model"
 import { Prop } from "../../../sheet/ext"
 import { defineHideable } from "../../../sheet/ext/hideable"
 import type { Paper, Point } from "../../../sheet/ui/paper"
@@ -11,7 +8,7 @@ import {
   type DrawProps,
   type Paper2,
 } from "../../../sheet/ui/paper2"
-import { distLinePt } from "../fn/distance"
+import { pick } from "./util"
 
 function getLineBounds(
   { x: x1, y: y1 }: Point,
@@ -96,7 +93,6 @@ export function drawLine2(
   segmentByOffset(paper, o1, o2, props)
 }
 
-const SELECTED = new Prop(() => false)
 const DIMMED = new Prop(() => false)
 
 export const EXT_LINE = defineHideable({
@@ -111,61 +107,8 @@ export const EXT_LINE = defineHideable({
     for (const val of each(data.value)) {
       drawLine2(paper, unpt(val[0]), unpt(val[1]), {
         dimmed: DIMMED.get(data.expr),
+        pick: pick(val, "l", data),
       })
     }
-  },
-  select: {
-    ty(data) {
-      return data.value.type
-    },
-    dim(data) {
-      DIMMED.set(data.expr, true)
-    },
-    undim(data) {
-      DIMMED.set(data.expr, false)
-    },
-    on(data, at) {
-      if (data.value.list !== false) {
-        return
-      }
-
-      const l1 = data.paper.paperToCanvas(unpt(data.value.value[0]))
-      const l2 = data.paper.paperToCanvas(unpt(data.value.value[1]))
-      const pt = data.paper.paperToCanvas(at)
-
-      if (distLinePt([l1, l2], pt) <= 12 * data.paper.scale) {
-        SELECTED.set(data.expr, true)
-        return { ...data, value: data.value }
-      }
-    },
-    off(data) {
-      SELECTED.set(data.expr, false)
-    },
-    val(data) {
-      return data.value
-    },
-    ref(data) {
-      if (data.expr.field.ast.type == "binding") {
-        const block = new Block(null)
-        CmdVar.leftOf(
-          block.cursor(R),
-          data.expr.field.ast.name,
-          data.expr.field.options,
-        )
-        return block
-      }
-
-      const name = data.expr.sheet.scope.name("l")
-      const c = data.expr.field.block.cursor(L)
-      CmdVar.leftOf(c, name, data.expr.field.options)
-      new OpEq(false).insertAt(c, L)
-      const block = new Block(null)
-      CmdVar.leftOf(block.cursor(R), name, data.expr.field.options)
-      data.expr.field.dirtyAst = data.expr.field.dirtyValue = true
-      data.expr.field.trackNameNow()
-      data.expr.field.scope.queueUpdate()
-
-      return block
-    },
   },
 })

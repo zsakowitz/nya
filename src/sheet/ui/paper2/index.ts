@@ -1,5 +1,6 @@
 import { sx } from "../../../jsx"
 import { onTheme } from "../../theme"
+import type { DragProps, PickProps } from "./interact"
 
 interface Bounds {
   readonly xmin: number
@@ -177,6 +178,11 @@ export class Paper2 {
     }
   }
 
+  offsetDistance(a: Point, b: Point) {
+    const { x, y } = this.toOffsetDelta({ x: a.x - b.x, y: a.y - b.y })
+    return Math.hypot(x, y)
+  }
+
   move({ x, y }: Point) {
     this.rawBounds = {
       ...this.rawBounds,
@@ -218,6 +224,8 @@ export class Paper2 {
 
 export interface DrawProps {
   dimmed?: boolean
+  drag?: DragProps
+  pick?: PickProps
 }
 
 export function segmentByPaper(
@@ -250,6 +258,8 @@ export function segmentByOffset(
       stroke: "#2d70b3",
       "stroke-opacity": props?.dimmed ? 0.3 : 1,
       "stroke-linecap": "round",
+      drag: props?.drag,
+      pick: props?.pick,
     }),
   )
 }

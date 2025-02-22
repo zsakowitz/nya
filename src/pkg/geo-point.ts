@@ -5,18 +5,23 @@ import { FnDist } from "../eval/ops/dist"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "../eval/ops/vars"
 import { each, type JsValue } from "../eval/ty"
 import { approx, frac, num, pt, real, unpt } from "../eval/ty/create"
-import { highRes, TY_INFO, WRITE_POINT, type TyGlide } from "../eval/ty/info"
+import { highRes, TY_INFO, WRITE_POINT, type TyGlide2 } from "../eval/ty/info"
 import { abs, add, mul, neg } from "../eval/ty/ops"
 import { OpEq } from "../field/cmd/leaf/cmp"
 import { CmdDot } from "../field/cmd/leaf/dot"
 import { CmdVar } from "../field/cmd/leaf/var"
 import { Block, L, R } from "../field/model"
-import { h, PAPER2_DRAG, sx, type Paper2DragProps } from "../jsx"
-import { Prop, Store } from "../sheet/ext"
+import { h, sx } from "../jsx"
+import { Prop } from "../sheet/ext"
 import { defineHideable } from "../sheet/ext/hideable"
-import { Transition } from "../sheet/transition"
 import type { Paper, Point } from "../sheet/ui/paper"
 import type { Paper2 } from "../sheet/ui/paper2"
+import {
+  HANDLER_DRAG,
+  HANDLER_PICK,
+  type DragProps,
+  type PickProps,
+} from "../sheet/ui/paper2/interact"
 import type { Sheet } from "../sheet/ui/sheet"
 import { virtualStepExp, write, Writer } from "../sheet/write"
 import { FN_VALID } from "./bool"
@@ -55,10 +60,6 @@ declare module "../eval/ast/token" {
     ".y": 0
   }
 }
-
-const color = new Store(
-  (expr) => new Transition(4, () => expr.sheet.paper.queue()),
-)
 
 const SELECTED = new Prop(() => false)
 const DIMMED = new Prop(() => false)
@@ -103,13 +104,12 @@ export function drawPoint2(
     halo?: boolean
     dimmed?: boolean
     hover?: boolean
-    drag?(at: Point): Paper2DragProps
+    drag?: DragProps
+    pick?: PickProps
   },
 ) {
   const offset = paper.toOffset(props.at)
   if (!(isFinite(offset.x) && isFinite(offset.y))) return
-
-  // TODO: dimmed
 
   const center = sx("circle", {
     class: props.hover ? "transition-[r] group-hover:[r:12]" : "transition-[r]",
@@ -125,7 +125,7 @@ export function drawPoint2(
       "point",
       sx(
         "g",
-        { class: "group cursor-move", drag: props.drag },
+        { class: "group cursor-move", drag: props.drag, pick: props.pick },
         sx("circle", {
           cx: offset.x,
           cy: offset.y,
@@ -138,7 +138,10 @@ export function drawPoint2(
     )
   } else {
     if (props.drag) {
-      PAPER2_DRAG.set(center, props.drag)
+      HANDLER_DRAG.set(center, props.drag)
+    }
+    if (props.pick) {
+      HANDLER_PICK.set(center, props.pick)
     }
     paper.append("point", center)
   }
@@ -163,6 +166,7 @@ const EXT_POINT = defineHideable({
       return {
         value: value as JsValue<"point32" | "point64" | "c32" | "c64">,
         paper: expr.sheet.paper,
+        paper2: expr.sheet.paper2,
         expr,
         drag,
       }
@@ -229,9 +233,9 @@ const EXT_POINT = defineHideable({
             case "glider":
               {
                 const { value, precision } = (
-                  TY_INFO[drag.shape.type].glide! as TyGlide<any>
+                  TY_INFO[drag.shape.type].glide2! as TyGlide2<any>
                 )({
-                  paper: data.paper,
+                  paper: data.paper2,
                   point: at,
                   shape: drag.shape.value,
                 })
@@ -250,88 +254,54 @@ const EXT_POINT = defineHideable({
       drawPoint2(paper, {
         at: unpt(pt),
         dimmed: DIMMED.get(data.expr),
-        size:
-          SELECTED.get(data.expr) ? 6
-          : data.drag ? color.get(data.expr).get()
-          : 4,
+        size: SELECTED.get(data.expr) ? 6 : 4,
         halo: !!drag,
         hover: !!drag,
         drag: move ? () => move : undefined,
+        pick: {
+          val() {
+            return {
+              type:
+                data.value.type == "c32" ? "point32"
+                : data.value.type == "c64" ? "point64"
+                : data.value.type,
+              value: pt,
+            }
+          },
+          ref() {
+            if (data.expr.field.ast.type == "binding") {
+              const block = new Block(null)
+              CmdVar.leftOf(
+                block.cursor(R),
+                data.expr.field.ast.name,
+                data.expr.field.options,
+              )
+              return block
+            }
+
+            const name = data.expr.sheet.scope.name("p")
+            const c = data.expr.field.block.cursor(L)
+            CmdVar.leftOf(c, name, data.expr.field.options)
+            new OpEq(false).insertAt(c, L)
+            data.expr.field.dirtyAst = data.expr.field.dirtyValue = true
+            data.expr.field.trackNameNow()
+            data.expr.field.scope.queueUpdate()
+
+            const block = new Block(null)
+            const cursor = block.cursor(R)
+            CmdVar.leftOf(cursor, name, data.expr.field.options)
+            if (data.value.type.startsWith("c")) {
+              new CmdDot().insertAt(cursor, L)
+              for (const c of "point") {
+                new CmdVar(c, data.expr.field.options).insertAt(cursor, L)
+              }
+            }
+
+            return block
+          },
+        },
       })
     }
-  },
-  select: {
-    ty(data) {
-      const ty = data.value.type
-      return (
-        ty == "c32" ? "point32"
-        : ty == "c64" ? "point64"
-        : ty
-      )
-    },
-    dim(data) {
-      DIMMED.set(data.expr, true)
-    },
-    undim(data) {
-      DIMMED.set(data.expr, false)
-    },
-    on(data, at) {
-      if (data.value.list !== false) {
-        return
-      }
-
-      if (
-        data.paper.canvasDistance(at, unpt(data.value.value)) <=
-        12 * data.paper.scale
-      ) {
-        SELECTED.set(data.expr, true)
-        return { ...data, value: data.value }
-      }
-    },
-    off(data) {
-      SELECTED.set(data.expr, false)
-    },
-    val(data) {
-      const ty = data.value.type
-      return {
-        ...data.value,
-        type:
-          ty == "c32" ? "point32"
-          : ty == "c64" ? "point64"
-          : ty,
-      }
-    },
-    ref(data) {
-      if (data.expr.field.ast.type == "binding") {
-        const block = new Block(null)
-        CmdVar.leftOf(
-          block.cursor(R),
-          data.expr.field.ast.name,
-          data.expr.field.options,
-        )
-        return block
-      }
-
-      const name = data.expr.sheet.scope.name("p")
-      const c = data.expr.field.block.cursor(L)
-      CmdVar.leftOf(c, name, data.expr.field.options)
-      new OpEq(false).insertAt(c, L)
-      data.expr.field.dirtyAst = data.expr.field.dirtyValue = true
-      data.expr.field.trackNameNow()
-      data.expr.field.scope.queueUpdate()
-
-      const block = new Block(null)
-      const cursor = block.cursor(R)
-      CmdVar.leftOf(cursor, name, data.expr.field.options)
-      if (data.value.type.startsWith("c")) {
-        new CmdDot().insertAt(cursor, L)
-        for (const c of "point") {
-          new CmdVar(c, data.expr.field.options).insertAt(cursor, L)
-        }
-      }
-
-      return block
-    },
   },
 })
 

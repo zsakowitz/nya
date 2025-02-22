@@ -1,7 +1,7 @@
 import type { Package } from ".."
 import type { JsVal, SPoint, TyComponents, Tys } from "../../eval/ty"
 import { num, pt, real, unpt } from "../../eval/ty/create"
-import { gliderOnLine, WRITE_POINT, type TyInfo } from "../../eval/ty/info"
+import { gliderOnLine2, WRITE_POINT, type TyInfo } from "../../eval/ty/info"
 import { CmdComma } from "../../field/cmd/leaf/comma"
 import { CmdWord } from "../../field/cmd/leaf/word"
 import { CmdBrack } from "../../field/cmd/math/brack"
@@ -105,13 +105,13 @@ function lineInfo(
         ),
       )
     },
-    glide:
+    glide2:
       glide ?
         (props) => {
-          const raw = gliderOnLine(
+          const raw = gliderOnLine2(
+            props.paper,
             [unpt(props.shape[0]), unpt(props.shape[1])],
             props.point,
-            props.paper,
           )
 
           return {
@@ -368,7 +368,7 @@ const INFO_CIRCLE: TyInfo<Tys["circle"], TyComponents["circle"]> = {
       ),
     )
   },
-  glide(props) {
+  glide2(props) {
     const x = num(props.shape.center.x)
     const y = num(props.shape.center.y)
     const angle =
@@ -377,7 +377,7 @@ const INFO_CIRCLE: TyInfo<Tys["circle"], TyComponents["circle"]> = {
       : Math.atan2(props.point.y - y, props.point.x - x)
     const circumPaper = Math.hypot(props.point.x - x, props.point.y - y)
     const circumCanvas =
-      2 * Math.PI * props.paper.canvasDistance(props.point, { x, y })
+      2 * Math.PI * props.paper.offsetDistance(props.point, { x, y })
     return {
       precision: circumCanvas / circumPaper,
       value: angle / 2 / Math.PI,

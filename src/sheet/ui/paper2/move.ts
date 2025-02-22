@@ -1,5 +1,5 @@
 import type { Paper2, Point } from "."
-import { PAPER2_DRAG, type Paper2DragProps } from "../../../jsx"
+import { HANDLER_DRAG, type DragFn } from "./interact"
 
 const SNAP_DISTANCE = 16
 
@@ -38,7 +38,7 @@ export function registerWheelHandler(paper: Paper2) {
 export function registerDragHandler(paper: Paper2) {
   let initial: Point | undefined
   let ptrs = 0
-  let drag: Paper2DragProps | undefined
+  let drag: DragFn | undefined
 
   paper.el.addEventListener(
     "pointermove",
@@ -76,7 +76,7 @@ export function registerDragHandler(paper: Paper2) {
       const at = paper.eventToPaper(event)
 
       for (const el of event.composedPath()) {
-        const fn = PAPER2_DRAG.get(el as SVGElement)
+        const fn = HANDLER_DRAG.get(el as SVGElement)
         if (fn) {
           const props = fn(at)
           if (props) {

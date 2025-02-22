@@ -971,7 +971,7 @@ export const PKG_CORE_OPS: Package = {
 
             try {
               var shape = js(args[0]!, props.js)
-              if (!TY_INFO[shape.type].glide) return null
+              if (!TY_INFO[shape.type].glide2) return null
               if (shape.list !== false) return null
             } catch {
               return null

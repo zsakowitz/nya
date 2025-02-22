@@ -36,14 +36,8 @@ export const PICK_BY_TY = createPicker<PropsByTy, Selected>({
   id(data) {
     return data.ext.id
   },
-  init(data, sheet) {
-    const maybePoint = data.next.some((x) => x == "point32" || x == "point64")
-
-    sheet.checkDim(
-      maybePoint ?
-        [...data.next, "point32", "point64", "line", "ray", "segment", "circle"]
-      : data.next,
-    )
+  init(_, sheet) {
+    sheet.checkDim()
   },
   find(data, at, sheet) {
     const maybePoint = data.next.some((x) => x == "point32" || x == "point64")
@@ -55,8 +49,7 @@ export const PICK_BY_TY = createPicker<PropsByTy, Selected>({
       for (const pt of data.chosen) {
         if (pt.val.type == "point32" || pt.val.type == "point64") {
           if (
-            sheet.paper.canvasDistance(at, unpt(pt.val.value as SPoint)) <=
-            12 * sheet.paper.scale
+            sheet.paper2.offsetDistance(at, unpt(pt.val.value as SPoint)) <= 12
           ) {
             return pt
           }
@@ -64,14 +57,7 @@ export const PICK_BY_TY = createPicker<PropsByTy, Selected>({
       }
     }
 
-    const [hovered] = sheet.select(
-      at,
-      data.next,
-      1,
-      maybePoint ?
-        [...data.next, "point32", "point64", "line", "ray", "segment", "circle"]
-      : data.next,
-    )
+    const [hovered] = sheet.select(at, data.next)
 
     if (hovered) {
       return hovered

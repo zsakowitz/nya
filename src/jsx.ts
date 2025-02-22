@@ -1,4 +1,9 @@
-import type { Point } from "./sheet/ui/paper2"
+import {
+  HANDLER_DRAG,
+  HANDLER_PICK,
+  type DragProps,
+  type PickProps,
+} from "./sheet/ui/paper2/interact"
 
 export const U_ZERO_WIDTH_SPACE = "\u200B"
 
@@ -156,7 +161,8 @@ export interface SVGProps {
 
 export interface SVGPropsGlobal {
   class?: string
-  drag?(at: Point): Paper2DragProps | null
+  drag?: DragProps
+  pick?: PickProps
 }
 
 export type SVGClassOnlyElements = {
@@ -164,15 +170,6 @@ export type SVGClassOnlyElements = {
 }[keyof SVGProps]
 
 // TODO: use sx for all SVG functions
-
-export interface Paper2DragProps {
-  (at: Point, done: boolean): void
-}
-
-export const PAPER2_DRAG = new WeakMap<
-  SVGElement,
-  (at: Point) => Paper2DragProps | null
->()
 
 export function sx<K extends keyof SVGProps>(
   name: K,
@@ -196,10 +193,17 @@ export function sx(
     el.setAttribute("class", cl)
   } else if (cl) {
     if (cl.drag) {
-      PAPER2_DRAG.set(el, cl.drag)
+      HANDLER_DRAG.set(el, cl.drag)
+    }
+    if (cl.pick) {
+      HANDLER_PICK.set(el, cl.pick)
     }
     for (const key in cl) {
-      if (key != "drag" && cl[key]) {
+      if (
+        cl[key] != null &&
+        typeof cl[key] != "function" &&
+        typeof cl[key] != "object"
+      ) {
         el.setAttribute(key, "" + cl[key])
       }
     }
