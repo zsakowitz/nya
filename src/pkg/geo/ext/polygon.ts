@@ -102,9 +102,6 @@ export const EXT_POLYGON = defineHideable({
       })
     }
   },
-  layer() {
-    return 1
-  },
   select: {
     ty() {
       return "segment"

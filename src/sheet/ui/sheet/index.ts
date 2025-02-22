@@ -376,7 +376,6 @@ export class Sheet {
   private checkGlsl() {
     const compiled = this.exprs
       .filter((x) => x.glsl != null)
-      .sort((a, b) => a.layer - b.layer)
       .map((x) => x.glsl!)
 
     if (compiled.length == 0) {
@@ -488,10 +487,7 @@ void main() {
 
     let ret = []
 
-    for (const expr of this.exprs
-      .slice()
-      .reverse()
-      .sort((a, b) => a.layer - b.layer)) {
+    for (const expr of this.exprs.slice().reverse()) {
       if (!expr.state.ok) continue
 
       const ext = expr.state.ext

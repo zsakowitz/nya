@@ -139,7 +139,6 @@ export class Expr {
     }
   }
 
-  layer = 0
   compute() {
     let destroyed = false
 
@@ -153,13 +152,11 @@ export class Expr {
         }
       }
       this.state = { ok: false, reason: this.field.error }
-      this.layer = 0
       return
     }
 
     if (this.field.ast.type == "binding" && this.field.ast.params) {
       this.state = { ok: true, ext: null, data: {} }
-      this.layer = 0
       return
     }
 
@@ -177,7 +174,6 @@ export class Expr {
           }
           destroyed = true
           this.state = { ok: true, ext, data }
-          this.layer = ext.layer?.(data) ?? 0
           if (ext.svg) {
             this.sheet.paper2.queue()
           }
@@ -193,7 +189,6 @@ export class Expr {
       }
       destroyed = true
       this.state = { ok: true, ext: null, data: {} }
-      this.layer = 0
       this.elOutput.appendChild(h(JSON.stringify(this.state)))
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e)
@@ -207,7 +202,6 @@ export class Expr {
         }
       }
       this.state = { ok: false, reason: msg }
-      this.layer = 0
     }
   }
 

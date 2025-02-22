@@ -92,7 +92,4 @@ export const EXT_VECTOR = defineHideable({
       drawVector2(paper, unpt(val[0]), unpt(val[1]))
     }
   },
-  layer() {
-    return 2
-  },
 })

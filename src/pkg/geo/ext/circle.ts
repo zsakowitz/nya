@@ -104,9 +104,6 @@ export const EXT_CIRCLE = defineHideable({
       })
     }
   },
-  layer() {
-    return 2
-  },
   select: {
     ty() {
       return "circle"

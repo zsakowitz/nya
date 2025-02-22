@@ -126,12 +126,10 @@ export class Handlers implements PointerHandlers<DataDrag, DataHover> {
       return { pick: true }
     }
 
-    for (const expr of this.sheet.exprs
-      .filter(
-        (x): x is typeof x & { state: { ok: true; ext: { drag: {} } } } =>
-          x.state.ok && !!x.state.ext?.drag,
-      )
-      .sort((a, b) => b.layer - a.layer)) {
+    for (const expr of this.sheet.exprs.filter(
+      (x): x is typeof x & { state: { ok: true; ext: { drag: {} } } } =>
+        x.state.ok && !!x.state.ext?.drag,
+    )) {
       const data = expr.state.ext.drag.start(expr.state.data, at)
       if (data == null) continue
 
@@ -195,12 +193,10 @@ export class Handlers implements PointerHandlers<DataDrag, DataHover> {
       return { pick: true }
     }
 
-    for (const expr of this.sheet.exprs
-      .filter(
-        (x): x is typeof x & { state: { ok: true; ext: { hover: {} } } } =>
-          x.state.ok && !!x.state.ext?.hover,
-      )
-      .sort((a, b) => b.layer - a.layer)) {
+    for (const expr of this.sheet.exprs.filter(
+      (x): x is typeof x & { state: { ok: true; ext: { hover: {} } } } =>
+        x.state.ok && !!x.state.ext?.hover,
+    )) {
       const data = expr.state.ext.hover.on(expr.state.data, at)
       if (data == null) continue
 
@@ -221,12 +217,10 @@ export class Handlers implements PointerHandlers<DataDrag, DataHover> {
       return this.checkPick(at)
     }
 
-    for (const expr of this.sheet.exprs
-      .filter(
-        (x): x is typeof x & { state: { ok: true; ext: { hover: {} } } } =>
-          x.state.ok && !!x.state.ext?.hover,
-      )
-      .sort((a, b) => b.layer - a.layer)) {
+    for (const expr of this.sheet.exprs.filter(
+      (x): x is typeof x & { state: { ok: true; ext: { hover: {} } } } =>
+        x.state.ok && !!x.state.ext?.hover,
+    )) {
       const hoverData = expr.state.ext.hover.on(expr.state.data, at)
       if (hoverData == null) continue
 

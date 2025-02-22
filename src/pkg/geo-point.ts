@@ -180,9 +180,6 @@ const EXT_POINT = defineHideable({
       })
     }
   },
-  layer() {
-    return 3
-  },
   drag: {
     start(data, at) {
       if (!data.drag || data.value.list !== false) {

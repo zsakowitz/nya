@@ -114,9 +114,6 @@ export const EXT_LINE = defineHideable({
       })
     }
   },
-  layer() {
-    return 2
-  },
   select: {
     ty(data) {
       return data.value.type

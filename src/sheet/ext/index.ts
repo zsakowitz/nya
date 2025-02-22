@@ -29,20 +29,7 @@ export interface Ext<T extends {}, U extends {}, V extends {}, W extends {}> {
   el?(data: NoInfer<T>): HTMLElement | undefined
   svg?(data: NoInfer<T>, paper: Paper2): void
 
-  plot2d?(data: NoInfer<T>, paper: Paper): void
   plotGl?(data: NoInfer<T>, helpers: GlslHelpers): GlslResult | undefined
-
-  /**
-   * Higher `layer` values are higher in the draw stack. When ties are
-   * encountered, later expressions are plotted higher.
-   *
-   * Extensions with higher layers also take precedence for hover and drag
-   * operations.
-   *
-   * GLSL plots are plotted below all 2D plots, despite the layer of the
-   * individual expressions.
-   */
-  layer?(data: NoInfer<T>): number | undefined
 
   drag?: {
     /** Returning a non-nullish value captures the event. */

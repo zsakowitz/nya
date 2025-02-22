@@ -157,9 +157,6 @@ export const EXT_RAY = defineHideable({
       })
     }
   },
-  layer() {
-    return 2
-  },
   select: {
     ty(data) {
       return data.value.type
