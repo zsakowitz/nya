@@ -1,9 +1,9 @@
-import type { Paper2, Point } from "."
+import type { Paper, Point } from "."
 import { HANDLER_DRAG, type DragFn } from "./interact"
 
 const SNAP_DISTANCE = 16
 
-export function registerWheelHandler(paper: Paper2) {
+export function registerWheelHandler(paper: Paper) {
   paper.el.addEventListener(
     "wheel",
     (event) => {
@@ -35,7 +35,7 @@ export function registerWheelHandler(paper: Paper2) {
   )
 }
 
-export function registerDragHandler(paper: Paper2) {
+export function registerDragHandler(paper: Paper) {
   let initial: Point | undefined
   let ptrs = 0
   let drag: DragFn | undefined
@@ -115,7 +115,7 @@ export function registerDragHandler(paper: Paper2) {
   addEventListener("contextmenu", () => onPointerUp())
 }
 
-export function registerPinchHandler(paper: Paper2) {
+export function registerPinchHandler(paper: Paper) {
   let previousDistance: number | undefined
 
   paper.el.addEventListener("touchmove", (event) => {

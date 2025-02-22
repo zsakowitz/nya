@@ -6,14 +6,14 @@ import type { Point } from "../../../sheet/ui/paper"
 import {
   segmentByOffset,
   type DrawProps,
-  type Paper2,
+  type Paper,
 } from "../../../sheet/ui/paper"
 import { pick } from "./util"
 
 function getLineBounds(
   { x: x1, y: y1 }: Point,
   { x: x2, y: y2 }: Point,
-  paper: Paper2,
+  paper: Paper,
 ): [Point, Point] {
   const { xmin, w, ymin, h } = paper.bounds()
 
@@ -33,7 +33,7 @@ function getLineBounds(
 }
 
 export function drawLine(
-  paper: Paper2,
+  paper: Paper,
   p1: Point,
   p2: Point,
   props?: DrawProps,

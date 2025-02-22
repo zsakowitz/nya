@@ -2,10 +2,10 @@ import { each, type JsValue } from "../../../eval/ty"
 import { unpt } from "../../../eval/ty/create"
 import { sx } from "../../../jsx"
 import { defineHideable } from "../../../sheet/ext/hideable"
-import type { DrawProps, Paper2, Point } from "../../../sheet/ui/paper"
+import type { DrawProps, Paper, Point } from "../../../sheet/ui/paper"
 
 export function drawVector(
-  paper: Paper2,
+  paper: Paper,
   p1: Point,
   p2: Point,
   props?: Pick<DrawProps, "ghost">,

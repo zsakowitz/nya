@@ -5,7 +5,7 @@ import { CmdBrack } from "../../field/cmd/math/brack"
 import { Block, L, R } from "../../field/model"
 import { h, p, svgx } from "../../jsx"
 import type { Point } from "../../sheet/ui/paper"
-import type { Paper2 } from "../../sheet/ui/paper"
+import type { Paper } from "../../sheet/ui/paper"
 import type { GlslContext } from "../lib/fn"
 import type { TyWrite } from "./display"
 
@@ -39,7 +39,7 @@ interface TyComponentInfo<T, U extends TyName> {
 interface GlideProps<T> {
   shape: T
   point: Point
-  paper: Paper2
+  paper: Paper
 }
 
 export type TyCoerceMap<T> = {
@@ -70,7 +70,7 @@ export const WRITE_POINT: TyWrite<SPoint> = {
 }
 
 export function gliderOnLine(
-  paper: Paper2,
+  paper: Paper,
   [{ x: x1, y: y1 }, { x: x2, y: y2 }]: [Point, Point],
   { x, y }: Point,
 ) {

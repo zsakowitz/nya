@@ -10,14 +10,10 @@ import { sx } from "../../../jsx"
 import { Prop } from "../../../sheet/ext"
 import { defineHideable } from "../../../sheet/ext/hideable"
 import type { Expr } from "../../../sheet/ui/expr"
-import {
-  segmentByPaper,
-  type Paper2,
-  type Point,
-} from "../../../sheet/ui/paper"
+import { segmentByPaper, type Paper, type Point } from "../../../sheet/ui/paper"
 
 export function drawPolygon(
-  paper: Paper2,
+  paper: Paper,
   polygon: Point[],
   props: {
     closed: boolean

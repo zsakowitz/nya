@@ -20,7 +20,7 @@ import { REMARK } from "../../remark"
 import { Slider } from "../../slider"
 import { isDark } from "../../theme"
 import { Expr } from "../expr"
-import { Paper2, type Point } from "../paper"
+import { Paper, type Point } from "../paper"
 import { createDrawAxes } from "../paper/grid"
 import { HANDLER_PICK } from "../paper/interact"
 import {
@@ -32,7 +32,7 @@ import { PickHandler } from "../paper/pick"
 import { btn, createDocs, DEFAULT_TO_VISIBLE_DOCS } from "./docs"
 
 export class Sheet {
-  readonly paper2 = new Paper2("absolute inset-0 size-full touch-none")
+  readonly paper2 = new Paper("absolute inset-0 size-full touch-none")
   readonly scope: Scope
   readonly exprs: Expr[] = []
 

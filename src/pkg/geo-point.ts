@@ -16,7 +16,7 @@ import { Prop } from "../sheet/ext"
 import { defineHideable } from "../sheet/ext/hideable"
 import { definePickTy, PICK_TY, toolbar } from "../sheet/pick-ty"
 import type { Point } from "../sheet/ui/paper"
-import type { DrawProps, Paper2 } from "../sheet/ui/paper"
+import type { DrawProps, Paper } from "../sheet/ui/paper"
 import { HANDLER_DRAG, HANDLER_PICK } from "../sheet/ui/paper/interact"
 import type { Sheet } from "../sheet/ui/sheet"
 import { virtualStepExp, write, Writer } from "../sheet/write"
@@ -60,7 +60,7 @@ const SELECTED = new Prop(() => false)
 const DIMMED = new Prop(() => false)
 
 export function drawPoint(
-  paper: Paper2,
+  paper: Paper,
   props: {
     at: Point
     size?: number

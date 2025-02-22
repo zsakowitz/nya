@@ -1,4 +1,4 @@
-import type { Paper2 } from "."
+import type { Paper } from "."
 import { hx, sx } from "../../../jsx"
 import { theme } from "../../theme"
 
@@ -20,7 +20,7 @@ const THEME_AXIS_STROKE = () => theme("--nya-paper-screen-line", "black")
 const MAX_GRIDLINES_MAJOR = 200
 const MAX_GRIDLINES_MINOR = MAX_GRIDLINES_MAJOR * 5
 
-export function createDrawAxes(paper: Paper2) {
+export function createDrawAxes(paper: Paper) {
   const cv = hx("canvas")
   const ctx = cv.getContext("2d")!
 

@@ -26,7 +26,7 @@ LAYERS.grid = 0
 LAYERS.line = 1
 LAYERS.point = 2
 
-export class Paper2 {
+export class Paper {
   readonly el
   private readonly layers = new Map<number, SVGGElement>()
 
@@ -230,7 +230,7 @@ export interface DrawProps {
 }
 
 export function segmentByPaper(
-  paper: Paper2,
+  paper: Paper,
   p1: Point,
   p2: Point,
   props?: DrawProps,
@@ -239,7 +239,7 @@ export function segmentByPaper(
 }
 
 export function segmentByOffset(
-  paper: Paper2,
+  paper: Paper,
   o1: Point,
   o2: Point,
   props?: DrawProps,

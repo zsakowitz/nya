@@ -1,6 +1,6 @@
 import type { GlslHelpers, GlslResult } from "../../eval/lib/fn"
 import { Expr } from "../ui/expr"
-import type { Paper2 } from "../ui/paper"
+import type { Paper } from "../ui/paper"
 
 /** An extension to an expression in the sheet interface. */
 export interface Ext<T extends {}> {
@@ -16,7 +16,7 @@ export interface Ext<T extends {}> {
   destroy?(data: NoInfer<T>): void
   aside?(data: NoInfer<T>): HTMLElement | undefined
   el?(data: NoInfer<T>): HTMLElement | undefined
-  svg?(data: NoInfer<T>, paper: Paper2): void
+  svg?(data: NoInfer<T>, paper: Paper): void
 
   // TODO: remove plotGl as a special-cased function; it should be delegated to 'shader'
   plotGl?(data: NoInfer<T>, helpers: GlslHelpers): GlslResult | undefined

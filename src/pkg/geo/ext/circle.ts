@@ -4,13 +4,13 @@ import { sx } from "../../../jsx"
 import { Prop } from "../../../sheet/ext"
 import { defineHideable } from "../../../sheet/ext/hideable"
 import type { Point } from "../../../sheet/ui/paper"
-import type { DrawProps, Paper2 } from "../../../sheet/ui/paper"
+import type { DrawProps, Paper } from "../../../sheet/ui/paper"
 import { pick } from "./util"
 
 const DIMMED = new Prop(() => false)
 
 export function drawCircle(
-  paper: Paper2,
+  paper: Paper,
   props: {
     at: Point
     r: number
