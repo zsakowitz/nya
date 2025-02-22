@@ -136,17 +136,15 @@ export class CmdSupSub extends Command {
     }
   }
 
-  redraw() {
-    const next = CmdSupSub.render(this.sub, this.sup)
-    this.el.replaceWith(next)
-    ;(this as any).el = next
+  render() {
+    this.setEl(CmdSupSub.render(this.sub, this.sup))
   }
 
   /** Creates the given part, or returns the block if it already exists. */
   create(part: "sub" | "sup") {
     if (!this[part]) {
       ;(this as any)[part] = new Block(this)
-      this.redraw()
+      this.render()
     }
     return this[part]!
   }
@@ -222,7 +220,7 @@ export class CmdSupSub extends Command {
             cursor.moveTo(this, R)
           }
         } else {
-          this.redraw()
+          this.render()
         }
       }
 
@@ -248,12 +246,12 @@ export class CmdSupSub extends Command {
     if (block == this.sub) {
       cursor.moveTo(this, L)
       ;(this as any).sub = null
-      this.redraw()
+      this.render()
       cursor.insert(block, at == R ? L : R)
     } else {
       cursor.moveTo(this, R)
       ;(this as any).sup = null
-      this.redraw()
+      this.render()
       cursor.insert(block, at == R ? L : R)
     }
 
