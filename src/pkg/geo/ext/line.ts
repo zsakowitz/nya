@@ -53,7 +53,7 @@ export const EXT_LINE = defineHideable({
     const value = expr.js?.value
 
     if (value && value.type == "line") {
-      return { value: value as JsValue<"line">, expr, paper: expr.sheet.paper }
+      return { value: value as JsValue<"line">, expr }
     }
   },
   svg(data, paper) {

@@ -137,7 +137,6 @@ const EXT_POINT = defineHideable({
     ) {
       return {
         value: value as JsValue<"point32" | "point64" | "c32" | "c64">,
-        paper: expr.sheet.paper,
         paper2: expr.sheet.paper2,
         expr,
         drag,
@@ -158,7 +157,7 @@ const EXT_POINT = defineHideable({
               if (drag.x) {
                 new Writer(drag.x.span.remove().span()).set(
                   at.x,
-                  data.paper.el.width / data.paper.bounds().w,
+                  data.paper2.xPrecision,
                   drag.x.signed,
                 )
                 drag.x.field.sel = drag.x.field.block.cursor(R).selection()
@@ -168,7 +167,7 @@ const EXT_POINT = defineHideable({
               if (drag.y) {
                 new Writer(drag.y.span.remove().span()).set(
                   at.y,
-                  data.paper.el.height / data.paper.bounds().h,
+                  data.paper2.yPrecision,
                   drag.y.signed,
                 )
                 drag.y.field.sel = drag.y.field.block.cursor(R).selection()
@@ -179,9 +178,9 @@ const EXT_POINT = defineHideable({
             case "complex":
               {
                 const x = at.x
-                const xp = data.paper.el.width / data.paper.bounds().w
+                const xp = data.paper2.xPrecision
                 const y = at.y
-                const yp = data.paper.el.height / data.paper.bounds().h
+                const yp = data.paper2.yPrecision
                 const cursor = drag.span.remove()
                 write(
                   cursor,

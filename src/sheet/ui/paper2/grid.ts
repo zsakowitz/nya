@@ -25,7 +25,7 @@ export function createDrawAxes(paper: Paper2) {
   const ctx = cv.getContext("2d")!
 
   function scale() {
-    return globalThis.devicePixelRatio ?? 1
+    return paper.scale
   }
 
   function paperToCanvas(x: number, y: number) {

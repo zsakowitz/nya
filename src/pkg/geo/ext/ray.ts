@@ -91,7 +91,7 @@ export const EXT_RAY = defineHideable({
     const value = expr.js?.value
 
     if (value && value.type == "ray") {
-      return { value: value as JsValue<"ray">, paper: expr.sheet.paper, expr }
+      return { value: value as JsValue<"ray">, expr }
     }
   },
   svg(data, paper) {

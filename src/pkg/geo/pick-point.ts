@@ -176,13 +176,13 @@ export function virtualPoint(at: Point, sheet: Sheet) {
       new CmdBrack("(", ")", null, inner).insertAt(cursor, L)
       new Writer(inner.cursor(R).span()).set(
         at.x,
-        sheet.paper.el.width / sheet.paper.bounds().w,
+        sheet.paper2.xPrecision,
         false,
       )
       new CmdComma().insertAt(inner.cursor(R), L)
       new Writer(inner.cursor(R).span()).set(
         at.y,
-        sheet.paper.el.width / sheet.paper.bounds().w,
+        sheet.paper2.yPrecision,
         false,
       )
       expr.field.dirtyAst = expr.field.dirtyValue = true

@@ -124,7 +124,6 @@ export const EXT_POLYGON = defineHideable({
       return {
         value: value as JsValue<"polygon">,
         expr,
-        paper: expr.sheet.paper,
       }
     }
   },

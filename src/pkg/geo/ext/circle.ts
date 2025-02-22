@@ -60,7 +60,7 @@ export const EXT_CIRCLE = defineHideable({
     if (value && value.type == "circle") {
       return {
         value: value as JsValue<"circle">,
-        paper: expr.sheet.paper,
+
         expr,
       }
     }

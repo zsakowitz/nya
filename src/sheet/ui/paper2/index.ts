@@ -34,6 +34,14 @@ export class Paper2 {
   readonly height: number = 0
   readonly width: number = 0
 
+  get yPrecision() {
+    return ((globalThis.devicePixelRatio ?? 1) * this.height) / this.bounds().h
+  }
+
+  get xPrecision() {
+    return ((globalThis.devicePixelRatio ?? 1) * this.width) / this.bounds().w
+  }
+
   constructor(
     className?: string,
     private rawBounds: Bounds = {

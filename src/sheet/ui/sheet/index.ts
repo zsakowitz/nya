@@ -20,7 +20,7 @@ import { REMARK } from "../../remark"
 import { Slider } from "../../slider"
 import { isDark } from "../../theme"
 import { Expr } from "../expr"
-import { Paper, type Point } from "../paper"
+import { type Point } from "../paper"
 import { Paper2 } from "../paper2"
 import { createDrawAxes } from "../paper2/grid"
 import { HANDLER_PICK } from "../paper2/interact"
@@ -33,8 +33,6 @@ import { PickHandler } from "../paper2/pick"
 import { btn, createDocs, DEFAULT_TO_VISIBLE_DOCS } from "./docs"
 
 export class Sheet {
-  /** @deprecated */
-  readonly paper = new Paper()
   readonly paper2 = new Paper2("absolute inset-0 size-full touch-none")
   readonly scope: Scope
   readonly exprs: Expr[] = []
@@ -337,10 +335,8 @@ export class Sheet {
             ...splitRaw(this.paper2.height / h),
           ],
           u_unit_per_hpx: [
-            ...splitRaw(w / (window.devicePixelRatio ?? 1) / this.paper2.width),
-            ...splitRaw(
-              h / (window.devicePixelRatio ?? 1) / this.paper2.height,
-            ),
+            ...splitRaw(1 / this.paper2.xPrecision),
+            ...splitRaw(1 / this.paper2.yPrecision),
           ],
           u_darkmul: isDark() ? [-1, -1, -1, 1] : [1, 1, 1, 1],
           u_darkoffset: isDark() ? [1, 1, 1, 0] : [0, 0, 0, 0],

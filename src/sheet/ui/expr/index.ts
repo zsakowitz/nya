@@ -301,7 +301,6 @@ export class Expr {
     this.field.unlink()
     this.sheet.queueGlsl()
     this.sheet.queueIndices()
-    this.sheet.paper.queue()
     this.sheet.paper2.queue()
     this.el.remove()
   }
