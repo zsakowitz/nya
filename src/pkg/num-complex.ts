@@ -642,34 +642,6 @@ function mulC(
   return pt(sub(mul(a, c), mul(b, d)), add(mul(b, c), mul(a, d)))
 }
 
-export function declareSin(ctx: GlslContext) {
-  ctx.glsl`vec2 _helper_sin(vec2 z) {
-  return vec2(sin(z.x) * cosh(z.y), cos(z.x) * sinh(z.y));
-}
-`
-}
-
-export function sinPt(a: SPoint) {
-  return pt(
-    approx(Math.sin(num(a.x)) * Math.cosh(num(a.y))),
-    approx(Math.cos(num(a.x)) * Math.sinh(num(a.y))),
-  )
-}
-
-export function declareCos(ctx: GlslContext) {
-  ctx.glsl`vec2 _helper_cos(vec2 z) {
-  return vec2(cos(z.x) * cosh(z.y), -sin(z.x) * sinh(z.y));
-}
-`
-}
-
-export function cosPt(a: SPoint): SPoint {
-  return pt(
-    approx(Math.cos(num(a.x)) * Math.cosh(num(a.y))),
-    approx(-Math.sin(num(a.x)) * Math.sinh(num(a.y))),
-  )
-}
-
 export function divPt({ x: a, y: b }: SPoint, { x: c, y: d }: SPoint): SPoint {
   const x = add(mul(a, c), mul(b, d))
   const y = sub(mul(b, c), mul(a, d))

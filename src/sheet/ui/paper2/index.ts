@@ -141,7 +141,10 @@ export class Paper2 {
     }
   }
 
-  /** @deprecated */
+  /**
+   * @deprecated Kept to avoid duplicating line and ray functions while
+   *   switching to SVG syntax
+   */
   paperToCanvas(pt: Point): Point {
     return this.toOffset(pt)
   }
