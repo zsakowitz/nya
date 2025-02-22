@@ -1,5 +1,5 @@
-import { each, type JsValue, type SPoint } from "../../../eval/ty"
-import { num, rept, unpt } from "../../../eval/ty/create"
+import { each, type JsValue } from "../../../eval/ty"
+import { rept, unpt } from "../../../eval/ty/create"
 import { OpEq } from "../../../field/cmd/leaf/cmp"
 import { CmdDot } from "../../../field/cmd/leaf/dot"
 import { CmdNum } from "../../../field/cmd/leaf/num"
@@ -10,7 +10,6 @@ import { sx } from "../../../jsx"
 import { Prop } from "../../../sheet/ext"
 import { defineHideable } from "../../../sheet/ext/hideable"
 import type { Expr } from "../../../sheet/ui/expr"
-import type { Paper } from "../../../sheet/ui/paper"
 import {
   segmentByOffset,
   type Paper2,
@@ -18,49 +17,13 @@ import {
 } from "../../../sheet/ui/paper2"
 
 export function drawPolygon(
-  polygon: SPoint[],
-  paper: Paper,
-  closed: boolean,
-  dimmed: boolean,
-) {
-  const pts = polygon.map(({ x, y }) =>
-    paper.paperToCanvas({ x: num(x), y: num(y) }),
-  )
-  if (pts.length == 0) return
-
-  const { ctx, scale } = paper
-
-  if (dimmed) {
-    ctx.globalAlpha = 0.3
-  }
-
-  ctx.beginPath()
-  ctx.lineWidth = 3 * scale
-  ctx.strokeStyle = "#2d70b3"
-  ctx.fillStyle = "#2d70b340"
-  ctx.moveTo(pts[0]!.x, pts[0]!.y)
-  for (const pt of pts.slice(1)) {
-    if (!(isFinite(pt.x) && isFinite(pt.y))) return
-    ctx.lineTo(pt.x, pt.y)
-  }
-  if (closed) {
-    ctx.lineTo(pts[0]!.x, pts[0]!.y)
-  }
-  ctx.fill()
-  ctx.stroke()
-
-  if (dimmed) {
-    ctx.globalAlpha = 1
-  }
-}
-
-export function drawPolygon2(
   paper: Paper2,
   polygon: Point[],
   props: {
     closed: boolean
     dimmed?: boolean
     pick?: { expr: Expr }
+    ghost?: boolean
   },
 ) {
   const pts = polygon.map((pt) => paper.toOffset(pt))
@@ -89,10 +52,11 @@ export function drawPolygon2(
       fill: "#2d70b340",
       "stroke-opacity": props.dimmed ? 0.3 : 1,
       "fill-opacity": props.dimmed ? 0.3 : 1,
+      class: props.ghost ? "pointer-events-none" : "",
     }),
   )
 
-  if (props.pick) {
+  if (!props.ghost && props.pick) {
     const { pick } = props
     for (let i = 0; i < pts.length; i++) {
       const p1 = pts[i]!
@@ -166,7 +130,7 @@ export const EXT_POLYGON = defineHideable({
   },
   svg(data, paper) {
     for (const polygon of each(data.value)) {
-      drawPolygon2(paper, polygon.map(unpt), {
+      drawPolygon(paper, polygon.map(unpt), {
         closed: true,
         dimmed: DIMMED.get(data.expr),
         pick: { expr: data.expr },

@@ -14,7 +14,7 @@ import { Block, L, R } from "../field/model"
 import { h, sx } from "../jsx"
 import { Prop } from "../sheet/ext"
 import { defineHideable } from "../sheet/ext/hideable"
-import { definePick2, PICK2 } from "../sheet/pick2byty"
+import { definePick2, PICK2, toolbar } from "../sheet/pick2byty"
 import type { Point } from "../sheet/ui/paper"
 import type { DrawProps, Paper2 } from "../sheet/ui/paper2"
 import { HANDLER_DRAG, HANDLER_PICK } from "../sheet/ui/paper2/interact"
@@ -35,7 +35,6 @@ import {
   OP_POS,
 } from "./core-ops"
 import { EXT_EVAL } from "./eval"
-import { picker2 } from "./geo/pick-normal"
 import { FN_UNSIGN, PKG_REAL } from "./num-real"
 
 declare module "../eval/ty" {
@@ -552,7 +551,7 @@ export const PKG_GEO_POINT: Package = {
       1: [EXT_POINT],
     },
     toolbar: {
-      1: [picker2(() => iconPoint(false), PICK_POINT)],
+      1: [toolbar(() => iconPoint(false), PICK_POINT)],
     },
     keys: {
       p: (sheet: Sheet) => sheet.pick.set(PICK2, PICK_POINT),

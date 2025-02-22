@@ -7,7 +7,7 @@ import { CmdWord } from "../../field/cmd/leaf/word"
 import { CmdBrack } from "../../field/cmd/math/brack"
 import { Block, L, R } from "../../field/model"
 import { h, p, svgx } from "../../jsx"
-import { definePick2, PICK2 } from "../../sheet/pick2byty"
+import { definePick2, PICK2, toolbar, type Data2 } from "../../sheet/pick2byty"
 import { segmentByPaper } from "../../sheet/ui/paper2"
 import {
   drawPoint,
@@ -40,7 +40,6 @@ import { FN_SEGMENTS } from "./fn/segments"
 import { FN_START } from "./fn/start"
 import { FN_VECTOR } from "./fn/vector"
 import { FN_VERTICES } from "./fn/vertices"
-import { PICK_BY_TY, picker, picker2, type PropsByTy } from "./pick-normal"
 
 declare module "../../eval/ty" {
   interface Tys {
@@ -232,10 +231,10 @@ const PICK_PARALLEL = definePick2(
   },
 )
 
-const PICK_MIDPOINT: PropsByTy = {
-  chosen: [],
+const PICK_MIDPOINT: Data2 = {
+  vals: [],
   next: ["point32", "point64", "segment"],
-  ext: {
+  src: {
     id: Math.random(),
     output: { tag: "p", fn: "midpoint" },
     next(args) {
@@ -272,10 +271,10 @@ const PICK_MIDPOINT: PropsByTy = {
   },
 }
 
-const PICK_POLYGON: PropsByTy = {
-  chosen: [],
+const PICK_POLYGON: Data2 = {
+  vals: [],
   next: ["point32", "point64"],
-  ext: {
+  src: {
     id: Math.random(),
     output: { tag: "P", fn: "polygon" },
     allowExistingPoint(args) {
@@ -299,10 +298,9 @@ const PICK_POLYGON: PropsByTy = {
       const pts = args as JsVal<"point32" | "point64">[]
 
       drawPolygon(
-        pts.map((x) => x.value),
-        sheet.paper,
-        false,
-        false,
+        sheet.paper2,
+        pts.map((x) => unpt(x.value)),
+        { closed: false, ghost: true },
       )
     },
   },
@@ -497,13 +495,13 @@ export const PKG_GEOMETRY: Package = {
     },
     toolbar: {
       1: [
-        picker2(INFO_SEGMENT.icon, PICK_SEGMENT),
-        picker2(INFO_RAY.icon, PICK_RAY),
-        picker2(INFO_LINE.icon, PICK_LINE),
-        picker2(INFO_VECTOR.icon, PICK_VECTOR),
-        picker2(INFO_CIRCLE.icon, PICK_CIRCLE),
-        picker(INFO_POLYGON.icon, PICK_POLYGON),
-        picker2(
+        toolbar(INFO_SEGMENT.icon, PICK_SEGMENT),
+        toolbar(INFO_RAY.icon, PICK_RAY),
+        toolbar(INFO_LINE.icon, PICK_LINE),
+        toolbar(INFO_VECTOR.icon, PICK_VECTOR),
+        toolbar(INFO_CIRCLE.icon, PICK_CIRCLE),
+        toolbar(INFO_POLYGON.icon, PICK_POLYGON),
+        toolbar(
           () =>
             h(
               "",
@@ -525,7 +523,7 @@ export const PKG_GEOMETRY: Package = {
             ),
           PICK_PERPENDICULAR,
         ),
-        picker2(
+        toolbar(
           () =>
             h(
               "",
@@ -547,7 +545,7 @@ export const PKG_GEOMETRY: Package = {
             ),
           PICK_PARALLEL,
         ),
-        picker(
+        toolbar(
           () =>
             h(
               "",
@@ -582,7 +580,8 @@ export const PKG_GEOMETRY: Package = {
       c: (sheet) => sheet.pick.set(PICK2, PICK_CIRCLE),
       x: (sheet) => sheet.pick.set(PICK2, PICK_PERPENDICULAR),
       z: (sheet) => sheet.pick.set(PICK2, PICK_PARALLEL),
-      m: (sheet) => sheet.setPick(PICK_BY_TY, PICK_MIDPOINT),
+      m: (sheet) => sheet.pick.set(PICK2, PICK_MIDPOINT),
+      P: (sheet) => sheet.pick.set(PICK2, PICK_POLYGON),
     },
   },
 }

@@ -1,9 +1,11 @@
-import type { JsVal, TyName } from "../eval/ty"
+import type { JsVal, SPoint, TyName } from "../eval/ty"
+import { unpt } from "../eval/ty/create"
 import { OpEq } from "../field/cmd/leaf/cmp"
 import { CmdComma } from "../field/cmd/leaf/comma"
 import { CmdVar } from "../field/cmd/leaf/var"
 import { CmdBrack } from "../field/cmd/math/brack"
 import { Block, L, R } from "../field/model"
+import { hx } from "../jsx"
 import { virtualPoint } from "../pkg/geo/pick-point"
 import { definePicker, type Picker2 } from "./pick2"
 import { Expr } from "./ui/expr"
@@ -12,6 +14,7 @@ import type { Selected, Sheet } from "./ui/sheet"
 interface Source {
   id: number
   output: { tag: string; fn: string } | null
+  allowExistingPoint?(args: JsVal[]): boolean
   next(args: JsVal[]): readonly TyName[] | null
   draw(sheet: Sheet, args: JsVal[]): void
 }
@@ -33,6 +36,19 @@ export const PICK2: Picker2<Data2, Selected> = definePicker<Data2, Selected>({
     }
 
     if (data.next.includes("point32") || data.next.includes("point64")) {
+      if (data.src.allowExistingPoint?.(data.vals.map((x) => x.val))) {
+        for (const pt of data.vals) {
+          if (pt.val.type == "point32" || pt.val.type == "point64") {
+            if (
+              sheet.paper2.offsetDistance(at, unpt(pt.val.value as SPoint)) <=
+              12
+            ) {
+              return pt
+            }
+          }
+        }
+      }
+
       return virtualPoint(at, sheet)
     }
 
@@ -155,5 +171,28 @@ export function definePick2(
         draw(sheet, ...args)
       },
     },
+  }
+}
+
+export function toolbar(icon: () => HTMLSpanElement, props: Data2) {
+  return (sheet: Sheet) => {
+    const btn = hx(
+      "button",
+      "w-12 hover:bg-[--nya-bg] border-x border-transparent hover:border-[--nya-border] focus:outline-none -mr-px last:mr-0 focus-visible:bg-[--nya-sidebar-hover]",
+      icon(),
+    )
+    sheet.pick.onChange.push(() => {
+      if (sheet.pick.id == props.src.id) {
+        btn.classList.add("bg-[--nya-bg]", "border-[--nya-border]")
+        btn.classList.remove("border-transparent")
+      } else {
+        btn.classList.remove("bg-[--nya-bg]", "border-[--nya-border]")
+        btn.classList.add("border-transparent")
+      }
+    })
+    btn.addEventListener("click", () => {
+      sheet.pick.set(PICK2, props)
+    })
+    return btn
   }
 }
