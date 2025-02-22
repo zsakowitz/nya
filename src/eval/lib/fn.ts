@@ -16,7 +16,7 @@ export class GlslHelpers {
       this.templateHelpers.push(source)
       ;(this as any).helpers += source[0]!
       if (!source[0]!.endsWith("\n")) {
-        console.error(source)
+        console.warn("[declare source invalid]", source)
       }
     }
   }

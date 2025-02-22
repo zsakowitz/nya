@@ -91,6 +91,7 @@ export function drawPoint(
       sx(
         "g",
         { class: "group" + ghost },
+        center,
         sx("circle", {
           cx: offset.x,
           cy: offset.y,
@@ -100,7 +101,6 @@ export function drawPoint(
           drag: props.drag,
           pick: props.pick,
         }),
-        center,
       ),
     )
   } else {
