@@ -1,21 +1,31 @@
 import type { Paper2, Point } from "."
 
+const SNAP_DISTANCE = 16
+
 export function registerWheelHandler(paper: Paper2) {
   paper.el.addEventListener(
     "wheel",
     (event) => {
       event.preventDefault()
       if (event.metaKey || event.ctrlKey) {
-        paper.zoom(
-          paper.eventToPaper(event),
-          1 +
-            Math.sign(event.deltaY) * Math.sqrt(Math.abs(event.deltaY)) * 0.03,
-        )
+        const scale =
+          1 + Math.sign(event.deltaY) * Math.sqrt(Math.abs(event.deltaY)) * 0.03
+        const point = { ...paper.eventToPaper(event) }
+        if (scale < 1) {
+          const origin = paper.paperToOffset({ x: 0, y: 0 })
+          if (Math.abs(event.offsetX - origin.x) < SNAP_DISTANCE) {
+            point.x = 0
+          }
+          if (Math.abs(event.offsetY - origin.y) < SNAP_DISTANCE) {
+            point.y = 0
+          }
+        }
+        paper.zoom(point, scale)
       } else {
         paper.move(
           paper.offsetDeltaToPaper({
-            x: 2 * event.deltaX,
-            y: 2 * event.deltaY,
+            x: event.deltaX,
+            y: event.deltaY,
           }),
         )
       }
