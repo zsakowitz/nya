@@ -79,6 +79,114 @@ export class GlslContext {
   cacheValue(val: GlslValue): string {
     return this.cached(val.type, val.expr, val.list)
   }
+
+  private fns = new WeakMap<TemplateStringsArray, string>()
+  fn(source: TemplateStringsArray, ...interps: (GlslVal | (() => string))[]) {
+    const cached = this.fns.get(source)
+    if (cached != null) {
+      return `${cached}(${interps
+        .filter((x) => typeof x != "function")
+        .map((x) => x.expr)
+        .join(", ")})`
+    }
+
+    const [ret, ...first] = source[0]!.split("\n")
+    const name = this.name()
+    const args = interps.map((x) =>
+      typeof x == "function" ? x : { arg: x, name: this.name() },
+    )
+    const contents = `${ret} ${name}(${args
+      .filter((x) => typeof x != "function")
+      .map((x) => `${TY_INFO[x.arg.type].glsl} ${x.name}`)}) {
+${first.join("\n")}${source
+      .slice(1)
+      .map(
+        (x, i) =>
+          (typeof args[i] == "function" ? args[i]() : args[i]!.name) + x,
+      )
+      .join("")}
+}\n`
+    this.helpers.helpers += contents
+    return `${name}(
+${interps
+  .filter((x) => typeof x == "object")
+  .map((x) => x.expr)
+  .join(",\n")}
+)`
+  }
 }
 
+export type GlslType =
+  `${"float" | "vec2" | "vec3" | "vec4"}${"" | `[${number}]`}`
+
 export type GlslResult = readonly [block: GlslContext, expr: string]
+
+export interface GlslFn<T extends readonly TyName[] = readonly TyName[]> {
+  (ctx: GlslContext, ...args: { [K in keyof T]: GlslVal<T[K]> }): string
+  glName: string
+  load(ctx: GlslContext): void
+  raw(ctx: GlslContext, ...args: { [K in keyof T]: string }): string
+}
+
+let fnNext = 0
+
+export function fn<const T extends readonly TyName[], const R extends TyName>(
+  tys: T,
+  ret: R,
+): (
+  strings: TemplateStringsArray,
+  ...interps: (number | GlslFn<any>)[]
+) => GlslFn<T>
+
+export function fn(tys: readonly TyName[], ret: TyName) {
+  return (
+    strings: TemplateStringsArray,
+    ...interps: (number | GlslFn)[]
+  ): GlslFn => {
+    const loadFns = interps
+      .map((x) => typeof x == "function" && x.load)
+      .filter((x) => x != false)
+    const name = `_nya_helperfn_${fnNext++}`
+
+    const args = tys.map((x) => ({ ty: x, name: `_nya_helperfn_${fnNext++}` }))
+    let source: string | undefined
+
+    const on = new WeakSet<GlslHelpers>()
+    function load(ctx: GlslContext) {
+      loadFns.forEach((load) => load(ctx))
+      if (!on.has(ctx.helpers)) {
+        if (source == null) {
+          source = `${TY_INFO[ret].glsl} ${name}(${args.map(({ ty, name }) => `${TY_INFO[ty].glsl} ${name}`).join(", ")}) {
+${strings[0]!}${strings
+            .slice(1)
+            .map((x, i) => {
+              const interp = interps[i]!
+              return (
+                (typeof interp == "number" ?
+                  args[interp]!.name
+                : interp.glName) + x
+              )
+            })
+            .join("")}
+}\n`
+        }
+        ctx.helpers.helpers += source
+        on.add(ctx.helpers)
+      }
+    }
+    function raw(ctx: GlslContext, ...args: string[]): string {
+      load(ctx)
+      return `${name}(${args.join(", ")})`
+    }
+
+    function fn(ctx: GlslContext, ...args: GlslVal[]): string {
+      return raw(ctx, ...args.map((x) => x.expr))
+    }
+
+    fn.glName = name
+    fn.raw = raw
+    fn.load = load
+
+    return fn
+  }
+}

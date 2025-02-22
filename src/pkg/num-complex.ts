@@ -1,5 +1,5 @@
 import type { Package } from "."
-import type { GlslContext } from "../eval/lib/fn"
+import { fn, type GlslContext } from "../eval/lib/fn"
 import { FnDist } from "../eval/ops/dist"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "../eval/ops/vars"
 import type { GlslVal, JsVal, SPoint } from "../eval/ty"
@@ -649,6 +649,11 @@ export function divPt({ x: a, y: b }: SPoint, { x: c, y: d }: SPoint): SPoint {
   return pt(div(x, denom), div(y, denom))
 }
 
+export function recipPt({ x: c, y: d }: SPoint): SPoint {
+  const denom = add(mul(c, c), mul(d, d))
+  return pt(div(c, denom), div(neg(d), denom))
+}
+
 export function declareDiv(ctx: GlslContext) {
   ctx.glsl`vec2 _helper_div(vec2 a, vec2 b) {
   return vec2(
@@ -658,6 +663,16 @@ export function declareDiv(ctx: GlslContext) {
 }
 `
 }
+
+export const divGl = fn(["c32", "c32"], "c32")`return vec2(
+  ${0}.x * ${1}.x + ${0}.y * ${1}.y,
+  ${0}.y * ${1}.x - ${0}.x * ${1}.y
+) / (${1}.x * ${1}.x + ${1}.y * ${1}.y);`
+
+export const recipGl = fn(
+  ["c32"],
+  "c32",
+)`return vec2(${0}.x, -${0}.y) / (${0}.x * ${0}.x + ${0}.y * ${0}.y);`
 
 function iconComplex(hd: boolean) {
   return h(

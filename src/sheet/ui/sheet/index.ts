@@ -99,8 +99,6 @@ export class Sheet {
           } catch (e) {
             console.warn("[draw]", e)
           }
-        } else {
-          console.log(expr.state)
         }
       }
     })
