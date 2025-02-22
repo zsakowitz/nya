@@ -1,5 +1,5 @@
 import type { Point } from "."
-import type { AnyPick2, Picker2 } from "../../pick2"
+import type { AnyPick, Picker } from "../../pick"
 import type { Sheet } from "../sheet"
 
 export class PickHandler {
@@ -72,7 +72,7 @@ export class PickHandler {
   }
 
   private lastMouse: Point | undefined
-  private pick: { pick: AnyPick2; data: {}; found: {} | null } | undefined
+  private pick: { pick: AnyPick; data: {}; found: {} | null } | undefined
 
   isActive() {
     return !!this.pick
@@ -105,7 +105,7 @@ export class PickHandler {
   }
 
   set<T extends {}, U extends {}>(
-    pick: Picker2<T, U>,
+    pick: Picker<T, U>,
     data: T,
     found?: U | null,
   ) {

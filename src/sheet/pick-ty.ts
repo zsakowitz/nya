@@ -7,7 +7,7 @@ import { CmdBrack } from "../field/cmd/math/brack"
 import { Block, L, R } from "../field/model"
 import { hx } from "../jsx"
 import { virtualPoint } from "../pkg/geo/pick-point"
-import { definePicker, type Picker2 } from "./pick2"
+import { definePicker, type Picker } from "./pick"
 import { Expr } from "./ui/expr"
 import type { Selected, Sheet } from "./ui/sheet"
 
@@ -19,13 +19,13 @@ interface Source {
   draw(sheet: Sheet, args: JsVal[]): void
 }
 
-export interface Data2 {
+export interface Data {
   vals: readonly Selected[]
   src: Source
   next: readonly TyName[]
 }
 
-export const PICK2: Picker2<Data2, Selected> = definePicker<Data2, Selected>({
+export const PICK_TY: Picker<Data, Selected> = definePicker<Data, Selected>({
   id(data) {
     return data.src.id
   },
@@ -72,12 +72,12 @@ export const PICK2: Picker2<Data2, Selected> = definePicker<Data2, Selected>({
 
     if (next != null) {
       return {
-        pick: PICK2,
+        pick: PICK_TY,
         data: {
           src: data.src,
           next,
           vals: [...data.vals, found],
-        } satisfies Data2,
+        } satisfies Data,
       }
     }
 
@@ -123,18 +123,18 @@ export const PICK2: Picker2<Data2, Selected> = definePicker<Data2, Selected>({
       return null
     }
     return {
-      pick: PICK2,
+      pick: PICK_TY,
       data: {
         src: data.src,
         next: initial,
         vals: [],
-      } satisfies Data2,
+      } satisfies Data,
     }
   },
   cancel() {},
 })
 
-export function definePick2<
+export function definePickTy<
   const K extends readonly [readonly TyName[], ...(readonly TyName[][])],
 >(
   tag: string,
@@ -150,14 +150,14 @@ export function definePick2<
       : never
     }>
   ) => void,
-): Data2
+): Data
 
-export function definePick2(
+export function definePickTy(
   tag: string,
   fn: string | null,
   steps: readonly [readonly TyName[], ...(readonly TyName[][])],
   draw: (sheet: Sheet, ...args: JsVal[]) => void,
-): Data2 {
+): Data {
   return {
     next: steps[0],
     vals: [],
@@ -174,7 +174,7 @@ export function definePick2(
   }
 }
 
-export function toolbar(icon: () => HTMLSpanElement, props: Data2) {
+export function toolbar(icon: () => HTMLSpanElement, props: Data) {
   return (sheet: Sheet) => {
     const btn = hx(
       "button",
@@ -191,7 +191,7 @@ export function toolbar(icon: () => HTMLSpanElement, props: Data2) {
       }
     })
     btn.addEventListener("click", () => {
-      sheet.pick.set(PICK2, props)
+      sheet.pick.set(PICK_TY, props)
     })
     return btn
   }

@@ -7,7 +7,7 @@ import { CmdWord } from "../../field/cmd/leaf/word"
 import { CmdBrack } from "../../field/cmd/math/brack"
 import { Block, L, R } from "../../field/model"
 import { h, p, svgx } from "../../jsx"
-import { definePick2, PICK2, toolbar, type Data2 } from "../../sheet/pick2byty"
+import { definePickTy, PICK_TY, toolbar, type Data } from "../../sheet/pick-ty"
 import { segmentByPaper } from "../../sheet/ui/paper2"
 import {
   drawPoint,
@@ -119,7 +119,7 @@ function lineInfo(
   }
 }
 
-const PICK_LINE = definePick2(
+const PICK_LINE = definePickTy(
   "l",
   "line",
   [
@@ -133,7 +133,7 @@ const PICK_LINE = definePick2(
   },
 )
 
-const PICK_SEGMENT = definePick2(
+const PICK_SEGMENT = definePickTy(
   "l",
   "segment",
   [
@@ -149,7 +149,7 @@ const PICK_SEGMENT = definePick2(
   },
 )
 
-const PICK_RAY = definePick2(
+const PICK_RAY = definePickTy(
   "l",
   "ray",
   [
@@ -165,7 +165,7 @@ const PICK_RAY = definePick2(
   },
 )
 
-const PICK_VECTOR = definePick2(
+const PICK_VECTOR = definePickTy(
   "l",
   "vector",
   [
@@ -181,7 +181,7 @@ const PICK_VECTOR = definePick2(
   },
 )
 
-const PICK_CIRCLE = definePick2(
+const PICK_CIRCLE = definePickTy(
   "c",
   "circle",
   [
@@ -201,7 +201,7 @@ const PICK_CIRCLE = definePick2(
   },
 )
 
-const PICK_PERPENDICULAR = definePick2(
+const PICK_PERPENDICULAR = definePickTy(
   "l",
   "perpendicular",
   [
@@ -216,7 +216,7 @@ const PICK_PERPENDICULAR = definePick2(
   },
 )
 
-const PICK_PARALLEL = definePick2(
+const PICK_PARALLEL = definePickTy(
   "l",
   "parallel",
   [
@@ -231,7 +231,7 @@ const PICK_PARALLEL = definePick2(
   },
 )
 
-const PICK_MIDPOINT: Data2 = {
+const PICK_MIDPOINT: Data = {
   vals: [],
   next: ["point32", "point64", "segment"],
   src: {
@@ -271,7 +271,7 @@ const PICK_MIDPOINT: Data2 = {
   },
 }
 
-const PICK_POLYGON: Data2 = {
+const PICK_POLYGON: Data = {
   vals: [],
   next: ["point32", "point64"],
   src: {
@@ -573,15 +573,15 @@ export const PKG_GEOMETRY: Package = {
       ],
     },
     keys: {
-      s: (sheet) => sheet.pick.set(PICK2, PICK_SEGMENT),
-      r: (sheet) => sheet.pick.set(PICK2, PICK_RAY),
-      l: (sheet) => sheet.pick.set(PICK2, PICK_LINE),
-      v: (sheet) => sheet.pick.set(PICK2, PICK_VECTOR),
-      c: (sheet) => sheet.pick.set(PICK2, PICK_CIRCLE),
-      x: (sheet) => sheet.pick.set(PICK2, PICK_PERPENDICULAR),
-      z: (sheet) => sheet.pick.set(PICK2, PICK_PARALLEL),
-      m: (sheet) => sheet.pick.set(PICK2, PICK_MIDPOINT),
-      P: (sheet) => sheet.pick.set(PICK2, PICK_POLYGON),
+      s: (sheet) => sheet.pick.set(PICK_TY, PICK_SEGMENT),
+      r: (sheet) => sheet.pick.set(PICK_TY, PICK_RAY),
+      l: (sheet) => sheet.pick.set(PICK_TY, PICK_LINE),
+      v: (sheet) => sheet.pick.set(PICK_TY, PICK_VECTOR),
+      c: (sheet) => sheet.pick.set(PICK_TY, PICK_CIRCLE),
+      x: (sheet) => sheet.pick.set(PICK_TY, PICK_PERPENDICULAR),
+      z: (sheet) => sheet.pick.set(PICK_TY, PICK_PARALLEL),
+      m: (sheet) => sheet.pick.set(PICK_TY, PICK_MIDPOINT),
+      P: (sheet) => sheet.pick.set(PICK_TY, PICK_POLYGON),
     },
   },
 }
