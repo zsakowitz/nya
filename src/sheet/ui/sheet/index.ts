@@ -15,7 +15,6 @@ import { declareAddR64, declareMulR64 } from "../../../pkg/core-ops"
 import { Scope } from "../../deps"
 import type { Exts } from "../../ext"
 import type { SheetFactory } from "../../factory"
-import type { Picker } from "../../pick"
 import { doMatchReglSize } from "../../regl"
 import { REMARK } from "../../remark"
 import { Slider } from "../../slider"
@@ -32,7 +31,6 @@ import {
 } from "../paper2/move"
 import { PickHandler } from "../paper2/pick"
 import { btn, createDocs, DEFAULT_TO_VISIBLE_DOCS } from "./docs"
-import { Handlers } from "./handler"
 
 export class Sheet {
   /** @deprecated */
@@ -45,8 +43,6 @@ export class Sheet {
   private readonly setPixelRatio
   private readonly glPixelRatio = new Slider()
 
-  /** @deprecated */
-  readonly handlers
   readonly pick
   private readonly regl: Regl
 
@@ -80,7 +76,6 @@ export class Sheet {
       }
     })
 
-    this.handlers = new Handlers(this)
     this.scope = new Scope(options)
 
     // prepare js context
@@ -272,14 +267,6 @@ export class Sheet {
         this.pick.cancel()
       }
     })
-  }
-
-  setPick<T extends {}, U extends {}>(pick: Picker<T, U>, data: NoInfer<T>) {
-    this.handlers.setPick(pick, data)
-  }
-
-  unsetPick() {
-    this.handlers.unsetPick()
   }
 
   private checkIndices() {
