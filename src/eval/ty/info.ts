@@ -22,16 +22,11 @@ export interface TyInfo<T, U extends TyName> {
   coerce: TyCoerceMap<T>
   write: TyWrite<T>
   icon(): HTMLSpanElement
-  glide2?: TyGlide2<T>
+  glide?: TyGlide<T>
   components?: TyComponentInfo<T, U>
 }
 
 export type TyGlide<T> = (props: GlideProps<T>) => {
-  value: number
-  precision: number
-}
-
-export type TyGlide2<T> = (props: GlideProps2<T>) => {
   value: number
   precision: number
 }
@@ -42,12 +37,6 @@ interface TyComponentInfo<T, U extends TyName> {
 }
 
 interface GlideProps<T> {
-  shape: T
-  point: Point
-  paper: Paper
-}
-
-interface GlideProps2<T> {
   shape: T
   point: Point
   paper: Paper2

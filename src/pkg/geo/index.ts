@@ -105,7 +105,7 @@ function lineInfo(
         ),
       )
     },
-    glide2:
+    glide:
       glide ?
         (props) => {
           const raw = gliderOnLine2(
@@ -368,7 +368,7 @@ const INFO_CIRCLE: TyInfo<Tys["circle"], TyComponents["circle"]> = {
       ),
     )
   },
-  glide2(props) {
+  glide(props) {
     const x = num(props.shape.center.x)
     const y = num(props.shape.center.y)
     const angle =

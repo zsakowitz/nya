@@ -5,7 +5,7 @@ import { FnDist } from "../eval/ops/dist"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "../eval/ops/vars"
 import { each, type JsValue } from "../eval/ty"
 import { approx, frac, num, pt, real, unpt } from "../eval/ty/create"
-import { highRes, TY_INFO, WRITE_POINT, type TyGlide2 } from "../eval/ty/info"
+import { highRes, TY_INFO, WRITE_POINT, type TyGlide } from "../eval/ty/info"
 import { abs, add, mul, neg } from "../eval/ty/ops"
 import { OpEq } from "../field/cmd/leaf/cmp"
 import { CmdDot } from "../field/cmd/leaf/dot"
@@ -233,7 +233,7 @@ const EXT_POINT = defineHideable({
             case "glider":
               {
                 const { value, precision } = (
-                  TY_INFO[drag.shape.type].glide2! as TyGlide2<any>
+                  TY_INFO[drag.shape.type].glide! as TyGlide<any>
                 )({
                   paper: data.paper2,
                   point: at,
