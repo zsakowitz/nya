@@ -25,7 +25,7 @@ LAYERS.line = 1
 LAYERS.point = 2
 
 export class Paper2 {
-  private readonly el
+  readonly el
   private readonly layers = new Map<number, SVGGElement>()
 
   readonly scale: number = 1
@@ -142,9 +142,55 @@ export class Paper2 {
     const px = offset.x / this.width
     const py = offset.y / this.height
     const { xmin, w, ymin, h } = this.bounds()
-    return {
-      x: xmin + w * px,
-      y: ymin + h * (1 - py),
+    return { x: xmin + w * px, y: ymin + h * (1 - py) }
+  }
+
+  eventToPaper(event: { offsetX: number; offsetY: number }): Point {
+    return this.offsetToPaper({ x: event.offsetX, y: event.offsetY })
+  }
+
+  offsetDeltaToPaper(offsetDelta: Point): Point {
+    const px = offsetDelta.x / this.width
+    const py = offsetDelta.y / this.height
+    const { w, h } = this.bounds()
+    return { x: w * px, y: -h * py }
+  }
+
+  move({ x, y }: Point) {
+    this.rawBounds = {
+      ...this.rawBounds,
+      xmin: this.rawBounds.xmin + x,
+      ymin: this.rawBounds.ymin + y,
     }
+    this.queue()
+  }
+
+  zoom({ x, y }: Point, scale: number) {
+    const { xmin, w, ymin, h } = this.rawBounds
+
+    const xCenter = xmin + w / 2
+    const yCenter = ymin + h / 2
+    const xAdj = (x - xCenter) * (1 - scale) + xCenter
+    const yAdj = (y - yCenter) * (1 - scale) + yCenter
+
+    const xmin2 = scale * (xmin - xCenter) + xAdj
+    const ymin2 = scale * (ymin - yCenter) + yAdj
+    const w2 = scale * w
+    const h2 = scale * h
+
+    const ew = 1e-12 * Math.max(Math.abs(xmin2), Math.abs(xmin2 + w2))
+    const eh = 1e-12 * Math.max(Math.abs(ymin2), Math.abs(ymin2 + h2))
+    if (w2 <= ew || h2 <= eh || w2 >= 1e300 || h2 >= 1e300) {
+      return
+    }
+
+    this.rawBounds = {
+      xmin: xmin2,
+      w: w2,
+      ymin: ymin2,
+      h: h2,
+    }
+
+    this.queue()
   }
 }
