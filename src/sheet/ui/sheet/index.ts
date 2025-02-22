@@ -24,6 +24,11 @@ import { Expr } from "../expr"
 import { Paper, type Point } from "../paper"
 import { Paper2 } from "../paper2"
 import { createDrawAxes } from "../paper2/grid"
+import {
+  registerDragHandler,
+  registerPinchHandler,
+  registerWheelHandler,
+} from "../paper2/move"
 import { btn, createDocs, DEFAULT_TO_VISIBLE_DOCS } from "./docs"
 import { Handlers } from "./handler"
 
@@ -82,6 +87,9 @@ export class Sheet {
     )
     // matchSize(this.paper)
     // makeInteractive(this.paper, this.handlers)
+    registerWheelHandler(this.paper2)
+    registerDragHandler(this.paper2)
+    registerPinchHandler(this.paper2)
     createDrawAxes(this.paper2)
     this.paper2.fns.push(() => {
       for (const expr of this.exprs) {
@@ -228,7 +236,7 @@ export class Sheet {
     this.glPixelRatio.el.className =
       "block w-48 bg-[--nya-bg] outline outline-[--nya-pixel-ratio] rounded-full p-1"
     this.el = h(
-      "fixed inset-0 grid grid-cols-[500px_1fr] grid-rows-[3rem_1fr] grid-rows-1 select-none",
+      "fixed inset-0 grid grid-cols-[min(500px,40vw)_1fr] grid-rows-[3rem_1fr] grid-rows-1 select-none",
 
       sidebar,
       docs,
@@ -237,7 +245,7 @@ export class Sheet {
       h(
         "relative" + (toolbar ? "" : " row-span-2"),
         canvas,
-        (this.paper2 as any).el,
+        this.paper2.el,
         toolbar &&
           h(
             "absolute block top-0 left-0 right-0 h-1 from-[--nya-sidebar-shadow] to-transparent bg-gradient-to-b",
