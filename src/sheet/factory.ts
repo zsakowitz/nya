@@ -5,7 +5,7 @@ import {
   type PuncInfix,
   type PuncUnary,
 } from "../eval/ast/token"
-import { AST_TXRS, GROUP, MAGIC_VARS } from "../eval/ast/tx"
+import { AST_TXRS, GROUP, MAGIC_VARS, type AstTxr } from "../eval/ast/tx"
 import { FNS, OP_BINARY, OP_UNARY } from "../eval/ops"
 import { VARS } from "../eval/ops/vars"
 import type { TyName } from "../eval/ty"
@@ -84,8 +84,13 @@ export class SheetFactory {
       VARS[key] = pkg.eval.vars[key]!
     }
 
-    for (const txr in pkg.eval?.txrs) {
-      AST_TXRS[txr as NodeName] = pkg.eval.txrs[txr as NodeName]! as any
+    for (const keyRaw in pkg.eval?.txrs) {
+      const key = keyRaw as NodeName
+      const txr = pkg.eval.txrs[key]! as AstTxr<any>
+      if (AST_TXRS[key] && (AST_TXRS[key].layer ?? 0) >= (txr.layer ?? 0)) {
+        continue
+      }
+      AST_TXRS[key] = pkg.eval.txrs[key]! as any
     }
 
     for (const prec in pkg.sheet?.exts) {

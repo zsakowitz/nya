@@ -14,6 +14,13 @@ export interface AstTxr<T> {
   glsl(node: T, props: PropsGlsl): GlslValue
   deps(node: T, deps: Deps): void
   drag: DragTarget<T>
+
+  /**
+   * If two packages attempt to load the same transformer, the one with a higher
+   * `layer` takes precedence. If the same `layer` is used, the first one loaded
+   * wins.
+   */
+  layer?: number
 }
 
 export interface PropsDrag {
@@ -58,6 +65,7 @@ function joint<T>(
       },
     },
     deps,
+    layer: -1,
   }
 }
 
@@ -134,7 +142,11 @@ export function group(node: { lhs: ParenLhs; rhs: ParenRhs }) {
 
 export const MAGIC_VARS: Record<string, MagicVarTxr> = Object.create(null)
 
+// Most of these just error instead of specifying any behavior, as actual
+// behavior should be left to packages. The ones which aren't immediate errors
+// are explained.
 export const AST_TXRS: { [K in NodeName]?: AstTxr<Nodes[K]> } = {
+  // Delegates to `GROUP` so that different packages can specify different groups
   group: {
     js(node, props) {
       return group(node).js(node.value, props)
@@ -154,12 +166,8 @@ export const AST_TXRS: { [K in NodeName]?: AstTxr<Nodes[K]> } = {
       deps.add(node.value)
     },
   },
-  error: joint(
-    ({ reason }) => {
-      throw new Error(reason)
-    },
-    () => {},
-  ),
+
+  // Delegates to `MAGIC_VARS` so packages can specify varied magic variables
   magicvar: {
     js(node, props) {
       if (node.value in MAGIC_VARS) {
@@ -182,6 +190,44 @@ export const AST_TXRS: { [K in NodeName]?: AstTxr<Nodes[K]> } = {
       }
     },
   },
+
+  // The type system is implemented in project nya core, so it makes sense to
+  // have its transformer in libcore.
+  tycoerce: {
+    deps(node, deps) {
+      deps.add(node.value)
+    },
+    drag: NO_DRAG,
+    glsl(node, props) {
+      const value = glsl(node.value, props)
+      return {
+        type: node.name,
+        list: value.list,
+        expr: coerceValueGlsl(props.ctx, value, {
+          type: node.name,
+          list: value.list,
+        }),
+      }
+    },
+    js(node, props) {
+      const value = js(node.value, props)
+      return coerceValueJs(value, {
+        type: node.name,
+        list: value.list,
+      })
+    },
+    layer: -1,
+  },
+
+  // Immediately throws whatever error was in the source node
+  error: joint(
+    ({ reason }) => {
+      throw new Error(reason)
+    },
+    () => {},
+  ),
+
+  // Everything else just errors or adds dependencies.
   void: error`Empty expression.`(() => {}),
   commalist: error`Lists must be surrounded by square brackets.`(
     (node, deps) => {
@@ -208,29 +254,5 @@ export const AST_TXRS: { [K in NodeName]?: AstTxr<Nodes[K]> } = {
     () => {},
   ),
   tyname: errorAll`Cannot evaluate a raw type name.`,
-  tycoerce: {
-    deps(node, deps) {
-      deps.add(node.value)
-    },
-    drag: NO_DRAG,
-    glsl(node, props) {
-      const value = glsl(node.value, props)
-      return {
-        type: node.name,
-        list: value.list,
-        expr: coerceValueGlsl(props.ctx, value, {
-          type: node.name,
-          list: value.list,
-        }),
-      }
-    },
-    js(node, props) {
-      const value = js(node.value, props)
-      return coerceValueJs(value, {
-        type: node.name,
-        list: value.list,
-      })
-    },
-  },
 }
 Object.setPrototypeOf(AST_TXRS, null)
