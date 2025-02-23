@@ -205,6 +205,7 @@ export class Sheet {
         docs.classList.add("hidden")
         sidebar.classList.remove("hidden")
       }),
+      this.options,
       Object.values(factory.loaded),
     )
 

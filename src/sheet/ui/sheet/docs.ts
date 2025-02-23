@@ -19,11 +19,11 @@ import { CmdPiecewise } from "../../../field/cmd/logic/piecewise"
 import { CmdBrack } from "../../../field/cmd/math/brack"
 import { CmdSupSub } from "../../../field/cmd/math/supsub"
 import { fa } from "../../../field/fa"
+import { FieldInert } from "../../../field/field-inert"
 import { Block, R } from "../../../field/model"
+import type { Options } from "../../../field/options"
 import { a, h, hx } from "../../../jsx"
 import type { Package } from "../../../pkg"
-
-export const DEFAULT_TO_VISIBLE_DOCS = false
 
 export function btn(
   icon: IconDefinition,
@@ -105,17 +105,41 @@ class PackageList {
 
 const IS_DEV = "NYA_DEV" in globalThis
 const OPEN_NORMAL = !IS_DEV
-const OPEN_DATA_TYPES = IS_DEV
+const OPEN_DATA_TYPES = false
+const OPEN_LAST_PACKAGE = IS_DEV
 
-export function createDocs(hide: HTMLElement, packages: Package[]) {
+export const DEFAULT_TO_VISIBLE_DOCS = IS_DEV
+
+export function createDocs(
+  hide: HTMLElement,
+  options: Options,
+  packages: Package[],
+) {
   const list = new PackageList(packages)
 
   const nonPackageSpecific = h(
     "contents",
-    secShaders(),
+    ...packages
+      .map((x) => x.docs)
+      .filter((x) => x != null)
+      .flatMap((docs, i, a) =>
+        Object.entries(docs).map(([k, v], j, b) =>
+          section(
+            k,
+            v(),
+            OPEN_LAST_PACKAGE && i == a.length - 1 && j == b.length - 1,
+          ),
+        ),
+      ),
     secAdvancedOperators(),
     secChangelog(),
   )
+
+  nonPackageSpecific.querySelectorAll("samp").forEach((el) => {
+    const field = new FieldInert(options)
+    field.typeLatex(el.textContent ?? "")
+    el.replaceWith(field.el)
+  })
 
   const el = h(
     "flex flex-col overflow-y-auto px-4 pb-4 gap-2 [&_p+p]:-mt-2",
@@ -378,36 +402,6 @@ function secDataTypes(list: PackageList) {
     ),
     OPEN_DATA_TYPES,
   )
-}
-
-function secShaders() {
-  return section("shaders", [
-    hx(
-      "p",
-      "",
-      "If you reference the 'x', 'y', or 'p' variables in an expression, it becomes a ",
-      hx("em", "", "shader"),
-      ". A shader outputs a single color for every pixel on your screen, and can draw very complex shapes very quickly.",
-    ),
-    hx(
-      "p",
-      "",
-      "When running in shaders, most computations run at a lower precision than normal, since most devices can't handle higher precision values, which might lead to shaders appearing pixelated.",
-    ),
-    hx(
-      "p",
-      "",
-      "Some functions and operators, however, can run on high-precision variants. These operations can be up to 20x slower, but are much more accurate. Note that only these types have high-precision variants:",
-    ),
-    h(
-      "flex flex-col",
-      ...Object.entries(TY_INFO)
-        .filter((x) => x[0].endsWith("64"))
-        .map(([, info]) =>
-          h("flex gap-1", info?.icon(), info.name + " (high-res)"),
-        ),
-    ),
-  ])
 }
 
 function secAdvancedOperators() {
@@ -916,3 +910,20 @@ function secChangelog() {
 
 const MASSIVE_URL = () =>
   "https://v8-dm8n5plod-zsnout.vercel.app/desmos?desmosState=%7B%22version%22%3A11%2C%22randomSeed%22%3A%22bce40c91e3061790fd578740a10de9b1%22%2C%22graph%22%3A%7B%22viewport%22%3A%7B%22xmin%22%3A-21.818588115496738%2C%22ymin%22%3A-18.86552532798194%2C%22xmax%22%3A19.579211720093717%2C%22ymax%22%3A18.692962426082%7D%2C%22complex%22%3Atrue%7D%2C%22expressions%22%3A%7B%22list%22%3A%5B%7B%22type%22%3A%22expression%22%2C%22id%22%3A%22__fractal_explorer_c%22%2C%22color%22%3A%22%23c74440%22%2C%22latex%22%3A%22f_c%5C%5Cleft%28p%5C%5Cright%29%3Dp%22%2C%22hidden%22%3Atrue%7D%2C%7B%22type%22%3A%22expression%22%2C%22id%22%3A%22__fractal_explorer_z%22%2C%22color%22%3A%22%232d70b3%22%2C%22latex%22%3A%22f_z%5C%5Cleft%28p%5C%5Cright%29%3Dp%22%2C%22hidden%22%3Atrue%7D%2C%7B%22type%22%3A%22expression%22%2C%22id%22%3A%22__fractal_explorer_f%22%2C%22color%22%3A%22%23388c46%22%2C%22latex%22%3A%22f_%7Beq%7D%5C%5Cleft%28c%2Cz%2Cp%5C%5Cright%29%3Dz-%5C%5Cfrac%7B%5C%5Cleft%28z-A%5C%5Cright%29%5C%5Cleft%28z-B%5C%5Cright%29%5C%5Cleft%28z-C%5C%5Cright%29%7D%7BA%5C%5Cleft%28B%2BC-2z%5C%5Cright%29%2BB%5C%5Cleft%28C-2z%5C%5Cright%29%2Bz%5C%5Cleft%283z-2C%5C%5Cright%29%7D%22%2C%22hidden%22%3Atrue%7D%2C%7B%22type%22%3A%22expression%22%2C%22id%22%3A%222%22%2C%22color%22%3A%22%23c74440%22%2C%22latex%22%3A%22A%3D-10-5.2i%22%2C%22colorLatex%22%3A%22X%22%7D%2C%7B%22type%22%3A%22expression%22%2C%22id%22%3A%2221%22%2C%22color%22%3A%22%232d70b3%22%2C%22latex%22%3A%22B%3D0.9-3.74i%22%2C%22colorLatex%22%3A%22Y%22%7D%2C%7B%22type%22%3A%22expression%22%2C%22id%22%3A%2222%22%2C%22color%22%3A%22%23388c46%22%2C%22latex%22%3A%22C%3D-4.7%2B2i%22%2C%22colorLatex%22%3A%22Z%22%7D%2C%7B%22type%22%3A%22expression%22%2C%22id%22%3A%2241%22%2C%22color%22%3A%22%23c74440%22%2C%22latex%22%3A%22q%5C%5Cleft%28x%5C%5Cright%29%3D%5C%5Coperatorname%7Bhsv%7D%5C%5Cleft%28180-%5C%5Cfrac%7B360%7D%7B2%5C%5Cpi%7D%5C%5Carctan%5C%5Cleft%28%5C%5Coperatorname%7Bimag%7D%5C%5Cleft%28x%5C%5Cright%29%2C%5C%5Coperatorname%7Breal%7D%5C%5Cleft%28x%5C%5Cright%29%5C%5Cright%29%2C1%2C1%5C%5Cright%29%22%7D%2C%7B%22type%22%3A%22expression%22%2C%22id%22%3A%2242%22%2C%22color%22%3A%22%232d70b3%22%2C%22latex%22%3A%22Z%3Dq%5C%5Cleft%28C%5C%5Cright%29%22%7D%2C%7B%22type%22%3A%22expression%22%2C%22id%22%3A%2243%22%2C%22color%22%3A%22%23388c46%22%2C%22latex%22%3A%22Y%3Dq%5C%5Cleft%28B%5C%5Cright%29%22%7D%2C%7B%22type%22%3A%22expression%22%2C%22id%22%3A%2244%22%2C%22color%22%3A%22%236042a6%22%2C%22latex%22%3A%22X%3Dq%5C%5Cleft%28A%5C%5Cright%29%22%7D%2C%7B%22type%22%3A%22expression%22%2C%22id%22%3A%2246%22%2C%22color%22%3A%22%23000000%22%2C%22latex%22%3A%22P%3D11.25-2i%22%7D%2C%7B%22type%22%3A%22expression%22%2C%22id%22%3A%2247%22%2C%22color%22%3A%22%232d70b3%22%2C%22latex%22%3A%22f%5C%5Cleft%28z%5C%5Cright%29%3Df_%7Beq%7D%5C%5Cleft%28P%2Cz%2CP%5C%5Cright%29%22%7D%2C%7B%22type%22%3A%22expression%22%2C%22id%22%3A%2249%22%2C%22color%22%3A%22%236042a6%22%2C%22latex%22%3A%22s%5C%5Cleft%28z%2C0%5C%5Cright%29%3Dz%22%7D%2C%7B%22type%22%3A%22expression%22%2C%22id%22%3A%2250%22%2C%22color%22%3A%22%23000000%22%2C%22latex%22%3A%22s%5C%5Cleft%28z%2Cn%5C%5Cright%29%3Ds%5C%5Cleft%28%5C%5Coperatorname%7Bjoin%7D%5C%5Cleft%28z%2Cf%5C%5Cleft%28z%5C%5Cleft%5Bz.%5C%5Coperatorname%7Blength%7D%5C%5Cright%5D%5C%5Cright%29%5C%5Cright%29%2Cn-1%5C%5Cright%29%22%7D%2C%7B%22type%22%3A%22expression%22%2C%22id%22%3A%2248%22%2C%22color%22%3A%22%23000000%22%2C%22latex%22%3A%22s%5C%5Cleft%28%5C%5Cleft%5BP%5C%5Cright%5D%2C50%5C%5Cright%29%22%2C%22lines%22%3Atrue%7D%5D%7D%2C%22includeFunctionParametersInRandomSeed%22%3Atrue%7D&equation=%7E%7Ez-%5Cfrac%7B%5Cleft%28z-%5Cdesmos%7BA%7D%5Cright%29%5Cleft%28z-%5Cdesmos%7BB%7D%5Cright%29%5Cleft%28z-%5Cdesmos%7BC%7D%5Cright%29%7D%7B%5Cdesmos%7BA%7D%5Cleft%28%5Cdesmos%7BB%7D%2B%5Cdesmos%7BC%7D-2z%5Cright%29%2B%5Cdesmos%7BB%7D%5Cleft%28%5Cdesmos%7BC%7D-2z%5Cright%29%2Bz%5Cleft%283z-2%5Cdesmos%7BC%7D%5Cright%29%7D&inner_theme=plot&theme=plot&size=1e10&plot_size=9.999999578402807e-9"
+
+export function example(input: string, value: string) {
+  return h(
+    "block -mr-4 w-[calc(100%_+_1rem)] border-l border-[--nya-border]",
+    h(
+      "block px-4 w-full overflow-x-auto [&::-webkit-scrollbar]:hidden text-left",
+      hx("samp", "", input),
+    ),
+    h(
+      "pt-2 block px-2 w-full overflow-x-auto [&::-webkit-scrollbar]:hidden text-right",
+      h(
+        "bg-[--nya-bg-sidebar] border border-[--nya-border] px-2 py-1 rounded ml-auto inline-block",
+        hx("samp", "", value),
+      ),
+    ),
+  )
+}

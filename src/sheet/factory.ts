@@ -138,7 +138,7 @@ export class SheetFactory {
       const magic = pkg.eval.op.magic[key]!
       for (const key of magic.helpers || []) {
         this.options.words.init(key, "infix")
-        PRECEDENCE_MAP[key] = Precedence.WordInfix
+        PRECEDENCE_MAP[key] = Precedence.WordInfixList
       }
       MAGIC_VARS[key] = magic
     }

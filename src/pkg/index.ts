@@ -59,6 +59,8 @@ export interface Package {
     toolbar?: Record<number, ToolbarItem[]>
     keys?: Record<string, (sheet: Sheet) => void>
   }
+
+  docs?: Record<string, () => HTMLElement[]>
 }
 
 export interface ToolbarItem {
