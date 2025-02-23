@@ -41,7 +41,7 @@ export function t(text: string) {
   return document.createTextNode(text)
 }
 
-export function p(d: string) {
+export function path(d: string) {
   const el = document.createElementNS("http://www.w3.org/2000/svg", "path")
   el.setAttribute("d", d)
   return el
@@ -104,7 +104,7 @@ export function usvg(
   el.setAttribute("stroke-linejoin", "miter")
   el.setAttribute("stroke-miterlimit", "100")
   el.setAttribute("class", classes)
-  el.appendChild(p(d))
+  el.appendChild(path(d))
   return el
 }
 

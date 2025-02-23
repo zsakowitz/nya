@@ -1,5 +1,5 @@
 import type { Node } from "../../../eval/ast/token"
-import { h, p, svg } from "../../../jsx"
+import { h, path, svg } from "../../../jsx"
 import type { LatexParser } from "../../latex"
 import {
   Block,
@@ -64,7 +64,7 @@ export class CmdRoot extends Command<
             "absolute bottom-[.15em] top-px inline-block w-[.95em]",
             svg(
               "0 0 32 54",
-              p(
+              path(
                 "M0 33 L7 27 L12.5 47 L13 47 L30 0 L32 0 L13 54 L11 54 L4.5 31 L0 33",
               ),
             ),
@@ -83,7 +83,7 @@ export class CmdRoot extends Command<
         "absolute bottom-[.15em] top-px inline-block w-[.95em]",
         svg(
           "0 0 32 54",
-          p(
+          path(
             "M0 33 L7 27 L12.5 47 L13 47 L30 0 L32 0 L13 54 L11 54 L4.5 31 L0 33",
           ),
         ),

@@ -6,7 +6,7 @@ import { CmdComma } from "../../field/cmd/leaf/comma"
 import { CmdWord } from "../../field/cmd/leaf/word"
 import { CmdBrack } from "../../field/cmd/math/brack"
 import { Block, L, R } from "../../field/model"
-import { h, p, svgx } from "../../jsx"
+import { h, path, svgx } from "../../jsx"
 import { definePickTy, PICK_TY, toolbar, type Data } from "../../sheet/pick-ty"
 import { segmentByPaper } from "../../sheet/ui/paper"
 import {
@@ -444,7 +444,7 @@ const INFO_POLYGON: TyInfo<Tys["polygon"], TyComponents["polygon"]> = {
           svgx(
             "2.2 4.4 17.6 13.2",
             "stroke-current fill-none overflow-visible [stroke-linejoin:round] stroke-2",
-            p("M 7.2 4.4 L 19.8 13.2 L 2.2 17.6 Z"),
+            path("M 7.2 4.4 L 19.8 13.2 L 2.2 17.6 Z"),
           ),
         ),
       ),

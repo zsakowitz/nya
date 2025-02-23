@@ -1,6 +1,6 @@
 import { faQuoteLeft } from "@fortawesome/free-solid-svg-icons/faQuoteLeft"
 import { fa } from "../../../field/fa"
-import { h, p, svgx } from "../../../jsx"
+import { h, path, svgx } from "../../../jsx"
 
 export function circle(
   kind: "shaderon" | "empty" | "ithkuilscript" | "text",
@@ -30,7 +30,7 @@ export function circle(
         svgx(
           "-9.5367431640625e-7 -35.04999923706055 34.20000076293945 70.0999984741211",
           "absolute top-1/2 left-1/2 h-[90%] -translate-x-1/2 -translate-y-1/2 fill-current",
-          p(
+          path(
             "M 8.449998474121093 -25.05 l 0 25 l -8.45 8.45 l 26.7 26.65 l 7.5 -7.5 l -25.5 -25.5 l 9.75 -9.7 l 0 -27.4 l -10 10 z",
           ),
         ),
