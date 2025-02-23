@@ -108,7 +108,7 @@ const OPEN_NORMAL = !IS_DEV
 const OPEN_DATA_TYPES = false
 const OPEN_LAST_PACKAGE = IS_DEV
 
-export const DEFAULT_TO_VISIBLE_DOCS = IS_DEV
+export const DEFAULT_TO_VISIBLE_DOCS = false
 
 export function createDocs(
   hide: HTMLElement,

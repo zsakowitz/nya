@@ -136,9 +136,23 @@ export class SheetFactory {
         this.options.words.init(key, "magicprefix")
       }
       const magic = pkg.eval.op.magic[key]!
-      for (const key of magic.helpers || []) {
-        this.options.words.init(key, "infix")
-        PRECEDENCE_MAP[key] = Precedence.WordInfixList
+      for (const helper of magic.helpers || []) {
+        this.options.words.init(helper, "infix")
+        PRECEDENCE_MAP[helper] = Precedence.WordInfixList
+        if (!(helper in OP_BINARY)) {
+          OP_BINARY[helper] = {
+            glsl() {
+              throw new Error(
+                `The operator '${helper}' can only be used as part of an '${key}' expression.`,
+              )
+            },
+            js() {
+              throw new Error(
+                `The operator '${helper}' can only be used as part of an '${key}' expression.`,
+              )
+            },
+          }
+        }
       }
       MAGIC_VARS[key] = magic
     }
