@@ -22,7 +22,7 @@ import { fa } from "../../../field/fa"
 import { FieldInert } from "../../../field/field-inert"
 import { Block, R } from "../../../field/model"
 import type { Options } from "../../../field/options"
-import { a, h, hx } from "../../../jsx"
+import { a, h, hx, p } from "../../../jsx"
 import type { Package } from "../../../pkg"
 
 export function btn(
@@ -246,9 +246,7 @@ function section(label: string, data: Node | (Node | null)[], open?: boolean) {
 function secCredits() {
   return section(
     "credits",
-    hx(
-      "p",
-      "",
+    p(
       "This site is a work in progress by ",
       hx(
         "a",
@@ -275,19 +273,13 @@ function secCredits() {
 
 function secWhy() {
   return section("why this exists", [
-    hx(
-      "p",
-      "",
+    p(
       "I love Desmos's tools, and I've always thought it would be fun to rebuild it, simply for my own enjoyment.",
     ),
-    hx(
-      "p",
-      "",
+    p(
       "My original dream was simply to make a version of Desmos with complex numbers (they weren't added to Desmos until late 2024). But I never created that, since it never seemed worth it to rebuild a whole calculator app just for one tiny feature.",
     ),
-    hx(
-      "p",
-      "",
+    p(
       "Later, I became obsessed with fractals (see the ",
       a(
         "https://v8.zsnout.com/fractal-gallery",
@@ -295,14 +287,10 @@ function secWhy() {
       ),
       " for interactive examples). I tried making some in Desmos, but they never matched up to my quality expectations, since Desmos wasn't built for fractals. So I brushed the thought aside.",
     ),
-    hx(
-      "p",
-      "",
+    p(
       "But then, around November 2024, I had a realization. I'm a programmer. If I want Desmos to make fractals, I can just... make it do that. And the project just exploded from there. For the full details, scroll down to the changelog at the bottom of this page.",
     ),
-    hx(
-      "p",
-      "",
+    p(
       "Hence, I present to you: ",
       hx("strong", "font-semibold", "project nya"),
       ". I hope you enjoy it.",
@@ -790,17 +778,13 @@ function secOperators(list: PackageList) {
 
 function secChangelog() {
   return section("changelog", [
-    hx(
-      "p",
-      "",
+    p(
       "My original prototype was just ",
       a(MASSIVE_URL(), "to slap Desmos onto my existing Fractal Explorer"),
       ". It worked well, but it could only render one fractal. Since then, I've rebuilt every component of those original projects. Here are some highlights:",
     ),
-    hx("p", "", "Nov. 18 was the day I started the project."),
-    hx(
-      "p",
-      "",
+    p("Nov. 18 was the day I started the project."),
+    p(
       "Nov. 28 was the first day ",
       a(
         "https://ts-latex-ckprccic9-zsakowitzs-projects.vercel.app/",
@@ -808,9 +792,7 @@ function secChangelog() {
       ),
       " was accessible on the internet.",
     ),
-    hx(
-      "p",
-      "",
+    p(
       "By Nov. 30, ",
       a(
         "https://ts-latex-1u30n8hl1-zsakowitzs-projects.vercel.app/",
@@ -818,10 +800,8 @@ function secChangelog() {
       ),
       " could type everything Desmos's can, and then some.",
     ),
-    hx("p", "", "I took a month-long break during December."),
-    hx(
-      "p",
-      "",
+    p("I took a month-long break during December."),
+    p(
       "Jan. 6 was the first day ",
       a(
         "https://ts-latex-6bxt4jtun-zsakowitzs-projects.vercel.app/",
@@ -829,25 +809,19 @@ function secChangelog() {
       ),
       " started to actually set in.",
     ),
-    hx(
-      "p",
-      "",
+    p(
       "By Jan. 8, it could evaluate some expressions and had a graph paper ",
       a("https://ts-latex-7q5154x8x-zsakowitzs-projects.vercel.app/", ""),
       ". (I stole the graph paper from an old project, which saved a bit of time.)",
     ),
-    hx(
-      "p",
-      "",
+    p(
       a(
         "https://ts-latex-15r43kfip-zsakowitzs-projects.vercel.app/",
         "On Jan. 10",
       ),
       ", it could render basic shaders.",
     ),
-    hx(
-      "p",
-      "",
+    p(
       "On Jan. 11, iteration was supported enough to ",
       a(
         "https://ts-latex-ejtii37qi-zsakowitzs-projects.vercel.app/",
@@ -855,9 +829,7 @@ function secChangelog() {
       ),
       ".",
     ),
-    hx(
-      "p",
-      "",
+    p(
       "By Jan. 25, it could mimic high-precision numbers enough to ",
       a(
         "https://ts-latex-gvky3jt81-zsakowitzs-projects.vercel.app/",
@@ -865,9 +837,7 @@ function secChangelog() {
       ),
       ". (Drag the slider at the top-right to the left for less pixelation.)",
     ),
-    hx(
-      "p",
-      "",
+    p(
       "By Feb. 5, it could draw objects directly from the CPU, and ",
       a(
         "https://ts-latex-1ggybmqd9-zsakowitzs-projects.vercel.app/",
@@ -875,9 +845,7 @@ function secChangelog() {
       ),
       ".",
     ),
-    hx(
-      "p",
-      "",
+    p(
       "On Feb. 6, I worked on adding ",
       a(
         "https://ts-latex-3n1xvcbem-zsakowitzs-projects.vercel.app/",
@@ -885,9 +853,7 @@ function secChangelog() {
       ),
       ".",
     ),
-    hx(
-      "p",
-      "",
+    p(
       "As of Feb. 8, ",
       a(
         "https://ts-latex-oywr5or8t-zsakowitzs-projects.vercel.app/",
@@ -895,9 +861,7 @@ function secChangelog() {
       ),
       " without ever touching the expression list.",
     ),
-    hx(
-      "p",
-      "",
+    p(
       "As of Feb. 11, ",
       a(
         "https://github.com/zsakowitz/nya/tree/4d7dfd34cbcec061a9d0e0befe15fc259415b97e/src/pkg",

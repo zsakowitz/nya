@@ -116,6 +116,10 @@ export function a(href: string, ...children: (Node | string | null)[]) {
   )
 }
 
+export function p(...children: (Node | string | null)[]) {
+  return hx("p", "", ...children)
+}
+
 interface SVGProps {
   svg: {
     fill?: string

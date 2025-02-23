@@ -7,7 +7,7 @@ import { ALL_DOCS, type WithDocs } from "../eval/ops/docs"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "../eval/ops/vars"
 import { coerceValueGlsl } from "../eval/ty/coerce"
 import { TY_INFO, any } from "../eval/ty/info"
-import { h, hx } from "../jsx"
+import { h, hx, p } from "../jsx"
 import { Store, defineExt } from "../sheet/ext"
 import { circle } from "../sheet/ui/expr/circle"
 import { PROP_SHOWN } from "../show"
@@ -247,21 +247,15 @@ export const PKG_SHADER: Package = {
   docs: {
     shaders() {
       return [
-        hx(
-          "p",
-          "",
+        p(
           "If you reference the 'x', 'y', or 'p' variables in an expression, it becomes a ",
           hx("em", "", "shader"),
           ". A shader outputs a single color for every pixel on your screen, and can draw very complex shapes very quickly.",
         ),
-        hx(
-          "p",
-          "",
+        p(
           "When running in shaders, most computations run at a lower precision than normal, since most devices can't handle higher precision values, which might lead to shaders appearing pixelated.",
         ),
-        hx(
-          "p",
-          "",
+        p(
           "Some functions and operators, however, can run on high-precision variants. These operations can be up to 20x slower, but are much more accurate. Note that only these types have high-precision variants:",
         ),
         h(

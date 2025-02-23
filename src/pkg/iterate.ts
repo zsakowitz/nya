@@ -21,7 +21,7 @@ import {
 import { coerceValueGlsl, isReal } from "../eval/ty/coerce"
 import { num, real } from "../eval/ty/create"
 import { declareGlsl } from "../eval/ty/decl"
-import { h, hx } from "../jsx"
+import { h, p } from "../jsx"
 import { example } from "../sheet/ui/sheet/docs"
 
 declare module "../eval/ast/token" {
@@ -525,9 +525,7 @@ export const PKG_ITERATE: Package = {
   docs: {
     iteration() {
       return [
-        hx(
-          "p",
-          "",
+        p(
           "The ",
           h("font-semibold", "iterate"),
           " function lets you compute an expression multiple times using its previous value as part of the computation. For example:",
@@ -536,9 +534,7 @@ export const PKG_ITERATE: Package = {
           String.raw`\operatorname{iterate}^{50}n\to n+2\operatorname{from}n=3`,
           "=103",
         ),
-        hx(
-          "p",
-          "",
+        p(
           "You can also add a ",
           h("font-semibold", "while"),
           " or ",
@@ -549,9 +545,7 @@ export const PKG_ITERATE: Package = {
           String.raw`\operatorname{iterate}^{100}z\to 2z\operatorname{while}z<100\operatorname{from}z=2`,
           "=128",
         ),
-        hx(
-          "p",
-          "",
+        p(
           "As an alternate form, you can write ",
           h("font-semibold", "iterate"),
           " after ",
@@ -564,18 +558,14 @@ export const PKG_ITERATE: Package = {
           String.raw`a\operatorname{with}\operatorname{iterate}^{10}a\to 2a\operatorname{from}a=1`,
           "=1024",
         ),
-        hx(
-          "p",
-          "",
+        p(
           "In this alternate form, you can iterate over multiple variables at once. Note that variables are updated all at once, not in sequence.",
         ),
         example(
           String.raw`a\operatorname{with}\operatorname{iterate}^{10}\begin{list}n\to n+1\\a\to a+n\end{list}\operatorname{from}\begin{list}n=0\\a=0\end{list}`,
           "=45",
         ),
-        hx(
-          "p",
-          "",
+        p(
           "By the way, you can type ",
           h("font-semibold", "list"),
           " to create a vertical list, like the ones in that last example. Alternatively, you can just separate the elements with commas:",
@@ -584,9 +574,7 @@ export const PKG_ITERATE: Package = {
           String.raw`a\operatorname{with}\operatorname{iterate}^{10}n\to n+1,a\to a+n\operatorname{from}n=0,a=0`,
           "=45",
         ),
-        hx(
-          "p",
-          "",
+        p(
           "If you want to update each variable in order, use ",
           h("font-semibold", "withseq iterate"),
           ".",
@@ -599,9 +587,7 @@ export const PKG_ITERATE: Package = {
           String.raw`a\operatorname{withseq}\operatorname{iterate}^{10}\begin{list}a\to a+n\\n\to n+1\end{list}\operatorname{from}\begin{list}n=0\\a=0\end{list}`,
           "=45",
         ),
-        hx(
-          "p",
-          "",
+        p(
           "If you're iterating over multiple variables, you can use ",
           h("font-semibold", "iterate.name"),
           " as a shortcut for ",
@@ -612,9 +598,7 @@ export const PKG_ITERATE: Package = {
           String.raw`\operatorname{iterate}.a^{10}\begin{list}n\to n+1\\a\to a+n\end{list}\operatorname{from}\begin{list}n=0\\a=0\end{list}`,
           "=45",
         ),
-        hx(
-          "p",
-          "",
+        p(
           "Finally, you can use ",
           h("font-semibold", "iterate.count"),
           " to return the number of iterations instead of any particular variable. This is usually only useful if you also have a ",
@@ -627,9 +611,7 @@ export const PKG_ITERATE: Package = {
           String.raw`\operatorname{iterate}.\operatorname{count}^{20}z\to 2z\operatorname{from}z=1\operatorname{while}z<500`,
           "=9",
         ),
-        hx(
-          "p",
-          "",
+        p(
           "Note that in shaders, iteration is significantly more restricted than usual. The variable you're iterating over can't change type, so you can't grow or shrink a list, change a number to a color, or do anything similar.",
         ),
       ]
