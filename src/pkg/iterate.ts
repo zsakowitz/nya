@@ -11,10 +11,18 @@ import {
   parseUpdateVar,
   tryParseBindingVar,
 } from "../eval/lib/binding"
-import { type GlslValue, type JsValue, list } from "../eval/ty"
-import { isReal } from "../eval/ty/coerce"
+import {
+  type GlslValue,
+  type JsValue,
+  type Type,
+  list,
+  typeName,
+} from "../eval/ty"
+import { coerceValueGlsl, isReal } from "../eval/ty/coerce"
 import { num, real } from "../eval/ty/create"
 import { declareGlsl } from "../eval/ty/decl"
+import { h, hx } from "../jsx"
+import { example } from "../sheet/ui/sheet/docs"
 
 declare module "../eval/ast/token" {
   interface PuncListInfix {
@@ -23,8 +31,6 @@ declare module "../eval/ast/token" {
     from: 0
   }
 }
-
-// TODO: can't handle changing types in webgl
 
 interface IterateCondition {
   type: "while" | "until"
@@ -35,7 +41,7 @@ type IterateRetval = "count" | { id: string; name: string }
 
 interface Iterate {
   update: Binding[]
-  from: Binding[]
+  from: [...Binding, explicit: boolean][]
 
   limit: Node
   condition: IterateCondition | undefined
@@ -199,6 +205,12 @@ function parseIterate(
         span: null,
       },
       name,
+      !!(
+        from &&
+        (from.type == "value" ?
+          from.value
+        : from.values.find((x) => x[0] == id)?.[1])
+      ),
     ]),
   }
 
@@ -321,6 +333,52 @@ function iterateGlsl(
     const name = ctx.name()
     ctx.push`${declareGlsl(value, name)} = ${value.expr};\n`
     values[id] = { ...value, expr: name }
+  }
+
+  const firstIterTypes: Record<string, Type> = Object.create(null)
+  const oldCtx = props.eval.ctx
+  try {
+    props.eval.ctx = props.eval.ctx.fork()
+
+    if (props.seq) {
+      for (const [id, update] of iterate.update) {
+        const virtualValues = { ...values }
+        Object.setPrototypeOf(virtualValues, null)
+        props.eval.bindings.withAll(
+          virtualValues,
+          () =>
+            (virtualValues[id] = firstIterTypes[id] = glsl(update, props.eval)),
+        )
+      }
+    } else {
+      props.eval.bindings.withAll(values, () => {
+        for (const [id, update] of iterate.update) {
+          firstIterTypes[id] = glsl(update, props.eval)
+        }
+      })
+    }
+  } finally {
+    props.eval.ctx = oldCtx
+  }
+
+  for (const [id, , name, explicit] of iterate.from) {
+    const from = values[id]!
+    const prev = from
+    const type = firstIterTypes[id]!
+    try {
+      values[id] = {
+        expr: coerceValueGlsl(props.eval.ctx, from, type),
+        list: type.list,
+        type: type.type,
+      }
+    } catch {
+      throw new Error(
+        `Variable ${name} has different types before (${typeName(prev)}) and after (${typeName(type)}) evaluating update clause; this is not allowed in 'iterate' clauses within shaders.` +
+          (explicit ? "" : (
+            " Note that 0 was inferred to be the initial value since you didn't specify any actual initial value."
+          )),
+      )
+    }
   }
 
   const count = ctx.name()
