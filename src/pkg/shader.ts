@@ -18,7 +18,6 @@ import { PKG_REAL } from "./num-real"
 const store = new Store((expr) => {
   const circEmpty = circle("empty")
   const circShader = circle("shaderon")
-  circShader.classList.add("hidden")
 
   const field = hx("input", {
     type: "checkbox",
@@ -26,6 +25,8 @@ const store = new Store((expr) => {
     autocomplete: "off",
   })
   field.checked = PROP_SHOWN.get(expr)
+  circShader.classList.toggle("hidden", !PROP_SHOWN.get(expr))
+  circEmpty.classList.toggle("hidden", PROP_SHOWN.get(expr))
   field.addEventListener("input", () => setShow(field.checked))
 
   const el = hx(

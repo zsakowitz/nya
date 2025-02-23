@@ -226,6 +226,10 @@ export function coerceValueGlsl(
     throw new Error("Cannot grow a list.")
   }
 
+  if (value.list < to.list) {
+    throw new Error("Cannot grow a list.")
+  }
+
   const index = ctx.name()
   const cached = ctx.cacheValue(value)
   ctx.push`for (int ${index} = 0; ${index} < ${to.list}; ${index}++) {\n`

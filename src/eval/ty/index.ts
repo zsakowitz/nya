@@ -188,6 +188,8 @@ export function joinGlsl(
 export function typeName(type: Type) {
   if (type.list === false) {
     return TY_INFO[type.type].name
+  } else if (type.list === 0 && type.type == "never") {
+    return "empty list"
   } else {
     return `list of ${type.list} ${
       type.list === 1 ? TY_INFO[type.type].name : TY_INFO[type.type].namePlural

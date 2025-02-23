@@ -393,14 +393,12 @@ function iterateGlsl(
     for (const [id, update, name] of iterate.update) {
       const local = values[id]!
       const next = glsl(update, props.eval)
-      if (local.type !== next.type) {
+      if (local.type !== next.type || local.list !== next.list) {
         throw new Error(
-          `Variable ${name} has different types before (${local.type}) and after (${next.type}) evaluating update clause; this is not allowed in 'iterate' clauses within shaders. Try specifying a different initial value for ${name} using a 'from' clause (default is the real number zero).`,
-        )
-      }
-      if (local.list !== next.list) {
-        throw new Error(
-          `Variable ${name} has different lengths as a list before and after evaluating update clause; this is not allowed in 'iterate' clauses within shaders. Try specifying a different initial value for ${name} using a 'from' clause (default is the real number zero).`,
+          `Variable ${name} has different types before (${typeName(local)}) and after (${typeName(next)}) evaluating update clause; this is not allowed in 'iterate' clauses within shaders.` +
+            (iterate.from.find((x) => x[0] == id)?.[3] ?
+              ""
+            : " Note that 0 was inferred to be the initial value since you didn't specify any actual initial value."),
         )
       }
       if (props.seq) {

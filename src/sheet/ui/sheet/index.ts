@@ -275,7 +275,7 @@ export class Sheet {
   private _qdIndices = false
   queueIndices() {
     if (this._qdIndices) return
-    setTimeout(() => {
+    queueMicrotask(() => {
       this._qdIndices = false
       this.checkIndices()
     })
@@ -404,7 +404,7 @@ void main() {
   private _qdGlsl = false
   queueGlsl() {
     if (this._qdGlsl) return
-    setTimeout(() => {
+    queueMicrotask(() => {
       this._qdGlsl = false
       this.checkGlsl()
     })
