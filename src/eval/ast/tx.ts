@@ -5,9 +5,18 @@ import type { Deps } from "../deps"
 import { glsl, type PropsGlsl } from "../glsl"
 import { js, type PropsJs } from "../js"
 import { type Bindings } from "../lib/binding"
+import { OP_BINARY, OP_UNARY } from "../ops"
 import { type GlslValue, type JsVal, type JsValue } from "../ty"
 import { coerceValueGlsl, coerceValueJs } from "../ty/coerce"
-import type { MagicVar, Node, NodeName, Nodes, PuncBinaryStr } from "./token"
+import type {
+  MagicVar,
+  Node,
+  NodeName,
+  Nodes,
+  OpBinary,
+  PuncBinaryStr,
+  PuncUnary,
+} from "./token"
 
 export interface TxrAst<T> {
   js(node: T, props: PropsJs): JsValue
@@ -125,6 +134,10 @@ export interface TxrMagicVar extends Omit<TxrAst<MagicVar>, "drag"> {
   }
 }
 
+export interface TxrOpUnary extends TxrAst<Node> {}
+
+export interface TxrOpBinary extends TxrAst<{ lhs: Node; rhs: Node }> {}
+
 export interface TxrGroup extends Omit<TxrAst<Node>, "deps"> {}
 
 export function group(node: { lhs: ParenLhs; rhs: ParenRhs }) {
@@ -139,6 +152,12 @@ export const TXR_GROUP: Partial<Record<`${ParenLhs} ${ParenRhs}`, TxrGroup>> =
   Object.create(null)
 
 export const TXR_MAGICVAR: Record<string, TxrMagicVar> = Object.create(null)
+
+export const TXR_OP_UNARY: Partial<Record<PuncUnary, TxrOpUnary>> =
+  Object.create(null)
+
+export const TXR_OP_BINARY: Partial<Record<OpBinary, TxrOpBinary>> =
+  Object.create(null)
 
 // Most of these just error instead of specifying any behavior, as actual
 // behavior should be left to packages. The ones which aren't immediate errors
@@ -186,6 +205,103 @@ export const TXR_AST: { [K in NodeName]?: TxrAst<Nodes[K]> } = {
       } else {
         throw new Error(`The '${node.value}' operator is not defined.`)
       }
+    },
+  },
+
+  // Delegates to `TXR_OP_UNARY`, `TXR_OP_BINARY`, `OP_UNARY`, and `OP_BINARY`
+  op: {
+    layer: -1,
+    deps(node, deps) {
+      if (node.b) {
+        const txr = TXR_OP_BINARY[node.kind]
+        if (txr) {
+          txr.deps({ lhs: node.a, rhs: node.b }, deps)
+        } else {
+          deps.add(node.a)
+          deps.add(node.b)
+        }
+      } else {
+        const txr = TXR_OP_UNARY[node.kind]
+        if (txr) {
+          txr.deps(node.a, deps)
+        } else {
+          deps.add(node.a)
+        }
+      }
+    },
+    drag: {
+      num(node, props) {
+        if (node.b) {
+          const txr = TXR_OP_BINARY[node.kind]
+          if (txr) {
+            return txr.drag.num({ lhs: node.a, rhs: node.b }, props)
+          }
+        } else {
+          const txr = TXR_OP_UNARY[node.kind]
+          if (txr) {
+            return txr.drag.num(node.a, props)
+          }
+        }
+        return null
+      },
+      point(node, props) {
+        if (node.b) {
+          const txr = TXR_OP_BINARY[node.kind]
+          if (txr) {
+            return txr.drag.point({ lhs: node.a, rhs: node.b }, props)
+          }
+        } else {
+          const txr = TXR_OP_UNARY[node.kind]
+          if (txr) {
+            return txr.drag.point(node.a, props)
+          }
+        }
+        return null
+      },
+    },
+    js(node, props) {
+      if (node.b) {
+        const txr = TXR_OP_BINARY[node.kind]
+        if (txr) {
+          return txr.js({ lhs: node.a, rhs: node.b }, props)
+        }
+        const op = OP_BINARY[node.kind]
+        if (op) {
+          return op.js([js(node.a, props), js(node.b, props)])
+        }
+      } else {
+        const txr = TXR_OP_UNARY[node.kind]
+        if (txr) {
+          return txr.js(node.a, props)
+        }
+        const op = OP_UNARY[node.kind]
+        if (op) {
+          return op.js([js(node.a, props)])
+        }
+      }
+      throw new Error(`The operator '${node.kind}' is not defined.`)
+    },
+    glsl(node, props) {
+      if (node.b) {
+        const txr = TXR_OP_BINARY[node.kind]
+        if (txr) {
+          return txr.glsl({ lhs: node.a, rhs: node.b }, props)
+        }
+        const op = OP_BINARY[node.kind]
+        if (op) {
+          return op.glsl(props.ctx, [glsl(node.a, props), glsl(node.b, props)])
+        }
+      } else {
+        const txr = TXR_OP_UNARY[node.kind]
+        if (txr) {
+          return txr.glsl(node.a, props)
+        }
+        const op = OP_UNARY[node.kind]
+        if (op) {
+          return op.glsl(props.ctx, [glsl(node.a, props)])
+        }
+      }
+      throw new Error(`The operator '${node.kind}' is not defined.`)
     },
   },
 
@@ -253,4 +369,5 @@ export const TXR_AST: { [K in NodeName]?: TxrAst<Nodes[K]> } = {
   ),
   tyname: errorAll`Cannot evaluate a raw type name.`,
 }
+
 Object.setPrototypeOf(TXR_AST, null)
