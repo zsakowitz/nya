@@ -568,7 +568,7 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
     },
   },
   eval: {
-    fns: {
+    fn: {
       point: FN_POINT,
       arg: FN_ARG,
       complex: FN_COMPLEX,
@@ -577,7 +577,7 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
       imag: FN_IMAG,
       real: FN_REAL,
     },
-    vars: {
+    var: {
       p: {
         label: "coordinates of currently drawn shader pixel",
         get js(): never {

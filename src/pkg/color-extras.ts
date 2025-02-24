@@ -129,7 +129,7 @@ export const PKG_COLOR_EXTRAS: Package = {
     )
   },
   eval: {
-    fns: {
+    fn: {
       valid: FN_VALID,
       oklab: FN_OKLAB,
       oklch: FN_OKLCH,

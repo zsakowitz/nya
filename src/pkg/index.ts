@@ -49,8 +49,8 @@ export interface Package {
   }
 
   eval?: {
-    vars?: List<Builtin>
-    fns?: List<Fn & WithDocs>
+    var?: List<Builtin>
+    fn?: List<Fn & WithDocs>
     op?: {
       unary?: List<Fn & WithDocs, PuncUnary>
       binary?: List<{ precedence: number; fn: Fn & WithDocs }, PuncInfix>

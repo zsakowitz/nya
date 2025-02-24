@@ -385,7 +385,7 @@ export const PKG_TEXT: Package = {
         },
       },
     },
-    fns: {
+    fn: {
       concat: FN_CONCAT,
     },
   },

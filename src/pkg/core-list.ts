@@ -127,7 +127,7 @@ export const PKG_CORE_LIST: Package = {
   name: "core list functionality",
   label: null,
   eval: {
-    fns: {
+    fn: {
       join: FN_JOIN,
     },
     tx: {

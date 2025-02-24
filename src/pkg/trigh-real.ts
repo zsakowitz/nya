@@ -126,7 +126,7 @@ export const PKG_TRIG_HYPERBOLIC_REAL: Package = {
   },
   deps: [() => PKG_REAL],
   eval: {
-    fns: {
+    fn: {
       sinh: FN_SINH,
       cosh: FN_COSH,
       tanh: FN_TANH,

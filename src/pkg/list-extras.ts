@@ -99,7 +99,7 @@ export const PKG_LIST_EXTRAS: Package = {
   label: null,
   deps: [() => PKG_REAL],
   eval: {
-    fns: {
+    fn: {
       sort: FN_SORT,
       unique: FN_UNIQUE,
     },

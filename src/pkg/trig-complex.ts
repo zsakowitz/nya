@@ -65,7 +65,7 @@ export const PKG_TRIG_COMPLEX: Package = {
   label: null,
   deps: [() => PKG_TRIG_REAL, () => PKG_NUM_COMPLEX],
   eval: {
-    fns: {
+    fn: {
       sin: FN_SIN,
       cos: FN_COS,
       tan: FN_TAN,

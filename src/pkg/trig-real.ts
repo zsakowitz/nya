@@ -113,7 +113,7 @@ export const PKG_TRIG_REAL: Package = {
   },
   deps: [() => PKG_REAL],
   eval: {
-    fns: {
+    fn: {
       sin: FN_SIN,
       cos: FN_COS,
       tan: FN_TAN,

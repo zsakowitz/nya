@@ -52,7 +52,7 @@ export const PKG_NUMBER_THEORY: Package = {
   label: "functions for working with integers",
   deps: [() => PKG_REAL],
   eval: {
-    fns: {
+    fn: {
       floor,
       ceil,
       round,

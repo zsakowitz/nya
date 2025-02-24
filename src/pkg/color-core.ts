@@ -259,7 +259,7 @@ export const PKG_COLOR_CORE: Package = {
     },
   },
   eval: {
-    fns: {
+    fn: {
       rgb: FN_RGB,
       hsv: FN_HSV,
     },

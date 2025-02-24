@@ -251,7 +251,7 @@ export const PKG_NUM_QUATERNION: Package = {
   },
 
   eval: {
-    vars: {
+    var: {
       j: {
         label: "a four-dimensional unit vector perpendicular to 1, i, and k",
         js: {
@@ -273,7 +273,7 @@ export const PKG_NUM_QUATERNION: Package = {
         display: false,
       },
     },
-    fns: {
+    fn: {
       unsign: FN_UNSIGN,
       conj: FN_CONJ,
     },

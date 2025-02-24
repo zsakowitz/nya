@@ -324,7 +324,7 @@ export const PKG_BOOL: Package = {
     },
   },
   eval: {
-    vars: {
+    var: {
       false: {
         label: "result of a false statement (2=3, 7>9, √4=5)",
         js: { type: "bool", value: false, list: false },
@@ -346,7 +346,7 @@ export const PKG_BOOL: Package = {
         or: { precedence: Precedence.BoolOr, fn: OP_OR },
       },
     },
-    fns: {
+    fn: {
       valid: FN_VALID,
       firstvalid: FN_FIRSTVALID,
     },

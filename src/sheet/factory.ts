@@ -72,16 +72,16 @@ export class SheetFactory {
       }
     }
 
-    for (const key in pkg.eval?.fns) {
+    for (const key in pkg.eval?.fn) {
       this.options.words.init(key, "prefix")
-      FNS[key] = pkg.eval.fns[key]!
+      FNS[key] = pkg.eval.fn[key]!
     }
 
-    for (const key in pkg.eval?.vars) {
+    for (const key in pkg.eval?.var) {
       if (key.length > 1) {
         this.options.words.init(key, "var")
       }
-      VARS[key] = pkg.eval.vars[key]!
+      VARS[key] = pkg.eval.var[key]!
     }
 
     for (const keyRaw in pkg.eval?.tx?.ast) {

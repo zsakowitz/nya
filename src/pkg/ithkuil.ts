@@ -184,7 +184,7 @@ export const PKG_ITHKUIL: Package = {
     },
   },
   eval: {
-    fns: {
+    fn: {
       ithkuilgloss: new FnDist("ithkuilgloss", "glosses an ithkuil word").add(
         ["text"],
         "text",
@@ -337,7 +337,7 @@ export const PKG_ITHKUIL: Package = {
           err,
         ),
     },
-    vars: {
+    var: {
       ithkuilversion: {
         label: "version of @zsnout/ithkuil currently in use",
         js: {

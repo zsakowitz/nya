@@ -535,7 +535,7 @@ export const PKG_GEO_POINT: Package = {
     },
   },
   eval: {
-    fns: {
+    fn: {
       screendistance: FN_SCREENDISTANCE,
       debugpoint: FN_DEBUGPOINT,
     },

@@ -831,7 +831,7 @@ export const PKG_STATISTICS: Package = {
     },
   },
   eval: {
-    fns: {
+    fn: {
       min: FN_MIN,
       max: FN_MAX,
       total: FN_TOTAL,

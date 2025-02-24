@@ -651,7 +651,7 @@ function secNamedVariables(list: PackageList) {
       const pkgs = list.packages
         .filter(
           (x) =>
-            x.eval?.vars && Object.values(x.eval.vars).includes(builtin as any),
+            x.eval?.var && Object.values(x.eval.var).includes(builtin as any),
         )
         .map((x) => x.id)
 
@@ -692,7 +692,7 @@ function secNamedFunctions(list: PackageList) {
     .map((fn) => {
       const pkgs = list.packages
         .filter(
-          (x) => x.eval?.fns && Object.values(x.eval.fns).includes(fn as any),
+          (x) => x.eval?.fn && Object.values(x.eval.fn).includes(fn as any),
         )
         .map((x) => x.id)
 

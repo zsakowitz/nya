@@ -215,7 +215,7 @@ export const PKG_SHADER: Package = {
   label: "creates shaders with the x, y, and p variables",
   deps: [() => PKG_COLOR_CORE, () => PKG_REAL],
   eval: {
-    vars: {
+    var: {
       x: {
         label: "x-coordinate of currently drawn shader pixel",
         get js(): never {
@@ -235,7 +235,7 @@ export const PKG_SHADER: Package = {
         display: false,
       },
     },
-    fns: {
+    fn: {
       forceshader,
     },
   },

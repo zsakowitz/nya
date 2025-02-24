@@ -468,7 +468,7 @@ export const PKG_GEOMETRY: Package = {
     },
   },
   eval: {
-    fns: {
+    fn: {
       center: FN_CENTER,
       circle: FN_CIRCLE,
       distance: FN_DISTANCE,

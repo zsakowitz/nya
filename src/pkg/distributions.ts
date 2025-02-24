@@ -361,7 +361,7 @@ export const PKG_DISTRIBUTIONS: Package = {
     },
   },
   eval: {
-    fns: {
+    fn: {
       normaldist,
       tdist,
       poissondist,

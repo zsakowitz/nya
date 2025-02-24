@@ -525,7 +525,7 @@ float _helper_cmp_r32(float a, float b) {
     },
   },
   eval: {
-    fns: {
+    fn: {
       sign: FN_SIGN,
       ln: FN_LN,
       log: FN_LOG10,
@@ -566,7 +566,7 @@ float _helper_cmp_r32(float a, float b) {
         }
       })(),
     },
-    vars: {
+    var: {
       π: splitDual(
         Math.PI,
         "ratio of any circle's circumference to its diameter",
