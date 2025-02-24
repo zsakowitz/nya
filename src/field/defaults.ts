@@ -245,6 +245,14 @@ const latex = new WordMap<LatexInit>([
             BRACKS[lhsRaw as keyof typeof BRACKS].side != R
           ) ?
             ((parser.i += lhsRaw.length), lhsRaw as ParenLhs)
+          : (
+            lhsRaw &&
+            lhsRaw.length >= 2 &&
+            lhsRaw[0] == "\\" &&
+            lhsRaw.slice(1) in BRACKS &&
+            BRACKS[lhsRaw.slice(1) as keyof typeof BRACKS].side != R
+          ) ?
+            ((parser.i += lhsRaw.length), lhsRaw.slice(1) as ParenLhs)
           : null
         const contents = parser.until("\\right")
         const rhsRaw = parser.peek()
@@ -255,6 +263,14 @@ const latex = new WordMap<LatexInit>([
             BRACKS[rhsRaw as keyof typeof BRACKS].side != L
           ) ?
             ((parser.i += rhsRaw.length), rhsRaw as ParenRhs)
+          : (
+            rhsRaw &&
+            rhsRaw.length >= 2 &&
+            rhsRaw[0] == "\\" &&
+            rhsRaw.slice(1) in BRACKS &&
+            BRACKS[rhsRaw.slice(1) as keyof typeof BRACKS].side != L
+          ) ?
+            ((parser.i += rhsRaw.length), rhsRaw.slice(1) as ParenRhs)
           : null
         if (lhs && rhs) {
           return new CmdBrack(lhs, rhs, null, contents)
