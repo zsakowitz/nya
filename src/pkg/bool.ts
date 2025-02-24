@@ -398,6 +398,13 @@ export const PKG_BOOL: Package = {
           String.raw`\begin{cases}\left[2\right]&4<3\\\left[3,4\right]&\end{cases}`,
           String.raw`=\left[3\right]`,
         ),
+        px`Because project nya aims to be compatible with Desmos, you can also use flat piecewise syntax.`,
+        example(
+          String.raw`\left\{x>0:x^{2},x-3\right\}\operatorname{for}x=\left[-3,-2,-1,0,1,2,3\right]`,
+          String.raw`=\left[-6,-5,-4,-3,1,4,9\right]`,
+        ),
+        px`Note that in project nya, empty curly braces evaluate to ${h("font-semibold", "true")}, not 1. This matches how Desmos works under the hood, rather than what it shows to the user.`,
+        example(String.raw`\left\{\right\}`, String.raw`=\operatorname{true}`),
       ]
     },
   },

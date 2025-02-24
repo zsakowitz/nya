@@ -106,9 +106,9 @@ class PackageList {
 const IS_DEV = "NYA_DEV" in globalThis
 const OPEN_NORMAL = !IS_DEV
 const OPEN_DATA_TYPES = false
-const OPEN_LAST_PACKAGE = IS_DEV
+const OPEN_PACKAGE_DOCS = IS_DEV && "piecewise functions"
 
-export const DEFAULT_TO_VISIBLE_DOCS = false
+export const DEFAULT_TO_VISIBLE_DOCS = true
 
 export function createDocs(
   hide: HTMLElement,
@@ -122,13 +122,9 @@ export function createDocs(
     ...packages
       .map((x) => x.docs)
       .filter((x) => x != null)
-      .flatMap((docs, i, a) =>
-        Object.entries(docs).map(([k, v], j, b) =>
-          section(
-            k,
-            v(),
-            OPEN_LAST_PACKAGE && i == a.length - 1 && j == b.length - 1,
-          ),
+      .flatMap((docs) =>
+        Object.entries(docs).map(([k, v]) =>
+          section(k, v(), OPEN_PACKAGE_DOCS == k),
         ),
       ),
     secAdvancedOperators(),
