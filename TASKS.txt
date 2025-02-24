@@ -21,6 +21,7 @@ to do list for things to plot is:
 ❌ f(r, θ) = g(r, θ)
 
 to do list for features is:
+❌ 100% compatible piecewise functions
 ❌ actions
 ❌ tickers
 ❌ inequality borders
