@@ -60,7 +60,7 @@ export interface Package {
       binary?: List<TxrOpBinary & { precedence: number }, OpBinary>
       magic?: List<TxrMagicVar>
       group?: List<TxrGroup, `${ParenLhs} ${ParenRhs}`>
-      ast: Partial<{ [K in NodeName]: TxrAst<Nodes[K]> }>
+      ast?: Partial<{ [K in NodeName]: TxrAst<Nodes[K]> }>
     }
   }
 

@@ -448,7 +448,7 @@ export const PKG_ITERATE: Package = {
   name: "iterate",
   label: "easily repeat expressions",
   eval: {
-    op: {
+    tx: {
       magic: {
         iterate: {
           helpers: ["while", "until", "from"],
