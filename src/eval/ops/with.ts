@@ -1,5 +1,5 @@
 import type { Node } from "../ast/token"
-import { MAGIC_VARS } from "../ast/tx"
+import { TXR_MAGICVAR } from "../ast/tx"
 import type { Deps } from "../deps"
 import { glsl, type PropsGlsl } from "../glsl"
 import { js, type PropsJs } from "../js"
@@ -12,7 +12,7 @@ export function withBindingsJs(
   props: PropsJs,
 ): Record<string, JsValue> {
   if (rhs.type == "magicvar") {
-    const mv = MAGIC_VARS[rhs.value]
+    const mv = TXR_MAGICVAR[rhs.value]
     if (!mv) {
       throw new Error(`The '${rhs.value}' operator is not defined.`)
     }
@@ -51,7 +51,7 @@ export function withBindingsGlsl(
   props: PropsGlsl,
 ): Record<string, GlslValue> {
   if (rhs.type == "magicvar") {
-    const mv = MAGIC_VARS[rhs.value]
+    const mv = TXR_MAGICVAR[rhs.value]
     if (!mv) {
       throw new Error(`The '${rhs.value}' operator is not defined.`)
     }
@@ -90,7 +90,7 @@ export function withBindingsDeps(
   deps: Deps,
 ): string[] {
   if (rhs.type == "magicvar") {
-    const mv = MAGIC_VARS[rhs.value]
+    const mv = TXR_MAGICVAR[rhs.value]
     if (!mv) {
       throw new Error(`The '${rhs.value}' operator is not defined.`)
     }

@@ -5,7 +5,7 @@ import {
   type PuncInfix,
   type PuncUnary,
 } from "../eval/ast/token"
-import { AST_TXRS, GROUP, MAGIC_VARS, type AstTxr } from "../eval/ast/tx"
+import { TXR_AST, TXR_GROUP, TXR_MAGICVAR, type TxrAst } from "../eval/ast/tx"
 import { FNS, OP_BINARY, OP_UNARY } from "../eval/ops"
 import { VARS } from "../eval/ops/vars"
 import type { TyName } from "../eval/ty"
@@ -86,11 +86,11 @@ export class SheetFactory {
 
     for (const keyRaw in pkg.eval?.txrs) {
       const key = keyRaw as NodeName
-      const txr = pkg.eval.txrs[key]! as AstTxr<any>
-      if (AST_TXRS[key] && (AST_TXRS[key].layer ?? 0) >= (txr.layer ?? 0)) {
+      const txr = pkg.eval.txrs[key]! as TxrAst<any>
+      if (TXR_AST[key] && (TXR_AST[key].layer ?? 0) >= (txr.layer ?? 0)) {
         continue
       }
-      AST_TXRS[key] = pkg.eval.txrs[key]! as any
+      TXR_AST[key] = pkg.eval.txrs[key]! as any
     }
 
     for (const prec in pkg.sheet?.exts) {
@@ -140,8 +140,14 @@ export class SheetFactory {
       if (/^[A-Za-z]+$/.test(key)) {
         this.options.words.init(key, "magicprefix")
       }
-      const magic = pkg.eval.op.magic[key]!
-      for (const helper of magic.helpers || []) {
+      const txr = pkg.eval.op.magic[key]!
+      if (
+        TXR_MAGICVAR[key] &&
+        (TXR_MAGICVAR[key].layer ?? 0) >= (txr.layer ?? 0)
+      ) {
+        continue
+      }
+      for (const helper of txr.helpers || []) {
         this.options.words.init(helper, "infix")
         PRECEDENCE_MAP[helper] = Precedence.WordInfixList
         if (!(helper in OP_BINARY)) {
@@ -159,12 +165,17 @@ export class SheetFactory {
           }
         }
       }
-      MAGIC_VARS[key] = magic
+
+      TXR_MAGICVAR[key] = txr
     }
 
     for (const keyRaw in pkg.eval?.op?.group) {
       const key = keyRaw as `${ParenLhs} ${ParenRhs}`
-      GROUP[key] = pkg.eval.op.group[key]!
+      const txr = pkg.eval.op.group[key]!
+      if (TXR_GROUP[key] && (TXR_GROUP[key].layer ?? 0) >= (txr.layer ?? 0)) {
+        continue
+      }
+      TXR_GROUP[key] = txr
     }
 
     return this

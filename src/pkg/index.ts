@@ -5,7 +5,7 @@ import type {
   PuncInfix,
   PuncUnary,
 } from "../eval/ast/token"
-import type { AstTxr, MagicVarTxr } from "../eval/ast/tx"
+import type { TxrAst, TxrMagicVar } from "../eval/ast/tx"
 import type { Fn } from "../eval/ops"
 import type { WithDocs } from "../eval/ops/docs"
 import type { Builtin } from "../eval/ops/vars"
@@ -43,14 +43,14 @@ export interface Package {
   }
 
   eval?: {
-    txrs?: Partial<{ [K in NodeName]: AstTxr<Nodes[K]> }>
+    txrs?: Partial<{ [K in NodeName]: TxrAst<Nodes[K]> }>
     vars?: List<Builtin>
     fns?: List<Fn & WithDocs>
     op?: {
       unary?: List<Fn & WithDocs, PuncUnary>
       binary?: List<{ precedence: number; fn: Fn & WithDocs }, PuncInfix>
-      magic?: List<MagicVarTxr>
-      group?: List<Omit<AstTxr<Node>, "deps">, `${ParenLhs} ${ParenRhs}`>
+      magic?: List<TxrMagicVar>
+      group?: List<Omit<TxrAst<Node>, "deps">, `${ParenLhs} ${ParenRhs}`>
     }
   }
 

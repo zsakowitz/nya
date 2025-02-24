@@ -9,7 +9,7 @@ import { type GlslValue, type JsVal, type JsValue } from "../ty"
 import { coerceValueGlsl, coerceValueJs } from "../ty/coerce"
 import type { MagicVar, Node, NodeName, Nodes, PuncBinaryStr } from "./token"
 
-export interface AstTxr<T> {
+export interface TxrAst<T> {
   js(node: T, props: PropsJs): JsValue
   glsl(node: T, props: PropsGlsl): GlslValue
   deps(node: T, deps: Deps): void
@@ -48,7 +48,7 @@ interface DragTarget<T> {
 function joint<T>(
   fn: (node: T) => never,
   deps: (node: T, deps: Deps) => void,
-): AstTxr<T> {
+): TxrAst<T> {
   return {
     js(node) {
       fn(node)
@@ -69,7 +69,7 @@ function joint<T>(
   }
 }
 
-function errorAll<T>(data: TemplateStringsArray): AstTxr<T> {
+function errorAll<T>(data: TemplateStringsArray): TxrAst<T> {
   return joint(
     () => {
       throw new Error(data[0])
@@ -80,7 +80,7 @@ function errorAll<T>(data: TemplateStringsArray): AstTxr<T> {
 
 function error(
   data: TemplateStringsArray,
-): <T>(f: (node: T, deps: Deps) => void) => AstTxr<T> {
+): <T>(f: (node: T, deps: Deps) => void) => TxrAst<T> {
   return (f) =>
     joint(() => {
       throw new Error(data[0])
@@ -88,7 +88,7 @@ function error(
 }
 
 export function dragNum(node: Node, props: PropsDrag) {
-  const txr = AST_TXRS[node.type]
+  const txr = TXR_AST[node.type]
   if (!txr) {
     throw new Error(`The transformer '${node.type}' is not defined.`)
   }
@@ -96,7 +96,7 @@ export function dragNum(node: Node, props: PropsDrag) {
 }
 
 export function dragPoint(node: Node, props: PropsDrag) {
-  const txr = AST_TXRS[node.type]
+  const txr = TXR_AST[node.type]
   if (!txr) {
     throw new Error(`The transformer '${node.type}' is not defined.`)
   }
@@ -112,11 +112,8 @@ export const NO_DRAG: DragTarget<unknown> = {
   },
 }
 
-export interface MagicVarTxr {
+export interface TxrMagicVar extends Omit<TxrAst<MagicVar>, "drag"> {
   helpers?: readonly PuncBinaryStr[]
-  js: AstTxr<MagicVar>["js"]
-  glsl: AstTxr<MagicVar>["glsl"]
-  deps: AstTxr<MagicVar>["deps"]
   with?: {
     js(node: MagicVar, props: PropsJs, seq: boolean): Record<string, JsValue>
     glsl(
@@ -128,24 +125,25 @@ export interface MagicVarTxr {
   }
 }
 
-export const GROUP: Partial<
-  Record<`${ParenLhs} ${ParenRhs}`, Omit<AstTxr<Node>, "deps">>
-> = Object.create(null)
+export interface TxrGroup extends Omit<TxrAst<Node>, "deps"> {}
 
 export function group(node: { lhs: ParenLhs; rhs: ParenRhs }) {
-  const g = GROUP[`${node.lhs} ${node.rhs}`]
+  const g = TXR_GROUP[`${node.lhs} ${node.rhs}`]
   if (!g) {
     throw new Error(`${node.lhs}...${node.rhs} brackets are not supported yet.`)
   }
   return g
 }
 
-export const MAGIC_VARS: Record<string, MagicVarTxr> = Object.create(null)
+export const TXR_GROUP: Partial<Record<`${ParenLhs} ${ParenRhs}`, TxrGroup>> =
+  Object.create(null)
+
+export const TXR_MAGICVAR: Record<string, TxrMagicVar> = Object.create(null)
 
 // Most of these just error instead of specifying any behavior, as actual
 // behavior should be left to packages. The ones which aren't immediate errors
 // are explained.
-export const AST_TXRS: { [K in NodeName]?: AstTxr<Nodes[K]> } = {
+export const TXR_AST: { [K in NodeName]?: TxrAst<Nodes[K]> } = {
   // Delegates to `GROUP` so that different packages can specify different groups
   group: {
     js(node, props) {
@@ -170,21 +168,21 @@ export const AST_TXRS: { [K in NodeName]?: AstTxr<Nodes[K]> } = {
   // Delegates to `MAGIC_VARS` so packages can specify varied magic variables
   magicvar: {
     js(node, props) {
-      if (node.value in MAGIC_VARS) {
-        return MAGIC_VARS[node.value]!.js(node as never, props)
+      if (node.value in TXR_MAGICVAR) {
+        return TXR_MAGICVAR[node.value]!.js(node as never, props)
       }
       throw new Error(`The '${node.value}' operator is not defined.`)
     },
     glsl(node, props) {
-      if (node.value in MAGIC_VARS) {
-        return MAGIC_VARS[node.value]!.glsl(node as never, props)
+      if (node.value in TXR_MAGICVAR) {
+        return TXR_MAGICVAR[node.value]!.glsl(node as never, props)
       }
       throw new Error(`The '${node.value}' operator is not defined.`)
     },
     drag: NO_DRAG,
     deps(node, deps) {
-      if (node.value in MAGIC_VARS) {
-        MAGIC_VARS[node.value]!.deps(node as never, deps)
+      if (node.value in TXR_MAGICVAR) {
+        TXR_MAGICVAR[node.value]!.deps(node as never, deps)
       } else {
         throw new Error(`The '${node.value}' operator is not defined.`)
       }
@@ -255,4 +253,4 @@ export const AST_TXRS: { [K in NodeName]?: AstTxr<Nodes[K]> } = {
   ),
   tyname: errorAll`Cannot evaluate a raw type name.`,
 }
-Object.setPrototypeOf(AST_TXRS, null)
+Object.setPrototypeOf(TXR_AST, null)

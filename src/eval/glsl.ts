@@ -1,5 +1,5 @@
 import type { Node } from "./ast/token"
-import { AST_TXRS } from "./ast/tx"
+import { TXR_AST } from "./ast/tx"
 import { Bindings, type BindingFn } from "./lib/binding"
 import { GlslContext } from "./lib/fn"
 import { FNS } from "./ops"
@@ -32,7 +32,7 @@ export function glslCall(
 }
 
 export function glsl(node: Node, props: PropsGlsl): GlslValue {
-  const txr = AST_TXRS[node.type]
+  const txr = TXR_AST[node.type]
   if (!txr) {
     throw new Error(`The '${node.type}' transformer is not defined.`)
   }

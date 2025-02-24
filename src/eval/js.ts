@@ -1,5 +1,5 @@
 import type { Node } from "./ast/token"
-import { AST_TXRS } from "./ast/tx"
+import { TXR_AST } from "./ast/tx"
 import { Bindings, type BindingFn } from "./lib/binding"
 import { FNS } from "./ops"
 import type { JsValue, SReal } from "./ty"
@@ -25,7 +25,7 @@ export function jsCall(
 }
 
 export function js(node: Node, props: PropsJs): JsValue {
-  const txr = AST_TXRS[node.type]
+  const txr = TXR_AST[node.type]
   if (!txr) {
     throw new Error(`The '${node.type}' transformer is not defined.`)
   }

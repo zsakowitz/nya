@@ -1,5 +1,5 @@
 import type { Node } from "./ast/token"
-import { AST_TXRS } from "./ast/tx"
+import { TXR_AST } from "./ast/tx"
 import { id, type Bound } from "./lib/binding"
 
 export class Deps {
@@ -45,7 +45,7 @@ export class Deps {
   }
 
   add(node: Node) {
-    AST_TXRS[node.type]?.deps(node as never, this)
+    TXR_AST[node.type]?.deps(node as never, this)
   }
 
   isBound(id: string) {
