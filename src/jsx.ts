@@ -120,6 +120,18 @@ export function p(...children: (Node | string | null)[]) {
   return hx("p", "", ...children)
 }
 
+export function px(
+  strings: TemplateStringsArray,
+  ...interps: (Node | string | null)[]
+) {
+  return hx(
+    "p",
+    "",
+    strings[0]!,
+    ...strings.slice(1).flatMap((x, i) => [interps[i]!, x]),
+  )
+}
+
 interface SVGProps {
   svg: {
     fill?: string

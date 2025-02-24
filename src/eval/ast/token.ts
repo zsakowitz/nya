@@ -56,6 +56,7 @@ export interface PuncListInfix extends PuncListPm, PuncListCmp {
   "\\times ": 0
   "\\odot ": 0
   "\\otimes ": 0
+  ":": 0
 }
 
 /** Tokens which can be unary prefix operators. */
@@ -99,17 +100,18 @@ export type PuncBinaryStr = PuncInfix | PuncPm | PuncCmp
 // prettier-ignore
 export const Precedence = Object.freeze({
   NotApplicable:     -1, // 23!, ¬x, dotted access
-  Exponential:       13, // x ↑ 3
-  Product:           12, // x ÷ y
-  Sum:               11, // 2 + 3
-  Range:             10, // 1...100
-  Comparison:         9, // x² < 3
-  Equality:           8, // x = 3
-  BoolAnd:            7, // x ∧ y
-  BoolOr:             6, // x ⋁ y
-  DoubleStruckRight:  5, // x => 4x
-  DoubleStruckBiDi:   4, // a <=> b
-  Action:             3, // a -> a + 1
+  Exponential:       14, // x ↑ 3
+  Product:           13, // x ÷ y
+  Sum:               12, // 2 + 3
+  Range:             11, // 1...100
+  Comparison:        10, // x² < 3
+  Equality:           9, // x = 3
+  BoolAnd:            8, // x ∧ y
+  BoolOr:             7, // x ⋁ y
+  DoubleStruckRight:  6, // x => 4x
+  DoubleStruckBiDi:   5, // a <=> b
+  Action:             4, // a -> a + 1
+  Colon:              3, // a: b
   Comma:              2, // 2, 3
   WordInfix:          1, // 3 base 4, a with a=5
   WordInfixList:      0, // 2, 3 from 4 // commas and word infixes are special-cased; they're weird
@@ -126,6 +128,7 @@ export const PRECEDENCE_MAP: Partial<Record<PuncBinaryStr, number>> = {
   "...": Precedence.Range,
   "\\Rightarrow ": Precedence.DoubleStruckRight,
   "\\to ": Precedence.Action,
+  ":": Precedence.Colon,
   ",": Precedence.Comma,
   base: Precedence.WordInfix,
   for: Precedence.WordInfix,

@@ -22,7 +22,6 @@ import {
 } from "../../model"
 import { Options, WordMap } from "../../options"
 import { CmdSupSub } from "../math/supsub"
-import { CmdColon } from "./colon"
 import { CmdDot } from "./dot"
 import { CmdNum } from "./num"
 
@@ -163,19 +162,6 @@ export class CmdVar extends Leaf {
     while (rhs[R] instanceof CmdVar) {
       rhs = rhs[R]
       vars.push(rhs)
-    }
-
-    if (rhs[R] instanceof CmdColon) {
-      if (vars.length == 1) {
-        this.render(null, null)
-        return
-      }
-      vars.forEach((x) => {
-        x.render("var", null)
-      })
-      lhs.render("var", L)
-      rhs.render("var", R)
-      return
     }
 
     for (const cmd of vars) {

@@ -1,5 +1,6 @@
 import type { Package } from "."
-import { Precedence, type Piece } from "../eval/ast/token"
+import { commalist } from "../eval/ast/collect"
+import { Precedence, type Node, type Piece } from "../eval/ast/token"
 import { NO_DRAG } from "../eval/ast/tx"
 import { glsl, type PropsGlsl } from "../eval/glsl"
 import { js, type PropsJs } from "../eval/js"
@@ -9,6 +10,8 @@ import type { WithDocs } from "../eval/ops/docs"
 import {
   join,
   joinGlsl,
+  list,
+  typeName,
   type GlslValue,
   type JsValue,
   type Val,
@@ -28,7 +31,8 @@ import { CmdComma } from "../field/cmd/leaf/comma"
 import { CmdWord } from "../field/cmd/leaf/word"
 import { CmdBrack } from "../field/cmd/math/brack"
 import { L } from "../field/model"
-import { h } from "../jsx"
+import { h, px } from "../jsx"
+import { example } from "../sheet/ui/sheet/docs"
 import { OP_AND } from "./core-cmp"
 
 declare module "../eval/ty" {
@@ -51,6 +55,10 @@ declare module "../eval/ast/token" {
 }
 
 function piecewiseJs(piecesRaw: Piece[], props: PropsJs): JsValue {
+  if (piecesRaw.length == 0) {
+    return { type: "bool", value: true, list: false }
+  }
+
   const pieces = piecesRaw.map(({ value, condition }, index) => {
     const cond: JsValue =
       index == piecesRaw.length - 1 && condition.type == "void" ?
@@ -75,7 +83,13 @@ function piecewiseJs(piecesRaw: Piece[], props: PropsJs): JsValue {
     return { value: js(value, props), cond }
   })
 
-  const ret = coerceType(pieces.map((x) => x.value))
+  try {
+    var ret = coerceType(pieces.map((x) => x.value))
+  } catch {
+    throw new Error(
+      `All branches of a piecewise function must have the same type; ${list(pieces.map((x) => typeName(x.value)))} are different types.`,
+    )
+  }
   for (const { value, cond } of pieces) {
     if (cond.value) {
       return coerceValueJs(value, ret)
@@ -90,6 +104,10 @@ function piecewiseJs(piecesRaw: Piece[], props: PropsJs): JsValue {
 }
 
 function piecewiseGlsl(piecesRaw: Piece[], props: PropsGlsl): GlslValue {
+  if (piecesRaw.length == 0) {
+    return { type: "bool", expr: "true", list: false }
+  }
+
   const name = props.ctx.name()
 
   let isDefinitelyAssigned = false
@@ -213,6 +231,27 @@ const FN_FIRSTVALID: Fn & WithDocs = {
   },
 }
 
+const TRUE: Node = { type: "var", kind: "var", span: null, value: "true" }
+
+function parseBraces(node: Node): Piece[] {
+  const clauses = commalist(node)
+
+  return clauses.map((node, index, array): Piece => {
+    if (node.type == "op" && node.b && node.kind == ":") {
+      return {
+        condition: node.a,
+        value: node.b,
+      }
+    }
+
+    if (index == array.length - 1) {
+      return { condition: TRUE, value: node }
+    }
+
+    return { condition: node, value: TRUE }
+  })
+}
+
 export const PKG_BOOL: Package = {
   id: "nya:bool-ops",
   name: "boolean operations",
@@ -306,6 +345,17 @@ export const PKG_BOOL: Package = {
         "\\or ": { precedence: Precedence.BoolOr, fn: OP_OR },
         or: { precedence: Precedence.BoolOr, fn: OP_OR },
       },
+      group: {
+        "{ }": {
+          js(node, props) {
+            return piecewiseJs(parseBraces(node), props)
+          },
+          glsl(node, props) {
+            return piecewiseGlsl(parseBraces(node), props)
+          },
+          drag: NO_DRAG,
+        },
+      },
     },
     fns: {
       valid: FN_VALID,
@@ -327,6 +377,28 @@ export const PKG_BOOL: Package = {
           }
         },
       },
+    },
+  },
+  docs: {
+    "piecewise functions"() {
+      return [
+        px`Piecewise functions let a function specify different outputs depending on some condition. Type ${h("font-semibold", "cases")} to create one.`,
+        example(
+          String.raw`\begin{cases}x^{2}&x>0\\x-3&\end{cases}\operatorname{for}x=\left[-3,-2,-1,0,1,2,3\right]`,
+          String.raw`=\left[-6,-5,-4,-3,1,4,9\right]`,
+        ),
+        px`Type a semicolon to add more cases. If multiple conditions match, the first one will be chosen.`,
+        example(
+          String.raw`\begin{cases}x^{2}&x>0\\x-3&x>-2\\8&\end{cases}\operatorname{for}x=\left[-3,-2,-1,0,1,2,3\right]`,
+          String.raw`=\left[-8,-8,-4,-3,1,4,9\right]`,
+        ),
+        px`All branches of a piecewise function must evaluate to the same type.`,
+        px`The outputs are coerced to be the same type. Thus, if multiple branches of the piecewise output lists of different lengths, the output will be chopped to the smallest list.`,
+        example(
+          String.raw`\begin{cases}\left[2\right]&4<3\\\left[3,4\right]&\end{cases}`,
+          String.raw`=\left[3\right]`,
+        ),
+      ]
     },
   },
 }
