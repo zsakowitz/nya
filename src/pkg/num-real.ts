@@ -583,40 +583,42 @@ float _helper_cmp_r32(float a, float b) {
         display: false,
       },
     },
-    txrs: {
-      num: {
-        js(node, props) {
-          return parseNumberJs(
-            node.value,
-            node.sub ? asNumericBase(js(node.sub, props)) : props.base,
-          )
-        },
-        glsl(node, props) {
-          return parseNumberGlsl(
-            node.value,
-            node.sub ? asNumericBase(js(node.sub, props)) : props.base,
-          )
-        },
-        drag: {
-          num(node, props) {
-            // TODO: restrict numbers in sliders
-            if (node.span) {
-              return {
-                span: node.span,
-                field: props.field,
+    tx: {
+      ast: {
+        num: {
+          js(node, props) {
+            return parseNumberJs(
+              node.value,
+              node.sub ? asNumericBase(js(node.sub, props)) : props.base,
+            )
+          },
+          glsl(node, props) {
+            return parseNumberGlsl(
+              node.value,
+              node.sub ? asNumericBase(js(node.sub, props)) : props.base,
+            )
+          },
+          drag: {
+            num(node, props) {
+              // TODO: restrict numbers in sliders
+              if (node.span) {
+                return {
+                  span: node.span,
+                  field: props.field,
+                }
               }
+              return null
+            },
+            point() {
+              return null
+            },
+          },
+          deps(node, deps) {
+            if (node.sub) {
+              deps.add(node.sub)
             }
-            return null
+            return
           },
-          point() {
-            return null
-          },
-        },
-        deps(node, deps) {
-          if (node.sub) {
-            deps.add(node.sub)
-          }
-          return
         },
       },
     },

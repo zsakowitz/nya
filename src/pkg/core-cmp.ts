@@ -28,31 +28,33 @@ export const PKG_CORE_CMP: Package = {
   name: "basic comparison operators",
   label: null,
   eval: {
-    txrs: {
-      cmplist: {
-        js(node, props) {
-          return node.ops
-            .map((op, i) => {
-              const a = js(node.items[i]!, props)
-              const b = js(node.items[i + 1]!, props)
-              return OP_BINARY[op]!.js([a, b])
-            })
-            .reduce((a, b) => OP_AND.js([a, b]))
-        },
-        glsl(node, props) {
-          return node.ops
-            .map((op, i) => {
-              const a = glsl(node.items[i]!, props)
-              const b = glsl(node.items[i + 1]!, props)
-              return OP_BINARY[op]!.glsl(props.ctx, [a, b])
-            })
-            .reduce((a, b) => OP_AND.glsl(props.ctx, [a, b]))
-        },
-        drag: NO_DRAG,
-        deps(node, deps) {
-          for (const item of node.items) {
-            deps.add(item)
-          }
+    tx: {
+      ast: {
+        cmplist: {
+          js(node, props) {
+            return node.ops
+              .map((op, i) => {
+                const a = js(node.items[i]!, props)
+                const b = js(node.items[i + 1]!, props)
+                return OP_BINARY[op]!.js([a, b])
+              })
+              .reduce((a, b) => OP_AND.js([a, b]))
+          },
+          glsl(node, props) {
+            return node.ops
+              .map((op, i) => {
+                const a = glsl(node.items[i]!, props)
+                const b = glsl(node.items[i + 1]!, props)
+                return OP_BINARY[op]!.glsl(props.ctx, [a, b])
+              })
+              .reduce((a, b) => OP_AND.glsl(props.ctx, [a, b]))
+          },
+          drag: NO_DRAG,
+          deps(node, deps) {
+            for (const item of node.items) {
+              deps.add(item)
+            }
+          },
         },
       },
     },

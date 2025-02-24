@@ -1,11 +1,17 @@
 import type {
-  Node,
   NodeName,
   Nodes,
+  OpBinary,
   PuncInfix,
   PuncUnary,
 } from "../eval/ast/token"
-import type { TxrAst, TxrMagicVar } from "../eval/ast/tx"
+import type {
+  TxrAst,
+  TxrGroup,
+  TxrMagicVar,
+  TxrOpBinary,
+  TxrOpUnary,
+} from "../eval/ast/tx"
 import type { Fn } from "../eval/ops"
 import type { WithDocs } from "../eval/ops/docs"
 import type { Builtin } from "../eval/ops/vars"
@@ -43,14 +49,18 @@ export interface Package {
   }
 
   eval?: {
-    txrs?: Partial<{ [K in NodeName]: TxrAst<Nodes[K]> }>
     vars?: List<Builtin>
     fns?: List<Fn & WithDocs>
     op?: {
       unary?: List<Fn & WithDocs, PuncUnary>
       binary?: List<{ precedence: number; fn: Fn & WithDocs }, PuncInfix>
+    }
+    tx?: {
+      unary?: List<TxrOpUnary, PuncUnary>
+      binary?: List<TxrOpBinary & { precedence: number }, OpBinary>
       magic?: List<TxrMagicVar>
-      group?: List<Omit<TxrAst<Node>, "deps">, `${ParenLhs} ${ParenRhs}`>
+      group?: List<TxrGroup, `${ParenLhs} ${ParenRhs}`>
+      ast: Partial<{ [K in NodeName]: TxrAst<Nodes[K]> }>
     }
   }
 

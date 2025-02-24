@@ -371,15 +371,17 @@ export const PKG_TEXT: Package = {
     },
   },
   eval: {
-    txrs: {
-      text: {
-        deps() {},
-        drag: NO_DRAG,
-        js(node) {
-          return { type: "text", value: node.value, list: false }
-        },
-        glsl() {
-          err()
+    tx: {
+      ast: {
+        text: {
+          deps() {},
+          drag: NO_DRAG,
+          js(node) {
+            return { type: "text", value: node.value, list: false }
+          },
+          glsl() {
+            err()
+          },
         },
       },
     },

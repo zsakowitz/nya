@@ -345,6 +345,29 @@ export const PKG_BOOL: Package = {
         "\\or ": { precedence: Precedence.BoolOr, fn: OP_OR },
         or: { precedence: Precedence.BoolOr, fn: OP_OR },
       },
+    },
+    fns: {
+      valid: FN_VALID,
+      firstvalid: FN_FIRSTVALID,
+    },
+    tx: {
+      ast: {
+        piecewise: {
+          js(node, props) {
+            return piecewiseJs(node.pieces, props)
+          },
+          glsl(node, props) {
+            return piecewiseGlsl(node.pieces, props)
+          },
+          drag: NO_DRAG,
+          deps(node, deps) {
+            for (const { condition, value } of node.pieces) {
+              deps.add(condition)
+              deps.add(value)
+            }
+          },
+        },
+      },
       group: {
         "{ }": {
           js(node, props) {
@@ -354,27 +377,6 @@ export const PKG_BOOL: Package = {
             return piecewiseGlsl(parseBraces(node), props)
           },
           drag: NO_DRAG,
-        },
-      },
-    },
-    fns: {
-      valid: FN_VALID,
-      firstvalid: FN_FIRSTVALID,
-    },
-    txrs: {
-      piecewise: {
-        js(node, props) {
-          return piecewiseJs(node.pieces, props)
-        },
-        glsl(node, props) {
-          return piecewiseGlsl(node.pieces, props)
-        },
-        drag: NO_DRAG,
-        deps(node, deps) {
-          for (const { condition, value } of node.pieces) {
-            deps.add(condition)
-            deps.add(value)
-          }
         },
       },
     },

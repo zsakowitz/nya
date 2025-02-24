@@ -130,7 +130,22 @@ export const PKG_CORE_LIST: Package = {
     fns: {
       join: FN_JOIN,
     },
-    op: {
+    tx: {
+      ast: {
+        index: {
+          js(node, props) {
+            return indexJs(js(node.on, props), js(node.index, props))
+          },
+          glsl(node, props) {
+            return indexGlsl(glsl(node.on, props), js(node.index, props))
+          },
+          drag: NO_DRAG,
+          deps(node, deps) {
+            deps.add(node.on)
+            deps.add(node.index)
+          },
+        },
+      },
       group: {
         "[ ]": {
           js(node, props) {
@@ -149,21 +164,6 @@ export const PKG_CORE_LIST: Package = {
             )
           },
           drag: NO_DRAG,
-        },
-      },
-    },
-    txrs: {
-      index: {
-        js(node, props) {
-          return indexJs(js(node.on, props), js(node.index, props))
-        },
-        glsl(node, props) {
-          return indexGlsl(glsl(node.on, props), js(node.index, props))
-        },
-        drag: NO_DRAG,
-        deps(node, deps) {
-          deps.add(node.on)
-          deps.add(node.index)
         },
       },
     },

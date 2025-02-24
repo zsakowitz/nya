@@ -84,13 +84,13 @@ export class SheetFactory {
       VARS[key] = pkg.eval.vars[key]!
     }
 
-    for (const keyRaw in pkg.eval?.txrs) {
+    for (const keyRaw in pkg.eval?.tx?.ast) {
       const key = keyRaw as NodeName
-      const txr = pkg.eval.txrs[key]! as TxrAst<any>
+      const txr = pkg.eval.tx.ast[key]! as TxrAst<any>
       if (TXR_AST[key] && (TXR_AST[key].layer ?? 0) >= (txr.layer ?? 0)) {
         continue
       }
-      TXR_AST[key] = pkg.eval.txrs[key]! as any
+      TXR_AST[key] = pkg.eval.tx.ast[key]! as any
     }
 
     for (const prec in pkg.sheet?.exts) {
@@ -136,11 +136,11 @@ export class SheetFactory {
       OP_UNARY[key] = pkg.eval.op.unary[key]!
     }
 
-    for (const key in pkg.eval?.op?.magic) {
+    for (const key in pkg.eval?.tx?.magic) {
       if (/^[A-Za-z]+$/.test(key)) {
         this.options.words.init(key, "magicprefix")
       }
-      const txr = pkg.eval.op.magic[key]!
+      const txr = pkg.eval.tx.magic[key]!
       if (
         TXR_MAGICVAR[key] &&
         (TXR_MAGICVAR[key].layer ?? 0) >= (txr.layer ?? 0)
@@ -169,9 +169,9 @@ export class SheetFactory {
       TXR_MAGICVAR[key] = txr
     }
 
-    for (const keyRaw in pkg.eval?.op?.group) {
+    for (const keyRaw in pkg.eval?.tx?.group) {
       const key = keyRaw as `${ParenLhs} ${ParenRhs}`
-      const txr = pkg.eval.op.group[key]!
+      const txr = pkg.eval.tx.group[key]!
       if (TXR_GROUP[key] && (TXR_GROUP[key].layer ?? 0) >= (txr.layer ?? 0)) {
         continue
       }
