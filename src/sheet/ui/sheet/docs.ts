@@ -111,11 +111,15 @@ const OPEN_PACKAGE_DOCS = IS_DEV && ""
 
 export const DEFAULT_TO_VISIBLE_DOCS = IS_DEV
 
-function header(contents: string) {
-  return hx(
-    "h2",
-    "font-semibold text-center text-lg mt-4 -mb-2 first:mt-2",
-    contents,
+function header(contents: string, sublabel: string) {
+  return h(
+    "contents",
+    hx(
+      "h2",
+      "font-semibold text-center text-lg mt-4 -mb-2 [:first-child>&]:mt-2",
+      contents,
+    ),
+    hx("p", "text-[--nya-title] text-sm -mb-2 text-center -mt-1", sublabel),
   )
 }
 
@@ -129,7 +133,10 @@ export function createDocs(
   const nonSearchable = h(
     "contents",
     secAdvancedOperators(),
-    header("specific documentation"),
+    header(
+      "specific documentation",
+      "short articles about specific parts of project nya",
+    ),
     ...packages
       .map((x) => x.docs)
       .filter((x) => x != null)
@@ -146,13 +153,19 @@ export function createDocs(
 
   const el = h(
     "flex flex-col overflow-y-auto px-4 pb-[1.125rem] gap-2 [&_p+p]:-mt-2 flex-1",
-    header("about project nya itself"),
+    header(
+      "about project nya itself",
+      "learn all about the story of project nya and how it works!",
+    ),
     secCredits(),
     secWhy(),
     secWhatArePackages(),
     secChangelog(),
 
-    header("collective information"),
+    header(
+      "collective information",
+      "every function and variable in project nya",
+    ),
     secPackages(list),
     secDataTypes(list),
     secNamedVariables(list),
