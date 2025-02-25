@@ -334,7 +334,7 @@ function secWhatArePackages() {
       "First, it means others can create their own packages as separate files, then include them into the main project. I haven't developed this system too much yet, but in theory, extensions like DesThree or DesModder could exist as semi-official additions to project nya, instead of as hacks around the project.",
     ),
     p(
-      "Second, it means I can pick out a subset of features. If I wanted to make a four-function scientific calculator, it would be as simple as not including any package relating to graphing or geometry. Or I could make a 'Desmos-only' subset of project nya, which excludes features like quaternions, shaders, withseq, text, and boolean operators.",
+      "Second, it means I can pick out a subset of features. If I wanted to make a four-function scientific calculator, it would be as simple as not including any package relating to graphing or geometry. Or I could make a 'Desmos-only' subset of project nya, which excludes features like quaternions, shaders, withseq, text, alternate bases, and boolean operators.",
     ),
     p(
       "Third, it keeps the code really clean, since I can put all the statistics functions in one place, the quaternion functions in another, and totally separate them from all other code.",
@@ -923,7 +923,7 @@ export function example(input: string, value: string) {
     h(
       "pt-2 block px-2 w-full overflow-x-auto [&::-webkit-scrollbar]:hidden text-right",
       h(
-        "bg-[--nya-bg-sidebar] border border-[--nya-border] px-2 py-1 rounded ml-auto inline-block",
+        "bg-[--nya-bg-sidebar] [line-height:1] border border-[--nya-border] px-2 py-1 rounded ml-auto inline-block",
         hx("samp", "", value),
       ),
     ),

@@ -14,7 +14,7 @@ import { declareR64 } from "../eval/ops/r64"
 import { VARS } from "../eval/ops/vars"
 import { each, type GlslValue, type JsValue } from "../eval/ty"
 import { canCoerce, coerceTyJs } from "../eval/ty/coerce"
-import { frac, num, real } from "../eval/ty/create"
+import { frac, num } from "../eval/ty/create"
 import { TY_INFO } from "../eval/ty/info"
 import { add, div } from "../eval/ty/ops"
 import { splitValue } from "../eval/ty/split"
@@ -255,66 +255,6 @@ export const PKG_CORE_OPS: Package = {
   eval: {
     tx: {
       binary: {
-        base: {
-          precedence: Precedence.WordInfix,
-          deps(node, deps) {
-            deps.add(node.lhs)
-            deps.add(node.rhs)
-          },
-          drag: NO_DRAG,
-          js({ lhs, rhs }, props) {
-            return js(
-              lhs,
-              Object.create(props, {
-                base: {
-                  value:
-                    (
-                      rhs.type == "var" &&
-                      rhs.kind == "var" &&
-                      !rhs.sub &&
-                      !rhs.sup &&
-                      (rhs.value == "mrrp" || rhs.value == "meow")
-                    ) ?
-                      real(10)
-                    : asNumericBase(
-                        js(
-                          rhs,
-                          Object.create(props, {
-                            base: { value: real(10) },
-                          }),
-                        ),
-                      ),
-                },
-              }),
-            )
-          },
-          glsl({ lhs, rhs }, props) {
-            return glsl(
-              lhs,
-              Object.create(props, {
-                base: {
-                  value:
-                    (
-                      rhs.type == "var" &&
-                      rhs.kind == "var" &&
-                      !rhs.sub &&
-                      !rhs.sup &&
-                      (rhs.value == "mrrp" || rhs.value == "meow")
-                    ) ?
-                      real(10)
-                    : asNumericBase(
-                        js(
-                          rhs,
-                          Object.create(props, {
-                            base: { value: real(10) },
-                          }),
-                        ),
-                      ),
-                },
-              }),
-            )
-          },
-        },
         ".": {
           precedence: Precedence.NotApplicable,
           deps({ lhs, rhs }, deps) {

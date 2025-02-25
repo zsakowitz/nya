@@ -1,4 +1,5 @@
 import type { Package } from "./pkg"
+import { PKG_BASE } from "./pkg/base"
 import { PKG_BOOL } from "./pkg/bool"
 import { PKG_COLOR_CORE } from "./pkg/color-core"
 import { PKG_COLOR_EXTRAS } from "./pkg/color-extras"
@@ -55,4 +56,5 @@ export const ALL: Package[] = [
   PKG_GRIDLINES,
   PKG_WITH,
   PKG_WITH_SEQ,
+  PKG_BASE,
 ]

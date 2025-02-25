@@ -210,6 +210,9 @@ export class SheetFactory {
       ) {
         continue
       }
+      if (!(key in PRECEDENCE_MAP)) {
+        PRECEDENCE_MAP[key] = Precedence.WordInfix
+      }
       if (/^[A-Za-z]+$/.test(key)) {
         this.options.words.init(key, "infix")
       }

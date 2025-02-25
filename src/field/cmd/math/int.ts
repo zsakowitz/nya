@@ -121,6 +121,10 @@ export class CmdInt extends Command<BlocksInt> {
     }
   }
 
+  endsImplicitGroup(): boolean {
+    return true
+  }
+
   vertOutOf(
     dir: VDir,
     block: Block,

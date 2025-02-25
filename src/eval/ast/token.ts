@@ -119,7 +119,6 @@ export const Precedence = Object.freeze({
 
 /** A map from binary operators to their precedences. */
 export const PRECEDENCE_MAP: Partial<Record<PuncBinaryStr, number>> = {
-  ".": Precedence.NotApplicable,
   "\\uparrow ": Precedence.Exponential,
   "\\otimes ": Precedence.Product,
   "\\pm ": Precedence.Sum,
@@ -130,8 +129,6 @@ export const PRECEDENCE_MAP: Partial<Record<PuncBinaryStr, number>> = {
   "\\to ": Precedence.Action,
   ":": Precedence.Colon,
   ",": Precedence.Comma,
-  with: Precedence.WordInfix,
-  withseq: Precedence.WordInfix,
 }
 Object.setPrototypeOf(PRECEDENCE_MAP, null)
 
