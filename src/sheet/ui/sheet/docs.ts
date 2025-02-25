@@ -86,16 +86,17 @@ class PackageList {
   }
 
   section(
-    label: () => string,
+    label: string,
+    rlabel: () => string,
     disabled: (() => boolean) | null,
     data: Node | (Node | null)[],
     open?: boolean,
   ) {
-    const section = sectionEls(label(), data, open)
+    const section = sectionEls(label, rlabel(), data, open)
     section.el.ariaDisabled = section.el.dataset.nyaDisabled =
       disabled?.() ? "true" : "false"
     this.on(() => {
-      section.label.textContent = label()
+      section.rlabel.textContent = rlabel()
       section.el.ariaDisabled = section.el.dataset.nyaDisabled =
         disabled?.() ? "true" : "false"
     })
@@ -106,9 +107,17 @@ class PackageList {
 const IS_DEV = "NYA_DEV" in globalThis
 const OPEN_NORMAL = !IS_DEV
 const OPEN_DATA_TYPES = false
-const OPEN_PACKAGE_DOCS = IS_DEV && "piecewise functions"
+const OPEN_PACKAGE_DOCS = IS_DEV && ""
 
 export const DEFAULT_TO_VISIBLE_DOCS = IS_DEV
+
+function header(contents: string) {
+  return hx(
+    "h2",
+    "font-semibold text-center text-lg mt-4 -mb-2 first:mt-2",
+    contents,
+  )
+}
 
 export function createDocs(
   hide: HTMLElement,
@@ -117,19 +126,19 @@ export function createDocs(
 ) {
   const list = new PackageList(packages)
 
-  const nonPackageSpecific = h(
+  const nonSearchable = h(
     "contents",
+    secAdvancedOperators(),
+    header("specific documentation"),
     ...packages
       .map((x) => x.docs)
       .filter((x) => x != null)
       .flatMap((docs) => Object.entries(docs))
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([k, v]) => section(k, v(), OPEN_PACKAGE_DOCS == k)),
-    secAdvancedOperators(),
-    secChangelog(),
   )
 
-  nonPackageSpecific.querySelectorAll("samp").forEach((el) => {
+  nonSearchable.querySelectorAll("samp").forEach((el) => {
     const field = new FieldInert(options)
     field.typeLatex(el.textContent ?? "")
     el.replaceWith(field.el)
@@ -137,19 +146,24 @@ export function createDocs(
 
   const el = h(
     "flex flex-col overflow-y-auto px-4 pb-[1.125rem] gap-2 [&_p+p]:-mt-2 flex-1",
+    header("about project nya itself"),
     secCredits(),
     secWhy(),
+    secWhatArePackages(),
+    secChangelog(),
+
+    header("collective information"),
     secPackages(list),
     secDataTypes(list),
     secNamedVariables(list),
     secNamedFunctions(list),
     secOperators(list),
-    nonPackageSpecific,
+    nonSearchable,
   )
 
   list.on(() => {
-    nonPackageSpecific.classList.toggle("hidden", list.active)
-    nonPackageSpecific.classList.toggle("contents", !list.active)
+    nonSearchable.classList.toggle("hidden", list.active)
+    nonSearchable.classList.toggle("contents", !list.active)
   })
 
   return h(
@@ -190,34 +204,38 @@ function makeDoc(fn: { name: string; label: string; docs(): Node[] }) {
   )
 }
 
-function title(label: string) {
-  const el = h("flex-1", label)
+function title(label: string, rlabel: string | null) {
+  const el = h("flex-1 pl-1.5 pr-2", label)
+  const elr = h("flex-1 pl-1.5 pr-0 text-right", rlabel)
   return {
     el: hx(
       "summary",
       "[[open]_&]:sticky top-0 z-10 bg-[--nya-bg] pt-2 list-none",
       h(
-        "flex bg-[--nya-bg-sidebar] border border-[--nya-border] -mx-2 rounded-lg px-2 pt-1 font-['Symbola'] text-[1.265rem] text-center items-center [[data-nya-disabled=true]_&]:opacity-30",
+        "flex bg-[--nya-bg-sidebar] border border-[--nya-border] pt-0.5 -mx-2 rounded-lg px-2 font-['Symbola'] text-[1.265rem] items-center [[data-nya-disabled=true]_&]:opacity-30",
         h(
           "",
           fa(
             faCaretRight,
-            "size-4 fill-[--nya-title] -mt-1 [[open]_&]:rotate-90 transition-transform",
+            "size-4 fill-[--nya-title] [[open]_&]:rotate-90 -mt-0.5 transition-transform",
           ),
         ),
         el,
+        rlabel && elr,
       ),
     ),
     label: el,
+    rlabel: elr,
   }
 }
 
 function sectionEls(
   label: string,
+  rlabel: string | null,
   data: Node | (Node | null)[],
   open?: boolean,
 ) {
-  const titleEl = title(label)
+  const titleEl = title(label, rlabel)
 
   return {
     el: hx(
@@ -230,11 +248,12 @@ function sectionEls(
       h("flex flex-col gap-4 pb-2", ...(Array.isArray(data) ? data : [data])),
     ),
     label: titleEl.label,
+    rlabel: titleEl.rlabel,
   }
 }
 
 function section(label: string, data: Node | (Node | null)[], open?: boolean) {
-  return sectionEls(label, data, open).el
+  return sectionEls(label, null, data, open).el
 }
 
 function secCredits() {
@@ -259,7 +278,7 @@ function secCredits() {
         },
         "Its source code",
       ),
-      " is publicly available on GitHub. Inspiration was taken primarily from Desmos.",
+      " is publicly available on GitHub. The design is heavily inspired by Desmos.",
     ),
     OPEN_NORMAL,
   )
@@ -288,6 +307,24 @@ function secWhy() {
       "Hence, I present to you: ",
       hx("strong", "font-semibold", "project nya"),
       ". I hope you enjoy it.",
+    ),
+  ])
+}
+
+function secWhatArePackages() {
+  return section("the package system", [
+    p(
+      "The greatest strength of project nya is the package system. A package is a small module of variables, functions, and operators. project nya itself is composed of several dozen packages: one for each feature.",
+    ),
+    p("Why separate things into packages? There are many benefits."),
+    p(
+      "First, it means others can create their own packages as separate files, then include them into the main project. I haven't developed this system too much yet, but in theory, extensions like DesThree or DesModder could exist as semi-official additions to project nya, instead of as hacks around the project.",
+    ),
+    p(
+      "Second, it means I can pick out a subset of features. If I wanted to make a four-function scientific calculator, it would be as simple as not including any package relating to graphing or geometry. Or I could make a 'Desmos-only' subset of project nya, which excludes features like quaternions, shaders, withseq, text, and boolean operators.",
+    ),
+    p(
+      "Third, it keeps the code really clean, since I can put all the statistics functions in one place, the quaternion functions in another, and totally separate them from all other code.",
     ),
   ])
 }
@@ -328,10 +365,8 @@ function secPackages(list: PackageList) {
     })
 
   return list.section(
-    () =>
-      list.active ?
-        `packages (showing ${list.count} of ${list.packages.length})`
-      : `packages (${list.packages.length})`,
+    "packages",
+    () => "" + (list.active ? list.count : list.packages.length),
     null,
     [
       h(
@@ -372,8 +407,8 @@ function secDataTypes(list: PackageList) {
   const count = () => els.reduce((a, b) => a + +b.active, 0)
 
   return list.section(
-    () =>
-      list.active ? `data types (${count()})` : `data types (${els.length})`,
+    "data types",
+    () => "" + (list.active ? count() : els.length),
     () => count() == 0,
     h(
       "flex flex-col",
@@ -675,10 +710,8 @@ function secNamedVariables(list: PackageList) {
   const count = () => els.reduce((a, b) => a + +b.active, 0)
 
   return list.section(
-    () =>
-      list.active ?
-        `named variables (${count()})`
-      : `named variables (${els.length})`,
+    "named variables",
+    () => "" + (list.active ? count() : els.length),
     () => count() == 0,
     h("flex flex-col", ...els.map((x) => x.el)),
   )
@@ -716,10 +749,8 @@ function secNamedFunctions(list: PackageList) {
   const count = () => els.reduce((a, b) => a + +b.active, 0)
 
   return list.section(
-    () =>
-      list.active ?
-        `named functions (${count()})`
-      : `named functions (${els.length})`,
+    "named functions",
+    () => "" + (list.active ? count() : els.length),
     () => count() == 0,
     els.map((x) => x.el),
   )
@@ -763,8 +794,8 @@ function secOperators(list: PackageList) {
   const count = () => els.reduce((a, b) => a + +b.active, 0)
 
   return list.section(
-    () =>
-      list.active ? `operators (${count()})` : `operators (${els.length})`,
+    "operators",
+    () => "" + (list.active ? count() : els.length),
     () => count() == 0,
     els.map((x) => x.el),
   )
