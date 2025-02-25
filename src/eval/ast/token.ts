@@ -130,8 +130,6 @@ export const PRECEDENCE_MAP: Partial<Record<PuncBinaryStr, number>> = {
   "\\to ": Precedence.Action,
   ":": Precedence.Colon,
   ",": Precedence.Comma,
-  base: Precedence.WordInfix,
-  for: Precedence.WordInfix,
   with: Precedence.WordInfix,
   withseq: Precedence.WordInfix,
 }

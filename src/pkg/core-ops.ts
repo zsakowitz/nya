@@ -5,33 +5,19 @@ import { dragNum, dragPoint, group, NO_DRAG } from "../eval/ast/tx"
 import { glsl, glslCall } from "../eval/glsl"
 import { js, jsCall } from "../eval/js"
 import { asNumericBase, parseNumberJs } from "../eval/lib/base"
-import {
-  BindingFn,
-  id,
-  name,
-  parseBindings,
-  parseBindingVar,
-  tryId,
-  tryName,
-} from "../eval/lib/binding"
+import { BindingFn, id, name, tryId, tryName } from "../eval/lib/binding"
 import type { GlslContext } from "../eval/lib/fn"
 import { safe } from "../eval/lib/util"
-import { OP_BINARY, OP_UNARY } from "../eval/ops"
+import { OP_UNARY } from "../eval/ops"
 import { FnDist } from "../eval/ops/dist"
 import { declareR64 } from "../eval/ops/r64"
 import { VARS } from "../eval/ops/vars"
-import {
-  withBindingsDeps,
-  withBindingsGlsl,
-  withBindingsJs,
-} from "../eval/ops/with"
-import { each, type GlslValue, type JsValue, type TyName } from "../eval/ty"
-import { canCoerce, coerceTyJs, listJs } from "../eval/ty/coerce"
+import { each, type GlslValue, type JsValue } from "../eval/ty"
+import { canCoerce, coerceTyJs } from "../eval/ty/coerce"
 import { frac, num, real } from "../eval/ty/create"
 import { TY_INFO } from "../eval/ty/info"
 import { add, div } from "../eval/ty/ops"
 import { splitValue } from "../eval/ty/split"
-import { L, R, Span } from "../field/model"
 
 export function declareAddR64(ctx: GlslContext) {
   declareR64(ctx)
@@ -268,6 +254,118 @@ export const PKG_CORE_OPS: Package = {
   label: null,
   eval: {
     tx: {
+      binary: {
+        base: {
+          precedence: Precedence.WordInfix,
+          deps(node, deps) {
+            deps.add(node.lhs)
+            deps.add(node.rhs)
+          },
+          drag: NO_DRAG,
+          js({ lhs, rhs }, props) {
+            return js(
+              lhs,
+              Object.create(props, {
+                base: {
+                  value:
+                    (
+                      rhs.type == "var" &&
+                      rhs.kind == "var" &&
+                      !rhs.sub &&
+                      !rhs.sup &&
+                      (rhs.value == "mrrp" || rhs.value == "meow")
+                    ) ?
+                      real(10)
+                    : asNumericBase(
+                        js(
+                          rhs,
+                          Object.create(props, {
+                            base: { value: real(10) },
+                          }),
+                        ),
+                      ),
+                },
+              }),
+            )
+          },
+          glsl({ lhs, rhs }, props) {
+            return glsl(
+              lhs,
+              Object.create(props, {
+                base: {
+                  value:
+                    (
+                      rhs.type == "var" &&
+                      rhs.kind == "var" &&
+                      !rhs.sub &&
+                      !rhs.sup &&
+                      (rhs.value == "mrrp" || rhs.value == "meow")
+                    ) ?
+                      real(10)
+                    : asNumericBase(
+                        js(
+                          rhs,
+                          Object.create(props, {
+                            base: { value: real(10) },
+                          }),
+                        ),
+                      ),
+                },
+              }),
+            )
+          },
+        },
+        ".": {
+          precedence: Precedence.NotApplicable,
+          deps({ lhs, rhs }, deps) {
+            deps.add(lhs)
+            if (!(rhs.type == "var" && !rhs.sub)) {
+              deps.add(rhs)
+            }
+          },
+          drag: NO_DRAG,
+          js({ lhs, rhs }, props) {
+            if (rhs.type == "var" && !rhs.sub) {
+              if (rhs.kind == "var" && `.${rhs.value}` in OP_UNARY) {
+                const name = `.${rhs.value}` as PuncUnary
+
+                const value = OP_UNARY[name]!.js([js(lhs, props)])
+
+                if (rhs.sup) {
+                  return OP_RAISE.js([value, js(rhs.sup, props)])
+                } else {
+                  return value
+                }
+              } else if (rhs.kind == "prefix") {
+                return jsCall(rhs.value, [lhs], true, props)
+              }
+            }
+
+            throw new Error("I don't understand this use of '.'.")
+          },
+          glsl({ lhs, rhs }, props) {
+            if (rhs.type == "var" && !rhs.sub) {
+              if (rhs.kind == "var" && `.${rhs.value}` in OP_UNARY) {
+                const name = `.${rhs.value}` as PuncUnary
+
+                const value = OP_UNARY[name]!.glsl(props.ctx, [
+                  glsl(lhs, props),
+                ])
+
+                if (rhs.sup) {
+                  return OP_RAISE.glsl(props.ctx, [value, glsl(rhs.sup, props)])
+                } else {
+                  return value
+                }
+              } else if (rhs.kind == "prefix") {
+                return glslCall(rhs.value, [lhs], true, props)
+              }
+            }
+
+            throw new Error("I don't understand this use of '.'.")
+          },
+        },
+      },
       ast: {
         juxtaposed: {
           js(node, props) {
@@ -467,298 +565,6 @@ export const PKG_CORE_OPS: Package = {
             }
 
             deps.track(node)
-          },
-        },
-        op: {
-          js(node, props) {
-            if (!node.b) {
-              const op = OP_UNARY[node.kind]
-              if (op) {
-                return op.js([js(node.a, props)])
-              }
-              throw new Error(
-                `The operator '${node.kind}' is not supported yet.`,
-              )
-            }
-            switch (node.kind) {
-              case "base":
-                return js(
-                  node.a,
-                  Object.create(props, {
-                    base: {
-                      value:
-                        (
-                          node.b.type == "var" &&
-                          node.b.kind == "var" &&
-                          !node.b.sub &&
-                          !node.b.sup &&
-                          (node.b.value == "mrrp" || node.b.value == "meow")
-                        ) ?
-                          real(10)
-                        : asNumericBase(
-                            js(
-                              node.b,
-                              Object.create(props, {
-                                base: { value: real(10) },
-                              }),
-                            ),
-                          ),
-                    },
-                  }),
-                )
-              case "for": {
-                const bindings = parseBindings(node.b, (x) =>
-                  parseBindingVar(x, "for"),
-                ).map(([id, contents]): [string, JsValue<TyName, number>] => {
-                  const value = js(contents, props)
-                  if (value.list === false) {
-                    throw new Error(
-                      "The variable on the right side of 'for' must be a list.",
-                    )
-                  }
-                  return [id, value]
-                })
-                if (
-                  bindings.map((x) => x[0]).some((x, i, a) => a.indexOf(x) != i)
-                ) {
-                  throw new Error(
-                    "The same variable cannot be bound twice on the right side of 'for'.",
-                  )
-                }
-                type RX = Record<string, JsValue<TyName, false>>
-                let values: RX[] = [Object.create(null)]
-                for (const binding of bindings.reverse()) {
-                  values = values.flatMap((v): RX[] =>
-                    binding[1].value.map(
-                      (x): RX => ({
-                        ...v,
-                        [binding[0]]: {
-                          list: false,
-                          type: binding[1].type,
-                          value: x,
-                        },
-                      }),
-                    ),
-                  )
-                }
-                return listJs(
-                  values.map((v) =>
-                    props.bindingsJs.withAll(v, () => js(node.a, props)),
-                  ),
-                )
-              }
-              case ".":
-                if (node.b.type == "var" && !node.b.sub) {
-                  if (node.b.kind == "var" && `.${node.b.value}` in OP_UNARY) {
-                    const name = `.${node.b.value}` as PuncUnary
-
-                    const value = OP_UNARY[name]!.js([js(node.a, props)])
-
-                    if (node.b.sup) {
-                      return OP_RAISE.js([value, js(node.b.sup, props)])
-                    } else {
-                      return value
-                    }
-                  } else if (node.b.kind == "prefix") {
-                    return jsCall(node.b.value, [node.a], true, props)
-                  }
-                }
-                break
-              case "with":
-              case "withseq": {
-                return props.bindingsJs.withAll(
-                  withBindingsJs(node.b, node.kind == "withseq", props),
-                  () => js(node.a, props),
-                )
-              }
-            }
-            const op = OP_BINARY[node.kind]
-            if (op) {
-              return op.js([js(node.a, props), js(node.b, props)])
-            }
-            throw new Error(`The operator '${node.kind}' is not supported yet.`)
-          },
-          glsl(node, props) {
-            if (!node.b) {
-              const op = OP_UNARY[node.kind]
-              if (op) {
-                return op.glsl(props.ctx, [glsl(node.a, props)])
-              }
-              throw new Error(
-                `The operator '${node.kind}' is not supported yet.`,
-              )
-            }
-            switch (node.kind) {
-              case "base":
-                return glsl(
-                  node.a,
-                  Object.create(props, {
-                    base: {
-                      value:
-                        (
-                          node.b.type == "var" &&
-                          node.b.kind == "var" &&
-                          !node.b.sub &&
-                          !node.b.sup &&
-                          (node.b.value == "mrrp" || node.b.value == "meow")
-                        ) ?
-                          real(10)
-                        : asNumericBase(
-                            js(
-                              node.b,
-                              Object.create(props, {
-                                base: { value: real(10) },
-                              }),
-                            ),
-                          ),
-                    },
-                  }),
-                )
-              case "for": {
-                const names: Record<
-                  string,
-                  GlslValue<TyName, false>
-                > = Object.create(null)
-                const bindings = parseBindings(node.b, (x) =>
-                  parseBindingVar(x, "for"),
-                )
-                  .map(([id, contents]) => {
-                    const value = glsl(contents, props)
-                    if (value.list === false) {
-                      throw new Error(
-                        "The variable on the right side of 'for' must be a list.",
-                      )
-                    }
-                    const cached = props.ctx.cacheValue(value)
-                    const index = props.ctx.name()
-                    names[id] = {
-                      expr: `${cached}[${index}]`,
-                      list: false,
-                      type: value.type,
-                    }
-                    return {
-                      id,
-                      index,
-                      value: {
-                        expr: cached,
-                        list: value.list,
-                        type: value.type,
-                      } satisfies GlslValue<TyName, number>,
-                      head: `for (int ${index} = 0; ${index} < ${value.list}; ${index}++) {\n`,
-                    }
-                  })
-                  .reverse()
-                if (
-                  bindings.map((x) => x.id).some((x, i, a) => a.indexOf(x) != i)
-                ) {
-                  throw new Error(
-                    "The same variable cannot be bound twice on the right side of 'for'.",
-                  )
-                }
-                const ctxVal = props.ctx.fork()
-                const val = props.bindings.withAll(names, () =>
-                  glsl(node.a, { ...props, ctx: ctxVal }),
-                )
-                if (val.list !== false) {
-                  throw new Error("Cannot store lists inside other lists.")
-                }
-                const ret = props.ctx.name()
-                const size = bindings.reduce((a, b) => a * b.value.list, 1)
-                props.ctx.push`${TY_INFO[val.type].glsl} ${ret}[${size}];\n`
-                for (const { head } of bindings) {
-                  props.ctx.push`${head}`
-                }
-                props.ctx.push`${ctxVal.block}`
-                props.ctx
-                  .push`${ret}[${bindings.reduce((a, b) => `(${a}) * ${b.value.list} + ${b.index}`, "0")}] = ${val.expr};\n`
-                props.ctx.push`${"}\n".repeat(bindings.length)}`
-                return { expr: ret, list: size, type: val.type }
-              }
-              case "with":
-              case "withseq": {
-                return props.bindings.withAll(
-                  withBindingsGlsl(node.b, node.kind == "withseq", props),
-                  () => glsl(node.a, props),
-                )
-              }
-              case ".":
-                if (node.b.type == "var" && !node.b.sub) {
-                  if (node.b.kind == "var" && `.${node.b.value}` in OP_UNARY) {
-                    const name = `.${node.b.value}` as PuncUnary
-
-                    const value = OP_UNARY[name]!.glsl(props.ctx, [
-                      glsl(node.a, props),
-                    ])
-
-                    if (node.b.sup) {
-                      return OP_RAISE.glsl(props.ctx, [
-                        value,
-                        glsl(node.b.sup, props),
-                      ])
-                    } else {
-                      return value
-                    }
-                  } else if (node.b.kind == "prefix") {
-                    return glslCall(node.b.value, [node.a], true, props)
-                  }
-                }
-            }
-            const op = OP_BINARY[node.kind]
-            if (op) {
-              return op.glsl(props.ctx, [
-                glsl(node.a, props),
-                glsl(node.b, props),
-              ])
-            }
-            throw new Error(`The operator '${node.kind}' is not supported yet.`)
-          },
-          drag: {
-            num() {
-              return null
-            },
-            point(node, props) {
-              if (
-                node.b &&
-                node.a.type == "num" &&
-                node.a.span &&
-                (node.kind == "+" || node.kind == "-") &&
-                node.b.type == "juxtaposed" &&
-                node.b.nodes.length == 2 &&
-                node.b.nodes[1]!.type == "var" &&
-                node.b.nodes[1]!.value == "i" &&
-                node.b.nodes[1]!.span &&
-                node.b.nodes[0]!.type == "num"
-              ) {
-                if (node.a.span.parent != node.b.nodes[1]!.span.parent) {
-                  return null
-                }
-                return {
-                  type: "complex",
-                  span: new Span(
-                    node.a.span.parent,
-                    node.a.span[L],
-                    node.b.nodes[1]!.span[R],
-                  ),
-                  field: props.field,
-                }
-              }
-              return null
-            },
-          },
-          deps(node, deps) {
-            if (!node.b) {
-              deps.add(node.a)
-              return
-            }
-            if (node.kind == "with" || node.kind == "withseq") {
-              deps.withBoundIds(
-                withBindingsDeps(node.b, node.kind == "withseq", deps),
-                () => deps.add(node.a),
-              )
-              return
-            }
-            deps.add(node.a)
-            deps.add(node.b)
           },
         },
         call: {

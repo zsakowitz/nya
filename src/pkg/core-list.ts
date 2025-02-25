@@ -1,12 +1,15 @@
 import type { Package } from "."
 import { commalist } from "../eval/ast/collect"
+import { Precedence } from "../eval/ast/token"
 import { NO_DRAG } from "../eval/ast/tx"
 import { glsl } from "../eval/glsl"
 import { js } from "../eval/js"
+import { parseBindings, parseBindingVar } from "../eval/lib/binding"
 import type { Fn } from "../eval/ops"
 import { docByIcon } from "../eval/ops/dist"
 import { type WithDocs, ALL_DOCS } from "../eval/ops/docs"
-import type { GlslValue, JsValue } from "../eval/ty"
+import { bindingDeps } from "../eval/ops/with"
+import type { GlslValue, JsValue, TyName } from "../eval/ty"
 import {
   coerceTy,
   coerceValueGlsl,
@@ -131,6 +134,118 @@ export const PKG_CORE_LIST: Package = {
       join: FN_JOIN,
     },
     tx: {
+      binary: {
+        for: {
+          precedence: Precedence.WordInfix,
+          deps(node, deps) {
+            deps.withBoundIds(bindingDeps(node.rhs, false, deps), () =>
+              deps.add(node.lhs),
+            )
+          },
+          drag: NO_DRAG,
+          js({ lhs, rhs }, props) {
+            const bindings = parseBindings(rhs, (x) =>
+              parseBindingVar(x, "for"),
+            ).map(([id, contents]): [string, JsValue<TyName, number>] => {
+              const value = js(contents, props)
+              if (value.list === false) {
+                throw new Error(
+                  "The variable on the right side of 'for' must be a list.",
+                )
+              }
+              return [id, value]
+            })
+            if (
+              bindings.map((x) => x[0]).some((x, i, a) => a.indexOf(x) != i)
+            ) {
+              throw new Error(
+                "The same variable cannot be bound twice on the right side of 'for'.",
+              )
+            }
+            type RX = Record<string, JsValue<TyName, false>>
+            let values: RX[] = [Object.create(null)]
+            for (const binding of bindings.reverse()) {
+              values = values.flatMap((v): RX[] =>
+                binding[1].value.map(
+                  (x): RX => ({
+                    ...v,
+                    [binding[0]]: {
+                      list: false,
+                      type: binding[1].type,
+                      value: x,
+                    },
+                  }),
+                ),
+              )
+            }
+            return listJs(
+              values.map((v) =>
+                props.bindingsJs.withAll(v, () => js(lhs, props)),
+              ),
+            )
+          },
+          glsl({ lhs, rhs }, props) {
+            const names: Record<
+              string,
+              GlslValue<TyName, false>
+            > = Object.create(null)
+            const bindings = parseBindings(rhs, (x) =>
+              parseBindingVar(x, "for"),
+            )
+              .map(([id, contents]) => {
+                const value = glsl(contents, props)
+                if (value.list === false) {
+                  throw new Error(
+                    "The variable on the right side of 'for' must be a list.",
+                  )
+                }
+                const cached = props.ctx.cacheValue(value)
+                const index = props.ctx.name()
+                names[id] = {
+                  expr: `${cached}[${index}]`,
+                  list: false,
+                  type: value.type,
+                }
+                return {
+                  id,
+                  index,
+                  value: {
+                    expr: cached,
+                    list: value.list,
+                    type: value.type,
+                  } satisfies GlslValue<TyName, number>,
+                  head: `for (int ${index} = 0; ${index} < ${value.list}; ${index}++) {\n`,
+                }
+              })
+              .reverse()
+            if (
+              bindings.map((x) => x.id).some((x, i, a) => a.indexOf(x) != i)
+            ) {
+              throw new Error(
+                "The same variable cannot be bound twice on the right side of 'for'.",
+              )
+            }
+            const ctxVal = props.ctx.fork()
+            const val = props.bindings.withAll(names, () =>
+              glsl(lhs, { ...props, ctx: ctxVal }),
+            )
+            if (val.list !== false) {
+              throw new Error("Cannot store lists inside other lists.")
+            }
+            const ret = props.ctx.name()
+            const size = bindings.reduce((a, b) => a * b.value.list, 1)
+            props.ctx.push`${TY_INFO[val.type].glsl} ${ret}[${size}];\n`
+            for (const { head } of bindings) {
+              props.ctx.push`${head}`
+            }
+            props.ctx.push`${ctxVal.block}`
+            props.ctx
+              .push`${ret}[${bindings.reduce((a, b) => `(${a}) * ${b.value.list} + ${b.index}`, "0")}] = ${val.expr};\n`
+            props.ctx.push`${"}\n".repeat(bindings.length)}`
+            return { expr: ret, list: size, type: val.type }
+          },
+        },
+      },
       ast: {
         index: {
           js(node, props) {

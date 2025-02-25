@@ -186,11 +186,6 @@ const words = new WordMap<WordKind>([
   ["width", "var"],
   ["height", "var"],
 
-  // Standard infixes
-  ["for", "infix"],
-  ["with", "infix"],
-  ["withseq", "infix"],
-
   // List operations
   ["shuffle", "prefix"],
 
@@ -206,7 +201,7 @@ const words = new WordMap<WordKind>([
   ["reflect", "prefix"],
   ["translate", "prefix"],
 
-  // Custom functions
+  // Custom variables
   ["mrrp", "var"],
   ["meow", "var"],
 
@@ -216,7 +211,6 @@ const words = new WordMap<WordKind>([
   ["mod", "infix"],
   ["nPr", "infix"],
   ["nCr", "infix"],
-  ["base", "infix"],
 ]).freeze()
 
 const latex = new WordMap<LatexInit>([

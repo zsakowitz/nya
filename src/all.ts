@@ -24,6 +24,8 @@ import { PKG_TEXT } from "./pkg/text"
 import { PKG_TRIG_COMPLEX } from "./pkg/trig-complex"
 import { PKG_TRIG_REAL } from "./pkg/trig-real"
 import { PKG_TRIG_HYPERBOLIC_REAL } from "./pkg/trigh-real"
+import { PKG_WITH } from "./pkg/with"
+import { PKG_WITH_SEQ } from "./pkg/withseq"
 
 export const ALL: Package[] = [
   PKG_CORE_OPS,
@@ -51,4 +53,6 @@ export const ALL: Package[] = [
   PKG_DISTRIBUTIONS,
   PKG_ITERATE,
   PKG_GRIDLINES,
+  PKG_WITH,
+  PKG_WITH_SEQ,
 ]

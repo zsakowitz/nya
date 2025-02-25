@@ -84,11 +84,7 @@ export function withBindingsGlsl(
   return result
 }
 
-export function withBindingsDeps(
-  rhs: Node,
-  seq: boolean,
-  deps: Deps,
-): string[] {
+export function bindingDeps(rhs: Node, seq: boolean, deps: Deps): string[] {
   if (rhs.type == "magicvar") {
     const mv = TXR_MAGICVAR[rhs.value]
     if (!mv) {

@@ -2,10 +2,18 @@ import {
   Precedence,
   PRECEDENCE_MAP,
   type NodeName,
+  type OpBinary,
   type PuncInfix,
   type PuncUnary,
 } from "../eval/ast/token"
-import { TXR_AST, TXR_GROUP, TXR_MAGICVAR, type TxrAst } from "../eval/ast/tx"
+import {
+  TXR_AST,
+  TXR_GROUP,
+  TXR_MAGICVAR,
+  TXR_OP_BINARY,
+  TXR_OP_UNARY,
+  type TxrAst,
+} from "../eval/ast/tx"
 import { FNS, OP_BINARY, OP_UNARY } from "../eval/ops"
 import { VARS } from "../eval/ops/vars"
 import type { TyName } from "../eval/ty"
@@ -176,6 +184,36 @@ export class SheetFactory {
         continue
       }
       TXR_GROUP[key] = txr
+    }
+
+    for (const keyRaw in pkg.eval?.tx?.unary) {
+      const key = keyRaw as PuncUnary
+      const txr = pkg.eval.tx.unary[key]!
+      if (
+        TXR_OP_UNARY[key] &&
+        (TXR_OP_UNARY[key].layer ?? 0) >= (txr.layer ?? 0)
+      ) {
+        continue
+      }
+      if (/^[A-Za-z]+$/.test(key)) {
+        this.options.words.init(key, "prefix")
+      }
+      TXR_OP_UNARY[key] = txr
+    }
+
+    for (const keyRaw in pkg.eval?.tx?.binary) {
+      const key = keyRaw as OpBinary
+      const txr = pkg.eval.tx.binary[key]!
+      if (
+        TXR_OP_BINARY[key] &&
+        (TXR_OP_BINARY[key].layer ?? 0) >= (txr.layer ?? 0)
+      ) {
+        continue
+      }
+      if (/^[A-Za-z]+$/.test(key)) {
+        this.options.words.init(key, "infix")
+      }
+      TXR_OP_BINARY[key] = txr
     }
 
     return this
