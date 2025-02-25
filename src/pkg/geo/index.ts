@@ -256,6 +256,25 @@ const PICK_ANGLE = definePickTy(
     if (p1 && p2 && p3) {
       drawAngle(sheet.paper, unpt(p1.value), unpt(p2.value), unpt(p3.value), {
         draft: true,
+        type: "angle",
+      })
+    }
+  },
+)
+
+const PICK_DIRECTEDANGLE = definePickTy(
+  "a",
+  "directedangle",
+  [
+    ["point32", "point64"],
+    ["point32", "point64"],
+    ["point32", "point64"],
+  ],
+  (sheet, p1, p2, p3) => {
+    if (p1 && p2 && p3) {
+      drawAngle(sheet.paper, unpt(p1.value), unpt(p2.value), unpt(p3.value), {
+        draft: true,
+        type: "directedangle",
       })
     }
   },
@@ -480,67 +499,74 @@ const INFO_POLYGON: TyInfoByName<"polygon"> = {
   },
 }
 
-const INFO_ANGLE: TyInfoByName<"angle"> = {
-  name: "angle",
-  namePlural: "angles",
-  coerce: {},
-  garbage: {
-    js: [
-      pt(real(NaN), real(NaN)),
-      pt(real(NaN), real(NaN)),
-      pt(real(NaN), real(NaN)),
-    ],
-    glsl: "mat3x2(vec2(0.0/0.0),vec2(0.0/0.0),vec2(0.0/0.0))",
-  },
-  glsl: "mat3x2",
-  write: {
-    display(value, props) {
-      new CmdWord("angle", "prefix").insertAt(props.cursor, L)
-      const inner = new Block(null)
-      const brack = new CmdBrack("(", ")", null, inner)
-      brack.insertAt(props.cursor, L)
-      let first = true
-      props = props.at(inner.cursor(R))
-      for (const pt of value) {
-        if (first) {
-          first = false
-        } else {
-          new CmdComma().insertAt(props.cursor, L)
+function angleInfo(
+  type: "angle" | "directedangle",
+): TyInfoByName<"angle" | "directedangle"> {
+  return {
+    name: type == "angle" ? "angle" : "directed angle",
+    namePlural: type == "angle" ? "angles" : "directed angles",
+    coerce: {},
+    garbage: {
+      js: [
+        pt(real(NaN), real(NaN)),
+        pt(real(NaN), real(NaN)),
+        pt(real(NaN), real(NaN)),
+      ],
+      glsl: "mat3x2(vec2(0.0/0.0),vec2(0.0/0.0),vec2(0.0/0.0))",
+    },
+    glsl: "mat3x2",
+    write: {
+      display(value, props) {
+        new CmdWord(type, "prefix").insertAt(props.cursor, L)
+        const inner = new Block(null)
+        const brack = new CmdBrack("(", ")", null, inner)
+        brack.insertAt(props.cursor, L)
+        let first = true
+        props = props.at(inner.cursor(R))
+        for (const pt of value) {
+          if (first) {
+            first = false
+          } else {
+            new CmdComma().insertAt(props.cursor, L)
+          }
+          const block = new Block(null)
+          new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
+          const inner = props.at(block.cursor(R))
+          inner.num(pt.x)
+          new CmdComma().insertAt(inner.cursor, L)
+          inner.num(pt.y)
         }
-        const block = new Block(null)
-        new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
-        const inner = props.at(block.cursor(R))
-        inner.num(pt.x)
-        new CmdComma().insertAt(inner.cursor, L)
-        inner.num(pt.y)
-      }
+      },
+      isApprox(value) {
+        return value.some((x) => x.x.type == "approx" || x.y.type == "approx")
+      },
     },
-    isApprox(value) {
-      return value.some((x) => x.x.type == "approx" || x.y.type == "approx")
-    },
-  },
-  icon() {
-    return h(
-      "",
-      h(
-        "text-black dark:text-slate-500 size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px]",
+    icon() {
+      return h(
+        "",
         h(
-          "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
-        ),
-        h(
-          "w-[16px] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
-          svgx(
-            "2.2 4.4 17.6 13.2",
-            "stroke-current fill-none overflow-visible [stroke-linejoin:round] [stroke-linecap:round] stroke-2",
-            path(
-              "M 19.8 13.2 L 2.2 17.6 L 7.2 4.4 M 9.96114000116 15.6597149997 A 8 8 0 0 0 5.03381650088 10.1187244377",
+          "text-black dark:text-slate-500 size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px]",
+          h(
+            "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
+          ),
+          h(
+            "w-[16px] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
+            svgx(
+              "2.2 4.4 17.6 13.2",
+              "stroke-current fill-none overflow-visible [stroke-linejoin:round] [stroke-linecap:round] stroke-2",
+              path(
+                "M 19.8 13.2 L 2.2 17.6 L 7.2 4.4 M 9.96114000116 15.6597149997 A 8 8 0 0 0 5.03381650088 10.1187244377",
+              ),
             ),
           ),
         ),
-      ),
-    )
-  },
+      )
+    },
+  }
 }
+
+const INFO_ANGLE = angleInfo("angle")
+const INFO_DIRECTEDANGLE = angleInfo("directedangle")
 
 export const PKG_GEOMETRY: Package = {
   id: "nya:geometry",
@@ -556,6 +582,7 @@ export const PKG_GEOMETRY: Package = {
       circle: INFO_CIRCLE,
       polygon: INFO_POLYGON,
       angle: INFO_ANGLE,
+      directedangle: INFO_DIRECTEDANGLE,
     },
   },
   eval: {
@@ -676,6 +703,7 @@ export const PKG_GEOMETRY: Package = {
             ),
           PICK_MIDPOINT,
         ),
+        toolbar(INFO_DIRECTEDANGLE.icon, PICK_DIRECTEDANGLE),
       ],
     },
     keys: {
@@ -688,6 +716,8 @@ export const PKG_GEOMETRY: Package = {
       z: (sheet) => sheet.pick.set(PICK_TY, PICK_PARALLEL),
       m: (sheet) => sheet.pick.set(PICK_TY, PICK_MIDPOINT),
       P: (sheet) => sheet.pick.set(PICK_TY, PICK_POLYGON),
+      a: (sheet) => sheet.pick.set(PICK_TY, PICK_ANGLE),
+      A: (sheet) => sheet.pick.set(PICK_TY, PICK_DIRECTEDANGLE),
     },
   },
 }

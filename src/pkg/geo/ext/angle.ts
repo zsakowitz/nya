@@ -12,7 +12,7 @@ export function drawAngle(
   p1: Point,
   p2: Point,
   p3: Point,
-  props?: { draft?: boolean },
+  props: { draft?: boolean; type: "angle" | "directedangle" },
 ) {
   const angle =
     (Math.atan2(p1.x - p2.x, p1.y - p2.y) -
@@ -78,16 +78,18 @@ export const EXT_ANGLE = defineHideable({
   data(expr) {
     const value = expr.js?.value
 
-    if (value && value.type == "angle") {
+    if (value && (value.type == "angle" || value.type == "directedangle")) {
       return {
-        value: value as JsValue<"angle">,
+        value: value as JsValue<"angle" | "directedangle">,
         expr,
       }
     }
   },
   svg(data, paper) {
     for (const val of each(data.value)) {
-      drawAngle(paper, unpt(val[0]), unpt(val[1]), unpt(val[2]))
+      drawAngle(paper, unpt(val[0]), unpt(val[1]), unpt(val[2]), {
+        type: data.value.type,
+      })
     }
   },
 })
