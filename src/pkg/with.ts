@@ -36,4 +36,5 @@ export const PKG_WITH: Package = {
       },
     },
   },
+  // TODO: docs on substitution
 }

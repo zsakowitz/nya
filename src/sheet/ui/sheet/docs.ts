@@ -108,7 +108,7 @@ const OPEN_NORMAL = !IS_DEV
 const OPEN_DATA_TYPES = false
 const OPEN_PACKAGE_DOCS = IS_DEV && "piecewise functions"
 
-export const DEFAULT_TO_VISIBLE_DOCS = true
+export const DEFAULT_TO_VISIBLE_DOCS = IS_DEV
 
 export function createDocs(
   hide: HTMLElement,
@@ -122,11 +122,9 @@ export function createDocs(
     ...packages
       .map((x) => x.docs)
       .filter((x) => x != null)
-      .flatMap((docs) =>
-        Object.entries(docs).map(([k, v]) =>
-          section(k, v(), OPEN_PACKAGE_DOCS == k),
-        ),
-      ),
+      .flatMap((docs) => Object.entries(docs))
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([k, v]) => section(k, v(), OPEN_PACKAGE_DOCS == k)),
     secAdvancedOperators(),
     secChangelog(),
   )
@@ -138,7 +136,7 @@ export function createDocs(
   })
 
   const el = h(
-    "flex flex-col overflow-y-auto px-4 pb-4 gap-2 [&_p+p]:-mt-2",
+    "flex flex-col overflow-y-auto px-4 pb-[1.125rem] gap-2 [&_p+p]:-mt-2 flex-1",
     secCredits(),
     secWhy(),
     secPackages(list),
@@ -164,7 +162,7 @@ export function createDocs(
       btn(faFolderClosed, "none", () => {
         el.querySelectorAll("details").forEach((x) => (x.open = false))
       }),
-      h("m-auto text-2xl", "project nya"),
+      h("m-auto text-2xl whitespace-nowrap", "project nya"),
       hide,
     ),
     el,
@@ -225,7 +223,7 @@ function sectionEls(
     el: hx(
       "details",
       {
-        class: "flex flex-col gap-4 -mb-6 open:-mb-2",
+        class: "flex flex-col open:gap-4 -mb-2 open:-mb-2",
         open: open ? "open" : null,
       },
       titleEl.el,

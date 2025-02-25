@@ -283,4 +283,6 @@ export const PKG_CORE_LIST: Package = {
       },
     },
   },
+  // TODO: docs on \begin{list}
+  // TODO: docs on for
 }
