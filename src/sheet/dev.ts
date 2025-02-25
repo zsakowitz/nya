@@ -10,7 +10,7 @@ const SHORT_EXPRS = true
 
 const factory = new SheetFactory(options)
 
-const IS_DEV = "NYA_DEV" in globalThis
+const IS_DEV = false && "NYA_DEV" in globalThis
 if (!(LOAD_EMPTY && IS_DEV)) {
   for (const pkg of (await import("../all")).ALL) {
     factory.load(pkg)

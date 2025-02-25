@@ -5,18 +5,18 @@ J=\operatorname{line}\left(\left(0,0\right),\left(2,3\right)\right)
 A=0.665-0.149i
 B=0+0i
 C=.3+.4i
-@\operatorname{lightdark}\begin{cases}\operatorname{rgb}\left(255,128,128,.4\right)&\left|z-A\right|=q\\\operatorname{rgb}\left(128,255,128,.4\right)&\left|z-B\right|=q\\\operatorname{rgb}\left(128,128,255,.4\right)&\end{cases}\operatorname{with}q=\operatorname{min}\left(\left|z-A\right|,\left|z-B\right|,\left|z-C\right|\right)\operatorname{with}z=\operatorname{iterate}^{20}z\to z-\frac{\left(z-A\right)\cdot \left(z-B\right)\cdot \left(z-C\right)}{3z^{2}-2\cdot \left(A+B+C\right)z+\left(AB+BC+CA\right)}\operatorname{from}z=\frac{p}{1}
+@\operatorname{lightdark}\begin{cases}\operatorname{rgb}\left(255,128,128,.4\right)&\left|z-A\right|=q\\\operatorname{rgb}\left(128,255,128,.4\right)&\left|z-B\right|=q\\\operatorname{rgb}\left(128,128,255,.4\right)&\end{cases}\operatorname{with}q=\operatorname{min}\left(\left|z-A\right|,\left|z-B\right|,\left|z-C\right|\right)\operatorname{with}z=\operatorname{iterate}^{20}z\to z-\frac{\left(z-A\right)\cdot \left(z-B\right)\cdot \left(z-C\right)}{3z^{2}-2\cdot \left(A+B+C\right)z+\left(AB+BC+CA\right)}\operatorname{from}z=p
 F=\operatorname{line}\left(A.\operatorname{point},C.\operatorname{point}\right)
 \operatorname{glider}\left(F,.3\right)
 q_{2}=0.1\operatorname{base}2
 q_{4}=0.\digit{q}5\operatorname{base}36
 @a\cdot \left(\operatorname{valid}a\and y>0\and -8<x<0\right)\operatorname{with}a=\operatorname{oklch}\left(\frac{q_{2}+10}{20},\frac{y}{8},\frac{360x}{8}\right)
-@\operatorname{firstvalid}\operatorname{oklab}\left(C.x+.4,.5\cdot \frac{x}{5}+0.25,0.5\cdot \frac{y}{5}+0.25\right)
+@\operatorname{firstvalid}\operatorname{oklab}\left(C.\operatorname{real}+.4,.5\cdot \frac{x}{5}+0.25,0.5\cdot \frac{y}{5}+0.25\right)
 D=\operatorname{circle}\left(\left(2,3\right),q_{2}+4\right)
 E=\operatorname{glider}\left(D,-.367\right)
 G=\operatorname{circle}\left(E,\left(0,0\right)\right)
 \operatorname{intersection}\left(D,G\right)
-\operatorname{rgb}\left(a\left[1\right],a\left[2\right],a\left[3\right]\right)\operatorname{with}a=255\cdot \left(0.45\operatorname{sin}\frac{5\left|\left[a,b,c\right]\right|}{n}+0.5\right)\operatorname{withseq}\operatorname{iterate}^{50}\begin{list}r\to s\\s\to z\\z\to zz+p\\a\to a+\operatorname{dot}\left(z-s,s-r\right)\\b\to b+\operatorname{dot}\left(z-s,z-s\right)\\c\to c+\operatorname{dot}\left(z-s,z-r\right)\\n\to n+1\end{list}\operatorname{while}z.\operatorname{real}z.\operatorname{real}+z.\operatorname{imag}z.\operatorname{imag}<4\operatorname{from}\begin{list}r=0i\\s=0i\\z=0i\\a=\frac{0}{1}\\b=\frac{0}{1}\\c=\frac{0}{1}\end{list}
+@\operatorname{rgb}\left(a\left[1\right],a\left[2\right],a\left[3\right]\right)\operatorname{with}a=255\cdot \left(0.45\operatorname{sin}\frac{5\left|\left[a,b,c\right]\right|}{n}+0.5\right)\operatorname{withseq}\operatorname{iterate}^{50}\begin{list}r\to s\\s\to z\\z\to zz+p\\a\to a+\operatorname{dot}\left(z-s,s-r\right)\\b\to b+\operatorname{dot}\left(z-s,z-s\right)\\c\to c+\operatorname{dot}\left(z-s,z-r\right)\\n\to n+1\end{list}\operatorname{while}z.\operatorname{real}z.\operatorname{real}+z.\operatorname{imag}z.\operatorname{imag}<4\operatorname{from}s=0i,z=0i
 \operatorname{hsv}\left(360\left|\operatorname{iterate}^{20}z\to z^{2}+p\operatorname{while}\left|z\right|\leq 2\operatorname{from}\frac{0i}{1}\right|,1,1\right)
 \operatorname{firstvalid}\left(\operatorname{oklch}\left(.4,y,360x\right),\operatorname{oklch}\left(.5,y,360x\right),\operatorname{oklch}\left(.6,y,360x\right),\operatorname{oklch}\left(.7,y,360x\right),\operatorname{oklch}\left(.8,y,360x\right),\operatorname{oklch}\left(.9,y,360x\right),\operatorname{oklch}\left(.95,y,360x\right)\right)
 \begin{cases}\operatorname{rgb}\left(128,255,0\right)&\left|p\right|<.5\\\operatorname{rgb}\left(255,255,0\right)&y<.7\\\operatorname{rgb}\left(0,255,128\right)&\end{cases}
