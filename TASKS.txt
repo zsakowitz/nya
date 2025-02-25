@@ -10,6 +10,7 @@ to do list for functions is:
 ❌ way more geometry stuff
 ❌ 3D points and vectors
 ❌ polygon([r32], [r32])
+❌ ceil, floor, round, statistics for complex numbers
 
 to do list for things to plot is:
 ❌ f(x)

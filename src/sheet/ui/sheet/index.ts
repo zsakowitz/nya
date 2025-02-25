@@ -209,7 +209,7 @@ export class Sheet {
       Object.values(factory.loaded),
     )
 
-    if (DEFAULT_TO_VISIBLE_DOCS) {
+    if ("NYA_DEV" in globalThis && DEFAULT_TO_VISIBLE_DOCS) {
       docs.classList.remove("hidden")
       sidebar.classList.add("hidden")
     }

@@ -602,7 +602,7 @@ export const PKG_ITERATE: Package = {
           "=45",
         ),
         p(
-          "Finally, you can use ",
+          "You can also use ",
           h("font-semibold", "iterate.count"),
           " to return the number of iterations instead of any particular variable. This is usually only useful if you also have a ",
           h("font-semibold", "while"),
@@ -614,6 +614,10 @@ export const PKG_ITERATE: Package = {
           String.raw`\operatorname{iterate}.\operatorname{count}^{20}z\to 2z\operatorname{from}z=1\operatorname{while}z<500`,
           "=9",
         ),
+        p(
+          "Finally, note that variables default to zero if you don't specify an initial value.",
+        ),
+        example(String.raw`\operatorname{iterate}^{20}z\to z+1`, "=20"),
         p(
           "Note that in shaders, iteration is significantly more restricted than usual. The variable you're iterating over can't change type, so you can't grow or shrink a list, change a number to a color, or do anything similar.",
         ),

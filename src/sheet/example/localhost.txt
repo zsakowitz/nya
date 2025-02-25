@@ -1,4 +1,4 @@
-a\operatorname{with}\operatorname{iterate}^{10}n\to n+1,a\to a+n\operatorname{from}n=0,a=0
+a\operatorname{with}\operatorname{iterate}^{10}n\to n+1,a\to a+n
 @\operatorname{iterate}^{50}z\to z^{2}+p
 \operatorname{circle}\left(\left(1,2\right),3\right)
 \operatorname{segment}\left(\left(0,6\right),\left(6,5\right)\right)

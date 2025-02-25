@@ -25,6 +25,13 @@ import type { Options } from "../../../field/options"
 import { a, h, hx, p } from "../../../jsx"
 import type { Package } from "../../../pkg"
 
+const IS_DEV = "NYA_DEV" in globalThis
+const OPEN_NORMAL = !IS_DEV
+const OPEN_DATA_TYPES = false
+const OPEN_PACKAGE_DOCS = IS_DEV && ""
+
+export const DEFAULT_TO_VISIBLE_DOCS = false
+
 export function btn(
   icon: IconDefinition,
   label: Node | string,
@@ -103,13 +110,6 @@ class PackageList {
     return section.el
   }
 }
-
-const IS_DEV = "NYA_DEV" in globalThis
-const OPEN_NORMAL = !IS_DEV
-const OPEN_DATA_TYPES = false
-const OPEN_PACKAGE_DOCS = IS_DEV && ""
-
-export const DEFAULT_TO_VISIBLE_DOCS = IS_DEV
 
 function header(contents: string, sublabel: string) {
   return h(
