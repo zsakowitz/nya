@@ -18,6 +18,7 @@ import { frac, num } from "../eval/ty/create"
 import { TY_INFO } from "../eval/ty/info"
 import { add, div } from "../eval/ty/ops"
 import { splitValue } from "../eval/ty/split"
+import { L, R, Span } from "../field/model"
 
 export function declareAddR64(ctx: GlslContext) {
   declareR64(ctx)
@@ -303,6 +304,102 @@ export const PKG_CORE_OPS: Package = {
             }
 
             throw new Error("I don't understand this use of '.'.")
+          },
+        },
+        "+": {
+          precedence: Precedence.Sum,
+          deps(node, deps) {
+            deps.add(node.lhs)
+            deps.add(node.rhs)
+          },
+          js(node, props) {
+            return OP_ADD.js([js(node.lhs, props), js(node.rhs, props)])
+          },
+          glsl(node, props) {
+            return OP_ADD.glsl(props.ctx, [
+              glsl(node.lhs, props),
+              glsl(node.rhs, props),
+            ])
+          },
+          drag: {
+            num() {
+              return null
+            },
+            point({ lhs, rhs }, props) {
+              if (
+                rhs &&
+                lhs.type == "num" &&
+                lhs.span &&
+                rhs.type == "juxtaposed" &&
+                rhs.nodes.length == 2 &&
+                rhs.nodes[1]!.type == "var" &&
+                rhs.nodes[1]!.value == "i" &&
+                rhs.nodes[1]!.span &&
+                rhs.nodes[0]!.type == "num"
+              ) {
+                if (lhs.span.parent != rhs.nodes[1]!.span.parent) {
+                  return null
+                }
+                return {
+                  type: "complex",
+                  span: new Span(
+                    lhs.span.parent,
+                    lhs.span[L],
+                    rhs.nodes[1]!.span[R],
+                  ),
+                  field: props.field,
+                }
+              }
+              return null
+            },
+          },
+        },
+        "-": {
+          precedence: Precedence.Sum,
+          deps(node, deps) {
+            deps.add(node.lhs)
+            deps.add(node.rhs)
+          },
+          js(node, props) {
+            return OP_SUB.js([js(node.lhs, props), js(node.rhs, props)])
+          },
+          glsl(node, props) {
+            return OP_SUB.glsl(props.ctx, [
+              glsl(node.lhs, props),
+              glsl(node.rhs, props),
+            ])
+          },
+          drag: {
+            num() {
+              return null
+            },
+            point({ lhs, rhs }, props) {
+              if (
+                rhs &&
+                lhs.type == "num" &&
+                lhs.span &&
+                rhs.type == "juxtaposed" &&
+                rhs.nodes.length == 2 &&
+                rhs.nodes[1]!.type == "var" &&
+                rhs.nodes[1]!.value == "i" &&
+                rhs.nodes[1]!.span &&
+                rhs.nodes[0]!.type == "num"
+              ) {
+                if (lhs.span.parent != rhs.nodes[1]!.span.parent) {
+                  return null
+                }
+                return {
+                  type: "complex",
+                  span: new Span(
+                    lhs.span.parent,
+                    lhs.span[L],
+                    rhs.nodes[1]!.span[R],
+                  ),
+                  field: props.field,
+                }
+              }
+              return null
+            },
           },
         },
       },
