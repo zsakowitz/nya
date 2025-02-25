@@ -366,8 +366,11 @@ function iterateGlsl(
     const prev = from
     const type = firstIterTypes[id]!
     try {
+      const expr = coerceValueGlsl(props.eval.ctx, from, type)
+      const name = ctx.name()
+      ctx.push`${declareGlsl(type, name)} = ${expr};\n`
       values[id] = {
-        expr: coerceValueGlsl(props.eval.ctx, from, type),
+        expr: name,
         list: type.list,
         type: type.type,
       }
