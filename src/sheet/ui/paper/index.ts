@@ -15,8 +15,10 @@ export interface Point {
 }
 
 interface LayerShared {
-  line: 1
-  point: 2
+  angleline: 1
+  line: 2
+  anglearc: 3
+  point: 4
 }
 
 interface LayerExclusive {
@@ -24,8 +26,10 @@ interface LayerExclusive {
 }
 
 const LAYER_SHARED: Partial<LayerShared> = Object.create(null)
-LAYER_SHARED.line = 1
-LAYER_SHARED.point = 2
+LAYER_SHARED.angleline = 1
+LAYER_SHARED.line = 2
+LAYER_SHARED.anglearc = 3
+LAYER_SHARED.point = 4
 
 const LAYER_EXCLUSIVE: Partial<LayerExclusive> = Object.create(null)
 LAYER_EXCLUSIVE.grid = 0
@@ -252,6 +256,7 @@ export type DrawKind =
   | "vector"
   | "polygon"
   | "circle"
+  | "angle"
 
 export type DrawProps = {
   drag?: DragProps
@@ -291,6 +296,7 @@ export function segmentByOffset(
       vector: "picking-any:opacity-30 picking-vector:opacity-100",
       polygon: "picking-any:opacity-30 picking-polygon:opacity-100",
       circle: "picking-any:opacity-30 picking-circle:opacity-100",
+      angle: "picking-any:opacity-30 picking-angle:opacity-100",
       null: "",
     }[props.kind ?? "null"]
 
@@ -332,12 +338,31 @@ export function segmentByOffset(
       pick: props.pick && {
         ...props.pick,
         draw() {
-          ring.setAttribute("stroke", "#2d70b360")
+          ring.setAttribute("stroke", "#2d70b3" + "60")
           target.classList.add("cursor-pointer")
         },
       },
       class: clsx,
     })
     paper.append("line", target)
+  }
+}
+
+export function norm(at: Point, distance = 1) {
+  const denom = Math.hypot(at.x, at.y)
+  if (denom == 0) return at
+
+  return {
+    x: (at.x / denom) * distance,
+    y: (at.y / denom) * distance,
+  }
+}
+
+export function normSegment(from: Point, to: Point, distance = 1) {
+  const n = norm({ x: to.x - from.x, y: to.y - from.y }, distance)
+
+  return {
+    x: from.x + n.x,
+    y: from.y + n.y,
   }
 }

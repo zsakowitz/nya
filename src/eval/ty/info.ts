@@ -4,8 +4,7 @@ import { CmdWord } from "../../field/cmd/leaf/word"
 import { CmdBrack } from "../../field/cmd/math/brack"
 import { Block, L, R } from "../../field/model"
 import { h, path, svgx } from "../../jsx"
-import type { Point } from "../../sheet/ui/paper"
-import type { Paper } from "../../sheet/ui/paper"
+import type { Paper, Point } from "../../sheet/ui/paper"
 import type { GlslContext } from "../lib/fn"
 import type { TyWrite } from "./display"
 
@@ -25,6 +24,8 @@ export interface TyInfo<T, U extends TyName> {
   glide?: TyGlide<T>
   components?: TyComponentInfo<T, U>
 }
+
+export type TyInfoByName<T extends TyName> = TyInfo<Tys[T], TyComponents[T]>
 
 export type TyGlide<T> = (props: GlideProps<T>) => {
   value: number

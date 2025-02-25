@@ -1,5 +1,14 @@
 a\operatorname{with}\operatorname{iterate}^{10}n\to n+1,a\to a+n
-@\operatorname{iterate}^{50}z\to z^{2}+p
+\operatorname{iterate}^{50}z\to z^{2}+p
 \operatorname{circle}\left(\left(1,2\right),3\right)
 \operatorname{segment}\left(\left(0,6\right),\left(6,5\right)\right)
 \left(1,2\right)
+p_{1}=\left(-5.47,6.17\right)
+p_{2}=\left(-8.45,0.36\right)
+p_{3}=\left(-2.82,3.32\right)
+a_{1}=\operatorname{angle}\left(p_{1},p_{2},p_{3}\right)
+p_{4}=\left(-1.76,-3.69\right)
+a_{2}=\operatorname{angle}\left(p_{3},p_{2},p_{4}\right)
+p_{5}=\left(-9.62,-0.44\right)
+a_{3}=\operatorname{angle}\left(p_{4},p_{2},p_{5}\right)
+a_{4}=\operatorname{angle}\left(p_{5},p_{2},p_{1}\right)

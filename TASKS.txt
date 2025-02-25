@@ -7,10 +7,12 @@ to do list for functions is:
 ❌ stat tests
 ❌ logb
 ❌ lcm, gcd, nPr, nCr
-❌ way more geometry stuff
-❌ 3D points and vectors
+❌ arc, directedangle, bisector, anglebisector, angles, directedangles
+❌ rotate, dilate, reflect, translate
 ❌ polygon([r32], [r32])
+❌ 3D points and vectors
 ❌ ceil, floor, round, statistics for complex numbers
+❌ width, height
 
 to do list for things to plot is:
 ❌ f(x)

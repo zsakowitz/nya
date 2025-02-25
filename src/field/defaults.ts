@@ -182,35 +182,9 @@ const autos = new WordMap<Init>([
 ]).freeze()
 
 const words = new WordMap<WordKind>([
-  // Standard variables
-  ["width", "var"],
-  ["height", "var"],
-
-  // List operations
-  ["shuffle", "prefix"],
-
-  // Geometry
-  ["bisector", "prefix"],
-  ["arc", "prefix"],
-  ["angle", "prefix"],
-  ["anglebisector", "prefix"],
-  ["directedangle", "prefix"],
-  ["directedangles", "prefix"],
-  ["rotate", "prefix"],
-  ["dilate", "prefix"],
-  ["reflect", "prefix"],
-  ["translate", "prefix"],
-
   // Custom variables
   ["mrrp", "var"],
   ["meow", "var"],
-
-  // Number theory
-  ["lcm", "prefix"],
-  ["gcd", "prefix"],
-  ["mod", "infix"],
-  ["nPr", "infix"],
-  ["nCr", "infix"],
 ]).freeze()
 
 const latex = new WordMap<LatexInit>([

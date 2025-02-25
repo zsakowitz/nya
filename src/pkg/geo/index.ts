@@ -1,7 +1,13 @@
 import type { Package } from ".."
-import type { JsVal, SPoint, TyComponents, Tys } from "../../eval/ty"
+import { FnDist } from "../../eval/ops/dist"
+import type { JsVal, SPoint } from "../../eval/ty"
 import { num, pt, real, unpt } from "../../eval/ty/create"
-import { gliderOnLine, WRITE_POINT, type TyInfo } from "../../eval/ty/info"
+import {
+  gliderOnLine,
+  WRITE_POINT,
+  type TyInfo,
+  type TyInfoByName,
+} from "../../eval/ty/info"
 import { CmdComma } from "../../field/cmd/leaf/comma"
 import { CmdWord } from "../../field/cmd/leaf/word"
 import { CmdBrack } from "../../field/cmd/math/brack"
@@ -16,6 +22,7 @@ import {
   PKG_GEO_POINT,
 } from "../geo-point"
 import { PKG_REAL } from "../num-real"
+import { drawAngle, EXT_ANGLE } from "./ext/angle"
 import { drawCircle, EXT_CIRCLE } from "./ext/circle"
 import { drawLine, EXT_LINE } from "./ext/line"
 import { drawPolygon, EXT_POLYGON } from "./ext/polygon"
@@ -49,6 +56,8 @@ declare module "../../eval/ty" {
     vector: [SPoint, SPoint]
     circle: { center: SPoint; radius: SReal }
     polygon: SPoint[]
+    angle: [SPoint, SPoint, SPoint]
+    directedangle: [SPoint, SPoint, SPoint]
   }
 
   interface TyComponents {
@@ -58,6 +67,8 @@ declare module "../../eval/ty" {
     vector: never
     circle: never
     polygon: never
+    angle: never
+    directedangle: never
   }
 }
 
@@ -233,6 +244,23 @@ const PICK_PARALLEL = definePickTy(
   },
 )
 
+const PICK_ANGLE = definePickTy(
+  "a",
+  "angle",
+  [
+    ["point32", "point64"],
+    ["point32", "point64"],
+    ["point32", "point64"],
+  ],
+  (sheet, p1, p2, p3) => {
+    if (p1 && p2 && p3) {
+      drawAngle(sheet.paper, unpt(p1.value), unpt(p2.value), unpt(p3.value), {
+        draft: true,
+      })
+    }
+  },
+)
+
 const PICK_MIDPOINT: Data = {
   vals: [],
   next: ["point32", "point64", "segment"],
@@ -336,7 +364,7 @@ const INFO_VECTOR = lineInfo(
   null,
 )
 
-const INFO_CIRCLE: TyInfo<Tys["circle"], TyComponents["circle"]> = {
+const INFO_CIRCLE: TyInfoByName<"circle"> = {
   name: "circle",
   namePlural: "circles",
   glsl: "vec3",
@@ -392,7 +420,7 @@ const INFO_CIRCLE: TyInfo<Tys["circle"], TyComponents["circle"]> = {
   },
 }
 
-const INFO_POLYGON: TyInfo<Tys["polygon"], TyComponents["polygon"]> = {
+const INFO_POLYGON: TyInfoByName<"polygon"> = {
   name: "polygon",
   namePlural: "polygons",
   get glsl(): never {
@@ -452,6 +480,68 @@ const INFO_POLYGON: TyInfo<Tys["polygon"], TyComponents["polygon"]> = {
   },
 }
 
+const INFO_ANGLE: TyInfoByName<"angle"> = {
+  name: "angle",
+  namePlural: "angles",
+  coerce: {},
+  garbage: {
+    js: [
+      pt(real(NaN), real(NaN)),
+      pt(real(NaN), real(NaN)),
+      pt(real(NaN), real(NaN)),
+    ],
+    glsl: "mat3x2(vec2(0.0/0.0),vec2(0.0/0.0),vec2(0.0/0.0))",
+  },
+  glsl: "mat3x2",
+  write: {
+    display(value, props) {
+      new CmdWord("angle", "prefix").insertAt(props.cursor, L)
+      const inner = new Block(null)
+      const brack = new CmdBrack("(", ")", null, inner)
+      brack.insertAt(props.cursor, L)
+      let first = true
+      props = props.at(inner.cursor(R))
+      for (const pt of value) {
+        if (first) {
+          first = false
+        } else {
+          new CmdComma().insertAt(props.cursor, L)
+        }
+        const block = new Block(null)
+        new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
+        const inner = props.at(block.cursor(R))
+        inner.num(pt.x)
+        new CmdComma().insertAt(inner.cursor, L)
+        inner.num(pt.y)
+      }
+    },
+    isApprox(value) {
+      return value.some((x) => x.x.type == "approx" || x.y.type == "approx")
+    },
+  },
+  icon() {
+    return h(
+      "",
+      h(
+        "text-black dark:text-slate-500 size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px]",
+        h(
+          "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
+        ),
+        h(
+          "w-[16px] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
+          svgx(
+            "2.2 4.4 17.6 13.2",
+            "stroke-current fill-none overflow-visible [stroke-linejoin:round] [stroke-linecap:round] stroke-2",
+            path(
+              "M 19.8 13.2 L 2.2 17.6 L 7.2 4.4 M 9.96114000116 15.6597149997 A 8 8 0 0 0 5.03381650088 10.1187244377",
+            ),
+          ),
+        ),
+      ),
+    )
+  },
+}
+
 export const PKG_GEOMETRY: Package = {
   id: "nya:geometry",
   name: "geometry",
@@ -465,6 +555,7 @@ export const PKG_GEOMETRY: Package = {
       vector: INFO_VECTOR,
       circle: INFO_CIRCLE,
       polygon: INFO_POLYGON,
+      angle: INFO_ANGLE,
     },
   },
   eval: {
@@ -487,11 +578,25 @@ export const PKG_GEOMETRY: Package = {
       start: FN_START,
       vector: FN_VECTOR,
       vertices: FN_VERTICES,
+      angle: new FnDist("angle", "constructs an angle from three vertices").add(
+        ["point32", "point32", "point32"],
+        "angle",
+        (a, b, c) => [a.value, b.value, c.value],
+        (_, a, b, c) => `mat3x2(${a.expr}, ${b.expr}, ${c.expr})`,
+      ),
     },
   },
   sheet: {
     exts: {
-      1: [EXT_CIRCLE, EXT_LINE, EXT_POLYGON, EXT_RAY, EXT_SEGMENT, EXT_VECTOR],
+      1: [
+        EXT_CIRCLE,
+        EXT_LINE,
+        EXT_POLYGON,
+        EXT_RAY,
+        EXT_SEGMENT,
+        EXT_VECTOR,
+        EXT_ANGLE,
+      ],
     },
     toolbar: {
       1: [
@@ -501,6 +606,7 @@ export const PKG_GEOMETRY: Package = {
         toolbar(INFO_VECTOR.icon, PICK_VECTOR),
         toolbar(INFO_CIRCLE.icon, PICK_CIRCLE),
         toolbar(INFO_POLYGON.icon, PICK_POLYGON),
+        toolbar(INFO_ANGLE.icon, PICK_ANGLE),
         toolbar(
           () =>
             h(

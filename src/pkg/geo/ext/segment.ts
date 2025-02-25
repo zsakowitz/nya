@@ -11,7 +11,6 @@ export const EXT_SEGMENT = defineHideable({
     if (value && value.type == "segment") {
       return {
         value: value as JsValue<"segment">,
-
         expr,
       }
     }
