@@ -7,7 +7,7 @@ import { num, pt, real } from "../../../eval/ty/create"
 import { div, mul, sub } from "../../../eval/ty/ops"
 import { FN_INTERSECTION } from "../../geo-point"
 
-function js(
+export function intersectLineLineJs(
   [{ x: x1, y: y1 }, { x: x2, y: y2 }]: Val<"line">,
   [{ x: x3, y: y3 }, { x: x4, y: y4 }]: Val<"line">,
 ) {
@@ -38,7 +38,11 @@ function js(
   )
 }
 
-function glsl(ctx: GlslContext, ar: GlslVal, br: GlslVal): string {
+export function intersectLineLineGlsl(
+  ctx: GlslContext,
+  ar: GlslVal,
+  br: GlslVal,
+): string {
   const a = ctx.cache(ar)
   const b = ctx.cache(br)
 
@@ -60,7 +64,12 @@ function glsl(ctx: GlslContext, ar: GlslVal, br: GlslVal): string {
 // line-line
 for (const a of ["segment", "ray", "line"] as const) {
   for (const b of ["segment", "ray", "line"] as const) {
-    FN_INTERSECTION.add([a, b], "point32", (a, b) => js(a.value, b.value), glsl)
+    FN_INTERSECTION.add(
+      [a, b],
+      "point32",
+      (a, b) => intersectLineLineJs(a.value, b.value),
+      intersectLineLineGlsl,
+    )
   }
 }
 
