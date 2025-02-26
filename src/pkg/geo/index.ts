@@ -1,5 +1,4 @@
 import type { Package } from ".."
-import { FnDist } from "../../eval/ops/dist"
 import type { JsVal, SPoint } from "../../eval/ty"
 import { num, pt, real, unpt } from "../../eval/ty/create"
 import {
@@ -29,6 +28,8 @@ import { drawPolygon, EXT_POLYGON } from "./ext/polygon"
 import { drawRay, EXT_RAY } from "./ext/ray"
 import { EXT_SEGMENT } from "./ext/segment"
 import { drawVector, EXT_VECTOR } from "./ext/vector"
+import { FN_ANGLE, FN_DIRECTEDANGLE } from "./fn/angle"
+import { FN_ANGLES, FN_DIRECTEDANGLES } from "./fn/angles"
 import { FN_CENTER } from "./fn/center"
 import { FN_CIRCLE } from "./fn/circle"
 import { FN_DISTANCE } from "./fn/distance"
@@ -630,21 +631,10 @@ export const PKG_GEOMETRY: Package = {
       start: FN_START,
       vector: FN_VECTOR,
       vertices: FN_VERTICES,
-      angle: new FnDist("angle", "constructs an angle from three vertices").add(
-        ["point32", "point32", "point32"],
-        "angle",
-        (a, b, c) => [a.value, b.value, c.value],
-        (_, a, b, c) => `mat3x2(${a.expr}, ${b.expr}, ${c.expr})`,
-      ),
-      directedangle: new FnDist(
-        "directedangle",
-        "constructs an angle with a particular direction",
-      ).add(
-        ["point32", "point32", "point32"],
-        "directedangle",
-        (a, b, c) => [a.value, b.value, c.value],
-        (_, a, b, c) => `mat3x2(${a.expr}, ${b.expr}, ${c.expr})`,
-      ),
+      angle: FN_ANGLE,
+      directedangle: FN_DIRECTEDANGLE,
+      angles: FN_ANGLES,
+      directedangles: FN_DIRECTEDANGLES,
     },
   },
   sheet: {
