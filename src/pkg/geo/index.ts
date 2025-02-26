@@ -501,6 +501,7 @@ const INFO_POLYGON: TyInfoByName<"polygon"> = {
 
 function angleInfo(
   type: "angle" | "directedangle",
+  svg: () => SVGSVGElement,
 ): TyInfoByName<"angle" | "directedangle"> {
   return {
     name: type == "angle" ? "angle" : "directed angle",
@@ -560,13 +561,7 @@ function angleInfo(
           ),
           h(
             "w-[16px] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
-            svgx(
-              "2.2 4.4 17.6 13.2",
-              "stroke-current fill-none overflow-visible [stroke-linejoin:round] [stroke-linecap:round] stroke-2",
-              path(
-                "M 19.8 13.2 L 2.2 17.6 L 7.2 4.4 M 9.96114000116 15.6597149997 A 8 8 0 0 0 5.03381650088 10.1187244377",
-              ),
-            ),
+            svg(),
           ),
         ),
       )
@@ -574,8 +569,25 @@ function angleInfo(
   }
 }
 
-const INFO_ANGLE = angleInfo("angle")
-const INFO_DIRECTEDANGLE = angleInfo("directedangle")
+const INFO_ANGLE = angleInfo("angle", () =>
+  svgx(
+    "2.2 4.4 17.6 13.2",
+    "stroke-current fill-none overflow-visible [stroke-linejoin:round] [stroke-linecap:round] stroke-2",
+    path(
+      "M 19.8 13.2 L 2.2 17.6 L 7.2 4.4 M 9.96114000116 15.6597149997 A 8 8 0 0 0 5.03381650088 10.1187244377",
+    ),
+  ),
+)
+
+const INFO_DIRECTEDANGLE = angleInfo("directedangle", () =>
+  svgx(
+    "2.2 4.4 17.6 13.2",
+    "stroke-current fill-none overflow-visible [stroke-linejoin:round] [stroke-linecap:round] stroke-2",
+    path(
+      "M 19.8 13.2 L 2.2 17.6 L 7.2 4.4 M 6.55 6.116 A 12.28 12.28 0 0 1 14.113 14.621 M 14.11360097 14.62159976L9.411532655 11.16512951 14.24277289 8.787223393 Z",
+    ),
+  ),
+)
 
 export const PKG_GEOMETRY: Package = {
   id: "nya:geometry",
