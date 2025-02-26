@@ -5,35 +5,63 @@ import type { GlslContext } from "../../../eval/lib/fn"
 import type { GlslVal, Tys, Val } from "../../../eval/ty"
 import { num, pt, real } from "../../../eval/ty/create"
 import { div, mul, sub } from "../../../eval/ty/ops"
+import type { Point } from "../../../sheet/ui/paper"
 import { FN_INTERSECTION } from "../../geo-point"
 
 export function intersectLineLineJs(
+  a: [Point, Point],
+  b: [Point, Point],
+): Point {
+  const x1 = a[0].x
+  const y1 = a[0].y
+  const x2 = a[1].x
+  const y2 = a[1].y
+
+  const x3 = b[0].x
+  const y3 = b[0].y
+  const x4 = b[1].x
+  const y4 = b[1].y
+
+  const x = (x1 * y2 - y1 * x2) * (x3 - x4) - (x1 - x2) * (x3 * y4 - y3 - x4)
+  const y = (x1 * y2 - y1 * x2) * (y3 - y4) - (y1 - y2) * (x3 * y4 - y3 - x4)
+  const d = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4)
+
+  return { x: x / d, y: y / d }
+}
+
+export function intersectSLineLineJs(
   [{ x: x1, y: y1 }, { x: x2, y: y2 }]: Val<"line">,
   [{ x: x3, y: y3 }, { x: x4, y: y4 }]: Val<"line">,
 ) {
+  // (x1 - x2) (y3 - y4) - (y1 - y2) (x3 - x4)
+  const d = sub(mul(sub(x1, x2), sub(y3, y4)), mul(sub(y1, y2), sub(x3, x4)))
+
+  const x1y2 = mul(x1, y2)
+  const x2y1 = mul(y1, x2)
+  const x3y4 = mul(x3, y4)
+  const x4y3 = mul(y3, x4)
+
   return pt(
     div(
       // (x1 y2 - y1 x2) (x3 - x4) - (x1 - x2) (x3 y4 - y3 x4)
       sub(
         // (x1 y2 - y1 x2) (x3 - x4)
-        mul(sub(mul(x1, y2), mul(y1, x2)), sub(x3, x4)),
+        mul(sub(x1y2, x2y1), sub(x3, x4)),
         // (x1 - x2) (x3 y4 - y3 x4)
-        mul(sub(x1, x2), sub(mul(x3, y4), mul(y3, x4))),
+        mul(sub(x1, x2), sub(x3y4, x4y3)),
       ),
-      // (x1 - x2) (y3 - y4) - (y1 - y2) (x3 - x4)
-      sub(mul(sub(x1, x2), sub(y3, y4)), mul(sub(y1, y2), sub(x3, x4))),
+      d,
     ),
 
     div(
       // (x1 y2 - y1 x2) (y3 - y4) - (x1 - x2) (x3 y4 - y3 x4)
       sub(
         // (x1 y2 - y1 x2) (y3 - y4)
-        mul(sub(mul(x1, y2), mul(y1, x2)), sub(y3, y4)),
+        mul(sub(x1y2, x2y1), sub(y3, y4)),
         // (y1 - y2) (x3 y4 - y3 x4)
-        mul(sub(y1, y2), sub(mul(x3, y4), mul(y3, x4))),
+        mul(sub(y1, y2), sub(x3y4, x4y3)),
       ),
-      // (x1 - x2) (y3 - y4) - (y1 - y2) (x3 - x4)
-      sub(mul(sub(x1, x2), sub(y3, y4)), mul(sub(y1, y2), sub(x3, x4))),
+      d,
     ),
   )
 }
@@ -67,7 +95,7 @@ for (const a of ["segment", "ray", "line"] as const) {
     FN_INTERSECTION.add(
       [a, b],
       "point32",
-      (a, b) => intersectLineLineJs(a.value, b.value),
+      (a, b) => intersectSLineLineJs(a.value, b.value),
       intersectLineLineGlsl,
     )
   }
