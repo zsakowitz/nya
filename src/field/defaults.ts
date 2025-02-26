@@ -29,13 +29,7 @@ import { CmdVar, type WordKind } from "./cmd/leaf/var"
 import { CmdList } from "./cmd/logic/list"
 import { CmdPiecewise } from "./cmd/logic/piecewise"
 import { BIG_ALIASES, CmdBig } from "./cmd/math/big"
-import {
-  BRACKS,
-  CmdBrack,
-  matchParen,
-  type ParenLhs,
-  type ParenRhs,
-} from "./cmd/math/brack"
+import { BRACKS, CmdBrack, type ParenLhs } from "./cmd/math/brack"
 import { CmdFrac } from "./cmd/math/frac"
 import { CmdInt } from "./cmd/math/int"
 import { CmdMatrix } from "./cmd/math/matrix"
@@ -201,63 +195,16 @@ const latex = new WordMap<LatexInit>([
       },
     },
   ],
-  [
-    "\\left",
-    {
-      fromLatex(_, parser) {
-        const lhsRaw = parser.peek()
-        const lhs =
-          (
-            lhsRaw &&
-            lhsRaw in BRACKS &&
-            BRACKS[lhsRaw as keyof typeof BRACKS].side != R
-          ) ?
-            ((parser.i += lhsRaw.length), lhsRaw as ParenLhs)
-          : (
-            lhsRaw &&
-            lhsRaw.length >= 2 &&
-            lhsRaw[0] == "\\" &&
-            lhsRaw.slice(1) in BRACKS &&
-            BRACKS[lhsRaw.slice(1) as keyof typeof BRACKS].side != R
-          ) ?
-            ((parser.i += lhsRaw.length), lhsRaw.slice(1) as ParenLhs)
-          : null
-        const contents = parser.until("\\right")
-        const rhsRaw = parser.peek()
-        const rhs =
-          (
-            rhsRaw &&
-            rhsRaw in BRACKS &&
-            BRACKS[rhsRaw as keyof typeof BRACKS].side != L
-          ) ?
-            ((parser.i += rhsRaw.length), rhsRaw as ParenRhs)
-          : (
-            rhsRaw &&
-            rhsRaw.length >= 2 &&
-            rhsRaw[0] == "\\" &&
-            rhsRaw.slice(1) in BRACKS &&
-            BRACKS[rhsRaw.slice(1) as keyof typeof BRACKS].side != L
-          ) ?
-            ((parser.i += rhsRaw.length), rhsRaw.slice(1) as ParenRhs)
-          : null
-        if (lhs && rhs) {
-          return new CmdBrack(lhs, rhs, null, contents)
-        } else if (lhs) {
-          return new CmdBrack(lhs, matchParen(lhs), null, contents)
-        } else if (rhs) {
-          return new CmdBrack(matchParen(rhs), rhs, null, contents)
-        } else {
-          return new CmdBrack("(", ")", null, contents)
-        }
-      },
-    },
-  ],
+  ["\\left", CmdBrack],
+  ...Object.entries(BRACKS)
+    .filter((x) => x[1].side != R)
+    .map((x) => x[0] as ParenLhs)
+    .map((lhs): [string, LatexInit] => [lhs, CmdBrack]),
   ["\\frac", CmdFrac],
   ["\\pi", SymPi],
   ["\\infty", SymInfinity],
   ["\\infinity", SymInfinity],
   ["\\tau", SymTau],
-
   ["\\neq", OpEq],
   ["\\sim", OpTilde],
   ["\\approx", OpApprox],

@@ -8,7 +8,7 @@ import { h } from "../jsx"
 import { Store, defineExt } from "../sheet/ext"
 import type { Expr } from "../sheet/ui/expr"
 
-const store = new Store((e) => {
+export const STORE_EVAL = new Store((e) => {
   const field = new FieldInert(
     e.field.options,
     "bg-[--nya-bg-sidebar] border border-[--nya-border] px-2 py-1 rounded ml-auto inline-block",
@@ -26,7 +26,7 @@ export const EXT_EVAL = defineExt({
       return
     }
 
-    const { field, el } = store.get(expr)
+    const { field, el } = STORE_EVAL.get(expr)
     const { block } = field
     block.clear()
     new Display(block.cursor(R), expr.js.base).output(expr.js.value)

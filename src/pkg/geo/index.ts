@@ -22,7 +22,7 @@ import {
   PKG_GEO_POINT,
 } from "../geo-point"
 import { PKG_REAL } from "../num-real"
-import { drawAngle, EXT_ANGLE } from "./ext/angle"
+import { angleGlsl, angleJs, drawAngle, EXT_ANGLE } from "./ext/angle"
 import { drawCircle, EXT_CIRCLE } from "./ext/circle"
 import { drawLine, EXT_LINE } from "./ext/line"
 import { drawPolygon, EXT_POLYGON } from "./ext/polygon"
@@ -505,7 +505,16 @@ function angleInfo(
   return {
     name: type == "angle" ? "angle" : "directed angle",
     namePlural: type == "angle" ? "angles" : "directed angles",
-    coerce: {},
+    coerce: {
+      r32: {
+        js(value) {
+          return angleJs({ value, type })
+        },
+        glsl(expr, ctx) {
+          return angleGlsl(ctx, { expr, type })
+        },
+      },
+    },
     garbage: {
       js: [
         pt(real(NaN), real(NaN)),
@@ -608,6 +617,15 @@ export const PKG_GEOMETRY: Package = {
       angle: new FnDist("angle", "constructs an angle from three vertices").add(
         ["point32", "point32", "point32"],
         "angle",
+        (a, b, c) => [a.value, b.value, c.value],
+        (_, a, b, c) => `mat3x2(${a.expr}, ${b.expr}, ${c.expr})`,
+      ),
+      directedangle: new FnDist(
+        "directedangle",
+        "constructs an angle with a particular direction",
+      ).add(
+        ["point32", "point32", "point32"],
+        "directedangle",
         (a, b, c) => [a.value, b.value, c.value],
         (_, a, b, c) => `mat3x2(${a.expr}, ${b.expr}, ${c.expr})`,
       ),

@@ -1,5 +1,6 @@
 import type { Node } from "../../../eval/ast/token"
 import { h, path, svg } from "../../../jsx"
+import type { LatexParser } from "../../latex"
 import {
   Block,
   Command,
@@ -13,6 +14,7 @@ import {
   type Selection,
 } from "../../model"
 import { CmdComma } from "../leaf/comma"
+import { CmdUnknown } from "../leaf/unknown"
 
 export const BRACKS = {
   "[": {
@@ -319,6 +321,64 @@ export class CmdBrack extends Command<[Block]> {
         rhsSymbol.html(),
       ),
     )
+  }
+
+  static fromLatex(cmd: string, parser: LatexParser): Command {
+    if (cmd == "\\left") {
+      const lhsRaw = parser.peek()
+      const lhs =
+        (
+          lhsRaw &&
+          lhsRaw in BRACKS &&
+          BRACKS[lhsRaw as keyof typeof BRACKS].side != R
+        ) ?
+          ((parser.i += lhsRaw.length), lhsRaw as ParenLhs)
+        : (
+          lhsRaw &&
+          lhsRaw.length >= 2 &&
+          lhsRaw[0] == "\\" &&
+          lhsRaw.slice(1) in BRACKS &&
+          BRACKS[lhsRaw.slice(1) as keyof typeof BRACKS].side != R
+        ) ?
+          ((parser.i += lhsRaw.length), lhsRaw.slice(1) as ParenLhs)
+        : null
+      const contents = parser.until("\\right")
+      const rhsRaw = parser.peek()
+      const rhs =
+        (
+          rhsRaw &&
+          rhsRaw in BRACKS &&
+          BRACKS[rhsRaw as keyof typeof BRACKS].side != L
+        ) ?
+          ((parser.i += rhsRaw.length), rhsRaw as ParenRhs)
+        : (
+          rhsRaw &&
+          rhsRaw.length >= 2 &&
+          rhsRaw[0] == "\\" &&
+          rhsRaw.slice(1) in BRACKS &&
+          BRACKS[rhsRaw.slice(1) as keyof typeof BRACKS].side != L
+        ) ?
+          ((parser.i += rhsRaw.length), rhsRaw.slice(1) as ParenRhs)
+        : null
+      if (lhs && rhs) {
+        return new CmdBrack(lhs, rhs, null, contents)
+      } else if (lhs) {
+        return new CmdBrack(lhs, matchParen(lhs), null, contents)
+      } else if (rhs) {
+        return new CmdBrack(matchParen(rhs), rhs, null, contents)
+      } else {
+        return new CmdBrack("(", ")", null, contents)
+      }
+    }
+
+    if (is(cmd, L)) {
+      const lhs = cmd
+      const rhs = matchParen(lhs)
+      const contents = parser.until(rhs)
+      return new CmdBrack(lhs, rhs, null, contents)
+    }
+
+    return new CmdUnknown(cmd)
   }
 
   constructor(

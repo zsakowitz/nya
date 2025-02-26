@@ -136,6 +136,14 @@ export class Paper {
     this.layers.set(index, el)
   }
 
+  addClass(layer: keyof LayerShared, ...classes: string[]) {
+    const index = LAYER_SHARED[layer]
+    if (index == null) {
+      throw new Error(`Shared layer '${layer}' is not defined.`)
+    }
+    this.layer(index).classList.add(...classes)
+  }
+
   append(layer: keyof LayerShared, el: SVGElement) {
     const index = LAYER_SHARED[layer]
     if (index == null) {
