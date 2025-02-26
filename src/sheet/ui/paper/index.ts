@@ -1,4 +1,9 @@
+import type { SPoint } from "../../../eval/ty"
+import { isZero } from "../../../eval/ty/check"
+import { pt } from "../../../eval/ty/create"
+import { add, div, sub } from "../../../eval/ty/ops"
 import { sx } from "../../../jsx"
+import { hypot } from "../../../pkg/geo/fn/distance"
 import { onTheme } from "../../theme"
 import type { DragProps, PickProps } from "./interact"
 
@@ -366,6 +371,13 @@ export function norm(at: Point, distance = 1) {
   }
 }
 
+export function normS(at: SPoint): SPoint {
+  const denom = hypot(at)
+  if (isZero(denom)) return at
+
+  return pt(div(at.x, denom), div(at.y, denom))
+}
+
 export function normSegment(from: Point, to: Point, distance = 1) {
   const n = norm({ x: to.x - from.x, y: to.y - from.y }, distance)
 
@@ -373,4 +385,9 @@ export function normSegment(from: Point, to: Point, distance = 1) {
     x: from.x + n.x,
     y: from.y + n.y,
   }
+}
+
+export function normSegmentS(from: SPoint, to: SPoint) {
+  const n = normS(pt(sub(to.x, from.x), sub(to.y, from.y)))
+  return pt(add(from.x, n.x), add(from.y, n.y))
 }

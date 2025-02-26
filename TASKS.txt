@@ -7,7 +7,7 @@ to do list for functions is:
 ❌ stat tests
 ❌ logb
 ❌ lcm, gcd, nPr, nCr
-❌ arc, directedangle, bisector, anglebisector, angles, directedangles
+❌ arc
 ❌ rotate, dilate, reflect, translate
 ❌ polygon([r32], [r32])
 ❌ 3D points and vectors

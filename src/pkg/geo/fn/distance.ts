@@ -1,18 +1,20 @@
 import { FnDist } from "../../../eval/ops/dist"
 import type { SPoint, SReal } from "../../../eval/ty"
-import { num, real } from "../../../eval/ty/create"
+import { num, pt, real } from "../../../eval/ty/create"
 import { abs, add, div, mul, sub } from "../../../eval/ty/ops"
 
 export function sqrt(val: SReal) {
   return real(num(val) ** 0.5)
 }
 
-export function dist(a: SPoint, b: SPoint) {
-  const dx = sub(a.x, b.x)
-  const dy = sub(a.y, b.y)
+export function hypot({ x: dx, y: dy }: SPoint) {
   const dx2 = mul(dx, dx)
   const dy2 = mul(dy, dy)
   return sqrt(add(dx2, dy2))
+}
+
+export function dist(a: SPoint, b: SPoint) {
+  return hypot(pt(sub(a.x, b.x), sub(a.y, b.y)))
 }
 
 export const FN_DISTANCE = new FnDist<"r32">(

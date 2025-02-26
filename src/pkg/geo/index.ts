@@ -29,6 +29,7 @@ import { drawRay, EXT_RAY } from "./ext/ray"
 import { EXT_SEGMENT } from "./ext/segment"
 import { drawVector, EXT_VECTOR } from "./ext/vector"
 import { FN_ANGLE, FN_DIRECTEDANGLE } from "./fn/angle"
+import { FN_ANGLEBISECTOR } from "./fn/anglebisector"
 import { FN_ANGLES, FN_DIRECTEDANGLES } from "./fn/angles"
 import { FN_CENTER } from "./fn/center"
 import { FN_CIRCLE } from "./fn/circle"
@@ -40,6 +41,7 @@ import { FN_LINE } from "./fn/line"
 import { FN_MIDPOINT } from "./fn/midpoint"
 import { FN_PARALLEL, parallelJs } from "./fn/parallel"
 import { FN_PERPENDICULAR, perpendicularJs } from "./fn/perpendicular"
+import { FN_PERPENDICULARBISECTOR } from "./fn/perpendicularbisector"
 import { FN_POLYGON } from "./fn/polygon"
 import { FN_RADIUS } from "./fn/radius"
 import { FN_RAY } from "./fn/ray"
@@ -635,6 +637,8 @@ export const PKG_GEOMETRY: Package = {
       directedangle: FN_DIRECTEDANGLE,
       angles: FN_ANGLES,
       directedangles: FN_DIRECTEDANGLES,
+      anglebisector: FN_ANGLEBISECTOR,
+      perpendicularbisector: FN_PERPENDICULARBISECTOR,
     },
   },
   sheet: {
