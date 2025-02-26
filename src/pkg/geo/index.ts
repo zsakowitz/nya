@@ -12,7 +12,7 @@ import { CmdComma } from "../../field/cmd/leaf/comma"
 import { CmdWord } from "../../field/cmd/leaf/word"
 import { CmdBrack } from "../../field/cmd/math/brack"
 import { Block, L, R } from "../../field/model"
-import { h, path, svgx } from "../../jsx"
+import { h, path, svgx, sx } from "../../jsx"
 import { definePickTy, PICK_TY, toolbar, type Data } from "../../sheet/pick-ty"
 import { segmentByPaper } from "../../sheet/ui/paper"
 import {
@@ -584,8 +584,12 @@ const INFO_DIRECTEDANGLE = angleInfo("directedangle", () =>
     "2.2 4.4 17.6 13.2",
     "stroke-current fill-none overflow-visible [stroke-linejoin:round] [stroke-linecap:round] stroke-2",
     path(
-      "M 19.8 13.2 L 2.2 17.6 L 7.2 4.4 M 6.55 6.116 A 12.28 12.28 0 0 1 14.113 14.621 M 14.11360097 14.62159976L9.411532655 11.16512951 14.24277289 8.787223393 Z",
+      "M 19.8 13.2 L 2.2 17.6 L 7.2 4.4 M 6.55 6.116 A 12.28 12.28 0 0 1 14.113 14.621",
     ),
+    sx("path", {
+      d: "M 14.11360097 14.62159976 L 8.057568123 10.64149487 13.89384933 7.378086938 Z",
+      fill: "currentcolor",
+    }),
   ),
 )
 
