@@ -17,7 +17,6 @@ export type Arc =
       c: Point
       r: number
       a1: number
-      a2: number
       a3: number
       p1: Point // c + r * sincos(a1)
       p3: Point // c + r * sincos(a3)
@@ -95,7 +94,6 @@ export function computeArc(p1: Point, p2: Point, p3: Point): Arc {
     c,
     r,
     a1,
-    a2,
     a3,
     p1,
     p3,
