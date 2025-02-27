@@ -17,10 +17,12 @@ export type Arc =
       c: Point
       r: number
       a1: number
+      a2: number
       a3: number
       p1: Point // c + r * sincos(a1)
-      p2: Point
       p3: Point // c + r * sincos(a3)
+      swap: boolean
+      large: boolean
     }
 
   // glider at ≤0   = P1
@@ -44,12 +46,12 @@ export function computeArc(p1: Point, p2: Point, p3: Point): Arc {
 
   // check for collinearity
 
-  const a1: Point = { x: (x1 + x2) / 2, y: (y1 + y2) / 2 }
-  const a2: Point = { x: a1.x - (y2 - y1), y: a1.y + (x2 - x1) }
-  const b1: Point = { x: (x3 + x2) / 2, y: (y3 + y2) / 2 }
-  const b2: Point = { x: b1.x - (y2 - y3), y: b1.y + (x2 - x3) }
+  const l1a: Point = { x: (x1 + x2) / 2, y: (y1 + y2) / 2 }
+  const l1b: Point = { x: l1a.x - (y2 - y1), y: l1a.y + (x2 - x1) }
+  const l2a: Point = { x: (x3 + x2) / 2, y: (y3 + y2) / 2 }
+  const l2b: Point = { x: l2a.x - (y2 - y3), y: l2a.y + (x2 - x3) }
 
-  const c = intersectLineLineJs([a1, a2], [b1, b2])
+  const c = intersectLineLineJs([l1a, l1b], [l2a, l2b])
   const r = Math.hypot(c.x - x1, c.y - y1)
   if (!(isFinite(c.x) && isFinite(c.y) && isFinite(r))) {
     if (Math.abs((y2 - y1) * (x1 - x2) - (y3 - y2) * (y2 - y1)) < 1e-8) {
@@ -69,15 +71,36 @@ export function computeArc(p1: Point, p2: Point, p3: Point): Arc {
     }
   }
 
+  const mx = (p1.x + p3.x) / 2
+  const my = (p1.y + p3.y) / 2
+
+  const large =
+    Math.hypot(p2.x - mx, p2.y - my) >= Math.hypot(p1.x - p3.x, p1.y - p3.y) / 2
+
+  // This code properly orders `a1` and `a3` so that simple interpolations can be used for gliders
+  let a1 = Math.atan2(p1.y - c.y, p1.x - c.x)
+  let a2 = Math.atan2(p2.y - c.y, p2.x - c.x)
+  let a3 = Math.atan2(p3.y - c.y, p3.x - c.x)
+
+  if (!(Math.min(a1, a3) <= a2 && a2 <= Math.max(a1, a3))) {
+    if (a3 > a1) {
+      a3 -= 2 * Math.PI
+    } else {
+      a1 -= 2 * Math.PI
+    }
+  }
+
   return {
     type: "circle",
     c,
     r,
-    a1: Math.atan2(p1.x - c.x, p1.y - c.y),
-    a3: Math.atan2(p3.x - c.x, p3.y - c.y),
+    a1,
+    a2,
+    a3,
     p1,
-    p2,
     p3,
+    large,
+    swap: a1 > a3,
   }
 }
 
@@ -111,28 +134,38 @@ export function arcPath(paper: Paper, arc: Arc): ArcPath {
       }
     case "circle":
       const delta = paper.toOffsetDelta({ x: arc.r, y: arc.r })
-      const mx = (arc.p1.x + arc.p3.x) / 2
-      const my = (arc.p1.y + arc.p3.y) / 2
-      const p2nrm = {
-        x: mx + (arc.p3.y - arc.p1.y),
-        y: my - (arc.p3.x - arc.p1.x),
-      }
-      const p2rev = {
-        x: mx - (arc.p3.y - arc.p1.y),
-        y: my + (arc.p3.x - arc.p1.x),
-      }
       return {
         type: "circle",
         p1: paper.toOffset(arc.p1),
         p3: paper.toOffset(arc.p3),
         r: delta,
-        flags: `${+(
-          Math.hypot(arc.p2.x - mx, arc.p2.y - my) >=
-          Math.hypot(arc.p1.x - arc.p3.x, arc.p1.y - arc.p3.y) / 2
-        )} ${+(
-          Math.hypot(arc.p2.x - p2nrm.x, arc.p2.y - p2nrm.y) >=
-          Math.hypot(arc.p2.x - p2rev.x, arc.p2.y - p2rev.y)
-        )}`,
+        flags: `${+arc.large} ${+arc.swap}`,
+      }
+  }
+}
+
+export function glideArc(arc: Arc, at: number): Point {
+  if (!isFinite(at) || arc.type == "invalid") {
+    return { x: NaN, y: NaN }
+  }
+
+  const t = arc.type == "tworay" ? at : Math.max(0, Math.min(1, at))
+
+  switch (arc.type) {
+    case "segment":
+    case "tworay":
+      if (arc.type == "tworay" && 0 < at && at < 1) {
+        return { x: NaN, y: NaN }
+      }
+      return {
+        x: arc.p1.x * (1 - t) + arc.p3.x * t,
+        y: arc.p1.y * (1 - t) + arc.p3.y * t,
+      }
+    case "circle":
+      const a = arc.a1 * (1 - t) + arc.a3 * t
+      return {
+        x: Math.cos(a) * arc.r + arc.c.x,
+        y: Math.sin(a) * arc.r + arc.c.y,
       }
   }
 }

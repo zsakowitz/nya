@@ -40,6 +40,7 @@ to do list for features is:
 ❌ construction menu
 ❌ dependent geometry objects can be dragged
 😐 sliders
+❌ slider variables infer bounds based on usage (glider, rgb, hsv)
 
 to do list for non-desmos stuff is:
 ❌ streaming video, audio, images, files

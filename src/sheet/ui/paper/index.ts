@@ -295,7 +295,7 @@ export function segmentByOffset(
   paper: Paper,
   o1: Point,
   o2: Point,
-  props: DrawLineProps,
+  props: DrawLineProps = {},
 ) {
   if (!(isFinite(o1.x) && isFinite(o1.y) && isFinite(o2.x) && isFinite(o2.y))) {
     return

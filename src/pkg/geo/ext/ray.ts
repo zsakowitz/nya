@@ -65,7 +65,7 @@ export function drawRay(
   paper: Paper,
   p1: Point,
   p2: Point,
-  props: DrawLineProps,
+  props?: DrawLineProps,
 ) {
   const { x: x1, y: y1 } = p1
   const { x: x2, y: y2 } = p2
