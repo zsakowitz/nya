@@ -1,9 +1,6 @@
-p_{1}=\left(-6.13,0.37\right)
-p_{2}=\left(-1.99,3.07\right)
-p_{3}=\left(6.44,2.2\right)
-a_{1}=\operatorname{arc}\left(p_{1},p_{2},p_{3}\right)
-p_{4}=\left(0.05,-5.25\right)
-p_{5}=\left(2,0\right)
-p_{6}=\left(-0.49,9.8\right)
-a_{2}=\operatorname{arc}\left(p_{4},p_{5},p_{6}\right)
-p_{7}=\operatorname{intersection}\left(a_{2},a_{1}\right)
+\operatorname{circle}\left(\left(0,0\right),5\right).\operatorname{arc}\left(a,b\right)
+a=2
+b=1.46
+A=\left(5\operatorname{cos}a,5\operatorname{sin}a\right)
+B=\left(-\operatorname{sin}\left(a\right)\operatorname{sign}\left(b-a\right),\operatorname{cos}\left(a\right)\operatorname{sign}\left(b-a\right)\right)
+\operatorname{vector}\left(A,A+B\right)

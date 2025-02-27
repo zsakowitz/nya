@@ -1,8 +1,9 @@
 import type { GlslContext } from "../../../eval/lib/fn"
 import { FnDist } from "../../../eval/ops/dist"
 import type { GlslVal, JsVal } from "../../../eval/ty"
-import { num, real } from "../../../eval/ty/create"
+import { num, real, rept } from "../../../eval/ty/create"
 import { abs, sub } from "../../../eval/ty/ops"
+import { crArcVal } from "../arc"
 import { dist } from "./distance"
 
 function js(a: JsVal<"point32">, b: JsVal<"point32">) {
@@ -25,7 +26,7 @@ function glsl(ctx: GlslContext, ar: GlslVal<"point32">, b: GlslVal<"point32">) {
 
 export const FN_CIRCLE = new FnDist(
   "circle",
-  "constructs a circle given its center and either its numerical radius or a point on its circumference",
+  "constructs a circle from a center and radius",
 )
   .add(
     ["point32", "r32"],
@@ -43,3 +44,18 @@ export const FN_CIRCLE = new FnDist(
     },
   )
   .add(["point32", "point32"], "circle", js, glsl)
+  .add(
+    ["arc"],
+    "circle",
+    (a) => {
+      const { c, r } = crArcVal(a.value)
+      return {
+        center: rept(c),
+        radius: real(r),
+      }
+    },
+    () => {
+      // TODO:
+      throw new Error("Cannot convert an arc into a circle in shaders yet.")
+    },
+  )

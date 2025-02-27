@@ -200,3 +200,27 @@ export function unglideArc(paper: Paper, arc: Arc, at: Point) {
     precision,
   }
 }
+
+export function crArc(
+  { x: x1, y: y1 }: Point,
+  { x: x2, y: y2 }: Point,
+  { x: x3, y: y3 }: Point,
+): { c: Point; r: number } {
+  if (![x1, y1, x2, y2, x3, y3].every(isFinite)) {
+    return { c: { x: NaN, y: NaN }, r: NaN }
+  }
+
+  const l1a: Point = { x: (x1 + x2) / 2, y: (y1 + y2) / 2 }
+  const l1b: Point = { x: l1a.x - (y2 - y1), y: l1a.y + (x2 - x1) }
+  const l2a: Point = { x: (x3 + x2) / 2, y: (y3 + y2) / 2 }
+  const l2b: Point = { x: l2a.x - (y2 - y3), y: l2a.y + (x2 - x3) }
+
+  const c = intersectLineLineJs([l1a, l1b], [l2a, l2b])
+  const r = Math.hypot(c.x - x1, c.y - y1)
+
+  return { c, r }
+}
+
+export function crArcVal(val: Val<"arc">) {
+  return crArc(unpt(val[0]), unpt(val[1]), unpt(val[2]))
+}

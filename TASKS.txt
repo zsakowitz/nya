@@ -30,6 +30,7 @@ to do list for features is:
 ❌ inequality borders
 ❌ proper recursion
 ❌ more stuff works in shaders
+❌ arc functions work in shaders
 ❌ regressions
 ❌ images
 ❌ tone

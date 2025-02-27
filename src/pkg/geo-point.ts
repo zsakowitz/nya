@@ -70,7 +70,8 @@ export function drawPoint(
     props.ghost ? " pointer-events-none"
     : props.cursor == "pointer" ? " cursor-pointer"
     : props.cursor == "auto" ? ""
-    : " cursor-move"
+    : props.drag ? " cursor-move"
+    : ""
 
   const center = sx("circle", {
     class:
@@ -85,7 +86,7 @@ export function drawPoint(
     fill: "#6042a6",
   })
 
-  if (props.halo) {
+  if (props.halo || props.drag || props.pick) {
     paper.append(
       "point",
       sx(
@@ -96,7 +97,7 @@ export function drawPoint(
           cx: offset.x,
           cy: offset.y,
           r: 12,
-          fill: "#6042a659",
+          fill: props.halo ? "#6042a659" : "transparent",
           class: "picking-any:opacity-30 picking-point:opacity-100",
           drag: props.drag,
           pick: props.pick,
