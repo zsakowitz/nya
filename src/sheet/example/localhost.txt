@@ -1,6 +1,8 @@
-\operatorname{circle}\left(\left(0,0\right),5\right).\operatorname{arc}\left(a,b\right)
-a=2
-b=1.46
-A=\left(5\operatorname{cos}a,5\operatorname{sin}a\right)
-B=\left(-\operatorname{sin}\left(a\right)\operatorname{sign}\left(b-a\right),\operatorname{cos}\left(a\right)\operatorname{sign}\left(b-a\right)\right)
-\operatorname{vector}\left(A,A+B\right)
+\operatorname{circle}\left(\left(0,0\right),r\right).\operatorname{arc}\left(a,b\right)
+r=\left[1,2,3,4,5,6,7,8,9,10\right]
+a=\left[-10,-8,-6,-4,-2,0,2,4,6,8\right]
+b=-7.32
+A=\left(r\operatorname{cos}a,r\operatorname{sin}a\right)
+\operatorname{vector}\left(A,A+B\right)\operatorname{with}B=\left(-\operatorname{sin}\left(a\right)\operatorname{sign}\left(b-a\right),\operatorname{cos}\left(a\right)\operatorname{sign}\left(b-a\right)\right)
+r_2=\left[1,2,3,4,5,6,7,8,9,10\right]
+a_2=\left[-10,-8,-6,-4,-2,0,2,4,6,8\right]
