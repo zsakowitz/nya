@@ -132,47 +132,23 @@ export function px(
   )
 }
 
+interface SVGDrawProps {
+  stroke?: string
+  "stroke-width"?: number
+  "stroke-opacity"?: number
+  "stroke-linecap"?: "round"
+  "stroke-linejoin"?: "round"
+  fill?: string
+  "fill-opacity"?: number
+}
+
 interface SVGProps {
-  svg: {
-    fill?: string
-  }
-  g: {}
-  path: {
-    d: string
-    fill?: string
-    stroke?: string
-    "stroke-width"?: number
-    "fill-opacity"?: number
-    "stroke-opacity"?: number
-    "stroke-linecap"?: "round"
-    "stroke-linejoin"?: "round"
-  }
-  line: {
-    x1: number
-    y1: number
-    x2: number
-    y2: number
-    stroke?: string
-    "stroke-width"?: number
-    "stroke-opacity"?: number
-    "stroke-linecap"?: "round"
-  }
-  circle: {
-    cx: number
-    cy: number
-    r: number
-    fill?: string
-    stroke?: string
-    "fill-opacity"?: number
-    "stroke-width"?: number
-    "stroke-opacity"?: number
-  }
-  foreignObject: {
-    x: number
-    y: number
-    width: number
-    height: number
-  }
+  svg: { viewBox: string } & SVGDrawProps
+  g: SVGDrawProps
+  path: { d: string } & SVGDrawProps
+  line: { x1: number; y1: number; x2: number; y2: number } & SVGDrawProps
+  circle: { cx: number; cy: number; r: number } & SVGDrawProps
+  foreignObject: { x: number; y: number; width: number; height: number }
 }
 
 interface SVGPropsGlobal {

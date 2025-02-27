@@ -69,6 +69,7 @@ export class Paper {
     this.el = sx("svg", {
       class: (className ?? "") + " nya-svg-display",
       fill: "none",
+      viewBox: "",
     })
     const resize = () => {
       this.el.setAttribute(

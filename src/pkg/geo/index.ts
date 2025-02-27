@@ -559,8 +559,38 @@ const INFO_ARC: TyInfoByName<"arc"> = {
         h(
           "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
         ),
-        h(
-          "size-[16px] absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-2 border-current",
+        sx(
+          "svg",
+          {
+            class:
+              "size-[16px] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 overflow-visible",
+            viewBox: `0 0 64 64`,
+            fill: "none",
+          },
+          sx("path", {
+            d: "M 6.821075367479289 58.046972674137905 A 60.375975878779 -60.375975878779 0 0 1 60.110633724316074 7.562127915029379",
+            stroke: "#388c46",
+            "stroke-linecap": "round",
+            "stroke-width": 8,
+          }),
+          sx("circle", {
+            cx: 6.821075367479289,
+            cy: 58.046972674137905,
+            r: 8,
+            fill: "#6042a6",
+          }),
+          sx("circle", {
+            cx: 15.235216160664043,
+            cy: 35.60926389231189,
+            r: 8,
+            fill: "#6042a6",
+          }),
+          sx("circle", {
+            cx: 60.110633724316074,
+            cy: 7.562127915029379,
+            r: 8,
+            fill: "#6042a6",
+          }),
         ),
       ),
     )
