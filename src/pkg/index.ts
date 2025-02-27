@@ -21,6 +21,7 @@ import type { ParenLhs, ParenRhs } from "../field/cmd/math/brack"
 import type { LatexInit } from "../field/latex"
 import type { Init } from "../field/model"
 import type { AnyExt } from "../sheet/ext"
+import type { AnyItemFactory } from "../sheet/item"
 import type { Sheet } from "../sheet/ui/sheet"
 
 type List<T, K extends PropertyKey = string> = { readonly [_ in K]?: T }
@@ -65,12 +66,13 @@ export interface Package {
   }
 
   sheet?: {
+    items?: AnyItemFactory[]
     exts?: Record<number, AnyExt[]>
     toolbar?: Record<number, ToolbarItem[]>
-    keys?: Record<string, (sheet: Sheet) => void>
+    keys?: List<(sheet: Sheet) => void>
   }
 
-  docs?: Record<string, () => HTMLElement[]>
+  docs?: List<() => HTMLElement[]>
 }
 
 export interface ToolbarItem {
