@@ -551,7 +551,7 @@ export const PKG_GEO_POINT: Package = {
       1: [EXT_POINT],
     },
     toolbar: {
-      1: [toolbar(() => iconPoint(false), PICK_POINT)],
+      1: [toolbar(() => iconPoint(false), PICK_POINT, "p")],
     },
     keys: {
       p: (sheet: Sheet) => sheet.pick.set(PICK_TY, PICK_POINT),

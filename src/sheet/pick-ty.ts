@@ -5,7 +5,7 @@ import { CmdComma } from "../field/cmd/leaf/comma"
 import { CmdVar } from "../field/cmd/leaf/var"
 import { CmdBrack } from "../field/cmd/math/brack"
 import { Block, L, R } from "../field/model"
-import { hx } from "../jsx"
+import { h, hx } from "../jsx"
 import { virtualPoint } from "../pkg/geo/pick-point"
 import { definePicker, type Picker } from "./pick"
 import { Expr } from "./ui/expr"
@@ -186,12 +186,16 @@ export function definePickTy(
   }
 }
 
-export function toolbar(icon: () => HTMLSpanElement, props: Data) {
+export function toolbar(icon: () => HTMLSpanElement, props: Data, key: string) {
   return (sheet: Sheet) => {
     const btn = hx(
       "button",
-      "w-12 hover:bg-[--nya-bg] border-x border-transparent hover:border-[--nya-border] focus:outline-none -mr-px last:mr-0 focus-visible:bg-[--nya-sidebar-hover]",
+      "flex flex-col w-12 hover:bg-[--nya-bg] border-x border-transparent hover:border-[--nya-border] focus:outline-none -mr-px last:mr-0 focus-visible:bg-[--nya-sidebar-hover] justify-center",
       icon(),
+      h(
+        "[line-height:1] -mt-0.5 -mb-1 text-[--nya-title] font-sans text-xs opacity-50",
+        key,
+      ),
     )
     sheet.pick.onChange.push(() => {
       if (sheet.pick.id == props.src.id) {

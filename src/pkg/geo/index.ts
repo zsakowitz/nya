@@ -705,6 +705,72 @@ const INFO_DIRECTEDANGLE = angleInfo("directedangle", () =>
   ),
 )
 
+function iconPerpendicular() {
+  return h(
+    "",
+    h(
+      "text-[#2d70b3] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px] overflow-hidden",
+      h(
+        "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
+      ),
+      h(
+        "w-[30px] h-0 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-t-2 border-current -rotate-[30deg]",
+      ),
+      h(
+        "w-[30px] h-0 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-t-2 border-current opacity-30 rotate-[60deg]",
+      ),
+      h(
+        "size-1 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#6042a6]",
+      ),
+    ),
+  )
+}
+
+function iconParallel() {
+  return h(
+    "",
+    h(
+      "text-[#2d70b3] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px] overflow-hidden",
+      h(
+        "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
+      ),
+      h(
+        "w-[30px] h-0 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 translate-y-[calc(-50%_+_4px)] border-t-2 border-current -rotate-[30deg]",
+      ),
+      h(
+        "w-[30px] h-0 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 translate-y-[calc(-50%_-_4px)] border-t-2 border-current opacity-30 -rotate-[30deg]",
+      ),
+      h(
+        "size-1 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 translate-y-[calc(-50%_+_4px)] bg-[#6042a6]",
+      ),
+    ),
+  )
+}
+
+function iconMidpoint() {
+  return h(
+    "",
+    h(
+      "text-[#6042a6] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px] overflow-hidden",
+      h(
+        "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
+      ),
+      h(
+        "text-[#2d70b3] w-[20px] h-0 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-t-2 border-current -rotate-[30deg]",
+      ),
+      h(
+        "size-1 absolute rounded-full top-1/2 left-1/2 [transform:translate(-50%,-50%)_rotate(-30deg)_translate(-8px,0)] bg-[#6042a6]",
+      ),
+      h(
+        "size-1 absolute rounded-full top-1/2 left-1/2 [transform:translate(-50%,-50%)_rotate(-30deg)_translate(8px,0)] bg-[#6042a6]",
+      ),
+      h(
+        "size-[7px] absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#6042a6]",
+      ),
+    ),
+  )
+}
+
 export const PKG_GEOMETRY: Package = {
   id: "nya:geometry",
   name: "geometry",
@@ -767,84 +833,18 @@ export const PKG_GEOMETRY: Package = {
     },
     toolbar: {
       1: [
-        toolbar(INFO_SEGMENT.icon, PICK_SEGMENT),
-        toolbar(INFO_RAY.icon, PICK_RAY),
-        toolbar(INFO_LINE.icon, PICK_LINE),
-        toolbar(INFO_VECTOR.icon, PICK_VECTOR),
-        toolbar(INFO_CIRCLE.icon, PICK_CIRCLE),
-        toolbar(INFO_ARC.icon, PICK_ARC),
-        toolbar(INFO_POLYGON.icon, PICK_POLYGON),
-        toolbar(INFO_ANGLE.icon, PICK_ANGLE),
-        toolbar(
-          () =>
-            h(
-              "",
-              h(
-                "text-[#2d70b3] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px] overflow-hidden",
-                h(
-                  "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
-                ),
-                h(
-                  "w-[30px] h-0 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-t-2 border-current -rotate-[30deg]",
-                ),
-                h(
-                  "w-[30px] h-0 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-t-2 border-current opacity-30 rotate-[60deg]",
-                ),
-                h(
-                  "size-1 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#6042a6]",
-                ),
-              ),
-            ),
-          PICK_PERPENDICULAR,
-        ),
-        toolbar(
-          () =>
-            h(
-              "",
-              h(
-                "text-[#2d70b3] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px] overflow-hidden",
-                h(
-                  "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
-                ),
-                h(
-                  "w-[30px] h-0 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 translate-y-[calc(-50%_+_4px)] border-t-2 border-current -rotate-[30deg]",
-                ),
-                h(
-                  "w-[30px] h-0 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 translate-y-[calc(-50%_-_4px)] border-t-2 border-current opacity-30 -rotate-[30deg]",
-                ),
-                h(
-                  "size-1 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 translate-y-[calc(-50%_+_4px)] bg-[#6042a6]",
-                ),
-              ),
-            ),
-          PICK_PARALLEL,
-        ),
-        toolbar(
-          () =>
-            h(
-              "",
-              h(
-                "text-[#6042a6] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px] overflow-hidden",
-                h(
-                  "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
-                ),
-                h(
-                  "text-[#2d70b3] w-[20px] h-0 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-t-2 border-current -rotate-[30deg]",
-                ),
-                h(
-                  "size-1 absolute rounded-full top-1/2 left-1/2 [transform:translate(-50%,-50%)_rotate(-30deg)_translate(-8px,0)] bg-[#6042a6]",
-                ),
-                h(
-                  "size-1 absolute rounded-full top-1/2 left-1/2 [transform:translate(-50%,-50%)_rotate(-30deg)_translate(8px,0)] bg-[#6042a6]",
-                ),
-                h(
-                  "size-[7px] absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#6042a6]",
-                ),
-              ),
-            ),
-          PICK_MIDPOINT,
-        ),
-        toolbar(INFO_DIRECTEDANGLE.icon, PICK_DIRECTEDANGLE),
+        toolbar(INFO_SEGMENT.icon, PICK_SEGMENT, "s"),
+        toolbar(INFO_RAY.icon, PICK_RAY, "r"),
+        toolbar(INFO_LINE.icon, PICK_LINE, "l"),
+        toolbar(INFO_VECTOR.icon, PICK_VECTOR, "v"),
+        toolbar(INFO_CIRCLE.icon, PICK_CIRCLE, "c"),
+        toolbar(INFO_ARC.icon, PICK_ARC, "a"),
+        toolbar(INFO_POLYGON.icon, PICK_POLYGON, "P"),
+        toolbar(INFO_ANGLE.icon, PICK_ANGLE, "A"),
+        toolbar(iconPerpendicular, PICK_PERPENDICULAR, "x"),
+        toolbar(iconParallel, PICK_PARALLEL, "c"),
+        toolbar(iconMidpoint, PICK_MIDPOINT, "m"),
+        toolbar(INFO_DIRECTEDANGLE.icon, PICK_DIRECTEDANGLE, "d"),
       ],
     },
     keys: {
@@ -853,12 +853,13 @@ export const PKG_GEOMETRY: Package = {
       l: (sheet) => sheet.pick.set(PICK_TY, PICK_LINE),
       v: (sheet) => sheet.pick.set(PICK_TY, PICK_VECTOR),
       c: (sheet) => sheet.pick.set(PICK_TY, PICK_CIRCLE),
+      a: (sheet) => sheet.pick.set(PICK_TY, PICK_ARC),
       x: (sheet) => sheet.pick.set(PICK_TY, PICK_PERPENDICULAR),
       z: (sheet) => sheet.pick.set(PICK_TY, PICK_PARALLEL),
       m: (sheet) => sheet.pick.set(PICK_TY, PICK_MIDPOINT),
       P: (sheet) => sheet.pick.set(PICK_TY, PICK_POLYGON),
-      a: (sheet) => sheet.pick.set(PICK_TY, PICK_ANGLE),
-      A: (sheet) => sheet.pick.set(PICK_TY, PICK_DIRECTEDANGLE),
+      A: (sheet) => sheet.pick.set(PICK_TY, PICK_ANGLE),
+      d: (sheet) => sheet.pick.set(PICK_TY, PICK_DIRECTEDANGLE),
     },
   },
 }
