@@ -21,7 +21,7 @@ import {
   PKG_GEO_POINT,
 } from "../geo-point"
 import { PKG_REAL } from "../num-real"
-import { computeArc } from "./arc"
+import { computeArcVal, unglideArc } from "./arc"
 import { angleGlsl, angleJs, drawAngle, EXT_ANGLE } from "./ext/angle"
 import { drawArc, EXT_ARC } from "./ext/arc"
 import { drawCircle, EXT_CIRCLE } from "./ext/circle"
@@ -233,7 +233,7 @@ const PICK_ARC = definePickTy(
   (sheet, p1, p2, p3) => {
     if (p1 && p2 && p3) {
       drawArc(sheet.paper, {
-        arc: computeArc(unpt(p1.value), unpt(p2.value), unpt(p3.value)),
+        arc: computeArcVal([p1.value, p2.value, p3.value]),
         ghost: true,
         kind: "arc",
       })
@@ -595,20 +595,9 @@ const INFO_ARC: TyInfoByName<"arc"> = {
       ),
     )
   },
-  // TODO: glide on arc
-  // glide(props) {
-  //   const x = num(props.shape.center.x)
-  //   const y = num(props.shape.center.y)
-  //   const angle =
-  //     props.point.x == x && props.point.y == y ?
-  //       0
-  //     : Math.atan2(props.point.y - y, props.point.x - x)
-  //   return {
-  //     precision:
-  //       2 * Math.PI * props.paper.offsetDistance(props.point, { x, y }),
-  //     value: angle / 2 / Math.PI,
-  //   }
-  // },
+  glide(props) {
+    return unglideArc(props.paper, computeArcVal(props.shape), props.point)
+  },
 }
 
 function angleInfo(

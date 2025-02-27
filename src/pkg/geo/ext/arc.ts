@@ -1,9 +1,8 @@
 import { each, type JsValue } from "../../../eval/ty"
-import { unpt } from "../../../eval/ty/create"
 import { sx } from "../../../jsx"
 import { defineHideable } from "../../../sheet/ext/hideable"
 import type { DrawLineProps, Paper } from "../../../sheet/ui/paper"
-import { arcPath, computeArc, type Arc } from "../arc"
+import { arcPath, computeArcVal, type Arc } from "../arc"
 import { pick } from "./util"
 
 export function drawArc(
@@ -83,7 +82,7 @@ export const EXT_ARC = defineHideable({
   },
   svg(data, paper) {
     for (const val of each(data.value)) {
-      const arc = computeArc(unpt(val[0]), unpt(val[1]), unpt(val[2]))
+      const arc = computeArcVal(val)
       drawArc(paper, {
         arc,
         pick: pick(val, "a", data),

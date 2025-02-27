@@ -2,11 +2,12 @@
 /// <reference path="../index.ts" />
 
 import type { GlslContext } from "../../../eval/lib/fn"
-import type { GlslVal, Tys, Val } from "../../../eval/ty"
-import { num, pt, real } from "../../../eval/ty/create"
+import type { GlslVal, SPoint, Tys, Val } from "../../../eval/ty"
+import { num, pt, real, rept } from "../../../eval/ty/create"
 import { div, mul, sub } from "../../../eval/ty/ops"
 import type { Point } from "../../../sheet/ui/paper"
 import { FN_INTERSECTION } from "../../geo-point"
+import { computeArcVal } from "../arc"
 
 export function intersectLineLineJs(
   a: [Point, Point],
@@ -107,120 +108,263 @@ for (const a of ["segment", "ray", "line"] as const) {
   }
 }
 
+function lineCircleJs(circ: Tys["circle"], lin: Tys["line"], index: -1 | 1) {
+  // https://stackoverflow.com/a/37225895
+  const cx = num(circ.center.x)
+  const cy = num(circ.center.y)
+  const r = num(circ.radius)
+  const x1 = num(lin[0].x)
+  const y1 = num(lin[0].y)
+  const x2 = num(lin[1].x)
+  const y2 = num(lin[1].y)
+  const v1 = { x: x2 - x1, y: y2 - y1 }
+  const v2 = { x: x1 - cx, y: y1 - cy }
+  const b = -2 * (v1.x * v2.x + v1.y * v2.y)
+  const c = 2 * (v1.x * v1.x + v1.y * v1.y)
+  const d = Math.sqrt(b * b - 2 * c * (v2.x * v2.x + v2.y * v2.y - r * r))
+  if (isNaN(d)) {
+    return pt(real(NaN), real(NaN))
+  }
+  const u1 = (b + index * d) / c
+  const returned = { x: x1 + v1.x * u1, y: y1 + v1.y * u1 }
+  return pt(real(returned.x), real(returned.y))
+}
+
+function lineCircleGlsl(
+  ctx: GlslContext,
+  circ: string,
+  lin: string,
+  index: -1 | 1,
+) {
+  // https://stackoverflow.com/a/37225895
+  const cx = `${circ}.x`
+  const cy = `${circ}.y`
+  const r = `${circ}.z`
+  const x1 = `${lin}.x`
+  const y1 = `${lin}.y`
+  const x2 = `${lin}.z`
+  const y2 = `${lin}.w`
+  const v1 = ctx.cached("point32", `vec2(${x2}-${x1},${y2}-${y1})`)
+  const v2 = ctx.cached("point32", `vec2(${x1}-${cx}, ${y1}-${cy})`)
+  const b = ctx.cached("r32", `(-2. * (${v1}.x * ${v2}.x + ${v1}.y * ${v2}.y))`)
+  const c = ctx.cached("r32", `(2. * (${v1}.x * ${v1}.x + ${v2}.y * ${v2}.y))`)
+  const d = ctx.cached(
+    "r32",
+    `sqrt(${b}*${b} - 2.0*${c}*(${v2}.x*${v2}.x+${v2}.y*${v2}.y-${r}*${r}))`,
+  )
+  return `(vec2(${x1},${y1}) + ${v1} * ((${b}${index == -1 ? "-" : "+"}${d})/${c}))`
+}
+
+function lineArcJs(ac: Tys["arc"], lin: Tys["line"], index: -1 | 1): SPoint {
+  const arc = computeArcVal(ac)
+  switch (arc.type) {
+    case "invalid":
+      return rept({ x: NaN, y: NaN })
+    case "segment":
+    case "tworay":
+      return intersectSLineLineJs([rept(arc.p1), rept(arc.p3)], lin)
+    case "circle":
+      return lineCircleJs(
+        {
+          center: rept(arc.c),
+          radius: real(arc.r),
+        },
+        lin,
+        arc.swap ? index : (-index as -1 | 1),
+      )
+  }
+}
+
+function circleCircleJs(
+  ar: Tys["circle"],
+  br: Tys["circle"],
+  swap: boolean,
+): SPoint {
+  if (swap) {
+    ;[br, ar] = [ar, br]
+  }
+
+  const x0 = num(ar.center.x)
+  const y0 = num(ar.center.y)
+  const r0 = num(ar.radius)
+
+  const x1 = num(br.center.x)
+  const y1 = num(br.center.y)
+  const r1 = num(br.radius)
+
+  // Calculate the distance between the centers of the circles
+  const dx = x1 - x0
+  const dy = y1 - y0
+  const d = Math.sqrt(dx * dx + dy * dy)
+
+  // Check for special cases
+  if (d > r0 + r1) {
+    // Circles do not intersect
+    return pt(real(NaN), real(NaN))
+  }
+  if (d < Math.abs(r0 - r1)) {
+    // One circle is contained within the other
+    return pt(real(NaN), real(NaN))
+  }
+  if (d === 0 && r0 === r1) {
+    // Circles are the same
+    return pt(real(NaN), real(NaN))
+  }
+
+  // Calculate the intersection points
+  const a = (r0 * r0 - r1 * r1 + d * d) / (2 * d)
+  const h = Math.sqrt(r0 * r0 - a * a)
+  const rx = -dy * (h / d)
+  const ry = dx * (h / d)
+
+  return pt(real(x0 + a * (dx / d) + rx), real(y0 + a * (dy / d) + ry))
+}
+
 // line-circle
-{
-  function lineCircleJs(circ: Tys["circle"], lin: Tys["line"], index: -1 | 1) {
-    // https://stackoverflow.com/a/37225895
-    const cx = num(circ.center.x)
-    const cy = num(circ.center.y)
-    const r = num(circ.radius)
-    const x1 = num(lin[0].x)
-    const y1 = num(lin[0].y)
-    const x2 = num(lin[1].x)
-    const y2 = num(lin[1].y)
-    const v1 = { x: x2 - x1, y: y2 - y1 }
-    const v2 = { x: x1 - cx, y: y1 - cy }
-    const b = -2 * (v1.x * v2.x + v1.y * v2.y)
-    const c = 2 * (v1.x * v1.x + v1.y * v1.y)
-    const d = Math.sqrt(b * b - 2 * c * (v2.x * v2.x + v2.y * v2.y - r * r))
-    if (isNaN(d)) {
-      return pt(real(NaN), real(NaN))
-    }
-    const u1 = (b + index * d) / c
-    const returned = { x: x1 + v1.x * u1, y: y1 + v1.y * u1 }
-    return pt(real(returned.x), real(returned.y))
-  }
+for (const b of ["segment", "ray", "line"] as const) {
+  FN_INTERSECTION.add(
+    ["circle", b],
+    "point32",
+    (a, b) => lineCircleJs(a.value, b.value, 1),
+    (ctx, a, b) => lineCircleGlsl(ctx, ctx.cache(a), ctx.cache(b), 1),
+  )
+  FN_INTERSECTION.add(
+    [b, "circle"],
+    "point32",
+    (a, b) => lineCircleJs(b.value, a.value, -1),
+    (ctx, a, b) => lineCircleGlsl(ctx, ctx.cache(b), ctx.cache(a), -1),
+  )
 
-  function lineCircleGlsl(
-    ctx: GlslContext,
-    circ: string,
-    lin: string,
-    index: -1 | 1,
-  ) {
-    // https://stackoverflow.com/a/37225895
-    const cx = `${circ}.x`
-    const cy = `${circ}.y`
-    const r = `${circ}.z`
-    const x1 = `${lin}.x`
-    const y1 = `${lin}.y`
-    const x2 = `${lin}.z`
-    const y2 = `${lin}.w`
-    const v1 = ctx.cached("point32", `vec2(${x2}-${x1},${y2}-${y1})`)
-    const v2 = ctx.cached("point32", `vec2(${x1}-${cx}, ${y1}-${cy})`)
-    const b = ctx.cached(
-      "r32",
-      `(-2. * (${v1}.x * ${v2}.x + ${v1}.y * ${v2}.y))`,
-    )
-    const c = ctx.cached(
-      "r32",
-      `(2. * (${v1}.x * ${v1}.x + ${v2}.y * ${v2}.y))`,
-    )
-    const d = ctx.cached(
-      "r32",
-      `sqrt(${b}*${b} - 2.0*${c}*(${v2}.x*${v2}.x+${v2}.y*${v2}.y-${r}*${r}))`,
-    )
-    return `(vec2(${x1},${y1}) + ${v1} * ((${b}${index == -1 ? "-" : "+"}${d})/${c}))`
-  }
-
-  for (const b of ["segment", "ray", "line"] as const) {
-    FN_INTERSECTION.add(
-      ["circle", b],
-      "point32",
-      (a, b) => lineCircleJs(a.value, b.value, 1),
-      (ctx, a, b) => lineCircleGlsl(ctx, ctx.cache(a), ctx.cache(b), 1),
-    )
-    FN_INTERSECTION.add(
-      [b, "circle"],
-      "point32",
-      (a, b) => lineCircleJs(b.value, a.value, -1),
-      (ctx, a, b) => lineCircleGlsl(ctx, ctx.cache(b), ctx.cache(a), -1),
-    )
-  }
+  FN_INTERSECTION.add(
+    ["arc", b],
+    "point32",
+    (a, b) => lineArcJs(a.value, b.value, 1),
+    () => {
+      // TODO:
+      throw new Error(
+        "Cannot compute intersections involving an arc in shaders yet.",
+      )
+    },
+  )
+  FN_INTERSECTION.add(
+    [b, "arc"],
+    "point32",
+    (a, b) => lineArcJs(b.value, a.value, -1),
+    () => {
+      // TODO:
+      throw new Error(
+        "Cannot compute intersections involving an arc in shaders yet.",
+      )
+    },
+  )
 }
 
 // circle-circle
 FN_INTERSECTION.add(
   ["circle", "circle"],
   "point32",
+  (ar, br) => circleCircleJs(ar.value, br.value, false),
+  () => {
+    // TODO:
+    throw new Error(
+      "Cannot compute intersections between two circles in shaders yet.",
+    )
+  },
+)
+
+FN_INTERSECTION.add(
+  ["circle", "arc"],
+  "point32",
   (ar, br) => {
-    // From Google's AI overview; I'm not sure of the original source
-
-    const x0 = num(ar.value.center.x)
-    const y0 = num(ar.value.center.y)
-    const r0 = num(ar.value.radius)
-
-    const x1 = num(br.value.center.x)
-    const y1 = num(br.value.center.y)
-    const r1 = num(br.value.radius)
-
-    // Calculate the distance between the centers of the circles
-    const dx = x1 - x0
-    const dy = y1 - y0
-    const d = Math.sqrt(dx * dx + dy * dy)
-
-    // Check for special cases
-    if (d > r0 + r1) {
-      // Circles do not intersect
-      return pt(real(NaN), real(NaN))
+    const b = computeArcVal(br.value)
+    switch (b.type) {
+      case "invalid":
+        return rept({ x: NaN, y: NaN })
+      case "segment":
+      case "tworay":
+        return lineCircleJs(ar.value, [rept(b.p1), rept(b.p3)], 1)
+      case "circle":
+        return circleCircleJs(
+          ar.value,
+          {
+            center: rept(b.c),
+            radius: real(b.r),
+          },
+          b.swap,
+        )
     }
-    if (d < Math.abs(r0 - r1)) {
-      // One circle is contained within the other
-      return pt(real(NaN), real(NaN))
-    }
-    if (d === 0 && r0 === r1) {
-      // Circles are the same
-      return pt(real(NaN), real(NaN))
-    }
-
-    // Calculate the intersection points
-    const a = (r0 * r0 - r1 * r1 + d * d) / (2 * d)
-    const h = Math.sqrt(r0 * r0 - a * a)
-    const rx = -dy * (h / d)
-    const ry = dx * (h / d)
-
-    return pt(real(x0 + a * (dx / d) + rx), real(y0 + a * (dy / d) + ry))
   },
   () => {
-    throw new Error("Cannot compute circle intersections in shaders yet.")
+    // TODO:
+    throw new Error(
+      "Cannot compute intersections involving arcs in shaders yet.",
+    )
+  },
+)
+
+FN_INTERSECTION.add(
+  ["arc", "circle"],
+  "point32",
+  (ar, br) => {
+    const b = computeArcVal(ar.value)
+    switch (b.type) {
+      case "invalid":
+        return rept({ x: NaN, y: NaN })
+      case "segment":
+      case "tworay":
+        return lineCircleJs(br.value, [rept(b.p1), rept(b.p3)], -1)
+      case "circle":
+        return circleCircleJs(
+          br.value,
+          {
+            center: rept(b.c),
+            radius: real(b.r),
+          },
+          !b.swap,
+        )
+    }
+  },
+  () => {
+    // TODO:
+    throw new Error(
+      "Cannot compute intersections involving arcs in shaders yet.",
+    )
+  },
+)
+
+FN_INTERSECTION.add(
+  ["arc", "arc"],
+  "point32",
+  (ar, br) => {
+    const a = computeArcVal(ar.value)
+    const b = computeArcVal(br.value)
+    if (a.type == "invalid" || b.type == "invalid") {
+      return rept({ x: NaN, y: NaN })
+    }
+    if (a.type == "circle") {
+      const ac = { center: rept(a.c), radius: real(a.r) }
+      if (b.type == "circle") {
+        const bc = { center: rept(b.c), radius: real(b.r) }
+        return circleCircleJs(bc, ac, a.swap != b.swap)
+      } else {
+        return lineCircleJs(ac, [rept(b.p1), rept(b.p3)], a.swap ? -1 : 1)
+      }
+    } else {
+      if (b.type == "circle") {
+        const bc = { center: rept(b.c), radius: real(b.r) }
+        return lineCircleJs(bc, [rept(b.p1), rept(b.p3)], b.swap ? 1 : -1)
+      } else {
+        return intersectSLineLineJs(
+          [rept(a.p1), rept(b.p3)],
+          [rept(b.p1), rept(b.p3)],
+        )
+      }
+    }
+  },
+  () => {
+    // TODO:
+    throw new Error(
+      "Cannot compute intersections involving arcs in shaders yet.",
+    )
   },
 )

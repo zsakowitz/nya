@@ -3,10 +3,10 @@
 
 import type { GlslContext } from "../../../eval/lib/fn"
 import type { GlslVal, SPoint, SReal } from "../../../eval/ty"
-import { num, pt, real, rept, unpt } from "../../../eval/ty/create"
+import { num, pt, real, rept } from "../../../eval/ty/create"
 import { add, mul, sub } from "../../../eval/ty/ops"
 import { FN_GLIDER } from "../../geo-point"
-import { computeArc, glideArc } from "../arc"
+import { computeArcVal, glideArc } from "../arc"
 
 function js(
   { value: [{ x: x1, y: y1 }, { x: x2, y: y2 }] }: { value: [SPoint, SPoint] },
@@ -48,18 +48,10 @@ FN_GLIDER.add(["segment", "r32"], "point32", js, glsl)
     ["arc", "r32"],
     "point32",
     (arc, t) => {
-      return rept(
-        glideArc(
-          computeArc(
-            unpt(arc.value[0]),
-            unpt(arc.value[1]),
-            unpt(arc.value[2]),
-          ),
-          num(t.value),
-        ),
-      )
+      return rept(glideArc(computeArcVal(arc.value), num(t.value)))
     },
     () => {
+      // TODO:
       throw new Error("'glider' on an arc isn't supported in shaders yet.")
     },
   )

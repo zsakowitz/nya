@@ -14,7 +14,7 @@ import { Writer } from "../../sheet/write"
 import { drawPoint, FN_GLIDER, FN_INTERSECTION } from "../geo-point"
 
 export function virtualPoint(at: Point, sheet: Sheet) {
-  const objs = sheet.select(at, ["line", "segment", "ray", "circle"])
+  const objs = sheet.select(at, ["line", "segment", "ray", "circle", "arc"])
 
   intersection: if (objs.length >= 2) {
     let o1 = objs[0]!

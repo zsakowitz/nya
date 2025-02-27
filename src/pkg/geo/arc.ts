@@ -1,3 +1,6 @@
+import type { Val } from "../../eval/ty"
+import { unpt } from "../../eval/ty/create"
+import { gliderOnLine } from "../../eval/ty/info"
 import type { Paper, Point } from "../../sheet/ui/paper"
 import { getRayBounds } from "./ext/ray"
 import { intersectLineLineJs } from "./fn/intersection"
@@ -8,6 +11,16 @@ import { intersectLineLineJs } from "./fn/intersection"
 export type Arc =
   // glider = undefined
   | { type: "invalid" }
+
+  // glider at ≤0   = P1
+  // glider at 0..1 = somewhere between P1 and P3 on the segment
+  // glider at ≥1   = P3
+  | { type: "segment"; p1: Point; p3: Point }
+
+  // glider at ≤0   = from P1, move away from P3
+  // glider at 0..1 = undefined
+  // glider at ≥1   = from P3, move away from P1
+  | { type: "tworay"; p1: Point; p3: Point }
 
   // glider at ≤0   = P1
   // glider at 0..1 = somewhere between P1 and P3 on the arc
@@ -23,16 +36,6 @@ export type Arc =
       swap: boolean
       large: boolean
     }
-
-  // glider at ≤0   = P1
-  // glider at 0..1 = somewhere between P1 and P3 on the segment
-  // glider at ≥1   = P3
-  | { type: "segment"; p1: Point; p3: Point }
-
-  // glider at ≤0   = from P1, move away from P3
-  // glider at 0..1 = undefined
-  // glider at ≥1   = from P3, move away from P1
-  | { type: "tworay"; p1: Point; p3: Point }
 
 export function computeArc(p1: Point, p2: Point, p3: Point): Arc {
   const { x: x1, y: y1 } = p1
@@ -102,6 +105,10 @@ export function computeArc(p1: Point, p2: Point, p3: Point): Arc {
   }
 }
 
+export function computeArcVal(val: Val<"arc">): Arc {
+  return computeArc(unpt(val[0]), unpt(val[1]), unpt(val[2]))
+}
+
 export type ArcPath =
   | { type: "invalid" }
   | { type: "circle"; p1: Point; r: Point; p3: Point; flags: string }
@@ -149,21 +156,47 @@ export function glideArc(arc: Arc, at: number): Point {
 
   const t = arc.type == "tworay" ? at : Math.max(0, Math.min(1, at))
 
-  switch (arc.type) {
-    case "segment":
-    case "tworay":
-      if (arc.type == "tworay" && 0 < at && at < 1) {
-        return { x: NaN, y: NaN }
-      }
-      return {
-        x: arc.p1.x * (1 - t) + arc.p3.x * t,
-        y: arc.p1.y * (1 - t) + arc.p3.y * t,
-      }
-    case "circle":
-      const a = arc.a1 * (1 - t) + arc.a3 * t
-      return {
-        x: Math.cos(a) * arc.r + arc.c.x,
-        y: Math.sin(a) * arc.r + arc.c.y,
-      }
+  if (arc.type == "circle") {
+    const a = arc.a1 * (1 - t) + arc.a3 * t
+    return {
+      x: Math.cos(a) * arc.r + arc.c.x,
+      y: Math.sin(a) * arc.r + arc.c.y,
+    }
+  } else {
+    if (arc.type == "tworay" && 0 < at && at < 1) {
+      return { x: NaN, y: NaN }
+    }
+    return {
+      x: arc.p1.x * (1 - t) + arc.p3.x * t,
+      y: arc.p1.y * (1 - t) + arc.p3.y * t,
+    }
+  }
+}
+
+export function unglideArc(paper: Paper, arc: Arc, at: Point) {
+  if (arc.type == "invalid") {
+    return { value: 0, precision: 1 }
+  }
+
+  if (arc.type == "circle") {
+    const a = Math.atan2(at.y - arc.c.y, at.x - arc.c.x)
+    const t = (a - arc.a1) / (arc.a3 - arc.a1)
+    return {
+      value: Math.max(0, Math.min(1, t)),
+      precision: 2 * Math.PI * paper.offsetDistance(at, arc.c),
+    }
+  }
+
+  const { value: t, precision } = gliderOnLine(paper, [arc.p1, arc.p3], at)
+  return {
+    value:
+      arc.type == "tworay" ?
+        0 < t && t < 1 ?
+          t < 0.5 ?
+            0
+          : 1
+        : t
+      : Math.max(0, Math.min(1, t)),
+    precision,
   }
 }
