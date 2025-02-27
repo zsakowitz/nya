@@ -12,21 +12,20 @@ export function intersectLineLineJs(
   a: [Point, Point],
   b: [Point, Point],
 ): Point {
-  const x1 = a[0].x
-  const y1 = a[0].y
-  const x2 = a[1].x
-  const y2 = a[1].y
+  const [{ x: x1, y: y1 }, { x: x2, y: y2 }] = a
+  const [{ x: x3, y: y3 }, { x: x4, y: y4 }] = b
 
-  const x3 = b[0].x
-  const y3 = b[0].y
-  const x4 = b[1].x
-  const y4 = b[1].y
-
-  const x = (x1 * y2 - y1 * x2) * (x3 - x4) - (x1 - x2) * (x3 * y4 - y3 - x4)
-  const y = (x1 * y2 - y1 * x2) * (y3 - y4) - (y1 - y2) * (x3 * y4 - y3 - x4)
   const d = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4)
 
-  return { x: x / d, y: y / d }
+  const x1y2 = x1 * y2
+  const x2y1 = y1 * x2
+  const x3y4 = x3 * y4
+  const x4y3 = y3 * x4
+
+  return {
+    x: ((x1y2 - x2y1) * (x3 - x4) - (x1 - x2) * (x3y4 - x4y3)) / d,
+    y: ((x1y2 - x2y1) * (y3 - y4) - (y1 - y2) * (x3y4 - x4y3)) / d,
+  }
 }
 
 export function intersectSLineLineJs(
@@ -83,10 +82,17 @@ export function intersectLineLineGlsl(
   const x4 = `${b}.z`
   const y4 = `${b}.w`
 
-  return `vec2(
-  (${x1} * ${y2} - ${y1} * ${x2}) * (${x3} - ${x4}) - (${x1} - ${x2}) * (${x3} * ${y4} - ${y3} - ${x4}),
-  (${x1} * ${y2} - ${y1} * ${x2}) * (${y3} - ${y4}) - (${y1} - ${y2}) * (${x3} * ${y4} - ${y3} - ${x4})
-) / ((${x1} - ${x2}) * (${y3} - ${y4}) - (${y1} - ${y2}) * (${x3} - ${x4}))`
+  const d = `(${x1} - ${x2}) * (${y3} - ${y4}) - (${y1} - ${y2}) * (${x3} - ${x4})`
+
+  const x1y2 = `(${x1} * ${y2})`
+  const x2y1 = `(${y1} * ${x2})`
+  const x3y4 = `(${x3} * ${y4})`
+  const x4y3 = `(${y3} * ${x4})`
+
+  return `(vec2(
+  (${x1y2} - ${x2y1}) * (${x3} - ${x4}) - (${x1} - ${x2}) * (${x3y4} - ${x4y3}),
+  (${x1y2} - ${x2y1}) * (${y3} - ${y4}) - (${y1} - ${y2}) * (${x3y4} - ${x4y3})
+) / (${d}))`
 }
 
 // line-line

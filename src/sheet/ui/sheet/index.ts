@@ -120,14 +120,14 @@ export class Sheet {
 
     let copyId = 0
     const copyAll = btn(faCopy, copyAllLabel, async () => {
-      copyAllLabel.data = "Copying..."
+      copyAllLabel.data = "Copy"
       const id = ++copyId
       try {
         await navigator.clipboard.writeText(
           this.exprs.map((x) => x.field.block.latex()).join("\n"),
         )
         if (copyId == id) {
-          copyAllLabel.data = "Copied!"
+          copyAllLabel.data = "Copied"
           setTimeout(() => {
             if (copyId == id) {
               copyAllLabel.data = "Copy"
@@ -136,7 +136,7 @@ export class Sheet {
         }
       } catch {
         if (copyId == id) {
-          copyAllLabel.data = "Failed ❌"
+          copyAllLabel.data = "Failed"
           setTimeout(() => {
             if (copyId == id) {
               copyAllLabel.data = "Copy"

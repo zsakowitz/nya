@@ -21,7 +21,9 @@ import {
   PKG_GEO_POINT,
 } from "../geo-point"
 import { PKG_REAL } from "../num-real"
+import { computeArc } from "./arc"
 import { angleGlsl, angleJs, drawAngle, EXT_ANGLE } from "./ext/angle"
+import { drawArc, EXT_ARC } from "./ext/arc"
 import { drawCircle, EXT_CIRCLE } from "./ext/circle"
 import { drawLine, EXT_LINE } from "./ext/line"
 import { drawPolygon, EXT_POLYGON } from "./ext/polygon"
@@ -31,6 +33,7 @@ import { drawVector, EXT_VECTOR } from "./ext/vector"
 import { FN_ANGLE, FN_DIRECTEDANGLE } from "./fn/angle"
 import { FN_ANGLEBISECTOR } from "./fn/anglebisector"
 import { FN_ANGLES, FN_DIRECTEDANGLES } from "./fn/angles"
+import { FN_ARC } from "./fn/arc"
 import { FN_CENTER } from "./fn/center"
 import { FN_CIRCLE } from "./fn/circle"
 import { FN_DISTANCE } from "./fn/distance"
@@ -61,6 +64,7 @@ declare module "../../eval/ty" {
     polygon: SPoint[]
     angle: [SPoint, SPoint, SPoint]
     directedangle: [SPoint, SPoint, SPoint]
+    arc: [SPoint, SPoint, SPoint]
   }
 
   interface TyComponents {
@@ -72,6 +76,7 @@ declare module "../../eval/ty" {
     polygon: never
     angle: never
     directedangle: never
+    arc: never
   }
 }
 
@@ -212,6 +217,25 @@ const PICK_CIRCLE = definePickTy(
         r: Math.hypot(center.x - edge.x, center.y - edge.y),
         ghost: true,
         kind: "circle",
+      })
+    }
+  },
+)
+
+const PICK_ARC = definePickTy(
+  "a",
+  "arc",
+  [
+    ["point32", "point64"],
+    ["point32", "point64"],
+    ["point32", "point64"],
+  ],
+  (sheet, p1, p2, p3) => {
+    if (p1 && p2 && p3) {
+      drawArc(sheet.paper, {
+        arc: computeArc(unpt(p1.value), unpt(p2.value), unpt(p3.value)),
+        ghost: true,
+        kind: "arc",
       })
     }
   },
@@ -502,6 +526,61 @@ const INFO_POLYGON: TyInfoByName<"polygon"> = {
   },
 }
 
+const INFO_ARC: TyInfoByName<"arc"> = {
+  name: "arc",
+  namePlural: "arcs",
+  glsl: "mat3x2",
+  garbage: {
+    js: [NANPT, NANPT, NANPT],
+    glsl: "mat3x2(vec2(0.0/0.0),vec2(0.0/0.0),vec2(0.0/0.0))",
+  },
+  coerce: {},
+  write: {
+    isApprox(value) {
+      return value.some((x) => x.x.type == "approx" || x.y.type == "approx")
+    },
+    display(value, props) {
+      new CmdWord("arc", "prefix").insertAt(props.cursor, L)
+      const block = new Block(null)
+      new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
+      const inner = props.at(block.cursor(R))
+      WRITE_POINT.display(value[0], inner)
+      new CmdComma().insertAt(inner.cursor, L)
+      WRITE_POINT.display(value[1], inner)
+      new CmdComma().insertAt(inner.cursor, L)
+      WRITE_POINT.display(value[2], inner)
+    },
+  },
+  icon() {
+    return h(
+      "",
+      h(
+        "text-[#388c46] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px]",
+        h(
+          "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
+        ),
+        h(
+          "size-[16px] absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-2 border-current",
+        ),
+      ),
+    )
+  },
+  // TODO: glide on arc
+  // glide(props) {
+  //   const x = num(props.shape.center.x)
+  //   const y = num(props.shape.center.y)
+  //   const angle =
+  //     props.point.x == x && props.point.y == y ?
+  //       0
+  //     : Math.atan2(props.point.y - y, props.point.x - x)
+  //   return {
+  //     precision:
+  //       2 * Math.PI * props.paper.offsetDistance(props.point, { x, y }),
+  //     value: angle / 2 / Math.PI,
+  //   }
+  // },
+}
+
 function angleInfo(
   type: "angle" | "directedangle",
   svg: () => SVGSVGElement,
@@ -611,6 +690,7 @@ export const PKG_GEOMETRY: Package = {
       polygon: INFO_POLYGON,
       angle: INFO_ANGLE,
       directedangle: INFO_DIRECTEDANGLE,
+      arc: INFO_ARC,
     },
   },
   eval: {
@@ -639,6 +719,7 @@ export const PKG_GEOMETRY: Package = {
       directedangles: FN_DIRECTEDANGLES,
       anglebisector: FN_ANGLEBISECTOR,
       perpendicularbisector: FN_PERPENDICULARBISECTOR,
+      arc: FN_ARC,
     },
   },
   sheet: {
@@ -651,6 +732,7 @@ export const PKG_GEOMETRY: Package = {
         EXT_SEGMENT,
         EXT_VECTOR,
         EXT_ANGLE,
+        EXT_ARC,
       ],
     },
     toolbar: {
@@ -660,6 +742,7 @@ export const PKG_GEOMETRY: Package = {
         toolbar(INFO_LINE.icon, PICK_LINE),
         toolbar(INFO_VECTOR.icon, PICK_VECTOR),
         toolbar(INFO_CIRCLE.icon, PICK_CIRCLE),
+        toolbar(INFO_ARC.icon, PICK_ARC),
         toolbar(INFO_POLYGON.icon, PICK_POLYGON),
         toolbar(INFO_ANGLE.icon, PICK_ANGLE),
         toolbar(

@@ -270,6 +270,7 @@ export type DrawKind =
   | "polygon"
   | "circle"
   | "angle"
+  | "arc"
 
 export type DrawProps = {
   drag?: DragProps
@@ -310,6 +311,7 @@ export function segmentByOffset(
       polygon: "picking-any:opacity-30 picking-polygon:opacity-100",
       circle: "picking-any:opacity-30 picking-circle:opacity-100",
       angle: "picking-any:opacity-30 picking-angle:opacity-100",
+      arc: "picking-any:opacity-30 picking-arc:opacity-100",
       null: "",
     }[props.kind ?? "null"]
 

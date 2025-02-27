@@ -28,6 +28,8 @@ export default {
             vector: "vector",
             polygon: "polygon",
             circle: "circle,point32,point64",
+            angle: "angle",
+            arc: "arc,point32,point64",
           },
         },
       )

@@ -1,7 +1,7 @@
 import type { Fn } from "../../../eval/ops"
 import { doc } from "../../../eval/ops/dist"
 import { ALL_DOCS, type WithDocs } from "../../../eval/ops/docs"
-import type { SPoint } from "../../../eval/ty"
+import type { JsVal } from "../../../eval/ty"
 
 export const FN_SEGMENTS: Fn & WithDocs = {
   name: "segments",
@@ -10,14 +10,16 @@ export const FN_SEGMENTS: Fn & WithDocs = {
     return [doc(["polygon"], "segment", true)]
   },
   js(args) {
-    if (args.length != 1) {
+    if (
+      !(
+        args.length == 1 &&
+        args[0]!.type == "polygon" &&
+        args[0]!.list === false
+      )
+    ) {
       throw new Error("'segments' expects a single polygon.")
     }
-    const arg = args[0]!
-    if (arg.list !== false) {
-      throw new Error("'segments' expects a single polygon.")
-    }
-    const pts = arg.value as SPoint[]
+    const pts = (args[0]! as JsVal<"polygon">).value
     return {
       type: "segment",
       list: pts.length < 2 ? 0 : pts.length,

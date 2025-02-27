@@ -1,0 +1,8 @@
+p_{1}=\left(-5.97,1.29\right)
+p_{2}=\left(0.34,4.33\right)
+l_{1}=\operatorname{line}\left(p_{1},p_{2}\right)
+p_{3}=\left(2.35,-3.75\right)
+p_{4}=\left(-5.28,6.53\right)
+l_{2}=\operatorname{line}\left(p_{3},p_{4}\right)
+p_{5}=\operatorname{intersection}\left(l_{1},l_{2}\right)
+@p_{5}.\operatorname{forceshader}

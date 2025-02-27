@@ -9,10 +9,12 @@ import {
 } from "../../../sheet/ui/paper"
 import { pick } from "./util"
 
-function getRayBounds(
+// Overloaded so it has a prettier signature in autocomplete
+
+export function getRayBounds(
+  paper: Paper,
   { x: x1, y: y1 }: Point,
   { x: x2, y: y2 }: Point,
-  paper: Paper,
 ): [Point, Point] | null {
   const { xmin, w, ymin, h } = paper.bounds()
 
@@ -72,7 +74,7 @@ export function drawRay(
     return
   }
 
-  const bounds = getRayBounds(p1, p2, paper)
+  const bounds = getRayBounds(paper, p1, p2)
   if (!bounds) return
 
   const [o1, o2] = bounds

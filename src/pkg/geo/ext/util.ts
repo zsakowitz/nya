@@ -6,7 +6,7 @@ import type { Expr } from "../../../sheet/ui/expr"
 
 export function pick(
   val: Val,
-  abbr: "l" | "c" | "v",
+  abbr: "l" | "c" | "v" | "a",
   data: { value: JsValue; expr: Expr },
 ) {
   return {
