@@ -12,7 +12,8 @@ import { Block, L, R } from "../field/model"
 import { h, px, sx } from "../jsx"
 import { defineExt } from "../sheet/ext"
 import { example } from "../sheet/ui/sheet/docs"
-import { mark, translate } from "./geo/fn/translate"
+import { mark as markRotate, rotateJs } from "./geo/fn/rotate"
+import { mark as markTranslate, translate } from "./geo/fn/translate"
 import { glsl } from "./image"
 
 declare module "../eval/ty" {
@@ -185,13 +186,24 @@ export const PKG_IMAGE_GEO: Package = {
   },
 }
 
-mark(
+markTranslate(
   "image2d",
   (a, b) => ({
     data: a.value.data,
     aspect: a.value.aspect,
     p1: translate(b, a.value.p1),
     p2: translate(b, a.value.p2),
+  }),
+  glsl,
+)
+
+markRotate(
+  "image2d",
+  (a, b) => ({
+    data: a.value.data,
+    aspect: a.value.aspect,
+    p1: rotateJs(b, a.value.p1),
+    p2: rotateJs(b, a.value.p2),
   }),
   glsl,
 )
