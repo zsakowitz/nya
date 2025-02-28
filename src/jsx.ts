@@ -180,6 +180,7 @@ interface SVGProps {
     width: number
     height: number
     href: string
+    preserveAspectRatio?: "none"
   } & SVGDrawProps
 }
 

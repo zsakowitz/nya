@@ -2,7 +2,7 @@ import { faImage } from "@fortawesome/free-regular-svg-icons"
 import type { Package } from "."
 import { FnDist } from "../eval/ops/dist"
 import { each, type JsValue } from "../eval/ty"
-import { SNANPT, unpt } from "../eval/ty/create"
+import { num, SNANPT, unpt } from "../eval/ty/create"
 import { TY_INFO } from "../eval/ty/info"
 import { CmdComma } from "../field/cmd/leaf/comma"
 import { CmdWord } from "../field/cmd/leaf/word"
@@ -19,6 +19,7 @@ declare module "../eval/ty" {
       data: Val<"image">
       p1: SPoint
       p2: SPoint
+      aspect: SReal | null
     }
   }
 
@@ -27,12 +28,24 @@ declare module "../eval/ty" {
   }
 }
 
-const FN_IMAGE = new FnDist("image", "draws an image on the graphpaper").add(
-  ["image", "segment"],
-  "image2d",
-  (a, b) => ({ data: a.value, p1: b.value[0], p2: b.value[1] }),
-  glsl,
-)
+const FN_IMAGE = new FnDist("image", "draws an image on the graphpaper")
+  .add(
+    ["image", "segment"],
+    "image2d",
+    (a, b) => ({ data: a.value, p1: b.value[0], p2: b.value[1], aspect: null }),
+    glsl,
+  )
+  .add(
+    ["image", "segment", "r32"],
+    "image2d",
+    (a, b, c) => ({
+      data: a.value,
+      p1: b.value[0],
+      p2: b.value[1],
+      aspect: c.value,
+    }),
+    glsl,
+  )
 
 const EXT = defineExt<JsValue<"image2d">>({
   data(expr) {
@@ -45,16 +58,21 @@ const EXT = defineExt<JsValue<"image2d">>({
       const p1 = paper.toOffset(unpt(val.p1))
       const p2 = paper.toOffset(unpt(val.p2))
       const width = Math.hypot(p1.x - p2.x, p1.y - p2.y)
-      const height = (val.data.height / val.data.width) * width
+      const height =
+        (val.aspect ? num(val.aspect) : val.data.height / val.data.width) *
+        width
       paper.append(
         "image",
         sx("image", {
           href: val.data.src,
           width,
-          height,
+          height: Math.abs(height),
           x: p1.x,
-          y: p1.y - height,
-          transform: `rotate(${(180 / Math.PI) * Math.atan2(p2.y - p1.y, p2.x - p1.x)} ${p1.x} ${p1.y})`,
+          y: (p1.y - height) * Math.sign(height),
+          transform:
+            `rotate(${(180 / Math.PI) * Math.atan2(p2.y - p1.y, p2.x - p1.x)} ${p1.x} ${p1.y})` +
+            (height < 0 ? " scale(1 -1)" : ""),
+          preserveAspectRatio: "none",
         }),
       )
     }
@@ -87,6 +105,7 @@ export const PKG_IMAGE_GEO: Package = {
             },
             p1: SNANPT,
             p2: SNANPT,
+            aspect: null,
           },
           get glsl(): never {
             return glsl()
@@ -108,6 +127,10 @@ export const PKG_IMAGE_GEO: Package = {
             TY_INFO.image.write.display(value.data, inner)
             new CmdComma().insertAt(inner.cursor, L)
             TY_INFO.segment.write.display([value.p1, value.p2], inner)
+            if (value.aspect) {
+              new CmdComma().insertAt(inner.cursor, L)
+              inner.num(value.aspect)
+            }
             new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
           },
         },
