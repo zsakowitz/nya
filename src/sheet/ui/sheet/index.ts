@@ -169,7 +169,7 @@ export class Sheet {
 
       // title bar
       h(
-        "sticky top-0 w-full bg-[--nya-bg-sidebar] border-r border-[--nya-border] text-center text-[--nya-title] z-10",
+        "sticky top-0 w-full bg-[--nya-bg-sidebar] border-r border-[--nya-border] text-center text-[--nya-title] z-20",
         h(
           "flex w-full h-12 min-h-12 max-h-12 p-1 border-b border-[--nya-border]",
           copyAll,

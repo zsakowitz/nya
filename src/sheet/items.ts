@@ -85,7 +85,7 @@ export class ItemList {
   ) {
     const elIndex = t("??")
     const ref = new ItemRef(this, factory, null!, null!, elIndex)
-    const data = factory.decode(ref, source)
+    const data = factory.init(ref, source)
     ;(ref as ItemRefMut).data = data
     this.createOf(ref, props)
     return ref

@@ -182,7 +182,7 @@ export function createDocs(
   return h(
     "flex flex-col border-r border-[--nya-border] hidden row-span-2",
     h(
-      "w-full p-1 h-12 min-h-12 max-h-12 flex bg-[--nya-bg-sidebar] border-b border-[--nya-border] text-center text-[--nya-title] z-10 font-['Symbola']",
+      "w-full p-1 h-12 min-h-12 max-h-12 flex bg-[--nya-bg-sidebar] border-b border-[--nya-border] text-center text-[--nya-title] z-20 font-['Symbola']",
       btn(faFolderOpen, "all", () => {
         el.querySelectorAll("details").forEach((x) => (x.open = true))
       }),
@@ -228,7 +228,7 @@ function title(label: string, rlabel: string | null) {
   return {
     el: hx(
       "summary",
-      "[[open]_&]:sticky top-0 z-10 bg-[--nya-bg] pt-2 list-none",
+      "[[open]_&]:sticky top-0 z-20 bg-[--nya-bg] pt-2 list-none",
       h(
         "flex bg-[--nya-bg-sidebar] border border-[--nya-border] pt-0.5 -mx-2 rounded-lg px-2 font-['Symbola'] text-[1.265rem] items-center [[data-nya-disabled=true]_&]:opacity-30",
         h(

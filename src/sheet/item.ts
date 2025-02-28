@@ -14,17 +14,13 @@ export interface ItemFactory<T> {
   icon: IconDefinition
 
   /** The passed {@linkcode ItemRef} is mostly uninitialized. */
-  init(ref: ItemRef<T>): T
+  init(ref: ItemRef<T>, source?: string): T
   el(data: T): HTMLElement
   draw?(data: T): void
   glsl?(data: T): GlslResult | undefined
   unlink(data: T): void
-
   focus(data: T, from?: VDir): void
-
   encode(data: T): string
-  /** The passed {@linkcode ItemRef} is mostly uninitialized. */
-  decode(ref: ItemRef<T>, source: string): T
 
   /**
    * Defaults to zero; if two items are loaded with the same ID, the higher one
@@ -40,8 +36,20 @@ export const FACTORY_EXPR: ItemFactory<Expr> = {
   name: "field",
   icon: faSquareRootVariable,
 
-  init(ref) {
-    return new Expr(ref.list.sheet, ref)
+  init(ref, source) {
+    const expr = new Expr(ref.list.sheet, ref)
+    if (source) {
+      expr.field.onBeforeChange()
+      const block = new LatexParser(
+        ref.list.sheet.options,
+        source,
+        expr.field,
+      ).parse()
+      expr.field.block.insert(block, null, null)
+      expr.field.sel = expr.field.block.cursor(R).selection()
+      expr.field.onAfterChange(false)
+    }
+    return expr
   },
   el(data) {
     return data.el
@@ -68,19 +76,6 @@ export const FACTORY_EXPR: ItemFactory<Expr> = {
 
   encode(data) {
     return data.field.block.latex()
-  },
-  decode(ref, source) {
-    const expr = new Expr(ref.list.sheet, ref)
-    expr.field.onBeforeChange()
-    const block = new LatexParser(
-      ref.list.sheet.options,
-      source,
-      expr.field,
-    ).parse()
-    expr.field.block.insert(block, null, null)
-    expr.field.sel = expr.field.block.cursor(R).selection()
-    expr.field.onAfterChange(false)
-    return expr
   },
 
   layer: -1,

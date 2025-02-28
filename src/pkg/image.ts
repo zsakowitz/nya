@@ -308,13 +308,8 @@ const FACTORY: ItemFactory<Data> = {
     // TODO:
     return ""
   },
-  decode(ref) {
-    // TODO:
-    return FACTORY.init(ref)
-  },
   unlink(data) {
     data.output.unlink()
-    // TODO:
   },
   focus() {
     // TODO:
