@@ -4,7 +4,7 @@ import type { GlslContext } from "../eval/lib/fn"
 import { FnDist } from "../eval/ops/dist"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "../eval/ops/vars"
 import { each, type JsValue } from "../eval/ty"
-import { approx, frac, num, pt, real, unpt } from "../eval/ty/create"
+import { approx, frac, SNANPT, num, pt, real, unpt } from "../eval/ty/create"
 import { highRes, TY_INFO, WRITE_POINT, type TyGlide } from "../eval/ty/info"
 import { abs, add, mul, neg } from "../eval/ty/ops"
 import { OpEq } from "../field/cmd/leaf/cmp"
@@ -492,7 +492,7 @@ export const PKG_GEO_POINT: Package = {
         name: "point",
         namePlural: "points",
         glsl: "vec4",
-        garbage: { js: pt(real(NaN), real(NaN)), glsl: "vec4(0.0/0.0)" },
+        garbage: { js: SNANPT, glsl: "vec4(0.0/0.0)" },
         coerce: {
           point32: {
             js(self) {
@@ -519,7 +519,7 @@ export const PKG_GEO_POINT: Package = {
         name: "point",
         namePlural: "points",
         glsl: "vec2",
-        garbage: { js: pt(real(NaN), real(NaN)), glsl: "vec2(0.0/0.0)" },
+        garbage: { js: SNANPT, glsl: "vec2(0.0/0.0)" },
         coerce: {},
         write: WRITE_POINT,
         icon() {

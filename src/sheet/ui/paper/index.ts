@@ -20,24 +20,26 @@ export interface Point {
 }
 
 interface LayerShared {
-  angleline: 1
-  line: 2
-  anglearc: 3
-  point: 4
+  image: 0
+  angleline: 2
+  line: 3
+  anglearc: 4
+  point: 5
 }
 
 interface LayerExclusive {
-  grid: 0
+  grid: 1
 }
 
 const LAYER_SHARED: Partial<LayerShared> = Object.create(null)
-LAYER_SHARED.angleline = 1
-LAYER_SHARED.line = 2
-LAYER_SHARED.anglearc = 3
-LAYER_SHARED.point = 4
+LAYER_SHARED.image = 0
+LAYER_SHARED.angleline = 2
+LAYER_SHARED.line = 3
+LAYER_SHARED.anglearc = 4
+LAYER_SHARED.point = 5
 
 const LAYER_EXCLUSIVE: Partial<LayerExclusive> = Object.create(null)
-LAYER_EXCLUSIVE.grid = 0
+LAYER_EXCLUSIVE.grid = 1
 
 export class Paper {
   readonly el

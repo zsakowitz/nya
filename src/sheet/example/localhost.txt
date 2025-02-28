@@ -1,0 +1,4 @@
+p_{1}=\left(-6.75,3.56\right)
+p_{2}=\left(-2.46,4.31\right)
+l_{1}=\operatorname{segment}\left(p_{1},p_{2}\right)
+\operatorname{image}\left(i_{1},l_{1}\right)

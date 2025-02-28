@@ -13,6 +13,7 @@ to do list for functions is:
 ❌ 3D points and vectors
 ❌ ceil, floor, round, statistics for complex numbers
 ❌ width, height
+❌ sort(values, keys)
 
 to do list for things to plot is:
 ❌ f(x)

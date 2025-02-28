@@ -4,7 +4,7 @@ import { FnDist } from "../eval/ops/dist"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "../eval/ops/vars"
 import type { GlslVal, JsVal, SPoint } from "../eval/ty"
 import { isZero } from "../eval/ty/check"
-import { approx, num, pt, real } from "../eval/ty/create"
+import { approx, SNANPT, num, pt, real } from "../eval/ty/create"
 import type { TyWrite } from "../eval/ty/display"
 import { highRes } from "../eval/ty/info"
 import { abs, add, div, mul, neg, sub } from "../eval/ty/ops"
@@ -511,7 +511,7 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
       bool: {
         c32: {
           js(self) {
-            return self ? pt(real(1), real(0)) : pt(real(NaN), real(NaN))
+            return self ? pt(real(1), real(0)) : SNANPT
           },
           glsl(self) {
             return `(${self} ? vec2(1,0) : vec2(0.0/0.0))`
@@ -524,7 +524,7 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
         name: "complex number",
         namePlural: "complex numbers",
         glsl: "vec4",
-        garbage: { js: pt(real(NaN), real(NaN)), glsl: "vec4(0.0/0.0)" },
+        garbage: { js: SNANPT, glsl: "vec4(0.0/0.0)" },
         coerce: {
           c32: {
             js(self) {
@@ -551,7 +551,7 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
         name: "complex number",
         namePlural: "complex numbers",
         glsl: "vec2",
-        garbage: { js: pt(real(NaN), real(NaN)), glsl: "vec2(0.0/0.0)" },
+        garbage: { js: SNANPT, glsl: "vec2(0.0/0.0)" },
         coerce: {},
         write: WRITE_COMPLEX,
         icon() {

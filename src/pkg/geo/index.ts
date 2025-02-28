@@ -1,6 +1,6 @@
 import type { Package } from ".."
 import type { JsVal, SPoint } from "../../eval/ty"
-import { num, pt, real, unpt } from "../../eval/ty/create"
+import { SNANPT, num, real, unpt } from "../../eval/ty/create"
 import {
   gliderOnLine,
   WRITE_POINT,
@@ -80,8 +80,6 @@ declare module "../../eval/ty" {
   }
 }
 
-const NANPT = pt(real(NaN), real(NaN))
-
 function lineInfo(
   name: string,
   namePlural: string,
@@ -92,7 +90,7 @@ function lineInfo(
     name,
     namePlural,
     glsl: "vec4",
-    garbage: { js: [NANPT, NANPT], glsl: "vec4(0.0/0.0)" },
+    garbage: { js: [SNANPT, SNANPT], glsl: "vec4(0.0/0.0)" },
     coerce: {},
     write: {
       isApprox(value) {
@@ -383,8 +381,8 @@ const PICK_POLYGON: Data = {
 }
 
 const INFO_SEGMENT = lineInfo(
-  "line segment",
-  "line segements",
+  "segment",
+  "segements",
   "w-[20px] h-0 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-t-2 border-current -rotate-[30deg]",
   (x) => Math.max(0, Math.min(1, x)),
 )
@@ -415,7 +413,7 @@ const INFO_CIRCLE: TyInfoByName<"circle"> = {
   namePlural: "circles",
   glsl: "vec3",
   garbage: {
-    js: { center: NANPT, radius: real(NaN) },
+    js: { center: SNANPT, radius: real(NaN) },
     glsl: "vec3(0.0/0.0)",
   },
   coerce: {},
@@ -531,7 +529,7 @@ const INFO_ARC: TyInfoByName<"arc"> = {
   namePlural: "arcs",
   glsl: "mat3x2",
   garbage: {
-    js: [NANPT, NANPT, NANPT],
+    js: [SNANPT, SNANPT, SNANPT],
     glsl: "mat3x2(vec2(0.0/0.0),vec2(0.0/0.0),vec2(0.0/0.0))",
   },
   coerce: {},
@@ -618,11 +616,7 @@ function angleInfo(
       },
     },
     garbage: {
-      js: [
-        pt(real(NaN), real(NaN)),
-        pt(real(NaN), real(NaN)),
-        pt(real(NaN), real(NaN)),
-      ],
+      js: [SNANPT, SNANPT, SNANPT],
       glsl: "mat3x2(vec2(0.0/0.0),vec2(0.0/0.0),vec2(0.0/0.0))",
     },
     glsl: "mat3x2",

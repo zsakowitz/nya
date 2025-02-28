@@ -3,7 +3,9 @@ import { faImage } from "@fortawesome/free-solid-svg-icons"
 import type { Package } from "."
 import type { Node, Nodes, PlainVar } from "../eval/ast/token"
 import { NO_DRAG } from "../eval/ast/tx"
+import { FnDist } from "../eval/ops/dist"
 import type { JsValue, Val } from "../eval/ty"
+import { frac, real } from "../eval/ty/create"
 import { Leaf } from "../field/cmd/leaf"
 import { OpEq } from "../field/cmd/leaf/cmp"
 import { CmdVar } from "../field/cmd/leaf/var"
@@ -18,13 +20,13 @@ import type { ItemRef } from "../sheet/items"
 
 declare module "../eval/ast/token" {
   interface Nodes {
-    imageraw: { data: Val<"imageraw"> }
+    image: { data: Val<"image"> }
   }
 }
 
 declare module "../eval/ty" {
   interface Tys {
-    imageraw: {
+    image: {
       src: string
       width: number
       height: number
@@ -32,12 +34,12 @@ declare module "../eval/ty" {
   }
 
   interface TyComponents {
-    imageraw: never
+    image: never
   }
 }
 
 class CmdImgRaw extends Leaf {
-  constructor(public data: Val<"imageraw">) {
+  constructor(public data: Val<"image">) {
     super("", h(""))
   }
 
@@ -54,7 +56,7 @@ class CmdImgRaw extends Leaf {
   }
 
   ir(tokens: Node[]): true | void {
-    tokens.push({ type: "imageraw", data: this.data })
+    tokens.push({ type: "image", data: this.data })
   }
 }
 
@@ -321,28 +323,43 @@ const FACTORY: ItemFactory<Data> = {
   },
 }
 
+export const FN_IMGWIDTH = new FnDist(
+  "imgwidth",
+  "gets the natural width of an image",
+).add(["image"], "r32", (a) => real(a.value.width), glsl)
+
+export const FN_IMGHEIGHT = new FnDist(
+  "imgheight",
+  "gets the natural height of an image",
+).add(["image"], "r32", (a) => real(a.value.height), glsl)
+
+export const FN_IMGASPECT = new FnDist(
+  "imgaspect",
+  "gets the preferred aspect ratio of an image",
+).add(["image"], "r32", (a) => frac(a.value.width, a.value.height), glsl)
+
 export const PKG_IMAGE: Package = {
   id: "nya:image",
   name: "images",
   label: "upload and manipulate images",
   ty: {
     info: {
-      imageraw: {
+      image: {
         name: "image file",
         namePlural: "image files",
         coerce: {},
         garbage: {
           js: {
             src: "",
-            width: 1,
-            height: 1,
+            width: 0,
+            height: 0,
           },
           get glsl(): never {
-            throw new Error("Cannot load image files in shaders yet.")
+            return glsl()
           },
         },
         get glsl(): never {
-          throw new Error("Cannot load image files in shaders yet.")
+          return glsl()
         },
         write: {
           display(value, props) {
@@ -380,20 +397,29 @@ export const PKG_IMAGE: Package = {
   eval: {
     tx: {
       ast: {
-        imageraw: {
+        image: {
           deps() {},
           drag: NO_DRAG,
-          js(node): JsValue<"imageraw", false> {
-            return { type: "imageraw", value: node.data, list: false }
+          js(node): JsValue<"image", false> {
+            return { type: "image", value: node.data, list: false }
           },
           glsl() {
-            throw new Error("Cannot load image files in shaders yet.")
+            return glsl()
           },
         },
       },
+    },
+    fn: {
+      imgwidth: FN_IMGWIDTH,
+      imgheight: FN_IMGHEIGHT,
+      imgaspect: FN_IMGASPECT,
     },
   },
   sheet: {
     items: [FACTORY],
   },
+}
+
+export function glsl(): never {
+  throw new Error("Cannot manipulate image data in shaders yet.")
 }

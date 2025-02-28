@@ -9,6 +9,7 @@ import { PKG_CORE_OPS } from "./pkg/core-ops"
 import { PKG_DISTRIBUTIONS } from "./pkg/distributions"
 import { PKG_EVAL } from "./pkg/eval"
 import { PKG_GEOMETRY } from "./pkg/geo"
+import { PKG_IMAGE_GEO } from "./pkg/geo-image"
 import { PKG_GEO_POINT } from "./pkg/geo-point"
 import { PKG_GRIDLINES } from "./pkg/gridlines"
 import { PKG_IMAGE } from "./pkg/image"
@@ -59,4 +60,5 @@ export const ALL: Package[] = [
   PKG_WITH_SEQ,
   PKG_BASE,
   PKG_IMAGE,
+  PKG_IMAGE_GEO,
 ]

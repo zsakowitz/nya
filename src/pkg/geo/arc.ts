@@ -1,5 +1,5 @@
 import type { Val } from "../../eval/ty"
-import { unpt } from "../../eval/ty/create"
+import { NANPT, unpt } from "../../eval/ty/create"
 import { gliderOnLine } from "../../eval/ty/info"
 import type { Paper, Point } from "../../sheet/ui/paper"
 import { getRayBounds } from "./ext/ray"
@@ -151,7 +151,7 @@ export function arcPath(paper: Paper, arc: Arc): ArcPath {
 
 export function glideArc(arc: Arc, at: number): Point {
   if (!isFinite(at) || arc.type == "invalid") {
-    return { x: NaN, y: NaN }
+    return NANPT
   }
 
   const t = arc.type == "tworay" ? at : Math.max(0, Math.min(1, at))
@@ -164,7 +164,7 @@ export function glideArc(arc: Arc, at: number): Point {
     }
   } else {
     if (arc.type == "tworay" && 0 < at && at < 1) {
-      return { x: NaN, y: NaN }
+      return NANPT
     }
     return {
       x: arc.p1.x * (1 - t) + arc.p3.x * t,
@@ -207,7 +207,7 @@ export function crArc(
   { x: x3, y: y3 }: Point,
 ): { c: Point; r: number } {
   if (![x1, y1, x2, y2, x3, y3].every(isFinite)) {
-    return { c: { x: NaN, y: NaN }, r: NaN }
+    return { c: NANPT, r: NaN }
   }
 
   const l1a: Point = { x: (x1 + x2) / 2, y: (y1 + y2) / 2 }

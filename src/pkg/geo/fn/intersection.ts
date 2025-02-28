@@ -3,7 +3,7 @@
 
 import type { GlslContext } from "../../../eval/lib/fn"
 import type { GlslVal, SPoint, Tys, Val } from "../../../eval/ty"
-import { num, pt, real, rept } from "../../../eval/ty/create"
+import { SNANPT, num, pt, real, rept } from "../../../eval/ty/create"
 import { div, mul, sub } from "../../../eval/ty/ops"
 import type { Point } from "../../../sheet/ui/paper"
 import { FN_INTERSECTION } from "../../geo-point"
@@ -123,7 +123,7 @@ function lineCircleJs(circ: Tys["circle"], lin: Tys["line"], index: -1 | 1) {
   const c = 2 * (v1.x * v1.x + v1.y * v1.y)
   const d = Math.sqrt(b * b - 2 * c * (v2.x * v2.x + v2.y * v2.y - r * r))
   if (isNaN(d)) {
-    return pt(real(NaN), real(NaN))
+    return SNANPT
   }
   const u1 = (b + index * d) / c
   const returned = { x: x1 + v1.x * u1, y: y1 + v1.y * u1 }
@@ -159,7 +159,7 @@ function lineArcJs(ac: Tys["arc"], lin: Tys["line"], index: -1 | 1): SPoint {
   const arc = computeArcVal(ac)
   switch (arc.type) {
     case "invalid":
-      return rept({ x: NaN, y: NaN })
+      return SNANPT
     case "segment":
     case "tworay":
       return intersectSLineLineJs([rept(arc.p1), rept(arc.p3)], lin)
@@ -200,15 +200,15 @@ function circleCircleJs(
   // Check for special cases
   if (d > r0 + r1) {
     // Circles do not intersect
-    return pt(real(NaN), real(NaN))
+    return SNANPT
   }
   if (d < Math.abs(r0 - r1)) {
     // One circle is contained within the other
-    return pt(real(NaN), real(NaN))
+    return SNANPT
   }
   if (d === 0 && r0 === r1) {
     // Circles are the same
-    return pt(real(NaN), real(NaN))
+    return SNANPT
   }
 
   // Calculate the intersection points
@@ -279,7 +279,7 @@ FN_INTERSECTION.add(
     const b = computeArcVal(br.value)
     switch (b.type) {
       case "invalid":
-        return rept({ x: NaN, y: NaN })
+        return SNANPT
       case "segment":
       case "tworay":
         return lineCircleJs(ar.value, [rept(b.p1), rept(b.p3)], 1)
@@ -309,7 +309,7 @@ FN_INTERSECTION.add(
     const b = computeArcVal(ar.value)
     switch (b.type) {
       case "invalid":
-        return rept({ x: NaN, y: NaN })
+        return SNANPT
       case "segment":
       case "tworay":
         return lineCircleJs(br.value, [rept(b.p1), rept(b.p3)], -1)
@@ -339,7 +339,7 @@ FN_INTERSECTION.add(
     const a = computeArcVal(ar.value)
     const b = computeArcVal(br.value)
     if (a.type == "invalid" || b.type == "invalid") {
-      return rept({ x: NaN, y: NaN })
+      return SNANPT
     }
     if (a.type == "circle") {
       const ac = { center: rept(a.c), radius: real(a.r) }

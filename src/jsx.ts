@@ -140,15 +140,47 @@ interface SVGDrawProps {
   "stroke-linejoin"?: "round"
   fill?: string
   "fill-opacity"?: number
+  transform?: string
 }
 
 interface SVGProps {
-  svg: { viewBox: string } & SVGDrawProps
+  svg: {
+    viewBox: string
+  } & SVGDrawProps
+
   g: SVGDrawProps
-  path: { d: string } & SVGDrawProps
-  line: { x1: number; y1: number; x2: number; y2: number } & SVGDrawProps
-  circle: { cx: number; cy: number; r: number } & SVGDrawProps
-  foreignObject: { x: number; y: number; width: number; height: number }
+
+  path: {
+    d: string
+  } & SVGDrawProps
+
+  line: {
+    x1: number
+    y1: number
+    x2: number
+    y2: number
+  } & SVGDrawProps
+
+  circle: {
+    cx: number
+    cy: number
+    r: number
+  } & SVGDrawProps
+
+  foreignObject: {
+    x: number
+    y: number
+    width: number
+    height: number
+  }
+
+  image: {
+    x: number
+    y: number
+    width: number
+    height: number
+    href: string
+  } & SVGDrawProps
 }
 
 interface SVGPropsGlobal {

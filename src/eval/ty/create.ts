@@ -64,3 +64,11 @@ export function unpt(pt: SPoint): Point {
 export function rept(pt: Point): SPoint {
   return { type: "point", x: real(pt.x), y: real(pt.y) }
 }
+
+export const SNANPT: SPoint = {
+  type: "point",
+  x: { type: "approx", value: NaN },
+  y: { type: "approx", value: NaN },
+}
+
+export const NANPT: Point = { x: NaN, y: NaN }
