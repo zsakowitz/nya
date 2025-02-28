@@ -110,7 +110,7 @@ const FACTORY: ItemFactory<Data> = {
     const msg = t("")
 
     const msgEl = h(
-      "hidden [line-height:1] text-center absolute inset-x-2 z-10 pt-0.5 bottom-1 bg-[--nya-bg] text-[--nya-expr-error]",
+      "hidden [line-height:1] text-center absolute inset-x-2 z-10 bottom-1 bg-[--nya-bg] text-[--nya-expr-error] font-sans",
       h(
         "absolute bottom-full inset-x-0 from-[--nya-bg] to-transparent bg-gradient-to-t h-2",
       ),
@@ -146,7 +146,7 @@ const FACTORY: ItemFactory<Data> = {
     })
 
     const none = h(
-      "flex-1 flex items-center justify-center px-3 py-2",
+      "flex-1 flex items-center justify-center px-3 py-2 font-sans",
       "Click to upload an image.",
     )
 
@@ -252,7 +252,7 @@ const FACTORY: ItemFactory<Data> = {
       }
 
       if (data.url == null) {
-        setMsg("Click to upload an image to use.")
+        setMsg("Select an image to import.")
         return
       }
 
