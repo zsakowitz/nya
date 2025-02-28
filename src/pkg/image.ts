@@ -9,8 +9,10 @@ import { OpEq } from "../field/cmd/leaf/cmp"
 import { CmdVar } from "../field/cmd/leaf/var"
 import { fa } from "../field/fa"
 import { Field } from "../field/field"
-import { R } from "../field/model"
+import { toText } from "../field/latex"
+import { L, R } from "../field/model"
 import { h, hx, path, svgx, t } from "../jsx"
+import { FieldComputed } from "../sheet/deps"
 import { type ItemFactory } from "../sheet/item"
 import type { ItemRef } from "../sheet/items"
 
@@ -48,7 +50,7 @@ class CmdImgRaw extends Leaf {
   }
 
   latex(): string {
-    return ""
+    return `\\imgraw{${toText(this.data.src)}}`
   }
 
   ir(tokens: Node[]): true | void {
@@ -56,11 +58,45 @@ class CmdImgRaw extends Leaf {
   }
 }
 
+class CmdImg extends Leaf {
+  constructor(readonly src: string) {
+    super(
+      "",
+      h(
+        "relative inline-block size-24 border border-[--nya-border] rounded overflow-hidden align-middle",
+        hx("img", {
+          class: "absolute object-cover inset-0 size-24 blur scale-[120%]",
+          src,
+        }),
+        hx("img", {
+          class: "absolute object-contain inset-0 size-24",
+          src,
+        }),
+      ),
+    )
+  }
+
+  reader(): string {
+    return " Image "
+  }
+
+  ascii(): string {
+    return ""
+  }
+
+  latex(): string {
+    return ""
+  }
+
+  ir(): true | void {}
+}
+
 interface Data {
   url: string | null
   name: Field
   ref: ItemRef<Data>
   el: HTMLElement
+  output: FieldComputed
 }
 
 const FACTORY: ItemFactory<Data> = {
@@ -118,10 +154,13 @@ const FACTORY: ItemFactory<Data> = {
     )
     const img2 = hx("img", "hidden absolute size-full inset-0 object-contain")
 
+    const output = new FieldComputed(ref.list.sheet.scope)
+
     const data: Data = {
       url: null,
       name,
       ref,
+      output,
       el: h(
         "grid grid-cols-[2.5rem_auto] border-r border-b border-[--nya-border] relative nya-expr",
         // grey side of expression
@@ -159,6 +198,29 @@ const FACTORY: ItemFactory<Data> = {
     }
 
     let ast: PlainVar | null = null
+
+    function update() {
+      console.log("checking")
+
+      if (!ast || !data.url) {
+        output.unlink()
+        return
+      }
+
+      output.relink()
+      output.onBeforeChange()
+      output.block.clear()
+      const cursor = output.block.cursor(R)
+      CmdVar.leftOf(cursor, ast, output.options)
+      new OpEq(false).insertAt(cursor, L)
+      new CmdImgRaw({
+        src: data.url,
+        height: natHeight,
+        width: natWidth,
+      }).insertAt(cursor, L)
+      output.onAfterChange(false)
+      output.queueAstUpdate()
+    }
 
     function check() {
       ast = null
@@ -198,6 +260,15 @@ const FACTORY: ItemFactory<Data> = {
     }
 
     check()
+    update()
+
+    let natWidth = 0
+    let natHeight = 0
+    img2.onload = () => {
+      natWidth = img2.naturalWidth
+      natHeight = img2.naturalHeight
+      update()
+    }
 
     field.addEventListener("change", () => {
       const file = field.files?.[0]
@@ -225,6 +296,7 @@ const FACTORY: ItemFactory<Data> = {
     name.onAfterChange = (wasChangeCanceled) => {
       prevOnAfterChange.call(name, wasChangeCanceled)
       check()
+      update()
     }
 
     return data
@@ -240,7 +312,8 @@ const FACTORY: ItemFactory<Data> = {
     // TODO:
     return FACTORY.init(ref)
   },
-  unlink() {
+  unlink(data) {
+    data.output.unlink()
     // TODO:
   },
   focus() {
@@ -272,8 +345,12 @@ export const PKG_IMAGE: Package = {
           throw new Error("Cannot load image files in shaders yet.")
         },
         write: {
-          display() {
-            // FIXME:
+          display(value, props) {
+            if (value.src) {
+              new CmdImg(value.src).insertAt(props.cursor, L)
+            } else {
+              // FIXME:
+            }
           },
           isApprox() {
             return false
