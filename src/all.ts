@@ -7,6 +7,7 @@ import { PKG_CORE_CMP } from "./pkg/core-cmp"
 import { PKG_CORE_LIST } from "./pkg/core-list"
 import { PKG_CORE_OPS } from "./pkg/core-ops"
 import { PKG_DISTRIBUTIONS } from "./pkg/distributions"
+import { PKG_DOCS_FN } from "./pkg/docs-fn"
 import { PKG_EVAL } from "./pkg/eval"
 import { PKG_GEOMETRY } from "./pkg/geo"
 import { PKG_IMAGE_GEO } from "./pkg/geo-image"
@@ -61,4 +62,5 @@ export const ALL: Package[] = [
   PKG_BASE,
   PKG_IMAGE,
   PKG_IMAGE_GEO,
+  PKG_DOCS_FN,
 ]

@@ -38,7 +38,7 @@ declare module "../eval/ty" {
   }
 }
 
-class CmdImgRaw extends Leaf {
+export class CmdImgRaw extends Leaf {
   constructor(public data: Val<"image">) {
     super("", h(""))
   }
@@ -202,8 +202,6 @@ const FACTORY: ItemFactory<Data> = {
     let ast: PlainVar | null = null
 
     function update() {
-      console.log("checking")
-
       if (!ast || !data.url) {
         output.unlink()
         return

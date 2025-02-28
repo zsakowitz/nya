@@ -4,3 +4,5 @@ l_{1}=\operatorname{segment}\left(p_{1},p_{2}\right)
 \operatorname{image}\left(i_{1},l_{1},-\frac{\operatorname{length}l_{1}}{\operatorname{length}l_{3}}\operatorname{sign}\operatorname{directedangle}\left(p_{3},p_{1},p_{2}\right)\right)
 p_{3}=\operatorname{glider}\left(\operatorname{perpendicular}\left(l_{1},p_{1}\right),-0.56\right)
 l_{3}=\operatorname{segment}\left(p_{1},p_{3}\right)
+#nya:docs-fn#arccos
+#nya:image#

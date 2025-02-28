@@ -5,7 +5,7 @@ import { faFolderClosed } from "@fortawesome/free-solid-svg-icons/faFolderClosed
 import { faFolderOpen } from "@fortawesome/free-solid-svg-icons/faFolderOpen"
 import { FNS } from "../../../eval/ops"
 import { array, icon } from "../../../eval/ops/dist"
-import { ALL_DOCS } from "../../../eval/ops/docs"
+import { ALL_DOCS, type WithDocs } from "../../../eval/ops/docs"
 import { VARS, type Builtin } from "../../../eval/ops/vars"
 import type { Type } from "../../../eval/ty"
 import { frac } from "../../../eval/ty/create"
@@ -205,13 +205,18 @@ function makeDocName(name: string) {
   )
 }
 
-function makeDoc(fn: { name: string; label: string; docs(): Node[] }) {
+export function makeDoc(
+  fn: WithDocs,
+  props?: {
+    title?: boolean
+  },
+) {
   const nodes = fn.docs()
   if (nodes.length == 0) return null
 
   return h(
     "flex flex-col",
-    makeDocName(fn.name),
+    props?.title === false ? null : makeDocName(fn.name),
     h("text-sm leading-tight text-slate-500", fn.label),
     h("flex flex-col pl-4 mt-1", ...nodes),
   )

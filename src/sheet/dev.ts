@@ -21,6 +21,11 @@ const sheet = factory.create()
 document.body.appendChild(sheet.el)
 
 function expr(source: string) {
+  if (source.startsWith("#")) {
+    sheet.list.fromString(source)
+    return
+  }
+
   let doShow = false
   if (source.startsWith("@")) {
     doShow = true
@@ -36,10 +41,3 @@ function expr(source: string) {
 const src = SHORT_EXPRS && IS_DEV ? SRC_LOCALHOST : SRC_STANDARD
 
 src.split("\n").forEach((x) => x && expr(x))
-
-if (IS_DEV) {
-  const img = factory.items["nya:image"]
-  if (img) {
-    sheet.list.create(img)
-  }
-}

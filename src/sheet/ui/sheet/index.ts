@@ -183,6 +183,7 @@ export class Sheet {
             .itemFactories()
             .sort((a, b) =>
               a.id == this.factory.defaultItem.id ? -1
+              : b.id == this.factory.defaultItem.id ? 1
               : a.name < b.name ? -1
               : a.name > b.name ? 1
               : 0,

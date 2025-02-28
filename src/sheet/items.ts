@@ -118,7 +118,7 @@ export class ItemList {
       } else {
         return this.fromStringById(
           source.slice(1, next),
-          source.slice(next),
+          source.slice(next + 1),
           props,
         )
       }
