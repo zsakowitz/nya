@@ -6,7 +6,7 @@ import { PKG_REAL } from "./num-real"
 const FN_SINH = new FnDist("sinh", "takes the hyperbolic sinhe of an angle")
 const FN_COSH = new FnDist("cosh", "takes the hyperbolic coshine of an angle")
 const FN_TANH = new FnDist("tanh", "takes the hyperbolic tanhgent of an angle")
-const FN_CSCH = new FnDist("csch", "takes the hyperbolic coshecant of an angle")
+const FN_CSCH = new FnDist("csch", "takes the hyperbolic cosecant of an angle")
 const FN_SECH = new FnDist("sech", "takes the hyperbolic secant of an angle")
 const FN_COTH = new FnDist("coth", "takes the hyperbolic cotangent of an angle")
 
