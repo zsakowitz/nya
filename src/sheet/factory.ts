@@ -264,4 +264,12 @@ export class SheetFactory {
     }
     return sheet
   }
+
+  itemFactories() {
+    const items = Object.values(this.items)
+    if (!(this.defaultItem.id in items)) {
+      items.unshift(this.defaultItem)
+    }
+    return items
+  }
 }

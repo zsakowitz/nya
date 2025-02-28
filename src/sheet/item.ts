@@ -1,20 +1,23 @@
+import {
+  faSquareRootVariable,
+  type IconDefinition,
+} from "@fortawesome/free-solid-svg-icons"
 import type { GlslResult } from "../eval/lib/fn"
 import { LatexParser } from "../field/latex"
 import { L, R, U, type VDir } from "../field/model"
-import { t } from "../jsx"
 import type { ItemRef } from "./items"
 import { Expr } from "./ui/expr"
 
 export interface ItemFactory<T> {
   id: string
   name: string
-  icon(): Node
+  icon: IconDefinition
 
   /** The passed {@linkcode ItemRef} is mostly uninitialized. */
   init(ref: ItemRef<T>): T
   el(data: T): HTMLElement
-  draw(data: T): void
-  glsl(data: T): GlslResult | undefined
+  draw?(data: T): void
+  glsl?(data: T): GlslResult | undefined
   unlink(data: T): void
 
   focus(data: T, from?: VDir): void
@@ -34,10 +37,8 @@ export type AnyItemFactory = ItemFactory<unknown>
 
 export const FACTORY_EXPR: ItemFactory<Expr> = {
   id: "nya:expr",
-  name: "expression",
-  icon() {
-    return t("f(x)")
-  },
+  name: "field",
+  icon: faSquareRootVariable,
 
   init(ref) {
     return new Expr(ref.list.sheet, ref)

@@ -60,7 +60,7 @@ export class Expr {
       ref.elIndex,
       fa(
         faWarning,
-        "hidden mx-auto size-6 fill-[--nya-icon-error] [.nya-expr-error_&]:block",
+        "hidden mb-1.5 mx-auto size-6 fill-[--nya-icon-error] [.nya-expr-error_&]:block",
       ),
       (this.elAside = h("contents")),
     )

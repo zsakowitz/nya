@@ -36,7 +36,7 @@ export class ItemList {
   draw() {
     for (const expr of this.items) {
       try {
-        expr.factory.draw(expr.data)
+        expr.factory.draw?.(expr.data)
       } catch (e) {
         console.warn("[draw]", e)
       }

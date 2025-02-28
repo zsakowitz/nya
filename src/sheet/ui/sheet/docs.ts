@@ -39,7 +39,7 @@ export function btn(
 ) {
   const el = hx(
     "button",
-    "flex flex-col h-full aspect-square [line-height:1] hover:bg-[--nya-sidebar-hover] hover:text-[--nya-title-dark] rounded",
+    "flex flex-col h-[calc(2.5rem_-_1px)] min-w-10 [line-height:1] hover:bg-[--nya-sidebar-hover] hover:text-[--nya-title-dark] rounded",
     h(
       "flex flex-col m-auto",
       fa(icon, "mx-auto size-5 fill-current"),

@@ -169,11 +169,24 @@ export class Sheet {
 
       // title bar
       h(
-        "sticky top-0 w-full p-1 h-12 min-h-12 max-h-12 flex bg-[--nya-bg-sidebar] border-b border-r border-[--nya-border] text-center text-[--nya-title] z-10",
-        copyAll,
-        clearAll,
-        h("m-auto text-2xl", "project nya"),
-        switchToDocs,
+        "sticky top-0 w-full bg-[--nya-bg-sidebar] border-r border-[--nya-border] text-center text-[--nya-title] z-10",
+        h(
+          "flex w-full h-12 min-h-12 max-h-12 p-1 border-b border-[--nya-border]",
+          copyAll,
+          clearAll,
+          h("m-auto text-2xl", "project nya"),
+          switchToDocs,
+        ),
+        h(
+          "grid grid-cols-[repeat(auto-fill,2.5rem)] p-1 border-b border-[--nya-border]",
+          ...factory
+            .itemFactories()
+            .map((item) =>
+              btn(item.icon, item.name, () =>
+                this.list.create(item, { focus: true }),
+              ),
+            ),
+        ),
       ),
 
       // main expression list
@@ -323,7 +336,7 @@ export class Sheet {
   private program: regl.DrawCommand | undefined
   private checkGlsl() {
     const compiled = this.list.items
-      .map((x) => x.factory.glsl(x.data))
+      .map((x) => x.factory.glsl?.(x.data))
       .filter((x) => x != null)
 
     if (compiled.length == 0) {

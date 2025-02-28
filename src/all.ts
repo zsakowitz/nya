@@ -11,6 +11,7 @@ import { PKG_EVAL } from "./pkg/eval"
 import { PKG_GEOMETRY } from "./pkg/geo"
 import { PKG_GEO_POINT } from "./pkg/geo-point"
 import { PKG_GRIDLINES } from "./pkg/gridlines"
+import { PKG_IMAGE } from "./pkg/image"
 import { PKG_ITERATE } from "./pkg/iterate"
 import { PKG_ITHKUIL } from "./pkg/ithkuil"
 import { PKG_LIST_EXTRAS } from "./pkg/list-extras"
@@ -57,4 +58,5 @@ export const ALL: Package[] = [
   PKG_WITH,
   PKG_WITH_SEQ,
   PKG_BASE,
+  PKG_IMAGE,
 ]
