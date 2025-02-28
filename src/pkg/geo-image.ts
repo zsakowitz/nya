@@ -28,7 +28,10 @@ declare module "../eval/ty" {
   }
 }
 
-const FN_IMAGE = new FnDist("image", "draws an image on the graphpaper")
+const FN_IMAGE = new FnDist(
+  "image",
+  "draws an image on the graphpaper; pass a number to override the preferred aspect ratio",
+)
   .add(
     ["image", "segment"],
     "image2d",
@@ -59,7 +62,7 @@ const EXT = defineExt<JsValue<"image2d">>({
       const p2 = paper.toOffset(unpt(val.p2))
       const width = Math.hypot(p1.x - p2.x, p1.y - p2.y)
       const height =
-        (val.aspect ? num(val.aspect) : val.data.height / val.data.width) *
+        (val.aspect ? 1 / num(val.aspect) : val.data.height / val.data.width) *
         width
       paper.append(
         "image",

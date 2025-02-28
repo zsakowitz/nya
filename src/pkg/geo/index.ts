@@ -1,6 +1,6 @@
 import type { Package } from ".."
 import type { JsVal, SPoint } from "../../eval/ty"
-import { SNANPT, num, real, unpt } from "../../eval/ty/create"
+import { num, real, SNANPT, unpt } from "../../eval/ty/create"
 import {
   gliderOnLine,
   WRITE_POINT,
@@ -40,6 +40,7 @@ import { FN_DISTANCE } from "./fn/distance"
 import { FN_END } from "./fn/end"
 import "./fn/glider"
 import "./fn/intersection"
+import { FN_LENGTH } from "./fn/length"
 import { FN_LINE } from "./fn/line"
 import { FN_MIDPOINT } from "./fn/midpoint"
 import { FN_PARALLEL, parallelJs } from "./fn/parallel"
@@ -799,6 +800,7 @@ export const PKG_GEOMETRY: Package = {
       anglebisector: FN_ANGLEBISECTOR,
       perpendicularbisector: FN_PERPENDICULARBISECTOR,
       arc: FN_ARC,
+      length: FN_LENGTH,
     },
   },
   sheet: {

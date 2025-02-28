@@ -224,3 +224,16 @@ export function crArc(
 export function crArcVal(val: Val<"arc">) {
   return crArc(unpt(val[0]), unpt(val[1]), unpt(val[2]))
 }
+
+export function arcLength(arc: Arc) {
+  switch (arc.type) {
+    case "invalid":
+      return NaN
+    case "segment":
+      return Math.hypot(arc.p1.x - arc.p3.x, arc.p1.y - arc.p3.y)
+    case "tworay":
+      return Infinity
+    case "circle":
+      return arc.r * Math.abs(arc.a1 - arc.a3)
+  }
+}

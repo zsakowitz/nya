@@ -1,5 +1,6 @@
 p_{1}=\left(-6.75,3.56\right)
-p_{2}=\left(3.99,5.94\right)
+p_{2}=\left(4.99,-1.28\right)
 l_{1}=\operatorname{segment}\left(p_{1},p_{2}\right)
-\operatorname{image}\left(i_{1},l_{1},a\right)
-a=-0.62
+\operatorname{image}\left(i_{1},l_{1},-\frac{\operatorname{length}l_{1}}{\operatorname{length}l_{3}}\operatorname{sign}\operatorname{directedangle}\left(p_{3},p_{1},p_{2}\right)\right)
+p_{3}=\operatorname{glider}\left(\operatorname{perpendicular}\left(l_{1},p_{1}\right),-0.56\right)
+l_{3}=\operatorname{segment}\left(p_{1},p_{3}\right)
