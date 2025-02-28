@@ -52,6 +52,7 @@ import { FN_RAY } from "./fn/ray"
 import { FN_SEGMENT } from "./fn/segment"
 import { FN_SEGMENTS } from "./fn/segments"
 import { FN_START } from "./fn/start"
+import { FN_TRANSLATE } from "./fn/translate"
 import { FN_VECTOR } from "./fn/vector"
 import { FN_VERTICES } from "./fn/vertices"
 
@@ -801,6 +802,7 @@ export const PKG_GEOMETRY: Package = {
       perpendicularbisector: FN_PERPENDICULARBISECTOR,
       arc: FN_ARC,
       length: FN_LENGTH,
+      translate: FN_TRANSLATE,
     },
   },
   sheet: {

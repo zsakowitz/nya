@@ -1,9 +1,8 @@
-- distance
 - area
 - perimeter
 - coterminal
 - supplement
-- dilation
-- rotation
-- reflection
-- translation
+- dilate
+- rotate
+- reflect
+- transform, dilation, rotation, reflection, translation, etc.
