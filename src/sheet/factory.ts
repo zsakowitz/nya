@@ -22,7 +22,7 @@ import type { ParenLhs, ParenRhs } from "../field/cmd/math/brack"
 import { Inits, WordMap, type Options } from "../field/options"
 import type { Package, ToolbarItem } from "../pkg"
 import { Exts } from "./ext"
-import type { AnyItemFactory } from "./item"
+import { FACTORY_EXPR, type AnyItemFactory } from "./item"
 import { Sheet } from "./ui/sheet"
 
 export class SheetFactory {
@@ -30,6 +30,7 @@ export class SheetFactory {
   readonly toolbar: Record<number, ToolbarItem[]> = Object.create(null)
   readonly keys: Record<string, (sheet: Sheet) => void> = Object.create(null)
   readonly items: Record<string, AnyItemFactory> = Object.create(null)
+  defaultItem: AnyItemFactory = FACTORY_EXPR
 
   options
   constructor(options: Options) {
@@ -227,6 +228,17 @@ export class SheetFactory {
         (this.items[item.id]?.layer ?? 0) < (item.layer ?? 0)
       ) {
         this.items[item.id] = item
+      }
+    }
+
+    if (pkg.sheet?.defaultItem) {
+      const item = pkg.sheet.defaultItem
+
+      if (
+        !this.defaultItem ||
+        (this.defaultItem?.layer ?? 0) < (item.layer ?? 0)
+      ) {
+        this.defaultItem = item
       }
     }
 

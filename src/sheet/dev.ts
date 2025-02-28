@@ -26,7 +26,7 @@ function expr(source: string) {
     doShow = true
     source = source.slice(1)
   }
-  const expr = new Expr(sheet)
+  const expr = Expr.of(sheet)
   expr.field.typeLatex(source)
   if (doShow) {
     show(expr)

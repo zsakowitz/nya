@@ -50,7 +50,7 @@ export function virtualPoint(at: Point, sheet: Sheet) {
         const r1 = o1.ref()
         const r2 = o2.ref()
 
-        const expr = new Expr(sheet)
+        const expr = Expr.of(sheet)
         const name = sheet.scope.name("p")
         const cursor = expr.field.block.cursor(R)
         CmdVar.leftOf(cursor, name, expr.field.options)
@@ -120,7 +120,7 @@ export function virtualPoint(at: Point, sheet: Sheet) {
 
         const o1 = obj.ref()
 
-        const expr = new Expr(sheet)
+        const expr = Expr.of(sheet)
         const name = sheet.scope.name("p")
         const cursor = expr.field.block.cursor(R)
         CmdVar.leftOf(cursor, name, expr.field.options)
@@ -173,7 +173,7 @@ export function virtualPoint(at: Point, sheet: Sheet) {
         return ret
       }
 
-      const expr = new Expr(sheet)
+      const expr = Expr.of(sheet)
       const name = sheet.scope.name("p")
       const cursor = expr.field.block.cursor(R)
       CmdVar.leftOf(cursor, name, expr.field.options)

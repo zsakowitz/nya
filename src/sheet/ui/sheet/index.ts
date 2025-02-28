@@ -14,6 +14,7 @@ import { declareAddR64, declareMulR64 } from "../../../pkg/core-ops"
 import { Scope } from "../../deps"
 import type { Exts } from "../../ext"
 import type { SheetFactory } from "../../factory"
+import { ItemList } from "../../items"
 import { doMatchReglSize } from "../../regl"
 import { REMARK } from "../../remark"
 import { Slider } from "../../slider"
@@ -32,7 +33,7 @@ import { btn, createDocs, DEFAULT_TO_VISIBLE_DOCS } from "./docs"
 export class Sheet {
   readonly paper = new Paper("absolute inset-0 size-full touch-none")
   readonly scope: Scope
-  readonly exprs: Expr[] = []
+  readonly list = new ItemList(this)
 
   private readonly pixelRatio
   private readonly setPixelRatio
@@ -42,10 +43,10 @@ export class Sheet {
   private readonly regl: Regl
 
   readonly el
-  readonly elExpressions = h("flex flex-col")
+  readonly elExpressions = h("flex flex-col", this.list.el)
   readonly elNextIndex = h(
     "font-sans text-[--nya-expr-index] text-[65%] leading-none",
-    "1",
+    this.list.nextIndex,
   )
 
   constructor(
@@ -77,17 +78,7 @@ export class Sheet {
     registerWheelHandler(this.paper)
     registerDragHandler(this.paper)
     registerPinchHandler(this.paper)
-    this.paper.fns.push(() => {
-      for (const expr of this.exprs) {
-        if (expr.state.ok && expr.state.ext?.svg) {
-          try {
-            expr.state.ext.svg(expr.state.data, this.paper)
-          } catch (e) {
-            console.warn("[draw]", e)
-          }
-        }
-      }
-    })
+    this.paper.fns.push(() => this.list.draw())
     this.pick = new PickHandler(this)
 
     // prepare glsl context
@@ -111,8 +102,8 @@ export class Sheet {
     })
 
     const clearAll = btn(faTrash, "Clear", () => {
-      while (this.exprs[0]) {
-        this.exprs[0].delete()
+      while (this.list.items[0]) {
+        this.list.items[0].delete()
       }
     })
 
@@ -124,7 +115,13 @@ export class Sheet {
       const id = ++copyId
       try {
         await navigator.clipboard.writeText(
-          this.exprs.map((x) => x.field.block.latex()).join("\n"),
+          this.list.items
+            .map(({ factory, data }) =>
+              factory == this.factory.defaultItem ?
+                factory.encode(data)
+              : "#" + factory.id + "#" + factory.encode(data),
+            )
+            .join("\n"),
         )
         if (copyId == id) {
           copyAllLabel.data = "Copied"
@@ -165,7 +162,7 @@ export class Sheet {
     )
 
     nextExpression.addEventListener("click", () => {
-      const expr = new Expr(this)
+      const expr = Expr.of(this)
       setTimeout(() => nextExpression.scrollIntoView())
       setTimeout(() => expr.field.el.focus())
     })
@@ -264,24 +261,6 @@ export class Sheet {
     })
   }
 
-  private checkIndices() {
-    for (let i = 0; i < this.exprs.length; i++) {
-      const expr = this.exprs[i]!
-      expr.elIndex.textContent = i + 1 + ""
-    }
-    this.elNextIndex.textContent = this.exprs.length + 1 + ""
-  }
-
-  private _qdIndices = false
-  queueIndices() {
-    if (this._qdIndices) return
-    queueMicrotask(() => {
-      this._qdIndices = false
-      this.checkIndices()
-    })
-    this._qdIndices = true
-  }
-
   private startGlslLoop() {
     const global = this.regl({
       attributes: {
@@ -346,9 +325,9 @@ export class Sheet {
 
   private program: regl.DrawCommand | undefined
   private checkGlsl() {
-    const compiled = this.exprs
-      .filter((x) => x.glsl != null)
-      .map((x) => x.glsl!)
+    const compiled = this.list.items
+      .map((x) => x.factory.glsl(x.data))
+      .filter((x) => x != null)
 
     if (compiled.length == 0) {
       this.program = undefined

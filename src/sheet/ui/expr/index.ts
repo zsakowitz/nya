@@ -8,6 +8,8 @@ import { outputBase } from "../../../eval/ty/display"
 import { fa } from "../../../field/fa"
 import { h } from "../../../jsx"
 import type { AnyExt } from "../../ext"
+import { FACTORY_EXPR } from "../../item"
+import type { ItemRef } from "../../items"
 import type { Sheet } from "../sheet"
 import { Field } from "./field"
 
@@ -20,9 +22,12 @@ type ExprState =
   | { ok: true; ext: AnyExt | null; data: {} }
 
 export class Expr {
+  static of(sheet: Sheet) {
+    return sheet.list.create(FACTORY_EXPR).data
+  }
+
   readonly field
   readonly el
-  readonly elIndex
   private readonly elOutput
   private readonly elAside
   private readonly elError
@@ -31,9 +36,10 @@ export class Expr {
   removable = true
   state: ExprState = { ok: false, reason: "Not computed yet." }
 
-  constructor(readonly sheet: Sheet) {
-    sheet.exprs.push(this)
-    sheet.queueIndices()
+  constructor(
+    readonly sheet: Sheet,
+    readonly ref: ItemRef<Expr>,
+  ) {
     this.el = h(
       "grid grid-cols-[2.5rem_auto] border-r border-b border-[--nya-border] relative nya-expr",
     )
@@ -51,7 +57,7 @@ export class Expr {
           "nya-expr-bar inline-flex bg-[--nya-bg-sidebar] flex-col p-0.5 border-r border-[--nya-border] font-sans text-[--nya-expr-index] text-[65%] leading-none focus:outline-none",
         tabindex: "-1",
       },
-      (this.elIndex = h("")),
+      ref.elIndex,
       fa(
         faWarning,
         "hidden mx-auto size-6 fill-[--nya-icon-error] [.nya-expr-error_&]:block",
@@ -89,25 +95,12 @@ export class Expr {
     this.sheet.elExpressions.appendChild(this.el)
 
     this.field.el.addEventListener("keydown", (event) => {
-      if (!(event.key == "Enter" && !event.ctrlKey && !event.metaKey)) return
-
-      const idx = this.sheet.exprs.indexOf(this)
-      if (idx == -1) return
-
-      event.preventDefault()
-      const expr = new Expr(this.sheet)
-      this.sheet.exprs.pop()
-      this.sheet.exprs.splice(idx + 1, 0, expr)
-      const exprIdx = idx + 1
-      this.sheet.queueIndices()
-      const before =
-        this.sheet.exprs[exprIdx + 1]?.el ?? this.sheet.elExpressions
-      this.sheet.elExpressions.insertBefore(
-        expr.el,
-        this.sheet.exprs[exprIdx + 1]?.el ?? null,
-      )
-      setTimeout(() => before.scrollIntoView({ behavior: "instant" }))
-      setTimeout(() => expr.field.el.focus())
+      if (event.key == "Enter" && !event.ctrlKey && !event.metaKey) {
+        this.sheet.list.create(FACTORY_EXPR, {
+          at: this.ref.index() + 1,
+          focus: true,
+        })
+      }
     })
   }
 
@@ -288,10 +281,10 @@ export class Expr {
   }
 
   delete() {
-    const idx = this.sheet.exprs.indexOf(this)
-    if (idx == -1) return
+    this.ref.delete()
+  }
 
-    this.sheet.exprs.splice(idx, 1)
+  unlink() {
     if (this.state.ok) {
       try {
         this.state.ext?.destroy?.(this.state.data)
@@ -301,10 +294,6 @@ export class Expr {
     }
 
     this.field.unlink()
-    this.sheet.queueGlsl()
-    this.sheet.queueIndices()
-    this.sheet.paper.queue()
-    this.el.remove()
   }
 
   focus() {

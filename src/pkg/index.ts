@@ -66,13 +66,14 @@ export interface Package {
   }
 
   sheet?: {
+    defaultItem?: AnyItemFactory
     items?: AnyItemFactory[]
     exts?: Record<number, AnyExt[]>
     toolbar?: Record<number, ToolbarItem[]>
     keys?: List<(sheet: Sheet) => void>
   }
 
-  docs?: List<() => HTMLElement[]>
+  docs?: Record<string, () => HTMLElement[]>
 }
 
 export interface ToolbarItem {

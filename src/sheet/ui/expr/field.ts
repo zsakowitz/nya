@@ -1,5 +1,5 @@
 import { Expr } from "."
-import { D, L, R, type Dir, type VDir } from "../../../field/model"
+import { D, L, U, type Dir, type VDir } from "../../../field/model"
 import { FieldComputed } from "../../deps"
 
 export class Field extends FieldComputed {
@@ -16,15 +16,12 @@ export class Field extends FieldComputed {
   }
 
   onVertOut(towards: VDir): void {
-    const idx = this.expr.sheet.exprs.indexOf(this.expr)
-    if (idx == -1) return
+    const ref = this.expr.ref.offset(towards / 2)
 
-    const next = this.expr.sheet.exprs[idx + towards / 2]
-
-    if (next) {
-      next.field.el.focus()
+    if (ref) {
+      ref.focus()
     } else if (towards == D) {
-      const expr = new Expr(this.expr.sheet)
+      const expr = Expr.of(this.expr.sheet)
       setTimeout(() => expr.field.el.focus())
     }
   }
@@ -34,13 +31,11 @@ export class Field extends FieldComputed {
       return
     }
 
-    const idx = this.expr.sheet.exprs.indexOf(this.expr)
+    const idx = this.expr.ref.index()
     if (idx == -1) return
 
     if (this.expr.removable) {
-      this.expr.sheet.exprs.splice(idx, 1)
-      this.expr.el.remove()
-      this.expr.sheet.queueIndices()
+      this.expr.ref.delete()
     }
 
     const nextIndex =
@@ -51,15 +46,12 @@ export class Field extends FieldComputed {
       : towards == L ? Math.max(0, idx - 1)
       : idx
 
-    const next = this.expr.sheet.exprs[nextIndex]
+    const next = this.expr.ref.list.items[nextIndex]
 
     if (next) {
-      next.field.onBeforeChange()
-      next.field.sel = next.field.block.cursor(towards == L ? R : L).selection()
-      next.field.onAfterChange(false)
-      next.field.el.focus()
+      next.focus(towards == L ? D : U)
     } else {
-      const expr = new Expr(this.expr.sheet)
+      const expr = Expr.of(this.expr.sheet)
       setTimeout(() => expr.field.el.focus())
     }
   }
@@ -71,20 +63,6 @@ export class Field extends FieldComputed {
     this.typeLatex(self!)
 
     if (!rest.length) return
-    const { exprs } = this.expr.sheet
-    let el = this.expr.el
-
-    let idx = exprs.indexOf(this.expr) + 1
-    if (!idx) idx = exprs.length
-    for (const latex of rest) {
-      const expr = new Expr(this.expr.sheet)
-      exprs.pop()
-      exprs.splice(idx, 0, expr)
-      expr.field.typeLatex(latex)
-      el.insertAdjacentElement("afterend", expr.el)
-      el = expr.el
-      idx++
-    }
-    this.expr.sheet.queueIndices()
+    this.expr.ref.pasteBelow(rest)
   }
 }

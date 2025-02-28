@@ -99,7 +99,7 @@ export const PICK_TY: Picker<Data, Selected> = definePicker<Data, Selected>({
       const valueRef =
         args.slice(0, -1).includes(found.val) ? refs.pop()! : found.ref()
 
-      const expr = new Expr(sheet)
+      const expr = Expr.of(sheet)
       const name = sheet.scope.name(data.src.output.tag)
       const cursor = expr.field.block.cursor(R)
       CmdVar.leftOf(cursor, name, expr.field.options)
