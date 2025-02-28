@@ -45,6 +45,7 @@ import { FN_LENGTH } from "./fn/length"
 import { FN_LINE } from "./fn/line"
 import { FN_MIDPOINT } from "./fn/midpoint"
 import { FN_PARALLEL, parallelJs } from "./fn/parallel"
+import { FN_PERIMETER } from "./fn/perimeter"
 import { FN_PERPENDICULAR, perpendicularJs } from "./fn/perpendicular"
 import { FN_PERPENDICULARBISECTOR } from "./fn/perpendicularbisector"
 import { FN_POLYGON } from "./fn/polygon"
@@ -809,6 +810,7 @@ export const PKG_GEOMETRY: Package = {
       rotate: FN_ROTATE,
       dilate: FN_DILATE,
       reflect: FN_REFLECT,
+      perimeter: FN_PERIMETER,
     },
   },
   sheet: {

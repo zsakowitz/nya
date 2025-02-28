@@ -11,6 +11,7 @@ import { makeDoc } from "../sheet/ui/sheet/docs"
 interface Data {
   fn: string
   el: HTMLElement
+  select: HTMLSelectElement
 }
 
 function init(ref: ItemRef<Data>, source?: string) {
@@ -25,14 +26,23 @@ function init(ref: ItemRef<Data>, source?: string) {
   const field = hx(
     "select",
     "relative -mx-4 px-3 py-2 -mb-2 bg-transparent text-[1.265rem] focus:outline-none font-['Times_New_Roman']",
+    hx(
+      "option",
+      { value: "-1", disabled: "disabled", selected: "selected" },
+      "‹function›",
+    ),
   )
   for (let i = 0; i < fns.length; i++) {
-    field.appendChild(
-      hx("option", { class: "text-base", value: "" + i }, fns[i]!.name),
-    )
+    field.appendChild(hx("option", { value: "" + i }, fns[i]!.name))
   }
   const idx = source ? fns.findIndex((x) => x.name == source) : -1
-  const body = h("contents")
+  const body = h(
+    "contents",
+    h(
+      "text-[--nya-title] text-sm -mb-1",
+      "Choose a function to show information about.",
+    ),
+  )
 
   field.addEventListener("input", () => {
     const fn = fns[+field.value]
@@ -50,6 +60,7 @@ function init(ref: ItemRef<Data>, source?: string) {
 
   const data: Data = {
     fn: "",
+    select: field,
     el: h(
       "grid grid-cols-[2.5rem_auto] border-r border-b border-[--nya-border] relative nya-expr",
       // grey side of expression
@@ -105,11 +116,9 @@ const FACTORY: ItemFactory<Data> = {
     console.log({ source })
     return init(ref, source)
   },
-  unlink() {
-    // TODO:
-  },
-  focus() {
-    // TODO:
+  unlink() {},
+  focus(data) {
+    data.select.focus()
   },
 }
 

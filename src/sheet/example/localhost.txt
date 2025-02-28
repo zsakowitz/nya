@@ -1,3 +1,4 @@
+#nya:docs-fn#
 p_{1}=\left(-3.2,-0.83\right)
 p_{2}=\left(2.42,4.24\right)
 c_{1}=\operatorname{circle}\left(p_{1},p_{2}\right)

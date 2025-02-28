@@ -1,5 +1,4 @@
 - area
-- perimeter
 - coterminal
 - supplement
 - transform, dilation, rotation, reflection, translation, etc.
