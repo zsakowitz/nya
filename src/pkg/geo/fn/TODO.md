@@ -2,7 +2,4 @@
 - perimeter
 - coterminal
 - supplement
-- dilate
-- rotate
-- reflect
 - transform, dilation, rotation, reflection, translation, etc.

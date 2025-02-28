@@ -2,7 +2,7 @@ import { faImage } from "@fortawesome/free-regular-svg-icons"
 import type { Package } from "."
 import { FnDist } from "../eval/ops/dist"
 import { each, type JsValue } from "../eval/ty"
-import { num, SNANPT, unpt } from "../eval/ty/create"
+import { num, real, SNANPT, unpt } from "../eval/ty/create"
 import { TY_INFO } from "../eval/ty/info"
 import { CmdComma } from "../field/cmd/leaf/comma"
 import { CmdWord } from "../field/cmd/leaf/word"
@@ -12,9 +12,12 @@ import { Block, L, R } from "../field/model"
 import { h, px, sx } from "../jsx"
 import { defineExt } from "../sheet/ext"
 import { example } from "../sheet/ui/sheet/docs"
+import { dilateJs, mark as markDilate } from "./geo/fn/dilate"
+import { mark as markReflect, reflectJs } from "./geo/fn/reflect"
 import { mark as markRotate, rotateJs } from "./geo/fn/rotate"
 import { mark as markTranslate, translate } from "./geo/fn/translate"
 import { glsl } from "./image"
+import { neg } from "../eval/ty/ops"
 
 declare module "../eval/ty" {
   interface Tys {
@@ -204,6 +207,31 @@ markRotate(
     aspect: a.value.aspect,
     p1: rotateJs(b, a.value.p1),
     p2: rotateJs(b, a.value.p2),
+  }),
+  glsl,
+)
+
+markDilate(
+  "image2d",
+  (a, b) => ({
+    data: a.value.data,
+    aspect: a.value.aspect,
+    p1: dilateJs(b, a.value.p1),
+    p2: dilateJs(b, a.value.p2),
+  }),
+  glsl,
+)
+
+markReflect(
+  "image2d",
+  (a, b) => ({
+    data: a.value.data,
+    aspect:
+      a.value.aspect ?
+        neg(a.value.aspect)
+      : real(-a.value.data.width / a.value.data.height),
+    p1: reflectJs(b, a.value.p1),
+    p2: reflectJs(b, a.value.p2),
   }),
   glsl,
 )

@@ -36,6 +36,7 @@ import { FN_ANGLES, FN_DIRECTEDANGLES } from "./fn/angles"
 import { FN_ARC } from "./fn/arc"
 import { FN_CENTER } from "./fn/center"
 import { FN_CIRCLE } from "./fn/circle"
+import { FN_DILATE } from "./fn/dilate"
 import { FN_DISTANCE } from "./fn/distance"
 import { FN_END } from "./fn/end"
 import "./fn/glider"
@@ -49,6 +50,7 @@ import { FN_PERPENDICULARBISECTOR } from "./fn/perpendicularbisector"
 import { FN_POLYGON } from "./fn/polygon"
 import { FN_RADIUS } from "./fn/radius"
 import { FN_RAY } from "./fn/ray"
+import { FN_REFLECT } from "./fn/reflect"
 import { FN_ROTATE } from "./fn/rotate"
 import { FN_SEGMENT } from "./fn/segment"
 import { FN_SEGMENTS } from "./fn/segments"
@@ -805,6 +807,8 @@ export const PKG_GEOMETRY: Package = {
       length: FN_LENGTH,
       translate: FN_TRANSLATE,
       rotate: FN_ROTATE,
+      dilate: FN_DILATE,
+      reflect: FN_REFLECT,
     },
   },
   sheet: {
