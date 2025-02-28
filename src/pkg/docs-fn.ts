@@ -64,7 +64,7 @@ function init(ref: ItemRef<Data>, source?: string) {
       ),
 
       // main body
-      hx("label", "relative flex flex-col px-4 pb-3", field, body),
+      hx("label", "relative flex flex-col px-4 pb-3 font-sans", field, body),
 
       // focus ring
       h(
