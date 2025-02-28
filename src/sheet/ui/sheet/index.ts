@@ -181,6 +181,12 @@ export class Sheet {
           "grid grid-cols-[repeat(auto-fill,2.5rem)] p-1 border-b border-[--nya-border]",
           ...factory
             .itemFactories()
+            .sort((a, b) =>
+              a.id == this.factory.defaultItem.id ? -1
+              : a.name < b.name ? -1
+              : a.name > b.name ? 1
+              : 0,
+            )
             .map((item) =>
               btn(item.icon, item.name, () =>
                 this.list.create(item, { focus: true }),
