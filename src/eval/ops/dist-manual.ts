@@ -26,6 +26,7 @@ interface FnOverloadFixed<Q extends TyName = TyName> {
   type: Q
   js(...args: JsVal[]): Val<Q>
   glsl(ctx: GlslContext, ...args: GlslVal[]): string
+  docOrder: number | null
 }
 
 /** A {@linkcode FnOverload} with a variable-length argument count. */
@@ -35,6 +36,7 @@ export interface FnOverloadVar<Q extends TyName = TyName> {
   type: Q
   js(args: Tys[TyName][]): Val<Q>
   glsl(ctx: GlslContext, ...args: GlslVal[]): string
+  docOrder: number | null
 }
 
 /**

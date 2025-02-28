@@ -53,8 +53,9 @@ export class FnDist<Q extends TyName = TyName> extends FnDistManual<Q> {
       ctx: GlslContext,
       ...args: { -readonly [K in keyof T]: GlslVal<T[K]> }
     ) => string,
+    docOrder: number | null = null,
   ) {
-    this.o.push({ params, type: ret, js, glsl })
+    this.o.push({ params, type: ret, js, glsl, docOrder })
     return this
   }
 
@@ -64,8 +65,9 @@ export class FnDist<Q extends TyName = TyName> extends FnDistManual<Q> {
     ret: R,
     js: (value: Tys[T][]) => Tys[R],
     glsl: (ctx: GlslContext, ...args: GlslVal<T>[]) => string,
+    docOrder: number | null = null,
   ) {
-    this.o.push({ param, type: ret, js, glsl })
+    this.o.push({ param, type: ret, js, glsl, docOrder })
     return this
   }
 
@@ -150,11 +152,14 @@ export class FnDist<Q extends TyName = TyName> extends FnDistManual<Q> {
   }
 
   docs(): HTMLSpanElement[] {
-    return this.o.map((overload) =>
-      overload.param == null ?
-        doc(overload.params, overload.type)
-      : docList(overload.param, overload.type),
-    )
+    return this.o
+      .slice()
+      .sort((a, b) => (a.docOrder ?? 0) - (b.docOrder ?? 0))
+      .map((overload) =>
+        overload.param == null ?
+          doc(overload.params, overload.type)
+        : docList(overload.param, overload.type),
+      )
   }
 }
 

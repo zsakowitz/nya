@@ -237,6 +237,7 @@ const FN_CONCAT = new (class extends FnDistManual<"text"> {
       glsl() {
         throw new Error("Text cannot be created in shaders.")
       },
+      docOrder: null,
     }
   }
 

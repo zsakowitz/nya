@@ -114,13 +114,12 @@ export function mark<const T extends TyName>(
     (ctx, a, b) => glsl(ctx, a, ctx.cache(b)),
   )
 
-  queueMicrotask(() =>
-    FN_TRANSLATE.add(
-      [param, "point32", "point32"],
-      param,
-      (a, b, c) => js(a, [b.value, c.value]),
-      (ctx, a, b, c) =>
-        glsl(ctx, a, ctx.cached("vector", `vec4(${b.expr}, ${c.expr})`)),
-    ),
+  FN_TRANSLATE.add(
+    [param, "point32", "point32"],
+    param,
+    (a, b, c) => js(a, [b.value, c.value]),
+    (ctx, a, b, c) =>
+      glsl(ctx, a, ctx.cached("vector", `vec4(${b.expr}, ${c.expr})`)),
+    1,
   )
 }

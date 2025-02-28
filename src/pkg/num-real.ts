@@ -178,6 +178,7 @@ const FN_COMPONENT = new (class extends FnDistCaching {
 
         return comps.at[staticIndex]![1](a.expr)
       },
+      docOrder: Object.keys(TY_INFO).indexOf(ty),
     }
   }
 
@@ -267,6 +268,40 @@ function mulR64(ctx: GlslContext, a: string, b: string) {
   declareMulR64(ctx)
   return `_helper_mul_r64(${a}, ${b})`
 }
+
+const FN_COUNT = new (class extends FnList<"r64"> {
+  constructor() {
+    super("count", "counts the size of a list")
+  }
+
+  signature(args: Ty[]): FnOverload<"r64"> {
+    return {
+      params: args.map((x) => x.type),
+      type: "r64",
+      js() {
+        return real(args.length)
+      },
+      glsl() {
+        return `vec2(${args.length.toExponential()}, 0)`
+      },
+      docOrder: null,
+    }
+  }
+
+  trySignatureList(arg: Type<TyName, number>): FnOverloadVar<"r64"> {
+    return {
+      param: arg.type,
+      type: "r64",
+      js() {
+        return real(arg.list)
+      },
+      glsl() {
+        return `vec2(${arg.list.toExponential()}, 0)`
+      },
+      docOrder: null,
+    }
+  }
+})()
 
 export const PKG_REAL: Package = {
   id: "nya:num-real",
@@ -534,37 +569,7 @@ float _helper_cmp_r32(float a, float b) {
       valid: FN_VALID,
       cmp: FN_CMP,
       component: FN_COMPONENT,
-      count: new (class extends FnList<"r64"> {
-        constructor() {
-          super("count", "counts the size of a list")
-        }
-
-        signature(args: Ty[]): FnOverload<"r64"> {
-          return {
-            params: args.map((x) => x.type),
-            type: "r64",
-            js() {
-              return real(args.length)
-            },
-            glsl() {
-              return `vec2(${args.length.toExponential()}, 0)`
-            },
-          }
-        }
-
-        trySignatureList(arg: Type<TyName, number>): FnOverloadVar<"r64"> {
-          return {
-            param: arg.type,
-            type: "r64",
-            js() {
-              return real(arg.list)
-            },
-            glsl() {
-              return `vec2(${arg.list.toExponential()}, 0)`
-            },
-          }
-        }
-      })(),
+      count: FN_COUNT,
     },
     var: {
       π: splitDual(
