@@ -36,3 +36,10 @@ function expr(source: string) {
 const src = SHORT_EXPRS && IS_DEV ? SRC_LOCALHOST : SRC_STANDARD
 
 src.split("\n").forEach((x) => x && expr(x))
+
+if (IS_DEV) {
+  const img = factory.items["nya:image"]
+  if (img) {
+    sheet.list.create(img)
+  }
+}
