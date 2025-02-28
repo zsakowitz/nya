@@ -248,33 +248,6 @@ const FACTORY: ItemFactory<Data> = {
   },
 }
 
-// function genIcon(): string {
-//   const SIZE = 6
-//
-//   const grid = Array.from({ length: SIZE }, (_, i) =>
-//     Array.from({ length: SIZE }, (_, j) =>
-//       Math.random() < 0.5 ? `M ${i} ${j} h 1 v 1 h -1 z` : "",
-//     ),
-//   )
-//
-//   for (let i = 0; i < SIZE; i++) {
-//     for (let j = 0; j < SIZE; j++) {
-//       if (
-//         grid[i]?.[j] &&
-//         +!!grid[i]?.[j - 1] +
-//           +!!grid[i]?.[j + 1] +
-//           +!!grid[i - 1]?.[j] +
-//           +!!grid[i + 1]?.[j] >=
-//           3
-//       ) {
-//         return genIcon()
-//       }
-//     }
-//   }
-//
-//   return grid.flat().join(" ")
-// }
-
 export const PKG_IMAGE: Package = {
   id: "nya:image",
   name: "images",
