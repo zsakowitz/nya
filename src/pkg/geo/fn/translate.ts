@@ -1,5 +1,6 @@
+import type { GlslContext } from "../../../eval/lib/fn"
 import { FnDist } from "../../../eval/ops/dist"
-import type { SPoint } from "../../../eval/ty"
+import type { GlslVal, JsVal, SPoint, TyName, Val } from "../../../eval/ty"
 import { pt } from "../../../eval/ty/create"
 import { add, sub } from "../../../eval/ty/ops"
 
@@ -14,221 +15,112 @@ export const FN_TRANSLATE = new FnDist(
   "translate",
   "translates an object by a vector",
 )
-  .add(
-    ["point32", "vector"],
-    "point32",
-    (a, b) => translate(b.value, a.value),
-    (ctx, a, br) => {
-      const b = ctx.cache(br)
-      return `(${a.expr} + (${b}.zw - ${b}.xy))`
-    },
-  )
-  .add(
-    ["segment", "vector"],
-    "segment",
-    (a, b) => [translate(b.value, a.value[0]), translate(b.value, a.value[1])],
-    (ctx, a, br) => {
-      const b = ctx.cache(br)
-      return `(${a.expr} + (${b}.zw - ${b}.xy).xyxy)`
-    },
-  )
-  .add(
-    ["ray", "vector"],
-    "ray",
-    (a, b) => [translate(b.value, a.value[0]), translate(b.value, a.value[1])],
-    (ctx, a, br) => {
-      const b = ctx.cache(br)
-      return `(${a.expr} + (${b}.zw - ${b}.xy).xyxy)`
-    },
-  )
-  .add(
-    ["line", "vector"],
-    "line",
-    (a, b) => [translate(b.value, a.value[0]), translate(b.value, a.value[1])],
-    (ctx, a, br) => {
-      const b = ctx.cache(br)
-      return `(${a.expr} + (${b}.zw - ${b}.xy).xyxy)`
-    },
-  )
-  .add(
-    ["vector", "vector"],
-    "vector",
-    (a, b) => [translate(b.value, a.value[0]), translate(b.value, a.value[1])],
-    (ctx, a, br) => {
-      const b = ctx.cache(br)
-      return `(${a.expr} + (${b}.zw - ${b}.xy).xyxy)`
-    },
-  )
-  .add(
-    ["angle", "vector"],
-    "angle",
-    (a, b) => [
-      translate(b.value, a.value[0]),
-      translate(b.value, a.value[1]),
-      translate(b.value, a.value[2]),
-    ],
-    (ctx, a, br) => {
-      const b = ctx.cache(br)
-      const d = ctx.cached("point32", `(${b}.zw - ${b}.xy)`)
-      return `(${a.expr} + mat3x2(${d}, ${d}, ${d}))`
-    },
-  )
-  .add(
-    ["directedangle", "vector"],
-    "directedangle",
-    (a, b) => [
-      translate(b.value, a.value[0]),
-      translate(b.value, a.value[1]),
-      translate(b.value, a.value[2]),
-    ],
-    (ctx, a, br) => {
-      const b = ctx.cache(br)
-      const d = ctx.cached("point32", `(${b}.zw - ${b}.xy)`)
-      return `(${a.expr} + mat3x2(${d}, ${d}, ${d}))`
-    },
-  )
-  .add(
-    ["arc", "vector"],
-    "arc",
-    (a, b) => [
-      translate(b.value, a.value[0]),
-      translate(b.value, a.value[1]),
-      translate(b.value, a.value[2]),
-    ],
-    (ctx, a, br) => {
-      const b = ctx.cache(br)
-      const d = ctx.cached("point32", `(${b}.zw - ${b}.xy)`)
-      return `(${a.expr} + mat3x2(${d}, ${d}, ${d}))`
-    },
-  )
-  .add(
-    ["circle", "vector"],
-    "circle",
-    (a, b) => ({
-      center: translate(b.value, a.value.center),
-      radius: a.value.radius,
-    }),
-    (ctx, a, br) => {
-      const b = ctx.cache(br)
-      return `(${a.expr} + vec3(${b}.zw - ${b}.xy, 0))`
-    },
-  )
-  .add(
-    ["polygon", "vector"],
-    "polygon",
-    (a, b) => a.value.map((x) => translate(b.value, x)),
-    () => {
-      throw new Error("Cannot construct polygons in shaders yet.")
-    },
+
+mark(
+  "point32",
+  (a, b) => translate(b, a.value),
+  (_, a, b) => `(${a.expr} + (${b}.zw - ${b}.xy))`,
+)
+
+mark(
+  "segment",
+  (a, b) => [translate(b, a.value[0]), translate(b, a.value[1])],
+  (_, a, b) => `(${a.expr} + (${b}.zw - ${b}.xy).xyxy)`,
+)
+
+mark(
+  "ray",
+  (a, b) => [translate(b, a.value[0]), translate(b, a.value[1])],
+  (_, a, b) => `(${a.expr} + (${b}.zw - ${b}.xy).xyxy)`,
+)
+
+mark(
+  "line",
+  (a, b) => [translate(b, a.value[0]), translate(b, a.value[1])],
+  (_, a, b) => `(${a.expr} + (${b}.zw - ${b}.xy).xyxy)`,
+)
+
+mark(
+  "vector",
+  (a, b) => [translate(b, a.value[0]), translate(b, a.value[1])],
+  (_, a, b) => `(${a.expr} + (${b}.zw - ${b}.xy).xyxy)`,
+)
+
+mark(
+  "circle",
+  (a, b) => ({
+    center: translate(b, a.value.center),
+    radius: a.value.radius,
+  }),
+  (_, a, b) => `(${a.expr} + vec3(${b}.zw - ${b}.xy, 0))`,
+)
+
+mark(
+  "arc",
+  (a, b) => [
+    translate(b, a.value[0]),
+    translate(b, a.value[1]),
+    translate(b, a.value[2]),
+  ],
+  (ctx, a, b) => {
+    const d = ctx.cached("point32", `(${b}.zw - ${b}.xy)`)
+    return `(${a.expr} + mat3x2(${d}, ${d}, ${d}))`
+  },
+)
+
+mark(
+  "polygon",
+  (a, b) => a.value.map((x) => translate(b, x)),
+  () => {
+    throw new Error("Cannot construct polygons in shaders yet.")
+  },
+)
+
+mark(
+  "angle",
+  (a, b) => [
+    translate(b, a.value[0]),
+    translate(b, a.value[1]),
+    translate(b, a.value[2]),
+  ],
+  (ctx, a, b) => {
+    const d = ctx.cached("point32", `(${b}.zw - ${b}.xy)`)
+    return `(${a.expr} + mat3x2(${d}, ${d}, ${d}))`
+  },
+)
+
+mark(
+  "directedangle",
+  (a, b) => [
+    translate(b, a.value[0]),
+    translate(b, a.value[1]),
+    translate(b, a.value[2]),
+  ],
+  (ctx, a, b) => {
+    const d = ctx.cached("point32", `(${b}.zw - ${b}.xy)`)
+    return `(${a.expr} + mat3x2(${d}, ${d}, ${d}))`
+  },
+)
+
+export function mark<const T extends TyName>(
+  param: T,
+  js: (arg: JsVal<T>, vector: [SPoint, SPoint]) => Val<T>,
+  glsl: (ctx: GlslContext, arg: GlslVal<T>, vector: string) => string,
+) {
+  FN_TRANSLATE.add(
+    [param, "vector"],
+    param,
+    (a, b) => js(a, b.value),
+    (ctx, a, b) => glsl(ctx, a, ctx.cache(b)),
   )
 
-  .add(
-    ["point32", "point32", "point32"],
-    "point32",
-    (a, b, c) => translate([b.value, c.value], a.value),
-    (_, a, b, c) => {
-      return `(${a.expr} + (${c.expr} - ${b.expr}))`
-    },
+  queueMicrotask(() =>
+    FN_TRANSLATE.add(
+      [param, "point32", "point32"],
+      param,
+      (a, b, c) => js(a, [b.value, c.value]),
+      (ctx, a, b, c) =>
+        glsl(ctx, a, ctx.cached("vector", `vec4(${b.expr}, ${c.expr})`)),
+    ),
   )
-  .add(
-    ["segment", "point32", "point32"],
-    "segment",
-    (a, b, c) => [
-      translate([b.value, c.value], a.value[0]),
-      translate([b.value, c.value], a.value[1]),
-    ],
-    (_, a, b, c) => {
-      return `(${a.expr} + (${c.expr} - ${b.expr}).xyxy)`
-    },
-  )
-  .add(
-    ["ray", "point32", "point32"],
-    "ray",
-    (a, b, c) => [
-      translate([b.value, c.value], a.value[0]),
-      translate([b.value, c.value], a.value[1]),
-    ],
-    (_, a, b, c) => {
-      return `(${a.expr} + (${c.expr} - ${b.expr}).xyxy)`
-    },
-  )
-  .add(
-    ["line", "point32", "point32"],
-    "line",
-    (a, b, c) => [
-      translate([b.value, c.value], a.value[0]),
-      translate([b.value, c.value], a.value[1]),
-    ],
-    (_, a, b, c) => {
-      return `(${a.expr} + (${c.expr} - ${b.expr}).xyxy)`
-    },
-  )
-  .add(
-    ["vector", "point32", "point32"],
-    "vector",
-    (a, b, c) => [
-      translate([b.value, c.value], a.value[0]),
-      translate([b.value, c.value], a.value[1]),
-    ],
-    (_, a, b, c) => {
-      return `(${a.expr} + (${c.expr} - ${b.expr}).xyxy)`
-    },
-  )
-  .add(
-    ["angle", "point32", "point32"],
-    "angle",
-    (a, b, c) => [
-      translate([b.value, c.value], a.value[0]),
-      translate([b.value, c.value], a.value[1]),
-      translate([b.value, c.value], a.value[2]),
-    ],
-    (ctx, a, b, c) => {
-      const d = ctx.cached("point32", `(${c.expr} - ${b.expr})`)
-      return `(${a.expr} + mat3x2(${d}, ${d}, ${d}))`
-    },
-  )
-  .add(
-    ["directedangle", "point32", "point32"],
-    "directedangle",
-    (a, b, c) => [
-      translate([b.value, c.value], a.value[0]),
-      translate([b.value, c.value], a.value[1]),
-      translate([b.value, c.value], a.value[2]),
-    ],
-    (ctx, a, b, c) => {
-      const d = ctx.cached("point32", `(${c.expr} - ${b.expr})`)
-      return `(${a.expr} + mat3x2(${d}, ${d}, ${d}))`
-    },
-  )
-  .add(
-    ["arc", "point32", "point32"],
-    "arc",
-    (a, b, c) => [
-      translate([b.value, c.value], a.value[0]),
-      translate([b.value, c.value], a.value[1]),
-      translate([b.value, c.value], a.value[2]),
-    ],
-    (ctx, a, b, c) => {
-      const d = ctx.cached("point32", `(${c.expr} - ${b.expr})`)
-      return `(${a.expr} + mat3x2(${d}, ${d}, ${d}))`
-    },
-  )
-  .add(
-    ["circle", "point32", "point32"],
-    "circle",
-    (a, b, c) => ({
-      center: translate([b.value, c.value], a.value.center),
-      radius: a.value.radius,
-    }),
-    (_, a, b, c) => {
-      return `(${a.expr} + vec3(${c.expr}.zw - ${b.expr}.xy, 0))`
-    },
-  )
-  .add(
-    ["polygon", "point32", "point32"],
-    "polygon",
-    (a, b, c) => a.value.map((x) => translate([b.value, c.value], x)),
-    () => {
-      throw new Error("Cannot construct polygons in shaders yet.")
-    },
-  )
+}
