@@ -43,21 +43,21 @@ export class ItemList {
     }
   }
 
-  create<T>(factory: ItemFactory<T>, props?: ItemCreateProps) {
+  /** `ref` should already have `data` stored. */
+  private createOf<T>(ref: ItemRef<T>, props?: ItemCreateProps) {
+    const data = ref.data
+    const el = ref.factory.el(data)
+    ;(ref as ItemRefMut).el = el
+
     const at = props?.at
-    const index = t("??")
-    const ref = new ItemRef<T>(this, factory, null!, null!, index)
-    const data = factory.init(ref)
-    const el = factory.el(data)
     const before = (at && this.items[at]?.el) || null
     this.el.insertBefore(el, before)
-    ;(ref as ItemRefMut).data = data
-    ;(ref as ItemRefMut).el = el
     if (at != null && 0 <= at && at <= this.items.length) {
       this.items.splice(at, 0, ref)
     } else {
       this.items.push(ref)
     }
+
     this.queueIndices()
     if (props?.focus) {
       // if (before) {
@@ -65,11 +65,66 @@ export class ItemList {
       // }
       setTimeout(() => ref.focus())
     }
+  }
+
+  create<T>(factory: ItemFactory<T>, props?: ItemCreateProps) {
+    const ref = new ItemRef<T>(this, factory, null!, null!, t("??"))
+    ;(ref as ItemRefMut).data = factory.init(ref)
+    this.createOf(ref, props)
     return ref
   }
 
   createDefault(props?: ItemCreateProps) {
     return this.create(this.sheet.factory.defaultItem, props)
+  }
+
+  private fromStringByFactory<T>(
+    factory: ItemFactory<T>,
+    source: string,
+    props?: ItemCreateProps,
+  ) {
+    const elIndex = t("??")
+    const ref = new ItemRef(this, factory, null!, null!, elIndex)
+    const data = factory.decode(ref, source)
+    ;(ref as ItemRefMut).data = data
+    this.createOf(ref, props)
+    return ref
+  }
+
+  private fromStringDefault(source: string, props?: ItemCreateProps) {
+    return this.fromStringByFactory(
+      this.sheet.factory.defaultItem,
+      source,
+      props,
+    )
+  }
+
+  private fromStringById(id: string, source: string, props?: ItemCreateProps) {
+    const factory =
+      this.sheet.factory.defaultItem.id == id ?
+        this.sheet.factory.defaultItem
+      : this.sheet.factory.items[id]
+    if (!factory) {
+      throw new Error(`Item type '${id}' is not defined.`)
+    }
+    return this.fromStringByFactory(factory, source, props)
+  }
+
+  fromString(source: string, props?: ItemCreateProps): ItemRef<unknown> {
+    if (source[0] == "#") {
+      const next = source.indexOf("#", 1)
+      if (next == -1) {
+        return this.fromStringDefault(source)
+      } else {
+        return this.fromStringById(
+          source.slice(1, next),
+          source.slice(next),
+          props,
+        )
+      }
+    } else {
+      return this.fromStringDefault(source)
+    }
   }
 }
 
@@ -111,26 +166,19 @@ export class ItemRef<T> {
     this.factory.focus(this.data, from)
   }
 
-  pasteBelow(_rows: string[]) {
-    // FIXME:
-    // const { exprs } = this.expr.sheet
-    // let el = this.expr.el
-    //
-    // let idx = exprs.indexOf(this.expr) + 1
-    // if (!idx) idx = exprs.length
-    // for (const latex of rest) {
-    //   const expr = Expr.of(this.expr.sheet)
-    //   exprs.pop()
-    //   exprs.splice(idx, 0, expr)
-    //   expr.field.typeLatex(latex)
-    //   el.insertAdjacentElement("afterend", expr.el)
-    //   el = expr.el
-    //   idx++
-    // }
-    // this.expr.sheet.queueIndices()
+  pasteBelow(rest: string[]) {
+    let idx = this.index() + 1 || this.list.items.length
+
+    for (const source of rest) {
+      try {
+        this.list.fromString(source, { at: idx })
+      } catch (e) {
+        console.warn("[pasteBelow]", e)
+      }
+    }
   }
 }
 
 type ItemRefMut = {
-  -readonly [K in keyof ItemRef<any>]: ItemRef<any>[K]
+  -readonly [K in keyof ItemRef<unknown>]: ItemRef<unknown>[K]
 }

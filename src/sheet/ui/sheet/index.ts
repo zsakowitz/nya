@@ -19,7 +19,6 @@ import { doMatchReglSize } from "../../regl"
 import { REMARK } from "../../remark"
 import { Slider } from "../../slider"
 import { isDark } from "../../theme"
-import { Expr } from "../expr"
 import { Paper, type Point } from "../paper"
 import { HANDLER_PICK, type PickProps } from "../paper/interact"
 import {
@@ -162,9 +161,7 @@ export class Sheet {
     )
 
     nextExpression.addEventListener("click", () => {
-      const expr = Expr.of(this)
-      setTimeout(() => nextExpression.scrollIntoView())
-      setTimeout(() => expr.field.el.focus())
+      this.list.createDefault({ focus: true })
     })
 
     const sidebar = h(

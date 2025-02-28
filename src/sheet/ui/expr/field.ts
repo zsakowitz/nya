@@ -21,8 +21,7 @@ export class Field extends FieldComputed {
     if (ref) {
       ref.focus()
     } else if (towards == D) {
-      const expr = Expr.of(this.expr.sheet)
-      setTimeout(() => expr.field.el.focus())
+      this.expr.ref.list.createDefault({ focus: true })
     }
   }
 
@@ -50,9 +49,15 @@ export class Field extends FieldComputed {
 
     if (next) {
       next.focus(towards == L ? D : U)
+    } else if (towards == L) {
+      this.expr.ref.list.createDefault({ focus: true })
     } else {
-      const expr = Expr.of(this.expr.sheet)
-      setTimeout(() => expr.field.el.focus())
+      const prev = this.expr.ref.list.items[idx - 1]
+      if (prev) {
+        prev.focus(D)
+      } else {
+        this.expr.ref.list.createDefault({ focus: true })
+      }
     }
   }
 

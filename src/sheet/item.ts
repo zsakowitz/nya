@@ -30,7 +30,7 @@ export interface ItemFactory<T> {
   layer?: number
 }
 
-export type AnyItemFactory = ItemFactory<any>
+export type AnyItemFactory = ItemFactory<unknown>
 
 export const FACTORY_EXPR: ItemFactory<Expr> = {
   id: "nya:expr",
@@ -70,6 +70,7 @@ export const FACTORY_EXPR: ItemFactory<Expr> = {
   },
   decode(ref, source) {
     const expr = new Expr(ref.list.sheet, ref)
+    expr.field.onBeforeChange()
     const block = new LatexParser(
       ref.list.sheet.options,
       source,
@@ -77,6 +78,7 @@ export const FACTORY_EXPR: ItemFactory<Expr> = {
     ).parse()
     expr.field.block.insert(block, null, null)
     expr.field.sel = expr.field.block.cursor(R).selection()
+    expr.field.onAfterChange(false)
     return expr
   },
 
