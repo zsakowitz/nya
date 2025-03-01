@@ -2,6 +2,7 @@ import type { JsVal, SPoint, TyName } from "../eval/ty"
 import { unpt } from "../eval/ty/create"
 import { OpEq } from "../field/cmd/leaf/cmp"
 import { CmdComma } from "../field/cmd/leaf/comma"
+import { CmdToken } from "../field/cmd/leaf/token"
 import { CmdVar } from "../field/cmd/leaf/var"
 import { CmdBrack } from "../field/cmd/math/brack"
 import { Block, L, R } from "../field/model"
@@ -13,7 +14,7 @@ import type { Selected, Sheet } from "./ui/sheet"
 
 interface Source {
   id: number
-  output: { tag: string; fn: string } | null
+  fn: string | null
   allowExistingPoint?(args: JsVal[]): boolean
   next(args: JsVal[]): readonly TyName[] | null
   draw(sheet: Sheet, args: JsVal[]): void
@@ -91,7 +92,7 @@ export const PICK_TY: Picker<Data, Selected> = definePicker<Data, Selected>({
       }
     }
 
-    if (data.src.output) {
+    if (data.src.fn) {
       const refs = []
       for (const arg of data.vals) {
         refs.push(arg.ref())
@@ -100,11 +101,11 @@ export const PICK_TY: Picker<Data, Selected> = definePicker<Data, Selected>({
         args.slice(0, -1).includes(found.val) ? refs.pop()! : found.ref()
 
       const expr = Expr.of(sheet)
-      const name = sheet.scope.name(data.src.output.tag)
       const cursor = expr.field.block.cursor(R)
-      CmdVar.leftOf(cursor, name, expr.field.options)
+      const token = CmdToken.new(expr.field.ctx)
+      token.insertAt(cursor, L)
       new OpEq(false).insertAt(cursor, L)
-      for (const char of data.src.output.fn) {
+      for (const char of data.src.fn) {
         new CmdVar(char, sheet.options).insertAt(cursor, L)
       }
       const inner = new Block(null)
@@ -149,7 +150,6 @@ export const PICK_TY: Picker<Data, Selected> = definePicker<Data, Selected>({
 export function definePickTy<
   const K extends readonly [readonly TyName[], ...(readonly TyName[][])],
 >(
-  tag: string,
   fn: string | null,
   steps: K,
   draw: (
@@ -165,7 +165,6 @@ export function definePickTy<
 ): Data
 
 export function definePickTy(
-  tag: string,
   fn: string | null,
   steps: readonly [readonly TyName[], ...(readonly TyName[][])],
   draw: (sheet: Sheet, ...args: JsVal[]) => void,
@@ -175,7 +174,7 @@ export function definePickTy(
     vals: [],
     src: {
       id: Math.random(),
-      output: fn == null ? null : { fn, tag },
+      fn,
       next(args) {
         return steps[args.length] ?? null
       },

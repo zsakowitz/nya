@@ -24,6 +24,7 @@ import {
   OpUpArrow,
 } from "./cmd/leaf/op"
 import { SymInfinity, SymPi, SymTau } from "./cmd/leaf/sym"
+import { CmdToken } from "./cmd/leaf/token"
 import { CmdTyName } from "./cmd/leaf/tyname"
 import { CmdVar, type WordKind } from "./cmd/leaf/var"
 import { CmdList } from "./cmd/logic/list"
@@ -77,6 +78,7 @@ const inits = new Inits()
   .set(">", OpGt)
   // other cmds
   .set("/", CmdFrac)
+  .set("@", CmdToken)
   .setAll(["_", "^"], CmdSupSub)
   .setAll(Object.keys(BIG_ALIASES), CmdBig)
   .set("\\int", CmdInt)
@@ -230,6 +232,7 @@ const latex = new WordMap<LatexInit>([
   ["\\uxv", CmuSym],
   ["\\tyname", CmdTyName],
   ["\\ty", CmdTyName],
+  ["\\token", CmdToken],
 ])
 
 for (const key of inits.getAll()) {

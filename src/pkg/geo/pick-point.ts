@@ -1,9 +1,9 @@
-import type { Var } from "../../eval/ast/token"
 import type { JsVal } from "../../eval/ty"
 import { approx, num, pt, real, unpt } from "../../eval/ty/create"
 import { TY_INFO } from "../../eval/ty/info"
 import { OpEq } from "../../field/cmd/leaf/cmp"
 import { CmdComma } from "../../field/cmd/leaf/comma"
+import { CmdToken } from "../../field/cmd/leaf/token"
 import { CmdVar } from "../../field/cmd/leaf/var"
 import { CmdBrack } from "../../field/cmd/math/brack"
 import { Block, L, R } from "../../field/model"
@@ -36,14 +36,14 @@ export function virtualPoint(at: Point, sheet: Sheet) {
       break intersection
     }
 
-    let ref: Var & { sup?: undefined }
+    let ref: CmdToken | undefined
 
     return {
       val,
       ref() {
         if (ref) {
           const ret = new Block(null)
-          CmdVar.leftOf(ret.cursor(R), ref, sheet.options)
+          ref.clone().insertAt(ret.cursor(R), L)
           return ret
         }
 
@@ -51,9 +51,9 @@ export function virtualPoint(at: Point, sheet: Sheet) {
         const r2 = o2.ref()
 
         const expr = Expr.of(sheet)
-        const name = sheet.scope.name("p")
+        ref = CmdToken.new(sheet.scope.ctx)
         const cursor = expr.field.block.cursor(R)
-        CmdVar.leftOf(cursor, name, expr.field.options)
+        ref.insertAt(cursor, L)
         new OpEq(false).insertAt(cursor, L)
         for (const char of "intersection") {
           new CmdVar(char, expr.field.options).insertAt(cursor, L)
@@ -70,9 +70,8 @@ export function virtualPoint(at: Point, sheet: Sheet) {
         expr.field.trackNameNow()
         expr.field.scope.queueUpdate()
 
-        ref = name
         const ret = new Block(null)
-        CmdVar.leftOf(ret.cursor(R), name, sheet.options)
+        ref.clone().insertAt(ret.cursor(R), L)
         return ret
       },
       draw() {
@@ -107,23 +106,23 @@ export function virtualPoint(at: Point, sheet: Sheet) {
       break glider
     }
 
-    let ref: Var & { sup?: undefined }
+    let ref: CmdToken | undefined
 
     return {
       val: position,
       ref() {
         if (ref) {
           const ret = new Block(null)
-          CmdVar.leftOf(ret.cursor(R), ref, sheet.options)
+          ref.clone().insertAt(ret.cursor(R), L)
           return ret
         }
 
         const o1 = obj.ref()
 
         const expr = Expr.of(sheet)
-        const name = sheet.scope.name("p")
+        ref = CmdToken.new(sheet.scope.ctx)
         const cursor = expr.field.block.cursor(R)
-        CmdVar.leftOf(cursor, name, expr.field.options)
+        ref.insertAt(cursor, L)
         new OpEq(false).insertAt(cursor, L)
         for (const char of "glider") {
           new CmdVar(char, expr.field.options).insertAt(cursor, L)
@@ -140,9 +139,8 @@ export function virtualPoint(at: Point, sheet: Sheet) {
         expr.field.trackNameNow()
         expr.field.scope.queueUpdate()
 
-        ref = name
         const ret = new Block(null)
-        CmdVar.leftOf(ret.cursor(R), name, sheet.options)
+        ref.clone().insertAt(ret.cursor(R), L)
         return ret
       },
       draw() {
@@ -161,7 +159,7 @@ export function virtualPoint(at: Point, sheet: Sheet) {
     value: pt(real(at.x), real(at.y)),
   }
 
-  let ref: Var & { sup?: undefined }
+  let ref: CmdToken | undefined
 
   let center: SVGCircleElement | undefined
   return {
@@ -169,14 +167,14 @@ export function virtualPoint(at: Point, sheet: Sheet) {
     ref() {
       if (ref) {
         const ret = new Block(null)
-        CmdVar.leftOf(ret.cursor(R), ref, sheet.options)
+        ref.clone().insertAt(ret.cursor(R), L)
         return ret
       }
 
       const expr = Expr.of(sheet)
-      const name = sheet.scope.name("p")
+      ref = CmdToken.new(sheet.scope.ctx)
       const cursor = expr.field.block.cursor(R)
-      CmdVar.leftOf(cursor, name, expr.field.options)
+      ref.insertAt(cursor, L)
       new OpEq(false).insertAt(cursor, L)
       const inner = new Block(null)
       new CmdBrack("(", ")", null, inner).insertAt(cursor, L)
@@ -195,10 +193,8 @@ export function virtualPoint(at: Point, sheet: Sheet) {
       expr.field.trackNameNow()
       expr.field.scope.queueUpdate()
 
-      ref = name
       const ret = new Block(null)
-      CmdVar.leftOf(ret.cursor(R), name, sheet.options)
-
+      ref.clone().insertAt(ret.cursor(R), L)
       return ret
     },
     draw() {

@@ -4,11 +4,12 @@ import type { GlslContext } from "../eval/lib/fn"
 import { FnDist } from "../eval/ops/dist"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "../eval/ops/vars"
 import { each, type JsValue } from "../eval/ty"
-import { approx, frac, SNANPT, num, pt, real, unpt } from "../eval/ty/create"
+import { approx, frac, num, pt, real, SNANPT, unpt } from "../eval/ty/create"
 import { highRes, TY_INFO, WRITE_POINT, type TyGlide } from "../eval/ty/info"
 import { abs, add, mul, neg } from "../eval/ty/ops"
 import { OpEq } from "../field/cmd/leaf/cmp"
 import { CmdDot } from "../field/cmd/leaf/dot"
+import { CmdToken } from "../field/cmd/leaf/token"
 import { CmdVar } from "../field/cmd/leaf/var"
 import { Block, L, R } from "../field/model"
 import { h, sx } from "../jsx"
@@ -247,9 +248,9 @@ const EXT_POINT = defineHideable({
               return block
             }
 
-            const name = data.expr.sheet.scope.name("p")
             const c = data.expr.field.block.cursor(L)
-            CmdVar.leftOf(c, name, data.expr.field.options)
+            const token = CmdToken.new(data.expr.field.scope.ctx)
+            token.insertAt(c, L)
             new OpEq(false).insertAt(c, L)
             data.expr.field.dirtyAst = data.expr.field.dirtyValue = true
             data.expr.field.trackNameNow()
@@ -257,7 +258,7 @@ const EXT_POINT = defineHideable({
 
             const block = new Block(null)
             const cursor = block.cursor(R)
-            CmdVar.leftOf(cursor, name, data.expr.field.options)
+            token.clone().insertAt(cursor, L)
             if (data.value.type.startsWith("c")) {
               new CmdDot().insertAt(cursor, L)
               for (const c of "point") {
@@ -293,7 +294,7 @@ const FN_SCREENDISTANCE = new FnDist<"r32">(
   "calculates the distance between two points in terms of pixels on your screen, rather than graphpaper units",
 )
 
-const PICK_POINT = definePickTy("p", null, [["point32", "point64"]], () => {})
+const PICK_POINT = definePickTy(null, [["point32", "point64"]], () => {})
 
 export const FN_DEBUGPOINT = new FnDist(
   "debugpoint",

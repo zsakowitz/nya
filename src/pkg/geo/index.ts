@@ -143,7 +143,6 @@ function lineInfo(
 }
 
 const PICK_LINE = definePickTy(
-  "l",
   "line",
   [
     ["point32", "point64"],
@@ -157,7 +156,6 @@ const PICK_LINE = definePickTy(
 )
 
 const PICK_SEGMENT = definePickTy(
-  "l",
   "segment",
   [
     ["point32", "point64"],
@@ -173,7 +171,6 @@ const PICK_SEGMENT = definePickTy(
 )
 
 const PICK_RAY = definePickTy(
-  "l",
   "ray",
   [
     ["point32", "point64"],
@@ -190,7 +187,6 @@ const PICK_RAY = definePickTy(
 )
 
 const PICK_VECTOR = definePickTy(
-  "l",
   "vector",
   [
     ["point32", "point64"],
@@ -206,7 +202,6 @@ const PICK_VECTOR = definePickTy(
 )
 
 const PICK_CIRCLE = definePickTy(
-  "c",
   "circle",
   [
     ["point32", "point64"],
@@ -227,7 +222,6 @@ const PICK_CIRCLE = definePickTy(
 )
 
 const PICK_ARC = definePickTy(
-  "a",
   "arc",
   [
     ["point32", "point64"],
@@ -246,7 +240,6 @@ const PICK_ARC = definePickTy(
 )
 
 const PICK_PERPENDICULAR = definePickTy(
-  "l",
   "perpendicular",
   [
     ["segment", "ray", "line", "vector"],
@@ -261,7 +254,6 @@ const PICK_PERPENDICULAR = definePickTy(
 )
 
 const PICK_PARALLEL = definePickTy(
-  "l",
   "parallel",
   [
     ["segment", "ray", "line", "vector"],
@@ -276,7 +268,6 @@ const PICK_PARALLEL = definePickTy(
 )
 
 const PICK_ANGLE = definePickTy(
-  "a",
   "angle",
   [
     ["point32", "point64"],
@@ -294,7 +285,6 @@ const PICK_ANGLE = definePickTy(
 )
 
 const PICK_DIRECTEDANGLE = definePickTy(
-  "a",
   "directedangle",
   [
     ["point32", "point64"],
@@ -316,7 +306,7 @@ const PICK_MIDPOINT: Data = {
   next: ["point32", "point64", "segment"],
   src: {
     id: Math.random(),
-    output: { tag: "p", fn: "midpoint" },
+    fn: "midpoint",
     next(args) {
       if (args.length == 0) {
         return ["point32", "point64", "segment"]
@@ -356,7 +346,7 @@ const PICK_POLYGON: Data = {
   next: ["point32", "point64"],
   src: {
     id: Math.random(),
-    output: { tag: "P", fn: "polygon" },
+    fn: "polygon",
     allowExistingPoint(args) {
       return args.length >= 2
     },

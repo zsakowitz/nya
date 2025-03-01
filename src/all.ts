@@ -26,7 +26,6 @@ import { PKG_SHADER } from "./pkg/shader"
 import { PKG_SLIDER } from "./pkg/slider"
 import { PKG_STATISTICS } from "./pkg/statistics"
 import { PKG_TEXT } from "./pkg/text"
-import { PKG_TOKEN } from "./pkg/token"
 import { PKG_TRIG_COMPLEX } from "./pkg/trig-complex"
 import { PKG_TRIG_REAL } from "./pkg/trig-real"
 import { PKG_TRIG_HYPERBOLIC_REAL } from "./pkg/trigh-real"
@@ -66,5 +65,4 @@ export const ALL: Package[] = [
   PKG_IMAGE_GEO,
   PKG_DOCS_FN,
   PKG_NOTES,
-  PKG_TOKEN,
 ]

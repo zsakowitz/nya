@@ -1,24 +1,23 @@
 import { faWarning } from "@fortawesome/free-solid-svg-icons/faWarning"
-import type { Package } from "."
-import type { Node } from "../eval/ast/token"
-import { BindingFn, id } from "../eval/lib/binding"
-import type { TyName } from "../eval/ty"
-import { TY_INFO } from "../eval/ty/info"
-import { Leaf } from "../field/cmd/leaf"
-import { CmdUnknown } from "../field/cmd/leaf/unknown"
-import { fa } from "../field/fa"
-import { type LatexParser } from "../field/latex"
+import { Leaf } from "."
+import type { Node } from "../../../eval/ast/token"
+import { BindingFn, id } from "../../../eval/lib/binding"
+import type { TyName } from "../../../eval/ty"
+import { TY_INFO } from "../../../eval/ty/info"
+import { h } from "../../../jsx"
+import type { Ctx, Scope } from "../../../sheet/deps"
+import { fa } from "../../fa"
+import type { LatexParser } from "../../latex"
 import {
-  L,
-  R,
-  Span,
   type Command,
   type Cursor,
   type InitProps,
   type InitRet,
-} from "../field/model"
-import { h } from "../jsx"
-import type { Scope } from "../sheet/deps"
+  L,
+  R,
+  Span,
+} from "../../model"
+import { CmdUnknown } from "./unknown"
 
 function iconError() {
   return h(
@@ -49,7 +48,7 @@ function iconFunction() {
 
 const data = new WeakMap<Scope, TokenCtx>()
 
-class TokenCtx {
+export class TokenCtx {
   constructor(readonly scope: Scope) {
     const existing = data.get(scope)
     if (existing) return existing
@@ -158,9 +157,9 @@ class TokenCtx {
 
 let nextId = 0
 
-class CmdToken extends Leaf {
+export class CmdToken extends Leaf {
   static init(cursor: Cursor, props: InitProps): InitRet {
-    this.new(new TokenCtx(props.ctx.scope)).insertAt(cursor, L)
+    this.new(props.ctx).insertAt(cursor, L)
   }
 
   static fromLatex(_cmd: string, parser: LatexParser): Command {
@@ -174,8 +173,8 @@ class CmdToken extends Leaf {
     return new CmdUnknown(`‹token›`)
   }
 
-  static new(ctx: TokenCtx) {
-    return new this(nextId++, ctx)
+  static new(ctx: Ctx) {
+    return new this(nextId++, new TokenCtx(ctx.scope))
   }
 
   constructor(
@@ -209,18 +208,8 @@ class CmdToken extends Leaf {
   latex(): string {
     return `\\token{${this.id}}`
   }
-}
 
-export const PKG_TOKEN: Package = {
-  id: "nya:token",
-  name: "tokens",
-  label: "icon variables",
-  field: {
-    inits: {
-      "@": CmdToken,
-    },
-    latex: {
-      "\\token": CmdToken,
-    },
-  },
+  clone() {
+    return new CmdToken(this.id, this.ctx)
+  }
 }
