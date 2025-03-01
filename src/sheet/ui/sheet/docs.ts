@@ -24,6 +24,7 @@ import { Block, R } from "../../../field/model"
 import type { Options } from "../../../field/options"
 import { a, h, hx, p } from "../../../jsx"
 import type { Package } from "../../../pkg"
+import type { Ctx } from "../../deps"
 
 const IS_DEV = "NYA_DEV" in globalThis
 const OPEN_NORMAL = !IS_DEV
@@ -126,7 +127,7 @@ function header(contents: string, sublabel: string) {
 export function createDocs(
   hide: HTMLElement,
   options: Options,
-  ctx: WeakKey,
+  ctx: Ctx,
   packages: Package[],
 ) {
   const list = new PackageList(packages)

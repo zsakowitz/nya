@@ -1,3 +1,4 @@
+\token{0}=2+3
 \token{0}
 #nya:image#
 s=\operatorname{segment}\left(p_{1},p_{2}\right)

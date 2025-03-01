@@ -89,7 +89,6 @@ const FACTORY: ItemFactory<Data> = {
     }
 
     if (idx !== -1) {
-      console.log(idx)
       field.value = "" + idx
       const fn = fns[idx]!
       const doc = makeDoc(fn, { title: false })

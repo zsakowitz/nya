@@ -7,8 +7,6 @@ to do list for functions is:
 ❌ stat tests
 ❌ logb
 ❌ lcm, gcd, nPr, nCr
-❌ arc
-❌ rotate, dilate, reflect, translate
 ❌ polygon([r32], [r32])
 ❌ 3D points and vectors
 ❌ ceil, floor, round, statistics for complex numbers
@@ -25,7 +23,7 @@ to do list for things to plot is:
 ❌ f(r, θ) = g(r, θ)
 
 to do list for features is:
-❌ 100% compatible piecewise functions
+😐 100% compatible piecewise functions (lists are weird)
 ❌ actions
 ❌ tickers
 ❌ inequality borders
@@ -33,7 +31,7 @@ to do list for features is:
 ❌ more stuff works in shaders
 ❌ arc functions work in shaders
 ❌ regressions
-❌ images
+😐 images
 ❌ tone
 ❌ 3D
 ✅ functions
@@ -45,6 +43,8 @@ to do list for features is:
 ❌ slider variables infer bounds based on usage (glider, rgb, hsv)
 ❌ angle bisector picker
 ❌ perpendicular bisector picker
+❌ folders
+❌ normal images
 
 to do list for non-desmos stuff is:
 ❌ streaming video, audio, images, files

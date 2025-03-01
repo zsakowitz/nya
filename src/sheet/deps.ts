@@ -18,8 +18,12 @@ import { TY_INFO } from "../eval/ty/info"
 import { Field } from "../field/field"
 import type { Options } from "../field/options"
 
+export interface Ctx {
+  scope: Scope
+}
+
 export class Scope {
-  readonly ctx: WeakKey = Object.freeze(Object.create(null))
+  readonly ctx: Ctx = Object.freeze({ scope: this, __proto__: null })
 
   constructor(readonly options: Options) {
     const self = this
@@ -96,6 +100,8 @@ export class Scope {
       ctx: new GlslContext(this.helpers),
     }
   }
+
+  readonly hooks: (() => void)[] = []
 
   flush() {
     for (const field of this.fields) {
@@ -273,6 +279,10 @@ export class Scope {
         field.dirtyValue = false
         field.recompute?.()
       }
+    }
+
+    for (const hook of this.hooks) {
+      hook()
     }
   }
 

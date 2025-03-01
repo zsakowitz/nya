@@ -1,4 +1,5 @@
 import { twMerge } from "tailwind-merge"
+import type { Ctx } from "../sheet/deps"
 import { LatexParser } from "./latex"
 import {
   Block,
@@ -26,7 +27,7 @@ export class FieldInert {
 
   constructor(
     readonly options: Options,
-    readonly ctx: WeakKey,
+    readonly ctx: Ctx,
     className?: string,
   ) {
     this.el = this.block.el

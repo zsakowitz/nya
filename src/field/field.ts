@@ -1,4 +1,5 @@
 import { h } from "../jsx"
+import type { Ctx } from "../sheet/deps"
 import { FieldInert } from "./field-inert"
 import { Selection } from "./model"
 import type { Options } from "./options"
@@ -8,7 +9,7 @@ export class Field extends FieldInert {
     "relative nya-cursor border-current w-px -ml-px border-l [.nya-display:has(.nya-cmd-prompt)_&]:hidden [.nya-display:not(:focus)_&]:hidden",
   )
 
-  constructor(options: Options, ctx: WeakKey, className?: string) {
+  constructor(options: Options, ctx: Ctx, className?: string) {
     super(options, ctx, className)
     this.makeActive()
     this.showCursor()
