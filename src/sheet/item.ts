@@ -42,6 +42,7 @@ export const FACTORY_EXPR: ItemFactory<Expr> = {
       expr.field.onBeforeChange()
       const block = new LatexParser(
         ref.list.sheet.options,
+        ref.list.sheet.scope.ctx,
         source,
         expr.field,
       ).parse()

@@ -19,6 +19,8 @@ import { Field } from "../field/field"
 import type { Options } from "../field/options"
 
 export class Scope {
+  readonly ctx: WeakKey = Object.freeze(Object.create(null))
+
   constructor(readonly options: Options) {
     const self = this
 
@@ -355,7 +357,7 @@ export class FieldComputed extends Field {
     className?: string,
     unlinked?: boolean,
   ) {
-    super(scope.options, className)
+    super(scope.options, scope.ctx, className)
     if (unlinked) {
       this.linked = false
     } else {

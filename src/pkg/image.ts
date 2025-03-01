@@ -130,6 +130,7 @@ const FACTORY: ItemFactory<Data> = {
 
     const name = new Field(
       ref.list.sheet.options,
+      ref.list.sheet.scope.ctx,
       "nya-display whitespace-nowrap font-['Symbola','Times_New_Roman',serif] font-normal not-italic [line-height:1] cursor-text select-none inline-block nya-range-bound border-[--nya-border] text-[1rem] p-1 pr-2 border-b min-w-12 max-w-24 min-h-[calc(1.5rem_+_1px)] focus:outline-none focus:border-b-[--nya-expr-focus] focus:border-b-2 [&::-webkit-scrollbar]:hidden overflow-x-auto align-middle focus:-mb-px after:hidden",
     )
 

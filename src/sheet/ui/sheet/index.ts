@@ -220,6 +220,7 @@ export class Sheet {
         sidebar.classList.remove("hidden")
       }),
       this.options,
+      this.scope.ctx,
       Object.values(factory.loaded),
     )
 

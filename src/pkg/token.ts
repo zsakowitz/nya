@@ -17,8 +17,6 @@ import {
 import type { Options } from "../field/options"
 import { h } from "../jsx"
 
-let nextId = 0
-
 function error() {
   return h(
     "",
@@ -33,9 +31,22 @@ function error() {
   )
 }
 
+const data = new WeakMap<Options, TokenCtx>()
+
+class TokenCtx {
+  static of(ctx: WeakKey) {
+    let v
+    return data.get(ctx) ?? (data.set(ctx, (v = new TokenCtx())), v)
+  }
+
+  private __id = 2
+}
+
+let nextId = 0
+
 class CmdToken extends Leaf {
   static init(cursor: Cursor, props: InitProps): InitRet {
-    this.new(props.options).insertAt(cursor, L)
+    this.new(TokenCtx.of(props.ctx)).insertAt(cursor, L)
   }
 
   static fromLatex(_cmd: string, parser: LatexParser): Command {
@@ -43,19 +54,19 @@ class CmdToken extends Leaf {
     const id = parseInt(arg, 10)
 
     if (isFinite(id)) {
-      return new CmdToken(id, parser.options)
+      return new CmdToken(id, TokenCtx.of(parser.ctx))
     }
 
     return new CmdUnknown(`‹token›`)
   }
 
-  static new(options: Options) {
-    return new this(nextId++, options)
+  static new(ctx: TokenCtx) {
+    return new this(nextId++, ctx)
   }
 
   constructor(
     readonly id: number,
-    readonly options: Options,
+    readonly ctx: TokenCtx,
   ) {
     if (id >= nextId) {
       nextId = id + 1

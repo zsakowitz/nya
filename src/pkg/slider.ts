@@ -133,7 +133,11 @@ class RangeControls {
         field.onAfterChange(false)
       })
     }
-    this.name = new FieldInert(expr.sheet.options, "text-[1em]")
+    this.name = new FieldInert(
+      expr.sheet.options,
+      expr.sheet.scope.ctx,
+      "text-[1em]",
+    )
 
     this.scrubber = new Slider(
       expr,

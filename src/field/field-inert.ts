@@ -26,6 +26,7 @@ export class FieldInert {
 
   constructor(
     readonly options: Options,
+    readonly ctx: WeakKey,
     className?: string,
   ) {
     this.el = this.block.el
@@ -37,7 +38,7 @@ export class FieldInert {
 
   setPrefix(block: Block | ((field: FieldInert) => void)) {
     if (typeof block == "function") {
-      const field = new FieldInert(this.options)
+      const field = new FieldInert(this.options, this.ctx)
       block(field)
       block = field.block
     }
@@ -54,6 +55,7 @@ export class FieldInert {
     }
 
     const value = performInit(init, this.sel, {
+      ctx: this.ctx,
       input,
       event: props?.event,
       field: this,
@@ -86,7 +88,7 @@ export class FieldInert {
     if (!skipChangeHandlers) {
       this.onBeforeChange?.()
     }
-    const block = new LatexParser(this.options, source, this).parse()
+    const block = new LatexParser(this.options, this.ctx, source, this).parse()
     const cursor = this.sel.remove()
     cursor.insert(block, L)
     this.sel = cursor.selection()

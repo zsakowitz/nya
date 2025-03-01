@@ -1666,6 +1666,7 @@ export interface InitProps<E = KeyboardEvent | undefined> {
   options: Options
   event: E
   field: FieldInert
+  ctx: WeakKey
 }
 
 /**

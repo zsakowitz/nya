@@ -29,6 +29,7 @@ export class LatexParser {
 
   constructor(
     readonly options: Options,
+    readonly ctx: WeakKey,
     private readonly source: string,
     readonly field: FieldInert | null,
   ) {

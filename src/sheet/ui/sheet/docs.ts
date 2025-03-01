@@ -126,6 +126,7 @@ function header(contents: string, sublabel: string) {
 export function createDocs(
   hide: HTMLElement,
   options: Options,
+  ctx: WeakKey,
   packages: Package[],
 ) {
   const list = new PackageList(packages)
@@ -146,7 +147,7 @@ export function createDocs(
   )
 
   nonSearchable.querySelectorAll("samp").forEach((el) => {
-    const field = new FieldInert(options)
+    const field = new FieldInert(options, ctx)
     field.typeLatex(el.textContent ?? "")
     el.replaceWith(field.el)
   })
