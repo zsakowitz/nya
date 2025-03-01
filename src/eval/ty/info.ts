@@ -21,6 +21,7 @@ export interface TyInfo<T, U extends TyName> {
   coerce: TyCoerceMap<T>
   write: TyWrite<T>
   icon(): HTMLSpanElement
+  token?(val: T): HTMLSpanElement | null
   glide?: TyGlide<T>
   components?: TyComponentInfo<T, U>
 }

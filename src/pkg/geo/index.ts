@@ -8,6 +8,7 @@ import {
   type TyInfoByName,
 } from "../../eval/ty/info"
 import { CmdComma } from "../../field/cmd/leaf/comma"
+import { createToken } from "../../field/cmd/leaf/token"
 import { CmdWord } from "../../field/cmd/leaf/word"
 import { CmdBrack } from "../../field/cmd/math/brack"
 import { Block, L, R } from "../../field/model"
@@ -515,6 +516,18 @@ const INFO_POLYGON: TyInfoByName<"polygon"> = {
             path("M 7.2 4.4 L 19.8 13.2 L 2.2 17.6 Z"),
           ),
         ),
+      ),
+    )
+  },
+  token(val) {
+    if (val.length < 2) {
+      return null
+    }
+    const pts = val.map(unpt)
+    return createToken(
+      "#388c46",
+      path(
+        `M ${pts[0]!.x} ${-pts[0]!.y}${pts.slice(1).map((pt) => ` L ${pt.x} ${-pt.y}`)} Z`,
       ),
     )
   },

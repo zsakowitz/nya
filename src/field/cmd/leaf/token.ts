@@ -2,9 +2,9 @@ import { faWarning } from "@fortawesome/free-solid-svg-icons/faWarning"
 import { Leaf } from "."
 import type { Node } from "../../../eval/ast/token"
 import { BindingFn, id } from "../../../eval/lib/binding"
-import type { TyName } from "../../../eval/ty"
+import type { JsVal, TyName } from "../../../eval/ty"
 import { TY_INFO } from "../../../eval/ty/info"
-import { h } from "../../../jsx"
+import { h, sx } from "../../../jsx"
 import type { Ctx, Scope } from "../../../sheet/deps"
 import { fa } from "../../fa"
 import type { LatexParser } from "../../latex"
@@ -42,6 +42,46 @@ function iconFunction() {
       h(
         "size-[7px] bg-current absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
       ),
+    ),
+  )
+}
+
+export function createToken(color: string, ...paths: SVGElement[]) {
+  const svg = sx(
+    "svg",
+    {
+      class:
+        "size-[16px] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 fill-transparent stroke-current overflow-visible",
+      viewBox: "0 0 1 1",
+      "stroke-linejoin": "round",
+      "stroke-linecap": "round",
+    },
+    ...paths,
+  )
+
+  document.body.append(svg)
+  const rect = svg.getBBox({ fill: true, stroke: false })
+  svg.remove()
+
+  const xc = rect.x + rect.width / 2
+  const yc = rect.y + rect.height / 2
+  const size = Math.max(rect.width, rect.height)
+  svg.setAttribute(
+    "viewBox",
+    `${xc - size / 2} ${yc - size / 2} ${size} ${size}`,
+  )
+  svg.setAttribute("stroke-width", size / 8 + "")
+
+  return h(
+    "",
+    h(
+      {
+        class:
+          "size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-current rounded-[4px] border-2",
+        style: `color:${color}`,
+      },
+      h("opacity-25 block bg-current absolute inset-0"),
+      svg,
     ),
   )
 }
@@ -84,27 +124,34 @@ export class TokenCtx {
       if (tokens.length == 0) continue
 
       let type: TyName | "__function" | undefined
+      let val: JsVal | undefined
       try {
-        const val = this.scope.bindingsJs.get(id({ value: "$" + key }))
-        if (val instanceof BindingFn) {
+        const value = this.scope.bindingsJs.get(id({ value: "$" + key }))
+        if (value instanceof BindingFn) {
           type = "__function"
-        } else if (val) {
-          type = val.type
+        } else if (value) {
+          if (value.list === false) {
+            val = value
+          }
+          type = value.type
         }
       } catch (e) {
         try {
-          const val = this.scope.bindingsGlsl.get(id({ value: "$" + key }))
-          if (val instanceof BindingFn) {
+          const value = this.scope.bindingsGlsl.get(id({ value: "$" + key }))
+          if (value instanceof BindingFn) {
             type = "__function"
-          } else if (val) {
-            type = val.type
+          } else if (value) {
+            type = value.type
           }
         } catch (f) {
           console.warn("[tokenctx.update]", e, f)
         }
       }
 
-      if (type) {
+      let token
+      if (val && (token = TY_INFO[val.type].token?.(val.value as never))) {
+        this.tokens.set(key, token)
+      } else if (type) {
         if (type.endsWith("64")) {
           type = (type.slice(0, -2) + "32") as TyName
         }
