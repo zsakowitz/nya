@@ -1,3 +1,4 @@
+\token{0}
 #nya:image#
 s=\operatorname{segment}\left(p_{1},p_{2}\right)
 p_{1}=\left(-5.28,-0.07\right)
