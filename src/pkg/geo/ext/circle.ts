@@ -83,7 +83,7 @@ export const EXT_CIRCLE = defineHideable({
       drawCircle(paper, {
         at: unpt(val.center),
         r: num(val.radius),
-        pick: pick(val, "c", data),
+        pick: pick(val, data, data.expr.field.ctx),
         kind: "circle",
       })
     }

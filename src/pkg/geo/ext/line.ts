@@ -52,7 +52,7 @@ export const EXT_LINE = defineHideable({
   svg(data, paper) {
     for (const val of each(data.value)) {
       drawLine(paper, unpt(val[0]), unpt(val[1]), {
-        pick: pick(val, "l", data),
+        pick: pick(val, data, data.expr.field.ctx),
         kind: "line",
       })
     }

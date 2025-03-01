@@ -9,6 +9,7 @@ import {
 } from "../../../eval/ast/token"
 import { subscript } from "../../../eval/lib/text"
 import { h } from "../../../jsx"
+import type { Ctx } from "../../../sheet/deps"
 import type { LatexParser } from "../../latex"
 import {
   Block,
@@ -24,6 +25,7 @@ import { Options, WordMap } from "../../options"
 import { CmdSupSub } from "../math/supsub"
 import { CmdDot } from "./dot"
 import { CmdNum } from "./num"
+import { CmdToken, TokenCtx } from "./token"
 
 /**
  * The different kinds of {@linkcode CmdVar}-composed words which exist. These
@@ -80,10 +82,19 @@ export class CmdVar extends Leaf {
     cursor: Cursor,
     token: Var & { sup?: undefined },
     options: Options,
+    ctx: Ctx,
   ) {
-    for (const char of token.value) {
-      new CmdVar(char, options).insertAt(cursor, L)
+    if (/^\$\d+$/.test(token.value)) {
+      new CmdToken(+token.value.slice(1), new TokenCtx(ctx.scope)).insertAt(
+        cursor,
+        L,
+      )
+    } else {
+      for (const char of token.value) {
+        new CmdVar(char, options).insertAt(cursor, L)
+      }
     }
+
     if (token.sub) {
       const sub = new Block(null)
       const subc = sub.cursor(R)

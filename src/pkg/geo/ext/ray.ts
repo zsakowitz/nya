@@ -96,7 +96,7 @@ export const EXT_RAY = defineHideable({
   svg(data, paper) {
     for (const val of each(data.value)) {
       drawRay(paper, unpt(val[0]), unpt(val[1]), {
-        pick: pick(val, "l", data),
+        pick: pick(val, data, data.expr.field.ctx),
         kind: "ray",
       })
     }

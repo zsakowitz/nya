@@ -138,6 +138,7 @@ const FACTORY: ItemFactory<Data> = {
       name.block.cursor(R),
       ref.list.sheet.scope.name("i"),
       name.options,
+      name.ctx,
     )
 
     const field = hx("input", {
@@ -212,7 +213,7 @@ const FACTORY: ItemFactory<Data> = {
       output.onBeforeChange()
       output.block.clear()
       const cursor = output.block.cursor(R)
-      CmdVar.leftOf(cursor, ast, output.options)
+      CmdVar.leftOf(cursor, ast, output.options, name.ctx)
       new OpEq(false).insertAt(cursor, L)
       new CmdImgRaw({
         src: data.url,

@@ -85,7 +85,7 @@ export const EXT_ARC = defineHideable({
       const arc = computeArcVal(val)
       drawArc(paper, {
         arc,
-        pick: pick(val, "a", data),
+        pick: pick(val, data, data.expr.field.ctx),
         kind: "arc",
       })
     }

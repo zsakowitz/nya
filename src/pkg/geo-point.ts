@@ -244,6 +244,7 @@ const EXT_POINT = defineHideable({
                 block.cursor(R),
                 data.expr.field.ast.name,
                 data.expr.field.options,
+                data.expr.field.ctx,
               )
               return block
             }

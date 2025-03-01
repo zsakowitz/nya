@@ -3,6 +3,7 @@ import { rept, unpt } from "../../../eval/ty/create"
 import { OpEq } from "../../../field/cmd/leaf/cmp"
 import { CmdDot } from "../../../field/cmd/leaf/dot"
 import { CmdNum } from "../../../field/cmd/leaf/num"
+import { CmdToken } from "../../../field/cmd/leaf/token"
 import { CmdVar } from "../../../field/cmd/leaf/var"
 import { CmdBrack } from "../../../field/cmd/math/brack"
 import { Block, L, R } from "../../../field/model"
@@ -70,18 +71,15 @@ export function drawPolygon(
                 (cursor = block.cursor(R)),
                 pick.expr.field.ast.name,
                 pick.expr.field.options,
+                pick.expr.field.ctx,
               )
             } else {
-              const name = pick.expr.sheet.scope.name("P")
+              const name = CmdToken.new(pick.expr.field.ctx)
               const c = pick.expr.field.block.cursor(L)
-              CmdVar.leftOf(c, name, pick.expr.field.options)
+              name.insertAt(c, L)
               new OpEq(false).insertAt(c, L)
               block = new Block(null)
-              CmdVar.leftOf(
-                (cursor = block.cursor(R)),
-                name,
-                pick.expr.field.options,
-              )
+              name.clone().insertAt((cursor = block.cursor(R)), L)
               pick.expr.field.dirtyAst = pick.expr.field.dirtyValue = true
               pick.expr.field.trackNameNow()
               pick.expr.field.scope.queueUpdate()

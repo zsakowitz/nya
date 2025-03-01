@@ -300,7 +300,7 @@ class Slider extends RawSlider {
     this.expr.field.onBeforeChange()
     field.block.clear()
     const cursor = field.block.cursor(R)
-    CmdVar.leftOf(cursor, this.name, field.options)
+    CmdVar.leftOf(cursor, this.name, field.options, field.ctx)
     new OpEq(false).insertAt(cursor, L)
     const base = this.base
     this.display(cursor, base)
@@ -330,7 +330,12 @@ const EXT_SLIDER = defineExt({
     controls.scrubber.name = ast.name
     controls.scrubber.writtenBase = !!value.base
     controls.name.block.clear()
-    CmdVar.leftOf(controls.name.block.cursor(R), ast.name, expr.field.options)
+    CmdVar.leftOf(
+      controls.name.block.cursor(R),
+      ast.name,
+      expr.field.options,
+      expr.field.ctx,
+    )
     controls.relink()
     controls.setBoundsAppropriately()
     return controls
