@@ -276,6 +276,9 @@ const EXT_POINT = defineHideable({
             center!.style.r = "6"
             center!.parentElement!.style.cursor = "pointer"
           },
+          focus() {
+            requestAnimationFrame(() => data.expr.focus())
+          },
         },
       })
     }

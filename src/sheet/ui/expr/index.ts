@@ -10,6 +10,7 @@ import { h } from "../../../jsx"
 import type { AnyExt } from "../../ext"
 import { FACTORY_EXPR } from "../../item"
 import type { ItemRef } from "../../items"
+import { PICK_CURSOR } from "../../pick-cursor"
 import type { Sheet } from "../sheet"
 import { Field } from "./field"
 
@@ -100,6 +101,10 @@ export class Expr {
           at: this.ref.index() + 1,
           focus: true,
         })
+      }
+
+      if (event.key == "Shift") {
+        sheet.pick.set(PICK_CURSOR, { expr: this })
       }
     })
   }

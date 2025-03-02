@@ -17,10 +17,6 @@ interface PickerInit<T extends {}, U extends {}> {
   data: T
 }
 
-export function definePicker<T extends {}, U extends {}>(picker: Picker<T, U>) {
-  return picker
-}
-
 export type AnyPick = Picker<any, any>
 
 type AnyPickInit = PickerInit<any, any>

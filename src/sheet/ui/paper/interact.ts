@@ -17,6 +17,7 @@ export interface PickProps<T extends TyName = TyName> {
   ref(): Block
   draw(): void
   drawFocus?(): void
+  focus(): void
 }
 
 export const HANDLER_PICK = new WeakMap<SVGElement, PickProps>()

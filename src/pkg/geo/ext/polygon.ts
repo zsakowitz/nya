@@ -100,6 +100,9 @@ export function drawPolygon(
 
             return block
           },
+          focus() {
+            requestAnimationFrame(() => props.pick!.expr.focus())
+          },
         },
         kind: "segment",
       })

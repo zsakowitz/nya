@@ -5,8 +5,13 @@ import { CmdVar } from "../../../field/cmd/leaf/var"
 import { Block, L, R } from "../../../field/model"
 import type { Ctx } from "../../../sheet/deps"
 import type { Expr } from "../../../sheet/ui/expr"
+import type { PickProps } from "../../../sheet/ui/paper/interact"
 
-export function pick(val: Val, data: { value: JsValue; expr: Expr }, ctx: Ctx) {
+export function pick(
+  val: Val,
+  data: { value: JsValue; expr: Expr },
+  ctx: Ctx,
+): Omit<PickProps, "draw" | "drawFocus"> {
   return {
     val() {
       return { type: data.value.type, value: val }
@@ -34,6 +39,9 @@ export function pick(val: Val, data: { value: JsValue; expr: Expr }, ctx: Ctx) {
       data.expr.field.scope.queueUpdate()
 
       return block
+    },
+    focus() {
+      requestAnimationFrame(() => data.expr.focus())
     },
   }
 }

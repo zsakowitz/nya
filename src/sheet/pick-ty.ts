@@ -8,7 +8,7 @@ import { CmdBrack } from "../field/cmd/math/brack"
 import { Block, L, R } from "../field/model"
 import { h, hx } from "../jsx"
 import { virtualPoint } from "../pkg/geo/pick-point"
-import { definePicker, type Picker } from "./pick"
+import { type Picker } from "./pick"
 import { Expr } from "./ui/expr"
 import type { Selected, Sheet } from "./ui/sheet"
 
@@ -26,7 +26,7 @@ export interface Data {
   next: readonly TyName[]
 }
 
-export const PICK_TY: Picker<Data, Selected> = definePicker<Data, Selected>({
+export const PICK_TY: Picker<Data, Selected> = {
   id(data) {
     return data.src.id
   },
@@ -145,7 +145,7 @@ export const PICK_TY: Picker<Data, Selected> = definePicker<Data, Selected>({
   cancel(_, sheet) {
     delete sheet.paper.el.dataset.nyaPicking
   },
-})
+}
 
 export function definePickTy<
   const K extends readonly [readonly TyName[], ...(readonly TyName[][])],

@@ -9,11 +9,14 @@ import { CmdBrack } from "../../field/cmd/math/brack"
 import { Block, L, R } from "../../field/model"
 import { Expr } from "../../sheet/ui/expr"
 import type { Point } from "../../sheet/ui/paper"
-import type { Sheet } from "../../sheet/ui/sheet"
+import type { Selected, Sheet } from "../../sheet/ui/sheet"
 import { Writer } from "../../sheet/write"
 import { drawPoint, FN_GLIDER, FN_INTERSECTION } from "../geo-point"
 
-export function virtualPoint(at: Point, sheet: Sheet) {
+export function virtualPoint(
+  at: Point,
+  sheet: Sheet,
+): Selected<"point32" | "point64"> {
   const objs = sheet.select(at, ["line", "segment", "ray", "circle", "arc"])
 
   intersection: if (objs.length >= 2) {

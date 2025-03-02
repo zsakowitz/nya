@@ -1,5 +1,5 @@
 import type { Paper, Point } from "."
-import { HANDLER_DRAG, type DragFn } from "./interact"
+import { HANDLER_DRAG, HANDLER_PICK, type DragFn } from "./interact"
 
 const SNAP_DISTANCE = 16
 
@@ -39,6 +39,7 @@ export function registerDragHandler(paper: Paper) {
   let initial: Point | undefined
   let ptrs = 0
   let drag: DragFn | undefined
+  let didMove = false
 
   paper.el.addEventListener(
     "pointermove",
@@ -58,6 +59,9 @@ export function registerDragHandler(paper: Paper) {
         return
       }
 
+      didMove = true
+      ;(document.activeElement as HTMLElement).blur?.()
+
       const self = paper.eventToPaper(event)
 
       paper.move({
@@ -74,6 +78,8 @@ export function registerDragHandler(paper: Paper) {
       ptrs++
       paper.el.setPointerCapture(event.pointerId)
       const at = paper.eventToPaper(event)
+      didMove = false
+      initial = at
 
       for (const el of event.composedPath()) {
         const fn = HANDLER_DRAG.get(el as SVGElement)
@@ -81,16 +87,33 @@ export function registerDragHandler(paper: Paper) {
           const props = fn(at)
           if (props) {
             drag = props
-            initial = undefined
-            return
+            break
           }
         }
       }
 
-      initial = at
+      for (const el of event.composedPath()) {
+        const fn = HANDLER_PICK.get(el as SVGElement)
+        if (fn) {
+          fn.focus()
+          return
+        }
+      }
     },
     { passive: false },
   )
+
+  paper.el.addEventListener("click", (event) => {
+    initial = undefined
+
+    for (const el of event.composedPath()) {
+      const fn = HANDLER_PICK.get(el as SVGElement)
+      if (!didMove && fn) {
+        fn.focus()
+        return
+      }
+    }
+  })
 
   function onPointerUp(event?: PointerEvent) {
     ptrs--
@@ -100,7 +123,7 @@ export function registerDragHandler(paper: Paper) {
     }
 
     if (drag) {
-      if (event) {
+      if (didMove && event) {
         try {
           drag(paper.eventToPaper(event), true)
         } catch (e) {

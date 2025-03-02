@@ -421,6 +421,7 @@ void main() {
     const picks = Array.from(
       this.paper.el.getIntersectionList(rect, this.paper.el),
     )
+      .reverse()
       .map((v) => HANDLER_PICK.get(v))
       .filter((x) => x != null)
       .filter((x) => tys.includes(x.val().type))
@@ -429,6 +430,6 @@ void main() {
 }
 
 export interface Selected<K extends TyName = TyName>
-  extends Omit<PickProps<K>, "val"> {
+  extends Omit<PickProps<K>, "val" | "focus"> {
   val: JsVal<K>
 }
