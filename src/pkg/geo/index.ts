@@ -14,7 +14,7 @@ import { CmdBrack } from "../../field/cmd/math/brack"
 import { Block, L, R } from "../../field/model"
 import { h, path, svgx, sx } from "../../jsx"
 import { definePickTy, PICK_TY, toolbar, type Data } from "../../sheet/pick-ty"
-import { segmentByPaper } from "../../sheet/ui/paper"
+import { normSegment, segmentByPaper } from "../../sheet/ui/paper"
 import {
   drawPoint,
   FN_GLIDER,
@@ -23,7 +23,14 @@ import {
 } from "../geo-point"
 import { PKG_REAL } from "../num-real"
 import { computeArcVal, unglideArc } from "./arc"
-import { angleGlsl, angleJs, drawAngle, EXT_ANGLE } from "./ext/angle"
+import {
+  angleGlsl,
+  angleJs,
+  ARC,
+  drawAngle,
+  EXT_ANGLE,
+  LINE,
+} from "./ext/angle"
 import { drawArc, EXT_ARC } from "./ext/arc"
 import { drawCircle, EXT_CIRCLE } from "./ext/circle"
 import { drawLine, EXT_LINE } from "./ext/line"
@@ -685,6 +692,90 @@ function angleInfo(
           ),
         ),
       )
+    },
+    token(val) {
+      const p1 = unpt(val[0])
+      const p2 = unpt(val[1])
+      const p3 = unpt(val[2])
+
+      const measure =
+        (Math.atan2(p1.x - p2.x, p1.y - p2.y) -
+          Math.atan2(p3.x - p2.x, p3.y - p2.y) +
+          2 * Math.PI) %
+        (2 * Math.PI)
+
+      const swap = measure > Math.PI
+
+      const o1 = { x: p1.x, y: -p1.y }
+      const o2 = { x: p2.x, y: -p2.y }
+      const o3 = { x: p3.x, y: -p3.y }
+      const s1 = normSegment(o2, o1, LINE)
+      const s3 = normSegment(o2, o3, LINE)
+      const a1 = normSegment(o2, o1, ARC)
+      const a3 = normSegment(o2, o3, ARC)
+
+      const els: SVGElement[] = []
+
+      for (const s of [s1, s3]) {
+        els.push(sx("line", { x1: o2.x, y1: o2.y, x2: s.x, y2: s.y }))
+      }
+
+      const src = swap ? a3 : a1
+      const dst = swap ? a1 : a3
+
+      const path =
+        type == "angle" && Math.abs((measure % Math.PI) - Math.PI / 2) < 9e-7 ?
+          `M ${src.x} ${src.y} L ${a1.x + a3.x - o2.x} ${a1.y + a3.y - o2.y} L ${dst.x} ${dst.y}`
+        : `M ${src.x} ${src.y} A ${ARC} ${ARC} 0 0 0 ${dst.x} ${dst.y}`
+
+      const g = sx("g", "", sx("path", { d: path }))
+
+      if (type == "directedangle") {
+        const size = Math.max(
+          8,
+          Math.min(
+            16,
+            ((measure > Math.PI ? 2 * Math.PI - measure : measure) * ARC) / 2,
+          ),
+        )
+
+        // source: https://www.desmos.com/geometry/e4uy7yykhv
+        // rotates the triangle so the center of the back edge is on the angle's arc
+        const adj = 0.0323385 * size - 0.00388757
+
+        const tilt = swap ? -adj : Math.PI + adj
+        const dx1 =
+          Math.cos(tilt) * (a3.y - o2.y) + Math.sin(tilt) * (a3.x - o2.x)
+        const dy1 =
+          Math.cos(tilt) * (a3.x - o2.x) - Math.sin(tilt) * (a3.y - o2.y)
+
+        const dx = -dx1
+        const dy = dy1
+        const nx = (size * dx) / Math.hypot(dx, dy)
+        const ny = (size * dy) / Math.hypot(dx, dy)
+        const ox = a3.x - nx
+        const oy = a3.y - ny
+        const w = 0.4
+
+        g.appendChild(
+          sx("path", {
+            d: `M ${a3.x} ${a3.y} L ${ox + w * ny} ${oy - w * nx} L ${ox - w * ny} ${oy + w * nx} Z`,
+            fill: "currentcolor",
+          }),
+        )
+      } else {
+        g.appendChild(
+          sx("path", {
+            d: `${path} L ${o2.x} ${o2.y} Z`,
+            fill: "black",
+            "fill-opacity": 0.3,
+          }),
+        )
+      }
+
+      els.push(g)
+
+      return createToken("black", ...els)
     },
   }
 }

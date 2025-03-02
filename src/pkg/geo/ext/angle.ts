@@ -14,8 +14,8 @@ import { defineHideable } from "../../../sheet/ext/hideable"
 import { normSegment, type Paper, type Point } from "../../../sheet/ui/paper"
 import { STORE_EVAL } from "../../eval"
 
-const LINE = 32
-const ARC = 20
+export const LINE = 32
+export const ARC = 20
 
 export function angleJs({ value, type }: JsVal<"angle" | "directedangle">) {
   const p0 = unpt(value[0])
