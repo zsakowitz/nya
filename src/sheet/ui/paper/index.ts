@@ -71,9 +71,61 @@ export class Paper {
     private autofit = true,
   ) {
     this.el = sx("svg", {
-      class: (className ?? "") + " nya-svg-display",
+      class:
+        (className ?? "") +
+        " nya-svg-display focus:outline-none ring-inset focus-visible:ring ring-[--nya-expr-focus]",
       fill: "none",
       viewBox: "0 0 1 1",
+    })
+    this.el.addEventListener("keydown", (event) => {
+      if (event.metaKey || event.ctrlKey) return
+
+      const { xmin, w, ymin, h } = this.bounds()
+
+      const scale =
+        event.shiftKey ?
+          event.altKey ?
+            0.1
+          : 0.5
+        : event.altKey ? 0.01
+        : 0.05
+
+      if (
+        event.key == "+" ||
+        event.key == "=" ||
+        event.key == "-" ||
+        event.key == "_"
+      ) {
+        event.preventDefault()
+        this.zoom(
+          {
+            x: xmin + w / 2,
+            y: ymin + h / 2,
+          },
+          event.key == "-" || event.key == "_" ?
+            1 + 2 * scale
+          : 1 / (1 + 2 * scale),
+        )
+        return
+      }
+
+      const dir = {
+        ArrowLeft: [-w, null],
+        ArrowRight: [w, null],
+        ArrowUp: [null, h],
+        ArrowDown: [null, -h],
+      }[event.key]
+
+      if (!dir) return
+
+      event.preventDefault()
+
+      const amount = scale * Math.min(w, h)
+
+      this.move({
+        x: dir[0] == null ? 0 : Math.sign(dir[0]) * amount,
+        y: dir[1] == null ? 0 : Math.sign(dir[1]) * amount,
+      })
     })
     const resize = () => {
       this.el.setAttribute(
