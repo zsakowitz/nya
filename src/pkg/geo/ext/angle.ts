@@ -94,7 +94,7 @@ export function drawAngle(
   const a1 = normSegment(o2, o1, ARC)
   const a3 = normSegment(o2, o3, ARC)
 
-  paper.addClass("angleline", "opacity-[43%]")
+  paper.addClass("angleline", "opacity-[50%]")
   for (const s of [s1, s3]) {
     paper.append(
       "angleline",
@@ -104,7 +104,7 @@ export function drawAngle(
         x2: s.x,
         y2: s.y,
         "stroke-width": 1.5,
-        stroke: "#888",
+        stroke: "var(--nya-angle)",
         "stroke-linecap": "round",
         class:
           props?.draft ? "" : (
@@ -131,7 +131,7 @@ export function drawAngle(
     sx("path", {
       d: path,
       "stroke-width": 3,
-      stroke: "black",
+      stroke: "var(--nya-angle)",
       "stroke-linecap": "round",
       "stroke-linejoin": "round",
     }),
@@ -166,8 +166,8 @@ export function drawAngle(
       sx("path", {
         d: `M ${a3.x} ${a3.y} L ${ox + w * ny} ${oy - w * nx} L ${ox - w * ny} ${oy + w * nx} Z`,
         "stroke-width": 3,
-        stroke: "black",
-        fill: "black",
+        stroke: "var(--nya-angle)",
+        fill: "var(--nya-angle)",
         "stroke-linejoin": "round",
       }),
     )
@@ -175,7 +175,7 @@ export function drawAngle(
     g.appendChild(
       sx("path", {
         d: `${path} L ${o2.x} ${o2.y} Z`,
-        fill: "black",
+        fill: "var(--nya-angle)",
         "fill-opacity": 0.3,
       }),
     )

@@ -937,7 +937,7 @@ function angleInfo(
         g.appendChild(
           sx("path", {
             d: `${path} L ${o2.x} ${o2.y} Z`,
-            fill: "black",
+            fill: "var(--nya-angle)",
             "fill-opacity": 0.3,
           }),
         )
@@ -945,7 +945,7 @@ function angleInfo(
 
       els.push(g)
 
-      return createToken("black", ...els)
+      return createToken("var(--nya-angle)", ...els)
     },
   }
 }

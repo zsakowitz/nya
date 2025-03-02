@@ -21,6 +21,7 @@
 body {
   --nya-bg: white;
   --nya-text: black;
+  --nya-angle: black;
   --nya-selection: theme("colors.blue.200");
   --nya-empty: #0003;
   --nya-bg-sidebar: theme("colors.slate.100");
@@ -57,6 +58,7 @@ body {
   body {
     --nya-bg: theme("colors.slate.950");
     --nya-text: theme("colors.slate.300");
+    --nya-angle: theme("colors.slate.500");
     --nya-selection: theme("colors.blue.900");
     --nya-empty: theme("colors.slate.800");
     --nya-bg-sidebar: theme("colors.slate.900");
@@ -315,10 +317,9 @@ body {
 }
 
 :where(
-    .nya-expr:focus-within:not(:has(.nya-range-scrubber:focus-within))
-      .nya-range,
-    .nya-range-error
-  ) {
+  .nya-expr:focus-within:not(:has(.nya-range-scrubber:focus-within)) .nya-range,
+  .nya-range-error
+) {
   & {
     @apply -mt-2 px-4 leading-none pb-2 text-[1.265em];
   }
