@@ -46,8 +46,6 @@ export function computeArc(p1: Point, p2: Point, p3: Point): Arc {
     return { type: "invalid" }
   }
 
-  // check for collinearity
-
   const l1a: Point = { x: (x1 + x2) / 2, y: (y1 + y2) / 2 }
   const l1b: Point = { x: l1a.x - (y2 - y1), y: l1a.y + (x2 - x1) }
   const l2a: Point = { x: (x3 + x2) / 2, y: (y3 + y2) / 2 }
@@ -55,21 +53,26 @@ export function computeArc(p1: Point, p2: Point, p3: Point): Arc {
 
   const c = intersectLineLineJs([l1a, l1b], [l2a, l2b])
   const r = Math.hypot(c.x - x1, c.y - y1)
-  if (!(isFinite(c.x) && isFinite(c.y) && isFinite(r))) {
-    if (Math.abs((y2 - y1) * (x1 - x2) - (y3 - y2) * (y2 - y1)) < 1e-8) {
-      const direct = Math.hypot(x1 - x3, y1 - y3)
+  const range = Math.max(
+    ...[x1 - x2, x2 - x3, x3 - x1, y1 - y2, y2 - y3, y3 - y1].map(Math.abs),
+  )
 
-      return {
-        type:
-          (
-            Math.hypot(x1 - x2, y1 - y2) > direct ||
-            Math.hypot(x3 - x2, y3 - y2) > direct
-          ) ?
-            "tworay"
-          : "segment",
-        p1,
-        p3,
-      }
+  // Due to floating-point arithmetic, collinearity checks can never be perfect.
+  // This is a best-guess solution which works pretty well on most things, which
+  // is all it needs to do.
+  if (!([c.x, c.y, r].every(isFinite) && Math.abs(r) < 1e10 * range)) {
+    const xmin = Math.min(x1, x3)
+    const ymin = Math.min(y1, y3)
+    const xmax = Math.max(x1, x3)
+    const ymax = Math.max(y1, y3)
+
+    return {
+      type:
+        xmin <= x2 && x2 <= xmax && ymin <= y2 && y2 <= ymax ?
+          "segment"
+        : "tworay",
+      p1,
+      p3,
     }
   }
 

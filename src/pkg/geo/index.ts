@@ -395,22 +395,26 @@ const INFO_SEGMENT = lineInfo(
   "segements",
   "w-[20px] h-0 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-t-2 border-current -rotate-[30deg]",
   (x) => Math.max(0, Math.min(1, x)),
-  (a, b) =>
-    h(
-      "",
-      h(
-        "text-[#2d70b3] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px] overflow-hidden",
-        h(
-          "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
-        ),
-        h({
-          class:
-            "w-[16px] h-0 absolute rounded-full top-1/2 left-1/2 border-t-2 border-current",
-          style: `transform: translate(-50%, -50%) rotate(${-(180 / Math.PI) * Math.atan2(b.y - a.y, b.x - a.x)}deg)`,
-        }),
-      ),
-    ),
+  segmentIcon,
 )
+
+function segmentIcon(a: Point, b: Point, color = "text-[#2d70b3]") {
+  return h(
+    "",
+    h(
+      color +
+        " size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px] overflow-hidden",
+      h(
+        "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
+      ),
+      h({
+        class:
+          "w-[16px] h-0 absolute rounded-full top-1/2 left-1/2 border-t-2 border-current",
+        style: `transform: translate(-50%, -50%) rotate(${-(180 / Math.PI) * Math.atan2(b.y - a.y, b.x - a.x)}deg)`,
+      }),
+    ),
+  )
+}
 
 const INFO_RAY = lineInfo(
   "ray",
@@ -527,12 +531,7 @@ const INFO_VECTOR = lineInfo(
             "stroke-width": 2,
           },
           path(
-            `M ${11 - 8 * x} ${11 - 8 * y}
-             L ${11 + 8 * x} ${11 + 8 * y}
-             M ${11 + 8 * x} ${11 + 8 * y}
-             L ${11 + d * x + w * y} ${11 + d * y - w * x}
-             L ${11 + d * x - w * y} ${11 + d * y + w * x}
-             Z`,
+            `M ${11 - 8 * x} ${11 - 8 * y} L ${11 + 8 * x} ${11 + 8 * y} M ${11 + 8 * x} ${11 + 8 * y} L ${11 + d * x + w * y} ${11 + d * y - w * x} L ${11 + d * x - w * y} ${11 + d * y + w * x} Z`,
           ),
         ),
       ),
@@ -736,6 +735,49 @@ const INFO_ARC: TyInfoByName<"arc"> = {
         ),
       ),
     )
+  },
+  token(val) {
+    const arc = computeArcVal(val)
+
+    switch (arc.type) {
+      case "invalid":
+        return null
+      case "segment":
+        return segmentIcon(arc.p1, arc.p3, "text-[#388c46]")
+      case "tworay":
+        const x = Math.cos(Math.atan2(arc.p3.y - arc.p1.y, arc.p3.x - arc.p1.x))
+        const y = -Math.sin(
+          Math.atan2(arc.p3.y - arc.p1.y, arc.p3.x - arc.p1.x),
+        )
+        return h(
+          "",
+          h(
+            "text-[#388c46] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px] overflow-hidden",
+            h(
+              "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
+            ),
+            sx(
+              "svg",
+              {
+                class: "size-[22px] absolute inset-0 fill-none stroke-current",
+                viewBox: "0 0 22 22",
+                "stroke-linecap": "round",
+                "stroke-width": 2,
+              },
+              path(
+                `M ${11 - 50 * x} ${11 - 50 * y} L ${11 - 4 * x} ${11 - 4 * y} M ${11 + 4 * x} ${11 + 4 * y} L ${11 + 50 * x} ${11 + 50 * y}`,
+              ),
+            ),
+          ),
+        )
+      case "circle":
+        return createToken(
+          "#388c46",
+          path(
+            `M ${arc.p1.x} ${-arc.p1.y} A ${arc.r} ${arc.r} 0 ${+arc.large} ${+arc.swap} ${arc.p3.x} ${-arc.p3.y}`,
+          ),
+        )
+    }
   },
   glide(props) {
     return unglideArc(props.paper, computeArcVal(props.shape), props.point)

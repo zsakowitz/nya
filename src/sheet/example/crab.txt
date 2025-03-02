@@ -1,0 +1,28 @@
+#nya:image#
+s=\operatorname{segment}\left(p_{1},p_{2}\right)
+p_{1}=\left(-5.28,-0.07\right)
+p_{2}=\left(5,0\right)
+C=\operatorname{image}\left(i_{1},s\right)
+q_{1}=\left(-3.57,6.24\right)
+q_{2}=\left(-0.61,5.4\right)
+l_{1}=\operatorname{segment}\left(q_{1},q_{2}\right)
+M\left(x,a,b\right)=\operatorname{rotate}\left(\operatorname{translate}\left(\operatorname{dilate}\left(x,a.\operatorname{glider}\left(0\right),\frac{\operatorname{length}b}{\operatorname{length}a}\right),a.\operatorname{glider}\left(0\right),b.\operatorname{glider}\left(0\right)\right),b.\operatorname{glider}\left(0\right),\operatorname{directedangle}\left(\operatorname{translate}\left(a.\operatorname{glider}\left(1\right),a.\operatorname{glider}\left(0\right),b.\operatorname{glider}\left(0\right)\right),b.\operatorname{glider}\left(0\right),b.\operatorname{glider}\left(1\right)\right)\right)
+b\operatorname{withseq}\operatorname{iterate}^{4}\begin{list}a\to \left(A\left(q\right)\left[i\right]\operatorname{for}q=a,i=Q\right)\\b\to \operatorname{join}\left(b,a\right)\end{list}\operatorname{from}a=\left[C\right],b=\left[C\right]
+A\left(x\right)=M\left(x,s,L\right)
+p_{3}=\left(1.542,5.602\right)
+p_{4}=\left(2.8,6.64\right)
+l_{2}=\operatorname{segment}\left(p_{3},p_{4}\right)
+p_{5}=\left(-4.17,3.4\right)
+p_{6}=\left(-4.94,6.06\right)
+l_{3}=\operatorname{segment}\left(p_{5},p_{6}\right)
+p_{7}=\left(-3.78,4.04\right)
+p_{8}=\left(-2.14,5.52\right)
+l_{4}=\operatorname{segment}\left(p_{7},p_{8}\right)
+p_{9}=\left(2.958,4.061\right)
+p_{10}=\left(2.95,1.54\right)
+l_{5}=\operatorname{segment}\left(p_{9},p_{10}\right)
+L=\left[l_{1},l_{2},l_{3},l_{4},l_{5},l_{6}\right]
+Q=\operatorname{iterate}.a^{L.\operatorname{count}}n\to n+1,a\to \operatorname{join}\left(a,n\right)\operatorname{from}a=\left[\right],n=1
+p_{11}=\left(-0.64,4.95\right)
+p_{12}=\left(-0.97,3.66\right)
+l_{6}=\operatorname{segment}\left(p_{11},p_{12}\right)
