@@ -1,6 +1,6 @@
 import type { Package } from ".."
 import type { JsVal, SPoint } from "../../eval/ty"
-import { num, real, SNANPT, unpt } from "../../eval/ty/create"
+import { num, pt, real, SNANPT, unpt } from "../../eval/ty/create"
 import {
   gliderOnLine,
   WRITE_POINT,
@@ -621,6 +621,22 @@ function angleInfo(
         },
         glsl(expr, ctx) {
           return angleGlsl(ctx, { expr, type })
+        },
+      },
+      c32: {
+        js(value) {
+          return pt(angleJs({ value, type }), real(0))
+        },
+        glsl(expr, ctx) {
+          return `vec2(${angleGlsl(ctx, { expr, type })}, 0)`
+        },
+      },
+      q32: {
+        js(value) {
+          return [angleJs({ value, type }), real(0), real(0), real(0)]
+        },
+        glsl(expr, ctx) {
+          return `vec4(${angleGlsl(ctx, { expr, type })}, 0, 0, 0)`
         },
       },
     },

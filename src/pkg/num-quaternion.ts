@@ -2,6 +2,7 @@ import type { Package } from "."
 import type { GlslContext } from "../eval/lib/fn"
 import type { SReal, Tys } from "../eval/ty"
 import { approx, num, real } from "../eval/ty/create"
+import { TY_INFO } from "../eval/ty/info"
 import { abs, add, div, mul, neg, sub } from "../eval/ty/ops"
 import { h } from "../jsx"
 import {
@@ -207,6 +208,18 @@ export const PKG_NUM_QUATERNION: Package = {
       },
     },
     coerce: {
+      bool: {
+        q32: {
+          js(self) {
+            return self ?
+                [real(1), real(0), real(0), real(0)]
+              : TY_INFO.q32.garbage.js
+          },
+          glsl(self) {
+            return `(${self} ? vec4(1, 0, 0, 0) : vec4(0.0/0.0))`
+          },
+        },
+      },
       r32: {
         q32: {
           js(self) {

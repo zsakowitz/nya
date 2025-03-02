@@ -517,6 +517,14 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
             return `(${self} ? vec2(1,0) : vec2(0.0/0.0))`
           },
         },
+        c64: {
+          js(self) {
+            return self ? pt(real(1), real(0)) : SNANPT
+          },
+          glsl(self) {
+            return `(${self} ? vec4(1,0,0,0) : vec2(0.0/0.0))`
+          },
+        },
       },
     },
     info: {

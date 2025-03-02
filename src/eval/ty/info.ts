@@ -191,3 +191,38 @@ TY_INFO.never = {
     )
   },
 }
+
+export function tidyCoercions() {
+  let go = true
+  while (go) {
+    go = false
+    for (const [ty, info] of Object.entries(TY_INFO)) {
+      for (const src in info.coerce) {
+        for (const dst in TY_INFO[src as TyName].coerce) {
+          if (!(dst in info.coerce)) {
+            go = true
+            ;((info.coerce as TyCoerceMap<any>)[dst as TyName] as TyCoerce<
+              any,
+              any
+            >) = {
+              js(self) {
+                return TY_INFO[src as TyName].coerce[dst as TyName]!.js(
+                  info.coerce[src as TyName]!.js(self as never) as never,
+                )
+              },
+              glsl(self, ctx) {
+                return TY_INFO[src as TyName].coerce[dst as TyName]!.glsl(
+                  info.coerce[src as TyName]!.glsl(self as never, ctx) as never,
+                  ctx,
+                )
+              },
+            }
+            console.warn(
+              `[coerce], '${ty}' coerces to '${src}' but not '${dst}', but '${src}' coerces to '${dst}'; adding a relationship`,
+            )
+          }
+        }
+      }
+    }
+  }
+}

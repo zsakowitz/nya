@@ -17,7 +17,7 @@ import {
 import { FNS, OP_BINARY, OP_UNARY } from "../eval/ops"
 import { VARS } from "../eval/ops/vars"
 import type { TyName } from "../eval/ty"
-import { TY_INFO, type TyCoerce } from "../eval/ty/info"
+import { tidyCoercions, TY_INFO, type TyCoerce } from "../eval/ty/info"
 import type { ParenLhs, ParenRhs } from "../field/cmd/math/brack"
 import { Inits, WordMap, type Options } from "../field/options"
 import type { Package, ToolbarItem } from "../pkg"
@@ -246,6 +246,7 @@ export class SheetFactory {
   }
 
   create() {
+    tidyCoercions()
     const sheet = new Sheet(
       this.options,
       new Exts(
