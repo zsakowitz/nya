@@ -14,7 +14,7 @@ import { CmdBrack } from "../../field/cmd/math/brack"
 import { Block, L, R } from "../../field/model"
 import { h, path, svgx, sx } from "../../jsx"
 import { definePickTy, PICK_TY, toolbar, type Data } from "../../sheet/pick-ty"
-import { normSegment, segmentByPaper } from "../../sheet/ui/paper"
+import { normSegment, segmentByPaper, type Point } from "../../sheet/ui/paper"
 import {
   drawPoint,
   FN_GLIDER,
@@ -95,10 +95,11 @@ declare module "../../eval/ty" {
 }
 
 function lineInfo(
-  name: string,
+  name: "segment" | "ray" | "line" | "vector",
   namePlural: string,
-  clsx: string,
+  clsx: string | (() => HTMLElement),
   glide: ((bound: number) => number) | null,
+  token: (a: Point, b: Point) => HTMLSpanElement | null,
 ): TyInfo<[SPoint, SPoint], never> {
   return {
     name,
@@ -120,17 +121,22 @@ function lineInfo(
         WRITE_POINT.display(value[1], inner)
       },
     },
-    icon() {
-      return h(
-        "",
-        h(
-          "text-[#2d70b3] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px] overflow-hidden",
+    icon:
+      typeof clsx == "function" ? clsx : (
+        () =>
           h(
-            "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
-          ),
-          h(clsx),
-        ),
-      )
+            "",
+            h(
+              "text-[#2d70b3] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px] overflow-hidden",
+              h(
+                "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
+              ),
+              h(clsx),
+            ),
+          )
+      ),
+    token(val) {
+      return token(unpt(val[0]), unpt(val[1]))
     },
     glide:
       glide ?
@@ -389,6 +395,21 @@ const INFO_SEGMENT = lineInfo(
   "segements",
   "w-[20px] h-0 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-t-2 border-current -rotate-[30deg]",
   (x) => Math.max(0, Math.min(1, x)),
+  (a, b) =>
+    h(
+      "",
+      h(
+        "text-[#2d70b3] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px] overflow-hidden",
+        h(
+          "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
+        ),
+        h({
+          class:
+            "w-[16px] h-0 absolute rounded-full top-1/2 left-1/2 border-t-2 border-current",
+          style: `transform: translate(-50%, -50%) rotate(${-(180 / Math.PI) * Math.atan2(b.y - a.y, b.x - a.x)}deg)`,
+        }),
+      ),
+    ),
 )
 
 const INFO_RAY = lineInfo(
@@ -396,6 +417,29 @@ const INFO_RAY = lineInfo(
   "rays",
   "w-[30px] h-0 absolute rounded-full top-1/2 left-1/2 translate-x-[-10px] translate-y-[-3.5px] border-t-2 border-current -rotate-[30deg]",
   (x) => Math.max(0, x),
+  (a, b) => {
+    const x = Math.cos(Math.atan2(b.y - a.y, b.x - a.x))
+    const y = Math.sin(Math.atan2(b.y - a.y, b.x - a.x))
+    return h(
+      "",
+      h(
+        "text-[#2d70b3] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px] overflow-hidden",
+        h(
+          "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
+        ),
+        sx(
+          "svg",
+          {
+            class: "size-[22px] absolute inset-0 fill-none stroke-current",
+            viewBox: "0 0 22 22",
+            "stroke-linecap": "round",
+            "stroke-width": 2,
+          },
+          path(`M ${11 - 8 * x} ${11 + 8 * y} L ${11 + 50 * x} ${11 - 50 * y}`),
+        ),
+      ),
+    )
+  },
 )
 
 const INFO_LINE = lineInfo(
@@ -403,13 +447,98 @@ const INFO_LINE = lineInfo(
   "lines",
   "w-[30px] h-0 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-t-2 border-current -rotate-[30deg]",
   (x) => x,
+  (a, b) => {
+    const x = Math.cos(Math.atan2(b.y - a.y, b.x - a.x))
+    const y = Math.sin(Math.atan2(b.y - a.y, b.x - a.x))
+    return h(
+      "",
+      h(
+        "text-[#2d70b3] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px] overflow-hidden",
+        h(
+          "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
+        ),
+        sx(
+          "svg",
+          {
+            class: "size-[22px] absolute inset-0 fill-none stroke-current",
+            viewBox: "0 0 22 22",
+            "stroke-linecap": "round",
+            "stroke-width": 2,
+          },
+          path(
+            `M ${11 - 50 * x} ${11 + 50 * y} L ${11 + 50 * x} ${11 - 50 * y}`,
+          ),
+        ),
+      ),
+    )
+  },
 )
 
 const INFO_VECTOR = lineInfo(
   "vector",
   "vectors",
   "w-[20px] h-0 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-t-2 border-current -rotate-[30deg] after:absolute after:content-['_'] after:bg-current after:top-[-4px] after:right-[-1px] after:bottom-[-2px] after:w-[6px] after:[clip-path:polygon(0%_0%,100%_50%,0%_100%)]",
+  // [NEW ICON] () =>
+  //   h(
+  //     "",
+  //     h(
+  //       "text-[#2d70b3] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px] overflow-hidden",
+  //       h(
+  //         "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
+  //       ),
+  //       sx(
+  //         "svg",
+  //         {
+  //           class: "size-[22px] absolute inset-0 fill-current stroke-current",
+  //           viewBox: "0 0 22 22",
+  //           "stroke-linecap": "round",
+  //           "stroke-linejoin": "round",
+  //           "stroke-width": 2,
+  //         },
+  //         path(
+  //           `M 4.153044906177569 15.137536216539871 L 17.84695509382243 6.86246378346013 M 17.84695509382243 6.86246378346013 L 13.182216681949255 6.877145363583335 L 15.664738411873175 10.985318419876794 Z`,
+  //         ),
+  //       ),
+  //     ),
+  //   ),
   null,
+  (o1, o2) => {
+    const angle = Math.atan2(o2.y - o1.y, o2.x - o1.x)
+    const x = Math.cos(angle)
+    const y = -Math.sin(angle)
+
+    const sz = 4
+    const d = 8 - sz
+    const w = 0.6 * sz
+
+    return h(
+      "",
+      h(
+        "text-[#2d70b3] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px] overflow-hidden",
+        h(
+          "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
+        ),
+        sx(
+          "svg",
+          {
+            class: "size-[22px] absolute inset-0 fill-current stroke-current",
+            viewBox: "0 0 22 22",
+            "stroke-linecap": "round",
+            "stroke-linejoin": "round",
+            "stroke-width": 2,
+          },
+          path(
+            `M ${11 - 8 * x} ${11 - 8 * y}
+             L ${11 + 8 * x} ${11 + 8 * y}
+             M ${11 + 8 * x} ${11 + 8 * y}
+             L ${11 + d * x + w * y} ${11 + d * y - w * x}
+             L ${11 + d * x - w * y} ${11 + d * y + w * x}
+             Z`,
+          ),
+        ),
+      ),
+    )
+  },
 )
 
 const INFO_CIRCLE: TyInfoByName<"circle"> = {
