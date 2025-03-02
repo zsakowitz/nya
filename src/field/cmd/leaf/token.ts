@@ -143,8 +143,11 @@ export class TokenCtx {
           } else if (value) {
             type = value.type
           }
-        } catch (f) {
-          console.warn("[tokenctx.update]", e, f)
+        } catch {
+          console.warn(
+            "[tokenctx.update]",
+            e instanceof Error ? e.message : String(e),
+          )
         }
       }
 
