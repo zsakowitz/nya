@@ -45,7 +45,7 @@ to do list for features is:
 ❌ perpendicular bisector picker
 ❌ folders
 ❌ normal images
-❌ tokens for perpendicular, parallel, glider, intersection, bisectors
+❌ tokens for parallel, glider, intersection, bisectors
 ❌ grabbing objects previews the result
 ❌ objects are automatically grabbable in function names, lists, and operators
 
