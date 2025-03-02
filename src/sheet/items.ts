@@ -3,9 +3,10 @@ import { h, t } from "../jsx"
 import type { ItemFactory } from "./item"
 import type { Sheet } from "./ui/sheet"
 
-export interface ItemCreateProps {
+export interface ItemCreateProps<U> {
   at?: number
   focus?: boolean
+  from?: NoInfer<U>
 }
 
 export class ItemList {
@@ -44,7 +45,7 @@ export class ItemList {
   }
 
   /** `ref` should already have `data` stored. */
-  private createOf<T>(ref: ItemRef<T>, props?: ItemCreateProps) {
+  private createOf<T, U>(ref: ItemRef<T>, props?: ItemCreateProps<U>) {
     const data = ref.data
     const el = ref.factory.el(data)
     ;(ref as ItemRefMut).el = el
@@ -60,46 +61,50 @@ export class ItemList {
 
     this.queueIndices()
     if (props?.focus) {
-      // if (before) {
-      //   setTimeout(() => before.scrollIntoView({ behavior: "instant" }))
-      // }
       setTimeout(() => ref.focus())
     }
   }
 
-  create<T>(factory: ItemFactory<T>, props?: ItemCreateProps) {
+  create<T, U>(factory: ItemFactory<T, U>, props?: ItemCreateProps<U>) {
     const ref = new ItemRef<T>(this, factory, null!, null!, t("??"))
-    ;(ref as ItemRefMut).data = factory.init(ref)
+    ;(ref as ItemRefMut).data = factory.init(ref, undefined, props?.from)
     this.createOf(ref, props)
     return ref
   }
 
-  createDefault(props?: ItemCreateProps) {
+  createDefault(props?: ItemCreateProps<undefined>) {
     return this.create(this.sheet.factory.defaultItem, props)
   }
 
-  private fromStringByFactory<T>(
-    factory: ItemFactory<T>,
+  private fromStringByFactory<T, U>(
+    factory: ItemFactory<T, U>,
     source: string,
-    props?: ItemCreateProps,
+    props?: ItemCreateProps<U>,
   ) {
     const elIndex = t("??")
     const ref = new ItemRef(this, factory, null!, null!, elIndex)
-    const data = factory.init(ref, source)
+    const data = factory.init(ref, source, props?.from)
     ;(ref as ItemRefMut).data = data
     this.createOf(ref, props)
     return ref
   }
 
-  private fromStringDefault(source: string, props?: ItemCreateProps) {
-    return this.fromStringByFactory(
+  private fromStringDefault(
+    source: string,
+    props?: ItemCreateProps<undefined>,
+  ) {
+    return this.fromStringByFactory<unknown, undefined>(
       this.sheet.factory.defaultItem,
       source,
       props,
     )
   }
 
-  private fromStringById(id: string, source: string, props?: ItemCreateProps) {
+  private fromStringById(
+    id: string,
+    source: string,
+    props?: ItemCreateProps<undefined>,
+  ) {
     const factory =
       this.sheet.factory.defaultItem.id == id ?
         this.sheet.factory.defaultItem
@@ -110,7 +115,7 @@ export class ItemList {
     return this.fromStringByFactory(factory, source, props)
   }
 
-  fromString(source: string, props?: ItemCreateProps): ItemRef<unknown> {
+  fromString(source: string, props?: ItemCreateProps<undefined>) {
     if (source[0] == "#") {
       const next = source.indexOf("#", 1)
       if (next == -1) {

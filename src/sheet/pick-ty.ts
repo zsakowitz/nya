@@ -105,7 +105,7 @@ export const PICK_TY: Picker<Data, Selected> = {
       args.slice(0, -1).includes(found.val) ? refs.pop()! : found.ref()
 
     if (!data.src.create?.(sheet, [...data.vals, found]) && data.src.fn) {
-      const expr = Expr.of(sheet)
+      const expr = Expr.of(sheet, true)
       const cursor = expr.field.block.cursor(R)
       const token = CmdToken.new(expr.field.ctx)
       token.insertAt(cursor, L)

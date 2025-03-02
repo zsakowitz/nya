@@ -5,16 +5,17 @@ import {
 import type { GlslResult } from "../eval/lib/fn"
 import { LatexParser } from "../field/latex"
 import { L, R, U, type VDir } from "../field/model"
+import { h } from "../jsx"
 import type { ItemRef } from "./items"
 import { Expr } from "./ui/expr"
 
-export interface ItemFactory<T> {
+export interface ItemFactory<T, U = unknown> {
   id: string
   name: string
   icon: IconDefinition
 
   /** The passed {@linkcode ItemRef} is mostly uninitialized. */
-  init(ref: ItemRef<T>, source?: string): T
+  init(ref: ItemRef<T>, source: string | undefined, from: U | undefined): T
   el(data: T): HTMLElement
   draw?(data: T): void
   glsl?(data: T): GlslResult | undefined
@@ -31,13 +32,13 @@ export interface ItemFactory<T> {
 
 export type AnyItemFactory = ItemFactory<unknown>
 
-export const FACTORY_EXPR: ItemFactory<Expr> = {
+export const FACTORY_EXPR: ItemFactory<Expr, { geo?: boolean }> = {
   id: "nya:expr",
   name: "field",
   icon: faSquareRootVariable,
 
-  init(ref, source) {
-    const expr = new Expr(ref.list.sheet, ref)
+  init(ref, source, props) {
+    const expr = new Expr(ref.list.sheet, ref, !!props?.geo)
     if (source) {
       expr.field.onBeforeChange()
       const block = new LatexParser(
@@ -53,7 +54,21 @@ export const FACTORY_EXPR: ItemFactory<Expr> = {
     return expr
   },
   el(data) {
-    return data.el
+    return data.geo ?
+        ((data.field.el.className =
+          "nya-display cursor-text whitespace-nowrap font-['Symbola','Times_New_Roman',serif] text-[1.265em] font-normal not-italic [line-height:1] cursor-text block select-none inline-block pb-1 pt-1.5 px-4 focus:outline-none"),
+        h(
+          "grid grid-cols-[2.5rem_auto] border-r border-b relative nya-expr border-[--nya-border]",
+          h(
+            "nya-expr-bar inline-flex bg-[--nya-bg-sidebar] flex-col p-0.5 border-r border-[--nya-border] font-sans text-[--nya-expr-index] text-[65%] leading-none focus:outline-none",
+            data.ref.elIndex,
+          ),
+          data.field.el,
+          h(
+            "hidden absolute -inset-y-px inset-x-0 [:first-child>&]:top-0 border-2 border-[--nya-expr-focus] pointer-events-none [:focus-within>&]:block [:active>&]:block",
+          ),
+        ))
+      : data.el
   },
   draw(expr) {
     if (expr.state.ok && expr.state.ext?.svg) {

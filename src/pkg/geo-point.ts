@@ -563,6 +563,9 @@ export const PKG_GEO_POINT: Package = {
             [(x) => x.y, (x) => `${x}.zw`],
           ],
         },
+        preview(paper, val) {
+          drawPoint(paper, { at: unpt(val), ghost: true })
+        },
       },
       point32: {
         name: "point",
@@ -580,6 +583,9 @@ export const PKG_GEO_POINT: Package = {
             [(x) => x.x, (x) => `${x}.x`],
             [(x) => x.y, (x) => `${x}.y`],
           ],
+        },
+        preview(paper, val) {
+          drawPoint(paper, { at: unpt(val), ghost: true })
         },
       },
     },

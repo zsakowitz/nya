@@ -53,7 +53,7 @@ export function virtualPoint(
         const r1 = o1.ref()
         const r2 = o2.ref()
 
-        const expr = Expr.of(sheet)
+        const expr = Expr.of(sheet, true)
         ref = CmdToken.new(sheet.scope.ctx)
         const cursor = expr.field.block.cursor(R)
         ref.insertAt(cursor, L)
@@ -122,7 +122,7 @@ export function virtualPoint(
 
         const o1 = obj.ref()
 
-        const expr = Expr.of(sheet)
+        const expr = Expr.of(sheet, true)
         ref = CmdToken.new(sheet.scope.ctx)
         const cursor = expr.field.block.cursor(R)
         ref.insertAt(cursor, L)
@@ -174,7 +174,7 @@ export function virtualPoint(
         return ret
       }
 
-      const expr = Expr.of(sheet)
+      const expr = Expr.of(sheet, true)
       ref = CmdToken.new(sheet.scope.ctx)
       const cursor = expr.field.block.cursor(R)
       ref.insertAt(cursor, L)

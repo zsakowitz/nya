@@ -23,8 +23,8 @@ type ExprState =
   | { ok: true; ext: AnyExt | null; data: {} }
 
 export class Expr {
-  static of(sheet: Sheet) {
-    return sheet.list.create(FACTORY_EXPR).data
+  static of(sheet: Sheet, geo?: boolean) {
+    return sheet.list.create(FACTORY_EXPR, { from: { geo } }).data
   }
 
   readonly field
@@ -40,9 +40,10 @@ export class Expr {
   constructor(
     readonly sheet: Sheet,
     readonly ref: ItemRef<Expr>,
+    readonly geo: boolean,
   ) {
     this.el = h(
-      "grid grid-cols-[2.5rem_auto] border-r border-b border-[--nya-border] relative nya-expr",
+      "grid grid-cols-[2.5rem_auto] border-r border-b relative nya-expr border-[--nya-border]",
     )
     this.field = new Field(
       this,
@@ -93,7 +94,6 @@ export class Expr {
         "hidden absolute -inset-y-px inset-x-0 [:first-child>&]:top-0 border-2 border-[--nya-expr-focus] pointer-events-none [:focus-within>&]:block [:active>&]:block",
       ),
     )
-    this.sheet.elExpressions.appendChild(this.el)
 
     this.field.el.addEventListener("keydown", (event) => {
       if (event.key == "Enter" && !event.ctrlKey && !event.metaKey) {

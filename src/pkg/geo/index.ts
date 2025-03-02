@@ -366,7 +366,7 @@ function createPick(type: "angle" | "directedangle"): Data {
         }
 
         for (let i = 0; i < a.val.value.length; i++) {
-          const expr = Expr.of(sheet)
+          const expr = Expr.of(sheet, true)
           const cursor = expr.field.block.cursor(R)
 
           const token = CmdToken.new(expr.field.ctx)
