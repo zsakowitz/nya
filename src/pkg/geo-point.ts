@@ -6,7 +6,7 @@ import { ERR_COORDS_USED_OUTSIDE_GLSL } from "../eval/ops/vars"
 import { each, type JsValue } from "../eval/ty"
 import { approx, frac, num, pt, real, SNANPT, unpt } from "../eval/ty/create"
 import { highRes, TY_INFO, WRITE_POINT, type TyGlide } from "../eval/ty/info"
-import { abs, add, mul, neg } from "../eval/ty/ops"
+import { abs, add, div, mul, neg } from "../eval/ty/ops"
 import { OpEq } from "../field/cmd/leaf/cmp"
 import { CmdDot } from "../field/cmd/leaf/dot"
 import { CmdToken } from "../field/cmd/leaf/token"
@@ -28,6 +28,8 @@ import {
   declareOdotC64,
   OP_ABS,
   OP_ADD,
+  OP_CDOT,
+  OP_DIV,
   OP_NEG,
   OP_ODOT,
   OP_POINT,
@@ -486,6 +488,48 @@ export const PKG_GEO_POINT: Package = {
         throw new Error(ERR_COORDS_USED_OUTSIDE_GLSL)
       },
       (ctx, a) => declareDebugPoint(ctx, a),
+    )
+
+    OP_CDOT.add(
+      ["point32", "r32"],
+      "point32",
+      (a, b) => pt(mul(a.value.x, b.value), mul(a.value.y, b.value)),
+      (_, a, b) => `(${a.expr} * ${b.expr})`,
+    )
+      .add(
+        ["r32", "point32"],
+        "point32",
+        (b, a) => pt(mul(a.value.x, b.value), mul(a.value.y, b.value)),
+        (_, a, b) => `(${a.expr} * ${b.expr})`,
+      )
+      .add(
+        ["point64", "r64"],
+        "point64",
+        (a, b) => pt(mul(a.value.x, b.value), mul(a.value.y, b.value)),
+        (ctx, ar, br) => {
+          declareMulR64(ctx)
+          const a = ctx.cache(ar)
+          const b = ctx.cache(br)
+          return `vec4(_helper_mul_r64(${a}.xy, ${b}), _helper_mul_r64(${a}.zw, ${b}))`
+        },
+      )
+      .add(
+        ["r64", "point64"],
+        "point64",
+        (b, a) => pt(mul(a.value.x, b.value), mul(a.value.y, b.value)),
+        (ctx, br, ar) => {
+          declareMulR64(ctx)
+          const a = ctx.cache(ar)
+          const b = ctx.cache(br)
+          return `vec4(_helper_mul_r64(${a}.xy, ${b}), _helper_mul_r64(${a}.zw, ${b}))`
+        },
+      )
+
+    OP_DIV.add(
+      ["point32", "r32"],
+      "point32",
+      (a, b) => pt(div(a.value.x, b.value), div(a.value.y, b.value)),
+      (_, a, b) => `(${a.expr} / ${b.expr})`,
     )
   },
   ty: {
