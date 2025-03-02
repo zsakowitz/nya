@@ -263,4 +263,10 @@ export const options: Options = Object.freeze<Options>({
       : cmd instanceof CmdVar && cmd.kind == null)
     )
   },
+  wordsInSubscript(cmd) {
+    return (
+      cmd[L] instanceof CmdVar &&
+      (cmd[L].kind == "prefix" || cmd[L].kind == "magicprefix")
+    )
+  },
 })

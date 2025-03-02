@@ -1,4 +1,5 @@
 import type { WordKind } from "./cmd/leaf/var"
+import type { CmdSupSub } from "./cmd/math/supsub"
 import type { LatexInit } from "./latex"
 import type { Command, Init } from "./model"
 
@@ -145,6 +146,12 @@ export interface Options {
 
   /** If `true`, letter substitution will still occur in subscripts. */
   autoCmdsInSubscripts?: boolean
+
+  /**
+   * If this returns `true`, words will still be created in the given subscript
+   * block.
+   */
+  wordsInSubscript?(command: CmdSupSub): boolean
 
   /** If `true`, typing a `CmdOp` in a subscript will exit the subscript. */
   exitSubWithOp?: boolean

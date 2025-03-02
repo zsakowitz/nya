@@ -160,6 +160,15 @@ export class CmdVar extends Leaf {
   }
 
   private checkWords(words: WordMap<WordKind>) {
+    if (
+      this.parent?.parent instanceof CmdSupSub &&
+      this.parent == this.parent.parent.sub
+    ) {
+      if (!this.options.wordsInSubscript?.(this.parent.parent)) {
+        return
+      }
+    }
+
     const vars: CmdVar[] = [this]
 
     let lhs: CmdVar = this

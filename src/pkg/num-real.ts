@@ -276,6 +276,17 @@ export const FN_LOG10 = new FnDist(
   (_, a) => `(log(${a.expr}) / log(10.0))`,
 )
 
+export const FN_LOGB = new FnDist(
+  "log with subscript",
+  "takes the logarithm of a value in some base",
+  "Cannot take the logarithm of %%.",
+).add(
+  ["r32", "r32"],
+  "r32",
+  (b, a) => approx(Math.log(num(a.value)) / Math.log(num(b.value))),
+  (_, b, a) => `(log(${a.expr}) / log(${b.expr}))`,
+)
+
 function mulR64(ctx: GlslContext, a: string, b: string) {
   declareMulR64(ctx)
   return `_helper_mul_r64(${a}, ${b})`
@@ -576,6 +587,7 @@ float _helper_cmp_r32(float a, float b) {
       sign: FN_SIGN,
       ln: FN_LN,
       log: FN_LOG10,
+      log_: FN_LOGB,
       exp: FN_EXP,
       unsign: FN_UNSIGN,
       valid: FN_VALID,
