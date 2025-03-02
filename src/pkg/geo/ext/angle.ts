@@ -20,8 +20,8 @@ import {
 import { STORE_EVAL } from "../../eval"
 import { pick } from "./util"
 
-export const LINE = 32
-export const ARC = 20
+const LINE = 32
+const ARC = 20
 
 export function angleJs({ value, type }: JsVal<"angle" | "directedangle">) {
   const p0 = unpt(value[0])

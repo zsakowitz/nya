@@ -29,14 +29,7 @@ import {
 } from "../geo-point"
 import { PKG_REAL } from "../num-real"
 import { computeArcVal, unglideArc } from "./arc"
-import {
-  angleGlsl,
-  angleJs,
-  ARC,
-  drawAngle,
-  EXT_ANGLE,
-  LINE,
-} from "./ext/angle"
+import { angleGlsl, angleJs, drawAngle, EXT_ANGLE } from "./ext/angle"
 import { drawArc, EXT_ARC } from "./ext/arc"
 import { drawCircle, EXT_CIRCLE } from "./ext/circle"
 import { drawLine, EXT_LINE } from "./ext/line"
@@ -864,6 +857,9 @@ function angleInfo(
   type: "angle" | "directedangle",
   svg: () => SVGSVGElement,
 ): TyInfoByName<"angle" | "directedangle"> {
+  const LINE = 32
+  const ARC = type == "directedangle" ? 28 : 20
+
   return {
     name: type == "angle" ? "angle" : "directed angle",
     namePlural: type == "angle" ? "angles" : "directed angles",
