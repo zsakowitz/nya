@@ -2,13 +2,18 @@ import { each, type JsValue } from "../../../eval/ty"
 import { unpt } from "../../../eval/ty/create"
 import { sx } from "../../../jsx"
 import { defineHideable } from "../../../sheet/ext/hideable"
-import type { DrawLineProps, Paper, Point } from "../../../sheet/ui/paper"
+import {
+  type DrawLineProps,
+  type Paper,
+  type Point,
+} from "../../../sheet/ui/paper"
+import { pick } from "./util"
 
 export function drawVector(
   paper: Paper,
   p1: Point,
   p2: Point,
-  props?: Pick<DrawLineProps, "ghost">,
+  props?: Omit<DrawLineProps, "kind">,
 ) {
   const o1 = paper.toOffset(p1)
   const o2 = paper.toOffset(p2)
@@ -24,31 +29,48 @@ export function drawVector(
   const oy = o2.y - ny
   const w = 0.4
 
-  paper.append(
-    "line",
-    sx("line", {
-      x1: o1.x,
-      y1: o1.y,
-      x2: o2.x,
-      y2: o2.y,
-      "stroke-width": 3,
-      stroke: "#2d70b3",
-      "stroke-linecap": "round",
-      class: props?.ghost ? "pointer-events-none" : "",
-    }),
-  )
+  const d = `M ${o1.x} ${o1.y} L ${o2.x} ${o2.y} M ${o2.x} ${o2.y} L ${ox + w * ny} ${oy - w * nx} L ${ox - w * ny} ${oy + w * nx} Z`
 
   paper.append(
     "line",
     sx("path", {
-      d: `M ${o2.x} ${o2.y} L ${ox + w * ny} ${oy - w * nx} L ${ox - w * ny} ${oy + w * nx} Z`,
+      d,
       "stroke-width": 3,
       stroke: "#2d70b3",
       fill: "#2d70b3",
+      "stroke-linecap": "round",
       "stroke-linejoin": "round",
       class: props?.ghost ? "pointer-events-none" : "",
     }),
   )
+
+  if (props?.drag || props?.pick) {
+    const ring = sx("path", {
+      d,
+      "stroke-width": 8,
+      stroke: "transparent",
+      "stroke-linecap": "round",
+      "stroke-linejoin": "round",
+    })
+    const target = sx("path", {
+      d,
+      "stroke-width": 12,
+      stroke: "transparent",
+      fill: "transparent",
+      "stroke-linecap": "round",
+      "stroke-linejoin": "round",
+      drag: props.drag,
+      pick: props.pick && {
+        ...props.pick,
+        draw() {
+          ring.setAttribute("stroke", "#2d70b3" + "60")
+          target.classList.add("cursor-pointer")
+        },
+      },
+    })
+    paper.append("line", ring)
+    paper.append("line", target)
+  }
 }
 
 export const EXT_VECTOR = defineHideable({
@@ -56,12 +78,14 @@ export const EXT_VECTOR = defineHideable({
     const value = expr.js?.value
 
     if (value && value.type == "vector") {
-      return { value: value as JsValue<"vector"> }
+      return { value: value as JsValue<"vector">, expr }
     }
   },
   svg(data, paper) {
     for (const val of each(data.value)) {
-      drawVector(paper, unpt(val[0]), unpt(val[1]))
+      drawVector(paper, unpt(val[0]), unpt(val[1]), {
+        pick: pick(val, data, data.expr.field.ctx),
+      })
     }
   },
 })

@@ -31,7 +31,8 @@ const FACTORY: ItemFactory<Data> = {
     }
 
     const field = hx("textarea", {
-      class: "px-4 py-3 focus:outline-none font-sans resize-none",
+      class:
+        "px-4 py-3 focus:outline-none font-sans resize-none bg-transparent",
       value: contents,
       spellcheck: "false",
     })
@@ -83,6 +84,8 @@ const FACTORY: ItemFactory<Data> = {
     }
 
     addEventListener("resize", resize)
+
+    queueMicrotask(resize)
 
     return data
   },
