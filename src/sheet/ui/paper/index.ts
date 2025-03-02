@@ -22,10 +22,9 @@ export interface Point {
 interface LayerShared {
   image: 0
   angleline: 2
-  polygontarget: 3
-  line: 4
-  anglearc: 5
-  point: 6
+  line: 3
+  anglearc: 4
+  point: 5
 }
 
 interface LayerExclusive {
@@ -35,10 +34,9 @@ interface LayerExclusive {
 const LAYER_SHARED: LayerShared = {
   image: 0,
   angleline: 2,
-  polygontarget: 3,
-  line: 4,
-  anglearc: 5,
-  point: 6,
+  line: 3,
+  anglearc: 4,
+  point: 5,
 }
 Object.setPrototypeOf(LAYER_SHARED, null)
 

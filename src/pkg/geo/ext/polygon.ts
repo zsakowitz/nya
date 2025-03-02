@@ -114,6 +114,7 @@ export function drawPolygon(
       stroke: "transparent",
       "stroke-linecap": "round",
       "stroke-linejoin": "round",
+      class: "pointer-events-none",
     })
 
     const target = sx("path", {
@@ -128,12 +129,12 @@ export function drawPolygon(
           requestAnimationFrame(() => props.pick!.expr.focus())
         },
         ref() {
-          let block, cursor
+          let block
 
           if (pick.expr.field.ast.type == "binding") {
             block = new Block(null)
             CmdVar.leftOf(
-              (cursor = block.cursor(R)),
+              block.cursor(R),
               pick.expr.field.ast.name,
               pick.expr.field.options,
               pick.expr.field.ctx,
@@ -144,7 +145,7 @@ export function drawPolygon(
             name.insertAt(c, L)
             new OpEq(false).insertAt(c, L)
             block = new Block(null)
-            name.clone().insertAt((cursor = block.cursor(R)), L)
+            name.clone().insertAt(block.cursor(R), L)
             pick.expr.field.dirtyAst = pick.expr.field.dirtyValue = true
             pick.expr.field.trackNameNow()
             pick.expr.field.scope.queueUpdate()
@@ -159,7 +160,7 @@ export function drawPolygon(
     })
 
     paper.append("line", ring)
-    paper.append("polygontarget", target)
+    paper.append("line", target)
   }
 }
 
