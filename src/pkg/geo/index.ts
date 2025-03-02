@@ -1,5 +1,5 @@
 import type { Package } from ".."
-import type { JsVal, Tys } from "../../eval/ty"
+import { type JsVal, type Tys } from "../../eval/ty"
 import { num, pt, real, SNANPT, unpt } from "../../eval/ty/create"
 import {
   gliderOnLine,
@@ -152,6 +152,33 @@ function lineInfo<T extends "segment" | "ray" | "line" | "vector">(
           }
         }
       : undefined,
+    preview(paper, val) {
+      switch (name) {
+        case "segment":
+          segmentByPaper(paper, unpt(val[0]), unpt(val[1]), {
+            kind: "segment",
+            ghost: true,
+          })
+          break
+        case "ray":
+          drawRay(paper, unpt(val[0]), unpt(val[1]), {
+            kind: "ray",
+            ghost: true,
+          })
+          break
+        case "line":
+          drawLine(paper, unpt(val[0]), unpt(val[1]), {
+            kind: "line",
+            ghost: true,
+          })
+          break
+        case "vector":
+          drawVector(paper, unpt(val[0]), unpt(val[1]), {
+            ghost: true,
+          })
+          break
+      }
+    },
   }
 }
 
@@ -662,6 +689,13 @@ const INFO_CIRCLE: TyInfoByName<"circle"> = {
       value: angle / 2 / Math.PI,
     }
   },
+  preview(paper, val) {
+    drawCircle(paper, {
+      at: unpt(val.center),
+      r: num(val.radius),
+      ghost: true,
+    })
+  },
 }
 
 const INFO_POLYGON: TyInfoByName<"polygon"> = {
@@ -733,6 +767,12 @@ const INFO_POLYGON: TyInfoByName<"polygon"> = {
         `M ${pts[0]!.x} ${-pts[0]!.y}${pts.slice(1).map((pt) => ` L ${pt.x} ${-pt.y}`)} Z`,
       ),
     )
+  },
+  preview(paper, val) {
+    drawPolygon(paper, val.map(unpt), {
+      closed: false,
+      ghost: true,
+    })
   },
 }
 
@@ -850,6 +890,13 @@ const INFO_ARC: TyInfoByName<"arc"> = {
   },
   glide(props) {
     return unglideArc(props.paper, computeArcVal(props.shape), props.point)
+  },
+  preview(paper, val) {
+    drawArc(paper, {
+      arc: computeArcVal(val),
+      kind: "arc",
+      ghost: true,
+    })
   },
 }
 
@@ -1018,6 +1065,13 @@ function angleInfo(
       els.push(g)
 
       return createToken("var(--nya-angle)", ...els)
+    },
+    preview(paper, val) {
+      drawAngle(paper, unpt(val[0]), unpt(val[1]), unpt(val[2]), {
+        kind: type,
+        draft: true,
+        ghost: true,
+      })
     },
   }
 }

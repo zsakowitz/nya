@@ -22,6 +22,7 @@ export interface TyInfo<T, U extends TyName> {
   write: TyWrite<T>
   icon(): HTMLSpanElement
   token?(val: T): HTMLSpanElement | null
+  preview?(paper: Paper, val: T): void
   glide?: TyGlide<T>
   components?: TyComponentInfo<T, U>
 }

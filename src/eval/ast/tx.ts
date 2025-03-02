@@ -341,6 +341,19 @@ export const TXR_AST: { [K in NodeName]?: TxrAst<Nodes[K]> } = {
     () => {},
   ),
 
+  // A special built-in used for previewing picked objects
+  value: {
+    deps() {},
+    drag: NO_DRAG,
+    glsl() {
+      throw new Error("Cannot evaluate a 'value' node in a shader.")
+    },
+    js(node) {
+      return node.value
+    },
+    layer: -1,
+  },
+
   // Everything else just errors or adds dependencies.
   void: error`Empty expression.`(() => {}),
   commalist: error`Lists must be surrounded by square brackets.`(

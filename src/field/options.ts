@@ -165,9 +165,15 @@ export interface Options {
   /** If `true`, big symbols will default to having no upper bound. */
   noAutoBigBound?: boolean
 
-  /** Called before inserting a value into an expression. */
+  /**
+   * Called before inserting a value into an expression. Should only insert
+   * things around the cursor.
+   */
   beforeInsert?(cursor: Cursor): void
 
-  /** Called after inserting a value into an expression. */
+  /**
+   * Called after inserting a value into an expression. Not called when
+   * previewing an inserted value.
+   */
   afterInsert?(cursor: Cursor): void
 }

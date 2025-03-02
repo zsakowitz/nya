@@ -1,6 +1,8 @@
-import type { TyName } from "../eval/ty"
+import { js } from "../eval/js"
+import { each, type TyName } from "../eval/ty"
 import { TY_INFO } from "../eval/ty/info"
-import { L } from "../field/model"
+import { CmdValue } from "../field/cmd/leaf/value"
+import { L, R } from "../field/model"
 import { virtualPoint } from "../pkg/geo/pick-point"
 import type { Picker } from "./pick"
 import type { Expr } from "./ui/expr"
@@ -45,8 +47,43 @@ export const PICK_CURSOR: Picker<Data, Selected> = {
 
     return virtualPoint(at, sheet)
   },
-  draw(_, found) {
-    found?.draw?.()
+  draw(data, found) {
+    if (!found) return
+
+    const sel = data.expr.field.sel.clone()
+    const oldContents = sel.splice()
+    const cursor = sel.cursor(R)
+
+    try {
+      data.expr.field.options.beforeInsert?.(cursor)
+      new CmdValue({ ...found.val, list: false }).insertAt(cursor, L)
+      let ast = data.expr.field.block.expr(true)
+      if (ast.type == "binding") {
+        if (ast.params) {
+          return
+        }
+        ast = ast.value
+      }
+
+      try {
+        const value = js(ast, data.expr.field.scope.propsJs)
+        const { preview: draw } = TY_INFO[value.type]
+        if (draw) {
+          for (const val of each(value)) {
+            draw(data.expr.sheet.paper, val as never)
+          }
+        }
+      } catch (e) {
+        console.warn(
+          "[pickcursor.preview]",
+          e instanceof Error ? e.message : String(e),
+        )
+      }
+    } finally {
+      sel.remove()
+      oldContents.insertAt(sel.cursor(R), L)
+      found.draw?.()
+    }
   },
   select(data, found) {
     data.expr.field.onBeforeChange()
@@ -56,7 +93,8 @@ export const PICK_CURSOR: Picker<Data, Selected> = {
     data.expr.field.options.afterInsert?.(cursor)
     data.expr.field.sel = cursor.selection()
     data.expr.field.onAfterChange(false)
-    requestAnimationFrame(() => data.expr.field.el.focus())
+    data.expr.field.el.focus()
+
     return { pick: PICK_CURSOR, data }
   },
   cancel() {},

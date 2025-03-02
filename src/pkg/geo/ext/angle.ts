@@ -82,7 +82,7 @@ export function drawAngle(
   p1: Point,
   p2: Point,
   p3: Point,
-  props: Pick<DrawLineProps, "drag" | "pick"> & {
+  props: Pick<DrawLineProps, "drag" | "pick" | "ghost"> & {
     draft?: boolean
     kind: "angle" | "directedangle"
   },
@@ -116,9 +116,9 @@ export function drawAngle(
         stroke: "var(--nya-angle)",
         "stroke-linecap": "round",
         class:
-          props?.draft ? "" : (
-            "picking-any:opacity-30 picking-angle:opacity-100"
-          ),
+          props.ghost ? "pointer-events-none"
+          : props?.draft ? ""
+          : "picking-any:opacity-30 picking-angle:opacity-100",
       }),
     )
   }
@@ -166,7 +166,9 @@ export function drawAngle(
 
   const g = sx(
     "g",
-    props?.draft ? "" : "picking-any:opacity-30 picking-angle:opacity-100",
+    props.ghost ? "pointer-events-none"
+    : props?.draft ? ""
+    : "picking-any:opacity-30 picking-angle:opacity-100",
     sx("path", {
       d,
       "stroke-width": 3,

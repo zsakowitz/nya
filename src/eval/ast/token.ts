@@ -5,7 +5,7 @@ import type { Span } from "../../field/model"
 import { tryParseFnParam, type FnParam } from "../lib/binding"
 import { isSubscript } from "../lib/text"
 import { VARS } from "../ops/vars"
-import type { TyName } from "../ty"
+import type { JsValue, TyName } from "../ty"
 import { commalist } from "./collect"
 import { pass1_suffixes } from "./pass1.suffixes"
 import { pass2_implicits } from "./pass2.implicits"
@@ -239,6 +239,7 @@ export interface Nodes {
   punc: Punc
   tyname: { name: TyName }
   tycoerce: { name: TyName; value: Node }
+  value: { value: JsValue }
 }
 
 export type NodeName = keyof Nodes
