@@ -153,6 +153,7 @@ export interface TxrSuffixArgs<T, U> {
 }
 
 export interface TxrSuffix<T> {
+  drag?: DragTarget<{ lhs: Node; rhs: T }>
   js(node: TxrSuffixArgs<T, JsValue>, props: PropsJs): JsValue
   glsl(node: TxrSuffixArgs<T, GlslValue>, props: PropsGlsl): GlslValue
   deps(node: T, deps: Deps): void
@@ -384,7 +385,14 @@ export const TXR_AST: { [K in NodeName]?: TxrAst<Nodes[K]> } = {
 
   // Delegates to `TXR_SUFFIX` so that different packages can specify suffixes
   suffixed: {
-    drag: NO_DRAG,
+    drag: {
+      point(node, props) {
+        return null
+      },
+      num(node, props) {
+        return null
+      },
+    },
     layer: -1,
     js(node, props) {
       const rest = node.suffixes.slice()
