@@ -49,6 +49,17 @@ const REMARKS = [
   "options to inits to exts to packages",
   "sorry we keep taking down the site",
   "now with quaternions!",
+  "angle bisector ≠ triangle median",
+  "use @ to type tokens",
+  "'mom can we get a desmos?' 'no, we have a desmos at home'",
+  "intuitive images 🙁 images on line segments 🤩",
+  "slowly making an operating system",
+  "WE HAVE KEYBOARD SHORTCUTS :spair:",
+  "monkey patching? sounds hacky.",
+  "so much documentation that it's unhelpful",
+  "lock in 😐",
+  "¡try spanish factorial notation!",
+  "on our way to make a CAS system...",
 ]
 
 export const REMARK = REMARKS[Math.floor(REMARKS.length * Math.random())]!
