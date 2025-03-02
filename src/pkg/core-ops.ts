@@ -1,9 +1,14 @@
 import type { Package } from "."
 import { commalist, fnargs } from "../eval/ast/collect"
-import { Precedence, type PuncUnary } from "../eval/ast/token"
+import {
+  Precedence,
+  type Node,
+  type PuncUnary,
+  type Var,
+} from "../eval/ast/token"
 import { dragNum, dragPoint, group, NO_DRAG } from "../eval/ast/tx"
-import { glsl, glslCall } from "../eval/glsl"
-import { js, jsCall } from "../eval/js"
+import { glsl, glslCall, type PropsGlsl } from "../eval/glsl"
+import { js, jsCall, type PropsJs } from "../eval/js"
 import { asNumericBase, parseNumberJs } from "../eval/lib/base"
 import { BindingFn, id, name, tryId, tryName } from "../eval/lib/binding"
 import type { GlslContext } from "../eval/lib/fn"
@@ -278,7 +283,7 @@ export const PKG_CORE_OPS: Package = {
                   return value
                 }
               } else if (rhs.kind == "prefix") {
-                return jsCall(rhs.value, [lhs], true, props)
+                return callJs(rhs, [lhs], props)
               }
             }
 
@@ -299,7 +304,7 @@ export const PKG_CORE_OPS: Package = {
                   return value
                 }
               } else if (rhs.kind == "prefix") {
-                return glslCall(rhs.value, [lhs], true, props)
+                return callGlsl(rhs, [lhs], props)
               }
             }
 
@@ -606,61 +611,16 @@ export const PKG_CORE_OPS: Package = {
         },
         call: {
           js(node, props) {
-            if (
-              node.name.type == "var" &&
-              node.name.kind == "prefix" &&
-              !node.name.sub
-            ) {
-              const sup =
-                node.name.sup ?
-                  (
-                    (node.name.sup.type == "op" &&
-                      node.name.sup.kind == "-" &&
-                      !node.name.sup.b &&
-                      node.name.sup.a.type == "num" &&
-                      !node.name.sup.a.sub &&
-                      node.name.sup.a.value == "1") ||
-                    (node.name.sup.type == "num" &&
-                      !node.name.sup.sub &&
-                      node.name.sup.value == "-1")
-                  ) ?
-                    "^-1"
-                  : (
-                    node.name.sup.type == "num" &&
-                    node.name.sup.value.indexOf(".") == -1
-                  ) ?
-                    fnExponentJs(
-                      node.name.sup.sub ?
-                        js(node.name.sup, {
-                          ...props,
-                          base: asNumericBase(
-                            js(node.name.sup.sub, {
-                              ...props,
-                              base: frac(10, 1),
-                            }),
-                          ),
-                        })
-                      : js(node.name.sup, props),
-                    )
-                  : invalidFnSup()
-                : null
-
+            if (node.name.type == "var" && node.name.kind == "prefix") {
               const args = node.on ? commalist(node.args) : fnargs(node.args)
               if (node.on) {
                 args.unshift(node.on)
               }
-
-              if (sup == "^-1") {
-                return jsCall(node.name.value + "^-1", args, !!node.on, props)
+              if (node.name.sub) {
+                args.unshift(node.name.sub)
               }
 
-              const value = jsCall(node.name.value, args, !!node.on, props)
-
-              if (sup == null) {
-                return value
-              }
-
-              return OP_RAISE.js([value, sup])
+              return callJs(node.name, args, props)
             }
 
             fn: if (node.name.type == "var" && node.name.kind == "var") {
@@ -697,67 +657,28 @@ export const PKG_CORE_OPS: Package = {
               }
             }
 
-            throw new Error(
-              "Cannot call anything except built-in functions yet.",
+            if (node.on) {
+              throw new Error("Cannot use dot syntax here.")
+            }
+
+            const lhs = js(node.name, props)
+            const rhs = js(
+              { type: "group", lhs: "(", rhs: ")", value: node.args },
+              props,
             )
+            return OP_JUXTAPOSE.js([lhs, rhs])
           },
           glsl(node, props) {
-            if (
-              node.name.type == "var" &&
-              node.name.kind == "prefix" &&
-              !node.name.sub
-            ) {
-              const sup =
-                node.name.sup ?
-                  (
-                    (node.name.sup.type == "op" &&
-                      node.name.sup.kind == "-" &&
-                      !node.name.sup.b &&
-                      node.name.sup.a.type == "num" &&
-                      !node.name.sup.a.sub &&
-                      node.name.sup.a.value == "1") ||
-                    (node.name.sup.type == "num" &&
-                      !node.name.sup.sub &&
-                      node.name.sup.value == "-1")
-                  ) ?
-                    "^-1"
-                  : (
-                    node.name.sup.type == "num" &&
-                    node.name.sup.value.indexOf(".") == -1
-                  ) ?
-                    fnExponentGlsl(
-                      props.ctx,
-                      node.name.sup.sub ?
-                        js(node.name.sup, {
-                          ...props,
-                          base: asNumericBase(
-                            js(node.name.sup.sub, {
-                              ...props,
-                              base: frac(10, 1),
-                            }),
-                          ),
-                        })
-                      : js(node.name.sup, props),
-                    )
-                  : invalidFnSup()
-                : null
-
+            if (node.name.type == "var" && node.name.kind == "prefix") {
               const args = node.on ? commalist(node.args) : fnargs(node.args)
               if (node.on) {
                 args.unshift(node.on)
               }
-
-              if (sup == "^-1") {
-                return glslCall(node.name.value + "^-1", args, !!node.on, props)
+              if (node.name.sub) {
+                args.unshift(node.name.sub)
               }
 
-              const value = glslCall(node.name.value, args, !!node.on, props)
-
-              if (sup == null) {
-                return value
-              }
-
-              return OP_RAISE.glsl(props.ctx, [value, sup])
+              return callGlsl(node.name, args, props)
             }
 
             fn: if (node.name.type == "var" && node.name.kind == "var") {
@@ -797,9 +718,16 @@ export const PKG_CORE_OPS: Package = {
               }
             }
 
-            throw new Error(
-              "Cannot call anything except built-in functions yet.",
+            if (node.on) {
+              throw new Error("Cannot use dot syntax here.")
+            }
+
+            const lhs = glsl(node.name, props)
+            const rhs = glsl(
+              { type: "group", lhs: "(", rhs: ")", value: node.args },
+              props,
             )
+            return OP_JUXTAPOSE.glsl(props.ctx, [lhs, rhs])
           },
           drag: {
             num() {
@@ -964,4 +892,95 @@ export const PKG_CORE_OPS: Package = {
       },
     },
   },
+}
+
+function callJs(name: Var, args: Node[], props: PropsJs): JsValue {
+  const sub = name.sub ? "_" : ""
+
+  const sup =
+    name.sup ?
+      (
+        (name.sup.type == "op" &&
+          name.sup.kind == "-" &&
+          !name.sup.b &&
+          name.sup.a.type == "num" &&
+          !name.sup.a.sub &&
+          name.sup.a.value == "1") ||
+        (name.sup.type == "num" && !name.sup.sub && name.sup.value == "-1")
+      ) ?
+        "^-1"
+      : name.sup.type == "num" && name.sup.value.indexOf(".") == -1 ?
+        fnExponentJs(
+          name.sup.sub ?
+            js(name.sup, {
+              ...props,
+              base: asNumericBase(
+                js(name.sup.sub, {
+                  ...props,
+                  base: frac(10, 1),
+                }),
+              ),
+            })
+          : js(name.sup, props),
+        )
+      : invalidFnSup()
+    : null
+
+  if (sup == "^-1") {
+    return jsCall(name.value + sub + "^-1", name.value, args, props)
+  }
+
+  const value = jsCall(name.value + sub, name.value, args, props)
+
+  if (sup == null) {
+    return value
+  }
+
+  return OP_RAISE.js([value, sup])
+}
+
+function callGlsl(name: Var, args: Node[], props: PropsGlsl): GlslValue {
+  const sub = name.sub ? "_" : ""
+
+  const sup =
+    name.sup ?
+      (
+        (name.sup.type == "op" &&
+          name.sup.kind == "-" &&
+          !name.sup.b &&
+          name.sup.a.type == "num" &&
+          !name.sup.a.sub &&
+          name.sup.a.value == "1") ||
+        (name.sup.type == "num" && !name.sup.sub && name.sup.value == "-1")
+      ) ?
+        "^-1"
+      : name.sup.type == "num" && name.sup.value.indexOf(".") == -1 ?
+        fnExponentGlsl(
+          props.ctx,
+          name.sup.sub ?
+            js(name.sup, {
+              ...props,
+              base: asNumericBase(
+                js(name.sup.sub, {
+                  ...props,
+                  base: frac(10, 1),
+                }),
+              ),
+            })
+          : js(name.sup, props),
+        )
+      : invalidFnSup()
+    : null
+
+  if (sup == "^-1") {
+    return glslCall(name.value + sub + "^-1", name.value, args, props)
+  }
+
+  const value = glslCall(name.value + sub, name.value, args, props)
+
+  if (sup == null) {
+    return value
+  }
+
+  return OP_RAISE.glsl(props.ctx, [value, sup])
 }

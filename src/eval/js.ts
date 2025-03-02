@@ -11,14 +11,34 @@ export interface PropsJs {
 
 export function jsCall(
   name: string,
+  rawName: string,
   args: Node[],
-  _asMethod: boolean,
   props: PropsJs,
 ): JsValue {
   const fn = FNS[name]
 
   if (!fn) {
-    throw new Error(`The '${name}' function is not supported yet.`)
+    if (name.endsWith("_^-1")) {
+      if (FNS[rawName + "_"]) {
+        throw new Error(`'${rawName}' does not have an inverse.`)
+      }
+      if (FNS[rawName + "^-1"]) {
+        throw new Error(`Cannot attach a subscript to '${rawName}'.`)
+      }
+      if (FNS[rawName]) {
+        throw new Error(`'${rawName}' does not have an inverse.`)
+      }
+    } else if (name.endsWith("^-1")) {
+      if (FNS[rawName]) {
+        throw new Error(`'${rawName}' does not have an inverse.`)
+      }
+    } else if (name.endsWith("_")) {
+      if (FNS[rawName]) {
+        throw new Error(`Cannot attach a subscript to '${rawName}'.`)
+      }
+    }
+
+    throw new Error(`'${rawName}' is not supported yet.`)
   }
 
   return fn.js(args.map((arg) => js(arg, props)))
