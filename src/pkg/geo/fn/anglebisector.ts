@@ -5,7 +5,9 @@ import { pt } from "../../../eval/ty/create"
 import { add, sub } from "../../../eval/ty/ops"
 import { normSegmentS } from "../../../sheet/ui/paper"
 
-function js(a: JsVal<"angle" | "directedangle">): [SPoint, SPoint] {
+export function bisectAngleJs(
+  a: JsVal<"angle" | "directedangle">,
+): [SPoint, SPoint] {
   const p1 = normSegmentS(a.value[1], a.value[0])
   const p3 = normSegmentS(a.value[1], a.value[2])
 
@@ -36,4 +38,4 @@ function glsl(ctx: GlslContext, a: GlslVal<"angle" | "directedangle">) {
 export const FN_ANGLEBISECTOR = new FnDist(
   "anglebisector",
   "constucts the bisector of an angle",
-).add(["angle"], "ray", js, glsl)
+).add(["angle"], "ray", bisectAngleJs, glsl)

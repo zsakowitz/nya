@@ -54,6 +54,7 @@ export const FACTORY_EXPR: ItemFactory<Expr, { geo?: boolean }> = {
     return expr
   },
   el(data) {
+    // TODO: put geo items in a separated region
     return data.geo ?
         ((data.field.el.className =
           "nya-display cursor-text whitespace-nowrap font-['Symbola','Times_New_Roman',serif] text-[1.265em] font-normal not-italic [line-height:1] cursor-text block select-none inline-block pb-1 pt-1.5 px-4 focus:outline-none"),

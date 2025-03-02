@@ -38,7 +38,7 @@ import { drawRay, EXT_RAY } from "./ext/ray"
 import { EXT_SEGMENT } from "./ext/segment"
 import { drawVector, EXT_VECTOR } from "./ext/vector"
 import { FN_ANGLE, FN_DIRECTEDANGLE } from "./fn/angle"
-import { FN_ANGLEBISECTOR } from "./fn/anglebisector"
+import { bisectAngleJs, FN_ANGLEBISECTOR } from "./fn/anglebisector"
 import { FN_ANGLES, FN_DIRECTEDANGLES } from "./fn/angles"
 import { FN_ARC } from "./fn/arc"
 import { FN_CENTER } from "./fn/center"
@@ -1166,8 +1166,43 @@ function iconMidpoint() {
   )
 }
 
+function iconAngleBisector() {
+  return h(
+    "",
+    h(
+      "text-[#2d70b3] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px] overflow-hidden",
+      h(
+        "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
+      ),
+      h(
+        "w-[16px] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
+        svgx(
+          "2.2 4.4 17.6 13.2",
+          "stroke-current fill-none overflow-visible [stroke-linejoin:round] [stroke-linecap:round] stroke-2",
+          sx("path", {
+            d: "M 19.8 13.2 L 2.2 17.6 L 7.2 4.4 M 6.55 6.116 A 12.28 12.28 0 0 1 14.113 14.621",
+            class: "opacity-30",
+          }),
+          path("M 2.2 17.6 L 76.9 -48.9"),
+        ),
+      ),
+    ),
+  )
+}
+
 const PICK_ANGLE = createPick("angle")
 const PICK_DIRECTEDANGLE = createPick("directedangle")
+
+const PICK_ANGLEBISECTOR = definePickTy(
+  "anglebisector",
+  [["angle", "directedangle"]],
+  (sheet, a) => {
+    if (a) {
+      const [p1, p2] = bisectAngleJs(a)
+      drawRay(sheet.paper, unpt(p1), unpt(p2), { ghost: true, kind: "ray" })
+    }
+  },
+)
 
 export const PKG_GEOMETRY: Package = {
   id: "nya:geometry",
@@ -1245,10 +1280,11 @@ export const PKG_GEOMETRY: Package = {
         toolbar(INFO_ARC.icon, PICK_ARC, "a"),
         toolbar(INFO_POLYGON.icon, PICK_POLYGON, "P"),
         toolbar(INFO_ANGLE.icon, PICK_ANGLE, "A"),
+        toolbar(INFO_DIRECTEDANGLE.icon, PICK_DIRECTEDANGLE, "d"),
         toolbar(iconPerpendicular, PICK_PERPENDICULAR, "x"),
         toolbar(iconParallel, PICK_PARALLEL, "z"),
         toolbar(iconMidpoint, PICK_MIDPOINT, "m"),
-        toolbar(INFO_DIRECTEDANGLE.icon, PICK_DIRECTEDANGLE, "d"),
+        toolbar(iconAngleBisector, PICK_ANGLEBISECTOR, "b"),
       ],
     },
     keys: {
@@ -1264,6 +1300,7 @@ export const PKG_GEOMETRY: Package = {
       P: (sheet) => sheet.pick.set(PICK_TY, PICK_POLYGON),
       A: (sheet) => sheet.pick.set(PICK_TY, PICK_ANGLE),
       d: (sheet) => sheet.pick.set(PICK_TY, PICK_DIRECTEDANGLE),
+      b: (sheet) => sheet.pick.set(PICK_TY, PICK_ANGLEBISECTOR),
     },
   },
 }
