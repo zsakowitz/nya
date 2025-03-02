@@ -45,7 +45,9 @@ export const PICK_CURSOR: Picker<Data, Selected> = {
   select(data, found) {
     data.expr.field.onBeforeChange()
     const cursor = data.expr.field.sel.remove()
+    data.expr.field.options.beforeInsert?.(cursor)
     found.ref().insertAt(cursor, L)
+    data.expr.field.options.afterInsert?.(cursor)
     data.expr.field.sel = cursor.selection()
     data.expr.field.onAfterChange(false)
     requestAnimationFrame(() => data.expr.field.el.focus())

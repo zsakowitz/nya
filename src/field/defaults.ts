@@ -269,4 +269,28 @@ export const options: Options = Object.freeze<Options>({
       (cmd[L].kind == "prefix" || cmd[L].kind == "magicprefix")
     )
   },
+  beforeInsert(cursor) {
+    if (
+      cursor.parent?.parent instanceof CmdBrack &&
+      ((cursor.parent.parent.lhs == "(" &&
+        cursor.parent.parent.rhs == ")" &&
+        (cursor.parent.parent[L] instanceof CmdVar ||
+          (cursor.parent.parent[L] instanceof CmdSupSub &&
+            cursor.parent.parent[L][L] instanceof CmdVar))) ||
+        (cursor.parent.parent.lhs == "[" && cursor.parent.parent.rhs == "]"))
+    ) {
+      if (cursor[L] && !(cursor[L] instanceof CmdComma)) {
+        new CmdComma().insertAt(cursor, L)
+      }
+
+      if (cursor[R] && !(cursor[R] instanceof CmdComma)) {
+        new CmdComma().insertAt(cursor, R)
+      }
+    }
+  },
+  afterInsert(cursor) {
+    if (cursor[R] instanceof CmdComma) {
+      cursor.moveTo(cursor[R], R)
+    }
+  },
 })

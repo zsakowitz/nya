@@ -1,7 +1,7 @@
 import type { WordKind } from "./cmd/leaf/var"
 import type { CmdSupSub } from "./cmd/math/supsub"
 import type { LatexInit } from "./latex"
-import type { Command, Init } from "./model"
+import type { Command, Cursor, Init } from "./model"
 
 /** A container for various initializables. */
 export class Inits {
@@ -164,4 +164,10 @@ export interface Options {
 
   /** If `true`, big symbols will default to having no upper bound. */
   noAutoBigBound?: boolean
+
+  /** Called before inserting a value into an expression. */
+  beforeInsert?(cursor: Cursor): void
+
+  /** Called after inserting a value into an expression. */
+  afterInsert?(cursor: Cursor): void
 }
