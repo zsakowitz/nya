@@ -5,13 +5,13 @@ to do list for functions is:
 ❌ visualizations
 ❌ distributions
 ❌ stat tests
-✅ logb
 ❌ lcm, gcd, nPr, nCr
 ❌ polygon([r32], [r32])
 ❌ 3D points and vectors
 ❌ ceil, floor, round, statistics for complex numbers
 ❌ width, height
 ❌ sort(values, keys)
+✅ logb
 
 to do list for things to plot is:
 ❌ f(x)
@@ -23,7 +23,6 @@ to do list for things to plot is:
 ❌ f(r, θ) = g(r, θ)
 
 to do list for features is:
-😐 100% compatible piecewise functions (lists are weird)
 ❌ actions
 ❌ tickers
 ❌ inequality borders
@@ -31,23 +30,24 @@ to do list for features is:
 ❌ more stuff works in shaders
 ❌ arc functions work in shaders
 ❌ regressions
-😐 images
 ❌ tone
 ❌ 3D
-✅ functions
 ❌ draggable expression list
 ❌ persistent graph state
 ❌ construction menu
 ❌ dependent geometry objects can be dragged
-😐 sliders
 ❌ slider variables infer bounds based on usage (glider, rgb, hsv)
 ❌ angle bisector picker
 ❌ perpendicular bisector picker
 ❌ folders
 ❌ normal images
 ❌ tokens for parallel, glider, intersection, bisectors
-❌ grabbing objects previews the result
 ❌ objects are automatically grabbable in function names, lists, and operators
+😐 sliders
+😐 images
+😐 100% compatible piecewise functions (lists are weird)
+✅ grabbing objects previews the result
+✅ functions
 
 to do list for non-desmos stuff is:
 ❌ streaming video, audio, images, files
