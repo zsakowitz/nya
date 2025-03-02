@@ -1,2 +1,1 @@
-#nya:image#
-\token0=i_1
+@y=x!

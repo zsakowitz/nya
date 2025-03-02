@@ -192,7 +192,7 @@ export function toolbar(icon: () => HTMLSpanElement, props: Data, key: string) {
       "button",
       {
         class:
-          "flex flex-col w-12 hover:bg-[--nya-bg] border-x border-transparent hover:border-[--nya-border] focus:outline-none -mr-px last:mr-0 justify-center",
+          "flex flex-col w-11 hover:bg-[--nya-bg] border-x border-transparent hover:border-[--nya-border] focus:outline-none -mr-px last:mr-0 justify-center",
         tabindex: "-1",
       },
       icon(),

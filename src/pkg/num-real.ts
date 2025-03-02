@@ -1,4 +1,6 @@
 import type { Package } from "."
+import { NO_DRAG } from "../eval/ast/tx"
+import { glsl } from "../eval/glsl"
 import { js } from "../eval/js"
 import { asNumericBase, parseNumberGlsl, parseNumberJs } from "../eval/lib/base"
 import type { GlslContext } from "../eval/lib/fn"
@@ -287,6 +289,92 @@ export const FN_LOGB = new FnDist(
   (_, b, a) => `(log(${a.expr}) / log(${b.expr}))`,
 )
 
+function factorial(ctx: GlslContext, x: string) {
+  ctx.glsl`
+
+
+float sinpiSeries(float x) {
+  float xsq = x*x;
+    return x*(3.141592653589793-xsq*(5.167708-xsq*(2.549761-xsq*0.5890122)));
+}
+
+
+
+float sinpi(float x) {
+  if (isnan(x) || isinf(x)) { return 0.0/0.0; }
+    if (x==0.0) { return x; }
+    if (x == floor(x)) { return x > 0.0 ? 0.0 : -0.0; }
+    int i = int(floor(2.0*x+0.5));
+    float t = -0.5 * float(i) + x;
+    float s = bool(i & 2) ? -1.0 : 1.0;
+    float y = bool(i & 1) ? cos(3.141592653589793 * t) : sinpiSeries(t);
+    return s*y;
+}
+
+
+
+
+
+float sincpi(float x) {
+          return isnan(x) ? 0.0/0.0 : isinf(x) ? 0.0 : x == 0.0 ? 1.0 : sinpi(x)/(3.141592653589793*x);
+}
+
+float stirlingPrefactor(float x, float y) {
+  if (isnan(x) || isnan(y)) { return 0.0/0.0; }
+    return pow(x/exp(1.0), y);
+}
+
+float stirlerrSeries(float x) {
+    float S0 = 0.083333336;
+    float S1 = 0.0027777778;
+    float S2 = 0.0007936508;
+    float nn = x*x;
+    return (S0-(S1-S2/nn)/nn)/x;
+}
+
+float factorialMinimax(float x) {
+
+    float n1 = 2.1618295;
+    float n2 = 1.5849807;
+    float n3 = 0.4026814;
+    float d1 = 2.2390451;
+    float d2 = 1.6824219;
+    float d3 = 0.43668285;
+
+    float n = 1.0 + x*(n1 + x*(n2 + x*n3));
+    float d = 1.0 + x*(d1 + x*(d2 + x*d3));
+    float xp1 = x+1.0;
+
+    return stirlingPrefactor(xp1,x)*sqrt(xp1)*(n/d);
+
+
+}
+
+float factorialAsymptotic(float x) {
+  return stirlingPrefactor(x,x)*sqrt(2.0*3.141592653589793*x)*exp(stirlerrSeries(x));
+}
+
+float factorialPositive(float x)
+            {return (x>33.0)?1.0/0.0:(x>8.0)?factorialAsymptotic(x):factorialMinimax(x);}
+
+
+
+float factorial(float x) {
+if (isnan(x) || (isinf(x) && x < 0.0)) { return 0.0/0.0; }
+    bool isInteger = x == floor(x);
+    if (x < 0.0) {
+      if (isInteger) return 1.0/0.0;
+      return 1.0 / (sincpi(x) * factorialPositive(-x));
+    }
+    float approx = factorialPositive(x);
+    return isInteger ? round(approx) : approx;
+    }
+
+`
+
+  return `factorial(${x})`
+}
+
 function mulR64(ctx: GlslContext, a: string, b: string) {
   declareMulR64(ctx)
   return `_helper_mul_r64(${a}, ${b})`
@@ -325,6 +413,23 @@ const FN_COUNT = new (class extends FnList<"r64"> {
     }
   }
 })()
+
+const OP_FACTORIAL = new FnDist(
+  "!",
+  "computes a factorial",
+  `Cannot take the factorial of %%.`,
+).add(
+  ["r32"],
+  "r32",
+  (a) => {
+    return real(
+      [1, 1, 2, 6, 24, 120, 720, 5040, 40320, 362880, 3628800, 39916800][
+        num(a.value)
+      ] ?? NaN,
+    )
+  },
+  (ctx, a) => factorial(ctx, a.expr),
+)
 
 export const PKG_REAL: Package = {
   id: "nya:num-real",
@@ -647,6 +752,27 @@ float _helper_cmp_r32(float a, float b) {
               deps.add(node.sub)
             }
             return
+          },
+        },
+        factorial: {
+          deps(node, deps) {
+            deps.add(node.on)
+            if (typeof node.repeats != "number") {
+              deps.add(node.repeats)
+            }
+          },
+          drag: NO_DRAG,
+          js(node, props) {
+            if (node.repeats != 1) {
+              throw new Error("Cannot evaluate repeated factorials yet.")
+            }
+            return OP_FACTORIAL.js([js(node.on, props)])
+          },
+          glsl(node, props) {
+            if (node.repeats != 1) {
+              throw new Error("Cannot evaluate repeated factorials yet.")
+            }
+            return OP_FACTORIAL.glsl(props.ctx, [glsl(node.on, props)])
           },
         },
       },

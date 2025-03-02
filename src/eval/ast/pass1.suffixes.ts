@@ -123,11 +123,12 @@ export function pass1_suffixes(tokens: Node[]) {
       }
 
       tokens.splice(i, 1)
-      if (prev.type == "factorial" && typeof prev.repeats == "number") {
-        prev.repeats++
-      } else {
-        tokens[i - 1] = { type: "factorial", on: prev, repeats: 1 }
-      }
+      // TODO: allow repeated factorials
+      // if (prev.type == "factorial" && typeof prev.repeats == "number") {
+      //   prev.repeats++
+      // } else {
+      tokens[i - 1] = { type: "factorial", on: prev, repeats: 1 }
+      // }
       i--
 
       continue

@@ -5,7 +5,6 @@ import {
 import type { GlslResult } from "../eval/lib/fn"
 import { LatexParser } from "../field/latex"
 import { L, R, U, type VDir } from "../field/model"
-import { h } from "../jsx"
 import type { ItemRef } from "./items"
 import { Expr } from "./ui/expr"
 
@@ -16,6 +15,8 @@ export interface ItemFactory<T, U = unknown> {
 
   /** The passed {@linkcode ItemRef} is mostly uninitialized. */
   init(ref: ItemRef<T>, source: string | undefined, from: U | undefined): T
+  /** The number of indicies this item takes up. */
+  size?(data: T): number
   el(data: T): HTMLElement
   draw?(data: T): void
   glsl?(data: T): GlslResult | undefined
@@ -54,22 +55,7 @@ export const FACTORY_EXPR: ItemFactory<Expr, { geo?: boolean }> = {
     return expr
   },
   el(data) {
-    // TODO: put geo items in a separated region
-    return data.geo ?
-        ((data.field.el.className =
-          "nya-display cursor-text whitespace-nowrap font-['Symbola','Times_New_Roman',serif] text-[1.265em] font-normal not-italic [line-height:1] cursor-text block select-none inline-block pb-1 pt-1.5 px-4 focus:outline-none"),
-        h(
-          "grid grid-cols-[2.5rem_auto] border-r border-b relative nya-expr border-[--nya-border]",
-          h(
-            "nya-expr-bar inline-flex bg-[--nya-bg-sidebar] flex-col p-0.5 border-r border-[--nya-border] font-sans text-[--nya-expr-index] text-[65%] leading-none focus:outline-none",
-            data.ref.elIndex,
-          ),
-          data.field.el,
-          h(
-            "hidden absolute -inset-y-px inset-x-0 [:first-child>&]:top-0 border-2 border-[--nya-expr-focus] pointer-events-none [:focus-within>&]:block [:active>&]:block",
-          ),
-        ))
-      : data.el
+    return data.el
   },
   draw(expr) {
     if (expr.state.ok && expr.state.ext?.svg) {

@@ -1,5 +1,10 @@
 ## a complete project nya task list
 
+to do list for things desmos hid is:
+❌ chisqdist
+❌ apply
+❌ erf
+
 to do list for functions is:
 ❌ random, shuffle
 ❌ visualizations

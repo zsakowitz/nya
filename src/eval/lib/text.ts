@@ -1,5 +1,7 @@
 import type { Node } from "../ast/token"
 
+// TODO: this should be part of txrs
+
 export function subscript(node: Node): string {
   switch (node.type) {
     case "void":

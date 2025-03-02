@@ -119,7 +119,6 @@ export const Precedence = Object.freeze({
 
 /** A map from binary operators to their precedences. */
 export const PRECEDENCE_MAP: Partial<Record<PuncBinaryStr, number>> = {
-  "\\uparrow ": Precedence.Exponential,
   "\\otimes ": Precedence.Product,
   "\\pm ": Precedence.Sum,
   "\\mp ": Precedence.Sum,
@@ -206,6 +205,14 @@ export type AstBinding = {
   value: Node
 }
 
+/** All AST suffix-like node types. This may be augmented. */
+export interface Suffixes {
+  prop: { name: Node }
+  call: { args: Node }
+  raise: { exp: Node }
+  factorial: { repeats: number | Node }
+}
+
 /** All AST node types. This may be augmented. */
 export interface Nodes {
   void: {}
@@ -240,9 +247,11 @@ export interface Nodes {
   tyname: { name: TyName }
   tycoerce: { name: TyName; value: Node }
   value: { value: JsValue }
+  suffixes: { base: Node; suffixes: Suffix[] }
 }
 
 export type NodeName = keyof Nodes
+export type SuffixName = keyof Suffixes
 
 /**
  * An AST node.
@@ -256,6 +265,18 @@ export type NodeName = keyof Nodes
  * `((2)+(3)),(4)`).
  */
 export type Node = { [K in NodeName]: Nodes[K] & { type: K } }[NodeName]
+
+/**
+ * A suffix which binds tightly after another value, like function calls,
+ * factorials, property accesses, and superscripts.
+ *
+ * Suffixes involve some parsing ambiguity, so they are separated from other
+ * items. For instance, `a(b)!²` could either be `(a(b))!²` if `a` is a
+ * function, or `a*(b!²)` if `a` is a plain variable.
+ */
+export type Suffix = {
+  [K in SuffixName]: Suffixes[K] & { type: K }
+}[SuffixName]
 
 /** Parses a list of tokens into a complete AST. */
 export function tokensToAst(tokens: Node[], maybeBinding: boolean): Node {

@@ -17,11 +17,13 @@ export class ItemList {
   constructor(readonly sheet: Sheet) {}
 
   private checkIndices() {
-    for (let i = 0; i < this.items.length; i++) {
-      const expr = this.items[i]!
-      expr.elIndex.textContent = i + 1 + ""
+    let index = 1
+    for (const expr of this.items) {
+      const size = expr.factory.size?.(expr.data) ?? 1
+      expr.elIndex.textContent = "" + index
+      index += size
     }
-    this.nextIndex.textContent = this.items.length + 1 + ""
+    this.nextIndex.textContent = "" + index
   }
 
   private _qdIndices = false

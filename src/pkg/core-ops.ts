@@ -915,6 +915,7 @@ export const PKG_CORE_OPS: Package = {
         "\\odot ": { fn: OP_ODOT, precedence: Precedence.Product },
         mod: { fn: OP_MOD, precedence: Precedence.Product },
         "\\times ": { fn: OP_CROSS, precedence: Precedence.Product },
+        "\\uparrow ": { fn: OP_RAISE, precedence: Precedence.Exponential },
       },
     },
   },
