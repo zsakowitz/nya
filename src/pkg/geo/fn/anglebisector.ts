@@ -6,13 +6,16 @@ import { add, sub } from "../../../eval/ty/ops"
 import { normSegmentS } from "../../../sheet/ui/paper"
 
 function js(a: JsVal<"angle" | "directedangle">): [SPoint, SPoint] {
+  const p1 = normSegmentS(a.value[1], a.value[0])
+  const p3 = normSegmentS(a.value[1], a.value[2])
+
   return [
     a.value[1],
     normSegmentS(
       a.value[1],
       pt(
-        sub(add(a.value[0].x, a.value[2].x), a.value[1].x),
-        sub(add(a.value[0].y, a.value[2].y), a.value[1].y),
+        sub(add(p1.x, p3.x), a.value[1].x),
+        sub(add(p1.y, p3.y), a.value[1].y),
       ),
     ),
   ]
