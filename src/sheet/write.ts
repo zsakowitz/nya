@@ -56,10 +56,7 @@ export function virtualStepExp(ratio: number, base: number) {
 export class Writer {
   constructor(readonly span: Span) {}
 
-  /**
-   * @param precision (total options the user can choose from) / (total space
-   *   available in math units)
-   */
+  /** @param precision Total options the user can choose from. */
   setExact(value: SReal, precision: number, signed = false) {
     write(
       this.span.remove(),
@@ -68,18 +65,9 @@ export class Writer {
       virtualStepExp(precision, 10),
       signed,
     )
-    // const inner = new Block(null)
-    // new CmdSupSub(inner, null).insertAt(this.span.cursor(R), L)
-    // new CmdNum("1").insertAt(inner.cursor(R), L)
-    // new CmdNum("0").insertAt(inner.cursor(R), L)
   }
 
-  /**
-   * @param precision (total options the user can choose from) / (total space
-   *   available in math units)
-   * @param signed Whether to forcefully add a + sign in the even that it
-   *   doesn't exist
-   */
+  /** @param precision Total options the user can choose from. */
   set(value: number, precision: number, signed = false) {
     this.setExact(real(value), precision, signed)
   }

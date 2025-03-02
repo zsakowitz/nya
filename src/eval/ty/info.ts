@@ -30,7 +30,7 @@ export type TyInfoByName<T extends TyName> = TyInfo<Tys[T], TyComponents[T]>
 
 export type TyGlide<T> = (props: GlideProps<T>) => {
   value: number
-  /** (possible values the user can choose) / (domain on paper) */
+  /** Number of values the user can choose. */
   precision: number
 }
 
@@ -74,9 +74,12 @@ export const WRITE_POINT: TyWrite<SPoint> = {
 
 export function gliderOnLine(
   paper: Paper,
-  [{ x: x1, y: y1 }, { x: x2, y: y2 }]: [Point, Point],
+  [p1, p2]: [Point, Point],
   { x, y }: Point,
 ) {
+  const { x: x1, y: y1 } = p1
+  const { x: x2, y: y2 } = p2
+
   const B = Math.hypot(x1 - x, y1 - y)
   const A = Math.hypot(x2 - x, y2 - y)
   const C = Math.hypot(x1 - x2, y1 - y2)
@@ -85,9 +88,7 @@ export function gliderOnLine(
 
   return {
     value: a / C,
-    precision:
-      paper.offsetDistance({ x: x1, y: y1 }, { x: x2, y: y2 }) /
-      Math.hypot(x1 - x2, y1 - y2),
+    precision: paper.offsetDistance(p1, p2),
   }
 }
 
