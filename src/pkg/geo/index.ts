@@ -1,5 +1,5 @@
 import type { Package } from ".."
-import type { JsVal, SPoint } from "../../eval/ty"
+import type { JsVal, Tys } from "../../eval/ty"
 import { num, pt, real, SNANPT, unpt } from "../../eval/ty/create"
 import {
   gliderOnLine,
@@ -72,7 +72,7 @@ declare module "../../eval/ty" {
   interface Tys {
     segment: [SPoint, SPoint]
     ray: [SPoint, SPoint]
-    line: [SPoint, SPoint]
+    line: [SPoint, SPoint] & { source?: "perpendicular" | "parallel" }
     vector: [SPoint, SPoint]
     circle: { center: SPoint; radius: SReal }
     polygon: SPoint[]
@@ -94,13 +94,13 @@ declare module "../../eval/ty" {
   }
 }
 
-function lineInfo(
-  name: "segment" | "ray" | "line" | "vector",
+function lineInfo<T extends "segment" | "ray" | "line" | "vector">(
+  name: T,
   namePlural: string,
   clsx: string | (() => HTMLElement),
   glide: ((bound: number) => number) | null,
-  token: (a: Point, b: Point) => HTMLSpanElement | null,
-): TyInfo<[SPoint, SPoint], never> {
+  token: (a: Point, b: Point, source: Tys[T]) => HTMLSpanElement | null,
+): TyInfo<Tys[T], never> {
   return {
     name,
     namePlural,
@@ -136,7 +136,7 @@ function lineInfo(
           )
       ),
     token(val) {
-      return token(unpt(val[0]), unpt(val[1]))
+      return token(unpt(val[0]), unpt(val[1]), val)
     },
     glide:
       glide ?
@@ -395,7 +395,7 @@ const INFO_SEGMENT = lineInfo(
   "segements",
   "w-[20px] h-0 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-t-2 border-current -rotate-[30deg]",
   (x) => Math.max(0, Math.min(1, x)),
-  segmentIcon,
+  (a, b) => segmentIcon(a, b),
 )
 
 function segmentIcon(a: Point, b: Point, color = "text-[#2d70b3]") {
@@ -451,9 +451,9 @@ const INFO_LINE = lineInfo(
   "lines",
   "w-[30px] h-0 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-t-2 border-current -rotate-[30deg]",
   (x) => x,
-  (a, b) => {
+  (a, b, c) => {
     const x = Math.cos(Math.atan2(b.y - a.y, b.x - a.x))
-    const y = Math.sin(Math.atan2(b.y - a.y, b.x - a.x))
+    const y = -Math.sin(Math.atan2(b.y - a.y, b.x - a.x))
     return h(
       "",
       h(
@@ -469,8 +469,20 @@ const INFO_LINE = lineInfo(
             "stroke-linecap": "round",
             "stroke-width": 2,
           },
+          c.source == "perpendicular" ?
+            sx("path", {
+              d: `M ${11 - 50 * y} ${11 + 50 * x} L ${11 + 50 * y} ${11 - 50 * x}`,
+              "stroke-opacity": 0.3,
+            })
+          : null,
+          c.source == "parallel" ?
+            sx("path", {
+              d: `M ${11 + 4 * y - 50 * x} ${11 - 4 * x - 50 * y} L ${11 + 4 * y + 50 * x} ${11 - 4 * x + 50 * y}`,
+              "stroke-opacity": 0.3,
+            })
+          : null,
           path(
-            `M ${11 - 50 * x} ${11 + 50 * y} L ${11 + 50 * x} ${11 - 50 * y}`,
+            `M ${11 - 50 * x} ${11 - 50 * y} L ${11 + 50 * x} ${11 + 50 * y}`,
           ),
         ),
       ),
@@ -1117,7 +1129,7 @@ export const PKG_GEOMETRY: Package = {
         toolbar(INFO_POLYGON.icon, PICK_POLYGON, "P"),
         toolbar(INFO_ANGLE.icon, PICK_ANGLE, "A"),
         toolbar(iconPerpendicular, PICK_PERPENDICULAR, "x"),
-        toolbar(iconParallel, PICK_PARALLEL, "c"),
+        toolbar(iconParallel, PICK_PARALLEL, "z"),
         toolbar(iconMidpoint, PICK_MIDPOINT, "m"),
         toolbar(INFO_DIRECTEDANGLE.icon, PICK_DIRECTEDANGLE, "d"),
       ],

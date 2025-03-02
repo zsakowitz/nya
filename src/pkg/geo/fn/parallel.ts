@@ -1,6 +1,6 @@
 import type { GlslContext } from "../../../eval/lib/fn"
 import { FnDist } from "../../../eval/ops/dist"
-import type { GlslVal, JsVal, Val } from "../../../eval/ty"
+import type { GlslVal, JsVal, SPoint, Val } from "../../../eval/ty"
 import { pt } from "../../../eval/ty/create"
 import { add, sub } from "../../../eval/ty/ops"
 
@@ -10,7 +10,13 @@ export function parallelJs(
   { value: [A, B] }: JsVal<LineLike>,
   { value: b }: JsVal<"point32" | "point64">,
 ): Val<"line"> {
-  return [b, pt(add(b.x, sub(B.x, A.x)), add(b.y, sub(B.y, A.y)))]
+  return Object.assign(
+    [b, pt(add(b.x, sub(B.x, A.x)), add(b.y, sub(B.y, A.y)))] satisfies [
+      SPoint,
+      SPoint,
+    ],
+    { source: "parallel" as const },
+  )
 }
 
 const glsl = (

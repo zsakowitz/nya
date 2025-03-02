@@ -10,7 +10,13 @@ export function perpendicularJs(
   { value: [A, B] }: { value: Tys["line"] },
   { value: b }: { value: SPoint },
 ): Val<"line"> {
-  return [b, pt(add(b.x, sub(B.y, A.y)), sub(b.y, sub(B.x, A.x)))]
+  return Object.assign(
+    [b, pt(add(b.x, sub(B.y, A.y)), sub(b.y, sub(B.x, A.x)))] satisfies [
+      SPoint,
+      SPoint,
+    ],
+    { source: "perpendicular" as const },
+  )
 }
 
 const glsl = (
