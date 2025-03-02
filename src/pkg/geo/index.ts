@@ -477,30 +477,29 @@ const INFO_LINE = lineInfo(
 const INFO_VECTOR = lineInfo(
   "vector",
   "vectors",
-  "w-[20px] h-0 absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-t-2 border-current -rotate-[30deg] after:absolute after:content-['_'] after:bg-current after:top-[-4px] after:right-[-1px] after:bottom-[-2px] after:w-[6px] after:[clip-path:polygon(0%_0%,100%_50%,0%_100%)]",
-  // [NEW ICON] () =>
-  //   h(
-  //     "",
-  //     h(
-  //       "text-[#2d70b3] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px] overflow-hidden",
-  //       h(
-  //         "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
-  //       ),
-  //       sx(
-  //         "svg",
-  //         {
-  //           class: "size-[22px] absolute inset-0 fill-current stroke-current",
-  //           viewBox: "0 0 22 22",
-  //           "stroke-linecap": "round",
-  //           "stroke-linejoin": "round",
-  //           "stroke-width": 2,
-  //         },
-  //         path(
-  //           `M 4.153044906177569 15.137536216539871 L 17.84695509382243 6.86246378346013 M 17.84695509382243 6.86246378346013 L 13.182216681949255 6.877145363583335 L 15.664738411873175 10.985318419876794 Z`,
-  //         ),
-  //       ),
-  //     ),
-  //   ),
+  () =>
+    h(
+      "",
+      h(
+        "text-[#2d70b3] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px] overflow-hidden",
+        h(
+          "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
+        ),
+        sx(
+          "svg",
+          {
+            class: "size-[22px] absolute inset-0 fill-current stroke-current",
+            viewBox: "0 0 22 22",
+            "stroke-linecap": "round",
+            "stroke-linejoin": "round",
+            "stroke-width": 2,
+          },
+          path(
+            `M 4.153044906177569 15.137536216539871 L 17.84695509382243 6.86246378346013 M 17.84695509382243 6.86246378346013 L 13.182216681949255 6.877145363583335 L 15.664738411873175 10.985318419876794 Z`,
+          ),
+        ),
+      ),
+    ),
   null,
   (o1, o2) => {
     const angle = Math.atan2(o2.y - o1.y, o2.x - o1.x)

@@ -45,6 +45,7 @@ to do list for features is:
 ❌ perpendicular bisector picker
 ❌ folders
 ❌ normal images
+❌ tokens for perpendicular, parallel, glider, intersection, bisectors
 
 to do list for non-desmos stuff is:
 ❌ streaming video, audio, images, files
