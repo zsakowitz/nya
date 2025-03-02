@@ -20,17 +20,23 @@ export function jsCall(
   if (!fn) {
     if (name.endsWith("_^-1")) {
       if (FNS[rawName + "_"]) {
-        throw new Error(`'${rawName}' does not have an inverse.`)
+        throw new Error(
+          `'${rawName}' only supports positive integer superscripts.`,
+        )
       }
       if (FNS[rawName + "^-1"]) {
         throw new Error(`Cannot attach a subscript to '${rawName}'.`)
       }
       if (FNS[rawName]) {
-        throw new Error(`'${rawName}' does not have an inverse.`)
+        throw new Error(
+          `'${rawName}' only supports positive integer superscripts.`,
+        )
       }
     } else if (name.endsWith("^-1")) {
       if (FNS[rawName]) {
-        throw new Error(`'${rawName}' does not have an inverse.`)
+        throw new Error(
+          `'${rawName}' only supports positive integer superscripts.`,
+        )
       }
     } else if (name.endsWith("_")) {
       if (FNS[rawName]) {

@@ -5,7 +5,7 @@ to do list for functions is:
 ❌ visualizations
 ❌ distributions
 ❌ stat tests
-❌ logb
+✅ logb
 ❌ lcm, gcd, nPr, nCr
 ❌ polygon([r32], [r32])
 ❌ 3D points and vectors
