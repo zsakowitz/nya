@@ -386,6 +386,21 @@ export const PKG_IMAGE: Package = {
             ),
           )
         },
+        token(val) {
+          return h(
+            "",
+            h(
+              "text-[theme(colors.slate.500)] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block border-2 border-current relative rounded-[4px] overflow-hidden",
+              h(
+                "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
+              ),
+              hx("img", {
+                class: "absolute inset-0 w-full h-full object-cover",
+                src: val.src,
+              }),
+            ),
+          )
+        },
       },
     },
   },
