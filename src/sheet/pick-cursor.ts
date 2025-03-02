@@ -22,6 +22,12 @@ export const PICK_CURSOR: Picker<Data, Selected> = {
     sheet.paper.el.dataset.nyaPicking = Object.keys(TY_INFO).join(" ")
 
     if (!added.has(sheet)) {
+      sheet.paper.el.addEventListener("focus", () => {
+        if (sheet.pick.id == ID) {
+          ;(sheet.pick.data as Data).expr.focus()
+        }
+      })
+
       addEventListener("keyup", (e) => {
         if (e.key == "Shift") {
           if (sheet.pick.id == ID) {

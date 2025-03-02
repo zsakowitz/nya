@@ -76,6 +76,10 @@ export class PickHandler {
     return !!this.pick
   }
 
+  get data() {
+    return this.pick?.data
+  }
+
   get id() {
     return this.pick?.pick.id(this.pick.data) ?? null
   }

@@ -41,10 +41,6 @@ export function registerDragHandler(paper: Paper) {
   let drag: DragFn | undefined
   let didMove = false
 
-  paper.el.addEventListener("focus", (e) => {
-    e.preventDefault()
-  })
-
   paper.el.addEventListener(
     "pointermove",
     (event) => {

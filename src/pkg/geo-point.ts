@@ -138,7 +138,7 @@ const EXT_POINT = defineHideable({
     ) {
       return {
         value: value as JsValue<"point32" | "point64" | "c32" | "c64">,
-        paper2: expr.sheet.paper,
+        paper: expr.sheet.paper,
         expr,
         drag,
       }
@@ -158,7 +158,7 @@ const EXT_POINT = defineHideable({
               if (drag.x) {
                 new Writer(drag.x.span.remove().span()).set(
                   at.x,
-                  data.paper2.xPrecision,
+                  data.paper.xPrecision,
                   drag.x.signed,
                 )
                 drag.x.field.sel = drag.x.field.block.cursor(R).selection()
@@ -168,7 +168,7 @@ const EXT_POINT = defineHideable({
               if (drag.y) {
                 new Writer(drag.y.span.remove().span()).set(
                   at.y,
-                  data.paper2.yPrecision,
+                  data.paper.yPrecision,
                   drag.y.signed,
                 )
                 drag.y.field.sel = drag.y.field.block.cursor(R).selection()
@@ -179,9 +179,9 @@ const EXT_POINT = defineHideable({
             case "complex":
               {
                 const x = at.x
-                const xp = data.paper2.xPrecision
+                const xp = data.paper.xPrecision
                 const y = at.y
-                const yp = data.paper2.yPrecision
+                const yp = data.paper.yPrecision
                 const cursor = drag.span.remove()
                 write(
                   cursor,
@@ -207,7 +207,7 @@ const EXT_POINT = defineHideable({
                 const { value, precision } = (
                   TY_INFO[drag.shape.type].glide! as TyGlide<any>
                 )({
-                  paper: data.paper2,
+                  paper: data.paper,
                   point: at,
                   shape: drag.shape.value,
                 })
