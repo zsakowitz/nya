@@ -149,8 +149,8 @@ export class FnDist<Q extends TyName = TyName> extends FnDistManual<Q> {
     )
   }
 
-  withName(name: string, label: string) {
-    const dist = new FnDist<Q>(name, label)
+  withName(name: string, label: string, message?: FnError) {
+    const dist = new FnDist<Q>(name, label, message)
     dist.parent = this
     return dist
   }

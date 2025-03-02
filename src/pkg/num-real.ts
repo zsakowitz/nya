@@ -95,11 +95,16 @@ function addCmp(
   )
 }
 
-export const FN_EXP = new FnDist("exp", "raises e to some value")
+export const FN_EXP = new FnDist(
+  "exp",
+  "raises e to some value",
+  "Cannot raise e to the power of %%.",
+)
 
 export const FN_UNSIGN = new FnDist(
   "unsign",
   "takes the absolute value of the components of a value",
+  "Cannot take the absolute value component-by-component of %%.",
 )
 
 const FN_COMPONENT = new (class extends FnDistCaching {
@@ -225,11 +230,13 @@ function iconReal(hd: boolean) {
 const FN_CMP = new FnDist(
   "cmp",
   "compares two numbers, returning -1, 0, or 1, depending on whether the first number is less than, equal to, or greater than the second number",
+  "Cannot compare %%.",
 )
 
 export const FN_LN = new FnDist(
   "ln",
   "takes the natural logarithm of a value",
+  "Cannot take the natural logarithm of %%.",
 ).add(
   ["r32"],
   "r32",
@@ -237,7 +244,11 @@ export const FN_LN = new FnDist(
   (_, a) => `log(${a.expr})`,
 )
 
-export const FN_SIGN = new FnDist("sign", "gets the sign of a number")
+export const FN_SIGN = new FnDist(
+  "sign",
+  "gets the sign of a number",
+  "Cannot find the sign of %%.",
+)
   .add(
     ["r64"],
     "r64",
@@ -257,6 +268,7 @@ export const FN_SIGN = new FnDist("sign", "gets the sign of a number")
 export const FN_LOG10 = new FnDist(
   "log",
   "takes the base-10 logarithm of a value",
+  "Cannot take the base-10 logarithm of %%.",
 ).add(
   ["r32"],
   "r32",

@@ -210,48 +210,74 @@ float _helper_cmp_r64(vec2 a, vec2 b) {
 `
 }
 
-export const OP_ADD = new FnDist("+", "adds two values or points")
+export const OP_ADD = new FnDist(
+  "+",
+  "adds two values or points",
+  "Cannot add %%.",
+)
 
-export const OP_CDOT = new FnDist("·", "multiplies two values")
+export const OP_CDOT = new FnDist(
+  "·",
+  "multiplies two values",
+  "Cannot multiply %%.",
+)
 
-export const OP_CROSS = new FnDist("×", "multiplies two real numbers")
+export const OP_CROSS = new FnDist(
+  "×",
+  "multiplies two real numbers",
+  "Cannot take the cross product of %%.",
+)
 
-export const OP_DIV = new FnDist("÷", "divides two values")
+export const OP_DIV = new FnDist("÷", "divides two values", "Cannot divide %%.")
 
 const OP_JUXTAPOSE = OP_CDOT.withName(
   "juxtapose",
   "multiplies two values which aren't separated by an operator",
+  "Cannot juxtapose %%.",
 )
 
 export const OP_MOD = new FnDist(
   "mod",
   "gets the remainder when dividing one value by another",
+  "Cannot take the remainder of %%.",
 )
 
-export const OP_NEG = new FnDist("-", "negates its input")
+export const OP_NEG = new FnDist("-", "negates its input", "Cannot negate %%.")
 
 export const OP_ODOT = new FnDist(
   "⊙",
   "multiples complex numbers or points component-wise",
+  "Cannot multiply %% component-by-component.",
 )
 
 export const OP_POS = new FnDist(
   "+",
   "unary plus; ensures the expression is number-like",
+  "Cannot convert %% to a number.",
 )
 
-export const OP_RAISE = new FnDist("^", "raises a value to an exponent")
+export const OP_RAISE = new FnDist(
+  "^",
+  "raises a value to an exponent",
+  "Cannot raise %% as an exponent.",
+)
 
-export const OP_SUB = new FnDist("-", "subtracts two values")
+export const OP_SUB = new FnDist(
+  "-",
+  "subtracts two values",
+  "Cannot subtract %%.",
+)
 
 export const OP_POINT = new FnDist(
   "construct point",
   "constructs a point from two coordinates",
+  "Cannot construct a point from %%.",
 )
 
 export const OP_ABS = new FnDist(
   "abs",
   "takes the absolute value of a number, or gets the magnitude of a complex number",
+  "Cannot take the absolute value of %%.",
 )
 
 export const PKG_CORE_OPS: Package = {

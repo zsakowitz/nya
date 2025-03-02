@@ -5,6 +5,7 @@ import { add, div } from "../../../eval/ty/ops"
 export const FN_MIDPOINT = new FnDist(
   "midpoint",
   "constructs the midpoint of a line segment or between two points",
+  "Cannot construct the midpoint of %%.",
 )
   .add(
     ["point32", "point32"],
