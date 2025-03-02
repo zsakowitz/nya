@@ -14,6 +14,8 @@ import {
 } from "./dist-manual"
 import { ALL_DOCS } from "./docs"
 
+export type FnError = `${string}%%${string}`
+
 /**
  * `FnDist` are functions which take a fixed number of arguments of
  * predetermined type, and return some value of predetermined type. They
@@ -31,7 +33,11 @@ export class FnDist<Q extends TyName = TyName> extends FnDistManual<Q> {
   o: FnOverload<Q>[] = []
   private parent?: FnDist<Q>
 
-  constructor(name: string, label: string) {
+  constructor(
+    name: string,
+    label: string,
+    readonly message: FnError = `Cannot call '${name}' with %%.`,
+  ) {
     super(name, label)
     ALL_DOCS.push(this)
   }
@@ -108,9 +114,7 @@ export class FnDist<Q extends TyName = TyName> extends FnDistManual<Q> {
     if (this.parent) {
       return this.parent.signature(args)
     } else {
-      throw new Error(
-        `Cannot call '${this.name}' with arguments of type ${listTy(args)}.`,
-      )
+      throw new Error(this.message.replace("%%", listTy(args)))
     }
   }
 
@@ -141,7 +145,7 @@ export class FnDist<Q extends TyName = TyName> extends FnDistManual<Q> {
     }
 
     throw new Error(
-      `Cannot call '${this.name}' with a list of ${TY_INFO[arg.type].namePlural}.`,
+      this.message.replace("%%", `a list of ${TY_INFO[arg.type].namePlural}`),
     )
   }
 

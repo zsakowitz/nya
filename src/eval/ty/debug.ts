@@ -11,7 +11,10 @@ export function listTy(tys: Ty[], conj?: string) {
 
 function listTyName(tys: TyName[], conj?: string) {
   return list(
-    tys.map((x) => TY_INFO[x].name),
+    tys.map((x) => {
+      const { name } = TY_INFO[x]
+      return `${/^[aeiou]/i.test(name) ? "an" : "a"} ${name}`
+    }),
     conj,
   )
 }
