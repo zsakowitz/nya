@@ -246,17 +246,15 @@ export const PKG_CORE_LIST: Package = {
           },
         },
       },
-      ast: {
+      suffix: {
         index: {
           js(node, props) {
-            return indexJs(js(node.on, props), js(node.index, props))
+            return indexJs(node.base, js(node.rhs.index, props))
           },
           glsl(node, props) {
-            return indexGlsl(glsl(node.on, props), js(node.index, props))
+            return indexGlsl(node.base, js(node.rhs.index, props))
           },
-          drag: NO_DRAG,
           deps(node, deps) {
-            deps.add(node.on)
             deps.add(node.index)
           },
         },

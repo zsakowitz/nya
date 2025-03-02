@@ -1,16 +1,16 @@
 import type { Package } from "."
-import { commalist, fnargs } from "../eval/ast/collect"
+import { commalist } from "../eval/ast/collect"
 import {
   Precedence,
   type Node,
   type PuncUnary,
   type Var,
 } from "../eval/ast/token"
-import { dragNum, dragPoint, group, NO_DRAG } from "../eval/ast/tx"
+import { dragNum, dragPoint, NO_DRAG } from "../eval/ast/tx"
 import { glsl, glslCall, type PropsGlsl } from "../eval/glsl"
 import { js, jsCall, type PropsJs } from "../eval/js"
 import { asNumericBase, parseNumberJs } from "../eval/lib/base"
-import { BindingFn, id, name, tryId, tryName } from "../eval/lib/binding"
+import { BindingFn, id, name, tryName } from "../eval/lib/binding"
 import type { GlslContext } from "../eval/lib/fn"
 import { safe } from "../eval/lib/util"
 import { OP_UNARY } from "../eval/ops"
@@ -20,7 +20,6 @@ import { VARS } from "../eval/ops/vars"
 import { each, type GlslValue, type JsValue } from "../eval/ty"
 import { canCoerce, coerceTyJs } from "../eval/ty/coerce"
 import { frac, num } from "../eval/ty/create"
-import { TY_INFO } from "../eval/ty/info"
 import { add, div } from "../eval/ty/ops"
 import { splitValue } from "../eval/ty/split"
 import { L, R, Span } from "../field/model"
@@ -635,192 +634,6 @@ export const PKG_CORE_OPS: Package = {
             deps.track(node)
           },
         },
-        call: {
-          js(node, props) {
-            if (node.name.type == "var" && node.name.kind == "prefix") {
-              const args = node.on ? commalist(node.args) : fnargs(node.args)
-              if (node.on) {
-                args.unshift(node.on)
-              }
-              if (node.name.sub) {
-                args.unshift(node.name.sub)
-              }
-
-              return callJs(node.name, args, props)
-            }
-
-            fn: if (node.name.type == "var" && node.name.kind == "var") {
-              if (node.name.sup) {
-                throw new Error(
-                  "Superscripts are not allowed when calling user-defined functions.",
-                )
-              }
-
-              const id = tryId(node.name)
-              if (id == null) {
-                break fn
-              }
-
-              const value = props.bindingsJs.get(id)
-              if (!value) {
-                throw new Error(
-                  `The variable '${tryName(node.name)}' is not defined.`,
-                )
-              } else if (value instanceof BindingFn) {
-                const args = node.on ? commalist(node.args) : fnargs(node.args)
-                if (node.on) {
-                  args.unshift(node.on)
-                }
-
-                return value.js(args.map((node) => js(node, props)))
-              } else if (node.on) {
-                throw new Error(
-                  `Cannot use dot notation on '${tryName(node.name)}', since it's not a function.`,
-                )
-              } else {
-                const rhs = group({ lhs: "(", rhs: ")" }).js(node.args, props)
-                return OP_JUXTAPOSE.js([value, rhs])
-              }
-            }
-
-            if (node.on) {
-              throw new Error("Cannot use dot syntax here.")
-            }
-
-            const lhs = js(node.name, props)
-            const rhs = js(
-              { type: "group", lhs: "(", rhs: ")", value: node.args },
-              props,
-            )
-            return OP_JUXTAPOSE.js([lhs, rhs])
-          },
-          glsl(node, props) {
-            if (node.name.type == "var" && node.name.kind == "prefix") {
-              const args = node.on ? commalist(node.args) : fnargs(node.args)
-              if (node.on) {
-                args.unshift(node.on)
-              }
-              if (node.name.sub) {
-                args.unshift(node.name.sub)
-              }
-
-              return callGlsl(node.name, args, props)
-            }
-
-            fn: if (node.name.type == "var" && node.name.kind == "var") {
-              if (node.name.sup) {
-                throw new Error(
-                  "Superscripts are not allowed when calling user-defined functions.",
-                )
-              }
-
-              const id = tryId(node.name)
-              if (id == null) {
-                break fn
-              }
-
-              const value = props.bindings.get(id)
-              if (!value) {
-                throw new Error(
-                  `The variable '${tryName(node.name)}' is not defined.`,
-                )
-              } else if (value instanceof BindingFn) {
-                const args = node.on ? commalist(node.args) : fnargs(node.args)
-                if (node.on) {
-                  args.unshift(node.on)
-                }
-
-                return value.glsl(
-                  props.ctx,
-                  args.map((node) => glsl(node, props)),
-                )
-              } else if (node.on) {
-                throw new Error(
-                  `Cannot use dot notation on '${tryName(node.name)}', since it's not a function.`,
-                )
-              } else {
-                const rhs = group({ lhs: "(", rhs: ")" }).glsl(node.args, props)
-                return OP_JUXTAPOSE.glsl(props.ctx, [value, rhs])
-              }
-            }
-
-            if (node.on) {
-              throw new Error("Cannot use dot syntax here.")
-            }
-
-            const lhs = glsl(node.name, props)
-            const rhs = glsl(
-              { type: "group", lhs: "(", rhs: ")", value: node.args },
-              props,
-            )
-            return OP_JUXTAPOSE.glsl(props.ctx, [lhs, rhs])
-          },
-          drag: {
-            num() {
-              return null
-            },
-            point(node, props) {
-              if (
-                !(
-                  node.name.type == "var" &&
-                  node.name.kind == "prefix" &&
-                  !node.name.sub &&
-                  !node.name.sup &&
-                  node.name.value == "glider"
-                )
-              ) {
-                return null
-              }
-
-              const args = node.on ? commalist(node.args) : fnargs(node.args)
-              if (node.on) args.unshift(node.on)
-              if (args.length != 2) return null
-
-              const pos = dragNum(args[1]!, props)
-              if (!pos) return null
-
-              try {
-                var shape = js(args[0]!, props.js)
-                if (!TY_INFO[shape.type].glide) return null
-                if (shape.list !== false) return null
-              } catch {
-                return null
-              }
-
-              return {
-                type: "glider",
-                shape,
-                value: pos,
-              }
-            },
-          },
-          deps(node, deps) {
-            if (
-              node.name.type == "var" &&
-              node.name.kind == "prefix" &&
-              !node.name.sub &&
-              !node.name.sup
-            ) {
-              deps.add(node.args)
-              if (node.on) {
-                deps.add(node.on)
-              }
-              return
-            }
-
-            if (
-              node.name.type == "var" &&
-              node.name.kind == "var" &&
-              !node.name.sup
-            ) {
-              deps.add(node.args)
-              if (node.on) {
-                deps.add(node.on)
-              }
-              deps.track(node.name)
-            }
-          },
-        },
         frac: {
           js(node, props) {
             return OP_DIV.js([js(node.a, props), js(node.b, props)])
@@ -835,22 +648,6 @@ export const PKG_CORE_OPS: Package = {
           deps(node, deps) {
             deps.add(node.a)
             deps.add(node.b)
-          },
-        },
-        raise: {
-          js(node, props) {
-            return OP_RAISE.js([js(node.base, props), js(node.exponent, props)])
-          },
-          glsl(node, props) {
-            return OP_RAISE.glsl(props.ctx, [
-              glsl(node.base, props),
-              glsl(node.exponent, props),
-            ])
-          },
-          drag: NO_DRAG,
-          deps(node, deps) {
-            deps.add(node.base)
-            deps.add(node.exponent)
           },
         },
       },
@@ -899,6 +696,134 @@ export const PKG_CORE_OPS: Package = {
             return OP_ABS.glsl(props.ctx, [glsl(node, props)])
           },
           drag: NO_DRAG,
+        },
+      },
+      suffix: {
+        raise: {
+          deps(node, deps) {
+            deps.add(node.exp)
+          },
+          js(node, props) {
+            return OP_RAISE.js([node.base, js(node.rhs.exp, props)])
+          },
+          glsl(node, props) {
+            return OP_RAISE.glsl(props.ctx, [
+              node.base,
+              glsl(node.rhs.exp, props),
+            ])
+          },
+        },
+        call: {
+          deps(node, deps) {
+            deps.add(node.args)
+          },
+          js(node, props) {
+            const rhsWrapped: Node = {
+              type: "group",
+              lhs: "(",
+              rhs: ")",
+              value: node.rhs.args,
+            }
+
+            // If LHS is a value, exit early; it's not a function
+            if (node.lhs.type == "value") {
+              const rhs = js(
+                { type: "suffixed", base: rhsWrapped, suffixes: node.rest },
+                props,
+              )
+              node.rest.length = 0
+              return OP_JUXTAPOSE.js([node.base, rhs])
+            }
+
+            let lhs: JsValue | undefined
+
+            fn: if (node.lhs.value.type == "var") {
+              if (node.lhs.value.kind == "prefix") {
+                const args = commalist(node.rhs.args)
+                if (node.lhs.value.sub) {
+                  args.unshift(node.lhs.value.sub)
+                }
+                return callJs(node.lhs.value, args, props)
+              }
+
+              if (!(node.lhs.value.kind == "var" && !node.lhs.value.sup))
+                break fn
+
+              const fn = props.bindingsJs.get(id(node.lhs.value))
+              if (!fn) {
+                throw new Error(`'${tryName(node.lhs.value)}' is not defined.`)
+              }
+
+              if (!(fn instanceof BindingFn)) {
+                lhs = fn
+                break fn
+              }
+
+              return fn.js(commalist(node.rhs.args).map((x) => js(x, props)))
+            }
+
+            const rhs = js(
+              { type: "suffixed", base: rhsWrapped, suffixes: node.rest },
+              props,
+            )
+            node.rest.length = 0
+            return OP_JUXTAPOSE.js([lhs ?? node.base, rhs])
+          },
+          glsl(node, props) {
+            const rhsWrapped: Node = {
+              type: "group",
+              lhs: "(",
+              rhs: ")",
+              value: node.rhs.args,
+            }
+
+            // If LHS is a value, exit early; it's not a function
+            if (node.lhs.type == "value") {
+              const rhs = glsl(
+                { type: "suffixed", base: rhsWrapped, suffixes: node.rest },
+                props,
+              )
+              node.rest.length = 0
+              return OP_JUXTAPOSE.glsl(props.ctx, [node.base, rhs])
+            }
+
+            let lhs: GlslValue | undefined
+
+            fn: if (node.lhs.value.type == "var") {
+              if (node.lhs.value.kind == "prefix") {
+                const args = commalist(node.rhs.args)
+                if (node.lhs.value.sub) {
+                  args.unshift(node.lhs.value.sub)
+                }
+                return callGlsl(node.lhs.value, args, props)
+              }
+
+              if (!(node.lhs.value.kind == "var" && !node.lhs.value.sup))
+                break fn
+
+              const fn = props.bindings.get(id(node.lhs.value))
+              if (!fn) {
+                throw new Error(`'${tryName(node.lhs.value)}' is not defined.`)
+              }
+
+              if (!(fn instanceof BindingFn)) {
+                lhs = fn
+                break fn
+              }
+
+              return fn.glsl(
+                props.ctx,
+                commalist(node.rhs.args).map((x) => glsl(x, props)),
+              )
+            }
+
+            const rhs = glsl(
+              { type: "suffixed", base: rhsWrapped, suffixes: node.rest },
+              props,
+            )
+            node.rest.length = 0
+            return OP_JUXTAPOSE.glsl(props.ctx, [lhs ?? node.base, rhs])
+          },
         },
       },
     },

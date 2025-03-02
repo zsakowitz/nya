@@ -16,6 +16,9 @@ import type {
   OpBinary,
   PuncBinaryStr,
   PuncUnary,
+  Suffix,
+  Suffixes,
+  SuffixName,
 } from "./token"
 
 export interface TxrAst<T> {
@@ -134,6 +137,28 @@ export interface TxrMagicVar extends Omit<TxrAst<MagicVar>, "drag"> {
   }
 }
 
+export type TxrSuffixLhs<T> =
+  | { type: "value"; value: T }
+  | { type: "node"; value: Node }
+
+export interface TxrSuffixArgs<T, U> {
+  lhs: TxrSuffixLhs<U>
+  readonly base: U
+  rhs: T
+  /**
+   * Intentionally mutable, so that `a(b)!` can remove `!` from the stack and
+   * immediately execute it on `b` if `a` is not a function.
+   */
+  rest: Suffix[]
+}
+
+export interface TxrSuffix<T> {
+  js(node: TxrSuffixArgs<T, JsValue>, props: PropsJs): JsValue
+  glsl(node: TxrSuffixArgs<T, GlslValue>, props: PropsGlsl): GlslValue
+  deps(node: T, deps: Deps): void
+  layer?: number
+}
+
 export interface TxrOpUnary extends TxrAst<Node> {}
 
 export interface TxrOpBinary extends TxrAst<{ lhs: Node; rhs: Node }> {}
@@ -157,6 +182,9 @@ export const TXR_OP_UNARY: Partial<Record<PuncUnary, TxrOpUnary>> =
   Object.create(null)
 
 export const TXR_OP_BINARY: Partial<Record<OpBinary, TxrOpBinary>> =
+  Object.create(null)
+
+export const TXR_SUFFIX: { [K in SuffixName]?: TxrSuffix<Suffixes[K]> } =
   Object.create(null)
 
 // Most of these just error instead of specifying any behavior, as actual
@@ -354,6 +382,89 @@ export const TXR_AST: { [K in NodeName]?: TxrAst<Nodes[K]> } = {
     layer: -1,
   },
 
+  // Delegates to `TXR_SUFFIX` so that different packages can specify suffixes
+  suffixed: {
+    drag: NO_DRAG,
+    layer: -1,
+    js(node, props) {
+      const rest = node.suffixes.slice()
+      let lhs: TxrSuffixLhs<JsValue> = { type: "node", value: node.base }
+      let suffix
+
+      while ((suffix = rest[0])) {
+        rest.shift()
+        const txr = TXR_SUFFIX[suffix.type] as TxrSuffix<unknown>
+        if (!txr) {
+          throw new Error(`Suffix '${suffix.type}' is not defined.`)
+        }
+
+        lhs = {
+          type: "value",
+          value: txr.js(
+            {
+              lhs,
+              get base() {
+                return lhs.type == "node" ? js(lhs.value, props) : lhs.value
+              },
+              rhs: suffix,
+              rest,
+            },
+            props,
+          ),
+        }
+      }
+
+      switch (lhs.type) {
+        case "value":
+          return lhs.value
+        case "node":
+          return js(lhs.value, props)
+      }
+    },
+    glsl(node, props) {
+      const rest = node.suffixes.slice()
+      let lhs: TxrSuffixLhs<GlslValue> = { type: "node", value: node.base }
+      let suffix
+
+      while ((suffix = rest[0])) {
+        rest.shift()
+        const txr = TXR_SUFFIX[suffix.type] as TxrSuffix<unknown>
+        if (!txr) {
+          throw new Error(`Suffix '${suffix.type}' is not defined.`)
+        }
+
+        lhs = {
+          type: "value",
+          value: txr.glsl(
+            {
+              lhs,
+              get base() {
+                return lhs.type == "node" ? glsl(lhs.value, props) : lhs.value
+              },
+              rhs: suffix,
+              rest,
+            },
+            props,
+          ),
+        }
+      }
+
+      switch (lhs.type) {
+        case "value":
+          return lhs.value
+        case "node":
+          return glsl(lhs.value, props)
+      }
+    },
+    deps(node, deps) {
+      deps.add(node.base)
+      for (const suffix of node.suffixes) {
+        const txr = TXR_SUFFIX[suffix.type] as TxrSuffix<unknown>
+        txr?.deps(suffix, deps)
+      }
+    },
+  },
+
   // Everything else just errors or adds dependencies.
   void: error`Empty expression.`(() => {}),
   commalist: error`Lists must be surrounded by square brackets.`(
@@ -367,7 +478,6 @@ export const TXR_AST: { [K in NodeName]?: TxrAst<Nodes[K]> } = {
   sup: error`Invalid superscript.`((node, deps) => deps.add(node.sup)),
   big: errorAll`Summation and product notation is not supported yet.`,
   bigsym: errorAll`Invalid sum or product.`,
-  factorial: errorAll`Factorials are not supported yet.`,
   num16: errorAll`UScript is not supported yet.`,
   matrix: errorAll`Matrices are not supported yet.`,
   binding: error`Cannot evaluate a variable binding.`((node, deps) =>

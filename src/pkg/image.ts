@@ -9,6 +9,7 @@ import { frac, real } from "../eval/ty/create"
 import { Leaf } from "../field/cmd/leaf"
 import { OpEq } from "../field/cmd/leaf/cmp"
 import { CmdVar } from "../field/cmd/leaf/var"
+import { CmdWord } from "../field/cmd/leaf/word"
 import { fa } from "../field/fa"
 import { Field } from "../field/field"
 import { toText } from "../field/latex"
@@ -361,7 +362,7 @@ export const PKG_IMAGE: Package = {
             if (value.src) {
               new CmdImg(value.src).insertAt(props.cursor, L)
             } else {
-              // FIXME:
+              new CmdWord("undefined", "var").insertAt(props.cursor, L)
             }
           },
           isApprox() {

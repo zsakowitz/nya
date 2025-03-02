@@ -8,6 +8,7 @@ import {
   type PuncBinaryNoComma,
   type PuncInfix,
   type PuncPrefix,
+  type Suffix,
 } from "./token"
 
 // rules governing implicits:
@@ -262,12 +263,20 @@ export function pass2_implicits(tokens: Node[]): Node[] {
     const contents = takeMul()
 
     return {
-      type: "call",
-      name,
-      args: nested.reduceRight<Node>(
-        (args, [signs, name]) =>
-          reduceSigns(signs, { type: "call", name, args }),
-        contents,
+      type: "suffixed",
+      base: name,
+      suffixes: nested.reduceRight<Suffix[]>(
+        (suffixes, [signs, name]) => [
+          {
+            type: "call",
+            args: reduceSigns(signs, {
+              type: "suffixed",
+              base: name,
+              suffixes,
+            }),
+          },
+        ],
+        [{ type: "call", args: contents }],
       ),
     }
   }

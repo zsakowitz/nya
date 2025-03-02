@@ -64,14 +64,15 @@ function readExp(
   if (
     node.type == "op" &&
     (node.kind == "\\cdot " || node.kind == "\\times ") &&
-    node.b.type == "raise" &&
+    node.b.type == "suffixed" &&
     node.b.base.type == "num" &&
-    !node.b.base.sub &&
+    node.b.suffixes.length == 1 &&
+    node.b.suffixes[0]!.type == "raise" &&
     node.b.base.value == "10"
   ) {
     const a = readSigned(node.a, base)
     if (a == null) return null
-    const b = readSigned(node.b.exponent, base)
+    const b = readSigned(node.b.suffixes[0]!.exp, base)
     if (b == null) return null
     value = mul(a, raise(base, b))
   } else {

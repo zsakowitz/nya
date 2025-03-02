@@ -4,6 +4,8 @@ import type {
   OpBinary,
   PuncInfix,
   PuncUnary,
+  Suffixes,
+  SuffixName,
 } from "../eval/ast/token"
 import type {
   TxrAst,
@@ -11,6 +13,7 @@ import type {
   TxrMagicVar,
   TxrOpBinary,
   TxrOpUnary,
+  TxrSuffix,
 } from "../eval/ast/tx"
 import type { Fn } from "../eval/ops"
 import type { WithDocs } from "../eval/ops/docs"
@@ -61,7 +64,8 @@ export interface Package {
       binary?: List<TxrOpBinary & { precedence: number }, OpBinary>
       magic?: List<TxrMagicVar>
       group?: List<TxrGroup, `${ParenLhs} ${ParenRhs}`>
-      ast?: Partial<{ [K in NodeName]: TxrAst<Nodes[K]> }>
+      ast?: { [K in NodeName]?: TxrAst<Nodes[K]> }
+      suffix?: { [K in SuffixName]?: TxrSuffix<Suffixes[K]> }
     }
   }
 

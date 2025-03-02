@@ -207,10 +207,12 @@ export type AstBinding = {
 
 /** All AST suffix-like node types. This may be augmented. */
 export interface Suffixes {
-  prop: { name: Node }
+  prop: { name: Node; exp?: Node }
   call: { args: Node }
+  method: { name: Node; args: Node; exp?: Node }
   raise: { exp: Node }
   factorial: { repeats: number | Node }
+  index: { index: Node }
 }
 
 /** All AST node types. This may be augmented. */
@@ -224,8 +226,6 @@ export interface Nodes {
   group: { lhs: ParenLhs; rhs: ParenRhs; value: Node }
   sub: { sub: Node }
   sup: { sup: Node }
-  raise: { base: Node; exponent: Node }
-  call: { on?: Node; name: Node; args: Node }
   frac: { a: Node; b: Node }
   mixed: { integer: string; a: string; b: string }
   piecewise: { pieces: Piece[] }
@@ -233,21 +233,19 @@ export interface Nodes {
   bigsym: { cmd: BigCmd | "\\int"; sub?: Node; sup?: Node }
   big: { cmd: BigCmd | "\\int"; sub?: Node; sup?: Node; of: Node }
   root: { contents: Node; root?: Node }
-  index: { on: Node; index: Node }
   juxtaposed: { nodes: Node[] }
   op:
     | { kind: OpBinary; a: Node; b: Node; span: Span | null }
     | { kind: PuncUnary; a: Node; b?: undefined }
   commalist: { items: Node[] }
   cmplist: { items: Node[]; ops: PuncCmp[] }
-  factorial: { on: Node; repeats: number | Node }
   error: { reason: string }
   binding: AstBinding
   punc: Punc
   tyname: { name: TyName }
   tycoerce: { name: TyName; value: Node }
   value: { value: JsValue }
-  suffixes: { base: Node; suffixes: Suffix[] }
+  suffixed: { base: Node; suffixes: readonly Suffix[] }
 }
 
 export type NodeName = keyof Nodes

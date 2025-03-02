@@ -9,6 +9,7 @@ import { PKG_CORE_OPS } from "./pkg/core-ops"
 import { PKG_DISTRIBUTIONS } from "./pkg/distributions"
 import { PKG_DOCS_FN } from "./pkg/docs-fn"
 import { PKG_EVAL } from "./pkg/eval"
+import { PKG_FACTORIAL } from "./pkg/factorial"
 import { PKG_GEOMETRY } from "./pkg/geo"
 import { PKG_IMAGE_GEO } from "./pkg/geo-image"
 import { PKG_GEO_POINT } from "./pkg/geo-point"
@@ -65,4 +66,5 @@ export const ALL: Package[] = [
   PKG_IMAGE_GEO,
   PKG_DOCS_FN,
   PKG_NOTES,
+  PKG_FACTORIAL,
 ]

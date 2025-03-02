@@ -5,6 +5,7 @@ import {
   type OpBinary,
   type PuncInfix,
   type PuncUnary,
+  type SuffixName,
 } from "../eval/ast/token"
 import {
   TXR_AST,
@@ -12,7 +13,9 @@ import {
   TXR_MAGICVAR,
   TXR_OP_BINARY,
   TXR_OP_UNARY,
+  TXR_SUFFIX,
   type TxrAst,
+  type TxrSuffix,
 } from "../eval/ast/tx"
 import { FNS, OP_BINARY, OP_UNARY } from "../eval/ops"
 import { VARS } from "../eval/ops/vars"
@@ -229,6 +232,15 @@ export class SheetFactory {
       ) {
         this.items[item.id] = item
       }
+    }
+
+    for (const keyRaw in pkg.eval?.tx?.suffix) {
+      const key = keyRaw as SuffixName
+      const txr = pkg.eval.tx.suffix[key]!
+      if (TXR_SUFFIX[key] && (TXR_SUFFIX[key].layer ?? 0) >= (txr.layer ?? 0)) {
+        continue
+      }
+      TXR_SUFFIX[key] = txr as TxrSuffix<unknown>
     }
 
     if (pkg.sheet?.defaultItem) {

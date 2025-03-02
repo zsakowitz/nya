@@ -71,23 +71,41 @@ export function pass1_suffixes(tokens: Node[]) {
         // .min(...) calls
         if (next2?.type == "group" && next2.lhs == "(" && next2.rhs == ")") {
           tokens.splice(i, 3)
-          tokens[i - 1] = {
-            type: "call",
-            on: prev,
-            args: next2.value,
-            name: next,
+          // prev.next next2
+          if (prev.type == "suffixed") {
+            tokens[i - 1] = {
+              type: "suffixed",
+              base: prev.base,
+              suffixes: [
+                ...prev.suffixes,
+                { type: "method", args: next2.value, name: next },
+              ],
+            }
+          } else {
+            tokens[i - 1] = {
+              type: "suffixed",
+              base: prev,
+              suffixes: [{ type: "method", args: next2.value, name: next }],
+            }
           }
           i--
           continue
         }
 
         tokens.splice(i, 2)
-        tokens[i - 1] = {
-          type: "op",
-          kind: ".",
-          a: prev,
-          b: next,
-          span: null,
+
+        if (prev.type == "suffixed") {
+          tokens[i - 1] = {
+            type: "suffixed",
+            base: prev.base,
+            suffixes: [...prev.suffixes, { type: "prop", name: next }],
+          }
+        } else {
+          tokens[i - 1] = {
+            type: "suffixed",
+            base: prev,
+            suffixes: [{ type: "prop", name: next }],
+          }
         }
         i--
         continue
@@ -117,7 +135,22 @@ export function pass1_suffixes(tokens: Node[]) {
     if (prev && self.type == "punc" && self.value == "!") {
       if (next?.type == "sub") {
         tokens.splice(i, 2)
-        tokens[i - 1] = { type: "factorial", on: prev, repeats: next.sub }
+        if (prev.type == "suffixed") {
+          tokens[i - 1] = {
+            type: "suffixed",
+            base: prev.base,
+            suffixes: [
+              ...prev.suffixes,
+              { type: "factorial", repeats: next.sub },
+            ],
+          }
+        } else {
+          tokens[i - 1] = {
+            type: "suffixed",
+            base: prev,
+            suffixes: [{ type: "factorial", repeats: next.sub }],
+          }
+        }
         i--
         continue
       }
@@ -127,7 +160,19 @@ export function pass1_suffixes(tokens: Node[]) {
       // if (prev.type == "factorial" && typeof prev.repeats == "number") {
       //   prev.repeats++
       // } else {
-      tokens[i - 1] = { type: "factorial", on: prev, repeats: 1 }
+      if (prev.type == "suffixed") {
+        tokens[i - 1] = {
+          type: "suffixed",
+          base: prev.base,
+          suffixes: [...prev.suffixes, { type: "factorial", repeats: 1 }],
+        }
+      } else {
+        tokens[i - 1] = {
+          type: "suffixed",
+          base: prev,
+          suffixes: [{ type: "factorial", repeats: 1 }],
+        }
+      }
       // }
       i--
 
@@ -137,7 +182,19 @@ export function pass1_suffixes(tokens: Node[]) {
     // 4³ exponents
     if (prev && self.type == "sup" && isValueToken(prev)) {
       tokens.splice(i, 1)
-      tokens[i - 1] = { type: "raise", base: prev, exponent: self.sup }
+      if (prev.type == "suffixed") {
+        tokens[i - 1] = {
+          type: "suffixed",
+          base: prev.base,
+          suffixes: [...prev.suffixes, { type: "raise", exp: self.sup }],
+        }
+      } else {
+        tokens[i - 1] = {
+          type: "suffixed",
+          base: prev,
+          suffixes: [{ type: "raise", exp: self.sup }],
+        }
+      }
       i--
       continue
     }
@@ -151,7 +208,19 @@ export function pass1_suffixes(tokens: Node[]) {
       (isValueToken(prev) || (prev.type == "var" && prev.kind == "prefix"))
     ) {
       tokens.splice(i, 1)
-      tokens[i - 1] = { type: "call", name: prev, args: self.value }
+      if (prev.type == "suffixed") {
+        tokens[i - 1] = {
+          type: "suffixed",
+          base: prev.base,
+          suffixes: [...prev.suffixes, { type: "call", args: self.value }],
+        }
+      } else {
+        tokens[i - 1] = {
+          type: "suffixed",
+          base: prev,
+          suffixes: [{ type: "call", args: self.value }],
+        }
+      }
       i--
       continue
     }
@@ -165,7 +234,19 @@ export function pass1_suffixes(tokens: Node[]) {
       isValueToken(prev)
     ) {
       tokens.splice(i, 1)
-      tokens[i - 1] = { type: "index", on: prev, index: self.value }
+      if (prev.type == "suffixed") {
+        tokens[i - 1] = {
+          type: "suffixed",
+          base: prev.base,
+          suffixes: [...prev.suffixes, { type: "index", index: self.value }],
+        }
+      } else {
+        tokens[i - 1] = {
+          type: "suffixed",
+          base: prev,
+          suffixes: [{ type: "index", index: self.value }],
+        }
+      }
       i--
       continue
     }

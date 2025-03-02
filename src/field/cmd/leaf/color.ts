@@ -106,21 +106,26 @@ ${parseInt(color.slice(5, 7), 16)}\\right)`
     const g = parseInt(color.slice(3, 5), 16).toString()
     const b = parseInt(color.slice(5, 7), 16).toString()
     tokens.push({
-      type: "call",
-      name: {
+      type: "suffixed",
+      base: {
         type: "var",
         value: "rgb",
         kind: "prefix",
         span: null,
       },
-      args: {
-        type: "commalist",
-        items: [
-          { type: "num", value: r, span: null },
-          { type: "num", value: g, span: null },
-          { type: "num", value: b, span: null },
-        ],
-      },
+      suffixes: [
+        {
+          type: "call",
+          args: {
+            type: "commalist",
+            items: [
+              { type: "num", value: r, span: null },
+              { type: "num", value: g, span: null },
+              { type: "num", value: b, span: null },
+            ],
+          },
+        },
+      ],
     })
   }
 }
