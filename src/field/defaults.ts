@@ -292,5 +292,27 @@ export const options: Options = Object.freeze<Options>({
     if (cursor[R] instanceof CmdComma) {
       cursor.moveTo(cursor[R], R)
     }
+
+    // if (
+    //   cursor.parent?.parent instanceof CmdBrack &&
+    //   cursor.parent.parent.lhs == "(" &&
+    //   cursor.parent.parent.rhs == ")" &&
+    //   cursor.parent.parent[L] instanceof CmdVar &&
+    //   cursor.parent.parent[L].kind == "prefix"
+    // ) {
+    //   let cmd = cursor.parent.parent[L]
+    //   let name = cursor.parent.parent[L].text
+    //
+    //   while (cmd[L] instanceof CmdVar && cmd[L].kind == "prefix") {
+    //     cmd = cmd[L]
+    //     name = cmd.text + name
+    //
+    //     if (cmd.part == L) {
+    //       break
+    //     }
+    //   }
+    // }
+    //
+    // TODO: autocomplete parentheses
   },
 })
