@@ -29,6 +29,7 @@ export default {
             polygon: "polygon",
             circle: "circle,point32,point64",
             angle: "angle",
+            directedangle: "directedangle",
             arc: "arc,point32,point64",
           },
         },

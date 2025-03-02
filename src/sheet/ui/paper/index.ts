@@ -273,6 +273,7 @@ export type DrawKind =
   | "polygon"
   | "circle"
   | "angle"
+  | "directedangle"
   | "arc"
 
 export type DrawProps = {
@@ -314,6 +315,7 @@ export function segmentByOffset(
       polygon: "picking-any:opacity-30 picking-polygon:opacity-100",
       circle: "picking-any:opacity-30 picking-circle:opacity-100",
       angle: "picking-any:opacity-30 picking-angle:opacity-100",
+      directedangle: "picking-any:opacity-30 picking-directedangle:opacity-100",
       arc: "picking-any:opacity-30 picking-arc:opacity-100",
       null: "",
     }[props.kind ?? "null"]
@@ -356,7 +358,7 @@ export function segmentByOffset(
       pick: props.pick && {
         ...props.pick,
         draw() {
-          ring.setAttribute("stroke", "#2d70b3" + "60")
+          ring.setAttribute("stroke", "#2d70b360")
           target.classList.add("cursor-pointer")
         },
       },

@@ -63,7 +63,7 @@ export function drawVector(
       pick: props.pick && {
         ...props.pick,
         draw() {
-          ring.setAttribute("stroke", "#2d70b3" + "60")
+          ring.setAttribute("stroke", "#2d70b360")
           target.classList.add("cursor-pointer")
         },
       },

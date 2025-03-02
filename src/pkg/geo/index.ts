@@ -292,7 +292,7 @@ const PICK_ANGLE = definePickTy(
     if (p1 && p2 && p3) {
       drawAngle(sheet.paper, unpt(p1.value), unpt(p2.value), unpt(p3.value), {
         draft: true,
-        type: "angle",
+        kind: "angle",
       })
     }
   },
@@ -309,7 +309,7 @@ const PICK_DIRECTEDANGLE = definePickTy(
     if (p1 && p2 && p3) {
       drawAngle(sheet.paper, unpt(p1.value), unpt(p2.value), unpt(p3.value), {
         draft: true,
-        type: "directedangle",
+        kind: "directedangle",
       })
     }
   },

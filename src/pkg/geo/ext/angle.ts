@@ -11,8 +11,14 @@ import { Display } from "../../../eval/ty/display"
 import { R } from "../../../field/model"
 import { sx } from "../../../jsx"
 import { defineHideable } from "../../../sheet/ext/hideable"
-import { normSegment, type Paper, type Point } from "../../../sheet/ui/paper"
+import {
+  normSegment,
+  type DrawLineProps,
+  type Paper,
+  type Point,
+} from "../../../sheet/ui/paper"
 import { STORE_EVAL } from "../../eval"
+import { pick } from "./util"
 
 export const LINE = 32
 export const ARC = 20
@@ -76,7 +82,10 @@ export function drawAngle(
   p1: Point,
   p2: Point,
   p3: Point,
-  props: { draft?: boolean; type: "angle" | "directedangle" },
+  props: Pick<DrawLineProps, "drag" | "pick"> & {
+    draft?: boolean
+    kind: "angle" | "directedangle"
+  },
 ) {
   const measure =
     (Math.atan2(p1.x - p2.x, p1.y - p2.y) -
@@ -117,27 +126,17 @@ export function drawAngle(
   const src = swap ? a3 : a1
   const dst = swap ? a1 : a3
 
-  const path =
+  const plainPath =
     (
-      props.type == "angle" &&
+      props.kind == "angle" &&
       Math.abs((measure % Math.PI) - Math.PI / 2) < 9e-7
     ) ?
       `M ${src.x} ${src.y} L ${a1.x + a3.x - o2.x} ${a1.y + a3.y - o2.y} L ${dst.x} ${dst.y}`
     : `M ${src.x} ${src.y} A ${ARC} ${ARC} 0 0 0 ${dst.x} ${dst.y}`
 
-  const g = sx(
-    "g",
-    props?.draft ? "" : "picking-any:opacity-30 picking-angle:opacity-100",
-    sx("path", {
-      d: path,
-      "stroke-width": 3,
-      stroke: "var(--nya-angle)",
-      "stroke-linecap": "round",
-      "stroke-linejoin": "round",
-    }),
-  )
+  let d = plainPath
 
-  if (props.type == "directedangle") {
+  if (props.kind == "directedangle") {
     const size = Math.max(
       4,
       Math.min(
@@ -162,23 +161,58 @@ export function drawAngle(
     const oy = a3.y - ny
     const w = 0.4
 
+    d += ` M ${a3.x} ${a3.y} L ${ox + w * ny} ${oy - w * nx} L ${ox - w * ny} ${oy + w * nx} Z`
+  }
+
+  const g = sx(
+    "g",
+    props?.draft ? "" : "picking-any:opacity-30 picking-angle:opacity-100",
+    sx("path", {
+      d,
+      "stroke-width": 3,
+      stroke: "var(--nya-angle)",
+      "stroke-linecap": "round",
+      "stroke-linejoin": "round",
+    }),
+  )
+
+  if (props.kind == "angle") {
     g.appendChild(
       sx("path", {
-        d: `M ${a3.x} ${a3.y} L ${ox + w * ny} ${oy - w * nx} L ${ox - w * ny} ${oy + w * nx} Z`,
-        "stroke-width": 3,
-        stroke: "var(--nya-angle)",
-        fill: "var(--nya-angle)",
-        "stroke-linejoin": "round",
-      }),
-    )
-  } else {
-    g.appendChild(
-      sx("path", {
-        d: `${path} L ${o2.x} ${o2.y} Z`,
+        d: `${plainPath} L ${o2.x} ${o2.y} Z`,
         fill: "var(--nya-angle)",
         "fill-opacity": 0.3,
       }),
     )
+  }
+
+  if (props.drag || props.pick) {
+    const ring = sx("path", {
+      d,
+      "stroke-width": 8,
+      stroke: "transparent",
+      "stroke-opacity": 0x60 / 0xff,
+      "stroke-linecap": "round",
+      "stroke-linejoin": "round",
+    })
+    const target = sx("path", {
+      d: d + ` L ${o2.x} ${o2.y}`,
+      "stroke-width": 12,
+      stroke: "transparent",
+      fill: "transparent",
+      "stroke-linecap": "round",
+      "stroke-linejoin": "round",
+      drag: props.drag,
+      pick: props.pick && {
+        ...props.pick,
+        draw() {
+          ring.setAttribute("stroke", "var(--nya-angle)")
+          target.classList.add("cursor-pointer")
+        },
+      },
+    })
+    g.appendChild(ring)
+    g.appendChild(target)
   }
 
   paper.append("anglearc", g)
@@ -204,7 +238,8 @@ export const EXT_ANGLE = defineHideable({
   svg(data, paper) {
     for (const val of each(data.value)) {
       drawAngle(paper, unpt(val[0]), unpt(val[1]), unpt(val[2]), {
-        type: data.value.type,
+        kind: data.value.type,
+        pick: pick(val, data, data.expr.field.ctx),
       })
     }
   },
