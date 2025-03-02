@@ -281,23 +281,6 @@ const PICK_PARALLEL = definePickTy(
   },
 )
 
-const PICK_ANGLE = definePickTy(
-  "angle",
-  [
-    ["point32", "point64"],
-    ["point32", "point64"],
-    ["point32", "point64"],
-  ],
-  (sheet, p1, p2, p3) => {
-    if (p1 && p2 && p3) {
-      drawAngle(sheet.paper, unpt(p1.value), unpt(p2.value), unpt(p3.value), {
-        draft: true,
-        kind: "angle",
-      })
-    }
-  },
-)
-
 const PICK_DIRECTEDANGLE = definePickTy(
   "directedangle",
   [
@@ -314,6 +297,55 @@ const PICK_DIRECTEDANGLE = definePickTy(
     }
   },
 )
+
+type PickAngleArgs =
+  | [JsVal<"polygon">]
+  | [
+      JsVal<"point32" | "point64">?,
+      JsVal<"point32" | "point64">?,
+      JsVal<"point32" | "point64">?,
+    ]
+
+const PICK_ANGLE: Data = {
+  vals: [],
+  next: ["point32", "point64", "polygon"],
+  src: {
+    id: Math.random(),
+    fn: "midpoint",
+    next(args) {
+      if (args.length == 0) {
+        return ["point32", "point64", "polygon"]
+      }
+      if (args.length == 3) {
+        return null
+      }
+      return args[0]?.type == "polygon" ? null : ["point32", "point64"]
+    },
+    draw(sheet, args) {
+      const [a, b, c] = args as PickAngleArgs
+
+      if (a?.type == "polygon") {
+        if (a.value.length < 2) {
+          return
+        }
+        for (let i = 0; i < a.value.length; i++) {
+          const prev = a.value[(i + a.value.length - 1) % a.value.length]!
+          const self = a.value[i]!
+          const next = a.value[(i + 1) % a.value.length]!
+          drawAngle(sheet.paper, unpt(prev), unpt(self), unpt(next), {
+            draft: true,
+            kind: "angle",
+          })
+        }
+      } else if (a && b && c) {
+        drawAngle(sheet.paper, unpt(a.value), unpt(b.value), unpt(c.value), {
+          draft: true,
+          kind: "angle",
+        })
+      }
+    },
+  },
+}
 
 const PICK_MIDPOINT: Data = {
   vals: [],

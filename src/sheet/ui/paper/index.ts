@@ -22,21 +22,25 @@ export interface Point {
 interface LayerShared {
   image: 0
   angleline: 2
-  line: 3
-  anglearc: 4
-  point: 5
+  polygontarget: 3
+  line: 4
+  anglearc: 5
+  point: 6
 }
 
 interface LayerExclusive {
   grid: 1
 }
 
-const LAYER_SHARED: Partial<LayerShared> = Object.create(null)
-LAYER_SHARED.image = 0
-LAYER_SHARED.angleline = 2
-LAYER_SHARED.line = 3
-LAYER_SHARED.anglearc = 4
-LAYER_SHARED.point = 5
+const LAYER_SHARED: LayerShared = {
+  image: 0,
+  angleline: 2,
+  polygontarget: 3,
+  line: 4,
+  anglearc: 5,
+  point: 6,
+}
+Object.setPrototypeOf(LAYER_SHARED, null)
 
 const LAYER_EXCLUSIVE: Partial<LayerExclusive> = Object.create(null)
 LAYER_EXCLUSIVE.grid = 1

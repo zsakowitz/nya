@@ -107,6 +107,59 @@ export function drawPolygon(
         kind: "segment",
       })
     }
+
+    const ring = sx("path", {
+      d,
+      "stroke-width": 8,
+      stroke: "transparent",
+      "stroke-linecap": "round",
+      "stroke-linejoin": "round",
+    })
+
+    const target = sx("path", {
+      d,
+      fill: "transparent",
+      pick: {
+        draw() {
+          ring.setAttribute("stroke", "#2d70b360")
+          target.style.cursor = "pointer"
+        },
+        focus() {
+          requestAnimationFrame(() => props.pick!.expr.focus())
+        },
+        ref() {
+          let block, cursor
+
+          if (pick.expr.field.ast.type == "binding") {
+            block = new Block(null)
+            CmdVar.leftOf(
+              (cursor = block.cursor(R)),
+              pick.expr.field.ast.name,
+              pick.expr.field.options,
+              pick.expr.field.ctx,
+            )
+          } else {
+            const name = CmdToken.new(pick.expr.field.ctx)
+            const c = pick.expr.field.block.cursor(L)
+            name.insertAt(c, L)
+            new OpEq(false).insertAt(c, L)
+            block = new Block(null)
+            name.clone().insertAt((cursor = block.cursor(R)), L)
+            pick.expr.field.dirtyAst = pick.expr.field.dirtyValue = true
+            pick.expr.field.trackNameNow()
+            pick.expr.field.scope.queueUpdate()
+          }
+
+          return block
+        },
+        val() {
+          return { type: "polygon", value: polygon.map(rept) }
+        },
+      },
+    })
+
+    paper.append("line", ring)
+    paper.append("polygontarget", target)
   }
 }
 
