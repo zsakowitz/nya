@@ -7,14 +7,20 @@ import {
   type TyInfo,
   type TyInfoByName,
 } from "../../eval/ty/info"
+import { OpEq } from "../../field/cmd/leaf/cmp"
 import { CmdComma } from "../../field/cmd/leaf/comma"
-import { createToken } from "../../field/cmd/leaf/token"
+import { CmdDot } from "../../field/cmd/leaf/dot"
+import { CmdNum } from "../../field/cmd/leaf/num"
+import { CmdToken, createToken } from "../../field/cmd/leaf/token"
+import { CmdVar } from "../../field/cmd/leaf/var"
 import { CmdWord } from "../../field/cmd/leaf/word"
 import { CmdBrack } from "../../field/cmd/math/brack"
 import { Block, L, R } from "../../field/model"
 import { h, path, svgx, sx } from "../../jsx"
 import { definePickTy, PICK_TY, toolbar, type Data } from "../../sheet/pick-ty"
+import { Expr } from "../../sheet/ui/expr"
 import { normSegment, segmentByPaper, type Point } from "../../sheet/ui/paper"
+import type { Selected } from "../../sheet/ui/sheet"
 import {
   drawPoint,
   FN_GLIDER,
@@ -281,23 +287,6 @@ const PICK_PARALLEL = definePickTy(
   },
 )
 
-const PICK_DIRECTEDANGLE = definePickTy(
-  "directedangle",
-  [
-    ["point32", "point64"],
-    ["point32", "point64"],
-    ["point32", "point64"],
-  ],
-  (sheet, p1, p2, p3) => {
-    if (p1 && p2 && p3) {
-      drawAngle(sheet.paper, unpt(p1.value), unpt(p2.value), unpt(p3.value), {
-        draft: true,
-        kind: "directedangle",
-      })
-    }
-  },
-)
-
 type PickAngleArgs =
   | [JsVal<"polygon">]
   | [
@@ -306,45 +295,88 @@ type PickAngleArgs =
       JsVal<"point32" | "point64">?,
     ]
 
-const PICK_ANGLE: Data = {
-  vals: [],
-  next: ["point32", "point64", "polygon"],
-  src: {
-    id: Math.random(),
-    fn: "midpoint",
-    next(args) {
-      if (args.length == 0) {
-        return ["point32", "point64", "polygon"]
-      }
-      if (args.length == 3) {
-        return null
-      }
-      return args[0]?.type == "polygon" ? null : ["point32", "point64"]
-    },
-    draw(sheet, args) {
-      const [a, b, c] = args as PickAngleArgs
-
-      if (a?.type == "polygon") {
-        if (a.value.length < 2) {
-          return
+function createPick(type: "angle" | "directedangle"): Data {
+  return {
+    vals: [],
+    next: ["point32", "point64", "polygon"],
+    src: {
+      id: Math.random(),
+      fn: type,
+      next(args) {
+        if (args.length == 0) {
+          return ["point32", "point64", "polygon"]
         }
-        for (let i = 0; i < a.value.length; i++) {
-          const prev = a.value[(i + a.value.length - 1) % a.value.length]!
-          const self = a.value[i]!
-          const next = a.value[(i + 1) % a.value.length]!
-          drawAngle(sheet.paper, unpt(prev), unpt(self), unpt(next), {
+        if (args.length == 3) {
+          return null
+        }
+        return args[0]?.type == "polygon" ? null : ["point32", "point64"]
+      },
+      draw(sheet, args) {
+        const [a, b, c] = args as PickAngleArgs
+
+        if (a?.type == "polygon") {
+          if (a.value.length < 2) {
+            return
+          }
+          for (let i = 0; i < a.value.length; i++) {
+            const prev = a.value[(i + a.value.length - 1) % a.value.length]!
+            const self = a.value[i]!
+            const next = a.value[(i + 1) % a.value.length]!
+            drawAngle(sheet.paper, unpt(prev), unpt(self), unpt(next), {
+              draft: true,
+              kind: type,
+            })
+          }
+        } else if (a && b && c) {
+          drawAngle(sheet.paper, unpt(a.value), unpt(b.value), unpt(c.value), {
             draft: true,
-            kind: "angle",
+            kind: type,
           })
         }
-      } else if (a && b && c) {
-        drawAngle(sheet.paper, unpt(a.value), unpt(b.value), unpt(c.value), {
-          draft: true,
-          kind: "angle",
-        })
-      }
+      },
+      create(sheet, args) {
+        const a = args[0] as Selected<"polygon">
+
+        if (a?.val.type != "polygon") {
+          return false
+        }
+
+        if (a.val.value.length < 2) {
+          return true
+        }
+
+        for (let i = 0; i < a.val.value.length; i++) {
+          const expr = Expr.of(sheet)
+          const cursor = expr.field.block.cursor(R)
+
+          const token = CmdToken.new(expr.field.ctx)
+          token.insertAt(cursor, L)
+          new OpEq(false).insertAt(cursor, L)
+
+          a.ref().insertAt(cursor, L)
+          new CmdDot().insertAt(cursor, L)
+          for (const c of type + "s") {
+            new CmdVar(c, sheet.options).insertAt(cursor, L)
+          }
+
+          const index = new Block(null)
+          new CmdBrack("[", "]", null, index).insertAt(cursor, L)
+          {
+            const cursor = index.cursor(R)
+            for (const char of BigInt(i + 1).toString()) {
+              new CmdNum(char).insertAt(cursor, L)
+            }
+          }
+
+          expr.field.dirtyAst = expr.field.dirtyValue = true
+          expr.field.trackNameNow()
+          expr.field.scope.queueUpdate()
+        }
+
+        return true
+      },
     },
-  },
+  }
 }
 
 const PICK_MIDPOINT: Data = {
@@ -1083,6 +1115,9 @@ function iconMidpoint() {
     ),
   )
 }
+
+const PICK_ANGLE = createPick("angle")
+const PICK_DIRECTEDANGLE = createPick("directedangle")
 
 export const PKG_GEOMETRY: Package = {
   id: "nya:geometry",

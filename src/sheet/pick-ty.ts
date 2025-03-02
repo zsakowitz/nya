@@ -18,6 +18,11 @@ interface Source {
   allowExistingPoint?(args: JsVal[]): boolean
   next(args: JsVal[]): readonly TyName[] | null
   draw(sheet: Sheet, args: JsVal[]): void
+  /**
+   * Return `true` if the item has been created; otherwise, return `false` to
+   * use the default behavior.
+   */
+  create?(sheet: Sheet, args: Selected[]): boolean
 }
 
 export interface Data {
@@ -92,14 +97,14 @@ export const PICK_TY: Picker<Data, Selected> = {
       }
     }
 
-    if (data.src.fn) {
-      const refs = []
-      for (const arg of data.vals) {
-        refs.push(arg.ref())
-      }
-      const valueRef =
-        args.slice(0, -1).includes(found.val) ? refs.pop()! : found.ref()
+    const refs = []
+    for (const arg of data.vals) {
+      refs.push(arg.ref())
+    }
+    const valueRef =
+      args.slice(0, -1).includes(found.val) ? refs.pop()! : found.ref()
 
+    if (!data.src.create?.(sheet, [...data.vals, found]) && data.src.fn) {
       const expr = Expr.of(sheet)
       const cursor = expr.field.block.cursor(R)
       const token = CmdToken.new(expr.field.ctx)
@@ -122,17 +127,13 @@ export const PICK_TY: Picker<Data, Selected> = {
       expr.field.dirtyAst = expr.field.dirtyValue = true
       expr.field.trackNameNow()
       expr.field.scope.queueUpdate()
-    } else {
-      for (const arg of data.vals) {
-        arg.ref()
-      }
-      found.ref()
     }
 
     const initial = data.src.next([])
     if (!initial) {
       return null
     }
+
     return {
       pick: PICK_TY,
       data: {
