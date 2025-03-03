@@ -2,9 +2,9 @@ import type { Package } from "."
 import { fn, type GlslContext } from "../eval/lib/fn"
 import { FnDist } from "../eval/ops/dist"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "../eval/ops/vars"
-import type { GlslVal, JsVal, SPoint } from "../eval/ty"
+import type { GlslVal, SPoint } from "../eval/ty"
 import { isZero } from "../eval/ty/check"
-import { approx, SNANPT, num, pt, real } from "../eval/ty/create"
+import { approx, num, pt, real, SNANPT } from "../eval/ty/create"
 import type { TyWrite } from "../eval/ty/display"
 import { highRes } from "../eval/ty/info"
 import { abs, add, div, mul, neg, sub } from "../eval/ty/ops"
@@ -51,7 +51,18 @@ declare module "../eval/ty" {
   }
 }
 
-function declareMulC32(ctx: GlslContext) {
+export function lnJs(a: SPoint) {
+  if (isZero(a)) {
+    return pt(real(-Infinity), real(0))
+  }
+
+  const x = num(a.x)
+  const y = num(a.y)
+
+  return pt(approx(Math.log(Math.hypot(x, y))), approx(Math.atan2(y, x)))
+}
+
+export function declareMulC32(ctx: GlslContext) {
   ctx.glsl`
 vec2 _helper_mul_c32(vec2 a, vec2 b) {
   return vec2(
@@ -65,6 +76,17 @@ vec2 _helper_mul_c32(vec2 a, vec2 b) {
 function declareExp(ctx: GlslContext) {
   ctx.glsl`vec2 _helper_exp(vec2 a) {
   return exp(a.x) * vec2(cos(a.y), sin(a.y));
+}
+`
+}
+
+export function declareLn(ctx: GlslContext) {
+  ctx.glsl`vec2 _helper_ln(vec2 z) {
+  if (z == vec2(0)) {
+    return vec2(-1.0 / 0.0, 0);
+  }
+
+  return vec2(log(length(z)), atan(z.y, z.x));
 }
 `
 }
@@ -147,33 +169,13 @@ export const PKG_NUM_COMPLEX: Package = {
       },
     )
 
-    function declareLnC32(ctx: GlslContext) {
-      ctx.glsl`vec2 _helper_ln_c32(vec2 z) {
-  if (z == vec2(0)) {
-    return vec2(-1.0 / 0.0, 0);
-  }
-
-  return vec2(log(length(z)), atan(z.y, z.x));
-}
-`
-    }
-
     FN_LN.add(
       ["c32"],
       "c32",
-      ({ value: a }) => {
-        if (isZero(a)) {
-          return pt(real(-Infinity), real(0))
-        }
-
-        const x = num(a.x)
-        const y = num(a.y)
-
-        return pt(approx(Math.log(Math.hypot(x, y))), approx(Math.atan2(y, x)))
-      },
+      (a) => lnJs(a.value),
       (ctx, a) => {
-        declareLnC32(ctx)
-        return `_helper_ln_c32(${a.expr})`
+        declareLn(ctx)
+        return `_helper_ln(${a.expr})`
       },
     )
 
@@ -194,10 +196,12 @@ export const PKG_NUM_COMPLEX: Package = {
         )
       },
       (ctx, a) => {
-        declareLnC32(ctx)
-        return `(_helper_ln_c32(${a.expr}) / vec2(log(10.0)))`
+        declareLn(ctx)
+        return `(_helper_ln(${a.expr}) / vec2(log(10.0)))`
       },
     )
+
+    // TODO: logb
 
     FN_VALID.add(
       ["c32"],
@@ -281,11 +285,21 @@ export const PKG_NUM_COMPLEX: Package = {
       (ctx, a) => declareDebugPoint(ctx, a),
     )
 
-    OP_SUB.add(["c64", "c64"], "c64", subC, (ctx, ar, br) => {
-      const a = ctx.cache(ar)
-      const b = ctx.cache(br)
-      return `vec4(${subR64(ctx, `${a}.xy`, `${b}.xy`)}, ${subR64(ctx, `${a}.zw`, `${b}.zw`)})`
-    }).add(["c32", "c32"], "c32", subC, (_, a, b) => `(${a.expr} - ${b.expr})`)
+    OP_SUB.add(
+      ["c64", "c64"],
+      "c64",
+      (a, b) => subPt(a.value, b.value),
+      (ctx, ar, br) => {
+        const a = ctx.cache(ar)
+        const b = ctx.cache(br)
+        return `vec4(${subR64(ctx, `${a}.xy`, `${b}.xy`)}, ${subR64(ctx, `${a}.zw`, `${b}.zw`)})`
+      },
+    ).add(
+      ["c32", "c32"],
+      "c32",
+      (a, b) => subPt(a.value, b.value),
+      (_, a, b) => `(${a.expr} - ${b.expr})`,
+    )
 
     OP_RAISE.add(
       ["c32", "c32"],
@@ -354,17 +368,31 @@ export const PKG_NUM_COMPLEX: Package = {
       },
     )
 
-    OP_ADD.add(["c64", "c64"], "c64", addC, (ctx, ar, br) => {
-      const a = ctx.cache(ar)
-      const b = ctx.cache(br)
-      return `vec4(${addR64(ctx, `${a}.xy`, `${b}.xy`)}, ${addR64(ctx, `${a}.zw`, `${b}.zw`)})`
-    }).add(["c32", "c32"], "c32", addC, (_, a, b) => `(${a.expr} + ${b.expr})`)
+    OP_ADD.add(
+      ["c64", "c64"],
+      "c64",
+      (a, b) => addPt(a.value, b.value),
+      (ctx, ar, br) => {
+        const a = ctx.cache(ar)
+        const b = ctx.cache(br)
+        return `vec4(${addR64(ctx, `${a}.xy`, `${b}.xy`)}, ${addR64(ctx, `${a}.zw`, `${b}.zw`)})`
+      },
+    ).add(
+      ["c32", "c32"],
+      "c32",
+      (a, b) => addPt(a.value, b.value),
+      (_, a, b) => `(${a.expr} + ${b.expr})`,
+    )
 
-    OP_CDOT.add(["c64", "c64"], "c64", mulC, (ctx, a, b) => {
-      declareAddR64(ctx)
-      declareSubR64(ctx)
-      declareMulR64(ctx)
-      ctx.glsl`
+    OP_CDOT.add(
+      ["c64", "c64"],
+      "c64",
+      (a, b) => mulPt(a.value, b.value),
+      (ctx, a, b) => {
+        declareAddR64(ctx)
+        declareSubR64(ctx)
+        declareMulR64(ctx)
+        ctx.glsl`
 vec4 _helper_mul_c64(vec4 a, vec4 b) {
   return vec4(
     _helper_sub_r64(_helper_mul_r64(a.xy, b.xy), _helper_mul_r64(a.zw, b.zw)),
@@ -372,11 +400,17 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
   );
 }
 `
-      return `_helper_mul_c64(${a.expr}, ${b.expr})`
-    }).add(["c32", "c32"], "c32", mulC, (ctx, a, b) => {
-      declareMulC32(ctx)
-      return `_helper_mul_c32(${a.expr}, ${b.expr})`
-    })
+        return `_helper_mul_c64(${a.expr}, ${b.expr})`
+      },
+    ).add(
+      ["c32", "c32"],
+      "c32",
+      (a, b) => mulPt(a.value, b.value),
+      (ctx, a, b) => {
+        declareMulC32(ctx)
+        return `_helper_mul_c32(${a.expr}, ${b.expr})`
+      },
+    )
 
     FN_COMPLEX.add(
       ["c64"],
@@ -632,21 +666,15 @@ function dotC32(
   return `_helper_dot_c32(${a.expr}, ${b.expr})`
 }
 
-function subC(a: JsVal<"c32" | "c64">, b: JsVal<"c32" | "c64">) {
-  return pt(sub(a.value.x, b.value.x), sub(a.value.y, b.value.y))
+export function subPt(a: SPoint, b: SPoint) {
+  return pt(sub(a.x, b.x), sub(a.y, b.y))
 }
 
-function addC(
-  a: JsVal<"c32" | "c64" | "point32" | "point64">,
-  b: JsVal<"c32" | "c64" | "point32" | "point64">,
-) {
-  return pt(add(a.value.x, b.value.x), add(a.value.y, b.value.y))
+export function addPt(a: SPoint, b: SPoint) {
+  return pt(add(a.x, b.x), add(a.y, b.y))
 }
 
-function mulC(
-  { value: { x: a, y: b } }: JsVal<"c32" | "c64">,
-  { value: { x: c, y: d } }: JsVal<"c32" | "c64">,
-) {
+export function mulPt({ x: a, y: b }: SPoint, { x: c, y: d }: SPoint) {
   return pt(sub(mul(a, c), mul(b, d)), add(mul(b, c), mul(a, d)))
 }
 
@@ -662,7 +690,7 @@ export function recipPt({ x: c, y: d }: SPoint): SPoint {
   return pt(div(c, denom), div(neg(d), denom))
 }
 
-function declareDiv(ctx: GlslContext) {
+export function declareDiv(ctx: GlslContext) {
   ctx.glsl`vec2 _helper_div(vec2 a, vec2 b) {
   return vec2(
     a.x * b.x + a.y * b.y,

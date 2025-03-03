@@ -1,1 +1,3 @@
-@y=x!
+A=2+3i
+@\operatorname{arcsin}(A).\operatorname{debugpoint}
+\operatorname{arcsin}A
