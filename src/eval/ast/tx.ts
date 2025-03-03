@@ -400,7 +400,18 @@ export const TXR_AST: { [K in NodeName]?: TxrAst<Nodes[K]> } = {
   suffixed: {
     // FIXME: gliders should still work
     drag: {
-      point() {
+      point({ base, suffixes }, props) {
+        if (
+          suffixes.length == 1 &&
+          suffixes[0]!.type == "call" &&
+          base.type == "var" &&
+          base.kind == "prefix" &&
+          base.value == "glider" &&
+          !base.sub &&
+          !base.sup
+        ) {
+        }
+
         return null
       },
       num() {
