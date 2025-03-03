@@ -8,6 +8,8 @@ import { type Bindings } from "../lib/binding"
 import { OP_BINARY, OP_UNARY } from "../ops"
 import { type GlslValue, type JsVal, type JsValue } from "../ty"
 import { coerceValueGlsl, coerceValueJs } from "../ty/coerce"
+import { TY_INFO } from "../ty/info"
+import { commalist } from "./collect"
 import type {
   MagicVar,
   Node,
@@ -402,17 +404,45 @@ export const TXR_AST: { [K in NodeName]?: TxrAst<Nodes[K]> } = {
     drag: {
       point({ base, suffixes }, props) {
         if (
-          suffixes.length == 1 &&
-          suffixes[0]!.type == "call" &&
-          base.type == "var" &&
-          base.kind == "prefix" &&
-          base.value == "glider" &&
-          !base.sub &&
-          !base.sup
+          !(
+            (suffixes.length == 1 &&
+              suffixes[0]!.type == "call" &&
+              base.type == "var" &&
+              base.kind == "prefix" &&
+              base.value == "glider" &&
+              !base.sub &&
+              !base.sup) ||
+            (suffixes[0]!.type == "method" &&
+              suffixes[0]!.name.type == "var" &&
+              suffixes[0]!.name.kind == "prefix" &&
+              suffixes[0]!.name.value == "glider")
+          )
         ) {
+          return null
         }
 
-        return null
+        const args = commalist(suffixes[0]!.args)
+        if (suffixes[0]!.type == "method") {
+          args.unshift(base)
+        }
+        if (args.length != 2) return null
+
+        const pos = dragNum(args[1]!, props)
+        if (!pos) return null
+
+        try {
+          var shape = js(args[0]!, props.js)
+          if (!TY_INFO[shape.type].glide) return null
+          if (shape.list !== false) return null
+        } catch {
+          return null
+        }
+
+        return {
+          type: "glider",
+          shape,
+          value: pos,
+        }
       },
       num() {
         return null
