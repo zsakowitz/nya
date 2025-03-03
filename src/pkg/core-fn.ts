@@ -1,0 +1,520 @@
+import type { Package } from "."
+import { commalist } from "../eval/ast/collect"
+import {
+  Precedence,
+  type Node,
+  type PuncUnary,
+  type Var,
+} from "../eval/ast/token"
+import { NO_DRAG } from "../eval/ast/tx"
+import { glsl, glslCall, type PropsGlsl } from "../eval/glsl"
+import { js, jsCall, type PropsJs } from "../eval/js"
+import { asNumericBase } from "../eval/lib/base"
+import { BindingFn, id, tryName } from "../eval/lib/binding"
+import type { GlslContext } from "../eval/lib/fn"
+import { safe } from "../eval/lib/util"
+import { FNS, OP_UNARY } from "../eval/ops"
+import { each, type GlslValue, type JsValue } from "../eval/ty"
+import { canCoerce, coerceTyJs } from "../eval/ty/coerce"
+import { frac, num } from "../eval/ty/create"
+import { OP_JUXTAPOSE, OP_RAISE } from "./core-ops"
+
+function callJs(name: Var, args: Node[], props: PropsJs): JsValue {
+  const sub = name.sub ? "_" : ""
+
+  const sup =
+    name.sup ?
+      (
+        (name.sup.type == "op" &&
+          name.sup.kind == "-" &&
+          !name.sup.b &&
+          name.sup.a.type == "num" &&
+          !name.sup.a.sub &&
+          name.sup.a.value == "1") ||
+        (name.sup.type == "num" && !name.sup.sub && name.sup.value == "-1")
+      ) ?
+        "^-1"
+      : name.sup.type == "num" && name.sup.value.indexOf(".") == -1 ?
+        fnExponentJs(
+          name.sup.sub ?
+            js(name.sup, {
+              ...props,
+              base: asNumericBase(
+                js(name.sup.sub, {
+                  ...props,
+                  base: frac(10, 1),
+                }),
+              ),
+            })
+          : js(name.sup, props),
+        )
+      : invalidFnSup()
+    : null
+
+  const rawName = name.kind == "var" ? "." + name.value : name.value
+
+  if (sup == "^-1") {
+    return jsCall(rawName + sub + "^-1", rawName, args, props)
+  }
+
+  const value = jsCall(rawName + sub, rawName, args, props)
+
+  if (sup == null) {
+    return value
+  }
+
+  return OP_RAISE.js([value, sup])
+}
+
+function callGlsl(name: Var, args: Node[], props: PropsGlsl): GlslValue {
+  const sub = name.sub ? "_" : ""
+
+  const sup =
+    name.sup ?
+      (
+        (name.sup.type == "op" &&
+          name.sup.kind == "-" &&
+          !name.sup.b &&
+          name.sup.a.type == "num" &&
+          !name.sup.a.sub &&
+          name.sup.a.value == "1") ||
+        (name.sup.type == "num" && !name.sup.sub && name.sup.value == "-1")
+      ) ?
+        "^-1"
+      : name.sup.type == "num" && name.sup.value.indexOf(".") == -1 ?
+        fnExponentGlsl(
+          props.ctx,
+          name.sup.sub ?
+            js(name.sup, {
+              ...props,
+              base: asNumericBase(
+                js(name.sup.sub, {
+                  ...props,
+                  base: frac(10, 1),
+                }),
+              ),
+            })
+          : js(name.sup, props),
+        )
+      : invalidFnSup()
+    : null
+
+  const rawName = name.kind == "var" ? "." + name.value : name.value
+
+  if (sup == "^-1") {
+    return glslCall(rawName + sub + "^-1", rawName, args, props)
+  }
+
+  const value = glslCall(rawName + sub, rawName, args, props)
+
+  if (sup == null) {
+    return value
+  }
+
+  return OP_RAISE.glsl(props.ctx, [value, sup])
+}
+
+function invalidFnSup(): never {
+  throw new Error(
+    "Only -1 and positive integers are allowed as function superscripts.",
+  )
+}
+
+function fnExponentJs(raw: JsValue): JsValue<"r32"> {
+  if (!canCoerce(raw.type, "r32")) {
+    invalidFnSup()
+  }
+
+  const value = coerceTyJs(raw, "r32")
+  for (const valRaw of each(value)) {
+    const val = num(valRaw)
+    if (!(safe(val) && 1 < val)) {
+      invalidFnSup()
+    }
+  }
+
+  return value
+}
+
+function fnExponentGlsl(ctx: GlslContext, raw: JsValue): GlslValue<"r64"> {
+  if (!canCoerce(raw.type, "r32")) {
+    invalidFnSup()
+  }
+
+  const value = coerceTyJs(raw, "r32")
+  for (const valRaw of each(value)) {
+    const val = num(valRaw)
+    if (!(safe(val) && 1 < val)) {
+      invalidFnSup()
+    }
+  }
+
+  if (value.list === false) {
+    return {
+      type: "r64",
+      list: false,
+      expr: `vec2(${num(value.value)}, 0)`,
+    }
+  }
+
+  const expr = ctx.name()
+  ctx.push`vec2 ${expr}[${value.list}];\n`
+  for (let i = 0; i < value.list; i++) {
+    ctx.push`${expr}[${i}] = vec2(${num(value.value[i]!)}, 0);\n`
+  }
+
+  return {
+    type: "r64",
+    list: value.list,
+    expr,
+  }
+}
+
+export const PKG_CORE_FN: Package = {
+  id: "nya:core-fn",
+  name: "functions",
+  label: "call functions and access properties",
+  eval: {
+    tx: {
+      binary: {
+        ".": {
+          precedence: Precedence.NotApplicable,
+          deps({ lhs, rhs }, deps) {
+            deps.add(lhs)
+            if (!(rhs.type == "var" && !rhs.sub)) {
+              deps.add(rhs)
+            }
+          },
+          drag: NO_DRAG,
+          js({ lhs, rhs }, props) {
+            if (rhs.type == "var" && !rhs.sub) {
+              if (rhs.kind == "var" && `.${rhs.value}` in OP_UNARY) {
+                const name = `.${rhs.value}` as PuncUnary
+
+                const value = OP_UNARY[name]!.js([js(lhs, props)])
+
+                if (rhs.sup) {
+                  return OP_RAISE.js([value, js(rhs.sup, props)])
+                } else {
+                  return value
+                }
+              } else if (rhs.kind == "prefix") {
+                return callJs(rhs, [lhs], props)
+              }
+            }
+
+            throw new Error("I don't understand this use of '.'.")
+          },
+          glsl({ lhs, rhs }, props) {
+            if (rhs.type == "var" && !rhs.sub) {
+              if (rhs.kind == "var" && `.${rhs.value}` in OP_UNARY) {
+                const name = `.${rhs.value}` as PuncUnary
+
+                const value = OP_UNARY[name]!.glsl(props.ctx, [
+                  glsl(lhs, props),
+                ])
+
+                if (rhs.sup) {
+                  return OP_RAISE.glsl(props.ctx, [value, glsl(rhs.sup, props)])
+                } else {
+                  return value
+                }
+              } else if (rhs.kind == "prefix") {
+                return callGlsl(rhs, [lhs], props)
+              }
+            }
+
+            throw new Error("I don't understand this use of '.'.")
+          },
+        },
+      },
+      suffix: {
+        call: {
+          deps(node, deps) {
+            deps.add(node.args)
+          },
+          js(node, props) {
+            const rhsWrapped: Node = {
+              type: "group",
+              lhs: "(",
+              rhs: ")",
+              value: node.rhs.args,
+            }
+
+            // If LHS is a value, exit early; it's not a function
+            if (node.lhs.type == "value") {
+              const rhs = js(
+                { type: "suffixed", base: rhsWrapped, suffixes: node.rest },
+                props,
+              )
+              node.rest.length = 0
+              return OP_JUXTAPOSE.js([node.base, rhs])
+            }
+
+            let lhs: JsValue | undefined
+
+            fn: if (node.lhs.value.type == "var") {
+              if (node.lhs.value.kind == "prefix") {
+                const args = commalist(node.rhs.args)
+                if (node.lhs.value.sub) {
+                  args.unshift(node.lhs.value.sub)
+                }
+                return callJs(node.lhs.value, args, props)
+              }
+
+              if (!(node.lhs.value.kind == "var" && !node.lhs.value.sup))
+                break fn
+
+              const fn = props.bindingsJs.get(id(node.lhs.value))
+              if (!fn) {
+                throw new Error(`'${tryName(node.lhs.value)}' is not defined.`)
+              }
+
+              if (!(fn instanceof BindingFn)) {
+                lhs = fn
+                break fn
+              }
+
+              return fn.js(commalist(node.rhs.args).map((x) => js(x, props)))
+            }
+
+            const rhs = js(
+              { type: "suffixed", base: rhsWrapped, suffixes: node.rest },
+              props,
+            )
+            node.rest.length = 0
+            return OP_JUXTAPOSE.js([lhs ?? node.base, rhs])
+          },
+          glsl(node, props) {
+            const rhsWrapped: Node = {
+              type: "group",
+              lhs: "(",
+              rhs: ")",
+              value: node.rhs.args,
+            }
+
+            // If LHS is a value, exit early; it's not a function
+            if (node.lhs.type == "value") {
+              const rhs = glsl(
+                { type: "suffixed", base: rhsWrapped, suffixes: node.rest },
+                props,
+              )
+              node.rest.length = 0
+              return OP_JUXTAPOSE.glsl(props.ctx, [node.base, rhs])
+            }
+
+            let lhs: GlslValue | undefined
+
+            fn: if (node.lhs.value.type == "var") {
+              if (node.lhs.value.kind == "prefix") {
+                const args = commalist(node.rhs.args)
+                if (node.lhs.value.sub) {
+                  args.unshift(node.lhs.value.sub)
+                }
+                return callGlsl(node.lhs.value, args, props)
+              }
+
+              if (!(node.lhs.value.kind == "var" && !node.lhs.value.sup))
+                break fn
+
+              const fn = props.bindings.get(id(node.lhs.value))
+              if (!fn) {
+                throw new Error(`'${tryName(node.lhs.value)}' is not defined.`)
+              }
+
+              if (!(fn instanceof BindingFn)) {
+                lhs = fn
+                break fn
+              }
+
+              return fn.glsl(
+                props.ctx,
+                commalist(node.rhs.args).map((x) => glsl(x, props)),
+              )
+            }
+
+            const rhs = glsl(
+              { type: "suffixed", base: rhsWrapped, suffixes: node.rest },
+              props,
+            )
+            node.rest.length = 0
+            return OP_JUXTAPOSE.glsl(props.ctx, [lhs ?? node.base, rhs])
+          },
+        },
+        prop: {
+          deps(node, deps) {
+            if (node.name.sup) {
+              deps.add(node.name.sup)
+            }
+          },
+          js(node, props) {
+            if (node.rhs.name.kind == "var") {
+              if (node.rhs.name.sub) {
+                throw new Error(
+                  `Cannot attach a subscript to '.${node.rhs.name.value}'.`,
+                )
+              }
+
+              const f = FNS[`.${node.rhs.name.value}`]
+              if (!f) {
+                throw new Error(
+                  `'.${node.rhs.name.value}' is not supported yet.`,
+                )
+              }
+
+              const raw = f.js([node.base])
+              if (node.rhs.name.sup) {
+                return OP_RAISE.js([raw, js(node.rhs.name.sup, props)])
+              } else {
+                return raw
+              }
+            }
+
+            return callJs(
+              node.rhs.name,
+              [{ type: "value", value: node.base }],
+              props,
+            )
+          },
+          glsl(node, props) {
+            if (node.rhs.name.kind == "var") {
+              if (node.rhs.name.sub) {
+                throw new Error(
+                  `Cannot attach a subscript to '.${node.rhs.name.value}'.`,
+                )
+              }
+
+              const f = FNS[`.${node.rhs.name.value}`]
+              if (!f) {
+                throw new Error(
+                  `'.${node.rhs.name.value}' is not supported yet.`,
+                )
+              }
+
+              const raw = f.glsl(props.ctx, [node.base])
+              if (node.rhs.name.sup) {
+                return OP_RAISE.glsl(props.ctx, [
+                  raw,
+                  glsl(node.rhs.name.sup, props),
+                ])
+              } else {
+                return raw
+              }
+            }
+
+            return callGlsl(
+              node.rhs.name,
+              [{ type: "valueGlsl", value: node.base }],
+              props,
+            )
+          },
+        },
+        method: {
+          deps(node, deps) {
+            if (node.name.sup) {
+              deps.add(node.name.sup)
+            }
+            deps.add(node.args)
+          },
+          js(node, props) {
+            if (node.rhs.name.kind == "var") {
+              if (node.rhs.name.sub) {
+                throw new Error(
+                  `Cannot attach a subscript to '.${node.rhs.name.value}'.`,
+                )
+              }
+
+              const f = FNS[`.${node.rhs.name.value}`]
+              if (!f) {
+                throw new Error(
+                  `'.${node.rhs.name.value}' is not supported yet.`,
+                )
+              }
+
+              let raw = f.js([node.base])
+              if (node.rhs.name.sup) {
+                raw = OP_RAISE.js([raw, js(node.rhs.name.sup, props)])
+              }
+
+              const rhs = js(
+                {
+                  type: "suffixed",
+                  base: {
+                    type: "group",
+                    lhs: "(",
+                    rhs: ")",
+                    value: node.rhs.args,
+                  },
+                  suffixes: node.rest,
+                },
+                props,
+              )
+              node.rest.length = 0
+
+              return OP_JUXTAPOSE.js([raw, rhs])
+            }
+
+            return callJs(
+              node.rhs.name,
+              [
+                { type: "value", value: node.base },
+                ...commalist(node.rhs.args),
+              ],
+              props,
+            )
+          },
+          glsl(node, props) {
+            if (node.rhs.name.kind == "var") {
+              if (node.rhs.name.sub) {
+                throw new Error(
+                  `Cannot attach a subscript to '.${node.rhs.name.value}'.`,
+                )
+              }
+
+              const f = FNS[`.${node.rhs.name.value}`]
+              if (!f) {
+                throw new Error(
+                  `'.${node.rhs.name.value}' is not supported yet.`,
+                )
+              }
+
+              let raw = f.glsl(props.ctx, [node.base])
+              if (node.rhs.name.sup) {
+                raw = OP_RAISE.glsl(props.ctx, [
+                  raw,
+                  glsl(node.rhs.name.sup, props),
+                ])
+              }
+
+              const rhs = glsl(
+                {
+                  type: "suffixed",
+                  base: {
+                    type: "group",
+                    lhs: "(",
+                    rhs: ")",
+                    value: node.rhs.args,
+                  },
+                  suffixes: node.rest,
+                },
+                props,
+              )
+              node.rest.length = 0
+
+              return OP_JUXTAPOSE.glsl(props.ctx, [raw, rhs])
+            }
+
+            return callGlsl(
+              node.rhs.name,
+              [
+                { type: "valueGlsl", value: node.base },
+                ...commalist(node.rhs.args),
+              ],
+              props,
+            )
+          },
+        },
+      },
+    },
+  },
+}

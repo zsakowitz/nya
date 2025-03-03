@@ -87,7 +87,9 @@ export class SheetFactory {
     }
 
     for (const key in pkg.eval?.fn) {
-      this.options.words.init(key, "prefix")
+      if (/^[A-Za-z]+$/.test(key)) {
+        this.options.words.init(key, "prefix")
+      }
       FNS[key] = pkg.eval.fn[key]!
     }
 

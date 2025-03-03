@@ -370,14 +370,27 @@ export const TXR_AST: { [K in NodeName]?: TxrAst<Nodes[K]> } = {
     () => {},
   ),
 
-  // A special built-in used for previewing picked objects
+  // A special builtin used for previewing picked objects and `.x`-style accessors
   value: {
     deps() {},
     drag: NO_DRAG,
+    js(node) {
+      return node.value
+    },
     glsl() {
       throw new Error("Cannot evaluate a 'value' node in a shader.")
     },
-    js(node) {
+    layer: -1,
+  },
+
+  // A special builtin used for `.x`-style accessors
+  valueGlsl: {
+    deps() {},
+    drag: NO_DRAG,
+    js() {
+      throw new Error("Cannot evaluate a 'valueGlsl' node in a shader.")
+    },
+    glsl(node) {
       return node.value
     },
     layer: -1,
@@ -385,11 +398,12 @@ export const TXR_AST: { [K in NodeName]?: TxrAst<Nodes[K]> } = {
 
   // Delegates to `TXR_SUFFIX` so that different packages can specify suffixes
   suffixed: {
+    // FIXME: gliders should still work
     drag: {
-      point(node, props) {
+      point() {
         return null
       },
-      num(node, props) {
+      num() {
         return null
       },
     },

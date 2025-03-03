@@ -5,7 +5,7 @@ import type { Span } from "../../field/model"
 import { tryParseFnParam, type FnParam } from "../lib/binding"
 import { isSubscript } from "../lib/text"
 import { VARS } from "../ops/vars"
-import type { JsValue, TyName } from "../ty"
+import type { GlslValue, JsValue, TyName } from "../ty"
 import { commalist } from "./collect"
 import { pass1_suffixes } from "./pass1.suffixes"
 import { pass2_implicits } from "./pass2.implicits"
@@ -207,9 +207,9 @@ export type AstBinding = {
 
 /** All AST suffix-like node types. This may be augmented. */
 export interface Suffixes {
-  prop: { name: Node; exp?: Node }
+  prop: { name: Var }
   call: { args: Node }
-  method: { name: Node; args: Node; exp?: Node }
+  method: { name: Var; args: Node }
   raise: { exp: Node }
   factorial: { repeats: number | Node }
   index: { index: Node }
@@ -245,6 +245,7 @@ export interface Nodes {
   tyname: { name: TyName }
   tycoerce: { name: TyName; value: Node }
   value: { value: JsValue }
+  valueGlsl: { value: GlslValue }
   suffixed: { base: Node; suffixes: readonly Suffix[] }
 }
 

@@ -4,6 +4,7 @@ import { PKG_BOOL } from "./pkg/bool"
 import { PKG_COLOR_CORE } from "./pkg/color-core"
 import { PKG_COLOR_EXTRAS } from "./pkg/color-extras"
 import { PKG_CORE_CMP } from "./pkg/core-cmp"
+import { PKG_CORE_FN } from "./pkg/core-fn"
 import { PKG_CORE_LIST } from "./pkg/core-list"
 import { PKG_CORE_OPS } from "./pkg/core-ops"
 import { PKG_DISTRIBUTIONS } from "./pkg/distributions"
@@ -67,4 +68,5 @@ export const ALL: Package[] = [
   PKG_DOCS_FN,
   PKG_NOTES,
   PKG_FACTORIAL,
+  PKG_CORE_FN,
 ]

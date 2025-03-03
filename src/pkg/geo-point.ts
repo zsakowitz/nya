@@ -50,13 +50,6 @@ declare module "../eval/ty" {
   }
 }
 
-declare module "../eval/ast/token" {
-  interface PuncListSuffix {
-    ".x": 0
-    ".y": 0
-  }
-}
-
 export function drawPoint(
   paper: Paper,
   props: {
@@ -594,12 +587,8 @@ export const PKG_GEO_POINT: Package = {
     fn: {
       screendistance: FN_SCREENDISTANCE,
       debugpoint: FN_DEBUGPOINT,
-    },
-    op: {
-      unary: {
-        ".x": OP_X,
-        ".y": OP_Y,
-      },
+      ".x": OP_X,
+      ".y": OP_Y,
     },
   },
   sheet: {
