@@ -1,15 +1,10 @@
+import factorial from "@stdlib/math/base/special/factorial"
 import type { Package } from "."
 import type { GlslContext } from "../eval/lib/fn"
 import { FnDist } from "../eval/ops/dist"
 import { num, real } from "../eval/ty/create"
 
-export let factorials = [1]
-let n = 1
-for (let i = 1; i < 171; i++) {
-  factorials.push((n *= i))
-}
-
-function factorial(ctx: GlslContext, x: string) {
+function factorialGlsl(ctx: GlslContext, x: string) {
   ctx.glsl`
 
 
@@ -103,18 +98,19 @@ const OP_FACTORIAL = new FnDist(
   ["r32"],
   "r32",
   (a) => {
-    if (num(a.value) >= 171) {
+    const val = num(a.value)
+    if (val == Math.floor(val) && val < 0) {
       return real(Infinity)
     }
-    return real(factorials[num(a.value)] ?? NaN)
+    return real(factorial(val))
   },
-  (ctx, a) => factorial(ctx, a.expr),
+  (ctx, a) => factorialGlsl(ctx, a.expr),
 )
 
 export const PKG_FACTORIAL: Package = {
   id: "nya:factorial",
-  name: "continuous factorial",
-  label: "FIXME: it's only continuous in shaders",
+  name: "factorial",
+  label: "extended factorial operator",
   eval: {
     tx: {
       suffix: {
