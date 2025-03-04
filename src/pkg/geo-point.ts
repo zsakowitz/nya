@@ -235,12 +235,19 @@ const EXT_POINT = defineHideable({
           ref() {
             if (data.expr.field.ast.type == "binding") {
               const block = new Block(null)
+              const cursor = block.cursor(R)
               CmdVar.leftOf(
-                block.cursor(R),
+                cursor,
                 data.expr.field.ast.name,
                 data.expr.field.options,
                 data.expr.field.ctx,
               )
+              if (data.value.type.startsWith("c")) {
+                new CmdDot().insertAt(cursor, L)
+                for (const c of "point") {
+                  new CmdVar(c, data.expr.field.options).insertAt(cursor, L)
+                }
+              }
               return block
             }
 
