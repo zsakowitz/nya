@@ -49,20 +49,15 @@ export class ItemList {
   /** `ref` should already have `data` stored. */
   private createOf<T, U>(ref: ItemRef<T>, props?: ItemCreateProps<U>) {
     const data = ref.data
-    const aside = ref.factory.aside(data)
+    const aside = ref.factory.aside?.(data)
     const main = ref.factory.main(data)
+    if (aside) {
+      ;(ref as ItemRefMut).elGrayBar.appendChild(aside)
+    }
+    // TODO: delete via backspace on gray bar
     const el = ((ref as ItemRefMut).el = h(
       "grid grid-cols-[2.5rem_auto] border-r border-b relative nya-expr border-[--nya-border]",
-      // TODO: delete via backspace on this bar
-      ((ref as ItemRefMut).elGrayBar = h(
-        {
-          class:
-            "nya-expr-bar inline-flex bg-[--nya-bg-sidebar] flex-col p-0.5 border-r border-[--nya-border] font-sans text-[--nya-expr-index] text-[65%] leading-none focus:outline-none",
-          tabindex: "-1",
-        },
-        ref.elIndex,
-        aside,
-      )),
+      ref.elGrayBar,
       main,
       h(
         "hidden absolute -inset-y-px inset-x-0 [:first-child>&]:top-0 border-2 border-[--nya-expr-focus] pointer-events-none [:focus-within>&]:block [:active>&]:block",
@@ -85,7 +80,23 @@ export class ItemList {
   }
 
   create<T, U>(factory: ItemFactory<T, U>, props?: ItemCreateProps<U>) {
-    const ref = new ItemRef<T>(this, factory, null!, null!, t("??"), null!)
+    const elIndex = t("??")
+    const ref = new ItemRef<T>(
+      this,
+      factory,
+      null!,
+      null!,
+      elIndex,
+      h(
+        {
+          class:
+            "nya-expr-bar inline-flex bg-[--nya-bg-sidebar] flex-col p-0.5 border-r border-[--nya-border] font-sans text-[--nya-expr-index] text-[65%] leading-none focus:outline-none",
+          tabindex: "-1",
+        },
+        elIndex,
+      ),
+      factory.group ? new ItemSublist() : null,
+    )
     ;(ref as ItemRefMut).data = factory.init(ref, undefined, props?.from)
     this.createOf(ref, props)
     return ref
@@ -100,8 +111,23 @@ export class ItemList {
     source: string,
     props?: ItemCreateProps<U>,
   ) {
-    const elIndex = t("??")
-    const ref = new ItemRef(this, factory, null!, null!, elIndex, null!)
+    const index = t("??")
+    const ref = new ItemRef(
+      this,
+      factory,
+      null!,
+      null!,
+      index,
+      h(
+        {
+          class:
+            "nya-expr-bar inline-flex bg-[--nya-bg-sidebar] flex-col p-0.5 border-r border-[--nya-border] font-sans text-[--nya-expr-index] text-[65%] leading-none focus:outline-none",
+          tabindex: "-1",
+        },
+        index,
+      ),
+      factory.group ? new ItemSublist() : null,
+    )
     const data = factory.init(ref, source, props?.from)
     ;(ref as ItemRefMut).data = data
     this.createOf(ref, props)
@@ -152,6 +178,8 @@ export class ItemList {
   }
 }
 
+export class ItemSublist {}
+
 export class ItemRef<T> {
   constructor(
     readonly list: ItemList,
@@ -160,6 +188,7 @@ export class ItemRef<T> {
     readonly el: HTMLElement,
     readonly elIndex: Text,
     readonly elGrayBar: HTMLElement,
+    readonly sublist: ItemSublist | null,
   ) {}
 
   delete() {

@@ -1,17 +1,15 @@
-import { faImage as faImageRegular } from "@fortawesome/free-regular-svg-icons"
-import { faImage } from "@fortawesome/free-solid-svg-icons"
+import { faImage } from "@fortawesome/free-solid-svg-icons/faImage"
 import type { Package } from "."
-import type { Node, Nodes, PlainVar } from "../eval/ast/token"
+import type { Node } from "../eval/ast/token"
 import { NO_DRAG } from "../eval/ast/tx"
 import { FnDist } from "../eval/ops/dist"
 import type { JsValue, Val } from "../eval/ty"
 import { frac, real } from "../eval/ty/create"
 import { Leaf } from "../field/cmd/leaf"
 import { OpEq } from "../field/cmd/leaf/cmp"
-import { CmdVar } from "../field/cmd/leaf/var"
+import { CmdToken, TokenCtx } from "../field/cmd/leaf/token"
 import { CmdWord } from "../field/cmd/leaf/word"
 import { fa } from "../field/fa"
-import { Field } from "../field/field"
 import { toText } from "../field/latex"
 import { L, R } from "../field/model"
 import { h, hx, path, svgx, t } from "../jsx"
@@ -96,7 +94,7 @@ class CmdImg extends Leaf {
 
 interface Data {
   url: string | null
-  name: Field
+  id: number
   ref: ItemRef<Data>
   el: HTMLElement
   output: FieldComputed
@@ -107,7 +105,7 @@ const FACTORY: ItemFactory<Data> = {
   name: "image",
   icon: faImage,
 
-  init(ref) {
+  init(ref, source) {
     const msg = t("")
 
     const msgEl = h(
@@ -129,18 +127,10 @@ const FACTORY: ItemFactory<Data> = {
       }
     }
 
-    const name = new Field(
-      ref.list.sheet.options,
-      ref.list.sheet.scope.ctx,
-      "nya-display whitespace-nowrap font-['Symbola','Times_New_Roman',serif] font-normal not-italic [line-height:1] cursor-text select-none inline-block nya-range-bound border-[--nya-border] text-[1rem] p-1 pr-2 border-b min-w-12 max-w-24 min-h-[calc(1.5rem_+_1px)] focus:outline-none focus:border-b-[--nya-expr-focus] focus:border-b-2 [&::-webkit-scrollbar]:hidden overflow-x-auto align-middle focus:-mb-px after:hidden",
-    )
-
-    CmdVar.leftOf(
-      name.block.cursor(R),
-      ref.list.sheet.scope.name("i"),
-      name.options,
-      name.ctx,
-    )
+    const token =
+      source && /^\d+$/.test(source) ?
+        new CmdToken(+source, new TokenCtx(ref.list.sheet.scope))
+      : CmdToken.new(ref.list.sheet.scope.ctx)
 
     const field = hx("input", {
       type: "file",
@@ -163,12 +153,12 @@ const FACTORY: ItemFactory<Data> = {
 
     const data: Data = {
       url: null,
-      name,
+      id: token.id,
       ref,
       output,
       el: h(
         "relative flex items-center pl-4 p-2",
-        name.el,
+        token.el,
         new OpEq(false).el,
         hx(
           "label",
@@ -182,22 +172,17 @@ const FACTORY: ItemFactory<Data> = {
       ),
     }
 
-    let ast: PlainVar | null = null
+    let natWidth = 0
+    let natHeight = 0
 
     function update() {
-      if (!ast || !data.url) {
-        output.unlink()
-        return
-      }
-
-      output.relink()
       output.onBeforeChange()
       output.block.clear()
       const cursor = output.block.cursor(R)
-      CmdVar.leftOf(cursor, ast, output.options, name.ctx)
+      token.clone().insertAt(cursor, L)
       new OpEq(false).insertAt(cursor, L)
       new CmdImgRaw({
-        src: data.url,
+        src: data.url ?? "",
         height: natHeight,
         width: natWidth,
       }).insertAt(cursor, L)
@@ -206,34 +191,6 @@ const FACTORY: ItemFactory<Data> = {
     }
 
     function check() {
-      ast = null
-
-      try {
-        const node = name.block.ast()
-
-        if (node.type == "void") {
-          setMsg("Please provide a name for this image.")
-          return
-        }
-
-        if (!(node.type == "var" && node.kind == "var")) {
-          setMsg("The name should be a variable name.")
-          return
-        }
-
-        if (node.sup) {
-          setMsg("The name should not have a superscript.")
-          return
-        }
-
-        ast = node satisfies Nodes["var"] as any
-      } catch (e) {
-        console.warn("[image.ast]", e)
-        ast = null
-        setMsg(e instanceof Error ? e.message : "I don't understand that name.")
-        return
-      }
-
       if (data.url == null) {
         setMsg("Select an image to import.")
         return
@@ -245,13 +202,21 @@ const FACTORY: ItemFactory<Data> = {
     check()
     update()
 
-    let natWidth = 0
-    let natHeight = 0
     img2.onload = () => {
       natWidth = img2.naturalWidth
       natHeight = img2.naturalHeight
       update()
     }
+
+    field.addEventListener("copy", (event) => {
+      event.preventDefault()
+      navigator.clipboard.writeText(`\\token{${token.id}}`)
+    })
+
+    ref.elGrayBar.addEventListener("copy", (event) => {
+      event.preventDefault()
+      navigator.clipboard.writeText(`\\token{${token.id}}`)
+    })
 
     field.addEventListener("change", () => {
       const file = field.files?.[0]
@@ -275,24 +240,26 @@ const FACTORY: ItemFactory<Data> = {
       check()
     })
 
-    const prevOnAfterChange = name.onAfterChange
-    name.onAfterChange = (wasChangeCanceled) => {
-      prevOnAfterChange.call(name, wasChangeCanceled)
-      check()
-      update()
+    data.el.addEventListener("click", () => {
+      ref.focusAside()
+    })
+
+    if (source == null) {
+      queueMicrotask(() => {
+        ref.pasteBelow([`image(\\token{${token.id}},segment((-5,0),(5,0)))`])
+      })
     }
 
     return data
   },
   aside() {
-    return fa(faImageRegular, "block mx-auto size-6 mt-0.5 mb-1.5 fill-current")
+    return fa(faImage, "mx-auto size-6 mt-1 mb-1.5 fill-current")
   },
   main(data) {
     return data.el
   },
-  encode() {
-    // TODO:
-    return ""
+  encode(data) {
+    return "" + data.id
   },
   unlink(data) {
     data.output.unlink()
@@ -345,7 +312,7 @@ export const PKG_IMAGE: Package = {
             if (value.src) {
               new CmdImg(value.src).insertAt(props.cursor, L)
             } else {
-              new CmdWord("undefined", "var").insertAt(props.cursor, L)
+              new CmdWord("empty image", "var").insertAt(props.cursor, L)
             }
           },
           isApprox() {

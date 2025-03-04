@@ -11,6 +11,7 @@ import { PKG_DISTRIBUTIONS } from "./pkg/distributions"
 import { PKG_DOCS_FN } from "./pkg/docs-fn"
 import { PKG_EVAL } from "./pkg/eval"
 import { PKG_FACTORIAL } from "./pkg/factorial"
+import { PKG_FOLDER } from "./pkg/folder"
 import { PKG_GEOMETRY } from "./pkg/geo"
 import { PKG_IMAGE_GEO } from "./pkg/geo-image"
 import { PKG_GEO_POINT } from "./pkg/geo-point"
@@ -19,7 +20,7 @@ import { PKG_IMAGE } from "./pkg/image"
 import { PKG_ITERATE } from "./pkg/iterate"
 import { PKG_ITHKUIL } from "./pkg/ithkuil"
 import { PKG_LIST_EXTRAS } from "./pkg/list-extras"
-import { PKG_NOTES } from "./pkg/notes"
+import { PKG_NOTES } from "./pkg/note"
 import { PKG_NUM_COMPLEX } from "./pkg/num-complex"
 import { PKG_NUM_QUATERNION } from "./pkg/num-quaternion"
 import { PKG_REAL } from "./pkg/num-real"
@@ -69,4 +70,5 @@ export const ALL: Package[] = [
   PKG_NOTES,
   PKG_FACTORIAL,
   PKG_CORE_FN,
+  PKG_FOLDER,
 ]

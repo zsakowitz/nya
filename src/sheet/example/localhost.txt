@@ -1,3 +1,2 @@
-A=2+3i
-@\operatorname{arcsin}(A).\operatorname{debugpoint}
-\operatorname{arcsin}A
+#nya:folder#"hello world"
+#nya:image#34

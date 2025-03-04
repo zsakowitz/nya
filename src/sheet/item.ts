@@ -12,10 +12,11 @@ export interface ItemFactory<T, U = unknown> {
   id: string
   name: string
   icon: IconDefinition
+  group?: boolean
 
   /** The passed {@linkcode ItemRef} is mostly uninitialized. */
   init(ref: ItemRef<T>, source: string | undefined, from: U | undefined): T
-  aside(data: T): Node
+  aside?(data: T): Node
   main(data: T): Node
 
   draw?(data: T): void
