@@ -18,7 +18,7 @@ const FACTORY: ItemFactory<Data> = {
   name: "docs",
   icon: faBook,
 
-  init(ref, source) {
+  init(_, source) {
     const fns = Object.values(ALL_DOCS)
       .filter((x) => x.name in FNS && FNS[x.name])
       .sort((a, b) =>
@@ -65,26 +65,11 @@ const FACTORY: ItemFactory<Data> = {
     const data: Data = {
       fn: "",
       select: field,
-      el: h(
-        "grid grid-cols-[2.5rem_auto] border-r border-b border-[--nya-border] relative nya-expr",
-        // grey side of expression
-        h(
-          {
-            class:
-              "nya-expr-bar inline-flex bg-[--nya-bg-sidebar] flex-col p-0.5 border-r border-[--nya-border] font-sans text-[--nya-expr-index] text-[65%] leading-none focus:outline-none",
-            tabindex: "-1",
-          },
-          ref.elIndex,
-          fa(faBook, "block mx-auto size-6 mt-0.5 mb-1.5 fill-current"),
-        ),
-
-        // main body
-        hx("label", "relative flex flex-col px-4 pb-3 font-sans", field, body),
-
-        // focus ring
-        h(
-          "hidden absolute -inset-y-px inset-x-0 [:first-child>&]:top-0 border-2 border-[--nya-expr-focus] pointer-events-none [:focus-within>&]:block [:active>&]:block",
-        ),
+      el: hx(
+        "label",
+        "relative flex flex-col px-4 pb-3 font-sans",
+        field,
+        body,
       ),
     }
 
@@ -100,7 +85,10 @@ const FACTORY: ItemFactory<Data> = {
 
     return data
   },
-  el(data) {
+  aside() {
+    return fa(faBook, "block mx-auto size-6 mt-0.5 mb-1.5 fill-current")
+  },
+  main(data) {
     return data.el
   },
   encode(data) {

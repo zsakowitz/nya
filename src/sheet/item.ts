@@ -15,9 +15,9 @@ export interface ItemFactory<T, U = unknown> {
 
   /** The passed {@linkcode ItemRef} is mostly uninitialized. */
   init(ref: ItemRef<T>, source: string | undefined, from: U | undefined): T
-  /** The number of indicies this item takes up. */
-  size?(data: T): number
-  el(data: T): HTMLElement
+  aside(data: T): Node
+  main(data: T): Node
+
   draw?(data: T): void
   glsl?(data: T): GlslResult | undefined
   unlink(data: T): void
@@ -54,8 +54,11 @@ export const FACTORY_EXPR: ItemFactory<Expr, { geo?: boolean }> = {
     }
     return expr
   },
-  el(data) {
-    return data.el
+  aside(data) {
+    return data.aside
+  },
+  main(data) {
+    return data.main
   },
   draw(expr) {
     if (expr.state.ok && expr.state.ext?.svg) {

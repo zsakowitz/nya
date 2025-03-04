@@ -28,11 +28,11 @@ export class Expr {
   }
 
   readonly field
-  readonly el
   private readonly elOutput
   private readonly elAside
   private readonly elError
-  private readonly elFocus
+  readonly aside
+  readonly main
 
   removable = true
   state: ExprState = { ok: false, reason: "Not computed yet." }
@@ -42,9 +42,6 @@ export class Expr {
     readonly ref: ItemRef<Expr>,
     readonly geo: boolean,
   ) {
-    this.el = h(
-      "grid grid-cols-[2.5rem_auto] border-r border-b relative nya-expr border-[--nya-border]",
-    )
     this.field = new Field(
       this,
       "block overflow-x-auto [&::-webkit-scrollbar]:hidden min-h-[3.265rem] max-w-[calc(var(--nya-sidebar)_-_2.5rem_-_1px)] p-4 focus:outline-none",
@@ -53,47 +50,16 @@ export class Expr {
     this.elError = h(
       "block hidden mx-1 -mt-2 px-1 pb-1 leading-tight italic text-[--nya-expr-error] whitespace-pre-wrap font-sans pointer-events-none",
     )
-    this.elFocus = h(
-      {
-        class:
-          "nya-expr-bar inline-flex bg-[--nya-bg-sidebar] flex-col p-0.5 border-r border-[--nya-border] font-sans text-[--nya-expr-index] text-[65%] leading-none focus:outline-none",
-        tabindex: "-1",
-      },
-      ref.elIndex,
+    this.aside = h(
+      "contents",
       fa(
         faWarning,
         "hidden mb-1.5 mx-auto size-6 fill-[--nya-icon-error] [.nya-expr-error_&]:block",
       ),
       (this.elAside = h("contents")),
     )
-    this.elFocus.addEventListener("keydown", (event) => {
-      if (
-        event.altKey ||
-        event.ctrlKey ||
-        event.metaKey ||
-        event.target != this.el
-      ) {
-        return
-      }
 
-      if (event.key == "Backspace") {
-        event.preventDefault()
-        this.delete()
-      }
-    })
-
-    this.el.append(
-      // grey side of expression
-      this.elFocus,
-
-      // main expression body
-      h("flex flex-col", this.field.el, this.elOutput, this.elError),
-
-      // focus ring
-      h(
-        "hidden absolute -inset-y-px inset-x-0 [:first-child>&]:top-0 border-2 border-[--nya-expr-focus] pointer-events-none [:focus-within>&]:block [:active>&]:block",
-      ),
-    )
+    this.main = h("flex flex-col", this.field.el, this.elOutput, this.elError)
 
     this.field.el.addEventListener("keydown", (event) => {
       if (event.key == "Enter" && !event.ctrlKey && !event.metaKey) {
@@ -238,7 +204,6 @@ export class Expr {
 
     try {
       this.elError.classList.add("hidden")
-      this.el.classList.remove("nya-expr-error")
 
       // .aside()
       {
@@ -302,6 +267,6 @@ export class Expr {
   }
 
   focus() {
-    this.elFocus.focus()
+    this.ref.focusAside()
   }
 }

@@ -19,7 +19,7 @@ export class ItemList {
   private checkIndices() {
     let index = 1
     for (const expr of this.items) {
-      const size = expr.factory.size?.(expr.data) ?? 1
+      const size = 1
       expr.elIndex.textContent = "" + index
       index += size
     }
@@ -49,8 +49,25 @@ export class ItemList {
   /** `ref` should already have `data` stored. */
   private createOf<T, U>(ref: ItemRef<T>, props?: ItemCreateProps<U>) {
     const data = ref.data
-    const el = ref.factory.el(data)
-    ;(ref as ItemRefMut).el = el
+    const aside = ref.factory.aside(data)
+    const main = ref.factory.main(data)
+    const el = ((ref as ItemRefMut).el = h(
+      "grid grid-cols-[2.5rem_auto] border-r border-b relative nya-expr border-[--nya-border]",
+      // TODO: delete via backspace on this bar
+      ((ref as ItemRefMut).elGrayBar = h(
+        {
+          class:
+            "nya-expr-bar inline-flex bg-[--nya-bg-sidebar] flex-col p-0.5 border-r border-[--nya-border] font-sans text-[--nya-expr-index] text-[65%] leading-none focus:outline-none",
+          tabindex: "-1",
+        },
+        ref.elIndex,
+        aside,
+      )),
+      main,
+      h(
+        "hidden absolute -inset-y-px inset-x-0 [:first-child>&]:top-0 border-2 border-[--nya-expr-focus] pointer-events-none [:focus-within>&]:block [:active>&]:block",
+      ),
+    ))
 
     const at = props?.at
     const before = (at && this.items[at]?.el) || null
@@ -68,7 +85,7 @@ export class ItemList {
   }
 
   create<T, U>(factory: ItemFactory<T, U>, props?: ItemCreateProps<U>) {
-    const ref = new ItemRef<T>(this, factory, null!, null!, t("??"))
+    const ref = new ItemRef<T>(this, factory, null!, null!, t("??"), null!)
     ;(ref as ItemRefMut).data = factory.init(ref, undefined, props?.from)
     this.createOf(ref, props)
     return ref
@@ -84,7 +101,7 @@ export class ItemList {
     props?: ItemCreateProps<U>,
   ) {
     const elIndex = t("??")
-    const ref = new ItemRef(this, factory, null!, null!, elIndex)
+    const ref = new ItemRef(this, factory, null!, null!, elIndex, null!)
     const data = factory.init(ref, source, props?.from)
     ;(ref as ItemRefMut).data = data
     this.createOf(ref, props)
@@ -142,6 +159,7 @@ export class ItemRef<T> {
     readonly data: T,
     readonly el: HTMLElement,
     readonly elIndex: Text,
+    readonly elGrayBar: HTMLElement,
   ) {}
 
   delete() {
@@ -171,6 +189,10 @@ export class ItemRef<T> {
 
   focus(from?: VDir) {
     this.factory.focus(this.data, from)
+  }
+
+  focusAside() {
+    this.elGrayBar.focus()
   }
 
   pasteBelow(rest: string[]) {
