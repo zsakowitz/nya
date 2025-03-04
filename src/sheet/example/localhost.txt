@@ -1,2 +1,0 @@
-#nya:folder#"hello world"
-#nya:image#34

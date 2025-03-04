@@ -40,12 +40,12 @@ export const FACTORY_EXPR: ItemFactory<Expr, { geo?: boolean }> = {
   icon: faSquareRootVariable,
 
   init(ref, source, props) {
-    const expr = new Expr(ref.list.sheet, ref, !!props?.geo)
+    const expr = new Expr(ref.root.sheet, ref, !!props?.geo)
     if (source) {
       expr.field.onBeforeChange()
       const block = new LatexParser(
-        ref.list.sheet.options,
-        ref.list.sheet.scope.ctx,
+        ref.root.sheet.options,
+        ref.root.sheet.scope.ctx,
         source,
         expr.field,
       ).parse()

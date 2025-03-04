@@ -258,12 +258,12 @@ export class Sheet {
         ),
       ),
     )
-    new ResizeObserver(() =>
+    new ResizeObserver(() => {
       this.el.style.setProperty(
-        "--nya-sidebar",
+        "--nya-sidebar-raw",
         this.elExpressions.clientWidth + "px",
-      ),
-    ).observe(this.elExpressions)
+      )
+    }).observe(this.elExpressions)
 
     this.startGlslLoop()
 

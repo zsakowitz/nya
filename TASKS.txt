@@ -48,6 +48,7 @@ to do list for features is:
 ❌ normal images
 ❌ tokens for parallel, glider, intersection, bisectors
 ❌ objects are automatically grabbable in function names, lists, and operators
+❌ construct vector from vector and starting point
 😐 sliders
 😐 images
 😐 100% compatible piecewise functions (lists are weird)

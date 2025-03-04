@@ -16,12 +16,12 @@ export class Field extends FieldComputed {
   }
 
   onVertOut(towards: VDir): void {
-    const ref = this.expr.ref.offset(towards / 2)
+    const ref = this.expr.ref.offset(towards)
 
     if (ref) {
       ref.focus()
     } else if (towards == D) {
-      this.expr.ref.list.createDefault({ focus: true })
+      this.expr.ref.root.createDefault({ focus: true })
     }
   }
 
@@ -45,18 +45,18 @@ export class Field extends FieldComputed {
       : towards == L ? Math.max(0, idx - 1)
       : idx
 
-    const next = this.expr.ref.list.items[nextIndex]
+    const next = this.expr.ref.root.items[nextIndex]
 
     if (next) {
       next.focus(towards == L ? D : U)
     } else if (towards == L) {
-      this.expr.ref.list.createDefault({ focus: true })
+      this.expr.ref.root.createDefault({ focus: true })
     } else {
-      const prev = this.expr.ref.list.items[idx - 1]
+      const prev = this.expr.ref.root.items[idx - 1]
       if (prev) {
         prev.focus(D)
       } else {
-        this.expr.ref.list.createDefault({ focus: true })
+        this.expr.ref.root.createDefault({ focus: true })
       }
     }
   }
@@ -70,7 +70,7 @@ export class Field extends FieldComputed {
       if (this.block.isEmpty()) {
         let idx = this.expr.ref.index()
         this.expr.ref.delete()
-        this.expr.ref.list.items[idx]?.focus(U)
+        this.expr.ref.root.items[idx]?.focus(U)
       }
       return
     }

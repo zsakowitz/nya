@@ -1,0 +1,13 @@
+\token{91}=\left(3.31,5.24\right)
+b=65.9
+\token{92}=\left(0.77,0.36\right)
+\token{93}=\operatorname{ray}\left(\token{91},\token{92}\right)
+\token{94}=\left(-7.17,-2.32\right)
+\token{95}=\operatorname{ray}\left(\token{91},\token{94}\right)
+\token{96}=\operatorname{angle}\left(\token{92},\token{91},\token{94}\right)
+L=\operatorname{anglebisector}\left(\token{96}\right)
+\token{98}=\operatorname{glider}\left(L,10.86\right)
+\token{99}=\operatorname{perpendicular}\left(\token{93},\token{98}\right)
+\token{100}=\operatorname{intersection}\left(\token{99},\token{93}\right)
+C=\operatorname{circle}\left(\token{98},\token{100}\right)
+a\operatorname{withseq}\operatorname{iterate}^{b}\begin{list}C\to \left(\operatorname{circle}\left(\operatorname{intersection}\left(L,\operatorname{anglebisector}A\right),S\right)\operatorname{with}A=\operatorname{angle}\left(\operatorname{intersection}\left(Q,\token{95}\right),\operatorname{intersection}\left(Q,\token{93}\right),\token{91}\right)\operatorname{with}Q=\operatorname{perpendicular}\left(L,S\right)\operatorname{with}S=\operatorname{intersection}\left(L,C\right)\right)\\a\to \operatorname{join}\left(a,C\right)\end{list}\operatorname{from}a=\left[\right],C=C

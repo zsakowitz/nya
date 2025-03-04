@@ -1,4 +1,4 @@
-import type { VDir } from "../field/model"
+import { D, U, type VDir } from "../field/model"
 import { h, t } from "../jsx"
 import type { ItemFactory } from "./item"
 import type { Sheet } from "./ui/sheet"
@@ -9,42 +9,20 @@ export interface ItemCreateProps<U> {
   from?: NoInfer<U>
 }
 
-export class ItemListGlobal {
-  readonly el = h("contents")
+export abstract class ItemList {
+  abstract readonly root: ItemListGlobal
+  abstract readonly sheet: Sheet
+  abstract readonly parent: ItemRef<unknown> | undefined
+  abstract readonly depth: number
+
   readonly items: ItemRef<unknown>[] = []
-  readonly nextIndex = t("1")
 
-  constructor(readonly sheet: Sheet) {}
-
-  private checkIndices() {
-    let index = 1
+  private setIndicesFrom(index: { i: number }) {
     for (const ref of this.items) {
-      const size = ref.size()
-      ref.elIndex.textContent = "" + index
+      ref.elIndex.data = index.i + ""
+      index.i++
       if (ref.sublist) {
-        ref.sublist.checkIndices(index + 1)
-      }
-      index += size
-    }
-    this.nextIndex.textContent = "" + index
-  }
-
-  private _qdIndices = false
-  queueIndices() {
-    if (this._qdIndices) return
-    queueMicrotask(() => {
-      this._qdIndices = false
-      this.checkIndices()
-    })
-    this._qdIndices = true
-  }
-
-  draw() {
-    for (const expr of this.items) {
-      try {
-        expr.factory.draw?.(expr.data)
-      } catch (e) {
-        console.warn("[draw]", e)
+        ref.sublist.setIndicesFrom(index)
       }
     }
   }
@@ -59,8 +37,14 @@ export class ItemListGlobal {
     }
     // TODO: delete via backspace on gray bar
     const el = ((ref as ItemRefMut).el = h(
-      "grid grid-cols-[2.5rem_auto] border-r border-b relative nya-expr border-[--nya-border]",
+      {
+        class: "grid border-r border-b relative nya-expr border-[--nya-border]",
+        style: `grid-template-columns:2.5rem${" 1rem".repeat(this.depth)} auto;--nya-sidebar:calc(var(--nya-sidebar-raw) - ${this.depth}*1rem)`,
+      },
       ref.elGrayBar,
+      ...Array.from({ length: this.depth }, () =>
+        h("border-r border-[--nya-border] my-1"),
+      ),
       main,
       h(
         "hidden absolute -inset-y-px inset-x-0 [:first-child>&]:top-0 border-2 border-[--nya-expr-focus] pointer-events-none [:focus-within>&]:block [:active>&]:block",
@@ -68,15 +52,40 @@ export class ItemListGlobal {
     ))
 
     const at = props?.at
-    const before = (at && this.items[at]?.el) || null
-    this.el.insertBefore(el, before)
+    const last = this.items[this.items.length - 1]
+
+    if (at === this.items.length) {
+      if (last) {
+        this.root.el.insertBefore(el, last.el.nextElementSibling)
+      } else if (this.parent) {
+        this.root.el.insertBefore(el, this.parent.el.nextElementSibling)
+      } else {
+        this.root.el.appendChild(el)
+      }
+    } else if (at != null && 0 <= at && at < this.items.length) {
+      this.root.el.insertBefore(el, this.items[at]!.el)
+    } else {
+      if (this.parent) {
+        this.root.el.insertBefore(el, this.parent.el.nextElementSibling)
+      } else {
+        this.root.el.appendChild(el)
+      }
+    }
+
+    //     const nextEl =
+    //       (at && this.items[at]?.el) ||
+    //       this.items[this.items.length - 1]?.el.nextElementSibling ||
+    //       this.parent?.el.nextElementSibling ||
+    //       null
+    //
+    //     this.root.el.insertBefore(el, nextEl)
     if (at != null && 0 <= at && at <= this.items.length) {
       this.items.splice(at, 0, ref)
     } else {
       this.items.push(ref)
     }
 
-    this.queueIndices()
+    this.root.queueIndices()
     if (props?.focus) {
       setTimeout(() => ref.focus())
     }
@@ -85,6 +94,7 @@ export class ItemListGlobal {
   create<T, U>(factory: ItemFactory<T, U>, props?: ItemCreateProps<U>) {
     const elIndex = t("??")
     const ref = new ItemRef<T>(
+      this.root,
       this,
       factory,
       null!,
@@ -116,6 +126,7 @@ export class ItemListGlobal {
   ) {
     const index = t("??")
     const ref = new ItemRef(
+      this.root,
       this,
       factory,
       null!,
@@ -181,23 +192,69 @@ export class ItemListGlobal {
   }
 }
 
-export class ItemListLocal<T> {
+export class ItemListGlobal extends ItemList {
+  readonly el = h("contents")
   readonly items: ItemRef<unknown>[] = []
+  readonly nextIndex = t("1")
 
-  constructor(readonly ref: ItemRef<T>) {}
-
-  size(): number {
-    return this.items.reduce((a, b) => a + b.size(), 0)
+  constructor(readonly sheet: Sheet) {
+    super()
   }
 
-  checkIndices(index: number) {
-    for (const ref of this.items) {
-      ref.elIndex.data = "" + index
-      if (ref.sublist) {
-        ref.sublist.checkIndices(index + 1)
+  get root() {
+    return this
+  }
+
+  get parent(): undefined {
+    return
+  }
+
+  get depth() {
+    return 0
+  }
+
+  private checkIndices() {
+    const i = { i: 1 }
+    ;(this as any).setIndicesFrom(i)
+    this.nextIndex.data = i.i + ""
+  }
+
+  private _qdIndices = false
+  queueIndices() {
+    if (this._qdIndices) return
+    queueMicrotask(() => {
+      this._qdIndices = false
+      this.checkIndices()
+    })
+    this._qdIndices = true
+  }
+
+  draw() {
+    for (const expr of this.items) {
+      try {
+        expr.factory.draw?.(expr.data)
+      } catch (e) {
+        console.warn("[draw]", e)
       }
-      index += ref.size()
     }
+  }
+}
+
+export class ItemListLocal<T> extends ItemList {
+  constructor(readonly parent: ItemRef<T>) {
+    super()
+  }
+
+  get depth() {
+    return this.parent.list.depth + 1
+  }
+
+  get root() {
+    return this.parent.root
+  }
+
+  get sheet() {
+    return this.root.sheet
   }
 }
 
@@ -205,7 +262,8 @@ export class ItemRef<T> {
   readonly sublist: ItemListLocal<T> | null
 
   constructor(
-    readonly list: ItemListGlobal,
+    readonly root: ItemListGlobal,
+    readonly list: ItemList,
     readonly factory: ItemFactory<T>,
     readonly data: T,
     readonly el: HTMLElement,
@@ -216,11 +274,13 @@ export class ItemRef<T> {
     this.sublist = sublist ? new ItemListLocal(this) : null
   }
 
-  size(): number {
-    return 1 + (this.sublist ? this.sublist.size() : 0)
-  }
-
   delete() {
+    if (this.sublist) {
+      while (this.sublist.items[0]) {
+        this.sublist.items[0].delete()
+      }
+    }
+
     const idx = this.list.items.indexOf(this)
     if (idx == -1) return
 
@@ -232,17 +292,24 @@ export class ItemRef<T> {
       console.warn("[expr.destroy]", e)
     }
 
-    this.list.sheet.queueGlsl()
-    this.list.queueIndices()
-    this.list.sheet.paper.queue()
+    this.root.sheet.queueGlsl()
+    this.root.queueIndices()
+    this.root.sheet.paper.queue()
   }
 
   index() {
     return this.list.items.indexOf(this)
   }
 
-  offset(by: number) {
-    return this.list.items[this.index() + by]
+  offset(by: VDir) {
+    switch (by) {
+      case U:
+        return this.list.items[this.index() - 1] ?? this.list.parent
+      case D:
+        if (this.sublist?.items[0]) {
+          return this.sublist.items[0]
+        }
+    }
   }
 
   focus(from?: VDir) {

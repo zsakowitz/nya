@@ -129,8 +129,8 @@ const FACTORY: ItemFactory<Data> = {
 
     const token =
       source && /^\d+$/.test(source) ?
-        new CmdToken(BigInt(source), new TokenCtx(ref.list.sheet.scope))
-      : CmdToken.new(ref.list.sheet.scope.ctx)
+        new CmdToken(BigInt(source), new TokenCtx(ref.root.sheet.scope))
+      : CmdToken.new(ref.root.sheet.scope.ctx)
 
     const field = hx("input", {
       type: "file",
@@ -149,7 +149,7 @@ const FACTORY: ItemFactory<Data> = {
     )
     const img2 = hx("img", "hidden absolute size-full inset-0 object-contain")
 
-    const output = new FieldComputed(ref.list.sheet.scope)
+    const output = new FieldComputed(ref.root.sheet.scope)
 
     const data: Data = {
       url: null,
