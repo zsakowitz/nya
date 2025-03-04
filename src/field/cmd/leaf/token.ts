@@ -96,8 +96,8 @@ export class TokenCtx {
     scope.hooks.push(() => this.update())
   }
 
-  private readonly tracking = new Map<number, CmdToken[]>()
-  readonly tokens = new Map<number, HTMLElement>()
+  private readonly tracking = new Map<bigint, CmdToken[]>()
+  readonly tokens = new Map<bigint, HTMLElement>()
 
   track(cmd: CmdToken) {
     let d: CmdToken[]
@@ -205,7 +205,7 @@ export class TokenCtx {
   }
 }
 
-let nextId = 0
+let nextId = 0n
 
 export class CmdToken extends Leaf {
   static init(cursor: Cursor, props: InitProps): InitRet {
@@ -214,9 +214,9 @@ export class CmdToken extends Leaf {
 
   static fromLatex(_cmd: string, parser: LatexParser): Command {
     const arg = parser.text()
-    const id = parseInt(arg, 10)
+    const id = BigInt(arg)
 
-    if (isFinite(id)) {
+    if (id >= 0n) {
       return new CmdToken(id, new TokenCtx(parser.ctx.scope))
     }
 
@@ -228,11 +228,11 @@ export class CmdToken extends Leaf {
   }
 
   constructor(
-    readonly id: number,
+    readonly id: bigint,
     readonly ctx: TokenCtx,
   ) {
     if (id >= nextId) {
-      nextId = id + 1
+      nextId = id + 1n
     }
     super("\\token", h("", ctx.tokens.get(id)?.cloneNode(true) ?? iconError()))
     ctx.track(this)

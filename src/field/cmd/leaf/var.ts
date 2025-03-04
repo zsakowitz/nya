@@ -85,10 +85,10 @@ export class CmdVar extends Leaf {
     ctx: Ctx,
   ) {
     if (/^\$\d+$/.test(token.value)) {
-      new CmdToken(+token.value.slice(1), new TokenCtx(ctx.scope)).insertAt(
-        cursor,
-        L,
-      )
+      new CmdToken(
+        BigInt(token.value.slice(1)),
+        new TokenCtx(ctx.scope),
+      ).insertAt(cursor, L)
     } else {
       for (const char of token.value) {
         new CmdVar(char, options).insertAt(cursor, L)

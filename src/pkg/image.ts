@@ -94,7 +94,7 @@ class CmdImg extends Leaf {
 
 interface Data {
   url: string | null
-  id: number
+  id: bigint
   ref: ItemRef<Data>
   el: HTMLElement
   output: FieldComputed
@@ -129,7 +129,7 @@ const FACTORY: ItemFactory<Data> = {
 
     const token =
       source && /^\d+$/.test(source) ?
-        new CmdToken(+source, new TokenCtx(ref.list.sheet.scope))
+        new CmdToken(BigInt(source), new TokenCtx(ref.list.sheet.scope))
       : CmdToken.new(ref.list.sheet.scope.ctx)
 
     const field = hx("input", {
