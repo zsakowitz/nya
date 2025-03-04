@@ -14,7 +14,7 @@ import { declareAddR64, declareMulR64 } from "../../../pkg/core-ops"
 import { Scope } from "../../deps"
 import type { Exts } from "../../ext"
 import type { SheetFactory } from "../../factory"
-import { ItemList } from "../../items"
+import { ItemListGlobal } from "../../items"
 import { doMatchReglSize } from "../../regl"
 import { REMARK } from "../../remark"
 import { Slider } from "../../slider"
@@ -32,7 +32,7 @@ import { btn, createDocs, DEFAULT_TO_VISIBLE_DOCS } from "./docs"
 export class Sheet {
   readonly paper = new Paper("absolute inset-0 size-full touch-none")
   readonly scope: Scope
-  readonly list = new ItemList(this)
+  readonly list = new ItemListGlobal(this)
 
   private readonly pixelRatio
   private readonly setPixelRatio

@@ -9,7 +9,7 @@ export interface ItemCreateProps<U> {
   from?: NoInfer<U>
 }
 
-export class ItemList {
+export class ItemListGlobal {
   readonly el = h("contents")
   readonly items: ItemRef<unknown>[] = []
   readonly nextIndex = t("1")
@@ -18,9 +18,12 @@ export class ItemList {
 
   private checkIndices() {
     let index = 1
-    for (const expr of this.items) {
-      const size = 1
-      expr.elIndex.textContent = "" + index
+    for (const ref of this.items) {
+      const size = ref.size()
+      ref.elIndex.textContent = "" + index
+      if (ref.sublist) {
+        ref.sublist.checkIndices(index + 1)
+      }
       index += size
     }
     this.nextIndex.textContent = "" + index
@@ -95,7 +98,7 @@ export class ItemList {
         },
         elIndex,
       ),
-      factory.group ? new ItemSublist() : null,
+      !!factory.group,
     )
     ;(ref as ItemRefMut).data = factory.init(ref, undefined, props?.from)
     this.createOf(ref, props)
@@ -126,7 +129,7 @@ export class ItemList {
         },
         index,
       ),
-      factory.group ? new ItemSublist() : null,
+      !!factory.group,
     )
     const data = factory.init(ref, source, props?.from)
     ;(ref as ItemRefMut).data = data
@@ -178,18 +181,44 @@ export class ItemList {
   }
 }
 
-export class ItemSublist {}
+export class ItemListLocal<T> {
+  readonly items: ItemRef<unknown>[] = []
+
+  constructor(readonly ref: ItemRef<T>) {}
+
+  size(): number {
+    return this.items.reduce((a, b) => a + b.size(), 0)
+  }
+
+  checkIndices(index: number) {
+    for (const ref of this.items) {
+      ref.elIndex.data = "" + index
+      if (ref.sublist) {
+        ref.sublist.checkIndices(index + 1)
+      }
+      index += ref.size()
+    }
+  }
+}
 
 export class ItemRef<T> {
+  readonly sublist: ItemListLocal<T> | null
+
   constructor(
-    readonly list: ItemList,
+    readonly list: ItemListGlobal,
     readonly factory: ItemFactory<T>,
     readonly data: T,
     readonly el: HTMLElement,
     readonly elIndex: Text,
     readonly elGrayBar: HTMLElement,
-    readonly sublist: ItemSublist | null,
-  ) {}
+    sublist: boolean,
+  ) {
+    this.sublist = sublist ? new ItemListLocal(this) : null
+  }
+
+  size(): number {
+    return 1 + (this.sublist ? this.sublist.size() : 0)
+  }
 
   delete() {
     const idx = this.list.items.indexOf(this)
