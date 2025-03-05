@@ -1,4 +1,5 @@
 import type { Point } from "."
+import type { ItemRef } from "../../items"
 import type { AnyPick, Picker } from "../../pick"
 import type { Sheet } from "../sheet"
 
@@ -129,4 +130,17 @@ export class PickHandler {
       this.pick.pick.draw(this.pick.data, this.pick.found, this.sheet)
     }
   }
+
+  readonly suppressed: ItemRef<unknown> | undefined
+
+  checkSuppressed() {
+    ;(this as PickHandlerMut).suppressed = undefined
+
+    if (this.pick) {
+      ;(this as PickHandlerMut).suppressed =
+        this.pick.pick.suppress?.(this.pick.data, this.pick.found) ?? undefined
+    }
+  }
 }
+
+type PickHandlerMut = { -readonly [K in keyof PickHandler]: PickHandler[K] }

@@ -1,7 +1,6 @@
-import { faPlus } from "@fortawesome/free-solid-svg-icons"
 import { faFolder } from "@fortawesome/free-solid-svg-icons/faFolder"
 import type { Package } from "."
-import { fa } from "../field/fa"
+import { D, L, R, U } from "../field/model"
 import { h, hx } from "../jsx"
 import type { ItemFactory } from "../sheet/item"
 import type { ItemRef } from "../sheet/items"
@@ -37,6 +36,43 @@ const FACTORY: ItemFactory<Data> = {
       spellcheck: "false",
     })
     field.value = contents
+    field.addEventListener("keydown", (event) => {
+      if (event.key == "Backspace") {
+        if (field.selectionStart == 0 && field.selectionEnd == 0) {
+          event.preventDefault()
+          ref.onDelOut(L, field.value == "")
+          return
+        }
+      } else if (event.key == "Del" || event.key == "Delete") {
+        if (
+          field.selectionStart == field.selectionEnd &&
+          field.selectionEnd == field.value.length
+        ) {
+          event.preventDefault()
+          ref.onDelOut(R, field.value == "")
+          return
+        }
+      }
+
+      if (event.key == "Enter" && !event.shiftKey) {
+        event.preventDefault()
+        ref.onEnter(D)
+        return
+      }
+
+      // TODO: detect we're at the end of the textarea
+      if (event.key == "ArrowDown") {
+        event.preventDefault()
+        ref.onVertOut(D)
+        return
+      }
+
+      if (event.key == "ArrowUp") {
+        event.preventDefault()
+        ref.onVertOut(U)
+        return
+      }
+    })
 
     const data: Data = {
       contents,
@@ -69,20 +105,9 @@ const FACTORY: ItemFactory<Data> = {
   main(data) {
     return h(
       "grid grid-cols-[1rem_auto]",
-      h(
-        "grid grid-rows-[1fr,1fr]",
-        h(""),
-        h("border-r border-t border-[--nya-border] mb-1 ml-1"),
-      ),
+      h("border-r border-t border-[--nya-border] mb-1 ml-1 mt-[1.5rem]"),
       data.field,
     )
-  },
-  aside(data) {
-    const add = hx("button", "", fa(faPlus, "size-4"))
-    add.onclick = () => {
-      data.ref.sublist!.createDefault()
-    }
-    return add
   },
   encode(data) {
     return JSON.stringify(data.contents)

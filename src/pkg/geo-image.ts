@@ -1,9 +1,10 @@
 import { faImage } from "@fortawesome/free-regular-svg-icons"
 import type { Package } from "."
 import { FnDist } from "../eval/ops/dist"
-import { each, type JsValue } from "../eval/ty"
+import { each, type JsValue, type Val } from "../eval/ty"
 import { num, real, SNANPT, unpt } from "../eval/ty/create"
 import { TY_INFO } from "../eval/ty/info"
+import { neg } from "../eval/ty/ops"
 import { CmdComma } from "../field/cmd/leaf/comma"
 import { CmdWord } from "../field/cmd/leaf/word"
 import { CmdBrack } from "../field/cmd/math/brack"
@@ -11,13 +12,13 @@ import { fa } from "../field/fa"
 import { Block, L, R } from "../field/model"
 import { h, px, sx } from "../jsx"
 import { defineExt } from "../sheet/ext"
+import type { Paper } from "../sheet/ui/paper"
 import { example } from "../sheet/ui/sheet/docs"
 import { dilateJs, mark as markDilate } from "./geo/fn/dilate"
 import { mark as markReflect, reflectJs } from "./geo/fn/reflect"
 import { mark as markRotate, rotateJs } from "./geo/fn/rotate"
 import { mark as markTranslate, translate } from "./geo/fn/translate"
 import { glsl } from "./image"
-import { neg } from "../eval/ty/ops"
 
 declare module "../eval/ty" {
   interface Tys {
@@ -56,6 +57,29 @@ const FN_IMAGE = new FnDist(
     glsl,
   )
 
+function draw(paper: Paper, val: Val<"image2d">) {
+  const p1 = paper.toOffset(unpt(val.p1))
+  const p2 = paper.toOffset(unpt(val.p2))
+  const width = Math.hypot(p1.x - p2.x, p1.y - p2.y)
+  const height =
+    (val.aspect ? 1 / num(val.aspect) : val.data.height / val.data.width) *
+    width
+  paper.append(
+    "image",
+    sx("image", {
+      href: val.data.src,
+      width,
+      height: Math.abs(height),
+      x: p1.x,
+      y: (p1.y - height) * Math.sign(height),
+      transform:
+        `rotate(${(180 / Math.PI) * Math.atan2(p2.y - p1.y, p2.x - p1.x)} ${p1.x} ${p1.y})` +
+        (height < 0 ? " scale(1 -1)" : ""),
+      preserveAspectRatio: "none",
+    }),
+  )
+}
+
 const EXT = defineExt<JsValue<"image2d">>({
   data(expr) {
     if (expr.js?.value.type == "image2d") {
@@ -64,26 +88,7 @@ const EXT = defineExt<JsValue<"image2d">>({
   },
   svg(data, paper) {
     for (const val of each(data)) {
-      const p1 = paper.toOffset(unpt(val.p1))
-      const p2 = paper.toOffset(unpt(val.p2))
-      const width = Math.hypot(p1.x - p2.x, p1.y - p2.y)
-      const height =
-        (val.aspect ? 1 / num(val.aspect) : val.data.height / val.data.width) *
-        width
-      paper.append(
-        "image",
-        sx("image", {
-          href: val.data.src,
-          width,
-          height: Math.abs(height),
-          x: p1.x,
-          y: (p1.y - height) * Math.sign(height),
-          transform:
-            `rotate(${(180 / Math.PI) * Math.atan2(p2.y - p1.y, p2.x - p1.x)} ${p1.x} ${p1.y})` +
-            (height < 0 ? " scale(1 -1)" : ""),
-          preserveAspectRatio: "none",
-        }),
-      )
+      draw(paper, val)
     }
   },
 })
@@ -158,6 +163,7 @@ export const PKG_IMAGE_GEO: Package = {
             ),
           )
         },
+        preview: draw,
       },
     },
   },

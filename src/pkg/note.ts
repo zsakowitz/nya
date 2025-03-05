@@ -1,6 +1,7 @@
 import { faStickyNote } from "@fortawesome/free-solid-svg-icons/faStickyNote"
 import type { Package } from "."
 import { fa } from "../field/fa"
+import { D, L, R, U } from "../field/model"
 import { hx } from "../jsx"
 import type { ItemFactory } from "../sheet/item"
 import type { ItemRef } from "../sheet/items"
@@ -35,6 +36,43 @@ const FACTORY: ItemFactory<Data> = {
       spellcheck: "false",
     })
     field.value = contents
+    field.addEventListener("keydown", (event) => {
+      if (event.key == "Backspace") {
+        if (field.selectionStart == 0 && field.selectionEnd == 0) {
+          event.preventDefault()
+          ref.onDelOut(L, field.value == "")
+          return
+        }
+      } else if (event.key == "Del" || event.key == "Delete") {
+        if (
+          field.selectionStart == field.selectionEnd &&
+          field.selectionEnd == field.value.length
+        ) {
+          event.preventDefault()
+          ref.onDelOut(R, field.value == "")
+          return
+        }
+      }
+
+      if (event.key == "Enter" && !event.shiftKey) {
+        event.preventDefault()
+        ref.onEnter(D)
+        return
+      }
+
+      // TODO: detect we're at the end of the textarea
+      if (event.key == "ArrowDown") {
+        event.preventDefault()
+        ref.onVertOut(D)
+        return
+      }
+
+      if (event.key == "ArrowUp") {
+        event.preventDefault()
+        ref.onVertOut(U)
+        return
+      }
+    })
 
     const data: Data = {
       contents,

@@ -98,6 +98,7 @@ interface Data {
   ref: ItemRef<Data>
   el: HTMLElement
   output: FieldComputed
+  field: HTMLInputElement
 }
 
 const FACTORY: ItemFactory<Data> = {
@@ -154,6 +155,7 @@ const FACTORY: ItemFactory<Data> = {
     const data: Data = {
       url: null,
       id: token.id,
+      field,
       ref,
       output,
       el: h(
@@ -264,8 +266,12 @@ const FACTORY: ItemFactory<Data> = {
   unlink(data) {
     data.output.unlink()
   },
-  focus() {
-    // TODO:
+  focus(data, from) {
+    if (from == null) {
+      data.field.click()
+    } else {
+      data.field.focus()
+    }
   },
 }
 

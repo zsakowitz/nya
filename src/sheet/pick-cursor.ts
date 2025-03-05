@@ -4,12 +4,14 @@ import { TY_INFO } from "../eval/ty/info"
 import { CmdValue } from "../field/cmd/leaf/value"
 import { L, R } from "../field/model"
 import { virtualPoint } from "../pkg/geo/pick-point"
+import type { ItemRef } from "./items"
 import type { Picker } from "./pick"
 import type { Expr } from "./ui/expr"
 import { Sheet, type Selected } from "./ui/sheet"
 
 export interface Data {
   expr: Expr
+  ref: ItemRef<Expr>
 }
 
 const ID = Math.random()
@@ -38,6 +40,8 @@ export const PICK_CURSOR: Picker<Data, Selected> = {
         }
       })
     }
+
+    sheet.paper.queue()
   },
   find(_, at, sheet) {
     const [a] = sheet.select(at, Object.keys(TY_INFO) as TyName[])
@@ -98,4 +102,7 @@ export const PICK_CURSOR: Picker<Data, Selected> = {
     return { pick: PICK_CURSOR, data }
   },
   cancel() {},
+  suppress(data, found) {
+    return found && data.ref
+  },
 }

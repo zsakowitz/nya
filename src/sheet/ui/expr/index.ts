@@ -34,7 +34,6 @@ export class Expr {
   readonly aside
   readonly main
 
-  removable = true
   state: ExprState = { ok: false, reason: "Not computed yet." }
 
   constructor(
@@ -63,14 +62,14 @@ export class Expr {
 
     this.field.el.addEventListener("keydown", (event) => {
       if (event.key == "Enter" && !event.ctrlKey && !event.metaKey) {
-        this.sheet.list.create(FACTORY_EXPR, {
+        this.ref.list.create(FACTORY_EXPR, {
           at: this.ref.index() + 1,
           focus: true,
         })
       }
 
       if (event.key == "Shift") {
-        sheet.pick.set(PICK_CURSOR, { expr: this })
+        sheet.pick.set(PICK_CURSOR, { expr: this, ref: this.ref })
       }
     })
   }

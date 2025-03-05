@@ -1,3 +1,4 @@
+import type { ItemRef } from "./items"
 import type { Point } from "./ui/paper"
 import type { Sheet } from "./ui/sheet"
 
@@ -10,6 +11,8 @@ export interface Picker<in T extends {}, in out U extends {}> {
   /** Returns the next picker to be used. */
   select(data: T, found: U, sheet: Sheet): AnyPickInit | null
   cancel(data: T, sheet: Sheet): void
+  /** If an expression is returned, its draw is suppressed. */
+  suppress?(data: T, found: U | null): ItemRef<unknown> | null
 }
 
 interface PickerInit<T extends {}, U extends {}> {

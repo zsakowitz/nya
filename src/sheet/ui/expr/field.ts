@@ -1,5 +1,5 @@
 import { Expr } from "."
-import { D, L, U, type Dir, type VDir } from "../../../field/model"
+import { U, type Dir, type VDir } from "../../../field/model"
 import { FieldComputed } from "../../deps"
 
 export class Field extends FieldComputed {
@@ -15,53 +15,15 @@ export class Field extends FieldComputed {
     this.expr.display()
   }
 
-  onVertOut(towards: VDir): void {
-    const ref = this.expr.ref.offset(towards)
-
-    if (ref) {
-      ref.focus()
-    } else if (towards == D) {
-      this.expr.ref.root.createDefault({ focus: true })
-    }
+  onVertOut(towards: VDir) {
+    this.expr.ref.onVertOut(towards)
   }
 
-  onDelOut(towards: Dir): void {
-    if (!this.expr.field.block.isEmpty()) {
-      return
-    }
-
-    const idx = this.expr.ref.index()
-    if (idx == -1) return
-
-    if (this.expr.removable) {
-      this.expr.ref.delete()
-    }
-
-    const nextIndex =
-      !this.expr.removable ?
-        towards == L ?
-          Math.max(0, idx - 1)
-        : idx + 1
-      : towards == L ? Math.max(0, idx - 1)
-      : idx
-
-    const next = this.expr.ref.root.items[nextIndex]
-
-    if (next) {
-      next.focus(towards == L ? D : U)
-    } else if (towards == L) {
-      this.expr.ref.root.createDefault({ focus: true })
-    } else {
-      const prev = this.expr.ref.root.items[idx - 1]
-      if (prev) {
-        prev.focus(D)
-      } else {
-        this.expr.ref.root.createDefault({ focus: true })
-      }
-    }
+  onDelOut(towards: Dir) {
+    this.expr.ref.onDelOut(towards, this.expr.field.block.isEmpty())
   }
 
-  onPaste(event: ClipboardEvent): void {
+  onPaste(event: ClipboardEvent) {
     const data = event.clipboardData?.getData("text/plain") ?? ""
     if (!data) return
     const [self, ...rest] = data.split("\n")

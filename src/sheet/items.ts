@@ -1,4 +1,4 @@
-import { D, U, type VDir } from "../field/model"
+import { D, L, U, type Dir, type VDir } from "../field/model"
 import { h, t } from "../jsx"
 import type { ItemFactory } from "./item"
 import type { Sheet } from "./ui/sheet"
@@ -54,31 +54,16 @@ export abstract class ItemList {
     const at = props?.at
     const last = this.items[this.items.length - 1]
 
-    if (at === this.items.length) {
-      if (last) {
-        this.root.el.insertBefore(el, last.el.nextElementSibling)
-      } else if (this.parent) {
-        this.root.el.insertBefore(el, this.parent.el.nextElementSibling)
-      } else {
-        this.root.el.appendChild(el)
-      }
-    } else if (at != null && 0 <= at && at < this.items.length) {
-      this.root.el.insertBefore(el, this.items[at]!.el)
+    if (at != null && 0 <= at && at < this.items.length) {
+      this.items[at]!.el.insertAdjacentElement("beforebegin", el)
+    } else if (last) {
+      last.el.insertAdjacentElement("afterend", el)
+    } else if (this.parent) {
+      this.parent.el.insertAdjacentElement("afterend", el)
     } else {
-      if (this.parent) {
-        this.root.el.insertBefore(el, this.parent.el.nextElementSibling)
-      } else {
-        this.root.el.appendChild(el)
-      }
+      this.root.el.appendChild(el)
     }
 
-    //     const nextEl =
-    //       (at && this.items[at]?.el) ||
-    //       this.items[this.items.length - 1]?.el.nextElementSibling ||
-    //       this.parent?.el.nextElementSibling ||
-    //       null
-    //
-    //     this.root.el.insertBefore(el, nextEl)
     if (at != null && 0 <= at && at <= this.items.length) {
       this.items.splice(at, 0, ref)
     } else {
@@ -87,7 +72,7 @@ export abstract class ItemList {
 
     this.root.queueIndices()
     if (props?.focus) {
-      setTimeout(() => ref.focus())
+      setTimeout(() => ref.factory.focus(ref.data, null))
     }
   }
 
@@ -230,9 +215,14 @@ export class ItemListGlobal extends ItemList {
   }
 
   draw() {
-    for (const expr of this.items) {
+    this.sheet.pick.checkSuppressed()
+    const s = this.sheet.pick.suppressed
+
+    for (const ref of this.items) {
+      if (ref == s) continue
+
       try {
-        expr.factory.draw?.(expr.data)
+        ref.factory.draw?.(ref.data)
       } catch (e) {
         console.warn("[draw]", e)
       }
@@ -304,15 +294,48 @@ export class ItemRef<T> {
   offset(by: VDir) {
     switch (by) {
       case U:
-        return this.list.items[this.index() - 1] ?? this.list.parent
+        // If I am the first item, move into my parent
+        if (this.index() == 0) {
+          return this.list.parent
+        }
+
+        let prev: ItemRef<unknown> = this.list.items[this.index() - 1]!
+
+        // Move into the last item of `prev`:
+        // 1. If `prev` has no sublist, move into `prev`
+        // 2a. If `prev` has a sublist, move into `prev.sublist.at(-1)`
+        // 2b. If `prev.sublist.at(-1)` does not exist, move into `prev`
+        while (true) {
+          if (!prev.sublist) {
+            return prev
+          }
+          const last: ItemRef<unknown> | undefined =
+            prev.sublist.items[prev.sublist.items.length - 1]
+          if (!last) {
+            return prev
+          }
+          prev = last
+        }
+
       case D:
+        // If I have a sublist, move into it
         if (this.sublist?.items[0]) {
           return this.sublist.items[0]
+        }
+
+        let el: ItemRef<unknown> | undefined = this
+        while (el) {
+          const idx = el.index()
+          if (el.list.items[idx + 1]) {
+            return el.list.items[idx + 1]
+          }
+
+          el = el.list.parent
         }
     }
   }
 
-  focus(from?: VDir) {
+  focus(from: VDir) {
     this.factory.focus(this.data, from)
   }
 
@@ -330,6 +353,60 @@ export class ItemRef<T> {
         console.warn("[pasteBelow]", e)
       }
     }
+  }
+
+  onDelOut(towards: Dir, allowDeletion: boolean) {
+    if (
+      towards == L &&
+      this.list != this.root &&
+      this.index() == this.list.items.length - 1
+    ) {
+      console.log("deleting containing folder")
+      return
+    }
+
+    if (!allowDeletion) {
+      return
+    }
+
+    const idx = this.index()
+    if (idx == -1) return
+
+    const nextIndex = towards == L ? Math.max(0, idx - 1) : idx
+
+    const next = this.root.items[nextIndex]
+
+    if (next) {
+      next.focus(towards == L ? D : U)
+    } else if (towards == L) {
+      this.root.createDefault({ focus: true })
+    } else {
+      const prev = this.root.items[idx - 1]
+      if (prev) {
+        prev.focus(D)
+      } else {
+        this.root.createDefault({ focus: true })
+      }
+    }
+  }
+
+  onVertOut(towards: VDir) {
+    const ref = this.offset(towards)
+
+    if (ref) {
+      ref.focus(towards == U ? D : U)
+    } else if (towards == D) {
+      this.root.createDefault({ focus: true })
+    }
+  }
+
+  onEnter(_towards: typeof D) {
+    if (this.sublist) {
+      this.sublist.createDefault({ at: 0, focus: true })
+      return
+    }
+
+    this.list.createDefault({ at: this.index() + 1, focus: true })
   }
 }
 

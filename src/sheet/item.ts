@@ -22,7 +22,8 @@ export interface ItemFactory<T, U = unknown> {
   draw?(data: T): void
   glsl?(data: T): GlslResult | undefined
   unlink(data: T): void
-  focus(data: T, from?: VDir): void
+  /** `from` is only `null` immediately after creation. */
+  focus(data: T, from: VDir | null): void
   encode(data: T): string
 
   /**
