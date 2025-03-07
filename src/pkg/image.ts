@@ -26,7 +26,7 @@ declare module "../eval/ast/token" {
 declare module "../eval/ty" {
   interface Tys {
     image: {
-      src: string
+      src: ImageData | null
       width: number
       height: number
     }
@@ -34,6 +34,28 @@ declare module "../eval/ty" {
 
   interface TyComponents {
     image: never
+  }
+}
+
+const counts = new Map<string, number>()
+
+const registry = new FinalizationRegistry<string>((url) => {
+  const count = (counts.get(url) ?? 0) - 1
+
+  if (count <= 0) {
+    counts.delete(url)
+    console.log("revoking " + url)
+    URL.revokeObjectURL(url)
+  } else {
+    console.log(`${count} left: ${url}`)
+  }
+})
+
+class ImageData {
+  constructor(readonly url: string) {
+    console.log("increasing count for " + url)
+    counts.set(url, (counts.get(url) ?? 0) + 1)
+    registry.register(this, url)
   }
 }
 
@@ -51,7 +73,7 @@ export class CmdImgRaw extends Leaf {
   }
 
   latex(): string {
-    return `\\imgraw{${toText(this.data.src)}}`
+    return `\\imgraw{${toText(this.data.src?.url ?? "")}}`
   }
 
   ir(tokens: Node[]): true | void {
@@ -184,7 +206,7 @@ const FACTORY: ItemFactory<Data> = {
       token.clone().insertAt(cursor, L)
       new OpEq(false).insertAt(cursor, L)
       new CmdImgRaw({
-        src: data.url ?? "",
+        src: data.url ? new ImageData(data.url) : null,
         height: natHeight,
         width: natWidth,
       }).insertAt(cursor, L)
@@ -302,7 +324,7 @@ export const PKG_IMAGE: Package = {
         coerce: {},
         garbage: {
           js: {
-            src: "",
+            src: null,
             width: 0,
             height: 0,
           },
@@ -316,9 +338,9 @@ export const PKG_IMAGE: Package = {
         write: {
           display(value, props) {
             if (value.src) {
-              new CmdImg(value.src).insertAt(props.cursor, L)
+              new CmdImg(value.src.url).insertAt(props.cursor, L)
             } else {
-              new CmdWord("empty image", "var").insertAt(props.cursor, L)
+              new CmdWord("undefined", "var").insertAt(props.cursor, L)
             }
           },
           isApprox() {
@@ -351,10 +373,11 @@ export const PKG_IMAGE: Package = {
               h(
                 "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
               ),
-              hx("img", {
-                class: "absolute inset-0 w-full h-full object-cover",
-                src: val.src,
-              }),
+              val.src &&
+                hx("img", {
+                  class: "absolute inset-0 w-full h-full object-cover",
+                  src: val.src.url,
+                }),
             ),
           )
         },

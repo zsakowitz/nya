@@ -58,16 +58,19 @@ const FN_IMAGE = new FnDist(
   )
 
 function draw(paper: Paper, val: Val<"image2d">) {
+  if (!val.data.src) return
+
   const p1 = paper.toOffset(unpt(val.p1))
   const p2 = paper.toOffset(unpt(val.p2))
   const width = Math.hypot(p1.x - p2.x, p1.y - p2.y)
   const height =
     (val.aspect ? 1 / num(val.aspect) : val.data.height / val.data.width) *
     width
+
   paper.append(
     "image",
     sx("image", {
-      href: val.data.src,
+      href: val.data.src.url,
       width,
       height: Math.abs(height),
       x: p1.x,
@@ -113,7 +116,7 @@ export const PKG_IMAGE_GEO: Package = {
         garbage: {
           js: {
             data: {
-              src: "",
+              src: null,
               width: 0,
               height: 0,
             },
