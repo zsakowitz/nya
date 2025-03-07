@@ -375,14 +375,14 @@ export class ItemRef<T> {
   }
 
   onDelOut(towards: Dir, allowDeletion: boolean) {
-    if (
-      towards == L &&
-      this.list != this.root &&
-      this.index() == this.list.items.length - 1
-    ) {
-      console.log("deleting containing folder")
-      return
-    }
+    // TODO: allow deleting containing folder
+    // if (
+    //   towards == L &&
+    //   this.list != this.root &&
+    //   this.index() == this.list.items.length - 1
+    // ) {
+    //   return
+    // }
 
     if (!allowDeletion) {
       return
@@ -391,8 +391,9 @@ export class ItemRef<T> {
     const idx = this.index()
     if (idx == -1) return
 
-    const nextIndex = towards == L ? Math.max(0, idx - 1) : idx
+    this.delete()
 
+    const nextIndex = towards == L ? Math.max(0, idx - 1) : idx
     const next = this.root.items[nextIndex]
 
     if (next) {
