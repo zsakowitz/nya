@@ -44,16 +44,12 @@ const registry = new FinalizationRegistry<string>((url) => {
 
   if (count <= 0) {
     counts.delete(url)
-    console.log("revoking " + url)
     URL.revokeObjectURL(url)
-  } else {
-    console.log(`${count} left: ${url}`)
   }
 })
 
 class ImageData {
   constructor(readonly url: string) {
-    console.log("increasing count for " + url)
     counts.set(url, (counts.get(url) ?? 0) + 1)
     registry.register(this, url)
   }
