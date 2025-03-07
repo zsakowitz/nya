@@ -52,16 +52,12 @@ export abstract class ItemList {
     ))
 
     const at = props?.at
-    const last = this.items[this.items.length - 1]
 
     if (at != null && 0 <= at && at < this.items.length) {
-      this.items[at]!.el.insertAdjacentElement("beforebegin", el)
-    } else if (last) {
-      last.el.insertAdjacentElement("afterend", el)
-    } else if (this.parent) {
-      this.parent.el.insertAdjacentElement("afterend", el)
+      // Insert before a parent node
+      this.root.el.insertBefore(el, this.items[at]!.el)
     } else {
-      this.root.el.appendChild(el)
+      this.insertAfter(el)
     }
 
     if (at != null && 0 <= at && at <= this.items.length) {
@@ -73,6 +69,29 @@ export abstract class ItemList {
     this.root.queueIndices()
     if (props?.focus) {
       setTimeout(() => ref.factory.focus(ref.data, null))
+    }
+  }
+
+  private insertAfter(el: HTMLElement) {
+    let list: ItemList = this
+
+    while (true) {
+      const last = list.items[list.items.length - 1]
+
+      if (last?.sublist) {
+        list = last.sublist
+        continue
+      }
+
+      if (last) {
+        this.root.el.insertBefore(el, last.el.nextSibling)
+      } else if (list.parent) {
+        this.root.el.insertBefore(el, list.parent.el.nextSibling)
+      } else {
+        this.root.el.appendChild(el)
+      }
+
+      return
     }
   }
 
