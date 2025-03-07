@@ -125,8 +125,8 @@ export function any(
 export const TY_INFO: TyInfoMap = Object.create(null) as any
 
 TY_INFO.never = {
-  name: "never",
-  namePlural: "nevers",
+  name: "empty value",
+  namePlural: "empty values",
   garbage: {
     js: "__never",
     glsl: "false",

@@ -301,7 +301,8 @@ export class CmdBrack extends Command<[Block]> {
     const lhsSymbol = BRACKS[lhs]
     const rhsSymbol = BRACKS[rhs]
     return h(
-      "relative inline-block nya-cmd-brack",
+      "relative inline-block nya-cmd-brack" +
+        (lhs == "(" && rhs == ")" ? " nya-cmd-paren" : ""),
       h(
         "left-0 absolute top-0 bottom-[2px] inline-block" +
           (side == R ? " opacity-20" : "") +

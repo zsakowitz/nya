@@ -147,6 +147,13 @@ body {
     + .nya-cmd-brack,
     + :where(.nya-cursor) + .nya-cmd-brack
   ) {
+  @apply pr-[.1em];
+}
+
+.nya-cmd-word-r:not(.nya-cmd-word-infix):has(
+    + .nya-cmd-paren,
+    + :where(.nya-cursor) + .nya-cmd-paren
+  ) {
   @apply pr-0;
 }
 
