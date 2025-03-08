@@ -606,7 +606,7 @@ export const TXR_AST: { [K in NodeName]?: TxrAst<Nodes[K]> } = {
         if (!txr) {
           throw new Error(`Suffix '${suffix.type}' is not defined.`)
         }
-
+        console.log(txr, txr.sym)
         lhs = {
           type: "value",
           value: txr.sym(
@@ -682,4 +682,8 @@ export function sym(node: Node, props: PropsSym): Sym {
   }
 
   return txr.sym(node as never, props)
+}
+
+export function NO_SYM(..._: any): never {
+  throw new Error("NO SYMBOLIC COMPUTATION ALLOWED HERE")
 }

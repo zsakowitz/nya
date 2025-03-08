@@ -1,10 +1,32 @@
 import type { Package } from "."
 import { FnDist } from "../eval/ops/dist"
+import { unary } from "../eval/sym"
 import { approx, num } from "../eval/ty/create"
+import { chain, OP_NEG } from "./core-ops"
 import { PKG_REAL } from "./num-real"
 
-const FN_SIN = new FnDist("sin", "takes the sine of an angle")
-const FN_COS = new FnDist("cos", "takes the cosine of an angle")
+const FN_SIN: FnDist = new FnDist(
+  "sin",
+  "takes the sine of an angle",
+  undefined,
+  undefined,
+  unary((wrt, a) => chain(a, wrt, { type: "call", fn: FN_COS, args: [a] })),
+)
+
+const FN_COS: FnDist = new FnDist(
+  "cos",
+  "takes the cosine of an angle",
+  undefined,
+  undefined,
+  unary((wrt, a) =>
+    chain(a, wrt, {
+      type: "call",
+      fn: OP_NEG,
+      args: [{ type: "call", fn: FN_SIN, args: [a] }],
+    }),
+  ),
+)
+
 const FN_TAN = new FnDist("tan", "takes the tangent of an angle")
 const FN_CSC = new FnDist("csc", "takes the cosecant of an angle")
 const FN_SEC = new FnDist("sec", "takes the secant of an angle")

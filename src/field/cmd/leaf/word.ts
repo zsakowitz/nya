@@ -15,9 +15,11 @@ export class CmdWord extends Leaf {
       text,
       h(
         "nya-cmd-var " +
-          (italic ? "italic" : (
-            `nya-cmd-word nya-cmd-word-${kind} nya-cmd-word-l nya-cmd-word-r`
-          )),
+          (italic ?
+            /[A-Za-z]/.test(text) ?
+              "italic"
+            : ""
+          : `nya-cmd-word nya-cmd-word-${kind} nya-cmd-word-l nya-cmd-word-r`),
         h("font-['Times_New_Roman'] [line-height:.9]", text),
       ),
     )

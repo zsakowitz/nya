@@ -1,7 +1,7 @@
 import type { Package } from "."
 import { commalist } from "../eval/ast/collect"
 import { Precedence } from "../eval/ast/token"
-import { NO_DRAG } from "../eval/ast/tx"
+import { NO_DRAG, NO_SYM } from "../eval/ast/tx"
 import { glsl } from "../eval/glsl"
 import { js } from "../eval/js"
 import { parseBindings, parseBindingVar } from "../eval/lib/binding"
@@ -136,6 +136,7 @@ export const PKG_CORE_LIST: Package = {
     tx: {
       binary: {
         for: {
+          sym: NO_SYM,
           precedence: Precedence.WordInfix,
           deps(node, deps) {
             deps.withBoundIds(bindingDeps(node.rhs, false, deps), () =>
@@ -248,6 +249,7 @@ export const PKG_CORE_LIST: Package = {
       },
       suffix: {
         index: {
+          sym: NO_SYM,
           js(node, props) {
             return indexJs(node.base, js(node.rhs.index, props))
           },
@@ -276,6 +278,7 @@ export const PKG_CORE_LIST: Package = {
               commalist(node).map((item) => glsl(item, props)),
             )
           },
+          sym: NO_SYM,
           drag: NO_DRAG,
         },
       },

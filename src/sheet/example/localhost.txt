@@ -1,1 +1,7 @@
-\operatorname{sym}x^{3}+4x^{2}+x_{3y}
+tanxderivx
+cosxderivx
+sinxderivx
+xderivx
+x^2derivx
+x^{x}\operatorname{deriv}x
+3derivx

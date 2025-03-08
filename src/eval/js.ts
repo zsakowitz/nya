@@ -2,11 +2,13 @@ import type { Node } from "./ast/token"
 import { TXR_AST } from "./ast/tx"
 import { Bindings, type BindingFn } from "./lib/binding"
 import { FNS } from "./ops"
+import type { Sym } from "./sym"
 import type { JsValue, SReal } from "./ty"
 
 export interface PropsJs {
   base: SReal
   bindingsJs: Bindings<JsValue | BindingFn>
+  bindingsSym: Bindings<Sym | BindingFn>
 }
 
 export function jsCall(

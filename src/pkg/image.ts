@@ -1,7 +1,7 @@
 import { faImage } from "@fortawesome/free-solid-svg-icons/faImage"
 import type { Package } from "."
 import type { Node } from "../eval/ast/token"
-import { NO_DRAG } from "../eval/ast/tx"
+import { NO_DRAG, NO_SYM } from "../eval/ast/tx"
 import { FnDist } from "../eval/ops/dist"
 import type { JsValue, Val } from "../eval/ty"
 import { frac, real } from "../eval/ty/create"
@@ -384,6 +384,7 @@ export const PKG_IMAGE: Package = {
     tx: {
       ast: {
         image: {
+          sym: NO_SYM,
           deps() {},
           drag: NO_DRAG,
           js(node): JsValue<"image", false> {

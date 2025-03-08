@@ -1,7 +1,7 @@
 import type { Node, Var } from "../eval/ast/token"
-import type { PropsDrag } from "../eval/ast/tx"
+import { sym, type PropsDrag } from "../eval/ast/tx"
 import { Deps } from "../eval/deps"
-import { glsl, type PropsGlsl } from "../eval/glsl"
+import { glsl, type PropsGlsl, type PropsSym } from "../eval/glsl"
 import { js, type PropsJs } from "../eval/js"
 import {
   BindingFn,
@@ -12,6 +12,7 @@ import {
   tryName,
 } from "../eval/lib/binding"
 import { GlslContext, GlslHelpers } from "../eval/lib/fn"
+import type { Sym } from "../eval/sym"
 import type { GlslValue, JsValue } from "../eval/ty"
 import { frac } from "../eval/ty/create"
 import { TY_INFO } from "../eval/ty/info"
@@ -32,6 +33,16 @@ export class Scope {
       base: frac(10, 1),
       get bindingsJs() {
         return self.bindingsJs
+      },
+      get bindingsSym() {
+        return self.bindingsSym
+      },
+    }
+
+    this.propsSym = {
+      base: frac(10, 1),
+      get bindingsSym() {
+        return self.bindingsSym
       },
     }
 
@@ -76,8 +87,10 @@ export class Scope {
   bindingsJs!: Bindings<JsValue | BindingFn>
   bindingsDrag!: Bindings<[FieldComputed, Node]>
   bindingsGlsl!: Bindings<GlslValue | BindingFn>
+  bindingsSym!: Bindings<Sym | BindingFn>
   readonly helpers = new GlslHelpers()
   readonly propsJs: PropsJs
+  readonly propsSym: PropsSym
 
   propsDrag(field: FieldComputed): PropsDrag {
     return {
@@ -96,6 +109,9 @@ export class Scope {
       },
       get bindingsJs() {
         return self.bindingsJs
+      },
+      get bindingsSym() {
+        return self.bindingsSym
       },
       ctx: new GlslContext(this.helpers),
     }
@@ -151,11 +167,13 @@ export class Scope {
 
     const bindingMapJs: Record<string, JsValue | BindingFn> =
       Object.create(null)
+    const bindingMapSym: Record<string, Sym | BindingFn> = Object.create(null)
     const bindingMapGlsl: Record<string, GlslValue | BindingFn> =
       Object.create(null)
     const bindingMapDrag: Record<string, [FieldComputed, Node]> =
       Object.create(null)
     const bindingsJs = new Bindings(bindingMapJs)
+    const bindingsSym = new Bindings(bindingMapSym)
     const bindingsDrag = new Bindings(bindingMapDrag)
     const bindingsGlsl = new Bindings(bindingMapGlsl)
     for (const def in this.defs) {
@@ -199,30 +217,48 @@ export class Scope {
               glsl(value, { ...this.propsGlsl(), ctx }),
             )
           },
+          (values): Sym => {
+            if (values.length != params.length) {
+              throw new Error(
+                `Function '${tryName(first.name)}' expects ${params.length} arguments.`,
+              )
+            }
+
+            const args: Record<string, Sym> = Object.create(null)
+            for (let i = 0; i < params.length; i++) {
+              args[params[i]![0]] = values[i]!
+            }
+
+            return bindingsSym.withArgs(args, () => sym(value, this.propsJs))
+          },
         )
 
         bindingMapJs[def] = fn
+        bindingMapSym[def] = fn
         bindingMapGlsl[def] = fn
       } else if (field.length == 1) {
         const { value: node } = first!
 
-        let valueJs: JsValue | undefined
         Object.defineProperty(bindingMapJs, def, {
           configurable: true,
           enumerable: true,
           get: () =>
-            (valueJs ??= this.propsJs.bindingsJs.withoutArgs(() =>
-              js(node, this.propsJs),
-            )),
+            this.propsJs.bindingsJs.withoutArgs(() => js(node, this.propsJs)),
         })
 
-        let valueGlsl: GlslValue | undefined
+        Object.defineProperty(bindingMapSym, def, {
+          configurable: true,
+          enumerable: true,
+          get: () =>
+            this.propsSym.bindingsSym.withoutArgs(() =>
+              sym(node, this.propsSym),
+            ),
+        })
+
         Object.defineProperty(bindingMapGlsl, def, {
           configurable: true,
           enumerable: true,
           get: () => {
-            if (valueGlsl) return valueGlsl
-
             const props = this.propsGlsl()
             const ctx = (props.ctx = new GlslContext(this.helpers))
             const rawValue = glsl(node, props)
@@ -231,7 +267,7 @@ export class Scope {
   ${ctx.block}
   return ${rawValue.expr};
 }`
-            return (valueGlsl = { ...rawValue, expr: `${name}()` })
+            return { ...rawValue, expr: `${name}()` }
           },
         })
 
@@ -271,6 +307,7 @@ export class Scope {
       }
     }
     this.bindingsJs = bindingsJs
+    this.bindingsSym = bindingsSym
     this.bindingsDrag = bindingsDrag
     this.bindingsGlsl = bindingsGlsl
 

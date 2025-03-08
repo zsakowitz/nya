@@ -1,5 +1,6 @@
 import type { Package } from "."
 import type { MagicVar, Node } from "../eval/ast/token"
+import { NO_SYM } from "../eval/ast/tx"
 import type { Deps } from "../eval/deps"
 import { type PropsGlsl, glsl } from "../eval/glsl"
 import { type PropsJs, js } from "../eval/js"
@@ -454,6 +455,7 @@ export const PKG_ITERATE: Package = {
     tx: {
       magic: {
         iterate: {
+          sym: NO_SYM,
           helpers: ["while", "until", "from"],
           js(node, props) {
             if (node.value == "iterate") {

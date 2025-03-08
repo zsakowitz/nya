@@ -1,6 +1,6 @@
 import type { Package } from "."
 import type { Node } from "../eval/ast/token"
-import { NO_DRAG } from "../eval/ast/tx"
+import { NO_DRAG, NO_SYM } from "../eval/ast/tx"
 import { doc, FnDist } from "../eval/ops/dist"
 import { FnDistManual, type FnOverload } from "../eval/ops/dist-manual"
 import { ALL_DOCS } from "../eval/ops/docs"
@@ -223,7 +223,13 @@ const OP_TO_TEXT = new FnDist<"text">("to text", "converts a value into text")
 
 const FN_CONCAT = new (class extends FnDistManual<"text"> {
   constructor() {
-    super("concat", "concatenates one or more string-like values into a string")
+    super(
+      "concat",
+      "concatenates one or more string-like values into a string",
+      undefined,
+      // SYM: fix concat derivatives
+      undefined,
+    )
     ALL_DOCS.push(this)
   }
 
@@ -376,6 +382,7 @@ export const PKG_TEXT: Package = {
     tx: {
       ast: {
         text: {
+          sym: NO_SYM,
           deps() {},
           drag: NO_DRAG,
           js(node) {

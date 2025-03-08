@@ -9,6 +9,7 @@ import { listTy } from "../ty/debug"
 import { TY_INFO } from "../ty/info"
 import {
   FnDistManual,
+  type DerivFn,
   type DisplayFn,
   type FnOverload,
   type FnOverloadVar,
@@ -39,8 +40,9 @@ export class FnDist<Q extends TyName = TyName> extends FnDistManual<Q> {
     label: string,
     readonly message: FnError = `Cannot call '${name}' with %%.`,
     displayFn?: DisplayFn,
+    deriv?: DerivFn,
   ) {
-    super(name, label, displayFn)
+    super(name, label, displayFn, deriv)
     ALL_DOCS.push(this)
   }
 

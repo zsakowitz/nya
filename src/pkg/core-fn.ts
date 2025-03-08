@@ -6,7 +6,7 @@ import {
   type PuncUnary,
   type Var,
 } from "../eval/ast/token"
-import { NO_DRAG, sym } from "../eval/ast/tx"
+import { NO_DRAG, NO_SYM, sym } from "../eval/ast/tx"
 import { glsl, glslCall, type PropsGlsl, type PropsSym } from "../eval/glsl"
 import { js, jsCall, type PropsJs } from "../eval/js"
 import { asNumericBase } from "../eval/lib/base"
@@ -128,9 +128,11 @@ function callSym(name: Var, args: Node[], props: PropsSym): Sym {
           name.sup.sub ?
             js(name.sup, {
               bindingsJs: SYM_BINDINGS,
+              bindingsSym: props.bindingsSym,
               base: asNumericBase(
                 js(name.sup.sub, {
                   bindingsJs: SYM_BINDINGS,
+                  bindingsSym: props.bindingsSym,
                   base: frac(10, 1),
                 }),
               ),
@@ -138,6 +140,7 @@ function callSym(name: Var, args: Node[], props: PropsSym): Sym {
           : js(name.sup, {
               base: props.base,
               bindingsJs: SYM_BINDINGS,
+              bindingsSym: props.bindingsSym,
             }),
         )
       : invalidFnSup()
@@ -408,6 +411,61 @@ export const PKG_CORE_FN: Package = {
             node.rest.length = 0
             return OP_JUXTAPOSE.js([lhs ?? node.base, rhs])
           },
+          sym(node, props) {
+            const rhsWrapped: Node = {
+              type: "group",
+              lhs: "(",
+              rhs: ")",
+              value: node.rhs.args,
+            }
+
+            // If LHS is a value, exit early; it's not a function
+            if (node.lhs.type == "value") {
+              const rhs = sym(
+                { type: "suffixed", base: rhsWrapped, suffixes: node.rest },
+                props,
+              )
+              node.rest.length = 0
+              return { type: "call", fn: OP_JUXTAPOSE, args: [node.base, rhs] }
+            }
+
+            let lhs: Sym | undefined
+
+            fn: if (node.lhs.value.type == "var") {
+              if (node.lhs.value.kind == "prefix") {
+                const args = commalist(node.rhs.args)
+                if (node.lhs.value.sub) {
+                  args.unshift(node.lhs.value.sub)
+                }
+                return callSym(node.lhs.value, args, props)
+              }
+
+              if (!(node.lhs.value.kind == "var" && !node.lhs.value.sup))
+                break fn
+              const fn = props.bindingsSym.get(id(node.lhs.value))
+              if (!fn) {
+                throw new Error(`'${tryName(node.lhs.value)}' is not defined.`)
+              }
+
+              if (!(fn instanceof BindingFn)) {
+                lhs = fn
+                break fn
+              }
+
+              return fn.sym(commalist(node.rhs.args).map((x) => sym(x, props)))
+            }
+
+            const rhs = sym(
+              { type: "suffixed", base: rhsWrapped, suffixes: node.rest },
+              props,
+            )
+            node.rest.length = 0
+            return {
+              type: "call",
+              fn: OP_JUXTAPOSE,
+              args: [lhs ?? node.base, rhs],
+            }
+          },
           glsl(node, props) {
             const rhsWrapped: Node = {
               type: "group",
@@ -465,6 +523,7 @@ export const PKG_CORE_FN: Package = {
           },
         },
         prop: {
+          sym: NO_SYM,
           deps(node, deps) {
             if (node.name.sup) {
               deps.add(node.name.sup)

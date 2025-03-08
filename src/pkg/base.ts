@@ -1,6 +1,6 @@
 import type { Package } from "."
 import { Precedence } from "../eval/ast/token"
-import { NO_DRAG } from "../eval/ast/tx"
+import { NO_DRAG, NO_SYM } from "../eval/ast/tx"
 import { glsl } from "../eval/glsl"
 import { js } from "../eval/js"
 import { asNumericBase } from "../eval/lib/base"
@@ -20,6 +20,7 @@ export const PKG_BASE: Package = {
       binary: {
         base: {
           precedence: Precedence.WordInfix,
+          sym: NO_SYM,
           deps(node, deps) {
             deps.add(node.lhs)
             deps.add(node.rhs)

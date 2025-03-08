@@ -1,7 +1,8 @@
 import type { Package } from "."
 import { Precedence, type MagicVar } from "../eval/ast/token"
-import { TXR_AST } from "../eval/ast/tx"
-import { insert, txr, TXR_SYM, type Sym, type TxrSym } from "../eval/sym"
+import { NO_DRAG, sym, TXR_AST } from "../eval/ast/tx"
+import { issue } from "../eval/ops/issue"
+import { insertStrict, txr, TXR_SYM, type Sym, type TxrSym } from "../eval/sym"
 import type { JsValue } from "../eval/ty"
 import { frac, real } from "../eval/ty/create"
 import { Display } from "../eval/ty/display"
@@ -52,7 +53,7 @@ export const PKG_SYM: Package = {
               )
             }
 
-            insert(
+            insertStrict(
               props.cursor,
               txr.display(value),
               Precedence.Comma,
@@ -123,12 +124,53 @@ export const PKG_SYM: Package = {
           },
         },
       },
+      binary: {
+        deriv: {
+          deps(node, deps) {
+            deps.add(node.lhs)
+          },
+          drag: NO_DRAG,
+          glsl() {
+            // SYM:
+            throw new Error("Cannot take derivative in shaders yet.")
+          },
+          js(node, props) {
+            const lhs = sym(node.lhs, props)
+            const rhs = sym(node.rhs, props)
+            if (rhs.type != "var") {
+              throw new Error(
+                "The right side of 'deriv' should be a variable name.",
+              )
+            }
+            return {
+              type: "sym",
+              list: false,
+              value: txr(lhs).deriv(lhs, rhs.id),
+            }
+          },
+          precedence: Precedence.WordInfix,
+          sym(node, props) {
+            const lhs = sym(node.lhs, props)
+            const rhs = sym(node.rhs, props)
+            if (rhs.type != "var") {
+              throw new Error(
+                "The right side of 'deriv' should be a variable name.",
+              )
+            }
+            return txr(lhs).deriv(lhs, rhs.id)
+          },
+        },
+      },
     },
     sym: {
       call: {
-        deriv() {
-          // SYM:
-          throw new Error("Cannot compute derivatives of functions yet.")
+        deriv(value, wrt) {
+          return (
+            value.fn.deriv?.(value.args, wrt) ??
+            issue(
+              `Cannot compute the derivative of ${"name" in value.fn ? `'${value.fn.name}'` : "this function"} yet.`,
+            )()
+          )
         },
         uses(value, name) {
           return value.args.some((x) => txr(x).uses(x, name))

@@ -1,5 +1,6 @@
 import { commalist } from "../ast/collect"
 import type { Node, Var } from "../ast/token"
+import type { Sym } from "../sym"
 import type { GlslValue, JsValue } from "../ty"
 import type { GlslContext } from "./fn"
 import { subscript } from "./text"
@@ -207,5 +208,6 @@ export class BindingFn {
   constructor(
     readonly js: (args: JsValue[]) => JsValue,
     readonly glsl: (ctx: GlslContext, args: GlslValue[]) => GlslValue,
+    readonly sym: (args: Sym[]) => Sym,
   ) {}
 }

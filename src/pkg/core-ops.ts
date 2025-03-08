@@ -11,16 +11,37 @@ import { safe } from "../eval/lib/util"
 import { FnDist } from "../eval/ops/dist"
 import { declareR64 } from "../eval/ops/r64"
 import { VARS } from "../eval/ops/vars"
-import { binaryFn, insert, prefixFn, txr, type Sym } from "../eval/sym"
+import {
+  binary,
+  binaryFn,
+  insert,
+  insertStrict,
+  prefixFn,
+  SYM_0,
+  SYM_1,
+  txr,
+  unary,
+  type Sym,
+} from "../eval/sym"
 import { each, type GlslValue, type JsValue } from "../eval/ty"
 import { canCoerce, coerceTyJs } from "../eval/ty/coerce"
 import { frac, num, real } from "../eval/ty/create"
 import { add, div } from "../eval/ty/ops"
 import { splitValue } from "../eval/ty/split"
-import { OpCdot, OpDiv, OpMinus, OpPlus, OpTimes } from "../field/cmd/leaf/op"
+import { CmdComma } from "../field/cmd/leaf/comma"
+import {
+  OpCdot,
+  OpDiv,
+  OpMinus,
+  OpOdot,
+  OpPlus,
+  OpTimes,
+} from "../field/cmd/leaf/op"
 import { CmdWord } from "../field/cmd/leaf/word"
+import { CmdBrack } from "../field/cmd/math/brack"
 import { CmdSupSub } from "../field/cmd/math/supsub"
 import { Block, L, R, Span } from "../field/model"
+import { FN_LN } from "./num-real"
 
 export function declareAddR64(ctx: GlslContext) {
   declareR64(ctx)
@@ -210,18 +231,31 @@ float _helper_cmp_r64(vec2 a, vec2 b) {
 `
 }
 
-export const OP_ADD = new FnDist(
+export const OP_ADD: FnDist = new FnDist(
   "+",
   "adds two values or points",
   "Cannot add %%.",
   binaryFn(() => new OpPlus(), Precedence.Sum),
+  binary((wrt, a, b) => ({
+    type: "call",
+    fn: OP_ADD,
+    args: [txr(a).deriv(a, wrt), txr(b).deriv(b, wrt)],
+  })),
 )
 
-export const OP_CDOT = new FnDist(
+export const OP_CDOT: FnDist = new FnDist(
   "·",
   "multiplies two values",
   "Cannot multiply %%.",
   binaryFn(() => new OpCdot(), Precedence.Product),
+  binary((wrt, a, b) => ({
+    type: "call",
+    fn: OP_ADD,
+    args: [
+      { type: "call", fn: OP_CDOT, args: [a, txr(b).deriv(b, wrt)] },
+      { type: "call", fn: OP_CDOT, args: [b, txr(a).deriv(a, wrt)] },
+    ],
+  })),
 )
 
 export const OP_CROSS = new FnDist(
@@ -252,26 +286,34 @@ export const OP_MOD = new FnDist(
   binaryFn(() => new CmdWord("mod", "infix"), Precedence.Product),
 )
 
-export const OP_NEG = new FnDist(
+export const OP_NEG: FnDist = new FnDist(
   "-",
   "negates its input",
   "Cannot negate %%.",
   prefixFn(() => new OpMinus(), Precedence.Sum),
+  unary((wrt, a) => ({
+    type: "call",
+    args: [txr(a).deriv(a, wrt)],
+    fn: OP_NEG,
+  })),
 )
 
 export const OP_ODOT = new FnDist(
   "⊙",
   "multiples complex numbers or points component-wise",
   "Cannot multiply %% component-by-component.",
+  binaryFn(() => new OpOdot(), Precedence.Product),
 )
 
 export const OP_POS = new FnDist(
   "+",
   "unary plus; ensures the expression is number-like",
   "Cannot convert %% to a number.",
+  prefixFn(() => new OpPlus(), Precedence.Sum),
+  unary((wrt, a) => txr(a).deriv(a, wrt)),
 )
 
-export const OP_RAISE = new FnDist(
+export const OP_RAISE: FnDist = new FnDist(
   "^",
   "raises a value to an exponent",
   "Cannot raise %% as an exponent.",
@@ -283,24 +325,132 @@ export const OP_RAISE = new FnDist(
     new CmdSupSub(null, txr(b).display(b).block).insertAt(cursor, L)
     return { block, lhs: Precedence.Atom, rhs: Precedence.Atom }
   },
+  ([a, b, c], wrt) => {
+    if (!(a && b && !c)) {
+      throw new Error("Invalid derivative.")
+    }
+
+    const usedA = txr(a).uses(a, wrt)
+    const usedB = txr(b).uses(b, wrt)
+
+    if (!usedA && !usedB) {
+      return SYM_0
+    } else if (usedA && !usedB) {
+      // f(x)^n --> f'(x) * nf^(n-1)
+      return {
+        type: "call",
+        fn: OP_CDOT,
+        args: [
+          {
+            type: "call",
+            fn: OP_CDOT,
+            args: [txr(a).deriv(a, wrt), b],
+          },
+          {
+            type: "call",
+            fn: OP_RAISE,
+            args: [a, SYM_1],
+          },
+        ],
+      }
+    } else if (usedB && !usedA) {
+      // a^f = f' * a^f * ln a
+      return {
+        type: "call",
+        fn: OP_CDOT,
+        args: [
+          {
+            type: "call",
+            fn: OP_CDOT,
+            args: [
+              txr(b).deriv(b, wrt),
+              { type: "call", fn: FN_LN, args: [a] },
+            ],
+          },
+          {
+            type: "call",
+            fn: OP_RAISE,
+            args: [a, b],
+          },
+        ],
+      }
+    } else {
+      // d/dx(f(x)^g(x)) = f^(g - 1) (g f' + f ln(f) g')
+      return {
+        type: "call",
+        fn: OP_CDOT,
+        args: [
+          {
+            type: "call",
+            fn: OP_RAISE,
+            args: [a, { type: "call", fn: OP_SUB, args: [b, SYM_1] }],
+          },
+
+          // g f' + f ln(f) g'
+          {
+            type: "call",
+            fn: OP_ADD,
+            args: [
+              { type: "call", fn: OP_CDOT, args: [b, txr(a).deriv(a, wrt)] },
+
+              // f ln(f) g'
+              {
+                type: "call",
+                fn: OP_CDOT,
+                args: [
+                  {
+                    type: "call",
+                    fn: OP_CDOT,
+                    args: [a, { type: "call", fn: FN_LN, args: [a] }],
+                  },
+                  txr(b).deriv(b, wrt),
+                ],
+              },
+            ],
+          },
+        ],
+      }
+    }
+  },
 )
 
 export const OP_SUB = new FnDist(
   "-",
   "subtracts two values",
   "Cannot subtract %%.",
+  binaryFn(() => new OpMinus(), Precedence.Sum),
 )
 
 export const OP_POINT = new FnDist(
   "construct point",
   "constructs a point from two coordinates",
   "Cannot construct a point from %%.",
+  ([a, b, c]) => {
+    if (!(a && b && !c)) return
+    const inner = new Block(null)
+    const cursor = inner.cursor(R)
+    insertStrict(cursor, txr(a).display(a), Precedence.Comma, Precedence.Comma)
+    new CmdComma().insertAt(cursor, L)
+    insertStrict(cursor, txr(b).display(b), Precedence.Comma, Precedence.Comma)
+    const block = new Block(null)
+    new CmdBrack("(", ")", null, inner).insertAt(block.cursor(R), L)
+    return { block, lhs: Precedence.Var, rhs: Precedence.Var }
+  },
 )
 
 export const OP_ABS = new FnDist(
   "abs",
   "takes the absolute value of a number, or gets the magnitude of a complex number",
   "Cannot take the absolute value of %%.",
+  ([a, b]) => {
+    if (!a || b) return
+    const inner = new Block(null)
+    const cursor = inner.cursor(R)
+    txr(a).display(a).block.insertAt(cursor, L)
+    const block = new Block(null)
+    new CmdBrack("|", "|", null, inner).insertAt(block.cursor(R), L)
+    return { block, lhs: Precedence.Var, rhs: Precedence.Var }
+  },
 )
 
 export const PKG_CORE_OPS: Package = {
@@ -819,4 +969,8 @@ export const PKG_CORE_OPS: Package = {
       },
     },
   },
+}
+
+export function chain(f: Sym, wrt: string, ddx: Sym): Sym {
+  return { type: "call", fn: OP_CDOT, args: [txr(f).deriv(f, wrt), ddx] }
 }

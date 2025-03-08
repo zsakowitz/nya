@@ -115,6 +115,8 @@ const FN_COMPONENT = new (class extends FnDistCaching {
       "gets a component of a multidimensional value",
       // SYM: better display
       undefined,
+      // SYM: fix component derivatives
+      undefined,
     )
     ALL_DOCS.push(this)
   }
@@ -239,7 +241,7 @@ const FN_CMP = new FnDist(
   "Cannot compare %%.",
 )
 
-export const FN_LN = new FnDist(
+export const FN_LN: FnDist = new FnDist(
   "ln",
   "takes the natural logarithm of a value",
   "Cannot take the natural logarithm of %%.",
@@ -637,6 +639,7 @@ float _helper_cmp_r32(float a, float b) {
                     js(node.sub, {
                       base: props.base,
                       bindingsJs: SYM_BINDINGS,
+                      bindingsSym: props.bindingsSym,
                     }),
                   )
                 : props.base,

@@ -2,8 +2,9 @@ import type { WordKind } from "../../field/cmd/leaf/var"
 import { CmdBrack } from "../../field/cmd/math/brack"
 import { Block, L, R, type Command, type Cursor } from "../../field/model"
 import type { Fn } from "../ops"
-import type { DisplayFn } from "../ops/dist-manual"
+import type { DerivFn, DisplayFn } from "../ops/dist-manual"
 import type { JsValue } from "../ty"
+import { real } from "../ty/create"
 
 export interface SymVarSource {
   name: string
@@ -53,8 +54,22 @@ export interface SymDisplay {
   rhs: number
 }
 
-/** Exclusionary comparison performed on `lhs` and `rhs`. */
+/** Inclusionary comparison performed on `lhs` and `rhs`. */
 export function insert(
+  at: Cursor,
+  result: SymDisplay,
+  lhs: number,
+  rhs: number,
+) {
+  if (result.lhs <= lhs || result.rhs <= rhs) {
+    new CmdBrack("(", ")", null, result.block).insertAt(at, L)
+  } else {
+    result.block.insertAt(at, L)
+  }
+}
+
+/** Exclusionary comparison performed on `lhs` and `rhs`. */
+export function insertStrict(
   at: Cursor,
   result: SymDisplay,
   lhs: number,
@@ -88,4 +103,34 @@ export function binaryFn(op: () => Command | Block, prec: number): DisplayFn {
     insert(cursor, txr(b).display(b), prec, prec)
     return { block, lhs: prec, rhs: prec }
   }
+}
+
+export function unary(f: (wrt: string, a: Sym) => Sym): DerivFn {
+  return ([a, b], wrt) => {
+    if (!a || b) {
+      throw new Error("Incorrect number of arguments passed to function.")
+    }
+
+    return f(wrt, a)
+  }
+}
+
+export function binary(f: (wrt: string, a: Sym, b: Sym) => Sym): DerivFn {
+  return ([a, b, c], wrt) => {
+    if (!a || !b || c) {
+      throw new Error("Incorrect number of arguments passed to function.")
+    }
+
+    return f(wrt, a, b)
+  }
+}
+
+export const SYM_0: Sym = {
+  type: "js",
+  value: { type: "r32", list: false, value: real(0) },
+}
+
+export const SYM_1: Sym = {
+  type: "js",
+  value: { type: "r32", list: false, value: real(1) },
 }

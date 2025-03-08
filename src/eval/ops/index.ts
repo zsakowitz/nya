@@ -8,6 +8,8 @@ export interface Fn {
   glsl(ctx: GlslContext, args: GlslValue[]): GlslValue
   // SYM: make this required
   display?(args: Sym[]): SymDisplay
+  // SYM: make this required
+  deriv?(args: Sym[], wrt: string): Sym
 }
 
 export const FNS: Record<string, Fn> = Object.create(null)

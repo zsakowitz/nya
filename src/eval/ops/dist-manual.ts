@@ -5,7 +5,7 @@ import { CmdBrack } from "../../field/cmd/math/brack"
 import { Block, L, R } from "../../field/model"
 import { Precedence } from "../ast/token"
 import { GlslContext } from "../lib/fn"
-import { insert, txr, type Sym, type SymDisplay } from "../sym"
+import { insert, insertStrict, txr, type Sym, type SymDisplay } from "../sym"
 import type {
   GlslVal,
   GlslValue,
@@ -46,6 +46,7 @@ export interface FnOverloadVar<Q extends TyName = TyName> {
 }
 
 export type DisplayFn = ((args: Sym[]) => SymDisplay | undefined) | undefined
+export type DerivFn = ((args: Sym[], wrt: string) => Sym) | undefined
 
 /**
  * `FnDist` are functions which take a distribute across lists, returning a list
@@ -59,6 +60,7 @@ export abstract class FnDistManual<Q extends TyName = TyName> implements Fn {
     readonly name: string,
     readonly label: string,
     private readonly displayFn: DisplayFn,
+    readonly deriv: DerivFn,
   ) {}
 
   display(args: Sym[]): SymDisplay {
@@ -81,7 +83,12 @@ export abstract class FnDistManual<Q extends TyName = TyName> implements Fn {
         new CmdComma().insertAt(cursor, L)
       }
 
-      insert(cursor, txr(arg).display(arg), Precedence.Comma, Precedence.Comma)
+      insertStrict(
+        cursor,
+        txr(arg).display(arg),
+        Precedence.Comma,
+        Precedence.Comma,
+      )
     }
     return { block: ret, lhs: Precedence.Atom, rhs: Precedence.Atom }
   }

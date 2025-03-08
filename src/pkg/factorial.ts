@@ -3,6 +3,7 @@ import type { Package } from "."
 import type { GlslContext } from "../eval/lib/fn"
 import { FnDist } from "../eval/ops/dist"
 import { num, real } from "../eval/ty/create"
+import { NO_SYM } from "../eval/ast/tx"
 
 function factorialGlsl(ctx: GlslContext, x: string) {
   ctx.glsl`float sinpiSeries(float x) {
@@ -126,6 +127,7 @@ export const PKG_FACTORIAL: Package = {
     tx: {
       suffix: {
         factorial: {
+          sym: NO_SYM,
           deps(node, deps) {
             if (typeof node.repeats != "number") {
               deps.add(node.repeats)

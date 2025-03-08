@@ -1,7 +1,7 @@
 import type { Package } from "."
 import { commalist } from "../eval/ast/collect"
 import { Precedence, type Node, type Piece } from "../eval/ast/token"
-import { NO_DRAG } from "../eval/ast/tx"
+import { NO_DRAG, NO_SYM } from "../eval/ast/tx"
 import { glsl, type PropsGlsl } from "../eval/glsl"
 import { js, type PropsJs } from "../eval/js"
 import type { Fn } from "../eval/ops"
@@ -353,6 +353,7 @@ export const PKG_BOOL: Package = {
     tx: {
       ast: {
         piecewise: {
+          sym: NO_SYM,
           js(node, props) {
             return piecewiseJs(node.pieces, props)
           },
@@ -370,6 +371,7 @@ export const PKG_BOOL: Package = {
       },
       group: {
         "{ }": {
+          sym: NO_SYM,
           js(node, props) {
             return piecewiseJs(parseBraces(node), props)
           },

@@ -3,10 +3,12 @@ import { TXR_AST } from "./ast/tx"
 import { Bindings, type BindingFn } from "./lib/binding"
 import { GlslContext } from "./lib/fn"
 import { FNS } from "./ops"
+import type { Sym } from "./sym"
 import type { GlslValue, JsValue, SReal } from "./ty"
 
 export interface PropsSym {
   base: SReal
+  bindingsSym: Bindings<Sym | BindingFn>
 }
 
 export interface PropsGlsl {
@@ -15,6 +17,7 @@ export interface PropsGlsl {
   /** GLSL bindings must contain variable names and be properly typed. */
   bindings: Bindings<GlslValue | BindingFn>
   bindingsJs: Bindings<JsValue | BindingFn>
+  bindingsSym: Bindings<Sym | BindingFn>
 }
 
 export function glslCall(

@@ -1,6 +1,6 @@
 import type { Package } from "."
 import { Precedence } from "../eval/ast/token"
-import { NO_DRAG } from "../eval/ast/tx"
+import { NO_DRAG, NO_SYM } from "../eval/ast/tx"
 import { glsl } from "../eval/glsl"
 import { js } from "../eval/js"
 import { OP_BINARY } from "../eval/ops"
@@ -31,6 +31,7 @@ export const PKG_CORE_CMP: Package = {
     tx: {
       ast: {
         cmplist: {
+          sym: NO_SYM,
           js(node, props) {
             return node.ops
               .map((op, i) => {
