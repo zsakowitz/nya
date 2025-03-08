@@ -5,7 +5,9 @@ import { insert, txr, TXR_SYM, type Sym, type TxrSym } from "../eval/sym"
 import type { JsValue } from "../eval/ty"
 import { frac, real } from "../eval/ty/create"
 import { Display } from "../eval/ty/display"
+import { CmdNum } from "../field/cmd/leaf/num"
 import { CmdWord } from "../field/cmd/leaf/word"
+import { CmdSupSub } from "../field/cmd/math/supsub"
 import { Block, L, R } from "../field/model"
 import { h } from "../jsx"
 
@@ -101,6 +103,24 @@ export const PKG_SYM: Package = {
           glsl() {
             throw new Error("Cannot construct symbolic expressions in shaders.")
           },
+          sym(node, props) {
+            validateSym(node)
+            const tx = TXR_AST[node.contents.type]
+            if (!tx?.sym) {
+              throw new Error(
+                `Cannot transform '${node.contents.type}' into a symbolic computation.`,
+              )
+            }
+
+            return {
+              type: "js",
+              value: {
+                type: "sym",
+                list: false,
+                value: tx.sym(node.contents as never, props),
+              } satisfies JsValue<"sym", false>,
+            }
+          },
         },
       },
     },
@@ -136,21 +156,31 @@ export const PKG_SYM: Package = {
             }
           }
 
-          return { type: "var", id: value.id }
+          return { type: "var", id: value.id, source: value.source }
         },
         uses(value, name) {
           return value.id == name
         },
         display(value) {
           const block = new Block(null)
-          // SYM: this is a horrid way of displaying variables
-          const word = new CmdWord("%" + value.id, "var", value.id.length == 2)
-          word.el.classList.add(
-            "border",
-            "bg-[--nya-bg]",
-            "border-[--nya-border]",
-          )
-          word.insertAt(block.cursor(R), L)
+          const cursor = block.cursor(R)
+          new CmdWord(
+            value.source.name,
+            value.source.kind,
+            value.source.italic,
+          ).insertAt(cursor, L)
+          if (value.source.sub) {
+            const block = new Block(null)
+            new CmdSupSub(block, null).insertAt(cursor, L)
+            const c = block.cursor(R)
+            for (const char of value.source.sub) {
+              if ("0" <= char && char <= "9") {
+                new CmdNum(char).insertAt(c, L)
+              } else {
+                new CmdWord(char, undefined, true).insertAt(c, L)
+              }
+            }
+          }
           return { block, lhs: Precedence.Atom, rhs: Precedence.Atom }
         },
       },

@@ -9,6 +9,7 @@ import { listTy } from "../ty/debug"
 import { TY_INFO } from "../ty/info"
 import {
   FnDistManual,
+  type DisplayFn,
   type FnOverload,
   type FnOverloadVar,
 } from "./dist-manual"
@@ -37,8 +38,9 @@ export class FnDist<Q extends TyName = TyName> extends FnDistManual<Q> {
     name: string,
     label: string,
     readonly message: FnError = `Cannot call '${name}' with %%.`,
+    displayFn?: DisplayFn,
   ) {
-    super(name, label)
+    super(name, label, displayFn)
     ALL_DOCS.push(this)
   }
 
@@ -149,8 +151,8 @@ export class FnDist<Q extends TyName = TyName> extends FnDistManual<Q> {
     )
   }
 
-  withName(name: string, label: string, message?: FnError) {
-    const dist = new FnDist<Q>(name, label, message)
+  with(name: string, label: string, message?: FnError, displayFn?: DisplayFn) {
+    const dist = new FnDist<Q>(name, label, message, displayFn)
     dist.parent = this
     return dist
   }

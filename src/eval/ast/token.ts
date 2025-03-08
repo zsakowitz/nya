@@ -5,6 +5,7 @@ import type { Span } from "../../field/model"
 import { tryParseFnParam, type FnParam } from "../lib/binding"
 import { isSubscript } from "../lib/text"
 import { VARS } from "../ops/vars"
+import type { Sym } from "../sym"
 import type { GlslValue, JsValue } from "../ty"
 import { commalist } from "./collect"
 import { pass1_suffixes } from "./pass1.suffixes"
@@ -100,7 +101,11 @@ export type PuncBinaryStr = PuncInfix | PuncPm | PuncCmp
 // prettier-ignore
 export const Precedence = Object.freeze({
   NotApplicable:     -1, // 23!, ¬x, dotted access
-  Atom:              99, // f(x), x², dotted access (for now, only used in sym)
+
+  Var:               99, // a variable name (only used in sym)
+  Atom:              98, // f(x), x², dotted access (only used in sym)
+  Juxtaposition:     97, // 2x (only used in sym)
+
   Exponential:       14, // x ↑ 3
   Product:           13, // x ÷ y
   Sum:               12, // 2 + 3
@@ -245,6 +250,7 @@ export interface Nodes {
   punc: Punc
   value: { value: JsValue }
   valueGlsl: { value: GlslValue }
+  sym: { value: Sym }
   suffixed: { base: Node; suffixes: readonly Suffix[] }
 }
 

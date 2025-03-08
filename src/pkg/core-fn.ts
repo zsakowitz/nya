@@ -6,14 +6,15 @@ import {
   type PuncUnary,
   type Var,
 } from "../eval/ast/token"
-import { NO_DRAG } from "../eval/ast/tx"
-import { glsl, glslCall, type PropsGlsl } from "../eval/glsl"
+import { NO_DRAG, sym } from "../eval/ast/tx"
+import { glsl, glslCall, type PropsGlsl, type PropsSym } from "../eval/glsl"
 import { js, jsCall, type PropsJs } from "../eval/js"
 import { asNumericBase } from "../eval/lib/base"
-import { BindingFn, id, tryName } from "../eval/lib/binding"
+import { BindingFn, id, SYM_BINDINGS, tryName } from "../eval/lib/binding"
 import type { GlslContext } from "../eval/lib/fn"
 import { safe } from "../eval/lib/util"
 import { FNS, OP_UNARY } from "../eval/ops"
+import type { Sym } from "../eval/sym"
 import { each, type GlslValue, type JsValue } from "../eval/ty"
 import { canCoerce, coerceTyJs } from "../eval/ty/coerce"
 import { frac, num } from "../eval/ty/create"
@@ -64,6 +65,101 @@ function callJs(name: Var, args: Node[], props: PropsJs): JsValue {
   }
 
   return OP_RAISE.js([value, sup])
+}
+
+function symCall(
+  name: string,
+  rawName: string,
+  args: Node[],
+  props: PropsSym,
+): Sym {
+  const fn = FNS[name]
+
+  if (!fn) {
+    if (name.endsWith("_^-1")) {
+      if (FNS[rawName + "_"]) {
+        throw new Error(
+          `'${rawName}' only supports positive integer superscripts.`,
+        )
+      }
+      if (FNS[rawName + "^-1"]) {
+        throw new Error(`Cannot attach a subscript to '${rawName}'.`)
+      }
+      if (FNS[rawName]) {
+        throw new Error(
+          `'${rawName}' only supports positive integer superscripts.`,
+        )
+      }
+    } else if (name.endsWith("^-1")) {
+      if (FNS[rawName]) {
+        throw new Error(
+          `'${rawName}' only supports positive integer superscripts.`,
+        )
+      }
+    } else if (name.endsWith("_")) {
+      if (FNS[rawName]) {
+        throw new Error(`Cannot attach a subscript to '${rawName}'.`)
+      }
+    }
+
+    throw new Error(`'${rawName}' is not supported yet.`)
+  }
+
+  return { type: "call", fn, args: args.map((a) => sym(a, props)) }
+}
+
+function callSym(name: Var, args: Node[], props: PropsSym): Sym {
+  const sub = name.sub ? "_" : ""
+
+  const sup =
+    name.sup ?
+      (
+        (name.sup.type == "op" &&
+          name.sup.kind == "-" &&
+          !name.sup.b &&
+          name.sup.a.type == "num" &&
+          !name.sup.a.sub &&
+          name.sup.a.value == "1") ||
+        (name.sup.type == "num" && !name.sup.sub && name.sup.value == "-1")
+      ) ?
+        "^-1"
+      : name.sup.type == "num" && name.sup.value.indexOf(".") == -1 ?
+        fnExponentJs(
+          name.sup.sub ?
+            js(name.sup, {
+              bindingsJs: SYM_BINDINGS,
+              base: asNumericBase(
+                js(name.sup.sub, {
+                  bindingsJs: SYM_BINDINGS,
+                  base: frac(10, 1),
+                }),
+              ),
+            })
+          : js(name.sup, {
+              base: props.base,
+              bindingsJs: SYM_BINDINGS,
+            }),
+        )
+      : invalidFnSup()
+    : null
+
+  const rawName = name.kind == "var" ? "." + name.value : name.value
+
+  if (sup == "^-1") {
+    return symCall(rawName + sub + "^-1", rawName, args, props)
+  }
+
+  const value = symCall(rawName + sub, rawName, args, props)
+
+  if (sup == null) {
+    return value
+  }
+
+  return {
+    type: "call",
+    fn: OP_RAISE,
+    args: [value, { type: "js", value: sup }],
+  }
 }
 
 function callGlsl(name: Var, args: Node[], props: PropsGlsl): GlslValue {
@@ -200,6 +296,33 @@ export const PKG_CORE_FN: Package = {
                 }
               } else if (rhs.kind == "prefix") {
                 return callJs(rhs, [lhs], props)
+              }
+            }
+
+            throw new Error("I don't understand this use of '.'.")
+          },
+          sym({ lhs, rhs }, props) {
+            if (rhs.type == "var" && !rhs.sub) {
+              if (rhs.kind == "var" && `.${rhs.value}` in OP_UNARY) {
+                const name = `.${rhs.value}` as PuncUnary
+
+                const value: Sym = {
+                  type: "call",
+                  fn: OP_UNARY[name]!,
+                  args: [sym(lhs, props)],
+                }
+
+                if (rhs.sup) {
+                  return {
+                    type: "call",
+                    fn: OP_RAISE,
+                    args: [value, sym(rhs.sup, props)],
+                  }
+                } else {
+                  return value
+                }
+              } else if (rhs.kind == "prefix") {
+                return callSym(rhs, [lhs], props)
               }
             }
 
@@ -510,6 +633,54 @@ export const PKG_CORE_FN: Package = {
                 { type: "valueGlsl", value: node.base },
                 ...commalist(node.rhs.args),
               ],
+              props,
+            )
+          },
+          sym(node, props) {
+            if (node.rhs.name.kind == "var") {
+              if (node.rhs.name.sub) {
+                throw new Error(
+                  `Cannot attach a subscript to '.${node.rhs.name.value}'.`,
+                )
+              }
+
+              const f = FNS[`.${node.rhs.name.value}`]
+              if (!f) {
+                throw new Error(
+                  `'.${node.rhs.name.value}' is not supported yet.`,
+                )
+              }
+
+              let raw: Sym = { type: "call", fn: f, args: [node.base] }
+              if (node.rhs.name.sup) {
+                raw = {
+                  type: "call",
+                  fn: OP_RAISE,
+                  args: [raw, sym(node.rhs.name.sup, props)],
+                }
+              }
+
+              const rhs = sym(
+                {
+                  type: "suffixed",
+                  base: {
+                    type: "group",
+                    lhs: "(",
+                    rhs: ")",
+                    value: node.rhs.args,
+                  },
+                  suffixes: node.rest,
+                },
+                props,
+              )
+              node.rest.length = 0
+
+              return { type: "call", fn: OP_JUXTAPOSE, args: [raw, rhs] }
+            }
+
+            return callSym(
+              node.rhs.name,
+              [{ type: "sym", value: node.base }, ...commalist(node.rhs.args)],
               props,
             )
           },

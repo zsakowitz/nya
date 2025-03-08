@@ -1,12 +1,21 @@
+import type { WordKind } from "../../field/cmd/leaf/var"
 import { CmdBrack } from "../../field/cmd/math/brack"
-import { L, type Block, type Cursor } from "../../field/model"
+import { Block, L, R, type Command, type Cursor } from "../../field/model"
 import type { Fn } from "../ops"
+import type { DisplayFn } from "../ops/dist-manual"
 import type { JsValue } from "../ty"
+
+export interface SymVarSource {
+  name: string
+  kind: Exclude<WordKind, "magicprefix"> | undefined
+  italic: boolean
+  sub?: string
+}
 
 // This is an intentionally short list. Most more complicated stuff can be
 // expressed with `call`, and other things can just become packages.
 export interface Syms {
-  var: { id: string }
+  var: { id: string; source: SymVarSource }
   call: { fn: Fn; args: Sym[] }
   undef: {}
   js: { value: JsValue }
@@ -55,5 +64,28 @@ export function insert(
     new CmdBrack("(", ")", null, result.block).insertAt(at, L)
   } else {
     result.block.insertAt(at, L)
+  }
+}
+
+export function prefixFn(op: () => Command, prec: number): DisplayFn {
+  return ([a, b]) => {
+    if (!a || b) return
+    const block = new Block(null)
+    const cursor = block.cursor(R)
+    op().insertAt(cursor, L)
+    insert(cursor, txr(a).display(a), prec, prec)
+    return { block, lhs: prec, rhs: prec }
+  }
+}
+
+export function binaryFn(op: () => Command | Block, prec: number): DisplayFn {
+  return ([a, b, c]) => {
+    if (!(a && b && !c)) return
+    const block = new Block(null)
+    const cursor = block.cursor(R)
+    insert(cursor, txr(a).display(a), prec, prec)
+    op().insertAt(cursor, L)
+    insert(cursor, txr(b).display(b), prec, prec)
+    return { block, lhs: prec, rhs: prec }
   }
 }

@@ -1,7 +1,7 @@
 import type { Package } from "."
 import { js } from "../eval/js"
 import { asNumericBase, parseNumberGlsl, parseNumberJs } from "../eval/lib/base"
-import { Bindings } from "../eval/lib/binding"
+import { SYM_BINDINGS } from "../eval/lib/binding"
 import type { GlslContext } from "../eval/lib/fn"
 import { safe } from "../eval/lib/util"
 import { docByIcon, FnDist } from "../eval/ops/dist"
@@ -110,7 +110,12 @@ export const FN_UNSIGN = new FnDist(
 
 const FN_COMPONENT = new (class extends FnDistCaching {
   constructor() {
-    super("component", "gets a component of a multidimensional value")
+    super(
+      "component",
+      "gets a component of a multidimensional value",
+      // SYM: better display
+      undefined,
+    )
     ALL_DOCS.push(this)
   }
 
@@ -631,7 +636,7 @@ float _helper_cmp_r32(float a, float b) {
                   asNumericBase(
                     js(node.sub, {
                       base: props.base,
-                      bindingsJs: new Bindings(),
+                      bindingsJs: SYM_BINDINGS,
                     }),
                   )
                 : props.base,

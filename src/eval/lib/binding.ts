@@ -91,6 +91,17 @@ export class Bindings<T> {
   }
 }
 
+export const SYM_BINDINGS: Bindings<any> = new Proxy(
+  Object.freeze(Object.create(null)),
+  {
+    get() {
+      throw new Error(
+        "Cannot access external bindings from a symbolic expression.",
+      )
+    },
+  },
+)
+
 export type Binding = [id: string, contents: Node, name: string]
 export type FnParam = [id: string, name: string]
 

@@ -32,6 +32,12 @@ export const PKG_WITH_SEQ: Package = {
               deps.add(node.lhs),
             )
           },
+          sym() {
+            // SYM2:
+            throw new Error(
+              "'withseq' is not allowed in symbolic computation yet.",
+            )
+          },
         },
       },
     },

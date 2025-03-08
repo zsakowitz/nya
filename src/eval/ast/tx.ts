@@ -441,7 +441,7 @@ export const TXR_AST: { [K in NodeName]?: TxrAst<Nodes[K]> } = {
     deps() {},
     drag: NO_DRAG,
     js() {
-      throw new Error("Cannot evaluate a 'valueGlsl' node in a shader.")
+      throw new Error("Cannot evaluate a 'valueGlsl' node outside of shaders.")
     },
     glsl(node) {
       return node.value
@@ -450,6 +450,26 @@ export const TXR_AST: { [K in NodeName]?: TxrAst<Nodes[K]> } = {
       throw new Error(
         "Cannot convert a 'valueGlsl' node to a symbolic expression.",
       )
+    },
+    layer: -1,
+  },
+
+  // A special builtin used for `.x`-style accessors
+  sym: {
+    deps() {},
+    drag: NO_DRAG,
+    js() {
+      throw new Error(
+        "Cannot evaluate a 'sym' node outside of symbolic expressions.",
+      )
+    },
+    glsl() {
+      throw new Error(
+        "Cannot evaluate a 'sym' node outside of symbolic expressions.",
+      )
+    },
+    sym(node) {
+      return node.value
     },
     layer: -1,
   },

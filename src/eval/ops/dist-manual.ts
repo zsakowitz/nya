@@ -45,6 +45,8 @@ export interface FnOverloadVar<Q extends TyName = TyName> {
   docOrder: number | null
 }
 
+export type DisplayFn = ((args: Sym[]) => SymDisplay | undefined) | undefined
+
 /**
  * `FnDist` are functions which take a distribute across lists, returning a list
  * of the shortest length of their inputs.
@@ -56,9 +58,15 @@ export abstract class FnDistManual<Q extends TyName = TyName> implements Fn {
   constructor(
     readonly name: string,
     readonly label: string,
+    private readonly displayFn: DisplayFn,
   ) {}
 
   display(args: Sym[]): SymDisplay {
+    const custom = this.displayFn?.(args)
+    if (custom) {
+      return custom
+    }
+
     const ret = new Block(null)
     const outer = ret.cursor(R)
     new CmdWord(this.name, "prefix").insertAt(outer, L)

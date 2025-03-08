@@ -6,16 +6,21 @@ import { js } from "../eval/js"
 import { parseNumberJs } from "../eval/lib/base"
 import { BindingFn, id, name, tryName } from "../eval/lib/binding"
 import type { GlslContext } from "../eval/lib/fn"
+import { subscript } from "../eval/lib/text"
 import { safe } from "../eval/lib/util"
 import { FnDist } from "../eval/ops/dist"
 import { declareR64 } from "../eval/ops/r64"
 import { VARS } from "../eval/ops/vars"
+import { binaryFn, insert, prefixFn, txr, type Sym } from "../eval/sym"
 import { each, type GlslValue, type JsValue } from "../eval/ty"
 import { canCoerce, coerceTyJs } from "../eval/ty/coerce"
-import { frac, num } from "../eval/ty/create"
+import { frac, num, real } from "../eval/ty/create"
 import { add, div } from "../eval/ty/ops"
 import { splitValue } from "../eval/ty/split"
-import { L, R, Span } from "../field/model"
+import { OpCdot, OpDiv, OpMinus, OpPlus, OpTimes } from "../field/cmd/leaf/op"
+import { CmdWord } from "../field/cmd/leaf/word"
+import { CmdSupSub } from "../field/cmd/math/supsub"
+import { Block, L, R, Span } from "../field/model"
 
 export function declareAddR64(ctx: GlslContext) {
   declareR64(ctx)
@@ -209,35 +214,50 @@ export const OP_ADD = new FnDist(
   "+",
   "adds two values or points",
   "Cannot add %%.",
+  binaryFn(() => new OpPlus(), Precedence.Sum),
 )
 
 export const OP_CDOT = new FnDist(
   "·",
   "multiplies two values",
   "Cannot multiply %%.",
+  binaryFn(() => new OpCdot(), Precedence.Product),
 )
 
 export const OP_CROSS = new FnDist(
   "×",
   "multiplies two real numbers",
   "Cannot take the cross product of %%.",
+  binaryFn(() => new OpTimes(), Precedence.Product),
 )
 
-export const OP_DIV = new FnDist("÷", "divides two values", "Cannot divide %%.")
+export const OP_DIV = new FnDist(
+  "÷",
+  "divides two values",
+  "Cannot divide %%.",
+  binaryFn(() => new OpDiv(), Precedence.Product),
+)
 
-export const OP_JUXTAPOSE = OP_CDOT.withName(
+export const OP_JUXTAPOSE = OP_CDOT.with(
   "juxtapose",
   "multiplies two values which aren't separated by an operator",
   "Cannot juxtapose %%.",
+  binaryFn(() => new Block(null), Precedence.Juxtaposition),
 )
 
 export const OP_MOD = new FnDist(
   "mod",
   "gets the remainder when dividing one value by another",
   "Cannot take the remainder of %%.",
+  binaryFn(() => new CmdWord("mod", "infix"), Precedence.Product),
 )
 
-export const OP_NEG = new FnDist("-", "negates its input", "Cannot negate %%.")
+export const OP_NEG = new FnDist(
+  "-",
+  "negates its input",
+  "Cannot negate %%.",
+  prefixFn(() => new OpMinus(), Precedence.Sum),
+)
 
 export const OP_ODOT = new FnDist(
   "⊙",
@@ -255,6 +275,14 @@ export const OP_RAISE = new FnDist(
   "^",
   "raises a value to an exponent",
   "Cannot raise %% as an exponent.",
+  ([a, b, c]) => {
+    if (!(a && b && !c)) return
+    const block = new Block(null)
+    const cursor = block.cursor(R)
+    insert(cursor, txr(a).display(a), Precedence.Atom, Precedence.Atom)
+    new CmdSupSub(null, txr(b).display(b).block).insertAt(cursor, L)
+    return { block, lhs: Precedence.Atom, rhs: Precedence.Atom }
+  },
 )
 
 export const OP_SUB = new FnDist(
@@ -451,6 +479,22 @@ export const PKG_CORE_OPS: Package = {
             )
             return splitValue(num(value))
           },
+          sym(node, props) {
+            return {
+              type: "js",
+              value: {
+                type: "r64",
+                list: false,
+                value: add(
+                  parseNumberJs(node.integer, props.base).value,
+                  div(
+                    parseNumberJs(node.a, props.base).value,
+                    parseNumberJs(node.b, props.base).value,
+                  ),
+                ),
+              },
+            }
+          },
           drag: NO_DRAG,
           deps() {},
         },
@@ -473,6 +517,31 @@ export const PKG_CORE_OPS: Package = {
                   value: frac(1, 2),
                 },
               ])
+            }
+          },
+          sym(node, props) {
+            return {
+              type: "call",
+              fn: OP_RAISE,
+              args: [
+                sym(node.contents, props),
+                node.root ?
+                  {
+                    type: "call",
+                    fn: OP_DIV,
+                    args: [
+                      {
+                        type: "js",
+                        value: { type: "r32", list: false, value: real(1) },
+                      },
+                      sym(node.root, props),
+                    ],
+                  }
+                : {
+                    type: "js",
+                    value: { type: "r32", list: false, value: frac(1, 2) },
+                  },
+              ],
             }
           },
           glsl(node, props) {
@@ -602,8 +671,27 @@ export const PKG_CORE_OPS: Package = {
 
             deps.track(node)
           },
-          sym(node) {
-            return { type: "var", id: id(node) }
+          sym(node, props) {
+            const raw: Sym = {
+              type: "var",
+              id: id(node),
+              source: {
+                name: node.value,
+                italic: node.value.length == 1,
+                kind: node.value.length == 1 ? undefined : "var",
+                sub: node.sub && subscript(node.sub),
+              },
+            }
+
+            if (node.sup) {
+              return {
+                type: "call",
+                fn: OP_RAISE,
+                args: [raw, sym(node.sup, props)],
+              }
+            }
+
+            return raw
           },
         },
         frac: {
@@ -615,6 +703,13 @@ export const PKG_CORE_OPS: Package = {
               glsl(node.a, props),
               glsl(node.b, props),
             ])
+          },
+          sym(node, props) {
+            return {
+              type: "call",
+              fn: OP_DIV,
+              args: [sym(node.a, props), sym(node.b, props)],
+            }
           },
           drag: NO_DRAG,
           deps(node, deps) {
@@ -639,6 +734,16 @@ export const PKG_CORE_OPS: Package = {
               )
             }
             return glsl(node, props)
+          },
+          sym(node, props) {
+            if (node.type == "commalist") {
+              return {
+                type: "call",
+                fn: OP_POINT,
+                args: node.items.map((x) => sym(x, props)),
+              }
+            }
+            return sym(node, props)
           },
           drag: {
             num(node, props) {
@@ -667,6 +772,9 @@ export const PKG_CORE_OPS: Package = {
           glsl(node, props) {
             return OP_ABS.glsl(props.ctx, [glsl(node, props)])
           },
+          sym(node, props) {
+            return { type: "call", fn: OP_ABS, args: [sym(node, props)] }
+          },
           drag: NO_DRAG,
         },
       },
@@ -677,6 +785,13 @@ export const PKG_CORE_OPS: Package = {
           },
           js(node, props) {
             return OP_RAISE.js([node.base, js(node.rhs.exp, props)])
+          },
+          sym(node, props) {
+            return {
+              type: "call",
+              fn: OP_RAISE,
+              args: [node.base, sym(node.rhs.exp, props)],
+            }
           },
           glsl(node, props) {
             return OP_RAISE.glsl(props.ctx, [
