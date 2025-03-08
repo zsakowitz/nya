@@ -7,7 +7,6 @@ import { js, type PropsJs } from "../js"
 import { type Bindings } from "../lib/binding"
 import { OP_BINARY, OP_UNARY } from "../ops"
 import { type GlslValue, type JsVal, type JsValue } from "../ty"
-import { coerceValueGlsl, coerceValueJs } from "../ty/coerce"
 import { TY_INFO } from "../ty/info"
 import { commalist } from "./collect"
 import type {
@@ -336,34 +335,6 @@ export const TXR_AST: { [K in NodeName]?: TxrAst<Nodes[K]> } = {
     },
   },
 
-  // The type system is implemented in project nya core, so it makes sense to
-  // have its transformer in libcore.
-  tycoerce: {
-    deps(node, deps) {
-      deps.add(node.value)
-    },
-    drag: NO_DRAG,
-    glsl(node, props) {
-      const value = glsl(node.value, props)
-      return {
-        type: node.name,
-        list: value.list,
-        expr: coerceValueGlsl(props.ctx, value, {
-          type: node.name,
-          list: value.list,
-        }),
-      }
-    },
-    js(node, props) {
-      const value = js(node.value, props)
-      return coerceValueJs(value, {
-        type: node.name,
-        list: value.list,
-      })
-    },
-    layer: -1,
-  },
-
   // Immediately throws whatever error was in the source node
   error: joint(
     ({ reason }) => {
@@ -553,7 +524,6 @@ export const TXR_AST: { [K in NodeName]?: TxrAst<Nodes[K]> } = {
     },
     () => {},
   ),
-  tyname: errorAll`Cannot evaluate a raw type name.`,
 }
 
 Object.setPrototypeOf(TXR_AST, null)

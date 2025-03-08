@@ -32,7 +32,7 @@ export class CmdTyName extends Leaf {
     return ` Type ${this.ty} `
   }
 
-  ir(tokens: Node[]): true | void {
-    tokens.push({ type: "tyname", name: this.ty })
+  ir(_tokens: Node[]): true | void {
+    throw new Error("Type names cannot be part of an expression.")
   }
 }
