@@ -22,7 +22,7 @@ const CHECKBOX = new Store((expr) => {
     "label",
     "",
     field,
-    h("sr-only", "plot this shader?"),
+    h("sr-only", "plot this item?"),
     circEmpty,
     circShader,
   )

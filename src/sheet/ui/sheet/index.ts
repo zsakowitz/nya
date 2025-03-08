@@ -343,9 +343,7 @@ export class Sheet {
 
   private program: regl.DrawCommand | undefined
   private checkGlsl() {
-    const compiled = this.list.items
-      .map((x) => x.factory.glsl?.(x.data))
-      .filter((x) => x != null)
+    const compiled = this.list.glsl()
 
     if (compiled.length == 0) {
       this.program = undefined

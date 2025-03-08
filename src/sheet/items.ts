@@ -1,3 +1,4 @@
+import type { GlslResult } from "../eval/lib/fn"
 import { D, L, U, type Dir, type VDir } from "../field/model"
 import { h, t } from "../jsx"
 import type { ItemFactory } from "./item"
@@ -178,6 +179,31 @@ export abstract class ItemList {
     return this.fromStringByFactory(factory, source, props)
   }
 
+  drawWith(suppressed: ItemRef<unknown> | undefined) {
+    for (const ref of this.items) {
+      if (ref == suppressed) continue
+
+      try {
+        ref.factory.draw?.(ref.data)
+        if (ref.sublist) {
+          ref.sublist.drawWith(suppressed)
+        }
+      } catch (e) {
+        console.warn("[draw]", e)
+      }
+    }
+  }
+
+  glslWith(list: GlslResult[]) {
+    for (const ref of this.items) {
+      const result = ref.factory.glsl?.(ref.data)
+
+      if (result) {
+        list.push(result)
+      }
+    }
+  }
+
   fromString(source: string, props?: ItemCreateProps<undefined>) {
     if (source[0] == "#") {
       const next = source.indexOf("#", 1)
@@ -236,16 +262,13 @@ export class ItemListGlobal extends ItemList {
   draw() {
     this.sheet.pick.checkSuppressed()
     const s = this.sheet.pick.suppressed
+    this.drawWith(s)
+  }
 
-    for (const ref of this.items) {
-      if (ref == s) continue
-
-      try {
-        ref.factory.draw?.(ref.data)
-      } catch (e) {
-        console.warn("[draw]", e)
-      }
-    }
+  glsl() {
+    const list: GlslResult[] = []
+    this.glslWith(list)
+    return list
   }
 }
 
