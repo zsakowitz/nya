@@ -1,6 +1,6 @@
 import type { Package } from "."
 import { Precedence } from "../eval/ast/token"
-import { dragNum, dragPoint, NO_DRAG } from "../eval/ast/tx"
+import { dragNum, dragPoint, NO_DRAG, sym } from "../eval/ast/tx"
 import { glsl } from "../eval/glsl"
 import { js } from "../eval/js"
 import { parseNumberJs } from "../eval/lib/base"
@@ -297,6 +297,13 @@ export const PKG_CORE_OPS: Package = {
               glsl(node.rhs, props),
             ])
           },
+          sym(node, props) {
+            return {
+              type: "call",
+              fn: OP_ADD,
+              args: [sym(node.lhs, props), sym(node.rhs, props)],
+            }
+          },
           drag: {
             num() {
               return null
@@ -344,6 +351,13 @@ export const PKG_CORE_OPS: Package = {
               glsl(node.lhs, props),
               glsl(node.rhs, props),
             ])
+          },
+          sym(node, props) {
+            return {
+              type: "call",
+              fn: OP_SUB,
+              args: [sym(node.lhs, props), sym(node.rhs, props)],
+            }
           },
           drag: {
             num() {
@@ -402,6 +416,15 @@ export const PKG_CORE_OPS: Package = {
             for (const x of node.nodes) {
               deps.add(x)
             }
+          },
+          sym(node, props) {
+            return node.nodes
+              .map((x) => sym(x, props))
+              .reduce((a, b) => ({
+                type: "call",
+                fn: OP_JUXTAPOSE,
+                args: [a, b],
+              }))
           },
         },
         mixed: {
@@ -578,6 +601,9 @@ export const PKG_CORE_OPS: Package = {
             }
 
             deps.track(node)
+          },
+          sym(node) {
+            return { type: "var", id: id(node) }
           },
         },
         frac: {

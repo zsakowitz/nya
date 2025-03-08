@@ -100,6 +100,7 @@ export type PuncBinaryStr = PuncInfix | PuncPm | PuncCmp
 // prettier-ignore
 export const Precedence = Object.freeze({
   NotApplicable:     -1, // 23!, ¬x, dotted access
+  Atom:              99, // f(x), x², dotted access (for now, only used in sym)
   Exponential:       14, // x ↑ 3
   Product:           13, // x ÷ y
   Sum:               12, // 2 + 3

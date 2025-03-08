@@ -1,6 +1,7 @@
 import type { Package } from "."
 import { js } from "../eval/js"
 import { asNumericBase, parseNumberGlsl, parseNumberJs } from "../eval/lib/base"
+import { Bindings } from "../eval/lib/binding"
 import type { GlslContext } from "../eval/lib/fn"
 import { safe } from "../eval/lib/util"
 import { docByIcon, FnDist } from "../eval/ops/dist"
@@ -620,6 +621,22 @@ float _helper_cmp_r32(float a, float b) {
               node.value,
               node.sub ? asNumericBase(js(node.sub, props)) : props.base,
             )
+          },
+          sym(node, props) {
+            return {
+              type: "js",
+              value: parseNumberJs(
+                node.value,
+                node.sub ?
+                  asNumericBase(
+                    js(node.sub, {
+                      base: props.base,
+                      bindingsJs: new Bindings(),
+                    }),
+                  )
+                : props.base,
+              ),
+            }
           },
           glsl(node, props) {
             return parseNumberGlsl(

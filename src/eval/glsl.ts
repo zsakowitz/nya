@@ -5,6 +5,10 @@ import { GlslContext } from "./lib/fn"
 import { FNS } from "./ops"
 import type { GlslValue, JsValue, SReal } from "./ty"
 
+export interface PropsSym {
+  base: SReal
+}
+
 export interface PropsGlsl {
   base: SReal
   ctx: GlslContext

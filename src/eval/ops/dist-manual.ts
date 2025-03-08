@@ -1,5 +1,11 @@
 import type { Fn } from "."
+import { CmdComma } from "../../field/cmd/leaf/comma"
+import { CmdWord } from "../../field/cmd/leaf/word"
+import { CmdBrack } from "../../field/cmd/math/brack"
+import { Block, L, R } from "../../field/model"
+import { Precedence } from "../ast/token"
 import { GlslContext } from "../lib/fn"
+import { insert, txr, type Sym, type SymDisplay } from "../sym"
 import type {
   GlslVal,
   GlslValue,
@@ -51,6 +57,26 @@ export abstract class FnDistManual<Q extends TyName = TyName> implements Fn {
     readonly name: string,
     readonly label: string,
   ) {}
+
+  display(args: Sym[]): SymDisplay {
+    const ret = new Block(null)
+    const outer = ret.cursor(R)
+    new CmdWord(this.name, "prefix").insertAt(outer, L)
+    const paren = new Block(null)
+    new CmdBrack("(", ")", null, paren).insertAt(outer, L)
+    const cursor = paren.cursor(R)
+    let first = true
+    for (const arg of args) {
+      if (first) {
+        first = false
+      } else {
+        new CmdComma().insertAt(cursor, L)
+      }
+
+      insert(cursor, txr(arg).display(arg), Precedence.Comma, Precedence.Comma)
+    }
+    return { block: ret, lhs: Precedence.Atom, rhs: Precedence.Atom }
+  }
 
   abstract signature(args: Ty[]): FnOverload<Q>
 

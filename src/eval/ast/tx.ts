@@ -2,7 +2,7 @@ import type { ParenLhs, ParenRhs } from "../../field/cmd/math/brack"
 import { Span } from "../../field/model"
 import type { FieldComputed } from "../../sheet/deps"
 import type { Deps } from "../deps"
-import { glsl, type PropsGlsl } from "../glsl"
+import { glsl, type PropsGlsl, type PropsSym } from "../glsl"
 import { js, type PropsJs } from "../js"
 import { type Bindings } from "../lib/binding"
 import { OP_BINARY, OP_UNARY } from "../ops"
@@ -26,7 +26,7 @@ import type {
 export interface TxrAst<T> {
   js(node: T, props: PropsJs): JsValue
   glsl(node: T, props: PropsGlsl): GlslValue
-  sym?(node: T): Sym
+  sym?(node: T, props: PropsSym): Sym
   deps(node: T, deps: Deps): void
   drag: DragTarget<T>
 
@@ -206,7 +206,7 @@ export const TXR_AST: { [K in NodeName]?: TxrAst<Nodes[K]> } = {
     glsl(node, props) {
       return group(node).glsl(node.value, props)
     },
-    sym(node) {
+    sym(node, props) {
       const s = group(node).sym
 
       // SYM: require group sym txrs
@@ -216,7 +216,7 @@ export const TXR_AST: { [K in NodeName]?: TxrAst<Nodes[K]> } = {
         )
       }
 
-      return s(node.value)
+      return s(node.value, props)
     },
     drag: {
       num(node, props) {
@@ -245,7 +245,7 @@ export const TXR_AST: { [K in NodeName]?: TxrAst<Nodes[K]> } = {
       }
       throw new Error(`The '${node.value}' operator is not defined.`)
     },
-    sym(node) {
+    sym(node, props) {
       if (node.value in TXR_MAGICVAR) {
         const s = TXR_MAGICVAR[node.value]!.sym
 
@@ -256,7 +256,7 @@ export const TXR_AST: { [K in NodeName]?: TxrAst<Nodes[K]> } = {
           )
         }
 
-        return s(node as never)
+        return s(node as never, props)
       }
       throw new Error(`The '${node.value}' operator is not defined.`)
     },
@@ -365,7 +365,7 @@ export const TXR_AST: { [K in NodeName]?: TxrAst<Nodes[K]> } = {
       }
       throw new Error(`The operator '${node.kind}' is not defined.`)
     },
-    sym(node) {
+    sym(node, props) {
       if (node.b) {
         const txr = TXR_OP_BINARY[node.kind]
         if (txr) {
@@ -376,14 +376,14 @@ export const TXR_AST: { [K in NodeName]?: TxrAst<Nodes[K]> } = {
             )
           }
 
-          return txr.sym({ lhs: node.a, rhs: node.b })
+          return txr.sym({ lhs: node.a, rhs: node.b }, props)
         }
         const op = OP_BINARY[node.kind]
         if (op) {
           return {
             type: "call",
             fn: op,
-            args: [toSym(node.a), toSym(node.b)],
+            args: [sym(node.a, props), sym(node.b, props)],
           }
         }
       } else {
@@ -396,14 +396,14 @@ export const TXR_AST: { [K in NodeName]?: TxrAst<Nodes[K]> } = {
             )
           }
 
-          return txr.sym(node.a)
+          return txr.sym(node.a, props)
         }
         const op = OP_UNARY[node.kind]
         if (op) {
           return {
             type: "call",
             fn: op,
-            args: [toSym(node.a)],
+            args: [sym(node.a, props)],
           }
         }
       }
@@ -604,7 +604,7 @@ export const TXR_AST: { [K in NodeName]?: TxrAst<Nodes[K]> } = {
 
 Object.setPrototypeOf(TXR_AST, null)
 
-export function toSym(node: Node): Sym {
+export function sym(node: Node, props: PropsSym): Sym {
   const txr = TXR_AST[node.type]
   if (!txr) {
     throw new Error(`Transformer '${node.type}' is not defined.`)
@@ -617,5 +617,5 @@ export function toSym(node: Node): Sym {
     )
   }
 
-  return txr.sym(node as never)
+  return txr.sym(node as never, props)
 }
