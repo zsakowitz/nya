@@ -124,9 +124,35 @@ body {
   @apply pr-[.1em];
 }
 
-:is(.nya-cmd-op, .nya-cmd-word-r:not(.nya-cmd-word-var)) {
+.nya-cmd-op,
+.nya-cmd-word-r:not(.nya-cmd-word-var):where(:not(.nya-cmd-word-prop)) {
   & + .nya-cmd-pm > *,
   & + :where(.nya-cursor) + .nya-cmd-pm > * {
+    @apply pr-0;
+  }
+}
+
+.nya-cmd-var-prop {
+  @apply pr-[.2em];
+}
+
+.nya-cmd-var-prop:has(+ .nya-cmd-supsub),
+.nya-cmd-var-prop:has(+ .nya-cursor + .nya-cmd-supsub) {
+  @apply pr-0;
+}
+
+.nya-cmd-var-prop + .nya-cmd-supsub,
+.nya-cmd-var-prop + .nya-cursor + .nya-cmd-supsub {
+  @apply pr-[.2em];
+}
+
+.nya-cmd-op,
+.nya-cmd-word-l {
+  .nya-cmd-var-prop:has(+ &),
+  .nya-cmd-var-prop:has(+ .nya-cursor + &),
+  .nya-cmd-var-prop + .nya-cmd-supsub:has(+ &),
+  .nya-cmd-var-prop + .nya-cmd-supsub:has(+ .nya-cursor + &),
+  .nya-cmd-var-prop + .nya-cursor + .nya-cmd-supsub:has(+ &) {
     @apply pr-0;
   }
 }

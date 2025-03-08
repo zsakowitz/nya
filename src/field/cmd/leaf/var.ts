@@ -112,7 +112,12 @@ export class CmdVar extends Leaf {
     return new this(cmd, parser.options)
   }
 
-  static render(text: string, kind: CmdVar["kind"], part: CmdVar["part"]) {
+  static render(
+    text: string,
+    kind: CmdVar["kind"],
+    part: CmdVar["part"],
+    prop: boolean,
+  ) {
     const side =
       part == L ? "-l"
       : part == R ? "-r"
@@ -121,7 +126,8 @@ export class CmdVar extends Leaf {
 
     return h(
       "nya-cmd-var" +
-        (kind ? ` nya-cmd-word nya-cmd-word-${kind} nya-cmd-word${side}` : ""),
+        (kind ? ` nya-cmd-word nya-cmd-word-${kind} nya-cmd-word${side}` : "") +
+        (prop ? ` nya-cmd-${kind ? "word" : "var"}-prop` : ""),
       h(
         "font-['Times_New_Roman'] [line-height:.9]" +
           (kind == null ? " italic" : "") +
@@ -136,17 +142,17 @@ export class CmdVar extends Leaf {
 
   readonly kind: WordKind | null = null
   readonly part: Dir | null = null
+  readonly prop: boolean = false
 
   constructor(
     readonly text: string,
     readonly options: Options,
   ) {
-    // The wrapper ensures selections work fine
-    super(text, CmdVar.render(text, null, null))
+    super(text, CmdVar.render(text, null, null, false))
   }
 
-  private render(kind = this.kind, part = this.part) {
-    if (this.kind == kind && this.part == part) {
+  private render(kind: WordKind | null, part: Dir | null, prop: boolean) {
+    if (this.kind == kind && this.part == part && this.prop == prop) {
       return
     }
 
@@ -155,6 +161,7 @@ export class CmdVar extends Leaf {
         this.text,
         ((this as any).kind = kind),
         ((this as any).part = part),
+        ((this as any).prop = prop),
       ),
     )
   }
@@ -184,8 +191,10 @@ export class CmdVar extends Leaf {
       vars.push(rhs)
     }
 
-    for (const cmd of vars) {
-      cmd.render(null, null)
+    const hasDot = lhs[L] instanceof CmdDot
+    for (let i = 0; i < vars.length; i++) {
+      const cmd = vars[i]!
+      cmd.render(null, null, hasDot && i == 0)
     }
 
     const maxLen = words.maxLen
@@ -205,11 +214,11 @@ export class CmdVar extends Leaf {
         const kind = words.get(full)
 
         if (kind) {
-          vars[i]!.render(kind, L)
+          vars[i]!.render(kind, L, false)
           for (let k = i + 1; k < i + j - 1; k++) {
-            vars[k]!.render(kind, null)
+            vars[k]!.render(kind, null, false)
           }
-          vars[i + j - 1]!.render(kind, R)
+          vars[i + j - 1]!.render(kind, R, vars[i]![L] instanceof CmdDot)
           i += j - 1
           break
         }
