@@ -1,6 +1,6 @@
 \operatorname{ithkuilscript}\text{hlaséi-rrala sakawi}
-#nya:image#
-\operatorname{image}\left(i_1,\operatorname{segment}\left(E,H\right)\right)
+#nya:image#0
+\operatorname{image}\left(\token{0},\operatorname{segment}\left(E,H\right)\right)
 \operatorname{vector}\left(\left(-1,-.5\right),\left(-.5,1\right)\right)
 J=\operatorname{line}\left(\left(0,0\right),\left(2,3\right)\right)
 \operatorname{perpendicular}\left(J,\left(2,3\right)\right)
