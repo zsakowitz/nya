@@ -28,6 +28,7 @@ import { PKG_NUMBER_THEORY } from "./pkg/number-theory"
 import { PKG_SHADER } from "./pkg/shader"
 import { PKG_SLIDER } from "./pkg/slider"
 import { PKG_STATISTICS } from "./pkg/statistics"
+import { PKG_SYM } from "./pkg/sym"
 import { PKG_TEXT } from "./pkg/text"
 import { PKG_TRIG_COMPLEX } from "./pkg/trig-complex"
 import { PKG_TRIG_REAL } from "./pkg/trig-real"
@@ -71,4 +72,5 @@ export const ALL: Package[] = [
   PKG_FACTORIAL,
   PKG_CORE_FN,
   PKG_FOLDER,
+  PKG_SYM,
 ]
