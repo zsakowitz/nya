@@ -26,7 +26,7 @@ import type {
 export interface TxrAst<T> {
   js(node: T, props: PropsJs): JsValue
   glsl(node: T, props: PropsGlsl): GlslValue
-  sym?(node: T, props: PropsSym): Sym
+  sym(node: T, props: PropsSym): Sym
   deps(node: T, deps: Deps): void
   drag: DragTarget<T>
 
@@ -162,6 +162,7 @@ export interface TxrSuffix<T> {
   drag?: DragTarget<{ lhs: Node; rhs: T }>
   js(node: TxrSuffixArgs<T, JsValue>, props: PropsJs): JsValue
   glsl(node: TxrSuffixArgs<T, GlslValue>, props: PropsGlsl): GlslValue
+  sym(node: TxrSuffixArgs<T, Sym>, props: PropsSym): Sym
   deps(node: T, deps: Deps): void
   layer?: number
 }
@@ -429,6 +430,9 @@ export const TXR_AST: { [K in NodeName]?: TxrAst<Nodes[K]> } = {
     glsl() {
       throw new Error("Cannot evaluate a 'value' node in a shader.")
     },
+    sym(node) {
+      return { type: "js", value: node.value }
+    },
     layer: -1,
   },
 
@@ -441,6 +445,11 @@ export const TXR_AST: { [K in NodeName]?: TxrAst<Nodes[K]> } = {
     },
     glsl(node) {
       return node.value
+    },
+    sym() {
+      throw new Error(
+        "Cannot convert a 'valueGlsl' node to a symbolic expression.",
+      )
     },
     layer: -1,
   },
@@ -564,6 +573,41 @@ export const TXR_AST: { [K in NodeName]?: TxrAst<Nodes[K]> } = {
           return lhs.value
         case "node":
           return glsl(lhs.value, props)
+      }
+    },
+    sym(node, props) {
+      const rest = node.suffixes.slice()
+      let lhs: TxrSuffixLhs<Sym> = { type: "node", value: node.base }
+      let suffix
+
+      while ((suffix = rest[0])) {
+        rest.shift()
+        const txr = TXR_SUFFIX[suffix.type] as TxrSuffix<unknown>
+        if (!txr) {
+          throw new Error(`Suffix '${suffix.type}' is not defined.`)
+        }
+
+        lhs = {
+          type: "value",
+          value: txr.sym(
+            {
+              lhs,
+              get base() {
+                return lhs.type == "node" ? sym(lhs.value, props) : lhs.value
+              },
+              rhs: suffix,
+              rest,
+            },
+            props,
+          ),
+        }
+      }
+
+      switch (lhs.type) {
+        case "value":
+          return lhs.value
+        case "node":
+          return sym(lhs.value, props)
       }
     },
     deps(node, deps) {
