@@ -19,6 +19,7 @@ import {
 } from "../eval/ast/tx"
 import { FNS, OP_BINARY, OP_UNARY } from "../eval/ops"
 import { VARS } from "../eval/ops/vars"
+import { TXR_SYM, type SymName, type TxrSym } from "../eval/sym"
 import type { TyName } from "../eval/ty"
 import { tidyCoercions, TY_INFO, type TyCoerce } from "../eval/ty/info"
 import type { ParenLhs, ParenRhs } from "../field/cmd/math/brack"
@@ -243,6 +244,15 @@ export class SheetFactory {
         continue
       }
       TXR_SUFFIX[key] = txr as TxrSuffix<unknown>
+    }
+
+    for (const keyRaw in pkg.eval?.sym) {
+      const key = keyRaw as SymName
+      const txr = pkg.eval.sym[key]!
+      if (TXR_SYM[key] && (TXR_SYM[key].layer ?? 0) >= (txr.layer ?? 0)) {
+        continue
+      }
+      TXR_SYM[key] = txr as TxrSym<unknown>
     }
 
     if (pkg.sheet?.defaultItem) {

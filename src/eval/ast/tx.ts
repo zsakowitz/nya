@@ -6,6 +6,7 @@ import { glsl, type PropsGlsl } from "../glsl"
 import { js, type PropsJs } from "../js"
 import { type Bindings } from "../lib/binding"
 import { OP_BINARY, OP_UNARY } from "../ops"
+import type { Sym } from "../sym"
 import { type GlslValue, type JsVal, type JsValue } from "../ty"
 import { TY_INFO } from "../ty/info"
 import { commalist } from "./collect"
@@ -25,6 +26,7 @@ import type {
 export interface TxrAst<T> {
   js(node: T, props: PropsJs): JsValue
   glsl(node: T, props: PropsGlsl): GlslValue
+  sym?(node: T): Sym
   deps(node: T, deps: Deps): void
   drag: DragTarget<T>
 
@@ -67,6 +69,9 @@ function joint<T>(
       fn(node)
     },
     glsl(node) {
+      fn(node)
+    },
+    sym(node) {
       fn(node)
     },
     drag: {
@@ -201,6 +206,18 @@ export const TXR_AST: { [K in NodeName]?: TxrAst<Nodes[K]> } = {
     glsl(node, props) {
       return group(node).glsl(node.value, props)
     },
+    sym(node) {
+      const s = group(node).sym
+
+      // SYM: require group sym txrs
+      if (!s) {
+        throw new Error(
+          `Group ${node.lhs}...${node.rhs} cannot be turned into a symbolic computation yet.`,
+        )
+      }
+
+      return s(node.value)
+    },
     drag: {
       num(node, props) {
         return group(node).drag.num(node.value, props)
@@ -225,6 +242,21 @@ export const TXR_AST: { [K in NodeName]?: TxrAst<Nodes[K]> } = {
     glsl(node, props) {
       if (node.value in TXR_MAGICVAR) {
         return TXR_MAGICVAR[node.value]!.glsl(node as never, props)
+      }
+      throw new Error(`The '${node.value}' operator is not defined.`)
+    },
+    sym(node) {
+      if (node.value in TXR_MAGICVAR) {
+        const s = TXR_MAGICVAR[node.value]!.sym
+
+        // SYM: require magic var txrs
+        if (!s) {
+          throw new Error(
+            `Magic variable '${node.value}' cannot be turned into a symbolic computation yet.`,
+          )
+        }
+
+        return s(node as never)
       }
       throw new Error(`The '${node.value}' operator is not defined.`)
     },
@@ -329,6 +361,50 @@ export const TXR_AST: { [K in NodeName]?: TxrAst<Nodes[K]> } = {
         const op = OP_UNARY[node.kind]
         if (op) {
           return op.glsl(props.ctx, [glsl(node.a, props)])
+        }
+      }
+      throw new Error(`The operator '${node.kind}' is not defined.`)
+    },
+    sym(node) {
+      if (node.b) {
+        const txr = TXR_OP_BINARY[node.kind]
+        if (txr) {
+          // SYM: require txrs
+          if (!txr.sym) {
+            throw new Error(
+              `Binary operator '${node.kind}' cannot be turned into a symbolic computation yet.`,
+            )
+          }
+
+          return txr.sym({ lhs: node.a, rhs: node.b })
+        }
+        const op = OP_BINARY[node.kind]
+        if (op) {
+          return {
+            type: "call",
+            fn: op,
+            args: [toSym(node.a), toSym(node.b)],
+          }
+        }
+      } else {
+        const txr = TXR_OP_UNARY[node.kind]
+        if (txr) {
+          // SYM: require txrs
+          if (!txr.sym) {
+            throw new Error(
+              `Binary operator '${node.kind}' cannot be turned into a symbolic computation yet.`,
+            )
+          }
+
+          return txr.sym(node.a)
+        }
+        const op = OP_UNARY[node.kind]
+        if (op) {
+          return {
+            type: "call",
+            fn: op,
+            args: [toSym(node.a)],
+          }
         }
       }
       throw new Error(`The operator '${node.kind}' is not defined.`)
@@ -527,3 +603,19 @@ export const TXR_AST: { [K in NodeName]?: TxrAst<Nodes[K]> } = {
 }
 
 Object.setPrototypeOf(TXR_AST, null)
+
+export function toSym(node: Node): Sym {
+  const txr = TXR_AST[node.type]
+  if (!txr) {
+    throw new Error(`Transformer '${node.type}' is not defined.`)
+  }
+
+  // SYM: require txrs
+  if (!txr.sym) {
+    throw new Error(
+      `Node type '${node.type}' cannot be turned into a symbolic computation yet.`,
+    )
+  }
+
+  return txr.sym(node as never)
+}

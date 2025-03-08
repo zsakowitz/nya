@@ -18,6 +18,7 @@ import type {
 import type { Fn } from "../eval/ops"
 import type { WithDocs } from "../eval/ops/docs"
 import type { Builtin } from "../eval/ops/vars"
+import type { SymName, Syms, TxrSym } from "../eval/sym"
 import type { TyComponents, TyName, Tys } from "../eval/ty"
 import type { TyCoerceMap, TyInfo } from "../eval/ty/info"
 import type { ParenLhs, ParenRhs } from "../field/cmd/math/brack"
@@ -67,6 +68,8 @@ export interface Package {
       ast?: { [K in NodeName]?: TxrAst<Nodes[K]> }
       suffix?: { [K in SuffixName]?: TxrSuffix<Suffixes[K]> }
     }
+    // `sym` is separated from other `tx` since it works separately
+    sym?: { [K in SymName]?: TxrSym<Syms[K]> }
   }
 
   sheet?: {
