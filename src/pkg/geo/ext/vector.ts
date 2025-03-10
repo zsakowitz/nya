@@ -3,7 +3,7 @@ import { unpt } from "../../../eval/ty/create"
 import { sx } from "../../../jsx"
 import { defineHideable } from "../../../sheet/ext/hideable"
 import type { Point } from "../../../sheet/point"
-import { type DrawLineProps, type Paper } from "../../../sheet/ui/paper"
+import type { DrawLineProps, Paper } from "../../../sheet/ui/paper"
 import { pick } from "./util"
 
 export function drawVector(

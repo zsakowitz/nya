@@ -21,7 +21,7 @@ import {
   type Dir,
   type InitProps,
 } from "../../model"
-import { WordMap, type Options } from "../../options"
+import type { Options, WordMap } from "../../options"
 import { CmdSupSub } from "../math/supsub"
 import { CmdDot } from "./dot"
 import { CmdNum } from "./num"

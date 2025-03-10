@@ -1,9 +1,9 @@
 import type { Package } from ".."
-import { type JsVal, type Tys } from "../../eval/ty"
-import { num, pt, real, SNANPT, unpt } from "../../eval/ty/create"
+import type { JsVal, Tys } from "../../eval/ty"
+import { SNANPT, num, pt, real, unpt } from "../../eval/ty/create"
 import {
-  gliderOnLine,
   WRITE_POINT,
+  gliderOnLine,
   type TyInfo,
   type TyInfoByName,
 } from "../../eval/ty/info"
@@ -17,29 +17,29 @@ import { CmdWord } from "../../field/cmd/leaf/word"
 import { CmdBrack } from "../../field/cmd/math/brack"
 import { Block, L, R } from "../../field/model"
 import { h, path, svgx, sx } from "../../jsx"
-import { definePickTy, PICK_TY, toolbar, type Data } from "../../sheet/pick-ty"
+import { PICK_TY, definePickTy, toolbar, type Data } from "../../sheet/pick-ty"
 import type { Point } from "../../sheet/point"
 import { Expr } from "../../sheet/ui/expr"
 import { normSegment, segmentByPaper } from "../../sheet/ui/paper"
 import type { Selected } from "../../sheet/ui/sheet"
 import {
-  drawPoint,
   FN_GLIDER,
   FN_INTERSECTION,
   PKG_GEO_POINT,
+  drawPoint,
 } from "../geo-point"
 import { PKG_REAL } from "../num-real"
 import { computeArcVal, unglideArc } from "./arc"
-import { angleGlsl, angleJs, drawAngle, EXT_ANGLE } from "./ext/angle"
-import { drawArc, EXT_ARC } from "./ext/arc"
-import { drawCircle, EXT_CIRCLE } from "./ext/circle"
-import { drawLine, EXT_LINE } from "./ext/line"
-import { drawPolygon, EXT_POLYGON } from "./ext/polygon"
-import { drawRay, EXT_RAY } from "./ext/ray"
+import { EXT_ANGLE, angleGlsl, angleJs, drawAngle } from "./ext/angle"
+import { EXT_ARC, drawArc } from "./ext/arc"
+import { EXT_CIRCLE, drawCircle } from "./ext/circle"
+import { EXT_LINE, drawLine } from "./ext/line"
+import { EXT_POLYGON, drawPolygon } from "./ext/polygon"
+import { EXT_RAY, drawRay } from "./ext/ray"
 import { EXT_SEGMENT } from "./ext/segment"
-import { drawVector, EXT_VECTOR } from "./ext/vector"
+import { EXT_VECTOR, drawVector } from "./ext/vector"
 import { FN_ANGLE, FN_DIRECTEDANGLE } from "./fn/angle"
-import { bisectAngleJs, FN_ANGLEBISECTOR } from "./fn/anglebisector"
+import { FN_ANGLEBISECTOR, bisectAngleJs } from "./fn/anglebisector"
 import { FN_ANGLES, FN_DIRECTEDANGLES } from "./fn/angles"
 import { FN_ARC } from "./fn/arc"
 import { FN_CENTER } from "./fn/center"

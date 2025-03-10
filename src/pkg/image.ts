@@ -14,7 +14,7 @@ import { toText } from "../field/latex"
 import { L, R } from "../field/model"
 import { h, hx, path, svgx, t } from "../jsx"
 import { FieldComputed } from "../sheet/deps"
-import { type ItemFactory } from "../sheet/item"
+import type { ItemFactory } from "../sheet/item"
 import type { ItemRef } from "../sheet/items"
 
 declare module "../eval/ast/token" {

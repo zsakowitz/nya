@@ -8,7 +8,7 @@ import { CmdBrack } from "../field/cmd/math/brack"
 import { Block, L, R } from "../field/model"
 import { h, hx } from "../jsx"
 import { virtualPoint } from "../pkg/geo/pick-point"
-import { type Picker } from "./pick"
+import type { Picker } from "./pick"
 import { Expr } from "./ui/expr"
 import type { Selected, Sheet } from "./ui/sheet"
 

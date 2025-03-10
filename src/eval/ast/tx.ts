@@ -1,13 +1,13 @@
 import type { ParenLhs, ParenRhs } from "../../field/cmd/math/brack"
-import { Span } from "../../field/model"
+import type { Span } from "../../field/model"
 import type { FieldComputed } from "../../sheet/deps"
 import type { Deps } from "../deps"
 import { glsl, type PropsGlsl, type PropsSym } from "../glsl"
 import { js, type PropsJs } from "../js"
-import { type Bindings } from "../lib/binding"
+import type { Bindings } from "../lib/binding"
 import { OP_BINARY, OP_UNARY } from "../ops"
 import type { Sym } from "../sym"
-import { type GlslValue, type JsVal, type JsValue } from "../ty"
+import type { GlslValue, JsVal, JsValue } from "../ty"
 import { TY_INFO } from "../ty/info"
 import { commalist } from "./collect"
 import type {
@@ -19,8 +19,8 @@ import type {
   PuncBinaryStr,
   PuncUnary,
   Suffix,
-  Suffixes,
   SuffixName,
+  Suffixes,
 } from "./token"
 
 export interface TxrAst<T> {

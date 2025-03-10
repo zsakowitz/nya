@@ -1,6 +1,6 @@
 import type { Node } from "./ast/token"
 import { TXR_AST } from "./ast/tx"
-import { Bindings, type BindingFn } from "./lib/binding"
+import type { BindingFn, Bindings } from "./lib/binding"
 import { FNS } from "./ops"
 import type { Sym } from "./sym"
 import type { JsValue, SReal } from "./ty"

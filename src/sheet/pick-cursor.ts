@@ -7,7 +7,7 @@ import { virtualPoint } from "../pkg/geo/pick-point"
 import type { ItemRef } from "./items"
 import type { Picker } from "./pick"
 import type { Expr } from "./ui/expr"
-import { Sheet, type Selected } from "./ui/sheet"
+import type { Selected, Sheet } from "./ui/sheet"
 
 export interface Data {
   expr: Expr

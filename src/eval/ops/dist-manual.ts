@@ -4,7 +4,7 @@ import { CmdWord } from "../../field/cmd/leaf/word"
 import { CmdBrack } from "../../field/cmd/math/brack"
 import { Block, L, R } from "../../field/model"
 import { Precedence } from "../ast/token"
-import { GlslContext } from "../lib/fn"
+import type { GlslContext } from "../lib/fn"
 import { insertStrict, txr, type Sym, type SymDisplay } from "../sym"
 import type {
   GlslVal,
