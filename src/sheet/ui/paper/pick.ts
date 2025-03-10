@@ -1,6 +1,6 @@
-import type { Point } from "../../point"
 import type { ItemRef } from "../../items"
 import type { AnyPick, Picker } from "../../pick"
+import type { Point } from "../../point"
 import type { Sheet } from "../sheet"
 
 export class PickHandler {
