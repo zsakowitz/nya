@@ -1,9 +1,4 @@
-import type { SPoint } from "../../../eval/ty"
-import { isZero } from "../../../eval/ty/check"
-import { pt } from "../../../eval/ty/create"
-import { add, div, sub } from "../../../eval/ty/ops"
 import { sx } from "../../../jsx"
-import { hypot } from "../../../pkg/geo/fn/distance"
 import type { Point } from "../../point"
 import { onTheme } from "../../theme"
 import type { DragProps, PickProps } from "./interact"
@@ -416,35 +411,4 @@ export function segmentByOffset(
     })
     paper.append("line", target)
   }
-}
-
-export function norm(at: Point, distance = 1) {
-  const denom = Math.hypot(at.x, at.y)
-  if (denom == 0) return at
-
-  return {
-    x: (at.x / denom) * distance,
-    y: (at.y / denom) * distance,
-  }
-}
-
-export function normS(at: SPoint): SPoint {
-  const denom = hypot(at)
-  if (isZero(denom)) return at
-
-  return pt(div(at.x, denom), div(at.y, denom))
-}
-
-export function normSegment(from: Point, to: Point, distance = 1) {
-  const n = norm({ x: to.x - from.x, y: to.y - from.y }, distance)
-
-  return {
-    x: from.x + n.x,
-    y: from.y + n.y,
-  }
-}
-
-export function normSegmentS(from: SPoint, to: SPoint) {
-  const n = normS(pt(sub(to.x, from.x), sub(to.y, from.y)))
-  return pt(add(from.x, n.x), add(from.y, n.y))
 }

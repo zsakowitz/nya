@@ -11,12 +11,8 @@ import { Display } from "../../../eval/ty/display"
 import { R } from "../../../field/model"
 import { sx } from "../../../jsx"
 import { defineHideable } from "../../../sheet/ext/hideable"
-import type { Point } from "../../../sheet/point"
-import {
-  normSegment,
-  type DrawLineProps,
-  type Paper,
-} from "../../../sheet/ui/paper"
+import { normVector, type Point } from "../../../sheet/point"
+import type { DrawLineProps, Paper } from "../../../sheet/ui/paper"
 import { STORE_EVAL } from "../../eval"
 import { pick } from "./util"
 
@@ -98,10 +94,10 @@ export function drawAngle(
   const o1 = paper.toOffset(p1)
   const o2 = paper.toOffset(p2)
   const o3 = paper.toOffset(p3)
-  const s1 = normSegment(o2, o1, LINE)
-  const s3 = normSegment(o2, o3, LINE)
-  const a1 = normSegment(o2, o1, ARC)
-  const a3 = normSegment(o2, o3, ARC)
+  const s1 = normVector(o2, o1, LINE)
+  const s3 = normVector(o2, o3, LINE)
+  const a1 = normVector(o2, o1, ARC)
+  const a3 = normVector(o2, o3, ARC)
 
   paper.addClass("angleline", "opacity-[50%]")
   for (const s of [s1, s3]) {

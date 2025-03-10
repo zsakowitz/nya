@@ -18,9 +18,9 @@ import { CmdBrack } from "../../field/cmd/math/brack"
 import { Block, L, R } from "../../field/model"
 import { h, path, svgx, sx } from "../../jsx"
 import { PICK_TY, definePickTy, toolbar, type Data } from "../../sheet/pick-ty"
-import type { Point } from "../../sheet/point"
+import { normVector, type Point } from "../../sheet/point"
 import { Expr } from "../../sheet/ui/expr"
-import { normSegment, segmentByPaper } from "../../sheet/ui/paper"
+import { segmentByPaper } from "../../sheet/ui/paper"
 import type { Selected } from "../../sheet/ui/sheet"
 import {
   FN_GLIDER,
@@ -999,10 +999,10 @@ function angleInfo(
       const o1 = { x: p1.x, y: -p1.y }
       const o2 = { x: p2.x, y: -p2.y }
       const o3 = { x: p3.x, y: -p3.y }
-      const s1 = normSegment(o2, o1, LINE)
-      const s3 = normSegment(o2, o3, LINE)
-      const a1 = normSegment(o2, o1, ARC)
-      const a3 = normSegment(o2, o3, ARC)
+      const s1 = normVector(o2, o1, LINE)
+      const s3 = normVector(o2, o3, LINE)
+      const a1 = normVector(o2, o1, ARC)
+      const a3 = normVector(o2, o3, ARC)
 
       const els: SVGElement[] = []
 
