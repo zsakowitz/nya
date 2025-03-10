@@ -1,4 +1,5 @@
-import type { Paper, Point } from "."
+import type { Paper } from "."
+import type { Point } from "../../point"
 import { HANDLER_DRAG, HANDLER_PICK, type DragFn } from "./interact"
 
 const SNAP_DISTANCE = 16

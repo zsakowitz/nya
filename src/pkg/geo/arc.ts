@@ -1,7 +1,8 @@
 import type { Val } from "../../eval/ty"
 import { NANPT, unpt } from "../../eval/ty/create"
 import { gliderOnLine } from "../../eval/ty/info"
-import type { Paper, Point } from "../../sheet/ui/paper"
+import type { Point } from "../../sheet/point"
+import type { Paper } from "../../sheet/ui/paper"
 import { getRayBounds } from "./ext/ray"
 import { intersectLineLineJs } from "./fn/intersection"
 

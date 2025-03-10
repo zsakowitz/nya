@@ -2,15 +2,13 @@ import { each, type JsValue } from "../../../eval/ty"
 import { num, unpt } from "../../../eval/ty/create"
 import { sx } from "../../../jsx"
 import { defineHideable } from "../../../sheet/ext/hideable"
-import type { DrawLineProps, Paper, Point } from "../../../sheet/ui/paper"
+import type { Point } from "../../../sheet/point"
+import type { DrawLineProps, Paper } from "../../../sheet/ui/paper"
 import { pick } from "./util"
 
 export function drawCircle(
   paper: Paper,
-  props: {
-    at: Point
-    r: number
-  } & DrawLineProps,
+  props: { at: Point; r: number } & DrawLineProps,
 ) {
   const { x: cx, y: cy } = paper.toOffset(props.at)
   const r = paper.toOffsetDelta({ x: props.r, y: 0 }).x

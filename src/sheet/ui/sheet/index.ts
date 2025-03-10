@@ -15,11 +15,12 @@ import { Scope } from "../../deps"
 import type { Exts } from "../../ext"
 import type { SheetFactory } from "../../factory"
 import { ItemListGlobal } from "../../items"
+import type { Point } from "../../point"
 import { doMatchReglSize } from "../../regl"
 import { REMARK } from "../../remark"
 import { Slider } from "../../slider"
 import { isDark } from "../../theme"
-import { Paper, type Point } from "../paper"
+import { Paper } from "../paper"
 import { HANDLER_PICK, type PickProps } from "../paper/interact"
 import {
   registerDragHandler,

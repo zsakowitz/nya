@@ -11,11 +11,11 @@ import { Display } from "../../../eval/ty/display"
 import { R } from "../../../field/model"
 import { sx } from "../../../jsx"
 import { defineHideable } from "../../../sheet/ext/hideable"
+import type { Point } from "../../../sheet/point"
 import {
   normSegment,
   type DrawLineProps,
   type Paper,
-  type Point,
 } from "../../../sheet/ui/paper"
 import { STORE_EVAL } from "../../eval"
 import { pick } from "./util"

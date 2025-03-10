@@ -4,6 +4,7 @@ import { pt } from "../../../eval/ty/create"
 import { add, div, sub } from "../../../eval/ty/ops"
 import { sx } from "../../../jsx"
 import { hypot } from "../../../pkg/geo/fn/distance"
+import type { Point } from "../../point"
 import { onTheme } from "../../theme"
 import type { DragProps, PickProps } from "./interact"
 
@@ -12,11 +13,6 @@ interface Bounds {
   readonly w: number
   readonly ymin: number
   readonly h: number
-}
-
-export interface Point {
-  readonly x: number
-  readonly y: number
 }
 
 interface LayerShared {

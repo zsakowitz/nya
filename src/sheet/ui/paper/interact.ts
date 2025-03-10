@@ -1,6 +1,6 @@
-import type { Point } from "."
 import type { JsVal, TyName } from "../../../eval/ty"
 import type { Block } from "../../../field/model"
+import type { Point } from "../../point"
 
 export interface DragProps {
   (at: Point): DragFn | null

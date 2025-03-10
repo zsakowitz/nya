@@ -18,8 +18,9 @@ import { CmdBrack } from "../../field/cmd/math/brack"
 import { Block, L, R } from "../../field/model"
 import { h, path, svgx, sx } from "../../jsx"
 import { definePickTy, PICK_TY, toolbar, type Data } from "../../sheet/pick-ty"
+import type { Point } from "../../sheet/point"
 import { Expr } from "../../sheet/ui/expr"
-import { normSegment, segmentByPaper, type Point } from "../../sheet/ui/paper"
+import { normSegment, segmentByPaper } from "../../sheet/ui/paper"
 import type { Selected } from "../../sheet/ui/sheet"
 import {
   drawPoint,

@@ -1,4 +1,4 @@
-import type { Point } from "."
+import type { Point } from "../../point"
 import type { ItemRef } from "../../items"
 import type { AnyPick, Picker } from "../../pick"
 import type { Sheet } from "../sheet"

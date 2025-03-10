@@ -1,8 +1,8 @@
 import { each, type JsValue } from "../../../eval/ty"
 import { unpt } from "../../../eval/ty/create"
 import { defineHideable } from "../../../sheet/ext/hideable"
+import type { Point } from "../../../sheet/point"
 import {
-  Point,
   segmentByOffset,
   type DrawLineProps,
   type Paper,

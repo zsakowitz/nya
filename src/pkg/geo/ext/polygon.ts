@@ -9,8 +9,9 @@ import { CmdBrack } from "../../../field/cmd/math/brack"
 import { Block, L, R } from "../../../field/model"
 import { sx } from "../../../jsx"
 import { defineHideable } from "../../../sheet/ext/hideable"
+import type { Point } from "../../../sheet/point"
 import type { Expr } from "../../../sheet/ui/expr"
-import { segmentByPaper, type Paper, type Point } from "../../../sheet/ui/paper"
+import { segmentByPaper, type Paper } from "../../../sheet/ui/paper"
 
 export function drawPolygon(
   paper: Paper,
