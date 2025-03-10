@@ -606,7 +606,7 @@ export const TXR_AST: { [K in NodeName]?: TxrAst<Nodes[K]> } = {
         if (!txr) {
           throw new Error(`Suffix '${suffix.type}' is not defined.`)
         }
-        console.log(txr, txr.sym)
+
         lhs = {
           type: "value",
           value: txr.sym(
