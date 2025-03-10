@@ -11,7 +11,9 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "moduleResolution": "bundler",
-    "moduleDetection": "force"
+    "moduleDetection": "force",
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true
   },
   "exclude": ["src/pkg-beta"]
 }

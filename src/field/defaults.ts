@@ -52,7 +52,7 @@ import {
 import { CmdMap } from "./cmd/util/map"
 import { CmdNoop } from "./cmd/util/noop"
 import { CmdPrompt } from "./cmd/util/prompt"
-import { LatexEnvs, LatexInit } from "./latex"
+import { LatexEnvs, type LatexInit } from "./latex"
 import { D, L, R, U, type Init } from "./model"
 import { Inits, WordMap, type Options } from "./options"
 

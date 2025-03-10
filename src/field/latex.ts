@@ -3,7 +3,7 @@ import { CmdEOF } from "./cmd/leaf/eof"
 import { CmdUnknown } from "./cmd/leaf/unknown"
 import type { FieldInert } from "./field-inert"
 import { Block, L, R, type Command } from "./model"
-import { Options, WordMap } from "./options"
+import { WordMap, type Options } from "./options"
 
 export interface LatexInit {
   fromLatex(cmd: string, parser: LatexParser): Command | Block
