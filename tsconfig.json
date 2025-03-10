@@ -13,7 +13,9 @@
     "moduleResolution": "bundler",
     "moduleDetection": "force",
     "isolatedModules": true,
-    "verbatimModuleSyntax": true
+    "verbatimModuleSyntax": true,
+    "noUncheckedSideEffectImports": true,
+    "allowArbitraryExtensions": true
   },
   "exclude": ["src/pkg-beta"]
 }
