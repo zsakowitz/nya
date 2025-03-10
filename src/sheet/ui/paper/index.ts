@@ -7,7 +7,6 @@ import { hypot } from "../../../pkg/geo/fn/distance"
 import type { Point } from "../../point"
 import { onTheme } from "../../theme"
 import type { DragProps, PickProps } from "./interact"
-import type { Point } from "../../point"
 
 interface Bounds {
   readonly xmin: number
