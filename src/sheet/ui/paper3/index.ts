@@ -139,6 +139,8 @@ export class Paper3 {
   readonly fns: (() => void)[] = []
 
   private draw() {
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+
     for (const fn of this.fns) {
       try {
         fn()
