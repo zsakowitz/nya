@@ -13,7 +13,7 @@ interface Bounds {
 export class Paper3 {
   readonly el
   private readonly canvas
-  readonly ctx
+  readonly ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D
 
   readonly scale: number = 1
   readonly height: number = 0
