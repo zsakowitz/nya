@@ -1,9 +1,10 @@
 import type { GlslHelpers, GlslResult } from "../../eval/lib/fn"
 import type { Expr } from "../ui/expr"
 import type { Paper } from "../ui/paper"
+import type { Plottable } from "../ui/paper3/item"
 
-/** An extension to an expression in the sheet interface. */
-export interface Ext<T extends {}> {
+/** A possible result of a math expression. */
+export interface Ext<T extends {}, U> {
   /**
    * Attempts to use this extension on a {@linkcode Expr}. May result in:
    *
@@ -17,14 +18,15 @@ export interface Ext<T extends {}> {
   aside?(data: NoInfer<T>): HTMLElement | undefined
   el?(data: NoInfer<T>): HTMLElement | undefined
   svg?(data: NoInfer<T>, paper: Paper): void
+  plot?: Plottable<T, U>
 
   // TODO: remove plotGl as a special-cased function; it should be delegated to 'shader'
   plotGl?(data: NoInfer<T>, helpers: GlslHelpers): GlslResult | undefined
 }
 
-export type AnyExt = Ext<{}>
+export type AnyExt = Ext<{}, unknown>
 
-export function defineExt<T extends {}>(ext: Ext<T>) {
+export function defineExt<T extends {}, U>(ext: Ext<T, U>) {
   return ext
 }
 

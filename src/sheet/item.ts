@@ -20,6 +20,11 @@ export interface ItemFactory<T, U = unknown> {
   main(data: T): Node
 
   draw?(data: T): void
+  draw3?: {
+    /** Return `null` to skip drawing this item. */
+    order(data: T): number | null
+    draw(data: T): void
+  }
   glsl?(data: T): GlslResult | undefined
   unlink(data: T): void
   /** `from` is only `null` immediately after creation. */
@@ -40,8 +45,8 @@ export const FACTORY_EXPR: ItemFactory<Expr, { geo?: boolean }> = {
   name: "field",
   icon: faSquareRootVariable,
 
-  init(ref, source, props) {
-    const expr = new Expr(ref.root.sheet, ref, !!props?.geo)
+  init(ref, source) {
+    const expr = new Expr(ref.root.sheet, ref)
     if (source) {
       expr.field.onBeforeChange()
       const block = new LatexParser(
@@ -66,6 +71,19 @@ export const FACTORY_EXPR: ItemFactory<Expr, { geo?: boolean }> = {
     if (expr.state.ok && expr.state.ext?.svg) {
       expr.state.ext.svg(expr.state.data, expr.sheet.paper)
     }
+  },
+  draw3: {
+    order(data) {
+      if (data.state.ok && data.state.ext?.plot) {
+        return data.state.ext.plot.order
+      }
+      return null
+    },
+    draw(data) {
+      if (data.state.ok && data.state.ext?.plot) {
+        data.state.ext.plot.draw(data.state.data)
+      }
+    },
   },
   glsl(data) {
     return data.glsl

@@ -83,8 +83,8 @@ function draw(paper: Paper, val: Val<"image2d">) {
   )
 }
 
-const EXT = defineExt<JsValue<"image2d">>({
-  data(expr) {
+const EXT = defineExt({
+  data(expr): JsValue<"image2d"> | undefined {
     if (expr.js?.value.type == "image2d") {
       return expr.js.value as JsValue<"image2d">
     }

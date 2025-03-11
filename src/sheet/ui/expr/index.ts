@@ -39,7 +39,6 @@ export class Expr {
   constructor(
     readonly sheet: Sheet,
     readonly ref: ItemRef<Expr>,
-    readonly geo: boolean,
   ) {
     this.field = new Field(
       this,

@@ -192,6 +192,31 @@ export abstract class ItemList {
         console.warn("[draw]", e)
       }
     }
+
+    const list: Record<number, ItemRef<unknown>[]> = Object.create(null)
+    this.createDrawList(list, suppressed)
+
+    for (const [, v] of Object.entries(list).sort(([a], [b]) => +a - +b)) {
+      for (const ref of v) {
+        ref.factory.draw3!.draw(ref.data)
+      }
+    }
+  }
+
+  private createDrawList(
+    list: Record<number, ItemRef<unknown>[]>,
+    suppressed: ItemRef<unknown> | undefined,
+  ) {
+    for (const ref of this.items) {
+      if (ref == suppressed) continue
+
+      const order = ref.factory.draw3?.order(ref.data)
+      if (order != null) (list[order] ??= []).push(ref)
+
+      if (ref.sublist) {
+        ref.sublist.createDrawList(list, suppressed)
+      }
+    }
   }
 
   glslWith(list: GlslResult[]) {
