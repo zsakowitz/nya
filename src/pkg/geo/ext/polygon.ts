@@ -10,6 +10,7 @@ import { Block, L, R } from "../../../field/model"
 import { sx } from "../../../jsx"
 import { defineHideable } from "../../../sheet/ext/hideable"
 import type { Point } from "../../../sheet/point"
+import { Colors, Size } from "../../../sheet/ui/cv/consts"
 import type { Expr } from "../../../sheet/ui/expr"
 import { segmentByPaper, type Paper } from "../../../sheet/ui/paper"
 
@@ -176,12 +177,19 @@ export const EXT_POLYGON = defineHideable({
       }
     }
   },
-  svg(data, paper) {
-    for (const polygon of each(data.value)) {
-      drawPolygon(paper, polygon.map(unpt), {
-        closed: true,
-        pick: { expr: data.expr },
-      })
-    }
+  plot: {
+    order: 2,
+    draw(data) {
+      for (const val of each(data.value)) {
+        data.expr.sheet.cv.polygon(
+          val.map(unpt),
+          Size.Line,
+          Colors.Blue,
+          1,
+          0.3,
+          true,
+        )
+      }
+    },
   },
 })

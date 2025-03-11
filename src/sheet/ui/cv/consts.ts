@@ -49,6 +49,9 @@ export const Size = Object.freeze({
   Line: 3,
   LineRing: 8,
 
+  VectorHead: 12,
+  VectorWidthRatio: 0.4,
+
   /**
    * The offset distance required to consider something a "touch".
    *

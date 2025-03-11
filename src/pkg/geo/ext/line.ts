@@ -2,29 +2,30 @@ import { each, type JsValue } from "../../../eval/ty"
 import { unpt } from "../../../eval/ty/create"
 import { defineHideable } from "../../../sheet/ext/hideable"
 import type { Point } from "../../../sheet/point"
+import type { Cv } from "../../../sheet/ui/cv"
+import { Colors, Order, Size } from "../../../sheet/ui/cv/consts"
 import type { DrawLineProps } from "../../../sheet/ui/paper"
 import { segmentByOffset, type Paper } from "../../../sheet/ui/paper"
-import { pick } from "./util"
 
-function getLineBounds(
+export function getLineBounds(
   { x: x1, y: y1 }: Point,
   { x: x2, y: y2 }: Point,
-  paper: Paper,
+  cv: Paper | Cv,
 ): [Point, Point] {
-  const { xmin, w, ymin, h } = paper.bounds()
+  const { xmin, w, ymin, h } = cv.bounds()
 
   if (x1 == x2) {
     return [
-      paper.toOffset({ x: x1, y: ymin }),
-      paper.toOffset({ x: x1, y: ymin + h }),
+      cv.toOffset({ x: x1, y: ymin }),
+      cv.toOffset({ x: x1, y: ymin + h }),
     ]
   }
 
   const m = (y2 - y1) / (x2 - x1)
 
   return [
-    paper.toOffset({ x: xmin, y: m * (xmin - x1) + y1 }),
-    paper.toOffset({ x: xmin + w, y: m * (xmin + w - x1) + y1 }),
+    cv.toOffset({ x: xmin, y: m * (xmin - x1) + y1 }),
+    cv.toOffset({ x: xmin + w, y: m * (xmin + w - x1) + y1 }),
   ]
 }
 
@@ -50,12 +51,16 @@ export const EXT_LINE = defineHideable({
       return { value: value as JsValue<"line">, expr }
     }
   },
-  svg(data, paper) {
-    for (const val of each(data.value)) {
-      drawLine(paper, unpt(val[0]), unpt(val[1]), {
-        pick: pick(val, data, data.expr.field.ctx),
-        kind: "line",
-      })
-    }
+  plot: {
+    order: Order.Graph,
+    draw(data) {
+      for (const val of each(data.value)) {
+        data.expr.sheet.cv.polygonByCanvas(
+          getLineBounds(unpt(val[0]), unpt(val[1]), data.expr.sheet.cv),
+          Size.Line,
+          Colors.Blue,
+        )
+      }
+    },
   },
 })

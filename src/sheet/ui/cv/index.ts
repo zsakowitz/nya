@@ -266,6 +266,100 @@ export class Cv {
 
     this.queue()
   }
+
+  point(at: Point, size: number, color: string, alpha = 1) {
+    this.ctx.beginPath()
+    this.ctx.fillStyle = color
+    this.ctx.globalAlpha = alpha
+    const { x, y } = this.toCanvas(at)
+    this.ctx.ellipse(
+      x,
+      y,
+      size * this.scale,
+      size * this.scale,
+      0,
+      0,
+      2 * Math.PI,
+    )
+    this.ctx.fill()
+  }
+
+  /** Accepts canvas coordinates. */
+  path(path: Path2D, size: number, color: string, alpha = 1, fillAlpha = 1) {
+    this.ctx.strokeStyle = color
+    this.ctx.globalAlpha = alpha
+    this.ctx.lineWidth = size * this.scale
+    this.ctx.lineCap = "round"
+    this.ctx.lineJoin = "round"
+    this.ctx.globalAlpha = alpha * fillAlpha
+    this.ctx.fillStyle = color
+    this.ctx.fill(path)
+    this.ctx.globalAlpha = alpha
+    this.ctx.stroke(path)
+  }
+
+  // TODO: everything except point should probably just make a Path2D and delegate to `path`
+
+  circle(at: Point, r: number, size: number, color: string, alpha = 1) {
+    this.ctx.beginPath()
+    this.ctx.strokeStyle = color
+    this.ctx.globalAlpha = alpha
+    this.ctx.lineWidth = size * this.scale
+    const { x, y } = this.toCanvas(at)
+    const { x: rx, y: ry } = this.toCanvasDelta({ x: r, y: r })
+    this.ctx.ellipse(x, y, rx, -ry, 0, 0, 2 * Math.PI)
+    this.ctx.stroke()
+  }
+
+  polygon(
+    ps: Point[],
+    size: number,
+    color: string,
+    alpha?: number,
+    fillAlpha?: number,
+    closed?: boolean,
+  ) {
+    this.polygonByCanvas(
+      ps.map((p) => this.toCanvas(p)),
+      size,
+      color,
+      alpha,
+      fillAlpha,
+      closed,
+    )
+  }
+
+  polygonByCanvas(
+    pts: Point[],
+    size: number,
+    color: string,
+    alpha = 1,
+    fillAlpha = 1,
+    closed = false,
+  ) {
+    if (pts.length <= 1) return
+
+    this.ctx.beginPath()
+    this.ctx.strokeStyle = color
+    this.ctx.globalAlpha = alpha
+    this.ctx.lineWidth = size * this.scale
+    this.ctx.lineCap = "round"
+    this.ctx.lineJoin = "round"
+    this.ctx.moveTo(pts[0]!.x, pts[0]!.y)
+    for (const { x, y } of pts.slice(1)) {
+      this.ctx.lineTo(x, y)
+    }
+    if (closed) {
+      this.ctx.closePath()
+    }
+    if (pts.length > 2) {
+      this.ctx.globalAlpha = alpha * fillAlpha
+      this.ctx.fillStyle = color
+      this.ctx.fill()
+      this.ctx.globalAlpha = alpha
+    }
+    this.ctx.stroke()
+  }
 }
 
 type Paper3Mut = { -readonly [K in keyof Cv]: Cv[K] }

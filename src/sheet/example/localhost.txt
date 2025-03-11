@@ -1,10 +1,8 @@
-tanxderivx
-cosxderivx
-sinxderivx
-xderivx
-x^2derivx
-x^{x}\operatorname{deriv}x
-3derivx
-symx-1
-@|x^2+y^2|<5^2
-@(|x^2+y^2|<3^2)rgb(60,42,\digit a6)base16
+(2,3)
+\left(4+5,0+0\right)
+\operatorname{segment}\left(\left(1,0\right),\left(0,2\right)\right)
+\operatorname{ray}\left(\left(2,2\right),\left(4,-5\right)\right)
+\operatorname{line}\left(\left(2,2\right),\left(4,5\right)\right)
+\operatorname{vector}\left(\left(-2,4\right),\left(2,6\right)\right)
+\operatorname{circle}\left(\left(-5,0\right),3\right)
+\operatorname{polygon}\left(\left(-6,-4\right),\left(2,-6\right),\left(-2,-2\right)\right)

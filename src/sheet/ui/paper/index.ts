@@ -39,7 +39,10 @@ export class Paper {
   private readonly layers = new Map<number, SVGElement>()
   private readonly sharedLayers = new Map<number, SVGGElement>()
 
-  readonly scale: number = 1
+  /** @deprecated For compat with cv while transitioning */
+  get scale() {
+    return 1
+  }
   readonly height: number = 0
   readonly width: number = 0
 
@@ -125,7 +128,6 @@ export class Paper {
       )
       ;(this as any).width = this.el.clientWidth
       ;(this as any).height = this.el.clientHeight
-      ;(this as any).scale = window.devicePixelRatio ?? 1
       this.queue()
     }
     resize()
@@ -229,6 +231,11 @@ export class Paper {
       this.queued = false
       this.draw()
     })
+  }
+
+  /** @deprecated Used for transitioning to Cv */
+  toCanvas(pt: Point) {
+    return this.toOffset(pt)
   }
 
   toOffset({ x, y }: Point): Point {

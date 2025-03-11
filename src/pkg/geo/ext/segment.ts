@@ -1,8 +1,7 @@
 import { each, type JsValue } from "../../../eval/ty"
 import { unpt } from "../../../eval/ty/create"
 import { defineHideable } from "../../../sheet/ext/hideable"
-import { segmentByPaper } from "../../../sheet/ui/paper"
-import { pick } from "./util"
+import { Colors, Order, Size } from "../../../sheet/ui/cv/consts"
 
 export const EXT_SEGMENT = defineHideable({
   data(expr) {
@@ -15,12 +14,12 @@ export const EXT_SEGMENT = defineHideable({
       }
     }
   },
-  svg(data, paper) {
-    for (const val of each(data.value)) {
-      segmentByPaper(paper, unpt(val[0]), unpt(val[1]), {
-        pick: pick(val, data, data.expr.field.ctx),
-        kind: "segment",
-      })
-    }
+  plot: {
+    order: Order.Graph,
+    draw(data) {
+      for (const val of each(data.value)) {
+        data.expr.sheet.cv.polygon(val.map(unpt), Size.Line, Colors.Blue)
+      }
+    },
   },
 })

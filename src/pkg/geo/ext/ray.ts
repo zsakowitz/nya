@@ -2,21 +2,24 @@ import { each, type JsValue } from "../../../eval/ty"
 import { unpt } from "../../../eval/ty/create"
 import { defineHideable } from "../../../sheet/ext/hideable"
 import type { Point } from "../../../sheet/point"
+import type { Cv } from "../../../sheet/ui/cv"
+import { Colors, Order, Size } from "../../../sheet/ui/cv/consts"
 import {
   segmentByOffset,
   type DrawLineProps,
   type Paper,
 } from "../../../sheet/ui/paper"
-import { pick } from "./util"
-
-// Overloaded so it has a prettier signature in autocomplete
 
 export function getRayBounds(
-  paper: Paper,
+  cv: Paper | Cv,
   { x: x1, y: y1 }: Point,
   { x: x2, y: y2 }: Point,
 ): [Point, Point] | null {
-  const { xmin, w, ymin, h } = paper.bounds()
+  if (x1 == y1 && x2 == y2) {
+    return null
+  }
+
+  const { xmin, w, ymin, h } = cv.bounds()
 
   if (x1 == x2) {
     if (y1 < y2) {
@@ -24,18 +27,15 @@ export function getRayBounds(
         return null
       }
       return [
-        paper.toOffset({ x: x1, y: y1 }),
-        paper.toOffset({ x: x1, y: ymin + h }),
+        cv.toCanvas({ x: x1, y: y1 }),
+        cv.toCanvas({ x: x1, y: ymin + h }),
       ]
     }
 
     if (y1 < ymin) {
       return null
     }
-    return [
-      paper.toOffset({ x: x1, y: y1 }),
-      paper.toOffset({ x: x1, y: ymin }),
-    ]
+    return [cv.toCanvas({ x: x1, y: y1 }), cv.toCanvas({ x: x1, y: ymin })]
   }
 
   const m = (y2 - y1) / (x2 - x1)
@@ -46,8 +46,8 @@ export function getRayBounds(
     }
 
     return [
-      paper.toOffset({ x: x1, y: y1 }),
-      paper.toOffset({ x: xmin + w, y: m * (xmin + w - x1) + y1 }),
+      cv.toCanvas({ x: x1, y: y1 }),
+      cv.toCanvas({ x: xmin + w, y: m * (xmin + w - x1) + y1 }),
     ]
   }
 
@@ -56,8 +56,8 @@ export function getRayBounds(
   }
 
   return [
-    paper.toOffset({ x: x1, y: y1 }),
-    paper.toOffset({ x: xmin, y: m * (xmin - x1) + y1 }),
+    cv.toCanvas({ x: x1, y: y1 }),
+    cv.toCanvas({ x: xmin, y: m * (xmin - x1) + y1 }),
   ]
 }
 
@@ -93,12 +93,20 @@ export const EXT_RAY = defineHideable({
       return { value: value as JsValue<"ray">, expr }
     }
   },
-  svg(data, paper) {
-    for (const val of each(data.value)) {
-      drawRay(paper, unpt(val[0]), unpt(val[1]), {
-        pick: pick(val, data, data.expr.field.ctx),
-        kind: "ray",
-      })
-    }
+  plot: {
+    order: Order.Graph,
+    draw(data) {
+      for (const val of each(data.value)) {
+        const bounds = getRayBounds(
+          data.expr.sheet.cv,
+          unpt(val[0]),
+          unpt(val[1]),
+        )
+
+        if (bounds) {
+          data.expr.sheet.cv.polygonByCanvas(bounds, Size.Line, Colors.Blue)
+        }
+      }
+    },
   },
 })

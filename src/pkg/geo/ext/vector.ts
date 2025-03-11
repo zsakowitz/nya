@@ -3,8 +3,27 @@ import { unpt } from "../../../eval/ty/create"
 import { sx } from "../../../jsx"
 import { defineHideable } from "../../../sheet/ext/hideable"
 import type { Point } from "../../../sheet/point"
+import type { Cv } from "../../../sheet/ui/cv"
+import { Colors, Order, Size } from "../../../sheet/ui/cv/consts"
 import type { DrawLineProps, Paper } from "../../../sheet/ui/paper"
-import { pick } from "./util"
+
+export function vectorPath(cv: Paper | Cv, p1: Point, p2: Point) {
+  const o1 = cv.toCanvas(p1)
+  const o2 = cv.toCanvas(p2)
+  if (!(isFinite(o1.x) && isFinite(o1.y) && isFinite(o2.x) && isFinite(o2.y))) {
+    return
+  }
+
+  const dx = o2.x - o1.x
+  const dy = o2.y - o1.y
+  const nx = (Size.VectorHead * cv.scale * dx) / Math.hypot(dx, dy)
+  const ny = (Size.VectorHead * cv.scale * dy) / Math.hypot(dx, dy)
+  const ox = o2.x - nx
+  const oy = o2.y - ny
+  const w = Size.VectorWidthRatio
+
+  return `M ${o1.x} ${o1.y} L ${o2.x} ${o2.y} M ${o2.x} ${o2.y} L ${ox + w * ny} ${oy - w * nx} L ${ox - w * ny} ${oy + w * nx} Z`
+}
 
 export function drawVector(
   paper: Paper,
@@ -12,21 +31,8 @@ export function drawVector(
   p2: Point,
   props?: Omit<DrawLineProps, "kind">,
 ) {
-  const o1 = paper.toOffset(p1)
-  const o2 = paper.toOffset(p2)
-  if (!(isFinite(o1.x) && isFinite(o1.y) && isFinite(o2.x) && isFinite(o2.y))) {
-    return
-  }
-
-  const dx = o2.x - o1.x
-  const dy = o2.y - o1.y
-  const nx = (14 * dx) / Math.hypot(dx, dy)
-  const ny = (14 * dy) / Math.hypot(dx, dy)
-  const ox = o2.x - nx
-  const oy = o2.y - ny
-  const w = 0.4
-
-  const d = `M ${o1.x} ${o1.y} L ${o2.x} ${o2.y} M ${o2.x} ${o2.y} L ${ox + w * ny} ${oy - w * nx} L ${ox - w * ny} ${oy + w * nx} Z`
+  const d = vectorPath(paper, p1, p2)
+  if (!d) return
 
   paper.append(
     "line",
@@ -78,11 +84,16 @@ export const EXT_VECTOR = defineHideable({
       return { value: value as JsValue<"vector">, expr }
     }
   },
-  svg(data, paper) {
-    for (const val of each(data.value)) {
-      drawVector(paper, unpt(val[0]), unpt(val[1]), {
-        pick: pick(val, data, data.expr.field.ctx),
-      })
-    }
+  plot: {
+    order: Order.Graph,
+    draw(data) {
+      const { cv } = data.expr.sheet
+      for (const [p1, p2] of each(data.value)) {
+        const d = vectorPath(cv, unpt(p1), unpt(p2))
+        if (!d) continue
+
+        cv.path(new Path2D(d), Size.Line, Colors.Blue)
+      }
+    },
   },
 })

@@ -16,9 +16,10 @@ import { h, sx } from "../jsx"
 import { defineHideable } from "../sheet/ext/hideable"
 import { definePickTy, PICK_TY, toolbar } from "../sheet/pick-ty"
 import type { Point } from "../sheet/point"
+import { Colors, Order, Size } from "../sheet/ui/cv/consts"
 import type { DrawProps, Paper } from "../sheet/ui/paper"
 import { HANDLER_DRAG, HANDLER_PICK } from "../sheet/ui/paper/interact"
-import type { Sheet } from "../sheet/ui/sheet"
+import { Sheet } from "../sheet/ui/sheet"
 import { virtualStepExp, write, Writer } from "../sheet/write"
 import { FN_VALID } from "./bool"
 import { OP_PLOT, plotJs } from "./color-core"
@@ -135,6 +136,7 @@ const EXT_POINT = defineHideable({
         paper: expr.sheet.paper,
         expr,
         drag,
+        cv: expr.sheet.cv,
       }
     }
   },
@@ -283,6 +285,17 @@ const EXT_POINT = defineHideable({
         },
       })
     }
+  },
+  plot: {
+    order: Order.Point,
+    draw({ drag, cv, value }) {
+      for (const val of each(value)) {
+        cv.point(unpt(val), Size.Point, Colors.Purple)
+        if (drag) {
+          cv.point(unpt(val), Size.PointHaloWide, Colors.Purple, 0.3)
+        }
+      }
+    },
   },
 })
 

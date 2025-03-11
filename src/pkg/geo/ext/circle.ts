@@ -3,8 +3,8 @@ import { num, unpt } from "../../../eval/ty/create"
 import { sx } from "../../../jsx"
 import { defineHideable } from "../../../sheet/ext/hideable"
 import type { Point } from "../../../sheet/point"
+import { Colors, Order, Size } from "../../../sheet/ui/cv/consts"
 import type { DrawLineProps, Paper } from "../../../sheet/ui/paper"
-import { pick } from "./util"
 
 export function drawCircle(
   paper: Paper,
@@ -76,14 +76,17 @@ export const EXT_CIRCLE = defineHideable({
       }
     }
   },
-  svg(data, paper) {
-    for (const val of each(data.value)) {
-      drawCircle(paper, {
-        at: unpt(val.center),
-        r: num(val.radius),
-        pick: pick(val, data, data.expr.field.ctx),
-        kind: "circle",
-      })
-    }
+  plot: {
+    order: Order.Graph,
+    draw(data) {
+      for (const val of each(data.value)) {
+        data.expr.sheet.cv.circle(
+          unpt(val.center),
+          num(val.radius),
+          Size.Line,
+          Colors.Green,
+        )
+      }
+    },
   },
 })
