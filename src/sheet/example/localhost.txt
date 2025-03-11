@@ -5,3 +5,4 @@ xderivx
 x^2derivx
 x^{x}\operatorname{deriv}x
 3derivx
+symx-1

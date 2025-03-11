@@ -252,8 +252,8 @@ export const OP_CDOT: FnDist = new FnDist(
     type: "call",
     fn: OP_ADD,
     args: [
-      { type: "call", fn: OP_CDOT, args: [a, txr(b).deriv(b, wrt)] },
-      { type: "call", fn: OP_CDOT, args: [b, txr(a).deriv(a, wrt)] },
+      { type: "call", fn: OP_JUXTAPOSE, args: [a, txr(b).deriv(b, wrt)] },
+      { type: "call", fn: OP_JUXTAPOSE, args: [b, txr(a).deriv(a, wrt)] },
     ],
   })),
 )
@@ -276,7 +276,28 @@ export const OP_JUXTAPOSE = OP_CDOT.with(
   "juxtapose",
   "multiplies two values which aren't separated by an operator",
   "Cannot juxtapose %%.",
-  binaryFn(() => new Block(null), Precedence.Juxtaposition),
+  ([a, b, c]) => {
+    if (!(a && b && !c)) return
+    const block = new Block(null)
+    const cursor = block.cursor(R)
+    insertStrict(
+      cursor,
+      txr(a).display(a),
+      Precedence.Juxtaposition,
+      Precedence.Juxtaposition,
+    )
+    insert(
+      cursor,
+      txr(b).display(b),
+      Precedence.Juxtaposition,
+      Precedence.Juxtaposition,
+    )
+    return {
+      block,
+      lhs: Precedence.Juxtaposition,
+      rhs: Precedence.Juxtaposition,
+    }
+  },
 )
 
 export const OP_MOD = new FnDist(
@@ -339,11 +360,11 @@ export const OP_RAISE: FnDist = new FnDist(
       // f(x)^n --> f'(x) * nf^(n-1)
       return {
         type: "call",
-        fn: OP_CDOT,
+        fn: OP_JUXTAPOSE,
         args: [
           {
             type: "call",
-            fn: OP_CDOT,
+            fn: OP_JUXTAPOSE,
             args: [txr(a).deriv(a, wrt), b],
           },
           {
@@ -357,11 +378,11 @@ export const OP_RAISE: FnDist = new FnDist(
       // a^f = f' * a^f * ln a
       return {
         type: "call",
-        fn: OP_CDOT,
+        fn: OP_JUXTAPOSE,
         args: [
           {
             type: "call",
-            fn: OP_CDOT,
+            fn: OP_JUXTAPOSE,
             args: [
               txr(b).deriv(b, wrt),
               { type: "call", fn: FN_LN, args: [a] },
@@ -378,7 +399,7 @@ export const OP_RAISE: FnDist = new FnDist(
       // d/dx(f(x)^g(x)) = f^(g - 1) (g f' + f ln(f) g')
       return {
         type: "call",
-        fn: OP_CDOT,
+        fn: OP_JUXTAPOSE,
         args: [
           {
             type: "call",
@@ -391,16 +412,20 @@ export const OP_RAISE: FnDist = new FnDist(
             type: "call",
             fn: OP_ADD,
             args: [
-              { type: "call", fn: OP_CDOT, args: [b, txr(a).deriv(a, wrt)] },
+              {
+                type: "call",
+                fn: OP_JUXTAPOSE,
+                args: [b, txr(a).deriv(a, wrt)],
+              },
 
               // f ln(f) g'
               {
                 type: "call",
-                fn: OP_CDOT,
+                fn: OP_JUXTAPOSE,
                 args: [
                   {
                     type: "call",
-                    fn: OP_CDOT,
+                    fn: OP_JUXTAPOSE,
                     args: [a, { type: "call", fn: FN_LN, args: [a] }],
                   },
                   txr(b).deriv(b, wrt),
@@ -972,5 +997,5 @@ export const PKG_CORE_OPS: Package = {
 }
 
 export function chain(f: Sym, wrt: string, ddx: Sym): Sym {
-  return { type: "call", fn: OP_CDOT, args: [txr(f).deriv(f, wrt), ddx] }
+  return { type: "call", fn: OP_JUXTAPOSE, args: [txr(f).deriv(f, wrt), ddx] }
 }

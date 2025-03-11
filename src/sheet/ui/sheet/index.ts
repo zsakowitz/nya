@@ -28,10 +28,12 @@ import {
   registerWheelHandler,
 } from "../paper/move"
 import { PickHandler } from "../paper/pick"
+import { Paper3 } from "../paper3"
 import { btn, createDocs, DEFAULT_TO_VISIBLE_DOCS } from "./docs"
 
 export class Sheet {
   readonly paper = new Paper("absolute inset-0 size-full touch-none")
+  readonly paper3 = new Paper3("absolute inset-0 size-full touch-none")
   readonly scope: Scope
   readonly list = new ItemListGlobal(this)
 
@@ -243,7 +245,7 @@ export class Sheet {
       h(
         "relative" + (toolbar ? "" : " row-span-2"),
         canvas,
-        this.paper.el,
+        this.paper3.el,
         toolbar &&
           h(
             "absolute block top-0 left-0 right-0 h-1 from-[--nya-sidebar-shadow] to-transparent bg-gradient-to-b",

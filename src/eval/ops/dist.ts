@@ -153,8 +153,15 @@ export class FnDist<Q extends TyName = TyName> extends FnDistManual<Q> {
     )
   }
 
-  with(name: string, label: string, message?: FnError, displayFn?: DisplayFn) {
-    const dist = new FnDist<Q>(name, label, message, displayFn)
+  with(
+    name: string,
+    label: string,
+    message?: FnError,
+    // @ts-expect-error typescript please add module-level privacy like rust, class-based privacy is horrific
+    display: DisplayFn = this.displayFn,
+    deriv = this.deriv,
+  ) {
+    const dist = new FnDist<Q>(name, label, message, display, deriv)
     dist.parent = this
     return dist
   }
