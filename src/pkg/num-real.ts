@@ -273,6 +273,12 @@ export const FN_SIGN = new FnDist(
     (_, a) => `sign(${a.expr})`,
   )
 
+export const FN_SGN = FN_SIGN.with(
+  "sgn",
+  "gets the sign of a number",
+  "Cannot find the sign of %%.",
+)
+
 export const FN_LOG10 = new FnDist(
   "log",
   "takes the base-10 logarithm of a value",
@@ -593,6 +599,7 @@ float _helper_cmp_r32(float a, float b) {
   eval: {
     fn: {
       sign: FN_SIGN,
+      sgn: FN_SGN,
       ln: FN_LN,
       log: FN_LOG10,
       log_: FN_LOGB,
