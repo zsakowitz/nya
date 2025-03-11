@@ -10,7 +10,7 @@ interface Bounds {
   readonly h: number
 }
 
-export class Paper3 {
+export class Cv {
   readonly el
   private readonly canvas
   readonly ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D
@@ -257,4 +257,4 @@ export class Paper3 {
   }
 }
 
-type Paper3Mut = { -readonly [K in keyof Paper3]: Paper3[K] }
+type Paper3Mut = { -readonly [K in keyof Cv]: Cv[K] }

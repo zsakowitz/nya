@@ -1,6 +1,6 @@
 import type { Package } from "."
 import { theme } from "../sheet/theme"
-import type { Paper3 } from "../sheet/ui/paper3"
+import type { Cv } from "../sheet/ui/cv"
 
 const THEME_MAIN_AXIS_WIDTH = 1.5
 const THEME_MAJOR_LINE_ALPHA = 0.3
@@ -20,7 +20,7 @@ const THEME_AXIS_STROKE = () => theme("--nya-paper-screen-line", "black")
 const MAX_GRIDLINES_MAJOR = 200
 const MAX_GRIDLINES_MINOR = MAX_GRIDLINES_MAJOR * 5
 
-function createDrawAxes(paper: Paper3) {
+function createDrawAxes(paper: Cv) {
   const cv = paper.ctx.canvas
   const ctx = paper.ctx
 
@@ -310,6 +310,6 @@ export const PKG_GRIDLINES: Package = {
   name: "gridlines",
   label: "draws a numbered grid below the graphs",
   init(sheet) {
-    createDrawAxes(sheet.cv3)
+    createDrawAxes(sheet.cv)
   },
 }
