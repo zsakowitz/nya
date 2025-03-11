@@ -1,6 +1,7 @@
 import type { Package } from "."
 import { theme } from "../sheet/theme"
 import type { Cv } from "../sheet/ui/cv"
+import { OrderMajor } from "../sheet/ui/cv/consts"
 
 const THEME_MAIN_AXIS_WIDTH = 1.5
 const THEME_MAJOR_LINE_ALPHA = 0.3
@@ -301,8 +302,7 @@ function createDrawAxes(paper: Cv) {
     drawAxes()
   }
 
-  // TODO: confirm proper order; do lines go above or below shaders? drawn objects? etc
-  paper.fns.push(drawGridlines)
+  paper.fn(OrderMajor.Grid, drawGridlines)
 }
 
 export const PKG_GRIDLINES: Package = {

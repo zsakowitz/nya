@@ -20,6 +20,8 @@ import { doMatchReglSize } from "../../regl"
 import { REMARK } from "../../remark"
 import { Slider } from "../../slider"
 import { isDark } from "../../theme"
+import { Cv } from "../cv"
+import { OrderMajor } from "../cv/consts"
 import { Paper } from "../paper"
 import { HANDLER_PICK, type PickProps } from "../paper/interact"
 import {
@@ -28,7 +30,6 @@ import {
   registerWheelHandler,
 } from "../paper/move"
 import { PickHandler } from "../paper/pick"
-import { Cv } from "../cv"
 import { btn, createDocs, DEFAULT_TO_VISIBLE_DOCS } from "./docs"
 
 export class Sheet {
@@ -77,11 +78,13 @@ export class Sheet {
     this.scope = new Scope(options)
 
     this.paper.queue = () => this.cv.queue()
+
     // prepare js context
     registerWheelHandler(this.paper)
     registerDragHandler(this.paper)
     registerPinchHandler(this.paper)
-    this.cv.fns.push(() => this.list.draw())
+    this.cv.fn(OrderMajor.Backdrop, () => this.list.draw(true))
+    this.cv.fn(OrderMajor.Canvas, () => this.list.draw(false))
     this.pick = new PickHandler(this)
 
     // prepare glsl context

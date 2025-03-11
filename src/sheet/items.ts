@@ -179,22 +179,9 @@ export abstract class ItemList {
     return this.fromStringByFactory(factory, source, props)
   }
 
-  drawWith(suppressed: ItemRef<unknown> | undefined) {
-    for (const ref of this.items) {
-      if (ref == suppressed) continue
-
-      try {
-        ref.factory.draw?.(ref.data)
-        if (ref.sublist) {
-          ref.sublist.drawWith(suppressed)
-        }
-      } catch (e) {
-        console.warn("[draw]", e)
-      }
-    }
-
+  drawWith(suppressed: ItemRef<unknown> | undefined, backdrop: boolean) {
     const list: Record<number, ItemRef<unknown>[]> = Object.create(null)
-    this.createDrawList(list, suppressed)
+    this.createDrawList(list, suppressed, backdrop)
 
     for (const [, v] of Object.entries(list).sort(([a], [b]) => +a - +b)) {
       for (const ref of v) {
@@ -206,15 +193,19 @@ export abstract class ItemList {
   private createDrawList(
     list: Record<number, ItemRef<unknown>[]>,
     suppressed: ItemRef<unknown> | undefined,
+    backdrop: boolean,
   ) {
     for (const ref of this.items) {
       if (ref == suppressed) continue
 
       const order = ref.factory.draw3?.order(ref.data)
-      if (order != null) (list[order] ??= []).push(ref)
+
+      if (order != null && (backdrop ? order < 0 : order > 0)) {
+        ;(list[order] ??= []).push(ref)
+      }
 
       if (ref.sublist) {
-        ref.sublist.createDrawList(list, suppressed)
+        ref.sublist.createDrawList(list, suppressed, backdrop)
       }
     }
   }
@@ -284,10 +275,10 @@ export class ItemListGlobal extends ItemList {
     this._qdIndices = true
   }
 
-  draw() {
+  draw(backdrop: boolean) {
     this.sheet.pick.checkSuppressed()
     const s = this.sheet.pick.suppressed
-    this.drawWith(s)
+    this.drawWith(s, backdrop)
   }
 
   glsl() {

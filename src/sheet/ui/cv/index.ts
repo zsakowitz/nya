@@ -136,7 +136,18 @@ export class Cv {
     }
   }
 
-  readonly fns: (() => void)[] = []
+  private readonly fns: ((() => void) & { order: number })[] = []
+
+  fn(order: number, fn: (() => void) & { order?: number }) {
+    fn.order = order
+    const index = this.fns.findIndex((a) => a.order > order)
+
+    if (index == -1) {
+      this.fns.push(fn as any)
+    } else {
+      this.fns.splice(index, 0, fn as any)
+    }
+  }
 
   private draw() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
