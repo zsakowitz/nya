@@ -71,7 +71,7 @@ const EXT_GLSL = defineExt({
   aside(data) {
     return data.el
   },
-  plotGl(data) {
+  glsl(data) {
     if (!data.show) return
 
     let ast = data.expr.field.ast

@@ -231,7 +231,7 @@ export class Expr {
 
       // .plotGl()
       {
-        const gl = this.state.ext.plotGl?.(
+        const gl = this.state.ext.glsl?.(
           this.state.data,
           this.sheet.scope.helpers,
         )

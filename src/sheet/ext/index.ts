@@ -19,9 +19,8 @@ export interface Ext<T extends {}, U> {
   el?(data: NoInfer<T>): HTMLElement | undefined
   svg?(data: NoInfer<T>, paper: Paper): void
   plot?: Plottable<T, U>
-
   // TODO: remove plotGl as a special-cased function; it should be delegated to 'shader'
-  plotGl?(data: NoInfer<T>, helpers: GlslHelpers): GlslResult | undefined
+  glsl?(data: NoInfer<T>, helpers: GlslHelpers): GlslResult | undefined
 }
 
 export type AnyExt = Ext<{}, unknown>
