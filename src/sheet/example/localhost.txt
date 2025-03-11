@@ -6,3 +6,5 @@ x^2derivx
 x^{x}\operatorname{deriv}x
 3derivx
 symx-1
+@|x^2+y^2|<5^2
+@(|x^2+y^2|<3^2)rgb(60,42,\digit a6)base16

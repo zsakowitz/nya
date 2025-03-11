@@ -33,7 +33,7 @@ import { btn, createDocs, DEFAULT_TO_VISIBLE_DOCS } from "./docs"
 
 export class Sheet {
   readonly paper = new Paper("absolute inset-0 size-full touch-none")
-  readonly paper3 = new Paper3("absolute inset-0 size-full touch-none")
+  readonly cv3 = new Paper3("absolute inset-0 size-full touch-none")
   readonly scope: Scope
   readonly list = new ItemListGlobal(this)
 
@@ -76,11 +76,12 @@ export class Sheet {
 
     this.scope = new Scope(options)
 
+    this.paper.queue = () => this.cv3.queue()
     // prepare js context
     registerWheelHandler(this.paper)
     registerDragHandler(this.paper)
     registerPinchHandler(this.paper)
-    this.paper.fns.push(() => this.list.draw())
+    this.cv3.fns.push(() => this.list.draw())
     this.pick = new PickHandler(this)
 
     // prepare glsl context
@@ -245,7 +246,7 @@ export class Sheet {
       h(
         "relative" + (toolbar ? "" : " row-span-2"),
         canvas,
-        this.paper3.el,
+        this.cv3.el,
         toolbar &&
           h(
             "absolute block top-0 left-0 right-0 h-1 from-[--nya-sidebar-shadow] to-transparent bg-gradient-to-b",
@@ -315,30 +316,34 @@ export class Sheet {
       },
     })
 
+    // TODO: switch to manually rendering frames
     this.regl.frame(() => {
       this.regl.clear({ color: [0, 0, 0, 0] })
 
       const program = this.program
       if (!program) return
 
-      const { xmin, w, ymin, h } = this.paper.bounds()
+      const { xmin, w, ymin, h } = this.cv3.bounds()
       global(
         {
+          // TODO: check that all of these work on canvases where buffer width is smaller than canvas width
           u_scale: splitRaw(w / this.regl._gl.drawingBufferWidth),
           u_cx: splitRaw(xmin),
           u_cy: splitRaw(ymin),
           u_px_per_unit: [
-            ...splitRaw(this.paper.width / w),
-            ...splitRaw(this.paper.height / h),
+            ...splitRaw(this.cv3.width / w),
+            ...splitRaw(this.cv3.height / h),
           ],
           u_unit_per_hpx: [
-            ...splitRaw(1 / this.paper.xPrecision),
-            ...splitRaw(1 / this.paper.yPrecision),
+            ...splitRaw(1 / this.cv3.xPrecision),
+            ...splitRaw(1 / this.cv3.yPrecision),
           ],
           u_darkmul: isDark() ? [-1, -1, -1, 1] : [1, 1, 1, 1],
           u_darkoffset: isDark() ? [1, 1, 1, 0] : [0, 0, 0, 0],
           u_is_dark: isDark(),
         },
+
+        // this is wrapped because TS errors if you don't wrap it
         () => program(),
       )
     })
@@ -413,7 +418,7 @@ void main() {
     at: Point,
     tys: K,
   ): Selected<K[number]>[] {
-    const o = this.paper.toOffset(at)
+    const o = this.cv3.toOffset(at)
     const rect = this.paper.el.createSVGRect()
     rect.x = o.x
     rect.y = o.y
