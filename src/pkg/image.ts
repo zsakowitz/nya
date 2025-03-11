@@ -49,7 +49,10 @@ const registry = new FinalizationRegistry<string>((url) => {
 })
 
 class ImageData {
-  constructor(readonly url: string) {
+  constructor(
+    readonly url: string,
+    readonly data: ImageBitmap | null,
+  ) {
     counts.set(url, (counts.get(url) ?? 0) + 1)
     registry.register(this, url)
   }
@@ -167,6 +170,15 @@ const FACTORY: ItemFactory<Data> = {
       "hidden absolute size-full inset-0 object-cover blur",
     )
     const img2 = hx("img", "hidden absolute size-full inset-0 object-contain")
+    img2.addEventListener("load", () => {
+      const id = ++bitmapId
+      createImageBitmap(img2).then((bitmap_) => {
+        if (id == bitmapId) {
+          bitmap = bitmap_
+          update()
+        }
+      })
+    })
 
     const output = new FieldComputed(ref.root.sheet.scope)
 
@@ -192,8 +204,8 @@ const FACTORY: ItemFactory<Data> = {
       ),
     }
 
-    let natWidth = 0
-    let natHeight = 0
+    let bitmapId = 0
+    let bitmap: ImageBitmap | null = null
 
     function update() {
       output.onBeforeChange()
@@ -202,9 +214,9 @@ const FACTORY: ItemFactory<Data> = {
       token.clone().insertAt(cursor, L)
       new OpEq(false).insertAt(cursor, L)
       new CmdImgRaw({
-        src: data.url ? new ImageData(data.url) : null,
-        height: natHeight,
-        width: natWidth,
+        src: data.url ? new ImageData(data.url, bitmap) : null,
+        height: bitmap?.height ?? 0,
+        width: bitmap?.width ?? 0,
       }).insertAt(cursor, L)
       output.onAfterChange(false)
       output.queueAstUpdate()
@@ -222,12 +234,6 @@ const FACTORY: ItemFactory<Data> = {
     check()
     update()
 
-    img2.onload = () => {
-      natWidth = img2.naturalWidth
-      natHeight = img2.naturalHeight
-      update()
-    }
-
     field.addEventListener("copy", (event) => {
       event.preventDefault()
       navigator.clipboard.writeText(`\\token{${token.id}}`)
@@ -243,19 +249,15 @@ const FACTORY: ItemFactory<Data> = {
       field.value = ""
       if (!file) return
 
-      const prev = data.url
       const next = URL.createObjectURL(file)
       data.url = next
       img1.src = img2.src = next
+      bitmap = null
       none.classList.add("hidden")
       img1.classList.remove("hidden")
       img1.classList.add("block")
       img2.classList.remove("hidden")
       img2.classList.add("block")
-
-      if (prev) {
-        URL.revokeObjectURL(prev)
-      }
 
       check()
     })
