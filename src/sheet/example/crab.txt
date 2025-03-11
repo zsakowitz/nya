@@ -1,8 +1,8 @@
-#nya:image#
+#nya:image#9
 s=\operatorname{segment}\left(p_{1},p_{2}\right)
 p_{1}=\left(-5.28,-0.07\right)
 p_{2}=\left(5,0\right)
-C=\operatorname{image}\left(i_{1},s\right)
+C=\operatorname{image}\left(\token9,s\right)
 q_{1}=\left(-3.57,6.24\right)
 q_{2}=\left(-0.61,5.4\right)
 l_{1}=\operatorname{segment}\left(q_{1},q_{2}\right)
