@@ -21,7 +21,6 @@ import { PICK_TY, definePickTy, toolbar, type Data } from "../../sheet/pick-ty"
 import { normVector, type Point } from "../../sheet/point"
 import { Colors, Size } from "../../sheet/ui/cv/consts"
 import { Expr } from "../../sheet/ui/expr"
-import { segmentByPaper } from "../../sheet/ui/paper"
 import type { Selected } from "../../sheet/ui/sheet"
 import {
   FN_GLIDER,
@@ -41,7 +40,7 @@ import {
 import { EXT_ARC, drawArc, drawArcCv } from "./ext/arc"
 import { EXT_CIRCLE, drawCircle } from "./ext/circle"
 import { EXT_LINE, drawLine, getLineBounds } from "./ext/line"
-import { EXT_POLYGON, drawPolygon } from "./ext/polygon"
+import { EXT_POLYGON } from "./ext/polygon"
 import { EXT_RAY, drawRay, getRayBounds } from "./ext/ray"
 import { EXT_SEGMENT } from "./ext/segment"
 import { EXT_VECTOR, drawVector, vectorPath } from "./ext/vector"
@@ -207,9 +206,7 @@ const PICK_SEGMENT = definePickTy(
   ],
   (sheet, p1, p2) => {
     if (p1 && p2) {
-      segmentByPaper(sheet.paper, unpt(p1.value), unpt(p2.value), {
-        ghost: true,
-      })
+      sheet.cv.polygon([unpt(p1.value), unpt(p2.value)], Size.Line, Colors.Blue)
     }
   },
 )
@@ -469,10 +466,13 @@ const PICK_POLYGON: Data = {
 
       const pts = args as JsVal<"point32" | "point64">[]
 
-      drawPolygon(
-        sheet.paper,
+      sheet.cv.polygon(
         pts.map((x) => unpt(x.value)),
-        { closed: false, ghost: true },
+        Size.Line,
+        Colors.Blue,
+        1,
+        0.3,
+        false,
       )
     },
   },

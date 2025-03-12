@@ -346,15 +346,6 @@ export type DrawLineProps = Omit<DrawProps, "pick"> & {
   pick?: Omit<PickProps, "draw">
 }
 
-export function segmentByPaper(
-  paper: Paper,
-  p1: Point,
-  p2: Point,
-  props: DrawLineProps,
-) {
-  segmentByOffset(paper, paper.toOffset(p1), paper.toOffset(p2), props)
-}
-
 export function segmentByOffset(
   paper: Paper,
   o1: Point,
