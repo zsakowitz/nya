@@ -1,9 +1,10 @@
 import { each, type JsValue } from "../../../eval/ty"
 import { sx } from "../../../jsx"
 import { defineHideable } from "../../../sheet/ext/hideable"
+import type { Cv } from "../../../sheet/ui/cv"
+import { Colors, Order, Size } from "../../../sheet/ui/cv/consts"
 import type { DrawLineProps, Paper } from "../../../sheet/ui/paper"
 import { arcPath, computeArcVal, type Arc } from "../arc"
-import { pick } from "./util"
 
 export function drawArc(
   paper: Paper,
@@ -68,6 +69,25 @@ export function drawArc(
   }
 }
 
+export function drawArcCv(cv: Cv, arc: Arc) {
+  const o = arcPath(cv, arc)
+
+  const d =
+    o.type == "circle" ?
+      `M ${o.p1.x} ${o.p1.y} A ${o.r.x} ${o.r.y} 0 ${o.flags} ${o.p3.x} ${o.p3.y}`
+    : o.type == "segment" ? `M ${o.p1.x} ${o.p1.y} L ${o.p3.x} ${o.p3.y}`
+    : o.type == "tworay" ?
+      (o.r1 ? `M ${o.r1[0].x} ${o.r1[0].y} L ${o.r1[1].x} ${o.r1[1].y}` : "") +
+      (o.r3 ? ` M ${o.r3[0].x} ${o.r3[0].y} L ${o.r3[1].x} ${o.r3[1].y}` : "")
+    : null
+
+  if (!d) {
+    return
+  }
+
+  cv.path(new Path2D(d), Size.Line, Colors.Green)
+}
+
 export const EXT_ARC = defineHideable({
   data(expr) {
     const value = expr.js?.value
@@ -80,14 +100,13 @@ export const EXT_ARC = defineHideable({
       }
     }
   },
-  svg(data, paper) {
-    for (const val of each(data.value)) {
-      const arc = computeArcVal(val)
-      drawArc(paper, {
-        arc,
-        pick: pick(val, data, data.expr.field.ctx),
-        kind: "arc",
-      })
-    }
+  plot: {
+    order: Order.Graph,
+    draw(data) {
+      for (const val of each(data.value)) {
+        const arc = computeArcVal(val)
+        drawArcCv(data.expr.sheet.cv, arc)
+      }
+    },
   },
 })

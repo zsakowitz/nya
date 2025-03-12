@@ -276,6 +276,11 @@ export class Paper {
     }
   }
 
+  /** @deprecated Used for interop with cv */
+  toCanvasDelta(paperDelta: Point): Point {
+    return this.toOffsetDelta(paperDelta)
+  }
+
   offsetDistance(a: Point, b: Point) {
     const { x, y } = this.toOffsetDelta({ x: a.x - b.x, y: a.y - b.y })
     return Math.hypot(x, y)

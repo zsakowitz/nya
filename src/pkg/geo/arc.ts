@@ -2,7 +2,8 @@ import type { Val } from "../../eval/ty"
 import { NANPT, unpt } from "../../eval/ty/create"
 import { gliderOnLine } from "../../eval/ty/info"
 import type { Point } from "../../sheet/point"
-import type { Paper } from "../../sheet/ui/paper"
+import { Cv } from "../../sheet/ui/cv"
+import { Paper } from "../../sheet/ui/paper"
 import { getRayBounds } from "./ext/ray"
 import { intersectLineLineJs } from "./fn/intersection"
 
@@ -119,34 +120,34 @@ export type ArcPath =
   | { type: "segment"; p1: Point; p3: Point }
   | { type: "tworay"; r1: [Point, Point] | null; r3: [Point, Point] | null }
 
-export function arcPath(paper: Paper, arc: Arc): ArcPath {
+export function arcPath(cv: Cv | Paper, arc: Arc): ArcPath {
   switch (arc.type) {
     case "invalid":
       return { type: "invalid" }
     case "segment":
       return {
         type: "segment",
-        p1: paper.toOffset(arc.p1),
-        p3: paper.toOffset(arc.p3),
+        p1: cv.toCanvas(arc.p1),
+        p3: cv.toCanvas(arc.p3),
       }
     case "tworay":
       return {
         type: "tworay",
-        r1: getRayBounds(paper, arc.p1, {
+        r1: getRayBounds(cv, arc.p1, {
           x: 2 * arc.p1.x - arc.p3.x,
           y: 2 * arc.p1.y - arc.p3.y,
         }),
-        r3: getRayBounds(paper, arc.p3, {
+        r3: getRayBounds(cv, arc.p3, {
           x: 2 * arc.p3.x - arc.p1.x,
           y: 2 * arc.p3.y - arc.p1.y,
         }),
       }
     case "circle":
-      const delta = paper.toOffsetDelta({ x: arc.r, y: arc.r })
+      const delta = cv.toCanvasDelta({ x: arc.r, y: arc.r })
       return {
         type: "circle",
-        p1: paper.toOffset(arc.p1),
-        p3: paper.toOffset(arc.p3),
+        p1: cv.toCanvas(arc.p1),
+        p3: cv.toCanvas(arc.p3),
         r: delta,
         flags: `${+arc.large} ${+arc.swap}`,
       }
