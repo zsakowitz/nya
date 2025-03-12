@@ -4,14 +4,12 @@ import { defineHideable } from "../../../sheet/ext/hideable"
 import type { Point } from "../../../sheet/point"
 import type { Cv } from "../../../sheet/ui/cv"
 import { Colors, Order, Size } from "../../../sheet/ui/cv/consts"
-import type { DrawLineProps } from "../../../sheet/ui/paper"
-import { segmentByOffset, type Paper } from "../../../sheet/ui/paper"
+import type { Paper } from "../../../sheet/ui/paper"
 
-// FIXME: make signature match ext/ray
 export function getLineBounds(
+  cv: Paper | Cv,
   { x: x1, y: y1 }: Point,
   { x: x2, y: y2 }: Point,
-  cv: Paper | Cv,
 ): [Point, Point] {
   const { xmin, w, ymin, h } = cv.bounds()
 
@@ -30,20 +28,6 @@ export function getLineBounds(
   ]
 }
 
-export function drawLine(
-  paper: Paper,
-  p1: Point,
-  p2: Point,
-  props: DrawLineProps,
-) {
-  const [o1, o2] = getLineBounds(p1, p2, paper)
-  if (!(isFinite(o1.x) && isFinite(o1.y) && isFinite(o2.x) && isFinite(o2.y))) {
-    return
-  }
-
-  segmentByOffset(paper, o1, o2, props)
-}
-
 export const EXT_LINE = defineHideable({
   data(expr) {
     const value = expr.js?.value
@@ -57,7 +41,7 @@ export const EXT_LINE = defineHideable({
     draw(data) {
       for (const val of each(data.value)) {
         data.expr.sheet.cv.polygonByCanvas(
-          getLineBounds(unpt(val[0]), unpt(val[1]), data.expr.sheet.cv),
+          getLineBounds(data.expr.sheet.cv, unpt(val[0]), unpt(val[1])),
           Size.Line,
           Colors.Blue,
         )

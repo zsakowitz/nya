@@ -39,9 +39,9 @@ import {
 } from "./ext/angle"
 import { EXT_ARC, drawArc, drawArcCv } from "./ext/arc"
 import { EXT_CIRCLE, drawCircle } from "./ext/circle"
-import { EXT_LINE, drawLine, getLineBounds } from "./ext/line"
+import { EXT_LINE, getLineBounds } from "./ext/line"
 import { EXT_POLYGON } from "./ext/polygon"
-import { EXT_RAY, drawRay, getRayBounds } from "./ext/ray"
+import { EXT_RAY, getRayBounds } from "./ext/ray"
 import { EXT_SEGMENT } from "./ext/segment"
 import { EXT_VECTOR, drawVector, vectorPath } from "./ext/vector"
 import { FN_ANGLE, FN_DIRECTEDANGLE } from "./fn/angle"
@@ -171,7 +171,7 @@ function lineInfo<T extends "segment" | "ray" | "line" | "vector">(
           break
         }
         case "line": {
-          const bounds = getLineBounds(unpt(val[0]), unpt(val[1]), cv)
+          const bounds = getLineBounds(cv, unpt(val[0]), unpt(val[1]))
           if (bounds) cv.polygonByCanvas(bounds, Size.Line, Colors.Blue)
           break
         }
@@ -193,7 +193,8 @@ const PICK_LINE = definePickTy(
   ],
   (sheet, p1, p2) => {
     if (p1 && p2) {
-      drawLine(sheet.paper, unpt(p1.value), unpt(p2.value), { ghost: true })
+      const bounds = getLineBounds(sheet.cv, unpt(p1.value), unpt(p2.value))
+      sheet.cv.polygonByCanvas(bounds, Size.Line, Colors.Blue)
     }
   },
 )
@@ -219,10 +220,8 @@ const PICK_RAY = definePickTy(
   ],
   (sheet, p1, p2) => {
     if (p1 && p2) {
-      drawRay(sheet.paper, unpt(p1.value), unpt(p2.value), {
-        ghost: true,
-        kind: "ray",
-      })
+      const bounds = getRayBounds(sheet.cv, unpt(p1.value), unpt(p2.value))
+      if (bounds) sheet.cv.polygonByCanvas(bounds, Size.Line, Colors.Blue)
     }
   },
 )
@@ -289,7 +288,8 @@ const PICK_PERPENDICULAR = definePickTy(
   (sheet, p1, p2) => {
     if (p1 && p2) {
       const line = perpendicularJs(p1, p2)
-      drawLine(sheet.paper, unpt(line[0]), unpt(line[1]), { ghost: true })
+      const bounds = getLineBounds(sheet.cv, unpt(line[0]), unpt(line[1]))
+      sheet.cv.polygonByCanvas(bounds, Size.Line, Colors.Blue)
     }
   },
 )
@@ -303,7 +303,8 @@ const PICK_PARALLEL = definePickTy(
   (sheet, p1, p2) => {
     if (p1 && p2) {
       const line = parallelJs(p1, p2)
-      drawLine(sheet.paper, unpt(line[0]), unpt(line[1]), { ghost: true })
+      const bounds = getLineBounds(sheet.cv, unpt(line[0]), unpt(line[1]))
+      sheet.cv.polygonByCanvas(bounds, Size.Line, Colors.Blue)
     }
   },
 )
@@ -1189,7 +1190,8 @@ const PICK_ANGLEBISECTOR = definePickTy(
   (sheet, a) => {
     if (a) {
       const [p1, p2] = bisectAngleJs(a)
-      drawRay(sheet.paper, unpt(p1), unpt(p2), { ghost: true, kind: "ray" })
+      const bounds = getRayBounds(sheet.cv, unpt(p1), unpt(p2))
+      if (bounds) sheet.cv.polygonByCanvas(bounds, Size.Line, Colors.Blue)
     }
   },
 )
