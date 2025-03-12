@@ -128,10 +128,12 @@ export class Paper {
       )
       ;(this as any).width = this.el.clientWidth
       ;(this as any).height = this.el.clientHeight
-      this.queue()
     }
     resize()
-    new ResizeObserver(resize).observe(this.el)
+    new ResizeObserver(() => {
+      resize()
+      this.queue()
+    }).observe(this.el)
     onTheme(() => this.draw())
   }
 
@@ -226,7 +228,9 @@ export class Paper {
   private queued = false
 
   queue() {
+    console.error("Paper.queue should be overriden")
     if (this.queued) return
+    this.queued = true
     requestAnimationFrame(() => {
       this.queued = false
       this.draw()

@@ -10,12 +10,12 @@ export interface Point {
 }
 
 export function norm(pt: Point, distance = 1): Point {
-  const hypot = distance * Math.hypot(pt.x, pt.y)
+  const hypot = Math.hypot(pt.x, pt.y)
   if (hypot == 0) return pt
 
   return {
-    x: pt.x / hypot,
-    y: pt.y / hypot,
+    x: (distance * pt.x) / hypot,
+    y: (distance * pt.y) / hypot,
   }
 }
 

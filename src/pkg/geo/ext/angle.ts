@@ -12,12 +12,13 @@ import { R } from "../../../field/model"
 import { sx } from "../../../jsx"
 import { defineHideable } from "../../../sheet/ext/hideable"
 import { normVector, type Point } from "../../../sheet/point"
+import type { Cv } from "../../../sheet/ui/cv"
+import { Colors, Order, Size } from "../../../sheet/ui/cv/consts"
 import type { DrawLineProps, Paper } from "../../../sheet/ui/paper"
 import { STORE_EVAL } from "../../eval"
-import { pick } from "./util"
 
-const LINE = 32
-const ARC = 20
+const LINE = Size.AngleGuideLength
+const ARC = Size.AngleArcDistance
 
 export function angleJs({ value, type }: JsVal<"angle" | "directedangle">) {
   const p0 = unpt(value[0])
@@ -216,6 +217,100 @@ export function drawAngle(
   paper.append("anglearc", g)
 }
 
+export function drawAngleCv(
+  cv: Cv,
+  p1: Point,
+  p2: Point,
+  p3: Point,
+  props: { kind: "angle" | "directedangle" },
+) {
+  const measure =
+    (Math.atan2(p1.x - p2.x, p1.y - p2.y) -
+      Math.atan2(p3.x - p2.x, p3.y - p2.y) +
+      2 * Math.PI) %
+    (2 * Math.PI)
+
+  const swap = measure > Math.PI
+
+  const o1 = cv.toCanvas(p1)
+  const o2 = cv.toCanvas(p2)
+  const o3 = cv.toCanvas(p3)
+  const s1 = normVector(o2, o1, cv.scale * LINE)
+  const s3 = normVector(o2, o3, cv.scale * LINE)
+  const a1 = normVector(o2, o1, cv.scale * ARC)
+  const a3 = normVector(o2, o3, cv.scale * ARC)
+
+  const src = swap ? a3 : a1
+  const dst = swap ? a1 : a3
+
+  const plainPath =
+    (
+      props.kind == "angle" &&
+      Math.abs((measure % Math.PI) - Math.PI / 2) < 9e-7
+    ) ?
+      `M ${src.x} ${src.y} L ${a1.x + a3.x - o2.x} ${a1.y + a3.y - o2.y} L ${dst.x} ${dst.y}`
+    : `M ${src.x} ${src.y} A ${cv.scale * ARC} ${cv.scale * ARC} 0 0 0 ${dst.x} ${dst.y}`
+
+  let d = plainPath
+
+  if (props.kind == "directedangle") {
+    const size =
+      cv.scale *
+      Math.max(
+        Size.DirectedAngleMinHeadSize,
+        Math.min(
+          Size.DirectedAngleMaxHeadSize,
+          ((measure > Math.PI ? 2 * Math.PI - measure : measure) * ARC) / 2,
+        ),
+      )
+
+    // source: https://www.desmos.com/geometry/e4uy7yykhv
+    // rotates the triangle so the center of the back edge is on the angle's arc
+    const adj = Math.min(
+      Math.atan(Size.VectorWidthRatio),
+      0.0323385 * (size / cv.scale) - 0.00388757,
+    )
+
+    const tilt = swap ? -adj : Math.PI + adj
+    const dx1 = Math.cos(tilt) * (a3.y - o2.y) + Math.sin(tilt) * (a3.x - o2.x)
+    const dy1 = Math.cos(tilt) * (a3.x - o2.x) - Math.sin(tilt) * (a3.y - o2.y)
+
+    const dx = -dx1
+    const dy = dy1
+    const nx = (size * dx) / Math.hypot(dx, dy)
+    const ny = (size * dy) / Math.hypot(dx, dy)
+    const ox = a3.x - nx
+    const oy = a3.y - ny
+    const w = Size.VectorWidthRatio
+
+    cv.path(
+      new Path2D(
+        `M ${a3.x} ${a3.y} L ${ox + w * ny} ${oy - w * nx} L ${ox - w * ny} ${oy + w * nx} Z`,
+      ),
+      Size.Line,
+      Colors.Angle,
+      1,
+      1,
+    )
+  }
+
+  cv.path(new Path2D(d), Size.Line, Colors.Angle)
+
+  if (props.kind == "angle") {
+    cv.path(
+      new Path2D(`${plainPath} L ${o2.x} ${o2.y} Z`),
+      Size.Line,
+      Colors.Angle,
+      0,
+      0.3,
+    )
+  }
+
+  for (const s of [s1, s3]) {
+    cv.polygonByCanvas([o2, s], Size.AngleGuide, Colors.Angle, 0.5)
+  }
+}
+
 export const EXT_ANGLE = defineHideable({
   data(expr) {
     const raw = expr.js?.value
@@ -233,13 +328,19 @@ export const EXT_ANGLE = defineHideable({
       return { value, expr, el }
     }
   },
-  svg(data, paper) {
-    for (const val of each(data.value)) {
-      drawAngle(paper, unpt(val[0]), unpt(val[1]), unpt(val[2]), {
-        kind: data.value.type,
-        pick: pick(val, data, data.expr.field.ctx),
-      })
-    }
+  plot: {
+    order: Order.Graph,
+    draw(data) {
+      for (const val of each(data.value)) {
+        drawAngleCv(
+          data.expr.sheet.cv,
+          unpt(val[0]),
+          unpt(val[1]),
+          unpt(val[2]),
+          { kind: data.value.type },
+        )
+      }
+    },
   },
   el(data) {
     return data.el

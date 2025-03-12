@@ -1,7 +1,7 @@
 import type { GlslHelpers, GlslResult } from "../../eval/lib/fn"
+import type { Plottable } from "../ui/cv/item"
 import type { Expr } from "../ui/expr"
 import type { Paper } from "../ui/paper"
-import type { Plottable } from "../ui/cv/item"
 
 /** A possible result of a math expression. */
 export interface Ext<T extends {}, U> {

@@ -112,11 +112,13 @@ export class Cv {
       const height = ((this as Paper3Mut).height = this.el.clientHeight)
       this.canvas.width = width * scale
       this.canvas.height = height * scale
-      this.queue()
     }
     resize()
-    new ResizeObserver(resize).observe(this.el)
-    onTheme(() => this.draw())
+    new ResizeObserver(() => {
+      resize()
+      this.queue()
+    }).observe(this.el)
+    onTheme(() => this.queue())
   }
 
   bounds(): Bounds {
@@ -150,6 +152,7 @@ export class Cv {
   }
 
   private draw() {
+    console.log("drawing")
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
 
     for (const fn of this.fns) {
@@ -165,6 +168,7 @@ export class Cv {
 
   queue() {
     if (this.queued) return
+    this.queued = true
     requestAnimationFrame(() => {
       this.queued = false
       this.draw()
@@ -282,20 +286,27 @@ export class Cv {
       2 * Math.PI,
     )
     this.ctx.fill()
+    this.ctx.globalAlpha = 1
   }
 
   /** Accepts canvas coordinates. */
-  path(path: Path2D, size: number, color: string, alpha = 1, fillAlpha = 1) {
+  path(
+    path: Path2D,
+    size: number,
+    color: string,
+    strokeAlpha = 1,
+    fillAlpha = 0,
+  ) {
     this.ctx.strokeStyle = color
-    this.ctx.globalAlpha = alpha
     this.ctx.lineWidth = size * this.scale
     this.ctx.lineCap = "round"
     this.ctx.lineJoin = "round"
-    this.ctx.globalAlpha = alpha * fillAlpha
+    this.ctx.globalAlpha = fillAlpha
     this.ctx.fillStyle = color
     this.ctx.fill(path)
-    this.ctx.globalAlpha = alpha
+    this.ctx.globalAlpha = strokeAlpha
     this.ctx.stroke(path)
+    this.ctx.globalAlpha = 1
   }
 
   // TODO: everything except point should probably just make a Path2D and delegate to `path`
@@ -309,13 +320,14 @@ export class Cv {
     const { x: rx, y: ry } = this.toCanvasDelta({ x: r, y: r })
     this.ctx.ellipse(x, y, rx, -ry, 0, 0, 2 * Math.PI)
     this.ctx.stroke()
+    this.ctx.globalAlpha = 1
   }
 
   polygon(
     ps: Point[],
     size: number,
     color: string,
-    alpha?: number,
+    strokeAlpha?: number,
     fillAlpha?: number,
     closed?: boolean,
   ) {
@@ -323,7 +335,7 @@ export class Cv {
       ps.map((p) => this.toCanvas(p)),
       size,
       color,
-      alpha,
+      strokeAlpha,
       fillAlpha,
       closed,
     )
@@ -333,15 +345,14 @@ export class Cv {
     pts: Point[],
     size: number,
     color: string,
-    alpha = 1,
-    fillAlpha = 1,
+    strokeAlpha = 1,
+    fillAlpha = 0,
     closed = false,
   ) {
     if (pts.length <= 1) return
 
     this.ctx.beginPath()
     this.ctx.strokeStyle = color
-    this.ctx.globalAlpha = alpha
     this.ctx.lineWidth = size * this.scale
     this.ctx.lineCap = "round"
     this.ctx.lineJoin = "round"
@@ -353,12 +364,13 @@ export class Cv {
       this.ctx.closePath()
     }
     if (pts.length > 2) {
-      this.ctx.globalAlpha = alpha * fillAlpha
+      this.ctx.globalAlpha = fillAlpha
       this.ctx.fillStyle = color
       this.ctx.fill()
-      this.ctx.globalAlpha = alpha
     }
+    this.ctx.globalAlpha = strokeAlpha
     this.ctx.stroke()
+    this.ctx.globalAlpha = 1
   }
 }
 

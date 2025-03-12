@@ -12,6 +12,8 @@ import { fa } from "../field/fa"
 import { Block, L, R } from "../field/model"
 import { h, px, sx } from "../jsx"
 import { defineExt } from "../sheet/ext"
+import type { Cv } from "../sheet/ui/cv"
+import { Order } from "../sheet/ui/cv/consts"
 import type { Paper } from "../sheet/ui/paper"
 import { example } from "../sheet/ui/sheet/docs"
 import { dilateJs, mark as markDilate } from "./geo/fn/dilate"
@@ -83,16 +85,47 @@ function draw(paper: Paper, val: Val<"image2d">) {
   )
 }
 
+function drawCv(cv: Cv, val: Val<"image2d">) {
+  if (!val.data.src?.data) {
+    return
+  }
+
+  const p1 = cv.toCanvas(unpt(val.p1))
+  const p2 = cv.toCanvas(unpt(val.p2))
+  const width = Math.hypot(p1.x - p2.x, p1.y - p2.y)
+  const height =
+    (val.aspect ? 1 / num(val.aspect) : val.data.height / val.data.width) *
+    width
+
+  const transform = new DOMMatrix()
+  transform.translateSelf(p1.x, p1.y)
+  transform.rotateSelf((180 / Math.PI) * Math.atan2(p2.y - p1.y, p2.x - p1.x))
+  transform.translateSelf(-p1.x, -p1.y)
+  if (height < 0) transform.scaleSelf(1, -1)
+  cv.ctx.setTransform(transform)
+  cv.ctx.drawImage(
+    val.data.src.data,
+    p1.x,
+    (p1.y - height) * Math.sign(height),
+    width,
+    Math.abs(height),
+  )
+  cv.ctx.resetTransform()
+}
+
 const EXT = defineExt({
-  data(expr): JsValue<"image2d"> | undefined {
+  data(expr) {
     if (expr.js?.value.type == "image2d") {
-      return expr.js.value as JsValue<"image2d">
+      return { value: expr.js.value as JsValue<"image2d">, expr }
     }
   },
-  svg(data, paper) {
-    for (const val of each(data)) {
-      draw(paper, val)
-    }
+  plot: {
+    order: Order.Backdrop,
+    draw(data) {
+      for (const val of each(data.value)) {
+        drawCv(data.expr.sheet.cv, val)
+      }
+    },
   },
 })
 

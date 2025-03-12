@@ -92,7 +92,7 @@ export const EXT_VECTOR = defineHideable({
         const d = vectorPath(cv, unpt(p1), unpt(p2))
         if (!d) continue
 
-        cv.path(new Path2D(d), Size.Line, Colors.Blue)
+        cv.path(new Path2D(d), Size.Line, Colors.Blue, 1, 1)
       }
     },
   },

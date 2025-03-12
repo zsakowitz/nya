@@ -2,6 +2,7 @@ export const Colors = Object.freeze({
   Purple: "#6042a6",
   Blue: "#2d70b3",
   Green: "#388c46",
+  Angle: "black", // TODO: var(--nya-angle)
 })
 
 export const OrderMajor = Object.freeze({
@@ -14,10 +15,9 @@ export const OrderMajor = Object.freeze({
 export const Order = Object.freeze({
   Backdrop: -1,
   Grid: 1,
-  AngleLine: 2,
   Graph: 2,
-  AngleArc: 2,
-  Point: 3,
+  Angle: 3,
+  Point: 4,
 })
 
 const queryPointerCoarse = matchMedia("(pointer: coarse)")
@@ -51,6 +51,13 @@ export const Size = Object.freeze({
 
   VectorHead: 12,
   VectorWidthRatio: 0.4,
+
+  AngleGuide: 1.5,
+  AngleArcDistance: 20,
+  AngleGuideLength: 32,
+
+  DirectedAngleMinHeadSize: 4,
+  DirectedAngleMaxHeadSize: 8,
 
   /**
    * The offset distance required to consider something a "touch".

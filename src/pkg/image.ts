@@ -214,12 +214,14 @@ const FACTORY: ItemFactory<Data> = {
       token.clone().insertAt(cursor, L)
       new OpEq(false).insertAt(cursor, L)
       new CmdImgRaw({
-        src: data.url ? new ImageData(data.url, bitmap) : null,
+        src: data.url && bitmap ? new ImageData(data.url, bitmap) : null,
         height: bitmap?.height ?? 0,
         width: bitmap?.width ?? 0,
       }).insertAt(cursor, L)
       output.onAfterChange(false)
       output.queueAstUpdate()
+      // TODO: figure out why we have to queue manually; shouldn't it happen automatically?
+      ref.root.sheet.cv.queue()
     }
 
     function check() {
