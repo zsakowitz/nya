@@ -143,149 +143,150 @@ const EXT_POINT = defineHideable({
   el(data) {
     return EXT_EVAL.el!(EXT_EVAL.data(data.expr)!)
   },
-  svg(data, paper) {
-    for (const pt of each(data.value)) {
-      const { drag } = data
-      const move =
-        drag &&
-        ((at: Point) => {
-          switch (drag.type) {
-            case "split":
-              if (drag.x) {
-                new Writer(drag.x.span.remove().span()).set(
-                  at.x,
-                  data.paper.xPrecision,
-                  drag.x.signed,
-                )
-                drag.x.field.sel = drag.x.field.block.cursor(R).selection()
-                drag.x.field.queueAstUpdate()
-              }
-
-              if (drag.y) {
-                new Writer(drag.y.span.remove().span()).set(
-                  at.y,
-                  data.paper.yPrecision,
-                  drag.y.signed,
-                )
-                drag.y.field.sel = drag.y.field.block.cursor(R).selection()
-                drag.y.field.queueAstUpdate()
-              }
-
-              break
-            case "complex":
-              {
-                const x = at.x
-                const xp = data.paper.xPrecision
-                const y = at.y
-                const yp = data.paper.yPrecision
-                const cursor = drag.span.remove()
-                write(
-                  cursor,
-                  real(x),
-                  frac(10, 1),
-                  virtualStepExp(xp, 10),
-                  false,
-                )
-                write(
-                  cursor,
-                  real(y),
-                  frac(10, 1),
-                  virtualStepExp(yp, 10),
-                  true,
-                )
-                new CmdVar("i", data.expr.field.options).insertAt(cursor, L)
-                drag.field.sel = drag.field.block.cursor(R).selection()
-                drag.field.queueAstUpdate()
-              }
-              break
-            case "glider":
-              {
-                const { value, precision } = (
-                  TY_INFO[drag.shape.type].glide! as TyGlide<any>
-                )({
-                  paper: data.paper,
-                  point: at,
-                  shape: drag.shape.value,
-                })
-                new Writer(drag.value.span.remove().span()).set(
-                  value,
-                  precision,
-                )
-                drag.value.field.sel = drag.value.field.block
-                  .cursor(R)
-                  .selection()
-                drag.value.field.queueAstUpdate()
-              }
-              break
-          }
-        })
-
-      const center = drawPoint(paper, {
-        at: unpt(pt),
-        halo: !!drag,
-        hover: !!drag,
-        drag: move ? () => move : undefined,
-        pick: {
-          val() {
-            return {
-              type:
-                data.value.type == "c32" ? "point32"
-                : data.value.type == "c64" ? "point64"
-                : data.value.type,
-              value: pt,
-            }
-          },
-          ref() {
-            if (data.expr.field.ast.type == "binding") {
-              const block = new Block(null)
-              const cursor = block.cursor(R)
-              CmdVar.leftOf(
-                cursor,
-                data.expr.field.ast.name,
-                data.expr.field.options,
-                data.expr.field.ctx,
-              )
-              if (data.value.type.startsWith("c")) {
-                new CmdDot().insertAt(cursor, L)
-                for (const c of "point") {
-                  new CmdVar(c, data.expr.field.options).insertAt(cursor, L)
-                }
-              }
-              return block
-            }
-
-            const c = data.expr.field.block.cursor(L)
-            const token = CmdToken.new(data.expr.field.scope.ctx)
-            token.insertAt(c, L)
-            new OpEq(false).insertAt(c, L)
-            data.expr.field.dirtyAst = data.expr.field.dirtyValue = true
-            data.expr.field.trackNameNow()
-            data.expr.field.scope.queueUpdate()
-
-            const block = new Block(null)
-            const cursor = block.cursor(R)
-            token.clone().insertAt(cursor, L)
-            if (data.value.type.startsWith("c")) {
-              new CmdDot().insertAt(cursor, L)
-              for (const c of "point") {
-                new CmdVar(c, data.expr.field.options).insertAt(cursor, L)
-              }
-            }
-
-            return block
-          },
-          draw() {
-            center!.style.transition = "none"
-            center!.style.r = "6"
-            center!.parentElement!.style.cursor = "pointer"
-          },
-          focus() {
-            requestAnimationFrame(() => data.expr.focus())
-          },
-        },
-      })
-    }
-  },
+  // FIXME: remove this after using it as a reference
+  //   svg(data, paper) {
+  //     for (const pt of each(data.value)) {
+  //       const { drag } = data
+  //       const move =
+  //         drag &&
+  //         ((at: Point) => {
+  //           switch (drag.type) {
+  //             case "split":
+  //               if (drag.x) {
+  //                 new Writer(drag.x.span.remove().span()).set(
+  //                   at.x,
+  //                   data.paper.xPrecision,
+  //                   drag.x.signed,
+  //                 )
+  //                 drag.x.field.sel = drag.x.field.block.cursor(R).selection()
+  //                 drag.x.field.queueAstUpdate()
+  //               }
+  //
+  //               if (drag.y) {
+  //                 new Writer(drag.y.span.remove().span()).set(
+  //                   at.y,
+  //                   data.paper.yPrecision,
+  //                   drag.y.signed,
+  //                 )
+  //                 drag.y.field.sel = drag.y.field.block.cursor(R).selection()
+  //                 drag.y.field.queueAstUpdate()
+  //               }
+  //
+  //               break
+  //             case "complex":
+  //               {
+  //                 const x = at.x
+  //                 const xp = data.paper.xPrecision
+  //                 const y = at.y
+  //                 const yp = data.paper.yPrecision
+  //                 const cursor = drag.span.remove()
+  //                 write(
+  //                   cursor,
+  //                   real(x),
+  //                   frac(10, 1),
+  //                   virtualStepExp(xp, 10),
+  //                   false,
+  //                 )
+  //                 write(
+  //                   cursor,
+  //                   real(y),
+  //                   frac(10, 1),
+  //                   virtualStepExp(yp, 10),
+  //                   true,
+  //                 )
+  //                 new CmdVar("i", data.expr.field.options).insertAt(cursor, L)
+  //                 drag.field.sel = drag.field.block.cursor(R).selection()
+  //                 drag.field.queueAstUpdate()
+  //               }
+  //               break
+  //             case "glider":
+  //               {
+  //                 const { value, precision } = (
+  //                   TY_INFO[drag.shape.type].glide! as TyGlide<any>
+  //                 )({
+  //                   paper: data.paper,
+  //                   point: at,
+  //                   shape: drag.shape.value,
+  //                 })
+  //                 new Writer(drag.value.span.remove().span()).set(
+  //                   value,
+  //                   precision,
+  //                 )
+  //                 drag.value.field.sel = drag.value.field.block
+  //                   .cursor(R)
+  //                   .selection()
+  //                 drag.value.field.queueAstUpdate()
+  //               }
+  //               break
+  //           }
+  //         })
+  //
+  //       const center = drawPoint(paper, {
+  //         at: unpt(pt),
+  //         halo: !!drag,
+  //         hover: !!drag,
+  //         drag: move ? () => move : undefined,
+  //         pick: {
+  //           val() {
+  //             return {
+  //               type:
+  //                 data.value.type == "c32" ? "point32"
+  //                 : data.value.type == "c64" ? "point64"
+  //                 : data.value.type,
+  //               value: pt,
+  //             }
+  //           },
+  //           ref() {
+  //             if (data.expr.field.ast.type == "binding") {
+  //               const block = new Block(null)
+  //               const cursor = block.cursor(R)
+  //               CmdVar.leftOf(
+  //                 cursor,
+  //                 data.expr.field.ast.name,
+  //                 data.expr.field.options,
+  //                 data.expr.field.ctx,
+  //               )
+  //               if (data.value.type.startsWith("c")) {
+  //                 new CmdDot().insertAt(cursor, L)
+  //                 for (const c of "point") {
+  //                   new CmdVar(c, data.expr.field.options).insertAt(cursor, L)
+  //                 }
+  //               }
+  //               return block
+  //             }
+  //
+  //             const c = data.expr.field.block.cursor(L)
+  //             const token = CmdToken.new(data.expr.field.scope.ctx)
+  //             token.insertAt(c, L)
+  //             new OpEq(false).insertAt(c, L)
+  //             data.expr.field.dirtyAst = data.expr.field.dirtyValue = true
+  //             data.expr.field.trackNameNow()
+  //             data.expr.field.scope.queueUpdate()
+  //
+  //             const block = new Block(null)
+  //             const cursor = block.cursor(R)
+  //             token.clone().insertAt(cursor, L)
+  //             if (data.value.type.startsWith("c")) {
+  //               new CmdDot().insertAt(cursor, L)
+  //               for (const c of "point") {
+  //                 new CmdVar(c, data.expr.field.options).insertAt(cursor, L)
+  //               }
+  //             }
+  //
+  //             return block
+  //           },
+  //           draw() {
+  //             center!.style.transition = "none"
+  //             center!.style.r = "6"
+  //             center!.parentElement!.style.cursor = "pointer"
+  //           },
+  //           focus() {
+  //             requestAnimationFrame(() => data.expr.focus())
+  //           },
+  //         },
+  //       })
+  //     }
+  //   },
   plot: {
     order: Order.Point,
     draw({ drag, cv, value }) {
