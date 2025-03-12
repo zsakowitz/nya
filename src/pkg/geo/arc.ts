@@ -39,7 +39,7 @@ export type Arc =
       large: boolean
     }
 
-export function computeArc(p1: Point, p2: Point, p3: Point): Arc {
+function computeArc(p1: Point, p2: Point, p3: Point): Arc {
   const { x: x1, y: y1 } = p1
   const { x: x2, y: y2 } = p2
   const { x: x3, y: y3 } = p3
@@ -114,7 +114,7 @@ export function computeArcVal(val: Val<"arc">): Arc {
   return computeArc(unpt(val[0]), unpt(val[1]), unpt(val[2]))
 }
 
-export type ArcPath =
+type ArcPath =
   | { type: "invalid" }
   | { type: "circle"; p1: Point; r: Point; p3: Point; flags: string }
   | { type: "segment"; p1: Point; p3: Point }
@@ -206,7 +206,7 @@ export function unglideArc(paper: Paper, arc: Arc, at: Point) {
   }
 }
 
-export function crArc(
+function crArc(
   { x: x1, y: y1 }: Point,
   { x: x2, y: y2 }: Point,
   { x: x3, y: y3 }: Point,

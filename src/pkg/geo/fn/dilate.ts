@@ -27,7 +27,7 @@ export function dilateJs(by: DilationJs, target: SPoint) {
   return pt(add(mul(x, by.s), by.c.x), add(mul(y, by.s), by.c.y))
 }
 
-export function dilateGlsl(ctx: GlslContext, by: DilationGlsl, target: string) {
+function dilateGlsl(ctx: GlslContext, by: DilationGlsl, target: string) {
   ctx.glsl`vec2 _helper_dilate(vec3 by, vec2 target) {
   target -= by;
   return vec2(

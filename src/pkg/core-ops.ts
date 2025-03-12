@@ -7,7 +7,6 @@ import { parseNumberJs } from "../eval/lib/base"
 import { BindingFn, id, name, tryName } from "../eval/lib/binding"
 import type { GlslContext } from "../eval/lib/fn"
 import { subscript } from "../eval/lib/text"
-import { safe } from "../eval/lib/util"
 import { FnDist } from "../eval/ops/dist"
 import { declareR64 } from "../eval/ops/r64"
 import { VARS } from "../eval/ops/vars"
@@ -23,8 +22,6 @@ import {
   unary,
   type Sym,
 } from "../eval/sym"
-import { each, type GlslValue, type JsValue } from "../eval/ty"
-import { canCoerce, coerceTyJs } from "../eval/ty/coerce"
 import { frac, num, real } from "../eval/ty/create"
 import { add, div } from "../eval/ty/ops"
 import { splitValue } from "../eval/ty/split"
@@ -152,65 +149,6 @@ export function abs64(ctx: GlslContext, x: string) {
 }
 `
   return `_helper_abs_r64(${x})`
-}
-
-export function invalidFnSup(): never {
-  throw new Error(
-    "Only -1 and positive integers are allowed as function superscripts.",
-  )
-}
-
-export function fnExponentJs(raw: JsValue): JsValue<"r32"> {
-  if (!canCoerce(raw.type, "r32")) {
-    invalidFnSup()
-  }
-
-  const value = coerceTyJs(raw, "r32")
-  for (const valRaw of each(value)) {
-    const val = num(valRaw)
-    if (!(safe(val) && 1 < val)) {
-      invalidFnSup()
-    }
-  }
-
-  return value
-}
-
-export function fnExponentGlsl(
-  ctx: GlslContext,
-  raw: JsValue,
-): GlslValue<"r64"> {
-  if (!canCoerce(raw.type, "r32")) {
-    invalidFnSup()
-  }
-
-  const value = coerceTyJs(raw, "r32")
-  for (const valRaw of each(value)) {
-    const val = num(valRaw)
-    if (!(safe(val) && 1 < val)) {
-      invalidFnSup()
-    }
-  }
-
-  if (value.list === false) {
-    return {
-      type: "r64",
-      list: false,
-      expr: `vec2(${num(value.value)}, 0)`,
-    }
-  }
-
-  const expr = ctx.name()
-  ctx.push`vec2 ${expr}[${value.list}];\n`
-  for (let i = 0; i < value.list; i++) {
-    ctx.push`${expr}[${i}] = vec2(${num(value.value[i]!)}, 0);\n`
-  }
-
-  return {
-    type: "r64",
-    list: value.list,
-    expr,
-  }
 }
 
 export function declareCmpR64(ctx: GlslContext) {

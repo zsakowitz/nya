@@ -8,7 +8,7 @@ import type { DerivFn, DisplayFn } from "../ops/dist-manual"
 import type { JsValue } from "../ty"
 import { real } from "../ty/create"
 
-export interface SymVarSource {
+interface SymVarSource {
   name: string
   kind: Exclude<WordKind, "magicprefix"> | undefined
   italic: boolean

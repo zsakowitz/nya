@@ -67,7 +67,7 @@ interface PuncListPrefix extends PuncListPm {
 }
 
 /** Tokens which can be unary suffix operators. */
-export interface PuncListSuffix {
+interface PuncListSuffix {
   "!": 0
 }
 

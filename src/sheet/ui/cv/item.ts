@@ -3,7 +3,7 @@ import { Block } from "../../../field/model"
 import type { Point } from "../../point"
 
 /** Hints as to what we're trying to pick. */
-export interface Hint {
+interface Hint {
   /** If absent, all types are available. */
   readonly tys?: readonly TyName[]
 }
@@ -12,7 +12,7 @@ export interface Hint {
  * `T` is the intrinsic data of the object, while `U` is separate, since a
  * single item may render multiple things to the canvas (e.g. lists).
  */
-export interface Target<T, U> {
+interface Target<T, U> {
   /** Returns appropriate data for each intersection. */
   hits(data: T, at: Point, hint: Hint): U[]
 

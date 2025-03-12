@@ -4,13 +4,13 @@ import { h, t } from "../jsx"
 import type { ItemFactory } from "./item"
 import type { Sheet } from "./ui/sheet"
 
-export interface ItemCreateProps<U> {
+interface ItemCreateProps<U> {
   at?: number
   focus?: boolean
   from?: NoInfer<U>
 }
 
-export abstract class ItemList {
+abstract class ItemList {
   abstract readonly root: ItemListGlobal
   abstract readonly sheet: Sheet
   abstract readonly parent: ItemRef<unknown> | undefined
@@ -288,7 +288,7 @@ export class ItemListGlobal extends ItemList {
   }
 }
 
-export class ItemListLocal<T> extends ItemList {
+class ItemListLocal<T> extends ItemList {
   constructor(readonly parent: ItemRef<T>) {
     super()
   }

@@ -9,7 +9,7 @@ export interface Point {
   readonly y: number
 }
 
-export function norm(pt: Point, distance = 1): Point {
+function norm(pt: Point, distance = 1): Point {
   const hypot = Math.hypot(pt.x, pt.y)
   if (hypot == 0) return pt
 
@@ -19,7 +19,7 @@ export function norm(pt: Point, distance = 1): Point {
   }
 }
 
-export function normS(at: SPoint): SPoint {
+function normS(at: SPoint): SPoint {
   const denom = hypot(at)
   if (isZero(denom)) return at
 

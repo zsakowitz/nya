@@ -156,10 +156,10 @@ export type ParenLhs = "(" | "[" | "{" | "|" | "¡"
 export type ParenRhs = ")" | "]" | "}" | "|" | "!"
 type ParenAny = ParenLhs | ParenRhs
 
-export function matchParen(x: ParenLhs): ParenRhs
-export function matchParen(x: ParenRhs): ParenLhs
-export function matchParen(x: ParenAny): ParenAny
-export function matchParen(x: ParenAny) {
+function matchParen(x: ParenLhs): ParenRhs
+function matchParen(x: ParenRhs): ParenLhs
+function matchParen(x: ParenAny): ParenAny
+function matchParen(x: ParenAny) {
   return {
     "(": ")",
     "[": "]",

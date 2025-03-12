@@ -31,7 +31,7 @@ export function rotateJs(by: RotationJs, target: SPoint) {
   )
 }
 
-export function rotateGlsl(ctx: GlslContext, by: RotationGlsl, target: string) {
+function rotateGlsl(ctx: GlslContext, by: RotationGlsl, target: string) {
   ctx.glsl`vec2 _helper_rotate(vec4 by, vec2 target) {
   target -= by;
   return vec2(

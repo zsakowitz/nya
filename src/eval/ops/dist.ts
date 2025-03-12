@@ -16,7 +16,7 @@ import {
 } from "./dist-manual"
 import { ALL_DOCS } from "./docs"
 
-export type FnError = `${string}%%${string}`
+type FnError = `${string}%%${string}`
 
 /**
  * `FnDist` are functions which take a fixed number of arguments of

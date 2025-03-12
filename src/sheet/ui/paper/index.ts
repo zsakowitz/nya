@@ -325,7 +325,7 @@ export class Paper {
   }
 }
 
-export type DrawKind =
+type DrawKind =
   | "point"
   | "line"
   | "ray"

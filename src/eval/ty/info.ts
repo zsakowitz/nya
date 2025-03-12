@@ -1,4 +1,4 @@
-import type { JsValue, SPoint, TyComponents, TyName, Tys } from "."
+import type { SPoint, TyComponents, TyName, Tys } from "."
 import { CmdComma } from "../../field/cmd/leaf/comma"
 import { CmdWord } from "../../field/cmd/leaf/word"
 import { CmdBrack } from "../../field/cmd/math/brack"
@@ -31,7 +31,7 @@ export interface TyInfo<T, U extends TyName> {
 
 export type TyInfoByName<T extends TyName> = TyInfo<Tys[T], TyComponents[T]>
 
-export type TyGlide<T> = (props: GlideProps<T>) => {
+type TyGlide<T> = (props: GlideProps<T>) => {
   value: number
   /** Number of values the user can choose. */
   precision: number
@@ -229,10 +229,4 @@ export function tidyCoercions() {
       }
     }
   }
-}
-
-export function token(value: JsValue) {
-  const info = TY_INFO[value.type] as TyInfo<unknown, TyName>
-
-  return (value.list === false && info.token?.(value.value)) || info.icon()
 }

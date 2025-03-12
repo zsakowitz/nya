@@ -58,7 +58,7 @@ class ImageData {
   }
 }
 
-export class CmdImgRaw extends Leaf {
+class CmdImgRaw extends Leaf {
   constructor(public data: Val<"image">) {
     super("", h(""))
   }
@@ -297,17 +297,17 @@ const FACTORY: ItemFactory<Data> = {
   },
 }
 
-export const FN_IMGWIDTH = new FnDist(
+const FN_IMGWIDTH = new FnDist(
   "imgwidth",
   "gets the natural width of an image",
 ).add(["image"], "r32", (a) => real(a.value.width), glsl)
 
-export const FN_IMGHEIGHT = new FnDist(
+const FN_IMGHEIGHT = new FnDist(
   "imgheight",
   "gets the natural height of an image",
 ).add(["image"], "r32", (a) => real(a.value.height), glsl)
 
-export const FN_IMGASPECT = new FnDist(
+const FN_IMGASPECT = new FnDist(
   "imgaspect",
   "gets the preferred aspect ratio of an image",
 ).add(["image"], "r32", (a) => frac(a.value.width, a.value.height), glsl)

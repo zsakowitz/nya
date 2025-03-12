@@ -143,11 +143,11 @@ export interface TxrMagicVar extends Omit<TxrAst<MagicVar>, "drag"> {
   }
 }
 
-export type TxrSuffixLhs<T> =
+type TxrSuffixLhs<T> =
   | { type: "value"; value: T }
   | { type: "node"; value: Node }
 
-export interface TxrSuffixArgs<T, U> {
+interface TxrSuffixArgs<T, U> {
   lhs: TxrSuffixLhs<U>
   readonly base: U
   rhs: T
@@ -173,7 +173,7 @@ export interface TxrOpBinary extends TxrAst<{ lhs: Node; rhs: Node }> {}
 
 export interface TxrGroup extends Omit<TxrAst<Node>, "deps"> {}
 
-export function group(node: { lhs: ParenLhs; rhs: ParenRhs }) {
+function group(node: { lhs: ParenLhs; rhs: ParenRhs }) {
   const g = TXR_GROUP[`${node.lhs} ${node.rhs}`]
   if (!g) {
     throw new Error(`${node.lhs}...${node.rhs} brackets are not supported yet.`)

@@ -9,7 +9,7 @@ import type { Picker } from "./pick"
 import type { Expr } from "./ui/expr"
 import type { Selected, Sheet } from "./ui/sheet"
 
-export interface Data {
+interface Data {
   expr: Expr
   ref: ItemRef<Expr>
 }

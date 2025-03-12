@@ -15,11 +15,3 @@ export function commalist(node: Node): Node[] {
 
   return [node]
 }
-
-/**
- * Like {@linkcode commalist}, but will remove a single layer of parentheses if
- * they exist.
- */
-export function fnargs(node: Node): Node[] {
-  return commalist(node)
-}

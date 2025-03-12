@@ -273,7 +273,7 @@ export const FN_SIGN = new FnDist(
     (_, a) => `sign(${a.expr})`,
   )
 
-export const FN_SGN = FN_SIGN.with(
+const FN_SGN = FN_SIGN.with(
   "sgn",
   "gets the sign of a number",
   "Cannot find the sign of %%.",
@@ -290,7 +290,8 @@ export const FN_LOG10 = new FnDist(
   (_, a) => `(log(${a.expr}) / log(10.0))`,
 )
 
-export const FN_LOGB = new FnDist(
+// TODO: implement for complex nums
+const FN_LOGB = new FnDist(
   "log with subscript",
   "takes the logarithm of a value in some base",
   "Cannot take the logarithm of %%.",
