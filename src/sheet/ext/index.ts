@@ -1,7 +1,6 @@
 import type { GlslHelpers, GlslResult } from "../../eval/lib/fn"
 import type { Plottable } from "../ui/cv/item"
 import type { Expr } from "../ui/expr"
-import type { Paper } from "../ui/paper"
 
 /** A possible result of a math expression. */
 export interface Ext<T extends {}, U> {
@@ -17,7 +16,6 @@ export interface Ext<T extends {}, U> {
   destroy?(data: NoInfer<T>): void
   aside?(data: NoInfer<T>): HTMLElement | undefined
   el?(data: NoInfer<T>): HTMLElement | undefined
-  svg?(data: NoInfer<T>, paper: Paper): void
   plot?: Plottable<T, U>
   // TODO: remove plotGl as a special-cased function; it should be delegated to 'shader'
   glsl?(data: NoInfer<T>, helpers: GlslHelpers): GlslResult | undefined

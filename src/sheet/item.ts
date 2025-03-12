@@ -18,13 +18,7 @@ export interface ItemFactory<T, U = unknown> {
   init(ref: ItemRef<T>, source: string | undefined, from: U | undefined): T
   aside?(data: T): Node
   main(data: T): Node
-
-  draw?(data: T): void
-  draw3?: {
-    /** Return `null` to skip drawing this item. */
-    order(data: T): number | null
-    draw(data: T): void
-  }
+  draw3?: { order(data: T): number | null; draw(data: T): void } // FIXME: no -3
   glsl?(data: T): GlslResult | undefined
   unlink(data: T): void
   /** `from` is only `null` immediately after creation. */
@@ -66,11 +60,6 @@ export const FACTORY_EXPR: ItemFactory<Expr, { geo?: boolean }> = {
   },
   main(data) {
     return data.main
-  },
-  draw(expr) {
-    if (expr.state.ok && expr.state.ext?.svg) {
-      expr.state.ext.svg(expr.state.data, expr.sheet.paper)
-    }
   },
   draw3: {
     order(data) {
