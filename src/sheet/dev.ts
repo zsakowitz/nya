@@ -1,4 +1,3 @@
-import { ALL } from "../all"
 import { options } from "../field/defaults"
 import { show } from "../show"
 import SRC_LOCALHOST from "./example/localhost.txt"
@@ -6,13 +5,16 @@ import SRC_STANDARD from "./example/standard.txt"
 import { SheetFactory } from "./factory"
 import { Expr } from "./ui/expr"
 
+const LOAD_EMPTY = false
 const SHORT_EXPRS = true
 
 const factory = new SheetFactory(options)
 
 const IS_DEV = "NYA_DEV" in globalThis
-for (const pkg of ALL) {
-  factory.load(pkg)
+if (!(LOAD_EMPTY && IS_DEV)) {
+  for (const pkg of (await import("../all")).ALL) {
+    factory.load(pkg)
+  }
 }
 
 const sheet = factory.create()
