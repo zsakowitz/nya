@@ -48,7 +48,7 @@ const CHECKBOX = new Store((expr) => {
 export function defineHideable<T extends WeakKey, U>(
   ext: Omit<Ext<T, U>, "aside">,
 ): Ext<T, U> {
-  const { svg } = ext
+  const { plot } = ext
   const map = new WeakMap<T, Expr>()
 
   return {
@@ -66,10 +66,14 @@ export function defineHideable<T extends WeakKey, U>(
         return CHECKBOX.get(expr).el
       }
     },
-    svg(data, paper) {
-      if (!CHECKBOX.get(map.get(data)!).show) {
-        svg?.(data, paper)
-      }
+    plot: plot && {
+      order: plot.order,
+      draw(data) {
+        const expr = map.get(data)
+        if (expr && !CHECKBOX.get(expr).show) {
+          plot.draw(data)
+        }
+      },
     },
   }
 }
