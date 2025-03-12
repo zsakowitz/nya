@@ -17,16 +17,16 @@ export function getLineBounds(
 
   if (x1 == x2) {
     return [
-      cv.toOffset({ x: x1, y: ymin }),
-      cv.toOffset({ x: x1, y: ymin + h }),
+      cv.toCanvas({ x: x1, y: ymin }),
+      cv.toCanvas({ x: x1, y: ymin + h }),
     ]
   }
 
   const m = (y2 - y1) / (x2 - x1)
 
   return [
-    cv.toOffset({ x: xmin, y: m * (xmin - x1) + y1 }),
-    cv.toOffset({ x: xmin + w, y: m * (xmin + w - x1) + y1 }),
+    cv.toCanvas({ x: xmin, y: m * (xmin - x1) + y1 }),
+    cv.toCanvas({ x: xmin + w, y: m * (xmin + w - x1) + y1 }),
   ]
 }
 

@@ -169,7 +169,7 @@ export class Cv {
   queue() {
     if (this.queued) return
     this.queued = true
-    requestAnimationFrame(() => {
+    queueMicrotask(() => {
       this.queued = false
       this.draw()
     })

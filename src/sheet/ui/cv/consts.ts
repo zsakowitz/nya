@@ -1,9 +1,13 @@
+import { theme } from "../../theme"
+
 // FIXME: why is this plural
 export const Colors = Object.freeze({
   Purple: "#6042a6",
   Blue: "#2d70b3",
   Green: "#388c46",
-  Angle: "black", // TODO: var(--nya-angle)
+  get Angle() {
+    return theme("--nya-angle", "black")
+  },
 })
 
 export const OrderMajor = Object.freeze({
