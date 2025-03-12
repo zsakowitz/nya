@@ -5,6 +5,7 @@ import { CmdBrack } from "../../field/cmd/math/brack"
 import { Block, L, R } from "../../field/model"
 import { h, path, svgx } from "../../jsx"
 import type { Point } from "../../sheet/point"
+import type { Cv } from "../../sheet/ui/cv"
 import type { Paper } from "../../sheet/ui/paper"
 import type { GlslContext } from "../lib/fn"
 import type { TyWrite } from "./display"
@@ -23,7 +24,7 @@ export interface TyInfo<T, U extends TyName> {
   write: TyWrite<T>
   icon(): HTMLSpanElement
   token?(val: T): HTMLSpanElement | null
-  preview?(paper: Paper, val: T): void
+  preview?(cv: Cv, val: T): void
   glide?: TyGlide<T>
   components?: TyComponentInfo<T, U>
 }

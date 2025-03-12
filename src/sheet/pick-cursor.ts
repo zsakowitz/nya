@@ -74,7 +74,7 @@ export const PICK_CURSOR: Picker<Data, Selected> = {
         const { preview: draw } = TY_INFO[value.type]
         if (draw) {
           for (const val of each(value)) {
-            draw(data.expr.sheet.paper, val as never)
+            draw(data.expr.sheet.cv, val as never)
           }
         }
       } catch (e) {

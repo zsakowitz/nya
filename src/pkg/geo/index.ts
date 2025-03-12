@@ -19,6 +19,7 @@ import { Block, L, R } from "../../field/model"
 import { h, path, svgx, sx } from "../../jsx"
 import { PICK_TY, definePickTy, toolbar, type Data } from "../../sheet/pick-ty"
 import { normVector, type Point } from "../../sheet/point"
+import { Colors, Size } from "../../sheet/ui/cv/consts"
 import { Expr } from "../../sheet/ui/expr"
 import { segmentByPaper } from "../../sheet/ui/paper"
 import type { Selected } from "../../sheet/ui/sheet"
@@ -30,14 +31,20 @@ import {
 } from "../geo-point"
 import { PKG_REAL } from "../num-real"
 import { computeArcVal, unglideArc } from "./arc"
-import { EXT_ANGLE, angleGlsl, angleJs, drawAngle } from "./ext/angle"
-import { EXT_ARC, drawArc } from "./ext/arc"
+import {
+  EXT_ANGLE,
+  angleGlsl,
+  angleJs,
+  drawAngle,
+  drawAngleCv,
+} from "./ext/angle"
+import { EXT_ARC, drawArc, drawArcCv } from "./ext/arc"
 import { EXT_CIRCLE, drawCircle } from "./ext/circle"
-import { EXT_LINE, drawLine } from "./ext/line"
+import { EXT_LINE, drawLine, getLineBounds } from "./ext/line"
 import { EXT_POLYGON, drawPolygon } from "./ext/polygon"
-import { EXT_RAY, drawRay } from "./ext/ray"
+import { EXT_RAY, drawRay, getRayBounds } from "./ext/ray"
 import { EXT_SEGMENT } from "./ext/segment"
-import { EXT_VECTOR, drawVector } from "./ext/vector"
+import { EXT_VECTOR, drawVector, vectorPath } from "./ext/vector"
 import { FN_ANGLE, FN_DIRECTEDANGLE } from "./fn/angle"
 import { FN_ANGLEBISECTOR, bisectAngleJs } from "./fn/anglebisector"
 import { FN_ANGLES, FN_DIRECTEDANGLES } from "./fn/angles"
@@ -153,31 +160,27 @@ function lineInfo<T extends "segment" | "ray" | "line" | "vector">(
           }
         }
       : undefined,
-    preview(paper, val) {
+    preview(cv, val) {
       switch (name) {
-        case "segment":
-          segmentByPaper(paper, unpt(val[0]), unpt(val[1]), {
-            kind: "segment",
-            ghost: true,
-          })
+        case "segment": {
+          cv.polygon(val.map(unpt), Size.Line, Colors.Blue)
           break
-        case "ray":
-          drawRay(paper, unpt(val[0]), unpt(val[1]), {
-            kind: "ray",
-            ghost: true,
-          })
+        }
+        case "ray": {
+          const bounds = getRayBounds(cv, unpt(val[0]), unpt(val[1]))
+          if (bounds) cv.polygonByCanvas(bounds, Size.Line, Colors.Blue)
           break
-        case "line":
-          drawLine(paper, unpt(val[0]), unpt(val[1]), {
-            kind: "line",
-            ghost: true,
-          })
+        }
+        case "line": {
+          const bounds = getLineBounds(unpt(val[0]), unpt(val[1]), cv)
+          if (bounds) cv.polygonByCanvas(bounds, Size.Line, Colors.Blue)
           break
-        case "vector":
-          drawVector(paper, unpt(val[0]), unpt(val[1]), {
-            ghost: true,
-          })
+        }
+        case "vector": {
+          const path = vectorPath(cv, unpt(val[0]), unpt(val[1]))
+          if (path) cv.path(new Path2D(path), Size.Line, Colors.Blue, 1, 1)
           break
+        }
       }
     },
   }
@@ -690,12 +693,8 @@ const INFO_CIRCLE: TyInfoByName<"circle"> = {
       value: angle / 2 / Math.PI,
     }
   },
-  preview(paper, val) {
-    drawCircle(paper, {
-      at: unpt(val.center),
-      r: num(val.radius),
-      ghost: true,
-    })
+  preview(cv, val) {
+    cv.circle(unpt(val.center), num(val.radius), Size.Line, Colors.Green)
   },
 }
 
@@ -769,11 +768,8 @@ const INFO_POLYGON: TyInfoByName<"polygon"> = {
       ),
     )
   },
-  preview(paper, val) {
-    drawPolygon(paper, val.map(unpt), {
-      closed: false,
-      ghost: true,
-    })
+  preview(cv, val) {
+    cv.polygon(val.map(unpt), Size.Line, Colors.Blue, 1, 0.3, false)
   },
 }
 
@@ -892,12 +888,9 @@ const INFO_ARC: TyInfoByName<"arc"> = {
   glide(props) {
     return unglideArc(props.paper, computeArcVal(props.shape), props.point)
   },
-  preview(paper, val) {
-    drawArc(paper, {
-      arc: computeArcVal(val),
-      kind: "arc",
-      ghost: true,
-    })
+  preview(cv, val) {
+    const arc = computeArcVal(val)
+    drawArcCv(cv, arc)
   },
 }
 
@@ -1067,12 +1060,8 @@ function angleInfo(
 
       return createToken("var(--nya-angle)", ...els)
     },
-    preview(paper, val) {
-      drawAngle(paper, unpt(val[0]), unpt(val[1]), unpt(val[2]), {
-        kind: type,
-        draft: true,
-        ghost: true,
-      })
+    preview(cv, val) {
+      drawAngleCv(cv, unpt(val[0]), unpt(val[1]), unpt(val[2]), { kind: type })
     },
   }
 }

@@ -7,6 +7,7 @@ import { Colors, Order, Size } from "../../../sheet/ui/cv/consts"
 import type { DrawLineProps } from "../../../sheet/ui/paper"
 import { segmentByOffset, type Paper } from "../../../sheet/ui/paper"
 
+// FIXME: make signature match ext/ray
 export function getLineBounds(
   { x: x1, y: y1 }: Point,
   { x: x2, y: y2 }: Point,

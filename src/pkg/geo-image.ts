@@ -10,11 +10,10 @@ import { CmdWord } from "../field/cmd/leaf/word"
 import { CmdBrack } from "../field/cmd/math/brack"
 import { fa } from "../field/fa"
 import { Block, L, R } from "../field/model"
-import { h, px, sx } from "../jsx"
+import { h, px } from "../jsx"
 import { defineExt } from "../sheet/ext"
 import type { Cv } from "../sheet/ui/cv"
 import { Order } from "../sheet/ui/cv/consts"
-import type { Paper } from "../sheet/ui/paper"
 import { example } from "../sheet/ui/sheet/docs"
 import { dilateJs, mark as markDilate } from "./geo/fn/dilate"
 import { mark as markReflect, reflectJs } from "./geo/fn/reflect"
@@ -59,33 +58,7 @@ const FN_IMAGE = new FnDist(
     glsl,
   )
 
-function draw(paper: Paper, val: Val<"image2d">) {
-  if (!val.data.src) return
-
-  const p1 = paper.toOffset(unpt(val.p1))
-  const p2 = paper.toOffset(unpt(val.p2))
-  const width = Math.hypot(p1.x - p2.x, p1.y - p2.y)
-  const height =
-    (val.aspect ? 1 / num(val.aspect) : val.data.height / val.data.width) *
-    width
-
-  paper.append(
-    "image",
-    sx("image", {
-      href: val.data.src.url,
-      width,
-      height: Math.abs(height),
-      x: p1.x,
-      y: (p1.y - height) * Math.sign(height),
-      transform:
-        `rotate(${(180 / Math.PI) * Math.atan2(p2.y - p1.y, p2.x - p1.x)} ${p1.x} ${p1.y})` +
-        (height < 0 ? " scale(1 -1)" : ""),
-      preserveAspectRatio: "none",
-    }),
-  )
-}
-
-function drawCv(cv: Cv, val: Val<"image2d">) {
+function draw(cv: Cv, val: Val<"image2d">) {
   if (!val.data.src?.data) {
     return
   }
@@ -123,7 +96,7 @@ const EXT = defineExt({
     order: Order.Backdrop,
     draw(data) {
       for (const val of each(data.value)) {
-        drawCv(data.expr.sheet.cv, val)
+        draw(data.expr.sheet.cv, val)
       }
     },
   },

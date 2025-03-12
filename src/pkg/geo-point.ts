@@ -4,14 +4,9 @@ import type { GlslContext } from "../eval/lib/fn"
 import { FnDist } from "../eval/ops/dist"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "../eval/ops/vars"
 import { each, type JsValue } from "../eval/ty"
-import { approx, frac, num, pt, real, SNANPT, unpt } from "../eval/ty/create"
-import { highRes, TY_INFO, WRITE_POINT, type TyGlide } from "../eval/ty/info"
+import { approx, num, pt, SNANPT, unpt } from "../eval/ty/create"
+import { highRes, WRITE_POINT } from "../eval/ty/info"
 import { abs, add, div, mul, neg } from "../eval/ty/ops"
-import { OpEq } from "../field/cmd/leaf/cmp"
-import { CmdDot } from "../field/cmd/leaf/dot"
-import { CmdToken } from "../field/cmd/leaf/token"
-import { CmdVar } from "../field/cmd/leaf/var"
-import { Block, L, R } from "../field/model"
 import { h, sx } from "../jsx"
 import { defineHideable } from "../sheet/ext/hideable"
 import { definePickTy, PICK_TY, toolbar } from "../sheet/pick-ty"
@@ -20,7 +15,6 @@ import { Colors, Order, Size } from "../sheet/ui/cv/consts"
 import type { DrawProps, Paper } from "../sheet/ui/paper"
 import { HANDLER_DRAG, HANDLER_PICK } from "../sheet/ui/paper/interact"
 import { Sheet } from "../sheet/ui/sheet"
-import { virtualStepExp, write, Writer } from "../sheet/write"
 import { FN_VALID } from "./bool"
 import { OP_PLOT, plotJs } from "./color-core"
 import {
@@ -578,8 +572,8 @@ export const PKG_GEO_POINT: Package = {
             [(x) => x.y, (x) => `${x}.zw`],
           ],
         },
-        preview(paper, val) {
-          drawPoint(paper, { at: unpt(val), ghost: true })
+        preview(cv, val) {
+          cv.point(unpt(val), Size.Point, Colors.Purple)
         },
       },
       point32: {
@@ -599,8 +593,8 @@ export const PKG_GEO_POINT: Package = {
             [(x) => x.y, (x) => `${x}.y`],
           ],
         },
-        preview(paper, val) {
-          drawPoint(paper, { at: unpt(val), ghost: true })
+        preview(cv, val) {
+          cv.point(unpt(val), Size.Point, Colors.Purple)
         },
       },
     },
