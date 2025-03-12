@@ -17,7 +17,7 @@ export interface Ext<T extends {}, U> {
   aside?(data: NoInfer<T>): HTMLElement | undefined
   el?(data: NoInfer<T>): HTMLElement | undefined
   plot?: Plottable<T, U>
-  // TODO: remove plotGl as a special-cased function; it should be delegated to 'shader'
+  // TODO: glsl should be moved to shader plugin
   glsl?(data: NoInfer<T>, helpers: GlslHelpers): GlslResult | undefined
 }
 
