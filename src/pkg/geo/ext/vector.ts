@@ -85,7 +85,9 @@ export const EXT_VECTOR = defineHideable({
     }
   },
   plot: {
-    order: Order.Graph,
+    order() {
+      return Order.Graph
+    },
     items(data) {
       return each(data.value)
     },

@@ -93,7 +93,9 @@ const EXT = defineExt({
     }
   },
   plot: {
-    order: Order.Backdrop,
+    order() {
+      return Order.Backdrop
+    },
     items(data) {
       return each(data.value)
     },

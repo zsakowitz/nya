@@ -101,7 +101,9 @@ export const EXT_ARC = defineHideable({
     }
   },
   plot: {
-    order: Order.Graph,
+    order() {
+      return Order.Graph
+    },
     items(data) {
       return each(data.value)
     },

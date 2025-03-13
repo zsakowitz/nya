@@ -15,7 +15,9 @@ export const EXT_SEGMENT = defineHideable({
     }
   },
   plot: {
-    order: Order.Graph,
+    order() {
+      return Order.Graph
+    },
     items(data) {
       return each(data.value)
     },

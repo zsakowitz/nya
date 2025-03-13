@@ -282,7 +282,9 @@ const EXT_POINT = defineHideable({
   //     }
   //   },
   plot: {
-    order: Order.Point,
+    order() {
+      return Order.Point
+    },
     items(data) {
       return each(data.value)
     },
