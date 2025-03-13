@@ -308,7 +308,14 @@ export const OP_RAISE: FnDist = new FnDist(
           {
             type: "call",
             fn: OP_RAISE,
-            args: [a, SYM_1],
+            args: [
+              a,
+              {
+                type: "call",
+                fn: OP_SUB,
+                args: [b, SYM_1],
+              },
+            ],
           },
         ],
       }
