@@ -22,13 +22,13 @@ import { Slider } from "../../slider"
 import { isDark } from "../../theme"
 import { Cv } from "../cv"
 import { OrderMajor } from "../cv/consts"
-import { Paper } from "../paper"
-import { HANDLER_PICK, type PickProps } from "../paper/interact"
 import {
   registerDragHandler,
   registerPinchHandler,
   registerWheelHandler,
-} from "../paper/move"
+} from "../cv/move"
+import { Paper } from "../paper"
+import { HANDLER_PICK, type PickProps } from "../paper/interact"
 import { PickHandler } from "../paper/pick"
 import { btn, createDocs, DEFAULT_TO_VISIBLE_DOCS } from "./docs"
 
@@ -80,9 +80,9 @@ export class Sheet {
     this.paper.queue = () => this.cv.queue()
 
     // prepare js context
-    registerWheelHandler(this.paper)
-    registerDragHandler(this.paper)
-    registerPinchHandler(this.paper)
+    registerWheelHandler(this.cv)
+    registerDragHandler(this.cv)
+    registerPinchHandler(this.cv)
     this.cv.fn(OrderMajor.Backdrop, () => this.list.draw(true))
     this.cv.fn(OrderMajor.Canvas, () => this.list.draw(false))
     this.pick = new PickHandler(this)
