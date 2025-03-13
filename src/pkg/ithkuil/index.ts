@@ -1,6 +1,9 @@
 import { affixes, roots } from "@zsnout/ithkuil/data"
-import * as generate from "@zsnout/ithkuil/generate"
-import { wordToIthkuil } from "@zsnout/ithkuil/generate"
+import {
+  caToIthkuil,
+  geminatedCAToIthkuil,
+  wordToIthkuil,
+} from "@zsnout/ithkuil/generate"
 import {
   isLegalConsonantForm,
   isLegalWordFinalConsonantForm,
@@ -15,21 +18,22 @@ import {
   parseCaGloss,
   unglossWord,
 } from "@zsnout/ithkuil/ungloss"
-import type { Package } from "."
-import type { Fn } from "../eval/ops"
-import { doc, FnDist } from "../eval/ops/dist"
-import { ALL_DOCS, type WithDocs } from "../eval/ops/docs"
-import { each, type JsVal, type JsValue, type Val } from "../eval/ty"
-import { Leaf } from "../field/cmd/leaf"
-import { OpEq } from "../field/cmd/leaf/cmp"
-import { CmdComma } from "../field/cmd/leaf/comma"
-import { L } from "../field/model"
-import { h, path, svgx } from "../jsx"
-import { defineExt } from "../sheet/ext"
-import { circle } from "../sheet/ui/expr/circle"
-import { CmdTextInert, PKG_TEXT, type TextSegment } from "./text"
+import type { Package } from ".."
+import type { Fn } from "../../eval/ops"
+import { doc, FnDist } from "../../eval/ops/dist"
+import { ALL_DOCS, type WithDocs } from "../../eval/ops/docs"
+import { each, type JsVal, type JsValue, type Val } from "../../eval/ty"
+import { Leaf } from "../../field/cmd/leaf"
+import { OpEq } from "../../field/cmd/leaf/cmp"
+import { CmdComma } from "../../field/cmd/leaf/comma"
+import { L } from "../../field/model"
+import { h, path, svgx } from "../../jsx"
+import { defineExt } from "../../sheet/ext"
+import { circle } from "../../sheet/ui/expr/circle"
+import { CmdTextInert, PKG_TEXT, type TextSegment } from "../text"
+import * as categories from "./categories"
 
-declare module "../eval/ty" {
+declare module "../../eval/ty" {
   interface Tys {
     ithkuilscript: readonly [string, SVGSVGElement]
   }
@@ -76,7 +80,7 @@ class CmdIthkuilScript extends Leaf {
 
 const recognize = createRecognizer(affixes, roots)
 
-const CATEGORIES_RAW = Object.entries(generate)
+const CATEGORIES_RAW = Object.entries(categories)
   .filter((x) => x[0].startsWith("ALL_"))
   .map(([k, v]) => {
     k = k.slice(4).toLowerCase()
@@ -314,7 +318,7 @@ export const PKG_ITHKUIL: Package = {
           (v) => {
             const val = v.value.map((x) => x.value).join("")
             const ca = parseCaGloss(val)
-            return [{ type: "plain", value: generate.caToIthkuil(ca) }]
+            return [{ type: "plain", value: caToIthkuil(ca) }]
           },
           err,
         )
@@ -327,10 +331,7 @@ export const PKG_ITHKUIL: Package = {
             return [
               {
                 type: "plain",
-                value:
-                  b.value ?
-                    generate.geminatedCAToIthkuil(ca)
-                  : generate.caToIthkuil(ca),
+                value: b.value ? geminatedCAToIthkuil(ca) : caToIthkuil(ca),
               },
             ]
           },
