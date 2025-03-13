@@ -1,18 +1,22 @@
 import type { JsVal, TyName } from "../../../eval/ty"
 import { Block } from "../../../field/model"
 import type { Point } from "../../point"
+import type { TargetItem } from "./move"
 
 /** Hints as to what we're trying to pick. */
-interface Hint {
+export interface Hint {
   /** If absent, all types are available. */
   readonly tys?: readonly TyName[]
+
+  /** Limits the number of results. */
+  readonly limit: number
 }
 
 /**
  * `T` is the intrinsic data of the object, while `U` is separate, since a
  * single item may render multiple things to the canvas (e.g. lists).
  */
-interface Target<T, U> {
+export interface Target<T, U> {
   /** Returns appropriate data for each intersection. */
   hits(data: T, item: U, at: Point, hint: Hint): boolean
 
@@ -39,9 +43,7 @@ interface Target<T, U> {
    *    "hover"`.
    */
   toggle(
-    data: T,
-    item: U,
-    index: number,
+    item: TargetItem<T, U>,
     on: boolean,
     reason: "pick" | "hover" | "drag",
   ): void
@@ -62,7 +64,7 @@ interface Target<T, U> {
 
 /** Something which can be plotted on the plain canvas. */
 export interface Plottable<T, U> {
-  order: number
+  order(data: T): number | null
   items(data: T): U[]
   draw(data: T, item: U): void
   target?: Target<T, U>

@@ -1,9 +1,21 @@
 import type { Cv } from "."
 import type { Point } from "../../point"
+import type { Hint, Target } from "./item"
 
 const SNAP_DISTANCE = 16
 
-export type DragFn = (point: Point, done: boolean) => void
+type DragFn = (point: Point, done: boolean) => void
+
+export interface Handler {
+  find(at: Point, hint: Hint): TargetItem[]
+}
+
+export interface TargetItem<T = unknown, U = unknown> {
+  target: Target<T, U>
+  data: T
+  item: U
+  index: number
+}
 
 export function registerWheelHandler(cv: Cv) {
   cv.el.addEventListener(
@@ -37,7 +49,7 @@ export function registerWheelHandler(cv: Cv) {
   )
 }
 
-export function registerDragHandler(cv: Cv) {
+export function registerPointerHandler(cv: Cv, handler: Handler) {
   let initial: Point | undefined
   let ptrs = 0
   let drag: DragFn | undefined
@@ -50,6 +62,15 @@ export function registerDragHandler(cv: Cv) {
 
       if (ptrs != 1) {
         return
+      }
+
+      const [found] = handler.find(
+        { x: event.offsetX, y: event.offsetY },
+        { limit: 1, tys: undefined },
+      )
+
+      if (found) {
+        found.target.toggle(found, true, "hover")
       }
 
       if (drag) {

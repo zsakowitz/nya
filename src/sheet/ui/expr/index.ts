@@ -18,9 +18,8 @@ const ID_X = id({ value: "x" })
 const ID_Y = id({ value: "y" })
 const ID_P = id({ value: "p" })
 
-type ExprState =
-  | { ok: false; reason: string }
-  | { ok: true; ext: AnyExt | null; data: {} }
+export type ExprStateOk = { ok: true; ext: AnyExt | null; data: {} }
+type ExprState = { ok: false; reason: string } | ExprStateOk
 
 export class Expr {
   static of(sheet: Sheet, geo?: boolean) {

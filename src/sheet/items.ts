@@ -2,6 +2,9 @@ import type { GlslResult } from "../eval/lib/fn"
 import { D, L, U, type Dir, type VDir } from "../field/model"
 import { h, t } from "../jsx"
 import type { ItemFactory } from "./item"
+import type { Point } from "./point"
+import type { Hint } from "./ui/cv/item"
+import type { TargetItem } from "./ui/cv/move"
 import type { Sheet } from "./ui/sheet"
 
 interface ItemCreateProps<U> {
@@ -185,7 +188,9 @@ abstract class ItemList {
 
     for (const [, v] of Object.entries(list).sort(([a], [b]) => +a - +b)) {
       for (const ref of v) {
-        ref.factory.draw3!.draw(ref.data)
+        for (const item of ref.factory.plot!.items(ref.data)) {
+          ref.factory.plot!.draw(ref.data, item)
+        }
       }
     }
   }
@@ -198,7 +203,7 @@ abstract class ItemList {
     for (const ref of this.items) {
       if (ref == suppressed) continue
 
-      const order = ref.factory.draw3?.order(ref.data)
+      const order = ref.factory.plot?.order(ref.data)
 
       if (order != null && (backdrop ? order < 0 : order > 0)) {
         ;(list[order] ??= []).push(ref)
@@ -234,6 +239,37 @@ abstract class ItemList {
       }
     } else {
       return this.fromStringDefault(source)
+    }
+  }
+
+  find(items: TargetItem[], at: Point, hint: Hint) {
+    // Reverse order is used here since later items come later in draw order and
+    // therefore earlier in interaction order.
+
+    for (let i = this.items.length - 1; i >= 0; i--) {
+      // Exit early if we've found enough solutions; caller is responsible for
+      // providing better hints if they don't like our results.
+      if (items.length >= hint.limit) {
+        return
+      }
+
+      const {
+        factory: { plot },
+        data,
+        sublist,
+      } = this.items[i]!
+
+      sublist?.find(items, at, hint)
+
+      if (plot?.target) {
+        const plotItems = plot.items(data)
+        for (let i = plotItems.length - 1; i >= 0; i--) {
+          const item = plotItems[i]!
+          if (plot.target.hits(data, item, at, hint)) {
+            items.push({ target: plot.target, data, item, index: i })
+          }
+        }
+      }
     }
   }
 }

@@ -6,9 +6,10 @@ import type { GlslResult } from "../eval/lib/fn"
 import { LatexParser } from "../field/latex"
 import { L, R, U, type VDir } from "../field/model"
 import type { ItemRef } from "./items"
-import { Expr } from "./ui/expr"
+import type { Plottable } from "./ui/cv/item"
+import { Expr, type ExprStateOk } from "./ui/expr"
 
-export interface ItemFactory<T, U = unknown> {
+export interface ItemFactory<T, U = unknown, V = unknown> {
   id: string
   name: string
   icon: IconDefinition
@@ -18,7 +19,7 @@ export interface ItemFactory<T, U = unknown> {
   init(ref: ItemRef<T>, source: string | undefined, from: U | undefined): T
   aside?(data: T): Node
   main(data: T): Node
-  draw3?: { order(data: T): number | null; draw(data: T): void } // FIXME: no -3
+  plot?: Plottable<T, V>
   glsl?(data: T): GlslResult | undefined
   unlink(data: T): void
   /** `from` is only `null` immediately after creation. */
@@ -61,19 +62,23 @@ export const FACTORY_EXPR: ItemFactory<Expr, { geo?: boolean }> = {
   main(data) {
     return data.main
   },
-  draw3: {
+  plot: {
     order(data) {
       if (data.state.ok && data.state.ext?.plot) {
-        return data.state.ext.plot.order
+        return data.state.ext.plot.order(data.state.data)
       }
       return null
     },
-    draw(data) {
+    items(data) {
       if (data.state.ok && data.state.ext?.plot) {
-        for (const item of data.state.ext.plot.items(data.state.data)) {
-          data.state.ext.plot.draw(data.state.data, item)
-        }
+        return data.state.ext.plot.items(data.state.data)
       }
+      return []
+    },
+    draw(data, item) {
+      // This cast is safe since it wouldn't be called unless `items` returned.
+      const state = data.state as ExprStateOk
+      state.ext!.plot!.draw(state.data, item)
     },
   },
   glsl(data) {

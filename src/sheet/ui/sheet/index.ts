@@ -22,10 +22,13 @@ import { Slider } from "../../slider"
 import { isDark } from "../../theme"
 import { Cv } from "../cv"
 import { OrderMajor } from "../cv/consts"
+import type { Hint } from "../cv/item"
 import {
-  registerDragHandler,
   registerPinchHandler,
+  registerPointerHandler,
   registerWheelHandler,
+  type Handler,
+  type TargetItem,
 } from "../cv/move"
 import { Paper } from "../paper"
 import { HANDLER_PICK, type PickProps } from "../paper/interact"
@@ -81,7 +84,7 @@ export class Sheet {
 
     // prepare js context
     registerWheelHandler(this.cv)
-    registerDragHandler(this.cv)
+    registerPointerHandler(this.cv, new SheetHandler(this))
     registerPinchHandler(this.cv)
     this.cv.fn(OrderMajor.Backdrop, () => this.list.draw(true))
     this.cv.fn(OrderMajor.Canvas, () => this.list.draw(false))
@@ -435,6 +438,16 @@ void main() {
       .filter((x) => x != null)
       .filter((x) => tys.includes(x.val().type))
     return picks.map((x) => ({ ...x, val: x.val() }))
+  }
+}
+
+class SheetHandler implements Handler {
+  constructor(readonly sheet: Sheet) {}
+
+  find(at: Point, hint: Hint): TargetItem[] {
+    const items: TargetItem[] = []
+    this.sheet.list.find(items, at, hint)
+    return items
   }
 }
 
