@@ -78,15 +78,16 @@ export const EXT_CIRCLE = defineHideable({
   },
   plot: {
     order: Order.Graph,
-    draw(data) {
-      for (const val of each(data.value)) {
-        data.expr.sheet.cv.circle(
-          unpt(val.center),
-          num(val.radius),
-          Size.Line,
-          Colors.Green,
-        )
-      }
+    items(data) {
+      return each(data.value)
+    },
+    draw(data, val) {
+      data.expr.sheet.cv.circle(
+        unpt(val.center),
+        num(val.radius),
+        Size.Line,
+        Colors.Green,
+      )
     },
   },
 })

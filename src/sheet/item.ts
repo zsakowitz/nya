@@ -70,7 +70,9 @@ export const FACTORY_EXPR: ItemFactory<Expr, { geo?: boolean }> = {
     },
     draw(data) {
       if (data.state.ok && data.state.ext?.plot) {
-        data.state.ext.plot.draw(data.state.data)
+        for (const item of data.state.ext.plot.items(data.state.data)) {
+          data.state.ext.plot.draw(data.state.data, item)
+        }
       }
     },
   },

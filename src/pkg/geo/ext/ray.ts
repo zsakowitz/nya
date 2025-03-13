@@ -67,17 +67,18 @@ export const EXT_RAY = defineHideable({
   },
   plot: {
     order: Order.Graph,
-    draw(data) {
-      for (const val of each(data.value)) {
-        const bounds = getRayBounds(
-          data.expr.sheet.cv,
-          unpt(val[0]),
-          unpt(val[1]),
-        )
+    items(data) {
+      return each(data.value)
+    },
+    draw(data, val) {
+      const bounds = getRayBounds(
+        data.expr.sheet.cv,
+        unpt(val[0]),
+        unpt(val[1]),
+      )
 
-        if (bounds) {
-          data.expr.sheet.cv.polygonByCanvas(bounds, Size.Line, Colors.Blue)
-        }
+      if (bounds) {
+        data.expr.sheet.cv.polygonByCanvas(bounds, Size.Line, Colors.Blue)
       }
     },
   },

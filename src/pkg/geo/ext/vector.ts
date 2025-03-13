@@ -86,14 +86,13 @@ export const EXT_VECTOR = defineHideable({
   },
   plot: {
     order: Order.Graph,
-    draw(data) {
+    items(data) {
+      return each(data.value)
+    },
+    draw(data, [p1, p2]) {
       const { cv } = data.expr.sheet
-      for (const [p1, p2] of each(data.value)) {
-        const d = vectorPath(cv, unpt(p1), unpt(p2))
-        if (!d) continue
-
-        cv.path(new Path2D(d), Size.Line, Colors.Blue, 1, 1)
-      }
+      const d = vectorPath(cv, unpt(p1), unpt(p2))
+      if (d) cv.path(new Path2D(d), Size.Line, Colors.Blue, 1, 1)
     },
   },
 })

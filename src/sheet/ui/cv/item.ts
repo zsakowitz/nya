@@ -14,7 +14,7 @@ interface Hint {
  */
 interface Target<T, U> {
   /** Returns appropriate data for each intersection. */
-  hits(data: T, at: Point, hint: Hint): U[]
+  hits(data: T, item: U, at: Point, hint: Hint): boolean
 
   /**
    * Focuses the item corresponding to the object.
@@ -22,7 +22,7 @@ interface Target<T, U> {
    * Technically this could be left to normal lifecycle things, but it seems
    * annoying to put it everywhere.
    */
-  focus(data: U): void
+  focus(data: T): void
 
   /**
    * Different reasons are passed for different events:
@@ -38,27 +38,32 @@ interface Target<T, U> {
    * 3. `true "hover"`, then `true "drag"`, then `false "drag"`, then `false
    *    "hover"`.
    */
-  toggle(data: U, on: boolean, reason: "pick" | "hover" | "drag"): void
+  toggle(
+    data: T,
+    item: U,
+    index: number,
+    on: boolean,
+    reason: "pick" | "hover" | "drag",
+  ): void
 
   /** Gets the value this hit represents. */
-  val(data: U): JsVal
+  val(data: T, item: U): JsVal
 
   /** Creates a reference to the value. */
-  ref(data: U): Block
+  ref(data: T, item: U): Block
 
   /**
-   * Called when the cursor moves to a spot. Normally, the cursor will be locked
-   * onto that item; return `false` to give up pointer lock.
+   * Called when the item is dragged. Normally, the cursor will stay locked onto
+   * this item until it is raised; returning `false` will override that and
+   * release the lock.
    */
-  move?(data: U, at: Point): boolean
+  drag?(data: T, item: U, at: Point): boolean
 }
 
 /** Something which can be plotted on the plain canvas. */
 export interface Plottable<T, U> {
   order: number
-  // Technically, `draw` is never passed a paper, and neither is any of this, so
-  // there's no technical reason to put it in the `paper3` folder. It's here
-  // anyway because it's typically only used for plotting items on the paper.
-  draw(data: T): void
+  items(data: T): U[]
+  draw(data: T, item: U): void
   target?: Target<T, U>
 }

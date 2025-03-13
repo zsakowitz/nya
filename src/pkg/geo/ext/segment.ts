@@ -16,10 +16,11 @@ export const EXT_SEGMENT = defineHideable({
   },
   plot: {
     order: Order.Graph,
-    draw(data) {
-      for (const val of each(data.value)) {
-        data.expr.sheet.cv.polygon(val.map(unpt), Size.Line, Colors.Blue)
-      }
+    items(data) {
+      return each(data.value)
+    },
+    draw(data, val) {
+      data.expr.sheet.cv.polygon(val.map(unpt), Size.Line, Colors.Blue)
     },
   },
 })

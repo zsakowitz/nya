@@ -330,16 +330,17 @@ export const EXT_ANGLE = defineHideable({
   },
   plot: {
     order: Order.Graph,
-    draw(data) {
-      for (const val of each(data.value)) {
-        drawAngleCv(
-          data.expr.sheet.cv,
-          unpt(val[0]),
-          unpt(val[1]),
-          unpt(val[2]),
-          { kind: data.value.type },
-        )
-      }
+    items(data) {
+      return each(data.value)
+    },
+    draw(data, val) {
+      drawAngleCv(
+        data.expr.sheet.cv,
+        unpt(val[0]),
+        unpt(val[1]),
+        unpt(val[2]),
+        { kind: data.value.type },
+      )
     },
   },
   el(data) {

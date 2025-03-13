@@ -283,12 +283,13 @@ const EXT_POINT = defineHideable({
   //   },
   plot: {
     order: Order.Point,
-    draw({ drag, cv, value }) {
-      for (const val of each(value)) {
-        cv.point(unpt(val), Size.Point, Colors.Purple)
-        if (drag) {
-          cv.point(unpt(val), Size.PointHaloWide, Colors.Purple, 0.3)
-        }
+    items(data) {
+      return each(data.value)
+    },
+    draw({ drag, cv }, val) {
+      cv.point(unpt(val), Size.Point, Colors.Purple)
+      if (drag) {
+        cv.point(unpt(val), Size.PointHaloWide, Colors.Purple, 0.3)
       }
     },
   },

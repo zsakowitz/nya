@@ -94,10 +94,11 @@ const EXT = defineExt({
   },
   plot: {
     order: Order.Backdrop,
-    draw(data) {
-      for (const val of each(data.value)) {
-        draw(data.expr.sheet.cv, val)
-      }
+    items(data) {
+      return each(data.value)
+    },
+    draw(data, val) {
+      draw(data.expr.sheet.cv, val)
     },
   },
 })

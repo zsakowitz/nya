@@ -38,14 +38,15 @@ export const EXT_LINE = defineHideable({
   },
   plot: {
     order: Order.Graph,
-    draw(data) {
-      for (const val of each(data.value)) {
-        data.expr.sheet.cv.polygonByCanvas(
-          getLineBounds(data.expr.sheet.cv, unpt(val[0]), unpt(val[1])),
-          Size.Line,
-          Colors.Blue,
-        )
-      }
+    items(data) {
+      return each(data.value)
+    },
+    draw(data, val) {
+      data.expr.sheet.cv.polygonByCanvas(
+        getLineBounds(data.expr.sheet.cv, unpt(val[0]), unpt(val[1])),
+        Size.Line,
+        Colors.Blue,
+      )
     },
   },
 })
