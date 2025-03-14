@@ -48,7 +48,7 @@ type DragResult = { span: Span; field: FieldComputed }
 
 type DragResultSigned = DragResult & { signed: boolean }
 
-type DragResultPoint =
+export type DragResultPoint =
   // for when the X and Y coordinates are separate
   | { type: "split"; x: DragResultSigned | null; y: DragResultSigned | null }
   // for when the X and Y coordinates are part of a joint complex number

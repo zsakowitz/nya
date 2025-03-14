@@ -148,7 +148,7 @@ function lineInfo<T extends "segment" | "ray" | "line" | "vector">(
       glide ?
         (props) => {
           const raw = gliderOnLine(
-            props.paper,
+            props.cv,
             [unpt(props.shape[0]), unpt(props.shape[1])],
             props.point,
           )
@@ -689,8 +689,7 @@ const INFO_CIRCLE: TyInfoByName<"circle"> = {
         0
       : Math.atan2(props.point.y - y, props.point.x - x)
     return {
-      precision:
-        2 * Math.PI * props.paper.offsetDistance(props.point, { x, y }),
+      precision: 2 * Math.PI * props.cv.offsetDistance(props.point, { x, y }),
       value: angle / 2 / Math.PI,
     }
   },
@@ -887,7 +886,7 @@ const INFO_ARC: TyInfoByName<"arc"> = {
     }
   },
   glide(props) {
-    return unglideArc(props.paper, computeArcVal(props.shape), props.point)
+    return unglideArc(props.cv, computeArcVal(props.shape), props.point)
   },
   preview(cv, val) {
     const arc = computeArcVal(val)

@@ -178,7 +178,7 @@ export function glideArc(arc: Arc, at: number): Point {
   }
 }
 
-export function unglideArc(paper: Paper, arc: Arc, at: Point) {
+export function unglideArc(cv: Cv, arc: Arc, at: Point) {
   if (arc.type == "invalid") {
     return { value: 0, precision: 1 }
   }
@@ -188,11 +188,11 @@ export function unglideArc(paper: Paper, arc: Arc, at: Point) {
     const t = (a - arc.a1) / (arc.a3 - arc.a1)
     return {
       value: Math.max(0, Math.min(1, t)),
-      precision: 2 * Math.PI * paper.offsetDistance(at, arc.c),
+      precision: 2 * Math.PI * cv.offsetDistance(at, arc.c),
     }
   }
 
-  const { value: t, precision } = gliderOnLine(paper, [arc.p1, arc.p3], at)
+  const { value: t, precision } = gliderOnLine(cv, [arc.p1, arc.p3], at)
   return {
     value:
       arc.type == "tworay" ?

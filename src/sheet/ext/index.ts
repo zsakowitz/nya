@@ -48,9 +48,9 @@ export class Exts {
  * auto-initialization designed specifically for {@linkcode Expr}.
  */
 export class Store<T extends {}, U extends WeakKey = Expr> {
-  data = new WeakMap<U, T>()
+  private data = new WeakMap<U, T>()
 
-  constructor(readonly init: (key: U) => T) {}
+  constructor(private readonly init: (key: U) => T) {}
 
   get(key: U) {
     const data = this.data.get(key)

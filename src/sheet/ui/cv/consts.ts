@@ -69,7 +69,9 @@ export const Size = Object.freeze({
    *
    * Should not be used for drawing, as it depends on coarseness of the pointer.
    */
-  get TargetWidth() {
+  get Target() {
     return queryPointerCoarse.matches ? 24 : 12
   },
+
+  ZoomSnap: 16,
 })

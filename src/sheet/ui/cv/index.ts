@@ -2,6 +2,7 @@ import type { TyName } from "../../../eval/ty"
 import { hx } from "../../../jsx"
 import type { Point } from "../../point"
 import { onTheme } from "../../theme"
+import { Size } from "./consts"
 
 interface Bounds {
   readonly xmin: number
@@ -152,7 +153,6 @@ export class Cv {
   }
 
   private draw() {
-    console.log("drawing")
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
 
     for (const fn of this.fns) {
@@ -289,6 +289,10 @@ export class Cv {
     this.ctx.globalAlpha = 1
   }
 
+  hitsPoint(p1: Point, p2: Point) {
+    return this.offsetDistance(p1, p2) <= Size.Target
+  }
+
   /** Accepts canvas coordinates. */
   path(
     path: Path2D,
@@ -371,6 +375,10 @@ export class Cv {
     this.ctx.globalAlpha = strokeAlpha
     this.ctx.stroke()
     this.ctx.globalAlpha = 1
+  }
+
+  cursor(style: "default" | "pointer" | "move" | "grab" | "grabbing") {
+    this.el.style.cursor = style
   }
 }
 

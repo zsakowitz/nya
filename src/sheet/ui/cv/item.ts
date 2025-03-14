@@ -1,15 +1,26 @@
-import type { JsVal, TyName } from "../../../eval/ty"
+import type { JsVal, JsValue, TyName, Val } from "../../../eval/ty"
 import { Block } from "../../../field/model"
 import type { Point } from "../../point"
-import type { TargetItem } from "./move"
+import type { Expr } from "../expr"
+import type { ItemData } from "./move"
 
 /** Hints as to what we're trying to pick. */
-export interface Hint {
-  /** If absent, all types are available. */
-  readonly tys?: readonly TyName[]
+export class Hint {
+  static one() {
+    return new Hint(null, 1)
+  }
 
-  /** Limits the number of results. */
-  readonly limit: number
+  constructor(
+    /** If absent, all types are available. */
+    readonly tys: readonly TyName[] | null,
+
+    /** Limits the number of results. */
+    readonly limit: number,
+  ) {}
+
+  allows(ty: TyName) {
+    return this.tys == null || this.tys.includes(ty)
+  }
 }
 
 /**
@@ -17,8 +28,11 @@ export interface Hint {
  * single item may render multiple things to the canvas (e.g. lists).
  */
 export interface Target<T, U> {
-  /** Returns appropriate data for each intersection. */
-  hits(data: T, item: U, at: Point, hint: Hint): boolean
+  /**
+   * `at` is in paper coordinates. Returns whether the point hits the provided
+   * item.
+   */
+  hits(target: ItemData<T, U>, at: Point, hint: Hint): boolean
 
   /**
    * Focuses the item corresponding to the object.
@@ -28,38 +42,24 @@ export interface Target<T, U> {
    */
   focus(data: T): void
 
-  /**
-   * Different reasons are passed for different events:
-   *
-   * - `pick`: the item is hovered on or off during picking
-   * - `hover`: the item is hovered on or off not during picking
-   * - `drag`: the item is hovered on or off and the pointer is down
-   *
-   * Thus, these lifecycles are possible:
-   *
-   * 1. `true "pick"`, then `false "pick"`.
-   * 2. `true "hover"`, then `.focus()`, then `false "hover"`.
-   * 3. `true "hover"`, then `true "drag"`, then `false "drag"`, then `false
-   *    "hover"`.
-   */
+  /** `click` is only emitted with `on = false`. */
   toggle(
-    item: TargetItem<T, U>,
+    item: ItemData<T, U>,
     on: boolean,
-    reason: "pick" | "hover" | "drag",
+    reason: "pick" | "hover" | "drag" | "click",
   ): void
 
   /** Gets the value this hit represents. */
-  val(data: T, item: U): JsVal
+  val(target: ItemData<T, U>): JsVal
 
   /** Creates a reference to the value. */
-  ref(data: T, item: U): Block
+  ref(target: ItemData<T, U>): Block
 
-  /**
-   * Called when the item is dragged. Normally, the cursor will stay locked onto
-   * this item until it is raised; returning `false` will override that and
-   * release the lock.
-   */
-  drag?(data: T, item: U, at: Point): boolean
+  /** Called to check if an item can be dragged. */
+  canDrag?(target: ItemData<T, U>): boolean
+
+  /** Must be present if `canDrag` returns `true`. */
+  drag?(target: ItemData<T, U>, at: Point): void
 }
 
 /** Something which can be plotted on the plain canvas. */
@@ -68,4 +68,14 @@ export interface Plottable<T, U> {
   items(data: T): U[]
   draw(data: T, item: U): void
   target?: Target<T, U>
+}
+
+/** A utility for an incredibly common case of {@linkcode Target.ref}. */
+export function ref(props: { data: { expr: Expr }; index: number }) {
+  return props.data.expr.createRef(props.index)
+}
+
+/** A utility for an incredibly common case of {@linkcode Target.val}. */
+export function val(props: { data: { value: JsValue }; item: Val }): JsVal {
+  return { type: props.data.value.type, value: props.item }
 }

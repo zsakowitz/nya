@@ -1,13 +1,20 @@
 import { faWarning } from "@fortawesome/free-solid-svg-icons/faWarning"
+import type { PlainVar } from "../../../eval/ast/token"
 import { js } from "../../../eval/js"
 import { id } from "../../../eval/lib/binding"
 import type { GlslResult } from "../../../eval/lib/fn"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "../../../eval/ops/vars"
 import type { JsValue, SReal } from "../../../eval/ty"
 import { outputBase } from "../../../eval/ty/display"
+import { OpEq } from "../../../field/cmd/leaf/cmp"
+import { CmdNum } from "../../../field/cmd/leaf/num"
+import { CmdToken } from "../../../field/cmd/leaf/token"
+import { CmdVar } from "../../../field/cmd/leaf/var"
+import { CmdBrack } from "../../../field/cmd/math/brack"
 import { fa } from "../../../field/fa"
+import { Block, L, R, Span } from "../../../field/model"
 import { h } from "../../../jsx"
-import type { AnyExt } from "../../ext"
+import type { Ext } from "../../ext"
 import { FACTORY_EXPR } from "../../item"
 import type { ItemRef } from "../../items"
 import { PICK_CURSOR } from "../../pick-cursor"
@@ -18,10 +25,26 @@ const ID_X = id({ value: "x" })
 const ID_Y = id({ value: "y" })
 const ID_P = id({ value: "p" })
 
-export type ExprStateOk = { ok: true; ext: AnyExt | null; data: {} }
-type ExprState = { ok: false; reason: string } | ExprStateOk
+export type ExprStateOk<T extends {} = {}> =
+  | { ok: true; ext: Ext<T, unknown> | null; data: T }
+  | { ok: true; ext: null; data?: undefined }
 
-export class Expr {
+type ExprState<T extends {} = {}> =
+  | { ok: false; reason: string; ext?: undefined }
+  | ExprStateOk<T>
+
+/**
+ * The generic `T` doesn't actually affect any code in the slightest; it's only
+ * there to catch errors in our item implementation, which is so generic it
+ * often slips up and passes the wrong data.
+ *
+ * This is a case where we really need a type to be qualified over all possible
+ * values, but that's not possible, so we just set it to some absurd value and
+ * call it done.
+ *
+ * TODO: remove
+ */
+export class Expr<T extends {} = {}> {
   static of(sheet: Sheet, geo?: boolean) {
     return sheet.list.create(FACTORY_EXPR, { from: { geo } }).data
   }
@@ -33,7 +56,7 @@ export class Expr {
   readonly aside
   readonly main
 
-  state: ExprState = { ok: false, reason: "Not computed yet." }
+  state: ExprState<T> = { ok: false, reason: "Not computed yet." }
 
   constructor(
     readonly sheet: Sheet,
@@ -117,7 +140,7 @@ export class Expr {
     }
 
     if (this.field.ast.type == "binding" && this.field.ast.params) {
-      this.state = { ok: true, ext: null, data: {} }
+      this.state = { ok: true, ext: null }
       return
     }
 
@@ -134,7 +157,7 @@ export class Expr {
             this.sheet.paper.queue()
           }
           destroyed = true
-          this.state = { ok: true, ext, data }
+          this.state = { ok: true, ext: ext as any, data: data as any }
           if (ext.plot) {
             this.sheet.paper.queue()
           }
@@ -149,7 +172,7 @@ export class Expr {
         this.sheet.paper.queue()
       }
       destroyed = true
-      this.state = { ok: true, ext: null, data: {} }
+      this.state = { ok: true, ext: null }
       this.elOutput.appendChild(h(JSON.stringify(this.state)))
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e)
@@ -265,5 +288,60 @@ export class Expr {
 
   focus() {
     this.ref.focusAside()
+  }
+
+  /**
+   * Gets this expression's binding identifier. If no binding identifier exists,
+   * a token is created, inserted properly, and returned.
+   */
+  name(): PlainVar {
+    if (this.field.ast.type == "binding") {
+      return this.field.ast.name
+    }
+
+    const token = CmdToken.new(this.field.ctx)
+    const cursor = this.field.block.cursor(L)
+    new OpEq(false).insertAt(cursor, L)
+    token.insertAt(cursor, L)
+    const name: PlainVar = {
+      type: "var",
+      kind: "var",
+      span: new Span(this.field.block, token[L], token[R]),
+      value: "$" + token.id,
+    }
+    this.field.ast = {
+      type: "binding",
+      name,
+      params: null,
+      value: this.field.ast,
+    }
+    this.field.queueAstUpdate()
+
+    return {
+      type: "var",
+      kind: "var",
+      span: new Span(this.field.block, token[L], token[R]),
+      value: "$" + token.id,
+    }
+  }
+
+  /**
+   * Creates a reference to the item with the given index. If this item's value
+   * is not a list, no index is appended.
+   */
+  createRef(index: number): Block {
+    const block = new Block(null)
+    const cursor = block.cursor(R)
+    CmdVar.leftOf(cursor, this.name(), this.field.options, this.field.ctx)
+    if (this.js?.value.list !== false) {
+      const block = new Block(null)
+      new CmdBrack("[", "]", null, block).insertAt(cursor, L)
+      const at = block.cursor(R)
+      for (const digit of index.toString()) {
+        new CmdNum(digit).insertAt(at, L)
+      }
+    }
+
+    return block
   }
 }

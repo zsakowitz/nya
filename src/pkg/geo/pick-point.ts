@@ -95,7 +95,7 @@ export function virtualPoint(
     let index, position
     try {
       index = TY_INFO[obj.val.type].glide?.({
-        paper: sheet.paper,
+        cv: sheet.cv,
         point: at,
         shape: obj.val.value as never,
       })

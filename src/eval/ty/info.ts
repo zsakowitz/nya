@@ -6,7 +6,6 @@ import { Block, L, R } from "../../field/model"
 import { h, path, svgx } from "../../jsx"
 import type { Point } from "../../sheet/point"
 import type { Cv } from "../../sheet/ui/cv"
-import type { Paper } from "../../sheet/ui/paper"
 import type { GlslContext } from "../lib/fn"
 import type { TyWrite } from "./display"
 
@@ -31,7 +30,7 @@ export interface TyInfo<T, U extends TyName> {
 
 export type TyInfoByName<T extends TyName> = TyInfo<Tys[T], TyComponents[T]>
 
-type TyGlide<T> = (props: GlideProps<T>) => {
+export type TyGlide<T> = (props: GlideProps<T>) => {
   value: number
   /** Number of values the user can choose. */
   precision: number
@@ -45,7 +44,7 @@ interface TyComponentInfo<T, U extends TyName> {
 interface GlideProps<T> {
   shape: T
   point: Point
-  paper: Paper
+  cv: Cv
 }
 
 export type TyCoerceMap<T> = {
@@ -76,7 +75,7 @@ export const WRITE_POINT: TyWrite<SPoint> = {
 }
 
 export function gliderOnLine(
-  paper: Paper,
+  cv: Cv,
   [p1, p2]: [Point, Point],
   { x, y }: Point,
 ) {
@@ -91,7 +90,7 @@ export function gliderOnLine(
 
   return {
     value: a / C,
-    precision: paper.offsetDistance(p1, p2),
+    precision: cv.offsetDistance(p1, p2),
   }
 }
 

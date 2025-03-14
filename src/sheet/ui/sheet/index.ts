@@ -28,7 +28,7 @@ import {
   registerPointerHandler,
   registerWheelHandler,
   type Handler,
-  type TargetItem,
+  type ItemWithTarget,
 } from "../cv/move"
 import { Paper } from "../paper"
 import { HANDLER_PICK, type PickProps } from "../paper/interact"
@@ -444,9 +444,9 @@ void main() {
 class SheetHandler implements Handler {
   constructor(readonly sheet: Sheet) {}
 
-  find(at: Point, hint: Hint): TargetItem[] {
-    const items: TargetItem[] = []
-    this.sheet.list.find(items, at, hint)
+  find(at: Point, hint: Hint): ItemWithTarget[] {
+    const items: ItemWithTarget[] = []
+    this.sheet.list.find(items, this.sheet.cv.toPaper(at), hint)
     return items
   }
 }

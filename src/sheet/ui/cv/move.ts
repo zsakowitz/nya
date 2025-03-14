@@ -1,20 +1,21 @@
 import type { Cv } from "."
 import type { Point } from "../../point"
-import type { Hint, Target } from "./item"
-
-const SNAP_DISTANCE = 16
-
-type DragFn = (point: Point, done: boolean) => void
+import { Size } from "./consts"
+import { Hint, type Target } from "./item"
 
 export interface Handler {
-  find(at: Point, hint: Hint): TargetItem[]
+  find(at: Point, hint: Hint): ItemWithTarget[]
 }
 
-export interface TargetItem<T = unknown, U = unknown> {
-  target: Target<T, U>
+export interface ItemData<T = unknown, U = unknown> {
   data: T
   item: U
   index: number
+}
+
+export interface ItemWithTarget<T = unknown, U = unknown>
+  extends ItemData<T, U> {
+  target: Target<T, U>
 }
 
 export function registerWheelHandler(cv: Cv) {
@@ -28,10 +29,10 @@ export function registerWheelHandler(cv: Cv) {
         const point = { ...cv.eventToPaper(event) }
         if (scale < 1) {
           const origin = cv.toOffset({ x: 0, y: 0 })
-          if (Math.abs(event.offsetX - origin.x) < SNAP_DISTANCE) {
+          if (Math.abs(event.offsetX - origin.x) < Size.ZoomSnap) {
             point.x = 0
           }
-          if (Math.abs(event.offsetY - origin.y) < SNAP_DISTANCE) {
+          if (Math.abs(event.offsetY - origin.y) < Size.ZoomSnap) {
             point.y = 0
           }
         }
@@ -52,37 +53,51 @@ export function registerWheelHandler(cv: Cv) {
 export function registerPointerHandler(cv: Cv, handler: Handler) {
   let initial: Point | undefined
   let ptrs = 0
-  let drag: DragFn | undefined
-  let didMove = false
+  let moved = false
+  let current: ItemWithTarget | undefined
 
   cv.el.addEventListener(
     "pointermove",
     (event) => {
       event.preventDefault()
+      const pt: Point = { x: event.offsetX, y: event.offsetY }
+
+      if (ptrs == 0) {
+        const [next] = handler.find(pt, Hint.one())
+        // TODO: optimize out the case where current and next are identical, although it doesn't unduly harm anyone
+        if (current) {
+          current.target.toggle(current, false, "hover")
+        }
+        if (next) {
+          next.target.toggle(next, true, "hover")
+        }
+        current = next
+        return
+      }
 
       if (ptrs != 1) {
         return
       }
 
-      const [found] = handler.find(
-        { x: event.offsetX, y: event.offsetY },
-        { limit: 1, tys: undefined },
-      )
+      if (current) {
+        if (current.target.canDrag?.(current)) {
+          moved = true
+          current.target.drag!(current, cv.toPaper(pt))
+          cv.queue()
+          return
+        }
 
-      if (found) {
-        found.target.toggle(found, true, "hover")
-      }
-
-      if (drag) {
-        drag(cv.eventToPaper(event), false)
-        return
+        current.target.toggle(current, false, "drag")
+        current.target.toggle(current, false, "hover")
+        current = undefined
+        initial = cv.toPaper(pt)
       }
 
       if (!initial) {
         return
       }
 
-      didMove = true
+      moved = true
       ;(document.activeElement as HTMLElement).blur?.()
 
       const self = cv.eventToPaper(event)
@@ -98,37 +113,30 @@ export function registerPointerHandler(cv: Cv, handler: Handler) {
   cv.el.addEventListener(
     "pointerdown",
     (event) => {
+      event.preventDefault()
+
       ptrs++
       cv.el.setPointerCapture(event.pointerId)
-      const at = cv.eventToPaper(event)
-      didMove = false
-      initial = at
+      if (ptrs != 1) return
 
-      // TODO: make sure drag and pick handlers work
-      //
-      // for (const el of event.composedPath()) {
-      //   const fn = HANDLER_DRAG.get(el as SVGElement)
-      //   if (fn) {
-      //     const props = fn(at)
-      //     if (props) {
-      //       drag = props
-      //       break
-      //     }
-      //   }
-      // }
-      //
-      // for (const el of event.composedPath()) {
-      //   const fn = HANDLER_PICK.get(el as SVGElement)
-      //   if (fn) {
-      //     fn.focus()
-      //     return
-      //   }
-      // }
+      const pt: Point = { x: event.offsetX, y: event.offsetY }
+      moved = false
+      initial = cv.toPaper(pt)
+
+      const [next] = handler.find(pt, Hint.one())
+      if (current) {
+        current.target.toggle(current, false, "hover")
+      }
+      if (next) {
+        next.target.toggle(next, true, "hover")
+        if (next.target.canDrag?.(next)) {
+          next.target.toggle(next, true, "drag")
+        }
+      }
+      current = next
     },
     { passive: false },
   )
-
-  // TODO: click handler
 
   function onPointerUp(event?: PointerEvent) {
     ptrs--
@@ -137,18 +145,26 @@ export function registerPointerHandler(cv: Cv, handler: Handler) {
       ptrs = 0
     }
 
-    if (drag) {
-      if (didMove && event) {
-        try {
-          drag(cv.eventToPaper(event), true)
-        } catch (e) {
-          console.warn("[paper.drag]", e)
-        }
-      }
-      drag = undefined
+    initial = undefined
+
+    if (!event) {
+      current = undefined
+      return
     }
 
-    initial = undefined
+    const pt: Point = { x: event.offsetX, y: event.offsetY }
+
+    if (moved && current) {
+      if (current.target.canDrag?.(current)) {
+        current.target.drag!(current, cv.toPaper(pt))
+      }
+
+      current.target.toggle(current, false, "drag")
+      current.target.toggle(current, false, "hover")
+      cv.queue()
+      current = undefined
+      return
+    }
   }
 
   addEventListener("pointerup", onPointerUp)

@@ -77,6 +77,17 @@ export function defineHideable<T extends WeakKey, U>(
           plot.draw(data, item)
         }
       },
+      target: plot.target && {
+        ...plot.target,
+        hits(target, at, hint) {
+          const expr = map.get(target.data)
+          return (
+            expr != null &&
+            !CHECKBOX.get(expr).show &&
+            plot.target!.hits(target, at, hint)
+          )
+        },
+      },
     },
   }
 }

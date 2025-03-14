@@ -4,7 +4,7 @@ import { h, t } from "../jsx"
 import type { ItemFactory } from "./item"
 import type { Point } from "./point"
 import type { Hint } from "./ui/cv/item"
-import type { TargetItem } from "./ui/cv/move"
+import type { ItemWithTarget } from "./ui/cv/move"
 import type { Sheet } from "./ui/sheet"
 
 interface ItemCreateProps<U> {
@@ -242,7 +242,7 @@ abstract class ItemList {
     }
   }
 
-  find(items: TargetItem[], at: Point, hint: Hint) {
+  find(items: ItemWithTarget[], at: Point, hint: Hint) {
     // Reverse order is used here since later items come later in draw order and
     // therefore earlier in interaction order.
 
@@ -265,7 +265,7 @@ abstract class ItemList {
         const plotItems = plot.items(data)
         for (let i = plotItems.length - 1; i >= 0; i--) {
           const item = plotItems[i]!
-          if (plot.target.hits(data, item, at, hint)) {
+          if (plot.target.hits({ data, index: i, item }, at, hint)) {
             items.push({ target: plot.target, data, item, index: i })
           }
         }
