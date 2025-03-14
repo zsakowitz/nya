@@ -83,7 +83,6 @@ export function registerPointerHandler(cv: Cv, handler: Handler) {
         if (current.target.canDrag?.(current)) {
           moved = true
           current.target.drag!(current, cv.toPaper(pt))
-          cv.queue()
           return
         }
 
@@ -147,24 +146,33 @@ export function registerPointerHandler(cv: Cv, handler: Handler) {
 
     initial = undefined
 
-    if (!event) {
-      current = undefined
+    if (ptrs != 0) {
       return
     }
 
-    const pt: Point = { x: event.offsetX, y: event.offsetY }
+    const pt: Point | undefined = event && {
+      x: event.offsetX,
+      y: event.offsetY,
+    }
 
-    if (moved && current) {
-      if (current.target.canDrag?.(current)) {
-        current.target.drag!(current, cv.toPaper(pt))
+    if (current) {
+      if (moved) {
+        if (pt && current.target.canDrag?.(current)) {
+          current.target.drag!(current, cv.toPaper(pt))
+        }
+        current.target.toggle(current, false, "drag")
       }
-
-      current.target.toggle(current, false, "drag")
       current.target.toggle(current, false, "hover")
-      cv.queue()
-      current = undefined
-      return
     }
+    current = undefined
+
+    if (!pt) return
+
+    const [next] = handler.find(pt, Hint.one())
+    if (next) {
+      next.target.toggle(next, true, "hover")
+    }
+    current = next
   }
 
   addEventListener("pointerup", onPointerUp)
