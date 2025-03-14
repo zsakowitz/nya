@@ -55,10 +55,18 @@ export interface Target<T, U> {
   /** Creates a reference to the value. */
   ref(target: ItemData<T, U>): Block
 
-  /** Called to check if an item can be dragged. */
-  canDrag?(target: ItemData<T, U>): boolean
+  /**
+   * If this returns a point, it is used as the simulated "origin" for a drag
+   * operation. For example, this prevents points from unexpectedly jumping if
+   * the user starts dragging them from far off their actual center.
+   *
+   * The origin should be in offset coordinates.
+   *
+   * If this returns `null`, the item cannot be dragged.
+   */
+  dragOrigin?(target: ItemData<T, U>): Point | null
 
-  /** Must be present if `canDrag` returns `true`. */
+  /** Must be present if {@linkcode Target.dragOrigin} returns a point. */
   drag?(target: ItemData<T, U>, at: Point): void
 }
 

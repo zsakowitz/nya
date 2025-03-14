@@ -195,8 +195,12 @@ const EXT_POINT = defineHideable<
           }
         }
       },
-      canDrag(data) {
-        return !!data.data.drag
+      dragOrigin(target) {
+        if (target.data.drag) {
+          return target.data.cv.toOffset(unpt(target.item))
+        } else {
+          return null
+        }
       },
       drag({ data }, at) {
         const drag = data.drag!

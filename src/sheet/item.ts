@@ -110,9 +110,9 @@ export const FACTORY_EXPR: ItemFactory<Expr<K>, { geo?: boolean }> = {
         const state = item.data.state as ExprStateOk<K>
         return state.ext!.plot!.target!.val(local(item))
       },
-      canDrag(item) {
+      dragOrigin(item) {
         const state = item.data.state as ExprStateOk<K>
-        return !!state.ext!.plot!.target!.canDrag?.(local(item))
+        return state.ext!.plot!.target!.dragOrigin?.(local(item)) ?? null
       },
       drag(item, at) {
         const state = item.data.state as ExprStateOk<K>

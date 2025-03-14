@@ -183,6 +183,23 @@ export class Cv {
     return { x: xmin + w * px, y: ymin + h * (1 - py) }
   }
 
+  /**
+   * Identical to `.toPaper`, but binds the offset coordinates within
+   * `Size.DragMargin` pixels of the edge of the canvas. Useful to prevent
+   * objects from being dragged outside the window.
+   */
+  toPaperBounded(offset: Point): Point {
+    const x = Math.max(
+      Size.DragMargin,
+      Math.min(this.width - Size.DragMargin, offset.x),
+    )
+    const y = Math.max(
+      Size.DragMargin,
+      Math.min(this.height - Size.DragMargin, offset.y),
+    )
+    return this.toPaper({ x, y })
+  }
+
   /** Paper --> offset */
   toOffset({ x, y }: Point): Point {
     const { xmin, w, ymin, h } = this.bounds()

@@ -64,14 +64,13 @@ export const Size = Object.freeze({
   DirectedAngleMinHeadSize: 4,
   DirectedAngleMaxHeadSize: 8,
 
-  /**
-   * The offset distance required to consider something a "touch".
-   *
-   * Should not be used for drawing, as it depends on coarseness of the pointer.
-   */
+  /** The offset distance required to consider something a "touch". */
   get Target() {
     return queryPointerCoarse.matches ? 24 : 12
   },
+
+  /** 1.5 * {@linkcode Size.PointHaloWide} */
+  DragMargin: 18,
 
   ZoomSnap: 16,
 })

@@ -55,6 +55,7 @@ export function registerPointerHandler(cv: Cv, handler: Handler) {
   let ptrs = 0
   let moved = false
   let current: ItemWithTarget | undefined
+  let dragOffset: Point | undefined
 
   cv.el.addEventListener(
     "pointermove",
@@ -80,9 +81,15 @@ export function registerPointerHandler(cv: Cv, handler: Handler) {
       }
 
       if (current) {
-        if (current.target.canDrag?.(current)) {
+        if (dragOffset) {
           moved = true
-          current.target.drag!(current, cv.toPaper(pt))
+          current.target.drag!(
+            current,
+            cv.toPaperBounded({
+              x: pt.x - dragOffset.x,
+              y: pt.y - dragOffset.y,
+            }),
+          )
           return
         }
 
@@ -128,8 +135,15 @@ export function registerPointerHandler(cv: Cv, handler: Handler) {
       }
       if (next) {
         next.target.toggle(next, true, "hover")
-        if (next.target.canDrag?.(next)) {
+        const origin = next.target.dragOrigin?.(next)
+        if (origin) {
+          dragOffset = {
+            x: event.offsetX - origin.x,
+            y: event.offsetY - origin.y,
+          }
           next.target.toggle(next, true, "drag")
+        } else {
+          dragOffset = undefined
         }
       }
       current = next
@@ -157,14 +171,21 @@ export function registerPointerHandler(cv: Cv, handler: Handler) {
 
     if (current) {
       if (moved) {
-        if (pt && current.target.canDrag?.(current)) {
-          current.target.drag!(current, cv.toPaper(pt))
+        if (pt && dragOffset) {
+          current.target.drag!(
+            current,
+            cv.toPaperBounded({
+              x: pt.x - dragOffset.x,
+              y: pt.y - dragOffset.y,
+            }),
+          )
         }
         current.target.toggle(current, false, "drag")
       }
       current.target.toggle(current, false, "hover")
     }
     current = undefined
+    dragOffset = undefined
 
     if (!pt) return
 
@@ -173,6 +194,7 @@ export function registerPointerHandler(cv: Cv, handler: Handler) {
       next.target.toggle(next, true, "hover")
     }
     current = next
+    dragOffset = undefined
   }
 
   addEventListener("pointerup", onPointerUp)
