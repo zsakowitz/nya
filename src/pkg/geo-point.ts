@@ -194,8 +194,6 @@ const EXT_POINT = defineHideable<
             item.data.cv.cursor("grabbing")
           }
         }
-
-        console.log(on ? "✅ ON " : "❌ OFF", reason)
       },
       canDrag(data) {
         return !!data.data.drag
