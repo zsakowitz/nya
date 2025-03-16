@@ -43,7 +43,7 @@ import { EXT_LINE, getLineBounds } from "./ext/line"
 import { EXT_POLYGON } from "./ext/polygon"
 import { EXT_RAY, getRayBounds } from "./ext/ray"
 import { EXT_SEGMENT } from "./ext/segment"
-import { EXT_VECTOR, drawVector, vectorPath } from "./ext/vector"
+import { EXT_VECTOR } from "./ext/vector"
 import { FN_ANGLE, FN_DIRECTEDANGLE } from "./fn/angle"
 import { FN_ANGLEBISECTOR, bisectAngleJs } from "./fn/anglebisector"
 import { FN_ANGLES, FN_DIRECTEDANGLES } from "./fn/angles"
@@ -73,6 +73,7 @@ import { FN_START } from "./fn/start"
 import { FN_TRANSLATE } from "./fn/translate"
 import { FN_VECTOR } from "./fn/vector"
 import { FN_VERTICES } from "./fn/vertices"
+import { vectorPath } from "./vector"
 
 declare module "../../eval/ty" {
   interface Tys {
@@ -234,9 +235,9 @@ const PICK_VECTOR = definePickTy(
   ],
   (sheet, p1, p2) => {
     if (p1 && p2) {
-      drawVector(sheet.paper, unpt(p1.value), unpt(p2.value), {
-        ghost: true,
-      })
+      const { cv } = sheet
+      const d = vectorPath(cv, unpt(p1.value), unpt(p2.value))
+      if (d) cv.path(new Path2D(d), Size.Line, Colors.Blue, 1, 1)
     }
   },
 )
