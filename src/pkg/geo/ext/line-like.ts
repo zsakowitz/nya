@@ -9,7 +9,7 @@ import { ref, val } from "../../../sheet/ui/cv/item"
 import type { Expr } from "../../../sheet/ui/expr"
 
 export function createLineLikeExt(
-  type: "line" | "ray" | "segment",
+  type: "line" | "ray" | "segment" | "vector",
   path: (cv: Cv, p1: Point, p2: Point) => Path2D | null,
 ) {
   const picked = new Prop<boolean[]>(() => [])
@@ -36,7 +36,7 @@ export function createLineLikeExt(
         const { cv } = data.expr.sheet
         const d = path(cv, unpt(val[0]), unpt(val[1]))
         if (d) {
-          cv.path(d, Size.Line, Color.Blue)
+          cv.path(d, Size.Line, Color.Blue, 1, 1)
           if (picked.get(data.expr)[index]) {
             cv.path(d, Size.LineRing, Color.Blue, Opacity.Pick)
           }

@@ -344,6 +344,7 @@ export const EXT_ANGLE = defineHideable({
         { kind: data.value.type },
       )
     },
+    // FIXME: pick angles (for angle bisector)
   },
   el(data) {
     return data.el
