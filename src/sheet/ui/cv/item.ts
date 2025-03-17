@@ -1,6 +1,6 @@
 import { FnDist } from "../../../eval/ops/dist"
 import type { JsVal, JsValue, TyName, Val } from "../../../eval/ty"
-import { unpt } from "../../../eval/ty/create"
+import { num, unpt } from "../../../eval/ty/create"
 import { TY_INFO, type TyGlide } from "../../../eval/ty/info"
 import { Block } from "../../../field/model"
 import type { Point } from "../../point"
@@ -100,8 +100,15 @@ export class Hint {
             o.params[1] == a.val.type,
         )
 
-        const p1 = o1 && FN_INTERSECTION.js1(a.val, b.val)
-        const p2 = o2 && FN_INTERSECTION.js1(b.val, a.val)
+        let p1 = o1 && FN_INTERSECTION.js1(a.val, b.val)
+        if (!(p1 && isFinite(num(p1.value.x)) && isFinite(num(p1.value.y)))) {
+          p1 = false
+        }
+
+        let p2 = o2 && FN_INTERSECTION.js1(b.val, a.val)
+        if (!(p2 && isFinite(num(p2.value.x)) && isFinite(num(p2.value.y)))) {
+          p2 = false
+        }
 
         if (!(p1 || p2)) break intersection
 
