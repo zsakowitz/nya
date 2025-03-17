@@ -128,6 +128,7 @@ function lineInfo<T extends "segment" | "ray" | "line" | "vector">(
         WRITE_POINT.display(value[1], inner)
       },
     },
+    point: false,
     icon:
       typeof clsx == "function" ? clsx : (
         () =>
@@ -668,6 +669,7 @@ const INFO_CIRCLE: TyInfoByName<"circle"> = {
       inner.num(value.radius)
     },
   },
+  point: false,
   icon() {
     return h(
       "",
@@ -738,6 +740,7 @@ const INFO_POLYGON: TyInfoByName<"polygon"> = {
       }
     },
   },
+  point: false,
   icon() {
     return h(
       "",
@@ -799,6 +802,7 @@ const INFO_ARC: TyInfoByName<"arc"> = {
       WRITE_POINT.display(value[2], inner)
     },
   },
+  point: false,
   icon() {
     return h(
       "",
@@ -962,6 +966,7 @@ function angleInfo(
         return value.some((x) => x.x.type == "approx" || x.y.type == "approx")
       },
     },
+    point: false,
     icon() {
       return h(
         "",

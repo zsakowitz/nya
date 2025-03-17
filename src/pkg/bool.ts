@@ -294,6 +294,7 @@ export const PKG_BOOL: Package = {
             new CmdWord("" + value, "var").insertAt(props.cursor, L)
           },
         },
+        point: false,
         icon() {
           return h(
             "",

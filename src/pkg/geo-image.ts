@@ -160,6 +160,7 @@ export const PKG_IMAGE_GEO: Package = {
             new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
           },
         },
+        point: false,
         icon() {
           return h(
             "",

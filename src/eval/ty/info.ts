@@ -21,6 +21,7 @@ export interface TyInfo<T, U extends TyName> {
   garbage: TyGarbage<T>
   coerce: TyCoerceMap<T>
   write: TyWrite<T>
+  point: boolean
   icon(): HTMLSpanElement
   token?(val: T): HTMLSpanElement | null
   preview?(cv: Cv, val: T): void
@@ -133,6 +134,7 @@ TY_INFO.never = {
     glsl: "false",
   },
   glsl: "bool",
+  point: false,
   coerce: new Proxy<TyCoerceMap<never>>(
     {},
     {

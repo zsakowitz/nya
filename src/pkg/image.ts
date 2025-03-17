@@ -347,6 +347,7 @@ export const PKG_IMAGE: Package = {
             return false
           },
         },
+        point: false,
         icon() {
           return h(
             "",

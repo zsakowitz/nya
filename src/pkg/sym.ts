@@ -61,6 +61,7 @@ export const PKG_SYM: Package = {
             )
           },
         },
+        point: false,
         icon() {
           return h(
             "",

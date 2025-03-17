@@ -578,6 +578,7 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
           },
         },
         write: WRITE_COMPLEX,
+        point: true,
         icon() {
           return iconComplex(true)
         },
@@ -596,6 +597,7 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
         garbage: { js: SNANPT, glsl: "vec2(0.0/0.0)" },
         coerce: {},
         write: WRITE_COMPLEX,
+        point: true,
         icon() {
           return iconComplex(false)
         },

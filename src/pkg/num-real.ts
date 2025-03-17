@@ -560,6 +560,7 @@ float _helper_cmp_r32(float a, float b) {
           },
         },
         write: WRITE_REAL,
+        point: false,
         icon() {
           return iconReal(true)
         },
@@ -571,6 +572,7 @@ float _helper_cmp_r32(float a, float b) {
         garbage: { js: real(NaN), glsl: "(0.0/0.0)" },
         coerce: {},
         write: WRITE_REAL,
+        point: false,
         icon() {
           return iconReal(false)
         },

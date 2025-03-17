@@ -166,6 +166,7 @@ export const PKG_ITHKUIL: Package = {
             new CmdIthkuilScript(value[0], value[1]).insertAt(props.cursor, L)
           },
         },
+        point: false,
         icon() {
           return h(
             "",

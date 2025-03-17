@@ -210,6 +210,7 @@ export const PKG_COLOR_CORE: Package = {
             )
           },
         },
+        point: false,
         icon() {
           function make(clsx: string) {
             return h(

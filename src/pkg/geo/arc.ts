@@ -114,7 +114,7 @@ export function computeArcVal(val: Val<"arc">): Arc {
   return computeArc(unpt(val[0]), unpt(val[1]), unpt(val[2]))
 }
 
-type ArcPath =
+export type ArcPath =
   | { type: "invalid" }
   | { type: "circle"; p1: Point; r: Point; p3: Point; flags: string }
   | { type: "segment"; p1: Point; p3: Point }

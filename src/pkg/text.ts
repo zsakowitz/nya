@@ -360,6 +360,7 @@ export const PKG_TEXT: Package = {
             )
           },
         },
+        point: false,
         icon() {
           return h(
             "",

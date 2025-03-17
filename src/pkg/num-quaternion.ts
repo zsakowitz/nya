@@ -181,6 +181,7 @@ export const PKG_NUM_QUATERNION: Package = {
             ])
           },
         },
+        point: false,
         icon() {
           return h(
             "",

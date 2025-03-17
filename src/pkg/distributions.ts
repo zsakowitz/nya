@@ -128,6 +128,7 @@ export const PKG_DISTRIBUTIONS: Package = {
             new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
           },
         },
+        point: false,
         icon() {
           return h(
             "",
@@ -171,6 +172,7 @@ export const PKG_DISTRIBUTIONS: Package = {
             new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
           },
         },
+        point: false,
         icon() {
           return h(
             "",
@@ -217,6 +219,7 @@ export const PKG_DISTRIBUTIONS: Package = {
             new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
           },
         },
+        point: false,
         icon() {
           return h(
             "",
@@ -274,6 +277,7 @@ export const PKG_DISTRIBUTIONS: Package = {
             new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
           },
         },
+        point: false,
         icon() {
           return h(
             "",
@@ -331,6 +335,7 @@ export const PKG_DISTRIBUTIONS: Package = {
             new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
           },
         },
+        point: false,
         icon() {
           return h(
             "",

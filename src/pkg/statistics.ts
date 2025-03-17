@@ -774,6 +774,7 @@ const TY_STATS: TyInfo<Tys["stats"], TyComponents["stats"]> = {
       "Cannot create five-number statistical summaries in shaders.",
     )
   },
+  point: false,
   icon() {
     return h(
       "",

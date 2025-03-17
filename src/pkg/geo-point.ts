@@ -15,8 +15,8 @@ import { definePickTy, PICK_TY, toolbar } from "../sheet/pick-ty"
 import type { Point } from "../sheet/point"
 import { TransitionProp } from "../sheet/transition"
 import type { Cv } from "../sheet/ui/cv"
-import { Colors, Order, Size } from "../sheet/ui/cv/consts"
-import { ref, val } from "../sheet/ui/cv/item"
+import { Colors, Opacity, Order, Size } from "../sheet/ui/cv/consts"
+import { FN_GLIDER, FN_INTERSECTION, ref, val } from "../sheet/ui/cv/item"
 import type { Expr } from "../sheet/ui/expr"
 import type { DrawProps, Paper } from "../sheet/ui/paper"
 import { HANDLER_DRAG, HANDLER_PICK } from "../sheet/ui/paper/interact"
@@ -165,7 +165,12 @@ const EXT_POINT = defineHideable<
     draw({ drag, cv, expr }, val) {
       cv.point(unpt(val), tx.get(expr), Colors.Purple)
       if (drag) {
-        cv.point(unpt(val), Size.PointHaloWide, Colors.Purple, 0.3)
+        cv.point(
+          unpt(val),
+          Size.PointHaloWide,
+          Colors.Purple,
+          Opacity.PointHalo,
+        )
       }
     },
     target: {
@@ -181,18 +186,29 @@ const EXT_POINT = defineHideable<
       val,
       ref,
       toggle(item, on, reason) {
-        if (reason == "hover") {
-          if (on && item.data.drag) {
-            tx.set(item.data.expr, Size.PointHaloWide)
-            item.data.cv.cursor("grab")
-          } else if (!on) {
-            tx.set(item.data.expr, Size.Point)
-            item.data.cv.cursor("default")
-          }
-        } else if (reason == "drag") {
-          if (on) {
-            item.data.cv.cursor("grabbing")
-          }
+        switch (reason) {
+          case "drag":
+            if (on) item.data.cv.cursor("grabbing")
+            break
+          case "pick":
+            if (on) {
+              tx.set(item.data.expr, Size.PointHaloThin, true)
+              item.data.cv.cursor("pointer")
+            } else {
+              tx.set(item.data.expr, Size.Point, true)
+              item.data.cv.cursor("default")
+            }
+            break
+          case "hover":
+            if (on && item.data.drag) {
+              // TODO: transitions should be per-item
+              tx.set(item.data.expr, Size.PointHaloWide)
+              item.data.cv.cursor("grab")
+            } else if (!on) {
+              tx.set(item.data.expr, Size.Point)
+              item.data.cv.cursor("default")
+            }
+            break
         }
       },
       dragOrigin(target) {
@@ -258,15 +274,8 @@ const EXT_POINT = defineHideable<
   },
 })
 
-export const FN_GLIDER = new FnDist<"point32">(
-  "glider",
-  "constructs a point on an object",
-)
-
-export const FN_INTERSECTION = new FnDist<"point32">(
-  "intersection",
-  "constructs the point where two objects intersect",
-)
+// TODO: directly reference this so pkg/geo-point isn't a requirement
+export { FN_GLIDER, FN_INTERSECTION }
 
 const FN_SCREENDISTANCE = new FnDist<"r32">(
   "screendistance",
@@ -526,6 +535,7 @@ export const PKG_GEO_POINT: Package = {
           },
         },
         write: WRITE_POINT,
+        point: true,
         icon() {
           return iconPoint(true)
         },
@@ -547,6 +557,7 @@ export const PKG_GEO_POINT: Package = {
         garbage: { js: SNANPT, glsl: "vec2(0.0/0.0)" },
         coerce: {},
         write: WRITE_POINT,
+        point: true,
         icon() {
           return iconPoint(false)
         },
