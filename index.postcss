@@ -134,6 +134,16 @@ body {
 
 .nya-cmd-var-prop {
   @apply pr-[.2em];
+
+  &:last-child,
+  &:has(+ :where(.nya-cursor):last-child) {
+    @apply pr-0;
+  }
+
+  &:where(:has(+ .nya-cursor + .nya-cmd-colon)),
+  &:where(:has(+ .nya-cmd-colon)) {
+    @apply pr-0;
+  }
 }
 
 .nya-cmd-var-prop:has(+ .nya-cmd-supsub),
