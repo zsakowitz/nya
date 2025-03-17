@@ -329,9 +329,7 @@ export class Cv {
   hitsFill(at: Point, path: Path2D) {
     this.ctx.lineWidth = 2 * Size.Target * this.scale
     const { x, y } = this.toCanvas(at)
-    return (
-      this.ctx.isPointInPath(path, x, y) || this.ctx.isPointInStroke(path, x, y)
-    )
+    return this.ctx.isPointInPath(path, x, y)
   }
 
   hitsCircle(at: Point, center: Point, r: number) {

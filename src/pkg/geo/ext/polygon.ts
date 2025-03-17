@@ -42,7 +42,6 @@ export const EXT_POLYGON = defineHideable<
         .flatMap((raw, poly): PolyItem[] => {
           const val = raw.map(unpt)
           return [
-            { type: "poly", poly, val },
             ...val.map(
               (p1, index): PolyItem => ({
                 type: "segment",
@@ -52,6 +51,7 @@ export const EXT_POLYGON = defineHideable<
                 p2: val[(index + 1) % val.length]!,
               }),
             ),
+            { type: "poly", poly, val },
           ]
         })
     },
@@ -89,10 +89,21 @@ export const EXT_POLYGON = defineHideable<
     target: {
       hits(target, at, hint) {
         const cv = target.data.expr.sheet.cv
-        return target.item.type == "poly" ?
-            hint.allows("polygon") && cv.hitsFill(at, cv.dPoly(target.item.val))
-          : hint.allows("segment") &&
-              cv.hits(at, cv.dPoly([target.item.p1, target.item.p2]))
+
+        if (target.item.type == "segment") {
+          return (
+            hint.allows("segment") &&
+            cv.hits(at, cv.dPoly([target.item.p1, target.item.p2]))
+          )
+        }
+
+        const path = cv.dPoly(target.item.val)
+
+        return (
+          hint.allows("polygon") &&
+          (cv.hitsFill(at, path) ||
+            (!hint.allows("segment") && cv.hits(at, path)))
+        )
       },
       focus(data) {
         data.expr.focus()
