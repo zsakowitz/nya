@@ -1,13 +1,13 @@
 import { js } from "../eval/js"
-import { each, type TyName } from "../eval/ty"
+import { each } from "../eval/ty"
 import { TY_INFO } from "../eval/ty/info"
 import { CmdValue } from "../field/cmd/leaf/value"
 import { L, R } from "../field/model"
-import { virtualPoint } from "../pkg/geo/pick-point"
 import type { ItemRef } from "./items"
-import type { Picker } from "./pick"
+import { Hint } from "./ui/cv/item"
+import type { Picker } from "./ui/cv/pick"
 import type { Expr } from "./ui/expr"
-import type { Selected, Sheet } from "./ui/sheet"
+import type { Sheet } from "./ui/sheet"
 
 interface Data {
   expr: Expr
@@ -18,12 +18,15 @@ const ID = Math.random()
 
 let added = new WeakSet<Sheet>()
 
-export const PICK_CURSOR: Picker<Data, Selected> = {
+export const PICK_CURSOR: Picker<Data> = {
   id() {
     return ID
   },
-  init(_, sheet) {
-    sheet.paper.el.dataset.nyaPicking = Object.keys(TY_INFO).join(" ")
+  hint() {
+    return Hint.one()
+  },
+  toggle({ expr: { sheet } }, on) {
+    if (!on) return
 
     if (!added.has(sheet)) {
       sheet.paper.el.addEventListener("focus", () => {
@@ -43,14 +46,6 @@ export const PICK_CURSOR: Picker<Data, Selected> = {
 
     sheet.paper.queue()
   },
-  find(_, at, sheet) {
-    const [a] = sheet.select(at, Object.keys(TY_INFO) as TyName[])
-    if (a) {
-      return a
-    }
-
-    return virtualPoint(at, sheet)
-  },
   draw(data, found) {
     if (!found) return
 
@@ -60,7 +55,10 @@ export const PICK_CURSOR: Picker<Data, Selected> = {
 
     try {
       data.expr.field.options.beforeInsert?.(cursor)
-      new CmdValue({ ...found.val, list: false }).insertAt(cursor, L)
+      new CmdValue({ ...found.target.val(found), list: false }).insertAt(
+        cursor,
+        L,
+      )
       let ast = data.expr.field.block.expr(true)
       if (ast.type == "binding") {
         if (ast.params) {
@@ -86,22 +84,22 @@ export const PICK_CURSOR: Picker<Data, Selected> = {
     } finally {
       sel.remove()
       oldContents.insertAt(sel.cursor(R), L)
-      found.draw?.()
     }
   },
-  select(data, found) {
+  take(data, found) {
+    if (!found) return null
+
     data.expr.field.onBeforeChange()
     const cursor = data.expr.field.sel.remove()
     data.expr.field.options.beforeInsert?.(cursor)
-    found.ref().insertAt(cursor, L)
+    found.target.ref(found).insertAt(cursor, L)
     data.expr.field.options.afterInsert?.(cursor)
     data.expr.field.sel = cursor.selection()
     data.expr.field.onAfterChange(false)
     data.expr.field.el.focus()
 
-    return { pick: PICK_CURSOR, data }
+    return data
   },
-  cancel() {},
   suppress(data, found) {
     return found && data.ref
   },

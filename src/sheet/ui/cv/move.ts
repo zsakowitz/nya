@@ -5,7 +5,7 @@ import { Hint, type Target } from "./item"
 
 export interface Handler {
   find(at: Point, hint: Hint): ItemWithDrawTarget | undefined
-  pick(item: ItemWithTarget | null): void
+  take(item: ItemWithTarget | null): void
 }
 
 export interface ItemData<T = unknown, U = unknown> {
@@ -213,7 +213,7 @@ export function registerPointerHandler(cv: Cv, handler: Handler) {
         current = undefined
       }
       if (ptrs == 0) {
-        handler.pick(ret)
+        handler.take(ret)
       }
       // Recheck `picking` since `handler.pick` may have changed it
       if (picking && pt) {

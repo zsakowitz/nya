@@ -33,7 +33,6 @@ import {
 import { PickHandler2 } from "../cv/pick"
 import { Paper } from "../paper"
 import { HANDLER_PICK, type PickProps } from "../paper/interact"
-import { PickHandler } from "../paper/pick"
 import { btn, createDocs, DEFAULT_TO_VISIBLE_DOCS } from "./docs"
 
 export class Sheet {
@@ -85,15 +84,20 @@ export class Sheet {
 
     // prepare js context
     registerWheelHandler(this.cv)
-    const pick = registerPointerHandler(this.cv, new SheetHandler(this))
-    keys[1] = () => ((pick.picking = undefined), this.cv.queue())
-    keys[2] = () => ((pick.picking = Hint.pt()), this.cv.queue())
+    const handler = new SheetHandler(this)
+    const pick = registerPointerHandler(this.cv, handler)
+    this.pick = new PickHandler2(this, pick, handler)
     registerPinchHandler(this.cv)
-    this.cv.fn(OrderMajor.Backdrop, () => this.list.draw(true))
-    this.cv.fn(OrderMajor.Canvas, () => this.list.draw(false))
-    new PickHandler2(this, pick)
-    this.cv.fn(OrderMajor.Canvas, () => pick.picked?.target.draw?.(pick.picked))
-    this.pick = new PickHandler(this)
+
+    this.cv.fn(OrderMajor.Backdrop, () => {
+      this.list.draw(true) // backdrop images
+    })
+
+    this.cv.fn(OrderMajor.Canvas, () => {
+      this.list.draw(false) // canvas items
+      this.pick.draw() // constructed object previews
+      pick.picked?.target.draw?.(pick.picked) // virtual points
+    })
 
     // prepare glsl context
     const canvas = hx(
@@ -458,13 +462,12 @@ class SheetHandler implements Handler {
     return hint.pick(this.sheet, at, items)
   }
 
-  // FIXME: this should do something
-  pick(item: ItemWithTarget | null): void {
-    console.log(item)
-  }
+  take(_item: ItemWithTarget | null): void {}
 }
 
 export interface Selected<K extends TyName = TyName>
   extends Omit<PickProps<K>, "val" | "focus"> {
   val: JsVal<K>
 }
+
+// TODO: cancelling a partially complete polygon should reset to zero points, not totally cancel
