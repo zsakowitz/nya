@@ -1,10 +1,7 @@
-import { each, type JsValue } from "../../../eval/ty"
-import { unpt } from "../../../eval/ty/create"
-import { defineHideable } from "../../../sheet/ext/hideable"
 import type { Point } from "../../../sheet/point"
 import type { Cv } from "../../../sheet/ui/cv"
-import { Colors, Order, Size } from "../../../sheet/ui/cv/consts"
 import type { Paper } from "../../../sheet/ui/paper"
+import { createLineLikeExt } from "./line-like"
 
 export function getRayBounds(
   cv: Paper | Cv,
@@ -57,31 +54,12 @@ export function getRayBounds(
   ]
 }
 
-export const EXT_RAY = defineHideable({
-  data(expr) {
-    const value = expr.js?.value
-
-    if (value && value.type == "ray") {
-      return { value: value as JsValue<"ray">, expr }
-    }
-  },
-  plot: {
-    order() {
-      return Order.Graph
-    },
-    items(data) {
-      return each(data.value)
-    },
-    draw(data, val) {
-      const bounds = getRayBounds(
-        data.expr.sheet.cv,
-        unpt(val[0]),
-        unpt(val[1]),
-      )
-
-      if (bounds) {
-        data.expr.sheet.cv.polygonByCanvas(bounds, Size.Line, Colors.Blue)
-      }
-    },
-  },
+export const EXT_RAY = createLineLikeExt("ray", (cv, p1, p2) => {
+  const data = getRayBounds(cv, p1, p2)
+  if (data) {
+    const [o1, o2] = data
+    return new Path2D(`M ${o1.x} ${o1.y} L ${o2.x} ${o2.y}`)
+  } else {
+    return null
+  }
 })

@@ -8,7 +8,6 @@ export const Colors = Object.freeze({
   get Angle() {
     return theme("--nya-angle", "black")
   },
-  PickOpacity: 0.4,
 })
 
 export const Opacity = Object.freeze({
