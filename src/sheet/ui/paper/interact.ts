@@ -6,7 +6,7 @@ export interface DragProps {
   (at: Point): DragFn | null
 }
 
-export interface DragFn {
+interface DragFn {
   (at: Point, done: boolean): void
 }
 

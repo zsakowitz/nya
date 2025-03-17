@@ -2,7 +2,7 @@ import { h } from "../jsx"
 import { Store } from "./ext"
 import type { Expr } from "./ui/expr"
 
-export class Transition {
+class Transition {
   readonly el = h("transition-[width]")
   private readonly loop: () => void
   private value: number | undefined

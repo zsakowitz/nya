@@ -7,7 +7,7 @@ import { ref, val } from "../../../sheet/ui/cv/item"
 import type { Expr } from "../../../sheet/ui/expr"
 import { arcPath, computeArcVal, type Arc, type ArcPath } from "../arc"
 
-export function arcPathD(o: ArcPath) {
+function arcPathD(o: ArcPath) {
   return (
     o.type == "circle" ?
       `M ${o.p1.x} ${o.p1.y} A ${o.r.x} ${o.r.y} 0 ${o.flags} ${o.p3.x} ${o.p3.y}`
