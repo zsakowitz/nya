@@ -7,6 +7,7 @@ import { GlslContext } from "../../../eval/lib/fn"
 import type { JsVal, TyName } from "../../../eval/ty"
 import { num, real } from "../../../eval/ty/create"
 import { splitRaw } from "../../../eval/ty/split"
+import type { Block } from "../../../field/model"
 import type { Options } from "../../../field/options"
 import { h, hx, t } from "../../../jsx"
 import type { ToolbarItem } from "../../../pkg"
@@ -32,7 +33,7 @@ import {
 } from "../cv/move"
 import { PickHandler2 } from "../cv/pick"
 import { Paper } from "../paper"
-import { HANDLER_PICK, type PickProps } from "../paper/interact"
+import { HANDLER_PICK } from "../paper/interact"
 import { btn, createDocs, DEFAULT_TO_VISIBLE_DOCS } from "./docs"
 
 export class Sheet {
@@ -465,9 +466,7 @@ class SheetHandler implements Handler {
   take(_item: ItemWithTarget | null): void {}
 }
 
-export interface Selected<K extends TyName = TyName>
-  extends Omit<PickProps<K>, "val" | "focus"> {
+export interface Selected<K extends TyName = TyName> {
   val: JsVal<K>
+  ref(): Block
 }
-
-// TODO: cancelling a partially complete polygon should reset to zero points, not totally cancel

@@ -1,5 +1,4 @@
-import type { JsVal, SPoint, TyName } from "../eval/ty"
-import { unpt } from "../eval/ty/create"
+import type { JsVal, TyName } from "../eval/ty"
 import { OpEq } from "../field/cmd/leaf/cmp"
 import { CmdComma } from "../field/cmd/leaf/comma"
 import { CmdToken } from "../field/cmd/leaf/token"
@@ -7,8 +6,9 @@ import { CmdVar } from "../field/cmd/leaf/var"
 import { CmdBrack } from "../field/cmd/math/brack"
 import { Block, L, R } from "../field/model"
 import { h, hx } from "../jsx"
-import { virtualPoint } from "../pkg/geo/pick-point"
-import type { Picker } from "./pick"
+import { Hint } from "./ui/cv/item"
+import type { ItemWithDrawTarget } from "./ui/cv/move"
+import type { Picker } from "./ui/cv/pick"
 import { Expr } from "./ui/expr"
 import type { Selected, Sheet } from "./ui/sheet"
 
@@ -26,85 +26,85 @@ interface Source {
 }
 
 export interface Data {
-  vals: readonly Selected[]
+  vals: readonly ItemWithDrawTarget[]
   src: Source
   next: readonly TyName[]
 }
 
-export const PICK_TY: Picker<Data, Selected> = {
+export const PICK_TY: Picker<Data> = {
   id(data) {
     return data.src.id
   },
-  init(data, sheet) {
-    sheet.paper.el.dataset.nyaPicking = data.next.join(" ")
-  },
-  find(data, at, sheet) {
-    const [a] = sheet.select(at, data.next)
-    if (a) {
-      return a
-    }
-
-    if (data.next.includes("point32") || data.next.includes("point64")) {
-      for (const pt of data.vals) {
-        if (pt.val.type == "point32" || pt.val.type == "point64") {
-          if (
-            sheet.paper.offsetDistance(at, unpt(pt.val.value as SPoint)) <= 12
-          ) {
-            return pt
-          }
-        }
-      }
-
-      return virtualPoint(at, sheet)
-    }
-
-    return null
-  },
+  toggle() {},
   draw(data, found, sheet) {
-    const args = data.vals.map((x) => x.val)
+    const args = data.vals.map((x) => x.target.val(x))
     if (found) {
-      args.push(found.val)
+      args.push(found.target.val(found))
     }
     data.src.draw(sheet, args)
     for (const val of data.vals.filter((x, i, a) => a.indexOf(x) == i)) {
-      val.draw()
+      val.target.draw?.(val)
     }
-    if (found) {
-      if (data.vals.includes(found)) {
-        found.drawFocus?.()
-      } else {
-        found.draw()
-      }
-    }
+    // FIXME: properly show if an existing point is picked
   },
-  select(data, found, sheet) {
-    const args = data.vals.map((x) => x.val)
-    if (!data.src.allowExistingPoint?.(args) && data.vals.includes(found)) {
-      return { pick: PICK_TY, data }
+  hint(data) {
+    return Hint.oneOf(data.next)
+  },
+  suppress() {
+    return null
+  },
+  take(data, found, sheet) {
+    if (!found) {
+      // TODO: return `data` with empty array to reset state if some items have been chosen already
+      return null
     }
 
-    args.push(found.val)
+    const args = data.vals.map((x) => x.target.val(x))
+    // FIXME: confirm this check works
+    if (!data.src.allowExistingPoint?.(args) && data.vals.includes(found)) {
+      return data
+    }
+
+    const foundVal = found.target.val(found)
+    args.push(foundVal)
     const next = data.src.next(args)
 
     if (next != null) {
       return {
-        pick: PICK_TY,
-        data: {
-          src: data.src,
-          next,
-          vals: [...data.vals, found],
-        } satisfies Data,
+        src: data.src,
+        next,
+        vals: [...data.vals, found],
       }
     }
 
     const refs = []
     for (const arg of data.vals) {
-      refs.push(arg.ref())
+      refs.push(arg.target.ref(arg))
     }
     const valueRef =
-      args.slice(0, -1).includes(found.val) ? refs.pop()! : found.ref()
+      args.slice(0, -1).includes(foundVal) ?
+        refs.pop()!
+      : found.target.ref(found)
 
-    if (!data.src.create?.(sheet, [...data.vals, found]) && data.src.fn) {
+    if (
+      !data.src.create?.(sheet, [
+        ...data.vals.map(
+          (item): Selected => ({
+            ref() {
+              return item.target.ref(item)
+            },
+            val: item.target.val(item),
+          }),
+        ),
+        {
+          ref() {
+            return found.target.ref(found)
+          },
+          val: foundVal,
+        },
+      ]) &&
+      data.src.fn
+    ) {
       const expr = Expr.of(sheet, true)
       const cursor = expr.field.block.cursor(R)
       const token = CmdToken.new(expr.field.ctx)
@@ -116,6 +116,7 @@ export const PICK_TY: Picker<Data, Selected> = {
       const inner = new Block(null)
       new CmdBrack("(", ")", null, inner).insertAt(cursor, L)
       {
+        LargestContentfulPaint
         const cursor = inner.cursor(R)
         for (const arg of refs) {
           arg.insertAt(cursor, L)
@@ -135,16 +136,10 @@ export const PICK_TY: Picker<Data, Selected> = {
     }
 
     return {
-      pick: PICK_TY,
-      data: {
-        src: data.src,
-        next: initial,
-        vals: [],
-      } satisfies Data,
+      src: data.src,
+      next: initial,
+      vals: [],
     }
-  },
-  cancel(_, sheet) {
-    delete sheet.paper.el.dataset.nyaPicking
   },
 }
 

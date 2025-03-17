@@ -7,9 +7,9 @@ export interface Picker<T extends {}> {
   id(data: T): number
   toggle(data: T, on: boolean): void
   hint(data: T): Hint | null
-  draw(data: T, item: ItemWithTarget | null): void
-  /** `item=null` means it was a canceled action. */
-  take(data: T, item: ItemWithTarget | null): T | null
+  draw(data: T, item: ItemWithTarget | null, sheet: Sheet): void
+  /** `item=null` means it was a cancelled action. */
+  take(data: T, item: ItemWithTarget | null, sheet: Sheet): T | null
   /** Suppresses the rendering of a particular item. */
   suppress(data: T, item: ItemWithTarget | null): ItemRef<unknown> | null
 }
@@ -37,7 +37,7 @@ export class PickHandler2 {
       console.log("taking")
       if (!this.picker) return
 
-      const next = this.picker.take(this.data!, item)
+      const next = this.picker.take(this.data!, item, sheet)
       if (!next) {
         this.cancel(true)
       } else {
@@ -56,7 +56,7 @@ export class PickHandler2 {
 
   cancel(force?: boolean): void {
     if (this.picker) {
-      const next = this.picker.take(this.d!, null)
+      const next = this.picker.take(this.d!, null, this.sheet)
       this.picker.toggle(this.data!, false)
 
       if (!force && next) {
@@ -84,7 +84,7 @@ export class PickHandler2 {
   }
 
   draw(): void {
-    this.picker?.draw(this.data!, this.handler.picked ?? null)
+    this.picker?.draw(this.data!, this.handler.picked ?? null, this.sheet)
   }
 
   set<T extends {}>(picker: Picker<T>, data: T): void {

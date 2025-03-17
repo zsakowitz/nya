@@ -30,6 +30,15 @@ export class Hint {
     return new Hint(tys, 1, false, createdPoint)
   }
 
+  /**
+   * A hint which looks for one of a set of types, setting `derivedPoint` and
+   * `createdPoint` if available for the given type set.
+   */
+  static oneOf(tys: readonly TyName[]) {
+    const pt = tys.some((x) => TY_INFO[x].point)
+    return new Hint(tys, pt ? 2 : 1, pt, pt)
+  }
+
   /** A hint which looks for or creates a point. */
   static pt() {
     return new Hint(
