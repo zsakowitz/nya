@@ -19,7 +19,7 @@ import { Block, L, R } from "../../field/model"
 import { h, path, svgx, sx } from "../../jsx"
 import { PICK_TY, definePickTy, toolbar, type Data } from "../../sheet/pick-ty"
 import { normVector, type Point } from "../../sheet/point"
-import { Colors, Size } from "../../sheet/ui/cv/consts"
+import { Color, Size } from "../../sheet/ui/cv/consts"
 import { Expr } from "../../sheet/ui/expr"
 import type { Selected } from "../../sheet/ui/sheet"
 import {
@@ -164,22 +164,22 @@ function lineInfo<T extends "segment" | "ray" | "line" | "vector">(
     preview(cv, val) {
       switch (name) {
         case "segment": {
-          cv.polygon(val.map(unpt), Size.Line, Colors.Blue)
+          cv.polygon(val.map(unpt), Size.Line, Color.Blue)
           break
         }
         case "ray": {
           const bounds = getRayBounds(cv, unpt(val[0]), unpt(val[1]))
-          if (bounds) cv.polygonByCanvas(bounds, Size.Line, Colors.Blue)
+          if (bounds) cv.polygonByCanvas(bounds, Size.Line, Color.Blue)
           break
         }
         case "line": {
           const bounds = getLineBounds(cv, unpt(val[0]), unpt(val[1]))
-          if (bounds) cv.polygonByCanvas(bounds, Size.Line, Colors.Blue)
+          if (bounds) cv.polygonByCanvas(bounds, Size.Line, Color.Blue)
           break
         }
         case "vector": {
           const path = vectorPath(cv, unpt(val[0]), unpt(val[1]))
-          if (path) cv.path(new Path2D(path), Size.Line, Colors.Blue, 1, 1)
+          if (path) cv.path(new Path2D(path), Size.Line, Color.Blue, 1, 1)
           break
         }
       }
@@ -196,7 +196,7 @@ const PICK_LINE = definePickTy(
   (sheet, p1, p2) => {
     if (p1 && p2) {
       const bounds = getLineBounds(sheet.cv, unpt(p1.value), unpt(p2.value))
-      sheet.cv.polygonByCanvas(bounds, Size.Line, Colors.Blue)
+      sheet.cv.polygonByCanvas(bounds, Size.Line, Color.Blue)
     }
   },
 )
@@ -209,7 +209,7 @@ const PICK_SEGMENT = definePickTy(
   ],
   (sheet, p1, p2) => {
     if (p1 && p2) {
-      sheet.cv.polygon([unpt(p1.value), unpt(p2.value)], Size.Line, Colors.Blue)
+      sheet.cv.polygon([unpt(p1.value), unpt(p2.value)], Size.Line, Color.Blue)
     }
   },
 )
@@ -223,7 +223,7 @@ const PICK_RAY = definePickTy(
   (sheet, p1, p2) => {
     if (p1 && p2) {
       const bounds = getRayBounds(sheet.cv, unpt(p1.value), unpt(p2.value))
-      if (bounds) sheet.cv.polygonByCanvas(bounds, Size.Line, Colors.Blue)
+      if (bounds) sheet.cv.polygonByCanvas(bounds, Size.Line, Color.Blue)
     }
   },
 )
@@ -238,7 +238,7 @@ const PICK_VECTOR = definePickTy(
     if (p1 && p2) {
       const { cv } = sheet
       const d = vectorPath(cv, unpt(p1.value), unpt(p2.value))
-      if (d) cv.path(new Path2D(d), Size.Line, Colors.Blue, 1, 1)
+      if (d) cv.path(new Path2D(d), Size.Line, Color.Blue, 1, 1)
     }
   },
 )
@@ -291,7 +291,7 @@ const PICK_PERPENDICULAR = definePickTy(
     if (p1 && p2) {
       const line = perpendicularJs(p1, p2)
       const bounds = getLineBounds(sheet.cv, unpt(line[0]), unpt(line[1]))
-      sheet.cv.polygonByCanvas(bounds, Size.Line, Colors.Blue)
+      sheet.cv.polygonByCanvas(bounds, Size.Line, Color.Blue)
     }
   },
 )
@@ -306,7 +306,7 @@ const PICK_PARALLEL = definePickTy(
     if (p1 && p2) {
       const line = parallelJs(p1, p2)
       const bounds = getLineBounds(sheet.cv, unpt(line[0]), unpt(line[1]))
-      sheet.cv.polygonByCanvas(bounds, Size.Line, Colors.Blue)
+      sheet.cv.polygonByCanvas(bounds, Size.Line, Color.Blue)
     }
   },
 )
@@ -472,7 +472,7 @@ const PICK_POLYGON: Data = {
       sheet.cv.polygon(
         pts.map((x) => unpt(x.value)),
         Size.Line,
-        Colors.Blue,
+        Color.Blue,
         1,
         0.3,
         false,
@@ -697,7 +697,7 @@ const INFO_CIRCLE: TyInfoByName<"circle"> = {
     }
   },
   preview(cv, val) {
-    cv.circle(unpt(val.center), num(val.radius), Size.Line, Colors.Green)
+    cv.circle(unpt(val.center), num(val.radius), Size.Line, Color.Green)
   },
 }
 
@@ -773,7 +773,7 @@ const INFO_POLYGON: TyInfoByName<"polygon"> = {
     )
   },
   preview(cv, val) {
-    cv.polygon(val.map(unpt), Size.Line, Colors.Blue, 1, 0.3, false)
+    cv.polygon(val.map(unpt), Size.Line, Color.Blue, 1, 0.3, false)
   },
 }
 
@@ -1196,7 +1196,7 @@ const PICK_ANGLEBISECTOR = definePickTy(
     if (a) {
       const [p1, p2] = bisectAngleJs(a)
       const bounds = getRayBounds(sheet.cv, unpt(p1), unpt(p2))
-      if (bounds) sheet.cv.polygonByCanvas(bounds, Size.Line, Colors.Blue)
+      if (bounds) sheet.cv.polygonByCanvas(bounds, Size.Line, Color.Blue)
     }
   },
 )

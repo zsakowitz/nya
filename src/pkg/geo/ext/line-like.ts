@@ -4,7 +4,7 @@ import { Prop } from "../../../sheet/ext"
 import { defineHideable } from "../../../sheet/ext/hideable"
 import type { Point } from "../../../sheet/point"
 import type { Cv } from "../../../sheet/ui/cv"
-import { Colors, Opacity, Order, Size } from "../../../sheet/ui/cv/consts"
+import { Color, Opacity, Order, Size } from "../../../sheet/ui/cv/consts"
 import { ref, val } from "../../../sheet/ui/cv/item"
 import type { Expr } from "../../../sheet/ui/expr"
 
@@ -36,9 +36,9 @@ export function createLineLikeExt(
         const { cv } = data.expr.sheet
         const d = path(cv, unpt(val[0]), unpt(val[1]))
         if (d) {
-          cv.path(d, Size.Line, Colors.Blue)
+          cv.path(d, Size.Line, Color.Blue)
           if (picked.get(data.expr)[index]) {
-            cv.path(d, Size.LineRing, Colors.Blue, Opacity.Pick)
+            cv.path(d, Size.LineRing, Color.Blue, Opacity.Pick)
           }
         }
       },

@@ -1,7 +1,7 @@
 import { each, type JsValue, type SPoint } from "../../../eval/ty"
 import { unpt } from "../../../eval/ty/create"
 import { defineHideable } from "../../../sheet/ext/hideable"
-import { Colors, Order, Size } from "../../../sheet/ui/cv/consts"
+import { Color, Order, Size } from "../../../sheet/ui/cv/consts"
 import type { Expr } from "../../../sheet/ui/expr"
 
 export const EXT_POLYGON = defineHideable<
@@ -29,7 +29,7 @@ export const EXT_POLYGON = defineHideable<
       data.expr.sheet.cv.polygon(
         val.map(unpt),
         Size.Line,
-        Colors.Blue,
+        Color.Blue,
         1,
         0.3,
         true,

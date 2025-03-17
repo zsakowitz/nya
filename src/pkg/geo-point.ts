@@ -15,7 +15,7 @@ import { definePickTy, PICK_TY, toolbar } from "../sheet/pick-ty"
 import type { Point } from "../sheet/point"
 import { TransitionProp } from "../sheet/transition"
 import type { Cv } from "../sheet/ui/cv"
-import { Colors, Opacity, Order, Size } from "../sheet/ui/cv/consts"
+import { Color, Opacity, Order, Size } from "../sheet/ui/cv/consts"
 import { FN_GLIDER, FN_INTERSECTION, ref, val } from "../sheet/ui/cv/item"
 import type { Expr } from "../sheet/ui/expr"
 import type { DrawProps, Paper } from "../sheet/ui/paper"
@@ -163,14 +163,9 @@ const EXT_POINT = defineHideable<
       return each(data.value)
     },
     draw({ drag, cv, expr }, val) {
-      cv.point(unpt(val), tx.get(expr), Colors.Purple)
+      cv.point(unpt(val), tx.get(expr), Color.Purple)
       if (drag) {
-        cv.point(
-          unpt(val),
-          Size.PointHaloWide,
-          Colors.Purple,
-          Opacity.PointHalo,
-        )
+        cv.point(unpt(val), Size.PointHaloWide, Color.Purple, Opacity.PointHalo)
       }
     },
     target: {
@@ -547,7 +542,7 @@ export const PKG_GEO_POINT: Package = {
           ],
         },
         preview(cv, val) {
-          cv.point(unpt(val), Size.Point, Colors.Purple)
+          cv.point(unpt(val), Size.Point, Color.Purple)
         },
       },
       point32: {
@@ -569,7 +564,7 @@ export const PKG_GEO_POINT: Package = {
           ],
         },
         preview(cv, val) {
-          cv.point(unpt(val), Size.Point, Colors.Purple)
+          cv.point(unpt(val), Size.Point, Color.Purple)
         },
       },
     },

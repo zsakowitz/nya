@@ -11,7 +11,7 @@ import type { Point } from "../../point"
 import { Writer } from "../../write"
 import { Expr } from "../expr"
 import type { Sheet } from "../sheet"
-import { Colors, Size } from "./consts"
+import { Color, Size } from "./consts"
 import { FN_INTERSECTION } from "./item"
 import type { ItemWithDrawTarget, ItemWithTarget } from "./move"
 
@@ -80,7 +80,7 @@ const TARGET_INTERSECTION: ItemWithDrawTarget<
     sheet.cv.queue()
   },
   draw({ item: { at, sheet } }) {
-    sheet.cv.point(at, Size.Point, Colors.Purple)
+    sheet.cv.point(at, Size.Point, Color.Purple)
   },
 }
 
@@ -162,8 +162,8 @@ const TARGET_GLIDER: ItemWithDrawTarget<
     sheet.cv.queue()
   },
   draw({ item: { at, sheet } }) {
-    sheet.cv.point(at, Size.Point, Colors.Purple)
-    sheet.cv.point(at, Size.PointHaloWide, Colors.Purple, 0.3)
+    sheet.cv.point(at, Size.Point, Color.Purple)
+    sheet.cv.point(at, Size.PointHaloWide, Color.Purple, 0.3)
   },
 }
 
@@ -234,8 +234,8 @@ const TARGET_VPOINT: ItemWithDrawTarget<
     sheet.cv.queue()
   },
   draw({ item: { at, sheet } }) {
-    sheet.cv.point(at, Size.Point, Colors.Purple)
-    sheet.cv.point(at, Size.PointHaloWide, Colors.Purple, 0.3)
+    sheet.cv.point(at, Size.Point, Color.Purple)
+    sheet.cv.point(at, Size.PointHaloWide, Color.Purple, 0.3)
   },
 }
 

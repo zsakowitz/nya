@@ -1,7 +1,7 @@
 import { each, type JsValue } from "../../../eval/ty"
 import { unpt } from "../../../eval/ty/create"
 import { defineHideable } from "../../../sheet/ext/hideable"
-import { Colors, Order, Size } from "../../../sheet/ui/cv/consts"
+import { Color, Order, Size } from "../../../sheet/ui/cv/consts"
 import { vectorPath } from "../vector"
 
 export const EXT_VECTOR = defineHideable({
@@ -22,7 +22,7 @@ export const EXT_VECTOR = defineHideable({
     draw(data, [p1, p2]) {
       const { cv } = data.expr.sheet
       const d = vectorPath(cv, unpt(p1), unpt(p2))
-      if (d) cv.path(new Path2D(d), Size.Line, Colors.Blue, 1, 1)
+      if (d) cv.path(new Path2D(d), Size.Line, Color.Blue, 1, 1)
     },
   },
 })

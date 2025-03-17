@@ -3,7 +3,7 @@ import { sx } from "../../../jsx"
 import { Prop } from "../../../sheet/ext"
 import { defineHideable } from "../../../sheet/ext/hideable"
 import type { Cv } from "../../../sheet/ui/cv"
-import { Colors, Opacity, Order, Size } from "../../../sheet/ui/cv/consts"
+import { Color, Opacity, Order, Size } from "../../../sheet/ui/cv/consts"
 import { ref, val } from "../../../sheet/ui/cv/item"
 import type { Expr } from "../../../sheet/ui/expr"
 import type { DrawLineProps, Paper } from "../../../sheet/ui/paper"
@@ -92,7 +92,7 @@ export function drawArcCv(
 ) {
   const d = arcPathD(arcPath(cv, arc))
   if (!d) return
-  cv.path(new Path2D(d), size, Colors.Green, alpha)
+  cv.path(new Path2D(d), size, Color.Green, alpha)
 }
 
 const picked = new Prop<boolean[]>(() => [])

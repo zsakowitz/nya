@@ -4,7 +4,7 @@ import { sx } from "../../../jsx"
 import { Prop } from "../../../sheet/ext"
 import { defineHideable } from "../../../sheet/ext/hideable"
 import type { Point } from "../../../sheet/point"
-import { Colors, Opacity, Order, Size } from "../../../sheet/ui/cv/consts"
+import { Color, Opacity, Order, Size } from "../../../sheet/ui/cv/consts"
 import { ref, val } from "../../../sheet/ui/cv/item"
 import type { Expr } from "../../../sheet/ui/expr"
 import type { DrawLineProps, Paper } from "../../../sheet/ui/paper"
@@ -95,14 +95,14 @@ export const EXT_CIRCLE = defineHideable<
         unpt(val.center),
         num(val.radius),
         Size.Line,
-        Colors.Green,
+        Color.Green,
       )
       if (picked.get(data.expr)[index]) {
         data.expr.sheet.cv.circle(
           unpt(val.center),
           num(val.radius),
           Size.LineRing,
-          Colors.Green,
+          Color.Green,
           Opacity.Pick,
         )
       }

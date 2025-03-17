@@ -13,7 +13,7 @@ import { sx } from "../../../jsx"
 import { defineHideable } from "../../../sheet/ext/hideable"
 import { normVector, type Point } from "../../../sheet/point"
 import type { Cv } from "../../../sheet/ui/cv"
-import { Colors, Order, Size } from "../../../sheet/ui/cv/consts"
+import { Color, Order, Size } from "../../../sheet/ui/cv/consts"
 import type { DrawLineProps, Paper } from "../../../sheet/ui/paper"
 import { STORE_EVAL } from "../../eval"
 
@@ -288,26 +288,26 @@ export function drawAngleCv(
         `M ${a3.x} ${a3.y} L ${ox + w * ny} ${oy - w * nx} L ${ox - w * ny} ${oy + w * nx} Z`,
       ),
       Size.Line,
-      Colors.Angle,
+      Color.Angle,
       1,
       1,
     )
   }
 
-  cv.path(new Path2D(d), Size.Line, Colors.Angle)
+  cv.path(new Path2D(d), Size.Line, Color.Angle)
 
   if (props.kind == "angle") {
     cv.path(
       new Path2D(`${plainPath} L ${o2.x} ${o2.y} Z`),
       Size.Line,
-      Colors.Angle,
+      Color.Angle,
       0,
       0.3,
     )
   }
 
   for (const s of [s1, s3]) {
-    cv.polygonByCanvas([o2, s], Size.AngleGuide, Colors.Angle, 0.5)
+    cv.polygonByCanvas([o2, s], Size.AngleGuide, Color.Angle, 0.5)
   }
 }
 
