@@ -140,6 +140,7 @@ export const EXT_POLYGON = defineHideable<
       },
       toggle(item, on, reason) {
         if (reason == "pick") {
+          item.data.expr.sheet.cv.cursor(on ? "pointer" : "default")
           item.data.picked[item.index] = on
           item.data.expr.sheet.cv.queue()
         }

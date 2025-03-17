@@ -86,7 +86,7 @@ export class Sheet {
     registerWheelHandler(this.cv)
     const pick = registerPointerHandler(this.cv, new SheetHandler(this))
     keys[1] = () => ((pick.picking = undefined), this.cv.queue())
-    keys[2] = () => ((pick.picking = Hint.pt()), this.cv.queue())
+    keys[2] = () => ((pick.picking = Hint.one()), this.cv.queue())
     registerPinchHandler(this.cv)
     this.cv.fn(OrderMajor.Backdrop, () => this.list.draw(true))
     this.cv.fn(OrderMajor.Canvas, () => this.list.draw(false))

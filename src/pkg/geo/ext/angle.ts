@@ -5,15 +5,19 @@ import {
   type GlslVal,
   type JsVal,
   type JsValue,
+  type SPoint,
 } from "../../../eval/ty"
 import { real, unpt } from "../../../eval/ty/create"
 import { Display } from "../../../eval/ty/display"
 import { R } from "../../../field/model"
 import { sx } from "../../../jsx"
+import { Prop } from "../../../sheet/ext"
 import { defineHideable } from "../../../sheet/ext/hideable"
 import { normVector, type Point } from "../../../sheet/point"
 import type { Cv } from "../../../sheet/ui/cv"
-import { Color, Order, Size } from "../../../sheet/ui/cv/consts"
+import { Color, Opacity, Order, Size } from "../../../sheet/ui/cv/consts"
+import { ref, val } from "../../../sheet/ui/cv/item"
+import type { Expr } from "../../../sheet/ui/expr"
 import type { DrawLineProps, Paper } from "../../../sheet/ui/paper"
 import { STORE_EVAL } from "../../eval"
 
@@ -223,6 +227,8 @@ export function drawAngleCv(
   p2: Point,
   p3: Point,
   props: { kind: "angle" | "directedangle" },
+  size: number = Size.Line,
+  alpha = 1,
 ) {
   const measure =
     (Math.atan2(p1.x - p2.x, p1.y - p2.y) -
@@ -283,23 +289,15 @@ export function drawAngleCv(
     const oy = a3.y - ny
     const w = Size.VectorWidthRatio
 
-    cv.path(
-      new Path2D(
-        `M ${a3.x} ${a3.y} L ${ox + w * ny} ${oy - w * nx} L ${ox - w * ny} ${oy + w * nx} Z`,
-      ),
-      Size.Line,
-      Color.Angle,
-      1,
-      1,
-    )
+    d += ` M ${a3.x} ${a3.y} L ${ox + w * ny} ${oy - w * nx} L ${ox - w * ny} ${oy + w * nx} Z`
   }
 
-  cv.path(new Path2D(d), Size.Line, Color.Angle)
+  cv.path(new Path2D(d), size, Color.Angle, alpha)
 
   if (props.kind == "angle") {
     cv.path(
       new Path2D(`${plainPath} L ${o2.x} ${o2.y} Z`),
-      Size.Line,
+      size,
       Color.Angle,
       0,
       0.3,
@@ -311,7 +309,52 @@ export function drawAngleCv(
   }
 }
 
-export const EXT_ANGLE = defineHideable({
+function anglePath(
+  cv: Cv,
+  p1: Point,
+  p2: Point,
+  p3: Point,
+  props: { kind: "angle" | "directedangle" },
+) {
+  const measure =
+    (Math.atan2(p1.x - p2.x, p1.y - p2.y) -
+      Math.atan2(p3.x - p2.x, p3.y - p2.y) +
+      2 * Math.PI) %
+    (2 * Math.PI)
+
+  const swap = measure > Math.PI
+
+  const o1 = cv.toCanvas(p1)
+  const o2 = cv.toCanvas(p2)
+  const o3 = cv.toCanvas(p3)
+  const a1 = normVector(o2, o1, cv.scale * ARC)
+  const a3 = normVector(o2, o3, cv.scale * ARC)
+
+  const src = swap ? a3 : a1
+  const dst = swap ? a1 : a3
+
+  const d =
+    (
+      props.kind == "angle" &&
+      Math.abs((measure % Math.PI) - Math.PI / 2) < 9e-7
+    ) ?
+      `M ${src.x} ${src.y} L ${a1.x + a3.x - o2.x} ${a1.y + a3.y - o2.y} L ${dst.x} ${dst.y}`
+    : `M ${src.x} ${src.y} A ${cv.scale * ARC} ${cv.scale * ARC} 0 0 0 ${dst.x} ${dst.y}`
+
+  return new Path2D(d)
+}
+
+const picked = new Prop<boolean[]>(() => [])
+
+export const EXT_ANGLE = defineHideable<
+  {
+    value: JsValue<"angle" | "directedangle">
+    expr: Expr
+    el: HTMLSpanElement
+    picked: boolean[]
+  },
+  [SPoint, SPoint, SPoint]
+>({
   data(expr) {
     const raw = expr.js?.value
 
@@ -325,7 +368,7 @@ export const EXT_ANGLE = defineHideable({
         map(value, "r32", (val) => angleJs({ value: val, type: value.type })),
       )
 
-      return { value, expr, el }
+      return { value, expr, el, picked: picked.get(expr) }
     }
   },
   plot: {
@@ -335,7 +378,7 @@ export const EXT_ANGLE = defineHideable({
     items(data) {
       return each(data.value)
     },
-    draw(data, val) {
+    draw(data, val, index) {
       drawAngleCv(
         data.expr.sheet.cv,
         unpt(val[0]),
@@ -343,8 +386,45 @@ export const EXT_ANGLE = defineHideable({
         unpt(val[2]),
         { kind: data.value.type },
       )
+      if (data.picked[index]) {
+        drawAngleCv(
+          data.expr.sheet.cv,
+          unpt(val[0]),
+          unpt(val[1]),
+          unpt(val[2]),
+          { kind: data.value.type },
+          Size.LineRing,
+          Opacity.Pick,
+        )
+      }
     },
-    // FIXME: pick angles (for angle bisector)
+    target: {
+      hits(target, at, hint) {
+        if (!hint.allows(target.data.value.type)) return false
+        return target.data.expr.sheet.cv.hits(
+          at,
+          anglePath(
+            target.data.expr.sheet.cv,
+            unpt(target.item[0]),
+            unpt(target.item[1]),
+            unpt(target.item[2]),
+            { kind: target.data.value.type },
+          ),
+        )
+      },
+      focus(data) {
+        data.expr.focus()
+      },
+      val,
+      ref,
+      toggle(item, on, reason) {
+        if (reason == "pick") {
+          item.data.expr.sheet.cv.cursor(on ? "pointer" : "default")
+          picked.get(item.data.expr)[item.index] = on
+          item.data.expr.sheet.cv.queue()
+        }
+      },
+    },
   },
   el(data) {
     return data.el

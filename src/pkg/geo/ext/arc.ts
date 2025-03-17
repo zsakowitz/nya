@@ -76,6 +76,7 @@ export const EXT_ARC = defineHideable<
       val,
       toggle(item, on, reason) {
         if (reason == "pick") {
+          item.data.expr.sheet.cv.cursor(on ? "pointer" : "default")
           picked.get(item.data.expr)[item.index] = on
           item.data.expr.sheet.cv.queue()
         }
