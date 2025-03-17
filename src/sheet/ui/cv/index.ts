@@ -313,16 +313,25 @@ export class Cv {
     this.ctx.globalAlpha = 1
   }
 
-  /** Takes points in paper coordinates */
+  /** Takes points in paper coordinates. */
   hitsPoint(p1: Point, p2: Point) {
     return this.offsetDistance(p1, p2) <= Size.Target
   }
 
-  /** Takes a point in paper coordinates */
+  /** Takes `at` in paper coordinates. */
   hits(at: Point, path: Path2D) {
     this.ctx.lineWidth = 2 * Size.Target * this.scale
     const { x, y } = this.toCanvas(at)
     return this.ctx.isPointInStroke(path, x, y)
+  }
+
+  /** Takes `at` in paper coordinates. */
+  hitsFill(at: Point, path: Path2D) {
+    this.ctx.lineWidth = 2 * Size.Target * this.scale
+    const { x, y } = this.toCanvas(at)
+    return (
+      this.ctx.isPointInPath(path, x, y) || this.ctx.isPointInStroke(path, x, y)
+    )
   }
 
   hitsCircle(at: Point, center: Point, r: number) {
@@ -367,8 +376,19 @@ export class Cv {
     this.ctx.globalAlpha = 1
   }
 
+  dPoly(pts: readonly Point[]) {
+    if (pts.length < 2) return new Path2D()
+    const cvs = pts.map((x) => this.toCanvas(x))
+    return new Path2D(
+      `M ${cvs[0]!.x} ${cvs[0]!.y}${cvs
+        .slice(1)
+        .map(({ x, y }) => ` L ${x} ${y}`)
+        .join("")}`,
+    )
+  }
+
   polygon(
-    ps: Point[],
+    ps: readonly Point[],
     size: number,
     color: string,
     strokeAlpha?: number,
