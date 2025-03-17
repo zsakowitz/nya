@@ -30,6 +30,7 @@ import {
   type Handler,
   type ItemWithTarget,
 } from "../cv/move"
+import { PickHandler2 } from "../cv/pick"
 import { Paper } from "../paper"
 import { HANDLER_PICK, type PickProps } from "../paper/interact"
 import { PickHandler } from "../paper/pick"
@@ -86,10 +87,11 @@ export class Sheet {
     registerWheelHandler(this.cv)
     const pick = registerPointerHandler(this.cv, new SheetHandler(this))
     keys[1] = () => ((pick.picking = undefined), this.cv.queue())
-    keys[2] = () => ((pick.picking = Hint.one()), this.cv.queue())
+    keys[2] = () => ((pick.picking = Hint.pt()), this.cv.queue())
     registerPinchHandler(this.cv)
     this.cv.fn(OrderMajor.Backdrop, () => this.list.draw(true))
     this.cv.fn(OrderMajor.Canvas, () => this.list.draw(false))
+    new PickHandler2(this, pick)
     this.cv.fn(OrderMajor.Canvas, () => pick.picked?.target.draw?.(pick.picked))
     this.pick = new PickHandler(this)
 
