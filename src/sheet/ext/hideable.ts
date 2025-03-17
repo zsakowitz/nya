@@ -71,10 +71,10 @@ export function defineHideable<T extends WeakKey, U>(
       items(data) {
         return plot.items(data)
       },
-      draw(data, item) {
+      draw(data, item, index) {
         const expr = map.get(data)
         if (expr && !CHECKBOX.get(expr).show) {
-          plot.draw(data, item)
+          plot.draw(data, item, index)
         }
       },
       target: plot.target && {

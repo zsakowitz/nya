@@ -84,10 +84,10 @@ export const FACTORY_EXPR: ItemFactory<Expr<K>, { geo?: boolean }> = {
     items(data) {
       return data.state.ext?.plot?.items(data.state.data) ?? []
     },
-    draw(data, item) {
+    draw(data, item, index) {
       // This cast is safe since it wouldn't be called unless `items` returned.
       const state = data.state as ExprStateOk<K>
-      state.ext!.plot!.draw(state.data!, item)
+      state.ext!.plot!.draw(state.data!, item, index)
     },
     target: {
       hits(data, at, hint) {

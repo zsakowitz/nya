@@ -188,8 +188,9 @@ abstract class ItemList {
 
     for (const [, v] of Object.entries(list).sort(([a], [b]) => +a - +b)) {
       for (const ref of v) {
-        for (const item of ref.factory.plot!.items(ref.data)) {
-          ref.factory.plot!.draw(ref.data, item)
+        const items = ref.factory.plot!.items(ref.data)
+        for (let i = 0; i < items.length; i++) {
+          ref.factory.plot!.draw(ref.data, items[i]!, i)
         }
       }
     }

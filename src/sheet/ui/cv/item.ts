@@ -1,13 +1,45 @@
+import { FnDist } from "../../../eval/ops/dist"
 import type { JsVal, JsValue, TyName, Val } from "../../../eval/ty"
+import { unpt } from "../../../eval/ty/create"
+import { TY_INFO, type TyGlide } from "../../../eval/ty/info"
 import { Block } from "../../../field/model"
 import type { Point } from "../../point"
 import type { Expr } from "../expr"
-import type { ItemData } from "./move"
+import type { Sheet } from "../sheet"
+import {
+  virtualGlider,
+  virtualIntersection,
+  virtualPoint3,
+} from "./item-virtual"
+import type { ItemData, ItemWithDrawTarget, ItemWithTarget } from "./move"
+
+export const FN_INTERSECTION = new FnDist<"point32">(
+  "intersection",
+  "constructs the point where two objects intersect",
+)
+
+export const FN_GLIDER = new FnDist<"point32">(
+  "glider",
+  "constructs a point on an object",
+)
 
 /** Hints as to what we're trying to pick. */
 export class Hint {
-  static one() {
-    return new Hint(null, 1)
+  /** A hint which looks for one object. */
+  static one(tys: readonly TyName[] | null = null) {
+    return new Hint(tys, 1, false)
+  }
+
+  /** A hint which looks for or creates a point. */
+  static pt() {
+    return new Hint(
+      Object.entries(TY_INFO)
+        .filter(([, v]) => v.point)
+        .map(([k]) => k as TyName),
+      // `2` since we might have two glidable objects
+      2,
+      true,
+    )
   }
 
   constructor(
@@ -16,10 +48,105 @@ export class Hint {
 
     /** Limits the number of results. */
     readonly limit: number,
+
+    /** Whether virtual points, gliders, and intersections are allowed. */
+    readonly virtualPoint: boolean,
   ) {}
 
   allows(ty: TyName) {
-    return this.tys == null || this.tys.includes(ty)
+    return (
+      this.tys == null ||
+      this.tys.includes(ty) ||
+      (this.virtualPoint && !!TY_INFO[ty].glide)
+    )
+  }
+
+  /** Finds the targeted item. A point must be passed to make gliders work. */
+  pick(
+    sheet: Sheet,
+    at: Point,
+    raw: ItemWithTarget[],
+  ): ItemWithDrawTarget | undefined {
+    if (!this.virtualPoint) {
+      return raw[0]
+    }
+
+    const items = raw.map((item) => ({ item, val: item.target.val(item) }))
+
+    const [a, b] = items
+
+    if (a) {
+      // If a non-point was priority requested, take it
+      if (!this.tys || this.tys.includes(a.val.type)) {
+        return a.item
+      }
+
+      if (TY_INFO[a.val.type].point) {
+        return a.item
+      }
+
+      intersection: if (b) {
+        const o1 = FN_INTERSECTION.o.some(
+          (o) =>
+            o.params?.length == 2 &&
+            o.params[0] == a.val.type &&
+            o.params[1] == b.val.type,
+        )
+
+        const o2 = FN_INTERSECTION.o.some(
+          (o) =>
+            o.params?.length == 2 &&
+            o.params[0] == b.val.type &&
+            o.params[1] == a.val.type,
+        )
+
+        const p1 = o1 && FN_INTERSECTION.js1(a.val, b.val)
+        const p2 = o2 && FN_INTERSECTION.js1(b.val, a.val)
+
+        if (!(p1 || p2)) break intersection
+
+        let arg1 = a
+        let arg2 = b
+
+        if (p2) {
+          if (p1) {
+            // Offset distance is used instead of paper distance since in a
+            // stretched graph, offset distance matters more to the user than
+            // paper distance.
+            const o1 = sheet.cv.toOffset(unpt(p1.value))
+            const o2 = sheet.cv.toOffset(unpt(p2.value))
+            const d1 = Math.hypot(o1.x - at.x, o1.y - at.y)
+            const d2 = Math.hypot(o2.x - at.x, o2.y - at.y)
+            if (d2 < d1) {
+              arg1 = b
+              arg2 = a
+            }
+          } else {
+            arg1 = b
+            arg2 = a
+          }
+        }
+
+        return virtualIntersection(sheet, arg1.item, arg2.item)
+      }
+
+      glider: {
+        const { glide } = TY_INFO[a.val.type]
+        if (!glide) break glider
+
+        return virtualGlider(
+          sheet,
+          a.item,
+          (glide as TyGlide<Val>)({
+            cv: sheet.cv,
+            point: sheet.cv.toPaper(at),
+            shape: a.val.value,
+          }),
+        )
+      }
+    }
+
+    return virtualPoint3(sheet, sheet.cv.toPaper(at))
   }
 }
 
@@ -74,7 +201,7 @@ export interface Target<T, U> {
 export interface Plottable<T, U> {
   order(data: T): number | null
   items(data: T): U[]
-  draw(data: T, item: U): void
+  draw(data: T, item: U, index: number): void
   target?: Target<T, U>
 }
 

@@ -7,7 +7,7 @@ export function vectorPath(
   cv: Paper | Cv,
   p1: Point,
   p2: Point,
-  w = Size.VectorHead,
+  size = Size.VectorHead,
 ) {
   const o1 = cv.toCanvas(p1)
   const o2 = cv.toCanvas(p2)
@@ -17,10 +17,11 @@ export function vectorPath(
 
   const dx = o2.x - o1.x
   const dy = o2.y - o1.y
-  const nx = (Size.VectorHead * cv.scale * dx) / Math.hypot(dx, dy)
-  const ny = (Size.VectorHead * cv.scale * dy) / Math.hypot(dx, dy)
+  const nx = (size * cv.scale * dx) / Math.hypot(dx, dy)
+  const ny = (size * cv.scale * dy) / Math.hypot(dx, dy)
   const ox = o2.x - nx
   const oy = o2.y - ny
+  const w = Size.VectorWidthRatio
 
   return `M ${o1.x} ${o1.y} L ${o2.x} ${o2.y} M ${o2.x} ${o2.y} L ${ox + w * ny} ${oy - w * nx} L ${ox - w * ny} ${oy + w * nx} Z`
 }

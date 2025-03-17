@@ -1,4 +1,3 @@
-import type { TyName } from "../../../eval/ty"
 import { hx } from "../../../jsx"
 import type { Point } from "../../point"
 import { onTheme } from "../../theme"
@@ -19,17 +18,6 @@ export class Cv {
   readonly scale: number = 1
   readonly height: number = 0
   readonly width: number = 0
-
-  _picking: TyName[] = []
-
-  get picking() {
-    return this._picking
-  }
-
-  set picking(v) {
-    this._picking = v
-    this.queue()
-  }
 
   get xPrecision() {
     return (this.scale * this.width) / this.bounds().w
@@ -306,8 +294,43 @@ export class Cv {
     this.ctx.globalAlpha = 1
   }
 
+  ring(at: Point, distance: number, size: number, color: string, alpha = 1) {
+    this.ctx.beginPath()
+    this.ctx.globalAlpha = alpha
+    const { x, y } = this.toCanvas(at)
+    this.ctx.ellipse(
+      x,
+      y,
+      distance * this.scale,
+      distance * this.scale,
+      0,
+      0,
+      2 * Math.PI,
+    )
+    this.ctx.strokeStyle = color
+    this.ctx.lineWidth = size * this.scale
+    this.ctx.stroke()
+    this.ctx.globalAlpha = 1
+  }
+
+  /** Takes points in paper coordinates */
   hitsPoint(p1: Point, p2: Point) {
     return this.offsetDistance(p1, p2) <= Size.Target
+  }
+
+  /** Takes a point in paper coordinates */
+  hits(at: Point, path: Path2D) {
+    this.ctx.lineWidth = 2 * Size.Target * this.scale
+    const { x, y } = this.toCanvas(at)
+    return this.ctx.isPointInStroke(path, x, y)
+  }
+
+  hitsCircle(at: Point, center: Point, r: number) {
+    const path = new Path2D()
+    const { x, y } = this.toCanvas(center)
+    const { x: rx, y: ry } = this.toCanvasDelta({ x: r, y: r })
+    path.ellipse(x, y, rx, -ry, 0, 0, 2 * Math.PI)
+    return this.hits(at, path)
   }
 
   /** Accepts canvas coordinates. */
@@ -394,7 +417,7 @@ export class Cv {
     this.ctx.globalAlpha = 1
   }
 
-  cursor(style: "default" | "pointer" | "move" | "grab" | "grabbing") {
+  cursor(style: "default" | "pointer" | "move" | "grab" | "grabbing" | "none") {
     this.el.style.cursor = style
   }
 }

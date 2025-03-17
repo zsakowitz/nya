@@ -22,7 +22,7 @@ import { Slider } from "../../slider"
 import { isDark } from "../../theme"
 import { Cv } from "../cv"
 import { OrderMajor } from "../cv/consts"
-import type { Hint } from "../cv/item"
+import { Hint } from "../cv/item"
 import {
   registerPinchHandler,
   registerPointerHandler,
@@ -84,10 +84,13 @@ export class Sheet {
 
     // prepare js context
     registerWheelHandler(this.cv)
-    registerPointerHandler(this.cv, new SheetHandler(this))
+    const pick = registerPointerHandler(this.cv, new SheetHandler(this))
+    keys[1] = () => ((pick.picking = undefined), this.cv.queue())
+    keys[2] = () => ((pick.picking = Hint.pt()), this.cv.queue())
     registerPinchHandler(this.cv)
     this.cv.fn(OrderMajor.Backdrop, () => this.list.draw(true))
     this.cv.fn(OrderMajor.Canvas, () => this.list.draw(false))
+    this.cv.fn(OrderMajor.Canvas, () => pick.picked?.target.draw?.(pick.picked))
     this.pick = new PickHandler(this)
 
     // prepare glsl context
@@ -444,10 +447,10 @@ void main() {
 class SheetHandler implements Handler {
   constructor(readonly sheet: Sheet) {}
 
-  find(at: Point, hint: Hint): ItemWithTarget[] {
+  find(at: Point, hint: Hint) {
     const items: ItemWithTarget[] = []
     this.sheet.list.find(items, this.sheet.cv.toPaper(at), hint)
-    return items
+    return hint.pick(this.sheet, at, items)
   }
 }
 
