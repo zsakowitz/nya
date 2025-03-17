@@ -185,9 +185,14 @@ export function unglideArc(cv: Cv, arc: Arc, at: Point) {
 
   if (arc.type == "circle") {
     const a = Math.atan2(at.y - arc.c.y, at.x - arc.c.x)
-    const t = (a - arc.a1) / (arc.a3 - arc.a1)
+    const t1 = (a - arc.a1) / (arc.a3 - arc.a1)
+    const t2 = (a - 2 * Math.PI - arc.a1) / (arc.a3 - arc.a1)
+    const t3 = (a + 2 * Math.PI - arc.a1) / (arc.a3 - arc.a1)
     return {
-      value: Math.max(0, Math.min(1, t)),
+      value:
+        0 <= t3 && t3 <= 1 ? t3
+        : 0 <= t2 && t2 <= 1 ? t2
+        : Math.max(0, Math.min(1, t1)),
       precision: 2 * Math.PI * cv.offsetDistance(at, arc.c),
     }
   }

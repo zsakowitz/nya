@@ -11,7 +11,7 @@ b=\pi+10^{-14.5}
 \operatorname{polygon}\left(\left(-6,-4\right),\left(2,-6\right),\left(-2,-2\right)\right)
 #nya:image#0
 \operatorname{image}\left(\token{0},\operatorname{segment}\left(\left(-5,0\right),\left(5,0\right)\right)\right)
+\operatorname{arc}\left(\token{3},\token{2},\token{1}\right)
 \token{3}=\left(2,3\right)
 \token{2}=\left(-5,5\right)
 \token{1}=\left(0,8\right)
-\operatorname{arc}\left(\token{3},\token{2},\token{1}\right)
