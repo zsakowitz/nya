@@ -448,9 +448,16 @@ class SheetHandler implements Handler {
   constructor(readonly sheet: Sheet) {}
 
   find(at: Point, hint: Hint) {
-    const items: ItemWithTarget[] = []
-    this.sheet.list.find(items, this.sheet.cv.toPaper(at), hint)
+    const record: Record<number, ItemWithTarget[]> = Object.create(null)
+    this.sheet.list.find(record, this.sheet.cv.toPaper(at), hint)
+    const items = Object.entries(record)
+      .sort(([a], [b]) => +b - +a)
+      .flatMap((x) => x[1])
     return hint.pick(this.sheet, at, items)
+  }
+
+  pick(item: ItemWithTarget | null): void {
+    console.log(item)
   }
 }
 

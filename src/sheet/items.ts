@@ -243,31 +243,38 @@ abstract class ItemList {
     }
   }
 
-  find(items: ItemWithTarget[], at: Point, hint: Hint) {
+  find(items: Record<number, ItemWithTarget[]>, at: Point, hint: Hint) {
     // Reverse order is used here since later items come later in draw order and
     // therefore earlier in interaction order.
 
     for (let i = this.items.length - 1; i >= 0; i--) {
-      // Exit early if we've found enough solutions; caller is responsible for
-      // providing better hints if they don't like our results.
-      if (items.length >= hint.limit) {
-        return
-      }
-
       const {
         factory: { plot },
         data,
         sublist,
       } = this.items[i]!
 
+      const order = plot?.order(data)
+
+      // Exit early if we've found enough solutions; caller is responsible for
+      // providing better hints if they don't like our results.
+      if (order != null && (items[order]?.length ?? 0) >= hint.limit) {
+        return
+      }
+
       sublist?.find(items, at, hint)
 
-      if (plot?.target) {
+      if (order != null && plot?.target) {
         const plotItems = plot.items(data)
         for (let i = plotItems.length - 1; i >= 0; i--) {
           const item = plotItems[i]!
           if (plot.target.hits({ data, index: i, item }, at, hint)) {
-            items.push({ target: plot.target, data, item, index: i })
+            ;(items[order] ??= []).push({
+              target: plot.target,
+              data,
+              item,
+              index: i,
+            })
           }
         }
       }

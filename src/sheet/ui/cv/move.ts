@@ -5,6 +5,7 @@ import { Hint, type Target } from "./item"
 
 export interface Handler {
   find(at: Point, hint: Hint): ItemWithDrawTarget | undefined
+  pick(item: ItemWithTarget | null): void
 }
 
 export interface ItemData<T = unknown, U = unknown> {
@@ -203,17 +204,24 @@ export function registerPointerHandler(cv: Cv, handler: Handler) {
     }
 
     if (picking) {
+      let ret: ItemWithTarget | null = null
       if (current) {
-        current.target.toggle(current, false, "pick")
+        ;(ret = current).target.toggle(current, false, "pick")
         current = undefined
       }
-      if (pt) {
-        current = handler.find(pt, picking)
-        if (current) {
-          current.target.toggle(current, true, "pick")
-        }
+      if (ptrs == 0) {
+        handler.pick(ret)
       }
-      return
+      // Recheck `picking` since `handler.pick` may have changed it
+      if (picking) {
+        if (pt) {
+          current = handler.find(pt, picking)
+          if (current) {
+            current.target.toggle(current, true, "pick")
+          }
+        }
+        return
+      }
     }
 
     if (ptrs != 0) {
