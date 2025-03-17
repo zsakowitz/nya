@@ -34,6 +34,7 @@ Object.setPrototypeOf(LAYER_SHARED, null)
 const LAYER_EXCLUSIVE: Partial<LayerExclusive> = Object.create(null)
 LAYER_EXCLUSIVE.grid = 1
 
+// FIXME: delete me
 export class Paper {
   readonly el
   private readonly layers = new Map<number, SVGElement>()

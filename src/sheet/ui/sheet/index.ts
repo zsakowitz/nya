@@ -456,6 +456,7 @@ class SheetHandler implements Handler {
     return hint.pick(this.sheet, at, items)
   }
 
+  // FIXME: this should do something
   pick(item: ItemWithTarget | null): void {
     console.log(item)
   }

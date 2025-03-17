@@ -476,9 +476,10 @@ export const TXR_AST: { [K in NodeName]?: TxrAst<Nodes[K]> } = {
 
   // Delegates to `TXR_SUFFIX` so that different packages can specify suffixes
   suffixed: {
-    // FIXME: gliders should still work
     drag: {
       point({ base, suffixes }, props) {
+        // TODO: method chains which lead to gliders (e.g. l1.translate(...).glider(.4)) don't work
+
         if (
           !(
             (suffixes.length == 1 &&
