@@ -174,7 +174,13 @@ body {
     + :where(.nya-cursor) + .nya-cmd-brack
   ) {
   @apply pr-[.1em];
-  /* TODO: heuristic wrong when property followed by index (e.g. @.segment[1]) */
+}
+
+.nya-cmd-word-r.nya-cmd-word-prop:has(
+    + .nya-cmd-brack,
+    + :where(.nya-cursor) + .nya-cmd-brack
+  ) {
+  @apply pr-0;
 }
 
 .nya-cmd-word-r:not(.nya-cmd-word-infix):has(
