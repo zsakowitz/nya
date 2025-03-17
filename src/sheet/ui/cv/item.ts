@@ -26,8 +26,8 @@ export const FN_GLIDER = new FnDist<"point32">(
 /** Hints as to what we're trying to pick. */
 export class Hint {
   /** A hint which looks for one object. */
-  static one(tys: readonly TyName[] | null = null) {
-    return new Hint(tys, 1, false)
+  static one(tys: readonly TyName[] | null = null, createdPoint = false) {
+    return new Hint(tys, 1, false, createdPoint)
   }
 
   /** A hint which looks for or creates a point. */
@@ -39,25 +39,32 @@ export class Hint {
       // `2` since we might have two glidable objects
       2,
       true,
+      true,
     )
   }
 
-  constructor(
+  private constructor(
     /** If absent, all types are available. */
     readonly tys: readonly TyName[] | null,
 
     /** Limits the number of results. */
     readonly limit: number,
 
-    /** Whether virtual points, gliders, and intersections are allowed. */
-    readonly virtualPoint: boolean,
+    /**
+     * Whether gliders and intersections should be preferred if the cursor is
+     * near a glidable object.
+     */
+    readonly derivedPoint: boolean,
+
+    /** Whether a new point can be created if no other objects are nearby. */
+    readonly createdPoint: boolean,
   ) {}
 
   allows(ty: TyName) {
     return (
       this.tys == null ||
       this.tys.includes(ty) ||
-      (this.virtualPoint && !!TY_INFO[ty].glide)
+      (this.derivedPoint && !!TY_INFO[ty].glide)
     )
   }
 
@@ -67,7 +74,7 @@ export class Hint {
     at: Point,
     raw: ItemWithTarget[],
   ): ItemWithDrawTarget | undefined {
-    if (!this.virtualPoint) {
+    if (!(this.derivedPoint || this.createdPoint)) {
       return raw[0]
     }
 
@@ -75,16 +82,14 @@ export class Hint {
 
     const [a, b] = items
 
-    if (a) {
-      // If a non-point was priority requested, take it
-      if (!this.tys || this.tys.includes(a.val.type)) {
-        return a.item
-      }
+    if (
+      a &&
+      (!this.tys || this.tys.includes(a.val.type) || TY_INFO[a.val.type].point)
+    ) {
+      return a.item
+    }
 
-      if (TY_INFO[a.val.type].point) {
-        return a.item
-      }
-
+    if (this.derivedPoint && a) {
       intersection: if (b) {
         const o1 = FN_INTERSECTION.o.some(
           (o) =>
@@ -153,7 +158,9 @@ export class Hint {
       }
     }
 
-    return virtualPoint3(sheet, sheet.cv.toPaper(at))
+    if (this.createdPoint) {
+      return virtualPoint3(sheet, sheet.cv.toPaper(at))
+    }
   }
 }
 

@@ -23,7 +23,7 @@ export const PICK_CURSOR: Picker<Data> = {
     return ID
   },
   hint() {
-    return Hint.one()
+    return Hint.one(null, true)
   },
   toggle({ expr: { sheet } }, on) {
     if (!on) return

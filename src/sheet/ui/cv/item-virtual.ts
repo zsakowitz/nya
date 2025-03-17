@@ -213,9 +213,9 @@ const TARGET_VPOINT: ItemWithDrawTarget<
     new OpEq(false).insertAt(cursor, L)
     const inner = new Block(null)
     new CmdBrack("(", ")", null, inner).insertAt(cursor, L)
-    new Writer(inner.cursor(R).span()).set(at.x, sheet.paper.xPrecision, false)
+    new Writer(inner.cursor(R).span()).set(at.x, sheet.cv.xPrecision, false)
     new CmdComma().insertAt(inner.cursor(R), L)
-    new Writer(inner.cursor(R).span()).set(at.y, sheet.paper.yPrecision, false)
+    new Writer(inner.cursor(R).span()).set(at.y, sheet.cv.yPrecision, false)
     expr.field.dirtyAst = expr.field.dirtyValue = true
     expr.field.trackNameNow()
     expr.field.scope.queueUpdate()

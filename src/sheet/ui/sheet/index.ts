@@ -36,7 +36,7 @@ import { HANDLER_PICK, type PickProps } from "../paper/interact"
 import { btn, createDocs, DEFAULT_TO_VISIBLE_DOCS } from "./docs"
 
 export class Sheet {
-  readonly paper = new Paper("absolute inset-0 size-full touch-none")
+  private readonly paper = new Paper("absolute inset-0 size-full touch-none")
   readonly cv = new Cv("absolute inset-0 size-full touch-none")
   readonly scope: Scope
   readonly list = new ItemListGlobal(this)
