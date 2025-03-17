@@ -1,10 +1,9 @@
 import type { Point } from "../../sheet/point"
 import type { Cv } from "../../sheet/ui/cv"
 import { Size } from "../../sheet/ui/cv/consts"
-import type { Paper } from "../../sheet/ui/paper"
 
 export function vectorPath(
-  cv: Paper | Cv,
+  cv: Cv,
   p1: Point,
   p2: Point,
   size = Size.VectorHead,

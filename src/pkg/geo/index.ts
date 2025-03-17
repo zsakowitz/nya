@@ -37,7 +37,7 @@ import {
   drawAngle,
   drawAngleCv,
 } from "./ext/angle"
-import { EXT_ARC, drawArc, drawArcCv } from "./ext/arc"
+import { EXT_ARC, drawArcCv } from "./ext/arc"
 import { EXT_CIRCLE, drawCircle } from "./ext/circle"
 import { EXT_LINE, getLineBounds } from "./ext/line"
 import { EXT_POLYGON } from "./ext/polygon"
@@ -272,11 +272,8 @@ const PICK_ARC = definePickTy(
   ],
   (sheet, p1, p2, p3) => {
     if (p1 && p2 && p3) {
-      drawArc(sheet.paper, {
-        arc: computeArcVal([p1.value, p2.value, p3.value]),
-        ghost: true,
-        kind: "arc",
-      })
+      const arc = computeArcVal([p1.value, p2.value, p3.value])
+      drawArcCv(sheet.cv, arc)
     }
   },
 )

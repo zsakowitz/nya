@@ -1,10 +1,9 @@
 import type { Point } from "../../../sheet/point"
 import type { Cv } from "../../../sheet/ui/cv"
-import type { Paper } from "../../../sheet/ui/paper"
 import { createLineLikeExt } from "./line-like"
 
 export function getRayBounds(
-  cv: Paper | Cv,
+  cv: Cv,
   { x: x1, y: y1 }: Point,
   { x: x2, y: y2 }: Point,
 ): [Point, Point] | null {

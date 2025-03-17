@@ -3,7 +3,6 @@ import { NANPT, unpt } from "../../eval/ty/create"
 import { gliderOnLine } from "../../eval/ty/info"
 import type { Point } from "../../sheet/point"
 import { Cv } from "../../sheet/ui/cv"
-import { Paper } from "../../sheet/ui/paper"
 import { getRayBounds } from "./ext/ray"
 import { intersectLineLineJs } from "./fn/intersection"
 
@@ -120,7 +119,7 @@ export type ArcPath =
   | { type: "segment"; p1: Point; p3: Point }
   | { type: "tworay"; r1: [Point, Point] | null; r3: [Point, Point] | null }
 
-export function arcPath(cv: Cv | Paper, arc: Arc): ArcPath {
+export function arcPath(cv: Cv, arc: Arc): ArcPath {
   switch (arc.type) {
     case "invalid":
       return { type: "invalid" }
