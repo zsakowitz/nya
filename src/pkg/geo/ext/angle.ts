@@ -305,7 +305,7 @@ export function drawAngleCv(
   }
 
   for (const s of [s1, s3]) {
-    cv.polygonByCanvas([o2, s], Size.AngleGuide, Color.Angle, 0.5)
+    cv.polygonByCanvas([o2, s], Size.AngleGuide, Color.Angle, Opacity.AngleLine)
   }
 }
 
