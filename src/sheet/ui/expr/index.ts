@@ -301,8 +301,8 @@ export class Expr<T extends {} = {}> {
 
     const token = CmdToken.new(this.field.ctx)
     const cursor = this.field.block.cursor(L)
-    new OpEq(false).insertAt(cursor, L)
     token.insertAt(cursor, L)
+    new OpEq(false).insertAt(cursor, L)
     const name: PlainVar = {
       type: "var",
       kind: "var",
