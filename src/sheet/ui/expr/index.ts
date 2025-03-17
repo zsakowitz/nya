@@ -7,7 +7,6 @@ import { ERR_COORDS_USED_OUTSIDE_GLSL } from "../../../eval/ops/vars"
 import type { JsValue, SReal } from "../../../eval/ty"
 import { outputBase } from "../../../eval/ty/display"
 import { OpEq } from "../../../field/cmd/leaf/cmp"
-import { CmdNum } from "../../../field/cmd/leaf/num"
 import { CmdToken } from "../../../field/cmd/leaf/token"
 import { CmdVar } from "../../../field/cmd/leaf/var"
 import { CmdBrack } from "../../../field/cmd/math/brack"
@@ -334,12 +333,7 @@ export class Expr<T extends {} = {}> {
     const cursor = block.cursor(R)
     CmdVar.leftOf(cursor, this.name(), this.field.options, this.field.ctx)
     if (this.js?.value.list !== false) {
-      const block = new Block(null)
-      new CmdBrack("[", "]", null, block).insertAt(cursor, L)
-      const at = block.cursor(R)
-      for (const digit of index.toString()) {
-        new CmdNum(digit).insertAt(at, L)
-      }
+      CmdBrack.index(index + 1).insertAt(cursor, L)
     }
 
     return block

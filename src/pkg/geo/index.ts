@@ -10,7 +10,6 @@ import {
 import { OpEq } from "../../field/cmd/leaf/cmp"
 import { CmdComma } from "../../field/cmd/leaf/comma"
 import { CmdDot } from "../../field/cmd/leaf/dot"
-import { CmdNum } from "../../field/cmd/leaf/num"
 import { CmdToken, createToken } from "../../field/cmd/leaf/token"
 import { CmdVar } from "../../field/cmd/leaf/var"
 import { CmdWord } from "../../field/cmd/leaf/word"
@@ -379,15 +378,7 @@ function createPick(type: "angle" | "directedangle"): Data {
           for (const c of type + "s") {
             new CmdVar(c, sheet.options).insertAt(cursor, L)
           }
-
-          const index = new Block(null)
-          new CmdBrack("[", "]", null, index).insertAt(cursor, L)
-          {
-            const cursor = index.cursor(R)
-            for (const char of BigInt(i + 1).toString()) {
-              new CmdNum(char).insertAt(cursor, L)
-            }
-          }
+          CmdBrack.index(i + 1).insertAt(cursor, L)
 
           expr.field.dirtyAst = expr.field.dirtyValue = true
           expr.field.trackNameNow()

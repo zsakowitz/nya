@@ -1,10 +1,9 @@
 import { each, type JsVal, type JsValue } from "../../../eval/ty"
 import { rept, unpt } from "../../../eval/ty/create"
 import { CmdDot } from "../../../field/cmd/leaf/dot"
-import { CmdNum } from "../../../field/cmd/leaf/num"
 import { CmdVar } from "../../../field/cmd/leaf/var"
 import { CmdBrack } from "../../../field/cmd/math/brack"
-import { Block, L, R } from "../../../field/model"
+import { L, R } from "../../../field/model"
 import { Prop } from "../../../sheet/ext"
 import { defineHideable } from "../../../sheet/ext/hideable"
 import type { Point } from "../../../sheet/point"
@@ -116,12 +115,7 @@ export const EXT_POLYGON = defineHideable<
           for (const c of "segments") {
             new CmdVar(c, target.data.expr.sheet.options).insertAt(cursor, L)
           }
-          const index = new Block(null)
-          new CmdBrack("[", "]", null, index).insertAt(cursor, L)
-          const ic = index.cursor(R)
-          for (const d of BigInt(target.item.index).toString()) {
-            new CmdNum(d).insertAt(ic, L)
-          }
+          CmdBrack.index(target.item.index + 1).insertAt(cursor, L)
         }
         return block
       },

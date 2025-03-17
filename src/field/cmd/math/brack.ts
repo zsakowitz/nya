@@ -14,6 +14,7 @@ import {
   type Selection,
 } from "../../model"
 import { CmdComma } from "../leaf/comma"
+import { CmdNum } from "../leaf/num"
 import { CmdUnknown } from "../leaf/unknown"
 
 export const BRACKS = {
@@ -183,6 +184,16 @@ function is(brack: string, dir: Dir) {
 }
 
 export class CmdBrack extends Command<[Block]> {
+  static index(index: number) {
+    const inner = new Block(null)
+    const brack = new CmdBrack("[", "]", null, inner)
+    const cursor = inner.cursor(R)
+    for (const digit of BigInt(index).toString()) {
+      new CmdNum(digit).insertAt(cursor, L)
+    }
+    return brack
+  }
+
   static init(cursor: Cursor, { input }: InitProps) {
     if (!cursor.parent) return
 
