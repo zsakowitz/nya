@@ -64,6 +64,7 @@ export function registerPointerHandler(cv: Cv, handler: Handler) {
   let dragOffset: Point | undefined
   let last: Point | undefined
   let picking: Hint | undefined
+  let oc: (() => void) | undefined
 
   cv.el.addEventListener(
     "pointermove",
@@ -80,6 +81,7 @@ export function registerPointerHandler(cv: Cv, handler: Handler) {
         if (current) {
           current.target.toggle(current, true, "pick")
         }
+        oc?.()
         return
       }
 
@@ -159,6 +161,7 @@ export function registerPointerHandler(cv: Cv, handler: Handler) {
         if (current) {
           current.target.toggle(current, true, "pick")
         }
+        oc?.()
         return
       }
 
@@ -213,13 +216,14 @@ export function registerPointerHandler(cv: Cv, handler: Handler) {
         handler.pick(ret)
       }
       // Recheck `picking` since `handler.pick` may have changed it
-      if (picking) {
-        if (pt) {
-          current = handler.find(pt, picking)
-          if (current) {
-            current.target.toggle(current, true, "pick")
-          }
+      if (picking && pt) {
+        current = handler.find(pt, picking)
+        if (current) {
+          current.target.toggle(current, true, "pick")
         }
+      }
+      oc?.()
+      if (picking) {
         return
       }
     }
@@ -264,6 +268,7 @@ export function registerPointerHandler(cv: Cv, handler: Handler) {
     if (picking && current) {
       current.target.toggle(current, false, "pick")
       current = undefined
+      oc?.()
     }
   }
 
@@ -323,12 +328,22 @@ export function registerPointerHandler(cv: Cv, handler: Handler) {
           current = next
         }
       }
+
+      oc?.()
+    },
+    get oc(): undefined {
+      return
+    },
+    set oc(v: () => void) {
+      oc = v
     },
     get picked() {
       return picking && current
     },
   }
 }
+
+export type PointerHandlerRet = ReturnType<typeof registerPointerHandler>
 
 export function registerPinchHandler(cv: Cv) {
   let previousDistance: number | undefined
