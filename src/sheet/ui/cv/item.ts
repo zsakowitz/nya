@@ -143,12 +143,28 @@ export class Hint {
         )
 
         let p1 = o1 && FN_INTERSECTION.js1(a.val, b.val)
-        if (!(p1 && isFinite(num(p1.value.x)) && isFinite(num(p1.value.y)))) {
+        if (
+          !(
+            p1 &&
+            isFinite(num(p1.value.x)) &&
+            isFinite(num(p1.value.y)) &&
+            sheet.cv.offsetDistance(unpt(p1.value), sheet.cv.toPaper(at)) <=
+              Size.Target
+          )
+        ) {
           p1 = false
         }
 
         let p2 = o2 && FN_INTERSECTION.js1(b.val, a.val)
-        if (!(p2 && isFinite(num(p2.value.x)) && isFinite(num(p2.value.y)))) {
+        if (
+          !(
+            p2 &&
+            isFinite(num(p2.value.x)) &&
+            isFinite(num(p2.value.y)) &&
+            sheet.cv.offsetDistance(unpt(p2.value), sheet.cv.toPaper(at)) <=
+              Size.Target
+          )
+        ) {
           p2 = false
         }
 
