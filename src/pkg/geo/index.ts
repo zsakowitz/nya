@@ -1270,7 +1270,7 @@ export const PKG_GEOMETRY: Package = {
         toolbar(INFO_SEGMENT.icon, PICK_SEGMENT, "s"),
         toolbar(INFO_RAY.icon, PICK_RAY, "r"),
         toolbar(INFO_LINE.icon, PICK_LINE, "l"),
-        toolbar(INFO_VECTOR.icon, PICK_VECTOR, "v"),
+        nosc && toolbar(INFO_VECTOR.icon, PICK_VECTOR, "v"),
         toolbar(INFO_CIRCLE.icon, PICK_CIRCLE, "c"),
         nosc && toolbar(INFO_ARC.icon, PICK_ARC, "a"),
         toolbar(INFO_POLYGON.icon, PICK_POLYGON, "P"),
