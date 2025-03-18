@@ -1,0 +1,7 @@
+p_{1}=\operatorname{polygon}\left(5\left(\operatorname{cos}a,\operatorname{sin}a\right)\operatorname{for}a=-\frac{2\pi Q}{n}+\frac{\pi }{2}\right)
+n=5
+a=50
+Q=\operatorname{iterate}.a^{n}n\to n+1,a\to \operatorname{join}\left(a,n\right)\operatorname{from}a=\left[\right],n=0
+p_{2}=\operatorname{glider}\left(p_{1}.\operatorname{segments}\left[1\right],0.84\right)
+q\left(s\right)=s.\operatorname{rotate}\left(\left(0,0\right),\operatorname{directedangle}\left(p_{1}.\operatorname{vertices}\left[1\right],\left(0,0\right),p_{2}\right)\right).\operatorname{dilate}\left(\left(0,0\right),\frac{\left|p_{2}\right|}{\left|p_{1}.\operatorname{vertices}\left[1\right]\right|}\right)
+\operatorname{iterate}.a^{a}a\to \operatorname{join}\left(a,q\left(s\right)\right),s\to q\left(s\right)\operatorname{from}a=\left[\right],s=p_{1}
