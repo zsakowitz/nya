@@ -22,7 +22,8 @@ const TARGET_INTERSECTION: ItemWithDrawTarget<
     a: ItemWithTarget
     b: ItemWithTarget
     at: Point
-    ref: CmdToken | undefined
+    ref?: CmdToken | undefined
+    val?: JsVal<"point32">
   }
 >["target"] = {
   hits() {
@@ -58,11 +59,11 @@ const TARGET_INTERSECTION: ItemWithDrawTarget<
     ref.clone().insertAt(ret.cursor(R), L)
     return ret
   },
-  val({ item: { at } }): JsVal<"point32"> {
-    return {
+  val({ item }): JsVal<"point32"> {
+    return (item.val ??= {
       type: "point32",
-      value: pt(real(at.x), real(at.y)),
-    }
+      value: pt(real(item.at.x), real(item.at.y)),
+    })
   },
   toggle({ item: { sheet, a, b } }, on, reason) {
     if (on) {
@@ -107,7 +108,8 @@ const TARGET_GLIDER: ItemWithDrawTarget<
     at: Point
     item: ItemWithTarget
     index: { value: number; precision: number }
-    ref: CmdToken | undefined
+    ref?: CmdToken | undefined
+    val?: JsVal<"point32">
   }
 >["target"] = {
   hits() {
@@ -143,11 +145,11 @@ const TARGET_GLIDER: ItemWithDrawTarget<
     ref.clone().insertAt(ret.cursor(R), L)
     return ret
   },
-  val({ item: { at } }): JsVal<"point32"> {
-    return {
+  val({ item }): JsVal<"point32"> {
+    return (item.val ??= {
       type: "point32",
-      value: pt(real(at.x), real(at.y)),
-    }
+      value: pt(real(item.at.x), real(item.at.y)),
+    })
   },
   toggle({ item: { sheet, item } }, on, reason) {
     if (on) {
@@ -195,7 +197,12 @@ export function virtualGlider(
 
 const TARGET_VPOINT: ItemWithDrawTarget<
   null,
-  { sheet: Sheet; at: Point; ref: CmdToken | undefined }
+  {
+    sheet: Sheet
+    at: Point
+    ref?: CmdToken | undefined
+    val?: JsVal<"point32">
+  }
 >["target"] = {
   hits() {
     return true
@@ -227,11 +234,11 @@ const TARGET_VPOINT: ItemWithDrawTarget<
     ref.clone().insertAt(ret.cursor(R), L)
     return ret
   },
-  val({ item: { at } }): JsVal<"point32"> {
-    return {
+  val({ item }): JsVal<"point32"> {
+    return (item.val ??= {
       type: "point32",
-      value: pt(real(at.x), real(at.y)),
-    }
+      value: pt(real(item.at.x), real(item.at.y)),
+    })
   },
   toggle({ item: { sheet } }, on, reason) {
     sheet.cv.queue()
