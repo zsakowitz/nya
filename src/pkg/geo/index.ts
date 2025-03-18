@@ -1196,6 +1196,9 @@ const PICK_ANGLEBISECTOR = definePickTy(
   },
 )
 
+// straightedge and compass
+const nosc = !new URLSearchParams(location.search).has("sconly")
+
 export const PKG_GEOMETRY: Package = {
   id: "nya:geometry",
   name: "geometry",
@@ -1269,15 +1272,15 @@ export const PKG_GEOMETRY: Package = {
         toolbar(INFO_LINE.icon, PICK_LINE, "l"),
         toolbar(INFO_VECTOR.icon, PICK_VECTOR, "v"),
         toolbar(INFO_CIRCLE.icon, PICK_CIRCLE, "c"),
-        toolbar(INFO_ARC.icon, PICK_ARC, "a"),
+        nosc && toolbar(INFO_ARC.icon, PICK_ARC, "a"),
         toolbar(INFO_POLYGON.icon, PICK_POLYGON, "P"),
         toolbar(INFO_ANGLE.icon, PICK_ANGLE, "A"),
         toolbar(INFO_DIRECTEDANGLE.icon, PICK_DIRECTEDANGLE, "d"),
-        toolbar(iconPerpendicular, PICK_PERPENDICULAR, "x"),
-        toolbar(iconParallel, PICK_PARALLEL, "z"),
-        toolbar(iconMidpoint, PICK_MIDPOINT, "m"),
-        toolbar(iconAngleBisector, PICK_ANGLEBISECTOR, "b"),
-      ],
+        nosc && toolbar(iconPerpendicular, PICK_PERPENDICULAR, "x"),
+        nosc && toolbar(iconParallel, PICK_PARALLEL, "z"),
+        nosc && toolbar(iconMidpoint, PICK_MIDPOINT, "m"),
+        nosc && toolbar(iconAngleBisector, PICK_ANGLEBISECTOR, "b"),
+      ].filter((x) => x != false),
     },
     keys: {
       s: (sheet) => sheet.pick.set(PICK_TY, PICK_SEGMENT),
