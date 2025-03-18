@@ -319,10 +319,11 @@ export const PKG_IMAGE: Package = {
   ty: {
     info: {
       image: {
-        order: null,
         name: "image file",
         namePlural: "image files",
-        coerce: {},
+        get glsl(): never {
+          return glsl()
+        },
         garbage: {
           js: {
             src: null,
@@ -333,9 +334,7 @@ export const PKG_IMAGE: Package = {
             return glsl()
           },
         },
-        get glsl(): never {
-          return glsl()
-        },
+        coerce: {},
         write: {
           display(value, props) {
             if (value.src) {
@@ -348,6 +347,7 @@ export const PKG_IMAGE: Package = {
             return false
           },
         },
+        order: null,
         point: false,
         icon() {
           return h(
@@ -383,6 +383,9 @@ export const PKG_IMAGE: Package = {
             ),
           )
         },
+        glide: null,
+        preview: null,
+        components: null,
       },
     },
   },

@@ -16,6 +16,9 @@ if (!(LOAD_EMPTY && IS_DEV)) {
     factory.load(pkg)
   }
 }
+if (IS_DEV) {
+  setTimeout(async () => (await import("../test")).runTests())
+}
 
 const sheet = factory.create()
 document.body.appendChild(sheet.el)

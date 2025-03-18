@@ -21,13 +21,13 @@ export interface TyInfo<T, U extends TyName> {
   garbage: TyGarbage<T>
   coerce: TyCoerceMap<T>
   write: TyWrite<T>
-  point: boolean
   order: number | null
+  point: boolean
   icon(): HTMLSpanElement
-  token?(val: T): HTMLSpanElement | null
-  preview?(cv: Cv, val: T): void
-  glide?: TyGlide<T>
-  components?: TyComponentInfo<T, U>
+  token: ((val: T) => HTMLSpanElement | null) | null
+  glide: TyGlide<T> | null
+  preview: ((cv: Cv, val: T) => void) | null
+  components: TyComponentInfo<T, U> | null
 }
 
 export type TyInfoByName<T extends TyName> = TyInfo<Tys[T], TyComponents[T]>
@@ -130,13 +130,11 @@ export const TY_INFO: TyInfoMap = Object.create(null) as any
 TY_INFO.never = {
   name: "empty value",
   namePlural: "empty values",
+  glsl: "bool",
   garbage: {
     js: "__never",
     glsl: "false",
   },
-  order: null,
-  glsl: "bool",
-  point: false,
   coerce: new Proxy<TyCoerceMap<never>>(
     {},
     {
@@ -183,6 +181,8 @@ TY_INFO.never = {
       new CmdWord("undefined").insertAt(props.cursor, L)
     },
   },
+  order: null,
+  point: false,
   icon() {
     return h(
       "",
@@ -197,6 +197,10 @@ TY_INFO.never = {
       ),
     )
   },
+  token: null,
+  glide: null,
+  preview: null,
+  components: null,
 }
 
 export function tidyCoercions() {

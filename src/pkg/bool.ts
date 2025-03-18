@@ -286,7 +286,6 @@ export const PKG_BOOL: Package = {
         glsl: "bool",
         garbage: { js: false, glsl: "false" },
         coerce: {},
-        order: null,
         write: {
           isApprox() {
             return false
@@ -295,6 +294,7 @@ export const PKG_BOOL: Package = {
             new CmdWord("" + value, "var").insertAt(props.cursor, L)
           },
         },
+        order: null,
         point: false,
         icon() {
           return h(
@@ -322,6 +322,11 @@ export const PKG_BOOL: Package = {
             ),
           )
         },
+        // TODO: token for different bool states
+        token: null,
+        glide: null,
+        preview: null,
+        components: null,
       },
     },
   },

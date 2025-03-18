@@ -447,7 +447,6 @@ export const PKG_GEO_POINT: Package = {
   ty: {
     info: {
       point64: {
-        order: Order.Point,
         name: "point",
         namePlural: "points",
         glsl: "vec4",
@@ -463,9 +462,15 @@ export const PKG_GEO_POINT: Package = {
           },
         },
         write: WRITE_POINT,
+        order: Order.Point,
         point: true,
         icon() {
           return iconPoint(true)
+        },
+        token: null,
+        glide: null,
+        preview(cv, val) {
+          cv.point(unpt(val), Size.Point, Color.Purple)
         },
         components: {
           ty: "r64",
@@ -474,21 +479,23 @@ export const PKG_GEO_POINT: Package = {
             [(x) => x.y, (x) => `${x}.zw`],
           ],
         },
-        preview(cv, val) {
-          cv.point(unpt(val), Size.Point, Color.Purple)
-        },
       },
       point32: {
-        order: Order.Point,
         name: "point",
         namePlural: "points",
         glsl: "vec2",
         garbage: { js: SNANPT, glsl: "vec2(0.0/0.0)" },
         coerce: {},
         write: WRITE_POINT,
+        order: Order.Point,
         point: true,
         icon() {
           return iconPoint(false)
+        },
+        token: null,
+        glide: null,
+        preview(cv, val) {
+          cv.point(unpt(val), Size.Point, Color.Purple)
         },
         components: {
           ty: "r32",
@@ -496,9 +503,6 @@ export const PKG_GEO_POINT: Package = {
             [(x) => x.x, (x) => `${x}.x`],
             [(x) => x.y, (x) => `${x}.y`],
           ],
-        },
-        preview(cv, val) {
-          cv.point(unpt(val), Size.Point, Color.Purple)
         },
       },
     },

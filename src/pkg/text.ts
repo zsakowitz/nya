@@ -337,19 +337,18 @@ export const PKG_TEXT: Package = {
   ty: {
     info: {
       text: {
-        order: null,
         name: "text",
         namePlural: "texts",
-        coerce: {},
+        get glsl(): never {
+          return err()
+        },
         garbage: {
           js: [],
           get glsl(): never {
             return err()
           },
         },
-        get glsl(): never {
-          return err()
-        },
+        coerce: {},
         write: {
           isApprox() {
             return false
@@ -361,6 +360,7 @@ export const PKG_TEXT: Package = {
             )
           },
         },
+        order: null,
         point: false,
         icon() {
           return h(
@@ -377,6 +377,10 @@ export const PKG_TEXT: Package = {
             ),
           )
         },
+        token: null,
+        glide: null,
+        preview: null,
+        components: null,
       },
     },
   },

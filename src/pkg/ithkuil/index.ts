@@ -144,10 +144,11 @@ export const PKG_ITHKUIL: Package = {
   ty: {
     info: {
       ithkuilscript: {
-        order: null,
         name: "ithkuil script",
         namePlural: "ithkuil scripts",
-        coerce: {},
+        get glsl(): never {
+          return err()
+        },
         garbage: {
           get js() {
             return ["", svgx("", "")] as const
@@ -156,9 +157,7 @@ export const PKG_ITHKUIL: Package = {
             return err()
           },
         },
-        get glsl(): never {
-          return err()
-        },
+        coerce: {},
         write: {
           isApprox() {
             return false
@@ -167,6 +166,7 @@ export const PKG_ITHKUIL: Package = {
             new CmdIthkuilScript(value[0], value[1]).insertAt(props.cursor, L)
           },
         },
+        order: null,
         point: false,
         icon() {
           return h(
@@ -186,6 +186,10 @@ export const PKG_ITHKUIL: Package = {
             ),
           )
         },
+        token: null,
+        glide: null,
+        preview: null,
+        components: null,
       },
     },
   },

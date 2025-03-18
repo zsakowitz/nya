@@ -112,16 +112,10 @@ export const PKG_IMAGE_GEO: Package = {
   ty: {
     info: {
       image2d: {
-        order: Order.Backdrop,
         name: "drawn image",
         namePlural: "drawn images",
-        coerce: {
-          image: {
-            js(self) {
-              return self.data
-            },
-            glsl,
-          },
+        get glsl(): never {
+          return glsl()
         },
         garbage: {
           js: {
@@ -138,8 +132,13 @@ export const PKG_IMAGE_GEO: Package = {
             return glsl()
           },
         },
-        get glsl(): never {
-          return glsl()
+        coerce: {
+          image: {
+            js(self) {
+              return self.data
+            },
+            glsl,
+          },
         },
         write: {
           isApprox(value) {
@@ -161,6 +160,7 @@ export const PKG_IMAGE_GEO: Package = {
             new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
           },
         },
+        order: Order.Backdrop,
         point: false,
         icon() {
           return h(
@@ -177,7 +177,10 @@ export const PKG_IMAGE_GEO: Package = {
             ),
           )
         },
+        token: null,
+        glide: null,
         preview: draw,
+        components: null,
       },
     },
   },

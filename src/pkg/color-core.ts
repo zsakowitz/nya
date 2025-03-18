@@ -178,7 +178,6 @@ export const PKG_COLOR_CORE: Package = {
   ty: {
     info: {
       color: {
-        order: null,
         name: "color",
         namePlural: "colors",
         glsl: "vec4",
@@ -211,6 +210,7 @@ export const PKG_COLOR_CORE: Package = {
             )
           },
         },
+        order: null,
         point: false,
         icon() {
           function make(clsx: string) {
@@ -248,6 +248,9 @@ export const PKG_COLOR_CORE: Package = {
             ),
           )
         },
+        token: null,
+        glide: null,
+        preview: null,
         components: {
           ty: "r32",
           at: [

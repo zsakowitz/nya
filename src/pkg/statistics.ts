@@ -758,10 +758,13 @@ const FN_STATS = new FnList(
 )
 
 const TY_STATS: TyInfo<Tys["stats"], TyComponents["stats"]> = {
-  order: null,
   name: "five-number statistical summary",
   namePlural: "five-number statistical summaries",
-  coerce: {},
+  get glsl(): never {
+    throw new Error(
+      "Cannot create five-number statistical summaries in shaders.",
+    )
+  },
   garbage: {
     js: [real(NaN), real(NaN), real(NaN), real(NaN), real(NaN)],
     get glsl(): never {
@@ -770,11 +773,22 @@ const TY_STATS: TyInfo<Tys["stats"], TyComponents["stats"]> = {
       )
     },
   },
-  get glsl(): never {
-    throw new Error(
-      "Cannot create five-number statistical summaries in shaders.",
-    )
+  coerce: {},
+  write: {
+    isApprox(value) {
+      return value.some((x) => x.type == "approx")
+    },
+    display(value, props) {
+      new CmdStats(
+        value.map((value) => {
+          const block = new Block(null)
+          props.at(block.cursor(R)).num(value)
+          return block
+        }) satisfies Block[] as any,
+      ).insertAt(props.cursor, L)
+    },
   },
+  order: null,
   point: false,
   icon() {
     return h(
@@ -792,20 +806,10 @@ const TY_STATS: TyInfo<Tys["stats"], TyComponents["stats"]> = {
       ),
     )
   },
-  write: {
-    isApprox(value) {
-      return value.some((x) => x.type == "approx")
-    },
-    display(value, props) {
-      new CmdStats(
-        value.map((value) => {
-          const block = new Block(null)
-          props.at(block.cursor(R)).num(value)
-          return block
-        }) satisfies Block[] as any,
-      ).insertAt(props.cursor, L)
-    },
-  },
+  token: null,
+  glide: null,
+  preview: null,
+  components: null,
 }
 
 const store = createMultiEval(["Min", "Q1", "Median", "Q3", "Max"])

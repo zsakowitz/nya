@@ -149,7 +149,7 @@ function lineInfo<T extends "segment" | "ray" | "line" | "vector">(
             precision: raw.precision,
           }
         }
-      : undefined,
+      : null,
     preview(cv, val) {
       switch (name) {
         case "segment": {
@@ -173,6 +173,7 @@ function lineInfo<T extends "segment" | "ray" | "line" | "vector">(
         }
       }
     },
+    components: null,
   }
 }
 
@@ -628,7 +629,6 @@ const INFO_CIRCLE: TyInfoByName<"circle"> = {
     glsl: "vec3(0.0/0.0)",
   },
   coerce: {},
-  order: Order.Graph,
   write: {
     isApprox(value) {
       return (
@@ -647,6 +647,7 @@ const INFO_CIRCLE: TyInfoByName<"circle"> = {
       inner.num(value.radius)
     },
   },
+  order: Order.Graph,
   point: false,
   icon() {
     return h(
@@ -662,6 +663,7 @@ const INFO_CIRCLE: TyInfoByName<"circle"> = {
       ),
     )
   },
+  token: null,
   glide(props) {
     const x = num(props.shape.center.x)
     const y = num(props.shape.center.y)
@@ -677,12 +679,12 @@ const INFO_CIRCLE: TyInfoByName<"circle"> = {
   preview(cv, val) {
     cv.circle(unpt(val.center), num(val.radius), Size.Line, Color.Green)
   },
+  components: null,
 }
 
 const INFO_POLYGON: TyInfoByName<"polygon"> = {
   name: "polygon",
   namePlural: "polygons",
-  order: Order.Graph,
   get glsl(): never {
     throw new Error("Cannot construct polygons in shaders.")
   },
@@ -719,6 +721,7 @@ const INFO_POLYGON: TyInfoByName<"polygon"> = {
       }
     },
   },
+  order: Order.Graph,
   point: false,
   icon() {
     return h(
@@ -755,16 +758,18 @@ const INFO_POLYGON: TyInfoByName<"polygon"> = {
       ),
     )
   },
+  // TODO: polygons can have perimeter gliders
+  glide: null,
   preview(cv, val) {
     cv.polygon(val.map(unpt), Size.Line, Color.Blue, 1, 0.3, false)
   },
+  components: null,
 }
 
 const INFO_ARC: TyInfoByName<"arc"> = {
   name: "arc",
   namePlural: "arcs",
   glsl: "mat3x2",
-  order: Order.Graph,
   garbage: {
     js: [SNANPT, SNANPT, SNANPT],
     glsl: "mat3x2(vec2(0.0/0.0),vec2(0.0/0.0),vec2(0.0/0.0))",
@@ -786,6 +791,7 @@ const INFO_ARC: TyInfoByName<"arc"> = {
       WRITE_POINT.display(value[2], inner)
     },
   },
+  order: Order.Graph,
   point: false,
   icon() {
     return h(
@@ -881,6 +887,7 @@ const INFO_ARC: TyInfoByName<"arc"> = {
     const arc = computeArcVal(val)
     drawArcCv(cv, arc)
   },
+  components: null,
 }
 
 function angleInfo(
@@ -893,7 +900,11 @@ function angleInfo(
   return {
     name: type == "angle" ? "angle" : "directed angle",
     namePlural: type == "angle" ? "angles" : "directed angles",
-    order: Order.Angle,
+    glsl: "mat3x2",
+    garbage: {
+      js: [SNANPT, SNANPT, SNANPT],
+      glsl: "mat3x2(vec2(0.0/0.0),vec2(0.0/0.0),vec2(0.0/0.0))",
+    },
     coerce: {
       r32: {
         js(value) {
@@ -920,11 +931,6 @@ function angleInfo(
         },
       },
     },
-    garbage: {
-      js: [SNANPT, SNANPT, SNANPT],
-      glsl: "mat3x2(vec2(0.0/0.0),vec2(0.0/0.0),vec2(0.0/0.0))",
-    },
-    glsl: "mat3x2",
     write: {
       display(value, props) {
         new CmdWord(type, "prefix").insertAt(props.cursor, L)
@@ -951,6 +957,7 @@ function angleInfo(
         return value.some((x) => x.x.type == "approx" || x.y.type == "approx")
       },
     },
+    order: Order.Angle,
     point: false,
     icon() {
       return h(
@@ -1051,10 +1058,12 @@ function angleInfo(
 
       return createToken("var(--nya-angle)", ...els)
     },
+    glide: null,
     preview(cv, val) {
       console.log("previewing")
       drawAngleCv(cv, unpt(val[0]), unpt(val[1]), unpt(val[2]), { kind: type })
     },
+    components: null,
   }
 }
 

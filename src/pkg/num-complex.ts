@@ -564,7 +564,6 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
     },
     info: {
       c64: {
-        order: Order.Point,
         name: "complex number",
         namePlural: "complex numbers",
         glsl: "vec4",
@@ -580,10 +579,14 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
           },
         },
         write: WRITE_COMPLEX,
+        order: Order.Point,
         point: true,
         icon() {
           return iconComplex(true)
         },
+        token: null,
+        glide: null,
+        preview: null,
         components: {
           ty: "r64",
           at: [
@@ -593,17 +596,20 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
         },
       },
       c32: {
-        order: Order.Point,
         name: "complex number",
         namePlural: "complex numbers",
         glsl: "vec2",
         garbage: { js: SNANPT, glsl: "vec2(0.0/0.0)" },
         coerce: {},
         write: WRITE_COMPLEX,
+        order: Order.Point,
         point: true,
         icon() {
           return iconComplex(false)
         },
+        token: null,
+        glide: null,
+        preview: null,
         components: {
           ty: "r32",
           at: [

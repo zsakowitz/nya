@@ -99,6 +99,8 @@ const uniformdist = new FnDist("uniformdist", "creates a uniform distribution")
     (_, a, b) => `vec2(${a.expr}, ${b.expr})`,
   )
 
+// TODO: tokens for distributions
+
 export const PKG_DISTRIBUTIONS: Package = {
   id: "nya:distributions",
   name: "statistical distributions",
@@ -108,13 +110,12 @@ export const PKG_DISTRIBUTIONS: Package = {
       normaldist: {
         name: "normal distribution",
         namePlural: "normal distributions",
-        order: null,
-        coerce: {},
         glsl: "vec2",
         garbage: {
           js: [real(NaN), real(NaN)],
           glsl: "vec2(0.0/0.0)",
         },
+        coerce: {},
         write: {
           isApprox(value) {
             return value.some((x) => x.type == "approx")
@@ -129,6 +130,7 @@ export const PKG_DISTRIBUTIONS: Package = {
             new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
           },
         },
+        order: null,
         point: false,
         icon() {
           return h(
@@ -151,17 +153,20 @@ export const PKG_DISTRIBUTIONS: Package = {
             ),
           )
         },
+        token: null,
+        glide: null,
+        preview: null,
+        components: null,
       },
       tdist: {
         name: "t-distribution",
         namePlural: "t-distributions",
-        order: null,
-        coerce: {},
         glsl: "float",
         garbage: {
           js: real(NaN),
           glsl: "(0.0/0.0)",
         },
+        coerce: {},
         write: {
           isApprox(value) {
             return value.type == "approx"
@@ -174,6 +179,7 @@ export const PKG_DISTRIBUTIONS: Package = {
             new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
           },
         },
+        order: null,
         point: false,
         icon() {
           return h(
@@ -199,17 +205,20 @@ export const PKG_DISTRIBUTIONS: Package = {
             ),
           )
         },
+        token: null,
+        glide: null,
+        preview: null,
+        components: null,
       },
       poissondist: {
         name: "Poisson distribution",
         namePlural: "Poisson distributions",
-        order: null,
-        coerce: {},
         glsl: "float",
         garbage: {
           js: real(NaN),
           glsl: "(0.0/0.0)",
         },
+        coerce: {},
         write: {
           isApprox(value) {
             return value.type == "approx"
@@ -222,6 +231,7 @@ export const PKG_DISTRIBUTIONS: Package = {
             new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
           },
         },
+        order: null,
         point: false,
         icon() {
           return h(
@@ -256,17 +266,20 @@ export const PKG_DISTRIBUTIONS: Package = {
             ),
           )
         },
+        token: null,
+        glide: null,
+        preview: null,
+        components: null,
       },
       binomialdist: {
         name: "binomial distribution",
         namePlural: "binomial distributions",
-        order: null,
-        coerce: {},
         glsl: "vec2",
         garbage: {
           js: [real(NaN), real(NaN)],
           glsl: "(0.0/0.0)",
         },
+        coerce: {},
         write: {
           isApprox(value) {
             return value.some((x) => x.type == "approx")
@@ -281,6 +294,7 @@ export const PKG_DISTRIBUTIONS: Package = {
             new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
           },
         },
+        order: null,
         point: false,
         icon() {
           return h(
@@ -315,17 +329,20 @@ export const PKG_DISTRIBUTIONS: Package = {
             ),
           )
         },
+        token: null,
+        glide: null,
+        preview: null,
+        components: null,
       },
       uniformdist: {
         name: "uniform distribution",
         namePlural: "uniform distributions",
-        order: null,
-        coerce: {},
         glsl: "vec2",
         garbage: {
           js: [real(NaN), real(NaN)],
           glsl: "vec2(0.0/0.0)",
         },
+        coerce: {},
         write: {
           isApprox(value) {
             return value.some((x) => x.type == "approx")
@@ -340,6 +357,7 @@ export const PKG_DISTRIBUTIONS: Package = {
             new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
           },
         },
+        order: null,
         point: false,
         icon() {
           return h(
@@ -367,6 +385,10 @@ export const PKG_DISTRIBUTIONS: Package = {
             ),
           )
         },
+        token: null,
+        glide: null,
+        preview: null,
+        components: null,
       },
     },
   },

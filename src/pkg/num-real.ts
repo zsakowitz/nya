@@ -545,7 +545,6 @@ float _helper_cmp_r32(float a, float b) {
   ty: {
     info: {
       r64: {
-        order: null,
         name: "real number",
         namePlural: "real numbers",
         glsl: "vec2",
@@ -561,23 +560,32 @@ float _helper_cmp_r32(float a, float b) {
           },
         },
         write: WRITE_REAL,
+        order: null,
         point: false,
         icon() {
           return iconReal(true)
         },
+        token: null,
+        glide: null,
+        preview: null,
+        components: null,
       },
       r32: {
-        order: null,
         name: "real number",
         namePlural: "real numbers",
         glsl: "float",
         garbage: { js: real(NaN), glsl: "(0.0/0.0)" },
         coerce: {},
         write: WRITE_REAL,
+        order: null,
         point: false,
         icon() {
           return iconReal(false)
         },
+        token: null,
+        glide: null,
+        preview: null,
+        components: null,
       },
     },
     coerce: {
