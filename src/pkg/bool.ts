@@ -286,6 +286,7 @@ export const PKG_BOOL: Package = {
         glsl: "bool",
         garbage: { js: false, glsl: "false" },
         coerce: {},
+        order: null,
         write: {
           isApprox() {
             return false

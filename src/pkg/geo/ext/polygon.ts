@@ -32,6 +32,7 @@ export const EXT_POLYGON = defineHideable<
     }
   },
   plot: {
+    // FIXME: polygon insides are higher order during picking than segments, but not angles
     order() {
       return Order.Graph
     },

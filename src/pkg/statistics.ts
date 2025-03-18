@@ -758,6 +758,7 @@ const FN_STATS = new FnList(
 )
 
 const TY_STATS: TyInfo<Tys["stats"], TyComponents["stats"]> = {
+  order: null,
   name: "five-number statistical summary",
   namePlural: "five-number statistical summaries",
   coerce: {},

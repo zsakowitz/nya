@@ -337,6 +337,7 @@ export const PKG_TEXT: Package = {
   ty: {
     info: {
       text: {
+        order: null,
         name: "text",
         namePlural: "texts",
         coerce: {},

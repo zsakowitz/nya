@@ -515,6 +515,7 @@ export const PKG_GEO_POINT: Package = {
   ty: {
     info: {
       point64: {
+        order: Order.Point,
         name: "point",
         namePlural: "points",
         glsl: "vec4",
@@ -546,6 +547,7 @@ export const PKG_GEO_POINT: Package = {
         },
       },
       point32: {
+        order: Order.Point,
         name: "point",
         namePlural: "points",
         glsl: "vec2",

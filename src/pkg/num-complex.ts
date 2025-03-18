@@ -9,6 +9,7 @@ import type { TyWrite } from "../eval/ty/display"
 import { highRes } from "../eval/ty/info"
 import { abs, add, div, mul, neg, sub } from "../eval/ty/ops"
 import { h } from "../jsx"
+import { Order } from "../sheet/ui/cv/consts"
 import { FN_VALID } from "./bool"
 import { OP_PLOT, plotJs } from "./color-core"
 import {
@@ -563,6 +564,7 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
     },
     info: {
       c64: {
+        order: Order.Point,
         name: "complex number",
         namePlural: "complex numbers",
         glsl: "vec4",
@@ -591,6 +593,7 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
         },
       },
       c32: {
+        order: Order.Point,
         name: "complex number",
         namePlural: "complex numbers",
         glsl: "vec2",

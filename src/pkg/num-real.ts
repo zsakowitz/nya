@@ -545,6 +545,7 @@ float _helper_cmp_r32(float a, float b) {
   ty: {
     info: {
       r64: {
+        order: null,
         name: "real number",
         namePlural: "real numbers",
         glsl: "vec2",
@@ -566,6 +567,7 @@ float _helper_cmp_r32(float a, float b) {
         },
       },
       r32: {
+        order: null,
         name: "real number",
         namePlural: "real numbers",
         glsl: "float",

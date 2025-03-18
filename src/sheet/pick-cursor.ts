@@ -70,13 +70,15 @@ export const PICK_CURSOR: Picker<Data> = {
 
       try {
         const value = js(ast, data.expr.field.scope.propsJs)
-        const { preview: draw, point } = TY_INFO[value.type]
+        const { preview: draw, point, order } = TY_INFO[value.type]
         if (draw) {
-          ;(record[point ? Order.Point : Order.Graph] ??= []).push(() => {
-            for (const val of each(value)) {
-              draw(data.expr.sheet.cv, val as never)
-            }
-          })
+          ;(record[order ?? (point ? Order.Point : Order.Graph)] ??= []).push(
+            () => {
+              for (const val of each(value)) {
+                draw(data.expr.sheet.cv, val as never)
+              }
+            },
+          )
         }
       } catch (e) {
         console.warn(

@@ -29,6 +29,7 @@ export const PKG_SYM: Package = {
   ty: {
     info: {
       sym: {
+        order: null,
         name: "symbolic expression",
         namePlural: "symbolic expressions",
         coerce: {},

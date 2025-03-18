@@ -178,6 +178,7 @@ export const PKG_COLOR_CORE: Package = {
   ty: {
     info: {
       color: {
+        order: null,
         name: "color",
         namePlural: "colors",
         glsl: "vec4",

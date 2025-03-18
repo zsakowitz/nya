@@ -155,6 +155,7 @@ export const PKG_NUM_QUATERNION: Package = {
   ty: {
     info: {
       q32: {
+        order: null,
         name: "quaternion",
         namePlural: "quaternions",
         glsl: "vec4",

@@ -112,6 +112,7 @@ export const PKG_IMAGE_GEO: Package = {
   ty: {
     info: {
       image2d: {
+        order: Order.Backdrop,
         name: "drawn image",
         namePlural: "drawn images",
         coerce: {

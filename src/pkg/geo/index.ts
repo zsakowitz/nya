@@ -18,7 +18,7 @@ import { Block, L, R } from "../../field/model"
 import { h, path, svgx, sx } from "../../jsx"
 import { PICK_TY, definePickTy, toolbar, type Data } from "../../sheet/pick-ty"
 import { normVector, type Point } from "../../sheet/point"
-import { Color, Size } from "../../sheet/ui/cv/consts"
+import { Color, Order, Size } from "../../sheet/ui/cv/consts"
 import { Expr } from "../../sheet/ui/expr"
 import type { Selected } from "../../sheet/ui/sheet"
 import {
@@ -29,15 +29,9 @@ import {
 } from "../geo-point"
 import { PKG_REAL } from "../num-real"
 import { computeArcVal, unglideArc } from "./arc"
-import {
-  EXT_ANGLE,
-  angleGlsl,
-  angleJs,
-  drawAngle,
-  drawAngleCv,
-} from "./ext/angle"
+import { EXT_ANGLE, angleGlsl, angleJs, drawAngleCv } from "./ext/angle"
 import { EXT_ARC, drawArcCv } from "./ext/arc"
-import { EXT_CIRCLE, drawCircle } from "./ext/circle"
+import { EXT_CIRCLE } from "./ext/circle"
 import { EXT_LINE, getLineBounds } from "./ext/line"
 import { EXT_POLYGON } from "./ext/polygon"
 import { EXT_RAY, getRayBounds } from "./ext/ray"
@@ -127,6 +121,7 @@ function lineInfo<T extends "segment" | "ray" | "line" | "vector">(
         WRITE_POINT.display(value[1], inner)
       },
     },
+    order: Order.Graph,
     point: false,
     icon:
       typeof clsx == "function" ? clsx : (
@@ -252,12 +247,12 @@ const PICK_CIRCLE = definePickTy(
     if (p1 && p2) {
       const center = unpt(p1.value)
       const edge = unpt(p2.value)
-      drawCircle(sheet.paper, {
-        at: center,
-        r: Math.hypot(center.x - edge.x, center.y - edge.y),
-        ghost: true,
-        kind: "circle",
-      })
+      sheet.cv.circle(
+        center,
+        Math.hypot(center.x - edge.x, center.y - edge.y),
+        Size.Line,
+        Color.Green,
+      )
     }
   },
 )
@@ -342,14 +337,12 @@ function createPick(type: "angle" | "directedangle"): Data {
             const prev = a.value[(i + a.value.length - 1) % a.value.length]!
             const self = a.value[i]!
             const next = a.value[(i + 1) % a.value.length]!
-            drawAngle(sheet.paper, unpt(prev), unpt(self), unpt(next), {
-              draft: true,
+            drawAngleCv(sheet.cv, unpt(prev), unpt(self), unpt(next), {
               kind: type,
             })
           }
         } else if (a && b && c) {
-          drawAngle(sheet.paper, unpt(a.value), unpt(b.value), unpt(c.value), {
-            draft: true,
+          drawAngleCv(sheet.cv, unpt(a.value), unpt(b.value), unpt(c.value), {
             kind: type,
           })
         }
@@ -639,6 +632,7 @@ const INFO_CIRCLE: TyInfoByName<"circle"> = {
     glsl: "vec3(0.0/0.0)",
   },
   coerce: {},
+  order: Order.Graph,
   write: {
     isApprox(value) {
       return (
@@ -692,6 +686,7 @@ const INFO_CIRCLE: TyInfoByName<"circle"> = {
 const INFO_POLYGON: TyInfoByName<"polygon"> = {
   name: "polygon",
   namePlural: "polygons",
+  order: Order.Graph,
   get glsl(): never {
     throw new Error("Cannot construct polygons in shaders.")
   },
@@ -769,6 +764,7 @@ const INFO_ARC: TyInfoByName<"arc"> = {
   name: "arc",
   namePlural: "arcs",
   glsl: "mat3x2",
+  order: Order.Graph,
   garbage: {
     js: [SNANPT, SNANPT, SNANPT],
     glsl: "mat3x2(vec2(0.0/0.0),vec2(0.0/0.0),vec2(0.0/0.0))",
@@ -897,6 +893,7 @@ function angleInfo(
   return {
     name: type == "angle" ? "angle" : "directed angle",
     namePlural: type == "angle" ? "angles" : "directed angles",
+    order: Order.Angle,
     coerce: {
       r32: {
         js(value) {
@@ -1055,6 +1052,7 @@ function angleInfo(
       return createToken("var(--nya-angle)", ...els)
     },
     preview(cv, val) {
+      console.log("previewing")
       drawAngleCv(cv, unpt(val[0]), unpt(val[1]), unpt(val[2]), { kind: type })
     },
   }

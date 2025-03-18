@@ -108,6 +108,7 @@ export const PKG_DISTRIBUTIONS: Package = {
       normaldist: {
         name: "normal distribution",
         namePlural: "normal distributions",
+        order: null,
         coerce: {},
         glsl: "vec2",
         garbage: {
@@ -154,6 +155,7 @@ export const PKG_DISTRIBUTIONS: Package = {
       tdist: {
         name: "t-distribution",
         namePlural: "t-distributions",
+        order: null,
         coerce: {},
         glsl: "float",
         garbage: {
@@ -201,6 +203,7 @@ export const PKG_DISTRIBUTIONS: Package = {
       poissondist: {
         name: "Poisson distribution",
         namePlural: "Poisson distributions",
+        order: null,
         coerce: {},
         glsl: "float",
         garbage: {
@@ -257,6 +260,7 @@ export const PKG_DISTRIBUTIONS: Package = {
       binomialdist: {
         name: "binomial distribution",
         namePlural: "binomial distributions",
+        order: null,
         coerce: {},
         glsl: "vec2",
         garbage: {
@@ -315,6 +319,7 @@ export const PKG_DISTRIBUTIONS: Package = {
       uniformdist: {
         name: "uniform distribution",
         namePlural: "uniform distributions",
+        order: null,
         coerce: {},
         glsl: "vec2",
         garbage: {

@@ -144,6 +144,7 @@ export const PKG_ITHKUIL: Package = {
   ty: {
     info: {
       ithkuilscript: {
+        order: null,
         name: "ithkuil script",
         namePlural: "ithkuil scripts",
         coerce: {},

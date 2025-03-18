@@ -319,6 +319,7 @@ export const PKG_IMAGE: Package = {
   ty: {
     info: {
       image: {
+        order: null,
         name: "image file",
         namePlural: "image files",
         coerce: {},
