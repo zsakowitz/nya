@@ -96,6 +96,7 @@ export function virtualIntersection(
     index: 0,
     item: { sheet, at, a, b },
     target: TARGET_INTERSECTION,
+    virtualPoint: at,
   }
 }
 
@@ -172,21 +173,23 @@ export function virtualGlider(
   item: ItemWithTarget,
   index: { value: number; precision: number },
 ): ItemWithDrawTarget | undefined {
+  const at = unpt(
+    FN_GLIDER.js1(item.target.val(item), {
+      type: "r32",
+      value: real(index.value),
+    } satisfies JsVal<"r32">).value,
+  )
   return {
     data: 0,
     item: {
       sheet,
       item,
       index,
-      at: unpt(
-        FN_GLIDER.js1(item.target.val(item), {
-          type: "r32",
-          value: real(index.value),
-        } satisfies JsVal<"r32">).value,
-      ),
+      at,
     },
     index: 0,
     target: TARGET_GLIDER,
+    virtualPoint: at,
   }
 }
 
@@ -248,5 +251,6 @@ export function virtualPoint3(
     index: 0,
     item: { sheet, at },
     target: TARGET_VPOINT,
+    virtualPoint: at,
   }
 }

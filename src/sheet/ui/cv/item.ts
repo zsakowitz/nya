@@ -6,12 +6,18 @@ import { Block } from "../../../field/model"
 import type { Point } from "../../point"
 import type { Expr } from "../expr"
 import type { Sheet } from "../sheet"
+import { Size } from "./consts"
 import {
   virtualGlider,
   virtualIntersection,
   virtualPoint3,
 } from "./item-virtual"
-import type { ItemData, ItemWithDrawTarget, ItemWithTarget } from "./move"
+import type {
+  ItemData,
+  ItemWithDrawTarget,
+  ItemWithTarget,
+  VirtualPoint,
+} from "./move"
 
 export const FN_INTERSECTION = new FnDist<"point32">(
   "intersection",
@@ -34,9 +40,9 @@ export class Hint {
    * A hint which looks for one of a set of types, setting `derivedPoint` and
    * `createdPoint` if available for the given type set.
    */
-  static oneOf(tys: readonly TyName[]) {
+  static oneOf(tys: readonly TyName[], virtuals: readonly VirtualPoint[] = []) {
     const pt = tys.some((x) => TY_INFO[x].point)
-    return new Hint(tys, pt ? 2 : 1, pt, pt)
+    return new Hint(tys, pt ? 2 : 1, pt, pt, virtuals)
   }
 
   /** A hint which looks for or creates a point. */
@@ -63,10 +69,16 @@ export class Hint {
      * Whether gliders and intersections should be preferred if the cursor is
      * near a glidable object.
      */
-    readonly derivedPoint: boolean,
+    private readonly derivedPoint: boolean,
 
     /** Whether a new point can be created if no other objects are nearby. */
-    readonly createdPoint: boolean,
+    private readonly createdPoint: boolean,
+
+    /**
+     * Virtual points which have already been created, to be searched before
+     * everything else.
+     */
+    private readonly virtuals: readonly VirtualPoint[] = [],
   ) {}
 
   allows(ty: TyName) {
@@ -83,6 +95,15 @@ export class Hint {
     at: Point,
     raw: ItemWithTarget[],
   ): ItemWithDrawTarget | undefined {
+    if (!this.tys || this.tys.some((x) => TY_INFO[x].point)) {
+      const pp = sheet.cv.toPaper(at)
+      for (const pt of this.virtuals) {
+        if (sheet.cv.offsetDistance(pp, pt.virtualPoint) < Size.Target) {
+          return pt
+        }
+      }
+    }
+
     if (!(this.derivedPoint || this.createdPoint)) {
       return raw[0]
     }

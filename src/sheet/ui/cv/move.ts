@@ -22,7 +22,12 @@ export interface ItemWithTarget<T = unknown, U = unknown>
 export type ItemWithDrawTarget<T = unknown, U = unknown> = ItemWithTarget<
   T,
   U
-> & { target: { draw?(item: ItemData<T, U>): void } }
+> & {
+  target: { draw?(item: ItemData<T, U>): void }
+  virtualPoint?: Point
+}
+
+export type VirtualPoint = ItemWithDrawTarget & { virtualPoint: Point }
 
 export function registerWheelHandler(cv: Cv) {
   cv.el.addEventListener(
@@ -66,77 +71,75 @@ export function registerPointerHandler(cv: Cv, handler: Handler) {
   let picking: Hint | undefined
   let oc: (() => void) | undefined
 
-  cv.el.addEventListener(
-    "pointermove",
-    (event) => {
-      event.preventDefault()
-      const pt: Point = { x: event.offsetX, y: event.offsetY }
-      last = pt
+  function onPointerMove(event: { offsetX: number; offsetY: number }) {
+    const pt: Point = { x: event.offsetX, y: event.offsetY }
+    last = pt
 
-      if (picking && (ptrs == 0 || ptrs == 1)) {
-        if (current) {
-          current.target.toggle(current, false, "pick")
-        }
-        current = handler.find(pt, picking)
-        if (current) {
-          current.target.toggle(current, true, "pick")
-        }
-        oc?.()
-        return
-      }
-
-      if (ptrs == 0) {
-        const next = handler.find(pt, Hint.one())
-        // TODO: optimize out the case where current and next are identical, although it doesn't unduly harm anyone
-        if (current) {
-          current.target.toggle(current, false, "hover")
-        }
-        if (next) {
-          next.target.toggle(next, true, "hover")
-        }
-        current = next
-        return
-      }
-
-      if (ptrs != 1) {
-        return
-      }
-
+    if (picking && (ptrs == 0 || ptrs == 1)) {
       if (current) {
-        if (dragOffset) {
-          moved = true
-          current.target.drag!(
-            current,
-            cv.toPaperBounded({
-              x: pt.x - dragOffset.x,
-              y: pt.y - dragOffset.y,
-            }),
-          )
-          return
-        }
-
-        current.target.toggle(current, false, "drag")
-        current.target.toggle(current, false, "hover")
-        current = undefined
-        initial = cv.toPaper(pt)
+        current.target.toggle(current, false, "pick")
       }
+      current = handler.find(pt, picking)
+      if (current) {
+        current.target.toggle(current, true, "pick")
+      }
+      oc?.()
+      return
+    }
 
-      if (!initial) {
+    if (ptrs == 0) {
+      const next = handler.find(pt, Hint.one())
+      // TODO: optimize out the case where current and next are identical, although it doesn't unduly harm anyone
+      if (current) {
+        current.target.toggle(current, false, "hover")
+      }
+      if (next) {
+        next.target.toggle(next, true, "hover")
+      }
+      current = next
+      return
+    }
+
+    if (ptrs != 1) {
+      return
+    }
+
+    if (current) {
+      if (dragOffset) {
+        moved = true
+        current.target.drag!(
+          current,
+          cv.toPaperBounded({
+            x: pt.x - dragOffset.x,
+            y: pt.y - dragOffset.y,
+          }),
+        )
         return
       }
 
-      moved = true
-      ;(document.activeElement as HTMLElement).blur?.()
+      current.target.toggle(current, false, "drag")
+      current.target.toggle(current, false, "hover")
+      current = undefined
+      initial = cv.toPaper(pt)
+    }
 
-      const self = cv.eventToPaper(event)
+    if (!initial) {
+      return
+    }
 
-      cv.move({
-        x: initial.x - self.x,
-        y: initial.y - self.y,
-      })
-    },
-    { passive: false },
-  )
+    moved = true
+    ;(document.activeElement as HTMLElement).blur?.()
+
+    const self = cv.eventToPaper(event)
+
+    cv.move({
+      x: initial.x - self.x,
+      y: initial.y - self.y,
+    })
+  }
+
+  cv.el.addEventListener("pointermove", onPointerMove, { passive: true })
+  cv.el.addEventListener("wheel", onPointerMove, { passive: true })
 
   cv.el.addEventListener(
     "pointerdown",

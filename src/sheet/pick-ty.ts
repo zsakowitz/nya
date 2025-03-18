@@ -7,7 +7,7 @@ import { CmdBrack } from "../field/cmd/math/brack"
 import { Block, L, R } from "../field/model"
 import { h, hx } from "../jsx"
 import { Hint } from "./ui/cv/item"
-import type { ItemWithDrawTarget } from "./ui/cv/move"
+import type { ItemWithDrawTarget, VirtualPoint } from "./ui/cv/move"
 import type { Picker } from "./ui/cv/pick"
 import { Expr } from "./ui/expr"
 import type { Selected, Sheet } from "./ui/sheet"
@@ -48,7 +48,10 @@ export const PICK_TY: Picker<Data> = {
     // FIXME: properly show if an existing point is picked
   },
   hint(data) {
-    return Hint.oneOf(data.next)
+    return Hint.oneOf(
+      data.next,
+      data.vals.filter((x): x is VirtualPoint => x.virtualPoint != null),
+    )
   },
   suppress() {
     return null
