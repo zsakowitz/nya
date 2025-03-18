@@ -72,7 +72,7 @@ export const Size = Object.freeze({
 
   /** The offset distance required to consider something a "touch". */
   get Target() {
-    return queryPointerCoarse.matches ? 24 : 12
+    return queryPointerCoarse.matches ? 24 : 16
   },
 
   /** 1.5 * {@linkcode Size.PointHaloWide} */

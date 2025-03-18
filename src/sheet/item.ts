@@ -4,7 +4,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons"
 import type { GlslResult } from "../eval/lib/fn"
 import { LatexParser } from "../field/latex"
-import { L, R, U, type VDir } from "../field/model"
+import { Block, L, R, U, type VDir } from "../field/model"
 import type { ItemRef } from "./items"
 import type { Plottable } from "./ui/cv/item"
 import type { ItemData } from "./ui/cv/move"
@@ -96,27 +96,32 @@ export const FACTORY_EXPR: ItemFactory<Expr<K>, { geo?: boolean }> = {
       },
       focus(data) {
         const state = data.state as ExprStateOk<K>
-        state.ext!.plot!.target?.focus(state.data!)
+        state.ext?.plot?.target?.focus(state.data!)
       },
       toggle(item, on, reason) {
         const state = item.data.state as ExprStateOk<K>
-        state.ext!.plot!.target!.toggle(local(item), on, reason)
+        state.ext?.plot?.target!.toggle(local(item), on, reason)
       },
       ref(item) {
         const state = item.data.state as ExprStateOk<K>
-        return state.ext!.plot!.target!.ref(local(item))
+        return state.ext?.plot?.target!.ref(local(item)) ?? new Block(null)
       },
       val(item) {
         const state = item.data.state as ExprStateOk<K>
-        return state.ext!.plot!.target!.val(local(item))
+        return (
+          state.ext?.plot?.target!.val(local(item)) ?? {
+            type: "never",
+            value: "__never",
+          }
+        )
       },
       dragOrigin(item) {
         const state = item.data.state as ExprStateOk<K>
-        return state.ext!.plot!.target!.dragOrigin?.(local(item)) ?? null
+        return state.ext?.plot?.target!.dragOrigin?.(local(item)) ?? null
       },
       drag(item, at) {
         const state = item.data.state as ExprStateOk<K>
-        return state.ext!.plot!.target!.drag!(local(item), at)
+        return state.ext?.plot?.target!.drag!(local(item), at)
       },
     },
   },
