@@ -78,7 +78,7 @@ export class Prop<T> {
       set(v: T) {
         if (value != v) {
           value = v
-          expr.sheet.paper.queue()
+          expr.sheet.cv.queue()
         }
       },
     }

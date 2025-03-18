@@ -411,7 +411,7 @@ export class ItemRef<T> {
 
     this.root.sheet.queueGlsl()
     this.root.queueIndices()
-    this.root.sheet.paper.queue()
+    this.root.sheet.cv.queue()
   }
 
   index() {

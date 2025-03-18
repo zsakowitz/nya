@@ -9,17 +9,14 @@ import { highRes, TY_INFO, WRITE_POINT, type TyGlide } from "../eval/ty/info"
 import { abs, add, div, mul, neg } from "../eval/ty/ops"
 import { CmdVar } from "../field/cmd/leaf/var"
 import { L, R } from "../field/model"
-import { h, sx } from "../jsx"
+import { h } from "../jsx"
 import { defineHideable } from "../sheet/ext/hideable"
 import { definePickTy, PICK_TY, toolbar } from "../sheet/pick-ty"
-import type { Point } from "../sheet/point"
 import { TransitionProp } from "../sheet/transition"
 import type { Cv } from "../sheet/ui/cv"
 import { Color, Opacity, Order, Size } from "../sheet/ui/cv/consts"
 import { FN_GLIDER, FN_INTERSECTION, ref, val } from "../sheet/ui/cv/item"
 import type { Expr } from "../sheet/ui/expr"
-import type { DrawProps, Paper } from "../sheet/ui/paper"
-import { HANDLER_DRAG, HANDLER_PICK } from "../sheet/ui/paper/interact"
 import { Sheet } from "../sheet/ui/sheet"
 import { virtualStepExp, write, Writer } from "../sheet/write"
 import { FN_VALID } from "./bool"
@@ -53,75 +50,11 @@ declare module "../eval/ty" {
   }
 }
 
-export function drawPoint(
-  paper: Paper,
-  props: {
-    at: Point
-    halo?: boolean
-    hover?: boolean
-    cursor?: "auto" | "pointer"
-  } & Omit<DrawProps, "kind">,
-) {
-  const offset = paper.toOffset(props.at)
-  if (!(isFinite(offset.x) && isFinite(offset.y))) return
-
-  const ghost =
-    props.ghost ? " pointer-events-none"
-    : props.cursor == "pointer" ? " cursor-pointer"
-    : props.cursor == "auto" ? ""
-    : props.drag ? " cursor-move"
-    : ""
-
-  const center = sx("circle", {
-    class:
-      (props.hover ?
-        "transition-[r] group-hover:[r:12] picking-any:group-hover:[r:4]"
-      : "transition-[r]") +
-      (props.ghost ? " pointer-events-none" : "") +
-      " picking-any:opacity-30 picking-point:opacity-100",
-    cx: offset.x,
-    cy: offset.y,
-    r: 4,
-    fill: "#6042a6",
-  })
-
-  if (props.halo || props.drag || props.pick) {
-    paper.append(
-      "point",
-      sx(
-        "g",
-        { class: "group" + ghost },
-        center,
-        sx("circle", {
-          cx: offset.x,
-          cy: offset.y,
-          r: 12,
-          fill: props.halo ? "#6042a659" : "transparent",
-          class: "picking-any:opacity-30 picking-point:opacity-100",
-          drag: props.drag,
-          pick: props.pick,
-        }),
-      ),
-    )
-  } else {
-    if (props.drag) {
-      HANDLER_DRAG.set(center, props.drag)
-    }
-    if (props.pick) {
-      HANDLER_PICK.set(center, props.pick)
-    }
-    paper.append("point", center)
-  }
-
-  return center
-}
-
 const tx = new TransitionProp(4)
 
 const EXT_POINT = defineHideable<
   {
     value: JsValue<"point32" | "point64" | "c32" | "c64">
-    paper: Paper
     expr: Expr
     drag: DragResultPoint | null
     cv: Cv
@@ -145,7 +78,6 @@ const EXT_POINT = defineHideable<
     ) {
       return {
         value: value as JsValue<"point32" | "point64" | "c32" | "c64">,
-        paper: expr.sheet.paper,
         expr,
         drag,
         cv: expr.sheet.cv,

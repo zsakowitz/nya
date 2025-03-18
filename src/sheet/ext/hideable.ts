@@ -41,7 +41,7 @@ const CHECKBOX = new Store((expr) => {
     show = v
     circEmpty.classList.toggle("hidden", !v)
     circShader.classList.toggle("hidden", v)
-    expr.sheet.paper.queue()
+    expr.sheet.cv.queue()
   }
 })
 

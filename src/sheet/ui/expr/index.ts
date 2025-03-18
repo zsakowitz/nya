@@ -131,7 +131,7 @@ export class Expr<T extends {} = {}> {
           this.state.ext.destroy?.(this.state.data)
         }
         if (this.state.ok && this.state.ext?.plot) {
-          this.sheet.paper.queue()
+          this.sheet.cv.queue()
         }
       }
       this.state = { ok: false, reason: this.field.error }
@@ -153,12 +153,12 @@ export class Expr<T extends {} = {}> {
             this.state.ext.destroy?.(this.state.data)
           }
           if (this.state.ok && this.state.ext?.plot) {
-            this.sheet.paper.queue()
+            this.sheet.cv.queue()
           }
           destroyed = true
           this.state = { ok: true, ext: ext as any, data: data as any }
           if (ext.plot) {
-            this.sheet.paper.queue()
+            this.sheet.cv.queue()
           }
           return
         }
@@ -168,7 +168,7 @@ export class Expr<T extends {} = {}> {
         this.state.ext.destroy?.(this.state.data)
       }
       if (this.state.ok && this.state.ext?.plot) {
-        this.sheet.paper.queue()
+        this.sheet.cv.queue()
       }
       destroyed = true
       this.state = { ok: true, ext: null }
@@ -181,7 +181,7 @@ export class Expr<T extends {} = {}> {
           this.state.ext.destroy?.(this.state.data)
         }
         if (this.state.ok && this.state.ext?.plot) {
-          this.sheet.paper.queue()
+          this.sheet.cv.queue()
         }
       }
       this.state = { ok: false, reason: msg }

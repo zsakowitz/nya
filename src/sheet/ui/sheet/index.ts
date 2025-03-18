@@ -33,12 +33,9 @@ import {
   type VirtualPoint,
 } from "../cv/move"
 import { PickHandler2 } from "../cv/pick"
-import { Paper } from "../paper"
-import { HANDLER_PICK } from "../paper/interact"
 import { btn, createDocs, DEFAULT_TO_VISIBLE_DOCS } from "./docs"
 
 export class Sheet {
-  readonly paper = new Paper("absolute inset-0 size-full touch-none")
   readonly cv = new Cv("absolute inset-0 size-full touch-none")
   readonly scope: Scope
   readonly list = new ItemListGlobal(this)
@@ -81,8 +78,6 @@ export class Sheet {
     })
 
     this.scope = new Scope(options)
-
-    this.paper.queue = () => this.cv.queue()
 
     // prepare js context
     registerWheelHandler(this.cv)
@@ -431,26 +426,6 @@ void main() {
       this.checkGlsl()
     })
     this._qdGlsl = true
-  }
-
-  select<const K extends readonly TyName[]>(
-    at: Point,
-    tys: K,
-  ): Selected<K[number]>[] {
-    const o = this.cv.toOffset(at)
-    const rect = this.paper.el.createSVGRect()
-    rect.x = o.x
-    rect.y = o.y
-    rect.width = 0.1
-    rect.height = 0.1
-    const picks = Array.from(
-      this.paper.el.getIntersectionList(rect, this.paper.el),
-    )
-      .reverse()
-      .map((v) => HANDLER_PICK.get(v))
-      .filter((x) => x != null)
-      .filter((x) => tys.includes(x.val().type))
-    return picks.map((x) => ({ ...x, val: x.val() }))
   }
 }
 

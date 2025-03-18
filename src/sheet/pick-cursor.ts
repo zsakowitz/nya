@@ -30,9 +30,10 @@ export const PICK_CURSOR: Picker<Data> = {
     if (!on) return
 
     if (!added.has(sheet)) {
-      sheet.paper.el.addEventListener("focus", () => {
+      // Prevent defocusing the expression
+      sheet.cv.el.addEventListener("focus", () => {
         if (sheet.pick.id == ID) {
-          ;(sheet.pick.data as Data).expr.focus()
+          requestAnimationFrame(() => (sheet.pick.data as Data).expr.focus())
         }
       })
 
@@ -45,7 +46,7 @@ export const PICK_CURSOR: Picker<Data> = {
       })
     }
 
-    sheet.paper.queue()
+    sheet.cv.queue()
   },
   draw(record, data, found) {
     if (!found) return
