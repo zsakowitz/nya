@@ -87,5 +87,7 @@ to do list for 110% compatiability is:
 ❌ logbase(x, y)
 ❌ factorial(x)
 
-immediate
-FIXME: consistent shapes for Picker, TY_INFO, Package, and Ext
+other tasks:
+TODO: consistent shapes for Picker, TY_INFO, Package, and Ext
+FIXME: pressing shift after mouseleave
+FIXME: rays below angles?

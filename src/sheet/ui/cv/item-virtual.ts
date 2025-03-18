@@ -48,9 +48,9 @@ const TARGET_INTERSECTION: ItemWithDrawTarget<
       new CmdVar(l, sheet.options).insertAt(cursor, L)
     }
     new CmdBrack("(", ")", null, inner).insertAt(cursor, L)
-    a.target.ref(a).insertAt(cursor, L)
+    a.target.ref(a).insertAt(inner.cursor(R), L)
     new CmdComma().insertAt(inner.cursor(R), L)
-    b.target.ref(b).insertAt(cursor, L)
+    b.target.ref(b).insertAt(inner.cursor(R), L)
     expr.field.dirtyAst = expr.field.dirtyValue = true
     expr.field.trackNameNow()
     expr.field.scope.queueUpdate()
