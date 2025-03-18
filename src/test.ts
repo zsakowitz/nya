@@ -6,11 +6,12 @@ function shapes(name: string, data: Record<string, {}>) {
     ;(record[Object.keys(v).join(" ")] ??= []).push(k)
   }
   if (Object.entries(record).length != 1) {
-    console.error("multiple shaped found in ", name)
+    console.error("multiple shapes found in " + name, record)
   }
   return record
 }
 
 export function runTests() {
-  console.log(shapes("TY_INFO", TY_INFO))
+  shapes("TY_INFO", TY_INFO)
+  // TODO: unify shapes for `allPackages()`
 }
