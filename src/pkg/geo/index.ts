@@ -21,12 +21,7 @@ import { normVector, type Point } from "../../sheet/point"
 import { Color, Order, Size } from "../../sheet/ui/cv/consts"
 import { Expr } from "../../sheet/ui/expr"
 import type { Selected } from "../../sheet/ui/sheet"
-import {
-  FN_GLIDER,
-  FN_INTERSECTION,
-  PKG_GEO_POINT,
-  drawPoint,
-} from "../geo-point"
+import { FN_GLIDER, FN_INTERSECTION, PKG_GEO_POINT } from "../geo-point"
 import { PKG_REAL } from "../num-real"
 import { computeArcVal, unglideArc } from "./arc"
 import { EXT_ANGLE, angleGlsl, angleJs, drawAngleCv } from "./ext/angle"
@@ -416,10 +411,11 @@ const PICK_MIDPOINT: Data = {
         return
       }
 
-      drawPoint(sheet.paper, {
-        at: { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 },
-        ghost: true,
-      })
+      sheet.cv.point(
+        { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 },
+        Size.Point,
+        Color.Purple,
+      )
     },
   },
 }
