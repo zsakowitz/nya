@@ -97,8 +97,6 @@ export class PickHandler2 {
   }
 
   set<T extends {}>(picker: Picker<T>, data: T): void {
-    // @ts-expect-error FIXME: remove the check against old picker format
-    if (picker.init) return
     this.cancel(true)
     this.picker = picker
     this.d = data
