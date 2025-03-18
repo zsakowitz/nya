@@ -1,8 +1,8 @@
-\token{21}=\left(-0.87,6.37\right)
-\token{22}=\left(-6.02,-0.51\right)
 \token{23}=\left(3.33,1.29\right)
 \token{24}=\operatorname{polygon}\left(\token{21},\token{22},\token{23}\right)
 \token{25}=\token{24}.\operatorname{angles}\left[1\right]
 \token{26}=\token{24}.\operatorname{angles}\left[2\right]
 \token{27}=\token{24}.\operatorname{angles}\left[3\right]
 A=\token{24}.\operatorname{segments}\left[2\right]
+\token{21}=\left(-3.5,3.96\right)
+\token{22}=\left(-6.02,-0.51\right)

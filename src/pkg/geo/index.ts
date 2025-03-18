@@ -18,7 +18,7 @@ import { Block, L, R } from "../../field/model"
 import { h, path, svgx, sx } from "../../jsx"
 import { PICK_TY, definePickTy, toolbar, type Data } from "../../sheet/pick-ty"
 import { normVector, type Point } from "../../sheet/point"
-import { Color, Order, Size } from "../../sheet/ui/cv/consts"
+import { Color, Opacity, Order, Size } from "../../sheet/ui/cv/consts"
 import { Expr } from "../../sheet/ui/expr"
 import type { Selected } from "../../sheet/ui/sheet"
 import { FN_GLIDER, FN_INTERSECTION, PKG_GEO_POINT } from "../geo-point"
@@ -746,8 +746,12 @@ const INFO_POLYGON: TyInfoByName<"polygon"> = {
     const pts = val.map(unpt)
     return createToken(
       "#388c46",
-      path(
-        `M ${pts[0]!.x} ${-pts[0]!.y}${pts.slice(1).map((pt) => ` L ${pt.x} ${-pt.y}`)} Z`,
+      sx(
+        "g",
+        { fill: "currentcolor", "fill-opacity": Opacity.TokenFill },
+        path(
+          `M ${pts[0]!.x} ${-pts[0]!.y}${pts.slice(1).map((pt) => ` L ${pt.x} ${-pt.y}`)} Z`,
+        ),
       ),
     )
   },

@@ -58,6 +58,8 @@ export class Hint {
     )
   }
 
+  readonly maxOrder
+
   private constructor(
     /** If absent, all types are available. */
     readonly tys: readonly TyName[] | null,
@@ -79,7 +81,12 @@ export class Hint {
      * everything else.
      */
     readonly virtuals: readonly VirtualPoint[] = [],
-  ) {}
+  ) {
+    this.maxOrder =
+      tys ?
+        Math.max(...tys.map((x) => TY_INFO[x].order ?? -Infinity))
+      : Math.max(...Object.values(TY_INFO).map((x) => x.order ?? -Infinity))
+  }
 
   allows(ty: TyName) {
     return (

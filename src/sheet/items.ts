@@ -262,6 +262,12 @@ abstract class ItemList {
     // therefore earlier in interaction order.
 
     for (let i = this.items.length - 1; i >= 0; i--) {
+      // Exit early if we've found enough solutions; caller is responsible for
+      // providing better hints if they don't like our results.
+      if ((items[hint.maxOrder]?.length ?? 0) >= hint.limit) {
+        return
+      }
+
       const {
         factory: { plot },
         data,
@@ -269,12 +275,6 @@ abstract class ItemList {
       } = this.items[i]!
 
       const order = plot?.order(data)
-
-      // Exit early if we've found enough solutions; caller is responsible for
-      // providing better hints if they don't like our results.
-      if (order != null && (items[order]?.length ?? 0) >= hint.limit) {
-        return
-      }
 
       sublist?.find(items, at, hint)
 

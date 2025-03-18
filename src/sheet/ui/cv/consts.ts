@@ -13,6 +13,7 @@ export const Opacity = Object.freeze({
   Pick: 0.4,
   PointHalo: 0.3,
   Fill: 0.3,
+  TokenFill: 0.2,
   AngleLine: 0.25,
 })
 
