@@ -22,7 +22,7 @@ import { REMARK } from "../../remark"
 import { Slider } from "../../slider"
 import { isDark } from "../../theme"
 import { Cv } from "../cv"
-import { OrderMajor } from "../cv/consts"
+import { Order, OrderMajor } from "../cv/consts"
 import { Hint } from "../cv/item"
 import {
   registerPinchHandler,
@@ -92,16 +92,15 @@ export class Sheet {
     registerPinchHandler(this.cv)
 
     this.cv.fn(OrderMajor.Backdrop, () => {
-      this.list.draw(true) // backdrop images
+      this.list.draw(-Infinity, Order.Backdrop) // backdrop images
     })
 
     this.cv.fn(OrderMajor.Canvas, () => {
-      this.pick.draw() // constructed object previews
-      this.list.draw(false) // canvas items
+      this.list.draw(Order.Grid, Infinity) // canvas items + pick preview
       pick.picked?.target.draw?.(
         pick.picked,
         !!pick.picking?.virtuals.includes(pick.picked as VirtualPoint),
-      ) // virtual points
+      ) // currently active virtual point
     })
 
     // prepare glsl context

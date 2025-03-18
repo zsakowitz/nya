@@ -182,36 +182,50 @@ abstract class ItemList {
     return this.fromStringByFactory(factory, source, props)
   }
 
-  drawWith(suppressed: ItemRef<unknown> | undefined, backdrop: boolean) {
+  drawWith(suppressed: ItemRef<unknown> | undefined, min: number, max: number) {
     const list: Record<number, ItemRef<unknown>[]> = Object.create(null)
-    this.createDrawList(list, suppressed, backdrop)
+    const addons: Record<number, (() => void)[]> = Object.create(null)
+    this.createDrawList(list, addons, suppressed, min, max)
 
-    for (const [, v] of Object.entries(list).sort(([a], [b]) => +a - +b)) {
-      for (const ref of v) {
+    const keys = Object.keys(list)
+      .concat(Object.keys(addons))
+      .filter((x, i, a) => a.indexOf(x) == i)
+      .sort((a, b) => +a - +b)
+
+    for (const k of keys) {
+      if (!(min <= +k && +k <= max)) continue
+
+      for (const ref of list[+k] || []) {
         const items = ref.factory.plot!.items(ref.data)
         for (let i = 0; i < items.length; i++) {
           ref.factory.plot!.draw(ref.data, items[i]!, i)
         }
       }
+
+      for (const fn of addons[+k] || []) {
+        fn()
+      }
     }
   }
 
-  private createDrawList(
+  protected createDrawList(
     list: Record<number, ItemRef<unknown>[]>,
+    addons: Record<number, (() => void)[]>,
     suppressed: ItemRef<unknown> | undefined,
-    backdrop: boolean,
+    min: number,
+    max: number,
   ) {
     for (const ref of this.items) {
       if (ref == suppressed) continue
 
       const order = ref.factory.plot?.order(ref.data)
 
-      if (order != null && (backdrop ? order < 0 : order > 0)) {
+      if (order != null && min <= order && order <= max) {
         ;(list[order] ??= []).push(ref)
       }
 
       if (ref.sublist) {
-        ref.sublist.createDrawList(list, suppressed, backdrop)
+        ref.sublist.createDrawList(list, addons, suppressed, min, max)
       }
     }
   }
@@ -319,10 +333,21 @@ export class ItemListGlobal extends ItemList {
     this._qdIndices = true
   }
 
-  draw(backdrop: boolean) {
+  protected createDrawList(
+    list: Record<number, ItemRef<unknown>[]>,
+    addons: Record<number, (() => void)[]>,
+    suppressed: ItemRef<unknown> | undefined,
+    min: number,
+    max: number,
+  ): void {
+    super.createDrawList(list, addons, suppressed, min, max)
+    this.sheet.pick.draw(addons)
+  }
+
+  draw(min: number, max: number) {
     this.sheet.pick.checkSuppressed()
     const s = this.sheet.pick.suppressed
-    this.drawWith(s, backdrop)
+    this.drawWith(s, min, max)
   }
 
   glsl() {

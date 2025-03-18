@@ -6,6 +6,7 @@ import { CmdVar } from "../field/cmd/leaf/var"
 import { CmdBrack } from "../field/cmd/math/brack"
 import { Block, L, R } from "../field/model"
 import { h, hx } from "../jsx"
+import { Order } from "./ui/cv/consts"
 import { Hint } from "./ui/cv/item"
 import type { ItemWithDrawTarget, VirtualPoint } from "./ui/cv/move"
 import type { Picker } from "./ui/cv/pick"
@@ -36,18 +37,21 @@ export const PICK_TY: Picker<Data> = {
     return data.src.id
   },
   toggle() {},
-  draw(data, found, sheet) {
+  draw(record, data, found, sheet) {
     const args = data.vals.map((x) => x.target.val(x))
     if (found) {
       args.push(found.target.val(found))
     }
-    data.src.draw(sheet, args)
-    for (const val of data.vals.filter((x, i, a) => a.indexOf(x) == i)) {
-      if (val != found) {
-        val.target.draw?.(val, false)
+    ;(record[Order.Graph] ??= []).push(() => {
+      data.src.draw(sheet, args)
+    })
+    ;(record[Order.Point] ??= []).push(() => {
+      for (const val of data.vals.filter((x, i, a) => a.indexOf(x) == i)) {
+        if (val != found) {
+          val.target.draw?.(val, false)
+        }
       }
-    }
-    // FIXME: properly show if an existing point is picked
+    })
   },
   hint(data) {
     return Hint.oneOf(

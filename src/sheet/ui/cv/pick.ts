@@ -7,7 +7,12 @@ export interface Picker<T extends {}> {
   id(data: T): number
   toggle(data: T, on: boolean): void
   hint(data: T): Hint | null
-  draw(data: T, item: ItemWithTarget | null, sheet: Sheet): void
+  draw(
+    record: Record<number, (() => void)[]>,
+    data: T,
+    item: ItemWithTarget | null,
+    sheet: Sheet,
+  ): void
   /** `item=null` means it was a cancelled action. */
   take(data: T, item: ItemWithTarget | null, sheet: Sheet): T | null
   /** Suppresses the rendering of a particular item. */
@@ -34,7 +39,6 @@ export class PickHandler2 {
     }
 
     base.take = (item) => {
-      console.log("taking")
       if (!this.picker) return
 
       const next = this.picker.take(this.data!, item, sheet)
@@ -83,8 +87,13 @@ export class PickHandler2 {
     return !!this.picker
   }
 
-  draw(): void {
-    this.picker?.draw(this.data!, this.handler.picked ?? null, this.sheet)
+  draw(record: Record<number, (() => void)[]>): void {
+    this.picker?.draw(
+      record,
+      this.data!,
+      this.handler.picked ?? null,
+      this.sheet,
+    )
   }
 
   set<T extends {}>(picker: Picker<T>, data: T): void {

@@ -4,6 +4,7 @@ import { TY_INFO } from "../eval/ty/info"
 import { CmdValue } from "../field/cmd/leaf/value"
 import { L, R } from "../field/model"
 import type { ItemRef } from "./items"
+import { Order } from "./ui/cv/consts"
 import { Hint } from "./ui/cv/item"
 import type { Picker } from "./ui/cv/pick"
 import type { Expr } from "./ui/expr"
@@ -46,7 +47,7 @@ export const PICK_CURSOR: Picker<Data> = {
 
     sheet.paper.queue()
   },
-  draw(data, found) {
+  draw(record, data, found) {
     if (!found) return
 
     const sel = data.expr.field.sel.clone()
@@ -69,11 +70,13 @@ export const PICK_CURSOR: Picker<Data> = {
 
       try {
         const value = js(ast, data.expr.field.scope.propsJs)
-        const { preview: draw } = TY_INFO[value.type]
+        const { preview: draw, point } = TY_INFO[value.type]
         if (draw) {
-          for (const val of each(value)) {
-            draw(data.expr.sheet.cv, val as never)
-          }
+          ;(record[point ? Order.Point : Order.Graph] ??= []).push(() => {
+            for (const val of each(value)) {
+              draw(data.expr.sheet.cv, val as never)
+            }
+          })
         }
       } catch (e) {
         console.warn(
