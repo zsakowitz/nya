@@ -7,6 +7,7 @@ import { GlslContext } from "../../../eval/lib/fn"
 import type { JsVal, TyName } from "../../../eval/ty"
 import { num, real } from "../../../eval/ty/create"
 import { splitRaw } from "../../../eval/ty/split"
+import type { Block } from "../../../field/model"
 import type { Options } from "../../../field/options"
 import { h, hx, t } from "../../../jsx"
 import type { ToolbarItem } from "../../../pkg"
@@ -20,18 +21,22 @@ import { doMatchReglSize } from "../../regl"
 import { REMARK } from "../../remark"
 import { Slider } from "../../slider"
 import { isDark } from "../../theme"
-import { Paper } from "../paper"
-import { HANDLER_PICK, type PickProps } from "../paper/interact"
+import { Cv } from "../cv"
+import { Order, OrderMajor } from "../cv/consts"
+import { Hint } from "../cv/item"
 import {
-  registerDragHandler,
   registerPinchHandler,
+  registerPointerHandler,
   registerWheelHandler,
-} from "../paper/move"
-import { PickHandler } from "../paper/pick"
+  type Handler,
+  type ItemWithTarget,
+  type VirtualPoint,
+} from "../cv/move"
+import { PickHandler2 } from "../cv/pick"
 import { btn, createDocs, DEFAULT_TO_VISIBLE_DOCS } from "./docs"
 
 export class Sheet {
-  readonly paper = new Paper("absolute inset-0 size-full touch-none")
+  readonly cv = new Cv("absolute inset-0 size-full touch-none")
   readonly scope: Scope
   readonly list = new ItemListGlobal(this)
 
@@ -75,11 +80,23 @@ export class Sheet {
     this.scope = new Scope(options)
 
     // prepare js context
-    registerWheelHandler(this.paper)
-    registerDragHandler(this.paper)
-    registerPinchHandler(this.paper)
-    this.paper.fns.push(() => this.list.draw())
-    this.pick = new PickHandler(this)
+    registerWheelHandler(this.cv)
+    const handler = new SheetHandler(this)
+    const pick = registerPointerHandler(this.cv, handler)
+    this.pick = new PickHandler2(this, pick, handler)
+    registerPinchHandler(this.cv)
+
+    this.cv.fn(OrderMajor.Backdrop, () => {
+      this.list.draw(-Infinity, Order.Backdrop) // backdrop images
+    })
+
+    this.cv.fn(OrderMajor.Canvas, () => {
+      this.list.draw(Order.Grid, Infinity) // canvas items + pick preview
+      pick.picked?.target.draw?.(
+        pick.picked,
+        !!pick.picking?.virtuals.includes(pick.picked as VirtualPoint),
+      ) // currently active virtual point
+    })
 
     // prepare glsl context
     const canvas = hx(
@@ -232,7 +249,7 @@ export class Sheet {
 
     // dom
     this.glPixelRatio.el.className =
-      "block w-48 bg-[--nya-bg] outline outline-[--nya-pixel-ratio] rounded-full p-1"
+      "block w-48 bg-[--nya-bg] outline outline-1 outline-[--nya-pixel-ratio] rounded-full p-1"
     this.el = h(
       "fixed inset-0 grid grid-cols-[min(500px,40vw)_1fr] grid-rows-[3rem_1fr] grid-rows-1 select-none",
 
@@ -243,7 +260,7 @@ export class Sheet {
       h(
         "relative" + (toolbar ? "" : " row-span-2"),
         canvas,
-        this.paper.el,
+        this.cv.el,
         toolbar &&
           h(
             "absolute block top-0 left-0 right-0 h-1 from-[--nya-sidebar-shadow] to-transparent bg-gradient-to-b",
@@ -313,30 +330,34 @@ export class Sheet {
       },
     })
 
+    // TODO: switch to manually rendering frames
     this.regl.frame(() => {
       this.regl.clear({ color: [0, 0, 0, 0] })
 
       const program = this.program
       if (!program) return
 
-      const { xmin, w, ymin, h } = this.paper.bounds()
+      const { xmin, w, ymin, h } = this.cv.bounds()
       global(
         {
+          // TODO: check that all of these work on canvases where buffer width is smaller than canvas width
           u_scale: splitRaw(w / this.regl._gl.drawingBufferWidth),
           u_cx: splitRaw(xmin),
           u_cy: splitRaw(ymin),
           u_px_per_unit: [
-            ...splitRaw(this.paper.width / w),
-            ...splitRaw(this.paper.height / h),
+            ...splitRaw(this.cv.width / w),
+            ...splitRaw(this.cv.height / h),
           ],
           u_unit_per_hpx: [
-            ...splitRaw(1 / this.paper.xPrecision),
-            ...splitRaw(1 / this.paper.yPrecision),
+            ...splitRaw(1 / this.cv.xPrecision),
+            ...splitRaw(1 / this.cv.yPrecision),
           ],
           u_darkmul: isDark() ? [-1, -1, -1, 1] : [1, 1, 1, 1],
           u_darkoffset: isDark() ? [1, 1, 1, 0] : [0, 0, 0, 0],
           u_is_dark: isDark(),
         },
+
+        // this is wrapped because TS errors if you don't wrap it
         () => program(),
       )
     })
@@ -406,29 +427,24 @@ void main() {
     })
     this._qdGlsl = true
   }
-
-  select<const K extends readonly TyName[]>(
-    at: Point,
-    tys: K,
-  ): Selected<K[number]>[] {
-    const o = this.paper.toOffset(at)
-    const rect = this.paper.el.createSVGRect()
-    rect.x = o.x
-    rect.y = o.y
-    rect.width = 0.1
-    rect.height = 0.1
-    const picks = Array.from(
-      this.paper.el.getIntersectionList(rect, this.paper.el),
-    )
-      .reverse()
-      .map((v) => HANDLER_PICK.get(v))
-      .filter((x) => x != null)
-      .filter((x) => tys.includes(x.val().type))
-    return picks.map((x) => ({ ...x, val: x.val() }))
-  }
 }
 
-export interface Selected<K extends TyName = TyName>
-  extends Omit<PickProps<K>, "val" | "focus"> {
+class SheetHandler implements Handler {
+  constructor(readonly sheet: Sheet) {}
+
+  find(at: Point, hint: Hint) {
+    const record: Record<number, ItemWithTarget[]> = Object.create(null)
+    this.sheet.list.find(record, this.sheet.cv.toPaper(at), hint)
+    const items = Object.entries(record)
+      .sort(([a], [b]) => +b - +a)
+      .flatMap((x) => x[1])
+    return hint.pick(this.sheet, at, items)
+  }
+
+  take(_item: ItemWithTarget | null): void {}
+}
+
+export interface Selected<K extends TyName = TyName> {
   val: JsVal<K>
+  ref(): Block
 }

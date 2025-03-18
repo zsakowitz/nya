@@ -2,15 +2,18 @@ import type { GlslResult } from "../eval/lib/fn"
 import { D, L, U, type Dir, type VDir } from "../field/model"
 import { h, t } from "../jsx"
 import type { ItemFactory } from "./item"
+import type { Point } from "./point"
+import type { Hint } from "./ui/cv/item"
+import type { ItemWithTarget } from "./ui/cv/move"
 import type { Sheet } from "./ui/sheet"
 
-export interface ItemCreateProps<U> {
+interface ItemCreateProps<U> {
   at?: number
   focus?: boolean
   from?: NoInfer<U>
 }
 
-export abstract class ItemList {
+abstract class ItemList {
   abstract readonly root: ItemListGlobal
   abstract readonly sheet: Sheet
   abstract readonly parent: ItemRef<unknown> | undefined
@@ -179,17 +182,50 @@ export abstract class ItemList {
     return this.fromStringByFactory(factory, source, props)
   }
 
-  drawWith(suppressed: ItemRef<unknown> | undefined) {
+  drawWith(suppressed: ItemRef<unknown> | undefined, min: number, max: number) {
+    const list: Record<number, ItemRef<unknown>[]> = Object.create(null)
+    const addons: Record<number, (() => void)[]> = Object.create(null)
+    this.createDrawList(list, addons, suppressed, min, max)
+
+    const keys = Object.keys(list)
+      .concat(Object.keys(addons))
+      .filter((x, i, a) => a.indexOf(x) == i)
+      .sort((a, b) => +a - +b)
+
+    for (const k of keys) {
+      if (!(min <= +k && +k <= max)) continue
+
+      for (const ref of list[+k] || []) {
+        const items = ref.factory.plot!.items(ref.data)
+        for (let i = 0; i < items.length; i++) {
+          ref.factory.plot!.draw(ref.data, items[i]!, i)
+        }
+      }
+
+      for (const fn of addons[+k] || []) {
+        fn()
+      }
+    }
+  }
+
+  protected createDrawList(
+    list: Record<number, ItemRef<unknown>[]>,
+    addons: Record<number, (() => void)[]>,
+    suppressed: ItemRef<unknown> | undefined,
+    min: number,
+    max: number,
+  ) {
     for (const ref of this.items) {
       if (ref == suppressed) continue
 
-      try {
-        ref.factory.draw?.(ref.data)
-        if (ref.sublist) {
-          ref.sublist.drawWith(suppressed)
-        }
-      } catch (e) {
-        console.warn("[draw]", e)
+      const order = ref.factory.plot?.order(ref.data)
+
+      if (order != null && min <= order && order <= max) {
+        ;(list[order] ??= []).push(ref)
+      }
+
+      if (ref.sublist) {
+        ref.sublist.createDrawList(list, addons, suppressed, min, max)
       }
     }
   }
@@ -218,6 +254,44 @@ export abstract class ItemList {
       }
     } else {
       return this.fromStringDefault(source)
+    }
+  }
+
+  find(items: Record<number, ItemWithTarget[]>, at: Point, hint: Hint) {
+    // Reverse order is used here since later items come later in draw order and
+    // therefore earlier in interaction order.
+
+    for (let i = this.items.length - 1; i >= 0; i--) {
+      // Exit early if we've found enough solutions; caller is responsible for
+      // providing better hints if they don't like our results.
+      if ((items[hint.maxOrder]?.length ?? 0) >= hint.limit) {
+        return
+      }
+
+      const {
+        factory: { plot },
+        data,
+        sublist,
+      } = this.items[i]!
+
+      const order = plot?.order(data)
+
+      sublist?.find(items, at, hint)
+
+      if (order != null && plot?.target) {
+        const plotItems = plot.items(data)
+        for (let i = plotItems.length - 1; i >= 0; i--) {
+          const item = plotItems[i]!
+          if (plot.target.hits({ data, index: i, item }, at, hint)) {
+            ;(items[order] ??= []).push({
+              target: plot.target,
+              data,
+              item,
+              index: i,
+            })
+          }
+        }
+      }
     }
   }
 }
@@ -259,10 +333,21 @@ export class ItemListGlobal extends ItemList {
     this._qdIndices = true
   }
 
-  draw() {
+  protected createDrawList(
+    list: Record<number, ItemRef<unknown>[]>,
+    addons: Record<number, (() => void)[]>,
+    suppressed: ItemRef<unknown> | undefined,
+    min: number,
+    max: number,
+  ): void {
+    super.createDrawList(list, addons, suppressed, min, max)
+    this.sheet.pick.draw(addons)
+  }
+
+  draw(min: number, max: number) {
     this.sheet.pick.checkSuppressed()
     const s = this.sheet.pick.suppressed
-    this.drawWith(s)
+    this.drawWith(s, min, max)
   }
 
   glsl() {
@@ -272,7 +357,7 @@ export class ItemListGlobal extends ItemList {
   }
 }
 
-export class ItemListLocal<T> extends ItemList {
+class ItemListLocal<T> extends ItemList {
   constructor(readonly parent: ItemRef<T>) {
     super()
   }
@@ -326,7 +411,7 @@ export class ItemRef<T> {
 
     this.root.sheet.queueGlsl()
     this.root.queueIndices()
-    this.root.sheet.paper.queue()
+    this.root.sheet.cv.queue()
   }
 
   index() {

@@ -9,6 +9,7 @@ import type { TyWrite } from "../eval/ty/display"
 import { highRes } from "../eval/ty/info"
 import { abs, add, div, mul, neg, sub } from "../eval/ty/ops"
 import { h } from "../jsx"
+import { Order } from "../sheet/ui/cv/consts"
 import { FN_VALID } from "./bool"
 import { OP_PLOT, plotJs } from "./color-core"
 import {
@@ -578,9 +579,14 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
           },
         },
         write: WRITE_COMPLEX,
+        order: Order.Point,
+        point: true,
         icon() {
           return iconComplex(true)
         },
+        token: null,
+        glide: null,
+        preview: null,
         components: {
           ty: "r64",
           at: [
@@ -596,9 +602,14 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
         garbage: { js: SNANPT, glsl: "vec2(0.0/0.0)" },
         coerce: {},
         write: WRITE_COMPLEX,
+        order: Order.Point,
+        point: true,
         icon() {
           return iconComplex(false)
         },
+        token: null,
+        glide: null,
+        preview: null,
         components: {
           ty: "r32",
           at: [

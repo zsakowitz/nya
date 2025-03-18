@@ -12,9 +12,12 @@ const factory = new SheetFactory(options)
 
 const IS_DEV = "NYA_DEV" in globalThis
 if (!(LOAD_EMPTY && IS_DEV)) {
-  for (const pkg of (await import("../all")).ALL) {
+  for (const pkg of (await import("../all")).allPackages()) {
     factory.load(pkg)
   }
+}
+if (IS_DEV) {
+  setTimeout(async () => (await import("../test")).runTests())
 }
 
 const sheet = factory.create()

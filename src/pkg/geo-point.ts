@@ -1,24 +1,23 @@
 import type { Package } from "."
-import { dragPoint } from "../eval/ast/tx"
+import { dragPoint, type DragResultPoint } from "../eval/ast/tx"
 import type { GlslContext } from "../eval/lib/fn"
 import { FnDist } from "../eval/ops/dist"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "../eval/ops/vars"
-import { each, type JsValue } from "../eval/ty"
+import { each, type JsValue, type SPoint } from "../eval/ty"
 import { approx, frac, num, pt, real, SNANPT, unpt } from "../eval/ty/create"
 import { highRes, TY_INFO, WRITE_POINT, type TyGlide } from "../eval/ty/info"
 import { abs, add, div, mul, neg } from "../eval/ty/ops"
-import { OpEq } from "../field/cmd/leaf/cmp"
-import { CmdDot } from "../field/cmd/leaf/dot"
-import { CmdToken } from "../field/cmd/leaf/token"
 import { CmdVar } from "../field/cmd/leaf/var"
-import { Block, L, R } from "../field/model"
-import { h, sx } from "../jsx"
+import { L, R } from "../field/model"
+import { h } from "../jsx"
 import { defineHideable } from "../sheet/ext/hideable"
 import { definePickTy, PICK_TY, toolbar } from "../sheet/pick-ty"
-import type { Point } from "../sheet/point"
-import type { DrawProps, Paper } from "../sheet/ui/paper"
-import { HANDLER_DRAG, HANDLER_PICK } from "../sheet/ui/paper/interact"
-import type { Sheet } from "../sheet/ui/sheet"
+import { TransitionProp } from "../sheet/transition"
+import type { Cv } from "../sheet/ui/cv"
+import { Color, Opacity, Order, Size } from "../sheet/ui/cv/consts"
+import { FN_GLIDER, FN_INTERSECTION, ref, val } from "../sheet/ui/cv/item"
+import type { Expr } from "../sheet/ui/expr"
+import { Sheet } from "../sheet/ui/sheet"
 import { virtualStepExp, write, Writer } from "../sheet/write"
 import { FN_VALID } from "./bool"
 import { OP_PLOT, plotJs } from "./color-core"
@@ -51,70 +50,17 @@ declare module "../eval/ty" {
   }
 }
 
-export function drawPoint(
-  paper: Paper,
-  props: {
-    at: Point
-    halo?: boolean
-    hover?: boolean
-    cursor?: "auto" | "pointer"
-  } & Omit<DrawProps, "kind">,
-) {
-  const offset = paper.toOffset(props.at)
-  if (!(isFinite(offset.x) && isFinite(offset.y))) return
+const tx = new TransitionProp(4)
 
-  const ghost =
-    props.ghost ? " pointer-events-none"
-    : props.cursor == "pointer" ? " cursor-pointer"
-    : props.cursor == "auto" ? ""
-    : props.drag ? " cursor-move"
-    : ""
-
-  const center = sx("circle", {
-    class:
-      (props.hover ?
-        "transition-[r] group-hover:[r:12] picking-any:group-hover:[r:4]"
-      : "transition-[r]") +
-      (props.ghost ? " pointer-events-none" : "") +
-      " picking-any:opacity-30 picking-point:opacity-100",
-    cx: offset.x,
-    cy: offset.y,
-    r: 4,
-    fill: "#6042a6",
-  })
-
-  if (props.halo || props.drag || props.pick) {
-    paper.append(
-      "point",
-      sx(
-        "g",
-        { class: "group" + ghost },
-        center,
-        sx("circle", {
-          cx: offset.x,
-          cy: offset.y,
-          r: 12,
-          fill: props.halo ? "#6042a659" : "transparent",
-          class: "picking-any:opacity-30 picking-point:opacity-100",
-          drag: props.drag,
-          pick: props.pick,
-        }),
-      ),
-    )
-  } else {
-    if (props.drag) {
-      HANDLER_DRAG.set(center, props.drag)
-    }
-    if (props.pick) {
-      HANDLER_PICK.set(center, props.pick)
-    }
-    paper.append("point", center)
-  }
-
-  return center
-}
-
-const EXT_POINT = defineHideable({
+const EXT_POINT = defineHideable<
+  {
+    value: JsValue<"point32" | "point64" | "c32" | "c64">
+    expr: Expr
+    drag: DragResultPoint | null
+    cv: Cv
+  },
+  SPoint
+>({
   data(expr) {
     const value = expr.js?.value
 
@@ -132,169 +78,131 @@ const EXT_POINT = defineHideable({
     ) {
       return {
         value: value as JsValue<"point32" | "point64" | "c32" | "c64">,
-        paper: expr.sheet.paper,
         expr,
         drag,
+        cv: expr.sheet.cv,
       }
     }
   },
   el(data) {
     return EXT_EVAL.el!(EXT_EVAL.data(data.expr)!)
   },
-  svg(data, paper) {
-    for (const pt of each(data.value)) {
-      const { drag } = data
-      const move =
-        drag &&
-        ((at: Point) => {
-          switch (drag.type) {
-            case "split":
-              if (drag.x) {
-                new Writer(drag.x.span.remove().span()).set(
-                  at.x,
-                  data.paper.xPrecision,
-                  drag.x.signed,
-                )
-                drag.x.field.sel = drag.x.field.block.cursor(R).selection()
-                drag.x.field.queueAstUpdate()
-              }
-
-              if (drag.y) {
-                new Writer(drag.y.span.remove().span()).set(
-                  at.y,
-                  data.paper.yPrecision,
-                  drag.y.signed,
-                )
-                drag.y.field.sel = drag.y.field.block.cursor(R).selection()
-                drag.y.field.queueAstUpdate()
-              }
-
-              break
-            case "complex":
-              {
-                const x = at.x
-                const xp = data.paper.xPrecision
-                const y = at.y
-                const yp = data.paper.yPrecision
-                const cursor = drag.span.remove()
-                write(
-                  cursor,
-                  real(x),
-                  frac(10, 1),
-                  virtualStepExp(xp, 10),
-                  false,
-                )
-                write(
-                  cursor,
-                  real(y),
-                  frac(10, 1),
-                  virtualStepExp(yp, 10),
-                  true,
-                )
-                new CmdVar("i", data.expr.field.options).insertAt(cursor, L)
-                drag.field.sel = drag.field.block.cursor(R).selection()
-                drag.field.queueAstUpdate()
-              }
-              break
-            case "glider":
-              {
-                const { value, precision } = (
-                  TY_INFO[drag.shape.type].glide! as TyGlide<any>
-                )({
-                  paper: data.paper,
-                  point: at,
-                  shape: drag.shape.value,
-                })
-                new Writer(drag.value.span.remove().span()).set(
-                  value,
-                  precision,
-                )
-                drag.value.field.sel = drag.value.field.block
-                  .cursor(R)
-                  .selection()
-                drag.value.field.queueAstUpdate()
-              }
-              break
-          }
-        })
-
-      const center = drawPoint(paper, {
-        at: unpt(pt),
-        halo: !!drag,
-        hover: !!drag,
-        drag: move ? () => move : undefined,
-        pick: {
-          val() {
-            return {
-              type:
-                data.value.type == "c32" ? "point32"
-                : data.value.type == "c64" ? "point64"
-                : data.value.type,
-              value: pt,
+  plot: {
+    order() {
+      return Order.Point
+    },
+    items(data) {
+      return each(data.value)
+    },
+    draw({ drag, cv, expr }, val) {
+      cv.point(unpt(val), tx.get(expr), Color.Purple)
+      if (drag) {
+        cv.point(unpt(val), Size.PointHaloWide, Color.Purple, Opacity.PointHalo)
+      }
+    },
+    target: {
+      hits(data, at, hint) {
+        return (
+          hint.allows(data.data.value.type) &&
+          data.data.cv.hitsPoint(unpt(data.item), at)
+        )
+      },
+      focus(data) {
+        data.expr.focus()
+      },
+      val,
+      ref,
+      toggle(item, on, reason) {
+        switch (reason) {
+          case "drag":
+            if (on) item.data.cv.cursor("grabbing")
+            break
+          case "pick":
+            if (on) {
+              tx.set(item.data.expr, Size.PointHaloThin, true)
+              item.data.cv.cursor("pointer")
+            } else {
+              tx.set(item.data.expr, Size.Point, true)
+              item.data.cv.cursor("default")
             }
-          },
-          ref() {
-            if (data.expr.field.ast.type == "binding") {
-              const block = new Block(null)
-              const cursor = block.cursor(R)
-              CmdVar.leftOf(
-                cursor,
-                data.expr.field.ast.name,
-                data.expr.field.options,
-                data.expr.field.ctx,
+            break
+          case "hover":
+            if (on && item.data.drag) {
+              // TODO: transitions should be per-item
+              tx.set(item.data.expr, Size.PointHaloWide)
+              item.data.cv.cursor("grab")
+            } else if (!on) {
+              tx.set(item.data.expr, Size.Point)
+              item.data.cv.cursor("default")
+            }
+            break
+        }
+      },
+      dragOrigin(target) {
+        if (target.data.drag) {
+          return target.data.cv.toOffset(unpt(target.item))
+        } else {
+          return null
+        }
+      },
+      drag({ data }, at) {
+        const drag = data.drag!
+
+        switch (drag.type) {
+          case "split":
+            if (drag.x) {
+              new Writer(drag.x.span.remove().span()).set(
+                at.x,
+                data.cv.xPrecision,
+                drag.x.signed,
               )
-              if (data.value.type.startsWith("c")) {
-                new CmdDot().insertAt(cursor, L)
-                for (const c of "point") {
-                  new CmdVar(c, data.expr.field.options).insertAt(cursor, L)
-                }
-              }
-              return block
+              drag.x.field.sel = drag.x.field.block.cursor(R).selection()
+              drag.x.field.queueAstUpdate()
             }
 
-            const c = data.expr.field.block.cursor(L)
-            const token = CmdToken.new(data.expr.field.scope.ctx)
-            token.insertAt(c, L)
-            new OpEq(false).insertAt(c, L)
-            data.expr.field.dirtyAst = data.expr.field.dirtyValue = true
-            data.expr.field.trackNameNow()
-            data.expr.field.scope.queueUpdate()
-
-            const block = new Block(null)
-            const cursor = block.cursor(R)
-            token.clone().insertAt(cursor, L)
-            if (data.value.type.startsWith("c")) {
-              new CmdDot().insertAt(cursor, L)
-              for (const c of "point") {
-                new CmdVar(c, data.expr.field.options).insertAt(cursor, L)
-              }
+            if (drag.y) {
+              new Writer(drag.y.span.remove().span()).set(
+                at.y,
+                data.cv.yPrecision,
+                drag.y.signed,
+              )
+              drag.y.field.sel = drag.y.field.block.cursor(R).selection()
+              drag.y.field.queueAstUpdate()
             }
 
-            return block
-          },
-          draw() {
-            center!.style.transition = "none"
-            center!.style.r = "6"
-            center!.parentElement!.style.cursor = "pointer"
-          },
-          focus() {
-            requestAnimationFrame(() => data.expr.focus())
-          },
-        },
-      })
-    }
+            break
+          case "complex": {
+            const x = at.x
+            const xp = data.cv.xPrecision
+            const y = at.y
+            const yp = data.cv.yPrecision
+            const cursor = drag.span.remove()
+            write(cursor, real(x), frac(10, 1), virtualStepExp(xp, 10), false)
+            write(cursor, real(y), frac(10, 1), virtualStepExp(yp, 10), true)
+            new CmdVar("i", data.expr.field.options).insertAt(cursor, L)
+            drag.field.sel = drag.field.block.cursor(R).selection()
+            drag.field.queueAstUpdate()
+            break
+          }
+          case "glider": {
+            const { value, precision } = (
+              TY_INFO[drag.shape.type].glide! as TyGlide<any>
+            )({ cv: data.cv, point: at, shape: drag.shape.value })
+            new Writer(drag.value.span.remove().span()).set(value, precision)
+            drag.value.field.sel = drag.value.field.block.cursor(R).selection()
+            drag.value.field.queueAstUpdate()
+            break
+          }
+        }
+
+        return true
+      },
+    },
   },
 })
 
-export const FN_GLIDER = new FnDist<"point32">(
-  "glider",
-  "constructs a point on an object",
-)
-
-export const FN_INTERSECTION = new FnDist<"point32">(
-  "intersection",
-  "constructs the point where two objects intersect",
-)
+// TODO: directly reference this so pkg/geo-point isn't a requirement
+export { FN_GLIDER, FN_INTERSECTION }
 
 const FN_SCREENDISTANCE = new FnDist<"r32">(
   "screendistance",
@@ -554,8 +462,15 @@ export const PKG_GEO_POINT: Package = {
           },
         },
         write: WRITE_POINT,
+        order: Order.Point,
+        point: true,
         icon() {
           return iconPoint(true)
+        },
+        token: null,
+        glide: null,
+        preview(cv, val) {
+          cv.point(unpt(val), Size.Point, Color.Purple)
         },
         components: {
           ty: "r64",
@@ -563,9 +478,6 @@ export const PKG_GEO_POINT: Package = {
             [(x) => x.x, (x) => `${x}.xy`],
             [(x) => x.y, (x) => `${x}.zw`],
           ],
-        },
-        preview(paper, val) {
-          drawPoint(paper, { at: unpt(val), ghost: true })
         },
       },
       point32: {
@@ -575,8 +487,15 @@ export const PKG_GEO_POINT: Package = {
         garbage: { js: SNANPT, glsl: "vec2(0.0/0.0)" },
         coerce: {},
         write: WRITE_POINT,
+        order: Order.Point,
+        point: true,
         icon() {
           return iconPoint(false)
+        },
+        token: null,
+        glide: null,
+        preview(cv, val) {
+          cv.point(unpt(val), Size.Point, Color.Purple)
         },
         components: {
           ty: "r32",
@@ -584,9 +503,6 @@ export const PKG_GEO_POINT: Package = {
             [(x) => x.x, (x) => `${x}.x`],
             [(x) => x.y, (x) => `${x}.y`],
           ],
-        },
-        preview(paper, val) {
-          drawPoint(paper, { at: unpt(val), ghost: true })
         },
       },
     },

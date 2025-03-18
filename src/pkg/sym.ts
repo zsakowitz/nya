@@ -31,16 +31,16 @@ export const PKG_SYM: Package = {
       sym: {
         name: "symbolic expression",
         namePlural: "symbolic expressions",
-        coerce: {},
+        get glsl(): never {
+          throw new Error("Cannot construct symbolic expressions in shaders.")
+        },
         garbage: {
           js: { type: "undef" },
           get glsl(): never {
             throw new Error("Cannot construct symbolic expressions in shaders.")
           },
         },
-        get glsl(): never {
-          throw new Error("Cannot construct symbolic expressions in shaders.")
-        },
+        coerce: {},
         write: {
           isApprox() {
             return false
@@ -61,6 +61,8 @@ export const PKG_SYM: Package = {
             )
           },
         },
+        order: null,
+        point: false,
         icon() {
           return h(
             "",
@@ -76,6 +78,10 @@ export const PKG_SYM: Package = {
             ),
           )
         },
+        token: null,
+        glide: null,
+        preview: null,
+        components: null,
       },
     },
   },

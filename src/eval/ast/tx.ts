@@ -48,7 +48,7 @@ type DragResult = { span: Span; field: FieldComputed }
 
 type DragResultSigned = DragResult & { signed: boolean }
 
-type DragResultPoint =
+export type DragResultPoint =
   // for when the X and Y coordinates are separate
   | { type: "split"; x: DragResultSigned | null; y: DragResultSigned | null }
   // for when the X and Y coordinates are part of a joint complex number
@@ -143,11 +143,11 @@ export interface TxrMagicVar extends Omit<TxrAst<MagicVar>, "drag"> {
   }
 }
 
-export type TxrSuffixLhs<T> =
+type TxrSuffixLhs<T> =
   | { type: "value"; value: T }
   | { type: "node"; value: Node }
 
-export interface TxrSuffixArgs<T, U> {
+interface TxrSuffixArgs<T, U> {
   lhs: TxrSuffixLhs<U>
   readonly base: U
   rhs: T
@@ -173,7 +173,7 @@ export interface TxrOpBinary extends TxrAst<{ lhs: Node; rhs: Node }> {}
 
 export interface TxrGroup extends Omit<TxrAst<Node>, "deps"> {}
 
-export function group(node: { lhs: ParenLhs; rhs: ParenRhs }) {
+function group(node: { lhs: ParenLhs; rhs: ParenRhs }) {
   const g = TXR_GROUP[`${node.lhs} ${node.rhs}`]
   if (!g) {
     throw new Error(`${node.lhs}...${node.rhs} brackets are not supported yet.`)
@@ -476,9 +476,10 @@ export const TXR_AST: { [K in NodeName]?: TxrAst<Nodes[K]> } = {
 
   // Delegates to `TXR_SUFFIX` so that different packages can specify suffixes
   suffixed: {
-    // FIXME: gliders should still work
     drag: {
       point({ base, suffixes }, props) {
+        // TODO: method chains which lead to gliders (e.g. l1.translate(...).glider(.4)) don't work
+
         if (
           !(
             (suffixes.length == 1 &&

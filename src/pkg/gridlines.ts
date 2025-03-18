@@ -1,7 +1,7 @@
 import type { Package } from "."
-import { hx, sx } from "../jsx"
 import { theme } from "../sheet/theme"
-import type { Paper } from "../sheet/ui/paper"
+import type { Cv } from "../sheet/ui/cv"
+import { OrderMajor } from "../sheet/ui/cv/consts"
 
 const THEME_MAIN_AXIS_WIDTH = 1.5
 const THEME_MAJOR_LINE_ALPHA = 0.3
@@ -21,9 +21,9 @@ const THEME_AXIS_STROKE = () => theme("--nya-paper-screen-line", "black")
 const MAX_GRIDLINES_MAJOR = 200
 const MAX_GRIDLINES_MINOR = MAX_GRIDLINES_MAJOR * 5
 
-function createDrawAxes(paper: Paper) {
-  const cv = hx("canvas")
-  const ctx = cv.getContext("2d")!
+function createDrawAxes(paper: Cv) {
+  const cv = paper.ctx.canvas
+  const ctx = paper.ctx
 
   function scale() {
     return paper.scale
@@ -295,7 +295,6 @@ function createDrawAxes(paper: Paper) {
   }
 
   function drawGridlines() {
-    ctx.clearRect(0, 0, cv.width, cv.height)
     drawGridlinesX()
     drawGridlinesY()
     drawAxisNumbersX()
@@ -303,27 +302,7 @@ function createDrawAxes(paper: Paper) {
     drawAxes()
   }
 
-  const obj = sx(
-    "foreignObject",
-    {
-      x: 0,
-      y: 0,
-      height: 0,
-      width: 0,
-    },
-    cv,
-  )
-
-  paper.claim("grid", obj)
-
-  paper.fns.push(() => {
-    obj.setAttribute("width", "" + paper.width)
-    obj.setAttribute("height", "" + paper.height)
-    cv.width = paper.width * paper.scale
-    cv.height = paper.height * paper.scale
-    cv.className = "fixed top-0 left-0 w-full h-full"
-    drawGridlines()
-  })
+  paper.fn(OrderMajor.Grid, drawGridlines)
 }
 
 export const PKG_GRIDLINES: Package = {
@@ -331,6 +310,6 @@ export const PKG_GRIDLINES: Package = {
   name: "gridlines",
   label: "draws a numbered grid below the graphs",
   init(sheet) {
-    createDrawAxes(sheet.paper)
+    createDrawAxes(sheet.cv)
   },
 }

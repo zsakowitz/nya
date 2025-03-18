@@ -3,17 +3,17 @@ import { FnDist } from "../../../eval/ops/dist"
 import type { GlslVal, JsVal, SPoint } from "../../../eval/ty"
 import { pt } from "../../../eval/ty/create"
 import { add, sub } from "../../../eval/ty/ops"
-import { normSegmentS } from "../../../sheet/ui/paper"
+import { normVectorS } from "../../../sheet/point"
 
 export function bisectAngleJs(
   a: JsVal<"angle" | "directedangle">,
 ): [SPoint, SPoint] {
-  const p1 = normSegmentS(a.value[1], a.value[0])
-  const p3 = normSegmentS(a.value[1], a.value[2])
+  const p1 = normVectorS(a.value[1], a.value[0])
+  const p3 = normVectorS(a.value[1], a.value[2])
 
   return [
     a.value[1],
-    normSegmentS(
+    normVectorS(
       a.value[1],
       pt(
         sub(add(p1.x, p3.x), a.value[1].x),

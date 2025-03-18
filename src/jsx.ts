@@ -1,10 +1,3 @@
-import {
-  HANDLER_DRAG,
-  HANDLER_PICK,
-  type DragProps,
-  type PickProps,
-} from "./sheet/ui/paper/interact"
-
 export const U_ZERO_WIDTH_SPACE = "\u200B"
 
 export function h(
@@ -186,8 +179,6 @@ interface SVGProps {
 
 interface SVGPropsGlobal {
   class?: string
-  drag?: DragProps
-  pick?: PickProps
 }
 
 type SVGClassOnlyElements = {
@@ -217,12 +208,6 @@ export function sx(
   if (typeof cl == "string") {
     el.setAttribute("class", cl)
   } else if (cl) {
-    if (cl.drag) {
-      HANDLER_DRAG.set(el, cl.drag)
-    }
-    if (cl.pick) {
-      HANDLER_PICK.set(el, cl.pick)
-    }
     for (const key in cl) {
       if (
         cl[key] != null &&

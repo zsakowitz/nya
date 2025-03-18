@@ -210,6 +210,8 @@ export const PKG_COLOR_CORE: Package = {
             )
           },
         },
+        order: null,
+        point: false,
         icon() {
           function make(clsx: string) {
             return h(
@@ -246,6 +248,9 @@ export const PKG_COLOR_CORE: Package = {
             ),
           )
         },
+        token: null,
+        glide: null,
+        preview: null,
         components: {
           ty: "r32",
           at: [

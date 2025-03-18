@@ -42,8 +42,6 @@ to do list for features is:
 ❌ construction menu
 ❌ dependent geometry objects can be dragged
 ❌ slider variables infer bounds based on usage (glider, rgb, hsv)
-❌ angle bisector picker
-❌ perpendicular bisector picker
 ❌ folders
 ❌ normal images
 ❌ tokens for parallel, glider, intersection, bisectors
@@ -54,6 +52,8 @@ to do list for features is:
 😐 100% compatible piecewise functions (lists are weird)
 ✅ grabbing objects previews the result
 ✅ functions
+✅ angle bisector picker
+✅ perpendicular bisector picker
 
 to do list for non-desmos stuff is:
 ❌ streaming video, audio, images, files
@@ -62,6 +62,9 @@ to do list for non-desmos stuff is:
 ❌ colors in display p3
 ❌ fractal explorer package
 ❌ tetration
+❌ slope field
+❌ editable text boxes
+❌ collaborative editing
 
 to do list for 110% compatiability is:
 ❌ trigAngleMultiplier
@@ -83,3 +86,6 @@ to do list for 110% compatiability is:
 ❌ nthroot(x, y)
 ❌ logbase(x, y)
 ❌ factorial(x)
+
+immediate
+FIXME: consistent shapes for Picker, TY_INFO, Package, and Ext

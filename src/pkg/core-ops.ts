@@ -7,7 +7,6 @@ import { parseNumberJs } from "../eval/lib/base"
 import { BindingFn, id, name, tryName } from "../eval/lib/binding"
 import type { GlslContext } from "../eval/lib/fn"
 import { subscript } from "../eval/lib/text"
-import { safe } from "../eval/lib/util"
 import { FnDist } from "../eval/ops/dist"
 import { declareR64 } from "../eval/ops/r64"
 import { VARS } from "../eval/ops/vars"
@@ -23,8 +22,6 @@ import {
   unary,
   type Sym,
 } from "../eval/sym"
-import { each, type GlslValue, type JsValue } from "../eval/ty"
-import { canCoerce, coerceTyJs } from "../eval/ty/coerce"
 import { frac, num, real } from "../eval/ty/create"
 import { add, div } from "../eval/ty/ops"
 import { splitValue } from "../eval/ty/split"
@@ -154,65 +151,6 @@ export function abs64(ctx: GlslContext, x: string) {
   return `_helper_abs_r64(${x})`
 }
 
-export function invalidFnSup(): never {
-  throw new Error(
-    "Only -1 and positive integers are allowed as function superscripts.",
-  )
-}
-
-export function fnExponentJs(raw: JsValue): JsValue<"r32"> {
-  if (!canCoerce(raw.type, "r32")) {
-    invalidFnSup()
-  }
-
-  const value = coerceTyJs(raw, "r32")
-  for (const valRaw of each(value)) {
-    const val = num(valRaw)
-    if (!(safe(val) && 1 < val)) {
-      invalidFnSup()
-    }
-  }
-
-  return value
-}
-
-export function fnExponentGlsl(
-  ctx: GlslContext,
-  raw: JsValue,
-): GlslValue<"r64"> {
-  if (!canCoerce(raw.type, "r32")) {
-    invalidFnSup()
-  }
-
-  const value = coerceTyJs(raw, "r32")
-  for (const valRaw of each(value)) {
-    const val = num(valRaw)
-    if (!(safe(val) && 1 < val)) {
-      invalidFnSup()
-    }
-  }
-
-  if (value.list === false) {
-    return {
-      type: "r64",
-      list: false,
-      expr: `vec2(${num(value.value)}, 0)`,
-    }
-  }
-
-  const expr = ctx.name()
-  ctx.push`vec2 ${expr}[${value.list}];\n`
-  for (let i = 0; i < value.list; i++) {
-    ctx.push`${expr}[${i}] = vec2(${num(value.value[i]!)}, 0);\n`
-  }
-
-  return {
-    type: "r64",
-    list: value.list,
-    expr,
-  }
-}
-
 export function declareCmpR64(ctx: GlslContext) {
   ctx.glsl`
 float _helper_cmp_r64(vec2 a, vec2 b) {
@@ -252,8 +190,8 @@ export const OP_CDOT: FnDist = new FnDist(
     type: "call",
     fn: OP_ADD,
     args: [
-      { type: "call", fn: OP_CDOT, args: [a, txr(b).deriv(b, wrt)] },
-      { type: "call", fn: OP_CDOT, args: [b, txr(a).deriv(a, wrt)] },
+      { type: "call", fn: OP_JUXTAPOSE, args: [a, txr(b).deriv(b, wrt)] },
+      { type: "call", fn: OP_JUXTAPOSE, args: [b, txr(a).deriv(a, wrt)] },
     ],
   })),
 )
@@ -276,7 +214,28 @@ export const OP_JUXTAPOSE = OP_CDOT.with(
   "juxtapose",
   "multiplies two values which aren't separated by an operator",
   "Cannot juxtapose %%.",
-  binaryFn(() => new Block(null), Precedence.Juxtaposition),
+  ([a, b, c]) => {
+    if (!(a && b && !c)) return
+    const block = new Block(null)
+    const cursor = block.cursor(R)
+    insertStrict(
+      cursor,
+      txr(a).display(a),
+      Precedence.Juxtaposition,
+      Precedence.Juxtaposition,
+    )
+    insert(
+      cursor,
+      txr(b).display(b),
+      Precedence.Juxtaposition,
+      Precedence.Juxtaposition,
+    )
+    return {
+      block,
+      lhs: Precedence.Juxtaposition,
+      rhs: Precedence.Juxtaposition,
+    }
+  },
 )
 
 export const OP_MOD = new FnDist(
@@ -339,17 +298,24 @@ export const OP_RAISE: FnDist = new FnDist(
       // f(x)^n --> f'(x) * nf^(n-1)
       return {
         type: "call",
-        fn: OP_CDOT,
+        fn: OP_JUXTAPOSE,
         args: [
           {
             type: "call",
-            fn: OP_CDOT,
+            fn: OP_JUXTAPOSE,
             args: [txr(a).deriv(a, wrt), b],
           },
           {
             type: "call",
             fn: OP_RAISE,
-            args: [a, SYM_1],
+            args: [
+              a,
+              {
+                type: "call",
+                fn: OP_SUB,
+                args: [b, SYM_1],
+              },
+            ],
           },
         ],
       }
@@ -357,11 +323,11 @@ export const OP_RAISE: FnDist = new FnDist(
       // a^f = f' * a^f * ln a
       return {
         type: "call",
-        fn: OP_CDOT,
+        fn: OP_JUXTAPOSE,
         args: [
           {
             type: "call",
-            fn: OP_CDOT,
+            fn: OP_JUXTAPOSE,
             args: [
               txr(b).deriv(b, wrt),
               { type: "call", fn: FN_LN, args: [a] },
@@ -378,7 +344,7 @@ export const OP_RAISE: FnDist = new FnDist(
       // d/dx(f(x)^g(x)) = f^(g - 1) (g f' + f ln(f) g')
       return {
         type: "call",
-        fn: OP_CDOT,
+        fn: OP_JUXTAPOSE,
         args: [
           {
             type: "call",
@@ -391,16 +357,20 @@ export const OP_RAISE: FnDist = new FnDist(
             type: "call",
             fn: OP_ADD,
             args: [
-              { type: "call", fn: OP_CDOT, args: [b, txr(a).deriv(a, wrt)] },
+              {
+                type: "call",
+                fn: OP_JUXTAPOSE,
+                args: [b, txr(a).deriv(a, wrt)],
+              },
 
               // f ln(f) g'
               {
                 type: "call",
-                fn: OP_CDOT,
+                fn: OP_JUXTAPOSE,
                 args: [
                   {
                     type: "call",
-                    fn: OP_CDOT,
+                    fn: OP_JUXTAPOSE,
                     args: [a, { type: "call", fn: FN_LN, args: [a] }],
                   },
                   txr(b).deriv(b, wrt),
@@ -972,5 +942,5 @@ export const PKG_CORE_OPS: Package = {
 }
 
 export function chain(f: Sym, wrt: string, ddx: Sym): Sym {
-  return { type: "call", fn: OP_CDOT, args: [txr(f).deriv(f, wrt), ddx] }
+  return { type: "call", fn: OP_JUXTAPOSE, args: [txr(f).deriv(f, wrt), ddx] }
 }

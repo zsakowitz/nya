@@ -28,22 +28,24 @@ export abstract class Op extends Leaf {
     }
   }
 
+  static render(html: string) {
+    return h("nya-cmd-op", h("px-[.2em] inline-block", html))
+  }
+
   constructor(
     readonly ctrlSeq: string,
     html: string,
+    el = Op.render(html),
   ) {
-    super(
-      ctrlSeq,
-      h("nya-cmd-op", h("px-[.2em] inline-block cursor-text", html)),
-    )
+    super(ctrlSeq, el)
   }
 
   setHtml(html: string) {
-    this.setEl(h("nya-cmd-op", h("px-[.2em] inline-block cursor-text", html)))
+    this.setEl(Op.render(html))
   }
 }
 
-abstract class OpPm extends Leaf {
+abstract class OpPm extends Op {
   static exitSupSub(cursor: Cursor, { options }: InitProps) {
     if (
       (options.exitSubWithOp &&
@@ -69,7 +71,7 @@ abstract class OpPm extends Leaf {
     readonly ctrlSeq: string,
     html: string,
   ) {
-    super(ctrlSeq, OpPm.render(html))
+    super(ctrlSeq, html, OpPm.render(html))
   }
 
   setHtml(html: string) {

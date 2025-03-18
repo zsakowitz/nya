@@ -4,11 +4,13 @@ import {
 } from "@fortawesome/free-solid-svg-icons"
 import type { GlslResult } from "../eval/lib/fn"
 import { LatexParser } from "../field/latex"
-import { L, R, U, type VDir } from "../field/model"
+import { Block, L, R, U, type VDir } from "../field/model"
 import type { ItemRef } from "./items"
-import { Expr } from "./ui/expr"
+import type { Plottable } from "./ui/cv/item"
+import type { ItemData } from "./ui/cv/move"
+import { Expr, type ExprStateOk } from "./ui/expr"
 
-export interface ItemFactory<T, U = unknown> {
+export interface ItemFactory<T, U = unknown, V = unknown> {
   id: string
   name: string
   icon: IconDefinition
@@ -18,8 +20,7 @@ export interface ItemFactory<T, U = unknown> {
   init(ref: ItemRef<T>, source: string | undefined, from: U | undefined): T
   aside?(data: T): Node
   main(data: T): Node
-
-  draw?(data: T): void
+  plot?: Plottable<T, V>
   glsl?(data: T): GlslResult | undefined
   unlink(data: T): void
   /** `from` is only `null` immediately after creation. */
@@ -35,13 +36,23 @@ export interface ItemFactory<T, U = unknown> {
 
 export type AnyItemFactory = ItemFactory<unknown>
 
-export const FACTORY_EXPR: ItemFactory<Expr, { geo?: boolean }> = {
+type K = { readonly __unique_id: unique symbol }
+
+function local(data: ItemData<Expr<K>, unknown>): ItemData<K> {
+  return {
+    data: (data.data.state as ExprStateOk<K>).data!,
+    index: data.index,
+    item: data.item,
+  }
+}
+
+export const FACTORY_EXPR: ItemFactory<Expr<K>, { geo?: boolean }> = {
   id: "nya:expr",
   name: "field",
   icon: faSquareRootVariable,
 
-  init(ref, source, props) {
-    const expr = new Expr(ref.root.sheet, ref, !!props?.geo)
+  init(ref, source) {
+    const expr = new Expr(ref.root.sheet, ref)
     if (source) {
       expr.field.onBeforeChange()
       const block = new LatexParser(
@@ -54,7 +65,7 @@ export const FACTORY_EXPR: ItemFactory<Expr, { geo?: boolean }> = {
       expr.field.sel = expr.field.block.cursor(R).selection()
       expr.field.onAfterChange(false)
     }
-    return expr
+    return expr as Expr<K>
   },
   aside(data) {
     return data.aside
@@ -62,10 +73,57 @@ export const FACTORY_EXPR: ItemFactory<Expr, { geo?: boolean }> = {
   main(data) {
     return data.main
   },
-  draw(expr) {
-    if (expr.state.ok && expr.state.ext?.svg) {
-      expr.state.ext.svg(expr.state.data, expr.sheet.paper)
-    }
+  plot: {
+    order(data) {
+      if (data.state.ok && data.state.ext?.plot) {
+        return data.state.ext.plot.order(data.state.data)
+      }
+
+      return null
+    },
+    items(data) {
+      return data.state.ext?.plot?.items(data.state.data) ?? []
+    },
+    draw(data, item, index) {
+      // This cast is safe since it wouldn't be called unless `items` returned.
+      const state = data.state as ExprStateOk<K>
+      state.ext!.plot!.draw(state.data!, item, index)
+    },
+    target: {
+      hits(data, at, hint) {
+        const state = data.data.state as ExprStateOk<K>
+        return !!state.ext!.plot!.target?.hits(local(data), at, hint)
+      },
+      focus(data) {
+        const state = data.state as ExprStateOk<K>
+        state.ext?.plot?.target?.focus(state.data!)
+      },
+      toggle(item, on, reason) {
+        const state = item.data.state as ExprStateOk<K>
+        state.ext?.plot?.target!.toggle(local(item), on, reason)
+      },
+      ref(item) {
+        const state = item.data.state as ExprStateOk<K>
+        return state.ext?.plot?.target!.ref(local(item)) ?? new Block(null)
+      },
+      val(item) {
+        const state = item.data.state as ExprStateOk<K>
+        return (
+          state.ext?.plot?.target!.val(local(item)) ?? {
+            type: "never",
+            value: "__never",
+          }
+        )
+      },
+      dragOrigin(item) {
+        const state = item.data.state as ExprStateOk<K>
+        return state.ext?.plot?.target!.dragOrigin?.(local(item)) ?? null
+      },
+      drag(item, at) {
+        const state = item.data.state as ExprStateOk<K>
+        return state.ext?.plot?.target!.drag!(local(item), at)
+      },
+    },
   },
   glsl(data) {
     return data.glsl

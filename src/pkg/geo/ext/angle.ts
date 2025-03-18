@@ -5,23 +5,22 @@ import {
   type GlslVal,
   type JsVal,
   type JsValue,
+  type SPoint,
 } from "../../../eval/ty"
 import { real, unpt } from "../../../eval/ty/create"
 import { Display } from "../../../eval/ty/display"
 import { R } from "../../../field/model"
-import { sx } from "../../../jsx"
+import { Prop } from "../../../sheet/ext"
 import { defineHideable } from "../../../sheet/ext/hideable"
-import type { Point } from "../../../sheet/point"
-import {
-  normSegment,
-  type DrawLineProps,
-  type Paper,
-} from "../../../sheet/ui/paper"
+import { normVector, type Point } from "../../../sheet/point"
+import type { Cv } from "../../../sheet/ui/cv"
+import { Color, Opacity, Order, Size } from "../../../sheet/ui/cv/consts"
+import { ref, val } from "../../../sheet/ui/cv/item"
+import type { Expr } from "../../../sheet/ui/expr"
 import { STORE_EVAL } from "../../eval"
-import { pick } from "./util"
 
-const LINE = 32
-const ARC = 20
+const LINE = Size.AngleGuideLength
+const ARC = Size.AngleArcDistance
 
 export function angleJs({ value, type }: JsVal<"angle" | "directedangle">) {
   const p0 = unpt(value[0])
@@ -77,15 +76,14 @@ float _helper_directedangle(mat3x2 a) {
   return `_helper_${type}(${expr})`
 }
 
-export function drawAngle(
-  paper: Paper,
+export function drawAngleCv(
+  cv: Cv,
   p1: Point,
   p2: Point,
   p3: Point,
-  props: Pick<DrawLineProps, "drag" | "pick" | "ghost"> & {
-    draft?: boolean
-    kind: "angle" | "directedangle"
-  },
+  props: { kind: "angle" | "directedangle" },
+  size: number = Size.Line,
+  alpha = 1,
 ) {
   const measure =
     (Math.atan2(p1.x - p2.x, p1.y - p2.y) -
@@ -95,33 +93,13 @@ export function drawAngle(
 
   const swap = measure > Math.PI
 
-  const o1 = paper.toOffset(p1)
-  const o2 = paper.toOffset(p2)
-  const o3 = paper.toOffset(p3)
-  const s1 = normSegment(o2, o1, LINE)
-  const s3 = normSegment(o2, o3, LINE)
-  const a1 = normSegment(o2, o1, ARC)
-  const a3 = normSegment(o2, o3, ARC)
-
-  paper.addClass("angleline", "opacity-[50%]")
-  for (const s of [s1, s3]) {
-    paper.append(
-      "angleline",
-      sx("line", {
-        x1: o2.x,
-        y1: o2.y,
-        x2: s.x,
-        y2: s.y,
-        "stroke-width": 1.5,
-        stroke: "var(--nya-angle)",
-        "stroke-linecap": "round",
-        class:
-          props.ghost ? "pointer-events-none"
-          : props?.draft ? ""
-          : "picking-any:opacity-30 picking-angle:opacity-100",
-      }),
-    )
-  }
+  const o1 = cv.toCanvas(p1)
+  const o2 = cv.toCanvas(p2)
+  const o3 = cv.toCanvas(p3)
+  const s1 = normVector(o2, o1, cv.scale * LINE)
+  const s3 = normVector(o2, o3, cv.scale * LINE)
+  const a1 = normVector(o2, o1, cv.scale * ARC)
+  const a3 = normVector(o2, o3, cv.scale * ARC)
 
   const src = swap ? a3 : a1
   const dst = swap ? a1 : a3
@@ -132,22 +110,27 @@ export function drawAngle(
       Math.abs((measure % Math.PI) - Math.PI / 2) < 9e-7
     ) ?
       `M ${src.x} ${src.y} L ${a1.x + a3.x - o2.x} ${a1.y + a3.y - o2.y} L ${dst.x} ${dst.y}`
-    : `M ${src.x} ${src.y} A ${ARC} ${ARC} 0 0 0 ${dst.x} ${dst.y}`
+    : `M ${src.x} ${src.y} A ${cv.scale * ARC} ${cv.scale * ARC} 0 0 0 ${dst.x} ${dst.y}`
 
   let d = plainPath
 
   if (props.kind == "directedangle") {
-    const size = Math.max(
-      4,
-      Math.min(
-        8,
-        ((measure > Math.PI ? 2 * Math.PI - measure : measure) * ARC) / 2,
-      ),
-    )
+    const size =
+      cv.scale *
+      Math.max(
+        Size.DirectedAngleMinHeadSize,
+        Math.min(
+          Size.DirectedAngleMaxHeadSize,
+          ((measure > Math.PI ? 2 * Math.PI - measure : measure) * ARC) / 2,
+        ),
+      )
 
     // source: https://www.desmos.com/geometry/e4uy7yykhv
     // rotates the triangle so the center of the back edge is on the angle's arc
-    const adj = 0.0323385 * size - 0.00388757
+    const adj = Math.min(
+      Math.atan(Size.VectorWidthRatio),
+      0.0323385 * (size / cv.scale) - 0.00388757,
+    )
 
     const tilt = swap ? -adj : Math.PI + adj
     const dx1 = Math.cos(tilt) * (a3.y - o2.y) + Math.sin(tilt) * (a3.x - o2.x)
@@ -159,68 +142,74 @@ export function drawAngle(
     const ny = (size * dy) / Math.hypot(dx, dy)
     const ox = a3.x - nx
     const oy = a3.y - ny
-    const w = 0.4
+    const w = Size.VectorWidthRatio
 
     d += ` M ${a3.x} ${a3.y} L ${ox + w * ny} ${oy - w * nx} L ${ox - w * ny} ${oy + w * nx} Z`
   }
 
-  const g = sx(
-    "g",
-    props.ghost ? "pointer-events-none"
-    : props?.draft ? ""
-    : "picking-any:opacity-30 picking-angle:opacity-100",
-    sx("path", {
-      d,
-      "stroke-width": 3,
-      stroke: "var(--nya-angle)",
-      "stroke-linecap": "round",
-      "stroke-linejoin": "round",
-    }),
-  )
+  cv.path(new Path2D(d), size, Color.Angle, alpha)
 
   if (props.kind == "angle") {
-    g.appendChild(
-      sx("path", {
-        d: `${plainPath} L ${o2.x} ${o2.y} Z`,
-        fill: "var(--nya-angle)",
-        "fill-opacity": 0.3,
-      }),
+    cv.path(
+      new Path2D(`${plainPath} L ${o2.x} ${o2.y} Z`),
+      size,
+      Color.Angle,
+      0,
+      0.3,
     )
   }
 
-  if (props.drag || props.pick) {
-    const ring = sx("path", {
-      d,
-      "stroke-width": 8,
-      stroke: "transparent",
-      "stroke-opacity": 0x60 / 0xff,
-      "stroke-linecap": "round",
-      "stroke-linejoin": "round",
-    })
-    const target = sx("path", {
-      d: d + ` L ${o2.x} ${o2.y}`,
-      "stroke-width": 12,
-      stroke: "transparent",
-      fill: "transparent",
-      "stroke-linecap": "round",
-      "stroke-linejoin": "round",
-      drag: props.drag,
-      pick: props.pick && {
-        ...props.pick,
-        draw() {
-          ring.setAttribute("stroke", "var(--nya-angle)")
-          target.classList.add("cursor-pointer")
-        },
-      },
-    })
-    g.appendChild(ring)
-    g.appendChild(target)
+  for (const s of [s1, s3]) {
+    cv.polygonByCanvas([o2, s], Size.AngleGuide, Color.Angle, Opacity.AngleLine)
   }
-
-  paper.append("anglearc", g)
 }
 
-export const EXT_ANGLE = defineHideable({
+function anglePath(
+  cv: Cv,
+  p1: Point,
+  p2: Point,
+  p3: Point,
+  props: { kind: "angle" | "directedangle" },
+) {
+  const measure =
+    (Math.atan2(p1.x - p2.x, p1.y - p2.y) -
+      Math.atan2(p3.x - p2.x, p3.y - p2.y) +
+      2 * Math.PI) %
+    (2 * Math.PI)
+
+  const swap = measure > Math.PI
+
+  const o1 = cv.toCanvas(p1)
+  const o2 = cv.toCanvas(p2)
+  const o3 = cv.toCanvas(p3)
+  const a1 = normVector(o2, o1, cv.scale * ARC)
+  const a3 = normVector(o2, o3, cv.scale * ARC)
+
+  const src = swap ? a3 : a1
+  const dst = swap ? a1 : a3
+
+  const d =
+    (
+      props.kind == "angle" &&
+      Math.abs((measure % Math.PI) - Math.PI / 2) < 9e-7
+    ) ?
+      `M ${src.x} ${src.y} L ${a1.x + a3.x - o2.x} ${a1.y + a3.y - o2.y} L ${dst.x} ${dst.y}`
+    : `M ${src.x} ${src.y} A ${cv.scale * ARC} ${cv.scale * ARC} 0 0 0 ${dst.x} ${dst.y}`
+
+  return new Path2D(d)
+}
+
+const picked = new Prop<boolean[]>(() => [])
+
+export const EXT_ANGLE = defineHideable<
+  {
+    value: JsValue<"angle" | "directedangle">
+    expr: Expr
+    el: HTMLSpanElement
+    picked: boolean[]
+  },
+  [SPoint, SPoint, SPoint]
+>({
   data(expr) {
     const raw = expr.js?.value
 
@@ -234,16 +223,63 @@ export const EXT_ANGLE = defineHideable({
         map(value, "r32", (val) => angleJs({ value: val, type: value.type })),
       )
 
-      return { value, expr, el }
+      return { value, expr, el, picked: picked.get(expr) }
     }
   },
-  svg(data, paper) {
-    for (const val of each(data.value)) {
-      drawAngle(paper, unpt(val[0]), unpt(val[1]), unpt(val[2]), {
-        kind: data.value.type,
-        pick: pick(val, data, data.expr.field.ctx),
-      })
-    }
+  plot: {
+    order() {
+      return Order.Graph
+    },
+    items(data) {
+      return each(data.value)
+    },
+    draw(data, val, index) {
+      drawAngleCv(
+        data.expr.sheet.cv,
+        unpt(val[0]),
+        unpt(val[1]),
+        unpt(val[2]),
+        { kind: data.value.type },
+      )
+      if (data.picked[index]) {
+        drawAngleCv(
+          data.expr.sheet.cv,
+          unpt(val[0]),
+          unpt(val[1]),
+          unpt(val[2]),
+          { kind: data.value.type },
+          Size.LineRing,
+          Opacity.Pick,
+        )
+      }
+    },
+    target: {
+      hits(target, at, hint) {
+        if (!hint.allows(target.data.value.type)) return false
+        return target.data.expr.sheet.cv.hits(
+          at,
+          anglePath(
+            target.data.expr.sheet.cv,
+            unpt(target.item[0]),
+            unpt(target.item[1]),
+            unpt(target.item[2]),
+            { kind: target.data.value.type },
+          ),
+        )
+      },
+      focus(data) {
+        data.expr.focus()
+      },
+      val,
+      ref,
+      toggle(item, on, reason) {
+        if (reason == "pick") {
+          item.data.expr.sheet.cv.cursor(on ? "pointer" : "default")
+          picked.get(item.data.expr)[item.index] = on
+          item.data.expr.sheet.cv.queue()
+        }
+      },
+    },
   },
   el(data) {
     return data.el

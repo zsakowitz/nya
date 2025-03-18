@@ -111,7 +111,7 @@ function parseNumberGlslVal(text: string, base: SReal): string {
   if (value == -1 / 0) {
     return `vec2(-1.0/0.0, 0)`
   }
-  if (value == 0 / 0) {
+  if (value !== value) {
     return `vec2(0.0/0.0)`
   }
   return splitValue(value).expr

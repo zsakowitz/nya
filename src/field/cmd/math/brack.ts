@@ -14,6 +14,7 @@ import {
   type Selection,
 } from "../../model"
 import { CmdComma } from "../leaf/comma"
+import { CmdNum } from "../leaf/num"
 import { CmdUnknown } from "../leaf/unknown"
 
 export const BRACKS = {
@@ -156,10 +157,10 @@ export type ParenLhs = "(" | "[" | "{" | "|" | "¡"
 export type ParenRhs = ")" | "]" | "}" | "|" | "!"
 type ParenAny = ParenLhs | ParenRhs
 
-export function matchParen(x: ParenLhs): ParenRhs
-export function matchParen(x: ParenRhs): ParenLhs
-export function matchParen(x: ParenAny): ParenAny
-export function matchParen(x: ParenAny) {
+function matchParen(x: ParenLhs): ParenRhs
+function matchParen(x: ParenRhs): ParenLhs
+function matchParen(x: ParenAny): ParenAny
+function matchParen(x: ParenAny) {
   return {
     "(": ")",
     "[": "]",
@@ -183,6 +184,16 @@ function is(brack: string, dir: Dir) {
 }
 
 export class CmdBrack extends Command<[Block]> {
+  static index(index: number) {
+    const inner = new Block(null)
+    const brack = new CmdBrack("[", "]", null, inner)
+    const cursor = inner.cursor(R)
+    for (const digit of BigInt(index).toString()) {
+      new CmdNum(digit).insertAt(cursor, L)
+    }
+    return brack
+  }
+
   static init(cursor: Cursor, { input }: InitProps) {
     if (!cursor.parent) return
 

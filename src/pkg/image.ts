@@ -49,13 +49,16 @@ const registry = new FinalizationRegistry<string>((url) => {
 })
 
 class ImageData {
-  constructor(readonly url: string) {
+  constructor(
+    readonly url: string,
+    readonly data: ImageBitmap | null,
+  ) {
     counts.set(url, (counts.get(url) ?? 0) + 1)
     registry.register(this, url)
   }
 }
 
-export class CmdImgRaw extends Leaf {
+class CmdImgRaw extends Leaf {
   constructor(public data: Val<"image">) {
     super("", h(""))
   }
@@ -167,6 +170,15 @@ const FACTORY: ItemFactory<Data> = {
       "hidden absolute size-full inset-0 object-cover blur",
     )
     const img2 = hx("img", "hidden absolute size-full inset-0 object-contain")
+    img2.addEventListener("load", () => {
+      const id = ++bitmapId
+      createImageBitmap(img2).then((bitmap_) => {
+        if (id == bitmapId) {
+          bitmap = bitmap_
+          update()
+        }
+      })
+    })
 
     const output = new FieldComputed(ref.root.sheet.scope)
 
@@ -192,8 +204,8 @@ const FACTORY: ItemFactory<Data> = {
       ),
     }
 
-    let natWidth = 0
-    let natHeight = 0
+    let bitmapId = 0
+    let bitmap: ImageBitmap | null = null
 
     function update() {
       output.onBeforeChange()
@@ -202,12 +214,14 @@ const FACTORY: ItemFactory<Data> = {
       token.clone().insertAt(cursor, L)
       new OpEq(false).insertAt(cursor, L)
       new CmdImgRaw({
-        src: data.url ? new ImageData(data.url) : null,
-        height: natHeight,
-        width: natWidth,
+        src: data.url && bitmap ? new ImageData(data.url, bitmap) : null,
+        height: bitmap?.height ?? 0,
+        width: bitmap?.width ?? 0,
       }).insertAt(cursor, L)
       output.onAfterChange(false)
       output.queueAstUpdate()
+      // TODO: figure out why we have to queue manually; shouldn't it happen automatically?
+      ref.root.sheet.cv.queue()
     }
 
     function check() {
@@ -221,12 +235,6 @@ const FACTORY: ItemFactory<Data> = {
 
     check()
     update()
-
-    img2.onload = () => {
-      natWidth = img2.naturalWidth
-      natHeight = img2.naturalHeight
-      update()
-    }
 
     field.addEventListener("copy", (event) => {
       event.preventDefault()
@@ -243,19 +251,15 @@ const FACTORY: ItemFactory<Data> = {
       field.value = ""
       if (!file) return
 
-      const prev = data.url
       const next = URL.createObjectURL(file)
       data.url = next
       img1.src = img2.src = next
+      bitmap = null
       none.classList.add("hidden")
       img1.classList.remove("hidden")
       img1.classList.add("block")
       img2.classList.remove("hidden")
       img2.classList.add("block")
-
-      if (prev) {
-        URL.revokeObjectURL(prev)
-      }
 
       check()
     })
@@ -293,17 +297,17 @@ const FACTORY: ItemFactory<Data> = {
   },
 }
 
-export const FN_IMGWIDTH = new FnDist(
+const FN_IMGWIDTH = new FnDist(
   "imgwidth",
   "gets the natural width of an image",
 ).add(["image"], "r32", (a) => real(a.value.width), glsl)
 
-export const FN_IMGHEIGHT = new FnDist(
+const FN_IMGHEIGHT = new FnDist(
   "imgheight",
   "gets the natural height of an image",
 ).add(["image"], "r32", (a) => real(a.value.height), glsl)
 
-export const FN_IMGASPECT = new FnDist(
+const FN_IMGASPECT = new FnDist(
   "imgaspect",
   "gets the preferred aspect ratio of an image",
 ).add(["image"], "r32", (a) => frac(a.value.width, a.value.height), glsl)
@@ -317,7 +321,9 @@ export const PKG_IMAGE: Package = {
       image: {
         name: "image file",
         namePlural: "image files",
-        coerce: {},
+        get glsl(): never {
+          return glsl()
+        },
         garbage: {
           js: {
             src: null,
@@ -328,9 +334,7 @@ export const PKG_IMAGE: Package = {
             return glsl()
           },
         },
-        get glsl(): never {
-          return glsl()
-        },
+        coerce: {},
         write: {
           display(value, props) {
             if (value.src) {
@@ -343,6 +347,8 @@ export const PKG_IMAGE: Package = {
             return false
           },
         },
+        order: null,
+        point: false,
         icon() {
           return h(
             "",
@@ -377,6 +383,9 @@ export const PKG_IMAGE: Package = {
             ),
           )
         },
+        glide: null,
+        preview: null,
+        components: null,
       },
     },
   },

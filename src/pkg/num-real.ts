@@ -273,6 +273,12 @@ export const FN_SIGN = new FnDist(
     (_, a) => `sign(${a.expr})`,
   )
 
+const FN_SGN = FN_SIGN.with(
+  "sgn",
+  "gets the sign of a number",
+  "Cannot find the sign of %%.",
+)
+
 export const FN_LOG10 = new FnDist(
   "log",
   "takes the base-10 logarithm of a value",
@@ -284,7 +290,8 @@ export const FN_LOG10 = new FnDist(
   (_, a) => `(log(${a.expr}) / log(10.0))`,
 )
 
-export const FN_LOGB = new FnDist(
+// TODO: implement for complex nums
+const FN_LOGB = new FnDist(
   "log with subscript",
   "takes the logarithm of a value in some base",
   "Cannot take the logarithm of %%.",
@@ -553,9 +560,15 @@ float _helper_cmp_r32(float a, float b) {
           },
         },
         write: WRITE_REAL,
+        order: null,
+        point: false,
         icon() {
           return iconReal(true)
         },
+        token: null,
+        glide: null,
+        preview: null,
+        components: null,
       },
       r32: {
         name: "real number",
@@ -564,9 +577,15 @@ float _helper_cmp_r32(float a, float b) {
         garbage: { js: real(NaN), glsl: "(0.0/0.0)" },
         coerce: {},
         write: WRITE_REAL,
+        order: null,
+        point: false,
         icon() {
           return iconReal(false)
         },
+        token: null,
+        glide: null,
+        preview: null,
+        components: null,
       },
     },
     coerce: {
@@ -593,6 +612,7 @@ float _helper_cmp_r32(float a, float b) {
   eval: {
     fn: {
       sign: FN_SIGN,
+      sgn: FN_SGN,
       ln: FN_LN,
       log: FN_LOG10,
       log_: FN_LOGB,

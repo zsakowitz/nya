@@ -1,9 +1,9 @@
 import type { GlslHelpers, GlslResult } from "../../eval/lib/fn"
+import type { Plottable } from "../ui/cv/item"
 import type { Expr } from "../ui/expr"
-import type { Paper } from "../ui/paper"
 
-/** An extension to an expression in the sheet interface. */
-export interface Ext<T extends {}> {
+/** A possible result of a math expression. */
+export interface Ext<T extends {}, U> {
   /**
    * Attempts to use this extension on a {@linkcode Expr}. May result in:
    *
@@ -16,15 +16,14 @@ export interface Ext<T extends {}> {
   destroy?(data: NoInfer<T>): void
   aside?(data: NoInfer<T>): HTMLElement | undefined
   el?(data: NoInfer<T>): HTMLElement | undefined
-  svg?(data: NoInfer<T>, paper: Paper): void
-
-  // TODO: remove plotGl as a special-cased function; it should be delegated to 'shader'
-  plotGl?(data: NoInfer<T>, helpers: GlslHelpers): GlslResult | undefined
+  plot?: Plottable<T, U>
+  // TODO: glsl should be moved to shader plugin
+  glsl?(data: NoInfer<T>, helpers: GlslHelpers): GlslResult | undefined
 }
 
-export type AnyExt = Ext<{}>
+export type AnyExt = Ext<{}, unknown>
 
-export function defineExt<T extends {}>(ext: Ext<T>) {
+export function defineExt<T extends {}, U>(ext: Ext<T, U>) {
   return ext
 }
 
@@ -49,9 +48,9 @@ export class Exts {
  * auto-initialization designed specifically for {@linkcode Expr}.
  */
 export class Store<T extends {}, U extends WeakKey = Expr> {
-  data = new WeakMap<U, T>()
+  private data = new WeakMap<U, T>()
 
-  constructor(readonly init: (key: U) => T) {}
+  constructor(private readonly init: (key: U) => T) {}
 
   get(key: U) {
     const data = this.data.get(key)
@@ -79,7 +78,7 @@ export class Prop<T> {
       set(v: T) {
         if (value != v) {
           value = v
-          expr.sheet.paper.queue()
+          expr.sheet.cv.queue()
         }
       },
     }

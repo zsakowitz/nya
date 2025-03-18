@@ -2,7 +2,7 @@ import type { Val } from "../../eval/ty"
 import { NANPT, unpt } from "../../eval/ty/create"
 import { gliderOnLine } from "../../eval/ty/info"
 import type { Point } from "../../sheet/point"
-import type { Paper } from "../../sheet/ui/paper"
+import { Cv } from "../../sheet/ui/cv"
 import { getRayBounds } from "./ext/ray"
 import { intersectLineLineJs } from "./fn/intersection"
 
@@ -38,7 +38,7 @@ export type Arc =
       large: boolean
     }
 
-export function computeArc(p1: Point, p2: Point, p3: Point): Arc {
+function computeArc(p1: Point, p2: Point, p3: Point): Arc {
   const { x: x1, y: y1 } = p1
   const { x: x2, y: y2 } = p2
   const { x: x3, y: y3 } = p3
@@ -119,34 +119,34 @@ export type ArcPath =
   | { type: "segment"; p1: Point; p3: Point }
   | { type: "tworay"; r1: [Point, Point] | null; r3: [Point, Point] | null }
 
-export function arcPath(paper: Paper, arc: Arc): ArcPath {
+export function arcPath(cv: Cv, arc: Arc): ArcPath {
   switch (arc.type) {
     case "invalid":
       return { type: "invalid" }
     case "segment":
       return {
         type: "segment",
-        p1: paper.toOffset(arc.p1),
-        p3: paper.toOffset(arc.p3),
+        p1: cv.toCanvas(arc.p1),
+        p3: cv.toCanvas(arc.p3),
       }
     case "tworay":
       return {
         type: "tworay",
-        r1: getRayBounds(paper, arc.p1, {
+        r1: getRayBounds(cv, arc.p1, {
           x: 2 * arc.p1.x - arc.p3.x,
           y: 2 * arc.p1.y - arc.p3.y,
         }),
-        r3: getRayBounds(paper, arc.p3, {
+        r3: getRayBounds(cv, arc.p3, {
           x: 2 * arc.p3.x - arc.p1.x,
           y: 2 * arc.p3.y - arc.p1.y,
         }),
       }
     case "circle":
-      const delta = paper.toOffsetDelta({ x: arc.r, y: arc.r })
+      const delta = cv.toCanvasDelta({ x: arc.r, y: arc.r })
       return {
         type: "circle",
-        p1: paper.toOffset(arc.p1),
-        p3: paper.toOffset(arc.p3),
+        p1: cv.toCanvas(arc.p1),
+        p3: cv.toCanvas(arc.p3),
         r: delta,
         flags: `${+arc.large} ${+arc.swap}`,
       }
@@ -177,21 +177,26 @@ export function glideArc(arc: Arc, at: number): Point {
   }
 }
 
-export function unglideArc(paper: Paper, arc: Arc, at: Point) {
+export function unglideArc(cv: Cv, arc: Arc, at: Point) {
   if (arc.type == "invalid") {
     return { value: 0, precision: 1 }
   }
 
   if (arc.type == "circle") {
     const a = Math.atan2(at.y - arc.c.y, at.x - arc.c.x)
-    const t = (a - arc.a1) / (arc.a3 - arc.a1)
+    const t1 = (a - arc.a1) / (arc.a3 - arc.a1)
+    const t2 = (a - 2 * Math.PI - arc.a1) / (arc.a3 - arc.a1)
+    const t3 = (a + 2 * Math.PI - arc.a1) / (arc.a3 - arc.a1)
     return {
-      value: Math.max(0, Math.min(1, t)),
-      precision: 2 * Math.PI * paper.offsetDistance(at, arc.c),
+      value:
+        0 <= t3 && t3 <= 1 ? t3
+        : 0 <= t2 && t2 <= 1 ? t2
+        : Math.max(0, Math.min(1, t1)),
+      precision: 2 * Math.PI * cv.offsetDistance(at, arc.c),
     }
   }
 
-  const { value: t, precision } = gliderOnLine(paper, [arc.p1, arc.p3], at)
+  const { value: t, precision } = gliderOnLine(cv, [arc.p1, arc.p3], at)
   return {
     value:
       arc.type == "tworay" ?
@@ -205,7 +210,7 @@ export function unglideArc(paper: Paper, arc: Arc, at: Point) {
   }
 }
 
-export function crArc(
+function crArc(
   { x: x1, y: y1 }: Point,
   { x: x2, y: y2 }: Point,
   { x: x3, y: y3 }: Point,

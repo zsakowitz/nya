@@ -1,11 +1,11 @@
-import type { JsValue, SPoint, TyComponents, TyName, Tys } from "."
+import type { SPoint, TyComponents, TyName, Tys } from "."
 import { CmdComma } from "../../field/cmd/leaf/comma"
 import { CmdWord } from "../../field/cmd/leaf/word"
 import { CmdBrack } from "../../field/cmd/math/brack"
 import { Block, L, R } from "../../field/model"
 import { h, path, svgx } from "../../jsx"
 import type { Point } from "../../sheet/point"
-import type { Paper } from "../../sheet/ui/paper"
+import type { Cv } from "../../sheet/ui/cv"
 import type { GlslContext } from "../lib/fn"
 import type { TyWrite } from "./display"
 
@@ -21,11 +21,13 @@ export interface TyInfo<T, U extends TyName> {
   garbage: TyGarbage<T>
   coerce: TyCoerceMap<T>
   write: TyWrite<T>
+  order: number | null
+  point: boolean
   icon(): HTMLSpanElement
-  token?(val: T): HTMLSpanElement | null
-  preview?(paper: Paper, val: T): void
-  glide?: TyGlide<T>
-  components?: TyComponentInfo<T, U>
+  token: ((val: T) => HTMLSpanElement | null) | null
+  glide: TyGlide<T> | null
+  preview: ((cv: Cv, val: T) => void) | null
+  components: TyComponentInfo<T, U> | null
 }
 
 export type TyInfoByName<T extends TyName> = TyInfo<Tys[T], TyComponents[T]>
@@ -44,7 +46,7 @@ interface TyComponentInfo<T, U extends TyName> {
 interface GlideProps<T> {
   shape: T
   point: Point
-  paper: Paper
+  cv: Cv
 }
 
 export type TyCoerceMap<T> = {
@@ -75,7 +77,7 @@ export const WRITE_POINT: TyWrite<SPoint> = {
 }
 
 export function gliderOnLine(
-  paper: Paper,
+  cv: Cv,
   [p1, p2]: [Point, Point],
   { x, y }: Point,
 ) {
@@ -90,7 +92,7 @@ export function gliderOnLine(
 
   return {
     value: a / C,
-    precision: paper.offsetDistance(p1, p2),
+    precision: cv.offsetDistance(p1, p2),
   }
 }
 
@@ -128,11 +130,11 @@ export const TY_INFO: TyInfoMap = Object.create(null) as any
 TY_INFO.never = {
   name: "empty value",
   namePlural: "empty values",
+  glsl: "bool",
   garbage: {
     js: "__never",
     glsl: "false",
   },
-  glsl: "bool",
   coerce: new Proxy<TyCoerceMap<never>>(
     {},
     {
@@ -179,6 +181,8 @@ TY_INFO.never = {
       new CmdWord("undefined").insertAt(props.cursor, L)
     },
   },
+  order: null,
+  point: false,
   icon() {
     return h(
       "",
@@ -193,6 +197,10 @@ TY_INFO.never = {
       ),
     )
   },
+  token: null,
+  glide: null,
+  preview: null,
+  components: null,
 }
 
 export function tidyCoercions() {
@@ -228,10 +236,4 @@ export function tidyCoercions() {
       }
     }
   }
-}
-
-export function token(value: JsValue) {
-  const info = TY_INFO[value.type] as TyInfo<unknown, TyName>
-
-  return (value.list === false && info.token?.(value.value)) || info.icon()
 }

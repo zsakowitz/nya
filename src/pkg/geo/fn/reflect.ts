@@ -24,11 +24,7 @@ export function reflectJs(by: ReflectionJs, target: SPoint) {
   )
 }
 
-export function reflectGlsl(
-  ctx: GlslContext,
-  by: ReflectionGlsl,
-  target: string,
-) {
+function reflectGlsl(ctx: GlslContext, by: ReflectionGlsl, target: string) {
   throw new Error("Cannot call 'reflect' in shaders yet.")
 
   ctx.glsl`vec2 _helper_reflect(vec3 by, vec2 target) {

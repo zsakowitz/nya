@@ -1,26 +1,7 @@
-import { each, type JsValue } from "../../../eval/ty"
-import { unpt } from "../../../eval/ty/create"
-import { defineHideable } from "../../../sheet/ext/hideable"
-import { segmentByPaper } from "../../../sheet/ui/paper"
-import { pick } from "./util"
+import { createLineLikeExt } from "./line-like"
 
-export const EXT_SEGMENT = defineHideable({
-  data(expr) {
-    const value = expr.js?.value
-
-    if (value && value.type == "segment") {
-      return {
-        value: value as JsValue<"segment">,
-        expr,
-      }
-    }
-  },
-  svg(data, paper) {
-    for (const val of each(data.value)) {
-      segmentByPaper(paper, unpt(val[0]), unpt(val[1]), {
-        pick: pick(val, data, data.expr.field.ctx),
-        kind: "segment",
-      })
-    }
-  },
+export const EXT_SEGMENT = createLineLikeExt("segment", (cv, p1, p2) => {
+  const o1 = cv.toCanvas(p1)
+  const o2 = cv.toCanvas(p2)
+  return new Path2D(`M ${o1.x} ${o1.y} L ${o2.x} ${o2.y}`)
 })

@@ -1,0 +1,3 @@
+\operatorname{ray}\left(\left(0,a\right),\left(1,1\right)\right)
+\operatorname{ray}\left(\left(0,0\right),\left(-1,0\right)\right)
+a=0.122

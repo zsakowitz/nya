@@ -108,7 +108,7 @@ function parseIterate(
         from = parseFrom(contents.b)
         if (from.type == "list") {
           const ids = Object.create(null)
-          for (const [id, _, name] of from.values) {
+          for (const [id, , name] of from.values) {
             if (id in ids) {
               throw new Error(
                 `Variable ${name} is specified twice in 'from' clause.`,
@@ -142,7 +142,7 @@ function parseIterate(
   }
 
   const ids = Object.create(null)
-  for (const [id, _, name] of bindings) {
+  for (const [id, , name] of bindings) {
     if (props.source != "withseq" && id in ids) {
       throw new Error(
         `Cannot update ${name} twice. Maybe you meant 'withseq iterate'?`,
@@ -152,7 +152,7 @@ function parseIterate(
   }
 
   if (from?.type == "list") {
-    for (const [id, _, name] of from.values) {
+    for (const [id, , name] of from.values) {
       if (!(id in ids)) {
         throw new Error(
           `Variable ${name} in 'from' clause must be updated in 'iterate' clause.`,

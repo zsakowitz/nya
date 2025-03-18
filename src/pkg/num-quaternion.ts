@@ -181,6 +181,8 @@ export const PKG_NUM_QUATERNION: Package = {
             ])
           },
         },
+        order: null,
+        point: false,
         icon() {
           return h(
             "",
@@ -196,6 +198,9 @@ export const PKG_NUM_QUATERNION: Package = {
             ),
           )
         },
+        token: null,
+        glide: null,
+        preview: null,
         components: {
           ty: "r32",
           at: [

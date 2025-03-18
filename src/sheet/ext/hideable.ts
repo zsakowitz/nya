@@ -41,14 +41,14 @@ const CHECKBOX = new Store((expr) => {
     show = v
     circEmpty.classList.toggle("hidden", !v)
     circShader.classList.toggle("hidden", v)
-    expr.sheet.paper.queue()
+    expr.sheet.cv.queue()
   }
 })
 
-export function defineHideable<T extends WeakKey>(
-  ext: Omit<Ext<T>, "aside">,
-): Ext<T> {
-  const { svg } = ext
+export function defineHideable<T extends WeakKey, U>(
+  ext: Omit<Ext<T, U>, "aside">,
+): Ext<T, U> {
+  const { plot } = ext
   const map = new WeakMap<T, Expr>()
 
   return {
@@ -66,10 +66,28 @@ export function defineHideable<T extends WeakKey>(
         return CHECKBOX.get(expr).el
       }
     },
-    svg(data, paper) {
-      if (!CHECKBOX.get(map.get(data)!).show) {
-        svg?.(data, paper)
-      }
+    plot: plot && {
+      order: plot.order,
+      items(data) {
+        return plot.items(data)
+      },
+      draw(data, item, index) {
+        const expr = map.get(data)
+        if (expr && !CHECKBOX.get(expr).show) {
+          plot.draw(data, item, index)
+        }
+      },
+      target: plot.target && {
+        ...plot.target,
+        hits(target, at, hint) {
+          const expr = map.get(target.data)
+          return (
+            expr != null &&
+            !CHECKBOX.get(expr).show &&
+            plot.target!.hits(target, at, hint)
+          )
+        },
+      },
     },
   }
 }

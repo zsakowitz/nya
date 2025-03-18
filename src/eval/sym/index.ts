@@ -1,3 +1,5 @@
+import { CmdNum } from "../../field/cmd/leaf/num"
+import { Op } from "../../field/cmd/leaf/op"
 import type { WordKind } from "../../field/cmd/leaf/var"
 import { CmdBrack } from "../../field/cmd/math/brack"
 import { Block, L, R, type Command, type Cursor } from "../../field/model"
@@ -6,7 +8,7 @@ import type { DerivFn, DisplayFn } from "../ops/dist-manual"
 import type { JsValue } from "../ty"
 import { real } from "../ty/create"
 
-export interface SymVarSource {
+interface SymVarSource {
   name: string
   kind: Exclude<WordKind, "magicprefix"> | undefined
   italic: boolean
@@ -61,7 +63,11 @@ export function insert(
   lhs: number,
   rhs: number,
 ) {
-  if (result.lhs <= lhs || result.rhs <= rhs) {
+  if (
+    result.lhs <= lhs ||
+    result.rhs <= rhs ||
+    (at[L] && !(at[L] instanceof Op) && result.block.ends[L] instanceof CmdNum)
+  ) {
     new CmdBrack("(", ")", null, result.block).insertAt(at, L)
   } else {
     result.block.insertAt(at, L)
@@ -75,7 +81,11 @@ export function insertStrict(
   lhs: number,
   rhs: number,
 ) {
-  if (result.lhs < lhs || result.rhs < rhs) {
+  if (
+    result.lhs < lhs ||
+    result.rhs < rhs ||
+    (at[L] && !(at[L] instanceof Op) && result.block.ends[L] instanceof CmdNum)
+  ) {
     new CmdBrack("(", ")", null, result.block).insertAt(at, L)
   } else {
     result.block.insertAt(at, L)
@@ -98,7 +108,7 @@ export function binaryFn(op: () => Command | Block, prec: number): DisplayFn {
     if (!(a && b && !c)) return
     const block = new Block(null)
     const cursor = block.cursor(R)
-    insert(cursor, txr(a).display(a), prec, prec)
+    insertStrict(cursor, txr(a).display(a), prec, prec)
     op().insertAt(cursor, L)
     insert(cursor, txr(b).display(b), prec, prec)
     return { block, lhs: prec, rhs: prec }

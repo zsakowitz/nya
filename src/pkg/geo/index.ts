@@ -10,7 +10,6 @@ import {
 import { OpEq } from "../../field/cmd/leaf/cmp"
 import { CmdComma } from "../../field/cmd/leaf/comma"
 import { CmdDot } from "../../field/cmd/leaf/dot"
-import { CmdNum } from "../../field/cmd/leaf/num"
 import { CmdToken, createToken } from "../../field/cmd/leaf/token"
 import { CmdVar } from "../../field/cmd/leaf/var"
 import { CmdWord } from "../../field/cmd/leaf/word"
@@ -18,26 +17,21 @@ import { CmdBrack } from "../../field/cmd/math/brack"
 import { Block, L, R } from "../../field/model"
 import { h, path, svgx, sx } from "../../jsx"
 import { PICK_TY, definePickTy, toolbar, type Data } from "../../sheet/pick-ty"
-import type { Point } from "../../sheet/point"
+import { normVector, type Point } from "../../sheet/point"
+import { Color, Opacity, Order, Size } from "../../sheet/ui/cv/consts"
 import { Expr } from "../../sheet/ui/expr"
-import { normSegment, segmentByPaper } from "../../sheet/ui/paper"
 import type { Selected } from "../../sheet/ui/sheet"
-import {
-  FN_GLIDER,
-  FN_INTERSECTION,
-  PKG_GEO_POINT,
-  drawPoint,
-} from "../geo-point"
+import { FN_GLIDER, FN_INTERSECTION, PKG_GEO_POINT } from "../geo-point"
 import { PKG_REAL } from "../num-real"
 import { computeArcVal, unglideArc } from "./arc"
-import { EXT_ANGLE, angleGlsl, angleJs, drawAngle } from "./ext/angle"
-import { EXT_ARC, drawArc } from "./ext/arc"
-import { EXT_CIRCLE, drawCircle } from "./ext/circle"
-import { EXT_LINE, drawLine } from "./ext/line"
-import { EXT_POLYGON, drawPolygon } from "./ext/polygon"
-import { EXT_RAY, drawRay } from "./ext/ray"
+import { EXT_ANGLE, angleGlsl, angleJs, drawAngleCv } from "./ext/angle"
+import { EXT_ARC, drawArcCv } from "./ext/arc"
+import { EXT_CIRCLE } from "./ext/circle"
+import { EXT_LINE, getLineBounds } from "./ext/line"
+import { EXT_POLYGON } from "./ext/polygon"
+import { EXT_RAY, getRayBounds } from "./ext/ray"
 import { EXT_SEGMENT } from "./ext/segment"
-import { EXT_VECTOR, drawVector } from "./ext/vector"
+import { EXT_VECTOR } from "./ext/vector"
 import { FN_ANGLE, FN_DIRECTEDANGLE } from "./fn/angle"
 import { FN_ANGLEBISECTOR, bisectAngleJs } from "./fn/anglebisector"
 import { FN_ANGLES, FN_DIRECTEDANGLES } from "./fn/angles"
@@ -67,6 +61,7 @@ import { FN_START } from "./fn/start"
 import { FN_TRANSLATE } from "./fn/translate"
 import { FN_VECTOR } from "./fn/vector"
 import { FN_VERTICES } from "./fn/vertices"
+import { vectorPath } from "./vector"
 
 declare module "../../eval/ty" {
   interface Tys {
@@ -121,6 +116,8 @@ function lineInfo<T extends "segment" | "ray" | "line" | "vector">(
         WRITE_POINT.display(value[1], inner)
       },
     },
+    order: Order.Graph,
+    point: false,
     icon:
       typeof clsx == "function" ? clsx : (
         () =>
@@ -142,7 +139,7 @@ function lineInfo<T extends "segment" | "ray" | "line" | "vector">(
       glide ?
         (props) => {
           const raw = gliderOnLine(
-            props.paper,
+            props.cv,
             [unpt(props.shape[0]), unpt(props.shape[1])],
             props.point,
           )
@@ -152,34 +149,31 @@ function lineInfo<T extends "segment" | "ray" | "line" | "vector">(
             precision: raw.precision,
           }
         }
-      : undefined,
-    preview(paper, val) {
+      : null,
+    preview(cv, val) {
       switch (name) {
-        case "segment":
-          segmentByPaper(paper, unpt(val[0]), unpt(val[1]), {
-            kind: "segment",
-            ghost: true,
-          })
+        case "segment": {
+          cv.polygon(val.map(unpt), Size.Line, Color.Blue)
           break
-        case "ray":
-          drawRay(paper, unpt(val[0]), unpt(val[1]), {
-            kind: "ray",
-            ghost: true,
-          })
+        }
+        case "ray": {
+          const bounds = getRayBounds(cv, unpt(val[0]), unpt(val[1]))
+          if (bounds) cv.polygonByCanvas(bounds, Size.Line, Color.Blue)
           break
-        case "line":
-          drawLine(paper, unpt(val[0]), unpt(val[1]), {
-            kind: "line",
-            ghost: true,
-          })
+        }
+        case "line": {
+          const bounds = getLineBounds(cv, unpt(val[0]), unpt(val[1]))
+          if (bounds) cv.polygonByCanvas(bounds, Size.Line, Color.Blue)
           break
-        case "vector":
-          drawVector(paper, unpt(val[0]), unpt(val[1]), {
-            ghost: true,
-          })
+        }
+        case "vector": {
+          const path = vectorPath(cv, unpt(val[0]), unpt(val[1]))
+          if (path) cv.path(new Path2D(path), Size.Line, Color.Blue, 1, 1)
           break
+        }
       }
     },
+    components: null,
   }
 }
 
@@ -191,7 +185,8 @@ const PICK_LINE = definePickTy(
   ],
   (sheet, p1, p2) => {
     if (p1 && p2) {
-      drawLine(sheet.paper, unpt(p1.value), unpt(p2.value), { ghost: true })
+      const bounds = getLineBounds(sheet.cv, unpt(p1.value), unpt(p2.value))
+      sheet.cv.polygonByCanvas(bounds, Size.Line, Color.Blue)
     }
   },
 )
@@ -204,9 +199,7 @@ const PICK_SEGMENT = definePickTy(
   ],
   (sheet, p1, p2) => {
     if (p1 && p2) {
-      segmentByPaper(sheet.paper, unpt(p1.value), unpt(p2.value), {
-        ghost: true,
-      })
+      sheet.cv.polygon([unpt(p1.value), unpt(p2.value)], Size.Line, Color.Blue)
     }
   },
 )
@@ -219,10 +212,8 @@ const PICK_RAY = definePickTy(
   ],
   (sheet, p1, p2) => {
     if (p1 && p2) {
-      drawRay(sheet.paper, unpt(p1.value), unpt(p2.value), {
-        ghost: true,
-        kind: "ray",
-      })
+      const bounds = getRayBounds(sheet.cv, unpt(p1.value), unpt(p2.value))
+      if (bounds) sheet.cv.polygonByCanvas(bounds, Size.Line, Color.Blue)
     }
   },
 )
@@ -235,9 +226,9 @@ const PICK_VECTOR = definePickTy(
   ],
   (sheet, p1, p2) => {
     if (p1 && p2) {
-      drawVector(sheet.paper, unpt(p1.value), unpt(p2.value), {
-        ghost: true,
-      })
+      const { cv } = sheet
+      const d = vectorPath(cv, unpt(p1.value), unpt(p2.value))
+      if (d) cv.path(new Path2D(d), Size.Line, Color.Blue, 1, 1)
     }
   },
 )
@@ -252,12 +243,12 @@ const PICK_CIRCLE = definePickTy(
     if (p1 && p2) {
       const center = unpt(p1.value)
       const edge = unpt(p2.value)
-      drawCircle(sheet.paper, {
-        at: center,
-        r: Math.hypot(center.x - edge.x, center.y - edge.y),
-        ghost: true,
-        kind: "circle",
-      })
+      sheet.cv.circle(
+        center,
+        Math.hypot(center.x - edge.x, center.y - edge.y),
+        Size.Line,
+        Color.Green,
+      )
     }
   },
 )
@@ -271,11 +262,8 @@ const PICK_ARC = definePickTy(
   ],
   (sheet, p1, p2, p3) => {
     if (p1 && p2 && p3) {
-      drawArc(sheet.paper, {
-        arc: computeArcVal([p1.value, p2.value, p3.value]),
-        ghost: true,
-        kind: "arc",
-      })
+      const arc = computeArcVal([p1.value, p2.value, p3.value])
+      drawArcCv(sheet.cv, arc)
     }
   },
 )
@@ -289,7 +277,8 @@ const PICK_PERPENDICULAR = definePickTy(
   (sheet, p1, p2) => {
     if (p1 && p2) {
       const line = perpendicularJs(p1, p2)
-      drawLine(sheet.paper, unpt(line[0]), unpt(line[1]), { ghost: true })
+      const bounds = getLineBounds(sheet.cv, unpt(line[0]), unpt(line[1]))
+      sheet.cv.polygonByCanvas(bounds, Size.Line, Color.Blue)
     }
   },
 )
@@ -303,7 +292,8 @@ const PICK_PARALLEL = definePickTy(
   (sheet, p1, p2) => {
     if (p1 && p2) {
       const line = parallelJs(p1, p2)
-      drawLine(sheet.paper, unpt(line[0]), unpt(line[1]), { ghost: true })
+      const bounds = getLineBounds(sheet.cv, unpt(line[0]), unpt(line[1]))
+      sheet.cv.polygonByCanvas(bounds, Size.Line, Color.Blue)
     }
   },
 )
@@ -343,14 +333,12 @@ function createPick(type: "angle" | "directedangle"): Data {
             const prev = a.value[(i + a.value.length - 1) % a.value.length]!
             const self = a.value[i]!
             const next = a.value[(i + 1) % a.value.length]!
-            drawAngle(sheet.paper, unpt(prev), unpt(self), unpt(next), {
-              draft: true,
+            drawAngleCv(sheet.cv, unpt(prev), unpt(self), unpt(next), {
               kind: type,
             })
           }
         } else if (a && b && c) {
-          drawAngle(sheet.paper, unpt(a.value), unpt(b.value), unpt(c.value), {
-            draft: true,
+          drawAngleCv(sheet.cv, unpt(a.value), unpt(b.value), unpt(c.value), {
             kind: type,
           })
         }
@@ -379,15 +367,7 @@ function createPick(type: "angle" | "directedangle"): Data {
           for (const c of type + "s") {
             new CmdVar(c, sheet.options).insertAt(cursor, L)
           }
-
-          const index = new Block(null)
-          new CmdBrack("[", "]", null, index).insertAt(cursor, L)
-          {
-            const cursor = index.cursor(R)
-            for (const char of BigInt(i + 1).toString()) {
-              new CmdNum(char).insertAt(cursor, L)
-            }
-          }
+          CmdBrack.index(i + 1).insertAt(cursor, L)
 
           expr.field.dirtyAst = expr.field.dirtyValue = true
           expr.field.trackNameNow()
@@ -432,10 +412,11 @@ const PICK_MIDPOINT: Data = {
         return
       }
 
-      drawPoint(sheet.paper, {
-        at: { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 },
-        ghost: true,
-      })
+      sheet.cv.point(
+        { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 },
+        Size.Point,
+        Color.Purple,
+      )
     },
   },
 }
@@ -466,10 +447,13 @@ const PICK_POLYGON: Data = {
 
       const pts = args as JsVal<"point32" | "point64">[]
 
-      drawPolygon(
-        sheet.paper,
+      sheet.cv.polygon(
         pts.map((x) => unpt(x.value)),
-        { closed: false, ghost: true },
+        Size.Line,
+        Color.Blue,
+        1,
+        0.3,
+        false,
       )
     },
   },
@@ -663,6 +647,8 @@ const INFO_CIRCLE: TyInfoByName<"circle"> = {
       inner.num(value.radius)
     },
   },
+  order: Order.Graph,
+  point: false,
   icon() {
     return h(
       "",
@@ -677,6 +663,7 @@ const INFO_CIRCLE: TyInfoByName<"circle"> = {
       ),
     )
   },
+  token: null,
   glide(props) {
     const x = num(props.shape.center.x)
     const y = num(props.shape.center.y)
@@ -685,18 +672,14 @@ const INFO_CIRCLE: TyInfoByName<"circle"> = {
         0
       : Math.atan2(props.point.y - y, props.point.x - x)
     return {
-      precision:
-        2 * Math.PI * props.paper.offsetDistance(props.point, { x, y }),
+      precision: 2 * Math.PI * props.cv.offsetDistance(props.point, { x, y }),
       value: angle / 2 / Math.PI,
     }
   },
-  preview(paper, val) {
-    drawCircle(paper, {
-      at: unpt(val.center),
-      r: num(val.radius),
-      ghost: true,
-    })
+  preview(cv, val) {
+    cv.circle(unpt(val.center), num(val.radius), Size.Line, Color.Green)
   },
+  components: null,
 }
 
 const INFO_POLYGON: TyInfoByName<"polygon"> = {
@@ -738,6 +721,8 @@ const INFO_POLYGON: TyInfoByName<"polygon"> = {
       }
     },
   },
+  order: Order.Graph,
+  point: false,
   icon() {
     return h(
       "",
@@ -764,17 +749,21 @@ const INFO_POLYGON: TyInfoByName<"polygon"> = {
     const pts = val.map(unpt)
     return createToken(
       "#388c46",
-      path(
-        `M ${pts[0]!.x} ${-pts[0]!.y}${pts.slice(1).map((pt) => ` L ${pt.x} ${-pt.y}`)} Z`,
+      sx(
+        "g",
+        { fill: "currentcolor", "fill-opacity": Opacity.TokenFill },
+        path(
+          `M ${pts[0]!.x} ${-pts[0]!.y}${pts.slice(1).map((pt) => ` L ${pt.x} ${-pt.y}`)} Z`,
+        ),
       ),
     )
   },
-  preview(paper, val) {
-    drawPolygon(paper, val.map(unpt), {
-      closed: false,
-      ghost: true,
-    })
+  // TODO: polygons can have perimeter gliders
+  glide: null,
+  preview(cv, val) {
+    cv.polygon(val.map(unpt), Size.Line, Color.Blue, 1, 0.3, false)
   },
+  components: null,
 }
 
 const INFO_ARC: TyInfoByName<"arc"> = {
@@ -802,6 +791,8 @@ const INFO_ARC: TyInfoByName<"arc"> = {
       WRITE_POINT.display(value[2], inner)
     },
   },
+  order: Order.Graph,
+  point: false,
   icon() {
     return h(
       "",
@@ -890,15 +881,13 @@ const INFO_ARC: TyInfoByName<"arc"> = {
     }
   },
   glide(props) {
-    return unglideArc(props.paper, computeArcVal(props.shape), props.point)
+    return unglideArc(props.cv, computeArcVal(props.shape), props.point)
   },
-  preview(paper, val) {
-    drawArc(paper, {
-      arc: computeArcVal(val),
-      kind: "arc",
-      ghost: true,
-    })
+  preview(cv, val) {
+    const arc = computeArcVal(val)
+    drawArcCv(cv, arc)
   },
+  components: null,
 }
 
 function angleInfo(
@@ -911,6 +900,11 @@ function angleInfo(
   return {
     name: type == "angle" ? "angle" : "directed angle",
     namePlural: type == "angle" ? "angles" : "directed angles",
+    glsl: "mat3x2",
+    garbage: {
+      js: [SNANPT, SNANPT, SNANPT],
+      glsl: "mat3x2(vec2(0.0/0.0),vec2(0.0/0.0),vec2(0.0/0.0))",
+    },
     coerce: {
       r32: {
         js(value) {
@@ -937,11 +931,6 @@ function angleInfo(
         },
       },
     },
-    garbage: {
-      js: [SNANPT, SNANPT, SNANPT],
-      glsl: "mat3x2(vec2(0.0/0.0),vec2(0.0/0.0),vec2(0.0/0.0))",
-    },
-    glsl: "mat3x2",
     write: {
       display(value, props) {
         new CmdWord(type, "prefix").insertAt(props.cursor, L)
@@ -968,6 +957,8 @@ function angleInfo(
         return value.some((x) => x.x.type == "approx" || x.y.type == "approx")
       },
     },
+    order: Order.Angle,
+    point: false,
     icon() {
       return h(
         "",
@@ -999,10 +990,10 @@ function angleInfo(
       const o1 = { x: p1.x, y: -p1.y }
       const o2 = { x: p2.x, y: -p2.y }
       const o3 = { x: p3.x, y: -p3.y }
-      const s1 = normSegment(o2, o1, LINE)
-      const s3 = normSegment(o2, o3, LINE)
-      const a1 = normSegment(o2, o1, ARC)
-      const a3 = normSegment(o2, o3, ARC)
+      const s1 = normVector(o2, o1, LINE)
+      const s3 = normVector(o2, o3, LINE)
+      const a1 = normVector(o2, o1, ARC)
+      const a3 = normVector(o2, o3, ARC)
 
       const els: SVGElement[] = []
 
@@ -1067,13 +1058,12 @@ function angleInfo(
 
       return createToken("var(--nya-angle)", ...els)
     },
-    preview(paper, val) {
-      drawAngle(paper, unpt(val[0]), unpt(val[1]), unpt(val[2]), {
-        kind: type,
-        draft: true,
-        ghost: true,
-      })
+    glide: null,
+    preview(cv, val) {
+      console.log("previewing")
+      drawAngleCv(cv, unpt(val[0]), unpt(val[1]), unpt(val[2]), { kind: type })
     },
+    components: null,
   }
 }
 
@@ -1200,7 +1190,8 @@ const PICK_ANGLEBISECTOR = definePickTy(
   (sheet, a) => {
     if (a) {
       const [p1, p2] = bisectAngleJs(a)
-      drawRay(sheet.paper, unpt(p1), unpt(p2), { ghost: true, kind: "ray" })
+      const bounds = getRayBounds(sheet.cv, unpt(p1), unpt(p2))
+      if (bounds) sheet.cv.polygonByCanvas(bounds, Size.Line, Color.Blue)
     }
   },
 )
