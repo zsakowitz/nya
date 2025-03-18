@@ -30,6 +30,7 @@ import {
   registerWheelHandler,
   type Handler,
   type ItemWithTarget,
+  type VirtualPoint,
 } from "../cv/move"
 import { PickHandler2 } from "../cv/pick"
 import { Paper } from "../paper"
@@ -95,9 +96,12 @@ export class Sheet {
     })
 
     this.cv.fn(OrderMajor.Canvas, () => {
-      this.list.draw(false) // canvas items
       this.pick.draw() // constructed object previews
-      pick.picked?.target.draw?.(pick.picked) // virtual points
+      this.list.draw(false) // canvas items
+      pick.picked?.target.draw?.(
+        pick.picked,
+        !!pick.picking?.virtuals.includes(pick.picked as VirtualPoint),
+      ) // virtual points
     })
 
     // prepare glsl context

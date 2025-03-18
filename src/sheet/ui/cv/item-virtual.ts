@@ -79,8 +79,8 @@ const TARGET_INTERSECTION: ItemWithDrawTarget<
 
     sheet.cv.queue()
   },
-  draw({ item: { at, sheet } }) {
-    sheet.cv.point(at, Size.Point, Color.Purple)
+  draw({ item: { at, sheet } }, picked) {
+    sheet.cv.point(at, picked ? Size.PointHaloThin : Size.Point, Color.Purple)
   },
 }
 
@@ -162,8 +162,8 @@ const TARGET_GLIDER: ItemWithDrawTarget<
 
     sheet.cv.queue()
   },
-  draw({ item: { at, sheet } }) {
-    sheet.cv.point(at, Size.Point, Color.Purple)
+  draw({ item: { at, sheet } }, picked) {
+    sheet.cv.point(at, picked ? Size.PointHaloThin : Size.Point, Color.Purple)
     sheet.cv.point(at, Size.PointHaloWide, Color.Purple, 0.3)
   },
 }
@@ -233,11 +233,15 @@ const TARGET_VPOINT: ItemWithDrawTarget<
       value: pt(real(at.x), real(at.y)),
     }
   },
-  toggle({ item: { sheet } }) {
+  toggle({ item: { sheet } }, on, reason) {
     sheet.cv.queue()
+    if (reason == "pick" && !on) {
+      sheet.cv.cursor("default")
+    }
   },
-  draw({ item: { at, sheet } }) {
-    sheet.cv.point(at, Size.Point, Color.Purple)
+  draw({ item: { at, sheet } }, picked) {
+    if (picked) sheet.cv.cursor("pointer")
+    sheet.cv.point(at, picked ? Size.PointHaloThin : Size.Point, Color.Purple)
     sheet.cv.point(at, Size.PointHaloWide, Color.Purple, 0.3)
   },
 }

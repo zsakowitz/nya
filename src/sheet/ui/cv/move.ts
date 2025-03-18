@@ -23,7 +23,7 @@ export type ItemWithDrawTarget<T = unknown, U = unknown> = ItemWithTarget<
   T,
   U
 > & {
-  target: { draw?(item: ItemData<T, U>): void }
+  target: { draw?(item: ItemData<T, U>, picked: boolean): void }
   virtualPoint?: Point
 }
 

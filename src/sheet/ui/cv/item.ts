@@ -78,7 +78,7 @@ export class Hint {
      * Virtual points which have already been created, to be searched before
      * everything else.
      */
-    private readonly virtuals: readonly VirtualPoint[] = [],
+    readonly virtuals: readonly VirtualPoint[] = [],
   ) {}
 
   allows(ty: TyName) {

@@ -43,7 +43,9 @@ export const PICK_TY: Picker<Data> = {
     }
     data.src.draw(sheet, args)
     for (const val of data.vals.filter((x, i, a) => a.indexOf(x) == i)) {
-      val.target.draw?.(val)
+      if (val != found) {
+        val.target.draw?.(val, false)
+      }
     }
     // FIXME: properly show if an existing point is picked
   },
