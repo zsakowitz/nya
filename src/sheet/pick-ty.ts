@@ -69,7 +69,6 @@ export const PICK_TY: Picker<Data> = {
     }
 
     const args = data.vals.map((x) => x.target.val(x))
-    // FIXME: confirm this check works
     if (!data.src.allowExistingPoint?.(args) && data.vals.includes(found)) {
       return data
     }
