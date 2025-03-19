@@ -322,8 +322,36 @@ export const PKG_BOOL: Package = {
             ),
           )
         },
-        // TODO: token for different bool states
-        token: null,
+        token(val) {
+          return h(
+            "",
+            h(
+              "size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] inline-block relative",
+              h(
+                "bg-[--nya-bg] inline-block absolute inset-0 border-2 border-current rounded-[4px] " +
+                  (val ? "text-slate-500" : "text-[#c74440]"),
+                h(
+                  "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
+                ),
+                h(
+                  "size-[16px] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-2 rounded-full " +
+                    (val ? "border-[#388c46]" : "border-[#c74440]"),
+                ),
+              ),
+              h(
+                "bg-[--nya-bg] inline-block absolute inset-0 border-2 border-current rounded-[4px] [clip-path:polygon(100%_100%,100%_0%,0%_100%)] " +
+                  (val ? "text-[#388c46]" : "text-slate-500"),
+                h(
+                  "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
+                ),
+                h(
+                  "size-[16px] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full " +
+                    (val ? "bg-[#388c46]" : "bg-[#c74440]"),
+                ),
+              ),
+            ),
+          )
+        },
         glide: null,
         preview: null,
         components: null,

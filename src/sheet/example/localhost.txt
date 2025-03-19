@@ -1,1 +1,3 @@
 x^{2}\operatorname{deriv}x\operatorname{deriv}x\operatorname{deriv}x
+\token0=true
+\token1=false
