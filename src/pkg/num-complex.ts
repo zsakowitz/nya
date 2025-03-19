@@ -19,6 +19,7 @@ import {
   declareMulR64,
   declareOdotC64,
   declareSubR64,
+  FN_LN,
   OP_ABS,
   OP_ADD,
   OP_CDOT,
@@ -31,14 +32,7 @@ import {
   subR64,
 } from "./core-ops"
 import { declareDebugPoint, FN_DEBUGPOINT, PKG_GEO_POINT } from "./geo-point"
-import {
-  FN_EXP,
-  FN_LN,
-  FN_LOG10,
-  FN_SIGN,
-  FN_UNSIGN,
-  PKG_REAL,
-} from "./num-real"
+import { FN_EXP, FN_LOG10, FN_SIGN, FN_UNSIGN, PKG_REAL } from "./num-real"
 
 declare module "../eval/ty" {
   interface Tys {
