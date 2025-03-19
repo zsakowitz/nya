@@ -112,6 +112,17 @@ export function prefixFn(op: () => Command, prec: number): DisplayFn {
   }
 }
 
+export function suffixFn(op: () => Command, prec: number): DisplayFn {
+  return ([a, b]) => {
+    if (!a || b) return
+    const block = new Block(null)
+    const cursor = block.cursor(R)
+    insert(cursor, txr(a).display(a), prec, prec)
+    op().insertAt(cursor, L)
+    return { block, lhs: prec, rhs: prec }
+  }
+}
+
 export function binaryFn(op: () => Command | Block, prec: number): DisplayFn {
   return ([a, b, c]) => {
     if (!(a && b && !c)) return

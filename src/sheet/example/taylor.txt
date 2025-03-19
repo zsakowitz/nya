@@ -2,4 +2,4 @@ d\left(q,n\right)=\operatorname{iterate}^{n}f\to \operatorname{sym}\frac{d}{dx}\
 f\left(x\right)=x^{2}
 n=5
 s=\operatorname{iterate}.a^{n+1}n\to n+1,a\to \operatorname{join}\left(a,n\right)\operatorname{from}n=0,a=\left[\right]
-d\left(\operatorname{sym}f\left(x\right),s\right)\operatorname{for}s=s
+\operatorname{sym}\left(\left(\operatorname{eval}d\left(\operatorname{sym}f\left(x\right),s\right)\right)\cdot \frac{x^{\operatorname{unsym}s}}{\left(\operatorname{unsym}s\right)!}\right)\operatorname{for}s=s

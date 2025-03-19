@@ -1,9 +1,11 @@
 import factorial from "@stdlib/math/base/special/factorial"
 import type { Package } from "."
-import { NO_SYM } from "../eval/ast/tx"
+import { Precedence } from "../eval/ast/token"
 import type { GlslContext } from "../eval/lib/fn"
 import { FnDist } from "../eval/ops/dist"
+import { suffixFn } from "../eval/sym"
 import { num, real } from "../eval/ty/create"
+import { CmdExclamation } from "../field/cmd/leaf/exclamation"
 
 function factorialGlsl(ctx: GlslContext, x: string) {
   ctx.glsl`float sinpiSeries(float x) {
@@ -104,6 +106,7 @@ float factorial(float x) {
 
 const OP_FACTORIAL = new FnDist("!", "computes a factorial", {
   message: "Cannot take the factorial of %%.",
+  display: suffixFn(() => new CmdExclamation(), Precedence.Atom),
 }).add(
   ["r32"],
   "r32",
@@ -125,7 +128,12 @@ export const PKG_FACTORIAL: Package = {
     tx: {
       suffix: {
         factorial: {
-          sym: NO_SYM,
+          sym(node) {
+            if (node.rhs.repeats != 1) {
+              throw new Error("Cannot compute higher-order factorials yet.")
+            }
+            return { type: "call", fn: OP_FACTORIAL, args: [node.base] }
+          },
           deps(node, deps) {
             if (typeof node.repeats != "number") {
               deps.add(node.repeats)
