@@ -1,11 +1,8 @@
-import type { Package } from "."
-import { Precedence, type MagicVar, type Nodes } from "../eval/ast/token"
-import { NO_DRAG, sym, TXR_AST } from "../eval/ast/tx"
-import { glsl, jsToGlsl } from "../eval/glsl"
-import { js } from "../eval/js"
-import { id } from "../eval/lib/binding"
-import { FnDist } from "../eval/ops/dist"
-import { issue } from "../eval/ops/issue"
+import type { Package } from ".."
+import { Precedence, type Nodes } from "../../eval/ast/token"
+import { glsl, jsToGlsl } from "../../eval/glsl"
+import { js } from "../../eval/js"
+import { issue } from "../../eval/ops/issue"
 import {
   insertStrict,
   SYM_0,
@@ -14,17 +11,17 @@ import {
   TXR_SYM,
   type Sym,
   type TxrSym,
-} from "../eval/sym"
-import type { JsValue } from "../eval/ty"
-import { frac, real } from "../eval/ty/create"
-import { Display } from "../eval/ty/display"
-import { CmdNum } from "../field/cmd/leaf/num"
-import { CmdWord } from "../field/cmd/leaf/word"
-import { CmdSupSub } from "../field/cmd/math/supsub"
-import { Block, L, R } from "../field/model"
-import { h } from "../jsx"
+} from "../../eval/sym"
+import type { JsValue } from "../../eval/ty"
+import { frac, real } from "../../eval/ty/create"
+import { Display } from "../../eval/ty/display"
+import { CmdNum } from "../../field/cmd/leaf/num"
+import { CmdWord } from "../../field/cmd/leaf/word"
+import { CmdSupSub } from "../../field/cmd/math/supsub"
+import { Block, L, R } from "../../field/model"
+import { h } from "../../jsx"
 
-declare module "../eval/ty" {
+declare module "../../eval/ty" {
   interface Tys {
     sym: Sym
   }
@@ -34,9 +31,9 @@ declare module "../eval/ty" {
   }
 }
 
-export const PKG_SYM: Package = {
-  id: "nya:sym",
-  name: "symbolic computation",
+export const PKG_SYM_CORE: Package = {
+  id: "nya:sym-core",
+  name: "symbolic computation core",
   label: null,
   ty: {
     info: {
@@ -102,151 +99,6 @@ export const PKG_SYM: Package = {
     },
   },
   eval: {
-    tx: {
-      magic: {
-        /** Creates a symbolic expression "quoting" its contents. */
-        sym: {
-          fnlike: true,
-          deps(node, deps) {
-            deps.add(node.contents)
-          },
-          js(node, props) {
-            validateSym(node, "sym")
-            const tx = TXR_AST[node.contents.type]
-            if (!tx?.sym) {
-              throw new Error(
-                `Cannot transform '${node.contents.type}' into a symbolic computation.`,
-              )
-            }
-
-            const value = tx.sym(node.contents as never, props)
-
-            return {
-              type: "sym",
-              list: false,
-              value: txr(value).simplify(value),
-            } satisfies JsValue<"sym", false>
-          },
-          glsl() {
-            throw new Error("Cannot construct symbolic expressions in shaders.")
-          },
-          sym(node, props) {
-            validateSym(node, "sym")
-            const tx = TXR_AST[node.contents.type]
-            if (!tx?.sym) {
-              throw new Error(
-                `Cannot transform '${node.contents.type}' into a symbolic computation.`,
-              )
-            }
-
-            return {
-              type: "js",
-              value: {
-                type: "sym",
-                list: false,
-                value: tx.sym(node.contents as never, props),
-              } satisfies JsValue<"sym", false>,
-            }
-          },
-        },
-
-        /** Interpolates a value into a symbolic expression. */
-        unsym: {
-          fnlike: true,
-          deps(node, deps) {
-            deps.add(node.contents)
-          },
-          js() {
-            throw new Error(
-              "'unsym' can only be called inside a symbolic expression.",
-            )
-          },
-          glsl() {
-            throw new Error(
-              "'unsym' can only be called inside a symbolic expression.",
-            )
-          },
-          sym(node, props) {
-            validateSym(node, "unsym")
-            return { type: "js", value: js(node.contents, props) }
-          },
-        },
-
-        /** Evaluates a symbolic expression. */
-        eval: {
-          fnlike: true,
-          deps(node, deps) {
-            deps.add(node.contents)
-          },
-          js(node, props) {
-            validateSym(node, "eval")
-            const sym = js(node.contents, props)
-            if (sym.type != "sym" || sym.list !== false) {
-              throw new Error("'eval' expects a single symbolic expression.")
-            }
-
-            const val = sym.value as Sym
-            return txr(val).js(val, props)
-          },
-          glsl(node, props) {
-            validateSym(node, "eval")
-            const sym = js(node.contents, props)
-            if (sym.type != "sym" || sym.list !== false) {
-              throw new Error("'eval' expects a single symbolic expression.")
-            }
-
-            const val = sym.value as Sym
-            return txr(val).glsl(val, props)
-          },
-          sym(node, props) {
-            validateSym(node, "eval")
-            const sym = js(node.contents, props)
-            if (sym.type != "sym" || sym.list !== false) {
-              throw new Error("'eval' expects a single symbolic expression.")
-            }
-
-            return sym.value as Sym
-          },
-        },
-      },
-      ast: {
-        deriv: {
-          deps(node, deps) {
-            deps.add(node.of)
-            deps.add(node.wrt)
-          },
-          drag: NO_DRAG,
-          glsl(node, props) {
-            const of = sym(node.of, props)
-            const value = txr(of).deriv(of, id(node.wrt))
-            const deriv = txr(value).simplify(value)
-            return txr(deriv).glsl(deriv, props)
-          },
-          js(node, props) {
-            const of = sym(node.of, props)
-            const value = txr(of).deriv(of, id(node.wrt))
-            const deriv = txr(value).simplify(value)
-            return txr(deriv).js(deriv, props)
-          },
-          sym(node, props) {
-            const of = sym(node.of, props)
-            const value = txr(of).deriv(of, id(node.wrt))
-            return txr(value).simplify(value)
-          },
-        },
-      },
-    },
-    fn: {
-      simplify: new FnDist("simplify", "Simplifies an expression.", {
-        message: "Cannot simplify %%.",
-        // SYM: derivative of contents
-      }).add(
-        ["sym"],
-        "sym",
-        (a) => txr(a.value).simplify(a.value),
-        issue("Symbolic computation is not supported in shaders."),
-      ),
-    },
     sym: {
       call: {
         deriv(value, wrt) {
@@ -413,19 +265,4 @@ export const PKG_SYM: Package = {
       },
     },
   },
-}
-
-function validateSym(node: MagicVar, kind: "sym" | "eval" | "unsym") {
-  // FIXME: remove this now that `fnlike` works
-  if (node.prop) {
-    throw new Error(
-      `Cannot access a particular property of a${kind == "sym" ? "" : "n"} '${kind}' expression.`,
-    )
-  }
-  if (node.sub) {
-    throw new Error(`Cannot apply subscripts to '${kind}' expressions.`)
-  }
-  if (node.sup) {
-    throw new Error(`Cannot apply superscripts to '${kind}' expressions.`)
-  }
 }
