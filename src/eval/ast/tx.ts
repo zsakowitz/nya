@@ -132,6 +132,13 @@ export const NO_DRAG: DragTarget<unknown> = {
 
 export interface TxrMagicVar extends Omit<TxrAst<MagicVar>, "drag"> {
   helpers?: readonly PuncBinaryStr[]
+  /**
+   * If `true`, the magic variable will scope like a regular function (think
+   * `sym` or `eval`). If `false`, it will consume every token ahead of it
+   * (think `iterate`), as well as an optional property, subscript, and
+   * superscript.
+   */
+  fnlike?: boolean
   with?: {
     js(node: MagicVar, props: PropsJs, seq: boolean): Record<string, JsValue>
     glsl(

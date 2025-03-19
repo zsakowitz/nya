@@ -7,6 +7,7 @@ import {
   type PuncInfix,
   type Var,
 } from "../../../eval/ast/token"
+import { TXR_MAGICVAR } from "../../../eval/ast/tx"
 import { subscript } from "../../../eval/lib/text"
 import { h } from "../../../jsx"
 import type { Ctx } from "../../../sheet/deps"
@@ -283,7 +284,7 @@ export class CmdVar extends Leaf {
   }
 
   ir(tokens: Node[]): true | void {
-    if (this.kind == "magicprefix") {
+    magicprefix: if (this.kind == "magicprefix" && this.part == L) {
       let value = this.text
       let el: Command = this
       let prop: string | undefined
@@ -291,6 +292,9 @@ export class CmdVar extends Leaf {
         const name = (el = el[R])
         value += name.text
         if (name.part == R) break
+      }
+      if (TXR_MAGICVAR[value]?.fnlike) {
+        break magicprefix
       }
       if (el[R] instanceof CmdDot) {
         if (el[R][R] instanceof CmdVar) {
@@ -324,7 +328,7 @@ export class CmdVar extends Leaf {
         tokens.push({
           type: "var",
           value: this.text,
-          kind: this.kind,
+          kind: this.kind == "magicprefix" ? "prefix" : this.kind,
           span: new Span(this.parent, this[L], this[R]),
         })
         return

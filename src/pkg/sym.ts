@@ -104,7 +104,9 @@ export const PKG_SYM: Package = {
   eval: {
     tx: {
       magic: {
+        /** Creates a symbolic expression "quoting" its contents. */
         sym: {
+          fnlike: true,
           deps(node, deps) {
             deps.add(node.contents)
           },
@@ -147,7 +149,32 @@ export const PKG_SYM: Package = {
             }
           },
         },
+
+        /** Interpolates a value into a symbolic expression. */
+        unsym: {
+          fnlike: true,
+          deps(node, deps) {
+            deps.add(node.contents)
+          },
+          js() {
+            throw new Error(
+              "'unsym' can only be called inside a symbolic expression.",
+            )
+          },
+          glsl() {
+            throw new Error(
+              "'unsym' can only be called inside a symbolic expression.",
+            )
+          },
+          sym(node, props) {
+            validateSym(node, "unsym")
+            return { type: "js", value: js(node.contents, props) }
+          },
+        },
+
+        /** Evaluates a symbolic expression. */
         eval: {
+          fnlike: true,
           deps(node, deps) {
             deps.add(node.contents)
           },
@@ -388,10 +415,11 @@ export const PKG_SYM: Package = {
   },
 }
 
-function validateSym(node: MagicVar, kind: "sym" | "eval") {
+function validateSym(node: MagicVar, kind: "sym" | "eval" | "unsym") {
+  // FIXME: remove this now that `fnlike` works
   if (node.prop) {
     throw new Error(
-      `Cannot access a particular property of a${kind == "eval" ? "n" : ""} '${kind}' expression.`,
+      `Cannot access a particular property of a${kind == "sym" ? "" : "n"} '${kind}' expression.`,
     )
   }
   if (node.sub) {

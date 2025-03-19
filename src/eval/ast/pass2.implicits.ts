@@ -1,4 +1,5 @@
 import { L } from "../../field/model"
+import { FNLIKE_MAGICVAR } from "./fnlike"
 import {
   getPrecedence,
   isValueToken,
@@ -8,7 +9,7 @@ import {
   type PuncBinaryNoComma,
   type PuncInfix,
   type PuncPrefix,
-  type Suffix,
+  type Var,
 } from "./token"
 
 // rules governing implicits:
@@ -250,7 +251,7 @@ export function pass2_implicits(tokens: Node[]): Node[] {
     const name = fn()
     if (!name) return
 
-    const nested: [PuncPrefix[], Node][] = []
+    const nested: [PuncPrefix[], Var][] = []
 
     while (true) {
       const mySigns = takeSigns()
@@ -263,24 +264,45 @@ export function pass2_implicits(tokens: Node[]): Node[] {
       }
     }
 
-    const contents = takeMul()
+    let contents = takeMul()
 
-    return {
-      type: "suffixed",
-      base: name,
-      suffixes: nested.reduceRight<Suffix[]>(
-        (suffixes, [signs, name]) => [
-          {
-            type: "call",
-            args: reduceSigns(signs, {
-              type: "suffixed",
-              base: name,
-              suffixes,
-            }),
-          },
-        ],
-        [{ type: "call", args: contents }],
-      ),
+    function isFnLikeMagicVar(node: Var) {
+      return node.kind == "prefix" && FNLIKE_MAGICVAR[node.value]
+    }
+
+    while (nested.length) {
+      const [signs, name] = nested.pop()!
+      if (isFnLikeMagicVar(name)) {
+        contents = reduceSigns(signs, {
+          type: "magicvar",
+          value: name.value,
+          sub: name.sub,
+          sup: name.sup,
+          contents,
+        })
+      } else {
+        contents = reduceSigns(signs, {
+          type: "suffixed",
+          base: name,
+          suffixes: [{ type: "call", args: contents }],
+        })
+      }
+    }
+
+    if (isFnLikeMagicVar(name)) {
+      return {
+        type: "magicvar",
+        value: name.value,
+        sub: name.sub,
+        sup: name.sup,
+        contents,
+      }
+    } else {
+      return {
+        type: "suffixed",
+        base: name,
+        suffixes: [{ type: "call", args: contents }],
+      }
     }
   }
 

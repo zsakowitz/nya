@@ -1,4 +1,5 @@
 import { L, R } from "../../field/model"
+import { FNLIKE_MAGICVAR } from "./fnlike"
 import { isValueToken, type Node } from "./token"
 
 /**
@@ -213,6 +214,18 @@ export function pass1_suffixes(tokens: Node[]) {
           type: "suffixed",
           base: prev.base,
           suffixes: [...prev.suffixes, { type: "call", args: self.value }],
+        }
+      } else if (
+        prev.type == "var" &&
+        prev.kind == "prefix" &&
+        FNLIKE_MAGICVAR[prev.value]
+      ) {
+        tokens[i - 1] = {
+          type: "magicvar",
+          sub: prev.sub,
+          sup: prev.sup,
+          value: prev.value,
+          contents: self.value,
         }
       } else {
         tokens[i - 1] = {

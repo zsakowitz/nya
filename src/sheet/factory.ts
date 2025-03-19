@@ -1,3 +1,4 @@
+import { FNLIKE_MAGICVAR } from "../eval/ast/fnlike"
 import {
   Precedence,
   PRECEDENCE_MAP,
@@ -184,6 +185,7 @@ export class SheetFactory {
       }
 
       TXR_MAGICVAR[key] = txr
+      FNLIKE_MAGICVAR[key] = !!txr.fnlike
     }
 
     for (const keyRaw in pkg.eval?.tx?.group) {
