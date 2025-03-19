@@ -2,8 +2,6 @@ import type { Package } from ".."
 import { type MagicVar } from "../../eval/ast/token"
 import { TXR_AST } from "../../eval/ast/tx"
 import { js } from "../../eval/js"
-import { FnDist } from "../../eval/ops/dist"
-import { issue } from "../../eval/ops/issue"
 import { txr, type Sym } from "../../eval/sym"
 import type { JsValue } from "../../eval/ty"
 import { b, px } from "../../jsx"
@@ -108,17 +106,6 @@ export const PKG_SYM_EXTRAS: Package = {
           },
         },
       },
-    },
-    fn: {
-      simplify: new FnDist("simplify", "Simplifies an expression.", {
-        message: "Cannot simplify %%.",
-        // SYM: derivative of contents
-      }).add(
-        ["sym"],
-        "sym",
-        (a) => txr(a.value).simplify(a.value),
-        issue("Symbolic computation is not supported in shaders."),
-      ),
     },
   },
   docs: {
