@@ -206,7 +206,6 @@ export function pass1_suffixes(tokens: Node[]) {
       self.type == "group" &&
       self.lhs == "(" &&
       self.rhs == ")" &&
-      prev.type != "dd" &&
       (isValueToken(prev) || (prev.type == "var" && prev.kind == "prefix"))
     ) {
       tokens.splice(i, 1)

@@ -355,6 +355,7 @@ export function isValueToken(token: Node | undefined) {
     token.type == "punc" ||
     token.type == "sub" ||
     token.type == "sup" ||
-    (token.type == "var" && token.kind != "var")
+    (token.type == "var" && token.kind != "var") ||
+    token.type == "dd"
   )
 }
