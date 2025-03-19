@@ -1,6 +1,7 @@
 d\left(q,n\right)=\operatorname{iterate}^{n}f\to \operatorname{sym}\frac{d}{dx}\operatorname{eval}f\operatorname{from}f=q
-f\left(x\right)=\frac{\operatorname{sin}x}{\operatorname{cos}x}
+f\left(x\right)=\operatorname{ln}x
 n=6
-a=6.27
-s=\operatorname{iterate}.a^{n+1}n\to n+1,a\to \operatorname{join}\left(a,n\right)\operatorname{from}n=0,a=\left[\right]
-y<\operatorname{eval}\left(\left(\operatorname{iterate}.q^{n+1}n\to n+1,q\to \operatorname{sym}\left(\operatorname{eval}q+\operatorname{eval}\left(M\left[n\right]\right)\right)\operatorname{from}n=1,q=\operatorname{sym}0\right)\operatorname{with}M=\left(\operatorname{sym}\left(\operatorname{unsym}\left(\operatorname{eval}d\left(\operatorname{sym}f\left(x\right),s\right)\operatorname{with}x=a\right)\cdot \frac{\left(x-a\right)^{\operatorname{unsym}s}}{\left(\operatorname{unsym}s\right)!}\right)\operatorname{for}s=s\right)\right)
+a=1
+s=\operatorname{iterate}.a^{n+1}\begin{list}n\to n+1\\a\to a.\operatorname{join}\left(n\right)\end{list}\operatorname{from}a=\left[\right]
+M=\left(\operatorname{iterate}.q^{n+1}\begin{list}n\to n+1\\q\to \operatorname{sym}\left(\operatorname{eval}q+\operatorname{eval}\left(M\left[n\right]\right)\right)\end{list}\operatorname{from}\begin{list}n=1\\q=\operatorname{sym}0\end{list}\right)\operatorname{with}M=\left(\operatorname{sym}\left(\operatorname{unsym}\left(\operatorname{eval}d\left(\operatorname{sym}f\left(x\right),s\right)\operatorname{with}x=a\right)\cdot \frac{\left(x-\operatorname{unsym}a\right)^{\operatorname{unsym}s}}{\left(\operatorname{unsym}s\right)!}\right)\operatorname{for}s=s\right)
+@y<\operatorname{eval}M
