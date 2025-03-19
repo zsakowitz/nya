@@ -34,6 +34,7 @@ export interface TxrSym<T> {
   display(value: T): SymDisplay
   deriv(value: T, wrt: string): Sym
   uses(value: T, name: string): boolean
+  simplify(value: T): Sym
   layer?: number
 }
 

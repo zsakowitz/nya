@@ -1,6 +1,7 @@
 import type { Package } from "."
 import { Precedence, type MagicVar } from "../eval/ast/token"
 import { NO_DRAG, sym, TXR_AST } from "../eval/ast/tx"
+import { FnDist } from "../eval/ops/dist"
 import { issue } from "../eval/ops/issue"
 import { insertStrict, txr, TXR_SYM, type Sym, type TxrSym } from "../eval/sym"
 import type { JsValue } from "../eval/ty"
@@ -138,7 +139,7 @@ export const PKG_SYM: Package = {
           drag: NO_DRAG,
           glsl() {
             // SYM:
-            throw new Error("Cannot take derivative in shaders yet.")
+            throw new Error("Cannot take derivatives in shaders yet.")
           },
           js(node, props) {
             const lhs = sym(node.lhs, props)
@@ -148,10 +149,11 @@ export const PKG_SYM: Package = {
                 "The right side of 'deriv' should be a variable name.",
               )
             }
+            const value = txr(lhs).deriv(lhs, rhs.id)
             return {
               type: "sym",
               list: false,
-              value: txr(lhs).deriv(lhs, rhs.id),
+              value: txr(value).simplify(value),
             }
           },
           precedence: Precedence.WordInfix,
@@ -163,10 +165,26 @@ export const PKG_SYM: Package = {
                 "The right side of 'deriv' should be a variable name.",
               )
             }
-            return txr(lhs).deriv(lhs, rhs.id)
+            const value = txr(lhs).deriv(lhs, rhs.id)
+            return txr(value).simplify(value)
           },
         },
       },
+    },
+    fn: {
+      simplify: new FnDist(
+        "simplify",
+        "Simplifies an expression.",
+        `Cannot simplify %%.`,
+        undefined,
+        // SYM: derivative of contents
+        undefined,
+      ).add(
+        ["sym"],
+        "sym",
+        (a) => txr(a.value).simplify(a.value),
+        issue("Symbolic computation is not supported in shaders."),
+      ),
     },
     sym: {
       call: {
@@ -189,6 +207,18 @@ export const PKG_SYM: Package = {
             )
           }
           return value.fn.display(value.args)
+        },
+        simplify({ fn, args: rawArgs }) {
+          const args = rawArgs.map((x) => txr(x).simplify(x))
+          if (rawArgs.every((x) => x.type == "js")) {
+            try {
+              return {
+                type: "js",
+                value: fn.js(rawArgs.map((x) => x.value)),
+              }
+            } catch {}
+          }
+          return fn.simplify?.(args) ?? { type: "call", fn, args }
         },
       },
       var: {
@@ -231,6 +261,9 @@ export const PKG_SYM: Package = {
           }
           return { block, lhs: Precedence.Atom, rhs: Precedence.Atom }
         },
+        simplify(value) {
+          return { ...value, type: "var" }
+        },
       },
       js: {
         deriv() {
@@ -250,6 +283,9 @@ export const PKG_SYM: Package = {
           const block = new Block(null)
           new Display(block.cursor(R), frac(10, 1)).output(value.value, false)
           return { block, lhs: Precedence.Atom, rhs: Precedence.Atom }
+        },
+        simplify(value) {
+          return { type: "js", value: value.value }
         },
       },
     },

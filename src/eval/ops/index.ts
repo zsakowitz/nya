@@ -10,6 +10,8 @@ export interface Fn {
   display?(args: Sym[]): SymDisplay
   // SYM: make this required
   deriv?(args: Sym[], wrt: string): Sym
+  // SYM: implement this in more places
+  simplify?(args: Sym[]): Sym
 }
 
 export const FNS: Record<string, Fn> = Object.create(null)

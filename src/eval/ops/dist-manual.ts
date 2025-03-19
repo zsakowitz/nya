@@ -48,6 +48,13 @@ export interface FnOverloadVar<Q extends TyName = TyName> {
 export type DisplayFn = ((args: Sym[]) => SymDisplay | undefined) | undefined
 export type DerivFn = ((args: Sym[], wrt: string) => Sym) | undefined
 
+export interface FnDistProps {
+  display?: DisplayFn
+  deriv?: DerivFn
+  /** `args` will already be simplified. */
+  simplify?(args: Sym[]): Sym | undefined
+}
+
 /**
  * `FnDist` are functions which take a distribute across lists, returning a list
  * of the shortest length of their inputs.
