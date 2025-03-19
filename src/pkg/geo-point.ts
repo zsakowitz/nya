@@ -30,7 +30,7 @@ import type { Expr } from "../sheet/ui/expr"
 import { Sheet } from "../sheet/ui/sheet"
 import { virtualStepExp, write, Writer } from "../sheet/write"
 import { FN_VALID } from "./bool"
-import { OP_PLOT, plotJs } from "./color-core"
+import { OP_PLOT, plotJs } from "./color/core"
 import {
   abs64,
   addR64,

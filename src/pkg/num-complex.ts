@@ -11,7 +11,7 @@ import { abs, add, div, mul, neg, sub } from "../eval/ty/ops"
 import { h } from "../jsx"
 import { Order } from "../sheet/ui/cv/consts"
 import { FN_VALID } from "./bool"
-import { OP_PLOT, plotJs } from "./color-core"
+import { OP_PLOT, plotJs } from "./color/core"
 import {
   abs64,
   addR64,

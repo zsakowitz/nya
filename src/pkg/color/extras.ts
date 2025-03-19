@@ -1,11 +1,11 @@
-import type { Package } from "."
-import type { GlslContext } from "../eval/lib/fn"
-import { FnDist } from "../eval/ops/dist"
-import { frac, num } from "../eval/ty/create"
-import { sub } from "../eval/ty/ops"
-import { isDark } from "../sheet/theme"
-import { FN_VALID } from "./bool"
-import { PKG_COLOR_CORE } from "./color-core"
+import type { Package } from ".."
+import type { GlslContext } from "../../eval/lib/fn"
+import { FnDist } from "../../eval/ops/dist"
+import { frac, num } from "../../eval/ty/create"
+import { sub } from "../../eval/ty/ops"
+import { isDark } from "../../sheet/theme"
+import { FN_VALID } from "../bool"
+import { PKG_COLOR_CORE } from "./core"
 
 function oklab(
   ctx: GlslContext,
@@ -47,7 +47,7 @@ const FN_OKLCH = new FnDist(
 // )
 
 // TODO: hsl
-// H(h,s,l)=\operatorname{hsv}\left(h,\begin{cases}0&v=0\\2\left(1-\frac{l}{v}\right)&\end{cases},v\right)\operatorname{with}v=l+s\operatorname{min}\left(l,1-l\right)
+// H\left(h,s,l\right)=\operatorname{hsv}\left(h,\left\{v=0:0,2\left(1-\frac{l}{v}\right)\right\},v\right)\operatorname{with}v=l+s\operatorname{min}\left(l,1-l\right)
 
 export const PKG_COLOR_EXTRAS: Package = {
   id: "nya:color-extras",

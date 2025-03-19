@@ -105,6 +105,8 @@ export const PKG_SYM_EXTRAS: Package = {
             return sym.value as Sym
           },
         },
+
+        /** SYM: substitute a value for a variable */
       },
     },
   },

@@ -1,0 +1,3 @@
+H\left(h,s,l\right)=\operatorname{hsv}\left(h,\left\{v=0:0,2\left(1-\frac{l}{v}\right)\right\},v\right)\operatorname{with}v=l+s\operatorname{min}\left(l,1-l\right)
+D\left(z\right)=H\left(\frac{180}{\pi }\operatorname{arg}z,1,\frac{2}{\pi }\operatorname{arctan}\left|z\right|\right)
+D\left(\frac{\left(p^{2}-1\right)\left(p-2-i\right)^{2}}{p^{2}+2+2i}\right)
