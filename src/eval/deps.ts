@@ -6,14 +6,14 @@ export class Deps {
   readonly ids: Record<string, true> = Object.create(null)
   private readonly bound: Record<string, true | undefined> = Object.create(null)
 
-  private trackByLabel(name: string) {
+  trackById(name: string) {
     if (this.bound[name]) return
     this.ids[name] = true
   }
 
   track(ast: Bound) {
     const myId = id(ast)
-    this.trackByLabel(myId)
+    this.trackById(myId)
   }
 
   withBound<T>(ast: Bound, f: () => T): T {

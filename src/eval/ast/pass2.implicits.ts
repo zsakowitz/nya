@@ -92,7 +92,7 @@ export function pass2_implicits(tokens: Node[]): Node[] {
 
   function big() {
     const token = tokens[tokens.length - 1]
-    if (token?.type == "bigsym") {
+    if (token?.type == "bigsym" || token?.type == "dd") {
       tokens.pop()
       return token
     }
@@ -104,7 +104,10 @@ export function pass2_implicits(tokens: Node[]): Node[] {
   }
 
   function isNextBig() {
-    return tokens[tokens.length - 1]?.type == "bigsym"
+    return (
+      tokens[tokens.length - 1]?.type == "bigsym" ||
+      tokens[tokens.length - 1]?.type == "dd"
+    )
   }
 
   function many1<T>(f: () => T): (T & {})[] | undefined {
@@ -319,12 +322,16 @@ export function pass2_implicits(tokens: Node[]): Node[] {
     const head = big()
     if (!head) return
 
-    return {
-      type: "big",
-      cmd: head.cmd,
-      sub: head.sub,
-      sup: head.sup,
-      of: takeWord(),
+    const of = takeWord()
+
+    if (head.type == "dd") {
+      return { type: "deriv", wrt: head.wrt, of }
+    } else {
+      return { type: "big", cmd: head.cmd, sub: head.sub, sup: head.sup, of }
     }
   }
+
+  // FIXME: d/dx (x^2) doesn't work since it parses as a function call. maybe
+  // it's easier to restrict function calls to actual variables only instead
+  // of these cycle-wasting post-parse stage checks we do
 }

@@ -1,12 +1,16 @@
 import type { Package } from "."
-import { Precedence, type MagicVar } from "../eval/ast/token"
+import { Precedence, type MagicVar, type Nodes } from "../eval/ast/token"
 import { NO_DRAG, sym, TXR_AST } from "../eval/ast/tx"
+import { glsl } from "../eval/glsl"
+import { js } from "../eval/js"
+import { Bindings, id } from "../eval/lib/binding"
 import { FnDist } from "../eval/ops/dist"
 import { issue } from "../eval/ops/issue"
 import { insertStrict, txr, TXR_SYM, type Sym, type TxrSym } from "../eval/sym"
 import type { JsValue } from "../eval/ty"
 import { frac, real } from "../eval/ty/create"
 import { Display } from "../eval/ty/display"
+import { TY_INFO } from "../eval/ty/info"
 import { CmdNum } from "../field/cmd/leaf/num"
 import { CmdWord } from "../field/cmd/leaf/word"
 import { CmdSupSub } from "../field/cmd/math/supsub"
@@ -132,41 +136,34 @@ export const PKG_SYM: Package = {
           },
         },
       },
-      binary: {
+      ast: {
         deriv: {
           deps(node, deps) {
-            deps.add(node.lhs)
+            const of = sym(node.of, {
+              // SYM: this will ban functions in deps
+              bindingsSym: new Bindings(),
+              base: real(10),
+            })
+            const value = txr(of).deriv(of, id(node.wrt))
+            const deriv = txr(value).simplify(value)
+            txr(deriv).deps(deriv, deps)
           },
           drag: NO_DRAG,
-          glsl() {
-            // SYM:
-            throw new Error("Cannot take derivatives in shaders yet.")
+          glsl(node, props) {
+            const of = sym(node.of, props)
+            const value = txr(of).deriv(of, id(node.wrt))
+            const deriv = txr(value).simplify(value)
+            return txr(deriv).glsl(deriv, props)
           },
           js(node, props) {
-            const lhs = sym(node.lhs, props)
-            const rhs = sym(node.rhs, props)
-            if (rhs.type != "var") {
-              throw new Error(
-                "The right side of 'deriv' should be a variable name.",
-              )
-            }
-            const value = txr(lhs).deriv(lhs, rhs.id)
-            return {
-              type: "sym",
-              list: false,
-              value: txr(value).simplify(value),
-            }
+            const of = sym(node.of, props)
+            const value = txr(of).deriv(of, id(node.wrt))
+            const deriv = txr(value).simplify(value)
+            return txr(deriv).js(deriv, props)
           },
-          precedence: Precedence.WordInfix,
           sym(node, props) {
-            const lhs = sym(node.lhs, props)
-            const rhs = sym(node.rhs, props)
-            if (rhs.type != "var") {
-              throw new Error(
-                "The right side of 'deriv' should be a variable name.",
-              )
-            }
-            const value = txr(lhs).deriv(lhs, rhs.id)
+            const of = sym(node.of, props)
+            const value = txr(of).deriv(of, id(node.wrt))
             return txr(value).simplify(value)
           },
         },
@@ -218,6 +215,21 @@ export const PKG_SYM: Package = {
           }
           return fn.simplify?.(args) ?? { type: "call", fn, args }
         },
+
+        deps(value, deps) {
+          for (const arg of value.args) {
+            txr(arg).deps(arg, deps)
+          }
+        },
+        js(value, props) {
+          return value.fn.js(value.args.map((a) => txr(a).js(a, props)))
+        },
+        glsl(value, props) {
+          return value.fn.glsl(
+            props.ctx,
+            value.args.map((a) => txr(a).glsl(a, props)),
+          )
+        },
       },
       var: {
         deriv(value, wrt) {
@@ -262,6 +274,50 @@ export const PKG_SYM: Package = {
         simplify(value) {
           return { ...value, type: "var" }
         },
+
+        deps(value, deps) {
+          deps.trackById(value.id)
+        },
+        js(value, props) {
+          return js(
+            {
+              type: "var",
+              kind: "var",
+              span: null,
+              value: value.source.name,
+              sub:
+                value.source.sub ?
+                  {
+                    type: "var",
+                    kind: "var",
+                    span: null,
+                    value: value.source.sub,
+                  }
+                : undefined,
+            } satisfies Nodes["var"] & { type: "var" },
+            props,
+          )
+        },
+        glsl(value, props) {
+          return glsl(
+            {
+              type: "var",
+              kind: "var",
+              span: null,
+              value: value.source.name,
+              sub:
+                value.source.sub ?
+                  {
+                    type: "var",
+                    kind: "var",
+                    span: null,
+                    value: value.source.sub,
+                  }
+                : undefined,
+            } satisfies Nodes["var"] & { type: "var" },
+            props,
+          )
+        },
       },
       js: {
         deriv() {
@@ -284,6 +340,18 @@ export const PKG_SYM: Package = {
         },
         simplify(value) {
           return { type: "js", value: value.value }
+        },
+
+        deps() {},
+        js(value) {
+          return value.value
+        },
+        glsl(value) {
+          return {
+            ...value.value,
+            // FIXME: this is wrong
+            expr: TY_INFO[value.value.type].garbage.glsl,
+          }
         },
       },
     },

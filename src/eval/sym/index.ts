@@ -3,9 +3,12 @@ import { Op } from "../../field/cmd/leaf/op"
 import type { WordKind } from "../../field/cmd/leaf/var"
 import { CmdBrack } from "../../field/cmd/math/brack"
 import { Block, L, R, type Command, type Cursor } from "../../field/model"
+import type { Deps } from "../deps"
+import type { PropsGlsl } from "../glsl"
+import type { PropsJs } from "../js"
 import type { Fn } from "../ops"
 import type { DerivFn, DisplayFn } from "../ops/dist-manual"
-import type { JsValue, TyName, Val } from "../ty"
+import type { GlslValue, JsValue, TyName, Val } from "../ty"
 import { real } from "../ty/create"
 import { TY_INFO, type TyInfo } from "../ty/info"
 
@@ -37,6 +40,10 @@ export interface TxrSym<T> {
   uses(value: T, name: string): boolean
   simplify(value: T): Sym
   layer?: number
+
+  deps(value: T, deps: Deps): void
+  js(value: T, props: PropsJs): JsValue
+  glsl(value: T, props: PropsGlsl): GlslValue
 }
 
 export const TXR_SYM: { [K in keyof Syms]?: TxrSym<Syms[K]> } =

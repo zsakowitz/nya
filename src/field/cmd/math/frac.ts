@@ -1,4 +1,5 @@
-import type { Node } from "../../../eval/ast/token"
+import type { Node, PlainVar } from "../../../eval/ast/token"
+import { tryId } from "../../../eval/lib/binding"
 import { U_ZERO_WIDTH_SPACE, h } from "../../../jsx"
 import type { LatexParser } from "../../latex"
 import {
@@ -130,6 +131,30 @@ export class CmdFrac extends Command<[Block, Block]> {
   ir(tokens: Node[]): void {
     const a = this.blocks[0].ast()
     const b = this.blocks[1].ast()
+
+    derivative: if (
+      a.type == "var" &&
+      a.kind == "var" &&
+      a.value == "d" &&
+      !a.sup &&
+      !a.sub &&
+      b.type == "juxtaposed" &&
+      b.nodes.length == 2 &&
+      b.nodes[0]!.type == "var" &&
+      b.nodes[0]!.kind == "var" &&
+      b.nodes[0]!.value == "d" &&
+      !b.nodes[0]!.sup &&
+      !b.nodes[0]!.sub &&
+      b.nodes[1]!.type == "var" &&
+      b.nodes[1]!.kind == "var" &&
+      !b.nodes[1]!.sup
+    ) {
+      const id = tryId(b.nodes[1]!)
+      if (!id) break derivative
+
+      tokens.push({ type: "dd", wrt: b.nodes[1]! as PlainVar })
+      return
+    }
 
     const last = tokens[tokens.length - 1]
     if (

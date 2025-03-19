@@ -253,6 +253,8 @@ export interface Nodes {
   valueGlsl: { value: GlslValue }
   sym: { value: Sym }
   suffixed: { base: Node; suffixes: readonly Suffix[] }
+  dd: { wrt: PlainVar }
+  deriv: { wrt: PlainVar; of: Node }
 }
 
 export type NodeName = keyof Nodes

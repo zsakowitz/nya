@@ -55,6 +55,7 @@ export function allPackages(): Package[] {
     PKG_NUM_QUATERNION,
     PKG_TEXT,
     PKG_COLOR_EXTRAS,
+    // TODO: reduce ithkuil root and affix data size (it's 56% of the bundle currently)
     PKG_ITHKUIL,
     PKG_TRIG_HYPERBOLIC_REAL,
     PKG_STATISTICS,
