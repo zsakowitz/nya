@@ -4,4 +4,4 @@ n=6
 a=1
 s=\operatorname{iterate}.a^{n+1}\begin{list}n\to n+1\\a\to a.\operatorname{join}\left(n\right)\end{list}\operatorname{from}a=\left[\right]
 M=\left(\operatorname{iterate}.q^{n+1}\begin{list}n\to n+1\\q\to \operatorname{sym}\left(\operatorname{eval}q+\operatorname{eval}\left(M\left[n\right]\right)\right)\end{list}\operatorname{from}\begin{list}n=1\\q=\operatorname{sym}0\end{list}\right)\operatorname{with}M=\left(\operatorname{sym}\left(\operatorname{unsym}\left(\operatorname{eval}d\left(\operatorname{sym}f\left(x\right),s\right)\operatorname{with}x=a\right)\cdot \frac{\left(x-\operatorname{unsym}a\right)^{\operatorname{unsym}s}}{\left(\operatorname{unsym}s\right)!}\right)\operatorname{for}s=s\right)
-@y<\operatorname{eval}M
+y<\operatorname{eval}M
