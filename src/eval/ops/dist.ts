@@ -9,14 +9,17 @@ import { listTy } from "../ty/debug"
 import { TY_INFO } from "../ty/info"
 import {
   FnDistManual,
-  type DerivFn,
-  type DisplayFn,
   type FnOverload,
   type FnOverloadVar,
+  type FnProps,
 } from "./dist-manual"
 import { ALL_DOCS } from "./docs"
 
 type FnError = `${string}%%${string}`
+
+export interface FnDistProps extends FnProps {
+  message?: FnError
+}
 
 /**
  * `FnDist` are functions which take a fixed number of arguments of
@@ -34,15 +37,11 @@ type FnError = `${string}%%${string}`
 export class FnDist<Q extends TyName = TyName> extends FnDistManual<Q> {
   o: FnOverload<Q>[] = []
   private parent?: FnDist<Q>
+  private readonly message: FnError
 
-  constructor(
-    name: string,
-    label: string,
-    readonly message: FnError = `Cannot call '${name}' with %%.`,
-    displayFn?: DisplayFn,
-    deriv?: DerivFn,
-  ) {
-    super(name, label, displayFn, deriv)
+  constructor(name: string, label: string, props?: FnDistProps) {
+    super(name, label, props)
+    this.message = props?.message ?? `Cannot call '${name}' with %%.`
     ALL_DOCS.push(this)
   }
 
@@ -153,15 +152,8 @@ export class FnDist<Q extends TyName = TyName> extends FnDistManual<Q> {
     )
   }
 
-  with(
-    name: string,
-    label: string,
-    message?: FnError,
-    // @ts-expect-error typescript please add module-level privacy like rust, class-based privacy is horrific
-    display: DisplayFn = this.displayFn,
-    deriv = this.deriv,
-  ) {
-    const dist = new FnDist<Q>(name, label, message, display, deriv)
+  with(name: string, label: string, props?: FnDistProps) {
+    const dist = new FnDist<Q>(name, label, props)
     dist.parent = this
     return dist
   }

@@ -223,13 +223,7 @@ const OP_TO_TEXT = new FnDist<"text">("to text", "converts a value into text")
 
 const FN_CONCAT = new (class extends FnDistManual<"text"> {
   constructor() {
-    super(
-      "concat",
-      "concatenates one or more string-like values into a string",
-      undefined,
-      // SYM: fix concat derivatives
-      undefined,
-    )
+    super("concat", "concatenates one or more string-like values into a string")
     ALL_DOCS.push(this)
   }
 

@@ -5,34 +5,24 @@ import { approx, num, real } from "../eval/ty/create"
 import { chain, OP_NEG, OP_RAISE } from "./core-ops"
 import { PKG_REAL } from "./num-real"
 
-const FN_SIN: FnDist = new FnDist(
-  "sin",
-  "takes the sine of an angle",
-  undefined,
-  undefined,
-  unary((wrt, a) => chain(a, wrt, { type: "call", fn: FN_COS, args: [a] })),
-)
+const FN_SIN: FnDist = new FnDist("sin", "takes the sine of an angle", {
+  deriv: unary((wrt, a) =>
+    chain(a, wrt, { type: "call", fn: FN_COS, args: [a] }),
+  ),
+})
 
-const FN_COS: FnDist = new FnDist(
-  "cos",
-  "takes the cosine of an angle",
-  undefined,
-  undefined,
-  unary((wrt, a) =>
+const FN_COS: FnDist = new FnDist("cos", "takes the cosine of an angle", {
+  deriv: unary((wrt, a) =>
     chain(a, wrt, {
       type: "call",
       fn: OP_NEG,
       args: [{ type: "call", fn: FN_SIN, args: [a] }],
     }),
   ),
-)
+})
 
-const FN_TAN = new FnDist(
-  "tan",
-  "takes the tangent of an angle",
-  undefined,
-  undefined,
-  unary((wrt, a) =>
+const FN_TAN = new FnDist("tan", "takes the tangent of an angle", {
+  deriv: unary((wrt, a) =>
     chain(a, wrt, {
       type: "call",
       fn: OP_RAISE,
@@ -42,7 +32,7 @@ const FN_TAN = new FnDist(
       ],
     }),
   ),
-)
+})
 const FN_CSC = new FnDist("csc", "takes the cosecant of an angle")
 const FN_SEC = new FnDist("sec", "takes the secant of an angle")
 const FN_COT = new FnDist("cot", "takes the cotangent of an angle")

@@ -163,24 +163,20 @@ float _helper_cmp_r64(vec2 a, vec2 b) {
 `
 }
 
-export const OP_ADD: FnDist = new FnDist(
-  "+",
-  "adds two values or points",
-  "Cannot add %%.",
-  binaryFn(() => new OpPlus(), Precedence.Sum),
-  binary((wrt, a, b) => ({
+export const OP_ADD: FnDist = new FnDist("+", "adds two values or points", {
+  message: "Cannot add %%.",
+  display: binaryFn(() => new OpPlus(), Precedence.Sum),
+  deriv: binary((wrt, a, b) => ({
     type: "call",
     fn: OP_ADD,
     args: [txr(a).deriv(a, wrt), txr(b).deriv(b, wrt)],
   })),
-)
+})
 
-export const OP_CDOT: FnDist = new FnDist(
-  "·",
-  "multiplies two values",
-  "Cannot multiply %%.",
-  binaryFn(() => new OpCdot(), Precedence.Product),
-  binary((wrt, a, b) => ({
+export const OP_CDOT: FnDist = new FnDist("·", "multiplies two values", {
+  message: "Cannot multiply %%.",
+  display: binaryFn(() => new OpCdot(), Precedence.Product),
+  deriv: binary((wrt, a, b) => ({
     type: "call",
     fn: OP_ADD,
     args: [
@@ -188,20 +184,16 @@ export const OP_CDOT: FnDist = new FnDist(
       { type: "call", fn: OP_JUXTAPOSE, args: [b, txr(a).deriv(a, wrt)] },
     ],
   })),
-)
+})
 
-export const OP_CROSS = new FnDist(
-  "×",
-  "multiplies two real numbers",
-  "Cannot take the cross product of %%.",
-  binaryFn(() => new OpTimes(), Precedence.Product),
-)
+export const OP_CROSS = new FnDist("×", "multiplies two real numbers", {
+  message: "Cannot take the cross product of %%.",
+  display: binaryFn(() => new OpTimes(), Precedence.Product),
+})
 
-export const OP_DIV = new FnDist(
-  "÷",
-  "divides two values",
-  "Cannot divide %%.",
-  ([a, b, c]) => {
+export const OP_DIV = new FnDist("÷", "divides two values", {
+  message: "Cannot divide %%.",
+  display([a, b, c]) {
     if (a && b && !c) {
       const block = new Block(null)
       new CmdFrac(txr(a).display(a).block, txr(b).display(b).block).insertAt(
@@ -211,223 +203,235 @@ export const OP_DIV = new FnDist(
       return { block, lhs: Precedence.Atom, rhs: Precedence.Atom }
     }
   },
-)
+})
 
 export const OP_JUXTAPOSE = OP_CDOT.with(
   "juxtapose",
   "multiplies two values which aren't separated by an operator",
-  "Cannot juxtapose %%.",
-  ([a, b, c]) => {
-    if (!(a && b && !c)) return
-    const block = new Block(null)
-    const cursor = block.cursor(R)
-    insertStrict(
-      cursor,
-      txr(a).display(a),
-      Precedence.Juxtaposition,
-      Precedence.Juxtaposition,
-    )
-    insert(
-      cursor,
-      txr(b).display(b),
-      Precedence.Juxtaposition,
-      Precedence.Juxtaposition,
-    )
-    return {
-      block,
-      lhs: Precedence.Juxtaposition,
-      rhs: Precedence.Juxtaposition,
-    }
+  {
+    message: "Cannot juxtapose %%.",
+    display([a, b, c]) {
+      if (!(a && b && !c)) return
+      const block = new Block(null)
+      const cursor = block.cursor(R)
+      insertStrict(
+        cursor,
+        txr(a).display(a),
+        Precedence.Juxtaposition,
+        Precedence.Juxtaposition,
+      )
+      insert(
+        cursor,
+        txr(b).display(b),
+        Precedence.Juxtaposition,
+        Precedence.Juxtaposition,
+      )
+      return {
+        block,
+        lhs: Precedence.Juxtaposition,
+        rhs: Precedence.Juxtaposition,
+      }
+    },
   },
 )
 
-export const OP_MOD = new FnDist(
-  "mod",
-  "gets the remainder when dividing one value by another",
-  "Cannot take the remainder of %%.",
-  binaryFn(() => new CmdWord("mod", "infix"), Precedence.Product),
-)
+export const OP_MOD = new FnDist("mod", "modulus operator (remainder-like)", {
+  message: "Cannot take the remainder of %%.",
+  display: binaryFn(() => new CmdWord("mod", "infix"), Precedence.Product),
+})
 
-export const OP_NEG: FnDist = new FnDist(
-  "-",
-  "negates its input",
-  "Cannot negate %%.",
-  prefixFn(() => new OpMinus(), Precedence.Sum),
-  unary((wrt, a) => ({
+export const OP_NEG: FnDist = new FnDist("-", "negates its input", {
+  message: "Cannot negate %%.",
+  display: prefixFn(() => new OpMinus(), Precedence.Sum),
+  deriv: unary((wrt, a) => ({
     type: "call",
     args: [txr(a).deriv(a, wrt)],
     fn: OP_NEG,
   })),
-)
+})
 
-export const OP_ODOT = new FnDist(
-  "⊙",
-  "multiples complex numbers or points component-wise",
-  "Cannot multiply %% component-by-component.",
-  binaryFn(() => new OpOdot(), Precedence.Product),
-)
+export const OP_ODOT = new FnDist("⊙", "multiples the components of points", {
+  message: "Cannot multiply %% component-by-component.",
+  display: binaryFn(() => new OpOdot(), Precedence.Product),
+})
 
 export const OP_POS = new FnDist(
   "+",
-  "unary plus; ensures the expression is number-like",
-  "Cannot convert %% to a number.",
-  prefixFn(() => new OpPlus(), Precedence.Sum),
-  unary((wrt, a) => txr(a).deriv(a, wrt)),
+  "unary plus; ensures a numeric value is passed",
+  {
+    message: "Cannot convert %% to a number.",
+    display: prefixFn(() => new OpPlus(), Precedence.Sum),
+    deriv: unary((wrt, a) => txr(a).deriv(a, wrt)),
+  },
 )
 
 export const OP_RAISE: FnDist = new FnDist(
   "^",
   "raises a value to an exponent",
-  "Cannot raise %% as an exponent.",
-  ([a, b, c]) => {
-    if (!(a && b && !c)) return
-    const block = new Block(null)
-    const cursor = block.cursor(R)
-    insert(cursor, txr(a).display(a), Precedence.Atom, Precedence.Atom)
-    const bb = txr(b).display(b).block
-    if (cursor[L] instanceof CmdSupSub && !cursor[L].sup) {
-      bb.insertAt(cursor[L].create("sup").cursor(R), L)
-    } else {
-      new CmdSupSub(null, bb).insertAt(cursor, L)
-    }
-    return { block, lhs: Precedence.Atom, rhs: Precedence.Atom }
-  },
-  ([a, b, c], wrt) => {
-    if (!(a && b && !c)) {
-      throw new Error("Invalid derivative.")
-    }
-
-    const usedA = txr(a).uses(a, wrt)
-    const usedB = txr(b).uses(b, wrt)
-
-    if (!usedA && !usedB) {
-      return SYM_0
-    } else if (usedA && !usedB) {
-      // f(x)^n --> f'(x) * nf^(n-1)
-      return {
-        type: "call",
-        fn: OP_JUXTAPOSE,
-        args: [
-          {
-            type: "call",
-            fn: OP_JUXTAPOSE,
-            args: [txr(a).deriv(a, wrt), b],
-          },
-          {
-            type: "call",
-            fn: OP_RAISE,
-            args: [
-              a,
-              {
-                type: "call",
-                fn: OP_SUB,
-                args: [b, SYM_1],
-              },
-            ],
-          },
-        ],
+  {
+    message: "Cannot raise %% as an exponent.",
+    display([a, b, c]) {
+      if (!(a && b && !c)) return
+      const block = new Block(null)
+      const cursor = block.cursor(R)
+      insert(cursor, txr(a).display(a), Precedence.Atom, Precedence.Atom)
+      const bb = txr(b).display(b).block
+      if (cursor[L] instanceof CmdSupSub && !cursor[L].sup) {
+        bb.insertAt(cursor[L].create("sup").cursor(R), L)
+      } else {
+        new CmdSupSub(null, bb).insertAt(cursor, L)
       }
-    } else if (usedB && !usedA) {
-      // a^f = f' * a^f * ln a
-      return {
-        type: "call",
-        fn: OP_JUXTAPOSE,
-        args: [
-          {
-            type: "call",
-            fn: OP_JUXTAPOSE,
-            args: [
-              txr(b).deriv(b, wrt),
-              { type: "call", fn: FN_LN, args: [a] },
-            ],
-          },
-          {
-            type: "call",
-            fn: OP_RAISE,
-            args: [a, b],
-          },
-        ],
+      return { block, lhs: Precedence.Atom, rhs: Precedence.Atom }
+    },
+    deriv([a, b, c], wrt) {
+      if (!(a && b && !c)) {
+        throw new Error("Invalid derivative.")
       }
-    } else {
-      // d/dx(f(x)^g(x)) = f^(g - 1) (g f' + f ln(f) g')
-      return {
-        type: "call",
-        fn: OP_JUXTAPOSE,
-        args: [
-          {
-            type: "call",
-            fn: OP_RAISE,
-            args: [a, { type: "call", fn: OP_SUB, args: [b, SYM_1] }],
-          },
 
-          // g f' + f ln(f) g'
-          {
-            type: "call",
-            fn: OP_ADD,
-            args: [
-              {
-                type: "call",
-                fn: OP_JUXTAPOSE,
-                args: [b, txr(a).deriv(a, wrt)],
-              },
+      const usedA = txr(a).uses(a, wrt)
+      const usedB = txr(b).uses(b, wrt)
 
-              // f ln(f) g'
-              {
-                type: "call",
-                fn: OP_JUXTAPOSE,
-                args: [
-                  {
-                    type: "call",
-                    fn: OP_JUXTAPOSE,
-                    args: [a, { type: "call", fn: FN_LN, args: [a] }],
-                  },
-                  txr(b).deriv(b, wrt),
-                ],
-              },
-            ],
-          },
-        ],
+      if (!usedA && !usedB) {
+        return SYM_0
+      } else if (usedA && !usedB) {
+        // f(x)^n --> f'(x) * nf^(n-1)
+        return {
+          type: "call",
+          fn: OP_JUXTAPOSE,
+          args: [
+            {
+              type: "call",
+              fn: OP_JUXTAPOSE,
+              args: [txr(a).deriv(a, wrt), b],
+            },
+            {
+              type: "call",
+              fn: OP_RAISE,
+              args: [
+                a,
+                {
+                  type: "call",
+                  fn: OP_SUB,
+                  args: [b, SYM_1],
+                },
+              ],
+            },
+          ],
+        }
+      } else if (usedB && !usedA) {
+        // a^f = f' * a^f * ln a
+        return {
+          type: "call",
+          fn: OP_JUXTAPOSE,
+          args: [
+            {
+              type: "call",
+              fn: OP_JUXTAPOSE,
+              args: [
+                txr(b).deriv(b, wrt),
+                { type: "call", fn: FN_LN, args: [a] },
+              ],
+            },
+            {
+              type: "call",
+              fn: OP_RAISE,
+              args: [a, b],
+            },
+          ],
+        }
+      } else {
+        // d/dx(f(x)^g(x)) = f^(g - 1) (g f' + f ln(f) g')
+        return {
+          type: "call",
+          fn: OP_JUXTAPOSE,
+          args: [
+            {
+              type: "call",
+              fn: OP_RAISE,
+              args: [a, { type: "call", fn: OP_SUB, args: [b, SYM_1] }],
+            },
+
+            // g f' + f ln(f) g'
+            {
+              type: "call",
+              fn: OP_ADD,
+              args: [
+                {
+                  type: "call",
+                  fn: OP_JUXTAPOSE,
+                  args: [b, txr(a).deriv(a, wrt)],
+                },
+
+                // f ln(f) g'
+                {
+                  type: "call",
+                  fn: OP_JUXTAPOSE,
+                  args: [
+                    {
+                      type: "call",
+                      fn: OP_JUXTAPOSE,
+                      args: [a, { type: "call", fn: FN_LN, args: [a] }],
+                    },
+                    txr(b).deriv(b, wrt),
+                  ],
+                },
+              ],
+            },
+          ],
+        }
       }
-    }
+    },
   },
 )
 
-export const OP_SUB = new FnDist(
-  "-",
-  "subtracts two values",
-  "Cannot subtract %%.",
-  binaryFn(() => new OpMinus(), Precedence.Sum),
-)
+export const OP_SUB = new FnDist("-", "subtracts two values", {
+  message: "Cannot subtract %%.",
+  display: binaryFn(() => new OpMinus(), Precedence.Sum),
+})
 
 export const OP_POINT = new FnDist(
   "construct point",
   "constructs a point from two coordinates",
-  "Cannot construct a point from %%.",
-  ([a, b, c]) => {
-    if (!(a && b && !c)) return
-    const inner = new Block(null)
-    const cursor = inner.cursor(R)
-    insertStrict(cursor, txr(a).display(a), Precedence.Comma, Precedence.Comma)
-    new CmdComma().insertAt(cursor, L)
-    insertStrict(cursor, txr(b).display(b), Precedence.Comma, Precedence.Comma)
-    const block = new Block(null)
-    new CmdBrack("(", ")", null, inner).insertAt(block.cursor(R), L)
-    return { block, lhs: Precedence.Var, rhs: Precedence.Var }
+  {
+    message: "Cannot construct a point from %%.",
+    display([a, b, c]) {
+      if (!(a && b && !c)) return
+      const inner = new Block(null)
+      const cursor = inner.cursor(R)
+      insertStrict(
+        cursor,
+        txr(a).display(a),
+        Precedence.Comma,
+        Precedence.Comma,
+      )
+      new CmdComma().insertAt(cursor, L)
+      insertStrict(
+        cursor,
+        txr(b).display(b),
+        Precedence.Comma,
+        Precedence.Comma,
+      )
+      const block = new Block(null)
+      new CmdBrack("(", ")", null, inner).insertAt(block.cursor(R), L)
+      return { block, lhs: Precedence.Var, rhs: Precedence.Var }
+    },
   },
 )
 
 export const OP_ABS = new FnDist(
   "abs",
   "takes the absolute value of a number, or gets the magnitude of a complex number",
-  "Cannot take the absolute value of %%.",
-  ([a, b]) => {
-    if (!a || b) return
-    const inner = new Block(null)
-    const cursor = inner.cursor(R)
-    txr(a).display(a).block.insertAt(cursor, L)
-    const block = new Block(null)
-    new CmdBrack("|", "|", null, inner).insertAt(block.cursor(R), L)
-    return { block, lhs: Precedence.Var, rhs: Precedence.Var }
+  {
+    message: "Cannot take the absolute value of %%.",
+    display([a, b]) {
+      if (!a || b) return
+      const inner = new Block(null)
+      const cursor = inner.cursor(R)
+      txr(a).display(a).block.insertAt(cursor, L)
+      const block = new Block(null)
+      new CmdBrack("|", "|", null, inner).insertAt(block.cursor(R), L)
+      return { block, lhs: Precedence.Var, rhs: Precedence.Var }
+    },
   },
 )
 

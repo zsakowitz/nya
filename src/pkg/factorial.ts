@@ -1,9 +1,9 @@
 import factorial from "@stdlib/math/base/special/factorial"
 import type { Package } from "."
+import { NO_SYM } from "../eval/ast/tx"
 import type { GlslContext } from "../eval/lib/fn"
 import { FnDist } from "../eval/ops/dist"
 import { num, real } from "../eval/ty/create"
-import { NO_SYM } from "../eval/ast/tx"
 
 function factorialGlsl(ctx: GlslContext, x: string) {
   ctx.glsl`float sinpiSeries(float x) {
@@ -102,11 +102,9 @@ float factorial(float x) {
   return `factorial(${x})`
 }
 
-const OP_FACTORIAL = new FnDist(
-  "!",
-  "computes a factorial",
-  `Cannot take the factorial of %%.`,
-).add(
+const OP_FACTORIAL = new FnDist("!", "computes a factorial", {
+  message: "Cannot take the factorial of %%.",
+}).add(
   ["r32"],
   "r32",
   (a) => {

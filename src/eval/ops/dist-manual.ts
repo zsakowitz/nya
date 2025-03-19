@@ -48,7 +48,7 @@ export interface FnOverloadVar<Q extends TyName = TyName> {
 export type DisplayFn = ((args: Sym[]) => SymDisplay | undefined) | undefined
 export type DerivFn = ((args: Sym[], wrt: string) => Sym) | undefined
 
-export interface FnDistProps {
+export interface FnProps {
   display?: DisplayFn
   deriv?: DerivFn
   /** `args` will already be simplified. */
@@ -63,12 +63,17 @@ export interface FnDistProps {
  * a specific value.
  */
 export abstract class FnDistManual<Q extends TyName = TyName> implements Fn {
+  private readonly displayFn: DisplayFn | undefined
+  readonly deriv: DerivFn | undefined
+
   constructor(
     readonly name: string,
     readonly label: string,
-    private readonly displayFn: DisplayFn,
-    readonly deriv: DerivFn,
-  ) {}
+    props?: FnProps,
+  ) {
+    this.displayFn = props?.display
+    this.deriv = props?.deriv
+  }
 
   display(args: Sym[]): SymDisplay {
     const custom = this.displayFn?.(args)

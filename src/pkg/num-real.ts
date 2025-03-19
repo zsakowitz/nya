@@ -96,16 +96,14 @@ function addCmp(
   )
 }
 
-export const FN_EXP = new FnDist(
-  "exp",
-  "raises e to some value",
-  "Cannot raise e to the power of %%.",
-)
+export const FN_EXP = new FnDist("exp", "raises e to some value", {
+  message: "Cannot raise e to the power of %%.",
+})
 
 export const FN_UNSIGN = new FnDist(
   "unsign",
   "takes the absolute value of the components of a value",
-  "Cannot take the absolute value component-by-component of %%.",
+  { message: "Cannot take the absolute value component-by-component of %%." },
 )
 
 const FN_COMPONENT = new (class extends FnDistCaching {
@@ -113,10 +111,7 @@ const FN_COMPONENT = new (class extends FnDistCaching {
     super(
       "component",
       "gets a component of a multidimensional value",
-      // SYM: better display
-      undefined,
       // SYM: fix component derivatives
-      undefined,
     )
     ALL_DOCS.push(this)
   }
@@ -238,13 +233,13 @@ function iconReal(hd: boolean) {
 const FN_CMP = new FnDist(
   "cmp",
   "compares two numbers, returning -1, 0, or 1, depending on whether the first number is less than, equal to, or greater than the second number",
-  "Cannot compare %%.",
+  { message: "Cannot compare %%." },
 )
 
 export const FN_LN: FnDist = new FnDist(
   "ln",
   "takes the natural logarithm of a value",
-  "Cannot take the natural logarithm of %%.",
+  { message: "Cannot take the natural logarithm of %%." },
 ).add(
   ["r32"],
   "r32",
@@ -252,11 +247,9 @@ export const FN_LN: FnDist = new FnDist(
   (_, a) => `log(${a.expr})`,
 )
 
-export const FN_SIGN = new FnDist(
-  "sign",
-  "gets the sign of a number",
-  "Cannot find the sign of %%.",
-)
+export const FN_SIGN = new FnDist("sign", "gets the sign of a number", {
+  message: "Cannot find the sign of %%.",
+})
   .add(
     ["r64"],
     "r64",
@@ -273,16 +266,14 @@ export const FN_SIGN = new FnDist(
     (_, a) => `sign(${a.expr})`,
   )
 
-const FN_SGN = FN_SIGN.with(
-  "sgn",
-  "gets the sign of a number",
-  "Cannot find the sign of %%.",
-)
+const FN_SGN = FN_SIGN.with("sgn", "gets the sign of a number", {
+  message: "Cannot find the sign of %%.",
+})
 
 export const FN_LOG10 = new FnDist(
   "log",
   "takes the base-10 logarithm of a value",
-  "Cannot take the base-10 logarithm of %%.",
+  { message: "Cannot take the base-10 logarithm of %%." },
 ).add(
   ["r32"],
   "r32",
@@ -294,7 +285,7 @@ export const FN_LOG10 = new FnDist(
 const FN_LOGB = new FnDist(
   "log with subscript",
   "takes the logarithm of a value in some base",
-  "Cannot take the logarithm of %%.",
+  { message: "Cannot take the logarithm of %%." },
 ).add(
   ["r32", "r32"],
   "r32",

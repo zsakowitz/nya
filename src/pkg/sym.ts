@@ -172,14 +172,10 @@ export const PKG_SYM: Package = {
       },
     },
     fn: {
-      simplify: new FnDist(
-        "simplify",
-        "Simplifies an expression.",
-        `Cannot simplify %%.`,
-        undefined,
+      simplify: new FnDist("simplify", "Simplifies an expression.", {
+        message: "Cannot simplify %%.",
         // SYM: derivative of contents
-        undefined,
-      ).add(
+      }).add(
         ["sym"],
         "sym",
         (a) => txr(a.value).simplify(a.value),
