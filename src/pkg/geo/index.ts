@@ -830,24 +830,6 @@ const INFO_ARC: TyInfoByName<"arc"> = {
             "stroke-linecap": "round",
             "stroke-width": 8,
           }),
-          sx("circle", {
-            cx: 6.821075367479289,
-            cy: 58.046972674137905,
-            r: 8,
-            fill: "#6042a6",
-          }),
-          sx("circle", {
-            cx: 15.235216160664043,
-            cy: 35.60926389231189,
-            r: 8,
-            fill: "#6042a6",
-          }),
-          sx("circle", {
-            cx: 60.110633724316074,
-            cy: 7.562127915029379,
-            r: 8,
-            fill: "#6042a6",
-          }),
         ),
       ),
     )
