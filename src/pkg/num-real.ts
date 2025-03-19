@@ -32,7 +32,7 @@ import {
   OP_NGTE,
   OP_NLT,
   OP_NLTE,
-} from "./core-cmp"
+} from "./core/cmp"
 import {
   abs64,
   addR64,
@@ -51,7 +51,7 @@ import {
   OP_RAISE,
   OP_SUB,
   subR64,
-} from "./core-ops"
+} from "./core/ops"
 
 declare module "../eval/ty" {
   interface Tys {

@@ -1,24 +1,24 @@
-import type { Package } from "."
-import { commalist } from "../eval/ast/collect"
+import type { Package } from ".."
+import { commalist } from "../../eval/ast/collect"
 import {
   Precedence,
   type Node,
   type PuncUnary,
   type Var,
-} from "../eval/ast/token"
-import { NO_DRAG, NO_SYM, sym } from "../eval/ast/tx"
-import { glsl, glslCall, type PropsGlsl, type PropsSym } from "../eval/glsl"
-import { js, jsCall, type PropsJs } from "../eval/js"
-import { asNumericBase } from "../eval/lib/base"
-import { BindingFn, id, SYM_BINDINGS, tryName } from "../eval/lib/binding"
-import type { GlslContext } from "../eval/lib/fn"
-import { safe } from "../eval/lib/util"
-import { FNS, OP_UNARY } from "../eval/ops"
-import type { Sym } from "../eval/sym"
-import { each, type GlslValue, type JsValue } from "../eval/ty"
-import { canCoerce, coerceTyJs } from "../eval/ty/coerce"
-import { frac, num } from "../eval/ty/create"
-import { OP_JUXTAPOSE, OP_RAISE } from "./core-ops"
+} from "../../eval/ast/token"
+import { NO_DRAG, NO_SYM, sym } from "../../eval/ast/tx"
+import { glsl, glslCall, type PropsGlsl, type PropsSym } from "../../eval/glsl"
+import { js, jsCall, type PropsJs } from "../../eval/js"
+import { asNumericBase } from "../../eval/lib/base"
+import { BindingFn, id, SYM_BINDINGS, tryName } from "../../eval/lib/binding"
+import type { GlslContext } from "../../eval/lib/fn"
+import { safe } from "../../eval/lib/util"
+import { FNS, OP_UNARY } from "../../eval/ops"
+import type { Sym } from "../../eval/sym"
+import { each, type GlslValue, type JsValue } from "../../eval/ty"
+import { canCoerce, coerceTyJs } from "../../eval/ty/coerce"
+import { frac, num } from "../../eval/ty/create"
+import { OP_JUXTAPOSE, OP_RAISE } from "./ops"
 
 function callJs(name: Var, args: Node[], props: PropsJs): JsValue {
   const sub = name.sub ? "_" : ""

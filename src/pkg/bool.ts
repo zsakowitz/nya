@@ -34,7 +34,7 @@ import { CmdBrack } from "../field/cmd/math/brack"
 import { L } from "../field/model"
 import { h, px } from "../jsx"
 import { example } from "../sheet/ui/sheet/docs"
-import { OP_AND } from "./core-cmp"
+import { OP_AND } from "./core/cmp"
 
 declare module "../eval/ty" {
   interface Tys {

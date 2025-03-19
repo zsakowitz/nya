@@ -30,7 +30,7 @@ import {
   OP_RAISE,
   OP_SUB,
   subR64,
-} from "./core-ops"
+} from "./core/ops"
 import { declareDebugPoint, FN_DEBUGPOINT, PKG_GEO_POINT } from "./geo-point"
 import { FN_EXP, FN_LOG10, FN_SIGN, FN_UNSIGN, PKG_REAL } from "./num-real"
 

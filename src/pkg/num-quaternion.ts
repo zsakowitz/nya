@@ -14,7 +14,7 @@ import {
   OP_ODOT,
   OP_POS,
   OP_SUB,
-} from "./core-ops"
+} from "./core/ops"
 import { FN_CONJ, PKG_NUM_COMPLEX } from "./num-complex"
 import { FN_UNSIGN, PKG_REAL } from "./num-real"
 

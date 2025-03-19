@@ -1,10 +1,10 @@
-import type { Package } from "."
-import { Precedence } from "../eval/ast/token"
-import { NO_DRAG, sym } from "../eval/ast/tx"
-import { glsl } from "../eval/glsl"
-import { js } from "../eval/js"
-import { OP_BINARY } from "../eval/ops"
-import { FnDist } from "../eval/ops/dist"
+import type { Package } from ".."
+import { Precedence } from "../../eval/ast/token"
+import { NO_DRAG, sym } from "../../eval/ast/tx"
+import { glsl } from "../../eval/glsl"
+import { js } from "../../eval/js"
+import { OP_BINARY } from "../../eval/ops"
+import { FnDist } from "../../eval/ops/dist"
 import {
   asBool,
   binaryFn,
@@ -12,10 +12,10 @@ import {
   SYM_FALSE,
   txr,
   type Sym,
-} from "../eval/sym"
-import { OpEq, OpGt, OpLt } from "../field/cmd/leaf/cmp"
-import { CmdWord } from "../field/cmd/leaf/word"
-import { Block, L, R, type Command } from "../field/model"
+} from "../../eval/sym"
+import { OpEq, OpGt, OpLt } from "../../field/cmd/leaf/cmp"
+import { CmdWord } from "../../field/cmd/leaf/word"
+import { Block, L, R, type Command } from "../../field/model"
 
 function create(name: string, op: () => Command): FnDist {
   return new FnDist(name, `compares two values via the ${name} operator`, {
