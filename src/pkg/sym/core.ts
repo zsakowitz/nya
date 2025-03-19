@@ -16,6 +16,7 @@ import type { JsValue } from "../../eval/ty"
 import { frac, real } from "../../eval/ty/create"
 import { Display } from "../../eval/ty/display"
 import { CmdNum } from "../../field/cmd/leaf/num"
+import { OpPlusMinus } from "../../field/cmd/leaf/op"
 import { CmdWord } from "../../field/cmd/leaf/word"
 import { CmdSupSub } from "../../field/cmd/math/supsub"
 import { Block, L, R } from "../../field/model"
@@ -249,7 +250,17 @@ export const PKG_SYM_CORE: Package = {
         display(value) {
           const block = new Block(null)
           new Display(block.cursor(R), frac(10, 1)).output(value.value, false)
-          return { block, lhs: Precedence.Sum, rhs: Precedence.Sum }
+          let prec: number = Precedence.Atom
+          let el = block.ends[L]
+          while (el) {
+            if (el instanceof OpPlusMinus) {
+              prec = Precedence.Sum
+            } else if (!(el instanceof CmdNum)) {
+              prec = Precedence.NotApplicable
+            }
+            el = el[R]
+          }
+          return { block, lhs: prec, rhs: prec }
         },
         simplify(value) {
           return { type: "js", value: value.value }

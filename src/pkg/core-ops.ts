@@ -337,10 +337,22 @@ export const OP_NEG: FnDist = new FnDist("-", "negates its input", {
   })),
 })
 
-export const OP_ODOT = new FnDist("⊙", "multiples the components of points", {
-  message: "Cannot multiply %% component-by-component.",
-  display: binaryFn(() => new OpOdot(), Precedence.Product),
-})
+export const OP_ODOT: FnDist = new FnDist(
+  "⊙",
+  "multiples the components of points",
+  {
+    message: "Cannot multiply %% component-by-component.",
+    display: binaryFn(() => new OpOdot(), Precedence.Product),
+    deriv: binary((wrt, a, b) => ({
+      type: "call",
+      fn: OP_ADD,
+      args: [
+        { type: "call", fn: OP_ODOT, args: [a, txr(b).deriv(b, wrt)] },
+        { type: "call", fn: OP_ODOT, args: [b, txr(a).deriv(a, wrt)] },
+      ],
+    })),
+  },
+)
 
 export const OP_POS = new FnDist(
   "+",

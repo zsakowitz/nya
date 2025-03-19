@@ -104,7 +104,7 @@ export const Precedence = Object.freeze({
   NotApplicable:     -1, // 23!, ¬x, dotted access
 
   Var:               99, // a variable name (only used in sym)
-  Atom:              98, // f(x), x², dotted access (only used in sym)
+  Atom:              98, // 7, f(x), x², dotted access (only used in sym)
   Juxtaposition:     97, // 2x (only used in sym)
 
   Exponential:       14, // x ↑ 3
