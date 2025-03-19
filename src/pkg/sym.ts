@@ -259,7 +259,7 @@ export const PKG_SYM: Package = {
               }
             }
           }
-          return { block, lhs: Precedence.Atom, rhs: Precedence.Atom }
+          return { block, lhs: Precedence.Var, rhs: Precedence.Var }
         },
         simplify(value) {
           return { ...value, type: "var" }

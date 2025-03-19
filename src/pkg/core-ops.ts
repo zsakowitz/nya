@@ -26,16 +26,10 @@ import { frac, num, real } from "../eval/ty/create"
 import { add, div } from "../eval/ty/ops"
 import { splitValue } from "../eval/ty/split"
 import { CmdComma } from "../field/cmd/leaf/comma"
-import {
-  OpCdot,
-  OpDiv,
-  OpMinus,
-  OpOdot,
-  OpPlus,
-  OpTimes,
-} from "../field/cmd/leaf/op"
+import { OpCdot, OpMinus, OpOdot, OpPlus, OpTimes } from "../field/cmd/leaf/op"
 import { CmdWord } from "../field/cmd/leaf/word"
 import { CmdBrack } from "../field/cmd/math/brack"
+import { CmdFrac } from "../field/cmd/math/frac"
 import { CmdSupSub } from "../field/cmd/math/supsub"
 import { Block, L, R, Span } from "../field/model"
 import { FN_LN } from "./num-real"
@@ -207,7 +201,16 @@ export const OP_DIV = new FnDist(
   "÷",
   "divides two values",
   "Cannot divide %%.",
-  binaryFn(() => new OpDiv(), Precedence.Product),
+  ([a, b, c]) => {
+    if (a && b && !c) {
+      const block = new Block(null)
+      new CmdFrac(txr(a).display(a).block, txr(b).display(b).block).insertAt(
+        block.cursor(R),
+        L,
+      )
+      return { block, lhs: Precedence.Atom, rhs: Precedence.Atom }
+    }
+  },
 )
 
 export const OP_JUXTAPOSE = OP_CDOT.with(
@@ -281,7 +284,12 @@ export const OP_RAISE: FnDist = new FnDist(
     const block = new Block(null)
     const cursor = block.cursor(R)
     insert(cursor, txr(a).display(a), Precedence.Atom, Precedence.Atom)
-    new CmdSupSub(null, txr(b).display(b).block).insertAt(cursor, L)
+    const bb = txr(b).display(b).block
+    if (cursor[L] instanceof CmdSupSub && !cursor[L].sup) {
+      bb.insertAt(cursor[L].create("sup").cursor(R), L)
+    } else {
+      new CmdSupSub(null, bb).insertAt(cursor, L)
+    }
     return { block, lhs: Precedence.Atom, rhs: Precedence.Atom }
   },
   ([a, b, c], wrt) => {
