@@ -1,1 +1,3 @@
 \left(\operatorname{sym}z\right)\operatorname{with}z=\operatorname{sym}x^{2}
+\operatorname{eval}\left(\operatorname{sym}\operatorname{unsym}z\operatorname{with}z=\operatorname{sym}x\right)
+\operatorname{eval}\left(\operatorname{sym}\operatorname{eval}z\operatorname{with}z=\operatorname{sym}x\right)

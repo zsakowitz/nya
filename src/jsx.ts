@@ -7,6 +7,10 @@ export function h(
   return hx("span", cl, ...children)
 }
 
+export function b(text: string) {
+  return h("font-semibold", text)
+}
+
 export function hx<K extends keyof HTMLElementTagNameMap>(
   name: K,
   cl?: string | Record<string, string | null>,
