@@ -7,6 +7,7 @@ import { js, type PropsJs } from "../eval/js"
 import type { Fn } from "../eval/ops"
 import { docByIcon, FnDist } from "../eval/ops/dist"
 import type { WithDocs } from "../eval/ops/docs"
+import { asBool, binaryFn, SYM_TRUE } from "../eval/sym"
 import {
   join,
   joinGlsl,
@@ -156,7 +157,33 @@ function piecewiseGlsl(piecesRaw: Piece[], props: PropsGlsl): GlslValue {
   return { ...ret, expr: name }
 }
 
-const OP_OR = new FnDist("or", "returns true if either of its inputs are true")
+const OP_OR = new FnDist(
+  "or",
+  "returns true if either of its inputs are true",
+  {
+    display: binaryFn(() => new CmdWord("or", "infix"), Precedence.BoolOr),
+    simplify([a, b, c]) {
+      if (!(a && b && !c)) {
+        return
+      }
+
+      const va = asBool(a)
+      const vb = asBool(b)
+
+      if (va === true || vb === true) {
+        return SYM_TRUE
+      }
+
+      if (va === false) {
+        return b
+      }
+
+      if (vb === false) {
+        return a
+      }
+    },
+  },
+)
 
 export const FN_VALID = new FnDist<"bool">(
   "valid",
@@ -358,7 +385,11 @@ export const PKG_BOOL: Package = {
         glide: null,
         preview: null,
         components: null,
-        extras: null,
+        extras: {
+          asBool(value) {
+            return value
+          },
+        },
       },
     },
   },

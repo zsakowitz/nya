@@ -37,6 +37,7 @@ export interface TyInfo<T, U extends TyName> {
 export interface TyExtras<T> {
   isZero?(value: T): boolean
   isOne?(value: T): boolean
+  asBool?(value: T): boolean | null
 }
 
 export type TyInfoByName<T extends TyName> = TyInfo<Tys[T], TyComponents[T]>

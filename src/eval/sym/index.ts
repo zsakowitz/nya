@@ -165,6 +165,16 @@ export const SYM_1: Sym = {
   value: { type: "r32", list: false, value: real(1) },
 }
 
+export const SYM_FALSE: Sym = {
+  type: "js",
+  value: { type: "bool", list: false, value: false },
+}
+
+export const SYM_TRUE: Sym = {
+  type: "js",
+  value: { type: "bool", list: false, value: true },
+}
+
 export const SYM_2: Sym = {
   type: "js",
   value: { type: "r32", list: false, value: real(2) },
@@ -187,5 +197,15 @@ export function isOne(sym: Sym) {
     (TY_INFO[sym.value.type] as TyInfo<Val, TyName>).extras?.isOne?.(
       sym.value.value,
     )
+  )
+}
+
+export function asBool(sym: Sym) {
+  return (
+    (sym.type == "js" && sym.value.list === false ?
+      (TY_INFO[sym.value.type] as TyInfo<Val, TyName>).extras?.asBool?.(
+        sym.value.value,
+      )
+    : null) ?? null
   )
 }

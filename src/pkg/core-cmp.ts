@@ -1,27 +1,89 @@
 import type { Package } from "."
 import { Precedence } from "../eval/ast/token"
-import { NO_DRAG, NO_SYM } from "../eval/ast/tx"
+import { NO_DRAG, sym } from "../eval/ast/tx"
 import { glsl } from "../eval/glsl"
 import { js } from "../eval/js"
 import { OP_BINARY } from "../eval/ops"
 import { FnDist } from "../eval/ops/dist"
+import {
+  asBool,
+  binaryFn,
+  insertStrict,
+  SYM_FALSE,
+  txr,
+  type Sym,
+} from "../eval/sym"
+import { OpEq, OpGt, OpLt } from "../field/cmd/leaf/cmp"
+import { CmdWord } from "../field/cmd/leaf/word"
+import { Block, L, R, type Command } from "../field/model"
 
-export const OP_LT = new FnDist("<", "compares two values via the < operator")
-export const OP_GT = new FnDist(">", "compares two values via the > operator")
+function create(name: string, op: () => Command): FnDist {
+  return new FnDist(name, `compares two values via the ${name} operator`, {
+    message: `Cannot compare %% via ${name}.`,
+    display([a, b, c]) {
+      if (!(a && b && !c)) return
+      const block = new Block(null)
+      const cursor = block.cursor(R)
+      insertStrict(
+        cursor,
+        txr(a).display(a),
+        Precedence.Comparison,
+        Precedence.Comparison,
+      )
+      op().insertAt(cursor, L)
+      insertStrict(
+        cursor,
+        txr(b).display(b),
+        Precedence.Comparison,
+        Precedence.Comparison,
+      )
+      return { block, lhs: Precedence.Comparison, rhs: Precedence.Comparison }
+    },
+  })
+}
 
-export const OP_LTE = new FnDist("≤", "compares two values via the ≤ operator")
-export const OP_GTE = new FnDist("≥", "compares two values via the ≥ operator")
+export const OP_LT = create("<", () => new OpLt(false, false))
+export const OP_GT = create(">", () => new OpGt(false, false))
 
-export const OP_NLT = new FnDist("≮", "compares two values via the ≮ operator")
-export const OP_NGT = new FnDist("≯", "compares two values via the ≯ operator")
+export const OP_LTE = create("≤", () => new OpLt(false, true))
+export const OP_GTE = create("≥", () => new OpGt(false, true))
 
-export const OP_NLTE = new FnDist("≰", "compares two values via the ≰ operator")
-export const OP_NGTE = new FnDist("≱", "compares two values via the ≱ operator")
+export const OP_NLT = create("≮", () => new OpLt(true, false))
+export const OP_NGT = create("≯", () => new OpGt(true, false))
 
-export const OP_EQ = new FnDist("=", "compares two values via the = operator")
-export const OP_NEQ = new FnDist("≠", "compares two values via the ≠ operator")
+export const OP_NLTE = create("≰", () => new OpLt(true, true))
+export const OP_NGTE = create("≱", () => new OpGt(true, true))
 
-export const OP_AND = new FnDist("and", "returns true if both inputs are true")
+export const OP_EQ = create("=", () => new OpEq(false))
+export const OP_NEQ = create("≠", () => new OpEq(true))
+
+export const OP_AND = new FnDist(
+  "and",
+  "returns true if both inputs are true",
+  {
+    display: binaryFn(() => new CmdWord("and", "infix"), Precedence.BoolAnd),
+    simplify([a, b, c]) {
+      if (!(a && b && !c)) {
+        return
+      }
+
+      const va = asBool(a)
+      const vb = asBool(b)
+
+      if (va === false || vb === false) {
+        return SYM_FALSE
+      }
+
+      if (va === true) {
+        return b
+      }
+
+      if (vb === true) {
+        return a
+      }
+    },
+  },
+)
 
 export const PKG_CORE_CMP: Package = {
   id: "nya:core-cmp",
@@ -31,7 +93,17 @@ export const PKG_CORE_CMP: Package = {
     tx: {
       ast: {
         cmplist: {
-          sym: NO_SYM,
+          sym(node, props) {
+            return node.ops
+              .map((op, i): Sym => {
+                const a = sym(node.items[i]!, props)
+                const b = sym(node.items[i + 1]!, props)
+                return { type: "call", fn: OP_BINARY[op]!, args: [a, b] }
+              })
+              .reduce(
+                (a, b): Sym => ({ type: "call", fn: OP_AND, args: [a, b] }),
+              )
+          },
           js(node, props) {
             return node.ops
               .map((op, i) => {
