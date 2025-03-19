@@ -1,5 +1,6 @@
 import type { Package } from "."
-import { glsl } from "../eval/glsl"
+import { glsl, jsToGlsl } from "../eval/glsl"
+import { js } from "../eval/js"
 import { id } from "../eval/lib/binding"
 import type { Fn } from "../eval/ops"
 import { docByIcon } from "../eval/ops/dist"
@@ -215,6 +216,25 @@ export const PKG_SHADER: Package = {
   label: "creates shaders with the x, y, and p variables",
   deps: [() => PKG_COLOR_CORE, () => PKG_REAL],
   eval: {
+    tx: {
+      magic: {
+        forcejs: {
+          fnlike: true,
+          deps(node, deps) {
+            deps.add(node.contents)
+          },
+          js(node, props) {
+            return js(node.contents, props)
+          },
+          glsl(node, props) {
+            return jsToGlsl(js(node.contents, props), props.ctx)
+          },
+          sym() {
+            throw new Error("Cannot call 'forcejs' in a symbolic expression.")
+          },
+        },
+      },
+    },
     var: {
       x: {
         label: "x-coordinate of currently drawn shader pixel",
