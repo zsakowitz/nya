@@ -6,7 +6,14 @@ import { js } from "../eval/js"
 import { Bindings, id } from "../eval/lib/binding"
 import { FnDist } from "../eval/ops/dist"
 import { issue } from "../eval/ops/issue"
-import { insertStrict, txr, TXR_SYM, type Sym, type TxrSym } from "../eval/sym"
+import {
+  insertStrict,
+  SYM_1,
+  txr,
+  TXR_SYM,
+  type Sym,
+  type TxrSym,
+} from "../eval/sym"
 import type { JsValue } from "../eval/ty"
 import { frac, real } from "../eval/ty/create"
 import { Display } from "../eval/ty/display"
@@ -246,7 +253,7 @@ export const PKG_SYM: Package = {
             }
           }
 
-          return { type: "var", id: value.id, source: value.source }
+          return SYM_1
         },
         uses(value, name) {
           return value.id == name

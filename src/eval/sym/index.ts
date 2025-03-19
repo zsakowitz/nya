@@ -154,6 +154,11 @@ export const SYM_1: Sym = {
   value: { type: "r32", list: false, value: real(1) },
 }
 
+export const SYM_2: Sym = {
+  type: "js",
+  value: { type: "r32", list: false, value: real(2) },
+}
+
 export function isZero(sym: Sym) {
   return !!(
     sym.type == "js" &&

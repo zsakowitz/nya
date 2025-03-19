@@ -152,7 +152,7 @@ export class FnDist<Q extends TyName = TyName> extends FnDistManual<Q> {
     )
   }
 
-  with(name: string, label: string, props?: FnDistProps) {
+  with(name: string, label: string, props?: Partial<FnDistProps>) {
     const dist = new FnDist<Q>(name, label, {
       deriv: this.deriv,
       simplify: this.simplify,

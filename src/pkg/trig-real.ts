@@ -1,7 +1,7 @@
 import type { Package } from "."
 import { FnDist } from "../eval/ops/dist"
-import { unary } from "../eval/sym"
-import { approx, num, real } from "../eval/ty/create"
+import { SYM_2, unary } from "../eval/sym"
+import { approx, num } from "../eval/ty/create"
 import { chain, OP_NEG, OP_RAISE } from "./core-ops"
 import { PKG_REAL } from "./num-real"
 
@@ -26,10 +26,7 @@ const FN_TAN = new FnDist("tan", "takes the tangent of an angle", {
     chain(a, wrt, {
       type: "call",
       fn: OP_RAISE,
-      args: [
-        { type: "call", fn: FN_SEC, args: [a] },
-        { type: "js", value: { type: "r32", list: false, value: real(2) } },
-      ],
+      args: [{ type: "call", fn: FN_SEC, args: [a] }, SYM_2],
     }),
   ),
 })

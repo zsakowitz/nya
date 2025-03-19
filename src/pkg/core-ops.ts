@@ -20,6 +20,7 @@ import {
   prefixFn,
   SYM_0,
   SYM_1,
+  SYM_2,
   txr,
   unary,
   type Sym,
@@ -248,7 +249,7 @@ export const OP_CROSS = new FnDist("×", "multiplies two real numbers", {
   display: binaryFn(() => new OpTimes(), Precedence.Product),
 })
 
-export const OP_DIV = new FnDist("÷", "divides two values", {
+export const OP_DIV: FnDist = new FnDist("÷", "divides two values", {
   message: "Cannot divide %%.",
   display([a, b, c]) {
     if (a && b && !c) {
@@ -260,6 +261,25 @@ export const OP_DIV = new FnDist("÷", "divides two values", {
       return { block, lhs: Precedence.Atom, rhs: Precedence.Atom }
     }
   },
+  deriv: binary((wrt, a, b) => ({
+    type: "call",
+    fn: OP_DIV,
+    args: [
+      {
+        type: "call",
+        fn: OP_SUB,
+        args: [
+          { type: "call", fn: OP_JUXTAPOSE, args: [b, txr(a).deriv(a, wrt)] },
+          { type: "call", fn: OP_JUXTAPOSE, args: [a, txr(b).deriv(b, wrt)] },
+        ],
+      },
+      {
+        type: "call",
+        fn: OP_RAISE,
+        args: [b, SYM_2],
+      },
+    ],
+  })),
 })
 
 export const OP_JUXTAPOSE = OP_CDOT.with(
