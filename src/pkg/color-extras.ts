@@ -41,6 +41,14 @@ const FN_OKLCH = new FnDist(
   "creates a color given its lightness, chromaticity, and hue components",
 )
 
+// const FN_HSL = new FnDist(
+//   "hsl",
+//   "creates a color from hue, saturation, and lightness components",
+// )
+
+// TODO: hsl
+// H(h,s,l)=\operatorname{hsv}\left(h,\begin{cases}0&v=0\\2\left(1-\frac{l}{v}\right)&\end{cases},v\right)\operatorname{with}v=l+s\operatorname{min}\left(l,1-l\right)
+
 export const PKG_COLOR_EXTRAS: Package = {
   id: "nya:color-extras",
   name: "color functions extended",
