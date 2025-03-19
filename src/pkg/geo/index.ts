@@ -1,6 +1,6 @@
 import type { Package } from ".."
 import type { JsVal, Tys } from "../../eval/ty"
-import { SNANPT, num, pt, real, unpt } from "../../eval/ty/create"
+import { SNANPT, gl, num, pt, real, unpt } from "../../eval/ty/create"
 import {
   WRITE_POINT,
   gliderOnLine,
@@ -100,6 +100,9 @@ function lineInfo<T extends "segment" | "ray" | "line" | "vector">(
     name,
     namePlural,
     glsl: "vec4",
+    toGlsl([{ x: x1, y: y1 }, { x: x2, y: y2 }]) {
+      return `vec4(${gl(x1)}, ${gl(y1)}, ${gl(x2)}, ${gl(y2)})`
+    },
     garbage: { js: [SNANPT, SNANPT], glsl: "vec4(0.0/0.0)" },
     coerce: {},
     write: {
@@ -625,6 +628,9 @@ const INFO_CIRCLE: TyInfoByName<"circle"> = {
   name: "circle",
   namePlural: "circles",
   glsl: "vec3",
+  toGlsl({ center: { x, y }, radius }) {
+    return `vec3(${gl(x)}, ${gl(y)}, ${gl(radius)})`
+  },
   garbage: {
     js: { center: SNANPT, radius: real(NaN) },
     glsl: "vec3(0.0/0.0)",
@@ -688,6 +694,9 @@ const INFO_POLYGON: TyInfoByName<"polygon"> = {
   name: "polygon",
   namePlural: "polygons",
   get glsl(): never {
+    throw new Error("Cannot construct polygons in shaders.")
+  },
+  toGlsl() {
     throw new Error("Cannot construct polygons in shaders.")
   },
   garbage: {
@@ -773,6 +782,9 @@ const INFO_ARC: TyInfoByName<"arc"> = {
   name: "arc",
   namePlural: "arcs",
   glsl: "mat3x2",
+  toGlsl(val) {
+    return `mat3x2(${val.map(({ x, y }) => `vec2(${gl(x)}, ${gl(y)})`).join(", ")})`
+  },
   garbage: {
     js: [SNANPT, SNANPT, SNANPT],
     glsl: "mat3x2(vec2(0.0/0.0),vec2(0.0/0.0),vec2(0.0/0.0))",
@@ -905,6 +917,9 @@ function angleInfo(
     name: type == "angle" ? "angle" : "directed angle",
     namePlural: type == "angle" ? "angles" : "directed angles",
     glsl: "mat3x2",
+    toGlsl(val) {
+      return `mat3x2(${val.map(({ x, y }) => `vec2(${gl(x)}, ${gl(y)})`).join(", ")})`
+    },
     garbage: {
       js: [SNANPT, SNANPT, SNANPT],
       glsl: "mat3x2(vec2(0.0/0.0),vec2(0.0/0.0),vec2(0.0/0.0))",

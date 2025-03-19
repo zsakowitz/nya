@@ -1,6 +1,6 @@
 import type { Package } from "."
 import { FnDist } from "../eval/ops/dist"
-import { real } from "../eval/ty/create"
+import { gl, real } from "../eval/ty/create"
 import { CmdComma } from "../field/cmd/leaf/comma"
 import { CmdWord } from "../field/cmd/leaf/word"
 import { CmdBrack } from "../field/cmd/math/brack"
@@ -111,6 +111,9 @@ export const PKG_DISTRIBUTIONS: Package = {
         name: "normal distribution",
         namePlural: "normal distributions",
         glsl: "vec2",
+        toGlsl([a, b]) {
+          return `vec2(${gl(a)}, ${gl(b)})`
+        },
         garbage: {
           js: [real(NaN), real(NaN)],
           glsl: "vec2(0.0/0.0)",
@@ -163,6 +166,9 @@ export const PKG_DISTRIBUTIONS: Package = {
         name: "t-distribution",
         namePlural: "t-distributions",
         glsl: "float",
+        toGlsl(a) {
+          return gl(a)
+        },
         garbage: {
           js: real(NaN),
           glsl: "(0.0/0.0)",
@@ -216,6 +222,9 @@ export const PKG_DISTRIBUTIONS: Package = {
         name: "Poisson distribution",
         namePlural: "Poisson distributions",
         glsl: "float",
+        toGlsl(a) {
+          return gl(a)
+        },
         garbage: {
           js: real(NaN),
           glsl: "(0.0/0.0)",
@@ -278,9 +287,12 @@ export const PKG_DISTRIBUTIONS: Package = {
         name: "binomial distribution",
         namePlural: "binomial distributions",
         glsl: "vec2",
+        toGlsl([a, b]) {
+          return `vec2(${gl(a)}, ${gl(b)})`
+        },
         garbage: {
           js: [real(NaN), real(NaN)],
-          glsl: "(0.0/0.0)",
+          glsl: "vec2(0.0/0.0)",
         },
         coerce: {},
         write: {
@@ -342,6 +354,9 @@ export const PKG_DISTRIBUTIONS: Package = {
         name: "uniform distribution",
         namePlural: "uniform distributions",
         glsl: "vec2",
+        toGlsl([a, b]) {
+          return `vec2(${gl(a)}, ${gl(b)})`
+        },
         garbage: {
           js: [real(NaN), real(NaN)],
           glsl: "vec2(0.0/0.0)",

@@ -1,7 +1,7 @@
 import type { Package } from "."
 import type { GlslContext } from "../eval/lib/fn"
 import type { SReal, Tys } from "../eval/ty"
-import { approx, num, real } from "../eval/ty/create"
+import { approx, gl, num, real } from "../eval/ty/create"
 import { TY_INFO } from "../eval/ty/info"
 import { abs, add, div, mul, neg, sub } from "../eval/ty/ops"
 import { h } from "../jsx"
@@ -158,6 +158,9 @@ export const PKG_NUM_QUATERNION: Package = {
         name: "quaternion",
         namePlural: "quaternions",
         glsl: "vec4",
+        toGlsl(val) {
+          return `vec4(${val.map(gl).join(", ")})`
+        },
         garbage: {
           js: [real(NaN), real(NaN), real(NaN), real(NaN)],
           glsl: "vec4(0.0/0.0)",

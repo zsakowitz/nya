@@ -1,6 +1,7 @@
 import type { SApprox, SPoint, SReal } from "."
 import type { Point } from "../../sheet/point"
 import { safe } from "../lib/util"
+import { splitRaw } from "./split"
 
 export function num(value: SReal): number {
   if (value.type == "exact") {
@@ -63,6 +64,29 @@ export function unpt(pt: SPoint): Point {
 
 export function rept(pt: Point): SPoint {
   return { type: "point", x: real(pt.x), y: real(pt.y) }
+}
+
+export function gl(x: SReal, adj = 1) {
+  const value = num(x) / adj
+
+  if (isNaN(value)) {
+    return "(0.0/0.0)"
+  }
+
+  if (value == Infinity) {
+    return "(1.0/0.0)"
+  }
+
+  if (value == -Infinity) {
+    return "(-1.0/0.0)"
+  }
+
+  return value.toExponential()
+}
+
+export function gl64(x: SReal) {
+  const [a, b] = splitRaw(num(x))
+  return `vec2(${a.toExponential()}, ${b.toExponential()})`
 }
 
 export const SNANPT: SPoint = {

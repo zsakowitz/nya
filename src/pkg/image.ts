@@ -324,6 +324,9 @@ export const PKG_IMAGE: Package = {
         get glsl(): never {
           return glsl()
         },
+        toGlsl() {
+          glsl()
+        },
         garbage: {
           js: {
             src: null,

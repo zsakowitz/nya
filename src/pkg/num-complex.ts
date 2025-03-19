@@ -4,7 +4,7 @@ import { FnDist } from "../eval/ops/dist"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "../eval/ops/vars"
 import type { GlslVal, SPoint } from "../eval/ty"
 import { isZero } from "../eval/ty/check"
-import { approx, num, pt, real, SNANPT } from "../eval/ty/create"
+import { approx, gl, gl64, num, pt, real, SNANPT } from "../eval/ty/create"
 import type { TyWrite } from "../eval/ty/display"
 import { highRes, type TyExtras } from "../eval/ty/info"
 import { abs, add, div, mul, neg, sub } from "../eval/ty/ops"
@@ -576,6 +576,9 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
         name: "complex number",
         namePlural: "complex numbers",
         glsl: "vec4",
+        toGlsl({ x, y }) {
+          return `vec4(${gl64(x)}, ${gl64(y)})`
+        },
         garbage: { js: SNANPT, glsl: "vec4(0.0/0.0)" },
         coerce: {
           c32: {
@@ -609,6 +612,9 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
         name: "complex number",
         namePlural: "complex numbers",
         glsl: "vec2",
+        toGlsl({ x, y }) {
+          return `vec2(${gl(x)}, ${gl(y)})`
+        },
         garbage: { js: SNANPT, glsl: "vec2(0.0/0.0)" },
         coerce: {},
         write: WRITE_COMPLEX,

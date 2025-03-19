@@ -4,7 +4,8 @@ import type { BindingFn, Bindings } from "./lib/binding"
 import type { GlslContext } from "./lib/fn"
 import { FNS } from "./ops"
 import type { Sym } from "./sym"
-import type { GlslValue, JsValue, SReal } from "./ty"
+import type { GlslValue, JsValue, SReal, TyName, Val } from "./ty"
+import { TY_INFO, type TyInfo } from "./ty/info"
 
 export interface PropsSym {
   base: SReal
@@ -70,4 +71,25 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
     throw new Error(`The '${node.type}' transformer is not defined.`)
   }
   return txr.glsl(node as never, props)
+}
+
+export function jsToGlsl(js: JsValue, ctx: GlslContext): GlslValue {
+  const cv = (TY_INFO[js.type] as TyInfo<Val, TyName>).toGlsl
+
+  if (js.list === false) {
+    return {
+      type: js.type,
+      list: false,
+      expr: cv(js.value, ctx),
+    }
+  }
+
+  const expr = ctx.name()
+  ctx.push`${TY_INFO[js.type].glsl} ${expr}[${js.list}];\n`
+
+  for (let i = 0; i < js.list; i++) {
+    ctx.push`${expr}[${i}] = ${cv(js.value[i]!, ctx)};\n`
+  }
+
+  return { type: js.type, list: js.list, expr }
 }

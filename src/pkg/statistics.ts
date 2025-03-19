@@ -765,6 +765,11 @@ const TY_STATS: TyInfo<Tys["stats"], TyComponents["stats"]> = {
       "Cannot create five-number statistical summaries in shaders.",
     )
   },
+  toGlsl() {
+    throw new Error(
+      "Cannot create five-number statistical summaries in shaders.",
+    )
+  },
   garbage: {
     js: [real(NaN), real(NaN), real(NaN), real(NaN), real(NaN)],
     get glsl(): never {

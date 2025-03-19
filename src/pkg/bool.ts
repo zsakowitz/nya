@@ -284,6 +284,9 @@ export const PKG_BOOL: Package = {
         name: "true/false value",
         namePlural: "true/false values",
         glsl: "bool",
+        toGlsl(val) {
+          return "" + val
+        },
         garbage: { js: false, glsl: "false" },
         coerce: {},
         write: {

@@ -18,6 +18,7 @@ export interface TyInfo<T, U extends TyName> {
   name: string
   namePlural: string
   glsl: string
+  toGlsl(val: T, ctx: GlslContext): string
   garbage: TyGarbage<T>
   coerce: TyCoerceMap<T>
   write: TyWrite<T>
@@ -139,6 +140,9 @@ TY_INFO.never = {
   name: "empty value",
   namePlural: "empty values",
   glsl: "bool",
+  toGlsl() {
+    return "false"
+  },
   garbage: {
     js: "__never",
     glsl: "false",

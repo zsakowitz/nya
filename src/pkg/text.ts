@@ -336,6 +336,9 @@ export const PKG_TEXT: Package = {
         get glsl(): never {
           return err()
         },
+        toGlsl() {
+          err()
+        },
         garbage: {
           js: [],
           get glsl(): never {

@@ -14,7 +14,7 @@ import { ALL_DOCS } from "../eval/ops/docs"
 import { FnList } from "../eval/ops/list"
 import type { SReal, Ty, TyName, Type } from "../eval/ty"
 import { canCoerce, coerceValJs } from "../eval/ty/coerce"
-import { approx, frac, num, real } from "../eval/ty/create"
+import { approx, frac, gl, gl64, num, real } from "../eval/ty/create"
 import type { TyWrite } from "../eval/ty/display"
 import { highRes, TY_INFO, type TyExtras } from "../eval/ty/info"
 import { abs, add, div, mul, neg, raise, sub } from "../eval/ty/ops"
@@ -520,7 +520,7 @@ export const PKG_REAL: Package = {
     addCmp(OP_NGTE, (a, b) => !(a >= b), "!>=", "== -1.0")
 
     addCmp(OP_EQ, (a, b) => a == b, "==", "==  0.0")
-    addCmp(OP_NEQ, (a, b) => a != b, "!==", "==  0.0")
+    addCmp(OP_NEQ, (a, b) => a != b, "!==", "!=  0.0")
 
     FN_CMP.add(["r64", "r64"], "r32", cmpJs, (ctx, a, b) => {
       // TODO: NaN probably outputs 0 in r64
@@ -548,6 +548,9 @@ float _helper_cmp_r32(float a, float b) {
         name: "real number",
         namePlural: "real numbers",
         glsl: "vec2",
+        toGlsl(val) {
+          return gl64(val)
+        },
         garbage: { js: real(NaN), glsl: "vec2(0.0/0.0)" },
         coerce: {
           r32: {
@@ -575,6 +578,9 @@ float _helper_cmp_r32(float a, float b) {
         name: "real number",
         namePlural: "real numbers",
         glsl: "float",
+        toGlsl(val) {
+          return gl(val)
+        },
         garbage: { js: real(NaN), glsl: "(0.0/0.0)" },
         coerce: {},
         write: WRITE_REAL,

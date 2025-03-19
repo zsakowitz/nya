@@ -2,7 +2,7 @@ import type { Package } from "."
 import type { GlslContext } from "../eval/lib/fn"
 import { FnDist } from "../eval/ops/dist"
 import type { SColor, SReal } from "../eval/ty"
-import { frac, num, real } from "../eval/ty/create"
+import { frac, gl, num, real } from "../eval/ty/create"
 import { TY_INFO } from "../eval/ty/info"
 import { CmdColor } from "../field/cmd/leaf/color"
 import { L } from "../field/model"
@@ -181,6 +181,9 @@ export const PKG_COLOR_CORE: Package = {
         name: "color",
         namePlural: "colors",
         glsl: "vec4",
+        toGlsl({ r, g, b, a }) {
+          return `vec4(${gl(r, 255)}, ${gl(g, 255)}, ${gl(b, 255)}, ${gl(a)})`
+        },
         garbage: {
           js: { type: "color", r: real(0), g: real(0), b: real(0), a: real(0) },
           glsl: "vec4(0)",

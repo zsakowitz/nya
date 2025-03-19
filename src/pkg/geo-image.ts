@@ -117,6 +117,9 @@ export const PKG_IMAGE_GEO: Package = {
         get glsl(): never {
           return glsl()
         },
+        toGlsl() {
+          glsl()
+        },
         garbage: {
           js: {
             data: {

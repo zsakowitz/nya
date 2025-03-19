@@ -149,6 +149,9 @@ export const PKG_ITHKUIL: Package = {
         get glsl(): never {
           return err()
         },
+        toGlsl() {
+          err()
+        },
         garbage: {
           get js() {
             return ["", svgx("", "")] as const

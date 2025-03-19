@@ -1,7 +1,7 @@
 import type { Package } from "."
 import { Precedence, type MagicVar, type Nodes } from "../eval/ast/token"
 import { NO_DRAG, sym, TXR_AST } from "../eval/ast/tx"
-import { glsl } from "../eval/glsl"
+import { glsl, jsToGlsl } from "../eval/glsl"
 import { js } from "../eval/js"
 import { Bindings, id } from "../eval/lib/binding"
 import { FnDist } from "../eval/ops/dist"
@@ -10,7 +10,6 @@ import { insertStrict, txr, TXR_SYM, type Sym, type TxrSym } from "../eval/sym"
 import type { JsValue } from "../eval/ty"
 import { frac, real } from "../eval/ty/create"
 import { Display } from "../eval/ty/display"
-import { TY_INFO } from "../eval/ty/info"
 import { CmdNum } from "../field/cmd/leaf/num"
 import { CmdWord } from "../field/cmd/leaf/word"
 import { CmdSupSub } from "../field/cmd/math/supsub"
@@ -38,6 +37,9 @@ export const PKG_SYM: Package = {
         namePlural: "symbolic expressions",
         get glsl(): never {
           throw new Error("Cannot construct symbolic expressions in shaders.")
+        },
+        toGlsl() {
+          throw new Error("Symbolic expressions are not supported in shaders.")
         },
         garbage: {
           js: { type: "undef" },
@@ -140,7 +142,7 @@ export const PKG_SYM: Package = {
         deriv: {
           deps(node, deps) {
             const of = sym(node.of, {
-              // SYM: this will ban functions in deps
+              // FIXME: this bans functions in deriv nodes
               bindingsSym: new Bindings(),
               base: real(10),
             })
@@ -346,12 +348,8 @@ export const PKG_SYM: Package = {
         js(value) {
           return value.value
         },
-        glsl(value) {
-          return {
-            ...value.value,
-            // FIXME: this is wrong
-            expr: TY_INFO[value.value.type].garbage.glsl,
-          }
+        glsl(value, props) {
+          return jsToGlsl(value.value, props.ctx)
         },
       },
     },
