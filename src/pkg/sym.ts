@@ -3,7 +3,7 @@ import { Precedence, type MagicVar, type Nodes } from "../eval/ast/token"
 import { NO_DRAG, sym, TXR_AST } from "../eval/ast/tx"
 import { glsl, jsToGlsl } from "../eval/glsl"
 import { js } from "../eval/js"
-import { Bindings, id } from "../eval/lib/binding"
+import { id } from "../eval/lib/binding"
 import { FnDist } from "../eval/ops/dist"
 import { issue } from "../eval/ops/issue"
 import {
@@ -109,7 +109,7 @@ export const PKG_SYM: Package = {
             deps.add(node.contents)
           },
           js(node, props) {
-            validateSym(node)
+            validateSym(node, "sym")
             const tx = TXR_AST[node.contents.type]
             if (!tx?.sym) {
               throw new Error(
@@ -117,17 +117,19 @@ export const PKG_SYM: Package = {
               )
             }
 
+            const value = tx.sym(node.contents as never, props)
+
             return {
               type: "sym",
               list: false,
-              value: tx.sym(node.contents as never, props),
+              value: txr(value).simplify(value),
             } satisfies JsValue<"sym", false>
           },
           glsl() {
             throw new Error("Cannot construct symbolic expressions in shaders.")
           },
           sym(node, props) {
-            validateSym(node)
+            validateSym(node, "sym")
             const tx = TXR_AST[node.contents.type]
             if (!tx?.sym) {
               throw new Error(
@@ -145,18 +147,46 @@ export const PKG_SYM: Package = {
             }
           },
         },
+        eval: {
+          deps(node, deps) {
+            deps.add(node.contents)
+          },
+          js(node, props) {
+            validateSym(node, "eval")
+            const sym = js(node.contents, props)
+            if (sym.type != "sym" || sym.list !== false) {
+              throw new Error("'eval' expects a single symbolic expression.")
+            }
+
+            const val = sym.value as Sym
+            return txr(val).js(val, props)
+          },
+          glsl(node, props) {
+            validateSym(node, "eval")
+            const sym = js(node.contents, props)
+            if (sym.type != "sym" || sym.list !== false) {
+              throw new Error("'eval' expects a single symbolic expression.")
+            }
+
+            const val = sym.value as Sym
+            return txr(val).glsl(val, props)
+          },
+          sym(node, props) {
+            validateSym(node, "eval")
+            const sym = js(node.contents, props)
+            if (sym.type != "sym" || sym.list !== false) {
+              throw new Error("'eval' expects a single symbolic expression.")
+            }
+
+            return sym.value as Sym
+          },
+        },
       },
       ast: {
         deriv: {
           deps(node, deps) {
-            const of = sym(node.of, {
-              // FIXME: this bans functions in deriv nodes
-              bindingsSym: new Bindings(),
-              base: real(10),
-            })
-            const value = txr(of).deriv(of, id(node.wrt))
-            const deriv = txr(value).simplify(value)
-            txr(deriv).deps(deriv, deps)
+            deps.add(node.of)
+            deps.add(node.wrt)
           },
           drag: NO_DRAG,
           glsl(node, props) {
@@ -241,6 +271,7 @@ export const PKG_SYM: Package = {
           )
         },
       },
+      // TODO: infinity uses incorrect font in sym output
       var: {
         deriv(value, wrt) {
           if (value.id == wrt) {
@@ -357,16 +388,16 @@ export const PKG_SYM: Package = {
   },
 }
 
-function validateSym(node: MagicVar) {
+function validateSym(node: MagicVar, kind: "sym" | "eval") {
   if (node.prop) {
     throw new Error(
-      "Cannot access a particular property of a 'sym' expression.",
+      `Cannot access a particular property of a${kind == "eval" ? "n" : ""} '${kind}' expression.`,
     )
   }
   if (node.sub) {
-    throw new Error("Cannot apply subscripts to 'sym' expressions.")
+    throw new Error(`Cannot apply subscripts to '${kind}' expressions.`)
   }
   if (node.sup) {
-    throw new Error("Cannot apply superscripts to 'sym' expressions.")
+    throw new Error(`Cannot apply superscripts to '${kind}' expressions.`)
   }
 }

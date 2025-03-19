@@ -1,1 +1,1 @@
-@\operatorname{rgb}\left(\frac{d}{dx}x^{2},1,1\right)
+\left(\operatorname{sym}z\right)\operatorname{with}z=\operatorname{sym}x^{2}

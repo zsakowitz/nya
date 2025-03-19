@@ -10,6 +10,7 @@ import { TY_INFO, type TyInfo } from "./ty/info"
 export interface PropsSym {
   base: SReal
   bindingsSym: Bindings<Sym | BindingFn>
+  bindingsJs: Bindings<JsValue | BindingFn>
 }
 
 export interface PropsGlsl {

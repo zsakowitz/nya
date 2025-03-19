@@ -44,6 +44,9 @@ export class Scope {
       get bindingsSym() {
         return self.bindingsSym
       },
+      get bindingsJs() {
+        return self.bindingsJs
+      },
     }
 
     this.flush()
