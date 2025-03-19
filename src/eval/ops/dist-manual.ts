@@ -65,6 +65,7 @@ export interface FnProps {
 export abstract class FnDistManual<Q extends TyName = TyName> implements Fn {
   private readonly displayFn: DisplayFn | undefined
   readonly deriv: DerivFn | undefined
+  readonly simplify: ((args: Sym[]) => Sym | undefined) | undefined
 
   constructor(
     readonly name: string,
@@ -73,6 +74,7 @@ export abstract class FnDistManual<Q extends TyName = TyName> implements Fn {
   ) {
     this.displayFn = props?.display
     this.deriv = props?.deriv
+    this.simplify = props?.simplify
   }
 
   display(args: Sym[]): SymDisplay {

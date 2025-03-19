@@ -195,6 +195,7 @@ export const PKG_SYM: Package = {
         uses(value, name) {
           return value.args.some((x) => txr(x).uses(x, name))
         },
+        // SYM: better displaying of function calls when the argument doesn't need parentheses
         display(value) {
           if (!value.fn.display) {
             console.warn(value.fn)

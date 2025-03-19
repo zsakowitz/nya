@@ -6,12 +6,12 @@ import type { GlslValue, JsValue } from "../ty"
 export interface Fn {
   js(args: JsValue[]): JsValue
   glsl(ctx: GlslContext, args: GlslValue[]): GlslValue
-  // SYM: make this required
+  // SYM: proper displays for more things
   display?(args: Sym[]): SymDisplay
   // SYM: make this required
   deriv?(args: Sym[], wrt: string): Sym
   // SYM: implement this in more places
-  simplify?(args: Sym[]): Sym
+  simplify?(args: Sym[]): Sym | undefined
 }
 
 export const FNS: Record<string, Fn> = Object.create(null)
