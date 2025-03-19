@@ -8,6 +8,7 @@ import { FnDist } from "../eval/ops/dist"
 import { issue } from "../eval/ops/issue"
 import {
   insertStrict,
+  SYM_0,
   SYM_1,
   txr,
   TXR_SYM,
@@ -243,17 +244,10 @@ export const PKG_SYM: Package = {
       var: {
         deriv(value, wrt) {
           if (value.id == wrt) {
-            return {
-              type: "js",
-              value: {
-                type: "r64",
-                list: false,
-                value: real(1),
-              } satisfies JsValue<"r64", false>,
-            }
+            return SYM_1
           }
 
-          return SYM_1
+          return SYM_0
         },
         uses(value, name) {
           return value.id == name
