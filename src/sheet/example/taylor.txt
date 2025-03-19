@@ -1,5 +1,6 @@
 d\left(q,n\right)=\operatorname{iterate}^{n}f\to \operatorname{sym}\frac{d}{dx}\operatorname{eval}f\operatorname{from}f=q
-f\left(x\right)=x^{2}
-n=5
+f\left(x\right)=\frac{\operatorname{sin}x}{\operatorname{cos}x}
+n=6
+a=6.27
 s=\operatorname{iterate}.a^{n+1}n\to n+1,a\to \operatorname{join}\left(a,n\right)\operatorname{from}n=0,a=\left[\right]
-\operatorname{sym}\left(\left(\operatorname{eval}d\left(\operatorname{sym}f\left(x\right),s\right)\right)\cdot \frac{x^{\operatorname{unsym}s}}{\left(\operatorname{unsym}s\right)!}\right)\operatorname{for}s=s
+y<\operatorname{eval}\left(\left(\operatorname{iterate}.q^{n+1}n\to n+1,q\to \operatorname{sym}\left(\operatorname{eval}q+\operatorname{eval}\left(M\left[n\right]\right)\right)\operatorname{from}n=1,q=\operatorname{sym}0\right)\operatorname{with}M=\left(\operatorname{sym}\left(\operatorname{unsym}\left(\operatorname{eval}d\left(\operatorname{sym}f\left(x\right),s\right)\operatorname{with}x=a\right)\cdot \frac{\left(x-a\right)^{\operatorname{unsym}s}}{\left(\operatorname{unsym}s\right)!}\right)\operatorname{for}s=s\right)\right)

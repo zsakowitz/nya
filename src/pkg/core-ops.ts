@@ -168,7 +168,12 @@ float _helper_cmp_r64(vec2 a, vec2 b) {
 export const FN_LN: FnDist = new FnDist(
   "ln",
   "takes the natural logarithm of a value",
-  { message: "Cannot take the natural logarithm of %%." },
+  {
+    message: "Cannot take the natural logarithm of %%.",
+    deriv: unary((wrt, a) =>
+      chain(a, wrt, { type: "call", fn: OP_DIV, args: [SYM_1, a] }),
+    ),
+  },
 )
 
 export const OP_ADD: FnDist = new FnDist("+", "adds two values or points", {
