@@ -38,6 +38,7 @@ import {
   addR64,
   declareCmpR64,
   declareMulR64,
+  FN_LN,
   OP_ABS,
   OP_ADD,
   OP_CDOT,
@@ -236,11 +237,7 @@ const FN_CMP = new FnDist(
   { message: "Cannot compare %%." },
 )
 
-export const FN_LN: FnDist = new FnDist(
-  "ln",
-  "takes the natural logarithm of a value",
-  { message: "Cannot take the natural logarithm of %%." },
-).add(
+FN_LN.add(
   ["r32"],
   "r32",
   (a) => approx(Math.log(num(a.value))),

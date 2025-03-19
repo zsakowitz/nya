@@ -35,7 +35,6 @@ import { CmdBrack } from "../field/cmd/math/brack"
 import { CmdFrac } from "../field/cmd/math/frac"
 import { CmdSupSub } from "../field/cmd/math/supsub"
 import { Block, L, R, Span } from "../field/model"
-import { FN_LN } from "./num-real"
 
 export function declareAddR64(ctx: GlslContext) {
   declareR64(ctx)
@@ -165,6 +164,12 @@ float _helper_cmp_r64(vec2 a, vec2 b) {
 }
 `
 }
+
+export const FN_LN: FnDist = new FnDist(
+  "ln",
+  "takes the natural logarithm of a value",
+  { message: "Cannot take the natural logarithm of %%." },
+)
 
 export const OP_ADD: FnDist = new FnDist("+", "adds two values or points", {
   message: "Cannot add %%.",
