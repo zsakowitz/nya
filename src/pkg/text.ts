@@ -375,6 +375,7 @@ export const PKG_TEXT: Package = {
         glide: null,
         preview: null,
         components: null,
+        extras: null,
       },
     },
   },

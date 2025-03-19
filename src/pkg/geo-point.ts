@@ -479,6 +479,7 @@ export const PKG_GEO_POINT: Package = {
             [(x) => x.y, (x) => `${x}.zw`],
           ],
         },
+        extras: null,
       },
       point32: {
         name: "point",
@@ -504,6 +505,7 @@ export const PKG_GEO_POINT: Package = {
             [(x) => x.y, (x) => `${x}.y`],
           ],
         },
+        extras: null,
       },
     },
   },

@@ -210,6 +210,7 @@ export const PKG_NUM_QUATERNION: Package = {
             [(x) => x[3], (x) => `${x}.w`],
           ],
         },
+        extras: null,
       },
     },
     coerce: {

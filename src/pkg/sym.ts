@@ -83,6 +83,7 @@ export const PKG_SYM: Package = {
         glide: null,
         preview: null,
         components: null,
+        extras: null,
       },
     },
   },
@@ -207,11 +208,11 @@ export const PKG_SYM: Package = {
         },
         simplify({ fn, args: rawArgs }) {
           const args = rawArgs.map((x) => txr(x).simplify(x))
-          if (rawArgs.every((x) => x.type == "js")) {
+          if (args.every((x) => x.type == "js")) {
             try {
               return {
                 type: "js",
-                value: fn.js(rawArgs.map((x) => x.value)),
+                value: fn.js(args.map((x) => x.value)),
               }
             } catch {}
           }
@@ -279,7 +280,7 @@ export const PKG_SYM: Package = {
         display(value) {
           const block = new Block(null)
           new Display(block.cursor(R), frac(10, 1)).output(value.value, false)
-          return { block, lhs: Precedence.Atom, rhs: Precedence.Atom }
+          return { block, lhs: Precedence.Sum, rhs: Precedence.Sum }
         },
         simplify(value) {
           return { type: "js", value: value.value }

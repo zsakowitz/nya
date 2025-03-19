@@ -16,7 +16,7 @@ import type { SReal, Ty, TyName, Type } from "../eval/ty"
 import { canCoerce, coerceValJs } from "../eval/ty/coerce"
 import { approx, frac, num, real } from "../eval/ty/create"
 import type { TyWrite } from "../eval/ty/display"
-import { highRes, TY_INFO } from "../eval/ty/info"
+import { highRes, TY_INFO, type TyExtras } from "../eval/ty/info"
 import { abs, add, div, mul, neg, raise, sub } from "../eval/ty/ops"
 import { splitDual } from "../eval/ty/split"
 import { h } from "../jsx"
@@ -332,6 +332,15 @@ const FN_COUNT = new (class extends FnList<"r64"> {
   }
 })()
 
+const extras: TyExtras<SReal> = {
+  isOne(value) {
+    return num(value) == 1
+  },
+  isZero(value) {
+    return num(value) == 0
+  },
+}
+
 export const PKG_REAL: Package = {
   id: "nya:num-real",
   name: "real numbers",
@@ -560,6 +569,7 @@ float _helper_cmp_r32(float a, float b) {
         glide: null,
         preview: null,
         components: null,
+        extras,
       },
       r32: {
         name: "real number",
@@ -577,6 +587,7 @@ float _helper_cmp_r32(float a, float b) {
         glide: null,
         preview: null,
         components: null,
+        extras,
       },
     },
     coerce: {

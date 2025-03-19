@@ -28,6 +28,14 @@ export interface TyInfo<T, U extends TyName> {
   glide: TyGlide<T> | null
   preview: ((cv: Cv, val: T) => void) | null
   components: TyComponentInfo<T, U> | null
+  // Rarely used properties are stuffed in TyExtras, so that we can add new
+  // extra properties without having to fix the shapes of every existing type.
+  extras: TyExtras<T> | null
+}
+
+export interface TyExtras<T> {
+  isZero?(value: T): boolean
+  isOne?(value: T): boolean
 }
 
 export type TyInfoByName<T extends TyName> = TyInfo<Tys[T], TyComponents[T]>
@@ -201,6 +209,7 @@ TY_INFO.never = {
   glide: null,
   preview: null,
   components: null,
+  extras: null,
 }
 
 export function tidyCoercions() {

@@ -810,6 +810,7 @@ const TY_STATS: TyInfo<Tys["stats"], TyComponents["stats"]> = {
   glide: null,
   preview: null,
   components: null,
+  extras: null,
 }
 
 const store = createMultiEval(["Min", "Q1", "Median", "Q3", "Max"])

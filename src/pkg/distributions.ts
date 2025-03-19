@@ -157,6 +157,7 @@ export const PKG_DISTRIBUTIONS: Package = {
         glide: null,
         preview: null,
         components: null,
+        extras: null,
       },
       tdist: {
         name: "t-distribution",
@@ -209,6 +210,7 @@ export const PKG_DISTRIBUTIONS: Package = {
         glide: null,
         preview: null,
         components: null,
+        extras: null,
       },
       poissondist: {
         name: "Poisson distribution",
@@ -270,6 +272,7 @@ export const PKG_DISTRIBUTIONS: Package = {
         glide: null,
         preview: null,
         components: null,
+        extras: null,
       },
       binomialdist: {
         name: "binomial distribution",
@@ -333,6 +336,7 @@ export const PKG_DISTRIBUTIONS: Package = {
         glide: null,
         preview: null,
         components: null,
+        extras: null,
       },
       uniformdist: {
         name: "uniform distribution",
@@ -389,6 +393,7 @@ export const PKG_DISTRIBUTIONS: Package = {
         glide: null,
         preview: null,
         components: null,
+        extras: null,
       },
     },
   },

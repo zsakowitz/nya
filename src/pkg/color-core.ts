@@ -260,6 +260,7 @@ export const PKG_COLOR_CORE: Package = {
             [(x) => x.a, (x) => `${x}.w`],
           ],
         },
+        extras: null,
       },
     },
   },

@@ -15,6 +15,8 @@ import {
   binaryFn,
   insert,
   insertStrict,
+  isOne,
+  isZero,
   prefixFn,
   SYM_0,
   SYM_1,
@@ -171,6 +173,42 @@ export const OP_ADD: FnDist = new FnDist("+", "adds two values or points", {
     fn: OP_ADD,
     args: [txr(a).deriv(a, wrt), txr(b).deriv(b, wrt)],
   })),
+  simplify([a, b, c]) {
+    if (!(a && b && !c)) return
+
+    const za = isZero(a)
+    const zb = isZero(b)
+    if (za && zb) {
+      return SYM_0
+    } else if (za) {
+      return b
+    } else if (zb) {
+      return a
+    }
+  },
+})
+
+export const OP_SUB: FnDist = new FnDist("-", "subtracts two values", {
+  message: "Cannot subtract %%.",
+  display: binaryFn(() => new OpMinus(), Precedence.Sum),
+  deriv: binary((wrt, a, b) => ({
+    type: "call",
+    fn: OP_SUB,
+    args: [txr(a).deriv(a, wrt), txr(b).deriv(b, wrt)],
+  })),
+  simplify([a, b, c]) {
+    if (!(a && b && !c)) return
+
+    const za = isZero(a)
+    const zb = isZero(b)
+    if (za && zb) {
+      return SYM_0
+    } else if (za) {
+      return { type: "call", fn: OP_NEG, args: [b] }
+    } else if (zb) {
+      return a
+    }
+  },
 })
 
 export const OP_CDOT: FnDist = new FnDist("·", "multiplies two values", {
@@ -184,6 +222,25 @@ export const OP_CDOT: FnDist = new FnDist("·", "multiplies two values", {
       { type: "call", fn: OP_JUXTAPOSE, args: [b, txr(a).deriv(a, wrt)] },
     ],
   })),
+  simplify([a, b, c]) {
+    if (!(a && b && !c)) return
+
+    const za = isZero(a)
+    const zb = isZero(b)
+    if (za || zb) {
+      return SYM_0
+    }
+
+    const oa = isOne(a)
+    const ob = isOne(b)
+    if (oa && ob) {
+      return SYM_1
+    } else if (oa) {
+      return b
+    } else if (ob) {
+      return a
+    }
+  },
 })
 
 export const OP_CROSS = new FnDist("×", "multiplies two real numbers", {
@@ -283,6 +340,7 @@ export const OP_RAISE: FnDist = new FnDist(
       }
       return { block, lhs: Precedence.Atom, rhs: Precedence.Atom }
     },
+    // SYM: d/dx 0^x is apparently 1-∞*0^x
     deriv([a, b, c], wrt) {
       if (!(a && b && !c)) {
         throw new Error("Invalid derivative.")
@@ -381,13 +439,19 @@ export const OP_RAISE: FnDist = new FnDist(
         }
       }
     },
+    simplify([a, b, c]) {
+      if (!(a && b && !c)) return
+
+      if (isZero(b)) {
+        return SYM_1
+      }
+
+      if (isOne(b)) {
+        return a
+      }
+    },
   },
 )
-
-export const OP_SUB = new FnDist("-", "subtracts two values", {
-  message: "Cannot subtract %%.",
-  display: binaryFn(() => new OpMinus(), Precedence.Sum),
-})
 
 export const OP_POINT = new FnDist(
   "construct point",

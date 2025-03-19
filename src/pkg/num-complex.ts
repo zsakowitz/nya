@@ -6,7 +6,7 @@ import type { GlslVal, SPoint } from "../eval/ty"
 import { isZero } from "../eval/ty/check"
 import { approx, num, pt, real, SNANPT } from "../eval/ty/create"
 import type { TyWrite } from "../eval/ty/display"
-import { highRes } from "../eval/ty/info"
+import { highRes, type TyExtras } from "../eval/ty/info"
 import { abs, add, div, mul, neg, sub } from "../eval/ty/ops"
 import { h } from "../jsx"
 import { Order } from "../sheet/ui/cv/consts"
@@ -127,6 +127,15 @@ const WRITE_COMPLEX: TyWrite<SPoint> = {
       [value.x, ""],
       [value.y, "i"],
     ])
+  },
+}
+
+const extras: TyExtras<SPoint> = {
+  isOne(value) {
+    return num(value.x) == 1 && num(value.y) == 0
+  },
+  isZero(value) {
+    return num(value.x) == 0 && num(value.y) == 0
   },
 }
 
@@ -594,6 +603,7 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
             [(x) => x.y, (x) => `${x}.zw`],
           ],
         },
+        extras,
       },
       c32: {
         name: "complex number",
@@ -617,6 +627,7 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
             [(x) => x.y, (x) => `${x}.y`],
           ],
         },
+        extras,
       },
     },
   },

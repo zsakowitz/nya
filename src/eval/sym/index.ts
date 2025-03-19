@@ -5,8 +5,9 @@ import { CmdBrack } from "../../field/cmd/math/brack"
 import { Block, L, R, type Command, type Cursor } from "../../field/model"
 import type { Fn } from "../ops"
 import type { DerivFn, DisplayFn } from "../ops/dist-manual"
-import type { JsValue } from "../ty"
+import type { JsValue, TyName, Val } from "../ty"
 import { real } from "../ty/create"
+import { TY_INFO, type TyInfo } from "../ty/info"
 
 interface SymVarSource {
   name: string
@@ -144,4 +145,24 @@ export const SYM_0: Sym = {
 export const SYM_1: Sym = {
   type: "js",
   value: { type: "r32", list: false, value: real(1) },
+}
+
+export function isZero(sym: Sym) {
+  return !!(
+    sym.type == "js" &&
+    sym.value.list === false &&
+    (TY_INFO[sym.value.type] as TyInfo<Val, TyName>).extras?.isZero?.(
+      sym.value.value,
+    )
+  )
+}
+
+export function isOne(sym: Sym) {
+  return !!(
+    sym.type == "js" &&
+    sym.value.list === false &&
+    (TY_INFO[sym.value.type] as TyInfo<Val, TyName>).extras?.isOne?.(
+      sym.value.value,
+    )
+  )
 }

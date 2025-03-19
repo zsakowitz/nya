@@ -174,6 +174,7 @@ function lineInfo<T extends "segment" | "ray" | "line" | "vector">(
       }
     },
     components: null,
+    extras: null,
   }
 }
 
@@ -680,6 +681,7 @@ const INFO_CIRCLE: TyInfoByName<"circle"> = {
     cv.circle(unpt(val.center), num(val.radius), Size.Line, Color.Green)
   },
   components: null,
+  extras: null,
 }
 
 const INFO_POLYGON: TyInfoByName<"polygon"> = {
@@ -764,6 +766,7 @@ const INFO_POLYGON: TyInfoByName<"polygon"> = {
     cv.polygon(val.map(unpt), Size.Line, Color.Blue, 1, 0.3, false)
   },
   components: null,
+  extras: null,
 }
 
 const INFO_ARC: TyInfoByName<"arc"> = {
@@ -888,6 +891,7 @@ const INFO_ARC: TyInfoByName<"arc"> = {
     drawArcCv(cv, arc)
   },
   components: null,
+  extras: null,
 }
 
 function angleInfo(
@@ -1064,6 +1068,7 @@ function angleInfo(
       drawAngleCv(cv, unpt(val[0]), unpt(val[1]), unpt(val[2]), { kind: type })
     },
     components: null,
+    extras: null,
   }
 }
 
