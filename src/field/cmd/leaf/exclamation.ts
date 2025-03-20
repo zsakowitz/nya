@@ -14,7 +14,7 @@ export class CmdExclamation extends Leaf {
   }
 
   constructor() {
-    super("!", h("nya-cmd-op", "!"))
+    super("!", h("", "!"))
   }
 
   reader(): string {
