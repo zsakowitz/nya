@@ -2,9 +2,10 @@ import { Precedence } from "@/eval/ast/token"
 import type { GlslContext } from "@/eval/lib/fn"
 import { FnDist } from "@/eval/ops/dist"
 import { suffixFn } from "@/eval/sym"
-import { num, real } from "@/eval/ty/create"
+import { num, real, rept } from "@/eval/ty/create"
 import { CmdExclamation } from "@/field/cmd/leaf/exclamation"
 import factorial from "@stdlib/math/base/special/factorial"
+import { complex, gamma, type Complex } from "mathjs"
 import type { Package } from "."
 
 function factorialGlsl(ctx: GlslContext, x: string) {
@@ -107,18 +108,40 @@ float factorial(float x) {
 const OP_FACTORIAL = new FnDist("!", "computes a factorial", {
   message: "Cannot take the factorial of %%.",
   display: suffixFn(() => new CmdExclamation(), Precedence.Atom),
-}).add(
-  ["r32"],
-  "r32",
-  (a) => {
-    const val = num(a.value)
-    if (val == Math.floor(val) && val < 0) {
-      return real(Infinity)
-    }
-    return real(factorial(val))
-  },
-  (ctx, a) => factorialGlsl(ctx, a.expr),
-)
+})
+  .add(
+    ["r32"],
+    "r32",
+    (a) => {
+      const val = num(a.value)
+      if (val == Math.floor(val) && val < 0) {
+        return real(Infinity)
+      }
+      return real(factorial(val))
+    },
+    (ctx, a) => factorialGlsl(ctx, a.expr),
+  )
+  .add(
+    ["c32"],
+    "c32",
+    ({ value }) => {
+      const x = num(value.x)
+      const y = num(value.y)
+      if (y == 0 && x == Math.floor(x) && x < 0) {
+        return rept({ x: Infinity, y: 0 })
+      }
+      // The type signature lies.
+      const result = gamma(complex(x + 1, y)) as number | Complex
+      if (typeof result == "number") {
+        return rept({ x: result, y: 0 })
+      } else {
+        return rept({ x: result.re, y: result.im })
+      }
+    },
+    () => {
+      throw new Error("Cannot take factorials of complex numbers in shaders.")
+    },
+  )
 
 export const PKG_FACTORIAL: Package = {
   id: "nya:factorial",
