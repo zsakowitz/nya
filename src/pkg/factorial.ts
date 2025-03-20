@@ -1,12 +1,19 @@
 import { Precedence } from "@/eval/ast/token"
 import type { GlslContext } from "@/eval/lib/fn"
 import { FnDist } from "@/eval/ops/dist"
-import { suffixFn } from "@/eval/sym"
-import { num, real, rept } from "@/eval/ty/create"
+import { binary, suffixFn, SYM_1, txr, unary } from "@/eval/sym"
+import { approx, num, real, rept } from "@/eval/ty/create"
 import { CmdExclamation } from "@/field/cmd/leaf/exclamation"
+import { SymPsi } from "@/field/cmd/leaf/sym"
+import { CmdBrack } from "@/field/cmd/math/brack"
+import { CmdSupSub } from "@/field/cmd/math/supsub"
+import { Block, L, R } from "@/field/model"
+import digamma from "@stdlib/math/base/special/digamma"
 import factorial from "@stdlib/math/base/special/factorial"
+import polygamma from "@stdlib/math/base/special/polygamma"
 import { complex, gamma, type Complex } from "mathjs"
 import type { Package } from "."
+import { chain, OP_ADD, OP_JUXTAPOSE } from "./core/ops"
 
 function factorialGlsl(ctx: GlslContext, x: string) {
   ctx.glsl`float sinpiSeries(float x) {
@@ -105,9 +112,118 @@ float factorial(float x) {
   return `factorial(${x})`
 }
 
-const OP_FACTORIAL = new FnDist("!", "computes a factorial", {
+export const FN_DIGAMMA: FnDist = new FnDist(
+  "digamma",
+  "computes the derivatives of the natural logarithm of the gamma function",
+  {
+    deriv: unary((wrt, x) => {
+      return chain(x, wrt, {
+        type: "call",
+        fn: FN_POLYGAMMA,
+        args: [SYM_1, x],
+      })
+    }),
+    display([a, b]) {
+      if (!(a && !b)) return
+
+      const block = new Block(null)
+      const cursor = block.cursor(R)
+      new SymPsi().insertAt(cursor, L)
+
+      const arg = txr(a).display(a).block
+      new CmdBrack("(", ")", null, arg).insertAt(cursor, L)
+
+      return { block, lhs: Precedence.Atom, rhs: Precedence.Atom }
+    },
+  },
+).add(
+  ["r32"],
+  "r32",
+  (a) => {
+    return approx(digamma(num(a.value)))
+  },
+  () => {
+    throw new Error(
+      "Cannot compute the digamma function in shaders yet. (The digamma function is generated when you take the derivative of a factorial.)",
+    )
+  },
+)
+
+export const FN_POLYGAMMA: FnDist = new FnDist(
+  "polygamma",
+  "computes repeated derivatives of the natural logarithm of the gamma function",
+  {
+    deriv: binary((wrt, n, x) => {
+      if (txr(n).uses(n, wrt)) {
+        throw new Error(
+          "The index of the polygamma function cannot depend on the variable with respect to which you take the derivative. For example, d/dx polygamma(x,x) is not allowed.",
+        )
+      }
+      return chain(x, wrt, {
+        type: "call",
+        fn: FN_POLYGAMMA,
+        args: [{ type: "call", fn: OP_ADD, args: [n, SYM_1] }, x],
+      })
+    }),
+    display([a, b, c]) {
+      if (!(a && b && !c)) return
+
+      const block = new Block(null)
+      const cursor = block.cursor(R)
+      new SymPsi().insertAt(cursor, L)
+
+      const superscript = new Block(null)
+      const index = txr(a).display(a).block
+      new CmdBrack("(", ")", null, index).insertAt(superscript.cursor(R), L)
+      new CmdSupSub(null, superscript).insertAt(cursor, L)
+
+      const arg = txr(b).display(b).block
+      new CmdBrack("(", ")", null, arg).insertAt(cursor, L)
+
+      return { block, lhs: Precedence.Atom, rhs: Precedence.Atom }
+    },
+  },
+).add(
+  ["r32", "r32"],
+  "r32",
+  (a, b) => {
+    return approx(polygamma(num(a.value), num(b.value)))
+  },
+  () => {
+    throw new Error(
+      "Cannot compute the polygamma function in shaders yet. (The polygamma function is generated when you take the derivative of a factorial.)",
+    )
+  },
+)
+
+const OP_FACTORIAL: FnDist = new FnDist("!", "computes a factorial", {
   message: "Cannot take the factorial of %%.",
   display: suffixFn(() => new CmdExclamation(), Precedence.Atom),
+  deriv: unary((wrt, a) =>
+    chain(a, wrt, {
+      type: "call",
+      fn: OP_JUXTAPOSE,
+      args: [
+        {
+          type: "call",
+          fn: OP_FACTORIAL,
+          args: [a],
+        },
+        {
+          type: "call",
+          // TODO: decide whether to use digamma or polygamma
+          fn: FN_DIGAMMA,
+          args: [
+            {
+              type: "call",
+              fn: OP_ADD,
+              args: [a, SYM_1],
+            },
+          ],
+        },
+      ],
+    }),
+  ),
 })
   .add(
     ["r32"],
@@ -139,7 +255,9 @@ const OP_FACTORIAL = new FnDist("!", "computes a factorial", {
       }
     },
     () => {
-      throw new Error("Cannot take factorials of complex numbers in shaders.")
+      throw new Error(
+        "Cannot take factorials of complex numbers in shaders yet.",
+      )
     },
   )
 

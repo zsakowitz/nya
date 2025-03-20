@@ -1,6 +1,6 @@
-import { Leaf } from "."
 import type { Node } from "@/eval/ast/token"
 import { h } from "@/jsx"
+import { Leaf } from "."
 import type { LatexParser } from "../../latex"
 import {
   L,
@@ -12,10 +12,16 @@ import {
   type InitRet,
 } from "../../model"
 
-function sym(latex: string, reader: string, text: string, ascii: string) {
+function sym(
+  latex: string,
+  reader: string,
+  text: string,
+  ascii: string,
+  symbola?: boolean,
+) {
   const clsx =
-    text == "∞" ?
-      "[line-height:1] relative top-[-.05em]"
+    text == "∞" ? "[line-height:1] relative top-[-.05em]"
+    : symbola ? "font-['Symbola'] italic"
     : "font-['Times_New_Roman'] [line-height:.9]"
 
   return class extends Leaf {
@@ -60,4 +66,5 @@ function sym(latex: string, reader: string, text: string, ascii: string) {
 
 export const SymPi = sym("\\pi ", " pi ", "π", "pi")
 export const SymTau = sym("\\tau ", " tau ", "τ", "tau")
+export const SymPsi = sym("\\psi ", " psi ", "ψ", "psi", true)
 export const SymInfinity = sym("\\infinity ", " infinity ", "∞", "infinity")

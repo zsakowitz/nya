@@ -64,7 +64,7 @@ export class CmdFrac extends Command<[Block, Block]> {
     super(
       "\\frac",
       h(
-        "text-[90%] text-center align-[-.46em] px-[.2em] inline-block [.nya-selected>&]:nya-selected",
+        "nya-cmd-frac text-[90%] text-center align-[-.46em] px-[.2em] inline-block [.nya-selected>&]:nya-selected",
         h("px-[.1em] block pt-[.1em]", num.el),
         h(
           "float-right w-full p-[.1em] border-t border-current block",

@@ -344,6 +344,11 @@ body {
   @apply pl-[1ch];
 }
 
+.nya-cmd-word-r:has(+ .nya-cmd-frac),
+.nya-cmd-word-r:has(+ .nya-cursor + .nya-cmd-frac) {
+  @apply pr-[.1em];
+}
+
 .nya-range-bound {
   @apply border-[--nya-border];
 }
