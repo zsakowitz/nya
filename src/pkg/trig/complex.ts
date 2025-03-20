@@ -1,7 +1,7 @@
-import type { Package } from "."
 import { fn, type GlslContext } from "@/eval/lib/fn"
 import type { SPoint } from "@/eval/ty"
 import { approx, frac, num, pt, real } from "@/eval/ty/create"
+import type { Package } from ".."
 import {
   addPt,
   declareDiv,
@@ -15,7 +15,7 @@ import {
   recipGl,
   recipPt,
   subPt,
-} from "./num/complex"
+} from "../num/complex"
 import {
   FN_ARCCOS,
   FN_ARCCOT,
@@ -30,7 +30,7 @@ import {
   FN_SIN,
   FN_TAN,
   PKG_TRIG_REAL,
-} from "./trig-real"
+} from "./real"
 
 const sinGl = fn(
   ["c32"],
