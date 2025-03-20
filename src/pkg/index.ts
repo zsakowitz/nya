@@ -6,7 +6,7 @@ import type {
   PuncUnary,
   Suffixes,
   SuffixName,
-} from "../eval/ast/token"
+} from "@/eval/ast/token"
 import type {
   TxrAst,
   TxrGroup,
@@ -14,19 +14,19 @@ import type {
   TxrOpBinary,
   TxrOpUnary,
   TxrSuffix,
-} from "../eval/ast/tx"
-import type { Fn } from "../eval/ops"
-import type { WithDocs } from "../eval/ops/docs"
-import type { Builtin } from "../eval/ops/vars"
-import type { SymName, Syms, TxrSym } from "../eval/sym"
-import type { TyComponents, TyName, Tys } from "../eval/ty"
-import type { TyCoerceMap, TyInfo } from "../eval/ty/info"
-import type { ParenLhs, ParenRhs } from "../field/cmd/math/brack"
-import type { LatexInit } from "../field/latex"
-import type { Init } from "../field/model"
-import type { AnyExt } from "../sheet/ext"
-import type { AnyItemFactory } from "../sheet/item"
-import type { Sheet } from "../sheet/ui/sheet"
+} from "@/eval/ast/tx"
+import type { Fn } from "@/eval/ops"
+import type { WithDocs } from "@/eval/ops/docs"
+import type { Builtin } from "@/eval/ops/vars"
+import type { SymName, Syms, TxrSym } from "@/eval/sym"
+import type { TyComponents, TyName, Tys } from "@/eval/ty"
+import type { TyCoerceMap, TyInfo } from "@/eval/ty/info"
+import type { ParenLhs, ParenRhs } from "@/field/cmd/math/brack"
+import type { LatexInit } from "@/field/latex"
+import type { Init } from "@/field/model"
+import type { AnyExt } from "@/sheet/ext"
+import type { AnyItemFactory } from "@/sheet/item"
+import type { Sheet } from "@/sheet/ui/sheet"
 
 type List<T, K extends PropertyKey = string> = { readonly [_ in K]?: T }
 

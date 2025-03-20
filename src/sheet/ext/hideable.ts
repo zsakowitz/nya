@@ -1,5 +1,5 @@
 import { Store, type Ext } from "."
-import { h, hx } from "../../jsx"
+import { h, hx } from "@/jsx"
 import type { Expr } from "../ui/expr"
 import { circle } from "../ui/expr/circle"
 

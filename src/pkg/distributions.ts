@@ -1,11 +1,11 @@
 import type { Package } from "."
-import { FnDist } from "../eval/ops/dist"
-import { gl, real } from "../eval/ty/create"
-import { CmdComma } from "../field/cmd/leaf/comma"
-import { CmdWord } from "../field/cmd/leaf/word"
-import { CmdBrack } from "../field/cmd/math/brack"
-import { Block, L, R } from "../field/model"
-import { g, h, path, svgx } from "../jsx"
+import { FnDist } from "@/eval/ops/dist"
+import { gl, real } from "@/eval/ty/create"
+import { CmdComma } from "@/field/cmd/leaf/comma"
+import { CmdWord } from "@/field/cmd/leaf/word"
+import { CmdBrack } from "@/field/cmd/math/brack"
+import { Block, L, R } from "@/field/model"
+import { g, h, path, svgx } from "@/jsx"
 
 declare module "@/eval/ty" {
   interface Tys {

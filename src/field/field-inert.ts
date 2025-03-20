@@ -1,5 +1,5 @@
 import { twMerge } from "tailwind-merge"
-import type { Ctx } from "../sheet/deps"
+import type { Ctx } from "@/sheet/deps"
 import { LatexParser } from "./latex"
 import {
   Block,

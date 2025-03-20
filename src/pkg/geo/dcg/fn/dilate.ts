@@ -1,15 +1,8 @@
-import type { GlslContext } from "../../../../eval/lib/fn"
-import { FnDist } from "../../../../eval/ops/dist"
-import type {
-  GlslVal,
-  JsVal,
-  SPoint,
-  SReal,
-  TyName,
-  Val,
-} from "../../../../eval/ty"
-import { pt } from "../../../../eval/ty/create"
-import { add, mul, sub } from "../../../../eval/ty/ops"
+import type { GlslContext } from "@/eval/lib/fn"
+import { FnDist } from "@/eval/ops/dist"
+import type { GlslVal, JsVal, SPoint, SReal, TyName, Val } from "@/eval/ty"
+import { pt } from "@/eval/ty/create"
+import { add, mul, sub } from "@/eval/ty/ops"
 
 interface DilationJs {
   c: SPoint

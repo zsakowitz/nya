@@ -1,6 +1,6 @@
 import { Leaf } from "."
-import type { Node } from "../../../eval/ast/token"
-import { h } from "../../../jsx"
+import type { Node } from "@/eval/ast/token"
+import { h } from "@/jsx"
 import type { LatexParser } from "../../latex"
 import { L, R, Span, type Command, type Cursor, type Dir } from "../../model"
 import { CmdNum } from "./num"

@@ -2,9 +2,9 @@ import {
   faSquareRootVariable,
   type IconDefinition,
 } from "@fortawesome/free-solid-svg-icons"
-import type { GlslResult } from "../eval/lib/fn"
-import { LatexParser } from "../field/latex"
-import { Block, L, R, U, type VDir } from "../field/model"
+import type { GlslResult } from "@/eval/lib/fn"
+import { LatexParser } from "@/field/latex"
+import { Block, L, R, U, type VDir } from "@/field/model"
 import type { ItemRef } from "./items"
 import type { Plottable } from "./ui/cv/item"
 import type { ItemData } from "./ui/cv/move"

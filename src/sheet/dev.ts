@@ -1,5 +1,5 @@
-import { options } from "../field/defaults"
-import { show } from "../show"
+import { options } from "@/field/defaults"
+import { show } from "@/show"
 import SRC_LOCALHOST from "./example/localhost.txt"
 import SRC_STANDARD from "./example/standard.txt"
 import { SheetFactory } from "./factory"
@@ -12,12 +12,12 @@ const factory = new SheetFactory(options)
 
 const IS_DEV = "NYA_DEV" in globalThis
 if (!(LOAD_EMPTY && IS_DEV)) {
-  for (const pkg of (await import("../all")).allPackages()) {
+  for (const pkg of (await import("@/all")).allPackages()) {
     factory.load(pkg)
   }
 }
 if (IS_DEV) {
-  setTimeout(async () => (await import("../test")).runTests())
+  setTimeout(async () => (await import("@/test")).runTests())
 }
 
 const sheet = factory.create()

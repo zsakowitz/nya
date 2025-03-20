@@ -1,6 +1,6 @@
-import type { Package } from "../pkg"
-import { PKG_NUM_COMPLEX } from "../pkg/num-complex"
-import { defineExt, Prop } from "../sheet/ext"
+import type { Package } from "@/pkg"
+import { PKG_NUM_COMPLEX } from "@/pkg/num-complex"
+import { defineExt, Prop } from "@/sheet/ext"
 
 export type Theme = "simple" | "gradient" | "plot" | "trig" | "black" | "none"
 

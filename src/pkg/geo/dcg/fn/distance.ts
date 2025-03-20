@@ -1,7 +1,7 @@
-import { FnDist } from "../../../../eval/ops/dist"
-import type { SPoint, SReal } from "../../../../eval/ty"
-import { num, pt, real } from "../../../../eval/ty/create"
-import { abs, add, div, mul, sub } from "../../../../eval/ty/ops"
+import { FnDist } from "@/eval/ops/dist"
+import type { SPoint, SReal } from "@/eval/ty"
+import { num, pt, real } from "@/eval/ty/create"
+import { abs, add, div, mul, sub } from "@/eval/ty/ops"
 
 export function sqrt(val: SReal) {
   return real(num(val) ** 0.5)

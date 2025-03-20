@@ -1,6 +1,6 @@
 import { faQuoteLeft } from "@fortawesome/free-solid-svg-icons/faQuoteLeft"
-import { fa } from "../../../field/fa"
-import { h, path, svgx } from "../../../jsx"
+import { fa } from "@/field/fa"
+import { h, path, svgx } from "@/jsx"
 
 export function circle(
   kind: "shaderon" | "empty" | "ithkuilscript" | "text",

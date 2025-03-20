@@ -1,17 +1,17 @@
 import type { Package } from ".."
-import type { GlslContext } from "../../eval/lib/fn"
-import { FnDist } from "../../eval/ops/dist"
-import type { SColor, SReal } from "../../eval/ty"
-import { frac, gl, num, real } from "../../eval/ty/create"
-import { TY_INFO } from "../../eval/ty/info"
-import { CmdColor } from "../../field/cmd/leaf/color"
-import { L } from "../../field/model"
-import { h } from "../../jsx"
+import type { GlslContext } from "@/eval/lib/fn"
+import { FnDist } from "@/eval/ops/dist"
+import type { SColor, SReal } from "@/eval/ty"
+import { frac, gl, num, real } from "@/eval/ty/create"
+import { TY_INFO } from "@/eval/ty/info"
+import { CmdColor } from "@/field/cmd/leaf/color"
+import { L } from "@/field/model"
+import { h } from "@/jsx"
 import { PKG_BOOL } from "../bool"
 import { OP_CDOT } from "../core/ops"
 import { PKG_REAL } from "../num/real"
 
-declare module "../../eval/ty" {
+declare module "@/eval/ty" {
   interface Tys {
     color: SColor
   }

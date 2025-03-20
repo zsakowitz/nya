@@ -1,6 +1,6 @@
 import type { Package } from "."
-import { FnDist } from "../eval/ops/dist"
-import { frac, num } from "../eval/ty/create"
+import { FnDist } from "@/eval/ops/dist"
+import { frac, num } from "@/eval/ty/create"
 import { PKG_REAL } from "./num/real"
 
 const floor = new FnDist("floor", "rounds down to the nearest integer").add(

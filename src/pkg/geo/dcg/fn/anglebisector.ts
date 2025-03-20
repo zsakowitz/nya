@@ -1,9 +1,9 @@
-import type { GlslContext } from "../../../../eval/lib/fn"
-import { FnDist } from "../../../../eval/ops/dist"
-import type { GlslVal, JsVal, SPoint } from "../../../../eval/ty"
-import { pt } from "../../../../eval/ty/create"
-import { add, sub } from "../../../../eval/ty/ops"
-import { normVectorS } from "../../../../sheet/point"
+import type { GlslContext } from "@/eval/lib/fn"
+import { FnDist } from "@/eval/ops/dist"
+import type { GlslVal, JsVal, SPoint } from "@/eval/ty"
+import { pt } from "@/eval/ty/create"
+import { add, sub } from "@/eval/ty/ops"
+import { normVectorS } from "@/sheet/point"
 
 export function bisectAngleJs(
   a: JsVal<"angle" | "directedangle">,

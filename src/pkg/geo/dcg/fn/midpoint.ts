@@ -1,6 +1,6 @@
-import { FnDist } from "../../../../eval/ops/dist"
-import { pt, real } from "../../../../eval/ty/create"
-import { add, div } from "../../../../eval/ty/ops"
+import { FnDist } from "@/eval/ops/dist"
+import { pt, real } from "@/eval/ty/create"
+import { add, div } from "@/eval/ty/ops"
 
 export const FN_MIDPOINT = new FnDist(
   "midpoint",

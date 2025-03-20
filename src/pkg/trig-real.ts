@@ -1,7 +1,7 @@
 import type { Package } from "."
-import { FnDist } from "../eval/ops/dist"
-import { SYM_2, unary } from "../eval/sym"
-import { approx, num } from "../eval/ty/create"
+import { FnDist } from "@/eval/ops/dist"
+import { SYM_2, unary } from "@/eval/sym"
+import { approx, num } from "@/eval/ty/create"
 import { chain, OP_NEG, OP_RAISE } from "./core/ops"
 import { PKG_REAL } from "./num/real"
 

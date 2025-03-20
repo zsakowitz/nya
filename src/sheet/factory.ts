@@ -1,4 +1,4 @@
-import { FNLIKE_MAGICVAR } from "../eval/ast/fnlike"
+import { FNLIKE_MAGICVAR } from "@/eval/ast/fnlike"
 import {
   Precedence,
   PRECEDENCE_MAP,
@@ -7,7 +7,7 @@ import {
   type PuncInfix,
   type PuncUnary,
   type SuffixName,
-} from "../eval/ast/token"
+} from "@/eval/ast/token"
 import {
   TXR_AST,
   TXR_GROUP,
@@ -17,15 +17,15 @@ import {
   TXR_SUFFIX,
   type TxrAst,
   type TxrSuffix,
-} from "../eval/ast/tx"
-import { FNS, OP_BINARY, OP_UNARY } from "../eval/ops"
-import { VARS } from "../eval/ops/vars"
-import { TXR_SYM, type SymName, type TxrSym } from "../eval/sym"
-import type { TyName } from "../eval/ty"
-import { tidyCoercions, TY_INFO, type TyCoerce } from "../eval/ty/info"
-import type { ParenLhs, ParenRhs } from "../field/cmd/math/brack"
-import { Inits, WordMap, type Options } from "../field/options"
-import type { Package, ToolbarItem } from "../pkg"
+} from "@/eval/ast/tx"
+import { FNS, OP_BINARY, OP_UNARY } from "@/eval/ops"
+import { VARS } from "@/eval/ops/vars"
+import { TXR_SYM, type SymName, type TxrSym } from "@/eval/sym"
+import type { TyName } from "@/eval/ty"
+import { tidyCoercions, TY_INFO, type TyCoerce } from "@/eval/ty/info"
+import type { ParenLhs, ParenRhs } from "@/field/cmd/math/brack"
+import { Inits, WordMap, type Options } from "@/field/options"
+import type { Package, ToolbarItem } from "@/pkg"
 import { Exts } from "./ext"
 import { FACTORY_EXPR, type AnyItemFactory } from "./item"
 import { Sheet } from "./ui/sheet"

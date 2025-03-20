@@ -1,7 +1,7 @@
 import type { Package } from "."
-import { theme } from "../sheet/theme"
-import type { Cv } from "../sheet/ui/cv"
-import { OrderMajor } from "../sheet/ui/cv/consts"
+import { theme } from "@/sheet/theme"
+import type { Cv } from "@/sheet/ui/cv"
+import { OrderMajor } from "@/sheet/ui/cv/consts"
 
 const THEME_MAIN_AXIS_WIDTH = 1.5
 const THEME_MAJOR_LINE_ALPHA = 0.3

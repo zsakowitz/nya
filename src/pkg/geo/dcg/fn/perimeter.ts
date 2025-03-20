@@ -1,6 +1,6 @@
-import { FnDist } from "../../../../eval/ops/dist"
-import { pt, real } from "../../../../eval/ty/create"
-import { add, sub } from "../../../../eval/ty/ops"
+import { FnDist } from "@/eval/ops/dist"
+import { pt, real } from "@/eval/ty/create"
+import { add, sub } from "@/eval/ty/ops"
 import { hypot } from "./distance"
 
 export const FN_PERIMETER = new FnDist(

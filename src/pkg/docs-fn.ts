@@ -1,11 +1,11 @@
 import { faBook } from "@fortawesome/free-solid-svg-icons/faBook"
 import type { Package } from "."
-import { FNS } from "../eval/ops"
-import { ALL_DOCS } from "../eval/ops/docs"
-import { fa } from "../field/fa"
-import { h, hx } from "../jsx"
-import type { ItemFactory } from "../sheet/item"
-import { makeDoc } from "../sheet/ui/sheet/docs"
+import { FNS } from "@/eval/ops"
+import { ALL_DOCS } from "@/eval/ops/docs"
+import { fa } from "@/field/fa"
+import { h, hx } from "@/jsx"
+import type { ItemFactory } from "@/sheet/item"
+import { makeDoc } from "@/sheet/ui/sheet/docs"
 
 interface Data {
   fn: string

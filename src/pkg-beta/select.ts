@@ -1,13 +1,13 @@
-import { fnargs } from "../eval/ast/collect"
-import { js } from "../eval/js"
-import { frac } from "../eval/ty/create"
-import { Display } from "../eval/ty/display"
-import { OpEq } from "../field/cmd/leaf/cmp"
-import { CmdVar } from "../field/cmd/leaf/var"
-import { Block, L, R } from "../field/model"
-import { h, hx } from "../jsx"
-import type { Package } from "../pkg"
-import { defineExt, Store } from "../sheet/ext"
+import { fnargs } from "@/eval/ast/collect"
+import { js } from "@/eval/js"
+import { frac } from "@/eval/ty/create"
+import { Display } from "@/eval/ty/display"
+import { OpEq } from "@/field/cmd/leaf/cmp"
+import { CmdVar } from "@/field/cmd/leaf/var"
+import { Block, L, R } from "@/field/model"
+import { h, hx } from "@/jsx"
+import type { Package } from "@/pkg"
+import { defineExt, Store } from "@/sheet/ext"
 
 const store = new Store(() => {
   const select = hx("div", "flex flex-1 gap-1 text-[110%]")

@@ -1,31 +1,26 @@
 import type { Package } from "../.."
-import type { JsVal, Tys } from "../../../eval/ty"
-import { SNANPT, gl, num, pt, real, unpt } from "../../../eval/ty/create"
+import type { JsVal, Tys } from "@/eval/ty"
+import { SNANPT, gl, num, pt, real, unpt } from "@/eval/ty/create"
 import {
   WRITE_POINT,
   gliderOnLine,
   type TyInfo,
   type TyInfoByName,
-} from "../../../eval/ty/info"
-import { OpEq } from "../../../field/cmd/leaf/cmp"
-import { CmdComma } from "../../../field/cmd/leaf/comma"
-import { CmdDot } from "../../../field/cmd/leaf/dot"
-import { CmdToken, createToken } from "../../../field/cmd/leaf/token"
-import { CmdVar } from "../../../field/cmd/leaf/var"
-import { CmdWord } from "../../../field/cmd/leaf/word"
-import { CmdBrack } from "../../../field/cmd/math/brack"
-import { Block, L, R } from "../../../field/model"
-import { h, path, svgx, sx } from "../../../jsx"
-import {
-  PICK_TY,
-  definePickTy,
-  toolbar,
-  type Data,
-} from "../../../sheet/pick-ty"
-import { normVector, type Point } from "../../../sheet/point"
-import { Color, Opacity, Order, Size } from "../../../sheet/ui/cv/consts"
-import { Expr } from "../../../sheet/ui/expr"
-import type { Selected } from "../../../sheet/ui/sheet"
+} from "@/eval/ty/info"
+import { OpEq } from "@/field/cmd/leaf/cmp"
+import { CmdComma } from "@/field/cmd/leaf/comma"
+import { CmdDot } from "@/field/cmd/leaf/dot"
+import { CmdToken, createToken } from "@/field/cmd/leaf/token"
+import { CmdVar } from "@/field/cmd/leaf/var"
+import { CmdWord } from "@/field/cmd/leaf/word"
+import { CmdBrack } from "@/field/cmd/math/brack"
+import { Block, L, R } from "@/field/model"
+import { h, path, svgx, sx } from "@/jsx"
+import { PICK_TY, definePickTy, toolbar, type Data } from "@/sheet/pick-ty"
+import { normVector, type Point } from "@/sheet/point"
+import { Color, Opacity, Order, Size } from "@/sheet/ui/cv/consts"
+import { Expr } from "@/sheet/ui/expr"
+import type { Selected } from "@/sheet/ui/sheet"
 import { FN_GLIDER, FN_INTERSECTION, PKG_GEO_POINT } from "../point"
 import { PKG_REAL } from "../../num/real"
 import { computeArcVal, unglideArc } from "./arc"
@@ -68,7 +63,7 @@ import { FN_VECTOR } from "./fn/vector"
 import { FN_VERTICES } from "./fn/vertices"
 import { vectorPath } from "./vector"
 
-declare module "../../../eval/ty" {
+declare module "@/eval/ty" {
   interface Tys {
     segment: [SPoint, SPoint]
     ray: [SPoint, SPoint]

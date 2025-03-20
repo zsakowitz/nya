@@ -1,5 +1,5 @@
-import { h } from "../jsx"
-import type { Ctx } from "../sheet/deps"
+import { h } from "@/jsx"
+import type { Ctx } from "@/sheet/deps"
 import { FieldInert } from "./field-inert"
 import { Selection } from "./model"
 import type { Options } from "./options"

@@ -1,6 +1,6 @@
-import { FnDist } from "../../../../eval/ops/dist"
-import { pt, real } from "../../../../eval/ty/create"
-import { sub } from "../../../../eval/ty/ops"
+import { FnDist } from "@/eval/ops/dist"
+import { pt, real } from "@/eval/ty/create"
+import { sub } from "@/eval/ty/ops"
 import { arcLength, computeArcVal } from "../arc"
 import { hypot } from "./distance"
 

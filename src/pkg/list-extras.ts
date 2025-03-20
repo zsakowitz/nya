@@ -1,11 +1,11 @@
 import type { Package } from "."
-import type { Fn } from "../eval/ops"
-import { array, docByIcon, icon } from "../eval/ops/dist"
-import { type WithDocs, ALL_DOCS } from "../eval/ops/docs"
-import { issue } from "../eval/ops/issue"
-import type { SReal } from "../eval/ty"
-import { canCoerce, coerceTyJs, coerceValJs } from "../eval/ty/coerce"
-import { num } from "../eval/ty/create"
+import type { Fn } from "@/eval/ops"
+import { array, docByIcon, icon } from "@/eval/ops/dist"
+import { type WithDocs, ALL_DOCS } from "@/eval/ops/docs"
+import { issue } from "@/eval/ops/issue"
+import type { SReal } from "@/eval/ty"
+import { canCoerce, coerceTyJs, coerceValJs } from "@/eval/ty/coerce"
+import { num } from "@/eval/ty/create"
 import { PKG_REAL } from "./num/real"
 
 function sortJs(args: SReal[]) {

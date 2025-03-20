@@ -1,4 +1,4 @@
-import { hx } from "../../../jsx"
+import { hx } from "@/jsx"
 import type { Point } from "../../point"
 import { onTheme } from "../../theme"
 import { Size } from "./consts"

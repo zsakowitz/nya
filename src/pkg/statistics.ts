@@ -1,11 +1,11 @@
 import type { Package } from "."
-import type { Node } from "../eval/ast/token"
-import type { GlslContext } from "../eval/lib/fn"
-import type { Fn } from "../eval/ops"
-import { array, docByIcon, icon } from "../eval/ops/dist"
-import { ALL_DOCS, type WithDocs } from "../eval/ops/docs"
-import { issue } from "../eval/ops/issue"
-import { FnList } from "../eval/ops/list"
+import type { Node } from "@/eval/ast/token"
+import type { GlslContext } from "@/eval/lib/fn"
+import type { Fn } from "@/eval/ops"
+import { array, docByIcon, icon } from "@/eval/ops/dist"
+import { ALL_DOCS, type WithDocs } from "@/eval/ops/docs"
+import { issue } from "@/eval/ops/issue"
+import { FnList } from "@/eval/ops/list"
 import {
   each,
   join,
@@ -17,7 +17,7 @@ import {
   type TyName,
   type Tys,
   type Val,
-} from "../eval/ty"
+} from "@/eval/ty"
 import {
   canCoerce,
   coerceTyJs,
@@ -25,15 +25,15 @@ import {
   coerceValueGlsl,
   coerceValueJs,
   split,
-} from "../eval/ty/coerce"
-import { frac, num, real } from "../eval/ty/create"
-import { TY_INFO, type TyInfo } from "../eval/ty/info"
-import { abs, add, div, mul, sub } from "../eval/ty/ops"
-import { Leaf } from "../field/cmd/leaf"
-import { BRACKS } from "../field/cmd/math/brack"
-import { Block, L, R } from "../field/model"
-import { h, hx } from "../jsx"
-import { defineExt } from "../sheet/ext"
+} from "@/eval/ty/coerce"
+import { frac, num, real } from "@/eval/ty/create"
+import { TY_INFO, type TyInfo } from "@/eval/ty/info"
+import { abs, add, div, mul, sub } from "@/eval/ty/ops"
+import { Leaf } from "@/field/cmd/leaf"
+import { BRACKS } from "@/field/cmd/math/brack"
+import { Block, L, R } from "@/field/model"
+import { h, hx } from "@/jsx"
+import { defineExt } from "@/sheet/ext"
 import { addR64 } from "./core/ops"
 import { createMultiEval } from "./eval"
 import { sqrt } from "./geo/dcg/fn/distance"

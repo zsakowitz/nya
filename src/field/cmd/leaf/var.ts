@@ -6,11 +6,11 @@ import {
   type PuncBinaryStr,
   type PuncInfix,
   type Var,
-} from "../../../eval/ast/token"
-import { TXR_MAGICVAR } from "../../../eval/ast/tx"
-import { subscript } from "../../../eval/lib/text"
-import { h } from "../../../jsx"
-import type { Ctx } from "../../../sheet/deps"
+} from "@/eval/ast/token"
+import { TXR_MAGICVAR } from "@/eval/ast/tx"
+import { subscript } from "@/eval/lib/text"
+import { h } from "@/jsx"
+import type { Ctx } from "@/sheet/deps"
 import type { LatexParser } from "../../latex"
 import {
   Block,

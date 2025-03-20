@@ -19,21 +19,21 @@ import {
   unglossWord,
 } from "@zsnout/ithkuil/ungloss"
 import type { Package } from ".."
-import type { Fn } from "../../eval/ops"
-import { doc, FnDist } from "../../eval/ops/dist"
-import { ALL_DOCS, type WithDocs } from "../../eval/ops/docs"
-import { each, type JsVal, type JsValue, type Val } from "../../eval/ty"
-import { Leaf } from "../../field/cmd/leaf"
-import { OpEq } from "../../field/cmd/leaf/cmp"
-import { CmdComma } from "../../field/cmd/leaf/comma"
-import { L } from "../../field/model"
-import { h, path, svgx } from "../../jsx"
-import { defineExt } from "../../sheet/ext"
-import { circle } from "../../sheet/ui/expr/circle"
+import type { Fn } from "@/eval/ops"
+import { doc, FnDist } from "@/eval/ops/dist"
+import { ALL_DOCS, type WithDocs } from "@/eval/ops/docs"
+import { each, type JsVal, type JsValue, type Val } from "@/eval/ty"
+import { Leaf } from "@/field/cmd/leaf"
+import { OpEq } from "@/field/cmd/leaf/cmp"
+import { CmdComma } from "@/field/cmd/leaf/comma"
+import { L } from "@/field/model"
+import { h, path, svgx } from "@/jsx"
+import { defineExt } from "@/sheet/ext"
+import { circle } from "@/sheet/ui/expr/circle"
 import { CmdTextInert, PKG_TEXT, type TextSegment } from "../text"
 import * as categories from "./categories"
 
-declare module "../../eval/ty" {
+declare module "@/eval/ty" {
   interface Tys {
     ithkuilscript: readonly [string, SVGSVGElement]
   }

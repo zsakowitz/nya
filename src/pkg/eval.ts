@@ -1,12 +1,12 @@
 import type { Package } from "."
-import type { SReal } from "../eval/ty"
-import { frac } from "../eval/ty/create"
-import { Display } from "../eval/ty/display"
-import { FieldInert } from "../field/field-inert"
-import { R } from "../field/model"
-import { h } from "../jsx"
-import { Store, defineExt } from "../sheet/ext"
-import type { Expr } from "../sheet/ui/expr"
+import type { SReal } from "@/eval/ty"
+import { frac } from "@/eval/ty/create"
+import { Display } from "@/eval/ty/display"
+import { FieldInert } from "@/field/field-inert"
+import { R } from "@/field/model"
+import { h } from "@/jsx"
+import { Store, defineExt } from "@/sheet/ext"
+import type { Expr } from "@/sheet/ui/expr"
 
 export const STORE_EVAL = new Store((e) => {
   const field = new FieldInert(

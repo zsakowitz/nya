@@ -1,7 +1,7 @@
 import { Leaf } from "."
-import type { Node } from "../../../eval/ast/token"
-import type { JsValue, TyName } from "../../../eval/ty"
-import { h } from "../../../jsx"
+import type { Node } from "@/eval/ast/token"
+import type { JsValue, TyName } from "@/eval/ty"
+import { h } from "@/jsx"
 
 /**
  * Should only be used for `pick-cursor`. If this is displayed to the user, they

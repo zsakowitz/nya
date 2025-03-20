@@ -1,4 +1,4 @@
-import type { GlslHelpers, GlslResult } from "../../eval/lib/fn"
+import type { GlslHelpers, GlslResult } from "@/eval/lib/fn"
 import type { Plottable } from "../ui/cv/item"
 import type { Expr } from "../ui/expr"
 

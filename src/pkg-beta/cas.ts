@@ -1,6 +1,6 @@
-import type { Node } from "../eval/ast/token"
-import { NO_DRAG } from "../eval/ast/tx"
-import type { LatexParser } from "../field/latex"
+import type { Node } from "@/eval/ast/token"
+import { NO_DRAG } from "@/eval/ast/tx"
+import type { LatexParser } from "@/field/latex"
 import {
   Block,
   Command,
@@ -11,11 +11,11 @@ import {
   type InitProps,
   type InitRet,
   type Selection,
-} from "../field/model"
-import { h } from "../jsx"
-import type { Package } from "../pkg"
+} from "@/field/model"
+import { h } from "@/jsx"
+import type { Package } from "@/pkg"
 
-declare module "../eval/ast/token" {
+declare module "@/eval/ast/token" {
   interface Nodes {
     "nya:cas:symbolic": { ast: Node; latex: string }
   }

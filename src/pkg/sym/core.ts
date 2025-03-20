@@ -1,8 +1,8 @@
 import type { Package } from ".."
-import { Precedence, type Nodes } from "../../eval/ast/token"
-import { glsl, jsToGlsl } from "../../eval/glsl"
-import { js } from "../../eval/js"
-import { issue } from "../../eval/ops/issue"
+import { Precedence, type Nodes } from "@/eval/ast/token"
+import { glsl, jsToGlsl } from "@/eval/glsl"
+import { js } from "@/eval/js"
+import { issue } from "@/eval/ops/issue"
 import {
   insertStrict,
   SYM_0,
@@ -11,18 +11,18 @@ import {
   TXR_SYM,
   type Sym,
   type TxrSym,
-} from "../../eval/sym"
-import type { JsValue } from "../../eval/ty"
-import { frac, real } from "../../eval/ty/create"
-import { Display } from "../../eval/ty/display"
-import { CmdNum } from "../../field/cmd/leaf/num"
-import { OpPlusMinus } from "../../field/cmd/leaf/op"
-import { CmdWord } from "../../field/cmd/leaf/word"
-import { CmdSupSub } from "../../field/cmd/math/supsub"
-import { Block, L, R } from "../../field/model"
-import { h } from "../../jsx"
+} from "@/eval/sym"
+import type { JsValue } from "@/eval/ty"
+import { frac, real } from "@/eval/ty/create"
+import { Display } from "@/eval/ty/display"
+import { CmdNum } from "@/field/cmd/leaf/num"
+import { OpPlusMinus } from "@/field/cmd/leaf/op"
+import { CmdWord } from "@/field/cmd/leaf/word"
+import { CmdSupSub } from "@/field/cmd/math/supsub"
+import { Block, L, R } from "@/field/model"
+import { h } from "@/jsx"
 
-declare module "../../eval/ty" {
+declare module "@/eval/ty" {
   interface Tys {
     sym: Sym
   }

@@ -1,15 +1,15 @@
 import type { Package } from "."
-import type { Node } from "../eval/ast/token"
-import { NO_DRAG, NO_SYM } from "../eval/ast/tx"
-import { doc, FnDist } from "../eval/ops/dist"
-import { FnDistManual, type FnOverload } from "../eval/ops/dist-manual"
-import { ALL_DOCS } from "../eval/ops/docs"
-import { each, type JsValue, type Ty } from "../eval/ty"
-import { frac, num } from "../eval/ty/create"
-import { Display } from "../eval/ty/display"
-import { Leaf } from "../field/cmd/leaf"
-import type { FieldInert } from "../field/field-inert"
-import { LatexParser, toText } from "../field/latex"
+import type { Node } from "@/eval/ast/token"
+import { NO_DRAG, NO_SYM } from "@/eval/ast/tx"
+import { doc, FnDist } from "@/eval/ops/dist"
+import { FnDistManual, type FnOverload } from "@/eval/ops/dist-manual"
+import { ALL_DOCS } from "@/eval/ops/docs"
+import { each, type JsValue, type Ty } from "@/eval/ty"
+import { frac, num } from "@/eval/ty/create"
+import { Display } from "@/eval/ty/display"
+import { Leaf } from "@/field/cmd/leaf"
+import type { FieldInert } from "@/field/field-inert"
+import { LatexParser, toText } from "@/field/latex"
 import {
   Block,
   L,
@@ -18,10 +18,10 @@ import {
   type Cursor,
   type Dir,
   type InitProps,
-} from "../field/model"
-import { h, hx, t } from "../jsx"
-import { defineExt, Store } from "../sheet/ext"
-import { circle } from "../sheet/ui/expr/circle"
+} from "@/field/model"
+import { h, hx, t } from "@/jsx"
+import { defineExt, Store } from "@/sheet/ext"
+import { circle } from "@/sheet/ui/expr/circle"
 
 declare module "@/eval/ty" {
   interface Tys {
@@ -33,7 +33,7 @@ declare module "@/eval/ty" {
   }
 }
 
-declare module "../eval/ast/token" {
+declare module "@/eval/ast/token" {
   interface Nodes {
     text: { value: TextSegment[] }
   }

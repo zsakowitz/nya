@@ -1,8 +1,8 @@
-import type { GlslContext } from "../../../../eval/lib/fn"
-import { FnDist } from "../../../../eval/ops/dist"
-import type { GlslVal, JsVal } from "../../../../eval/ty"
-import { num, real, rept } from "../../../../eval/ty/create"
-import { abs, sub } from "../../../../eval/ty/ops"
+import type { GlslContext } from "@/eval/lib/fn"
+import { FnDist } from "@/eval/ops/dist"
+import type { GlslVal, JsVal } from "@/eval/ty"
+import { num, real, rept } from "@/eval/ty/create"
+import { abs, sub } from "@/eval/ty/ops"
 import { crArcVal } from "../arc"
 import { dist } from "./distance"
 

@@ -1,4 +1,4 @@
-import { FnList } from "../../../../eval/ops/list"
+import { FnList } from "@/eval/ops/list"
 
 function glsl(): never {
   throw new Error("Cannot construct polygons in shaders.")

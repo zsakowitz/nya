@@ -1,6 +1,6 @@
-import type { Node, PlainVar } from "../../../eval/ast/token"
-import { tryId } from "../../../eval/lib/binding"
-import { U_ZERO_WIDTH_SPACE, h } from "../../../jsx"
+import type { Node, PlainVar } from "@/eval/ast/token"
+import { tryId } from "@/eval/lib/binding"
+import { U_ZERO_WIDTH_SPACE, h } from "@/jsx"
 import type { LatexParser } from "../../latex"
 import {
   Block,

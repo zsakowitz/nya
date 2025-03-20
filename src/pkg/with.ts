@@ -1,9 +1,9 @@
 import type { Package } from "."
-import { Precedence } from "../eval/ast/token"
-import { NO_DRAG, NO_SYM } from "../eval/ast/tx"
-import { glsl } from "../eval/glsl"
-import { js } from "../eval/js"
-import { bindingDeps, withBindingsGlsl, withBindingsJs } from "../eval/ops/with"
+import { Precedence } from "@/eval/ast/token"
+import { NO_DRAG, NO_SYM } from "@/eval/ast/tx"
+import { glsl } from "@/eval/glsl"
+import { js } from "@/eval/js"
+import { bindingDeps, withBindingsGlsl, withBindingsJs } from "@/eval/ops/with"
 
 export const PKG_WITH: Package = {
   id: "nya:with",

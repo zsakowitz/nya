@@ -1,15 +1,15 @@
 import type { Package } from "."
-import { commalist } from "../eval/ast/collect"
-import { Precedence } from "../eval/ast/token"
-import { NO_DRAG, NO_SYM } from "../eval/ast/tx"
-import { glsl } from "../eval/glsl"
-import { js } from "../eval/js"
-import { parseBindings, parseBindingVar } from "../eval/lib/binding"
-import type { Fn } from "../eval/ops"
-import { docByIcon } from "../eval/ops/dist"
-import { type WithDocs, ALL_DOCS } from "../eval/ops/docs"
-import { bindingDeps } from "../eval/ops/with"
-import type { GlslValue, JsValue, TyName } from "../eval/ty"
+import { commalist } from "@/eval/ast/collect"
+import { Precedence } from "@/eval/ast/token"
+import { NO_DRAG, NO_SYM } from "@/eval/ast/tx"
+import { glsl } from "@/eval/glsl"
+import { js } from "@/eval/js"
+import { parseBindings, parseBindingVar } from "@/eval/lib/binding"
+import type { Fn } from "@/eval/ops"
+import { docByIcon } from "@/eval/ops/dist"
+import { type WithDocs, ALL_DOCS } from "@/eval/ops/docs"
+import { bindingDeps } from "@/eval/ops/with"
+import type { GlslValue, JsValue, TyName } from "@/eval/ty"
 import {
   coerceTy,
   coerceValueGlsl,
@@ -17,12 +17,12 @@ import {
   isReal,
   listGlsl,
   listJs,
-} from "../eval/ty/coerce"
-import { num } from "../eval/ty/create"
-import { any, TY_INFO } from "../eval/ty/info"
-import { CmdComma } from "../field/cmd/leaf/comma"
-import { CmdBrack } from "../field/cmd/math/brack"
-import { h } from "../jsx"
+} from "@/eval/ty/coerce"
+import { num } from "@/eval/ty/create"
+import { any, TY_INFO } from "@/eval/ty/info"
+import { CmdComma } from "@/field/cmd/leaf/comma"
+import { CmdBrack } from "@/field/cmd/math/brack"
+import { h } from "@/jsx"
 
 const FN_JOIN: Fn & WithDocs = {
   name: "join",

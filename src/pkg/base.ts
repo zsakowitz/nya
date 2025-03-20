@@ -1,12 +1,12 @@
 import type { Package } from "."
-import { Precedence } from "../eval/ast/token"
-import { NO_DRAG, NO_SYM } from "../eval/ast/tx"
-import { glsl } from "../eval/glsl"
-import { js } from "../eval/js"
-import { asNumericBase } from "../eval/lib/base"
-import { real } from "../eval/ty/create"
-import { h, px } from "../jsx"
-import { example } from "../sheet/ui/sheet/docs"
+import { Precedence } from "@/eval/ast/token"
+import { NO_DRAG, NO_SYM } from "@/eval/ast/tx"
+import { glsl } from "@/eval/glsl"
+import { js } from "@/eval/js"
+import { asNumericBase } from "@/eval/lib/base"
+import { real } from "@/eval/ty/create"
+import { h, px } from "@/jsx"
+import { example } from "@/sheet/ui/sheet/docs"
 
 // TODO: tons of base functionality is available without this package
 // removing subscripts on numbers would fix it, but may be annoying

@@ -1,10 +1,10 @@
 import { faStickyNote } from "@fortawesome/free-solid-svg-icons/faStickyNote"
 import type { Package } from "."
-import { fa } from "../field/fa"
-import { D, L, R, U } from "../field/model"
-import { hx } from "../jsx"
-import type { ItemFactory } from "../sheet/item"
-import type { ItemRef } from "../sheet/items"
+import { fa } from "@/field/fa"
+import { D, L, R, U } from "@/field/model"
+import { hx } from "@/jsx"
+import type { ItemFactory } from "@/sheet/item"
+import type { ItemRef } from "@/sheet/items"
 
 interface Data {
   contents: string

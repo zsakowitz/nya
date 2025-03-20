@@ -1,6 +1,6 @@
 import { Leaf } from "."
-import type { Node } from "../../../eval/ast/token"
-import { h } from "../../../jsx"
+import type { Node } from "@/eval/ast/token"
+import { h } from "@/jsx"
 import { L, R, Span } from "../../model"
 import type { WordKind } from "./var"
 

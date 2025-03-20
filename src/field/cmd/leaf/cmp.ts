@@ -1,4 +1,4 @@
-import type { Node, PuncCmp } from "../../../eval/ast/token"
+import type { Node, PuncCmp } from "@/eval/ast/token"
 import type { LatexParser } from "../../latex"
 import {
   L,

@@ -1,4 +1,4 @@
-import type { Ctx } from "../sheet/deps"
+import type { Ctx } from "@/sheet/deps"
 import { CmdEOF } from "./cmd/leaf/eof"
 import { CmdUnknown } from "./cmd/leaf/unknown"
 import type { FieldInert } from "./field-inert"

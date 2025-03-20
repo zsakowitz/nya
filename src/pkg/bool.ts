@@ -1,13 +1,13 @@
 import type { Package } from "."
-import { commalist } from "../eval/ast/collect"
-import { Precedence, type Node, type Piece } from "../eval/ast/token"
-import { NO_DRAG, NO_SYM } from "../eval/ast/tx"
-import { glsl, type PropsGlsl } from "../eval/glsl"
-import { js, type PropsJs } from "../eval/js"
-import type { Fn } from "../eval/ops"
-import { docByIcon, FnDist } from "../eval/ops/dist"
-import type { WithDocs } from "../eval/ops/docs"
-import { asBool, binaryFn, SYM_TRUE } from "../eval/sym"
+import { commalist } from "@/eval/ast/collect"
+import { Precedence, type Node, type Piece } from "@/eval/ast/token"
+import { NO_DRAG, NO_SYM } from "@/eval/ast/tx"
+import { glsl, type PropsGlsl } from "@/eval/glsl"
+import { js, type PropsJs } from "@/eval/js"
+import type { Fn } from "@/eval/ops"
+import { docByIcon, FnDist } from "@/eval/ops/dist"
+import type { WithDocs } from "@/eval/ops/docs"
+import { asBool, binaryFn, SYM_TRUE } from "@/eval/sym"
 import {
   join,
   joinGlsl,
@@ -16,7 +16,7 @@ import {
   type GlslValue,
   type JsValue,
   type Val,
-} from "../eval/ty"
+} from "@/eval/ty"
 import {
   coerceTy,
   coerceTyGlsl,
@@ -24,16 +24,16 @@ import {
   coerceType,
   coerceValueGlsl,
   coerceValueJs,
-} from "../eval/ty/coerce"
-import { declareGlsl } from "../eval/ty/decl"
-import { garbageValueGlsl, garbageValueJs } from "../eval/ty/garbage"
-import { any, TY_INFO } from "../eval/ty/info"
-import { CmdComma } from "../field/cmd/leaf/comma"
-import { CmdWord } from "../field/cmd/leaf/word"
-import { CmdBrack } from "../field/cmd/math/brack"
-import { L } from "../field/model"
-import { h, px } from "../jsx"
-import { example } from "../sheet/ui/sheet/docs"
+} from "@/eval/ty/coerce"
+import { declareGlsl } from "@/eval/ty/decl"
+import { garbageValueGlsl, garbageValueJs } from "@/eval/ty/garbage"
+import { any, TY_INFO } from "@/eval/ty/info"
+import { CmdComma } from "@/field/cmd/leaf/comma"
+import { CmdWord } from "@/field/cmd/leaf/word"
+import { CmdBrack } from "@/field/cmd/math/brack"
+import { L } from "@/field/model"
+import { h, px } from "@/jsx"
+import { example } from "@/sheet/ui/sheet/docs"
 import { OP_AND } from "./core/cmp"
 
 declare module "@/eval/ty" {
@@ -46,7 +46,7 @@ declare module "@/eval/ty" {
   }
 }
 
-declare module "../eval/ast/token" {
+declare module "@/eval/ast/token" {
   interface PuncListInfix {
     "\\and ": 0
     "\\or ": 0

@@ -1,6 +1,6 @@
 import { CmuLeaf } from "."
-import type { Node } from "../../../../eval/ast/token"
-import { h, usvg } from "../../../../jsx"
+import type { Node } from "@/eval/ast/token"
+import { h, usvg } from "@/jsx"
 import type { LatexParser } from "../../../latex"
 import {
   L,

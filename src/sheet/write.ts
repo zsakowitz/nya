@@ -1,9 +1,9 @@
-import { safe } from "../eval/lib/util"
-import type { SReal } from "../eval/ty"
-import { frac, num, real } from "../eval/ty/create"
-import { Display } from "../eval/ty/display"
-import { div, raise, recip } from "../eval/ty/ops"
-import type { Cursor, Span } from "../field/model"
+import { safe } from "@/eval/lib/util"
+import type { SReal } from "@/eval/ty"
+import { frac, num, real } from "@/eval/ty/create"
+import { Display } from "@/eval/ty/display"
+import { div, raise, recip } from "@/eval/ty/ops"
+import type { Cursor, Span } from "@/field/model"
 
 export function write(
   cursor: Cursor,

@@ -1,8 +1,8 @@
-import type { Node, Var } from "../eval/ast/token"
-import { sym, type PropsDrag } from "../eval/ast/tx"
-import { Deps } from "../eval/deps"
-import { glsl, type PropsGlsl, type PropsSym } from "../eval/glsl"
-import { js, type PropsJs } from "../eval/js"
+import type { Node, Var } from "@/eval/ast/token"
+import { sym, type PropsDrag } from "@/eval/ast/tx"
+import { Deps } from "@/eval/deps"
+import { glsl, type PropsGlsl, type PropsSym } from "@/eval/glsl"
+import { js, type PropsJs } from "@/eval/js"
 import {
   BindingFn,
   Bindings,
@@ -10,14 +10,14 @@ import {
   name,
   tryId,
   tryName,
-} from "../eval/lib/binding"
-import { GlslContext, GlslHelpers } from "../eval/lib/fn"
-import type { Sym } from "../eval/sym"
-import type { GlslValue, JsValue } from "../eval/ty"
-import { frac } from "../eval/ty/create"
-import { TY_INFO } from "../eval/ty/info"
-import { Field } from "../field/field"
-import type { Options } from "../field/options"
+} from "@/eval/lib/binding"
+import { GlslContext, GlslHelpers } from "@/eval/lib/fn"
+import type { Sym } from "@/eval/sym"
+import type { GlslValue, JsValue } from "@/eval/ty"
+import { frac } from "@/eval/ty/create"
+import { TY_INFO } from "@/eval/ty/info"
+import { Field } from "@/field/field"
+import type { Options } from "@/field/options"
 
 export interface Ctx {
   scope: Scope

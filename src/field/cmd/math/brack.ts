@@ -1,5 +1,5 @@
-import type { Node } from "../../../eval/ast/token"
-import { h, path, svg } from "../../../jsx"
+import type { Node } from "@/eval/ast/token"
+import { h, path, svg } from "@/jsx"
 import type { LatexParser } from "../../latex"
 import {
   Block,

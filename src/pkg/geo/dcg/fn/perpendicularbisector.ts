@@ -1,8 +1,8 @@
-import type { GlslContext } from "../../../../eval/lib/fn"
-import { FnDist } from "../../../../eval/ops/dist"
-import type { GlslVal, JsVal, SPoint } from "../../../../eval/ty"
-import { pt, real } from "../../../../eval/ty/create"
-import { add, div, sub } from "../../../../eval/ty/ops"
+import type { GlslContext } from "@/eval/lib/fn"
+import { FnDist } from "@/eval/ops/dist"
+import type { GlslVal, JsVal, SPoint } from "@/eval/ty"
+import { pt, real } from "@/eval/ty/create"
+import { add, div, sub } from "@/eval/ty/ops"
 
 function js(a: JsVal<"segment">): [SPoint, SPoint] {
   const mx = div(add(a.value[0].x, a.value[1].x), real(2))

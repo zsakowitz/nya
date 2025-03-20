@@ -1,8 +1,8 @@
-import type { SPoint } from "../eval/ty"
-import { isZero } from "../eval/ty/check"
-import { pt } from "../eval/ty/create"
-import { add, div, sub } from "../eval/ty/ops"
-import { hypot } from "../pkg/geo/dcg/fn/distance"
+import type { SPoint } from "@/eval/ty"
+import { isZero } from "@/eval/ty/check"
+import { pt } from "@/eval/ty/create"
+import { add, div, sub } from "@/eval/ty/ops"
+import { hypot } from "@/pkg/geo/dcg/fn/distance"
 
 export interface Point {
   readonly x: number

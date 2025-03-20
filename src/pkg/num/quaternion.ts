@@ -1,10 +1,10 @@
 import type { Package } from ".."
-import type { GlslContext } from "../../eval/lib/fn"
-import type { SReal, Tys } from "../../eval/ty"
-import { approx, gl, num, real } from "../../eval/ty/create"
-import { TY_INFO } from "../../eval/ty/info"
-import { abs, add, div, mul, neg, sub } from "../../eval/ty/ops"
-import { h } from "../../jsx"
+import type { GlslContext } from "@/eval/lib/fn"
+import type { SReal, Tys } from "@/eval/ty"
+import { approx, gl, num, real } from "@/eval/ty/create"
+import { TY_INFO } from "@/eval/ty/info"
+import { abs, add, div, mul, neg, sub } from "@/eval/ty/ops"
+import { h } from "@/jsx"
 import {
   OP_ABS,
   OP_ADD,

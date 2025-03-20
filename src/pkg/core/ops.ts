@@ -1,15 +1,15 @@
 import type { Package } from ".."
-import { Precedence } from "../../eval/ast/token"
-import { dragNum, dragPoint, NO_DRAG, sym } from "../../eval/ast/tx"
-import { glsl } from "../../eval/glsl"
-import { js } from "../../eval/js"
-import { parseNumberJs } from "../../eval/lib/base"
-import { BindingFn, id, name, tryName } from "../../eval/lib/binding"
-import type { GlslContext } from "../../eval/lib/fn"
-import { subscript } from "../../eval/lib/text"
-import { FnDist } from "../../eval/ops/dist"
-import { declareR64 } from "../../eval/ops/r64"
-import { VARS } from "../../eval/ops/vars"
+import { Precedence } from "@/eval/ast/token"
+import { dragNum, dragPoint, NO_DRAG, sym } from "@/eval/ast/tx"
+import { glsl } from "@/eval/glsl"
+import { js } from "@/eval/js"
+import { parseNumberJs } from "@/eval/lib/base"
+import { BindingFn, id, name, tryName } from "@/eval/lib/binding"
+import type { GlslContext } from "@/eval/lib/fn"
+import { subscript } from "@/eval/lib/text"
+import { FnDist } from "@/eval/ops/dist"
+import { declareR64 } from "@/eval/ops/r64"
+import { VARS } from "@/eval/ops/vars"
 import {
   binary,
   binaryFn,
@@ -24,23 +24,17 @@ import {
   txr,
   unary,
   type Sym,
-} from "../../eval/sym"
-import { frac, num, real } from "../../eval/ty/create"
-import { add, div } from "../../eval/ty/ops"
-import { splitValue } from "../../eval/ty/split"
-import { CmdComma } from "../../field/cmd/leaf/comma"
-import {
-  OpCdot,
-  OpMinus,
-  OpOdot,
-  OpPlus,
-  OpTimes,
-} from "../../field/cmd/leaf/op"
-import { CmdWord } from "../../field/cmd/leaf/word"
-import { CmdBrack } from "../../field/cmd/math/brack"
-import { CmdFrac } from "../../field/cmd/math/frac"
-import { CmdSupSub } from "../../field/cmd/math/supsub"
-import { Block, L, R, Span } from "../../field/model"
+} from "@/eval/sym"
+import { frac, num, real } from "@/eval/ty/create"
+import { add, div } from "@/eval/ty/ops"
+import { splitValue } from "@/eval/ty/split"
+import { CmdComma } from "@/field/cmd/leaf/comma"
+import { OpCdot, OpMinus, OpOdot, OpPlus, OpTimes } from "@/field/cmd/leaf/op"
+import { CmdWord } from "@/field/cmd/leaf/word"
+import { CmdBrack } from "@/field/cmd/math/brack"
+import { CmdFrac } from "@/field/cmd/math/frac"
+import { CmdSupSub } from "@/field/cmd/math/supsub"
+import { Block, L, R, Span } from "@/field/model"
 
 export function declareAddR64(ctx: GlslContext) {
   declareR64(ctx)

@@ -1,7 +1,7 @@
 import type { Package } from "."
-import { fn, type GlslContext } from "../eval/lib/fn"
-import type { SPoint } from "../eval/ty"
-import { approx, frac, num, pt, real } from "../eval/ty/create"
+import { fn, type GlslContext } from "@/eval/lib/fn"
+import type { SPoint } from "@/eval/ty"
+import { approx, frac, num, pt, real } from "@/eval/ty/create"
 import {
   addPt,
   declareDiv,

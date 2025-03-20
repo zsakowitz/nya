@@ -1,5 +1,5 @@
 import type { IconDefinition } from "@fortawesome/free-solid-svg-icons"
-import { path, svgx } from "../jsx"
+import { path, svgx } from "@/jsx"
 
 export function fa(icon: IconDefinition, className: string) {
   return svgx(

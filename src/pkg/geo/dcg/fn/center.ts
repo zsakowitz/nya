@@ -1,5 +1,5 @@
-import { FnDist } from "../../../../eval/ops/dist"
-import { rept } from "../../../../eval/ty/create"
+import { FnDist } from "@/eval/ops/dist"
+import { rept } from "@/eval/ty/create"
 import { crArcVal } from "../arc"
 
 export const FN_CENTER = new FnDist("center", "gets the center of a circle")

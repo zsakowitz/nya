@@ -1,9 +1,9 @@
 import { faFolder } from "@fortawesome/free-solid-svg-icons/faFolder"
 import type { Package } from "."
-import { D, L, R, U } from "../field/model"
-import { h, hx } from "../jsx"
-import type { ItemFactory } from "../sheet/item"
-import type { ItemRef } from "../sheet/items"
+import { D, L, R, U } from "@/field/model"
+import { h, hx } from "@/jsx"
+import type { ItemFactory } from "@/sheet/item"
+import type { ItemRef } from "@/sheet/items"
 
 interface Data {
   contents: string

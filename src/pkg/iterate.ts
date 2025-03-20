@@ -1,9 +1,9 @@
 import type { Package } from "."
-import type { MagicVar, Node } from "../eval/ast/token"
-import { NO_SYM } from "../eval/ast/tx"
-import type { Deps } from "../eval/deps"
-import { type PropsGlsl, glsl } from "../eval/glsl"
-import { type PropsJs, js } from "../eval/js"
+import type { MagicVar, Node } from "@/eval/ast/token"
+import { NO_SYM } from "@/eval/ast/tx"
+import type { Deps } from "@/eval/deps"
+import { type PropsGlsl, glsl } from "@/eval/glsl"
+import { type PropsJs, js } from "@/eval/js"
 import {
   type Binding,
   id,
@@ -11,21 +11,21 @@ import {
   parseBindings,
   parseUpdateVar,
   tryParseBindingVar,
-} from "../eval/lib/binding"
+} from "@/eval/lib/binding"
 import {
   type GlslValue,
   type JsValue,
   type Type,
   list,
   typeName,
-} from "../eval/ty"
-import { coerceValueGlsl, isReal } from "../eval/ty/coerce"
-import { num, real } from "../eval/ty/create"
-import { declareGlsl } from "../eval/ty/decl"
-import { h, p } from "../jsx"
-import { example } from "../sheet/ui/sheet/docs"
+} from "@/eval/ty"
+import { coerceValueGlsl, isReal } from "@/eval/ty/coerce"
+import { num, real } from "@/eval/ty/create"
+import { declareGlsl } from "@/eval/ty/decl"
+import { h, p } from "@/jsx"
+import { example } from "@/sheet/ui/sheet/docs"
 
-declare module "../eval/ast/token" {
+declare module "@/eval/ast/token" {
   interface PuncListInfix {
     while: 0
     until: 0

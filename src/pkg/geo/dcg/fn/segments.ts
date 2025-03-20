@@ -1,7 +1,7 @@
-import type { Fn } from "../../../../eval/ops"
-import { doc } from "../../../../eval/ops/dist"
-import { ALL_DOCS, type WithDocs } from "../../../../eval/ops/docs"
-import type { JsVal } from "../../../../eval/ty"
+import type { Fn } from "@/eval/ops"
+import { doc } from "@/eval/ops/dist"
+import { ALL_DOCS, type WithDocs } from "@/eval/ops/docs"
+import type { JsVal } from "@/eval/ty"
 
 export const FN_SEGMENTS: Fn & WithDocs = {
   name: "segments",
