@@ -36,7 +36,7 @@ import { h, px } from "../jsx"
 import { example } from "../sheet/ui/sheet/docs"
 import { OP_AND } from "./core/cmp"
 
-declare module "../eval/ty" {
+declare module "@/eval/ty" {
   interface Tys {
     bool: boolean
   }

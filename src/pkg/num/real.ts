@@ -1,26 +1,30 @@
-import type { Package } from "."
-import { js } from "../eval/js"
-import { asNumericBase, parseNumberGlsl, parseNumberJs } from "../eval/lib/base"
-import { SYM_BINDINGS } from "../eval/lib/binding"
-import type { GlslContext } from "../eval/lib/fn"
-import { safe } from "../eval/lib/util"
-import { docByIcon, FnDist } from "../eval/ops/dist"
+import type { Package } from ".."
+import { js } from "../../eval/js"
+import {
+  asNumericBase,
+  parseNumberGlsl,
+  parseNumberJs,
+} from "../../eval/lib/base"
+import { SYM_BINDINGS } from "../../eval/lib/binding"
+import type { GlslContext } from "../../eval/lib/fn"
+import { safe } from "../../eval/lib/util"
+import { docByIcon, FnDist } from "../../eval/ops/dist"
 import {
   FnDistCaching,
   type FnOverload,
   type FnOverloadVar,
-} from "../eval/ops/dist-manual"
-import { ALL_DOCS } from "../eval/ops/docs"
-import { FnList } from "../eval/ops/list"
-import type { SReal, Ty, TyName, Type } from "../eval/ty"
-import { canCoerce, coerceValJs } from "../eval/ty/coerce"
-import { approx, frac, gl, gl64, num, real } from "../eval/ty/create"
-import type { TyWrite } from "../eval/ty/display"
-import { highRes, TY_INFO, type TyExtras } from "../eval/ty/info"
-import { abs, add, div, mul, neg, raise, sub } from "../eval/ty/ops"
-import { splitDual } from "../eval/ty/split"
-import { h } from "../jsx"
-import { FN_VALID, PKG_BOOL } from "./bool"
+} from "../../eval/ops/dist-manual"
+import { ALL_DOCS } from "../../eval/ops/docs"
+import { FnList } from "../../eval/ops/list"
+import type { SReal, Ty, TyName, Type } from "../../eval/ty"
+import { canCoerce, coerceValJs } from "../../eval/ty/coerce"
+import { approx, frac, gl, gl64, num, real } from "../../eval/ty/create"
+import type { TyWrite } from "../../eval/ty/display"
+import { highRes, TY_INFO, type TyExtras } from "../../eval/ty/info"
+import { abs, add, div, mul, neg, raise, sub } from "../../eval/ty/ops"
+import { splitDual } from "../../eval/ty/split"
+import { h } from "../../jsx"
+import { FN_VALID, PKG_BOOL } from "../bool"
 import {
   OP_EQ,
   OP_GT,
@@ -32,7 +36,7 @@ import {
   OP_NGTE,
   OP_NLT,
   OP_NLTE,
-} from "./core/cmp"
+} from "../core/cmp"
 import {
   abs64,
   addR64,
@@ -51,9 +55,9 @@ import {
   OP_RAISE,
   OP_SUB,
   subR64,
-} from "./core/ops"
+} from "../core/ops"
 
-declare module "../eval/ty" {
+declare module "@/eval/ty" {
   interface Tys {
     r32: SReal
     r64: SReal

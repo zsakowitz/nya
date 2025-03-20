@@ -6,7 +6,7 @@ import { issue } from "../eval/ops/issue"
 import type { SReal } from "../eval/ty"
 import { canCoerce, coerceTyJs, coerceValJs } from "../eval/ty/coerce"
 import { num } from "../eval/ty/create"
-import { PKG_REAL } from "./num-real"
+import { PKG_REAL } from "./num/real"
 
 function sortJs(args: SReal[]) {
   return args.sort((a, b) => num(a) - num(b))

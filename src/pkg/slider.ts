@@ -19,7 +19,7 @@ import { FieldComputed } from "../sheet/deps"
 import { defineExt, Store } from "../sheet/ext"
 import { Slider as RawSlider } from "../sheet/slider"
 import type { Expr } from "../sheet/ui/expr"
-import { PKG_REAL } from "./num-real"
+import { PKG_REAL } from "./num/real"
 
 function readSigned(node: Node, base: SReal): SReal | null {
   let isNeg = false

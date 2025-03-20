@@ -7,7 +7,7 @@ import { CmdBrack } from "../field/cmd/math/brack"
 import { Block, L, R } from "../field/model"
 import { g, h, path, svgx } from "../jsx"
 
-declare module "../eval/ty" {
+declare module "@/eval/ty" {
   interface Tys {
     normaldist: [mean: SReal, stdev: SReal]
     tdist: SReal

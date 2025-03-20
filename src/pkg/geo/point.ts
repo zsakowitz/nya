@@ -46,7 +46,7 @@ import {
   OP_POS,
 } from "../core/ops"
 import { EXT_EVAL } from "../eval"
-import { FN_UNSIGN, PKG_REAL } from "../num-real"
+import { FN_UNSIGN, PKG_REAL } from "../num/real"
 
 declare module "@/eval/ty" {
   interface Tys {

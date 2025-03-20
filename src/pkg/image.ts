@@ -23,7 +23,7 @@ declare module "../eval/ast/token" {
   }
 }
 
-declare module "../eval/ty" {
+declare module "@/eval/ty" {
   interface Tys {
     image: {
       src: ImageData | null

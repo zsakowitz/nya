@@ -1,7 +1,7 @@
 import type { Package } from "."
 import { FnDist } from "../eval/ops/dist"
 import { approx, num } from "../eval/ty/create"
-import { PKG_REAL } from "./num-real"
+import { PKG_REAL } from "./num/real"
 
 const FN_SINH = new FnDist("sinh", "takes the hyperbolic sinhe of an angle")
 const FN_COSH = new FnDist("cosh", "takes the hyperbolic coshine of an angle")

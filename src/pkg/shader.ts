@@ -14,7 +14,7 @@ import { circle } from "../sheet/ui/expr/circle"
 import { PROP_SHOWN } from "../show"
 import { OP_PLOT, PKG_COLOR_CORE } from "./color/core"
 import { OP_SUB, declareAddR64 } from "./core/ops"
-import { PKG_REAL } from "./num-real"
+import { PKG_REAL } from "./num/real"
 
 const store = new Store((expr) => {
   const circEmpty = circle("empty")
