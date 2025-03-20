@@ -1,4 +1,3 @@
-import type { Package } from "."
 import type { Node } from "@/eval/ast/token"
 import type { GlslContext } from "@/eval/lib/fn"
 import type { Fn } from "@/eval/ops"
@@ -34,10 +33,11 @@ import { BRACKS } from "@/field/cmd/math/brack"
 import { Block, L, R } from "@/field/model"
 import { h, hx } from "@/jsx"
 import { defineExt } from "@/sheet/ext"
-import { addR64 } from "./core/ops"
-import { createMultiEval } from "./eval"
-import { sqrt } from "./geo/dcg/fn/distance"
-import { PKG_REAL } from "./num/real"
+import type { Package } from ".."
+import { addR64 } from "../core/ops"
+import { createMultiEval } from "../eval"
+import { sqrt } from "../geo/dcg/fn/distance"
+import { PKG_REAL } from "../num/real"
 
 declare module "@/eval/ty" {
   interface Tys {

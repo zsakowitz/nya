@@ -1,4 +1,3 @@
-import type { Package } from "."
 import { commalist } from "@/eval/ast/collect"
 import { Precedence } from "@/eval/ast/token"
 import { NO_DRAG, NO_SYM } from "@/eval/ast/tx"
@@ -23,6 +22,7 @@ import { any, TY_INFO } from "@/eval/ty/info"
 import { CmdComma } from "@/field/cmd/leaf/comma"
 import { CmdBrack } from "@/field/cmd/math/brack"
 import { h } from "@/jsx"
+import type { Package } from ".."
 
 const FN_JOIN: Fn & WithDocs = {
   name: "join",
