@@ -1,9 +1,10 @@
-import { faFolder } from "@fortawesome/free-solid-svg-icons/faFolder"
-import type { Package } from "."
+import { fa } from "@/field/fa"
 import { D, L, R, U } from "@/field/model"
-import { h, hx } from "@/jsx"
+import { hx } from "@/jsx"
 import type { ItemFactory } from "@/sheet/item"
 import type { ItemRef } from "@/sheet/items"
+import { faStickyNote } from "@fortawesome/free-solid-svg-icons/faStickyNote"
+import type { Package } from ".."
 
 interface Data {
   contents: string
@@ -13,10 +14,9 @@ interface Data {
 }
 
 const FACTORY: ItemFactory<Data> = {
-  id: "nya:folder",
-  name: "folder",
-  icon: faFolder,
-  group: true,
+  id: "nya:note",
+  name: "note",
+  icon: faStickyNote,
   init(ref, source) {
     let contents = ""
     if (source) {
@@ -26,7 +26,7 @@ const FACTORY: ItemFactory<Data> = {
           contents = result
         }
       } catch (e) {
-        console.warn("[nya:folder.init]", e)
+        console.warn("[nya:note.init]", e)
       }
     }
 
@@ -102,12 +102,11 @@ const FACTORY: ItemFactory<Data> = {
 
     return data
   },
+  aside() {
+    return fa(faStickyNote, "block mx-auto size-6 mt-0.5 mb-1.5 fill-current")
+  },
   main(data) {
-    return h(
-      "grid grid-cols-[1rem_auto]",
-      h("border-r border-t border-[--nya-border] mb-1 ml-1 mt-[1.5rem]"),
-      data.field,
-    )
+    return data.field
   },
   encode(data) {
     return JSON.stringify(data.contents)
@@ -120,10 +119,10 @@ const FACTORY: ItemFactory<Data> = {
   },
 }
 
-export const PKG_FOLDER: Package = {
-  id: "nya:folder",
-  name: "folders",
-  label: "for organizing expressions",
+export const PKG_NOTES: Package = {
+  id: "nya:notes",
+  name: "notes",
+  label: "in plain text between expressions",
   sheet: {
     items: [FACTORY],
   },
