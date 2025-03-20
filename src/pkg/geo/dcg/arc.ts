@@ -3,8 +3,8 @@ import { NANPT, unpt } from "../../../eval/ty/create"
 import { gliderOnLine } from "../../../eval/ty/info"
 import type { Point } from "../../../sheet/point"
 import { Cv } from "../../../sheet/ui/cv"
-import { getRayBounds } from "../ext/ray"
-import { intersectLineLineJs } from "../fn/intersection"
+import { getRayBounds } from "./ext/ray"
+import { intersectLineLineJs } from "./fn/intersection"
 
 // Arcs are very strange, since they can exist in a massive variety of states.
 // Most utilities for them are thus grouped into this file for ease of use.

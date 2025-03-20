@@ -36,7 +36,7 @@ import { h, hx } from "../jsx"
 import { defineExt } from "../sheet/ext"
 import { addR64 } from "./core/ops"
 import { createMultiEval } from "./eval"
-import { sqrt } from "./geo/fn/distance"
+import { sqrt } from "./geo/dcg/fn/distance"
 import { PKG_REAL } from "./num-real"
 
 declare module "../eval/ty" {
