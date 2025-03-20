@@ -119,7 +119,7 @@ export const PKG_SYM_EXTRAS: Package = {
         example(
           String.raw`\operatorname{sym}\frac{d}{dx}\operatorname{cos}6x`,
           // SYM: check this is correct once output gets prettified
-          String.raw`=(6)(-sin((6)x))`,
+          String.raw`=6(-sin(6x))`,
         ),
         px`The ${b("eval")} function acts as the inverse of ${b("sym")}: it evaluates a symbolic expression.`,
         example(String.raw`eval(symz^2)withz=4`, "=16"),

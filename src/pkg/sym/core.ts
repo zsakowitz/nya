@@ -1,4 +1,3 @@
-import type { Package } from ".."
 import { Precedence, type Nodes } from "@/eval/ast/token"
 import { glsl, jsToGlsl } from "@/eval/glsl"
 import { js } from "@/eval/js"
@@ -15,12 +14,14 @@ import {
 import type { JsValue } from "@/eval/ty"
 import { frac, real } from "@/eval/ty/create"
 import { Display } from "@/eval/ty/display"
+import { CmdDot } from "@/field/cmd/leaf/dot"
 import { CmdNum } from "@/field/cmd/leaf/num"
 import { OpPlusMinus } from "@/field/cmd/leaf/op"
 import { CmdWord } from "@/field/cmd/leaf/word"
 import { CmdSupSub } from "@/field/cmd/math/supsub"
 import { Block, L, R } from "@/field/model"
 import { h } from "@/jsx"
+import type { Package } from ".."
 
 declare module "@/eval/ty" {
   interface Tys {
@@ -255,7 +256,7 @@ export const PKG_SYM_CORE: Package = {
           while (el) {
             if (el instanceof OpPlusMinus) {
               prec = Precedence.Sum
-            } else if (!(el instanceof CmdNum)) {
+            } else if (!(el instanceof CmdNum || el instanceof CmdDot)) {
               prec = Precedence.NotApplicable
             }
             el = el[R]
