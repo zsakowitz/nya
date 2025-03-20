@@ -1,11 +1,11 @@
-import factorial from "@stdlib/math/base/special/factorial"
-import type { Package } from "."
 import { Precedence } from "@/eval/ast/token"
 import type { GlslContext } from "@/eval/lib/fn"
 import { FnDist } from "@/eval/ops/dist"
 import { suffixFn } from "@/eval/sym"
 import { num, real } from "@/eval/ty/create"
 import { CmdExclamation } from "@/field/cmd/leaf/exclamation"
+import factorial from "@stdlib/math/base/special/factorial"
+import type { Package } from "."
 
 function factorialGlsl(ctx: GlslContext, x: string) {
   ctx.glsl`float sinpiSeries(float x) {
