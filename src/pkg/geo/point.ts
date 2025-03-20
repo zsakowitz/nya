@@ -1,9 +1,9 @@
-import type { Package } from "."
-import { dragPoint, type DragResultPoint } from "../eval/ast/tx"
-import type { GlslContext } from "../eval/lib/fn"
-import { FnDist } from "../eval/ops/dist"
-import { ERR_COORDS_USED_OUTSIDE_GLSL } from "../eval/ops/vars"
-import { each, type JsValue, type SPoint } from "../eval/ty"
+import type { Package } from ".."
+import { dragPoint, type DragResultPoint } from "../../eval/ast/tx"
+import type { GlslContext } from "../../eval/lib/fn"
+import { FnDist } from "../../eval/ops/dist"
+import { ERR_COORDS_USED_OUTSIDE_GLSL } from "../../eval/ops/vars"
+import { each, type JsValue, type SPoint } from "../../eval/ty"
 import {
   approx,
   frac,
@@ -14,23 +14,23 @@ import {
   real,
   SNANPT,
   unpt,
-} from "../eval/ty/create"
-import { highRes, TY_INFO, WRITE_POINT, type TyGlide } from "../eval/ty/info"
-import { abs, add, div, mul, neg } from "../eval/ty/ops"
-import { CmdVar } from "../field/cmd/leaf/var"
-import { L, R } from "../field/model"
-import { h } from "../jsx"
-import { defineHideable } from "../sheet/ext/hideable"
-import { definePickTy, PICK_TY, toolbar } from "../sheet/pick-ty"
-import { TransitionProp } from "../sheet/transition"
-import type { Cv } from "../sheet/ui/cv"
-import { Color, Opacity, Order, Size } from "../sheet/ui/cv/consts"
-import { FN_GLIDER, FN_INTERSECTION, ref, val } from "../sheet/ui/cv/item"
-import type { Expr } from "../sheet/ui/expr"
-import { Sheet } from "../sheet/ui/sheet"
-import { virtualStepExp, write, Writer } from "../sheet/write"
-import { FN_VALID } from "./bool"
-import { OP_PLOT, plotJs } from "./color/core"
+} from "../../eval/ty/create"
+import { highRes, TY_INFO, WRITE_POINT, type TyGlide } from "../../eval/ty/info"
+import { abs, add, div, mul, neg } from "../../eval/ty/ops"
+import { CmdVar } from "../../field/cmd/leaf/var"
+import { L, R } from "../../field/model"
+import { h } from "../../jsx"
+import { defineHideable } from "../../sheet/ext/hideable"
+import { definePickTy, PICK_TY, toolbar } from "../../sheet/pick-ty"
+import { TransitionProp } from "../../sheet/transition"
+import type { Cv } from "../../sheet/ui/cv"
+import { Color, Opacity, Order, Size } from "../../sheet/ui/cv/consts"
+import { FN_GLIDER, FN_INTERSECTION, ref, val } from "../../sheet/ui/cv/item"
+import type { Expr } from "../../sheet/ui/expr"
+import { Sheet } from "../../sheet/ui/sheet"
+import { virtualStepExp, write, Writer } from "../../sheet/write"
+import { FN_VALID } from "../bool"
+import { OP_PLOT, plotJs } from "../color/core"
 import {
   abs64,
   addR64,
@@ -44,11 +44,11 @@ import {
   OP_ODOT,
   OP_POINT,
   OP_POS,
-} from "./core/ops"
-import { EXT_EVAL } from "./eval"
-import { FN_UNSIGN, PKG_REAL } from "./num-real"
+} from "../core/ops"
+import { EXT_EVAL } from "../eval"
+import { FN_UNSIGN, PKG_REAL } from "../num-real"
 
-declare module "../eval/ty" {
+declare module "@/eval/ty" {
   interface Tys {
     point32: SPoint
     point64: SPoint

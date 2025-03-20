@@ -3,7 +3,7 @@ import type { GlslVal, SPoint, Tys, Val } from "../../../../eval/ty"
 import { SNANPT, num, pt, real, rept } from "../../../../eval/ty/create"
 import { div, mul, sub } from "../../../../eval/ty/ops"
 import type { Point } from "../../../../sheet/point"
-import { FN_INTERSECTION } from "../../../geo-point"
+import { FN_INTERSECTION } from "../../point"
 import { computeArcVal } from "../arc"
 
 export function intersectLineLineJs(
