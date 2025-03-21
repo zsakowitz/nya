@@ -30,6 +30,7 @@ import type { Sheet } from "@/sheet/ui/sheet"
 
 type List<T, K extends PropertyKey = string> = { readonly [_ in K]?: T }
 
+// SHAPE: maybe use consistent shapes
 export interface Package {
   id: string
   name: string

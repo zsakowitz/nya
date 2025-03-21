@@ -4,7 +4,7 @@ import { unit, type Unit } from "./system"
 
 export const nan = unit("undefined", [], approx(NaN), approx(NaN))
 
-// FIXME: Hz, L,
+// FIXME: Hz, L
 const { m, kg, s, K, A, mol, cd } = UNIT_KIND_VALUES
 const g = unit("g", "kg", frac(1, 1e3))
 const cm = unit("cm", "m", frac(1, 1e2))
@@ -16,6 +16,7 @@ const degF = unit("°F", "K", frac(5, 9), frac(45967, 180))
 const dC = unit("∆°C", "K", real(1))
 const dF = unit("∆°F", "K", frac(5, 9))
 const d = unit("d", "s", frac(86400, 1))
+const Hz = unit("Hz", [{ unit: "s", exp: -1 }], frac(1, 1))
 const inch = unit("in", "m", frac(127, 5e3))
 const ft = unit("ft", "m", frac(381, 1250))
 const L = unit("L", [{ unit: "m", exp: 3 }], frac(1, 1e3))
@@ -155,4 +156,5 @@ export const UNITS_BY_NAME: Record<string, Unit> = {
   liter: L,
   milliliter: mL,
   gram: g,
+  hertz: Hz,
 }

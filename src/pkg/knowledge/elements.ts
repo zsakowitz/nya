@@ -1,5 +1,22 @@
+import { issue } from "@/eval/ops/issue"
+import type { TyInfoByName } from "@/eval/ty/info"
+import { CmdWord } from "@/field/cmd/leaf/word"
+import { L } from "@/field/model"
+import { h, hx } from "@/jsx"
+import type { Package } from ".."
+
+declare module "@/eval/ty" {
+  interface Tys {
+    ptelement: string | null
+  }
+
+  interface TyComponents {
+    ptelement: never
+  }
+}
+
 /*!
- * Sourced from https://github.com/Bowserinator/Periodic-Table-JSON
+ * Data is sourced from https://github.com/Bowserinator/Periodic-Table-JSON
  * Source is licensed under https://creativecommons.org/licenses/by-sa/3.0
  * Last updated commit: e98f098
  */
@@ -44,7 +61,7 @@ interface Data {
   block: string
 }
 
-export const dataRaw: Data[] = [
+const raw: Data[] = [
   {
     name: "Hydrogen",
     appearance: "colorless gas",
@@ -5362,3 +5379,72 @@ export const dataRaw: Data[] = [
     block: "s",
   },
 ]
+
+const bySymbol = Object.create(null)
+for (const entry of raw) {
+  bySymbol[entry.symbol] = entry
+}
+
+// TODO: SHADER:
+const glsl = issue("Periodic table elements are not supported in shaders yet.")
+
+const INFO_PTELEMENT: TyInfoByName<"ptelement"> = {
+  name: "element",
+  namePlural: "elements",
+  get glsl() {
+    return glsl()
+  },
+  toGlsl: glsl,
+  garbage: {
+    js: null,
+    get glsl() {
+      return glsl()
+    },
+  },
+  coerce: {},
+  write: {
+    display(value, props) {
+      new CmdWord(value ?? "undefined", "var").insertAt(props.cursor, L)
+    },
+    isApprox() {
+      return false
+    },
+  },
+  order: null,
+  point: false,
+  icon() {
+    return h(
+      "",
+      h(
+        "text-yellow-600 size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px]",
+        h(
+          "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
+        ),
+        h(
+          "absolute top-1/2 left-1/2 -translate-x-1/2 translate-y-[calc(-50%_+_1px)] font-['Times_New_Roman'] text-[100%]",
+          hx("sup", "font-['Symbola']", "1"),
+          "H",
+        ),
+      ),
+    )
+  },
+  // TODO: token depends on element
+  token: null,
+  glide: null,
+  preview: null,
+  components: null,
+  extras: null,
+}
+
+export const PKG_ELEMENTS: Package = {
+  id: "nya:ptelement",
+  name: "periodic table elements",
+  label: "and properties",
+  ty: {
+    info: {
+      ptelement: INFO_PTELEMENT,
+    },
+  },
+}
+
+// FIXME: pressing shift while cursor is not over canvas

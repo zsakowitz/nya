@@ -22,6 +22,7 @@ import { PKG_FOLDER } from "./pkg/item/folder"
 import { PKG_NOTES } from "./pkg/item/note"
 import { PKG_ITERATE } from "./pkg/iterate"
 import { PKG_ITHKUIL } from "./pkg/ithkuil"
+import { PKG_ELEMENTS } from "./pkg/knowledge/elements"
 import { PKG_NUM_COMPLEX } from "./pkg/num/complex"
 import { PKG_NUM_QUATERNION } from "./pkg/num/quaternion"
 import { PKG_REAL } from "./pkg/num/real"
@@ -81,5 +82,6 @@ export function allPackages(): Package[] {
     PKG_DERIV,
     PKG_SYM_EXTRAS,
     PKG_UNITS,
+    PKG_ELEMENTS,
   ]
 }
