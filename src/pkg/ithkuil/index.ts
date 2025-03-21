@@ -1,3 +1,14 @@
+import type { Fn } from "@/eval/ops"
+import { doc, FnDist } from "@/eval/ops/dist"
+import { ALL_DOCS, type WithDocs } from "@/eval/ops/docs"
+import { each, type JsVal, type JsValue, type Val } from "@/eval/ty"
+import { Leaf } from "@/field/cmd/leaf"
+import { OpEq } from "@/field/cmd/leaf/cmp"
+import { CmdComma } from "@/field/cmd/leaf/comma"
+import { L } from "@/field/model"
+import { h, path, svgx } from "@/jsx"
+import { defineExt } from "@/sheet/ext"
+import { circle } from "@/sheet/ui/expr/circle"
 import { affixes, roots } from "@zsnout/ithkuil/data"
 import {
   caToIthkuil,
@@ -19,17 +30,6 @@ import {
   unglossWord,
 } from "@zsnout/ithkuil/ungloss"
 import type { Package } from ".."
-import type { Fn } from "@/eval/ops"
-import { doc, FnDist } from "@/eval/ops/dist"
-import { ALL_DOCS, type WithDocs } from "@/eval/ops/docs"
-import { each, type JsVal, type JsValue, type Val } from "@/eval/ty"
-import { Leaf } from "@/field/cmd/leaf"
-import { OpEq } from "@/field/cmd/leaf/cmp"
-import { CmdComma } from "@/field/cmd/leaf/comma"
-import { L } from "@/field/model"
-import { h, path, svgx } from "@/jsx"
-import { defineExt } from "@/sheet/ext"
-import { circle } from "@/sheet/ui/expr/circle"
 import { CmdTextInert, PKG_TEXT, type TextSegment } from "../text"
 import * as categories from "./categories"
 
@@ -206,7 +206,7 @@ export const PKG_ITHKUIL: Package = {
           const sourceRaw = a.value.map((x) => x.value).join("")
           return sourceRaw
             .split(/[-\s]+/)
-            .map<TextSegment>((source) => {
+            .map((source): TextSegment => {
               const parsed = parseWord(source)
               if (!parsed) {
                 throw new Error(`Failed to parse ${source}.`)

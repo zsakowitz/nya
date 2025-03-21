@@ -7,11 +7,11 @@ import type { Package } from ".."
 
 declare module "@/eval/ty" {
   interface Tys {
-    ptelement: string | null
+    element: string | null
   }
 
   interface TyComponents {
-    ptelement: never
+    element: never
   }
 }
 
@@ -5388,7 +5388,7 @@ for (const entry of raw) {
 // TODO: SHADER:
 const glsl = issue("Periodic table elements are not supported in shaders yet.")
 
-const INFO_PTELEMENT: TyInfoByName<"ptelement"> = {
+const INTO_ELEMENT: TyInfoByName<"element"> = {
   name: "element",
   namePlural: "elements",
   get glsl() {
@@ -5436,13 +5436,13 @@ const INFO_PTELEMENT: TyInfoByName<"ptelement"> = {
   extras: null,
 }
 
-export const PKG_ELEMENTS: Package = {
-  id: "nya:ptelement",
-  name: "periodic table elements",
-  label: "and properties",
+export const PKG_CHEM_ELEMENTS: Package = {
+  id: "nya:chem-elements",
+  name: "chemical elements",
+  label: "and their properties",
   ty: {
     info: {
-      ptelement: INFO_PTELEMENT,
+      element: INTO_ELEMENT,
     },
   },
 }

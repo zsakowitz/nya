@@ -17,6 +17,38 @@ export function pass1_suffixes(tokens: Node[]) {
     const self = tokens[i]!
     const next = tokens[i + 1]
 
+    // unit K
+    // unit kcal
+    if (self.type == "var" && self.kind == "magicprefixword") {
+      if (next?.type == "var" && next.kind == "var") {
+        const { sup, ...contents } = next
+        const node: Node = {
+          type: "magicvar",
+          contents,
+          value: self.value,
+          sub: self.sub,
+          sup: self.sup,
+        }
+        tokens.splice(
+          i,
+          2,
+          sup ?
+            {
+              type: "suffixed",
+              base: node,
+              suffixes: [{ type: "raise", exp: sup }],
+            }
+          : node,
+        )
+        i--
+        continue
+      }
+
+      throw new Error(
+        `'${self.value}' should be followed by a letter, word, or name.`,
+      )
+    }
+
     // 2.3 .3 2. 2.3.min a.min a.sin² decimals and member accesses
     if (self.type == "punc" && self.value == ".") {
       const PREV = prev && prev.type == "num" && prev.value.indexOf(".") == -1

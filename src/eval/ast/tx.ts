@@ -141,8 +141,11 @@ export interface TxrMagicVar extends Omit<TxrAst<MagicVar>, "drag"> {
    * superscript.
    */
   fnlike?: boolean
-  /** If `true`, variables following the function name will become deitalicized. */
-  acceptsWord?: boolean
+  /**
+   * If `true`, variables immediately following the function name will become
+   * deitalicized and will merge into a single word.
+   */
+  takesWord?: boolean
   with?: {
     js(node: MagicVar, props: PropsJs, seq: boolean): Record<string, JsValue>
     glsl(
@@ -152,6 +155,19 @@ export interface TxrMagicVar extends Omit<TxrAst<MagicVar>, "drag"> {
     ): Record<string, GlslValue>
     deps(node: MagicVar, deps: Deps, seq: boolean): string[]
   }
+}
+
+export interface WordInfo {
+  value: string
+  sub?: Node
+}
+
+/** For things like `unit` and `element`. */
+export interface TxrWordPrefix {
+  js(contents: WordInfo, props: PropsJs): JsValue
+  glsl(contents: WordInfo, props: PropsGlsl): GlslValue
+  sym(contents: WordInfo, props: PropsSym): Sym
+  layer?: number
 }
 
 type TxrSuffixLhs<T> =

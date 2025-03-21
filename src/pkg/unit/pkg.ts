@@ -2,9 +2,9 @@
 // to work in shaders
 
 import { Precedence } from "@/eval/ast/token"
+import { NO_SYM, type WordInfo } from "@/eval/ast/tx"
 import { FnDist } from "@/eval/ops/dist"
 import { issue } from "@/eval/ops/issue"
-import type { Builtin } from "@/eval/ops/vars"
 import { binaryFn } from "@/eval/sym"
 import type { JsValue } from "@/eval/ty"
 import { num, real } from "@/eval/ty/create"
@@ -42,7 +42,7 @@ import {
   toSI,
   type UnitList,
 } from "./impl/system"
-import { nan, UNITS_BY_NAME } from "./impl/units"
+import { nan, UNITS } from "./impl/units"
 
 declare module "@/eval/ty" {
   interface Tys {
@@ -284,23 +284,26 @@ export const PKG_UNITS: Package = {
     fn: {
       intosi: FN_INTOSI,
     },
-    var: Object.fromEntries(
-      Object.entries(UNITS_BY_NAME).map(([k, unit]): [string, Builtin] => [
-        k,
-        {
-          js: {
-            type: "unit",
-            list: false,
-            value: [{ exp: real(1), unit }],
-          } satisfies JsValue<"unit">,
-          get glsl() {
-            return glsl()
+    tx: {
+      wordPrefix: {
+        unit: {
+          js(node) {
+            checkUnit(node)
+            const unit = UNITS[node.value]
+            if (unit) {
+              return {
+                type: "unit",
+                list: false,
+                value: [{ exp: real(1), unit }],
+              } satisfies JsValue<"unit">
+            }
+            throw new Error(`Unit '${node.value}' is not defined.`)
           },
-          display: true,
-          label: "a unit", // FIXME: actual label
+          glsl,
+          sym: NO_SYM,
         },
-      ]),
-    ),
+      },
+    },
   },
   init() {
     OP_CDOT.add(
@@ -402,6 +405,7 @@ export const PKG_UNITS: Package = {
       glsl,
     )
   },
+  // FIXME: unit system completely changed
   docs: {
     units() {
       return [
@@ -462,4 +466,10 @@ export const PKG_UNITS: Package = {
       ]
     },
   },
+}
+
+function checkUnit(node: WordInfo) {
+  if (node.sub) {
+    throw new Error("Cannot apply a subscript to 'unit'.")
+  }
 }

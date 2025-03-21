@@ -2,6 +2,7 @@ import { FNLIKE_MAGICVAR } from "@/eval/ast/fnlike"
 import {
   Precedence,
   PRECEDENCE_MAP,
+  type MagicVar,
   type NodeName,
   type OpBinary,
   type PuncInfix,
@@ -16,6 +17,7 @@ import {
   TXR_OP_UNARY,
   TXR_SUFFIX,
   type TxrAst,
+  type TxrMagicVar,
   type TxrSuffix,
 } from "@/eval/ast/tx"
 import { FNS, OP_BINARY, OP_UNARY } from "@/eval/ops"
@@ -165,7 +167,7 @@ export class SheetFactory {
       if (/^[A-Za-z]+$/.test(key)) {
         this.options.words.init(
           key,
-          txr.acceptsWord ? "magicprefixword" : "magicprefix",
+          txr.takesWord ? "magicprefixword" : "magicprefix",
         )
       }
       for (const helper of txr.helpers || []) {
@@ -258,6 +260,56 @@ export class SheetFactory {
         continue
       }
       TXR_SYM[key] = txr as TxrSym<unknown>
+    }
+
+    for (const key in pkg.eval?.tx?.wordPrefix) {
+      const txr = pkg.eval.tx.wordPrefix[key]!
+      if (
+        TXR_MAGICVAR[key] &&
+        (TXR_MAGICVAR[key].layer ?? 0) >= (txr.layer ?? 0)
+      ) {
+        continue
+      }
+
+      function contents(node: MagicVar) {
+        if (node.sub) {
+          throw new Error(`Cannot apply subscripts to '${key}'.`)
+        }
+        if (node.sup) {
+          throw new Error(`Cannot apply superscripts to '${key}'.`)
+        }
+        if (node.prop) {
+          throw new Error(`Cannot access a specific property of '${key}'.`)
+        }
+        const c = node.contents
+        if (c.type == "var" && c.kind == "var" && !c.sup) {
+          return { value: c.value, sub: c.sub }
+        }
+        throw new Error(
+          `'${key}' should be followed by a letter, word, or name.`,
+        )
+      }
+
+      const txr2: TxrMagicVar = {
+        deps() {},
+        glsl(node, props) {
+          return txr.glsl(contents(node), props)
+        },
+        js(node, props) {
+          return txr.js(contents(node), props)
+        },
+        sym(node, props) {
+          return txr.sym(contents(node), props)
+        },
+        fnlike: true,
+        takesWord: true,
+        layer: txr.layer,
+      }
+      if (/^[A-Za-z]+$/.test(key)) {
+        this.options.words.init(key, "magicprefixword")
+      }
+      TXR_MAGICVAR[key] = txr2
+      FNLIKE_MAGICVAR[key] = true
     }
 
     if (pkg.sheet?.defaultItem) {

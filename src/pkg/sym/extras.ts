@@ -1,4 +1,3 @@
-import type { Package } from ".."
 import { type MagicVar } from "@/eval/ast/token"
 import { TXR_AST } from "@/eval/ast/tx"
 import { js } from "@/eval/js"
@@ -6,6 +5,7 @@ import { txr, type Sym } from "@/eval/sym"
 import type { JsValue } from "@/eval/ty"
 import { b, px } from "@/jsx"
 import { example } from "@/sheet/ui/sheet/docs"
+import type { Package } from ".."
 
 export const PKG_SYM_EXTRAS: Package = {
   id: "nya:sym-extras",

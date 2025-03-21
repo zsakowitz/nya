@@ -8,7 +8,7 @@ import {
   UNIT_KINDS,
   type UnitKind,
 } from "./kind"
-import { UNITS_BY_NAME } from "./units"
+import { UNITS } from "./units"
 
 /**
  * A conversion factor from `src` to `dst`.
@@ -261,4 +261,4 @@ export function exp(a: UnitList, to: SReal): UnitList {
   return check(a.map(({ exp, unit }) => ({ exp: mul(exp, to), unit })))
 }
 
-console.log(toSI([{ exp: real(-1), unit: UNITS_BY_NAME.second! }]))
+console.log(toSI([{ exp: real(-1), unit: UNITS.second! }]))
