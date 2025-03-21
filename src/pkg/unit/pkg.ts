@@ -1,8 +1,11 @@
 // TODO: this basically needs meta properties in the type system
 // to work in shaders
 
+import { Precedence } from "@/eval/ast/token"
+import { FnDist } from "@/eval/ops/dist"
 import { issue } from "@/eval/ops/issue"
 import type { Builtin } from "@/eval/ops/vars"
+import { binaryFn } from "@/eval/sym"
 import type { JsValue } from "@/eval/ty"
 import { num, real } from "@/eval/ty/create"
 import type { Display } from "@/eval/ty/display"
@@ -31,6 +34,8 @@ import {
   factor,
   inv,
   multiply,
+  siUnit,
+  toSI,
   type UnitList,
 } from "./impl/system"
 import { nan, UNITS_BY_NAME } from "./impl/units"
@@ -44,6 +49,12 @@ declare module "@/eval/ty" {
   interface TyComponents {
     unit: never
     r32u: never
+  }
+}
+
+declare module "@/eval/ast/token" {
+  interface PuncListInfix {
+    in: 0
   }
 }
 
@@ -287,6 +298,42 @@ OP_POS.add(["r32u"], "r32u", (a) => a.value, glsl)
 
 OP_NEG.add(["r32u"], "r32u", ({ value: [a, u] }) => [neg(a), u], glsl)
 
+const FN_IN = new FnDist("in", "converts values between units", {
+  display: binaryFn(
+    () => new CmdWord("in", "infix"),
+    Precedence.UnitConversion,
+  ),
+}).add(
+  ["r32u", "unit"],
+  "r32u",
+  (a, b) => {
+    const f = factor(a.value[1], b.value)
+    return [convert(a.value[0], f), b.value]
+  },
+  glsl,
+)
+
+const FN_UNIT = new FnDist("unit", "gets the unit of a value").add(
+  ["r32u"],
+  "unit",
+  (a) => a.value[1],
+  glsl,
+)
+
+const FN_INTOSI = new FnDist(
+  "intosi",
+  "converts a value to its component SI units",
+).add(
+  ["r32u"],
+  "r32u",
+  (a) => {
+    const factor = toSI(a.value[1])
+    const unit = siUnit(a.value[1])
+    return [convert(a.value[0], factor), unit]
+  },
+  glsl,
+)
+
 export const PKG_UNITS: Package = {
   id: "nya:units",
   name: "units",
@@ -308,6 +355,18 @@ export const PKG_UNITS: Package = {
     },
   },
   eval: {
+    op: {
+      binary: {
+        in: {
+          precedence: Precedence.UnitConversion,
+          fn: FN_IN,
+        },
+      },
+    },
+    fn: {
+      unit: FN_UNIT,
+      intosi: FN_INTOSI,
+    },
     var: Object.fromEntries(
       Object.entries(UNITS_BY_NAME).map(([k, unit]): [string, Builtin] => [
         k,
@@ -321,7 +380,7 @@ export const PKG_UNITS: Package = {
             return glsl()
           },
           display: true,
-          label: "", // FIXME: actual label
+          label: "a unit", // FIXME: actual label
         },
       ]),
     ),

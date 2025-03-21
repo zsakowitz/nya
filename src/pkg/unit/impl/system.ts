@@ -2,7 +2,12 @@ import { safe } from "@/eval/lib/util"
 import type { SReal } from "@/eval/ty"
 import { frac, num, real } from "@/eval/ty/create"
 import { add, div, mul, neg, sub } from "@/eval/ty/ops"
-import { UNIT_KIND_NAMES, UNIT_KINDS, type UnitKind } from "./kind"
+import {
+  UNIT_KIND_NAMES,
+  UNIT_KIND_VALUES,
+  UNIT_KINDS,
+  type UnitKind,
+} from "./kind"
 
 /**
  * A conversion factor from `src` to `dst`.
@@ -57,7 +62,7 @@ function raise(base: SReal, exp: SReal): SReal {
   return real(num(base) ** val)
 }
 
-function toBase(list: UnitList): ConversionFactor {
+export function toSI(list: UnitList): ConversionFactor {
   let scale = real(1)
   let offset = real(0)
 
@@ -128,14 +133,16 @@ function exponent(value: number) {
 }
 
 export function name(list: UnitList) {
-  return list
-    .filter((x) => num(x.exp) != 0)
-    .map(({ exp, unit: { label } }) => `${label}${exponent(num(exp))}`)
-    .join(" ")
+  return (
+    list
+      .filter((x) => num(x.exp) != 0)
+      .map(({ exp, unit: { label } }) => `${label}${exponent(num(exp))}`)
+      .join(" ") || "unitless"
+  )
 }
 
 function si(src: UnitList): SICoefficients {
-  const data = Object.create(null)
+  const data: SICoefficients = Object.create(null)
 
   for (const {
     exp,
@@ -149,6 +156,17 @@ function si(src: UnitList): SICoefficients {
   }
 
   return data
+}
+
+export function siUnit(src: UnitList): UnitList {
+  const data = si(src)
+
+  return UNIT_KINDS.map((kind): UnitEntry | undefined => {
+    const exp = data[kind]
+    if (exp && num(exp) != 0) {
+      return { exp, unit: UNIT_KIND_VALUES[kind] }
+    }
+  }).filter((x) => x != null)
 }
 
 function assertSiCompat(src: UnitList, dst: UnitList) {
@@ -169,8 +187,8 @@ function assertSiCompat(src: UnitList, dst: UnitList) {
 
 export function factor(src: UnitList, dst: UnitList): ConversionFactor {
   assertSiCompat(src, dst)
-  const sf = toBase(src)
-  const df = toBase(dst)
+  const sf = toSI(src)
+  const df = toSI(dst)
   return {
     scale: div(sf.scale, df.scale),
     offset: div(sub(sf.offset, df.offset), df.scale),

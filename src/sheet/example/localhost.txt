@@ -1,3 +1,3 @@
-\ty{unit}
+\ty{unit}\ty{r32u}
 joule/(meter*second)
 calorie/celsius
