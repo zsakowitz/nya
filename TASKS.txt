@@ -88,7 +88,7 @@ to do list for 110% compatiability is:
 ❌ factorial(x)
 
 other tasks:
-TODO: consistent shapes for Picker, TY_INFO, Package, and Ext, TXR_...
+anything with SHADER: should work in shaders
 TODO: should rays display below angles?
 TODO: parallel lines are improperly ordered in their token
 FIXME: pressing shift after mouseleave

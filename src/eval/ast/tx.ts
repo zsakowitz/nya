@@ -23,6 +23,8 @@ import type {
   Suffixes,
 } from "./token"
 
+// SHAPE: make all txr shapes consistent
+
 export interface TxrAst<T> {
   js(node: T, props: PropsJs): JsValue
   glsl(node: T, props: PropsGlsl): GlslValue
