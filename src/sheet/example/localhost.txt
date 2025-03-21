@@ -1,3 +1,8 @@
-\left(\operatorname{sym}z\right)\operatorname{with}z=\operatorname{sym}x^{2}
-\operatorname{eval}\left(\operatorname{sym}\operatorname{unsym}z\operatorname{with}z=\operatorname{sym}x\right)
-\operatorname{eval}\left(\operatorname{sym}\operatorname{eval}z\operatorname{with}z=\operatorname{sym}x\right)
+2\operatorname{celsius}\cdot \left(3\operatorname{deltacelsius}\right)
+2\operatorname{celsius}\cdot \left(3\operatorname{celsius}\operatorname{in}\operatorname{kelvin}\right)
+2\operatorname{celsius}+3\operatorname{deltacelsius}
+20\operatorname{celsius}\operatorname{in}\operatorname{fahrenheit}
+15\operatorname{meter}+7\operatorname{centimeter}
+5\operatorname{milliliter}\cdot 1\frac{\operatorname{gram}}{\operatorname{milliliter}}\cdot \left(27\operatorname{celsius}\operatorname{in}\operatorname{kelvin}\right)
+\left(4\operatorname{meter}\right)^{2}\cdot 3\operatorname{meter}\operatorname{in}\operatorname{liter}
+\operatorname{intosi}\left(4\operatorname{calorie}\right)

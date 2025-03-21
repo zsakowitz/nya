@@ -12,4 +12,5 @@ export interface Builtin {
 export const ERR_COORDS_USED_OUTSIDE_GLSL =
   "Cannot access pixel coordinates outside of shaders."
 
+// SHAPE: consistent shape
 export const VARS: Record<string, Builtin> = Object.create(null)

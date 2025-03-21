@@ -44,7 +44,7 @@ interface Data {
   block: string
 }
 
-const dataRaw: Data[] = [
+export const dataRaw: Data[] = [
   {
     name: "Hydrogen",
     appearance: "colorless gas",

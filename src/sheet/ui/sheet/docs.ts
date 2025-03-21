@@ -1,8 +1,3 @@
-import type { IconDefinition } from "@fortawesome/free-solid-svg-icons"
-import { faCaretRight } from "@fortawesome/free-solid-svg-icons/faCaretRight"
-import { faCheck } from "@fortawesome/free-solid-svg-icons/faCheck"
-import { faFolderClosed } from "@fortawesome/free-solid-svg-icons/faFolderClosed"
-import { faFolderOpen } from "@fortawesome/free-solid-svg-icons/faFolderOpen"
 import { FNS } from "@/eval/ops"
 import { array, icon } from "@/eval/ops/dist"
 import { ALL_DOCS, type WithDocs } from "@/eval/ops/docs"
@@ -24,6 +19,11 @@ import { Block, R } from "@/field/model"
 import type { Options } from "@/field/options"
 import { a, h, hx, p } from "@/jsx"
 import type { Package } from "@/pkg"
+import type { IconDefinition } from "@fortawesome/free-solid-svg-icons"
+import { faCaretRight } from "@fortawesome/free-solid-svg-icons/faCaretRight"
+import { faCheck } from "@fortawesome/free-solid-svg-icons/faCheck"
+import { faFolderClosed } from "@fortawesome/free-solid-svg-icons/faFolderClosed"
+import { faFolderOpen } from "@fortawesome/free-solid-svg-icons/faFolderOpen"
 import type { Ctx } from "../../deps"
 
 const IS_DEV = "NYA_DEV" in globalThis
@@ -180,6 +180,10 @@ export function createDocs(
     nonSearchable.classList.toggle("hidden", list.active)
     nonSearchable.classList.toggle("contents", !list.active)
   })
+
+  if (OPEN_PACKAGE_DOCS) {
+    el.querySelectorAll("details:not([open])").forEach((x) => x.remove())
+  }
 
   return h(
     "flex flex-col border-r border-[--nya-border] hidden row-span-2",
@@ -922,7 +926,7 @@ const MASSIVE_URL = () =>
 
 export function example(input: string, value: string | null) {
   return h(
-    "block -mr-4 w-[calc(100%_+_1rem)] border-l border-[--nya-border]",
+    "block -mr-4 w-[calc(100%_+_1rem)] border-l border-[--nya-border] nya-doc-ex [.nya-doc-ex+&]:-mt-4 [.nya-doc-ex+&]:pt-2",
     h(
       "block px-4 w-full overflow-x-auto [&::-webkit-scrollbar]:hidden text-left",
       hx("samp", "", input),

@@ -107,9 +107,10 @@ export const Precedence = Object.freeze({
   Atom:              98, // 7, f(x), x², dotted access (only used in sym)
   Juxtaposition:     97, // 2x (only used in sym)
 
-  Exponential:       14, // x ↑ 3
-  Product:           13, // x ÷ y
-  Sum:               12, // 2 + 3
+  Exponential:       15, // x ↑ 3
+  Product:           14, // x ÷ y
+  Sum:               13, // 2 + 3
+  UnitConversion:    12, // 2m in cm
   Range:             11, // 1...100
   Comparison:        10, // x² < 3
   Equality:           9, // x = 3

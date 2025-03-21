@@ -1,5 +1,5 @@
-import type { SApprox, SPoint, SReal } from "."
 import type { Point } from "@/sheet/point"
+import type { SApprox, SPoint, SReal } from "."
 import { safe } from "../lib/util"
 import { splitRaw } from "./split"
 

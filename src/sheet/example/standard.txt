@@ -1,3 +1,6 @@
+5\operatorname{milliliter}\cdot 1\frac{\operatorname{gram}}{\operatorname{milliliter}}\cdot \left(27\operatorname{celsius}\operatorname{in}\operatorname{kelvin}\right)
+(4 meter)^{2} * 3 meter in liter
+intosi(4 calorie)
 \operatorname{ithkuilscript}\text{hlaséi-rrala sakawi}
 #nya:image#0
 \operatorname{image}\left(\token{0},\operatorname{segment}\left(E,H\right)\right)
@@ -23,6 +26,8 @@ H=\operatorname{intersection}\left(D,G\right)
 \operatorname{firstvalid}\left(\operatorname{oklch}\left(.4,y,360x\right),\operatorname{oklch}\left(.5,y,360x\right),\operatorname{oklch}\left(.6,y,360x\right),\operatorname{oklch}\left(.7,y,360x\right),\operatorname{oklch}\left(.8,y,360x\right),\operatorname{oklch}\left(.9,y,360x\right),\operatorname{oklch}\left(.95,y,360x\right)\right)
 \begin{cases}\operatorname{rgb}\left(128,255,0\right)&\left|p\right|<.5\\\operatorname{rgb}\left(255,255,0\right)&y<.7\\\operatorname{rgb}\left(0,255,128\right)&\end{cases}
 2+3
+20\operatorname{celsius}\operatorname{in}\operatorname{fahrenheit}
+15\operatorname{meter}+7\operatorname{centimeter}
 \left(4-5\right)\odot \left(3+9i\right)
 \frac{2}{3}i-\sqrt{4}
 \left[2,3\right]\times \left[4,5\right]
@@ -30,7 +35,6 @@ H=\operatorname{intersection}\left(D,G\right)
 -2\cdot \pi \operatorname{mod}6
 73\cdot 4\operatorname{base}15\operatorname{base}2
 73\cdot 4\operatorname{base}15
-\operatorname{concat}\left(A,\text{.},C,\text{.},X,\text{.},P,\text{.},E\right)\operatorname{for}\begin{list}A=\operatorname{ithkuilvalues}\text{affiliation}\\C=\operatorname{ithkuilvalues}\text{configuration}\\X=\operatorname{ithkuilvalues}\text{extension}\\P=\operatorname{ithkuilvalues}\text{perspective}\\E=\operatorname{ithkuilvalues}\text{essence}\end{list}
 \left(\operatorname{iterate}.a^{A.\operatorname{count}}\begin{list}n\to n+1\\a\to a.\operatorname{concat}\left(\text{ },A\left[n\right]\right)\end{list}\operatorname{from}\begin{list}a=a.\operatorname{concat}\left(\text{ =}\right)\\n=1\end{list}\right)\operatorname{with}A=\operatorname{ithkuilvalues}a\operatorname{for}a=\operatorname{ithkuilall}
 z^{2}+c
 z^{2}+c
