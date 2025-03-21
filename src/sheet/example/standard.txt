@@ -1,3 +1,4 @@
+#nya:note#FIXME: update unit examples
 5\operatorname{milliliter}\cdot 1\frac{\operatorname{gram}}{\operatorname{milliliter}}\cdot \left(27\operatorname{celsius}\operatorname{in}\operatorname{kelvin}\right)
 (4 meter)^{2} * 3 meter in liter
 intosi(4 calorie)
