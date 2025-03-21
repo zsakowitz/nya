@@ -1,7 +1,6 @@
-#nya:note#FIXME: update unit examples
-5\operatorname{milliliter}\cdot 1\frac{\operatorname{gram}}{\operatorname{milliliter}}\cdot \left(27\operatorname{celsius}\operatorname{in}\operatorname{kelvin}\right)
-(4 meter)^{2} * 3 meter in liter
-intosi(4 calorie)
+5\operatorname{unit}\operatorname{mL}\cdot 1\frac{\operatorname{unit}\operatorname{g}}{\operatorname{unit}\operatorname{mL}}\cdot \left(\left(27\operatorname{unit}\operatorname{degC}\right)\operatorname{in}\operatorname{unit}\operatorname{K}\right)
+\left(\left(4\operatorname{unit}\operatorname{m}\right)^{2}\cdot 3\operatorname{unit}\operatorname{m}\right)\operatorname{in}\operatorname{unit}\operatorname{L}
+intosi(4unitcal)
 \operatorname{ithkuilscript}\text{hlaséi-rrala sakawi}
 #nya:image#0
 \operatorname{image}\left(\token{0},\operatorname{segment}\left(E,H\right)\right)
@@ -27,8 +26,8 @@ H=\operatorname{intersection}\left(D,G\right)
 \operatorname{firstvalid}\left(\operatorname{oklch}\left(.4,y,360x\right),\operatorname{oklch}\left(.5,y,360x\right),\operatorname{oklch}\left(.6,y,360x\right),\operatorname{oklch}\left(.7,y,360x\right),\operatorname{oklch}\left(.8,y,360x\right),\operatorname{oklch}\left(.9,y,360x\right),\operatorname{oklch}\left(.95,y,360x\right)\right)
 \begin{cases}\operatorname{rgb}\left(128,255,0\right)&\left|p\right|<.5\\\operatorname{rgb}\left(255,255,0\right)&y<.7\\\operatorname{rgb}\left(0,255,128\right)&\end{cases}
 2+3
-20\operatorname{celsius}\operatorname{in}\operatorname{fahrenheit}
-15\operatorname{meter}+7\operatorname{centimeter}
+(20unitdC)inunitdF
+15unitm+7unitcm
 \left(4-5\right)\odot \left(3+9i\right)
 \frac{2}{3}i-\sqrt{4}
 \left[2,3\right]\times \left[4,5\right]

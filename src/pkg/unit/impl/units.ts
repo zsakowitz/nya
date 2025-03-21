@@ -203,6 +203,7 @@ export const UNITS: Record<string, Unit> = {
   liter: L,
   mL,
   milliliter: mL,
+  g,
   gram: g,
   Hz,
   hertz: Hz,
