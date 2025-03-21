@@ -11,10 +11,10 @@ const cm = unit("cm", "m", frac(1, 1e2))
 const au = unit("au", "m", real(149597870700))
 const min = unit("min", "s", frac(60, 1))
 const hr = unit("hr", "s", frac(3600, 1))
-const degC = unit("°C", "K", real(1), frac(5463, 20))
-const degF = unit("°F", "K", frac(5, 9), frac(45967, 180))
-const dC = unit("∆°C", "K", real(1))
-const dF = unit("∆°F", "K", frac(5, 9))
+const dC = unit("°C", "K", real(1), frac(5463, 20))
+const dF = unit("°F", "K", frac(5, 9), frac(45967, 180))
+const ddC = unit("∆°C", "K", real(1))
+const ddF = unit("∆°F", "K", frac(5, 9))
 const d = unit("d", "s", frac(86400, 1))
 const Hz = unit("Hz", [{ unit: "s", exp: -1 }], frac(1, 1))
 const inch = unit("in", "m", frac(127, 5e3))
@@ -152,14 +152,14 @@ export const UNITS: Record<string, Unit> = {
   hour: hr,
   d,
   day: d,
-  degC: degC,
-  celsius: degC,
-  degF: degF,
-  fahrenheit: degF,
-  dC,
-  deltacelsius: dC,
-  dF,
-  deltafahrenheit: dF,
+  dC: dC,
+  dF: dF,
+  ddC: ddC,
+  ddF: ddF,
+  celsius: dC,
+  fahrenheit: dF,
+  deltacelsius: ddC,
+  deltafahrenheit: ddF,
   N,
   newton: N,
   J,
