@@ -209,17 +209,21 @@ const INFO_R32U: TyInfoByName<"r32u"> = {
           "svg",
           {
             class:
-              "size-[16px] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 overflow-visible",
-            viewBox: "0 0 16 16",
+              "size-[26px] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
+            viewBox: "0 0 26 26",
             fill: "none",
           },
           sx("path", {
-            d: "M 5 0 L 16 11 L 11 16 L 0 5 Z M 5.5 10.5 l 3 -3 M 2.75 7.75 l 1.5 -1.5 M 8.25 13.25 l 1.5 -1.5",
+            d: "M 7 0 v 3 M 13 0 v 5 M 19 0 v 3 M 7 26 v -3 M 13 26 v -5 M 19 26 v -3 M 0 7 h 3 M 0 13 h 5 M 0 19 h 3 M 26 7 h -3 M 26 13 h -5 M 26 19 h -3",
             stroke: "currentcolor",
             "stroke-linecap": "round",
             "stroke-linejoin": "round",
             "stroke-width": 2,
           }),
+        ),
+        h(
+          "absolute top-1/2 left-1/2 -translate-x-1/2 translate-y-[calc(-50%_-_1.5px)] font-['Times_New_Roman'] italic text-[100%]",
+          "x",
         ),
       ),
     )
