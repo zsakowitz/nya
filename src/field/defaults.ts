@@ -270,7 +270,9 @@ export const options: Options = Object.freeze<Options>({
   wordsInSubscript(cmd) {
     return (
       cmd[L] instanceof CmdVar &&
-      (cmd[L].kind == "prefix" || cmd[L].kind == "magicprefix")
+      (cmd[L].kind == "prefix" ||
+        cmd[L].kind == "magicprefix" ||
+        cmd[L].kind == "magicprefixword")
     )
   },
   beforeInsert(cursor) {

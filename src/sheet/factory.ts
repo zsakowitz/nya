@@ -155,15 +155,18 @@ export class SheetFactory {
     }
 
     for (const key in pkg.eval?.tx?.magic) {
-      if (/^[A-Za-z]+$/.test(key)) {
-        this.options.words.init(key, "magicprefix")
-      }
       const txr = pkg.eval.tx.magic[key]!
       if (
         TXR_MAGICVAR[key] &&
         (TXR_MAGICVAR[key].layer ?? 0) >= (txr.layer ?? 0)
       ) {
         continue
+      }
+      if (/^[A-Za-z]+$/.test(key)) {
+        this.options.words.init(
+          key,
+          txr.acceptsWord ? "magicprefixword" : "magicprefix",
+        )
       }
       for (const helper of txr.helpers || []) {
         this.options.words.init(helper, "infix")

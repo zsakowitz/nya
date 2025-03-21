@@ -141,6 +141,8 @@ export interface TxrMagicVar extends Omit<TxrAst<MagicVar>, "drag"> {
    * superscript.
    */
   fnlike?: boolean
+  /** If `true`, variables following the function name will become deitalicized. */
+  acceptsWord?: boolean
   with?: {
     js(node: MagicVar, props: PropsJs, seq: boolean): Record<string, JsValue>
     glsl(

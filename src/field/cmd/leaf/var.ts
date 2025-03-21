@@ -1,4 +1,3 @@
-import { Leaf } from "."
 import {
   Precedence,
   PRECEDENCE_MAP,
@@ -11,6 +10,7 @@ import { TXR_MAGICVAR } from "@/eval/ast/tx"
 import { subscript } from "@/eval/lib/text"
 import { h } from "@/jsx"
 import type { Ctx } from "@/sheet/deps"
+import { Leaf } from "."
 import type { LatexParser } from "../../latex"
 import {
   Block,
@@ -42,7 +42,12 @@ import { CmdToken, TokenCtx } from "./token"
  * - `"prefix"`: `+word` `2 + word` `word +2` `(...) word(...)`
  * - `"infix"`: `2 word` `word 2` `word +` `(...) word (...)`
  */
-export type WordKind = "var" | "prefix" | "magicprefix" | "infix"
+export type WordKind =
+  | "var"
+  | "prefix"
+  | "magicprefix"
+  | "infix"
+  | "magicprefixword"
 
 export class CmdVar extends Leaf {
   static init(cursor: Cursor, props: InitProps) {
@@ -123,7 +128,10 @@ export class CmdVar extends Leaf {
       part == L ? "-l"
       : part == R ? "-r"
       : "-mid"
-    if (kind == "magicprefix") kind = "prefix"
+
+    if (kind == "magicprefix" || kind == "magicprefixword") {
+      kind = "prefix"
+    }
 
     return h(
       "nya-cmd-var" +
@@ -284,7 +292,10 @@ export class CmdVar extends Leaf {
   }
 
   ir(tokens: Node[]): true | void {
-    magicprefix: if (this.kind == "magicprefix" && this.part == L) {
+    magicprefix: if (
+      (this.kind == "magicprefix" || this.kind == "magicprefixword") &&
+      this.part == L
+    ) {
       let value = this.text
       let el: Command = this
       let prop: string | undefined
@@ -328,7 +339,10 @@ export class CmdVar extends Leaf {
         tokens.push({
           type: "var",
           value: this.text,
-          kind: this.kind == "magicprefix" ? "prefix" : this.kind,
+          kind:
+            this.kind == "magicprefix" || this.kind == "magicprefixword" ?
+              "prefix"
+            : this.kind,
           span: new Span(this.parent, this[L], this[R]),
         })
         return
@@ -376,7 +390,7 @@ export class CmdVar extends Leaf {
   }
 
   endsImplicitGroup(): boolean {
-    if (this.kind == "magicprefix") {
+    if (this.kind == "magicprefix" || this.kind == "magicprefixword") {
       return true
     }
     if (this.kind != "infix") {
