@@ -107,7 +107,9 @@ body {
   @apply pl-[.2em];
 
   .nya-cmd-colon + :where(&),
-  .nya-cmd-colon + :where(.nya-cursor) + :where(&) {
+  .nya-cmd-colon + :where(.nya-cursor) + :where(&),
+  .nya-cmd-supsub + :where(&),
+  .nya-cmd-supsub + :where(.nya-cursor) + :where(&) {
     @apply pl-[.1em];
   }
 
@@ -224,29 +226,36 @@ body {
   @apply pr-0;
 }
 
-.nya-cmd-word-r:not(.nya-cmd-word-infix) + .nya-cmd-supsub,
+.nya-cmd-word-r:not(.nya-cmd-word-infix)
+  + .nya-cmd-supsub:where(:not(:has(+ .nya-cmd-word-l))),
+.nya-cmd-word-r:not(.nya-cmd-word-infix)
+  + .nya-cmd-supsub:where(:not(:has(+ .nya-cursor + .nya-cmd-word-l))),
 .nya-cmd-word-r:not(.nya-cmd-word-infix)
   + :where(.nya-cursor)
-  + .nya-cmd-supsub,
+  + .nya-cmd-supsub:where(:not(:has(+ .nya-cmd-word-l))),
 .nya-cmd-word-r:not(.nya-cmd-word-infix)
   + .nya-cmd-dot
   + .nya-cmd-var
-  + .nya-cmd-supsub,
+  + .nya-cmd-supsub:where(:not(:has(+ .nya-cmd-word-l))),
 .nya-cmd-word-r:not(.nya-cmd-word-infix)
   + :where(.nya-cursor)
   + .nya-cmd-dot
   + .nya-cmd-var
-  + .nya-cmd-supsub,
+  + .nya-cmd-supsub:where(:not(:has(+ .nya-cmd-word-l))),
 .nya-cmd-word-r:not(.nya-cmd-word-infix)
   + .nya-cmd-dot
   + :where(.nya-cursor)
   + .nya-cmd-var
-  + .nya-cmd-supsub,
+  + .nya-cmd-supsub:where(:not(:has(+ .nya-cmd-word-l))),
 .nya-cmd-word-r:not(.nya-cmd-word-infix)
   + .nya-cmd-dot
   + .nya-cmd-var
   + :where(.nya-cursor)
-  + .nya-cmd-supsub {
+  + .nya-cmd-supsub:where(:not(:has(+ .nya-cmd-word-l))),
+.nya-cmd-word-r:not(.nya-cmd-word-infix)
+  + .nya-cmd-dot
+  + .nya-cmd-var
+  + .nya-cmd-supsub:where(:not(:has(+ .nya-cursor + .nya-cmd-word-l))) {
   @apply pr-[.2em];
 
   &:last-child,
@@ -346,6 +355,11 @@ body {
 
 .nya-cmd-word-r:has(+ .nya-cmd-frac),
 .nya-cmd-word-r:has(+ .nya-cursor + .nya-cmd-frac) {
+  @apply pr-[.1em];
+}
+
+.nya-cmd-supsub:has(+ .nya-cmd-word-l),
+.nya-cmd-supsub:has(+ .nya-cursor + :where(.nya-cmd-word-l)) {
   @apply pr-[.1em];
 }
 
