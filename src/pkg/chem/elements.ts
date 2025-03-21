@@ -1,13 +1,14 @@
 import { NO_SYM } from "@/eval/ast/tx"
 import { FnDist } from "@/eval/ops/dist"
 import { issue } from "@/eval/ops/issue"
-import type { JsValue } from "@/eval/ty"
+import type { JsVal, JsValue } from "@/eval/ty"
 import { approx, real } from "@/eval/ty/create"
-import type { TyInfoByName } from "@/eval/ty/info"
+import { type TyInfoByName } from "@/eval/ty/info"
 import { CmdWord } from "@/field/cmd/leaf/word"
 import { L } from "@/field/model"
 import { h, hx } from "@/jsx"
 import type { Package } from ".."
+import type { TextSegment } from "../text"
 import { UNIT_AMU } from "../unit/impl/units"
 
 declare module "@/eval/ty" {
@@ -5400,7 +5401,7 @@ for (const entry of raw) {
 // TODO: SHADER:
 const glsl = issue("Elements are not supported in shaders yet.")
 
-const INTO_ELEMENT: TyInfoByName<"element"> = {
+const INFO_ELEMENT: TyInfoByName<"element"> = {
   name: "element",
   namePlural: "elements",
   get glsl() {
@@ -5440,23 +5441,112 @@ const INTO_ELEMENT: TyInfoByName<"element"> = {
       ),
     )
   },
-  // TODO: token depends on element
-  token: null,
+  token(symbol) {
+    const value = symbol && bySymbol[symbol]
+    if (!value) {
+      return INFO_ELEMENT.icon()
+    }
+    const sz =
+      (value.number > 100 ? 1
+      : value.number > 10 ? 0.5
+      : 0) +
+      (value.symbol.length - 1)
+
+    return h(
+      "",
+      h(
+        "text-yellow-600 size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative rounded-[4px] overflow-hidden",
+        hx("img", {
+          class:
+            "scale-[200%] absolute inset-0 object-cover size-full opacity-30",
+          src: value.image.url,
+          alt: value.image.title,
+        }),
+        h({
+          class:
+            "absolute inset-0 border-2 border-yellow-600 size-full rounded-[4px]",
+          style: value["cpk-hex"] ? `border-color:#${value["cpk-hex"]}` : "",
+        }),
+        sz > 1 ?
+          h(
+            "absolute flex flex-col top-1/2 left-1/2 -translate-x-1/2 translate-y-[calc(-50%_+_1px)] font-['Times_New_Roman'] text-black dark:text-white text-[75%] [line-height:.9] text-center",
+            h("", value.symbol),
+            h("font-['Symbola']", "" + value.number),
+          )
+        : h(
+            "absolute top-1/2 left-1/2 -translate-x-1/2 translate-y-[calc(-50%_+_1px)] font-['Times_New_Roman'] text-black dark:text-white " +
+              (sz > 0 ? "text-[80%]" : "text-[100%]"),
+            hx("sup", "font-['Symbola']", "" + value.number),
+            value.symbol,
+          ),
+      ),
+    )
+  },
   glide: null,
   preview: null,
   components: null,
   extras: null,
 }
 
-const FN_MASS = new FnDist("mass", "gets the mass of an element").add(
+function map<T>(f: (symbol: Data | null) => T) {
+  return (v: JsVal<"element">): T => {
+    const el = v.value ? bySymbol[v.value] : null
+    return f(el ?? null)
+  }
+}
+
+function text(value: string): TextSegment[] {
+  return [{ type: "plain", value }]
+}
+
+function textProp<
+  K extends {
+    [U in keyof Data]: Data[U] extends string | null ? U : never
+  }[keyof Data],
+>(
+  key: K,
+  label: string,
+  name: `el${string}` = `el${key.replaceAll("_", "")}`,
+  defaultValue = "<unknown>",
+) {
+  return new FnDist(name, label).addJs(
+    ["element"],
+    "text",
+    map((x) => text(x?.[key] ?? defaultValue)),
+  )
+}
+
+const FN_MASS = new FnDist("mass", "gets the mass of an element").addJs(
   ["element"],
   "r32u",
   ({ value: symbol }) => {
     const el = symbol ? bySymbol[symbol] : null
     return [approx(el?.atomic_mass ?? NaN), [{ exp: real(1), unit: UNIT_AMU }]]
   },
-  glsl,
 )
+
+const fns = [
+  textProp("discovered_by", "gets the discoverer of an element"),
+  textProp("name", "gets the name of an element"),
+  textProp("appearance", "gets the appearance of an element"),
+  textProp("category", "gets the category of an element"),
+  textProp("named_by", "gets who named an element"),
+  textProp("phase", "gets the phase of an element at STP"),
+  textProp("summary", "gets a description of an element", "eldescription"),
+  textProp("symbol", "gets the symbol of an element"),
+  textProp(
+    "electron_configuration",
+    "gets the electron configuration of an element",
+    "elconfig",
+  ),
+  textProp(
+    "electron_configuration_semantic",
+    "gets the electron configuration of an element using the noble gas shorthand",
+    "elconfigshort",
+  ),
+  textProp("block", "gets the block an element is in on the periodic table"),
+  FN_MASS,
+]
 
 export const PKG_CHEM_ELEMENTS: Package = {
   id: "nya:chem-elements",
@@ -5464,7 +5554,7 @@ export const PKG_CHEM_ELEMENTS: Package = {
   label: "and their properties",
   ty: {
     info: {
-      element: INTO_ELEMENT,
+      element: INFO_ELEMENT,
     },
   },
   eval: {
@@ -5490,9 +5580,7 @@ export const PKG_CHEM_ELEMENTS: Package = {
         },
       },
     },
-    fn: {
-      mass: FN_MASS,
-    },
+    fn: Object.fromEntries(fns.map((fn) => [fn.name, fn])),
   },
 }
 
