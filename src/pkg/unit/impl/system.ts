@@ -8,6 +8,7 @@ import {
   UNIT_KINDS,
   type UnitKind,
 } from "./kind"
+import { UNITS_BY_NAME } from "./units"
 
 /**
  * A conversion factor from `src` to `dst`.
@@ -47,8 +48,10 @@ export type UnitList = UnitEntry[]
 function raise(base: SReal, exp: SReal): SReal {
   const val = num(exp)
 
-  if (val == 0) {
-    return frac(1, 0)
+  if (num(base) == 0) {
+    return frac(0, 1)
+  } else if (val == 0) {
+    return frac(1, 1)
   } else if (val == 1) {
     return base
   } else if (base.type == "exact" && safe(val)) {
@@ -70,8 +73,8 @@ export function toSI(list: UnitList): ConversionFactor {
     exp,
     unit: { base },
   } of list) {
-    const ox = base.offset ? raise(base.offset, exp) : real(0)
-    const sx = base.scale ? raise(base.scale, exp) : real(1)
+    const ox = raise(base.offset, exp)
+    const sx = raise(base.scale, exp)
     offset = add(offset, ox)
     scale = mul(scale, sx)
   }
@@ -80,7 +83,11 @@ export function toSI(list: UnitList): ConversionFactor {
 }
 
 export function convert(value: SReal, via: ConversionFactor) {
-  return add(mul(value, via.scale ?? real(1)), via.offset ?? real(0))
+  return add(mul(value, via.scale), via.offset)
+}
+
+export function convertInv(value: SReal, via: ConversionFactor) {
+  return div(sub(value, via.offset), via.scale)
 }
 
 function base(
@@ -169,7 +176,7 @@ export function siUnit(src: UnitList): UnitList {
   }).filter((x) => x != null)
 }
 
-function assertSiCompat(src: UnitList, dst: UnitList) {
+export function assertCompat(src: UnitList, dst: UnitList) {
   const si1 = si(src)
   const si2 = si(dst)
 
@@ -186,7 +193,7 @@ function assertSiCompat(src: UnitList, dst: UnitList) {
 }
 
 export function factor(src: UnitList, dst: UnitList): ConversionFactor {
-  assertSiCompat(src, dst)
+  assertCompat(src, dst)
   const sf = toSI(src)
   const df = toSI(dst)
   return {
@@ -208,7 +215,7 @@ export function check(list: UnitList) {
     if (unit.unit.base.offset && num(unit.unit.base.offset) != 0) {
       if (num(unit.exp) != 1) {
         throw new Error(
-          `'${unit.unit.label}' can't be raised to any exponent besides one. ${HELP}`,
+          `'${unit.unit.label}' is non-absolute, and can't be raised to any exponent besides one. ${HELP}`,
         )
       }
 
@@ -223,6 +230,12 @@ export function check(list: UnitList) {
   }
 
   return list
+}
+
+export function badSum(src: UnitList, dst: UnitList): never {
+  throw new Error(
+    `Adding '${name(src)}' and '${name(dst)}' is not allowed, since both units are non-absolute. ${HELP}`,
+  )
 }
 
 export function multiply(a: UnitList, b: UnitList): UnitList {
@@ -247,3 +260,5 @@ export function exp(a: UnitList, to: SReal): UnitList {
 
   return check(a.map(({ exp, unit }) => ({ exp: mul(exp, to), unit })))
 }
+
+console.log(toSI([{ exp: real(-1), unit: UNITS_BY_NAME.second! }]))

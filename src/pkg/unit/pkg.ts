@@ -17,7 +17,8 @@ import { CmdWord } from "@/field/cmd/leaf/word"
 import { CmdFrac } from "@/field/cmd/math/frac"
 import { CmdSupSub } from "@/field/cmd/math/supsub"
 import { Block, L, R } from "@/field/model"
-import { h, sx } from "@/jsx"
+import { b, h, px, sx } from "@/jsx"
+import { example } from "@/sheet/ui/sheet/docs"
 import type { Package } from ".."
 import {
   OP_ADD,
@@ -29,7 +30,10 @@ import {
   OP_SUB,
 } from "../core/ops"
 import {
+  assertCompat,
+  badSum,
   convert,
+  convertInv,
   exp,
   factor,
   inv,
@@ -236,112 +240,22 @@ const INFO_R32U: TyInfoByName<"r32u"> = {
   extras: null,
 }
 
-OP_CDOT.add(
-  ["unit", "unit"],
-  "unit",
-  (a, b) => multiply(a.value, b.value),
-  glsl,
-)
-
-OP_CDOT.add(
-  ["r32u", "r32u"],
-  "r32u",
-  (a, b) => [mul(a.value[0], b.value[0]), multiply(a.value[1], b.value[1])],
-  glsl,
-)
-
-OP_DIV.add(
-  ["unit", "unit"],
-  "unit",
-  (a, b) => multiply(a.value, inv(b.value)),
-  glsl,
-)
-
-OP_DIV.add(
-  ["r32u", "r32u"],
-  "r32u",
-  (a, b) => [
-    div(a.value[0], b.value[0]),
-    multiply(a.value[1], inv(b.value[1])),
-  ],
-  glsl,
-)
-
-OP_RAISE.add(["unit", "r32"], "unit", (a, b) => exp(a.value, b.value), glsl)
-
-OP_RAISE.add(
-  ["r32u", "r32"],
-  "r32u",
-  (a, b) => [raise(a.value[0], b.value), exp(a.value[1], b.value)],
-  glsl,
-)
-
-OP_ADD.add(
-  ["r32u", "r32u"],
-  "r32u",
-  ({ value: [v1, u1] }, { value: [v2, u2] }) => {
-    const f21 = factor(u2, u1)
-    return [add(v1, convert(v2, f21)), u1]
-  },
-  glsl,
-)
-
-OP_SUB.add(
-  ["r32u", "r32u"],
-  "r32u",
-  ({ value: [v1, u1] }, { value: [v2, u2] }) => {
-    const f21 = factor(u2, u1)
-    return [sub(v1, convert(v2, f21)), u1]
-  },
-  glsl,
-)
-
-OP_POS.add(["unit"], "unit", (a) => a.value, glsl)
-
-OP_POS.add(["r32u"], "r32u", (a) => a.value, glsl)
-
-OP_NEG.add(["r32u"], "r32u", ({ value: [a, u] }) => [neg(a), u], glsl)
-
 const FN_IN = new FnDist("in", "converts values between units", {
   display: binaryFn(
     () => new CmdWord("in", "infix"),
     Precedence.UnitConversion,
   ),
-}).add(
-  ["r32u", "unit"],
-  "r32u",
-  (a, b) => {
-    const f = factor(a.value[1], b.value)
-    return [convert(a.value[0], f), b.value]
-  },
-  glsl,
-)
-
-const FN_UNIT = new FnDist("unit", "gets the unit of a value").add(
-  ["r32u"],
-  "unit",
-  (a) => a.value[1],
-  glsl,
-)
+})
 
 const FN_INTOSI = new FnDist(
   "intosi",
   "converts a value to its component SI units",
-).add(
-  ["r32u"],
-  "r32u",
-  (a) => {
-    const factor = toSI(a.value[1])
-    const unit = siUnit(a.value[1])
-    return [convert(a.value[0], factor), unit]
-  },
-  glsl,
 )
 
 export const PKG_UNITS: Package = {
   id: "nya:units",
   name: "units",
-  label: "no more conversion factors",
+  label: "conversion functions and unit decompositions",
   ty: {
     info: {
       unit: INFO_UNIT,
@@ -368,7 +282,6 @@ export const PKG_UNITS: Package = {
       },
     },
     fn: {
-      unit: FN_UNIT,
       intosi: FN_INTOSI,
     },
     var: Object.fromEntries(
@@ -388,5 +301,165 @@ export const PKG_UNITS: Package = {
         },
       ]),
     ),
+  },
+  init() {
+    OP_CDOT.add(
+      ["unit", "unit"],
+      "unit",
+      (a, b) => multiply(a.value, b.value),
+      glsl,
+    )
+
+    OP_CDOT.add(
+      ["r32u", "r32u"],
+      "r32u",
+      (a, b) => [mul(a.value[0], b.value[0]), multiply(a.value[1], b.value[1])],
+      glsl,
+    )
+
+    OP_DIV.add(
+      ["unit", "unit"],
+      "unit",
+      (a, b) => multiply(a.value, inv(b.value)),
+      glsl,
+    )
+
+    OP_DIV.add(
+      ["r32u", "r32u"],
+      "r32u",
+      (a, b) => [
+        div(a.value[0], b.value[0]),
+        multiply(a.value[1], inv(b.value[1])),
+      ],
+      glsl,
+    )
+
+    OP_RAISE.add(["unit", "r32"], "unit", (a, b) => exp(a.value, b.value), glsl)
+
+    OP_RAISE.add(
+      ["r32u", "r32"],
+      "r32u",
+      (a, b) => [raise(a.value[0], b.value), exp(a.value[1], b.value)],
+      glsl,
+    )
+
+    OP_ADD.add(
+      ["r32u", "r32u"],
+      "r32u",
+      ({ value: [v1, u1] }, { value: [v2, u2] }) => {
+        assertCompat(u1, u2)
+        const f1 = toSI(u1)
+        const f2 = toSI(u2)
+        if (num(f1.offset) != 0 && num(f2.offset) != 0) {
+          badSum(u1, u2)
+        }
+        const val = add(convert(v1, f1), convert(v2, f2))
+        return [convertInv(val, f1), u1]
+      },
+      glsl,
+    )
+
+    OP_SUB.add(
+      ["r32u", "r32u"],
+      "r32u",
+      ({ value: [v1, u1] }, { value: [v2, u2] }) => {
+        assertCompat(u1, u2)
+        const f1 = toSI(u1)
+        const f2 = toSI(u2)
+        if (num(f1.offset) != 0 && num(f2.offset) != 0) {
+          badSum(u1, u2)
+        }
+        const val = sub(convert(v1, f1), convert(v2, f2))
+        return [convertInv(val, f1), u1]
+      },
+      glsl,
+    )
+
+    OP_POS.add(["unit"], "unit", (a) => a.value, glsl)
+
+    OP_POS.add(["r32u"], "r32u", (a) => a.value, glsl)
+
+    OP_NEG.add(["r32u"], "r32u", ({ value: [a, u] }) => [neg(a), u], glsl)
+
+    FN_IN.add(
+      ["r32u", "unit"],
+      "r32u",
+      (a, b) => {
+        const f = factor(a.value[1], b.value)
+        return [convert(a.value[0], f), b.value]
+      },
+      glsl,
+    )
+
+    FN_INTOSI.add(
+      ["r32u"],
+      "r32u",
+      (a) => {
+        const factor = toSI(a.value[1])
+        const unit = siUnit(a.value[1])
+        return [convert(a.value[0], factor), unit]
+      },
+      glsl,
+    )
+  },
+  docs: {
+    units() {
+      return [
+        px`Units in project nya are referenced by their long names, and do not take plural suffixes.`,
+        example("2meter", "=2\\wordvar{m}"),
+        px`You can multiply and divide values of different units.`,
+        example(
+          "\\frac{2meter}{7second*4minute}",
+          "=0.07142857143\\frac\\wordvar m{\\wordvar s\\cdot\\wordvar{min}}",
+        ),
+        px`You can convert between various units with the ${b("in")} operator.`,
+        example("20celsiusinfahrenheit", "=68\\wordvar{°F}"),
+        px`Adding and subtracting prefers the first value's units, and requires the units to be compatiable.`,
+        example("7meter+89centimeter", "=7.89\\wordvar m"),
+        px`You can use the ${b("intosi")} function to turn any unit value into its component SI units.`,
+        example(
+          "intosi(4calorie)",
+          "=16.736\\frac{\\wordvar{kg}\\cdot\\wordvar{m}^2}{\\wordvar s^2}",
+        ),
+        px`If the unit names are too long, define them as variables, and reuse them later.`,
+        example("m=meter", null),
+        example("s=second", null),
+        example("h=hour", null),
+        example(
+          "4\\frac{m}{s^2}in\\frac{m}{h^2}",
+          "=51840000.0\\frac{\\wordvar{m}}{\\wordvar{hr}^2}",
+        ),
+        px`The ${b("celsius")} and ${b("fahrenheit")} units have special behavior. See ${b("units (temperature)")} for more information, and for common errors you'll get when using these units.`,
+      ]
+    },
+    "units (temperature)"() {
+      return [
+        px`Temperature units like ${b("celsius")} and ${b("fahrenheit")} do not start at absolute zero (you have to add, not just multiply, to convert between them).`,
+        px`These units therefore come in two variants. The regular ${b("celsius")} and ${b("fahrenheit")} units are used for measured temperature, and ${b("deltacelsius")} and ${b("deltafahrenheit")} are used for changes in temperature.`,
+        px`If you measure the temperature outside, ${b("celsius")} is the appropriate. But if you measure a 4 degree drop in temperature, use ${b("deltacelsius")}. The same goes for the Fahrenheit-based variants.`,
+        px`First problem: addition. Adding 2 °C and 3 °C is ambiguous, since it could mean 5 °C (adding the 2 and 3) or 278 °C (adding 3 °C in kelvin to 2 °C). project nya forces you to explain what you mean: either use ${b("deltacelsius")} to communicate that you want a 3 degree change, or convert to kelvin before adding.`,
+        example("2 celsius + (3 celsius in kelvin)", "=278.15 \\wordvar{°C}"),
+        example("2 celsius + 3 deltacelsius", "=5 \\wordvar{°C}"),
+        px`Second problem: ratios. Dividing 5 J by 3 °C is ambiguous, since it could mean 5 J for every change of 3 °C, or 5 J for every total 276 K (3 °C in kelvin). Again, project nya forces you to disambiguate: either use ${b("deltacelsius")}, or convert into kelvin.`,
+        example(
+          "\\frac{5 joule}{3 celsius in kelvin}",
+          "=0.01810610176\\frac\\wordvar J\\wordvar K",
+        ),
+        example(
+          "\\frac{5 joule}{3 deltacelsius}",
+          "=1.66666666667\\frac\\wordvar J\\wordvar K",
+        ),
+        px`Third problem: multiplication. Multiplying 2 °C and 3 °C is ambiguous, since it could be an addition of 2 °C for every 3 °C, the reverse problem, or an addition of 2 °C for every addition of 3 °C. Again, the solution is to disambiguate: either use ${b("deltacelsius")} or convert into kelvin.`,
+        example(
+          "2 celsius \\cdot (3 celsius in kelvin)",
+          "=552.3 \\wordvar{°C}\\cdot\\wordvar K",
+        ),
+        example(
+          "2 celsius \\cdot 3 deltacelsius",
+          "=6 \\wordvar{°C}\\cdot\\wordvar{∆°C}",
+        ),
+        px`(The upwards triangle is the Greek letter capital delta, which is normally used to denote a change in something.)`,
+      ]
+    },
   },
 }

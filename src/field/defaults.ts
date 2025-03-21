@@ -27,6 +27,7 @@ import { SymInfinity, SymPi, SymTau } from "./cmd/leaf/sym"
 import { CmdToken } from "./cmd/leaf/token"
 import { CmdTyName } from "./cmd/leaf/tyname"
 import { CmdVar, type WordKind } from "./cmd/leaf/var"
+import { CmdWord } from "./cmd/leaf/word"
 import { CmdList } from "./cmd/logic/list"
 import { CmdPiecewise } from "./cmd/logic/piecewise"
 import { BIG_ALIASES, CmdBig } from "./cmd/math/big"
@@ -233,6 +234,9 @@ const latex = new WordMap<LatexInit>([
   ["\\tyname", CmdTyName],
   ["\\ty", CmdTyName],
   ["\\token", CmdToken],
+  ["\\wordvar", CmdWord],
+  ["\\wordprefix", CmdWord],
+  ["\\wordinfix", CmdWord],
 ])
 
 for (const key of inits.getAll()) {

@@ -1,10 +1,26 @@
 import type { Node } from "@/eval/ast/token"
+import type { LatexParser } from "@/field/latex"
 import { h } from "@/jsx"
 import { Leaf } from "."
-import { L, R, Span } from "../../model"
+import { L, R, Span, type Command } from "../../model"
+import { CmdUnknown } from "./unknown"
 import type { WordKind } from "./var"
 
 export class CmdWord extends Leaf {
+  static fromLatex(cmd: string, parser: LatexParser): Command {
+    const kind =
+      cmd == "\\wordvar" ? "var"
+      : cmd == "\\wordprefix" ? "prefix"
+      : cmd == "\\wordinfix" ? "infix"
+      : null
+
+    if (kind == null) {
+      return new CmdUnknown(cmd)
+    }
+
+    return new CmdWord(parser.text(), kind)
+  }
+
   constructor(
     readonly text: string,
     readonly kind: Exclude<WordKind, "magicprefix"> = "var",
