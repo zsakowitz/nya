@@ -202,7 +202,7 @@ export const PKG_ITHKUIL: Package = {
       ithkuilgloss: new FnDist("ithkuilgloss", "glosses an ithkuil word").add(
         ["text"],
         "text",
-        (a) => {
+        (a): TextSegment[] => {
           const sourceRaw = a.value.map((x) => x.value).join("")
           return sourceRaw
             .split(/[-\s]+/)
@@ -225,7 +225,7 @@ export const PKG_ITHKUIL: Package = {
       ).add(
         ["text"],
         "text",
-        (str) => {
+        (str): TextSegment[] => {
           const sourceRaw = str.value.map((x) => x.value).join("")
           return sourceRaw
             .split(/\s/)

@@ -1,9 +1,14 @@
+import { NO_SYM } from "@/eval/ast/tx"
+import { FnDist } from "@/eval/ops/dist"
 import { issue } from "@/eval/ops/issue"
+import type { JsValue } from "@/eval/ty"
+import { approx, real } from "@/eval/ty/create"
 import type { TyInfoByName } from "@/eval/ty/info"
 import { CmdWord } from "@/field/cmd/leaf/word"
 import { L } from "@/field/model"
 import { h, hx } from "@/jsx"
 import type { Package } from ".."
+import { UNIT_AMU } from "../unit/impl/units"
 
 declare module "@/eval/ty" {
   interface Tys {
@@ -5380,13 +5385,20 @@ const raw: Data[] = [
   },
 ]
 
-const bySymbol = Object.create(null)
+const bySymbol: Record<string, Data> = Object.create(null)
 for (const entry of raw) {
   bySymbol[entry.symbol] = entry
 }
 
+const symbols: Record<string, string> = Object.create(null)
+for (const entry of raw) {
+  symbols[entry.symbol] = entry.symbol
+  symbols[entry.name] = entry.symbol
+  symbols[entry.name.toLowerCase()] = entry.symbol
+}
+
 // TODO: SHADER:
-const glsl = issue("Periodic table elements are not supported in shaders yet.")
+const glsl = issue("Elements are not supported in shaders yet.")
 
 const INTO_ELEMENT: TyInfoByName<"element"> = {
   name: "element",
@@ -5436,6 +5448,16 @@ const INTO_ELEMENT: TyInfoByName<"element"> = {
   extras: null,
 }
 
+const FN_MASS = new FnDist("mass", "gets the mass of an element").add(
+  ["element"],
+  "r32u",
+  ({ value: symbol }) => {
+    const el = symbol ? bySymbol[symbol] : null
+    return [approx(el?.atomic_mass ?? NaN), [{ exp: real(1), unit: UNIT_AMU }]]
+  },
+  glsl,
+)
+
 export const PKG_CHEM_ELEMENTS: Package = {
   id: "nya:chem-elements",
   name: "chemical elements",
@@ -5443,6 +5465,33 @@ export const PKG_CHEM_ELEMENTS: Package = {
   ty: {
     info: {
       element: INTO_ELEMENT,
+    },
+  },
+  eval: {
+    tx: {
+      wordPrefix: {
+        element: {
+          js(contents) {
+            if (contents.sub) {
+              throw new Error("Element names may not have subscripts.")
+            }
+            const symbol = symbols[contents.value]
+            if (!symbol) {
+              throw new Error(`The element '${contents.value}' is not defined.`)
+            }
+            return {
+              type: "element",
+              list: false,
+              value: symbol,
+            } satisfies JsValue<"element">
+          },
+          glsl,
+          sym: NO_SYM,
+        },
+      },
+    },
+    fn: {
+      mass: FN_MASS,
     },
   },
 }

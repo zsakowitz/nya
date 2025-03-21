@@ -1,11 +1,28 @@
 import { approx, frac, real } from "@/eval/ty/create"
-import { UNIT_KIND_VALUES } from "./kind"
+import type { UnitKind } from "./kind"
 import { unit, type Unit } from "./system"
 
 export const nan = unit("undefined", [], approx(NaN), approx(NaN))
 
-// FIXME: Hz, L
-const { m, kg, s, K, A, mol, cd } = UNIT_KIND_VALUES
+const m = unit("m", "m")
+const kg = unit("kg", "kg")
+const s = unit("s", "s")
+const K = unit("K", "K")
+const A = unit("A", "A")
+const mol = unit("mol", "mol")
+const cd = unit("cd", "cd")
+export const UNIT_KIND_VALUES: Record<UnitKind, Unit> = {
+  // @ts-expect-error ts doesn't recognize __proto__
+  __proto__: null,
+  m,
+  kg,
+  s,
+  K,
+  A,
+  mol,
+  cd,
+}
+
 const g = unit("g", "kg", frac(1, 1e3))
 const cm = unit("cm", "m", frac(1, 1e2))
 const au = unit("au", "m", real(149597870700))
@@ -122,6 +139,7 @@ const G = unit(
   ],
   frac(1, 1e4),
 )
+export const UNIT_AMU = unit("u", "kg", real(1.6605390689252e-27))
 
 export const UNITS: Record<string, Unit> = {
   // @ts-expect-error ts doesn't recognize __proto__
@@ -207,4 +225,8 @@ export const UNITS: Record<string, Unit> = {
   gram: g,
   Hz,
   hertz: Hz,
+  Da: UNIT_AMU,
+  dalton: UNIT_AMU,
+  u: UNIT_AMU,
+  amu: UNIT_AMU,
 }

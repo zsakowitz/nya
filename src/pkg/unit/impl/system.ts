@@ -2,13 +2,8 @@ import { safe } from "@/eval/lib/util"
 import type { SReal } from "@/eval/ty"
 import { frac, num, real } from "@/eval/ty/create"
 import { add, div, mul, neg, sub } from "@/eval/ty/ops"
-import {
-  UNIT_KIND_NAMES,
-  UNIT_KIND_VALUES,
-  UNIT_KINDS,
-  type UnitKind,
-} from "./kind"
-import { UNITS } from "./units"
+import { UNIT_KIND_NAMES, UNIT_KINDS, type UnitKind } from "./kind"
+import { UNIT_KIND_VALUES } from "./units"
 
 /**
  * A conversion factor from `src` to `dst`.
@@ -262,5 +257,3 @@ export function exp(a: UnitList, to: SReal): UnitList {
 
   return check(a.map(({ exp, unit }) => ({ exp: mul(exp, to), unit })))
 }
-
-console.log(toSI([{ exp: real(-1), unit: UNITS.second! }]))
