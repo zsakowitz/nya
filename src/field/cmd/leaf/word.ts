@@ -23,7 +23,7 @@ export class CmdWord extends Leaf {
 
   constructor(
     readonly text: string,
-    readonly kind: Exclude<WordKind, "magicprefix"> = "var",
+    readonly kind: Exclude<WordKind, "magicprefix" | "magicprefixword"> = "var",
     readonly italic?: boolean,
   ) {
     // The wrapper ensures selections work fine

@@ -14,6 +14,7 @@ import type {
   TxrOpBinary,
   TxrOpUnary,
   TxrSuffix,
+  TxrWordPrefix,
 } from "@/eval/ast/tx"
 import type { Fn } from "@/eval/ops"
 import type { WithDocs } from "@/eval/ops/docs"
@@ -30,6 +31,7 @@ import type { Sheet } from "@/sheet/ui/sheet"
 
 type List<T, K extends PropertyKey = string> = { readonly [_ in K]?: T }
 
+// SHAPE: maybe use consistent shapes
 export interface Package {
   id: string
   name: string
@@ -67,6 +69,7 @@ export interface Package {
       group?: List<TxrGroup, `${ParenLhs} ${ParenRhs}`>
       ast?: { [K in NodeName]?: TxrAst<Nodes[K]> }
       suffix?: { [K in SuffixName]?: TxrSuffix<Suffixes[K]> }
+      wordPrefix?: List<TxrWordPrefix>
     }
     // `sym` is separated from other `tx` since it works separately
     sym?: { [K in SymName]?: TxrSym<Syms[K]> }

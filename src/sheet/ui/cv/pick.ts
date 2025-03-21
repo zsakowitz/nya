@@ -3,6 +3,7 @@ import type { Sheet } from "../sheet"
 import type { Hint } from "./item"
 import type { Handler, ItemWithTarget, PointerHandlerRet } from "./move"
 
+// SHAPE: consistent shape
 export interface Picker<T extends {}> {
   id(data: T): number
   toggle(data: T, on: boolean): void

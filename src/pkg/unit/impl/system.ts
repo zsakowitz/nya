@@ -8,7 +8,7 @@ import {
   UNIT_KINDS,
   type UnitKind,
 } from "./kind"
-import { UNITS_BY_NAME } from "./units"
+import { UNITS } from "./units"
 
 /**
  * A conversion factor from `src` to `dst`.
@@ -184,9 +184,11 @@ export function assertCompat(src: UnitList, dst: UnitList) {
     const s = si1[ty]
     const d = si2[ty]
     if (!s && !d) continue
-    if (!s || !d || num(s) != num(d)) {
+    const sv = s ? num(s) : 0
+    const dv = d ? num(d) : 0
+    if (sv != dv) {
       throw new Error(
-        `Powers of ${UNIT_KIND_NAMES[ty]} differ in units '${name(src)}' (${s ? num(s) : 0}) and '${name(dst)}' (${d ? num(d) : 0}).`,
+        `Powers of ${UNIT_KIND_NAMES[ty]} differ in units '${name(src)}' (${sv}) and '${name(dst)}' (${dv}).`,
       )
     }
   }
@@ -261,4 +263,4 @@ export function exp(a: UnitList, to: SReal): UnitList {
   return check(a.map(({ exp, unit }) => ({ exp: mul(exp, to), unit })))
 }
 
-console.log(toSI([{ exp: real(-1), unit: UNITS_BY_NAME.second! }]))
+console.log(toSI([{ exp: real(-1), unit: UNITS.second! }]))

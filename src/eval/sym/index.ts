@@ -14,7 +14,7 @@ import { TY_INFO, type TyInfo } from "../ty/info"
 
 interface SymVarSource {
   name: string
-  kind: Exclude<WordKind, "magicprefix"> | undefined
+  kind: Exclude<WordKind, "magicprefix" | "magicprefixword"> | undefined
   italic: boolean
   sub?: string
 }

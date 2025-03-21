@@ -1,6 +1,7 @@
 import type { Package } from "./pkg"
 import { PKG_BASE } from "./pkg/base"
 import { PKG_BOOL } from "./pkg/bool"
+import { PKG_CHEM_ELEMENTS } from "./pkg/chem/elements"
 import { PKG_COLOR_CORE } from "./pkg/color/core"
 import { PKG_COLOR_EXTRAS } from "./pkg/color/extras"
 import { PKG_CORE_CMP } from "./pkg/core/cmp"
@@ -81,5 +82,6 @@ export function allPackages(): Package[] {
     PKG_DERIV,
     PKG_SYM_EXTRAS,
     PKG_UNITS,
+    PKG_CHEM_ELEMENTS,
   ]
 }

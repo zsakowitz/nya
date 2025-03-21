@@ -1,4 +1,3 @@
-import { Leaf } from "."
 import {
   Precedence,
   PRECEDENCE_MAP,
@@ -11,6 +10,7 @@ import { TXR_MAGICVAR } from "@/eval/ast/tx"
 import { subscript } from "@/eval/lib/text"
 import { h } from "@/jsx"
 import type { Ctx } from "@/sheet/deps"
+import { Leaf } from "."
 import type { LatexParser } from "../../latex"
 import {
   Block,
@@ -42,7 +42,12 @@ import { CmdToken, TokenCtx } from "./token"
  * - `"prefix"`: `+word` `2 + word` `word +2` `(...) word(...)`
  * - `"infix"`: `2 word` `word 2` `word +` `(...) word (...)`
  */
-export type WordKind = "var" | "prefix" | "magicprefix" | "infix"
+export type WordKind =
+  | "var"
+  | "prefix"
+  | "magicprefix"
+  | "infix"
+  | "magicprefixword"
 
 export class CmdVar extends Leaf {
   static init(cursor: Cursor, props: InitProps) {
@@ -116,14 +121,18 @@ export class CmdVar extends Leaf {
   static render(
     text: string,
     kind: CmdVar["kind"],
-    part: CmdVar["part"],
+    part: CmdVar["part"] | "both",
     prop: boolean,
   ) {
     const side =
       part == L ? "-l"
       : part == R ? "-r"
+      : part == "both" ? "-l nya-cmd-word-r"
       : "-mid"
-    if (kind == "magicprefix") kind = "prefix"
+
+    if (kind == "magicprefix" || kind == "magicprefixword") {
+      kind = "prefix"
+    }
 
     return h(
       "nya-cmd-var" +
@@ -142,7 +151,7 @@ export class CmdVar extends Leaf {
   }
 
   readonly kind: WordKind | null = null
-  readonly part: Dir | null = null
+  readonly part: Dir | "both" | null = null
   readonly prop: boolean = false
 
   constructor(
@@ -152,7 +161,11 @@ export class CmdVar extends Leaf {
     super(text, CmdVar.render(text, null, null, false))
   }
 
-  private render(kind: WordKind | null, part: Dir | null, prop: boolean) {
+  private render(
+    kind: WordKind | null,
+    part: "both" | Dir | null,
+    prop: boolean,
+  ) {
     if (this.kind == kind && this.part == part && this.prop == prop) {
       return
     }
@@ -160,9 +173,9 @@ export class CmdVar extends Leaf {
     this.setEl(
       CmdVar.render(
         this.text,
-        ((this as any).kind = kind),
-        ((this as any).part = part),
-        ((this as any).prop = prop),
+        ((this as CmdVarMut).kind = kind),
+        ((this as CmdVarMut).part = part),
+        ((this as CmdVarMut).prop = prop),
       ),
     )
   }
@@ -221,6 +234,16 @@ export class CmdVar extends Leaf {
           }
           vars[i + j - 1]!.render(kind, R, vars[i]![L] instanceof CmdDot)
           i += j - 1
+          if (kind == "magicprefixword") {
+            i++
+            if (i < vars.length) {
+              vars[i]!.render("var", i == vars.length - 1 ? "both" : L, false)
+            }
+            for (i++; i < vars.length; i++) {
+              vars[i]!.render("var", i == vars.length - 1 ? R : null, false)
+            }
+            return
+          }
           break
         }
       }
@@ -232,22 +255,26 @@ export class CmdVar extends Leaf {
   }
 
   latex(): string {
+    // TODO: escape text
     if (this.part == L) {
       return "\\operatorname{" + this.text
     }
     if (this.part == R) {
       return this.text + "}"
     }
+    if (this.part == "both") {
+      return `\\operatorname{${this.text}}`
+    }
     return this.text
   }
 
   reader(): string {
-    if (this.kind) {
-      if (this.part == L) {
-        return " " + this.text
-      } else if (this.part == R) {
-        return this.text + " "
-      }
+    if (this.part == L) {
+      return " " + this.text
+    } else if (this.part == R) {
+      return this.text + " "
+    } else if (this.part == "both") {
+      return ` ${this.text} `
     }
     return this.text
   }
@@ -284,7 +311,10 @@ export class CmdVar extends Leaf {
   }
 
   ir(tokens: Node[]): true | void {
-    magicprefix: if (this.kind == "magicprefix" && this.part == L) {
+    magicprefix: if (
+      (this.kind == "magicprefix" || this.kind == "magicprefixword") &&
+      this.part == L
+    ) {
       let value = this.text
       let el: Command = this
       let prop: string | undefined
@@ -324,11 +354,27 @@ export class CmdVar extends Leaf {
     }
 
     if (this.kind) {
+      if (this.part == "both") {
+        tokens.push({
+          type: "var",
+          value: this.text,
+          kind:
+            this.kind == "magicprefix" ? "prefix"
+            : this.kind == "magicprefixword" ? "magicprefixword"
+            : this.kind,
+          span: new Span(this.parent, this[L], this[R]),
+        })
+        return
+      }
+
       if (this.part == L) {
         tokens.push({
           type: "var",
           value: this.text,
-          kind: this.kind == "magicprefix" ? "prefix" : this.kind,
+          kind:
+            this.kind == "magicprefix" ? "prefix"
+            : this.kind == "magicprefixword" ? "magicprefixword"
+            : this.kind,
           span: new Span(this.parent, this[L], this[R]),
         })
         return
@@ -394,3 +440,5 @@ export class CmdVar extends Leaf {
     )
   }
 }
+
+type CmdVarMut = { -readonly [K in keyof CmdVar]: CmdVar[K] }

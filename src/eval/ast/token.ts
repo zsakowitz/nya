@@ -192,8 +192,15 @@ export type Var = {
 export type PlainVar = Var & { sup?: undefined; kind: "var" }
 
 /**
- * A magic word in the AST; something like `iterate` which consumes all
- * succeeding tokens and voids the concept of precedence entirely.
+ * A magic word in the AST. Used to pass unparsed arguments to functions (e.g.
+ * sym, eval) and when a function defies standard precedence rules (e.g. unit,
+ * iterate).
+ *
+ * Magic words come in many varieties:
+ *
+ * - The `iterate` flavor, where it simply consumes all following tokens.
+ * - The `sym` flavor, where it has function-level precedence but accepts tokens.
+ * - The `unit` flavor, where it is just a word prefix.
  */
 export type MagicVar = {
   value: string
