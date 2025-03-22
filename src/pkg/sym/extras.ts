@@ -113,7 +113,7 @@ export const PKG_SYM_EXTRAS: Package = {
   docs: {
     "symbolic computation"() {
       return [
-        px`The ${b("sym")} function lets you create symbolic expressions. A symbolic expression is not evaluated, and shows up like an algebraic expression.`,
+        px`The ${b("sym")} function lets you create symbolic expressions. A symbolic expression is only partially evaluated, and shows up like an algebraic expression.`,
         example(String.raw`sym(x^{2*3}+y)`, String.raw`=x^6+y`),
         px`Combining ${b("sym")} with derivative notation lets you see the symbolic derivative of a function.`,
         example(
