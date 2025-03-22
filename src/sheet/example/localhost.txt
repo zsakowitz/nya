@@ -1,3 +1,13 @@
+\left(\operatorname{eleaffinity}\operatorname{element}\operatorname{H}\right)\operatorname{in}\frac{\operatorname{unit}\operatorname{J}}{\operatorname{unit}\operatorname{mol}}
+\token0=elementC
+\token1=elementHe
+\token2=elementU
+\token3=elementTc
+\token4=elementB
+\token5=elementV
+\token6=elementUue
+A=[\token0,\token1,\token2,\token3,\token4,\token5,\token6]
+elconfigA
 \ty{unit}\ty{r32u}\ty{element}
 2\operatorname{celsius}\cdot \left(3\operatorname{deltacelsius}\right)
 2\operatorname{celsius}\cdot \left(3\operatorname{celsius}\operatorname{in}\operatorname{kelvin}\right)

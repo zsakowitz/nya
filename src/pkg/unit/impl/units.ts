@@ -1,11 +1,28 @@
 import { approx, frac, real } from "@/eval/ty/create"
-import { UNIT_KIND_VALUES } from "./kind"
+import type { UnitKind } from "./kind"
 import { unit, type Unit } from "./system"
 
 export const nan = unit("undefined", [], approx(NaN), approx(NaN))
 
-// FIXME: Hz, L
-const { m, kg, s, K, A, mol, cd } = UNIT_KIND_VALUES
+const m = unit("m", "m")
+const kg = unit("kg", "kg")
+const s = unit("s", "s")
+export const UNIT_KELVIN = unit("K", "K")
+const A = unit("A", "A")
+export const UNIT_MOLE = unit("mol", "mol")
+const cd = unit("cd", "cd")
+export const UNIT_KIND_VALUES: Record<UnitKind, Unit> = {
+  // @ts-expect-error ts doesn't recognize __proto__
+  __proto__: null,
+  m,
+  kg,
+  s,
+  K: UNIT_KELVIN,
+  A,
+  mol: UNIT_MOLE,
+  cd,
+}
+
 const g = unit("g", "kg", frac(1, 1e3))
 const cm = unit("cm", "m", frac(1, 1e2))
 const au = unit("au", "m", real(149597870700))
@@ -35,11 +52,20 @@ const N = unit("N", [
   { unit: "m", exp: 1 },
   { unit: "s", exp: -2 },
 ])
-const J = unit("J", [
+export const UNIT_JOULE = unit("J", [
   { unit: "kg", exp: 1 },
   { unit: "m", exp: 2 },
   { unit: "s", exp: -2 },
 ])
+export const UNIT_KILOJOULE = unit(
+  "kJ",
+  [
+    { unit: "kg", exp: 1 },
+    { unit: "m", exp: 2 },
+    { unit: "s", exp: -2 },
+  ],
+  frac(1000, 1),
+)
 const cal = unit(
   "cal",
   [
@@ -122,6 +148,7 @@ const G = unit(
   ],
   frac(1, 1e4),
 )
+export const UNIT_AMU = unit("u", "kg", real(1.6605390689252e-27))
 
 export const UNITS: Record<string, Unit> = {
   // @ts-expect-error ts doesn't recognize __proto__
@@ -133,15 +160,15 @@ export const UNITS: Record<string, Unit> = {
   kilogramme: kg,
   s,
   second: s,
-  K,
-  kelvin: K,
+  K: UNIT_KELVIN,
+  kelvin: UNIT_KELVIN,
   A,
   ampere: A,
   amp: A,
   au,
   astronomicalunit: au,
-  mol,
-  mole: mol,
+  mol: UNIT_MOLE,
+  mole: UNIT_MOLE,
   cd,
   candela: cd,
   cm,
@@ -162,8 +189,8 @@ export const UNITS: Record<string, Unit> = {
   deltafahrenheit: ddF,
   N,
   newton: N,
-  J,
-  joule: J,
+  J: UNIT_JOULE,
+  joule: UNIT_JOULE,
   cal,
   calorie: cal,
   calourie: cal,
@@ -207,4 +234,10 @@ export const UNITS: Record<string, Unit> = {
   gram: g,
   Hz,
   hertz: Hz,
+  Da: UNIT_AMU,
+  dalton: UNIT_AMU,
+  u: UNIT_AMU,
+  amu: UNIT_AMU,
+  kJ: UNIT_KILOJOULE,
+  kilojoule: UNIT_KILOJOULE,
 }

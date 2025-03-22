@@ -14,6 +14,7 @@ import {
   type FnProps,
 } from "./dist-manual"
 import { ALL_DOCS } from "./docs"
+import { issue } from "./issue"
 
 type FnError = `${string}%%${string}`
 
@@ -65,6 +66,25 @@ export class FnDist<Q extends TyName = TyName> extends FnDistManual<Q> {
     docOrder: number | null = null,
   ) {
     this.o.push({ params, type: ret, js, glsl, docOrder })
+    return this
+  }
+
+  /** See {@linkcode FnDist.add} for information. */
+  addJs<const T extends readonly TyName[], const R extends Q>(
+    params: T,
+    ret: R,
+    js: (...args: { -readonly [K in keyof T]: JsVal<T[K]> }) => Tys[R],
+    docOrder: number | null = null,
+  ) {
+    this.o.push({
+      params,
+      type: ret,
+      js,
+      glsl: issue(
+        `The '${this.name}' function cannot be called from shaders yet.`,
+      ),
+      docOrder,
+    })
     return this
   }
 

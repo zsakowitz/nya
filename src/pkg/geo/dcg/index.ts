@@ -1,4 +1,3 @@
-import type { Package } from "../.."
 import type { JsVal, Tys } from "@/eval/ty"
 import { SNANPT, gl, num, pt, real, unpt } from "@/eval/ty/create"
 import {
@@ -21,8 +20,9 @@ import { normVector, type Point } from "@/sheet/point"
 import { Color, Opacity, Order, Size } from "@/sheet/ui/cv/consts"
 import { Expr } from "@/sheet/ui/expr"
 import type { Selected } from "@/sheet/ui/sheet"
-import { FN_GLIDER, FN_INTERSECTION, PKG_GEO_POINT } from "../point"
+import type { Package } from "../.."
 import { PKG_REAL } from "../../num/real"
+import { FN_GLIDER, FN_INTERSECTION, PKG_GEO_POINT } from "../point"
 import { computeArcVal, unglideArc } from "./arc"
 import { EXT_ANGLE, angleGlsl, angleJs, drawAngleCv } from "./ext/angle"
 import { EXT_ARC, drawArcCv } from "./ext/arc"
@@ -1061,7 +1061,6 @@ function angleInfo(
     },
     glide: null,
     preview(cv, val) {
-      console.log("previewing")
       drawAngleCv(cv, unpt(val[0]), unpt(val[1]), unpt(val[2]), { kind: type })
     },
     components: null,

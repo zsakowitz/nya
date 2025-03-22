@@ -1,9 +1,23 @@
+import { NO_SYM } from "@/eval/ast/tx"
+import { FnDist } from "@/eval/ops/dist"
 import { issue } from "@/eval/ops/issue"
-import type { TyInfoByName } from "@/eval/ty/info"
+import type { JsVal, JsValue } from "@/eval/ty"
+import { real } from "@/eval/ty/create"
+import { type TyInfoByName } from "@/eval/ty/info"
+import { brightness } from "@/field/cmd/leaf/color"
 import { CmdWord } from "@/field/cmd/leaf/word"
 import { L } from "@/field/model"
 import { h, hx } from "@/jsx"
 import type { Package } from ".."
+import type { TextSegment } from "../text"
+import { type Unit, type UnitList } from "../unit/impl/system"
+import {
+  UNIT_AMU,
+  UNIT_JOULE,
+  UNIT_KELVIN,
+  UNIT_KILOJOULE,
+  UNIT_MOLE,
+} from "../unit/impl/units"
 
 declare module "@/eval/ty" {
   interface Tys {
@@ -5380,15 +5394,22 @@ const raw: Data[] = [
   },
 ]
 
-const bySymbol = Object.create(null)
+const bySymbol: Record<string, Data> = Object.create(null)
 for (const entry of raw) {
   bySymbol[entry.symbol] = entry
 }
 
-// TODO: SHADER:
-const glsl = issue("Periodic table elements are not supported in shaders yet.")
+const symbols: Record<string, string> = Object.create(null)
+for (const entry of raw) {
+  symbols[entry.symbol] = entry.symbol
+  symbols[entry.name] = entry.symbol
+  symbols[entry.name.toLowerCase()] = entry.symbol
+}
 
-const INTO_ELEMENT: TyInfoByName<"element"> = {
+// TODO: SHADER:
+const glsl = issue("Elements are not supported in shaders yet.")
+
+const INFO_ELEMENT: TyInfoByName<"element"> = {
   name: "element",
   namePlural: "elements",
   get glsl() {
@@ -5428,13 +5449,161 @@ const INTO_ELEMENT: TyInfoByName<"element"> = {
       ),
     )
   },
-  // TODO: token depends on element
-  token: null,
+  token(symbol) {
+    const value = symbol && bySymbol[symbol]
+    if (!value) {
+      return INFO_ELEMENT.icon()
+    }
+    const sz =
+      (value.number > 100 ? 1
+      : value.number > 10 ? 0.5
+      : 0) +
+      (value.symbol.length - 1)
+
+    const color = `#${value["cpk-hex"] ?? "ca8a04"}`
+    const text = brightness(color) > 0.6 ? "black" : "white"
+
+    return h(
+      "",
+      h(
+        {
+          class:
+            "size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative rounded-[4px] overflow-hidden border-2 border-slate-950/30 dark:border-slate-50/50",
+          style: `background-color:${color};color:${text}`,
+        },
+        sz > 1 ?
+          h(
+            "absolute flex flex-col top-1/2 left-1/2 -translate-x-1/2 translate-y-[calc(-50%_+_1px)] font-['Times_New_Roman'] text-[75%] [line-height:.9] text-center",
+            h("", value.symbol),
+            h("font-['Symbola']", "" + value.number),
+          )
+        : h(
+            "absolute top-1/2 left-1/2 -translate-x-1/2 translate-y-[calc(-50%_+_1px)] font-['Times_New_Roman'] " +
+              (sz > 0 ? "text-[80%]" : "text-[100%]"),
+            hx("sup", "font-['Symbola']", "" + value.number),
+            value.symbol,
+          ),
+      ),
+    )
+  },
   glide: null,
   preview: null,
   components: null,
   extras: null,
 }
+
+function map<T>(f: (symbol: Data | null) => T) {
+  return (v: JsVal<"element">): T => {
+    const el = v.value ? bySymbol[v.value] : null
+    return f(el ?? null)
+  }
+}
+
+function text(value: string): TextSegment[] {
+  return [{ type: "plain", value }]
+}
+
+function textProp<
+  K extends {
+    [U in keyof Data]: Data[U] extends string | null ? U : never
+  }[keyof Data],
+>(
+  key: K,
+  label: string,
+  name: `el${string}` = `el${key.replaceAll("_", "")}`,
+  defaultValue = "<unknown>",
+) {
+  return new FnDist(name, label).addJs(
+    ["element"],
+    "text",
+    map((x) => text(x?.[key] ?? defaultValue)),
+  )
+}
+
+function numProp<
+  K extends {
+    [U in keyof Data]: Data[U] extends number | null ? U : never
+  }[keyof Data],
+>(
+  key: K,
+  label: string,
+  unit: UnitList | Unit | null,
+  name = `el${key.replaceAll("_", "")}`,
+) {
+  if (unit == null) {
+    return new FnDist(name, label).addJs(
+      ["element"],
+      "r32",
+      map((x) => real(x?.[key] ?? NaN)),
+    )
+  }
+
+  const list: UnitList = Array.isArray(unit) ? unit : [{ exp: real(1), unit }]
+
+  return new FnDist(name, label).addJs(
+    ["element"],
+    "r32u",
+    map((x) => [real(x?.[key] ?? NaN), list]),
+  )
+}
+
+const FN_MASS = numProp(
+  "atomic_mass",
+  "gets the mass of an element",
+  UNIT_AMU,
+  "mass",
+)
+
+const fns = [
+  textProp("discovered_by", "gets the discoverer of an element"),
+  textProp("name", "gets the name of an element"),
+  textProp("appearance", "gets the appearance of an element"),
+  textProp("category", "gets the category of an element"),
+  textProp("named_by", "gets who named an element"),
+  textProp("phase", "gets the phase of an element at STP"),
+  textProp("summary", "gets a description of an element", "eldescription"),
+  textProp("symbol", "gets the symbol of an element"),
+  textProp(
+    "electron_configuration",
+    "gets the electron configuration of an element",
+    "elconfig",
+  ),
+  textProp(
+    "electron_configuration_semantic",
+    "gets the electron configuration of an element using the noble gas shorthand",
+    "elconfigshort",
+  ),
+  textProp("block", "gets the block an element is in on the periodic table"),
+  FN_MASS,
+  numProp("boil", "boiling point of an element", UNIT_KELVIN),
+  numProp(
+    "electron_affinity",
+    "amount of energy released when an electron attaches to a neutral atom of this element",
+    [
+      { exp: real(1), unit: UNIT_KILOJOULE },
+      { exp: real(-1), unit: UNIT_MOLE },
+    ],
+    "eleaffinity",
+  ),
+  numProp(
+    "electronegativity_pauling",
+    "tendency for an atom of an element to attract shared electrons in a chemical bond",
+    null,
+    "elenegativity",
+  ),
+  numProp("melt", "melting point of an element", UNIT_KELVIN),
+  numProp(
+    "molar_heat",
+    "amount of energy required to increase the temperature of one mole of an element by one degree kelvin",
+    [
+      { exp: real(1), unit: UNIT_JOULE },
+      { exp: real(-1), unit: UNIT_KELVIN },
+      { exp: real(-1), unit: UNIT_MOLE },
+    ],
+  ),
+  numProp("number", "atomic number of an element", null),
+  numProp("period", "period of an element in the periodic table", null),
+]
 
 export const PKG_CHEM_ELEMENTS: Package = {
   id: "nya:chem-elements",
@@ -5442,8 +5611,33 @@ export const PKG_CHEM_ELEMENTS: Package = {
   label: "and their properties",
   ty: {
     info: {
-      element: INTO_ELEMENT,
+      element: INFO_ELEMENT,
     },
+  },
+  eval: {
+    tx: {
+      wordPrefix: {
+        element: {
+          js(contents) {
+            if (contents.sub) {
+              throw new Error("Element names may not have subscripts.")
+            }
+            const symbol = symbols[contents.value]
+            if (!symbol) {
+              throw new Error(`The element '${contents.value}' is not defined.`)
+            }
+            return {
+              type: "element",
+              list: false,
+              value: symbol,
+            } satisfies JsValue<"element">
+          },
+          glsl,
+          sym: NO_SYM,
+        },
+      },
+    },
+    fn: Object.fromEntries(fns.map((fn) => [fn.name, fn])),
   },
 }
 
