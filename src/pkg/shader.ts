@@ -214,6 +214,7 @@ export const PKG_SHADER: Package = {
   id: "nya:shader",
   name: "shaders",
   label: "creates shaders with the x, y, and p variables",
+  category: "miscellaneous",
   deps: [() => PKG_COLOR_CORE, () => PKG_REAL],
   eval: {
     tx: {

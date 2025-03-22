@@ -124,6 +124,7 @@ export const PKG_FOLDER: Package = {
   id: "nya:folder",
   name: "folders",
   label: "for organizing expressions",
+  category: "sheet items",
   sheet: {
     items: [FACTORY],
   },

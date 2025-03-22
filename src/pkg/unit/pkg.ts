@@ -1,6 +1,7 @@
 // TODO: this basically needs meta properties in the type system
 // to work in shaders
 
+import { example } from "@/docs/core"
 import { Precedence } from "@/eval/ast/token"
 import { NO_SYM, type WordInfo } from "@/eval/ast/tx"
 import { FnDist } from "@/eval/ops/dist"
@@ -18,7 +19,6 @@ import { CmdFrac } from "@/field/cmd/math/frac"
 import { CmdSupSub } from "@/field/cmd/math/supsub"
 import { Block, L, R } from "@/field/model"
 import { b, h, px, sx } from "@/jsx"
-import { example } from "@/docs/core"
 import type { Package } from ".."
 import {
   OP_ADD,
@@ -256,6 +256,7 @@ export const PKG_UNITS: Package = {
   id: "nya:units",
   name: "units",
   label: "conversion functions and unit decompositions",
+  category: "measurement",
   ty: {
     info: {
       unit: INFO_UNIT,

@@ -1,4 +1,3 @@
-import type { Package } from "."
 import type { Node } from "@/eval/ast/token"
 import { NO_DRAG, NO_SYM } from "@/eval/ast/tx"
 import { doc, FnDist } from "@/eval/ops/dist"
@@ -22,6 +21,7 @@ import {
 import { h, hx, t } from "@/jsx"
 import { defineExt, Store } from "@/sheet/ext"
 import { circle } from "@/sheet/ui/expr/circle"
+import type { Package } from "."
 
 declare module "@/eval/ty" {
   interface Tys {
@@ -319,6 +319,7 @@ export const PKG_TEXT: Package = {
   id: "nya:text",
   name: "text",
   label: "writing and outputting text",
+  category: "miscellaneous",
   field: {
     inits: {
       '"': CmdText,

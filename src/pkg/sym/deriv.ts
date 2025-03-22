@@ -9,6 +9,7 @@ export const PKG_DERIV: Package = {
   id: "nya:deriv",
   name: "derivatives",
   label: "via leibniz notation",
+  category: "symbolic computation",
   eval: {
     tx: {
       ast: {

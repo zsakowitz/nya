@@ -256,6 +256,7 @@ export const PKG_GEO_POINT: Package = {
   id: "nya:geo-point",
   name: "geometric points",
   label: "geometric points in 2D",
+  category: "geometry",
   deps: [() => PKG_REAL],
   load() {
     FN_SCREENDISTANCE.add(

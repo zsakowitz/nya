@@ -140,6 +140,7 @@ export const PKG_ITHKUIL: Package = {
   id: "nya:ithkuil",
   name: "ithkuil utilities",
   label: "functions for working with ithkuil",
+  category: "miscellaneous",
   deps: [() => PKG_TEXT],
   ty: {
     info: {

@@ -836,6 +836,7 @@ export const PKG_STATISTICS: Package = {
   id: "nya:statistics",
   name: "statistics",
   label: "rudimentary statistics functions",
+  category: "data/statistics",
   deps: [() => PKG_REAL],
   ty: {
     info: {

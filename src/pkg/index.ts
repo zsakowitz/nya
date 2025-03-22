@@ -31,11 +31,31 @@ import type { Sheet } from "@/sheet/ui/sheet"
 
 type List<T, K extends PropertyKey = string> = { readonly [_ in K]?: T }
 
+export type PackageCategory =
+  | "chemistry"
+  | "color"
+  | "core"
+  | "logic"
+  | "numbers"
+  | "numbers/multi-dimensional"
+  | "data/statistics"
+  | "data/lists"
+  | "geometry"
+  | "images"
+  | "sheet items"
+  | "miscellaneous"
+  | "symbolic computation"
+  | "trigonometry"
+  | "measurement"
+  | "number theory"
+  | "substitution"
+
 // SHAPE: maybe use consistent shapes
 export interface Package {
   id: string
   name: string
   label: string | null
+  category: PackageCategory
 
   load?(): void
   init?(sheet: Sheet): void

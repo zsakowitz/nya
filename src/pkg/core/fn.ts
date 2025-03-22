@@ -273,6 +273,7 @@ export const PKG_CORE_FN: Package = {
   id: "nya:core-fn",
   name: "functions",
   label: "call functions and access properties",
+  category: "core",
   eval: {
     tx: {
       binary: {

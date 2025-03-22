@@ -11,6 +11,7 @@ export const PKG_SYM_EXTRAS: Package = {
   id: "nya:sym-extras",
   name: "symbolic computation extras",
   label: null,
+  category: "symbolic computation",
   eval: {
     tx: {
       magic: {

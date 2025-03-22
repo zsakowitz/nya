@@ -37,6 +37,7 @@ export const PKG_SYM_CORE: Package = {
   id: "nya:sym-core",
   name: "symbolic computation core",
   label: null,
+  category: "symbolic computation",
   ty: {
     info: {
       sym: {

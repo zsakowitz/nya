@@ -1,7 +1,7 @@
-import type { Package } from "."
 import { theme } from "@/sheet/theme"
 import type { Cv } from "@/sheet/ui/cv"
 import { OrderMajor } from "@/sheet/ui/cv/consts"
+import type { Package } from "."
 
 const THEME_MAIN_AXIS_WIDTH = 1.5
 const THEME_MAJOR_LINE_ALPHA = 0.3
@@ -309,6 +309,7 @@ export const PKG_GRIDLINES: Package = {
   id: "nya:gridlines",
   name: "gridlines",
   label: "draws a numbered grid below the graphs",
+  category: "miscellaneous",
   init(sheet) {
     createDrawAxes(sheet.cv)
   },

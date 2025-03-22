@@ -123,6 +123,7 @@ export const PKG_NOTES: Package = {
   id: "nya:notes",
   name: "notes",
   label: "in plain text between expressions",
+  category: "sheet items",
   sheet: {
     items: [FACTORY],
   },

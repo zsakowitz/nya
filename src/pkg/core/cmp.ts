@@ -89,6 +89,7 @@ export const PKG_CORE_CMP: Package = {
   id: "nya:core-cmp",
   name: "basic comparison operators",
   label: null,
+  category: "logic",
   eval: {
     tx: {
       ast: {

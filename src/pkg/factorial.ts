@@ -265,6 +265,7 @@ export const PKG_FACTORIAL: Package = {
   id: "nya:factorial",
   name: "factorial",
   label: "extended factorial operator",
+  category: "numbers",
   eval: {
     tx: {
       suffix: {

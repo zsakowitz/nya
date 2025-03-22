@@ -49,6 +49,7 @@ export const PKG_TRIG_REAL: Package = {
   id: "nya:trig-real",
   name: "trigonometry",
   label: "trig on real numbers",
+  category: "trigonometry",
   load() {
     FN_SIN.add(
       ["r32"],

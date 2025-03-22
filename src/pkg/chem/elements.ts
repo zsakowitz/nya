@@ -5609,6 +5609,7 @@ export const PKG_CHEM_ELEMENTS: Package = {
   id: "nya:chem-elements",
   name: "chemical elements",
   label: "and their properties",
+  category: "chemistry",
   ty: {
     info: {
       element: INFO_ELEMENT,

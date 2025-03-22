@@ -1,4 +1,3 @@
-import type { Package } from ".."
 import { js } from "@/eval/js"
 import { asNumericBase, parseNumberGlsl, parseNumberJs } from "@/eval/lib/base"
 import { SYM_BINDINGS } from "@/eval/lib/binding"
@@ -20,6 +19,7 @@ import { highRes, TY_INFO, type TyExtras } from "@/eval/ty/info"
 import { abs, add, div, mul, neg, raise, sub } from "@/eval/ty/ops"
 import { splitDual } from "@/eval/ty/split"
 import { h } from "@/jsx"
+import type { Package } from ".."
 import { FN_VALID, PKG_BOOL } from "../bool"
 import {
   OP_EQ,
@@ -342,6 +342,7 @@ export const PKG_REAL: Package = {
   id: "nya:num-real",
   name: "real numbers",
   label: "support for real numbers",
+  category: "numbers",
   load() {
     OP_ABS.add(
       ["r64"],

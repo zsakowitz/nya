@@ -1,4 +1,3 @@
-import type { Package } from ".."
 import { fn, type GlslContext } from "@/eval/lib/fn"
 import { FnDist } from "@/eval/ops/dist"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "@/eval/ops/vars"
@@ -10,6 +9,7 @@ import { highRes, type TyExtras } from "@/eval/ty/info"
 import { abs, add, div, mul, neg, sub } from "@/eval/ty/ops"
 import { h } from "@/jsx"
 import { Order } from "@/sheet/ui/cv/consts"
+import type { Package } from ".."
 import { FN_VALID } from "../bool"
 import { OP_PLOT, plotJs } from "../color/core"
 import {
@@ -137,6 +137,7 @@ export const PKG_NUM_COMPLEX: Package = {
   id: "nya:num-complex",
   name: "complex numbers",
   label: "basic support for complex numbers",
+  category: "numbers/multi-dimensional",
   load() {
     FN_ARG.add(
       ["c32"],

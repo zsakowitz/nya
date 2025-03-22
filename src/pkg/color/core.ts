@@ -1,4 +1,3 @@
-import type { Package } from ".."
 import type { GlslContext } from "@/eval/lib/fn"
 import { FnDist } from "@/eval/ops/dist"
 import type { SColor, SReal } from "@/eval/ty"
@@ -7,6 +6,7 @@ import { TY_INFO } from "@/eval/ty/info"
 import { CmdColor } from "@/field/cmd/leaf/color"
 import { L } from "@/field/model"
 import { h } from "@/jsx"
+import type { Package } from ".."
 import { PKG_BOOL } from "../bool"
 import { OP_CDOT } from "../core/ops"
 import { PKG_REAL } from "../num/real"
@@ -97,6 +97,7 @@ export const PKG_COLOR_CORE: Package = {
   id: "nya:color-core",
   name: "color functions core",
   label: "rgb and hsv functions",
+  category: "color",
   deps: [() => PKG_REAL, () => PKG_BOOL],
   load() {
     OP_PLOT.add(

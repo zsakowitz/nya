@@ -1,9 +1,9 @@
-import type { Package } from ".."
 import type { GlslContext } from "@/eval/lib/fn"
 import { FnDist } from "@/eval/ops/dist"
 import { frac, num } from "@/eval/ty/create"
 import { sub } from "@/eval/ty/ops"
 import { isDark } from "@/sheet/theme"
+import type { Package } from ".."
 import { FN_VALID } from "../bool"
 import { PKG_COLOR_CORE } from "./core"
 
@@ -53,6 +53,7 @@ export const PKG_COLOR_EXTRAS: Package = {
   id: "nya:color-extras",
   name: "color functions extended",
   label: "more functions for creating colors",
+  category: "color",
   deps: [() => PKG_COLOR_CORE],
   load() {
     FN_VALID.add(

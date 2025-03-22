@@ -1,4 +1,4 @@
-import type { Package } from "."
+import { example } from "@/docs/core"
 import { commalist } from "@/eval/ast/collect"
 import { Precedence, type Node, type Piece } from "@/eval/ast/token"
 import { NO_DRAG, NO_SYM } from "@/eval/ast/tx"
@@ -33,7 +33,7 @@ import { CmdWord } from "@/field/cmd/leaf/word"
 import { CmdBrack } from "@/field/cmd/math/brack"
 import { L } from "@/field/model"
 import { h, px } from "@/jsx"
-import { example } from "@/docs/core"
+import type { Package } from "."
 import { OP_AND } from "./core/cmp"
 
 declare module "@/eval/ty" {
@@ -283,6 +283,7 @@ export const PKG_BOOL: Package = {
   id: "nya:bool-ops",
   name: "boolean operations",
   label: "basic support for boolean values",
+  category: "logic",
   load() {
     OP_AND.add(
       ["bool", "bool"],

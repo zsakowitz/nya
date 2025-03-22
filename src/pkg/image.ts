@@ -316,6 +316,7 @@ export const PKG_IMAGE: Package = {
   id: "nya:image",
   name: "images",
   label: "upload and manipulate images",
+  category: "images",
   ty: {
     info: {
       image: {

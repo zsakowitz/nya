@@ -545,6 +545,7 @@ export const PKG_CORE_OPS: Package = {
   id: "nya:core-ops",
   name: "basic operators",
   label: null,
+  category: "numbers",
   eval: {
     tx: {
       binary: {

@@ -193,6 +193,7 @@ export const PKG_TRIG_COMPLEX: Package = {
   id: "nya:trig-complex",
   name: "trigonometry on complex numbers",
   label: null,
+  category: "trigonometry",
   deps: [() => PKG_TRIG_REAL, () => PKG_NUM_COMPLEX],
   eval: {
     fn: {

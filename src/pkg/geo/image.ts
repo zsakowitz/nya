@@ -1,5 +1,4 @@
-import { faImage } from "@fortawesome/free-regular-svg-icons"
-import type { Package } from ".."
+import { example } from "@/docs/core"
 import { FnDist } from "@/eval/ops/dist"
 import { each, type JsValue, type Val } from "@/eval/ty"
 import { num, real, SNANPT, unpt } from "@/eval/ty/create"
@@ -14,7 +13,8 @@ import { h, px } from "@/jsx"
 import { defineExt } from "@/sheet/ext"
 import type { Cv } from "@/sheet/ui/cv"
 import { Order } from "@/sheet/ui/cv/consts"
-import { example } from "@/docs/core"
+import { faImage } from "@fortawesome/free-regular-svg-icons"
+import type { Package } from ".."
 import { glsl } from "../image"
 import { dilateJs, mark as markDilate } from "./dcg/fn/dilate"
 import { mark as markReflect, reflectJs } from "./dcg/fn/reflect"
@@ -109,6 +109,7 @@ export const PKG_IMAGE_GEO: Package = {
   id: "nya:geo-image",
   name: "image objects",
   label: "on the graphpaper",
+  category: "images",
   ty: {
     info: {
       image2d: {

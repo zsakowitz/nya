@@ -1204,6 +1204,7 @@ export const PKG_GEOMETRY: Package = {
   id: "nya:geometry",
   name: "geometry",
   label: "geometric objects and constructions",
+  category: "geometry",
   deps: [() => PKG_GEO_POINT, () => PKG_REAL],
   ty: {
     info: {
