@@ -1,4 +1,4 @@
-\left(\operatorname{elelectronaffinity}\operatorname{element}\operatorname{H}\right)\operatorname{in}\frac{\operatorname{unit}\operatorname{J}}{\operatorname{unit}\operatorname{mol}}
+\left(\operatorname{eleaffinity}\operatorname{element}\operatorname{H}\right)\operatorname{in}\frac{\operatorname{unit}\operatorname{J}}{\operatorname{unit}\operatorname{mol}}
 \token0=elementC
 \token1=elementHe
 \token2=elementU
