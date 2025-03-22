@@ -1,3 +1,4 @@
+import { createDocs2 } from "@/docs/big"
 import { options } from "@/field/defaults"
 import { show } from "@/show"
 import SRC_LOCALHOST from "./example/localhost.txt"
@@ -21,7 +22,8 @@ if (IS_DEV) {
 }
 
 const sheet = factory.create()
-document.body.appendChild(sheet.el)
+document.body.appendChild(createDocs2(sheet))
+// document.body.appendChild(sheet.el)
 
 function expr(source: string) {
   if (source.startsWith("#")) {

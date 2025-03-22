@@ -21,10 +21,10 @@ import { a, h, hx, p } from "@/jsx"
 import type { Package } from "@/pkg"
 import type { Ctx } from "@/sheet/deps"
 import type { IconDefinition } from "@fortawesome/free-solid-svg-icons"
-import { faCaretRight } from "@fortawesome/free-solid-svg-icons/faCaretRight"
-import { faCheck } from "@fortawesome/free-solid-svg-icons/faCheck"
 import { faFolderClosed } from "@fortawesome/free-solid-svg-icons/faFolderClosed"
 import { faFolderOpen } from "@fortawesome/free-solid-svg-icons/faFolderOpen"
+import { PackageList, secPackages } from "./list"
+import { sectionEls } from "./section"
 
 const IS_DEV = "NYA_DEV" in globalThis
 const OPEN_NORMAL = !IS_DEV
@@ -49,67 +49,6 @@ export function btn(
   )
   el.addEventListener("click", action)
   return el
-}
-
-class PackageList {
-  private readonly activePackages = new Set<string>()
-  private readonly fns: (() => void)[] = []
-
-  constructor(readonly packages: Package[]) {
-    queueMicrotask(() => this.fns.forEach((x) => x()))
-  }
-
-  set(name: string, active: boolean) {
-    if (active == this.activePackages.has(name)) {
-      return
-    }
-
-    if (active) {
-      this.activePackages.add(name)
-    } else {
-      this.activePackages.delete(name)
-    }
-    this.fns.forEach((x) => x())
-  }
-
-  get count() {
-    return this.activePackages.size
-  }
-
-  get active() {
-    return this.count != 0
-  }
-
-  has(name: string) {
-    return this.activePackages.size == 0 || this.activePackages.has(name)
-  }
-
-  on(f: () => void) {
-    this.fns.push(f)
-  }
-
-  with<T>(value: T, f: (value: T) => void): T {
-    this.on(() => f(value))
-    return value
-  }
-
-  section(
-    label: string,
-    rlabel: () => string,
-    disabled: (() => boolean) | null,
-    data: Node | (Node | null)[],
-    open?: boolean,
-  ) {
-    const section = sectionEls(label, rlabel(), data, open)
-    section.el.ariaDisabled = section.el.dataset.nyaDisabled =
-      disabled?.() ? "true" : "false"
-    this.on(() => {
-      section.rlabel.textContent = rlabel()
-      section.el.ariaDisabled = section.el.dataset.nyaDisabled =
-        disabled?.() ? "true" : "false"
-    })
-    return section.el
-  }
 }
 
 function header(contents: string, sublabel: string) {
@@ -228,54 +167,6 @@ export function makeDoc(
   )
 }
 
-function title(label: string, rlabel: string | null) {
-  const el = h("flex-1 pl-1.5 pr-2", label)
-  const elr = h("flex-1 pl-1.5 pr-0 text-right", rlabel)
-  return {
-    el: hx(
-      "summary",
-      "[[open]_&]:sticky top-0 z-20 bg-[--nya-bg] pt-2 list-none",
-      h(
-        "flex bg-[--nya-bg-sidebar] border border-[--nya-border] pt-0.5 -mx-2 rounded-lg px-2 font-['Symbola'] text-[1.265rem] items-center [[data-nya-disabled=true]_&]:opacity-30",
-        h(
-          "",
-          fa(
-            faCaretRight,
-            "size-4 fill-[--nya-title] [[open]_&]:rotate-90 -mt-0.5 transition-transform",
-          ),
-        ),
-        el,
-        rlabel && elr,
-      ),
-    ),
-    label: el,
-    rlabel: elr,
-  }
-}
-
-function sectionEls(
-  label: string,
-  rlabel: string | null,
-  data: Node | (Node | null)[],
-  open?: boolean,
-) {
-  const titleEl = title(label, rlabel)
-
-  return {
-    el: hx(
-      "details",
-      {
-        class: "flex flex-col open:gap-4 -mb-2 open:-mb-2",
-        open: open ? "open" : null,
-      },
-      titleEl.el,
-      h("flex flex-col gap-4 pb-2", ...(Array.isArray(data) ? data : [data])),
-    ),
-    label: titleEl.label,
-    rlabel: titleEl.rlabel,
-  }
-}
-
 function section(label: string, data: Node | (Node | null)[], open?: boolean) {
   return sectionEls(label, null, data, open).el
 }
@@ -351,56 +242,6 @@ function secWhatArePackages() {
       "Third, it keeps the code really clean, since I can put all the statistics functions in one place, the quaternion functions in another, and totally separate them from all other code.",
     ),
   ])
-}
-
-function secPackages(list: PackageList) {
-  const els = list.packages
-    .sort((a, b) =>
-      a.name < b.name ? -1
-      : a.name > b.name ? 1
-      : a.id < b.id ? -1
-      : a.id > b.id ? 1
-      : 0,
-    )
-    .map((pkg) => {
-      const field = hx("input", {
-        type: "checkbox",
-        class: "sr-only",
-        autocomplete: "off",
-      })
-      field.addEventListener("input", () => {
-        list.set(pkg.id, field.checked)
-      })
-      return hx(
-        "label",
-        "flex gap-2 items-center",
-        field,
-        h(
-          "size-4 border border-[--nya-border] rounded [:checked+&]:bg-[--nya-expr-focus] [:checked+&]:border-transparent flex",
-          fa(faCheck, "size-3 fill-current m-auto hidden [:checked+*_&]:block"),
-        ),
-        h(
-          "font-semibold",
-          pkg.name,
-          pkg.label &&
-            h("text-[--nya-title-dark] text-sm pl-4 font-normal", pkg.label),
-        ),
-      )
-    })
-
-  return list.section(
-    "packages",
-    () => "" + (list.active ? list.count : list.packages.length),
-    null,
-    [
-      h(
-        "-mb-2",
-        "Select one or more packages to only show documentation about those packages.",
-      ),
-      h("flex flex-col", ...els),
-    ],
-    OPEN_NORMAL,
-  )
 }
 
 function secDataTypes(list: PackageList) {
