@@ -3,7 +3,7 @@ import { NO_DRAG, sym } from "@/eval/ast/tx"
 import { id } from "@/eval/lib/binding"
 import { txr } from "@/eval/sym"
 import { b, px } from "@/jsx"
-import { example } from "@/sheet/ui/sheet/docs"
+import { example } from "@/docs/core"
 
 export const PKG_DERIV: Package = {
   id: "nya:deriv",

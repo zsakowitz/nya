@@ -18,7 +18,7 @@ import { CmdFrac } from "@/field/cmd/math/frac"
 import { CmdSupSub } from "@/field/cmd/math/supsub"
 import { Block, L, R } from "@/field/model"
 import { b, h, px, sx } from "@/jsx"
-import { example } from "@/sheet/ui/sheet/docs"
+import { example } from "@/docs/core"
 import type { Package } from ".."
 import {
   OP_ADD,

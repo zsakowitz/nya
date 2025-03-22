@@ -1,8 +1,4 @@
-import { faBook } from "@fortawesome/free-solid-svg-icons/faBook"
-import { faCopy } from "@fortawesome/free-solid-svg-icons/faCopy"
-import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash"
-import type { Regl } from "regl"
-import regl from "regl"
+import { btn, createDocs, DEFAULT_TO_VISIBLE_DOCS } from "@/docs/core"
 import { GlslContext } from "@/eval/lib/fn"
 import type { JsVal, TyName } from "@/eval/ty"
 import { num, real } from "@/eval/ty/create"
@@ -12,18 +8,23 @@ import type { Options } from "@/field/options"
 import { h, hx, t } from "@/jsx"
 import type { ToolbarItem } from "@/pkg"
 import { declareAddR64, declareMulR64 } from "@/pkg/core/ops"
-import { Scope } from "../../deps"
-import type { Exts } from "../../ext"
-import type { SheetFactory } from "../../factory"
-import { ItemListGlobal } from "../../items"
-import type { Point } from "../../point"
-import { doMatchReglSize } from "../../regl"
-import { REMARK } from "../../remark"
-import { Slider } from "../../slider"
-import { isDark } from "../../theme"
-import { Cv } from "../cv"
-import { Order, OrderMajor } from "../cv/consts"
-import { Hint } from "../cv/item"
+import { faBook } from "@fortawesome/free-solid-svg-icons/faBook"
+import { faCopy } from "@fortawesome/free-solid-svg-icons/faCopy"
+import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash"
+import type { Regl } from "regl"
+import regl from "regl"
+import { Scope } from "../deps"
+import type { Exts } from "../ext"
+import type { SheetFactory } from "../factory"
+import { ItemListGlobal } from "../items"
+import type { Point } from "../point"
+import { doMatchReglSize } from "../regl"
+import { REMARK } from "../remark"
+import { Slider } from "../slider"
+import { isDark } from "../theme"
+import { Cv } from "./cv"
+import { Order, OrderMajor } from "./cv/consts"
+import { Hint } from "./cv/item"
 import {
   registerPinchHandler,
   registerPointerHandler,
@@ -31,9 +32,8 @@ import {
   type Handler,
   type ItemWithTarget,
   type VirtualPoint,
-} from "../cv/move"
-import { PickHandler2 } from "../cv/pick"
-import { btn, createDocs, DEFAULT_TO_VISIBLE_DOCS } from "./docs"
+} from "./cv/move"
+import { PickHandler2 } from "./cv/pick"
 
 export class Sheet {
   readonly cv = new Cv("absolute inset-0 size-full touch-none")

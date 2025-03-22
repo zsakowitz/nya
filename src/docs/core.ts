@@ -19,12 +19,12 @@ import { Block, R } from "@/field/model"
 import type { Options } from "@/field/options"
 import { a, h, hx, p } from "@/jsx"
 import type { Package } from "@/pkg"
+import type { Ctx } from "@/sheet/deps"
 import type { IconDefinition } from "@fortawesome/free-solid-svg-icons"
 import { faCaretRight } from "@fortawesome/free-solid-svg-icons/faCaretRight"
 import { faCheck } from "@fortawesome/free-solid-svg-icons/faCheck"
 import { faFolderClosed } from "@fortawesome/free-solid-svg-icons/faFolderClosed"
 import { faFolderOpen } from "@fortawesome/free-solid-svg-icons/faFolderOpen"
-import type { Ctx } from "../../deps"
 
 const IS_DEV = "NYA_DEV" in globalThis
 const OPEN_NORMAL = !IS_DEV

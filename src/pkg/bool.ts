@@ -33,7 +33,7 @@ import { CmdWord } from "@/field/cmd/leaf/word"
 import { CmdBrack } from "@/field/cmd/math/brack"
 import { L } from "@/field/model"
 import { h, px } from "@/jsx"
-import { example } from "@/sheet/ui/sheet/docs"
+import { example } from "@/docs/core"
 import { OP_AND } from "./core/cmp"
 
 declare module "@/eval/ty" {

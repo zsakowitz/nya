@@ -23,7 +23,7 @@ import { coerceValueGlsl, isReal } from "@/eval/ty/coerce"
 import { num, real } from "@/eval/ty/create"
 import { declareGlsl } from "@/eval/ty/decl"
 import { h, p } from "@/jsx"
-import { example } from "@/sheet/ui/sheet/docs"
+import { example } from "@/docs/core"
 
 declare module "@/eval/ast/token" {
   interface PuncListInfix {

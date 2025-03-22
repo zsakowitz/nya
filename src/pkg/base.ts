@@ -6,7 +6,7 @@ import { js } from "@/eval/js"
 import { asNumericBase } from "@/eval/lib/base"
 import { real } from "@/eval/ty/create"
 import { h, px } from "@/jsx"
-import { example } from "@/sheet/ui/sheet/docs"
+import { example } from "@/docs/core"
 
 // TODO: tons of base functionality is available without this package
 // removing subscripts on numbers would fix it, but may be annoying
