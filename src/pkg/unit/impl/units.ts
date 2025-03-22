@@ -7,9 +7,9 @@ export const nan = unit("undefined", [], approx(NaN), approx(NaN))
 const m = unit("m", "m")
 const kg = unit("kg", "kg")
 const s = unit("s", "s")
-const K = unit("K", "K")
+export const UNIT_KELVIN = unit("K", "K")
 const A = unit("A", "A")
-const mol = unit("mol", "mol")
+export const UNIT_MOLE = unit("mol", "mol")
 const cd = unit("cd", "cd")
 export const UNIT_KIND_VALUES: Record<UnitKind, Unit> = {
   // @ts-expect-error ts doesn't recognize __proto__
@@ -17,9 +17,9 @@ export const UNIT_KIND_VALUES: Record<UnitKind, Unit> = {
   m,
   kg,
   s,
-  K,
+  K: UNIT_KELVIN,
   A,
-  mol,
+  mol: UNIT_MOLE,
   cd,
 }
 
@@ -52,11 +52,20 @@ const N = unit("N", [
   { unit: "m", exp: 1 },
   { unit: "s", exp: -2 },
 ])
-const J = unit("J", [
+export const UNIT_JOULE = unit("J", [
   { unit: "kg", exp: 1 },
   { unit: "m", exp: 2 },
   { unit: "s", exp: -2 },
 ])
+export const UNIT_KILOJOULE = unit(
+  "kJ",
+  [
+    { unit: "kg", exp: 1 },
+    { unit: "m", exp: 2 },
+    { unit: "s", exp: -2 },
+  ],
+  frac(1000, 1),
+)
 const cal = unit(
   "cal",
   [
@@ -151,15 +160,15 @@ export const UNITS: Record<string, Unit> = {
   kilogramme: kg,
   s,
   second: s,
-  K,
-  kelvin: K,
+  K: UNIT_KELVIN,
+  kelvin: UNIT_KELVIN,
   A,
   ampere: A,
   amp: A,
   au,
   astronomicalunit: au,
-  mol,
-  mole: mol,
+  mol: UNIT_MOLE,
+  mole: UNIT_MOLE,
   cd,
   candela: cd,
   cm,
@@ -180,8 +189,8 @@ export const UNITS: Record<string, Unit> = {
   deltafahrenheit: ddF,
   N,
   newton: N,
-  J,
-  joule: J,
+  J: UNIT_JOULE,
+  joule: UNIT_JOULE,
   cal,
   calorie: cal,
   calourie: cal,
@@ -229,4 +238,6 @@ export const UNITS: Record<string, Unit> = {
   dalton: UNIT_AMU,
   u: UNIT_AMU,
   amu: UNIT_AMU,
+  kJ: UNIT_KILOJOULE,
+  kilojoule: UNIT_KILOJOULE,
 }

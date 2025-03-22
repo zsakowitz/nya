@@ -2,7 +2,7 @@ import { NO_SYM } from "@/eval/ast/tx"
 import { FnDist } from "@/eval/ops/dist"
 import { issue } from "@/eval/ops/issue"
 import type { JsVal, JsValue } from "@/eval/ty"
-import { approx, real } from "@/eval/ty/create"
+import { real } from "@/eval/ty/create"
 import { type TyInfoByName } from "@/eval/ty/info"
 import { brightness } from "@/field/cmd/leaf/color"
 import { CmdWord } from "@/field/cmd/leaf/word"
@@ -10,7 +10,14 @@ import { L } from "@/field/model"
 import { h, hx } from "@/jsx"
 import type { Package } from ".."
 import type { TextSegment } from "../text"
-import { UNIT_AMU } from "../unit/impl/units"
+import { type Unit, type UnitList } from "../unit/impl/system"
+import {
+  UNIT_AMU,
+  UNIT_JOULE,
+  UNIT_KELVIN,
+  UNIT_KILOJOULE,
+  UNIT_MOLE,
+} from "../unit/impl/units"
 
 declare module "@/eval/ty" {
   interface Tys {
@@ -5513,13 +5520,38 @@ function textProp<
   )
 }
 
-const FN_MASS = new FnDist("mass", "gets the mass of an element").addJs(
-  ["element"],
-  "r32u",
-  ({ value: symbol }) => {
-    const el = symbol ? bySymbol[symbol] : null
-    return [approx(el?.atomic_mass ?? NaN), [{ exp: real(1), unit: UNIT_AMU }]]
-  },
+function numProp<
+  K extends {
+    [U in keyof Data]: Data[U] extends number | null ? U : never
+  }[keyof Data],
+>(
+  key: K,
+  label: string,
+  unit: UnitList | Unit | null,
+  name = `el${key.replaceAll("_", "")}`,
+) {
+  if (unit == null) {
+    return new FnDist(name, label).addJs(
+      ["element"],
+      "r32",
+      map((x) => real(x?.[key] ?? NaN)),
+    )
+  }
+
+  const list: UnitList = Array.isArray(unit) ? unit : [{ exp: real(1), unit }]
+
+  return new FnDist(name, label).addJs(
+    ["element"],
+    "r32u",
+    map((x) => [real(x?.[key] ?? NaN), list]),
+  )
+}
+
+const FN_MASS = numProp(
+  "atomic_mass",
+  "gets the mass of an element",
+  UNIT_AMU,
+  "mass",
 )
 
 const fns = [
@@ -5543,6 +5575,34 @@ const fns = [
   ),
   textProp("block", "gets the block an element is in on the periodic table"),
   FN_MASS,
+  numProp("boil", "boiling point of an element", UNIT_KELVIN),
+  numProp(
+    "electron_affinity",
+    "amount of energy released when an electron attaches to a neutral atom of this element",
+    [
+      { exp: real(1), unit: UNIT_KILOJOULE },
+      { exp: real(-1), unit: UNIT_MOLE },
+    ],
+    "eleaffinity",
+  ),
+  numProp(
+    "electronegativity_pauling",
+    "tendency for an atom of an element to attract shared electrons in a chemical bond",
+    null,
+    "elenegativity",
+  ),
+  numProp("melt", "melting point of an element", UNIT_KELVIN),
+  numProp(
+    "molar_heat",
+    "amount of energy required to increase the temperature of one mole of an element by one degree kelvin",
+    [
+      { exp: real(1), unit: UNIT_JOULE },
+      { exp: real(-1), unit: UNIT_KELVIN },
+      { exp: real(-1), unit: UNIT_MOLE },
+    ],
+  ),
+  numProp("number", "atomic number of an element", null),
+  numProp("period", "period of an element in the periodic table", null),
 ]
 
 export const PKG_CHEM_ELEMENTS: Package = {
