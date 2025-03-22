@@ -4,6 +4,7 @@ import { issue } from "@/eval/ops/issue"
 import type { JsVal, JsValue } from "@/eval/ty"
 import { approx, real } from "@/eval/ty/create"
 import { type TyInfoByName } from "@/eval/ty/info"
+import { brightness } from "@/field/cmd/leaf/color"
 import { CmdWord } from "@/field/cmd/leaf/word"
 import { L } from "@/field/model"
 import { h, hx } from "@/jsx"
@@ -5452,29 +5453,25 @@ const INFO_ELEMENT: TyInfoByName<"element"> = {
       : 0) +
       (value.symbol.length - 1)
 
+    const color = `#${value["cpk-hex"] ?? "ca8a04"}`
+    const text = brightness(color) > 0.6 ? "black" : "white"
+
     return h(
       "",
       h(
-        "text-yellow-600 size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative rounded-[4px] overflow-hidden",
-        hx("img", {
+        {
           class:
-            "scale-[200%] absolute inset-0 object-cover size-full opacity-30",
-          src: value.image.url,
-          alt: value.image.title,
-        }),
-        h({
-          class:
-            "absolute inset-0 border-2 border-yellow-600 size-full rounded-[4px]",
-          style: value["cpk-hex"] ? `border-color:#${value["cpk-hex"]}` : "",
-        }),
+            "size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative rounded-[4px] overflow-hidden border-2 border-slate-950/30 dark:border-slate-50/50",
+          style: `background-color:${color};color:${text}`,
+        },
         sz > 1 ?
           h(
-            "absolute flex flex-col top-1/2 left-1/2 -translate-x-1/2 translate-y-[calc(-50%_+_1px)] font-['Times_New_Roman'] text-black dark:text-white text-[75%] [line-height:.9] text-center",
+            "absolute flex flex-col top-1/2 left-1/2 -translate-x-1/2 translate-y-[calc(-50%_+_1px)] font-['Times_New_Roman'] text-[75%] [line-height:.9] text-center",
             h("", value.symbol),
             h("font-['Symbola']", "" + value.number),
           )
         : h(
-            "absolute top-1/2 left-1/2 -translate-x-1/2 translate-y-[calc(-50%_+_1px)] font-['Times_New_Roman'] text-black dark:text-white " +
+            "absolute top-1/2 left-1/2 -translate-x-1/2 translate-y-[calc(-50%_+_1px)] font-['Times_New_Roman'] " +
               (sz > 0 ? "text-[80%]" : "text-[100%]"),
             hx("sup", "font-['Symbola']", "" + value.number),
             value.symbol,

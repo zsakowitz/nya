@@ -3,10 +3,10 @@ import type { Node } from "@/eval/ast/token"
 import { h, hx } from "@/jsx"
 import { L, type Cursor, type InitProps } from "../../model"
 
-function brightness(rgb: string) {
-  const r = parseInt(rgb.slice(1, 3), 16) / 256
-  const g = parseInt(rgb.slice(3, 5), 16) / 256
-  const b = parseInt(rgb.slice(5, 7), 16) / 256
+export function brightness(rgb: string) {
+  const r = parseInt(rgb.slice(1, 3), 16) / 255
+  const g = parseInt(rgb.slice(3, 5), 16) / 255
+  const b = parseInt(rgb.slice(5, 7), 16) / 255
 
   return Math.sqrt(r * r * 0.241 + g * g * 0.691 + b * b * 0.068)
 }
