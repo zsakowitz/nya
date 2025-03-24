@@ -1,5 +1,4 @@
 import type { Fn } from "@/eval/ops"
-import { doc } from "@/eval/ops/dist"
 import { type WithDocs, ALL_DOCS } from "@/eval/ops/docs"
 import type { JsValue } from "@/eval/ty"
 
@@ -35,7 +34,13 @@ function fn(type: "angle" | "directedangle", label: string) {
       throw new Error("Polygons cannot exist in shaders.")
     },
     docs() {
-      return [doc(["polygon"], type, true)]
+      return [
+        {
+          params: [{ type: "polygon", list: false }],
+          dots: false,
+          ret: { type, list: true },
+        },
+      ]
     },
   }
 

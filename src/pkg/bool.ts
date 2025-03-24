@@ -1,11 +1,12 @@
 import { example } from "@/docs/core"
+import type { FnSignature } from "@/docs/signature"
 import { commalist } from "@/eval/ast/collect"
 import { Precedence, type Node, type Piece } from "@/eval/ast/token"
 import { NO_DRAG, NO_SYM } from "@/eval/ast/tx"
 import { glsl, type PropsGlsl } from "@/eval/glsl"
 import { js, type PropsJs } from "@/eval/js"
 import type { Fn } from "@/eval/ops"
-import { docByIcon, FnDist } from "@/eval/ops/dist"
+import { FnDist } from "@/eval/ops/dist"
 import type { WithDocs } from "@/eval/ops/docs"
 import { asBool, binaryFn, SYM_TRUE } from "@/eval/sym"
 import {
@@ -27,10 +28,8 @@ import {
 } from "@/eval/ty/coerce"
 import { declareGlsl } from "@/eval/ty/decl"
 import { garbageValueGlsl, garbageValueJs } from "@/eval/ty/garbage"
-import { any, TY_INFO } from "@/eval/ty/info"
-import { CmdComma } from "@/field/cmd/leaf/comma"
+import { TY_INFO } from "@/eval/ty/info"
 import { CmdWord } from "@/field/cmd/leaf/word"
-import { CmdBrack } from "@/field/cmd/math/brack"
 import { L } from "@/field/model"
 import { h, px } from "@/jsx"
 import type { Package } from "."
@@ -234,26 +233,14 @@ const FN_FIRSTVALID: Fn & WithDocs = {
       },
     )
   },
-  docs() {
-    const list = () =>
-      CmdBrack.render("[", "]", null, {
-        el: h(
-          "",
-          any(),
-          new CmdComma().el,
-          any(),
-          new CmdComma().el,
-          h("nya-cmd-dot nya-cmd-dot-l", "."),
-          h("nya-cmd-dot", "."),
-          h("nya-cmd-dot", "."),
-        ),
-      })
-
+  docs(): FnSignature[] {
+    // TODO: more accurate types here
     return [
-      docByIcon([any(), any()], any(), true),
-      docByIcon([list(), any()], any(), true),
-      docByIcon([any(), list()], any(), true),
-      docByIcon([list(), list()], any(), true),
+      {
+        params: [{ type: "__any", list: false }],
+        dots: true,
+        ret: { type: "__any", list: false },
+      },
     ]
   },
 }

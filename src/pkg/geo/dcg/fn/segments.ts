@@ -1,5 +1,4 @@
 import type { Fn } from "@/eval/ops"
-import { doc } from "@/eval/ops/dist"
 import { ALL_DOCS, type WithDocs } from "@/eval/ops/docs"
 import type { JsVal } from "@/eval/ty"
 
@@ -7,7 +6,13 @@ export const FN_SEGMENTS: Fn & WithDocs = {
   name: "segments",
   label: "gets the segments which make up a polygon",
   docs() {
-    return [doc(["polygon"], "segment", true)]
+    return [
+      {
+        params: [{ type: "polygon", list: false }],
+        dots: false,
+        ret: { type: "segment", list: true },
+      },
+    ]
   },
   js(args) {
     if (

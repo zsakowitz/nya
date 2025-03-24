@@ -1,5 +1,5 @@
+import type { FnSignature } from "@/docs/signature"
 import { CmdComma } from "@/field/cmd/leaf/comma"
-import { OpRightArrow } from "@/field/cmd/leaf/op"
 import { CmdBrack } from "@/field/cmd/math/brack"
 import { h } from "@/jsx"
 import type { GlslContext } from "../lib/fn"
@@ -182,14 +182,23 @@ export class FnDist<Q extends TyName = TyName> extends FnDistManual<Q> {
     return dist
   }
 
-  docs(): HTMLSpanElement[] {
+  docs(): FnSignature[] {
     return this.o
       .slice()
       .sort((a, b) => (a.docOrder ?? 0) - (b.docOrder ?? 0))
-      .map((overload) =>
-        overload.param == null ?
-          doc(overload.params, overload.type)
-        : docList(overload.param, overload.type),
+      .map(
+        (overload): FnSignature =>
+          overload.param == null ?
+            {
+              params: overload.params.map((x) => ({ type: x, list: false })),
+              dots: false,
+              ret: { type: overload.type, list: false },
+            }
+          : {
+              params: [{ type: overload.param, list: false }],
+              dots: false,
+              ret: { type: overload.type, list: false },
+            },
       )
   }
 }
@@ -201,10 +210,6 @@ export function icon(name: TyName) {
     console.warn("[icon missing]", name)
     return h("", name)
   }
-}
-
-export function doc(params: readonly TyName[], type: TyName, list = false) {
-  return docByIcon(params.map(icon), icon(type), list)
 }
 
 function arrayEls(node: Node) {
@@ -223,33 +228,4 @@ export function array(node: Node) {
   return CmdBrack.render("[", "]", null, {
     el: h("", ...arrayEls(node)),
   })
-}
-
-function docList(param: TyName, type: TyName, list = false) {
-  return docByIcon(
-    [
-      icon(param),
-      icon(param),
-      h(
-        "",
-        h("nya-cmd-dot nya-cmd-dot-l", "."),
-        h("nya-cmd-dot", "."),
-        h("nya-cmd-dot", "."),
-      ),
-    ],
-    icon(type),
-    list,
-  )
-}
-
-export function docByIcon(params: Node[], type: Node, list = false) {
-  const brack = CmdBrack.render("(", ")", null, {
-    el: h("", ...params.flatMap((x) => [new CmdComma().el, x]).slice(1)),
-  })
-  return h(
-    "font-['Symbola'] text-[1.265rem]",
-    brack,
-    new OpRightArrow().el,
-    list ? array(type) : type,
-  )
 }

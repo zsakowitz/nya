@@ -1,7 +1,7 @@
+import type { FnSignature } from "@/docs/signature"
 import type { Node } from "@/eval/ast/token"
 import type { GlslContext } from "@/eval/lib/fn"
 import type { Fn } from "@/eval/ops"
-import { array, docByIcon, icon } from "@/eval/ops/dist"
 import { ALL_DOCS, type WithDocs } from "@/eval/ops/docs"
 import { issue } from "@/eval/ops/issue"
 import { FnList } from "@/eval/ops/list"
@@ -84,10 +84,15 @@ class FnListList implements Fn, WithDocs {
     return this
   }
 
-  docs(): globalThis.Node[] {
-    return this.o.map(({ a, b, ret }) =>
-      docByIcon([array(icon(a)), array(icon(b))], icon(ret), true),
-    )
+  docs(): FnSignature[] {
+    return this.o.map(({ a, b, ret }) => ({
+      params: [
+        { type: a, list: true },
+        { type: b, list: true },
+      ],
+      dots: false,
+      ret: { type: ret, list: true },
+    }))
   }
 
   js(args: JsValue[]): JsValue {
@@ -379,8 +384,17 @@ const FN_QUARTILE: Fn & WithDocs = {
   glsl: issue("Cannot compute 'quartile' in shaders yet."),
   name: "quartile",
   label: "computes a quartile of a data set",
-  docs() {
-    return [docByIcon([array(icon("r32")), icon("r32")], icon("r32"))]
+  docs(): FnSignature[] {
+    return [
+      {
+        params: [
+          { type: "r32", list: true },
+          { type: "r32", list: false },
+        ],
+        dots: false,
+        ret: { type: "r32", list: false },
+      },
+    ]
   },
 }
 
@@ -431,7 +445,16 @@ const FN_QUANTILE: Fn & WithDocs = {
   name: "quantile",
   label: "computes a quantile of a data set",
   docs() {
-    return [docByIcon([array(icon("r32")), icon("r32")], icon("r32"))]
+    return [
+      {
+        params: [
+          { type: "r32", list: true },
+          { type: "r32", list: false },
+        ],
+        dots: false,
+        ret: { type: "r32", list: false },
+      },
+    ]
   },
 }
 
@@ -641,7 +664,13 @@ const FN_RANKS: Fn & WithDocs = {
   name: "ranks",
   label: "computes the rank of each element of a list",
   docs() {
-    return [docByIcon([array(icon("r32"))], icon("r32"), true)]
+    return [
+      {
+        params: [{ type: "r32", list: true }],
+        dots: false,
+        ret: { type: "r32", list: true },
+      },
+    ]
   },
   js(args) {
     const value =

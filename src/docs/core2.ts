@@ -3,6 +3,7 @@ import { ALL_DOCS } from "@/eval/ops/docs"
 import { h, hx, t } from "@/jsx"
 import type { Sheet } from "@/sheet/ui/sheet"
 import { PackageList, secPackagesContents } from "./list"
+import { docFromSignature } from "./signature"
 
 export function createDocs2(sheet: Sheet) {
   const pkgs = Object.values(sheet.factory.loaded).sort((a, b) =>
@@ -59,7 +60,11 @@ export function createDocs2(sheet: Sheet) {
                 doc.name,
               ),
               hx("td", "px-4 text-[--nya-title]", doc.label),
-              hx("td", "", h("flex flex-col", ...doc.docs())),
+              hx(
+                "td",
+                "",
+                h("flex flex-col", ...doc.docs().map(docFromSignature)),
+              ),
             )
 
             list.on(() => {

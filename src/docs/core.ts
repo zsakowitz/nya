@@ -25,6 +25,7 @@ import { faFolderClosed } from "@fortawesome/free-solid-svg-icons/faFolderClosed
 import { faFolderOpen } from "@fortawesome/free-solid-svg-icons/faFolderOpen"
 import { PackageList, secPackages } from "./list"
 import { sectionEls } from "./section"
+import { docFromSignature } from "./signature"
 
 const IS_DEV = "NYA_DEV" in globalThis
 const OPEN_NORMAL = !IS_DEV
@@ -163,7 +164,7 @@ export function makeDoc(
     "flex flex-col",
     props?.title === false ? null : makeDocName(fn.name),
     h("text-sm leading-tight text-slate-500", fn.label),
-    h("flex flex-col pl-4 mt-1", ...nodes),
+    h("flex flex-col pl-4 mt-1", ...nodes.map(docFromSignature)),
   )
 }
 

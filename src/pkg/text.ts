@@ -1,6 +1,7 @@
+import type { FnSignature } from "@/docs/signature"
 import type { Node } from "@/eval/ast/token"
 import { NO_DRAG, NO_SYM } from "@/eval/ast/tx"
-import { doc, FnDist } from "@/eval/ops/dist"
+import { FnDist } from "@/eval/ops/dist"
 import { FnDistManual, type FnOverload } from "@/eval/ops/dist-manual"
 import { ALL_DOCS } from "@/eval/ops/docs"
 import { each, type JsValue, type Ty } from "@/eval/ty"
@@ -241,13 +242,30 @@ const FN_CONCAT = new (class extends FnDistManual<"text"> {
     }
   }
 
-  docs() {
+  docs(): FnSignature[] {
     const ps = OP_TO_TEXT.o
       .map((x) => (x.params && x.params.length == 1 ? x.params[0]! : null))
       .filter((x) => x != null)
     return [
-      ...ps.map((a) => doc([a], "text")),
-      ...ps.flatMap((a) => ps.map((b) => doc([a, b], "text"))),
+      ...ps.map(
+        (a): FnSignature => ({
+          params: [{ type: a, list: false }],
+          dots: false,
+          ret: { type: "text", list: false },
+        }),
+      ),
+      ...ps.flatMap((a) =>
+        ps.map(
+          (b): FnSignature => ({
+            params: [
+              { type: a, list: false },
+              { type: b, list: false },
+            ],
+            dots: false,
+            ret: { type: "text", list: false },
+          }),
+        ),
+      ),
     ]
   }
 })()
