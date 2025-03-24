@@ -509,7 +509,7 @@ function secAdvancedOperators() {
   ])
 }
 
-function secNamedVariables(list: PackageList) {
+export function secNamedVariables(list: PackageList) {
   function createEl(name: string, val: Builtin) {
     let value: Type
     let js
@@ -582,7 +582,7 @@ function secNamedVariables(list: PackageList) {
   )
 }
 
-function secNamedFunctions(list: PackageList) {
+export function secNamedFunctions(list: PackageList) {
   const els = ALL_DOCS.filter((x) => Object.values(FNS).includes(x as any))
     .sort((a, b) => (a.name < b.name ? -1 : 1))
     .map((fn) => {
@@ -621,7 +621,7 @@ function secNamedFunctions(list: PackageList) {
   )
 }
 
-function secOperators(list: PackageList) {
+export function secOperators(list: PackageList) {
   const els = ALL_DOCS.filter((x) => !Object.values(FNS).includes(x as any))
     .sort((a, b) => (a.name < b.name ? -1 : 1))
     .map((fn) => {

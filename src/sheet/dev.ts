@@ -1,10 +1,11 @@
-import { createDocs2 } from "@/docs/big"
 import { options } from "@/field/defaults"
 import { show } from "@/show"
 import SRC_LOCALHOST from "./example/localhost.txt"
 import SRC_STANDARD from "./example/standard.txt"
 import { SheetFactory } from "./factory"
 import { Expr } from "./ui/expr"
+
+import { createDocs2 } from "@/docs/core2"
 
 const LOAD_EMPTY = false
 const SHORT_EXPRS = true
