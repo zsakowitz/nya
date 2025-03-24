@@ -129,7 +129,7 @@ export const PKG_CORE_LIST: Package = {
   id: "nya:core-list",
   name: "core list functionality",
   label: null,
-  category: "data/lists",
+  category: "lists",
   eval: {
     fn: {
       join: FN_JOIN,

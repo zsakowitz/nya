@@ -97,7 +97,7 @@ export const PKG_LIST_EXTRAS: Package = {
   id: "nya:list-extras",
   name: "extra list functions",
   label: null,
-  category: "data/lists",
+  category: "lists",
   deps: [() => PKG_REAL],
   eval: {
     fn: {

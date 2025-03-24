@@ -152,6 +152,7 @@ export const PKG_TRIG_HYPERBOLIC_REAL: Package = {
       "csch^-1": FN_ARCCSCH,
       "sech^-1": FN_ARCSECH,
       "coth^-1": FN_ARCCOTH,
+      // TODO: desmos apparently implements arcsin^-1. this seems useless, but compat
     },
   },
 }

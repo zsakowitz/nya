@@ -105,7 +105,7 @@ export const PKG_DISTRIBUTIONS: Package = {
   id: "nya:distributions",
   name: "statistical distributions",
   label: null,
-  category: "data/statistics",
+  category: "statistics",
   ty: {
     info: {
       normaldist: {

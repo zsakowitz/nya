@@ -32,7 +32,7 @@ export const PKG_NUM_QUATERNION: Package = {
   id: "nya:num-quaternion",
   name: "quaternions",
   label: "rudimentary support for quaternions",
-  category: "numbers/multi-dimensional",
+  category: "numbers (multi-dimensional)",
   deps: [() => PKG_REAL, () => PKG_NUM_COMPLEX],
   load() {
     OP_POS.add(

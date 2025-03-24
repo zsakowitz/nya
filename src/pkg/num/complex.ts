@@ -137,7 +137,7 @@ export const PKG_NUM_COMPLEX: Package = {
   id: "nya:num-complex",
   name: "complex numbers",
   label: "basic support for complex numbers",
-  category: "numbers/multi-dimensional",
+  category: "numbers (multi-dimensional)",
   load() {
     FN_ARG.add(
       ["c32"],
