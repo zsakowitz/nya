@@ -1,5 +1,5 @@
 import type { Fn } from "@/eval/ops"
-import { doc, FnDist } from "@/eval/ops/dist"
+import { FnDist } from "@/eval/ops/dist"
 import { ALL_DOCS, type WithDocs } from "@/eval/ops/docs"
 import { each, type JsVal, type JsValue, type Val } from "@/eval/ty"
 import { Leaf } from "@/field/cmd/leaf"
@@ -108,7 +108,13 @@ const ithkuilvalues: Fn & WithDocs = {
   label:
     "given the name of a grammatical category of ithkuil, returns all values it can take",
   docs() {
-    return [doc(["text"], "text", true)]
+    return [
+      {
+        params: [{ type: "text", list: false }],
+        dots: false,
+        ret: { type: "text", list: true },
+      },
+    ]
   },
   js(args) {
     if (

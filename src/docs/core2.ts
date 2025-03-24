@@ -1,9 +1,11 @@
 import { FNS } from "@/eval/ops"
 import { ALL_DOCS } from "@/eval/ops/docs"
+import type { TyName } from "@/eval/ty"
+import { TY_INFO } from "@/eval/ty/info"
 import { h, hx, t } from "@/jsx"
 import type { Sheet } from "@/sheet/ui/sheet"
 import { PackageList, secPackagesContents } from "./list"
-import { docFromSignature } from "./signature"
+import { tyIcon } from "./signature"
 
 export function createDocs2(sheet: Sheet) {
   const pkgs = Object.values(sheet.factory.loaded).sort((a, b) =>
@@ -34,11 +36,17 @@ export function createDocs2(sheet: Sheet) {
       "block py-4 px-4",
       hx(
         "table",
-        "",
+        "w-full",
         hx(
           "thead",
           "",
-          hx("tr", "", hx("th", "", "name"), hx("th", "", "description")),
+          hx(
+            "tr",
+            "",
+            hx("th", "", "name"),
+            hx("th", "", "description"),
+            hx("th", "", "returns"),
+          ),
         ),
         hx(
           "tbody",
@@ -63,7 +71,21 @@ export function createDocs2(sheet: Sheet) {
               hx(
                 "td",
                 "",
-                h("flex flex-col", ...doc.docs().map(docFromSignature)),
+                h(
+                  "inline-flex flex-wrap align-baseline pt-[2px]",
+                  ...doc
+                    .docs()
+                    .map((x) => x.ret.type)
+                    .map((x) =>
+                      x.endsWith("64") ?
+                        x.slice(0, -2) + "32" in TY_INFO ?
+                          ((x.slice(0, -2) + "32") as TyName)
+                        : x
+                      : x,
+                    )
+                    .filter((x, i, a) => a.indexOf(x) == i)
+                    .map(tyIcon),
+                ),
               ),
             )
 

@@ -25,8 +25,12 @@ function dots() {
   )
 }
 
+export function tyIcon(type: "__any" | TyName): HTMLElement {
+  return type == "__any" ? any() : TY_INFO[type].icon()
+}
+
 function typeDocs(type: FnType): HTMLElement {
-  const item = type.type == "__any" ? any() : TY_INFO[type.type].icon()
+  const item = tyIcon(type.type)
   if (type.list) {
     return CmdBrack.render("[", "]", null, {
       el: h(

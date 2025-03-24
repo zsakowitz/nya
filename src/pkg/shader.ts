@@ -2,11 +2,10 @@ import { glsl, jsToGlsl } from "@/eval/glsl"
 import { js } from "@/eval/js"
 import { id } from "@/eval/lib/binding"
 import type { Fn } from "@/eval/ops"
-import { docByIcon } from "@/eval/ops/dist"
 import { ALL_DOCS, type WithDocs } from "@/eval/ops/docs"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "@/eval/ops/vars"
 import { coerceValueGlsl } from "@/eval/ty/coerce"
-import { TY_INFO, any } from "@/eval/ty/info"
+import { TY_INFO } from "@/eval/ty/info"
 import { h, hx, p } from "@/jsx"
 import { Store, defineExt } from "@/sheet/ext"
 import { circle } from "@/sheet/ui/expr/circle"
@@ -202,7 +201,13 @@ const forceshader: Fn & WithDocs = {
     return args[0]!
   },
   docs() {
-    return [docByIcon([any()], any())]
+    return [
+      {
+        params: [{ type: "__any", list: false }],
+        dots: false,
+        ret: { type: "__any", list: false },
+      },
+    ]
   },
   name: "forceshader",
   label: "forces the given expression to be executed in a shader",

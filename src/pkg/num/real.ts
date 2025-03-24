@@ -1,9 +1,10 @@
+import type { FnSignature } from "@/docs/signature"
 import { js } from "@/eval/js"
 import { asNumericBase, parseNumberGlsl, parseNumberJs } from "@/eval/lib/base"
 import { SYM_BINDINGS } from "@/eval/lib/binding"
 import type { GlslContext } from "@/eval/lib/fn"
 import { safe } from "@/eval/lib/util"
-import { docByIcon, FnDist } from "@/eval/ops/dist"
+import { FnDist } from "@/eval/ops/dist"
 import {
   FnDistCaching,
   type FnOverload,
@@ -194,11 +195,15 @@ const FN_COMPONENT = new (class extends FnDistCaching {
   docs() {
     return Object.entries(TY_INFO)
       .filter((x) => x[1].components != null)
-      .map(([_, info]) =>
-        docByIcon(
-          [info.icon(), TY_INFO.r32.icon()],
-          TY_INFO[info.components!.ty].icon(),
-        ),
+      .map(
+        ([type, info]): FnSignature => ({
+          params: [
+            { type: type as TyName, list: false },
+            { type: "r32", list: false },
+          ],
+          dots: false,
+          ret: { type: info.components!.ty, list: false },
+        }),
       )
   }
 })()
@@ -262,10 +267,6 @@ export const FN_SIGN = new FnDist("sign", "gets the sign of a number", {
     (a) => real(Math.sign(num(a.value))),
     (_, a) => `sign(${a.expr})`,
   )
-
-const FN_SGN = FN_SIGN.with("sgn", "gets the sign of a number", {
-  message: "Cannot find the sign of %%.",
-})
 
 export const FN_LOG10 = new FnDist(
   "log",
@@ -618,7 +619,7 @@ float _helper_cmp_r32(float a, float b) {
   eval: {
     fn: {
       sign: FN_SIGN,
-      sgn: FN_SGN,
+      sgn: FN_SIGN,
       ln: FN_LN,
       log: FN_LOG10,
       log_: FN_LOGB,
