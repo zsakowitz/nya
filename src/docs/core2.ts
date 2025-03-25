@@ -43,6 +43,10 @@ export function createDocs2(sheet: Sheet) {
       which = x
       check()
     })
+    data.el.addEventListener("click", () => {
+      which = x
+      check()
+    })
     return data
   })
 
@@ -282,15 +286,21 @@ function secGuides(list: PackageList, options: Options, ctx: Ctx) {
   const el = h(
     "flex flex-col gap-4 w-full max-w-prose mx-auto",
     ...list.packages
-      .flatMap((x) => (x.docs ? Object.entries(x.docs) : []))
+      .flatMap((x) =>
+        (x.docs ? Object.entries(x.docs) : []).map(
+          ([k, v]) => [k, v, x.id] as const,
+        ),
+      )
       .sort(([a], [b]) =>
         a < b ? -1
         : a > b ? 1
         : 0,
       )
-      .map(([k, v]) =>
+      .map(([k, v, x]) => {
         // FIXME: sections are collapsible
-        hx(
+        // FIXME: ToC as sidebar
+
+        const el = hx(
           "section",
           "flex flex-col gap-4 border rounded-lg p-4 text-[--nya-text-prose] bg-[--nya-bg] border-[--nya-border]",
           hx(
@@ -299,8 +309,14 @@ function secGuides(list: PackageList, options: Options, ctx: Ctx) {
             k,
           ),
           ...v(),
-        ),
-      ),
+        )
+
+        list.on(() => {
+          el.classList.toggle("hidden", list.active ? !list.has(x) : false)
+        })
+
+        return el
+      }),
   )
 
   el.querySelectorAll("samp").forEach((el) => {
