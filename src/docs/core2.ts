@@ -4,11 +4,14 @@ import type { TyName } from "@/eval/ty"
 import { TY_INFO } from "@/eval/ty/info"
 import { CmdNum } from "@/field/cmd/leaf/num"
 import { CmdWord } from "@/field/cmd/leaf/word"
+import { fa } from "@/field/fa"
 import { FieldInert } from "@/field/field-inert"
 import type { Options } from "@/field/options"
 import { b, h, hx, li, px, t } from "@/jsx"
 import type { Ctx } from "@/sheet/deps"
 import type { Sheet } from "@/sheet/ui/sheet"
+import { faFaceSadTear } from "@fortawesome/free-regular-svg-icons/faFaceSadTear"
+import { faChevronRight } from "@fortawesome/free-solid-svg-icons/faChevronRight"
 import { PackageList, secPackagesContents } from "./list"
 import { tyIcon } from "./signature"
 
@@ -283,40 +286,68 @@ function secAbout() {
 }
 
 function secGuides(list: PackageList, options: Options, ctx: Ctx) {
-  const el = h(
-    "flex flex-col gap-4 w-full max-w-prose mx-auto",
-    ...list.packages
-      .flatMap((x) =>
-        (x.docs ? Object.entries(x.docs) : []).map(
-          ([k, v]) => [k, v, x.id] as const,
-        ),
-      )
-      .sort(([a], [b]) =>
-        a < b ? -1
-        : a > b ? 1
-        : 0,
-      )
-      .map(([k, v, x]) => {
-        // FIXME: sections are collapsible
-        // FIXME: ToC as sidebar
+  const guides = list.packages
+    .flatMap((x) =>
+      (x.docs ? Object.entries(x.docs) : []).map(
+        ([k, v]) => [k, v, x.id] as const,
+      ),
+    )
+    .sort(([a], [b]) =>
+      a < b ? -1
+      : a > b ? 1
+      : 0,
+    )
+    .map(([k, v, x]) => {
+      // FIXME: sections are collapsible
+      // FIXME: ToC as sidebar
 
-        const el = hx(
-          "section",
-          "flex flex-col gap-4 border rounded-lg p-4 text-[--nya-text-prose] bg-[--nya-bg] border-[--nya-border]",
-          hx(
-            "h2",
-            "text-2xl font-semibold border-b border-[--nya-border] pb-1 mb-2 text-[--nya-text]",
+      const el = hx(
+        "details",
+        "border border-transparent rounded-lg text-[--nya-text-prose] open:bg-[--nya-bg] open:border-[--nya-border] open:-mt-2",
+        hx(
+          "summary",
+          "list-none text-2xl font-semibold text-[--nya-text] select-none [[open]>&]:pt-2 px-4",
+          h(
+            "flex items-center gap-2 w-full [[open]>*>&]:border-b border-[--nya-border] [[open]>*>&]:pb-1",
+            fa(
+              faChevronRight,
+              "size-4 fill-[--nya-title] [[open]>*>*>&]:rotate-90",
+            ),
             k,
           ),
-          ...v(),
-        )
+        ),
+        h("flex flex-col gap-4 p-4 pt-2", ...v()),
+      )
 
-        list.on(() => {
-          el.classList.toggle("hidden", list.active ? !list.has(x) : false)
-        })
+      list.on(() => {
+        el.classList.toggle("hidden", list.active ? !list.has(x) : false)
+      })
 
-        return el
-      }),
+      return {
+        el,
+        get hidden() {
+          return list.active ? !list.has(x) : false
+        },
+      }
+    })
+
+  const allHidden = () => guides.every((x) => x.hidden)
+
+  const el = h(
+    "flex flex-col gap-4 w-full max-w-prose mx-auto",
+    ...guides.map((x) => x.el),
+    list.with(
+      h(
+        "m-auto flex flex-col",
+        fa(faFaceSadTear, "size-8 fill-[--nya-title] mx-auto mb-4"),
+        hx(
+          "p",
+          "w-full max-w-96 text-[--nya-text-prose]",
+          "There are no in-depth guides available for the packages you have selected. Try deselecting some packages.",
+        ),
+      ),
+      (v) => v.classList.toggle("hidden", !allHidden()),
+    ),
   )
 
   el.querySelectorAll("samp").forEach((el) => {
