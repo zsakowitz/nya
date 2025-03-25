@@ -6,12 +6,9 @@ import { CmdNum } from "@/field/cmd/leaf/num"
 import { CmdWord } from "@/field/cmd/leaf/word"
 import { fa } from "@/field/fa"
 import { FieldInert } from "@/field/field-inert"
-import type { Options } from "@/field/options"
 import { b, h, hx, li, px, t } from "@/jsx"
-import type { Ctx } from "@/sheet/deps"
 import type { Sheet } from "@/sheet/ui/sheet"
 import { faFaceSadTear } from "@fortawesome/free-regular-svg-icons/faFaceSadTear"
-import { faChevronRight } from "@fortawesome/free-solid-svg-icons/faChevronRight"
 import { PackageList, secPackagesContents } from "./list"
 import { tyIcon } from "./signature"
 
@@ -36,7 +33,7 @@ export function createDocs2(sheet: Sheet) {
 
   const names = {
     about: secAbout(),
-    guides: secGuides(list, sheet.options, sheet.scope.ctx),
+    guides: secGuides(sheet, list),
     functions: functions(list, true),
     operators: functions(list, false),
   }
@@ -285,7 +282,7 @@ function secAbout() {
   }
 }
 
-function secGuides(list: PackageList, options: Options, ctx: Ctx) {
+function secGuides(sheet: Sheet, list: PackageList) {
   const guides = list.packages
     .flatMap((x) => (x.docs ? x.docs : []).map((v) => [v, x.id] as const))
     .sort(([a], [b]) =>
@@ -294,22 +291,19 @@ function secGuides(list: PackageList, options: Options, ctx: Ctx) {
       : 0,
     )
     .map(([v, x]) => {
+      const chars = v.render().reduce((a, b) => {
+        b.querySelectorAll("samp").forEach((x) => x.remove())
+        return a + b.innerText.length
+      }, 0)
+
       const el = hx(
-        "details",
-        "border border-transparent rounded-lg text-[--nya-text-prose] open:bg-[--nya-bg] open:border-[--nya-border] open:-mt-2",
-        hx(
-          "summary",
-          "list-none text-2xl font-semibold text-[--nya-text] select-none [[open]>&]:pt-2 px-4",
-          h(
-            "flex items-center gap-2 w-full [[open]>*>&]:border-b border-[--nya-border] [[open]>*>&]:pb-1",
-            fa(
-              faChevronRight,
-              "size-4 fill-[--nya-title] [[open]>*>*>&]:rotate-90",
-            ),
-            v.name,
-          ),
+        "button",
+        "flex flex-col",
+        h(
+          "flex items-center justify-center border border-[--nya-border] bg-[--nya-bg] aspect-video rounded-lg",
+          hx("samp", "", v.poster),
         ),
-        h("flex flex-col gap-4 p-4 pt-2", ...v.render()),
+        h("text-[--nya-text-prose]", v.name, h("opacity-30", ` (${chars})`)),
       )
 
       list.on(() => {
@@ -326,25 +320,30 @@ function secGuides(list: PackageList, options: Options, ctx: Ctx) {
 
   const allHidden = () => guides.every((x) => x.hidden)
 
-  const el = h(
-    "flex flex-col gap-4 w-full max-w-prose mx-auto",
+  const grid = h(
+    "grid grid-cols-[repeat(auto-fill,minmax(18rem,1fr))] h-min gap-4 w-full mx-auto",
     ...guides.map((x) => x.el),
-    list.with(
-      h(
-        "m-auto flex flex-col",
-        fa(faFaceSadTear, "size-8 fill-[--nya-title] mx-auto mb-4"),
-        hx(
-          "p",
-          "w-full max-w-96 text-[--nya-text-prose]",
-          "There are no in-depth guides available for the packages you have selected. Try deselecting some packages.",
-        ),
-      ),
-      (v) => v.classList.toggle("hidden", !allHidden()),
+  )
+  const empty = h(
+    "m-auto flex flex-col",
+    fa(faFaceSadTear, "size-8 fill-[--nya-title] mx-auto mb-4"),
+    hx(
+      "p",
+      "w-full max-w-96 text-[--nya-text-prose]",
+      "There are no in-depth guides available for the packages you have selected. Try deselecting some packages.",
     ),
   )
 
+  const el = h("w-full flex flex-1", grid, empty)
+
+  list.on(() => {
+    grid.classList.toggle("hidden", allHidden())
+    empty.classList.toggle("hidden", !allHidden())
+  })
+
   el.querySelectorAll("samp").forEach((el) => {
-    const field = new FieldInert(options, ctx)
+    // FIXME: ctx ought to be plain scope
+    const field = new FieldInert(sheet.options, sheet.scope.ctx)
     field.typeLatex(el.textContent ?? "")
     el.replaceWith(field.el)
   })

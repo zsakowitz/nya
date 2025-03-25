@@ -406,7 +406,6 @@ export const PKG_UNITS: Package = {
       glsl,
     )
   },
-  // FIXME: unit system completely changed
   docs: [
     {
       name: "units",

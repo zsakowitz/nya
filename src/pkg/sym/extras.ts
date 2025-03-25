@@ -132,7 +132,7 @@ export const PKG_SYM_EXTRAS: Package = {
     },
     {
       name: "symbolic computation (advanced)",
-      poster: "sym2^{eval z}",
+      poster: "sym((unsym a)^{eval z})",
       render() {
         return [
           px`In the rare cases where you need to explicitly include values in a symbolic expression, use the ${b("unsym")} function.`,

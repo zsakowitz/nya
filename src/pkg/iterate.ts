@@ -531,7 +531,7 @@ export const PKG_ITERATE: Package = {
   docs: [
     {
       name: "iteration",
-      poster: "iterate^{50}z\\toz^2+c",
+      poster: "iterate^{50}z\\to z^2+c",
       render() {
         return [
           p(

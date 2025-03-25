@@ -200,7 +200,7 @@ export const PKG_IMAGE_GEO: Package = {
   docs: [
     {
       name: "images",
-      poster: String.raw`\operatorname{image}\left(i_{1},\operatorname{segment}\left(\left(0,0\right),\left(1,0\right)\right)\right)`,
+      poster: String.raw`\operatorname{image}\left(i_{1},\operatorname{segment}\left(...\right)\right)`,
       render() {
         return [
           px`In project nya, images are expressions, just like everything else. To create one, select the ${h("font-semibold", "image")} item type in the second-topmost navigation bar.`,
