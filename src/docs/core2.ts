@@ -154,7 +154,7 @@ function functions(list: PackageList, named: boolean) {
 
   return hx(
     "table",
-    "w-full",
+    "w-full h-min",
     hx(
       "thead",
       "",
