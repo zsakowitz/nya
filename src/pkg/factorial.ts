@@ -114,7 +114,7 @@ float factorial(float x) {
 
 export const FN_DIGAMMA: FnDist = new FnDist(
   "digamma",
-  "computes the derivatives of the natural logarithm of the gamma function",
+  "computes the derivative of the natural logarithm of the gamma function",
   {
     deriv: unary((wrt, x) => {
       return chain(x, wrt, {

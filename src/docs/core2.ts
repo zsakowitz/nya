@@ -28,17 +28,27 @@ export function createDocs2(sheet: Sheet) {
   const list = new PackageList(pkgs)
   let which = "functions"
 
-  const names = ["overview", "functions", "operators"]
-  const tabs = names.map((x) => {
+  const names = {
+    overview: h(""),
+    functions: functions(list, true),
+    operators: functions(list, false),
+  }
+  const tabs = Object.keys(names).map((x) => {
     const data = tab(x, x == which)
     data.el.addEventListener("pointerdown", () => {
       which = x
-      tabs.forEach((x) => (x.open = x.title == which))
+      check()
     })
     return data
   })
 
-  const fns = allFunctions(list)
+  function check() {
+    tabs.forEach((x) => (x.open = x.title == which))
+    for (const key in names) {
+      names[key as keyof typeof names].hidden = key != which
+    }
+  }
+  check()
 
   return h(
     "relative grid grid-cols-[auto,1px,24rem] min-h-screen text-[--nya-text]",
@@ -51,7 +61,7 @@ export function createDocs2(sheet: Sheet) {
         h("border-b border-[--nya-border] w-2"),
       ),
       h("block w-full h-[calc(3rem_+_1px)]"),
-      h("block p-4", fns),
+      h("block p-4", ...Object.values(names)),
     ),
     h("fixed right-[24rem] w-px h-[calc(100%_-_2rem)] top-4 bg-[--nya-border]"),
     h(
@@ -121,19 +131,15 @@ function tab(title: string, open: boolean) {
   }
 }
 
-function allFunctions(list: PackageList) {
+function functions(list: PackageList, named: boolean) {
   const raw = Object.values(FNS)
-  const fns = ALL_DOCS.filter((x) => raw.includes(x as any))
-  fns.sort((a, b) =>
-    a.name < b.name ? -1
-    : a.name > b.name ? 1
-    : 0,
-  )
-  const ops = ALL_DOCS.filter((x) => !raw.includes(x as any))
-  ops.sort((a, b) =>
-    a.name < b.name ? -1
-    : a.name > b.name ? 1
-    : 0,
+  const fns = ALL_DOCS.filter((x) => raw.includes(x as any) === named)
+  fns.sort(
+    (a, b) =>
+      +/^[\w\s]+$/.test(b.name) - +/^[\w\s]+$/.test(a.name) ||
+      (a.name < b.name ? -1
+      : a.name > b.name ? 1
+      : 0),
   )
 
   return hx(
@@ -153,7 +159,7 @@ function allFunctions(list: PackageList) {
     hx(
       "tbody",
       "",
-      ...[...fns, ...ops].map((doc) => {
+      ...fns.map((doc) => {
         const sources = list.packages
           .filter(
             (x) => x.eval?.fn && Object.values(x.eval.fn).includes(doc as any),

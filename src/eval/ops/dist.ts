@@ -183,7 +183,14 @@ export class FnDist<Q extends TyName = TyName> extends FnDistManual<Q> {
   }
 
   docs(): FnSignature[] {
-    return this.o
+    let o: FnOverload[] = this.o
+    let el: FnDist = this
+    while (el.parent) {
+      o.unshift(...el.parent.o)
+      el = el.parent
+    }
+
+    return o
       .slice()
       .sort((a, b) => (a.docOrder ?? 0) - (b.docOrder ?? 0))
       .map(

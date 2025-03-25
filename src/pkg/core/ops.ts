@@ -365,7 +365,7 @@ export const OP_POS = new FnDist(
 )
 
 export const OP_RAISE: FnDist = new FnDist(
-  "^",
+  "↑",
   "raises a value to an exponent",
   {
     message: "Cannot raise %% as an exponent.",
