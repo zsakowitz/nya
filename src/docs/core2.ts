@@ -4,7 +4,10 @@ import type { TyName } from "@/eval/ty"
 import { TY_INFO } from "@/eval/ty/info"
 import { CmdNum } from "@/field/cmd/leaf/num"
 import { CmdWord } from "@/field/cmd/leaf/word"
+import { FieldInert } from "@/field/field-inert"
+import type { Options } from "@/field/options"
 import { b, h, hx, li, px, t } from "@/jsx"
+import type { Ctx } from "@/sheet/deps"
 import type { Sheet } from "@/sheet/ui/sheet"
 import { PackageList, secPackagesContents } from "./list"
 import { tyIcon } from "./signature"
@@ -26,11 +29,11 @@ export function createDocs2(sheet: Sheet) {
   )
 
   const list = new PackageList(pkgs)
-  let which = "about"
+  let which = "guides"
 
   const names = {
     about: secAbout(),
-    guides: secGuides(list),
+    guides: secGuides(list, sheet.options, sheet.scope.ctx),
     functions: functions(list, true),
     operators: functions(list, false),
   }
@@ -275,6 +278,30 @@ function secAbout() {
   }
 }
 
-function secGuides(_list: PackageList) {
-  return h("")
+function secGuides(list: PackageList, options: Options, ctx: Ctx) {
+  const el = h(
+    "flex flex-col gap-4 w-full max-w-prose mx-auto",
+    ...list.packages
+      .flatMap((x) => (x.docs ? Object.entries(x.docs) : []))
+      .map(([k, v]) =>
+        hx(
+          "section",
+          "flex flex-col gap-4 border rounded-lg p-4 text-[--nya-text-prose] bg-[--nya-bg] border-[--nya-border]",
+          hx(
+            "h2",
+            "text-2xl font-semibold border-b border-[--nya-border] pb-1 mb-2 text-[--nya-text]",
+            k,
+          ),
+          ...v(),
+        ),
+      ),
+  )
+
+  el.querySelectorAll("samp").forEach((el) => {
+    const field = new FieldInert(options, ctx)
+    field.typeLatex(el.textContent ?? "")
+    el.replaceWith(field.el)
+  })
+
+  return el
 }
