@@ -294,9 +294,6 @@ function secGuides(list: PackageList, options: Options, ctx: Ctx) {
       : 0,
     )
     .map(([v, x]) => {
-      // FIXME: sections are collapsible
-      // FIXME: ToC as sidebar
-
       const el = hx(
         "details",
         "border border-transparent rounded-lg text-[--nya-text-prose] open:bg-[--nya-bg] open:border-[--nya-border] open:-mt-2",
