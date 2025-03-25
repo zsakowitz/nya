@@ -283,7 +283,13 @@ function secGuides(list: PackageList, options: Options, ctx: Ctx) {
     "flex flex-col gap-4 w-full max-w-prose mx-auto",
     ...list.packages
       .flatMap((x) => (x.docs ? Object.entries(x.docs) : []))
+      .sort(([a], [b]) =>
+        a < b ? -1
+        : a > b ? 1
+        : 0,
+      )
       .map(([k, v]) =>
+        // FIXME: sections are collapsible
         hx(
           "section",
           "flex flex-col gap-4 border rounded-lg p-4 text-[--nya-text-prose] bg-[--nya-bg] border-[--nya-border]",
