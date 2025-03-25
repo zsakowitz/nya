@@ -4,7 +4,7 @@ import type { TyName } from "@/eval/ty"
 import { TY_INFO } from "@/eval/ty/info"
 import { CmdNum } from "@/field/cmd/leaf/num"
 import { CmdWord } from "@/field/cmd/leaf/word"
-import { h, hx, t } from "@/jsx"
+import { b, h, hx, li, px, t } from "@/jsx"
 import type { Sheet } from "@/sheet/ui/sheet"
 import { PackageList, secPackagesContents } from "./list"
 import { tyIcon } from "./signature"
@@ -26,10 +26,11 @@ export function createDocs2(sheet: Sheet) {
   )
 
   const list = new PackageList(pkgs)
-  let which = "functions"
+  let which = "about"
 
   const names = {
-    overview: h(""),
+    about: secAbout(),
+    guides: secGuides(list),
     functions: functions(list, true),
     operators: functions(list, false),
   }
@@ -42,43 +43,52 @@ export function createDocs2(sheet: Sheet) {
     return data
   })
 
-  function check() {
-    tabs.forEach((x) => (x.open = x.title == which))
-    for (const key in names) {
-      names[key as keyof typeof names].hidden = key != which
-    }
-  }
-  check()
-
-  return h(
-    "relative grid grid-cols-[auto,1px,24rem] min-h-screen text-[--nya-text]",
+  const main = h(
+    "relative grid grid-cols-[auto,1px,18rem] [&.nya-docs-open]:grid-cols-[auto] min-h-screen text-[--nya-text]",
     h(
-      "relative block pb-4 z-[0]",
+      "relative block z-[0]",
       h(
-        "fixed left-0 right-[calc(24rem_+_1px)] top-0 pt-2 flex text-center bg-[--nya-bg] z-10 h-[calc(3rem_+_1px)]",
+        "fixed left-0 right-[calc(18rem_+_1px)] [.nya-docs-open_&]:right-0 top-0 pt-2 flex text-center bg-[--nya-bg] z-10 h-[calc(3rem_+_1px)]",
         h("border-b border-[--nya-border] w-2"),
         ...tabs.map((x) => x.el),
         h("border-b border-[--nya-border] w-2"),
       ),
       h("block w-full h-[calc(3rem_+_1px)]"),
-      h("block p-4", ...Object.values(names)),
+      h(
+        "flex min-h-[calc(100%_-_3rem_-_1px)] p-4 bg-[--nya-bg-sidebar]",
+        ...Object.values(names),
+      ),
     ),
-    h("fixed right-[24rem] w-px h-[calc(100%_-_2rem)] top-4 bg-[--nya-border]"),
     h(
-      "overflow-y-auto fixed inset-y-0 right-0 w-96 h-full pb-4 px-4",
+      "[.nya-docs-open_&]:hidden fixed right-[18rem] w-px h-[calc(100%_-_2rem)] top-4 bg-[--nya-border]",
+    ),
+    h(
+      "[.nya-docs-open_&]:hidden overflow-y-auto fixed inset-y-0 right-0 w-[18rem] h-full pb-4 px-4",
       h(
         "block sticky top-0 pt-4 bg-[--nya-bg] pb-2 mb-3 border-b border-[--nya-border] text-center font-semibold",
-        list.with(t("packages"), (v) => {
+        list.with(t("filter packages"), (v) => {
           if (list.active) {
             v.data = `packages (${list.count} selected)`
           } else {
-            v.data = "packages"
+            v.data = "filter packages"
           }
         }),
       ),
       secPackagesContents(list, false),
     ),
   )
+
+  function check() {
+    main.classList.toggle("nya-docs-open", which == "about")
+    tabs.forEach((x) => (x.open = x.title == which))
+    for (const key in names) {
+      names[key as keyof typeof names].hidden = key != which
+      names[key as keyof typeof names].classList.toggle("hidden", key != which)
+    }
+  }
+  check()
+
+  return main
 }
 
 function tabBorders() {
@@ -88,17 +98,16 @@ function tabBorders() {
       "absolute bottom-[--size] inset-x-0 top-0 border-x border-t border-[--nya-border] rounded-t-[--size]",
     ),
     h(
-      "absolute bottom-0 left-full size-[--size] -translate-x-px bg-[--nya-bg] [:hover>*>&]:bg-[--nya-bg-sidebar]",
+      "absolute bottom-0 left-full size-[--size] -translate-x-px bg-[--nya-bg-sidebar]",
     ),
     h(
-      "absolute bottom-0 left-full size-[--size] -translate-x-px rounded-bl-[--size] border-b border-l border-[--nya-border] [:hover>*>&]:bg-[--nya-bg] [:has(+:hover)>*>&]:bg-[--nya-bg-sidebar]",
-    ),
-
-    h(
-      "absolute bottom-0 right-full size-[--size] translate-x-px bg-[--nya-bg] [:hover>*>&]:bg-[--nya-bg-sidebar]",
+      "absolute bottom-0 left-full size-[--size] -translate-x-px rounded-bl-[--size] border-b border-l border-[--nya-border] bg-[--nya-bg] [:has(+:hover)>*>&]:bg-[--nya-bg-sidebar]",
     ),
     h(
-      "absolute bottom-0 right-full size-[--size] translate-x-px rounded-br-[--size] border-b border-r border-[--nya-border] [:hover>*>&]:bg-[--nya-bg] [:hover+*>*>&]:bg-[--nya-bg-sidebar]",
+      "absolute bottom-0 right-full size-[--size] translate-x-px bg-[--nya-bg-sidebar]",
+    ),
+    h(
+      "absolute bottom-0 right-full size-[--size] translate-x-px rounded-br-[--size] border-b border-r border-[--nya-border] bg-[--nya-bg] [:hover+*>*>&]:bg-[--nya-bg-sidebar]",
     ),
   )
 }
@@ -118,6 +127,7 @@ function tab(title: string, open: boolean) {
     el.classList.toggle("pb-[calc(0.5rem_+_1px)]", open)
     el.classList.toggle("border-b", !open)
     el.classList.toggle("z-10", open)
+    el.classList.toggle("bg-[--nya-bg-sidebar]", open)
   }
   check()
 
@@ -204,4 +214,69 @@ function functions(list: PackageList, named: boolean) {
       }),
     ),
   )
+}
+
+function secAbout() {
+  return h(
+    "flex flex-col gap-2 w-full max-w-prose border rounded-lg p-4 mx-auto text-[--nya-text-prose] bg-[--nya-bg] border-[--nya-border]",
+    hx(
+      "h2",
+      "text-2xl font-semibold border-b border-[--nya-border] pb-1 mb-2 text-[--nya-text]",
+      "Introduction",
+    ),
+    px`project nya is a graphing calculator, shader playground, unit converter, and symbolic computation tool. Its author is ${hx("a", { class: "text-blue-500 underline underline-offset-2", href: "https://github.com/@zsakowitz" }, "sakawi (she/her)")}, who tries to update it daily. All its code is available ${hx("a", { class: "text-blue-500 underline underline-offset-2", href: "https://github.com/zsakowitz/nya" }, "for free on GitHub")}.`,
+    px`project nya was originally conceived as a simple replacement for Desmos with support for complex numbers (Desmos's support for them is somewhat recent, as of 2024). It has evolved slightly from that base goal. (This is an understatement.)`,
+    px`project nya is designed to be extensible, so that new features can be added easily. This extensibility is why project nya can convert units, work with quaternions, provide chemical data, and plot recursive images.`,
+    hx(
+      "h2",
+      "text-2xl font-semibold border-b border-[--nya-border] pb-1 my-2 text-[--nya-text]",
+      "How to use it",
+    ),
+    px`The best idea is just to experiment! Type something, see what happens, edit it, and repeat. Or use the geometry tools at the top, which will help you construct geometrical objects.`,
+    px`Additionally, check out the ${b("guides")} tab. It has more specific guides about how to do recursion, construct geometrical objects, perform symbolic calculus, write in binary and hexadecimal, and more.`,
+    px`For an information overload, click the ${b("functions")} tab. It lists every function project nya supports, what it does, and what data types it works with, and will give you detailed information if you click the function entry. The ${b("operators")} tab is equivalent, but lists operators instead of named functions.`,
+    subsecPackages(),
+  )
+
+  function subsecPackages() {
+    return h(
+      "flex flex-col gap-2",
+      hx(
+        "h2",
+        "text-2xl font-semibold border-b border-[--nya-border] pb-1 my-2 text-[--nya-text]",
+        "The package system",
+      ),
+      px`Warning: this may be incredibly boring. However, this is my website, and I am very proud of the package system, so I am allowed to infodump about it.`,
+      px`project nya is essentially split into two parts: the core, and the packages. The core contains 1) a subset of the LaTeX renderer, 2) limited parts of the math evaluator, and 3) a definition of how the full app and graphpaper works.`,
+      px`That core library is basically a scaffold for the app, but it doesn't really have any content. If only the core library existed, project nya wouldn't know "sin" should be deitalicized, it would forget what an integer is, and typing math wouldn't even show the result.`,
+      px`All of ${h("italic", "that")} stuff exists solely within packages, small bits of code which provide small bits of functionality. The key point about packages is that they are easily composable: just stack one on top of the other, and they all will magically Just Work™ together.`,
+      px`That's what the ${b("packages")} thing on the right is! It's a list of every package loaded into project nya, so that you can more easily filter the help menu.`,
+      px`Here are some things packages do now:`,
+      hx(
+        "ul",
+        "list-disc pl-6 *:pl-2",
+        li`allow you to type in hexadecimal`,
+        li`add support for tiny notes in the expression list`,
+        li`put gridlines on the graphpaper`,
+        li`define statistical distributions`,
+        li`write in calligraphic text`,
+      ),
+      px`Here are some things you could make a package do:`,
+      hx(
+        "ul",
+        "list-disc pl-6 *:pl-2",
+        li`embed Photoshop into project nya`,
+        li`capture a livestream into a constantly updating image`,
+        li`compute regressions using Desmos`,
+        li`enable collaborative editing on a graph`,
+        li`stream your camera directly to the canvas`,
+      ),
+      px`Basically, packages let project nya split its functionality into many little parts, and anybody can write their own package.`,
+      px`Thanks for listening!`,
+    )
+  }
+}
+
+function secGuides(_list: PackageList) {
+  return h("")
 }
