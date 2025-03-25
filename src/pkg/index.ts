@@ -103,7 +103,13 @@ export interface Package {
     keys?: List<(sheet: Sheet) => void>
   }
 
-  docs?: Record<string, () => HTMLElement[]>
+  docs?: readonly Doc[]
+}
+
+export interface Doc {
+  name: string
+  poster: string
+  render(): HTMLElement[]
 }
 
 export interface ToolbarItem {

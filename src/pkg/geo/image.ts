@@ -197,24 +197,28 @@ export const PKG_IMAGE_GEO: Package = {
   sheet: {
     exts: { 1: [EXT] },
   },
-  docs: {
-    images() {
-      return [
-        px`In project nya, images are expressions, just like everything else. To create one, select the ${h("font-semibold", "image")} item type in the second-topmost navigation bar.`,
-        px`To draw the image onto the graphpaper, use the ${h("font-semibold", "image")} function.`,
-        example(
-          String.raw`\operatorname{image}\left(i_{1},\operatorname{segment}\left(\left(0,0\right),\left(1,0\right)\right)\right)`,
-          null,
-        ),
-        px`The ${h("font-semibold", "image")} function places an image on top of a line segment with its preferred aspect ratio, so it isn't distorted. If you want distortion, you can pass your own aspect ratio:`,
-        example(
-          String.raw`\operatorname{image}\left(i_{1},\operatorname{segment}\left(\left(0,0\right),\left(1,0\right)\right,\frac23\right)`,
-          null,
-        ),
-        px`Negative values for the aspect ratio will draw a mirrored version of the image on the other side of the line segment.`,
-      ]
+  docs: [
+    {
+      name: "images",
+      poster: String.raw`\operatorname{image}\left(i_{1},\operatorname{segment}\left(\left(0,0\right),\left(1,0\right)\right)\right)`,
+      render() {
+        return [
+          px`In project nya, images are expressions, just like everything else. To create one, select the ${h("font-semibold", "image")} item type in the second-topmost navigation bar.`,
+          px`To draw the image onto the graphpaper, use the ${h("font-semibold", "image")} function.`,
+          example(
+            String.raw`\operatorname{image}\left(i_{1},\operatorname{segment}\left(\left(0,0\right),\left(1,0\right)\right)\right)`,
+            null,
+          ),
+          px`The ${h("font-semibold", "image")} function places an image on top of a line segment with its preferred aspect ratio, so it isn't distorted. If you want distortion, you can pass your own aspect ratio:`,
+          example(
+            String.raw`\operatorname{image}\left(i_{1},\operatorname{segment}\left(\left(0,0\right),\left(1,0\right)\right,\frac23\right)`,
+            null,
+          ),
+          px`Negative values for the aspect ratio will draw a mirrored version of the image on the other side of the line segment.`,
+        ]
+      },
     },
-  },
+  ],
 }
 
 markTranslate(

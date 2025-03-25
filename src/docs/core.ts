@@ -82,9 +82,13 @@ export function createDocs(
     ...packages
       .map((x) => x.docs)
       .filter((x) => x != null)
-      .flatMap((docs) => Object.entries(docs))
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([k, v]) => section(k, v(), OPEN_PACKAGE_DOCS == k)),
+      .flat()
+      .sort((a, b) =>
+        a.name < b.name ? -1
+        : a.name > b.name ? 1
+        : 0,
+      )
+      .map((v) => section(v.name, v.render(), OPEN_PACKAGE_DOCS == v.name)),
   )
 
   nonSearchable.querySelectorAll("samp").forEach((el) => {

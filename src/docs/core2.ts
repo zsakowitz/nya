@@ -287,17 +287,13 @@ function secAbout() {
 
 function secGuides(list: PackageList, options: Options, ctx: Ctx) {
   const guides = list.packages
-    .flatMap((x) =>
-      (x.docs ? Object.entries(x.docs) : []).map(
-        ([k, v]) => [k, v, x.id] as const,
-      ),
-    )
+    .flatMap((x) => (x.docs ? x.docs : []).map((v) => [v, x.id] as const))
     .sort(([a], [b]) =>
-      a < b ? -1
-      : a > b ? 1
+      a.name < b.name ? -1
+      : a.name > b.name ? 1
       : 0,
     )
-    .map(([k, v, x]) => {
+    .map(([v, x]) => {
       // FIXME: sections are collapsible
       // FIXME: ToC as sidebar
 
@@ -313,10 +309,10 @@ function secGuides(list: PackageList, options: Options, ctx: Ctx) {
               faChevronRight,
               "size-4 fill-[--nya-title] [[open]>*>*>&]:rotate-90",
             ),
-            k,
+            v.name,
           ),
         ),
-        h("flex flex-col gap-4 p-4 pt-2", ...v()),
+        h("flex flex-col gap-4 p-4 pt-2", ...v.render()),
       )
 
       list.on(() => {

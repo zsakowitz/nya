@@ -83,16 +83,20 @@ export const PKG_BASE: Package = {
       },
     },
   },
-  docs: {
-    "alternate bases"() {
-      return [
-        px`The ${h("font-semibold", "base")} operator lets you write numbers in alternate number bases, like binary, hexadecimal, or even base -π!`,
-        example("1001+1101base2", "=10110base2"),
-        px`To convert between bases, write two ${h("font-semibold", "base")} clauses.`,
-        example("1001+1101base2base5", "=42base5"),
-        px`To output something in decimal, convert the result into base ten. Otherwise, project nya will try to guess what base you want to output in.`,
-        example("1001+1101base2base10", "=22"),
-      ]
+  docs: [
+    {
+      name: "alternate bases",
+      poster: "1001+1101base2",
+      render() {
+        return [
+          px`The ${h("font-semibold", "base")} operator lets you write numbers in alternate number bases, like binary, hexadecimal, or even base -π!`,
+          example("1001+1101base2", "=10110base2"),
+          px`To convert between bases, write two ${h("font-semibold", "base")} clauses.`,
+          example("1001+1101base2base5", "=42base5"),
+          px`To output something in decimal, convert the result into base ten. Otherwise, project nya will try to guess what base you want to output in.`,
+          example("1001+1101base2base10", "=22"),
+        ]
+      },
     },
-  },
+  ],
 }
