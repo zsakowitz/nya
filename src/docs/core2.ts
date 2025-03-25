@@ -59,11 +59,9 @@ export function createDocs2(sheet: Sheet) {
         ...Object.values(names),
       ),
     ),
+    h("[.nya-docs-open_&]:hidden bg-[--nya-border]"),
     h(
-      "[.nya-docs-open_&]:hidden fixed right-[18rem] w-px h-[calc(100%_-_2rem)] top-4 bg-[--nya-border]",
-    ),
-    h(
-      "[.nya-docs-open_&]:hidden overflow-y-auto fixed inset-y-0 right-0 w-[18rem] h-full pb-4 px-4",
+      "[.nya-docs-open_&]:hidden overflow-y-auto fixed inset-y-0 right-0 w-[18rem] h-full pb-4 px-4 bg-[--nya-bg]",
       h(
         "block sticky top-0 pt-4 bg-[--nya-bg] pb-2 mb-3 border-b border-[--nya-border] text-center font-semibold",
         list.with(t("filter packages"), (v) => {
