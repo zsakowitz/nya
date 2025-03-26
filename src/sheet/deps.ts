@@ -24,6 +24,7 @@ export interface Ctx {
 }
 
 export class Scope {
+  // FIXME: ctx ought to be plain scope
   readonly ctx: Ctx = Object.freeze({ scope: this, __proto__: null })
 
   constructor(readonly options: Options) {

@@ -9,6 +9,7 @@ import { FieldInert } from "@/field/field-inert"
 import { b, h, hx, li, px, t } from "@/jsx"
 import type { Sheet } from "@/sheet/ui/sheet"
 import { faFaceSadTear } from "@fortawesome/free-regular-svg-icons/faFaceSadTear"
+import { faClose } from "@fortawesome/free-solid-svg-icons/faClose"
 import { PackageList, secPackagesContents } from "./list"
 import { tyIcon } from "./signature"
 
@@ -59,6 +60,9 @@ export function createDocs2(sheet: Sheet) {
         h("border-b border-[--nya-border] w-2"),
         ...tabs.map((x) => x.el),
         h("border-b border-[--nya-border] w-2"),
+        h(
+          "absolute top-full inset-x-0 h-2 from-[--nya-bg-sidebar] to-transparent bg-gradient-to-b pointer-events-none",
+        ),
       ),
       h("block w-full h-[calc(3rem_+_1px)]"),
       h(
@@ -283,6 +287,45 @@ function secAbout() {
 }
 
 function secGuides(sheet: Sheet, list: PackageList) {
+  const activeTitle = t("")
+  const activeContents = h("flex flex-col gap-4")
+  const btn = hx(
+    "button",
+    "fixed right-[calc(18.5rem_+_1px)] top-[calc(3.5rem_+_1px)] size-8 bg-[--nya-bg] border border-[--nya-border] rounded-lg flex",
+    fa(faClose, "size-5 fill-[--nya-title] m-auto"),
+  )
+  const btn2 = h(
+    "-mb-4 -mx-4 block w-full mt-auto",
+    hx(
+      "button",
+      "block w-[calc(100%_+_2rem)] mt-4 p-4 italic text-[--nya-text-prose] text-sm underline underline-offset-2 rounded-b-lg",
+      "Click to show all guides.",
+    ),
+  )
+  btn.addEventListener("click", () => {
+    isActive = false
+    check()
+  })
+  btn2.addEventListener("click", () => {
+    isActive = false
+    check()
+  })
+  const active = h(
+    "hidden w-full max-w-prose flex flex-col gap-4 mx-auto text-[--nya-text-prose] flex-1",
+    btn,
+    h(
+      "flex flex-col gap-2 border rounded-lg p-4 bg-[--nya-bg] border-[--nya-border] flex-1",
+      hx(
+        "h2",
+        "text-2xl font-semibold border-b border-[--nya-border] pb-1 mb-2 text-[--nya-text]",
+        activeTitle,
+      ),
+      activeContents,
+      btn2,
+    ),
+  )
+  let isActive = false
+
   const guides = list.packages
     .flatMap((x) => (x.docs ? x.docs : []).map((v) => [v, x.id] as const))
     .sort(([a], [b]) =>
@@ -291,20 +334,26 @@ function secGuides(sheet: Sheet, list: PackageList) {
       : 0,
     )
     .map(([v, x]) => {
-      const chars = v.render().reduce((a, b) => {
-        b.querySelectorAll("samp").forEach((x) => x.remove())
-        return a + b.innerText.length
-      }, 0)
-
       const el = hx(
         "button",
         "flex flex-col",
         h(
-          "flex items-center justify-center border border-[--nya-border] bg-[--nya-bg] aspect-video rounded-lg",
-          hx("samp", "", v.poster),
+          "flex items-center justify-center border border-[--nya-border] bg-[--nya-bg] aspect-[16/9] rounded-lg relative",
+          h("*:cursor-pointer", math(v.poster)),
+          h("absolute left-2 bottom-1 text-[--nya-text-prose]", v.name),
         ),
-        h("text-[--nya-text-prose]", v.name, h("opacity-30", ` (${chars})`)),
       )
+
+      el.addEventListener("click", () => {
+        isActive = true
+        check()
+        activeTitle.data = v.name
+        while (activeContents.firstChild) {
+          activeContents.firstChild.remove()
+        }
+        activeContents.append(...v.render())
+        activeContents.querySelectorAll("samp").forEach(samp)
+      })
 
       list.on(() => {
         el.classList.toggle("hidden", list.active ? !list.has(x) : false)
@@ -334,19 +383,35 @@ function secGuides(sheet: Sheet, list: PackageList) {
     ),
   )
 
-  const el = h("w-full flex flex-1", grid, empty)
+  const el = h("w-full flex flex-1", active, grid, empty)
 
-  list.on(() => {
-    grid.classList.toggle("hidden", allHidden())
-    empty.classList.toggle("hidden", !allHidden())
-  })
+  function check() {
+    const rescroll = !(isActive && !active.classList.contains("hidden"))
+    active.classList.toggle("hidden", !isActive)
+    grid.classList.toggle("hidden", isActive || allHidden())
+    empty.classList.toggle("hidden", isActive || !allHidden())
+    if (rescroll) {
+      scrollTo({ behavior: "instant", left: 0, top: 0 })
+    }
+  }
 
-  el.querySelectorAll("samp").forEach((el) => {
-    // FIXME: ctx ought to be plain scope
-    const field = new FieldInert(sheet.options, sheet.scope.ctx)
-    field.typeLatex(el.textContent ?? "")
-    el.replaceWith(field.el)
-  })
+  list.on(check)
+
+  el.querySelectorAll("samp").forEach(samp)
 
   return el
+
+  function math(data: string) {
+    const field = new FieldInert(
+      sheet.options,
+      sheet.scope.ctx,
+      "text-[--nya-text]",
+    )
+    field.typeLatex(data)
+    return field.el
+  }
+
+  function samp(el: HTMLElement) {
+    el.replaceWith(math(el.textContent ?? ""))
+  }
 }
