@@ -91,7 +91,7 @@ function displayUnitPart(list: UnitList, display: Display, frac: boolean) {
   }
 }
 
-function displayUnit(list: UnitList, props: Display, require: boolean) {
+export function displayUnit(list: UnitList, props: Display, require: boolean) {
   const high = list.filter((x) => !(num(x.exp) < 0))
   const low = inv(list.filter((x) => num(x.exp) < 0))
 
@@ -312,6 +312,7 @@ export const PKG_UNITS: Package = {
       "unit",
       (a, b) => multiply(a.value, b.value),
       glsl,
+      "unit mol \\cdot unit K = \\varname{mol} \\cdot \\varname{K}",
     )
 
     OP_CDOT.add(

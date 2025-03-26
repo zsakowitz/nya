@@ -63,9 +63,10 @@ export class FnDist<Q extends TyName = TyName> extends FnDistManual<Q> {
       ctx: GlslContext,
       ...args: { -readonly [K in keyof T]: GlslVal<T[K]> }
     ) => string,
+    usage: string,
     docOrder: number | null = null,
   ) {
-    this.o.push({ params, type: ret, js, glsl, docOrder })
+    this.o.push({ params, type: ret, js, glsl, docOrder, usage })
     return this
   }
 
@@ -74,6 +75,7 @@ export class FnDist<Q extends TyName = TyName> extends FnDistManual<Q> {
     params: T,
     ret: R,
     js: (...args: { -readonly [K in keyof T]: JsVal<T[K]> }) => Tys[R],
+    usage: string,
     docOrder: number | null = null,
   ) {
     this.o.push({
@@ -83,6 +85,7 @@ export class FnDist<Q extends TyName = TyName> extends FnDistManual<Q> {
       glsl: issue(
         `The '${this.name}' function cannot be called from shaders yet.`,
       ),
+      usage,
       docOrder,
     })
     return this
@@ -94,9 +97,10 @@ export class FnDist<Q extends TyName = TyName> extends FnDistManual<Q> {
     ret: R,
     js: (value: Tys[T][]) => Tys[R],
     glsl: (ctx: GlslContext, ...args: GlslVal<T>[]) => string,
+    usage: string,
     docOrder: number | null = null,
   ) {
-    this.o.push({ param, type: ret, js, glsl, docOrder })
+    this.o.push({ param, type: ret, js, glsl, usage, docOrder })
     return this
   }
 
@@ -200,11 +204,13 @@ export class FnDist<Q extends TyName = TyName> extends FnDistManual<Q> {
               params: overload.params.map((x) => ({ type: x, list: false })),
               dots: false,
               ret: { type: overload.type, list: false },
+              usage: overload.usage,
             }
           : {
               params: [{ type: overload.param, list: false }],
               dots: false,
               ret: { type: overload.type, list: false },
+              usage: overload.usage,
             },
       )
   }

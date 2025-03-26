@@ -9,6 +9,7 @@ export interface FnSignature {
   readonly params: readonly FnType[]
   readonly dots: boolean
   readonly ret: FnType
+  readonly usage: string
 }
 
 export interface FnType {

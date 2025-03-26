@@ -30,14 +30,14 @@ export function createDocs2(sheet: Sheet) {
   )
 
   const list = new PackageList(pkgs)
-  let which = "guides"
+  let which = "functions"
 
   const names = {
     about: secAbout(),
     guides: secGuides(sheet, list),
     "data types": secDataTypes(list),
-    functions: functions(list, true),
-    operators: functions(list, false),
+    functions: secFunctions(list, true),
+    operators: secFunctions(list, false),
   }
   const tabs = Object.keys(names).map((x) => {
     const data = tab(x, x == which)
@@ -151,7 +151,7 @@ function tab(title: string, open: boolean) {
   }
 }
 
-function functions(list: PackageList, named: boolean) {
+function secFunctions(list: PackageList, named: boolean) {
   const raw = Object.values(FNS)
   const fns = ALL_DOCS.filter((x) => raw.includes(x as any) === named)
   fns.sort(

@@ -240,6 +240,7 @@ const FN_FIRSTVALID: Fn & WithDocs = {
         params: [{ type: "__any", list: false }],
         dots: true,
         ret: { type: "__any", list: false },
+        usage: `firstvalid(rgb(-2,3,40),rgb(70,250,9))=rgb(70,250,9)`,
       },
     ]
   },
@@ -277,6 +278,7 @@ export const PKG_BOOL: Package = {
       "bool",
       (a, b) => a.value && b.value,
       (_, a, b) => `(${a.expr} && ${b.expr})`,
+      "(2<3and7>8)=false",
     )
 
     OP_OR.add(
@@ -284,6 +286,7 @@ export const PKG_BOOL: Package = {
       "bool",
       (a, b) => a.value || b.value,
       (_, a, b) => `(${a.expr} || ${b.expr})`,
+      "(2<3or7>8)=true",
     )
 
     FN_VALID.add(
@@ -291,6 +294,7 @@ export const PKG_BOOL: Package = {
       "bool",
       () => true,
       () => "true",
+      "valid(false)=true",
     )
   },
   ty: {

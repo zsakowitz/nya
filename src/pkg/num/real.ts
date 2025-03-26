@@ -301,6 +301,17 @@ const FN_COUNT = new (class extends FnList<"r64"> {
     super("count", "counts the size of a list")
   }
 
+  docs(): FnSignature[] {
+    return [
+      {
+        params: [{ type: "__any", list: true }],
+        dots: false,
+        ret: { type: "r64", list: false },
+        usage: "count([7,9,4])=3",
+      },
+    ]
+  }
+
   signature(args: Ty[]): FnOverload<"r64"> {
     return {
       params: args.map((x) => x.type),
