@@ -1213,10 +1213,10 @@ export const PKG_GEOMETRY: Package = {
       line: INFO_LINE,
       vector: INFO_VECTOR,
       circle: INFO_CIRCLE,
+      arc: INFO_ARC,
       polygon: INFO_POLYGON,
       angle: INFO_ANGLE,
       directedangle: INFO_DIRECTEDANGLE,
-      arc: INFO_ARC,
     },
   },
   eval: {

@@ -35,6 +35,7 @@ export function createDocs2(sheet: Sheet) {
   const names = {
     about: secAbout(),
     guides: secGuides(sheet, list),
+    "data types": secDataTypes(list),
     functions: functions(list, true),
     operators: functions(list, false),
   }
@@ -212,6 +213,46 @@ function functions(list: PackageList, named: boolean) {
                 .filter((x, i, a) => a.indexOf(x) == i)
                 .map(tyIcon),
             ),
+          ),
+        )
+
+        list.on(() => {
+          tr.hidden = list.active ? !sources.some((x) => list.has(x)) : false
+        })
+
+        return tr
+      }),
+    ),
+  )
+}
+
+function secDataTypes(list: PackageList) {
+  const fns = Object.entries(TY_INFO)
+    .filter((x) => !x[0].endsWith("64"))
+    .map((x) => x[1])
+
+  return hx(
+    "table",
+    "w-full h-min",
+    hx("thead", "", hx("tr", "", hx("th", "", "icon"), hx("th", "", "name"))),
+    hx(
+      "tbody",
+      "",
+      ...fns.map((doc) => {
+        const sources = list.packages
+          .filter(
+            (x) => x.eval?.fn && Object.values(x.eval.fn).includes(doc as any),
+          )
+          .map((x) => x.id)
+
+        const tr = hx(
+          "tr",
+          "border-t border-[--nya-border]",
+          hx("td", "pt-[2px]", doc.icon()),
+          hx(
+            "td",
+            "align-baseline font-['Times_New_Roman'] text-[1.265rem] text-[--nya-text] whitespace-nowrap",
+            doc.name,
           ),
         )
 
