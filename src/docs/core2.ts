@@ -1,6 +1,5 @@
 import { FNS } from "@/eval/ops"
 import { ALL_DOCS } from "@/eval/ops/docs"
-import type { TyName } from "@/eval/ty"
 import { TY_INFO } from "@/eval/ty/info"
 import { CmdNum } from "@/field/cmd/leaf/num"
 import { CmdWord } from "@/field/cmd/leaf/word"
@@ -11,7 +10,6 @@ import type { Sheet } from "@/sheet/ui/sheet"
 import { faFaceSadTear } from "@fortawesome/free-regular-svg-icons/faFaceSadTear"
 import { faClose } from "@fortawesome/free-solid-svg-icons/faClose"
 import { PackageList, secPackagesContents } from "./list"
-import { tyIcon } from "./signature"
 
 function makeDocName(name: string) {
   return h(
@@ -36,8 +34,8 @@ export function createDocs2(sheet: Sheet) {
     about: secAbout(),
     guides: secGuides(sheet, list),
     "data types": secDataTypes(list),
-    functions: secFunctions(list, true),
-    operators: secFunctions(list, false),
+    functions: secFunctions(sheet, list, true),
+    operators: secFunctions(sheet, list, false),
   }
   const tabs = Object.keys(names).map((x) => {
     const data = tab(x, x == which)
@@ -151,9 +149,11 @@ function tab(title: string, open: boolean) {
   }
 }
 
-function secFunctions(list: PackageList, named: boolean) {
+function secFunctions(sheet: Sheet, list: PackageList, named: boolean) {
   const raw = Object.values(FNS)
-  const fns = ALL_DOCS.filter((x) => raw.includes(x as any) === named)
+  const fns = ALL_DOCS.filter((x) => raw.includes(x as any) === named).filter(
+    (x) => x.docs().some((x) => x.usage),
+  )
   fns.sort(
     (a, b) =>
       +/^[\w\s]+$/.test(b.name) - +/^[\w\s]+$/.test(a.name) ||
@@ -200,18 +200,17 @@ function secFunctions(list: PackageList, named: boolean) {
             "pt-[2px]",
             h(
               "inline-flex flex-wrap",
-              ...doc
-                .docs()
-                .map((x) => x.ret.type)
-                .map((x) =>
-                  x.endsWith("64") ?
-                    x.slice(0, -2) + "32" in TY_INFO ?
-                      ((x.slice(0, -2) + "32") as TyName)
-                    : x
-                  : x,
-                )
-                .filter((x, i, a) => a.indexOf(x) == i)
-                .map(tyIcon),
+              ...doc.docs().map((x) => math(x.usage ?? "")),
+              // .map((x) => x.ret.type)
+              // .map((x) =>
+              //   x.endsWith("64") ?
+              //     x.slice(0, -2) + "32" in TY_INFO ?
+              //       ((x.slice(0, -2) + "32") as TyName)
+              //     : x
+              //   : x,
+              // )
+              // .filter((x, i, a) => a.indexOf(x) == i)
+              // .map(tyIcon),
             ),
           ),
         )
@@ -224,6 +223,16 @@ function secFunctions(list: PackageList, named: boolean) {
       }),
     ),
   )
+
+  function math(data: string) {
+    const field = new FieldInert(
+      sheet.options,
+      sheet.scope.ctx,
+      "text-[--nya-text]",
+    )
+    field.typeLatex(data)
+    return field.el
+  }
 }
 
 function secDataTypes(list: PackageList) {

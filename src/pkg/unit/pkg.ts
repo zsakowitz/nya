@@ -17,6 +17,7 @@ import { OpCdot } from "@/field/cmd/leaf/op"
 import { CmdWord } from "@/field/cmd/leaf/word"
 import { CmdFrac } from "@/field/cmd/math/frac"
 import { CmdSupSub } from "@/field/cmd/math/supsub"
+import { toText } from "@/field/latex"
 import { Block, L, R } from "@/field/model"
 import { b, h, px, sx } from "@/jsx"
 import type { Package } from ".."
@@ -107,6 +108,52 @@ export function displayUnit(list: UnitList, props: Display, require: boolean) {
     }
   } else {
     displayUnitPart(high, props, false)
+  }
+}
+
+function latexUnitPart(list: UnitList, frac: boolean): string {
+  if (list.length == 0 && frac) {
+    return "1"
+  }
+
+  let ret = ""
+  let first = true
+  for (const {
+    exp,
+    unit: { label },
+  } of list) {
+    if (first) {
+      first = false
+    } else {
+      ret += "\\cdot "
+    }
+    const ev = num(exp)
+    if (ev == 0) continue
+    ret += `\\wordvar{${toText(label)}}`
+    if (ev != 1) {
+      ret += `^{${exp}}`
+    }
+  }
+
+  return ret
+}
+
+export function latexUnit(list: UnitList, require: boolean): string {
+  const high = list.filter((x) => !(num(x.exp) < 0))
+  const low = inv(list.filter((x) => num(x.exp) < 0))
+
+  if (low.length != 0) {
+    const num = latexUnitPart(high, true)
+    const denom = latexUnitPart(low, true)
+    return `\\frac{${num}}{${denom}}`
+  } else if (high.length == 0) {
+    if (require) {
+      return "\\wordvar{unitless}"
+    } else {
+      return ""
+    }
+  } else {
+    return latexUnitPart(high, false)
   }
 }
 
@@ -312,7 +359,7 @@ export const PKG_UNITS: Package = {
       "unit",
       (a, b) => multiply(a.value, b.value),
       glsl,
-      "unit mol \\cdot unit K = \\varname{mol} \\cdot \\varname{K}",
+      "unit mol \\cdot unit K = \\wordvar{mol} \\cdot \\wordvar{K}",
     )
 
     OP_CDOT.add(

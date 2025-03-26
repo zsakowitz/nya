@@ -2,13 +2,12 @@ import { NO_SYM } from "@/eval/ast/tx"
 import { FnDist } from "@/eval/ops/dist"
 import { issue } from "@/eval/ops/issue"
 import type { JsVal, JsValue } from "@/eval/ty"
-import { frac, real } from "@/eval/ty/create"
-import { Display } from "@/eval/ty/display"
+import { real } from "@/eval/ty/create"
 import { type TyInfoByName } from "@/eval/ty/info"
 import { brightness } from "@/field/cmd/leaf/color"
 import { CmdWord } from "@/field/cmd/leaf/word"
 import { toText } from "@/field/latex"
-import { Block, L, R } from "@/field/model"
+import { L } from "@/field/model"
 import { h, hx } from "@/jsx"
 import type { Package } from ".."
 import type { TextSegment } from "../text"
@@ -20,7 +19,7 @@ import {
   UNIT_KILOJOULE,
   UNIT_MOLE,
 } from "../unit/impl/units"
-import { displayUnit } from "../unit/pkg"
+import { latexUnit } from "../unit/pkg"
 
 declare module "@/eval/ty" {
   interface Tys {
@@ -5545,14 +5544,11 @@ function numProp<
 
   const list: UnitList = Array.isArray(unit) ? unit : [{ exp: real(1), unit }]
 
-  const block = new Block(null)
-  const props = new Display(block.cursor(R), frac(10, 1))
-  displayUnit(list, props, false)
   return new FnDist(name, label).addJs(
     ["element"],
     "r32u",
     map((x) => [real(x?.[key] ?? NaN), list]),
-    `${name}element Li=${bySymbol.Li?.[key] ?? `\\digit N \\digit a \\digit N `}${block.latex()}`,
+    `${name}element Li=${bySymbol.Li?.[key] ?? `\\digit N \\digit a \\digit N `}${latexUnit(list, false)}`,
   )
 }
 
