@@ -1,1 +1,2 @@
-@\left|iterate^{50}z\to z^2+pwhile|z|<2\right|=2
+debugast([1...2])
+debugast([1,...,3,2])
