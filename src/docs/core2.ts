@@ -1,5 +1,6 @@
 import { FNS } from "@/eval/ops"
 import { ALL_DOCS } from "@/eval/ops/docs"
+import type { TyName } from "@/eval/ty"
 import { TY_INFO } from "@/eval/ty/info"
 import { CmdNum } from "@/field/cmd/leaf/num"
 import { CmdWord } from "@/field/cmd/leaf/word"
@@ -10,6 +11,7 @@ import type { Sheet } from "@/sheet/ui/sheet"
 import { faFaceSadTear } from "@fortawesome/free-regular-svg-icons/faFaceSadTear"
 import { faClose } from "@fortawesome/free-solid-svg-icons/faClose"
 import { PackageList, secPackagesContents } from "./list"
+import { tyIcon } from "./signature"
 
 function makeDocName(name: string) {
   return h(
@@ -151,9 +153,7 @@ function tab(title: string, open: boolean) {
 
 function secFunctions(sheet: Sheet, list: PackageList, named: boolean) {
   const raw = Object.values(FNS)
-  const fns = ALL_DOCS.filter((x) => raw.includes(x as any) === named).filter(
-    (x) => x.docs().some((x) => x.usage),
-  )
+  const fns = ALL_DOCS.filter((x) => raw.includes(x as any) === named)
   fns.sort(
     (a, b) =>
       +/^[\w\s]+$/.test(b.name) - +/^[\w\s]+$/.test(a.name) ||
@@ -200,23 +200,19 @@ function secFunctions(sheet: Sheet, list: PackageList, named: boolean) {
             "pt-[2px]",
             hx(
               "ul",
-              "inline-flex flex-col gap-2",
+              "inline-flex flex-wrap gap-y-0.5",
               ...doc
                 .docs()
-                .flatMap((x) => (x.usage ? x.usage : []))
-                .filter((x) => x.trim())
-                .map((x) => hx("li", "", math(x))),
-              // FIXME: put examples somewhere else
-              // .map((x) => x.ret.type)
-              // .map((x) =>
-              //   x.endsWith("64") ?
-              //     x.slice(0, -2) + "32" in TY_INFO ?
-              //       ((x.slice(0, -2) + "32") as TyName)
-              //     : x
-              //   : x,
-              // )
-              // .filter((x, i, a) => a.indexOf(x) == i)
-              // .map(tyIcon),
+                .map((x) => x.ret.type)
+                .map((x) =>
+                  x.endsWith("64") ?
+                    x.slice(0, -2) + "32" in TY_INFO ?
+                      ((x.slice(0, -2) + "32") as TyName)
+                    : x
+                  : x,
+                )
+                .filter((x, i, a) => a.indexOf(x) == i)
+                .map(tyIcon),
             ),
           ),
         )
