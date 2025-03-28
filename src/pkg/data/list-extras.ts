@@ -21,6 +21,7 @@ const FN_SORT: Fn & WithDocs = {
         params: [{ type: "r32", list: false }],
         dots: true,
         ret: { type: "r32", list: true },
+        usage: "sort([8,1,2,13])=[1,2,8,13]",
       },
     ]
   },
@@ -63,6 +64,7 @@ const FN_UNIQUE: Fn & WithDocs = {
         params: [{ type: "r32", list: false }],
         dots: true,
         ret: { type: "r32", list: true },
+        usage: "unique([7,9,8,9,2,3,7])=[7,9,8,2,3]",
       },
     ]
   },

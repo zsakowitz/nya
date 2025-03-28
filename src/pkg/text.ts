@@ -345,6 +345,7 @@ export const PKG_TEXT: Package = {
     },
     latex: {
       "\\text": CmdText,
+      "\\textinert": CmdTextInert,
     },
   },
   ty: {

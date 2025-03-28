@@ -106,7 +106,7 @@ export const PKG_COLOR_CORE: Package = {
       plotJs,
       (_, a) =>
         `(${a.expr} ? vec4(0.1764705882, 0.4392156863, 0.7019607843, 1) : vec4(0))`,
-      "\\wordprefix{plot}(true)=rgb(45,112,179)",
+      "\\wordprefix{plot}(true)=\\nyacolor{rgb(45,112,179)}", // TODO: update once custom graph colors work
     )
 
     FN_RGB.add(
@@ -144,6 +144,7 @@ export const PKG_COLOR_CORE: Package = {
         declareHsv(ctx)
         return `vec4(_helper_hsv(vec3(${hr.expr} / 360.0, ${sr.expr}, ${vr.expr})), 1)`
       },
+      "hsv(180,.5,.7)=\\nyacolor{#59b2b2}",
     ).add(
       ["r32", "r32", "r32", "r32"],
       "color",
@@ -152,9 +153,16 @@ export const PKG_COLOR_CORE: Package = {
         declareHsv(ctx)
         return `vec4(_helper_hsv(vec3(${hr.expr} / 360.0, ${sr.expr}, ${vr.expr})), ${ar.expr})`
       },
+      "hsv(180,.5,.7,.5)=\\nyacolor{#59b2b280}",
     )
 
-    OP_PLOT.add(["color"], "color", plotJs, (_, a) => a.expr).add(
+    OP_PLOT.add(
+      ["color"],
+      "color",
+      plotJs,
+      (_, a) => a.expr,
+      "\\wordprefix{plot}(rgb(2,128,40))=\\nyacolor{#028028}",
+    ).add(
       ["r32"],
       "color",
       plotJs,
@@ -165,6 +173,7 @@ export const PKG_COLOR_CORE: Package = {
           { type: "r32", expr: "1.0" },
           { type: "r32", expr: "1.0" },
         ).expr,
+      "\\wordprefix{plot}(120)=\\nyacolor{#0f0}",
     )
 
     OP_CDOT.add(
@@ -172,11 +181,13 @@ export const PKG_COLOR_CORE: Package = {
       "color",
       (a, b) => (b.value ? a.value : TY_INFO.color.garbage.js),
       (_, a, b) => `(${b.expr} ? ${a.expr} : ${TY_INFO.color.garbage.glsl})`,
+      "rgb(70,8,9)\\cdot{1>2}=rgb(70,8,9)",
     ).add(
       ["bool", "color"],
       "color",
       (b, a) => (b.value ? a.value : TY_INFO.color.garbage.js),
       (_, b, a) => `(${b.expr} ? ${a.expr} : ${TY_INFO.color.garbage.glsl})`,
+      [],
     )
   },
   ty: {

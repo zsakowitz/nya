@@ -5519,7 +5519,7 @@ function textProp<
     ["element"],
     "text",
     map((x) => text(x?.[key] ?? defaultValue)),
-    `${name}(element Li)=\\text{${toText(bySymbol.Li?.[key] ?? defaultValue)}}`,
+    `${name}(element Li)=\\textinert{${toText(bySymbol.Li?.[key] ?? defaultValue)}}`,
   )
 }
 

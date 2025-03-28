@@ -10,7 +10,7 @@ import type { Package } from ".."
 declare module "@/eval/ty" {
   interface Tys {
     normaldist: [mean: SReal, stdev: SReal]
-    tdist: SReal
+    tdist: [degrees: SReal, shift: SReal, scale: SReal]
     poissondist: SReal
     binomialdist: [trials: SReal, chance: SReal]
     uniformdist: [min: SReal, max: SReal]
@@ -31,26 +31,45 @@ const normaldist = new FnDist("normaldist", "creates a normal distribution")
     "normaldist",
     () => [real(0), real(1)],
     () => "vec2(0,1)",
+    "normaldist()=normaldist(0,1)",
   )
   .add(
     ["r32"],
     "normaldist",
     (a) => [a.value, real(1)],
     (_, a) => `vec2(${a.expr}, 1)`,
+    "normaldist(3)=normaldist(3,1)",
   )
   .add(
     ["r32", "r32"],
     "normaldist",
     (a, b) => [a.value, b.value],
     (_, a, b) => `vec2(${a.expr}, ${b.expr})`,
+    "normaldist(3,2.7)",
   )
 
-const tdist = new FnDist("tdist", "creates a t-distribution").add(
-  ["r32"],
-  "tdist",
-  (a) => a.value,
-  (_, a) => a.expr,
-)
+const tdist = new FnDist("tdist", "creates a t-distribution")
+  .add(
+    ["r32"],
+    "tdist",
+    (a) => [a.value, real(0), real(1)],
+    (_, a) => `vec3(${a.expr}, 0, 1)`,
+    "tdist(2.5)=tdist(2.5,0,1)",
+  )
+  .add(
+    ["r32", "r32"],
+    "tdist",
+    (a, b) => [a.value, b.value, real(1)],
+    (_, a, b) => `vec3(${a.expr}, ${b.expr}, 1)`,
+    "tdist(2.5,3)=tdist(2.5,3,1)",
+  )
+  .add(
+    ["r32", "r32", "r32"],
+    "tdist",
+    (a, b, c) => [a.value, b.value, c.value],
+    (_, a, b, c) => `vec3(${a.expr}, ${b.expr}, ${c.expr})`,
+    "tdist(2.5,3,7.8)",
+  )
 
 const poissondist = new FnDist(
   "poissondist",
@@ -60,6 +79,7 @@ const poissondist = new FnDist(
   "poissondist",
   (a) => a.value,
   (_, a) => a.expr,
+  "poissondist(2.5)",
 )
 
 const binomialdist = new FnDist(
@@ -71,12 +91,14 @@ const binomialdist = new FnDist(
     "binomialdist",
     (a) => [a.value, real(0.5)],
     (_, a) => `vec2(${a.expr}, 0.5)`,
+    "binomialdist(6)=binomialdist(6,0.5)",
   )
   .add(
     ["r32", "r32"],
     "binomialdist",
     (a, b) => [a.value, b.value],
     (_, a, b) => `vec2(${a.expr}, ${b.expr})`,
+    "binomialdist(6,0.3)",
   )
 
 const uniformdist = new FnDist("uniformdist", "creates a uniform distribution")
@@ -85,18 +107,21 @@ const uniformdist = new FnDist("uniformdist", "creates a uniform distribution")
     "uniformdist",
     () => [real(0), real(1)],
     () => "vec2(0,1)",
+    "uniformdist()=uniformdist(0,1)",
   )
   .add(
     ["r32"],
     "uniformdist",
     (a) => [a.value, real(1)],
     (_, a) => `vec2(${a.expr}, 1)`,
+    "uniformdist(0.7)=uniformdist(0.7,1)",
   )
   .add(
     ["r32", "r32"],
     "uniformdist",
     (a, b) => [a.value, b.value],
     (_, a, b) => `vec2(${a.expr}, ${b.expr})`,
+    "uniformdist(8,23)=uniformdist(8,23)",
   )
 
 // TODO: tokens for distributions
@@ -167,23 +192,27 @@ export const PKG_DISTRIBUTIONS: Package = {
         name: "t-distribution",
         namePlural: "t-distributions",
         glsl: "float",
-        toGlsl(a) {
-          return gl(a)
+        toGlsl(x) {
+          return `vec3(${x.map(gl).join(", ")})`
         },
         garbage: {
-          js: real(NaN),
-          glsl: "(0.0/0.0)",
+          js: [real(NaN), real(NaN), real(NaN)],
+          glsl: "vec3(0.0/0.0)",
         },
         coerce: {},
         write: {
-          isApprox(value) {
-            return value.type == "approx"
+          isApprox(x) {
+            return x.some((x) => x.type == "approx")
           },
           display(value, props) {
             new CmdWord("tdist", "prefix").insertAt(props.cursor, L)
             const block = new Block(null)
             const inner = props.at(block.cursor(R))
-            inner.num(value)
+            inner.num(value[0])
+            new CmdComma().insertAt(inner.cursor, L)
+            inner.num(value[1])
+            new CmdComma().insertAt(inner.cursor, L)
+            inner.num(value[2])
             new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
           },
         },
