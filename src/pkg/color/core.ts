@@ -181,7 +181,7 @@ export const PKG_COLOR_CORE: Package = {
       "color",
       (a, b) => (b.value ? a.value : TY_INFO.color.garbage.js),
       (_, a, b) => `(${b.expr} ? ${a.expr} : ${TY_INFO.color.garbage.glsl})`,
-      "rgb(70,8,9)\\cdot{1>2}=rgb(70,8,9)",
+      "rgb(70,8,9)\\cdot\\left{1>2\\right}=rgb(70,8,9)",
     ).add(
       ["bool", "color"],
       "color",

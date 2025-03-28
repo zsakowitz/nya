@@ -1,4 +1,3 @@
-import type { Package } from ".."
 import { Precedence } from "@/eval/ast/token"
 import { dragNum, dragPoint, NO_DRAG, sym } from "@/eval/ast/tx"
 import { glsl } from "@/eval/glsl"
@@ -35,6 +34,7 @@ import { CmdBrack } from "@/field/cmd/math/brack"
 import { CmdFrac } from "@/field/cmd/math/frac"
 import { CmdSupSub } from "@/field/cmd/math/supsub"
 import { Block, L, R, Span } from "@/field/model"
+import type { Package } from ".."
 
 export function declareAddR64(ctx: GlslContext) {
   declareR64(ctx)
@@ -222,6 +222,8 @@ export const OP_SUB: FnDist = new FnDist("-", "subtracts two values", {
   },
 })
 
+// TODO: make sure only one side for each signature has usage examples
+// (2*(4,7) and (4,7)*2 should not both have usage examples)
 export const OP_CDOT: FnDist = new FnDist("·", "multiplies two values", {
   message: "Cannot multiply %%.",
   display: binaryFn(() => new OpCdot(), Precedence.Product),

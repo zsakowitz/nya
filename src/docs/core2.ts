@@ -240,9 +240,9 @@ function secFunctions(sheet: Sheet, list: PackageList, named: boolean) {
 
 function secFunctions2(sheet: Sheet, list: PackageList, named: boolean) {
   const raw = Object.values(FNS)
-  const fns = ALL_DOCS.filter((x) => raw.includes(x as any) === named).filter(
-    (x) => x.docs().some((x) => x.usage),
-  )
+  const fns = ALL_DOCS
+    // .filter((x) => raw.includes(x as any) === named)
+    .filter((x) => x.docs().some((x) => x.usage))
   fns.sort(
     (a, b) =>
       +/^[\w\s]+$/.test(b.name) - +/^[\w\s]+$/.test(a.name) ||
