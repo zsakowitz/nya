@@ -104,16 +104,15 @@ const EXT_GLSL = defineExt({
         return a
       }
 
-      const p11 = go(-2, -2)
-      const p12 = go(-2, +2)
-      const p21 = go(+2, -2)
-      const p22 = go(+2, +2)
+      const DIST = 1.5 * data.expr.sheet.cv.scale
+      const DIAG = DIST * Math.SQRT2
 
-      const result = `int(${p11} < 0.0) + int(${p12} < 0.0) + int(${p21} < 0.0) + int(${p22} < 0.0)`
+      const r1 = `int(${go(-DIST, -DIST)} < 0.0) + int(${go(-DIST, +DIST)} < 0.0) + int(${go(+DIST, -DIST)} < 0.0) + int(${go(+DIST, +DIST)} < 0.0)`
+      const r2 = `int(${go(-DIAG, 0)} < 0.0) + int(${go(+DIAG, 0)} < 0.0) + int(${go(0, -DIAG)} < 0.0) + int(${go(0, +DIAG)} < 0.0)`
 
       return [
         props.ctx,
-        `${result} == 0 || ${result} == 4 ? vec4(0) : vec4(0.1764705882, 0.4392156863, 0.7019607843, 1)`,
+        `(${r1} == 0 || ${r1} == 4) && (${r2} == 0 || ${r2} == 4) ? vec4(0) : vec4(0.1764705882, 0.4392156863, 0.7019607843, 1)`,
       ]
     }
 
