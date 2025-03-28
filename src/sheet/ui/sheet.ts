@@ -251,7 +251,7 @@ export class Sheet {
     this.glPixelRatio.el.className =
       "block w-48 bg-[--nya-bg] outline outline-1 outline-[--nya-pixel-ratio] rounded-full p-1"
     this.el = h(
-      "fixed inset-0 grid grid-cols-[min(500px,40vw)_1fr] grid-rows-[3rem_1fr] grid-rows-1 select-none",
+      "bg-[--nya-bg] fixed inset-0 grid grid-cols-[min(500px,40vw)_1fr] grid-rows-[3rem_1fr] grid-rows-1 select-none",
 
       sidebar,
       docs,

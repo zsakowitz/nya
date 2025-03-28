@@ -23,8 +23,8 @@ if (IS_DEV) {
 }
 
 const sheet = factory.create()
-document.body.appendChild(createDocs2(sheet))
-// document.body.appendChild(sheet.el)
+// document.body.appendChild(createDocs2(sheet))
+document.body.appendChild(sheet.el)
 
 function expr(source: string) {
   if (source.startsWith("#")) {
