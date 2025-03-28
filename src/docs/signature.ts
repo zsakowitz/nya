@@ -63,7 +63,7 @@ export function docFromSignature(signature: FnSignature) {
   }
 
   return h(
-    "inline-block",
+    "inline-block font-['Symbola'] text-[1.265em]",
     CmdBrack.render("(", ")", null, { el }),
     new OpRightArrow().el,
     typeDocs(signature.ret),

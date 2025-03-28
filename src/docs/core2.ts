@@ -11,7 +11,7 @@ import type { Sheet } from "@/sheet/ui/sheet"
 import { faFaceSadTear } from "@fortawesome/free-regular-svg-icons/faFaceSadTear"
 import { faClose } from "@fortawesome/free-solid-svg-icons/faClose"
 import { PackageList, secPackagesContents } from "./list"
-import { tyIcon } from "./signature"
+import { docFromSignature, tyIcon } from "./signature"
 
 function makeDocName(name: string) {
   return h(
@@ -30,7 +30,7 @@ export function createDocs2(sheet: Sheet) {
   )
 
   const list = new PackageList(pkgs)
-  let which = "operators"
+  let which = "fn cards"
 
   const names = {
     about: secAbout(),
@@ -38,6 +38,7 @@ export function createDocs2(sheet: Sheet) {
     "data types": secDataTypes(list),
     functions: secFunctions(sheet, list, true),
     operators: secFunctions(sheet, list, false),
+    "fn cards": secFunctions2(sheet, list, true),
   }
   const tabs = Object.keys(names).map((x) => {
     const data = tab(x, x == which)
@@ -224,6 +225,65 @@ function secFunctions(sheet: Sheet, list: PackageList, named: boolean) {
         return tr
       }),
     ),
+  )
+
+  function math(data: string) {
+    const field = new FieldInert(
+      sheet.options,
+      sheet.scope.ctx,
+      "text-[--nya-text]",
+    )
+    field.typeLatex(data)
+    return field.el
+  }
+}
+
+function secFunctions2(sheet: Sheet, list: PackageList, named: boolean) {
+  const raw = Object.values(FNS)
+  const fns = ALL_DOCS.filter((x) => raw.includes(x as any) === named).filter(
+    (x) => x.docs().some((x) => x.usage),
+  )
+  fns.sort(
+    (a, b) =>
+      +/^[\w\s]+$/.test(b.name) - +/^[\w\s]+$/.test(a.name) ||
+      (a.name < b.name ? -1
+      : a.name > b.name ? 1
+      : 0),
+  )
+
+  const els = fns.map((fn) =>
+    h(
+      "flex flex-col bg-[--nya-bg] border-[--nya-border] border rounded-lg py-2 gap-4",
+      h("px-2", makeDocName(fn.name)),
+      h("px-2 text-[--nya-title] -mt-4 text-sm", fn.label),
+      ...fn
+        .docs()
+        .map((decl) =>
+          h(
+            "flex flex-col gap-1",
+            h("px-2", docFromSignature(decl)),
+            decl.usage?.length ?
+              h(
+                "flex flex-col gap-1",
+                ...(typeof decl.usage == "string" ?
+                  [decl.usage]
+                : decl.usage
+                ).map((x) =>
+                  h(
+                    "overflow-x-auto pl-6 pr-2 [&::-webkit-scrollbar]:hidden",
+                    math(x),
+                  ),
+                ),
+              )
+            : null,
+          ),
+        ),
+    ),
+  )
+
+  return h(
+    "w-full grid grid-cols-[repeat(auto-fill,minmax(18rem,1fr))] h-min gap-2",
+    ...els,
   )
 
   function math(data: string) {
