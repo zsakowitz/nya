@@ -120,6 +120,7 @@ export function mark<const T extends TyName>(
     (a, b, c) => js(a, [b.value, c.value]),
     (ctx, a, b, c) =>
       glsl(ctx, a, ctx.cached("vector", `vec4(${b.expr}, ${c.expr})`)),
+    undefined,
     1,
   )
 }

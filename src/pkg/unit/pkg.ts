@@ -367,6 +367,7 @@ export const PKG_UNITS: Package = {
       "r32u",
       (a, b) => [mul(a.value[0], b.value[0]), multiply(a.value[1], b.value[1])],
       glsl,
+      "3 unit mol \\cdot 4 unit K = 12 \\wordvar{mol} \\cdot \\wordvar{K}",
     )
 
     OP_DIV.add(
@@ -374,6 +375,7 @@ export const PKG_UNITS: Package = {
       "unit",
       (a, b) => multiply(a.value, inv(b.value)),
       glsl,
+      "unit mol ÷ unit K = \\frac \\wordvar{mol} \\wordvar K",
     )
 
     OP_DIV.add(
@@ -384,15 +386,23 @@ export const PKG_UNITS: Package = {
         multiply(a.value[1], inv(b.value[1])),
       ],
       glsl,
+      "6 unit mol ÷ 3 unit K = 2 \\frac \\wordvar{mol} \\wordvar K",
     )
 
-    OP_RAISE.add(["unit", "r32"], "unit", (a, b) => exp(a.value, b.value), glsl)
+    OP_RAISE.add(
+      ["unit", "r32"],
+      "unit",
+      (a, b) => exp(a.value, b.value),
+      glsl,
+      "(unit ft)^2 = \\wordvar{ft}^2",
+    )
 
     OP_RAISE.add(
       ["r32u", "r32"],
       "r32u",
       (a, b) => [raise(a.value[0], b.value), exp(a.value[1], b.value)],
       glsl,
+      "(3 unit ft)^2 = 9 \\wordvar{ft}^2",
     )
 
     OP_ADD.add(
@@ -409,6 +419,7 @@ export const PKG_UNITS: Package = {
         return [convertInv(val, f1), u1]
       },
       glsl,
+      "3 unit m + 47 unit cm = 3.47 \\wordvar{m}",
     )
 
     OP_SUB.add(
@@ -425,13 +436,26 @@ export const PKG_UNITS: Package = {
         return [convertInv(val, f1), u1]
       },
       glsl,
+      "3 unit m - 47 unit cm = 2.53 \\wordvar{m}",
     )
 
-    OP_POS.add(["unit"], "unit", (a) => a.value, glsl)
+    OP_POS.add(["unit"], "unit", (a) => a.value, glsl, "+unit m = \\wordvar m")
 
-    OP_POS.add(["r32u"], "r32u", (a) => a.value, glsl)
+    OP_POS.add(
+      ["r32u"],
+      "r32u",
+      (a) => a.value,
+      glsl,
+      "+7 unit m = 7 \\wordvar m",
+    )
 
-    OP_NEG.add(["r32u"], "r32u", ({ value: [a, u] }) => [neg(a), u], glsl)
+    OP_NEG.add(
+      ["r32u"],
+      "r32u",
+      ({ value: [a, u] }) => [neg(a), u],
+      glsl,
+      "-7 unit m = -7 \\wordvar m",
+    )
 
     FN_IN.add(
       ["r32u", "unit"],
@@ -441,6 +465,7 @@ export const PKG_UNITS: Package = {
         return [convert(a.value[0], f), b.value]
       },
       glsl,
+      "(7 unit m) in unit cm = 700 \\wordvar{cm}",
     )
 
     FN_INTOSI.add(
@@ -452,6 +477,7 @@ export const PKG_UNITS: Package = {
         return [convert(a.value[0], factor), unit]
       },
       glsl,
+      "intosi(7 unit cal)=29.288\\frac{\\wordvar{kg}\\cdot\\wordvar m^2}{\\wordvar s^2}",
     )
   },
   docs: [

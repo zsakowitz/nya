@@ -1,7 +1,8 @@
-import { Leaf } from "."
 import type { Node } from "@/eval/ast/token"
+import type { LatexParser } from "@/field/latex"
 import { h, hx } from "@/jsx"
-import { L, type Cursor, type InitProps } from "../../model"
+import { Leaf } from "."
+import { L, type Command, type Cursor, type InitProps } from "../../model"
 
 export function brightness(rgb: string) {
   const r = parseInt(rgb.slice(1, 3), 16) / 255
@@ -30,6 +31,10 @@ export class CmdColor extends Leaf {
     } else {
       return "#808080"
     }
+  }
+
+  static fromLatex(_cmd: string, parser: LatexParser): Command {
+    return new CmdColor(parser.text())
   }
 
   static init(cursor: Cursor, { input }: InitProps) {

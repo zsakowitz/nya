@@ -5519,7 +5519,7 @@ function textProp<
     ["element"],
     "text",
     map((x) => text(x?.[key] ?? defaultValue)),
-    `${name}element Li=\\text{${toText(bySymbol.Li?.[key] ?? defaultValue)}}`,
+    `${name}(element Li)=\\text{${toText(bySymbol.Li?.[key] ?? defaultValue)}}`,
   )
 }
 
@@ -5538,7 +5538,7 @@ function numProp<
       ["element"],
       "r32",
       map((x) => real(x?.[key] ?? NaN)),
-      `${name}element Li=${bySymbol.Li?.[key] ?? `\\digit N \\digit a \\digit N`}`,
+      `${name}(element Li)=${bySymbol.Li?.[key] ?? `\\digit N \\digit a \\digit N`}`,
     )
   }
 
@@ -5548,7 +5548,7 @@ function numProp<
     ["element"],
     "r32u",
     map((x) => [real(x?.[key] ?? NaN), list]),
-    `${name}element Li=${bySymbol.Li?.[key] ?? `\\digit N \\digit a \\digit N `}${latexUnit(list, false)}`,
+    `${name}(element Li)=${bySymbol.Li?.[key] ?? `\\digit N \\digit a \\digit N `}${latexUnit(list, false)}`,
   )
 }
 

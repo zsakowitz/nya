@@ -237,6 +237,7 @@ const latex = new WordMap<LatexInit>([
   ["\\wordvar", CmdWord],
   ["\\wordprefix", CmdWord],
   ["\\wordinfix", CmdWord],
+  ["\\nyacolor", CmdColor],
 ])
 
 for (const key of inits.getAll()) {

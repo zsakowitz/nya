@@ -32,7 +32,7 @@ interface FnOverloadFixed<Q extends TyName = TyName> {
   type: Q
   js(...args: JsVal[]): Val<Q>
   glsl(ctx: GlslContext, ...args: GlslVal[]): string
-  usage: string
+  usage: string | string[]
   docOrder: number | null
 }
 

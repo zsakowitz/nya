@@ -28,7 +28,7 @@ export function createDocs2(sheet: Sheet) {
   )
 
   const list = new PackageList(pkgs)
-  let which = "functions"
+  let which = "operators"
 
   const names = {
     about: secAbout(),
@@ -198,9 +198,15 @@ function secFunctions(sheet: Sheet, list: PackageList, named: boolean) {
           hx(
             "td",
             "pt-[2px]",
-            h(
-              "inline-flex flex-wrap",
-              ...doc.docs().map((x) => math(x.usage ?? "")),
+            hx(
+              "ul",
+              "inline-flex flex-col gap-2",
+              ...doc
+                .docs()
+                .flatMap((x) => (x.usage ? x.usage : []))
+                .filter((x) => x.trim())
+                .map((x) => hx("li", "", math(x))),
+              // FIXME: put examples somewhere else
               // .map((x) => x.ret.type)
               // .map((x) =>
               //   x.endsWith("64") ?

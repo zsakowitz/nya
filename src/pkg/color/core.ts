@@ -106,6 +106,7 @@ export const PKG_COLOR_CORE: Package = {
       plotJs,
       (_, a) =>
         `(${a.expr} ? vec4(0.1764705882, 0.4392156863, 0.7019607843, 1) : vec4(0))`,
+      "\\wordprefix{plot}(true)=rgb(45,112,179)",
     )
 
     FN_RGB.add(
@@ -119,6 +120,7 @@ export const PKG_COLOR_CORE: Package = {
         a: real(1),
       }),
       (_, r, g, b) => `vec4(vec3(${r.expr}, ${g.expr}, ${b.expr}) / 255.0, 1)`,
+      "rgb(70,255,128)=\\nyacolor{rgb(70,255,128)}",
     ).add(
       ["r32", "r32", "r32", "r32"],
       "color",
@@ -131,6 +133,7 @@ export const PKG_COLOR_CORE: Package = {
       }),
       (_, r, g, b, a) =>
         `vec4(vec3(${r.expr}, ${g.expr}, ${b.expr}) / 255.0, ${a.expr})`,
+      "rgb(70,255,128,.4)=\\nyacolor{rgba(70,255,128,.4)}",
     )
 
     FN_HSV.add(

@@ -63,7 +63,7 @@ export class FnDist<Q extends TyName = TyName> extends FnDistManual<Q> {
       ctx: GlslContext,
       ...args: { -readonly [K in keyof T]: GlslVal<T[K]> }
     ) => string,
-    usage: string,
+    usage: string | string[],
     docOrder: number | null = null,
   ) {
     this.o.push({ params, type: ret, js, glsl, docOrder, usage })
@@ -187,7 +187,7 @@ export class FnDist<Q extends TyName = TyName> extends FnDistManual<Q> {
   }
 
   docs(): FnSignature[] {
-    let o: FnOverload[] = this.o
+    let o: FnOverload[] = this.o.slice()
     let el: FnDist = this
     while (el.parent) {
       o.unshift(...el.parent.o)
