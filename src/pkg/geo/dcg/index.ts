@@ -1198,7 +1198,10 @@ const PICK_ANGLEBISECTOR = definePickTy(
 )
 
 // straightedge and compass
-const nosc = !new URLSearchParams(location.search).has("sconly")
+const sc =
+  globalThis.URLSearchParams ?
+    !new URLSearchParams(globalThis.location?.search).has("sconly")
+  : true
 
 export const PKG_GEOMETRY: Package = {
   id: "nya:geometry",
@@ -1272,16 +1275,16 @@ export const PKG_GEOMETRY: Package = {
         toolbar(INFO_SEGMENT.icon, PICK_SEGMENT, "s"),
         toolbar(INFO_RAY.icon, PICK_RAY, "r"),
         toolbar(INFO_LINE.icon, PICK_LINE, "l"),
-        nosc && toolbar(INFO_VECTOR.icon, PICK_VECTOR, "v"),
+        sc && toolbar(INFO_VECTOR.icon, PICK_VECTOR, "v"),
         toolbar(INFO_CIRCLE.icon, PICK_CIRCLE, "c"),
-        nosc && toolbar(INFO_ARC.icon, PICK_ARC, "a"),
+        sc && toolbar(INFO_ARC.icon, PICK_ARC, "a"),
         toolbar(INFO_POLYGON.icon, PICK_POLYGON, "P"),
         toolbar(INFO_ANGLE.icon, PICK_ANGLE, "A"),
         toolbar(INFO_DIRECTEDANGLE.icon, PICK_DIRECTEDANGLE, "d"),
-        nosc && toolbar(iconPerpendicular, PICK_PERPENDICULAR, "x"),
-        nosc && toolbar(iconParallel, PICK_PARALLEL, "z"),
-        nosc && toolbar(iconMidpoint, PICK_MIDPOINT, "m"),
-        nosc && toolbar(iconAngleBisector, PICK_ANGLEBISECTOR, "b"),
+        sc && toolbar(iconPerpendicular, PICK_PERPENDICULAR, "x"),
+        sc && toolbar(iconParallel, PICK_PARALLEL, "z"),
+        sc && toolbar(iconMidpoint, PICK_MIDPOINT, "m"),
+        sc && toolbar(iconAngleBisector, PICK_ANGLEBISECTOR, "b"),
       ].filter((x) => x != false),
     },
     keys: {

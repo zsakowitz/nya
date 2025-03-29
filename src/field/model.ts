@@ -6,9 +6,6 @@ import type { FieldInert } from "./field-inert"
 import type { LatexParser } from "./latex"
 import type { Options } from "./options"
 
-const dummy = document.createElement("span")
-document.body.appendChild(dummy)
-
 export function getBoundingClientRect(el: Element) {
   return el.getBoundingClientRect()
 }

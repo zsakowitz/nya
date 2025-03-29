@@ -1,6 +1,5 @@
 import { FNS } from "@/eval/ops"
-import { ALL_DOCS } from "@/eval/ops/docs"
-import type { TyName } from "@/eval/ty"
+import { ALL_DOCS, type WithDocs } from "@/eval/ops/docs"
 import { TY_INFO } from "@/eval/ty/info"
 import { CmdNum } from "@/field/cmd/leaf/num"
 import { CmdWord } from "@/field/cmd/leaf/word"
@@ -11,7 +10,7 @@ import type { Sheet } from "@/sheet/ui/sheet"
 import { faFaceSadTear } from "@fortawesome/free-regular-svg-icons/faFaceSadTear"
 import { faClose } from "@fortawesome/free-solid-svg-icons/faClose"
 import { PackageList, secPackagesContents } from "./list"
-import { docFromSignature, tyIcon } from "./signature"
+import { docFromSignature } from "./signature"
 
 function makeDocName(name: string) {
   return h(
@@ -30,7 +29,7 @@ export function createDocs2(sheet: Sheet) {
   )
 
   const list = new PackageList(pkgs)
-  let which = "fn cards"
+  let which = "functions"
 
   const names = {
     about: secAbout(),
@@ -38,8 +37,6 @@ export function createDocs2(sheet: Sheet) {
     "data types": secDataTypes(list),
     functions: secFunctions(sheet, list, true),
     operators: secFunctions(sheet, list, false),
-    "fn cards": secFunctions2(sheet, list, true),
-    "op cards": secFunctions2(sheet, list, false),
   }
   const tabs = Object.keys(names).map((x) => {
     const data = tab(x, x == which)
@@ -153,7 +150,63 @@ function tab(title: string, open: boolean) {
   }
 }
 
-function secFunctions(_sheet: Sheet, list: PackageList, named: boolean) {
+function highlightedFunction(sheet: Sheet, fn: WithDocs, close: () => void) {
+  const closeEl = hx(
+    "button",
+    "flex size-8 border-[--nya-border] border-l border-b rounded-bl-lg hover:bg-[--nya-bg-sidebar]",
+    fa(faClose, "size-5 fill-[--nya-title] m-auto"),
+  )
+  closeEl.addEventListener("click", close)
+  return h(
+    "flex flex-col bg-[--nya-bg] border-[--nya-border] border border-b-0 rounded-t-lg max-h-[min(48rem,100vh_-_4rem_-_1px)] overflow-y-auto",
+    h(
+      "flex",
+      h(
+        "flex flex-col pt-2 w-full",
+        h(
+          "px-2",
+          makeDocName(
+            (
+              !Object.values(FNS).includes(fn as any) &&
+                /^[\w\s]+$/.test(fn.name)
+            ) ?
+              "[" + fn.name + "]"
+            : fn.name,
+          ),
+        ),
+        h("px-2 text-[--nya-title] text-sm", fn.label),
+      ),
+      closeEl,
+    ),
+    h(
+      "flex flex-col mt-4 pb-2",
+      ...fn
+        .docs()
+        .map((decl) =>
+          h(
+            "flex flex-col gap-1",
+            h("px-2", docFromSignature(decl)),
+            decl.usage?.length ?
+              h(
+                "flex flex-col gap-1 mb-4 [:last-child>&]:mb-0",
+                ...(typeof decl.usage == "string" ?
+                  [decl.usage]
+                : decl.usage
+                ).map((x) =>
+                  h(
+                    "overflow-x-auto pl-6 pr-2 [&::-webkit-scrollbar]:hidden",
+                    math(sheet, x),
+                  ),
+                ),
+              )
+            : null,
+          ),
+        ),
+    ),
+  )
+}
+
+function secFunctions(sheet: Sheet, list: PackageList, named: boolean) {
   const raw = Object.values(FNS)
   const fns = ALL_DOCS.filter((x) => raw.includes(x as any) === named)
   fns.sort(
@@ -163,141 +216,76 @@ function secFunctions(_sheet: Sheet, list: PackageList, named: boolean) {
       : a.name > b.name ? 1
       : 0),
   )
+  const highlighted = h(
+    "sticky bottom-0 mt-4 -mb-4 left-4 w-[calc(100vw_-_20rem_-_1px)] max-w-2xl hidden",
+  )
+  function set(fn: WithDocs) {
+    while (highlighted.firstChild) {
+      highlighted.firstChild.remove()
+    }
+    highlighted.appendChild(highlightedFunction(sheet, fn, unset))
+    highlighted.classList.remove("hidden")
+  }
+  function unset() {
+    highlighted.classList.add("hidden")
+  }
 
-  return hx(
-    "table",
-    "w-full h-min",
+  return h(
+    "flex flex-col -mx-4 flex-1",
     hx(
-      "thead",
-      "",
+      "table",
+      "w-full flex-1 h-min",
       hx(
-        "tr",
+        "thead",
         "",
-        hx("th", "", "name"),
-        hx("th", "", "description"),
-        hx("th", "", "returns"),
+        hx("tr", "", hx("th", "pl-4", "name"), hx("th", "pr-4", "description")),
+      ),
+      hx(
+        "tbody",
+        "",
+        ...fns.map((doc) => {
+          const sources = list.packages
+            .filter(
+              (x) =>
+                x.eval?.fn && Object.values(x.eval.fn).includes(doc as any),
+            )
+            .map((x) => x.id)
+
+          const tr = hx(
+            "tr",
+            "border-t border-[--nya-border] hover:bg-[--nya-bg] cursor-pointer select-none",
+            hx(
+              "td",
+              "align-baseline font-['Times_New_Roman'] text-[1.265rem] text-[--nya-text] whitespace-nowrap pl-4",
+              makeDocName(doc.name),
+            ),
+            hx("td", "align-baseline px-4 py-1 text-[--nya-title]", doc.label),
+          )
+
+          tr.addEventListener("click", () => {
+            set(doc)
+          })
+
+          list.on(() => {
+            tr.hidden = list.active ? !sources.some((x) => list.has(x)) : false
+          })
+
+          return tr
+        }),
       ),
     ),
-    hx(
-      "tbody",
-      "",
-      ...fns.map((doc) => {
-        const sources = list.packages
-          .filter(
-            (x) => x.eval?.fn && Object.values(x.eval.fn).includes(doc as any),
-          )
-          .map((x) => x.id)
-
-        const tr = hx(
-          "tr",
-          "border-t border-[--nya-border]",
-          hx(
-            "td",
-            "align-baseline font-['Times_New_Roman'] text-[1.265rem] text-[--nya-text] whitespace-nowrap",
-            makeDocName(doc.name),
-          ),
-          hx("td", "align-baseline px-4 py-1 text-[--nya-title]", doc.label),
-          hx(
-            "td",
-            "pt-[2px]",
-            hx(
-              "ul",
-              "inline-flex flex-wrap gap-y-0.5",
-              ...doc
-                .docs()
-                .map((x) => x.ret.type)
-                .map((x) =>
-                  x.endsWith("64") ?
-                    x.slice(0, -2) + "32" in TY_INFO ?
-                      ((x.slice(0, -2) + "32") as TyName)
-                    : x
-                  : x,
-                )
-                .filter((x, i, a) => a.indexOf(x) == i)
-                .map(tyIcon),
-            ),
-          ),
-        )
-
-        list.on(() => {
-          tr.hidden = list.active ? !sources.some((x) => list.has(x)) : false
-        })
-
-        return tr
-      }),
-    ),
+    highlighted,
   )
 }
 
-function secFunctions2(sheet: Sheet, _list: PackageList, named: boolean) {
-  // FIXME: filter by list
-  // FIXME: split into two tabs
-  // FIXME: make this look and work better
-  // FIXME: use symbola for fn names in `secFunctions` too
-
-  const raw = Object.values(FNS)
-  const fns = ALL_DOCS.filter((x) => raw.includes(x as any) === named).filter(
-    (x) => x.docs().some((x) => x.usage),
+function math(sheet: Sheet, data: string) {
+  const field = new FieldInert(
+    sheet.options,
+    sheet.scope.ctx,
+    "text-[--nya-text]",
   )
-  fns.sort(
-    (a, b) =>
-      +/^[\w\s]+$/.test(b.name) - +/^[\w\s]+$/.test(a.name) ||
-      (a.name < b.name ? -1
-      : a.name > b.name ? 1
-      : 0),
-  )
-
-  const els = fns.map((fn) =>
-    h(
-      "flex flex-col bg-[--nya-bg] border-[--nya-border] border rounded-lg py-2 my-2 break-inside-avoid first:mt-0",
-      h(
-        "px-2",
-        makeDocName(
-          !raw.includes(fn as any) && /^[\w\s]+$/.test(fn.name) ?
-            "[" + fn.name + "]"
-          : fn.name,
-        ),
-      ),
-      h("px-2 text-[--nya-title] text-sm", fn.label),
-      h(
-        "flex flex-col mt-4",
-        ...fn
-          .docs()
-          .map((decl) =>
-            h(
-              "flex flex-col gap-1",
-              h("px-2", docFromSignature(decl)),
-              decl.usage?.length ?
-                h(
-                  "flex flex-col gap-1 mb-4 [:last-child>&]:mb-0",
-                  ...(typeof decl.usage == "string" ?
-                    [decl.usage]
-                  : decl.usage
-                  ).map((x) =>
-                    h(
-                      "overflow-x-auto pl-6 pr-2 [&::-webkit-scrollbar]:hidden",
-                      math(x),
-                    ),
-                  ),
-                )
-              : null,
-            ),
-          ),
-      ),
-    ),
-  )
-
-  return h("w-full columns-[auto_18rem] h-min gap-2", ...els)
-
-  function math(data: string) {
-    const field = new FieldInert(
-      sheet.options,
-      sheet.scope.ctx,
-      "text-[--nya-text]",
-    )
-    field.typeLatex(data)
-    return field.el
-  }
+  field.typeLatex(data)
+  return field.el
 }
 
 function secDataTypes(list: PackageList) {
