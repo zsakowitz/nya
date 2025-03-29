@@ -39,6 +39,7 @@ export function createDocs2(sheet: Sheet) {
     functions: secFunctions(sheet, list, true),
     operators: secFunctions(sheet, list, false),
     "fn cards": secFunctions2(sheet, list, true),
+    "op cards": secFunctions2(sheet, list, false),
   }
   const tabs = Object.keys(names).map((x) => {
     const data = tab(x, x == which)
@@ -228,20 +229,16 @@ function secFunctions(_sheet: Sheet, list: PackageList, named: boolean) {
   )
 }
 
-function secFunctions2(sheet: Sheet, _list: PackageList, _named: boolean) {
+function secFunctions2(sheet: Sheet, _list: PackageList, named: boolean) {
   // FIXME: filter by list
   // FIXME: split into two tabs
   // FIXME: make this look and work better
   // FIXME: use symbola for fn names in `secFunctions` too
 
   const raw = Object.values(FNS)
-  const USED =
-    "abs:33; and:17; angle:24; anglebisector:23; angles:47; arc:24; arccos:40; arccosh:17; arccot:38; arccoth:17; arccsc:38; arccsch:17; arcsec:38; arcsech:19; arcsin:40; arcsinh:17; arctan:57; arctanh:19; arg:2; binomialdist:54; ceil:2; center:141; circle:150; cmp:3; complex:37; component:0; conj:38; construct point:5; corr:39; cos:35; cosh:15; cot:33; coth:18; count:16; cov:35; covp:36; csc:32; csch:18; debugpoint:36; digamma:16; dilate:312; directedangle:32; directedangles:71; distance:113; dot:17; elappearance:50; elblock:33; elboil:34; elcategory:47; elconfig:40; elconfigshort:46; eldescription:319; eldiscoveredby:61; eleaffinity:65; elenegativity:30; elmelt:36; elmolarheat:79; elname:38; elnamedby:43; elnumber:22; elperiod:22; elphase:37; elsymbol:35; end:30; exp:37; floor:2; forceshader:18; fract:2; hsv:71; imag:13; image:91; imgaspect:14; imgheight:14; imgwidth:13; in:40; intosi:75; ithkuilca:96; ithkuilgloss:73; ithkuilscript:32; ithkuilungloss:55; ithkuilvalid:2; ithkuilvalidfinal:2; ithkuilvalidinitial:2; ithkuilvalues:107; join:100; juxtapose:249; length:159; line:18; ln:27; log:30; log with subscript:9; mad:27; mass:34; max:35; mean:17; median:41; midpoint:63; min:35; mod:2; normaldist:74; or:15; parallel:184; perimeter:46; perpendicular:190; perpendicularbisector:121; plot:161; point:35; poissondist:16; polygamma:20; polygon:27; quantile:3; quartile:2; radius:131; ranks:35; ray:18; real:31; reflect:323; rgb:91; rotate:22; round:4; screendistance:28; sec:33; sech:14; segment:21; segments:151; sign:38; sin:34; sinh:15; sort:27; spearman:39; start:34; stats:18; stdev:32; stdevp:33; tan:33; tanh:14; tdist:68; text:164; total:17; translate:866; uniformdist:100; unique:35; unsign:73; valid:77; var:28; varp:29; vector:20; vertices:60; !:71; +:101; +:86; -:85; -:72; .x:9; .y:9; <:10; =:11; >:11; ·:249; ×:10; ÷:197; ↑:97; ≠:14; ≤:14; ≥:15; ≮:17; ≯:15; ≰:16; ≱:15; ⊙:81".split(
-      "; ",
-    )
-  const fns = ALL_DOCS
-    // .filter((x) => raw.includes(x as any) === named)
-    .filter((x) => x.docs().some((x) => x.usage))
+  const fns = ALL_DOCS.filter((x) => raw.includes(x as any) === named).filter(
+    (x) => x.docs().some((x) => x.usage),
+  )
   fns.sort(
     (a, b) =>
       +/^[\w\s]+$/.test(b.name) - +/^[\w\s]+$/.test(a.name) ||
@@ -250,75 +247,47 @@ function secFunctions2(sheet: Sheet, _list: PackageList, _named: boolean) {
       : 0),
   )
 
-  const els = fns
-    .filter(
-      (x) =>
-        !USED.includes(
-          x.name +
-            ":" +
-            x.docs().reduce((a, b) => a + (b.usage?.length || 0), 0),
-        ),
-    )
-    .map((fn) =>
+  const els = fns.map((fn) =>
+    h(
+      "flex flex-col bg-[--nya-bg] border-[--nya-border] border rounded-lg py-2 my-2 break-inside-avoid first:mt-0",
       h(
-        "flex flex-col bg-[--nya-bg] border-[--nya-border] border rounded-lg py-2 my-2 break-inside-avoid",
-        h(
-          "px-2",
-          makeDocName(
-            !raw.includes(fn as any) && /^[\w\s]+$/.test(fn.name) ?
-              "[" + fn.name + "]"
-            : fn.name,
-          ),
-        ),
-        h("px-2 text-[--nya-title] text-sm", fn.label),
-        h(
-          "flex flex-col mt-4",
-          ...fn
-            .docs()
-            .map((decl) =>
-              h(
-                "flex flex-col gap-1",
-                h("px-2", docFromSignature(decl)),
-                decl.usage?.length ?
-                  h(
-                    "flex flex-col gap-1 mb-4 [:last-child>&]:mb-0",
-                    ...(typeof decl.usage == "string" ?
-                      [decl.usage]
-                    : decl.usage
-                    ).map((x) =>
-                      h(
-                        "overflow-x-auto pl-6 pr-2 [&::-webkit-scrollbar]:hidden",
-                        math(x),
-                      ),
-                    ),
-                  )
-                : null,
-              ),
-            ),
+        "px-2",
+        makeDocName(
+          !raw.includes(fn as any) && /^[\w\s]+$/.test(fn.name) ?
+            "[" + fn.name + "]"
+          : fn.name,
         ),
       ),
-    )
-
-  return h(
-    "w-full columns-[auto_18rem] h-min gap-2",
-    hx(
-      "textarea",
-      {
-        class:
-          "block w-full border border-[--nya-border] bg-[--nya-bg] rounded-lg p-4 resize-none h-48",
-        readonly: "readonly",
-      },
-      fns
-        .map(
-          (x) =>
-            x.name +
-            ":" +
-            x.docs().reduce((a, b) => a + (b.usage?.length || 0), 0),
-        )
-        .join("; "),
+      h("px-2 text-[--nya-title] text-sm", fn.label),
+      h(
+        "flex flex-col mt-4",
+        ...fn
+          .docs()
+          .map((decl) =>
+            h(
+              "flex flex-col gap-1",
+              h("px-2", docFromSignature(decl)),
+              decl.usage?.length ?
+                h(
+                  "flex flex-col gap-1 mb-4 [:last-child>&]:mb-0",
+                  ...(typeof decl.usage == "string" ?
+                    [decl.usage]
+                  : decl.usage
+                  ).map((x) =>
+                    h(
+                      "overflow-x-auto pl-6 pr-2 [&::-webkit-scrollbar]:hidden",
+                      math(x),
+                    ),
+                  ),
+                )
+              : null,
+            ),
+          ),
+      ),
     ),
-    ...els,
   )
+
+  return h("w-full columns-[auto_18rem] h-min gap-2", ...els)
 
   function math(data: string) {
     const field = new FieldInert(
