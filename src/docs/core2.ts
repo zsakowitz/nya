@@ -242,10 +242,11 @@ function secFunctions2(sheet: Sheet, list: PackageList, named: boolean) {
   // FIXME: filter by list
   // FIXME: split into two tabs
   // FIXME: make this look and work better
+  // FIXME: use symbola for fn names in `secFunctions` too
 
   const raw = Object.values(FNS)
   const USED =
-    "abs:27; and:17; arg:2; binomialdist:54; ceil:2; complex:37; conj:38; construct point:5; count:16; debugpoint:36; dot:17; elappearance:50; elblock:33; elboil:34; elcategory:47; elconfig:40; elconfigshort:46; eldescription:319; eldiscoveredby:61; eleaffinity:65; elenegativity:30; elmelt:36; elmolarheat:79; elname:38; elnamedby:43; elnumber:22; elperiod:22; elphase:37; elsymbol:35; exp:21; floor:2; forceshader:18; fract:2; hsv:71; imag:13; in:40; intosi:75; juxtapose:240; ln:20; log:18; mass:34; normaldist:74; or:15; plot:161; point:35; poissondist:16; real:31; rgb:91; round:4; screendistance:28; sign:27; sort:27; tdist:68; uniformdist:100; unique:35; unsign:61; valid:75; +:96; +:82; -:79; -:65; .x:9; .y:9; ·:240; ÷:190; ↑:92; ⊙:72".split(
+    "abs:27; and:17; arccos:13; arccot:11; arccsc:11; arcsec:11; arcsin:13; arctan:30; arg:2; binomialdist:54; ceil:2; complex:37; conj:38; construct point:5; cos:10; cot:8; count:16; csc:8; debugpoint:36; dot:17; elappearance:50; elblock:33; elboil:34; elcategory:47; elconfig:40; elconfigshort:46; eldescription:319; eldiscoveredby:61; eleaffinity:65; elenegativity:30; elmelt:36; elmolarheat:79; elname:38; elnamedby:43; elnumber:22; elperiod:22; elphase:37; elsymbol:35; exp:21; floor:2; forceshader:18; fract:2; hsv:71; imag:13; in:40; intosi:75; juxtapose:240; ln:20; log:18; mass:34; normaldist:74; or:15; plot:161; point:35; poissondist:16; real:31; rgb:91; round:4; screendistance:28; sec:8; sign:27; sin:10; sort:27; tan:8; tdist:68; uniformdist:100; unique:35; unsign:61; valid:75; +:96; +:82; -:79; -:65; .x:9; .y:9; ·:240; ÷:190; ↑:92; ⊙:72".split(
       "; ",
     )
   const fns = ALL_DOCS

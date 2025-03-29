@@ -20,7 +20,7 @@ function sym(
   symbola?: boolean,
 ) {
   const clsx =
-    text == "∞" ? "[line-height:1] relative top-[-.05em]"
+    text == "∞" || text == "°" ? "[line-height:1] relative top-[-.05em]"
     : symbola ? "font-['Symbola'] italic"
     : "font-['Times_New_Roman'] [line-height:.9]"
 
@@ -68,3 +68,4 @@ export const SymPi = sym("\\pi ", " pi ", "π", "pi")
 export const SymTau = sym("\\tau ", " tau ", "τ", "tau")
 export const SymPsi = sym("\\psi ", " psi ", "ψ", "psi", true)
 export const SymInfinity = sym("\\infinity ", " infinity ", "∞", "infinity")
+export const SymDegree = sym("°", " degrees ", "°", "degrees", true)

@@ -195,8 +195,14 @@ class CmdText extends Leaf {
 }
 
 // TODO: automatically convert all values
-const OP_TO_TEXT = new FnDist<"text">("to text", "converts a value into text")
-  .add(["bool"], "text", (a) => [{ type: "latex", value: a.value + "" }], err)
+const OP_TO_TEXT = new FnDist<"text">("text", "converts a value into text")
+  .add(
+    ["bool"],
+    "text",
+    (a) => [{ type: "latex", value: a.value + "" }],
+    err,
+    "\\nyaop{text}(true)=\\textinert{true}",
+  )
   .add(
     ["r32"],
     "text",
@@ -206,6 +212,7 @@ const OP_TO_TEXT = new FnDist<"text">("to text", "converts a value into text")
       return [{ type: "latex", value: b.latex() }]
     },
     err,
+    "\\nyaop{text}(2.5)=\\textinert{2.5}",
   )
   .add(
     ["c32"],
@@ -219,8 +226,15 @@ const OP_TO_TEXT = new FnDist<"text">("to text", "converts a value into text")
       return [{ type: "latex", value: b.latex() }]
     },
     err,
+    "\\nyaop{text}(2+3i)=\\textinert{2+3i}",
   )
-  .add(["text"], "text", (a) => a.value, err)
+  .add(
+    ["text"],
+    "text",
+    (a) => a.value,
+    err,
+    "\\nyaop{text}(\\textinert{hello world})=\\textinert{hello world}",
+  )
 
 const FN_CONCAT = new (class extends FnDistManual<"text"> {
   constructor() {
@@ -239,6 +253,7 @@ const FN_CONCAT = new (class extends FnDistManual<"text"> {
         throw new Error("Text cannot be created in shaders.")
       },
       docOrder: null,
+      usage: [],
     }
   }
 
@@ -248,6 +263,7 @@ const FN_CONCAT = new (class extends FnDistManual<"text"> {
       .filter((x) => x != null)
     return [
       ...ps.map(
+        // @ts-ignore FIXME: how should concat usage examples be displayed
         (a): FnSignature => ({
           params: [{ type: a, list: false }],
           dots: false,
@@ -256,6 +272,7 @@ const FN_CONCAT = new (class extends FnDistManual<"text"> {
       ),
       ...ps.flatMap((a) =>
         ps.map(
+          // @ts-ignore FIXME: how should concat usage examples be displayed
           (b): FnSignature => ({
             params: [
               { type: a, list: false },

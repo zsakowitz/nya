@@ -81,6 +81,7 @@ function addCmp(
   js: (a: number, b: number) => boolean,
   glsl: `${"" | "!"}${"<" | ">" | "<=" | ">=" | "=="}`,
   glsl64: `${"==" | "!="} ${" 0.0" | " 1.0" | "-1.0"}`,
+  latex: string,
 ) {
   const pre = glsl.startsWith("!") ? "!" : ""
   if (pre) glsl = glsl.slice(1) as any
@@ -90,11 +91,13 @@ function addCmp(
     "bool",
     (a, b) => js(num(a.value), num(b.value)),
     (ctx, a, b) => `(${FN_CMP.glsl1(ctx, a, b).expr} ${glsl64})`,
+    [],
   ).add(
     ["r32", "r32"],
     "bool",
     (a, b) => js(num(a.value), num(b.value)),
     (_, a, b) => `(${pre}(${a.expr} ${glsl} ${b.expr}))`,
+    `(2${latex}3)=${js(2, 3)}`,
   )
 }
 
@@ -247,6 +250,7 @@ FN_LN.add(
   "r32",
   (a) => approx(Math.log(num(a.value))),
   (_, a) => `log(${a.expr})`,
+  "lne^2=2",
 )
 
 export const FN_SIGN = new FnDist("sign", "gets the sign of a number", {
@@ -260,12 +264,14 @@ export const FN_SIGN = new FnDist("sign", "gets the sign of a number", {
       declareCmpR64(ctx)
       return `_helper_cmp_r64(${a.expr}, vec2(0.0))`
     },
+    [],
   )
   .add(
     ["r32"],
     "r32",
     (a) => real(Math.sign(num(a.value))),
     (_, a) => `sign(${a.expr})`,
+    "sign(7.8)=1",
   )
 
 export const FN_LOG10 = new FnDist(
@@ -277,6 +283,7 @@ export const FN_LOG10 = new FnDist(
   "r32",
   (a) => approx(Math.log10(num(a.value))),
   (_, a) => `(log(${a.expr}) / log(10.0))`,
+  "log(10000)=4",
 )
 
 // TODO: implement for complex nums
@@ -289,6 +296,7 @@ const FN_LOGB = new FnDist(
   "r32",
   (b, a) => approx(Math.log(num(a.value)) / Math.log(num(b.value))),
   (_, b, a) => `(log(${a.expr}) / log(${b.expr}))`,
+  "log_216=4",
 )
 
 function mulR64(ctx: GlslContext, a: string, b: string) {
@@ -323,6 +331,7 @@ const FN_COUNT = new (class extends FnList<"r64"> {
         return `vec2(${args.length.toExponential()}, 0)`
       },
       docOrder: null,
+      usage: [],
     }
   }
 
@@ -337,6 +346,7 @@ const FN_COUNT = new (class extends FnList<"r64"> {
         return `vec2(${arg.list.toExponential()}, 0)`
       },
       docOrder: null,
+      usage: [],
     }
   }
 })()
@@ -361,11 +371,13 @@ export const PKG_REAL: Package = {
       "r64",
       (a) => abs(a.value),
       (ctx, a) => abs64(ctx, a.expr),
+      [],
     ).add(
       ["r32"],
       "r32",
       (a) => abs(a.value),
       (_, a) => `abs(${a.expr})`,
+      "|-3|=3",
     )
 
     OP_ADD.add(
@@ -373,11 +385,13 @@ export const PKG_REAL: Package = {
       "r64",
       (a, b) => add(a.value, b.value),
       (ctx, a, b) => addR64(ctx, a.expr, b.expr),
+      [],
     ).add(
       ["r32", "r32"],
       "r32",
       (a, b) => add(a.value, b.value),
       (_, a, b) => `(${a.expr} + ${b.expr})`,
+      "2+3=5",
     )
 
     OP_CROSS.add(
@@ -385,11 +399,13 @@ export const PKG_REAL: Package = {
       "r64",
       (a, b) => mul(a.value, b.value),
       (ctx, a, b) => mulR64(ctx, a.expr, b.expr),
+      [],
     ).add(
       ["r32", "r32"],
       "r32",
       (a, b) => mul(a.value, b.value),
       (_, a, b) => `(${a.expr} * ${b.expr})`,
+      "2\\times3=6",
     )
 
     OP_DIV.add(
@@ -517,20 +533,20 @@ export const PKG_REAL: Package = {
       },
     )
 
-    addCmp(OP_LT, (a, b) => a < b, "<", "== -1.0")
-    addCmp(OP_GT, (a, b) => a > b, ">", "==  1.0")
+    addCmp(OP_LT, (a, b) => a < b, "<", "== -1.0", "<")
+    addCmp(OP_GT, (a, b) => a > b, ">", "==  1.0", ">")
 
-    addCmp(OP_LTE, (a, b) => a <= b, "<=", "!=  1.0")
-    addCmp(OP_GTE, (a, b) => a >= b, ">=", "!= -1.0")
+    addCmp(OP_LTE, (a, b) => a <= b, "<=", "!=  1.0", "\\leq ")
+    addCmp(OP_GTE, (a, b) => a >= b, ">=", "!= -1.0", "\\geq ")
 
-    addCmp(OP_NLT, (a, b) => !(a < b), "!<", "!= -1.0")
-    addCmp(OP_NGT, (a, b) => !(a > b), "!>", "!=  1.0")
+    addCmp(OP_NLT, (a, b) => !(a < b), "!<", "!= -1.0", "\\nless ")
+    addCmp(OP_NGT, (a, b) => !(a > b), "!>", "!=  1.0", "\\ngtr ")
 
-    addCmp(OP_NLTE, (a, b) => !(a <= b), "!<=", "==  1.0")
-    addCmp(OP_NGTE, (a, b) => !(a >= b), "!>=", "== -1.0")
+    addCmp(OP_NLTE, (a, b) => !(a <= b), "!<=", "==  1.0", "\\nleq ")
+    addCmp(OP_NGTE, (a, b) => !(a >= b), "!>=", "== -1.0", "\\ngeq ")
 
-    addCmp(OP_EQ, (a, b) => a == b, "==", "==  0.0")
-    addCmp(OP_NEQ, (a, b) => a != b, "!==", "!=  0.0")
+    addCmp(OP_EQ, (a, b) => a == b, "==", "==  0.0", "=")
+    addCmp(OP_NEQ, (a, b) => a != b, "!==", "!=  0.0", "\\neq ")
 
     FN_CMP.add(["r64", "r64"], "r32", cmpJs, (ctx, a, b) => {
       // TODO: NaN probably outputs 0 in r64
