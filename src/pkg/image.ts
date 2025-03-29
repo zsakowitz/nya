@@ -297,20 +297,27 @@ const FACTORY: ItemFactory<Data> = {
   },
 }
 
+// DOCS: figure out something better to use than ellipses
 const FN_IMGWIDTH = new FnDist(
   "imgwidth",
   "gets the natural width of an image",
-).add(["image"], "r32", (a) => real(a.value.width), glsl)
+).add(["image"], "r32", (a) => real(a.value.width), glsl, "imgwidth(...)")
 
 const FN_IMGHEIGHT = new FnDist(
   "imgheight",
   "gets the natural height of an image",
-).add(["image"], "r32", (a) => real(a.value.height), glsl)
+).add(["image"], "r32", (a) => real(a.value.height), glsl, "imgheight(...)")
 
 const FN_IMGASPECT = new FnDist(
   "imgaspect",
   "gets the preferred aspect ratio of an image",
-).add(["image"], "r32", (a) => frac(a.value.width, a.value.height), glsl)
+).add(
+  ["image"],
+  "r32",
+  (a) => frac(a.value.width, a.value.height),
+  glsl,
+  "imgaspect(...)",
+)
 
 export const PKG_IMAGE: Package = {
   id: "nya:image",

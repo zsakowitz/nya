@@ -103,7 +103,7 @@ function valid(x: string) {
   )
 }
 
-const ithkuilvalues: Fn & WithDocs = {
+const FN_ITHKUILVALUES: Fn & WithDocs = {
   name: "ithkuilvalues",
   label:
     "given the name of a grammatical category of ithkuil, returns all values it can take",
@@ -113,6 +113,7 @@ const ithkuilvalues: Fn & WithDocs = {
         params: [{ type: "text", list: false }],
         dots: false,
         ret: { type: "text", list: true },
+        usage: `ithkuilvalues(\\textinert{affiliation})=[${categories.ALL_AFFILIATIONS.map((x) => `\\textinert{${x}}`).join(", ")}]`,
       },
     ]
   },
@@ -140,7 +141,7 @@ const ithkuilvalues: Fn & WithDocs = {
   glsl: err,
 }
 
-ALL_DOCS.push(ithkuilvalues)
+ALL_DOCS.push(FN_ITHKUILVALUES)
 
 export const PKG_ITHKUIL: Package = {
   id: "nya:ithkuil",
@@ -225,6 +226,7 @@ export const PKG_ITHKUIL: Package = {
             )
         },
         err,
+        "ithkuilgloss(\\textinert{rraza})=\\textinert{S1-“🐈 cat (Felis catus)”-MFS}",
       ),
       ithkuilungloss: new FnDist(
         "ithkuilungloss",
@@ -255,6 +257,7 @@ export const PKG_ITHKUIL: Package = {
             )
         },
         err,
+        'ithkuilungloss(\\textinert{"cat"-MFS})=\\textinert{rraza}',
       ),
       ithkuilscript: new FnDist(
         "ithkuilscript",
@@ -287,8 +290,9 @@ export const PKG_ITHKUIL: Package = {
           ]
         },
         err,
+        "ithkuilscript(\\textinert{rraza})",
       ),
-      ithkuilvalues,
+      ithkuilvalues: FN_ITHKUILVALUES,
       ithkuilvalid: new FnDist(
         "ithkuilvalid",
         "checks if a consonant form is valid according to ithkuil phonotactics",
@@ -300,6 +304,10 @@ export const PKG_ITHKUIL: Package = {
           return valid(val) && isLegalConsonantForm(val)
         },
         err,
+        [
+          "ithkuilvalid(\\textinert{rz})=true",
+          "ithkuilvalid(\\textinert{šzr})=false",
+        ],
       ),
       ithkuilvalidinitial: new FnDist(
         "ithkuilvalidinitial",
@@ -312,6 +320,10 @@ export const PKG_ITHKUIL: Package = {
           return valid(val) && isLegalWordInitialConsonantForm(val)
         },
         err,
+        [
+          "ithkuilvalid(\\textinert{rz})=false",
+          "ithkuilvalid(\\textinert{pl})=true",
+        ],
       ),
       ithkuilvalidfinal: new FnDist(
         "ithkuilvalidfinal",
@@ -324,6 +336,10 @@ export const PKG_ITHKUIL: Package = {
           return valid(val) && isLegalWordFinalConsonantForm(val)
         },
         err,
+        [
+          "ithkuilvalid(\\textinert{rz})=true",
+          "ithkuilvalid(\\textinert{pl})=false",
+        ],
       ),
       ithkuilca: new FnDist(
         "ithkuilca",
@@ -338,6 +354,7 @@ export const PKG_ITHKUIL: Package = {
             return [{ type: "plain", value: caToIthkuil(ca) }]
           },
           err,
+          "ithkuilca(\\textinert{ASO.MSC})=\\textinert{lk}",
         )
         .add(
           ["text", "bool"],
@@ -353,6 +370,7 @@ export const PKG_ITHKUIL: Package = {
             ]
           },
           err,
+          "ithkuilca(\\textinert{ASO.MSC},true)=\\textinert{lkk}",
         ),
     },
     var: {

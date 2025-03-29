@@ -11,6 +11,7 @@ export const FN_VERTICES: Fn & WithDocs = {
         params: [{ type: "polygon", list: false }],
         dots: false,
         ret: { type: "point64", list: true },
+        usage: "vertices(polygon((2,3),(9,-10),(5,7)))=[(2,3),(9,-10),(5,7)]",
       },
     ]
   },

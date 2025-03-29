@@ -45,6 +45,7 @@ const FN_IMAGE = new FnDist(
     "image2d",
     (a, b) => ({ data: a.value, p1: b.value[0], p2: b.value[1], aspect: null }),
     glsl,
+    "image(\\ty{image},segment((-5,0),(5,0)))",
   )
   .add(
     ["image", "segment", "r32"],
@@ -56,6 +57,7 @@ const FN_IMAGE = new FnDist(
       aspect: c.value,
     }),
     glsl,
+    "image(\\ty{image},segment((-5,0),(5,0)),\\frac{16}{9})",
   )
 
 function draw(cv: Cv, val: Val<"image2d">) {
@@ -230,6 +232,7 @@ markTranslate(
     p2: translate(b, a.value.p2),
   }),
   glsl,
+  "image(...)",
 )
 
 markRotate(
@@ -241,6 +244,7 @@ markRotate(
     p2: rotateJs(b, a.value.p2),
   }),
   glsl,
+  "image(...)",
 )
 
 markDilate(
@@ -252,6 +256,7 @@ markDilate(
     p2: dilateJs(b, a.value.p2),
   }),
   glsl,
+  "image(...)",
 )
 
 markReflect(
@@ -266,4 +271,5 @@ markReflect(
     p2: reflectJs(b, a.value.p2),
   }),
   glsl,
+  "image(...)",
 )

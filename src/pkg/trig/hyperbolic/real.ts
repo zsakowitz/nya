@@ -46,6 +46,7 @@ export const PKG_TRIG_HYPERBOLIC_REAL: Package = {
       "r32",
       (a) => approx(Math.sinh(num(a.value))),
       (_, a) => `sinh(${a.expr})`,
+      "sinh(ln 2)=0.75",
     )
 
     FN_COSH.add(
@@ -53,6 +54,7 @@ export const PKG_TRIG_HYPERBOLIC_REAL: Package = {
       "r32",
       (a) => approx(Math.cosh(num(a.value))),
       (_, a) => `cosh(${a.expr})`,
+      "cosh(ln 2)=1.25",
     )
 
     FN_TANH.add(
@@ -60,6 +62,7 @@ export const PKG_TRIG_HYPERBOLIC_REAL: Package = {
       "r32",
       (a) => approx(Math.tanh(num(a.value))),
       (_, a) => `tanh(${a.expr})`,
+      "tanh(ln 2)=0.6",
     )
 
     FN_CSCH.add(
@@ -67,6 +70,7 @@ export const PKG_TRIG_HYPERBOLIC_REAL: Package = {
       "r32",
       (a) => approx(1 / Math.sinh(num(a.value))),
       (_, a) => `(1.0/sinh(${a.expr}))`,
+      "csch(ln 2)=\\frac43",
     )
 
     FN_SECH.add(
@@ -74,6 +78,7 @@ export const PKG_TRIG_HYPERBOLIC_REAL: Package = {
       "r32",
       (a) => approx(1 / Math.cosh(num(a.value))),
       (_, a) => `(1.0/cosh(${a.expr}))`,
+      "sech(ln 2)=0.8",
     )
 
     FN_COTH.add(
@@ -81,13 +86,16 @@ export const PKG_TRIG_HYPERBOLIC_REAL: Package = {
       "r32",
       (a) => approx(1 / Math.tanh(num(a.value))),
       (_, a) => `(1.0/tanh(${a.expr}))`,
+      "coth(ln 2)=\\frac53",
     )
 
+    // DOCS: remove parentheses from trig fns
     FN_ARCSINH.add(
       ["r32"],
       "r32",
       (a) => approx(Math.asinh(num(a.value))),
       (_, a) => `asinh(${a.expr})`,
+      "arcsinh(2)≈1.4436",
     )
 
     FN_ARCCOSH.add(
@@ -95,6 +103,7 @@ export const PKG_TRIG_HYPERBOLIC_REAL: Package = {
       "r32",
       (a) => approx(Math.acosh(num(a.value))),
       (_, a) => `acosh(${a.expr})`,
+      "arccosh(2)≈1.3170",
     )
 
     FN_ARCTANH.add(
@@ -102,6 +111,7 @@ export const PKG_TRIG_HYPERBOLIC_REAL: Package = {
       "r32",
       (a) => approx(Math.atanh(num(a.value))),
       (_, a) => `atanh(${a.expr})`,
+      "arctanh(0.3)≈0.3095",
     )
 
     FN_ARCCSCH.add(
@@ -109,6 +119,7 @@ export const PKG_TRIG_HYPERBOLIC_REAL: Package = {
       "r32",
       (a) => approx(Math.asinh(1 / num(a.value))),
       (_, a) => `asinh(1.0/${a.expr})`,
+      "arccsch(3)≈0.3275",
     )
 
     FN_ARCSECH.add(
@@ -116,6 +127,7 @@ export const PKG_TRIG_HYPERBOLIC_REAL: Package = {
       "r32",
       (a) => approx(Math.acosh(1 / num(a.value))),
       (_, a) => `acosh(1.0/${a.expr})`,
+      "arcsech(0.3)≈1.8738",
     )
 
     FN_ARCCOTH.add(
@@ -123,6 +135,7 @@ export const PKG_TRIG_HYPERBOLIC_REAL: Package = {
       "r32",
       (a) => approx(Math.atanh(1 / num(a.value))),
       (_, a) => `atanh(1.0/${a.expr})`,
+      "arccoth(3)≈0.3466",
     )
   },
   deps: [() => PKG_REAL],

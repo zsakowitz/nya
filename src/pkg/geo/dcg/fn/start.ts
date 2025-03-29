@@ -8,4 +8,5 @@ export const FN_START = new FnDist(
   "point32",
   (a) => a.value[0],
   (_, a) => `${a.expr}.xy`,
+  "start(vector((2,3),(9,-10)))=(2,3)",
 )

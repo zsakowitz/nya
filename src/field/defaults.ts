@@ -23,7 +23,7 @@ import {
   OpTimes,
   OpUpArrow,
 } from "./cmd/leaf/op"
-import { SymDegree, SymInfinity, SymPi, SymTau } from "./cmd/leaf/sym"
+import { SymDegree, SymInfinity, SymPi, SymPsi, SymTau } from "./cmd/leaf/sym"
 import { CmdToken } from "./cmd/leaf/token"
 import { CmdTyName } from "./cmd/leaf/tyname"
 import { CmdVar, type WordKind } from "./cmd/leaf/var"
@@ -243,6 +243,7 @@ const latex = new WordMap<LatexInit>([
   ["\\wordinfix", CmdWord],
   ["\\nyaop", CmdWord],
   ["\\nyacolor", CmdColor],
+  ["\\psi", SymPsi],
 ])
 
 for (const key of inits.getAll()) {

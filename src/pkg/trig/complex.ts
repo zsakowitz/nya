@@ -206,18 +206,60 @@ export const PKG_TRIG_COMPLEX: Package = {
     },
   },
   load() {
-    FN_SIN.add(["c32"], "c32", (a) => sinJs(a.value), sinGl)
-    FN_COS.add(["c32"], "c32", (a) => cosJs(a.value), cosGl)
-    FN_TAN.add(["c32"], "c32", (a) => tanJs(a.value), tanGl)
-    FN_CSC.add(["c32"], "c32", (a) => recipPt(sinJs(a.value)), cscGl)
-    FN_SEC.add(["c32"], "c32", (a) => recipPt(cosJs(a.value)), secGl)
-    FN_COT.add(["c32"], "c32", (a) => cotJs(a.value), cotGl)
+    FN_SIN.add(
+      ["c32"],
+      "c32",
+      (a) => sinJs(a.value),
+      sinGl,
+      "sin(2+3i)≈9.1545-4.1689i",
+    )
+
+    FN_COS.add(
+      ["c32"],
+      "c32",
+      (a) => cosJs(a.value),
+      cosGl,
+      "cos(2+3i)≈-4.1896-9.1092i",
+    )
+
+    FN_TAN.add(
+      ["c32"],
+      "c32",
+      (a) => tanJs(a.value),
+      tanGl,
+      "tan(2+3i)≈-0.0038+1.0032i",
+    )
+
+    FN_CSC.add(
+      ["c32"],
+      "c32",
+      (a) => recipPt(sinJs(a.value)),
+      cscGl,
+      "csc(2+3i)≈0.0905+0.0412i",
+    )
+
+    FN_SEC.add(
+      ["c32"],
+      "c32",
+      (a) => recipPt(cosJs(a.value)),
+      secGl,
+      "sec(2+3i)≈-0.0417+0.0906i",
+    )
+
+    FN_COT.add(
+      ["c32"],
+      "c32",
+      (a) => cotJs(a.value),
+      cotGl,
+      "cot(2+3i)≈-0.0037-0.9968i",
+    )
 
     FN_ARCSIN.add(
       ["c32"],
       "c32",
       (a) => asinJs(a.value),
       (ctx, a) => asinGlsl(ctx, a.expr),
+      "arcsin(2+3i)≈0.5707+1.9834i",
     )
 
     FN_ARCCOS.add(
@@ -225,6 +267,7 @@ export const PKG_TRIG_COMPLEX: Package = {
       "c32",
       (a) => acosJs(a.value),
       (ctx, a) => `(vec2(${Math.PI / 2},0) - ${asinGlsl(ctx, a.expr)})`,
+      "arccos(2+3i)≈1.0001-1.9834i",
     )
 
     FN_ARCTAN.add(
@@ -232,6 +275,7 @@ export const PKG_TRIG_COMPLEX: Package = {
       "c32",
       (a) => atanJs(a.value),
       (ctx, a) => atanGlsl(ctx, a.expr),
+      "arctan(2+3i)≈1.4099+0.2291i",
     )
 
     FN_ARCCOT.add(
@@ -239,6 +283,7 @@ export const PKG_TRIG_COMPLEX: Package = {
       "c32",
       (a) => acotJs(a.value),
       (ctx, a) => acotGlsl(ctx, a.expr),
+      "arccot(2+3i)≈0.1609-0.2291i",
     )
 
     FN_ARCSEC.add(
@@ -246,6 +291,7 @@ export const PKG_TRIG_COMPLEX: Package = {
       "c32",
       (a) => asecJs(a.value),
       (ctx, a) => asecGlsl(ctx, a.expr),
+      "arcsec(2+3i)≈1.4204+0.2313i",
     )
 
     FN_ARCCSC.add(
@@ -253,6 +299,7 @@ export const PKG_TRIG_COMPLEX: Package = {
       "c32",
       (a) => acscJs(a.value),
       (ctx, a) => acscGlsl(ctx, a.expr),
+      "arccsc(2+3i)≈0.1504-0.2313i",
     )
   },
 }

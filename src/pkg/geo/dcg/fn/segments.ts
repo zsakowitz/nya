@@ -11,6 +11,7 @@ export const FN_SEGMENTS: Fn & WithDocs = {
         params: [{ type: "polygon", list: false }],
         dots: false,
         ret: { type: "segment", list: true },
+        usage: String.raw`segments(polygon\begin{list}(2,3)\\(9,-10)\\(5,7)\end{list})=\begin{list}segment((2,3),(9,-10))\\segment((9,-10),(5,7))\\segment((5,7),(2,3))\end{list}`,
       },
     ]
   },

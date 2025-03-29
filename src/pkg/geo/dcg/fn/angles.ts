@@ -39,6 +39,7 @@ function fn(type: "angle" | "directedangle", label: string) {
           params: [{ type: "polygon", list: false }],
           dots: false,
           ret: { type, list: true },
+          usage: `${type}(polygon(...))=[${type}(...),${type}(...),...]`,
         },
       ]
     },

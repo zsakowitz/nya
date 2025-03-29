@@ -38,4 +38,11 @@ function glsl(ctx: GlslContext, a: GlslVal<"angle" | "directedangle">) {
 export const FN_ANGLEBISECTOR = new FnDist(
   "anglebisector",
   "constucts the bisector of an angle",
-).add(["angle"], "ray", bisectAngleJs, glsl)
+).add(
+  ["angle"],
+  "ray",
+  bisectAngleJs,
+  glsl,
+  // DOCS: maybe this should show its result
+  "anglebisector(ray(...))",
+)
