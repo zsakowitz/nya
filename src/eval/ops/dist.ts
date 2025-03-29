@@ -98,7 +98,7 @@ export class FnDist<Q extends TyName = TyName> extends FnDistManual<Q> {
     ret: R,
     js: (value: Tys[T][]) => Tys[R],
     glsl: (ctx: GlslContext, ...args: GlslVal<T>[]) => string,
-    usage: string,
+    usage: string | string[],
     docOrder: number | null = null,
   ) {
     this.o.push({ param, type: ret, js, glsl, usage, docOrder })
@@ -208,8 +208,11 @@ export class FnDist<Q extends TyName = TyName> extends FnDistManual<Q> {
               usage: overload.usage,
             }
           : {
-              params: [{ type: overload.param, list: false }],
-              dots: false,
+              params: [
+                { type: overload.param, list: false },
+                { type: overload.param, list: false },
+              ],
+              dots: true,
               ret: { type: overload.type, list: false },
               usage: overload.usage,
             },
