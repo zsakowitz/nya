@@ -101,6 +101,7 @@ export const PKG_COLOR_EXTRAS: Package = {
           "1.0",
         )
       },
+      "oklch(0.69,0.1661,50)=\\nyacolor{#eb7829}",
     ).add(
       ["r32", "r32", "r32", "r32"],
       "color",
@@ -120,6 +121,7 @@ export const PKG_COLOR_EXTRAS: Package = {
           a.expr,
         )
       },
+      "oklch(0.69,0.1661,50,.5)=\\nyacolor{#eb782980}",
     )
 
     FN_OKLAB.add(
@@ -129,6 +131,7 @@ export const PKG_COLOR_EXTRAS: Package = {
         throw new Error("Cannot compute oklab() colors outside of shaders.")
       },
       (ctx, a, b, c) => oklab(ctx, a.expr, b.expr, c.expr, "1.0"),
+      "oklab(0.8,-0.083,-0.144)=\\nyacolor{rgb(57,202,255)}",
     ).add(
       ["r32", "r32", "r32", "r32"],
       "color",
@@ -136,6 +139,7 @@ export const PKG_COLOR_EXTRAS: Package = {
         throw new Error("Cannot compute oklab() colors outside of shaders.")
       },
       (ctx, a, b, c, alpha) => oklab(ctx, a.expr, b.expr, c.expr, alpha.expr),
+      "oklab(0.8,-0.083,-0.144,.5)=\\nyacolor{rgb(57,202,255 / 50%)}",
     )
   },
   eval: {
@@ -165,6 +169,7 @@ export const PKG_COLOR_EXTRAS: Package = {
             const a = ctx.cache(ar)
             return `(u_darkmul * ${a} + u_darkoffset)`
           },
+          "lightdark(rgb(4,70,196))",
         )
         .add(
           ["color", "color"],
@@ -173,6 +178,7 @@ export const PKG_COLOR_EXTRAS: Package = {
           (_, a, b) => {
             return `(u_is_dark ? ${b.expr} : ${a.expr})`
           },
+          "lightdark(rgb(4,70,196),hsv(60,1,0.7))",
         ),
     },
   },

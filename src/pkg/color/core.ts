@@ -133,7 +133,7 @@ export const PKG_COLOR_CORE: Package = {
       }),
       (_, r, g, b, a) =>
         `vec4(vec3(${r.expr}, ${g.expr}, ${b.expr}) / 255.0, ${a.expr})`,
-      "rgb(70,255,128,.4)=\\nyacolor{rgba(70,255,128,.4)}",
+      "rgb(70,255,128,.4)=\\nyacolor{rgb(70,255,128,.4)}",
     )
 
     FN_HSV.add(
