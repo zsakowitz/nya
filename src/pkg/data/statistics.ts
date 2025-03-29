@@ -60,6 +60,7 @@ class FnListList implements Fn, WithDocs {
       a: GlslValue<TyName, number>,
       b: GlslValue<TyName, number>,
     ): string
+    usage: string | string[]
   }[] = []
 
   constructor(
@@ -79,19 +80,21 @@ class FnListList implements Fn, WithDocs {
       a: GlslValue<A, number>,
       b: GlslValue<B, number>,
     ) => string,
+    usage: string | string[],
   ) {
-    this.o.push({ a, b, ret, js, glsl })
+    this.o.push({ a, b, ret, js, glsl, usage })
     return this
   }
 
   docs(): FnSignature[] {
-    return this.o.map(({ a, b, ret }) => ({
+    return this.o.map(({ a, b, ret, usage }) => ({
       params: [
         { type: a, list: true },
         { type: b, list: true },
       ],
       dots: false,
       ret: { type: ret, list: true },
+      usage,
     }))
   }
 
@@ -175,6 +178,7 @@ const FN_MIN = new FnList("min", "returns the minimum of its inputs")
       args.length ?
         args.map((x) => x.expr).reduce((a, b) => `min(${a}, ${b})`)
       : `(0.0/0.0)`,
+    "min(8,2,9)=2",
   )
   .add(
     ["stats"],
@@ -183,6 +187,7 @@ const FN_MIN = new FnList("min", "returns the minimum of its inputs")
     issue(
       "Cannot compute 'min' of a five-number statistical summary in shaders.",
     ),
+    "min(stats([2,9,5,6]))=2",
   )
 
 const FN_MAX = new FnList("max", "returns the maximum of its inputs")
@@ -197,6 +202,7 @@ const FN_MAX = new FnList("max", "returns the maximum of its inputs")
       args.length ?
         args.map((x) => x.expr).reduce((a, b) => `max(${a}, ${b})`)
       : `(0.0/0.0)`,
+    "max(8,2,9)=9",
   )
   .add(
     ["stats"],
@@ -205,6 +211,7 @@ const FN_MAX = new FnList("max", "returns the maximum of its inputs")
     issue(
       "Cannot compute 'max' of a five-number statistical summary in shaders.",
     ),
+    "max(stats([2,9,5,6]))=9",
   )
 
 const FN_TOTAL = new FnList("total", "returns the sum of its inputs")

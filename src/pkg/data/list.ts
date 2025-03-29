@@ -1,3 +1,4 @@
+import type { FnSignature } from "@/docs/signature"
 import { commalist } from "@/eval/ast/collect"
 import { Precedence } from "@/eval/ast/token"
 import { NO_DRAG, NO_SYM } from "@/eval/ast/tx"
@@ -56,14 +57,17 @@ const FN_JOIN: Fn & WithDocs = {
   },
   docs() {
     return [false, true].flatMap((a) =>
-      [false, true].map((b) => ({
-        params: [
-          { type: "__any", list: a },
-          { type: "__any", list: b },
-        ],
-        dots: true,
-        ret: { type: "__any", list: true },
-      })),
+      [false, true].map((b): FnSignature => {
+        return {
+          params: [
+            { type: "__any", list: a },
+            { type: "__any", list: b },
+          ],
+          dots: true,
+          ret: { type: "__any", list: true },
+          usage: `join(${a ? "[0,4,1]" : "9"},${b ? "[8,5,3]" : "2"})=[${a ? "0,4,1" : "9"},${b ? "8,5,3" : "2"}]`,
+        }
+      }),
     )
   },
 }

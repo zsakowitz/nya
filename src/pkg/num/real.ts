@@ -8,6 +8,7 @@ import { FnDist } from "@/eval/ops/dist"
 import {
   FnDistCaching,
   type FnOverload,
+  type FnOverloadData,
   type FnOverloadVar,
 } from "@/eval/ops/dist-manual"
 import { ALL_DOCS } from "@/eval/ops/docs"
@@ -121,7 +122,7 @@ const FN_COMPONENT = new (class extends FnDistCaching {
     ALL_DOCS.push(this)
   }
 
-  gen(args: Ty[]): FnOverload<TyName> {
+  gen(args: Ty[]): FnOverloadData<TyName> {
     if (args.length != 2) {
       throw new Error("'component' expects two parameters.")
     }
@@ -191,7 +192,6 @@ const FN_COMPONENT = new (class extends FnDistCaching {
 
         return comps.at[staticIndex]![1](a.expr)
       },
-      docOrder: Object.keys(TY_INFO).indexOf(ty),
     }
   }
 
@@ -206,6 +206,8 @@ const FN_COMPONENT = new (class extends FnDistCaching {
           ],
           dots: false,
           ret: { type: info.components!.ty, list: false },
+          usage: [],
+          // DOCS: how to generate 'component' usage examples?
         }),
       )
   }
@@ -413,6 +415,7 @@ export const PKG_REAL: Package = {
       "r32",
       (a, b) => div(a.value, b.value),
       (_, a, b) => `(${a.expr} / ${b.expr})`,
+      "8÷-2=-4",
     )
 
     OP_MOD.add(
@@ -430,6 +433,7 @@ export const PKG_REAL: Package = {
 `
         return `_helper_mod_r32(${a.expr}, ${b.expr})`
       },
+      ["17mod10=7", "-14mod3=1"],
     )
 
     OP_CDOT.add(
@@ -437,11 +441,13 @@ export const PKG_REAL: Package = {
       "r64",
       (a, b) => mul(a.value, b.value),
       (ctx, a, b) => mulR64(ctx, a.expr, b.expr),
+      [],
     ).add(
       ["r32", "r32"],
       "r32",
       (a, b) => mul(a.value, b.value),
       (_, a, b) => `(${a.expr} * ${b.expr})`,
+      "2\\cdot3=6",
     )
 
     OP_NEG.add(
@@ -449,11 +455,13 @@ export const PKG_REAL: Package = {
       "r64",
       (a) => neg(a.value),
       (_, a) => `(-${a.expr})`,
+      [],
     ).add(
       ["r32"],
       "r32",
       (a) => neg(a.value),
       (_, a) => `(-${a.expr})`,
+      "-(2)=-2",
     )
 
     OP_ODOT.add(
@@ -461,11 +469,13 @@ export const PKG_REAL: Package = {
       "r64",
       (a, b) => mul(a.value, b.value),
       (ctx, a, b) => mulR64(ctx, a.expr, b.expr),
+      [],
     ).add(
       ["r32", "r32"],
       "r32",
       (a, b) => mul(a.value, b.value),
       (_, a, b) => `(${a.expr} * ${b.expr})`,
+      "2\\odot3=6",
     )
 
     OP_POS.add(
@@ -473,11 +483,13 @@ export const PKG_REAL: Package = {
       "r64",
       (a) => a.value,
       (_, a) => a.expr,
+      [],
     ).add(
       ["r32"],
       "r32",
       (a) => a.value,
       (_, a) => a.expr,
+      "+3=3",
     )
 
     OP_RAISE.add(
@@ -487,6 +499,7 @@ export const PKG_REAL: Package = {
       (_, a, b) => {
         return `pow(${a.expr}, ${b.expr})`
       },
+      "2^3=8",
     )
 
     OP_SUB.add(
@@ -494,11 +507,13 @@ export const PKG_REAL: Package = {
       "r64",
       (a, b) => sub(a.value, b.value),
       (ctx, a, b) => subR64(ctx, a.expr, b.expr),
+      [],
     ).add(
       ["r32", "r32"],
       "r32",
       (a, b) => sub(a.value, b.value),
       (_, a, b) => `(${a.expr} - ${b.expr})`,
+      "3-7=-4",
     )
 
     FN_EXP.add(
@@ -506,6 +521,7 @@ export const PKG_REAL: Package = {
       "r32",
       (a) => approx(Math.exp(num(a.value))),
       (_, a) => `exp(${a.expr})`,
+      "exp(2)=e^2≈7.389",
     )
 
     FN_UNSIGN.add(
@@ -513,6 +529,7 @@ export const PKG_REAL: Package = {
       "r64",
       (a) => abs(a.value),
       (ctx, a) => abs64(ctx, a.expr),
+      [],
     ).add(
       ["r32"],
       "r32",
@@ -521,6 +538,7 @@ export const PKG_REAL: Package = {
           approx(Math.abs(a.value.value))
         : frac(Math.abs(a.value.n), Math.abs(a.value.d)),
       (_, a) => `abs(${a})`,
+      "unsign(-7)=7",
     )
 
     FN_VALID.add(
@@ -531,6 +549,7 @@ export const PKG_REAL: Package = {
         const a = ctx.cache(ar)
         return `(!isnan(${a}) && !isinf(${a}))`
       },
+      ["valid(3)=true", "valid(∞)=false"],
     )
 
     addCmp(OP_LT, (a, b) => a < b, "<", "== -1.0", "<")
@@ -548,12 +567,22 @@ export const PKG_REAL: Package = {
     addCmp(OP_EQ, (a, b) => a == b, "==", "==  0.0", "=")
     addCmp(OP_NEQ, (a, b) => a != b, "!==", "!=  0.0", "\\neq ")
 
-    FN_CMP.add(["r64", "r64"], "r32", cmpJs, (ctx, a, b) => {
-      // TODO: NaN probably outputs 0 in r64
-      declareCmpR64(ctx)
-      return `_helper_cmp_r64(${a.expr}, ${b.expr})`
-    }).add(["r32", "r32"], "r32", cmpJs, (ctx, a, b) => {
-      ctx.glsl`
+    FN_CMP.add(
+      ["r64", "r64"],
+      "r32",
+      cmpJs,
+      (ctx, a, b) => {
+        // TODO: NaN probably outputs 0 in r64
+        declareCmpR64(ctx)
+        return `_helper_cmp_r64(${a.expr}, ${b.expr})`
+      },
+      [],
+    ).add(
+      ["r32", "r32"],
+      "r32",
+      cmpJs,
+      (ctx, a, b) => {
+        ctx.glsl`
 float _helper_cmp_r32(float a, float b) {
   if (a < b) {
     return -1.0;
@@ -564,8 +593,10 @@ float _helper_cmp_r32(float a, float b) {
   }
 }
 `
-      return `_helper_cmp_r32(${a.expr}, ${b.expr})`
-    })
+        return `_helper_cmp_r32(${a.expr}, ${b.expr})`
+      },
+      ["cmp(7,9)=-1", "cmp(8,8)=0", "cmp(3,-8)=1"],
+    )
   },
   deps: [() => PKG_BOOL],
   ty: {

@@ -63,6 +63,7 @@ export class FnDist<Q extends TyName = TyName> extends FnDistManual<Q> {
       ctx: GlslContext,
       ...args: { -readonly [K in keyof T]: GlslVal<T[K]> }
     ) => string,
+    // TODO: ban "" statically
     usage: string | string[],
     docOrder: number | null = null,
   ) {

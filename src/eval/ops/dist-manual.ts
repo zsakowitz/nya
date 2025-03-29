@@ -25,6 +25,11 @@ export type FnOverload<Q extends TyName = TyName> =
   | FnOverloadFixed<Q>
   | FnOverloadVar<Q>
 
+/** A single overload of a `FnDist` function. */
+export type FnOverloadData<Q extends TyName = TyName> =
+  | Omit<FnOverloadFixed<Q>, "usage" | "docOrder">
+  | Omit<FnOverloadVar<Q>, "usage" | "docOrder">
+
 /** A {@linkcode FnOverload} with a fixed-length argument count. */
 interface FnOverloadFixed<Q extends TyName = TyName> {
   param?: undefined
@@ -109,7 +114,7 @@ export abstract class FnDistManual<Q extends TyName = TyName> implements Fn {
     return { block: ret, lhs: Precedence.Atom, rhs: Precedence.Atom }
   }
 
-  abstract signature(args: Ty[]): FnOverload<Q>
+  abstract signature(args: Ty[]): FnOverloadData<Q>
 
   js1(...args: JsVal[]): JsVal<Q> {
     const overload = this.signature(args)
@@ -254,12 +259,12 @@ export abstract class FnDistManual<Q extends TyName = TyName> implements Fn {
 export abstract class FnDistCaching<
   Q extends TyName = TyName,
 > extends FnDistManual {
-  private readonly cached: Record<string, FnOverload<Q> | Error> =
+  private readonly cached: Record<string, FnOverloadData<Q> | Error> =
     Object.create(null)
 
-  abstract gen(args: Ty[]): FnOverload<Q>
+  abstract gen(args: Ty[]): FnOverloadData<Q>
 
-  signature(args: Ty[]): FnOverload<keyof Tys> {
+  signature(args: Ty[]): FnOverloadData<keyof Tys> {
     const name = args.map((x) => x.type).join(" ")
     if (name in this.cached) {
       const val = this.cached[name]!

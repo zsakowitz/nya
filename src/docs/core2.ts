@@ -152,7 +152,7 @@ function tab(title: string, open: boolean) {
   }
 }
 
-function secFunctions(sheet: Sheet, list: PackageList, named: boolean) {
+function secFunctions(_sheet: Sheet, list: PackageList, named: boolean) {
   const raw = Object.values(FNS)
   const fns = ALL_DOCS.filter((x) => raw.includes(x as any) === named)
   fns.sort(
@@ -226,19 +226,9 @@ function secFunctions(sheet: Sheet, list: PackageList, named: boolean) {
       }),
     ),
   )
-
-  function math(data: string) {
-    const field = new FieldInert(
-      sheet.options,
-      sheet.scope.ctx,
-      "text-[--nya-text]",
-    )
-    field.typeLatex(data)
-    return field.el
-  }
 }
 
-function secFunctions2(sheet: Sheet, list: PackageList, named: boolean) {
+function secFunctions2(sheet: Sheet, _list: PackageList, _named: boolean) {
   // FIXME: filter by list
   // FIXME: split into two tabs
   // FIXME: make this look and work better
@@ -246,7 +236,7 @@ function secFunctions2(sheet: Sheet, list: PackageList, named: boolean) {
 
   const raw = Object.values(FNS)
   const USED =
-    "abs:27; and:17; arccos:13; arccot:11; arccsc:11; arcsec:11; arcsin:13; arctan:30; arg:2; binomialdist:54; ceil:2; complex:37; conj:38; construct point:5; cos:10; cot:8; count:16; csc:8; debugpoint:36; dot:17; elappearance:50; elblock:33; elboil:34; elcategory:47; elconfig:40; elconfigshort:46; eldescription:319; eldiscoveredby:61; eleaffinity:65; elenegativity:30; elmelt:36; elmolarheat:79; elname:38; elnamedby:43; elnumber:22; elperiod:22; elphase:37; elsymbol:35; exp:21; floor:2; forceshader:18; fract:2; hsv:71; imag:13; in:40; intosi:75; juxtapose:240; ln:20; log:18; mass:34; normaldist:74; or:15; plot:161; point:35; poissondist:16; real:31; rgb:91; round:4; screendistance:28; sec:8; sign:27; sin:10; sort:27; tan:8; tdist:68; uniformdist:100; unique:35; unsign:61; valid:75; +:96; +:82; -:79; -:65; .x:9; .y:9; ·:240; ÷:190; ↑:92; ⊙:72".split(
+    "abs:33; and:17; arccos:13; arccot:11; arccsc:11; arcsec:11; arcsin:13; arctan:30; arg:2; binomialdist:54; ceil:2; cmp:3; complex:37; component:0; conj:38; construct point:5; cos:10; cot:8; count:16; csc:8; debugpoint:36; dot:17; elappearance:50; elblock:33; elboil:34; elcategory:47; elconfig:40; elconfigshort:46; eldescription:319; eldiscoveredby:61; eleaffinity:65; elenegativity:30; elmelt:36; elmolarheat:79; elname:38; elnamedby:43; elnumber:22; elperiod:22; elphase:37; elsymbol:35; exp:37; floor:2; forceshader:18; fract:2; hsv:71; imag:13; in:40; intosi:75; join:100; juxtapose:249; ln:27; log:30; log with subscript:9; mass:34; max:35; min:35; mod:2; normaldist:74; or:15; plot:161; point:35; poissondist:16; real:31; rgb:91; round:4; screendistance:28; sec:8; sign:38; sin:10; sort:27; tan:8; tdist:68; text:164; uniformdist:100; unique:35; unsign:73; valid:77; +:101; +:86; -:85; -:72; .x:9; .y:9; <:10; =:11; >:11; ·:249; ×:10; ÷:197; ↑:97; ≠:14; ≤:14; ≥:15; ≮:17; ≯:15; ≰:16; ≱:15; ⊙:81".split(
       "; ",
     )
   const fns = ALL_DOCS
@@ -271,7 +261,7 @@ function secFunctions2(sheet: Sheet, list: PackageList, named: boolean) {
     )
     .map((fn) =>
       h(
-        "flex flex-col bg-[--nya-bg] border-[--nya-border] border rounded-lg py-2 gap-4",
+        "flex flex-col bg-[--nya-bg] border-[--nya-border] border rounded-lg py-2 gap-4 my-2 break-inside-avoid",
         h(
           "px-2",
           makeDocName(
@@ -307,10 +297,14 @@ function secFunctions2(sheet: Sheet, list: PackageList, named: boolean) {
     )
 
   return h(
-    "w-full grid grid-cols-[repeat(auto-fill,minmax(18rem,1fr))] h-min gap-2",
+    "w-full columns-[auto_18rem] h-min gap-2",
     hx(
       "textarea",
-      "",
+      {
+        class:
+          "block w-full border border-[--nya-border] bg-[--nya-bg] rounded-lg p-4 resize-none h-48",
+        readonly: "readonly",
+      },
       fns
         .map(
           (x) =>
