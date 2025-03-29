@@ -12,6 +12,7 @@ export function brightness(rgb: string) {
   return Math.sqrt(r * r * 0.241 + g * g * 0.691 + b * b * 0.068)
 }
 
+// TODO: this is only ever used in readonly contexts now
 export class CmdColor extends Leaf {
   static parse(name: string) {
     const el = document.createElement("span")

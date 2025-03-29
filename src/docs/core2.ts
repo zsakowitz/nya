@@ -239,7 +239,15 @@ function secFunctions(sheet: Sheet, list: PackageList, named: boolean) {
 }
 
 function secFunctions2(sheet: Sheet, list: PackageList, named: boolean) {
+  // FIXME: filter by list
+  // FIXME: split into two tabs
+  // FIXME: make this look and work better
+
   const raw = Object.values(FNS)
+  const USED =
+    "abs:27; and:17; arg:2; binomialdist:54; ceil:2; complex:37; conj:38; construct point:5; count:16; debugpoint:36; dot:17; elappearance:50; elblock:33; elboil:34; elcategory:47; elconfig:40; elconfigshort:46; eldescription:319; eldiscoveredby:61; eleaffinity:65; elenegativity:30; elmelt:36; elmolarheat:79; elname:38; elnamedby:43; elnumber:22; elperiod:22; elphase:37; elsymbol:35; exp:21; floor:2; forceshader:18; fract:2; hsv:71; imag:13; in:40; intosi:75; juxtapose:240; ln:20; log:18; mass:34; normaldist:74; or:15; plot:161; point:35; poissondist:16; real:31; rgb:91; round:4; screendistance:28; sign:27; sort:27; tdist:68; uniformdist:100; unique:35; unsign:61; valid:75; +:96; +:82; -:79; -:65; .x:9; .y:9; ·:240; ÷:190; ↑:92; ⊙:72".split(
+      "; ",
+    )
   const fns = ALL_DOCS
     // .filter((x) => raw.includes(x as any) === named)
     .filter((x) => x.docs().some((x) => x.usage))
@@ -251,38 +259,66 @@ function secFunctions2(sheet: Sheet, list: PackageList, named: boolean) {
       : 0),
   )
 
-  const els = fns.map((fn) =>
-    h(
-      "flex flex-col bg-[--nya-bg] border-[--nya-border] border rounded-lg py-2 gap-4",
-      h("px-2", makeDocName(fn.name)),
-      h("px-2 text-[--nya-title] -mt-4 text-sm", fn.label),
-      ...fn
-        .docs()
-        .map((decl) =>
-          h(
-            "flex flex-col gap-1",
-            h("px-2", docFromSignature(decl)),
-            decl.usage?.length ?
-              h(
-                "flex flex-col gap-1",
-                ...(typeof decl.usage == "string" ?
-                  [decl.usage]
-                : decl.usage
-                ).map((x) =>
-                  h(
-                    "overflow-x-auto pl-6 pr-2 [&::-webkit-scrollbar]:hidden",
-                    math(x),
-                  ),
-                ),
-              )
-            : null,
+  const els = fns
+    .filter(
+      (x) =>
+        !USED.includes(
+          x.name +
+            ":" +
+            x.docs().reduce((a, b) => a + (b.usage?.length || 0), 0),
+        ),
+    )
+    .map((fn) =>
+      h(
+        "flex flex-col bg-[--nya-bg] border-[--nya-border] border rounded-lg py-2 gap-4",
+        h(
+          "px-2",
+          makeDocName(
+            !raw.includes(fn as any) && /^[\w\s]+$/.test(fn.name) ?
+              "[" + fn.name + "]"
+            : fn.name,
           ),
         ),
-    ),
-  )
+        h("px-2 text-[--nya-title] -mt-4 text-sm", fn.label),
+        ...fn
+          .docs()
+          .map((decl) =>
+            h(
+              "flex flex-col gap-1",
+              h("px-2", docFromSignature(decl)),
+              decl.usage?.length ?
+                h(
+                  "flex flex-col gap-1",
+                  ...(typeof decl.usage == "string" ?
+                    [decl.usage]
+                  : decl.usage
+                  ).map((x) =>
+                    h(
+                      "overflow-x-auto pl-6 pr-2 [&::-webkit-scrollbar]:hidden",
+                      math(x),
+                    ),
+                  ),
+                )
+              : null,
+            ),
+          ),
+      ),
+    )
 
   return h(
     "w-full grid grid-cols-[repeat(auto-fill,minmax(18rem,1fr))] h-min gap-2",
+    hx(
+      "textarea",
+      "",
+      fns
+        .map(
+          (x) =>
+            x.name +
+            ":" +
+            x.docs().reduce((a, b) => a + (b.usage?.length || 0), 0),
+        )
+        .join("; "),
+    ),
     ...els,
   )
 

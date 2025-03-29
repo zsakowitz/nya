@@ -339,7 +339,7 @@ export const PKG_GEO_POINT: Package = {
       "color",
       plotJs,
       (ctx, a) => FN_DEBUGPOINT.glsl1(ctx, a).expr,
-      "\\wordprefix{plot}((2,3))",
+      "\\nyaop{plot}((2,3))",
     )
 
     OP_ABS.add(

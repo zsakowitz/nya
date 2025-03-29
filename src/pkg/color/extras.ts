@@ -79,7 +79,7 @@ export const PKG_COLOR_EXTRAS: Package = {
         const a = ctx.cache(ar)
         return `(0.0 <= ${a}.x && ${a}.x <= 1.0 && 0.0 <= ${a}.y && ${a}.y <= 1.0 && 0.0 <= ${a}.z && ${a}.z <= 1.0 && 0.0 <= ${a}.w && ${a}.w <= 1.0)`
       },
-      "\\wordprefix{valid}(rgb(8,900,-350))=false",
+      "valid(rgb(8,900,-350))=false",
     )
 
     FN_OKLCH.add(

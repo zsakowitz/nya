@@ -341,7 +341,7 @@ export const OP_NEG: FnDist = new FnDist("-", "negates its input", {
 
 export const OP_ODOT: FnDist = new FnDist(
   "⊙",
-  "multiples the components of points",
+  "multiplies multi-dimensional values component-by-component",
   {
     message: "Cannot multiply %% component-by-component.",
     display: binaryFn(() => new OpOdot(), Precedence.Product),

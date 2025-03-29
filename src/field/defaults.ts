@@ -211,6 +211,7 @@ const latex = new WordMap<LatexInit>([
   ["\\neq", OpEq],
   ["\\sim", OpTilde],
   ["\\approx", OpApprox],
+  ["≈", OpApprox],
   ["\\nless", OpLt],
   ["\\leq", OpLt],
   ["\\nleq", OpLt],
@@ -237,6 +238,7 @@ const latex = new WordMap<LatexInit>([
   ["\\wordvar", CmdWord],
   ["\\wordprefix", CmdWord],
   ["\\wordinfix", CmdWord],
+  ["\\nyaop", CmdWord],
   ["\\nyacolor", CmdColor],
 ])
 

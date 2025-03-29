@@ -106,7 +106,7 @@ export const PKG_COLOR_CORE: Package = {
       plotJs,
       (_, a) =>
         `(${a.expr} ? vec4(0.1764705882, 0.4392156863, 0.7019607843, 1) : vec4(0))`,
-      "\\wordprefix{plot}(true)=\\nyacolor{rgb(45,112,179)}", // TODO: update once custom graph colors work
+      "\\nyaop{plot}(true)=\\nyacolor{rgb(45,112,179)}", // TODO: update once custom graph colors work
     )
 
     FN_RGB.add(
@@ -161,7 +161,7 @@ export const PKG_COLOR_CORE: Package = {
       "color",
       plotJs,
       (_, a) => a.expr,
-      "\\wordprefix{plot}(rgb(2,128,40))=\\nyacolor{#028028}",
+      "\\nyaop{plot}(rgb(2,128,40))=\\nyacolor{#028028}",
     ).add(
       ["r32"],
       "color",
@@ -173,7 +173,7 @@ export const PKG_COLOR_CORE: Package = {
           { type: "r32", expr: "1.0" },
           { type: "r32", expr: "1.0" },
         ).expr,
-      "\\wordprefix{plot}(120)=\\nyacolor{#0f0}",
+      "\\nyaop{plot}(120)=\\nyacolor{#0f0}",
     )
 
     OP_CDOT.add(

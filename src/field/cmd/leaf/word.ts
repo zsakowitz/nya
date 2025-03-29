@@ -12,6 +12,7 @@ export class CmdWord extends Leaf {
       cmd == "\\wordvar" ? "var"
       : cmd == "\\wordprefix" ? "prefix"
       : cmd == "\\wordinfix" ? "infix"
+      : cmd == "\\nyaop" ? "builtin"
       : null
 
     if (kind == null) {
@@ -23,7 +24,9 @@ export class CmdWord extends Leaf {
 
   constructor(
     readonly text: string,
-    readonly kind: Exclude<WordKind, "magicprefix" | "magicprefixword"> = "var",
+    readonly kind:
+      | Exclude<WordKind, "magicprefix" | "magicprefixword">
+      | "builtin" = "var",
     readonly italic?: boolean,
   ) {
     // The wrapper ensures selections work fine
@@ -36,7 +39,12 @@ export class CmdWord extends Leaf {
               "italic"
             : ""
           : `nya-cmd-word nya-cmd-word-${kind} nya-cmd-word-l nya-cmd-word-r`),
-        h("font-['Times_New_Roman'] [line-height:.9]", text),
+        h(
+          (kind == "builtin" ? "font-['Symbola']" : (
+            "font-['Times_New_Roman']"
+          )) + " [line-height:.9]",
+          text,
+        ),
       ),
     )
   }
@@ -65,7 +73,7 @@ export class CmdWord extends Leaf {
     tokens.push({
       type: "var",
       value: this.text,
-      kind: this.kind,
+      kind: this.kind == "builtin" ? "prefix" : this.kind,
       span: new Span(this.parent, this[L], this[R]),
     })
   }

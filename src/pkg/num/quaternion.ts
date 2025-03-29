@@ -15,7 +15,7 @@ import {
   OP_POS,
   OP_SUB,
 } from "../core/ops"
-import { FN_CONJ, PKG_NUM_COMPLEX } from "./complex"
+import { FN_CONJ, FN_REAL, PKG_NUM_COMPLEX } from "./complex"
 import { FN_UNSIGN, PKG_REAL } from "./real"
 
 declare module "@/eval/ty" {
@@ -160,8 +160,16 @@ export const PKG_NUM_QUATERNION: Package = {
       ["q32"],
       "q32",
       (a) => [a.value[0], neg(a.value[1]), neg(a.value[2]), neg(a.value[3])],
-      (_, a) => `(${a} * vec4(1, -1, -1, -1))`,
+      (_, a) => `(${a.expr} * vec4(1, -1, -1, -1))`,
       "conj(-2-3i+4k)=2+3i-4k",
+    )
+
+    FN_REAL.add(
+      ["q32"],
+      "r32",
+      (a) => a.value[0],
+      (_, a) => `${a.expr}.x`,
+      "real(-2-3i+4k)=-2",
     )
   },
   ty: {

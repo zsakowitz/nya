@@ -110,7 +110,10 @@ const FN_IMAG = new FnDist(
   "gets the imaginary part of a complex number",
 )
 
-const FN_REAL = new FnDist("real", "gets the real part of a complex number")
+export const FN_REAL = new FnDist(
+  "real",
+  "gets the real part of a multi-dimensional number",
+)
 
 const WRITE_COMPLEX: TyWrite<SPoint> = {
   isApprox(value) {
@@ -147,6 +150,7 @@ export const PKG_NUM_COMPLEX: Package = {
         const a = ctx.cache(ar)
         return `atan(${a}.y, ${a}.x)`
       },
+      ["arg(\\frac12+\\frac\\sqrt32i)=\\frac\\pi2", "arg(-3i)=-\\frac\\pi2"],
     )
 
     FN_SIGN.add(
@@ -157,6 +161,7 @@ export const PKG_NUM_COMPLEX: Package = {
         return pt(div(a.x, denom), div(a.y, denom))
       },
       (_, a) => `normalize(${a.expr})`,
+      "sign(3-4i)=\\frac35-\\frac45i",
     )
 
     FN_EXP.add(
@@ -172,6 +177,7 @@ export const PKG_NUM_COMPLEX: Package = {
         declareExp(ctx)
         return `_helper_exp(${a.expr})`
       },
+      "exp(2i)≈-0.416+0.909i",
     )
 
     FN_LN.add(
@@ -182,6 +188,7 @@ export const PKG_NUM_COMPLEX: Package = {
         declareLn(ctx)
         return `_helper_ln(${a.expr})`
       },
+      "ln(-0.416+0.909i)≈2i",
     )
 
     FN_LOG10.add(
@@ -204,6 +211,7 @@ export const PKG_NUM_COMPLEX: Package = {
         declareLn(ctx)
         return `(_helper_ln(${a.expr}) / vec2(log(10.0)))`
       },
+      "log(100i)≈2+0.682i",
     )
 
     // TODO: logb
@@ -216,6 +224,7 @@ export const PKG_NUM_COMPLEX: Package = {
         const a = ctx.cache(ar)
         return `(!isnan(${a}.x) && !isinf(${a}.x) && !isnan(${a}.y) && !isinf(${a}.y))`
       },
+      ["valid(2+3i)=true", "valid(\\frac{2+3i}0)=false"],
     )
 
     FN_CONJ.add(
@@ -223,11 +232,13 @@ export const PKG_NUM_COMPLEX: Package = {
       "c64",
       (a) => pt(a.value.x, neg(a.value.y)),
       (_, a) => `(${a} * vec4(1, 1, -1, -1))`,
+      [],
     ).add(
       ["c32"],
       "c32",
       (a) => pt(a.value.x, neg(a.value.y)),
       (_, a) => `(${a} * vec2(1, -1))`,
+      "conj(-2+3i)=2-3i",
     )
 
     FN_DOT.add(
@@ -235,11 +246,13 @@ export const PKG_NUM_COMPLEX: Package = {
       "r64",
       (a, b) => sub(mul(a.value.x, b.value.x), mul(a.value.y, b.value.y)),
       dotC64,
+      [],
     ).add(
       ["c32", "c32"],
       "r32",
       (a, b) => sub(mul(a.value.x, b.value.x), mul(a.value.y, b.value.y)),
       dotC32,
+      "dot(2+3i,4-5i)=23",
     )
 
     FN_UNSIGN.add(
@@ -250,11 +263,13 @@ export const PKG_NUM_COMPLEX: Package = {
         const name = ctx.cache(a)
         return `vec4(${abs64(ctx, `${name}.xy`)}, ${abs64(ctx, `${name}.zw`)})`
       },
+      [],
     ).add(
       ["c32"],
       "c32",
       (a) => pt(abs(a.value.x), abs(a.value.y)),
       (_, a) => `abs(${a.expr})`,
+      "unsign(4-5i)=4+5i",
     )
 
     FN_IMAG.add(
@@ -262,11 +277,14 @@ export const PKG_NUM_COMPLEX: Package = {
       "r64",
       (a) => a.value.y,
       (_, a) => `${a.expr}.zw`,
+      // TODO: decide whether high res variants should have usage examples
+      [],
     ).add(
       ["c32"],
       "r32",
       (a) => a.value.y,
       (_, a) => `${a.expr}.y`,
+      "imag(-9+8i)=8",
     )
 
     FN_REAL.add(
@@ -274,11 +292,13 @@ export const PKG_NUM_COMPLEX: Package = {
       "r64",
       (a) => a.value.x,
       (_, a) => `${a.expr}.xy`,
+      [],
     ).add(
       ["c32"],
       "r32",
       (a) => a.value.x,
       (_, a) => `${a.expr}.x`,
+      "real(-9+8i)=-9",
     )
 
     FN_DEBUGPOINT.add(
@@ -288,6 +308,7 @@ export const PKG_NUM_COMPLEX: Package = {
         throw new Error(ERR_COORDS_USED_OUTSIDE_GLSL)
       },
       (ctx, a) => declareDebugPoint(ctx, a),
+      "debugpoint(e^{2i})",
     )
 
     OP_SUB.add(
@@ -299,11 +320,13 @@ export const PKG_NUM_COMPLEX: Package = {
         const b = ctx.cache(br)
         return `vec4(${subR64(ctx, `${a}.xy`, `${b}.xy`)}, ${subR64(ctx, `${a}.zw`, `${b}.zw`)})`
       },
+      [],
     ).add(
       ["c32", "c32"],
       "c32",
       (a, b) => subPt(a.value, b.value),
       (_, a, b) => `(${a.expr} - ${b.expr})`,
+      "(2+3i)-(4-7i)=-2+10i",
     )
 
     OP_RAISE.add(
@@ -353,6 +376,7 @@ export const PKG_NUM_COMPLEX: Package = {
 `
         return `_helper_pow_c32(${a.expr}, ${b.expr})`
       },
+      "(4+5i)^(2\\pi i)≈0.00223-0.00281i",
     )
 
     OP_ODOT.add(
@@ -364,6 +388,7 @@ export const PKG_NUM_COMPLEX: Package = {
         declareOdotC64(ctx)
         return `_helper_odot_c64(${a.expr}, ${b.expr})`
       },
+      [],
     ).add(
       ["c32", "c32"],
       "c32",
@@ -371,6 +396,7 @@ export const PKG_NUM_COMPLEX: Package = {
       (_, a, b) => {
         return `(${a.expr} * ${b.expr})`
       },
+      "(2+3i)\\odot(1-2i)=2-6i",
     )
 
     OP_ADD.add(
@@ -382,11 +408,13 @@ export const PKG_NUM_COMPLEX: Package = {
         const b = ctx.cache(br)
         return `vec4(${addR64(ctx, `${a}.xy`, `${b}.xy`)}, ${addR64(ctx, `${a}.zw`, `${b}.zw`)})`
       },
+      [],
     ).add(
       ["c32", "c32"],
       "c32",
       (a, b) => addPt(a.value, b.value),
       (_, a, b) => `(${a.expr} + ${b.expr})`,
+      "(2+3i)+(1-2i)=3+i",
     )
 
     OP_CDOT.add(
@@ -407,6 +435,7 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
 `
         return `_helper_mul_c64(${a.expr}, ${b.expr})`
       },
+      [],
     ).add(
       ["c32", "c32"],
       "c32",
@@ -415,6 +444,7 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
         declareMulC32(ctx)
         return `_helper_mul_c32(${a.expr}, ${b.expr})`
       },
+      "(-2+3i)\\cdot(4-9i)=19+30i",
     )
 
     FN_COMPLEX.add(
@@ -422,24 +452,28 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
       "c64",
       (a) => a.value,
       (_, a) => a.expr,
+      [],
     )
       .add(
         ["c32"],
         "c32",
         (a) => a.value,
         (_, a) => a.expr,
+        "complex(2+3i)=2+3i",
       )
       .add(
         ["point64"],
         "c64",
         (a) => a.value,
         (_, a) => a.expr,
+        [],
       )
       .add(
         ["point32"],
         "c32",
         (a) => a.value,
         (_, a) => a.expr,
+        "complex((2,3))=2+3i",
       )
 
     FN_POINT.add(
@@ -447,24 +481,28 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
       "point64",
       (a) => a.value,
       (_, a) => a.expr,
+      [],
     )
       .add(
         ["c32"],
         "point32",
         (a) => a.value,
         (_, a) => a.expr,
+        "point(2+3i)=(2,3)",
       )
       .add(
         ["point64"],
         "point64",
         (a) => a.value,
         (_, a) => a.expr,
+        [],
       )
       .add(
         ["point32"],
         "point32",
         (a) => a.value,
         (_, a) => a.expr,
+        "point((2,3))=(2,3)",
       )
 
     OP_ABS.add(
@@ -473,6 +511,7 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
       // TODO: this is exact for some values
       (a) => approx(Math.hypot(num(a.value.x), num(a.value.y))),
       (_, a) => `length(${a.expr})`,
+      "|3-4i|=5",
     )
 
     OP_DIV.add(
@@ -483,6 +522,7 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
         declareDiv(ctx)
         return `_helper_div(${a.expr}, ${b.expr})`
       },
+      "\\frac{2+3i}{-3+4i}=0.24-0.68i",
     )
 
     OP_NEG.add(
@@ -490,18 +530,22 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
       "c64",
       (a) => pt(neg(a.value.x), neg(a.value.y)),
       (_, a) => `(-${a.expr})`,
+      [],
     ).add(
       ["c32"],
       "c32",
       (a) => pt(neg(a.value.x), neg(a.value.y)),
       (_, a) => `(-${a.expr})`,
+      "-(2+3i)=-2-3i",
     )
 
+    // TODO: replace this with domain coloring
     OP_PLOT.add(
       ["c32"],
       "color",
       plotJs,
       (ctx, a) => FN_DEBUGPOINT.glsl1(ctx, a).expr,
+      "\\nyaop{plot}(2+3i)",
     )
 
     OP_POS.add(
@@ -509,11 +553,13 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
       "c64",
       (a) => a.value,
       (_, a) => a.expr,
+      [],
     ).add(
       ["c32"],
       "c32",
       (a) => a.value,
       (_, a) => a.expr,
+      "+(2+3i)=2+3i",
     )
   },
   deps: [() => PKG_REAL, () => PKG_GEO_POINT],
