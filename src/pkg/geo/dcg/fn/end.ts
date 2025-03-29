@@ -8,4 +8,5 @@ export const FN_END = new FnDist(
   "point32",
   (a) => a.value[1],
   (_, a) => `${a.expr}.zw`,
+  "end(vector((7,5),(6,8)))=(6,8)",
 )

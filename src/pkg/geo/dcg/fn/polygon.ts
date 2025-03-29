@@ -7,4 +7,10 @@ function glsl(): never {
 export const FN_POLYGON = new FnList(
   "polygon",
   "constructs a polygon from a set of points",
-).addSpread("point32", "polygon", (args) => args, glsl)
+).addSpread(
+  "point32",
+  "polygon",
+  (args) => args,
+  glsl,
+  "polygon((2,3),(7,4),(-9,3))",
+)

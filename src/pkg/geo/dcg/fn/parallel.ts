@@ -33,7 +33,14 @@ export const FN_PARALLEL = new FnDist(
   "parallel",
   "creates a line parallel to an existing line which passes through some point",
 )
-  .add(["segment", "point32"], "line", parallelJs, glsl)
-  .add(["ray", "point32"], "line", parallelJs, glsl)
-  .add(["line", "point32"], "line", parallelJs, glsl)
-  .add(["vector", "point32"], "line", parallelJs, glsl)
+  // DOCS: should there be examples for each type?
+  .add(["segment", "point32"], "line", parallelJs, glsl, [])
+  .add(["ray", "point32"], "line", parallelJs, glsl, [])
+  .add(
+    ["line", "point32"],
+    "line",
+    parallelJs,
+    glsl,
+    String.raw`\operatorname{parallel}\left(\operatorname{line}\left(\left(1,4\right),\left(5,9\right)\right),\left(2,3\right)\right)=\operatorname{line}\left(\left(2,3\right),\left(6,8\right)\right)`,
+  )
+  .add(["vector", "point32"], "line", parallelJs, glsl, [])

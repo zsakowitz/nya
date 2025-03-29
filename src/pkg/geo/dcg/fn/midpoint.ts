@@ -16,6 +16,7 @@ export const FN_MIDPOINT = new FnDist(
         div(add(a.value.y, b.value.y), real(2)),
       ),
     (_, a, b) => `((${a.expr} + ${b.expr}) / 2.0)`,
+    "midpoint((1,4),(3,8))=(2,6)",
   )
   .add(
     ["segment"],
@@ -26,4 +27,5 @@ export const FN_MIDPOINT = new FnDist(
       const a = ctx.cache(ar)
       return `((${a}.xy + ${a}.zw) / 2.0)`
     },
+    "midpoint(segment((1,4),(3,8)))=(2,6)",
   )

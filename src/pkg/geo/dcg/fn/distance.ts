@@ -21,6 +21,17 @@ export const FN_DISTANCE = new FnDist<"r32">(
   "distance",
   "calculates the distance between two objects",
 )
+  .add(
+    ["point32", "point32"],
+    "r32",
+    (a, b) => dist(a.value, b.value),
+    (ctx, ar, br) => {
+      const a = ctx.cache(ar)
+      const b = ctx.cache(br)
+      return `hypot(${a}.x - ${b}.x, ${a}.y - ${b}.y)`
+    },
+    "distance((2,3),(5,-1))=5",
+  )
   // https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
   .add(
     ["line", "point32"],
@@ -51,14 +62,5 @@ export const FN_DISTANCE = new FnDist<"r32">(
       const y0 = `${b}.y`
       return `abs((${y2} - ${y1}) * ${x0} - (${x2} - ${x1}) * ${y0} + ${x2} * ${y1} - ${y2} * ${x1}) / distance(${a}.xy, ${a}.zw)`
     },
-  )
-  .add(
-    ["point32", "point32"],
-    "r32",
-    (a, b) => dist(a.value, b.value),
-    (ctx, ar, br) => {
-      const a = ctx.cache(ar)
-      const b = ctx.cache(br)
-      return `hypot(${a}.x - ${b}.x, ${a}.y - ${b}.y)`
-    },
+    String.raw`distance(\operatorname{line}\left(\left(5,6\right),\left(7,-3\right)\right),(2,3))≈3.5794`,
   )

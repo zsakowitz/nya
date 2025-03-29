@@ -236,7 +236,7 @@ function secFunctions2(sheet: Sheet, _list: PackageList, _named: boolean) {
 
   const raw = Object.values(FNS)
   const USED =
-    "abs:33; and:17; angle:24; anglebisector:23; angles:47; arccos:13; arccot:11; arccsc:11; arcsec:11; arcsin:13; arctan:30; arg:2; binomialdist:54; ceil:2; cmp:3; complex:37; component:0; conj:38; construct point:5; corr:39; cos:10; cot:8; count:16; cov:35; covp:36; csc:8; debugpoint:36; digamma:16; directedangle:32; directedangles:71; dot:17; elappearance:50; elblock:33; elboil:34; elcategory:47; elconfig:40; elconfigshort:46; eldescription:319; eldiscoveredby:61; eleaffinity:65; elenegativity:30; elmelt:36; elmolarheat:79; elname:38; elnamedby:43; elnumber:22; elperiod:22; elphase:37; elsymbol:35; exp:37; floor:2; forceshader:18; fract:2; hsv:71; imag:13; image:91; imgaspect:14; imgheight:14; imgwidth:13; in:40; intosi:75; ithkuilca:96; ithkuilgloss:73; ithkuilscript:32; ithkuilungloss:55; ithkuilvalid:2; ithkuilvalidfinal:2; ithkuilvalidinitial:2; ithkuilvalues:107; join:100; juxtapose:249; ln:27; log:30; log with subscript:9; mad:27; mass:34; max:35; mean:17; median:41; min:35; mod:2; normaldist:74; or:15; plot:161; point:35; poissondist:16; polygamma:20; quantile:3; quartile:2; ranks:35; real:31; rgb:91; rotate:22; round:4; screendistance:28; sec:8; segment:21; segments:151; sign:38; sin:10; sort:27; spearman:39; start:34; stats:18; stdev:32; stdevp:33; tan:8; tdist:68; text:164; total:17; translate:866; uniformdist:100; unique:35; unsign:73; valid:77; var:28; varp:29; vector:20; vertices:60; !:71; +:101; +:86; -:85; -:72; .x:9; .y:9; <:10; =:11; >:11; ·:249; ×:10; ÷:197; ↑:97; ≠:14; ≤:14; ≥:15; ≮:17; ≯:15; ≰:16; ≱:15; ⊙:81".split(
+    "abs:33; and:17; angle:24; anglebisector:23; angles:47; arccos:40; arccosh:17; arccot:38; arccoth:17; arccsc:38; arccsch:17; arcsec:38; arcsech:19; arcsin:40; arcsinh:17; arctan:57; arctanh:19; arg:2; binomialdist:54; ceil:2; center:141; circle:150; cmp:3; complex:37; component:0; conj:38; construct point:5; corr:39; cos:35; cosh:15; cot:33; coth:18; count:16; cov:35; covp:36; csc:32; csch:18; debugpoint:36; digamma:16; dilate:312; directedangle:32; directedangles:71; distance:113; dot:17; elappearance:50; elblock:33; elboil:34; elcategory:47; elconfig:40; elconfigshort:46; eldescription:319; eldiscoveredby:61; eleaffinity:65; elenegativity:30; elmelt:36; elmolarheat:79; elname:38; elnamedby:43; elnumber:22; elperiod:22; elphase:37; elsymbol:35; end:30; exp:37; floor:2; forceshader:18; fract:2; hsv:71; imag:13; image:91; imgaspect:14; imgheight:14; imgwidth:13; in:40; intosi:75; ithkuilca:96; ithkuilgloss:73; ithkuilscript:32; ithkuilungloss:55; ithkuilvalid:2; ithkuilvalidfinal:2; ithkuilvalidinitial:2; ithkuilvalues:107; join:100; juxtapose:249; length:159; line:18; ln:27; log:30; log with subscript:9; mad:27; mass:34; max:35; mean:17; median:41; midpoint:63; min:35; mod:2; normaldist:74; or:15; parallel:184; perpendicular:190; plot:161; point:35; poissondist:16; polygamma:20; quantile:3; quartile:2; ranks:35; ray:18; real:31; reflect:323; rgb:91; rotate:22; round:4; screendistance:28; sec:33; sech:14; segment:21; segments:151; sign:38; sin:34; sinh:15; sort:27; spearman:39; start:34; stats:18; stdev:32; stdevp:33; tan:33; tanh:14; tdist:68; text:164; total:17; translate:866; uniformdist:100; unique:35; unsign:73; valid:77; var:28; varp:29; vector:20; vertices:60; !:71; +:101; +:86; -:85; -:72; .x:9; .y:9; <:10; =:11; >:11; ·:249; ×:10; ÷:197; ↑:97; ≠:14; ≤:14; ≥:15; ≮:17; ≯:15; ≰:16; ≱:15; ⊙:81".split(
       "; ",
     )
   const fns = ALL_DOCS
@@ -261,7 +261,7 @@ function secFunctions2(sheet: Sheet, _list: PackageList, _named: boolean) {
     )
     .map((fn) =>
       h(
-        "flex flex-col bg-[--nya-bg] border-[--nya-border] border rounded-lg py-2 gap-4 my-2 break-inside-avoid",
+        "flex flex-col bg-[--nya-bg] border-[--nya-border] border rounded-lg py-2 my-2 break-inside-avoid",
         h(
           "px-2",
           makeDocName(
@@ -270,29 +270,32 @@ function secFunctions2(sheet: Sheet, _list: PackageList, _named: boolean) {
             : fn.name,
           ),
         ),
-        h("px-2 text-[--nya-title] -mt-4 text-sm", fn.label),
-        ...fn
-          .docs()
-          .map((decl) =>
-            h(
-              "flex flex-col gap-1",
-              h("px-2", docFromSignature(decl)),
-              decl.usage?.length ?
-                h(
-                  "flex flex-col gap-1",
-                  ...(typeof decl.usage == "string" ?
-                    [decl.usage]
-                  : decl.usage
-                  ).map((x) =>
-                    h(
-                      "overflow-x-auto pl-6 pr-2 [&::-webkit-scrollbar]:hidden",
-                      math(x),
+        h("px-2 text-[--nya-title] text-sm", fn.label),
+        h(
+          "flex flex-col mt-4",
+          ...fn
+            .docs()
+            .map((decl) =>
+              h(
+                "flex flex-col gap-1",
+                h("px-2", docFromSignature(decl)),
+                decl.usage?.length ?
+                  h(
+                    "flex flex-col gap-1 mb-4 [:last-child>&]:mb-0",
+                    ...(typeof decl.usage == "string" ?
+                      [decl.usage]
+                    : decl.usage
+                    ).map((x) =>
+                      h(
+                        "overflow-x-auto pl-6 pr-2 [&::-webkit-scrollbar]:hidden",
+                        math(x),
+                      ),
                     ),
-                  ),
-                )
-              : null,
+                  )
+                : null,
+              ),
             ),
-          ),
+        ),
       ),
     )
 

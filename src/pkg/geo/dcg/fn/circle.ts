@@ -33,6 +33,7 @@ export const FN_CIRCLE = new FnDist(
     "circle",
     (a, b) => ({ center: a.value, radius: abs(b.value) }),
     (_, a, b) => `vec3(${a.expr}, abs(${b.expr}))`,
+    "circle((4,3),7)",
   )
   .add(
     ["point32", "segment"],
@@ -42,8 +43,9 @@ export const FN_CIRCLE = new FnDist(
       const b = ctx.cache(br)
       return `vec3(${a.expr}, length(${b}.xy - ${b}.zw))`
     },
+    "circle((4,3),segment(...))",
   )
-  .add(["point32", "point32"], "circle", js, glsl)
+  .add(["point32", "point32"], "circle", js, glsl, "circle((4,3),(8,9))")
   .add(
     ["arc"],
     "circle",
@@ -58,4 +60,5 @@ export const FN_CIRCLE = new FnDist(
       // TODO:
       throw new Error("Cannot convert an arc into a circle in shaders yet.")
     },
+    String.raw`circle(\operatorname{arc}\left(\left(-6,4\right),\left(3,2\right),\left(0,5\right)\right))`,
   )

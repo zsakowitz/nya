@@ -8,6 +8,7 @@ export const FN_ARC = new FnDist(
   "arc",
   (a, b, c) => [a.value, b.value, c.value],
   (_, a, b, c) => `mat3x2(${a.expr}, ${b.expr}, ${c.expr})`,
+  "arc((2,3),(9,-10),(1,5))",
 )
 // TODO: arc from a circle, start angle, and end angle
 // TODO: arc from segment
