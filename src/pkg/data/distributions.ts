@@ -1,11 +1,22 @@
+import { jsToGlsl } from "@/eval/glsl"
 import { FnDist } from "@/eval/ops/dist"
-import { gl, real } from "@/eval/ty/create"
+import { FnDistDeriv } from "@/eval/ops/dist-deriv"
+import { SYM_2, SYM_E, SYM_HALF, SYM_PI, unary } from "@/eval/sym"
+import type { GlslValue } from "@/eval/ty"
+import { approx, gl, num, real } from "@/eval/ty/create"
+import { TY_INFO } from "@/eval/ty/info"
 import { CmdComma } from "@/field/cmd/leaf/comma"
 import { CmdWord } from "@/field/cmd/leaf/word"
 import { CmdBrack } from "@/field/cmd/math/brack"
 import { Block, L, R } from "@/field/model"
 import { g, h, path, svgx } from "@/jsx"
+import { defineExt } from "@/sheet/ext"
+import { createLine } from "@/sheet/shader-line"
+import erfinv from "@stdlib/math/base/special/erfinv"
+import { erf } from "mathjs"
 import type { Package } from ".."
+import { chain, OP_DIV, OP_JUXTAPOSE, OP_NEG, OP_RAISE } from "../core/ops"
+import { EXT_EVAL } from "../eval"
 
 declare module "@/eval/ty" {
   interface Tys {
@@ -124,7 +135,121 @@ const uniformdist = new FnDist("uniformdist", "creates a uniform distribution")
     "uniformdist(8,23)=uniformdist(8,23)",
   )
 
+const FN_ERF = new FnDist(
+  "erf",
+  "error function; related to area of a normal distribution",
+  {
+    deriv: unary((wrt, a) =>
+      chain(a, wrt, {
+        type: "call",
+        fn: OP_JUXTAPOSE,
+        args: [
+          {
+            type: "call",
+            fn: OP_DIV,
+            args: [
+              SYM_2,
+              {
+                type: "call",
+                fn: OP_RAISE,
+                args: [SYM_PI, SYM_HALF],
+              },
+            ],
+          },
+          {
+            type: "call",
+            fn: OP_RAISE,
+            args: [
+              SYM_E,
+              {
+                type: "call",
+                fn: OP_NEG,
+                args: [{ type: "call", fn: OP_RAISE, args: [a, SYM_2] }],
+              },
+            ],
+          },
+        ],
+      }),
+    ),
+  },
+).addJs(["r32"], "r32", (a) => approx(erf(num(a.value))), "erf(1)≈0.842700")
+
+const FN_ERFINV = new FnDist("erf^-1", "inverse error function").addJs(
+  ["r32"],
+  "r32",
+  (a) => approx(erfinv(num(a.value))),
+  "erf^{-1}(0.8427)≈1",
+)
+
+const FN_PDF = new FnDistDeriv("pdf", "probability distribution function").add(
+  ["normaldist", "r32"],
+  "r32",
+  (dist, xRaw) => {
+    const mean = num(dist.value[0])
+    const stdev = num(dist.value[1])
+    const x = num(xRaw.value)
+    return approx(
+      Math.E ** (-((x - mean) ** 2) / (2 * stdev * stdev)) /
+        Math.sqrt(2 * Math.PI * stdev * stdev),
+    )
+  },
+  (ctx, a, b) => {
+    ctx.glsl`float nya_normaldist_pdf(vec2 dist, float x) {
+  float mean = dist.x;
+  float variance = dist.y * dist.y;
+  return pow(2.718281828459045, -(x-mean) * (x-mean) / (2.0 * variance))
+    / (2.5066282746310007 * abs(dist.y));
+}`
+    return `nya_normaldist_pdf(${a.expr}, ${b.expr})`
+  },
+  "normaldist().pdf(1)≈0.24197",
+)
+
+// const FN_CDF = new FnDistDeriv("cdf", "cumulative distribution function").addJs(
+//   ["normaldist", "r32"],
+//   "r32",
+//   // (dist, xRaw) =
+// )
+
 // TODO: tokens for distributions
+
+const EXT_CONTINUOUS_DISTRIBUTION = defineExt({
+  data(expr) {
+    if (!expr.js) {
+      return
+    }
+
+    if (!TY_INFO[expr.js.value.type].extras?.renderContinuousPdf) {
+      return
+    }
+
+    if (expr.js.value.list !== false) {
+      return
+    }
+
+    return {
+      eval: EXT_EVAL.data(expr)!,
+      value: expr.js.value,
+      expr,
+    }
+  },
+  el(data) {
+    return EXT_EVAL.el!(data.eval)
+  },
+  glsl(data) {
+    const props = data.expr.sheet.scope.propsGlsl()
+    return createLine(
+      data.expr.sheet.cv,
+      props,
+      () => ({ list: false, type: "r64", expr: "v_coords.zw" }),
+      () => {
+        const dist = jsToGlsl(data.value, props.ctx)
+        const x: GlslValue = { list: false, type: "r64", expr: "v_coords.xy" }
+        return FN_PDF.glsl(props.ctx, [dist, x])
+      },
+    )
+  },
+})
 
 export const PKG_DISTRIBUTIONS: Package = {
   id: "nya:distributions",
@@ -186,7 +311,7 @@ export const PKG_DISTRIBUTIONS: Package = {
         glide: null,
         preview: null,
         components: null,
-        extras: null,
+        extras: { renderContinuousPdf: true },
       },
       tdist: {
         name: "t-distribution",
@@ -449,6 +574,14 @@ export const PKG_DISTRIBUTIONS: Package = {
       poissondist,
       binomialdist,
       uniformdist,
+      erf: FN_ERF,
+      "erf^-1": FN_ERFINV,
+      pdf: FN_PDF,
+    },
+  },
+  sheet: {
+    exts: {
+      1: [EXT_CONTINUOUS_DISTRIBUTION],
     },
   },
 }

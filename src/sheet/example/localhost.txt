@@ -1,2 +1,1 @@
-debugast([1...2])
-debugast([1,...,3,2])
+\operatorname{iterate}^{10}z\to z^{2}+p\operatorname{while}\left|z\right|<2

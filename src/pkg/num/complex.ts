@@ -12,6 +12,7 @@ import { Order } from "@/sheet/ui/cv/consts"
 import type { Package } from ".."
 import { FN_VALID } from "../bool"
 import { OP_PLOT, plotJs } from "../color/core"
+import { declareOklab } from "../color/oklab"
 import {
   abs64,
   addR64,
@@ -539,12 +540,35 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
       "-(2+3i)=-2-3i",
     )
 
-    // TODO: replace this with domain coloring
+    /*!
+     * Source from https://github.com/nschloe/cplot/blob/main/src/cplot/_colors.py
+     *
+     * Licensed under GNU General Public License v3.0
+     */
+
     OP_PLOT.add(
       ["c32"],
       "color",
       plotJs,
-      (ctx, a) => FN_DEBUGPOINT.glsl1(ctx, a).expr,
+      (ctx, a) => {
+        declareOklab(ctx)
+        ctx.glsl`
+vec4 _nya_cplot(vec2 z) {
+  float angle = atan(z.y, z.x);
+  float absval_scaled = length(z) / (length(z) + 1.0);
+  float r0 = 0.08499547839164734 * 1.28;
+  float offset = 0.8936868 * 3.141592653589793;
+  float rd = 1.5*r0 * (1.0 - 2.0 * abs(absval_scaled - 0.5));
+  vec3 ok_coords = vec3(
+    absval_scaled,
+    rd * cos(angle + offset),
+    rd * sin(angle + offset)
+  );
+  return vec4(_helper_oklab(ok_coords), 1);
+}
+`
+        return `_nya_cplot(${a.expr})`
+      },
       "\\nyaop{plot}(2+3i)",
     )
 

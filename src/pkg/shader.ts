@@ -3,15 +3,14 @@ import { js } from "@/eval/js"
 import type { Fn } from "@/eval/ops"
 import { ALL_DOCS, type WithDocs } from "@/eval/ops/docs"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "@/eval/ops/vars"
-import { coerceValueGlsl } from "@/eval/ty/coerce"
 import { TY_INFO } from "@/eval/ty/info"
 import { h, hx, p } from "@/jsx"
 import { Store, defineExt } from "@/sheet/ext"
+import { createLine } from "@/sheet/shader-line"
 import { circle } from "@/sheet/ui/expr/circle"
 import { PROP_SHOWN } from "@/show"
 import type { Package } from "."
 import { OP_PLOT, PKG_COLOR_CORE } from "./color/core"
-import { OP_SUB, declareAddR64 } from "./core/ops"
 import { PKG_REAL } from "./num/real"
 
 const store = new Store((expr) => {
@@ -80,40 +79,15 @@ const EXT_GLSL = defineExt({
       ast.ops[0]! == "cmp-eq"
     ) {
       const props = data.expr.sheet.scope.propsGlsl()
+
       const lhs = ast.items[0]!
       const rhs = ast.items[1]!
-
-      declareAddR64(props.ctx)
-
-      /** Returns an `r32`. */
-      function go(dx: number, dy: number) {
-        const offset = props.ctx.cachedNative(
-          "vec4",
-          `vec4(${dx.toExponential()} * u_unit_per_hpx.x, 0, ${dy.toExponential()} * u_unit_per_hpx.z, 0)`,
-        )
-        props.ctx.push`v_coords += ${offset};\n`
-        const a = props.ctx.cached(
-          "r32",
-          coerceValueGlsl(
-            props.ctx,
-            OP_SUB.glsl(props.ctx, [glsl(lhs, props), glsl(rhs, props)]),
-            { type: "r32", list: false },
-          ),
-        )
-        props.ctx.push`v_coords -= ${offset};\n`
-        return a
-      }
-
-      const DIST = 1.5 * data.expr.sheet.cv.scale
-      const DIAG = DIST * Math.SQRT2
-
-      const r1 = `int(${go(-DIST, -DIST)} < 0.0) + int(${go(-DIST, +DIST)} < 0.0) + int(${go(+DIST, -DIST)} < 0.0) + int(${go(+DIST, +DIST)} < 0.0)`
-      const r2 = `int(${go(-DIAG, 0)} < 0.0) + int(${go(+DIAG, 0)} < 0.0) + int(${go(0, -DIAG)} < 0.0) + int(${go(0, +DIAG)} < 0.0)`
-
-      return [
-        props.ctx,
-        `(${r1} == 0 || ${r1} == 4) && (${r2} == 0 || ${r2} == 4) ? vec4(0) : vec4(0.1764705882, 0.4392156863, 0.7019607843, 1)`,
-      ]
+      return createLine(
+        data.expr.sheet.cv,
+        props,
+        () => glsl(lhs, props),
+        () => glsl(rhs, props),
+      )
     }
 
     if (ast.type == "binding") {

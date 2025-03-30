@@ -49,6 +49,7 @@ import {
   OP_MOD,
   OP_NEG,
   OP_ODOT,
+  OP_PLOTSIGN,
   OP_POS,
   OP_RAISE,
   OP_SUB,
@@ -507,6 +508,20 @@ export const PKG_REAL: Package = {
       "r64",
       (a, b) => sub(a.value, b.value),
       (ctx, a, b) => subR64(ctx, a.expr, b.expr),
+      [],
+    ).add(
+      ["r32", "r32"],
+      "r32",
+      (a, b) => sub(a.value, b.value),
+      (_, a, b) => `(${a.expr} - ${b.expr})`,
+      "3-7=-4",
+    )
+
+    OP_PLOTSIGN.add(
+      ["r64", "r64"],
+      "r32",
+      (a, b) => sub(a.value, b.value),
+      (ctx, a, b) => subR64(ctx, a.expr, b.expr) + ".x",
       [],
     ).add(
       ["r32", "r32"],

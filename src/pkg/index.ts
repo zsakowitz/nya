@@ -92,7 +92,7 @@ export interface Package {
       wordPrefix?: List<TxrWordPrefix>
     }
     // `sym` is separated from other `tx` since it works separately
-    sym?: { [K in SymName]?: TxrSym<Syms[K]> }
+    sym?: { [K in SymName]?: TxrSym<Syms[K] & { type: K }> }
   }
 
   sheet?: {

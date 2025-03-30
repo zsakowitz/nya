@@ -206,6 +206,7 @@ function highlightedFunction(sheet: Sheet, fn: WithDocs, close: () => void) {
   )
 }
 
+// DOCS: make functions appear in a sensible order; alphabetical separates common groups
 function secFunctions(sheet: Sheet, list: PackageList, named: boolean) {
   const raw = Object.values(FNS)
   const fns = ALL_DOCS.filter((x) => raw.includes(x as any) === named)

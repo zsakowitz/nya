@@ -3,13 +3,24 @@ import { Op } from "@/field/cmd/leaf/op"
 import type { WordKind } from "@/field/cmd/leaf/var"
 import { CmdBrack } from "@/field/cmd/math/brack"
 import { Block, L, R, type Command, type Cursor } from "@/field/model"
+import type { ImageData } from "@/pkg/image"
 import type { Deps } from "../deps"
 import type { PropsGlsl } from "../glsl"
 import type { PropsJs } from "../js"
+import { id } from "../lib/binding"
 import type { Fn } from "../ops"
 import type { DerivFn, DisplayFn } from "../ops/dist-manual"
-import type { GlslValue, JsValue, TyName, Val } from "../ty"
-import { real } from "../ty/create"
+import type {
+  GlslValue,
+  JsValue,
+  SColor,
+  SPoint,
+  SReal,
+  TyName,
+  Tys,
+  Val,
+} from "../ty"
+import { frac, real } from "../ty/create"
 import { TY_INFO, type TyInfo } from "../ty/info"
 
 interface SymVarSource {
@@ -26,7 +37,22 @@ export interface Syms {
   call: { fn: Fn; args: Sym[] }
   undef: {}
   js: { value: JsValue }
+  val: { value: SymVal }
 }
+
+type AsSym<T> =
+  T extends string | ImageData | null | undefined ? T
+  : T extends SReal | boolean | number | Sym ? Sym
+  : T extends SPoint ? [Sym, Sym]
+  : T extends SColor ? [Sym, Sym, Sym, Sym]
+  : { [K in keyof T]: AsSym<T[K]> }
+
+export type TysSym = { [K in keyof Tys]: AsSym<Tys[K]> }
+export type SymVal = {
+  [K in keyof TysSym]:
+    | { type: K; list: false; value: TysSym[K] }
+    | { type: K; list: number; value: TysSym[K][] }
+}[keyof TysSym]
 
 export type SymName = keyof Syms
 
@@ -178,6 +204,23 @@ export const SYM_TRUE: Sym = {
 export const SYM_2: Sym = {
   type: "js",
   value: { type: "r32", list: false, value: real(2) },
+}
+
+export const SYM_HALF: Sym = {
+  type: "js",
+  value: { type: "r32", list: false, value: frac(1, 2) },
+}
+
+export const SYM_PI: Sym = {
+  type: "var",
+  id: id({ value: "π" }),
+  source: { italic: false, kind: "var", name: "π" },
+}
+
+export const SYM_E: Sym = {
+  type: "var",
+  id: id({ value: "e" }),
+  source: { italic: true, kind: "var", name: "e" },
 }
 
 export function isZero(sym: Sym) {

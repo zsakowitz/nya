@@ -35,9 +35,20 @@ export interface TyInfo<T, U extends TyName> {
 }
 
 export interface TyExtras<T> {
+  /** Used to simplify arithmetic operators. */
   isZero?(value: T): boolean
+
+  /** Used to simplify arithmetic operators. */
   isOne?(value: T): boolean
+
+  /** Used for `AND` and `OR` operators. */
   asBool?(value: T): boolean | null
+
+  /**
+   * If `true`, the type is rendered as a continuous PDF as a shader via the
+   * `pdf(T, x)` function.
+   */
+  renderContinuousPdf?: boolean
 }
 
 export type TyInfoByName<T extends TyName> = TyInfo<Tys[T], TyComponents[T]>

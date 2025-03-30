@@ -20,6 +20,8 @@ import {
   SYM_0,
   SYM_1,
   SYM_2,
+  SYM_E,
+  SYM_HALF,
   txr,
   unary,
   type Sym,
@@ -32,6 +34,7 @@ import { OpCdot, OpMinus, OpOdot, OpPlus, OpTimes } from "@/field/cmd/leaf/op"
 import { CmdWord } from "@/field/cmd/leaf/word"
 import { CmdBrack } from "@/field/cmd/math/brack"
 import { CmdFrac } from "@/field/cmd/math/frac"
+import { CmdRoot } from "@/field/cmd/math/root"
 import { CmdSupSub } from "@/field/cmd/math/supsub"
 import { Block, L, R, Span } from "@/field/model"
 import type { Package } from ".."
@@ -173,6 +176,11 @@ export const FN_LN: FnDist = new FnDist(
     deriv: unary((wrt, a) =>
       chain(a, wrt, { type: "call", fn: OP_DIV, args: [SYM_1, a] }),
     ),
+    simplify([a, b]) {
+      if (a && !b && a == SYM_E) {
+        return SYM_1
+      }
+    },
   },
 )
 
@@ -221,6 +229,17 @@ export const OP_SUB: FnDist = new FnDist("-", "subtracts two values", {
     }
   },
 })
+
+/**
+ * To plot `x²=1-y²`, we essentially convert it to `x²-(1-y²)`, then plot
+ * wherever the sign changes. This, however, only works for real numbers, but we
+ * also want to be able to do equality checks like this on other types.
+ */
+export const OP_PLOTSIGN = new FnDist<"r32">(
+  "plotsign",
+  "used to plot f=g; a line is drawn whenever this function's value flips signs",
+  { message: "Cannot plot an equality between %%." },
+)
 
 // TODO: make sure only one side for each signature has usage examples
 // (2*(4,7) and (4,7)*2 should not both have usage examples)
@@ -373,15 +392,25 @@ export const OP_RAISE: FnDist = new FnDist(
     message: "Cannot raise %% as an exponent.",
     display([a, b, c]) {
       if (!(a && b && !c)) return
+
       const block = new Block(null)
       const cursor = block.cursor(R)
-      insert(cursor, txr(a).display(a), Precedence.Atom, Precedence.Atom)
-      const bb = txr(b).display(b).block
-      if (cursor[L] instanceof CmdSupSub && !cursor[L].sup) {
-        bb.insertAt(cursor[L].create("sup").cursor(R), L)
+
+      // not checking for any 0.5; specifically checking for this symbol
+      // so that user powers aren't reduced magically
+      if (b == SYM_HALF) {
+        const body = txr(a).display(a).block
+        new CmdRoot(body, null).insertAt(cursor, L)
       } else {
-        new CmdSupSub(null, bb).insertAt(cursor, L)
+        insert(cursor, txr(a).display(a), Precedence.Atom, Precedence.Atom)
+        const bb = txr(b).display(b).block
+        if (cursor[L] instanceof CmdSupSub && !cursor[L].sup) {
+          bb.insertAt(cursor[L].create("sup").cursor(R), L)
+        } else {
+          new CmdSupSub(null, bb).insertAt(cursor, L)
+        }
       }
+
       return { block, lhs: Precedence.Atom, rhs: Precedence.Atom }
     },
     // SYM: d/dx 0^x is apparently 1-∞*0^x

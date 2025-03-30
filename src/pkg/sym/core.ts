@@ -188,7 +188,7 @@ export const PKG_SYM_CORE: Package = {
           return { block, lhs: Precedence.Var, rhs: Precedence.Var }
         },
         simplify(value) {
-          return { ...value, type: "var" }
+          return value
         },
 
         deps(value, deps) {
@@ -265,7 +265,7 @@ export const PKG_SYM_CORE: Package = {
           return { block, lhs: prec, rhs: prec }
         },
         simplify(value) {
-          return { type: "js", value: value.value }
+          return value
         },
 
         deps() {},

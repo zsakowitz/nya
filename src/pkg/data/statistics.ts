@@ -746,7 +746,7 @@ const FN_SPEARMAN = new FnListList(
   "spearman([2,4,6,8,10],[12,11,8,3,1])=-1",
 )
 
-class CmdStats extends Leaf {
+export class CmdStats extends Leaf {
   constructor(readonly contents: [Block, Block, Block, Block, Block]) {
     super(
       "\\nyastats",
