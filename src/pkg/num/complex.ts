@@ -554,6 +554,9 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
         declareOklab(ctx)
         ctx.glsl`
 vec4 _nya_cplot(vec2 z) {
+  if (isinf(z.x) || isinf(z.y) || isnan(z.x) || isnan(z.y)) {
+    return vec4(0);
+  }
   float angle = atan(z.y, z.x);
   float absval_scaled = length(z) / (length(z) + 1.0);
   float r0 = 0.08499547839164734 * 1.28;

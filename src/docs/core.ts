@@ -34,13 +34,13 @@ const OPEN_PACKAGE_DOCS = ""
 
 export const DEFAULT_TO_VISIBLE_DOCS = false
 
-export function btn(
+export function btnSkin<K extends "button" | "a">(
+  kind: K,
   icon: IconDefinition,
   label: Node | string,
-  action: () => void,
 ) {
-  const el = hx(
-    "button",
+  return hx(
+    kind,
     "flex flex-col h-[calc(2.5rem_-_1px)] min-w-10 [line-height:1] hover:bg-[--nya-sidebar-hover] hover:text-[--nya-title-dark] rounded focus:outline-none focus-visible:ring ring-[--nya-expr-focus]",
     h(
       "flex flex-col m-auto",
@@ -48,6 +48,14 @@ export function btn(
       h("text-[80%]/[.5] mt-1.5 lowercase", label),
     ),
   )
+}
+
+export function btn(
+  icon: IconDefinition,
+  label: Node | string,
+  action: () => void,
+) {
+  const el = btnSkin("button", icon, label)
   el.addEventListener("click", action)
   return el
 }

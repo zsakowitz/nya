@@ -1,4 +1,4 @@
-import { btn, createDocs, DEFAULT_TO_VISIBLE_DOCS } from "@/docs/core"
+import { btn, btnSkin, createDocs, DEFAULT_TO_VISIBLE_DOCS } from "@/docs/core"
 import { GlslContext } from "@/eval/lib/fn"
 import type { JsVal, TyName } from "@/eval/ty"
 import { num, real } from "@/eval/ty/create"
@@ -113,10 +113,9 @@ export class Sheet {
     this.glPixelRatio.onInput = () =>
       this.setPixelRatio(num(this.glPixelRatio.value))
 
-    const switchToDocs = btn(faBook, "Docs", () => {
-      docs.classList.remove("hidden")
-      sidebar.classList.add("hidden")
-    })
+    const switchToDocs = btnSkin("a", faBook, "Docs")
+    switchToDocs.href = location.origin + "/?/docs"
+    switchToDocs.target = "_blank"
 
     const clearAll = btn(faTrash, "Clear", () => {
       while (this.list.items[0]) {

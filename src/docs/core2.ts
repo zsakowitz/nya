@@ -29,7 +29,7 @@ export function createDocs2(sheet: Sheet) {
   )
 
   const list = new PackageList(pkgs)
-  let which = "functions"
+  let which = "about"
 
   const names = {
     about: secAbout(),
