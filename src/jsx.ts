@@ -8,7 +8,7 @@ export function h(
 }
 
 export function b(text: string) {
-  return h("font-semibold", text)
+  return h("font-semibold text-[--nya-text]", text)
 }
 
 export function hx<K extends keyof HTMLElementTagNameMap>(
@@ -123,6 +123,18 @@ export function px(
 ) {
   return hx(
     "p",
+    "",
+    strings[0]!,
+    ...strings.slice(1).flatMap((x, i) => [interps[i]!, x]),
+  )
+}
+
+export function li(
+  strings: TemplateStringsArray,
+  ...interps: (Node | string | null)[]
+) {
+  return hx(
+    "li",
     "",
     strings[0]!,
     ...strings.slice(1).flatMap((x, i) => [interps[i]!, x]),

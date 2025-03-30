@@ -1,8 +1,9 @@
-f_{absscaling}\left(x\right)=\frac{x}{x+1}
+f_{absscaling}\left(x\right)=\frac{x^{q}}{x^{q}+1}
+q=1
 v_{satadj}=1.28
-a\left(z\right)=f_{absscaling}\left(\left|z\right|\right)
+a\left(z\right)=f_{absscaling}\left(4\left|z\right|\right)
 r_{0}=0.08499547839164734\cdot v_{satadj}
 v_{offset}=0.8936868\pi 
 v_{rd}\left(z\right)=r_{0}-2r_{0}\left|a\left(z\right)-.5\right|
 c\left(z\right)=\operatorname{oklab}\left(a\left(z\right),v_{rd}\left(z\right)\operatorname{cos}\left(\operatorname{arg}z+v_{offset}\right),v_{rd}\left(z\right)\operatorname{sin}\left(\operatorname{arg}z+v_{offset}\right)\right)
-c\left(\frac{\left(p^{2}-1\right)\left(p-2-i\right)^{2}}{x^{2}+2+2i}\right)
+c\left(p^{6}-1\right)

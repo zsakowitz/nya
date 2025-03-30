@@ -20,6 +20,7 @@ mark(
   "point32",
   (a, b) => translate(b, a.value),
   (_, a, b) => `(${a.expr} + (${b}.zw - ${b}.xy))`,
+  "(2,3)",
 )
 
 mark(
@@ -106,12 +107,15 @@ export function mark<const T extends TyName>(
   param: T,
   js: (arg: JsVal<T>, vector: [SPoint, SPoint]) => Val<T>,
   glsl: (ctx: GlslContext, arg: GlslVal<T>, vector: string) => string,
+  // DOCS: figure out something better than ellipses
+  usage = `${param}(...)`,
 ) {
   FN_TRANSLATE.add(
     [param, "vector"],
     param,
     (a, b) => js(a, b.value),
     (ctx, a, b) => glsl(ctx, a, ctx.cache(b)),
+    `translate(${usage},vector((2,3),(7,-10)))`,
   )
 
   FN_TRANSLATE.add(
@@ -120,6 +124,7 @@ export function mark<const T extends TyName>(
     (a, b, c) => js(a, [b.value, c.value]),
     (ctx, a, b, c) =>
       glsl(ctx, a, ctx.cached("vector", `vec4(${b.expr}, ${c.expr})`)),
+    `translate(${usage},(2,3),(7,-10))`,
     1,
   )
 }

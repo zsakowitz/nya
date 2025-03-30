@@ -48,6 +48,7 @@ mark(
   "point32",
   (a, b) => reflectJs(b, a.value),
   (ctx, a, b) => reflectGlsl(ctx, b, a.expr),
+  "(2,3)",
 )
 
 mark(
@@ -149,12 +150,14 @@ export function mark<const T extends TyName>(
   param: T,
   js: (arg: JsVal<T>, rotation: ReflectionJs) => Val<T>,
   glsl: (ctx: GlslContext, arg: GlslVal<T>, rotation: ReflectionGlsl) => string,
+  usage = `${param}(...)`,
 ) {
   FN_REFLECT.add(
     [param, "segment"],
     param,
     (a, b) => js(a, b),
     (ctx, a, br) => glsl(ctx, a, { by: ctx.cache(br) }),
+    [],
   )
 
   FN_REFLECT.add(
@@ -162,7 +165,7 @@ export function mark<const T extends TyName>(
     param,
     (a, b) => js(a, b),
     (ctx, a, br) => glsl(ctx, a, { by: ctx.cache(br) }),
-    1,
+    [],
   )
 
   FN_REFLECT.add(
@@ -170,6 +173,6 @@ export function mark<const T extends TyName>(
     param,
     (a, b) => js(a, b),
     (ctx, a, br) => glsl(ctx, a, { by: ctx.cache(br) }),
-    2,
+    `reflect(${usage},line(...))`,
   )
 }

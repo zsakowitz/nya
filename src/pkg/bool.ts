@@ -1,11 +1,12 @@
-import type { Package } from "."
+import { example } from "@/docs/core"
+import type { FnSignature } from "@/docs/signature"
 import { commalist } from "@/eval/ast/collect"
 import { Precedence, type Node, type Piece } from "@/eval/ast/token"
 import { NO_DRAG, NO_SYM } from "@/eval/ast/tx"
 import { glsl, type PropsGlsl } from "@/eval/glsl"
 import { js, type PropsJs } from "@/eval/js"
 import type { Fn } from "@/eval/ops"
-import { docByIcon, FnDist } from "@/eval/ops/dist"
+import { FnDist } from "@/eval/ops/dist"
 import type { WithDocs } from "@/eval/ops/docs"
 import { asBool, binaryFn, SYM_TRUE } from "@/eval/sym"
 import {
@@ -27,13 +28,11 @@ import {
 } from "@/eval/ty/coerce"
 import { declareGlsl } from "@/eval/ty/decl"
 import { garbageValueGlsl, garbageValueJs } from "@/eval/ty/garbage"
-import { any, TY_INFO } from "@/eval/ty/info"
-import { CmdComma } from "@/field/cmd/leaf/comma"
+import { TY_INFO } from "@/eval/ty/info"
 import { CmdWord } from "@/field/cmd/leaf/word"
-import { CmdBrack } from "@/field/cmd/math/brack"
 import { L } from "@/field/model"
 import { h, px } from "@/jsx"
-import { example } from "@/docs/core"
+import type { Package } from "."
 import { OP_AND } from "./core/cmp"
 
 declare module "@/eval/ty" {
@@ -185,11 +184,13 @@ const OP_OR = new FnDist(
   },
 )
 
+// TODO: FIXME: valid should be part of piecewise syntax (e.g. allowing a value to be used as a piecewise condition) instead of a named function
 export const FN_VALID = new FnDist<"bool">(
   "valid",
   "returns true if a value is valid for the given type (whether a number is finite, whether a color is displayable, etc.)",
 )
 
+// TODO: firstvalid is only useful because we don't have list filters
 const FN_FIRSTVALID: Fn & WithDocs = {
   name: "firstvalid",
   label:
@@ -234,26 +235,15 @@ const FN_FIRSTVALID: Fn & WithDocs = {
       },
     )
   },
-  docs() {
-    const list = () =>
-      CmdBrack.render("[", "]", null, {
-        el: h(
-          "",
-          any(),
-          new CmdComma().el,
-          any(),
-          new CmdComma().el,
-          h("nya-cmd-dot nya-cmd-dot-l", "."),
-          h("nya-cmd-dot", "."),
-          h("nya-cmd-dot", "."),
-        ),
-      })
-
+  docs(): FnSignature[] {
+    // TODO: more accurate types here
     return [
-      docByIcon([any(), any()], any(), true),
-      docByIcon([list(), any()], any(), true),
-      docByIcon([any(), list()], any(), true),
-      docByIcon([list(), list()], any(), true),
+      {
+        params: [{ type: "__any", list: false }],
+        dots: true,
+        ret: { type: "__any", list: false },
+        usage: `firstvalid(rgb(-2,3,40),rgb(70,250,9))=rgb(70,250,9)`,
+      },
     ]
   },
 }
@@ -283,12 +273,14 @@ export const PKG_BOOL: Package = {
   id: "nya:bool-ops",
   name: "boolean operations",
   label: "basic support for boolean values",
+  category: "logic",
   load() {
     OP_AND.add(
       ["bool", "bool"],
       "bool",
       (a, b) => a.value && b.value,
       (_, a, b) => `(${a.expr} && ${b.expr})`,
+      "(2<3and7>8)=false",
     )
 
     OP_OR.add(
@@ -296,6 +288,7 @@ export const PKG_BOOL: Package = {
       "bool",
       (a, b) => a.value || b.value,
       (_, a, b) => `(${a.expr} || ${b.expr})`,
+      "(2<3or7>8)=true",
     )
 
     FN_VALID.add(
@@ -303,6 +296,7 @@ export const PKG_BOOL: Package = {
       "bool",
       () => true,
       () => "true",
+      "valid(false)=true",
     )
   },
   ty: {
@@ -453,33 +447,40 @@ export const PKG_BOOL: Package = {
       },
     },
   },
-  docs: {
-    "piecewise functions"() {
-      return [
-        px`Piecewise functions let a function specify different outputs depending on some condition. Type ${h("font-semibold", "cases")} to create one.`,
-        example(
-          String.raw`\begin{cases}x^{2}&x>0\\x-3&\end{cases}\operatorname{for}x=\left[-3,-2,-1,0,1,2,3\right]`,
-          String.raw`=\left[-6,-5,-4,-3,1,4,9\right]`,
-        ),
-        px`Type a semicolon to add more cases. If multiple conditions match, the first one will be chosen.`,
-        example(
-          String.raw`\begin{cases}x^{2}&x>0\\x-3&x>-2\\8&\end{cases}\operatorname{for}x=\left[-3,-2,-1,0,1,2,3\right]`,
-          String.raw`=\left[-8,-8,-4,-3,1,4,9\right]`,
-        ),
-        px`All branches of a piecewise function must evaluate to the same type.`,
-        px`The outputs are coerced to be the same type. Thus, if multiple branches of the piecewise output lists of different lengths, the output will be chopped to the smallest list.`,
-        example(
-          String.raw`\begin{cases}\left[2\right]&4<3\\\left[3,4\right]&\end{cases}`,
-          String.raw`=\left[3\right]`,
-        ),
-        px`Because project nya aims to be compatible with Desmos, you can also use flat piecewise syntax.`,
-        example(
-          String.raw`\left\{x>0:x^{2},x-3\right\}\operatorname{for}x=\left[-3,-2,-1,0,1,2,3\right]`,
-          String.raw`=\left[-6,-5,-4,-3,1,4,9\right]`,
-        ),
-        px`Note that in project nya, empty curly braces evaluate to ${h("font-semibold", "true")}, not 1. This matches how Desmos works under the hood, rather than what it shows to the user.`,
-        example(String.raw`\left\{\right\}`, String.raw`=\operatorname{true}`),
-      ]
+  docs: [
+    {
+      name: "piecewise functions",
+      poster: String.raw`\begin{cases}x^{2}&x>0\\x-3&\end{cases}`,
+      render() {
+        return [
+          px`Piecewise functions let a function specify different outputs depending on some condition. Type ${h("font-semibold", "cases")} to create one.`,
+          example(
+            String.raw`\begin{cases}x^{2}&x>0\\x-3&\end{cases}\operatorname{for}x=\left[-3,-2,-1,0,1,2,3\right]`,
+            String.raw`=\left[-6,-5,-4,-3,1,4,9\right]`,
+          ),
+          px`Type a semicolon to add more cases. If multiple conditions match, the first one will be chosen.`,
+          example(
+            String.raw`\begin{cases}x^{2}&x>0\\x-3&x>-2\\8&\end{cases}\operatorname{for}x=\left[-3,-2,-1,0,1,2,3\right]`,
+            String.raw`=\left[-8,-8,-4,-3,1,4,9\right]`,
+          ),
+          px`All branches of a piecewise function must evaluate to the same type.`,
+          px`The outputs are coerced to be the same type. Thus, if multiple branches of the piecewise output lists of different lengths, the output will be chopped to the smallest list.`,
+          example(
+            String.raw`\begin{cases}\left[2\right]&4<3\\\left[3,4\right]&\end{cases}`,
+            String.raw`=\left[3\right]`,
+          ),
+          px`Because project nya aims to be compatible with Desmos, you can also use flat piecewise syntax.`,
+          example(
+            String.raw`\left\{x>0:x^{2},x-3\right\}\operatorname{for}x=\left[-3,-2,-1,0,1,2,3\right]`,
+            String.raw`=\left[-6,-5,-4,-3,1,4,9\right]`,
+          ),
+          px`Note that in project nya, empty curly braces evaluate to ${h("font-semibold", "true")}, not 1. This matches how Desmos works under the hood, rather than what it shows to the user.`,
+          example(
+            String.raw`\left\{\right\}`,
+            String.raw`=\operatorname{true}`,
+          ),
+        ]
+      },
     },
-  },
+  ],
 }

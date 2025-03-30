@@ -1,5 +1,4 @@
-import { faImage } from "@fortawesome/free-regular-svg-icons"
-import type { Package } from ".."
+import { example } from "@/docs/core"
 import { FnDist } from "@/eval/ops/dist"
 import { each, type JsValue, type Val } from "@/eval/ty"
 import { num, real, SNANPT, unpt } from "@/eval/ty/create"
@@ -14,7 +13,8 @@ import { h, px } from "@/jsx"
 import { defineExt } from "@/sheet/ext"
 import type { Cv } from "@/sheet/ui/cv"
 import { Order } from "@/sheet/ui/cv/consts"
-import { example } from "@/docs/core"
+import { faImage } from "@fortawesome/free-regular-svg-icons"
+import type { Package } from ".."
 import { glsl } from "../image"
 import { dilateJs, mark as markDilate } from "./dcg/fn/dilate"
 import { mark as markReflect, reflectJs } from "./dcg/fn/reflect"
@@ -45,6 +45,7 @@ const FN_IMAGE = new FnDist(
     "image2d",
     (a, b) => ({ data: a.value, p1: b.value[0], p2: b.value[1], aspect: null }),
     glsl,
+    "image(\\ty{image},segment((-5,0),(5,0)))",
   )
   .add(
     ["image", "segment", "r32"],
@@ -56,6 +57,7 @@ const FN_IMAGE = new FnDist(
       aspect: c.value,
     }),
     glsl,
+    "image(\\ty{image},segment((-5,0),(5,0)),\\frac{16}{9})",
   )
 
 function draw(cv: Cv, val: Val<"image2d">) {
@@ -109,6 +111,7 @@ export const PKG_IMAGE_GEO: Package = {
   id: "nya:geo-image",
   name: "image objects",
   label: "on the graphpaper",
+  category: "images",
   ty: {
     info: {
       image2d: {
@@ -196,24 +199,28 @@ export const PKG_IMAGE_GEO: Package = {
   sheet: {
     exts: { 1: [EXT] },
   },
-  docs: {
-    images() {
-      return [
-        px`In project nya, images are expressions, just like everything else. To create one, select the ${h("font-semibold", "image")} item type in the second-topmost navigation bar.`,
-        px`To draw the image onto the graphpaper, use the ${h("font-semibold", "image")} function.`,
-        example(
-          String.raw`\operatorname{image}\left(i_{1},\operatorname{segment}\left(\left(0,0\right),\left(1,0\right)\right)\right)`,
-          null,
-        ),
-        px`The ${h("font-semibold", "image")} function places an image on top of a line segment with its preferred aspect ratio, so it isn't distorted. If you want distortion, you can pass your own aspect ratio:`,
-        example(
-          String.raw`\operatorname{image}\left(i_{1},\operatorname{segment}\left(\left(0,0\right),\left(1,0\right)\right,\frac23\right)`,
-          null,
-        ),
-        px`Negative values for the aspect ratio will draw a mirrored version of the image on the other side of the line segment.`,
-      ]
+  docs: [
+    {
+      name: "images",
+      poster: String.raw`\operatorname{image}\left(i_{1},\operatorname{segment}\left(...\right)\right)`,
+      render() {
+        return [
+          px`In project nya, images are expressions, just like everything else. To create one, select the ${h("font-semibold", "image")} item type in the second-topmost navigation bar.`,
+          px`To draw the image onto the graphpaper, use the ${h("font-semibold", "image")} function.`,
+          example(
+            String.raw`\operatorname{image}\left(i_{1},\operatorname{segment}\left(\left(0,0\right),\left(1,0\right)\right)\right)`,
+            null,
+          ),
+          px`The ${h("font-semibold", "image")} function places an image on top of a line segment with its preferred aspect ratio, so it isn't distorted. If you want distortion, you can pass your own aspect ratio:`,
+          example(
+            String.raw`\operatorname{image}\left(i_{1},\operatorname{segment}\left(\left(0,0\right),\left(1,0\right)\right,\frac23\right)`,
+            null,
+          ),
+          px`Negative values for the aspect ratio will draw a mirrored version of the image on the other side of the line segment.`,
+        ]
+      },
     },
-  },
+  ],
 }
 
 markTranslate(
@@ -225,6 +232,7 @@ markTranslate(
     p2: translate(b, a.value.p2),
   }),
   glsl,
+  "image(...)",
 )
 
 markRotate(
@@ -236,6 +244,7 @@ markRotate(
     p2: rotateJs(b, a.value.p2),
   }),
   glsl,
+  "image(...)",
 )
 
 markDilate(
@@ -247,6 +256,7 @@ markDilate(
     p2: dilateJs(b, a.value.p2),
   }),
   glsl,
+  "image(...)",
 )
 
 markReflect(
@@ -261,4 +271,5 @@ markReflect(
     p2: reflectJs(b, a.value.p2),
   }),
   glsl,
+  "image(...)",
 )

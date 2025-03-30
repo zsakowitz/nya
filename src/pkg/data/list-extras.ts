@@ -1,5 +1,5 @@
+import type { FnSignature } from "@/docs/signature"
 import type { Fn } from "@/eval/ops"
-import { array, docByIcon, icon } from "@/eval/ops/dist"
 import { type WithDocs, ALL_DOCS } from "@/eval/ops/docs"
 import { issue } from "@/eval/ops/issue"
 import type { SReal } from "@/eval/ty"
@@ -15,8 +15,15 @@ function sortJs(args: SReal[]) {
 const FN_SORT: Fn & WithDocs = {
   name: "sort",
   label: "sorts the elements of a list",
-  docs() {
-    return [docByIcon([array(icon("r32"))], icon("r32"), true)]
+  docs(): FnSignature[] {
+    return [
+      {
+        params: [{ type: "r32", list: true }],
+        dots: false,
+        ret: { type: "r32", list: true },
+        usage: "sort([8,1,2,13])=[1,2,8,13]",
+      },
+    ]
   },
   js(args) {
     const value =
@@ -47,11 +54,19 @@ const FN_SORT: Fn & WithDocs = {
 
 ALL_DOCS.push(FN_SORT)
 
+// TODO: unique should not be dependent on type; make it work everywhere
 const FN_UNIQUE: Fn & WithDocs = {
   name: "unique",
   label: "removes any duplicate elements in a list",
   docs() {
-    return [docByIcon([array(icon("r32"))], icon("r32"), true)]
+    return [
+      {
+        params: [{ type: "r32", list: true }],
+        dots: false,
+        ret: { type: "r32", list: true },
+        usage: "unique([7,9,8,9,2,3,7])=[7,9,8,2,3]",
+      },
+    ]
   },
   js(args) {
     const value =
@@ -97,6 +112,7 @@ export const PKG_LIST_EXTRAS: Package = {
   id: "nya:list-extras",
   name: "extra list functions",
   label: null,
+  category: "lists",
   deps: [() => PKG_REAL],
   eval: {
     fn: {

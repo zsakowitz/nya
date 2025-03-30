@@ -1,7 +1,7 @@
+import type { FnSignature } from "@/docs/signature"
 import type { Node } from "@/eval/ast/token"
 import type { GlslContext } from "@/eval/lib/fn"
 import type { Fn } from "@/eval/ops"
-import { array, docByIcon, icon } from "@/eval/ops/dist"
 import { ALL_DOCS, type WithDocs } from "@/eval/ops/docs"
 import { issue } from "@/eval/ops/issue"
 import { FnList } from "@/eval/ops/list"
@@ -60,6 +60,7 @@ class FnListList implements Fn, WithDocs {
       a: GlslValue<TyName, number>,
       b: GlslValue<TyName, number>,
     ): string
+    usage: string | string[]
   }[] = []
 
   constructor(
@@ -79,15 +80,22 @@ class FnListList implements Fn, WithDocs {
       a: GlslValue<A, number>,
       b: GlslValue<B, number>,
     ) => string,
+    usage: string | string[],
   ) {
-    this.o.push({ a, b, ret, js, glsl })
+    this.o.push({ a, b, ret, js, glsl, usage })
     return this
   }
 
-  docs(): globalThis.Node[] {
-    return this.o.map(({ a, b, ret }) =>
-      docByIcon([array(icon(a)), array(icon(b))], icon(ret), true),
-    )
+  docs(): FnSignature[] {
+    return this.o.map(({ a, b, ret, usage }) => ({
+      params: [
+        { type: a, list: true },
+        { type: b, list: true },
+      ],
+      dots: false,
+      ret: { type: ret, list: true },
+      usage,
+    }))
   }
 
   js(args: JsValue[]): JsValue {
@@ -170,6 +178,7 @@ const FN_MIN = new FnList("min", "returns the minimum of its inputs")
       args.length ?
         args.map((x) => x.expr).reduce((a, b) => `min(${a}, ${b})`)
       : `(0.0/0.0)`,
+    "min(8,2,9)=2", // DOCS: should min/max use the list-style addSpread convention or the rest parameter every-other-programming-language convention
   )
   .add(
     ["stats"],
@@ -178,6 +187,7 @@ const FN_MIN = new FnList("min", "returns the minimum of its inputs")
     issue(
       "Cannot compute 'min' of a five-number statistical summary in shaders.",
     ),
+    "min(stats([2,9,5,6]))=2",
   )
 
 const FN_MAX = new FnList("max", "returns the maximum of its inputs")
@@ -192,6 +202,7 @@ const FN_MAX = new FnList("max", "returns the maximum of its inputs")
       args.length ?
         args.map((x) => x.expr).reduce((a, b) => `max(${a}, ${b})`)
       : `(0.0/0.0)`,
+    "max(8,2,9)=9",
   )
   .add(
     ["stats"],
@@ -200,6 +211,7 @@ const FN_MAX = new FnList("max", "returns the maximum of its inputs")
     issue(
       "Cannot compute 'max' of a five-number statistical summary in shaders.",
     ),
+    "max(stats([2,9,5,6]))=9",
   )
 
 const FN_TOTAL = new FnList("total", "returns the sum of its inputs")
@@ -211,12 +223,14 @@ const FN_TOTAL = new FnList("total", "returns the sum of its inputs")
       args.length ?
         args.map((x) => x.expr).reduce((a, b) => addR64(ctx, a, b))
       : "vec2(0)",
+    [],
   )
   .addSpread(
     "r32",
     "r32",
     (args) => args.reduce((a, b) => add(a, b), real(0)),
     (_, ...args) => `(${args.map((x) => x.expr).join(" + ") || "0.0"})`,
+    "total([8,2,9])=19",
   )
 
 function meanJs(args: SReal[]): SReal {
@@ -256,12 +270,14 @@ const FN_MEAN = new FnList("mean", "takes the arithmetic mean of its inputs")
         ctx,
         args.map((x) => x.expr),
       ),
+    [],
   )
   .addSpread(
     "r32",
     "r32",
     (args) => meanJs(args),
     (_, ...args) => meanGlsl(args.map((x) => x.expr)),
+    "mean([8,2,3,7])=5",
   )
 
 function sortJs(args: SReal[]) {
@@ -288,6 +304,7 @@ const FN_MEDIAN = new FnList("median", "takes the median of its inputs")
     "r32",
     (args) => middleJs(sortJs(args)),
     issue("Cannot compute 'median' in shaders yet."),
+    "median([7,2,3])=3",
   )
   .add(
     ["stats"],
@@ -296,6 +313,7 @@ const FN_MEDIAN = new FnList("median", "takes the median of its inputs")
     issue(
       "Cannot compute 'median' of a five-number statistical summary in shaders.",
     ),
+    "median(stats([7,2,3]))=3",
   )
 
 function quartile<L extends number | false>(
@@ -379,8 +397,18 @@ const FN_QUARTILE: Fn & WithDocs = {
   glsl: issue("Cannot compute 'quartile' in shaders yet."),
   name: "quartile",
   label: "computes a quartile of a data set",
-  docs() {
-    return [docByIcon([array(icon("r32")), icon("r32")], icon("r32"))]
+  docs(): FnSignature[] {
+    return [
+      {
+        params: [
+          { type: "r32", list: true },
+          { type: "r32", list: false },
+        ],
+        dots: false,
+        ret: { type: "r32", list: false },
+        usage: ["quartile([8,2,9,0,1],1)=2", "quartile([8,2,9,0,1],3)=8"],
+      },
+    ]
   },
 }
 
@@ -431,7 +459,21 @@ const FN_QUANTILE: Fn & WithDocs = {
   name: "quantile",
   label: "computes a quantile of a data set",
   docs() {
-    return [docByIcon([array(icon("r32")), icon("r32")], icon("r32"))]
+    return [
+      {
+        params: [
+          { type: "r32", list: true },
+          { type: "r32", list: false },
+        ],
+        dots: false,
+        ret: { type: "r32", list: false },
+        usage: [
+          "quantile([8,2,9,0,1],0.1)=0.4",
+          "quantile([8,2,9,0,1],0.3)=1.2",
+          "quantile([8,2,9,0,1],0.7)=6.8",
+        ],
+      },
+    ]
   },
 }
 
@@ -479,6 +521,7 @@ const FN_VAR = new FnList("var", "sample variance").addSpread(
       args.map((x) => x.expr),
       true,
     ),
+  "var([3,3.5,4,4.3,3.7])=0.245",
 )
 
 const FN_VARP = new FnList("varp", "population variance").addSpread(
@@ -491,6 +534,7 @@ const FN_VARP = new FnList("varp", "population variance").addSpread(
       args.map((x) => x.expr),
       false,
     ),
+  "varp([3,3.5,4,4.3,3.7])=0.196",
 )
 
 function stdevJs(args: SReal[], sample: boolean) {
@@ -511,6 +555,7 @@ const FN_STDEV = new FnList("stdev", "sample standard deviation").addSpread(
       args.map((x) => x.expr),
       true,
     ),
+  "stdev([3,3.5,4,4.3,3.7])≈0.49497",
 )
 
 const FN_STDEVP = new FnList(
@@ -526,6 +571,7 @@ const FN_STDEVP = new FnList(
       args.map((x) => x.expr),
       false,
     ),
+  "stdevp([3,3.5,4,4.3,3.7])≈0.44272",
 )
 
 const FN_MAD = new FnList("mad", "mean absolute deviation").addSpread(
@@ -551,6 +597,7 @@ const FN_MAD = new FnList("mad", "mean absolute deviation").addSpread(
 
     return `(${tad} / ${args.length.toExponential()})`
   },
+  "mad([3,3.5,4,4.3,3.7])=0.36",
 )
 
 function covJs(a: SReal[], b: SReal[], sample: boolean) {
@@ -592,6 +639,7 @@ const FN_COV = new FnListList("cov", "sample covariance").add(
   "r32",
   (a, b) => covJs(a.value, b.value, true),
   (ctx, a, b) => covGlsl(ctx, a, b, true),
+  "cov([2,4,6,8,10],[12,11,8,3,1])=-15",
 )
 
 const FN_COVP = new FnListList("covp", "population covariance").add(
@@ -600,6 +648,7 @@ const FN_COVP = new FnListList("covp", "population covariance").add(
   "r32",
   (a, b) => covJs(a.value, b.value, false),
   (ctx, a, b) => covGlsl(ctx, a, b, false),
+  "covp([2,4,6,8,10],[12,11,8,3,1])=-12",
 )
 
 const FN_CORR = new FnListList("corr", "Pearson correlation coefficient").add(
@@ -610,6 +659,7 @@ const FN_CORR = new FnListList("corr", "Pearson correlation coefficient").add(
     div(covJs(a, b, true), mul(stdevJs(a, true), stdevJs(b, true))),
   (ctx, a, b) =>
     `(${covGlsl(ctx, a, b, true)} / (${stdevGlsl(ctx, split(a.list, a.expr), true)} * ${stdevGlsl(ctx, split(b.list, b.expr), true)}))`,
+  "corr([2,4,6,8,10],[12,11,8,3,1])≈-0.975",
 )
 
 function ranksJs(data: SReal[]): SReal[] {
@@ -637,11 +687,19 @@ function ranksJs(data: SReal[]): SReal[] {
   return ret.map((x) => frac(2 * x.position + (x.count - 1), 2))
 }
 
+// DCG: ranks is not available in standard dcg; should be in separate package
 const FN_RANKS: Fn & WithDocs = {
   name: "ranks",
   label: "computes the rank of each element of a list",
   docs() {
-    return [docByIcon([array(icon("r32"))], icon("r32"), true)]
+    return [
+      {
+        params: [{ type: "r32", list: true }],
+        dots: false,
+        ret: { type: "r32", list: true },
+        usage: "ranks([7,2,8,8,23])=[2,1,3.5,3.5,5]",
+      },
+    ]
   },
   js(args) {
     const value =
@@ -685,9 +743,10 @@ const FN_SPEARMAN = new FnListList(
     return div(covJs(a, b, true), mul(stdevJs(a, true), stdevJs(b, true)))
   },
   issue("Cannot compute 'spearman' in shaders yet."),
+  "spearman([2,4,6,8,10],[12,11,8,3,1])=-1",
 )
 
-class CmdStats extends Leaf {
+export class CmdStats extends Leaf {
   constructor(readonly contents: [Block, Block, Block, Block, Block]) {
     super(
       "\\nyastats",
@@ -755,6 +814,7 @@ const FN_STATS = new FnList(
     return value satisfies SReal[] as Tys["stats"]
   },
   issue("Cannot compute 'stats' in shaders yet."),
+  "stats([2,4,3,7,8])",
 )
 
 const TY_STATS: TyInfo<Tys["stats"], TyComponents["stats"]> = {
@@ -836,6 +896,7 @@ export const PKG_STATISTICS: Package = {
   id: "nya:statistics",
   name: "statistics",
   label: "rudimentary statistics functions",
+  category: "statistics",
   deps: [() => PKG_REAL],
   ty: {
     info: {

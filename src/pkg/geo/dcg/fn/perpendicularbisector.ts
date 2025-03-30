@@ -38,11 +38,18 @@ export const FN_PERPENDICULARBISECTOR = new FnDist(
   "perpendicularbisector",
   "constucts the perpendicular bisector of a line segment or between two points",
 )
-  .add(["segment"], "line", js, glsl)
+  .add(
+    ["segment"],
+    "line",
+    js,
+    glsl,
+    "perpendicularbisector(segment((1,5),(4,3)))=line((2.5,4),(0.5,1))",
+  )
   .add(
     ["point32", "point32"],
     "line",
     (a, b) => js({ type: "segment", value: [a.value, b.value] }),
     (ctx, a, b) =>
       glsl(ctx, { type: "segment", expr: `vec4(${a.expr}, ${b.expr})` }),
+    "perpendicularbisector((1,5),(4,3))=line((2.5,4),(0.5,1))",
   )

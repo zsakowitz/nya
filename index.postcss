@@ -21,12 +21,15 @@
 body {
   --nya-bg: white;
   --nya-text: black;
+  --nya-text-prose: theme("colors.slate.700");
   --nya-angle: black;
+  --nya-dropdown: theme("colors.slate.400");
   --nya-selection: theme("colors.blue.200");
   --nya-empty: #0003;
   --nya-bg-sidebar: theme("colors.slate.100");
   --nya-sidebar-hover: theme("colors.slate.300");
   --nya-border: theme("colors.slate.200");
+  --nya-border-hover: theme("colors.slate.400");
   --nya-slider-zero: theme("colors.slate.400");
   --nya-expr-index: theme("colors.slate.600");
   --nya-expr-focus: theme("colors.blue.400");
@@ -50,7 +53,7 @@ body {
   --nya-paper-screen-line: black;
   color-scheme: light;
 
-  @apply bg-[--nya-bg] text-[--nya-text];
+  @apply bg-[--nya-bg-sidebar] text-[--nya-text];
 }
 
 @media (prefers-color-scheme: dark) {
@@ -58,12 +61,15 @@ body {
   body {
     --nya-bg: theme("colors.slate.950");
     --nya-text: theme("colors.slate.300");
+    --nya-text-prose: theme("colors.slate.300");
     --nya-angle: theme("colors.slate.500");
+    --nya-dropdown: theme("colors.slate.500");
     --nya-selection: theme("colors.blue.900");
     --nya-empty: theme("colors.slate.800");
     --nya-bg-sidebar: theme("colors.slate.900");
     --nya-sidebar-hover: theme("colors.slate.800");
     --nya-border: theme("colors.slate.800");
+    --nya-border-hover: theme("colors.slate.700");
     --nya-slider-zero: theme("colors.slate.400");
     --nya-expr-index: theme("colors.slate.400");
     --nya-expr-focus: theme("colors.blue.800");

@@ -23,7 +23,7 @@ import {
   OpTimes,
   OpUpArrow,
 } from "./cmd/leaf/op"
-import { SymInfinity, SymPi, SymTau } from "./cmd/leaf/sym"
+import { SymDegree, SymInfinity, SymPi, SymPsi, SymTau } from "./cmd/leaf/sym"
 import { CmdToken } from "./cmd/leaf/token"
 import { CmdTyName } from "./cmd/leaf/tyname"
 import { CmdVar, type WordKind } from "./cmd/leaf/var"
@@ -80,6 +80,8 @@ const inits = new Inits()
   // other cmds
   .set("/", CmdFrac)
   .set("@", CmdToken)
+  .set("°", SymDegree)
+  .set("π", SymPi)
   .setAll(["_", "^"], CmdSupSub)
   .setAll(Object.keys(BIG_ALIASES), CmdBig)
   .set("\\int", CmdInt)
@@ -176,6 +178,7 @@ const autos = new WordMap<Init>([
   ["tau", SymTau],
   ["infinity", SymInfinity],
   ["infty", SymInfinity],
+  ["degree", SymDegree],
 ]).freeze()
 
 const words = new WordMap<WordKind>([
@@ -211,6 +214,7 @@ const latex = new WordMap<LatexInit>([
   ["\\neq", OpEq],
   ["\\sim", OpTilde],
   ["\\approx", OpApprox],
+  ["≈", OpApprox],
   ["\\nless", OpLt],
   ["\\leq", OpLt],
   ["\\nleq", OpLt],
@@ -237,6 +241,9 @@ const latex = new WordMap<LatexInit>([
   ["\\wordvar", CmdWord],
   ["\\wordprefix", CmdWord],
   ["\\wordinfix", CmdWord],
+  ["\\nyaop", CmdWord],
+  ["\\nyacolor", CmdColor],
+  ["\\psi", SymPsi],
 ])
 
 for (const key of inits.getAll()) {

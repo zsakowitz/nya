@@ -8,4 +8,5 @@ export const FN_RAY = new FnDist(
   "ray",
   (a, b) => [a.value, b.value],
   (_, a, b) => `vec4(${a.expr}, ${b.expr})`,
+  "ray((1,4),(-2,-7))",
 )

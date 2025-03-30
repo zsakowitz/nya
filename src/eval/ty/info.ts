@@ -1,4 +1,3 @@
-import type { SPoint, TyComponents, TyName, Tys } from "."
 import { CmdComma } from "@/field/cmd/leaf/comma"
 import { CmdWord } from "@/field/cmd/leaf/word"
 import { CmdBrack } from "@/field/cmd/math/brack"
@@ -6,6 +5,7 @@ import { Block, L, R } from "@/field/model"
 import { h, path, svgx } from "@/jsx"
 import type { Point } from "@/sheet/point"
 import type { Cv } from "@/sheet/ui/cv"
+import type { SPoint, TyComponents, TyName, Tys } from "."
 import type { GlslContext } from "../lib/fn"
 import type { TyWrite } from "./display"
 
@@ -35,9 +35,20 @@ export interface TyInfo<T, U extends TyName> {
 }
 
 export interface TyExtras<T> {
+  /** Used to simplify arithmetic operators. */
   isZero?(value: T): boolean
+
+  /** Used to simplify arithmetic operators. */
   isOne?(value: T): boolean
+
+  /** Used for `AND` and `OR` operators. */
   asBool?(value: T): boolean | null
+
+  /**
+   * If `true`, the type is rendered as a continuous PDF as a shader via the
+   * `pdf(T, x)` function.
+   */
+  renderContinuousPdf?: boolean
 }
 
 export type TyInfoByName<T extends TyName> = TyInfo<Tys[T], TyComponents[T]>
@@ -50,7 +61,7 @@ export type TyGlide<T> = (props: GlideProps<T>) => {
 
 interface TyComponentInfo<T, U extends TyName> {
   ty: U
-  at: [(val: T) => Tys[U], (val: string) => string][]
+  at: [js: (val: T) => Tys[U], glsl: (val: string) => string][]
 }
 
 interface GlideProps<T> {

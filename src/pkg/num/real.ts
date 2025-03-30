@@ -1,13 +1,14 @@
-import type { Package } from ".."
+import type { FnSignature } from "@/docs/signature"
 import { js } from "@/eval/js"
 import { asNumericBase, parseNumberGlsl, parseNumberJs } from "@/eval/lib/base"
 import { SYM_BINDINGS } from "@/eval/lib/binding"
 import type { GlslContext } from "@/eval/lib/fn"
 import { safe } from "@/eval/lib/util"
-import { docByIcon, FnDist } from "@/eval/ops/dist"
+import { FnDist } from "@/eval/ops/dist"
 import {
   FnDistCaching,
   type FnOverload,
+  type FnOverloadData,
   type FnOverloadVar,
 } from "@/eval/ops/dist-manual"
 import { ALL_DOCS } from "@/eval/ops/docs"
@@ -20,6 +21,7 @@ import { highRes, TY_INFO, type TyExtras } from "@/eval/ty/info"
 import { abs, add, div, mul, neg, raise, sub } from "@/eval/ty/ops"
 import { splitDual } from "@/eval/ty/split"
 import { h } from "@/jsx"
+import type { Package } from ".."
 import { FN_VALID, PKG_BOOL } from "../bool"
 import {
   OP_EQ,
@@ -47,6 +49,7 @@ import {
   OP_MOD,
   OP_NEG,
   OP_ODOT,
+  OP_PLOTSIGN,
   OP_POS,
   OP_RAISE,
   OP_SUB,
@@ -80,6 +83,7 @@ function addCmp(
   js: (a: number, b: number) => boolean,
   glsl: `${"" | "!"}${"<" | ">" | "<=" | ">=" | "=="}`,
   glsl64: `${"==" | "!="} ${" 0.0" | " 1.0" | "-1.0"}`,
+  latex: string,
 ) {
   const pre = glsl.startsWith("!") ? "!" : ""
   if (pre) glsl = glsl.slice(1) as any
@@ -89,11 +93,13 @@ function addCmp(
     "bool",
     (a, b) => js(num(a.value), num(b.value)),
     (ctx, a, b) => `(${FN_CMP.glsl1(ctx, a, b).expr} ${glsl64})`,
+    [],
   ).add(
     ["r32", "r32"],
     "bool",
     (a, b) => js(num(a.value), num(b.value)),
     (_, a, b) => `(${pre}(${a.expr} ${glsl} ${b.expr}))`,
+    `(2${latex}3)=${js(2, 3)}`,
   )
 }
 
@@ -117,7 +123,7 @@ const FN_COMPONENT = new (class extends FnDistCaching {
     ALL_DOCS.push(this)
   }
 
-  gen(args: Ty[]): FnOverload<TyName> {
+  gen(args: Ty[]): FnOverloadData<TyName> {
     if (args.length != 2) {
       throw new Error("'component' expects two parameters.")
     }
@@ -187,18 +193,23 @@ const FN_COMPONENT = new (class extends FnDistCaching {
 
         return comps.at[staticIndex]![1](a.expr)
       },
-      docOrder: Object.keys(TY_INFO).indexOf(ty),
     }
   }
 
   docs() {
     return Object.entries(TY_INFO)
       .filter((x) => x[1].components != null)
-      .map(([_, info]) =>
-        docByIcon(
-          [info.icon(), TY_INFO.r32.icon()],
-          TY_INFO[info.components!.ty].icon(),
-        ),
+      .map(
+        ([type, info]): FnSignature => ({
+          params: [
+            { type: type as TyName, list: false },
+            { type: "r32", list: false },
+          ],
+          dots: false,
+          ret: { type: info.components!.ty, list: false },
+          usage: [],
+          // DOCS: how to generate 'component' usage examples?
+        }),
       )
   }
 })()
@@ -242,6 +253,7 @@ FN_LN.add(
   "r32",
   (a) => approx(Math.log(num(a.value))),
   (_, a) => `log(${a.expr})`,
+  "lne^2=2",
 )
 
 export const FN_SIGN = new FnDist("sign", "gets the sign of a number", {
@@ -255,17 +267,15 @@ export const FN_SIGN = new FnDist("sign", "gets the sign of a number", {
       declareCmpR64(ctx)
       return `_helper_cmp_r64(${a.expr}, vec2(0.0))`
     },
+    [],
   )
   .add(
     ["r32"],
     "r32",
     (a) => real(Math.sign(num(a.value))),
     (_, a) => `sign(${a.expr})`,
+    "sign(7.8)=1",
   )
-
-const FN_SGN = FN_SIGN.with("sgn", "gets the sign of a number", {
-  message: "Cannot find the sign of %%.",
-})
 
 export const FN_LOG10 = new FnDist(
   "log",
@@ -276,6 +286,7 @@ export const FN_LOG10 = new FnDist(
   "r32",
   (a) => approx(Math.log10(num(a.value))),
   (_, a) => `(log(${a.expr}) / log(10.0))`,
+  "log(10000)=4",
 )
 
 // TODO: implement for complex nums
@@ -288,6 +299,7 @@ const FN_LOGB = new FnDist(
   "r32",
   (b, a) => approx(Math.log(num(a.value)) / Math.log(num(b.value))),
   (_, b, a) => `(log(${a.expr}) / log(${b.expr}))`,
+  "log_216=4",
 )
 
 function mulR64(ctx: GlslContext, a: string, b: string) {
@@ -298,6 +310,17 @@ function mulR64(ctx: GlslContext, a: string, b: string) {
 const FN_COUNT = new (class extends FnList<"r64"> {
   constructor() {
     super("count", "counts the size of a list")
+  }
+
+  docs(): FnSignature[] {
+    return [
+      {
+        params: [{ type: "__any", list: true }],
+        dots: false,
+        ret: { type: "r64", list: false },
+        usage: "count([7,9,4])=3",
+      },
+    ]
   }
 
   signature(args: Ty[]): FnOverload<"r64"> {
@@ -311,6 +334,7 @@ const FN_COUNT = new (class extends FnList<"r64"> {
         return `vec2(${args.length.toExponential()}, 0)`
       },
       docOrder: null,
+      usage: [],
     }
   }
 
@@ -325,6 +349,7 @@ const FN_COUNT = new (class extends FnList<"r64"> {
         return `vec2(${arg.list.toExponential()}, 0)`
       },
       docOrder: null,
+      usage: [],
     }
   }
 })()
@@ -342,17 +367,20 @@ export const PKG_REAL: Package = {
   id: "nya:num-real",
   name: "real numbers",
   label: "support for real numbers",
+  category: "numbers",
   load() {
     OP_ABS.add(
       ["r64"],
       "r64",
       (a) => abs(a.value),
       (ctx, a) => abs64(ctx, a.expr),
+      [],
     ).add(
       ["r32"],
       "r32",
       (a) => abs(a.value),
       (_, a) => `abs(${a.expr})`,
+      "|-3|=3",
     )
 
     OP_ADD.add(
@@ -360,11 +388,13 @@ export const PKG_REAL: Package = {
       "r64",
       (a, b) => add(a.value, b.value),
       (ctx, a, b) => addR64(ctx, a.expr, b.expr),
+      [],
     ).add(
       ["r32", "r32"],
       "r32",
       (a, b) => add(a.value, b.value),
       (_, a, b) => `(${a.expr} + ${b.expr})`,
+      "2+3=5",
     )
 
     OP_CROSS.add(
@@ -372,11 +402,13 @@ export const PKG_REAL: Package = {
       "r64",
       (a, b) => mul(a.value, b.value),
       (ctx, a, b) => mulR64(ctx, a.expr, b.expr),
+      [],
     ).add(
       ["r32", "r32"],
       "r32",
       (a, b) => mul(a.value, b.value),
       (_, a, b) => `(${a.expr} * ${b.expr})`,
+      "2\\times3=6",
     )
 
     OP_DIV.add(
@@ -384,6 +416,7 @@ export const PKG_REAL: Package = {
       "r32",
       (a, b) => div(a.value, b.value),
       (_, a, b) => `(${a.expr} / ${b.expr})`,
+      "8÷-2=-4",
     )
 
     OP_MOD.add(
@@ -401,6 +434,7 @@ export const PKG_REAL: Package = {
 `
         return `_helper_mod_r32(${a.expr}, ${b.expr})`
       },
+      ["17mod10=7", "-14mod3=1"],
     )
 
     OP_CDOT.add(
@@ -408,11 +442,13 @@ export const PKG_REAL: Package = {
       "r64",
       (a, b) => mul(a.value, b.value),
       (ctx, a, b) => mulR64(ctx, a.expr, b.expr),
+      [],
     ).add(
       ["r32", "r32"],
       "r32",
       (a, b) => mul(a.value, b.value),
       (_, a, b) => `(${a.expr} * ${b.expr})`,
+      "2\\cdot3=6",
     )
 
     OP_NEG.add(
@@ -420,11 +456,13 @@ export const PKG_REAL: Package = {
       "r64",
       (a) => neg(a.value),
       (_, a) => `(-${a.expr})`,
+      [],
     ).add(
       ["r32"],
       "r32",
       (a) => neg(a.value),
       (_, a) => `(-${a.expr})`,
+      "-(2)=-2",
     )
 
     OP_ODOT.add(
@@ -432,11 +470,13 @@ export const PKG_REAL: Package = {
       "r64",
       (a, b) => mul(a.value, b.value),
       (ctx, a, b) => mulR64(ctx, a.expr, b.expr),
+      [],
     ).add(
       ["r32", "r32"],
       "r32",
       (a, b) => mul(a.value, b.value),
       (_, a, b) => `(${a.expr} * ${b.expr})`,
+      "2\\odot3=6",
     )
 
     OP_POS.add(
@@ -444,11 +484,13 @@ export const PKG_REAL: Package = {
       "r64",
       (a) => a.value,
       (_, a) => a.expr,
+      [],
     ).add(
       ["r32"],
       "r32",
       (a) => a.value,
       (_, a) => a.expr,
+      "+3=3",
     )
 
     OP_RAISE.add(
@@ -458,6 +500,7 @@ export const PKG_REAL: Package = {
       (_, a, b) => {
         return `pow(${a.expr}, ${b.expr})`
       },
+      "2^3=8",
     )
 
     OP_SUB.add(
@@ -465,11 +508,27 @@ export const PKG_REAL: Package = {
       "r64",
       (a, b) => sub(a.value, b.value),
       (ctx, a, b) => subR64(ctx, a.expr, b.expr),
+      [],
     ).add(
       ["r32", "r32"],
       "r32",
       (a, b) => sub(a.value, b.value),
       (_, a, b) => `(${a.expr} - ${b.expr})`,
+      "3-7=-4",
+    )
+
+    OP_PLOTSIGN.add(
+      ["r64", "r64"],
+      "r32",
+      (a, b) => sub(a.value, b.value),
+      (ctx, a, b) => subR64(ctx, a.expr, b.expr) + ".x",
+      [],
+    ).add(
+      ["r32", "r32"],
+      "r32",
+      (a, b) => sub(a.value, b.value),
+      (_, a, b) => `(${a.expr} - ${b.expr})`,
+      "3-7=-4",
     )
 
     FN_EXP.add(
@@ -477,6 +536,7 @@ export const PKG_REAL: Package = {
       "r32",
       (a) => approx(Math.exp(num(a.value))),
       (_, a) => `exp(${a.expr})`,
+      "exp(2)=e^2≈7.389",
     )
 
     FN_UNSIGN.add(
@@ -484,6 +544,7 @@ export const PKG_REAL: Package = {
       "r64",
       (a) => abs(a.value),
       (ctx, a) => abs64(ctx, a.expr),
+      [],
     ).add(
       ["r32"],
       "r32",
@@ -492,6 +553,7 @@ export const PKG_REAL: Package = {
           approx(Math.abs(a.value.value))
         : frac(Math.abs(a.value.n), Math.abs(a.value.d)),
       (_, a) => `abs(${a})`,
+      "unsign(-7)=7",
     )
 
     FN_VALID.add(
@@ -502,29 +564,40 @@ export const PKG_REAL: Package = {
         const a = ctx.cache(ar)
         return `(!isnan(${a}) && !isinf(${a}))`
       },
+      ["valid(3)=true", "valid(∞)=false"],
     )
 
-    addCmp(OP_LT, (a, b) => a < b, "<", "== -1.0")
-    addCmp(OP_GT, (a, b) => a > b, ">", "==  1.0")
+    addCmp(OP_LT, (a, b) => a < b, "<", "== -1.0", "<")
+    addCmp(OP_GT, (a, b) => a > b, ">", "==  1.0", ">")
 
-    addCmp(OP_LTE, (a, b) => a <= b, "<=", "!=  1.0")
-    addCmp(OP_GTE, (a, b) => a >= b, ">=", "!= -1.0")
+    addCmp(OP_LTE, (a, b) => a <= b, "<=", "!=  1.0", "\\leq ")
+    addCmp(OP_GTE, (a, b) => a >= b, ">=", "!= -1.0", "\\geq ")
 
-    addCmp(OP_NLT, (a, b) => !(a < b), "!<", "!= -1.0")
-    addCmp(OP_NGT, (a, b) => !(a > b), "!>", "!=  1.0")
+    addCmp(OP_NLT, (a, b) => !(a < b), "!<", "!= -1.0", "\\nless ")
+    addCmp(OP_NGT, (a, b) => !(a > b), "!>", "!=  1.0", "\\ngtr ")
 
-    addCmp(OP_NLTE, (a, b) => !(a <= b), "!<=", "==  1.0")
-    addCmp(OP_NGTE, (a, b) => !(a >= b), "!>=", "== -1.0")
+    addCmp(OP_NLTE, (a, b) => !(a <= b), "!<=", "==  1.0", "\\nleq ")
+    addCmp(OP_NGTE, (a, b) => !(a >= b), "!>=", "== -1.0", "\\ngeq ")
 
-    addCmp(OP_EQ, (a, b) => a == b, "==", "==  0.0")
-    addCmp(OP_NEQ, (a, b) => a != b, "!==", "!=  0.0")
+    addCmp(OP_EQ, (a, b) => a == b, "==", "==  0.0", "=")
+    addCmp(OP_NEQ, (a, b) => a != b, "!==", "!=  0.0", "\\neq ")
 
-    FN_CMP.add(["r64", "r64"], "r32", cmpJs, (ctx, a, b) => {
-      // TODO: NaN probably outputs 0 in r64
-      declareCmpR64(ctx)
-      return `_helper_cmp_r64(${a.expr}, ${b.expr})`
-    }).add(["r32", "r32"], "r32", cmpJs, (ctx, a, b) => {
-      ctx.glsl`
+    FN_CMP.add(
+      ["r64", "r64"],
+      "r32",
+      cmpJs,
+      (ctx, a, b) => {
+        // TODO: NaN probably outputs 0 in r64
+        declareCmpR64(ctx)
+        return `_helper_cmp_r64(${a.expr}, ${b.expr})`
+      },
+      [],
+    ).add(
+      ["r32", "r32"],
+      "r32",
+      cmpJs,
+      (ctx, a, b) => {
+        ctx.glsl`
 float _helper_cmp_r32(float a, float b) {
   if (a < b) {
     return -1.0;
@@ -535,8 +608,10 @@ float _helper_cmp_r32(float a, float b) {
   }
 }
 `
-      return `_helper_cmp_r32(${a.expr}, ${b.expr})`
-    })
+        return `_helper_cmp_r32(${a.expr}, ${b.expr})`
+      },
+      ["cmp(7,9)=-1", "cmp(8,8)=0", "cmp(3,-8)=1"],
+    )
   },
   deps: [() => PKG_BOOL],
   ty: {
@@ -617,7 +692,7 @@ float _helper_cmp_r32(float a, float b) {
   eval: {
     fn: {
       sign: FN_SIGN,
-      sgn: FN_SGN,
+      sgn: FN_SIGN,
       ln: FN_LN,
       log: FN_LOG10,
       log_: FN_LOGB,

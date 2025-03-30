@@ -11,6 +11,7 @@ import { PKG_DISTRIBUTIONS } from "./pkg/data/distributions"
 import { PKG_CORE_LIST } from "./pkg/data/list"
 import { PKG_LIST_EXTRAS } from "./pkg/data/list-extras"
 import { PKG_STATISTICS } from "./pkg/data/statistics"
+import { PKG_DEBUG } from "./pkg/debug"
 import { PKG_EVAL } from "./pkg/eval"
 import { PKG_FACTORIAL } from "./pkg/factorial"
 import { PKG_GEOMETRY } from "./pkg/geo/dcg"
@@ -83,5 +84,6 @@ export function allPackages(): Package[] {
     PKG_SYM_EXTRAS,
     PKG_UNITS,
     PKG_CHEM_ELEMENTS,
+    PKG_DEBUG,
   ]
 }

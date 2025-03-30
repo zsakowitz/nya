@@ -22,6 +22,7 @@ export const FN_LENGTH = new FnDist(
 `
       return `_helper_length_segment(${a.expr})`
     },
+    "length(segment((1,4),(-2,8)))=5",
   )
   .add(
     ["vector"],
@@ -37,6 +38,7 @@ export const FN_LENGTH = new FnDist(
 `
       return `_helper_length_vector(${a.expr})`
     },
+    "length(vector((1,4),(-2,8)))=5",
   )
   .add(
     ["arc"],
@@ -45,4 +47,5 @@ export const FN_LENGTH = new FnDist(
     () => {
       throw new Error("Cannot compute arc length in shaders yet.")
     },
+    String.raw`length(\operatorname{arc}\left(\left(-6,4\right),\left(3,2\right),\left(0,5\right)\right))≈29.1730`,
   )

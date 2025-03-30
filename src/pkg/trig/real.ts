@@ -49,12 +49,14 @@ export const PKG_TRIG_REAL: Package = {
   id: "nya:trig-real",
   name: "trigonometry",
   label: "trig on real numbers",
+  category: "trigonometry",
   load() {
     FN_SIN.add(
       ["r32"],
       "r32",
       (a) => approx(Math.sin(num(a.value))),
       (_, a) => `sin(${a.expr})`,
+      "sin30°=0.5",
     )
 
     FN_COS.add(
@@ -62,6 +64,7 @@ export const PKG_TRIG_REAL: Package = {
       "r32",
       (a) => approx(Math.cos(num(a.value))),
       (_, a) => `cos(${a.expr})`,
+      "cos60°=0.5",
     )
 
     FN_TAN.add(
@@ -69,6 +72,7 @@ export const PKG_TRIG_REAL: Package = {
       "r32",
       (a) => approx(Math.tan(num(a.value))),
       (_, a) => `tan(${a.expr})`,
+      "tan45°=1",
     )
 
     FN_CSC.add(
@@ -76,6 +80,7 @@ export const PKG_TRIG_REAL: Package = {
       "r32",
       (a) => approx(1 / Math.sin(num(a.value))),
       (_, a) => `(1.0/sin(${a.expr}))`,
+      "csc30°=2",
     )
 
     FN_SEC.add(
@@ -83,6 +88,7 @@ export const PKG_TRIG_REAL: Package = {
       "r32",
       (a) => approx(1 / Math.cos(num(a.value))),
       (_, a) => `(1.0/cos(${a.expr}))`,
+      "sec60°=2",
     )
 
     FN_COT.add(
@@ -90,6 +96,7 @@ export const PKG_TRIG_REAL: Package = {
       "r32",
       (a) => approx(1 / Math.tan(num(a.value))),
       (_, a) => `(1.0/tan(${a.expr}))`,
+      "cot45°=1",
     )
 
     FN_ARCSIN.add(
@@ -97,6 +104,7 @@ export const PKG_TRIG_REAL: Package = {
       "r32",
       (a) => approx(Math.asin(num(a.value))),
       (_, a) => `asin(${a.expr})`,
+      "arcsin0.5=30°",
     )
 
     FN_ARCCOS.add(
@@ -104,6 +112,7 @@ export const PKG_TRIG_REAL: Package = {
       "r32",
       (a) => approx(Math.acos(num(a.value))),
       (_, a) => `acos(${a.expr})`,
+      "arccos0.5=60°",
     )
 
     FN_ARCTAN.add(
@@ -111,11 +120,13 @@ export const PKG_TRIG_REAL: Package = {
       "r32",
       (a) => approx(Math.atan(num(a.value))),
       (_, a) => `atan(${a.expr})`,
+      "arctan1=45°",
     ).add(
       ["r32", "r32"],
       "r32",
       (a, b) => approx(Math.atan2(num(a.value), num(b.value))),
       (_, a, b) => `atan(${a.expr}, ${b.expr})`,
+      "arctan(-1,-1)=-135°",
     )
 
     FN_ARCCSC.add(
@@ -123,6 +134,7 @@ export const PKG_TRIG_REAL: Package = {
       "r32",
       (a) => approx(Math.asin(1 / num(a.value))),
       (_, a) => `asin(1.0/${a.expr})`,
+      "arccsc2=30°",
     )
 
     FN_ARCSEC.add(
@@ -130,6 +142,7 @@ export const PKG_TRIG_REAL: Package = {
       "r32",
       (a) => approx(Math.acos(1 / num(a.value))),
       (_, a) => `acos(1.0/${a.expr})`,
+      "arcsec2=60°",
     )
 
     FN_ARCCOT.add(
@@ -137,6 +150,7 @@ export const PKG_TRIG_REAL: Package = {
       "r32",
       (a) => approx(Math.atan(1 / num(a.value))),
       (_, a) => `atan(1.0/${a.expr})`,
+      "arccot1=45°",
     )
   },
   deps: [() => PKG_REAL],

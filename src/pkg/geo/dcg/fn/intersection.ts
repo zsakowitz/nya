@@ -101,6 +101,9 @@ for (const a of ["segment", "ray", "line"] as const) {
       "point32",
       (a, b) => intersectSLineLineJs(a.value, b.value),
       intersectLineLineGlsl,
+      a == "line" && b == "line" ?
+        String.raw`\operatorname{intersection}\left(\operatorname{line}\left(\left(2,3\right),\left(4,-5\right)\right),\operatorname{line}\left(\left(1,9\right),\left(5,0\right)\right)\right)=(-\\frac1{7},\\frac{81}7)`
+      : [],
     )
   }
 }
@@ -224,14 +227,21 @@ for (const b of ["segment", "ray", "line"] as const) {
     "point32",
     (a, b) => lineCircleJs(a.value, b.value, 1),
     (ctx, a, b) => lineCircleGlsl(ctx, ctx.cache(a), ctx.cache(b), 1),
+    [],
   )
   FN_INTERSECTION.add(
     [b, "circle"],
     "point32",
     (a, b) => lineCircleJs(b.value, a.value, -1),
     (ctx, a, b) => lineCircleGlsl(ctx, ctx.cache(b), ctx.cache(a), -1),
+    b == "line" ?
+      String.raw`\operatorname{intersection}\left(\operatorname{line}\left(\left(2,3\right),\left(4,-5\right)\right),\operatorname{circle}\left(\left(1,9\right),\left(5,0\right)\right)\right)≈(-1.8564,18.4256)`
+    : [],
   )
+}
 
+// line-arc
+for (const b of ["segment", "ray", "line"] as const) {
   FN_INTERSECTION.add(
     ["arc", b],
     "point32",
@@ -242,6 +252,7 @@ for (const b of ["segment", "ray", "line"] as const) {
         "Cannot compute intersections involving an arc in shaders yet.",
       )
     },
+    [],
   )
   FN_INTERSECTION.add(
     [b, "arc"],
@@ -253,8 +264,16 @@ for (const b of ["segment", "ray", "line"] as const) {
         "Cannot compute intersections involving an arc in shaders yet.",
       )
     },
+    b == "line" ?
+      String.raw`\operatorname{intersection}\left(\operatorname{line}\left(\left(5,1\right),\left(4,2\right)\right),\operatorname{arc}\left(\left(2,3\right),\left(5,-1\right),\left(4,6\right)\right)\right)≈(2.1684,3.8316)`
+    : [],
   )
 }
+
+const A = String.raw`\operatorname{arc}\left(\left(2,3\right),\left(5,-1\right),\left(4,6\right)\right)`
+const A2 = String.raw`\operatorname{arc}\left(\left(5,15\right),\left(6,10\right),\left(5,-5\right)\right)`
+const B = String.raw`\operatorname{circle}\left(\left(3,3\right),4\right)`
+const B2 = String.raw`\operatorname{circle}\left(\left(5,2\right),2\right)`
 
 // circle-circle
 FN_INTERSECTION.add(
@@ -267,6 +286,7 @@ FN_INTERSECTION.add(
       "Cannot compute intersections between two circles in shaders yet.",
     )
   },
+  `intersection(${B},${B2})≈(6.9568,2.4136)`,
 )
 
 FN_INTERSECTION.add(
@@ -297,6 +317,7 @@ FN_INTERSECTION.add(
       "Cannot compute intersections involving arcs in shaders yet.",
     )
   },
+  `intersection(${B},${A})≈(5.1415,6.3784)`,
 )
 
 FN_INTERSECTION.add(
@@ -327,6 +348,7 @@ FN_INTERSECTION.add(
       "Cannot compute intersections involving arcs in shaders yet.",
     )
   },
+  `intersection(${A},${B})≈(4.2943,-0.7848)`,
 )
 
 FN_INTERSECTION.add(
@@ -364,4 +386,5 @@ FN_INTERSECTION.add(
       "Cannot compute intersections involving arcs in shaders yet.",
     )
   },
+  `intersection(${A},${A2})≈(5.8435,-1.0712)`,
 )

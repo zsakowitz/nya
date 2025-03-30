@@ -1,4 +1,4 @@
-import { btn, createDocs, DEFAULT_TO_VISIBLE_DOCS } from "@/docs/core"
+import { btn, btnSkin } from "@/docs/core"
 import { GlslContext } from "@/eval/lib/fn"
 import type { JsVal, TyName } from "@/eval/ty"
 import { num, real } from "@/eval/ty/create"
@@ -113,10 +113,9 @@ export class Sheet {
     this.glPixelRatio.onInput = () =>
       this.setPixelRatio(num(this.glPixelRatio.value))
 
-    const switchToDocs = btn(faBook, "Docs", () => {
-      docs.classList.remove("hidden")
-      sidebar.classList.add("hidden")
-    })
+    const switchToDocs = btnSkin("a", faBook, "Docs")
+    switchToDocs.href = location.origin + "/?/docs"
+    switchToDocs.target = "_blank"
 
     const clearAll = btn(faTrash, "Clear", () => {
       while (this.list.items[0]) {
@@ -232,29 +231,13 @@ export class Sheet {
         )
       : null
 
-    const docs = createDocs(
-      btn(faBook, "Back", () => {
-        docs.classList.add("hidden")
-        sidebar.classList.remove("hidden")
-      }),
-      this.options,
-      this.scope.ctx,
-      Object.values(factory.loaded),
-    )
-
-    if ("NYA_DEV" in globalThis && DEFAULT_TO_VISIBLE_DOCS) {
-      docs.classList.remove("hidden")
-      sidebar.classList.add("hidden")
-    }
-
     // dom
     this.glPixelRatio.el.className =
       "block w-48 bg-[--nya-bg] outline outline-1 outline-[--nya-pixel-ratio] rounded-full p-1"
     this.el = h(
-      "fixed inset-0 grid grid-cols-[min(500px,40vw)_1fr] grid-rows-[3rem_1fr] grid-rows-1 select-none",
+      "bg-[--nya-bg] fixed inset-0 grid grid-cols-[min(500px,40vw)_1fr] grid-rows-[3rem_1fr] grid-rows-1 select-none",
 
       sidebar,
-      docs,
       toolbar,
 
       h(

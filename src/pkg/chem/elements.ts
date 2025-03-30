@@ -6,6 +6,7 @@ import { real } from "@/eval/ty/create"
 import { type TyInfoByName } from "@/eval/ty/info"
 import { brightness } from "@/field/cmd/leaf/color"
 import { CmdWord } from "@/field/cmd/leaf/word"
+import { toText } from "@/field/latex"
 import { L } from "@/field/model"
 import { h, hx } from "@/jsx"
 import type { Package } from ".."
@@ -18,6 +19,7 @@ import {
   UNIT_KILOJOULE,
   UNIT_MOLE,
 } from "../unit/impl/units"
+import { latexUnit } from "../unit/pkg"
 
 declare module "@/eval/ty" {
   interface Tys {
@@ -5517,6 +5519,7 @@ function textProp<
     ["element"],
     "text",
     map((x) => text(x?.[key] ?? defaultValue)),
+    `${name}(element Li)=\\textinert{${toText(bySymbol.Li?.[key] ?? defaultValue)}}`,
   )
 }
 
@@ -5535,6 +5538,7 @@ function numProp<
       ["element"],
       "r32",
       map((x) => real(x?.[key] ?? NaN)),
+      `${name}(element Li)=${bySymbol.Li?.[key] ?? `\\digit N \\digit a \\digit N`}`,
     )
   }
 
@@ -5544,6 +5548,7 @@ function numProp<
     ["element"],
     "r32u",
     map((x) => [real(x?.[key] ?? NaN), list]),
+    `${name}(element Li)=${bySymbol.Li?.[key] ?? `\\digit N \\digit a \\digit N `}${latexUnit(list, false)}`,
   )
 }
 
@@ -5609,6 +5614,7 @@ export const PKG_CHEM_ELEMENTS: Package = {
   id: "nya:chem-elements",
   name: "chemical elements",
   label: "and their properties",
+  category: "chemistry",
   ty: {
     info: {
       element: INFO_ELEMENT,

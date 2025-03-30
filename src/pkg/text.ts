@@ -1,7 +1,7 @@
-import type { Package } from "."
+import type { FnSignature } from "@/docs/signature"
 import type { Node } from "@/eval/ast/token"
 import { NO_DRAG, NO_SYM } from "@/eval/ast/tx"
-import { doc, FnDist } from "@/eval/ops/dist"
+import { FnDist } from "@/eval/ops/dist"
 import { FnDistManual, type FnOverload } from "@/eval/ops/dist-manual"
 import { ALL_DOCS } from "@/eval/ops/docs"
 import { each, type JsValue, type Ty } from "@/eval/ty"
@@ -22,6 +22,7 @@ import {
 import { h, hx, t } from "@/jsx"
 import { defineExt, Store } from "@/sheet/ext"
 import { circle } from "@/sheet/ui/expr/circle"
+import type { Package } from "."
 
 declare module "@/eval/ty" {
   interface Tys {
@@ -194,8 +195,14 @@ class CmdText extends Leaf {
 }
 
 // TODO: automatically convert all values
-const OP_TO_TEXT = new FnDist<"text">("to text", "converts a value into text")
-  .add(["bool"], "text", (a) => [{ type: "latex", value: a.value + "" }], err)
+const OP_TO_TEXT = new FnDist<"text">("text", "converts a value into text")
+  .add(
+    ["bool"],
+    "text",
+    (a) => [{ type: "latex", value: a.value + "" }],
+    err,
+    "\\nyaop{text}(true)=\\textinert{true}",
+  )
   .add(
     ["r32"],
     "text",
@@ -205,6 +212,7 @@ const OP_TO_TEXT = new FnDist<"text">("to text", "converts a value into text")
       return [{ type: "latex", value: b.latex() }]
     },
     err,
+    "\\nyaop{text}(2.5)=\\textinert{2.5}",
   )
   .add(
     ["c32"],
@@ -218,8 +226,15 @@ const OP_TO_TEXT = new FnDist<"text">("to text", "converts a value into text")
       return [{ type: "latex", value: b.latex() }]
     },
     err,
+    "\\nyaop{text}(2+3i)=\\textinert{2+3i}",
   )
-  .add(["text"], "text", (a) => a.value, err)
+  .add(
+    ["text"],
+    "text",
+    (a) => a.value,
+    err,
+    "\\nyaop{text}(\\textinert{hello world})=\\textinert{hello world}",
+  )
 
 const FN_CONCAT = new (class extends FnDistManual<"text"> {
   constructor() {
@@ -238,21 +253,41 @@ const FN_CONCAT = new (class extends FnDistManual<"text"> {
         throw new Error("Text cannot be created in shaders.")
       },
       docOrder: null,
+      usage: [],
     }
   }
 
-  docs() {
+  docs(): FnSignature[] {
     const ps = OP_TO_TEXT.o
       .map((x) => (x.params && x.params.length == 1 ? x.params[0]! : null))
       .filter((x) => x != null)
     return [
-      ...ps.map((a) => doc([a], "text")),
-      ...ps.flatMap((a) => ps.map((b) => doc([a, b], "text"))),
+      ...ps.map(
+        // @ts-ignore FIXME: how should concat usage examples be displayed
+        (a): FnSignature => ({
+          params: [{ type: a, list: false }],
+          dots: false,
+          ret: { type: "text", list: false },
+        }),
+      ),
+      ...ps.flatMap((a) =>
+        ps.map(
+          // @ts-ignore FIXME: how should concat usage examples be displayed
+          (b): FnSignature => ({
+            params: [
+              { type: a, list: false },
+              { type: b, list: false },
+            ],
+            dots: false,
+            ret: { type: "text", list: false },
+          }),
+        ),
+      ),
     ]
   }
 })()
 
-const store = new Store((expr) => {
+export const store = new Store((expr) => {
   const el = h(
     "flex flex-col px-2 pb-1 -mt-2 w-[calc(var(--nya-sidebar)_-_2.5rem_-_1px)] overflow-x-auto [&::-webkit-scrollbar]:hidden font-sans [.nya-expr:has(&):not(:focus-within)_.nya-display]:sr-only [.nya-expr:has(&):not(:focus-within)_&]:px-4 [.nya-expr:has(&):not(:focus-within)_&]:py-3 [.nya-expr:has(&):not(:focus-within)_&]:mt-0 [white-space:preserve_wrap] [line-height:1.5] gap-2 max-h-[400px] select-text nya-not-expr-focus-target",
   )
@@ -319,6 +354,7 @@ export const PKG_TEXT: Package = {
   id: "nya:text",
   name: "text",
   label: "writing and outputting text",
+  category: "miscellaneous",
   field: {
     inits: {
       '"': CmdText,
@@ -326,6 +362,7 @@ export const PKG_TEXT: Package = {
     },
     latex: {
       "\\text": CmdText,
+      "\\textinert": CmdTextInert,
     },
   },
   ty: {

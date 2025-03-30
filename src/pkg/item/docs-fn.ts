@@ -17,7 +17,6 @@ const FACTORY: ItemFactory<Data> = {
   id: "nya:docs-fn",
   name: "docs",
   icon: faBook,
-
   init(_, source) {
     const fns = Object.values(ALL_DOCS)
       .filter((x) => x.name in FNS && FNS[x.name])
@@ -104,6 +103,7 @@ export const PKG_DOCS_FN: Package = {
   id: "nya:docs-fn",
   name: "inline function documentation",
   label: null,
+  category: "sheet items",
   sheet: {
     items: [FACTORY],
   },

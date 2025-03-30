@@ -1,10 +1,10 @@
-import type { Package } from ".."
 import type { GlslContext } from "@/eval/lib/fn"
 import type { SReal, Tys } from "@/eval/ty"
 import { approx, gl, num, real } from "@/eval/ty/create"
 import { TY_INFO } from "@/eval/ty/info"
 import { abs, add, div, mul, neg, sub } from "@/eval/ty/ops"
 import { h } from "@/jsx"
+import type { Package } from ".."
 import {
   OP_ABS,
   OP_ADD,
@@ -15,7 +15,7 @@ import {
   OP_POS,
   OP_SUB,
 } from "../core/ops"
-import { FN_CONJ, PKG_NUM_COMPLEX } from "./complex"
+import { FN_CONJ, FN_REAL, PKG_NUM_COMPLEX } from "./complex"
 import { FN_UNSIGN, PKG_REAL } from "./real"
 
 declare module "@/eval/ty" {
@@ -32,6 +32,7 @@ export const PKG_NUM_QUATERNION: Package = {
   id: "nya:num-quaternion",
   name: "quaternions",
   label: "rudimentary support for quaternions",
+  category: "numbers (multi-dimensional)",
   deps: [() => PKG_REAL, () => PKG_NUM_COMPLEX],
   load() {
     OP_POS.add(
@@ -39,6 +40,7 @@ export const PKG_NUM_QUATERNION: Package = {
       "q32",
       (a) => a.value,
       (_, a) => a.expr,
+      "+(3+2k)=3+2k",
     )
 
     OP_NEG.add(
@@ -46,6 +48,7 @@ export const PKG_NUM_QUATERNION: Package = {
       "q32",
       (a) => a.value.map(neg) satisfies SReal[] as any,
       (_, a) => `(-${a.expr})`,
+      "-(3+2k)=-3-2k",
     )
 
     OP_ABS.add(
@@ -62,6 +65,7 @@ export const PKG_NUM_QUATERNION: Package = {
           ),
         ),
       (_, a) => `length(${a.expr})`,
+      "|3j+4k|=5",
     )
 
     OP_ADD.add(
@@ -74,6 +78,7 @@ export const PKG_NUM_QUATERNION: Package = {
         add(a.value[3], b.value[3]),
       ],
       (_, a, b) => `(${a.expr} + ${b.expr})`,
+      "(2+3j)+(4j+k)=2+7j+k",
     )
 
     OP_SUB.add(
@@ -86,6 +91,7 @@ export const PKG_NUM_QUATERNION: Package = {
         sub(a.value[3], b.value[3]),
       ],
       (_, a, b) => `(${a.expr} - ${b.expr})`,
+      "(2+3j)-(4j+k)=2-j+k",
     )
 
     OP_ODOT.add(
@@ -100,15 +106,18 @@ export const PKG_NUM_QUATERNION: Package = {
       (_, a, b) => {
         return `(${a.expr} * ${b.expr})`
       },
+      "(2+3j)\\odot(1+4j+k)=2+12j",
     )
 
     OP_CDOT.add(
       ["q32", "q32"],
       "q32",
       (a, b) => mulQ32(a.value, b.value),
-      () => {
-        throw new Error("skill issue")
+      (ctx, a, b) => {
+        declareMulQ32(ctx)
+        return `_helper_mul_q32(${a.expr}, ${b.expr})`
       },
+      "(2+3j)\\cdot(1+4j+k)=-10+3i+11j+2k",
     )
 
     OP_DIV.add(
@@ -131,6 +140,7 @@ export const PKG_NUM_QUATERNION: Package = {
 `
         return `_helper_div_q32(${a.expr}, ${b.expr})`
       },
+      "\\frac{2+3j}{4+3i}=0.32-0.24i+0.48j+0.36k",
     )
 
     FN_UNSIGN.add(
@@ -143,13 +153,23 @@ export const PKG_NUM_QUATERNION: Package = {
         abs(a.value[3]),
       ],
       (_, a) => `abs(${a.expr})`,
+      "unsign(-2-3i+4k)=2+3i+4k",
     )
 
     FN_CONJ.add(
       ["q32"],
       "q32",
       (a) => [a.value[0], neg(a.value[1]), neg(a.value[2]), neg(a.value[3])],
-      (_, a) => `(${a} * vec4(1, -1, -1, -1))`,
+      (_, a) => `(${a.expr} * vec4(1, -1, -1, -1))`,
+      "conj(-2-3i+4k)=2+3i-4k",
+    )
+
+    FN_REAL.add(
+      ["q32"],
+      "r32",
+      (a) => a.value[0],
+      (_, a) => `${a.expr}.x`,
+      "real(-2-3i+4k)=-2",
     )
   },
   ty: {

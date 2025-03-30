@@ -31,11 +31,31 @@ import type { Sheet } from "@/sheet/ui/sheet"
 
 type List<T, K extends PropertyKey = string> = { readonly [_ in K]?: T }
 
+export type PackageCategory =
+  | "chemistry"
+  | "color"
+  | "core"
+  | "geometry"
+  | "images"
+  | "lists"
+  | "logic"
+  | "measurement"
+  | "miscellaneous"
+  | "number theory"
+  | "numbers (multi-dimensional)"
+  | "numbers"
+  | "sheet items"
+  | "statistics"
+  | "substitution"
+  | "symbolic computation"
+  | "trigonometry"
+
 // SHAPE: maybe use consistent shapes
 export interface Package {
   id: string
   name: string
   label: string | null
+  category: PackageCategory
 
   load?(): void
   init?(sheet: Sheet): void
@@ -72,7 +92,7 @@ export interface Package {
       wordPrefix?: List<TxrWordPrefix>
     }
     // `sym` is separated from other `tx` since it works separately
-    sym?: { [K in SymName]?: TxrSym<Syms[K]> }
+    sym?: { [K in SymName]?: TxrSym<Syms[K] & { type: K }> }
   }
 
   sheet?: {
@@ -83,7 +103,13 @@ export interface Package {
     keys?: List<(sheet: Sheet) => void>
   }
 
-  docs?: Record<string, () => HTMLElement[]>
+  docs?: readonly Doc[]
+}
+
+export interface Doc {
+  name: string
+  poster: string
+  render(): HTMLElement[]
 }
 
 export interface ToolbarItem {

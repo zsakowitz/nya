@@ -8,4 +8,5 @@ export const FN_SEGMENT = new FnDist(
   "segment",
   (a, b) => [a.value, b.value],
   (_, a, b) => `vec4(${a.expr}, ${b.expr})`,
+  "segment((7,8),(2,-3))",
 )

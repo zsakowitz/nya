@@ -32,7 +32,7 @@ export const Order = Object.freeze({
   Point: 4,
 })
 
-const queryPointerCoarse = matchMedia("(pointer: coarse)")
+const queryPointerCoarse = globalThis.matchMedia?.("(pointer: coarse)")
 
 export const Size = Object.freeze({
   /**
@@ -73,7 +73,7 @@ export const Size = Object.freeze({
 
   /** The offset distance required to consider something a "touch". */
   get Target() {
-    return queryPointerCoarse.matches ? 24 : 16
+    return queryPointerCoarse?.matches ? 24 : 16
   },
 
   /** 1.5 * {@linkcode Size.PointHaloWide} */

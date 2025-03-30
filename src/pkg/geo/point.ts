@@ -256,6 +256,7 @@ export const PKG_GEO_POINT: Package = {
   id: "nya:geo-point",
   name: "geometric points",
   label: "geometric points in 2D",
+  category: "geometry",
   deps: [() => PKG_REAL],
   load() {
     FN_SCREENDISTANCE.add(
@@ -267,6 +268,7 @@ export const PKG_GEO_POINT: Package = {
       (_, a, b) => {
         return `length((${a.expr} - ${b.expr}) * u_px_per_unit.xz)`
       },
+      "screendistance((2,3),(4,-5))",
     )
 
     OP_ADD.add(
@@ -278,11 +280,13 @@ export const PKG_GEO_POINT: Package = {
         const b = ctx.cache(br)
         return `vec4(${addR64(ctx, `${a}.xy`, `${b}.xy`)}, ${addR64(ctx, `${a}.zw`, `${b}.zw`)})`
       },
+      [],
     ).add(
       ["point32", "point32"],
       "point32",
       (a, b) => pt(add(a.value.x, b.value.x), add(a.value.y, b.value.y)),
       (_, a, b) => `(${a.expr} + ${b.expr})`,
+      "(2,3)+(4,-7)=(8,-4)",
     )
 
     FN_UNSIGN.add(
@@ -293,11 +297,13 @@ export const PKG_GEO_POINT: Package = {
         const name = ctx.cache(a)
         return `vec4(${abs64(ctx, `${name}.xy`)}, ${abs64(ctx, `${name}.zw`)})`
       },
+      [],
     ).add(
       ["point32"],
       "point32",
       (a) => pt(abs(a.value.x), abs(a.value.y)),
       (_, a) => `abs(${a.expr})`,
+      "unsign((4,-7))=(4,7)",
     )
 
     OP_X.add(
@@ -305,11 +311,13 @@ export const PKG_GEO_POINT: Package = {
       "r64",
       (a) => a.value.x,
       (_, a) => `${a.expr}.xy`,
+      [],
     ).add(
       ["point32"],
       "r32",
       (a) => a.value.x,
       (_, a) => `${a.expr}.x`,
+      "(2,3).x=2",
     )
 
     OP_Y.add(
@@ -317,11 +325,13 @@ export const PKG_GEO_POINT: Package = {
       "r64",
       (a) => a.value.y,
       (_, a) => `${a.expr}.zw`,
+      [],
     ).add(
       ["point32"],
       "r32",
       (a) => a.value.y,
       (_, a) => `${a.expr}.y`,
+      "(2,3).y=3",
     )
 
     OP_PLOT.add(
@@ -329,6 +339,7 @@ export const PKG_GEO_POINT: Package = {
       "color",
       plotJs,
       (ctx, a) => FN_DEBUGPOINT.glsl1(ctx, a).expr,
+      "\\nyaop{plot}((2,3))",
     )
 
     OP_ABS.add(
@@ -337,6 +348,7 @@ export const PKG_GEO_POINT: Package = {
       // TODO: this is exact for some values
       (a) => approx(Math.hypot(num(a.value.x), num(a.value.y))),
       (_, a) => `length(${a.expr})`,
+      "|(3,-4)|=5",
     )
 
     OP_NEG.add(
@@ -344,11 +356,13 @@ export const PKG_GEO_POINT: Package = {
       "point64",
       (a) => pt(neg(a.value.x), neg(a.value.y)),
       (_, a) => `(-${a.expr})`,
+      [],
     ).add(
       ["point32"],
       "point32",
       (a) => pt(neg(a.value.x), neg(a.value.y)),
       (_, a) => `(-${a.expr})`,
+      "-(7,-9)=(-7,9)",
     )
 
     FN_VALID.add(
@@ -359,6 +373,7 @@ export const PKG_GEO_POINT: Package = {
         const a = ctx.cache(ar)
         return `(!isnan(${a}.x) && !isinf(${a}.x) && !isnan(${a}.y) && !isinf(${a}.y))`
       },
+      "valid((5,\\frac{7}{0}))=false",
     )
 
     OP_ODOT.add(
@@ -370,6 +385,7 @@ export const PKG_GEO_POINT: Package = {
         declareOdotC64(ctx)
         return `_helper_odot_c64(${a.expr}, ${b.expr})`
       },
+      [],
     ).add(
       ["point32", "point32"],
       "point32",
@@ -377,6 +393,7 @@ export const PKG_GEO_POINT: Package = {
       (_, a, b) => {
         return `(${a.expr} * ${b.expr})`
       },
+      "(2,3)\\odot(5,-7)=(10,-21)",
     )
 
     OP_POINT.add(
@@ -384,11 +401,13 @@ export const PKG_GEO_POINT: Package = {
       "point64",
       (x, y) => pt(x.value, y.value),
       (_, x, y) => `vec4(${x.expr}, ${y.expr})`,
+      [],
     ).add(
       ["r32", "r32"],
       "point32",
       (x, y) => pt(x.value, y.value),
       (_, x, y) => `vec2(${x.expr}, ${y.expr})`,
+      "(4,7)",
     )
 
     OP_POS.add(
@@ -396,11 +415,13 @@ export const PKG_GEO_POINT: Package = {
       "point64",
       (a) => a.value,
       (_, a) => a.expr,
+      [],
     ).add(
       ["point32"],
       "point32",
       (a) => a.value,
       (_, a) => a.expr,
+      "+(4,-7)=(4,-7)",
     )
 
     FN_DEBUGPOINT.add(
@@ -410,31 +431,21 @@ export const PKG_GEO_POINT: Package = {
         throw new Error(ERR_COORDS_USED_OUTSIDE_GLSL)
       },
       (ctx, a) => declareDebugPoint(ctx, a),
+      "debugpoint((9,-2))",
     )
 
     OP_CDOT.add(
-      ["point32", "r32"],
-      "point32",
+      ["point64", "r64"],
+      "point64",
       (a, b) => pt(mul(a.value.x, b.value), mul(a.value.y, b.value)),
-      (_, a, b) => `(${a.expr} * ${b.expr})`,
+      (ctx, ar, br) => {
+        declareMulR64(ctx)
+        const a = ctx.cache(ar)
+        const b = ctx.cache(br)
+        return `vec4(_helper_mul_r64(${a}.xy, ${b}), _helper_mul_r64(${a}.zw, ${b}))`
+      },
+      [],
     )
-      .add(
-        ["r32", "point32"],
-        "point32",
-        (b, a) => pt(mul(a.value.x, b.value), mul(a.value.y, b.value)),
-        (_, a, b) => `(${a.expr} * ${b.expr})`,
-      )
-      .add(
-        ["point64", "r64"],
-        "point64",
-        (a, b) => pt(mul(a.value.x, b.value), mul(a.value.y, b.value)),
-        (ctx, ar, br) => {
-          declareMulR64(ctx)
-          const a = ctx.cache(ar)
-          const b = ctx.cache(br)
-          return `vec4(_helper_mul_r64(${a}.xy, ${b}), _helper_mul_r64(${a}.zw, ${b}))`
-        },
-      )
       .add(
         ["r64", "point64"],
         "point64",
@@ -445,6 +456,21 @@ export const PKG_GEO_POINT: Package = {
           const b = ctx.cache(br)
           return `vec4(_helper_mul_r64(${a}.xy, ${b}), _helper_mul_r64(${a}.zw, ${b}))`
         },
+        [],
+      )
+      .add(
+        ["point32", "r32"],
+        "point32",
+        (a, b) => pt(mul(a.value.x, b.value), mul(a.value.y, b.value)),
+        (_, a, b) => `(${a.expr} * ${b.expr})`,
+        [],
+      )
+      .add(
+        ["r32", "point32"],
+        "point32",
+        (b, a) => pt(mul(a.value.x, b.value), mul(a.value.y, b.value)),
+        (_, a, b) => `(${a.expr} * ${b.expr})`,
+        "7\\cdot(8,-3)=(56,-21)",
       )
 
     OP_DIV.add(
@@ -452,6 +478,7 @@ export const PKG_GEO_POINT: Package = {
       "point32",
       (a, b) => pt(div(a.value.x, b.value), div(a.value.y, b.value)),
       (_, a, b) => `(${a.expr} / ${b.expr})`,
+      "(8,-6)/2=(4,-3)",
     )
   },
   ty: {

@@ -9,4 +9,5 @@ export const FN_LINE = new FnDist(
   "line",
   (a, b) => [a.value, b.value],
   (_, a, b) => `vec4(${a.expr}, ${b.expr})`,
+  "line((1,4),(5,-9))",
 )

@@ -1,4 +1,4 @@
-import type { Package } from "."
+import { example } from "@/docs/core"
 import type { MagicVar, Node } from "@/eval/ast/token"
 import { NO_SYM } from "@/eval/ast/tx"
 import type { Deps } from "@/eval/deps"
@@ -23,7 +23,7 @@ import { coerceValueGlsl, isReal } from "@/eval/ty/coerce"
 import { num, real } from "@/eval/ty/create"
 import { declareGlsl } from "@/eval/ty/decl"
 import { h, p } from "@/jsx"
-import { example } from "@/docs/core"
+import type { Package } from "."
 
 declare module "@/eval/ast/token" {
   interface PuncListInfix {
@@ -451,6 +451,7 @@ export const PKG_ITERATE: Package = {
   id: "nya:iterate",
   name: "iterate",
   label: "easily repeat expressions",
+  category: "miscellaneous",
   eval: {
     tx: {
       magic: {
@@ -527,103 +528,107 @@ export const PKG_ITERATE: Package = {
       },
     },
   },
-  docs: {
-    iteration() {
-      return [
-        p(
-          "The ",
-          h("font-semibold", "iterate"),
-          " function lets you compute an expression multiple times using its previous value as part of the computation. For example:",
-        ),
-        example(
-          String.raw`\operatorname{iterate}^{50}n\to n+2\operatorname{from}n=3`,
-          "=103",
-        ),
-        p(
-          "You can also add a ",
-          h("font-semibold", "while"),
-          " or ",
-          h("font-semibold", "until"),
-          " clause to limit when the expression stops iterating. The condition is evaluated before each iteration.",
-        ),
-        example(
-          String.raw`\operatorname{iterate}^{100}z\to 2z\operatorname{while}z<100\operatorname{from}z=2`,
-          "=128",
-        ),
-        p(
-          "As an alternate form, you can write ",
-          h("font-semibold", "iterate"),
-          " after ",
-          h("font-semibold", "with"),
-          " to get access to its result on the left side of the ",
-          h("font-semibold", "with"),
-          " expression.",
-        ),
-        example(
-          String.raw`a\operatorname{with}\operatorname{iterate}^{10}a\to 2a\operatorname{from}a=1`,
-          "=1024",
-        ),
-        p(
-          "In this alternate form, you can iterate over multiple variables at once. Note that variables are updated all at once, not in sequence.",
-        ),
-        example(
-          String.raw`a\operatorname{with}\operatorname{iterate}^{10}\begin{list}n\to n+1\\a\to a+n\end{list}\operatorname{from}\begin{list}n=0\\a=0\end{list}`,
-          "=45",
-        ),
-        p(
-          "By the way, you can type ",
-          h("font-semibold", "list"),
-          " to create a vertical list, like the ones in that last example. Alternatively, you can just separate the elements with commas:",
-        ),
-        example(
-          String.raw`a\operatorname{with}\operatorname{iterate}^{10}n\to n+1,a\to a+n\operatorname{from}n=0,a=0`,
-          "=45",
-        ),
-        p(
-          "If you want to update each variable in order, use ",
-          h("font-semibold", "withseq iterate"),
-          ".",
-        ),
-        example(
-          String.raw`a\operatorname{withseq}\operatorname{iterate}^{10}\begin{list}n\to n+1\\a\to a+n\end{list}\operatorname{from}\begin{list}n=0\\a=0\end{list}`,
-          "=55",
-        ),
-        example(
-          String.raw`a\operatorname{withseq}\operatorname{iterate}^{10}\begin{list}a\to a+n\\n\to n+1\end{list}\operatorname{from}\begin{list}n=0\\a=0\end{list}`,
-          "=45",
-        ),
-        p(
-          "If you're iterating over multiple variables, you can use ",
-          h("font-semibold", "iterate.name"),
-          " as a shortcut for ",
-          h("font-semibold", "name with iterate"),
-          ".",
-        ),
-        example(
-          String.raw`\operatorname{iterate}.a^{10}\begin{list}n\to n+1\\a\to a+n\end{list}\operatorname{from}\begin{list}n=0\\a=0\end{list}`,
-          "=45",
-        ),
-        p(
-          "You can also use ",
-          h("font-semibold", "iterate.count"),
-          " to return the number of iterations instead of any particular variable. This is usually only useful if you also have a ",
-          h("font-semibold", "while"),
-          " or ",
-          h("font-semibold", "until"),
-          " clause.",
-        ),
-        example(
-          String.raw`\operatorname{iterate}.\operatorname{count}^{20}z\to 2z\operatorname{from}z=1\operatorname{while}z<500`,
-          "=9",
-        ),
-        p(
-          "Finally, note that variables default to zero if you don't specify an initial value.",
-        ),
-        example(String.raw`\operatorname{iterate}^{20}z\to z+1`, "=20"),
-        p(
-          "Note that in shaders, iteration is significantly more restricted than usual. The variable you're iterating over can't change type, so you can't grow or shrink a list, change a number to a color, or do anything similar.",
-        ),
-      ]
+  docs: [
+    {
+      name: "iteration",
+      poster: "iterate^{50}z\\to z^2+c",
+      render() {
+        return [
+          p(
+            "The ",
+            h("font-semibold", "iterate"),
+            " function lets you compute an expression multiple times using its previous value as part of the computation. For example:",
+          ),
+          example(
+            String.raw`\operatorname{iterate}^{50}n\to n+2\operatorname{from}n=3`,
+            "=103",
+          ),
+          p(
+            "You can also add a ",
+            h("font-semibold", "while"),
+            " or ",
+            h("font-semibold", "until"),
+            " clause to limit when the expression stops iterating. The condition is evaluated before each iteration.",
+          ),
+          example(
+            String.raw`\operatorname{iterate}^{100}z\to 2z\operatorname{while}z<100\operatorname{from}z=2`,
+            "=128",
+          ),
+          p(
+            "As an alternate form, you can write ",
+            h("font-semibold", "iterate"),
+            " after ",
+            h("font-semibold", "with"),
+            " to get access to its result on the left side of the ",
+            h("font-semibold", "with"),
+            " expression.",
+          ),
+          example(
+            String.raw`a\operatorname{with}\operatorname{iterate}^{10}a\to 2a\operatorname{from}a=1`,
+            "=1024",
+          ),
+          p(
+            "In this alternate form, you can iterate over multiple variables at once. Note that variables are updated all at once, not in sequence.",
+          ),
+          example(
+            String.raw`a\operatorname{with}\operatorname{iterate}^{10}\begin{list}n\to n+1\\a\to a+n\end{list}\operatorname{from}\begin{list}n=0\\a=0\end{list}`,
+            "=45",
+          ),
+          p(
+            "By the way, you can type ",
+            h("font-semibold", "list"),
+            " to create a vertical list, like the ones in that last example. Alternatively, you can just separate the elements with commas:",
+          ),
+          example(
+            String.raw`a\operatorname{with}\operatorname{iterate}^{10}n\to n+1,a\to a+n\operatorname{from}n=0,a=0`,
+            "=45",
+          ),
+          p(
+            "If you want to update each variable in order, use ",
+            h("font-semibold", "withseq iterate"),
+            ".",
+          ),
+          example(
+            String.raw`a\operatorname{withseq}\operatorname{iterate}^{10}\begin{list}n\to n+1\\a\to a+n\end{list}\operatorname{from}\begin{list}n=0\\a=0\end{list}`,
+            "=55",
+          ),
+          example(
+            String.raw`a\operatorname{withseq}\operatorname{iterate}^{10}\begin{list}a\to a+n\\n\to n+1\end{list}\operatorname{from}\begin{list}n=0\\a=0\end{list}`,
+            "=45",
+          ),
+          p(
+            "If you're iterating over multiple variables, you can use ",
+            h("font-semibold", "iterate.name"),
+            " as a shortcut for ",
+            h("font-semibold", "name with iterate"),
+            ".",
+          ),
+          example(
+            String.raw`\operatorname{iterate}.a^{10}\begin{list}n\to n+1\\a\to a+n\end{list}\operatorname{from}\begin{list}n=0\\a=0\end{list}`,
+            "=45",
+          ),
+          p(
+            "You can also use ",
+            h("font-semibold", "iterate.count"),
+            " to return the number of iterations instead of any particular variable. This is usually only useful if you also have a ",
+            h("font-semibold", "while"),
+            " or ",
+            h("font-semibold", "until"),
+            " clause.",
+          ),
+          example(
+            String.raw`\operatorname{iterate}.\operatorname{count}^{20}z\to 2z\operatorname{from}z=1\operatorname{while}z<500`,
+            "=9",
+          ),
+          p(
+            "Finally, note that variables default to zero if you don't specify an initial value.",
+          ),
+          example(String.raw`\operatorname{iterate}^{20}z\to z+1`, "=20"),
+          p(
+            "Note that in shaders, iteration is significantly more restricted than usual. The variable you're iterating over can't change type, so you can't grow or shrink a list, change a number to a color, or do anything similar.",
+          ),
+        ]
+      },
     },
-  },
+  ],
 }

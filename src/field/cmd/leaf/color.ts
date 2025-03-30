@@ -1,7 +1,8 @@
-import { Leaf } from "."
 import type { Node } from "@/eval/ast/token"
+import type { LatexParser } from "@/field/latex"
 import { h, hx } from "@/jsx"
-import { L, type Cursor, type InitProps } from "../../model"
+import { Leaf } from "."
+import { L, type Command, type Cursor, type InitProps } from "../../model"
 
 export function brightness(rgb: string) {
   const r = parseInt(rgb.slice(1, 3), 16) / 255
@@ -11,6 +12,7 @@ export function brightness(rgb: string) {
   return Math.sqrt(r * r * 0.241 + g * g * 0.691 + b * b * 0.068)
 }
 
+// TODO: this is only ever used in readonly contexts now
 export class CmdColor extends Leaf {
   static parse(name: string) {
     const el = document.createElement("span")
@@ -30,6 +32,10 @@ export class CmdColor extends Leaf {
     } else {
       return "#808080"
     }
+  }
+
+  static fromLatex(_cmd: string, parser: LatexParser): Command {
+    return new CmdColor(parser.text())
   }
 
   static init(cursor: Cursor, { input }: InitProps) {

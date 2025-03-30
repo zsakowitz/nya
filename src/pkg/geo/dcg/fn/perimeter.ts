@@ -26,4 +26,5 @@ export const FN_PERIMETER = new FnDist(
   () => {
     throw new Error("Cannot measure polygon perimeters in shaders.")
   },
+  "perimeter(polygon((2,3),(7,5),(-1,4)))≈16.6097",
 )

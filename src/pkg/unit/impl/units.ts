@@ -148,7 +148,7 @@ const G = unit(
   ],
   frac(1, 1e4),
 )
-export const UNIT_AMU = unit("u", "kg", real(1.6605390689252e-27))
+export const UNIT_AMU = unit("amu", "kg", real(1.6605390689252e-27))
 
 export const UNITS: Record<string, Unit> = {
   // @ts-expect-error ts doesn't recognize __proto__

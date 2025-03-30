@@ -18,9 +18,15 @@ function glsl(ctx: GlslContext, ar: GlslVal, b: GlslVal) {
   return `mix(${a}.xy, ${a}.zw, ${b.expr})`
 }
 
-FN_GLIDER.add(["segment", "r32"], "point32", js, glsl)
-  .add(["ray", "r32"], "point32", js, glsl)
-  .add(["line", "r32"], "point32", js, glsl)
+FN_GLIDER.add(["segment", "r32"], "point32", js, glsl, [])
+  .add(["ray", "r32"], "point32", js, glsl, [])
+  .add(
+    ["line", "r32"],
+    "point32",
+    js,
+    glsl,
+    "glider(line((2,3),(7,9)),0.3)=(3.5,4.8)",
+  )
   .add(
     ["circle", "r32"],
     "point32",
@@ -40,6 +46,7 @@ FN_GLIDER.add(["segment", "r32"], "point32", js, glsl)
       })
       return `vec2(${a}.xy) + ${a}.z * vec2(cos(${t}), sin(${t}))`
     },
+    "glider(circle((2,3),(7,9)),0.3)≈(-0.4135,10.4280)",
   )
   .add(
     ["arc", "r32"],
@@ -51,4 +58,5 @@ FN_GLIDER.add(["segment", "r32"], "point32", js, glsl)
       // TODO:
       throw new Error("'glider' on an arc isn't supported in shaders yet.")
     },
+    "glider(arc((2,3),(7,9),(4,-1)),0.3)≈(-7.7549,9.0412)",
   )

@@ -353,6 +353,7 @@ export const PKG_SLIDER: Package = {
   id: "nya:slider",
   name: "sliders",
   label: "sliders on numeric variables",
+  category: "sheet items",
   deps: [() => PKG_REAL],
   sheet: {
     exts: {

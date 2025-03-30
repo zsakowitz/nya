@@ -1,16 +1,27 @@
+import { jsToGlsl } from "@/eval/glsl"
 import { FnDist } from "@/eval/ops/dist"
-import { gl, real } from "@/eval/ty/create"
+import { FnDistDeriv } from "@/eval/ops/dist-deriv"
+import { SYM_2, SYM_E, SYM_HALF, SYM_PI, unary } from "@/eval/sym"
+import type { GlslValue } from "@/eval/ty"
+import { approx, gl, num, real } from "@/eval/ty/create"
+import { TY_INFO } from "@/eval/ty/info"
 import { CmdComma } from "@/field/cmd/leaf/comma"
 import { CmdWord } from "@/field/cmd/leaf/word"
 import { CmdBrack } from "@/field/cmd/math/brack"
 import { Block, L, R } from "@/field/model"
 import { g, h, path, svgx } from "@/jsx"
+import { defineExt } from "@/sheet/ext"
+import { createLine } from "@/sheet/shader-line"
+import erfinv from "@stdlib/math/base/special/erfinv"
+import { erf } from "mathjs"
 import type { Package } from ".."
+import { chain, OP_DIV, OP_JUXTAPOSE, OP_NEG, OP_RAISE } from "../core/ops"
+import { EXT_EVAL } from "../eval"
 
 declare module "@/eval/ty" {
   interface Tys {
     normaldist: [mean: SReal, stdev: SReal]
-    tdist: SReal
+    tdist: [degrees: SReal, shift: SReal, scale: SReal]
     poissondist: SReal
     binomialdist: [trials: SReal, chance: SReal]
     uniformdist: [min: SReal, max: SReal]
@@ -31,26 +42,45 @@ const normaldist = new FnDist("normaldist", "creates a normal distribution")
     "normaldist",
     () => [real(0), real(1)],
     () => "vec2(0,1)",
+    "normaldist()=normaldist(0,1)",
   )
   .add(
     ["r32"],
     "normaldist",
     (a) => [a.value, real(1)],
     (_, a) => `vec2(${a.expr}, 1)`,
+    "normaldist(3)=normaldist(3,1)",
   )
   .add(
     ["r32", "r32"],
     "normaldist",
     (a, b) => [a.value, b.value],
     (_, a, b) => `vec2(${a.expr}, ${b.expr})`,
+    "normaldist(3,2.7)",
   )
 
-const tdist = new FnDist("tdist", "creates a t-distribution").add(
-  ["r32"],
-  "tdist",
-  (a) => a.value,
-  (_, a) => a.expr,
-)
+const tdist = new FnDist("tdist", "creates a t-distribution")
+  .add(
+    ["r32"],
+    "tdist",
+    (a) => [a.value, real(0), real(1)],
+    (_, a) => `vec3(${a.expr}, 0, 1)`,
+    "tdist(2.5)=tdist(2.5,0,1)",
+  )
+  .add(
+    ["r32", "r32"],
+    "tdist",
+    (a, b) => [a.value, b.value, real(1)],
+    (_, a, b) => `vec3(${a.expr}, ${b.expr}, 1)`,
+    "tdist(2.5,3)=tdist(2.5,3,1)",
+  )
+  .add(
+    ["r32", "r32", "r32"],
+    "tdist",
+    (a, b, c) => [a.value, b.value, c.value],
+    (_, a, b, c) => `vec3(${a.expr}, ${b.expr}, ${c.expr})`,
+    "tdist(2.5,3,7.8)",
+  )
 
 const poissondist = new FnDist(
   "poissondist",
@@ -60,6 +90,7 @@ const poissondist = new FnDist(
   "poissondist",
   (a) => a.value,
   (_, a) => a.expr,
+  "poissondist(2.5)",
 )
 
 const binomialdist = new FnDist(
@@ -71,12 +102,14 @@ const binomialdist = new FnDist(
     "binomialdist",
     (a) => [a.value, real(0.5)],
     (_, a) => `vec2(${a.expr}, 0.5)`,
+    "binomialdist(6)=binomialdist(6,0.5)",
   )
   .add(
     ["r32", "r32"],
     "binomialdist",
     (a, b) => [a.value, b.value],
     (_, a, b) => `vec2(${a.expr}, ${b.expr})`,
+    "binomialdist(6,0.3)",
   )
 
 const uniformdist = new FnDist("uniformdist", "creates a uniform distribution")
@@ -85,26 +118,144 @@ const uniformdist = new FnDist("uniformdist", "creates a uniform distribution")
     "uniformdist",
     () => [real(0), real(1)],
     () => "vec2(0,1)",
+    "uniformdist()=uniformdist(0,1)",
   )
   .add(
     ["r32"],
     "uniformdist",
     (a) => [a.value, real(1)],
     (_, a) => `vec2(${a.expr}, 1)`,
+    "uniformdist(0.7)=uniformdist(0.7,1)",
   )
   .add(
     ["r32", "r32"],
     "uniformdist",
     (a, b) => [a.value, b.value],
     (_, a, b) => `vec2(${a.expr}, ${b.expr})`,
+    "uniformdist(8,23)=uniformdist(8,23)",
   )
 
+const FN_ERF = new FnDist(
+  "erf",
+  "error function; related to area of a normal distribution",
+  {
+    deriv: unary((wrt, a) =>
+      chain(a, wrt, {
+        type: "call",
+        fn: OP_JUXTAPOSE,
+        args: [
+          {
+            type: "call",
+            fn: OP_DIV,
+            args: [
+              SYM_2,
+              {
+                type: "call",
+                fn: OP_RAISE,
+                args: [SYM_PI, SYM_HALF],
+              },
+            ],
+          },
+          {
+            type: "call",
+            fn: OP_RAISE,
+            args: [
+              SYM_E,
+              {
+                type: "call",
+                fn: OP_NEG,
+                args: [{ type: "call", fn: OP_RAISE, args: [a, SYM_2] }],
+              },
+            ],
+          },
+        ],
+      }),
+    ),
+  },
+).addJs(["r32"], "r32", (a) => approx(erf(num(a.value))), "erf(1)≈0.842700")
+
+const FN_ERFINV = new FnDist("erf^-1", "inverse error function").addJs(
+  ["r32"],
+  "r32",
+  (a) => approx(erfinv(num(a.value))),
+  "erf^{-1}(0.8427)≈1",
+)
+
+const FN_PDF = new FnDistDeriv("pdf", "probability distribution function").add(
+  ["normaldist", "r32"],
+  "r32",
+  (dist, xRaw) => {
+    const mean = num(dist.value[0])
+    const stdev = num(dist.value[1])
+    const x = num(xRaw.value)
+    return approx(
+      Math.E ** (-((x - mean) ** 2) / (2 * stdev * stdev)) /
+        Math.sqrt(2 * Math.PI * stdev * stdev),
+    )
+  },
+  (ctx, a, b) => {
+    ctx.glsl`float nya_normaldist_pdf(vec2 dist, float x) {
+  float mean = dist.x;
+  float variance = dist.y * dist.y;
+  return pow(2.718281828459045, -(x-mean) * (x-mean) / (2.0 * variance))
+    / (2.5066282746310007 * abs(dist.y));
+}`
+    return `nya_normaldist_pdf(${a.expr}, ${b.expr})`
+  },
+  "normaldist().pdf(1)≈0.24197",
+)
+
+// const FN_CDF = new FnDistDeriv("cdf", "cumulative distribution function").addJs(
+//   ["normaldist", "r32"],
+//   "r32",
+//   // (dist, xRaw) =
+// )
+
 // TODO: tokens for distributions
+
+const EXT_CONTINUOUS_DISTRIBUTION = defineExt({
+  data(expr) {
+    if (!expr.js) {
+      return
+    }
+
+    if (!TY_INFO[expr.js.value.type].extras?.renderContinuousPdf) {
+      return
+    }
+
+    if (expr.js.value.list !== false) {
+      return
+    }
+
+    return {
+      eval: EXT_EVAL.data(expr)!,
+      value: expr.js.value,
+      expr,
+    }
+  },
+  el(data) {
+    return EXT_EVAL.el!(data.eval)
+  },
+  glsl(data) {
+    const props = data.expr.sheet.scope.propsGlsl()
+    return createLine(
+      data.expr.sheet.cv,
+      props,
+      () => ({ list: false, type: "r64", expr: "v_coords.zw" }),
+      () => {
+        const dist = jsToGlsl(data.value, props.ctx)
+        const x: GlslValue = { list: false, type: "r64", expr: "v_coords.xy" }
+        return FN_PDF.glsl(props.ctx, [dist, x])
+      },
+    )
+  },
+})
 
 export const PKG_DISTRIBUTIONS: Package = {
   id: "nya:distributions",
   name: "statistical distributions",
   label: null,
+  category: "statistics",
   ty: {
     info: {
       normaldist: {
@@ -160,29 +311,33 @@ export const PKG_DISTRIBUTIONS: Package = {
         glide: null,
         preview: null,
         components: null,
-        extras: null,
+        extras: { renderContinuousPdf: true },
       },
       tdist: {
         name: "t-distribution",
         namePlural: "t-distributions",
         glsl: "float",
-        toGlsl(a) {
-          return gl(a)
+        toGlsl(x) {
+          return `vec3(${x.map(gl).join(", ")})`
         },
         garbage: {
-          js: real(NaN),
-          glsl: "(0.0/0.0)",
+          js: [real(NaN), real(NaN), real(NaN)],
+          glsl: "vec3(0.0/0.0)",
         },
         coerce: {},
         write: {
-          isApprox(value) {
-            return value.type == "approx"
+          isApprox(x) {
+            return x.some((x) => x.type == "approx")
           },
           display(value, props) {
             new CmdWord("tdist", "prefix").insertAt(props.cursor, L)
             const block = new Block(null)
             const inner = props.at(block.cursor(R))
-            inner.num(value)
+            inner.num(value[0])
+            new CmdComma().insertAt(inner.cursor, L)
+            inner.num(value[1])
+            new CmdComma().insertAt(inner.cursor, L)
+            inner.num(value[2])
             new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
           },
         },
@@ -419,6 +574,14 @@ export const PKG_DISTRIBUTIONS: Package = {
       poissondist,
       binomialdist,
       uniformdist,
+      erf: FN_ERF,
+      "erf^-1": FN_ERFINV,
+      pdf: FN_PDF,
+    },
+  },
+  sheet: {
+    exts: {
+      1: [EXT_CONTINUOUS_DISTRIBUTION],
     },
   },
 }

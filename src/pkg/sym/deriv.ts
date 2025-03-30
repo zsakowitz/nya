@@ -1,14 +1,15 @@
-import type { Package } from ".."
+import { example } from "@/docs/core"
 import { NO_DRAG, sym } from "@/eval/ast/tx"
 import { id } from "@/eval/lib/binding"
 import { txr } from "@/eval/sym"
 import { b, px } from "@/jsx"
-import { example } from "@/docs/core"
+import type { Package } from ".."
 
 export const PKG_DERIV: Package = {
   id: "nya:deriv",
   name: "derivatives",
   label: "via leibniz notation",
+  category: "symbolic computation",
   eval: {
     tx: {
       ast: {
@@ -39,18 +40,22 @@ export const PKG_DERIV: Package = {
       },
     },
   },
-  docs: {
-    derivatives() {
-      return [
-        px`Use Leibniz notation to take derivatives.`,
-        example("\\frac{d}{dx}x^{2}forx=[1,2,3]", "=[2,4,6]"),
-        px`You can take repeated derivatives as well.`,
-        example("\\frac{d}{dx}\\frac{d}{dx}x^{2}", "=2"),
-        // SYM: remove once done with derivatives
-        // TODO: make this dependent on PKG_SYM_EXTRAS being loaded
-        px`To see the expanded derivative as a symbolic expression, write ${b("sym")} before the derivative symbol.`,
-        example("sym\\frac{d}{dx}e^{sin x}", "=cos(x)ln(e)e^{sin(x)}"),
-      ]
+  docs: [
+    {
+      name: "derivatives",
+      poster: "\\frac{d}{dx}3^{sin x}",
+      render() {
+        return [
+          px`Use Leibniz notation to take derivatives.`,
+          example("\\frac{d}{dx}x^{2}forx=[1,2,3]", "=[2,4,6]"),
+          px`You can take repeated derivatives as well.`,
+          example("\\frac{d}{dx}\\frac{d}{dx}x^{2}", "=2"),
+          // SYM: remove once done with derivatives
+          // TODO: make this dependent on PKG_SYM_EXTRAS being loaded
+          px`To see the expanded derivative as a symbolic expression, write ${b("sym")} before the derivative symbol.`,
+          example("sym\\frac{d}{dx}e^{sin x}", "=cos(x)ln(e)e^{sin(x)}"),
+        ]
+      },
     },
-  },
+  ],
 }

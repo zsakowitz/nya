@@ -33,7 +33,14 @@ export const FN_PERPENDICULAR = new FnDist(
   "perpendicular",
   "creates a line perpendicular to an existing line which passes through some point",
 )
-  .add(["segment", "point32"], "line", perpendicularJs, glsl)
-  .add(["ray", "point32"], "line", perpendicularJs, glsl)
-  .add(["line", "point32"], "line", perpendicularJs, glsl)
-  .add(["vector", "point32"], "line", perpendicularJs, glsl)
+  // DOCS: should each overload have an example
+  .add(["segment", "point32"], "line", perpendicularJs, glsl, [])
+  .add(["ray", "point32"], "line", perpendicularJs, glsl, [])
+  .add(
+    ["line", "point32"],
+    "line",
+    perpendicularJs,
+    glsl,
+    String.raw`\operatorname{perpendicular}\left(\operatorname{line}\left(\left(1,4\right),\left(5,9\right)\right),\left(2,3\right)\right)=\operatorname{line}\left(\left(2,3\right),\left(7,-1\right)\right)`,
+  )
+  .add(["vector", "point32"], "line", perpendicularJs, glsl, [])

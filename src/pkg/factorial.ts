@@ -114,7 +114,7 @@ float factorial(float x) {
 
 export const FN_DIGAMMA: FnDist = new FnDist(
   "digamma",
-  "computes the derivatives of the natural logarithm of the gamma function",
+  "computes the derivative of the natural logarithm of the gamma function",
   {
     deriv: unary((wrt, x) => {
       return chain(x, wrt, {
@@ -147,6 +147,7 @@ export const FN_DIGAMMA: FnDist = new FnDist(
       "Cannot compute the digamma function in shaders yet. (The digamma function is generated when you take the derivative of a factorial.)",
     )
   },
+  "\\psi(2)≈0.422784",
 )
 
 export const FN_POLYGAMMA: FnDist = new FnDist(
@@ -194,6 +195,7 @@ export const FN_POLYGAMMA: FnDist = new FnDist(
       "Cannot compute the polygamma function in shaders yet. (The polygamma function is generated when you take the derivative of a factorial.)",
     )
   },
+  "\\psi^(3)(2)≈0.493939",
 )
 
 const OP_FACTORIAL: FnDist = new FnDist("!", "computes a factorial", {
@@ -236,6 +238,7 @@ const OP_FACTORIAL: FnDist = new FnDist("!", "computes a factorial", {
       return real(factorial(val))
     },
     (ctx, a) => factorialGlsl(ctx, a.expr),
+    "7! =5040=7\\cdot6\\cdot5\\cdot4\\cdot3\\cdot2\\cdot1",
   )
   .add(
     ["c32"],
@@ -259,12 +262,14 @@ const OP_FACTORIAL: FnDist = new FnDist("!", "computes a factorial", {
         "Cannot take factorials of complex numbers in shaders yet.",
       )
     },
+    "(2+3i)!≈-0.44011-0.06364i",
   )
 
 export const PKG_FACTORIAL: Package = {
   id: "nya:factorial",
   name: "factorial",
   label: "extended factorial operator",
+  category: "numbers",
   eval: {
     tx: {
       suffix: {

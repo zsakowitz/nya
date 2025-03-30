@@ -1,4 +1,3 @@
-import type { Package } from ".."
 import type { GlslContext } from "@/eval/lib/fn"
 import { FnDist } from "@/eval/ops/dist"
 import type { SColor, SReal } from "@/eval/ty"
@@ -7,6 +6,7 @@ import { TY_INFO } from "@/eval/ty/info"
 import { CmdColor } from "@/field/cmd/leaf/color"
 import { L } from "@/field/model"
 import { h } from "@/jsx"
+import type { Package } from ".."
 import { PKG_BOOL } from "../bool"
 import { OP_CDOT } from "../core/ops"
 import { PKG_REAL } from "../num/real"
@@ -97,6 +97,7 @@ export const PKG_COLOR_CORE: Package = {
   id: "nya:color-core",
   name: "color functions core",
   label: "rgb and hsv functions",
+  category: "color",
   deps: [() => PKG_REAL, () => PKG_BOOL],
   load() {
     OP_PLOT.add(
@@ -105,6 +106,7 @@ export const PKG_COLOR_CORE: Package = {
       plotJs,
       (_, a) =>
         `(${a.expr} ? vec4(0.1764705882, 0.4392156863, 0.7019607843, 1) : vec4(0))`,
+      "\\nyaop{plot}(true)=\\nyacolor{rgb(45,112,179)}", // TODO: update once custom graph colors work
     )
 
     FN_RGB.add(
@@ -118,6 +120,7 @@ export const PKG_COLOR_CORE: Package = {
         a: real(1),
       }),
       (_, r, g, b) => `vec4(vec3(${r.expr}, ${g.expr}, ${b.expr}) / 255.0, 1)`,
+      "rgb(70,255,128)=\\nyacolor{rgb(70,255,128)}",
     ).add(
       ["r32", "r32", "r32", "r32"],
       "color",
@@ -130,6 +133,7 @@ export const PKG_COLOR_CORE: Package = {
       }),
       (_, r, g, b, a) =>
         `vec4(vec3(${r.expr}, ${g.expr}, ${b.expr}) / 255.0, ${a.expr})`,
+      "rgb(70,255,128,.4)=\\nyacolor{rgb(70,255,128,.4)}",
     )
 
     FN_HSV.add(
@@ -140,6 +144,7 @@ export const PKG_COLOR_CORE: Package = {
         declareHsv(ctx)
         return `vec4(_helper_hsv(vec3(${hr.expr} / 360.0, ${sr.expr}, ${vr.expr})), 1)`
       },
+      "hsv(180,.5,.7)=\\nyacolor{#59b2b2}",
     ).add(
       ["r32", "r32", "r32", "r32"],
       "color",
@@ -148,9 +153,16 @@ export const PKG_COLOR_CORE: Package = {
         declareHsv(ctx)
         return `vec4(_helper_hsv(vec3(${hr.expr} / 360.0, ${sr.expr}, ${vr.expr})), ${ar.expr})`
       },
+      "hsv(180,.5,.7,.5)=\\nyacolor{#59b2b280}",
     )
 
-    OP_PLOT.add(["color"], "color", plotJs, (_, a) => a.expr).add(
+    OP_PLOT.add(
+      ["color"],
+      "color",
+      plotJs,
+      (_, a) => a.expr,
+      "\\nyaop{plot}(rgb(2,128,40))=\\nyacolor{#028028}",
+    ).add(
       ["r32"],
       "color",
       plotJs,
@@ -161,18 +173,21 @@ export const PKG_COLOR_CORE: Package = {
           { type: "r32", expr: "1.0" },
           { type: "r32", expr: "1.0" },
         ).expr,
+      "\\nyaop{plot}(120)=\\nyacolor{#0f0}",
     )
 
     OP_CDOT.add(
-      ["color", "bool"],
-      "color",
-      (a, b) => (b.value ? a.value : TY_INFO.color.garbage.js),
-      (_, a, b) => `(${b.expr} ? ${a.expr} : ${TY_INFO.color.garbage.glsl})`,
-    ).add(
       ["bool", "color"],
       "color",
       (b, a) => (b.value ? a.value : TY_INFO.color.garbage.js),
       (_, b, a) => `(${b.expr} ? ${a.expr} : ${TY_INFO.color.garbage.glsl})`,
+      [],
+    ).add(
+      ["color", "bool"],
+      "color",
+      (a, b) => (b.value ? a.value : TY_INFO.color.garbage.js),
+      (_, a, b) => `(${b.expr} ? ${a.expr} : ${TY_INFO.color.garbage.glsl})`,
+      "rgb(70,8,9)\\cdot\\left{3>2\\right}=rgb(70,8,9)",
     )
   },
   ty: {

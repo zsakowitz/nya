@@ -1,5 +1,4 @@
 import type { Fn } from "@/eval/ops"
-import { doc } from "@/eval/ops/dist"
 import { ALL_DOCS, type WithDocs } from "@/eval/ops/docs"
 import type { SPoint } from "@/eval/ty"
 
@@ -7,7 +6,14 @@ export const FN_VERTICES: Fn & WithDocs = {
   name: "vertices",
   label: "gets the vertices which make up a polygon",
   docs() {
-    return [doc(["polygon"], "segment", true)]
+    return [
+      {
+        params: [{ type: "polygon", list: false }],
+        dots: false,
+        ret: { type: "point64", list: true },
+        usage: "vertices(polygon((2,3),(9,-10),(5,7)))=[(2,3),(9,-10),(5,7)]",
+      },
+    ]
   },
   js(args) {
     if (args.length != 1) {

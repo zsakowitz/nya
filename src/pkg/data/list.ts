@@ -1,3 +1,4 @@
+import type { FnSignature } from "@/docs/signature"
 import { commalist } from "@/eval/ast/collect"
 import { Precedence } from "@/eval/ast/token"
 import { NO_DRAG, NO_SYM } from "@/eval/ast/tx"
@@ -5,7 +6,6 @@ import { glsl } from "@/eval/glsl"
 import { js } from "@/eval/js"
 import { parseBindings, parseBindingVar } from "@/eval/lib/binding"
 import type { Fn } from "@/eval/ops"
-import { docByIcon } from "@/eval/ops/dist"
 import { type WithDocs, ALL_DOCS } from "@/eval/ops/docs"
 import { bindingDeps } from "@/eval/ops/with"
 import type { GlslValue, JsValue, TyName } from "@/eval/ty"
@@ -18,10 +18,7 @@ import {
   listJs,
 } from "@/eval/ty/coerce"
 import { num } from "@/eval/ty/create"
-import { any, TY_INFO } from "@/eval/ty/info"
-import { CmdComma } from "@/field/cmd/leaf/comma"
-import { CmdBrack } from "@/field/cmd/math/brack"
-import { h } from "@/jsx"
+import { TY_INFO } from "@/eval/ty/info"
 import type { Package } from ".."
 
 const FN_JOIN: Fn & WithDocs = {
@@ -59,26 +56,19 @@ const FN_JOIN: Fn & WithDocs = {
     return { list: size, expr: name, type: ty }
   },
   docs() {
-    const list = () =>
-      CmdBrack.render("[", "]", null, {
-        el: h(
-          "",
-          any(),
-          new CmdComma().el,
-          any(),
-          new CmdComma().el,
-          h("nya-cmd-dot nya-cmd-dot-l", "."),
-          h("nya-cmd-dot", "."),
-          h("nya-cmd-dot", "."),
-        ),
-      })
-
-    return [
-      docByIcon([any(), any()], any(), true),
-      docByIcon([list(), any()], any(), true),
-      docByIcon([any(), list()], any(), true),
-      docByIcon([list(), list()], any(), true),
-    ]
+    return [false, true].flatMap((a) =>
+      [false, true].map((b): FnSignature => {
+        return {
+          params: [
+            { type: "__any", list: a },
+            { type: "__any", list: b },
+          ],
+          dots: true,
+          ret: { type: "__any", list: true },
+          usage: `join(${a ? "[0,4,1]" : "9"},${b ? "[8,5,3]" : "2"})=[${a ? "0,4,1" : "9"},${b ? "8,5,3" : "2"}]`,
+        }
+      }),
+    )
   },
 }
 
@@ -129,6 +119,7 @@ export const PKG_CORE_LIST: Package = {
   id: "nya:core-list",
   name: "core list functionality",
   label: null,
+  category: "lists",
   eval: {
     fn: {
       join: FN_JOIN,

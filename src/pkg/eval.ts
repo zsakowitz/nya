@@ -1,4 +1,3 @@
-import type { Package } from "."
 import type { SReal } from "@/eval/ty"
 import { frac } from "@/eval/ty/create"
 import { Display } from "@/eval/ty/display"
@@ -7,6 +6,7 @@ import { R } from "@/field/model"
 import { h } from "@/jsx"
 import { Store, defineExt } from "@/sheet/ext"
 import type { Expr } from "@/sheet/ui/expr"
+import type { Package } from "."
 
 export const STORE_EVAL = new Store((e) => {
   const field = new FieldInert(
@@ -42,6 +42,7 @@ export const PKG_EVAL: Package = {
   id: "nya:eval",
   name: "evaluator",
   label: "displays computed expressions",
+  category: "core",
   sheet: {
     exts: {
       2: [EXT_EVAL],

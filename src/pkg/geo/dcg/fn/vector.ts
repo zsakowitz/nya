@@ -8,4 +8,5 @@ export const FN_VECTOR = new FnDist(
   "vector",
   (a, b) => [a.value, b.value],
   (_, a, b) => `vec4(${a.expr}, ${b.expr})`,
+  "vector((2,3),(7,-8))",
 )
