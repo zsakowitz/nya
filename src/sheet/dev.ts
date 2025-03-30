@@ -3,7 +3,7 @@ import SRC_LOCALHOST from "./example/localhost.txt"
 import SRC_STANDARD from "./example/standard.txt"
 import { SheetFactory } from "./factory"
 
-import { createDocs2 } from "@/docs/core2"
+import { createDocs2 } from "@/docs"
 
 const LOAD_EMPTY = false
 const SHORT_EXPRS = true
