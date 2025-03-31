@@ -21,6 +21,42 @@ function makeDocName(name: string) {
   )
 }
 
+function decode(path: string) {
+  path = path.replace(/-/g, " ")
+  try {
+    return decodeURIComponent(path)
+  } catch {
+    return path
+  }
+}
+
+function encode(path: string) {
+  return encodeURIComponent(path.replace(/ /g, "-"))
+}
+
+function parsePath(uri: string) {
+  let match
+  if ((match = uri.match(/^\/docs\/([\w-]+)(?:\/([^\/]+))?\/?$/))) {
+    return {
+      tab: match[1] && decode(match[1]),
+      sub: match[2] && decode(match[2]),
+    }
+  }
+}
+
+function getPath() {
+  const [, pathRaw] = location.href.split("?")
+  return pathRaw ? parsePath(pathRaw) : null
+}
+
+function setPath(tab: string, sub: string | null) {
+  history.replaceState(
+    {},
+    "",
+    location.origin + "/?/docs/" + encode(tab) + (sub ? "/" + encode(sub) : ""),
+  )
+}
+
 export function createDocs2(sheet: Sheet) {
   const pkgs = Object.values(sheet.factory.loaded).sort((a, b) =>
     a.name < b.name ? -1
@@ -29,23 +65,29 @@ export function createDocs2(sheet: Sheet) {
   )
 
   const list = new PackageList(pkgs)
-  let which = "about"
+  const path = getPath()
 
-  const names = {
+  const names: Record<string, HTMLElement> = {
     about: secAbout(),
     guides: secGuides(sheet, list),
     "data types": secDataTypes(list),
     functions: secFunctions(sheet, list, true),
     operators: secFunctions(sheet, list, false),
+    // @ts-expect-error it can't handle null prototype initializer
+    __proto__: null,
   }
+  let which = path?.tab && path.tab in names ? path.tab : "about"
+
   const tabs = Object.keys(names).map((x) => {
     const data = tab(x, x == which)
     data.el.addEventListener("pointerdown", () => {
       which = x
+      setPath(x, null)
       check()
     })
     data.el.addEventListener("click", () => {
       which = x
+      setPath(x, null)
       check()
     })
     return data
@@ -91,8 +133,8 @@ export function createDocs2(sheet: Sheet) {
     main.classList.toggle("nya-docs-open", which == "about")
     tabs.forEach((x) => (x.open = x.title == which))
     for (const key in names) {
-      names[key as keyof typeof names].hidden = key != which
-      names[key as keyof typeof names].classList.toggle("hidden", key != which)
+      names[key]!.hidden = key != which
+      names[key]!.classList.toggle("hidden", key != which)
     }
   }
   check()
@@ -408,10 +450,12 @@ function secGuides(sheet: Sheet, list: PackageList) {
   )
   btn.addEventListener("click", () => {
     isActive = false
+    setPath("guides", null)
     check()
   })
   btn2.addEventListener("click", () => {
     isActive = false
+    setPath("guides", null)
     check()
   })
   const active = h(
@@ -429,6 +473,7 @@ function secGuides(sheet: Sheet, list: PackageList) {
     ),
   )
   let isActive = false
+  const path = getPath()
 
   const guides = list.packages
     .flatMap((x) => (x.docs ? x.docs : []).map((v) => [v, x.id] as const))
@@ -448,8 +493,13 @@ function secGuides(sheet: Sheet, list: PackageList) {
         ),
       )
 
-      el.addEventListener("click", () => {
+      el.addEventListener("click", set)
+      if (path?.sub == v.name) {
+        queueMicrotask(set)
+      }
+      function set() {
         isActive = true
+        setPath("guides", v.name)
         check()
         activeTitle.data = v.name
         while (activeContents.firstChild) {
@@ -457,7 +507,7 @@ function secGuides(sheet: Sheet, list: PackageList) {
         }
         activeContents.append(...v.render())
         activeContents.querySelectorAll("samp").forEach(samp)
-      })
+      }
 
       list.on(() => {
         el.classList.toggle("hidden", list.active ? !list.has(x) : false)

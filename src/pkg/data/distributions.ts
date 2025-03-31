@@ -174,7 +174,7 @@ const FN_ERF = new FnDist(
   },
 ).addJs(["r32"], "r32", (a) => approx(erf(num(a.value))), "erf(1)≈0.842700")
 
-const FN_ERFINV = new FnDist("erf^-1", "inverse error function").addJs(
+const FN_ERFINV = new FnDist("erfinv", "inverse error function").addJs(
   ["r32"],
   "r32",
   (a) => approx(erfinv(num(a.value))),

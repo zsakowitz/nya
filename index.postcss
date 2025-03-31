@@ -277,9 +277,15 @@ body {
     @apply pr-0;
   }
 
-  &:is(.nya-cmd-word-r + .nya-cmd-supsub):has(+ .nya-cmd-brack),
-  &:is(.nya-cmd-word-r + .nya-cursor + .nya-cmd-supsub):has(+ .nya-cmd-brack),
-  &:is(.nya-cmd-word-r + .nya-cmd-supsub):has(+ .nya-cursor + .nya-cmd-brack) {
+  &:is(.nya-cmd-word-r + .nya-cmd-supsub):has(
+      + .nya-cmd-brack:not(.nya-cmd-paren)
+    ),
+  &:is(.nya-cmd-word-r + .nya-cursor + .nya-cmd-supsub):has(
+      + .nya-cmd-brack:not(.nya-cmd-paren)
+    ),
+  &:is(.nya-cmd-word-r + .nya-cmd-supsub):has(
+      + .nya-cursor + .nya-cmd-brack:not(.nya-cmd-paren)
+    ) {
     @apply pr-[.1em];
   }
 }
