@@ -1,5 +1,6 @@
 import { glsl, jsToGlsl } from "@/eval/glsl"
 import { js } from "@/eval/js"
+import { id } from "@/eval/lib/binding"
 import type { Fn } from "@/eval/ops"
 import { ALL_DOCS, type WithDocs } from "@/eval/ops/docs"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "@/eval/ops/vars"
@@ -72,14 +73,13 @@ const EXT_GLSL = defineExt({
   glsl(data) {
     if (!data.show) return
 
+    const props = data.expr.sheet.scope.propsGlsl()
     let ast = data.expr.field.ast
     if (
       ast.type == "cmplist" &&
       ast.ops.length == 1 &&
       ast.ops[0]! == "cmp-eq"
     ) {
-      const props = data.expr.sheet.scope.propsGlsl()
-
       const lhs = ast.items[0]!
       const rhs = ast.items[1]!
       return createLine(
@@ -94,12 +94,32 @@ const EXT_GLSL = defineExt({
       ast = ast.value
     }
 
-    const props = data.expr.sheet.scope.propsGlsl()
-    const value = OP_PLOT.glsl(props.ctx, [glsl(ast, props)])
-    if (value.list !== false) {
+    const fork = props.ctx.fork()
+    const value = glsl(ast, { ...props, ctx: fork })
+    if (value.type == "r32" || value.type == "r64") {
+      const deps = data.expr.field.deps.ids
+      const usesX = deps[id({ value: "x" })]
+      const usesY = deps[id({ value: "y" })]
+      const usesP = deps[id({ value: "p" })]
+      if (usesX && !usesY && !usesP) {
+        return createLine(
+          data.expr.sheet.cv,
+          props,
+          () => ({ type: "r64", expr: "v_coords.zw", list: false }),
+          () => {
+            props.ctx.push`${fork.block}`
+            return value
+          },
+        )
+      }
+    }
+
+    props.ctx.push`${fork.block}`
+    const color = OP_PLOT.glsl(props.ctx, [value])
+    if (color.list !== false) {
       throw new Error("Shaders must return a single color.")
     }
-    return [props.ctx, value.expr]
+    return [props.ctx, color.expr]
   },
 })
 

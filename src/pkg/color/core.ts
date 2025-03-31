@@ -91,6 +91,7 @@ export function plotJs(): never {
 export const OP_PLOT = new FnDist<"color">(
   "plot",
   "converts an expression to the color it plots as a shader",
+  { message: `Cannot plot %%.` },
 )
 
 export const PKG_COLOR_CORE: Package = {
@@ -162,18 +163,6 @@ export const PKG_COLOR_CORE: Package = {
       plotJs,
       (_, a) => a.expr,
       "\\nyaop{plot}(rgb(2,128,40))=\\nyacolor{#028028}",
-    ).add(
-      ["r32"],
-      "color",
-      plotJs,
-      (ctx, a) =>
-        FN_HSV.glsl1(
-          ctx,
-          a,
-          { type: "r32", expr: "1.0" },
-          { type: "r32", expr: "1.0" },
-        ).expr,
-      "\\nyaop{plot}(120)=\\nyacolor{#0f0}",
     )
 
     OP_CDOT.add(

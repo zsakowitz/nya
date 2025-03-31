@@ -24,6 +24,38 @@ export function createLine(
     [-s, -s],
     [0, -1],
     [s, -s],
+
+    ...(
+      [
+        [1, 0],
+        [s, s],
+        [0, 1],
+        [-s, s],
+        [-1, 0],
+        [-s, -s],
+        [0, -1],
+        [s, -s],
+      ] satisfies [number, number][]
+    ).map(([a, b]): [number, number] => [
+      (a * DIST + 0.5 * a) / DIST,
+      (b * DIST + 0.5 * b) / DIST,
+    ]),
+
+    ...(
+      [
+        [1, 0],
+        [s, s],
+        [0, 1],
+        [-s, s],
+        [-1, 0],
+        [-s, -s],
+        [0, -1],
+        [s, -s],
+      ] satisfies [number, number][]
+    ).map(([a, b]): [number, number] => [
+      (a * DIST + a) / DIST,
+      (b * DIST + b) / DIST,
+    ]),
   ]
   props.ctx
     .push`vec2[${jsOffsets.length}] ${offsets} = vec2[${jsOffsets.length}](${jsOffsets.map(([x, y]) => `vec2(${DIST * x}, ${DIST * y})`).join(", ")});\n`
@@ -46,10 +78,26 @@ export function createLine(
   props.ctx.push`v_coords -= ${o};\n`
   props.ctx.push`}\n`
 
-  const count = jsOffsets.map((_, i) => `int(${ret}[${i}]<0.0)`).join("+")
+  const count = Array(8)
+    .fill(0)
+    .map((_, i) => `int(${ret}[${i}]<0.0)`)
+    .join("+")
+  const count2 = Array(8)
+    .fill(0)
+    .map((_, i) => `int(${ret}[${i + 8}]<0.0)`)
+    .join("+")
+  const count3 = Array(8)
+    .fill(0)
+    .map((_, i) => `int(${ret}[${i + 16}]<0.0)`)
+    .join("+")
 
   return [
     props.ctx,
-    `(${count} == 0 || ${count} == ${jsOffsets.length}) ? vec4(0) : vec4(0.1764705882, 0.4392156863, 0.7019607843, 1)`,
+    `vec4(0.1764705882, 0.4392156863, 0.7019607843,
+      (${count} != 0 && ${count} != 8) ? 1.0 :
+      (${count2} != 0 && ${count2} != 8) ? 0.5 :
+      (${count3} != 0 && ${count3} != 8) ? 0.25 :
+      0.0
+    )`,
   ]
 }
