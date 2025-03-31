@@ -1,4 +1,5 @@
 import type { GlslContext } from "@/eval/lib/fn"
+import { FnDist } from "@/eval/ops/dist"
 import type { SReal, Tys } from "@/eval/ty"
 import { approx, gl, num, real } from "@/eval/ty/create"
 import { TY_INFO } from "@/eval/ty/info"
@@ -15,7 +16,7 @@ import {
   OP_POS,
   OP_SUB,
 } from "../core/ops"
-import { FN_CONJ, FN_REAL, PKG_NUM_COMPLEX } from "./complex"
+import { FN_CONJ, FN_I, FN_REAL, PKG_NUM_COMPLEX } from "./complex"
 import { FN_UNSIGN, PKG_REAL } from "./real"
 
 declare module "@/eval/ty" {
@@ -27,6 +28,10 @@ declare module "@/eval/ty" {
     q32: "r32"
   }
 }
+
+const FN_J = new FnDist(".j", "gets the coefficient of 'j' in a quaternion")
+
+const FN_K = new FnDist(".k", "gets the coefficient of 'k' in a quaternion")
 
 export const PKG_NUM_QUATERNION: Package = {
   id: "nya:num-quaternion",
@@ -170,6 +175,30 @@ export const PKG_NUM_QUATERNION: Package = {
       (a) => a.value[0],
       (_, a) => `${a.expr}.x`,
       "real(-2-3i+4k)=-2",
+    )
+
+    FN_I.add(
+      ["q32"],
+      "r32",
+      (a) => a.value[1],
+      (_, a) => `${a.expr}.y`,
+      "(-2-3i+4k).i=-3",
+    )
+
+    FN_J.add(
+      ["q32"],
+      "r32",
+      (a) => a.value[2],
+      (_, a) => `${a.expr}.z`,
+      "(-2-3i+4k).j=0",
+    )
+
+    FN_K.add(
+      ["q32"],
+      "r32",
+      (a) => a.value[3],
+      (_, a) => `${a.expr}.w`,
+      "(-2-3i+4k).k=4",
     )
   },
   ty: {

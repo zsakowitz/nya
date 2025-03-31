@@ -111,6 +111,11 @@ const FN_IMAG = new FnDist(
   "gets the imaginary part of a complex number",
 )
 
+export const FN_I = new FnDist(
+  ".i",
+  "gets the coefficient of 'i' in a multi-dimensional number",
+)
+
 export const FN_REAL = new FnDist(
   "real",
   "gets the real part of a multi-dimensional number",
@@ -341,6 +346,21 @@ export const PKG_NUM_COMPLEX: Package = {
       (a) => a.value.y,
       (_, a) => `${a.expr}.y`,
       "imag(-9+8i)=8",
+    )
+
+    FN_I.add(
+      ["c64"],
+      "r64",
+      (a) => a.value.y,
+      (_, a) => `${a.expr}.zw`,
+      // TODO: decide whether high res variants should have usage examples
+      [],
+    ).add(
+      ["c32"],
+      "r32",
+      (a) => a.value.y,
+      (_, a) => `${a.expr}.y`,
+      "(-9+8i).i=8",
     )
 
     FN_REAL.add(
