@@ -51,13 +51,27 @@ export class CmdSupSub extends Command {
 
   static fromLatex(cmd: string, parser: LatexParser): Command {
     if (cmd == "_") {
-      const sub = parser.arg()
-      const sup = parser.peek() == "^" ? (parser.i++, parser.arg()) : null
-      return new this(sub, sup)
+      const sub = new Block(null)
+      let sup: Block | null = null
+      const supsub = new CmdSupSub(sub, sup)
+      parser.arg(sub)
+      if (parser.peek() == "^") {
+        parser.i++
+        sup = supsub.create("sup")
+        parser.arg(sup)
+      }
+      return supsub
     } else if (cmd == "^") {
-      const sup = parser.arg()
-      const sub = parser.peek() == "_" ? (parser.i++, parser.arg()) : null
-      return new this(sub, sup)
+      const sup = new Block(null)
+      let sub: Block | null = null
+      const supsub = new CmdSupSub(sub, sup)
+      parser.arg(sup)
+      if (parser.peek() == "_") {
+        parser.i++
+        sub = supsub.create("sub")
+        parser.arg(sub)
+      }
+      return supsub
     } else {
       return new CmdUnknown(cmd)
     }

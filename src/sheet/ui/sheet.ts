@@ -182,7 +182,7 @@ export class Sheet {
     })
 
     const titlebar = h(
-      "font-['Symbola','Times_New_Roman',sans-serif] sticky top-0 w-full bg-[--nya-bg-sidebar] border-r border-[--nya-border] text-center text-[--nya-title] z-20 [grid-area:titlebar]",
+      "font-['Symbola','Times_New_Roman',sans-serif] sticky top-0 w-full bg-[--nya-bg-sidebar] border-r border-[--nya-border] text-center text-[--nya-title] z-20 [grid-area:titlebar] border-t sm:border-t-0",
       h(
         "flex w-full h-12 min-h-12 max-h-12 p-1 border-b border-[--nya-border]",
         copyAll,
@@ -193,7 +193,7 @@ export class Sheet {
     )
 
     const sidebar = h(
-      "font-['Symbola','Times_New_Roman',sans-serif] flex flex-col overflow-y-auto [grid-area:sidebar] border-[--nya-border] border-t sm:border-t-0",
+      "font-['Symbola','Times_New_Roman',sans-serif] flex flex-col overflow-y-auto [grid-area:sidebar] border-[--nya-border]",
 
       // title bar
       h(
@@ -258,10 +258,10 @@ export class Sheet {
     this.glPixelRatio.el.className =
       "block w-48 bg-[--nya-bg] outline outline-1 outline-[--nya-pixel-ratio] rounded-full p-1"
     this.el = h(
-      "bg-[--nya-bg] fixed inset-0 grid select-none grid-cols-[1fr] grid-rows-[3rem_3rem_1fr_1fr] sm:grid-cols-[min(500px,40vw)_1fr] sm:grid-rows-[3rem_1fr] " +
+      "bg-[--nya-bg] fixed inset-0 grid select-none grid-cols-[1fr] grid-rows-[3rem_1fr_calc(3rem_+_1px)_1fr] sm:grid-cols-[min(500px,40vw)_1fr] sm:grid-rows-[3rem_1fr] " +
         (toolbar ?
-          "[grid-template-areas:'titlebar'_'toolbar'_'cv'_'sidebar'] sm:[grid-template-areas:'titlebar_toolbar'_'sidebar_cv']"
-        : "[grid-template-areas:'titlebar'_'cv'_'cv'_'sidebar'] sm:[grid-template-areas:'titlebar_cv'_'sidebar_cv']"),
+          "[grid-template-areas:'toolbar'_'cv'_'titlebar'_'sidebar'] sm:[grid-template-areas:'titlebar_toolbar'_'sidebar_cv']"
+        : "[grid-template-areas:'cv'_'cv'_'titlebar'_'sidebar'] sm:[grid-template-areas:'titlebar_cv'_'sidebar_cv']"),
 
       titlebar,
       sidebar,

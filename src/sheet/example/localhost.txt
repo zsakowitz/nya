@@ -1,2 +1,7 @@
-F_{simple}\left(z,i\right)=\operatorname{with}o=\left[\left\{x_{outerA}\and z.\operatorname{imag}<0:-\frac{i}{50},\frac{i}{50}\right\}\right]
-x_{outerA}=\operatorname{true}
+F_{simple}\left(z,i\right)=\left\{x_{outerC}:\left(\operatorname{rgb}\left(qo.r,qo.g,qo.b\right)\operatorname{with}q=\frac{i}{50}\operatorname{mod}1\right),o\right\}\operatorname{with}o=\operatorname{hsv}\left(360\left\{x_{outerA}\and z.\operatorname{imag}<0:-\frac{i}{50},\frac{i}{50}\right\},1,1\right)
+F_{gradient}\left(s_{z},i,q_{isouter}\right)=\left\{q_{isouter}\and x_{outerC}:\left(\operatorname{rgb}\left(qo.r,qo.g,qo.b\right)\operatorname{with}q=\frac{i}{50}\operatorname{mod}1\right),o\right\}\operatorname{with}o=\operatorname{rgb}\left(s\left[1\right],s\left[2\right],s\left[3\right]\right)\operatorname{with}s=0.5+0.45\operatorname{sin}\left(\left|5s_{z}\right|\right)\operatorname{with}s_{z}=\left\{i=0:s_{z},\frac{\left|s_{z}\right|}{i}\right\}
+x_{outerA}=\operatorname{false}
+x_{outerC}=\operatorname{false}
+F_{outer}\left(i,z,s_{z}\right)=F_{simple}\left(z,i\right)
+F_{inner}\left(i,z,s_{z},s_{z2}\right)=\operatorname{rgb}\left(0,0,0\right)
+\begin{cases}F_{outer}\left(i,z,\left[0,0,0\right]\right)&i=50\\F_{inner}\left(i,z,\left[0,0,0\right],0\right)&\end{cases}\operatorname{with}\operatorname{iterate}^{50}\begin{list}i\to i+1\\z\to z^{2}+p\end{list}\operatorname{while}\left|z\right|<2

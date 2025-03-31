@@ -83,31 +83,27 @@ export class LatexParser {
    *
    * `undefined` is only returned if `next` is `undefined` or `"}"`.
    */
-  argMaybe(next = this.peek()): Block | undefined {
+  argMaybe(next = this.peek(), into?: Block): Block | undefined {
     if (!next) return
     if (next == "}") return
     if (next == "{") {
       this.i += next.length
-      return this.until("}")
+      return this.until("}", undefined, into)
     }
     this.i += next.length
     const cmd = this.cmds.get(next)
-    if (cmd) {
-      const block = new Block(null)
-      cmd.fromLatex(next, this).insertAt(block.cursor(R), L)
-      return block
-    }
-    const block = new Block(null)
-    new CmdUnknown(next).insertAt(block.cursor(R), L)
-    return block
+    into ??= new Block(null)
+    const c = into.cursor(R)
+    ;(cmd ? cmd.fromLatex(next, this) : new CmdUnknown(next)).insertAt(c, L)
+    return into
   }
 
   /**
    * If `this.argMaybe()` would succeed, returns the result. Otherwise, returns
    * a {@linkcode Block} containing a signle {@linkcode CmdEOF}.
    */
-  arg(): Block {
-    return this.argMaybe() ?? CmdEOF.block("any value")
+  arg(into?: Block): Block {
+    return this.argMaybe(undefined, into) ?? CmdEOF.block("any value")
   }
 
   /**
@@ -115,22 +111,22 @@ export class LatexParser {
    * `allowTermination` is not true and the end token is never reached (e.g. the
    * source ends unexpectedly), a {@linkcode CmdEOF} will be inserted.
    */
-  until(end: string, allowTermination?: boolean): Block {
-    const inner = new Block(null)
+  until(end: string, allowTermination?: boolean, into?: Block): Block {
+    into ??= new Block(null)
     let next
     while ((next = this.peek())) {
       if (next == end) {
         this.i += next.length
-        return inner
+        return into
       }
       const arg = this.argMaybe(next)
       if (!arg) break
-      inner.insert(arg, inner.ends[R], null)
+      into.insert(arg, into.ends[R], null)
     }
     if (!allowTermination) {
-      new CmdEOF(end).insertAt(inner.cursor(R), L)
+      new CmdEOF(end).insertAt(into.cursor(R), L)
     }
-    return inner
+    return into
   }
 
   /**
