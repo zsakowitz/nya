@@ -13,7 +13,6 @@ export class Deps {
 
   track(ast: Bound) {
     const myId = id(ast)
-    console.log(myId)
     this.trackById(myId)
   }
 
