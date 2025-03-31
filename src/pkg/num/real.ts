@@ -265,7 +265,7 @@ export const FN_SIGN = new FnDist("sign", "gets the sign of a number", {
     (a) => real(Math.sign(num(a.value))),
     (ctx, a) => {
       declareCmpR64(ctx)
-      return `_helper_cmp_r64(${a.expr}, vec2(0.0))`
+      return `vec2(_helper_cmp_r64(${a.expr}, vec2(0.0)), 0)`
     },
     [],
   )

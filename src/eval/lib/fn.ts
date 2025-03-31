@@ -165,7 +165,8 @@ ${strings[0]!}${strings
               )
             })
             .join("")}
-}\n`
+}
+`
         }
         ctx.helpers.helpers += source
         on.add(ctx.helpers)

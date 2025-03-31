@@ -12,21 +12,34 @@ export function createLine(
 ): GlslResult {
   declareAddR64(props.ctx)
 
+  type Coord = [number, number]
+  /**
+   * `BASE` is specified in 120° increments because it produces pretty balanced
+   * results without needing more than three points. The base conditions we'd
+   * like to have are:
+   *
+   * 1. Lines of all slopes look even
+   * 2. Curves like `sin x` and `x³` don't seem to change thickness
+   *
+   * Using 120° increments combined with the anti-alising system seems to work
+   * pretty well for that, so that's what we do.
+   */
+  const BASE: Coord[] = Array.from({ length: 3 }, (_, i) => [
+    Math.cos((i * 2 * Math.PI) / 3),
+    Math.sin((i * 2 * Math.PI) / 3),
+  ])
+
   const DIST = 1.5 * cv.scale
-  const offsets = props.ctx.name()
-  const s = Math.SQRT1_2
-  const jsOffsets: [number, number][] = [
-    [1, 0],
-    [s, s],
-    [0, 1],
-    [-s, s],
-    [-1, 0],
-    [-s, -s],
-    [0, -1],
-    [s, -s],
+  const jsOffsets: Coord[] = [
+    ...BASE.map(([a, b]): Coord => [a * DIST, b * DIST]),
+    ...BASE.map(([a, b]): Coord => [a * (DIST + 0.5), b * (DIST + 0.5)]),
+    // ...BASE.map(([a, b]): Coord => [a * (DIST + 1), b * (DIST + 1)]),
   ]
+
+  const offsets = props.ctx.name()
   props.ctx
-    .push`vec2[${jsOffsets.length}] ${offsets} = vec2[${jsOffsets.length}](${jsOffsets.map(([x, y]) => `vec2(${DIST * x}, ${DIST * y})`).join(", ")});\n`
+    .push`vec2[${jsOffsets.length}] ${offsets} = vec2[${jsOffsets.length}](${jsOffsets.map(([x, y]) => `vec2(${x}, ${y})`).join(", ")});\n`
+
   const ret = props.ctx.name()
   props.ctx.push`float[${jsOffsets.length}] ${ret};\n`
   const i = props.ctx.name()
@@ -46,10 +59,21 @@ export function createLine(
   props.ctx.push`v_coords -= ${o};\n`
   props.ctx.push`}\n`
 
-  const count = jsOffsets.map((_, i) => `int(${ret}[${i}]<0.0)`).join("+")
+  const count = Array(BASE.length)
+    .fill(0)
+    .map((_, i) => `int(${ret}[${i}]<0.0)`)
+    .join("+")
+  const count2 = Array(BASE.length)
+    .fill(0)
+    .map((_, i) => `int(${ret}[${i + BASE.length}]<0.0)`)
+    .join("+")
 
   return [
     props.ctx,
-    `(${count} == 0 || ${count} == ${jsOffsets.length}) ? vec4(0) : vec4(0.1764705882, 0.4392156863, 0.7019607843, 1)`,
+    `vec4(0.1764705882, 0.4392156863, 0.7019607843,
+      (${count} != 0 && ${count} != ${BASE.length}) ? 1.0 :
+      (${count2} != 0 && ${count2} != ${BASE.length}) ? 0.5 :
+      0.0
+    )`,
   ]
 }

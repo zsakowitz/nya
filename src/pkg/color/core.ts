@@ -10,6 +10,7 @@ import type { Package } from ".."
 import { PKG_BOOL } from "../bool"
 import { OP_CDOT } from "../core/ops"
 import { PKG_REAL } from "../num/real"
+import { ERR_COORDS_USED_OUTSIDE_GLSL } from "@/eval/ops/vars"
 
 declare module "@/eval/ty" {
   interface Tys {
@@ -85,12 +86,14 @@ const FN_HSV = new FnDist(
 )
 
 export function plotJs(): never {
+  throw new Error(ERR_COORDS_USED_OUTSIDE_GLSL)
   throw new Error("Cannot plot colors outside of a shader.")
 }
 
 export const OP_PLOT = new FnDist<"color">(
   "plot",
   "converts an expression to the color it plots as a shader",
+  { message: `Cannot plot %%.` },
 )
 
 export const PKG_COLOR_CORE: Package = {
@@ -162,18 +165,6 @@ export const PKG_COLOR_CORE: Package = {
       plotJs,
       (_, a) => a.expr,
       "\\nyaop{plot}(rgb(2,128,40))=\\nyacolor{#028028}",
-    ).add(
-      ["r32"],
-      "color",
-      plotJs,
-      (ctx, a) =>
-        FN_HSV.glsl1(
-          ctx,
-          a,
-          { type: "r32", expr: "1.0" },
-          { type: "r32", expr: "1.0" },
-        ).expr,
-      "\\nyaop{plot}(120)=\\nyacolor{#0f0}",
     )
 
     OP_CDOT.add(

@@ -27,6 +27,7 @@ import { CmdSupSub } from "../math/supsub"
 import { CmdDot } from "./dot"
 import { CmdNum } from "./num"
 import { CmdToken, TokenCtx } from "./token"
+import { CmdWord } from "./word"
 
 /**
  * The different kinds of {@linkcode CmdVar}-composed words which exist. These
@@ -96,9 +97,10 @@ export class CmdVar extends Leaf {
         new TokenCtx(ctx.scope),
       ).insertAt(cursor, L)
     } else {
-      for (const char of token.value) {
-        new CmdVar(char, options).insertAt(cursor, L)
-      }
+      ;(token.value.length == 1 ?
+        new CmdVar(token.value, options)
+      : new CmdWord(token.value, "var")
+      ).insertAt(cursor, L)
     }
 
     if (token.sub) {
