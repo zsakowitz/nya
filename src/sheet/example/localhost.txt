@@ -1,3 +1,2 @@
-x
-2x
-sin x
+F_{simple}\left(z,i\right)=\operatorname{with}o=\left[\left\{x_{outerA}\and z.\operatorname{imag}<0:-\frac{i}{50},\frac{i}{50}\right\}\right]
+x_{outerA}=\operatorname{true}

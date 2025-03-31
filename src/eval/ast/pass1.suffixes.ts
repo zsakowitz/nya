@@ -144,7 +144,6 @@ export function pass1_suffixes(tokens: Node[]) {
         continue
       }
 
-      // FIXME: spacing of cos^-1 -1/2
       // TODO: swizzling
 
       continue

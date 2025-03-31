@@ -14,7 +14,7 @@ export class CmdColon extends Leaf {
   }
 
   constructor() {
-    super(":", h("nya-cmd-colon pr-[.2em]", ":"))
+    super(":", h("nya-cmd-colon nya-cmd-op pr-[.2em]", ":"))
   }
 
   reader(): string {

@@ -182,6 +182,12 @@ body {
   @apply pl-0;
 }
 
+:is(.nya-cmd-word-r) + .nya-cmd-supsub + .nya-cmd-pm > *,
+:is(.nya-cmd-word-r) + :where(.nya-cursor) + .nya-cmd-supsub + .nya-cmd-pm > *,
+:is(.nya-cmd-word-r) + .nya-cmd-supsub + :where(.nya-cursor) + .nya-cmd-pm > * {
+  @apply px-0;
+}
+
 .nya-cmd-op + .nya-cmd-word-l,
 .nya-cmd-op + :where(.nya-cursor) + .nya-cmd-word-l {
   @apply pl-0;
@@ -269,6 +275,12 @@ body {
   &:has(+ .nya-cmd-brack),
   &:has(+ :where(.nya-cursor) + .nya-cmd-brack) {
     @apply pr-0;
+  }
+
+  &:is(.nya-cmd-word-r + .nya-cmd-supsub):has(+ .nya-cmd-brack),
+  &:is(.nya-cmd-word-r + .nya-cursor + .nya-cmd-supsub):has(+ .nya-cmd-brack),
+  &:is(.nya-cmd-word-r + .nya-cmd-supsub):has(+ .nya-cursor + .nya-cmd-brack) {
+    @apply pr-[.1em];
   }
 }
 
