@@ -163,7 +163,7 @@ export class Sheet {
       "button",
       {
         class:
-          "relative text-left grid grid-cols-[2.5rem_auto] min-h-[3.625rem] border-r border-[--nya-border]",
+          "relative text-left grid grid-cols-[2.5rem_auto] min-h-[3.625rem] sm:border-r border-[--nya-border]",
         tabindex: "-1",
       },
 
@@ -181,19 +181,23 @@ export class Sheet {
       this.list.createDefault({ focus: true })
     })
 
+    const titlebar = h(
+      "font-['Symbola','Times_New_Roman',sans-serif] sticky top-0 w-full bg-[--nya-bg-sidebar] border-r border-[--nya-border] text-center text-[--nya-title] z-20 [grid-area:titlebar]",
+      h(
+        "flex w-full h-12 min-h-12 max-h-12 p-1 border-b border-[--nya-border]",
+        copyAll,
+        clearAll,
+        h("m-auto text-2xl", "project nya"),
+        switchToDocs,
+      ),
+    )
+
     const sidebar = h(
-      "font-['Symbola','Times_New_Roman',sans-serif] flex flex-col overflow-y-auto row-span-2",
+      "font-['Symbola','Times_New_Roman',sans-serif] flex flex-col overflow-y-auto [grid-area:sidebar] border-[--nya-border] border-t sm:border-t-0",
 
       // title bar
       h(
-        "sticky top-0 w-full bg-[--nya-bg-sidebar] border-r border-[--nya-border] text-center text-[--nya-title] z-20",
-        h(
-          "flex w-full h-12 min-h-12 max-h-12 p-1 border-b border-[--nya-border]",
-          copyAll,
-          clearAll,
-          h("m-auto text-2xl", "project nya"),
-          switchToDocs,
-        ),
+        "sticky top-0 w-full bg-[--nya-bg-sidebar] sm:border-r border-[--nya-border] text-center text-[--nya-title] z-20",
         h(
           "grid grid-cols-[repeat(auto-fill,2.5rem)] p-1 border-b border-[--nya-border]",
           ...factory
@@ -220,44 +224,49 @@ export class Sheet {
       nextExpression,
 
       // right border on remainder of the flexbox
-      h("flex-1 border-r min-h-24 border-[--nya-border]"),
+      h("flex-1 sm:border-r min-h-24 border-[--nya-border]"),
     )
 
     const toolbar =
       toolbarItems.length ?
         h(
-          "font-['Symbola','Times_New_Roman',sans-serif] flex overflow-x-auto h-12 min-h-12 bg-[--nya-bg-sidebar] border-b border-[--nya-border] first:*:ml-auto last:*:mr-auto [&::-webkit-scrollbar]:hidden px-2",
+          "font-['Symbola','Times_New_Roman',sans-serif] flex overflow-x-auto h-12 min-h-12 bg-[--nya-bg-sidebar] border-b border-[--nya-border] first:*:ml-auto last:*:mr-auto [&::-webkit-scrollbar]:hidden px-2 [grid-area:toolbar]",
           ...toolbarItems.map((x) => x(this)),
         )
       : null
+
+    const cv = h(
+      "relative [grid-area:cv]" + (toolbar ? "" : " row-span-2"),
+      canvas,
+      this.cv.el,
+      toolbar &&
+        h(
+          "absolute block top-0 left-0 right-0 h-1 from-[--nya-sidebar-shadow] to-transparent bg-gradient-to-b",
+        ),
+      h(
+        "absolute block sm:top-0 bottom-0 left-0 sm:w-1 w-full h-1 sm:h-full from-[--nya-sidebar-shadow] to-transparent bg-gradient-to-t sm:bg-gradient-to-r",
+      ),
+      h("absolute flex flex-col top-2 right-2", this.glPixelRatio.el),
+      h(
+        "absolute flex flex-col bottom-2 right-2 text-right font-['Symbola'] text-[--nya-title] pointer-events-none [-webkit-text-stroke:2px_var(--nya-bg)] [paint-order:stroke] opacity-30",
+        h("text-3xl/[1]", "project nya"),
+        h("italic text-sm leading-none", REMARK),
+      ),
+    )
 
     // dom
     this.glPixelRatio.el.className =
       "block w-48 bg-[--nya-bg] outline outline-1 outline-[--nya-pixel-ratio] rounded-full p-1"
     this.el = h(
-      "bg-[--nya-bg] fixed inset-0 grid grid-cols-[min(500px,40vw)_1fr] grid-rows-[3rem_1fr] grid-rows-1 select-none",
+      "bg-[--nya-bg] fixed inset-0 grid select-none grid-cols-[1fr] grid-rows-[3rem_3rem_1fr_1fr] sm:grid-cols-[min(500px,40vw)_1fr] sm:grid-rows-[3rem_1fr] " +
+        (toolbar ?
+          "[grid-template-areas:'titlebar'_'toolbar'_'cv'_'sidebar'] sm:[grid-template-areas:'titlebar_toolbar'_'sidebar_cv']"
+        : "[grid-template-areas:'titlebar'_'cv'_'cv'_'sidebar'] sm:[grid-template-areas:'titlebar_cv'_'sidebar_cv']"),
 
+      titlebar,
       sidebar,
       toolbar,
-
-      h(
-        "relative" + (toolbar ? "" : " row-span-2"),
-        canvas,
-        this.cv.el,
-        toolbar &&
-          h(
-            "absolute block top-0 left-0 right-0 h-1 from-[--nya-sidebar-shadow] to-transparent bg-gradient-to-b",
-          ),
-        h(
-          "absolute block top-0 bottom-0 left-0 w-1 from-[--nya-sidebar-shadow] to-transparent bg-gradient-to-r",
-        ),
-        h("absolute flex flex-col top-2 right-2", this.glPixelRatio.el),
-        h(
-          "absolute flex flex-col bottom-2 right-2 text-right font-['Symbola'] text-[--nya-title] pointer-events-none [-webkit-text-stroke:2px_var(--nya-bg)] [paint-order:stroke] opacity-30",
-          h("text-3xl/[1]", "project nya"),
-          h("italic text-sm leading-none", REMARK),
-        ),
-      ),
+      cv,
     )
     new ResizeObserver(() => {
       this.el.style.setProperty(

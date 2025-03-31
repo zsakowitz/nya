@@ -42,7 +42,8 @@ abstract class ItemList {
     // TODO: delete via backspace on gray bar
     const el = ((ref as ItemRefMut).el = h(
       {
-        class: "grid border-r border-b relative nya-expr border-[--nya-border]",
+        class:
+          "grid sm:border-r border-b relative nya-expr border-[--nya-border]",
         style: `grid-template-columns:2.5rem${" 1rem".repeat(this.depth)} auto;--nya-sidebar:calc(var(--nya-sidebar-raw) - ${this.depth}*1rem)`,
       },
       ref.elGrayBar,
