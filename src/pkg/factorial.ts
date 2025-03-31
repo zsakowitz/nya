@@ -16,6 +16,7 @@ import type { Package } from "."
 import { chain, OP_ADD, OP_JUXTAPOSE } from "./core/ops"
 
 function factorialGlsl(ctx: GlslContext, x: string) {
+  /*! From Desmos's shaders. Source is https://www.desmos.com/api/v1.11/docs/index.html. */
   ctx.glsl`float sinpiSeries(float x) {
   float xsq = x * x;
   return x * (3.141592653589793 - xsq * (5.167708 - xsq * (2.549761 - xsq * 0.5890122)));
