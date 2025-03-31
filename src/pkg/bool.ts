@@ -196,6 +196,15 @@ const FN_FIRSTVALID: Fn & WithDocs = {
   label:
     "returns the first value which is valid for its type (the first finite number, the first color which is displayable, etc.)",
   js(args) {
+    // TODO: optimize for uniform case
+    if (args.length == 1 && args[0]!.list !== false) {
+      args = args[0]!.value.map((val) => ({
+        type: args[0]!.type,
+        list: false,
+        value: val,
+      }))
+    }
+
     const ty = coerceTy(args)
 
     return join(
@@ -213,6 +222,15 @@ const FN_FIRSTVALID: Fn & WithDocs = {
     )
   },
   glsl(ctx, args) {
+    // TODO: optimize for uniform case
+    if (args.length == 1 && args[0]!.list !== false) {
+      args = Array.from({ length: args[0]!.list }, (_, i) => ({
+        type: args[0]!.type,
+        list: false,
+        expr: `${args[0]!.expr}[${i}]`,
+      }))
+    }
+
     const ty = coerceTy(args)
 
     return joinGlsl(
