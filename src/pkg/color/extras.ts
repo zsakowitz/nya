@@ -1,6 +1,6 @@
 import { FnDist } from "@/eval/ops/dist"
-import { frac, num } from "@/eval/ty/create"
-import { sub } from "@/eval/ty/ops"
+import { frac, num, real } from "@/eval/ty/create"
+import { div, sub } from "@/eval/ty/ops"
 import { isDark } from "@/sheet/theme"
 import type { Package } from ".."
 import { FN_VALID } from "../bool"
@@ -17,6 +17,11 @@ const FN_OKLCH = new FnDist(
   "creates a color given its lightness, chromaticity, and hue components",
 )
 
+const FN_R = new FnDist(".r", "gets the red component of a color")
+const FN_G = new FnDist(".g", "gets the green component of a color")
+const FN_B = new FnDist(".b", "gets the blue component of a color")
+const FN_A = new FnDist(".a", "gets the alpha component of a color")
+
 // const FN_HSL = new FnDist(
 //   "hsl",
 //   "creates a color from hue, saturation, and lightness components",
@@ -24,6 +29,40 @@ const FN_OKLCH = new FnDist(
 
 // TODO: hsl
 // H\left(h,s,l\right)=\operatorname{hsv}\left(h,\left\{v=0:0,2\left(1-\frac{l}{v}\right)\right\},v\right)\operatorname{with}v=l+s\operatorname{min}\left(l,1-l\right)
+
+const FN_LIGHTDARK = new FnDist(
+  "lightdark",
+  "if a single color is passed, it will be inverted in dark mode; if two arguments are passed, the first is used for light mode and the second for dark mode",
+)
+  .add(
+    ["color"],
+    "color",
+    (a) => {
+      if (isDark()) {
+        return {
+          type: "color",
+          r: sub(frac(255, 0), a.value.r),
+          g: sub(frac(255, 0), a.value.g),
+          b: sub(frac(255, 0), a.value.b),
+          a: a.value.a,
+        }
+      } else return a.value
+    },
+    (ctx, ar) => {
+      const a = ctx.cache(ar)
+      return `(u_darkmul * ${a} + u_darkoffset)`
+    },
+    "lightdark(rgb(4,70,196))",
+  )
+  .add(
+    ["color", "color"],
+    "color",
+    (a, b) => (isDark() ? b.value : a.value),
+    (_, a, b) => {
+      return `(u_is_dark ? ${b.expr} : ${a.expr})`
+    },
+    "lightdark(rgb(4,70,196),hsv(60,1,0.7))",
+  )
 
 export const PKG_COLOR_EXTRAS: Package = {
   id: "nya:color-extras",
@@ -117,45 +156,49 @@ export const PKG_COLOR_EXTRAS: Package = {
       (ctx, a, b, c, alpha) => oklab(ctx, a.expr, b.expr, c.expr, alpha.expr),
       "oklab(0.8,-0.083,-0.144,.5)=\\nyacolor{rgb(57,202,255 / 50%)}",
     )
+
+    FN_R.add(
+      ["color"],
+      "r32",
+      (a) => div(a.value.r, real(255)),
+      (_, a) => `${a.expr}.x`,
+      "rgb(23,45,250).r=\\frac{23}{255}",
+    )
+
+    FN_G.add(
+      ["color"],
+      "r32",
+      (a) => div(a.value.g, real(255)),
+      (_, a) => `${a.expr}.y`,
+      "rgb(23,45,250).g=\\frac{45}{255}",
+    )
+
+    FN_B.add(
+      ["color"],
+      "r32",
+      (a) => div(a.value.b, real(255)),
+      (_, a) => `${a.expr}.z`,
+      "rgb(23,45,250).r=\\frac{250}{255}",
+    )
+
+    FN_A.add(
+      ["color"],
+      "r32",
+      (a) => a.value.a,
+      (_, a) => `${a.expr}.w`,
+      "rgb(23,45,250,0.3).a=0.3",
+    )
   },
   eval: {
     fn: {
       valid: FN_VALID,
       oklab: FN_OKLAB,
       oklch: FN_OKLCH,
-      lightdark: new FnDist(
-        "lightdark",
-        "if a single color is passed, it will be inverted in dark mode; if two arguments are passed, the first is used for light mode and the second for dark mode",
-      )
-        .add(
-          ["color"],
-          "color",
-          (a) => {
-            if (isDark()) {
-              return {
-                type: "color",
-                r: sub(frac(255, 0), a.value.r),
-                g: sub(frac(255, 0), a.value.g),
-                b: sub(frac(255, 0), a.value.b),
-                a: a.value.a,
-              }
-            } else return a.value
-          },
-          (ctx, ar) => {
-            const a = ctx.cache(ar)
-            return `(u_darkmul * ${a} + u_darkoffset)`
-          },
-          "lightdark(rgb(4,70,196))",
-        )
-        .add(
-          ["color", "color"],
-          "color",
-          (a, b) => (isDark() ? b.value : a.value),
-          (_, a, b) => {
-            return `(u_is_dark ? ${b.expr} : ${a.expr})`
-          },
-          "lightdark(rgb(4,70,196),hsv(60,1,0.7))",
-        ),
+      lightdark: FN_LIGHTDARK,
+      ".r": FN_R,
+      ".g": FN_G,
+      ".b": FN_B,
+      ".a": FN_A,
     },
   },
 }
