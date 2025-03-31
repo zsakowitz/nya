@@ -6,7 +6,7 @@ import type { Fn } from "@/eval/ops"
 import { ALL_DOCS, type WithDocs } from "@/eval/ops/docs"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "@/eval/ops/vars"
 import { TY_INFO } from "@/eval/ty/info"
-import { h, hx, li, p, px } from "@/jsx"
+import { b, h, hx, li, p, px } from "@/jsx"
 import { Store, defineExt } from "@/sheet/ext"
 import { createLine } from "@/sheet/shader-line"
 import { circle } from "@/sheet/ui/expr/circle"
@@ -241,13 +241,13 @@ export const PKG_SHADER: Package = {
           px`Domain coloring is a method of visualizing functions which map complex numbers to complex numbers. Here are some such functions:`,
           example("f(z)=z^6-1", null),
           example("f(z)=\\frac1zsinz^3", null),
-          px`In domain coloring, each pixel on the plane is assigned a color based on the value of the function at that point. For instance, the pixel at (2,3) is assigned a color based on f(2+3i).`,
+          px`In domain coloring, each pixel on the plane is assigned a color based on the value of the function at that point. For instance, the pixel at ${b("(2,3)")} is assigned a color based on ${b("f(2+3i)")}.`,
           px`The color is assigned by two attributes of the function's value:`,
           hx(
             "ul",
-            "list-disc pl-6",
-            li`The magnitude of the value (how far it is from 0) is turned into the grayscale brightness of the color.${hx("br")}Values close to zero are darker, and values far from zero are whiter.`,
-            li`The argument of the value (its angle relative to the x-axis) is turned into the hue of the color.${hx("br")}Positive real values are ${h("text-white px-1 rounded-sm bg-[#027D42]", "green")}, positive imaginary values are ${h("text-white px-1 rounded-sm bg-[#0064BB]", "blue")}, negative real values are ${h("text-white px-1 rounded-sm bg-[#9C347E]", "magenta")}, and negative imaginary values are ${h("text-white px-1 rounded-sm bg-[#9A4C01]", "orange")}.`,
+            "list-disc pl-6 first:*:mb-4",
+            li`The magnitude of the value (how far it is from 0) is turned into the grayscale brightness of the color. Values close to zero are darker, and values far from zero are whiter.`,
+            li`The argument of the value (its angle relative to the x-axis) is turned into the hue of the color. Positive real values are ${h("text-white px-1 rounded-sm bg-[#027D42]", "green")}, positive imaginary values are ${h("text-white px-1 rounded-sm bg-[#0064BB]", "blue")}, negative real values are ${h("text-white px-1 rounded-sm bg-[#9C347E]", "magenta")}, and negative imaginary values are ${h("text-white px-1 rounded-sm bg-[#9A4C01]", "orange")}.`,
           ),
           px`Domain coloring is automatically activated if you write any expression which references x, y, or p.`,
         ]

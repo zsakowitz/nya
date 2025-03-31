@@ -31,7 +31,7 @@ import { garbageValueGlsl, garbageValueJs } from "@/eval/ty/garbage"
 import { TY_INFO } from "@/eval/ty/info"
 import { CmdWord } from "@/field/cmd/leaf/word"
 import { L } from "@/field/model"
-import { h, px } from "@/jsx"
+import { b, h, px } from "@/jsx"
 import type { Package } from "."
 import { OP_AND } from "./core/cmp"
 
@@ -471,7 +471,7 @@ export const PKG_BOOL: Package = {
       poster: String.raw`\begin{cases}x^{2}&x>0\\x-3&\end{cases}`,
       render() {
         return [
-          px`Piecewise functions let a function specify different outputs depending on some condition. Type ${h("font-semibold", "cases")} to create one.`,
+          px`Piecewise functions let a function specify different outputs depending on some condition. Type ${b("cases")} to create one.`,
           example(
             String.raw`\begin{cases}x^{2}&x>0\\x-3&\end{cases}\operatorname{for}x=\left[-3,-2,-1,0,1,2,3\right]`,
             String.raw`=\left[-6,-5,-4,-3,1,4,9\right]`,
@@ -492,7 +492,7 @@ export const PKG_BOOL: Package = {
             String.raw`\left\{x>0:x^{2},x-3\right\}\operatorname{for}x=\left[-3,-2,-1,0,1,2,3\right]`,
             String.raw`=\left[-6,-5,-4,-3,1,4,9\right]`,
           ),
-          px`Note that in project nya, empty curly braces evaluate to ${h("font-semibold", "true")}, not 1. This matches how Desmos works under the hood, rather than what it shows to the user.`,
+          px`Note that in project nya, empty curly braces evaluate to ${b("true")}, not 1. This matches how Desmos works under the hood, rather than what it shows to the user.`,
           example(
             String.raw`\left\{\right\}`,
             String.raw`=\operatorname{true}`,

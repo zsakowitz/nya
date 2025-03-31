@@ -9,7 +9,7 @@ import { CmdWord } from "@/field/cmd/leaf/word"
 import { CmdBrack } from "@/field/cmd/math/brack"
 import { fa } from "@/field/fa"
 import { Block, L, R } from "@/field/model"
-import { h, px } from "@/jsx"
+import { b, h, px } from "@/jsx"
 import { defineExt } from "@/sheet/ext"
 import type { Cv } from "@/sheet/ui/cv"
 import { Order } from "@/sheet/ui/cv/consts"
@@ -205,13 +205,13 @@ export const PKG_IMAGE_GEO: Package = {
       poster: String.raw`\operatorname{image}\left(i_{1},\operatorname{segment}\left(...\right)\right)`,
       render() {
         return [
-          px`In project nya, images are expressions, just like everything else. To create one, select the ${h("font-semibold", "image")} item type in the second-topmost navigation bar.`,
-          px`To draw the image onto the graphpaper, use the ${h("font-semibold", "image")} function.`,
+          px`In project nya, images are expressions, just like everything else. To create one, select the ${b("image")} item type in the second-topmost navigation bar.`,
+          px`To draw the image onto the graphpaper, use the ${b("image")} function.`,
           example(
             String.raw`\operatorname{image}\left(i_{1},\operatorname{segment}\left(\left(0,0\right),\left(1,0\right)\right)\right)`,
             null,
           ),
-          px`The ${h("font-semibold", "image")} function places an image on top of a line segment with its preferred aspect ratio, so it isn't distorted. If you want distortion, you can pass your own aspect ratio:`,
+          px`The ${b("image")} function places an image on top of a line segment with its preferred aspect ratio, so it isn't distorted. If you want distortion, you can pass your own aspect ratio:`,
           example(
             String.raw`\operatorname{image}\left(i_{1},\operatorname{segment}\left(\left(0,0\right),\left(1,0\right)\right,\frac23\right)`,
             null,

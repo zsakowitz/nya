@@ -22,7 +22,7 @@ import {
 import { coerceValueGlsl, isReal } from "@/eval/ty/coerce"
 import { num, real } from "@/eval/ty/create"
 import { declareGlsl } from "@/eval/ty/decl"
-import { h, p } from "@/jsx"
+import { b, p } from "@/jsx"
 import type { Package } from "."
 
 declare module "@/eval/ast/token" {
@@ -536,7 +536,7 @@ export const PKG_ITERATE: Package = {
         return [
           p(
             "The ",
-            h("font-semibold", "iterate"),
+            b("iterate"),
             " function lets you compute an expression multiple times using its previous value as part of the computation. For example:",
           ),
           example(
@@ -545,9 +545,9 @@ export const PKG_ITERATE: Package = {
           ),
           p(
             "You can also add a ",
-            h("font-semibold", "while"),
+            b("while"),
             " or ",
-            h("font-semibold", "until"),
+            b("until"),
             " clause to limit when the expression stops iterating. The condition is evaluated before each iteration.",
           ),
           example(
@@ -556,11 +556,11 @@ export const PKG_ITERATE: Package = {
           ),
           p(
             "As an alternate form, you can write ",
-            h("font-semibold", "iterate"),
+            b("iterate"),
             " after ",
-            h("font-semibold", "with"),
+            b("with"),
             " to get access to its result on the left side of the ",
-            h("font-semibold", "with"),
+            b("with"),
             " expression.",
           ),
           example(
@@ -576,7 +576,7 @@ export const PKG_ITERATE: Package = {
           ),
           p(
             "By the way, you can type ",
-            h("font-semibold", "list"),
+            b("list"),
             " to create a vertical list, like the ones in that last example. Alternatively, you can just separate the elements with commas:",
           ),
           example(
@@ -585,7 +585,7 @@ export const PKG_ITERATE: Package = {
           ),
           p(
             "If you want to update each variable in order, use ",
-            h("font-semibold", "withseq iterate"),
+            b("withseq iterate"),
             ".",
           ),
           example(
@@ -598,9 +598,9 @@ export const PKG_ITERATE: Package = {
           ),
           p(
             "If you're iterating over multiple variables, you can use ",
-            h("font-semibold", "iterate.name"),
+            b("iterate.name"),
             " as a shortcut for ",
-            h("font-semibold", "name with iterate"),
+            b("name with iterate"),
             ".",
           ),
           example(
@@ -609,11 +609,11 @@ export const PKG_ITERATE: Package = {
           ),
           p(
             "You can also use ",
-            h("font-semibold", "iterate.count"),
+            b("iterate.count"),
             " to return the number of iterations instead of any particular variable. This is usually only useful if you also have a ",
-            h("font-semibold", "while"),
+            b("while"),
             " or ",
-            h("font-semibold", "until"),
+            b("until"),
             " clause.",
           ),
           example(
