@@ -761,13 +761,17 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
   },
   eval: {
     fn: {
-      point: FN_POINT,
       arg: FN_ARG,
-      complex: FN_COMPLEX,
       conj: FN_CONJ,
-      dot: FN_DOT,
       imag: FN_IMAG,
       real: FN_REAL,
+      sign: FN_SIGN,
+      // DCG: dot doesn't exist for complex numbers in desmos
+      dot: FN_DOT,
+      // DCG: everything below doesn't exist in vanilla desmos
+      complex: FN_COMPLEX,
+      point: FN_POINT,
+      ".i": FN_I,
       cplot: FN_CPLOT,
       cplothue: FN_CPLOTHUE,
     },
