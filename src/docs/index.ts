@@ -569,3 +569,5 @@ function secGuides(sheet: Sheet, list: PackageList) {
     el.replaceWith(math(el.textContent ?? ""))
   }
 }
+
+// DOCS: filter packages should disappear when an individual guide is selected

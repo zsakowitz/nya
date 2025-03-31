@@ -363,6 +363,21 @@ const extras: TyExtras<SReal> = {
   },
 }
 
+export function declarePowR32(ctx: GlslContext) {
+  ctx.glsl`float _nya_pow_r32(float a, float b) {
+  if (a >= 0.0) {
+    return pow(a, b);
+  } else if (mod(b, 2.0) == 0.0) {
+    return pow(abs(a), b);
+  } else if (mod(b, 2.0) == 1.0) {
+    return sign(a) * pow(abs(a), b);
+  } else {
+    return 0.0/0.0;
+  }
+}
+`
+}
+
 export const PKG_REAL: Package = {
   id: "nya:num-real",
   name: "real numbers",
@@ -415,7 +430,7 @@ export const PKG_REAL: Package = {
       ["r32", "r32"],
       "r32",
       (a, b) => div(a.value, b.value),
-      (_, a, b) => `(${a.expr} / ${b.expr})`,
+      (_, a, b) => `((${a.expr}) / (${b.expr}))`,
       "8÷-2=-4",
     )
 
@@ -497,10 +512,11 @@ export const PKG_REAL: Package = {
       ["r32", "r32"],
       "r32",
       (a, b) => raise(a.value, b.value),
-      (_, a, b) => {
-        return `pow(${a.expr}, ${b.expr})`
+      (ctx, a, b) => {
+        declarePowR32(ctx)
+        return `_nya_pow_r32(${a.expr}, ${b.expr})`
       },
-      "2^3=8",
+      ["2^3=8", "(-3)^4.3=\\wordvar{undefined}"],
     )
 
     OP_SUB.add(

@@ -96,6 +96,26 @@ export class Scope {
   readonly propsJs: PropsJs
   readonly propsSym: PropsSym
 
+  addNestedDeps(set: Set<string>) {
+    const todo = new Set<string>(set)
+    while (todo.size) {
+      const current = [...todo]
+      todo.clear()
+      for (const id of current) {
+        const definers = this.defs[id]
+        if (!definers) continue
+        for (const src of definers) {
+          for (const id in src.deps.ids) {
+            if (!set.has(id)) {
+              set.add(id)
+              todo.add(id)
+            }
+          }
+        }
+      }
+    }
+  }
+
   propsDrag(field: FieldComputed): PropsDrag {
     return {
       field,
@@ -492,6 +512,12 @@ export class FieldComputed extends Field {
     this.scope.adopt(this)
     this.linked = true
     this.scope.queueUpdate()
+  }
+
+  allDeps() {
+    const deps = new Set(Object.keys(this.deps.ids))
+    this.scope.addNestedDeps(deps)
+    return deps
   }
 
   recompute?(): void
