@@ -5,9 +5,6 @@ export function doMatchReglSize(
   regl: Regl,
 ): [get: () => number, set: (value: number) => void] {
   let ratio = 1
-  if (window.devicePixelRatio > 1) {
-    ratio = window.devicePixelRatio
-  }
 
   function resize() {
     const scale = (window.devicePixelRatio ?? 1) / ratio
