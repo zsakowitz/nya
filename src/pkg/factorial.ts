@@ -85,7 +85,7 @@ float factorialAsymptotic(float x) {
 }
 
 float factorialPositive(float x) {
-  return x > 33.0
+  return x > 34.04
     ? 1.0 / 0.0
     : x > 8.0
     ? factorialAsymptotic(x)

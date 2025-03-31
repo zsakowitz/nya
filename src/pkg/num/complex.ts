@@ -116,6 +116,61 @@ export const FN_REAL = new FnDist(
   "gets the real part of a multi-dimensional number",
 )
 
+const FN_CPLOTHUE = new FnDist(
+  "cplothue",
+  "gets the hue a complex number would be represented by when performing domain coloring",
+).add(
+  ["c32"],
+  "r32",
+  plotJs,
+  (ctx, a) => {
+    declareOklab(ctx)
+    ctx.glsl`
+float _nya_cplot_hue(vec2 z) {
+  if (isinf(z.x) || isinf(z.y) || isnan(z.x) || isnan(z.y)) {
+    return (0.0 / 0.0);
+  }
+  float angle = atan(z.y, z.x);
+  float absval_scaled = length(z) / (length(z) + 1.0);
+  float r0 = 0.08499547839164734 * 1.28;
+  float offset = 0.8936868 * 3.141592653589793;
+  float rd = 1.5*r0 * (1.0 - 2.0 * abs(absval_scaled - 0.5));
+  return angle + offset;
+}
+`
+    return `_nya_cplot_hue(${a.expr})`
+  },
+  "cplot(2+3i)=\\color{#83c4d6}",
+)
+
+function cplot(ctx: GlslContext, a: GlslVal<"c32">) {
+  declareOklab(ctx)
+  ctx.glsl`
+vec4 _nya_cplot(vec2 z) {
+  if (isinf(z.x) || isinf(z.y) || isnan(z.x) || isnan(z.y)) {
+    return vec4(0);
+  }
+  float angle = atan(z.y, z.x);
+  float absval_scaled = length(z) / (length(z) + 1.0);
+  float r0 = 0.08499547839164734 * 1.28;
+  float offset = 0.8936868 * 3.141592653589793;
+  float rd = 1.5*r0 * (1.0 - 2.0 * abs(absval_scaled - 0.5));
+  vec3 ok_coords = vec3(
+    absval_scaled,
+    rd * cos(angle + offset),
+    rd * sin(angle + offset)
+  );
+  return vec4(_helper_oklab(ok_coords), 1);
+}
+`
+  return `_nya_cplot(${a.expr})`
+}
+
+const FN_CPLOT = new FnDist<"color">(
+  "cplot",
+  "gets the color a complex number would be represented by when performing domain coloring",
+).add(["c32"], "color", plotJs, cplot, "cplot(2+3i)=\\color{#83c4d6}")
+
 const WRITE_COMPLEX: TyWrite<SPoint> = {
   isApprox(value) {
     return value.x.type == "approx" || value.y.type == "approx"
@@ -550,29 +605,8 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
       ["c32"],
       "color",
       plotJs,
-      (ctx, a) => {
-        declareOklab(ctx)
-        ctx.glsl`
-vec4 _nya_cplot(vec2 z) {
-  if (isinf(z.x) || isinf(z.y) || isnan(z.x) || isnan(z.y)) {
-    return vec4(0);
-  }
-  float angle = atan(z.y, z.x);
-  float absval_scaled = length(z) / (length(z) + 1.0);
-  float r0 = 0.08499547839164734 * 1.28;
-  float offset = 0.8936868 * 3.141592653589793;
-  float rd = 1.5*r0 * (1.0 - 2.0 * abs(absval_scaled - 0.5));
-  vec3 ok_coords = vec3(
-    absval_scaled,
-    rd * cos(angle + offset),
-    rd * sin(angle + offset)
-  );
-  return vec4(_helper_oklab(ok_coords), 1);
-}
-`
-        return `_nya_cplot(${a.expr})`
-      },
-      "\\nyaop{plot}(2+3i)",
+      cplot,
+      "\\nyaop{plot}(2+3i)=\\color{#83c4d6}",
     )
 
     OP_POS.add(
@@ -714,6 +748,8 @@ vec4 _nya_cplot(vec2 z) {
       dot: FN_DOT,
       imag: FN_IMAG,
       real: FN_REAL,
+      cplot: FN_CPLOT,
+      cplothue: FN_CPLOTHUE,
     },
     var: {
       p: {

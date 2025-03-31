@@ -10,6 +10,7 @@ import type { Package } from ".."
 import { PKG_BOOL } from "../bool"
 import { OP_CDOT } from "../core/ops"
 import { PKG_REAL } from "../num/real"
+import { ERR_COORDS_USED_OUTSIDE_GLSL } from "@/eval/ops/vars"
 
 declare module "@/eval/ty" {
   interface Tys {
@@ -85,6 +86,7 @@ const FN_HSV = new FnDist(
 )
 
 export function plotJs(): never {
+  throw new Error(ERR_COORDS_USED_OUTSIDE_GLSL)
   throw new Error("Cannot plot colors outside of a shader.")
 }
 
