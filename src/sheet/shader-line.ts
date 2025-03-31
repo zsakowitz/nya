@@ -33,7 +33,7 @@ export function createLine(
   const jsOffsets: Coord[] = [
     ...BASE.map(([a, b]): Coord => [a * DIST, b * DIST]),
     ...BASE.map(([a, b]): Coord => [a * (DIST + 0.5), b * (DIST + 0.5)]),
-    ...BASE.map(([a, b]): Coord => [a * (DIST + 1), b * (DIST + 1)]),
+    // ...BASE.map(([a, b]): Coord => [a * (DIST + 1), b * (DIST + 1)]),
   ]
 
   const offsets = props.ctx.name()
@@ -67,17 +67,12 @@ export function createLine(
     .fill(0)
     .map((_, i) => `int(${ret}[${i + BASE.length}]<0.0)`)
     .join("+")
-  const count3 = Array(BASE.length)
-    .fill(0)
-    .map((_, i) => `int(${ret}[${i + BASE.length * 2}]<0.0)`)
-    .join("+")
 
   return [
     props.ctx,
     `vec4(0.1764705882, 0.4392156863, 0.7019607843,
       (${count} != 0 && ${count} != ${BASE.length}) ? 1.0 :
       (${count2} != 0 && ${count2} != ${BASE.length}) ? 0.5 :
-      (${count3} != 0 && ${count3} != ${BASE.length}) ? 0.25 :
       0.0
     )`,
   ]
