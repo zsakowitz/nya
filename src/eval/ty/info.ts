@@ -14,22 +14,30 @@ interface TyGarbage<T> {
   glsl: string
 }
 
+// SHAPE: consistent shape includes data vs. getter; shapes aren't actually consistent
 export interface TyInfo<T> {
   name: string
   namePlural: string
+  /** The GLSL type for this type (bool, vec2, mat3x2, etc.) */
   glsl: string
+  /** Writes a JavaScript variant of this value in GLSL */
   toGlsl(val: T, ctx: GlslContext): string
+  /** NaN equivalents for this type */
   garbage: TyGarbage<T>
+  // TODO: check that all coercion maps have null prototypes
   coerce: TyCoerceMap<T>
   write: TyWrite<T>
+  /** Inherent draw order for the type */
   order: number | null
+  /** Whether the type can be picked as a 2D point */
   point: boolean
   icon(): HTMLSpanElement
   token: ((val: T) => HTMLSpanElement | null) | null
+  /** How to "unglide" this value */
   glide: TyGlide<T> | null
+  /** Draws a preview of this object on a canvas. */
   preview: ((cv: Cv, val: T) => void) | null
-  // Rarely used properties are stuffed in TyExtras, so that we can add new
-  // extra properties without having to fix the shapes of every existing type.
+  /** Place to stuff uncommon properties so we don't have to remake TyInfo shapes */
   extras: TyExtras<T> | null
 }
 
