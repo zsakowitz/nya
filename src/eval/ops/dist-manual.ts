@@ -100,7 +100,7 @@ export abstract class FnDistManual<Q extends TyName = TyName> implements Fn {
       return {
         block: ret,
         // SYM: check that this is the correct precedence
-        lhs: Precedence.Exponential,
+        lhs: Precedence.Atom,
         rhs: Precedence.ImplicitFnCall,
       }
     }

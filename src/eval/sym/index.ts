@@ -1,5 +1,3 @@
-import { CmdNum } from "@/field/cmd/leaf/num"
-import { Op } from "@/field/cmd/leaf/op"
 import type { WordKind } from "@/field/cmd/leaf/var"
 import { CmdBrack } from "@/field/cmd/math/brack"
 import { Block, L, R, type Command, type Cursor } from "@/field/model"
@@ -93,6 +91,14 @@ export interface SymDisplay {
   rhs: number
 }
 
+export function insertWrapped(at: Cursor, block: Block, wrap: boolean) {
+  if (wrap) {
+    new CmdBrack("(", ")", null, block).insertAt(at, L)
+  } else {
+    block.insertAt(at, L)
+  }
+}
+
 /** Inclusionary comparison performed on `lhs` and `rhs`. */
 export function insert(
   at: Cursor,
@@ -100,15 +106,7 @@ export function insert(
   lhs: number,
   rhs: number,
 ) {
-  if (
-    result.lhs <= lhs ||
-    result.rhs <= rhs ||
-    (at[L] && !(at[L] instanceof Op) && result.block.ends[L] instanceof CmdNum)
-  ) {
-    new CmdBrack("(", ")", null, result.block).insertAt(at, L)
-  } else {
-    result.block.insertAt(at, L)
-  }
+  insertWrapped(at, result.block, result.lhs <= lhs || result.rhs <= rhs)
 }
 
 /** Exclusionary comparison performed on `lhs` and `rhs`. */
@@ -118,15 +116,7 @@ export function insertStrict(
   lhs: number,
   rhs: number,
 ) {
-  if (
-    result.lhs < lhs ||
-    result.rhs < rhs ||
-    (at[L] && !(at[L] instanceof Op) && result.block.ends[L] instanceof CmdNum)
-  ) {
-    new CmdBrack("(", ")", null, result.block).insertAt(at, L)
-  } else {
-    result.block.insertAt(at, L)
-  }
+  insertWrapped(at, result.block, result.lhs < lhs || result.rhs < rhs)
 }
 
 export function prefixFn(op: () => Command, prec: number): DisplayFn {

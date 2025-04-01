@@ -1,3 +1,8 @@
+sym(5sinacosb)
+\operatorname{sym}\frac{d}{dx}\left(e^{x2}\right)^{x}
+\operatorname{sym}\left(\left(\operatorname{ln}2\right)3^{x}\right)
+\operatorname{sym}\left(\left(5\operatorname{ln}x\right)4\right)
+syms2
 v=4
 symv(lnx)
 sym\frac d{dx}0^x

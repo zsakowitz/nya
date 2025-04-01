@@ -14,6 +14,7 @@ import {
   binaryFn,
   insert,
   insertStrict,
+  insertWrapped,
   isOne,
   isZero,
   prefixFn,
@@ -31,6 +32,7 @@ import { TY_INFO } from "@/eval/ty/info"
 import { add, div } from "@/eval/ty/ops"
 import { splitValue } from "@/eval/ty/split"
 import { CmdComma } from "@/field/cmd/leaf/comma"
+import { CmdNum } from "@/field/cmd/leaf/num"
 import { OpCdot, OpMinus, OpOdot, OpPlus, OpTimes } from "@/field/cmd/leaf/op"
 import { CmdWord } from "@/field/cmd/leaf/word"
 import { CmdBrack } from "@/field/cmd/math/brack"
@@ -323,22 +325,35 @@ export const OP_JUXTAPOSE = OP_CDOT.with(
       if (!(a && b && !c)) return
       const block = new Block(null)
       const cursor = block.cursor(R)
-      insertStrict(
+      const resultA = txr(a).display(a)
+      const resultB = txr(b).display(b)
+      insertWrapped(
         cursor,
-        txr(a).display(a),
-        Precedence.Juxtaposition,
-        Precedence.Juxtaposition,
+        resultA.block,
+        resultA.rhs < Precedence.Juxtaposition,
       )
-      insert(
-        cursor,
-        txr(b).display(b),
-        Precedence.Juxtaposition,
-        Precedence.Juxtaposition,
-      )
+      if (
+        resultB.lhs >= Precedence.Juxtaposition &&
+        resultB.rhs >= Precedence.Juxtaposition &&
+        resultB.block.ends[L] instanceof CmdNum
+      ) {
+        new OpCdot().insertAt(cursor, L)
+        resultB.block.insertAt(cursor, L)
+        return {
+          block,
+          lhs: Precedence.Product,
+          rhs: Precedence.Product,
+        }
+      }
+      const wrapB = resultB.lhs < Precedence.Juxtaposition
+      insertWrapped(cursor, resultB.block, wrapB)
       return {
         block,
         lhs: Precedence.Juxtaposition,
-        rhs: Precedence.Juxtaposition,
+        rhs:
+          wrapB ?
+            Precedence.Juxtaposition
+          : Math.min(Precedence.Juxtaposition, resultB.rhs),
       }
     },
   },
