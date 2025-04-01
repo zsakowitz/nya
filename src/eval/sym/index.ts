@@ -35,6 +35,7 @@ interface SymVarSource {
 export interface Syms {
   var: { id: string; source: SymVarSource }
   call: { fn: Fn; args: Sym[] }
+  dep: { id: string; value: Sym }
   undef: {}
   js: { value: JsValue }
   val: { value: SymVal }
@@ -60,6 +61,7 @@ export type Sym<T extends SymName = SymName> = {
   [K in T]: { type: K } & Syms[K]
 }[T]
 
+// SHAPE:
 export interface TxrSym<T> {
   display(value: T): SymDisplay
   deriv(value: T, wrt: string): Sym

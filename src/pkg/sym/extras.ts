@@ -153,7 +153,6 @@ export const PKG_SYM_EXTRAS: Package = {
 }
 
 function validateSym(node: MagicVar, kind: "sym" | "eval" | "unsym") {
-  // FIXME: remove this now that `fnlike` works
   if (node.prop) {
     throw new Error(
       `Cannot access a particular property of a${kind == "sym" ? "" : "n"} '${kind}' expression.`,

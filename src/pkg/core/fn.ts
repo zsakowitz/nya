@@ -1,4 +1,3 @@
-import type { Package } from ".."
 import { commalist } from "@/eval/ast/collect"
 import {
   Precedence,
@@ -18,6 +17,7 @@ import type { Sym } from "@/eval/sym"
 import { each, type GlslValue, type JsValue } from "@/eval/ty"
 import { canCoerce, coerceTyJs } from "@/eval/ty/coerce"
 import { frac, num } from "@/eval/ty/create"
+import type { Package } from ".."
 import { OP_JUXTAPOSE, OP_RAISE } from "./ops"
 
 function callJs(name: Var, args: Node[], props: PropsJs): JsValue {
@@ -441,15 +441,14 @@ export const PKG_CORE_FN: Package = {
                 return callSym(node.lhs.value, args, props)
               }
 
-              if (!(node.lhs.value.kind == "var" && !node.lhs.value.sup))
+              if (!(node.lhs.value.kind == "var" && !node.lhs.value.sup)) {
                 break fn
-              const fn = props.bindingsSym.get(id(node.lhs.value))
-              if (!fn) {
-                throw new Error(`'${tryName(node.lhs.value)}' is not defined.`)
               }
 
-              if (!(fn instanceof BindingFn)) {
-                lhs = fn
+              const fn = props.bindingsSym.get(id(node.lhs.value))
+              if (!fn || !(fn instanceof BindingFn)) {
+                // only functions are inlined; everything else is treated as a variable
+                lhs = sym(node.lhs.value, props)
                 break fn
               }
 

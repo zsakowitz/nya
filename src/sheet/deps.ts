@@ -253,7 +253,11 @@ export class Scope {
               args[params[i]![0]] = values[i]!
             }
 
-            return bindingsSym.withArgs(args, () => sym(value, this.propsJs))
+            return bindingsSym.withArgs(args, () => ({
+              type: "dep",
+              id: def,
+              value: sym(value, this.propsJs),
+            }))
           },
         )
 

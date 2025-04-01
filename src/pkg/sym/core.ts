@@ -276,6 +276,39 @@ export const PKG_SYM_CORE: Package = {
           return jsToGlsl(value.value, props.ctx)
         },
       },
+      dep: {
+        deps(value, deps) {
+          deps.trackById(value.id)
+          txr(value.value).deps(value.value, deps)
+        },
+        deriv(value, wrt) {
+          return {
+            type: "dep",
+            id: value.id,
+            value: txr(value.value).deriv(value.value, wrt),
+          }
+        },
+        display({ value }) {
+          return txr(value).display(value)
+        },
+        glsl({ value }, props) {
+          return txr(value).glsl(value, props)
+        },
+        js({ value }, props) {
+          return txr(value).js(value, props)
+        },
+        simplify(value) {
+          return {
+            type: "dep",
+            id: value.id,
+            value: txr(value.value).simplify(value.value),
+          }
+        },
+        uses({ value }, name) {
+          return txr(value).uses(value, name)
+        },
+        layer: -1,
+      },
     },
   },
 }

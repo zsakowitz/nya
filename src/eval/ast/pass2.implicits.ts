@@ -352,8 +352,4 @@ export function pass2_implicits(tokens: Node[]): Node[] {
       return { type: "big", cmd: head.cmd, sub: head.sub, sup: head.sup, of }
     }
   }
-
-  // FIXME: d/dx (x^2) doesn't work since it parses as a function call. maybe
-  // it's easier to restrict function calls to actual variables only instead
-  // of these cycle-wasting post-parse stage checks we do
 }
