@@ -310,7 +310,6 @@ export const PKG_DISTRIBUTIONS: Package = {
         token: null,
         glide: null,
         preview: null,
-        components: null,
         extras: { renderContinuousPdf: true },
       },
       tdist: {
@@ -370,7 +369,6 @@ export const PKG_DISTRIBUTIONS: Package = {
         token: null,
         glide: null,
         preview: null,
-        components: null,
         extras: null,
       },
       poissondist: {
@@ -435,7 +433,6 @@ export const PKG_DISTRIBUTIONS: Package = {
         token: null,
         glide: null,
         preview: null,
-        components: null,
         extras: null,
       },
       binomialdist: {
@@ -502,7 +499,6 @@ export const PKG_DISTRIBUTIONS: Package = {
         token: null,
         glide: null,
         preview: null,
-        components: null,
         extras: null,
       },
       uniformdist: {
@@ -562,7 +558,6 @@ export const PKG_DISTRIBUTIONS: Package = {
         token: null,
         glide: null,
         preview: null,
-        components: null,
         extras: null,
       },
     },

@@ -11,12 +11,6 @@ export interface Tys {
   never: "__never"
 }
 
-export interface TyComponents {
-  never: never
-}
-
-null! as TyComponents satisfies Record<TyName, TyName>
-
 export type SApprox = { type: "approx"; value: number }
 export type SExact = { type: "exact"; n: number; d: number }
 export type SReal = SApprox | SExact

@@ -396,7 +396,6 @@ export const PKG_BOOL: Package = {
         },
         glide: null,
         preview: null,
-        components: null,
         extras: {
           asBool(value) {
             return value

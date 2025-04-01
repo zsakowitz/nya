@@ -5490,7 +5490,6 @@ const INFO_ELEMENT: TyInfoByName<"element"> = {
   },
   glide: null,
   preview: null,
-  components: null,
   extras: null,
 }
 

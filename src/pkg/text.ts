@@ -414,7 +414,6 @@ export const PKG_TEXT: Package = {
         token: null,
         glide: null,
         preview: null,
-        components: null,
         extras: null,
       },
     },

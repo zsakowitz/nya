@@ -253,15 +253,6 @@ export const PKG_NUM_QUATERNION: Package = {
         token: null,
         glide: null,
         preview: null,
-        components: {
-          ty: "r32",
-          at: [
-            [(x) => x[0], (x) => `${x}.x`],
-            [(x) => x[1], (x) => `${x}.y`],
-            [(x) => x[2], (x) => `${x}.z`],
-            [(x) => x[3], (x) => `${x}.w`],
-          ],
-        },
         extras: null,
       },
     },

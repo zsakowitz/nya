@@ -260,15 +260,6 @@ export const PKG_COLOR_CORE: Package = {
         token: null,
         glide: null,
         preview: null,
-        components: {
-          ty: "r32",
-          at: [
-            [(x) => x.r, (x) => `(255.0 * ${x}.x)`],
-            [(x) => x.g, (x) => `(255.0 * ${x}.y)`],
-            [(x) => x.b, (x) => `(255.0 * ${x}.z)`],
-            [(x) => x.a, (x) => `${x}.w`],
-          ],
-        },
         extras: null,
       },
     },

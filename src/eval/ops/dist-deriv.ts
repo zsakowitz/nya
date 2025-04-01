@@ -25,8 +25,10 @@ export class FnDistDeriv extends FnDist {
             return { type: "undef" }
           case "var":
           case "call":
+          case "dep":
+            // TODO: dep might be fixable
             throw new Error(
-              `Cannot take derivative of '${name}' if the first argument is a variable; it must be an expression like normaldist() or segment() which explicitly specifies the type.`,
+              `Cannot take derivative of '${name}' if the first argument is a variable or function; it must be an expression like normaldist() or segment() which explicitly specifies the type.`,
             )
         }
 

@@ -4,7 +4,7 @@ import type { BindingFn, Bindings } from "./lib/binding"
 import type { GlslContext } from "./lib/fn"
 import { FNS } from "./ops"
 import type { Sym } from "./sym"
-import type { GlslValue, JsValue, SReal, TyName, Val } from "./ty"
+import type { GlslValue, JsValue, SReal, Val } from "./ty"
 import { TY_INFO, type TyInfo } from "./ty/info"
 
 export interface PropsSym {
@@ -75,7 +75,7 @@ export function glsl(node: Node, props: PropsGlsl): GlslValue {
 }
 
 export function jsToGlsl(js: JsValue, ctx: GlslContext): GlslValue {
-  const cv = (TY_INFO[js.type] as TyInfo<Val, TyName>).toGlsl
+  const cv = (TY_INFO[js.type] as TyInfo<Val>).toGlsl
 
   if (js.list === false) {
     return {

@@ -749,13 +749,6 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
         token: null,
         glide: null,
         preview: null,
-        components: {
-          ty: "r64",
-          at: [
-            [(x) => x.x, (x) => `${x}.xy`],
-            [(x) => x.y, (x) => `${x}.zw`],
-          ],
-        },
         extras,
       },
       c32: {
@@ -776,13 +769,6 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
         token: null,
         glide: null,
         preview: null,
-        components: {
-          ty: "r32",
-          at: [
-            [(x) => x.x, (x) => `${x}.x`],
-            [(x) => x.y, (x) => `${x}.y`],
-          ],
-        },
         extras,
       },
     },

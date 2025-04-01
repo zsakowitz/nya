@@ -12,7 +12,6 @@ import {
   type GlslValue,
   type JsValue,
   type SReal,
-  type TyComponents,
   type TyName,
   type Tys,
   type Val,
@@ -26,7 +25,7 @@ import {
   split,
 } from "@/eval/ty/coerce"
 import { frac, num, real } from "@/eval/ty/create"
-import { TY_INFO, type TyInfo } from "@/eval/ty/info"
+import { TY_INFO, type TyInfoByName } from "@/eval/ty/info"
 import { abs, add, div, mul, sub } from "@/eval/ty/ops"
 import { Leaf } from "@/field/cmd/leaf"
 import { BRACKS } from "@/field/cmd/math/brack"
@@ -817,7 +816,7 @@ const FN_STATS = new FnList(
   "stats([2,4,3,7,8])",
 )
 
-const TY_STATS: TyInfo<Tys["stats"], TyComponents["stats"]> = {
+const TY_STATS: TyInfoByName<"stats"> = {
   name: "five-number statistical summary",
   namePlural: "five-number statistical summaries",
   get glsl(): never {
@@ -874,7 +873,6 @@ const TY_STATS: TyInfo<Tys["stats"], TyComponents["stats"]> = {
   token: null,
   glide: null,
   preview: null,
-  components: null,
   extras: null,
 }
 

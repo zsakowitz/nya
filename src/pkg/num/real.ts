@@ -3,22 +3,14 @@ import { js } from "@/eval/js"
 import { asNumericBase, parseNumberGlsl, parseNumberJs } from "@/eval/lib/base"
 import { SYM_BINDINGS } from "@/eval/lib/binding"
 import type { GlslContext } from "@/eval/lib/fn"
-import { safe } from "@/eval/lib/util"
 import { FnDist } from "@/eval/ops/dist"
-import {
-  FnDistCaching,
-  type FnOverload,
-  type FnOverloadData,
-  type FnOverloadVar,
-} from "@/eval/ops/dist-manual"
-import { ALL_DOCS } from "@/eval/ops/docs"
+import { type FnOverload, type FnOverloadVar } from "@/eval/ops/dist-manual"
 import { FnList } from "@/eval/ops/list"
 import type { SReal, Ty, TyName, Type } from "@/eval/ty"
 import { isZero } from "@/eval/ty/check"
-import { canCoerce, coerceValJs } from "@/eval/ty/coerce"
 import { approx, frac, gl, gl64, num, real } from "@/eval/ty/create"
 import type { TyWrite } from "@/eval/ty/display"
-import { highRes, TY_INFO, type TyExtras } from "@/eval/ty/info"
+import { highRes, type TyExtras } from "@/eval/ty/info"
 import { abs, add, div, mul, neg, raise, sub } from "@/eval/ty/ops"
 import { splitDual } from "@/eval/ty/split"
 import { h } from "@/jsx"
@@ -114,107 +106,6 @@ export const FN_UNSIGN = new FnDist(
   "takes the absolute value of the components of a value",
   { message: "Cannot take the absolute value component-by-component of %%." },
 )
-
-const FN_COMPONENT = new (class extends FnDistCaching {
-  constructor() {
-    super(
-      "component",
-      "gets a component of a multidimensional value",
-      // SYM: fix component derivatives
-    )
-    ALL_DOCS.push(this)
-  }
-
-  gen(args: Ty[]): FnOverloadData<TyName> {
-    if (args.length != 2) {
-      throw new Error("'component' expects two parameters.")
-    }
-    if (!canCoerce(args[1]!.type, "r32")) {
-      throw new Error(
-        "The second parameter to 'component' must be a real number.",
-      )
-    }
-
-    const ty = args[0]!.type
-    const info = TY_INFO[ty]
-    const comps = info.components
-    const name =
-      info.namePlural.slice(0, 1).toUpperCase() + info.namePlural.slice(1)
-
-    if (!comps) {
-      throw new Error(`${name} do not have components.`)
-    }
-
-    return {
-      params: [ty, args[1]!.type],
-      type: comps.ty,
-      js(a, b) {
-        const val = num(coerceValJs(b, "r32").value) - 1
-        let comp
-        if (!(safe(val) && (comp = comps.at[val]))) {
-          throw new Error(`${name} only have components 1-${comps.at.length}.`)
-        }
-
-        return comp[0](a.value as never)
-      },
-      glsl(_, a, b) {
-        const STATIC_INDEX =
-          /^(?:vec2\(([0-9e+-.]+), ?([0-9e+-.]+)\)\.x|(\d*.\d+|\d+.))$/
-        const match = STATIC_INDEX.exec(b.expr)
-
-        let staticIndex: number | null = null
-        if (match) {
-          if (match[1]) {
-            const real = +match[1]
-            const imag = +match[2]!
-            if (imag == 0) {
-              staticIndex = real
-            }
-          } else {
-            staticIndex = +match[3]!
-          }
-        }
-
-        if (staticIndex == null) {
-          throw new Error(
-            "The 'component' function's second argument must be a plain number in shaders; try 1 or 2 instead of computing a value.",
-          )
-        }
-
-        staticIndex--
-
-        if (
-          !(
-            safe(staticIndex) &&
-            0 <= staticIndex &&
-            staticIndex < comps.at.length
-          )
-        ) {
-          throw new Error(`${name} only have components 1-${comps.at.length}.`)
-        }
-
-        return comps.at[staticIndex]![1](a.expr)
-      },
-    }
-  }
-
-  docs() {
-    return Object.entries(TY_INFO)
-      .filter((x) => x[1].components != null)
-      .map(
-        ([type, info]): FnSignature => ({
-          params: [
-            { type: type as TyName, list: false },
-            { type: "r32", list: false },
-          ],
-          dots: false,
-          ret: { type: info.components!.ty, list: false },
-          usage: [],
-          // DOCS: how to generate 'component' usage examples?
-        }),
-      )
-  }
-})()
 
 const WRITE_REAL: TyWrite<SReal> = {
   isApprox(value) {
@@ -690,7 +581,6 @@ float _helper_cmp_r32(float a, float b) {
         token: null,
         glide: null,
         preview: null,
-        components: null,
         extras,
       },
       r32: {
@@ -711,7 +601,6 @@ float _helper_cmp_r32(float a, float b) {
         token: null,
         glide: null,
         preview: null,
-        components: null,
         extras,
       },
     },
@@ -747,7 +636,6 @@ float _helper_cmp_r32(float a, float b) {
       unsign: FN_UNSIGN,
       valid: FN_VALID,
       cmp: FN_CMP,
-      component: FN_COMPONENT,
       count: FN_COUNT,
     },
     var: {

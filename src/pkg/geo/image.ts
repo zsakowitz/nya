@@ -186,7 +186,6 @@ export const PKG_IMAGE_GEO: Package = {
         token: null,
         glide: null,
         preview: draw,
-        components: null,
         extras: null,
       },
     },

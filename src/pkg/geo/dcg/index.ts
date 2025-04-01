@@ -1,11 +1,6 @@
 import type { JsVal, Tys } from "@/eval/ty"
 import { SNANPT, gl, num, pt, real, unpt } from "@/eval/ty/create"
-import {
-  WRITE_POINT,
-  gliderOnLine,
-  type TyInfo,
-  type TyInfoByName,
-} from "@/eval/ty/info"
+import { WRITE_POINT, gliderOnLine, type TyInfoByName } from "@/eval/ty/info"
 import { OpEq } from "@/field/cmd/leaf/cmp"
 import { CmdComma } from "@/field/cmd/leaf/comma"
 import { CmdDot } from "@/field/cmd/leaf/dot"
@@ -95,7 +90,7 @@ function lineInfo<T extends "segment" | "ray" | "line" | "vector">(
   clsx: string | (() => HTMLElement),
   glide: ((bound: number) => number) | null,
   token: (a: Point, b: Point, source: Tys[T]) => HTMLSpanElement | null,
-): TyInfo<Tys[T], never> {
+): TyInfoByName<T> {
   return {
     name,
     namePlural,
@@ -176,7 +171,6 @@ function lineInfo<T extends "segment" | "ray" | "line" | "vector">(
         }
       }
     },
-    components: null,
     extras: null,
   }
 }
@@ -686,7 +680,6 @@ const INFO_CIRCLE: TyInfoByName<"circle"> = {
   preview(cv, val) {
     cv.circle(unpt(val.center), num(val.radius), Size.Line, Color.Green)
   },
-  components: null,
   extras: null,
 }
 
@@ -774,7 +767,6 @@ const INFO_POLYGON: TyInfoByName<"polygon"> = {
   preview(cv, val) {
     cv.polygon(val.map(unpt), Size.Line, Color.Blue, 1, 0.3, false)
   },
-  components: null,
   extras: null,
 }
 
@@ -884,7 +876,6 @@ const INFO_ARC: TyInfoByName<"arc"> = {
     const arc = computeArcVal(val)
     drawArcCv(cv, arc)
   },
-  components: null,
   extras: null,
 }
 
@@ -1063,7 +1054,6 @@ function angleInfo(
     preview(cv, val) {
       drawAngleCv(cv, unpt(val[0]), unpt(val[1]), unpt(val[2]), { kind: type })
     },
-    components: null,
     extras: null,
   }
 }

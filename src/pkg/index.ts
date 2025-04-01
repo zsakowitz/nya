@@ -20,7 +20,7 @@ import type { Fn } from "@/eval/ops"
 import type { WithDocs } from "@/eval/ops/docs"
 import type { Builtin } from "@/eval/ops/vars"
 import type { SymName, Syms, TxrSym } from "@/eval/sym"
-import type { TyComponents, TyName, Tys } from "@/eval/ty"
+import type { TyName, Tys } from "@/eval/ty"
 import type { TyCoerceMap, TyInfo } from "@/eval/ty/info"
 import type { ParenLhs, ParenRhs } from "@/field/cmd/math/brack"
 import type { LatexInit } from "@/field/latex"
@@ -70,7 +70,7 @@ export interface Package {
   }
 
   ty?: {
-    info?: Partial<{ [K in TyName]: TyInfo<Tys[K], TyComponents[K]> }>
+    info?: Partial<{ [K in TyName]: TyInfo<Tys[K]> }>
     /** For adding coercions from already-defined types. */
     coerce?: Partial<{ [T in TyName]: TyCoerceMap<Tys[T]> }>
   }

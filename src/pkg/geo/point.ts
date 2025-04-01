@@ -512,13 +512,6 @@ export const PKG_GEO_POINT: Package = {
         preview(cv, val) {
           cv.point(unpt(val), Size.Point, Color.Purple)
         },
-        components: {
-          ty: "r64",
-          at: [
-            [(x) => x.x, (x) => `${x}.xy`],
-            [(x) => x.y, (x) => `${x}.zw`],
-          ],
-        },
         extras: null,
       },
       point32: {
@@ -540,13 +533,6 @@ export const PKG_GEO_POINT: Package = {
         glide: null,
         preview(cv, val) {
           cv.point(unpt(val), Size.Point, Color.Purple)
-        },
-        components: {
-          ty: "r32",
-          at: [
-            [(x) => x.x, (x) => `${x}.x`],
-            [(x) => x.y, (x) => `${x}.y`],
-          ],
         },
         extras: null,
       },

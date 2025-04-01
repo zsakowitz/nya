@@ -8,16 +8,7 @@ import type { PropsJs } from "../js"
 import { id } from "../lib/binding"
 import type { Fn } from "../ops"
 import type { DerivFn, DisplayFn } from "../ops/dist-manual"
-import type {
-  GlslValue,
-  JsValue,
-  SColor,
-  SPoint,
-  SReal,
-  TyName,
-  Tys,
-  Val,
-} from "../ty"
+import type { GlslValue, JsValue, SColor, SPoint, SReal, Tys, Val } from "../ty"
 import { frac, real } from "../ty/create"
 import { TY_INFO, type TyInfo } from "../ty/info"
 
@@ -219,9 +210,7 @@ export function isZero(sym: Sym) {
   return !!(
     sym.type == "js" &&
     sym.value.list === false &&
-    (TY_INFO[sym.value.type] as TyInfo<Val, TyName>).extras?.isZero?.(
-      sym.value.value,
-    )
+    (TY_INFO[sym.value.type] as TyInfo<Val>).extras?.isZero?.(sym.value.value)
   )
 }
 
@@ -229,18 +218,14 @@ export function isOne(sym: Sym) {
   return !!(
     sym.type == "js" &&
     sym.value.list === false &&
-    (TY_INFO[sym.value.type] as TyInfo<Val, TyName>).extras?.isOne?.(
-      sym.value.value,
-    )
+    (TY_INFO[sym.value.type] as TyInfo<Val>).extras?.isOne?.(sym.value.value)
   )
 }
 
 export function asBool(sym: Sym) {
   return (
     (sym.type == "js" && sym.value.list === false ?
-      (TY_INFO[sym.value.type] as TyInfo<Val, TyName>).extras?.asBool?.(
-        sym.value.value,
-      )
+      (TY_INFO[sym.value.type] as TyInfo<Val>).extras?.asBool?.(sym.value.value)
     : null) ?? null
   )
 }

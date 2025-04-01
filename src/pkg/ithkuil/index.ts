@@ -200,7 +200,6 @@ export const PKG_ITHKUIL: Package = {
         token: null,
         glide: null,
         preview: null,
-        components: null,
         extras: null,
       },
     },

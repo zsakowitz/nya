@@ -219,7 +219,6 @@ const INFO_UNIT: TyInfoByName<"unit"> = {
   token: null,
   glide: null,
   preview: null,
-  components: null,
   extras: null,
 }
 
@@ -283,7 +282,6 @@ const INFO_R32U: TyInfoByName<"r32u"> = {
   token: null,
   glide: null,
   preview: null,
-  components: null,
   extras: null,
 }
 

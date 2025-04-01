@@ -96,7 +96,6 @@ export const PKG_SYM_CORE: Package = {
         token: null,
         glide: null,
         preview: null,
-        components: null,
         extras: null,
       },
     },

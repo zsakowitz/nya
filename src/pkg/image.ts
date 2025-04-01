@@ -398,7 +398,6 @@ export const PKG_IMAGE: Package = {
         },
         glide: null,
         preview: null,
-        components: null,
         extras: null,
       },
     },

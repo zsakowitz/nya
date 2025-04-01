@@ -5,7 +5,7 @@ import { Block, L, R } from "@/field/model"
 import { h, path, svgx } from "@/jsx"
 import type { Point } from "@/sheet/point"
 import type { Cv } from "@/sheet/ui/cv"
-import type { SPoint, TyComponents, TyName, Tys } from "."
+import type { SPoint, TyName, Tys } from "."
 import type { GlslContext } from "../lib/fn"
 import type { TyWrite } from "./display"
 
@@ -14,7 +14,7 @@ interface TyGarbage<T> {
   glsl: string
 }
 
-export interface TyInfo<T, U extends TyName> {
+export interface TyInfo<T> {
   name: string
   namePlural: string
   glsl: string
@@ -28,7 +28,6 @@ export interface TyInfo<T, U extends TyName> {
   token: ((val: T) => HTMLSpanElement | null) | null
   glide: TyGlide<T> | null
   preview: ((cv: Cv, val: T) => void) | null
-  components: TyComponentInfo<T, U> | null
   // Rarely used properties are stuffed in TyExtras, so that we can add new
   // extra properties without having to fix the shapes of every existing type.
   extras: TyExtras<T> | null
@@ -54,17 +53,12 @@ export interface TyExtras<T> {
   renderContinuousPdf?: boolean
 }
 
-export type TyInfoByName<T extends TyName> = TyInfo<Tys[T], TyComponents[T]>
+export type TyInfoByName<T extends TyName> = TyInfo<Tys[T]>
 
 export type TyGlide<T> = (props: GlideProps<T>) => {
   value: number
   /** Number of values the user can choose. */
   precision: number
-}
-
-interface TyComponentInfo<T, U extends TyName> {
-  ty: U
-  at: [js: (val: T) => Tys[U], glsl: (val: string) => string][]
 }
 
 interface GlideProps<T> {
@@ -82,9 +76,7 @@ export interface TyCoerce<T, U> {
   glsl(self: string, ctx: GlslContext): string
 }
 
-type TyInfoMap = {
-  [K in keyof Tys]: TyInfo<Tys[K], TyComponents[K]>
-}
+type TyInfoMap = { [K in keyof Tys]: TyInfo<Tys[K]> }
 
 export const WRITE_POINT: TyWrite<SPoint> = {
   isApprox(value) {
@@ -227,7 +219,6 @@ TY_INFO.never = {
   token: null,
   glide: null,
   preview: null,
-  components: null,
   extras: null,
 }
 

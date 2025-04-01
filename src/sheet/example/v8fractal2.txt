@@ -1,0 +1,1 @@
+\operatorname{from}\begin{list}z_{1}=0\\z_{2}=0\\s_{z2}=0\\s_{z}=\left(0,0,0\right)\end{list}
