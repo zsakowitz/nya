@@ -38,6 +38,9 @@ export interface TyExtras<T> {
   /** Used to simplify arithmetic operators. */
   isZero?(value: T): boolean
 
+  /** Used to simplify xlny. */
+  isNonZero?(value: T): boolean
+
   /** Used to simplify arithmetic operators. */
   isOne?(value: T): boolean
 

@@ -93,6 +93,18 @@ export abstract class FnDistManual<Q extends TyName = TyName> implements Fn {
     const ret = new Block(null)
     const outer = ret.cursor(R)
     new CmdWord(this.name, "prefix").insertAt(outer, L)
+
+    if (args.length == 1) {
+      const result = txr(args[0]!).display(args[0]!)
+      insertStrict(outer, result, Precedence.Product, Precedence.Product)
+      return {
+        block: ret,
+        // SYM: check that this is the correct precedence
+        lhs: Precedence.Exponential,
+        rhs: Precedence.ImplicitFnCall,
+      }
+    }
+
     const paren = new Block(null)
     new CmdBrack("(", ")", null, paren).insertAt(outer, L)
     const cursor = paren.cursor(R)
@@ -281,3 +293,5 @@ export abstract class FnDistCaching<
     }
   }
 }
+
+// FIXME: floor^(2_3) claims 3 isn't in base 3

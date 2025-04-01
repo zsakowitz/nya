@@ -14,6 +14,7 @@ import {
 import { ALL_DOCS } from "@/eval/ops/docs"
 import { FnList } from "@/eval/ops/list"
 import type { SReal, Ty, TyName, Type } from "@/eval/ty"
+import { isZero } from "@/eval/ty/check"
 import { canCoerce, coerceValJs } from "@/eval/ty/coerce"
 import { approx, frac, gl, gl64, num, real } from "@/eval/ty/create"
 import type { TyWrite } from "@/eval/ty/display"
@@ -41,6 +42,7 @@ import {
   declareCmpR64,
   declareMulR64,
   FN_LN,
+  FN_XLNY,
   OP_ABS,
   OP_ADD,
   OP_CDOT,
@@ -256,6 +258,32 @@ FN_LN.add(
   "lne^2=2",
 )
 
+FN_XLNY.add(
+  ["r32", "r32"],
+  "r32",
+  (a, b) => {
+    if (isNaN(num(b.value))) {
+      return real(NaN)
+    }
+
+    if (isZero(a.value)) {
+      return real(0)
+    }
+
+    return mul(a.value, approx(Math.log(num(b.value))))
+  },
+  (ctx, ar, br) => {
+    const a = ctx.cache(ar)
+    const b = ctx.cache(br)
+    return `(isnan(${b}) ? 0.0/0.0 : ${a} == 0.0 ? 0.0 : ${a} * log(${b}))`
+  },
+  [
+    "2\\nyaop{xlny}3=2ln3",
+    "0ln0=\\digit N \\digit a \\digit N",
+    "0\\nyaop{xlny}0=0",
+  ],
+)
+
 export const FN_SIGN = new FnDist("sign", "gets the sign of a number", {
   message: "Cannot find the sign of %%.",
 })
@@ -360,6 +388,9 @@ const extras: TyExtras<SReal> = {
   },
   isZero(value) {
     return num(value) == 0
+  },
+  isNonZero(value) {
+    return num(value) != 0
   },
 }
 

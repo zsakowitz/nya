@@ -3,7 +3,7 @@ import { FnDist } from "@/eval/ops/dist"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "@/eval/ops/vars"
 import type { GlslVal, SPoint } from "@/eval/ty"
 import { isZero } from "@/eval/ty/check"
-import { approx, gl, gl64, num, pt, real, SNANPT } from "@/eval/ty/create"
+import { approx, gl, gl64, num, pt, real, rept, SNANPT } from "@/eval/ty/create"
 import type { TyWrite } from "@/eval/ty/display"
 import { highRes, type TyExtras } from "@/eval/ty/info"
 import { abs, add, div, mul, neg, sub } from "@/eval/ty/ops"
@@ -21,6 +21,7 @@ import {
   declareOdotC64,
   declareSubR64,
   FN_LN,
+  FN_XLNY,
   OP_ABS,
   OP_ADD,
   OP_CDOT,
@@ -195,6 +196,9 @@ const extras: TyExtras<SPoint> = {
   isZero(value) {
     return num(value.x) == 0 && num(value.y) == 0
   },
+  isNonZero(value) {
+    return num(value.x) != 0 || num(value.y) != 0
+  },
 }
 
 export const PKG_NUM_COMPLEX: Package = {
@@ -250,6 +254,30 @@ export const PKG_NUM_COMPLEX: Package = {
         return `_helper_ln(${a.expr})`
       },
       "ln(-0.416+0.909i)≈2i",
+    )
+
+    FN_XLNY.add(
+      ["c32", "c32"],
+      "c32",
+      (a, b) => {
+        if (isNaN(num(b.value.x)) || isNaN(num(b.value.y))) {
+          return SNANPT
+        }
+
+        if (isZero(a.value)) {
+          return rept({ x: 0, y: 0 })
+        }
+
+        return mulPt(a.value, lnJs(b.value))
+      },
+      (ctx, ar, br) => {
+        declareMulC32(ctx)
+        declareLn(ctx)
+        const a = ctx.cache(ar)
+        const b = ctx.cache(br)
+        return `(isnan(${b}.x) || isnan(${b}.y) ? vec2(0.0/0.0) : ${a} == vec2(0) ? vec2(0) : _helper_mul_c32(${a}, _helper_ln(${b})))`
+      },
+      "2i\\nyaop{xlny}3=2iln3",
     )
 
     FN_LOG10.add(

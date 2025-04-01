@@ -27,6 +27,7 @@ import {
   type Sym,
 } from "@/eval/sym"
 import { frac, num, real } from "@/eval/ty/create"
+import { TY_INFO } from "@/eval/ty/info"
 import { add, div } from "@/eval/ty/ops"
 import { splitValue } from "@/eval/ty/split"
 import { CmdComma } from "@/field/cmd/leaf/comma"
@@ -402,7 +403,8 @@ export const OP_RAISE: FnDist = new FnDist(
         const body = txr(a).display(a).block
         new CmdRoot(body, null).insertAt(cursor, L)
       } else {
-        insert(cursor, txr(a).display(a), Precedence.Atom, Precedence.Atom)
+        const result = txr(a).display(a)
+        insert(cursor, result, Precedence.Atom, Precedence.Atom)
         const bb = txr(b).display(b).block
         if (cursor[L] instanceof CmdSupSub && !cursor[L].sup) {
           bb.insertAt(cursor[L].create("sup").cursor(R), L)
@@ -453,25 +455,21 @@ export const OP_RAISE: FnDist = new FnDist(
         // a^f = f' * a^f * ln a
         return {
           type: "call",
-          fn: OP_JUXTAPOSE,
+          fn: FN_XLNY,
           args: [
             {
               type: "call",
               fn: OP_JUXTAPOSE,
               args: [
                 txr(b).deriv(b, wrt),
-                { type: "call", fn: FN_LN, args: [a] },
+                { type: "call", fn: OP_RAISE, args: [a, b] },
               ],
             },
-            {
-              type: "call",
-              fn: OP_RAISE,
-              args: [a, b],
-            },
+            a,
           ],
         }
       } else {
-        // d/dx(f(x)^g(x)) = f^(g - 1) (g f' + f ln(f) g')
+        // d/dx(f(x)^g(x)) = f^(g - 1) (g f' + f g' ln(f))
         return {
           type: "call",
           fn: OP_JUXTAPOSE,
@@ -482,7 +480,7 @@ export const OP_RAISE: FnDist = new FnDist(
               args: [a, { type: "call", fn: OP_SUB, args: [b, SYM_1] }],
             },
 
-            // g f' + f ln(f) g'
+            // g f' + f g' ln(f)
             {
               type: "call",
               fn: OP_ADD,
@@ -493,17 +491,17 @@ export const OP_RAISE: FnDist = new FnDist(
                   args: [b, txr(a).deriv(a, wrt)],
                 },
 
-                // f ln(f) g'
+                // f g' ln(f)
                 {
                   type: "call",
-                  fn: OP_JUXTAPOSE,
+                  fn: FN_XLNY,
                   args: [
                     {
                       type: "call",
                       fn: OP_JUXTAPOSE,
-                      args: [a, { type: "call", fn: FN_LN, args: [a] }],
+                      args: [a, txr(b).deriv(b, wrt)],
                     },
-                    txr(b).deriv(b, wrt),
+                    a,
                   ],
                 },
               ],
@@ -569,6 +567,59 @@ export const OP_ABS = new FnDist(
       new CmdBrack("|", "|", null, inner).insertAt(block.cursor(R), L)
       return { block, lhs: Precedence.Var, rhs: Precedence.Var }
     },
+  },
+)
+
+export const FN_XLNY = new FnDist(
+  "xlny",
+  "takes 'a*ln(b)' such that the result is zero if 'a' is zero; used internally for derivatives of exponents",
+  {
+    simplify([a, b, c]) {
+      if (a && b && !c) {
+        if (a.type == "js" && a.value.list === false) {
+          if (TY_INFO[a.value.type].extras?.isZero?.(a.value.value as never)) {
+            return SYM_0
+          }
+        }
+
+        if (b.type == "js" && b.value.list === false) {
+          if (
+            TY_INFO[b.value.type].extras?.isNonZero?.(b.value.value as never)
+          ) {
+            return {
+              type: "call",
+              // FIXME: might be possible to simplify once in juxtapose form
+              fn: OP_JUXTAPOSE,
+              args: [
+                a,
+                {
+                  type: "js",
+                  value: { ...FN_LN.js1(b.value), list: false },
+                },
+              ],
+            }
+          }
+        }
+      }
+    },
+    display([a, b, c]) {
+      if (!(a && b && !c)) return
+      const mock: Sym = {
+        type: "call",
+        fn: OP_JUXTAPOSE,
+        args: [
+          a,
+          {
+            type: "call",
+            fn: FN_LN,
+            args: [b],
+          },
+        ],
+      }
+      return txr(mock).display(mock)
+    },
+    // FIXME: xlny should have a proper derivative
+    // similar to product rule, but must preserve behavior that x=0 implies xlny=0 (modulo NaN)
   },
 )
 
@@ -807,10 +858,7 @@ export const PKG_CORE_OPS: Package = {
                       sym(node.root, props),
                     ],
                   }
-                : {
-                    type: "js",
-                    value: { type: "r32", list: false, value: frac(1, 2) },
-                  },
+                : SYM_HALF,
               ],
             }
           },

@@ -252,7 +252,7 @@ export const PKG_SYM_CORE: Package = {
         display(value) {
           const block = new Block(null)
           new Display(block.cursor(R), frac(10, 1)).output(value.value, false)
-          let prec: number = Precedence.Atom
+          let prec: number = Precedence.Numeric
           let el = block.ends[L]
           while (el) {
             if (el instanceof OpPlusMinus) {
