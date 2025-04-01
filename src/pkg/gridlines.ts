@@ -22,6 +22,10 @@ const MAX_GRIDLINES_MAJOR = 200
 const MAX_GRIDLINES_MINOR = MAX_GRIDLINES_MAJOR * 5
 
 function createDrawAxes(paper: Cv) {
+  if (location.href.includes("nogrid")) {
+    return
+  }
+
   const cv = paper.ctx.canvas
   const ctx = paper.ctx
 
