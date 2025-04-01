@@ -15,7 +15,7 @@ import {
   unpt,
 } from "@/eval/ty/create"
 import { highRes, TY_INFO, WRITE_POINT, type TyGlide } from "@/eval/ty/info"
-import { abs, add, div, mul, neg } from "@/eval/ty/ops"
+import { abs, add, div, mul, neg, sub } from "@/eval/ty/ops"
 import { CmdVar } from "@/field/cmd/leaf/var"
 import { L, R } from "@/field/model"
 import { h } from "@/jsx"
@@ -44,6 +44,8 @@ import {
   OP_ODOT,
   OP_POINT,
   OP_POS,
+  OP_SUB,
+  subR64,
 } from "../core/ops"
 import { EXT_EVAL } from "../eval"
 import { FN_UNSIGN, PKG_REAL } from "../num/real"
@@ -226,15 +228,8 @@ export const FN_DEBUGPOINT = new FnDist(
   "given some point p, returns a color depending on which side of the currently active shader pixel that point p is on",
 )
 
-const OP_X = new FnDist(
-  ".x",
-  "accesses the x-coordinate of a point or complex number",
-)
-
-const OP_Y = new FnDist(
-  ".y",
-  "accesses the y-coordinate of a point or complex number",
-)
+export const OP_X = new FnDist(".x", "gets the x-coordinate of a point")
+export const OP_Y = new FnDist(".y", "gets the y-coordinate of a point")
 
 export function declareDebugPoint(
   ctx: GlslContext,
@@ -251,6 +246,25 @@ export function declareDebugPoint(
 `
   return `_helper_debugpoint_c32(${a.expr})`
 }
+
+export const FN_POINT = OP_POINT.with(
+  "point",
+  "constructs a point from multi-dimensional values",
+)
+  .add(
+    ["r64"],
+    "r64",
+    (a) => a.value,
+    (_, a) => a.expr,
+    [],
+  )
+  .add(
+    ["r32"],
+    "r32",
+    (a) => a.value,
+    (_, a) => a.expr,
+    "point(7)=7",
+  )
 
 export const PKG_GEO_POINT: Package = {
   id: "nya:geo-point",
@@ -287,6 +301,24 @@ export const PKG_GEO_POINT: Package = {
       (a, b) => pt(add(a.value.x, b.value.x), add(a.value.y, b.value.y)),
       (_, a, b) => `(${a.expr} + ${b.expr})`,
       "(2,3)+(4,-7)=(8,-4)",
+    )
+
+    OP_SUB.add(
+      ["point64", "point64"],
+      "point64",
+      (a, b) => pt(sub(a.value.x, b.value.x), sub(a.value.y, b.value.y)),
+      (ctx, ar, br) => {
+        const a = ctx.cache(ar)
+        const b = ctx.cache(br)
+        return `vec4(${subR64(ctx, `${a}.xy`, `${b}.xy`)}, ${subR64(ctx, `${a}.zw`, `${b}.zw`)})`
+      },
+      [],
+    ).add(
+      ["point32", "point32"],
+      "point32",
+      (a, b) => pt(sub(a.value.x, b.value.x), sub(a.value.y, b.value.y)),
+      (_, a, b) => `(${a.expr} - ${b.expr})`,
+      "(2,3)-(4,-7)=(-2,10)",
     )
 
     FN_UNSIGN.add(
@@ -540,6 +572,7 @@ export const PKG_GEO_POINT: Package = {
   },
   eval: {
     fn: {
+      point: FN_POINT,
       screendistance: FN_SCREENDISTANCE,
       debugpoint: FN_DEBUGPOINT,
       ".x": OP_X,

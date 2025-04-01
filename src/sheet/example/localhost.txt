@@ -1,3 +1,5 @@
+#nya:docs-fn#point
+\ty{p3d32}
 \operatorname{debugast}\left(\operatorname{sin}2\int 3\right)
 2÷
 sin÷

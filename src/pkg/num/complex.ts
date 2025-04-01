@@ -33,7 +33,12 @@ import {
   OP_SUB,
   subR64,
 } from "../core/ops"
-import { declareDebugPoint, FN_DEBUGPOINT, PKG_GEO_POINT } from "../geo/point"
+import {
+  declareDebugPoint,
+  FN_DEBUGPOINT,
+  FN_POINT,
+  PKG_GEO_POINT,
+} from "../geo/point"
 import { FN_EXP, FN_LOG10, FN_SIGN, FN_UNSIGN, PKG_REAL } from "./real"
 
 declare module "@/eval/ty" {
@@ -87,8 +92,6 @@ export function declareLn(ctx: GlslContext) {
 }
 `
 }
-
-const FN_POINT = new FnDist("point", "converts a complex number into a point")
 
 const FN_ARG = new FnDist(
   "arg",

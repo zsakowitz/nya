@@ -1,4 +1,5 @@
 import type { Package } from "./pkg"
+import { PKG_POINT_3D } from "./pkg/3d/point"
 import { PKG_BASE } from "./pkg/base"
 import { PKG_BOOL } from "./pkg/bool"
 import { PKG_CHEM_ELEMENTS } from "./pkg/chem/elements"
@@ -85,5 +86,6 @@ export function allPackages(): Package[] {
     PKG_UNITS,
     PKG_CHEM_ELEMENTS,
     PKG_DEBUG,
+    PKG_POINT_3D,
   ]
 }

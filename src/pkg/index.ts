@@ -59,6 +59,7 @@ export interface Package {
 
   load?(): void
   init?(sheet: Sheet): void
+  // TODO: find a better deps system; should probably reference package ids
   deps?: (() => Package)[]
 
   field?: {
