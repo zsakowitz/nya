@@ -177,13 +177,10 @@ export function pass2_implicits(tokens: Node[]): Node[] {
     )
   }
 
-  function takeExp(): Node {
+  function takeExp(): Node | undefined {
     let first = takeSeq()
     if (!first) {
-      return {
-        type: "error",
-        reason: "Expected some value; received function name or punctuation.",
-      }
+      return
     }
 
     let values = [first]
@@ -199,17 +196,20 @@ export function pass2_implicits(tokens: Node[]): Node[] {
             JSON.stringify(ex),
         }
       }
-      exs.push(ex.value)
 
-      const next = takeSeq()
-      if (!next) {
-        return {
-          type: "error",
-          reason: `The '${ex.value}' operator needs a value on both sides.`,
+      const seq = takeSeq()
+      if (!seq) {
+        const next = tokens[tokens.length - 1]
+        if (next && !isValueToken(next)) {
+          tokens.push(ex)
+          break
+        } else {
+          return unexpectedOp(ex)
         }
       }
 
-      values.push(next)
+      exs.push(ex.value)
+      values.push(seq)
     }
 
     while (exs.length) {
@@ -227,19 +227,29 @@ export function pass2_implicits(tokens: Node[]): Node[] {
     return values[0]!
   }
 
-  function takeMul(): Node {
+  function takeMul(): Node | undefined {
     let lhs = takeExp()
-    if (lhs.type == "error") {
-      return lhs
+    if (!lhs) {
+      return
     }
 
     let md
     while ((md = op(Precedence.Product))) {
+      const b = takeExp()
+      if (!b) {
+        const next = tokens[tokens.length - 1]
+        if (next && !isValueToken(next)) {
+          tokens.push(md)
+          return lhs
+        } else {
+          return unexpectedOp(md)
+        }
+      }
       lhs = {
         type: "op",
         kind: md.value,
         a: lhs,
-        b: takeExp(),
+        b,
         span: "span" in md ? md.span : null!,
       }
     }
@@ -265,6 +275,7 @@ export function pass2_implicits(tokens: Node[]): Node[] {
     }
 
     let contents = takeMul()
+    if (!contents) return unexpectedOp(nested[nested.length - 1]?.[1] ?? name)
 
     function isFnLikeMagicVar(node: Var) {
       return node.kind == "prefix" && FNLIKE_MAGICVAR[node.value]
@@ -323,7 +334,7 @@ export function pass2_implicits(tokens: Node[]): Node[] {
       putBackSigns(mySigns)
 
       const lhs = takeMul()
-      if (lhs.type == "error") return lhs
+      if (!lhs) return unexpectedOp()
 
       const nodes: Node[] = [lhs]
 
@@ -352,4 +363,35 @@ export function pass2_implicits(tokens: Node[]): Node[] {
       return { type: "big", cmd: head.cmd, sub: head.sub, sup: head.sup, of }
     }
   }
+
+  function unexpectedOp(after?: Node): Node {
+    const next = tokens[tokens.length - 1]
+    if (next?.type == "punc" && next.kind != "prefix") {
+      return {
+        type: "error",
+        reason: `'${next.value}' needs something on its left side.`,
+      }
+    }
+    if (after?.type == "punc" && after.kind != "prefix") {
+      return {
+        type: "error",
+        reason: `'${after.value}' needs something on its right side.`,
+      }
+    }
+    if (after?.type == "var" && after.kind == "prefix") {
+      return {
+        type: "error",
+        reason: `'${after.value}' needs an argument. Try '${after.value} 2' or '${after.value}(2,3)'.`,
+      }
+    }
+
+    return {
+      type: "error",
+      reason: "I don't understand this.",
+    }
+  }
 }
+
+// FIXME: before implementing sum, prod, coprod, or integral, redo precedence rules for them
+// currently sin2∫3 = sin(2∫3), but it should be (sin 2)∫3
+// also, 2*-∫3 is parsed as 2*∫3 and the signs just get totally skipped

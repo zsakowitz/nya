@@ -1,3 +1,8 @@
+\operatorname{debugast}\left(\operatorname{sin}2\int 3\right)
+2÷
+sin÷
+sin÷4
+sin4÷
 sym(5sinacosb)
 \operatorname{sym}\frac{d}{dx}\left(e^{x2}\right)^{x}
 \operatorname{sym}\left(\left(\operatorname{ln}2\right)3^{x}\right)

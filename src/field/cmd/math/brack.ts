@@ -512,3 +512,5 @@ export class CmdBrack extends Command<[Block]> {
     }
   }
 }
+
+// TODO: typing 2), then going to the left of 2 and typing ( jumps cursor to after the 2
