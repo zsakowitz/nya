@@ -32,4 +32,8 @@ export class CmdColon extends Leaf {
   ir(tokens: Node[]): void {
     tokens.push({ type: "punc", kind: "infix", value: ":" })
   }
+
+  endsImplicitGroup(): boolean {
+    return true
+  }
 }

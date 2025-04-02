@@ -40,23 +40,24 @@ export class Bindings<T> {
   withAll<U>(data: Record<string, T>, fn: () => U): U {
     const old: Record<string, PropertyDescriptor | undefined> =
       Object.create(null)
+    const args: Record<string, true> = Object.create(null)
     try {
       for (const key in data) {
-        old[key] = Object.getOwnPropertyDescriptor(this.viaWith, key)
-        Object.defineProperty(
-          this.viaWith,
-          key,
-          Object.getOwnPropertyDescriptor(data, key)!,
-        )
+        const target =
+          this.viaArgs[key] ? ((args[key] = true), this.viaArgs) : this.viaWith
+        old[key] = Object.getOwnPropertyDescriptor(target, key)
+        const next = Object.getOwnPropertyDescriptor(data, key)!
+        Object.defineProperty(target, key, next)
       }
       return fn()
     } finally {
       for (const key in old) {
         const desc = old[key]
+        const target = args[key] ? this.viaArgs : this.viaWith
         if (desc) {
-          Object.defineProperty(this.viaWith, key, desc)
+          Object.defineProperty(target, key, desc)
         } else {
-          delete this.viaWith[key]
+          delete target[key]
         }
       }
     }

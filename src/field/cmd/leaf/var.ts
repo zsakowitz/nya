@@ -105,6 +105,7 @@ export class CmdVar extends Leaf {
 
     if (token.sub) {
       const sub = new Block(null)
+      const supsub = new CmdSupSub(sub, null)
       const subc = sub.cursor(R)
       for (const char of subscript(token.sub)) {
         ;(/\d/.test(char) ?
@@ -112,7 +113,7 @@ export class CmdVar extends Leaf {
         : new CmdVar(char, options)
         ).insertAt(subc, L)
       }
-      new CmdSupSub(sub, null).insertAt(cursor, L)
+      supsub.insertAt(cursor, L)
     }
   }
 
