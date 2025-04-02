@@ -3,7 +3,13 @@ import { dragNum, dragPoint, NO_DRAG, sym } from "@/eval/ast/tx"
 import { glsl } from "@/eval/glsl"
 import { js } from "@/eval/js"
 import { parseNumberJs } from "@/eval/lib/base"
-import { BindingFn, id, name, tryName } from "@/eval/lib/binding"
+import {
+  BindingFn,
+  BindingGlslValue,
+  id,
+  name,
+  tryName,
+} from "@/eval/lib/binding"
 import type { GlslContext } from "@/eval/lib/fn"
 import { subscript } from "@/eval/lib/text"
 import { FnDist } from "@/eval/ops/dist"
@@ -941,6 +947,9 @@ export const PKG_CORE_OPS: Package = {
               throw new Error(
                 `${tryName(node)} is a function; try using parentheses.`,
               )
+            }
+            if (value instanceof BindingGlslValue) {
+              return value.glsl(props.ctx)
             }
             if (value) {
               if (node.sup) {

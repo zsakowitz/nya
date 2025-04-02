@@ -212,3 +212,7 @@ export class BindingFn {
     readonly sym: (args: Sym[]) => Sym,
   ) {}
 }
+
+export class BindingGlslValue {
+  constructor(readonly glsl: (ctx: GlslContext) => GlslValue) {}
+}

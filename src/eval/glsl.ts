@@ -1,6 +1,6 @@
 import type { Node } from "./ast/token"
 import { TXR_AST } from "./ast/tx"
-import type { BindingFn, Bindings } from "./lib/binding"
+import type { BindingFn, BindingGlslValue, Bindings } from "./lib/binding"
 import type { GlslContext } from "./lib/fn"
 import { FNS } from "./ops"
 import type { Sym } from "./sym"
@@ -17,7 +17,7 @@ export interface PropsGlsl {
   base: SReal
   ctx: GlslContext
   /** GLSL bindings must contain variable names and be properly typed. */
-  bindings: Bindings<GlslValue | BindingFn>
+  bindings: Bindings<GlslValue | BindingGlslValue | BindingFn>
   bindingsJs: Bindings<JsValue | BindingFn>
   bindingsSym: Bindings<Sym | BindingFn>
 }

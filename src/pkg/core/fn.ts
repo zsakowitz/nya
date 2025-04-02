@@ -9,8 +9,14 @@ import { NO_DRAG, NO_SYM, sym } from "@/eval/ast/tx"
 import { glsl, glslCall, type PropsGlsl, type PropsSym } from "@/eval/glsl"
 import { js, jsCall, type PropsJs } from "@/eval/js"
 import { asNumericBase } from "@/eval/lib/base"
-import { BindingFn, id, SYM_BINDINGS, tryName } from "@/eval/lib/binding"
-import type { GlslContext } from "@/eval/lib/fn"
+import {
+  BindingFn,
+  BindingGlslValue,
+  id,
+  SYM_BINDINGS,
+  tryName,
+} from "@/eval/lib/binding"
+import { type GlslContext } from "@/eval/lib/fn"
 import { safe } from "@/eval/lib/util"
 import { FNS, OP_UNARY } from "@/eval/ops"
 import type { Sym } from "@/eval/sym"
@@ -501,6 +507,11 @@ export const PKG_CORE_FN: Package = {
               const fn = props.bindings.get(id(node.lhs.value))
               if (!fn) {
                 throw new Error(`'${tryName(node.lhs.value)}' is not defined.`)
+              }
+
+              if (fn instanceof BindingGlslValue) {
+                lhs = fn.glsl(props.ctx)
+                break fn
               }
 
               if (!(fn instanceof BindingFn)) {

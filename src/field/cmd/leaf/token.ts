@@ -1,11 +1,11 @@
-import { faWarning } from "@fortawesome/free-solid-svg-icons/faWarning"
-import { Leaf } from "."
 import type { Node } from "@/eval/ast/token"
-import { BindingFn, id } from "@/eval/lib/binding"
+import { BindingFn, BindingGlslValue, id } from "@/eval/lib/binding"
 import type { JsVal, TyName } from "@/eval/ty"
 import { TY_INFO } from "@/eval/ty/info"
 import { h, sx } from "@/jsx"
 import type { Ctx, Scope } from "@/sheet/deps"
+import { faWarning } from "@fortawesome/free-solid-svg-icons/faWarning"
+import { Leaf } from "."
 import { fa } from "../../fa"
 import type { LatexParser } from "../../latex"
 import {
@@ -139,6 +139,8 @@ export class TokenCtx {
         try {
           const value = this.scope.bindingsGlsl.get(id({ value: "$" + key }))
           if (value instanceof BindingFn) {
+            type = "__function"
+          } else if (value instanceof BindingGlslValue) {
             type = "__function"
           } else if (value) {
             type = value.type

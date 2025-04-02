@@ -1,5 +1,4 @@
 import { btn, btnSkin } from "@/docs/core"
-import { GlslContext } from "@/eval/lib/fn"
 import type { JsVal, TyName } from "@/eval/ty"
 import { num, real } from "@/eval/ty/create"
 import { splitRaw } from "@/eval/ty/split"
@@ -364,8 +363,9 @@ export class Sheet {
       return
     }
 
-    declareAddR64(new GlslContext(this.scope.helpers))
-    declareMulR64(new GlslContext(this.scope.helpers))
+    const ctx = this.scope.propsGlsl().ctx
+    declareAddR64(ctx)
+    declareMulR64(ctx)
     const frag = `#version 300 es
 precision highp float;
 out vec4 color;
@@ -397,17 +397,21 @@ v_coords = vec4(
 ${compiled.map((x) => x[0].block).join("")}color = ${compiled.map((x) => x[1]).reduce((a, b) => `_nya_helper_compose(${a},${b})`)};
       }
       `
-    this.program = this.regl({
-      frag,
-      vert: `#version 300 es
+    try {
+      this.program = this.regl({
+        frag,
+        vert: `#version 300 es
 precision highp float;
 in vec2 position;
 void main() {
   gl_Position = vec4(position, 0, 1);
 }
 `,
-      count: 6,
-    })
+        count: 6,
+      })
+    } catch {
+      this.program = undefined
+    }
   }
 
   private _qdGlsl = false

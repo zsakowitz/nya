@@ -5,6 +5,7 @@ import { glsl, type PropsGlsl, type PropsSym } from "@/eval/glsl"
 import { js, type PropsJs } from "@/eval/js"
 import {
   BindingFn,
+  BindingGlslValue,
   Bindings,
   id,
   name,
@@ -15,7 +16,6 @@ import { GlslContext, GlslHelpers } from "@/eval/lib/fn"
 import type { Sym } from "@/eval/sym"
 import type { GlslValue, JsValue } from "@/eval/ty"
 import { frac } from "@/eval/ty/create"
-import { TY_INFO } from "@/eval/ty/info"
 import { Field } from "@/field/field"
 import type { Options } from "@/field/options"
 
@@ -90,7 +90,7 @@ export class Scope {
 
   bindingsJs!: Bindings<JsValue | BindingFn>
   bindingsDrag!: Bindings<[FieldComputed, Node]>
-  bindingsGlsl!: Bindings<GlslValue | BindingFn>
+  bindingsGlsl!: Bindings<GlslValue | BindingGlslValue | BindingFn>
   bindingsSym!: Bindings<Sym | BindingFn>
   readonly helpers = new GlslHelpers()
   readonly propsJs: PropsJs
@@ -192,8 +192,10 @@ export class Scope {
     const bindingMapJs: Record<string, JsValue | BindingFn> =
       Object.create(null)
     const bindingMapSym: Record<string, Sym | BindingFn> = Object.create(null)
-    const bindingMapGlsl: Record<string, GlslValue | BindingFn> =
-      Object.create(null)
+    const bindingMapGlsl: Record<
+      string,
+      GlslValue | BindingGlslValue | BindingFn
+    > = Object.create(null)
     const bindingMapDrag: Record<string, [FieldComputed, Node]> =
       Object.create(null)
     const bindingsJs = new Bindings(bindingMapJs)
@@ -286,17 +288,11 @@ export class Scope {
         Object.defineProperty(bindingMapGlsl, def, {
           configurable: true,
           enumerable: true,
-          get: () => {
+          value: new BindingGlslValue((ctx) => {
             const props = this.propsGlsl()
-            const ctx = (props.ctx = new GlslContext(this.helpers))
-            const rawValue = glsl(node, props)
-            const name = ctx.name()
-            ctx.helpers.helpers += `${TY_INFO[rawValue.type].glsl}${rawValue.list !== false ? `[${rawValue.list}]` : ""} ${name}() {
-  ${ctx.block}
-  return ${rawValue.expr};
-}`
-            return { ...rawValue, expr: `${name}()` }
-          },
+            props.ctx = ctx
+            return glsl(node, props)
+          }),
         })
 
         bindingMapDrag[def] = [fields[0]!, node]

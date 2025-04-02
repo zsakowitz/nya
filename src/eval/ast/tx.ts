@@ -31,7 +31,6 @@ export interface TxrAst<T> {
   sym(node: T, props: PropsSym): Sym
   deps(node: T, deps: Deps): void
   drag: DragTarget<T>
-
   /**
    * If two packages attempt to load the same transformer, the one with a higher
    * `layer` takes precedence. If the same `layer` is used, the first one loaded
