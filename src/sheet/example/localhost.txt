@@ -1,2 +1,7 @@
-a=2
-ax
+y=\operatorname{sin}x
+y=x
+y=-x
+y=2x
+y=20x
+y=0.1x
+y=-0.1x

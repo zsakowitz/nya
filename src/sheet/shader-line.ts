@@ -34,7 +34,6 @@ export function createLine(
     ...BASE.map(([a, b]): Coord => [a * DIST, b * DIST]),
     ...BASE.map(([a, b]): Coord => [a * (DIST + 0.5), b * (DIST + 0.5)]),
     [0, 0],
-    // ...BASE.map(([a, b]): Coord => [a * (DIST + 1), b * (DIST + 1)]),
   ]
 
   const offsets = props.ctx.name()
