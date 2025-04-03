@@ -21,6 +21,46 @@ const THEME_AXIS_STROKE = () => theme("--nya-paper-screen-line", "black")
 const MAX_GRIDLINES_MAJOR = 200
 const MAX_GRIDLINES_MINOR = MAX_GRIDLINES_MAJOR * 5
 
+function getGridlineSize(scale: number, graphSize: number, canvasSize: number) {
+  const MIN_GRIDLINE_SIZE = 16 * scale
+
+  const graphUnitsInGridlineSize = (MIN_GRIDLINE_SIZE * graphSize) / canvasSize
+
+  const exp = 10 ** Math.floor(Math.log10(graphUnitsInGridlineSize))
+  const mantissa = graphUnitsInGridlineSize / exp
+  if (mantissa < 2) {
+    return { minor: 2 * exp, major: 10 * exp }
+  } else if (mantissa < 4) {
+    return { minor: 5 * exp, major: 20 * exp }
+  } else {
+    return { minor: 10 * exp, major: 50 * exp }
+  }
+}
+
+export function gridlineCoords(
+  cv: Cv,
+  axis: "x" | "y",
+  kind: "major" | "minor",
+) {
+  const bounds = cv.bounds()
+  const min = axis == "x" ? bounds.xmin : bounds.ymin
+  const delta = axis == "x" ? bounds.w : bounds.h
+  const size = getGridlineSize(cv.scale, delta, cv.width)[kind]
+
+  const majorStart = Math.floor(min / size) * size
+  const majorEnd = Math.ceil((min + delta) / size) * size
+  const max = kind == "minor" ? MAX_GRIDLINES_MINOR : MAX_GRIDLINES_MAJOR
+  const values: number[] = []
+  for (
+    let line = majorStart, i = 0;
+    line < majorEnd && i < max;
+    line += size, i++
+  ) {
+    values.push(line)
+  }
+  return values
+}
+
 function createDrawAxes(paper: Cv) {
   if (location.href.includes("nogrid")) {
     return
@@ -67,26 +107,9 @@ function createDrawAxes(paper: Cv) {
     drawScreenLineY(y, THEME_MAIN_AXIS_WIDTH * scale())
   }
 
-  function getGridlineSize(graphSize: number, canvasSize: number) {
-    const MIN_GRIDLINE_SIZE = 16 * scale()
-
-    const graphUnitsInGridlineSize =
-      (MIN_GRIDLINE_SIZE * graphSize) / canvasSize
-
-    const exp = 10 ** Math.floor(Math.log10(graphUnitsInGridlineSize))
-    const mantissa = graphUnitsInGridlineSize / exp
-    if (mantissa < 2) {
-      return { minor: 2 * exp, major: 10 * exp }
-    } else if (mantissa < 4) {
-      return { minor: 5 * exp, major: 20 * exp }
-    } else {
-      return { minor: 10 * exp, major: 50 * exp }
-    }
-  }
-
   function drawGridlinesX() {
     const { xmin, w } = paper.bounds()
-    const { minor, major } = getGridlineSize(w, cv.width)
+    const { minor, major } = getGridlineSize(scale(), w, cv.width)
 
     ctx.strokeStyle = THEME_AXIS_STROKE()
     ctx.lineWidth = scale()
@@ -122,7 +145,7 @@ function createDrawAxes(paper: Cv) {
 
   function drawGridlinesY() {
     const { ymin, h } = paper.bounds()
-    const { minor, major } = getGridlineSize(h, cv.height)
+    const { minor, major } = getGridlineSize(scale(), h, cv.height)
 
     ctx.strokeStyle = THEME_AXIS_STROKE()
     ctx.lineWidth = scale()
@@ -186,7 +209,7 @@ function createDrawAxes(paper: Cv) {
 
   function drawAxisNumbersX() {
     const { xmin, w } = paper.bounds()
-    const { major } = getGridlineSize(w, cv.width)
+    const { major } = getGridlineSize(scale(), w, cv.width)
 
     ctx.beginPath()
 
@@ -250,7 +273,7 @@ function createDrawAxes(paper: Cv) {
 
   function drawAxisNumbersY() {
     const { ymin, h } = paper.bounds()
-    const { major } = getGridlineSize(h, cv.height)
+    const { major } = getGridlineSize(scale(), h, cv.height)
 
     ctx.beginPath()
 

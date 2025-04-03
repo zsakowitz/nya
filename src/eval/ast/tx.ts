@@ -712,5 +712,7 @@ export function sym(node: Node, props: PropsSym): Sym {
 }
 
 export function NO_SYM(..._: any): never {
-  throw new Error("NO SYMBOLIC COMPUTATION ALLOWED HERE")
+  throw new Error(
+    "You are using a construct which is not yet supported in symbolic computation.",
+  )
 }

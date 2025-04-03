@@ -46,6 +46,9 @@ export type SymVal = {
 
 export type SymName = keyof Syms
 
+// TODO: Node can be simplified into Sym in many cases
+// having op and call seems like a waste sometimes
+// maybe rewrite Node to be more like Sym
 export type Sym<T extends SymName = SymName> = {
   [K in T]: { type: K } & Syms[K]
 }[T]
