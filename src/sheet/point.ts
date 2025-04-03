@@ -9,7 +9,7 @@ export interface Point {
   readonly y: number
 }
 
-function norm(pt: Point, distance = 1): Point {
+export function norm(pt: Point, distance = 1): Point {
   const hypot = Math.hypot(pt.x, pt.y)
   if (hypot == 0) return pt
 

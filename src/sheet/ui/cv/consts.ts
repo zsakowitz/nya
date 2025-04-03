@@ -15,6 +15,7 @@ export const Opacity = Object.freeze({
   Fill: 0.3,
   TokenFill: 0.2,
   AngleLine: 0.25,
+  SlopeField: 0.3,
 })
 
 export const OrderMajor = Object.freeze({
@@ -70,6 +71,9 @@ export const Size = Object.freeze({
 
   DirectedAngleMinHeadSize: 4,
   DirectedAngleMaxHeadSize: 8,
+
+  // TODO: make this dependent on grid size
+  SlopeFieldMarker: 16,
 
   /** The offset distance required to consider something a "touch". */
   get Target() {
