@@ -473,11 +473,8 @@ export const OP_RAISE: FnDist = new FnDist(
           ],
         }
       } else if (usedB && !usedA) {
-        // COMPAT: d/dx(0^x) = x
-
-        if (isZero(a)) {
-          return SYM_0
-        }
+        // TODO: very strange things happen with 0^x and (x-x)^x
+        // figure out if we want to resolve this, or keep the current behavior (and thus desmos compat)
 
         // a^f = f' * a^f * ln a
         return {
