@@ -58,7 +58,7 @@ export const FACTORY_EXPR: ItemFactory<Expr<K>, { geo?: boolean }> = {
       expr.field.onBeforeChange()
       const block = new LatexParser(
         ref.root.sheet.options,
-        ref.root.sheet.scope.ctx,
+        ref.root.sheet.scope,
         source,
         expr.field,
       ).parse()

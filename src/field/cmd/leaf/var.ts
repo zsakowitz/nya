@@ -9,7 +9,7 @@ import {
 import { TXR_MAGICVAR } from "@/eval/ast/tx"
 import { subscript } from "@/eval/lib/text"
 import { h } from "@/jsx"
-import type { Ctx } from "@/sheet/deps"
+import type { Scope } from "@/sheet/deps"
 import { Leaf } from "."
 import type { LatexParser } from "../../latex"
 import {
@@ -89,13 +89,13 @@ export class CmdVar extends Leaf {
     cursor: Cursor,
     token: Var & { sup?: undefined },
     options: Options,
-    ctx: Ctx,
+    scope: Scope,
   ) {
     if (/^\$\d+$/.test(token.value)) {
-      new CmdToken(
-        BigInt(token.value.slice(1)),
-        new TokenCtx(ctx.scope),
-      ).insertAt(cursor, L)
+      new CmdToken(BigInt(token.value.slice(1)), new TokenCtx(scope)).insertAt(
+        cursor,
+        L,
+      )
     } else {
       ;(token.value.length == 1 ?
         new CmdVar(token.value, options)

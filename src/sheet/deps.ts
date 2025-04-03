@@ -20,14 +20,7 @@ import { frac } from "@/eval/ty/create"
 import { Field } from "@/field/field"
 import type { Options } from "@/field/options"
 
-export interface Ctx {
-  scope: Scope
-}
-
 export class Scope {
-  // FIXME: ctx ought to be plain scope
-  readonly ctx: Ctx = Object.freeze({ scope: this, __proto__: null })
-
   constructor(
     readonly options: Options,
     readonly ctxJs: JsContext,
@@ -424,7 +417,7 @@ export class FieldComputed extends Field {
     className?: string,
     unlinked?: boolean,
   ) {
-    super(scope.options, scope.ctx, className)
+    super(scope.options, scope, className)
     if (unlinked) {
       this.linked = false
     } else {

@@ -39,7 +39,7 @@ const TARGET_INTERSECTION: ItemWithDrawTarget<
     }
 
     const expr = Expr.of(sheet, true)
-    item.ref = ref = CmdToken.new(sheet.scope.ctx)
+    item.ref = ref = CmdToken.new(sheet.scope)
     const cursor = expr.field.block.cursor(R)
     ref.insertAt(cursor, L)
     new OpEq(false).insertAt(cursor, L)
@@ -125,7 +125,7 @@ const TARGET_GLIDER: ItemWithDrawTarget<
     }
 
     const expr = Expr.of(sheet, true)
-    item.ref = ref = CmdToken.new(sheet.scope.ctx)
+    item.ref = ref = CmdToken.new(sheet.scope)
     const cursor = expr.field.block.cursor(R)
     ref.insertAt(cursor, L)
     new OpEq(false).insertAt(cursor, L)
@@ -217,7 +217,7 @@ const TARGET_VPOINT: ItemWithDrawTarget<
     }
 
     const expr = Expr.of(sheet, true)
-    item.ref = ref = CmdToken.new(sheet.scope.ctx)
+    item.ref = ref = CmdToken.new(sheet.scope)
     const cursor = expr.field.block.cursor(R)
     ref.insertAt(cursor, L)
     new OpEq(false).insertAt(cursor, L)

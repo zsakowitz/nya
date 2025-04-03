@@ -11,7 +11,7 @@ import type { Package } from "."
 export const STORE_EVAL = new Store((e) => {
   const field = new FieldInert(
     e.field.options,
-    e.sheet.scope.ctx,
+    e.sheet.scope,
     "bg-[--nya-bg-sidebar] border border-[--nya-border] px-2 py-1 rounded ml-auto inline-block",
   )
   const el = h(
@@ -86,7 +86,7 @@ export function createMultiEval(items: (Node | string)[]) {
 
         const { el } = new FieldInert(
           expr.field.options,
-          expr.sheet.scope.ctx,
+          expr.sheet.scope,
           "bg-[--nya-bg-sidebar] border border-[--nya-border] px-2 py-1 border-l-0 last:rounded-r inline-block",
         )
         label.appendChild(el)
@@ -109,7 +109,7 @@ export function createMultiEval(items: (Node | string)[]) {
       for (const x of values) {
         const field = new FieldInert(
           expr.field.options,
-          expr.sheet.scope.ctx,
+          expr.sheet.scope,
           "bg-[--nya-bg-sidebar] border border-[--nya-border] px-2 py-1 border-l-0 last:rounded-r inline-block",
         )
         const display = new Display(field.block.cursor(R), frac(10, 1))

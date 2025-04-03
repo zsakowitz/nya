@@ -1,5 +1,5 @@
+import type { Scope } from "@/sheet/deps"
 import { twMerge } from "tailwind-merge"
-import type { Ctx } from "@/sheet/deps"
 import { LatexParser } from "./latex"
 import {
   Block,
@@ -27,7 +27,7 @@ export class FieldInert {
 
   constructor(
     readonly options: Options,
-    readonly ctx: Ctx,
+    readonly scope: Scope,
     className?: string,
   ) {
     this.el = this.block.el
@@ -39,7 +39,7 @@ export class FieldInert {
 
   setPrefix(block: Block | ((field: FieldInert) => void)) {
     if (typeof block == "function") {
-      const field = new FieldInert(this.options, this.ctx)
+      const field = new FieldInert(this.options, this.scope)
       block(field)
       block = field.block
     }
@@ -56,7 +56,7 @@ export class FieldInert {
     }
 
     const value = performInit(init, this.sel, {
-      ctx: this.ctx,
+      scope: this.scope,
       input,
       event: props?.event,
       field: this,
@@ -89,7 +89,12 @@ export class FieldInert {
     if (!skipChangeHandlers) {
       this.onBeforeChange?.()
     }
-    const block = new LatexParser(this.options, this.ctx, source, this).parse()
+    const block = new LatexParser(
+      this.options,
+      this.scope,
+      source,
+      this,
+    ).parse()
     const cursor = this.sel.remove()
     cursor.insert(block, L)
     this.sel = cursor.selection()

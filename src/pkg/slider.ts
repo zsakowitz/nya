@@ -136,7 +136,7 @@ class RangeControls {
     }
     this.name = new FieldInert(
       expr.sheet.options,
-      expr.sheet.scope.ctx,
+      expr.sheet.scope,
       "text-[1em]",
     )
 
@@ -301,7 +301,7 @@ class Slider extends RawSlider {
     this.expr.field.onBeforeChange()
     field.block.clear()
     const cursor = field.block.cursor(R)
-    CmdVar.leftOf(cursor, this.name, field.options, field.ctx)
+    CmdVar.leftOf(cursor, this.name, field.options, field.scope)
     new OpEq(false).insertAt(cursor, L)
     const base = this.base
     this.display(cursor, base)
@@ -335,7 +335,7 @@ const EXT_SLIDER = defineExt({
       controls.name.block.cursor(R),
       ast.name,
       expr.field.options,
-      expr.field.ctx,
+      expr.field.scope,
     )
     controls.relink()
     controls.setBoundsAppropriately()

@@ -1,6 +1,6 @@
 import { tokensToAst, type Node } from "@/eval/ast/token"
 import { h } from "@/jsx"
-import type { Ctx } from "@/sheet/deps"
+import type { Scope } from "@/sheet/deps"
 import type { CmdFrac } from "./cmd/math/frac"
 import type { FieldInert } from "./field-inert"
 import type { LatexParser } from "./latex"
@@ -1664,7 +1664,7 @@ export interface InitProps<E = KeyboardEvent | undefined> {
   options: Options
   event: E
   field: FieldInert
-  ctx: Ctx
+  scope: Scope
 }
 
 /**

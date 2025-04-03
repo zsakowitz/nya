@@ -298,7 +298,7 @@ export class Expr<T extends {} = {}> {
       return this.field.ast.name
     }
 
-    const token = CmdToken.new(this.field.ctx)
+    const token = CmdToken.new(this.field.scope)
     const cursor = this.field.block.cursor(L)
     token.insertAt(cursor, L)
     new OpEq(false).insertAt(cursor, L)
@@ -331,7 +331,7 @@ export class Expr<T extends {} = {}> {
   createRef(index: number): Block {
     const block = new Block(null)
     const cursor = block.cursor(R)
-    CmdVar.leftOf(cursor, this.name(), this.field.options, this.field.ctx)
+    CmdVar.leftOf(cursor, this.name(), this.field.options, this.field.scope)
     if (this.js?.value.list !== false) {
       CmdBrack.index(index + 1).insertAt(cursor, L)
     }

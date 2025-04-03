@@ -329,7 +329,7 @@ const EXT_TEXT = defineExt({
           try {
             const block = new LatexParser(
               expr.field.options,
-              expr.field.ctx,
+              expr.field.scope,
               segment.value,
               null,
             ).parse()

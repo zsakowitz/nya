@@ -1,4 +1,4 @@
-import type { Ctx } from "@/sheet/deps"
+import type { Scope } from "@/sheet/deps"
 import { CmdEOF } from "./cmd/leaf/eof"
 import { CmdUnknown } from "./cmd/leaf/unknown"
 import type { FieldInert } from "./field-inert"
@@ -30,7 +30,7 @@ export class LatexParser {
 
   constructor(
     readonly options: Options,
-    readonly ctx: Ctx,
+    readonly scope: Scope,
     private readonly source: string,
     readonly field: FieldInert | null,
   ) {

@@ -322,11 +322,7 @@ function secFunctions(sheet: Sheet, list: PackageList, named: boolean) {
 }
 
 function math(sheet: Sheet, data: string) {
-  const field = new FieldInert(
-    sheet.options,
-    sheet.scope.ctx,
-    "text-[--nya-text]",
-  )
+  const field = new FieldInert(sheet.options, sheet.scope, "text-[--nya-text]")
   field.typeLatex(data)
   return field.el
 }
@@ -558,7 +554,7 @@ function secGuides(sheet: Sheet, list: PackageList) {
   function math(data: string) {
     const field = new FieldInert(
       sheet.options,
-      sheet.scope.ctx,
+      sheet.scope,
       "text-[--nya-text]",
     )
     field.typeLatex(data)

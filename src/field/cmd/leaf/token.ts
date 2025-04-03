@@ -3,7 +3,7 @@ import { BindingFn, BindingGlslValue, id } from "@/eval/lib/binding"
 import type { JsVal, TyName } from "@/eval/ty"
 import { TY_INFO } from "@/eval/ty/info"
 import { h, sx } from "@/jsx"
-import type { Ctx, Scope } from "@/sheet/deps"
+import type { Scope } from "@/sheet/deps"
 import { faWarning } from "@fortawesome/free-solid-svg-icons/faWarning"
 import { Leaf } from "."
 import { fa } from "../../fa"
@@ -211,7 +211,7 @@ let nextId = 0n
 
 export class CmdToken extends Leaf {
   static init(cursor: Cursor, props: InitProps): InitRet {
-    this.new(props.ctx).insertAt(cursor, L)
+    this.new(props.scope).insertAt(cursor, L)
   }
 
   static fromLatex(_cmd: string, parser: LatexParser): Command {
@@ -219,14 +219,14 @@ export class CmdToken extends Leaf {
     const id = BigInt(arg)
 
     if (id >= 0n) {
-      return new CmdToken(id, new TokenCtx(parser.ctx.scope))
+      return new CmdToken(id, new TokenCtx(parser.scope))
     }
 
     return new CmdUnknown(`‹token›`)
   }
 
-  static new(ctx: Ctx) {
-    return new this(nextId++, new TokenCtx(ctx.scope))
+  static new(scope: Scope) {
+    return new this(nextId++, new TokenCtx(scope))
   }
 
   constructor(

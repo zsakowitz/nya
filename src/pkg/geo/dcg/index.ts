@@ -356,7 +356,7 @@ function createPick(type: "angle" | "directedangle"): Data {
           const expr = Expr.of(sheet, true)
           const cursor = expr.field.block.cursor(R)
 
-          const token = CmdToken.new(expr.field.ctx)
+          const token = CmdToken.new(expr.field.scope)
           token.insertAt(cursor, L)
           new OpEq(false).insertAt(cursor, L)
 

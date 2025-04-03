@@ -154,7 +154,7 @@ const FACTORY: ItemFactory<Data> = {
     const token =
       source && /^\d+$/.test(source) ?
         new CmdToken(BigInt(source), new TokenCtx(ref.root.sheet.scope))
-      : CmdToken.new(ref.root.sheet.scope.ctx)
+      : CmdToken.new(ref.root.sheet.scope)
 
     const field = hx("input", {
       type: "file",
