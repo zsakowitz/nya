@@ -34,7 +34,7 @@ import {
   declareCmpR64,
   declareMulR64,
   FN_LN,
-  FN_XLNY,
+  FN_XPRODY,
   OP_ABS,
   OP_ADD,
   OP_CDOT,
@@ -149,7 +149,7 @@ FN_LN.add(
   "lne^2=2",
 )
 
-FN_XLNY.add(
+FN_XPRODY.add(
   ["r32", "r32"],
   "r32",
   (a, b) => {
@@ -161,17 +161,17 @@ FN_XLNY.add(
       return real(0)
     }
 
-    return mul(a.value, approx(Math.log(num(b.value))))
+    return mul(a.value, b.value)
   },
   (ctx, ar, br) => {
     const a = ctx.cache(ar)
     const b = ctx.cache(br)
-    return `(isnan(${b}) ? 0.0/0.0 : ${a} == 0.0 ? 0.0 : ${a} * log(${b}))`
+    return `(isnan(${b}) ? 0.0/0.0 : ${a} == 0.0 ? 0.0 : ${a} * ${b})`
   },
   [
-    "2\\nyaop{xlny}3=2ln3",
-    "0ln0=\\digit N \\digit a \\digit N",
-    "0\\nyaop{xlny}0=0",
+    "2\\nyaop{xprody}3=2\\cdot3",
+    "0*\\infty=\\digit N \\digit a \\digit N",
+    "0\\nyaop{xprody}\\infty=0",
   ],
 )
 

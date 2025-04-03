@@ -21,7 +21,7 @@ import {
   declareOdotC64,
   declareSubR64,
   FN_LN,
-  FN_XLNY,
+  FN_XPRODY,
   OP_ABS,
   OP_ADD,
   OP_CDOT,
@@ -259,7 +259,7 @@ export const PKG_NUM_COMPLEX: Package = {
       "ln(-0.416+0.909i)≈2i",
     )
 
-    FN_XLNY.add(
+    FN_XPRODY.add(
       ["c32", "c32"],
       "c32",
       (a, b) => {
@@ -271,16 +271,16 @@ export const PKG_NUM_COMPLEX: Package = {
           return rept({ x: 0, y: 0 })
         }
 
-        return mulPt(a.value, lnJs(b.value))
+        return mulPt(a.value, b.value)
       },
       (ctx, ar, br) => {
         declareMulC32(ctx)
         declareLn(ctx)
         const a = ctx.cache(ar)
         const b = ctx.cache(br)
-        return `(isnan(${b}.x) || isnan(${b}.y) ? vec2(0.0/0.0) : ${a} == vec2(0) ? vec2(0) : _helper_mul_c32(${a}, _helper_ln(${b})))`
+        return `(isnan(${b}.x) || isnan(${b}.y) ? vec2(0.0/0.0) : ${a} == vec2(0) ? vec2(0) : _helper_mul_c32(${a}, ${b}))`
       },
-      "2i\\nyaop{xlny}3=2iln3",
+      ["2i\\nyaop{xprody}3=6i", "0\\nyaop{xprody}(-\\infty i)=0"],
     )
 
     FN_LOG10.add(

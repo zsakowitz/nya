@@ -479,7 +479,7 @@ export const OP_RAISE: FnDist = new FnDist(
         // a^f = f' * a^f * ln a
         return {
           type: "call",
-          fn: FN_XLNY,
+          fn: FN_XPRODY,
           args: [
             {
               type: "call",
@@ -489,7 +489,7 @@ export const OP_RAISE: FnDist = new FnDist(
                 { type: "call", fn: OP_RAISE, args: [a, b] },
               ],
             },
-            a,
+            { type: "call", fn: FN_LN, args: [a] },
           ],
         }
       } else {
@@ -518,14 +518,14 @@ export const OP_RAISE: FnDist = new FnDist(
                 // f g' ln(f)
                 {
                   type: "call",
-                  fn: FN_XLNY,
+                  fn: FN_XPRODY,
                   args: [
                     {
                       type: "call",
                       fn: OP_JUXTAPOSE,
                       args: [a, txr(b).deriv(b, wrt)],
                     },
-                    a,
+                    { type: "call", fn: FN_LN, args: [a] },
                   ],
                 },
               ],
@@ -594,36 +594,33 @@ export const OP_ABS = new FnDist(
   },
 )
 
-export const FN_XLNY = new FnDist(
-  "xlny",
-  "takes 'a*ln(b)' such that the result is zero if 'a' is zero; used internally for derivatives of exponents",
+export const FN_XPRODY: FnDist = new FnDist(
+  "xprody",
+  "takes 'a*b' such that the result is zero if 'a' is zero and 'b' is infinite; used internally for derivatives of exponents",
   {
     simplify([a, b, c]) {
       if (a && b && !c) {
+        let a0: boolean | undefined = false
+        let a1: boolean | undefined = false
+        let b0: boolean | undefined = false
+        let b1: boolean | undefined = false
+
         if (a.type == "js" && a.value.list === false) {
-          if (TY_INFO[a.value.type].extras?.isZero?.(a.value.value as never)) {
-            return SYM_0
-          }
+          a0 = TY_INFO[a.value.type].extras?.isZero?.(a.value.value as never)
+          a1 = TY_INFO[a.value.type].extras?.isOne?.(a.value.value as never)
         }
 
         if (b.type == "js" && b.value.list === false) {
-          if (
-            TY_INFO[b.value.type].extras?.isNonZero?.(b.value.value as never)
-          ) {
-            return {
-              type: "call",
-              // FIXME: might be possible to simplify once in juxtapose form
-              fn: OP_JUXTAPOSE,
-              args: [
-                a,
-                {
-                  type: "js",
-                  value: { ...FN_LN.js1(b.value), list: false },
-                },
-              ],
-            }
-          }
+          b0 = TY_INFO[b.value.type].extras?.isZero?.(b.value.value as never)
+          b1 = TY_INFO[b.value.type].extras?.isOne?.(b.value.value as never)
         }
+
+        if (a0 || b0) {
+          return SYM_0
+        }
+
+        if (a1) return b
+        if (b1) return a
       }
     },
     display([a, b, c]) {
@@ -631,19 +628,18 @@ export const FN_XLNY = new FnDist(
       const mock: Sym = {
         type: "call",
         fn: OP_JUXTAPOSE,
-        args: [
-          a,
-          {
-            type: "call",
-            fn: FN_LN,
-            args: [b],
-          },
-        ],
+        args: [a, b],
       }
       return txr(mock).display(mock)
     },
-    // FIXME: xlny should have a proper derivative
-    // similar to product rule, but must preserve behavior that x=0 implies xlny=0 (modulo NaN)
+    deriv: binary((wrt, a, b) => ({
+      type: "call",
+      fn: OP_ADD,
+      args: [
+        { type: "call", fn: FN_XPRODY, args: [a, txr(b).deriv(b, wrt)] },
+        { type: "call", fn: FN_XPRODY, args: [b, txr(a).deriv(a, wrt)] },
+      ],
+    })),
   },
 )
 
