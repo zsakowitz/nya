@@ -46,8 +46,7 @@ export function gridlineCoords(
   const min = axis == "x" ? bounds.xmin : bounds.ymin
   const delta = axis == "x" ? bounds.w : bounds.h
   const canvasSize = axis == "x" ? cv.width : cv.height
-  // TODO: why does 1 work here
-  const size = getGridlineSize(1, delta, canvasSize)[kind]
+  const size = getGridlineSize(cv.scale, delta, canvasSize * cv.scale)[kind]
 
   const majorStart = Math.floor(min / size) * size
   const majorEnd = Math.ceil((min + delta) / size) * size

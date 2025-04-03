@@ -1,1 +1,2 @@
-slopefield(y/x)
+\operatorname{slopefield}\operatorname{vector}\left(\left(0,0\right),\left(1,xy\right)\right)
+\operatorname{ln}y=\frac{1}{2}x^{2}

@@ -6,7 +6,7 @@ export function vectorPath(
   cv: Cv,
   p1: Point,
   p2: Point,
-  size = Size.VectorHead,
+  size: number = Size.VectorHead,
 ) {
   const o1 = cv.toCanvas(p1)
   const o2 = cv.toCanvas(p2)

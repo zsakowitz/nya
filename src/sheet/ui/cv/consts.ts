@@ -72,8 +72,8 @@ export const Size = Object.freeze({
   DirectedAngleMinHeadSize: 4,
   DirectedAngleMaxHeadSize: 8,
 
-  // TODO: make this dependent on grid size
   SlopeFieldMarker: 16,
+  SlopeFieldVectorHead: 6,
 
   /** The offset distance required to consider something a "touch". */
   get Target() {

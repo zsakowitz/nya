@@ -342,6 +342,10 @@ export class Cv {
 
   /** Accepts canvas coordinates. */
   path(
+    this: {
+      ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D
+      scale: number
+    },
     path: Path2D,
     size: number,
     color: string,

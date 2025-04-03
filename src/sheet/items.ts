@@ -199,7 +199,15 @@ abstract class ItemList {
       for (const ref of list[+k] || []) {
         const items = ref.factory.plot!.items(ref.data)
         for (let i = 0; i < items.length; i++) {
-          ref.factory.plot!.draw(ref.data, items[i]!, i)
+          try {
+            ref.factory.plot!.draw(ref.data, items[i]!, i)
+          } catch (e) {
+            console.warn("[itemlist.draw]", e)
+            ref.factory.error?.(
+              ref.data,
+              e instanceof Error ? e.message : String(e),
+            )
+          }
         }
       }
 

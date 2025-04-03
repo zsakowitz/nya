@@ -8,12 +8,14 @@ import { canCoerce, coerceTyJs } from "@/eval/ty/coerce"
 import { approx, num, real } from "@/eval/ty/create"
 import { CmdWord } from "@/field/cmd/leaf/word"
 import { L } from "@/field/model"
-import { h, path, svgx } from "@/jsx"
+import { h, hx, path, svgx } from "@/jsx"
+import { Store } from "@/sheet/ext"
 import { defineHideable } from "@/sheet/ext/hideable"
 import { norm } from "@/sheet/point"
 import { Color, Opacity, Order, Size } from "@/sheet/ui/cv/consts"
 import type { Expr } from "@/sheet/ui/expr"
 import type { Package } from "."
+import { vectorPath } from "./geo/dcg/vector"
 import { gridlineCoords } from "./gridlines"
 
 declare module "@/eval/ty" {
@@ -24,16 +26,30 @@ declare module "@/eval/ty" {
 
 const glsl = issue("Cannot use slope fields in shaders.")
 
+const cv = new Store(() => {
+  const el = hx("canvas")
+  try {
+    return el.transferControlToOffscreen().getContext("2d")!
+  } catch {
+    return el.getContext("2d")!
+  }
+})
+
 const EXT_SLOPE_FIELD = defineHideable<
   {
     expr: Expr
     value: JsValue<"slopefield">
+    offscreen: OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D
   },
   Val<"slopefield">
 >({
   data(expr) {
     if (expr.js?.value.type == "slopefield") {
-      return { expr, value: expr.js.value as JsValue<"slopefield"> }
+      return {
+        expr,
+        value: expr.js.value as JsValue<"slopefield">,
+        offscreen: cv.get(expr),
+      }
     }
   },
   plot: {
@@ -44,17 +60,13 @@ const EXT_SLOPE_FIELD = defineHideable<
       return Order.Graph
     },
     draw(data, node) {
-      const kind =
-        data.expr.sheet.cv.width > 1600 || data.expr.sheet.cv.height > 1600 ?
-          "major"
-        : "minor"
-      const sx = gridlineCoords(data.expr.sheet.cv, "x", kind)
-      const sy = gridlineCoords(data.expr.sheet.cv, "y", kind)
+      const cv = data.expr.sheet.cv
+      if (!cv.width || !cv.height || !cv.scale) return
+      const kind = cv.width > 1600 || cv.height > 1600 ? "major" : "minor"
+      const sx = gridlineCoords(cv, "x", kind)
+      const sy = gridlineCoords(cv, "y", kind)
       const path = new Path2D()
-      const size =
-        Size.SlopeFieldMarker *
-        data.expr.sheet.cv.scale *
-        (kind == "major" ? 4 : 1)
+      const size = Size.SlopeFieldMarker * cv.scale * (kind == "major" ? 4 : 1)
 
       for (const x of sx) {
         for (const y of sy) {
@@ -74,29 +86,74 @@ const EXT_SLOPE_FIELD = defineHideable<
             },
             () => js(node, props),
           )
+
           const isR32 = canCoerce(value.type, "r32")
-          if (!isR32) {
-            throw new Error(
-              "The function in 'slopefield' must return a number.",
-            ) // FIXME: or vector
+          if (isR32) {
+            const r32 = coerceTyJs(value, "r32")
+            const at = cv.toCanvas({ x, y })
+            for (const slopeRaw of each(r32)) {
+              const slope = num(slopeRaw)
+              if (isNaN(slope)) continue
+              const { x: dx, y: dy } =
+                slope == Infinity || slope == -Infinity ?
+                  { x: 0, y: size }
+                : norm({ x: 1, y: -slope }, size)
+              path.moveTo(at.x - dx / 2, at.y - dy / 2)
+              path.lineTo(at.x + dx / 2, at.y + dy / 2)
+            }
           }
 
-          const r32 = coerceTyJs(value, "r32")
-          const at = data.expr.sheet.cv.toCanvas({ x, y })
-          for (const slopeRaw of each(r32)) {
-            const slope = num(slopeRaw)
-            if (isNaN(slope)) continue
-            const { x: dx, y: dy } =
-              slope == Infinity || slope == -Infinity ?
-                { x: 0, y: size }
-              : norm({ x: 1, y: -slope }, size)
-            path.moveTo(at.x - dx / 2, at.y - dy / 2)
-            path.lineTo(at.x + dx / 2, at.y + dy / 2)
+          const isVector = canCoerce(value.type, "vector")
+          if (isVector) {
+            const r32 = coerceTyJs(value, "vector")
+            for (const vectorRaw of each(r32)) {
+              const dxRaw = num(vectorRaw[1].x) - num(vectorRaw[0].x)
+              const dyRaw = num(vectorRaw[1].y) - num(vectorRaw[0].y)
+              if (isNaN(dxRaw) || isNaN(dyRaw)) continue
+              const { x: dx, y: dy } = cv.toPaperDelta(
+                norm({ x: dxRaw, y: -dyRaw }, size),
+              )
+              const vPath = vectorPath(
+                cv,
+                { x: x - dx / 4, y: y - dy / 4 },
+                { x: x + dx / 4, y: y + dy / 4 },
+                Size.SlopeFieldVectorHead,
+              )
+              path.addPath(new Path2D(vPath))
+            }
+          }
+
+          const isPoint = canCoerce(value.type, "point32")
+          if (isPoint) {
+            const r32 = coerceTyJs(value, "point32")
+            for (const raw of each(r32)) {
+              const dxRaw = num(raw.x)
+              const dyRaw = num(raw.y)
+              if (isNaN(dxRaw) || isNaN(dyRaw)) continue
+              const { x: dx, y: dy } = cv.toPaperDelta(
+                norm({ x: dxRaw, y: -dyRaw }, size),
+              )
+              const vPath = vectorPath(
+                cv,
+                { x: x - dx / 4, y: y - dy / 4 },
+                { x: x + dx / 4, y: y + dy / 4 },
+                Size.SlopeFieldVectorHead,
+              )
+              path.addPath(new Path2D(vPath))
+            }
           }
         }
       }
 
-      data.expr.sheet.cv.path(path, Size.Line, Color.Blue, Opacity.SlopeField)
+      const temp = data.offscreen
+      temp.canvas.width = cv.width * cv.scale
+      temp.canvas.height = cv.height * cv.scale
+      const self = { ctx: temp, scale: cv.scale }
+      cv.path.call(self, path, Size.Line, Color.Blue, 1, 1)
+      cv.path.call(self, path, Size.Line, Color.Blue, 1, 1)
+      cv.ctx.globalAlpha = Opacity.SlopeField
+      cv.ctx.drawImage(temp.canvas, 0, 0)
+      cv.ctx.globalAlpha = 1
     },
   },
 })

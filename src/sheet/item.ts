@@ -1,10 +1,10 @@
+import type { GlslResult } from "@/eval/lib/fn"
+import { LatexParser } from "@/field/latex"
+import { Block, L, R, U, type VDir } from "@/field/model"
 import {
   faSquareRootVariable,
   type IconDefinition,
 } from "@fortawesome/free-solid-svg-icons"
-import type { GlslResult } from "@/eval/lib/fn"
-import { LatexParser } from "@/field/latex"
-import { Block, L, R, U, type VDir } from "@/field/model"
 import type { ItemRef } from "./items"
 import type { Plottable } from "./ui/cv/item"
 import type { ItemData } from "./ui/cv/move"
@@ -26,6 +26,7 @@ export interface ItemFactory<T, U = unknown, V = unknown> {
   /** `from` is only `null` immediately after creation. */
   focus(data: T, from: VDir | null): void
   encode(data: T): string
+  error?(data: T, message: string): void
 
   /**
    * Defaults to zero; if two items are loaded with the same ID, the higher one
@@ -138,6 +139,9 @@ export const FACTORY_EXPR: ItemFactory<Expr<K>, { geo?: boolean }> = {
       data.field.onAfterChange(true)
     }
     data.field.el.focus()
+  },
+  error(data, message) {
+    data.setError(message)
   },
 
   encode(data) {
