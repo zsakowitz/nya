@@ -25,11 +25,7 @@ export const FN_DISTANCE = new FnDist<"r32">(
     ["point32", "point32"],
     "r32",
     (a, b) => dist(a.value, b.value),
-    (ctx, ar, br) => {
-      const a = ctx.cache(ar)
-      const b = ctx.cache(br)
-      return `hypot(${a}.x - ${b}.x, ${a}.y - ${b}.y)`
-    },
+    (_, a, b) => `length(${a.expr} - ${b.expr})`,
     "distance((2,3),(5,-1))=5",
   )
   // https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
