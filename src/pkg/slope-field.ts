@@ -62,11 +62,12 @@ const EXT_SLOPE_FIELD = defineHideable<
     draw(data, node) {
       const cv = data.expr.sheet.cv
       if (!cv.width || !cv.height || !cv.scale) return
-      const kind = cv.width > 1600 || cv.height > 1600 ? "major" : "minor"
-      const sx = gridlineCoords(cv, "x", kind)
-      const sy = gridlineCoords(cv, "y", kind)
+      const kind = cv.width > 3200 || cv.height > 3200 ? "major" : "minor"
+      const sx = gridlineCoords(cv, "x", kind, 2)
+      const sy = gridlineCoords(cv, "y", kind, 2)
       const path = new Path2D()
-      const size = Size.SlopeFieldMarker * cv.scale * (kind == "major" ? 4 : 1)
+      const size =
+        Size.SlopeFieldMarker * cv.scale * (kind == "major" ? 8 : 1.5)
 
       for (const x of sx) {
         for (const y of sy) {

@@ -5645,5 +5645,3 @@ export const PKG_CHEM_ELEMENTS: Package = {
     fn: Object.fromEntries(fns.map((fn) => [fn.name, fn])),
   },
 }
-
-// FIXME: pressing shift while cursor is not over canvas

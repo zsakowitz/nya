@@ -473,6 +473,12 @@ export const OP_RAISE: FnDist = new FnDist(
           ],
         }
       } else if (usedB && !usedA) {
+        // COMPAT: d/dx(0^x) = x
+
+        if (isZero(a)) {
+          return SYM_0
+        }
+
         // a^f = f' * a^f * ln a
         return {
           type: "call",

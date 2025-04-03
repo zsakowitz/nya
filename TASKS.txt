@@ -88,6 +88,6 @@ to do list for 110% compatiability is:
 ❌ factorial(x)
 
 priority tasks: FIXME
-other tasks: (TODO, FEAT, SYM, DOCS, SHAPE, DCG, DEBT, SHADER, QUIRK)
+other tasks: (TODO, FEAT, SYM, DOCS, SHAPE, DCG, DEBT, SHADER, QUIRK, COMPAT)
 TODO: should rays display below angles?
 TODO: parallel lines are improperly ordered in their token
