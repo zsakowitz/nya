@@ -5,6 +5,7 @@ import { Block, L, R } from "@/field/model"
 import type { Fn } from "."
 import { Precedence } from "../ast/token"
 import type { GlslContext } from "../lib/fn"
+import type { JsContext } from "../lib/jsctx"
 import { insertStrict, txr, type Sym, type SymDisplay } from "../sym"
 import type {
   GlslVal,
@@ -162,7 +163,7 @@ export abstract class FnDistManual<Q extends TyName = TyName> implements Fn {
     }
   }
 
-  js(args: JsValue[]): JsValue<Q> {
+  js(_ctx: JsContext, args: JsValue[]): JsValue<Q> {
     const overload = this.signature(args)
     const list = unifyLists(args)
 

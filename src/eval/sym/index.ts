@@ -3,7 +3,7 @@ import { CmdBrack } from "@/field/cmd/math/brack"
 import { Block, L, R, type Command, type Cursor } from "@/field/model"
 import type { ImageData } from "@/pkg/image"
 import type { Deps } from "../deps"
-import type { PropsGlsl } from "../glsl"
+import type { PropsGlsl, PropsSym } from "../glsl"
 import type { PropsJs } from "../js"
 import { id } from "../lib/binding"
 import type { Fn } from "../ops"
@@ -55,7 +55,7 @@ export interface TxrSym<T> {
   display(value: T): SymDisplay
   deriv(value: T, wrt: string): Sym
   uses(value: T, name: string): boolean
-  simplify(value: T): Sym
+  simplify(value: T, props: PropsSym): Sym
   layer?: number
 
   deps(value: T, deps: Deps): void
@@ -73,6 +73,10 @@ export function txr<T extends SymName>(sym: Sym<T>): TxrSym<Syms[T]> {
   }
 
   return txr
+}
+
+export function simplify(sym: Sym, props: PropsSym): Sym {
+  return txr(sym).simplify(sym, props)
 }
 
 export interface SymDisplay {

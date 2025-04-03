@@ -3,6 +3,7 @@ import type { Node, Var } from "../ast/token"
 import type { Sym } from "../sym"
 import type { GlslValue, JsValue } from "../ty"
 import type { GlslContext } from "./fn"
+import type { JsContext } from "./jsctx"
 import { subscript } from "./text"
 
 const encoder = new TextEncoder()
@@ -207,9 +208,9 @@ export function parseBindings<T>(node: Node, f: (node: Node) => T): T[] {
 
 export class BindingFn {
   constructor(
-    readonly js: (args: JsValue[]) => JsValue,
+    readonly js: (ctx: JsContext, args: JsValue[]) => JsValue,
     readonly glsl: (ctx: GlslContext, args: GlslValue[]) => GlslValue,
-    readonly sym: (args: Sym[]) => Sym,
+    readonly sym: (ctx: JsContext, args: Sym[]) => Sym,
   ) {}
 }
 

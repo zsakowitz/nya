@@ -1,25 +1,20 @@
 import type { Node } from "./ast/token"
 import { TXR_AST } from "./ast/tx"
+import type { PropsJs } from "./js"
 import type { BindingFn, BindingGlslValue, Bindings } from "./lib/binding"
 import type { GlslContext } from "./lib/fn"
 import { FNS } from "./ops"
-import type { Sym } from "./sym"
-import type { GlslValue, JsValue, SReal, Val } from "./ty"
+import type { GlslValue, JsValue, Val } from "./ty"
 import { TY_INFO, type TyInfo } from "./ty/info"
 
-export interface PropsSym {
-  base: SReal
-  bindingsSym: Bindings<Sym | BindingFn>
-  bindingsJs: Bindings<JsValue | BindingFn>
-}
+// FIXME: remove alias; sym and js operate in identical environments and have access to each other
+export type PropsSym = PropsJs
 
-export interface PropsGlsl {
-  base: SReal
+export interface PropsGlsl extends PropsSym {
   ctx: GlslContext
+  // FIXME: should be bindingsGlsl
   /** GLSL bindings must contain variable names and be properly typed. */
   bindings: Bindings<GlslValue | BindingGlslValue | BindingFn>
-  bindingsJs: Bindings<JsValue | BindingFn>
-  bindingsSym: Bindings<Sym | BindingFn>
 }
 
 export function glslCall(

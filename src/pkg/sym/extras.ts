@@ -2,7 +2,7 @@ import { example } from "@/docs/core"
 import { type MagicVar } from "@/eval/ast/token"
 import { TXR_AST } from "@/eval/ast/tx"
 import { js } from "@/eval/js"
-import { txr, type Sym } from "@/eval/sym"
+import { simplify, txr, type Sym } from "@/eval/sym"
 import type { JsValue } from "@/eval/ty"
 import { b, px } from "@/jsx"
 import type { Package } from ".."
@@ -35,7 +35,7 @@ export const PKG_SYM_EXTRAS: Package = {
             return {
               type: "sym",
               list: false,
-              value: txr(value).simplify(value),
+              value: simplify(value, props),
             } satisfies JsValue<"sym", false>
           },
           glsl() {

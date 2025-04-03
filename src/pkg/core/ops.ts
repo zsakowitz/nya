@@ -659,7 +659,10 @@ export const PKG_CORE_OPS: Package = {
             deps.add(node.rhs)
           },
           js(node, props) {
-            return OP_ADD.js([js(node.lhs, props), js(node.rhs, props)])
+            return OP_ADD.js(props.ctxJs, [
+              js(node.lhs, props),
+              js(node.rhs, props),
+            ])
           },
           glsl(node, props) {
             return OP_ADD.glsl(props.ctx, [
@@ -714,7 +717,10 @@ export const PKG_CORE_OPS: Package = {
             deps.add(node.rhs)
           },
           js(node, props) {
-            return OP_SUB.js([js(node.lhs, props), js(node.rhs, props)])
+            return OP_SUB.js(props.ctxJs, [
+              js(node.lhs, props),
+              js(node.rhs, props),
+            ])
           },
           glsl(node, props) {
             return OP_SUB.glsl(props.ctx, [
@@ -771,7 +777,7 @@ export const PKG_CORE_OPS: Package = {
             }
             return node.nodes
               .map((x) => js(x, props))
-              .reduce((a, b) => OP_JUXTAPOSE.js([a, b]))
+              .reduce((a, b) => OP_JUXTAPOSE.js(props.ctxJs, [a, b]))
           },
           glsl(node, props) {
             if (node.nodes.length == 0) {
@@ -843,15 +849,15 @@ export const PKG_CORE_OPS: Package = {
         root: {
           js(node, props) {
             if (node.root) {
-              return OP_RAISE.js([
+              return OP_RAISE.js(props.ctxJs, [
                 js(node.contents, props),
-                OP_DIV.js([
+                OP_DIV.js(props.ctxJs, [
                   { list: false, type: "r64", value: frac(1, 1) },
                   js(node.root, props),
                 ]),
               ])
             } else {
-              return OP_RAISE.js([
+              return OP_RAISE.js(props.ctxJs, [
                 js(node.contents, props),
                 {
                   list: false,
@@ -917,7 +923,7 @@ export const PKG_CORE_OPS: Package = {
             }
             if (value) {
               if (node.sup) {
-                return OP_RAISE.js([value, js(node.sup, props)])
+                return OP_RAISE.js(props.ctxJs, [value, js(node.sup, props)])
               } else {
                 return value
               }
@@ -930,7 +936,7 @@ export const PKG_CORE_OPS: Package = {
               if (!value) break builtin
 
               if (!node.sup) return value
-              return OP_RAISE.js([value, js(node.sup, props)])
+              return OP_RAISE.js(props.ctxJs, [value, js(node.sup, props)])
             }
 
             let n
@@ -1038,7 +1044,10 @@ export const PKG_CORE_OPS: Package = {
         },
         frac: {
           js(node, props) {
-            return OP_DIV.js([js(node.a, props), js(node.b, props)])
+            return OP_DIV.js(props.ctxJs, [
+              js(node.a, props),
+              js(node.b, props),
+            ])
           },
           glsl(node, props) {
             return OP_DIV.glsl(props.ctx, [
@@ -1064,7 +1073,10 @@ export const PKG_CORE_OPS: Package = {
         "( )": {
           js(node, props) {
             if (node.type == "commalist") {
-              return OP_POINT.js(node.items.map((x) => js(x, props)))
+              return OP_POINT.js(
+                props.ctxJs,
+                node.items.map((x) => js(x, props)),
+              )
             }
             return js(node, props)
           },
@@ -1109,7 +1121,7 @@ export const PKG_CORE_OPS: Package = {
         },
         "| |": {
           js(node, props) {
-            return OP_ABS.js([js(node, props)])
+            return OP_ABS.js(props.ctxJs, [js(node, props)])
           },
           glsl(node, props) {
             return OP_ABS.glsl(props.ctx, [glsl(node, props)])
@@ -1126,7 +1138,10 @@ export const PKG_CORE_OPS: Package = {
             deps.add(node.exp)
           },
           js(node, props) {
-            return OP_RAISE.js([node.base, js(node.rhs.exp, props)])
+            return OP_RAISE.js(props.ctxJs, [
+              node.base,
+              js(node.rhs.exp, props),
+            ])
           },
           sym(node, props) {
             return {

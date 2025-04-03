@@ -1,4 +1,5 @@
 import type { GlslContext } from "../lib/fn"
+import type { JsContext } from "../lib/jsctx"
 import type { GlslValue, JsValue, TyName, Type } from "../ty"
 import { coerceValGlsl, coerceValJs } from "../ty/coerce"
 import { TY_INFO } from "../ty/info"
@@ -12,15 +13,15 @@ import { FnDist } from "./dist"
  * functions.
  */
 export class FnList<Q extends TyName = TyName> extends FnDist<Q> {
-  js(args: JsValue[]): JsValue<Q> {
+  js(ctx: JsContext, args: JsValue[]): JsValue<Q> {
     if (!(args.length == 1 && args[0]!.list !== false)) {
-      return super.js(args)
+      return super.js(ctx, args)
     }
 
     const arg = args[0]!
     const overload = this.trySignatureList(arg)
     if (!overload) {
-      return super.js(args)
+      return super.js(ctx, args)
     }
 
     return {

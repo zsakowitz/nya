@@ -1,10 +1,11 @@
 import type { PuncBinaryStr, PuncUnary } from "../ast/token"
 import type { GlslContext } from "../lib/fn"
+import type { JsContext } from "../lib/jsctx"
 import type { Sym, SymDisplay } from "../sym"
 import type { GlslValue, JsValue } from "../ty"
 
 export interface Fn {
-  js(args: JsValue[]): JsValue
+  js(ctx: JsContext, args: JsValue[]): JsValue
   glsl(ctx: GlslContext, args: GlslValue[]): GlslValue
   // SYM: proper displays for more things
   display?(args: Sym[]): SymDisplay

@@ -25,7 +25,7 @@ const FN_SORT: Fn & WithDocs = {
       },
     ]
   },
-  js(args) {
+  js(_ctx, args) {
     const value =
       (
         args.length == 1 &&
@@ -68,7 +68,7 @@ const FN_UNIQUE: Fn & WithDocs = {
       },
     ]
   },
-  js(args) {
+  js(_ctx, args) {
     const value =
       (
         args.length == 1 &&

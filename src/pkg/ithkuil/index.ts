@@ -117,7 +117,7 @@ const FN_ITHKUILVALUES: Fn & WithDocs = {
       },
     ]
   },
-  js(args) {
+  js(_ctx, args) {
     if (
       !(args.length == 1 && args[0]!.list === false && args[0]!.type == "text")
     ) {

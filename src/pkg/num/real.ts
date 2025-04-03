@@ -671,11 +671,7 @@ float _helper_cmp_r32(float a, float b) {
                 node.value,
                 node.sub ?
                   asNumericBase(
-                    js(node.sub, {
-                      base: props.base,
-                      bindingsJs: SYM_BINDINGS,
-                      bindingsSym: props.bindingsSym,
-                    }),
+                    js(node.sub, { ...props, bindingsJs: SYM_BINDINGS }),
                   )
                 : props.base,
               ),

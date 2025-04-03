@@ -15,7 +15,7 @@ export const FN_VERTICES: Fn & WithDocs = {
       },
     ]
   },
-  js(args) {
+  js(_ctx, args) {
     if (args.length != 1) {
       throw new Error("'vertices' expects a single polygon.")
     }

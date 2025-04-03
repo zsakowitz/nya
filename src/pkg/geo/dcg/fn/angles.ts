@@ -6,7 +6,7 @@ function fn(type: "angle" | "directedangle", label: string) {
   const FN: Fn & WithDocs = {
     name: type + "s",
     label,
-    js(args): JsValue<"angle" | "directedangle"> {
+    js(_ctx, args): JsValue<"angle" | "directedangle"> {
       if (
         !(
           args.length == 1 &&

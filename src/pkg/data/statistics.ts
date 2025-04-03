@@ -1,6 +1,7 @@
 import type { FnSignature } from "@/docs/signature"
 import type { Node } from "@/eval/ast/token"
 import type { GlslContext } from "@/eval/lib/fn"
+import type { JsContext } from "@/eval/lib/jsctx"
 import type { Fn } from "@/eval/ops"
 import { ALL_DOCS, type WithDocs } from "@/eval/ops/docs"
 import { issue } from "@/eval/ops/issue"
@@ -97,7 +98,7 @@ class FnListList implements Fn, WithDocs {
     }))
   }
 
-  js(args: JsValue[]): JsValue {
+  js(_ctx: JsContext, args: JsValue[]): JsValue {
     if (
       !(args.length == 2 && args[0]!.list !== false && args[1]!.list !== false)
     ) {
@@ -357,7 +358,7 @@ function quartile<L extends number | false>(
 }
 
 const FN_QUARTILE: Fn & WithDocs = {
-  js(args) {
+  js(_ctx, args) {
     if (args.length != 2) {
       throw new Error("'quartile' expects a list and a quartile")
     }
@@ -414,7 +415,7 @@ const FN_QUARTILE: Fn & WithDocs = {
 ALL_DOCS.push(FN_QUARTILE)
 
 const FN_QUANTILE: Fn & WithDocs = {
-  js(args) {
+  js(_ctx, args) {
     if (
       !(
         args.length == 2 &&
@@ -700,7 +701,7 @@ const FN_RANKS: Fn & WithDocs = {
       },
     ]
   },
-  js(args) {
+  js(_ctx, args) {
     const value =
       (
         args.length == 1 &&

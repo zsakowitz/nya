@@ -1,4 +1,5 @@
 import { btn, btnSkin } from "@/docs/core"
+import { JsContext } from "@/eval/lib/jsctx"
 import type { JsVal, TyName } from "@/eval/ty"
 import { num, real } from "@/eval/ty/create"
 import { splitRaw } from "@/eval/ty/split"
@@ -76,7 +77,7 @@ export class Sheet {
       }
     })
 
-    this.scope = new Scope(options)
+    this.scope = new Scope(options, new JsContext(this))
 
     // prepare js context
     registerWheelHandler(this.cv)

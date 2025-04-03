@@ -286,11 +286,11 @@ export const PKG_FACTORIAL: Package = {
               deps.add(node.repeats)
             }
           },
-          js(node) {
+          js(node, props) {
             if (node.rhs.repeats != 1) {
               throw new Error("Cannot compute higher-order factorials yet.")
             }
-            return OP_FACTORIAL.js([node.base])
+            return OP_FACTORIAL.js(props.ctxJs, [node.base])
           },
           glsl(node, props) {
             if (node.rhs.repeats != 1) {

@@ -15,7 +15,7 @@ export const FN_SEGMENTS: Fn & WithDocs = {
       },
     ]
   },
-  js(args) {
+  js(_ctx, args) {
     if (
       !(
         args.length == 1 &&

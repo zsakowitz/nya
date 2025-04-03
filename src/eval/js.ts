@@ -1,6 +1,7 @@
 import type { Node } from "./ast/token"
 import { TXR_AST } from "./ast/tx"
 import type { BindingFn, Bindings } from "./lib/binding"
+import type { JsContext } from "./lib/jsctx"
 import { FNS } from "./ops"
 import type { Sym } from "./sym"
 import type { JsValue, SReal } from "./ty"
@@ -9,6 +10,7 @@ export interface PropsJs {
   base: SReal
   bindingsJs: Bindings<JsValue | BindingFn>
   bindingsSym: Bindings<Sym | BindingFn>
+  ctxJs: JsContext
 }
 
 export function jsCall(
@@ -49,7 +51,10 @@ export function jsCall(
     throw new Error(`'${rawName}' is not supported yet.`)
   }
 
-  return fn.js(args.map((arg) => js(arg, props)))
+  return fn.js(
+    props.ctxJs,
+    args.map((arg) => js(arg, props)),
+  )
 }
 
 export function js(node: Node, props: PropsJs): JsValue {

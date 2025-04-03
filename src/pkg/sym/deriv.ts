@@ -1,7 +1,7 @@
 import { example } from "@/docs/core"
 import { NO_DRAG, sym } from "@/eval/ast/tx"
 import { id } from "@/eval/lib/binding"
-import { txr } from "@/eval/sym"
+import { simplify, txr } from "@/eval/sym"
 import { b, px } from "@/jsx"
 import type { Package } from ".."
 
@@ -22,19 +22,19 @@ export const PKG_DERIV: Package = {
           glsl(node, props) {
             const of = sym(node.of, props)
             const value = txr(of).deriv(of, id(node.wrt))
-            const deriv = txr(value).simplify(value)
+            const deriv = simplify(value, props)
             return txr(deriv).glsl(deriv, props)
           },
           js(node, props) {
             const of = sym(node.of, props)
             const value = txr(of).deriv(of, id(node.wrt))
-            const deriv = txr(value).simplify(value)
+            const deriv = simplify(value, props)
             return txr(deriv).js(deriv, props)
           },
           sym(node, props) {
             const of = sym(node.of, props)
             const value = txr(of).deriv(of, id(node.wrt))
-            return txr(value).simplify(value)
+            return simplify(value, props)
           },
         },
       },

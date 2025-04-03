@@ -4,6 +4,7 @@ import { js } from "@/eval/js"
 import { issue } from "@/eval/ops/issue"
 import {
   insertStrict,
+  simplify,
   SYM_0,
   SYM_1,
   txr,
@@ -124,13 +125,16 @@ export const PKG_SYM_CORE: Package = {
           }
           return value.fn.display(value.args)
         },
-        simplify({ fn, args: rawArgs }) {
-          const args = rawArgs.map((x) => txr(x).simplify(x))
+        simplify({ fn, args: rawArgs }, props) {
+          const args = rawArgs.map((x) => simplify(x, props))
           if (args.every((x) => x.type == "js")) {
             try {
               return {
                 type: "js",
-                value: fn.js(args.map((x) => x.value)),
+                value: fn.js(
+                  props.ctxJs,
+                  args.map((x) => x.value),
+                ),
               }
             } catch {}
           }
@@ -143,7 +147,10 @@ export const PKG_SYM_CORE: Package = {
           }
         },
         js(value, props) {
-          return value.fn.js(value.args.map((a) => txr(a).js(a, props)))
+          return value.fn.js(
+            props.ctxJs,
+            value.args.map((a) => txr(a).js(a, props)),
+          )
         },
         glsl(value, props) {
           return value.fn.glsl(
@@ -296,11 +303,11 @@ export const PKG_SYM_CORE: Package = {
         js({ value }, props) {
           return txr(value).js(value, props)
         },
-        simplify(value) {
+        simplify(value, props) {
           return {
             type: "dep",
             id: value.id,
-            value: txr(value.value).simplify(value.value),
+            value: simplify(value.value, props),
           }
         },
         uses({ value }, name) {

@@ -356,7 +356,7 @@ export const TXR_AST: { [K in NodeName]?: TxrAst<Nodes[K]> } = {
         }
         const op = OP_BINARY[node.kind]
         if (op) {
-          return op.js([js(node.a, props), js(node.b, props)])
+          return op.js(props.ctxJs, [js(node.a, props), js(node.b, props)])
         }
       } else {
         const txr = TXR_OP_UNARY[node.kind]
@@ -365,7 +365,7 @@ export const TXR_AST: { [K in NodeName]?: TxrAst<Nodes[K]> } = {
         }
         const op = OP_UNARY[node.kind]
         if (op) {
-          return op.js([js(node.a, props)])
+          return op.js(props.ctxJs, [js(node.a, props)])
         }
       }
       throw new Error(`The operator '${node.kind}' is not defined.`)

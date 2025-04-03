@@ -16,7 +16,7 @@ import {
   SYM_BINDINGS,
   tryName,
 } from "@/eval/lib/binding"
-import { type GlslContext } from "@/eval/lib/fn"
+import type { GlslContext } from "@/eval/lib/fn"
 import { safe } from "@/eval/lib/util"
 import { FNS, OP_UNARY } from "@/eval/ops"
 import type { Sym } from "@/eval/sym"
@@ -70,7 +70,7 @@ function callJs(name: Var, args: Node[], props: PropsJs): JsValue {
     return value
   }
 
-  return OP_RAISE.js([value, sup])
+  return OP_RAISE.js(props.ctxJs, [value, sup])
 }
 
 function symCall(
@@ -133,21 +133,17 @@ function callSym(name: Var, args: Node[], props: PropsSym): Sym {
         fnExponentJs(
           name.sup.sub ?
             js(name.sup, {
+              ...props,
               bindingsJs: SYM_BINDINGS,
-              bindingsSym: props.bindingsSym,
               base: asNumericBase(
                 js(name.sup.sub, {
+                  ...props,
                   bindingsJs: SYM_BINDINGS,
-                  bindingsSym: props.bindingsSym,
                   base: frac(10, 1),
                 }),
               ),
             })
-          : js(name.sup, {
-              base: props.base,
-              bindingsJs: SYM_BINDINGS,
-              bindingsSym: props.bindingsSym,
-            }),
+          : js(name.sup, { ...props, bindingsJs: SYM_BINDINGS }),
         )
       : invalidFnSup()
     : null
@@ -297,10 +293,10 @@ export const PKG_CORE_FN: Package = {
               if (rhs.kind == "var" && `.${rhs.value}` in OP_UNARY) {
                 const name = `.${rhs.value}` as PuncUnary
 
-                const value = OP_UNARY[name]!.js([js(lhs, props)])
+                const value = OP_UNARY[name]!.js(props.ctxJs, [js(lhs, props)])
 
                 if (rhs.sup) {
-                  return OP_RAISE.js([value, js(rhs.sup, props)])
+                  return OP_RAISE.js(props.ctxJs, [value, js(rhs.sup, props)])
                 } else {
                   return value
                 }
@@ -381,7 +377,7 @@ export const PKG_CORE_FN: Package = {
                 props,
               )
               node.rest.length = 0
-              return OP_JUXTAPOSE.js([node.base, rhs])
+              return OP_JUXTAPOSE.js(props.ctxJs, [node.base, rhs])
             }
 
             let lhs: JsValue | undefined
@@ -408,7 +404,10 @@ export const PKG_CORE_FN: Package = {
                 break fn
               }
 
-              return fn.js(commalist(node.rhs.args).map((x) => js(x, props)))
+              return fn.js(
+                props.ctxJs,
+                commalist(node.rhs.args).map((x) => js(x, props)),
+              )
             }
 
             const rhs = js(
@@ -416,7 +415,7 @@ export const PKG_CORE_FN: Package = {
               props,
             )
             node.rest.length = 0
-            return OP_JUXTAPOSE.js([lhs ?? node.base, rhs])
+            return OP_JUXTAPOSE.js(props.ctxJs, [lhs ?? node.base, rhs])
           },
           sym(node, props) {
             const rhsWrapped: Node = {
@@ -458,7 +457,10 @@ export const PKG_CORE_FN: Package = {
                 break fn
               }
 
-              return fn.sym(commalist(node.rhs.args).map((x) => sym(x, props)))
+              return fn.sym(
+                props.ctxJs,
+                commalist(node.rhs.args).map((x) => sym(x, props)),
+              )
             }
 
             const rhs = sym(
@@ -555,9 +557,12 @@ export const PKG_CORE_FN: Package = {
                 )
               }
 
-              const raw = f.js([node.base])
+              const raw = f.js(props.ctxJs, [node.base])
               if (node.rhs.name.sup) {
-                return OP_RAISE.js([raw, js(node.rhs.name.sup, props)])
+                return OP_RAISE.js(props.ctxJs, [
+                  raw,
+                  js(node.rhs.name.sup, props),
+                ])
               } else {
                 return raw
               }
@@ -624,9 +629,12 @@ export const PKG_CORE_FN: Package = {
                 )
               }
 
-              let raw = f.js([node.base])
+              let raw = f.js(props.ctxJs, [node.base])
               if (node.rhs.name.sup) {
-                raw = OP_RAISE.js([raw, js(node.rhs.name.sup, props)])
+                raw = OP_RAISE.js(props.ctxJs, [
+                  raw,
+                  js(node.rhs.name.sup, props),
+                ])
               }
 
               const rhs = js(
@@ -644,7 +652,7 @@ export const PKG_CORE_FN: Package = {
               )
               node.rest.length = 0
 
-              return OP_JUXTAPOSE.js([raw, rhs])
+              return OP_JUXTAPOSE.js(props.ctxJs, [raw, rhs])
             }
 
             return callJs(

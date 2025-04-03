@@ -24,7 +24,7 @@ import type { Package } from ".."
 const FN_JOIN: Fn & WithDocs = {
   name: "join",
   label: "joins multiple lists into a single one",
-  js(args) {
+  js(_ctx, args) {
     args = args.filter((x) => x.list !== 0)
     const ty = coerceTy(args)
     const items = args.flatMap((x) => {

@@ -1,4 +1,3 @@
-import type { Package } from ".."
 import { Precedence } from "@/eval/ast/token"
 import { NO_DRAG, sym } from "@/eval/ast/tx"
 import { glsl } from "@/eval/glsl"
@@ -16,6 +15,7 @@ import {
 import { OpEq, OpGt, OpLt } from "@/field/cmd/leaf/cmp"
 import { CmdWord } from "@/field/cmd/leaf/word"
 import { Block, L, R, type Command } from "@/field/model"
+import type { Package } from ".."
 
 function create(name: string, op: () => Command): FnDist {
   return new FnDist(name, `compares two values via the ${name} operator`, {
@@ -110,9 +110,9 @@ export const PKG_CORE_CMP: Package = {
               .map((op, i) => {
                 const a = js(node.items[i]!, props)
                 const b = js(node.items[i + 1]!, props)
-                return OP_BINARY[op]!.js([a, b])
+                return OP_BINARY[op]!.js(props.ctxJs, [a, b])
               })
-              .reduce((a, b) => OP_AND.js([a, b]))
+              .reduce((a, b) => OP_AND.js(props.ctxJs, [a, b]))
           },
           glsl(node, props) {
             return node.ops

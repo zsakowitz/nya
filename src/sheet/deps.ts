@@ -13,6 +13,7 @@ import {
   tryName,
 } from "@/eval/lib/binding"
 import { GlslContext, GlslHelpers } from "@/eval/lib/fn"
+import { JsContext } from "@/eval/lib/jsctx"
 import type { Sym } from "@/eval/sym"
 import type { GlslValue, JsValue } from "@/eval/ty"
 import { frac } from "@/eval/ty/create"
@@ -27,10 +28,13 @@ export class Scope {
   // FIXME: ctx ought to be plain scope
   readonly ctx: Ctx = Object.freeze({ scope: this, __proto__: null })
 
-  constructor(readonly options: Options) {
+  constructor(
+    readonly options: Options,
+    readonly ctxJs: JsContext,
+  ) {
     const self = this
 
-    this.propsJs = {
+    this.propsJs = this.propsSym = {
       base: frac(10, 1),
       get bindingsJs() {
         return self.bindingsJs
@@ -38,16 +42,7 @@ export class Scope {
       get bindingsSym() {
         return self.bindingsSym
       },
-    }
-
-    this.propsSym = {
-      base: frac(10, 1),
-      get bindingsSym() {
-        return self.bindingsSym
-      },
-      get bindingsJs() {
-        return self.bindingsJs
-      },
+      ctxJs: this.ctxJs,
     }
 
     this.flush()
@@ -138,6 +133,7 @@ export class Scope {
         return self.bindingsSym
       },
       ctx: new GlslContext(this.helpers),
+      ctxJs: this.ctxJs,
     }
   }
 
@@ -213,7 +209,7 @@ export class Scope {
         const { value, params } = first
 
         const fn = new BindingFn(
-          (values) => {
+          (_ctx, values) => {
             if (values.length != params.length) {
               throw new Error(
                 `Function '${tryName(first.name)}' expects ${params.length} arguments.`,
@@ -243,7 +239,7 @@ export class Scope {
               glsl(value, { ...this.propsGlsl(), ctx }),
             )
           },
-          (values): Sym => {
+          (_ctx, values): Sym => {
             if (values.length != params.length) {
               throw new Error(
                 `Function '${tryName(first.name)}' expects ${params.length} arguments.`,
