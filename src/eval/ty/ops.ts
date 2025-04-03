@@ -41,7 +41,16 @@ export function raise(a: SReal, b: SReal): SReal {
   }
 
   if (isZero(a)) {
-    return real(0)
+    const bv = num(b)
+    if (isNaN(bv)) {
+      return real(NaN)
+    } else if (bv < 0) {
+      return real(Infinity)
+    } else if (bv == 0) {
+      return real(1)
+    } else {
+      return real(0)
+    }
   }
 
   if (a.type == "exact") {
