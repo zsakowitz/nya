@@ -637,7 +637,7 @@ export const FN_XPRODY: FnDist = new FnDist(
       fn: OP_ADD,
       args: [
         { type: "call", fn: FN_XPRODY, args: [a, txr(b).deriv(b, wrt)] },
-        { type: "call", fn: FN_XPRODY, args: [b, txr(a).deriv(a, wrt)] },
+        { type: "call", fn: FN_XPRODY, args: [txr(a).deriv(a, wrt), b] },
       ],
     })),
   },
