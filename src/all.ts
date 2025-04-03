@@ -31,6 +31,7 @@ import { PKG_REAL } from "./pkg/num/real"
 import { PKG_NUMBER_THEORY } from "./pkg/number-theory"
 import { PKG_SHADER } from "./pkg/shader"
 import { PKG_SLIDER } from "./pkg/slider"
+import { PKG_SLOPE_FIELD } from "./pkg/slope-field"
 import { PKG_SYM_CORE } from "./pkg/sym/core"
 import { PKG_DERIV } from "./pkg/sym/deriv"
 import { PKG_SYM_EXTRAS } from "./pkg/sym/extras"
@@ -87,5 +88,6 @@ export function allPackages(): Package[] {
     PKG_CHEM_ELEMENTS,
     PKG_DEBUG,
     PKG_POINT_3D,
+    PKG_SLOPE_FIELD,
   ]
 }

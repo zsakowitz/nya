@@ -1,3 +1,4 @@
+\ty{slopefield}
 y=\operatorname{sin}x
 y=x
 y=-x
