@@ -184,7 +184,7 @@ const OP_OR = new FnDist(
   },
 )
 
-// TODO: FIXME: valid should be part of piecewise syntax (e.g. allowing a value to be used as a piecewise condition) instead of a named function
+// TODO: QUIRK: valid should be part of piecewise syntax (e.g. allowing a value to be used as a piecewise condition) instead of a named function
 export const FN_VALID = new FnDist<"bool">(
   "valid",
   "returns true if a value is valid for the given type (whether a number is finite, whether a color is displayable, etc.)",

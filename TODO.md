@@ -9,8 +9,6 @@
 - ttest
 - tscore
 - ittest
-- logb
-- d/dx
 - f’(x)
 - ∫
 - ∑
@@ -18,7 +16,6 @@
 - tone
 - lcm
 - gcd
-- mod
 - nPr
 - nCr
 - →
@@ -46,4 +43,4 @@ TODO FOR COMPLEX:
 TODO FOR IMPROVEMENTS:
 
 - nthroot
-- for
+- `for 2<x<3`

@@ -87,8 +87,7 @@ to do list for 110% compatiability is:
 ❌ logbase(x, y)
 ❌ factorial(x)
 
-other tasks:
-anything with SHADER: should work in shaders
+priority tasks: FIXME
+other tasks: (TODO, FEAT, SYM, DOCS, SHAPE, DCG, DEBT, SHADER, QUIRK)
 TODO: should rays display below angles?
 TODO: parallel lines are improperly ordered in their token
-FIXME: pressing shift after mouseleave
