@@ -273,6 +273,7 @@ export function registerPointerHandler(cv: Cv, handler: Handler) {
       current = undefined
       oc?.()
     }
+    last = undefined
   }
 
   addEventListener("pointerup", onPointerUp)
