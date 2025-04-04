@@ -1,3 +1,4 @@
+import type { RequireRadiansContext } from "@/sheet/ui/sheet"
 import type { GlslVal, GlslValue, TyName } from "../ty"
 import { TY_INFO } from "../ty/info"
 import type { JsContext } from "./jsctx"
@@ -121,6 +122,10 @@ ${interps
   /** Returns a `float`. */
   rad() {
     return this.helpers.jsCtx.sheet.toRadiansR32()
+  }
+
+  requireRad(ctx: RequireRadiansContext) {
+    return this.helpers.jsCtx.sheet.requireRadians(ctx)
   }
 }
 

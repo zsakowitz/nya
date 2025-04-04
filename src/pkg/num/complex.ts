@@ -245,10 +245,13 @@ export const PKG_NUM_COMPLEX: Package = {
     FN_ARG.add(
       ["c32"],
       "r32",
-      ({ value: a }) => approx(Math.atan2(num(a.y), num(a.x))),
+      function ({ value: a }) {
+        return approx(Math.atan2(num(a.y), num(a.x)) / this.rad())
+      },
       (ctx, ar) => {
+        // TODO: arg p = 45 does weird things b/c discontinuous
         const a = ctx.cache(ar)
-        return `atan(${a}.y, ${a}.x)`
+        return `(atan(${a}.y, ${a}.x) / ${ctx.rad()})`
       },
       ["arg(\\frac12+\\frac\\sqrt32i)=\\frac\\pi2", "arg(-3i)=-\\frac\\pi2"],
     )
@@ -264,7 +267,8 @@ export const PKG_NUM_COMPLEX: Package = {
       "sign(3-4i)=\\frac35-\\frac45i",
     )
 
-    FN_EXP.add(
+    FN_EXP.addRadOnly(
+      "with a complex number",
       ["c32"],
       "c32",
       ({ value: a }) => {
@@ -280,7 +284,8 @@ export const PKG_NUM_COMPLEX: Package = {
       "exp(2i)≈-0.416+0.909i",
     )
 
-    FN_LN.add(
+    FN_LN.addRadOnly(
+      "with a complex number",
       ["c32"],
       "c32",
       (a) => lnJs(a.value),
@@ -315,7 +320,8 @@ export const PKG_NUM_COMPLEX: Package = {
       ["2i\\nyaop{xprody}3=6i", "0\\nyaop{xprody}(-\\infty i)=0"],
     )
 
-    FN_LOG10.add(
+    FN_LOG10.addRadOnly(
+      "with a complex number",
       ["c32"],
       "c32",
       ({ value: a }) => {
@@ -890,6 +896,7 @@ export function divPt({ x: a, y: b }: SPoint, { x: c, y: d }: SPoint): SPoint {
 
 export function recipPt({ x: c, y: d }: SPoint): SPoint {
   const denom = add(mul(c, c), mul(d, d))
+  if (isZero(denom)) return pt(approx(1 / num(c)), approx(1 / num(d)))
   return pt(div(c, denom), div(neg(d), denom))
 }
 

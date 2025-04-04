@@ -35,7 +35,8 @@ import {
 } from "./cv/move"
 import { PickHandler2 } from "./cv/pick"
 
-export type RequireRadiansContext = `'${string}' with complex numbers`
+export type RequireRadiansReason = "with a complex number" | "complex numbers"
+export type RequireRadiansContext = `call '${string}' ${RequireRadiansReason}`
 
 export class Sheet {
   readonly cv = new Cv("absolute inset-0 size-full touch-none")
@@ -51,7 +52,7 @@ export class Sheet {
   requireRadians(context: RequireRadiansContext) {
     if (this.trigKind == "deg") {
       throw new Error(
-        `Cannot call ${context} unless angles are measured in radians.`,
+        `Cannot ${context} unless angles are measured in radians.`,
       )
     }
   }

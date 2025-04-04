@@ -200,6 +200,12 @@ export const PKG_TRIG_REAL: Package = {
       "csc^-1": FN_ARCCSC,
       "sec^-1": FN_ARCSEC,
       "cot^-1": FN_ARCCOT,
+      "arcsin^-1": FN_SIN,
+      "arccos^-1": FN_COS,
+      "arctan^-1": FN_TAN,
+      "arccsc^-1": FN_CSC,
+      "arcsec^-1": FN_SEC,
+      "arccot^-1": FN_COT,
     },
   },
 }

@@ -2,6 +2,7 @@ import type { FnSignature } from "@/docs/signature"
 import { CmdComma } from "@/field/cmd/leaf/comma"
 import { CmdBrack } from "@/field/cmd/math/brack"
 import { h } from "@/jsx"
+import type { RequireRadiansReason } from "@/sheet/ui/sheet"
 import type { GlslContext } from "../lib/fn"
 import type { JsContext } from "../lib/jsctx"
 import type { GlslVal, JsVal, Ty, TyName, Type, Tys } from "../ty"
@@ -73,6 +74,41 @@ export class FnDist<Q extends TyName = TyName> extends FnDistManual<Q> {
   ) {
     this.o.push({ params, type: ret, js, glsl, docOrder, usage })
     return this
+  }
+
+  /**
+   * See {@linkcode FnDist.add} for information. Throws if any unit other than
+   * radians are used for trigonometry.
+   */
+  addRadOnly<const T extends readonly TyName[], const R extends Q>(
+    reason: RequireRadiansReason,
+    params: T,
+    ret: R,
+    js: (
+      this: JsContext,
+      ...args: { -readonly [K in keyof T]: JsVal<T[K]> }
+    ) => Tys[R],
+    glsl: (
+      ctx: GlslContext,
+      ...args: { -readonly [K in keyof T]: GlslVal<T[K]> }
+    ) => string,
+    // TODO: ban "" statically
+    usage: string | string[],
+  ) {
+    const self = this.name
+    this.add<T, R>(
+      params,
+      ret,
+      function () {
+        this.requireRad(`call '${self}' ${reason}`)
+        return js.apply(this, arguments as any)
+      },
+      (ctx, ...args) => {
+        ctx.requireRad(`call '${self}' ${reason}`)
+        return glsl(ctx, ...args)
+      },
+      usage,
+    )
   }
 
   /** See {@linkcode FnDist.add} for information. Throws if called in a shader. */

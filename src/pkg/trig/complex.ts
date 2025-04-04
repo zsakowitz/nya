@@ -1,6 +1,8 @@
 import { fn, type GlslContext } from "@/eval/lib/fn"
 import type { SPoint } from "@/eval/ty"
-import { approx, frac, num, pt, real } from "@/eval/ty/create"
+import { approx, frac, num, pt, real, rept, unpt } from "@/eval/ty/create"
+import type { Point } from "@/sheet/point"
+import type { RequireRadiansReason } from "@/sheet/ui/sheet"
 import type { Package } from ".."
 import {
   addPt,
@@ -56,26 +58,39 @@ const cotGl = fn(
   "c32",
 )`return ${divGl}(${cosGl}(${0}), ${sinGl}(${0}));`
 
-function sinJs(a: SPoint) {
-  return pt(
-    approx(Math.sin(num(a.x)) * Math.cosh(num(a.y))),
-    approx(Math.cos(num(a.x)) * Math.sinh(num(a.y))),
-  )
+function sinJs(a: Point) {
+  return {
+    x: Math.sin(a.x) * Math.cosh(a.y),
+    y: Math.cos(a.x) * Math.sinh(a.y),
+  }
 }
 
-function cosJs(a: SPoint) {
-  return pt(
-    approx(Math.cos(num(a.x)) * Math.cosh(num(a.y))),
-    approx(-Math.sin(num(a.x)) * Math.sinh(num(a.y))),
-  )
+function cosJs(a: Point) {
+  return {
+    x: Math.cos(a.x) * Math.cosh(a.y),
+    y: -Math.sin(a.x) * Math.sinh(a.y),
+  }
 }
 
-function tanJs(a: SPoint) {
-  return divPt(sinJs(a), cosJs(a))
+function tanJs(a: Point) {
+  return divJs(sinJs(a), cosJs(a))
 }
 
-function cotJs(a: SPoint) {
-  return divPt(cosJs(a), sinJs(a))
+function cotJs(a: Point) {
+  return divJs(cosJs(a), sinJs(a))
+}
+
+function recipJs({ x: c, y: d }: Point): SPoint {
+  const denom = c * c + d * d
+  if (denom == 0) return pt(approx(1 / c), approx(1 / d))
+  return pt(approx(c / denom), approx(d / denom))
+}
+
+function divJs({ x: a, y: b }: Point, { x: c, y: d }: Point): SPoint {
+  const x = a * c + b * d
+  const y = b * c - a * d
+  const denom = c * c + d * d
+  return pt(approx(x / denom), approx(y / denom))
 }
 
 function sqrtJs(z: SPoint): SPoint {
@@ -206,55 +221,64 @@ export const PKG_TRIG_COMPLEX: Package = {
     },
   },
   load() {
-    FN_SIN.add(
+    const Q: RequireRadiansReason = "with a complex number"
+
+    FN_SIN.addRadOnly(
+      Q,
       ["c32"],
       "c32",
-      (a) => sinJs(a.value),
+      (a) => rept(sinJs(unpt(a.value))),
       sinGl,
       "sin(2+3i)≈9.1545-4.1689i",
     )
 
-    FN_COS.add(
+    FN_COS.addRadOnly(
+      Q,
       ["c32"],
       "c32",
-      (a) => cosJs(a.value),
+      (a) => rept(cosJs(unpt(a.value))),
       cosGl,
       "cos(2+3i)≈-4.1896-9.1092i",
     )
 
-    FN_TAN.add(
+    FN_TAN.addRadOnly(
+      Q,
       ["c32"],
       "c32",
-      (a) => tanJs(a.value),
+      (a) => tanJs(unpt(a.value)),
       tanGl,
       "tan(2+3i)≈-0.0038+1.0032i",
     )
 
-    FN_CSC.add(
+    FN_CSC.addRadOnly(
+      Q,
       ["c32"],
       "c32",
-      (a) => recipPt(sinJs(a.value)),
+      (a) => recipJs(sinJs(unpt(a.value))),
       cscGl,
       "csc(2+3i)≈0.0905+0.0412i",
     )
 
-    FN_SEC.add(
+    FN_SEC.addRadOnly(
+      Q,
       ["c32"],
       "c32",
-      (a) => recipPt(cosJs(a.value)),
+      (a) => recipJs(cosJs(unpt(a.value))),
       secGl,
       "sec(2+3i)≈-0.0417+0.0906i",
     )
 
-    FN_COT.add(
+    FN_COT.addRadOnly(
+      Q,
       ["c32"],
       "c32",
-      (a) => cotJs(a.value),
+      (a) => cotJs(unpt(a.value)),
       cotGl,
       "cot(2+3i)≈-0.0037-0.9968i",
     )
 
-    FN_ARCSIN.add(
+    FN_ARCSIN.addRadOnly(
+      Q,
       ["c32"],
       "c32",
       (a) => asinJs(a.value),
@@ -262,7 +286,8 @@ export const PKG_TRIG_COMPLEX: Package = {
       "arcsin(2+3i)≈0.5707+1.9834i",
     )
 
-    FN_ARCCOS.add(
+    FN_ARCCOS.addRadOnly(
+      Q,
       ["c32"],
       "c32",
       (a) => acosJs(a.value),
@@ -270,7 +295,8 @@ export const PKG_TRIG_COMPLEX: Package = {
       "arccos(2+3i)≈1.0001-1.9834i",
     )
 
-    FN_ARCTAN.add(
+    FN_ARCTAN.addRadOnly(
+      Q,
       ["c32"],
       "c32",
       (a) => atanJs(a.value),
@@ -278,7 +304,8 @@ export const PKG_TRIG_COMPLEX: Package = {
       "arctan(2+3i)≈1.4099+0.2291i",
     )
 
-    FN_ARCCOT.add(
+    FN_ARCCOT.addRadOnly(
+      Q,
       ["c32"],
       "c32",
       (a) => acotJs(a.value),
@@ -286,7 +313,8 @@ export const PKG_TRIG_COMPLEX: Package = {
       "arccot(2+3i)≈0.1609-0.2291i",
     )
 
-    FN_ARCSEC.add(
+    FN_ARCSEC.addRadOnly(
+      Q,
       ["c32"],
       "c32",
       (a) => asecJs(a.value),
@@ -294,7 +322,8 @@ export const PKG_TRIG_COMPLEX: Package = {
       "arcsec(2+3i)≈1.4204+0.2313i",
     )
 
-    FN_ARCCSC.add(
+    FN_ARCCSC.addRadOnly(
+      Q,
       ["c32"],
       "c32",
       (a) => acscJs(a.value),
