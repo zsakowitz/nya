@@ -1,13 +1,7 @@
-F\left(l,p\right)=\frac{\left|\left(y_{2}-y_{1}\right)x_{0}-\left(x_{2}-x_{1}\right)y_{0}+x_{2}y_{1}-y_{2}x_{1}\right|}{\sqrt{\left(y_{2}-y_{1}\right)^{2}+\left(x_{2}-x_{1}\right)^{2}}}\operatorname{with}\begin{list}x_{0}=p.x\\y_{0}=p.y\\x_{1}=l.\operatorname{glider}\left(0\right).x\\y_{1}=l.\operatorname{glider}\left(0\right).y\\x_{2}=l.\operatorname{glider}\left(1\right).x\\y_{2}=l.\operatorname{glider}\left(1\right).y\end{list}
-D\left(l,p\right)=\frac{C^{2}+B^{2}-A^{2}}{2\cdot C^{2}}\operatorname{with}\begin{list}A=\left|\left(x_{2}-x_{0},y_{2}-y_{0}\right)\right|\\B=\left|\left(x_{1}-x_{0},y_{1}-y_{0}\right)\right|\\C=\left|\left(x_{1}-x_{2},y_{1}-y_{2}\right)\right|\end{list}\operatorname{with}\begin{list}x_{0}=p.x\\y_{0}=p.y\\x_{1}=l.\operatorname{glider}\left(0\right).x\\y_{1}=l.\operatorname{glider}\left(0\right).y\\x_{2}=l.\operatorname{glider}\left(1\right).x\\y_{2}=l.\operatorname{glider}\left(1\right).y\end{list}
-\token{0}=\left(-4.73,-2.94\right)
-\token{1}=\left(3.06,4.78\right)
-\token{2}=\operatorname{line}\left(\token{0},\token{1}\right)
-E\left(l,p\right)=\begin{cases}\operatorname{distance}\left(p,\operatorname{glider}\left(l,0\right)\right)&q<0\\\operatorname{distance}\left(p,\operatorname{glider}\left(l,1\right)\right)&q>1\\F\left(l,p\right)&\end{cases}\operatorname{with}q=D\left(l,p\right)
-E\left(\token{2},\left(x,y\right)\right)E\left(\token{5},\left(x,y\right)\right)E\left(\token{8},\left(x,y\right)\right)
-\token{3}=\left(-16.75,4.77\right)
-\token{4}=\left(6.51,7.33\right)
-\token{5}=\operatorname{segment}\left(\token{3},\token{4}\right)
-\token{6}=\left(-5.9,9.02\right)
-\token{7}=\left(-0.2,-6.32\right)
-\token{8}=\operatorname{segment}\left(\token{6},\token{7}\right)
+f\left(t,y\right)=t
+\operatorname{slopefield}f\left(x,y\right)
+P_{0}=\left(-12.6,29.1\right)
+h=0.1
+F\left(t,y\right)=y+\frac{h}{6}\left(k_{1}+2k_{2}+2k_{3}+k_{4}\right)\operatorname{withseq}\begin{list}k_{1}=f\left(t,y\right)\\k_{2}=f\left(t+\frac{h}{2},y+\frac{hk_{1}}{2}\right)\\k_{3}=f\left(t+\frac{h}{2},y+\frac{hk_{2}}{2}\right)\\k_{4}=f\left(t+h,y+hk_{3}\right)\end{list}
+n=500
+\left(\operatorname{iterate}.a^{\operatorname{count}\left(Q\right)-1}a\to \operatorname{join}\left(a,\operatorname{segment}\left(Q\left[n\right],Q\left[n+1\right]\right)\right),n\to n+1\operatorname{from}n=1,a=\left[\right]\right)\operatorname{with}Q=\operatorname{iterate}.a^{n}a\to \operatorname{join}\left(a,P\right),P\to \left(P.x+h,F\left(P.x,P.y\right)\right)\operatorname{from}P=P_{0},a=\left[\right]
