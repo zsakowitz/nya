@@ -1,5 +1,6 @@
 import type { GlslContext } from "@/eval/lib/fn"
 import { FnDist } from "@/eval/ops/dist"
+import { ERR_COORDS_USED_OUTSIDE_GLSL } from "@/eval/ops/vars"
 import type { SColor, SReal } from "@/eval/ty"
 import { frac, gl, num, real } from "@/eval/ty/create"
 import { TY_INFO } from "@/eval/ty/info"
@@ -10,7 +11,6 @@ import type { Package } from ".."
 import { PKG_BOOL } from "../bool"
 import { OP_CDOT } from "../core/ops"
 import { PKG_REAL } from "../num/real"
-import { ERR_COORDS_USED_OUTSIDE_GLSL } from "@/eval/ops/vars"
 
 declare module "@/eval/ty" {
   interface Tys {
@@ -87,7 +87,6 @@ const FN_HSV = new FnDist(
 
 export function plotJs(): never {
   throw new Error(ERR_COORDS_USED_OUTSIDE_GLSL)
-  throw new Error("Cannot plot colors outside of a shader.")
 }
 
 export const OP_PLOT = new FnDist<"color">(
@@ -108,7 +107,7 @@ export const PKG_COLOR_CORE: Package = {
       "color",
       plotJs,
       (_, a) =>
-        `(${a.expr} ? vec4(0.1764705882, 0.4392156863, 0.7019607843, 1) : vec4(0))`,
+        `(${a.expr} ? vec4(0.1764705882, 0.4392156863, 0.7019607843, .5) : vec4(0))`,
       "\\nyaop{plot}(true)=\\nyacolor{rgb(45,112,179)}", // TODO: update once custom graph colors work
     )
 

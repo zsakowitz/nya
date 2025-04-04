@@ -79,8 +79,8 @@ export function createLine(
     props.ctx,
     `vec4(0.1764705882, 0.4392156863, 0.7019607843,
       ${skip} ? 0.0 :
-      (${count} != 0 && ${count} != ${BASE.length}) ? 1.0 :
-      (${count2} != 0 && ${count2} != ${BASE.length}) ? 0.5 :
+      (${count} != 0 && ${count} != ${BASE.length}) ? 0.8 :
+      (${count2} != 0 && ${count2} != ${BASE.length}) ? 0.4 :
       0.0
     )`,
   ]
