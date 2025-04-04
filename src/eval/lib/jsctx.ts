@@ -7,11 +7,7 @@ export class JsContext {
     this.sheet.requireRadians(context)
   }
 
-  toRadians() {
+  rad() {
     return this.sheet.toRadians()
-  }
-
-  toRadiansR32() {
-    return this.sheet.toRadiansR32()
   }
 }

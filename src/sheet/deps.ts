@@ -25,6 +25,7 @@ export class Scope {
     readonly options: Options,
     readonly ctxJs: JsContext,
   ) {
+    this.helpers = new GlslHelpers(this.ctxJs)
     const self = this
 
     this.propsJs = this.propsSym = {
@@ -80,7 +81,7 @@ export class Scope {
   bindingsDrag!: Bindings<[FieldComputed, Node]>
   bindingsGlsl!: Bindings<GlslValue | BindingGlslValue | BindingFn>
   bindingsSym!: Bindings<Sym | BindingFn>
-  readonly helpers = new GlslHelpers()
+  readonly helpers
   readonly propsJs: PropsJs
   readonly propsSym: PropsSym
 

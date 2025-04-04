@@ -1,1 +1,6 @@
-\operatorname{cplot}\left|p!\right|
+sin45
+cos45
+tan45
+cot45
+sec45
+csc45

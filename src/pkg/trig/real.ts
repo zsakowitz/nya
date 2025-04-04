@@ -54,102 +54,128 @@ export const PKG_TRIG_REAL: Package = {
     FN_SIN.add(
       ["r32"],
       "r32",
-      (a) => approx(Math.sin(num(a.value))),
-      (_, a) => `sin(${a.expr})`,
+      function (a) {
+        return approx(Math.sin(this.rad() * num(a.value)))
+      },
+      (ctx, a) => `sin(${ctx.rad()} * ${a.expr})`,
       "sin30°=0.5",
     )
 
     FN_COS.add(
       ["r32"],
       "r32",
-      (a) => approx(Math.cos(num(a.value))),
-      (_, a) => `cos(${a.expr})`,
+      function (a) {
+        return approx(Math.cos(this.rad() * num(a.value)))
+      },
+      (ctx, a) => `cos(${ctx.rad()} * ${a.expr})`,
       "cos60°=0.5",
     )
 
     FN_TAN.add(
       ["r32"],
       "r32",
-      (a) => approx(Math.tan(num(a.value))),
-      (_, a) => `tan(${a.expr})`,
+      function (a) {
+        return approx(Math.tan(this.rad() * num(a.value)))
+      },
+      (ctx, a) => `tan(${ctx.rad()} * ${a.expr})`,
       "tan45°=1",
     )
 
     FN_CSC.add(
       ["r32"],
       "r32",
-      (a) => approx(1 / Math.sin(num(a.value))),
-      (_, a) => `(1.0/sin(${a.expr}))`,
+      function (a) {
+        return approx(1 / Math.sin(this.rad() * num(a.value)))
+      },
+      (ctx, a) => `(1.0/sin(${ctx.rad()} * ${a.expr}))`,
       "csc30°=2",
     )
 
     FN_SEC.add(
       ["r32"],
       "r32",
-      (a) => approx(1 / Math.cos(num(a.value))),
-      (_, a) => `(1.0/cos(${a.expr}))`,
+      function (a) {
+        return approx(1 / Math.cos(this.rad() * num(a.value)))
+      },
+      (ctx, a) => `(1.0/cos(${ctx.rad()} * ${a.expr}))`,
       "sec60°=2",
     )
 
     FN_COT.add(
       ["r32"],
       "r32",
-      (a) => approx(1 / Math.tan(num(a.value))),
-      (_, a) => `(1.0/tan(${a.expr}))`,
+      function (a) {
+        return approx(1 / Math.tan(this.rad() * num(a.value)))
+      },
+      (ctx, a) => `(1.0/tan(${ctx.rad()} * ${a.expr}))`,
       "cot45°=1",
     )
 
     FN_ARCSIN.add(
       ["r32"],
       "r32",
-      (a) => approx(Math.asin(num(a.value))),
-      (_, a) => `asin(${a.expr})`,
+      function (a) {
+        return approx(Math.asin(num(a.value)) / this.rad())
+      },
+      (ctx, a) => `(asin(${a.expr}) / ${ctx.rad()})`,
       "arcsin0.5=30°",
     )
 
     FN_ARCCOS.add(
       ["r32"],
       "r32",
-      (a) => approx(Math.acos(num(a.value))),
-      (_, a) => `acos(${a.expr})`,
+      function (a) {
+        return approx(Math.acos(num(a.value)) / this.rad())
+      },
+      (ctx, a) => `(acos(${a.expr}) / ${ctx.rad()})`,
       "arccos0.5=60°",
     )
 
     FN_ARCTAN.add(
       ["r32"],
       "r32",
-      (a) => approx(Math.atan(num(a.value))),
-      (_, a) => `atan(${a.expr})`,
+      function (a) {
+        return approx(Math.atan(num(a.value)) / this.rad())
+      },
+      (ctx, a) => `(atan(${a.expr}) / ${ctx.rad()})`,
       "arctan1=45°",
     ).add(
       ["r32", "r32"],
       "r32",
-      (a, b) => approx(Math.atan2(num(a.value), num(b.value))),
-      (_, a, b) => `atan(${a.expr}, ${b.expr})`,
+      function (a, b) {
+        return approx(Math.atan2(num(a.value), num(b.value)) / this.rad())
+      },
+      (ctx, a, b) => `(atan(${a.expr}, ${b.expr}) / ${ctx.rad()})`,
       "arctan(-1,-1)=-135°",
     )
 
     FN_ARCCSC.add(
       ["r32"],
       "r32",
-      (a) => approx(Math.asin(1 / num(a.value))),
-      (_, a) => `asin(1.0/${a.expr})`,
+      function (a) {
+        return approx(Math.asin(1 / num(a.value)) / this.rad())
+      },
+      (ctx, a) => `(asin(1.0/${a.expr}) / ${ctx.rad()})`,
       "arccsc2=30°",
     )
 
     FN_ARCSEC.add(
       ["r32"],
       "r32",
-      (a) => approx(Math.acos(1 / num(a.value))),
-      (_, a) => `acos(1.0/${a.expr})`,
+      function (a) {
+        return approx(Math.acos(1 / num(a.value)) / this.rad())
+      },
+      (ctx, a) => `(acos(1.0/${a.expr}) / ${ctx.rad()})`,
       "arcsec2=60°",
     )
 
     FN_ARCCOT.add(
       ["r32"],
       "r32",
-      (a) => approx(Math.atan(1 / num(a.value))),
-      (_, a) => `atan(1.0/${a.expr})`,
+      function (a) {
+        return approx(Math.atan(1 / num(a.value)) / this.rad())
+      },
+      (ctx, a) => `(atan(1.0/${a.expr}) / ${ctx.rad()})`,
       "arccot1=45°",
     )
   },

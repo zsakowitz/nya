@@ -1,9 +1,12 @@
 import type { GlslVal, GlslValue, TyName } from "../ty"
 import { TY_INFO } from "../ty/info"
+import type { JsContext } from "./jsctx"
 
 export class GlslHelpers {
   helpers = ""
   private next = 0
+
+  constructor(readonly jsCtx: JsContext) {}
 
   name() {
     return `_nya_helper_${this.next++}`
@@ -113,6 +116,11 @@ ${interps
   .map((x) => x.expr)
   .join(",\n")}
 )`
+  }
+
+  /** Returns a `float`. */
+  rad() {
+    return this.helpers.jsCtx.sheet.toRadiansR32()
   }
 }
 

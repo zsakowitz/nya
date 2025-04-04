@@ -46,7 +46,7 @@ export class Sheet {
   private readonly setPixelRatio
   private readonly glPixelRatio = new Slider()
 
-  private trigKind: "deg" | "rad" = "rad"
+  private trigKind: "deg" | "rad" = "deg"
 
   requireRadians(context: RequireRadiansContext) {
     if (this.trigKind == "deg") {
@@ -57,7 +57,7 @@ export class Sheet {
   }
 
   toRadians() {
-    return this.trigKind == "deg" ? real(Math.PI / 180) : real(1)
+    return this.trigKind == "deg" ? Math.PI / 180 : 1
   }
 
   toRadiansR32(): string {
