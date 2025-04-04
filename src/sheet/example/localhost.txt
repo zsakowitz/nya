@@ -1,7 +1,3 @@
-f\left(t,y\right)=t
-\operatorname{slopefield}f\left(x,y\right)
-P_{0}=\left(-12.6,29.1\right)
-h=0.1
-F\left(t,y\right)=y+\frac{h}{6}\left(k_{1}+2k_{2}+2k_{3}+k_{4}\right)\operatorname{withseq}\begin{list}k_{1}=f\left(t,y\right)\\k_{2}=f\left(t+\frac{h}{2},y+\frac{hk_{1}}{2}\right)\\k_{3}=f\left(t+\frac{h}{2},y+\frac{hk_{2}}{2}\right)\\k_{4}=f\left(t+h,y+hk_{3}\right)\end{list}
-n=500
-\left(\operatorname{iterate}.a^{\operatorname{count}\left(Q\right)-1}a\to \operatorname{join}\left(a,\operatorname{segment}\left(Q\left[n\right],Q\left[n+1\right]\right)\right),n\to n+1\operatorname{from}n=1,a=\left[\right]\right)\operatorname{with}Q=\operatorname{iterate}.a^{n}a\to \operatorname{join}\left(a,P\right),P\to \left(P.x+h,F\left(P.x,P.y\right)\right)\operatorname{from}P=P_{0},a=\left[\right]
+P=0.181+0.216i
+P!
+P!.\operatorname{debugpoint}

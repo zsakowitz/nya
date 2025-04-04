@@ -75,6 +75,20 @@ vec2 _helper_mul_c32(vec2 a, vec2 b) {
 `
 }
 
+export function declarePowC32(ctx: GlslContext) {
+  declareMulC32(ctx)
+  declareExp(ctx)
+  ctx.glsl`vec2 _helper_pow_c32(vec2 a, vec2 b) {
+  if (a == vec2(0)) {
+    return vec2(0);
+  } else {
+    vec2 ln_a = vec2(log(length(a)), atan(a.y, a.x));
+    return _helper_exp(_helper_mul_c32(b, ln_a));
+  }
+}
+`
+}
+
 function declareExp(ctx: GlslContext) {
   ctx.glsl`vec2 _helper_exp(vec2 a) {
   return exp(a.x) * vec2(cos(a.y), sin(a.y));
@@ -470,17 +484,7 @@ export const PKG_NUM_COMPLEX: Package = {
         ).value as SPoint
       },
       (ctx, a, b) => {
-        declareMulC32(ctx)
-        declareExp(ctx)
-        ctx.glsl`vec2 _helper_pow_c32(vec2 a, vec2 b) {
-  if (a == vec2(0)) {
-    return vec2(0);
-  } else {
-    vec2 ln_a = vec2(log(length(a)), atan(a.y, a.x));
-    return _helper_exp(_helper_mul_c32(b, ln_a));
-  }
-}
-`
+        declarePowC32(ctx)
         return `_helper_pow_c32(${a.expr}, ${b.expr})`
       },
       "(4+5i)^(2\\pi i)≈0.00223-0.00281i",
