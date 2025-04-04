@@ -27,7 +27,8 @@ export class FnList<Q extends TyName = TyName> extends FnDist<Q> {
     return {
       type: overload.type,
       list: false,
-      value: overload.js(
+      value: overload.js.call(
+        ctx,
         arg.value.map(
           (x) =>
             coerceValJs({ type: arg.type, value: x }, overload.param).value,

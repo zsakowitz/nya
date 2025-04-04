@@ -215,9 +215,7 @@ export const PKG_SLOPE_FIELD: Package = {
         },
         token: null,
         glide: null,
-        preview(cv, val) {
-          // FIXME: previewing a slope field should display it
-        },
+        preview: null,
         extras: null,
       },
     },

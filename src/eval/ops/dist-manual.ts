@@ -36,7 +36,7 @@ interface FnOverloadFixed<Q extends TyName = TyName> {
   param?: undefined
   params: readonly TyName[]
   type: Q
-  js(...args: JsVal[]): Val<Q>
+  js(this: JsContext, ...args: JsVal[]): Val<Q>
   glsl(ctx: GlslContext, ...args: GlslVal[]): string
   usage: string | string[]
   docOrder: number | null
@@ -47,7 +47,7 @@ export interface FnOverloadVar<Q extends TyName = TyName> {
   param: TyName
   params?: undefined
   type: Q
-  js(args: Tys[TyName][]): Val<Q>
+  js(this: JsContext, args: Tys[TyName][]): Val<Q>
   glsl(ctx: GlslContext, ...args: GlslVal[]): string
   usage: string | string[]
   docOrder: number | null
@@ -129,13 +129,14 @@ export abstract class FnDistManual<Q extends TyName = TyName> implements Fn {
 
   abstract signature(args: Ty[]): FnOverloadData<Q>
 
-  js1(...args: JsVal[]): JsVal<Q> {
+  js1(ctx: JsContext, ...args: JsVal[]): JsVal<Q> {
     const overload = this.signature(args)
 
     if (overload.param) {
       return {
         type: overload.type,
-        value: overload.js(
+        value: overload.js.call(
+          ctx,
           args.map((x) => coerceValJs(x, overload.param).value),
         ),
       }
@@ -143,7 +144,8 @@ export abstract class FnDistManual<Q extends TyName = TyName> implements Fn {
 
     return {
       type: overload.type,
-      value: overload.js(
+      value: overload.js.call(
+        ctx,
         ...args.map((x, i) => coerceValJs(x, overload.params[i]!)),
       ),
     }
@@ -163,7 +165,7 @@ export abstract class FnDistManual<Q extends TyName = TyName> implements Fn {
     }
   }
 
-  js(_ctx: JsContext, args: JsValue[]): JsValue<Q> {
+  js(ctx: JsContext, args: JsValue[]): JsValue<Q> {
     const overload = this.signature(args)
     const list = unifyLists(args)
 
@@ -171,7 +173,8 @@ export abstract class FnDistManual<Q extends TyName = TyName> implements Fn {
       if (overload.param) {
         return {
           type: overload.type,
-          value: overload.js(
+          value: overload.js.call(
+            ctx,
             args.map((x) => coerceValJs(x as JsVal, overload.param).value),
           ),
           list: false,
@@ -181,7 +184,8 @@ export abstract class FnDistManual<Q extends TyName = TyName> implements Fn {
       return {
         type: overload.type,
         list,
-        value: overload.js(
+        value: overload.js.call(
+          ctx,
           ...args.map((x, i) => coerceValJs(x as JsVal, overload.params[i]!)),
         ),
       }
@@ -192,7 +196,8 @@ export abstract class FnDistManual<Q extends TyName = TyName> implements Fn {
         type: overload.type,
         list,
         value: Array.from({ length: list }, (_, j) =>
-          overload.js(
+          overload.js.call(
+            ctx,
             args.map(
               (x) =>
                 coerceValJs(
@@ -209,7 +214,8 @@ export abstract class FnDistManual<Q extends TyName = TyName> implements Fn {
       type: overload.type,
       list,
       value: Array.from({ length: list }, (_, j) =>
-        overload.js(
+        overload.js.call(
+          ctx,
           ...args.map((x, i) =>
             coerceValJs(
               x.list === false ? x : { type: x.type, value: x.value[j]! },

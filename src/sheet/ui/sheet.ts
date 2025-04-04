@@ -35,6 +35,8 @@ import {
 } from "./cv/move"
 import { PickHandler2 } from "./cv/pick"
 
+export type RequireRadiansContext = `'${string}' with complex numbers`
+
 export class Sheet {
   readonly cv = new Cv("absolute inset-0 size-full touch-none")
   readonly scope: Scope
@@ -43,6 +45,24 @@ export class Sheet {
   private readonly pixelRatio
   private readonly setPixelRatio
   private readonly glPixelRatio = new Slider()
+
+  private trigKind: "deg" | "rad" = "rad"
+
+  requireRadians(context: RequireRadiansContext) {
+    if (this.trigKind == "deg") {
+      throw new Error(
+        `Cannot call ${context} unless angles are measured in radians.`,
+      )
+    }
+  }
+
+  toRadians() {
+    return this.trigKind == "deg" ? real(Math.PI / 180) : real(1)
+  }
+
+  toRadiansR32(): string {
+    return this.trigKind == "deg" ? `${(Math.PI / 180).toExponential()}` : "1.0"
+  }
 
   readonly pick
   private readonly regl: Regl

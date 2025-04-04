@@ -471,7 +471,7 @@ export const PKG_NUM_COMPLEX: Package = {
     OP_RAISE.add(
       ["c32", "c32"],
       "c32",
-      ({ value: a }, { value: b }) => {
+      function ({ value: a }, { value: b }) {
         if (isZero(b)) {
           if (b.x.type == "exact" && b.y.type == "exact") {
             return pt(real(1), real(0))
@@ -489,7 +489,9 @@ export const PKG_NUM_COMPLEX: Package = {
         }
 
         return FN_EXP.js1(
+          this,
           OP_CDOT.js1(
+            this,
             { type: "c32", value: b },
             {
               type: "c32",

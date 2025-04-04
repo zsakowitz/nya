@@ -3,6 +3,7 @@ import { CmdComma } from "@/field/cmd/leaf/comma"
 import { CmdBrack } from "@/field/cmd/math/brack"
 import { h } from "@/jsx"
 import type { GlslContext } from "../lib/fn"
+import type { JsContext } from "../lib/jsctx"
 import type { GlslVal, JsVal, Ty, TyName, Type, Tys } from "../ty"
 import { canCoerce } from "../ty/coerce"
 import { listTy } from "../ty/debug"
@@ -58,7 +59,10 @@ export class FnDist<Q extends TyName = TyName> extends FnDistManual<Q> {
   add<const T extends readonly TyName[], const R extends Q>(
     params: T,
     ret: R,
-    js: (...args: { -readonly [K in keyof T]: JsVal<T[K]> }) => Tys[R],
+    js: (
+      this: JsContext,
+      ...args: { -readonly [K in keyof T]: JsVal<T[K]> }
+    ) => Tys[R],
     glsl: (
       ctx: GlslContext,
       ...args: { -readonly [K in keyof T]: GlslVal<T[K]> }

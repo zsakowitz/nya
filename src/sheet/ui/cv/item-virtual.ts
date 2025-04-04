@@ -90,7 +90,10 @@ export function virtualIntersection(
   a: ItemWithTarget,
   b: ItemWithTarget,
 ): ItemWithDrawTarget | undefined {
-  const at = unpt(FN_INTERSECTION.js1(a.target.val(a), b.target.val(b)).value)
+  const at = unpt(
+    FN_INTERSECTION.js1(sheet.scope.ctxJs, a.target.val(a), b.target.val(b))
+      .value,
+  )
 
   return {
     data: null,
@@ -176,7 +179,7 @@ export function virtualGlider(
   index: { value: number; precision: number },
 ): ItemWithDrawTarget | undefined {
   const at = unpt(
-    FN_GLIDER.js1(item.target.val(item), {
+    FN_GLIDER.js1(sheet.scope.ctxJs, item.target.val(item), {
       type: "r32",
       value: real(index.value),
     } satisfies JsVal<"r32">).value,

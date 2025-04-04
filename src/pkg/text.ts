@@ -247,7 +247,7 @@ const FN_CONCAT = new (class extends FnDistManual<"text"> {
       params: args.map((x) => x.type),
       type: "text",
       js(...args) {
-        return args.flatMap((x) => OP_TO_TEXT.js1(x).value)
+        return args.flatMap((x) => OP_TO_TEXT.js1(this, x).value)
       },
       glsl() {
         throw new Error("Text cannot be created in shaders.")

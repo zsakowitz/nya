@@ -142,7 +142,7 @@ export class Hint {
             o.params[1] == a.val.type,
         )
 
-        let p1 = o1 && FN_INTERSECTION.js1(a.val, b.val)
+        let p1 = o1 && FN_INTERSECTION.js1(sheet.scope.ctxJs, a.val, b.val)
         if (
           !(
             p1 &&
@@ -155,7 +155,7 @@ export class Hint {
           p1 = false
         }
 
-        let p2 = o2 && FN_INTERSECTION.js1(b.val, a.val)
+        let p2 = o2 && FN_INTERSECTION.js1(sheet.scope.ctxJs, b.val, a.val)
         if (
           !(
             p2 &&

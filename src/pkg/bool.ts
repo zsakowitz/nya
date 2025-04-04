@@ -195,7 +195,7 @@ const FN_FIRSTVALID: Fn & WithDocs = {
   name: "firstvalid",
   label:
     "returns the first value which is valid for its type (the first finite number, the first color which is displayable, etc.)",
-  js(_ctx, args) {
+  js(ctx, args) {
     // TODO: optimize for uniform case
     if (args.length == 1 && args[0]!.list !== false) {
       args = args[0]!.value.map((val) => ({
@@ -212,7 +212,7 @@ const FN_FIRSTVALID: Fn & WithDocs = {
       ty,
       (...args) => {
         for (const arg of args) {
-          if (FN_VALID.js1(arg).value) {
+          if (FN_VALID.js1(ctx, arg).value) {
             return arg.value
           }
         }
