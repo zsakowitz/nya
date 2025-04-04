@@ -9,7 +9,7 @@ import type { Package } from ".."
 
 export const PKG_SYM_EXTRAS: Package = {
   id: "nya:sym-extras",
-  name: "symbolic computation extras",
+  name: "extra symbolics",
   label: null,
   category: "symbolic computation",
   eval: {

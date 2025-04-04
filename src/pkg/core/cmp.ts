@@ -87,7 +87,7 @@ export const OP_AND = new FnDist(
 
 export const PKG_CORE_CMP: Package = {
   id: "nya:core-cmp",
-  name: "basic comparison operators",
+  name: "comparison operators",
   label: null,
   category: "logic",
   eval: {

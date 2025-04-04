@@ -36,7 +36,7 @@ declare module "@/eval/ty" {
 
 export const PKG_SYM_CORE: Package = {
   id: "nya:sym-core",
-  name: "symbolic computation core",
+  name: "symbolics core",
   label: null,
   category: "symbolic computation",
   ty: {

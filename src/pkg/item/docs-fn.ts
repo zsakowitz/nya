@@ -101,7 +101,7 @@ const FACTORY: ItemFactory<Data> = {
 
 export const PKG_DOCS_FN: Package = {
   id: "nya:docs-fn",
-  name: "inline function documentation",
+  name: "inline function docs",
   label: null,
   category: "sheet items",
   sheet: {

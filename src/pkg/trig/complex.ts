@@ -191,7 +191,7 @@ function acscJs(a: SPoint) {
 
 export const PKG_TRIG_COMPLEX: Package = {
   id: "nya:trig-complex",
-  name: "trigonometry on complex numbers",
+  name: "on complex numbers",
   label: null,
   category: "trigonometry",
   deps: [() => PKG_TRIG_REAL, () => PKG_NUM_COMPLEX],
