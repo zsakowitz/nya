@@ -75,7 +75,7 @@ export class FnDist<Q extends TyName = TyName> extends FnDistManual<Q> {
     return this
   }
 
-  /** See {@linkcode FnDist.add} for information. */
+  /** See {@linkcode FnDist.add} for information. Throws if called in a shader. */
   addJs<const T extends readonly TyName[], const R extends Q>(
     params: T,
     ret: R,
