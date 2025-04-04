@@ -58,7 +58,7 @@ export const PKG_NUM_QUATERNION: Package = {
 
     OP_ABS.add(
       ["q32"],
-      "r32",
+      "rabs32",
       // TODO: this is exact for some values
       (a) =>
         approx(

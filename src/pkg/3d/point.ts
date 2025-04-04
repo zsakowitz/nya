@@ -126,7 +126,7 @@ export const PKG_POINT_3D: Package = {
 
     OP_ABS.add(
       ["p3d32"],
-      "r32",
+      "rabs32",
       ({ value: [x, y, z] }) => real(Math.hypot(num(x), num(y), num(z))),
       (_, a) => `length(${a.expr})`,
       "|(3,-4,12)|=13",

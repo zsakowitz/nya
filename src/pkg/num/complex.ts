@@ -189,10 +189,28 @@ vec4 _nya_cplot(vec2 z) {
   return `_nya_cplot(${a.expr})`
 }
 
+function cplotAbs(ctx: GlslContext, a: GlslVal<"rabs32">) {
+  declareOklab(ctx)
+  ctx.glsl`
+vec4 _nya_cplot(float z) {
+  if (isinf(z) || isnan(z)) {
+    return vec4(0);
+  }
+  float absval_scaled = abs(z) / (abs(z) + 1.0);
+  vec3 ok_coords = vec3(absval_scaled, 0, 0);
+  vec3 rgb = _helper_oklab(ok_coords);
+  return vec4(vec3(0), 1.0-rgb.x);
+}
+`
+  return `_nya_cplot(${a.expr})`
+}
+
 const FN_CPLOT = new FnDist<"color">(
   "cplot",
   "gets the color a complex number would be represented by when performing domain coloring",
-).add(["c32"], "color", plotJs, cplot, "cplot(2+3i)=\\color{#83c4d6}")
+)
+  .add(["rabs32"], "color", plotJs, cplotAbs, "cplot|2+3i|=\\color{#b8b8b8}")
+  .add(["c32"], "color", plotJs, cplot, "cplot(2+3i)=\\color{#83c4d6}")
 
 const WRITE_COMPLEX: TyWrite<SPoint> = {
   isApprox(value) {
@@ -618,7 +636,7 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
 
     OP_ABS.add(
       ["c32"],
-      "r32",
+      "rabs32",
       // TODO: this is exact for some values
       (a) => approx(Math.hypot(num(a.value.x), num(a.value.y))),
       (_, a) => `length(${a.expr})`,
@@ -657,6 +675,12 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
      */
 
     OP_PLOT.add(
+      ["rabs32"],
+      "color",
+      plotJs,
+      cplotAbs,
+      "\\nyaop{plot}(2)=\\color{#b8b8b8}",
+    ).add(
       ["c32"],
       "color",
       plotJs,

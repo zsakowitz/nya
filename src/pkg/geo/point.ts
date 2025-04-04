@@ -376,7 +376,7 @@ export const PKG_GEO_POINT: Package = {
 
     OP_ABS.add(
       ["point32"],
-      "r32",
+      "rabs32",
       // TODO: this is exact for some values
       (a) => approx(Math.hypot(num(a.value.x), num(a.value.y))),
       (_, a) => `length(${a.expr})`,

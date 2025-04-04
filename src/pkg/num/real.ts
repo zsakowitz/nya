@@ -54,11 +54,8 @@ declare module "@/eval/ty" {
   interface Tys {
     r32: SReal
     r64: SReal
-  }
-
-  interface TyComponents {
-    r32: never
-    r64: never
+    rabs32: SReal
+    rabs64: SReal
   }
 }
 
@@ -116,7 +113,7 @@ const WRITE_REAL: TyWrite<SReal> = {
   },
 }
 
-function iconReal(hd: boolean) {
+function iconReal(hd: boolean, text: "x" | "|x|") {
   return h(
     "",
     h(
@@ -127,8 +124,8 @@ function iconReal(hd: boolean) {
           (hd ? " -inset-[2px] rounded-[2px]" : "inset-0"),
       ),
       h(
-        "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-['Times_New_Roman'] italic text-[120%]",
-        "x",
+        "absolute top-1/2 left-1/2 -translate-x-1/2 translate-y-[calc(-50%_-_1px)] font-['Times_New_Roman'] italic text-[120%]",
+        text,
       ),
       hd ? highRes() : null,
     ),
@@ -308,13 +305,13 @@ export const PKG_REAL: Package = {
   load() {
     OP_ABS.add(
       ["r64"],
-      "r64",
+      "rabs64",
       (a) => abs(a.value),
       (ctx, a) => abs64(ctx, a.expr),
       [],
     ).add(
       ["r32"],
-      "r32",
+      "rabs32",
       (a) => abs(a.value),
       (_, a) => `abs(${a.expr})`,
       "|-3|=3",
@@ -576,7 +573,7 @@ float _helper_cmp_r32(float a, float b) {
         order: null,
         point: false,
         icon() {
-          return iconReal(true)
+          return iconReal(true, "x")
         },
         token: null,
         glide: null,
@@ -596,7 +593,65 @@ float _helper_cmp_r32(float a, float b) {
         order: null,
         point: false,
         icon() {
-          return iconReal(false)
+          return iconReal(false, "x")
+        },
+        token: null,
+        glide: null,
+        preview: null,
+        extras,
+      },
+      rabs64: {
+        name: "positive real number",
+        namePlural: "positive real numbers",
+        glsl: "vec2",
+        toGlsl(val) {
+          return gl64(val)
+        },
+        garbage: { js: real(NaN), glsl: "vec2(0.0/0.0)" },
+        coerce: {
+          r32: {
+            js: (x) => x,
+            glsl: (x) => x + ".x",
+          },
+          r64: {
+            js: (x) => x,
+            glsl: (x) => x,
+          },
+          rabs32: {
+            js: (x) => x,
+            glsl: (x) => x + ".x",
+          },
+        },
+        write: WRITE_REAL,
+        order: null,
+        point: false,
+        icon() {
+          return iconReal(true, "|x|")
+        },
+        token: null,
+        glide: null,
+        preview: null,
+        extras,
+      },
+      rabs32: {
+        name: "positive real number",
+        namePlural: "positive real numbers",
+        glsl: "float",
+        toGlsl(val) {
+          return gl(val)
+        },
+        garbage: { js: real(NaN), glsl: "(0.0/0.0)" },
+        coerce: {
+          r32: {
+            js: (x) => x,
+            glsl: (x) => x,
+          },
+        },
+        write: WRITE_REAL,
+        order: null,
+        point: false,
+        icon() {
+          return iconReal(false, "|x|")
         },
         token: null,
         glide: null,
