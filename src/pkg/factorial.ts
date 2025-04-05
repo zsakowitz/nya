@@ -1,11 +1,11 @@
 import { Precedence } from "@/eval/ast/token"
 import type { GlslContext } from "@/eval/lib/fn"
 import { FnDist } from "@/eval/ops/dist"
-import { FnDistManual } from "@/eval/ops/dist-manual"
 import { binary, suffixFn, SYM_1, txr, unary } from "@/eval/sym"
 import { approx, num, real, rept } from "@/eval/ty/create"
 import { CmdExclamation } from "@/field/cmd/leaf/exclamation"
-import { SymPsi } from "@/field/cmd/leaf/sym"
+import { SymGamma, SymPsi } from "@/field/cmd/leaf/sym"
+import { CmdWord } from "@/field/cmd/leaf/word"
 import { CmdBrack } from "@/field/cmd/math/brack"
 import { CmdSupSub } from "@/field/cmd/math/supsub"
 import { Block, L, R } from "@/field/model"
@@ -174,6 +174,25 @@ vec2 _nya_helper_factorial(vec2 z) {
 `
 }
 
+export const FN_GAMMA: FnDist = new FnDist(
+  "gamma",
+  "computes the gamma function",
+  {
+    display([a, b]) {
+      if (!(a && !b)) return
+
+      const block = new Block(null)
+      const cursor = block.cursor(R)
+      new SymGamma().insertAt(cursor, L)
+
+      const arg = txr(a).display(a).block
+      new CmdBrack("(", ")", null, arg).insertAt(cursor, L)
+
+      return { block, lhs: Precedence.Atom, rhs: Precedence.Atom }
+    },
+  },
+)
+
 export const FN_DIGAMMA: FnDist = new FnDist(
   "digamma",
   "computes the derivative of the natural logarithm of the gamma function",
@@ -332,20 +351,19 @@ const FN_LNGAMMA = new FnDist(
   {
     display([a, b]) {
       if (!(a && !b)) return
-      return FnDistManual.prototype.display.call({ name: "ln" }, [
-        {
-          type: "call",
-          fn: OP_FACTORIAL,
-          args: [
-            {
-              type: "call",
-              fn: OP_ADD,
-              args: [a, SYM_1],
-            },
-          ],
-        },
-      ])
+
+      const block = new Block(null)
+      const cursor = block.cursor(R)
+      new CmdWord("lnΓ", "prefix").insertAt(cursor, L)
+
+      const arg = txr(a).display(a).block
+      new CmdBrack("(", ")", null, arg).insertAt(cursor, L)
+
+      return { block, lhs: Precedence.Atom, rhs: Precedence.Atom }
     },
+    deriv: unary((props, a) =>
+      chain(a, props, { type: "call", fn: FN_DIGAMMA, args: [a] }),
+    ),
   },
 ).add(
   ["r32"],

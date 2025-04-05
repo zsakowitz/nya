@@ -67,5 +67,6 @@ function sym(
 export const SymPi = sym("\\pi ", " pi ", "π", "pi")
 export const SymTau = sym("\\tau ", " tau ", "τ", "tau")
 export const SymPsi = sym("\\psi ", " psi ", "ψ", "psi", true)
+export const SymGamma = sym("\\Gamma ", " gamma ", "Γ", "Gamma")
 export const SymInfinity = sym("\\infinity ", " infinity ", "∞", "infinity")
 export const SymDegree = sym("°", " degrees ", "°", "degrees", true)
