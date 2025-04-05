@@ -2,34 +2,41 @@ import { FnDist } from "@/eval/ops/dist"
 import { SYM_2, unary } from "@/eval/sym"
 import { approx, num } from "@/eval/ty/create"
 import type { Package } from ".."
-import { chain, OP_NEG, OP_RAISE } from "../core/ops"
+import { chain, OP_NEG, OP_RAISE, toRad } from "../core/ops"
 import { PKG_REAL } from "../num/real"
 
 const FN_SIN: FnDist = new FnDist("sin", "takes the sine of an angle", {
-  deriv: unary((wrt, a) =>
-    chain(a, wrt, { type: "call", fn: FN_COS, args: [a] }),
-  ),
+  deriv: unary((wrt, a) => {
+    return toRad(wrt, chain(a, wrt, { type: "call", fn: FN_COS, args: [a] }))
+  }),
 })
 
 const FN_COS: FnDist = new FnDist("cos", "takes the cosine of an angle", {
   deriv: unary((wrt, a) =>
-    chain(a, wrt, {
-      type: "call",
-      fn: OP_NEG,
-      args: [{ type: "call", fn: FN_SIN, args: [a] }],
-    }),
+    toRad(
+      wrt,
+      chain(a, wrt, {
+        type: "call",
+        fn: OP_NEG,
+        args: [{ type: "call", fn: FN_SIN, args: [a] }],
+      }),
+    ),
   ),
 })
 
 const FN_TAN = new FnDist("tan", "takes the tangent of an angle", {
   deriv: unary((wrt, a) =>
-    chain(a, wrt, {
-      type: "call",
-      fn: OP_RAISE,
-      args: [{ type: "call", fn: FN_SEC, args: [a] }, SYM_2],
-    }),
+    toRad(
+      wrt,
+      chain(a, wrt, {
+        type: "call",
+        fn: OP_RAISE,
+        args: [{ type: "call", fn: FN_SEC, args: [a] }, SYM_2],
+      }),
+    ),
   ),
 })
+
 const FN_CSC = new FnDist("csc", "takes the cosecant of an angle")
 const FN_SEC = new FnDist("sec", "takes the secant of an angle")
 const FN_COT = new FnDist("cot", "takes the cotangent of an angle")

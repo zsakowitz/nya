@@ -209,13 +209,13 @@ export const FN_POLYGAMMA: FnDist = new FnDist(
   "polygamma",
   "computes repeated derivatives of the natural logarithm of the gamma function",
   {
-    deriv: binary((wrt, n, x) => {
-      if (txr(n).uses(n, wrt)) {
+    deriv: binary((props, n, x) => {
+      if (txr(n).uses(n, props.wrt)) {
         throw new Error(
           "The index of the polygamma function cannot depend on the variable with respect to which you take the derivative. For example, d/dx polygamma(x,x) is not allowed.",
         )
       }
-      return chain(x, wrt, {
+      return chain(x, props, {
         type: "call",
         fn: FN_POLYGAMMA,
         args: [{ type: "call", fn: OP_ADD, args: [n, SYM_1] }, x],

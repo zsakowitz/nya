@@ -1,5 +1,5 @@
 import type { JsValue, TyName } from "@/eval/ty"
-import type { Sym, SymVal } from "../sym"
+import type { PropsDeriv, Sym, SymVal } from "../sym"
 import { TY_INFO } from "../ty/info"
 import { FnDist, type FnDistProps } from "./dist"
 import type { DerivFn } from "./dist-manual"
@@ -60,7 +60,7 @@ export class FnDistDeriv extends FnDist {
         ),
         ...Sym[],
       ],
-      wrt: string,
+      wrt: PropsDeriv,
     ) => Sym,
   ) {
     this.fns[ty] = f as DerivFn

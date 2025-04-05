@@ -1,7 +1,7 @@
 import type { PuncBinaryStr, PuncUnary } from "../ast/token"
 import type { GlslContext } from "../lib/fn"
 import type { JsContext } from "../lib/jsctx"
-import type { Sym, SymDisplay } from "../sym"
+import type { PropsDeriv, Sym, SymDisplay } from "../sym"
 import type { GlslValue, JsValue } from "../ty"
 
 export interface Fn {
@@ -10,7 +10,7 @@ export interface Fn {
   // SYM: proper displays for more things
   display?(args: Sym[]): SymDisplay
   // SYM: make this required
-  deriv?(args: Sym[], wrt: string): Sym
+  deriv?(args: Sym[], wrt: PropsDeriv): Sym
   // SYM: implement this in more places
   simplify?(args: Sym[]): Sym | undefined
 }

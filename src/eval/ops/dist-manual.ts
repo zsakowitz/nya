@@ -54,7 +54,7 @@ export interface FnOverloadVar<Q extends TyName = TyName> {
 }
 
 export type DisplayFn = ((args: Sym[]) => SymDisplay | undefined) | undefined
-export type DerivFn = ((args: Sym[], wrt: string) => Sym) | undefined
+export type DerivFn = Fn["deriv"]
 
 export interface FnProps {
   display?: DisplayFn

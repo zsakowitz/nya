@@ -21,19 +21,28 @@ export const PKG_DERIV: Package = {
           drag: NO_DRAG,
           glsl(node, props) {
             const of = sym(node.of, props)
-            const value = txr(of).deriv(of, id(node.wrt))
+            const value = txr(of).deriv(of, {
+              ctx: props.ctxJs,
+              wrt: id(node.wrt),
+            })
             const deriv = simplify(value, props)
             return txr(deriv).glsl(deriv, props)
           },
           js(node, props) {
             const of = sym(node.of, props)
-            const value = txr(of).deriv(of, id(node.wrt))
+            const value = txr(of).deriv(of, {
+              ctx: props.ctxJs,
+              wrt: id(node.wrt),
+            })
             const deriv = simplify(value, props)
             return txr(deriv).js(deriv, props)
           },
           sym(node, props) {
             const of = sym(node.of, props)
-            const value = txr(of).deriv(of, id(node.wrt))
+            const value = txr(of).deriv(of, {
+              ctx: props.ctxJs,
+              wrt: id(node.wrt),
+            })
             return simplify(value, props)
           },
         },

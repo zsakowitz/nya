@@ -6,6 +6,7 @@ import type { Deps } from "../deps"
 import type { PropsGlsl, PropsSym } from "../glsl"
 import type { PropsJs } from "../js"
 import { id } from "../lib/binding"
+import type { JsContext } from "../lib/jsctx"
 import type { Fn } from "../ops"
 import type { DerivFn, DisplayFn } from "../ops/dist-manual"
 import type { GlslValue, JsValue, SColor, SPoint, SReal, Tys, Val } from "../ty"
@@ -17,6 +18,11 @@ interface SymVarSource {
   kind: Exclude<WordKind, "magicprefix" | "magicprefixword"> | undefined
   italic: boolean
   sub?: string
+}
+
+export interface PropsDeriv {
+  wrt: string
+  ctx: JsContext
 }
 
 // This is an intentionally short list. Most more complicated stuff can be
@@ -56,7 +62,7 @@ export type Sym<T extends SymName = SymName> = {
 // SHAPE:
 export interface TxrSym<T> {
   display(value: T): SymDisplay
-  deriv(value: T, wrt: string): Sym
+  deriv(value: T, props: PropsDeriv): Sym
   uses(value: T, name: string): boolean
   simplify(value: T, props: PropsSym): Sym
   layer?: number
@@ -151,23 +157,23 @@ export function binaryFn(op: () => Command | Block, prec: number): DisplayFn {
   }
 }
 
-export function unary(f: (wrt: string, a: Sym) => Sym): DerivFn {
-  return ([a, b], wrt) => {
+export function unary(f: (props: PropsDeriv, a: Sym) => Sym): DerivFn {
+  return ([a, b], ctx) => {
     if (!a || b) {
       throw new Error("Incorrect number of arguments passed to function.")
     }
 
-    return f(wrt, a)
+    return f(ctx, a)
   }
 }
 
-export function binary(f: (wrt: string, a: Sym, b: Sym) => Sym): DerivFn {
-  return ([a, b, c], wrt) => {
+export function binary(f: (props: PropsDeriv, a: Sym, b: Sym) => Sym): DerivFn {
+  return ([a, b, c], props) => {
     if (!a || !b || c) {
       throw new Error("Incorrect number of arguments passed to function.")
     }
 
-    return f(wrt, a, b)
+    return f(props, a, b)
   }
 }
 
@@ -196,6 +202,11 @@ export const SYM_2: Sym = {
   value: { type: "r32", list: false, value: real(2) },
 }
 
+export const SYM_180: Sym = {
+  type: "js",
+  value: { type: "r32", list: false, value: real(180) },
+}
+
 export const SYM_HALF: Sym = {
   type: "js",
   value: { type: "r32", list: false, value: frac(1, 2) },
@@ -205,6 +216,12 @@ export const SYM_PI: Sym = {
   type: "var",
   id: id({ value: "π" }),
   source: { italic: false, kind: "var", name: "π" },
+}
+
+export const SYM_TAU: Sym = {
+  type: "var",
+  id: id({ value: "τ" }),
+  source: { italic: false, kind: "var", name: "τ" },
 }
 
 export const SYM_E: Sym = {

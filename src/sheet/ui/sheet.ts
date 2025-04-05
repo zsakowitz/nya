@@ -1,5 +1,6 @@
 import { btn, btnSkin } from "@/docs/core"
 import { JsContext } from "@/eval/lib/jsctx"
+import { SYM_180, SYM_PI, SYM_TAU, type Sym } from "@/eval/sym"
 import type { JsVal, TyName } from "@/eval/ty"
 import { num, real } from "@/eval/ty/create"
 import { splitRaw } from "@/eval/ty/split"
@@ -47,10 +48,10 @@ export class Sheet {
   private readonly setPixelRatio
   private readonly glPixelRatio = new Slider()
 
-  private trigKind: "deg" | "rad" = "deg"
+  private trigKind: "deg" | "rad" | "rot" = "rot"
 
   requireRadians(context: RequireRadiansContext) {
-    if (this.trigKind == "deg") {
+    if (this.trigKind != "rad") {
       throw new Error(
         `Cannot ${context} unless angles are measured in radians.`,
       )
@@ -58,11 +59,30 @@ export class Sheet {
   }
 
   toRadians() {
-    return this.trigKind == "deg" ? Math.PI / 180 : 1
+    return (
+      this.trigKind == "deg" ? Math.PI / 180
+      : this.trigKind == "rot" ? 2 * Math.PI
+      : 1
+    )
   }
 
   toRadiansR32(): string {
-    return this.trigKind == "deg" ? `${(Math.PI / 180).toExponential()}` : "1.0"
+    return (
+      this.trigKind == "deg" ? `${(Math.PI / 180).toExponential()}`
+      : this.trigKind == "rot" ? `${(2 * Math.PI).toExponential()}`
+      : "1.0"
+    )
+  }
+
+  toRadiansSym(): [num: Sym | null, denom: Sym | null] {
+    switch (this.trigKind) {
+      case "deg":
+        return [SYM_PI, SYM_180]
+      case "rad":
+        return [null, null]
+      case "rot":
+        return [SYM_TAU, null]
+    }
   }
 
   readonly pick

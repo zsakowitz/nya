@@ -161,8 +161,8 @@ export const PKG_SYM_CORE: Package = {
       },
       // TODO: infinity uses incorrect font in sym output
       var: {
-        deriv(value, wrt) {
-          if (value.id == wrt) {
+        deriv(value, props) {
+          if (value.id == props.wrt) {
             return SYM_1
           }
 
@@ -287,11 +287,11 @@ export const PKG_SYM_CORE: Package = {
           deps.trackById(value.id)
           txr(value.value).deps(value.value, deps)
         },
-        deriv(value, wrt) {
+        deriv(value, props) {
           return {
             type: "dep",
             id: value.id,
-            value: txr(value.value).deriv(value.value, wrt),
+            value: txr(value.value).deriv(value.value, props),
           }
         },
         display({ value }) {

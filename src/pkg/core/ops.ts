@@ -31,6 +31,7 @@ import {
   SYM_HALF,
   txr,
   unary,
+  type PropsDeriv,
   type Sym,
 } from "@/eval/sym"
 import { frac, num, real } from "@/eval/ty/create"
@@ -437,13 +438,13 @@ export const OP_RAISE: FnDist = new FnDist(
       return { block, lhs: Precedence.Atom, rhs: Precedence.Atom }
     },
     // SYM: d/dx 0^x is apparently 1-∞*0^x
-    deriv([a, b, c], wrt) {
+    deriv([a, b, c], props) {
       if (!(a && b && !c)) {
         throw new Error("Invalid derivative.")
       }
 
-      const usedA = txr(a).uses(a, wrt)
-      const usedB = txr(b).uses(b, wrt)
+      const usedA = txr(a).uses(a, props.wrt)
+      const usedB = txr(b).uses(b, props.wrt)
 
       if (!usedA && !usedB) {
         return SYM_0
@@ -456,7 +457,7 @@ export const OP_RAISE: FnDist = new FnDist(
             {
               type: "call",
               fn: OP_JUXTAPOSE,
-              args: [txr(a).deriv(a, wrt), b],
+              args: [txr(a).deriv(a, props), b],
             },
             {
               type: "call",
@@ -485,7 +486,7 @@ export const OP_RAISE: FnDist = new FnDist(
               type: "call",
               fn: OP_JUXTAPOSE,
               args: [
-                txr(b).deriv(b, wrt),
+                txr(b).deriv(b, props),
                 { type: "call", fn: OP_RAISE, args: [a, b] },
               ],
             },
@@ -512,7 +513,7 @@ export const OP_RAISE: FnDist = new FnDist(
                 {
                   type: "call",
                   fn: OP_JUXTAPOSE,
-                  args: [b, txr(a).deriv(a, wrt)],
+                  args: [b, txr(a).deriv(a, props)],
                 },
 
                 // f g' ln(f)
@@ -523,7 +524,7 @@ export const OP_RAISE: FnDist = new FnDist(
                     {
                       type: "call",
                       fn: OP_JUXTAPOSE,
-                      args: [a, txr(b).deriv(b, wrt)],
+                      args: [a, txr(b).deriv(b, props)],
                     },
                     { type: "call", fn: FN_LN, args: [a] },
                   ],
@@ -1177,6 +1178,31 @@ export const PKG_CORE_OPS: Package = {
   },
 }
 
-export function chain(f: Sym, wrt: string, ddx: Sym): Sym {
+export function chain(f: Sym, wrt: PropsDeriv, ddx: Sym): Sym {
   return { type: "call", fn: OP_JUXTAPOSE, args: [txr(f).deriv(f, wrt), ddx] }
+}
+
+export function toRad(props: PropsDeriv, sym: Sym): Sym {
+  const [num, denom] = props.ctx.sheet.toRadiansSym()
+
+  if (!denom) {
+    if (!num) {
+      return sym
+    }
+
+    return { type: "call", fn: OP_JUXTAPOSE, args: [num, sym] }
+  }
+
+  return {
+    type: "call",
+    fn: OP_JUXTAPOSE,
+    args: [
+      {
+        type: "call",
+        fn: OP_DIV,
+        args: [num || SYM_1, denom],
+      },
+      sym,
+    ],
+  }
 }
