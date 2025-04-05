@@ -7,6 +7,7 @@ import { CmdBrack } from "@/field/cmd/math/brack"
 import { Block, L, R } from "@/field/model"
 import { h, path, svgx } from "@/jsx"
 import type { Package } from ".."
+import { OP_Z } from "../3d/point"
 import { FN_VALID } from "../bool"
 import {
   OP_ABS,
@@ -24,14 +25,14 @@ import { FN_UNSIGN } from "../num/real"
 
 declare module "@/eval/ty" {
   interface Tys {
-    // short for "point 3d; 32 bits"
-    p3d32: [SReal, SReal, SReal]
+    // short for "point 4d; 32 bits"
+    p4d32: [SReal, SReal, SReal, SReal]
   }
 }
 
-export const OP_Z = new FnDist(".z", "gets the z-coordinate of a point")
+const OP_W = new FnDist(".w", "gets the w-coordinate of a point")
 
-function iconPoint3D(hd: boolean) {
+function iconPoint4D(hd: boolean) {
   return h(
     "",
     h(
@@ -54,170 +55,198 @@ function iconPoint3D(hd: boolean) {
   )
 }
 
-export const PKG_POINT_3D: Package = {
-  id: "nya:point-3d",
-  name: "3D points",
+export const PKG_POINT_4D: Package = {
+  id: "nya:point-4d",
+  name: "4D points",
   label: null,
   category: "geometry",
   load() {
     OP_X.add(
-      ["p3d32"],
+      ["p4d32"],
       "r32",
       (x) => x.value[0],
       (_, a) => `${a.expr}.x`,
-      "(7,-8,2).x=7",
+      "(7,-8,2,5).x=7",
     )
 
     OP_Y.add(
-      ["p3d32"],
+      ["p4d32"],
       "r32",
       (x) => x.value[1],
       (_, a) => `${a.expr}.y`,
-      "(7,-8,2).y=-8",
+      "(7,-8,2,5).y=-8",
     )
 
     OP_Z.add(
-      ["p3d32"],
+      ["p4d32"],
       "r32",
       (x) => x.value[2],
       (_, a) => `${a.expr}.z`,
-      "(7,-8,2).z=2",
+      "(7,-8,2,5).z=2",
+    )
+
+    OP_W.add(
+      ["p4d32"],
+      "r32",
+      (x) => x.value[3],
+      (_, a) => `${a.expr}.w`,
+      "(7,-8,2,5).z=5",
     )
 
     OP_POINT.add(
-      ["r32", "r32", "r32"],
-      "p3d32",
-      (x, y, z) => [x.value, y.value, z.value],
-      (_, x, y, z) => `vec3(${x.expr}, ${y.expr}, ${z.expr})`,
+      ["r32", "r32", "r32", "r32"],
+      "p4d32",
+      (x, y, z, w) => [x.value, y.value, z.value, w.value],
+      (_, x, y, z, w) => `vec4(${x.expr}, ${y.expr}, ${z.expr}, ${w.expr})`,
       "(7,-8,2)",
     )
 
     OP_ADD.add(
-      ["p3d32", "p3d32"],
-      "p3d32",
-      ({ value: [x1, y1, z1] }, { value: [x2, y2, z2] }) => [
+      ["p4d32", "p4d32"],
+      "p4d32",
+      ({ value: [x1, y1, z1, w1] }, { value: [x2, y2, z2, w2] }) => [
         add(x1, x2),
         add(y1, y2),
         add(z1, z2),
+        add(w1, w2),
       ],
       (_, a, b) => `(${a.expr} + ${b.expr})`,
-      "(7,-9,4)+(2,-3,0)=(9,-12,4)",
+      "(7,-9,4,2)+(2,-3,0,-5)=(9,-12,4,-3)",
     )
 
     OP_SUB.add(
-      ["p3d32", "p3d32"],
-      "p3d32",
-      ({ value: [x1, y1, z1] }, { value: [x2, y2, z2] }) => [
+      ["p4d32", "p4d32"],
+      "p4d32",
+      ({ value: [x1, y1, z1, w1] }, { value: [x2, y2, z2, w2] }) => [
         sub(x1, x2),
         sub(y1, y2),
         sub(z1, z2),
+        sub(w1, w2),
       ],
       (_, a, b) => `(${a.expr} - ${b.expr})`,
-      "(7,-9,4)-(2,-3,0)=(5,-6,4)",
+      "(7,-9,4,2)-(2,-3,0,-5)=(5,-6,4,7)",
     )
 
     FN_UNSIGN.add(
-      ["p3d32"],
-      "p3d32",
-      ({ value: [x, y, z] }) => [abs(x), abs(y), abs(z)],
+      ["p4d32"],
+      "p4d32",
+      ({ value: [x, y, z, w] }) => [abs(x), abs(y), abs(z), abs(w)],
       (_, a) => `abs(${a.expr})`,
-      "unsign((7,-9,4))=(7,9,4)",
+      "unsign((7,-9,4,-5))=(7,9,4,5)",
     )
 
     OP_ABS.add(
-      ["p3d32"],
+      ["p4d32"],
       "rabs32",
-      ({ value: [x, y, z] }) => real(Math.hypot(num(x), num(y), num(z))),
+      ({ value: [x, y, z, w] }) =>
+        real(Math.hypot(num(x), num(y), num(z), num(w))),
       (_, a) => `length(${a.expr})`,
-      "|(3,-4,12)|=13",
+      "|(3,-4,12,84)|=85",
     )
 
     OP_NEG.add(
-      ["p3d32"],
-      "p3d32",
-      ({ value: [x, y, z] }) => [neg(x), neg(y), neg(z)],
+      ["p4d32"],
+      "p4d32",
+      ({ value: [x, y, z, w] }) => [neg(x), neg(y), neg(z), neg(w)],
       (_, a) => `(-${a.expr})`,
-      "-(3,-4,0)=(-3,4,0)",
+      "-(3,-4,0,5)=(-3,4,0,-5)",
     )
 
     FN_VALID.add(
-      ["p3d32"],
+      ["p4d32"],
       "bool",
-      ({ value: [xr, yr, zr] }) => {
+      ({ value: [xr, yr, zr, wr] }) => {
         const x = num(xr)
         const y = num(yr)
         const z = num(zr)
-        return isFinite(x) && isFinite(y) && isFinite(z)
+        const w = num(wr)
+        return isFinite(x) && isFinite(y) && isFinite(z) && isFinite(w)
       },
       (ctx, ar) => {
         const a = ctx.cache(ar)
         return `(!(any(isnan(${a})) || any(isinf(${a}))))`
       },
-      ["valid((2,3,-4))=true", "valid((\\frac00,\\infty,-4))=false"],
+      ["valid((2,3,-4,-5))=true", "valid((\\frac00,\\infty,-4,5))=false"],
     )
 
     OP_ODOT.add(
-      ["p3d32", "p3d32"],
-      "p3d32",
-      ({ value: [x1, y1, z1] }, { value: [x2, y2, z2] }) => [
+      ["p4d32", "p4d32"],
+      "p4d32",
+      ({ value: [x1, y1, z1, w1] }, { value: [x2, y2, z2, w2] }) => [
         mul(x1, x2),
         mul(y1, y2),
         mul(z1, z2),
+        mul(w1, w2),
       ],
       (_, a, b) => `(${a.expr} * ${b.expr})`,
-      "(7,-9,4)\\odot(2,-3,0)=(14,27,0)",
+      "(7,-9,4,5)\\odot(2,-3,0,-5)=(14,27,0,-25)",
     )
 
     OP_POS.add(
-      ["p3d32"],
-      "p3d32",
+      ["p4d32"],
+      "p4d32",
       (a) => a.value,
       (_, a) => a.expr,
       "+(2,-4,7)=(2,-4,7)",
     )
 
     OP_CDOT.add(
-      ["p3d32", "r32"],
-      "p3d32",
-      ({ value: [x, y, z] }, { value: s }) => [mul(s, x), mul(s, y), mul(s, z)],
+      ["p4d32", "r32"],
+      "p4d32",
+      ({ value: [x, y, z, w] }, { value: s }) => [
+        mul(s, x),
+        mul(s, y),
+        mul(s, z),
+        mul(s, w),
+      ],
       (_, a, b) => `(${a.expr} * ${b.expr})`,
       [],
     ).add(
-      ["r32", "p3d32"],
-      "p3d32",
-      ({ value: s }, { value: [x, y, z] }) => [mul(s, x), mul(s, y), mul(s, z)],
+      ["r32", "p4d32"],
+      "p4d32",
+      ({ value: s }, { value: [x, y, z, w] }) => [
+        mul(s, x),
+        mul(s, y),
+        mul(s, z),
+        mul(s, w),
+      ],
       (_, a, b) => `(${a.expr} * ${b.expr})`,
-      "8\\cdot(9,-4,2)=(72,-32,16)",
+      "8\\cdot(9,-4,2,5)=(72,-32,16,40)",
     )
 
     OP_DIV.add(
-      ["p3d32", "r32"],
-      "p3d32",
-      ({ value: [x, y, z] }, { value: s }) => [div(x, s), div(y, s), div(z, s)],
+      ["p4d32", "r32"],
+      "p4d32",
+      ({ value: [x, y, z, w] }, { value: s }) => [
+        div(x, s),
+        div(y, s),
+        div(z, s),
+        div(w, s),
+      ],
       (_, a, b) => `(${a.expr} / ${b.expr})`,
-      "(72,-32,16)÷4=(18,-8,4)",
+      "(72,-32,16,8)÷4=(18,-8,4,2)",
     )
 
     FN_POINT.add(
-      ["p3d32"],
-      "p3d32",
+      ["p4d32"],
+      "p4d32",
       (a) => a.value,
       (_, a) => a.expr,
-      "point((7,8,-2))=(7,8,-2)",
+      "point((7,8,-2,5))=(7,8,-2,5)",
     )
   },
   ty: {
     info: {
-      p3d32: {
-        name: "3D point",
-        namePlural: "3D points",
-        glsl: "vec3",
+      p4d32: {
+        name: "4D point",
+        namePlural: "4D points",
+        glsl: "vec4",
         toGlsl(val) {
-          return `vec3(${val.map((x) => num(x).toExponential()).join(", ")})`
+          return `vec4(${val.map((x) => num(x).toExponential()).join(", ")})`
         },
         garbage: {
-          js: [real(NaN), real(NaN), real(NaN)],
-          glsl: `vec3(0.0/0.0)`,
+          js: [real(NaN), real(NaN), real(NaN), real(NaN)],
+          glsl: `vec4(0.0/0.0)`,
         },
         coerce: {},
         write: {
@@ -233,12 +262,14 @@ export const PKG_POINT_3D: Package = {
             inner.num(value[1])
             new CmdComma().insertAt(inner.cursor, L)
             inner.num(value[2])
+            new CmdComma().insertAt(inner.cursor, L)
+            inner.num(value[3])
           },
         },
         order: null,
         point: false,
         icon() {
-          return iconPoint3D(false)
+          return iconPoint4D(false)
         },
         token: null,
         glide: null,
