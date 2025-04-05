@@ -10,28 +10,28 @@ const FN_CSCH = new FnDist("csch", "takes the hyperbolic cosecant of an angle")
 const FN_SECH = new FnDist("sech", "takes the hyperbolic secant of an angle")
 const FN_COTH = new FnDist("coth", "takes the hyperbolic cotangent of an angle")
 
-const FN_ARCSINH = new FnDist(
-  "arcsinh",
+const FN_ARSINH = new FnDist(
+  "arsinh",
   "takes the inverse hyperbolic sine of a value",
 )
-const FN_ARCCOSH = new FnDist(
-  "arccosh",
+const FN_ARCOSH = new FnDist(
+  "arcosh",
   "takes the inverse hyperbolic cosine of a value",
 )
-const FN_ARCTANH = new FnDist(
-  "arctanh",
+const FN_ARTANH = new FnDist(
+  "artanh",
   "takes the inverse hyperbolic tangent of a value",
 )
-const FN_ARCCSCH = new FnDist(
-  "arccsch",
+const FN_ARCSCH = new FnDist(
+  "arcsch",
   "takes the inverse hyperbolic cosecant of a value",
 )
-const FN_ARCSECH = new FnDist(
-  "arcsech",
+const FN_ARSECH = new FnDist(
+  "arsech",
   "takes the inverse hyperbolic secant of a value",
 )
-const FN_ARCCOTH = new FnDist(
-  "arccoth",
+const FN_ARCOTH = new FnDist(
+  "arcoth",
   "takes the inverse hyperbolic cotangent of a value",
 )
 
@@ -90,52 +90,52 @@ export const PKG_TRIG_HYPERBOLIC_REAL: Package = {
     )
 
     // DOCS: remove parentheses from trig fns
-    FN_ARCSINH.add(
+    FN_ARSINH.add(
       ["r32"],
       "r32",
       (a) => approx(Math.asinh(num(a.value))),
       (_, a) => `asinh(${a.expr})`,
-      "arcsinh(2)≈1.4436",
+      "arsinh(2)≈1.4436",
     )
 
-    FN_ARCCOSH.add(
+    FN_ARCOSH.add(
       ["r32"],
       "r32",
       (a) => approx(Math.acosh(num(a.value))),
       (_, a) => `acosh(${a.expr})`,
-      "arccosh(2)≈1.3170",
+      "arcosh(2)≈1.3170",
     )
 
-    FN_ARCTANH.add(
+    FN_ARTANH.add(
       ["r32"],
       "r32",
       (a) => approx(Math.atanh(num(a.value))),
       (_, a) => `atanh(${a.expr})`,
-      "arctanh(0.3)≈0.3095",
+      "artanh(0.3)≈0.3095",
     )
 
-    FN_ARCCSCH.add(
+    FN_ARCSCH.add(
       ["r32"],
       "r32",
       (a) => approx(Math.asinh(1 / num(a.value))),
       (_, a) => `asinh(1.0/${a.expr})`,
-      "arccsch(3)≈0.3275",
+      "arcsch(3)≈0.3275",
     )
 
-    FN_ARCSECH.add(
+    FN_ARSECH.add(
       ["r32"],
       "r32",
       (a) => approx(Math.acosh(1 / num(a.value))),
       (_, a) => `acosh(1.0/${a.expr})`,
-      "arcsech(0.3)≈1.8738",
+      "arsech(0.3)≈1.8738",
     )
 
-    FN_ARCCOTH.add(
+    FN_ARCOTH.add(
       ["r32"],
       "r32",
       (a) => approx(Math.atanh(1 / num(a.value))),
       (_, a) => `atanh(1.0/${a.expr})`,
-      "arccoth(3)≈0.3466",
+      "arcoth(3)≈0.3466",
     )
   },
   deps: [() => PKG_REAL],
@@ -147,24 +147,24 @@ export const PKG_TRIG_HYPERBOLIC_REAL: Package = {
       csch: FN_CSCH,
       sech: FN_SECH,
       coth: FN_COTH,
-      arsinh: FN_ARCSINH,
-      arcosh: FN_ARCCOSH,
-      artanh: FN_ARCTANH,
-      arcsch: FN_ARCCSCH,
-      arsech: FN_ARCSECH,
-      arcoth: FN_ARCCOTH,
-      arcsinh: FN_ARCSINH,
-      arccosh: FN_ARCCOSH,
-      arctanh: FN_ARCTANH,
-      arccsch: FN_ARCCSCH,
-      arcsech: FN_ARCSECH,
-      arccoth: FN_ARCCOTH,
-      "sinh^-1": FN_ARCSINH,
-      "cosh^-1": FN_ARCCOSH,
-      "tanh^-1": FN_ARCTANH,
-      "csch^-1": FN_ARCCSCH,
-      "sech^-1": FN_ARCSECH,
-      "coth^-1": FN_ARCCOTH,
+      arsinh: FN_ARSINH,
+      arcosh: FN_ARCOSH,
+      artanh: FN_ARTANH,
+      arcsch: FN_ARCSCH,
+      arsech: FN_ARSECH,
+      arcoth: FN_ARCOTH,
+      arcsinh: FN_ARSINH,
+      arccosh: FN_ARCOSH,
+      arctanh: FN_ARTANH,
+      arccsch: FN_ARCSCH,
+      arcsech: FN_ARSECH,
+      arccoth: FN_ARCOTH,
+      "sinh^-1": FN_ARSINH,
+      "cosh^-1": FN_ARCOSH,
+      "tanh^-1": FN_ARTANH,
+      "csch^-1": FN_ARCSCH,
+      "sech^-1": FN_ARSECH,
+      "coth^-1": FN_ARCOTH,
       "arsinh^-1": FN_SINH,
       "arcosh^-1": FN_COSH,
       "artanh^-1": FN_TANH,
