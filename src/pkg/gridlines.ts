@@ -247,7 +247,7 @@ function createDrawAxes(paper: Cv) {
 
     for (
       let line = majorStart, i = 0;
-      line < majorEnd && i < MAX_GRIDLINES_MAJOR;
+      line <= majorEnd && i < MAX_GRIDLINES_MAJOR;
       line++, i++
     ) {
       if (line == 0) {
@@ -290,7 +290,7 @@ function createDrawAxes(paper: Cv) {
 
     for (
       let line = majorStart, i = 0;
-      line < majorEnd && i < MAX_GRIDLINES_MAJOR;
+      line <= majorEnd && i < MAX_GRIDLINES_MAJOR;
       line++, i++
     ) {
       if (line == 0) {

@@ -1,6 +1,7 @@
 import { Precedence } from "@/eval/ast/token"
 import type { GlslContext } from "@/eval/lib/fn"
 import { FnDist } from "@/eval/ops/dist"
+import { FnDistManual } from "@/eval/ops/dist-manual"
 import { binary, suffixFn, SYM_1, txr, unary } from "@/eval/sym"
 import { approx, num, real, rept } from "@/eval/ty/create"
 import { CmdExclamation } from "@/field/cmd/leaf/exclamation"
@@ -10,13 +11,16 @@ import { CmdSupSub } from "@/field/cmd/math/supsub"
 import { Block, L, R } from "@/field/model"
 import digamma from "@stdlib/math/base/special/digamma"
 import factorial from "@stdlib/math/base/special/factorial"
+import gammaln from "@stdlib/math/base/special/gammaln"
 import polygamma from "@stdlib/math/base/special/polygamma"
 import { complex, gamma, type Complex } from "mathjs"
 import type { Package } from "."
+import lngamma from "../glsl/lngamma.glsl"
 import { chain, OP_ADD, OP_JUXTAPOSE } from "./core/ops"
 import { declareDiv, declarePowC32 } from "./num/complex"
 
-function factorialGlsl(ctx: GlslContext, x: string) {
+// TODO: our approximation may be better than desmos's lol
+function declareFactorialR32(ctx: GlslContext) {
   /*! From Desmos's shaders. Source is https://www.desmos.com/api/v1.11/docs/index.html. */
   ctx.glsl`float sinpiSeries(float x) {
   float xsq = x * x;
@@ -110,11 +114,14 @@ float factorial(float x) {
   return isInteger ? round(approx) : approx;
 }
 `
+}
 
+function factorialGlsl(ctx: GlslContext, x: string) {
+  declareFactorialR32(ctx)
   return `factorial(${x})`
 }
 
-function declareFactorial(ctx: GlslContext) {
+function declareFactorialC32(ctx: GlslContext) {
   declareDiv(ctx)
   declarePowC32(ctx)
   /*! https://en.wikipedia.org/wiki/Lanczos_approximation */
@@ -313,11 +320,44 @@ const OP_FACTORIAL: FnDist = new FnDist("!", "computes a factorial", {
       }
     },
     (ctx, a) => {
-      declareFactorial(ctx)
+      declareFactorialC32(ctx)
       return `_nya_helper_factorial(${a.expr})`
     },
     "(2+3i)!≈-0.44011-0.06364i",
   )
+
+const FN_LNGAMMA = new FnDist(
+  "lngamma",
+  "calculates the natural logarithm of the gamma function",
+  {
+    display([a, b]) {
+      if (!(a && !b)) return
+      return FnDistManual.prototype.display.call({ name: "ln" }, [
+        {
+          type: "call",
+          fn: OP_FACTORIAL,
+          args: [
+            {
+              type: "call",
+              fn: OP_ADD,
+              args: [a, SYM_1],
+            },
+          ],
+        },
+      ])
+    },
+  },
+).add(
+  ["r32"],
+  "r32",
+  (x) => approx(gammaln(num(x.value))),
+  (ctx, a) => {
+    declareFactorialR32(ctx)
+    ctx.helpers.declareText(lngamma)
+    return `lngamma(${a.expr})`
+  },
+  "lngamma23=ln((23+1)!)",
+)
 
 export const PKG_FACTORIAL: Package = {
   id: "nya:factorial",
@@ -353,6 +393,9 @@ export const PKG_FACTORIAL: Package = {
           },
         },
       },
+    },
+    fn: {
+      lngamma: FN_LNGAMMA,
     },
   },
 }

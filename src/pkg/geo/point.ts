@@ -240,7 +240,7 @@ export function declareDebugPoint(
     sign(v_coords.x - z.x) / 2.0 + 0.5,
     sign(v_coords.z - z.y) / 2.0 + 0.5,
     1,
-    1
+    .5
   );
 }
 `

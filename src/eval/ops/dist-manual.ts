@@ -71,7 +71,7 @@ export interface FnProps {
  * a specific value.
  */
 export abstract class FnDistManual<Q extends TyName = TyName> implements Fn {
-  private readonly displayFn: DisplayFn | undefined
+  readonly displayFn: DisplayFn | undefined
   readonly deriv: DerivFn | undefined
   readonly simplify: ((args: Sym[]) => Sym | undefined) | undefined
 
@@ -85,7 +85,10 @@ export abstract class FnDistManual<Q extends TyName = TyName> implements Fn {
     this.simplify = props?.simplify
   }
 
-  display(args: Sym[]): SymDisplay {
+  display(
+    this: { name: string; displayFn?: DisplayFn },
+    args: Sym[],
+  ): SymDisplay {
     const custom = this.displayFn?.(args)
     if (custom) {
       return custom
@@ -95,8 +98,16 @@ export abstract class FnDistManual<Q extends TyName = TyName> implements Fn {
     const outer = ret.cursor(R)
     new CmdWord(this.name, "prefix").insertAt(outer, L)
 
-    if (args.length == 1) {
+    norm: if (args.length == 1) {
       const result = txr(args[0]!).display(args[0]!)
+      if (
+        result.block.ends[L] instanceof CmdBrack &&
+        result.block.ends[L].lhs == "(" &&
+        result.block.ends[L].rhs == ")" &&
+        result.block.ends[L] != result.block.ends[R]
+      ) {
+        break norm
+      }
       insertStrict(outer, result, Precedence.Product, Precedence.Product)
       return {
         block: ret,

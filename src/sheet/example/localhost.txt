@@ -1,5 +1,6 @@
-f\left(x\right)=\operatorname{sin}x
-f\left(x\right)
-\left(a,f\left(a\right)\right)
-a=0.406
-y-f\left(a\right)=\left(\frac{d}{dx}f\left(x\right)\operatorname{with}x=a\right)\left(x-a\right)
+\operatorname{sym}x!^{2}
+\operatorname{sym}\left(2\cdot x!\right)
+\operatorname{sym}x!2
+\operatorname{sym}\left(\operatorname{ln}\left(x!\right)\right)
+\operatorname{sym}\left(\operatorname{ln}\left(\left(xy\right)!\right)\right)
+\operatorname{sym}\left(\operatorname{ln}\left(\left(x+2\right)!\right)\right)

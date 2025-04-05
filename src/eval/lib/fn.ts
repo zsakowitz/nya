@@ -14,14 +14,29 @@ export class GlslHelpers {
   }
 
   private templateHelpers: TemplateStringsArray[] = []
+  private literalHelpers = new Set<string>()
 
   declare(source: TemplateStringsArray) {
-    if (this.templateHelpers.indexOf(source) == -1) {
-      this.templateHelpers.push(source)
-      ;(this as any).helpers += source[0]!
-      if (!source[0]!.endsWith("\n")) {
-        console.warn("[declare source invalid]", source)
-      }
+    if (this.templateHelpers.indexOf(source) != -1) {
+      return
+    }
+
+    this.templateHelpers.push(source)
+    ;(this as any).helpers += source[0]!
+    if (!source[0]!.endsWith("\n")) {
+      console.warn("[declare source invalid]", source)
+    }
+  }
+
+  declareText(text: string) {
+    if (this.literalHelpers.has(text)) {
+      return
+    }
+
+    this.literalHelpers.add(text)
+    ;(this as any).helpers += text
+    if (!text.endsWith("\n")) {
+      console.warn("[declareText source invalid]", text)
     }
   }
 }
