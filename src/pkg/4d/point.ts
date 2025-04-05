@@ -281,6 +281,7 @@ export const PKG_POINT_4D: Package = {
   eval: {
     fn: {
       ".z": OP_Z,
+      ".w": OP_W,
     },
   },
 }
