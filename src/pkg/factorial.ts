@@ -4,7 +4,7 @@ import { FnDist } from "@/eval/ops/dist"
 import { binary, suffixFn, SYM_1, txr, unary } from "@/eval/sym"
 import { approx, num, real, rept } from "@/eval/ty/create"
 import { CmdExclamation } from "@/field/cmd/leaf/exclamation"
-import { SymGamma, SymPsi } from "@/field/cmd/leaf/sym"
+import { SymPsi } from "@/field/cmd/leaf/sym"
 import { CmdWord } from "@/field/cmd/leaf/word"
 import { CmdBrack } from "@/field/cmd/math/brack"
 import { CmdSupSub } from "@/field/cmd/math/supsub"
@@ -173,25 +173,6 @@ vec2 _nya_helper_factorial(vec2 z) {
 }
 `
 }
-
-export const FN_GAMMA: FnDist = new FnDist(
-  "gamma",
-  "computes the gamma function",
-  {
-    display([a, b]) {
-      if (!(a && !b)) return
-
-      const block = new Block(null)
-      const cursor = block.cursor(R)
-      new SymGamma().insertAt(cursor, L)
-
-      const arg = txr(a).display(a).block
-      new CmdBrack("(", ")", null, arg).insertAt(cursor, L)
-
-      return { block, lhs: Precedence.Atom, rhs: Precedence.Atom }
-    },
-  },
-)
 
 export const FN_DIGAMMA: FnDist = new FnDist(
   "digamma",
