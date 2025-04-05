@@ -687,7 +687,7 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
       "color",
       plotJs,
       cplotAbs,
-      "\\nyaop{plot}(2)=\\color{#b8b8b8}",
+      "\\nyaop{plot}(|2|)=\\color{#b8b8b8}",
     ).add(
       ["c32"],
       "color",
