@@ -48,7 +48,7 @@ export class Sheet {
   private readonly setPixelRatio
   private readonly glPixelRatio = new Slider()
 
-  private trigKind: "deg" | "rad" | "rot" = "rot"
+  private trigKind: "deg" | "rad" | "rot" = "rad"
 
   requireRadians(context: RequireRadiansContext) {
     if (this.trigKind != "rad") {
@@ -153,6 +153,43 @@ export class Sheet {
     this.glPixelRatio.value = real(this.pixelRatio())
     this.glPixelRatio.onInput = () =>
       this.setPixelRatio(num(this.glPixelRatio.value))
+
+    const radioName = "_nya_radio_" + Math.random().toString().slice(2)
+    const trigLabel = (name: Sheet["trigKind"]) => {
+      const input = hx("input", {
+        type: "radio",
+        name: radioName,
+        value: "deg",
+        class: "sr-only",
+      })
+      input.defaultChecked = this.trigKind == name
+      input.addEventListener("input", () => {
+        this.trigKind = name
+        this.scope.queueGlobalRecompute()
+      })
+      const label = hx(
+        "label",
+        "contents cursor-pointer",
+        input,
+        h(
+          "opacity-30 hover:opacity-100 [:checked+&]:opacity-100 inline-block [:checked+&]:bg-[--nya-bg-sidebar] px-2 text-center rounded-sm [:first-child>&]:rounded-l-full [:last-child>&]:rounded-r-full",
+          name,
+        ),
+      )
+      label.addEventListener("pointerdown", () => {
+        input.value = name
+        input.checked = true
+        this.trigKind = name
+        this.scope.queueGlobalRecompute()
+      })
+      return label
+    }
+    const trigKindEl = h(
+      "block w-48 bg-[--nya-bg] outline outline-1 outline-[--nya-pixel-ratio] rounded-full p-0.5 text-[--nya-text-prose] font-['Symbola'] grid grid-cols-3",
+      trigLabel("rad"),
+      trigLabel("deg"),
+      trigLabel("rot"),
+    )
 
     const switchToDocs = btnSkin("a", faBook, "Docs")
     switchToDocs.href = location.origin + "/?/docs"
@@ -287,7 +324,11 @@ export class Sheet {
       h(
         "absolute block sm:top-0 bottom-0 left-0 sm:w-1 w-full h-1 sm:h-full from-[--nya-sidebar-shadow] to-transparent bg-gradient-to-t sm:bg-gradient-to-r",
       ),
-      h("absolute flex flex-col top-2 right-2", this.glPixelRatio.el),
+      h(
+        "absolute flex flex-col top-2 right-2 gap-2",
+        this.glPixelRatio.el,
+        trigKindEl,
+      ),
       h(
         "absolute flex flex-col bottom-2 right-2 text-right font-['Symbola'] text-[--nya-title] pointer-events-none [-webkit-text-stroke:2px_var(--nya-bg)] [paint-order:stroke] opacity-30",
         h("text-3xl/[1]", "project nya"),

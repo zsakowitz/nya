@@ -71,6 +71,13 @@ export class Scope {
     this._queued = true
   }
 
+  queueGlobalRecompute() {
+    for (const field of this.fields) {
+      field.dirtyValue = true
+    }
+    this.queueUpdate()
+  }
+
   /** A map from binding IDs to the fields which define them. */
   private readonly defs: Record<string, FieldComputed[]> = Object.create(null)
 
