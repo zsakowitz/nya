@@ -60,6 +60,16 @@ const REMARKS = [
   "lock in 😐",
   "¡try spanish factorial notation!",
   "on our way to make a CAS system...",
+  "soweli li suwi :3",
+  "not infinite, just infinitely weird",
+  "nasa li pona !!",
+  "hexagons :O",
+  "arctic exploration",
+  "many rationals, much reals",
+  "rats? i was rats once.",
+  "listenbourg",
+  "it's not a bug, it's a learning opportunity. for the customer",
+  "may ur days be filled with cats",
 ]
 
 export const REMARK = REMARKS[Math.floor(REMARKS.length * Math.random())]!

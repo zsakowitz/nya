@@ -1,6 +1,4 @@
-\operatorname{sym}x!^{2}
-\operatorname{sym}\left(2\cdot x!\right)
-\operatorname{sym}x!2
-\operatorname{sym}\left(\operatorname{ln}\left(x!\right)\right)
-\operatorname{sym}\left(\operatorname{ln}\left(\left(xy\right)!\right)\right)
-\operatorname{sym}\left(\operatorname{ln}\left(\left(x+2\right)!\right)\right)
+a=\frac{\left(\operatorname{iterate}.a^{101}a\to \operatorname{join}\left(a,n\right),n\to n+1\operatorname{from}a=\left[\right]\right)}{25}-2
+\left(a,\operatorname{erf}a\right)
+f\left(x\right)=\operatorname{tanh}\left(\frac{2}{\sqrt{\pi }}\left(x+\frac{11}{123}x^{3}\right)\right)
+f\left(x\right)
