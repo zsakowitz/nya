@@ -5,6 +5,7 @@ import { id } from "@/eval/lib/binding"
 import type { Fn } from "@/eval/ops"
 import { ALL_DOCS, type WithDocs } from "@/eval/ops/docs"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "@/eval/ops/vars"
+import { canCoerce } from "@/eval/ty/coerce"
 import { TY_INFO } from "@/eval/ty/info"
 import { b, h, hx, li, p, px } from "@/jsx"
 import { Store, defineExt } from "@/sheet/ext"
@@ -97,7 +98,7 @@ const EXT_GLSL = defineExt({
 
     const fork = props.ctx.fork()
     const value = glsl(ast, { ...props, ctx: fork })
-    if (value.type == "r32" || value.type == "r64") {
+    if (canCoerce(value.type, "r32")) {
       const deps = data.expr.field.allDeps()
       const usesX = deps.has(id({ value: "x" }))
       const usesY = deps.has(id({ value: "y" }))

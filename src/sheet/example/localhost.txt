@@ -1,1 +1,1 @@
-erf x
+\operatorname{normaldist}\left(\right).\operatorname{cdf}\left(-1,1\right)

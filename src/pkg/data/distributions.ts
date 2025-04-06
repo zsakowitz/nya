@@ -178,7 +178,7 @@ const FN_ERF = new FnDist(
   "r32",
   (a) => approx(erf(num(a.value))),
   (ctx, a) => {
-    ctx.helpers.declareText(erfGl)
+    ctx.glslText(erfGl)
     return `_nya_helper_erf(${a.expr})`
   },
   "erf(1)≈0.842700",
@@ -215,11 +215,46 @@ const FN_PDF = new FnDistDeriv("pdf", "probability distribution function").add(
   "normaldist().pdf(1)≈0.24197",
 )
 
-// const FN_CDF = new FnDistDeriv("cdf", "cumulative distribution function").addJs(
-//   ["normaldist", "r32"],
-//   "r32",
-//   // (dist, xRaw) =
-// )
+const FN_CDF = new FnDistDeriv("cdf", "cumulative distribution function")
+  .add(
+    ["normaldist", "r32"],
+    "r32",
+    (dist, xRaw) => {
+      const mean = num(dist.value[0])
+      const stdev = num(dist.value[1])
+      const x = num(xRaw.value)
+      return approx((1 + erf((x - mean) / (stdev * Math.SQRT2))) / 2)
+    },
+    (ctx, dist, x) => {
+      ctx.glslText(erfGl)
+      const d = ctx.cache(dist)
+      return `((1.0 + _nya_helper_erf((${x.expr} - ${d}.x) / (${d}.y * ${Math.SQRT2}))) / 2.0)`
+    },
+    "normaldist().cdf(1)≈0.8413",
+  )
+  // COMPAT: cdf does not automatically order its arguments
+  // wrap cdf calls in absolute value signs to use dcg behavior
+  .add(
+    ["normaldist", "r32", "r32"],
+    "r32",
+    (dist, lRaw, rRaw) => {
+      const mean = num(dist.value[0])
+      const stdev = num(dist.value[1])
+      const l = num(lRaw.value)
+      const r = num(rRaw.value)
+      return approx(
+        (erf((r - mean) / (stdev * Math.SQRT2)) -
+          erf((l - mean) / (stdev * Math.SQRT2))) /
+          2,
+      )
+    },
+    (ctx, dist, x, y) => {
+      ctx.glslText(erfGl)
+      const d = ctx.cache(dist)
+      return `((_nya_helper_erf((${y.expr} - ${d}.x) / (${d}.y * ${Math.SQRT2})) - _nya_helper_erf((${x.expr} - ${d}.x) / (${d}.y * ${Math.SQRT2}))) / 2.0)`
+    },
+    "normaldist().cdf(-1,1)≈0.68",
+  )
 
 // TODO: tokens for distributions
 
@@ -582,6 +617,7 @@ export const PKG_DISTRIBUTIONS: Package = {
       erf: FN_ERF,
       "erf^-1": FN_ERFINV,
       pdf: FN_PDF,
+      cdf: FN_CDF,
     },
   },
   sheet: {

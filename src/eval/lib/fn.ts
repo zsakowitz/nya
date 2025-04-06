@@ -54,6 +54,10 @@ export class GlslContext {
     this.helpers.declare(source)
   }
 
+  glslText(source: string) {
+    this.helpers.declareText(source)
+  }
+
   fork() {
     return new GlslContext(this.helpers)
   }
