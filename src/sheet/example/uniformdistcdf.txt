@@ -1,0 +1,8 @@
+F(x,y)=\left\{p.x=p.x:p.x=p.y,p.y\neq p.y\right\}forp=join((x,y))
+F(uniformdist(2,4).cdf(\left[-\infinity ,1,3,5,\infinity \right]),\left[0,0,0.5,1,1\right])
+F(uniformdist(3,3).cdf(\left[-\infinity ,1,3,5,\infinity \right]),\left[0,0,\frac{0}{0},1,1\right])
+F(uniformdist(-\infinity ,-\infinity ).cdf(\left[-\infinity ,3,\infinity \right]),\left[\frac{0}{0},1,1\right])
+F(uniformdist(-\infinity ,5).cdf(\left[-\infinity ,3,7,\infinity \right]),\left[\frac{0}{0},1,1,1\right])
+F(uniformdist(-\infinity ,\infinity ).cdf(\left[-\infinity ,3,\infinity \right]),\left[\frac{0}{0},\frac{0}{0},\frac{0}{0}\right])
+F(uniformdist(5,\infinity ).cdf(\left[-\infinity ,3,7,\infinity \right]),\left[0,0,0,\frac{0}{0}\right])
+F(uniformdist(\infinity ,\infinity ).cdf(\left[-\infinity ,3,7,\infinity \right]),\left[0,0,0,\frac{0}{0}\right])

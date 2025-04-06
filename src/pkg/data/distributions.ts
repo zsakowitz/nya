@@ -2,15 +2,16 @@ import { jsToGlsl } from "@/eval/glsl"
 import { FnDist } from "@/eval/ops/dist"
 import { FnDistDeriv } from "@/eval/ops/dist-deriv"
 import { SYM_2, SYM_E, SYM_HALF, SYM_PI, unary } from "@/eval/sym"
-import type { GlslValue } from "@/eval/ty"
+import type { GlslValue, JsVal, SReal } from "@/eval/ty"
 import { approx, gl, num, real } from "@/eval/ty/create"
 import { TY_INFO } from "@/eval/ty/info"
+import { div, recip, sub } from "@/eval/ty/ops"
 import { CmdComma } from "@/field/cmd/leaf/comma"
 import { CmdWord } from "@/field/cmd/leaf/word"
 import { CmdBrack } from "@/field/cmd/math/brack"
 import { Block, L, R } from "@/field/model"
 import { g, h, path, svgx } from "@/jsx"
-import { defineExt } from "@/sheet/ext"
+import { defineHideable } from "@/sheet/ext/hideable"
 import { createLine } from "@/sheet/shader-line"
 import erfinv from "@stdlib/math/base/special/erfinv"
 import { erf } from "mathjs"
@@ -191,29 +192,113 @@ const FN_ERFINV = new FnDist("erfinv", "inverse error function").addJs(
   "erf^{-1}(0.8427)≈1",
 )
 
-const FN_PDF = new FnDistDeriv("pdf", "probability distribution function").add(
-  ["normaldist", "r32"],
-  "r32",
-  (dist, xRaw) => {
-    const mean = num(dist.value[0])
-    const stdev = num(dist.value[1])
-    const x = num(xRaw.value)
-    return approx(
-      Math.E ** (-((x - mean) ** 2) / (2 * stdev * stdev)) /
-        Math.sqrt(2 * Math.PI * stdev * stdev),
-    )
-  },
-  (ctx, a, b) => {
-    ctx.glsl`float nya_normaldist_pdf(vec2 dist, float x) {
+const FN_PDF = new FnDistDeriv("pdf", "probability distribution function")
+  .add(
+    ["normaldist", "r32"],
+    "r32",
+    (dist, xRaw) => {
+      const mean = num(dist.value[0])
+      const stdev = num(dist.value[1])
+      const x = num(xRaw.value)
+      return approx(
+        Math.E ** (-((x - mean) ** 2) / (2 * stdev * stdev)) /
+          Math.sqrt(2 * Math.PI * stdev * stdev),
+      )
+    },
+    (ctx, a, b) => {
+      ctx.glsl`float nya_normaldist_pdf(vec2 dist, float x) {
   float mean = dist.x;
   float variance = dist.y * dist.y;
   return pow(2.718281828459045, -(x-mean) * (x-mean) / (2.0 * variance))
     / (2.5066282746310007 * abs(dist.y));
 }`
-    return `nya_normaldist_pdf(${a.expr}, ${b.expr})`
-  },
-  "normaldist().pdf(1)≈0.24197",
-)
+      return `nya_normaldist_pdf(${a.expr}, ${b.expr})`
+    },
+    "normaldist().pdf(1)≈0.24197",
+  )
+  .add(
+    ["uniformdist", "r32"],
+    "r32",
+    (dist, xRaw) => {
+      const min = num(dist.value[0])
+      const max = num(dist.value[1])
+      const x = num(xRaw.value)
+      // COMPAT: desmos doesn't do an isNaN(x) check except sometimes
+      // calculating uniformdist(1,2).pdf(x{x>1.5}withx=1.2) results in 1
+      // but plotting uniformdist(1,2).pdf(x{x>1.5}) doesn't plot a value for x=1.2
+      // to simplify things, we always do an isNaN(x) check
+      // see https://www.desmos.com/calculator/x22o29smej for further examples
+      if (isNaN(min) || isNaN(max) || isNaN(x) || min > max) {
+        return real(NaN)
+      }
+      if (!isFinite(min) || !isFinite(max)) {
+        return min == max ? real(NaN) : real(0)
+      }
+      return min <= x && x <= max ?
+          recip(sub(dist.value[1], dist.value[0]))
+        : real(0)
+    },
+    (ctx, dist, xRaw) => {
+      const d = ctx.cache(dist)
+      const x = ctx.cache(xRaw)
+      return `(
+  isnan(${d}.x) || isnan(${d}.y) || isnan(${x}) || ${d}.x > ${d}.y ? 0.0/0.0 :
+  isinf(${d}.x) || isinf(${d}.y) ? ${d}.x == ${d}.y ? 0.0/0.0 : 0.0 :
+  ${d}.x <= ${x} && ${x} <= ${d}.y ? 1.0 / (${d}.y - ${d}.x) : 0.0
+)`
+    },
+    ["uniformdist(3,8).pdf(4)=\\frac15", "uniformdist(3,8).pdf(19)=0"],
+  )
+
+function uniformdistcdfGlsl(dist: string, x: string) {
+  return `(
+  isnan(${dist}.x) || isnan(${dist}.y) || isnan(${x}) || ${dist}.x > ${dist}.y ? 0.0/0.0
+  : isinf(${dist}.x) || isinf(${dist}.y) ?
+    ${dist}.x == -1.0/0.0 ? ${x} == -1.0/0.0 || ${dist}.y == 1.0/0.0 ? 0.0/0.0 : 1.0
+    : ${x} == 1.0/0.0 ? 0.0/0.0 : 0.0
+  : ${x} < ${dist}.x ? 0.0
+  : ${x} > ${dist}.y ? 1.0
+  : ${dist}.x == ${dist}.y ? 0.0/0.0
+  : (${x} - ${dist}.x) / (${dist}.y - ${dist}.x)
+)`
+}
+
+function uniformdistcdfJs(
+  dist: JsVal<"uniformdist">,
+  xRaw: JsVal<"r32">,
+): SReal {
+  const min = num(dist.value[0])
+  const max = num(dist.value[1])
+  const x = num(xRaw.value)
+  // COMPAT: desmos doesn't do an isNaN(x) check except sometimes
+  // calculating uniformdist(1,2).pdf(x{x>1.5}withx=1.2) results in 1
+  // but plotting uniformdist(1,2).pdf(x{x>1.5}) doesn't plot a value for x=1.2
+  // to simplify things, we always do an isNaN(x) check
+  // see https://www.desmos.com/calculator/x22o29smej for further examples
+  if (isNaN(min) || isNaN(max) || isNaN(x) || min > max) {
+    return real(NaN)
+  }
+  if (!isFinite(min) || !isFinite(max)) {
+    // COMPAT: our behavior at infinites is very different from desmos:
+    // we aim that d/dx cdf = pdf, and have fewer NaN values with infinite bounds
+    // test suite is at src/sheet/example/uniformdistcdf.txt
+    // see comparison at https://www.desmos.com/calculator/wikg5utgi7
+    return real(
+      min == -Infinity ?
+        x == -Infinity || max == Infinity ?
+          NaN
+        : 1
+      : x == Infinity ? NaN
+      : 0,
+    )
+  }
+  // COMPAT: uniformdist(3,3).cdf(3) is 1 in desmos, but NaN in project nya
+  return (
+    x < min ? real(0)
+    : x > max ? real(1)
+    : div(sub(xRaw.value, dist.value[0]), sub(dist.value[1], dist.value[0]))
+  )
+}
 
 const FN_CDF = new FnDistDeriv("cdf", "cumulative distribution function")
   .add(
@@ -255,10 +340,28 @@ const FN_CDF = new FnDistDeriv("cdf", "cumulative distribution function")
     },
     "normaldist().cdf(-1,1)≈0.68",
   )
+  .add(
+    ["uniformdist", "r32"],
+    "r32",
+    uniformdistcdfJs,
+    (ctx, a, b) => uniformdistcdfGlsl(ctx.cache(a), ctx.cache(b)),
+    ["uniformdist(4,8).cdf(7)=0.75"],
+  )
+  .add(
+    ["uniformdist", "r32", "r32"],
+    "r32",
+    (dist, lhs, rhs) =>
+      sub(uniformdistcdfJs(dist, rhs), uniformdistcdfJs(dist, lhs)),
+    (ctx, ar, b, c) => {
+      const a = ctx.cache(ar)
+      return `(${uniformdistcdfGlsl(a, ctx.cache(b))} - ${uniformdistcdfGlsl(a, ctx.cache(c))})`
+    },
+    ["uniformdist(4,8).cdf(7,9)=0.25"],
+  )
 
 // TODO: tokens for distributions
 
-const EXT_CONTINUOUS_DISTRIBUTION = defineExt({
+const EXT_CONTINUOUS_DISTRIBUTION = defineHideable({
   data(expr) {
     if (!expr.js) {
       return
@@ -603,7 +706,9 @@ export const PKG_DISTRIBUTIONS: Package = {
         token: null,
         glide: null,
         preview: null,
-        extras: null,
+        extras: {
+          renderContinuousPdf: true,
+        },
       },
     },
   },

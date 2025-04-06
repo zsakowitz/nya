@@ -1,5 +1,5 @@
-import { Store, type Ext } from "."
 import { h, hx } from "@/jsx"
+import { Store, type Ext } from "."
 import type { Expr } from "../ui/expr"
 import { circle } from "../ui/expr/circle"
 
@@ -42,6 +42,7 @@ const CHECKBOX = new Store((expr) => {
     circEmpty.classList.toggle("hidden", !v)
     circShader.classList.toggle("hidden", v)
     expr.sheet.cv.queue()
+    expr.display()
   }
 })
 
@@ -89,5 +90,14 @@ export function defineHideable<T extends WeakKey, U>(
         },
       },
     },
+    glsl:
+      ext.glsl ?
+        (data, helpers) => {
+          const expr = map.get(data)
+          if (expr && !CHECKBOX.get(expr).show) {
+            return ext.glsl!(data, helpers)
+          }
+        }
+      : undefined,
   }
 }
