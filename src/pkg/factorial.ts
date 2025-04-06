@@ -328,7 +328,7 @@ const OP_FACTORIAL: FnDist = new FnDist("!", "computes a factorial", {
 
 const FN_LNGAMMA = new FnDist(
   "lngamma",
-  "calculates the natural logarithm of the gamma function",
+  "calculates the natural logarithm of the absolute value of the gamma function",
   {
     display([a, b]) {
       if (!(a && !b)) return
@@ -353,7 +353,7 @@ const FN_LNGAMMA = new FnDist(
   (ctx, a) => {
     declareFactorialR32(ctx)
     ctx.helpers.declareText(lngamma)
-    return `lngamma(${a.expr})`
+    return `_nya_helper_lngamma(${a.expr})`
   },
   "lngamma23=ln((23+1)!)",
 )

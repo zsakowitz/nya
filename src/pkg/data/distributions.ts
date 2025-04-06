@@ -15,6 +15,7 @@ import { createLine } from "@/sheet/shader-line"
 import erfinv from "@stdlib/math/base/special/erfinv"
 import { erf } from "mathjs"
 import type { Package } from ".."
+import erfGl from "../../glsl/erf.glsl"
 import { chain, OP_DIV, OP_JUXTAPOSE, OP_NEG, OP_RAISE } from "../core/ops"
 import { EXT_EVAL } from "../eval"
 
@@ -172,7 +173,16 @@ const FN_ERF = new FnDist(
       }),
     ),
   },
-).addJs(["r32"], "r32", (a) => approx(erf(num(a.value))), "erf(1)≈0.842700")
+).add(
+  ["r32"],
+  "r32",
+  (a) => approx(erf(num(a.value))),
+  (ctx, a) => {
+    ctx.helpers.declareText(erfGl)
+    return `_nya_helper_erf(${a.expr})`
+  },
+  "erf(1)≈0.842700",
+)
 
 const FN_ERFINV = new FnDist("erfinv", "inverse error function").addJs(
   ["r32"],
