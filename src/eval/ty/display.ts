@@ -1,4 +1,3 @@
-import type { JsVal, JsValue, SReal } from "."
 import { OpApprox, OpEq } from "@/field/cmd/leaf/cmp"
 import { CmdComma } from "@/field/cmd/leaf/comma"
 import { CmdDot } from "@/field/cmd/leaf/dot"
@@ -9,6 +8,7 @@ import { CmdWord } from "@/field/cmd/leaf/word"
 import { CmdBrack } from "@/field/cmd/math/brack"
 import { CmdSupSub } from "@/field/cmd/math/supsub"
 import { Block, L, R, type Cursor } from "@/field/model"
+import type { JsVal, JsValue, SReal } from "."
 import type { Node } from "../ast/token"
 import { js, type PropsJs } from "../js"
 import { safe } from "../lib/util"
@@ -213,14 +213,26 @@ export class Display {
       const block = new Block(null)
       const brack = new CmdBrack("[", "]", null, block)
       brack.insertAt(this.cursor, L)
-      this.cursor.moveIn(block, R)
-      for (let i = 0; i < value.value.length; i++) {
-        if (i != 0) {
-          new CmdComma().insertAt(this.cursor, L)
+      try {
+        this.cursor.moveIn(block, R)
+        const len = value.value.length
+        // Items are capped to prevent lag from rendering a 10,000-element list
+        const MAX_LEN = 5
+        for (let i = 0; i < Math.min(MAX_LEN, len); i++) {
+          if (i != 0) {
+            new CmdComma().insertAt(this.cursor, L)
+          }
+          TY_INFO[value.type].write.display(value.value[i] as never, this)
         }
-        TY_INFO[value.type].write.display(value.value[i] as never, this)
+        // TODO: dim remaining item count
+        if (len > MAX_LEN) {
+          new CmdComma().insertAt(this.cursor, L)
+          this.num(real(len - MAX_LEN))
+          new CmdWord("others", "var").insertAt(this.cursor, L)
+        }
+      } finally {
+        this.cursor.moveTo(brack, R)
       }
-      this.cursor.moveTo(brack, R)
     }
   }
 
