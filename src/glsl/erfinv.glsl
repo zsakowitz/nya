@@ -1,6 +1,6 @@
 /*! From @stdlib/math/base/special/erfinv */
 
-float rationalFcnR1(float x) {
+float _erfinvR1(float x) {
   float ax;
   float s1;
   float s2;
@@ -91,7 +91,7 @@ float rationalFcnR1(float x) {
   return s1 / s2;
 }
 
-float rationalFcnR2(float x) {
+float _erfinvR2(float x) {
   float ax;
   float s1;
   float s2;
@@ -176,7 +176,7 @@ float rationalFcnR2(float x) {
   return s1 / s2;
 }
 
-float rationalFcnR3(float x) {
+float _erfinvR3(float x) {
   float ax;
   float s1;
   float s2;
@@ -274,7 +274,7 @@ float rationalFcnR3(float x) {
   return s1 / s2;
 }
 
-float rationalFcnR4(float x) {
+float _erfinvR4(float x) {
   float ax;
   float s1;
   float s2;
@@ -356,7 +356,7 @@ float rationalFcnR4(float x) {
   return s1 / s2;
 }
 
-float rationalFcnR5(float x) {
+float _erfinvR5(float x) {
   float ax;
   float s1;
   float s2;
@@ -437,11 +437,11 @@ float rationalFcnR5(float x) {
   return s1 / s2;
 }
 
-const float Y1 = 8.91314744949340820313e-2;
-const float Y2 = 2.249481201171875;
-const float Y3 = 8.07220458984375e-1;
-const float Y4 = 9.3995571136474609375e-1;
-const float Y5 = 9.8362827301025390625e-1;
+const float _erfinvY1 = 8.91314744949340820313e-2;
+const float _erfinvY2 = 2.249481201171875;
+const float _erfinvY3 = 8.07220458984375e-1;
+const float _erfinvY4 = 9.3995571136474609375e-1;
+const float _erfinvY5 = 9.8362827301025390625e-1;
 
 float _nya_helper_erfinv(float x) {
   float sign;
@@ -484,32 +484,32 @@ float _nya_helper_erfinv(float x) {
   // |x| <= 0.5
   if (ax <= 0.5) {
     g = ax * (ax + 10.0);
-    r = rationalFcnR1(ax);
-    return sign * (g * Y1 + g * r);
+    r = _erfinvR1(ax);
+    return sign * (g * _erfinvY1 + g * r);
   }
   // 1-|x| >= 0.25
   if (q >= 0.25) {
     g = sqrt(-2.0 * log(q));
     q -= 0.25;
-    r = rationalFcnR2(q);
-    return sign * (g / (Y2 + r));
+    r = _erfinvR2(q);
+    return sign * (g / (_erfinvY2 + r));
   }
   q = sqrt(-log(q));
 
   // q < 3
   if (q < 3.0) {
     qs = q - 1.125;
-    r = rationalFcnR3(qs);
-    return sign * (Y3 * q + r * q);
+    r = _erfinvR3(qs);
+    return sign * (_erfinvY3 * q + r * q);
   }
   // q < 6
   if (q < 6.0) {
     qs = q - 3.0;
-    r = rationalFcnR4(qs);
-    return sign * (Y4 * q + r * q);
+    r = _erfinvR4(qs);
+    return sign * (_erfinvY4 * q + r * q);
   }
   // q < 18
   qs = q - 6.0;
-  r = rationalFcnR5(qs);
-  return sign * (Y5 * q + r * q);
+  r = _erfinvR5(qs);
+  return sign * (_erfinvY5 * q + r * q);
 }
