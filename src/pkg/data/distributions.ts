@@ -17,6 +17,7 @@ import erfinv from "@stdlib/math/base/special/erfinv"
 import { erf } from "mathjs"
 import type { Package } from ".."
 import erfGl from "../../glsl/erf.glsl"
+import erfinvGl from "../../glsl/erfinv.glsl"
 import { chain, OP_DIV, OP_JUXTAPOSE, OP_NEG, OP_RAISE } from "../core/ops"
 import { EXT_EVAL } from "../eval"
 
@@ -185,10 +186,14 @@ const FN_ERF = new FnDist(
   "erf(1)≈0.842700",
 )
 
-const FN_ERFINV = new FnDist("erfinv", "inverse error function").addJs(
+const FN_ERFINV = new FnDist("erfinv", "inverse error function").add(
   ["r32"],
   "r32",
   (a) => approx(erfinv(num(a.value))),
+  (ctx, a) => {
+    ctx.glslText(erfinvGl)
+    return `_nya_helper_erfinv(${a.expr})`
+  },
   "erf^{-1}(0.8427)≈1",
 )
 
