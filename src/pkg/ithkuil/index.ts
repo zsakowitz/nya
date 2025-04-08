@@ -37,10 +37,6 @@ declare module "@/eval/ty" {
   interface Tys {
     ithkuilscript: readonly [string, SVGSVGElement]
   }
-
-  interface TyComponents {
-    ithkuilscript: never
-  }
 }
 
 class CmdIthkuilScript extends Leaf {

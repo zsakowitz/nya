@@ -25,10 +25,6 @@ declare module "@/eval/ty" {
   interface Tys {
     element: string | null
   }
-
-  interface TyComponents {
-    element: never
-  }
 }
 
 /*!

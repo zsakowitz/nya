@@ -70,18 +70,6 @@ declare module "@/eval/ty" {
     directedangle: [SPoint, SPoint, SPoint]
     arc: [SPoint, SPoint, SPoint]
   }
-
-  interface TyComponents {
-    segment: never
-    ray: never
-    line: never
-    vector: never
-    circle: never
-    polygon: never
-    angle: never
-    directedangle: never
-    arc: never
-  }
 }
 
 function lineInfo<T extends "segment" | "ray" | "line" | "vector">(

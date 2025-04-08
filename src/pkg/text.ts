@@ -28,10 +28,6 @@ declare module "@/eval/ty" {
   interface Tys {
     text: TextSegment[]
   }
-
-  interface TyComponents {
-    text: never
-  }
 }
 
 declare module "@/eval/ast/token" {

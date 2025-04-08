@@ -30,10 +30,6 @@ declare module "@/eval/ty" {
       aspect: SReal | null
     }
   }
-
-  interface TyComponents {
-    image2d: never
-  }
 }
 
 const FN_IMAGE = new FnDist(

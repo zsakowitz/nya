@@ -31,10 +31,6 @@ declare module "@/eval/ty" {
       height: number
     }
   }
-
-  interface TyComponents {
-    image: never
-  }
 }
 
 const counts = new Map<string, number>()

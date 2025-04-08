@@ -46,11 +46,6 @@ declare module "@/eval/ty" {
     c32: SPoint
     c64: SPoint
   }
-
-  interface TyComponents {
-    c32: "r32"
-    c64: "r64"
-  }
 }
 
 export function lnJs(a: SPoint) {

@@ -16,10 +16,6 @@ declare module "@/eval/ty" {
   interface Tys {
     color: SColor
   }
-
-  interface TyComponents {
-    color: "r32"
-  }
 }
 
 const FN_RGB = new FnDist(

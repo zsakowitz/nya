@@ -50,11 +50,6 @@ declare module "@/eval/ty" {
     unit: UnitList
     r32u: [SReal, UnitList]
   }
-
-  interface TyComponents {
-    unit: never
-    r32u: never
-  }
 }
 
 declare module "@/eval/ast/token" {

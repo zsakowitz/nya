@@ -44,10 +44,6 @@ declare module "@/eval/ty" {
   interface Tys {
     stats: [min: SReal, q1: SReal, median: SReal, q3: SReal, max: SReal]
   }
-
-  interface TyComponents {
-    stats: never
-  }
 }
 
 class FnListList implements Fn, WithDocs {

@@ -55,11 +55,6 @@ declare module "@/eval/ty" {
     point32: SPoint
     point64: SPoint
   }
-
-  interface TyComponents {
-    point32: "r32"
-    point64: "r64"
-  }
 }
 
 const tx = new TransitionProp(4)

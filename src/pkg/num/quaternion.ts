@@ -23,10 +23,6 @@ declare module "@/eval/ty" {
   interface Tys {
     q32: [SReal, SReal, SReal, SReal]
   }
-
-  interface TyComponents {
-    q32: "r32"
-  }
 }
 
 const FN_J = new FnDist(".j", "gets the coefficient of 'j' in a quaternion")

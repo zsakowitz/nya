@@ -28,10 +28,6 @@ declare module "@/eval/ty" {
   interface Tys {
     sym: Sym
   }
-
-  interface TyComponents {
-    sym: never
-  }
 }
 
 export const PKG_SYM_CORE: Package = {

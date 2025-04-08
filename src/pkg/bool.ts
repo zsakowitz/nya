@@ -39,10 +39,6 @@ declare module "@/eval/ty" {
   interface Tys {
     bool: boolean
   }
-
-  interface TyComponents {
-    bool: never
-  }
 }
 
 declare module "@/eval/ast/token" {

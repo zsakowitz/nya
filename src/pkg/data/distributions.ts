@@ -30,14 +30,6 @@ declare module "@/eval/ty" {
     binomialdist: [trials: SReal, chance: SReal]
     uniformdist: [min: SReal, max: SReal]
   }
-
-  interface TyComponents {
-    normaldist: never
-    tdist: never
-    poissondist: never
-    binomialdist: never
-    uniformdist: never
-  }
 }
 
 const normaldist = new FnDist("normaldist", "creates a normal distribution")
