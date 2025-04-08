@@ -1,5 +1,1 @@
-f\left(z\right)=\frac{2}{\sqrt{\pi }}\left(z-\frac{z^{3}}{3}+\frac{z^{5}}{10}-\frac{z^{7}}{42}+\frac{z^{9}}{216}\right)
-A=\operatorname{iterate}.a^{10}a\to \operatorname{join}\left(a,n\right),n\to n+1\operatorname{from}a=\left[\right]
-Q=\operatorname{forcejs}\left(\left(2n+1,\frac{\left(-1\right)^{n}}{\left(2n+1\right)n!}\right)\operatorname{for}n=A\right)
-g\left(z\right)=\frac{2}{\sqrt{\pi }}\operatorname{total}\left(z^{q.x}q.y\operatorname{for}q=Q\right)
-g\left(p\right)
+zetap
