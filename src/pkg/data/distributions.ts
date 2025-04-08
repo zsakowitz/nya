@@ -367,6 +367,25 @@ const FN_CDF = new FnDistDeriv("cdf", "cumulative distribution function")
 
 const FN_INVERSECDF = FN_QUANTILE.with("inversecdf", FN_QUANTILE.label)
 
+FN_QUANTILE.add(
+  ["normaldist", "r32"],
+  "r32",
+  (dist, x) => {
+    const mean = num(dist.value[0])
+    const stdev = num(dist.value[1])
+    const p = num(x.value)
+    if (!(0 <= p && p <= 1)) return real(NaN)
+    return approx(mean + stdev * Math.SQRT2 * erfinv(2 * p - 1))
+  },
+  (ctx, dist, x) => {
+    const d = ctx.cache(dist)
+    const p = ctx.cache(x)
+    ctx.glslText(erfinvGl)
+    return `(0.0 <= ${p} && ${p} <= 1.0 ? ${d}.x + ${d}.y * ${Math.SQRT2} * _nya_helper_erfinv(2.0 * ${p} - 1.0) : 0.0/0.0)`
+  },
+  ["quantile(normaldist(),.84)≈.9944"],
+)
+
 // TODO: tokens for distributions
 
 const EXT_CONTINUOUS_DISTRIBUTION = defineHideable({
