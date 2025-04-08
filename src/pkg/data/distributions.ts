@@ -20,6 +20,7 @@ import erfGl from "../../glsl/erf.glsl"
 import erfinvGl from "../../glsl/erfinv.glsl"
 import { chain, OP_DIV, OP_JUXTAPOSE, OP_NEG, OP_RAISE } from "../core/ops"
 import { EXT_EVAL } from "../eval"
+import { FN_QUANTILE } from "./statistics"
 
 declare module "@/eval/ty" {
   interface Tys {
@@ -363,6 +364,8 @@ const FN_CDF = new FnDistDeriv("cdf", "cumulative distribution function")
     },
     ["uniformdist(4,8).cdf(7,9)=0.25"],
   )
+
+const FN_INVERSECDF = FN_QUANTILE.with("inversecdf", FN_QUANTILE.label)
 
 // TODO: tokens for distributions
 
@@ -725,9 +728,11 @@ export const PKG_DISTRIBUTIONS: Package = {
       binomialdist,
       uniformdist,
       erf: FN_ERF,
-      "erf^-1": FN_ERFINV,
+      "erf^-1": FN_ERFINV, // DCG: erf^-1 is not available in standard desmos
       pdf: FN_PDF,
       cdf: FN_CDF,
+      "cdf^-1": FN_INVERSECDF, // DCG: cdf^-1 is not available in standard desmos
+      inversecdf: FN_INVERSECDF,
     },
   },
   sheet: {

@@ -72,6 +72,18 @@ vec2 _helper_add_r64(vec2 dsa, vec2 dsb) {
 `
 }
 
+export function declareAddC64(ctx: GlslContext) {
+  declareAddR64(ctx)
+  ctx.glsl`
+vec4 _helper_add_c64(vec4 a, vec4 b) {
+  return vec4(
+    _helper_add_r64(a.xy, b.xy),
+    _helper_add_r64(a.zw, b.zw)
+  );
+}
+`
+}
+
 export function addR64(ctx: GlslContext, a: string, b: string) {
   declareAddR64(ctx)
   return `_helper_add_r64(${a}, ${b})`

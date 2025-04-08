@@ -263,7 +263,10 @@ export const PKG_NUM_COMPLEX: Package = {
         const denom = real(Math.hypot(num(a.x), num(a.y)))
         return pt(div(a.x, denom), div(a.y, denom))
       },
-      (_, a) => `normalize(${a.expr})`,
+      (ctx, ar) => {
+        const a = ctx.cache(ar)
+        return `(${a} == vec2(0) ? vec2(0) : normalize(${a}))`
+      },
       "sign(3-4i)=\\frac35-\\frac45i",
     )
 

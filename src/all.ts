@@ -13,6 +13,7 @@ import { PKG_DISTRIBUTIONS } from "./pkg/data/distributions"
 import { PKG_CORE_LIST } from "./pkg/data/list"
 import { PKG_LIST_EXTRAS } from "./pkg/data/list-extras"
 import { PKG_STATISTICS } from "./pkg/data/statistics"
+import { PKG_STATISTICS_COMPLEX } from "./pkg/data/statistics-complex"
 import { PKG_DEBUG } from "./pkg/debug"
 import { PKG_EVAL } from "./pkg/eval"
 import { PKG_FACTORIAL } from "./pkg/factorial"
@@ -91,5 +92,6 @@ export function allPackages(): Package[] {
     PKG_POINT_3D,
     PKG_SLOPE_FIELD,
     PKG_POINT_4D,
+    PKG_STATISTICS_COMPLEX,
   ]
 }

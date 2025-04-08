@@ -3,6 +3,7 @@ import type { Node } from "@/eval/ast/token"
 import type { GlslContext } from "@/eval/lib/fn"
 import type { JsContext } from "@/eval/lib/jsctx"
 import type { Fn } from "@/eval/ops"
+import { FnDist } from "@/eval/ops/dist"
 import { ALL_DOCS, type WithDocs } from "@/eval/ops/docs"
 import { issue } from "@/eval/ops/issue"
 import { FnList } from "@/eval/ops/list"
@@ -214,7 +215,7 @@ const FN_MAX = new FnList("max", "returns the maximum of its inputs")
     "max(stats([2,9,5,6]))=9",
   )
 
-const FN_TOTAL = new FnList("total", "returns the sum of its inputs")
+export const FN_TOTAL = new FnList("total", "returns the sum of its inputs")
   .addSpread(
     "r64",
     "r64",
@@ -414,51 +415,73 @@ const FN_QUARTILE: Fn & WithDocs = {
 
 ALL_DOCS.push(FN_QUARTILE)
 
-const FN_QUANTILE: Fn & WithDocs = {
-  js(_ctx, args) {
+export const FN_QUANTILE = new (class extends FnDist {
+  js(ctx: JsContext, args: JsValue[]): JsValue<keyof Tys> {
     if (
-      !(
-        args.length == 2 &&
-        canCoerce(args[0]!.type, "r32") &&
-        args[0]!.list !== false &&
-        canCoerce(args[1]!.type, "r32")
-      )
+      args.length == 2 &&
+      canCoerce(args[0]!.type, "r32") &&
+      canCoerce(args[1]!.type, "r32")
     ) {
-      throw new Error("'quantile' expects a list and a quantile")
-    }
-
-    const list = coerceTyJs(args[0]!, "r32").value.slice()
-    const quantile = coerceTyJs(args[1]!, "r32")
-
-    if (list.length == 0) {
-      return map(quantile, "r32", () => real(NaN))
-    }
-    sortJs(list)
-
-    return map(quantile, "r32", (quartile) => {
-      let q = num(quartile)
-      if (!(0 <= q && q <= 1)) {
-        return real(NaN)
+      if (args[0]!.list === false) {
+        throw new Error(
+          "The first argument to 'quantile' must be a list or distribution.",
+        )
       }
 
-      const mid = mul(quartile, frac(list.length - 1, 1))
-      const lhs = Math.floor(num(mid))
-      const rhs = Math.ceil(num(mid))
+      const list = coerceTyJs(args[0]!, "r32").value.slice()
+      const quantile = coerceTyJs(args[1]!, "r32")
 
-      if (lhs == rhs) {
-        return list[lhs]!
+      if (list.length == 0) {
+        return map(quantile, "r32", () => real(NaN))
+      }
+      sortJs(list)
+
+      return map(quantile, "r32", (quartile) => {
+        let q = num(quartile)
+        if (!(0 <= q && q <= 1)) {
+          return real(NaN)
+        }
+
+        const mid = mul(quartile, frac(list.length - 1, 1))
+        const lhs = Math.floor(num(mid))
+        const rhs = Math.ceil(num(mid))
+
+        if (lhs == rhs) {
+          return list[lhs]!
+        }
+
+        return add(
+          mul(sub(frac(rhs, 1), mid), list[lhs]!),
+          mul(sub(mid, frac(lhs, 1)), list[rhs]!),
+        )
+      })
+    }
+
+    return super.js(ctx, args)
+  }
+
+  glsl(
+    ctx: GlslContext,
+    args: GlslValue[],
+  ): GlslValue<keyof Tys, number | false> {
+    if (
+      args.length == 2 &&
+      canCoerce(args[0]!.type, "r32") &&
+      canCoerce(args[1]!.type, "r32")
+    ) {
+      if (args[0]!.list === false) {
+        throw new Error(
+          "The first argument to 'quantile' must be a list or distribution.",
+        )
       }
 
-      return add(
-        mul(sub(frac(rhs, 1), mid), list[lhs]!),
-        mul(sub(mid, frac(lhs, 1)), list[rhs]!),
-      )
-    })
-  },
-  glsl: issue("Cannot compute 'quantile' in shaders yet."),
-  name: "quantile",
-  label: "computes a quantile of a data set",
-  docs() {
+      throw new Error("Cannot compute 'quantile' of a list in shaders yet.")
+    }
+
+    return super.glsl(ctx, args)
+  }
+
+  docs(): FnSignature[] {
     return [
       {
         params: [
@@ -473,9 +496,13 @@ const FN_QUANTILE: Fn & WithDocs = {
           "quantile([8,2,9,0,1],0.7)=6.8",
         ],
       },
+      ...super.docs(),
     ]
-  },
-}
+  }
+})(
+  "quantile",
+  "computes a quantile of a data set or the inverse CDF of a distribution",
+)
 
 ALL_DOCS.push(FN_QUANTILE)
 
