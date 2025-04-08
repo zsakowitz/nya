@@ -5,7 +5,7 @@ import { SYM_2, SYM_E, SYM_HALF, SYM_PI, unary } from "@/eval/sym"
 import type { GlslValue, JsVal, SReal } from "@/eval/ty"
 import { approx, gl, num, real } from "@/eval/ty/create"
 import { TY_INFO } from "@/eval/ty/info"
-import { div, recip, sub } from "@/eval/ty/ops"
+import { add, div, mul, recip, sub } from "@/eval/ty/ops"
 import { CmdComma } from "@/field/cmd/leaf/comma"
 import { CmdWord } from "@/field/cmd/leaf/word"
 import { CmdBrack } from "@/field/cmd/math/brack"
@@ -384,6 +384,26 @@ FN_QUANTILE.add(
     return `(0.0 <= ${p} && ${p} <= 1.0 ? ${d}.x + ${d}.y * ${Math.SQRT2} * _nya_helper_erfinv(2.0 * ${p} - 1.0) : 0.0/0.0)`
   },
   ["quantile(normaldist(),.84)≈.9944"],
+).add(
+  ["uniformdist", "r32"],
+  "r32",
+  (dist, x) => {
+    const p = num(x.value)
+    if (!(0 <= p && p <= 1) || !(num(dist.value[0]) <= num(dist.value[1]))) {
+      return real(NaN)
+    }
+
+    return add(
+      mul(dist.value[0], sub(real(1), x.value)),
+      mul(dist.value[1], x.value),
+    )
+  },
+  (ctx, dist, x) => {
+    const d = ctx.cache(dist)
+    const p = ctx.cache(x)
+    return `(0.0 <= ${p} && ${p} <= 1.0 && ${d}.x <= ${d}.y ? ${d}.x * (1.0 - ${p}) + ${d}.y * ${p} : 0.0/0.0)`
+  },
+  ["quantile(uniformdist(4,6),.3)=4.6"],
 )
 
 // TODO: tokens for distributions
