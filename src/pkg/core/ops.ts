@@ -960,14 +960,14 @@ export const PKG_CORE_OPS: Package = {
             throw new Error(`The variable '${n}' is not defined.`)
           },
           glsl(node, props) {
-            const value = props.bindings.get(id(node))
+            let value = props.bindings.get(id(node))
             if (value instanceof BindingFn) {
               throw new Error(
                 `${tryName(node)} is a function; try using parentheses.`,
               )
             }
             if (value instanceof BindingGlslValue) {
-              return value.glsl(props.ctx)
+              value = value.glsl(props.ctx)
             }
             if (value) {
               if (node.sup) {
