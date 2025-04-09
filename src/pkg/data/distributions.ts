@@ -29,6 +29,7 @@ declare module "@/eval/ty" {
     poissondist: SReal
     binomialdist: [trials: SReal, chance: SReal]
     uniformdist: [min: SReal, max: SReal]
+    boltzmanndist: [a: SReal]
   }
 }
 
@@ -78,6 +79,40 @@ const tdist = new FnDist("tdist", "creates a t-distribution")
     "tdist(2.5,3,7.8)",
   )
 
+const uniformdist = new FnDist("uniformdist", "creates a uniform distribution")
+  .add(
+    [],
+    "uniformdist",
+    () => [real(0), real(1)],
+    () => "vec2(0,1)",
+    "uniformdist()=uniformdist(0,1)",
+  )
+  .add(
+    ["r32"],
+    "uniformdist",
+    (a) => [a.value, real(1)],
+    (_, a) => `vec2(${a.expr}, 1)`,
+    "uniformdist(0.7)=uniformdist(0.7,1)",
+  )
+  .add(
+    ["r32", "r32"],
+    "uniformdist",
+    (a, b) => [a.value, b.value],
+    (_, a, b) => `vec2(${a.expr}, ${b.expr})`,
+    "uniformdist(8,23)=uniformdist(8,23)",
+  )
+
+const boltzmanndist = new FnDist(
+  "boltzmanndist",
+  "creates a Maxwell-Boltzmann distribution",
+).add(
+  ["r32"],
+  "boltzmanndist",
+  (a) => [a.value],
+  (_, a) => a.expr,
+  "boltzmanndist(4.3)",
+)
+
 const poissondist = new FnDist(
   "poissondist",
   "creates a Poisson distribution",
@@ -106,29 +141,6 @@ const binomialdist = new FnDist(
     (a, b) => [a.value, b.value],
     (_, a, b) => `vec2(${a.expr}, ${b.expr})`,
     "binomialdist(6,0.3)",
-  )
-
-const uniformdist = new FnDist("uniformdist", "creates a uniform distribution")
-  .add(
-    [],
-    "uniformdist",
-    () => [real(0), real(1)],
-    () => "vec2(0,1)",
-    "uniformdist()=uniformdist(0,1)",
-  )
-  .add(
-    ["r32"],
-    "uniformdist",
-    (a) => [a.value, real(1)],
-    (_, a) => `vec2(${a.expr}, 1)`,
-    "uniformdist(0.7)=uniformdist(0.7,1)",
-  )
-  .add(
-    ["r32", "r32"],
-    "uniformdist",
-    (a, b) => [a.value, b.value],
-    (_, a, b) => `vec2(${a.expr}, ${b.expr})`,
-    "uniformdist(8,23)=uniformdist(8,23)",
   )
 
 const FN_ERF = new FnDist(
@@ -279,8 +291,8 @@ function uniformdistcdfJs(
   if (!isFinite(min) || !isFinite(max)) {
     // COMPAT: our behavior at infinites is very different from desmos:
     // we aim that d/dx cdf = pdf, and have fewer NaN values with infinite bounds
-    // test suite is at src/sheet/example/uniformdistcdf.txt
-    // see comparison at https://www.desmos.com/calculator/wikg5utgi7
+    // nya test suite is at src/sheet/example/test/uniformdistcdf.txt
+    // desmos tests are at https://www.desmos.com/calculator/wikg5utgi7
     return real(
       min == -Infinity ?
         x == -Infinity || max == Infinity ?
@@ -558,6 +570,119 @@ export const PKG_DISTRIBUTIONS: Package = {
         preview: null,
         extras: null,
       },
+      uniformdist: {
+        name: "uniform distribution",
+        namePlural: "uniform distributions",
+        glsl: "vec2",
+        toGlsl([a, b]) {
+          return `vec2(${gl(a)}, ${gl(b)})`
+        },
+        garbage: {
+          js: [real(NaN), real(NaN)],
+          glsl: "vec2(0.0/0.0)",
+        },
+        coerce: {},
+        write: {
+          isApprox(value) {
+            return value.some((x) => x.type == "approx")
+          },
+          display([min, max], props) {
+            new CmdWord("uniformdist", "prefix").insertAt(props.cursor, L)
+            const block = new Block(null)
+            const inner = props.at(block.cursor(R))
+            inner.num(min)
+            new CmdComma().insertAt(inner.cursor, L)
+            inner.num(max)
+            new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
+          },
+        },
+        order: null,
+        point: false,
+        icon() {
+          return h(
+            "",
+            h(
+              "text-[#c74440] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px]",
+              h(
+                "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
+              ),
+              h(
+                "w-[16px] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
+                svgx(
+                  "0 0 16 16",
+                  "stroke-current fill-none overflow-visible [stroke-linejoin:round] [stroke-linecap:round] stroke-2 size-full",
+                  path("M 0 16 h 4"),
+                  path("M 4 0 h 8"),
+                  path("M 12 16 h 4"),
+                  g(
+                    "[stroke-dasharray:0_4]",
+                    path("M 4 0 v 16"),
+                    path("M 12 0 v 16"),
+                  ),
+                ),
+              ),
+            ),
+          )
+        },
+        token: null,
+        glide: null,
+        preview: null,
+        extras: {
+          renderContinuousPdf: true,
+        },
+      },
+      boltzmanndist: {
+        name: "boltzmann distribution",
+        namePlural: "boltzmann distributions",
+        glsl: "vec2",
+        toGlsl([a]) {
+          return gl(a)
+        },
+        garbage: {
+          js: [real(NaN)],
+          glsl: "(0.0/0.0)",
+        },
+        coerce: {},
+        write: {
+          isApprox(value) {
+            return value.some((x) => x.type == "approx")
+          },
+          display([mean], props) {
+            new CmdWord("boltzmanndist", "prefix").insertAt(props.cursor, L)
+            const block = new Block(null)
+            const inner = props.at(block.cursor(R))
+            inner.num(mean)
+            new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
+          },
+        },
+        order: null,
+        point: false,
+        icon() {
+          return h(
+            "",
+            h(
+              "text-[#c74440] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px]",
+              h(
+                "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
+              ),
+              h(
+                "w-[16px] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
+                svgx(
+                  "-3 -4.6768178153 6 4.734125137329102",
+                  "stroke-current fill-none overflow-visible [stroke-linejoin:round] [stroke-linecap:round] stroke-[.68px] size-full",
+                  path(
+                    "M -3 -0.05318218079999999 C -2.6666961 -0.1063596624 -2.3314068 -0.21846021599999998 -2 -0.647891604 C -1.6685932 -1.07732298 -1.3239836 -1.9629140399999998 -1 -2.90364864 C -0.67601635 -3.8443833599999997 -0.33333333 -4.78730736 0 -4.78730736 C 0.33333333 -4.78730736 0.67601635 -3.8443833599999997 1 -2.90364864 C 1.3239836 -1.9629140399999998 1.6685932 -1.07732298 2 -0.647891604 C 2.3314068 -0.21846021599999998 2.6666961 -0.1063596624 3 -0.05318218079999999",
+                  ),
+                ),
+              ),
+            ),
+          )
+        },
+        token: null,
+        glide: null,
+        preview: null,
+        extras: { renderContinuousPdf: true },
+      },
       poissondist: {
         name: "Poisson distribution",
         namePlural: "Poisson distributions",
@@ -687,67 +812,6 @@ export const PKG_DISTRIBUTIONS: Package = {
         glide: null,
         preview: null,
         extras: null,
-      },
-      uniformdist: {
-        name: "uniform distribution",
-        namePlural: "uniform distributions",
-        glsl: "vec2",
-        toGlsl([a, b]) {
-          return `vec2(${gl(a)}, ${gl(b)})`
-        },
-        garbage: {
-          js: [real(NaN), real(NaN)],
-          glsl: "vec2(0.0/0.0)",
-        },
-        coerce: {},
-        write: {
-          isApprox(value) {
-            return value.some((x) => x.type == "approx")
-          },
-          display([min, max], props) {
-            new CmdWord("uniformdist", "prefix").insertAt(props.cursor, L)
-            const block = new Block(null)
-            const inner = props.at(block.cursor(R))
-            inner.num(min)
-            new CmdComma().insertAt(inner.cursor, L)
-            inner.num(max)
-            new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
-          },
-        },
-        order: null,
-        point: false,
-        icon() {
-          return h(
-            "",
-            h(
-              "text-[#c74440] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px]",
-              h(
-                "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
-              ),
-              h(
-                "w-[16px] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
-                svgx(
-                  "0 0 16 16",
-                  "stroke-current fill-none overflow-visible [stroke-linejoin:round] [stroke-linecap:round] stroke-2 size-full",
-                  path("M 0 16 h 4"),
-                  path("M 4 0 h 8"),
-                  path("M 12 16 h 4"),
-                  g(
-                    "[stroke-dasharray:0_4]",
-                    path("M 4 0 v 16"),
-                    path("M 12 0 v 16"),
-                  ),
-                ),
-              ),
-            ),
-          )
-        },
-        token: null,
-        glide: null,
-        preview: null,
-        extras: {
-          renderContinuousPdf: true,
-        },
       },
     },
   },

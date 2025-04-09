@@ -290,6 +290,10 @@ export function declarePowR32(ctx: GlslContext) {
     return pow(abs(a), b);
   } else if (mod(b, 2.0) == 1.0) {
     return sign(a) * pow(abs(a), b);
+  } else if (b == 1.0/0.0) {
+    return abs(a) == 1.0 ? a : abs(a) < 1.0 ? sign(a) * 0.0 : sign(a) / 0.0;
+  } else if (b == -1.0/0.0) {
+    return abs(a) == 1.0 ? a : abs(a) < 1.0 ? sign(a) / 0.0 : sign(a) * 0.0;
   } else {
     return 0.0/0.0;
   }
