@@ -172,6 +172,14 @@ export function abs64(ctx: GlslContext, x: string) {
   return `_helper_abs_r64(${x})`
 }
 
+/**
+ * _helper_cmp_r64(a, b):
+ *
+ *     if (a < b) -1
+ *     if (a > b) +1
+ *     else 0
+ */
+// TODO: this says any comparison to NaN is equal
 export function declareCmpR64(ctx: GlslContext) {
   ctx.glsl`
 float _helper_cmp_r64(vec2 a, vec2 b) {
