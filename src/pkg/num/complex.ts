@@ -134,16 +134,9 @@ export const FN_REAL = new FnDist(
   "gets the real part of a multi-dimensional number",
 )
 
-const FN_CPLOTHUE = new FnDist(
-  "cplothue",
-  "gets the hue a complex number would be represented by when performing domain coloring",
-).add(
-  ["c32"],
-  "r32",
-  plotJs,
-  (ctx, a) => {
-    declareOklab(ctx)
-    ctx.glsl`
+function cplotHue(ctx: GlslContext, a: GlslVal<"c32" | "point32">) {
+  declareOklab(ctx)
+  ctx.glsl`
 float _nya_cplot_hue(vec2 z) {
   if (isinf(z.x) || isinf(z.y) || isnan(z.x) || isnan(z.y)) {
     return (0.0 / 0.0);
@@ -156,12 +149,17 @@ float _nya_cplot_hue(vec2 z) {
   return angle + offset;
 }
 `
-    return `_nya_cplot_hue(${a.expr})`
-  },
-  "cplot(2+3i)=\\color{#83c4d6}",
-)
+  return `_nya_cplot_hue(${a.expr})`
+}
 
-function cplot(ctx: GlslContext, a: GlslVal<"c32">) {
+const FN_CPLOTHUE = new FnDist(
+  "cplothue",
+  "gets the hue a complex number would be represented by when performing domain coloring",
+)
+  .add(["c32"], "r32", plotJs, cplotHue, "cplothue(2+3i)≈3.7904")
+  .add(["point32"], "r32", plotJs, cplotHue, "cplothue((2,3))≈3.7904")
+
+function cplot(ctx: GlslContext, a: GlslVal<"c32" | "point32">) {
   declareOklab(ctx)
   ctx.glsl`
 vec4 _nya_cplot(vec2 z) {
@@ -206,6 +204,7 @@ const FN_CPLOT = new FnDist<"color">(
 )
   .add(["rabs32"], "color", plotJs, cplotAbs, "cplot|2+3i|=\\color{#b8b8b8}")
   .add(["c32"], "color", plotJs, cplot, "cplot(2+3i)=\\color{#83c4d6}")
+  .add(["point32"], "color", plotJs, cplot, "cplot((2,3))=\\color{#83c4d6}") // TODO: point32 logic in geo/point
 
 const WRITE_COMPLEX: TyWrite<SPoint> = {
   isApprox(value) {
@@ -686,13 +685,21 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
       plotJs,
       cplotAbs,
       "\\nyaop{plot}(|2|)=\\color{#b8b8b8}",
-    ).add(
-      ["c32"],
-      "color",
-      plotJs,
-      cplot,
-      "\\nyaop{plot}(2+3i)=\\color{#83c4d6}",
     )
+      .add(
+        ["c32"],
+        "color",
+        plotJs,
+        cplot,
+        "\\nyaop{plot}(2+3i)=\\color{#83c4d6}",
+      )
+      .add(
+        ["point32"],
+        "color",
+        plotJs,
+        cplot,
+        "\\nyaop{plot}((2,3))=\\color{#83c4d6}",
+      )
 
     OP_POS.add(
       ["c64"],

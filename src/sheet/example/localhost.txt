@@ -1,5 +1,14 @@
-f\left(x\right)=\sqrt{\frac{2}{\pi }}\frac{x^{2}}{a^{3}}\operatorname{exp}\left(-\frac{x^{2}}{2a^{2}}\right)\left\{x\geq 0\right\}
+f\left(x\right)=\sqrt{\frac{2}{\pi }}\frac{x^{2}}{a^{3}}\operatorname{exp}\left(-\frac{x^{2}}{2a^{2}}\right)
 f\left(x\right)
 a=1.6
 q=\left[0,.25,.5,1,1.6,2.3,3,4,5,6,7,8\right]
-\left(q,f\left(q\right)\right)
+V\left(q\right)=\left(q,f\left(q\right)\right)
+D\left(q\right)=\left(1,\frac{d}{dx}f\left(x\right)\operatorname{with}x=q\right)
+l=1.45
+r=2.34
+F\left(t\right)=V\left(l\right)+D\left(l\right)t+ct^{2}+dt^{3}
+3V\left(l\right)+3D\left(l\right)+3c+3d=3V\left(r\right)
+D\left(l\right)+2c+3d=D\left(r\right)
+c=3V\left(r\right)-D\left(r\right)-3V\left(l\right)-2D\left(l\right)
+d=D\left(r\right)-2V\left(r\right)+D\left(l\right)+2V\left(l\right)
+F\left(t\right)\operatorname{for}t=\left[0,.1,.2,.3,.4,.5,.6,.7,.8,.9,1\right]

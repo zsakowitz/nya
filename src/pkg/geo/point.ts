@@ -30,7 +30,6 @@ import { Sheet } from "@/sheet/ui/sheet"
 import { virtualStepExp, write, Writer } from "@/sheet/write"
 import type { Package } from ".."
 import { FN_VALID } from "../bool"
-import { OP_PLOT, plotJs } from "../color/core"
 import {
   abs64,
   addR64,
@@ -359,14 +358,6 @@ export const PKG_GEO_POINT: Package = {
       (a) => a.value.y,
       (_, a) => `${a.expr}.y`,
       "(2,3).y=3",
-    )
-
-    OP_PLOT.add(
-      ["point32"],
-      "color",
-      plotJs,
-      (ctx, a) => FN_DEBUGPOINT.glsl1(ctx, a).expr,
-      "\\nyaop{plot}((2,3))",
     )
 
     OP_ABS.add(

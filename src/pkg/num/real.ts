@@ -6,6 +6,7 @@ import type { GlslContext } from "@/eval/lib/fn"
 import { FnDist } from "@/eval/ops/dist"
 import { type FnOverload, type FnOverloadVar } from "@/eval/ops/dist-manual"
 import { FnList } from "@/eval/ops/list"
+import { unary } from "@/eval/sym"
 import type { SReal, Ty, TyName, Type } from "@/eval/ty"
 import { isZero } from "@/eval/ty/check"
 import { approx, frac, gl, gl64, num, real } from "@/eval/ty/create"
@@ -31,6 +32,7 @@ import {
 import {
   abs64,
   addR64,
+  chain,
   declareCmpR64,
   declareMulR64,
   FN_LN,
@@ -94,8 +96,11 @@ function addCmp(
   )
 }
 
-export const FN_EXP = new FnDist("exp", "raises e to some value", {
+export const FN_EXP: FnDist = new FnDist("exp", "raises e to some value", {
   message: "Cannot raise e to the power of %%.",
+  deriv: unary((props, a) =>
+    chain(a, props, { type: "call", fn: FN_EXP, args: [a] }),
+  ),
 })
 
 export const FN_UNSIGN = new FnDist(
