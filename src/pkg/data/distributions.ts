@@ -668,10 +668,10 @@ export const PKG_DISTRIBUTIONS: Package = {
               h(
                 "w-[16px] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
                 svgx(
-                  "-3 -4.6768178153 6 4.734125137329102",
-                  "stroke-current fill-none overflow-visible [stroke-linejoin:round] [stroke-linecap:round] stroke-[.68px] size-full",
+                  "2 7.760000228881836 8.109999656677246 6.239999771118164",
+                  "stroke-current fill-none overflow-visible [stroke-linejoin:round] [stroke-linecap:round] stroke-[1.013749957px] size-[16px]",
                   path(
-                    "M -3 -0.05318218079999999 C -2.6666961 -0.1063596624 -2.3314068 -0.21846021599999998 -2 -0.647891604 C -1.6685932 -1.07732298 -1.3239836 -1.9629140399999998 -1 -2.90364864 C -0.67601635 -3.8443833599999997 -0.33333333 -4.78730736 0 -4.78730736 C 0.33333333 -4.78730736 0.67601635 -3.8443833599999997 1 -2.90364864 C 1.3239836 -1.9629140399999998 1.6685932 -1.07732298 2 -0.647891604 C 2.3314068 -0.21846021599999998 2.6666961 -0.1063596624 3 -0.05318218079999999",
+                    `M2 14C2.35 13.99 2.62 12.86 2.83 11.92 2.98 11.2 3.1667 10.48 3.32 9.76 3.44 9.26 3.58 8.77 3.77 8.29 3.91 7.99 3.99 7.77 4.22 7.76 4.5 7.76 4.68 8.26 4.88 8.68 5.07 9.26 5.29 9.8 5.47 10.39 5.73 11.14 5.98 11.85 6.34 12.58 6.66 13.17 6.88 13.43 7.35 13.7 7.71 13.93 8.07 13.93 8.56 14 9.11 14 9.6 14 10.11 14`,
                   ),
                 ),
               ),
@@ -819,9 +819,10 @@ export const PKG_DISTRIBUTIONS: Package = {
     fn: {
       normaldist,
       tdist,
+      boltzmanndist,
+      uniformdist,
       poissondist,
       binomialdist,
-      uniformdist,
       erf: FN_ERF,
       "erf^-1": FN_ERFINV, // DCG: erf^-1 is not available in standard desmos
       pdf: FN_PDF,
