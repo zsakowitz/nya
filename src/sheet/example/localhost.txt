@@ -1,9 +1,3 @@
-D=\left(\left[.6,.7,.8,.9,.99,.999,.9999\right],\left[25.88078,41.37843,72.4838,172.2548,2363.4915,28412.65,324147.4\right]\right)
-\left(\operatorname{ln}\left(1-D.x\right),\operatorname{ln}D.y\right)
-\token{2}=\left(-10.23,13.89\right)
-\token{3}=\left(0.29,2.09\right)
-\token{4}=\operatorname{line}\left(\token{2},\token{3}\right)
-y=-1.121673x+2.41528
-g\left(x\right)=\operatorname{max}\left(0.6,1-\operatorname{exp}\frac{\operatorname{ln}x-2.41528}{-1.121673}\right)
-f\left(z\right)=\frac{2z}{\sqrt{\pi }}\left(\frac{2\operatorname{total}q-q\left[1\right]-q\left[11\right]}{2\operatorname{count}q-1-1}\right)\operatorname{with}q=e^{-t^{2}}\operatorname{with}t=\frac{\left[0,1,2,3,4,5,6,7,8,9,10\right]z}{10}
-exp-p^2
+f_{angle}\left(p\right)=\operatorname{imag}-p^{2}
+f\left(z\right)=\frac{2z}{20\sqrt{\pi }}\left(\operatorname{total}\left(e^{-t^{2}}\operatorname{with}t=d\cdot \left[0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,9.83\right]\operatorname{with}d=\frac{z}{10}\right)\right)
+y<1000\frac{f\left(x\right)-\operatorname{erf}x}{x}

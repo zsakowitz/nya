@@ -293,8 +293,8 @@ const FN_GAMMA: FnDist = new FnDist("gamma", "computes the gamma function", {
       }
       return real(factorial(val))
     },
-    (ctx, a) => factorialGlsl(ctx, a.expr),
-    "gamma7=5040=7\\cdot6\\cdot5\\cdot4\\cdot3\\cdot2\\cdot1",
+    (ctx, a) => factorialGlsl(ctx, `(${a.expr} - 1.0)`),
+    "gamma8=5040=7! =7\\cdot6\\cdot5\\cdot4\\cdot3\\cdot2\\cdot1",
   )
   .add(
     ["c32"],
