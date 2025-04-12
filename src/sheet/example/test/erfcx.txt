@@ -1,0 +1,9 @@
+Q=\left(\left[-.7,-.8,-.9,-.95,-.99,-.999\right],\left[6,72,173,390,2350,28500\right]\right)
+\token{0}=\left(\operatorname{log}\left(1+Q.x\right),\operatorname{log}Q.y\right)
+\token{1}=\operatorname{line}\left(\token{0}\left[6\right],\token{0}\left[2\right]\right)
+\token{3}=\operatorname{line}\left(\left(0,0\right),\left(0,1\right)\right)
+\token{2}=\operatorname{intersection}\left(\token{3},\token{1}\right)
+a=\token{0}\left[6\right]
+b=\token{0}\left[2\right]
+\frac{b.y-a.y}{b.x-a.x}
+y=-1.128847676x+1.068301831
