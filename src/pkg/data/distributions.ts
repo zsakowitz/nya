@@ -292,6 +292,31 @@ const FN_ERF = new FnDist(
     },
     "erf(2+3i)≈-20.75+8.70i",
   )
+  .add(
+    ["r32", "r32"],
+    "r32",
+    (a, b) => approx(erf(num(b.value)) - erf(num(a.value))),
+    (ctx, a, b) => {
+      ctx.glslText(erfGl)
+      return `(_nya_helper_erf(${b.expr}) - _nya_helper_erf(${a.expr}))`
+    },
+    "erf(-1,1)≈1.6854",
+  )
+  .add(
+    ["c32", "c32"],
+    "c32",
+    (a, b) => {
+      const ap = erfPt(unpt(a.value))
+      const bp = erfPt(unpt(b.value))
+      return rept({ x: bp.x - ap.x, y: bp.y - ap.y })
+    },
+    (ctx, a, b) => {
+      declareMulC32(ctx)
+      ctx.glslText(erfC32Gl)
+      return `(_nya_helper_erf(${b.expr}) - _nya_helper_erf(${a.expr}))`
+    },
+    "erf(-i,3)≈0.9976-1.6498i",
+  )
 
 const FN_FADDEEVA = new FnDist("faddeeva", "scaled complex error function").add(
   ["c32"],
