@@ -1,3 +1,17 @@
+## Search Params
+
+for main:
+
+- `?shaderpixelsize=<1..=16>`
+- `?nogrid`
+- `?cvsize=<n>`
+
+for docs:
+
+`/?/docs(/tab(/page)?)?` goes to docs
+
+## other things
+
 (arccos x).imag = arccosh x for 1≤x
 
 Search in `09ebb184-7d76-4d37-a61a-30d9b6f12578` for

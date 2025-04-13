@@ -37,6 +37,21 @@ export class Cv {
     },
     private autofit = true,
   ) {
+    if (globalThis.location?.search.includes("cvsize")) {
+      const size = new URLSearchParams(location.search).get("cvsize")
+      if (size) {
+        const num = +size
+        if (Number.isFinite(num) && 10e-300 <= num && num <= 10e300) {
+          this.rawBounds = rawBounds = {
+            xmin: -num,
+            w: num * 2,
+            ymin: -num,
+            h: num * 2,
+          }
+        }
+      }
+    }
+
     this.canvas = hx("canvas", "absolute inset-0 w-full h-full")
     this.ctx = this.canvas.getContext("2d")!
     this.el = hx(

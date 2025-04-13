@@ -6,6 +6,16 @@ export function doMatchReglSize(
 ): [get: () => number, set: (value: number) => void] {
   let ratio = 1
 
+  if (globalThis.location?.search.includes("shaderpixelsize")) {
+    const val = new URLSearchParams(location.search).get("shaderpixelsize")
+    if (val) {
+      const num = +val
+      if (Number.isSafeInteger(num) && 1 <= num && num <= 16) {
+        ratio = num
+      }
+    }
+  }
+
   function resize() {
     const scale = (window.devicePixelRatio ?? 1) / ratio
     canvas.width = canvas.clientWidth * scale
