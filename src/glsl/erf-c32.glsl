@@ -17,7 +17,7 @@ vec2 cexp(vec2 z) {
   return exp(z.x) * cexpi(z.y);
 }
 
-vec2 faddeeva(vec2 z) {
+vec2 _nya_faddeeva(vec2 z) {
   const int M = 4;
   const int N = 1 << M - 1;
 
@@ -78,7 +78,7 @@ vec2 faddeeva(vec2 z) {
 
 vec2 erf_pos(vec2 z) {
   vec2 z_1i = _helper_mul_c32(vec2(0, 1), z); // 1i*z
-  return vec2(1, 0) - _helper_mul_c32(cexp(-csqr(z)), faddeeva(z_1i));
+  return vec2(1, 0) - _helper_mul_c32(cexp(-csqr(z)), _nya_faddeeva(z_1i));
 }
 
 vec2 _nya_helper_erf(vec2 z) {

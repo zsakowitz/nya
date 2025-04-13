@@ -290,8 +290,20 @@ const FN_ERF = new FnDist(
       ctx.glslText(erfC32Gl)
       return `_nya_helper_erf(${a.expr})`
     },
-    ["erf(2+3i)≈-20.75+8.70i"],
+    "erf(2+3i)≈-20.75+8.70i",
   )
+
+const FN_FADDEEVA = new FnDist("faddeeva", "scaled complex error function").add(
+  ["c32"],
+  "c32",
+  (a) => rept(faddeevaPt(unpt(a.value))),
+  (ctx, a) => {
+    declareMulC32(ctx)
+    ctx.glslText(erfC32Gl)
+    return `_nya_faddeeva(${a.expr})`
+  },
+  "faddeeva(2+3i)≈0.130+0.081i",
+)
 
 const FN_ERFINV = new FnDist("erfinv", "inverse error function").add(
   ["r32"],
@@ -927,6 +939,7 @@ export const PKG_DISTRIBUTIONS: Package = {
       binomialdist,
       erf: FN_ERF,
       "erf^-1": FN_ERFINV, // DCG: erf^-1 is not available in standard desmos
+      faddeeva: FN_FADDEEVA, // DCG: faddeeva is not available in standard desmos
       pdf: FN_PDF,
       cdf: FN_CDF,
       "cdf^-1": FN_INVERSECDF, // DCG: cdf^-1 is not available in standard desmos
