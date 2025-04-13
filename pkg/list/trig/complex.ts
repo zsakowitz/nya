@@ -1,9 +1,9 @@
+import type { Package } from "#/types"
 import { fn, type GlslContext } from "@/eval/lib/fn"
 import type { SPoint } from "@/eval/ty"
 import { approx, frac, num, pt, real, rept, unpt } from "@/eval/ty/create"
 import type { Point } from "@/sheet/point"
 import type { RequireRadiansReason } from "@/sheet/ui/sheet"
-import type { Package } from "#/types"
 import {
   addPt,
   declareDiv,
@@ -13,7 +13,6 @@ import {
   divPt,
   lnJs,
   mulPt,
-  PKG_NUM_COMPLEX,
   recipGl,
   recipPt,
   subPt,
@@ -31,7 +30,6 @@ import {
   FN_SEC,
   FN_SIN,
   FN_TAN,
-  PKG_TRIG_REAL,
 } from "./real"
 
 const sinGl = fn(
@@ -204,12 +202,11 @@ function acscJs(a: SPoint) {
   return asinJs(recipPt(a))
 }
 
-export const PKG_TRIG_COMPLEX: Package = {
-  id: "nya:trig-complex",
+export default {
   name: "on complex numbers",
   label: null,
   category: "trigonometry",
-  deps: [() => PKG_TRIG_REAL, () => PKG_NUM_COMPLEX],
+  deps: ["trig/real", "num/complex"],
   eval: {
     fn: {
       sin: FN_SIN,
@@ -331,4 +328,4 @@ export const PKG_TRIG_COMPLEX: Package = {
       "arccsc(2+3i)≈0.1504-0.2313i",
     )
   },
-}
+} satisfies Package

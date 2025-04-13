@@ -1,3 +1,4 @@
+import type { Package } from "#/types"
 import type { GlslContext } from "@/eval/lib/fn"
 import { FnDist } from "@/eval/ops/dist"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "@/eval/ops/vars"
@@ -7,10 +8,7 @@ import { TY_INFO } from "@/eval/ty/info"
 import { CmdColor } from "@/field/cmd/leaf/color"
 import { L } from "@/field/model"
 import { h } from "@/jsx"
-import type { Package } from "#/types"
-import { PKG_BOOL } from "../bool"
 import { OP_CDOT } from "../core/ops"
-import { PKG_REAL } from "../num/real"
 
 declare module "@/eval/ty" {
   interface Tys {
@@ -91,12 +89,11 @@ export const OP_PLOT = new FnDist<"color">(
   { message: `Cannot plot %%.` },
 )
 
-export const PKG_COLOR_CORE: Package = {
-  id: "nya:color-core",
+export default {
   name: "color functions core",
   label: "rgb and hsv functions",
   category: "color",
-  deps: [() => PKG_REAL, () => PKG_BOOL],
+  deps: ["num/real", "bool"],
   load() {
     OP_PLOT.add(
       ["bool"],
@@ -265,4 +262,4 @@ export const PKG_COLOR_CORE: Package = {
       hsv: FN_HSV,
     },
   },
-}
+} satisfies Package

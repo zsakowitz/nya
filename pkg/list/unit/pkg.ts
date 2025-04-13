@@ -1,6 +1,7 @@
 // TODO: this basically needs meta properties in the type system
 // to work in shaders
 
+import type { Package } from "#/types"
 import { example } from "@/docs/core"
 import { Precedence } from "@/eval/ast/token"
 import { NO_SYM, type WordInfo } from "@/eval/ast/tx"
@@ -20,7 +21,6 @@ import { CmdSupSub } from "@/field/cmd/math/supsub"
 import { toText } from "@/field/latex"
 import { Block, L, R } from "@/field/model"
 import { b, h, px, sx } from "@/jsx"
-import type { Package } from "#/types"
 import {
   OP_ADD,
   OP_CDOT,
@@ -200,8 +200,8 @@ const INFO_UNIT: TyInfoByName<"unit"> = {
             fill: "none",
           },
           sx("path", {
-            d: "M 5 0 L 16 11 L 11 16 L 0 5 Z M 5.5 10.5 l 3 -3 M 2.75 7.75 l 1.5 -1.5 M 8.25 13.25 l 1.5 -1.5",
-            stroke: "currentcolor",
+            "d": "M 5 0 L 16 11 L 11 16 L 0 5 Z M 5.5 10.5 l 3 -3 M 2.75 7.75 l 1.5 -1.5 M 8.25 13.25 l 1.5 -1.5",
+            "stroke": "currentcolor",
             "stroke-linecap": "round",
             "stroke-linejoin": "round",
             "stroke-width": 2,
@@ -259,8 +259,8 @@ const INFO_R32U: TyInfoByName<"r32u"> = {
             fill: "none",
           },
           sx("path", {
-            d: "M 7 0 v 3 M 13 0 v 5 M 19 0 v 3 M 7 26 v -3 M 13 26 v -5 M 19 26 v -3 M 0 7 h 3 M 0 13 h 5 M 0 19 h 3 M 26 7 h -3 M 26 13 h -5 M 26 19 h -3",
-            stroke: "currentcolor",
+            "d": "M 7 0 v 3 M 13 0 v 5 M 19 0 v 3 M 7 26 v -3 M 13 26 v -5 M 19 26 v -3 M 0 7 h 3 M 0 13 h 5 M 0 19 h 3 M 26 7 h -3 M 26 13 h -5 M 26 19 h -3",
+            "stroke": "currentcolor",
             "stroke-linecap": "round",
             "stroke-linejoin": "round",
             "stroke-width": 2,
@@ -292,8 +292,13 @@ const FN_INTOSI = new FnDist(
   "converts a value to its component SI units",
 )
 
-export const PKG_UNITS: Package = {
-  id: "nya:units",
+function checkUnit(node: WordInfo) {
+  if (node.sub) {
+    throw new Error("Cannot apply a subscript to 'unit'.")
+  }
+}
+
+export default {
   name: "units",
   label: "conversion functions and unit decompositions",
   category: "measurement",
@@ -546,10 +551,4 @@ export const PKG_UNITS: Package = {
       },
     },
   ],
-}
-
-function checkUnit(node: WordInfo) {
-  if (node.sub) {
-    throw new Error("Cannot apply a subscript to 'unit'.")
-  }
-}
+} satisfies Package

@@ -1,4 +1,3 @@
-import { twMerge } from "tailwind-merge"
 import type { Package } from "#/types"
 import type { AstBinding, Node, PlainVar } from "@/eval/ast/token"
 import { js } from "@/eval/js"
@@ -19,7 +18,7 @@ import { FieldComputed } from "@/sheet/deps"
 import { defineExt, Store } from "@/sheet/ext"
 import { Slider as RawSlider } from "@/sheet/slider"
 import type { Expr } from "@/sheet/ui/expr"
-import { PKG_REAL } from "./num/real"
+import { twMerge } from "tailwind-merge"
 
 function readSigned(node: Node, base: SReal): SReal | null {
   let isNeg = false
@@ -349,15 +348,14 @@ const EXT_SLIDER = defineExt({
   },
 })
 
-export const PKG_SLIDER: Package = {
-  id: "nya:slider",
+export default {
   name: "sliders",
   label: "sliders on numeric variables",
   category: "sheet items",
-  deps: [() => PKG_REAL],
+  deps: ["num/real"],
   sheet: {
     exts: {
       0: [EXT_SLIDER],
     },
   },
-}
+} satisfies Package

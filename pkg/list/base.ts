@@ -1,3 +1,4 @@
+import type { Package } from "#/types"
 import { example } from "@/docs/core"
 import { Precedence } from "@/eval/ast/token"
 import { NO_DRAG, NO_SYM } from "@/eval/ast/tx"
@@ -6,13 +7,11 @@ import { js } from "@/eval/js"
 import { asNumericBase } from "@/eval/lib/base"
 import { real } from "@/eval/ty/create"
 import { b, px } from "@/jsx"
-import type { Package } from "#/types"
 
 // TODO: tons of base functionality is available without this package
 // removing subscripts on numbers would fix it, but may be annoying
 
-export const PKG_BASE: Package = {
-  id: "nya:base",
+export default {
   name: "alternate bases",
   label: "bases other than 2*5",
   category: "number theory",
@@ -99,4 +98,4 @@ export const PKG_BASE: Package = {
       },
     },
   ],
-}
+} satisfies Package

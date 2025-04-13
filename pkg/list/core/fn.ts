@@ -1,3 +1,4 @@
+import type { Package } from "#/types"
 import { commalist } from "@/eval/ast/collect"
 import {
   Precedence,
@@ -23,7 +24,6 @@ import type { Sym } from "@/eval/sym"
 import { each, type GlslValue, type JsValue } from "@/eval/ty"
 import { canCoerce, coerceTyJs } from "@/eval/ty/coerce"
 import { frac, num } from "@/eval/ty/create"
-import type { Package } from "#/types"
 import { OP_JUXTAPOSE, OP_RAISE } from "./ops"
 
 function callJs(name: Var, args: Node[], props: PropsJs): JsValue {
@@ -271,8 +271,7 @@ function fnExponentGlsl(ctx: GlslContext, raw: JsValue): GlslValue<"r64"> {
   }
 }
 
-export const PKG_CORE_FN: Package = {
-  id: "nya:core-fn",
+export default {
   name: "functions",
   label: "call functions and access properties",
   category: "core",
@@ -766,4 +765,4 @@ export const PKG_CORE_FN: Package = {
       },
     },
   },
-}
+} satisfies Package

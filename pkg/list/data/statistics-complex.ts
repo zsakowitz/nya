@@ -1,5 +1,5 @@
-import { rept } from "@/eval/ty/create"
 import type { Package } from "#/types"
+import { rept } from "@/eval/ty/create"
 import { declareAddC64 } from "../core/ops"
 import { addPt } from "../num/complex"
 import { FN_TOTAL } from "./statistics"
@@ -26,8 +26,7 @@ FN_TOTAL.addSpread(
   "total([8+3i,2-4i,-9])=1-i",
 )
 
-export const PKG_STATISTICS_COMPLEX: Package = {
-  id: "nya:statistics-complex",
+export default {
   name: "complex statistics",
   label: "rudimentary statistics for complex numbers",
   category: "statistics",
@@ -36,4 +35,4 @@ export const PKG_STATISTICS_COMPLEX: Package = {
       total: FN_TOTAL,
     },
   },
-}
+} satisfies Package

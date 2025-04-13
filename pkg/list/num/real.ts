@@ -1,3 +1,4 @@
+import type { Package } from "#/types"
 import type { FnSignature } from "@/docs/signature"
 import { js } from "@/eval/js"
 import { asNumericBase, parseNumberGlsl, parseNumberJs } from "@/eval/lib/base"
@@ -15,8 +16,7 @@ import { highRes, type TyExtras } from "@/eval/ty/info"
 import { abs, add, div, mul, neg, raise, sub } from "@/eval/ty/ops"
 import { splitDual } from "@/eval/ty/split"
 import { h } from "@/jsx"
-import type { Package } from "#/types"
-import { FN_VALID, PKG_BOOL } from "../bool"
+import { FN_VALID } from "../bool"
 import {
   OP_EQ,
   OP_GT,
@@ -306,8 +306,7 @@ export function declarePowR32(ctx: GlslContext) {
 `
 }
 
-export const PKG_REAL: Package = {
-  id: "nya:num-real",
+export default {
   name: "real numbers",
   label: "support for real numbers",
   category: "numbers",
@@ -557,7 +556,7 @@ float _helper_cmp_r32(float a, float b) {
       ["cmp(7,9)=-1", "cmp(8,8)=0", "cmp(3,-8)=1"],
     )
   },
-  deps: [() => PKG_BOOL],
+  deps: ["bool"],
   ty: {
     info: {
       r64: {
@@ -703,15 +702,15 @@ float _helper_cmp_r32(float a, float b) {
       count: FN_COUNT,
     },
     var: {
-      π: splitDual(
+      "π": splitDual(
         Math.PI,
         "ratio of any circle's circumference to its diameter",
       ),
-      τ: splitDual(
+      "τ": splitDual(
         Math.PI * 2,
         "ratio of any circle's circumference to its radius",
       ),
-      e: splitDual(Math.E, "euler's number"),
+      "e": splitDual(Math.E, "euler's number"),
       "∞": {
         label: "limit as a number increases without bound",
         js: { type: "r64", value: real(Infinity), list: false },
@@ -772,4 +771,4 @@ float _helper_cmp_r32(float a, float b) {
       },
     },
   },
-}
+} satisfies Package

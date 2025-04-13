@@ -1,3 +1,4 @@
+import type { Package } from "#/types"
 import type { Fn } from "@/eval/ops"
 import { FnDist } from "@/eval/ops/dist"
 import { ALL_DOCS, type WithDocs } from "@/eval/ops/docs"
@@ -29,9 +30,10 @@ import {
   parseCaGloss,
   unglossWord,
 } from "@zsnout/ithkuil/ungloss"
-import type { Package } from "#/types"
-import { CmdTextInert, PKG_TEXT, type TextSegment } from "../text"
+import { CmdTextInert, type TextSegment } from "../text"
 import * as categories from "./categories"
+
+// TODO: reduce ithkuil root and affix data size (it's 56% of the bundle currently)
 
 declare module "@/eval/ty" {
   interface Tys {
@@ -139,12 +141,11 @@ const FN_ITHKUILVALUES: Fn & WithDocs = {
 
 ALL_DOCS.push(FN_ITHKUILVALUES)
 
-export const PKG_ITHKUIL: Package = {
-  id: "nya:ithkuil",
+export default {
   name: "ithkuil utilities",
   label: "functions for working with ithkuil",
   category: "miscellaneous",
-  deps: [() => PKG_TEXT],
+  deps: ["text"],
   ty: {
     info: {
       ithkuilscript: {
@@ -442,7 +443,7 @@ export const PKG_ITHKUIL: Package = {
       ],
     },
   },
-}
+} satisfies Package
 
 function err(): never {
   throw new Error("Ithkuil utilities do not work in shaders.")

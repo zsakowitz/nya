@@ -1,3 +1,4 @@
+import type { Package } from "#/types"
 import { example } from "@/docs/core"
 import type { MagicVar, Node } from "@/eval/ast/token"
 import { NO_SYM } from "@/eval/ast/tx"
@@ -23,7 +24,6 @@ import { coerceValueGlsl, isReal } from "@/eval/ty/coerce"
 import { num, real } from "@/eval/ty/create"
 import { declareGlsl } from "@/eval/ty/decl"
 import { b, p } from "@/jsx"
-import type { Package } from "#/types"
 
 declare module "@/eval/ast/token" {
   interface PuncListInfix {
@@ -447,8 +447,7 @@ function iterateDeps(iterate: Iterate, deps: Deps): string[] {
   return ids
 }
 
-export const PKG_ITERATE: Package = {
-  id: "nya:iterate",
+export default {
   name: "iterate",
   label: "easily repeat expressions",
   category: "miscellaneous",
@@ -631,4 +630,4 @@ export const PKG_ITERATE: Package = {
       },
     },
   ],
-}
+} satisfies Package

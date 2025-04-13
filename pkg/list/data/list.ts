@@ -1,3 +1,4 @@
+import type { Package } from "#/types"
 import type { FnSignature } from "@/docs/signature"
 import { commalist } from "@/eval/ast/collect"
 import { Precedence } from "@/eval/ast/token"
@@ -19,7 +20,6 @@ import {
 } from "@/eval/ty/coerce"
 import { num } from "@/eval/ty/create"
 import { TY_INFO } from "@/eval/ty/info"
-import type { Package } from "#/types"
 
 const FN_JOIN: Fn & WithDocs = {
   name: "join",
@@ -115,8 +115,7 @@ function indexGlsl(on: GlslValue, indexVal: JsValue): GlslValue {
   }
 }
 
-export const PKG_CORE_LIST: Package = {
-  id: "nya:core-list",
+export default {
   name: "core list functionality",
   label: null,
   category: "lists",
@@ -277,4 +276,4 @@ export const PKG_CORE_LIST: Package = {
   },
   // TODO: docs on \begin{list}
   // TODO: docs on for
-}
+} satisfies Package

@@ -1,3 +1,4 @@
+import type { Package } from "#/types"
 import type { Node } from "@/eval/ast/token"
 import { NO_SYM } from "@/eval/ast/tx"
 import { js } from "@/eval/js"
@@ -14,7 +15,6 @@ import { defineHideable } from "@/sheet/ext/hideable"
 import { norm } from "@/sheet/point"
 import { Color, Opacity, Order, Size } from "@/sheet/ui/cv/consts"
 import type { Expr } from "@/sheet/ui/expr"
-import type { Package } from "#/types"
 import { vectorPath } from "./geo/dcg/vector"
 import { gridlineCoords } from "./gridlines"
 
@@ -159,8 +159,7 @@ const EXT_SLOPE_FIELD = defineHideable<
   },
 })
 
-export const PKG_SLOPE_FIELD: Package = {
-  id: "nya:slope-field",
+export default {
   name: "slope fields",
   label: null,
   category: "miscellaneous",
@@ -253,4 +252,4 @@ export const PKG_SLOPE_FIELD: Package = {
   sheet: {
     exts: { 1: [EXT_SLOPE_FIELD] },
   },
-}
+} satisfies Package

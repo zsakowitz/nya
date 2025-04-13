@@ -1,3 +1,4 @@
+import type { Package } from "#/types"
 import { Precedence, type Nodes } from "@/eval/ast/token"
 import { glsl, jsToGlsl } from "@/eval/glsl"
 import { js } from "@/eval/js"
@@ -22,7 +23,6 @@ import { CmdWord } from "@/field/cmd/leaf/word"
 import { CmdSupSub } from "@/field/cmd/math/supsub"
 import { Block, L, R } from "@/field/model"
 import { h } from "@/jsx"
-import type { Package } from "#/types"
 
 declare module "@/eval/ty" {
   interface Tys {
@@ -30,8 +30,7 @@ declare module "@/eval/ty" {
   }
 }
 
-export const PKG_SYM_CORE: Package = {
-  id: "nya:sym-core",
+export default {
   name: "symbolics core",
   label: null,
   category: "symbolic computation",
@@ -313,4 +312,4 @@ export const PKG_SYM_CORE: Package = {
       },
     },
   },
-}
+} satisfies Package

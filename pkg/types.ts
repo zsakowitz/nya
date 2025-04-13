@@ -28,6 +28,7 @@ import type { Init } from "@/field/model"
 import type { AnyExt } from "@/sheet/ext"
 import type { AnyItemFactory } from "@/sheet/item"
 import type { Sheet } from "@/sheet/ui/sheet"
+import type { ManifestKey } from "./manifest"
 
 type List<T, K extends PropertyKey = string> = { readonly [_ in K]?: T }
 
@@ -52,7 +53,6 @@ export type PackageCategory =
 
 // SHAPE: maybe use consistent shapes
 export interface Package {
-  id: string
   name: string
   label: string | null
   category: PackageCategory
@@ -60,7 +60,7 @@ export interface Package {
   load?(): void
   init?(sheet: Sheet): void
   // TODO: find a better deps system; should probably reference package ids
-  deps?: (() => Package)[]
+  deps?: ManifestKey[]
 
   field?: {
     inits?: List<Init>

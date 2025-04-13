@@ -1,9 +1,8 @@
+import type { Package } from "#/types"
 import { FnDist } from "@/eval/ops/dist"
 import { SYM_2, unary } from "@/eval/sym"
 import { approx, num } from "@/eval/ty/create"
-import type { Package } from "#/types"
 import { chain, OP_NEG, OP_RAISE, toRad } from "../core/ops"
-import { PKG_REAL } from "../num/real"
 
 const FN_SIN: FnDist = new FnDist("sin", "takes the sine of an angle", {
   deriv: unary((wrt, a) => {
@@ -52,8 +51,7 @@ const FN_ARCCOT = new FnDist("arccot", "takes the inverse cotangent of a value")
 
 export { FN_ARCCOS, FN_ARCCOT, FN_ARCCSC, FN_ARCSEC, FN_ARCSIN, FN_ARCTAN }
 
-export const PKG_TRIG_REAL: Package = {
-  id: "nya:trig-real",
+export default {
   name: "trigonometry",
   label: "trig on real numbers",
   category: "trigonometry",
@@ -186,21 +184,21 @@ export const PKG_TRIG_REAL: Package = {
       "arccot1=45°",
     )
   },
-  deps: [() => PKG_REAL],
+  deps: ["num/real"],
   eval: {
     fn: {
-      sin: FN_SIN,
-      cos: FN_COS,
-      tan: FN_TAN,
-      csc: FN_CSC,
-      sec: FN_SEC,
-      cot: FN_COT,
-      arcsin: FN_ARCSIN,
-      arccos: FN_ARCCOS,
-      arctan: FN_ARCTAN,
-      arccsc: FN_ARCCSC,
-      arcsec: FN_ARCSEC,
-      arccot: FN_ARCCOT,
+      "sin": FN_SIN,
+      "cos": FN_COS,
+      "tan": FN_TAN,
+      "csc": FN_CSC,
+      "sec": FN_SEC,
+      "cot": FN_COT,
+      "arcsin": FN_ARCSIN,
+      "arccos": FN_ARCCOS,
+      "arctan": FN_ARCTAN,
+      "arccsc": FN_ARCCSC,
+      "arcsec": FN_ARCSEC,
+      "arccot": FN_ARCCOT,
       "sin^-1": FN_ARCSIN,
       "cos^-1": FN_ARCCOS,
       "tan^-1": FN_ARCTAN,
@@ -215,4 +213,4 @@ export const PKG_TRIG_REAL: Package = {
       "arccot^-1": FN_COT,
     },
   },
-}
+} satisfies Package

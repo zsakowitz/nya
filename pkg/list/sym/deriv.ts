@@ -1,12 +1,11 @@
+import type { Package } from "#/types"
 import { example } from "@/docs/core"
 import { NO_DRAG, sym } from "@/eval/ast/tx"
 import { id } from "@/eval/lib/binding"
 import { simplify, txr } from "@/eval/sym"
 import { b, px } from "@/jsx"
-import type { Package } from "#/types"
 
-export const PKG_DERIV: Package = {
-  id: "nya:deriv",
+export default {
   name: "derivatives",
   label: "via leibniz notation",
   category: "symbolic computation",
@@ -67,4 +66,4 @@ export const PKG_DERIV: Package = {
       },
     },
   ],
-}
+} satisfies Package

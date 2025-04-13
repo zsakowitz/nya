@@ -1,3 +1,4 @@
+import type { Package } from "#/types"
 import { example } from "@/docs/core"
 import type { FnSignature } from "@/docs/signature"
 import { commalist } from "@/eval/ast/collect"
@@ -32,7 +33,6 @@ import { TY_INFO } from "@/eval/ty/info"
 import { CmdWord } from "@/field/cmd/leaf/word"
 import { L } from "@/field/model"
 import { b, h, px } from "@/jsx"
-import type { Package } from "#/types"
 import { OP_AND } from "./core/cmp"
 
 declare module "@/eval/ty" {
@@ -45,8 +45,8 @@ declare module "@/eval/ast/token" {
   interface PuncListInfix {
     "\\and ": 0
     "\\or ": 0
-    and: 0
-    or: 0
+    "and": 0
+    "or": 0
   }
 }
 
@@ -283,8 +283,7 @@ function parseBraces(node: Node): Piece[] {
   })
 }
 
-export const PKG_BOOL: Package = {
-  id: "nya:bool-ops",
+export default {
   name: "boolean operations",
   label: "basic support for boolean values",
   category: "logic",
@@ -418,9 +417,9 @@ export const PKG_BOOL: Package = {
     op: {
       binary: {
         "\\and ": { precedence: Precedence.BoolAnd, fn: OP_AND },
-        and: { precedence: Precedence.BoolAnd, fn: OP_AND },
+        "and": { precedence: Precedence.BoolAnd, fn: OP_AND },
         "\\or ": { precedence: Precedence.BoolOr, fn: OP_OR },
-        or: { precedence: Precedence.BoolOr, fn: OP_OR },
+        "or": { precedence: Precedence.BoolOr, fn: OP_OR },
       },
     },
     fn: {
@@ -496,4 +495,4 @@ export const PKG_BOOL: Package = {
       },
     },
   ],
-}
+} satisfies Package

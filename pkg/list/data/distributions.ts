@@ -589,8 +589,7 @@ const EXT_CONTINUOUS_DISTRIBUTION = defineHideable({
   },
 })
 
-export const PKG_DISTRIBUTIONS: Package = {
-  id: "nya:distributions",
+export default {
   name: "statistical distributions",
   label: null,
   category: "statistics",
@@ -962,13 +961,13 @@ export const PKG_DISTRIBUTIONS: Package = {
       uniformdist,
       poissondist,
       binomialdist,
-      erf: FN_ERF,
+      "erf": FN_ERF,
       "erf^-1": FN_ERFINV, // DCG: erf^-1 is not available in standard desmos
-      faddeeva: FN_FADDEEVA, // DCG: faddeeva is not available in standard desmos
-      pdf: FN_PDF,
-      cdf: FN_CDF,
+      "faddeeva": FN_FADDEEVA, // DCG: faddeeva is not available in standard desmos
+      "pdf": FN_PDF,
+      "cdf": FN_CDF,
       "cdf^-1": FN_INVERSECDF, // DCG: cdf^-1 is not available in standard desmos
-      inversecdf: FN_INVERSECDF,
+      "inversecdf": FN_INVERSECDF,
     },
   },
   sheet: {
@@ -976,4 +975,4 @@ export const PKG_DISTRIBUTIONS: Package = {
       1: [EXT_CONTINUOUS_DISTRIBUTION],
     },
   },
-}
+} satisfies Package

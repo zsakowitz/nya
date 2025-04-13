@@ -1,5 +1,4 @@
 import type { Package } from "#/types"
-import { PKG_NUM_COMPLEX } from "$/num-complex"
 import { defineExt, Prop } from "@/sheet/ext"
 
 export type Theme = "simple" | "gradient" | "plot" | "trig" | "black" | "none"
@@ -131,8 +130,7 @@ export const PKG_FRACTAL: Package = {
   name: "fractal explorer integration",
   label:
     "allows expressions like z->z²+c to generate fractals using standard fractal explorer options",
-  deps: [() => PKG_NUM_COMPLEX],
-
+  deps: ["num/complex"],
   sheet: {
     exts: {
       1: [EXT_FRACTAL],

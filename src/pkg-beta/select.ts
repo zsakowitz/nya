@@ -94,7 +94,6 @@ const EXT_SELECT = defineExt({
 })
 
 export const PKG_SELECT: Package = {
-  id: "nya:select",
   name: "multiple-choice form fields",
   label: null,
   eval: {

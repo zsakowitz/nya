@@ -1,20 +1,20 @@
+import type { Package } from "#/types"
 import { fa } from "@/field/fa"
 import { h, hx, t } from "@/jsx"
-import type { Package } from "#/types"
 import { faCheck } from "@fortawesome/free-solid-svg-icons/faCheck"
 import { faChevronRight } from "@fortawesome/free-solid-svg-icons/faChevronRight"
 import { faMinus } from "@fortawesome/free-solid-svg-icons/faMinus"
 import { sectionEls } from "./section"
 
 export class PackageList {
-  private readonly activePackages = new Set<string>()
+  private readonly activePackages = new Set<Package>()
   private readonly fns: (() => void)[] = []
 
   constructor(readonly packages: Package[]) {
     queueMicrotask(() => this.fns.forEach((x) => x()))
   }
 
-  set(name: string, active: boolean) {
+  set(name: Package, active: boolean) {
     if (active == this.activePackages.has(name)) {
       return
     }
@@ -35,7 +35,7 @@ export class PackageList {
     return this.count != 0
   }
 
-  has(name: string) {
+  has(name: Package) {
     return this.activePackages.size == 0 || this.activePackages.has(name)
   }
 
@@ -100,7 +100,7 @@ function createCategory(
   const { field, el } = createCheckbox((v) => {
     items.forEach((x) => {
       x.field.checked = v
-      list.set(x.pkg.id, v)
+      list.set(x.pkg, v)
     })
   }, t(category))
 
@@ -115,7 +115,7 @@ function createCategory(
         field.checked = state === true
         field.indeterminate = state === null
 
-        list.set(pkg.id, v)
+        list.set(pkg, v)
       },
       h(
         labels ? "font-semibold" : "",
@@ -131,8 +131,8 @@ function createCategory(
 
   const id = "s" + Math.random().toString().slice(2)
   const openCheckbox = hx("input", {
-    type: "checkbox",
-    class: "sr-only",
+    "type": "checkbox",
+    "class": "sr-only",
     "aria-label": "whether to show all packages in this category",
     id,
   })
@@ -165,8 +165,6 @@ export function secPackagesContents(list: PackageList, labels = true) {
   for (const pkg of list.packages.slice().sort((a, b) =>
     a.name < b.name ? -1
     : a.name > b.name ? 1
-    : a.id < b.id ? -1
-    : a.id > b.id ? 1
     : 0,
   )) {
     ;(raw[pkg.category] ??= []).push(pkg)

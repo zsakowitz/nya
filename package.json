@@ -33,6 +33,7 @@
       "prettier-plugin-jsdoc"
     ],
     "experimentalTernaries": true,
-    "proseWrap": "always"
+    "proseWrap": "always",
+    "quoteProps": "consistent"
   }
 }

@@ -68,13 +68,13 @@ export function createDocs2(sheet: Sheet) {
   const path = getPath()
 
   const names: Record<string, HTMLElement> = {
-    about: secAbout(),
-    guides: secGuides(sheet, list),
+    "about": secAbout(),
+    "guides": secGuides(sheet, list),
     "data types": secDataTypes(list),
-    functions: secFunctions(sheet, list, true),
-    operators: secFunctions(sheet, list, false),
+    "functions": secFunctions(sheet, list, true),
+    "operators": secFunctions(sheet, list, false),
     // @ts-expect-error it can't handle null prototype initializer
-    __proto__: null,
+    "__proto__": null,
   }
   let which = path?.tab && path.tab in names ? path.tab : "about"
 
@@ -287,12 +287,9 @@ function secFunctions(sheet: Sheet, list: PackageList, named: boolean) {
         "tbody",
         "",
         ...fns.map((doc) => {
-          const sources = list.packages
-            .filter(
-              (x) =>
-                x.eval?.fn && Object.values(x.eval.fn).includes(doc as any),
-            )
-            .map((x) => x.id)
+          const sources = list.packages.filter(
+            (x) => x.eval?.fn && Object.values(x.eval.fn).includes(doc as any),
+          )
 
           const tr = hx(
             "tr",
@@ -340,11 +337,9 @@ function secDataTypes(list: PackageList) {
       "tbody",
       "",
       ...fns.map((doc) => {
-        const sources = list.packages
-          .filter(
-            (x) => x.eval?.fn && Object.values(x.eval.fn).includes(doc as any),
-          )
-          .map((x) => x.id)
+        const sources = list.packages.filter(
+          (x) => x.eval?.fn && Object.values(x.eval.fn).includes(doc as any),
+        )
 
         const tr = hx(
           "tr",
@@ -472,7 +467,7 @@ function secGuides(sheet: Sheet, list: PackageList) {
   const path = getPath()
 
   const guides = list.packages
-    .flatMap((x) => (x.docs ? x.docs : []).map((v) => [v, x.id] as const))
+    .flatMap((x) => (x.docs ? x.docs : []).map((v) => [v, x] as const))
     .sort(([a], [b]) =>
       a.name < b.name ? -1
       : a.name > b.name ? 1

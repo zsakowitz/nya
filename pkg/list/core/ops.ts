@@ -1,3 +1,4 @@
+import type { Package } from "#/types"
 import { Precedence } from "@/eval/ast/token"
 import { dragNum, dragPoint, NO_DRAG, sym } from "@/eval/ast/tx"
 import { glsl } from "@/eval/glsl"
@@ -48,7 +49,6 @@ import { CmdRoot } from "@/field/cmd/math/root"
 import { CmdSupSub } from "@/field/cmd/math/supsub"
 import { Block, L, R, Span } from "@/field/model"
 import { OP_PLOTSIGN } from "@/sheet/shader-line"
-import type { Package } from "#/types"
 
 // FIXME: use direct from source
 export { declareAddR64, declareMulR64, OP_PLOTSIGN }
@@ -602,8 +602,36 @@ export const FN_XPRODY: FnDist = new FnDist(
   },
 )
 
-export const PKG_CORE_OPS: Package = {
-  id: "nya:core-ops",
+export function chain(f: Sym, wrt: PropsDeriv, ddx: Sym): Sym {
+  return { type: "call", fn: OP_JUXTAPOSE, args: [txr(f).deriv(f, wrt), ddx] }
+}
+
+export function toRad(props: PropsDeriv, sym: Sym): Sym {
+  const [num, denom] = props.ctx.sheet.toRadiansSym()
+
+  if (!denom) {
+    if (!num) {
+      return sym
+    }
+
+    return { type: "call", fn: OP_JUXTAPOSE, args: [num, sym] }
+  }
+
+  return {
+    type: "call",
+    fn: OP_JUXTAPOSE,
+    args: [
+      {
+        type: "call",
+        fn: OP_DIV,
+        args: [num || SYM_1, denom],
+      },
+      sym,
+    ],
+  }
+}
+
+export default {
   name: "basic operators",
   label: null,
   category: "numbers",
@@ -1128,39 +1156,10 @@ export const PKG_CORE_OPS: Package = {
         "\\cdot ": { fn: OP_CDOT, precedence: Precedence.Product },
         "÷": { fn: OP_DIV, precedence: Precedence.Product },
         "\\odot ": { fn: OP_ODOT, precedence: Precedence.Product },
-        mod: { fn: OP_MOD, precedence: Precedence.Product },
+        "mod": { fn: OP_MOD, precedence: Precedence.Product },
         "\\times ": { fn: OP_CROSS, precedence: Precedence.Product },
         "\\uparrow ": { fn: OP_RAISE, precedence: Precedence.Exponential },
       },
     },
   },
-}
-
-export function chain(f: Sym, wrt: PropsDeriv, ddx: Sym): Sym {
-  return { type: "call", fn: OP_JUXTAPOSE, args: [txr(f).deriv(f, wrt), ddx] }
-}
-
-export function toRad(props: PropsDeriv, sym: Sym): Sym {
-  const [num, denom] = props.ctx.sheet.toRadiansSym()
-
-  if (!denom) {
-    if (!num) {
-      return sym
-    }
-
-    return { type: "call", fn: OP_JUXTAPOSE, args: [num, sym] }
-  }
-
-  return {
-    type: "call",
-    fn: OP_JUXTAPOSE,
-    args: [
-      {
-        type: "call",
-        fn: OP_DIV,
-        args: [num || SYM_1, denom],
-      },
-      sym,
-    ],
-  }
-}
+} satisfies Package

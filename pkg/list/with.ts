@@ -1,12 +1,11 @@
+import type { Package } from "#/types"
 import { Precedence } from "@/eval/ast/token"
 import { NO_DRAG, NO_SYM } from "@/eval/ast/tx"
 import { glsl } from "@/eval/glsl"
 import { js } from "@/eval/js"
 import { bindingDeps, withBindingsGlsl, withBindingsJs } from "@/eval/ops/with"
-import type { Package } from "#/types"
 
-export const PKG_WITH: Package = {
-  id: "nya:with",
+export default {
   name: "with",
   label: "substitute variables using 'with'",
   category: "substitution",
@@ -39,4 +38,4 @@ export const PKG_WITH: Package = {
     },
   },
   // TODO: docs on substitution
-}
+} satisfies Package

@@ -1,3 +1,4 @@
+import type { Package } from "#/types"
 import type { FnSignature } from "@/docs/signature"
 import type { Node } from "@/eval/ast/token"
 import { NO_DRAG, NO_SYM } from "@/eval/ast/tx"
@@ -22,7 +23,6 @@ import {
 import { h, hx, t } from "@/jsx"
 import { defineExt, Store } from "@/sheet/ext"
 import { circle } from "@/sheet/ui/expr/circle"
-import type { Package } from "#/types"
 
 declare module "@/eval/ty" {
   interface Tys {
@@ -346,8 +346,13 @@ const EXT_TEXT = defineExt({
   },
 })
 
-export const PKG_TEXT: Package = {
-  id: "nya:text",
+export type TextSegment = { type: "plain" | "latex"; value: string }
+
+function err(): never {
+  throw new Error("Text is not supported in shaders.")
+}
+
+export default {
   name: "text",
   label: "writing and outputting text",
   category: "miscellaneous",
@@ -439,10 +444,4 @@ export const PKG_TEXT: Package = {
       1: [EXT_TEXT],
     },
   },
-}
-
-export type TextSegment = { type: "plain" | "latex"; value: string }
-
-function err(): never {
-  throw new Error("Text is not supported in shaders.")
-}
+} satisfies Package

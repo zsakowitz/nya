@@ -1,10 +1,10 @@
+import type { Package } from "#/types"
 import { fa } from "@/field/fa"
 import { D, L, R, U } from "@/field/model"
 import { hx } from "@/jsx"
 import type { ItemFactory } from "@/sheet/item"
 import type { ItemRef } from "@/sheet/items"
 import { faStickyNote } from "@fortawesome/free-solid-svg-icons/faStickyNote"
-import type { Package } from "#/types"
 
 interface Data {
   contents: string
@@ -119,12 +119,11 @@ const FACTORY: ItemFactory<Data> = {
   },
 }
 
-export const PKG_NOTES: Package = {
-  id: "nya:notes",
+export default {
   name: "notes",
   label: "in plain text between expressions",
   category: "sheet items",
   sheet: {
     items: [FACTORY],
   },
-}
+} satisfies Package

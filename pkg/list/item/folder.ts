@@ -1,9 +1,9 @@
+import type { Package } from "#/types"
 import { D, L, R, U } from "@/field/model"
 import { h, hx } from "@/jsx"
 import type { ItemFactory } from "@/sheet/item"
 import type { ItemRef } from "@/sheet/items"
 import { faFolder } from "@fortawesome/free-solid-svg-icons/faFolder"
-import type { Package } from "#/types"
 
 interface Data {
   contents: string
@@ -120,12 +120,11 @@ const FACTORY: ItemFactory<Data> = {
   },
 }
 
-export const PKG_FOLDER: Package = {
-  id: "nya:folder",
+export default {
   name: "folders",
   label: "for organizing expressions",
   category: "sheet items",
   sheet: {
     items: [FACTORY],
   },
-}
+} satisfies Package

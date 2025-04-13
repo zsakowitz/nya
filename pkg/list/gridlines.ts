@@ -1,7 +1,7 @@
+import type { Package } from "#/types"
 import { theme } from "@/sheet/theme"
 import type { Cv } from "@/sheet/ui/cv"
 import { OrderMajor } from "@/sheet/ui/cv/consts"
-import type { Package } from "#/types"
 
 const THEME_MAIN_AXIS_WIDTH = 1.5
 const THEME_MAJOR_LINE_ALPHA = 0.3
@@ -334,12 +334,11 @@ function createDrawAxes(paper: Cv) {
   paper.fn(OrderMajor.Grid, drawGridlines)
 }
 
-export const PKG_GRIDLINES: Package = {
-  id: "nya:gridlines",
+export default {
   name: "gridlines",
   label: "draws a numbered grid below the graphs",
   category: "miscellaneous",
   init(sheet) {
     createDrawAxes(sheet.cv)
   },
-}
+} satisfies Package

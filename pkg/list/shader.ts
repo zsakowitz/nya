@@ -1,3 +1,4 @@
+import type { Package } from "#/types"
 import { example } from "@/docs/core"
 import { glsl, jsToGlsl } from "@/eval/glsl"
 import { js } from "@/eval/js"
@@ -12,9 +13,7 @@ import { Store, defineExt } from "@/sheet/ext"
 import { createLine } from "@/sheet/shader-line"
 import { circle } from "@/sheet/ui/expr/circle"
 import { PROP_SHOWN } from "@/show"
-import type { Package } from "#/types"
-import { OP_PLOT, PKG_COLOR_CORE } from "./color/core"
-import { PKG_REAL } from "./num/real"
+import { OP_PLOT } from "./color/core"
 
 const store = new Store((expr) => {
   const circEmpty = circle("empty")
@@ -151,12 +150,11 @@ const forceshader: Fn & WithDocs = {
 
 ALL_DOCS.push(forceshader)
 
-export const PKG_SHADER: Package = {
-  id: "nya:shader",
+export default {
   name: "shaders",
   label: "creates shaders with the x, y, and p variables",
   category: "miscellaneous",
-  deps: [() => PKG_COLOR_CORE, () => PKG_REAL],
+  deps: ["color/core", "num/real"],
   eval: {
     tx: {
       magic: {
@@ -255,4 +253,4 @@ export const PKG_SHADER: Package = {
       },
     },
   ],
-}
+} satisfies Package

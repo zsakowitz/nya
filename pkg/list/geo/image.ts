@@ -1,3 +1,4 @@
+import type { Package } from "#/types"
 import { example } from "@/docs/core"
 import { FnDist } from "@/eval/ops/dist"
 import { each, type JsValue, type Val } from "@/eval/ty"
@@ -14,7 +15,6 @@ import { defineExt } from "@/sheet/ext"
 import type { Cv } from "@/sheet/ui/cv"
 import { Order } from "@/sheet/ui/cv/consts"
 import { faImage } from "@fortawesome/free-regular-svg-icons"
-import type { Package } from "#/types"
 import { glsl } from "../image"
 import { dilateJs, mark as markDilate } from "./dcg/fn/dilate"
 import { mark as markReflect, reflectJs } from "./dcg/fn/reflect"
@@ -103,8 +103,7 @@ const EXT = defineExt({
   },
 })
 
-export const PKG_IMAGE_GEO: Package = {
-  id: "nya:geo-image",
+export default {
   name: "image objects",
   label: "on the graphpaper",
   category: "images",
@@ -216,7 +215,7 @@ export const PKG_IMAGE_GEO: Package = {
       },
     },
   ],
-}
+} satisfies Package
 
 markTranslate(
   "image2d",

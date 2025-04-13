@@ -1,10 +1,9 @@
+import type { Package } from "#/types"
 import { FnDist } from "@/eval/ops/dist"
 import { frac, num, real } from "@/eval/ty/create"
 import { div, sub } from "@/eval/ty/ops"
 import { isDark } from "@/sheet/theme"
-import type { Package } from "#/types"
 import { FN_VALID } from "../bool"
-import { PKG_COLOR_CORE } from "./core"
 import { oklab } from "./oklab"
 
 const FN_OKLAB = new FnDist(
@@ -64,12 +63,11 @@ const FN_LIGHTDARK = new FnDist(
     "lightdark(rgb(4,70,196),hsv(60,1,0.7))",
   )
 
-export const PKG_COLOR_EXTRAS: Package = {
-  id: "nya:color-extras",
+export default {
   name: "color functions extended",
   label: "more functions for creating colors",
   category: "color",
-  deps: [() => PKG_COLOR_CORE],
+  deps: ["color/core"],
   load() {
     FN_VALID.add(
       ["color"],
@@ -191,14 +189,14 @@ export const PKG_COLOR_EXTRAS: Package = {
   },
   eval: {
     fn: {
-      valid: FN_VALID,
-      oklab: FN_OKLAB,
-      oklch: FN_OKLCH,
-      lightdark: FN_LIGHTDARK,
+      "valid": FN_VALID,
+      "oklab": FN_OKLAB,
+      "oklch": FN_OKLCH,
+      "lightdark": FN_LIGHTDARK,
       ".r": FN_R,
       ".g": FN_G,
       ".b": FN_B,
       ".a": FN_A,
     },
   },
-}
+} satisfies Package

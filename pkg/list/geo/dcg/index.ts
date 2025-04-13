@@ -1,3 +1,4 @@
+import type { Package } from "#/types"
 import type { JsVal, Tys } from "@/eval/ty"
 import { SNANPT, gl, num, pt, real, unpt } from "@/eval/ty/create"
 import { WRITE_POINT, gliderOnLine, type TyInfoByName } from "@/eval/ty/info"
@@ -15,9 +16,7 @@ import { normVector, type Point } from "@/sheet/point"
 import { Color, Opacity, Order, Size } from "@/sheet/ui/cv/consts"
 import { Expr } from "@/sheet/ui/expr"
 import type { Selected } from "@/sheet/ui/sheet"
-import type { Package } from "#/types"
-import { PKG_REAL } from "../../num/real"
-import { FN_GLIDER, FN_INTERSECTION, PKG_GEO_POINT } from "../point"
+import { FN_GLIDER, FN_INTERSECTION } from "../point"
 import { computeArcVal, unglideArc } from "./arc"
 import { EXT_ANGLE, angleGlsl, angleJs, drawAngleCv } from "./ext/angle"
 import { EXT_ARC, drawArcCv } from "./ext/arc"
@@ -489,8 +488,8 @@ const INFO_RAY = lineInfo(
         sx(
           "svg",
           {
-            class: "size-[22px] absolute inset-0 fill-none stroke-current",
-            viewBox: "0 0 22 22",
+            "class": "size-[22px] absolute inset-0 fill-none stroke-current",
+            "viewBox": "0 0 22 22",
             "stroke-linecap": "round",
             "stroke-width": 2,
           },
@@ -519,20 +518,20 @@ const INFO_LINE = lineInfo(
         sx(
           "svg",
           {
-            class: "size-[22px] absolute inset-0 fill-none stroke-current",
-            viewBox: "0 0 22 22",
+            "class": "size-[22px] absolute inset-0 fill-none stroke-current",
+            "viewBox": "0 0 22 22",
             "stroke-linecap": "round",
             "stroke-width": 2,
           },
           c.source == "perpendicular" ?
             sx("path", {
-              d: `M ${11 - 50 * y} ${11 + 50 * x} L ${11 + 50 * y} ${11 - 50 * x}`,
+              "d": `M ${11 - 50 * y} ${11 + 50 * x} L ${11 + 50 * y} ${11 - 50 * x}`,
               "stroke-opacity": 0.3,
             })
           : null,
           c.source == "parallel" ?
             sx("path", {
-              d: `M ${11 + 4 * y - 50 * x} ${11 - 4 * x - 50 * y} L ${11 + 4 * y + 50 * x} ${11 - 4 * x + 50 * y}`,
+              "d": `M ${11 + 4 * y - 50 * x} ${11 - 4 * x - 50 * y} L ${11 + 4 * y + 50 * x} ${11 - 4 * x + 50 * y}`,
               "stroke-opacity": 0.3,
             })
           : null,
@@ -559,8 +558,8 @@ const INFO_VECTOR = lineInfo(
         sx(
           "svg",
           {
-            class: "size-[22px] absolute inset-0 fill-current stroke-current",
-            viewBox: "0 0 22 22",
+            "class": "size-[22px] absolute inset-0 fill-current stroke-current",
+            "viewBox": "0 0 22 22",
             "stroke-linecap": "round",
             "stroke-linejoin": "round",
             "stroke-width": 2,
@@ -591,8 +590,8 @@ const INFO_VECTOR = lineInfo(
         sx(
           "svg",
           {
-            class: "size-[22px] absolute inset-0 fill-current stroke-current",
-            viewBox: "0 0 22 22",
+            "class": "size-[22px] absolute inset-0 fill-current stroke-current",
+            "viewBox": "0 0 22 22",
             "stroke-linecap": "round",
             "stroke-linejoin": "round",
             "stroke-width": 2,
@@ -743,7 +742,7 @@ const INFO_POLYGON: TyInfoByName<"polygon"> = {
       "#388c46",
       sx(
         "g",
-        { fill: "currentcolor", "fill-opacity": Opacity.TokenFill },
+        { "fill": "currentcolor", "fill-opacity": Opacity.TokenFill },
         path(
           `M ${pts[0]!.x} ${-pts[0]!.y}${pts.slice(1).map((pt) => ` L ${pt.x} ${-pt.y}`)} Z`,
         ),
@@ -805,8 +804,8 @@ const INFO_ARC: TyInfoByName<"arc"> = {
             fill: "none",
           },
           sx("path", {
-            d: "M 6.821075367479289 58.046972674137905 A 60.375975878779 -60.375975878779 0 0 1 60.110633724316074 7.562127915029379",
-            stroke: "#388c46",
+            "d": "M 6.821075367479289 58.046972674137905 A 60.375975878779 -60.375975878779 0 0 1 60.110633724316074 7.562127915029379",
+            "stroke": "#388c46",
             "stroke-linecap": "round",
             "stroke-width": 8,
           }),
@@ -837,8 +836,9 @@ const INFO_ARC: TyInfoByName<"arc"> = {
             sx(
               "svg",
               {
-                class: "size-[22px] absolute inset-0 fill-none stroke-current",
-                viewBox: "0 0 22 22",
+                "class":
+                  "size-[22px] absolute inset-0 fill-none stroke-current",
+                "viewBox": "0 0 22 22",
                 "stroke-linecap": "round",
                 "stroke-width": 2,
               },
@@ -1027,8 +1027,8 @@ function angleInfo(
       } else {
         g.appendChild(
           sx("path", {
-            d: `${path} L ${o2.x} ${o2.y} Z`,
-            fill: "var(--nya-angle)",
+            "d": `${path} L ${o2.x} ${o2.y} Z`,
+            "fill": "var(--nya-angle)",
             "fill-opacity": 0.3,
           }),
         )
@@ -1181,12 +1181,11 @@ const sc =
     !new URLSearchParams(globalThis.location?.search).has("sconly")
   : true
 
-export const PKG_GEOMETRY: Package = {
-  id: "nya:geometry",
+export default {
   name: "geometry",
   label: "geometric objects and constructions",
   category: "geometry",
-  deps: [() => PKG_GEO_POINT, () => PKG_REAL],
+  deps: ["geo/point", "num/real"],
   ty: {
     info: {
       segment: INFO_SEGMENT,
@@ -1281,4 +1280,4 @@ export const PKG_GEOMETRY: Package = {
       b: (sheet) => sheet.pick.set(PICK_TY, PICK_ANGLEBISECTOR),
     },
   },
-}
+} satisfies Package

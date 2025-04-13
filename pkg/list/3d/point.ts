@@ -1,3 +1,4 @@
+import type { Package } from "#/types"
 import { FnDist } from "@/eval/ops/dist"
 import { num, real } from "@/eval/ty/create"
 import { highRes } from "@/eval/ty/info"
@@ -6,7 +7,6 @@ import { CmdComma } from "@/field/cmd/leaf/comma"
 import { CmdBrack } from "@/field/cmd/math/brack"
 import { Block, L, R } from "@/field/model"
 import { h, path, svgx } from "@/jsx"
-import type { Package } from "#/types"
 import { FN_VALID } from "../bool"
 import {
   OP_ABS,
@@ -54,8 +54,7 @@ function iconPoint3D(hd: boolean) {
   )
 }
 
-export const PKG_POINT_3D: Package = {
-  id: "nya:point-3d",
+export default {
   name: "3D points",
   label: null,
   category: "geometry",
@@ -252,4 +251,4 @@ export const PKG_POINT_3D: Package = {
       ".z": OP_Z,
     },
   },
-}
+} satisfies Package

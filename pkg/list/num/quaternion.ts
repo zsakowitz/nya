@@ -16,8 +16,8 @@ import {
   OP_POS,
   OP_SUB,
 } from "../core/ops"
-import { FN_CONJ, FN_I, FN_REAL, PKG_NUM_COMPLEX } from "./complex"
-import { FN_UNSIGN, PKG_REAL } from "./real"
+import { FN_CONJ, FN_I, FN_REAL } from "./complex"
+import { FN_UNSIGN } from "./real"
 
 declare module "@/eval/ty" {
   interface Tys {
@@ -29,12 +29,67 @@ const FN_J = new FnDist(".j", "gets the coefficient of 'j' in a quaternion")
 
 const FN_K = new FnDist(".k", "gets the coefficient of 'k' in a quaternion")
 
-export const PKG_NUM_QUATERNION: Package = {
-  id: "nya:num-quaternion",
+function mulQ32(
+  [a, b, c, d]: Tys["q32"],
+  [e, f, g, h]: Tys["q32"],
+): Tys["q32"] {
+  //  (a+bi+cj+dk)(e+fi+gj+hk)
+  //
+  //   ae+afi+agj+ahk
+  // + bie+bifi+bigj+bihk
+  // + cje+cjfi+cjgj+cjhk
+  // + dke+dkfi+dkgj+dkhk
+  //
+  //   ae+afi+agj+ahk
+  // + bie-bf+bgk-bhj
+  // + cje-cfk-cg+chi
+  // + dke+dfj-dgi-dh
+  //
+  //   1(ae-bf-cg-dh)
+  // + i(af+be+ch-dg)
+  // + j(ag-bh+ce+df)
+  // + k(ah+bg-cf+de)
+
+  return [
+    sub(sub(sub(mul(a, e), mul(b, f)), mul(c, g)), mul(d, h)),
+    sub(add(add(mul(a, f), mul(b, e)), mul(c, h)), mul(d, g)),
+    add(add(sub(mul(a, g), mul(b, h)), mul(c, e)), mul(d, f)),
+    add(sub(add(mul(a, h), mul(b, g)), mul(c, f)), mul(d, e)),
+  ]
+}
+
+function declareMulQ32(ctx: GlslContext) {
+  //   (a+bi+cj+dk)(e+fi+gj+hk)
+  //
+  //   1(ae-bf-cg-dh)
+  // + i(af+be+ch-dg)
+  // + j(ag-bh+ce+df)
+  // + k(ah+bg-cf+de)
+  ctx.glsl`vec4 _helper_mul_q32(vec4 x, vec4 y) {
+  float a = x.x;
+  float b = x.y;
+  float c = x.z;
+  float d = x.w;
+  float e = y.x;
+  float f = y.y;
+  float g = y.z;
+  float h = y.w;
+
+  return vec4(
+    a*e - b*f - c*g - d*h,
+    a*f + b*e + c*h - d*g,
+    a*g - b*h + c*e + d*f,
+    a*h + b*g - c*f + d*e
+  );
+}
+`
+}
+
+export default {
   name: "quaternions",
   label: "rudimentary support for quaternions",
   category: "numbers (multi-dimensional)",
-  deps: [() => PKG_REAL, () => PKG_NUM_COMPLEX],
+  deps: ["num/real", "num/complex"],
   load() {
     OP_POS.add(
       ["q32"],
@@ -332,68 +387,12 @@ export const PKG_NUM_QUATERNION: Package = {
       },
     },
     fn: {
-      unsign: FN_UNSIGN,
-      conj: FN_CONJ,
-      real: FN_REAL,
+      "unsign": FN_UNSIGN,
+      "conj": FN_CONJ,
+      "real": FN_REAL,
       ".i": FN_I,
       ".j": FN_J,
       ".k": FN_K,
     },
   },
-}
-
-function mulQ32(
-  [a, b, c, d]: Tys["q32"],
-  [e, f, g, h]: Tys["q32"],
-): Tys["q32"] {
-  //  (a+bi+cj+dk)(e+fi+gj+hk)
-  //
-  //   ae+afi+agj+ahk
-  // + bie+bifi+bigj+bihk
-  // + cje+cjfi+cjgj+cjhk
-  // + dke+dkfi+dkgj+dkhk
-  //
-  //   ae+afi+agj+ahk
-  // + bie-bf+bgk-bhj
-  // + cje-cfk-cg+chi
-  // + dke+dfj-dgi-dh
-  //
-  //   1(ae-bf-cg-dh)
-  // + i(af+be+ch-dg)
-  // + j(ag-bh+ce+df)
-  // + k(ah+bg-cf+de)
-
-  return [
-    sub(sub(sub(mul(a, e), mul(b, f)), mul(c, g)), mul(d, h)),
-    sub(add(add(mul(a, f), mul(b, e)), mul(c, h)), mul(d, g)),
-    add(add(sub(mul(a, g), mul(b, h)), mul(c, e)), mul(d, f)),
-    add(sub(add(mul(a, h), mul(b, g)), mul(c, f)), mul(d, e)),
-  ]
-}
-
-function declareMulQ32(ctx: GlslContext) {
-  //   (a+bi+cj+dk)(e+fi+gj+hk)
-  //
-  //   1(ae-bf-cg-dh)
-  // + i(af+be+ch-dg)
-  // + j(ag-bh+ce+df)
-  // + k(ah+bg-cf+de)
-  ctx.glsl`vec4 _helper_mul_q32(vec4 x, vec4 y) {
-  float a = x.x;
-  float b = x.y;
-  float c = x.z;
-  float d = x.w;
-  float e = y.x;
-  float f = y.y;
-  float g = y.z;
-  float h = y.w;
-
-  return vec4(
-    a*e - b*f - c*g - d*h,
-    a*f + b*e + c*h - d*g,
-    a*g - b*h + c*e + d*f,
-    a*h + b*g - c*f + d*e
-  );
-}
-`
-}
+} satisfies Package

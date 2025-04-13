@@ -1,12 +1,11 @@
+import type { Package } from "#/types"
 import { Precedence } from "@/eval/ast/token"
 import { NO_DRAG } from "@/eval/ast/tx"
 import { glsl } from "@/eval/glsl"
 import { js } from "@/eval/js"
 import { bindingDeps, withBindingsGlsl, withBindingsJs } from "@/eval/ops/with"
-import type { Package } from "#/types"
 
-export const PKG_WITH_SEQ: Package = {
-  id: "nya:with-seq",
+export default {
   name: "with (sequential)",
   label: "an ordered variant of 'with'",
   category: "substitution",
@@ -43,4 +42,4 @@ export const PKG_WITH_SEQ: Package = {
       },
     },
   },
-}
+} satisfies Package

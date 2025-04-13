@@ -1,3 +1,4 @@
+import type { Package } from "#/types"
 import { example } from "@/docs/core"
 import { type MagicVar } from "@/eval/ast/token"
 import { TXR_AST } from "@/eval/ast/tx"
@@ -5,10 +6,22 @@ import { js } from "@/eval/js"
 import { simplify, txr, type Sym } from "@/eval/sym"
 import type { JsValue } from "@/eval/ty"
 import { b, px } from "@/jsx"
-import type { Package } from "#/types"
 
-export const PKG_SYM_EXTRAS: Package = {
-  id: "nya:sym-extras",
+function validateSym(node: MagicVar, kind: "sym" | "eval" | "unsym") {
+  if (node.prop) {
+    throw new Error(
+      `Cannot access a particular property of a${kind == "sym" ? "" : "n"} '${kind}' expression.`,
+    )
+  }
+  if (node.sub) {
+    throw new Error(`Cannot apply subscripts to '${kind}' expressions.`)
+  }
+  if (node.sup) {
+    throw new Error(`Cannot apply superscripts to '${kind}' expressions.`)
+  }
+}
+
+export default {
   name: "extra symbolics",
   label: null,
   category: "symbolic computation",
@@ -150,18 +163,4 @@ export const PKG_SYM_EXTRAS: Package = {
       },
     },
   ],
-}
-
-function validateSym(node: MagicVar, kind: "sym" | "eval" | "unsym") {
-  if (node.prop) {
-    throw new Error(
-      `Cannot access a particular property of a${kind == "sym" ? "" : "n"} '${kind}' expression.`,
-    )
-  }
-  if (node.sub) {
-    throw new Error(`Cannot apply subscripts to '${kind}' expressions.`)
-  }
-  if (node.sup) {
-    throw new Error(`Cannot apply superscripts to '${kind}' expressions.`)
-  }
-}
+} satisfies Package

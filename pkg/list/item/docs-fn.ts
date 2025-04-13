@@ -1,11 +1,11 @@
+import type { Package } from "#/types"
+import { makeDoc } from "@/docs/core"
 import { FNS } from "@/eval/ops"
 import { ALL_DOCS } from "@/eval/ops/docs"
 import { fa } from "@/field/fa"
 import { h, hx } from "@/jsx"
 import type { ItemFactory } from "@/sheet/item"
-import { makeDoc } from "@/docs/core"
 import { faBook } from "@fortawesome/free-solid-svg-icons/faBook"
-import type { Package } from "#/types"
 
 interface Data {
   fn: string
@@ -99,12 +99,11 @@ const FACTORY: ItemFactory<Data> = {
   },
 }
 
-export const PKG_DOCS_FN: Package = {
-  id: "nya:docs-fn",
+export default {
   name: "inline function docs",
   label: null,
   category: "sheet items",
   sheet: {
     items: [FACTORY],
   },
-}
+} satisfies Package

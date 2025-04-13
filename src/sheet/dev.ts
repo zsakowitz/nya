@@ -3,6 +3,7 @@ import SRC_LOCALHOST from "./example/localhost.txt"
 import SRC_STANDARD from "./example/standard.txt"
 import { SheetFactory } from "./factory"
 
+import { all } from "#/manifest"
 import { createDocs2 } from "@/docs"
 
 const LOAD_EMPTY = false
@@ -12,8 +13,8 @@ const factory = new SheetFactory(options)
 
 const IS_DEV = "NYA_DEV" in globalThis
 if (!(LOAD_EMPTY && IS_DEV)) {
-  for (const pkg of (await import("@/all")).allPackages()) {
-    factory.load(pkg)
+  for (const pkg of await all()) {
+    await factory.load(pkg)
   }
 }
 if (IS_DEV) {

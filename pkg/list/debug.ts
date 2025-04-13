@@ -1,9 +1,8 @@
+import type { Package } from "#/types"
 import type { MagicVar } from "@/eval/ast/token"
 import { NO_SYM } from "@/eval/ast/tx"
-import type { Package } from "#/types"
 
-export const PKG_DEBUG: Package = {
-  id: "nya:debug",
+export default {
   name: "debug utilities",
   label: "for project nya developers",
   category: "miscellaneous",
@@ -39,7 +38,7 @@ export const PKG_DEBUG: Package = {
       },
     },
   },
-}
+} satisfies Package
 
 function check(node: MagicVar) {
   if (node.sub) {

@@ -1,3 +1,4 @@
+import type { Package } from "#/types"
 import type { FnSignature } from "@/docs/signature"
 import type { Node } from "@/eval/ast/token"
 import type { GlslContext } from "@/eval/lib/fn"
@@ -34,11 +35,9 @@ import { BRACKS } from "@/field/cmd/math/brack"
 import { Block, L, R } from "@/field/model"
 import { h, hx } from "@/jsx"
 import { defineExt } from "@/sheet/ext"
-import type { Package } from "#/types"
 import { addR64 } from "../core/ops"
 import { createMultiEval } from "../eval"
 import { sqrt } from "../geo/dcg/fn/distance"
-import { PKG_REAL } from "../num/real"
 
 declare module "@/eval/ty" {
   interface Tys {
@@ -914,12 +913,11 @@ const EXT_STATS = defineExt({
   },
 })
 
-export const PKG_STATISTICS: Package = {
-  id: "nya:statistics",
+export default {
   name: "statistics",
   label: "rudimentary statistics functions",
   category: "statistics",
-  deps: [() => PKG_REAL],
+  deps: ["num/real"],
   ty: {
     info: {
       stats: TY_STATS,
@@ -954,4 +952,4 @@ export const PKG_STATISTICS: Package = {
       1: [EXT_STATS],
     },
   },
-}
+} satisfies Package

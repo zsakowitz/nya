@@ -1,3 +1,4 @@
+import type { Package } from "#/types"
 import { dragPoint, type DragResultPoint } from "@/eval/ast/tx"
 import type { GlslContext } from "@/eval/lib/fn"
 import { FnDist } from "@/eval/ops/dist"
@@ -28,7 +29,6 @@ import { FN_GLIDER, FN_INTERSECTION, ref, val } from "@/sheet/ui/cv/item"
 import type { Expr } from "@/sheet/ui/expr"
 import { Sheet } from "@/sheet/ui/sheet"
 import { virtualStepExp, write, Writer } from "@/sheet/write"
-import type { Package } from "#/types"
 import { FN_VALID } from "../bool"
 import {
   abs64,
@@ -47,7 +47,7 @@ import {
   subR64,
 } from "../core/ops"
 import { EXT_EVAL } from "../eval"
-import { FN_UNSIGN, PKG_REAL } from "../num/real"
+import { FN_UNSIGN } from "../num/real"
 
 declare module "@/eval/ty" {
   interface Tys {
@@ -260,12 +260,29 @@ export const FN_POINT = OP_POINT.with(
     "point(7)=7",
   )
 
-export const PKG_GEO_POINT: Package = {
-  id: "nya:geo-point",
+function iconPoint(hd: boolean) {
+  return h(
+    "",
+    h(
+      "text-[#6042a6] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-current rounded-[4px]" +
+        (hd ? " border-double border-[3px]" : " border-2"),
+      h(
+        "opacity-25 block bg-current absolute " +
+          (hd ? " -inset-[2px] rounded-[2px]" : "inset-0"),
+      ),
+      h(
+        "size-[7px] bg-current absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
+      ),
+      hd ? highRes() : null,
+    ),
+  )
+}
+
+export default {
   name: "geometric points",
   label: "geometric points in 2D",
   category: "geometry",
-  deps: [() => PKG_REAL],
+  deps: ["num/real"],
   load() {
     FN_SCREENDISTANCE.add(
       ["point32", "point32"],
@@ -558,9 +575,9 @@ export const PKG_GEO_POINT: Package = {
   },
   eval: {
     fn: {
-      point: FN_POINT,
-      screendistance: FN_SCREENDISTANCE,
-      debugpoint: FN_DEBUGPOINT,
+      "point": FN_POINT,
+      "screendistance": FN_SCREENDISTANCE,
+      "debugpoint": FN_DEBUGPOINT,
       ".x": OP_X,
       ".y": OP_Y,
     },
@@ -576,22 +593,4 @@ export const PKG_GEO_POINT: Package = {
       p: (sheet: Sheet) => sheet.pick.set(PICK_TY, PICK_POINT),
     },
   },
-}
-
-function iconPoint(hd: boolean) {
-  return h(
-    "",
-    h(
-      "text-[#6042a6] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-current rounded-[4px]" +
-        (hd ? " border-double border-[3px]" : " border-2"),
-      h(
-        "opacity-25 block bg-current absolute " +
-          (hd ? " -inset-[2px] rounded-[2px]" : "inset-0"),
-      ),
-      h(
-        "size-[7px] bg-current absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
-      ),
-      hd ? highRes() : null,
-    ),
-  )
-}
+} satisfies Package

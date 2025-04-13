@@ -1,3 +1,4 @@
+import type { Package } from "#/types"
 import type { FnSignature } from "@/docs/signature"
 import type { Fn } from "@/eval/ops"
 import { type WithDocs, ALL_DOCS } from "@/eval/ops/docs"
@@ -5,8 +6,6 @@ import { issue } from "@/eval/ops/issue"
 import type { SReal } from "@/eval/ty"
 import { canCoerce, coerceTyJs, coerceValJs } from "@/eval/ty/coerce"
 import { num } from "@/eval/ty/create"
-import type { Package } from "#/types"
-import { PKG_REAL } from "../num/real"
 
 function sortJs(args: SReal[]) {
   return args.sort((a, b) => num(a) - num(b))
@@ -108,16 +107,15 @@ const FN_UNIQUE: Fn & WithDocs = {
 
 ALL_DOCS.push(FN_UNIQUE)
 
-export const PKG_LIST_EXTRAS: Package = {
-  id: "nya:list-extras",
+export default {
   name: "extra list functions",
   label: null,
   category: "lists",
-  deps: [() => PKG_REAL],
+  deps: ["num/real"],
   eval: {
     fn: {
       sort: FN_SORT,
       unique: FN_UNIQUE,
     },
   },
-}
+} satisfies Package

@@ -1,3 +1,4 @@
+import type { Package } from "#/types"
 import { Precedence } from "@/eval/ast/token"
 import type { GlslContext } from "@/eval/lib/fn"
 import { FnDist } from "@/eval/ops/dist"
@@ -16,7 +17,6 @@ import factorial from "@stdlib/math/base/special/factorial"
 import gammaln from "@stdlib/math/base/special/gammaln"
 import polygamma from "@stdlib/math/base/special/polygamma"
 import { complex, gamma, type Complex } from "mathjs"
-import type { Package } from "#/types"
 import { chain, OP_ADD, OP_JUXTAPOSE } from "./core/ops"
 import { declareDiv, declarePowC32 } from "./num/complex"
 
@@ -352,8 +352,7 @@ const FN_LNGAMMA = new FnDist(
   "lngamma23=ln((23+1)!)",
 )
 
-export const PKG_FACTORIAL: Package = {
-  id: "nya:factorial",
+export default {
   name: "factorial",
   label: "extended factorial operator",
   category: "numbers",
@@ -393,4 +392,4 @@ export const PKG_FACTORIAL: Package = {
       gamma: FN_GAMMA,
     },
   },
-}
+} satisfies Package

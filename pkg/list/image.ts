@@ -323,8 +323,7 @@ const FN_IMGASPECT = new FnDist(
   "imgaspect(...)",
 )
 
-export const PKG_IMAGE: Package = {
-  id: "nya:image",
+export default {
   name: "images",
   label: "upload and manipulate images",
   category: "images",
@@ -429,7 +428,7 @@ export const PKG_IMAGE: Package = {
   sheet: {
     items: [FACTORY],
   },
-}
+} satisfies Package
 
 export function glsl(): never {
   throw new Error("Cannot manipulate image data in shaders yet.")

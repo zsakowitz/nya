@@ -1,7 +1,6 @@
+import type { Package } from "#/types"
 import { FnDist } from "@/eval/ops/dist"
 import { approx, num } from "@/eval/ty/create"
-import type { Package } from "#/types"
-import { PKG_REAL } from "../../num/real"
 
 const FN_SINH = new FnDist("sinh", "takes the hyperbolic sinhe of an angle")
 const FN_COSH = new FnDist("cosh", "takes the hyperbolic coshine of an angle")
@@ -35,8 +34,7 @@ const FN_ARCOTH = new FnDist(
   "takes the inverse hyperbolic cotangent of a value",
 )
 
-export const PKG_TRIG_HYPERBOLIC_REAL: Package = {
-  id: "nya:trigh-real",
+export default {
   name: "hyperbolic trigonometry",
   label: "hyperbolic trig on real numbers",
   category: "trigonometry",
@@ -138,27 +136,27 @@ export const PKG_TRIG_HYPERBOLIC_REAL: Package = {
       "arcoth(3)≈0.3466",
     )
   },
-  deps: [() => PKG_REAL],
+  deps: ["num/real"],
   eval: {
     fn: {
-      sinh: FN_SINH,
-      cosh: FN_COSH,
-      tanh: FN_TANH,
-      csch: FN_CSCH,
-      sech: FN_SECH,
-      coth: FN_COTH,
-      arsinh: FN_ARSINH,
-      arcosh: FN_ARCOSH,
-      artanh: FN_ARTANH,
-      arcsch: FN_ARCSCH,
-      arsech: FN_ARSECH,
-      arcoth: FN_ARCOTH,
-      arcsinh: FN_ARSINH,
-      arccosh: FN_ARCOSH,
-      arctanh: FN_ARTANH,
-      arccsch: FN_ARCSCH,
-      arcsech: FN_ARSECH,
-      arccoth: FN_ARCOTH,
+      "sinh": FN_SINH,
+      "cosh": FN_COSH,
+      "tanh": FN_TANH,
+      "csch": FN_CSCH,
+      "sech": FN_SECH,
+      "coth": FN_COTH,
+      "arsinh": FN_ARSINH,
+      "arcosh": FN_ARCOSH,
+      "artanh": FN_ARTANH,
+      "arcsch": FN_ARCSCH,
+      "arsech": FN_ARSECH,
+      "arcoth": FN_ARCOTH,
+      "arcsinh": FN_ARSINH,
+      "arccosh": FN_ARCOSH,
+      "arctanh": FN_ARTANH,
+      "arccsch": FN_ARCSCH,
+      "arcsech": FN_ARSECH,
+      "arccoth": FN_ARCOTH,
       "sinh^-1": FN_ARSINH,
       "cosh^-1": FN_ARCOSH,
       "tanh^-1": FN_ARTANH,
@@ -179,4 +177,4 @@ export const PKG_TRIG_HYPERBOLIC_REAL: Package = {
       "arccoth^-1": FN_COTH,
     },
   },
-}
+} satisfies Package

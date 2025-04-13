@@ -1,8 +1,7 @@
+import type { Package } from "#/types"
 import { FnDist } from "@/eval/ops/dist"
 import { frac, num } from "@/eval/ty/create"
 import { sub } from "@/eval/ty/ops"
-import type { Package } from "#/types"
-import { PKG_REAL } from "./num/real"
 
 const floor = new FnDist("floor", "rounds down to the nearest integer").add(
   ["r32"],
@@ -62,12 +61,11 @@ const round = new FnDist(
     ["round(395.92143,2)=395.92", "round(395.92143,-2)=400"],
   )
 
-export const PKG_NUMBER_THEORY: Package = {
-  id: "nya:number-theory",
+export default {
   name: "number theory",
   label: "functions for working with integers",
   category: "number theory",
-  deps: [() => PKG_REAL],
+  deps: ["num/real"],
   eval: {
     fn: {
       floor,
@@ -76,4 +74,4 @@ export const PKG_NUMBER_THEORY: Package = {
       fract,
     },
   },
-}
+} satisfies Package

@@ -1,3 +1,4 @@
+import type { Package } from "#/types"
 import { fn, type GlslContext } from "@/eval/lib/fn"
 import { FnDist } from "@/eval/ops/dist"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "@/eval/ops/vars"
@@ -10,7 +11,6 @@ import { abs, add, div, mul, neg, sub } from "@/eval/ty/ops"
 import { h } from "@/jsx"
 import type { Point } from "@/sheet/point"
 import { Order } from "@/sheet/ui/cv/consts"
-import type { Package } from "#/types"
 import { FN_VALID } from "../bool"
 import { OP_PLOT, plotJs } from "../color/core"
 import { declareOklab } from "../color/oklab"
@@ -34,13 +34,8 @@ import {
   OP_SUB,
   subR64,
 } from "../core/ops"
-import {
-  declareDebugPoint,
-  FN_DEBUGPOINT,
-  FN_POINT,
-  PKG_GEO_POINT,
-} from "../geo/point"
-import { FN_EXP, FN_LOG10, FN_SIGN, FN_UNSIGN, PKG_REAL } from "./real"
+import { declareDebugPoint, FN_DEBUGPOINT, FN_POINT } from "../geo/point"
+import { FN_EXP, FN_LOG10, FN_SIGN, FN_UNSIGN } from "./real"
 
 declare module "@/eval/ty" {
   interface Tys {
@@ -231,8 +226,105 @@ const extras: TyExtras<SPoint> = {
   },
 }
 
-export const PKG_NUM_COMPLEX: Package = {
-  id: "nya:num-complex",
+function dotC64(
+  ctx: GlslContext,
+  a: GlslVal<"c64" | "point64">,
+  b: GlslVal<"c64" | "point64">,
+) {
+  declareSubR64(ctx)
+  declareMulR64(ctx)
+  ctx.glsl`vec2 _helper_dot_c64(vec4 a, vec4 b) {
+  return _helper_sub_r64(
+    _helper_mul_r64(a.xy, b.xy),
+    _helper_mul_r64(a.zw, b.zw)
+  );
+}`
+  return `_helper_dot_c64(${a.expr}, ${b.expr})`
+}
+
+function dotC32(
+  ctx: GlslContext,
+  a: GlslVal<"c32" | "point32">,
+  b: GlslVal<"c32" | "point32">,
+) {
+  ctx.glsl`float _helper_dot_c32(vec2 a, vec2 b) {
+  return a.x * b.x - a.y * b.y;
+}`
+  return `_helper_dot_c32(${a.expr}, ${b.expr})`
+}
+
+export function subPt(a: SPoint, b: SPoint) {
+  return pt(sub(a.x, b.x), sub(a.y, b.y))
+}
+
+export function addPt(a: SPoint, b: SPoint) {
+  return pt(add(a.x, b.x), add(a.y, b.y))
+}
+
+export function mulPt({ x: a, y: b }: SPoint, { x: c, y: d }: SPoint) {
+  return pt(sub(mul(a, c), mul(b, d)), add(mul(b, c), mul(a, d)))
+}
+
+export function divPt({ x: a, y: b }: SPoint, { x: c, y: d }: SPoint): SPoint {
+  const x = add(mul(a, c), mul(b, d))
+  const y = sub(mul(b, c), mul(a, d))
+  const denom = add(mul(c, c), mul(d, d))
+  return pt(div(x, denom), div(y, denom))
+}
+
+export function divNonSPt({ x: a, y: b }: Point, { x: c, y: d }: Point): Point {
+  const x = a * c + b * d
+  const y = b * c - a * d
+  const denom = c * c + d * d
+  return { x: x / denom, y: y / denom }
+}
+
+export function recipPt({ x: c, y: d }: SPoint): SPoint {
+  const denom = add(mul(c, c), mul(d, d))
+  if (isZero(denom)) return pt(approx(1 / num(c)), approx(1 / num(d)))
+  return pt(div(c, denom), div(neg(d), denom))
+}
+
+export function declareDiv(ctx: GlslContext) {
+  ctx.glsl`vec2 _helper_div(vec2 a, vec2 b) {
+  return vec2(
+    a.x * b.x + a.y * b.y,
+    a.y * b.x - a.x * b.y
+  ) / (b.x * b.x + b.y * b.y);
+}
+`
+}
+
+export const divGl = fn(["c32", "c32"], "c32")`return vec2(
+  ${0}.x * ${1}.x + ${0}.y * ${1}.y,
+  ${0}.y * ${1}.x - ${0}.x * ${1}.y
+) / (${1}.x * ${1}.x + ${1}.y * ${1}.y);`
+
+export const recipGl = fn(
+  ["c32"],
+  "c32",
+)`return vec2(${0}.x, -${0}.y) / (${0}.x * ${0}.x + ${0}.y * ${0}.y);`
+
+function iconComplex(hd: boolean) {
+  return h(
+    "",
+    h(
+      "text-[#6042a6] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-current rounded-[4px]" +
+        (hd ? " border-double border-[3px]" : " border-2"),
+      h(
+        "opacity-25 block bg-current absolute " +
+          (hd ? " -inset-[2px] rounded-[2px]" : "inset-0"),
+      ),
+      h(
+        "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-['Times_New_Roman'] italic text-[120%]",
+        "i",
+      ),
+      hd ? highRes() : null,
+    ),
+  )
+}
+
+export default {
   name: "complex numbers",
   label: "basic support for complex numbers",
   category: "numbers (multi-dimensional)",
@@ -716,7 +808,7 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
       "+(2+3i)=2+3i",
     )
   },
-  deps: [() => PKG_REAL, () => PKG_GEO_POINT],
+  deps: ["num/real", "geo/point"],
   ty: {
     coerce: {
       r32: {
@@ -820,19 +912,19 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
   },
   eval: {
     fn: {
-      arg: FN_ARG,
-      conj: FN_CONJ,
-      imag: FN_IMAG,
-      real: FN_REAL,
-      sign: FN_SIGN,
+      "arg": FN_ARG,
+      "conj": FN_CONJ,
+      "imag": FN_IMAG,
+      "real": FN_REAL,
+      "sign": FN_SIGN,
       // DCG: dot doesn't exist for complex numbers in desmos
-      dot: FN_DOT,
+      "dot": FN_DOT,
       // DCG: everything below doesn't exist in vanilla desmos
-      complex: FN_COMPLEX,
-      point: FN_POINT,
+      "complex": FN_COMPLEX,
+      "point": FN_POINT,
       ".i": FN_I,
-      cplot: FN_CPLOT,
-      cplothue: FN_CPLOTHUE,
+      "cplot": FN_CPLOT,
+      "cplothue": FN_CPLOTHUE,
     },
     var: {
       p: {
@@ -852,102 +944,4 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
       },
     },
   },
-}
-
-function dotC64(
-  ctx: GlslContext,
-  a: GlslVal<"c64" | "point64">,
-  b: GlslVal<"c64" | "point64">,
-) {
-  declareSubR64(ctx)
-  declareMulR64(ctx)
-  ctx.glsl`vec2 _helper_dot_c64(vec4 a, vec4 b) {
-  return _helper_sub_r64(
-    _helper_mul_r64(a.xy, b.xy),
-    _helper_mul_r64(a.zw, b.zw)
-  );
-}`
-  return `_helper_dot_c64(${a.expr}, ${b.expr})`
-}
-
-function dotC32(
-  ctx: GlslContext,
-  a: GlslVal<"c32" | "point32">,
-  b: GlslVal<"c32" | "point32">,
-) {
-  ctx.glsl`float _helper_dot_c32(vec2 a, vec2 b) {
-  return a.x * b.x - a.y * b.y;
-}`
-  return `_helper_dot_c32(${a.expr}, ${b.expr})`
-}
-
-export function subPt(a: SPoint, b: SPoint) {
-  return pt(sub(a.x, b.x), sub(a.y, b.y))
-}
-
-export function addPt(a: SPoint, b: SPoint) {
-  return pt(add(a.x, b.x), add(a.y, b.y))
-}
-
-export function mulPt({ x: a, y: b }: SPoint, { x: c, y: d }: SPoint) {
-  return pt(sub(mul(a, c), mul(b, d)), add(mul(b, c), mul(a, d)))
-}
-
-export function divPt({ x: a, y: b }: SPoint, { x: c, y: d }: SPoint): SPoint {
-  const x = add(mul(a, c), mul(b, d))
-  const y = sub(mul(b, c), mul(a, d))
-  const denom = add(mul(c, c), mul(d, d))
-  return pt(div(x, denom), div(y, denom))
-}
-
-export function divNonSPt({ x: a, y: b }: Point, { x: c, y: d }: Point): Point {
-  const x = a * c + b * d
-  const y = b * c - a * d
-  const denom = c * c + d * d
-  return { x: x / denom, y: y / denom }
-}
-
-export function recipPt({ x: c, y: d }: SPoint): SPoint {
-  const denom = add(mul(c, c), mul(d, d))
-  if (isZero(denom)) return pt(approx(1 / num(c)), approx(1 / num(d)))
-  return pt(div(c, denom), div(neg(d), denom))
-}
-
-export function declareDiv(ctx: GlslContext) {
-  ctx.glsl`vec2 _helper_div(vec2 a, vec2 b) {
-  return vec2(
-    a.x * b.x + a.y * b.y,
-    a.y * b.x - a.x * b.y
-  ) / (b.x * b.x + b.y * b.y);
-}
-`
-}
-
-export const divGl = fn(["c32", "c32"], "c32")`return vec2(
-  ${0}.x * ${1}.x + ${0}.y * ${1}.y,
-  ${0}.y * ${1}.x - ${0}.x * ${1}.y
-) / (${1}.x * ${1}.x + ${1}.y * ${1}.y);`
-
-export const recipGl = fn(
-  ["c32"],
-  "c32",
-)`return vec2(${0}.x, -${0}.y) / (${0}.x * ${0}.x + ${0}.y * ${0}.y);`
-
-function iconComplex(hd: boolean) {
-  return h(
-    "",
-    h(
-      "text-[#6042a6] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-current rounded-[4px]" +
-        (hd ? " border-double border-[3px]" : " border-2"),
-      h(
-        "opacity-25 block bg-current absolute " +
-          (hd ? " -inset-[2px] rounded-[2px]" : "inset-0"),
-      ),
-      h(
-        "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-['Times_New_Roman'] italic text-[120%]",
-        "i",
-      ),
-      hd ? highRes() : null,
-    ),
-  )
-}
+} satisfies Package

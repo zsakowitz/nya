@@ -1,7 +1,7 @@
+import type { Package } from "#/types"
 import { FnDist } from "@/eval/ops/dist"
 import { approx, num, pt, real } from "@/eval/ty/create"
 import { complex, zeta } from "mathjs"
-import type { Package } from "#/types"
 
 export const FN_ZETA: FnDist = new FnDist(
   "zeta",
@@ -19,8 +19,7 @@ export const FN_ZETA: FnDist = new FnDist(
   "zeta2≈1.645",
 )
 
-export const PKG_SPECIAL_FNS: Package = {
-  id: "nya:special-fns",
+export default {
   name: "special functions",
   label: "for uncomputable integrals and sums",
   category: "numbers (multi-dimensional)",
@@ -29,4 +28,4 @@ export const PKG_SPECIAL_FNS: Package = {
       zeta: FN_ZETA,
     },
   },
-}
+} satisfies Package

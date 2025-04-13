@@ -1,3 +1,4 @@
+import type { Package } from "#/types"
 import { Precedence } from "@/eval/ast/token"
 import { NO_DRAG, sym } from "@/eval/ast/tx"
 import { glsl } from "@/eval/glsl"
@@ -15,7 +16,6 @@ import {
 import { OpEq, OpGt, OpLt } from "@/field/cmd/leaf/cmp"
 import { CmdWord } from "@/field/cmd/leaf/word"
 import { Block, L, R, type Command } from "@/field/model"
-import type { Package } from "#/types"
 
 function create(name: string, op: () => Command): FnDist {
   return new FnDist(name, `compares two values via the ${name} operator`, {
@@ -85,8 +85,7 @@ export const OP_AND = new FnDist(
   },
 )
 
-export const PKG_CORE_CMP: Package = {
-  id: "nya:core-cmp",
+export default {
   name: "comparison operators",
   label: null,
   category: "logic",
@@ -147,4 +146,4 @@ export const PKG_CORE_CMP: Package = {
       },
     },
   },
-}
+} satisfies Package

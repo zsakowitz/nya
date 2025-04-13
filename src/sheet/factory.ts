@@ -1,3 +1,5 @@
+import { manifest } from "#/manifest"
+import type { Package, ToolbarItem } from "#/types"
 import { FNLIKE_MAGICVAR } from "@/eval/ast/fnlike"
 import {
   Precedence,
@@ -27,7 +29,6 @@ import type { TyName } from "@/eval/ty"
 import { tidyCoercions, TY_INFO, type TyCoerce } from "@/eval/ty/info"
 import type { ParenLhs, ParenRhs } from "@/field/cmd/math/brack"
 import { Inits, WordMap, type Options } from "@/field/options"
-import type { Package, ToolbarItem } from "@/pkg"
 import { Exts } from "./ext"
 import { FACTORY_EXPR, type AnyItemFactory } from "./item"
 import { Sheet } from "./ui/sheet"
@@ -49,20 +50,17 @@ export class SheetFactory {
     }
   }
 
-  readonly loaded: Record<string, Package> = Object.create(null)
+  readonly loaded = new Set<Package>()
   private queuedCoercions: Record<string, Record<string, TyCoerce<any, any>>> =
     Object.create(null)
-  load(pkg: Package) {
-    if (pkg.id in this.loaded) {
+  async load(pkg: Package) {
+    if (this.loaded.has(pkg)) {
       return this
     }
-    this.loaded[pkg.id] = pkg
+    this.loaded.add(pkg)
 
-    for (const getDep of pkg.deps || []) {
-      const dep = getDep()
-      if (!(dep.id in this.loaded)) {
-        console.log(`[load] ${dep.id} from ${pkg.id}`)
-      }
+    for (const depId of pkg.deps || []) {
+      const dep = (await manifest[depId]()).default
       this.load(dep)
     }
     pkg.load?.()
