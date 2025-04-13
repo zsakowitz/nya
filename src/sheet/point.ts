@@ -1,8 +1,7 @@
 import type { SPoint } from "@/eval/ty"
 import { isZero } from "@/eval/ty/check"
-import { pt } from "@/eval/ty/create"
+import { num, pt, real } from "@/eval/ty/create"
 import { add, div, sub } from "@/eval/ty/ops"
-import { hypot } from "@/pkg/geo/dcg/fn/distance"
 
 export interface Point {
   readonly x: number
@@ -20,7 +19,7 @@ export function norm(pt: Point, distance = 1): Point {
 }
 
 function normS(at: SPoint): SPoint {
-  const denom = hypot(at)
+  const denom = real(Math.hypot(num(at.x), num(at.y)))
   if (isZero(denom)) return at
 
   return pt(div(at.x, denom), div(at.y, denom))

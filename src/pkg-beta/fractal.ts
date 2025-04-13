@@ -1,5 +1,5 @@
-import type { Package } from "@/pkg"
-import { PKG_NUM_COMPLEX } from "@/pkg/num-complex"
+import type { Package } from "#/types"
+import { PKG_NUM_COMPLEX } from "$/num-complex"
 import { defineExt, Prop } from "@/sheet/ext"
 
 export type Theme = "simple" | "gradient" | "plot" | "trig" | "black" | "none"

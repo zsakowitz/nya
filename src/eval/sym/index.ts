@@ -1,7 +1,6 @@
 import type { WordKind } from "@/field/cmd/leaf/var"
 import { CmdBrack } from "@/field/cmd/math/brack"
 import { Block, L, R, type Command, type Cursor } from "@/field/model"
-import type { ImageData } from "@/pkg/image"
 import type { Deps } from "../deps"
 import type { PropsGlsl, PropsSym } from "../glsl"
 import type { PropsJs } from "../js"
@@ -36,8 +35,16 @@ export interface Syms {
   val: { value: SymVal }
 }
 
+export interface SymPreserved {
+  string: string
+  null: null
+  undefined: undefined
+}
+
+type SymPreserve = SymPreserved[keyof SymPreserved]
+
 type AsSym<T> =
-  T extends string | ImageData | null | undefined ? T
+  T extends SymPreserve ? T
   : T extends SReal | boolean | number | Sym ? Sym
   : T extends SPoint ? [Sym, Sym]
   : T extends SColor ? [Sym, Sym, Sym, Sym]

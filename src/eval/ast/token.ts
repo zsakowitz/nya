@@ -59,6 +59,8 @@ export interface PuncListInfix extends PuncListPm, PuncListCmp {
   "\\odot ": 0
   "\\otimes ": 0
   ":": 0
+  "\\and ": 0
+  "\\or ": 0
 }
 
 /** Tokens which can be unary prefix operators. */

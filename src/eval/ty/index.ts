@@ -9,6 +9,10 @@ import { TY_INFO } from "./info"
  */
 export interface Tys {
   never: "__never"
+  r32: SReal
+  r64: SReal
+  bool: boolean
+  point32: SPoint
 }
 
 export type SApprox = { type: "approx"; value: number }

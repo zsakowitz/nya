@@ -1,8 +1,20 @@
-import { type PropsGlsl } from "@/eval/glsl"
+import type { PropsGlsl } from "@/eval/glsl"
 import type { GlslResult } from "@/eval/lib/fn"
+import { FnDist } from "@/eval/ops/dist"
+import { declareAddR64 } from "@/eval/ops/r64"
 import type { GlslValue } from "@/eval/ty"
-import { declareAddR64, OP_PLOTSIGN } from "@/pkg/core/ops"
 import type { Cv } from "./ui/cv"
+
+/**
+ * To plot `x²=1-y²`, we essentially convert it to `x²-(1-y²)`, then plot
+ * wherever the sign changes. This, however, only works for real numbers, but we
+ * also want to be able to do equality checks like this on other types.
+ */
+export const OP_PLOTSIGN = new FnDist<"r32">(
+  "plotsign",
+  "used to plot f=g; a line is drawn whenever this function's value flips signs",
+  { message: "Cannot plot an equality between %%." },
+)
 
 export function createLine(
   cv: Cv,

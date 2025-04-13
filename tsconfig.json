@@ -16,7 +16,9 @@
     "verbatimModuleSyntax": true,
     "allowArbitraryExtensions": true,
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "#/*": ["./pkg/*"],
+      "$/*": ["./pkg/list/*"]
     }
   },
   "exclude": ["src/pkg-beta"]
