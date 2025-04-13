@@ -3,3 +3,6 @@ A=q+f\left(-2xy\right)q\operatorname{with}q=B
 B=\operatorname{erf}\left(\sqrt{p.\operatorname{real}^{2}-p.\operatorname{imag}^{2}}\operatorname{sign}\left(p.\operatorname{real}\right)\right)
 E=\frac{p}{20}\operatorname{total}\left(\operatorname{exp}-p^{2}\operatorname{for}p=\frac{\left[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20\right]p}{20}\right)
 B
+\left\{\left|E\right|>1:\operatorname{rgb}\left(255,255,0,.1\right)\right\}
+\left\{\left|E\right|>2:\operatorname{rgb}\left(255,255,0,.1\right)\right\}
+\left\{\left|E\right|>.9:\operatorname{rgb}\left(255,255,0,.1\right)\right\}
