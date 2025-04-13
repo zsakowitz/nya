@@ -3,7 +3,7 @@ import { FnDist } from "@/eval/ops/dist"
 import { FnDistDeriv } from "@/eval/ops/dist-deriv"
 import { SYM_2, SYM_E, SYM_HALF, SYM_PI, unary } from "@/eval/sym"
 import type { GlslValue, JsVal, SReal } from "@/eval/ty"
-import { approx, gl, num, real } from "@/eval/ty/create"
+import { approx, gl, num, real, rept, unpt } from "@/eval/ty/create"
 import { TY_INFO } from "@/eval/ty/info"
 import { add, div, mul, recip, sub } from "@/eval/ty/ops"
 import { CmdComma } from "@/field/cmd/leaf/comma"
@@ -12,14 +12,17 @@ import { CmdBrack } from "@/field/cmd/math/brack"
 import { Block, L, R } from "@/field/model"
 import { g, h, path, svgx } from "@/jsx"
 import { defineHideable } from "@/sheet/ext/hideable"
+import type { Point } from "@/sheet/point"
 import { createLine } from "@/sheet/shader-line"
 import erf from "@stdlib/math/base/special/erf"
 import erfinv from "@stdlib/math/base/special/erfinv"
 import type { Package } from ".."
+import erfC32Gl from "../../glsl/erf-c32.glsl"
 import erfGl from "../../glsl/erf.glsl"
 import erfinvGl from "../../glsl/erfinv.glsl"
 import { chain, OP_DIV, OP_JUXTAPOSE, OP_NEG, OP_RAISE } from "../core/ops"
 import { EXT_EVAL } from "../eval"
+import { declareMulC32, divNonSPt } from "../num/complex"
 import { FN_QUANTILE } from "./statistics"
 
 declare module "@/eval/ty" {
@@ -143,6 +146,93 @@ const binomialdist = new FnDist(
     "binomialdist(6,0.3)",
   )
 
+function faddeevaPt(z: Point): Point {
+  const M = 4
+  const N = 1 << (M - 1)
+  const A = [
+    +0.983046454995208, -0.095450491368505, -0.106397537035019,
+    +0.004553979597404, -0.000012773721299, -0.000000071458742,
+    +0.000000000080803, -0.000000000000007,
+  ]
+  const B = [
+    -1.338045597353875, +0.822618936152688, -0.044470795125534,
+    -0.000502542048995, +0.000011914499129, -0.000000020157171,
+    -0.000000000001558, +0.000000000000003,
+  ]
+  const C = [
+    0.392699081698724, 1.178097245096172, 1.963495408493621, 2.748893571891069,
+    3.534291735288517, 4.319689898685965, 5.105088062083414, 5.890486225480862,
+  ]
+  const s = 2.75
+
+  // Constrain to imag(z)>=0
+  const sgni = z.y < 0 ? -1 : 1
+  z = { x: z.x * sgni, y: z.y * sgni }
+
+  // Approximate
+  let t: Point = { x: z.x, y: z.y + s * 0.5 }
+  let w: Point = { x: 0, y: 0 }
+
+  for (let m = 0; m < N; ++m) {
+    const dw = divNonSPt(
+      {
+        x: A[m]! + mulPt(t, { x: 0, y: B[m]! }).x,
+        y: mulPt(t, { x: 0, y: B[m]! }).y,
+      },
+      {
+        x: C[m]! * C[m]! - sqrPt(t).x,
+        y: -sqrPt(t).y,
+      },
+    )
+    w = { x: w.x + dw.x, y: w.y + dw.y }
+  }
+
+  if (sgni < 0) {
+    w = {
+      x: 2 * expPt(sqrPt(z)).x - w.x,
+      y: 2 * expPt(sqrPt(z)).y - w.y,
+    }
+  }
+
+  return w
+}
+
+function sqrPt(z: Point): Point {
+  return { x: z.x * z.x - z.y * z.y, y: 2.0 * z.x * z.y }
+}
+
+function mulPt({ x: a, y: b }: Point, { x: c, y: d }: Point): Point {
+  return { x: a * c - b * d, y: b * c + a * d }
+}
+
+function expPt({ x: a, y: b }: Point): Point {
+  return { x: Math.exp(a) * Math.cos(b), y: Math.exp(a) * Math.sin(b) }
+}
+
+function erfPos(z: Point): Point {
+  const z_1i = mulPt({ x: 0, y: 1 }, z)
+  const res = mulPt(
+    expPt({
+      x: -sqrPt(z).x,
+      y: -sqrPt(z).y,
+    }),
+    faddeevaPt(z_1i),
+  )
+  return {
+    x: 1 - res.x,
+    y: -res.y,
+  }
+}
+
+function erfPt(z: Point): Point {
+  if (z.x < 0) {
+    const res = erfPos({ x: -z.x, y: -z.y })
+    return { x: -res.x, y: -res.y }
+  }
+
+  return erfPos(z)
+}
+
 const FN_ERF = new FnDist(
   "erf",
   "error function; related to area of a normal distribution",
@@ -180,16 +270,28 @@ const FN_ERF = new FnDist(
       }),
     ),
   },
-).add(
-  ["r32"],
-  "r32",
-  (a) => approx(erf(num(a.value))),
-  (ctx, a) => {
-    ctx.glslText(erfGl)
-    return `_nya_helper_erf(${a.expr})`
-  },
-  "erf(1)≈0.842700",
 )
+  .add(
+    ["r32"],
+    "r32",
+    (a) => approx(erf(num(a.value))),
+    (ctx, a) => {
+      ctx.glslText(erfGl)
+      return `_nya_helper_erf(${a.expr})`
+    },
+    "erf(1)≈0.842700",
+  )
+  .add(
+    ["c32"],
+    "c32",
+    (a) => rept(erfPt(unpt(a.value))),
+    (ctx, a) => {
+      declareMulC32(ctx)
+      ctx.glslText(erfC32Gl)
+      return `_nya_helper_erf(${a.expr})`
+    },
+    ["erf(2+3i)≈-20.75+8.70i"],
+  )
 
 const FN_ERFINV = new FnDist("erfinv", "inverse error function").add(
   ["r32"],

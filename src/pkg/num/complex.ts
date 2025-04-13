@@ -8,6 +8,7 @@ import type { TyWrite } from "@/eval/ty/display"
 import { highRes, type TyExtras } from "@/eval/ty/info"
 import { abs, add, div, mul, neg, sub } from "@/eval/ty/ops"
 import { h } from "@/jsx"
+import type { Point } from "@/sheet/point"
 import { Order } from "@/sheet/ui/cv/consts"
 import type { Package } from ".."
 import { FN_VALID } from "../bool"
@@ -897,6 +898,13 @@ export function divPt({ x: a, y: b }: SPoint, { x: c, y: d }: SPoint): SPoint {
   const y = sub(mul(b, c), mul(a, d))
   const denom = add(mul(c, c), mul(d, d))
   return pt(div(x, denom), div(y, denom))
+}
+
+export function divNonSPt({ x: a, y: b }: Point, { x: c, y: d }: Point): Point {
+  const x = a * c + b * d
+  const y = b * c - a * d
+  const denom = c * c + d * d
+  return { x: x / denom, y: y / denom }
 }
 
 export function recipPt({ x: c, y: d }: SPoint): SPoint {
