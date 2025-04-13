@@ -1,1 +1,1 @@
-erfp
+\frac{\sqrt{\pi }}{2}\left(z+\frac{\pi }{12}z^{3}+\frac{7\pi ^{2}}{480}z^{5}+\frac{127\pi ^{3}}{40320}z^{7}+\frac{4369\pi ^{4}}{5806080}z^{9}+\frac{34807\pi ^{5}}{182476800}z^{11}\right)\operatorname{with}z=p\left\{\left|p\right|<1.0\right\}
