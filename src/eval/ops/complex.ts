@@ -95,16 +95,17 @@ export function floorP(p: Point): Point {
   }
 }
 
-export function ceilP(z: Point): Point {
-  const b = cx(Math.ceil(z.x), Math.ceil(z.y))
-  const x = z.x - Math.floor(z.x)
-  const y = z.y - Math.floor(z.y)
+export function ceilP(p: Point): Point {
+  p = cx(p.x + 0.5, p.y + 0.5)
+  const b = cx(Math.floor(p.x), Math.floor(p.y))
+  const x = p.x - Math.floor(p.x)
+  const y = p.y - Math.floor(p.y)
 
-  if (1.0 > x + y) {
-    if (x < y) {
-      return cx(b.x - 1, b.y)
+  if (1.0 < x + y) {
+    if (x >= y) {
+      return cx(b.x + 1, b.y)
     } else {
-      return cx(b.x, b.y - 1)
+      return cx(b.x, b.y + 1)
     }
   } else {
     return b
