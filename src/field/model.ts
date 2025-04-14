@@ -1,4 +1,5 @@
-import { tokensToAst, type Node } from "@/eval/ast/token"
+import { tokensToAst } from "@/eval/ast/complete"
+import type { Node } from "@/eval/ast/token"
 import { h } from "@/jsx"
 import type { Scope } from "@/sheet/deps"
 import type { CmdFrac } from "./cmd/math/frac"

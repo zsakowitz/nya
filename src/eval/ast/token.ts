@@ -2,15 +2,9 @@ import type { WordKind } from "@/field/cmd/leaf/var"
 import type { BigCmd } from "@/field/cmd/math/big"
 import type { ParenLhs, ParenRhs } from "@/field/cmd/math/brack"
 import type { Span } from "@/field/model"
-import { tryParseFnParam, type FnParam } from "../lib/binding"
-import { isSubscript } from "../lib/text"
-import { VARS } from "../ops/vars"
+import { type FnParam } from "../lib/binding"
 import type { Sym } from "../sym"
 import type { GlslValue, JsValue } from "../ty"
-import { commalist } from "./collect"
-import { pass1_suffixes } from "./pass1.suffixes"
-import { pass2_implicits } from "./pass2.implicits"
-import { pass3_ordering } from "./pass3.ordering"
 
 /** Tokens which can be parsed both as a binary infix and as a prefix. */
 interface PuncListPm {
@@ -40,16 +34,16 @@ interface PuncListCmp {
 
 /** Tokens which can be binary operators. */
 export interface PuncListInfix extends PuncListPm, PuncListCmp {
-  for: 0
-  with: 0
-  withseq: 0
-  base: 0
-  deriv: 0
+  "for": 0
+  "with": 0
+  "withseq": 0
+  "base": 0
+  "deriv": 0
   "..": 0
   "...": 0
   "\\cdot ": 0
   "÷": 0
-  mod: 0
+  "mod": 0
   "\\to ": 0
   "\\Rightarrow ": 0
   ".": 0
@@ -296,63 +290,6 @@ export type Node = { [K in NodeName]: Nodes[K] & { type: K } }[NodeName]
 export type Suffix = {
   [K in SuffixName]: Suffixes[K] & { type: K }
 }[SuffixName]
-
-/** Parses a list of tokens into a complete AST. */
-export function tokensToAst(tokens: Node[], maybeBinding: boolean): Node {
-  binding: if (
-    maybeBinding &&
-    tokens[0]?.type == "var" &&
-    !tokens[0].sup &&
-    tokens[0].kind == "var" &&
-    (tokens[0].sub ? isSubscript(tokens[0].sub) : !(tokens[0].value in VARS)) &&
-    ((tokens[1]?.type == "punc" &&
-      tokens[1].kind == "cmp" &&
-      tokens[1].value == "cmp-eq") ||
-      (tokens[1]?.type == "group" &&
-        tokens[1].lhs == "(" &&
-        tokens[1].rhs == ")" &&
-        tokens[2]?.type == "punc" &&
-        tokens[2].kind == "cmp" &&
-        tokens[2].value == "cmp-eq"))
-  ) {
-    if (tokens[1].type == "group") {
-      const args = commalist(tokens[1].value).map((node) =>
-        tryParseFnParam(node),
-      )
-      if (!args.every((x) => x != null)) {
-        break binding
-      }
-
-      const used = new Set<string>()
-      for (const [id, name] of args) {
-        if (used.has(id)) {
-          throw new Error(
-            `Cannot use '${name}' for two parameters in the same function.`,
-          )
-        }
-        used.add(id)
-      }
-
-      return {
-        type: "binding",
-        name: tokens[0] as PlainVar,
-        params: args,
-        value: tokensToAst(tokens.slice(3), false),
-      }
-    }
-
-    return {
-      type: "binding",
-      name: tokens[0] as PlainVar,
-      params: null,
-      value: tokensToAst(tokens.slice(2), false),
-    }
-  }
-
-  tokens = pass1_suffixes(tokens)
-  tokens = pass2_implicits(tokens)
-  return pass3_ordering(tokens)
-}
 
 /**
  * Returns whether the passed token is a value or not (e.g. can directly be

@@ -24,8 +24,7 @@ import {
 } from "../../model"
 import type { Options, WordMap } from "../../options"
 import { CmdSupSub } from "../math/supsub"
-import { CmdDot } from "./dot"
-import { CmdNum } from "./num"
+import { CmdDot, CmdNum } from "./num"
 import { CmdToken, TokenCtx } from "./token"
 import { CmdWord } from "./word"
 

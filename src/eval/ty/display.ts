@@ -1,7 +1,6 @@
 import { OpApprox, OpEq } from "@/field/cmd/leaf/cmp"
 import { CmdComma } from "@/field/cmd/leaf/comma"
-import { CmdDot } from "@/field/cmd/leaf/dot"
-import { CmdNum } from "@/field/cmd/leaf/num"
+import { CmdDot, CmdNum } from "@/field/cmd/leaf/num"
 import { OpMinus, OpPlus, OpTimes } from "@/field/cmd/leaf/op"
 import { SymInfinity } from "@/field/cmd/leaf/sym"
 import { CmdWord } from "@/field/cmd/leaf/word"

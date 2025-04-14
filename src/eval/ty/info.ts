@@ -1,11 +1,9 @@
-import { CmdComma } from "@/field/cmd/leaf/comma"
 import { CmdWord } from "@/field/cmd/leaf/word"
-import { CmdBrack } from "@/field/cmd/math/brack"
-import { Block, L, R } from "@/field/model"
+import { L } from "@/field/model"
 import { h, path, svgx } from "@/jsx"
 import type { Point } from "@/sheet/point"
 import type { Cv } from "@/sheet/ui/cv"
-import type { SPoint, TyName, Tys } from "."
+import type { TyName, Tys } from "."
 import type { GlslContext } from "../lib/fn"
 import type { TyWrite } from "./display"
 
@@ -85,20 +83,6 @@ export interface TyCoerce<T, U> {
 }
 
 type TyInfoMap = { [K in keyof Tys]: TyInfo<Tys[K]> }
-
-export const WRITE_POINT: TyWrite<SPoint> = {
-  isApprox(value) {
-    return value.x.type == "approx" || value.y.type == "approx"
-  },
-  display(value, props) {
-    const block = new Block(null)
-    new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
-    const inner = props.at(block.cursor(R))
-    inner.num(value.x)
-    new CmdComma().insertAt(inner.cursor, L)
-    inner.num(value.y)
-  },
-}
 
 export function gliderOnLine(
   cv: Cv,

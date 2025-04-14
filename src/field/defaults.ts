@@ -3,9 +3,8 @@ import { OpApprox, OpEq, OpGt, OpLt, OpTilde } from "./cmd/leaf/cmp"
 import { CmdColon } from "./cmd/leaf/colon"
 import { CmdColor } from "./cmd/leaf/color"
 import { CmdComma } from "./cmd/leaf/comma"
-import { CmdDot } from "./cmd/leaf/dot"
 import { CmdExclamation } from "./cmd/leaf/exclamation"
-import { CmdNum } from "./cmd/leaf/num"
+import { CmdDot, CmdNum } from "./cmd/leaf/num"
 import {
   OpAnd,
   OpCdot,
