@@ -23,17 +23,8 @@ import type { GlslContext } from "@/eval/lib/fn"
 import { FnDist } from "@/eval/ops/dist"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "@/eval/ops/vars"
 import { each, type JsValue, type SPoint } from "@/eval/ty"
-import {
-  approx,
-  frac,
-  gl,
-  gl64,
-  num,
-  pt,
-  real,
-  SNANPT,
-  unpt,
-} from "@/eval/ty/create"
+import { approx, frac, gl, num, pt, real, SNANPT, unpt } from "@/eval/ty/create"
+import { gl64 } from "@/eval/ty/create-r64"
 import type { TyWrite } from "@/eval/ty/display"
 import { highRes, TY_INFO, type TyGlide } from "@/eval/ty/info"
 import { abs, add, div, mul, neg, sub } from "@/eval/ty/ops"

@@ -1,6 +1,28 @@
+import type { SReal } from "@/eval/ty"
 import { approx, frac, real } from "@/eval/ty/create"
 import type { UnitKind } from "./kind"
-import { unit, type Unit } from "./system"
+import type { BaseUnit, BaseUnitList, Unit } from "./system"
+
+function base(
+  category: UnitKind | BaseUnit[],
+  scale: SReal,
+  offset: SReal,
+): BaseUnitList {
+  return {
+    dst: typeof category == "string" ? [{ exp: 1, unit: category }] : category,
+    scale,
+    offset,
+  }
+}
+
+export function unit(
+  label: string,
+  category: UnitKind | BaseUnit[],
+  scale: SReal = frac(1, 1),
+  offset: SReal = frac(0, 1),
+): Unit {
+  return { label, base: base(category, scale, offset) }
+}
 
 export const nan = unit("undefined", [], approx(NaN), approx(NaN))
 
