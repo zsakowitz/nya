@@ -44,17 +44,31 @@ function parsePath(uri: string) {
   }
 }
 
-function getPath() {
-  const [, pathRaw] = location.href.split("?")
-  return pathRaw ? parsePath(pathRaw) : null
+function getPath(): ReturnType<typeof parsePath> | null {
+  let ret: ReturnType<typeof parsePath> | null = null
+  new URLSearchParams(location.search).forEach((_, k) => {
+    if (ret == null && k.startsWith("/docs")) {
+      ret = parsePath(k)
+    }
+  })
+  return ret
 }
 
 function setPath(tab: string, sub: string | null) {
-  history.replaceState(
-    {},
-    "",
-    location.origin + "/?/docs/" + encode(tab) + (sub ? "/" + encode(sub) : ""),
-  )
+  const params = new URLSearchParams(location.search)
+  params.forEach((_, k) => {
+    if (k.startsWith("/docs")) {
+      params.delete(k)
+    }
+  })
+
+  const url =
+    "?/docs/" +
+    encode(tab) +
+    (sub ? "/" + encode(sub) : "") +
+    (params.size ? "&" + params : "")
+
+  history.replaceState({}, "", location.origin + url)
 }
 
 export function createDocs2(sheet: Sheet) {
@@ -274,7 +288,7 @@ function secFunctions(sheet: Sheet, list: PackageList, named: boolean) {
   }
 
   return h(
-    "flex flex-col -mx-4 flex-1",
+    "flex flex-col -mx-4 flex-1 h-min",
     hx(
       "table",
       "w-full flex-1 h-min",
