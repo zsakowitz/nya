@@ -1,4 +1,5 @@
-import { fnargs } from "@/eval/ast/collect"
+import type { Package } from "#/types"
+import { commalist } from "@/eval/ast/collect"
 import { js } from "@/eval/js"
 import { frac } from "@/eval/ty/create"
 import { Display } from "@/eval/ty/display"
@@ -6,7 +7,6 @@ import { OpEq } from "@/field/cmd/leaf/cmp"
 import { CmdVar } from "@/field/cmd/leaf/var"
 import { Block, L, R } from "@/field/model"
 import { h, hx } from "@/jsx"
-import type { Package } from "#/types"
 import { defineExt, Store } from "@/sheet/ext"
 
 const store = new Store(() => {
@@ -43,7 +43,7 @@ const EXT_SELECT = defineExt({
     )
       return
 
-    const args = fnargs(node.args)
+    const args = commalist(node.args)
     if (args.length != 2) return
 
     const items = js(args[0]!, expr.sheet.scope.propsJs)
