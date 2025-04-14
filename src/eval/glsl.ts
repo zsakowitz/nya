@@ -7,12 +7,12 @@ import { FNS } from "./ops"
 import type { GlslValue, JsValue, Val } from "./ty"
 import { TY_INFO, type TyInfo } from "./ty/info"
 
-// TODO: DEBT: remove alias; sym and js operate in identical environments and have access to each other
+// DEBT: remove alias; sym and js operate in identical environments and have access to each other
 export type PropsSym = PropsJs
 
 export interface PropsGlsl extends PropsSym {
   ctx: GlslContext
-  // TODO: DEBT: should be bindingsGlsl
+  // DEBT: should be bindingsGlsl
   /** GLSL bindings must contain variable names and be properly typed. */
   bindings: Bindings<GlslValue | BindingGlslValue | BindingFn>
 }
