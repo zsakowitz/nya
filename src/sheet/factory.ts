@@ -30,7 +30,8 @@ import { tidyCoercions, TY_INFO, type TyCoerce } from "@/eval/ty/info"
 import type { ParenLhs, ParenRhs } from "@/field/cmd/math/brack"
 import { Inits, WordMap, type Options } from "@/field/options"
 import { Exts } from "./ext"
-import { FACTORY_EXPR, type AnyItemFactory } from "./item"
+import { FACTORY_EXPR } from "./factory-expr"
+import type { AnyItemFactory } from "./item"
 import { Sheet } from "./ui/sheet"
 
 export class SheetFactory {
