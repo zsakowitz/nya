@@ -480,6 +480,9 @@ v_coords = vec4(
 ${compiled.map((x) => x[0].block).join("")}color = ${compiled.map((x) => x[1]).reduce((a, b) => `_nya_helper_compose(${a},${b})`)};
       }
       `
+    if (globalThis.location?.search.includes("logfrag")) {
+      console.log(frag)
+    }
     try {
       this.program = this.regl({
         frag,

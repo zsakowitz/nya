@@ -1,4 +1,6 @@
+import type { SPoint } from "@/eval/ty"
 import type { Point } from "@/sheet/point"
+import { rept, unpt } from "../ty/create"
 
 // TODO: make everything use cx instead of {x,y}
 export function cx(x: number, y = 1): Point {
@@ -11,6 +13,10 @@ export function addP(a: Point, b: Point): Point {
 
 export function subP(a: Point, b: Point): Point {
   return { x: a.x - b.x, y: a.y - b.y }
+}
+
+export function negP(a: Point): Point {
+  return cx(-a.x, -a.y)
 }
 
 export function mulP({ x: x1, y: y1 }: Point, { x: x2, y: y2 }: Point): Point {
@@ -71,4 +77,40 @@ export function mulI({ x: a, y: b }: Point): Point {
 
 export function negI({ x: a, y: b }: Point): Point {
   return { x: b, y: -a }
+}
+
+export function floorP(p: Point): Point {
+  const b = cx(Math.floor(p.x), Math.floor(p.y))
+  const x = p.x - Math.floor(p.x)
+  const y = p.y - Math.floor(p.y)
+
+  if (1.0 <= x + y) {
+    if (x >= y) {
+      return cx(b.x + 1, b.y)
+    } else {
+      return cx(b.x, b.y + 1)
+    }
+  } else {
+    return b
+  }
+}
+
+export function ceilP(z: Point): Point {
+  const b = cx(Math.ceil(z.x), Math.ceil(z.y))
+  const x = z.x - Math.floor(z.x)
+  const y = z.y - Math.floor(z.y)
+
+  if (1.0 > x + y) {
+    if (x < y) {
+      return cx(b.x - 1, b.y)
+    } else {
+      return cx(b.x, b.y - 1)
+    }
+  } else {
+    return b
+  }
+}
+
+export function onP(f: (x: Point) => Point) {
+  return (x: { value: SPoint }) => rept(f(unpt(x.value)))
 }

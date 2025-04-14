@@ -5,6 +5,7 @@
 - `?cvsize=<n>`
 - `?onlypkg=<package id>`
 - `?/docs(/tab(/page)?)?`
+- `?logfrag`
 
 ## other things
 

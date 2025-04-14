@@ -1,5 +1,7 @@
 import type { Package } from "#/types"
+import { ceilP, floorP, onP } from "@/eval/ops/complex"
 import { frac, num, pt, rept } from "@/eval/ty/create"
+import floorGl from "@/glsl/floor.glsl"
 import { FN_CEIL, FN_FLOOR, FN_FRACT, FN_ROUND } from "./number-theory"
 
 export default {
@@ -8,6 +10,28 @@ export default {
   category: "number theory",
   deps: ["num/real", "num/complex", "number-theory"],
   load() {
+    FN_FLOOR.add(
+      ["c32"],
+      "c32",
+      onP(floorP),
+      (ctx, a) => {
+        ctx.glslText(floorGl)
+        return `cx_floor(${a.expr})`
+      },
+      "floor(-0.47+3.92i)=-1+4i",
+    )
+
+    FN_CEIL.add(
+      ["c32"],
+      "c32",
+      onP(ceilP),
+      (ctx, a) => {
+        ctx.glslText(floorGl)
+        return `cx_ceil(${a.expr})`
+      },
+      "ceil(-0.47+3.92i)=4i",
+    )
+
     FN_ROUND.add(
       ["c32"],
       "c32",

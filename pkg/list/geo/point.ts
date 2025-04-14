@@ -1,4 +1,23 @@
 import type { Package } from "#/types"
+import { FN_VALID } from "$/bool"
+import {
+  abs64,
+  addR64,
+  declareMulR64,
+  declareOdotC64,
+  OP_ABS,
+  OP_ADD,
+  OP_CDOT,
+  OP_DIV,
+  OP_NEG,
+  OP_ODOT,
+  OP_POINT,
+  OP_POS,
+  OP_SUB,
+  subR64,
+} from "$/core/ops"
+import { EXT_EVAL } from "$/eval"
+import { FN_UNSIGN } from "$/num/real"
 import { dragPoint, type DragResultPoint } from "@/eval/ast/tx"
 import type { GlslContext } from "@/eval/lib/fn"
 import { FnDist } from "@/eval/ops/dist"
@@ -29,25 +48,6 @@ import { FN_GLIDER, FN_INTERSECTION, ref, val } from "@/sheet/ui/cv/item"
 import type { Expr } from "@/sheet/ui/expr"
 import { Sheet } from "@/sheet/ui/sheet"
 import { virtualStepExp, write, Writer } from "@/sheet/write"
-import { FN_VALID } from "$/bool"
-import {
-  abs64,
-  addR64,
-  declareMulR64,
-  declareOdotC64,
-  OP_ABS,
-  OP_ADD,
-  OP_CDOT,
-  OP_DIV,
-  OP_NEG,
-  OP_ODOT,
-  OP_POINT,
-  OP_POS,
-  OP_SUB,
-  subR64,
-} from "$/core/ops"
-import { EXT_EVAL } from "$/eval"
-import { FN_UNSIGN } from "$/num/real"
 
 declare module "@/eval/ty" {
   interface Tys {
