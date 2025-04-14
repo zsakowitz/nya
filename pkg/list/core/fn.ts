@@ -450,10 +450,23 @@ export default {
               }
 
               const fn = props.bindingsSym.get(id(node.lhs.value))
-              if (!fn || !(fn instanceof BindingFn)) {
+              if (!fn) {
                 // only functions are inlined; everything else is treated as a variable
                 lhs = sym(node.lhs.value, props)
                 break fn
+              }
+
+              if (!(fn instanceof BindingFn)) {
+                const rhs = sym(
+                  { type: "suffixed", base: rhsWrapped, suffixes: node.rest },
+                  props,
+                )
+                node.rest.length = 0
+                return {
+                  type: "call",
+                  fn: OP_JUXTAPOSE,
+                  args: [node.base, rhs],
+                }
               }
 
               return fn.sym(

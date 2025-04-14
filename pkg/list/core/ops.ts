@@ -1018,7 +1018,15 @@ export default {
             deps.track(node)
           },
           sym(node, props) {
-            const raw: Sym = {
+            const val = props.bindingsSym.get(id(node))
+
+            if (val instanceof BindingFn) {
+              throw new Error(
+                `'${tryName(node)}' is a function; try using parentheses.`,
+              )
+            }
+
+            const raw: Sym = val ?? {
               type: "var",
               id: id(node),
               source: {
