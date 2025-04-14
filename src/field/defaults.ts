@@ -1,5 +1,13 @@
 import "../../index.css"
-import { OpApprox, OpEq, OpGt, OpLt, OpTilde } from "./cmd/leaf/cmp"
+import {
+  OpApprox,
+  OpDoubleRightArrow,
+  OpEq,
+  OpGt,
+  OpLt,
+  OpRightArrow,
+  OpTilde,
+} from "./cmd/leaf/cmp"
 import { CmdColon } from "./cmd/leaf/colon"
 import { CmdColor } from "./cmd/leaf/color"
 import { CmdComma } from "./cmd/leaf/comma"
@@ -9,7 +17,6 @@ import {
   OpAnd,
   OpCdot,
   OpDiv,
-  OpDoubleRightArrow,
   OpMinus,
   OpMinusPlus,
   OpNeg,
@@ -18,7 +25,6 @@ import {
   OpOtimes,
   OpPlus,
   OpPlusMinus,
-  OpRightArrow,
   OpTimes,
   OpUpArrow,
 } from "./cmd/leaf/op"

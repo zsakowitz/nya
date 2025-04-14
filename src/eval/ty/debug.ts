@@ -9,6 +9,7 @@ export function listTy(tys: Ty[], conj?: string) {
   )
 }
 
+// TODO: an uniform distribution
 function listTyName(tys: TyName[], conj?: string) {
   return list(
     tys.map((x) => {

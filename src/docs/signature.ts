@@ -1,7 +1,7 @@
 import type { TyName } from "@/eval/ty"
 import { any, TY_INFO } from "@/eval/ty/info"
+import { OpRightArrow } from "@/field/cmd/leaf/cmp"
 import { CmdComma } from "@/field/cmd/leaf/comma"
-import { OpRightArrow } from "@/field/cmd/leaf/op"
 import { CmdBrack } from "@/field/cmd/math/brack"
 import { h } from "@/jsx"
 
