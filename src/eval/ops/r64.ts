@@ -26,9 +26,6 @@ vec2 _helper_add_r64(vec2 dsa, vec2 dsb) {
   );
   dsc.x = r64_add(t1, t2);
   dsc.y = r64_sub(t2, r64_sub(dsc.x, t1));
-  if (abs(dsc.y) > abs(dsc.x)) {
-    return dsc.yx;
-  }
   return dsc;
 }
 `
@@ -60,10 +57,6 @@ vec2 _helper_mul_r64(vec2 dsa, vec2 dsb) {
 
   dsc.x = r64_add(t1, t2);
   dsc.y = r64_sub(t2, r64_sub(dsc.x, t1));
-  if (abs(dsc.y) > abs(dsc.x)) {
-    return dsc.yx;
-  }
-
   return dsc;
 }
 `
