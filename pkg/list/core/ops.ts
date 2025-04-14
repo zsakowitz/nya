@@ -19,6 +19,7 @@ import { VARS } from "@/eval/ops/vars"
 import {
   binary,
   binaryFn,
+  call,
   insert,
   insertStrict,
   insertWrapped,
@@ -506,6 +507,10 @@ export const OP_RAISE: FnDist = new FnDist(
     },
   },
 )
+
+export function symSquare(x: Sym) {
+  return call(OP_RAISE, x, SYM_2)
+}
 
 export const OP_POINT = new FnDist(
   "construct point",

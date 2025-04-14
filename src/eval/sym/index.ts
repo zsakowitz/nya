@@ -260,3 +260,11 @@ export function asBool(sym: Sym) {
     : null) ?? null
   )
 }
+
+export function call(fn: Fn, ...args: Sym[]): Sym {
+  return {
+    type: "call",
+    fn,
+    args,
+  }
+}

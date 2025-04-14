@@ -1,53 +1,81 @@
+import { chain, OP_JUXTAPOSE, OP_NEG, symSquare } from "#/list/core/ops"
 import type { Package } from "#/types"
 import { FnDist } from "@/eval/ops/dist"
+import { call, unary } from "@/eval/sym"
 import { approx, num } from "@/eval/ty/create"
 
-export const FN_SINH = new FnDist(
+export const FN_SINH: FnDist = new FnDist(
   "sinh",
   "takes the hyperbolic sinhe of an angle",
+  { deriv: unary((p, a) => chain(a, p, call(FN_COSH, a))) },
 )
-export const FN_COSH = new FnDist(
+export const FN_COSH: FnDist = new FnDist(
   "cosh",
   "takes the hyperbolic coshine of an angle",
+  { deriv: unary((p, a) => chain(a, p, call(FN_SINH, a))) },
 )
-export const FN_TANH = new FnDist(
+export const FN_TANH: FnDist = new FnDist(
   "tanh",
   "takes the hyperbolic tanhgent of an angle",
+  { deriv: unary((p, a) => chain(a, p, symSquare(call(FN_SECH, a)))) },
 )
-export const FN_CSCH = new FnDist(
+export const FN_CSCH: FnDist = new FnDist(
   "csch",
   "takes the hyperbolic cosecant of an angle",
+  {
+    deriv: unary((p, a) =>
+      chain(
+        a,
+        p,
+        call(OP_NEG, call(OP_JUXTAPOSE, call(FN_COTH, a), call(FN_CSCH, a))),
+      ),
+    ),
+  },
 )
-export const FN_SECH = new FnDist(
+export const FN_SECH: FnDist = new FnDist(
   "sech",
   "takes the hyperbolic secant of an angle",
+  {
+    deriv: unary((p, a) =>
+      chain(
+        a,
+        p,
+        call(OP_NEG, call(OP_JUXTAPOSE, call(FN_TANH, a), call(FN_SECH, a))),
+      ),
+    ),
+  },
 )
-export const FN_COTH = new FnDist(
+export const FN_COTH: FnDist = new FnDist(
   "coth",
   "takes the hyperbolic cotangent of an angle",
+  {
+    deriv: unary((p, a) =>
+      chain(a, p, call(OP_NEG, symSquare(call(FN_CSCH, a)))),
+    ),
+  },
 )
 
-export const FN_ARSINH = new FnDist(
+export const FN_ARSINH: FnDist = new FnDist(
   "arsinh",
   "takes the inverse hyperbolic sine of a value",
 )
-export const FN_ARCOSH = new FnDist(
+export const FN_ARCOSH: FnDist = new FnDist(
   "arcosh",
   "takes the inverse hyperbolic cosine of a value",
 )
-export const FN_ARTANH = new FnDist(
+export const FN_ARTANH: FnDist = new FnDist(
   "artanh",
   "takes the inverse hyperbolic tangent of a value",
 )
-export const FN_ARCSCH = new FnDist(
+export const FN_ARCSCH: FnDist = new FnDist(
   "arcsch",
   "takes the inverse hyperbolic cosecant of a value",
 )
-export const FN_ARSECH = new FnDist(
+export const FN_ARSECH: FnDist = new FnDist(
   "arsech",
   "takes the inverse hyperbolic secant of a value",
 )
-export const FN_ARCOTH = new FnDist(
+export const FN_ARCOTH: FnDist = new FnDist(
   "arcoth",
   "takes the inverse hyperbolic cotangent of a value",
 )
