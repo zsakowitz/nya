@@ -6,7 +6,7 @@ import type { CmdFrac } from "./cmd/math/frac"
 import type { FieldInert } from "./field-inert"
 import type { LatexParser } from "./latex"
 import type { Options } from "./options"
-import { D, L, R, U, type Dir, type VDir } from "./sides"
+import { D, L, R, U, type Dir, type VDir } from "./dir"
 
 export function getBoundingClientRect(el: Element) {
   return el.getBoundingClientRect()

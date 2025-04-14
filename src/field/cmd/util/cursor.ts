@@ -1,4 +1,4 @@
-import { D, L, R, U, type Dir, type VDir } from "@/field/sides"
+import { D, L, R, U, type Dir, type VDir } from "@/field/dir"
 import { Cursor, Selection, type Init } from "../../model"
 import { isMac } from "../../shortcut"
 

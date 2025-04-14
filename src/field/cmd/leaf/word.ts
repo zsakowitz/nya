@@ -1,6 +1,6 @@
 import type { Node } from "@/eval/ast/token"
 import type { LatexParser } from "@/field/latex"
-import { L, R } from "@/field/sides"
+import { L, R } from "@/field/dir"
 import { h } from "@/jsx"
 import { Leaf } from "."
 import { Span, type Command } from "../../model"

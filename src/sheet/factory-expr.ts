@@ -1,6 +1,6 @@
 import { LatexParser } from "@/field/latex"
 import { Block } from "@/field/model"
-import { L, R, U } from "@/field/sides"
+import { L, R, U } from "@/field/dir"
 import { faSquareRootVariable } from "@fortawesome/free-solid-svg-icons"
 import type { ItemFactory } from "./item"
 import type { ItemData } from "./ui/cv/move"

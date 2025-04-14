@@ -4,7 +4,7 @@ import { CmdUnknown } from "./cmd/leaf/unknown"
 import type { FieldInert } from "./field-inert"
 import { Block, type Command } from "./model"
 import { WordMap, type Options } from "./options"
-import { L, R } from "./sides"
+import { L, R } from "./dir"
 
 export interface LatexInit {
   fromLatex(cmd: string, parser: LatexParser): Command | Block

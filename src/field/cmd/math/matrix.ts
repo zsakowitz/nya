@@ -1,5 +1,5 @@
 import type { Node } from "@/eval/ast/token"
-import { D, L, R, U, type Dir, type VDir } from "@/field/sides"
+import { D, L, R, U, type Dir, type VDir } from "@/field/dir"
 import { h } from "@/jsx"
 import type { LatexParser } from "../../latex"
 import { Block, Command, Cursor, getBoundingClientRect } from "../../model"

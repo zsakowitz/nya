@@ -1,4 +1,4 @@
-import { L, R, type Dir, type VDir } from "@/field/sides"
+import { L, R, type Dir, type VDir } from "@/field/dir"
 import { Command, type Block, type Cursor } from "../../../model"
 
 export abstract class CmuLeaf extends Command<[]> {

@@ -1,5 +1,5 @@
 import type { Node } from "@/eval/ast/token"
-import { D, L, R, U, type Dir, type VDir } from "@/field/sides"
+import { D, L, R, U, type Dir, type VDir } from "@/field/dir"
 import { h, U_ZERO_WIDTH_SPACE } from "@/jsx"
 import type { LatexParser } from "../../latex"
 import {

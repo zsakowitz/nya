@@ -1,4 +1,4 @@
-import { U, type Dir, type VDir } from "@/field/sides"
+import { U, type Dir, type VDir } from "@/field/dir"
 import type { Expr } from "."
 import { FieldComputed } from "../../deps"
 

@@ -8,7 +8,7 @@ import {
 } from "@/eval/ast/token"
 import { TXR_MAGICVAR } from "@/eval/ast/tx"
 import { subscript } from "@/eval/lib/text"
-import { L, R, type Dir } from "@/field/sides"
+import { L, R, type Dir } from "@/field/dir"
 import { h } from "@/jsx"
 import type { Scope } from "@/sheet/deps"
 import { Leaf } from "."

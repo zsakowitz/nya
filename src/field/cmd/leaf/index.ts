@@ -1,4 +1,4 @@
-import { L, R, type Dir } from "@/field/sides"
+import { L, R, type Dir } from "@/field/dir"
 import { Command, Cursor, type Block } from "../../model"
 
 export function focusEdge(command: Command, x: number) {

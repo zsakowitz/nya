@@ -3,7 +3,7 @@ import { twMerge } from "tailwind-merge"
 import { LatexParser } from "./latex"
 import { Block, performInit, Selection, type Init } from "./model"
 import type { Options } from "./options"
-import { L, R, type Dir, type VDir } from "./sides"
+import { L, R, type Dir, type VDir } from "./dir"
 
 /** Props passed to `Display.init()` and `Display.type()`. */
 interface FieldInitProps {

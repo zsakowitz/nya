@@ -1,5 +1,5 @@
 import type { Node } from "@/eval/ast/token"
-import { L, R, type Dir } from "@/field/sides"
+import { L, R, type Dir } from "@/field/dir"
 import { h } from "@/jsx"
 import { Leaf } from "."
 import type { LatexParser } from "../../latex"

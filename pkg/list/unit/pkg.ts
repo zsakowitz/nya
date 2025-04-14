@@ -20,7 +20,7 @@ import { CmdFrac } from "@/field/cmd/math/frac"
 import { CmdSupSub } from "@/field/cmd/math/supsub"
 import { toText } from "@/field/latex"
 import { Block } from "@/field/model"
-import { L, R } from "@/field/sides"
+import { L, R } from "@/field/dir"
 import { b, h, px, sx } from "@/jsx"
 import {
   OP_ADD,

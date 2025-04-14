@@ -1,5 +1,5 @@
 import type { GlslResult } from "@/eval/lib/fn"
-import { D, L, U, type Dir, type VDir } from "@/field/sides"
+import { D, L, U, type Dir, type VDir } from "@/field/dir"
 import { h, t } from "@/jsx"
 import type { ItemFactory } from "./item"
 import type { Point } from "./point"

@@ -61,7 +61,7 @@ import { CmdPrompt } from "./cmd/util/prompt"
 import { LatexEnvs, type LatexInit } from "./latex"
 import type { Init } from "./model"
 import { Inits, WordMap, type Options } from "./options"
-import { D, L, R, U } from "./sides"
+import { D, L, R, U } from "./dir"
 
 const inits = new Inits()
   .setDefault(

@@ -1,5 +1,5 @@
 import type { Node, PuncCmp } from "@/eval/ast/token"
-import { L, R, type Dir } from "@/field/sides"
+import { L, R, type Dir } from "@/field/dir"
 import type { LatexParser } from "../../latex"
 import type { Command, Cursor, InitProps } from "../../model"
 import { OpMinus, opp } from "./op"

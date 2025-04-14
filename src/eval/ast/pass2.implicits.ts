@@ -1,4 +1,4 @@
-import { L } from "@/field/sides"
+import { L } from "@/field/dir"
 import { FNLIKE_MAGICVAR } from "./fnlike"
 import {
   getPrecedence,

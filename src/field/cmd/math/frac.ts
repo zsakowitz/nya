@@ -1,6 +1,6 @@
 import type { Node, PlainVar } from "@/eval/ast/token"
 import { tryId } from "@/eval/lib/binding"
-import { D, L, R, U, type Dir, type VDir } from "@/field/sides"
+import { D, L, R, U, type Dir, type VDir } from "@/field/dir"
 import { U_ZERO_WIDTH_SPACE, h } from "@/jsx"
 import type { LatexParser } from "../../latex"
 import { Block, Command, type Cursor, type Selection } from "../../model"

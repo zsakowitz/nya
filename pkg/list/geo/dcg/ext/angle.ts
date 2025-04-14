@@ -10,7 +10,7 @@ import {
 } from "@/eval/ty"
 import { real, unpt } from "@/eval/ty/create"
 import { Display } from "@/eval/ty/display"
-import { R } from "@/field/sides"
+import { R } from "@/field/dir"
 import { Prop } from "@/sheet/ext"
 import { defineHideable } from "@/sheet/ext/hideable"
 import { normVector, type Point } from "@/sheet/point"
