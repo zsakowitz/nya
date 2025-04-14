@@ -1,15 +1,10 @@
 ## Search Params
 
-for main:
-
 - `?shaderpixelsize=<1..=16>`
 - `?nogrid`
 - `?cvsize=<n>`
 - `?onlypkg=<package id>`
-
-for docs:
-
-`/?/docs(/tab(/page)?)?` goes to docs
+- `?/docs(/tab(/page)?)?`
 
 ## other things
 
