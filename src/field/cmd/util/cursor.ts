@@ -1,14 +1,5 @@
-import {
-  Cursor,
-  D,
-  L,
-  R,
-  Selection,
-  U,
-  type Dir,
-  type Init,
-  type VDir,
-} from "../../model"
+import { D, L, R, U, type Dir, type VDir } from "@/field/dir"
+import { Cursor, Selection, type Init } from "../../model"
 import { isMac } from "../../shortcut"
 
 /**

@@ -1,5 +1,5 @@
 import type { Node } from "./ast/token"
-import { TXR_AST } from "./ast/tx"
+import { glsl } from "./ast/tx"
 import type { PropsJs } from "./js"
 import type { BindingFn, BindingGlslValue, Bindings } from "./lib/binding"
 import type { GlslContext } from "./lib/fn"
@@ -7,12 +7,12 @@ import { FNS } from "./ops"
 import type { GlslValue, JsValue, Val } from "./ty"
 import { TY_INFO, type TyInfo } from "./ty/info"
 
-// TODO: DEBT: remove alias; sym and js operate in identical environments and have access to each other
+// DEBT: remove alias; sym and js operate in identical environments and have access to each other
 export type PropsSym = PropsJs
 
 export interface PropsGlsl extends PropsSym {
   ctx: GlslContext
-  // TODO: DEBT: should be bindingsGlsl
+  // DEBT: should be bindingsGlsl
   /** GLSL bindings must contain variable names and be properly typed. */
   bindings: Bindings<GlslValue | BindingGlslValue | BindingFn>
 }
@@ -59,14 +59,6 @@ export function glslCall(
     props.ctx,
     args.map((arg) => glsl(arg, props)),
   )
-}
-
-export function glsl(node: Node, props: PropsGlsl): GlslValue {
-  const txr = TXR_AST[node.type]
-  if (!txr) {
-    throw new Error(`The '${node.type}' transformer is not defined.`)
-  }
-  return txr.glsl(node as never, props)
 }
 
 export function jsToGlsl(js: JsValue, ctx: GlslContext): GlslValue {

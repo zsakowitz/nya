@@ -1,8 +1,8 @@
 import type { Node, Var } from "@/eval/ast/token"
-import { sym, type PropsDrag } from "@/eval/ast/tx"
+import { glsl, js, sym, type PropsDrag } from "@/eval/ast/tx"
 import { Deps } from "@/eval/deps"
-import { glsl, type PropsGlsl, type PropsSym } from "@/eval/glsl"
-import { js, type PropsJs } from "@/eval/js"
+import type { PropsGlsl, PropsSym } from "@/eval/glsl"
+import type { PropsJs } from "@/eval/js"
 import {
   BindingFn,
   BindingGlslValue,

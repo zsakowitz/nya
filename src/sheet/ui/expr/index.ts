@@ -1,5 +1,5 @@
 import type { PlainVar } from "@/eval/ast/token"
-import { js } from "@/eval/js"
+import { js } from "@/eval/ast/tx"
 import { id } from "@/eval/lib/binding"
 import type { GlslResult } from "@/eval/lib/fn"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "@/eval/ops/vars"
@@ -9,12 +9,12 @@ import { OpEq } from "@/field/cmd/leaf/cmp"
 import { CmdToken } from "@/field/cmd/leaf/token"
 import { CmdVar } from "@/field/cmd/leaf/var"
 import { CmdBrack } from "@/field/cmd/math/brack"
-import { fa } from "@/field/fa"
-import { Block, L, R, Span } from "@/field/model"
-import { h } from "@/jsx"
+import { L, R } from "@/field/dir"
+import { Block, Span } from "@/field/model"
+import { fa, h } from "@/jsx"
 import { faWarning } from "@fortawesome/free-solid-svg-icons/faWarning"
-import type { Ext } from "../../ext"
-import { FACTORY_EXPR } from "../../item"
+import type { AnyExt } from "../../ext"
+import { FACTORY_EXPR } from "../../factory-expr"
 import type { ItemRef } from "../../items"
 import { PICK_CURSOR } from "../../pick-cursor"
 import type { Sheet } from "../sheet"
@@ -24,13 +24,11 @@ const ID_X = id({ value: "x" })
 const ID_Y = id({ value: "y" })
 const ID_P = id({ value: "p" })
 
-export type ExprStateOk<T extends {} = {}> =
-  | { ok: true; ext: Ext<T, unknown> | null; data: T }
+export type ExprStateOk =
+  | { ok: true; ext: AnyExt | null; data: {} }
   | { ok: true; ext: null; data?: undefined }
 
-type ExprState<T extends {} = {}> =
-  | { ok: false; reason: string; ext?: undefined }
-  | ExprStateOk<T>
+type ExprState = { ok: false; reason: string; ext?: undefined } | ExprStateOk
 
 /**
  * The generic `T` doesn't actually affect any code in the slightest; it's only
@@ -43,7 +41,7 @@ type ExprState<T extends {} = {}> =
  *
  * TODO: remove
  */
-export class Expr<T extends {} = {}> {
+export class Expr {
   static of(sheet: Sheet, geo?: boolean) {
     return sheet.list.create(FACTORY_EXPR, { from: { geo } }).data
   }
@@ -55,7 +53,7 @@ export class Expr<T extends {} = {}> {
   readonly aside
   readonly main
 
-  state: ExprState<T> = { ok: false, reason: "Not computed yet." }
+  state: ExprState = { ok: false, reason: "Not computed yet." }
 
   constructor(
     readonly sheet: Sheet,

@@ -4,9 +4,9 @@ import { example } from "@/docs/core"
 import type { FnSignature } from "@/docs/signature"
 import { commalist } from "@/eval/ast/collect"
 import { Precedence, type Node, type Piece } from "@/eval/ast/token"
-import { NO_DRAG, NO_SYM } from "@/eval/ast/tx"
-import { glsl, type PropsGlsl } from "@/eval/glsl"
-import { js, type PropsJs } from "@/eval/js"
+import { glsl, js, NO_DRAG, NO_SYM } from "@/eval/ast/tx"
+import type { PropsGlsl } from "@/eval/glsl"
+import type { PropsJs } from "@/eval/js"
 import type { Fn } from "@/eval/ops"
 import { FnDist } from "@/eval/ops/dist"
 import type { WithDocs } from "@/eval/ops/docs"
@@ -14,8 +14,6 @@ import { asBool, binaryFn, SYM_TRUE } from "@/eval/sym"
 import {
   join,
   joinGlsl,
-  list,
-  typeName,
   type GlslValue,
   type JsValue,
   type Val,
@@ -28,11 +26,12 @@ import {
   coerceValueGlsl,
   coerceValueJs,
 } from "@/eval/ty/coerce"
+import { listTy } from "@/eval/ty/debug"
 import { declareGlsl } from "@/eval/ty/decl"
 import { garbageValueGlsl, garbageValueJs } from "@/eval/ty/garbage"
 import { TY_INFO } from "@/eval/ty/info"
 import { CmdWord } from "@/field/cmd/leaf/word"
-import { L } from "@/field/model"
+import { L } from "@/field/dir"
 import { b, h, px } from "@/jsx"
 
 declare module "@/eval/ty" {
@@ -83,7 +82,7 @@ function piecewiseJs(piecesRaw: Piece[], props: PropsJs): JsValue {
     var ret = coerceType(pieces.map((x) => x.value))
   } catch {
     throw new Error(
-      `All branches of a piecewise function must have the same type; ${list(pieces.map((x) => typeName(x.value)))} are different types.`,
+      `All branches of a piecewise function must have the same type; ${listTy(pieces.map((x) => x.value))} are different types.`,
     )
   }
   for (const { value, cond } of pieces) {

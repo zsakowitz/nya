@@ -1,21 +1,4 @@
 import type { Package } from "#/types"
-import type { FnSignature } from "@/docs/signature"
-import { js } from "@/eval/js"
-import { asNumericBase, parseNumberGlsl, parseNumberJs } from "@/eval/lib/base"
-import { SYM_BINDINGS } from "@/eval/lib/binding"
-import type { GlslContext } from "@/eval/lib/fn"
-import { FnDist } from "@/eval/ops/dist"
-import { type FnOverload, type FnOverloadVar } from "@/eval/ops/dist-manual"
-import { FnList } from "@/eval/ops/list"
-import { unary } from "@/eval/sym"
-import type { SReal, Ty, TyName, Type } from "@/eval/ty"
-import { isZero } from "@/eval/ty/check"
-import { approx, frac, gl, gl64, num, real } from "@/eval/ty/create"
-import type { TyWrite } from "@/eval/ty/display"
-import { highRes, type TyExtras } from "@/eval/ty/info"
-import { abs, add, div, mul, neg, raise, sub } from "@/eval/ty/ops"
-import { splitDual } from "@/eval/ty/split"
-import { h } from "@/jsx"
 import { FN_VALID } from "$/bool"
 import {
   OP_EQ,
@@ -51,6 +34,24 @@ import {
   OP_SUB,
   subR64,
 } from "$/core/ops"
+import type { FnSignature } from "@/docs/signature"
+import { js } from "@/eval/ast/tx"
+import { asNumericBase, parseNumberGlsl, parseNumberJs } from "@/eval/lib/base"
+import { SYM_BINDINGS } from "@/eval/lib/binding"
+import type { GlslContext } from "@/eval/lib/fn"
+import { FnDist } from "@/eval/ops/dist"
+import type { FnOverload, FnOverloadVar } from "@/eval/ops/dist-manual"
+import { FnList } from "@/eval/ops/list"
+import { unary } from "@/eval/sym"
+import type { SReal, Ty, TyName, Type } from "@/eval/ty"
+import { isZero } from "@/eval/ty/check"
+import { approx, frac, gl, num, real } from "@/eval/ty/create"
+import { gl64 } from "@/eval/ty/create-r64"
+import type { TyWrite } from "@/eval/ty/display"
+import { highRes, type TyExtras } from "@/eval/ty/info"
+import { abs, add, div, mul, neg, raise, sub } from "@/eval/ty/ops"
+import { splitDual } from "@/eval/ty/split"
+import { h } from "@/jsx"
 
 declare module "@/eval/ty" {
   interface Tys {

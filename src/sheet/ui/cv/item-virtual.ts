@@ -1,3 +1,4 @@
+import { FnDist } from "@/eval/ops/dist"
 import type { JsVal } from "@/eval/ty"
 import { pt, real, unpt } from "@/eval/ty/create"
 import { OpEq } from "@/field/cmd/leaf/cmp"
@@ -5,15 +6,23 @@ import { CmdComma } from "@/field/cmd/leaf/comma"
 import { CmdToken } from "@/field/cmd/leaf/token"
 import { CmdVar } from "@/field/cmd/leaf/var"
 import { CmdBrack } from "@/field/cmd/math/brack"
-import { Block, L, R } from "@/field/model"
-import { FN_GLIDER } from "@/sheet/ui/cv/item"
+import { L, R } from "@/field/dir"
+import { Block } from "@/field/model"
 import type { Point } from "../../point"
 import { Writer } from "../../write"
-import { Expr } from "../expr"
 import type { Sheet } from "../sheet"
 import { Color, Size } from "./consts"
-import { FN_INTERSECTION } from "./item"
 import type { ItemWithDrawTarget, ItemWithTarget } from "./move"
+
+export const FN_INTERSECTION = new FnDist<"point32">(
+  "intersection",
+  "constructs the point where two objects intersect",
+)
+
+export const FN_GLIDER = new FnDist<"point32">(
+  "glider",
+  "constructs a point on an object",
+)
 
 const TARGET_INTERSECTION: ItemWithDrawTarget<
   null,
@@ -38,7 +47,7 @@ const TARGET_INTERSECTION: ItemWithDrawTarget<
       return ret
     }
 
-    const expr = Expr.of(sheet, true)
+    const expr = sheet.createExpr(true)
     item.ref = ref = CmdToken.new(sheet.scope)
     const cursor = expr.field.block.cursor(R)
     ref.insertAt(cursor, L)
@@ -127,7 +136,7 @@ const TARGET_GLIDER: ItemWithDrawTarget<
       return ret
     }
 
-    const expr = Expr.of(sheet, true)
+    const expr = sheet.createExpr(true)
     item.ref = ref = CmdToken.new(sheet.scope)
     const cursor = expr.field.block.cursor(R)
     ref.insertAt(cursor, L)
@@ -219,7 +228,7 @@ const TARGET_VPOINT: ItemWithDrawTarget<
       return ret
     }
 
-    const expr = Expr.of(sheet, true)
+    const expr = sheet.createExpr(true)
     item.ref = ref = CmdToken.new(sheet.scope)
     const cursor = expr.field.block.cursor(R)
     ref.insertAt(cursor, L)

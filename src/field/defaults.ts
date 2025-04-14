@@ -1,16 +1,22 @@
 import "../../index.css"
-import { OpApprox, OpEq, OpGt, OpLt, OpTilde } from "./cmd/leaf/cmp"
+import {
+  OpApprox,
+  OpDoubleRightArrow,
+  OpEq,
+  OpGt,
+  OpLt,
+  OpRightArrow,
+  OpTilde,
+} from "./cmd/leaf/cmp"
 import { CmdColon } from "./cmd/leaf/colon"
 import { CmdColor } from "./cmd/leaf/color"
 import { CmdComma } from "./cmd/leaf/comma"
-import { CmdDot } from "./cmd/leaf/dot"
 import { CmdExclamation } from "./cmd/leaf/exclamation"
-import { CmdNum } from "./cmd/leaf/num"
+import { CmdDot, CmdNum } from "./cmd/leaf/num"
 import {
   OpAnd,
   OpCdot,
   OpDiv,
-  OpDoubleRightArrow,
   OpMinus,
   OpMinusPlus,
   OpNeg,
@@ -19,7 +25,6 @@ import {
   OpOtimes,
   OpPlus,
   OpPlusMinus,
-  OpRightArrow,
   OpTimes,
   OpUpArrow,
 } from "./cmd/leaf/op"
@@ -54,8 +59,9 @@ import { CmdMap } from "./cmd/util/map"
 import { CmdNoop } from "./cmd/util/noop"
 import { CmdPrompt } from "./cmd/util/prompt"
 import { LatexEnvs, type LatexInit } from "./latex"
-import { D, L, R, U, type Init } from "./model"
+import type { Init } from "./model"
 import { Inits, WordMap, type Options } from "./options"
+import { D, L, R, U } from "./dir"
 
 const inits = new Inits()
   .setDefault(

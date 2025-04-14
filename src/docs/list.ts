@@ -1,6 +1,5 @@
 import type { Package } from "#/types"
-import { fa } from "@/field/fa"
-import { h, hx, t } from "@/jsx"
+import { fa, h, hx, t } from "@/jsx"
 import { faCheck } from "@fortawesome/free-solid-svg-icons/faCheck"
 import { faChevronRight } from "@fortawesome/free-solid-svg-icons/faChevronRight"
 import { faMinus } from "@fortawesome/free-solid-svg-icons/faMinus"

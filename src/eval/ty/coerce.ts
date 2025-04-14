@@ -9,9 +9,9 @@ import type {
   Type,
   Val,
 } from "."
-import { list } from "."
 import type { GlslContext } from "../lib/fn"
 import { TY_INFO, type TyCoerce, type TyCoerceMap } from "./info"
+import { list } from "./list"
 
 export function canCoerce(src: TyName, dst: TyName): boolean {
   return src == dst || {}.hasOwnProperty.call(TY_INFO[src].coerce, dst)

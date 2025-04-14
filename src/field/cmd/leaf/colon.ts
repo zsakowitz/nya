@@ -1,8 +1,9 @@
-import { Leaf } from "."
 import type { Node } from "@/eval/ast/token"
+import { L } from "@/field/dir"
 import { h } from "@/jsx"
+import { Leaf } from "."
 import type { LatexParser } from "../../latex"
-import { L, type Command, type Cursor } from "../../model"
+import type { Command, Cursor } from "../../model"
 
 export class CmdColon extends Leaf {
   static init(cursor: Cursor) {

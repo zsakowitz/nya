@@ -1,14 +1,9 @@
 import type { Node, PuncCmp } from "@/eval/ast/token"
+import { L, R, type Dir } from "@/field/dir"
 import type { LatexParser } from "../../latex"
-import {
-  L,
-  R,
-  type Command,
-  type Cursor,
-  type Dir,
-  type InitProps,
-} from "../../model"
-import { Op, OpDoubleRightArrow, OpMinus, OpRightArrow } from "./op"
+import type { Command, Cursor, InitProps } from "../../model"
+import { OpMinus, opp } from "./op"
+import { Op } from "./op-core"
 
 /** An `Op` which can be negated. */
 export abstract class OpCeq extends Op {
@@ -284,5 +279,41 @@ export class OpGt extends cmp(
     }
 
     return super.init(cursor, props)
+  }
+}
+
+export class OpDoubleRightArrow extends opp(
+  "\\Rightarrow ",
+  " maps to ",
+  "⇒",
+  "=>",
+  true,
+) {
+  delete(cursor: Cursor, from: Dir): void {
+    if (from == R) {
+      const minus = new OpEq(false)
+      this.replaceWith(minus.lone())
+      if (cursor[R] == this) {
+        cursor.moveTo(minus, L)
+      }
+      return
+    }
+
+    super.delete(cursor, from)
+  }
+}
+
+export class OpRightArrow extends opp("\\to ", " becomes ", "→", "->", true) {
+  delete(cursor: Cursor, from: Dir): void {
+    if (from == R) {
+      const minus = new OpMinus()
+      this.replaceWith(minus.lone())
+      if (cursor[R] == this) {
+        cursor.moveTo(minus, L)
+      }
+      return
+    }
+
+    super.delete(cursor, from)
   }
 }

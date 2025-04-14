@@ -17,7 +17,7 @@ import regl from "regl"
 import { Scope } from "../deps"
 import type { Exts } from "../ext"
 import type { SheetFactory } from "../factory"
-import { ItemListGlobal } from "../items"
+import { ItemListGlobal, type ItemRef } from "../items"
 import type { Point } from "../point"
 import { doMatchReglSize } from "../regl"
 import { REMARK } from "../remark"
@@ -35,6 +35,7 @@ import {
   type VirtualPoint,
 } from "./cv/move"
 import { PickHandler2 } from "./cv/pick"
+import { Expr } from "./expr"
 
 export type RequireRadiansReason = "with a complex number" | "complex numbers"
 export type RequireRadiansContext = `call '${string}' ${RequireRadiansReason}`
@@ -508,6 +509,16 @@ void main() {
       this.checkGlsl()
     })
     this._qdGlsl = true
+  }
+
+  createExpr(geo?: boolean) {
+    return Expr.of(this, geo)
+  }
+
+  // used to avoid circular dependency from src/sheet/factory-expr.ts
+  // @ts-expect-error unused
+  private _createExprWithRef(ref: ItemRef<Expr>) {
+    return new Expr(this, ref)
   }
 }
 

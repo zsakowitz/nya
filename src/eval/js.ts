@@ -1,5 +1,5 @@
 import type { Node } from "./ast/token"
-import { TXR_AST } from "./ast/tx"
+import { js } from "./ast/tx"
 import type { BindingFn, Bindings } from "./lib/binding"
 import type { JsContext } from "./lib/jsctx"
 import { FNS } from "./ops"
@@ -55,12 +55,4 @@ export function jsCall(
     props.ctxJs,
     args.map((arg) => js(arg, props)),
   )
-}
-
-export function js(node: Node, props: PropsJs): JsValue {
-  const txr = TXR_AST[node.type]
-  if (!txr) {
-    throw new Error(`The '${node.type}' transformer is not defined.`)
-  }
-  return txr.js(node as never, props)
 }

@@ -1,14 +1,12 @@
 import type { Node } from "@/eval/ast/token"
+import { L, R, type Dir } from "@/field/dir"
 import { h, path, svg } from "@/jsx"
 import type { LatexParser } from "../../latex"
 import {
   Block,
   Command,
-  L,
-  R,
   Span,
   type Cursor,
-  type Dir,
   type InitProps,
   type InitRet,
   type Selection,

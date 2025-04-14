@@ -1,9 +1,8 @@
 import type { Node } from "@/eval/ast/token"
+import { L, R } from "@/field/dir"
 import { h, hx } from "@/jsx"
 import type { FieldInert } from "../../field-inert"
 import {
-  L,
-  R,
   Selection,
   type Cursor,
   type InitProps,

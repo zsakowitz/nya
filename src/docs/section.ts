@@ -1,5 +1,4 @@
-import { fa } from "@/field/fa"
-import { h, hx } from "@/jsx"
+import { fa, h, hx } from "@/jsx"
 import { faCaretRight } from "@fortawesome/free-solid-svg-icons/faCaretRight"
 
 export function title(label: string, rlabel: string | null) {

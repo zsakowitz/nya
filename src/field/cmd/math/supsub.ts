@@ -1,18 +1,8 @@
 import type { Node } from "@/eval/ast/token"
+import { D, L, R, U, type Dir, type VDir } from "@/field/dir"
 import { U_ZERO_WIDTH_SPACE, h } from "@/jsx"
 import type { LatexParser } from "../../latex"
-import {
-  Block,
-  Command,
-  Cursor,
-  D,
-  L,
-  R,
-  U,
-  type Dir,
-  type InitProps,
-  type VDir,
-} from "../../model"
+import { Block, Command, Cursor, type InitProps } from "../../model"
 import { focusEdge } from "../leaf"
 import { CmdUnknown } from "../leaf/unknown"
 

@@ -1,5 +1,5 @@
+import { U, type Dir, type VDir } from "@/field/dir"
 import type { Expr } from "."
-import { U, type Dir, type VDir } from "@/field/model"
 import { FieldComputed } from "../../deps"
 
 export class Field extends FieldComputed {

@@ -1,8 +1,6 @@
 import type { Package } from "#/types"
 import { Precedence } from "@/eval/ast/token"
-import { NO_DRAG } from "@/eval/ast/tx"
-import { glsl } from "@/eval/glsl"
-import { js } from "@/eval/js"
+import { glsl, js, NO_DRAG } from "@/eval/ast/tx"
 import { bindingDeps, withBindingsGlsl, withBindingsJs } from "@/eval/ops/with"
 
 export default {

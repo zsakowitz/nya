@@ -1,5 +1,5 @@
 import type { Package } from "#/types"
-import { glsl } from "$/image"
+import { imageShaderError } from "$/image"
 import { example } from "@/docs/core"
 import { FnDist } from "@/eval/ops/dist"
 import { each, type JsValue, type Val } from "@/eval/ty"
@@ -9,9 +9,9 @@ import { neg } from "@/eval/ty/ops"
 import { CmdComma } from "@/field/cmd/leaf/comma"
 import { CmdWord } from "@/field/cmd/leaf/word"
 import { CmdBrack } from "@/field/cmd/math/brack"
-import { fa } from "@/field/fa"
-import { Block, L, R } from "@/field/model"
-import { b, h, px } from "@/jsx"
+import { L, R } from "@/field/dir"
+import { Block } from "@/field/model"
+import { b, fa, h, px } from "@/jsx"
 import { defineExt } from "@/sheet/ext"
 import type { Cv } from "@/sheet/ui/cv"
 import { Order } from "@/sheet/ui/cv/consts"
@@ -40,7 +40,7 @@ const FN_IMAGE = new FnDist(
     ["image", "segment"],
     "image2d",
     (a, b) => ({ data: a.value, p1: b.value[0], p2: b.value[1], aspect: null }),
-    glsl,
+    imageShaderError,
     "image(\\ty{image},segment((-5,0),(5,0)))",
   )
   .add(
@@ -52,7 +52,7 @@ const FN_IMAGE = new FnDist(
       p2: b.value[1],
       aspect: c.value,
     }),
-    glsl,
+    imageShaderError,
     "image(\\ty{image},segment((-5,0),(5,0)),\\frac{16}{9})",
   )
 
@@ -113,10 +113,10 @@ export default {
         name: "drawn image",
         namePlural: "drawn images",
         get glsl(): never {
-          return glsl()
+          return imageShaderError()
         },
         toGlsl() {
-          glsl()
+          imageShaderError()
         },
         garbage: {
           js: {
@@ -130,7 +130,7 @@ export default {
             aspect: null,
           },
           get glsl(): never {
-            return glsl()
+            return imageShaderError()
           },
         },
         coerce: {
@@ -138,7 +138,7 @@ export default {
             js(self) {
               return self.data
             },
-            glsl,
+            glsl: imageShaderError,
           },
         },
         write: {
@@ -225,7 +225,7 @@ markTranslate(
     p1: translate(b, a.value.p1),
     p2: translate(b, a.value.p2),
   }),
-  glsl,
+  imageShaderError,
   "image(...)",
 )
 
@@ -237,7 +237,7 @@ markRotate(
     p1: rotateJs(b, a.value.p1),
     p2: rotateJs(b, a.value.p2),
   }),
-  glsl,
+  imageShaderError,
   "image(...)",
 )
 
@@ -249,7 +249,7 @@ markDilate(
     p1: dilateJs(b, a.value.p1),
     p2: dilateJs(b, a.value.p2),
   }),
-  glsl,
+  imageShaderError,
   "image(...)",
 )
 
@@ -264,6 +264,6 @@ markReflect(
     p1: reflectJs(b, a.value.p1),
     p2: reflectJs(b, a.value.p2),
   }),
-  glsl,
+  imageShaderError,
   "image(...)",
 )

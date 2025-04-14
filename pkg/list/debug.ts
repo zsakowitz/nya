@@ -13,7 +13,7 @@ export default {
           fnlike: true,
           deps() {},
           js(node) {
-            check(node)
+            check(node, "debugast")
             return {
               type: "text",
               list: false,
@@ -30,7 +30,7 @@ export default {
             }
           },
           glsl(node) {
-            check(node)
+            check(node, "debugast")
             throw new Error("'debugast' isn't available in shaders.")
           },
           sym: NO_SYM,
@@ -40,14 +40,14 @@ export default {
   },
 } satisfies Package
 
-function check(node: MagicVar) {
+function check(node: MagicVar, why: "debugast") {
   if (node.sub) {
-    throw new Error("Cannot attach subscripts to 'debugast'.")
+    throw new Error(`Cannot attach subscripts to '${why}'.`)
   }
   if (node.sup) {
-    throw new Error("Cannot attach superscripts to 'debugast'.")
+    throw new Error(`Cannot attach superscripts to '${why}'.`)
   }
   if (node.prop) {
-    throw new Error("Dot notation is not valid after 'debugast'.")
+    throw new Error(`Dot notation is not valid after '${why}'.`)
   }
 }

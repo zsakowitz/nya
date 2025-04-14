@@ -1,17 +1,9 @@
 import type { Scope } from "@/sheet/deps"
 import { twMerge } from "tailwind-merge"
 import { LatexParser } from "./latex"
-import {
-  Block,
-  L,
-  performInit,
-  R,
-  Selection,
-  type Dir,
-  type Init,
-  type VDir,
-} from "./model"
+import { Block, performInit, Selection, type Init } from "./model"
 import type { Options } from "./options"
+import { L, R, type Dir, type VDir } from "./dir"
 
 /** Props passed to `Display.init()` and `Display.type()`. */
 interface FieldInitProps {

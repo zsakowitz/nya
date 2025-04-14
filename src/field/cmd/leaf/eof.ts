@@ -1,7 +1,8 @@
-import { Leaf } from "."
 import type { Node } from "@/eval/ast/token"
+import { L, R } from "@/field/dir"
 import { h } from "@/jsx"
-import { Block, L, R } from "../../model"
+import { Leaf } from "."
+import { Block } from "../../model"
 
 /**
  * Created when a LaTeX string terminates too early (e.g. before closing a

@@ -1,10 +1,10 @@
 import type { Package } from "#/types"
 import { example } from "@/docs/core"
 import type { MagicVar, Node } from "@/eval/ast/token"
-import { NO_SYM } from "@/eval/ast/tx"
+import { glsl, js, NO_SYM } from "@/eval/ast/tx"
 import type { Deps } from "@/eval/deps"
-import { type PropsGlsl, glsl } from "@/eval/glsl"
-import { type PropsJs, js } from "@/eval/js"
+import type { PropsGlsl } from "@/eval/glsl"
+import type { PropsJs } from "@/eval/js"
 import {
   type Binding,
   id,
@@ -13,16 +13,11 @@ import {
   parseUpdateVar,
   tryParseBindingVar,
 } from "@/eval/lib/binding"
-import {
-  type GlslValue,
-  type JsValue,
-  type Type,
-  list,
-  typeName,
-} from "@/eval/ty"
+import { type GlslValue, type JsValue, type Type, typeName } from "@/eval/ty"
 import { coerceValueGlsl, isReal } from "@/eval/ty/coerce"
 import { num, real } from "@/eval/ty/create"
 import { declareGlsl } from "@/eval/ty/decl"
+import { list } from "@/eval/ty/list"
 import { b, p } from "@/jsx"
 
 declare module "@/eval/ast/token" {

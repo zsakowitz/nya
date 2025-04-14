@@ -23,21 +23,16 @@ import type { GlslContext } from "@/eval/lib/fn"
 import { FnDist } from "@/eval/ops/dist"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "@/eval/ops/vars"
 import { each, type JsValue, type SPoint } from "@/eval/ty"
-import {
-  approx,
-  frac,
-  gl,
-  gl64,
-  num,
-  pt,
-  real,
-  SNANPT,
-  unpt,
-} from "@/eval/ty/create"
-import { highRes, TY_INFO, WRITE_POINT, type TyGlide } from "@/eval/ty/info"
+import { approx, frac, gl, num, pt, real, SNANPT, unpt } from "@/eval/ty/create"
+import { gl64 } from "@/eval/ty/create-r64"
+import type { TyWrite } from "@/eval/ty/display"
+import { highRes, TY_INFO, type TyGlide } from "@/eval/ty/info"
 import { abs, add, div, mul, neg, sub } from "@/eval/ty/ops"
+import { CmdComma } from "@/field/cmd/leaf/comma"
 import { CmdVar } from "@/field/cmd/leaf/var"
-import { L, R } from "@/field/model"
+import { CmdBrack } from "@/field/cmd/math/brack"
+import { Block } from "@/field/model"
+import { L, R } from "@/field/dir"
 import { h } from "@/jsx"
 import { defineHideable } from "@/sheet/ext/hideable"
 import { definePickTy, PICK_TY, toolbar } from "@/sheet/pick-ty"
@@ -239,6 +234,20 @@ export function declareDebugPoint(
 }
 `
   return `_helper_debugpoint_c32(${a.expr})`
+}
+
+export const WRITE_POINT: TyWrite<SPoint> = {
+  isApprox(value) {
+    return value.x.type == "approx" || value.y.type == "approx"
+  },
+  display(value, props) {
+    const block = new Block(null)
+    new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
+    const inner = props.at(block.cursor(R))
+    inner.num(value.x)
+    new CmdComma().insertAt(inner.cursor, L)
+    inner.num(value.y)
+  },
 }
 
 export const FN_POINT = OP_POINT.with(

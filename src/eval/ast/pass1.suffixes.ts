@@ -1,4 +1,4 @@
-import { L, R } from "@/field/model"
+import { L, R } from "@/field/dir"
 import { FNLIKE_MAGICVAR } from "./fnlike"
 import { isValueToken, type Node } from "./token"
 

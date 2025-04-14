@@ -1,49 +1,11 @@
 import type { Node, Punc, PuncInfix, PuncPm } from "@/eval/ast/token"
+import { L, R } from "@/field/dir"
 import { h } from "@/jsx"
 import { Leaf } from "."
 import type { LatexParser } from "../../latex"
-import {
-  L,
-  R,
-  Span,
-  type Command,
-  type Cursor,
-  type Dir,
-  type InitProps,
-} from "../../model"
+import { Span, type Command, type Cursor, type InitProps } from "../../model"
 import { CmdSupSub } from "../math/supsub"
-import { OpEq } from "./cmp"
-
-export abstract class Op extends Leaf {
-  /** Exits `SupSub` nodes when instructed to, following the passed `options.` */
-  static exitSupSub(cursor: Cursor, { options }: InitProps) {
-    if (
-      options.exitSubWithOp &&
-      cursor.parent?.parent instanceof CmdSupSub &&
-      cursor.parent.parent.sub == cursor.parent &&
-      !cursor[R] &&
-      cursor[L]
-    ) {
-      cursor.moveTo(cursor.parent.parent, R)
-    }
-  }
-
-  static render(html: string) {
-    return h("nya-cmd-op", h("px-[.2em] inline-block", html))
-  }
-
-  constructor(
-    readonly ctrlSeq: string,
-    html: string,
-    el = Op.render(html),
-  ) {
-    super(ctrlSeq, el)
-  }
-
-  setHtml(html: string) {
-    this.setEl(Op.render(html))
-  }
-}
+import { Op } from "./op-core"
 
 abstract class OpPm extends Op {
   static exitSupSub(cursor: Cursor, { options }: InitProps) {
@@ -123,7 +85,7 @@ function op(
   }
 }
 
-function opp(
+export function opp(
   latex: Exclude<PuncInfix, ".">,
   mathspeak: string,
   html?: string,
@@ -252,40 +214,5 @@ export class OpNeg extends Leaf {
 
   endsImplicitGroup(): boolean {
     return true
-  }
-}
-
-export class OpRightArrow extends opp("\\to ", " becomes ", "→", "->", true) {
-  delete(cursor: Cursor, from: Dir): void {
-    if (from == R) {
-      const minus = new OpMinus()
-      this.replaceWith(minus.lone())
-      if (cursor[R] == this) {
-        cursor.moveTo(minus, L)
-      }
-      return
-    }
-
-    super.delete(cursor, from)
-  }
-}
-export class OpDoubleRightArrow extends opp(
-  "\\Rightarrow ",
-  " maps to ",
-  "⇒",
-  "=>",
-  true,
-) {
-  delete(cursor: Cursor, from: Dir): void {
-    if (from == R) {
-      const minus = new OpEq(false)
-      this.replaceWith(minus.lone())
-      if (cursor[R] == this) {
-        cursor.moveTo(minus, L)
-      }
-      return
-    }
-
-    super.delete(cursor, from)
   }
 }
