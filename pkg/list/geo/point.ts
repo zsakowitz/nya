@@ -29,7 +29,7 @@ import { FN_GLIDER, FN_INTERSECTION, ref, val } from "@/sheet/ui/cv/item"
 import type { Expr } from "@/sheet/ui/expr"
 import { Sheet } from "@/sheet/ui/sheet"
 import { virtualStepExp, write, Writer } from "@/sheet/write"
-import { FN_VALID } from "../bool"
+import { FN_VALID } from "$/bool"
 import {
   abs64,
   addR64,
@@ -45,9 +45,9 @@ import {
   OP_POS,
   OP_SUB,
   subR64,
-} from "../core/ops"
-import { EXT_EVAL } from "../eval"
-import { FN_UNSIGN } from "../num/real"
+} from "$/core/ops"
+import { EXT_EVAL } from "$/eval"
+import { FN_UNSIGN } from "$/num/real"
 
 declare module "@/eval/ty" {
   interface Tys {

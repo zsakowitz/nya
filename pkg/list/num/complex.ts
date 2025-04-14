@@ -11,8 +11,8 @@ import { abs, add, div, mul, neg, sub } from "@/eval/ty/ops"
 import { h } from "@/jsx"
 import type { Point } from "@/sheet/point"
 import { Order } from "@/sheet/ui/cv/consts"
-import { FN_VALID } from "../bool"
-import { OP_PLOT, plotJs } from "../color/core"
+import { FN_VALID } from "$/bool"
+import { OP_PLOT, plotJs } from "$/color/core"
 import { declareOklab } from "../color/oklab"
 import {
   abs64,
@@ -33,8 +33,8 @@ import {
   OP_RAISE,
   OP_SUB,
   subR64,
-} from "../core/ops"
-import { declareDebugPoint, FN_DEBUGPOINT, FN_POINT } from "../geo/point"
+} from "$/core/ops"
+import { declareDebugPoint, FN_DEBUGPOINT, FN_POINT } from "$/geo/point"
 import { FN_EXP, FN_LOG10, FN_SIGN, FN_UNSIGN } from "./real"
 
 declare module "@/eval/ty" {

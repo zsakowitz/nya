@@ -35,8 +35,8 @@ import { BRACKS } from "@/field/cmd/math/brack"
 import { Block, L, R } from "@/field/model"
 import { h, hx } from "@/jsx"
 import { defineExt } from "@/sheet/ext"
-import { addR64 } from "../core/ops"
-import { createMultiEval } from "../eval"
+import { addR64 } from "$/core/ops"
+import { createMultiEval } from "$/eval"
 import { sqrt } from "../geo/dcg/fn/distance"
 
 declare module "@/eval/ty" {

@@ -8,7 +8,7 @@ import { TY_INFO } from "@/eval/ty/info"
 import { CmdColor } from "@/field/cmd/leaf/color"
 import { L } from "@/field/model"
 import { h } from "@/jsx"
-import { OP_CDOT } from "../core/ops"
+import { OP_CDOT } from "$/core/ops"
 
 declare module "@/eval/ty" {
   interface Tys {

@@ -16,7 +16,7 @@ import { highRes, type TyExtras } from "@/eval/ty/info"
 import { abs, add, div, mul, neg, raise, sub } from "@/eval/ty/ops"
 import { splitDual } from "@/eval/ty/split"
 import { h } from "@/jsx"
-import { FN_VALID } from "../bool"
+import { FN_VALID } from "$/bool"
 import {
   OP_EQ,
   OP_GT,
@@ -28,7 +28,7 @@ import {
   OP_NGTE,
   OP_NLT,
   OP_NLTE,
-} from "../core/cmp"
+} from "$/core/cmp"
 import {
   abs64,
   addR64,
@@ -50,7 +50,7 @@ import {
   OP_RAISE,
   OP_SUB,
   subR64,
-} from "../core/ops"
+} from "$/core/ops"
 
 declare module "@/eval/ty" {
   interface Tys {

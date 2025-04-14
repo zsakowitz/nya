@@ -2,7 +2,7 @@
 
 /** @type {import("tailwindcss").Config} */
 export default {
-  content: ["./src/**/*.{ts,postcss}"],
+  content: ["./src/**/*.{ts,postcss}", "./pkg/**/*.ts", "index.postcss"],
   plugins: [
     (
       /** @type {import("tailwindcss/types/config").PluginAPI} */

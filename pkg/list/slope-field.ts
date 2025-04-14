@@ -16,7 +16,7 @@ import { norm } from "@/sheet/point"
 import { Color, Opacity, Order, Size } from "@/sheet/ui/cv/consts"
 import type { Expr } from "@/sheet/ui/expr"
 import { vectorPath } from "./geo/dcg/vector"
-import { gridlineCoords } from "./gridlines"
+import { gridlineCoords } from "$/gridlines"
 
 declare module "@/eval/ty" {
   interface Tys {

@@ -3,7 +3,7 @@ import { FnDist } from "@/eval/ops/dist"
 import { frac, num, real } from "@/eval/ty/create"
 import { div, sub } from "@/eval/ty/ops"
 import { isDark } from "@/sheet/theme"
-import { FN_VALID } from "../bool"
+import { FN_VALID } from "$/bool"
 import { oklab } from "./oklab"
 
 const FN_OKLAB = new FnDist(

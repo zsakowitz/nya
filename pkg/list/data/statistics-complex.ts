@@ -1,7 +1,7 @@
 import type { Package } from "#/types"
 import { rept } from "@/eval/ty/create"
-import { declareAddC64 } from "../core/ops"
-import { addPt } from "../num/complex"
+import { declareAddC64 } from "$/core/ops"
+import { addPt } from "$/num/complex"
 import { FN_TOTAL } from "./statistics"
 
 FN_TOTAL.addSpread(

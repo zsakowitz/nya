@@ -29,7 +29,7 @@ import {
   OP_POS,
   OP_RAISE,
   OP_SUB,
-} from "../core/ops"
+} from "$/core/ops"
 import {
   assertCompat,
   badSum,

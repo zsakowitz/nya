@@ -16,7 +16,7 @@ import {
   recipGl,
   recipPt,
   subPt,
-} from "../num/complex"
+} from "$/num/complex"
 import {
   FN_ARCCOS,
   FN_ARCCOT,

@@ -20,9 +20,9 @@ import type { Point } from "@/sheet/point"
 import { createLine } from "@/sheet/shader-line"
 import erf from "@stdlib/math/base/special/erf"
 import erfinv from "@stdlib/math/base/special/erfinv"
-import { chain, OP_DIV, OP_JUXTAPOSE, OP_NEG, OP_RAISE } from "../core/ops"
-import { EXT_EVAL } from "../eval"
-import { declareMulC32, divNonSPt } from "../num/complex"
+import { chain, OP_DIV, OP_JUXTAPOSE, OP_NEG, OP_RAISE } from "$/core/ops"
+import { EXT_EVAL } from "$/eval"
+import { declareMulC32, divNonSPt } from "$/num/complex"
 import { FN_QUANTILE } from "./statistics"
 
 declare module "@/eval/ty" {

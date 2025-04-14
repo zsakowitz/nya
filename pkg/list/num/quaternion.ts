@@ -15,7 +15,7 @@ import {
   OP_ODOT,
   OP_POS,
   OP_SUB,
-} from "../core/ops"
+} from "$/core/ops"
 import { FN_CONJ, FN_I, FN_REAL } from "./complex"
 import { FN_UNSIGN } from "./real"
 

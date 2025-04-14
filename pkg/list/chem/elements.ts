@@ -10,7 +10,7 @@ import { CmdWord } from "@/field/cmd/leaf/word"
 import { toText } from "@/field/latex"
 import { L } from "@/field/model"
 import { h, hx } from "@/jsx"
-import type { TextSegment } from "../text"
+import type { TextSegment } from "$/text"
 import type { Unit, UnitList } from "../unit/impl/system"
 import {
   UNIT_AMU,
@@ -19,7 +19,7 @@ import {
   UNIT_KILOJOULE,
   UNIT_MOLE,
 } from "../unit/impl/units"
-import { latexUnit } from "../unit/pkg"
+import { latexUnit } from "$/unit/pkg"
 
 declare module "@/eval/ty" {
   interface Tys {

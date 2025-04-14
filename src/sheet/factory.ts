@@ -55,7 +55,7 @@ export class SheetFactory {
     Object.create(null)
   async load(pkg: Package) {
     if (this.loaded.has(pkg)) {
-      return this
+      return
     }
     this.loaded.add(pkg)
 
@@ -320,8 +320,6 @@ export class SheetFactory {
         this.defaultItem = item
       }
     }
-
-    return this
   }
 
   create() {
@@ -339,7 +337,7 @@ export class SheetFactory {
       this.keys,
       this,
     )
-    for (const pkg of Object.values(this.loaded)) {
+    for (const pkg of this.loaded) {
       pkg.init?.(sheet)
     }
     return sheet

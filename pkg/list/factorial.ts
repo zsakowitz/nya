@@ -17,8 +17,8 @@ import factorial from "@stdlib/math/base/special/factorial"
 import gammaln from "@stdlib/math/base/special/gammaln"
 import polygamma from "@stdlib/math/base/special/polygamma"
 import { complex, gamma, type Complex } from "mathjs"
-import { chain, OP_ADD, OP_JUXTAPOSE } from "./core/ops"
-import { declareDiv, declarePowC32 } from "./num/complex"
+import { chain, OP_ADD, OP_JUXTAPOSE } from "$/core/ops"
+import { declareDiv, declarePowC32 } from "$/num/complex"
 
 // TODO: our approximation may be better than desmos's lol
 export function declareFactorialR32(ctx: GlslContext) {
@@ -356,6 +356,7 @@ export default {
   name: "factorial",
   label: "extended factorial operator",
   category: "numbers",
+  deps: ["core/ops", "num/complex"],
   eval: {
     tx: {
       suffix: {

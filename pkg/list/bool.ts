@@ -1,4 +1,5 @@
 import type { Package } from "#/types"
+import { OP_AND } from "$/core/cmp"
 import { example } from "@/docs/core"
 import type { FnSignature } from "@/docs/signature"
 import { commalist } from "@/eval/ast/collect"
@@ -33,7 +34,6 @@ import { TY_INFO } from "@/eval/ty/info"
 import { CmdWord } from "@/field/cmd/leaf/word"
 import { L } from "@/field/model"
 import { b, h, px } from "@/jsx"
-import { OP_AND } from "./core/cmp"
 
 declare module "@/eval/ty" {
   interface Tys {
@@ -287,6 +287,7 @@ export default {
   name: "boolean operations",
   label: "basic support for boolean values",
   category: "logic",
+  deps: ["core/cmp"],
   load() {
     OP_AND.add(
       ["bool", "bool"],

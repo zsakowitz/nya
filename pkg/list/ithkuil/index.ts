@@ -30,7 +30,7 @@ import {
   parseCaGloss,
   unglossWord,
 } from "@zsnout/ithkuil/ungloss"
-import { CmdTextInert, type TextSegment } from "../text"
+import { CmdTextInert, type TextSegment } from "$/text"
 import * as categories from "./categories"
 
 // TODO: reduce ithkuil root and affix data size (it's 56% of the bundle currently)

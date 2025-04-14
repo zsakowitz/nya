@@ -7,8 +7,8 @@ import { CmdComma } from "@/field/cmd/leaf/comma"
 import { CmdBrack } from "@/field/cmd/math/brack"
 import { Block, L, R } from "@/field/model"
 import { h, path, svgx } from "@/jsx"
-import { OP_Z } from "../3d/point"
-import { FN_VALID } from "../bool"
+import { OP_Z } from "$/3d/point"
+import { FN_VALID } from "$/bool"
 import {
   OP_ABS,
   OP_ADD,
@@ -19,9 +19,9 @@ import {
   OP_POINT,
   OP_POS,
   OP_SUB,
-} from "../core/ops"
-import { FN_POINT, OP_X, OP_Y } from "../geo/point"
-import { FN_UNSIGN } from "../num/real"
+} from "$/core/ops"
+import { FN_POINT, OP_X, OP_Y } from "$/geo/point"
+import { FN_UNSIGN } from "$/num/real"
 
 declare module "@/eval/ty" {
   interface Tys {
@@ -59,6 +59,7 @@ export default {
   name: "4D points",
   label: null,
   category: "geometry",
+  deps: ["bool", "geo/point", "core/ops", "num/real"],
   load() {
     OP_X.add(
       ["p4d32"],

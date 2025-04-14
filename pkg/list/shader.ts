@@ -13,7 +13,7 @@ import { Store, defineExt } from "@/sheet/ext"
 import { createLine } from "@/sheet/shader-line"
 import { circle } from "@/sheet/ui/expr/circle"
 import { PROP_SHOWN } from "@/show"
-import { OP_PLOT } from "./color/core"
+import { OP_PLOT } from "$/color/core"
 
 const store = new Store((expr) => {
   const circEmpty = circle("empty")
