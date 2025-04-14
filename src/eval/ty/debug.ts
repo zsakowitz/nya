@@ -1,6 +1,6 @@
 import type { Ty, TyName } from "."
-import { list } from "../ty"
 import { TY_INFO } from "./info"
+import { list } from "./list"
 
 export function listTy(tys: Ty[], conj?: string) {
   return listTyName(

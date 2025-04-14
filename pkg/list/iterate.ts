@@ -13,16 +13,11 @@ import {
   parseUpdateVar,
   tryParseBindingVar,
 } from "@/eval/lib/binding"
-import {
-  type GlslValue,
-  type JsValue,
-  type Type,
-  list,
-  typeName,
-} from "@/eval/ty"
+import { type GlslValue, type JsValue, type Type, typeName } from "@/eval/ty"
 import { coerceValueGlsl, isReal } from "@/eval/ty/coerce"
 import { num, real } from "@/eval/ty/create"
 import { declareGlsl } from "@/eval/ty/decl"
+import { list } from "@/eval/ty/list"
 import { b, p } from "@/jsx"
 
 declare module "@/eval/ast/token" {

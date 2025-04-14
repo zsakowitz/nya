@@ -14,8 +14,6 @@ import { asBool, binaryFn, SYM_TRUE } from "@/eval/sym"
 import {
   join,
   joinGlsl,
-  list,
-  typeName,
   type GlslValue,
   type JsValue,
   type Val,
@@ -28,6 +26,7 @@ import {
   coerceValueGlsl,
   coerceValueJs,
 } from "@/eval/ty/coerce"
+import { listTy } from "@/eval/ty/debug"
 import { declareGlsl } from "@/eval/ty/decl"
 import { garbageValueGlsl, garbageValueJs } from "@/eval/ty/garbage"
 import { TY_INFO } from "@/eval/ty/info"
@@ -83,7 +82,7 @@ function piecewiseJs(piecesRaw: Piece[], props: PropsJs): JsValue {
     var ret = coerceType(pieces.map((x) => x.value))
   } catch {
     throw new Error(
-      `All branches of a piecewise function must have the same type; ${list(pieces.map((x) => typeName(x.value)))} are different types.`,
+      `All branches of a piecewise function must have the same type; ${listTy(pieces.map((x) => x.value))} are different types.`,
     )
   }
   for (const { value, cond } of pieces) {
