@@ -1,6 +1,6 @@
 import type { Package } from "#/types"
 import { example } from "@/docs/core"
-import { type MagicVar } from "@/eval/ast/token"
+import type { MagicVar } from "@/eval/ast/token"
 import { TXR_AST } from "@/eval/ast/tx"
 import { js } from "@/eval/js"
 import { simplify, txr, type Sym } from "@/eval/sym"

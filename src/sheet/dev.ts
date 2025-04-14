@@ -9,11 +9,14 @@ import { createDocs2 } from "@/docs"
 const factory = new SheetFactory(options)
 
 if (globalThis.location?.search.includes("onlypkg")) {
-  const id = new URLSearchParams(location.search).get("onlypkg") ?? ""
-  const pkg =
-    {}.hasOwnProperty.call(manifest, id) ? manifest[id as ManifestKey] : null
-  if (pkg) {
-    await factory.load((await pkg()).default)
+  const ids = (new URLSearchParams(location.search).get("onlypkg") ?? "").split(
+    ",",
+  )
+  for (const id of ids) {
+    if ({}.hasOwnProperty.call(manifest, id)) {
+      const pkg = manifest[id as ManifestKey]
+      await factory.load((await pkg()).default)
+    }
   }
 } else {
   for (const pkg of await all()) {
