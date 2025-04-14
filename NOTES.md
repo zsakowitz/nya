@@ -5,6 +5,7 @@ for main:
 - `?shaderpixelsize=<1..=16>`
 - `?nogrid`
 - `?cvsize=<n>`
+- `?onlypkg=<package id>`
 
 for docs:
 
