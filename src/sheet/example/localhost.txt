@@ -1,2 +1,6 @@
-f\left(z\right)=\frac{\sqrt{\pi }}{2}\left(z+\frac{\pi }{12}z^{3}+\frac{7\pi ^{2}}{480}z^{5}+\frac{127\pi ^{3}}{40320}z^{7}+\frac{4369\pi ^{4}}{5806080}z^{9}+\frac{34807\pi ^{5}}{182476800}z^{11}\right)\left\{\left|z\right|\leq 1.0\right\}
-f\left(1\right)
+\operatorname{sinh}\left(2+3i\right)
+\operatorname{cosh}\left(2+3i\right)
+\operatorname{tanh}\left(2+3i\right)
+\operatorname{coth}\left(2+3i\right)
+\operatorname{sech}\left(2+3i\right)
+\operatorname{csch}\left(2+3i\right)

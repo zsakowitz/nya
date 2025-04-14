@@ -1,5 +1,9 @@
 import type { Package } from "#/types"
+import { chain, OP_DIV, OP_JUXTAPOSE, OP_NEG, OP_RAISE } from "$/core/ops"
+import { EXT_EVAL } from "$/eval"
+import { declareMulC32 } from "$/num/complex"
 import { jsToGlsl } from "@/eval/glsl"
+import { divP } from "@/eval/ops/complex"
 import { FnDist } from "@/eval/ops/dist"
 import { FnDistDeriv } from "@/eval/ops/dist-deriv"
 import { SYM_2, SYM_E, SYM_HALF, SYM_PI, unary } from "@/eval/sym"
@@ -20,9 +24,6 @@ import type { Point } from "@/sheet/point"
 import { createLine } from "@/sheet/shader-line"
 import erf from "@stdlib/math/base/special/erf"
 import erfinv from "@stdlib/math/base/special/erfinv"
-import { chain, OP_DIV, OP_JUXTAPOSE, OP_NEG, OP_RAISE } from "$/core/ops"
-import { EXT_EVAL } from "$/eval"
-import { declareMulC32, divNonSPt } from "$/num/complex"
 import { FN_QUANTILE } from "./statistics"
 
 declare module "@/eval/ty" {
@@ -174,7 +175,7 @@ function faddeevaPt(z: Point): Point {
   let w: Point = { x: 0, y: 0 }
 
   for (let m = 0; m < N; ++m) {
-    const dw = divNonSPt(
+    const dw = divP(
       {
         x: A[m]! + mulPt(t, { x: 0, y: B[m]! }).x,
         y: mulPt(t, { x: 0, y: B[m]! }).y,

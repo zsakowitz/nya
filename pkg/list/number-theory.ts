@@ -3,7 +3,10 @@ import { FnDist } from "@/eval/ops/dist"
 import { frac, num } from "@/eval/ty/create"
 import { sub } from "@/eval/ty/ops"
 
-const floor = new FnDist("floor", "rounds down to the nearest integer").add(
+export const FN_FLOOR = new FnDist(
+  "floor",
+  "rounds down to the nearest integer",
+).add(
   ["r32"],
   "r32",
   (v) => frac(Math.floor(num(v.value)), 1),
@@ -11,7 +14,7 @@ const floor = new FnDist("floor", "rounds down to the nearest integer").add(
   ["floor(2.3)=2", "floor(-7.8)=-8"],
 )
 
-const fract = new FnDist(
+export const FN_FRACT = new FnDist(
   "fract",
   "calculate x-floor(x), or the fractional part of x",
 ).add(
@@ -22,7 +25,10 @@ const fract = new FnDist(
   ["fract(7.4)=0.4", "fract(-9.3)=0.7"],
 )
 
-const ceil = new FnDist("ceil", "rounds up to the nearest integer").add(
+export const FN_CEIL = new FnDist(
+  "ceil",
+  "rounds up to the nearest integer",
+).add(
   ["r32"],
   "r32",
   (v) => frac(Math.ceil(num(v.value)), 1),
@@ -30,7 +36,7 @@ const ceil = new FnDist("ceil", "rounds up to the nearest integer").add(
   ["ceil(2.3)=3", "ceil(-7.8)=-7"],
 )
 
-const round = new FnDist(
+export const FN_ROUND = new FnDist(
   "round",
   "rounds to the nearest integer; ties are rounded up",
 )
@@ -68,10 +74,10 @@ export default {
   deps: ["num/real"],
   eval: {
     fn: {
-      floor,
-      ceil,
-      round,
-      fract,
+      floor: FN_FLOOR,
+      ceil: FN_CEIL,
+      round: FN_ROUND,
+      fract: FN_FRACT,
     },
   },
 } satisfies Package

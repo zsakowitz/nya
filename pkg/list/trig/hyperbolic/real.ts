@@ -2,34 +2,52 @@ import type { Package } from "#/types"
 import { FnDist } from "@/eval/ops/dist"
 import { approx, num } from "@/eval/ty/create"
 
-const FN_SINH = new FnDist("sinh", "takes the hyperbolic sinhe of an angle")
-const FN_COSH = new FnDist("cosh", "takes the hyperbolic coshine of an angle")
-const FN_TANH = new FnDist("tanh", "takes the hyperbolic tanhgent of an angle")
-const FN_CSCH = new FnDist("csch", "takes the hyperbolic cosecant of an angle")
-const FN_SECH = new FnDist("sech", "takes the hyperbolic secant of an angle")
-const FN_COTH = new FnDist("coth", "takes the hyperbolic cotangent of an angle")
+export const FN_SINH = new FnDist(
+  "sinh",
+  "takes the hyperbolic sinhe of an angle",
+)
+export const FN_COSH = new FnDist(
+  "cosh",
+  "takes the hyperbolic coshine of an angle",
+)
+export const FN_TANH = new FnDist(
+  "tanh",
+  "takes the hyperbolic tanhgent of an angle",
+)
+export const FN_CSCH = new FnDist(
+  "csch",
+  "takes the hyperbolic cosecant of an angle",
+)
+export const FN_SECH = new FnDist(
+  "sech",
+  "takes the hyperbolic secant of an angle",
+)
+export const FN_COTH = new FnDist(
+  "coth",
+  "takes the hyperbolic cotangent of an angle",
+)
 
-const FN_ARSINH = new FnDist(
+export const FN_ARSINH = new FnDist(
   "arsinh",
   "takes the inverse hyperbolic sine of a value",
 )
-const FN_ARCOSH = new FnDist(
+export const FN_ARCOSH = new FnDist(
   "arcosh",
   "takes the inverse hyperbolic cosine of a value",
 )
-const FN_ARTANH = new FnDist(
+export const FN_ARTANH = new FnDist(
   "artanh",
   "takes the inverse hyperbolic tangent of a value",
 )
-const FN_ARCSCH = new FnDist(
+export const FN_ARCSCH = new FnDist(
   "arcsch",
   "takes the inverse hyperbolic cosecant of a value",
 )
-const FN_ARSECH = new FnDist(
+export const FN_ARSECH = new FnDist(
   "arsech",
   "takes the inverse hyperbolic secant of a value",
 )
-const FN_ARCOTH = new FnDist(
+export const FN_ARCOTH = new FnDist(
   "arcoth",
   "takes the inverse hyperbolic cotangent of a value",
 )

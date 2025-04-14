@@ -1,19 +1,6 @@
 import type { Package } from "#/types"
-import { fn, type GlslContext } from "@/eval/lib/fn"
-import { FnDist } from "@/eval/ops/dist"
-import { ERR_COORDS_USED_OUTSIDE_GLSL } from "@/eval/ops/vars"
-import type { GlslVal, SPoint } from "@/eval/ty"
-import { isZero } from "@/eval/ty/check"
-import { approx, gl, gl64, num, pt, real, rept, SNANPT } from "@/eval/ty/create"
-import type { TyWrite } from "@/eval/ty/display"
-import { highRes, type TyExtras } from "@/eval/ty/info"
-import { abs, add, div, mul, neg, sub } from "@/eval/ty/ops"
-import { h } from "@/jsx"
-import type { Point } from "@/sheet/point"
-import { Order } from "@/sheet/ui/cv/consts"
 import { FN_VALID } from "$/bool"
 import { OP_PLOT, plotJs } from "$/color/core"
-import { declareOklab } from "../color/oklab"
 import {
   abs64,
   addR64,
@@ -35,6 +22,18 @@ import {
   subR64,
 } from "$/core/ops"
 import { declareDebugPoint, FN_DEBUGPOINT, FN_POINT } from "$/geo/point"
+import { fn, type GlslContext } from "@/eval/lib/fn"
+import { FnDist } from "@/eval/ops/dist"
+import { ERR_COORDS_USED_OUTSIDE_GLSL } from "@/eval/ops/vars"
+import type { GlslVal, SPoint } from "@/eval/ty"
+import { isZero } from "@/eval/ty/check"
+import { approx, gl, gl64, num, pt, real, rept, SNANPT } from "@/eval/ty/create"
+import type { TyWrite } from "@/eval/ty/display"
+import { highRes, type TyExtras } from "@/eval/ty/info"
+import { abs, add, div, mul, neg, sub } from "@/eval/ty/ops"
+import { h } from "@/jsx"
+import { Order } from "@/sheet/ui/cv/consts"
+import { declareOklab } from "../color/oklab"
 import { FN_EXP, FN_LOG10, FN_SIGN, FN_UNSIGN } from "./real"
 
 declare module "@/eval/ty" {
@@ -270,13 +269,6 @@ export function divPt({ x: a, y: b }: SPoint, { x: c, y: d }: SPoint): SPoint {
   const y = sub(mul(b, c), mul(a, d))
   const denom = add(mul(c, c), mul(d, d))
   return pt(div(x, denom), div(y, denom))
-}
-
-export function divNonSPt({ x: a, y: b }: Point, { x: c, y: d }: Point): Point {
-  const x = a * c + b * d
-  const y = b * c - a * d
-  const denom = c * c + d * d
-  return { x: x / denom, y: y / denom }
 }
 
 export function recipPt({ x: c, y: d }: SPoint): SPoint {

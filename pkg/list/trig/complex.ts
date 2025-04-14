@@ -1,9 +1,4 @@
 import type { Package } from "#/types"
-import { fn, type GlslContext } from "@/eval/lib/fn"
-import type { SPoint } from "@/eval/ty"
-import { approx, frac, num, pt, real, rept, unpt } from "@/eval/ty/create"
-import type { Point } from "@/sheet/point"
-import type { RequireRadiansReason } from "@/sheet/ui/sheet"
 import {
   addPt,
   declareDiv,
@@ -17,6 +12,12 @@ import {
   recipPt,
   subPt,
 } from "$/num/complex"
+import { fn, type GlslContext } from "@/eval/lib/fn"
+import { cx, divP, recipP, sqrtP } from "@/eval/ops/complex"
+import type { SPoint } from "@/eval/ty"
+import { frac, pt, real, rept, unpt } from "@/eval/ty/create"
+import type { Point } from "@/sheet/point"
+import type { RequireRadiansReason } from "@/sheet/ui/sheet"
 import {
   FN_ARCCOS,
   FN_ARCCOT,
@@ -32,81 +33,68 @@ import {
   FN_TAN,
 } from "./real"
 
-const sinGl = fn(
+export const sinGl = fn(
   ["c32"],
   "c32",
 )`return vec2(sin(${0}.x) * cosh(${0}.y), cos(${0}.x) * sinh(${0}.y));`
 
-const cosGl = fn(
+export const cosGl = fn(
   ["c32"],
   "c32",
 )`return vec2(cos(${0}.x) * cosh(${0}.y), -sin(${0}.x) * sinh(${0}.y));`
 
-const tanGl = fn(
+export const tanGl = fn(
   ["c32"],
   "c32",
 )`return ${divGl}(${sinGl}(${0}), ${cosGl}(${0}));`
 
-const cscGl = fn(["c32"], "c32")`return ${recipGl}(${sinGl}(${0}));`
+export const cscGl = fn(["c32"], "c32")`return ${recipGl}(${sinGl}(${0}));`
 
-const secGl = fn(["c32"], "c32")`return ${recipGl}(${cosGl}(${0}));`
+export const secGl = fn(["c32"], "c32")`return ${recipGl}(${cosGl}(${0}));`
 
-const cotGl = fn(
+export const cotGl = fn(
   ["c32"],
   "c32",
 )`return ${divGl}(${cosGl}(${0}), ${sinGl}(${0}));`
 
-function sinJs(a: Point) {
+export function sinJs(a: Point) {
   return {
     x: Math.sin(a.x) * Math.cosh(a.y),
     y: Math.cos(a.x) * Math.sinh(a.y),
   }
 }
 
-function cosJs(a: Point) {
+export function cosJs(a: Point) {
   return {
     x: Math.cos(a.x) * Math.cosh(a.y),
     y: -Math.sin(a.x) * Math.sinh(a.y),
   }
 }
 
-function tanJs(a: Point) {
+export function tanJs(a: Point) {
   return divJs(sinJs(a), cosJs(a))
 }
 
-function cotJs(a: Point) {
+export function cotJs(a: Point) {
   return divJs(cosJs(a), sinJs(a))
 }
 
-function recipJs({ x: c, y: d }: Point): SPoint {
-  const denom = c * c + d * d
-  if (denom == 0) return pt(approx(1 / c), approx(1 / d))
-  return pt(approx(c / denom), approx(d / denom))
+function recipJs(p: Point): SPoint {
+  return rept(recipP(p))
 }
 
-function divJs({ x: a, y: b }: Point, { x: c, y: d }: Point): SPoint {
-  const x = a * c + b * d
-  const y = b * c - a * d
-  const denom = c * c + d * d
-  return pt(approx(x / denom), approx(y / denom))
+export function divJs(a: Point, b: Point): SPoint {
+  return rept(divP(a, b))
 }
 
 function sqrtJs(z: SPoint): SPoint {
-  const x = num(z.x)
-  const y = num(z.y)
-  const h = Math.sqrt(Math.hypot(x, y))
-  const a = Math.atan2(y, x) / 2
-  return pt(real(Math.cos(a) * h), real(Math.sin(a) * h))
+  return rept(sqrtP(unpt(z)))
 }
 
-const I = pt(real(0), real(1))
-const ONE = pt(real(1), real(0))
+const I = rept(cx(0, 1))
+const ONE = rept(cx(1))
 
-function asinJs(a: SPoint) {
-  return mulPt(I, lnJs(subPt(sqrtJs(subPt(ONE, mulPt(a, a))), mulPt(I, a))))
-}
-
-function declareSqrt(ctx: GlslContext) {
+export function declareSqrt(ctx: GlslContext) {
   ctx.glsl`vec2 _helper_sqrt(vec2 z) {
   float a = atan(z.y, z.x) / 2.0;
   return vec2(cos(a), sin(a)) * sqrt(length(z));
@@ -180,6 +168,10 @@ function acscGlsl(ctx: GlslContext, a: string): string {
   declareAsin(ctx)
   declareDiv(ctx)
   return `_helper_asin(_helper_div(vec2(1, 0), ${a}))`
+}
+
+function asinJs(a: SPoint) {
+  return mulPt(I, lnJs(subPt(sqrtJs(subPt(ONE, mulPt(a, a))), mulPt(I, a))))
 }
 
 function acosJs(a: SPoint) {
