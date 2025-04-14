@@ -17,7 +17,6 @@ if (globalThis.location?.search.includes("onlypkg")) {
   }
 } else {
   for (const pkg of await all()) {
-    console.log(pkg.name)
     await factory.load(pkg)
   }
 }
