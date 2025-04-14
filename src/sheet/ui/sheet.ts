@@ -35,6 +35,7 @@ import {
   type VirtualPoint,
 } from "./cv/move"
 import { PickHandler2 } from "./cv/pick"
+import { Expr } from "./expr"
 
 export type RequireRadiansReason = "with a complex number" | "complex numbers"
 export type RequireRadiansContext = `call '${string}' ${RequireRadiansReason}`
@@ -508,6 +509,10 @@ void main() {
       this.checkGlsl()
     })
     this._qdGlsl = true
+  }
+
+  createExpr(geo?: boolean) {
+    return Expr.of(this, geo)
   }
 }
 

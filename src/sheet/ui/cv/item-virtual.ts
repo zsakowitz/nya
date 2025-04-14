@@ -10,7 +10,6 @@ import { L, R } from "@/field/dir"
 import { Block } from "@/field/model"
 import type { Point } from "../../point"
 import { Writer } from "../../write"
-import { Expr } from "../expr"
 import type { Sheet } from "../sheet"
 import { Color, Size } from "./consts"
 import type { ItemWithDrawTarget, ItemWithTarget } from "./move"
@@ -48,7 +47,7 @@ const TARGET_INTERSECTION: ItemWithDrawTarget<
       return ret
     }
 
-    const expr = Expr.of(sheet, true)
+    const expr = sheet.createExpr(true)
     item.ref = ref = CmdToken.new(sheet.scope)
     const cursor = expr.field.block.cursor(R)
     ref.insertAt(cursor, L)
@@ -137,7 +136,7 @@ const TARGET_GLIDER: ItemWithDrawTarget<
       return ret
     }
 
-    const expr = Expr.of(sheet, true)
+    const expr = sheet.createExpr(true)
     item.ref = ref = CmdToken.new(sheet.scope)
     const cursor = expr.field.block.cursor(R)
     ref.insertAt(cursor, L)
@@ -229,7 +228,7 @@ const TARGET_VPOINT: ItemWithDrawTarget<
       return ret
     }
 
-    const expr = Expr.of(sheet, true)
+    const expr = sheet.createExpr(true)
     item.ref = ref = CmdToken.new(sheet.scope)
     const cursor = expr.field.block.cursor(R)
     ref.insertAt(cursor, L)
