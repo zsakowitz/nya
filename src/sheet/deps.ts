@@ -273,14 +273,7 @@ export class Scope {
             this.propsJs.bindingsJs.withoutArgs(() => js(node, this.propsJs)),
         })
 
-        Object.defineProperty(bindingMapSym, def, {
-          configurable: true,
-          enumerable: true,
-          get: () =>
-            this.propsSym.bindingsSym.withoutArgs(() =>
-              sym(node, this.propsSym),
-            ),
-        })
+        // intentionally not defined on bindingMapSym
 
         Object.defineProperty(bindingMapGlsl, def, {
           configurable: true,

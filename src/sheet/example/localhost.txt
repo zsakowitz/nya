@@ -1,2 +1,5 @@
-f\left(x\right)=x\left(x\right)
-\operatorname{sym}f\left(a\right)
+f\left(x\right)=\operatorname{sinh}x^{2}
+f\left(x\right)
+\left(a,f\left(a\right)\right)
+a=0.75
+y-f\left(a\right)=\left(\frac{d}{dx}f\left(x\right)\operatorname{with}x=a\right)\left(x-a\right)
