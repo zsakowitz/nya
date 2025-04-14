@@ -6,6 +6,7 @@ import type { CmdFrac } from "./cmd/math/frac"
 import type { FieldInert } from "./field-inert"
 import type { LatexParser } from "./latex"
 import type { Options } from "./options"
+import { L, R } from "./sides"
 
 export function getBoundingClientRect(el: Element) {
   return el.getBoundingClientRect()
@@ -15,11 +16,7 @@ export function getBoundingClientRect(el: Element) {
 // user-level code. However, these may change, in the same vein as DOM getters
 // such as `.nextElementSibling`.
 
-/** Used across the system to represent the left side, or leftwards. */
-export const L = -1
-
-/** Used across the system to represent the right side, or rightwards. */
-export const R = 1
+export { L, R }
 
 /** Used across the system to represent the top side, or upwards. */
 export const U = -2

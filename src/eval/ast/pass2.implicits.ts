@@ -1,4 +1,4 @@
-import { L } from "@/field/model"
+import { L } from "@/field/sides"
 import { FNLIKE_MAGICVAR } from "./fnlike"
 import {
   getPrecedence,
