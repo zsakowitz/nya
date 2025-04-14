@@ -1,8 +1,7 @@
 import type { WithDocs } from "@/eval/ops/docs"
 import { CmdNum } from "@/field/cmd/leaf/num"
 import { CmdWord } from "@/field/cmd/leaf/word"
-import { fa } from "@/field/fa"
-import { h, hx } from "@/jsx"
+import { fa, h, hx } from "@/jsx"
 import type { IconDefinition } from "@fortawesome/free-solid-svg-icons"
 import { docFromSignature } from "./signature"
 

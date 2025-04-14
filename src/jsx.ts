@@ -1,3 +1,5 @@
+import type { IconDefinition } from "@fortawesome/free-solid-svg-icons"
+
 export const U_ZERO_WIDTH_SPACE = "\u200B"
 
 export function h(
@@ -142,14 +144,14 @@ export function li(
 }
 
 interface SVGDrawProps {
-  stroke?: string
+  "stroke"?: string
   "stroke-width"?: number
   "stroke-opacity"?: number
   "stroke-linecap"?: "round"
   "stroke-linejoin"?: "round"
-  fill?: string
+  "fill"?: string
   "fill-opacity"?: number
-  transform?: string
+  "transform"?: string
 }
 
 interface SVGProps {
@@ -240,4 +242,12 @@ export function sx(
     }
   }
   return el
+}
+
+export function fa(icon: IconDefinition, className: string) {
+  return svgx(
+    `0 0 ${icon.icon[0]} ${icon.icon[1]}`,
+    "overflow-visible " + className,
+    path(String(icon.icon[4])),
+  )
 }

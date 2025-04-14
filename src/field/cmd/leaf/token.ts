@@ -3,11 +3,10 @@ import { BindingFn, BindingGlslValue, id } from "@/eval/lib/binding"
 import type { JsVal, TyName } from "@/eval/ty"
 import { TY_INFO } from "@/eval/ty/info"
 import { L, R } from "@/field/dir"
-import { h, sx } from "@/jsx"
+import { fa, h, sx } from "@/jsx"
 import type { Scope } from "@/sheet/deps"
 import { faWarning } from "@fortawesome/free-solid-svg-icons/faWarning"
 import { Leaf } from "."
-import { fa } from "../../fa"
 import type { LatexParser } from "../../latex"
 import {
   Span,
