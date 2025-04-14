@@ -14,12 +14,13 @@ import {
 import type { GlslContext } from "@/eval/lib/fn"
 import { subscript } from "@/eval/lib/text"
 import { FnDist } from "@/eval/ops/dist"
+import type { DerivFn } from "@/eval/ops/dist-manual"
 import { declareAddR64, declareMulR64, declareR64 } from "@/eval/ops/r64"
 import { VARS } from "@/eval/ops/vars"
 import {
   binary,
   binaryFn,
-  call,
+  cl,
   insert,
   insertStrict,
   insertWrapped,
@@ -509,7 +510,7 @@ export const OP_RAISE: FnDist = new FnDist(
 )
 
 export function symSquare(x: Sym) {
-  return call(OP_RAISE, x, SYM_2)
+  return cl(OP_RAISE, x, SYM_2)
 }
 
 export const OP_POINT = new FnDist(
@@ -609,6 +610,12 @@ export const FN_XPRODY: FnDist = new FnDist(
 
 export function chain(f: Sym, wrt: PropsDeriv, ddx: Sym): Sym {
   return { type: "call", fn: OP_JUXTAPOSE, args: [txr(f).deriv(f, wrt), ddx] }
+}
+
+export function chaind(f: (a: Sym, props: PropsDeriv) => Sym): {
+  deriv: DerivFn
+} {
+  return { deriv: unary((props, a) => chain(a, props, f(a, props))) }
 }
 
 export function toRad(props: PropsDeriv, sym: Sym): Sym {

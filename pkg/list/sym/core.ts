@@ -30,6 +30,8 @@ declare module "@/eval/ty" {
   }
 }
 
+// FIXME: if g(x) = x^2, sym g(a) = x^2 (should be a^2)
+
 export default {
   name: "symbolics core",
   label: null,

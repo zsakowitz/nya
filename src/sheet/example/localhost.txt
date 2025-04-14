@@ -1,6 +1,5 @@
-\operatorname{sinh}\left(2+3i\right)
-\operatorname{cosh}\left(2+3i\right)
-\operatorname{tanh}\left(2+3i\right)
-\operatorname{coth}\left(2+3i\right)
-\operatorname{sech}\left(2+3i\right)
-\operatorname{csch}\left(2+3i\right)
+f\left(x\right)=\operatorname{sinh}x^{2}
+f\left(x\right)
+\left(a,f\left(a\right)\right)
+a=0.75
+y-f\left(a\right)=\left(\frac{d}{dx}f\left(x\right)\operatorname{with}x=a\right)\left(x-a\right)

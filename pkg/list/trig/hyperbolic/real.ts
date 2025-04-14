@@ -1,58 +1,38 @@
-import { chain, OP_JUXTAPOSE, OP_NEG, symSquare } from "#/list/core/ops"
+import { chaind, OP_JUXTAPOSE, OP_NEG, symSquare } from "#/list/core/ops"
 import type { Package } from "#/types"
 import { FnDist } from "@/eval/ops/dist"
-import { call, unary } from "@/eval/sym"
+import { cl } from "@/eval/sym"
 import { approx, num } from "@/eval/ty/create"
 
 export const FN_SINH: FnDist = new FnDist(
   "sinh",
   "takes the hyperbolic sinhe of an angle",
-  { deriv: unary((p, a) => chain(a, p, call(FN_COSH, a))) },
+  chaind((a) => cl(FN_COSH, a)),
 )
 export const FN_COSH: FnDist = new FnDist(
   "cosh",
   "takes the hyperbolic coshine of an angle",
-  { deriv: unary((p, a) => chain(a, p, call(FN_SINH, a))) },
+  chaind((a) => cl(FN_SINH, a)),
 )
 export const FN_TANH: FnDist = new FnDist(
   "tanh",
   "takes the hyperbolic tanhgent of an angle",
-  { deriv: unary((p, a) => chain(a, p, symSquare(call(FN_SECH, a)))) },
+  chaind((a) => symSquare(cl(FN_SECH, a))),
 )
 export const FN_CSCH: FnDist = new FnDist(
   "csch",
   "takes the hyperbolic cosecant of an angle",
-  {
-    deriv: unary((p, a) =>
-      chain(
-        a,
-        p,
-        call(OP_NEG, call(OP_JUXTAPOSE, call(FN_COTH, a), call(FN_CSCH, a))),
-      ),
-    ),
-  },
+  chaind((a) => cl(OP_NEG, cl(OP_JUXTAPOSE, cl(FN_COTH, a), cl(FN_CSCH, a)))),
 )
 export const FN_SECH: FnDist = new FnDist(
   "sech",
   "takes the hyperbolic secant of an angle",
-  {
-    deriv: unary((p, a) =>
-      chain(
-        a,
-        p,
-        call(OP_NEG, call(OP_JUXTAPOSE, call(FN_TANH, a), call(FN_SECH, a))),
-      ),
-    ),
-  },
+  chaind((a) => cl(OP_NEG, cl(OP_JUXTAPOSE, cl(FN_TANH, a), cl(FN_SECH, a)))),
 )
 export const FN_COTH: FnDist = new FnDist(
   "coth",
   "takes the hyperbolic cotangent of an angle",
-  {
-    deriv: unary((p, a) =>
-      chain(a, p, call(OP_NEG, symSquare(call(FN_CSCH, a)))),
-    ),
-  },
+  chaind((a) => cl(OP_NEG, symSquare(cl(FN_CSCH, a)))),
 )
 
 export const FN_ARSINH: FnDist = new FnDist(

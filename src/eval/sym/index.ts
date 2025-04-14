@@ -261,7 +261,7 @@ export function asBool(sym: Sym) {
   )
 }
 
-export function call(fn: Fn, ...args: Sym[]): Sym {
+export function cl(fn: Fn, ...args: Sym[]): Sym {
   return {
     type: "call",
     fn,
