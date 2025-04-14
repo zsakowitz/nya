@@ -1,4 +1,3 @@
-import { FnDist } from "@/eval/ops/dist"
 import type { JsVal, JsValue, TyName, Val } from "@/eval/ty"
 import { num, unpt } from "@/eval/ty/create"
 import { TY_INFO, type TyGlide } from "@/eval/ty/info"
@@ -8,6 +7,8 @@ import type { Expr } from "../expr"
 import type { Sheet } from "../sheet"
 import { Size } from "./consts"
 import {
+  FN_GLIDER,
+  FN_INTERSECTION,
   virtualGlider,
   virtualIntersection,
   virtualPoint3,
@@ -19,15 +20,8 @@ import type {
   VirtualPoint,
 } from "./move"
 
-export const FN_INTERSECTION = new FnDist<"point32">(
-  "intersection",
-  "constructs the point where two objects intersect",
-)
-
-export const FN_GLIDER = new FnDist<"point32">(
-  "glider",
-  "constructs a point on an object",
-)
+// DEBT: use direct export
+export { FN_GLIDER, FN_INTERSECTION }
 
 /** Hints as to what we're trying to pick. */
 export class Hint {

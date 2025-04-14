@@ -28,7 +28,7 @@
 <polygon fill="#757575" stroke="#757575" points="161.66,-8.63 171.69,-5.22 161.72,-1.63 161.66,-8.63"/>
 </g>
 <!-- sheet/ui/expr/index.ts&#45;&gt;sheet/factory&#45;expr.ts -->
-<g id="edge6" class="edge">
+<g id="edge5" class="edge">
 <title>sheet/ui/expr/index.ts&#45;&gt;sheet/factory&#45;expr.ts</title>
 <path fill="none" stroke="#757575" d="M173.2,-18.52C165.39,-18.62 157.39,-18.65 149.47,-18.6"/>
 <polygon fill="#757575" stroke="#757575" points="149.52,-15.1 139.48,-18.5 149.44,-22.1 149.52,-15.1"/>
@@ -40,7 +40,7 @@
 <text text-anchor="middle" x="419.12" y="-26.45" font-family="Arial" font-size="14.00" fill="#ff6c60">sheet/pick&#45;cursor.ts</text>
 </g>
 <!-- sheet/ui/expr/index.ts&#45;&gt;sheet/pick&#45;cursor.ts -->
-<g id="edge7" class="edge">
+<g id="edge6" class="edge">
 <title>sheet/ui/expr/index.ts&#45;&gt;sheet/pick&#45;cursor.ts</title>
 <path fill="none" stroke="#757575" d="M317.15,-20.13C325.13,-21.05 333.29,-22 341.35,-22.94"/>
 <polygon fill="#757575" stroke="#757575" points="340.79,-26.4 351.12,-24.08 341.6,-19.45 340.79,-26.4"/>
@@ -60,26 +60,20 @@
 <!-- sheet/ui/cv/item&#45;virtual.ts -->
 <g id="node5" class="node">
 <title>sheet/ui/cv/item&#45;virtual.ts</title>
-<path fill="none" stroke="#ff6c60" d="M839.33,-43.75C839.33,-43.75 689.92,-43.75 689.92,-43.75 685.96,-43.75 682,-39.79 682,-35.83 682,-35.83 682,-27.92 682,-27.92 682,-23.96 685.96,-20 689.92,-20 689.92,-20 839.33,-20 839.33,-20 843.29,-20 847.25,-23.96 847.25,-27.92 847.25,-27.92 847.25,-35.83 847.25,-35.83 847.25,-39.79 843.29,-43.75 839.33,-43.75"/>
-<text text-anchor="middle" x="764.62" y="-26.45" font-family="Arial" font-size="14.00" fill="#ff6c60">sheet/ui/cv/item&#45;virtual.ts</text>
+<path fill="none" stroke="#ff6c60" d="M839.33,-23.75C839.33,-23.75 689.92,-23.75 689.92,-23.75 685.96,-23.75 682,-19.79 682,-15.83 682,-15.83 682,-7.92 682,-7.92 682,-3.96 685.96,0 689.92,0 689.92,0 839.33,0 839.33,0 843.29,0 847.25,-3.96 847.25,-7.92 847.25,-7.92 847.25,-15.83 847.25,-15.83 847.25,-19.79 843.29,-23.75 839.33,-23.75"/>
+<text text-anchor="middle" x="764.62" y="-6.45" font-family="Arial" font-size="14.00" fill="#ff6c60">sheet/ui/cv/item&#45;virtual.ts</text>
 </g>
 <!-- sheet/ui/cv/item.ts&#45;&gt;sheet/ui/cv/item&#45;virtual.ts -->
-<g id="edge5" class="edge">
+<g id="edge4" class="edge">
 <title>sheet/ui/cv/item.ts&#45;&gt;sheet/ui/cv/item&#45;virtual.ts</title>
-<path fill="none" stroke="#757575" d="M646.48,-25.42C654.17,-25.25 662.16,-25.15 670.2,-25.13"/>
-<polygon fill="#757575" stroke="#757575" points="670.05,-28.63 680.05,-25.14 670.06,-21.63 670.05,-28.63"/>
+<path fill="none" stroke="#757575" d="M646.48,-24.96C654.17,-24.1 662.16,-23.21 670.2,-22.31"/>
+<polygon fill="#757575" stroke="#757575" points="670.51,-25.8 680.06,-21.21 669.73,-18.84 670.51,-25.8"/>
 </g>
 <!-- sheet/ui/cv/item&#45;virtual.ts&#45;&gt;sheet/ui/expr/index.ts -->
-<g id="edge4" class="edge">
-<title>sheet/ui/cv/item&#45;virtual.ts&#45;&gt;sheet/ui/expr/index.ts</title>
-<path fill="none" stroke="#757575" d="M706.16,-19.52C687.11,-15.99 665.73,-12.62 646,-10.88 536.4,-1.17 409.23,-3.87 328.29,-7.33"/>
-<polygon fill="#757575" stroke="#757575" points="328.53,-3.82 318.69,-7.76 328.84,-10.81 328.53,-3.82"/>
-</g>
-<!-- sheet/ui/cv/item&#45;virtual.ts&#45;&gt;sheet/ui/cv/item.ts -->
 <g id="edge3" class="edge">
-<title>sheet/ui/cv/item&#45;virtual.ts&#45;&gt;sheet/ui/cv/item.ts</title>
-<path fill="none" stroke="#757575" d="M681.57,-38.6C673.64,-38.65 665.63,-38.62 657.8,-38.52"/>
-<polygon fill="#757575" stroke="#757575" points="658.05,-35.03 647.99,-38.36 657.93,-42.03 658.05,-35.03"/>
+<title>sheet/ui/cv/item&#45;virtual.ts&#45;&gt;sheet/ui/expr/index.ts</title>
+<path fill="none" stroke="#757575" d="M681.68,-11.09C669.71,-11 657.54,-10.92 646,-10.88 515.78,-10.32 483.22,-10.27 353,-10.88 345.19,-10.91 337.06,-10.96 328.92,-11.02"/>
+<polygon fill="#757575" stroke="#757575" points="328.94,-7.52 318.97,-11.1 328.99,-14.52 328.94,-7.52"/>
 </g>
 </g>
 </svg>
