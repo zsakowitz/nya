@@ -1,10 +1,10 @@
+import { L, R, U } from "@/field/dir"
 import { LatexParser } from "@/field/latex"
 import { Block } from "@/field/model"
-import { L, R, U } from "@/field/dir"
 import { faSquareRootVariable } from "@fortawesome/free-solid-svg-icons"
 import type { ItemFactory } from "./item"
 import type { ItemData } from "./ui/cv/move"
-import { Expr, type ExprStateOk } from "./ui/expr"
+import type { Expr, ExprStateOk } from "./ui/expr"
 
 function local(data: ItemData<Expr, unknown>): ItemData<{}> {
   return {
@@ -18,9 +18,8 @@ export const FACTORY_EXPR: ItemFactory<Expr, { geo?: boolean }> = {
   id: "nya:expr",
   name: "field",
   icon: faSquareRootVariable,
-
   init(ref, source) {
-    const expr = new Expr(ref.root.sheet, ref)
+    const expr: Expr = (ref.root.sheet as any)._createExprWithRef(ref)
     if (source) {
       expr.field.onBeforeChange()
       const block = new LatexParser(
