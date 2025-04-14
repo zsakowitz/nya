@@ -1,12 +1,5 @@
-import {
-  Command,
-  L,
-  R,
-  type Block,
-  type Cursor,
-  type Dir,
-  type VDir,
-} from "../../../model"
+import { L, R, type Dir, type VDir } from "@/field/sides"
+import { Command, type Block, type Cursor } from "../../../model"
 
 export abstract class CmuLeaf extends Command<[]> {
   constructor(ctrlSeq: string, html: HTMLSpanElement) {

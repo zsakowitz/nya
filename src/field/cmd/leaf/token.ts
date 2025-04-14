@@ -2,6 +2,7 @@ import type { Node } from "@/eval/ast/token"
 import { BindingFn, BindingGlslValue, id } from "@/eval/lib/binding"
 import type { JsVal, TyName } from "@/eval/ty"
 import { TY_INFO } from "@/eval/ty/info"
+import { L, R } from "@/field/sides"
 import { h, sx } from "@/jsx"
 import type { Scope } from "@/sheet/deps"
 import { faWarning } from "@fortawesome/free-solid-svg-icons/faWarning"
@@ -9,13 +10,11 @@ import { Leaf } from "."
 import { fa } from "../../fa"
 import type { LatexParser } from "../../latex"
 import {
+  Span,
   type Command,
   type Cursor,
   type InitProps,
   type InitRet,
-  L,
-  R,
-  Span,
 } from "../../model"
 import { CmdUnknown } from "./unknown"
 
@@ -50,9 +49,9 @@ export function createToken(color: string, ...paths: SVGElement[]) {
   const svg = sx(
     "svg",
     {
-      class:
+      "class":
         "size-[16px] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 fill-transparent stroke-current overflow-visible",
-      viewBox: "0 0 1 1",
+      "viewBox": "0 0 1 1",
       "stroke-linejoin": "round",
       "stroke-linecap": "round",
     },

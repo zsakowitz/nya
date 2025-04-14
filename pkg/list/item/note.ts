@@ -1,6 +1,6 @@
 import type { Package } from "#/types"
 import { fa } from "@/field/fa"
-import { D, L, R, U } from "@/field/model"
+import { D, L, R, U } from "@/field/sides"
 import { hx } from "@/jsx"
 import type { ItemFactory } from "@/sheet/item"
 import type { ItemRef } from "@/sheet/items"

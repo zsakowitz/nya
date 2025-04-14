@@ -15,7 +15,8 @@ import {
 } from "@/eval/sym"
 import { OpEq, OpGt, OpLt } from "@/field/cmd/leaf/cmp"
 import { CmdWord } from "@/field/cmd/leaf/word"
-import { Block, L, R, type Command } from "@/field/model"
+import { Block, type Command } from "@/field/model"
+import { L, R } from "@/field/sides"
 
 function create(name: string, op: () => Command): FnDist {
   return new FnDist(name, `compares two values via the ${name} operator`, {

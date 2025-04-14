@@ -1,6 +1,7 @@
 import type { WordKind } from "@/field/cmd/leaf/var"
 import { CmdBrack } from "@/field/cmd/math/brack"
-import { Block, L, R, type Command, type Cursor } from "@/field/model"
+import { Block, type Command, type Cursor } from "@/field/model"
+import { L, R } from "@/field/sides"
 import type { Deps } from "../deps"
 import type { PropsGlsl, PropsSym } from "../glsl"
 import type { PropsJs } from "../js"

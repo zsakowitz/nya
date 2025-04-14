@@ -6,7 +6,7 @@ import type { SColor, SReal } from "@/eval/ty"
 import { frac, gl, num, real } from "@/eval/ty/create"
 import { TY_INFO } from "@/eval/ty/info"
 import { CmdColor } from "@/field/cmd/leaf/color"
-import { L } from "@/field/model"
+import { L } from "@/field/sides"
 import { h } from "@/jsx"
 import { OP_CDOT } from "$/core/ops"
 

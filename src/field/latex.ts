@@ -2,8 +2,9 @@ import type { Scope } from "@/sheet/deps"
 import { CmdEOF } from "./cmd/leaf/eof"
 import { CmdUnknown } from "./cmd/leaf/unknown"
 import type { FieldInert } from "./field-inert"
-import { Block, L, R, type Command } from "./model"
+import { Block, type Command } from "./model"
 import { WordMap, type Options } from "./options"
+import { L, R } from "./sides"
 
 export interface LatexInit {
   fromLatex(cmd: string, parser: LatexParser): Command | Block

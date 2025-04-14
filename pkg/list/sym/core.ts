@@ -20,7 +20,8 @@ import { CmdDot, CmdNum } from "@/field/cmd/leaf/num"
 import { OpPlusMinus } from "@/field/cmd/leaf/op"
 import { CmdWord } from "@/field/cmd/leaf/word"
 import { CmdSupSub } from "@/field/cmd/math/supsub"
-import { Block, L, R } from "@/field/model"
+import { Block } from "@/field/model"
+import { L, R } from "@/field/sides"
 import { h } from "@/jsx"
 
 declare module "@/eval/ty" {

@@ -1,15 +1,9 @@
 import type { Node, Punc, PuncInfix, PuncPm } from "@/eval/ast/token"
+import { L, R } from "@/field/sides"
 import { h } from "@/jsx"
 import { Leaf } from "."
 import type { LatexParser } from "../../latex"
-import {
-  L,
-  R,
-  Span,
-  type Command,
-  type Cursor,
-  type InitProps,
-} from "../../model"
+import { Span, type Command, type Cursor, type InitProps } from "../../model"
 import { CmdSupSub } from "../math/supsub"
 import { Op } from "./op-core"
 

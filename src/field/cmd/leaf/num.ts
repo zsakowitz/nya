@@ -1,17 +1,9 @@
 import type { Node } from "@/eval/ast/token"
+import { L, R, type Dir } from "@/field/sides"
 import { h } from "@/jsx"
 import { Leaf } from "."
 import type { LatexParser } from "../../latex"
-import {
-  Block,
-  Cursor,
-  L,
-  R,
-  Span,
-  type Command,
-  type Dir,
-  type InitProps,
-} from "../../model"
+import { Block, Cursor, Span, type Command, type InitProps } from "../../model"
 import { CmdSupSub } from "../math/supsub"
 import { CmdVar } from "./var"
 

@@ -1,4 +1,5 @@
-import { Command, Cursor, L, R, type Block, type Dir } from "../../model"
+import { L, R, type Dir } from "@/field/sides"
+import { Command, Cursor, type Block } from "../../model"
 
 export function focusEdge(command: Command, x: number) {
   const [lhs, rhs] = command.bounds()

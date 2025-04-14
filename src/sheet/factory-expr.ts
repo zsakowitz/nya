@@ -1,22 +1,20 @@
 import { LatexParser } from "@/field/latex"
-import { Block, U } from "@/field/model"
-import { L, R } from "@/field/sides"
+import { Block } from "@/field/model"
+import { L, R, U } from "@/field/sides"
 import { faSquareRootVariable } from "@fortawesome/free-solid-svg-icons"
 import type { ItemFactory } from "./item"
 import type { ItemData } from "./ui/cv/move"
 import { Expr, type ExprStateOk } from "./ui/expr"
 
-type K = { readonly __unique_id: unique symbol }
-
-function local(data: ItemData<Expr<K>, unknown>): ItemData<K> {
+function local(data: ItemData<Expr, unknown>): ItemData<{}> {
   return {
-    data: (data.data.state as ExprStateOk<K>).data!,
+    data: (data.data.state as ExprStateOk).data!,
     index: data.index,
     item: data.item,
   }
 }
 
-export const FACTORY_EXPR: ItemFactory<Expr<K>, { geo?: boolean }> = {
+export const FACTORY_EXPR: ItemFactory<Expr, { geo?: boolean }> = {
   id: "nya:expr",
   name: "field",
   icon: faSquareRootVariable,
@@ -35,7 +33,7 @@ export const FACTORY_EXPR: ItemFactory<Expr<K>, { geo?: boolean }> = {
       expr.field.sel = expr.field.block.cursor(R).selection()
       expr.field.onAfterChange(false)
     }
-    return expr as Expr<K>
+    return expr as Expr
   },
   aside(data) {
     return data.aside
@@ -56,28 +54,28 @@ export const FACTORY_EXPR: ItemFactory<Expr<K>, { geo?: boolean }> = {
     },
     draw(data, item, index) {
       // This cast is safe since it wouldn't be called unless `items` returned.
-      const state = data.state as ExprStateOk<K>
+      const state = data.state as ExprStateOk
       state.ext!.plot!.draw(state.data!, item, index)
     },
     target: {
       hits(data, at, hint) {
-        const state = data.data.state as ExprStateOk<K>
+        const state = data.data.state as ExprStateOk
         return !!state.ext!.plot!.target?.hits(local(data), at, hint)
       },
       focus(data) {
-        const state = data.state as ExprStateOk<K>
+        const state = data.state as ExprStateOk
         state.ext?.plot?.target?.focus(state.data!)
       },
       toggle(item, on, reason) {
-        const state = item.data.state as ExprStateOk<K>
+        const state = item.data.state as ExprStateOk
         state.ext?.plot?.target!.toggle(local(item), on, reason)
       },
       ref(item) {
-        const state = item.data.state as ExprStateOk<K>
+        const state = item.data.state as ExprStateOk
         return state.ext?.plot?.target!.ref(local(item)) ?? new Block(null)
       },
       val(item) {
-        const state = item.data.state as ExprStateOk<K>
+        const state = item.data.state as ExprStateOk
         return (
           state.ext?.plot?.target!.val(local(item)) ?? {
             type: "never",
@@ -86,11 +84,11 @@ export const FACTORY_EXPR: ItemFactory<Expr<K>, { geo?: boolean }> = {
         )
       },
       dragOrigin(item) {
-        const state = item.data.state as ExprStateOk<K>
+        const state = item.data.state as ExprStateOk
         return state.ext?.plot?.target!.dragOrigin?.(local(item)) ?? null
       },
       drag(item, at) {
-        const state = item.data.state as ExprStateOk<K>
+        const state = item.data.state as ExprStateOk
         return state.ext?.plot?.target!.drag!(local(item), at)
       },
     },

@@ -19,7 +19,8 @@ import { CmdWord } from "@/field/cmd/leaf/word"
 import { CmdFrac } from "@/field/cmd/math/frac"
 import { CmdSupSub } from "@/field/cmd/math/supsub"
 import { toText } from "@/field/latex"
-import { Block, L, R } from "@/field/model"
+import { Block } from "@/field/model"
+import { L, R } from "@/field/sides"
 import { b, h, px, sx } from "@/jsx"
 import {
   OP_ADD,

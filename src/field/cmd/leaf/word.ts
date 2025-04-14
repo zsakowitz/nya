@@ -1,8 +1,9 @@
 import type { Node } from "@/eval/ast/token"
 import type { LatexParser } from "@/field/latex"
+import { L, R } from "@/field/sides"
 import { h } from "@/jsx"
 import { Leaf } from "."
-import { L, R, Span, type Command } from "../../model"
+import { Span, type Command } from "../../model"
 import { CmdUnknown } from "./unknown"
 import type { WordKind } from "./var"
 

@@ -1,8 +1,9 @@
 import type { Node } from "@/eval/ast/token"
 import type { LatexParser } from "@/field/latex"
+import { L } from "@/field/sides"
 import { h, hx } from "@/jsx"
 import { Leaf } from "."
-import { L, type Command, type Cursor, type InitProps } from "../../model"
+import type { Command, Cursor, InitProps } from "../../model"
 
 export function brightness(rgb: string) {
   const r = parseInt(rgb.slice(1, 3), 16) / 255

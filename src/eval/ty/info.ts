@@ -1,5 +1,5 @@
 import { CmdWord } from "@/field/cmd/leaf/word"
-import { L } from "@/field/model"
+import { L } from "@/field/sides"
 import { h, path, svgx } from "@/jsx"
 import type { Point } from "@/sheet/point"
 import type { Cv } from "@/sheet/ui/cv"

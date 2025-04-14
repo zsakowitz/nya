@@ -49,7 +49,8 @@ import { CmdBrack } from "@/field/cmd/math/brack"
 import { CmdFrac } from "@/field/cmd/math/frac"
 import { CmdRoot } from "@/field/cmd/math/root"
 import { CmdSupSub } from "@/field/cmd/math/supsub"
-import { Block, L, R, Span } from "@/field/model"
+import { Block, Span } from "@/field/model"
+import { L, R } from "@/field/sides"
 import { OP_PLOTSIGN } from "@/sheet/shader-line"
 
 // FIXME: use direct from source

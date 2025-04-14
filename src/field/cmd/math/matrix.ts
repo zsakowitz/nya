@@ -1,18 +1,8 @@
 import type { Node } from "@/eval/ast/token"
+import { D, L, R, U, type Dir, type VDir } from "@/field/sides"
 import { h } from "@/jsx"
 import type { LatexParser } from "../../latex"
-import {
-  Block,
-  Command,
-  Cursor,
-  D,
-  getBoundingClientRect,
-  L,
-  R,
-  U,
-  type Dir,
-  type VDir,
-} from "../../model"
+import { Block, Command, Cursor, getBoundingClientRect } from "../../model"
 import { focusEdge } from "../leaf"
 
 type Coords = [row: number, col: number]

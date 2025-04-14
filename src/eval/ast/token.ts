@@ -2,7 +2,7 @@ import type { WordKind } from "@/field/cmd/leaf/var"
 import type { BigCmd } from "@/field/cmd/math/big"
 import type { ParenLhs, ParenRhs } from "@/field/cmd/math/brack"
 import type { Span } from "@/field/model"
-import { type FnParam } from "../lib/binding"
+import type { FnParam } from "../lib/binding"
 import type { Sym } from "../sym"
 import type { GlslValue, JsValue } from "../ty"
 

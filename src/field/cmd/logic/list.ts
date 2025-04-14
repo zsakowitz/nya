@@ -1,17 +1,8 @@
 import type { Node } from "@/eval/ast/token"
+import { D, L, R, U, type Dir, type VDir } from "@/field/sides"
 import { h } from "@/jsx"
 import type { LatexParser } from "../../latex"
-import {
-  Block,
-  Command,
-  D,
-  L,
-  R,
-  U,
-  type Cursor,
-  type Dir,
-  type VDir,
-} from "../../model"
+import { Block, Command, type Cursor } from "../../model"
 import { focusEdge, Leaf } from "../leaf"
 import { closestGridCell } from "../math/matrix"
 

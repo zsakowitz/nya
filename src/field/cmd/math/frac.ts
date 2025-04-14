@@ -1,19 +1,9 @@
 import type { Node, PlainVar } from "@/eval/ast/token"
 import { tryId } from "@/eval/lib/binding"
+import { D, L, R, U, type Dir, type VDir } from "@/field/sides"
 import { U_ZERO_WIDTH_SPACE, h } from "@/jsx"
 import type { LatexParser } from "../../latex"
-import {
-  Block,
-  Command,
-  D,
-  L,
-  R,
-  U,
-  type Cursor,
-  type Dir,
-  type Selection,
-  type VDir,
-} from "../../model"
+import { Block, Command, type Cursor, type Selection } from "../../model"
 import { focusEdge } from "../leaf"
 import { OpCeq } from "../leaf/cmp"
 import { OpDiv } from "../leaf/op"

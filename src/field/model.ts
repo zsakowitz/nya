@@ -6,7 +6,7 @@ import type { CmdFrac } from "./cmd/math/frac"
 import type { FieldInert } from "./field-inert"
 import type { LatexParser } from "./latex"
 import type { Options } from "./options"
-import { L, R } from "./sides"
+import { D, L, R, U, type Dir, type VDir } from "./sides"
 
 export function getBoundingClientRect(el: Element) {
   return el.getBoundingClientRect()
@@ -15,20 +15,6 @@ export function getBoundingClientRect(el: Element) {
 // Many properties are declared as `readonly` to prevent changes to them in
 // user-level code. However, these may change, in the same vein as DOM getters
 // such as `.nextElementSibling`.
-
-export { L, R }
-
-/** Used across the system to represent the top side, or upwards. */
-export const U = -2
-
-/** Used across the system to represent the bottom side, or downwards. */
-export const D = 2
-
-/** A direction or side. */
-export type Dir = -1 | 1
-
-/** A vertical direction or side. */
-export type VDir = -2 | 2
 
 /** Pointers to the {@linkcode Command}s on either side of a {@linkcode Block}. */
 interface Ends {

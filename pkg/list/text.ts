@@ -11,15 +11,8 @@ import { Display } from "@/eval/ty/display"
 import { Leaf } from "@/field/cmd/leaf"
 import type { FieldInert } from "@/field/field-inert"
 import { LatexParser, toText } from "@/field/latex"
-import {
-  Block,
-  L,
-  R,
-  type Command,
-  type Cursor,
-  type Dir,
-  type InitProps,
-} from "@/field/model"
+import { Block, type Command, type Cursor, type InitProps } from "@/field/model"
+import { L, R, type Dir } from "@/field/sides"
 import { h, hx, t } from "@/jsx"
 import { defineExt, Store } from "@/sheet/ext"
 import { circle } from "@/sheet/ui/expr/circle"

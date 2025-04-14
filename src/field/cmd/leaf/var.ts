@@ -8,20 +8,12 @@ import {
 } from "@/eval/ast/token"
 import { TXR_MAGICVAR } from "@/eval/ast/tx"
 import { subscript } from "@/eval/lib/text"
+import { L, R, type Dir } from "@/field/sides"
 import { h } from "@/jsx"
 import type { Scope } from "@/sheet/deps"
 import { Leaf } from "."
 import type { LatexParser } from "../../latex"
-import {
-  Block,
-  Cursor,
-  L,
-  R,
-  Span,
-  type Command,
-  type Dir,
-  type InitProps,
-} from "../../model"
+import { Block, Cursor, Span, type Command, type InitProps } from "../../model"
 import type { Options, WordMap } from "../../options"
 import { CmdSupSub } from "../math/supsub"
 import { CmdDot, CmdNum } from "./num"

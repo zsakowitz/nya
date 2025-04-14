@@ -1,6 +1,6 @@
 import type { GlslResult } from "@/eval/lib/fn"
-import { type VDir } from "@/field/model"
-import { type IconDefinition } from "@fortawesome/free-solid-svg-icons"
+import type { VDir } from "@/field/sides"
+import type { IconDefinition } from "@fortawesome/free-solid-svg-icons"
 import type { ItemRef } from "./items"
 import type { Plottable } from "./ui/cv/item"
 
