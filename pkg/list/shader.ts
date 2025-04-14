@@ -1,7 +1,8 @@
 import type { Package } from "#/types"
+import { OP_PLOT } from "$/color/core"
 import { example } from "@/docs/core"
-import { glsl, jsToGlsl } from "@/eval/glsl"
-import { js } from "@/eval/js"
+import { glsl, js } from "@/eval/ast/tx"
+import { jsToGlsl } from "@/eval/glsl"
 import { id } from "@/eval/lib/binding"
 import type { Fn } from "@/eval/ops"
 import { ALL_DOCS, type WithDocs } from "@/eval/ops/docs"
@@ -13,7 +14,6 @@ import { Store, defineExt } from "@/sheet/ext"
 import { createLine } from "@/sheet/shader-line"
 import { circle } from "@/sheet/ui/expr/circle"
 import { PROP_SHOWN } from "@/show"
-import { OP_PLOT } from "$/color/core"
 
 const store = new Store((expr) => {
   const circEmpty = circle("empty")

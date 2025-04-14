@@ -1,7 +1,7 @@
 import type { Package } from "#/types"
 import { Precedence, type Nodes } from "@/eval/ast/token"
-import { glsl, jsToGlsl } from "@/eval/glsl"
-import { js } from "@/eval/js"
+import { glsl, js } from "@/eval/ast/tx"
+import { jsToGlsl } from "@/eval/glsl"
 import { issue } from "@/eval/ops/issue"
 import {
   insertStrict,
@@ -20,8 +20,8 @@ import { CmdDot, CmdNum } from "@/field/cmd/leaf/num"
 import { OpPlusMinus } from "@/field/cmd/leaf/op"
 import { CmdWord } from "@/field/cmd/leaf/word"
 import { CmdSupSub } from "@/field/cmd/math/supsub"
-import { Block } from "@/field/model"
 import { L, R } from "@/field/dir"
+import { Block } from "@/field/model"
 import { h } from "@/jsx"
 
 declare module "@/eval/ty" {

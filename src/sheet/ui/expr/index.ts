@@ -1,5 +1,5 @@
 import type { PlainVar } from "@/eval/ast/token"
-import { js } from "@/eval/js"
+import { js } from "@/eval/ast/tx"
 import { id } from "@/eval/lib/binding"
 import type { GlslResult } from "@/eval/lib/fn"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "@/eval/ops/vars"

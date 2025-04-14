@@ -1,7 +1,7 @@
 import type { Package } from "#/types"
+import { gridlineCoords } from "$/gridlines"
 import type { Node } from "@/eval/ast/token"
-import { NO_SYM } from "@/eval/ast/tx"
-import { js } from "@/eval/js"
+import { js, NO_SYM } from "@/eval/ast/tx"
 import { id } from "@/eval/lib/binding"
 import { issue } from "@/eval/ops/issue"
 import { each, type JsValue, type Val } from "@/eval/ty"
@@ -16,7 +16,6 @@ import { norm } from "@/sheet/point"
 import { Color, Opacity, Order, Size } from "@/sheet/ui/cv/consts"
 import type { Expr } from "@/sheet/ui/expr"
 import { vectorPath } from "./geo/dcg/vector"
-import { gridlineCoords } from "$/gridlines"
 
 declare module "@/eval/ty" {
   interface Tys {

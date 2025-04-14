@@ -304,12 +304,24 @@ const FACTORY: ItemFactory<Data> = {
 const FN_IMGWIDTH = new FnDist(
   "imgwidth",
   "gets the natural width of an image",
-).add(["image"], "r32", (a) => real(a.value.width), glsl, "imgwidth(...)")
+).add(
+  ["image"],
+  "r32",
+  (a) => real(a.value.width),
+  imageShaderError,
+  "imgwidth(...)",
+)
 
 const FN_IMGHEIGHT = new FnDist(
   "imgheight",
   "gets the natural height of an image",
-).add(["image"], "r32", (a) => real(a.value.height), glsl, "imgheight(...)")
+).add(
+  ["image"],
+  "r32",
+  (a) => real(a.value.height),
+  imageShaderError,
+  "imgheight(...)",
+)
 
 const FN_IMGASPECT = new FnDist(
   "imgaspect",
@@ -318,7 +330,7 @@ const FN_IMGASPECT = new FnDist(
   ["image"],
   "r32",
   (a) => frac(a.value.width, a.value.height),
-  glsl,
+  imageShaderError,
   "imgaspect(...)",
 )
 
@@ -332,10 +344,10 @@ export default {
         name: "image file",
         namePlural: "image files",
         get glsl(): never {
-          return glsl()
+          return imageShaderError()
         },
         toGlsl() {
-          glsl()
+          imageShaderError()
         },
         garbage: {
           js: {
@@ -344,7 +356,7 @@ export default {
             height: 0,
           },
           get glsl(): never {
-            return glsl()
+            return imageShaderError()
           },
         },
         coerce: {},
@@ -413,7 +425,7 @@ export default {
             return { type: "image", value: node.data, list: false }
           },
           glsl() {
-            return glsl()
+            return imageShaderError()
           },
         },
       },
@@ -429,6 +441,6 @@ export default {
   },
 } satisfies Package
 
-export function glsl(): never {
+export function imageShaderError(): never {
   throw new Error("Cannot manipulate image data in shaders yet.")
 }

@@ -35,7 +35,7 @@ import {
   subR64,
 } from "$/core/ops"
 import type { FnSignature } from "@/docs/signature"
-import { js } from "@/eval/js"
+import { js } from "@/eval/ast/tx"
 import { asNumericBase, parseNumberGlsl, parseNumberJs } from "@/eval/lib/base"
 import { SYM_BINDINGS } from "@/eval/lib/binding"
 import type { GlslContext } from "@/eval/lib/fn"

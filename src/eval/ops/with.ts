@@ -1,8 +1,8 @@
+import { glsl, js, TXR_MAGICVAR } from "@/eval/ast/tx"
 import type { Node } from "../ast/token"
-import { TXR_MAGICVAR } from "../ast/tx"
 import type { Deps } from "../deps"
-import { glsl, type PropsGlsl } from "../glsl"
-import { js, type PropsJs } from "../js"
+import type { PropsGlsl } from "../glsl"
+import type { PropsJs } from "../js"
 import { parseBindings, parseBindingVar } from "../lib/binding"
 import type { GlslValue, JsValue } from "../ty"
 

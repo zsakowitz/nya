@@ -1,10 +1,10 @@
 import type { Package } from "#/types"
 import { example } from "@/docs/core"
 import type { MagicVar, Node } from "@/eval/ast/token"
-import { NO_SYM } from "@/eval/ast/tx"
+import { glsl, js, NO_SYM } from "@/eval/ast/tx"
 import type { Deps } from "@/eval/deps"
-import { type PropsGlsl, glsl } from "@/eval/glsl"
-import { type PropsJs, js } from "@/eval/js"
+import type { PropsGlsl } from "@/eval/glsl"
+import type { PropsJs } from "@/eval/js"
 import {
   type Binding,
   id,

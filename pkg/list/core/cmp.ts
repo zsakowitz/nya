@@ -1,8 +1,6 @@
 import type { Package } from "#/types"
 import { Precedence } from "@/eval/ast/token"
-import { NO_DRAG, sym } from "@/eval/ast/tx"
-import { glsl } from "@/eval/glsl"
-import { js } from "@/eval/js"
+import { glsl, js, NO_DRAG, sym } from "@/eval/ast/tx"
 import { OP_BINARY } from "@/eval/ops"
 import { FnDist } from "@/eval/ops/dist"
 import {
@@ -15,8 +13,8 @@ import {
 } from "@/eval/sym"
 import { OpEq, OpGt, OpLt } from "@/field/cmd/leaf/cmp"
 import { CmdWord } from "@/field/cmd/leaf/word"
-import { Block, type Command } from "@/field/model"
 import { L, R } from "@/field/dir"
+import { Block, type Command } from "@/field/model"
 
 function create(name: string, op: () => Command): FnDist {
   return new FnDist(name, `compares two values via the ${name} operator`, {

@@ -1,4 +1,4 @@
-import { js } from "@/eval/js"
+import { js } from "@/eval/ast/tx"
 import { each } from "@/eval/ty"
 import { TY_INFO } from "@/eval/ty/info"
 import { CmdValue } from "@/field/cmd/leaf/value"

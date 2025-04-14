@@ -1,8 +1,6 @@
 import type { Package } from "#/types"
 import { Precedence } from "@/eval/ast/token"
-import { dragNum, dragPoint, NO_DRAG, sym } from "@/eval/ast/tx"
-import { glsl } from "@/eval/glsl"
-import { js } from "@/eval/js"
+import { dragNum, dragPoint, glsl, js, NO_DRAG, sym } from "@/eval/ast/tx"
 import { parseNumberJs } from "@/eval/lib/base"
 import {
   BindingFn,
@@ -49,8 +47,8 @@ import { CmdBrack } from "@/field/cmd/math/brack"
 import { CmdFrac } from "@/field/cmd/math/frac"
 import { CmdRoot } from "@/field/cmd/math/root"
 import { CmdSupSub } from "@/field/cmd/math/supsub"
-import { Block, Span } from "@/field/model"
 import { L, R } from "@/field/dir"
+import { Block, Span } from "@/field/model"
 import { OP_PLOTSIGN } from "@/sheet/shader-line"
 
 // FIXME: use direct from source

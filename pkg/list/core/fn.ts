@@ -6,9 +6,9 @@ import {
   type PuncUnary,
   type Var,
 } from "@/eval/ast/token"
-import { NO_DRAG, NO_SYM, sym } from "@/eval/ast/tx"
-import { glsl, glslCall, type PropsGlsl, type PropsSym } from "@/eval/glsl"
-import { js, jsCall, type PropsJs } from "@/eval/js"
+import { glsl, js, NO_DRAG, NO_SYM, sym } from "@/eval/ast/tx"
+import { glslCall, type PropsGlsl, type PropsSym } from "@/eval/glsl"
+import { jsCall, type PropsJs } from "@/eval/js"
 import { asNumericBase } from "@/eval/lib/base"
 import {
   BindingFn,

@@ -2,8 +2,8 @@ import type { ParenLhs, ParenRhs } from "@/field/cmd/math/brack"
 import type { Span } from "@/field/model"
 import type { FieldComputed } from "@/sheet/deps"
 import type { Deps } from "../deps"
-import { glsl, type PropsGlsl, type PropsSym } from "../glsl"
-import { js, type PropsJs } from "../js"
+import type { PropsGlsl, PropsSym } from "../glsl"
+import type { PropsJs } from "../js"
 import type { Bindings } from "../lib/binding"
 import { OP_BINARY, OP_UNARY } from "../ops"
 import type { Sym } from "../sym"
@@ -715,4 +715,20 @@ export function NO_SYM(..._: any): never {
   throw new Error(
     "You are using a construct which is not yet supported in symbolic computation.",
   )
+}
+
+export function glsl(node: Node, props: PropsGlsl): GlslValue {
+  const txr = TXR_AST[node.type]
+  if (!txr) {
+    throw new Error(`The '${node.type}' transformer is not defined.`)
+  }
+  return txr.glsl(node as never, props)
+}
+
+export function js(node: Node, props: PropsJs): JsValue {
+  const txr = TXR_AST[node.type]
+  if (!txr) {
+    throw new Error(`The '${node.type}' transformer is not defined.`)
+  }
+  return txr.js(node as never, props)
 }
