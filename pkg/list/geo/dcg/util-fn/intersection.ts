@@ -3,7 +3,7 @@ import type { GlslVal, SPoint, Tys, Val } from "@/eval/ty"
 import { SNANPT, num, pt, real, rept } from "@/eval/ty/create"
 import { div, mul, sub } from "@/eval/ty/ops"
 import { FN_INTERSECTION } from "../../point"
-import { computeArcVal } from "../arc"
+import { computeArcVal } from "../util-arc"
 
 export function intersectSLineLineJs(
   [{ x: x1, y: y1 }, { x: x2, y: y2 }]: Val<"line">,

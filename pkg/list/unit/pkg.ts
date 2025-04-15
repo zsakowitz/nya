@@ -43,8 +43,8 @@ import {
   siUnit,
   toSI,
   type UnitList,
-} from "./impl/system"
-import { nan, UNITS } from "./impl/units"
+} from "./util/system"
+import { nan, UNITS } from "./util/units"
 
 declare module "@/eval/ty" {
   interface Tys {

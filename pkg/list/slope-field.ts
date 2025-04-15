@@ -15,7 +15,7 @@ import { defineHideable } from "@/sheet/ext/hideable"
 import { norm } from "@/sheet/point"
 import { Color, Opacity, Order, Size } from "@/sheet/ui/cv/consts"
 import type { Expr } from "@/sheet/ui/expr"
-import { vectorPath } from "./geo/dcg/vector"
+import { vectorPath } from "./geo/dcg/util-vector"
 
 declare module "@/eval/ty" {
   interface Tys {

@@ -3,7 +3,7 @@ import { NANPT, unpt } from "@/eval/ty/create"
 import { gliderOnLine } from "@/eval/ty/info"
 import type { Point } from "@/sheet/point"
 import { Cv } from "@/sheet/ui/cv"
-import { getRayBounds } from "./ext/ray"
+import { getRayBounds } from "./util-ext/ray"
 
 function intersectLineLineJs(a: [Point, Point], b: [Point, Point]): Point {
   const [{ x: x1, y: y1 }, { x: x2, y: y2 }] = a

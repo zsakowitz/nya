@@ -31,7 +31,7 @@ import {
   parseCaGloss,
   unglossWord,
 } from "@zsnout/ithkuil/ungloss"
-import * as categories from "./categories"
+import * as categories from "./util-categories"
 
 // TODO: reduce ithkuil root and affix data size (it's 56% of the bundle currently)
 

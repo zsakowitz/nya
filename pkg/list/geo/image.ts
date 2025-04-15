@@ -16,10 +16,10 @@ import { defineExt } from "@/sheet/ext"
 import type { Cv } from "@/sheet/ui/cv"
 import { Order } from "@/sheet/ui/cv/consts"
 import { faImage } from "@fortawesome/free-regular-svg-icons"
-import { dilateJs, mark as markDilate } from "./dcg/fn/dilate"
-import { mark as markReflect, reflectJs } from "./dcg/fn/reflect"
-import { mark as markRotate, rotateJs } from "./dcg/fn/rotate"
-import { mark as markTranslate, translate } from "./dcg/fn/translate"
+import { dilateJs, mark as markDilate } from "./dcg/util-fn/dilate"
+import { mark as markReflect, reflectJs } from "./dcg/util-fn/reflect"
+import { mark as markRotate, rotateJs } from "./dcg/util-fn/rotate"
+import { mark as markTranslate, translate } from "./dcg/util-fn/translate"
 
 declare module "@/eval/ty" {
   interface Tys {

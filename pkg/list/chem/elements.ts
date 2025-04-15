@@ -12,14 +12,14 @@ import { CmdWord } from "@/field/cmd/leaf/word"
 import { L } from "@/field/dir"
 import { toText } from "@/field/latex"
 import { h, hx } from "@/jsx"
-import type { Unit, UnitList } from "../unit/impl/system"
+import type { Unit, UnitList } from "../unit/util/system"
 import {
   UNIT_AMU,
   UNIT_JOULE,
   UNIT_KELVIN,
   UNIT_KILOJOULE,
   UNIT_MOLE,
-} from "../unit/impl/units"
+} from "../unit/util/units"
 
 declare module "@/eval/ty" {
   interface Tys {

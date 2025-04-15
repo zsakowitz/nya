@@ -5,7 +5,7 @@ import type { Cv } from "@/sheet/ui/cv"
 import { Color, Opacity, Order, Size } from "@/sheet/ui/cv/consts"
 import { ref, val } from "@/sheet/ui/cv/item"
 import type { Expr } from "@/sheet/ui/expr"
-import { arcPath, computeArcVal, type Arc, type ArcPath } from "../arc"
+import { arcPath, computeArcVal, type Arc, type ArcPath } from "../util-arc"
 
 function arcPathD(o: ArcPath) {
   return (

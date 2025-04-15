@@ -38,7 +38,7 @@ import { h, hx } from "@/jsx"
 import { defineExt } from "@/sheet/ext"
 import { addR64 } from "$/core/ops"
 import { createMultiEval } from "$/eval"
-import { sqrt } from "../geo/dcg/fn/distance"
+import { sqrt } from "../geo/dcg/util-fn/distance"
 
 declare module "@/eval/ty" {
   interface Tys {

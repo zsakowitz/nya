@@ -34,7 +34,7 @@ import { highRes, type TyExtras } from "@/eval/ty/info"
 import { abs, add, div, mul, neg, sub } from "@/eval/ty/ops"
 import { h } from "@/jsx"
 import { Order } from "@/sheet/ui/cv/consts"
-import { declareOklab } from "../color/oklab"
+import { declareOklab } from "../color/util-oklab"
 import { FN_EXP, FN_LOG10, FN_SIGN, FN_UNSIGN } from "./real"
 
 declare module "@/eval/ty" {
