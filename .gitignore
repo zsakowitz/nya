@@ -5,3 +5,4 @@ tsconfig.tsbuildinfo
 index.css
 meta.json
 pkg/graphsource
+graph.svg
