@@ -53,7 +53,7 @@ function sfc32(a: number, b: number, c: number, d: number) {
 function color(str: string) {
   const [a, b, c, d] = cyrb128(str)
   const gen = sfc32(a, b, c, d)
-  for (let i = 0; i < 16; i++) gen()
+  for (let i = 0; i < 17; i++) gen()
   const absL = 8 / (8 + 1.0)
   const absD = 0.125 / (0.125 + 1.0)
   const r0 = 0.08499547839164734 * 1.28
