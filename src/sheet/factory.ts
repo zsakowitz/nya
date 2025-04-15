@@ -339,7 +339,7 @@ export class SheetFactory {
       this,
     )
     for (const pkg of this.loaded) {
-      pkg.init?.(sheet)
+      pkg.init?.fn(sheet)
     }
     return sheet
   }

@@ -53,7 +53,7 @@ export class WordMap<T> {
   private readonly default?: T
   readonly maxLen
 
-  constructor(words: [string, T][], defaultValue?: T) {
+  constructor(words: (readonly [string, T])[], defaultValue?: T) {
     this.default = defaultValue
     let maxLen = 0
     for (const [key, value] of words) {

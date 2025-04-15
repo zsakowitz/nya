@@ -13,7 +13,7 @@ import type { Options, WordMap } from "@/field/options"
 import { h } from "@/jsx"
 import type { Scope } from "@/sheet/deps"
 import { Leaf } from "."
-import type { LatexParser } from "../../latex"
+import type { LatexInit, LatexParser } from "../../latex"
 import { Block, Cursor, Span, type Command, type InitProps } from "../../model"
 import { CmdSupSub } from "../math/supsub"
 import { CmdToken, TokenCtx } from "./token"
@@ -615,6 +615,18 @@ export class CmdVar extends Leaf {
       PRECEDENCE_MAP[text as PuncBinaryStr]! <= Precedence.Sum
     )
   }
+}
+
+export const OperatorName: LatexInit = {
+  fromLatex(cmd, parser) {
+    const word = cmd.startsWith("\\") ? cmd.slice(1) || cmd : cmd
+    const block = new Block(null)
+    const cursor = block.cursor(R)
+    for (const char of word) {
+      new CmdVar(char, parser.options).insertAt(cursor, L)
+    }
+    return block
+  },
 }
 
 type CmdVarMut = { -readonly [K in keyof CmdVar]: CmdVar[K] }

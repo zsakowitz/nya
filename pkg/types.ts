@@ -56,10 +56,13 @@ export interface Package {
   name: string
   label: string | null
   category: PackageCategory
+  deps?: PackageId[]
 
   load?(): void
-  init?(sheet: Sheet): void
-  deps?: PackageId[]
+  init?: {
+    intents: readonly string[]
+    fn(sheet: Sheet): void
+  }
 
   field?: {
     inits?: List<Init>

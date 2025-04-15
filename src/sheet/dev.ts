@@ -12,16 +12,14 @@ if (globalThis.location?.search.includes("onlypkg")) {
   const ids = (new URLSearchParams(location.search).get("onlypkg") ?? "").split(
     ",",
   )
-  for (const id of ids) {
-    if ({}.hasOwnProperty.call(index, id)) {
-      const pkg = index[id as PackageId]
-      await factory.load((await pkg()).default)
-    }
-  }
+  await Promise.all(
+    ids
+      .filter((x): x is PackageId => x in index)
+      .map((x) => index[x])
+      .map(async (x) => factory.load((await x()).default)),
+  )
 } else {
-  for (const pkg of await all()) {
-    await factory.load(pkg)
-  }
+  await Promise.all((await all()).map((x) => factory.load(x)))
 }
 
 const IS_DEV = "NYA_DEV" in globalThis

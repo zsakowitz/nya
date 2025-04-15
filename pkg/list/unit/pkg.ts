@@ -2,6 +2,15 @@
 // to work in shaders
 
 import type { Package } from "#/types"
+import {
+  OP_ADD,
+  OP_CDOT,
+  OP_DIV,
+  OP_NEG,
+  OP_POS,
+  OP_RAISE,
+  OP_SUB,
+} from "$/core/ops"
 import { example } from "@/docs/core"
 import { Precedence } from "@/eval/ast/token"
 import { NO_SYM, type WordInfo } from "@/eval/ast/tx"
@@ -18,19 +27,10 @@ import { OpCdot } from "@/field/cmd/leaf/op"
 import { CmdWord } from "@/field/cmd/leaf/word"
 import { CmdFrac } from "@/field/cmd/math/frac"
 import { CmdSupSub } from "@/field/cmd/math/supsub"
+import { L, R } from "@/field/dir"
 import { toText } from "@/field/latex"
 import { Block } from "@/field/model"
-import { L, R } from "@/field/dir"
 import { b, h, px, sx } from "@/jsx"
-import {
-  OP_ADD,
-  OP_CDOT,
-  OP_DIV,
-  OP_NEG,
-  OP_POS,
-  OP_RAISE,
-  OP_SUB,
-} from "$/core/ops"
 import {
   assertCompat,
   badSum,
@@ -352,7 +352,7 @@ export default {
       },
     },
   },
-  init() {
+  load() {
     OP_CDOT.add(
       ["unit", "unit"],
       "unit",

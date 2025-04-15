@@ -12,7 +12,7 @@ import { CmdColon } from "./cmd/leaf/colon"
 import { CmdColor } from "./cmd/leaf/color"
 import { CmdComma } from "./cmd/leaf/comma"
 import { CmdExclamation } from "./cmd/leaf/exclamation"
-import { CmdDot, CmdNum } from "./cmd/leaf/num"
+import { CmdDot, CmdNum, OperatorName } from "./cmd/leaf/num"
 import {
   OpAnd,
   OpCdot,
@@ -58,10 +58,10 @@ import {
 import { CmdMap } from "./cmd/util/map"
 import { CmdNoop } from "./cmd/util/noop"
 import { CmdPrompt } from "./cmd/util/prompt"
+import { D, L, R, U } from "./dir"
 import { LatexEnvs, type LatexInit } from "./latex"
 import type { Init } from "./model"
 import { Inits, WordMap, type Options } from "./options"
-import { D, L, R, U } from "./dir"
 
 const inits = new Inits()
   .setDefault(
@@ -193,6 +193,11 @@ const words = new WordMap<WordKind>([
   ["meow", "var"],
 ]).freeze()
 
+const latexWords =
+  "arg deg det dim exp gcd hom inf ker lg ln log max min sup limsup liminf injlim projlim Pr sin cos tan arcsin arccos arctan sinh cosh tanh sec csc cot coth".split(
+    " ",
+  ) /* no sech or csch */
+
 const latex = new WordMap<LatexInit>([
   ..."0123456789".split("").map((x): [string, typeof CmdNum] => [x, CmdNum]),
   ["\\digit", CmdNum],
@@ -250,6 +255,7 @@ const latex = new WordMap<LatexInit>([
   ["\\nyaop", CmdWord],
   ["\\nyacolor", CmdColor],
   ["\\psi", SymPsi],
+  ...latexWords.map((x) => [x, OperatorName] as const),
 ])
 
 for (const key of inits.getAll()) {

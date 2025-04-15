@@ -1,0 +1,2134 @@
+{
+  "packages": [
+    "3d/point",
+    "4d/point",
+    "base",
+    "bool",
+    "chem/elements",
+    "color/core",
+    "color/extras",
+    "core/cmp",
+    "core/fn",
+    "core/ops",
+    "data/distributions",
+    "data/list",
+    "data/list-extras",
+    "data/statistics",
+    "data/statistics-complex",
+    "debug",
+    "eval",
+    "factorial",
+    "geo/dcg",
+    "geo/image",
+    "geo/point",
+    "gridlines",
+    "image",
+    "item/docs-fn",
+    "item/folder",
+    "item/note",
+    "iterate",
+    "ithkuil",
+    "num/complex",
+    "num/quaternion",
+    "num/real",
+    "number-theory",
+    "number-theory-complex",
+    "shader",
+    "slider",
+    "slope-field",
+    "special",
+    "sym/core",
+    "sym/deriv",
+    "sym/extras",
+    "text",
+    "trig/complex",
+    "trig/hyperbolic/real",
+    "trig/hyperbolic/complex",
+    "trig/real",
+    "unit/pkg",
+    "with",
+    "withseq"
+  ],
+  "fns": {
+    ".z": [
+      {
+        "name": ".z",
+        "label": "gets the z-coordinate of a point",
+        "kind": "fn/named",
+        "refs": [
+          0,
+          1
+        ]
+      }
+    ],
+    ".w": [
+      {
+        "name": ".w",
+        "label": "gets the w-coordinate of a point",
+        "kind": "fn/named",
+        "refs": [
+          1
+        ]
+      }
+    ],
+    "valid": [
+      {
+        "name": "valid",
+        "label": "returns true if a value is valid for the given type (whether a number is finite, whether a color is displayable, etc.)",
+        "kind": "fn/named",
+        "refs": [
+          3,
+          6,
+          30
+        ]
+      }
+    ],
+    "firstvalid": [
+      {
+        "name": "firstvalid",
+        "label": "returns the first value which is valid for its type (the first finite number, the first color which is displayable, etc.)",
+        "kind": "fn/named",
+        "refs": [
+          3
+        ]
+      }
+    ],
+    "eldiscoveredby": [
+      {
+        "name": "eldiscoveredby",
+        "label": "gets the discoverer of an element",
+        "kind": "fn/named",
+        "refs": [
+          4
+        ]
+      }
+    ],
+    "elname": [
+      {
+        "name": "elname",
+        "label": "gets the name of an element",
+        "kind": "fn/named",
+        "refs": [
+          4
+        ]
+      }
+    ],
+    "elappearance": [
+      {
+        "name": "elappearance",
+        "label": "gets the appearance of an element",
+        "kind": "fn/named",
+        "refs": [
+          4
+        ]
+      }
+    ],
+    "elcategory": [
+      {
+        "name": "elcategory",
+        "label": "gets the category of an element",
+        "kind": "fn/named",
+        "refs": [
+          4
+        ]
+      }
+    ],
+    "elnamedby": [
+      {
+        "name": "elnamedby",
+        "label": "gets who named an element",
+        "kind": "fn/named",
+        "refs": [
+          4
+        ]
+      }
+    ],
+    "elphase": [
+      {
+        "name": "elphase",
+        "label": "gets the phase of an element at STP",
+        "kind": "fn/named",
+        "refs": [
+          4
+        ]
+      }
+    ],
+    "eldescription": [
+      {
+        "name": "eldescription",
+        "label": "gets a description of an element",
+        "kind": "fn/named",
+        "refs": [
+          4
+        ]
+      }
+    ],
+    "elsymbol": [
+      {
+        "name": "elsymbol",
+        "label": "gets the symbol of an element",
+        "kind": "fn/named",
+        "refs": [
+          4
+        ]
+      }
+    ],
+    "elconfig": [
+      {
+        "name": "elconfig",
+        "label": "gets the electron configuration of an element",
+        "kind": "fn/named",
+        "refs": [
+          4
+        ]
+      }
+    ],
+    "elconfigshort": [
+      {
+        "name": "elconfigshort",
+        "label": "gets the electron configuration of an element using the noble gas shorthand",
+        "kind": "fn/named",
+        "refs": [
+          4
+        ]
+      }
+    ],
+    "elblock": [
+      {
+        "name": "elblock",
+        "label": "gets the block an element is in on the periodic table",
+        "kind": "fn/named",
+        "refs": [
+          4
+        ]
+      }
+    ],
+    "mass": [
+      {
+        "name": "mass",
+        "label": "gets the mass of an element",
+        "kind": "fn/named",
+        "refs": [
+          4
+        ]
+      }
+    ],
+    "elboil": [
+      {
+        "name": "elboil",
+        "label": "boiling point of an element",
+        "kind": "fn/named",
+        "refs": [
+          4
+        ]
+      }
+    ],
+    "eleaffinity": [
+      {
+        "name": "eleaffinity",
+        "label": "amount of energy released when an electron attaches to a neutral atom of this element",
+        "kind": "fn/named",
+        "refs": [
+          4
+        ]
+      }
+    ],
+    "elenegativity": [
+      {
+        "name": "elenegativity",
+        "label": "tendency for an atom of an element to attract shared electrons in a chemical bond",
+        "kind": "fn/named",
+        "refs": [
+          4
+        ]
+      }
+    ],
+    "elmelt": [
+      {
+        "name": "elmelt",
+        "label": "melting point of an element",
+        "kind": "fn/named",
+        "refs": [
+          4
+        ]
+      }
+    ],
+    "elmolarheat": [
+      {
+        "name": "elmolarheat",
+        "label": "amount of energy required to increase the temperature of one mole of an element by one degree kelvin",
+        "kind": "fn/named",
+        "refs": [
+          4
+        ]
+      }
+    ],
+    "elnumber": [
+      {
+        "name": "elnumber",
+        "label": "atomic number of an element",
+        "kind": "fn/named",
+        "refs": [
+          4
+        ]
+      }
+    ],
+    "elperiod": [
+      {
+        "name": "elperiod",
+        "label": "period of an element in the periodic table",
+        "kind": "fn/named",
+        "refs": [
+          4
+        ]
+      }
+    ],
+    "rgb": [
+      {
+        "name": "rgb",
+        "label": "creates a color given its red, green, and blue components",
+        "kind": "fn/named",
+        "refs": [
+          5
+        ]
+      }
+    ],
+    "hsv": [
+      {
+        "name": "hsv",
+        "label": "creates a color given its hue (0-360), saturation (0-1), and value (0-1)",
+        "kind": "fn/named",
+        "refs": [
+          5
+        ]
+      }
+    ],
+    "oklab": [
+      {
+        "name": "oklab",
+        "label": "creates a color given its lightness, green-red, and blue-yellow components",
+        "kind": "fn/named",
+        "refs": [
+          6
+        ]
+      }
+    ],
+    "oklch": [
+      {
+        "name": "oklch",
+        "label": "creates a color given its lightness, chromaticity, and hue components",
+        "kind": "fn/named",
+        "refs": [
+          6
+        ]
+      }
+    ],
+    "lightdark": [
+      {
+        "name": "lightdark",
+        "label": "if a single color is passed, it will be inverted in dark mode; if two arguments are passed, the first is used for light mode and the second for dark mode",
+        "kind": "fn/named",
+        "refs": [
+          6
+        ]
+      }
+    ],
+    ".r": [
+      {
+        "name": ".r",
+        "label": "gets the red component of a color",
+        "kind": "fn/named",
+        "refs": [
+          6
+        ]
+      }
+    ],
+    ".g": [
+      {
+        "name": ".g",
+        "label": "gets the green component of a color",
+        "kind": "fn/named",
+        "refs": [
+          6
+        ]
+      }
+    ],
+    ".b": [
+      {
+        "name": ".b",
+        "label": "gets the blue component of a color",
+        "kind": "fn/named",
+        "refs": [
+          6
+        ]
+      }
+    ],
+    ".a": [
+      {
+        "name": ".a",
+        "label": "gets the alpha component of a color",
+        "kind": "fn/named",
+        "refs": [
+          6
+        ]
+      }
+    ],
+    "normaldist": [
+      {
+        "name": "normaldist",
+        "label": "creates a normal distribution",
+        "kind": "fn/named",
+        "refs": [
+          10
+        ]
+      }
+    ],
+    "tdist": [
+      {
+        "name": "tdist",
+        "label": "creates a t-distribution",
+        "kind": "fn/named",
+        "refs": [
+          10
+        ]
+      }
+    ],
+    "boltzmanndist": [
+      {
+        "name": "boltzmanndist",
+        "label": "creates a Maxwell-Boltzmann distribution",
+        "kind": "fn/named",
+        "refs": [
+          10
+        ]
+      }
+    ],
+    "uniformdist": [
+      {
+        "name": "uniformdist",
+        "label": "creates a uniform distribution",
+        "kind": "fn/named",
+        "refs": [
+          10
+        ]
+      }
+    ],
+    "poissondist": [
+      {
+        "name": "poissondist",
+        "label": "creates a Poisson distribution",
+        "kind": "fn/named",
+        "refs": [
+          10
+        ]
+      }
+    ],
+    "binomialdist": [
+      {
+        "name": "binomialdist",
+        "label": "creates a binomial distribution",
+        "kind": "fn/named",
+        "refs": [
+          10
+        ]
+      }
+    ],
+    "erf": [
+      {
+        "name": "erf",
+        "label": "error function; related to area of a normal distribution",
+        "kind": "fn/named",
+        "refs": [
+          10
+        ]
+      }
+    ],
+    "erf^-1": [
+      {
+        "name": "erfinv",
+        "label": "inverse error function",
+        "kind": "fn/named",
+        "refs": [
+          10
+        ]
+      }
+    ],
+    "faddeeva": [
+      {
+        "name": "faddeeva",
+        "label": "scaled complex error function",
+        "kind": "fn/named",
+        "refs": [
+          10
+        ]
+      }
+    ],
+    "pdf": [
+      {
+        "name": "pdf",
+        "label": "probability distribution function",
+        "kind": "fn/named",
+        "refs": [
+          10
+        ]
+      }
+    ],
+    "cdf": [
+      {
+        "name": "cdf",
+        "label": "cumulative distribution function",
+        "kind": "fn/named",
+        "refs": [
+          10
+        ]
+      }
+    ],
+    "cdf^-1": [
+      {
+        "name": "inversecdf",
+        "label": "computes a quantile of a data set or the inverse CDF of a distribution",
+        "kind": "fn/named",
+        "refs": [
+          10
+        ]
+      }
+    ],
+    "inversecdf": [
+      {
+        "name": "inversecdf",
+        "label": "computes a quantile of a data set or the inverse CDF of a distribution",
+        "kind": "fn/named",
+        "refs": [
+          10
+        ]
+      }
+    ],
+    "join": [
+      {
+        "name": "join",
+        "label": "joins multiple lists into a single one",
+        "kind": "fn/named",
+        "refs": [
+          11
+        ]
+      }
+    ],
+    "sort": [
+      {
+        "name": "sort",
+        "label": "sorts the elements of a list",
+        "kind": "fn/named",
+        "refs": [
+          12
+        ]
+      }
+    ],
+    "unique": [
+      {
+        "name": "unique",
+        "label": "removes any duplicate elements in a list",
+        "kind": "fn/named",
+        "refs": [
+          12
+        ]
+      }
+    ],
+    "min": [
+      {
+        "name": "min",
+        "label": "returns the minimum of its inputs",
+        "kind": "fn/named",
+        "refs": [
+          13
+        ]
+      }
+    ],
+    "max": [
+      {
+        "name": "max",
+        "label": "returns the maximum of its inputs",
+        "kind": "fn/named",
+        "refs": [
+          13
+        ]
+      }
+    ],
+    "total": [
+      {
+        "name": "total",
+        "label": "returns the sum of its inputs",
+        "kind": "fn/named",
+        "refs": [
+          13,
+          14
+        ]
+      }
+    ],
+    "mean": [
+      {
+        "name": "mean",
+        "label": "takes the arithmetic mean of its inputs",
+        "kind": "fn/named",
+        "refs": [
+          13
+        ]
+      }
+    ],
+    "median": [
+      {
+        "name": "median",
+        "label": "takes the median of its inputs",
+        "kind": "fn/named",
+        "refs": [
+          13
+        ]
+      }
+    ],
+    "quartile": [
+      {
+        "name": "quartile",
+        "label": "computes a quartile of a data set",
+        "kind": "fn/named",
+        "refs": [
+          13
+        ]
+      }
+    ],
+    "quantile": [
+      {
+        "name": "quantile",
+        "label": "computes a quantile of a data set or the inverse CDF of a distribution",
+        "kind": "fn/named",
+        "refs": [
+          13
+        ]
+      }
+    ],
+    "var": [
+      {
+        "name": "var",
+        "label": "sample variance",
+        "kind": "fn/named",
+        "refs": [
+          13
+        ]
+      }
+    ],
+    "varp": [
+      {
+        "name": "varp",
+        "label": "population variance",
+        "kind": "fn/named",
+        "refs": [
+          13
+        ]
+      }
+    ],
+    "stdev": [
+      {
+        "name": "stdev",
+        "label": "sample standard deviation",
+        "kind": "fn/named",
+        "refs": [
+          13
+        ]
+      }
+    ],
+    "stdevp": [
+      {
+        "name": "stdevp",
+        "label": "population standard deviation",
+        "kind": "fn/named",
+        "refs": [
+          13
+        ]
+      }
+    ],
+    "stddev": [
+      {
+        "name": "stdev",
+        "label": "sample standard deviation",
+        "kind": "fn/named",
+        "refs": [
+          13
+        ]
+      }
+    ],
+    "stddevp": [
+      {
+        "name": "stdevp",
+        "label": "population standard deviation",
+        "kind": "fn/named",
+        "refs": [
+          13
+        ]
+      }
+    ],
+    "mad": [
+      {
+        "name": "mad",
+        "label": "mean absolute deviation",
+        "kind": "fn/named",
+        "refs": [
+          13
+        ]
+      }
+    ],
+    "cov": [
+      {
+        "name": "cov",
+        "label": "sample covariance",
+        "kind": "fn/named",
+        "refs": [
+          13
+        ]
+      }
+    ],
+    "covp": [
+      {
+        "name": "covp",
+        "label": "population covariance",
+        "kind": "fn/named",
+        "refs": [
+          13
+        ]
+      }
+    ],
+    "corr": [
+      {
+        "name": "corr",
+        "label": "Pearson correlation coefficient",
+        "kind": "fn/named",
+        "refs": [
+          13
+        ]
+      }
+    ],
+    "stats": [
+      {
+        "name": "stats",
+        "label": "computes a five-statistic summary",
+        "kind": "fn/named",
+        "refs": [
+          13
+        ]
+      }
+    ],
+    "ranks": [
+      {
+        "name": "ranks",
+        "label": "computes the rank of each element of a list",
+        "kind": "fn/named",
+        "refs": [
+          13
+        ]
+      }
+    ],
+    "spearman": [
+      {
+        "name": "spearman",
+        "label": "Spearman's rank correlation coefficient",
+        "kind": "fn/named",
+        "refs": [
+          13
+        ]
+      }
+    ],
+    "lngamma": [
+      {
+        "name": "lngamma",
+        "label": "calculates the natural logarithm of the absolute value of the gamma function",
+        "kind": "fn/named",
+        "refs": [
+          17
+        ]
+      }
+    ],
+    "gamma": [
+      {
+        "name": "gamma",
+        "label": "computes the gamma function",
+        "kind": "fn/named",
+        "refs": [
+          17
+        ]
+      }
+    ],
+    "center": [
+      {
+        "name": "center",
+        "label": "gets the center of a circle",
+        "kind": "fn/named",
+        "refs": [
+          18
+        ]
+      }
+    ],
+    "circle": [
+      {
+        "name": "circle",
+        "label": "constructs a circle from a center and radius",
+        "kind": "fn/named",
+        "refs": [
+          18
+        ]
+      }
+    ],
+    "distance": [
+      {
+        "name": "distance",
+        "label": "calculates the distance between two objects",
+        "kind": "fn/named",
+        "refs": [
+          18
+        ]
+      }
+    ],
+    "end": [
+      {
+        "name": "end",
+        "label": "gets the ending point of a vector",
+        "kind": "fn/named",
+        "refs": [
+          18
+        ]
+      }
+    ],
+    "glider": [
+      {
+        "name": "glider",
+        "label": "constructs a point on an object",
+        "kind": "fn/named",
+        "refs": [
+          18
+        ]
+      }
+    ],
+    "intersection": [
+      {
+        "name": "intersection",
+        "label": "constructs the point where two objects intersect",
+        "kind": "fn/named",
+        "refs": [
+          18
+        ]
+      }
+    ],
+    "line": [
+      {
+        "name": "line",
+        "label": "constructs a line between two points",
+        "kind": "fn/named",
+        "refs": [
+          18
+        ]
+      }
+    ],
+    "midpoint": [
+      {
+        "name": "midpoint",
+        "label": "constructs the midpoint of a line segment or between two points",
+        "kind": "fn/named",
+        "refs": [
+          18
+        ]
+      }
+    ],
+    "parallel": [
+      {
+        "name": "parallel",
+        "label": "creates a line parallel to an existing line which passes through some point",
+        "kind": "fn/named",
+        "refs": [
+          18
+        ]
+      }
+    ],
+    "perpendicular": [
+      {
+        "name": "perpendicular",
+        "label": "creates a line perpendicular to an existing line which passes through some point",
+        "kind": "fn/named",
+        "refs": [
+          18
+        ]
+      }
+    ],
+    "polygon": [
+      {
+        "name": "polygon",
+        "label": "constructs a polygon from a set of points",
+        "kind": "fn/named",
+        "refs": [
+          18
+        ]
+      }
+    ],
+    "radius": [
+      {
+        "name": "radius",
+        "label": "measures the radius of a circle",
+        "kind": "fn/named",
+        "refs": [
+          18
+        ]
+      }
+    ],
+    "ray": [
+      {
+        "name": "ray",
+        "label": "constructs a ray (a line going in a particular direction)",
+        "kind": "fn/named",
+        "refs": [
+          18
+        ]
+      }
+    ],
+    "segment": [
+      {
+        "name": "segment",
+        "label": "constructs a line segment",
+        "kind": "fn/named",
+        "refs": [
+          18
+        ]
+      }
+    ],
+    "segments": [
+      {
+        "name": "segments",
+        "label": "gets the segments which make up a polygon",
+        "kind": "fn/named",
+        "refs": [
+          18
+        ]
+      }
+    ],
+    "start": [
+      {
+        "name": "start",
+        "label": "gets the starting point of a vector",
+        "kind": "fn/named",
+        "refs": [
+          18
+        ]
+      }
+    ],
+    "vector": [
+      {
+        "name": "vector",
+        "label": "constructs a vector between two points",
+        "kind": "fn/named",
+        "refs": [
+          18
+        ]
+      }
+    ],
+    "vertices": [
+      {
+        "name": "vertices",
+        "label": "gets the vertices which make up a polygon",
+        "kind": "fn/named",
+        "refs": [
+          18
+        ]
+      }
+    ],
+    "angle": [
+      {
+        "name": "angle",
+        "label": "constructs an angle from three vertices",
+        "kind": "fn/named",
+        "refs": [
+          18
+        ]
+      }
+    ],
+    "directedangle": [
+      {
+        "name": "directedangle",
+        "label": "constructs an angle with a particular direction",
+        "kind": "fn/named",
+        "refs": [
+          18
+        ]
+      }
+    ],
+    "angles": [
+      {
+        "name": "angles",
+        "label": "constructs an angle at every vertex of a polygon",
+        "kind": "fn/named",
+        "refs": [
+          18
+        ]
+      }
+    ],
+    "directedangles": [
+      {
+        "name": "directedangles",
+        "label": "constructs a directed angle at every vertex of a polygon",
+        "kind": "fn/named",
+        "refs": [
+          18
+        ]
+      }
+    ],
+    "anglebisector": [
+      {
+        "name": "anglebisector",
+        "label": "constucts the bisector of an angle",
+        "kind": "fn/named",
+        "refs": [
+          18
+        ]
+      }
+    ],
+    "perpendicularbisector": [
+      {
+        "name": "perpendicularbisector",
+        "label": "constucts the perpendicular bisector of a line segment or between two points",
+        "kind": "fn/named",
+        "refs": [
+          18
+        ]
+      }
+    ],
+    "arc": [
+      {
+        "name": "arc",
+        "label": "constructs an arc from three points",
+        "kind": "fn/named",
+        "refs": [
+          18
+        ]
+      }
+    ],
+    "length": [
+      {
+        "name": "length",
+        "label": "calculates the length of an object",
+        "kind": "fn/named",
+        "refs": [
+          18
+        ]
+      }
+    ],
+    "translate": [
+      {
+        "name": "translate",
+        "label": "translates an object by a vector",
+        "kind": "fn/named",
+        "refs": [
+          18
+        ]
+      }
+    ],
+    "rotate": [
+      {
+        "name": "rotate",
+        "label": "rotates an object around a point by some angle",
+        "kind": "fn/named",
+        "refs": [
+          18
+        ]
+      }
+    ],
+    "dilate": [
+      {
+        "name": "dilate",
+        "label": "scales an object from some point by some scaling factor",
+        "kind": "fn/named",
+        "refs": [
+          18
+        ]
+      }
+    ],
+    "reflect": [
+      {
+        "name": "reflect",
+        "label": "reflects an object across a line",
+        "kind": "fn/named",
+        "refs": [
+          18
+        ]
+      }
+    ],
+    "perimeter": [
+      {
+        "name": "perimeter",
+        "label": "measures the perimeter of a polygon",
+        "kind": "fn/named",
+        "refs": [
+          18
+        ]
+      }
+    ],
+    "image": [
+      {
+        "name": "image",
+        "label": "draws an image on the graphpaper; pass a number to override the preferred aspect ratio",
+        "kind": "fn/named",
+        "refs": [
+          19
+        ]
+      }
+    ],
+    "point": [
+      {
+        "name": "point",
+        "label": "constructs a point from multi-dimensional values",
+        "kind": "fn/named",
+        "refs": [
+          20,
+          28
+        ]
+      }
+    ],
+    "screendistance": [
+      {
+        "name": "screendistance",
+        "label": "calculates the distance between two points in terms of pixels on your screen, rather than graphpaper units",
+        "kind": "fn/named",
+        "refs": [
+          20
+        ]
+      }
+    ],
+    "debugpoint": [
+      {
+        "name": "debugpoint",
+        "label": "given some point p, returns a color depending on which side of the currently active shader pixel that point p is on",
+        "kind": "fn/named",
+        "refs": [
+          20
+        ]
+      }
+    ],
+    ".x": [
+      {
+        "name": ".x",
+        "label": "gets the x-coordinate of a point",
+        "kind": "fn/named",
+        "refs": [
+          20
+        ]
+      }
+    ],
+    ".y": [
+      {
+        "name": ".y",
+        "label": "gets the y-coordinate of a point",
+        "kind": "fn/named",
+        "refs": [
+          20
+        ]
+      }
+    ],
+    "imgwidth": [
+      {
+        "name": "imgwidth",
+        "label": "gets the natural width of an image",
+        "kind": "fn/named",
+        "refs": [
+          22
+        ]
+      }
+    ],
+    "imgheight": [
+      {
+        "name": "imgheight",
+        "label": "gets the natural height of an image",
+        "kind": "fn/named",
+        "refs": [
+          22
+        ]
+      }
+    ],
+    "imgaspect": [
+      {
+        "name": "imgaspect",
+        "label": "gets the preferred aspect ratio of an image",
+        "kind": "fn/named",
+        "refs": [
+          22
+        ]
+      }
+    ],
+    "ithkuilgloss": [
+      {
+        "name": "ithkuilgloss",
+        "label": "glosses an ithkuil word",
+        "kind": "fn/named",
+        "refs": [
+          27
+        ]
+      }
+    ],
+    "ithkuilungloss": [
+      {
+        "name": "ithkuilungloss",
+        "label": "unglosses an ithkuil word",
+        "kind": "fn/named",
+        "refs": [
+          27
+        ]
+      }
+    ],
+    "ithkuilscript": [
+      {
+        "name": "ithkuilscript",
+        "label": "converts an ithkuil word into script form",
+        "kind": "fn/named",
+        "refs": [
+          27
+        ]
+      }
+    ],
+    "ithkuilvalues": [
+      {
+        "name": "ithkuilvalues",
+        "label": "given the name of a grammatical category of ithkuil, returns all values it can take",
+        "kind": "fn/named",
+        "refs": [
+          27
+        ]
+      }
+    ],
+    "ithkuilvalid": [
+      {
+        "name": "ithkuilvalid",
+        "label": "checks if a consonant form is valid according to ithkuil phonotactics",
+        "kind": "fn/named",
+        "refs": [
+          27
+        ]
+      }
+    ],
+    "ithkuilvalidinitial": [
+      {
+        "name": "ithkuilvalidinitial",
+        "label": "checks if a consonant form is valid word-initially according to ithkuil phonotactics",
+        "kind": "fn/named",
+        "refs": [
+          27
+        ]
+      }
+    ],
+    "ithkuilvalidfinal": [
+      {
+        "name": "ithkuilvalidfinal",
+        "label": "checks if a consonant form is valid word-finally according to ithkuil phonotactics",
+        "kind": "fn/named",
+        "refs": [
+          27
+        ]
+      }
+    ],
+    "ithkuilca": [
+      {
+        "name": "ithkuilca",
+        "label": "generates an ithkuil CA form, optionally geminated",
+        "kind": "fn/named",
+        "refs": [
+          27
+        ]
+      }
+    ],
+    "arg": [
+      {
+        "name": "arg",
+        "label": "returns the angle between a point and the x-axis",
+        "kind": "fn/named",
+        "refs": [
+          28
+        ]
+      }
+    ],
+    "conj": [
+      {
+        "name": "conj",
+        "label": "takes the conjugate of a complex number or quaternion",
+        "kind": "fn/named",
+        "refs": [
+          28,
+          29
+        ]
+      }
+    ],
+    "imag": [
+      {
+        "name": "imag",
+        "label": "gets the imaginary part of a complex number",
+        "kind": "fn/named",
+        "refs": [
+          28
+        ]
+      }
+    ],
+    "real": [
+      {
+        "name": "real",
+        "label": "gets the real part of a multi-dimensional number",
+        "kind": "fn/named",
+        "refs": [
+          28,
+          29
+        ]
+      }
+    ],
+    "sign": [
+      {
+        "name": "sign",
+        "label": "gets the sign of a number",
+        "kind": "fn/named",
+        "refs": [
+          28,
+          30
+        ]
+      }
+    ],
+    "dot": [
+      {
+        "name": "dot",
+        "label": "takes the dot product of two complex numbers",
+        "kind": "fn/named",
+        "refs": [
+          28
+        ]
+      }
+    ],
+    "complex": [
+      {
+        "name": "complex",
+        "label": "converts a point into a complex number",
+        "kind": "fn/named",
+        "refs": [
+          28
+        ]
+      }
+    ],
+    ".i": [
+      {
+        "name": ".i",
+        "label": "gets the coefficient of 'i' in a multi-dimensional number",
+        "kind": "fn/named",
+        "refs": [
+          28,
+          29
+        ]
+      }
+    ],
+    "cplot": [
+      {
+        "name": "cplot",
+        "label": "gets the color a complex number would be represented by when performing domain coloring",
+        "kind": "fn/named",
+        "refs": [
+          28
+        ]
+      }
+    ],
+    "cplothue": [
+      {
+        "name": "cplothue",
+        "label": "gets the hue a complex number would be represented by when performing domain coloring",
+        "kind": "fn/named",
+        "refs": [
+          28
+        ]
+      }
+    ],
+    "unsign": [
+      {
+        "name": "unsign",
+        "label": "takes the absolute value of the components of a value",
+        "kind": "fn/named",
+        "refs": [
+          29,
+          30
+        ]
+      }
+    ],
+    ".j": [
+      {
+        "name": ".j",
+        "label": "gets the coefficient of 'j' in a quaternion",
+        "kind": "fn/named",
+        "refs": [
+          29
+        ]
+      }
+    ],
+    ".k": [
+      {
+        "name": ".k",
+        "label": "gets the coefficient of 'k' in a quaternion",
+        "kind": "fn/named",
+        "refs": [
+          29
+        ]
+      }
+    ],
+    "sgn": [
+      {
+        "name": "sign",
+        "label": "gets the sign of a number",
+        "kind": "fn/named",
+        "refs": [
+          30
+        ]
+      }
+    ],
+    "ln": [
+      {
+        "name": "ln",
+        "label": "takes the natural logarithm of a value",
+        "kind": "fn/named",
+        "refs": [
+          30
+        ]
+      }
+    ],
+    "log": [
+      {
+        "name": "log",
+        "label": "takes the base-10 logarithm of a value",
+        "kind": "fn/named",
+        "refs": [
+          30
+        ]
+      }
+    ],
+    "log_": [
+      {
+        "name": "log with subscript",
+        "label": "takes the logarithm of a value in some base",
+        "kind": "fn/named",
+        "refs": [
+          30
+        ]
+      }
+    ],
+    "exp": [
+      {
+        "name": "exp",
+        "label": "raises e to some value",
+        "kind": "fn/named",
+        "refs": [
+          30
+        ]
+      }
+    ],
+    "cmp": [
+      {
+        "name": "cmp",
+        "label": "compares two numbers, returning -1, 0, or 1, depending on whether the first number is less than, equal to, or greater than the second number",
+        "kind": "fn/named",
+        "refs": [
+          30
+        ]
+      }
+    ],
+    "count": [
+      {
+        "name": "count",
+        "label": "counts the size of a list",
+        "kind": "fn/named",
+        "refs": [
+          30
+        ]
+      }
+    ],
+    "floor": [
+      {
+        "name": "floor",
+        "label": "rounds down to the nearest integer",
+        "kind": "fn/named",
+        "refs": [
+          31,
+          32
+        ]
+      }
+    ],
+    "ceil": [
+      {
+        "name": "ceil",
+        "label": "rounds up to the nearest integer",
+        "kind": "fn/named",
+        "refs": [
+          31,
+          32
+        ]
+      }
+    ],
+    "round": [
+      {
+        "name": "round",
+        "label": "rounds to the nearest integer; ties are rounded up",
+        "kind": "fn/named",
+        "refs": [
+          31,
+          32
+        ]
+      }
+    ],
+    "fract": [
+      {
+        "name": "fract",
+        "label": "calculate x-floor(x), or the fractional part of x",
+        "kind": "fn/named",
+        "refs": [
+          31,
+          32
+        ]
+      }
+    ],
+    "forceshader": [
+      {
+        "name": "forceshader",
+        "label": "forces the given expression to be executed in a shader",
+        "kind": "fn/named",
+        "refs": [
+          33
+        ]
+      }
+    ],
+    "zeta": [
+      {
+        "name": "zeta",
+        "label": "computes the Riemann zeta function",
+        "kind": "fn/named",
+        "refs": [
+          36
+        ]
+      }
+    ],
+    "concat": [
+      {
+        "name": "concat",
+        "label": "concatenates one or more string-like values into a string",
+        "kind": "fn/named",
+        "refs": [
+          40
+        ]
+      }
+    ],
+    "sin": [
+      {
+        "name": "sin",
+        "label": "takes the sine of an angle",
+        "kind": "fn/named",
+        "refs": [
+          41,
+          44
+        ]
+      }
+    ],
+    "cos": [
+      {
+        "name": "cos",
+        "label": "takes the cosine of an angle",
+        "kind": "fn/named",
+        "refs": [
+          41,
+          44
+        ]
+      }
+    ],
+    "tan": [
+      {
+        "name": "tan",
+        "label": "takes the tangent of an angle",
+        "kind": "fn/named",
+        "refs": [
+          41,
+          44
+        ]
+      }
+    ],
+    "csc": [
+      {
+        "name": "csc",
+        "label": "takes the cosecant of an angle",
+        "kind": "fn/named",
+        "refs": [
+          41,
+          44
+        ]
+      }
+    ],
+    "sec": [
+      {
+        "name": "sec",
+        "label": "takes the secant of an angle",
+        "kind": "fn/named",
+        "refs": [
+          41,
+          44
+        ]
+      }
+    ],
+    "cot": [
+      {
+        "name": "cot",
+        "label": "takes the cotangent of an angle",
+        "kind": "fn/named",
+        "refs": [
+          41,
+          44
+        ]
+      }
+    ],
+    "sinh": [
+      {
+        "name": "sinh",
+        "label": "takes the hyperbolic sinhe of an angle",
+        "kind": "fn/named",
+        "refs": [
+          42
+        ]
+      }
+    ],
+    "cosh": [
+      {
+        "name": "cosh",
+        "label": "takes the hyperbolic coshine of an angle",
+        "kind": "fn/named",
+        "refs": [
+          42
+        ]
+      }
+    ],
+    "tanh": [
+      {
+        "name": "tanh",
+        "label": "takes the hyperbolic tanhgent of an angle",
+        "kind": "fn/named",
+        "refs": [
+          42
+        ]
+      }
+    ],
+    "csch": [
+      {
+        "name": "csch",
+        "label": "takes the hyperbolic cosecant of an angle",
+        "kind": "fn/named",
+        "refs": [
+          42
+        ]
+      }
+    ],
+    "sech": [
+      {
+        "name": "sech",
+        "label": "takes the hyperbolic secant of an angle",
+        "kind": "fn/named",
+        "refs": [
+          42
+        ]
+      }
+    ],
+    "coth": [
+      {
+        "name": "coth",
+        "label": "takes the hyperbolic cotangent of an angle",
+        "kind": "fn/named",
+        "refs": [
+          42
+        ]
+      }
+    ],
+    "arsinh": [
+      {
+        "name": "arsinh",
+        "label": "takes the inverse hyperbolic sine of a value",
+        "kind": "fn/named",
+        "refs": [
+          42
+        ]
+      }
+    ],
+    "arcosh": [
+      {
+        "name": "arcosh",
+        "label": "takes the inverse hyperbolic cosine of a value",
+        "kind": "fn/named",
+        "refs": [
+          42
+        ]
+      }
+    ],
+    "artanh": [
+      {
+        "name": "artanh",
+        "label": "takes the inverse hyperbolic tangent of a value",
+        "kind": "fn/named",
+        "refs": [
+          42
+        ]
+      }
+    ],
+    "arcsch": [
+      {
+        "name": "arcsch",
+        "label": "takes the inverse hyperbolic cosecant of a value",
+        "kind": "fn/named",
+        "refs": [
+          42
+        ]
+      }
+    ],
+    "arsech": [
+      {
+        "name": "arsech",
+        "label": "takes the inverse hyperbolic secant of a value",
+        "kind": "fn/named",
+        "refs": [
+          42
+        ]
+      }
+    ],
+    "arcoth": [
+      {
+        "name": "arcoth",
+        "label": "takes the inverse hyperbolic cotangent of a value",
+        "kind": "fn/named",
+        "refs": [
+          42
+        ]
+      }
+    ],
+    "arcsinh": [
+      {
+        "name": "arsinh",
+        "label": "takes the inverse hyperbolic sine of a value",
+        "kind": "fn/named",
+        "refs": [
+          42
+        ]
+      }
+    ],
+    "arccosh": [
+      {
+        "name": "arcosh",
+        "label": "takes the inverse hyperbolic cosine of a value",
+        "kind": "fn/named",
+        "refs": [
+          42
+        ]
+      }
+    ],
+    "arctanh": [
+      {
+        "name": "artanh",
+        "label": "takes the inverse hyperbolic tangent of a value",
+        "kind": "fn/named",
+        "refs": [
+          42
+        ]
+      }
+    ],
+    "arccsch": [
+      {
+        "name": "arcsch",
+        "label": "takes the inverse hyperbolic cosecant of a value",
+        "kind": "fn/named",
+        "refs": [
+          42
+        ]
+      }
+    ],
+    "arcsech": [
+      {
+        "name": "arsech",
+        "label": "takes the inverse hyperbolic secant of a value",
+        "kind": "fn/named",
+        "refs": [
+          42
+        ]
+      }
+    ],
+    "arccoth": [
+      {
+        "name": "arcoth",
+        "label": "takes the inverse hyperbolic cotangent of a value",
+        "kind": "fn/named",
+        "refs": [
+          42
+        ]
+      }
+    ],
+    "sinh^-1": [
+      {
+        "name": "arsinh",
+        "label": "takes the inverse hyperbolic sine of a value",
+        "kind": "fn/named",
+        "refs": [
+          42
+        ]
+      }
+    ],
+    "cosh^-1": [
+      {
+        "name": "arcosh",
+        "label": "takes the inverse hyperbolic cosine of a value",
+        "kind": "fn/named",
+        "refs": [
+          42
+        ]
+      }
+    ],
+    "tanh^-1": [
+      {
+        "name": "artanh",
+        "label": "takes the inverse hyperbolic tangent of a value",
+        "kind": "fn/named",
+        "refs": [
+          42
+        ]
+      }
+    ],
+    "csch^-1": [
+      {
+        "name": "arcsch",
+        "label": "takes the inverse hyperbolic cosecant of a value",
+        "kind": "fn/named",
+        "refs": [
+          42
+        ]
+      }
+    ],
+    "sech^-1": [
+      {
+        "name": "arsech",
+        "label": "takes the inverse hyperbolic secant of a value",
+        "kind": "fn/named",
+        "refs": [
+          42
+        ]
+      }
+    ],
+    "coth^-1": [
+      {
+        "name": "arcoth",
+        "label": "takes the inverse hyperbolic cotangent of a value",
+        "kind": "fn/named",
+        "refs": [
+          42
+        ]
+      }
+    ],
+    "arsinh^-1": [
+      {
+        "name": "sinh",
+        "label": "takes the hyperbolic sinhe of an angle",
+        "kind": "fn/named",
+        "refs": [
+          42
+        ]
+      }
+    ],
+    "arcosh^-1": [
+      {
+        "name": "cosh",
+        "label": "takes the hyperbolic coshine of an angle",
+        "kind": "fn/named",
+        "refs": [
+          42
+        ]
+      }
+    ],
+    "artanh^-1": [
+      {
+        "name": "tanh",
+        "label": "takes the hyperbolic tanhgent of an angle",
+        "kind": "fn/named",
+        "refs": [
+          42
+        ]
+      }
+    ],
+    "arcsch^-1": [
+      {
+        "name": "csch",
+        "label": "takes the hyperbolic cosecant of an angle",
+        "kind": "fn/named",
+        "refs": [
+          42
+        ]
+      }
+    ],
+    "arsech^-1": [
+      {
+        "name": "sech",
+        "label": "takes the hyperbolic secant of an angle",
+        "kind": "fn/named",
+        "refs": [
+          42
+        ]
+      }
+    ],
+    "arcoth^-1": [
+      {
+        "name": "coth",
+        "label": "takes the hyperbolic cotangent of an angle",
+        "kind": "fn/named",
+        "refs": [
+          42
+        ]
+      }
+    ],
+    "arcsinh^-1": [
+      {
+        "name": "sinh",
+        "label": "takes the hyperbolic sinhe of an angle",
+        "kind": "fn/named",
+        "refs": [
+          42
+        ]
+      }
+    ],
+    "arccosh^-1": [
+      {
+        "name": "cosh",
+        "label": "takes the hyperbolic coshine of an angle",
+        "kind": "fn/named",
+        "refs": [
+          42
+        ]
+      }
+    ],
+    "arctanh^-1": [
+      {
+        "name": "tanh",
+        "label": "takes the hyperbolic tanhgent of an angle",
+        "kind": "fn/named",
+        "refs": [
+          42
+        ]
+      }
+    ],
+    "arccsch^-1": [
+      {
+        "name": "csch",
+        "label": "takes the hyperbolic cosecant of an angle",
+        "kind": "fn/named",
+        "refs": [
+          42
+        ]
+      }
+    ],
+    "arcsech^-1": [
+      {
+        "name": "sech",
+        "label": "takes the hyperbolic secant of an angle",
+        "kind": "fn/named",
+        "refs": [
+          42
+        ]
+      }
+    ],
+    "arccoth^-1": [
+      {
+        "name": "coth",
+        "label": "takes the hyperbolic cotangent of an angle",
+        "kind": "fn/named",
+        "refs": [
+          42
+        ]
+      }
+    ],
+    "arcsin": [
+      {
+        "name": "arcsin",
+        "label": "takes the inverse sine of a value",
+        "kind": "fn/named",
+        "refs": [
+          44
+        ]
+      }
+    ],
+    "arccos": [
+      {
+        "name": "arccos",
+        "label": "takes the inverse cosine of a value",
+        "kind": "fn/named",
+        "refs": [
+          44
+        ]
+      }
+    ],
+    "arctan": [
+      {
+        "name": "arctan",
+        "label": "takes the inverse tangent of a value",
+        "kind": "fn/named",
+        "refs": [
+          44
+        ]
+      }
+    ],
+    "arccsc": [
+      {
+        "name": "arccsc",
+        "label": "takes the inverse cosecant of a value",
+        "kind": "fn/named",
+        "refs": [
+          44
+        ]
+      }
+    ],
+    "arcsec": [
+      {
+        "name": "arcsec",
+        "label": "takes the inverse secant of a value",
+        "kind": "fn/named",
+        "refs": [
+          44
+        ]
+      }
+    ],
+    "arccot": [
+      {
+        "name": "arccot",
+        "label": "takes the inverse cotangent of a value",
+        "kind": "fn/named",
+        "refs": [
+          44
+        ]
+      }
+    ],
+    "sin^-1": [
+      {
+        "name": "arcsin",
+        "label": "takes the inverse sine of a value",
+        "kind": "fn/named",
+        "refs": [
+          44
+        ]
+      }
+    ],
+    "cos^-1": [
+      {
+        "name": "arccos",
+        "label": "takes the inverse cosine of a value",
+        "kind": "fn/named",
+        "refs": [
+          44
+        ]
+      }
+    ],
+    "tan^-1": [
+      {
+        "name": "arctan",
+        "label": "takes the inverse tangent of a value",
+        "kind": "fn/named",
+        "refs": [
+          44
+        ]
+      }
+    ],
+    "csc^-1": [
+      {
+        "name": "arccsc",
+        "label": "takes the inverse cosecant of a value",
+        "kind": "fn/named",
+        "refs": [
+          44
+        ]
+      }
+    ],
+    "sec^-1": [
+      {
+        "name": "arcsec",
+        "label": "takes the inverse secant of a value",
+        "kind": "fn/named",
+        "refs": [
+          44
+        ]
+      }
+    ],
+    "cot^-1": [
+      {
+        "name": "arccot",
+        "label": "takes the inverse cotangent of a value",
+        "kind": "fn/named",
+        "refs": [
+          44
+        ]
+      }
+    ],
+    "arcsin^-1": [
+      {
+        "name": "sin",
+        "label": "takes the sine of an angle",
+        "kind": "fn/named",
+        "refs": [
+          44
+        ]
+      }
+    ],
+    "arccos^-1": [
+      {
+        "name": "cos",
+        "label": "takes the cosine of an angle",
+        "kind": "fn/named",
+        "refs": [
+          44
+        ]
+      }
+    ],
+    "arctan^-1": [
+      {
+        "name": "tan",
+        "label": "takes the tangent of an angle",
+        "kind": "fn/named",
+        "refs": [
+          44
+        ]
+      }
+    ],
+    "arccsc^-1": [
+      {
+        "name": "csc",
+        "label": "takes the cosecant of an angle",
+        "kind": "fn/named",
+        "refs": [
+          44
+        ]
+      }
+    ],
+    "arcsec^-1": [
+      {
+        "name": "sec",
+        "label": "takes the secant of an angle",
+        "kind": "fn/named",
+        "refs": [
+          44
+        ]
+      }
+    ],
+    "arccot^-1": [
+      {
+        "name": "cot",
+        "label": "takes the cotangent of an angle",
+        "kind": "fn/named",
+        "refs": [
+          44
+        ]
+      }
+    ],
+    "intosi": [
+      {
+        "name": "intosi",
+        "label": "converts a value to its component SI units",
+        "kind": "fn/named",
+        "refs": [
+          45
+        ]
+      }
+    ]
+  }
+}
