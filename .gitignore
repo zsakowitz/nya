@@ -4,3 +4,4 @@ tsconfig.tsbuildinfo
 **/.DS_Store
 index.css
 meta.json
+pkg/graphsource
