@@ -1,7 +1,7 @@
+import floorGl from "#/glsl/floor.glsl"
 import type { Package } from "#/types"
 import { ceilP, floorP, onP } from "@/eval/ops/complex"
 import { frac, num, pt, rept } from "@/eval/ty/create"
-import floorGl from "@/glsl/floor.glsl"
 import { FN_CEIL, FN_FLOOR, FN_FRACT, FN_ROUND } from "./number-theory"
 
 export default {
