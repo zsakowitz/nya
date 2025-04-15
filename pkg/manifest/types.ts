@@ -20,6 +20,7 @@ export type ManifestPackage = [
   id: PackageId,
   name: string,
   colorL: string,
+  colorM: string,
   colorD: string,
 ]
 

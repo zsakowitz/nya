@@ -17,11 +17,12 @@ const tds = Object.entries(manifest.fns)
         "td",
         "whitespace-pre",
         ...v[2].map((k) => {
-          const [, name, l, d] = manifest.packages[k]!
+          const [, name, l, m, d] = manifest.packages[k]!
           return h(
             {
-              class: "px-1 rounded-sm break-inside-avoid mx-0.5",
-              style: `background-color:${l};color:${d}`,
+              class:
+                "px-1 rounded-sm break-inside-avoid mx-0.5 bg-[--l] text-[--d] dark:bg-[--m] dark:text-[--l]",
+              style: `--l:${l};--m:${m};--d:${d}`,
             },
             name,
           )

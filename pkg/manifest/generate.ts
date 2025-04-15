@@ -55,14 +55,17 @@ function color(str: string) {
   const gen = sfc32(a, b, c, d)
   for (let i = 0; i < 17; i++) gen()
   const absL = 8 / (8 + 1.0)
-  const absD = 0.125 / (0.125 + 1.0)
+  const absM = 0.75 / (0.75 + 1.0)
+  const absD = 0.25 / (0.25 + 1.0)
   const r0 = 0.08499547839164734 * 1.28
   const offset = 0.8936868 * 3.141592653589793
   const angle = 2 * Math.PI * gen() + offset
   const rdL = 1.5 * r0 * (1.0 - 2.0 * Math.abs(absL - 0.5))
+  const rdM = 1.5 * r0 * (1.0 - 2.0 * Math.abs(absM - 0.5))
   const rdD = 1.5 * r0 * (1.0 - 2.0 * Math.abs(absD - 0.5))
   return [
     `oklab(${absL} ${rdL * Math.cos(angle)} ${rdL * Math.sin(angle)})`,
+    `oklab(${absM} ${rdM * Math.cos(angle)} ${rdM * Math.sin(angle)})`,
     `oklab(${absD} ${rdD * Math.cos(angle)} ${rdD * Math.sin(angle)})`,
   ] as const
 }
