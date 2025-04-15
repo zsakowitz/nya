@@ -40,7 +40,7 @@ export default {
           x: Math.round(num(a.value.x)),
           y: Math.round(num(a.value.y)),
         }),
-      (_, a) => `floor(${a} + 0.5)`,
+      (_, a) => `floor(${a.expr} + 0.5)`,
       "round(2.4-3.6i)=2-4i",
     ).add(
       ["c32", "r32"],

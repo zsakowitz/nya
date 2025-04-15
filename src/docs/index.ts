@@ -57,7 +57,9 @@ function setPath(tab: string, sub: string | null) {
     (sub ? "/" + encode(sub) : "") +
     (params.size ? "&" + params : "")
 
-  history.replaceState({}, "", location.origin + url)
+  const current = getPath()
+  if (current?.tab == tab && current.sub == sub) return
+  history.pushState({}, "", location.origin + url)
 }
 
 export function createDocs2(sheet: Sheet) {
@@ -70,12 +72,15 @@ export function createDocs2(sheet: Sheet) {
   const list = new PackageList(pkgs)
   const path = getPath()
 
+  const [guidesEl, checkPathGuides] = secGuides(sheet, list)
+  const [elF, checkF] = secFunctions(sheet, list, true, "functions")
+  const [elO, checkO] = secFunctions(sheet, list, false, "operators")
   const names: Record<string, HTMLElement> = {
     "about": secAbout(),
-    "guides": secGuides(sheet, list),
+    "guides": guidesEl,
     "data types": secDataTypes(list),
-    "functions": secFunctions(sheet, list, true),
-    "operators": secFunctions(sheet, list, false),
+    "functions": elF,
+    "operators": elO,
     // @ts-expect-error it can't handle null prototype initializer
     "__proto__": null,
   }
@@ -95,6 +100,22 @@ export function createDocs2(sheet: Sheet) {
     })
     return data
   })
+
+  window.onpopstate = () => {
+    const path = getPath()
+    which = path?.tab && path.tab in names ? path.tab : "about"
+    tabs.find((x) => x.title == which)
+    check()
+    if (path?.tab == "guides") {
+      checkPathGuides()
+    }
+    if (path?.tab == "functions") {
+      checkF()
+    }
+    if (path?.tab == "operators") {
+      checkO()
+    }
+  }
 
   const main = h(
     "relative grid grid-cols-[auto,1px,18rem] [&.nya-docs-open]:grid-cols-[auto] min-h-screen text-[--nya-text]",
@@ -252,7 +273,12 @@ function highlightedFunction(sheet: Sheet, fn: WithDocs, close: () => void) {
 }
 
 // DOCS: make functions appear in a sensible order; alphabetical separates common groups
-function secFunctions(sheet: Sheet, list: PackageList, named: boolean) {
+function secFunctions(
+  sheet: Sheet,
+  list: PackageList,
+  named: boolean,
+  tab: string,
+) {
   const raw = Object.values(FNS)
   const fns = ALL_DOCS.filter((x) => raw.includes(x as any) === named)
   fns.sort(
@@ -265,18 +291,31 @@ function secFunctions(sheet: Sheet, list: PackageList, named: boolean) {
   const highlighted = h(
     "sticky bottom-0 mt-4 -mb-4 left-4 w-[calc(100vw_-_20rem_-_1px)] max-w-2xl hidden",
   )
-  function set(fn: WithDocs) {
+  function set(fn: WithDocs, path: boolean) {
     while (highlighted.firstChild) {
       highlighted.firstChild.remove()
     }
     highlighted.appendChild(highlightedFunction(sheet, fn, unset))
     highlighted.classList.remove("hidden")
+    if (path) {
+      setPath(tab, fn.name)
+    }
   }
   function unset() {
     highlighted.classList.add("hidden")
   }
 
-  return h(
+  function checkPath() {
+    const path = getPath()
+    const fn = path && fns.find((x) => x.name == path.sub)
+    if (fn) {
+      set(fn, false)
+    } else {
+      unset()
+    }
+  }
+
+  const el = h(
     "flex flex-col -mx-4 flex-1 h-min",
     hx(
       "table",
@@ -305,9 +344,7 @@ function secFunctions(sheet: Sheet, list: PackageList, named: boolean) {
             hx("td", "align-baseline px-4 py-1 text-[--nya-title]", doc.label),
           )
 
-          tr.addEventListener("click", () => {
-            set(doc)
-          })
+          tr.addEventListener("click", () => set(doc, true))
 
           list.on(() => {
             tr.hidden = list.active ? !sources.some((x) => list.has(x)) : false
@@ -319,6 +356,8 @@ function secFunctions(sheet: Sheet, list: PackageList, named: boolean) {
     ),
     highlighted,
   )
+
+  return [el, checkPath] as const
 }
 
 function math(sheet: Sheet, data: string) {
@@ -508,12 +547,25 @@ function secGuides(sheet: Sheet, list: PackageList) {
       })
 
       return {
+        name: v.name,
         el,
         get hidden() {
           return list.active ? !list.has(x) : false
         },
+        set,
       }
     })
+
+  function checkPath() {
+    const path = getPath()
+    const guide = path && guides.find((x) => x.name == path.sub)
+    if (guide) {
+      guide.set()
+    } else {
+      isActive = false
+      check()
+    }
+  }
 
   const allHidden = () => guides.every((x) => x.hidden)
 
@@ -547,7 +599,7 @@ function secGuides(sheet: Sheet, list: PackageList) {
 
   el.querySelectorAll("samp").forEach(samp)
 
-  return el
+  return [el, checkPath] as const
 
   function math(data: string) {
     const field = new FieldInert(
