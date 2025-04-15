@@ -61,7 +61,7 @@ import { CmdPrompt } from "./cmd/util/prompt"
 import { D, L, R, U } from "./dir"
 import { LatexEnvs, type LatexInit } from "./latex"
 import type { Init } from "./model"
-import { Inits, WordMap, type Options } from "./options"
+import { Inits, WordMap, WordMapWithoutSpaces, type Options } from "./options"
 
 const inits = new Inits()
   .setDefault(
@@ -187,7 +187,7 @@ const autos = new WordMap<Init>([
   ["degree", SymDegree],
 ]).freeze()
 
-const words = new WordMap<WordKind>([
+const words = new WordMapWithoutSpaces<WordKind>([
   // Custom variables
   ["mrrp", "var"],
   ["meow", "var"],

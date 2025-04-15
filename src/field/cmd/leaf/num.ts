@@ -9,7 +9,7 @@ import {
 import { TXR_MAGICVAR } from "@/eval/ast/tx"
 import { subscript } from "@/eval/lib/text"
 import { L, R, type Dir } from "@/field/dir"
-import type { Options, WordMap } from "@/field/options"
+import type { Options, WordMapWithoutSpaces } from "@/field/options"
 import { h } from "@/jsx"
 import type { Scope } from "@/sheet/deps"
 import { Leaf } from "."
@@ -356,7 +356,7 @@ export class CmdVar extends Leaf {
     )
   }
 
-  private checkWords(words: WordMap<WordKind>) {
+  private checkWords(words: WordMapWithoutSpaces<WordKind>) {
     if (
       this.parent?.parent instanceof CmdSupSub &&
       this.parent == this.parent.parent.sub
@@ -399,17 +399,38 @@ export class CmdVar extends Leaf {
         text.push(vars[i + j]!.text)
       }
 
-      for (let j = max; j > 1; j--, text.pop()) {
+      for (let j = max; j > 0; j--, text.pop()) {
         const full = text.join("")
         const kind = words.get(full)
 
         if (kind) {
-          vars[i]!.render(kind, L, false)
-          for (let k = i + 1; k < i + j - 1; k++) {
-            vars[k]!.render(kind, null, false)
+          const indices = words.spaceIndices(full)
+
+          if (j == 1) {
+            vars[i]!.render(kind, "both", false)
+          } else {
+            vars[i]!.render(kind, indices?.includes(1) ? "both" : L, false)
+            for (let k = i + 1; k < i + j - 1; k++) {
+              const breakLhs = indices?.includes(k)
+              const breakRhs = indices?.includes(k + 1)
+              vars[k]!.render(
+                kind,
+                breakLhs && breakRhs ? "both"
+                : breakLhs ? L
+                : breakRhs ? R
+                : null,
+                false,
+              )
+            }
+            vars[i + j - 1]!.render(
+              kind,
+              indices?.includes(i + j - 1) ? "both" : R,
+              vars[i]![L] instanceof CmdDot,
+            )
           }
-          vars[i + j - 1]!.render(kind, R, vars[i]![L] instanceof CmdDot)
+
           i += j - 1
+
           if (kind == "magicprefixword") {
             i++
             if (i < vars.length) {

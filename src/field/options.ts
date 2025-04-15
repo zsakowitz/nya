@@ -97,8 +97,73 @@ export class WordMap<T> {
   clone() {
     const map = new WordMap<T>([])
     ;(map as any).maxLen = this.maxLen
-    ;(map as any).words = { ...this.words }
+    ;(map as any).words = { __proto__: null, ...this.words }
     return map
+  }
+}
+
+/**
+ * A map from strings to values. Caches the maximum word length. Words with
+ * spaces are stored without spaces, but their original spaced versions may
+ * still be accessed.
+ */
+export class WordMapWithoutSpaces<T> extends WordMap<T> {
+  /**
+   * If a word has a space, the spaces are removed and the original is stuffed
+   * here.
+   */
+  private spaced: Record<string, string> = Object.create(null)
+
+  constructor(words: (readonly [string, T])[], defaultValue?: T) {
+    super(
+      words.map(([k, v]) => [k.replace(/ /g, ""), v] as const),
+      defaultValue,
+    )
+
+    for (const [k] of words) {
+      if (k.includes(" ")) {
+        this.spaced[k.replace(/ /g, "")] = k
+      }
+    }
+  }
+
+  clone() {
+    const map = new WordMapWithoutSpaces<T>([])
+    ;(map as any).maxLen = this.maxLen
+    ;(map as any).words = { __proto__: null, ...(this as any).words }
+    ;(map as any).spaced = { __proto__: null, ...(this as any).spaced }
+    return map
+  }
+
+  set(word: string, value: T): this {
+    super.set(word, value)
+    if (word.includes(" ")) {
+      this.spaced[word.replace(/ /g, "")] = word
+    }
+    return this
+  }
+
+  withSpaces(unspaced: string): string | null {
+    return this.spaced[unspaced] ?? null
+  }
+
+  /**
+   * Returns an array of indices in the word with spaces. For instance, if
+   * `"hipeopleofearth"` is passed and `[2, 8, 10]` is returned, there are
+   * spaces as in `"hi people of earth"`.
+   */
+  spaceIndices(unspaced: string): readonly number[] | null {
+    let spaced = this.withSpaces(unspaced)
+    if (!spaced) return null
+
+    const indices = []
+    let i = 0
+    for (const el of spaced.split(" ")) {
+      i += el.length
+      indices.push(i)
+    }
+    indices.pop()
+    return indices
   }
 }
 
@@ -136,7 +201,7 @@ export interface Options {
    * or infix operator. The {@linkcode WordKind} controls spacing; see its
    * documentation for more details.
    */
-  words?: WordMap<WordKind>
+  words?: WordMapWithoutSpaces<WordKind>
 
   /**
    * If this returns `true` for a given {@linkcode Command}, a number typed
