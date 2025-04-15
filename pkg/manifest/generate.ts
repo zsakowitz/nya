@@ -3,6 +3,7 @@ import { options } from "@/field/defaults"
 import { SheetFactory } from "@/sheet/factory"
 import { index, type PackageId } from ".."
 import type { Package } from "../types"
+import { order } from "./order"
 import {
   manifestFnKinds,
   type Manifest,
@@ -52,7 +53,7 @@ function sfc32(a: number, b: number, c: number, d: number) {
 function color(str: string) {
   const [a, b, c, d] = cyrb128(str)
   const gen = sfc32(a, b, c, d)
-  for (let i = 0; i < 15; i++) gen()
+  for (let i = 0; i < 16; i++) gen()
   const absL = 8 / (8 + 1.0)
   const absD = 0.125 / (0.125 + 1.0)
   const r0 = 0.08499547839164734 * 1.28
@@ -68,11 +69,13 @@ function color(str: string) {
 
 async function createManifest(): Promise<Manifest> {
   const factory = new SheetFactory(options)
-  const pkgs = await Promise.all(
-    Object.entries(index).map(async ([id, load], index) => {
-      const pkg: Package = (await load()).default
-      return { id: id as PackageId, pkg, index: index as PackageIndex }
-    }),
+  const pkgs = order(
+    await Promise.all(
+      Object.entries(index).map(async ([id, load]) => {
+        const pkg: Package = (await load()).default
+        return { id: id as PackageId, pkg }
+      }),
+    ),
   )
   await Promise.all(pkgs.map((x) => factory.load(x.pkg)))
 
