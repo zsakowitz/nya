@@ -1,3 +1,4 @@
+import type { PuncInfix, PuncUnary } from "@/eval/ast/token"
 import { options } from "@/field/defaults"
 import { SheetFactory } from "@/sheet/factory"
 import { index, type PackageId } from "."
@@ -45,6 +46,23 @@ async function createManifest(): Promise<Manifest> {
     if (pkg.eval?.fn) {
       for (const key in pkg.eval.fn) {
         addRef(key, "fn/named", index, pkg.eval.fn[key]!)
+      }
+    }
+
+    if (pkg.eval?.op?.unary) {
+      for (const key in pkg.eval.op.unary) {
+        addRef(key, "fn/op/unary", index, pkg.eval.op.unary[key as PuncUnary]!)
+      }
+    }
+
+    if (pkg.eval?.op?.binary) {
+      for (const key in pkg.eval.op.binary) {
+        addRef(
+          key,
+          "fn/op/binary",
+          index,
+          pkg.eval.op.binary[key as PuncInfix]!.fn,
+        )
       }
     }
   }

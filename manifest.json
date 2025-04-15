@@ -1,3 +1,17 @@
+ithkuil gloss
+ithkuil ungloss
+ithkuil script
+ithkuil values
+ithkuil valid
+ithkuil valid initial
+ithkuil valid final
+ithkuil ca
+ithkuil version
+ithkuil all
+directed angle
+directed angles
+angle bisector
+perpendicular bisector
 {
   "packages": [
     "3d/point",
@@ -88,6 +102,46 @@
         "name": "firstvalid",
         "label": "returns the first value which is valid for its type (the first finite number, the first color which is displayable, etc.)",
         "kind": "fn/named",
+        "refs": [
+          3
+        ]
+      }
+    ],
+    "\\and ": [
+      {
+        "name": "and",
+        "label": "returns true if both inputs are true",
+        "kind": "fn/op/binary",
+        "refs": [
+          3
+        ]
+      }
+    ],
+    "and": [
+      {
+        "name": "and",
+        "label": "returns true if both inputs are true",
+        "kind": "fn/op/binary",
+        "refs": [
+          3
+        ]
+      }
+    ],
+    "\\or ": [
+      {
+        "name": "or",
+        "label": "returns true if either of its inputs are true",
+        "kind": "fn/op/binary",
+        "refs": [
+          3
+        ]
+      }
+    ],
+    "or": [
+      {
+        "name": "or",
+        "label": "returns true if either of its inputs are true",
+        "kind": "fn/op/binary",
         "refs": [
           3
         ]
@@ -370,6 +424,202 @@
         "kind": "fn/named",
         "refs": [
           6
+        ]
+      }
+    ],
+    "cmp-lt": [
+      {
+        "name": "<",
+        "label": "compares two values via the < operator",
+        "kind": "fn/op/binary",
+        "refs": [
+          7
+        ]
+      }
+    ],
+    "cmp-gt": [
+      {
+        "name": ">",
+        "label": "compares two values via the > operator",
+        "kind": "fn/op/binary",
+        "refs": [
+          7
+        ]
+      }
+    ],
+    "cmp-lte": [
+      {
+        "name": "≤",
+        "label": "compares two values via the ≤ operator",
+        "kind": "fn/op/binary",
+        "refs": [
+          7
+        ]
+      }
+    ],
+    "cmp-gte": [
+      {
+        "name": "≥",
+        "label": "compares two values via the ≥ operator",
+        "kind": "fn/op/binary",
+        "refs": [
+          7
+        ]
+      }
+    ],
+    "cmp-nlt": [
+      {
+        "name": "≮",
+        "label": "compares two values via the ≮ operator",
+        "kind": "fn/op/binary",
+        "refs": [
+          7
+        ]
+      }
+    ],
+    "cmp-ngt": [
+      {
+        "name": "≯",
+        "label": "compares two values via the ≯ operator",
+        "kind": "fn/op/binary",
+        "refs": [
+          7
+        ]
+      }
+    ],
+    "cmp-nlte": [
+      {
+        "name": "≰",
+        "label": "compares two values via the ≰ operator",
+        "kind": "fn/op/binary",
+        "refs": [
+          7
+        ]
+      }
+    ],
+    "cmp-ngte": [
+      {
+        "name": "≱",
+        "label": "compares two values via the ≱ operator",
+        "kind": "fn/op/binary",
+        "refs": [
+          7
+        ]
+      }
+    ],
+    "cmp-eq": [
+      {
+        "name": "=",
+        "label": "compares two values via the = operator",
+        "kind": "fn/op/binary",
+        "refs": [
+          7
+        ]
+      }
+    ],
+    "cmp-neq": [
+      {
+        "name": "≠",
+        "label": "compares two values via the ≠ operator",
+        "kind": "fn/op/binary",
+        "refs": [
+          7
+        ]
+      }
+    ],
+    "-": [
+      {
+        "name": "-",
+        "label": "negates its input",
+        "kind": "fn/op/unary",
+        "refs": [
+          9
+        ]
+      },
+      {
+        "name": "-",
+        "label": "subtracts two values",
+        "kind": "fn/op/binary",
+        "refs": [
+          9
+        ]
+      }
+    ],
+    "+": [
+      {
+        "name": "+",
+        "label": "unary plus; ensures a numeric value is passed",
+        "kind": "fn/op/unary",
+        "refs": [
+          9
+        ]
+      },
+      {
+        "name": "+",
+        "label": "adds two values or points",
+        "kind": "fn/op/binary",
+        "refs": [
+          9
+        ]
+      }
+    ],
+    "\\cdot ": [
+      {
+        "name": "·",
+        "label": "multiplies two values",
+        "kind": "fn/op/binary",
+        "refs": [
+          9
+        ]
+      }
+    ],
+    "÷": [
+      {
+        "name": "÷",
+        "label": "divides two values",
+        "kind": "fn/op/binary",
+        "refs": [
+          9
+        ]
+      }
+    ],
+    "\\odot ": [
+      {
+        "name": "⊙",
+        "label": "multiplies multi-dimensional values component-by-component",
+        "kind": "fn/op/binary",
+        "refs": [
+          9
+        ]
+      }
+    ],
+    "mod": [
+      {
+        "name": "mod",
+        "label": "modulus operator (remainder-like)",
+        "kind": "fn/op/binary",
+        "refs": [
+          9
+        ]
+      }
+    ],
+    "\\times ": [
+      {
+        "name": "×",
+        "label": "multiplies two real numbers",
+        "kind": "fn/op/binary",
+        "refs": [
+          9
+        ]
+      }
+    ],
+    "\\uparrow ": [
+      {
+        "name": "↑",
+        "label": "raises a value to an exponent",
+        "kind": "fn/op/binary",
+        "refs": [
+          9
         ]
       }
     ],
@@ -944,7 +1194,7 @@
         ]
       }
     ],
-    "directedangle": [
+    "directed angle": [
       {
         "name": "directedangle",
         "label": "constructs an angle with a particular direction",
@@ -964,7 +1214,7 @@
         ]
       }
     ],
-    "directedangles": [
+    "directed angles": [
       {
         "name": "directedangles",
         "label": "constructs a directed angle at every vertex of a polygon",
@@ -974,7 +1224,7 @@
         ]
       }
     ],
-    "anglebisector": [
+    "angle bisector": [
       {
         "name": "anglebisector",
         "label": "constucts the bisector of an angle",
@@ -984,7 +1234,7 @@
         ]
       }
     ],
-    "perpendicularbisector": [
+    "perpendicular bisector": [
       {
         "name": "perpendicularbisector",
         "label": "constucts the perpendicular bisector of a line segment or between two points",
@@ -1155,7 +1405,7 @@
         ]
       }
     ],
-    "ithkuilgloss": [
+    "ithkuil gloss": [
       {
         "name": "ithkuilgloss",
         "label": "glosses an ithkuil word",
@@ -1165,7 +1415,7 @@
         ]
       }
     ],
-    "ithkuilungloss": [
+    "ithkuil ungloss": [
       {
         "name": "ithkuilungloss",
         "label": "unglosses an ithkuil word",
@@ -1175,7 +1425,7 @@
         ]
       }
     ],
-    "ithkuilscript": [
+    "ithkuil script": [
       {
         "name": "ithkuilscript",
         "label": "converts an ithkuil word into script form",
@@ -1185,7 +1435,7 @@
         ]
       }
     ],
-    "ithkuilvalues": [
+    "ithkuil values": [
       {
         "name": "ithkuilvalues",
         "label": "given the name of a grammatical category of ithkuil, returns all values it can take",
@@ -1195,7 +1445,7 @@
         ]
       }
     ],
-    "ithkuilvalid": [
+    "ithkuil valid": [
       {
         "name": "ithkuilvalid",
         "label": "checks if a consonant form is valid according to ithkuil phonotactics",
@@ -1205,7 +1455,7 @@
         ]
       }
     ],
-    "ithkuilvalidinitial": [
+    "ithkuil valid initial": [
       {
         "name": "ithkuilvalidinitial",
         "label": "checks if a consonant form is valid word-initially according to ithkuil phonotactics",
@@ -1215,7 +1465,7 @@
         ]
       }
     ],
-    "ithkuilvalidfinal": [
+    "ithkuil valid final": [
       {
         "name": "ithkuilvalidfinal",
         "label": "checks if a consonant form is valid word-finally according to ithkuil phonotactics",
@@ -1225,7 +1475,7 @@
         ]
       }
     ],
-    "ithkuilca": [
+    "ithkuil ca": [
       {
         "name": "ithkuilca",
         "label": "generates an ithkuil CA form, optionally geminated",
@@ -2125,6 +2375,16 @@
         "name": "intosi",
         "label": "converts a value to its component SI units",
         "kind": "fn/named",
+        "refs": [
+          45
+        ]
+      }
+    ],
+    "in": [
+      {
+        "name": "in",
+        "label": "converts values between units",
+        "kind": "fn/op/binary",
         "refs": [
           45
         ]

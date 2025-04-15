@@ -144,7 +144,6 @@ export class WordMapWithoutSpaces<T> extends WordMap<T> {
 
   init(spaced: string, value: T): this {
     const despaced = despace(spaced)
-    if (despaced != spaced) console.log(spaced)
     if (this.has(despaced) && this.get(despaced) !== value) {
       console.warn(`[wordmap] '${despaced}' set with different values`)
     }

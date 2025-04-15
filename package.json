@@ -7,7 +7,8 @@
     "build:esb": "esbuild --bundle --minify --format=esm --outdir=dist --splitting --loader:.woff=file --loader:.ttf=file --loader:.glsl=text --loader:.woff2=file --loader:.svg=file --loader:.eot=file src/index.ts --metafile=meta.json --legal-comments=linked",
     "build:tw": "tailwindcss -i ./index.postcss -o ./index.css --minify",
     "lint": "madge src/index.ts --ts-config tsconfig.json -c",
-    "lint:graph": "madge --image graph.svg --ts-config tsconfig.json --circular src/index.ts"
+    "lint:graph": "madge --image graph.svg --ts-config tsconfig.json --circular src/index.ts",
+    "manifest": "bun pkg/manifest.ts > manifest.json"
   },
   "dependencies": {
     "@fortawesome/free-regular-svg-icons": "^6.7.2",
