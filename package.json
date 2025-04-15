@@ -9,7 +9,7 @@
     "lint": "tsc && madge src/index.ts --ts-config tsconfig.json -c",
     "graph:cycles": "madge --image graph.svg --ts-config tsconfig.json --circular src/index.ts",
     "graph:pkg": "madge --image graph.svg --ts-config tsconfig.json --exclude 'src|util[-/]' pkg/list/{*.ts,**/*.ts,**/**/*.ts,**/**/**/*.ts}",
-    "manifest": "node pkg/manifest/generate.ts > pkg/manifest/data.json"
+    "manifest": "bun pkg/manifest/generate.ts > pkg/manifest/data.json"
   },
   "dependencies": {
     "@fortawesome/free-regular-svg-icons": "^6.7.2",
