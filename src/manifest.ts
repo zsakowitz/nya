@@ -1,7 +1,7 @@
 import rawManifest from "#/manifest/data.json"
 import { manifestFnKinds, type Manifest } from "#/manifest/types"
 import { makeDocName } from "./docs/util"
-import { hx } from "./jsx"
+import { h, hx } from "./jsx"
 
 const manifest = rawManifest as any as Manifest
 
@@ -10,19 +10,36 @@ const tds = Object.entries(manifest.fns)
   .map(([k, v]) =>
     hx(
       "tr",
-      "",
-      hx("td", "", makeDocName(k)),
+      "contents",
+      hx("td", "text-[--nya-text]", makeDocName(k)),
       hx("td", "", manifestFnKinds[v[3]]),
-      hx("td", "", v[2].map((k) => manifest.packages[k]).join(", ")),
-      hx("td", "", v[1]),
+      hx(
+        "td",
+        "whitespace-pre",
+        ...v[2].map((k) => {
+          const [, name, l, d] = manifest.packages[k]!
+          return h(
+            {
+              class: "px-1 rounded-sm break-inside-avoid mx-0.5",
+              style: `background-color:${l};color:${d}`,
+            },
+            name,
+          )
+        }),
+      ),
+      hx("td", "mb-2 text-sm text-[--nya-title]", v[1]),
     ),
   )
 
 const table = hx(
   "table",
-  "grid",
-  hx("thead", "", hx("tr", "", hx("th", "item name"), hx("th", "item kind"))),
-  hx("tbody", "", ...tds),
+  "grid [grid-template-columns:repeat(4,auto)] gap-x-4 text-[--nya-text-prose]",
+  // hx(
+  //   "thead",
+  //   "contents",
+  //   hx("tr", "contents", hx("th", "item name"), hx("th", "item kind")),
+  // ),
+  hx("tbody", "contents", ...tds),
 )
 
 document.body.classList.add("p-4")

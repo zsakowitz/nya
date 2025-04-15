@@ -16,6 +16,13 @@ export const manifestFnKinds = [
 export type ManifestFnKindName = (typeof manifestFnKinds)[number]
 export type ManifestFnKindIndex = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7
 
+export type ManifestPackage = [
+  id: PackageId,
+  name: string,
+  colorL: string,
+  colorD: string,
+]
+
 export type ManifestFn = [
   name: string,
   label: string,
@@ -24,8 +31,7 @@ export type ManifestFn = [
 ]
 
 export interface Manifest {
-  packages: PackageId[]
-
+  packages: ManifestPackage[]
   /** Key => array of possible results */
   fns: Record<string, ManifestFn[]>
 }

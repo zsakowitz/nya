@@ -195,7 +195,7 @@ function acscJs(a: SPoint) {
 }
 
 export default {
-  name: "on complex numbers",
+  name: "complex trig",
   label: null,
   category: "trigonometry",
   deps: ["trig/real", "num/complex"],

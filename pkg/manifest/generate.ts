@@ -12,6 +12,60 @@ import {
   type PackageIndex,
 } from "./types"
 
+/*! https://stackoverflow.com/a/47593316 */
+function cyrb128(str: string) {
+  let h1 = 1779033703,
+    h2 = 3144134277,
+    h3 = 1013904242,
+    h4 = 2773480762
+  for (let i = 0, k; i < str.length; i++) {
+    k = str.charCodeAt(i)
+    h1 = h2 ^ Math.imul(h1 ^ k, 597399067)
+    h2 = h3 ^ Math.imul(h2 ^ k, 2869860233)
+    h3 = h4 ^ Math.imul(h3 ^ k, 951274213)
+    h4 = h1 ^ Math.imul(h4 ^ k, 2716044179)
+  }
+  h1 = Math.imul(h3 ^ (h1 >>> 18), 597399067)
+  h2 = Math.imul(h4 ^ (h2 >>> 22), 2869860233)
+  h3 = Math.imul(h1 ^ (h3 >>> 17), 951274213)
+  h4 = Math.imul(h2 ^ (h4 >>> 19), 2716044179)
+  ;(h1 ^= h2 ^ h3 ^ h4), (h2 ^= h1), (h3 ^= h1), (h4 ^= h1)
+  return [h1 >>> 0, h2 >>> 0, h3 >>> 0, h4 >>> 0] as const
+}
+
+function sfc32(a: number, b: number, c: number, d: number) {
+  return function () {
+    a |= 0
+    b |= 0
+    c |= 0
+    d |= 0
+    let t = (((a + b) | 0) + d) | 0
+    d = (d + 1) | 0
+    a = b ^ (b >>> 9)
+    b = (c + (c << 3)) | 0
+    c = (c << 21) | (c >>> 11)
+    c = (c + t) | 0
+    return (t >>> 0) / 4294967296
+  }
+}
+
+function color(str: string) {
+  const [a, b, c, d] = cyrb128(str)
+  const gen = sfc32(a, b, c, d)
+  for (let i = 0; i < 15; i++) gen()
+  const absL = 8 / (8 + 1.0)
+  const absD = 0.125 / (0.125 + 1.0)
+  const r0 = 0.08499547839164734 * 1.28
+  const offset = 0.8936868 * 3.141592653589793
+  const angle = 2 * Math.PI * gen() + offset
+  const rdL = 1.5 * r0 * (1.0 - 2.0 * Math.abs(absL - 0.5))
+  const rdD = 1.5 * r0 * (1.0 - 2.0 * Math.abs(absD - 0.5))
+  return [
+    `oklab(${absL} ${rdL * Math.cos(angle)} ${rdL * Math.sin(angle)})`,
+    `oklab(${absD} ${rdD * Math.cos(angle)} ${rdD * Math.sin(angle)})`,
+  ] as const
+}
+
 async function createManifest(): Promise<Manifest> {
   const factory = new SheetFactory(options)
   const pkgs = await Promise.all(
@@ -22,7 +76,11 @@ async function createManifest(): Promise<Manifest> {
   )
   await Promise.all(pkgs.map((x) => factory.load(x.pkg)))
 
-  const packages: Manifest["packages"] = pkgs.map((x) => x.id)
+  const packages: Manifest["packages"] = pkgs.map((x) => [
+    x.id,
+    x.pkg.name,
+    ...color(x.id),
+  ])
 
   const fns: Record<string, ManifestFn[]> = Object.create(null)
   for (const { index, pkg } of pkgs) {
@@ -41,7 +99,7 @@ async function createManifest(): Promise<Manifest> {
     if (pkg.eval?.op?.binary) {
       for (const key in pkg.eval.op.binary) {
         addRef(
-          key,
+          pkg.eval.op.binary[key as PuncInfix]!.fn.name,
           "fn/op/binary",
           index,
           pkg.eval.op.binary[key as PuncInfix]!.fn,
