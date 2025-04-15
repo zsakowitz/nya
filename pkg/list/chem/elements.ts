@@ -1,6 +1,14 @@
 import type { Package } from "#/types"
 import type { TextSegment } from "$/text"
 import { latexUnit } from "$/unit/pkg"
+import type { Unit, UnitList } from "$/unit/util/system"
+import {
+  UNIT_AMU,
+  UNIT_JOULE,
+  UNIT_KELVIN,
+  UNIT_KILOJOULE,
+  UNIT_MOLE,
+} from "$/unit/util/units"
 import { NO_SYM } from "@/eval/ast/tx"
 import { FnDist } from "@/eval/ops/dist"
 import { issue } from "@/eval/ops/issue"
@@ -12,14 +20,6 @@ import { CmdWord } from "@/field/cmd/leaf/word"
 import { L } from "@/field/dir"
 import { toText } from "@/field/latex"
 import { h, hx } from "@/jsx"
-import type { Unit, UnitList } from "../unit/util/system"
-import {
-  UNIT_AMU,
-  UNIT_JOULE,
-  UNIT_KELVIN,
-  UNIT_KILOJOULE,
-  UNIT_MOLE,
-} from "../unit/util/units"
 
 declare module "@/eval/ty" {
   interface Tys {
@@ -5611,6 +5611,7 @@ export default {
   name: "chemical elements",
   label: "and their properties",
   category: "chemistry",
+  deps: ["unit/pkg", "num/real", "text"],
   ty: {
     info: {
       element: INFO_ELEMENT,

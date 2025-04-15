@@ -2,8 +2,8 @@ import type { Package } from "#/types"
 import type { SReal } from "@/eval/ty"
 import { frac } from "@/eval/ty/create"
 import { Display } from "@/eval/ty/display"
-import { FieldInert } from "@/field/field-inert"
 import { R } from "@/field/dir"
+import { FieldInert } from "@/field/field-inert"
 import { h } from "@/jsx"
 import { Store, defineExt } from "@/sheet/ext"
 import type { Expr } from "@/sheet/ui/expr"
@@ -123,6 +123,7 @@ export default {
   name: "evaluator",
   label: "displays computed expressions",
   category: "core",
+  deps: [],
   sheet: {
     exts: {
       2: [EXT_EVAL],

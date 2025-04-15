@@ -349,6 +349,7 @@ export default {
   name: "text",
   label: "writing and outputting text",
   category: "miscellaneous",
+  deps: ["num/real", "num/complex", "bool"],
   field: {
     inits: {
       '"': CmdText,

@@ -50,6 +50,10 @@ export function sqrP(a: Point): Point {
   return { x: a.x * a.x - a.y * a.y, y: 2 * a.x * a.y }
 }
 
+export function expP({ x: a, y: b }: Point): Point {
+  return cx(Math.exp(a) * Math.cos(b), Math.exp(a) * Math.sin(b))
+}
+
 export function rcis(r: number, t: number): Point {
   return {
     x: r * Math.cos(t),

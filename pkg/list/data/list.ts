@@ -117,6 +117,7 @@ export default {
   name: "core list functionality",
   label: null,
   category: "lists",
+  deps: ["num/real"],
   eval: {
     fn: {
       join: FN_JOIN,

@@ -36,6 +36,7 @@ export default {
   name: "symbolics core",
   label: null,
   category: "symbolic computation",
+  deps: [],
   ty: {
     info: {
       sym: {

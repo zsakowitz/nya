@@ -102,6 +102,7 @@ export default {
   name: "inline function docs",
   label: null,
   category: "sheet items",
+  deps: [],
   sheet: {
     items: [FACTORY],
   },

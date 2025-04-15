@@ -124,6 +124,7 @@ export default {
   name: "folders",
   label: "for organizing expressions",
   category: "sheet items",
+  deps: [],
   sheet: {
     items: [FACTORY],
   },

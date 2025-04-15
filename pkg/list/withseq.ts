@@ -7,6 +7,7 @@ export default {
   name: "with (sequential)",
   label: "an ordered variant of 'with'",
   category: "substitution",
+  deps: [],
   eval: {
     tx: {
       binary: {

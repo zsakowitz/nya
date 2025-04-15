@@ -1,5 +1,5 @@
 import type { Package } from "#/types"
-import { gridlineCoords } from "$/gridlines"
+import { gridlineCoords } from "$/gridlines" // imported but not strictly necessary
 import type { Node } from "@/eval/ast/token"
 import { js, NO_SYM } from "@/eval/ast/tx"
 import { id } from "@/eval/lib/binding"
@@ -162,6 +162,7 @@ export default {
   name: "slope fields",
   label: null,
   category: "miscellaneous",
+  deps: ["geo/dcg", "geo/point", "num/real"],
   ty: {
     info: {
       slopefield: {

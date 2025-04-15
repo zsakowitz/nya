@@ -646,6 +646,7 @@ export default {
   name: "basic operators",
   label: null,
   category: "numbers",
+  deps: [],
   eval: {
     tx: {
       binary: {

@@ -13,6 +13,7 @@ export default {
   name: "alternate bases",
   label: "bases other than 2*5",
   category: "number theory",
+  deps: ["core/ops", "num/real"],
   eval: {
     tx: {
       binary: {

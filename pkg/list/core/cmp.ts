@@ -88,6 +88,7 @@ export default {
   name: "comparison operators",
   label: null,
   category: "logic",
+  deps: [], // almost all usages rely on bool, but cmd does not mention that type anywhere
   eval: {
     tx: {
       ast: {

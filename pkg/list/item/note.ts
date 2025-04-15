@@ -122,6 +122,7 @@ export default {
   name: "notes",
   label: "in plain text between expressions",
   category: "sheet items",
+  deps: [],
   sheet: {
     items: [FACTORY],
   },

@@ -338,6 +338,7 @@ export default {
   name: "images",
   label: "upload and manipulate images",
   category: "images",
+  deps: ["num/real"],
   ty: {
     info: {
       image: {

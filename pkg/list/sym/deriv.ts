@@ -9,6 +9,7 @@ export default {
   name: "derivatives",
   label: "via leibniz notation",
   category: "symbolic computation",
+  deps: ["sym/core"],
   eval: {
     tx: {
       ast: {

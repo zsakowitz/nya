@@ -1,6 +1,7 @@
-\operatorname{ceil}p
-A=\left[\left(-1.901,2\right),\left(-1.64,2.153\right),\left(-1.492,2.446\right),\left(-1.346,2.163\right),\left(-1.511,2.004\right),\left(-1.666,1.949\right),\left(-1.51,1.847\right),\left(-1.596,1.745\right),\left(-1.296,1.605\right),\left(-1.178,1.33\right),\left(-0.742,1.318\right),\left(-0.927,1.673\right),\left(-1.128,1.82\right),\left(-1.177,1.955\right),\left(-1.281,1.865\right),\left(-1.114,1.604\right),\left(-0.981,1.384\right),\left(-0.981,1.287\right),\left(-0.81,1.551\right),\left(-0.956,1.843\right),\left(-1.438,1.622\right),\left(-1.282,1.43\right)\right]
-\operatorname{ceil}\operatorname{complex}A
-3\operatorname{proj}\operatorname{lim}4
-3\operatorname{J}4
-3\operatorname{mol}4
+p_{1}\left(n\right)=\left\{n=0:0,n=1:3,n=2:2,n=3:5,n=4:4\right\}
+p_{5}\left(n\right)=4n
+p_{20}\left(n\right)=4n
+g\left(n\right)=p_{1}\left(n\operatorname{mod}5\right)+p_{5}\left(\operatorname{floor}\left(\frac{n\operatorname{mod}20}{5}\right)\right)+p_{20}\left(\operatorname{floor}\left(\frac{n\operatorname{mod}100}{20}\right)\right)
+f\left(n\right)=\left\{n=0:0,n>0:\operatorname{iterate}.a^{10}a\to a+3+g\left(n\operatorname{mod}100\right),n\to \operatorname{floor}\frac{n}{100}\operatorname{from}a=g\left(n\operatorname{mod}100\right),n=\operatorname{floor}\frac{n}{100}\operatorname{while}n\neq 0\right\}
+h\left(x\right)=\begin{cases}\operatorname{rgb}\left(0,0,0\right)&n=2\\\operatorname{rgb}\left(255,0,0\right)&n=4\\\operatorname{rgb}\left(0,255,0\right)&n=6\operatorname{or}n=7\\\operatorname{rgb}\left(0,0,255\right)&n=8\operatorname{or}n=9\\\operatorname{rgb}\left(255,255,0\right)&n=11\\\operatorname{rgb}\left(255,0,196\right)&n=13\end{cases}\operatorname{with}n=\operatorname{iterate}^{10}n\to f\left(n\right)\operatorname{from}n=\operatorname{round}x
+h\left(x\right)

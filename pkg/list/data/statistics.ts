@@ -1,4 +1,6 @@
 import type { Package } from "#/types"
+import { addR64 } from "$/core/ops"
+import { createMultiEval } from "$/eval"
 import type { FnSignature } from "@/docs/signature"
 import type { Node } from "@/eval/ast/token"
 import type { GlslContext } from "@/eval/lib/fn"
@@ -32,12 +34,10 @@ import { TY_INFO, type TyInfoByName } from "@/eval/ty/info"
 import { abs, add, div, mul, sub } from "@/eval/ty/ops"
 import { Leaf } from "@/field/cmd/leaf"
 import { BRACKS } from "@/field/cmd/math/brack"
-import { Block } from "@/field/model"
 import { L, R } from "@/field/dir"
+import { Block } from "@/field/model"
 import { h, hx } from "@/jsx"
 import { defineExt } from "@/sheet/ext"
-import { addR64 } from "$/core/ops"
-import { createMultiEval } from "$/eval"
 import { sqrt } from "../geo/dcg/util-fn/distance"
 
 declare module "@/eval/ty" {
@@ -257,7 +257,10 @@ function meanGlsl(args: string[]): string {
   return `((${args.join(" + ")}) / ${args.length.toExponential()})`
 }
 
-const FN_MEAN = new FnList("mean", "takes the arithmetic mean of its inputs")
+export const FN_MEAN = new FnList(
+  "mean",
+  "takes the arithmetic mean of its inputs",
+)
   .addSpread(
     "r64",
     "r64",

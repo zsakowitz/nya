@@ -446,6 +446,7 @@ export default {
   name: "iterate",
   label: "easily repeat expressions",
   category: "miscellaneous",
+  deps: ["num/real", "with", "withseq"],
   eval: {
     tx: {
       magic: {

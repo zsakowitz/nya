@@ -6,6 +6,7 @@ export default {
   name: "debug utilities",
   label: "for project nya developers",
   category: "miscellaneous",
+  deps: ["text"],
   eval: {
     tx: {
       magic: {

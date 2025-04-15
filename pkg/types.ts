@@ -56,7 +56,7 @@ export interface Package {
   name: string
   label: string | null
   category: PackageCategory
-  deps?: PackageId[]
+  deps: PackageId[]
 
   load?(): void
   init?: {

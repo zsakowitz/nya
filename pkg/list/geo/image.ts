@@ -107,6 +107,7 @@ export default {
   name: "image objects",
   label: "on the graphpaper",
   category: "images",
+  deps: ["image", "geo/point", "geo/dcg", "num/real"],
   ty: {
     info: {
       image2d: {

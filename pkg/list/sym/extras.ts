@@ -24,6 +24,7 @@ export default {
   name: "extra symbolics",
   label: null,
   category: "symbolic computation",
+  deps: ["sym/core"],
   eval: {
     tx: {
       magic: {

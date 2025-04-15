@@ -1,17 +1,12 @@
-import erfC32Gl from "#/glsl/erf-c32.glsl"
 import erfGl from "#/glsl/erf.glsl"
 import erfinvGl from "#/glsl/erfinv.glsl"
 import type { Package } from "#/types"
-import { chain, OP_DIV, OP_JUXTAPOSE, OP_NEG, OP_RAISE } from "$/core/ops"
 import { EXT_EVAL } from "$/eval"
-import { declareMulC32 } from "$/num/complex"
 import { jsToGlsl } from "@/eval/js-to-glsl"
-import { divP } from "@/eval/ops/complex"
 import { FnDist } from "@/eval/ops/dist"
 import { FnDistDeriv } from "@/eval/ops/dist-deriv"
-import { SYM_2, SYM_E, SYM_HALF, SYM_PI, unary } from "@/eval/sym"
 import type { GlslValue, JsVal, SReal } from "@/eval/ty"
-import { approx, gl, num, real, rept, unpt } from "@/eval/ty/create"
+import { approx, gl, num, real } from "@/eval/ty/create"
 import { TY_INFO } from "@/eval/ty/info"
 import { add, div, mul, recip, sub } from "@/eval/ty/ops"
 import { CmdComma } from "@/field/cmd/leaf/comma"
@@ -21,7 +16,6 @@ import { L, R } from "@/field/dir"
 import { Block } from "@/field/model"
 import { g, h, path, svgx } from "@/jsx"
 import { defineHideable } from "@/sheet/ext/hideable"
-import type { Point } from "@/sheet/point"
 import { createLine } from "@/sheet/shader-line"
 import erf from "@stdlib/math/base/special/erf"
 import erfinv from "@stdlib/math/base/special/erfinv"
@@ -147,201 +141,6 @@ const binomialdist = new FnDist(
     (_, a, b) => `vec2(${a.expr}, ${b.expr})`,
     "binomialdist(6,0.3)",
   )
-
-function faddeevaPt(z: Point): Point {
-  const M = 4
-  const N = 1 << (M - 1)
-  const A = [
-    +0.983046454995208, -0.095450491368505, -0.106397537035019,
-    +0.004553979597404, -0.000012773721299, -0.000000071458742,
-    +0.000000000080803, -0.000000000000007,
-  ]
-  const B = [
-    -1.338045597353875, +0.822618936152688, -0.044470795125534,
-    -0.000502542048995, +0.000011914499129, -0.000000020157171,
-    -0.000000000001558, +0.000000000000003,
-  ]
-  const C = [
-    0.392699081698724, 1.178097245096172, 1.963495408493621, 2.748893571891069,
-    3.534291735288517, 4.319689898685965, 5.105088062083414, 5.890486225480862,
-  ]
-  const s = 2.75
-
-  // Constrain to imag(z)>=0
-  const sgni = z.y < 0 ? -1 : 1
-  z = { x: z.x * sgni, y: z.y * sgni }
-
-  // Approximate
-  let t: Point = { x: z.x, y: z.y + s * 0.5 }
-  let w: Point = { x: 0, y: 0 }
-
-  for (let m = 0; m < N; ++m) {
-    const dw = divP(
-      {
-        x: A[m]! + mulPt(t, { x: 0, y: B[m]! }).x,
-        y: mulPt(t, { x: 0, y: B[m]! }).y,
-      },
-      {
-        x: C[m]! * C[m]! - sqrPt(t).x,
-        y: -sqrPt(t).y,
-      },
-    )
-    w = { x: w.x + dw.x, y: w.y + dw.y }
-  }
-
-  if (sgni < 0) {
-    w = {
-      x: 2 * expPt(sqrPt(z)).x - w.x,
-      y: 2 * expPt(sqrPt(z)).y - w.y,
-    }
-  }
-
-  return w
-}
-
-function sqrPt(z: Point): Point {
-  return { x: z.x * z.x - z.y * z.y, y: 2.0 * z.x * z.y }
-}
-
-function mulPt({ x: a, y: b }: Point, { x: c, y: d }: Point): Point {
-  return { x: a * c - b * d, y: b * c + a * d }
-}
-
-function expPt({ x: a, y: b }: Point): Point {
-  return { x: Math.exp(a) * Math.cos(b), y: Math.exp(a) * Math.sin(b) }
-}
-
-function erfPos(z: Point): Point {
-  const z_1i = mulPt({ x: 0, y: 1 }, z)
-  const res = mulPt(
-    expPt({
-      x: -sqrPt(z).x,
-      y: -sqrPt(z).y,
-    }),
-    faddeevaPt(z_1i),
-  )
-  return {
-    x: 1 - res.x,
-    y: -res.y,
-  }
-}
-
-function erfPt(z: Point): Point {
-  if (z.x < 0) {
-    const res = erfPos({ x: -z.x, y: -z.y })
-    return { x: -res.x, y: -res.y }
-  }
-
-  return erfPos(z)
-}
-
-const FN_ERF = new FnDist(
-  "erf",
-  "error function; related to area of a normal distribution",
-  {
-    deriv: unary((wrt, a) =>
-      chain(a, wrt, {
-        type: "call",
-        fn: OP_JUXTAPOSE,
-        args: [
-          {
-            type: "call",
-            fn: OP_DIV,
-            args: [
-              SYM_2,
-              {
-                type: "call",
-                fn: OP_RAISE,
-                args: [SYM_PI, SYM_HALF],
-              },
-            ],
-          },
-          {
-            type: "call",
-            fn: OP_RAISE,
-            args: [
-              SYM_E,
-              {
-                type: "call",
-                fn: OP_NEG,
-                args: [{ type: "call", fn: OP_RAISE, args: [a, SYM_2] }],
-              },
-            ],
-          },
-        ],
-      }),
-    ),
-  },
-)
-  .add(
-    ["r32"],
-    "r32",
-    (a) => approx(erf(num(a.value))),
-    (ctx, a) => {
-      ctx.glslText(erfGl)
-      return `_nya_helper_erf(${a.expr})`
-    },
-    "erf(1)≈0.842700",
-  )
-  .add(
-    ["c32"],
-    "c32",
-    (a) => rept(erfPt(unpt(a.value))),
-    (ctx, a) => {
-      declareMulC32(ctx)
-      ctx.glslText(erfC32Gl)
-      return `_nya_helper_erf(${a.expr})`
-    },
-    "erf(2+3i)≈-20.75+8.70i",
-  )
-  .add(
-    ["r32", "r32"],
-    "r32",
-    (a, b) => approx(erf(num(b.value)) - erf(num(a.value))),
-    (ctx, a, b) => {
-      ctx.glslText(erfGl)
-      return `(_nya_helper_erf(${b.expr}) - _nya_helper_erf(${a.expr}))`
-    },
-    "erf(-1,1)≈1.6854",
-  )
-  .add(
-    ["c32", "c32"],
-    "c32",
-    (a, b) => {
-      const ap = erfPt(unpt(a.value))
-      const bp = erfPt(unpt(b.value))
-      return rept({ x: bp.x - ap.x, y: bp.y - ap.y })
-    },
-    (ctx, a, b) => {
-      declareMulC32(ctx)
-      ctx.glslText(erfC32Gl)
-      return `(_nya_helper_erf(${b.expr}) - _nya_helper_erf(${a.expr}))`
-    },
-    "erf(-i,3)≈0.9976-1.6498i",
-  )
-
-const FN_FADDEEVA = new FnDist("faddeeva", "scaled complex error function").add(
-  ["c32"],
-  "c32",
-  (a) => rept(faddeevaPt(unpt(a.value))),
-  (ctx, a) => {
-    declareMulC32(ctx)
-    ctx.glslText(erfC32Gl)
-    return `_nya_faddeeva(${a.expr})`
-  },
-  "faddeeva(2+3i)≈0.130+0.081i",
-)
-
-const FN_ERFINV = new FnDist("erfinv", "inverse error function").add(
-  ["r32"],
-  "r32",
-  (a) => approx(erfinv(num(a.value))),
-  (ctx, a) => {
-    ctx.glslText(erfinvGl)
-    return `_nya_helper_erfinv(${a.expr})`
-  },
-  "erf^{-1}(0.8427)≈1",
-)
 
 const FN_PDF = new FnDistDeriv("pdf", "probability distribution function")
   .add(
@@ -595,6 +394,7 @@ export default {
   name: "statistical distributions",
   label: null,
   category: "statistics",
+  deps: ["num/real", "data/statistics"],
   ty: {
     info: {
       normaldist: {
@@ -963,9 +763,6 @@ export default {
       uniformdist,
       poissondist,
       binomialdist,
-      "erf": FN_ERF,
-      "erf^-1": FN_ERFINV, // DCG: erf^-1 is not available in standard desmos
-      "faddeeva": FN_FADDEEVA, // DCG: faddeeva is not available in standard desmos
       "pdf": FN_PDF,
       "cdf": FN_CDF,
       "cdf^-1": FN_INVERSECDF, // DCG: cdf^-1 is not available in standard desmos

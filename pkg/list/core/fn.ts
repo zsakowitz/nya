@@ -275,6 +275,7 @@ export default {
   name: "functions",
   label: "call functions and access properties",
   category: "core",
+  deps: ["num/real"],
   eval: {
     tx: {
       binary: {

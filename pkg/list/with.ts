@@ -7,6 +7,7 @@ export default {
   name: "with",
   label: "substitute variables using 'with'",
   category: "substitution",
+  deps: [],
   eval: {
     tx: {
       binary: {

@@ -801,7 +801,7 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
       "+(2+3i)=2+3i",
     )
   },
-  deps: ["num/real", "geo/point"],
+  deps: ["num/real", "geo/point", "core/ops", "color/core", "bool"],
   ty: {
     coerce: {
       r32: {
