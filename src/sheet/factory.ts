@@ -1,4 +1,4 @@
-import { manifest } from "#/manifest"
+import { index } from "#/index"
 import type { Package, ToolbarItem } from "#/types"
 import { FNLIKE_MAGICVAR } from "@/eval/ast/fnlike"
 import {
@@ -61,7 +61,7 @@ export class SheetFactory {
     this.loaded.add(pkg)
 
     for (const depId of pkg.deps || []) {
-      const dep = (await manifest[depId]()).default
+      const dep = (await index[depId]()).default
       this.load(dep)
     }
     pkg.load?.()

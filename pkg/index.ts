@@ -1,9 +1,6 @@
 import type { Package } from "./types"
 
-export type ManifestEntry = () => Promise<{ default: Package }>
-export type Manifest = Record<string, ManifestEntry>
-
-export const manifest = {
+export const index = {
   "3d/point": () => import("$/3d/point"),
   "4d/point": () => import("$/4d/point"),
   "base": () => import("$/base"),
@@ -53,14 +50,15 @@ export const manifest = {
   "with": () => import("$/with"),
   "withseq": () => import("$/withseq"),
 }
+Object.setPrototypeOf(index, null)
 
 // satisfies cannot be inline b/c it causes type errors
-manifest satisfies Manifest
+index satisfies Record<string, () => Promise<{ default: Package }>>
 
-export type ManifestKey = keyof typeof manifest
+export type PackageId = keyof typeof index
 
 export async function all(): Promise<Package[]> {
   return await Promise.all(
-    Object.values(manifest).map(async (x) => (await x()).default),
+    Object.values(index).map(async (x) => (await x()).default),
   )
 }

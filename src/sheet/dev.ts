@@ -1,4 +1,4 @@
-import { all, manifest, type ManifestKey } from "#/manifest"
+import { all, index, type PackageId } from "#/index"
 import { options } from "@/field/defaults"
 import SRC_LOCALHOST from "./example/localhost.txt"
 import SRC_STANDARD from "./example/standard.txt"
@@ -13,8 +13,8 @@ if (globalThis.location?.search.includes("onlypkg")) {
     ",",
   )
   for (const id of ids) {
-    if ({}.hasOwnProperty.call(manifest, id)) {
-      const pkg = manifest[id as ManifestKey]
+    if ({}.hasOwnProperty.call(index, id)) {
+      const pkg = index[id as PackageId]
       await factory.load((await pkg()).default)
     }
   }

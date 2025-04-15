@@ -28,7 +28,7 @@ import type { Init } from "@/field/model"
 import type { AnyExt } from "@/sheet/ext"
 import type { AnyItemFactory } from "@/sheet/item"
 import type { Sheet } from "@/sheet/ui/sheet"
-import type { ManifestKey } from "./manifest"
+import type { PackageId } from "."
 
 type List<T, K extends PropertyKey = string> = { readonly [_ in K]?: T }
 
@@ -59,7 +59,7 @@ export interface Package {
 
   load?(): void
   init?(sheet: Sheet): void
-  deps?: ManifestKey[]
+  deps?: PackageId[]
 
   field?: {
     inits?: List<Init>
