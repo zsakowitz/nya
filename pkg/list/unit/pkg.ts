@@ -303,6 +303,7 @@ export default {
   name: "units",
   label: "conversion functions and unit decompositions",
   category: "measurement",
+  deps: ["num/real"],
   ty: {
     info: {
       unit: INFO_UNIT,
