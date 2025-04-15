@@ -11,6 +11,7 @@ export default {
     tx: {
       binary: {
         withseq: {
+          label: "substitutes variables in sequence",
           precedence: Precedence.WordInfix,
           drag: NO_DRAG,
           js(node, props) {

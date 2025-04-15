@@ -9,7 +9,9 @@ export default {
   eval: {
     tx: {
       magic: {
+        // TODO: make a json type for this
         debugast: {
+          label: "returns the AST of its input",
           fnlike: true,
           deps() {},
           js(node) {

@@ -11,6 +11,7 @@ export default {
     tx: {
       binary: {
         with: {
+          label: "substitutes variables simultaneously",
           sym: NO_SYM,
           precedence: Precedence.WordInfix,
           drag: NO_DRAG,

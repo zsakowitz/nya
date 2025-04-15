@@ -2,7 +2,7 @@ import type { ParenLhs, ParenRhs } from "@/field/cmd/math/brack"
 import type { Span } from "@/field/model"
 import type { FieldComputed } from "@/sheet/deps"
 import type { Deps } from "../deps"
-import type { PropsGlsl, PropsSym } from "../glsl"
+import { jsToGlsl, type PropsGlsl, type PropsSym } from "../glsl"
 import type { PropsJs } from "../js"
 import type { Bindings } from "../lib/binding"
 import { OP_BINARY, OP_UNARY } from "../ops"
@@ -26,6 +26,7 @@ import type {
 // SHAPE: make all txr shapes consistent
 
 export interface TxrAst<T> {
+  label: string
   js(node: T, props: PropsJs): JsValue
   glsl(node: T, props: PropsGlsl): GlslValue
   sym(node: T, props: PropsSym): Sym
@@ -66,6 +67,7 @@ function joint<T>(
   deps: (node: T, deps: Deps) => void,
 ): TxrAst<T> {
   return {
+    label: "errors unless overriden",
     js(node) {
       fn(node)
     },
@@ -146,6 +148,7 @@ export interface TxrMagicVar extends Omit<TxrAst<MagicVar>, "drag"> {
    */
   takesWord?: boolean
   with?: {
+    label: string
     js(node: MagicVar, props: PropsJs, seq: boolean): Record<string, JsValue>
     glsl(
       node: MagicVar,
@@ -163,6 +166,7 @@ export interface WordInfo {
 
 /** For things like `unit` and `element`. */
 export interface TxrWordPrefix {
+  label: string
   js(contents: WordInfo, props: PropsJs): JsValue
   glsl(contents: WordInfo, props: PropsGlsl): GlslValue
   sym(contents: WordInfo, props: PropsSym): Sym
@@ -227,6 +231,7 @@ export const TXR_SUFFIX: { [K in SuffixName]?: TxrSuffix<Suffixes[K]> } =
 export const TXR_AST: { [K in NodeName]?: TxrAst<Nodes[K]> } = {
   // Delegates to `GROUP` so that different packages can specify different groups
   group: {
+    label: "delegates to groups specified in packages",
     js(node, props) {
       return group(node).js(node.value, props)
     },
@@ -260,6 +265,7 @@ export const TXR_AST: { [K in NodeName]?: TxrAst<Nodes[K]> } = {
 
   // Delegates to `MAGIC_VARS` so packages can specify varied magic variables
   magicvar: {
+    label: "delegates to magic variables specified in packages",
     js(node, props) {
       if (node.value in TXR_MAGICVAR) {
         return TXR_MAGICVAR[node.value]!.js(node as never, props)
@@ -299,6 +305,7 @@ export const TXR_AST: { [K in NodeName]?: TxrAst<Nodes[K]> } = {
 
   // Delegates to `TXR_OP_UNARY`, `TXR_OP_BINARY`, `OP_UNARY`, and `OP_BINARY`
   op: {
+    label: "delegates to operators specified in packages",
     layer: -1,
     deps(node, deps) {
       if (node.b) {
@@ -446,15 +453,16 @@ export const TXR_AST: { [K in NodeName]?: TxrAst<Nodes[K]> } = {
     () => {},
   ),
 
-  // A special builtin used for previewing picked objects and `.x`-style accessors
+  // A special builtin used for previewing picked objects, `.x`-style accessors, and images
   value: {
+    label: "returns the passed value",
     deps() {},
     drag: NO_DRAG,
     js(node) {
       return node.value
     },
-    glsl() {
-      throw new Error("Cannot evaluate a 'value' node in a shader.")
+    glsl(node, props) {
+      return jsToGlsl(node.value, props.ctx)
     },
     sym(node) {
       return { type: "js", value: node.value }
@@ -464,6 +472,7 @@ export const TXR_AST: { [K in NodeName]?: TxrAst<Nodes[K]> } = {
 
   // A special builtin used for `.x`-style accessors
   valueGlsl: {
+    label: "returns the passed value",
     deps() {},
     drag: NO_DRAG,
     js() {
@@ -482,6 +491,7 @@ export const TXR_AST: { [K in NodeName]?: TxrAst<Nodes[K]> } = {
 
   // A special builtin used for `.x`-style accessors
   sym: {
+    label: "returns the passed value",
     deps() {},
     drag: NO_DRAG,
     js() {
@@ -502,6 +512,7 @@ export const TXR_AST: { [K in NodeName]?: TxrAst<Nodes[K]> } = {
 
   // Delegates to `TXR_SUFFIX` so that different packages can specify suffixes
   suffixed: {
+    label: "delegates to suffixes specified in packages",
     drag: {
       point({ base, suffixes }, props) {
         // TODO: method chains which lead to gliders (e.g. l1.translate(...).glider(.4)) don't work

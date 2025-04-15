@@ -158,7 +158,10 @@ export default {
   eval: {
     tx: {
       magic: {
+        // TODO: evaluate as much at js time as possible, even w/o forcejs
         forcejs: {
+          label:
+            "evaluates an expression outside a shader, then passes the value to the shader",
           fnlike: true,
           deps(node, deps) {
             deps.add(node.contents)

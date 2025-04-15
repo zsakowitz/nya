@@ -124,6 +124,7 @@ export default {
     tx: {
       binary: {
         for: {
+          label: "performs a list comprehension",
           sym: NO_SYM,
           precedence: Precedence.WordInfix,
           deps(node, deps) {
@@ -251,6 +252,7 @@ export default {
       },
       group: {
         "[ ]": {
+          label: "evaluates a bracketed list",
           js(node, props) {
             if (node.type == "op" && node.kind == "for") {
               return js(node, props)

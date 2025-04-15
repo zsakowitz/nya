@@ -334,6 +334,7 @@ export default {
     tx: {
       wordPrefix: {
         unit: {
+          label: "returns the unit with a given symbol",
           js(node) {
             checkUnit(node)
             const unit = UNITS[node.value]

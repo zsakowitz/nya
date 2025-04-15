@@ -222,6 +222,7 @@ export default {
     tx: {
       magic: {
         slopefield: {
+          label: "generates a slope or vector field",
           fnlike: true,
           deps(node, deps) {
             deps.add(node.contents)

@@ -92,6 +92,7 @@ export default {
     tx: {
       ast: {
         cmplist: {
+          label: "chain of comparisons",
           sym(node, props) {
             return node.ops
               .map((op, i): Sym => {

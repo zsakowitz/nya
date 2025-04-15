@@ -450,6 +450,7 @@ export default {
     tx: {
       magic: {
         iterate: {
+          label: "iterates a variable substitution",
           sym: NO_SYM,
           helpers: ["while", "until", "from"],
           js(node, props) {
@@ -493,6 +494,8 @@ export default {
             }
           },
           with: {
+            label:
+              "iterates over multiple variables, exposing all results to the left of the 'with' operator",
             js(node, props, seq) {
               return iterateJs(
                 parseIterate(node, { source: seq ? "withseq" : "with" }),

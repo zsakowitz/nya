@@ -650,6 +650,7 @@ export default {
     tx: {
       binary: {
         "+": {
+          label: "adds two values",
           precedence: Precedence.Sum,
           deps(node, deps) {
             deps.add(node.lhs)
@@ -708,6 +709,7 @@ export default {
           },
         },
         "-": {
+          label: "subtracts one value from another",
           precedence: Precedence.Sum,
           deps(node, deps) {
             deps.add(node.lhs)
@@ -768,6 +770,7 @@ export default {
       },
       ast: {
         juxtaposed: {
+          label: "multiplies two things via implicit multiplication",
           js(node, props) {
             if (node.nodes.length == 0) {
               throw new Error("Cannot implicitly multiply zero things.")
@@ -801,6 +804,7 @@ export default {
           },
         },
         mixed: {
+          label: "evaluates mixed numbers (integers followed by fractions)",
           js(node, props) {
             return {
               type: "r64",
@@ -844,6 +848,7 @@ export default {
           deps() {},
         },
         root: {
+          label: "square roots and nth-roots",
           js(node, props) {
             if (node.root) {
               return OP_RAISE.js(props.ctxJs, [
@@ -911,6 +916,7 @@ export default {
           },
         },
         var: {
+          label: "evaluates variables",
           js(node, props) {
             const value = props.bindingsJs.get(id(node))
             if (value instanceof BindingFn) {
@@ -1048,6 +1054,7 @@ export default {
           },
         },
         frac: {
+          label: "evaluates fractions as division",
           js(node, props) {
             return OP_DIV.js(props.ctxJs, [
               js(node.a, props),
@@ -1076,6 +1083,7 @@ export default {
       },
       group: {
         "( )": {
+          label: "evaluates parentheses as a point or plain value",
           js(node, props) {
             if (node.type == "commalist") {
               return OP_POINT.js(
@@ -1125,6 +1133,7 @@ export default {
           },
         },
         "| |": {
+          label: "evaluates absolute value brackets",
           js(node, props) {
             return OP_ABS.js(props.ctxJs, [js(node, props)])
           },

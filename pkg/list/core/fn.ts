@@ -279,6 +279,7 @@ export default {
     tx: {
       binary: {
         ".": {
+          label: "dotted function calls",
           precedence: Precedence.NotApplicable,
           deps({ lhs, rhs }, deps) {
             deps.add(lhs)

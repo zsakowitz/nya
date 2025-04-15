@@ -722,6 +722,7 @@ float _helper_cmp_r32(float a, float b) {
     tx: {
       ast: {
         num: {
+          label: "parses real numbers",
           js(node, props) {
             return parseNumberJs(
               node.value,

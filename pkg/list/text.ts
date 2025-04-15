@@ -9,10 +9,10 @@ import { each, type JsValue, type Ty } from "@/eval/ty"
 import { frac, num } from "@/eval/ty/create"
 import { Display } from "@/eval/ty/display"
 import { Leaf } from "@/field/cmd/leaf"
+import { L, R, type Dir } from "@/field/dir"
 import type { FieldInert } from "@/field/field-inert"
 import { LatexParser, toText } from "@/field/latex"
 import { Block, type Command, type Cursor, type InitProps } from "@/field/model"
-import { L, R, type Dir } from "@/field/dir"
 import { h, hx, t } from "@/jsx"
 import { defineExt, Store } from "@/sheet/ext"
 import { circle } from "@/sheet/ui/expr/circle"
@@ -416,6 +416,7 @@ export default {
     tx: {
       ast: {
         text: {
+          label: "evaluates a text string",
           sym: NO_SYM,
           deps() {},
           drag: NO_DRAG,

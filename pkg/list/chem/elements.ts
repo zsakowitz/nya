@@ -1,4 +1,6 @@
 import type { Package } from "#/types"
+import type { TextSegment } from "$/text"
+import { latexUnit } from "$/unit/pkg"
 import { NO_SYM } from "@/eval/ast/tx"
 import { FnDist } from "@/eval/ops/dist"
 import { issue } from "@/eval/ops/issue"
@@ -7,10 +9,9 @@ import { real } from "@/eval/ty/create"
 import type { TyInfoByName } from "@/eval/ty/info"
 import { brightness } from "@/field/cmd/leaf/color"
 import { CmdWord } from "@/field/cmd/leaf/word"
-import { toText } from "@/field/latex"
 import { L } from "@/field/dir"
+import { toText } from "@/field/latex"
 import { h, hx } from "@/jsx"
-import type { TextSegment } from "$/text"
 import type { Unit, UnitList } from "../unit/impl/system"
 import {
   UNIT_AMU,
@@ -19,7 +20,6 @@ import {
   UNIT_KILOJOULE,
   UNIT_MOLE,
 } from "../unit/impl/units"
-import { latexUnit } from "$/unit/pkg"
 
 declare module "@/eval/ty" {
   interface Tys {
@@ -5620,6 +5620,7 @@ export default {
     tx: {
       wordPrefix: {
         element: {
+          label: "returns the element with a given symbol",
           js(contents) {
             if (contents.sub) {
               throw new Error("Element names may not have subscripts.")

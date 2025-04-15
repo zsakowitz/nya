@@ -429,6 +429,7 @@ export default {
     tx: {
       ast: {
         piecewise: {
+          label: "block syntax for piecewise functions",
           sym: NO_SYM,
           js(node, props) {
             return piecewiseJs(node.pieces, props)
@@ -447,6 +448,7 @@ export default {
       },
       group: {
         "{ }": {
+          label: "inline syntax for piecewise functions",
           sym: NO_SYM,
           js(node, props) {
             return piecewiseJs(parseBraces(node), props)

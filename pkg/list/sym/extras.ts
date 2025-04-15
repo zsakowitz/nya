@@ -29,6 +29,7 @@ export default {
       magic: {
         /** Creates a symbolic expression "quoting" its contents. */
         sym: {
+          label: "creates a symbolic expression",
           fnlike: true,
           deps(node, deps) {
             deps.add(node.contents)
@@ -62,6 +63,7 @@ export default {
 
         /** Interpolates a value into a symbolic expression. */
         unsym: {
+          label: "interpolates a value into a symbolic expression",
           fnlike: true,
           deps(node, deps) {
             deps.add(node.contents)
@@ -84,6 +86,8 @@ export default {
 
         /** Evaluates a symbolic expression. */
         eval: {
+          label:
+            "evaluates a symbolic expression in the current evaluation context",
           fnlike: true,
           deps(node, deps) {
             deps.add(node.contents)

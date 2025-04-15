@@ -1,6 +1,5 @@
 import type { Package } from "#/types"
 import type { Node } from "@/eval/ast/token"
-import { NO_DRAG, NO_SYM } from "@/eval/ast/tx"
 import { FnDist } from "@/eval/ops/dist"
 import type { JsValue, Val } from "@/eval/ty"
 import { frac, real } from "@/eval/ty/create"
@@ -15,12 +14,6 @@ import { FieldComputed } from "@/sheet/deps"
 import type { ItemFactory } from "@/sheet/item"
 import type { ItemRef } from "@/sheet/items"
 import { faImage } from "@fortawesome/free-solid-svg-icons/faImage"
-
-declare module "@/eval/ast/token" {
-  interface Nodes {
-    image: { data: Val<"image"> }
-  }
-}
 
 declare module "@/eval/ty" {
   interface Tys {
@@ -79,7 +72,14 @@ class CmdImgRaw extends Leaf {
   }
 
   ir(tokens: Node[]): true | void {
-    tokens.push({ type: "image", data: this.data })
+    tokens.push({
+      type: "value",
+      value: {
+        type: "image",
+        list: false,
+        value: this.data,
+      } satisfies JsValue<"image">,
+    })
   }
 }
 
@@ -415,21 +415,6 @@ export default {
     },
   },
   eval: {
-    tx: {
-      ast: {
-        image: {
-          sym: NO_SYM,
-          deps() {},
-          drag: NO_DRAG,
-          js(node): JsValue<"image", false> {
-            return { type: "image", value: node.data, list: false }
-          },
-          glsl() {
-            return imageShaderError()
-          },
-        },
-      },
-    },
     fn: {
       imgwidth: FN_IMGWIDTH,
       imgheight: FN_IMGHEIGHT,

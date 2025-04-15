@@ -13,6 +13,7 @@ export default {
     tx: {
       ast: {
         deriv: {
+          label: "takes the derivative of a value",
           deps(node, deps) {
             deps.add(node.of)
             deps.add(node.wrt)

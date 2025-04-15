@@ -296,6 +296,7 @@ export class SheetFactory {
       }
 
       const txr2: TxrMagicVar = {
+        label: txr.label,
         deps() {},
         glsl(node, props) {
           return txr.glsl(contents(node), props)

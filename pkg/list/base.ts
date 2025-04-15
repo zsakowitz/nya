@@ -18,6 +18,7 @@ export default {
       binary: {
         base: {
           precedence: Precedence.WordInfix,
+          label: "interprets numbers in <lhs> as if they were in base <rhs>",
           sym: NO_SYM,
           deps(node, deps) {
             deps.add(node.lhs)
