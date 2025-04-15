@@ -1,9 +1,9 @@
 {
   "scripts": {
-    "dev": "npm run build:tw && npm run esb",
+    "dev": "bun run build:tw && bun run esb",
     "esb": "mkdir -p dist; cp index.dev.html dist/index.html && cp -R icon dist/icon && cp icon/favicon.ico dist/favicon.ico && esbuild --watch=forever --loader:.woff=file --loader:.ttf=file --loader:.glsl=text --loader:.woff2=file --loader:.svg=file --loader:.eot=file --servedir=dist --format=esm --bundle --outdir=dist --splitting src/index.ts",
     "tw": "tailwindcss -i ./index.postcss -o ./index.css --watch",
-    "build": "npm run manifest && npm run build:tw && npm run build:esb && cp index.html dist/index.html && cp -R icon dist/icon && cp icon/favicon.ico dist/favicon.ico",
+    "build": "bun run manifest && bun run build:tw && bun run build:esb && cp index.html dist/index.html && cp -R icon dist/icon && cp icon/favicon.ico dist/favicon.ico",
     "build:esb": "esbuild --bundle --minify --format=esm --outdir=dist --splitting --loader:.woff=file --loader:.ttf=file --loader:.glsl=text --loader:.woff2=file --loader:.svg=file --loader:.eot=file src/index.ts --metafile=meta.json --legal-comments=linked",
     "build:tw": "tailwindcss -i ./index.postcss -o ./index.css --minify",
     "lint": "tsc && madge src/index.ts --ts-config tsconfig.json -c",
