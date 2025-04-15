@@ -101,6 +101,7 @@ export default {
   eval: {
     sym: {
       call: {
+        label: "function calls",
         deriv(value, wrt) {
           return (
             value.fn.deriv?.(value.args, wrt) ??
@@ -158,6 +159,7 @@ export default {
       },
       // TODO: infinity uses incorrect font in sym output
       var: {
+        label: "variables",
         deriv(value, props) {
           if (value.id == props.wrt) {
             return SYM_1
@@ -239,6 +241,7 @@ export default {
         },
       },
       js: {
+        label: "constant values",
         deriv() {
           return {
             type: "js",
@@ -280,6 +283,7 @@ export default {
         },
       },
       dep: {
+        label: "tracked dependencies",
         deps(value, deps) {
           deps.trackById(value.id)
           txr(value.value).deps(value.value, deps)

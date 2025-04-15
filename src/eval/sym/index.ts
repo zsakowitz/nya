@@ -1,7 +1,7 @@
 import type { WordKind } from "@/field/cmd/leaf/var"
 import { CmdBrack } from "@/field/cmd/math/brack"
-import { Block, type Command, type Cursor } from "@/field/model"
 import { L, R } from "@/field/dir"
+import { Block, type Command, type Cursor } from "@/field/model"
 import type { Deps } from "../deps"
 import type { PropsGlsl, PropsSym } from "../glsl"
 import type { PropsJs } from "../js"
@@ -69,6 +69,8 @@ export type Sym<T extends SymName = SymName> = {
 
 // SHAPE:
 export interface TxrSym<T> {
+  label: string
+
   display(value: T): SymDisplay
   deriv(value: T, props: PropsDeriv): Sym
   uses(value: T, name: string): boolean
