@@ -255,7 +255,7 @@ const latex = new WordMap<LatexInit>([
   ["\\nyaop", CmdWord],
   ["\\nyacolor", CmdColor],
   ["\\psi", SymPsi],
-  ...latexWords.map((x) => [x, OperatorName] as const),
+  ...latexWords.map((x) => ["\\" + x, OperatorName] as const),
 ])
 
 for (const key of inits.getAll()) {
