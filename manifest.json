@@ -1,17 +1,3 @@
-ithkuil gloss
-ithkuil ungloss
-ithkuil script
-ithkuil values
-ithkuil valid
-ithkuil valid initial
-ithkuil valid final
-ithkuil ca
-ithkuil version
-ithkuil all
-directed angle
-directed angles
-angle bisector
-perpendicular bisector
 {
   "packages": [
     "3d/point",
