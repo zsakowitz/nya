@@ -102,6 +102,13 @@ export class WordMap<T> {
   }
 }
 
+export type Despace<T extends string> =
+  T extends `${infer A} ${infer B}` ? `${A}${Despace<B>}` : T
+
+export function despace<K extends string>(t: K): Despace<K> {
+  return t.replace(/ /g, "") as any
+}
+
 /**
  * A map from strings to values. Caches the maximum word length. Words with
  * spaces are stored without spaces, but their original spaced versions may
@@ -116,13 +123,13 @@ export class WordMapWithoutSpaces<T> extends WordMap<T> {
 
   constructor(words: (readonly [string, T])[], defaultValue?: T) {
     super(
-      words.map(([k, v]) => [k.replace(/ /g, ""), v] as const),
+      words.map(([k, v]) => [despace(k), v] as const),
       defaultValue,
     )
 
     for (const [k] of words) {
       if (k.includes(" ")) {
-        this.spaced[k.replace(/ /g, "")] = k
+        this.spaced[despace(k)] = k
       }
     }
   }
@@ -135,10 +142,27 @@ export class WordMapWithoutSpaces<T> extends WordMap<T> {
     return map
   }
 
+  init(spaced: string, value: T): this {
+    const despaced = despace(spaced)
+    if (despaced != spaced) console.log(spaced)
+    if (this.has(despaced) && this.get(despaced) !== value) {
+      console.warn(`[wordmap] '${despaced}' set with different values`)
+    }
+    return this.set(spaced, value)
+  }
+
+  get(word: string): T | undefined {
+    return super.get(despace(word))
+  }
+
+  has(word: string): boolean {
+    return super.has(despace(word))
+  }
+
   set(word: string, value: T): this {
-    super.set(word, value)
+    super.set(despace(word), value)
     if (word.includes(" ")) {
-      this.spaced[word.replace(/ /g, "")] = word
+      this.spaced[despace(word)] = word
     }
     return this
   }

@@ -1,4 +1,5 @@
 import type { Package } from "#/types"
+import { CmdTextInert, type TextSegment } from "$/text"
 import type { Fn } from "@/eval/ops"
 import { FnDist } from "@/eval/ops/dist"
 import { ALL_DOCS, type WithDocs } from "@/eval/ops/docs"
@@ -30,7 +31,6 @@ import {
   parseCaGloss,
   unglossWord,
 } from "@zsnout/ithkuil/ungloss"
-import { CmdTextInert, type TextSegment } from "$/text"
 import * as categories from "./categories"
 
 // TODO: reduce ithkuil root and affix data size (it's 56% of the bundle currently)
@@ -120,7 +120,7 @@ const FN_ITHKUILVALUES: Fn & WithDocs = {
       !(args.length == 1 && args[0]!.list === false && args[0]!.type == "text")
     ) {
       throw new Error(
-        "The 'ithkuil' function expects the name of a grammatical category.",
+        "The 'ithkuilvalues' function expects the name of a grammatical category.",
       )
     }
     const arg = args[0]! as JsVal<"text">
@@ -203,7 +203,10 @@ export default {
   },
   eval: {
     fn: {
-      ithkuilgloss: new FnDist("ithkuilgloss", "glosses an ithkuil word").add(
+      "ithkuil gloss": new FnDist(
+        "ithkuilgloss",
+        "glosses an ithkuil word",
+      ).add(
         ["text"],
         "text",
         (a): TextSegment[] => {
@@ -224,7 +227,7 @@ export default {
         err,
         "ithkuilgloss(\\textinert{rraza})=\\textinert{S1-“🐈 cat (Felis catus)”-MFS}",
       ),
-      ithkuilungloss: new FnDist(
+      "ithkuil ungloss": new FnDist(
         "ithkuilungloss",
         "unglosses an ithkuil word",
       ).add(
@@ -255,7 +258,7 @@ export default {
         err,
         'ithkuilungloss(\\textinert{"cat"-MFS})=\\textinert{rraza}',
       ),
-      ithkuilscript: new FnDist(
+      "ithkuil script": new FnDist(
         "ithkuilscript",
         "converts an ithkuil word into script form",
       ).add(
@@ -288,8 +291,8 @@ export default {
         err,
         "ithkuilscript(\\textinert{rraza})",
       ),
-      ithkuilvalues: FN_ITHKUILVALUES,
-      ithkuilvalid: new FnDist(
+      "ithkuil values": FN_ITHKUILVALUES,
+      "ithkuil valid": new FnDist(
         "ithkuilvalid",
         "checks if a consonant form is valid according to ithkuil phonotactics",
       ).add(
@@ -305,7 +308,7 @@ export default {
           "ithkuilvalid(\\textinert{šzr})=false",
         ],
       ),
-      ithkuilvalidinitial: new FnDist(
+      "ithkuil valid initial": new FnDist(
         "ithkuilvalidinitial",
         "checks if a consonant form is valid word-initially according to ithkuil phonotactics",
       ).add(
@@ -321,7 +324,7 @@ export default {
           "ithkuilvalid(\\textinert{pl})=true",
         ],
       ),
-      ithkuilvalidfinal: new FnDist(
+      "ithkuil valid final": new FnDist(
         "ithkuilvalidfinal",
         "checks if a consonant form is valid word-finally according to ithkuil phonotactics",
       ).add(
@@ -337,7 +340,7 @@ export default {
           "ithkuilvalid(\\textinert{pl})=false",
         ],
       ),
-      ithkuilca: new FnDist(
+      "ithkuil ca": new FnDist(
         "ithkuilca",
         "generates an ithkuil CA form, optionally geminated",
       )
@@ -370,7 +373,7 @@ export default {
         ),
     },
     var: {
-      ithkuilversion: {
+      "ithkuil version": {
         label: "version of @zsnout/ithkuil currently in use",
         js: {
           type: "text",
@@ -382,7 +385,7 @@ export default {
         },
         display: true,
       },
-      ithkuilall: {
+      "ithkuil all": {
         label: "list of all grammatical categories in ithkuil",
         js: {
           type: "text",

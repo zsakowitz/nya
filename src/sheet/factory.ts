@@ -28,7 +28,13 @@ import { TXR_SYM, type SymName, type TxrSym } from "@/eval/sym"
 import type { TyName } from "@/eval/ty"
 import { tidyCoercions, TY_INFO, type TyCoerce } from "@/eval/ty/info"
 import type { ParenLhs, ParenRhs } from "@/field/cmd/math/brack"
-import { Inits, WordMap, type Options } from "@/field/options"
+import {
+  despace,
+  Inits,
+  WordMap,
+  WordMapWithoutSpaces,
+  type Options,
+} from "@/field/options"
 import { Exts } from "./ext"
 import { FACTORY_EXPR } from "./factory-expr"
 import type { AnyItemFactory } from "./item"
@@ -46,7 +52,7 @@ export class SheetFactory {
     this.options = {
       ...options,
       inits: options.inits?.clone() ?? new Inits(),
-      words: options.words?.clone() ?? new WordMap([]),
+      words: options.words?.clone() ?? new WordMapWithoutSpaces([]),
       latex: options.latex?.clone() ?? new WordMap([]),
     }
   }
@@ -90,17 +96,17 @@ export class SheetFactory {
     }
 
     for (const key in pkg.eval?.fn) {
-      if (/^[A-Za-z]+$/.test(key)) {
+      if (/^[A-Za-z ]+$/.test(key)) {
         this.options.words.init(key, "prefix")
       }
-      FNS[key] = pkg.eval.fn[key]!
+      FNS[despace(key)] = pkg.eval.fn[key]!
     }
 
     for (const key in pkg.eval?.var) {
       if (key.length > 1) {
         this.options.words.init(key, "var")
       }
-      VARS[key] = pkg.eval.var[key]!
+      VARS[despace(key)] = pkg.eval.var[key]!
     }
 
     for (const keyRaw in pkg.eval?.tx?.ast) {
@@ -163,7 +169,7 @@ export class SheetFactory {
       ) {
         continue
       }
-      if (/^[A-Za-z]+$/.test(key)) {
+      if (/^[A-Za-z ]+$/.test(key)) {
         this.options.words.init(
           key,
           txr.takesWord ? "magicprefixword" : "magicprefix",
@@ -188,8 +194,8 @@ export class SheetFactory {
         }
       }
 
-      TXR_MAGICVAR[key] = txr
-      FNLIKE_MAGICVAR[key] = !!txr.fnlike
+      TXR_MAGICVAR[despace(key)] = txr
+      FNLIKE_MAGICVAR[despace(key)] = !!txr.fnlike
     }
 
     for (const keyRaw in pkg.eval?.tx?.group) {

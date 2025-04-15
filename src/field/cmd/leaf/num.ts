@@ -297,6 +297,7 @@ export class CmdVar extends Leaf {
   static render(
     text: string,
     kind: CmdVar["kind"],
+    renderPart: CmdVar["part"] | "both",
     part: CmdVar["part"] | "both",
     prop: boolean,
   ) {
@@ -312,7 +313,21 @@ export class CmdVar extends Leaf {
 
     return h(
       "nya-cmd-var" +
-        (kind ? ` nya-cmd-word nya-cmd-word-${kind} nya-cmd-word${side}` : "") +
+        (kind ?
+          ` nya-cmd-word nya-cmd-word-${kind} nya-cmd-word${side}` +
+          ((
+            !(part == L || part == "both") &&
+            (renderPart == L || renderPart == "both")
+          ) ?
+            " pl-[.05em]"
+          : "") +
+          ((
+            !(part == R || part == "both") &&
+            (renderPart == R || renderPart == "both")
+          ) ?
+            " pr-[.05em]"
+          : "")
+        : "") +
         (prop ? ` nya-cmd-${kind ? "word" : "var"}-prop` : ""),
       h(
         "font-['Times_New_Roman'] [line-height:.9]" +
@@ -327,6 +342,7 @@ export class CmdVar extends Leaf {
   }
 
   readonly kind: WordKind | null = null
+  readonly renderPart: Dir | "both" | null = null
   readonly part: Dir | "both" | null = null
   readonly prop: boolean = false
 
@@ -334,15 +350,29 @@ export class CmdVar extends Leaf {
     readonly text: string,
     readonly options: Options,
   ) {
-    super(text, CmdVar.render(text, null, null, false))
+    super(text, CmdVar.render(text, null, null, null, false))
   }
 
-  private render(
+  private renderMatching(
     kind: WordKind | null,
     part: "both" | Dir | null,
     prop: boolean,
   ) {
-    if (this.kind == kind && this.part == part && this.prop == prop) {
+    this.render(kind, part, part, prop)
+  }
+
+  private render(
+    kind: WordKind | null,
+    renderPart: "both" | Dir | null,
+    part: "both" | Dir | null,
+    prop: boolean,
+  ) {
+    if (
+      this.kind == kind &&
+      this.renderPart == renderPart &&
+      this.part == part &&
+      this.prop == prop
+    ) {
       return
     }
 
@@ -350,6 +380,7 @@ export class CmdVar extends Leaf {
       CmdVar.render(
         this.text,
         ((this as CmdVarMut).kind = kind),
+        ((this as CmdVarMut).renderPart = renderPart),
         ((this as CmdVarMut).part = part),
         ((this as CmdVarMut).prop = prop),
       ),
@@ -384,7 +415,7 @@ export class CmdVar extends Leaf {
     const hasDot = lhs[L] instanceof CmdDot
     for (let i = 0; i < vars.length; i++) {
       const cmd = vars[i]!
-      cmd.render(null, null, hasDot && i == 0)
+      cmd.render(null, null, null, hasDot && i == 0)
     }
 
     const maxLen = words.maxLen
@@ -407,9 +438,9 @@ export class CmdVar extends Leaf {
           const indices = words.spaceIndices(full)
 
           if (j == 1) {
-            vars[i]!.render(kind, "both", false)
+            vars[i]!.render(kind, "both", "both", false)
           } else {
-            vars[i]!.render(kind, indices?.includes(1) ? "both" : L, false)
+            vars[i]!.render(kind, indices?.includes(1) ? "both" : L, L, false)
             for (let k = i + 1; k < i + j - 1; k++) {
               const breakLhs = indices?.includes(k)
               const breakRhs = indices?.includes(k + 1)
@@ -419,12 +450,14 @@ export class CmdVar extends Leaf {
                 : breakLhs ? L
                 : breakRhs ? R
                 : null,
+                null,
                 false,
               )
             }
             vars[i + j - 1]!.render(
               kind,
               indices?.includes(i + j - 1) ? "both" : R,
+              R,
               vars[i]![L] instanceof CmdDot,
             )
           }
@@ -434,10 +467,18 @@ export class CmdVar extends Leaf {
           if (kind == "magicprefixword") {
             i++
             if (i < vars.length) {
-              vars[i]!.render("var", i == vars.length - 1 ? "both" : L, false)
+              vars[i]!.renderMatching(
+                "var",
+                i == vars.length - 1 ? "both" : L,
+                false,
+              )
             }
             for (i++; i < vars.length; i++) {
-              vars[i]!.render("var", i == vars.length - 1 ? R : null, false)
+              vars[i]!.renderMatching(
+                "var",
+                i == vars.length - 1 ? R : null,
+                false,
+              )
             }
             return
           }
