@@ -1,7 +1,7 @@
 import type { Package } from "#/types"
 import { Precedence, type Nodes } from "@/eval/ast/token"
 import { glsl, js } from "@/eval/ast/tx"
-import { jsToGlsl } from "@/eval/glsl"
+import { jsToGlsl } from "@/eval/js-to-glsl"
 import { issue } from "@/eval/ops/issue"
 import {
   insertStrict,

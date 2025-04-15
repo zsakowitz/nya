@@ -4,8 +4,7 @@ import type { PropsJs } from "./js"
 import type { BindingFn, BindingGlslValue, Bindings } from "./lib/binding"
 import type { GlslContext } from "./lib/fn"
 import { FNS } from "./ops"
-import type { GlslValue, JsValue, Val } from "./ty"
-import { TY_INFO, type TyInfo } from "./ty/info"
+import type { GlslValue } from "./ty"
 
 // DEBT: remove alias; sym and js operate in identical environments and have access to each other
 export type PropsSym = PropsJs
@@ -59,25 +58,4 @@ export function glslCall(
     props.ctx,
     args.map((arg) => glsl(arg, props)),
   )
-}
-
-export function jsToGlsl(js: JsValue, ctx: GlslContext): GlslValue {
-  const cv = (TY_INFO[js.type] as TyInfo<Val>).toGlsl
-
-  if (js.list === false) {
-    return {
-      type: js.type,
-      list: false,
-      expr: cv(js.value, ctx),
-    }
-  }
-
-  const expr = ctx.name()
-  ctx.push`${TY_INFO[js.type].glsl} ${expr}[${js.list}];\n`
-
-  for (let i = 0; i < js.list; i++) {
-    ctx.push`${expr}[${i}] = ${cv(js.value[i]!, ctx)};\n`
-  }
-
-  return { type: js.type, list: js.list, expr }
 }
