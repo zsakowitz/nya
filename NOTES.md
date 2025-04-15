@@ -1,11 +1,20 @@
-## Search Params
+## URL Parameters
 
-- `?shaderpixelsize=<1..=16>`
+general configuration:
+
+- `?onlypkg=<package id>`
+
+configure sheet:
+
 - `?nogrid`
 - `?cvsize=<n>`
-- `?onlypkg=<package id>`
-- `?/docs(/tab(/page)?)?`
+- `?shaderpixelsize=<1..=16>`
 - `?logfrag`
+
+show other pieces of content:
+
+- `?/docs(/tab(/page)?)?`
+- `?showmanifest`
 
 ## other things
 

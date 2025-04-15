@@ -14,7 +14,7 @@ export const manifestFnKinds = [
 ] as const
 
 export type ManifestFnKindName = (typeof manifestFnKinds)[number]
-export type ManifestFnKindIndex = keyof typeof manifestFnKinds
+export type ManifestFnKindIndex = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7
 
 export type ManifestFn = [
   name: string,

@@ -1,8 +1,6 @@
 import { FNS } from "@/eval/ops"
 import { ALL_DOCS, type WithDocs } from "@/eval/ops/docs"
 import { TY_INFO } from "@/eval/ty/info"
-import { CmdNum } from "@/field/cmd/leaf/num"
-import { CmdWord } from "@/field/cmd/leaf/word"
 import { FieldInert } from "@/field/field-inert"
 import { b, fa, h, hx, li, px, t } from "@/jsx"
 import type { Sheet } from "@/sheet/ui/sheet"
@@ -10,15 +8,7 @@ import { faFaceSadTear } from "@fortawesome/free-regular-svg-icons/faFaceSadTear
 import { faClose } from "@fortawesome/free-solid-svg-icons/faClose"
 import { PackageList, secPackagesContents } from "./list"
 import { docFromSignature } from "./signature"
-
-function makeDocName(name: string) {
-  return h(
-    "font-['Symbola'] text-[1.265rem]/[1.15]",
-    /^(?:\p{L}+|\p{L}[\p{L}\s]+\p{L}|\.\p{L})$/u.test(name) ?
-      new CmdWord(name, undefined, /^[a-z]$/.test(name)).el
-    : new CmdNum(name).el,
-  )
-}
+import { makeDocName } from "./util"
 
 function decode(path: string) {
   path = path.replace(/-/g, " ")
