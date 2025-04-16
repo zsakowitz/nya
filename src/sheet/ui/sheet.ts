@@ -343,18 +343,13 @@ export class Sheet {
 
     const closeAddons = hx(
       "button",
-      "bg-[--nya-bg] border border-[--nya-border] nya-rx px-2 py-1 text-center rounded-lg text-[--nya-text-prose]",
+      "bg-[--nya-bg] border border-[--nya-border] nya-rx px-2 py-1 text-center rounded-lg text-[--nya-text-prose] sticky top-0",
       "close",
     )
 
-    const saveAddons = hx(
-      "button",
-      "bg-[--nya-bg] border border-[--nya-border] nya-sx px-2 py-1 text-center rounded-lg text-[--nya-text-prose]",
-      "save",
-    )
-
     const addons = h(
-      "relative [grid-area:cv] bg-[--nya-bg-sidebar] overflow-y-auto",
+      "relative [grid-area:cv] backdrop-blur flex h-full max-h-full",
+      h("absolute top-0 left-0 h-full w-full bg-[--nya-bg-sidebar] opacity-70"),
       toolbar &&
         h(
           "absolute block top-0 left-0 right-0 h-1 from-[--nya-sidebar-shadow] to-transparent bg-gradient-to-b",
@@ -363,10 +358,12 @@ export class Sheet {
         "absolute block sm:top-0 bottom-0 left-0 sm:w-1 w-full h-1 sm:h-full from-[--nya-sidebar-shadow] to-transparent bg-gradient-to-t sm:bg-gradient-to-r",
       ),
       h(
-        "flex flex-col gap-2 p-4 max-w-2xl mx-auto" +
-          (toolbar ? "" : " row-span-2"),
-        h("grid grid-cols-2 gap-2", closeAddons, saveAddons),
-        ...createAddons(factory, this),
+        "absolute top-0 left-0 w-full h-full overflow-y-auto p-4 [clip-path:polygon(0_0,100%_0,100%_100%,0%_100%)]",
+        h(
+          "w-full flex flex-col gap-2 max-w-2xl mx-auto",
+          closeAddons,
+          ...createAddons(factory, this),
+        ),
       ),
     )
 
@@ -383,7 +380,7 @@ export class Sheet {
       sidebar,
       toolbar,
       cv,
-      // addons,
+      addons,
     )
     new ResizeObserver(() => {
       this.el.style.setProperty(
