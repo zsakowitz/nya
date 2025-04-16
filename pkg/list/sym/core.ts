@@ -3,16 +3,7 @@ import { Precedence, type Nodes } from "@/eval/ast/token"
 import { glsl, js } from "@/eval/ast/tx"
 import { jsToGlsl } from "@/eval/js-to-glsl"
 import { issue } from "@/eval/ops/issue"
-import {
-  insertStrict,
-  simplify,
-  SYM_0,
-  SYM_1,
-  txr,
-  TXR_SYM,
-  type Sym,
-  type TxrSym,
-} from "@/eval/sym"
+import { simplify, SYM_0, SYM_1, txr } from "@/eval/sym"
 import type { JsValue } from "@/eval/ty"
 import { frac, real } from "@/eval/ty/create"
 import { Display } from "@/eval/ty/display"
@@ -22,83 +13,12 @@ import { CmdWord } from "@/field/cmd/leaf/word"
 import { CmdSupSub } from "@/field/cmd/math/supsub"
 import { L, R } from "@/field/dir"
 import { Block } from "@/field/model"
-import { h } from "@/jsx"
-
-declare module "@/eval/ty" {
-  interface Tys {
-    sym: Sym
-  }
-}
-
-// FIXME: if g(x) = x^2, sym g(a) = x^2 (should be a^2)
 
 export default {
   name: "symbolics core",
   label: null,
   category: "symbolic computation",
   deps: [],
-  ty: {
-    info: {
-      sym: {
-        name: "symbolic expression",
-        namePlural: "symbolic expressions",
-        get glsl(): never {
-          throw new Error("Cannot construct symbolic expressions in shaders.")
-        },
-        toGlsl() {
-          throw new Error("Symbolic expressions are not supported in shaders.")
-        },
-        garbage: {
-          js: { type: "undef" },
-          get glsl(): never {
-            throw new Error("Cannot construct symbolic expressions in shaders.")
-          },
-        },
-        coerce: {},
-        write: {
-          isApprox() {
-            return false
-          },
-          display(value, props) {
-            const txr: TxrSym<unknown> | undefined = TXR_SYM[value.type]
-            if (!txr) {
-              throw new Error(
-                `Symbolic expression type '${value.type}' is not defined.`,
-              )
-            }
-
-            insertStrict(
-              props.cursor,
-              txr.display(value),
-              Precedence.Comma,
-              Precedence.Comma,
-            )
-          },
-        },
-        order: null,
-        point: false,
-        icon() {
-          return h(
-            "",
-            h(
-              "text-[#00786F] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px]",
-              h(
-                "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
-              ),
-              h(
-                "absolute top-1/2 left-1/2 -translate-x-1/2 translate-y-[calc(-50%_-_1.5px)] font-['Times_New_Roman'] italic text-[100%]",
-                "f",
-              ),
-            ),
-          )
-        },
-        token: null,
-        glide: null,
-        preview: null,
-        extras: null,
-      },
-    },
-  },
   eval: {
     sym: {
       call: {
