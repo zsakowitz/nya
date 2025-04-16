@@ -1,11 +1,9 @@
 import type { Package } from "./types"
 
-export const index = {
+export const builtin = {
   "3d/point": () => import("$/3d/point"),
-  "4d/point": () => import("$/4d/point"),
   "base": () => import("$/base"),
   "bool": () => import("$/bool"),
-  "chem/elements": () => import("$/chem/elements"),
   "color/core": () => import("$/color/core"),
   "color/extras": () => import("$/color/extras"),
   "core/cmp": () => import("$/core/cmp"),
@@ -16,28 +14,21 @@ export const index = {
   "data/list-extras": () => import("$/data/list-extras"),
   "data/statistics": () => import("$/data/statistics"),
   "data/statistics-complex": () => import("$/data/statistics-complex"),
-  "debug": () => import("$/debug"),
   "eval": () => import("$/eval"),
   "factorial": () => import("$/factorial"),
   "geo/dcg": () => import("$/geo/dcg"),
-  "geo/image": () => import("$/geo/image"),
   "geo/point": () => import("$/geo/point"),
   "gridlines": () => import("$/gridlines"),
-  "image": () => import("$/image"),
   "item/docs-fn": () => import("$/item/docs-fn"),
   "item/folder": () => import("$/item/folder"),
   "item/note": () => import("$/item/note"),
   "iterate": () => import("$/iterate"),
-  "ithkuil": () => import("$/ithkuil"),
   "num/complex": () => import("$/num/complex"),
-  "num/quaternion": () => import("$/num/quaternion"),
   "num/real": () => import("$/num/real"),
   "number-theory": () => import("$/number-theory"),
   "number-theory-complex": () => import("$/number-theory-complex"),
   "shader": () => import("$/shader"),
   "slider": () => import("$/slider"),
-  "slope-field": () => import("$/slope-field"),
-  "special": () => import("$/special"),
   "special/erf": () => import("$/special/erf"),
   "special/erf-complex": () => import("$/special/erf-complex"),
   "sym/core": () => import("$/sym/core"),
@@ -48,11 +39,31 @@ export const index = {
   "trig/hyperbolic/real": () => import("$/trig/hyperbolic/real"),
   "trig/hyperbolic/complex": () => import("$/trig/hyperbolic/complex"),
   "trig/real": () => import("$/trig/real"),
-  "unit/pkg": () => import("$/unit/pkg"),
   "with": () => import("$/with"),
+}
+Object.setPrototypeOf(builtin, null)
+
+export const addons = {
+  "4d/point": () => import("$/4d/point"),
+  "chem/elements": () => import("$/chem/elements"),
+  "debug": () => import("$/debug"),
+  "gamma": () => import("$/gamma"),
+  "geo/image": () => import("$/geo/image"),
+  "image": () => import("$/image"),
+  "ithkuil": () => import("$/ithkuil"),
+  "num/quaternion": () => import("$/num/quaternion"),
+  "slope-field": () => import("$/slope-field"),
+  "special": () => import("$/special"),
+  "unit/pkg": () => import("$/unit/pkg"),
   "withseq": () => import("$/withseq"),
 }
-Object.setPrototypeOf(index, null)
+Object.setPrototypeOf(addons, null)
+
+export const index = {
+  __proto__: null,
+  ...builtin,
+  ...addons,
+} as typeof builtin & typeof addons
 
 // satisfies cannot be inline b/c it causes type errors
 index satisfies Record<string, () => Promise<{ default: Package }>>

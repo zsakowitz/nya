@@ -37,7 +37,14 @@ export default {
   name: "special functions",
   label: "for uncomputable integrals and sums",
   category: "numbers (multi-dimensional)",
-  deps: ["num/complex", "num/real", "special/erf", "special/erf-complex"],
+  deps: [
+    "num/complex",
+    "num/real",
+    "special/erf",
+    "special/erf-complex",
+    "factorial",
+    "gamma",
+  ],
   eval: {
     fn: {
       zeta: FN_ZETA,
