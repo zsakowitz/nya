@@ -193,7 +193,10 @@ export class Sheet {
     )
 
     const switchToDocs = btnSkin("a", faBook, "Docs")
-    switchToDocs.href = location.origin + "/?/docs"
+    switchToDocs.href =
+      location.origin +
+      "/?/docs" +
+      (location.search ? "&" + location.search.slice(1) : "")
     switchToDocs.target = "_blank"
 
     const clearAll = btn(faTrash, "Clear", () => {
