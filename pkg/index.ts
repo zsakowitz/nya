@@ -34,7 +34,6 @@ export const builtin = {
   "sym/core": () => import("$/sym/core"),
   "sym/deriv": () => import("$/sym/deriv"),
   "sym/extras": () => import("$/sym/extras"),
-  "text": () => import("$/text"),
   "trig/complex": () => import("$/trig/complex"),
   "trig/hyperbolic/real": () => import("$/trig/hyperbolic/real"),
   "trig/hyperbolic/complex": () => import("$/trig/hyperbolic/complex"),
@@ -55,6 +54,7 @@ export const addons = {
   "slope-field": () => import("$/slope-field"),
   "special": () => import("$/special"),
   "unit/pkg": () => import("$/unit/pkg"),
+  "text": () => import("$/text"),
   "withseq": () => import("$/withseq"),
 }
 Object.setPrototypeOf(addons, null)
@@ -72,6 +72,6 @@ export type PackageId = keyof typeof index
 
 export async function all(): Promise<Package[]> {
   return await Promise.all(
-    Object.values(index).map(async (x) => (await x()).default),
+    Object.values(builtin).map(async (x) => (await x()).default),
   )
 }

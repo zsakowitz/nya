@@ -1,7 +1,7 @@
 import type { OpBinary, PuncInfix, PuncUnary } from "@/eval/ast/token"
 import { options } from "@/field/defaults"
 import { SheetFactory } from "@/sheet/factory"
-import { index, type PackageId } from ".."
+import { builtin, index, type PackageId } from ".."
 import type { Package } from "../types"
 import { order } from "./order"
 import {
@@ -79,7 +79,7 @@ async function createManifest(): Promise<Manifest> {
         return { id: id as PackageId, pkg }
       }),
     ),
-  )
+  ).sort(({ id: a }, { id: b }) => +(a in builtin) - +(b in builtin))
   await Promise.all(pkgs.map((x) => factory.load(x.pkg)))
 
   const packages: Manifest["packages"] = pkgs.map((x) => [

@@ -9,8 +9,8 @@ import { CmdToken, createToken } from "@/field/cmd/leaf/token"
 import { CmdVar } from "@/field/cmd/leaf/var"
 import { CmdWord } from "@/field/cmd/leaf/word"
 import { CmdBrack } from "@/field/cmd/math/brack"
-import { Block } from "@/field/model"
 import { L, R } from "@/field/dir"
+import { Block } from "@/field/model"
 import { h, path, svgx, sx } from "@/jsx"
 import { PICK_TY, definePickTy, toolbar, type Data } from "@/sheet/pick-ty"
 import { normVector, type Point } from "@/sheet/point"
@@ -901,14 +901,6 @@ function angleInfo(
         },
         glsl(expr, ctx) {
           return `vec2(${angleGlsl(ctx, { expr, type })}, 0)`
-        },
-      },
-      q32: {
-        js(value) {
-          return [angleJs({ value, type }), real(0), real(0), real(0)]
-        },
-        glsl(expr, ctx) {
-          return `vec4(${angleGlsl(ctx, { expr, type })}, 0, 0, 0)`
         },
       },
     },
