@@ -96,7 +96,7 @@ export default {
       "q32",
       (a) => a.value,
       (_, a) => a.expr,
-      "+(3+2k)=3+2k",
+      "+(3-2k)=3-2k",
     )
 
     OP_NEG.add(
