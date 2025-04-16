@@ -1,4 +1,5 @@
 import type { ToolbarItem } from "#/types"
+import { createAddons } from "@/addons"
 import { btn, btnSkin } from "@/docs/core"
 import { JsContext } from "@/eval/lib/jsctx"
 import { declareAddR64, declareMulR64 } from "@/eval/ops/r64"
@@ -340,6 +341,35 @@ export class Sheet {
       ),
     )
 
+    const closeAddons = hx(
+      "button",
+      "bg-[--nya-bg] border border-[--nya-border] nya-rx px-2 py-1 text-center rounded-lg text-[--nya-text-prose]",
+      "close",
+    )
+
+    const saveAddons = hx(
+      "button",
+      "bg-[--nya-bg] border border-[--nya-border] nya-sx px-2 py-1 text-center rounded-lg text-[--nya-text-prose]",
+      "save",
+    )
+
+    const addons = h(
+      "relative [grid-area:cv] bg-[--nya-bg-sidebar] overflow-y-auto",
+      toolbar &&
+        h(
+          "absolute block top-0 left-0 right-0 h-1 from-[--nya-sidebar-shadow] to-transparent bg-gradient-to-b",
+        ),
+      h(
+        "absolute block sm:top-0 bottom-0 left-0 sm:w-1 w-full h-1 sm:h-full from-[--nya-sidebar-shadow] to-transparent bg-gradient-to-t sm:bg-gradient-to-r",
+      ),
+      h(
+        "flex flex-col gap-2 p-4 max-w-2xl mx-auto" +
+          (toolbar ? "" : " row-span-2"),
+        h("grid grid-cols-2 gap-2", closeAddons, saveAddons),
+        ...createAddons(factory, this),
+      ),
+    )
+
     // dom
     this.glPixelRatio.el.className =
       "block w-48 bg-[--nya-bg] outline outline-1 outline-[--nya-pixel-ratio] rounded-full p-1"
@@ -353,6 +383,7 @@ export class Sheet {
       sidebar,
       toolbar,
       cv,
+      // addons,
     )
     new ResizeObserver(() => {
       this.el.style.setProperty(

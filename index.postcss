@@ -56,6 +56,11 @@ body {
   --nya-sx-text: theme("colors.blue.950");
   --nya-sx-text-prose: theme("colors.blue.900");
   --nya-sx-title: theme("colors.blue.900");
+  --nya-rx-border: theme("colors.red.300");
+  --nya-rx-bg: theme("colors.red.100");
+  --nya-rx-text: theme("colors.red.950");
+  --nya-rx-text-prose: theme("colors.red.900");
+  --nya-rx-title: theme("colors.red.900");
   color-scheme: light;
 
   @apply bg-[--nya-bg-sidebar] text-[--nya-text];
@@ -101,6 +106,11 @@ body {
     --nya-sx-text: theme("colors.blue.300");
     --nya-sx-text-prose: theme("colors.blue.500");
     --nya-sx-title: theme("colors.blue.400");
+    --nya-rx-border: theme("colors.red.800");
+    --nya-rx-bg: theme("colors.red.950");
+    --nya-rx-text: theme("colors.red.300");
+    --nya-rx-text-prose: theme("colors.red.500");
+    --nya-rx-title: theme("colors.red.400");
     color-scheme: dark;
   }
 }
@@ -111,6 +121,14 @@ body {
   --nya-text: var(--nya-sx-text);
   --nya-text-prose: var(--nya-sx-text-prose);
   --nya-title: var(--nya-sx-title);
+}
+
+.nya-rx {
+  --nya-border: var(--nya-rx-border);
+  --nya-bg: var(--nya-rx-bg);
+  --nya-text: var(--nya-rx-text);
+  --nya-text-prose: var(--nya-rx-text-prose);
+  --nya-title: var(--nya-rx-title);
 }
 
 .nya-cmd-word-r {

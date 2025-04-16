@@ -3,8 +3,10 @@ import { manifest } from "#/manifest/data"
 import type { PackageIndex } from "#/manifest/types"
 import { makeDocName } from "./docs/util"
 import { h, hx } from "./jsx"
+import type { SheetFactory } from "./sheet/factory"
+import type { Sheet } from "./sheet/ui/sheet"
 
-export function createAddons() {
+export function createAddons(_factory: SheetFactory, _sheet: Sheet) {
   const pkgs = manifest.packages
     .map((x, i) => [...x, i] as const)
     .filter((x) => x[0] in addons)
@@ -54,15 +56,15 @@ export function createAddons() {
       },
       h(
         "flex flex-col",
-        h("row-1 col-[1] text-[--nya-text] text-lg font-semibold", name),
-        h("row-2 col-[1] text-[--nya-title]", label),
+        h("row-1 col-[1] text-[--nya-text] font-semibold", name),
+        h("row-2 col-[1] text-[--nya-title] text-sm", label),
       ),
       h(
-        "text-lg",
+        "*:!text-base/[1.15] text-base/[1.15]",
         ...fns
           .filter((x) => x[1][2].includes(index as PackageIndex))
           .flatMap((x, i) => [
-            i == 0 ? null : h("font-['Symbola'] text-[1.265em]", ", "),
+            i == 0 ? null : h("font-['Symbola']", ", "),
             makeDocName(x[0]),
           ]),
       ),
@@ -76,5 +78,5 @@ export function createAddons() {
     return el
   })
 
-  return h("flex flex-col", ...els)
+  return els
 }
