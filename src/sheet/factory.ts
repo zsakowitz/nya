@@ -66,9 +66,10 @@ export class SheetFactory {
     }
     this.loaded.add(pkg)
 
-    for (const depId of pkg.deps || []) {
-      const dep = (await index[depId]()).default
-      this.load(dep)
+    if (pkg.deps) {
+      await Promise.all(
+        pkg.deps.map(async (x) => await this.load((await index[x]()).default)),
+      )
     }
     pkg.load?.()
 
