@@ -541,7 +541,7 @@ export const OP_POINT = new FnDist(
   },
 )
 
-export const OP_ABS = new FnDist<"rabs32" | "rabs64">(
+export const OP_ABS = new FnDist(
   "abs",
   "takes the absolute value of a number, or gets the magnitude of a complex number",
   {
