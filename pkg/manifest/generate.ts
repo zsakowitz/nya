@@ -79,13 +79,16 @@ async function createManifest(): Promise<Manifest> {
         return { id: id as PackageId, pkg }
       }),
     ),
-  ).sort(({ id: a }, { id: b }) => +(a in builtin) - +(b in builtin))
+  )
+    .sort(({ id: a }, { id: b }) => +(b in builtin) - +(a in builtin))
+    .map((x, i) => ({ ...x, index: i as PackageIndex }))
   await Promise.all(pkgs.map((x) => factory.load(x.pkg)))
 
   const packages: Manifest["packages"] = pkgs.map((x) => [
     x.id,
     x.pkg.name,
     ...color(x.id),
+    x.pkg.label,
   ])
 
   const fns: Record<string, ManifestFn[]> = Object.create(null)

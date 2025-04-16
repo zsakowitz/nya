@@ -160,7 +160,7 @@ const EXT_SLOPE_FIELD = defineHideable<
 
 export default {
   name: "slope fields",
-  label: null,
+  label: "draw fields of slopes or vectors",
   category: "miscellaneous",
   deps: ["geo/dcg", "geo/point", "num/real"],
   ty: {

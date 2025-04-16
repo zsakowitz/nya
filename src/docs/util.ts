@@ -1,4 +1,3 @@
-import { CmdNum } from "@/field/cmd/leaf/num"
 import { h, hx } from "@/jsx"
 
 export function makeDocName(name: string) {
@@ -19,11 +18,13 @@ export function makeDocName(name: string) {
         /^[a-z]$/.test(name) ? "italic" : "",
         h(
           "font-['Times_New_Roman'] [line-height:.9]",
-          name,
+          ...(name.includes(" ") ?
+            name.split(" ").map((x, i) => h(i == 0 ? "" : "ml-1", x))
+          : [name]),
           sub ? hx("sub", "italic", "x") : null,
           inv ? hx("sup", "font-['Symbola']", "-1") : null,
         ),
       )
-    : new CmdNum(name).el,
+    : h("", name),
   )
 }

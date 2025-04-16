@@ -1,9 +1,11 @@
-import type { Package } from "./types"
+import "../index.css"
+import type { Addon, Package } from "./types"
 
-type IndexPartial = Partial<
-  Record<PackageId, () => Promise<{ default: Package }>>
->
-type Index = Record<PackageId, () => Promise<{ default: Package }>>
+export type IndexOf<T> = Record<PackageId, () => Promise<{ default: T }>>
+
+type IndexPartial = Partial<IndexOf<Package>>
+type IndexAddons = Partial<IndexOf<Addon>>
+type Index = IndexOf<Package>
 
 const rawBuiltin = {
   "__proto__": null,
@@ -78,18 +80,12 @@ const rawIndex = {
 // export type-casted objects. Not perfect, but it works pretty well.
 
 rawBuiltin satisfies IndexPartial
-rawAddons satisfies IndexPartial
+rawAddons satisfies IndexAddons
 rawIndex satisfies Index
 
 export const builtin = rawBuiltin as any as IndexPartial
-export const addons = rawAddons as any as IndexPartial
+export const addons = rawAddons as any as IndexAddons
 export const index = rawIndex as any as Index
 
 // we have to remove __proto__ because TS doesn't understand it's a special property
 export type PackageId = Exclude<keyof typeof rawIndex, "__proto__">
-
-export async function all(): Promise<Package[]> {
-  return await Promise.all(
-    Object.values(builtin).map(async (x) => (await x()).default),
-  )
-}

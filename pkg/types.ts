@@ -53,7 +53,7 @@ export type PackageCategory =
 // SHAPE: maybe use consistent shapes
 export interface Package {
   name: string
-  label: string | null
+  label: string | null // TODO: write better labels
   category: PackageCategory
   deps: PackageId[]
 
@@ -106,6 +106,10 @@ export interface Package {
   }
 
   docs?: readonly Doc[]
+}
+
+export interface Addon extends Package {
+  label: string
 }
 
 export interface Doc {

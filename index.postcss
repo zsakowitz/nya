@@ -51,6 +51,11 @@ body {
   --nya-paper-axis-number-onscreen: black;
   --nya-paper-axis-number-offscreen: #8e8e8e;
   --nya-paper-screen-line: black;
+  --nya-sx-border: theme("colors.blue.300");
+  --nya-sx-bg: theme("colors.blue.100");
+  --nya-sx-text: theme("colors.blue.950");
+  --nya-sx-text-prose: theme("colors.blue.900");
+  --nya-sx-title: theme("colors.blue.900");
   color-scheme: light;
 
   @apply bg-[--nya-bg-sidebar] text-[--nya-text];
@@ -91,8 +96,21 @@ body {
     --nya-paper-axis-number-onscreen: white;
     --nya-paper-axis-number-offscreen: #8e8e8e;
     --nya-paper-screen-line: theme("colors.slate.600");
+    --nya-sx-border: theme("colors.blue.800");
+    --nya-sx-bg: theme("colors.blue.950");
+    --nya-sx-text: theme("colors.blue.300");
+    --nya-sx-text-prose: theme("colors.blue.500");
+    --nya-sx-title: theme("colors.blue.400");
     color-scheme: dark;
   }
+}
+
+.nya-sx {
+  --nya-border: var(--nya-sx-border);
+  --nya-bg: var(--nya-sx-bg);
+  --nya-text: var(--nya-sx-text);
+  --nya-text-prose: var(--nya-sx-text-prose);
+  --nya-title: var(--nya-sx-title);
 }
 
 .nya-cmd-word-r {

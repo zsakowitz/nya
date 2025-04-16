@@ -2,7 +2,8 @@
 
 general configuration:
 
-- `?onlypkg=<package id>`
+- `?onlypkg=<comma-separated package ids>`
+- `?addons=<comma-separated package ids>`
 
 configure sheet:
 

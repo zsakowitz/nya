@@ -1,4 +1,4 @@
-import type { Package } from "#/types"
+import type { Addon } from "#/types"
 import { example } from "@/docs/core"
 import { Precedence, type MagicVar } from "@/eval/ast/token"
 import { js, TXR_AST } from "@/eval/ast/tx"
@@ -35,7 +35,7 @@ function validateSym(node: MagicVar, kind: "sym" | "eval" | "unsym") {
 
 export default {
   name: "extra symbolics",
-  label: null,
+  label: "manipulate unevaluated expressions as values",
   category: "symbolic computation",
   deps: ["sym/core"],
   ty: {
@@ -242,4 +242,4 @@ export default {
       },
     },
   ],
-} satisfies Package
+} satisfies Addon

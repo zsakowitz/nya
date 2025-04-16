@@ -1,6 +1,5 @@
 import type { Package } from "#/types"
 import type { PackageId } from ".."
-import type { PackageIndex } from "./types"
 
 export function order(packages: { id: PackageId; pkg: Package }[]) {
   const indices = Object.create(null) as Record<PackageId, number>
@@ -25,8 +24,5 @@ export function order(packages: { id: PackageId; pkg: Package }[]) {
     .map(([k, v]) => [+k, v] as const)
     .sort(([a], [b]) => a - b)
     .flatMap((x) => x[1])
-  return entries.map((id, index) => ({
-    ...packages.find((x) => x.id == id)!,
-    index: index as PackageIndex,
-  }))
+  return entries.map((id) => packages.find((x) => x.id == id)!)
 }
