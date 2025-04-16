@@ -102,8 +102,8 @@ const FN_LNGAMMA = new FnDist(
 )
 
 export default {
-  name: "factorial",
-  label: "extended factorial operator",
+  name: "gamma functions",
+  label: "functions related to the factorial and its derivative",
   category: "numbers",
   deps: ["core/ops", "num/complex", "factorial"],
   eval: {
