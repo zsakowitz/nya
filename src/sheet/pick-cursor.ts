@@ -37,7 +37,7 @@ export const PICK_CURSOR: Picker<Data> = {
         }
       })
 
-      addEventListener("keyup", (e) => {
+      window.addEventListener("keyup", (e) => {
         if (e.key == "Shift") {
           if (sheet.pick.id == ID) {
             sheet.pick.cancel()

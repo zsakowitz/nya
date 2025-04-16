@@ -1,10 +1,10 @@
-import { twMerge } from "tailwind-merge"
 import type { SReal } from "@/eval/ty"
 import { isZero } from "@/eval/ty/check"
 import { frac, num, real } from "@/eval/ty/create"
 import { add, div, mul, sub } from "@/eval/ty/ops"
 import type { Cursor } from "@/field/model"
 import { h, hx } from "@/jsx"
+import { twMerge } from "tailwind-merge"
 import { virtualStepExp, write } from "./write"
 
 export class Slider {
@@ -92,7 +92,7 @@ export class Slider {
       },
       { passive: true },
     )
-    addEventListener(
+    window.addEventListener(
       "pointermove",
       (event) => dragging && this.setByPageX(event.pageX),
       { passive: true },
