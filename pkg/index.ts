@@ -1,8 +1,13 @@
 import type { Package } from "./types"
 
-export const builtin = {
+type IndexPartial = Partial<
+  Record<PackageId, () => Promise<{ default: Package }>>
+>
+type Index = Record<PackageId, () => Promise<{ default: Package }>>
+
+const rawBuiltin = {
+  "__proto__": null,
   "3d/point": () => import("$/3d/point"),
-  "base": () => import("$/base"),
   "bool": () => import("$/bool"),
   "color/core": () => import("$/color/core"),
   "color/extras": () => import("$/color/extras"),
@@ -40,10 +45,11 @@ export const builtin = {
   "trig/real": () => import("$/trig/real"),
   "with": () => import("$/with"),
 }
-Object.setPrototypeOf(builtin, null)
 
-export const addons = {
+const rawAddons = {
+  "__proto__": null,
   "4d/point": () => import("$/4d/point"),
+  "base": () => import("$/base"),
   "chem/elements": () => import("$/chem/elements"),
   "debug": () => import("$/debug"),
   "gamma": () => import("$/gamma"),
@@ -57,18 +63,20 @@ export const addons = {
   "text": () => import("$/text"),
   "withseq": () => import("$/withseq"),
 }
-Object.setPrototypeOf(addons, null)
 
-export const index = {
+const rawIndex = {
+  // @ts-expect-error TS thinks we're spreading __proto__, but that's not how __proto__ works
   __proto__: null,
-  ...builtin,
-  ...addons,
-} as typeof builtin & typeof addons
+  ...rawBuiltin,
+  ...rawAddons,
+}
 
-// satisfies cannot be inline b/c it causes type errors
-index satisfies Record<string, () => Promise<{ default: Package }>>
+export const builtin = rawBuiltin as any as IndexPartial
+export const addons = rawAddons as any as IndexPartial
+export const index = rawIndex as any as Index
 
-export type PackageId = keyof typeof index
+// we have to remove __proto__ because TS doesn't understand it's a special property
+export type PackageId = Exclude<keyof typeof rawIndex, "__proto__">
 
 export async function all(): Promise<Package[]> {
   return await Promise.all(

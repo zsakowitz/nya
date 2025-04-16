@@ -1,0 +1,7 @@
+{
+  "files.exclude": {
+    "graph.svg": true,
+    "index.css": true,
+    "meta.json": true
+  }
+}

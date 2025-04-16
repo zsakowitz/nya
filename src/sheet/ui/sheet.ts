@@ -103,7 +103,7 @@ export class Sheet {
     keys: Record<string, (sheet: Sheet) => void>,
     readonly factory: SheetFactory,
   ) {
-    addEventListener("keydown", (ev) => {
+    window.addEventListener("keydown", (ev) => {
       if (
         ev.metaKey ||
         ev.ctrlKey ||
@@ -360,7 +360,7 @@ export class Sheet {
 
     this.startGlslLoop()
 
-    addEventListener("keydown", (event) => {
+    window.addEventListener("keydown", (event) => {
       if (
         this.pick.isActive() &&
         event.key == "Escape" &&

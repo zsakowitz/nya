@@ -35,7 +35,6 @@ type List<T, K extends PropertyKey = string> = { readonly [_ in K]?: T }
 export type PackageCategory =
   | "chemistry"
   | "color"
-  | "core"
   | "geometry"
   | "images"
   | "lists"
