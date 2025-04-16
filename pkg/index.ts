@@ -71,6 +71,16 @@ const rawIndex = {
   ...rawAddons,
 }
 
+// We would like to use the keys above as dependency IDs, which requires we have
+// the objects untyped. This, however, means around seven files which use these
+// objects will error if any single package has invalid types. To fix that, we
+// perform a quick check with 'satisfies' here to ensure correct types, then
+// export type-casted objects. Not perfect, but it works pretty well.
+
+rawBuiltin satisfies IndexPartial
+rawAddons satisfies IndexPartial
+rawIndex satisfies Index
+
 export const builtin = rawBuiltin as any as IndexPartial
 export const addons = rawAddons as any as IndexPartial
 export const index = rawIndex as any as Index
