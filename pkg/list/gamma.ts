@@ -95,7 +95,7 @@ const FN_LNGAMMA = new FnDist(
   (x) => approx(gammaln(num(x.value))),
   (ctx, a) => {
     declareFactorialR32(ctx)
-    ctx.helpers.declareText(lngammaGl)
+    ctx.glslText(lngammaGl)
     return `_nya_helper_lngamma(${a.expr})`
   },
   "lngamma23=ln((23+1)!)",
