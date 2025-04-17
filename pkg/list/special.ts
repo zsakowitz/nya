@@ -1,14 +1,16 @@
 import erfC32Gl from "#/glsl/erf-c32.glsl"
+import zetaGl from "#/glsl/zeta.glsl"
 import type { Package } from "#/types"
 import { FnDist } from "@/eval/ops/dist"
 import { approx, num, pt, real, rept, unpt } from "@/eval/ty/create"
 import { complex, zeta } from "mathjs"
-import { declareMulC32 } from "./num/complex"
+import { declareFactorialC32 } from "./factorial"
+import { declareDiv, declareMulC32, declarePowC32 } from "./num/complex"
 import { faddeevaPt } from "./special/erf-complex"
 
 const FN_ZETA: FnDist = new FnDist("zeta", "computes the Riemann zeta function")
   .addJs(["r32"], "r32", (a) => approx(zeta(num(a.value))), "zeta2≈1.645")
-  .addJs(
+  .add(
     ["c32"],
     "c32",
     (a) => {
@@ -17,6 +19,14 @@ const FN_ZETA: FnDist = new FnDist("zeta", "computes the Riemann zeta function")
         return pt(approx(val), real(0))
       }
       return pt(approx(val.re), approx(val.im))
+    },
+    (ctx, a) => {
+      declareMulC32(ctx)
+      declarePowC32(ctx)
+      declareDiv(ctx)
+      declareFactorialC32(ctx)
+      ctx.glslText(zetaGl)
+      return `zeta(${a.expr})`
     },
     "zeta(2+3i)≈0.798-0.114i",
   )
