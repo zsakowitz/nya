@@ -1,11 +1,4 @@
 import type { Package } from "#/types"
-import type { GlslContext } from "@/eval/lib/fn"
-import { FnDist } from "@/eval/ops/dist"
-import type { SReal, Tys } from "@/eval/ty"
-import { approx, gl, num, real } from "@/eval/ty/create"
-import { TY_INFO } from "@/eval/ty/info"
-import { abs, add, div, mul, neg, sub } from "@/eval/ty/ops"
-import { h } from "@/jsx"
 import {
   OP_ABS,
   OP_ADD,
@@ -16,6 +9,13 @@ import {
   OP_POS,
   OP_SUB,
 } from "$/core/ops"
+import type { GlslContext } from "@/eval/lib/fn"
+import { FnDist } from "@/eval/ops/dist"
+import type { SReal, Tys } from "@/eval/ty"
+import { approx, gl, num, real } from "@/eval/ty/create"
+import { TY_INFO } from "@/eval/ty/info"
+import { abs, add, div, mul, neg, sub } from "@/eval/ty/ops"
+import { h } from "@/jsx"
 import { FN_CONJ, FN_I, FN_REAL } from "./complex"
 import { FN_UNSIGN } from "./real"
 
