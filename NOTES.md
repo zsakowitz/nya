@@ -8,6 +8,7 @@ general configuration:
 configure sheet:
 
 - `?nogrid`
+- `?showaddons`
 - `?cvsize=<n>`
 - `?shaderpixelsize=<1..=16>`
 - `?logfrag`

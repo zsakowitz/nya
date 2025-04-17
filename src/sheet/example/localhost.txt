@@ -1,1 +1,1 @@
-zetap
+beta(x,y)

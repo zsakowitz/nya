@@ -85,6 +85,7 @@ async function createManifest(): Promise<Manifest> {
     x.pkg.name,
     ...color(x.id),
     x.pkg.label,
+    x.pkg.deps.map((id) => pkgs.findIndex((x) => x.id == id) as PackageIndex),
   ])
 
   const fns: Record<string, ManifestFn[]> = Object.create(null)

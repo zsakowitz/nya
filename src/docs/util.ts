@@ -19,7 +19,7 @@ export function makeDocName(name: string) {
         h(
           "font-['Times_New_Roman'] [line-height:.9]",
           ...(name.includes(" ") ?
-            name.split(" ").map((x, i) => h(i == 0 ? "" : "ml-1", x))
+            name.split(" ").map((x, i) => h(i == 0 ? "" : "ml-[.1em]", x))
           : [name]),
           sub ? hx("sub", "italic", "x") : null,
           inv ? hx("sup", "font-['Symbola']", "-1") : null,

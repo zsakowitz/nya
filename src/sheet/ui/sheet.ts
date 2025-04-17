@@ -1,17 +1,19 @@
-import type { ToolbarItem } from "#/types"
-import { createAddons } from "@/addons"
+import type { Package, ToolbarItem } from "#/types"
 import { btn, btnSkin } from "@/docs/core"
 import { JsContext } from "@/eval/lib/jsctx"
 import { declareAddR64, declareMulR64 } from "@/eval/ops/r64"
 import { SYM_180, SYM_PI, SYM_TAU, type Sym } from "@/eval/sym"
 import type { JsVal, TyName } from "@/eval/ty"
 import { num, real } from "@/eval/ty/create"
+import { tidyCoercions } from "@/eval/ty/info"
 import { splitRaw } from "@/eval/ty/split"
 import type { Block } from "@/field/model"
 import type { Options } from "@/field/options"
 import { h, hx, t } from "@/jsx"
+import { createAddons } from "@/sheet/ui/addons"
 import { faBook } from "@fortawesome/free-solid-svg-icons/faBook"
 import { faCopy } from "@fortawesome/free-solid-svg-icons/faCopy"
+import { faPuzzlePiece } from "@fortawesome/free-solid-svg-icons/faPuzzlePiece"
 import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash"
 import type { Regl } from "regl"
 import regl from "regl"
@@ -200,6 +202,10 @@ export class Sheet {
       (location.search ? "&" + location.search.slice(1) : "")
     switchToDocs.target = "_blank"
 
+    const showAddons = btn(faPuzzlePiece, "More", () => {
+      addons.classList.toggle("hidden")
+    })
+
     const clearAll = btn(faTrash, "Clear", () => {
       while (this.list.items[0]) {
         this.list.items[0].delete()
@@ -271,6 +277,7 @@ export class Sheet {
         copyAll,
         clearAll,
         h("m-auto text-2xl", "project nya"),
+        showAddons,
         switchToDocs,
       ),
     )
@@ -310,22 +317,22 @@ export class Sheet {
       h("flex-1 sm:border-r min-h-24 border-[--nya-border]"),
     )
 
-    const toolbar =
-      toolbarItems.length ?
-        h(
-          "font-['Symbola','Times_New_Roman',sans-serif] flex overflow-x-auto h-12 min-h-12 bg-[--nya-bg-sidebar] border-b border-[--nya-border] first:*:ml-auto last:*:mr-auto [&::-webkit-scrollbar]:hidden px-2 [grid-area:toolbar]",
-          ...toolbarItems.map((x) => x(this)),
-        )
-      : null
+    const hasToolbar = () => (toolbarItems.length ? true : null)
+    const createToolbar = () =>
+      h(
+        "font-['Symbola','Times_New_Roman',sans-serif] flex overflow-x-auto h-12 min-h-12 bg-[--nya-bg-sidebar] border-b border-[--nya-border] first:*:ml-auto last:*:mr-auto [&::-webkit-scrollbar]:hidden px-2 [grid-area:toolbar]",
+        ...toolbarItems.map((x) => x(this)),
+      )
+
+    const toolbarDependentCvGradient = h(
+      "absolute block top-0 left-0 right-0 h-1 from-[--nya-sidebar-shadow] to-transparent bg-gradient-to-b",
+    )
 
     const cv = h(
-      "relative [grid-area:cv]" + (toolbar ? "" : " row-span-2"),
+      "",
       canvas,
       this.cv.el,
-      toolbar &&
-        h(
-          "absolute block top-0 left-0 right-0 h-1 from-[--nya-sidebar-shadow] to-transparent bg-gradient-to-b",
-        ),
+      toolbarDependentCvGradient,
       h(
         "absolute block sm:top-0 bottom-0 left-0 sm:w-1 w-full h-1 sm:h-full from-[--nya-sidebar-shadow] to-transparent bg-gradient-to-t sm:bg-gradient-to-r",
       ),
@@ -343,22 +350,23 @@ export class Sheet {
 
     const closeAddons = hx(
       "button",
-      "bg-[--nya-bg] border border-[--nya-border] nya-rx px-2 py-1 text-center rounded-lg text-[--nya-text-prose] sticky top-0",
+      "bg-[--nya-bg] border border-[--nya-border] nya-rx px-2 py-1 text-center rounded-lg text-[--nya-text-prose] sticky top-0 z-10",
       "close",
     )
 
+    const toolbarDependentAddonGradient = h(
+      "absolute block top-0 left-0 right-0 h-1 from-[--nya-sidebar-shadow] to-transparent bg-gradient-to-b",
+    )
+
     const addons = h(
-      "relative [grid-area:cv] backdrop-blur flex h-full max-h-full",
+      "hidden relative [grid-area:cv] backdrop-blur flex h-full max-h-full",
       h("absolute top-0 left-0 h-full w-full bg-[--nya-bg-sidebar] opacity-70"),
-      toolbar &&
-        h(
-          "absolute block top-0 left-0 right-0 h-1 from-[--nya-sidebar-shadow] to-transparent bg-gradient-to-b",
-        ),
+      toolbarDependentAddonGradient,
       h(
         "absolute block sm:top-0 bottom-0 left-0 sm:w-1 w-full h-1 sm:h-full from-[--nya-sidebar-shadow] to-transparent bg-gradient-to-t sm:bg-gradient-to-r",
       ),
       h(
-        "absolute top-0 left-0 w-full h-full overflow-y-auto p-4 [clip-path:polygon(0_0,100%_0,100%_100%,0%_100%)]",
+        "absolute top-0 left-0 w-full h-full overflow-y-auto p-4",
         h(
           "w-full flex flex-col gap-2 max-w-2xl mx-auto",
           closeAddons,
@@ -366,22 +374,39 @@ export class Sheet {
         ),
       ),
     )
+    addons.classList.toggle("hidden", !location.search.includes("showaddons"))
 
     // dom
     this.glPixelRatio.el.className =
       "block w-48 bg-[--nya-bg] outline outline-1 outline-[--nya-pixel-ratio] rounded-full p-1"
-    this.el = h(
-      "bg-[--nya-bg] fixed inset-0 grid select-none grid-cols-[1fr] grid-rows-[3rem_1fr_calc(3rem_+_1px)_1fr] sm:grid-cols-[min(500px,40vw)_1fr] sm:grid-rows-[3rem_1fr] " +
-        (toolbar ?
-          "[grid-template-areas:'toolbar'_'cv'_'titlebar'_'sidebar'] sm:[grid-template-areas:'titlebar_toolbar'_'sidebar_cv']"
-        : "[grid-template-areas:'cv'_'cv'_'titlebar'_'sidebar'] sm:[grid-template-areas:'titlebar_cv'_'sidebar_cv']"),
+    const toolbarEl = h("contents")
+    this.el = h("", titlebar, sidebar, toolbarEl, cv, addons)
 
-      titlebar,
-      sidebar,
-      toolbar,
-      cv,
-      // addons,
-    )
+    const checkToolbar = (items?: ToolbarItem[]) => {
+      if (items) {
+        toolbarItems = items
+      }
+
+      this.el.classList =
+        "bg-[--nya-bg] fixed inset-0 grid select-none grid-cols-[1fr] grid-rows-[3rem_1fr_calc(3rem_+_1px)_1fr] sm:grid-cols-[min(500px,40vw)_1fr] sm:grid-rows-[3rem_1fr] " +
+        (hasToolbar() ?
+          "[grid-template-areas:'toolbar'_'cv'_'titlebar'_'sidebar'] sm:[grid-template-areas:'titlebar_toolbar'_'sidebar_cv']"
+        : "[grid-template-areas:'cv'_'cv'_'titlebar'_'sidebar'] sm:[grid-template-areas:'titlebar_cv'_'sidebar_cv']")
+      toolbarDependentAddonGradient.classList.toggle("hidden", !hasToolbar())
+      toolbarDependentAddonGradient.classList.toggle("block", !!hasToolbar())
+      toolbarDependentCvGradient.classList.toggle("hidden", !hasToolbar())
+      toolbarDependentCvGradient.classList.toggle("block", !!hasToolbar())
+      cv.className =
+        "relative [grid-area:cv]" + (hasToolbar() ? "" : " row-span-2")
+      while (toolbarEl.firstChild) {
+        toolbarEl.firstChild.remove()
+      }
+      if (hasToolbar()) {
+        toolbarEl.appendChild(createToolbar())
+      }
+    }
+    checkToolbar()
+
     new ResizeObserver(() => {
       this.el.style.setProperty(
         "--nya-sidebar-raw",
@@ -401,6 +426,26 @@ export class Sheet {
         this.pick.cancel()
       }
     })
+
+    this.checkToolbar = checkToolbar
+  }
+  private checkToolbar
+
+  async load(pkg: Package) {
+    await this.factory.load(pkg)
+    pkg.init?.fn(this)
+    tidyCoercions()
+    this.checkToolbar(
+      Object.entries(this.factory.toolbar)
+        .sort((a, b) => +a[0] - +b[0])
+        .flatMap((x) => x[1]),
+    )
+    this.exts.set(
+      Object.entries(this.factory.exts)
+        .sort((a, b) => +a[0] - +b[0])
+        .flatMap((x) => x[1].exts),
+    )
+    // }
   }
 
   private startGlslLoop() {

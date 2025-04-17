@@ -23,6 +23,7 @@ export type ManifestPackage = [
   colorM: string,
   colorD: string,
   label: string | null,
+  deps: PackageIndex[],
 ]
 
 export type ManifestFn = [

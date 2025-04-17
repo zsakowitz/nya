@@ -4,8 +4,8 @@ import { CmdComma } from "@/field/cmd/leaf/comma"
 import { CmdToken } from "@/field/cmd/leaf/token"
 import { CmdVar } from "@/field/cmd/leaf/var"
 import { CmdBrack } from "@/field/cmd/math/brack"
-import { Block } from "@/field/model"
 import { L, R } from "@/field/dir"
+import { Block } from "@/field/model"
 import { h, hx } from "@/jsx"
 import { Order } from "./ui/cv/consts"
 import { Hint } from "./ui/cv/item"
@@ -205,7 +205,7 @@ export function toolbar(icon: () => HTMLSpanElement, props: Data, key: string) {
         key,
       ),
     )
-    sheet.pick.onChange.push(() => {
+    function check() {
       if (sheet.pick.id == props.src.id) {
         btn.classList.add("bg-[--nya-bg]", "border-[--nya-border]")
         btn.classList.remove("border-transparent")
@@ -213,7 +213,9 @@ export function toolbar(icon: () => HTMLSpanElement, props: Data, key: string) {
         btn.classList.remove("bg-[--nya-bg]", "border-[--nya-border]")
         btn.classList.add("border-transparent")
       }
-    })
+    }
+    sheet.pick.onChange.push(check)
+    check()
     btn.addEventListener("click", () => {
       sheet.pick.set(PICK_TY, props)
     })
