@@ -380,7 +380,7 @@ export class Sheet {
       sidebar,
       toolbar,
       cv,
-      addons,
+      // addons,
     )
     new ResizeObserver(() => {
       this.el.style.setProperty(
