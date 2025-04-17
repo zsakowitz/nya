@@ -903,14 +903,6 @@ function angleInfo(
           return `vec2(${angleGlsl(ctx, { expr, type })}, 0)`
         },
       },
-      q32: {
-        js(value) {
-          return [angleJs({ value, type }), real(0), real(0), real(0)]
-        },
-        glsl(expr, ctx) {
-          return `vec4(${angleGlsl(ctx, { expr, type })}, 0, 0, 0)`
-        },
-      },
     },
     write: {
       display(value, props) {
