@@ -1,4 +1,4 @@
-import { index } from "#/index"
+import { index, type PackageId } from "#/index"
 import type { Package, ToolbarItem } from "#/types"
 import { FNLIKE_MAGICVAR } from "@/eval/ast/fnlike"
 import {
@@ -57,19 +57,17 @@ export class SheetFactory {
     }
   }
 
-  readonly loaded = new Set<Package>()
+  readonly loaded: Partial<Record<PackageId, Package>> = Object.create(null)
   private queuedCoercions: Record<string, Record<string, TyCoerce<any, any>>> =
     Object.create(null)
-  async load(pkg: Package) {
-    if (this.loaded.has(pkg)) {
-      return
-    }
-    this.loaded.add(pkg)
+  async load(id: PackageId) {
+    if (id in this.loaded) return
+    const pkg = (await index[id]()).default
+    if (id in this.loaded) return // someone else might've loaded it
+    this.loaded[id] = pkg
 
     if (pkg.deps) {
-      await Promise.all(
-        pkg.deps.map(async (x) => await this.load((await index[x]()).default)),
-      )
+      await Promise.all(pkg.deps.map((x) => this.load(x)))
     }
     pkg.load?.()
 
@@ -346,7 +344,7 @@ export class SheetFactory {
       this.keys,
       this,
     )
-    for (const pkg of this.loaded) {
+    for (const pkg of Object.values(this.loaded)) {
       pkg.init?.fn(sheet)
     }
     return sheet

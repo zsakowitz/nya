@@ -1,4 +1,5 @@
-import type { Package, ToolbarItem } from "#/types"
+import type { PackageId } from "#/index"
+import type { ToolbarItem } from "#/types"
 import { getAll } from "@/addons"
 import { btn, btnSkin, btnSkin2 } from "@/docs/core"
 import { JsContext } from "@/eval/lib/jsctx"
@@ -365,8 +366,8 @@ export class Sheet {
     )
 
     const closeAddons = h(
-      "mb-2 px-[calc(0.75rem_+_1px)] text-[--nya-text-prose]",
-      px`Addons extend project nya with extra functionality. They can add new functions, data types, and other constructs.`,
+      "mb-2 px-[calc(0.75rem_+_1px)] text-[--nya-text-prose] flex flex-col gap-2",
+      px`Addons extend project nya with extra functionality. They can add new functions, data types, and other constructs. Clicking the "Docs" icon will show additional guides after you've selected addons.`,
     )
 
     const toolbarDependentAddonGradient = h(
@@ -446,9 +447,9 @@ export class Sheet {
   }
   private checkToolbar
 
-  async load(pkg: Package) {
-    await this.factory.load(pkg)
-    pkg.init?.fn(this)
+  async load(id: PackageId) {
+    await this.factory.load(id)
+    this.factory.loaded[id]?.init?.fn(this) // package is never null by now, but extra checks don't hurt
     tidyCoercions()
     this.checkToolbar(
       Object.entries(this.factory.toolbar)

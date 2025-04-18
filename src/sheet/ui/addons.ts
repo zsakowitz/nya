@@ -1,4 +1,4 @@
-import { index, type PackageId } from "#/index"
+import { type PackageId } from "#/index"
 import { manifest } from "#/manifest/data"
 import type { PackageIndex } from "#/manifest/types"
 import { getAll, pkgs } from "@/addons"
@@ -43,8 +43,7 @@ export function createAddons(
     )
     onSet()
     if (on) {
-      const pkg = (await index[id]()).default
-      await sheet.load(pkg)
+      await sheet.load(id)
     }
   }
 
@@ -81,7 +80,7 @@ export function createAddons(
       const reqsContent = t("")
 
       const reqs = h(
-        "col-span-2 italic text-[--nya-text-prose]",
+        "col-span-2 italic text-[--nya-text-prose] text-sm mt-2",
         "required by ",
         reqsContent,
       )
@@ -91,12 +90,18 @@ export function createAddons(
         {
           class:
             "grid grid-cols-[40%_auto] bg-[--nya-bg] border border-[--nya-border] text-[--d] px-3 py-2 rounded-lg text-[--nya-text-prose] gap-x-4 text-left items-start" +
-            (has(id) ? " nya-sx" : ""),
+            (has(id) ? " nya-sx"
+            : id in sheet.factory.loaded ? " nya-yx"
+            : ""),
           style: `--l:${colorL};--m:${colorM};--d:${colorD}`,
         },
         head,
         side,
         reqs,
+        h(
+          "col-span-2 italic text-[--nya-text-prose] hidden [.nya-yx>&]:block mt-2 text-sm",
+          'Reload the page to finish removing this addon. This will erase your graph; click "Copy" to copy the graph\'s contents to your clipboard before reloading.',
+        ),
       )
 
       el.addEventListener("click", () => {
@@ -108,10 +113,9 @@ export function createAddons(
         el,
         check() {
           const self = map[index]
-          el.classList.toggle(
-            "nya-sx",
-            self?.selected || !!self?.dependents.length,
-          )
+          const selected = self?.selected || !!self?.dependents.length
+          el.classList.toggle("nya-sx", selected)
+          el.classList.toggle("nya-yx", !selected && id in sheet.factory.loaded)
           head.classList.toggle("opacity-30", !!self?.dependents.length)
           side.classList.toggle("opacity-30", !!self?.dependents.length)
           reqs.classList.toggle("hidden", !self?.dependents.length)

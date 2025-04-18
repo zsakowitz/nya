@@ -10,10 +10,7 @@ const factory = new SheetFactory(options)
 
 async function load(ids: string[]) {
   await Promise.all(
-    ids
-      .filter((x): x is PackageId => x in index)
-      .map((x) => index[x])
-      .map(async (x) => factory.load((await x()).default)),
+    ids.filter((x): x is PackageId => x in index).map((x) => factory.load(x)),
   )
 }
 
