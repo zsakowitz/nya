@@ -11,10 +11,11 @@ export const manifestFnKinds = [
   "magic/kw",
   "magic/fn",
   "magic/prefix",
+  "var/named",
 ] as const
 
 export type ManifestFnKindName = (typeof manifestFnKinds)[number]
-export type ManifestFnKindIndex = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7
+export type ManifestFnKindIndex = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8
 
 export type ManifestPackage = [
   id: PackageId,
@@ -31,6 +32,7 @@ export type ManifestFn = [
   label: string,
   refs: PackageIndex[],
   kind: ManifestFnKindIndex,
+  deitalicize?: true,
 ]
 
 export interface Manifest {

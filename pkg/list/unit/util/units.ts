@@ -141,79 +141,80 @@ const SCALABLE: Record<string, Unit> = {
   // @ts-expect-error ts doesn't recognize __proto__
   __proto__: null,
   m,
-  meter: m,
   s,
-  second: s,
   K: UNIT_KELVIN,
-  kelvin: UNIT_KELVIN,
   A,
-  ampere: A,
-  amp: A,
   au,
-  astronomicalunit: au,
   mol: UNIT_MOLE,
-  mole: UNIT_MOLE,
   cd,
-  candela: cd,
   min,
-  minute: min,
   hr,
-  hour: hr,
   d,
-  day: d,
   dC: dC,
   dF: dF,
   ddC: ddC,
   ddF: ddF,
+  N,
+  joule: UNIT_JOULE,
+  cal,
+  Pa,
+  W,
+  C,
+  V,
+  ohm,
+  S,
+  F,
+  H,
+  Wb,
+  T,
+  G,
+  Gs: G,
+  in: inch,
+  ft,
+  lb: lbf,
+  L,
+  g,
+  Hz,
+  Da: UNIT_AMU,
+  u: UNIT_AMU,
+  amu: UNIT_AMU,
+
+  meter: m,
+  kelvin: UNIT_KELVIN,
+  second: s,
+  ampere: A,
+  amp: A,
+  astronomicalunit: au,
+  mole: UNIT_MOLE,
+  candela: cd,
+  minute: min,
+  hour: hr,
+  day: d,
   celsius: dC,
   fahrenheit: dF,
   deltacelsius: ddC,
   deltafahrenheit: ddF,
-  N,
   newton: N,
   J: UNIT_JOULE,
-  joule: UNIT_JOULE,
-  cal,
   calorie: cal,
   calourie: cal,
-  Pa,
   pascal: Pa,
-  W,
   watt: W,
-  C,
   coulomb: C,
-  V,
   volt: V,
-  ohm,
-  S,
   siemens: S,
-  F,
   farad: F,
-  H,
   henry: H,
-  Wb,
   weber: Wb,
-  T,
   tesla: T,
-  G,
-  Gs: G,
   gauss: G,
-  in: inch,
   inch,
-  ft,
   foot: ft,
-  lb: lbf,
   pound: lbf,
-  L,
   liter: L,
-  g,
   gram: g,
-  Hz,
   hertz: Hz,
-  Da: UNIT_AMU,
   dalton: UNIT_AMU,
-  u: UNIT_AMU,
-  amu: UNIT_AMU,
 }
 
 const SCALARS = Object.entries({
@@ -244,13 +245,10 @@ const SCALARS = Object.entries({
 })
 
 const SCALED = Object.fromEntries(
-  Object.entries(SCALABLE).flatMap(([k, v]): [string, Unit][] => {
-    if (num(v.base.offset) != 0) {
-      return [[k, v]]
-    }
-    const res: [string, Unit][] = [[k, v]]
-    for (const [name, mx] of SCALARS) {
-      res.push([
+  SCALARS.flatMap(([name, mx]) =>
+    Object.entries(SCALABLE)
+      .filter((x) => num(x[1].base.offset) == 0)
+      .map(([k, v]) => [
         name + k,
         {
           label: name + v.label,
@@ -260,10 +258,8 @@ const SCALED = Object.fromEntries(
             scale: mul(v.base.scale, mx),
           },
         },
-      ])
-    }
-    return res
-  }),
+      ]),
+  ),
 )
 
 export const UNIT_KIND_VALUES: Record<UnitKind, Unit> = {
@@ -281,7 +277,11 @@ export const UNIT_KIND_VALUES: Record<UnitKind, Unit> = {
 export const UNITS: Record<string, Unit> = {
   // @ts-ignore
   __proto__: null,
+  ...SCALABLE,
   ...SCALED,
+  Cal: SCALED.kcal!,
+  Calorie: SCALED.kcal!,
+  Calourie: SCALED.kcal!,
 }
 
 export const UNIT_KILOJOULE = UNITS.kJ!

@@ -67,15 +67,30 @@ export function createAddons(
         h("row-2 col-[1] text-[--nya-title] text-sm", label),
       )
 
+      const sideItems = fns.filter((x) =>
+        x[1][2].includes(index as PackageIndex),
+      )
+
+      const MAX_ITEMS = 20
+
       const side = h(
         "*:!text-base/[1.15] text-base/[1.15]",
-        ...fns
-          .filter((x) => x[1][2].includes(index as PackageIndex))
+        ...sideItems
+          .slice(0, MAX_ITEMS)
           .flatMap((x, i) => [
             i == 0 ? null : h("font-['Symbola']", ", "),
-            makeDocName(x[0]),
+            makeDocName(x[0], x[1][4]),
           ]),
       )
+
+      if (sideItems.length > MAX_ITEMS) {
+        side.append(
+          h("font-['Symbola']", ", "),
+          makeDocName(`... (${sideItems.length - MAX_ITEMS} `),
+          makeDocName("more"),
+          makeDocName(")"),
+        )
+      }
 
       const reqsContent = t("")
 

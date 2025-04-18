@@ -281,6 +281,8 @@ export default {
   },
   eval: {
     fn: {
+      ".x": OP_X,
+      ".y": OP_Y,
       ".z": OP_Z,
       ".w": OP_W,
     },

@@ -96,6 +96,16 @@ async function createManifest(): Promise<Manifest> {
       }
     }
 
+    if (pkg.eval?.var) {
+      for (const key in pkg.eval.var) {
+        addRef(key, "var/named", index, {
+          name: key,
+          label: pkg.eval.var[key]!.label,
+          word: pkg.eval.var[key]!.word,
+        })
+      }
+    }
+
     if (pkg.eval?.op?.unary) {
       for (const key in pkg.eval.op.unary) {
         addRef(key, "fn/op/unary", index, pkg.eval.op.unary[key as PuncUnary]!)
@@ -162,13 +172,19 @@ async function createManifest(): Promise<Manifest> {
     key: string,
     kind: ManifestFnKindName,
     index: PackageIndex,
-    props: { name: string; label: string },
+    props: { name: string; label: string; word?: boolean },
   ) {
     const kIndex = manifestFnKinds.indexOf(kind) as ManifestFnKindIndex
     const fs = (fns[key] ??= [])
     let x: ManifestFn
     ;(fs.find((x) => x[3] == kIndex) ??
-      (fs.push((x = [props.name, props.label, [], kIndex])), x))[2].push(index)
+      (fs.push(
+        (x =
+          props.word && (key.length == 1 || props.name.length == 1) ?
+            [props.name, props.label, [], kIndex, true]
+          : [props.name, props.label, [], kIndex]),
+      ),
+      x))[2].push(index)
   }
 }
 

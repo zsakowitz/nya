@@ -102,7 +102,7 @@ export class SheetFactory {
     }
 
     for (const key in pkg.eval?.var) {
-      if (key.length > 1) {
+      if (key.length > 1 || pkg.eval.var[key]!.word) {
         this.options.words.init(key, "var")
       }
       VARS[despace(key)] = pkg.eval.var[key]!

@@ -62,6 +62,7 @@ const rawAddons = {
   "special": () => import("$/special"),
   "sym/extras": () => import("$/sym/extras"),
   "unit/pkg": () => import("$/unit/pkg"),
+  "unit/word": () => import("$/unit/word"),
   "text": () => import("$/text"),
   "withseq": () => import("$/withseq"),
 }
