@@ -5,9 +5,9 @@ import { fa, h, hx } from "@/jsx"
 import type { IconDefinition } from "@fortawesome/free-solid-svg-icons"
 import { docFromSignature } from "./signature"
 
-export function btnSkin<K extends "button" | "a">(
+export function btnSkin2<K extends keyof HTMLElementTagNameMap>(
   kind: K,
-  icon: IconDefinition,
+  icon: Node,
   label: Node | string,
 ) {
   return hx(
@@ -15,10 +15,18 @@ export function btnSkin<K extends "button" | "a">(
     "flex flex-col h-[calc(2.5rem_-_1px)] min-w-10 [line-height:1] hover:bg-[--nya-sidebar-hover] hover:text-[--nya-title-dark] rounded focus:outline-none focus-visible:ring ring-[--nya-expr-focus]",
     h(
       "flex flex-col m-auto",
-      fa(icon, "mx-auto size-5 fill-current"),
+      icon,
       h("text-[80%]/[.5] mt-1.5 lowercase", label),
     ),
   )
+}
+
+export function btnSkin<K extends "button" | "a">(
+  kind: K,
+  icon: IconDefinition,
+  label: Node | string,
+) {
+  return btnSkin2(kind, fa(icon, "mx-auto size-5 fill-current"), label)
 }
 
 export function btn(

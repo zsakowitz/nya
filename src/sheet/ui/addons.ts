@@ -8,7 +8,11 @@ import { h, hx, t } from "../../jsx"
 import type { SheetFactory } from "../factory"
 import { Sheet } from "./sheet"
 
-export function createAddons(_factory: SheetFactory, sheet: Sheet) {
+export function createAddons(
+  _factory: SheetFactory,
+  sheet: Sheet,
+  onSet: () => void,
+) {
   function has(id: string) {
     return (
       new URLSearchParams(location.search)
@@ -37,6 +41,7 @@ export function createAddons(_factory: SheetFactory, sheet: Sheet) {
       "",
       location.origin + (params.toString() ? "?" + params : ""),
     )
+    onSet()
     if (on) {
       const pkg = (await index[id]()).default
       await sheet.load(pkg)

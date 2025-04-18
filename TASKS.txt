@@ -3,7 +3,7 @@
 to do list for things desmos hid is:
 ❌ chisqdist
 ❌ apply
-❌ erf
+✅ erf
 
 to do list for functions is:
 ❌ random, shuffle
@@ -12,10 +12,11 @@ to do list for functions is:
 ❌ stat tests
 ❌ lcm, gcd, nPr, nCr
 ❌ polygon([r32], [r32])
-❌ 3D points and vectors
-❌ ceil, floor, round, statistics for complex numbers
+❌ statistics for complex numbers
 ❌ width, height
 ❌ sort(values, keys)
+✅ 3D points and vectors
+✅ ceil, floor, round for complex numbers
 ✅ logb
 
 to do list for things to plot is:
@@ -62,16 +63,15 @@ to do list for non-desmos stuff is:
 ❌ colors in display p3
 ❌ fractal explorer package
 ❌ tetration
-❌ slope field
 ❌ editable text boxes
 ❌ collaborative editing
+✅ slope field
 
 to do list for 110% compatiability is:
 ❌ trigAngleMultiplier
 ❌ rtxsqpone(r32) = r32^2 + 1
 ❌ rtxsqmone(r32) = r32^2 - 1
 ❌ hypot(r32, r32)
-❌ polyGamma
 ❌ argmin
 ❌ argmax
 ❌ upperQuantileIndex
@@ -86,6 +86,7 @@ to do list for 110% compatiability is:
 ❌ nthroot(x, y)
 ❌ logbase(x, y)
 ❌ factorial(x)
+✅ polyGamma
 
 priority tasks: FIXME
 other tasks: (TODO, FEAT, SYM, DOCS, SHAPE, DCG, DEBT, SHADER, QUIRK, COMPAT)

@@ -1,5 +1,6 @@
 import type { Package, ToolbarItem } from "#/types"
-import { btn, btnSkin } from "@/docs/core"
+import { getAll } from "@/addons"
+import { btn, btnSkin, btnSkin2 } from "@/docs/core"
 import { JsContext } from "@/eval/lib/jsctx"
 import { declareAddR64, declareMulR64 } from "@/eval/ops/r64"
 import { SYM_180, SYM_PI, SYM_TAU, type Sym } from "@/eval/sym"
@@ -9,11 +10,10 @@ import { tidyCoercions } from "@/eval/ty/info"
 import { splitRaw } from "@/eval/ty/split"
 import type { Block } from "@/field/model"
 import type { Options } from "@/field/options"
-import { h, hx, t } from "@/jsx"
+import { h, hx, px, t } from "@/jsx"
 import { createAddons } from "@/sheet/ui/addons"
 import { faBook } from "@fortawesome/free-solid-svg-icons/faBook"
 import { faCopy } from "@fortawesome/free-solid-svg-icons/faCopy"
-import { faPuzzlePiece } from "@fortawesome/free-solid-svg-icons/faPuzzlePiece"
 import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash"
 import type { Regl } from "regl"
 import regl from "regl"
@@ -40,8 +40,15 @@ import {
 import { PickHandler2 } from "./cv/pick"
 import { Expr } from "./expr"
 
-export type RequireRadiansReason = "with a complex number" | "complex numbers"
+export type RequireRadiansReason = "with a complex number"
 export type RequireRadiansContext = `call '${string}' ${RequireRadiansReason}`
+
+function renderDigits(n: number) {
+  return h(
+    "h-5 text-xl/[1] flex text-center items-center justify-center font-['Symbola']",
+    n.toString(),
+  )
+}
 
 export class Sheet {
   readonly cv = new Cv("absolute inset-0 size-full touch-none")
@@ -202,9 +209,18 @@ export class Sheet {
       (location.search ? "&" + location.search.slice(1) : "")
     switchToDocs.target = "_blank"
 
-    const showAddons = btn(faPuzzlePiece, "More", () => {
-      addons.classList.toggle("hidden")
-    })
+    const addonsIcon = h("contents")
+    const showAddons = btnSkin2("button", addonsIcon, "Addons")
+    showAddons.addEventListener("click", () =>
+      addons.classList.toggle("hidden"),
+    )
+    function checkIcon() {
+      while (addonsIcon.firstChild) {
+        addonsIcon.firstChild.remove()
+      }
+      addonsIcon.appendChild(renderDigits(getAll().length))
+    }
+    checkIcon()
 
     const clearAll = btn(faTrash, "Clear", () => {
       while (this.list.items[0]) {
@@ -348,10 +364,9 @@ export class Sheet {
       ),
     )
 
-    const closeAddons = hx(
-      "button",
-      "bg-[--nya-bg] border border-[--nya-border] nya-rx px-2 py-1 text-center rounded-lg text-[--nya-text-prose] sticky top-0 z-10",
-      "close",
+    const closeAddons = h(
+      "mb-2 px-[calc(0.75rem_+_1px)] text-[--nya-text-prose]",
+      px`Addons extend project nya with extra functionality. They can add new functions, data types, and other constructs.`,
     )
 
     const toolbarDependentAddonGradient = h(
@@ -360,7 +375,7 @@ export class Sheet {
 
     const addons = h(
       "hidden relative [grid-area:cv] backdrop-blur flex h-full max-h-full",
-      h("absolute top-0 left-0 h-full w-full bg-[--nya-bg-sidebar] opacity-70"),
+      h("absolute top-0 left-0 h-full w-full bg-[--nya-bg-sidebar] opacity-80"),
       toolbarDependentAddonGradient,
       h(
         "absolute block sm:top-0 bottom-0 left-0 sm:w-1 w-full h-1 sm:h-full from-[--nya-sidebar-shadow] to-transparent bg-gradient-to-t sm:bg-gradient-to-r",
@@ -370,7 +385,7 @@ export class Sheet {
         h(
           "w-full flex flex-col gap-2 max-w-2xl mx-auto",
           closeAddons,
-          ...createAddons(factory, this),
+          ...createAddons(factory, this, checkIcon),
         ),
       ),
     )
@@ -445,7 +460,6 @@ export class Sheet {
         .sort((a, b) => +a[0] - +b[0])
         .flatMap((x) => x[1].exts),
     )
-    // }
   }
 
   private startGlslLoop() {

@@ -31,17 +31,15 @@ import { abs, add, div, mul, neg, sub } from "@/eval/ty/ops"
 import { CmdComma } from "@/field/cmd/leaf/comma"
 import { CmdVar } from "@/field/cmd/leaf/var"
 import { CmdBrack } from "@/field/cmd/math/brack"
-import { Block } from "@/field/model"
 import { L, R } from "@/field/dir"
+import { Block } from "@/field/model"
 import { h } from "@/jsx"
 import { defineHideable } from "@/sheet/ext/hideable"
-import { definePickTy, PICK_TY, toolbar } from "@/sheet/pick-ty"
 import { TransitionProp } from "@/sheet/transition"
 import type { Cv } from "@/sheet/ui/cv"
 import { Color, Opacity, Order, Size } from "@/sheet/ui/cv/consts"
 import { FN_GLIDER, FN_INTERSECTION, ref, val } from "@/sheet/ui/cv/item"
 import type { Expr } from "@/sheet/ui/expr"
-import { Sheet } from "@/sheet/ui/sheet"
 import { virtualStepExp, write, Writer } from "@/sheet/write"
 
 declare module "@/eval/ty" {
@@ -210,8 +208,6 @@ const FN_SCREENDISTANCE = new FnDist<"r32">(
   "calculates the distance between two points in terms of pixels on your screen, rather than graphpaper units",
 )
 
-const PICK_POINT = definePickTy(null, [["point32", "point64"]], () => {})
-
 export const FN_DEBUGPOINT = new FnDist(
   "debugpoint",
   "given some point p, returns a color depending on which side of the currently active shader pixel that point p is on",
@@ -269,7 +265,7 @@ export const FN_POINT = OP_POINT.with(
     "point(7)=7",
   )
 
-function iconPoint(hd: boolean) {
+export function iconPoint(hd: boolean) {
   return h(
     "",
     h(
@@ -594,12 +590,6 @@ export default {
   sheet: {
     exts: {
       1: [EXT_POINT],
-    },
-    toolbar: {
-      1: [toolbar(() => iconPoint(false), PICK_POINT, "p")],
-    },
-    keys: {
-      p: (sheet: Sheet) => sheet.pick.set(PICK_TY, PICK_POINT),
     },
   },
 } satisfies Package
