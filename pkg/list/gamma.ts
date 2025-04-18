@@ -95,15 +95,15 @@ const FN_LNGAMMA = new FnDist(
   (x) => approx(gammaln(num(x.value))),
   (ctx, a) => {
     declareFactorialR32(ctx)
-    ctx.helpers.declareText(lngammaGl)
+    ctx.glslText(lngammaGl)
     return `_nya_helper_lngamma(${a.expr})`
   },
   "lngamma23=ln((23+1)!)",
 )
 
 export default {
-  name: "factorial",
-  label: "extended factorial operator",
+  name: "gamma functions",
+  label: "functions related to the factorial and its derivative",
   category: "numbers",
   deps: ["core/ops", "num/complex", "factorial"],
   eval: {

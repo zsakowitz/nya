@@ -96,7 +96,7 @@ export default {
       "q32",
       (a) => a.value,
       (_, a) => a.expr,
-      "+(3+2k)=3+2k",
+      "+(3-2k)=3-2k",
     )
 
     OP_NEG.add(
@@ -356,7 +356,7 @@ export default {
             return [self.x, self.y, real(0), real(0)]
           },
           glsl(self) {
-            return `vec4(${self}.xz, 0, 0, 0)`
+            return `vec4(${self}.xz, 0, 0)`
           },
         },
       },

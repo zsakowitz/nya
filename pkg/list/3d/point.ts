@@ -1,18 +1,10 @@
 import type { Package } from "#/types"
-import { FnDist } from "@/eval/ops/dist"
-import { num, real } from "@/eval/ty/create"
-import { highRes } from "@/eval/ty/info"
-import { abs, add, div, mul, neg, sub } from "@/eval/ty/ops"
-import { CmdComma } from "@/field/cmd/leaf/comma"
-import { CmdBrack } from "@/field/cmd/math/brack"
-import { Block } from "@/field/model"
-import { L, R } from "@/field/dir"
-import { h, path, svgx } from "@/jsx"
 import { FN_VALID } from "$/bool"
 import {
   OP_ABS,
   OP_ADD,
   OP_CDOT,
+  OP_CROSS,
   OP_DIV,
   OP_NEG,
   OP_ODOT,
@@ -22,6 +14,15 @@ import {
 } from "$/core/ops"
 import { FN_POINT, OP_X, OP_Y } from "$/geo/point"
 import { FN_UNSIGN } from "$/num/real"
+import { FnDist } from "@/eval/ops/dist"
+import { num, real } from "@/eval/ty/create"
+import { highRes } from "@/eval/ty/info"
+import { abs, add, div, mul, neg, sub } from "@/eval/ty/ops"
+import { CmdComma } from "@/field/cmd/leaf/comma"
+import { CmdBrack } from "@/field/cmd/math/brack"
+import { L, R } from "@/field/dir"
+import { Block } from "@/field/model"
+import { h, path, svgx } from "@/jsx"
 
 declare module "@/eval/ty" {
   interface Tys {
@@ -57,7 +58,8 @@ function iconPoint3D(hd: boolean) {
 
 export default {
   name: "3D points",
-  label: null,
+  label:
+    "enables cross-products and basic arithmetic on three-dimensional points",
   category: "geometry",
   deps: ["bool", "geo/point", "core/ops", "num/real"],
   load() {
@@ -206,6 +208,18 @@ export default {
       (_, a) => a.expr,
       "point((7,8,-2))=(7,8,-2)",
     )
+
+    OP_CROSS.add(
+      ["p3d32", "p3d32"],
+      "p3d32",
+      ({ value: [a1, a2, a3] }, { value: [b1, b2, b3] }) => [
+        sub(mul(a2, b3), mul(a3, b2)),
+        sub(mul(a3, b1), mul(a1, b3)),
+        sub(mul(a1, b2), mul(a2, b1)),
+      ],
+      (_, a, b) => `cross(${a.expr}, ${b.expr})`,
+      ["(2,-4,5)\\times(7,2,-3)=(2,41,32)"],
+    )
   },
   ty: {
     info: {
@@ -250,6 +264,8 @@ export default {
   },
   eval: {
     fn: {
+      ".x": OP_X,
+      ".y": OP_Y,
       ".z": OP_Z,
     },
   },

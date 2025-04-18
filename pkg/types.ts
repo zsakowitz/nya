@@ -35,7 +35,6 @@ type List<T, K extends PropertyKey = string> = { readonly [_ in K]?: T }
 export type PackageCategory =
   | "chemistry"
   | "color"
-  | "core"
   | "geometry"
   | "images"
   | "lists"
@@ -54,7 +53,7 @@ export type PackageCategory =
 // SHAPE: maybe use consistent shapes
 export interface Package {
   name: string
-  label: string | null
+  label: string | null // TODO: write better labels
   category: PackageCategory
   deps: PackageId[]
 
@@ -107,6 +106,10 @@ export interface Package {
   }
 
   docs?: readonly Doc[]
+}
+
+export interface Addon extends Package {
+  label: string
 }
 
 export interface Doc {

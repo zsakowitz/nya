@@ -1,17 +1,13 @@
-5\operatorname{unit}\operatorname{mL}\cdot 1\frac{\operatorname{unit}\operatorname{g}}{\operatorname{unit}\operatorname{mL}}\cdot \left(\left(27\operatorname{unit}\operatorname{dC}\right)\operatorname{in}\operatorname{unit}\operatorname{K}\right)
 \operatorname{lightdark}\begin{cases}\operatorname{rgb}\left(255,128,128,.4\right)&\left|z-A\right|=q\\\operatorname{rgb}\left(128,255,128,.4\right)&\left|z-B\right|=q\\\operatorname{rgb}\left(128,128,255,.4\right)&\end{cases}\operatorname{with}q=\operatorname{min}\left(\left|z-A\right|,\left|z-B\right|,\left|z-C\right|\right)\operatorname{with}z=\operatorname{iterate}^{20}z\to z-\frac{\left(z-A\right)\cdot \left(z-B\right)\cdot \left(z-C\right)}{3z^{2}-2\cdot \left(A+B+C\right)z+\left(AB+BC+CA\right)}\operatorname{from}z=p
 A=0.665-0.149i
 B=0+0i
 C=.3+.4i
-q_{2}=0.1\operatorname{base}2
+q_{2}=3.18
 a\left\{\operatorname{valid}a\and y>0\and -8<x<0\right\}\operatorname{with}a=\operatorname{oklch}\left(\frac{q_{2}+10}{20},\frac{y}{8},\frac{360x}{8}\right)
 \operatorname{firstvalid}\operatorname{oklab}\left(C.\operatorname{real}+.4,.5\cdot \frac{x}{5}+0.25,0.5\cdot \frac{y}{5}+0.25\right)
 \operatorname{firstvalid}\left(\operatorname{oklch}\left(.4,y,360x\right),\operatorname{oklch}\left(.5,y,360x\right),\operatorname{oklch}\left(.6,y,360x\right),\operatorname{oklch}\left(.7,y,360x\right),\operatorname{oklch}\left(.8,y,360x\right),\operatorname{oklch}\left(.9,y,360x\right),\operatorname{oklch}\left(.95,y,360x\right)\right)
-\left(20\operatorname{unit}\operatorname{dC}\right)\operatorname{in}\operatorname{unit}\operatorname{dF}
-15\operatorname{unit}\operatorname{m}+7\operatorname{unit}\operatorname{cm}
 \left(4-5\right)\odot \left(3+9i\right)
 \frac{2}{3}i-\sqrt{4}
 \left[2,3\right]\times \left[4,5\right]
 \left(11\operatorname{mod}6\right)^{7.3}
 -2\cdot \pi \operatorname{mod}6
-73\cdot 4\operatorname{base}15\operatorname{base}2

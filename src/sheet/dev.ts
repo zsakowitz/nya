@@ -1,4 +1,4 @@
-import { all, index, type PackageId } from "#/index"
+import { builtin, index, type PackageId } from "#/index"
 import { options } from "@/field/defaults"
 import SRC_LOCALHOST from "./example/localhost.txt"
 import SRC_STANDARD from "./example/standard.txt"
@@ -8,18 +8,27 @@ import { createDocs2 } from "@/docs"
 
 const factory = new SheetFactory(options)
 
-if (globalThis.location?.search.includes("onlypkg")) {
-  const ids = (new URLSearchParams(location.search).get("onlypkg") ?? "").split(
-    ",",
-  )
+async function load(ids: string[]) {
   await Promise.all(
-    ids
-      .filter((x): x is PackageId => x in index)
-      .map((x) => index[x])
-      .map(async (x) => factory.load((await x()).default)),
+    ids.filter((x): x is PackageId => x in index).map((x) => factory.load(x)),
   )
+}
+
+async function loadBuiltin() {
+  await load(Object.keys(builtin))
+}
+
+async function loadBy(key: string) {
+  const ids = new URLSearchParams(location.search).get(key) ?? ""
+  await load(ids.split(","))
+}
+
+if (globalThis.location?.search.includes("addons")) {
+  await Promise.all([loadBy("addons"), loadBuiltin()])
+} else if (globalThis.location?.search.includes("onlypkg")) {
+  await loadBy("onlypkg")
 } else {
-  await Promise.all((await all()).map((x) => factory.load(x)))
+  await loadBuiltin()
 }
 
 const IS_DEV = "NYA_DEV" in globalThis

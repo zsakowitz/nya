@@ -9,15 +9,15 @@ import { CmdToken, createToken } from "@/field/cmd/leaf/token"
 import { CmdVar } from "@/field/cmd/leaf/var"
 import { CmdWord } from "@/field/cmd/leaf/word"
 import { CmdBrack } from "@/field/cmd/math/brack"
-import { Block } from "@/field/model"
 import { L, R } from "@/field/dir"
+import { Block } from "@/field/model"
 import { h, path, svgx, sx } from "@/jsx"
 import { PICK_TY, definePickTy, toolbar, type Data } from "@/sheet/pick-ty"
 import { normVector, type Point } from "@/sheet/point"
 import { Color, Opacity, Order, Size } from "@/sheet/ui/cv/consts"
 import { Expr } from "@/sheet/ui/expr"
 import type { Selected } from "@/sheet/ui/sheet"
-import { FN_GLIDER, FN_INTERSECTION, WRITE_POINT } from "../point"
+import { FN_GLIDER, FN_INTERSECTION, WRITE_POINT, iconPoint } from "../point"
 import { computeArcVal, unglideArc } from "./util-arc"
 import { EXT_ANGLE, angleGlsl, angleJs, drawAngleCv } from "./util-ext/angle"
 import { EXT_ARC, drawArcCv } from "./util-ext/arc"
@@ -1174,6 +1174,8 @@ const sc =
     !new URLSearchParams(globalThis.location?.search).has("sconly")
   : true
 
+const PICK_POINT = definePickTy(null, [["point32", "point64"]], () => {})
+
 export default {
   name: "geometry",
   label: "geometric objects and constructions",
@@ -1242,6 +1244,7 @@ export default {
     },
     toolbar: {
       1: [
+        toolbar(() => iconPoint(false), PICK_POINT, "p"),
         toolbar(INFO_SEGMENT.icon, PICK_SEGMENT, "s"),
         toolbar(INFO_RAY.icon, PICK_RAY, "r"),
         toolbar(INFO_LINE.icon, PICK_LINE, "l"),
@@ -1271,6 +1274,7 @@ export default {
       A: (sheet) => sheet.pick.set(PICK_TY, PICK_ANGLE),
       d: (sheet) => sheet.pick.set(PICK_TY, PICK_DIRECTEDANGLE),
       b: (sheet) => sheet.pick.set(PICK_TY, PICK_ANGLEBISECTOR),
+      p: (sheet) => sheet.pick.set(PICK_TY, PICK_POINT),
     },
   },
 } satisfies Package

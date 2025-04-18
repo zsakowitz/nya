@@ -274,7 +274,7 @@ function fnExponentGlsl(ctx: GlslContext, raw: JsValue): GlslValue<"r64"> {
 export default {
   name: "functions",
   label: "call functions and access properties",
-  category: "core",
+  category: "miscellaneous",
   deps: ["num/real"],
   eval: {
     tx: {

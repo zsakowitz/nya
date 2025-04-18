@@ -1,10 +1,23 @@
-import type { Package } from "#/types"
+import type { Addon } from "#/types"
 import { example } from "@/docs/core"
-import type { MagicVar } from "@/eval/ast/token"
+import { Precedence, type MagicVar } from "@/eval/ast/token"
 import { js, TXR_AST } from "@/eval/ast/tx"
-import { simplify, txr, type Sym } from "@/eval/sym"
+import {
+  insertStrict,
+  simplify,
+  txr,
+  TXR_SYM,
+  type Sym,
+  type TxrSym,
+} from "@/eval/sym"
 import type { JsValue } from "@/eval/ty"
-import { b, px } from "@/jsx"
+import { b, h, px } from "@/jsx"
+
+declare module "@/eval/ty" {
+  interface Tys {
+    sym: Sym
+  }
+}
 
 function validateSym(node: MagicVar, kind: "sym" | "eval" | "unsym") {
   if (node.prop) {
@@ -22,9 +35,71 @@ function validateSym(node: MagicVar, kind: "sym" | "eval" | "unsym") {
 
 export default {
   name: "extra symbolics",
-  label: null,
+  label: "manipulate unevaluated expressions as values",
   category: "symbolic computation",
   deps: ["sym/core"],
+  ty: {
+    info: {
+      sym: {
+        name: "symbolic expression",
+        namePlural: "symbolic expressions",
+        get glsl(): never {
+          throw new Error("Cannot construct symbolic expressions in shaders.")
+        },
+        toGlsl() {
+          throw new Error("Symbolic expressions are not supported in shaders.")
+        },
+        garbage: {
+          js: { type: "undef" },
+          get glsl(): never {
+            throw new Error("Cannot construct symbolic expressions in shaders.")
+          },
+        },
+        coerce: {},
+        write: {
+          isApprox() {
+            return false
+          },
+          display(value, props) {
+            const txr: TxrSym<unknown> | undefined = TXR_SYM[value.type]
+            if (!txr) {
+              throw new Error(
+                `Symbolic expression type '${value.type}' is not defined.`,
+              )
+            }
+
+            insertStrict(
+              props.cursor,
+              txr.display(value),
+              Precedence.Comma,
+              Precedence.Comma,
+            )
+          },
+        },
+        order: null,
+        point: false,
+        icon() {
+          return h(
+            "",
+            h(
+              "text-[#00786F] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px]",
+              h(
+                "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
+              ),
+              h(
+                "absolute top-1/2 left-1/2 -translate-x-1/2 translate-y-[calc(-50%_-_1.5px)] font-['Times_New_Roman'] italic text-[100%]",
+                "f",
+              ),
+            ),
+          )
+        },
+        token: null,
+        glide: null,
+        preview: null,
+        extras: null,
+      },
+    },
+  },
   eval: {
     tx: {
       magic: {
@@ -167,4 +242,4 @@ export default {
       },
     },
   ],
-} satisfies Package
+} satisfies Addon

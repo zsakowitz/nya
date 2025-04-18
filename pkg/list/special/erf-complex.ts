@@ -107,7 +107,7 @@ FN_ERF.add(
 export default {
   name: "complex error function",
   label: null,
-  category: "miscellaneous",
+  category: "numbers (multi-dimensional)",
   deps: ["special/erf", "num/complex"],
   eval: {
     fn: {

@@ -798,7 +798,7 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
       "c32",
       (a) => a.value,
       (_, a) => a.expr,
-      "+(2+3i)=2+3i",
+      "+(2-3i)=2-3i",
     )
   },
   deps: ["num/real", "geo/point", "core/ops", "color/core", "bool"],

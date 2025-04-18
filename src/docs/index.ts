@@ -63,7 +63,7 @@ function setPath(tab: string, sub: string | null) {
 }
 
 export function createDocs2(sheet: Sheet) {
-  const pkgs = Array.from(sheet.factory.loaded).sort((a, b) =>
+  const pkgs = Object.values(sheet.factory.loaded).sort((a, b) =>
     a.name < b.name ? -1
     : a.name > b.name ? 1
     : 0,

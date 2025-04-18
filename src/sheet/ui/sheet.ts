@@ -1,14 +1,18 @@
+import type { PackageId } from "#/index"
 import type { ToolbarItem } from "#/types"
-import { btn, btnSkin } from "@/docs/core"
+import { getAll } from "@/addons"
+import { btn, btnSkin, btnSkin2 } from "@/docs/core"
 import { JsContext } from "@/eval/lib/jsctx"
 import { declareAddR64, declareMulR64 } from "@/eval/ops/r64"
 import { SYM_180, SYM_PI, SYM_TAU, type Sym } from "@/eval/sym"
 import type { JsVal, TyName } from "@/eval/ty"
 import { num, real } from "@/eval/ty/create"
+import { tidyCoercions } from "@/eval/ty/info"
 import { splitRaw } from "@/eval/ty/split"
 import type { Block } from "@/field/model"
 import type { Options } from "@/field/options"
-import { h, hx, t } from "@/jsx"
+import { h, hx, px, t } from "@/jsx"
+import { createAddons } from "@/sheet/ui/addons"
 import { faBook } from "@fortawesome/free-solid-svg-icons/faBook"
 import { faCopy } from "@fortawesome/free-solid-svg-icons/faCopy"
 import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash"
@@ -37,8 +41,15 @@ import {
 import { PickHandler2 } from "./cv/pick"
 import { Expr } from "./expr"
 
-export type RequireRadiansReason = "with a complex number" | "complex numbers"
+export type RequireRadiansReason = "with a complex number"
 export type RequireRadiansContext = `call '${string}' ${RequireRadiansReason}`
+
+function renderDigits(n: number) {
+  return h(
+    "h-5 text-xl/[1] flex text-center items-center justify-center font-['Symbola']",
+    n.toString(),
+  )
+}
 
 export class Sheet {
   readonly cv = new Cv("absolute inset-0 size-full touch-none")
@@ -193,8 +204,24 @@ export class Sheet {
     )
 
     const switchToDocs = btnSkin("a", faBook, "Docs")
-    switchToDocs.href = location.origin + "/?/docs"
+    switchToDocs.href =
+      location.origin +
+      "/?/docs" +
+      (location.search ? "&" + location.search.slice(1) : "")
     switchToDocs.target = "_blank"
+
+    const addonsIcon = h("contents")
+    const showAddons = btnSkin2("button", addonsIcon, "Addons")
+    showAddons.addEventListener("click", () =>
+      addons.classList.toggle("hidden"),
+    )
+    function checkIcon() {
+      while (addonsIcon.firstChild) {
+        addonsIcon.firstChild.remove()
+      }
+      addonsIcon.appendChild(renderDigits(getAll().length))
+    }
+    checkIcon()
 
     const clearAll = btn(faTrash, "Clear", () => {
       while (this.list.items[0]) {
@@ -267,6 +294,7 @@ export class Sheet {
         copyAll,
         clearAll,
         h("m-auto text-2xl", "project nya"),
+        showAddons,
         switchToDocs,
       ),
     )
@@ -306,22 +334,22 @@ export class Sheet {
       h("flex-1 sm:border-r min-h-24 border-[--nya-border]"),
     )
 
-    const toolbar =
-      toolbarItems.length ?
-        h(
-          "font-['Symbola','Times_New_Roman',sans-serif] flex overflow-x-auto h-12 min-h-12 bg-[--nya-bg-sidebar] border-b border-[--nya-border] first:*:ml-auto last:*:mr-auto [&::-webkit-scrollbar]:hidden px-2 [grid-area:toolbar]",
-          ...toolbarItems.map((x) => x(this)),
-        )
-      : null
+    const hasToolbar = () => (toolbarItems.length ? true : null)
+    const createToolbar = () =>
+      h(
+        "font-['Symbola','Times_New_Roman',sans-serif] flex overflow-x-auto h-12 min-h-12 bg-[--nya-bg-sidebar] border-b border-[--nya-border] first:*:ml-auto last:*:mr-auto [&::-webkit-scrollbar]:hidden px-2 [grid-area:toolbar]",
+        ...toolbarItems.map((x) => x(this)),
+      )
+
+    const toolbarDependentCvGradient = h(
+      "absolute block top-0 left-0 right-0 h-1 from-[--nya-sidebar-shadow] to-transparent bg-gradient-to-b",
+    )
 
     const cv = h(
-      "relative [grid-area:cv]" + (toolbar ? "" : " row-span-2"),
+      "",
       canvas,
       this.cv.el,
-      toolbar &&
-        h(
-          "absolute block top-0 left-0 right-0 h-1 from-[--nya-sidebar-shadow] to-transparent bg-gradient-to-b",
-        ),
+      toolbarDependentCvGradient,
       h(
         "absolute block sm:top-0 bottom-0 left-0 sm:w-1 w-full h-1 sm:h-full from-[--nya-sidebar-shadow] to-transparent bg-gradient-to-t sm:bg-gradient-to-r",
       ),
@@ -337,20 +365,64 @@ export class Sheet {
       ),
     )
 
+    const closeAddons = h(
+      "mb-2 px-[calc(0.75rem_+_1px)] text-[--nya-text-prose] flex flex-col gap-2",
+      px`Addons extend project nya with extra functionality. They can add new functions, data types, and other constructs. Clicking the "Docs" icon will show additional guides after you've selected addons.`,
+    )
+
+    const toolbarDependentAddonGradient = h(
+      "absolute block top-0 left-0 right-0 h-1 from-[--nya-sidebar-shadow] to-transparent bg-gradient-to-b",
+    )
+
+    const addons = h(
+      "hidden relative [grid-area:cv] backdrop-blur flex h-full max-h-full",
+      h("absolute top-0 left-0 h-full w-full bg-[--nya-bg-sidebar] opacity-80"),
+      toolbarDependentAddonGradient,
+      h(
+        "absolute block sm:top-0 bottom-0 left-0 sm:w-1 w-full h-1 sm:h-full from-[--nya-sidebar-shadow] to-transparent bg-gradient-to-t sm:bg-gradient-to-r",
+      ),
+      h(
+        "absolute top-0 left-0 w-full h-full overflow-y-auto p-4",
+        h(
+          "w-full flex flex-col gap-2 max-w-2xl mx-auto",
+          closeAddons,
+          ...createAddons(factory, this, checkIcon),
+        ),
+      ),
+    )
+    addons.classList.toggle("hidden", !location.search.includes("showaddons"))
+
     // dom
     this.glPixelRatio.el.className =
       "block w-48 bg-[--nya-bg] outline outline-1 outline-[--nya-pixel-ratio] rounded-full p-1"
-    this.el = h(
-      "bg-[--nya-bg] fixed inset-0 grid select-none grid-cols-[1fr] grid-rows-[3rem_1fr_calc(3rem_+_1px)_1fr] sm:grid-cols-[min(500px,40vw)_1fr] sm:grid-rows-[3rem_1fr] " +
-        (toolbar ?
-          "[grid-template-areas:'toolbar'_'cv'_'titlebar'_'sidebar'] sm:[grid-template-areas:'titlebar_toolbar'_'sidebar_cv']"
-        : "[grid-template-areas:'cv'_'cv'_'titlebar'_'sidebar'] sm:[grid-template-areas:'titlebar_cv'_'sidebar_cv']"),
+    const toolbarEl = h("contents")
+    this.el = h("", titlebar, sidebar, toolbarEl, cv, addons)
 
-      titlebar,
-      sidebar,
-      toolbar,
-      cv,
-    )
+    const checkToolbar = (items?: ToolbarItem[]) => {
+      if (items) {
+        toolbarItems = items
+      }
+
+      this.el.classList =
+        "bg-[--nya-bg] fixed inset-0 grid select-none grid-cols-[1fr] grid-rows-[3rem_1fr_calc(3rem_+_1px)_1fr] sm:grid-cols-[min(500px,40vw)_1fr] sm:grid-rows-[3rem_1fr] " +
+        (hasToolbar() ?
+          "[grid-template-areas:'toolbar'_'cv'_'titlebar'_'sidebar'] sm:[grid-template-areas:'titlebar_toolbar'_'sidebar_cv']"
+        : "[grid-template-areas:'cv'_'cv'_'titlebar'_'sidebar'] sm:[grid-template-areas:'titlebar_cv'_'sidebar_cv']")
+      toolbarDependentAddonGradient.classList.toggle("hidden", !hasToolbar())
+      toolbarDependentAddonGradient.classList.toggle("block", !!hasToolbar())
+      toolbarDependentCvGradient.classList.toggle("hidden", !hasToolbar())
+      toolbarDependentCvGradient.classList.toggle("block", !!hasToolbar())
+      cv.className =
+        "relative [grid-area:cv]" + (hasToolbar() ? "" : " row-span-2")
+      while (toolbarEl.firstChild) {
+        toolbarEl.firstChild.remove()
+      }
+      if (hasToolbar()) {
+        toolbarEl.appendChild(createToolbar())
+      }
+    }
+    checkToolbar()
+
     new ResizeObserver(() => {
       this.el.style.setProperty(
         "--nya-sidebar-raw",
@@ -370,6 +442,25 @@ export class Sheet {
         this.pick.cancel()
       }
     })
+
+    this.checkToolbar = checkToolbar
+  }
+  private checkToolbar
+
+  async load(id: PackageId) {
+    await this.factory.load(id)
+    this.factory.loaded[id]?.init?.fn(this) // package is never null by now, but extra checks don't hurt
+    tidyCoercions()
+    this.checkToolbar(
+      Object.entries(this.factory.toolbar)
+        .sort((a, b) => +a[0] - +b[0])
+        .flatMap((x) => x[1]),
+    )
+    this.exts.set(
+      Object.entries(this.factory.exts)
+        .sort((a, b) => +a[0] - +b[0])
+        .flatMap((x) => x[1].exts),
+    )
   }
 
   private startGlslLoop() {

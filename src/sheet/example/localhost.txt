@@ -1,7 +1,13 @@
-p_{1}\left(n\right)=\left\{n=0:0,n=1:3,n=2:2,n=3:5,n=4:4\right\}
-p_{5}\left(n\right)=4n
-p_{20}\left(n\right)=4n
-g\left(n\right)=p_{1}\left(n\operatorname{mod}5\right)+p_{5}\left(\operatorname{floor}\left(\frac{n\operatorname{mod}20}{5}\right)\right)+p_{20}\left(\operatorname{floor}\left(\frac{n\operatorname{mod}100}{20}\right)\right)
-f\left(n\right)=\left\{n=0:0,n>0:\operatorname{iterate}.a^{10}a\to a+3+g\left(n\operatorname{mod}100\right),n\to \operatorname{floor}\frac{n}{100}\operatorname{from}a=g\left(n\operatorname{mod}100\right),n=\operatorname{floor}\frac{n}{100}\operatorname{while}n\neq 0\right\}
-h\left(x\right)=\begin{cases}\operatorname{rgb}\left(0,0,0\right)&n=2\\\operatorname{rgb}\left(255,0,0\right)&n=4\\\operatorname{rgb}\left(0,255,0\right)&n=6\operatorname{or}n=7\\\operatorname{rgb}\left(0,0,255\right)&n=8\operatorname{or}n=9\\\operatorname{rgb}\left(255,255,0\right)&n=11\\\operatorname{rgb}\left(255,0,196\right)&n=13\end{cases}\operatorname{with}n=\operatorname{iterate}^{10}n\to f\left(n\right)\operatorname{from}n=\operatorname{round}x
-h\left(x\right)
+\operatorname{lightdark}\begin{cases}\operatorname{rgb}\left(255,128,128,.4\right)&\left|z-A\right|=q\\\operatorname{rgb}\left(128,255,128,.4\right)&\left|z-B\right|=q\\\operatorname{rgb}\left(128,128,255,.4\right)&\end{cases}\operatorname{with}q=\operatorname{min}\left(\left|z-A\right|,\left|z-B\right|,\left|z-C\right|\right)\operatorname{with}z=\operatorname{iterate}^{20}z\to z-\frac{\left(z-A\right)\cdot \left(z-B\right)\cdot \left(z-C\right)}{3z^{2}-2\cdot \left(A+B+C\right)z+\left(AB+BC+CA\right)}\operatorname{from}z=p
+A=0.665-0.149i
+B=0+0i
+C=.3+.4i
+q_{2}=3.18
+a\left\{\operatorname{valid}a\and y>0\and -8<x<0\right\}\operatorname{with}a=\operatorname{oklch}\left(\frac{q_{2}+10}{20},\frac{y}{8},\frac{360x}{8}\right)
+\operatorname{firstvalid}\operatorname{oklab}\left(C.\operatorname{real}+.4,.5\cdot \frac{x}{5}+0.25,0.5\cdot \frac{y}{5}+0.25\right)
+\operatorname{firstvalid}\left(\operatorname{oklch}\left(.4,y,360x\right),\operatorname{oklch}\left(.5,y,360x\right),\operatorname{oklch}\left(.6,y,360x\right),\operatorname{oklch}\left(.7,y,360x\right),\operatorname{oklch}\left(.8,y,360x\right),\operatorname{oklch}\left(.9,y,360x\right),\operatorname{oklch}\left(.95,y,360x\right)\right)
+\left(4-5\right)\odot \left(3+9i\right)
+\frac{2}{3}i-\sqrt{4}
+\left[2,3\right]\times \left[4,5\right]
+\left(11\operatorname{mod}6\right)^{7.3}
+-2\cdot \pi \operatorname{mod}6

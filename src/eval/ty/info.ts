@@ -220,6 +220,9 @@ export function tidyCoercions() {
     go = false
     for (const [ty, info] of Object.entries(TY_INFO)) {
       for (const src in info.coerce) {
+        if (!(src in TY_INFO)) {
+          continue
+        }
         for (const dst in TY_INFO[src as TyName].coerce) {
           if (!(dst in info.coerce)) {
             go = true

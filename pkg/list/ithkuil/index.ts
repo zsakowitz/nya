@@ -143,7 +143,8 @@ ALL_DOCS.push(FN_ITHKUILVALUES)
 
 export default {
   name: "ithkuil utilities",
-  label: "functions for working with ithkuil",
+  label:
+    "parsing, text and script generation, and consonant cluster checking for the Ithkuil language",
   category: "miscellaneous",
   deps: ["text"],
   ty: {

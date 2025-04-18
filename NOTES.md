@@ -2,11 +2,13 @@
 
 general configuration:
 
-- `?onlypkg=<package id>`
+- `?onlypkg=<comma-separated package ids>`
+- `?addons=<comma-separated package ids>`
 
 configure sheet:
 
 - `?nogrid`
+- `?showaddons`
 - `?cvsize=<n>`
 - `?shaderpixelsize=<1..=16>`
 - `?logfrag`

@@ -1,4 +1,3 @@
-import "../../index.css"
 import {
   OpApprox,
   OpDoubleRightArrow,

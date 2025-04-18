@@ -3,7 +3,7 @@ import { example } from "@/docs/core"
 import { NO_DRAG, sym } from "@/eval/ast/tx"
 import { id } from "@/eval/lib/binding"
 import { simplify, txr } from "@/eval/sym"
-import { b, px } from "@/jsx"
+import { px } from "@/jsx"
 
 export default {
   name: "derivatives",
@@ -60,10 +60,6 @@ export default {
           example("\\frac{d}{dx}x^{2}forx=[1,2,3]", "=[2,4,6]"),
           px`You can take repeated derivatives as well.`,
           example("\\frac{d}{dx}\\frac{d}{dx}x^{2}", "=2"),
-          // SYM: remove once done with derivatives
-          // TODO: make this dependent on PKG_SYM_EXTRAS being loaded
-          px`To see the expanded derivative as a symbolic expression, write ${b("sym")} before the derivative symbol.`,
-          example("sym\\frac{d}{dx}e^{sin x}", "=cos(x)ln(e)e^{sin(x)}"),
         ]
       },
     },

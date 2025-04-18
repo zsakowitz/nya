@@ -1,7 +1,5 @@
 import type { OpBinary, PuncInfix, PuncUnary } from "@/eval/ast/token"
-import { options } from "@/field/defaults"
-import { SheetFactory } from "@/sheet/factory"
-import { index, type PackageId } from ".."
+import { builtin, index, type PackageId } from ".."
 import type { Package } from "../types"
 import { order } from "./order"
 import {
@@ -71,7 +69,6 @@ function color(str: string) {
 }
 
 async function createManifest(): Promise<Manifest> {
-  const factory = new SheetFactory(options)
   const pkgs = order(
     await Promise.all(
       Object.entries(index).map(async ([id, load]) => {
@@ -80,12 +77,15 @@ async function createManifest(): Promise<Manifest> {
       }),
     ),
   )
-  await Promise.all(pkgs.map((x) => factory.load(x.pkg)))
+    .sort(({ id: a }, { id: b }) => +(b in builtin) - +(a in builtin))
+    .map((x, i) => ({ ...x, index: i as PackageIndex }))
 
   const packages: Manifest["packages"] = pkgs.map((x) => [
     x.id,
     x.pkg.name,
     ...color(x.id),
+    x.pkg.label,
+    x.pkg.deps.map((id) => pkgs.findIndex((x) => x.id == id) as PackageIndex),
   ])
 
   const fns: Record<string, ManifestFn[]> = Object.create(null)
@@ -93,6 +93,16 @@ async function createManifest(): Promise<Manifest> {
     if (pkg.eval?.fn) {
       for (const key in pkg.eval.fn) {
         addRef(key, "fn/named", index, pkg.eval.fn[key]!)
+      }
+    }
+
+    if (pkg.eval?.var) {
+      for (const key in pkg.eval.var) {
+        addRef(key, "var/named", index, {
+          name: key,
+          label: pkg.eval.var[key]!.label,
+          word: pkg.eval.var[key]!.word,
+        })
       }
     }
 
@@ -162,13 +172,19 @@ async function createManifest(): Promise<Manifest> {
     key: string,
     kind: ManifestFnKindName,
     index: PackageIndex,
-    props: { name: string; label: string },
+    props: { name: string; label: string; word?: boolean },
   ) {
     const kIndex = manifestFnKinds.indexOf(kind) as ManifestFnKindIndex
     const fs = (fns[key] ??= [])
     let x: ManifestFn
     ;(fs.find((x) => x[3] == kIndex) ??
-      (fs.push((x = [props.name, props.label, [], kIndex])), x))[2].push(index)
+      (fs.push(
+        (x =
+          props.word && (key.length == 1 || props.name.length == 1) ?
+            [props.name, props.label, [], kIndex, true]
+          : [props.name, props.label, [], kIndex]),
+      ),
+      x))[2].push(index)
   }
 }
 

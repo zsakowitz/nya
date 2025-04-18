@@ -1,0 +1,2 @@
+\operatorname{exp}\left(\operatorname{lngamma}x+\operatorname{lngamma}y-\operatorname{lngamma}\left(x+y\right)\right)P\left(x\right)P\left(y\right)P\left(x+y\right)
+P\left(x\right)=\left\{x>0\operatorname{or}\operatorname{floor}x\operatorname{mod}2=0:1,-1\right\}

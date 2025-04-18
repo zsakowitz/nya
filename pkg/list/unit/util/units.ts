@@ -1,19 +1,8 @@
 import type { SReal } from "@/eval/ty"
-import { approx, frac, real } from "@/eval/ty/create"
+import { approx, frac, num, real } from "@/eval/ty/create"
+import { mul } from "@/eval/ty/ops"
 import type { UnitKind } from "./kind"
-import type { BaseUnit, BaseUnitList, Unit } from "./system"
-
-function base(
-  category: UnitKind | BaseUnit[],
-  scale: SReal,
-  offset: SReal,
-): BaseUnitList {
-  return {
-    dst: typeof category == "string" ? [{ exp: 1, unit: category }] : category,
-    scale,
-    offset,
-  }
-}
+import type { BaseUnit, Unit } from "./system"
 
 export function unit(
   label: string,
@@ -21,32 +10,27 @@ export function unit(
   scale: SReal = frac(1, 1),
   offset: SReal = frac(0, 1),
 ): Unit {
-  return { label, base: base(category, scale, offset) }
+  return {
+    label,
+    base: {
+      dst:
+        typeof category == "string" ? [{ exp: 1, unit: category }] : category,
+      scale,
+      offset,
+    },
+  }
 }
 
 export const nan = unit("undefined", [], approx(NaN), approx(NaN))
 
 const m = unit("m", "m")
-const kg = unit("kg", "kg")
 const s = unit("s", "s")
 export const UNIT_KELVIN = unit("K", "K")
 const A = unit("A", "A")
 export const UNIT_MOLE = unit("mol", "mol")
 const cd = unit("cd", "cd")
-export const UNIT_KIND_VALUES: Record<UnitKind, Unit> = {
-  // @ts-expect-error ts doesn't recognize __proto__
-  __proto__: null,
-  m,
-  kg,
-  s,
-  K: UNIT_KELVIN,
-  A,
-  mol: UNIT_MOLE,
-  cd,
-}
 
 const g = unit("g", "kg", frac(1, 1e3))
-const cm = unit("cm", "m", frac(1, 1e2))
 const au = unit("au", "m", real(149597870700))
 const min = unit("min", "s", frac(60, 1))
 const hr = unit("hr", "s", frac(3600, 1))
@@ -59,7 +43,6 @@ const Hz = unit("Hz", [{ unit: "s", exp: -1 }], frac(1, 1))
 const inch = unit("in", "m", frac(127, 5e3))
 const ft = unit("ft", "m", frac(381, 1250))
 const L = unit("L", [{ unit: "m", exp: 3 }], frac(1, 1e3))
-const mL = unit("mL", [{ unit: "m", exp: 3 }], frac(1, 1e6))
 const lbf = unit(
   "lbf",
   [
@@ -79,15 +62,6 @@ export const UNIT_JOULE = unit("J", [
   { unit: "m", exp: 2 },
   { unit: "s", exp: -2 },
 ])
-export const UNIT_KILOJOULE = unit(
-  "kJ",
-  [
-    { unit: "kg", exp: 1 },
-    { unit: "m", exp: 2 },
-    { unit: "s", exp: -2 },
-  ],
-  frac(1000, 1),
-)
 const cal = unit(
   "cal",
   [
@@ -96,15 +70,6 @@ const cal = unit(
     { unit: "s", exp: -2 },
   ],
   frac(4184, 1000),
-)
-const kcal = unit(
-  "kcal",
-  [
-    { unit: "kg", exp: 1 },
-    { unit: "m", exp: 2 },
-    { unit: "s", exp: -2 },
-  ],
-  frac(4184, 1),
 )
 const Pa = unit("Pa", [
   { unit: "kg", exp: 1 },
@@ -172,94 +137,151 @@ const G = unit(
 )
 export const UNIT_AMU = unit("amu", "kg", real(1.6605390689252e-27))
 
-export const UNITS: Record<string, Unit> = {
+const SCALABLE: Record<string, Unit> = {
   // @ts-expect-error ts doesn't recognize __proto__
   __proto__: null,
   m,
-  meter: m,
-  kg,
-  kilogram: kg,
-  kilogramme: kg,
   s,
-  second: s,
   K: UNIT_KELVIN,
-  kelvin: UNIT_KELVIN,
   A,
-  ampere: A,
-  amp: A,
   au,
-  astronomicalunit: au,
   mol: UNIT_MOLE,
-  mole: UNIT_MOLE,
   cd,
-  candela: cd,
-  cm,
-  centimeter: cm,
   min,
-  minute: min,
   hr,
-  hour: hr,
   d,
-  day: d,
   dC: dC,
   dF: dF,
   ddC: ddC,
   ddF: ddF,
+  N,
+  joule: UNIT_JOULE,
+  cal,
+  Pa,
+  W,
+  C,
+  V,
+  ohm,
+  S,
+  F,
+  H,
+  Wb,
+  T,
+  G,
+  Gs: G,
+  in: inch,
+  ft,
+  lb: lbf,
+  L,
+  g,
+  Hz,
+  Da: UNIT_AMU,
+  u: UNIT_AMU,
+  amu: UNIT_AMU,
+
+  meter: m,
+  kelvin: UNIT_KELVIN,
+  second: s,
+  ampere: A,
+  amp: A,
+  astronomicalunit: au,
+  mole: UNIT_MOLE,
+  candela: cd,
+  minute: min,
+  hour: hr,
+  day: d,
   celsius: dC,
   fahrenheit: dF,
   deltacelsius: ddC,
   deltafahrenheit: ddF,
-  N,
   newton: N,
   J: UNIT_JOULE,
-  joule: UNIT_JOULE,
-  cal,
   calorie: cal,
   calourie: cal,
-  kcal,
-  Cal: kcal,
-  Calorie: cal,
-  Calourie: cal,
-  Pa,
   pascal: Pa,
-  W,
   watt: W,
-  C,
   coulomb: C,
-  V,
   volt: V,
-  ohm,
-  S,
   siemens: S,
-  F,
   farad: F,
-  H,
   henry: H,
-  Wb,
   weber: Wb,
-  T,
   tesla: T,
-  G,
-  Gs: G,
   gauss: G,
-  in: inch,
   inch,
-  ft,
   foot: ft,
-  lb: lbf,
   pound: lbf,
-  L,
   liter: L,
-  mL,
-  milliliter: mL,
-  g,
   gram: g,
-  Hz,
   hertz: Hz,
-  Da: UNIT_AMU,
   dalton: UNIT_AMU,
-  u: UNIT_AMU,
-  amu: UNIT_AMU,
-  kJ: UNIT_KILOJOULE,
-  kilojoule: UNIT_KILOJOULE,
 }
+
+const SCALARS = Object.entries({
+  Q: frac(1e30, 1),
+  R: frac(1e27, 1),
+  Y: frac(1e24, 1),
+  Z: frac(1e21, 1),
+  E: frac(1e18, 1),
+  P: frac(1e15, 1),
+  T: frac(1e12, 1),
+  G: frac(1e9, 1),
+  M: frac(1e6, 1),
+  k: frac(1e3, 1),
+  h: frac(1e2, 1),
+  da: frac(1e1, 1),
+  d: frac(1, 1e1),
+  c: frac(1, 1e2),
+  m: frac(1, 1e3),
+  μ: frac(1, 1e6),
+  n: frac(1, 1e9),
+  p: frac(1, 1e12),
+  f: frac(1, 1e15),
+  a: frac(1, 1e18),
+  z: frac(1, 1e21),
+  y: frac(1, 1e24),
+  r: frac(1, 1e27),
+  q: frac(1, 1e30),
+})
+
+const SCALED = Object.fromEntries(
+  SCALARS.flatMap(([name, mx]) =>
+    Object.entries(SCALABLE)
+      .filter((x) => num(x[1].base.offset) == 0)
+      .map(([k, v]) => [
+        name + k,
+        {
+          label: name + v.label,
+          base: {
+            dst: v.base.dst,
+            offset: v.base.offset,
+            scale: mul(v.base.scale, mx),
+          },
+        },
+      ]),
+  ),
+)
+
+export const UNIT_KIND_VALUES: Record<UnitKind, Unit> = {
+  // @ts-expect-error ts doesn't recognize __proto__
+  __proto__: null,
+  m,
+  kg: SCALED.kg!,
+  s,
+  K: UNIT_KELVIN,
+  A,
+  mol: UNIT_MOLE,
+  cd,
+}
+
+export const UNITS: Record<string, Unit> = {
+  // @ts-ignore
+  __proto__: null,
+  ...SCALABLE,
+  ...SCALED,
+  Cal: SCALED.kcal!,
+  Calorie: SCALED.kcal!,
+  Calourie: SCALED.kcal!,
+}
+
+export const UNIT_KILOJOULE = UNITS.kJ!

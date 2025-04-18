@@ -29,7 +29,11 @@ export function defineExt<T extends {}, U>(ext: Ext<T, U>) {
 }
 
 export class Exts {
-  constructor(readonly exts: AnyExt[] = []) {}
+  constructor(public exts: AnyExt[] = []) {}
+
+  set(exts: AnyExt[]) {
+    this.exts = exts
+  }
 
   add(ext: AnyExt) {
     this.exts.push(ext)

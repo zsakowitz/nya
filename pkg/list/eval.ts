@@ -122,7 +122,7 @@ export function createMultiEval(items: (Node | string)[]) {
 export default {
   name: "evaluator",
   label: "displays computed expressions",
-  category: "core",
+  category: "miscellaneous",
   deps: [],
   sheet: {
     exts: {

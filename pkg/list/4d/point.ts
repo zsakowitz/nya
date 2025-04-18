@@ -1,13 +1,4 @@
-import type { Package } from "#/types"
-import { FnDist } from "@/eval/ops/dist"
-import { num, real } from "@/eval/ty/create"
-import { highRes } from "@/eval/ty/info"
-import { abs, add, div, mul, neg, sub } from "@/eval/ty/ops"
-import { CmdComma } from "@/field/cmd/leaf/comma"
-import { CmdBrack } from "@/field/cmd/math/brack"
-import { Block } from "@/field/model"
-import { L, R } from "@/field/dir"
-import { h, path, svgx } from "@/jsx"
+import type { Addon } from "#/types"
 import { OP_Z } from "$/3d/point"
 import { FN_VALID } from "$/bool"
 import {
@@ -23,6 +14,15 @@ import {
 } from "$/core/ops"
 import { FN_POINT, OP_X, OP_Y } from "$/geo/point"
 import { FN_UNSIGN } from "$/num/real"
+import { FnDist } from "@/eval/ops/dist"
+import { num, real } from "@/eval/ty/create"
+import { highRes } from "@/eval/ty/info"
+import { abs, add, div, mul, neg, sub } from "@/eval/ty/ops"
+import { CmdComma } from "@/field/cmd/leaf/comma"
+import { CmdBrack } from "@/field/cmd/math/brack"
+import { L, R } from "@/field/dir"
+import { Block } from "@/field/model"
+import { h, path, svgx } from "@/jsx"
 
 declare module "@/eval/ty" {
   interface Tys {
@@ -58,7 +58,7 @@ function iconPoint4D(hd: boolean) {
 
 export default {
   name: "4D points",
-  label: null,
+  label: "for when you need to pack four numbers into a single value",
   category: "geometry",
   deps: ["bool", "geo/point", "core/ops", "num/real"],
   load() {
@@ -281,8 +281,10 @@ export default {
   },
   eval: {
     fn: {
+      ".x": OP_X,
+      ".y": OP_Y,
       ".z": OP_Z,
       ".w": OP_W,
     },
   },
-} satisfies Package
+} satisfies Addon

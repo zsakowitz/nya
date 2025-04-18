@@ -51,6 +51,16 @@ body {
   --nya-paper-axis-number-onscreen: black;
   --nya-paper-axis-number-offscreen: #8e8e8e;
   --nya-paper-screen-line: black;
+  --nya-sx-border: theme("colors.blue.300");
+  --nya-sx-bg: theme("colors.blue.100");
+  --nya-sx-text: theme("colors.blue.950");
+  --nya-sx-text-prose: theme("colors.blue.900");
+  --nya-sx-title: theme("colors.blue.900");
+  --nya-yx-border: theme("colors.yellow.300");
+  --nya-yx-bg: theme("colors.yellow.100");
+  --nya-yx-text: theme("colors.yellow.950");
+  --nya-yx-text-prose: theme("colors.yellow.900");
+  --nya-yx-title: theme("colors.yellow.900");
   color-scheme: light;
 
   @apply bg-[--nya-bg-sidebar] text-[--nya-text];
@@ -91,8 +101,34 @@ body {
     --nya-paper-axis-number-onscreen: white;
     --nya-paper-axis-number-offscreen: #8e8e8e;
     --nya-paper-screen-line: theme("colors.slate.600");
+    --nya-sx-border: theme("colors.blue.800");
+    --nya-sx-bg: theme("colors.blue.950");
+    --nya-sx-text: theme("colors.blue.300");
+    --nya-sx-text-prose: theme("colors.blue.500");
+    --nya-sx-title: theme("colors.blue.400");
+    --nya-yx-border: theme("colors.yellow.800");
+    --nya-yx-bg: theme("colors.yellow.950");
+    --nya-yx-text: theme("colors.yellow.300");
+    --nya-yx-text-prose: theme("colors.yellow.500");
+    --nya-yx-title: theme("colors.yellow.400");
     color-scheme: dark;
   }
+}
+
+.nya-sx {
+  --nya-border: var(--nya-sx-border);
+  --nya-bg: var(--nya-sx-bg);
+  --nya-text: var(--nya-sx-text);
+  --nya-text-prose: var(--nya-sx-text-prose);
+  --nya-title: var(--nya-sx-title);
+}
+
+.nya-yx {
+  --nya-border: var(--nya-yx-border);
+  --nya-bg: var(--nya-yx-bg);
+  --nya-text: var(--nya-yx-text);
+  --nya-text-prose: var(--nya-yx-text-prose);
+  --nya-title: var(--nya-yx-title);
 }
 
 .nya-cmd-word-r {

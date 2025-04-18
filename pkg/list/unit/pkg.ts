@@ -55,7 +55,7 @@ declare module "@/eval/ty" {
 
 declare module "@/eval/ast/token" {
   interface PuncListInfix {
-    in: 0
+    into: 0
   }
 }
 
@@ -156,7 +156,7 @@ export function latexUnit(list: UnitList, require: boolean): string {
 const INFO_UNIT: TyInfoByName<"unit"> = {
   name: "unit",
   namePlural: "units",
-  get glsl() {
+  get glsl(): never {
     return glsl()
   },
   toGlsl: glsl,
@@ -281,9 +281,9 @@ const INFO_R32U: TyInfoByName<"r32u"> = {
   extras: null,
 }
 
-const FN_IN = new FnDist("in", "converts values between units", {
+const FN_INTO = new FnDist("into", "converts values between units", {
   display: binaryFn(
-    () => new CmdWord("in", "infix"),
+    () => new CmdWord("into", "infix"),
     Precedence.UnitConversion,
   ),
 })
@@ -293,7 +293,7 @@ const FN_INTOSI = new FnDist(
   "converts a value to its component SI units",
 )
 
-function checkUnit(node: WordInfo) {
+export function checkUnit(node: WordInfo) {
   if (node.sub) {
     throw new Error("Cannot apply a subscript to 'unit'.")
   }
@@ -323,9 +323,9 @@ export default {
   eval: {
     op: {
       binary: {
-        in: {
+        into: {
           precedence: Precedence.UnitConversion,
-          fn: FN_IN,
+          fn: FN_INTO,
         },
       },
     },
@@ -458,7 +458,7 @@ export default {
       "-7 unit m = -7 \\wordvar m",
     )
 
-    FN_IN.add(
+    FN_INTO.add(
       ["r32u", "unit"],
       "r32u",
       (a, b) => {
@@ -494,8 +494,8 @@ export default {
             "\\frac{2unitm}{7units*4unitmin}",
             "=0.07142857143\\frac\\wordvar m{\\wordvar s\\cdot\\wordvar{min}}",
           ),
-          px`You can convert between various units with the ${b("in")} operator.`,
-          example("(20unitdC)inunitdF", "=68\\wordvar{°F}"),
+          px`You can convert between various units with the ${b("into")} operator.`,
+          example("(20unitdC)intounitdF", "=68\\wordvar{°F}"),
           px`Adding and subtracting prefers the first value's units, and requires the units to be compatiable.`,
           example("7unitm+89unitcm", "=7.89\\wordvar m"),
           px`You can use the ${b("intosi")} function to turn any unit value into its component SI units.`,
@@ -527,13 +527,13 @@ export default {
           px`If you measure the temperature outside, ${b("celsius")} is the appropriate. But if you measure a 4 degree drop in temperature, use ${b("deltacelsius")}. The same goes for the Fahrenheit-based variants.`,
           px`First problem: addition. Adding 2 °C and 3 °C is ambiguous, since it could mean 5 °C (adding the 2 and 3) or 278 °C (adding 3 °C in kelvin to 2 °C). project nya forces you to explain what you mean: either use ${b("deltacelsius")} to communicate that you want a 3 degree change, or convert to kelvin before adding.`,
           example(
-            "2 unit dC + ((3 unit dC) in unit K)",
+            "2 unit dC + ((3 unit dC) into unit K)",
             "=278.15 \\wordvar{°C}",
           ),
           example("2 unit dC + 3 unit ddC", "=5 \\wordvar{°C}"),
           px`Second problem: ratios. Dividing 5 J by 3 °C is ambiguous, since it could mean 5 J for every change of 3 °C, or 5 J for every total 276 K (3 °C in kelvin). Again, project nya forces you to disambiguate: either use ${b("deltacelsius")}, or convert into kelvin.`,
           example(
-            "\\frac{5 unit J}{(3 unit dC) in unit K}",
+            "\\frac{5 unit J}{(3 unit dC) into unit K}",
             "=0.01810610176\\frac\\wordvar J\\wordvar K",
           ),
           example(
@@ -542,7 +542,7 @@ export default {
           ),
           px`Third problem: multiplication. Multiplying 2 °C and 3 °C is ambiguous, since it could be an addition of 2 °C for every 3 °C, the reverse problem, or an addition of 2 °C for every addition of 3 °C. Again, the solution is to disambiguate: either use ${b("deltacelsius")} or convert into kelvin.`,
           example(
-            "2 unit dC \\cdot ((3 unit dC) in unit K)",
+            "2 unit dC \\cdot ((3 unit dC) into unit K)",
             "=552.3 \\wordvar{°C}\\cdot\\wordvar K",
           ),
           example(
@@ -555,3 +555,5 @@ export default {
     },
   ],
 } satisfies Package
+
+export { glsl as unitsInShadersError }

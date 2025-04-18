@@ -107,14 +107,6 @@ export function usvg(
   return el
 }
 
-export function a(href: string, ...children: (Node | string | null)[]) {
-  return hx(
-    "a",
-    { class: "text-blue-500 underline underline-offset-2", href },
-    ...children,
-  )
-}
-
 export function p(...children: (Node | string | null)[]) {
   return hx("p", "", ...children)
 }

@@ -1,0 +1,8 @@
+p_{1}\left(n\right)=\left\{n=0:0,n=1:3,n=2:2,n=3:5,n=4:4\right\}
+p_{5}\left(n\right)=4n
+p_{20}\left(n\right)=4n
+g\left(n\right)=p_{1}\left(n\operatorname{mod}5\right)+p_{5}\left(\operatorname{floor}\left(\frac{n\operatorname{mod}20}{5}\right)\right)+p_{20}\left(\operatorname{floor}\left(\frac{n\operatorname{mod}100}{20}\right)\right)
+f\left(n\right)=\left\{n=0:0,n>0:\operatorname{iterate}.a^{10}a\to a+3+g\left(n\operatorname{mod}100\right),n\to \operatorname{floor}\frac{n}{100}\operatorname{from}a=g\left(n\operatorname{mod}100\right),n=\operatorname{floor}\frac{n}{100}\operatorname{while}n\neq 0\right\}
+h\left(x\right)=\begin{cases}\operatorname{rgb}\left(255,255,0\right)&n=2\\\operatorname{rgb}\left(255,0,0\right)&n=4\\\operatorname{rgb}\left(0,255,0\right)&n=6\operatorname{or}n=7\\\operatorname{rgb}\left(0,0,255\right)&n=8\operatorname{or}n=9\\\operatorname{rgb}\left(0,0,0\right)&n=11\\\operatorname{rgb}\left(255,0,196\right)&n=13\end{cases}\operatorname{with}n=\operatorname{iterate}^{10}n\to f\left(n\right)\operatorname{from}n=\operatorname{round}x
+h\left(a\left(\operatorname{ceil}x,\operatorname{ceil}y\right)\right)\left\{x>0\operatorname{and}y>0\right\}
+a\left(x,y\right)=\left(\frac{\left(x+y-1\right)\left(x+y-2\right)}{2}+y\right)

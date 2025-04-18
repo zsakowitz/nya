@@ -7,6 +7,7 @@ export interface Builtin {
   dynamic?: boolean
   display: boolean | ((display: Display) => void)
   label: string
+  word?: boolean
 }
 
 export const ERR_COORDS_USED_OUTSIDE_GLSL =
