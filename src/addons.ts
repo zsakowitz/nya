@@ -19,34 +19,6 @@ function allDeps(pkg: ManifestPackage) {
   return deps
 }
 
-function allDependents(index: PackageIndex) {
-  const deps = new Set<PackageIndex>()
-  for (let i = 0; i < manifest.packages.length; i++) {
-    const pkg = manifest.packages[i]!
-    if (pkg[6].includes(index)) {
-      deps.add(i as PackageIndex)
-    }
-  }
-  let prev = 0
-  while (prev != deps.size) {
-    prev = deps.size
-    for (let i = 0; i < manifest.packages.length; i++) {
-      const pkg = manifest.packages[i]!
-      if (pkg[6].includes(index)) {
-        deps.add(i as PackageIndex)
-        continue
-      }
-      for (const existing of deps) {
-        if (pkg[6].includes(existing)) {
-          deps.add(i as PackageIndex)
-          break
-        }
-      }
-    }
-  }
-  return deps
-}
-
 export const pkgs = manifest.packages
   .map((x, i) => ({ i: i as PackageIndex, x }))
   .filter((x) => x.x[0] in addons)
@@ -61,12 +33,6 @@ function get() {
     .map((n) => pkgs.find((x) => x.x[0] == n)?.i)
     .filter((x) => x != null)
     .filter((x, i, a) => a.indexOf(x) == i)
-}
-
-function set(ids: PackageIndex[]) {
-  const search = new URLSearchParams(location.search)
-  search.set("addons", ids.map((x) => manifest.packages[x]![0]).join(","))
-  history.replaceState({}, "", location.origin + (search ? "?" + search : ""))
 }
 
 export function getAll() {
