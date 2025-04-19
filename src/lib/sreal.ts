@@ -131,10 +131,28 @@ export class SReal {
     return frac(-this.n, this.d)
   }
 
-  isApprox() {
+  isApprox(): boolean {
     return this.d === null
   }
+
+  gl32(): string {
+    return this.num().toExponential()
+  }
+
+  gl64(): `vec2(${string})` {
+    const n = this.num()
+    FLOAT32[0] = n
+    const a = FLOAT32[0]!
+    const b = n - FLOAT32[0]!
+    return `vec2(${a.toExponential()}, ${b.toExponential()})`
+  }
+
+  finite(): boolean {
+    return isFinite(this.num())
+  }
 }
+
+const FLOAT32 = new Float32Array(1)
 
 function gcd(a: number, b: number) {
   for (let temp = b; b !== 0; ) {
