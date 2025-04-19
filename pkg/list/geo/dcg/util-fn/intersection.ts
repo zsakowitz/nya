@@ -132,7 +132,7 @@ function lineArcJs(ac: Tys["arc"], lin: Tys["line"], index: -1 | 1): SPoint {
     case "circle":
       return lineCircleJs(
         {
-          center: rept(arc.c),
+          center: arc.c.s(),
           radius: int(arc.r),
         },
         lin,

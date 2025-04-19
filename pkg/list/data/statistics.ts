@@ -36,7 +36,6 @@ import { Block } from "@/field/model"
 import { h, hx } from "@/jsx"
 import { approx, frac, int, type SReal } from "@/lib/sreal"
 import { defineExt } from "@/sheet/ext"
-import { sqrt } from "../geo/dcg/util-fn/distance"
 
 declare module "@/eval/ty" {
   interface Tys {
@@ -559,7 +558,7 @@ const FN_VARP = new FnList("varp", "population variance").addSpread(
 )
 
 function stdevJs(args: SReal[], sample: boolean) {
-  return sqrt(varJs(args, sample))
+  return varJs(args, sample).sqrt()
 }
 
 function stdevGlsl(ctx: GlslContext, args: string[], sample: boolean) {

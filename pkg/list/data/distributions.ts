@@ -300,7 +300,7 @@ const FN_CDF = new FnDistDeriv("cdf", "cumulative distribution function")
     ["uniformdist", "r32", "r32"],
     "r32",
     (dist, lhs, rhs) =>
-      sub(uniformdistcdfJs(dist, rhs), uniformdistcdfJs(dist, lhs)),
+      uniformdistcdfJs(dist, rhs).sub(uniformdistcdfJs(dist, lhs)),
     (ctx, ar, b, c) => {
       const a = ctx.cache(ar)
       return `(${uniformdistcdfGlsl(a, ctx.cache(b))} - ${uniformdistcdfGlsl(a, ctx.cache(c))})`
@@ -336,10 +336,9 @@ FN_QUANTILE.add(
       return approx(NaN)
     }
 
-    return add(
-      mul(dist.value[0], sub(int(1), x.value)),
-      dist.value[1].mul(x.value),
-    )
+    return dist.value[0]
+      .mul(int(1).sub(x.value))
+      .add(dist.value[1].mul(x.value))
   },
   (ctx, dist, x) => {
     const d = ctx.cache(dist)
@@ -410,15 +409,15 @@ export default {
         coerce: {},
         write: {
           isApprox(value) {
-            return value.some((x) => x.type == "approx")
+            return value.some((x) => x.isApprox())
           },
           display([mean, stdev], props) {
             new CmdWord("normaldist", "prefix").insertAt(props.cursor, L)
             const block = new Block(null)
             const inner = props.at(block.cursor(R))
-            inner.mean.num()
+            inner.num(mean)
             new CmdComma().insertAt(inner.cursor, L)
-            inner.stdev.num()
+            inner.num(stdev)
             new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
           },
         },
@@ -455,7 +454,7 @@ export default {
         namePlural: "t-distributions",
         glsl: "float",
         toGlsl(x) {
-          return `vec3(${x.map(gl).join(", ")})`
+          return `vec3(${x.map((x) => x.gl32()).join(", ")})`
         },
         garbage: {
           js: [approx(NaN), approx(NaN), approx(NaN)],
@@ -464,7 +463,7 @@ export default {
         coerce: {},
         write: {
           isApprox(x) {
-            return x.some((x) => x.type == "approx")
+            return x.some((x) => x.isApprox())
           },
           display(value, props) {
             new CmdWord("tdist", "prefix").insertAt(props.cursor, L)
@@ -523,15 +522,15 @@ export default {
         coerce: {},
         write: {
           isApprox(value) {
-            return value.some((x) => x.type == "approx")
+            return value.some((x) => x.isApprox())
           },
           display([min, max], props) {
             new CmdWord("uniformdist", "prefix").insertAt(props.cursor, L)
             const block = new Block(null)
             const inner = props.at(block.cursor(R))
-            inner.min.num()
+            inner.num(min)
             new CmdComma().insertAt(inner.cursor, L)
-            inner.max.num()
+            inner.num(max)
             new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
           },
         },
@@ -584,13 +583,13 @@ export default {
         coerce: {},
         write: {
           isApprox(value) {
-            return value.some((x) => x.type == "approx")
+            return value.some((x) => x.isApprox())
           },
           display([mean], props) {
             new CmdWord("boltzmanndist", "prefix").insertAt(props.cursor, L)
             const block = new Block(null)
             const inner = props.at(block.cursor(R))
-            inner.mean.num()
+            inner.num(mean)
             new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
           },
         },
@@ -636,13 +635,13 @@ export default {
         coerce: {},
         write: {
           isApprox(value) {
-            return value.type == "approx"
+            return value.isApprox()
           },
           display(value, props) {
             new CmdWord("poissondist", "prefix").insertAt(props.cursor, L)
             const block = new Block(null)
             const inner = props.at(block.cursor(R))
-            inner.value.num()
+            inner.num(value)
             new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
           },
         },
@@ -700,15 +699,15 @@ export default {
         coerce: {},
         write: {
           isApprox(value) {
-            return value.some((x) => x.type == "approx")
+            return value.some((x) => x.isApprox())
           },
           display([a, b], props) {
             new CmdWord("binomialdist", "prefix").insertAt(props.cursor, L)
             const block = new Block(null)
             const inner = props.at(block.cursor(R))
-            inner.a.num()
+            inner.num(a)
             new CmdComma().insertAt(inner.cursor, L)
-            inner.b.num()
+            inner.num(b)
             new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
           },
         },

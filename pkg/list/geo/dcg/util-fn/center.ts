@@ -12,7 +12,7 @@ export const FN_CENTER = new FnDist("center", "gets the center of a circle")
   .add(
     ["arc"],
     "point32",
-    (a) => rept(crArcVal(a.value).c),
+    (a) => crArcVal(a.value).c.s(),
     () => {
       // TODO:
       throw new Error("Cannot calculate the center of an arc in shaders yet.")
