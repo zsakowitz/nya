@@ -1,6 +1,5 @@
 import type { Package } from "#/types"
 import type { JsVal, Tys } from "@/eval/ty"
-import { SNANPT, gl, num, pt, real, unpt } from "@/eval/ty/create"
 import { gliderOnLine, type TyInfoByName } from "@/eval/ty/info"
 import { OpEq } from "@/field/cmd/leaf/cmp"
 import { CmdComma } from "@/field/cmd/leaf/comma"
@@ -12,6 +11,8 @@ import { CmdBrack } from "@/field/cmd/math/brack"
 import { L, R } from "@/field/dir"
 import { Block } from "@/field/model"
 import { h, path, svgx, sx } from "@/jsx"
+import type { SPoint } from "@/lib/spoint"
+import type { SReal } from "@/lib/sreal"
 import { PICK_TY, definePickTy, toolbar, type Data } from "@/sheet/pick-ty"
 import { normVector, type Point } from "@/sheet/point"
 import { Color, Opacity, Order, Size } from "@/sheet/ui/cv/consts"
@@ -171,7 +172,7 @@ const PICK_LINE = definePickTy(
   ],
   (sheet, p1, p2) => {
     if (p1 && p2) {
-      const bounds = getLineBounds(sheet.cv, unpt(p1.value), unpt(p2.value))
+      const bounds = getLineBounds(sheet.cv, p1.value.xy(), p2.value.xy())
       sheet.cv.polygonByCanvas(bounds, Size.Line, Color.Blue)
     }
   },
@@ -185,7 +186,7 @@ const PICK_SEGMENT = definePickTy(
   ],
   (sheet, p1, p2) => {
     if (p1 && p2) {
-      sheet.cv.polygon([unpt(p1.value), unpt(p2.value)], Size.Line, Color.Blue)
+      sheet.cv.polygon([p1.value.xy(), p2.value.xy()], Size.Line, Color.Blue)
     }
   },
 )
@@ -198,7 +199,7 @@ const PICK_RAY = definePickTy(
   ],
   (sheet, p1, p2) => {
     if (p1 && p2) {
-      const bounds = getRayBounds(sheet.cv, unpt(p1.value), unpt(p2.value))
+      const bounds = getRayBounds(sheet.cv, p1.value.xy(), p2.value.xy())
       if (bounds) sheet.cv.polygonByCanvas(bounds, Size.Line, Color.Blue)
     }
   },
@@ -213,7 +214,7 @@ const PICK_VECTOR = definePickTy(
   (sheet, p1, p2) => {
     if (p1 && p2) {
       const { cv } = sheet
-      const d = vectorPath(cv, unpt(p1.value), unpt(p2.value))
+      const d = vectorPath(cv, p1.value.xy(), p2.value.xy())
       if (d) cv.path(new Path2D(d), Size.Line, Color.Blue, 1, 1)
     }
   },
@@ -227,8 +228,8 @@ const PICK_CIRCLE = definePickTy(
   ],
   (sheet, p1, p2) => {
     if (p1 && p2) {
-      const center = unpt(p1.value)
-      const edge = unpt(p2.value)
+      const center = p1.value.xy()
+      const edge = p2.value.xy()
       sheet.cv.circle(
         center,
         Math.hypot(center.x - edge.x, center.y - edge.y),
@@ -319,12 +320,12 @@ function createPick(type: "angle" | "directedangle"): Data {
             const prev = a.value[(i + a.value.length - 1) % a.value.length]!
             const self = a.value[i]!
             const next = a.value[(i + 1) % a.value.length]!
-            drawAngleCv(sheet.cv, unpt(prev), unpt(self), unpt(next), {
+            drawAngleCv(sheet.cv, prev.xy(), self.xy(), next.xy(), {
               kind: type,
             })
           }
         } else if (a && b && c) {
-          drawAngleCv(sheet.cv, unpt(a.value), unpt(b.value), unpt(c.value), {
+          drawAngleCv(sheet.cv, a.value.xy(), b.value.xy(), c.value.xy(), {
             kind: type,
           })
         }
@@ -392,8 +393,8 @@ const PICK_MIDPOINT: Data = {
         p1 = unpt(a.value[0])
         p2 = unpt(a.value[1])
       } else if (a && b) {
-        p1 = unpt(a.value)
-        p2 = unpt(b.value)
+        p1 = a.value.xy()
+        p2 = b.value.xy()
       } else {
         return
       }
@@ -434,7 +435,7 @@ const PICK_POLYGON: Data = {
       const pts = args as JsVal<"point32" | "point64">[]
 
       sheet.cv.polygon(
-        pts.map((x) => unpt(x.value)),
+        pts.map((x) => x.value.xy()),
         Size.Line,
         Color.Blue,
         1,
@@ -633,7 +634,7 @@ const INFO_CIRCLE: TyInfoByName<"circle"> = {
       const inner = props.at(block.cursor(R))
       WRITE_POINT.display(value.center, inner)
       new CmdComma().insertAt(inner.cursor, L)
-      inner.num(value.radius)
+      inner.value.radius.num()
     },
   },
   order: Order.Graph,
@@ -654,8 +655,8 @@ const INFO_CIRCLE: TyInfoByName<"circle"> = {
   },
   token: null,
   glide(props) {
-    const x = num(props.shape.center.x)
-    const y = num(props.shape.center.y)
+    const x = props.shape.center.x.num()
+    const y = props.shape.center.y.num()
     const angle =
       props.point.x == x && props.point.y == y ?
         0
@@ -666,7 +667,7 @@ const INFO_CIRCLE: TyInfoByName<"circle"> = {
     }
   },
   preview(cv, val) {
-    cv.circle(unpt(val.center), num(val.radius), Size.Line, Color.Green)
+    cv.circle(val.center.xy(), val.radius.num(), Size.Line, Color.Green)
   },
   extras: null,
 }
@@ -707,9 +708,9 @@ const INFO_POLYGON: TyInfoByName<"polygon"> = {
         const block = new Block(null)
         new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
         const inner = props.at(block.cursor(R))
-        inner.num(pt.x)
+        inner.pt.x.num()
         new CmdComma().insertAt(inner.cursor, L)
-        inner.num(pt.y)
+        inner.pt.y.num()
       }
     },
   },
@@ -921,9 +922,9 @@ function angleInfo(
           const block = new Block(null)
           new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
           const inner = props.at(block.cursor(R))
-          inner.num(pt.x)
+          inner.pt.x.num()
           new CmdComma().insertAt(inner.cursor, L)
-          inner.num(pt.y)
+          inner.pt.y.num()
         }
       },
       isApprox(value) {
@@ -1162,7 +1163,7 @@ const PICK_ANGLEBISECTOR = definePickTy(
   (sheet, a) => {
     if (a) {
       const [p1, p2] = bisectAngleJs(a)
-      const bounds = getRayBounds(sheet.cv, unpt(p1), unpt(p2))
+      const bounds = getRayBounds(sheet.cv, p1.xy(), p2.xy())
       if (bounds) sheet.cv.polygonByCanvas(bounds, Size.Line, Color.Blue)
     }
   },

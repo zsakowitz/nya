@@ -1,7 +1,6 @@
 import type { Package } from "#/types"
 import { commalist } from "@/eval/ast/collect"
 import { js } from "@/eval/js"
-import { frac } from "@/eval/ty/create"
 import { Display } from "@/eval/ty/display"
 import { OpEq } from "@/field/cmd/leaf/cmp"
 import { CmdVar } from "@/field/cmd/leaf/var"

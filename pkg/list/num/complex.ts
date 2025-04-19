@@ -27,11 +27,9 @@ import { FnDist } from "@/eval/ops/dist"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "@/eval/ops/vars"
 import type { GlslVal, SPoint } from "@/eval/ty"
 import { isZero } from "@/eval/ty/check"
-import { approx, gl, num, pt, real, rept, SNANPT } from "@/eval/ty/create"
 import { gl64 } from "@/eval/ty/create-r64"
 import type { TyWrite } from "@/eval/ty/display"
 import { highRes, type TyExtras } from "@/eval/ty/info"
-import { abs, add, div, mul, neg, sub } from "@/eval/ty/ops"
 import { h } from "@/jsx"
 import { Order } from "@/sheet/ui/cv/consts"
 import { declareOklab } from "../color/util-oklab"
@@ -49,8 +47,8 @@ export function lnJs(a: SPoint) {
     return pt(real(-Infinity), real(0))
   }
 
-  const x = num(a.x)
-  const y = num(a.y)
+  const x = a.x.num()
+  const y = a.y.num()
 
   return pt(approx(Math.log(Math.hypot(x, y))), approx(Math.atan2(y, x)))
 }
@@ -216,13 +214,13 @@ const WRITE_COMPLEX: TyWrite<SPoint> = {
 
 const extras: TyExtras<SPoint> = {
   isOne(value) {
-    return num(value.x) == 1 && num(value.y) == 0
+    return value.x.num() == 1 && value.y.num() == 0
   },
   isZero(value) {
-    return num(value.x) == 0 && num(value.y) == 0
+    return value.x.num() == 0 && value.y.num() == 0
   },
   isNonZero(value) {
-    return num(value.x) != 0 || num(value.y) != 0
+    return value.x.num() != 0 || value.y.num() != 0
   },
 }
 
@@ -274,7 +272,7 @@ export function divPt({ x: a, y: b }: SPoint, { x: c, y: d }: SPoint): SPoint {
 
 export function recipPt({ x: c, y: d }: SPoint): SPoint {
   const denom = add(mul(c, c), mul(d, d))
-  if (isZero(denom)) return pt(approx(1 / num(c)), approx(1 / num(d)))
+  if (isZero(denom)) return pt(approx(1 / c.num()), approx(1 / d.num()))
   return pt(div(c, denom), div(neg(d), denom))
 }
 
@@ -326,7 +324,7 @@ export default {
       ["c32"],
       "r32",
       function ({ value: a }) {
-        return approx(Math.atan2(num(a.y), num(a.x)) / this.rad())
+        return approx(Math.atan2(a.y.num(), a.x.num()) / this.rad())
       },
       (ctx, ar) => {
         // TODO: arg p = 45 does weird things b/c discontinuous
@@ -340,7 +338,7 @@ export default {
       ["c32"],
       "c32",
       ({ value: a }) => {
-        const denom = real(Math.hypot(num(a.x), num(a.y)))
+        const denom = real(Math.hypot(a.x.num(), a.y.num()))
         return pt(div(a.x, denom), div(a.y, denom))
       },
       (ctx, ar) => {
@@ -355,8 +353,8 @@ export default {
       ["c32"],
       "c32",
       ({ value: a }) => {
-        const e = approx(Math.exp(num(a.x)))
-        const y = num(a.y)
+        const e = approx(Math.exp(a.x.num()))
+        const y = a.y.num()
 
         return pt(mul(e, approx(Math.cos(y))), mul(e, approx(Math.sin(y))))
       },
@@ -383,7 +381,7 @@ export default {
       ["c32", "c32"],
       "c32",
       (a, b) => {
-        if (isNaN(num(b.value.x)) || isNaN(num(b.value.y))) {
+        if (isNaN(b.value.x.num()) || isNaN(b.value.y.num())) {
           return SNANPT
         }
 
@@ -412,8 +410,8 @@ export default {
           return pt(real(-Infinity), real(0))
         }
 
-        const x = num(a.x)
-        const y = num(a.y)
+        const x = a.x.num()
+        const y = a.y.num()
 
         return pt(
           approx(Math.log10(Math.hypot(x, y))),
@@ -432,7 +430,7 @@ export default {
     FN_VALID.add(
       ["c32"],
       "bool",
-      (a) => isFinite(num(a.value.x)) && isFinite(num(a.value.y)),
+      (a) => isFinite(a.value.x.num()) && isFinite(a.value.y.num()),
       (ctx, ar) => {
         const a = ctx.cache(ar)
         return `(!isnan(${a}.x) && !isinf(${a}.x) && !isnan(${a}.y) && !isinf(${a}.y))`
@@ -585,8 +583,8 @@ export default {
             {
               type: "c32",
               value: pt(
-                approx(Math.log(Math.hypot(num(a.x), num(a.y)))),
-                approx(Math.atan2(num(a.y), num(a.x))),
+                approx(Math.log(Math.hypot(a.x.num(), a.y.num()))),
+                approx(Math.atan2(a.y.num(), a.x.num())),
               ),
             },
           ),
@@ -729,7 +727,7 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
       ["c32"],
       "rabs32",
       // TODO: this is exact for some values
-      (a) => approx(Math.hypot(num(a.value.x), num(a.value.y))),
+      (a) => approx(Math.hypot(a.value.x.num(), a.value.y.num())),
       (_, a) => `length(${a.expr})`,
       "|3-4i|=5",
     )

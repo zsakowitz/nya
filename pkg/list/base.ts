@@ -3,7 +3,6 @@ import { example } from "@/docs/core"
 import { Precedence } from "@/eval/ast/token"
 import { glsl, js, NO_DRAG, NO_SYM } from "@/eval/ast/tx"
 import { asNumericBase } from "@/eval/lib/base"
-import { real } from "@/eval/ty/create"
 import { b, px } from "@/jsx"
 
 // TODO: tons of base functionality is available without this package

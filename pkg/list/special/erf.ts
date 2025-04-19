@@ -4,7 +4,6 @@ import type { Package } from "#/types"
 import { chain, OP_DIV, OP_JUXTAPOSE, OP_NEG, OP_RAISE } from "$/core/ops"
 import { FnDist } from "@/eval/ops/dist"
 import { SYM_2, SYM_E, SYM_HALF, SYM_PI, unary } from "@/eval/sym"
-import { approx, num } from "@/eval/ty/create"
 import erf from "@stdlib/math/base/special/erf"
 import erfinv from "@stdlib/math/base/special/erfinv"
 
@@ -49,7 +48,7 @@ export const FN_ERF = new FnDist(
   .add(
     ["r32"],
     "r32",
-    (a) => approx(erf(num(a.value))),
+    (a) => approx(erf(a.value.num())),
     (ctx, a) => {
       ctx.glslText(erfGl)
       return `_nya_helper_erf(${a.expr})`
@@ -59,7 +58,7 @@ export const FN_ERF = new FnDist(
   .add(
     ["r32", "r32"],
     "r32",
-    (a, b) => approx(erf(num(b.value)) - erf(num(a.value))),
+    (a, b) => approx(erf(b.value.num()) - erf(a.value.num())),
     (ctx, a, b) => {
       ctx.glslText(erfGl)
       return `(_nya_helper_erf(${b.expr}) - _nya_helper_erf(${a.expr}))`
@@ -70,7 +69,7 @@ export const FN_ERF = new FnDist(
 const FN_ERFINV = new FnDist("erfinv", "inverse error function").add(
   ["r32"],
   "r32",
-  (a) => approx(erfinv(num(a.value))),
+  (a) => approx(erfinv(a.value.num())),
   (ctx, a) => {
     ctx.glslText(erfinvGl)
     return `_nya_helper_erfinv(${a.expr})`

@@ -23,11 +23,9 @@ import type { GlslContext } from "@/eval/lib/fn"
 import { FnDist } from "@/eval/ops/dist"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "@/eval/ops/vars"
 import { each, type JsValue, type SPoint } from "@/eval/ty"
-import { approx, frac, gl, num, pt, real, SNANPT, unpt } from "@/eval/ty/create"
 import { gl64 } from "@/eval/ty/create-r64"
 import type { TyWrite } from "@/eval/ty/display"
 import { highRes, TY_INFO, type TyGlide } from "@/eval/ty/info"
-import { abs, add, div, mul, neg, sub } from "@/eval/ty/ops"
 import { CmdComma } from "@/field/cmd/leaf/comma"
 import { CmdVar } from "@/field/cmd/leaf/var"
 import { CmdBrack } from "@/field/cmd/math/brack"
@@ -94,16 +92,16 @@ const EXT_POINT = defineHideable<
       return each(data.value)
     },
     draw({ drag, cv, expr }, val) {
-      cv.point(unpt(val), tx.get(expr), Color.Purple)
+      cv.point(val.xy(), tx.get(expr), Color.Purple)
       if (drag) {
-        cv.point(unpt(val), Size.PointHaloWide, Color.Purple, Opacity.PointHalo)
+        cv.point(val.xy(), Size.PointHaloWide, Color.Purple, Opacity.PointHalo)
       }
     },
     target: {
       hits(data, at, hint) {
         return (
           hint.allows(data.data.value.type) &&
-          data.data.cv.hitsPoint(unpt(data.item), at)
+          data.data.cv.hitsPoint(data.item.xy(), at)
         )
       },
       focus(data) {
@@ -139,7 +137,7 @@ const EXT_POINT = defineHideable<
       },
       dragOrigin(target) {
         if (target.data.drag) {
-          return target.data.cv.toOffset(unpt(target.item))
+          return target.data.cv.toOffset(target.item.xy())
         } else {
           return null
         }
@@ -240,9 +238,9 @@ export const WRITE_POINT: TyWrite<SPoint> = {
     const block = new Block(null)
     new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
     const inner = props.at(block.cursor(R))
-    inner.num(value.x)
+    inner.value.x.num()
     new CmdComma().insertAt(inner.cursor, L)
-    inner.num(value.y)
+    inner.value.y.num()
   },
 }
 
@@ -386,7 +384,7 @@ export default {
       ["point32"],
       "rabs32",
       // TODO: this is exact for some values
-      (a) => approx(Math.hypot(num(a.value.x), num(a.value.y))),
+      (a) => approx(Math.hypot(a.value.x.num(), a.value.y.num())),
       (_, a) => `length(${a.expr})`,
       "|(3,-4)|=5",
     )
@@ -408,7 +406,7 @@ export default {
     FN_VALID.add(
       ["point32"],
       "bool",
-      (a) => isFinite(num(a.value.x)) && isFinite(num(a.value.y)),
+      (a) => isFinite(a.value.x.num()) && isFinite(a.value.y.num()),
       (ctx, ar) => {
         const a = ctx.cache(ar)
         return `(!isnan(${a}.x) && !isinf(${a}.x) && !isnan(${a}.y) && !isinf(${a}.y))`
@@ -550,7 +548,7 @@ export default {
         token: null,
         glide: null,
         preview(cv, val) {
-          cv.point(unpt(val), Size.Point, Color.Purple)
+          cv.point(val.xy(), Size.Point, Color.Purple)
         },
         extras: null,
       },
@@ -572,7 +570,7 @@ export default {
         token: null,
         glide: null,
         preview(cv, val) {
-          cv.point(unpt(val), Size.Point, Color.Purple)
+          cv.point(val.xy(), Size.Point, Color.Purple)
         },
         extras: null,
       },

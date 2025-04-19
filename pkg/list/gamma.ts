@@ -4,7 +4,6 @@ import { chain, OP_JUXTAPOSE } from "$/core/ops"
 import { Precedence } from "@/eval/ast/token"
 import { FnDist } from "@/eval/ops/dist"
 import { txr, unary } from "@/eval/sym"
-import { approx, num, real, rept } from "@/eval/ty/create"
 import { CmdWord } from "@/field/cmd/leaf/word"
 import { CmdBrack } from "@/field/cmd/math/brack"
 import { L, R } from "@/field/dir"
@@ -36,7 +35,7 @@ const FN_GAMMA: FnDist = new FnDist("gamma", "computes the gamma function", {
     ["r32"],
     "r32",
     (a) => {
-      const val = num(a.value) - 1
+      const val = a.value.num() - 1
       if (val == Math.floor(val) && val < 0) {
         return real(Infinity)
       }
@@ -49,8 +48,8 @@ const FN_GAMMA: FnDist = new FnDist("gamma", "computes the gamma function", {
     ["c32"],
     "c32",
     ({ value }) => {
-      const x = num(value.x) - 1
-      const y = num(value.y)
+      const x = value.x.num() - 1
+      const y = value.y.num()
       if (y == 0 && x == Math.floor(x) && x < 0) {
         return rept({ x: Infinity, y: 0 })
       }
@@ -92,7 +91,7 @@ const FN_LNGAMMA = new FnDist(
 ).add(
   ["r32"],
   "r32",
-  (x) => approx(gammaln(num(x.value))),
+  (x) => approx(gammaln(x.value.num())),
   (ctx, a) => {
     declareFactorialR32(ctx)
     ctx.glslText(lngammaGl)

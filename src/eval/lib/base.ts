@@ -65,7 +65,7 @@ function parseExact(text: string, base: SExact): SReal {
 }
 
 function parse(text: string, base: SReal): SReal {
-  if (num(base) == 10) {
+  if (base.num() == 10) {
     const value = +text
     if (text[text.length - 1] == ".") text = text.slice(0, -1)
     if (text[0] == ".") text = "0" + text

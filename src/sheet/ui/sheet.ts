@@ -6,7 +6,6 @@ import { JsContext } from "@/eval/lib/jsctx"
 import { declareAddR64, declareMulR64 } from "@/eval/ops/r64"
 import { SYM_180, SYM_PI, SYM_TAU, type Sym } from "@/eval/sym"
 import type { JsVal, TyName } from "@/eval/ty"
-import { num, real } from "@/eval/ty/create"
 import { tidyCoercions } from "@/eval/ty/info"
 import { splitRaw } from "@/eval/ty/split"
 import type { Block } from "@/field/model"
@@ -40,6 +39,7 @@ import {
 } from "./cv/move"
 import { PickHandler2 } from "./cv/pick"
 import { Expr } from "./expr"
+import { int } from "@/lib/sreal"
 
 export type RequireRadiansReason = "with a complex number"
 export type RequireRadiansContext = `call '${string}' ${RequireRadiansReason}`
@@ -161,10 +161,10 @@ export class Sheet {
 
     // prepare slider
     ;[this.pixelRatio, this.setPixelRatio] = doMatchReglSize(canvas, this.regl)
-    this.glPixelRatio.bounds(real(1), real(16))
-    this.glPixelRatio.value = real(this.pixelRatio())
+    this.glPixelRatio.bounds(int(1), int(16))
+    this.glPixelRatio.value = int(this.pixelRatio())
     this.glPixelRatio.onInput = () =>
-      this.setPixelRatio(num(this.glPixelRatio.value))
+      this.setPixelRatio(this.glPixelRatio.value.num())
 
     const radioName = "_nya_radio_" + Math.random().toString().slice(2)
     const trigLabel = (name: Sheet["trigKind"]) => {

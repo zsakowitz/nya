@@ -35,9 +35,7 @@ import {
   type PropsDeriv,
   type Sym,
 } from "@/eval/sym"
-import { frac, num, real } from "@/eval/ty/create"
 import { TY_INFO } from "@/eval/ty/info"
-import { add, div } from "@/eval/ty/ops"
 import { splitValue } from "@/eval/ty/split"
 import { CmdComma } from "@/field/cmd/leaf/comma"
 import { CmdNum } from "@/field/cmd/leaf/num"
@@ -827,7 +825,7 @@ export default {
                 parseNumberJs(node.b, props.base).value,
               ),
             )
-            return splitValue(num(value))
+            return splitValue(value.num())
           },
           sym(node, props) {
             return {

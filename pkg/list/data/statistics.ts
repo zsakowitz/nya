@@ -29,9 +29,7 @@ import {
   coerceValueJs,
   split,
 } from "@/eval/ty/coerce"
-import { frac, num, real } from "@/eval/ty/create"
 import { TY_INFO, type TyInfoByName } from "@/eval/ty/info"
-import { abs, add, div, mul, sub } from "@/eval/ty/ops"
 import { Leaf } from "@/field/cmd/leaf"
 import { BRACKS } from "@/field/cmd/math/brack"
 import { L, R } from "@/field/dir"
@@ -169,7 +167,7 @@ const FN_MIN = new FnList("min", "returns the minimum of its inputs")
     "r32",
     (args) =>
       args.length ?
-        args.map((x) => x).reduce((a, b) => (num(b) < num(a) ? b : a))
+        args.map((x) => x).reduce((a, b) => (b.num() < a.num() ? b : a))
       : real(NaN),
     (_, ...args) =>
       args.length ?
@@ -193,7 +191,7 @@ const FN_MAX = new FnList("max", "returns the maximum of its inputs")
     "r32",
     (args) =>
       args.length ?
-        args.reduce((a, b) => (num(b) > num(a) ? b : a))
+        args.reduce((a, b) => (b.num() > a.num() ? b : a))
       : real(NaN),
     (_, ...args) =>
       args.length ?
@@ -281,7 +279,7 @@ export const FN_MEAN = new FnList(
   )
 
 function sortJs(args: SReal[]) {
-  return args.sort((a, b) => num(a) - num(b))
+  return args.sort((a, b) => a.num() - b.num())
 }
 
 function middleJs(value: SReal[]): SReal {
@@ -326,7 +324,7 @@ function quartile<L extends number | false>(
   sortJs(list)
 
   return map(quartile, "r32", (quartile) => {
-    let q = num(quartile)
+    let q = quartile.num()
     if (!(0 <= q && q <= 4)) {
       return real(NaN)
     }
@@ -368,7 +366,7 @@ const FN_QUARTILE: Fn & WithDocs = {
         [coerceTyJs(args[0]!, "stats"), coerceTyJs(args[1]!, "r32")],
         "r32",
         ({ value: stats }, { value: quartileRaw }) => {
-          const quartile = num(quartileRaw)
+          const quartile = quartileRaw.num()
 
           if (!(0 <= quartile && quartile <= 4)) {
             return real(NaN)
@@ -436,14 +434,14 @@ export const FN_QUANTILE = new (class extends FnDist {
       sortJs(list)
 
       return map(quantile, "r32", (quartile) => {
-        let q = num(quartile)
+        let q = quartile.num()
         if (!(0 <= q && q <= 1)) {
           return real(NaN)
         }
 
         const mid = mul(quartile, frac(list.length - 1, 1))
-        const lhs = Math.floor(num(mid))
-        const rhs = Math.ceil(num(mid))
+        const lhs = Math.floor(mid.num())
+        const rhs = Math.ceil(mid.num())
 
         if (lhs == rhs) {
           return list[lhs]!
@@ -690,7 +688,7 @@ const FN_CORR = new FnListList("corr", "Pearson correlation coefficient").add(
 
 function ranksJs(data: SReal[]): SReal[] {
   const sorted = data
-    .map((x, i) => ({ x: num(x), i }))
+    .map((x, i) => ({ x: x.num(), i }))
     .sort((a, b) => a.x - b.x)
 
   type Result = { position: number; count: number }
@@ -873,7 +871,7 @@ const TY_STATS: TyInfoByName<"stats"> = {
       new CmdStats(
         value.map((value) => {
           const block = new Block(null)
-          props.at(block.cursor(R)).num(value)
+          props.at(block.cursor(R)).value.num()
           return block
         }) satisfies Block[] as any,
       ).insertAt(props.cursor, L)

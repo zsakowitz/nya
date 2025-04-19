@@ -4,10 +4,8 @@ import { js } from "@/eval/ast/tx"
 import { parseNumberJs } from "@/eval/lib/base"
 import type { SReal } from "@/eval/ty"
 import { coerceValJs } from "@/eval/ty/coerce"
-import { frac, num, real } from "@/eval/ty/create"
 import { Display } from "@/eval/ty/display"
 import { TY_INFO } from "@/eval/ty/info"
-import { mul, neg, raise } from "@/eval/ty/ops"
 import { OpEq, OpLt } from "@/field/cmd/leaf/cmp"
 import { CmdVar } from "@/field/cmd/leaf/var"
 import { CmdSupSub } from "@/field/cmd/math/supsub"
@@ -201,8 +199,8 @@ class RangeControls {
       typeof this.min.value != "string" &&
       typeof this.max.value != "string"
     ) {
-      const nmin = num(this.min.value)
-      const nmax = num(this.max.value)
+      const nmin = this.min.value.num()
+      const nmax = this.max.value.num()
 
       if (nmin <= nmax) {
         this.scrubber.bounds(this.min.value, this.max.value)
@@ -264,7 +262,7 @@ class Field extends FieldComputed {
           `Cannot use a ${TY_INFO[value.type].name} as a slider bound. Try using any number.`,
         )
       }
-      const native = num(r32.value)
+      const native = r32.value.num()
       if (native !== native) {
         throw new Error("Slider bounds may not be undefined.")
       }
@@ -305,10 +303,10 @@ class Slider extends RawSlider {
     new OpEq(false).insertAt(cursor, L)
     const base = this.base
     this.display(cursor, base)
-    if (this.writtenBase || num(base) != 10) {
+    if (this.writtenBase || base.num() != 10) {
       const sub = new Block(null)
       new CmdSupSub(sub, null).insertAt(cursor, L)
-      new Display(sub.cursor(R), frac(10, 1)).value(num(base))
+      new Display(sub.cursor(R), frac(10, 1)).value(base.num())
     }
     this.expr.field.sel = cursor.selection()
     this.expr.field.onAfterChange(false)

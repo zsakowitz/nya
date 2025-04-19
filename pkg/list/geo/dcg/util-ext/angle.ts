@@ -8,7 +8,6 @@ import {
   type JsValue,
   type SPoint,
 } from "@/eval/ty"
-import { real, unpt } from "@/eval/ty/create"
 import { Display } from "@/eval/ty/display"
 import { R } from "@/field/dir"
 import { Prop } from "@/sheet/ext"

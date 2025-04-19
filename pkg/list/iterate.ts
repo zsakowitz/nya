@@ -15,7 +15,6 @@ import {
 } from "@/eval/lib/binding"
 import { type GlslValue, type JsValue, type Type, typeName } from "@/eval/ty"
 import { coerceValueGlsl, isReal } from "@/eval/ty/coerce"
-import { num, real } from "@/eval/ty/create"
 import { declareGlsl } from "@/eval/ty/decl"
 import { list } from "@/eval/ty/list"
 import { b, p } from "@/jsx"
@@ -230,7 +229,7 @@ function getLimit(node: Node, props: PropsJs): number {
   if (!isReal(value)) {
     throw new Error("Limit of 'iterate' must be a number.")
   }
-  const real = Math.floor(num(value.value))
+  const real = Math.floor(value.value.num())
   if (!(0 <= real && real <= 1000)) {
     throw new Error("Limit of 'iterate' must be between 0 and 1000.")
   }

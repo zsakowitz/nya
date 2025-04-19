@@ -18,10 +18,8 @@ import { FnDist } from "@/eval/ops/dist"
 import { issue } from "@/eval/ops/issue"
 import { binaryFn } from "@/eval/sym"
 import type { JsValue } from "@/eval/ty"
-import { num, real } from "@/eval/ty/create"
 import type { Display } from "@/eval/ty/display"
 import type { TyInfoByName } from "@/eval/ty/info"
-import { add, div, mul, neg, raise, sub } from "@/eval/ty/ops"
 import { CmdNum } from "@/field/cmd/leaf/num"
 import { OpCdot } from "@/field/cmd/leaf/op"
 import { CmdWord } from "@/field/cmd/leaf/word"
@@ -77,20 +75,20 @@ function displayUnitPart(list: UnitList, display: Display, frac: boolean) {
     } else {
       new OpCdot().insertAt(display.cursor, L)
     }
-    const ev = num(exp)
+    const ev = exp.num()
     if (ev == 0) continue
     new CmdWord(label, "var").insertAt(display.cursor, L)
     if (ev != 1) {
       const sup = new Block(null)
-      display.at(sup.cursor(R)).num(exp)
+      display.at(sup.cursor(R)).exp.num()
       new CmdSupSub(null, sup).insertAt(display.cursor, L)
     }
   }
 }
 
 export function displayUnit(list: UnitList, props: Display, require: boolean) {
-  const high = list.filter((x) => !(num(x.exp) < 0))
-  const low = inv(list.filter((x) => num(x.exp) < 0))
+  const high = list.filter((x) => !(x.exp.num() < 0))
+  const low = inv(list.filter((x) => x.exp.num() < 0))
 
   if (low.length != 0) {
     const num = new Block(null)
@@ -123,7 +121,7 @@ function latexUnitPart(list: UnitList, frac: boolean): string {
     } else {
       ret += "\\cdot "
     }
-    const ev = num(exp)
+    const ev = exp.num()
     if (ev == 0) continue
     ret += `\\wordvar{${toText(label)}}`
     if (ev != 1) {
@@ -135,8 +133,8 @@ function latexUnitPart(list: UnitList, frac: boolean): string {
 }
 
 export function latexUnit(list: UnitList, require: boolean): string {
-  const high = list.filter((x) => !(num(x.exp) < 0))
-  const low = inv(list.filter((x) => num(x.exp) < 0))
+  const high = list.filter((x) => !(x.exp.num() < 0))
+  const low = inv(list.filter((x) => x.exp.num() < 0))
 
   if (low.length != 0) {
     const num = latexUnitPart(high, true)
@@ -234,7 +232,7 @@ const INFO_R32U: TyInfoByName<"r32u"> = {
   coerce: {},
   write: {
     display([value, unit], props) {
-      props.num(value)
+      props.value.num()
       displayUnit(unit, props, false)
     },
     isApprox() {
@@ -413,7 +411,7 @@ export default {
         assertCompat(u1, u2)
         const f1 = toSI(u1)
         const f2 = toSI(u2)
-        if (num(f1.offset) != 0 && num(f2.offset) != 0) {
+        if (f1.offset.num() != 0 && f2.offset.num() != 0) {
           badSum(u1, u2)
         }
         const val = add(convert(v1, f1), convert(v2, f2))
@@ -430,7 +428,7 @@ export default {
         assertCompat(u1, u2)
         const f1 = toSI(u1)
         const f2 = toSI(u2)
-        if (num(f1.offset) != 0 && num(f2.offset) != 0) {
+        if (f1.offset.num() != 0 && f2.offset.num() != 0) {
           badSum(u1, u2)
         }
         const val = sub(convert(v1, f1), convert(v2, f2))

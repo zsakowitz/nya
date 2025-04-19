@@ -1,9 +1,14 @@
 import { safe } from "@/eval/lib/util"
 
+const { floor, ceil, round, sqrt, sign } = Math
+
 /**
  * A real number type which preserves exact values for fractions (0.1 is
  * represented as 1/10, not
  * `0.1000000000000000055511151231257827021181583404541015625`).
+ *
+ * In documentation, `n/d` is used to describe exact fractions, while `~n` is
+ * used to describe approximate values, infinities, and NaN.
  */
 export class SReal {
   private constructor(
@@ -85,14 +90,14 @@ export class SReal {
 
   sqrt(): SReal {
     if (this.d !== null && this.d > 0 && this.n > 0) {
-      const n = Math.sqrt(this.n)
-      const d = Math.sqrt(this.d)
+      const n = sqrt(this.n)
+      const d = sqrt(this.d)
       if (safe(n) && safe(d)) {
         return frac(n, d)
       }
     }
 
-    return approx(Math.sqrt(this.num()))
+    return approx(sqrt(this.num()))
   }
 
   abs(): SReal {
@@ -100,7 +105,7 @@ export class SReal {
   }
 
   sign(): SReal {
-    return int(Math.sign(this.num()))
+    return int(sign(this.num()))
   }
 
   square(): SReal {
@@ -150,6 +155,53 @@ export class SReal {
   finite(): boolean {
     return isFinite(this.num())
   }
+
+  zero() {
+    return this.num() === 0
+  }
+
+  pow(b: SReal): SReal {
+    const a = this
+    const bv = b.num()
+
+    if (b.zero()) {
+      return int(1)
+    }
+
+    if (a.zero()) {
+      if (isNaN(bv)) {
+        return approx(NaN)
+      } else if (bv < 0) {
+        return approx(Infinity)
+      } else if (bv == 0) {
+        return int(1)
+      } else {
+        return int(0)
+      }
+    }
+
+    if (a.d !== null) {
+      const n = a.n ** bv
+      const d = a.d ** bv
+      if (safe(n) && safe(d)) return frac(n, d)
+    }
+
+    // TODO: things like (-8) ** (1/3) don't work
+    // TODO: use approx and exact better
+    return approx(a.num() ** bv)
+  }
+
+  floor(): SReal {
+    return int(floor(this.num()))
+  }
+
+  ceil(): SReal {
+    return int(ceil(this.num()))
+  }
+
+  round(): SReal {
+    return int(round(this.num()))
+  }
 }
 
 const FLOAT32 = new Float32Array(1)
@@ -163,6 +215,10 @@ function gcd(a: number, b: number) {
   return a
 }
 
+/**
+ * If `n` and `d` are safe integers, returns the exact fraction `n/d`.
+ * Otherwise, returns the approximate result `~n/d`.
+ */
 export function frac(n: number, d: number): SReal {
   if (safe(n) && safe(d) && d !== 0) {
     if (d < 0) {
@@ -177,10 +233,15 @@ export function frac(n: number, d: number): SReal {
   }
 }
 
+/** Returns the approximate result `~n`. */
 export function approx(n: number): SReal {
   return new (SReal as any)(n)
 }
 
+/**
+ * If `n` is a safe integer, returns the exact fraction `n/1`. Otherwise,
+ * returns the approximate result `~n`.
+ */
 export function int(n: number): SReal {
   return new (SReal as any)(n, safe(n) ? 1 : null)
 }

@@ -1,8 +1,6 @@
 import type { GlslContext } from "@/eval/lib/fn"
 import { FnDist } from "@/eval/ops/dist"
 import type { GlslVal, JsVal, SPoint, TyName, Val } from "@/eval/ty"
-import { frac, pt } from "@/eval/ty/create"
-import { mul, sub } from "@/eval/ty/ops"
 import { intersectSLineLineJs } from "./intersection"
 import { perpendicularJs } from "./perpendicular"
 

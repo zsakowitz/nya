@@ -1,26 +1,15 @@
 import type { GlslContext } from "@/eval/lib/fn"
 import { FnDist } from "@/eval/ops/dist"
-import type { GlslVal, JsVal, SPoint } from "@/eval/ty"
-import { pt } from "@/eval/ty/create"
-import { add, sub } from "@/eval/ty/ops"
-import { normVectorS } from "@/sheet/point"
+import type { GlslVal, JsVal } from "@/eval/ty"
+import type { SPoint } from "@/lib/spoint"
 
 export function bisectAngleJs(
   a: JsVal<"angle" | "directedangle">,
 ): [SPoint, SPoint] {
-  const p1 = normVectorS(a.value[1], a.value[0])
-  const p3 = normVectorS(a.value[1], a.value[2])
-
-  return [
-    a.value[1],
-    normVectorS(
-      a.value[1],
-      pt(
-        sub(add(p1.x, p3.x), a.value[1].x),
-        sub(add(p1.y, p3.y), a.value[1].y),
-      ),
-    ),
-  ]
+  const b = a.value[1]
+  const p1 = a.value[0].normFrom(b)
+  const p3 = a.value[2].normFrom(b)
+  return [b, p1.add(p3).sub(b).normFrom(b)]
 }
 
 function glsl(ctx: GlslContext, a: GlslVal<"angle" | "directedangle">) {

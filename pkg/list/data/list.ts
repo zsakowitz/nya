@@ -16,7 +16,6 @@ import {
   listGlsl,
   listJs,
 } from "@/eval/ty/coerce"
-import { num } from "@/eval/ty/create"
 import { TY_INFO } from "@/eval/ty/info"
 
 const FN_JOIN: Fn & WithDocs = {
@@ -82,7 +81,7 @@ function indexJs(on: JsValue, index: JsValue): JsValue {
   if (!isReal(index)) {
     throw new Error("Indexes must be numbers for now.")
   }
-  const value = num(index.value) - 1
+  const value = index.value.num() - 1
   return {
     type: on.type,
     list: false,
@@ -100,7 +99,7 @@ function indexGlsl(on: GlslValue, indexVal: JsValue): GlslValue {
   if (!isReal(indexVal)) {
     throw new Error("Indices must be numbers for now.")
   }
-  const index = num(indexVal.value)
+  const index = indexVal.value.num()
   if (index != Math.floor(index) || index <= 0 || index > on.list) {
     throw new Error(
       `Index ${index} is out-of-bounds on list of length ${on.list}.`,

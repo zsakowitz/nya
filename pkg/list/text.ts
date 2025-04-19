@@ -6,7 +6,6 @@ import { FnDist } from "@/eval/ops/dist"
 import { FnDistManual, type FnOverload } from "@/eval/ops/dist-manual"
 import { ALL_DOCS } from "@/eval/ops/docs"
 import { each, type JsValue, type Ty } from "@/eval/ty"
-import { frac, num } from "@/eval/ty/create"
 import { Display } from "@/eval/ty/display"
 import { Leaf } from "@/field/cmd/leaf"
 import { L, R, type Dir } from "@/field/dir"
@@ -197,7 +196,7 @@ const OP_TO_TEXT = new FnDist<"text">("text", "converts a value into text")
     "text",
     (a) => {
       const b = new Block(null)
-      new Display(b.cursor(R), frac(10, 1)).value(num(a.value))
+      new Display(b.cursor(R), frac(10, 1)).value(a.value.num())
       return [{ type: "latex", value: b.latex() }]
     },
     err,

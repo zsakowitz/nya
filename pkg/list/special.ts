@@ -5,7 +5,6 @@ import zetaGl from "#/glsl/zeta.glsl"
 import type { Package } from "#/types"
 import type { GlslContext } from "@/eval/lib/fn"
 import { FnDist } from "@/eval/ops/dist"
-import { approx, num, pt, real, rept, unpt } from "@/eval/ty/create"
 import gammaln from "@stdlib/math/base/special/gammaln"
 import { complex, zeta } from "mathjs"
 import { declareFactorialC32, declareFactorialR32 } from "./factorial"
@@ -13,12 +12,12 @@ import { declareDiv, declareMulC32, declarePowC32 } from "./num/complex"
 import { faddeevaPt } from "./special/erf-complex"
 
 const FN_ZETA: FnDist = new FnDist("zeta", "computes the Riemann zeta function")
-  .addJs(["r32"], "r32", (a) => approx(zeta(num(a.value))), "zeta2≈1.645")
+  .addJs(["r32"], "r32", (a) => approx(zeta(a.value.num())), "zeta2≈1.645")
   .add(
     ["c32"],
     "c32",
     (a) => {
-      const val = zeta(complex(num(a.value.x), num(a.value.y)))
+      const val = zeta(complex(a.value.x.num(), a.value.y.num()))
       if (typeof val == "number") {
         return pt(approx(val), real(0))
       }
@@ -38,7 +37,7 @@ const FN_ZETA: FnDist = new FnDist("zeta", "computes the Riemann zeta function")
 const FN_FADDEEVA = new FnDist("faddeeva", "scaled complex error function").add(
   ["c32"],
   "c32",
-  (a) => rept(faddeevaPt(unpt(a.value))),
+  (a) => rept(faddeevaPt(a.value.xy())),
   (ctx, a) => {
     declareMulC32(ctx)
     ctx.glslText(erfC32Gl)
@@ -57,8 +56,8 @@ const FN_BETA = new FnDist("beta", "beta function").add(
   ["r32", "r32"],
   "r32",
   (ar, br) => {
-    const a = num(ar.value)
-    const b = num(br.value)
+    const a = ar.value.num()
+    const b = br.value.num()
     const ln = gammaln(a) + gammaln(b) - gammaln(a + b)
     const s = (x: number) => (x > 0 || Math.floor(x) % 2 == 0 ? 1 : -1)
     const sign = s(a) * s(b) * s(a + b)
@@ -75,8 +74,8 @@ const FN_SIGNBETA = new FnDist("signbeta", "sign of the beta function").add(
   ["r32", "r32"],
   "r32",
   (ar, br) => {
-    const a = num(ar.value)
-    const b = num(br.value)
+    const a = ar.value.num()
+    const b = br.value.num()
     const s = (x: number) => (x > 0 || Math.floor(x) % 2 == 0 ? 1 : -1)
     return real(s(a) * s(b) * s(a + b))
   },
@@ -94,8 +93,8 @@ const FN_LNBETA = new FnDist(
   ["r32", "r32"],
   "r32",
   (ar, br) => {
-    const a = num(ar.value)
-    const b = num(br.value)
+    const a = ar.value.num()
+    const b = br.value.num()
     return approx(gammaln(a) + gammaln(b) - gammaln(a + b))
   },
   (ctx, a, b) => {

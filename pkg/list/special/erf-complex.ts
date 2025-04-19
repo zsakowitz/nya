@@ -1,7 +1,6 @@
 import erfC32Gl from "#/glsl/erf-c32.glsl"
 import type { Package } from "#/types"
 import { divP, expP, mulP, sqrP } from "@/eval/ops/complex"
-import { rept, unpt } from "@/eval/ty/create"
 import type { Point } from "@/sheet/point"
 import { declareMulC32 } from "../num/complex"
 import { FN_ERF } from "./erf"
@@ -81,7 +80,7 @@ function erfPt(z: Point): Point {
 FN_ERF.add(
   ["c32"],
   "c32",
-  (a) => rept(erfPt(unpt(a.value))),
+  (a) => rept(erfPt(a.value.xy())),
   (ctx, a) => {
     declareMulC32(ctx)
     ctx.glslText(erfC32Gl)
@@ -92,8 +91,8 @@ FN_ERF.add(
   ["c32", "c32"],
   "c32",
   (a, b) => {
-    const ap = erfPt(unpt(a.value))
-    const bp = erfPt(unpt(b.value))
+    const ap = erfPt(a.value.xy())
+    const bp = erfPt(b.value.xy())
     return rept({ x: bp.x - ap.x, y: bp.y - ap.y })
   },
   (ctx, a, b) => {

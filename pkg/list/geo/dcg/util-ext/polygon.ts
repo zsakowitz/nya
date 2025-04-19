@@ -1,5 +1,4 @@
 import { each, type JsVal, type JsValue } from "@/eval/ty"
-import { rept, unpt } from "@/eval/ty/create"
 import { CmdDot } from "@/field/cmd/leaf/num"
 import { CmdVar } from "@/field/cmd/leaf/var"
 import { CmdBrack } from "@/field/cmd/math/brack"

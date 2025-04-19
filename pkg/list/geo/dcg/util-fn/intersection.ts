@@ -1,7 +1,5 @@
 import type { GlslContext } from "@/eval/lib/fn"
 import type { GlslVal, SPoint, Tys, Val } from "@/eval/ty"
-import { SNANPT, num, pt, real, rept } from "@/eval/ty/create"
-import { div, mul, sub } from "@/eval/ty/ops"
 import { FN_INTERSECTION } from "../../point"
 import { computeArcVal } from "../util-arc"
 
@@ -89,9 +87,9 @@ for (const a of ["segment", "ray", "line"] as const) {
 
 function lineCircleJs(circ: Tys["circle"], lin: Tys["line"], index: -1 | 1) {
   // https://stackoverflow.com/a/37225895
-  const cx = num(circ.center.x)
-  const cy = num(circ.center.y)
-  const r = num(circ.radius)
+  const cx = circ.center.x.num()
+  const cy = circ.center.y.num()
+  const r = circ.radius.num()
   const x1 = num(lin[0].x)
   const y1 = num(lin[0].y)
   const x2 = num(lin[1].x)
@@ -163,13 +161,13 @@ function circleCircleJs(
     ;[br, ar] = [ar, br]
   }
 
-  const x0 = num(ar.center.x)
-  const y0 = num(ar.center.y)
-  const r0 = num(ar.radius)
+  const x0 = ar.center.x.num()
+  const y0 = ar.center.y.num()
+  const r0 = ar.radius.num()
 
-  const x1 = num(br.center.x)
-  const y1 = num(br.center.y)
-  const r1 = num(br.radius)
+  const x1 = br.center.x.num()
+  const y1 = br.center.y.num()
+  const r1 = br.radius.num()
 
   // Calculate the distance between the centers of the circles
   const dx = x1 - x0

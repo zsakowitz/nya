@@ -1,7 +1,5 @@
 import type { Package } from "#/types"
 import { FnDist } from "@/eval/ops/dist"
-import { frac, num, real } from "@/eval/ty/create"
-import { div, sub } from "@/eval/ty/ops"
 import { isDark } from "@/sheet/theme"
 import { FN_VALID } from "$/bool"
 import { oklab } from "./util-oklab"
@@ -73,10 +71,10 @@ export default {
       ["color"],
       "bool",
       ({ value: c }) => {
-        const r = num(c.r)
-        const g = num(c.g)
-        const b = num(c.b)
-        const a = num(c.a)
+        const r = c.r.num()
+        const g = c.g.num()
+        const b = c.b.num()
+        const a = c.a.num()
         return (
           0 <= r &&
           r <= 255 &&

@@ -1,8 +1,6 @@
 import type { GlslContext } from "@/eval/lib/fn"
 import { FnDist } from "@/eval/ops/dist"
 import type { GlslVal, JsVal, SPoint, SReal, TyName, Val } from "@/eval/ty"
-import { num, pt, real } from "@/eval/ty/create"
-import { add, mul, sub } from "@/eval/ty/ops"
 
 interface RotationJs {
   c: SPoint
@@ -156,8 +154,8 @@ export function mark<const T extends TyName>(
     (a, b, c) =>
       js(a, {
         c: b.value,
-        cos: real(Math.cos(num(c.value))),
-        sin: real(Math.sin(num(c.value))),
+        cos: real(Math.cos(c.value.num())),
+        sin: real(Math.sin(c.value.num())),
       }),
     (ctx, a, b, cr) => {
       const c = ctx.cache(cr)

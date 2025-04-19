@@ -6,7 +6,6 @@ import { id } from "@/eval/lib/binding"
 import { issue } from "@/eval/ops/issue"
 import { each, type JsValue, type Val } from "@/eval/ty"
 import { canCoerce, coerceTyJs } from "@/eval/ty/coerce"
-import { approx, num, real } from "@/eval/ty/create"
 import { CmdWord } from "@/field/cmd/leaf/word"
 import { L } from "@/field/dir"
 import { h, hx, path, svgx } from "@/jsx"
@@ -92,7 +91,7 @@ const EXT_SLOPE_FIELD = defineHideable<
             const r32 = coerceTyJs(value, "r32")
             const at = cv.toCanvas({ x, y })
             for (const slopeRaw of each(r32)) {
-              const slope = num(slopeRaw)
+              const slope = slopeRaw.num()
               if (isNaN(slope)) continue
               const { x: dx, y: dy } =
                 slope == Infinity || slope == -Infinity ?
@@ -127,8 +126,8 @@ const EXT_SLOPE_FIELD = defineHideable<
           if (isPoint) {
             const r32 = coerceTyJs(value, "point32")
             for (const raw of each(r32)) {
-              const dxRaw = num(raw.x)
-              const dyRaw = num(raw.y)
+              const dxRaw = raw.x.num()
+              const dyRaw = raw.y.num()
               if (isNaN(dxRaw) || isNaN(dyRaw)) continue
               const { x: dx, y: dy } = cv.toPaperDelta(
                 norm({ x: dxRaw, y: -dyRaw }, size),

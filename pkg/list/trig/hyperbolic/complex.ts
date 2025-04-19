@@ -21,7 +21,6 @@ import {
   sqrtP,
   subP,
 } from "@/eval/ops/complex"
-import { rept, unpt } from "@/eval/ty/create"
 import type { Point } from "@/sheet/point"
 import { declareSqrt, divJs } from "../complex"
 import {
@@ -173,7 +172,7 @@ export default {
     FN_SINH.add(
       ["c32"],
       "c32",
-      (a) => rept(sinhJs(unpt(a.value))),
+      (a) => rept(sinhJs(a.value.xy())),
       sinhGl,
       "sinh(2+3i)≈-3.591+0.531i",
     )
@@ -181,7 +180,7 @@ export default {
     FN_COSH.add(
       ["c32"],
       "c32",
-      (a) => rept(coshJs(unpt(a.value))),
+      (a) => rept(coshJs(a.value.xy())),
       coshGl,
       "cosh(2+3i)≈-3.725+0.512i",
     )
@@ -189,7 +188,7 @@ export default {
     FN_TANH.add(
       ["c32"],
       "c32",
-      (a) => tanhJs(unpt(a.value)),
+      (a) => tanhJs(a.value.xy()),
       tanhGl,
       "tanh(2+3i)≈0.965-0.010i",
     )
@@ -197,7 +196,7 @@ export default {
     FN_COTH.add(
       ["c32"],
       "c32",
-      (a) => cothJs(unpt(a.value)),
+      (a) => cothJs(a.value.xy()),
       cothGl,
       "coth(2+3i)≈1.036+0.011i",
     )
@@ -205,7 +204,7 @@ export default {
     FN_CSCH.add(
       ["c32"],
       "c32",
-      (a) => rept(recipP(sinhJs(unpt(a.value)))),
+      (a) => rept(recipP(sinhJs(a.value.xy()))),
       cschGl,
       "csch(2+3i)≈-0.273+0.040i",
     )
@@ -213,7 +212,7 @@ export default {
     FN_SECH.add(
       ["c32"],
       "c32",
-      (a) => rept(recipP(coshJs(unpt(a.value)))),
+      (a) => rept(recipP(coshJs(a.value.xy()))),
       sechGl,
       "sech(2+3i)≈-0.264+0.036i",
     )
@@ -221,7 +220,7 @@ export default {
     FN_ARSINH.add(
       ["c32"],
       "c32",
-      (a) => rept(asinhJs(unpt(a.value))),
+      (a) => rept(asinhJs(a.value.xy())),
       (ctx, a) => {
         declareAsinh(ctx)
         return `_helper_asinh(${a.expr})`
@@ -232,7 +231,7 @@ export default {
     FN_ARCOSH.add(
       ["c32"],
       "c32",
-      (a) => rept(acoshJs(unpt(a.value))),
+      (a) => rept(acoshJs(a.value.xy())),
       (ctx, a) => {
         declareAcosh(ctx)
         return `_helper_acosh(${a.expr})`
@@ -243,7 +242,7 @@ export default {
     FN_ARTANH.add(
       ["c32"],
       "c32",
-      (a) => rept(atanhJs(unpt(a.value))),
+      (a) => rept(atanhJs(a.value.xy())),
       (ctx, a) => {
         declareAtanh(ctx)
         return `_helper_atanh(${a.expr})`
@@ -254,7 +253,7 @@ export default {
     FN_ARCOTH.add(
       ["c32"],
       "c32",
-      (a) => rept(acothJs(unpt(a.value))),
+      (a) => rept(acothJs(a.value.xy())),
       (ctx, a) => {
         declareAcoth(ctx)
         return `_helper_acoth(${a.expr})`
@@ -265,7 +264,7 @@ export default {
     FN_ARCSCH.add(
       ["c32"],
       "c32",
-      (a) => rept(asinhJs(recipP(unpt(a.value)))),
+      (a) => rept(asinhJs(recipP(a.value.xy()))),
       (ctx, a) => {
         declareAsinh(ctx)
         declareDiv(ctx)
@@ -277,7 +276,7 @@ export default {
     FN_ARSECH.add(
       ["c32"],
       "c32",
-      (a) => rept(acoshJs(recipP(unpt(a.value)))),
+      (a) => rept(acoshJs(recipP(a.value.xy()))),
       (ctx, a) => {
         declareAcosh(ctx)
         declareDiv(ctx)

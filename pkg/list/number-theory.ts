@@ -1,7 +1,5 @@
 import type { Package } from "#/types"
 import { FnDist } from "@/eval/ops/dist"
-import { frac, num } from "@/eval/ty/create"
-import { sub } from "@/eval/ty/ops"
 
 export const FN_FLOOR = new FnDist(
   "floor",
@@ -9,7 +7,7 @@ export const FN_FLOOR = new FnDist(
 ).add(
   ["r32"],
   "r32",
-  (v) => frac(Math.floor(num(v.value)), 1),
+  (v) => frac(Math.floor(v.value.num()), 1),
   (_, v) => `floor(${v.expr})`,
   ["floor(2.3)=2", "floor(-7.8)=-8"],
 )
@@ -20,7 +18,7 @@ export const FN_FRACT = new FnDist(
 ).add(
   ["r32"],
   "r32",
-  (v) => sub(v.value, frac(Math.floor(num(v.value)), 1)),
+  (v) => sub(v.value, frac(Math.floor(v.value.num()), 1)),
   (_, v) => `fract(${v.expr})`,
   ["fract(7.4)=0.4", "fract(-9.3)=0.7"],
 )
@@ -31,7 +29,7 @@ export const FN_CEIL = new FnDist(
 ).add(
   ["r32"],
   "r32",
-  (v) => frac(Math.ceil(num(v.value)), 1),
+  (v) => frac(Math.ceil(v.value.num()), 1),
   (_, v) => `ceil(${v.expr})`,
   ["ceil(2.3)=3", "ceil(-7.8)=-7"],
 )
@@ -43,7 +41,7 @@ export const FN_ROUND = new FnDist(
   .add(
     ["r32"],
     "r32",
-    (v) => frac(Math.round(num(v.value)), 1),
+    (v) => frac(Math.round(v.value.num()), 1),
     (_, v) => `floor(${v.expr} + 0.5)`,
     ["round(3.5)=4", "round(-3.8)=-4"],
   )
@@ -51,13 +49,13 @@ export const FN_ROUND = new FnDist(
     ["r32", "r32"],
     "r32",
     (v, places) => {
-      const p = Math.round(num(places.value))
+      const p = Math.round(places.value.num())
       if (p > 0) {
         const x = 10 ** p
-        return frac(Math.round(num(v.value) * x), x)
+        return frac(Math.round(v.value.num() * x), x)
       } else {
         const x = 10 ** -p
-        return frac(x * Math.round(num(v.value) / x), 1)
+        return frac(x * Math.round(v.value.num() / x), 1)
       }
     },
     (ctx, v, places) => {

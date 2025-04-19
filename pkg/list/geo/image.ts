@@ -3,9 +3,7 @@ import { imageShaderError } from "$/image"
 import { example } from "@/docs/core"
 import { FnDist } from "@/eval/ops/dist"
 import { each, type JsValue, type Val } from "@/eval/ty"
-import { num, real, SNANPT, unpt } from "@/eval/ty/create"
 import { TY_INFO } from "@/eval/ty/info"
-import { neg } from "@/eval/ty/ops"
 import { CmdComma } from "@/field/cmd/leaf/comma"
 import { CmdWord } from "@/field/cmd/leaf/word"
 import { CmdBrack } from "@/field/cmd/math/brack"
@@ -61,11 +59,11 @@ function draw(cv: Cv, val: Val<"image2d">) {
     return
   }
 
-  const p1 = cv.toCanvas(unpt(val.p1))
-  const p2 = cv.toCanvas(unpt(val.p2))
+  const p1 = cv.toCanvas(val.p1.xy())
+  const p2 = cv.toCanvas(val.p2.xy())
   const width = Math.hypot(p1.x - p2.x, p1.y - p2.y)
   const height =
-    (val.aspect ? 1 / num(val.aspect) : val.data.height / val.data.width) *
+    (val.aspect ? 1 / val.aspect.num() : val.data.height / val.data.width) *
     width
 
   const transform = new DOMMatrix()
@@ -157,7 +155,7 @@ export default {
             TY_INFO.segment.write.display([value.p1, value.p2], inner)
             if (value.aspect) {
               new CmdComma().insertAt(inner.cursor, L)
-              inner.num(value.aspect)
+              inner.value.aspect.num()
             }
             new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
           },

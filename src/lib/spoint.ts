@@ -14,7 +14,7 @@ type PointData<N extends number> =
  * The only methods provided are methods which make sense for points. If working
  * with complex numbers, {@linkcode SComplex} is more useful.
  */
-export class SPoint<out N extends number> {
+export class SPoint<out N extends number = 2> {
   private constructor(readonly d: PointData<N>) {}
 
   add(other: SPoint<N>): SPoint<N> {
@@ -53,6 +53,22 @@ export class SPoint<out N extends number> {
     return this.d.reduce((a, b) => a.add(b.square()), int(0)).sqrt()
   }
 
+  zero(): boolean {
+    return this.d.every((x) => x.zero())
+  }
+
+  // TODO: handle infinity
+  norm(): SPoint<N> {
+    if (this.zero()) {
+      return this
+    }
+    return this.divR(this.hypot())
+  }
+
+  normFrom(from: SPoint<N>): SPoint<N> {
+    return this.sub(from).norm().add(from)
+  }
+
   finite(): boolean {
     return this.d.every((x) => x.finite())
   }
@@ -64,12 +80,25 @@ export class SPoint<out N extends number> {
   gl64(this: SPoint<2>) {
     return `vec${2 * this.d.length}(${this.d.map((x) => x.gl64()).join(", ")})`
   }
+
+  xy(this: SPoint<2>) {
+    return {
+      x: this.d[0].num(),
+      y: this.d[1].num(),
+    }
+  }
 }
 
 export function pt<const T extends readonly SReal[]>(
   data: T,
 ): SPoint<T["length"]> {
   return new (SPoint as any)(data)
+}
+
+export function ptint<const T extends readonly number[]>(
+  data: T,
+): SPoint<T["length"]> {
+  return pt(data.map(int))
 }
 
 export function ptnan<const N extends number>(n: N): SPoint<N> {

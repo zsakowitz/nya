@@ -1,5 +1,4 @@
 import type { Val } from "@/eval/ty"
-import { NANPT, unpt } from "@/eval/ty/create"
 import { gliderOnLine } from "@/eval/ty/info"
 import type { Point } from "@/sheet/point"
 import { Cv } from "@/sheet/ui/cv"

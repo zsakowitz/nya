@@ -3,7 +3,6 @@ import type { GlslContext } from "@/eval/lib/fn"
 import { FnDist } from "@/eval/ops/dist"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "@/eval/ops/vars"
 import type { SColor, SReal } from "@/eval/ty"
-import { frac, gl, num, real } from "@/eval/ty/create"
 import { TY_INFO } from "@/eval/ty/info"
 import { CmdColor } from "@/field/cmd/leaf/color"
 import { L } from "@/field/dir"
@@ -22,9 +21,9 @@ const FN_RGB = new FnDist(
 )
 
 function hsv(hr: SReal, sr: SReal, vr: SReal, a: SReal): SColor {
-  const h = num(hr) / 360
-  const s = num(sr)
-  const v = num(vr)
+  const h = hr.num() / 360
+  const s = sr.num()
+  const v = vr.num()
 
   // https://stackoverflow.com/questions/17242144/javascript-convert-hsb-hsv-color-to-rgb-accurately
   let r, g, b
@@ -198,9 +197,10 @@ export default {
           },
           display(value, props) {
             const f = (x: SReal) => {
-              const v = Math.min(255, Math.max(0, Math.floor(num(x)))).toString(
-                16,
-              )
+              const v = Math.min(
+                255,
+                Math.max(0, Math.floor(x.num())),
+              ).toString(16)
               if (v.length == 1) return "0" + v
               return v
             }

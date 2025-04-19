@@ -44,7 +44,7 @@ function makeDocName(name: string) {
     "font-['Symbola'] text-[1.265rem]/[1.15]",
     /^(?:\p{L}+|\p{L}[\p{L}\s]+\p{L}|\.\p{L})$/u.test(name) ?
       new CmdWord(name, undefined, /^[a-z]$/.test(name)).el
-    : new CmdNum(name).el,
+    : new Cmdname.num().el,
   )
 }
 

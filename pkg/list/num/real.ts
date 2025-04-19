@@ -45,11 +45,9 @@ import { FnList } from "@/eval/ops/list"
 import { unary } from "@/eval/sym"
 import type { SReal, Ty, TyName, Type } from "@/eval/ty"
 import { isZero } from "@/eval/ty/check"
-import { approx, frac, gl, num, real } from "@/eval/ty/create"
 import { gl64 } from "@/eval/ty/create-r64"
 import type { TyWrite } from "@/eval/ty/display"
 import { highRes, type TyExtras } from "@/eval/ty/info"
-import { abs, add, div, mul, neg, raise, sub } from "@/eval/ty/ops"
 import { splitDual } from "@/eval/ty/split"
 import { h } from "@/jsx"
 
@@ -63,8 +61,8 @@ declare module "@/eval/ty" {
 }
 
 function cmpJs(a: { value: SReal }, b: { value: SReal }) {
-  const ar = num(a.value)
-  const br = num(b.value)
+  const ar = a.value.num()
+  const br = b.value.num()
   return (
     ar < br ? real(-1)
     : ar > br ? real(1)
@@ -85,13 +83,13 @@ function addCmp(
   fn.add(
     ["r64", "r64"],
     "bool",
-    (a, b) => js(num(a.value), num(b.value)),
+    (a, b) => js(a.value.num(), b.value.num()),
     (ctx, a, b) => `(${FN_CMP.glsl1(ctx, a, b).expr} ${glsl64})`,
     [],
   ).add(
     ["r32", "r32"],
     "bool",
-    (a, b) => js(num(a.value), num(b.value)),
+    (a, b) => js(a.value.num(), b.value.num()),
     (_, a, b) => `(${pre}(${a.expr} ${glsl} ${b.expr}))`,
     `(2${latex}3)=${js(2, 3)}`,
   )
@@ -115,7 +113,7 @@ const WRITE_REAL: TyWrite<SReal> = {
     return value.type == "approx"
   },
   display(value, props) {
-    props.num(value)
+    props.value.num()
   },
 }
 
@@ -147,7 +145,7 @@ const FN_CMP = new FnDist(
 FN_LN.add(
   ["r32"],
   "r32",
-  (a) => approx(Math.log(num(a.value))),
+  (a) => approx(Math.log(a.value.num())),
   (_, a) => `log(${a.expr})`,
   "lne^2=2",
 )
@@ -156,7 +154,7 @@ FN_XPRODY.add(
   ["r32", "r32"],
   "r32",
   (a, b) => {
-    if (isNaN(num(b.value))) {
+    if (isNaN(b.value.num())) {
       return real(NaN)
     }
 
@@ -184,7 +182,7 @@ export const FN_SIGN = new FnDist("sign", "gets the sign of a number", {
   .add(
     ["r64"],
     "r64",
-    (a) => real(Math.sign(num(a.value))),
+    (a) => real(Math.sign(a.value.num())),
     (ctx, a) => {
       declareCmpR64(ctx)
       return `vec2(_helper_cmp_r64(${a.expr}, vec2(0.0)), 0)`
@@ -194,7 +192,7 @@ export const FN_SIGN = new FnDist("sign", "gets the sign of a number", {
   .add(
     ["r32"],
     "r32",
-    (a) => real(Math.sign(num(a.value))),
+    (a) => real(Math.sign(a.value.num())),
     (_, a) => `sign(${a.expr})`,
     "sign(7.8)=1",
   )
@@ -206,7 +204,7 @@ export const FN_LOG10 = new FnDist(
 ).add(
   ["r32"],
   "r32",
-  (a) => approx(Math.log10(num(a.value))),
+  (a) => approx(Math.log10(a.value.num())),
   (_, a) => `(log(${a.expr}) / log(10.0))`,
   "log(10000)=4",
 )
@@ -219,7 +217,7 @@ const FN_LOGB = new FnDist(
 ).add(
   ["r32", "r32"],
   "r32",
-  (b, a) => approx(Math.log(num(a.value)) / Math.log(num(b.value))),
+  (b, a) => approx(Math.log(a.value.num()) / Math.log(b.value.num())),
   (_, b, a) => `(log(${a.expr}) / log(${b.expr}))`,
   "log_216=4",
 )
@@ -278,13 +276,13 @@ const FN_COUNT = new (class extends FnList<"r64"> {
 
 const extras: TyExtras<SReal> = {
   isOne(value) {
-    return num(value) == 1
+    return value.num() == 1
   },
   isZero(value) {
-    return num(value) == 0
+    return value.num() == 0
   },
   isNonZero(value) {
-    return num(value) != 0
+    return value.num() != 0
   },
 }
 
@@ -366,8 +364,8 @@ export default {
       ["r32", "r32"],
       "r32",
       (ar, br) => {
-        const a = num(ar.value)
-        const b = num(br.value)
+        const a = ar.value.num()
+        const b = br.value.num()
         return approx(((a % b) + b) % b)
       },
       (ctx, a, b) => {
@@ -478,7 +476,7 @@ export default {
     FN_EXP.add(
       ["r32"],
       "r32",
-      (a) => approx(Math.exp(num(a.value))),
+      (a) => approx(Math.exp(a.value.num())),
       (_, a) => `exp(${a.expr})`,
       "exp(2)=e^2≈7.389",
     )
@@ -503,7 +501,7 @@ export default {
     FN_VALID.add(
       ["r32"],
       "bool",
-      (a) => isFinite(num(a.value)),
+      (a) => isFinite(a.value.num()),
       (ctx, ar) => {
         const a = ctx.cache(ar)
         return `(!isnan(${a}) && !isinf(${a}))`

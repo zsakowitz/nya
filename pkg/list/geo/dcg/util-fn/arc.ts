@@ -19,8 +19,8 @@ export const FN_ARC = new FnDist(
 //       const d = (a: number, b: number) =>
 //         (((a + b) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI)
 //
-//       const a1r = num(br.value)
-//       const a3r = num(cr.value)
+//       const a1r = br.value.num()
+//       const a3r = cr.value.num()
 //       let a1 = a1r % (2 * Math.PI)
 //       let a3 = a3r % (2 * Math.PI)
 //       if (a1r < a3r) {
@@ -34,7 +34,7 @@ export const FN_ARC = new FnDist(
 //       }
 //       let a2 = a1 + (Math.min(d(a3, a1), d(a1, a3)) / 2) * Math.sign(a3 - a1)
 //       const c = unpt(ar.value.center)
-//       const r = num(ar.value.radius)
+//       const r = ar.value.radius.num()
 //
 //       return [
 //         rept({ x: Math.cos(a1) * r + c.x, y: Math.sin(a1) * r + c.y }),

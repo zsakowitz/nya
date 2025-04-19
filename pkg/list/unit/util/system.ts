@@ -1,7 +1,5 @@
 import { safe } from "@/eval/lib/util"
 import type { SReal } from "@/eval/ty"
-import { frac, num, real } from "@/eval/ty/create"
-import { add, div, mul, neg, sub } from "@/eval/ty/ops"
 import { UNIT_KIND_NAMES, UNIT_KINDS, type UnitKind } from "./kind"
 import { UNIT_KIND_VALUES } from "./units"
 
@@ -41,9 +39,9 @@ export interface UnitEntry {
 export type UnitList = UnitEntry[]
 
 function raise(base: SReal, exp: SReal): SReal {
-  const val = num(exp)
+  const val = exp.num()
 
-  if (num(base) == 0) {
+  if (base.num() == 0) {
     return frac(0, 1)
   } else if (val == 0) {
     return frac(1, 1)
@@ -57,7 +55,7 @@ function raise(base: SReal, exp: SReal): SReal {
     }
   }
 
-  return real(num(base) ** val)
+  return real(base.num() ** val)
 }
 
 export function toSI(list: UnitList): ConversionFactor {
@@ -116,8 +114,8 @@ function exponent(value: number) {
 export function name(list: UnitList) {
   return (
     list
-      .filter((x) => num(x.exp) != 0)
-      .map(({ exp, unit: { label } }) => `${label}${exponent(num(exp))}`)
+      .filter((x) => x.exp.num() != 0)
+      .map(({ exp, unit: { label } }) => `${label}${exponent(exp.num())}`)
       .join(" ") || "unitless"
   )
 }
@@ -144,7 +142,7 @@ export function siUnit(src: UnitList): UnitList {
 
   return UNIT_KINDS.map((kind): UnitEntry | undefined => {
     const exp = data[kind]
-    if (exp && num(exp) != 0) {
+    if (exp && exp.num() != 0) {
       return { exp, unit: UNIT_KIND_VALUES[kind] }
     }
   }).filter((x) => x != null)
@@ -158,8 +156,8 @@ export function assertCompat(src: UnitList, dst: UnitList) {
     const s = si1[ty]
     const d = si2[ty]
     if (!s && !d) continue
-    const sv = s ? num(s) : 0
-    const dv = d ? num(d) : 0
+    const sv = s ? s.num() : 0
+    const dv = d ? d.num() : 0
     if (sv != dv) {
       throw new Error(
         `Powers of ${UNIT_KIND_NAMES[ty]} differ in units '${name(src)}' (${sv}) and '${name(dst)}' (${dv}).`,
@@ -183,13 +181,13 @@ const HELP = `Try:
 2. If you actually want a measurement, convert to an absolute scale (e.g. kelvin) using the "in" operator.`
 
 export function check(list: UnitList) {
-  list = list.filter((x) => num(x.exp) != 0)
+  list = list.filter((x) => x.exp.num() != 0)
 
   let offset: UnitEntry | undefined
 
   for (const unit of list) {
-    if (unit.unit.base.offset && num(unit.unit.base.offset) != 0) {
-      if (num(unit.exp) != 1) {
+    if (unit.unit.base.offset && unit.unit.base.offset.num() != 0) {
+      if (unit.exp.num() != 1) {
         throw new Error(
           `'${unit.unit.label}' is non-absolute, and can't be raised to any exponent besides one. ${HELP}`,
         )
@@ -230,7 +228,7 @@ export function inv(a: UnitList): UnitList {
 }
 
 export function exp(a: UnitList, to: SReal): UnitList {
-  if (num(to) == 0) {
+  if (to.num() == 0) {
     return []
   }
 

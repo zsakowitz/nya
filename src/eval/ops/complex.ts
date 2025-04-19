@@ -117,5 +117,5 @@ export function ceilP(p: Point): Point {
 }
 
 export function onP(f: (x: Point) => Point) {
-  return (x: { value: SPoint }) => rept(f(unpt(x.value)))
+  return (x: { value: SPoint }) => rept(f(x.value.xy()))
 }

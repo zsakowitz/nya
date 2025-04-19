@@ -6,9 +6,7 @@ import { jsToGlsl } from "@/eval/js-to-glsl"
 import { FnDist } from "@/eval/ops/dist"
 import { FnDistDeriv } from "@/eval/ops/dist-deriv"
 import type { GlslValue, JsVal, SReal } from "@/eval/ty"
-import { approx, gl, num, real } from "@/eval/ty/create"
 import { TY_INFO } from "@/eval/ty/info"
-import { add, div, mul, recip, sub } from "@/eval/ty/ops"
 import { CmdComma } from "@/field/cmd/leaf/comma"
 import { CmdWord } from "@/field/cmd/leaf/word"
 import { CmdBrack } from "@/field/cmd/math/brack"
@@ -149,7 +147,7 @@ const FN_PDF = new FnDistDeriv("pdf", "probability distribution function")
     (dist, xRaw) => {
       const mean = num(dist.value[0])
       const stdev = num(dist.value[1])
-      const x = num(xRaw.value)
+      const x = xRaw.value.num()
       return approx(
         Math.E ** (-((x - mean) ** 2) / (2 * stdev * stdev)) /
           Math.sqrt(2 * Math.PI * stdev * stdev),
@@ -172,7 +170,7 @@ const FN_PDF = new FnDistDeriv("pdf", "probability distribution function")
     (dist, xRaw) => {
       const min = num(dist.value[0])
       const max = num(dist.value[1])
-      const x = num(xRaw.value)
+      const x = xRaw.value.num()
       // COMPAT: desmos doesn't do an isNaN(x) check except sometimes
       // calculating uniformdist(1,2).pdf(x{x>1.5}withx=1.2) results in 1
       // but plotting uniformdist(1,2).pdf(x{x>1.5}) doesn't plot a value for x=1.2
@@ -219,7 +217,7 @@ function uniformdistcdfJs(
 ): SReal {
   const min = num(dist.value[0])
   const max = num(dist.value[1])
-  const x = num(xRaw.value)
+  const x = xRaw.value.num()
   // COMPAT: desmos doesn't do an isNaN(x) check except sometimes
   // calculating uniformdist(1,2).pdf(x{x>1.5}withx=1.2) results in 1
   // but plotting uniformdist(1,2).pdf(x{x>1.5}) doesn't plot a value for x=1.2
@@ -257,7 +255,7 @@ const FN_CDF = new FnDistDeriv("cdf", "cumulative distribution function")
     (dist, xRaw) => {
       const mean = num(dist.value[0])
       const stdev = num(dist.value[1])
-      const x = num(xRaw.value)
+      const x = xRaw.value.num()
       return approx((1 + erf((x - mean) / (stdev * Math.SQRT2))) / 2)
     },
     (ctx, dist, x) => {
@@ -275,8 +273,8 @@ const FN_CDF = new FnDistDeriv("cdf", "cumulative distribution function")
     (dist, lRaw, rRaw) => {
       const mean = num(dist.value[0])
       const stdev = num(dist.value[1])
-      const l = num(lRaw.value)
-      const r = num(rRaw.value)
+      const l = lRaw.value.num()
+      const r = rRaw.value.num()
       return approx(
         (erf((r - mean) / (stdev * Math.SQRT2)) -
           erf((l - mean) / (stdev * Math.SQRT2))) /
@@ -317,7 +315,7 @@ FN_QUANTILE.add(
   (dist, x) => {
     const mean = num(dist.value[0])
     const stdev = num(dist.value[1])
-    const p = num(x.value)
+    const p = x.value.num()
     if (!(0 <= p && p <= 1)) return real(NaN)
     return approx(mean + stdev * Math.SQRT2 * erfinv(2 * p - 1))
   },
@@ -332,7 +330,7 @@ FN_QUANTILE.add(
   ["uniformdist", "r32"],
   "r32",
   (dist, x) => {
-    const p = num(x.value)
+    const p = x.value.num()
     if (!(0 <= p && p <= 1) || !(num(dist.value[0]) <= num(dist.value[1]))) {
       return real(NaN)
     }
@@ -417,9 +415,9 @@ export default {
             new CmdWord("normaldist", "prefix").insertAt(props.cursor, L)
             const block = new Block(null)
             const inner = props.at(block.cursor(R))
-            inner.num(mean)
+            inner.mean.num()
             new CmdComma().insertAt(inner.cursor, L)
-            inner.num(stdev)
+            inner.stdev.num()
             new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
           },
         },
@@ -530,9 +528,9 @@ export default {
             new CmdWord("uniformdist", "prefix").insertAt(props.cursor, L)
             const block = new Block(null)
             const inner = props.at(block.cursor(R))
-            inner.num(min)
+            inner.min.num()
             new CmdComma().insertAt(inner.cursor, L)
-            inner.num(max)
+            inner.max.num()
             new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
           },
         },
@@ -591,7 +589,7 @@ export default {
             new CmdWord("boltzmanndist", "prefix").insertAt(props.cursor, L)
             const block = new Block(null)
             const inner = props.at(block.cursor(R))
-            inner.num(mean)
+            inner.mean.num()
             new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
           },
         },
@@ -643,7 +641,7 @@ export default {
             new CmdWord("poissondist", "prefix").insertAt(props.cursor, L)
             const block = new Block(null)
             const inner = props.at(block.cursor(R))
-            inner.num(value)
+            inner.value.num()
             new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
           },
         },
@@ -707,9 +705,9 @@ export default {
             new CmdWord("binomialdist", "prefix").insertAt(props.cursor, L)
             const block = new Block(null)
             const inner = props.at(block.cursor(R))
-            inner.num(a)
+            inner.a.num()
             new CmdComma().insertAt(inner.cursor, L)
-            inner.num(b)
+            inner.b.num()
             new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
           },
         },

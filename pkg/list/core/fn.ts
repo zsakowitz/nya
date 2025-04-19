@@ -23,7 +23,6 @@ import { FNS, OP_UNARY } from "@/eval/ops"
 import type { Sym } from "@/eval/sym"
 import { each, type GlslValue, type JsValue } from "@/eval/ty"
 import { canCoerce, coerceTyJs } from "@/eval/ty/coerce"
-import { frac, num } from "@/eval/ty/create"
 import { OP_JUXTAPOSE, OP_RAISE } from "./ops"
 
 function callJs(name: Var, args: Node[], props: PropsJs): JsValue {
@@ -228,7 +227,7 @@ function fnExponentJs(raw: JsValue): JsValue<"r32"> {
 
   const value = coerceTyJs(raw, "r32")
   for (const valRaw of each(value)) {
-    const val = num(valRaw)
+    const val = valRaw.num()
     if (!(safe(val) && 1 < val)) {
       invalidFnSup()
     }
@@ -244,7 +243,7 @@ function fnExponentGlsl(ctx: GlslContext, raw: JsValue): GlslValue<"r64"> {
 
   const value = coerceTyJs(raw, "r32")
   for (const valRaw of each(value)) {
-    const val = num(valRaw)
+    const val = valRaw.num()
     if (!(safe(val) && 1 < val)) {
       invalidFnSup()
     }
@@ -254,7 +253,7 @@ function fnExponentGlsl(ctx: GlslContext, raw: JsValue): GlslValue<"r64"> {
     return {
       type: "r64",
       list: false,
-      expr: `vec2(${num(value.value)}, 0)`,
+      expr: `vec2(${value.value.num()}, 0)`,
     }
   }
 

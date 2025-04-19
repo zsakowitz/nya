@@ -5,7 +5,6 @@ import { jsToGlsl } from "@/eval/js-to-glsl"
 import { issue } from "@/eval/ops/issue"
 import { simplify, SYM_0, SYM_1, txr } from "@/eval/sym"
 import type { JsValue } from "@/eval/ty"
-import { frac, real } from "@/eval/ty/create"
 import { Display } from "@/eval/ty/display"
 import { CmdDot, CmdNum } from "@/field/cmd/leaf/num"
 import { OpPlusMinus } from "@/field/cmd/leaf/op"
@@ -105,7 +104,7 @@ export default {
             const c = block.cursor(R)
             for (const char of value.source.sub) {
               if ("0" <= char && char <= "9") {
-                new CmdNum(char).insertAt(c, L)
+                new Cmdchar.num().insertAt(c, L)
               } else {
                 new CmdWord(char, undefined, true).insertAt(c, L)
               }

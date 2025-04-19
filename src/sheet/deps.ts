@@ -16,7 +16,6 @@ import { GlslContext, GlslHelpers } from "@/eval/lib/fn"
 import { JsContext } from "@/eval/lib/jsctx"
 import type { Sym } from "@/eval/sym"
 import type { GlslValue, JsValue } from "@/eval/ty"
-import { frac } from "@/eval/ty/create"
 import { Field } from "@/field/field"
 import type { Options } from "@/field/options"
 

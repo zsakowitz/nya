@@ -62,7 +62,7 @@ export class Display {
           break
         case "e": {
           if (digits[i + 1] != "+" && digits[i + 1] != "-") {
-            new CmdNum(digit).insertAt(cursor, L)
+            new Cmddigit.num().insertAt(cursor, L)
             break
           }
           if (tag) {
@@ -81,14 +81,14 @@ export class Display {
               if (digit == "-") {
                 new OpMinus().insertAt(cursor, L)
               } else if (digit != "+") {
-                new CmdNum(digit).insertAt(cursor, L)
+                new Cmddigit.num().insertAt(cursor, L)
               }
             }
           }
           break loop
         }
         default:
-          new CmdNum(digit).insertAt(cursor, L)
+          new Cmddigit.num().insertAt(cursor, L)
       }
     }
 
@@ -178,7 +178,7 @@ export class Display {
   }
 
   num(numRaw: SReal, tag?: string, signed = false) {
-    let val = this.numToBase(num(numRaw))
+    let val = this.numToBase(numRaw.num())
     if (signed && val[0] != "-") val = "+" + val
     if (val == "Infinity") val = "∞"
     else if (val == "-Infinity") val = "-∞"
@@ -253,9 +253,9 @@ export class Display {
 
     this.plainValue(value)
 
-    if (this.canWriteBase() && num(this.base) != 10) {
+    if (this.canWriteBase() && this.base.num() != 10) {
       new CmdWord("base", "infix").insertAt(this.cursor, L)
-      new Display(this.cursor, frac(10, 1)).num(this.base)
+      new Display(this.cursor, frac(10, 1)).this.base.num()
     }
   }
 }

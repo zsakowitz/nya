@@ -15,7 +15,6 @@ import {
 import { fn, type GlslContext } from "@/eval/lib/fn"
 import { cx, divP, recipP, sqrtP } from "@/eval/ops/complex"
 import type { SPoint } from "@/eval/ty"
-import { frac, pt, real, rept, unpt } from "@/eval/ty/create"
 import type { Point } from "@/sheet/point"
 import type { RequireRadiansReason } from "@/sheet/ui/sheet"
 import {
@@ -88,7 +87,7 @@ export function divJs(a: Point, b: Point): SPoint {
 }
 
 function sqrtJs(z: SPoint): SPoint {
-  return rept(sqrtP(unpt(z)))
+  return rept(sqrtP(z.xy()))
 }
 
 const I = rept(cx(0, 1))
@@ -216,7 +215,7 @@ export default {
       Q,
       ["c32"],
       "c32",
-      (a) => rept(sinJs(unpt(a.value))),
+      (a) => rept(sinJs(a.value.xy())),
       sinGl,
       "sin(2+3i)≈9.1545-4.1689i",
     )
@@ -225,7 +224,7 @@ export default {
       Q,
       ["c32"],
       "c32",
-      (a) => rept(cosJs(unpt(a.value))),
+      (a) => rept(cosJs(a.value.xy())),
       cosGl,
       "cos(2+3i)≈-4.1896-9.1092i",
     )
@@ -234,7 +233,7 @@ export default {
       Q,
       ["c32"],
       "c32",
-      (a) => tanJs(unpt(a.value)),
+      (a) => tanJs(a.value.xy()),
       tanGl,
       "tan(2+3i)≈-0.0038+1.0032i",
     )
@@ -243,7 +242,7 @@ export default {
       Q,
       ["c32"],
       "c32",
-      (a) => recipJs(sinJs(unpt(a.value))),
+      (a) => recipJs(sinJs(a.value.xy())),
       cscGl,
       "csc(2+3i)≈0.0905+0.0412i",
     )
@@ -252,7 +251,7 @@ export default {
       Q,
       ["c32"],
       "c32",
-      (a) => recipJs(cosJs(unpt(a.value))),
+      (a) => recipJs(cosJs(a.value.xy())),
       secGl,
       "sec(2+3i)≈-0.0417+0.0906i",
     )
@@ -261,7 +260,7 @@ export default {
       Q,
       ["c32"],
       "c32",
-      (a) => cotJs(unpt(a.value)),
+      (a) => cotJs(a.value.xy()),
       cotGl,
       "cot(2+3i)≈-0.0037-0.9968i",
     )

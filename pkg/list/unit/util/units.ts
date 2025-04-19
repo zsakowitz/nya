@@ -1,6 +1,4 @@
 import type { SReal } from "@/eval/ty"
-import { approx, frac, num, real } from "@/eval/ty/create"
-import { mul } from "@/eval/ty/ops"
 import type { UnitKind } from "./kind"
 import type { BaseUnit, Unit } from "./system"
 

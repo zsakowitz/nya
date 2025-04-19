@@ -6,13 +6,14 @@ import { Precedence } from "@/eval/ast/token"
 import type { GlslContext } from "@/eval/lib/fn"
 import { FnDist } from "@/eval/ops/dist"
 import { binary, suffixFn, SYM_1, txr, unary } from "@/eval/sym"
-import { approx, num, real, rept } from "@/eval/ty/create"
 import { CmdExclamation } from "@/field/cmd/leaf/exclamation"
 import { SymPsi } from "@/field/cmd/leaf/sym"
 import { CmdBrack } from "@/field/cmd/math/brack"
 import { CmdSupSub } from "@/field/cmd/math/supsub"
 import { L, R } from "@/field/dir"
 import { Block } from "@/field/model"
+import { ptint } from "@/lib/spoint"
+import { approx, int } from "@/lib/sreal"
 import digamma from "@stdlib/math/base/special/digamma"
 import factorial from "@stdlib/math/base/special/factorial"
 import polygamma from "@stdlib/math/base/special/polygamma"
@@ -154,7 +155,7 @@ export const FN_DIGAMMA: FnDist = new FnDist(
   ["r32"],
   "r32",
   (a) => {
-    return approx(digamma(num(a.value)))
+    return approx(digamma(a.value.num()))
   },
   () => {
     throw new Error(
@@ -202,7 +203,7 @@ export const FN_POLYGAMMA: FnDist = new FnDist(
   ["r32", "r32"],
   "r32",
   (a, b) => {
-    return approx(polygamma(num(a.value), num(b.value)))
+    return approx(polygamma(a.value.num(), b.value.num()))
   },
   () => {
     throw new Error(
@@ -236,11 +237,11 @@ const OP_FACTORIAL: FnDist = new FnDist("!", "computes a factorial", {
     ["r32"],
     "r32",
     (a) => {
-      const val = num(a.value)
+      const val = a.value.num()
       if (val == Math.floor(val) && val < 0) {
-        return real(Infinity)
+        return approx(Infinity)
       }
-      return real(factorial(val))
+      return int(factorial(val))
     },
     (ctx, a) => factorialGlsl(ctx, a.expr),
     "7! =5040=7\\cdot6\\cdot5\\cdot4\\cdot3\\cdot2\\cdot1",
@@ -249,17 +250,17 @@ const OP_FACTORIAL: FnDist = new FnDist("!", "computes a factorial", {
     ["c32"],
     "c32",
     ({ value }) => {
-      const x = num(value.x)
-      const y = num(value.y)
+      const x = value.x.num()
+      const y = value.y.num()
       if (y == 0 && x == Math.floor(x) && x < 0) {
-        return rept({ x: Infinity, y: 0 })
+        return ptint([Infinity, 0])
       }
       // The type signature lies.
       const result = gamma(complex(x + 1, y)) as number | Complex
       if (typeof result == "number") {
-        return rept({ x: result, y: 0 })
+        return ptint([result, 0])
       } else {
-        return rept({ x: result.re, y: result.im })
+        return ptint([result.re, result.im])
       }
     },
     (ctx, a) => {
