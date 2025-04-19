@@ -1,4 +1,3 @@
-import "../index.css"
 import type { Addon, Package } from "./types"
 
 export type IndexOf<T> = Record<PackageId, () => Promise<{ default: T }>>

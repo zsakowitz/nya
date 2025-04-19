@@ -1,3 +1,5 @@
+import "./page/index.dist.css"
+
 try {
   if (location.href.includes("showmanifest")) {
     await import("./manifest")
