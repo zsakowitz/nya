@@ -1,7 +1,6 @@
 import type { Package } from "#/types"
 import { commalist } from "@/eval/ast/collect"
 import { js } from "@/eval/js"
-import { frac } from "@/eval/ty/create"
 import { Display } from "@/eval/ty/display"
 import { OpEq } from "@/field/cmd/leaf/cmp"
 import { CmdVar } from "@/field/cmd/leaf/var"
@@ -75,7 +74,7 @@ const EXT_SELECT = defineExt({
     }
     for (const item of items.value) {
       const block = new Block(null)
-      new Display(block.cursor(R), frac(10, 1)).plainVal({
+      new Display(block.cursor(R), int(10)).plainVal({
         type: items.type,
         value: item,
       })

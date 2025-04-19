@@ -1,8 +1,8 @@
 import type { GlslContext } from "@/eval/lib/fn"
 import { FnDist } from "@/eval/ops/dist"
-import type { GlslVal, JsVal, SPoint, SReal, TyName, Val } from "@/eval/ty"
-import { pt } from "@/eval/ty/create"
-import { add, mul, sub } from "@/eval/ty/ops"
+import type { GlslVal, JsVal, TyName, Val } from "@/eval/ty"
+import { type SPoint } from "@/lib/spoint"
+import type { SReal } from "@/lib/sreal"
 
 interface DilationJs {
   c: SPoint
@@ -14,10 +14,7 @@ interface DilationGlsl {
 }
 
 export function dilateJs(by: DilationJs, target: SPoint) {
-  const x = sub(target.x, by.c.x)
-  const y = sub(target.y, by.c.y)
-
-  return pt(add(mul(x, by.s), by.c.x), add(mul(y, by.s), by.c.y))
+  return target.sub(by.c).mulR(by.s).add(by.c)
 }
 
 function dilateGlsl(ctx: GlslContext, by: DilationGlsl, target: string) {

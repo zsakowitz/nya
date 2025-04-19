@@ -5,16 +5,15 @@ import { EXT_EVAL } from "$/eval"
 import { jsToGlsl } from "@/eval/js-to-glsl"
 import { FnDist } from "@/eval/ops/dist"
 import { FnDistDeriv } from "@/eval/ops/dist-deriv"
-import type { GlslValue, JsVal, SReal } from "@/eval/ty"
-import { approx, gl, num, real } from "@/eval/ty/create"
+import type { GlslValue, JsVal } from "@/eval/ty"
 import { TY_INFO } from "@/eval/ty/info"
-import { add, div, mul, recip, sub } from "@/eval/ty/ops"
 import { CmdComma } from "@/field/cmd/leaf/comma"
 import { CmdWord } from "@/field/cmd/leaf/word"
 import { CmdBrack } from "@/field/cmd/math/brack"
 import { L, R } from "@/field/dir"
 import { Block } from "@/field/model"
 import { g, h, path, svgx } from "@/jsx"
+import { approx, frac, int, type SReal } from "@/lib/sreal"
 import { defineHideable } from "@/sheet/ext/hideable"
 import { createLine } from "@/sheet/shader-line"
 import erf from "@stdlib/math/base/special/erf"
@@ -36,14 +35,14 @@ const normaldist = new FnDist("normaldist", "creates a normal distribution")
   .add(
     [],
     "normaldist",
-    () => [real(0), real(1)],
+    () => [int(0), int(1)],
     () => "vec2(0,1)",
     "normaldist()=normaldist(0,1)",
   )
   .add(
     ["r32"],
     "normaldist",
-    (a) => [a.value, real(1)],
+    (a) => [a.value, int(1)],
     (_, a) => `vec2(${a.expr}, 1)`,
     "normaldist(3)=normaldist(3,1)",
   )
@@ -59,14 +58,14 @@ const tdist = new FnDist("tdist", "creates a t-distribution")
   .add(
     ["r32"],
     "tdist",
-    (a) => [a.value, real(0), real(1)],
+    (a) => [a.value, int(0), int(1)],
     (_, a) => `vec3(${a.expr}, 0, 1)`,
     "tdist(2.5)=tdist(2.5,0,1)",
   )
   .add(
     ["r32", "r32"],
     "tdist",
-    (a, b) => [a.value, b.value, real(1)],
+    (a, b) => [a.value, b.value, int(1)],
     (_, a, b) => `vec3(${a.expr}, ${b.expr}, 1)`,
     "tdist(2.5,3)=tdist(2.5,3,1)",
   )
@@ -82,14 +81,14 @@ const uniformdist = new FnDist("uniformdist", "creates a uniform distribution")
   .add(
     [],
     "uniformdist",
-    () => [real(0), real(1)],
+    () => [int(0), int(1)],
     () => "vec2(0,1)",
     "uniformdist()=uniformdist(0,1)",
   )
   .add(
     ["r32"],
     "uniformdist",
-    (a) => [a.value, real(1)],
+    (a) => [a.value, int(1)],
     (_, a) => `vec2(${a.expr}, 1)`,
     "uniformdist(0.7)=uniformdist(0.7,1)",
   )
@@ -130,7 +129,7 @@ const binomialdist = new FnDist(
   .add(
     ["r32"],
     "binomialdist",
-    (a) => [a.value, real(0.5)],
+    (a) => [a.value, frac(1, 2)],
     (_, a) => `vec2(${a.expr}, 0.5)`,
     "binomialdist(6)=binomialdist(6,0.5)",
   )
@@ -147,9 +146,9 @@ const FN_PDF = new FnDistDeriv("pdf", "probability distribution function")
     ["normaldist", "r32"],
     "r32",
     (dist, xRaw) => {
-      const mean = num(dist.value[0])
-      const stdev = num(dist.value[1])
-      const x = num(xRaw.value)
+      const mean = dist.value[0].num()
+      const stdev = dist.value[1].num()
+      const x = xRaw.value.num()
       return approx(
         Math.E ** (-((x - mean) ** 2) / (2 * stdev * stdev)) /
           Math.sqrt(2 * Math.PI * stdev * stdev),
@@ -170,23 +169,23 @@ const FN_PDF = new FnDistDeriv("pdf", "probability distribution function")
     ["uniformdist", "r32"],
     "r32",
     (dist, xRaw) => {
-      const min = num(dist.value[0])
-      const max = num(dist.value[1])
-      const x = num(xRaw.value)
+      const min = dist.value[0].num()
+      const max = dist.value[1].num()
+      const x = xRaw.value.num()
       // COMPAT: desmos doesn't do an isNaN(x) check except sometimes
       // calculating uniformdist(1,2).pdf(x{x>1.5}withx=1.2) results in 1
       // but plotting uniformdist(1,2).pdf(x{x>1.5}) doesn't plot a value for x=1.2
       // to simplify things, we always do an isNaN(x) check
       // see https://www.desmos.com/calculator/x22o29smej for further examples
       if (isNaN(min) || isNaN(max) || isNaN(x) || min > max) {
-        return real(NaN)
+        return approx(NaN)
       }
       if (!isFinite(min) || !isFinite(max)) {
-        return min == max ? real(NaN) : real(0)
+        return min == max ? approx(NaN) : int(0)
       }
       return min <= x && x <= max ?
-          recip(sub(dist.value[1], dist.value[0]))
-        : real(0)
+          dist.value[1].sub(dist.value[0]).inv()
+        : int(0)
     },
     (ctx, dist, xRaw) => {
       const d = ctx.cache(dist)
@@ -217,23 +216,23 @@ function uniformdistcdfJs(
   dist: JsVal<"uniformdist">,
   xRaw: JsVal<"r32">,
 ): SReal {
-  const min = num(dist.value[0])
-  const max = num(dist.value[1])
-  const x = num(xRaw.value)
+  const min = dist.value[0].num()
+  const max = dist.value[1].num()
+  const x = xRaw.value.num()
   // COMPAT: desmos doesn't do an isNaN(x) check except sometimes
   // calculating uniformdist(1,2).pdf(x{x>1.5}withx=1.2) results in 1
   // but plotting uniformdist(1,2).pdf(x{x>1.5}) doesn't plot a value for x=1.2
   // to simplify things, we always do an isNaN(x) check
   // see https://www.desmos.com/calculator/x22o29smej for further examples
   if (isNaN(min) || isNaN(max) || isNaN(x) || min > max) {
-    return real(NaN)
+    return approx(NaN)
   }
   if (!isFinite(min) || !isFinite(max)) {
     // COMPAT: our behavior at infinites is very different from desmos:
     // we aim that d/dx cdf = pdf, and have fewer NaN values with infinite bounds
     // nya test suite is at src/sheet/example/test/uniformdistcdf.txt
     // desmos tests are at https://www.desmos.com/calculator/wikg5utgi7
-    return real(
+    return int(
       min == -Infinity ?
         x == -Infinity || max == Infinity ?
           NaN
@@ -244,9 +243,9 @@ function uniformdistcdfJs(
   }
   // COMPAT: uniformdist(3,3).cdf(3) is 1 in desmos, but NaN in project nya
   return (
-    x < min ? real(0)
-    : x > max ? real(1)
-    : div(sub(xRaw.value, dist.value[0]), sub(dist.value[1], dist.value[0]))
+    x < min ? int(0)
+    : x > max ? int(1)
+    : xRaw.value.sub(dist.value[0]).div(dist.value[1].sub(dist.value[0]))
   )
 }
 
@@ -255,9 +254,9 @@ const FN_CDF = new FnDistDeriv("cdf", "cumulative distribution function")
     ["normaldist", "r32"],
     "r32",
     (dist, xRaw) => {
-      const mean = num(dist.value[0])
-      const stdev = num(dist.value[1])
-      const x = num(xRaw.value)
+      const mean = dist.value[0].num()
+      const stdev = dist.value[1].num()
+      const x = xRaw.value.num()
       return approx((1 + erf((x - mean) / (stdev * Math.SQRT2))) / 2)
     },
     (ctx, dist, x) => {
@@ -273,10 +272,10 @@ const FN_CDF = new FnDistDeriv("cdf", "cumulative distribution function")
     ["normaldist", "r32", "r32"],
     "r32",
     (dist, lRaw, rRaw) => {
-      const mean = num(dist.value[0])
-      const stdev = num(dist.value[1])
-      const l = num(lRaw.value)
-      const r = num(rRaw.value)
+      const mean = dist.value[0].num()
+      const stdev = dist.value[1].num()
+      const l = lRaw.value.num()
+      const r = rRaw.value.num()
       return approx(
         (erf((r - mean) / (stdev * Math.SQRT2)) -
           erf((l - mean) / (stdev * Math.SQRT2))) /
@@ -301,7 +300,7 @@ const FN_CDF = new FnDistDeriv("cdf", "cumulative distribution function")
     ["uniformdist", "r32", "r32"],
     "r32",
     (dist, lhs, rhs) =>
-      sub(uniformdistcdfJs(dist, rhs), uniformdistcdfJs(dist, lhs)),
+      uniformdistcdfJs(dist, rhs).sub(uniformdistcdfJs(dist, lhs)),
     (ctx, ar, b, c) => {
       const a = ctx.cache(ar)
       return `(${uniformdistcdfGlsl(a, ctx.cache(b))} - ${uniformdistcdfGlsl(a, ctx.cache(c))})`
@@ -315,10 +314,10 @@ FN_QUANTILE.add(
   ["normaldist", "r32"],
   "r32",
   (dist, x) => {
-    const mean = num(dist.value[0])
-    const stdev = num(dist.value[1])
-    const p = num(x.value)
-    if (!(0 <= p && p <= 1)) return real(NaN)
+    const mean = dist.value[0].num()
+    const stdev = dist.value[1].num()
+    const p = x.value.num()
+    if (!(0 <= p && p <= 1)) return approx(NaN)
     return approx(mean + stdev * Math.SQRT2 * erfinv(2 * p - 1))
   },
   (ctx, dist, x) => {
@@ -332,15 +331,14 @@ FN_QUANTILE.add(
   ["uniformdist", "r32"],
   "r32",
   (dist, x) => {
-    const p = num(x.value)
-    if (!(0 <= p && p <= 1) || !(num(dist.value[0]) <= num(dist.value[1]))) {
-      return real(NaN)
+    const p = x.value.num()
+    if (!(0 <= p && p <= 1) || !(dist.value[0].num() <= dist.value[1].num())) {
+      return approx(NaN)
     }
 
-    return add(
-      mul(dist.value[0], sub(real(1), x.value)),
-      mul(dist.value[1], x.value),
-    )
+    return dist.value[0]
+      .mul(int(1).sub(x.value))
+      .add(dist.value[1].mul(x.value))
   },
   (ctx, dist, x) => {
     const d = ctx.cache(dist)
@@ -402,16 +400,16 @@ export default {
         namePlural: "normal distributions",
         glsl: "vec2",
         toGlsl([a, b]) {
-          return `vec2(${gl(a)}, ${gl(b)})`
+          return `vec2(${a.gl32()}, ${b.gl32()})`
         },
         garbage: {
-          js: [real(NaN), real(NaN)],
+          js: [approx(NaN), approx(NaN)],
           glsl: "vec2(0.0/0.0)",
         },
         coerce: {},
         write: {
           isApprox(value) {
-            return value.some((x) => x.type == "approx")
+            return value.some((x) => x.isApprox())
           },
           display([mean, stdev], props) {
             new CmdWord("normaldist", "prefix").insertAt(props.cursor, L)
@@ -456,16 +454,16 @@ export default {
         namePlural: "t-distributions",
         glsl: "float",
         toGlsl(x) {
-          return `vec3(${x.map(gl).join(", ")})`
+          return `vec3(${x.map((x) => x.gl32()).join(", ")})`
         },
         garbage: {
-          js: [real(NaN), real(NaN), real(NaN)],
+          js: [approx(NaN), approx(NaN), approx(NaN)],
           glsl: "vec3(0.0/0.0)",
         },
         coerce: {},
         write: {
           isApprox(x) {
-            return x.some((x) => x.type == "approx")
+            return x.some((x) => x.isApprox())
           },
           display(value, props) {
             new CmdWord("tdist", "prefix").insertAt(props.cursor, L)
@@ -515,16 +513,16 @@ export default {
         namePlural: "uniform distributions",
         glsl: "vec2",
         toGlsl([a, b]) {
-          return `vec2(${gl(a)}, ${gl(b)})`
+          return `vec2(${a.gl32()}, ${b.gl32()})`
         },
         garbage: {
-          js: [real(NaN), real(NaN)],
+          js: [approx(NaN), approx(NaN)],
           glsl: "vec2(0.0/0.0)",
         },
         coerce: {},
         write: {
           isApprox(value) {
-            return value.some((x) => x.type == "approx")
+            return value.some((x) => x.isApprox())
           },
           display([min, max], props) {
             new CmdWord("uniformdist", "prefix").insertAt(props.cursor, L)
@@ -576,16 +574,16 @@ export default {
         namePlural: "boltzmann distributions",
         glsl: "vec2",
         toGlsl([a]) {
-          return gl(a)
+          return a.gl32()
         },
         garbage: {
-          js: [real(NaN)],
+          js: [approx(NaN)],
           glsl: "(0.0/0.0)",
         },
         coerce: {},
         write: {
           isApprox(value) {
-            return value.some((x) => x.type == "approx")
+            return value.some((x) => x.isApprox())
           },
           display([mean], props) {
             new CmdWord("boltzmanndist", "prefix").insertAt(props.cursor, L)
@@ -628,16 +626,16 @@ export default {
         namePlural: "Poisson distributions",
         glsl: "float",
         toGlsl(a) {
-          return gl(a)
+          return a.gl32()
         },
         garbage: {
-          js: real(NaN),
+          js: approx(NaN),
           glsl: "(0.0/0.0)",
         },
         coerce: {},
         write: {
           isApprox(value) {
-            return value.type == "approx"
+            return value.isApprox()
           },
           display(value, props) {
             new CmdWord("poissondist", "prefix").insertAt(props.cursor, L)
@@ -692,16 +690,16 @@ export default {
         namePlural: "binomial distributions",
         glsl: "vec2",
         toGlsl([a, b]) {
-          return `vec2(${gl(a)}, ${gl(b)})`
+          return `vec2(${a.gl32()}, ${b.gl32()})`
         },
         garbage: {
-          js: [real(NaN), real(NaN)],
+          js: [approx(NaN), approx(NaN)],
           glsl: "vec2(0.0/0.0)",
         },
         coerce: {},
         write: {
           isApprox(value) {
-            return value.some((x) => x.type == "approx")
+            return value.some((x) => x.isApprox())
           },
           display([a, b], props) {
             new CmdWord("binomialdist", "prefix").insertAt(props.cursor, L)

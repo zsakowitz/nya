@@ -1,5 +1,5 @@
+import type { Point } from "@/lib/point"
 import type { ItemRef } from "./items"
-import type { Point } from "./point"
 import type { Sheet } from "./ui/sheet"
 
 /** Simple API for picking objects off the canvas. */

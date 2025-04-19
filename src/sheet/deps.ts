@@ -16,9 +16,9 @@ import { GlslContext, GlslHelpers } from "@/eval/lib/fn"
 import { JsContext } from "@/eval/lib/jsctx"
 import type { Sym } from "@/eval/sym"
 import type { GlslValue, JsValue } from "@/eval/ty"
-import { frac } from "@/eval/ty/create"
 import { Field } from "@/field/field"
 import type { Options } from "@/field/options"
+import { int } from "@/lib/sreal"
 
 export class Scope {
   constructor(
@@ -29,7 +29,7 @@ export class Scope {
     const self = this
 
     this.propsJs = this.propsSym = {
-      base: frac(10, 1),
+      base: int(10),
       get bindingsJs() {
         return self.bindingsJs
       },
@@ -123,7 +123,7 @@ export class Scope {
   propsGlsl(): PropsGlsl {
     const self = this
     return {
-      base: frac(10, 1),
+      base: int(10),
       get bindings() {
         return self.bindingsGlsl
       },

@@ -9,21 +9,7 @@ import {
 } from "#/list/num/complex"
 import type { Package } from "#/types"
 import { fn, type GlslContext } from "@/eval/lib/fn"
-import {
-  addP,
-  cx,
-  divP,
-  lnP,
-  mulP,
-  recipP,
-  scaleP,
-  sqrP,
-  sqrtP,
-  subP,
-} from "@/eval/ops/complex"
-import { rept, unpt } from "@/eval/ty/create"
-import type { Point } from "@/sheet/point"
-import { declareSqrt, divJs } from "../complex"
+import { declareSqrt } from "../complex"
 import {
   FN_ARCOSH,
   FN_ARCOTH,
@@ -38,28 +24,6 @@ import {
   FN_SINH,
   FN_TANH,
 } from "./real"
-
-export function sinhJs(a: Point) {
-  return {
-    x: Math.cos(-a.y) * Math.sinh(a.x),
-    y: -Math.sin(-a.y) * Math.cosh(a.x),
-  }
-}
-
-export function coshJs(a: Point) {
-  return {
-    x: Math.cos(-a.y) * Math.cosh(a.x),
-    y: -Math.sin(-a.y) * Math.sinh(a.x),
-  }
-}
-
-export function tanhJs(a: Point) {
-  return divJs(sinhJs(a), coshJs(a))
-}
-
-export function cothJs(a: Point) {
-  return divJs(coshJs(a), sinhJs(a))
-}
 
 export const sinhGl = fn(
   ["c32"],
@@ -86,24 +50,6 @@ export const cothGl = fn(
   ["c32"],
   "c32",
 )`return ${divGl}(${coshGl}(${0}), ${sinhGl}(${0}));`
-
-function asinhJs(a: Point) {
-  return lnP(addP(a, sqrtP(addP(sqrP(a), cx(1)))))
-}
-
-function acoshJs(a: Point) {
-  const p1sqrt = sqrP(addP(a, cx(1)))
-  const m1sqrt = sqrP(addP(a, cx(-1)))
-  return lnP(addP(a, mulP(p1sqrt, m1sqrt)))
-}
-
-function atanhJs(a: Point) {
-  return scaleP(0.5, lnP(divP(addP(cx(1), a), subP(cx(1), a))))
-}
-
-function acothJs(a: Point) {
-  return scaleP(0.5, lnP(divP(addP(a, cx(1)), subP(a, cx(1)))))
-}
 
 function declareAsinh(ctx: GlslContext) {
   declareSqrt(ctx) // _helper_sqrt
@@ -162,66 +108,73 @@ function declareAcoth(ctx: GlslContext) {
 `
 }
 
+const W = "with a complex number"
+
 export default {
   name: "hyperbolic trig (complexes)",
   label: "hyperbolic trig on complex numbers",
   category: "trigonometry",
   deps: ["num/complex"],
   load() {
-    // FIXME: rad only
-
-    FN_SINH.add(
+    FN_SINH.addRadOnly(
+      W,
       ["c32"],
       "c32",
-      (a) => rept(sinhJs(unpt(a.value))),
+      (a) => a.value.ns().sinh().s(),
       sinhGl,
       "sinh(2+3i)≈-3.591+0.531i",
     )
 
-    FN_COSH.add(
+    FN_COSH.addRadOnly(
+      W,
       ["c32"],
       "c32",
-      (a) => rept(coshJs(unpt(a.value))),
+      (a) => a.value.ns().cosh().s(),
       coshGl,
       "cosh(2+3i)≈-3.725+0.512i",
     )
 
-    FN_TANH.add(
+    FN_TANH.addRadOnly(
+      W,
       ["c32"],
       "c32",
-      (a) => tanhJs(unpt(a.value)),
+      (a) => a.value.ns().tanh().s(),
       tanhGl,
       "tanh(2+3i)≈0.965-0.010i",
     )
 
-    FN_COTH.add(
+    FN_COTH.addRadOnly(
+      W,
       ["c32"],
       "c32",
-      (a) => cothJs(unpt(a.value)),
+      (a) => a.value.ns().coth().s(),
       cothGl,
       "coth(2+3i)≈1.036+0.011i",
     )
 
-    FN_CSCH.add(
+    FN_CSCH.addRadOnly(
+      W,
       ["c32"],
       "c32",
-      (a) => rept(recipP(sinhJs(unpt(a.value)))),
+      (a) => a.value.ns().sinh().inv().s(),
       cschGl,
       "csch(2+3i)≈-0.273+0.040i",
     )
 
-    FN_SECH.add(
+    FN_SECH.addRadOnly(
+      W,
       ["c32"],
       "c32",
-      (a) => rept(recipP(coshJs(unpt(a.value)))),
+      (a) => a.value.ns().cosh().inv().s(),
       sechGl,
       "sech(2+3i)≈-0.264+0.036i",
     )
 
-    FN_ARSINH.add(
+    FN_ARSINH.addRadOnly(
+      W,
       ["c32"],
       "c32",
-      (a) => rept(asinhJs(unpt(a.value))),
+      (a) => a.value.ns().asinh().s(),
       (ctx, a) => {
         declareAsinh(ctx)
         return `_helper_asinh(${a.expr})`
@@ -229,10 +182,11 @@ export default {
       "arsinh(2+3i)≈1.987+0.958i",
     )
 
-    FN_ARCOSH.add(
+    FN_ARCOSH.addRadOnly(
+      W,
       ["c32"],
       "c32",
-      (a) => rept(acoshJs(unpt(a.value))),
+      (a) => a.value.ns().acosh().s(),
       (ctx, a) => {
         declareAcosh(ctx)
         return `_helper_acosh(${a.expr})`
@@ -240,10 +194,11 @@ export default {
       "arcosh(2+3i)≈6.044-1.774i",
     )
 
-    FN_ARTANH.add(
+    FN_ARTANH.addRadOnly(
+      W,
       ["c32"],
       "c32",
-      (a) => rept(atanhJs(unpt(a.value))),
+      (a) => a.value.ns().atanh().s(),
       (ctx, a) => {
         declareAtanh(ctx)
         return `_helper_atanh(${a.expr})`
@@ -251,10 +206,11 @@ export default {
       "artanh(2+3i)≈0.402+1.481i",
     )
 
-    FN_ARCOTH.add(
+    FN_ARCOTH.addRadOnly(
+      W,
       ["c32"],
       "c32",
-      (a) => rept(acothJs(unpt(a.value))),
+      (a) => a.value.ns().acoth().s(),
       (ctx, a) => {
         declareAcoth(ctx)
         return `_helper_acoth(${a.expr})`
@@ -262,10 +218,11 @@ export default {
       "arcoth(2+3i)≈0.402-0.090i",
     )
 
-    FN_ARCSCH.add(
+    FN_ARCSCH.addRadOnly(
+      W,
       ["c32"],
       "c32",
-      (a) => rept(asinhJs(recipP(unpt(a.value)))),
+      (a) => a.value.ns().inv().asinh().s(),
       (ctx, a) => {
         declareAsinh(ctx)
         declareDiv(ctx)
@@ -274,10 +231,11 @@ export default {
       "arcsch(2+3i)≈0.367+0.520i",
     )
 
-    FN_ARSECH.add(
+    FN_ARSECH.addRadOnly(
+      W,
       ["c32"],
       "c32",
-      (a) => rept(acoshJs(recipP(unpt(a.value)))),
+      (a) => a.value.ns().inv().acosh().s(),
       (ctx, a) => {
         declareAcosh(ctx)
         declareDiv(ctx)

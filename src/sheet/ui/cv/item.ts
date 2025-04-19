@@ -1,8 +1,7 @@
 import type { JsVal, JsValue, TyName, Val } from "@/eval/ty"
-import { num, unpt } from "@/eval/ty/create"
 import { TY_INFO, type TyGlide } from "@/eval/ty/info"
 import { Block } from "@/field/model"
-import type { Point } from "../../point"
+import type { Point } from "@/lib/point"
 import type { Expr } from "../expr"
 import type { Sheet } from "../sheet"
 import { Size } from "./consts"
@@ -140,9 +139,8 @@ export class Hint {
         if (
           !(
             p1 &&
-            isFinite(num(p1.value.x)) &&
-            isFinite(num(p1.value.y)) &&
-            sheet.cv.offsetDistance(unpt(p1.value), sheet.cv.toPaper(at)) <=
+            p1.value.finite() &&
+            sheet.cv.offsetDistance(p1.value.xy(), sheet.cv.toPaper(at)) <=
               Size.Target
           )
         ) {
@@ -153,9 +151,8 @@ export class Hint {
         if (
           !(
             p2 &&
-            isFinite(num(p2.value.x)) &&
-            isFinite(num(p2.value.y)) &&
-            sheet.cv.offsetDistance(unpt(p2.value), sheet.cv.toPaper(at)) <=
+            p2.value.finite() &&
+            sheet.cv.offsetDistance(p2.value.xy(), sheet.cv.toPaper(at)) <=
               Size.Target
           )
         ) {
@@ -172,8 +169,8 @@ export class Hint {
             // Offset distance is used instead of paper distance since in a
             // stretched graph, offset distance matters more to the user than
             // paper distance.
-            const o1 = sheet.cv.toOffset(unpt(p1.value))
-            const o2 = sheet.cv.toOffset(unpt(p2.value))
+            const o1 = sheet.cv.toOffset(p1.value.xy())
+            const o2 = sheet.cv.toOffset(p2.value.xy())
             const d1 = Math.hypot(o1.x - at.x, o1.y - at.y)
             const d2 = Math.hypot(o2.x - at.x, o2.y - at.y)
             if (d2 < d1) {

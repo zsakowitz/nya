@@ -56,7 +56,7 @@ float factorialMinimax(float x) {
     float d = 1.0 + x*(d1 + x*(d2 + x*d3));
     float xp1 = x+1.0;
 
-    return stirlingPrefactor(xp1,x)*sqrt(xp1)*(n/d);
+    return stirlingPrefactor(xp1,x)*xp1.sqrt()*(n/d);
 
 
 }
@@ -106,4 +106,9 @@ float sinpiSeries(float x) {
 // \frac{1}{2}\left(e^{b}\cdot \left(\operatorname{sin}a+i\operatorname{cos}a\right)+e^{-b}\cdot \left(\operatorname{sin}a+i\operatorname{cos}a\right)\right)
 // sinh b = (e^b - e^-b) / 2
 // cosh b = (e^b + e^-b) / 2
+```
+
+```js
+// matches many thing which use the old fn-based ops
+;/(?<![._])(rept)\((\w+(?:!|\.\w+(?:\(\w+(?:!|\.\w+(?:\(\))?|\[\w+\])*\))?|\[\w+\])*)\)(?! \{)/
 ```

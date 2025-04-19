@@ -1,8 +1,8 @@
 import type { Package } from "#/types"
+import { chain, OP_NEG, OP_RAISE, toRad } from "$/core/ops"
 import { FnDist } from "@/eval/ops/dist"
 import { SYM_2, unary } from "@/eval/sym"
-import { approx, num } from "@/eval/ty/create"
-import { chain, OP_NEG, OP_RAISE, toRad } from "$/core/ops"
+import { approx } from "@/lib/sreal"
 
 const FN_SIN: FnDist = new FnDist("sin", "takes the sine of an angle", {
   deriv: unary((wrt, a) => {
@@ -60,7 +60,7 @@ export default {
       ["r32"],
       "r32",
       function (a) {
-        return approx(Math.sin(this.rad() * num(a.value)))
+        return approx(Math.sin(this.rad() * a.value.num()))
       },
       (ctx, a) => `sin(${ctx.rad()} * ${a.expr})`,
       "sin30°=0.5",
@@ -70,7 +70,7 @@ export default {
       ["r32"],
       "r32",
       function (a) {
-        return approx(Math.cos(this.rad() * num(a.value)))
+        return approx(Math.cos(this.rad() * a.value.num()))
       },
       (ctx, a) => `cos(${ctx.rad()} * ${a.expr})`,
       "cos60°=0.5",
@@ -80,7 +80,7 @@ export default {
       ["r32"],
       "r32",
       function (a) {
-        return approx(Math.tan(this.rad() * num(a.value)))
+        return approx(Math.tan(this.rad() * a.value.num()))
       },
       (ctx, a) => `tan(${ctx.rad()} * ${a.expr})`,
       "tan45°=1",
@@ -90,7 +90,7 @@ export default {
       ["r32"],
       "r32",
       function (a) {
-        return approx(1 / Math.sin(this.rad() * num(a.value)))
+        return approx(1 / Math.sin(this.rad() * a.value.num()))
       },
       (ctx, a) => `(1.0/sin(${ctx.rad()} * ${a.expr}))`,
       "csc30°=2",
@@ -100,7 +100,7 @@ export default {
       ["r32"],
       "r32",
       function (a) {
-        return approx(1 / Math.cos(this.rad() * num(a.value)))
+        return approx(1 / Math.cos(this.rad() * a.value.num()))
       },
       (ctx, a) => `(1.0/cos(${ctx.rad()} * ${a.expr}))`,
       "sec60°=2",
@@ -110,7 +110,7 @@ export default {
       ["r32"],
       "r32",
       function (a) {
-        return approx(1 / Math.tan(this.rad() * num(a.value)))
+        return approx(1 / Math.tan(this.rad() * a.value.num()))
       },
       (ctx, a) => `(1.0/tan(${ctx.rad()} * ${a.expr}))`,
       "cot45°=1",
@@ -120,7 +120,7 @@ export default {
       ["r32"],
       "r32",
       function (a) {
-        return approx(Math.asin(num(a.value)) / this.rad())
+        return approx(Math.asin(a.value.num()) / this.rad())
       },
       (ctx, a) => `(asin(${a.expr}) / ${ctx.rad()})`,
       "arcsin0.5=30°",
@@ -130,7 +130,7 @@ export default {
       ["r32"],
       "r32",
       function (a) {
-        return approx(Math.acos(num(a.value)) / this.rad())
+        return approx(Math.acos(a.value.num()) / this.rad())
       },
       (ctx, a) => `(acos(${a.expr}) / ${ctx.rad()})`,
       "arccos0.5=60°",
@@ -140,7 +140,7 @@ export default {
       ["r32"],
       "r32",
       function (a) {
-        return approx(Math.atan(num(a.value)) / this.rad())
+        return approx(Math.atan(a.value.num()) / this.rad())
       },
       (ctx, a) => `(atan(${a.expr}) / ${ctx.rad()})`,
       "arctan1=45°",
@@ -148,7 +148,7 @@ export default {
       ["r32", "r32"],
       "r32",
       function (a, b) {
-        return approx(Math.atan2(num(a.value), num(b.value)) / this.rad())
+        return approx(Math.atan2(a.value.num(), b.value.num()) / this.rad())
       },
       (ctx, a, b) => `(atan(${a.expr}, ${b.expr}) / ${ctx.rad()})`,
       "arctan(-1,-1)=-135°",
@@ -158,7 +158,7 @@ export default {
       ["r32"],
       "r32",
       function (a) {
-        return approx(Math.asin(1 / num(a.value)) / this.rad())
+        return approx(Math.asin(1 / a.value.num()) / this.rad())
       },
       (ctx, a) => `(asin(1.0/${a.expr}) / ${ctx.rad()})`,
       "arccsc2=30°",
@@ -168,7 +168,7 @@ export default {
       ["r32"],
       "r32",
       function (a) {
-        return approx(Math.acos(1 / num(a.value)) / this.rad())
+        return approx(Math.acos(1 / a.value.num()) / this.rad())
       },
       (ctx, a) => `(acos(1.0/${a.expr}) / ${ctx.rad()})`,
       "arcsec2=60°",
@@ -178,7 +178,7 @@ export default {
       ["r32"],
       "r32",
       function (a) {
-        return approx(Math.atan(1 / num(a.value)) / this.rad())
+        return approx(Math.atan(1 / a.value.num()) / this.rad())
       },
       (ctx, a) => `(atan(1.0/${a.expr}) / ${ctx.rad()})`,
       "arccot1=45°",

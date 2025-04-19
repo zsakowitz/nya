@@ -6,7 +6,6 @@ import { FnDist } from "@/eval/ops/dist"
 import { FnDistManual, type FnOverload } from "@/eval/ops/dist-manual"
 import { ALL_DOCS } from "@/eval/ops/docs"
 import { each, type JsValue, type Ty } from "@/eval/ty"
-import { frac, num } from "@/eval/ty/create"
 import { Display } from "@/eval/ty/display"
 import { Leaf } from "@/field/cmd/leaf"
 import { L, R, type Dir } from "@/field/dir"
@@ -14,6 +13,7 @@ import type { FieldInert } from "@/field/field-inert"
 import { LatexParser, toText } from "@/field/latex"
 import { Block, type Command, type Cursor, type InitProps } from "@/field/model"
 import { h, hx, t } from "@/jsx"
+import { int } from "@/lib/sreal"
 import { defineExt, Store } from "@/sheet/ext"
 import { circle } from "@/sheet/ui/expr/circle"
 
@@ -197,7 +197,7 @@ const OP_TO_TEXT = new FnDist<"text">("text", "converts a value into text")
     "text",
     (a) => {
       const b = new Block(null)
-      new Display(b.cursor(R), frac(10, 1)).value(num(a.value))
+      new Display(b.cursor(R), int(10)).value(a.value.num())
       return [{ type: "latex", value: b.latex() }]
     },
     err,
@@ -208,7 +208,7 @@ const OP_TO_TEXT = new FnDist<"text">("text", "converts a value into text")
     "text",
     (a) => {
       const b = new Block(null)
-      new Display(b.cursor(R), frac(10, 1)).nums([
+      new Display(b.cursor(R), int(10)).nums([
         [a.value.x, ""],
         [a.value.y, "i"],
       ])

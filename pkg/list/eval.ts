@@ -1,10 +1,9 @@
 import type { Package } from "#/types"
-import type { SReal } from "@/eval/ty"
-import { frac } from "@/eval/ty/create"
 import { Display } from "@/eval/ty/display"
 import { R } from "@/field/dir"
 import { FieldInert } from "@/field/field-inert"
 import { h } from "@/jsx"
+import { int, type SReal } from "@/lib/sreal"
 import { Store, defineExt } from "@/sheet/ext"
 import type { Expr } from "@/sheet/ui/expr"
 
@@ -100,7 +99,7 @@ export function createMultiEval(items: (Node | string)[]) {
           expr.sheet.scope,
           "bg-[--nya-bg-sidebar] border border-[--nya-border] px-2 py-1 border-l-0 last:rounded-r inline-block",
         )
-        const display = new Display(field.block.cursor(R), frac(10, 1))
+        const display = new Display(field.block.cursor(R), int(10))
         display.num(x[i]!)
         label.appendChild(field.el)
       }

@@ -1,6 +1,5 @@
 import { FnDist } from "@/eval/ops/dist"
 import type { JsVal } from "@/eval/ty"
-import { pt, real, unpt } from "@/eval/ty/create"
 import { OpEq } from "@/field/cmd/leaf/cmp"
 import { CmdComma } from "@/field/cmd/leaf/comma"
 import { CmdToken } from "@/field/cmd/leaf/token"
@@ -8,7 +7,9 @@ import { CmdVar } from "@/field/cmd/leaf/var"
 import { CmdBrack } from "@/field/cmd/math/brack"
 import { L, R } from "@/field/dir"
 import { Block } from "@/field/model"
-import type { Point } from "../../point"
+import type { Point } from "@/lib/point"
+import { ptint } from "@/lib/spoint"
+import { int } from "@/lib/sreal"
 import { Writer } from "../../write"
 import type { Sheet } from "../sheet"
 import { Color, Size } from "./consts"
@@ -71,7 +72,7 @@ const TARGET_INTERSECTION: ItemWithDrawTarget<
   val({ item }): JsVal<"point32"> {
     return (item.val ??= {
       type: "point32",
-      value: pt(real(item.at.x), real(item.at.y)),
+      value: ptint([item.at.x, item.at.y]),
     })
   },
   toggle({ item: { sheet, a, b } }, on, reason) {
@@ -99,10 +100,11 @@ export function virtualIntersection(
   a: ItemWithTarget,
   b: ItemWithTarget,
 ): ItemWithDrawTarget | undefined {
-  const at = unpt(
-    FN_INTERSECTION.js1(sheet.scope.ctxJs, a.target.val(a), b.target.val(b))
-      .value,
-  )
+  const at = FN_INTERSECTION.js1(
+    sheet.scope.ctxJs,
+    a.target.val(a),
+    b.target.val(b),
+  ).value.xy()
 
   return {
     data: null,
@@ -160,7 +162,7 @@ const TARGET_GLIDER: ItemWithDrawTarget<
   val({ item }): JsVal<"point32"> {
     return (item.val ??= {
       type: "point32",
-      value: pt(real(item.at.x), real(item.at.y)),
+      value: ptint([item.at.x, item.at.y]),
     })
   },
   toggle({ item: { sheet, item } }, on, reason) {
@@ -187,12 +189,11 @@ export function virtualGlider(
   item: ItemWithTarget,
   index: { value: number; precision: number },
 ): ItemWithDrawTarget | undefined {
-  const at = unpt(
-    FN_GLIDER.js1(sheet.scope.ctxJs, item.target.val(item), {
-      type: "r32",
-      value: real(index.value),
-    } satisfies JsVal<"r32">).value,
-  )
+  const at = FN_GLIDER.js1(sheet.scope.ctxJs, item.target.val(item), {
+    type: "r32",
+    value: int(index.value),
+  } satisfies JsVal<"r32">).value.xy()
+
   return {
     data: 0,
     item: {
@@ -249,7 +250,7 @@ const TARGET_VPOINT: ItemWithDrawTarget<
   val({ item }): JsVal<"point32"> {
     return (item.val ??= {
       type: "point32",
-      value: pt(real(item.at.x), real(item.at.y)),
+      value: ptint([item.at.x, item.at.y]),
     })
   },
   toggle({ item: { sheet } }, on, reason) {

@@ -1,19 +1,17 @@
-import type { SReal } from "@/eval/ty"
-import { isZero } from "@/eval/ty/check"
-import { frac, num, real } from "@/eval/ty/create"
-import { add, div, mul, sub } from "@/eval/ty/ops"
+import { safe } from "@/eval/lib/util"
 import type { Cursor } from "@/field/model"
 import { h, hx } from "@/jsx"
+import { frac, int, type SReal } from "@/lib/sreal"
 import { twMerge } from "tailwind-merge"
 import { virtualStepExp, write } from "./write"
 
 export class Slider {
-  private _min = real(0)
-  private _max = real(1)
-  private _step = real(0)
+  private _min = int(0)
+  private _max = int(1)
+  private _step = int(0)
   private _steps = 0
   private _base = 10
-  private _value = real(1)
+  private _value = int(1)
 
   private elNative
   private elScroller
@@ -61,7 +59,7 @@ export class Slider {
     this.updateScroller()
     this.updateSteps()
     this.elNative.addEventListener("input", () => {
-      this._value = real(+this.elNative.value)
+      this._value = int(+this.elNative.value)
       this.updateScroller()
       this.onInput?.()
     })
@@ -113,18 +111,18 @@ export class Slider {
       ),
     )
     const val = this.clamp(
-      pos * (num(this._max) - num(this._min)) + num(this._min),
+      pos * (this._max.num() - this._min.num()) + this._min.num(),
     )
-    this._value = real(val)
+    this._value = int(val)
     this.elNative.value = "" + val
     this.updateScroller()
     this.onInput?.()
   }
 
   private clamp(value: number): number {
-    const min = num(this._min)
-    const max = num(this._max)
-    const step = num(this._step)
+    const min = this._min.num()
+    const max = this._max.num()
+    const step = this._step.num()
     // takes care of NaN
     if (!(value > min)) return min
     if (value >= max) return max
@@ -156,9 +154,9 @@ export class Slider {
     while (this.elSteps.firstChild) {
       this.elSteps.firstChild.remove()
     }
-    const min = num(this._min)
-    const max = num(this._max)
-    const step = num(this._step)
+    const min = this._min.num()
+    const max = this._max.num()
+    const step = this._step.num()
     const steps = (this._steps = (max - min) / step)
     if (0 < steps && steps <= 100) {
       for (let i = 0; i <= steps; i++) {
@@ -186,9 +184,9 @@ export class Slider {
   }
 
   private updateScroller() {
-    const min = num(this._min)
-    const max = num(this._max)
-    const value = num(this._value)
+    const min = this._min.num()
+    const max = this._max.num()
+    const value = this._value.num()
     const pc = Math.max(0, Math.min(1, (value - min) / (max - min)))
     this.elScroller.style.left = 100 * pc + "%"
   }
@@ -198,7 +196,7 @@ export class Slider {
   }
 
   set step(v) {
-    const x = num(v)
+    const x = v.num()
     if (x >= 0 && isFinite(x)) {
       this._step = v
     }
@@ -214,12 +212,13 @@ export class Slider {
   }
 
   get base() {
-    return frac(this._base, 1)
+    return int(this._base)
   }
 
   set base(v: SReal) {
-    if (v.type == "exact" && v.d == 1 && v.n >= 2) {
-      this._base = v.n
+    const n = v.num()
+    if (safe(n) && n >= 2) {
+      this._base = n
     } else {
       this._base = 10
     }
@@ -228,7 +227,7 @@ export class Slider {
   private virtualStepExp() {
     return virtualStepExp(
       (this.elInner.clientWidth * (globalThis.devicePixelRatio ?? 1)) /
-        (num(this._max) - num(this._min)),
+        (this._max.num() - this._min.num()),
       this._base,
     )
   }
@@ -238,37 +237,33 @@ export class Slider {
   }
 
   get value() {
-    if (isZero(this._step)) {
+    if (this._step.zero()) {
       const step = this.virtualStep()
-      return mul(frac(Math.round(num(div(this._value, step))), 1), step)
+      return this._value.div(step).round().mul(step)
     } else {
-      return add(
-        mul(
-          frac(
-            Math.round(num(div(sub(this._value, this._min), this._step))),
-            1,
-          ),
-          this._step,
-        ),
-        this._min,
-      )
+      return this._value
+        .sub(this._min)
+        .div(this._step)
+        .round()
+        .mul(this._step)
+        .add(this._min)
     }
   }
 
   set value(v) {
     this._value = v
     this.updateScroller()
-    this.elNative.value = "" + num(this._value)
+    this.elNative.value = "" + this._value.num()
   }
 
   bounds(min: SReal, max: SReal) {
-    if (isFinite(num(min)) && isFinite(num(max)) && num(min) < num(max)) {
+    if (isFinite(min.num()) && isFinite(max.num()) && min.num() < max.num()) {
       this._min = min
       this._max = max
       this.updateScroller()
       this.updateSteps()
-      this.elNative.min = "" + num(min)
-      this.elNative.max = "" + num(max)
+      this.elNative.min = "" + min.num()
+      this.elNative.max = "" + max.num()
     }
   }
 

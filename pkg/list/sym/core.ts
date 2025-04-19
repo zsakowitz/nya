@@ -5,7 +5,6 @@ import { jsToGlsl } from "@/eval/js-to-glsl"
 import { issue } from "@/eval/ops/issue"
 import { simplify, SYM_0, SYM_1, txr } from "@/eval/sym"
 import type { JsValue } from "@/eval/ty"
-import { frac, real } from "@/eval/ty/create"
 import { Display } from "@/eval/ty/display"
 import { CmdDot, CmdNum } from "@/field/cmd/leaf/num"
 import { OpPlusMinus } from "@/field/cmd/leaf/op"
@@ -13,6 +12,7 @@ import { CmdWord } from "@/field/cmd/leaf/word"
 import { CmdSupSub } from "@/field/cmd/math/supsub"
 import { L, R } from "@/field/dir"
 import { Block } from "@/field/model"
+import { int } from "@/lib/sreal"
 
 export default {
   name: "symbolics core",
@@ -169,7 +169,7 @@ export default {
             value: {
               type: "r64",
               list: false,
-              value: real(0),
+              value: int(0),
             } satisfies JsValue<"r64", false>,
           }
         },
@@ -178,7 +178,7 @@ export default {
         },
         display(value) {
           const block = new Block(null)
-          new Display(block.cursor(R), frac(10, 1)).output(value.value, false)
+          new Display(block.cursor(R), int(10)).output(value.value, false)
           let prec: number = Precedence.Numeric
           let el = block.ends[L]
           while (el) {

@@ -82,7 +82,7 @@ to do list for 110% compatiability is:
 ❌ [normal/t/poisson/etc.]cdf
 ❌ [normal/t/poisson/etc.]pdf
 ❌ inv[normal/t/poisson/etc.]
-❌ sqrt(x)
+❌ x.sqrt()
 ❌ nthroot(x, y)
 ❌ logbase(x, y)
 ❌ factorial(x)

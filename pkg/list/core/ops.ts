@@ -35,9 +35,7 @@ import {
   type PropsDeriv,
   type Sym,
 } from "@/eval/sym"
-import { frac, num, real } from "@/eval/ty/create"
 import { TY_INFO } from "@/eval/ty/info"
-import { add, div } from "@/eval/ty/ops"
 import { splitValue } from "@/eval/ty/split"
 import { CmdComma } from "@/field/cmd/leaf/comma"
 import { CmdNum } from "@/field/cmd/leaf/num"
@@ -49,6 +47,7 @@ import { CmdRoot } from "@/field/cmd/math/root"
 import { CmdSupSub } from "@/field/cmd/math/supsub"
 import { L, R } from "@/field/dir"
 import { Block, Span } from "@/field/model"
+import { frac, int } from "@/lib/sreal"
 import { OP_PLOTSIGN } from "@/sheet/shader-line"
 
 // FIXME: use direct from source
@@ -810,24 +809,20 @@ export default {
             return {
               type: "r64",
               list: false,
-              value: add(
-                parseNumberJs(node.integer, props.base).value,
-                div(
-                  parseNumberJs(node.a, props.base).value,
+              value: parseNumberJs(node.integer, props.base).value.add(
+                parseNumberJs(node.a, props.base).value.div(
                   parseNumberJs(node.b, props.base).value,
                 ),
               ),
             }
           },
           glsl(node, props) {
-            const value = add(
-              parseNumberJs(node.integer, props.base).value,
-              div(
-                parseNumberJs(node.a, props.base).value,
+            const value = parseNumberJs(node.integer, props.base).value.add(
+              parseNumberJs(node.a, props.base).value.div(
                 parseNumberJs(node.b, props.base).value,
               ),
             )
-            return splitValue(num(value))
+            return splitValue(value.num())
           },
           sym(node, props) {
             return {
@@ -835,10 +830,8 @@ export default {
               value: {
                 type: "r64",
                 list: false,
-                value: add(
-                  parseNumberJs(node.integer, props.base).value,
-                  div(
-                    parseNumberJs(node.a, props.base).value,
+                value: parseNumberJs(node.integer, props.base).value.add(
+                  parseNumberJs(node.a, props.base).value.div(
                     parseNumberJs(node.b, props.base).value,
                   ),
                 ),
@@ -855,7 +848,7 @@ export default {
               return OP_RAISE.js(props.ctxJs, [
                 js(node.contents, props),
                 OP_DIV.js(props.ctxJs, [
-                  { list: false, type: "r64", value: frac(1, 1) },
+                  { list: false, type: "r64", value: int(1) },
                   js(node.root, props),
                 ]),
               ])
@@ -883,7 +876,7 @@ export default {
                     args: [
                       {
                         type: "js",
-                        value: { type: "r32", list: false, value: real(1) },
+                        value: { type: "r32", list: false, value: int(1) },
                       },
                       sym(node.root, props),
                     ],

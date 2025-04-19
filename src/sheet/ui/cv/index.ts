@@ -1,5 +1,5 @@
 import { hx } from "@/jsx"
-import type { Point } from "../../point"
+import { px, type Point } from "@/lib/point"
 import { onTheme } from "../../theme"
 import { Size } from "./consts"
 
@@ -81,10 +81,7 @@ export class Cv {
       ) {
         event.preventDefault()
         this.zoom(
-          {
-            x: xmin + w / 2,
-            y: ymin + h / 2,
-          },
+          px(xmin + w / 2, ymin + h / 2),
           event.key == "-" || event.key == "_" ?
             1 + 2 * scale
           : 1 / (1 + 2 * scale),
@@ -105,10 +102,12 @@ export class Cv {
 
       const amount = scale * Math.min(w, h)
 
-      this.move({
-        x: dir[0] == null ? 0 : Math.sign(dir[0]) * amount,
-        y: dir[1] == null ? 0 : Math.sign(dir[1]) * amount,
-      })
+      this.move(
+        px(
+          dir[0] == null ? 0 : Math.sign(dir[0]) * amount,
+          dir[1] == null ? 0 : Math.sign(dir[1]) * amount,
+        ),
+      )
     })
     const resize = () => {
       const scale = ((this as Paper3Mut).scale = window.devicePixelRatio ?? 1)
@@ -180,10 +179,10 @@ export class Cv {
 
   /** Offset --> paper */
   toPaper(offset: Point): Point {
-    const px = offset.x / this.width
-    const py = offset.y / this.height
+    const ox = offset.x / this.width
+    const oy = offset.y / this.height
     const { xmin, w, ymin, h } = this.bounds()
-    return { x: xmin + w * px, y: ymin + h * (1 - py) }
+    return px(xmin + w * ox, ymin + h * (1 - oy))
   }
 
   /**
@@ -200,54 +199,51 @@ export class Cv {
       Size.DragMargin,
       Math.min(this.height - Size.DragMargin, offset.y),
     )
-    return this.toPaper({ x, y })
+    return this.toPaper(px(x, y))
   }
 
   /** Paper --> offset */
   toOffset({ x, y }: Point): Point {
     const { xmin, w, ymin, h } = this.bounds()
-    return {
-      x: ((x - xmin) / w) * this.width,
-      y: (1 - (y - ymin) / h) * this.height,
-    }
+    return px(((x - xmin) / w) * this.width, (1 - (y - ymin) / h) * this.height)
   }
 
   /** Paper --> canvas */
   toCanvas(pt: Point): Point {
     const { x, y } = this.toOffset(pt)
-    return { x: x * this.scale, y: y * this.scale }
+    return px(x * this.scale, y * this.scale)
   }
 
   eventToPaper(event: { offsetX: number; offsetY: number }): Point {
-    return this.toPaper({ x: event.offsetX, y: event.offsetY })
+    return this.toPaper(px(event.offsetX, event.offsetY))
   }
 
   /** Offset --> paper */
   toPaperDelta(offsetDelta: Point): Point {
-    const px = offsetDelta.x / this.width
-    const py = offsetDelta.y / this.height
+    const ox = offsetDelta.x / this.width
+    const oy = offsetDelta.y / this.height
     const { w, h } = this.bounds()
-    return { x: w * px, y: -h * py }
+    return px(w * ox, -h * oy)
   }
 
   /** Paper --> offset */
   toOffsetDelta(paperDelta: Point): Point {
     const { w, h } = this.bounds()
-    return {
-      x: (paperDelta.x / w) * this.width,
-      y: -(paperDelta.y / h) * this.height,
-    }
+    return px(
+      (paperDelta.x / w) * this.width,
+      -(paperDelta.y / h) * this.height,
+    )
   }
 
   /** Paper --> canvas */
   toCanvasDelta(paperDelta: Point): Point {
     const { x, y } = this.toOffsetDelta(paperDelta)
-    return { x: x * this.scale, y: y * this.scale }
+    return px(x * this.scale, y * this.scale)
   }
 
   /** Shortcut for Math.hypot(.toOffset(a - b)) */
   offsetDistance(a: Point, b: Point) {
-    const { x, y } = this.toOffsetDelta({ x: a.x - b.x, y: a.y - b.y })
+    const { x, y } = this.toOffsetDelta(px(a.x - b.x, a.y - b.y))
     return Math.hypot(x, y)
   }
 
@@ -350,7 +346,7 @@ export class Cv {
   hitsCircle(at: Point, center: Point, r: number) {
     const path = new Path2D()
     const { x, y } = this.toCanvas(center)
-    const { x: rx, y: ry } = this.toCanvasDelta({ x: r, y: r })
+    const { x: rx, y: ry } = this.toCanvasDelta(px(r, r))
     path.ellipse(x, y, rx, -ry, 0, 0, 2 * Math.PI)
     return this.hits(at, path)
   }
@@ -387,7 +383,7 @@ export class Cv {
     this.ctx.globalAlpha = alpha
     this.ctx.lineWidth = size * this.scale
     const { x, y } = this.toCanvas(at)
-    const { x: rx, y: ry } = this.toCanvasDelta({ x: r, y: r })
+    const { x: rx, y: ry } = this.toCanvasDelta(px(r, r))
     this.ctx.ellipse(x, y, rx, -ry, 0, 0, 2 * Math.PI)
     this.ctx.stroke()
     this.ctx.globalAlpha = 1

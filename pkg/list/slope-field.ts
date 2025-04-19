@@ -6,13 +6,13 @@ import { id } from "@/eval/lib/binding"
 import { issue } from "@/eval/ops/issue"
 import { each, type JsValue, type Val } from "@/eval/ty"
 import { canCoerce, coerceTyJs } from "@/eval/ty/coerce"
-import { approx, num, real } from "@/eval/ty/create"
 import { CmdWord } from "@/field/cmd/leaf/word"
 import { L } from "@/field/dir"
 import { h, hx, path, svgx } from "@/jsx"
+import { px } from "@/lib/point"
+import { approx } from "@/lib/sreal"
 import { Store } from "@/sheet/ext"
 import { defineHideable } from "@/sheet/ext/hideable"
-import { norm } from "@/sheet/point"
 import { Color, Opacity, Order, Size } from "@/sheet/ui/cv/consts"
 import type { Expr } from "@/sheet/ui/expr"
 import { vectorPath } from "./geo/dcg/util-vector"
@@ -90,14 +90,14 @@ const EXT_SLOPE_FIELD = defineHideable<
           const isR32 = canCoerce(value.type, "r32")
           if (isR32) {
             const r32 = coerceTyJs(value, "r32")
-            const at = cv.toCanvas({ x, y })
+            const at = cv.toCanvas(px(x, y))
             for (const slopeRaw of each(r32)) {
-              const slope = num(slopeRaw)
+              const slope = slopeRaw.num()
               if (isNaN(slope)) continue
               const { x: dx, y: dy } =
                 slope == Infinity || slope == -Infinity ?
-                  { x: 0, y: size }
-                : norm({ x: 1, y: -slope }, size)
+                  px(0, size)
+                : px(1, -slope).norm(size)
               path.moveTo(at.x - dx / 2, at.y - dy / 2)
               path.lineTo(at.x + dx / 2, at.y + dy / 2)
             }
@@ -107,16 +107,16 @@ const EXT_SLOPE_FIELD = defineHideable<
           if (isVector) {
             const r32 = coerceTyJs(value, "vector")
             for (const vectorRaw of each(r32)) {
-              const dxRaw = num(vectorRaw[1].x) - num(vectorRaw[0].x)
-              const dyRaw = num(vectorRaw[1].y) - num(vectorRaw[0].y)
+              const dxRaw = vectorRaw[1].x.num() - vectorRaw[0].x.num()
+              const dyRaw = vectorRaw[1].y.num() - vectorRaw[0].y.num()
               if (isNaN(dxRaw) || isNaN(dyRaw)) continue
               const { x: dx, y: dy } = cv.toPaperDelta(
-                norm({ x: dxRaw, y: -dyRaw }, size),
+                px(dxRaw, -dyRaw).norm(size),
               )
               const vPath = vectorPath(
                 cv,
-                { x: x - dx / 4, y: y - dy / 4 },
-                { x: x + dx / 4, y: y + dy / 4 },
+                px(x - dx / 4, y - dy / 4),
+                px(x + dx / 4, y + dy / 4),
                 Size.SlopeFieldVectorHead,
               )
               path.addPath(new Path2D(vPath))
@@ -127,16 +127,16 @@ const EXT_SLOPE_FIELD = defineHideable<
           if (isPoint) {
             const r32 = coerceTyJs(value, "point32")
             for (const raw of each(r32)) {
-              const dxRaw = num(raw.x)
-              const dyRaw = num(raw.y)
+              const dxRaw = raw.x.num()
+              const dyRaw = raw.y.num()
               if (isNaN(dxRaw) || isNaN(dyRaw)) continue
               const { x: dx, y: dy } = cv.toPaperDelta(
-                norm({ x: dxRaw, y: -dyRaw }, size),
+                px(dxRaw, -dyRaw).norm(size),
               )
               const vPath = vectorPath(
                 cv,
-                { x: x - dx / 4, y: y - dy / 4 },
-                { x: x + dx / 4, y: y + dy / 4 },
+                px(x - dx / 4, y - dy / 4),
+                px(x + dx / 4, y + dy / 4),
                 Size.SlopeFieldVectorHead,
               )
               path.addPath(new Path2D(vPath))
@@ -175,7 +175,7 @@ export default {
         garbage: {
           js: {
             type: "value",
-            value: { type: "r64", list: false, value: real(NaN) },
+            value: { type: "r64", list: false, value: approx(NaN) },
           },
           get glsl(): never {
             return glsl()

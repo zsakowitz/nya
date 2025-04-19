@@ -1,9 +1,7 @@
 import { safe } from "@/eval/lib/util"
-import type { SReal } from "@/eval/ty"
-import { frac, num, real } from "@/eval/ty/create"
 import { Display } from "@/eval/ty/display"
-import { div, raise, recip } from "@/eval/ty/ops"
 import type { Cursor, Span } from "@/field/model"
+import { int, type SReal } from "@/lib/sreal"
 
 export function write(
   cursor: Cursor,
@@ -12,16 +10,16 @@ export function write(
   stepExp: number,
   signed = false,
 ) {
-  const base = num(baseRaw)
+  const base = baseRaw.num()
 
   if (!(safe(base) && 2 <= base && base <= 36)) {
-    new Display(cursor, baseRaw || frac(10, 1)).value(num(value), signed)
+    new Display(cursor, baseRaw || int(10)).value(value.num(), signed)
     return
   }
 
-  const display = new Display(cursor, baseRaw || frac(10, 1))
-  const step = recip(raise(baseRaw, frac(stepExp, 1)))
-  let main = Math.round(num(div(value, step)))
+  const display = new Display(cursor, baseRaw || int(10))
+  const step = baseRaw.pow(int(stepExp)).inv()
+  let main = Math.round(value.div(step).num())
   if (main < 0) {
     display.digits("-")
     main = -main
@@ -61,7 +59,7 @@ export class Writer {
     write(
       this.span.remove(),
       value,
-      frac(10, 1),
+      int(10),
       virtualStepExp(precision, 10),
       signed,
     )
@@ -69,6 +67,6 @@ export class Writer {
 
   /** @param precision Total options the user can choose from. */
   set(value: number, precision: number, signed = false) {
-    this.setExact(real(value), precision, signed)
+    this.setExact(int(value), precision, signed)
   }
 }

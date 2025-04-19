@@ -1,5 +1,5 @@
+import { Point, px } from "@/lib/point"
 import type { Cv } from "."
-import type { Point } from "../../point"
 import { Size } from "./consts"
 import { Hint, type Target } from "./item"
 
@@ -37,24 +37,19 @@ export function registerWheelHandler(cv: Cv) {
       if (event.metaKey || event.ctrlKey) {
         const scale =
           1 + Math.sign(event.deltaY) * Math.sqrt(Math.abs(event.deltaY)) * 0.03
-        const point = { ...cv.eventToPaper(event) }
+        let { x, y } = cv.eventToPaper(event)
         if (scale < 1) {
-          const origin = cv.toOffset({ x: 0, y: 0 })
+          const origin = cv.toOffset(px(0, 0))
           if (Math.abs(event.offsetX - origin.x) < Size.ZoomSnap) {
-            point.x = 0
+            x = 0
           }
           if (Math.abs(event.offsetY - origin.y) < Size.ZoomSnap) {
-            point.y = 0
+            y = 0
           }
         }
-        cv.zoom(point, scale)
+        cv.zoom(px(x, y), scale)
       } else {
-        cv.move(
-          cv.toPaperDelta({
-            x: event.deltaX,
-            y: event.deltaY,
-          }),
-        )
+        cv.move(cv.toPaperDelta(px(event.deltaX, event.deltaY)))
       }
     },
     { passive: false },
@@ -72,7 +67,7 @@ export function registerPointerHandler(cv: Cv, handler: Handler) {
   let oc: (() => void) | undefined
 
   function onPointerMove(event: { offsetX: number; offsetY: number }) {
-    const pt: Point = { x: event.offsetX, y: event.offsetY }
+    const pt: Point = px(event.offsetX, event.offsetY)
     last = pt
 
     if (picking && (ptrs == 0 || ptrs == 1)) {
@@ -109,10 +104,7 @@ export function registerPointerHandler(cv: Cv, handler: Handler) {
         moved = true
         current.target.drag!(
           current,
-          cv.toPaperBounded({
-            x: pt.x - dragOffset.x,
-            y: pt.y - dragOffset.y,
-          }),
+          cv.toPaperBounded(px(pt.x - dragOffset.x, pt.y - dragOffset.y)),
         )
         return
       }
@@ -132,10 +124,7 @@ export function registerPointerHandler(cv: Cv, handler: Handler) {
 
     const self = cv.eventToPaper(event)
 
-    cv.move({
-      x: initial.x - self.x,
-      y: initial.y - self.y,
-    })
+    cv.move(px(initial.x - self.x, initial.y - self.y))
   }
 
   cv.el.addEventListener("pointermove", onPointerMove, { passive: true })
@@ -153,7 +142,7 @@ export function registerPointerHandler(cv: Cv, handler: Handler) {
         return
       }
 
-      const pt: Point = (last = { x: event.offsetX, y: event.offsetY })
+      const pt: Point = (last = px(event.offsetX, event.offsetY))
       moved = false
 
       if (picking) {
@@ -181,10 +170,7 @@ export function registerPointerHandler(cv: Cv, handler: Handler) {
         next.target.toggle(next, true, "hover")
         const origin = next.target.dragOrigin?.(next)
         if (origin) {
-          dragOffset = {
-            x: event.offsetX - origin.x,
-            y: event.offsetY - origin.y,
-          }
+          dragOffset = px(event.offsetX - origin.x, event.offsetY - origin.y)
           next.target.toggle(next, true, "drag")
         } else {
           dragOffset = undefined
@@ -204,10 +190,7 @@ export function registerPointerHandler(cv: Cv, handler: Handler) {
 
     initial = undefined
 
-    const pt: Point | undefined = event && {
-      x: event.offsetX,
-      y: event.offsetY,
-    }
+    const pt: Point | undefined = event && px(event.offsetX, event.offsetY)
 
     if (picking) {
       let ret: ItemWithTarget | null = null
@@ -240,10 +223,7 @@ export function registerPointerHandler(cv: Cv, handler: Handler) {
         if (pt && moved) {
           current.target.drag!(
             current,
-            cv.toPaperBounded({
-              x: pt.x - dragOffset.x,
-              y: pt.y - dragOffset.y,
-            }),
+            cv.toPaperBounded(px(pt.x - dragOffset.x, pt.y - dragOffset.y)),
           )
         }
 
@@ -322,7 +302,7 @@ export function registerPointerHandler(cv: Cv, handler: Handler) {
             if (ptrs) {
               const origin = next.target.dragOrigin?.(next)
               if (origin) {
-                dragOffset = { x: last.x - origin.x, y: last.y - origin.y }
+                dragOffset = px(last.x - origin.x, last.y - origin.y)
                 next.target.toggle(next, true, "drag")
               } else {
                 dragOffset = undefined
@@ -382,7 +362,7 @@ export function registerPinchHandler(cv: Cv) {
 
     const xCenter = (a.clientX + b.clientX) / 2 - x
     const yCenter = (a.clientY + b.clientY) / 2 - y
-    const center = cv.toPaper({ x: xCenter, y: yCenter })
+    const center = cv.toPaper(px(xCenter, yCenter))
 
     if (distance > previousDistance) {
       cv.zoom(center, 0.9)

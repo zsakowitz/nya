@@ -1,7 +1,6 @@
-import type { GlslValue, JsValue, SExact, SReal } from "../ty"
+import { approx, frac, int, type SReal, type SRealFrac } from "@/lib/sreal"
+import type { GlslValue, JsValue } from "../ty"
 import { canCoerce, coerceValJs } from "../ty/coerce"
-import { approx, frac, num } from "../ty/create"
-import { add, neg } from "../ty/ops"
 import { splitValue } from "../ty/split"
 
 export function asNumericBase(value: JsValue): SReal {
@@ -16,7 +15,7 @@ export function asNumericBase(value: JsValue): SReal {
   return coerceValJs(value, "r32").value
 }
 
-function digitValue(char: string, base: SExact) {
+function digitValue(char: string, base: SRealFrac) {
   if ("0" <= char && char <= "9") {
     if (+char >= Math.abs(base.n)) {
       throw new Error(`The digit ${char} is invalid in base ${base.n}.`)
@@ -33,7 +32,7 @@ function digitValue(char: string, base: SExact) {
   }
 }
 
-function parseExact(text: string, base: SExact): SReal {
+function parseExact(text: string, base: SRealFrac): SReal {
   let isNeg = false
 
   if (text[0] == "-") {
@@ -45,27 +44,27 @@ function parseExact(text: string, base: SExact): SReal {
 
   const [a, b] = text.split(".") as [string, string?]
 
-  let total = frac(0, 1)
+  let total = int(0)
 
   for (let i = 0; i < a.length; i++) {
     const value = digitValue(a[i]!, base)
     const place = a.length - i - 1
-    total = add(total, frac(value * base.n ** place, base.d ** place))
+    total = total.add(frac(value * base.n ** place, base.d ** place))
   }
 
   if (b) {
     for (let j = 0; j < b.length; j++) {
       const value = digitValue(b[j]!, base)
       const place = j + 1
-      total = add(total, frac(value * base.d ** place, base.n ** place))
+      total = total.add(frac(value * base.d ** place, base.n ** place))
     }
   }
 
-  return isNeg ? neg(total) : total
+  return isNeg ? total.neg() : total
 }
 
 function parse(text: string, base: SReal): SReal {
-  if (num(base) == 10) {
+  if (base.num() == 10) {
     const value = +text
     if (text[text.length - 1] == ".") text = text.slice(0, -1)
     if (text[0] == ".") text = "0" + text
@@ -73,7 +72,7 @@ function parse(text: string, base: SReal): SReal {
     if ("" + value == text) {
       const decimal = text.indexOf(".")
       if (decimal == -1) {
-        return { type: "exact", n: value, d: 1 }
+        return int(value)
       } else {
         const n = parseInt(text.replace(".", ""), 10)
         return frac(n, 10 ** (text.length - decimal - 1))
@@ -83,8 +82,9 @@ function parse(text: string, base: SReal): SReal {
     }
   }
 
-  if (base.type == "exact") {
-    return parseExact(text, base)
+  const f = base.asFrac()
+  if (f) {
+    return parseExact(text, f)
   }
 
   throw new Error(
@@ -104,7 +104,7 @@ export function parseNumberJs(
 }
 
 function parseNumberGlslVal(text: string, base: SReal): string {
-  const value = num(parse(text, base))
+  const value = parse(text, base).num()
   if (value == 1 / 0) {
     return `vec2(1.0/0.0, 0)`
   }

@@ -1,19 +1,13 @@
 import { STORE_EVAL } from "$/eval"
 import type { GlslContext } from "@/eval/lib/fn"
-import {
-  each,
-  map,
-  type GlslVal,
-  type JsVal,
-  type JsValue,
-  type SPoint,
-} from "@/eval/ty"
-import { real, unpt } from "@/eval/ty/create"
+import { each, map, type GlslVal, type JsVal, type JsValue } from "@/eval/ty"
 import { Display } from "@/eval/ty/display"
 import { R } from "@/field/dir"
+import type { Point } from "@/lib/point"
+import type { SPoint } from "@/lib/spoint"
+import { int } from "@/lib/sreal"
 import { Prop } from "@/sheet/ext"
 import { defineHideable } from "@/sheet/ext/hideable"
-import { normVector, type Point } from "@/sheet/point"
 import type { Cv } from "@/sheet/ui/cv"
 import { Color, Opacity, Order, Size } from "@/sheet/ui/cv/consts"
 import { ref, val } from "@/sheet/ui/cv/item"
@@ -23,9 +17,9 @@ const LINE = Size.AngleGuideLength
 const ARC = Size.AngleArcDistance
 
 export function angleJs({ value, type }: JsVal<"angle" | "directedangle">) {
-  const p0 = unpt(value[0])
-  const p1 = unpt(value[1])
-  const p2 = unpt(value[2])
+  const p0 = value[0].ns()
+  const p1 = value[1].ns()
+  const p2 = value[2].ns()
 
   const measure =
     (Math.atan2(p0.x - p1.x, p0.y - p1.y) -
@@ -34,9 +28,9 @@ export function angleJs({ value, type }: JsVal<"angle" | "directedangle">) {
     (2 * Math.PI)
 
   if (measure > Math.PI) {
-    return real(type == "angle" ? 2 * Math.PI - measure : measure - 2 * Math.PI)
+    return int(type == "angle" ? 2 * Math.PI - measure : measure - 2 * Math.PI)
   } else {
-    return real(measure)
+    return int(measure)
   }
 }
 
@@ -96,10 +90,10 @@ export function drawAngleCv(
   const o1 = cv.toCanvas(p1)
   const o2 = cv.toCanvas(p2)
   const o3 = cv.toCanvas(p3)
-  const s1 = normVector(o2, o1, cv.scale * LINE)
-  const s3 = normVector(o2, o3, cv.scale * LINE)
-  const a1 = normVector(o2, o1, cv.scale * ARC)
-  const a3 = normVector(o2, o3, cv.scale * ARC)
+  const s1 = o1.normFrom(o2, cv.scale * LINE)
+  const s3 = o3.normFrom(o2, cv.scale * LINE)
+  const a1 = o1.normFrom(o2, cv.scale * ARC)
+  const a3 = o3.normFrom(o2, cv.scale * ARC)
 
   const src = swap ? a3 : a1
   const dst = swap ? a1 : a3
@@ -182,8 +176,8 @@ function anglePath(
   const o1 = cv.toCanvas(p1)
   const o2 = cv.toCanvas(p2)
   const o3 = cv.toCanvas(p3)
-  const a1 = normVector(o2, o1, cv.scale * ARC)
-  const a3 = normVector(o2, o3, cv.scale * ARC)
+  const a1 = o2.normFrom(o1, cv.scale * ARC)
+  const a3 = o2.normFrom(o3, cv.scale * ARC)
 
   const src = swap ? a3 : a1
   const dst = swap ? a1 : a3
@@ -234,19 +228,15 @@ export const EXT_ANGLE = defineHideable<
       return each(data.value)
     },
     draw(data, val, index) {
-      drawAngleCv(
-        data.expr.sheet.cv,
-        unpt(val[0]),
-        unpt(val[1]),
-        unpt(val[2]),
-        { kind: data.value.type },
-      )
+      drawAngleCv(data.expr.sheet.cv, val[0].ns(), val[1].ns(), val[2].ns(), {
+        kind: data.value.type,
+      })
       if (data.picked[index]) {
         drawAngleCv(
           data.expr.sheet.cv,
-          unpt(val[0]),
-          unpt(val[1]),
-          unpt(val[2]),
+          val[0].ns(),
+          val[1].ns(),
+          val[2].ns(),
           { kind: data.value.type },
           Size.LineRing,
           Opacity.Pick,
@@ -260,9 +250,9 @@ export const EXT_ANGLE = defineHideable<
           at,
           anglePath(
             target.data.expr.sheet.cv,
-            unpt(target.item[0]),
-            unpt(target.item[1]),
-            unpt(target.item[2]),
+            target.item[0].ns(),
+            target.item[1].ns(),
+            target.item[2].ns(),
             { kind: target.data.value.type },
           ),
         )

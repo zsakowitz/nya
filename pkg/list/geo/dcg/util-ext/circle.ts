@@ -1,5 +1,4 @@
 import { each, type JsValue, type Val } from "@/eval/ty"
-import { num, unpt } from "@/eval/ty/create"
 import { Prop } from "@/sheet/ext"
 import { defineHideable } from "@/sheet/ext/hideable"
 import { Color, Opacity, Order, Size } from "@/sheet/ui/cv/consts"
@@ -31,15 +30,15 @@ export const EXT_CIRCLE = defineHideable<
     },
     draw(data, val, index) {
       data.expr.sheet.cv.circle(
-        unpt(val.center),
-        num(val.radius),
+        val.center.xy(),
+        val.radius.num(),
         Size.Line,
         Color.Green,
       )
       if (picked.get(data.expr)[index]) {
         data.expr.sheet.cv.circle(
-          unpt(val.center),
-          num(val.radius),
+          val.center.xy(),
+          val.radius.num(),
           Size.LineRing,
           Color.Green,
           Opacity.Pick,
@@ -53,7 +52,7 @@ export const EXT_CIRCLE = defineHideable<
       hits({ data, item }, at, hint) {
         return (
           hint.allows(data.value.type) &&
-          data.expr.sheet.cv.hitsCircle(at, unpt(item.center), num(item.radius))
+          data.expr.sheet.cv.hitsCircle(at, item.center.xy(), item.radius.num())
         )
       },
       ref,

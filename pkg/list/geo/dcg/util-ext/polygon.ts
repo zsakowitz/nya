@@ -1,12 +1,11 @@
 import { each, type JsVal, type JsValue } from "@/eval/ty"
-import { rept, unpt } from "@/eval/ty/create"
 import { CmdDot } from "@/field/cmd/leaf/num"
 import { CmdVar } from "@/field/cmd/leaf/var"
 import { CmdBrack } from "@/field/cmd/math/brack"
 import { L, R } from "@/field/dir"
+import type { Point } from "@/lib/point"
 import { Prop } from "@/sheet/ext"
 import { defineHideable } from "@/sheet/ext/hideable"
-import type { Point } from "@/sheet/point"
 import { Color, Opacity, Order, Size } from "@/sheet/ui/cv/consts"
 import type { Expr } from "@/sheet/ui/expr"
 
@@ -40,7 +39,7 @@ export const EXT_POLYGON = defineHideable<
       return each(data.value)
         .filter((raw) => raw.length >= 2)
         .flatMap((raw, poly): PolyItem[] => {
-          const val = raw.map(unpt)
+          const val = raw.map((x) => x.ns())
           return [
             ...val.map(
               (p1, index): PolyItem => ({
@@ -124,12 +123,12 @@ export const EXT_POLYGON = defineHideable<
         if (item.type == "poly") {
           return {
             type: "polygon",
-            value: item.val.map(rept),
+            value: item.val.map((x) => x.s()),
           }
         } else {
           return {
             type: "segment",
-            value: [rept(item.p1), rept(item.p2)],
+            value: [item.p1.s(), item.p2.s()],
           } satisfies JsVal<"segment">
         }
       },

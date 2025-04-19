@@ -16,7 +16,6 @@ import {
   map,
   type GlslValue,
   type JsValue,
-  type SReal,
   type TyName,
   type Tys,
   type Val,
@@ -29,16 +28,14 @@ import {
   coerceValueJs,
   split,
 } from "@/eval/ty/coerce"
-import { frac, num, real } from "@/eval/ty/create"
 import { TY_INFO, type TyInfoByName } from "@/eval/ty/info"
-import { abs, add, div, mul, sub } from "@/eval/ty/ops"
 import { Leaf } from "@/field/cmd/leaf"
 import { BRACKS } from "@/field/cmd/math/brack"
 import { L, R } from "@/field/dir"
 import { Block } from "@/field/model"
 import { h, hx } from "@/jsx"
+import { approx, frac, int, type SReal } from "@/lib/sreal"
 import { defineExt } from "@/sheet/ext"
-import { sqrt } from "../geo/dcg/util-fn/distance"
 
 declare module "@/eval/ty" {
   interface Tys {
@@ -169,8 +166,8 @@ const FN_MIN = new FnList("min", "returns the minimum of its inputs")
     "r32",
     (args) =>
       args.length ?
-        args.map((x) => x).reduce((a, b) => (num(b) < num(a) ? b : a))
-      : real(NaN),
+        args.map((x) => x).reduce((a, b) => (b.num() < a.num() ? b : a))
+      : approx(NaN),
     (_, ...args) =>
       args.length ?
         args.map((x) => x.expr).reduce((a, b) => `min(${a}, ${b})`)
@@ -193,8 +190,8 @@ const FN_MAX = new FnList("max", "returns the maximum of its inputs")
     "r32",
     (args) =>
       args.length ?
-        args.reduce((a, b) => (num(b) > num(a) ? b : a))
-      : real(NaN),
+        args.reduce((a, b) => (b.num() > a.num() ? b : a))
+      : approx(NaN),
     (_, ...args) =>
       args.length ?
         args.map((x) => x.expr).reduce((a, b) => `max(${a}, ${b})`)
@@ -215,7 +212,7 @@ export const FN_TOTAL = new FnList("total", "returns the sum of its inputs")
   .addSpread(
     "r64",
     "r64",
-    (args) => args.reduce((a, b) => add(a, b), real(0)),
+    (args) => args.reduce((a, b) => a.add(b), int(0)),
     (ctx, ...args) =>
       args.length ?
         args.map((x) => x.expr).reduce((a, b) => addR64(ctx, a, b))
@@ -225,20 +222,17 @@ export const FN_TOTAL = new FnList("total", "returns the sum of its inputs")
   .addSpread(
     "r32",
     "r32",
-    (args) => args.reduce((a, b) => add(a, b), real(0)),
+    (args) => args.reduce((a, b) => a.add(b), int(0)),
     (_, ...args) => `(${args.map((x) => x.expr).join(" + ") || "0.0"})`,
     "total([8,2,9])=19",
   )
 
 function meanJs(args: SReal[]): SReal {
   if (args.length == 0) {
-    return real(NaN)
+    return approx(NaN)
   }
 
-  return div(
-    args.reduce((a, b) => add(a, b), real(0)),
-    frac(args.length, 1),
-  )
+  return args.reduce((a, b) => a.add(b), int(0)).div(int(args.length))
 }
 
 function meanGlslR64(ctx: GlslContext, args: string[]): string {
@@ -281,12 +275,12 @@ export const FN_MEAN = new FnList(
   )
 
 function sortJs(args: SReal[]) {
-  return args.sort((a, b) => num(a) - num(b))
+  return args.sort((a, b) => a.num() - b.num())
 }
 
 function middleJs(value: SReal[]): SReal {
   if (value.length == 0) {
-    return real(NaN)
+    return approx(NaN)
   }
 
   if (value.length % 2) {
@@ -295,7 +289,7 @@ function middleJs(value: SReal[]): SReal {
 
   const lhs = value[value.length / 2 - 1]!
   const rhs = value[value.length / 2]!
-  return div(add(lhs, rhs), real(2))
+  return lhs.add(rhs).div(int(2))
 }
 
 const FN_MEDIAN = new FnList("median", "takes the median of its inputs")
@@ -321,14 +315,14 @@ function quartile<L extends number | false>(
   quartile: JsValue<"r32", L>,
 ): JsValue<"r32", L> {
   if (list.length == 0) {
-    return map(quartile, "r32", () => real(NaN))
+    return map(quartile, "r32", () => approx(NaN))
   }
   sortJs(list)
 
   return map(quartile, "r32", (quartile) => {
-    let q = num(quartile)
+    let q = quartile.num()
     if (!(0 <= q && q <= 4)) {
-      return real(NaN)
+      return approx(NaN)
     }
 
     q = Math.round(q)
@@ -353,7 +347,7 @@ function quartile<L extends number | false>(
         }
     }
 
-    return real(NaN)
+    return approx(NaN)
   })
 }
 
@@ -368,10 +362,10 @@ const FN_QUARTILE: Fn & WithDocs = {
         [coerceTyJs(args[0]!, "stats"), coerceTyJs(args[1]!, "r32")],
         "r32",
         ({ value: stats }, { value: quartileRaw }) => {
-          const quartile = num(quartileRaw)
+          const quartile = quartileRaw.num()
 
           if (!(0 <= quartile && quartile <= 4)) {
-            return real(NaN)
+            return approx(NaN)
           }
 
           return stats[Math.round(quartile)]!
@@ -431,28 +425,28 @@ export const FN_QUANTILE = new (class extends FnDist {
       const quantile = coerceTyJs(args[1]!, "r32")
 
       if (list.length == 0) {
-        return map(quantile, "r32", () => real(NaN))
+        return map(quantile, "r32", () => approx(NaN))
       }
       sortJs(list)
 
       return map(quantile, "r32", (quartile) => {
-        let q = num(quartile)
+        let q = quartile.num()
         if (!(0 <= q && q <= 1)) {
-          return real(NaN)
+          return approx(NaN)
         }
 
-        const mid = mul(quartile, frac(list.length - 1, 1))
-        const lhs = Math.floor(num(mid))
-        const rhs = Math.ceil(num(mid))
+        const mid = quartile.mul(int(list.length - 1))
+        const lhs = Math.floor(mid.num())
+        const rhs = Math.ceil(mid.num())
 
         if (lhs == rhs) {
           return list[lhs]!
         }
 
-        return add(
-          mul(sub(frac(rhs, 1), mid), list[lhs]!),
-          mul(sub(mid, frac(lhs, 1)), list[rhs]!),
-        )
+        return int(rhs)
+          .sub(mid)
+          .mul(list[lhs]!)
+          .add(mid.sub(int(lhs)).mul(list[rhs]!))
       })
     }
 
@@ -507,17 +501,17 @@ ALL_DOCS.push(FN_QUANTILE)
 
 function varJs(args: SReal[], sample: boolean): SReal {
   if (args.length == 0 || (sample && args.length == 1)) {
-    return real(NaN)
+    return approx(NaN)
   }
 
   const mean = meanJs(args)
 
   const devs = args.reduce((a, b) => {
-    const dev = sub(b, mean)
-    return add(a, mul(dev, dev))
-  }, real(0))
+    const dev = b.sub(mean)
+    return a.add(dev.mul(dev))
+  }, int(0))
 
-  return div(devs, frac(args.length - +sample, 1))
+  return devs.div(int(args.length - +sample))
 }
 
 function varGlsl(ctx: GlslContext, args: string[], sample: boolean): string {
@@ -564,7 +558,7 @@ const FN_VARP = new FnList("varp", "population variance").addSpread(
 )
 
 function stdevJs(args: SReal[], sample: boolean) {
-  return sqrt(varJs(args, sample))
+  return varJs(args, sample).sqrt()
 }
 
 function stdevGlsl(ctx: GlslContext, args: string[], sample: boolean) {
@@ -605,12 +599,12 @@ const FN_MAD = new FnList("mad", "mean absolute deviation").addSpread(
   "r32",
   (args) => {
     if (args.length == 0) {
-      return real(NaN)
+      return approx(NaN)
     }
 
     const mean = meanJs(args)
-    const tad = args.reduce((a, b) => add(a, abs(sub(b, mean))), real(0))
-    return div(tad, frac(args.length, 1))
+    const tad = args.reduce((a, b) => a.add(b.sub(mean).abs()), int(0))
+    return tad.div(int(args.length))
   },
   (ctx, ...args) => {
     if (args.length == 0) {
@@ -628,16 +622,15 @@ const FN_MAD = new FnList("mad", "mean absolute deviation").addSpread(
 
 function covJs(a: SReal[], b: SReal[], sample: boolean) {
   if (a.length <= +sample) {
-    return real(NaN)
+    return approx(NaN)
   }
 
   const ma = meanJs(a)
   const mb = meanJs(b)
 
-  return div(
-    a.reduce((c, a, i) => add(c, mul(sub(a, ma), sub(b[i]!, mb))), real(0)),
-    frac(a.length - +sample, 1),
-  )
+  return a
+    .reduce((c, a, i) => a.sub(ma).mul(b[i]!.sub(mb)).add(c), int(0))
+    .div(int(a.length - +sample))
 }
 
 function covGlsl(
@@ -682,7 +675,7 @@ const FN_CORR = new FnListList("corr", "Pearson correlation coefficient").add(
   "r32",
   "r32",
   ({ value: a }, { value: b }) =>
-    div(covJs(a, b, true), mul(stdevJs(a, true), stdevJs(b, true))),
+    covJs(a, b, true).div(stdevJs(a, true).mul(stdevJs(b, true))),
   (ctx, a, b) =>
     `(${covGlsl(ctx, a, b, true)} / (${stdevGlsl(ctx, split(a.list, a.expr), true)} * ${stdevGlsl(ctx, split(b.list, b.expr), true)}))`,
   "corr([2,4,6,8,10],[12,11,8,3,1])≈-0.975",
@@ -690,7 +683,7 @@ const FN_CORR = new FnListList("corr", "Pearson correlation coefficient").add(
 
 function ranksJs(data: SReal[]): SReal[] {
   const sorted = data
-    .map((x, i) => ({ x: num(x), i }))
+    .map((x, i) => ({ x: x.num(), i }))
     .sort((a, b) => a.x - b.x)
 
   type Result = { position: number; count: number }
@@ -766,7 +759,7 @@ const FN_SPEARMAN = new FnListList(
   ({ value: ar }, { value: br }) => {
     const a = ranksJs(ar)
     const b = ranksJs(br)
-    return div(covJs(a, b, true), mul(stdevJs(a, true), stdevJs(b, true)))
+    return covJs(a, b, true).div(stdevJs(a, true).mul(stdevJs(b, true)))
   },
   issue("Cannot compute 'spearman' in shaders yet."),
   "spearman([2,4,6,8,10],[12,11,8,3,1])=-1",
@@ -834,7 +827,7 @@ const FN_STATS = new FnList(
     const { value } = quartile(args, {
       type: "r32",
       list: 5,
-      value: [real(0), real(1), real(2), real(3), real(4)],
+      value: [int(0), int(1), int(2), int(3), int(4)],
     })
 
     return value satisfies SReal[] as Tys["stats"]
@@ -857,7 +850,7 @@ const TY_STATS: TyInfoByName<"stats"> = {
     )
   },
   garbage: {
-    js: [real(NaN), real(NaN), real(NaN), real(NaN), real(NaN)],
+    js: [approx(NaN), approx(NaN), approx(NaN), approx(NaN), approx(NaN)],
     get glsl(): never {
       throw new Error(
         "Cannot create five-number statistical summaries in shaders.",
@@ -867,7 +860,7 @@ const TY_STATS: TyInfoByName<"stats"> = {
   coerce: {},
   write: {
     isApprox(value) {
-      return value.some((x) => x.type == "approx")
+      return value.some((x) => x.isApprox())
     },
     display(value, props) {
       new CmdStats(

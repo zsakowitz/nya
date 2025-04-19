@@ -1,5 +1,6 @@
 import { cx, type Complex } from "./complex"
-import { int, type SReal } from "./sreal"
+import { type Point } from "./point"
+import { approx, int, type SReal } from "./sreal"
 
 /**
  * A complex number type which preserves exact values for fractions (0.1 is
@@ -34,6 +35,10 @@ export class SComplex {
     return xy(this.x.mul(other), this.y.mul(other))
   }
 
+  mulEach(other: SComplex): SComplex {
+    return xy(this.x.mul(other.x), this.y.mul(other.y))
+  }
+
   div(other: SComplex): SComplex {
     const { x: a, y: b } = this
     const { x: c, y: d } = other
@@ -59,6 +64,14 @@ export class SComplex {
 
   abs(): SReal {
     return this.x.hypot(this.y)
+  }
+
+  unsign(): SComplex {
+    return xy(this.x.abs(), this.y.abs())
+  }
+
+  conj(): SComplex {
+    return xy(this.x, this.y.neg())
   }
 
   sign(): SComplex {
@@ -127,8 +140,43 @@ export class SComplex {
       return xy(int(bx), int(by))
     }
   }
+
+  roundEach(): SComplex {
+    return xy(this.x.round(), this.y.round())
+  }
+
+  pow(other: SComplex): SComplex {
+    if (other.y.zero() && this.y.zero() && this.x.num() > 0) {
+      return xy(this.x.pow(other.x), int(0))
+    }
+    return this.ns().pow(other.ns()).s()
+  }
+
+  zero(): boolean {
+    return this.x.zero() && this.y.zero()
+  }
+
+  xy(): Point {
+    return this.ns().xy()
+  }
+
+  gl32() {
+    return `vec2(${this.x.gl32()}, ${this.y.gl32()})`
+  }
+
+  gl64() {
+    return `vec4(${this.x.gl64()}, ${this.y.gl64()})`
+  }
 }
 
 export function xy(x: SReal, y: SReal): SComplex {
   return new (SComplex as any)(x, y)
+}
+
+export function xyint(x: number, y: number): SComplex {
+  return xy(int(x), int(y))
+}
+
+export function xynan() {
+  return xy(approx(NaN), approx(NaN))
 }

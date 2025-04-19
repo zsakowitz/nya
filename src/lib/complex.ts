@@ -1,3 +1,4 @@
+import { px, type Point } from "./point"
 import { xy, type SComplex } from "./scomplex"
 import { int } from "./sreal"
 
@@ -25,6 +26,10 @@ export class Complex {
 
   mulR(other: number): Complex {
     return cx(this.x * other, this.y * other)
+  }
+
+  mulEach(other: Complex): Complex {
+    return cx(this.x * other.x, this.y * other.y)
   }
 
   div(other: Complex): Complex {
@@ -145,6 +150,10 @@ export class Complex {
     return this.sin().div(this.cos())
   }
 
+  cot(): Complex {
+    return this.cos().div(this.sin())
+  }
+
   mulI(): Complex {
     return cx(-this.y, this.x)
   }
@@ -178,6 +187,54 @@ export class Complex {
   toString() {
     const y = this.y.toString()
     return `${this.x}${y[0] == "-" ? "" : "+"}${y}i`
+  }
+
+  pow(other: Complex): Complex {
+    return other.mul(this.ln()).exp()
+  }
+
+  xy(): Point {
+    return px(this.x, this.y)
+  }
+
+  sinh(): Complex {
+    const { x, y } = this
+    return cx(cos(y) * sinh(x), sin(y) * cosh(x))
+  }
+
+  cosh(): Complex {
+    const { x, y } = this
+    return cx(cos(y) * cosh(x), sin(y) * sinh(x))
+  }
+
+  tanh(): Complex {
+    return this.sinh().div(this.cosh())
+  }
+
+  coth(): Complex {
+    return this.cosh().div(this.sinh())
+  }
+
+  asinh(): Complex {
+    return this.square().add(cx(1, 0)).sqrt().add(this).ln()
+  }
+
+  acosh(): Complex {
+    const p1 = this.add(cx(1, 0)).sqrt()
+    const m1 = this.sub(cx(1, 0)).sqrt()
+    return p1.mul(m1).add(this).ln()
+  }
+
+  atanh(): Complex {
+    const p1 = cx(1, 0).add(this)
+    const m1 = cx(1, 0).sub(this)
+    return p1.div(m1).ln().divR(2)
+  }
+
+  acoth(): Complex {
+    const p1 = this.add(cx(1, 0))
+    const m1 = this.sub(cx(1, 0))
+    return p1.div(m1).ln().divR(2)
   }
 }
 

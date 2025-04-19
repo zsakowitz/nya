@@ -13,13 +13,13 @@ import { NO_SYM } from "@/eval/ast/tx"
 import { FnDist } from "@/eval/ops/dist"
 import { issue } from "@/eval/ops/issue"
 import type { JsVal, JsValue } from "@/eval/ty"
-import { real } from "@/eval/ty/create"
 import type { TyInfoByName } from "@/eval/ty/info"
 import { brightness } from "@/field/cmd/leaf/color"
 import { CmdWord } from "@/field/cmd/leaf/word"
 import { L } from "@/field/dir"
 import { toText } from "@/field/latex"
 import { h, hx } from "@/jsx"
+import { int, type SReal } from "@/lib/sreal"
 
 declare module "@/eval/ty" {
   interface Tys {
@@ -5534,17 +5534,17 @@ function numProp<
     return new FnDist(name, label).addJs(
       ["element"],
       "r32",
-      map((x) => real(x?.[key] ?? NaN)),
+      map((x) => int(x?.[key] ?? NaN)),
       `${name}(element Li)=${bySymbol.Li?.[key] ?? `\\digit N \\digit a \\digit N`}`,
     )
   }
 
-  const list: UnitList = Array.isArray(unit) ? unit : [{ exp: real(1), unit }]
+  const list: UnitList = Array.isArray(unit) ? unit : [{ exp: int(1), unit }]
 
   return new FnDist(name, label).addJs(
     ["element"],
     "r32u",
-    map((x) => [real(x?.[key] ?? NaN), list]),
+    map((x): [SReal, UnitList] => [int(x?.[key] ?? NaN), list]),
     `${name}(element Li)=${bySymbol.Li?.[key] ?? `\\digit N \\digit a \\digit N `}${latexUnit(list, false)}`,
   )
 }
@@ -5582,8 +5582,8 @@ const fns = [
     "electron_affinity",
     "amount of energy released when an electron attaches to a neutral atom of this element",
     [
-      { exp: real(1), unit: UNIT_KILOJOULE },
-      { exp: real(-1), unit: UNIT_MOLE },
+      { exp: int(1), unit: UNIT_KILOJOULE },
+      { exp: int(-1), unit: UNIT_MOLE },
     ],
     "eleaffinity",
   ),
@@ -5598,9 +5598,9 @@ const fns = [
     "molar_heat",
     "amount of energy required to increase the temperature of one mole of an element by one degree kelvin",
     [
-      { exp: real(1), unit: UNIT_JOULE },
-      { exp: real(-1), unit: UNIT_KELVIN },
-      { exp: real(-1), unit: UNIT_MOLE },
+      { exp: int(1), unit: UNIT_JOULE },
+      { exp: int(-1), unit: UNIT_KELVIN },
+      { exp: int(-1), unit: UNIT_MOLE },
     ],
   ),
   numProp("number", "atomic number of an element", null),

@@ -1,14 +1,10 @@
 import type { GlslContext } from "@/eval/lib/fn"
 import { FnDist } from "@/eval/ops/dist"
-import type { GlslVal, JsVal, SPoint, TyName, Val } from "@/eval/ty"
-import { pt } from "@/eval/ty/create"
-import { add, sub } from "@/eval/ty/ops"
+import type { GlslVal, JsVal, TyName, Val } from "@/eval/ty"
+import type { SPoint } from "@/lib/spoint"
 
 export function translate(by: [SPoint, SPoint], target: SPoint) {
-  return pt(
-    add(sub(by[1].x, by[0].x), target.x),
-    add(sub(by[1].y, by[0].y), target.y),
-  )
+  return by[1].sub(by[0]).add(target)
 }
 
 export const FN_TRANSLATE = new FnDist(

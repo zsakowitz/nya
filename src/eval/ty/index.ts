@@ -1,3 +1,5 @@
+import { SPoint } from "@/lib/spoint"
+import { SReal } from "@/lib/sreal"
 import type { GlslContext } from "../lib/fn"
 import { unifyLists } from "./coerce"
 import { TY_INFO } from "./info"
@@ -12,15 +14,8 @@ export interface Tys {
   r32: SReal
   r64: SReal
   bool: boolean
-  point32: SPoint
+  point32: SPoint<2>
 }
-
-export type SApprox = { type: "approx"; value: number }
-export type SExact = { type: "exact"; n: number; d: number }
-export type SReal = SApprox | SExact
-
-export type SPoint = { type: "point"; x: SReal; y: SReal }
-export type SColor = { type: "color"; r: SReal; g: SReal; b: SReal; a: SReal }
 
 export type TyName = keyof Tys
 

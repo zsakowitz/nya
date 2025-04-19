@@ -1,10 +1,11 @@
+import type { SReal } from "@/lib/sreal"
 import type { Node } from "./ast/token"
 import { js } from "./ast/tx"
 import type { BindingFn, Bindings } from "./lib/binding"
 import type { JsContext } from "./lib/jsctx"
 import { FNS } from "./ops"
 import type { Sym } from "./sym"
-import type { JsValue, SReal } from "./ty"
+import type { JsValue } from "./ty"
 
 export interface PropsJs {
   base: SReal

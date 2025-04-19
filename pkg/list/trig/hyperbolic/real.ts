@@ -2,7 +2,7 @@ import { chaind, OP_JUXTAPOSE, OP_NEG, symSquare } from "#/list/core/ops"
 import type { Package } from "#/types"
 import { FnDist } from "@/eval/ops/dist"
 import { cl } from "@/eval/sym"
-import { approx, num } from "@/eval/ty/create"
+import { approx } from "@/lib/sreal"
 
 export const FN_SINH: FnDist = new FnDist(
   "sinh",
@@ -68,7 +68,7 @@ export default {
     FN_SINH.add(
       ["r32"],
       "r32",
-      (a) => approx(Math.sinh(num(a.value))),
+      (a) => approx(Math.sinh(a.value.num())),
       (_, a) => `sinh(${a.expr})`,
       "sinh(ln 2)=0.75",
     )
@@ -76,7 +76,7 @@ export default {
     FN_COSH.add(
       ["r32"],
       "r32",
-      (a) => approx(Math.cosh(num(a.value))),
+      (a) => approx(Math.cosh(a.value.num())),
       (_, a) => `cosh(${a.expr})`,
       "cosh(ln 2)=1.25",
     )
@@ -84,7 +84,7 @@ export default {
     FN_TANH.add(
       ["r32"],
       "r32",
-      (a) => approx(Math.tanh(num(a.value))),
+      (a) => approx(Math.tanh(a.value.num())),
       (_, a) => `tanh(${a.expr})`,
       "tanh(ln 2)=0.6",
     )
@@ -92,7 +92,7 @@ export default {
     FN_CSCH.add(
       ["r32"],
       "r32",
-      (a) => approx(1 / Math.sinh(num(a.value))),
+      (a) => approx(1 / Math.sinh(a.value.num())),
       (_, a) => `(1.0/sinh(${a.expr}))`,
       "csch(ln 2)=\\frac43",
     )
@@ -100,7 +100,7 @@ export default {
     FN_SECH.add(
       ["r32"],
       "r32",
-      (a) => approx(1 / Math.cosh(num(a.value))),
+      (a) => approx(1 / Math.cosh(a.value.num())),
       (_, a) => `(1.0/cosh(${a.expr}))`,
       "sech(ln 2)=0.8",
     )
@@ -108,7 +108,7 @@ export default {
     FN_COTH.add(
       ["r32"],
       "r32",
-      (a) => approx(1 / Math.tanh(num(a.value))),
+      (a) => approx(1 / Math.tanh(a.value.num())),
       (_, a) => `(1.0/tanh(${a.expr}))`,
       "coth(ln 2)=\\frac53",
     )
@@ -117,7 +117,7 @@ export default {
     FN_ARSINH.add(
       ["r32"],
       "r32",
-      (a) => approx(Math.asinh(num(a.value))),
+      (a) => approx(Math.asinh(a.value.num())),
       (_, a) => `asinh(${a.expr})`,
       "arsinh(2)≈1.4436",
     )
@@ -125,7 +125,7 @@ export default {
     FN_ARCOSH.add(
       ["r32"],
       "r32",
-      (a) => approx(Math.acosh(num(a.value))),
+      (a) => approx(Math.acosh(a.value.num())),
       (_, a) => `acosh(${a.expr})`,
       "arcosh(2)≈1.3170",
     )
@@ -133,7 +133,7 @@ export default {
     FN_ARTANH.add(
       ["r32"],
       "r32",
-      (a) => approx(Math.atanh(num(a.value))),
+      (a) => approx(Math.atanh(a.value.num())),
       (_, a) => `atanh(${a.expr})`,
       "artanh(0.3)≈0.3095",
     )
@@ -141,7 +141,7 @@ export default {
     FN_ARCSCH.add(
       ["r32"],
       "r32",
-      (a) => approx(Math.asinh(1 / num(a.value))),
+      (a) => approx(Math.asinh(1 / a.value.num())),
       (_, a) => `asinh(1.0/${a.expr})`,
       "arcsch(3)≈0.3275",
     )
@@ -149,7 +149,7 @@ export default {
     FN_ARSECH.add(
       ["r32"],
       "r32",
-      (a) => approx(Math.acosh(1 / num(a.value))),
+      (a) => approx(Math.acosh(1 / a.value.num())),
       (_, a) => `acosh(1.0/${a.expr})`,
       "arsech(0.3)≈1.8738",
     )
@@ -157,7 +157,7 @@ export default {
     FN_ARCOTH.add(
       ["r32"],
       "r32",
-      (a) => approx(Math.atanh(1 / num(a.value))),
+      (a) => approx(Math.atanh(1 / a.value.num())),
       (_, a) => `atanh(1.0/${a.expr})`,
       "arcoth(3)≈0.3466",
     )

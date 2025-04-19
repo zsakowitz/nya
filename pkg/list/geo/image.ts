@@ -3,15 +3,15 @@ import { imageShaderError } from "$/image"
 import { example } from "@/docs/core"
 import { FnDist } from "@/eval/ops/dist"
 import { each, type JsValue, type Val } from "@/eval/ty"
-import { num, real, SNANPT, unpt } from "@/eval/ty/create"
 import { TY_INFO } from "@/eval/ty/info"
-import { neg } from "@/eval/ty/ops"
 import { CmdComma } from "@/field/cmd/leaf/comma"
 import { CmdWord } from "@/field/cmd/leaf/word"
 import { CmdBrack } from "@/field/cmd/math/brack"
 import { L, R } from "@/field/dir"
 import { Block } from "@/field/model"
-import { b, fa, h, px } from "@/jsx"
+import { b, fa, h, paragraphTag } from "@/jsx"
+import { ptnan, type SPoint } from "@/lib/spoint"
+import { frac, type SReal } from "@/lib/sreal"
 import { defineExt } from "@/sheet/ext"
 import type { Cv } from "@/sheet/ui/cv"
 import { Order } from "@/sheet/ui/cv/consts"
@@ -61,11 +61,11 @@ function draw(cv: Cv, val: Val<"image2d">) {
     return
   }
 
-  const p1 = cv.toCanvas(unpt(val.p1))
-  const p2 = cv.toCanvas(unpt(val.p2))
+  const p1 = cv.toCanvas(val.p1.xy())
+  const p2 = cv.toCanvas(val.p2.xy())
   const width = Math.hypot(p1.x - p2.x, p1.y - p2.y)
   const height =
-    (val.aspect ? 1 / num(val.aspect) : val.data.height / val.data.width) *
+    (val.aspect ? 1 / val.aspect.num() : val.data.height / val.data.width) *
     width
 
   const transform = new DOMMatrix()
@@ -126,8 +126,8 @@ export default {
               width: 0,
               height: 0,
             },
-            p1: SNANPT,
-            p2: SNANPT,
+            p1: ptnan(2),
+            p2: ptnan(2),
             aspect: null,
           },
           get glsl(): never {
@@ -144,8 +144,8 @@ export default {
         },
         write: {
           isApprox(value) {
-            return [value.p1.x, value.p1.y, value.p2.x, value.p2.y].some(
-              (x) => x.type == "approx",
+            return [value.p1.x, value.p1.y, value.p2.x, value.p2.y].some((x) =>
+              x.isApprox(),
             )
           },
           display(value, props) {
@@ -200,18 +200,18 @@ export default {
       poster: String.raw`\operatorname{image}\left(i_{1},\operatorname{segment}\left(...\right)\right)`,
       render() {
         return [
-          px`In project nya, images are expressions, just like everything else. To create one, select the ${b("image")} item type in the second-topmost navigation bar.`,
-          px`To draw the image onto the graphpaper, use the ${b("image")} function.`,
+          paragraphTag`In project nya, images are expressions, just like everything else. To create one, select the ${b("image")} item type in the second-topmost navigation bar.`,
+          paragraphTag`To draw the image onto the graphpaper, use the ${b("image")} function.`,
           example(
             String.raw`\operatorname{image}\left(i_{1},\operatorname{segment}\left(\left(0,0\right),\left(1,0\right)\right)\right)`,
             null,
           ),
-          px`The ${b("image")} function places an image on top of a line segment with its preferred aspect ratio, so it isn't distorted. If you want distortion, you can pass your own aspect ratio:`,
+          paragraphTag`The ${b("image")} function places an image on top of a line segment with its preferred aspect ratio, so it isn't distorted. If you want distortion, you can pass your own aspect ratio:`,
           example(
             String.raw`\operatorname{image}\left(i_{1},\operatorname{segment}\left(\left(0,0\right),\left(1,0\right)\right,\frac23\right)`,
             null,
           ),
-          px`Negative values for the aspect ratio will draw a mirrored version of the image on the other side of the line segment.`,
+          paragraphTag`Negative values for the aspect ratio will draw a mirrored version of the image on the other side of the line segment.`,
         ]
       },
     },
@@ -260,8 +260,8 @@ markReflect(
     data: a.value.data,
     aspect:
       a.value.aspect ?
-        neg(a.value.aspect)
-      : real(-a.value.data.width / a.value.data.height),
+        a.value.aspect.neg()
+      : frac(-a.value.data.width, a.value.data.height),
     p1: reflectJs(b, a.value.p1),
     p2: reflectJs(b, a.value.p2),
   }),

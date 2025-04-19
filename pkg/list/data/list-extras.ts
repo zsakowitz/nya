@@ -3,12 +3,11 @@ import type { FnSignature } from "@/docs/signature"
 import type { Fn } from "@/eval/ops"
 import { type WithDocs, ALL_DOCS } from "@/eval/ops/docs"
 import { issue } from "@/eval/ops/issue"
-import type { SReal } from "@/eval/ty"
 import { canCoerce, coerceTyJs, coerceValJs } from "@/eval/ty/coerce"
-import { num } from "@/eval/ty/create"
+import type { SReal } from "@/lib/sreal"
 
 function sortJs(args: SReal[]) {
-  return args.sort((a, b) => num(a) - num(b))
+  return args.sort((a, b) => a.num() - b.num())
 }
 
 const FN_SORT: Fn & WithDocs = {
@@ -89,7 +88,7 @@ const FN_UNIQUE: Fn & WithDocs = {
     const ret: SReal[] = []
 
     for (const item of value) {
-      const raw = num(item)
+      const raw = item.num()
       if (!seen.has(raw)) {
         seen.add(raw)
         ret.push(item)

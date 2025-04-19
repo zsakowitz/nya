@@ -22,18 +22,18 @@ import { dragPoint, type DragResultPoint } from "@/eval/ast/tx"
 import type { GlslContext } from "@/eval/lib/fn"
 import { FnDist } from "@/eval/ops/dist"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "@/eval/ops/vars"
-import { each, type JsValue, type SPoint } from "@/eval/ty"
-import { approx, frac, gl, num, pt, real, SNANPT, unpt } from "@/eval/ty/create"
-import { gl64 } from "@/eval/ty/create-r64"
+import { each, type JsValue } from "@/eval/ty"
 import type { TyWrite } from "@/eval/ty/display"
 import { highRes, TY_INFO, type TyGlide } from "@/eval/ty/info"
-import { abs, add, div, mul, neg, sub } from "@/eval/ty/ops"
 import { CmdComma } from "@/field/cmd/leaf/comma"
 import { CmdVar } from "@/field/cmd/leaf/var"
 import { CmdBrack } from "@/field/cmd/math/brack"
 import { L, R } from "@/field/dir"
 import { Block } from "@/field/model"
 import { h } from "@/jsx"
+import type { SComplex } from "@/lib/scomplex"
+import { pt, ptnan, type SPoint } from "@/lib/spoint"
+import { int } from "@/lib/sreal"
 import { defineHideable } from "@/sheet/ext/hideable"
 import { TransitionProp } from "@/sheet/transition"
 import type { Cv } from "@/sheet/ui/cv"
@@ -58,7 +58,7 @@ const EXT_POINT = defineHideable<
     drag: DragResultPoint | null
     cv: Cv
   },
-  SPoint
+  SPoint | SComplex
 >({
   data(expr) {
     const value = expr.js?.value
@@ -94,16 +94,16 @@ const EXT_POINT = defineHideable<
       return each(data.value)
     },
     draw({ drag, cv, expr }, val) {
-      cv.point(unpt(val), tx.get(expr), Color.Purple)
+      cv.point(val.xy(), tx.get(expr), Color.Purple)
       if (drag) {
-        cv.point(unpt(val), Size.PointHaloWide, Color.Purple, Opacity.PointHalo)
+        cv.point(val.xy(), Size.PointHaloWide, Color.Purple, Opacity.PointHalo)
       }
     },
     target: {
       hits(data, at, hint) {
         return (
           hint.allows(data.data.value.type) &&
-          data.data.cv.hitsPoint(unpt(data.item), at)
+          data.data.cv.hitsPoint(data.item.xy(), at)
         )
       },
       focus(data) {
@@ -139,7 +139,7 @@ const EXT_POINT = defineHideable<
       },
       dragOrigin(target) {
         if (target.data.drag) {
-          return target.data.cv.toOffset(unpt(target.item))
+          return target.data.cv.toOffset(target.item.xy())
         } else {
           return null
         }
@@ -176,8 +176,8 @@ const EXT_POINT = defineHideable<
             const y = at.y
             const yp = data.cv.yPrecision
             const cursor = drag.span.remove()
-            write(cursor, real(x), frac(10, 1), virtualStepExp(xp, 10), false)
-            write(cursor, real(y), frac(10, 1), virtualStepExp(yp, 10), true)
+            write(cursor, int(x), int(10), virtualStepExp(xp, 10), false)
+            write(cursor, int(y), int(10), virtualStepExp(yp, 10), true)
             new CmdVar("i", data.expr.field.options).insertAt(cursor, L)
             drag.field.sel = drag.field.block.cursor(R).selection()
             drag.field.queueAstUpdate()
@@ -234,7 +234,7 @@ export function declareDebugPoint(
 
 export const WRITE_POINT: TyWrite<SPoint> = {
   isApprox(value) {
-    return value.x.type == "approx" || value.y.type == "approx"
+    return value.isApprox()
   },
   display(value, props) {
     const block = new Block(null)
@@ -304,7 +304,7 @@ export default {
     OP_ADD.add(
       ["point64", "point64"],
       "point64",
-      (a, b) => pt(add(a.value.x, b.value.x), add(a.value.y, b.value.y)),
+      (a, b) => a.value.add(b.value),
       (ctx, ar, br) => {
         const a = ctx.cache(ar)
         const b = ctx.cache(br)
@@ -314,7 +314,7 @@ export default {
     ).add(
       ["point32", "point32"],
       "point32",
-      (a, b) => pt(add(a.value.x, b.value.x), add(a.value.y, b.value.y)),
+      (a, b) => a.value.add(b.value),
       (_, a, b) => `(${a.expr} + ${b.expr})`,
       "(2,3)+(4,-7)=(8,-4)",
     )
@@ -322,7 +322,7 @@ export default {
     OP_SUB.add(
       ["point64", "point64"],
       "point64",
-      (a, b) => pt(sub(a.value.x, b.value.x), sub(a.value.y, b.value.y)),
+      (a, b) => a.value.sub(b.value),
       (ctx, ar, br) => {
         const a = ctx.cache(ar)
         const b = ctx.cache(br)
@@ -332,7 +332,7 @@ export default {
     ).add(
       ["point32", "point32"],
       "point32",
-      (a, b) => pt(sub(a.value.x, b.value.x), sub(a.value.y, b.value.y)),
+      (a, b) => a.value.sub(b.value),
       (_, a, b) => `(${a.expr} - ${b.expr})`,
       "(2,3)-(4,-7)=(-2,10)",
     )
@@ -340,7 +340,7 @@ export default {
     FN_UNSIGN.add(
       ["point64"],
       "point64",
-      (a) => pt(abs(a.value.x), abs(a.value.y)),
+      (a) => a.value.unsign(),
       (ctx, a) => {
         const name = ctx.cache(a)
         return `vec4(${abs64(ctx, `${name}.xy`)}, ${abs64(ctx, `${name}.zw`)})`
@@ -349,7 +349,7 @@ export default {
     ).add(
       ["point32"],
       "point32",
-      (a) => pt(abs(a.value.x), abs(a.value.y)),
+      (a) => a.value.unsign(),
       (_, a) => `abs(${a.expr})`,
       "unsign((4,-7))=(4,7)",
     )
@@ -386,7 +386,7 @@ export default {
       ["point32"],
       "rabs32",
       // TODO: this is exact for some values
-      (a) => approx(Math.hypot(num(a.value.x), num(a.value.y))),
+      (a) => a.value.hypot(),
       (_, a) => `length(${a.expr})`,
       "|(3,-4)|=5",
     )
@@ -394,13 +394,13 @@ export default {
     OP_NEG.add(
       ["point64"],
       "point64",
-      (a) => pt(neg(a.value.x), neg(a.value.y)),
+      (a) => a.value.neg(),
       (_, a) => `(-${a.expr})`,
       [],
     ).add(
       ["point32"],
       "point32",
-      (a) => pt(neg(a.value.x), neg(a.value.y)),
+      (a) => a.value.neg(),
       (_, a) => `(-${a.expr})`,
       "-(7,-9)=(-7,9)",
     )
@@ -408,7 +408,7 @@ export default {
     FN_VALID.add(
       ["point32"],
       "bool",
-      (a) => isFinite(num(a.value.x)) && isFinite(num(a.value.y)),
+      (a) => isFinite(a.value.x.num()) && isFinite(a.value.y.num()),
       (ctx, ar) => {
         const a = ctx.cache(ar)
         return `(!isnan(${a}.x) && !isinf(${a}.x) && !isnan(${a}.y) && !isinf(${a}.y))`
@@ -419,7 +419,7 @@ export default {
     OP_ODOT.add(
       ["point64", "point64"],
       "point64",
-      (a, b) => pt(mul(a.value.x, b.value.x), mul(a.value.y, b.value.y)),
+      (a, b) => a.value.mulEach(b.value),
       (ctx, a, b) => {
         declareMulR64(ctx)
         declareOdotC64(ctx)
@@ -429,7 +429,7 @@ export default {
     ).add(
       ["point32", "point32"],
       "point32",
-      (a, b) => pt(mul(a.value.x, b.value.x), mul(a.value.y, b.value.y)),
+      (a, b) => a.value.mulEach(b.value),
       (_, a, b) => {
         return `(${a.expr} * ${b.expr})`
       },
@@ -439,13 +439,13 @@ export default {
     OP_POINT.add(
       ["r64", "r64"],
       "point64",
-      (x, y) => pt(x.value, y.value),
+      (x, y) => pt([x.value, y.value]),
       (_, x, y) => `vec4(${x.expr}, ${y.expr})`,
       [],
     ).add(
       ["r32", "r32"],
       "point32",
-      (x, y) => pt(x.value, y.value),
+      (x, y) => pt([x.value, y.value]),
       (_, x, y) => `vec2(${x.expr}, ${y.expr})`,
       "(4,7)",
     )
@@ -477,7 +477,7 @@ export default {
     OP_CDOT.add(
       ["point64", "r64"],
       "point64",
-      (a, b) => pt(mul(a.value.x, b.value), mul(a.value.y, b.value)),
+      (a, b) => a.value.mulR(b.value),
       (ctx, ar, br) => {
         declareMulR64(ctx)
         const a = ctx.cache(ar)
@@ -489,7 +489,7 @@ export default {
       .add(
         ["r64", "point64"],
         "point64",
-        (b, a) => pt(mul(a.value.x, b.value), mul(a.value.y, b.value)),
+        (a, b) => b.value.mulR(a.value),
         (ctx, br, ar) => {
           declareMulR64(ctx)
           const a = ctx.cache(ar)
@@ -501,14 +501,14 @@ export default {
       .add(
         ["point32", "r32"],
         "point32",
-        (a, b) => pt(mul(a.value.x, b.value), mul(a.value.y, b.value)),
+        (a, b) => a.value.mulR(b.value),
         (_, a, b) => `(${a.expr} * ${b.expr})`,
         [],
       )
       .add(
         ["r32", "point32"],
         "point32",
-        (b, a) => pt(mul(a.value.x, b.value), mul(a.value.y, b.value)),
+        (a, b) => b.value.mulR(a.value),
         (_, a, b) => `(${a.expr} * ${b.expr})`,
         "7\\cdot(8,-3)=(56,-21)",
       )
@@ -516,7 +516,7 @@ export default {
     OP_DIV.add(
       ["point32", "r32"],
       "point32",
-      (a, b) => pt(div(a.value.x, b.value), div(a.value.y, b.value)),
+      (a, b) => a.value.divR(b.value),
       (_, a, b) => `(${a.expr} / ${b.expr})`,
       "(8,-6)/2=(4,-3)",
     )
@@ -527,10 +527,10 @@ export default {
         name: "point",
         namePlural: "points",
         glsl: "vec4",
-        toGlsl({ x, y }) {
-          return `vec4(${gl64(x)}, ${gl64(y)})`
+        toGlsl(self) {
+          return self.gl64()
         },
-        garbage: { js: SNANPT, glsl: "vec4(0.0/0.0)" },
+        garbage: { js: ptnan(2), glsl: "vec4(0.0/0.0)" },
         coerce: {
           point32: {
             js(self) {
@@ -550,7 +550,7 @@ export default {
         token: null,
         glide: null,
         preview(cv, val) {
-          cv.point(unpt(val), Size.Point, Color.Purple)
+          cv.point(val.xy(), Size.Point, Color.Purple)
         },
         extras: null,
       },
@@ -558,10 +558,10 @@ export default {
         name: "point",
         namePlural: "points",
         glsl: "vec2",
-        toGlsl({ x, y }) {
-          return `vec2(${gl(x)}, ${gl(y)})`
+        toGlsl(self) {
+          return self.gl32()
         },
-        garbage: { js: SNANPT, glsl: "vec2(0.0/0.0)" },
+        garbage: { js: ptnan(2), glsl: "vec2(0.0/0.0)" },
         coerce: {},
         write: WRITE_POINT,
         order: Order.Point,
@@ -572,7 +572,7 @@ export default {
         token: null,
         glide: null,
         preview(cv, val) {
-          cv.point(unpt(val), Size.Point, Color.Purple)
+          cv.point(val.xy(), Size.Point, Color.Purple)
         },
         extras: null,
       },

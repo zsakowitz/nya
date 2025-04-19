@@ -2,12 +2,9 @@ import type { Package } from "#/types"
 import type { AstBinding, Node, PlainVar } from "@/eval/ast/token"
 import { js } from "@/eval/ast/tx"
 import { parseNumberJs } from "@/eval/lib/base"
-import type { SReal } from "@/eval/ty"
 import { coerceValJs } from "@/eval/ty/coerce"
-import { frac, num, real } from "@/eval/ty/create"
 import { Display } from "@/eval/ty/display"
 import { TY_INFO } from "@/eval/ty/info"
-import { mul, neg, raise } from "@/eval/ty/ops"
 import { OpEq, OpLt } from "@/field/cmd/leaf/cmp"
 import { CmdVar } from "@/field/cmd/leaf/var"
 import { CmdSupSub } from "@/field/cmd/math/supsub"
@@ -15,6 +12,7 @@ import { L, R } from "@/field/dir"
 import { FieldInert } from "@/field/field-inert"
 import { Block, Selection } from "@/field/model"
 import { h } from "@/jsx"
+import { int, type SReal } from "@/lib/sreal"
 import { FieldComputed } from "@/sheet/deps"
 import { defineExt, Store } from "@/sheet/ext"
 import { Slider as RawSlider } from "@/sheet/slider"
@@ -30,7 +28,7 @@ function readSigned(node: Node, base: SReal): SReal | null {
 
   if (node.type == "num" && !node.sub) {
     const { value } = parseNumberJs(node.value, base)
-    return isNeg ? neg(value) : value
+    return isNeg ? value.neg() : value
   }
 
   return null
@@ -47,18 +45,18 @@ function readExp(
   }
 
   if (!base && node.type == "num" && node.sub) {
-    const base = readSigned(node.sub, real(10))
+    const base = readSigned(node.sub, int(10))
     if (base == null) return null
     const value = readSigned(
       { type: "num", value: node.value, span: null },
       base,
     )
     if (value == null) return null
-    return { value: isNeg ? neg(value) : value, base }
+    return { value: isNeg ? value.neg() : value, base }
   }
 
   const baseRaw = base
-  base ||= real(10)
+  base ||= int(10)
 
   let value
   if (
@@ -74,13 +72,13 @@ function readExp(
     if (a == null) return null
     const b = readSigned(node.b.suffixes[0]!.exp, base)
     if (b == null) return null
-    value = mul(a, raise(base, b))
+    value = a.mul(base.pow(b))
   } else {
     value = readSigned(node, base)
   }
   if (value == null) return null
 
-  return { value: isNeg ? neg(value) : value, base: baseRaw }
+  return { value: isNeg ? value.neg() : value, base: baseRaw }
 }
 
 function readSlider(node: Node): { value: SReal; base: SReal | null } | null {
@@ -93,9 +91,9 @@ function readSlider(node: Node): { value: SReal; base: SReal | null } | null {
   ) {
     const base = +node.b.value
     if (!(2 <= base && base <= 36)) return null
-    const value = readExp(node.a, real(base))
+    const value = readExp(node.a, int(base))
     if (value == null) return null
-    return { value: value.value, base: real(base) }
+    return { value: value.value, base: int(base) }
   } else {
     const value = readExp(node, null)
     if (value == null) return null
@@ -201,8 +199,8 @@ class RangeControls {
       typeof this.min.value != "string" &&
       typeof this.max.value != "string"
     ) {
-      const nmin = num(this.min.value)
-      const nmax = num(this.max.value)
+      const nmin = this.min.value.num()
+      const nmax = this.max.value.num()
 
       if (nmin <= nmax) {
         this.scrubber.bounds(this.min.value, this.max.value)
@@ -212,7 +210,7 @@ class RangeControls {
     }
 
     if (this.step.value == null) {
-      this.scrubber.step = frac(0, 1)
+      this.scrubber.step = int(0)
     } else if (typeof this.step.value != "string") {
       this.scrubber.step = this.step.value
     }
@@ -264,7 +262,7 @@ class Field extends FieldComputed {
           `Cannot use a ${TY_INFO[value.type].name} as a slider bound. Try using any number.`,
         )
       }
-      const native = num(r32.value)
+      const native = r32.value.num()
       if (native !== native) {
         throw new Error("Slider bounds may not be undefined.")
       }
@@ -305,10 +303,10 @@ class Slider extends RawSlider {
     new OpEq(false).insertAt(cursor, L)
     const base = this.base
     this.display(cursor, base)
-    if (this.writtenBase || num(base) != 10) {
+    if (this.writtenBase || base.num() != 10) {
       const sub = new Block(null)
       new CmdSupSub(sub, null).insertAt(cursor, L)
-      new Display(sub.cursor(R), frac(10, 1)).value(num(base))
+      new Display(sub.cursor(R), int(10)).value(base.num())
     }
     this.expr.field.sel = cursor.selection()
     this.expr.field.onAfterChange(false)
@@ -326,7 +324,7 @@ const EXT_SLIDER = defineExt({
     const value = readSlider(ast.value)
     if (!value) return
     const controls = store.get(expr)
-    controls.scrubber.base = value.base || frac(10, 1)
+    controls.scrubber.base = value.base || int(10)
     controls.scrubber.value = value.value
     controls.scrubber.name = ast.name
     controls.scrubber.writtenBase = !!value.base

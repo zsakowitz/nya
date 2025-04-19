@@ -2,7 +2,6 @@ import type { Package } from "#/types"
 import type { Node } from "@/eval/ast/token"
 import { FnDist } from "@/eval/ops/dist"
 import type { JsValue, Val } from "@/eval/ty"
-import { frac, real } from "@/eval/ty/create"
 import { Leaf } from "@/field/cmd/leaf"
 import { OpEq } from "@/field/cmd/leaf/cmp"
 import { CmdToken, TokenCtx } from "@/field/cmd/leaf/token"
@@ -10,6 +9,7 @@ import { CmdWord } from "@/field/cmd/leaf/word"
 import { L, R } from "@/field/dir"
 import { toText } from "@/field/latex"
 import { fa, h, hx, path, svgx, t } from "@/jsx"
+import { frac, int } from "@/lib/sreal"
 import { FieldComputed } from "@/sheet/deps"
 import type { ItemFactory } from "@/sheet/item"
 import type { ItemRef } from "@/sheet/items"
@@ -307,7 +307,7 @@ const FN_IMGWIDTH = new FnDist(
 ).add(
   ["image"],
   "r32",
-  (a) => real(a.value.width),
+  (a) => int(a.value.width),
   imageShaderError,
   "imgwidth(...)",
 )
@@ -318,7 +318,7 @@ const FN_IMGHEIGHT = new FnDist(
 ).add(
   ["image"],
   "r32",
-  (a) => real(a.value.height),
+  (a) => int(a.value.height),
   imageShaderError,
   "imgheight(...)",
 )

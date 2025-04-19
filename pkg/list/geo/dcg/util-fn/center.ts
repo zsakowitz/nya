@@ -1,5 +1,4 @@
 import { FnDist } from "@/eval/ops/dist"
-import { rept } from "@/eval/ty/create"
 import { crArcVal } from "../util-arc"
 
 export const FN_CENTER = new FnDist("center", "gets the center of a circle")
@@ -13,7 +12,7 @@ export const FN_CENTER = new FnDist("center", "gets the center of a circle")
   .add(
     ["arc"],
     "point32",
-    (a) => rept(crArcVal(a.value).c),
+    (a) => crArcVal(a.value).c.s(),
     () => {
       // TODO:
       throw new Error("Cannot calculate the center of an arc in shaders yet.")

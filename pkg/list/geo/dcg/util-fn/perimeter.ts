@@ -1,7 +1,5 @@
 import { FnDist } from "@/eval/ops/dist"
-import { pt, real } from "@/eval/ty/create"
-import { add, sub } from "@/eval/ty/ops"
-import { hypot } from "./distance"
+import { int } from "@/lib/sreal"
 
 export const FN_PERIMETER = new FnDist(
   "perimeter",
@@ -11,14 +9,14 @@ export const FN_PERIMETER = new FnDist(
   "r32",
   (a) => {
     if (a.value.length <= 1) {
-      return real(0)
+      return int(0)
     }
 
-    let ret = real(0)
+    let ret = int(0)
     for (let i = 0; i < a.value.length; i++) {
       const self = a.value[i]!
       const next = a.value[(i + 1) % a.value.length]!
-      ret = add(ret, hypot(pt(sub(self.x, next.x), sub(self.y, next.y))))
+      ret = self.sub(next).hypot().add(ret)
     }
 
     return ret

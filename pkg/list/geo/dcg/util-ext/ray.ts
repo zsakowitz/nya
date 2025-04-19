@@ -1,4 +1,4 @@
-import type { Point } from "@/sheet/point"
+import { px, type Point } from "@/lib/point"
 import type { Cv } from "@/sheet/ui/cv"
 import { createLineLikeExt } from "./line-like"
 
@@ -18,16 +18,13 @@ export function getRayBounds(
       if (y1 > ymin + h) {
         return null
       }
-      return [
-        cv.toCanvas({ x: x1, y: y1 }),
-        cv.toCanvas({ x: x1, y: ymin + h }),
-      ]
+      return [cv.toCanvas(px(x1, y1)), cv.toCanvas(px(x1, ymin + h))]
     }
 
     if (y1 < ymin) {
       return null
     }
-    return [cv.toCanvas({ x: x1, y: y1 }), cv.toCanvas({ x: x1, y: ymin })]
+    return [cv.toCanvas(px(x1, y1)), cv.toCanvas(px(x1, ymin))]
   }
 
   const m = (y2 - y1) / (x2 - x1)
@@ -38,8 +35,8 @@ export function getRayBounds(
     }
 
     return [
-      cv.toCanvas({ x: x1, y: y1 }),
-      cv.toCanvas({ x: xmin + w, y: m * (xmin + w - x1) + y1 }),
+      cv.toCanvas(px(x1, y1)),
+      cv.toCanvas(px(xmin + w, m * (xmin + w - x1) + y1)),
     ]
   }
 
@@ -47,10 +44,7 @@ export function getRayBounds(
     return null
   }
 
-  return [
-    cv.toCanvas({ x: x1, y: y1 }),
-    cv.toCanvas({ x: xmin, y: m * (xmin - x1) + y1 }),
-  ]
+  return [cv.toCanvas(px(x1, y1)), cv.toCanvas(px(xmin, m * (xmin - x1) + y1))]
 }
 
 export const EXT_RAY = createLineLikeExt("ray", (cv, p1, p2) => {

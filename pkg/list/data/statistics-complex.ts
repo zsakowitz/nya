@@ -1,13 +1,12 @@
 import type { Package } from "#/types"
 import { declareAddC64 } from "$/core/ops"
-import { addPt } from "$/num/complex"
-import { rept } from "@/eval/ty/create"
+import { xyint } from "@/lib/scomplex"
 import { FN_MEAN, FN_TOTAL } from "./statistics"
 
 FN_TOTAL.addSpread(
   "c64",
   "c64",
-  (args) => args.reduce((a, b) => addPt(a, b), rept({ x: 0, y: 0 })),
+  (args) => args.reduce((a, b) => a.add(b), xyint(0, 0)),
   (ctx, ...args) => {
     if (!args.length) {
       return "vec4(0)"
@@ -21,7 +20,7 @@ FN_TOTAL.addSpread(
 ).addSpread(
   "c32",
   "c32",
-  (args) => args.reduce((a, b) => addPt(a, b), rept({ x: 0, y: 0 })),
+  (args) => args.reduce((a, b) => a.add(b), xyint(0, 0)),
   (_, ...args) => `(${args.map((x) => x.expr).join(" + ") || "0.0"})`,
   "total([8+3i,2-4i,-9])=1-i",
 )
@@ -29,7 +28,7 @@ FN_TOTAL.addSpread(
 FN_MEAN.addSpread(
   "c64",
   "c64",
-  (args) => args.reduce((a, b) => addPt(a, b), rept({ x: 0, y: 0 })),
+  (args) => args.reduce((a, b) => a.add(b), xyint(0, 0)),
   (ctx, ...args) => {
     if (!args.length) {
       return "vec4(0.0/0.0)"
@@ -45,7 +44,7 @@ FN_MEAN.addSpread(
 ).addSpread(
   "c32",
   "c32",
-  (args) => args.reduce((a, b) => addPt(a, b), rept({ x: 0, y: 0 })),
+  (args) => args.reduce((a, b) => a.add(b), xyint(0, 0)),
   (_, ...args) =>
     `((${args.map((x) => x.expr).join(" + ") || "0.0"}) / ${args.length.toExponential()})`,
   "mean([8+3i,2-4i,-9,-i])=0.25-0.5i",

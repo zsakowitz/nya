@@ -1,4 +1,4 @@
-import type { Point } from "@/sheet/point"
+import { px, type Point } from "@/lib/point"
 import type { Cv } from "@/sheet/ui/cv"
 import { createLineLikeExt } from "./line-like"
 
@@ -10,17 +10,14 @@ export function getLineBounds(
   const { xmin, w, ymin, h } = cv.bounds()
 
   if (x1 == x2) {
-    return [
-      cv.toCanvas({ x: x1, y: ymin }),
-      cv.toCanvas({ x: x1, y: ymin + h }),
-    ]
+    return [cv.toCanvas(px(x1, ymin)), cv.toCanvas(px(x1, ymin + h))]
   }
 
   const m = (y2 - y1) / (x2 - x1)
 
   return [
-    cv.toCanvas({ x: xmin, y: m * (xmin - x1) + y1 }),
-    cv.toCanvas({ x: xmin + w, y: m * (xmin + w - x1) + y1 }),
+    cv.toCanvas(px(xmin, m * (xmin - x1) + y1)),
+    cv.toCanvas(px(xmin + w, m * (xmin + w - x1) + y1)),
   ]
 }
 

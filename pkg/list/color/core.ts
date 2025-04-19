@@ -1,18 +1,18 @@
 import type { Package } from "#/types"
+import { OP_CDOT } from "$/core/ops"
 import type { GlslContext } from "@/eval/lib/fn"
 import { FnDist } from "@/eval/ops/dist"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "@/eval/ops/vars"
-import type { SColor, SReal } from "@/eval/ty"
-import { frac, gl, num, real } from "@/eval/ty/create"
 import { TY_INFO } from "@/eval/ty/info"
 import { CmdColor } from "@/field/cmd/leaf/color"
 import { L } from "@/field/dir"
 import { h } from "@/jsx"
-import { OP_CDOT } from "$/core/ops"
+import { pt, ptnan, type SPoint } from "@/lib/spoint"
+import { int, type SReal } from "@/lib/sreal"
 
 declare module "@/eval/ty" {
   interface Tys {
-    color: SColor
+    color: SPoint<4>
   }
 }
 
@@ -21,10 +21,10 @@ const FN_RGB = new FnDist(
   "creates a color given its red, green, and blue components",
 )
 
-function hsv(hr: SReal, sr: SReal, vr: SReal, a: SReal): SColor {
-  const h = num(hr) / 360
-  const s = num(sr)
-  const v = num(vr)
+function hsv(hr: SReal, sr: SReal, vr: SReal, a: SReal): SPoint<4> {
+  const h = hr.num() / 360
+  const s = sr.num()
+  const v = vr.num()
 
   // https://stackoverflow.com/questions/17242144/javascript-convert-hsb-hsv-color-to-rgb-accurately
   let r, g, b
@@ -55,13 +55,7 @@ function hsv(hr: SReal, sr: SReal, vr: SReal, a: SReal): SColor {
     default:
       throw new Error("Never occurs.")
   }
-  return {
-    type: "color",
-    r: real(255.0 * r),
-    g: real(255.0 * g),
-    b: real(255.0 * b),
-    a,
-  }
+  return pt([int(r), int(g), int(b), a])
 }
 
 function declareHsv(ctx: GlslContext) {
@@ -107,25 +101,25 @@ export default {
     FN_RGB.add(
       ["r32", "r32", "r32"],
       "color",
-      (r, g, b) => ({
-        type: "color",
-        r: r.value,
-        g: g.value,
-        b: b.value,
-        a: real(1),
-      }),
+      (r, g, b) =>
+        pt([
+          r.value.div(int(255)),
+          g.value.div(int(255)),
+          b.value.div(int(255)),
+          int(1),
+        ]),
       (_, r, g, b) => `vec4(vec3(${r.expr}, ${g.expr}, ${b.expr}) / 255.0, 1)`,
       "rgb(70,255,128)=\\nyacolor{rgb(70,255,128)}",
     ).add(
       ["r32", "r32", "r32", "r32"],
       "color",
-      (r, g, b, a) => ({
-        type: "color",
-        r: r.value,
-        g: g.value,
-        b: b.value,
-        a: a.value,
-      }),
+      (r, g, b, a) =>
+        pt([
+          r.value.div(int(255)),
+          g.value.div(int(255)),
+          b.value.div(int(255)),
+          a.value,
+        ]),
       (_, r, g, b, a) =>
         `vec4(vec3(${r.expr}, ${g.expr}, ${b.expr}) / 255.0, ${a.expr})`,
       "rgb(70,255,128,.4)=\\nyacolor{rgb(70,255,128,.4)}",
@@ -134,7 +128,7 @@ export default {
     FN_HSV.add(
       ["r32", "r32", "r32"],
       "color",
-      (hr, sr, vr) => hsv(hr.value, sr.value, vr.value, frac(1, 1)),
+      (hr, sr, vr) => hsv(hr.value, sr.value, vr.value, int(1)),
       (ctx, hr, sr, vr) => {
         declareHsv(ctx)
         return `vec4(_helper_hsv(vec3(${hr.expr} / 360.0, ${sr.expr}, ${vr.expr})), 1)`
@@ -179,36 +173,31 @@ export default {
         name: "color",
         namePlural: "colors",
         glsl: "vec4",
-        toGlsl({ r, g, b, a }) {
-          return `vec4(${gl(r, 255)}, ${gl(g, 255)}, ${gl(b, 255)}, ${gl(a)})`
+        toGlsl(v) {
+          return v.gl32()
         },
         garbage: {
-          js: { type: "color", r: real(0), g: real(0), b: real(0), a: real(0) },
+          js: ptnan(4),
           glsl: "vec4(0)",
         },
         coerce: {},
         write: {
           isApprox(value) {
-            return (
-              value.r.type == "approx" ||
-              value.g.type == "approx" ||
-              value.b.type == "approx" ||
-              value.a.type == "approx"
-            )
+            return value.isApprox()
           },
           display(value, props) {
             const f = (x: SReal) => {
-              const v = Math.min(255, Math.max(0, Math.floor(num(x)))).toString(
-                16,
-              )
+              const v = Math.min(
+                255,
+                Math.max(0, x.mul(int(255)).floor().num()),
+              ).toString(16)
               if (v.length == 1) return "0" + v
               return v
             }
 
-            new CmdColor("#" + f(value.r) + f(value.g) + f(value.b)).insertAt(
-              props.cursor,
-              L,
-            )
+            new CmdColor(
+              "#" + f(value.d[0]) + f(value.d[1]) + f(value.d[2]),
+            ).insertAt(props.cursor, L)
           },
         },
         order: null,

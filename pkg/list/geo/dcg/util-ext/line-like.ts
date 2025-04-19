@@ -1,8 +1,8 @@
-import { type JsValue, type SPoint, each } from "@/eval/ty"
-import { unpt } from "@/eval/ty/create"
+import { type JsValue, each } from "@/eval/ty"
+import type { Point } from "@/lib/point"
+import type { SPoint } from "@/lib/spoint"
 import { Prop } from "@/sheet/ext"
 import { defineHideable } from "@/sheet/ext/hideable"
-import type { Point } from "@/sheet/point"
 import type { Cv } from "@/sheet/ui/cv"
 import { Color, Opacity, Order, Size } from "@/sheet/ui/cv/consts"
 import { ref, val } from "@/sheet/ui/cv/item"
@@ -34,7 +34,7 @@ export function createLineLikeExt(
       },
       draw(data, val, index) {
         const { cv } = data.expr.sheet
-        const d = path(cv, unpt(val[0]), unpt(val[1]))
+        const d = path(cv, val[0].ns(), val[1].ns())
         if (d) {
           cv.path(d, Size.Line, Color.Blue, 1, 1)
           if (picked.get(data.expr)[index]) {
@@ -47,8 +47,8 @@ export function createLineLikeExt(
           if (!hint.allows(target.data.value.type)) return false
           const d = path(
             target.data.expr.sheet.cv,
-            unpt(target.item[0]),
-            unpt(target.item[1]),
+            target.item[0].ns(),
+            target.item[1].ns(),
           )
           return !!d && target.data.expr.sheet.cv.hits(at, d)
         },
