@@ -15,6 +15,7 @@ to do list for functions is:
 ❌ statistics for complex numbers
 ❌ width, height
 ❌ sort(values, keys)
+❌ dot(\ty{p3d32})
 ✅ 3D points and vectors
 ✅ ceil, floor, round for complex numbers
 ✅ logb
@@ -27,6 +28,11 @@ to do list for things to plot is:
 ❌ a for 2<t<3
 ❌ f(θ)
 ❌ f(r, θ) = g(r, θ)
+
+to do list for syntax is:
+❌ f'(x)
+❌ ∫
+❌ ∑, ∏
 
 to do list for features is:
 ❌ actions
