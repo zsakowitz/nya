@@ -1,4 +1,4 @@
-import { pxd, type Point } from "./point"
+import { px, pxd, type Point } from "./point"
 import type { SComplex } from "./scomplex"
 import { approx, int, type SReal } from "./sreal"
 
@@ -17,6 +17,14 @@ type PointData<N extends number> =
  */
 export class SPoint<out N extends number = 2> {
   private constructor(readonly d: PointData<N>) {}
+
+  get x(): N extends 2 ? SReal : SReal | undefined {
+    return this.d[0]
+  }
+
+  get y(): N extends 2 ? SReal : SReal | undefined {
+    return this.d[1]
+  }
 
   add(other: SPoint<N>): SPoint<N> {
     return pt(this.d.map((a, i) => a.add(other.d[i]!))) as SPoint<any>
@@ -86,8 +94,8 @@ export class SPoint<out N extends number = 2> {
     return pxd(this.d.map((x) => x.num())) as Point<any>
   }
 
-  xy(this: SPoint<2>) {
-    return px(this.d[0].num(), this.d[1].num())
+  xy(this: { x: SReal; y: SReal }) {
+    return px(this.x.num(), this.y.num())
   }
 }
 

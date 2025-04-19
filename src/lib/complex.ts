@@ -1,3 +1,4 @@
+import { px, type Point } from "./point"
 import { xy, type SComplex } from "./scomplex"
 import { int } from "./sreal"
 
@@ -25,6 +26,10 @@ export class Complex {
 
   mulR(other: number): Complex {
     return cx(this.x * other, this.y * other)
+  }
+
+  mulEach(other: Complex): Complex {
+    return cx(this.x * other.x, this.y * other.y)
   }
 
   div(other: Complex): Complex {
@@ -178,6 +183,14 @@ export class Complex {
   toString() {
     const y = this.y.toString()
     return `${this.x}${y[0] == "-" ? "" : "+"}${y}i`
+  }
+
+  pow(other: Complex): Complex {
+    return other.mul(this.ln()).exp()
+  }
+
+  xy(): Point {
+    return px(this.x, this.y)
   }
 }
 

@@ -168,7 +168,7 @@ export default {
             value: {
               type: "r64",
               list: false,
-              value: real(0),
+              value: int(0),
             } satisfies JsValue<"r64", false>,
           }
         },

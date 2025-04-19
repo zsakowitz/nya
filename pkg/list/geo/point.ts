@@ -22,8 +22,7 @@ import { dragPoint, type DragResultPoint } from "@/eval/ast/tx"
 import type { GlslContext } from "@/eval/lib/fn"
 import { FnDist } from "@/eval/ops/dist"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "@/eval/ops/vars"
-import { each, type JsValue, type SPoint } from "@/eval/ty"
-import { gl64 } from "@/eval/ty/create-r64"
+import { each, type JsValue } from "@/eval/ty"
 import type { TyWrite } from "@/eval/ty/display"
 import { highRes, TY_INFO, type TyGlide } from "@/eval/ty/info"
 import { CmdComma } from "@/field/cmd/leaf/comma"
@@ -32,6 +31,9 @@ import { CmdBrack } from "@/field/cmd/math/brack"
 import { L, R } from "@/field/dir"
 import { Block } from "@/field/model"
 import { h } from "@/jsx"
+import type { SComplex } from "@/lib/scomplex"
+import { pt, ptnan, type SPoint } from "@/lib/spoint"
+import { int } from "@/lib/sreal"
 import { defineHideable } from "@/sheet/ext/hideable"
 import { TransitionProp } from "@/sheet/transition"
 import type { Cv } from "@/sheet/ui/cv"
@@ -56,7 +58,7 @@ const EXT_POINT = defineHideable<
     drag: DragResultPoint | null
     cv: Cv
   },
-  SPoint
+  SPoint | SComplex
 >({
   data(expr) {
     const value = expr.js?.value
@@ -174,8 +176,8 @@ const EXT_POINT = defineHideable<
             const y = at.y
             const yp = data.cv.yPrecision
             const cursor = drag.span.remove()
-            write(cursor, real(x), frac(10, 1), virtualStepExp(xp, 10), false)
-            write(cursor, real(y), frac(10, 1), virtualStepExp(yp, 10), true)
+            write(cursor, int(x), int(10), virtualStepExp(xp, 10), false)
+            write(cursor, int(y), int(10), virtualStepExp(yp, 10), true)
             new CmdVar("i", data.expr.field.options).insertAt(cursor, L)
             drag.field.sel = drag.field.block.cursor(R).selection()
             drag.field.queueAstUpdate()
@@ -232,15 +234,15 @@ export function declareDebugPoint(
 
 export const WRITE_POINT: TyWrite<SPoint> = {
   isApprox(value) {
-    return value.x.type == "approx" || value.y.type == "approx"
+    return value.isApprox()
   },
   display(value, props) {
     const block = new Block(null)
     new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
     const inner = props.at(block.cursor(R))
-    inner.value.x.num()
+    inner.num(value.x)
     new CmdComma().insertAt(inner.cursor, L)
-    inner.value.y.num()
+    inner.num(value.y)
   },
 }
 
@@ -302,7 +304,7 @@ export default {
     OP_ADD.add(
       ["point64", "point64"],
       "point64",
-      (a, b) => pt(a.value.x.add(b.value.x), a.value.y.add(b.value.y)),
+      (a, b) => a.value.add(b.value),
       (ctx, ar, br) => {
         const a = ctx.cache(ar)
         const b = ctx.cache(br)
@@ -312,7 +314,7 @@ export default {
     ).add(
       ["point32", "point32"],
       "point32",
-      (a, b) => pt(a.value.x.add(b.value.x), a.value.y.add(b.value.y)),
+      (a, b) => a.value.add(b.value),
       (_, a, b) => `(${a.expr} + ${b.expr})`,
       "(2,3)+(4,-7)=(8,-4)",
     )
@@ -320,7 +322,7 @@ export default {
     OP_SUB.add(
       ["point64", "point64"],
       "point64",
-      (a, b) => pt(a.value.x.sub(b.value.x), a.value.y.sub(b.value.y)),
+      (a, b) => a.value.sub(b.value),
       (ctx, ar, br) => {
         const a = ctx.cache(ar)
         const b = ctx.cache(br)
@@ -330,7 +332,7 @@ export default {
     ).add(
       ["point32", "point32"],
       "point32",
-      (a, b) => pt(a.value.x.sub(b.value.x), a.value.y.sub(b.value.y)),
+      (a, b) => a.value.sub(b.value),
       (_, a, b) => `(${a.expr} - ${b.expr})`,
       "(2,3)-(4,-7)=(-2,10)",
     )
@@ -338,7 +340,7 @@ export default {
     FN_UNSIGN.add(
       ["point64"],
       "point64",
-      (a) => pt(abs(a.value.x), abs(a.value.y)),
+      (a) => a.value.unsign(),
       (ctx, a) => {
         const name = ctx.cache(a)
         return `vec4(${abs64(ctx, `${name}.xy`)}, ${abs64(ctx, `${name}.zw`)})`
@@ -347,7 +349,7 @@ export default {
     ).add(
       ["point32"],
       "point32",
-      (a) => pt(abs(a.value.x), abs(a.value.y)),
+      (a) => a.value.unsign(),
       (_, a) => `abs(${a.expr})`,
       "unsign((4,-7))=(4,7)",
     )
@@ -384,7 +386,7 @@ export default {
       ["point32"],
       "rabs32",
       // TODO: this is exact for some values
-      (a) => approx(Math.hypot(a.value.x.num(), a.value.y.num())),
+      (a) => a.value.hypot(),
       (_, a) => `length(${a.expr})`,
       "|(3,-4)|=5",
     )
@@ -392,13 +394,13 @@ export default {
     OP_NEG.add(
       ["point64"],
       "point64",
-      (a) => pt(neg(a.value.x), neg(a.value.y)),
+      (a) => a.value.neg(),
       (_, a) => `(-${a.expr})`,
       [],
     ).add(
       ["point32"],
       "point32",
-      (a) => pt(neg(a.value.x), neg(a.value.y)),
+      (a) => a.value.neg(),
       (_, a) => `(-${a.expr})`,
       "-(7,-9)=(-7,9)",
     )
@@ -417,7 +419,7 @@ export default {
     OP_ODOT.add(
       ["point64", "point64"],
       "point64",
-      (a, b) => pt(a.value.x.mul(b.value.x), a.value.y.mul(b.value.y)),
+      (a, b) => a.value.mulEach(b.value),
       (ctx, a, b) => {
         declareMulR64(ctx)
         declareOdotC64(ctx)
@@ -427,7 +429,7 @@ export default {
     ).add(
       ["point32", "point32"],
       "point32",
-      (a, b) => pt(a.value.x.mul(b.value.x), a.value.y.mul(b.value.y)),
+      (a, b) => a.value.mulEach(b.value),
       (_, a, b) => {
         return `(${a.expr} * ${b.expr})`
       },
@@ -437,13 +439,13 @@ export default {
     OP_POINT.add(
       ["r64", "r64"],
       "point64",
-      (x, y) => pt(x.value, y.value),
+      (x, y) => pt([x.value, y.value]),
       (_, x, y) => `vec4(${x.expr}, ${y.expr})`,
       [],
     ).add(
       ["r32", "r32"],
       "point32",
-      (x, y) => pt(x.value, y.value),
+      (x, y) => pt([x.value, y.value]),
       (_, x, y) => `vec2(${x.expr}, ${y.expr})`,
       "(4,7)",
     )
@@ -475,7 +477,7 @@ export default {
     OP_CDOT.add(
       ["point64", "r64"],
       "point64",
-      (a, b) => pt(a.value.x.mul(b.value), a.value.y.mul(b.value)),
+      (a, b) => a.value.mulR(b.value),
       (ctx, ar, br) => {
         declareMulR64(ctx)
         const a = ctx.cache(ar)
@@ -487,7 +489,7 @@ export default {
       .add(
         ["r64", "point64"],
         "point64",
-        (b, a) => pt(a.value.x.mul(b.value), a.value.y.mul(b.value)),
+        (a, b) => b.value.mulR(a.value),
         (ctx, br, ar) => {
           declareMulR64(ctx)
           const a = ctx.cache(ar)
@@ -499,14 +501,14 @@ export default {
       .add(
         ["point32", "r32"],
         "point32",
-        (a, b) => pt(a.value.x.mul(b.value), a.value.y.mul(b.value)),
+        (a, b) => a.value.mulR(b.value),
         (_, a, b) => `(${a.expr} * ${b.expr})`,
         [],
       )
       .add(
         ["r32", "point32"],
         "point32",
-        (b, a) => pt(a.value.x.mul(b.value), a.value.y.mul(b.value)),
+        (a, b) => b.value.mulR(a.value),
         (_, a, b) => `(${a.expr} * ${b.expr})`,
         "7\\cdot(8,-3)=(56,-21)",
       )
@@ -514,7 +516,7 @@ export default {
     OP_DIV.add(
       ["point32", "r32"],
       "point32",
-      (a, b) => pt(a.value.x.div(b.value), a.value.y.div(b.value)),
+      (a, b) => a.value.divR(b.value),
       (_, a, b) => `(${a.expr} / ${b.expr})`,
       "(8,-6)/2=(4,-3)",
     )
@@ -525,10 +527,10 @@ export default {
         name: "point",
         namePlural: "points",
         glsl: "vec4",
-        toGlsl({ x, y }) {
-          return `vec4(${gl64(x)}, ${gl64(y)})`
+        toGlsl(self) {
+          return self.gl64()
         },
-        garbage: { js: SNANPT, glsl: "vec4(0.0/0.0)" },
+        garbage: { js: ptnan(2), glsl: "vec4(0.0/0.0)" },
         coerce: {
           point32: {
             js(self) {
@@ -556,10 +558,10 @@ export default {
         name: "point",
         namePlural: "points",
         glsl: "vec2",
-        toGlsl({ x, y }) {
-          return `vec2(${gl(x)}, ${gl(y)})`
+        toGlsl(self) {
+          return self.gl32()
         },
-        garbage: { js: SNANPT, glsl: "vec2(0.0/0.0)" },
+        garbage: { js: ptnan(2), glsl: "vec2(0.0/0.0)" },
         coerce: {},
         write: WRITE_POINT,
         order: Order.Point,

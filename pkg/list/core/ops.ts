@@ -174,8 +174,8 @@ export const OP_ADD: FnDist = new FnDist("+", "adds two values or points", {
   simplify([a, b, c]) {
     if (!(a && b && !c)) return
 
-    const za = isZero(a)
-    const zb = isZero(b)
+    const za = a.zero()
+    const zb = b.zero()
     if (za && zb) {
       return SYM_0
     } else if (za) {
@@ -197,8 +197,8 @@ export const OP_SUB: FnDist = new FnDist("-", "subtracts two values", {
   simplify([a, b, c]) {
     if (!(a && b && !c)) return
 
-    const za = isZero(a)
-    const zb = isZero(b)
+    const za = a.zero()
+    const zb = b.zero()
     if (za && zb) {
       return SYM_0
     } else if (za) {
@@ -225,8 +225,8 @@ export const OP_CDOT: FnDist = new FnDist("·", "multiplies two values", {
   simplify([a, b, c]) {
     if (!(a && b && !c)) return
 
-    const za = isZero(a)
-    const zb = isZero(b)
+    const za = a.zero()
+    const zb = b.zero()
     if (za || zb) {
       return SYM_0
     }
@@ -496,7 +496,7 @@ export const OP_RAISE: FnDist = new FnDist(
     simplify([a, b, c]) {
       if (!(a && b && !c)) return
 
-      if (isZero(b)) {
+      if (b.zero()) {
         return SYM_1
       }
 

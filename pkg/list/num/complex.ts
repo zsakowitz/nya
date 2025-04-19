@@ -29,8 +29,8 @@ import type { GlslVal } from "@/eval/ty"
 import type { TyWrite } from "@/eval/ty/display"
 import { highRes, type TyExtras } from "@/eval/ty/info"
 import { h } from "@/jsx"
-import { px } from "@/lib/point"
 import { xy, xynan, type SComplex } from "@/lib/scomplex"
+import { pt } from "@/lib/spoint"
 import { approx, int } from "@/lib/sreal"
 import { Order } from "@/sheet/ui/cv/consts"
 import { declareOklab } from "../color/util-oklab"
@@ -495,46 +495,16 @@ export default {
     ).add(
       ["c32", "c32"],
       "c32",
-      (a, b) => subPt(a.value, b.value),
+      (a, b) => a.value.sub(b.value),
       (_, a, b) => `(${a.expr} - ${b.expr})`,
       "(2+3i)-(4-7i)=-2+10i",
     )
 
-    OP_RAISE.add(
+    OP_RAISE.addRadOnly(
+      "with a complex number",
       ["c32", "c32"],
       "c32",
-      function ({ value: a }, { value: b }) {
-        if (isZero(b)) {
-          if (b.x.type == "exact" && b.y.type == "exact") {
-            return pt(real(1), real(0))
-          } else {
-            return pt(approx(1), approx(0))
-          }
-        }
-
-        if (isZero(a)) {
-          if (a.x.type == "exact" && a.y.type == "exact") {
-            return pt(real(0), real(0))
-          } else {
-            return pt(approx(0), approx(0))
-          }
-        }
-
-        return FN_EXP.js1(
-          this,
-          OP_CDOT.js1(
-            this,
-            { type: "c32", value: b },
-            {
-              type: "c32",
-              value: pt(
-                approx(Math.log(Math.hypot(a.x.num(), a.y.num()))),
-                approx(Math.atan2(a.y.num(), a.x.num())),
-              ),
-            },
-          ),
-        ).value as SPoint
-      },
+      (a, b) => a.value.pow(b.value),
       (ctx, a, b) => {
         declarePowC32(ctx)
         return `_helper_pow_c32(${a.expr}, ${b.expr})`
@@ -545,7 +515,7 @@ export default {
     OP_ODOT.add(
       ["c64", "c64"],
       "c64",
-      (a, b) => px(a.value.x.mul(b.value.x), a.value.y.mul(b.value.y)),
+      (a, b) => a.value.mulEach(b.value),
       (ctx, a, b) => {
         declareMulR64(ctx)
         declareOdotC64(ctx)
@@ -555,7 +525,7 @@ export default {
     ).add(
       ["c32", "c32"],
       "c32",
-      (a, b) => px(a.value.x.mul(b.value.x), a.value.y.mul(b.value.y)),
+      (a, b) => a.value.mulEach(b.value),
       (_, a, b) => {
         return `(${a.expr} * ${b.expr})`
       },
@@ -565,7 +535,7 @@ export default {
     OP_ADD.add(
       ["c64", "c64"],
       "c64",
-      (a, b) => addPt(a.value, b.value),
+      (a, b) => a.value.add(b.value),
       (ctx, ar, br) => {
         const a = ctx.cache(ar)
         const b = ctx.cache(br)
@@ -575,7 +545,7 @@ export default {
     ).add(
       ["c32", "c32"],
       "c32",
-      (a, b) => addPt(a.value, b.value),
+      (a, b) => a.value.add(b.value),
       (_, a, b) => `(${a.expr} + ${b.expr})`,
       "(2+3i)+(1-2i)=3+i",
     )
@@ -583,7 +553,7 @@ export default {
     OP_CDOT.add(
       ["c64", "c64"],
       "c64",
-      (a, b) => mulPt(a.value, b.value),
+      (a, b) => a.value.mul(b.value),
       (ctx, a, b) => {
         declareAddR64(ctx)
         declareSubR64(ctx)
@@ -602,7 +572,7 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
     ).add(
       ["c32", "c32"],
       "c32",
-      (a, b) => mulPt(a.value, b.value),
+      (a, b) => a.value.mul(b.value),
       (ctx, a, b) => {
         declareMulC32(ctx)
         return `_helper_mul_c32(${a.expr}, ${b.expr})`
@@ -627,14 +597,14 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
       .add(
         ["point64"],
         "c64",
-        (a) => a.value,
+        (a) => xy(a.value.x, a.value.y),
         (_, a) => a.expr,
         [],
       )
       .add(
         ["point32"],
         "c32",
-        (a) => a.value,
+        (a) => xy(a.value.x, a.value.y),
         (_, a) => a.expr,
         "complex((2,3))=2+3i",
       )
@@ -642,14 +612,14 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
     FN_POINT.add(
       ["c64"],
       "point64",
-      (a) => a.value,
+      (a) => pt([a.value.x, a.value.y]),
       (_, a) => a.expr,
       [],
     )
       .add(
         ["c32"],
         "point32",
-        (a) => a.value,
+        (a) => pt([a.value.x, a.value.y]),
         (_, a) => a.expr,
         "point(2+3i)=(2,3)",
       )
@@ -680,7 +650,7 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
     OP_DIV.add(
       ["c32", "c32"],
       "c32",
-      (a, b) => divPt(a.value, b.value),
+      (a, b) => a.value.div(b.value),
       (ctx, a, b) => {
         declareDiv(ctx)
         return `_helper_div(${a.expr}, ${b.expr})`
@@ -691,13 +661,13 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
     OP_NEG.add(
       ["c64"],
       "c64",
-      (a) => pt(neg(a.value.x), neg(a.value.y)),
+      (a) => a.value.neg(),
       (_, a) => `(-${a.expr})`,
       [],
     ).add(
       ["c32"],
       "c32",
-      (a) => pt(neg(a.value.x), neg(a.value.y)),
+      (a) => a.value.neg(),
       (_, a) => `(-${a.expr})`,
       "-(2+3i)=-2-3i",
     )
@@ -750,7 +720,7 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
       r32: {
         c32: {
           js(self) {
-            return pt(self, real(0))
+            return xy(self, int(0))
           },
           glsl(self) {
             return `vec2(${self}, 0)`
@@ -760,7 +730,7 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
       r64: {
         c32: {
           js(self) {
-            return pt(self, real(0))
+            return xy(self, int(0))
           },
           glsl(self) {
             return `vec2(${self}.x, 0)`
@@ -768,7 +738,7 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
         },
         c64: {
           js(self) {
-            return pt(self, real(0))
+            return xy(self, int(0))
           },
           glsl(self) {
             return `vec4(${self}, 0, 0)`
@@ -778,7 +748,7 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
       bool: {
         c32: {
           js(self) {
-            return self ? pt(real(1), real(0)) : SNANPT
+            return self ? xy(int(1), int(0)) : xynan()
           },
           glsl(self) {
             return `(${self} ? vec2(1,0) : vec2(0.0/0.0))`
@@ -786,7 +756,7 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
         },
         c64: {
           js(self) {
-            return self ? pt(real(1), real(0)) : SNANPT
+            return self ? xy(int(1), int(0)) : xynan()
           },
           glsl(self) {
             return `(${self} ? vec4(1,0,0,0) : vec4(0.0/0.0))`
@@ -799,10 +769,10 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
         name: "complex number",
         namePlural: "complex numbers",
         glsl: "vec4",
-        toGlsl({ x, y }) {
-          return `vec4(${gl64(x)}, ${gl64(y)})`
+        toGlsl(self) {
+          return self.gl64()
         },
-        garbage: { js: SNANPT, glsl: "vec4(0.0/0.0)" },
+        garbage: { js: xynan(), glsl: "vec4(0.0/0.0)" },
         coerce: {
           c32: {
             js(self) {
@@ -828,10 +798,10 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
         name: "complex number",
         namePlural: "complex numbers",
         glsl: "vec2",
-        toGlsl({ x, y }) {
-          return `vec2(${gl(x)}, ${gl(y)})`
+        toGlsl(self) {
+          return self.gl32()
         },
-        garbage: { js: SNANPT, glsl: "vec2(0.0/0.0)" },
+        garbage: { js: xynan(), glsl: "vec2(0.0/0.0)" },
         coerce: {},
         write: WRITE_COMPLEX,
         order: Order.Point,
@@ -874,7 +844,7 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
       },
       i: {
         label: "unit vector perpendicular to number line; a square root of -1",
-        js: { type: "c64", value: pt(real(0), real(1)), list: false },
+        js: { type: "c64", value: xy(int(0), int(1)), list: false },
         glsl: { type: "c64", expr: "vec4(0, 0, 1, 0)", list: false },
         display: false,
       },

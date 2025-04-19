@@ -34,7 +34,7 @@ export function angleJs({ value, type }: JsVal<"angle" | "directedangle">) {
   if (measure > Math.PI) {
     return real(type == "angle" ? 2 * Math.PI - measure : measure - 2 * Math.PI)
   } else {
-    return real(measure)
+    return int(measure)
   }
 }
 

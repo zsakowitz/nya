@@ -45,7 +45,7 @@ function readExp(
   }
 
   if (!base && node.type == "num" && node.sub) {
-    const base = readSigned(node.sub, real(10))
+    const base = readSigned(node.sub, int(10))
     if (base == null) return null
     const value = readSigned(
       { type: "num", value: node.value, span: null },
@@ -56,7 +56,7 @@ function readExp(
   }
 
   const baseRaw = base
-  base ||= real(10)
+  base ||= int(10)
 
   let value
   if (
@@ -91,9 +91,9 @@ function readSlider(node: Node): { value: SReal; base: SReal | null } | null {
   ) {
     const base = +node.b.value
     if (!(2 <= base && base <= 36)) return null
-    const value = readExp(node.a, real(base))
+    const value = readExp(node.a, int(base))
     if (value == null) return null
-    return { value: value.value, base: real(base) }
+    return { value: value.value, base: int(base) }
   } else {
     const value = readExp(node, null)
     if (value == null) return null

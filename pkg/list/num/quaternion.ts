@@ -260,7 +260,7 @@ export default {
           return `vec4(${val.map(gl).join(", ")})`
         },
         garbage: {
-          js: [real(NaN), real(NaN), real(NaN), real(NaN)],
+          js: [int(NaN), int(NaN), int(NaN), int(NaN)],
           glsl: "vec4(0.0/0.0)",
         },
         coerce: {},
@@ -310,7 +310,7 @@ export default {
         q32: {
           js(self) {
             return self ?
-                [real(1), real(0), real(0), real(0)]
+                [int(1), int(0), int(0), int(0)]
               : TY_INFO.q32.garbage.js
           },
           glsl(self) {
@@ -321,7 +321,7 @@ export default {
       r32: {
         q32: {
           js(self) {
-            return [self, real(0), real(0), real(0)]
+            return [self, int(0), int(0), int(0)]
           },
           glsl(self) {
             return `vec4(${self}, 0, 0, 0)`
@@ -331,7 +331,7 @@ export default {
       r64: {
         q32: {
           js(self) {
-            return [self, real(0), real(0), real(0)]
+            return [self, int(0), int(0), int(0)]
           },
           glsl(self) {
             return `vec4(${self}.x, 0, 0, 0)`
@@ -341,7 +341,7 @@ export default {
       c32: {
         q32: {
           js(self) {
-            return [self.x, self.y, real(0), real(0)]
+            return [self.x, self.y, int(0), int(0)]
           },
           glsl(self) {
             return `vec4(${self}, 0, 0)`
@@ -351,7 +351,7 @@ export default {
       c64: {
         q32: {
           js(self) {
-            return [self.x, self.y, real(0), real(0)]
+            return [self.x, self.y, int(0), int(0)]
           },
           glsl(self) {
             return `vec4(${self}.xz, 0, 0)`
@@ -367,7 +367,7 @@ export default {
         label: "a four-dimensional unit vector perpendicular to 1, i, and k",
         js: {
           type: "q32",
-          value: [real(0), real(0), real(1), real(0)],
+          value: [int(0), int(0), int(1), int(0)],
           list: false,
         },
         glsl: { type: "q32", expr: "vec4(0, 0, 1, 0)", list: false },
@@ -377,7 +377,7 @@ export default {
         label: "a four-dimensional unit vector perpendicular to 1, i, and j",
         js: {
           type: "q32",
-          value: [real(0), real(0), real(0), real(1)],
+          value: [int(0), int(0), int(0), int(1)],
           list: false,
         },
         glsl: { type: "q32", expr: "vec4(0, 0, 0, 1)", list: false },

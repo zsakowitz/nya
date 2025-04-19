@@ -1,4 +1,5 @@
 import { cx, type Complex } from "./complex"
+import { type Point } from "./point"
 import { approx, int, type SReal } from "./sreal"
 
 /**
@@ -32,6 +33,10 @@ export class SComplex {
 
   mulR(other: SReal): SComplex {
     return xy(this.x.mul(other), this.y.mul(other))
+  }
+
+  mulEach(other: SComplex): SComplex {
+    return xy(this.x.mul(other.x), this.y.mul(other.y))
   }
 
   div(other: SComplex): SComplex {
@@ -136,8 +141,27 @@ export class SComplex {
     }
   }
 
+  pow(other: SComplex): SComplex {
+    if (other.y.zero() && this.y.zero() && this.x.num() > 0) {
+      return xy(this.x.pow(other.x), int(0))
+    }
+    return this.ns().pow(other.ns()).s()
+  }
+
   zero(): boolean {
     return this.x.zero() && this.y.zero()
+  }
+
+  xy(): Point {
+    return this.ns().xy()
+  }
+
+  gl32() {
+    return `vec2(${this.x.gl32()}, ${this.y.gl32()})`
+  }
+
+  gl64() {
+    return `vec4(${this.x.gl64()}, ${this.y.gl64()})`
   }
 }
 

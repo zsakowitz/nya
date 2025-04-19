@@ -3,8 +3,8 @@ import { FnDist } from "@/eval/ops/dist"
 import type { GlslVal, JsVal, SPoint } from "@/eval/ty"
 
 function js(a: JsVal<"segment">): [SPoint, SPoint] {
-  const mx = div(a.value[0].x.add(a.value[1].x), real(2))
-  const my = div(a.value[0].y.add(a.value[1].y), real(2))
+  const mx = div(a.value[0].x.add(a.value[1].x), int(2))
+  const my = div(a.value[0].y.add(a.value[1].y), int(2))
 
   return [
     pt(mx, my),

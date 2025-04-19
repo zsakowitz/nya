@@ -107,7 +107,7 @@ function lineCircleJs(circ: Tys["circle"], lin: Tys["line"], index: -1 | 1) {
   }
   const u1 = (b + index * d) / c
   const returned = { x: x1 + v1.x * u1, y: y1 + v1.y * u1 }
-  return pt(real(returned.x), real(returned.y))
+  return pt(int(returned.x), int(returned.y))
 }
 
 function lineCircleGlsl(
@@ -147,7 +147,7 @@ function lineArcJs(ac: Tys["arc"], lin: Tys["line"], index: -1 | 1): SPoint {
       return lineCircleJs(
         {
           center: rept(arc.c),
-          radius: real(arc.r),
+          radius: int(arc.r),
         },
         lin,
         arc.swap ? index : (-index as -1 | 1),
@@ -285,7 +285,7 @@ FN_INTERSECTION.add(
           ar.value,
           {
             center: rept(b.c),
-            radius: real(b.r),
+            radius: int(b.r),
           },
           b.swap,
         )
@@ -316,7 +316,7 @@ FN_INTERSECTION.add(
           br.value,
           {
             center: rept(b.c),
-            radius: real(b.r),
+            radius: int(b.r),
           },
           !b.swap,
         )
@@ -341,16 +341,16 @@ FN_INTERSECTION.add(
       return SNANPT
     }
     if (a.type == "circle") {
-      const ac = { center: rept(a.c), radius: real(a.r) }
+      const ac = { center: rept(a.c), radius: int(a.r) }
       if (b.type == "circle") {
-        const bc = { center: rept(b.c), radius: real(b.r) }
+        const bc = { center: rept(b.c), radius: int(b.r) }
         return circleCircleJs(bc, ac, a.swap != b.swap)
       } else {
         return lineCircleJs(ac, [rept(b.p1), rept(b.p3)], a.swap ? -1 : 1)
       }
     } else {
       if (b.type == "circle") {
-        const bc = { center: rept(b.c), radius: real(b.r) }
+        const bc = { center: rept(b.c), radius: int(b.r) }
         return lineCircleJs(bc, [rept(b.p1), rept(b.p3)], b.swap ? 1 : -1)
       } else {
         return intersectSLineLineJs(

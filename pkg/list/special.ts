@@ -19,7 +19,7 @@ const FN_ZETA: FnDist = new FnDist("zeta", "computes the Riemann zeta function")
     (a) => {
       const val = zeta(complex(a.value.x.num(), a.value.y.num()))
       if (typeof val == "number") {
-        return pt(approx(val), real(0))
+        return pt(approx(val), int(0))
       }
       return pt(approx(val.re), approx(val.im))
     },

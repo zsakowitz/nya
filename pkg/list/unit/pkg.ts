@@ -160,7 +160,7 @@ const INFO_UNIT: TyInfoByName<"unit"> = {
   },
   toGlsl: glsl,
   garbage: {
-    js: [{ exp: real(1), unit: nan }],
+    js: [{ exp: int(1), unit: nan }],
     get glsl() {
       return glsl()
     },
@@ -168,7 +168,7 @@ const INFO_UNIT: TyInfoByName<"unit"> = {
   coerce: {
     r32u: {
       js(self) {
-        return [real(1), self]
+        return [int(1), self]
       },
       glsl,
     },
@@ -225,7 +225,7 @@ const INFO_R32U: TyInfoByName<"r32u"> = {
   },
   toGlsl: glsl,
   garbage: {
-    js: [real(NaN), [{ exp: real(1), unit: nan }]],
+    js: [int(NaN), [{ exp: int(1), unit: nan }]],
     get glsl() {
       return glsl()
     },
@@ -342,7 +342,7 @@ export default {
               return {
                 type: "unit",
                 list: false,
-                value: [{ exp: real(1), unit }],
+                value: [{ exp: int(1), unit }],
               } satisfies JsValue<"unit">
             }
             throw new Error(`Unit '${node.value}' is not defined.`)

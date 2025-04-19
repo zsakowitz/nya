@@ -64,8 +64,8 @@ function cmpJs(a: { value: SReal }, b: { value: SReal }) {
   const br = b.value.num()
   return (
     ar < br ? real(-1)
-    : ar > br ? real(1)
-    : real(0)
+    : ar > br ? int(1)
+    : int(0)
   )
 }
 
@@ -154,11 +154,11 @@ FN_XPRODY.add(
   "r32",
   (a, b) => {
     if (isNaN(b.value.num())) {
-      return real(NaN)
+      return int(NaN)
     }
 
-    if (isZero(a.value)) {
-      return real(0)
+    if (a.value.zero()) {
+      return int(0)
     }
 
     return a.value.mul(b.value)
@@ -247,7 +247,7 @@ const FN_COUNT = new (class extends FnList<"r64"> {
       params: args.map((x) => x.type),
       type: "r64",
       js() {
-        return real(args.length)
+        return int(args.length)
       },
       glsl() {
         return `vec2(${args.length.toExponential()}, 0)`
@@ -262,7 +262,7 @@ const FN_COUNT = new (class extends FnList<"r64"> {
       param: arg.type,
       type: "r64",
       js() {
-        return real(arg.list)
+        return int(arg.list)
       },
       glsl() {
         return `vec2(${arg.list.toExponential()}, 0)`
@@ -564,7 +564,7 @@ float _helper_cmp_r32(float a, float b) {
         toGlsl(val) {
           return gl64(val)
         },
-        garbage: { js: real(NaN), glsl: "vec2(0.0/0.0)" },
+        garbage: { js: int(NaN), glsl: "vec2(0.0/0.0)" },
         coerce: {
           r32: {
             js(self) {
@@ -593,7 +593,7 @@ float _helper_cmp_r32(float a, float b) {
         toGlsl(val) {
           return gl(val)
         },
-        garbage: { js: real(NaN), glsl: "(0.0/0.0)" },
+        garbage: { js: int(NaN), glsl: "(0.0/0.0)" },
         coerce: {},
         write: WRITE_REAL,
         order: null,
@@ -613,7 +613,7 @@ float _helper_cmp_r32(float a, float b) {
         toGlsl(val) {
           return gl64(val)
         },
-        garbage: { js: real(NaN), glsl: "vec2(0.0/0.0)" },
+        garbage: { js: int(NaN), glsl: "vec2(0.0/0.0)" },
         coerce: {
           r32: {
             js: (x) => x,
@@ -646,7 +646,7 @@ float _helper_cmp_r32(float a, float b) {
         toGlsl(val) {
           return gl(val)
         },
-        garbage: { js: real(NaN), glsl: "(0.0/0.0)" },
+        garbage: { js: int(NaN), glsl: "(0.0/0.0)" },
         coerce: {
           r32: {
             js: (x) => x,
@@ -669,7 +669,7 @@ float _helper_cmp_r32(float a, float b) {
       bool: {
         r32: {
           js(self) {
-            return self ? real(1) : real(NaN)
+            return self ? int(1) : int(NaN)
           },
           glsl(self) {
             return `(${self} ? 1.0 : 0.0/0.0)`
@@ -677,7 +677,7 @@ float _helper_cmp_r32(float a, float b) {
         },
         r64: {
           js(self) {
-            return self ? real(1) : real(NaN)
+            return self ? int(1) : int(NaN)
           },
           glsl(self) {
             return `(${self} ? vec2(1, 0) : vec2(0.0/0.0))`
@@ -711,7 +711,7 @@ float _helper_cmp_r32(float a, float b) {
       "e": splitDual(Math.E, "euler's number"),
       "∞": {
         label: "limit as a number increases without bound",
-        js: { type: "r64", value: real(Infinity), list: false },
+        js: { type: "r64", value: int(Infinity), list: false },
         glsl: { type: "r64", expr: "vec2(1.0/0.0)", list: false },
         display: false,
       },

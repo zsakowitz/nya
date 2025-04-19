@@ -7,7 +7,7 @@ function js(
   { value: [{ x: x1, y: y1 }, { x: x2, y: y2 }] }: { value: [SPoint, SPoint] },
   { value: t }: { value: SReal },
 ) {
-  const s = sub(real(1), t)
+  const s = sub(int(1), t)
   return pt(x1.mul(s).add(x2.mul(t)), y1.mul(s).add(y2.mul(t)))
 }
 

@@ -306,7 +306,7 @@ const FN_IMGWIDTH = new FnDist(
 ).add(
   ["image"],
   "r32",
-  (a) => real(a.value.width),
+  (a) => int(a.value.width),
   imageShaderError,
   "imgwidth(...)",
 )
@@ -317,7 +317,7 @@ const FN_IMGHEIGHT = new FnDist(
 ).add(
   ["image"],
   "r32",
-  (a) => real(a.value.height),
+  (a) => int(a.value.height),
   imageShaderError,
   "imgheight(...)",
 )

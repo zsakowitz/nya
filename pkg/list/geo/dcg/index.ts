@@ -614,7 +614,7 @@ const INFO_CIRCLE: TyInfoByName<"circle"> = {
     return `vec3(${gl(x)}, ${gl(y)}, ${gl(radius)})`
   },
   garbage: {
-    js: { center: SNANPT, radius: real(NaN) },
+    js: { center: SNANPT, radius: int(NaN) },
     glsl: "vec3(0.0/0.0)",
   },
   coerce: {},
@@ -897,7 +897,7 @@ function angleInfo(
       },
       c32: {
         js(value) {
-          return pt(angleJs({ value, type }), real(0))
+          return pt(angleJs({ value, type }), int(0))
         },
         glsl(expr, ctx) {
           return `vec2(${angleGlsl(ctx, { expr, type })}, 0)`

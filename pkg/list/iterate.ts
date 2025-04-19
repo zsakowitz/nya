@@ -461,7 +461,7 @@ export default {
                 seq: false,
               })
               if (parsed.retval == "count") {
-                return { type: "r64", list: false, value: real(count) }
+                return { type: "r64", list: false, value: int(count) }
               } else {
                 return data[parsed.retval!.id]!
               }

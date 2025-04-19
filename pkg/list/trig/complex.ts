@@ -163,19 +163,19 @@ function acscGlsl(ctx: GlslContext, a: string): string {
 }
 
 function asinJs(a: SPoint) {
-  return mulPt(I, lnJs(subPt(sqrtJs(subPt(ONE, mulPt(a, a))), mulPt(I, a))))
+  return mulPt(I, lnJs(subPt(sqrtJs(ONE.sub(a.mul(a))), I.mul(a))))
 }
 
 function acosJs(a: SPoint) {
-  return subPt(pt(real(Math.PI / 2), real(0)), asinJs(a))
+  return subPt(pt(real(Math.PI / 2), int(0)), asinJs(a))
 }
 
 function atanJs(a: SPoint) {
-  return mulPt(pt(real(0), frac(-1, 2)), lnJs(divPt(subPt(I, a), addPt(I, a))))
+  return mulPt(pt(int(0), frac(-1, 2)), lnJs(I.sub(a).div(I.add(a))))
 }
 
 function acotJs(a: SPoint) {
-  return mulPt(pt(real(0), frac(-1, 2)), lnJs(divPt(addPt(a, I), subPt(a, I))))
+  return mulPt(pt(int(0), frac(-1, 2)), lnJs(a.add(I).div(a.sub(I))))
 }
 
 function asecJs(a: SPoint) {

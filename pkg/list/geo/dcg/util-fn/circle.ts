@@ -48,7 +48,7 @@ export const FN_CIRCLE = new FnDist(
       const { c, r } = crArcVal(a.value)
       return {
         center: rept(c),
-        radius: real(r),
+        radius: int(r),
       }
     },
     () => {

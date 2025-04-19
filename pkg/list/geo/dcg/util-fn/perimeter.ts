@@ -9,10 +9,10 @@ export const FN_PERIMETER = new FnDist(
   "r32",
   (a) => {
     if (a.value.length <= 1) {
-      return real(0)
+      return int(0)
     }
 
-    let ret = real(0)
+    let ret = int(0)
     for (let i = 0; i < a.value.length; i++) {
       const self = a.value[i]!
       const next = a.value[(i + 1) % a.value.length]!

@@ -173,7 +173,7 @@ export default {
         garbage: {
           js: {
             type: "value",
-            value: { type: "r64", list: false, value: real(NaN) },
+            value: { type: "r64", list: false, value: int(NaN) },
           },
           get glsl(): never {
             return glsl()
