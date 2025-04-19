@@ -1,3 +1,4 @@
+import type { Point } from "@/lib/point"
 import type { Cv } from "@/sheet/ui/cv"
 import { Size } from "@/sheet/ui/cv/consts"
 

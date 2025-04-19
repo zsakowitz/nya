@@ -9,6 +9,8 @@ import { canCoerce, coerceTyJs } from "@/eval/ty/coerce"
 import { CmdWord } from "@/field/cmd/leaf/word"
 import { L } from "@/field/dir"
 import { h, hx, path, svgx } from "@/jsx"
+import { px } from "@/lib/point"
+import { approx } from "@/lib/sreal"
 import { Store } from "@/sheet/ext"
 import { defineHideable } from "@/sheet/ext/hideable"
 import { Color, Opacity, Order, Size } from "@/sheet/ui/cv/consts"
@@ -88,14 +90,14 @@ const EXT_SLOPE_FIELD = defineHideable<
           const isR32 = canCoerce(value.type, "r32")
           if (isR32) {
             const r32 = coerceTyJs(value, "r32")
-            const at = cv.toCanvas({ x, y })
+            const at = cv.toCanvas(px(x, y))
             for (const slopeRaw of each(r32)) {
               const slope = slopeRaw.num()
               if (isNaN(slope)) continue
               const { x: dx, y: dy } =
                 slope == Infinity || slope == -Infinity ?
                   px(0, size)
-                : norm(px(1, -slope), size)
+                : px(1, -slope).norm(size)
               path.moveTo(at.x - dx / 2, at.y - dy / 2)
               path.lineTo(at.x + dx / 2, at.y + dy / 2)
             }
@@ -109,7 +111,7 @@ const EXT_SLOPE_FIELD = defineHideable<
               const dyRaw = vectorRaw[1].y.num() - vectorRaw[0].y.num()
               if (isNaN(dxRaw) || isNaN(dyRaw)) continue
               const { x: dx, y: dy } = cv.toPaperDelta(
-                norm(px(dxRaw, -dyRaw), size),
+                px(dxRaw, -dyRaw).norm(size),
               )
               const vPath = vectorPath(
                 cv,
@@ -129,7 +131,7 @@ const EXT_SLOPE_FIELD = defineHideable<
               const dyRaw = raw.y.num()
               if (isNaN(dxRaw) || isNaN(dyRaw)) continue
               const { x: dx, y: dy } = cv.toPaperDelta(
-                norm(px(dxRaw, -dyRaw), size),
+                px(dxRaw, -dyRaw).norm(size),
               )
               const vPath = vectorPath(
                 cv,

@@ -1,6 +1,6 @@
 import { FnDist } from "@/eval/ops/dist"
+import { int } from "@/lib/sreal"
 import { arcLength, computeArcVal } from "../util-arc"
-import { hypot } from "./distance"
 
 export const FN_LENGTH = new FnDist(
   "length",
@@ -9,8 +9,7 @@ export const FN_LENGTH = new FnDist(
   .add(
     ["segment"],
     "r32",
-    (a) =>
-      hypot(pt(a.value[0].x.sub(a.value[1].x), a.value[0].y.sub(a.value[1].y))),
+    (a) => a.value[0].sub(a.value[1]).hypot(),
     (ctx, a) => {
       ctx.glsl`float _helper_length_segment(vec4 a) {
   return length(a.xy - a.zw);
@@ -23,8 +22,7 @@ export const FN_LENGTH = new FnDist(
   .add(
     ["vector"],
     "r32",
-    (a) =>
-      hypot(pt(a.value[0].x.sub(a.value[1].x), a.value[0].y.sub(a.value[1].y))),
+    (a) => a.value[0].sub(a.value[1]).hypot(),
     (ctx, a) => {
       ctx.glsl`float _helper_length_vector(vec4 a) {
   return length(a.xy - a.zw);
@@ -37,7 +35,7 @@ export const FN_LENGTH = new FnDist(
   .add(
     ["arc"],
     "r32",
-    (a) => real(arcLength(computeArcVal(a.value))),
+    (a) => int(arcLength(computeArcVal(a.value))),
     () => {
       throw new Error("Cannot compute arc length in shaders yet.")
     },

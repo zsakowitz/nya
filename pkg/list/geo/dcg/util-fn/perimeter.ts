@@ -1,5 +1,5 @@
 import { FnDist } from "@/eval/ops/dist"
-import { hypot } from "./distance"
+import { int } from "@/lib/sreal"
 
 export const FN_PERIMETER = new FnDist(
   "perimeter",
@@ -16,7 +16,7 @@ export const FN_PERIMETER = new FnDist(
     for (let i = 0; i < a.value.length; i++) {
       const self = a.value[i]!
       const next = a.value[(i + 1) % a.value.length]!
-      ret = add(ret, hypot(pt(self.x.sub(next.x), self.y.sub(next.y))))
+      ret = self.sub(next).hypot().add(ret)
     }
 
     return ret

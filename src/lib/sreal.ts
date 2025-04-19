@@ -211,6 +211,10 @@ export class SReal {
   round(): SReal {
     return int(round(this.num()))
   }
+
+  fract(): SReal {
+    return this.sub(this.floor())
+  }
 }
 
 const FLOAT32 = new Float32Array(1)

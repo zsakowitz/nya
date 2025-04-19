@@ -141,6 +141,10 @@ export class SComplex {
     }
   }
 
+  roundEach(): SComplex {
+    return xy(this.x.round(), this.y.round())
+  }
+
   pow(other: SComplex): SComplex {
     if (other.y.zero() && this.y.zero() && this.x.num() > 0) {
       return xy(this.x.pow(other.x), int(0))

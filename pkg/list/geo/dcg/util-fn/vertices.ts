@@ -1,6 +1,6 @@
 import type { Fn } from "@/eval/ops"
 import { ALL_DOCS, type WithDocs } from "@/eval/ops/docs"
-import type { SPoint } from "@/eval/ty"
+import type { SPoint } from "@/lib/spoint"
 
 export const FN_VERTICES: Fn & WithDocs = {
   name: "vertices",
@@ -21,6 +21,9 @@ export const FN_VERTICES: Fn & WithDocs = {
     }
     const arg = args[0]!
     if (arg.list !== false) {
+      throw new Error("'vertices' expects a single polygon.")
+    }
+    if (arg.type != "polygon") {
       throw new Error("'vertices' expects a single polygon.")
     }
     return {

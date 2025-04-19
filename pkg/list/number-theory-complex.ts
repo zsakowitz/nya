@@ -1,6 +1,7 @@
 import floorGl from "#/glsl/floor.glsl"
 import type { Package } from "#/types"
-import { ceilP, floorP, onP } from "@/eval/ops/complex"
+import { xy } from "@/lib/scomplex"
+import { frac } from "@/lib/sreal"
 import { FN_CEIL, FN_FLOOR, FN_FRACT, FN_ROUND } from "./number-theory"
 
 export default {
@@ -12,7 +13,7 @@ export default {
     FN_FLOOR.add(
       ["c32"],
       "c32",
-      onP(floorP),
+      (x) => x.value.floor(),
       (ctx, a) => {
         ctx.glslText(floorGl)
         return `cx_floor(${a.expr})`
@@ -23,7 +24,7 @@ export default {
     FN_CEIL.add(
       ["c32"],
       "c32",
-      onP(ceilP),
+      (x) => x.value.ceil(),
       (ctx, a) => {
         ctx.glslText(floorGl)
         return `cx_ceil(${a.expr})`
@@ -34,7 +35,7 @@ export default {
     FN_ROUND.add(
       ["c32"],
       "c32",
-      (a) => rept(px(Math.round(a.value.x.num()), Math.round(a.value.y.num()))),
+      (a) => a.value.roundEach(),
       (_, a) => `floor(${a.expr} + 0.5)`,
       "round(2.4-3.6i)=2-4i",
     ).add(
@@ -44,13 +45,13 @@ export default {
         const p = Math.round(places.value.num())
         if (p > 0) {
           const x = 10 ** p
-          return pt(
+          return xy(
             frac(Math.round(v.value.x.num() * x), x),
             frac(Math.round(v.value.y.num() * x), x),
           )
         } else {
           const x = 10 ** -p
-          return pt(
+          return xy(
             frac(x * Math.round(v.value.x.num() / x), 1),
             frac(x * Math.round(v.value.y.num() / x), 1),
           )

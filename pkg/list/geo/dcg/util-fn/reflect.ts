@@ -1,6 +1,8 @@
 import type { GlslContext } from "@/eval/lib/fn"
 import { FnDist } from "@/eval/ops/dist"
-import type { GlslVal, JsVal, SPoint, TyName, Val } from "@/eval/ty"
+import type { GlslVal, JsVal, TyName, Val } from "@/eval/ty"
+import type { SPoint } from "@/lib/spoint"
+import { int } from "@/lib/sreal"
 import { intersectSLineLineJs } from "./intersection"
 import { perpendicularJs } from "./perpendicular"
 
@@ -15,8 +17,7 @@ interface ReflectionGlsl {
 export function reflectJs(by: ReflectionJs, target: SPoint) {
   const p = perpendicularJs(by, { value: target })
   const i = intersectSLineLineJs(p, by.value)
-
-  return pt(sub(mul(int(2), i.x), target.x), sub(mul(int(2), i.y), target.y))
+  return i.mulR(int(2)).sub(target)
 }
 
 function reflectGlsl(ctx: GlslContext, by: ReflectionGlsl, target: string) {

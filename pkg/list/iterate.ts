@@ -18,6 +18,7 @@ import { coerceValueGlsl, isReal } from "@/eval/ty/coerce"
 import { declareGlsl } from "@/eval/ty/decl"
 import { list } from "@/eval/ty/list"
 import { b, p } from "@/jsx"
+import { int } from "@/lib/sreal"
 
 declare module "@/eval/ast/token" {
   interface PuncListInfix {

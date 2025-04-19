@@ -1,6 +1,7 @@
 import type { GlslContext } from "@/eval/lib/fn"
 import { FnDist } from "@/eval/ops/dist"
-import type { GlslVal, JsVal, SPoint, Val } from "@/eval/ty"
+import type { GlslVal, JsVal, Val } from "@/eval/ty"
+import type { SPoint } from "@/lib/spoint"
 
 type LineLike = "segment" | "ray" | "line" | "vector"
 
@@ -8,13 +9,9 @@ export function parallelJs(
   { value: [A, B] }: JsVal<LineLike>,
   { value: b }: JsVal<"point32" | "point64">,
 ): Val<"line"> {
-  return Object.assign(
-    [b, pt(b.x.add(B.x.sub(A.x)), b.y.add(B.y.sub(A.y)))] satisfies [
-      SPoint,
-      SPoint,
-    ],
-    { source: "parallel" as const },
-  )
+  return Object.assign([b, b.add(B).sub(A)] satisfies [SPoint, SPoint], {
+    source: "parallel" as const,
+  })
 }
 
 const glsl = (

@@ -1,8 +1,8 @@
 import type { GlslContext } from "@/eval/lib/fn"
 import type { GlslVal, Tys, Val } from "@/eval/ty"
 import { px } from "@/lib/point"
-import { pt, ptnan, type SPoint } from "@/lib/spoint"
-import { int } from "@/lib/sreal"
+import { pt, ptint, ptnan, type SPoint } from "@/lib/spoint"
+import { frac, int } from "@/lib/sreal"
 import { FN_INTERSECTION } from "../../point"
 import { computeArcVal } from "../util-arc"
 
@@ -183,7 +183,9 @@ function circleCircleJs(
   const rx = -dy * (h / d)
   const ry = dx * (h / d)
 
-  return pt(real(x0 + a * (dx / d) + rx), real(y0 + a * (dy / d) + ry))
+  return ptint([x0, y0])
+    .add(ptint([rx, ry]))
+    .add(ptint([dx, dy]).mulR(frac(a, d)))
 }
 
 // line-circle
@@ -265,12 +267,12 @@ FN_INTERSECTION.add(
         return ptnan(2)
       case "segment":
       case "tworay":
-        return lineCircleJs(ar.value, [rept(b.p1), rept(b.p3)], 1)
+        return lineCircleJs(ar.value, [b.p1.s(), b.p3.s()], 1)
       case "circle":
         return circleCircleJs(
           ar.value,
           {
-            center: rept(b.c),
+            center: b.c.s(),
             radius: int(b.r),
           },
           b.swap,
@@ -296,12 +298,12 @@ FN_INTERSECTION.add(
         return ptnan(2)
       case "segment":
       case "tworay":
-        return lineCircleJs(br.value, [rept(b.p1), rept(b.p3)], -1)
+        return lineCircleJs(br.value, [b.p1.s(), b.p3.s()], -1)
       case "circle":
         return circleCircleJs(
           br.value,
           {
-            center: rept(b.c),
+            center: b.c.s(),
             radius: int(b.r),
           },
           !b.swap,
@@ -327,22 +329,19 @@ FN_INTERSECTION.add(
       return ptnan(2)
     }
     if (a.type == "circle") {
-      const ac = { center: rept(a.c), radius: int(a.r) }
+      const ac = { center: a.c.s(), radius: int(a.r) }
       if (b.type == "circle") {
-        const bc = { center: rept(b.c), radius: int(b.r) }
+        const bc = { center: b.c.s(), radius: int(b.r) }
         return circleCircleJs(bc, ac, a.swap != b.swap)
       } else {
-        return lineCircleJs(ac, [rept(b.p1), rept(b.p3)], a.swap ? -1 : 1)
+        return lineCircleJs(ac, [b.p1.s(), b.p3.s()], a.swap ? -1 : 1)
       }
     } else {
       if (b.type == "circle") {
-        const bc = { center: rept(b.c), radius: int(b.r) }
-        return lineCircleJs(bc, [rept(b.p1), rept(b.p3)], b.swap ? 1 : -1)
+        const bc = { center: b.c.s(), radius: int(b.r) }
+        return lineCircleJs(bc, [b.p1.s(), b.p3.s()], b.swap ? 1 : -1)
       } else {
-        return intersectSLineLineJs(
-          [rept(a.p1), rept(b.p3)],
-          [rept(b.p1), rept(b.p3)],
-        )
+        return intersectSLineLineJs([a.p1.s(), b.p3.s()], [b.p1.s(), b.p3.s()])
       }
     }
   },

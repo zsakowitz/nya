@@ -1,5 +1,6 @@
 import type { Package } from "#/types"
 import { FnDist } from "@/eval/ops/dist"
+import { frac } from "@/lib/sreal"
 
 export const FN_FLOOR = new FnDist(
   "floor",
@@ -7,7 +8,7 @@ export const FN_FLOOR = new FnDist(
 ).add(
   ["r32"],
   "r32",
-  (v) => frac(Math.floor(v.value.num()), 1),
+  (v) => v.value.floor(),
   (_, v) => `floor(${v.expr})`,
   ["floor(2.3)=2", "floor(-7.8)=-8"],
 )
@@ -18,7 +19,7 @@ export const FN_FRACT = new FnDist(
 ).add(
   ["r32"],
   "r32",
-  (v) => sub(v.value, frac(Math.floor(v.value.num()), 1)),
+  (v) => v.value.fract(),
   (_, v) => `fract(${v.expr})`,
   ["fract(7.4)=0.4", "fract(-9.3)=0.7"],
 )
@@ -29,7 +30,7 @@ export const FN_CEIL = new FnDist(
 ).add(
   ["r32"],
   "r32",
-  (v) => frac(Math.ceil(v.value.num()), 1),
+  (v) => v.value.ceil(),
   (_, v) => `ceil(${v.expr})`,
   ["ceil(2.3)=3", "ceil(-7.8)=-7"],
 )
@@ -41,7 +42,7 @@ export const FN_ROUND = new FnDist(
   .add(
     ["r32"],
     "r32",
-    (v) => frac(Math.round(v.value.num()), 1),
+    (v) => v.value.round(),
     (_, v) => `floor(${v.expr} + 0.5)`,
     ["round(3.5)=4", "round(-3.8)=-4"],
   )

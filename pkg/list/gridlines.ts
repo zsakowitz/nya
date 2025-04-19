@@ -1,4 +1,5 @@
 import type { Package } from "#/types"
+import { px } from "@/lib/point"
 import { theme } from "@/sheet/theme"
 import type { Cv } from "@/sheet/ui/cv"
 import { OrderMajor } from "@/sheet/ui/cv/consts"
@@ -76,7 +77,7 @@ function createDrawAxes(paper: Cv) {
   }
 
   function paperToCanvas(x: number, y: number) {
-    const pt = paper.toOffset({ x, y })
+    const pt = paper.toOffset(px(x, y))
     return px(pt.x * scale(), pt.y * scale())
   }
 

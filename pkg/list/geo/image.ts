@@ -10,6 +10,8 @@ import { CmdBrack } from "@/field/cmd/math/brack"
 import { L, R } from "@/field/dir"
 import { Block } from "@/field/model"
 import { b, fa, h, paragraphTag } from "@/jsx"
+import { ptnan, type SPoint } from "@/lib/spoint"
+import { frac, type SReal } from "@/lib/sreal"
 import { defineExt } from "@/sheet/ext"
 import type { Cv } from "@/sheet/ui/cv"
 import { Order } from "@/sheet/ui/cv/consts"
@@ -142,8 +144,8 @@ export default {
         },
         write: {
           isApprox(value) {
-            return [value.p1.x, value.p1.y, value.p2.x, value.p2.y].some(
-              (x) => x.type == "approx",
+            return [value.p1.x, value.p1.y, value.p2.x, value.p2.y].some((x) =>
+              x.isApprox(),
             )
           },
           display(value, props) {
@@ -258,8 +260,8 @@ markReflect(
     data: a.value.data,
     aspect:
       a.value.aspect ?
-        neg(a.value.aspect)
-      : real(-a.value.data.width / a.value.data.height),
+        a.value.aspect.neg()
+      : frac(-a.value.data.width, a.value.data.height),
     p1: reflectJs(b, a.value.p1),
     p2: reflectJs(b, a.value.p2),
   }),

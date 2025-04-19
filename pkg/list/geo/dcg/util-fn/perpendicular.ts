@@ -1,6 +1,7 @@
 import type { GlslContext } from "@/eval/lib/fn"
 import { FnDist } from "@/eval/ops/dist"
-import type { GlslVal, SPoint, Tys, Val } from "@/eval/ty"
+import type { GlslVal, Tys, Val } from "@/eval/ty"
+import { pt, type SPoint } from "@/lib/spoint"
 
 type LineLike = "segment" | "ray" | "line" | "vector"
 
@@ -9,7 +10,7 @@ export function perpendicularJs(
   { value: b }: { value: SPoint },
 ): Val<"line"> {
   return Object.assign(
-    [b, pt(b.x.add(B.y.sub(A.y)), b.y.sub(B.x.sub(A.x)))] satisfies [
+    [b, pt([b.x.add(B.y.sub(A.y)), b.y.sub(B.x.sub(A.x))])] satisfies [
       SPoint,
       SPoint,
     ],
