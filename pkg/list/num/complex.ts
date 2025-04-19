@@ -25,31 +25,22 @@ import { declareDebugPoint, FN_DEBUGPOINT, FN_POINT } from "$/geo/point"
 import { fn, type GlslContext } from "@/eval/lib/fn"
 import { FnDist } from "@/eval/ops/dist"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "@/eval/ops/vars"
-import type { GlslVal, SPoint } from "@/eval/ty"
-import { gl64 } from "@/eval/ty/create-r64"
+import type { GlslVal } from "@/eval/ty"
 import type { TyWrite } from "@/eval/ty/display"
 import { highRes, type TyExtras } from "@/eval/ty/info"
 import { h } from "@/jsx"
+import { px } from "@/lib/point"
+import { xy, xynan, type SComplex } from "@/lib/scomplex"
+import { approx, int } from "@/lib/sreal"
 import { Order } from "@/sheet/ui/cv/consts"
 import { declareOklab } from "../color/util-oklab"
 import { FN_EXP, FN_LOG10, FN_SIGN, FN_UNSIGN } from "./real"
 
 declare module "@/eval/ty" {
   interface Tys {
-    c32: SPoint
-    c64: SPoint
+    c32: SComplex
+    c64: SComplex
   }
-}
-
-export function lnJs(a: SPoint) {
-  if (isZero(a)) {
-    return pt(real(-Infinity), real(0))
-  }
-
-  const x = a.x.num()
-  const y = a.y.num()
-
-  return pt(approx(Math.log(Math.hypot(x, y))), approx(Math.atan2(y, x)))
 }
 
 export function declareMulC32(ctx: GlslContext) {
@@ -199,9 +190,9 @@ const FN_CPLOT = new FnDist<"color">(
   .add(["c32"], "color", plotJs, cplot, "cplot(2+3i)=\\color{#83c4d6}")
   .add(["point32"], "color", plotJs, cplot, "cplot((2,3))=\\color{#83c4d6}") // TODO: point32 logic in geo/point
 
-const WRITE_COMPLEX: TyWrite<SPoint> = {
+const WRITE_COMPLEX: TyWrite<SComplex> = {
   isApprox(value) {
-    return value.x.type == "approx" || value.y.type == "approx"
+    return value.isApprox()
   },
   display(value, props) {
     props.nums([
@@ -211,15 +202,15 @@ const WRITE_COMPLEX: TyWrite<SPoint> = {
   },
 }
 
-const extras: TyExtras<SPoint> = {
+const extras: TyExtras<SComplex> = {
   isOne(value) {
-    return value.x.num() == 1 && value.y.num() == 0
+    return value.x.num() == 1 && value.y.zero()
   },
   isZero(value) {
-    return value.x.num() == 0 && value.y.num() == 0
+    return value.x.zero() && value.y.zero()
   },
   isNonZero(value) {
-    return value.x.num() != 0 || value.y.num() != 0
+    return !value.x.zero() || !value.y.zero()
   },
 }
 
@@ -248,31 +239,6 @@ function dotC32(
   return a.x * b.x - a.y * b.y;
 }`
   return `_helper_dot_c32(${a.expr}, ${b.expr})`
-}
-
-export function subPt(a: SPoint, b: SPoint) {
-  return pt(a.x.sub(b.x), a.y.sub(b.y))
-}
-
-export function addPt(a: SPoint, b: SPoint) {
-  return pt(a.x.add(b.x), a.y.add(b.y))
-}
-
-export function mulPt({ x: a, y: b }: SPoint, { x: c, y: d }: SPoint) {
-  return pt(sub(a.mul(c), b.mul(d)), add(b.mul(c), a.mul(d)))
-}
-
-export function divPt({ x: a, y: b }: SPoint, { x: c, y: d }: SPoint): SPoint {
-  const x = add(a.mul(c), b.mul(d))
-  const y = sub(b.mul(c), a.mul(d))
-  const denom = add(c.mul(c), d.mul(d))
-  return pt(x.div(denom), y.div(denom))
-}
-
-export function recipPt({ x: c, y: d }: SPoint): SPoint {
-  const denom = add(c.mul(c), d.mul(d))
-  if (isZero(denom)) return pt(approx(1 / c.num()), approx(1 / d.num()))
-  return pt(c.div(denom), div(neg(d), denom))
 }
 
 export function declareDiv(ctx: GlslContext) {
@@ -323,7 +289,7 @@ export default {
       ["c32"],
       "r32",
       function ({ value: a }) {
-        return approx(Math.atan2(a.y.num(), a.x.num()) / this.rad())
+        return approx(a.arg() / this.rad())
       },
       (ctx, ar) => {
         // TODO: arg p = 45 does weird things b/c discontinuous
@@ -336,10 +302,7 @@ export default {
     FN_SIGN.add(
       ["c32"],
       "c32",
-      ({ value: a }) => {
-        const denom = real(Math.hypot(a.x.num(), a.y.num()))
-        return pt(a.x.div(denom), a.y.div(denom))
-      },
+      ({ value: a }) => a.sign(),
       (ctx, ar) => {
         const a = ctx.cache(ar)
         return `(${a} == vec2(0) ? vec2(0) : normalize(${a}))`
@@ -351,12 +314,7 @@ export default {
       "with a complex number",
       ["c32"],
       "c32",
-      ({ value: a }) => {
-        const e = approx(Math.exp(a.x.num()))
-        const y = a.y.num()
-
-        return pt(mul(e, approx(Math.cos(y))), mul(e, approx(Math.sin(y))))
-      },
+      ({ value: a }) => a.ns().exp().s(),
       (ctx, a) => {
         declareExp(ctx)
         return `_helper_exp(${a.expr})`
@@ -368,7 +326,7 @@ export default {
       "with a complex number",
       ["c32"],
       "c32",
-      (a) => lnJs(a.value),
+      (a) => a.value.ns().ln().s(),
       (ctx, a) => {
         declareLn(ctx)
         return `_helper_ln(${a.expr})`
@@ -381,14 +339,14 @@ export default {
       "c32",
       (a, b) => {
         if (isNaN(b.value.x.num()) || isNaN(b.value.y.num())) {
-          return SNANPT
+          return xynan()
         }
 
-        if (isZero(a.value)) {
-          return rept({ x: 0, y: 0 })
+        if (a.value.zero()) {
+          return xy(int(0), int(0))
         }
 
-        return mulPt(a.value, b.value)
+        return a.value.mul(b.value)
       },
       (ctx, ar, br) => {
         declareMulC32(ctx)
@@ -404,19 +362,7 @@ export default {
       "with a complex number",
       ["c32"],
       "c32",
-      ({ value: a }) => {
-        if (isZero(a)) {
-          return pt(real(-Infinity), real(0))
-        }
-
-        const x = a.x.num()
-        const y = a.y.num()
-
-        return pt(
-          approx(Math.log10(Math.hypot(x, y))),
-          approx(Math.atan2(y, x) / Math.LN10),
-        )
-      },
+      ({ value: a }) => a.ns().ln().divR(Math.LN10).s(),
       (ctx, a) => {
         declareLn(ctx)
         return `(_helper_ln(${a.expr}) / vec2(log(10.0)))`
@@ -440,13 +386,13 @@ export default {
     FN_CONJ.add(
       ["c64"],
       "c64",
-      (a) => pt(a.value.x, neg(a.value.y)),
+      (a) => a.value.conj(),
       (_, a) => `(${a} * vec4(1, 1, -1, -1))`,
       [],
     ).add(
       ["c32"],
       "c32",
-      (a) => pt(a.value.x, neg(a.value.y)),
+      (a) => a.value.conj(),
       (_, a) => `(${a} * vec2(1, -1))`,
       "conj(-2+3i)=2-3i",
     )
@@ -454,13 +400,13 @@ export default {
     FN_DOT.add(
       ["c64", "c64"],
       "r64",
-      (a, b) => sub(a.value.x.mul(b.value.x), a.value.y.mul(b.value.y)),
+      (a, b) => a.value.x.mul(b.value.x).sub(a.value.y.mul(b.value.y)),
       dotC64,
       [],
     ).add(
       ["c32", "c32"],
       "r32",
-      (a, b) => sub(a.value.x.mul(b.value.x), a.value.y.mul(b.value.y)),
+      (a, b) => a.value.x.mul(b.value.x).sub(a.value.y.mul(b.value.y)),
       dotC32,
       "dot(2+3i,4-5i)=23",
     )
@@ -468,7 +414,7 @@ export default {
     FN_UNSIGN.add(
       ["c64"],
       "c64",
-      (a) => pt(abs(a.value.x), abs(a.value.y)),
+      (a) => a.value.unsign(),
       (ctx, a) => {
         const name = ctx.cache(a)
         return `vec4(${abs64(ctx, `${name}.xy`)}, ${abs64(ctx, `${name}.zw`)})`
@@ -477,7 +423,7 @@ export default {
     ).add(
       ["c32"],
       "c32",
-      (a) => pt(abs(a.value.x), abs(a.value.y)),
+      (a) => a.value.unsign(),
       (_, a) => `abs(${a.expr})`,
       "unsign(4-5i)=4+5i",
     )
@@ -539,7 +485,7 @@ export default {
     OP_SUB.add(
       ["c64", "c64"],
       "c64",
-      (a, b) => subPt(a.value, b.value),
+      (a, b) => a.value.sub(b.value),
       (ctx, ar, br) => {
         const a = ctx.cache(ar)
         const b = ctx.cache(br)
@@ -599,7 +545,7 @@ export default {
     OP_ODOT.add(
       ["c64", "c64"],
       "c64",
-      (a, b) => pt(a.value.x.mul(b.value.x), a.value.y.mul(b.value.y)),
+      (a, b) => px(a.value.x.mul(b.value.x), a.value.y.mul(b.value.y)),
       (ctx, a, b) => {
         declareMulR64(ctx)
         declareOdotC64(ctx)
@@ -609,7 +555,7 @@ export default {
     ).add(
       ["c32", "c32"],
       "c32",
-      (a, b) => pt(a.value.x.mul(b.value.x), a.value.y.mul(b.value.y)),
+      (a, b) => px(a.value.x.mul(b.value.x), a.value.y.mul(b.value.y)),
       (_, a, b) => {
         return `(${a.expr} * ${b.expr})`
       },

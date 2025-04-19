@@ -10,9 +10,7 @@ export const FN_LENGTH = new FnDist(
     ["segment"],
     "r32",
     (a) =>
-      hypot(
-        pt(sub(a.value[0].x, a.value[1].x), sub(a.value[0].y, a.value[1].y)),
-      ),
+      hypot(pt(a.value[0].x.sub(a.value[1].x), a.value[0].y.sub(a.value[1].y))),
     (ctx, a) => {
       ctx.glsl`float _helper_length_segment(vec4 a) {
   return length(a.xy - a.zw);
@@ -26,9 +24,7 @@ export const FN_LENGTH = new FnDist(
     ["vector"],
     "r32",
     (a) =>
-      hypot(
-        pt(sub(a.value[0].x, a.value[1].x), sub(a.value[0].y, a.value[1].y)),
-      ),
+      hypot(pt(a.value[0].x.sub(a.value[1].x), a.value[0].y.sub(a.value[1].y))),
     (ctx, a) => {
       ctx.glsl`float _helper_length_vector(vec4 a) {
   return length(a.xy - a.zw);

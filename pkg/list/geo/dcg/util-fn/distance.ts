@@ -8,7 +8,7 @@ export function sqrt(val: SReal) {
 export function hypot({ x: dx, y: dy }: SPoint) {
   const dx2 = dx.mul(dx)
   const dy2 = dy.mul(dy)
-  return sqrt(dx2.add(dy2))
+  return dx2.add(dy2).sqrt()
 }
 
 export function dist(a: SPoint, b: SPoint) {
@@ -39,8 +39,8 @@ export const FN_DISTANCE = new FnDist<"r32">(
       const y0 = b.value.y
       const num = abs(
         add(
-          sub(mul(y2.sub(y1), x0), mul(x2.sub(x1), y0)),
-          sub(x2.mul(y1), y2.mul(x1)),
+          y2.sub(y1).mul(x0).sub(x2.sub(x1).mul(y0)),
+          x2.mul(y1).sub(y2.mul(x1)),
         ),
       )
       return div(num, dist(a.value[0], a.value[1]))

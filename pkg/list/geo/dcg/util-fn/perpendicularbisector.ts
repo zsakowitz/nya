@@ -3,14 +3,14 @@ import { FnDist } from "@/eval/ops/dist"
 import type { GlslVal, JsVal, SPoint } from "@/eval/ty"
 
 function js(a: JsVal<"segment">): [SPoint, SPoint] {
-  const mx = div(add(a.value[0].x, a.value[1].x), real(2))
-  const my = div(add(a.value[0].y, a.value[1].y), real(2))
+  const mx = div(a.value[0].x.add(a.value[1].x), real(2))
+  const my = div(a.value[0].y.add(a.value[1].y), real(2))
 
   return [
     pt(mx, my),
     pt(
-      add(mx, sub(a.value[1].y, a.value[0].y)),
-      sub(my, sub(a.value[1].x, a.value[0].x)),
+      mx.add(a.value[1].y.sub(a.value[0].y)),
+      my.sub(a.value[1].x.sub(a.value[0].x)),
     ),
   ]
 }

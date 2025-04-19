@@ -105,8 +105,8 @@ const EXT_SLOPE_FIELD = defineHideable<
           if (isVector) {
             const r32 = coerceTyJs(value, "vector")
             for (const vectorRaw of each(r32)) {
-              const dxRaw = num(vectorRaw[1].x) - num(vectorRaw[0].x)
-              const dyRaw = num(vectorRaw[1].y) - num(vectorRaw[0].y)
+              const dxRaw = vectorRaw[1].x.num() - vectorRaw[0].x.num()
+              const dyRaw = vectorRaw[1].y.num() - vectorRaw[0].y.num()
               if (isNaN(dxRaw) || isNaN(dyRaw)) continue
               const { x: dx, y: dy } = cv.toPaperDelta(
                 norm({ x: dxRaw, y: -dyRaw }, size),

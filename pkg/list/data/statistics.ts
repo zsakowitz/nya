@@ -512,7 +512,7 @@ function varJs(args: SReal[], sample: boolean): SReal {
 
   const devs = args.reduce((a, b) => {
     const dev = b.sub(mean)
-    return add(a, dev.mul(dev))
+    return a.add(dev.mul(dev))
   }, real(0))
 
   return div(devs, frac(args.length - +sample, 1))

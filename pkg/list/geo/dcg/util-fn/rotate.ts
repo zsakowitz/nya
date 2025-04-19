@@ -17,8 +17,8 @@ export function rotateJs(by: RotationJs, target: SPoint) {
   const y = target.y.sub(by.c.y)
 
   return pt(
-    add(sub(x.mul(by.cos), y.mul(by.sin)), by.c.x),
-    add(add(y.mul(by.cos), x.mul(by.sin)), by.c.y),
+    x.mul(by.cos).sub(y.mul(by.sin)).add(by.c.x),
+    y.mul(by.cos).add(x.mul(by.sin)).add(by.c.y),
   )
 }
 

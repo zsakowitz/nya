@@ -8,7 +8,10 @@ export function intersectSLineLineJs(
   [{ x: x3, y: y3 }, { x: x4, y: y4 }]: Val<"line">,
 ) {
   // (x1 - x2) (y3 - y4) - (y1 - y2) (x3 - x4)
-  const d = sub(mul(x1.sub(x2), y3.sub(y4)), mul(y1.sub(y2), x3.sub(x4)))
+  const d = x1
+    .sub(x2)
+    .mul(y3.sub(y4))
+    .sub(y1.sub(y2).mul(x3.sub(x4)))
 
   const x1y2 = x1.mul(y2)
   const x2y1 = y1.mul(x2)
@@ -20,9 +23,9 @@ export function intersectSLineLineJs(
       // (x1 y2 - y1 x2) (x3 - x4) - (x1 - x2) (x3 y4 - y3 x4)
       sub(
         // (x1 y2 - y1 x2) (x3 - x4)
-        mul(x1y2.sub(x2y1), x3.sub(x4)),
+        x1y2.sub(x2y1).mul(x3.sub(x4)),
         // (x1 - x2) (x3 y4 - y3 x4)
-        mul(x1.sub(x2), x3y4.sub(x4y3)),
+        x1.sub(x2).mul(x3y4.sub(x4y3)),
       ),
       d,
     ),
@@ -31,9 +34,9 @@ export function intersectSLineLineJs(
       // (x1 y2 - y1 x2) (y3 - y4) - (x1 - x2) (x3 y4 - y3 x4)
       sub(
         // (x1 y2 - y1 x2) (y3 - y4)
-        mul(x1y2.sub(x2y1), y3.sub(y4)),
+        x1y2.sub(x2y1).mul(y3.sub(y4)),
         // (y1 - y2) (x3 y4 - y3 x4)
-        mul(y1.sub(y2), x3y4.sub(x4y3)),
+        y1.sub(y2).mul(x3y4.sub(x4y3)),
       ),
       d,
     ),
@@ -90,10 +93,10 @@ function lineCircleJs(circ: Tys["circle"], lin: Tys["line"], index: -1 | 1) {
   const cx = circ.center.x.num()
   const cy = circ.center.y.num()
   const r = circ.radius.num()
-  const x1 = num(lin[0].x)
-  const y1 = num(lin[0].y)
-  const x2 = num(lin[1].x)
-  const y2 = num(lin[1].y)
+  const x1 = lin[0].x.num()
+  const y1 = lin[0].y.num()
+  const x2 = lin[1].x.num()
+  const y2 = lin[1].y.num()
   const v1 = { x: x2 - x1, y: y2 - y1 }
   const v2 = { x: x1 - cx, y: y1 - cy }
   const b = -2 * (v1.x * v2.x + v1.y * v2.y)

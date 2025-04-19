@@ -15,7 +15,7 @@ export function dilateJs(by: DilationJs, target: SPoint) {
   const x = target.x.sub(by.c.x)
   const y = target.y.sub(by.c.y)
 
-  return pt(add(x.mul(by.s), by.c.x), add(y.mul(by.s), by.c.y))
+  return pt(x.mul(by.s).add(by.c.x), y.mul(by.s).add(by.c.y))
 }
 
 function dilateGlsl(ctx: GlslContext, by: DilationGlsl, target: string) {

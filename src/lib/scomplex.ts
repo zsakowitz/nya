@@ -1,5 +1,5 @@
 import { cx, type Complex } from "./complex"
-import { int, type SReal } from "./sreal"
+import { approx, int, type SReal } from "./sreal"
 
 /**
  * A complex number type which preserves exact values for fractions (0.1 is
@@ -59,6 +59,14 @@ export class SComplex {
 
   abs(): SReal {
     return this.x.hypot(this.y)
+  }
+
+  unsign(): SComplex {
+    return xy(this.x.abs(), this.y.abs())
+  }
+
+  conj(): SComplex {
+    return xy(this.x, this.y.neg())
   }
 
   sign(): SComplex {
@@ -127,8 +135,16 @@ export class SComplex {
       return xy(int(bx), int(by))
     }
   }
+
+  zero(): boolean {
+    return this.x.zero() && this.y.zero()
+  }
 }
 
 export function xy(x: SReal, y: SReal): SComplex {
   return new (SComplex as any)(x, y)
+}
+
+export function xynan() {
+  return xy(approx(NaN), approx(NaN))
 }

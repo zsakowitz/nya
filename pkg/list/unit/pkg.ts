@@ -365,7 +365,7 @@ export default {
     OP_CDOT.add(
       ["r32u", "r32u"],
       "r32u",
-      (a, b) => [mul(a.value[0], b.value[0]), multiply(a.value[1], b.value[1])],
+      (a, b) => [a.value[0].mul(b.value[0]), multiply(a.value[1], b.value[1])],
       glsl,
       "3 unit mol \\cdot 4 unit K = 12 \\wordvar{mol} \\cdot \\wordvar{K}",
     )
@@ -382,7 +382,7 @@ export default {
       ["r32u", "r32u"],
       "r32u",
       (a, b) => [
-        div(a.value[0], b.value[0]),
+        a.value[0].div(b.value[0]),
         multiply(a.value[1], inv(b.value[1])),
       ],
       glsl,
@@ -400,7 +400,7 @@ export default {
     OP_RAISE.add(
       ["r32u", "r32"],
       "r32u",
-      (a, b) => [raise(a.value[0], b.value), exp(a.value[1], b.value)],
+      (a, b) => [a.value[0].pow(b.value), exp(a.value[1], b.value)],
       glsl,
       "(3 unit ft)^2 = 9 \\wordvar{ft}^2",
     )

@@ -49,10 +49,10 @@ function mulQ32(
   // + k(ah+bg-cf+de)
 
   return [
-    sub(sub(sub(a.mul(e), b.mul(f)), c.mul(g)), d.mul(h)),
-    sub(add(add(a.mul(f), b.mul(e)), c.mul(h)), d.mul(g)),
-    add(add(sub(a.mul(g), b.mul(h)), c.mul(e)), d.mul(f)),
-    add(sub(add(a.mul(h), b.mul(g)), c.mul(f)), d.mul(e)),
+    a.mul(e).sub(b.mul(f)).sub(c.mul(g)).sub(d.mul(h)),
+    a.mul(f).add(b.mul(e)).add(c.mul(h)).sub(d.mul(g)),
+    a.mul(g).sub(b.mul(h)).add(c.mul(e)).add(d.mul(f)),
+    a.mul(h).add(b.mul(g)).sub(c.mul(f)).add(d.mul(e)),
   ]
 }
 
@@ -112,10 +112,10 @@ export default {
       (a) =>
         approx(
           Math.hypot(
-            num(a.value[0]),
-            num(a.value[1]),
-            num(a.value[2]),
-            num(a.value[3]),
+            a.value[0].num(),
+            a.value[1].num(),
+            a.value[2].num(),
+            a.value[3].num(),
           ),
         ),
       (_, a) => `length(${a.expr})`,
@@ -126,10 +126,10 @@ export default {
       ["q32", "q32"],
       "q32",
       (a, b) => [
-        add(a.value[0], b.value[0]),
-        add(a.value[1], b.value[1]),
-        add(a.value[2], b.value[2]),
-        add(a.value[3], b.value[3]),
+        a.value[0].add(b.value[0]),
+        a.value[1].add(b.value[1]),
+        a.value[2].add(b.value[2]),
+        a.value[3].add(b.value[3]),
       ],
       (_, a, b) => `(${a.expr} + ${b.expr})`,
       "(2+3j)+(4j+k)=2+7j+k",
@@ -139,10 +139,10 @@ export default {
       ["q32", "q32"],
       "q32",
       (a, b) => [
-        sub(a.value[0], b.value[0]),
-        sub(a.value[1], b.value[1]),
-        sub(a.value[2], b.value[2]),
-        sub(a.value[3], b.value[3]),
+        a.value[0].sub(b.value[0]),
+        a.value[1].sub(b.value[1]),
+        a.value[2].sub(b.value[2]),
+        a.value[3].sub(b.value[3]),
       ],
       (_, a, b) => `(${a.expr} - ${b.expr})`,
       "(2+3j)-(4j+k)=2-j+k",
@@ -152,10 +152,10 @@ export default {
       ["q32", "q32"],
       "q32",
       (a, b) => [
-        mul(a.value[0], b.value[0]),
-        mul(a.value[1], b.value[1]),
-        mul(a.value[2], b.value[2]),
-        mul(a.value[3], b.value[3]),
+        a.value[0].mul(b.value[0]),
+        a.value[1].mul(b.value[1]),
+        a.value[2].mul(b.value[2]),
+        a.value[3].mul(b.value[3]),
       ],
       (_, a, b) => {
         return `(${a.expr} * ${b.expr})`
@@ -178,7 +178,7 @@ export default {
       ["q32", "q32"],
       "q32",
       (a, { value: [r, i, j, k] }) => {
-        const hyp = add(r.mul(r), add(i.mul(i), add(j.mul(j), k.mul(k))))
+        const hyp = add(r.mul(r), i.mul(i).add(j.mul(j).add(k.mul(k))))
         const ret = mulQ32(a.value, [r, neg(i), neg(j), neg(k)])
         for (let i = 0; i < 4; i++) {
           ret[i] = div(ret[i]!, hyp)

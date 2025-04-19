@@ -9,7 +9,7 @@ export function parallelJs(
   { value: b }: JsVal<"point32" | "point64">,
 ): Val<"line"> {
   return Object.assign(
-    [b, pt(add(b.x, B.x.sub(A.x)), add(b.y, B.y.sub(A.y)))] satisfies [
+    [b, pt(b.x.add(B.x.sub(A.x)), b.y.add(B.y.sub(A.y)))] satisfies [
       SPoint,
       SPoint,
     ],

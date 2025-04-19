@@ -4,8 +4,8 @@ import type { GlslVal, JsVal, SPoint, TyName, Val } from "@/eval/ty"
 
 export function translate(by: [SPoint, SPoint], target: SPoint) {
   return pt(
-    add(sub(by[1].x, by[0].x), target.x),
-    add(sub(by[1].y, by[0].y), target.y),
+    by[1].x.sub(by[0].x).add(target.x),
+    by[1].y.sub(by[0].y).add(target.y),
   )
 }
 
