@@ -2,7 +2,7 @@ import { FNS } from "@/eval/ops"
 import { ALL_DOCS, type WithDocs } from "@/eval/ops/docs"
 import { TY_INFO } from "@/eval/ty/info"
 import { FieldInert } from "@/field/field-inert"
-import { b, fa, h, hx, li, paragraphTag, t } from "@/jsx"
+import { b, fa, h, hx, li, px, t } from "@/jsx"
 import type { Sheet } from "@/sheet/ui/sheet"
 import { faFaceSadTear } from "@fortawesome/free-regular-svg-icons/faFaceSadTear"
 import { faClose } from "@fortawesome/free-solid-svg-icons/faClose"
@@ -412,17 +412,17 @@ function secAbout() {
       "text-2xl font-semibold border-b border-[--nya-border] pb-1 mb-2 text-[--nya-text]",
       "Introduction",
     ),
-    paragraphTag`project nya is a graphing calculator, shader playground, unit converter, and symbolic computation tool. Its author is ${hx("a", { class: "text-blue-500 underline underline-offset-2", href: "https://github.com/zsakowitz" }, "sakawi (she/her)")}, who tries to update it daily. All its code is available ${hx("a", { class: "text-blue-500 underline underline-offset-2", href: "https://github.com/zsakowitz/nya" }, "for free on GitHub")}.`,
-    paragraphTag`project nya was originally conceived as a simple replacement for Desmos with support for complex numbers (Desmos's support for them is somewhat recent, as of 2024). It has evolved slightly from that base goal. (This is an understatement.)`,
-    paragraphTag`project nya is designed to be extensible, so that new features can be added easily. This extensibility is why project nya can convert units, work with quaternions, provide chemical data, and plot recursive images.`,
+    px`project nya is a graphing calculator, shader playground, unit converter, and symbolic computation tool. Its author is ${hx("a", { class: "text-blue-500 underline underline-offset-2", href: "https://github.com/zsakowitz" }, "sakawi (she/her)")}, who tries to update it daily. All its code is available ${hx("a", { class: "text-blue-500 underline underline-offset-2", href: "https://github.com/zsakowitz/nya" }, "for free on GitHub")}.`,
+    px`project nya was originally conceived as a simple replacement for Desmos with support for complex numbers (Desmos's support for them is somewhat recent, as of 2024). It has evolved slightly from that base goal. (This is an understatement.)`,
+    px`project nya is designed to be extensible, so that new features can be added easily. This extensibility is why project nya can convert units, work with quaternions, provide chemical data, and plot recursive images.`,
     hx(
       "h2",
       "text-2xl font-semibold border-b border-[--nya-border] pb-1 my-2 text-[--nya-text]",
       "How to use it",
     ),
-    paragraphTag`The best idea is just to experiment! Type something, see what happens, edit it, and repeat. Or use the geometry tools at the top, which will help you construct geometrical objects.`,
-    paragraphTag`Additionally, check out the ${b("guides")} tab. It has more specific guides about how to do recursion, construct geometrical objects, perform symbolic calculus, write in binary and hexadecimal, and more.`,
-    paragraphTag`For an information overload, click the ${b("functions")} tab. It lists every function project nya supports, what it does, and what data types it works with, and will give you detailed information if you click the function entry. The ${b("operators")} tab is equivalent, but lists operators instead of named functions.`,
+    px`The best idea is just to experiment! Type something, see what happens, edit it, and repeat. Or use the geometry tools at the top, which will help you construct geometrical objects.`,
+    px`Additionally, check out the ${b("guides")} tab. It has more specific guides about how to do recursion, construct geometrical objects, perform symbolic calculus, write in binary and hexadecimal, and more.`,
+    px`For an information overload, click the ${b("functions")} tab. It lists every function project nya supports, what it does, and what data types it works with, and will give you detailed information if you click the function entry. The ${b("operators")} tab is equivalent, but lists operators instead of named functions.`,
     subsecPackages(),
   )
 
@@ -434,12 +434,12 @@ function secAbout() {
         "text-2xl font-semibold border-b border-[--nya-border] pb-1 my-2 text-[--nya-text]",
         "The package system",
       ),
-      paragraphTag`Warning: this may be incredibly boring. However, this is my website, and I am very proud of the package system, so I am allowed to infodump about it.`,
-      paragraphTag`project nya is essentially split into two parts: the core, and the packages. The core contains 1) a subset of the LaTeX renderer, 2) limited parts of the math evaluator, and 3) a definition of how the full app and graphpaper works.`,
-      paragraphTag`That core library is basically a scaffold for the app, but it doesn't really have any content. If only the core library existed, project nya wouldn't know "sin" should be deitalicized, it would forget what an integer is, and typing math wouldn't even show the result.`,
-      paragraphTag`All of ${h("italic", "that")} stuff exists solely within packages, small bits of code which provide small bits of functionality. The key point about packages is that they are easily composable: just stack one on top of the other, and they all will magically Just Work™ together.`,
-      paragraphTag`That's what the ${b("packages")} thing on the right is! It's a list of every package loaded into project nya, so that you can more easily filter the help menu.`,
-      paragraphTag`Here are some things packages do now:`,
+      px`Warning: this may be incredibly boring. However, this is my website, and I am very proud of the package system, so I am allowed to infodump about it.`,
+      px`project nya is essentially split into two parts: the core, and the packages. The core contains 1) a subset of the LaTeX renderer, 2) limited parts of the math evaluator, and 3) a definition of how the full app and graphpaper works.`,
+      px`That core library is basically a scaffold for the app, but it doesn't really have any content. If only the core library existed, project nya wouldn't know "sin" should be deitalicized, it would forget what an integer is, and typing math wouldn't even show the result.`,
+      px`All of ${h("italic", "that")} stuff exists solely within packages, small bits of code which provide small bits of functionality. The key point about packages is that they are easily composable: just stack one on top of the other, and they all will magically Just Work™ together.`,
+      px`That's what the ${b("packages")} thing on the right is! It's a list of every package loaded into project nya, so that you can more easily filter the help menu.`,
+      px`Here are some things packages do now:`,
       hx(
         "ul",
         "list-disc pl-6 *:pl-2",
@@ -449,7 +449,7 @@ function secAbout() {
         li`define statistical distributions`,
         li`write in calligraphic text`,
       ),
-      paragraphTag`Here are some things you could make a package do:`,
+      px`Here are some things you could make a package do:`,
       hx(
         "ul",
         "list-disc pl-6 *:pl-2",
@@ -459,8 +459,8 @@ function secAbout() {
         li`enable collaborative editing on a graph`,
         li`stream your camera directly to the canvas`,
       ),
-      paragraphTag`Basically, packages let project nya split its functionality into many little parts, and anybody can write their own package.`,
-      paragraphTag`Thanks for listening!`,
+      px`Basically, packages let project nya split its functionality into many little parts, and anybody can write their own package.`,
+      px`Thanks for listening!`,
     )
   }
 }

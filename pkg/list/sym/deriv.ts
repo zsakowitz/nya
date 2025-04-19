@@ -3,7 +3,7 @@ import { example } from "@/docs/core"
 import { NO_DRAG, sym } from "@/eval/ast/tx"
 import { id } from "@/eval/lib/binding"
 import { simplify, txr } from "@/eval/sym"
-import { paragraphTag } from "@/jsx"
+import { px } from "@/jsx"
 
 export default {
   name: "derivatives",
@@ -56,9 +56,9 @@ export default {
       poster: "\\frac{d}{dx}3^{sin x}",
       render() {
         return [
-          paragraphTag`Use Leibniz notation to take derivatives.`,
+          px`Use Leibniz notation to take derivatives.`,
           example("\\frac{d}{dx}x^{2}forx=[1,2,3]", "=[2,4,6]"),
-          paragraphTag`You can take repeated derivatives as well.`,
+          px`You can take repeated derivatives as well.`,
           example("\\frac{d}{dx}\\frac{d}{dx}x^{2}", "=2"),
         ]
       },

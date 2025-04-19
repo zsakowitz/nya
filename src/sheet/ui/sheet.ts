@@ -9,7 +9,7 @@ import { tidyCoercions } from "@/eval/ty/info"
 import { splitRaw } from "@/eval/ty/split"
 import type { Block } from "@/field/model"
 import type { Options } from "@/field/options"
-import { h, hx, paragraphTag, t } from "@/jsx"
+import { h, hx, px, t } from "@/jsx"
 import type { Point } from "@/lib/point"
 import { int } from "@/lib/real"
 import { createAddons, getAll } from "@/sheet/ui/addons"
@@ -366,7 +366,7 @@ export class Sheet {
 
     const closeAddons = h(
       "mb-2 px-[calc(0.75rem_+_1px)] text-[--nya-text-prose] flex flex-col gap-2",
-      paragraphTag`Addons extend project nya with extra functionality. They can add new functions, data types, and other constructs. Clicking the "Docs" icon will show additional guides after you've selected addons.`,
+      px`Addons extend project nya with extra functionality. They can add new functions, data types, and other constructs. Clicking the "Docs" icon will show additional guides after you've selected addons.`,
     )
 
     const toolbarDependentAddonGradient = h(

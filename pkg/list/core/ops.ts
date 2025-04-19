@@ -50,7 +50,7 @@ import { Block, Span } from "@/field/model"
 import { frac, int } from "@/lib/real"
 import { OP_PLOTSIGN } from "@/sheet/shader-line"
 
-// FIXME: use direct from source
+// DEBT: use direct from source
 export { declareAddR64, declareMulR64, OP_PLOTSIGN }
 
 export function declareAddC64(ctx: GlslContext) {

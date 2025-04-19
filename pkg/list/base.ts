@@ -3,7 +3,7 @@ import { example } from "@/docs/core"
 import { Precedence } from "@/eval/ast/token"
 import { glsl, js, NO_DRAG, NO_SYM } from "@/eval/ast/tx"
 import { asNumericBase } from "@/eval/lib/base"
-import { b, paragraphTag } from "@/jsx"
+import { b, px } from "@/jsx"
 import { int } from "@/lib/real"
 
 // TODO: tons of base functionality is available without this package
@@ -88,11 +88,11 @@ export default {
       poster: "1001+1101base2",
       render() {
         return [
-          paragraphTag`The ${b("base")} operator lets you write numbers in alternate number bases, like binary, hexadecimal, or even base -π!`,
+          px`The ${b("base")} operator lets you write numbers in alternate number bases, like binary, hexadecimal, or even base -π!`,
           example("1001+1101base2", "=10110base2"),
-          paragraphTag`To convert between bases, write two ${b("base")} clauses.`,
+          px`To convert between bases, write two ${b("base")} clauses.`,
           example("1001+1101base2base5", "=42base5"),
-          paragraphTag`To output something in decimal, convert the result into base ten. Otherwise, project nya will try to guess what base you want to output in.`,
+          px`To output something in decimal, convert the result into base ten. Otherwise, project nya will try to guess what base you want to output in.`,
           example("1001+1101base2base10", "=22"),
         ]
       },

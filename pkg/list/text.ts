@@ -252,16 +252,17 @@ const FN_CONCAT = new (class extends FnDistManual<"text"> {
       .filter((x) => x != null)
     return [
       ...ps.map(
-        // @ts-ignore FIXME: how should concat usage examples be displayed
+        // TODO: how should concat usage examples be displayed
         (a): FnSignature => ({
           params: [{ type: a, list: false }],
           dots: false,
           ret: { type: "text", list: false },
+          usage: [],
         }),
       ),
       ...ps.flatMap((a) =>
         ps.map(
-          // @ts-ignore FIXME: how should concat usage examples be displayed
+          // TODO: how should concat usage examples be displayed
           (b): FnSignature => ({
             params: [
               { type: a, list: false },
@@ -269,6 +270,7 @@ const FN_CONCAT = new (class extends FnDistManual<"text"> {
             ],
             dots: false,
             ret: { type: "text", list: false },
+            usage: [],
           }),
         ),
       ),

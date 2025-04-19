@@ -111,8 +111,7 @@ export function p(...children: (Node | string | null)[]) {
   return hx("p", "", ...children)
 }
 
-// FIXME: rename to px
-export function paragraphTag(
+export function px(
   strings: TemplateStringsArray,
   ...interps: (Node | string | null)[]
 ) {

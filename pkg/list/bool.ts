@@ -32,7 +32,7 @@ import { garbageValueGlsl, garbageValueJs } from "@/eval/ty/garbage"
 import { TY_INFO } from "@/eval/ty/info"
 import { CmdWord } from "@/field/cmd/leaf/word"
 import { L } from "@/field/dir"
-import { b, h, paragraphTag } from "@/jsx"
+import { b, h, px } from "@/jsx"
 
 declare module "@/eval/ty" {
   interface Tys {
@@ -467,28 +467,28 @@ export default {
       poster: String.raw`\begin{cases}x^{2}&x>0\\x-3&\end{cases}`,
       render() {
         return [
-          paragraphTag`Piecewise functions let a function specify different outputs depending on some condition. Type ${b("cases")} to create one.`,
+          px`Piecewise functions let a function specify different outputs depending on some condition. Type ${b("cases")} to create one.`,
           example(
             String.raw`\begin{cases}x^{2}&x>0\\x-3&\end{cases}\operatorname{for}x=\left[-3,-2,-1,0,1,2,3\right]`,
             String.raw`=\left[-6,-5,-4,-3,1,4,9\right]`,
           ),
-          paragraphTag`Type a semicolon to add more cases. If multiple conditions match, the first one will be chosen.`,
+          px`Type a semicolon to add more cases. If multiple conditions match, the first one will be chosen.`,
           example(
             String.raw`\begin{cases}x^{2}&x>0\\x-3&x>-2\\8&\end{cases}\operatorname{for}x=\left[-3,-2,-1,0,1,2,3\right]`,
             String.raw`=\left[-8,-8,-4,-3,1,4,9\right]`,
           ),
-          paragraphTag`All branches of a piecewise function must evaluate to the same type.`,
-          paragraphTag`The outputs are coerced to be the same type. Thus, if multiple branches of the piecewise output lists of different lengths, the output will be chopped to the smallest list.`,
+          px`All branches of a piecewise function must evaluate to the same type.`,
+          px`The outputs are coerced to be the same type. Thus, if multiple branches of the piecewise output lists of different lengths, the output will be chopped to the smallest list.`,
           example(
             String.raw`\begin{cases}\left[2\right]&4<3\\\left[3,4\right]&\end{cases}`,
             String.raw`=\left[3\right]`,
           ),
-          paragraphTag`Because project nya aims to be compatible with Desmos, you can also use flat piecewise syntax.`,
+          px`Because project nya aims to be compatible with Desmos, you can also use flat piecewise syntax.`,
           example(
             String.raw`\left\{x>0:x^{2},x-3\right\}\operatorname{for}x=\left[-3,-2,-1,0,1,2,3\right]`,
             String.raw`=\left[-6,-5,-4,-3,1,4,9\right]`,
           ),
-          paragraphTag`Note that in project nya, empty curly braces evaluate to ${b("true")}, not 1. This matches how Desmos works under the hood, rather than what it shows to the user.`,
+          px`Note that in project nya, empty curly braces evaluate to ${b("true")}, not 1. This matches how Desmos works under the hood, rather than what it shows to the user.`,
           example(
             String.raw`\left\{\right\}`,
             String.raw`=\operatorname{true}`,

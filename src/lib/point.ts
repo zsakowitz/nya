@@ -68,7 +68,6 @@ export class Point<out N extends number = 2> {
     return r
   }
 
-  // FIXME: check normFrom works everywhere it's used, including from SPoint
   normFrom(from: Point<N>, scale?: number): Point<N> {
     return this.sub(from).norm(scale).add(from)
   }
