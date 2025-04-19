@@ -1,5 +1,5 @@
 import { FnDist } from "@/eval/ops/dist"
-import { int } from "@/lib/sreal"
+import { int } from "@/lib/real"
 import { crArcVal } from "../util-arc"
 
 export const FN_RADIUS = new FnDist("radius", "measures the radius of a circle")

@@ -23,7 +23,7 @@ import { FNS, OP_UNARY } from "@/eval/ops"
 import type { Sym } from "@/eval/sym"
 import { each, type GlslValue, type JsValue } from "@/eval/ty"
 import { canCoerce, coerceTyJs } from "@/eval/ty/coerce"
-import { int } from "@/lib/sreal"
+import { int } from "@/lib/real"
 import { OP_JUXTAPOSE, OP_RAISE } from "./ops"
 
 function callJs(name: Var, args: Node[], props: PropsJs): JsValue {

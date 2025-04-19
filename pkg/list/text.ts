@@ -13,7 +13,7 @@ import type { FieldInert } from "@/field/field-inert"
 import { LatexParser, toText } from "@/field/latex"
 import { Block, type Command, type Cursor, type InitProps } from "@/field/model"
 import { h, hx, t } from "@/jsx"
-import { int } from "@/lib/sreal"
+import { int } from "@/lib/real"
 import { defineExt, Store } from "@/sheet/ext"
 import { circle } from "@/sheet/ui/expr/circle"
 

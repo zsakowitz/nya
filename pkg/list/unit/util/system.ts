@@ -1,4 +1,4 @@
-import { int, type SReal } from "@/lib/sreal"
+import { int, type SReal } from "@/lib/real"
 import { UNIT_KIND_NAMES, UNIT_KINDS, type UnitKind } from "./kind"
 import { UNIT_KIND_VALUES } from "./units"
 

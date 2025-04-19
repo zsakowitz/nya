@@ -4,7 +4,7 @@ import { Precedence } from "@/eval/ast/token"
 import { glsl, js, NO_DRAG, NO_SYM } from "@/eval/ast/tx"
 import { asNumericBase } from "@/eval/lib/base"
 import { b, paragraphTag } from "@/jsx"
-import { int } from "@/lib/sreal"
+import { int } from "@/lib/real"
 
 // TODO: tons of base functionality is available without this package
 // removing subscripts on numbers would fix it, but may be annoying

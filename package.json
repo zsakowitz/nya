@@ -7,7 +7,7 @@
     "build:esb": "esbuild --bundle --minify --format=esm --outdir=dist --splitting --loader:.woff=file --loader:.ttf=file --loader:.glsl=text --loader:.woff2=file --loader:.svg=file --loader:.eot=file src/index.ts --metafile=meta.json --legal-comments=linked",
     "build:tw": "tailwindcss -i ./index.postcss -o ./index.css --minify",
     "lint": "tsc && madge src/index.ts --ts-config tsconfig.json -c",
-    "graph:cycles": "madge --image graph.svg --ts-config tsconfig.json --circular src/index.ts",
+    "lint:cycles": "madge --ts-config tsconfig.json --circular src/index.ts",
     "graph:pkg": "madge --image graph.svg --ts-config tsconfig.json --exclude 'src|util[-/]' pkg/list/{*.ts,**/*.ts,**/**/*.ts,**/**/**/*.ts}",
     "manifest": "bun pkg/manifest/generate.ts > pkg/manifest/data.json"
   },

@@ -1,8 +1,8 @@
 import type { Package } from "#/types"
 import { FN_VALID } from "$/bool"
 import { FnDist } from "@/eval/ops/dist"
-import { pt } from "@/lib/spoint"
-import { int } from "@/lib/sreal"
+import { pt } from "@/lib/point"
+import { int } from "@/lib/real"
 import { isDark } from "@/sheet/theme"
 import { oklab } from "./util-oklab"
 

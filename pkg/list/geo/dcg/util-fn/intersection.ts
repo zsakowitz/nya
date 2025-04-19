@@ -1,8 +1,8 @@
 import type { GlslContext } from "@/eval/lib/fn"
 import type { GlslVal, Tys, Val } from "@/eval/ty"
 import { px } from "@/lib/point"
-import { pt, ptint, ptnan, type SPoint } from "@/lib/spoint"
-import { frac, int } from "@/lib/sreal"
+import { pt, ptint, ptnan, type SPoint } from "@/lib/point"
+import { frac, int } from "@/lib/real"
 import { FN_INTERSECTION } from "../../point"
 import { computeArcVal } from "../util-arc"
 

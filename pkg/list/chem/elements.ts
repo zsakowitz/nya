@@ -19,7 +19,7 @@ import { CmdWord } from "@/field/cmd/leaf/word"
 import { L } from "@/field/dir"
 import { toText } from "@/field/latex"
 import { h, hx } from "@/jsx"
-import { int, type SReal } from "@/lib/sreal"
+import { int, type SReal } from "@/lib/real"
 
 declare module "@/eval/ty" {
   interface Tys {

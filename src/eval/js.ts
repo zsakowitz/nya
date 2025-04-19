@@ -1,4 +1,4 @@
-import type { SReal } from "@/lib/sreal"
+import type { SReal } from "@/lib/real"
 import type { Node } from "./ast/token"
 import { js } from "./ast/tx"
 import type { BindingFn, Bindings } from "./lib/binding"

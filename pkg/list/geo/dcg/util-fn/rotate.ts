@@ -1,8 +1,8 @@
 import type { GlslContext } from "@/eval/lib/fn"
 import { FnDist } from "@/eval/ops/dist"
 import type { GlslVal, JsVal, TyName, Val } from "@/eval/ty"
-import { pt, type SPoint } from "@/lib/spoint"
-import { int, type SReal } from "@/lib/sreal"
+import { pt, type SPoint } from "@/lib/point"
+import { int, type SReal } from "@/lib/real"
 
 interface RotationJs {
   c: SPoint

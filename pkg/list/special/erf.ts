@@ -4,7 +4,7 @@ import type { Package } from "#/types"
 import { chain, OP_DIV, OP_JUXTAPOSE, OP_NEG, OP_RAISE } from "$/core/ops"
 import { FnDist } from "@/eval/ops/dist"
 import { SYM_2, SYM_E, SYM_HALF, SYM_PI, unary } from "@/eval/sym"
-import { approx } from "@/lib/sreal"
+import { approx } from "@/lib/real"
 import erf from "@stdlib/math/base/special/erf"
 import erfinv from "@stdlib/math/base/special/erfinv"
 

@@ -3,7 +3,7 @@ import { Display } from "@/eval/ty/display"
 import { R } from "@/field/dir"
 import { FieldInert } from "@/field/field-inert"
 import { h } from "@/jsx"
-import { int, type SReal } from "@/lib/sreal"
+import { int, type SReal } from "@/lib/real"
 import { Store, defineExt } from "@/sheet/ext"
 import type { Expr } from "@/sheet/ui/expr"
 

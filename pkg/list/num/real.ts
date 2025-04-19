@@ -48,7 +48,7 @@ import type { TyWrite } from "@/eval/ty/display"
 import { highRes, type TyExtras } from "@/eval/ty/info"
 import { splitDual } from "@/eval/ty/split"
 import { h } from "@/jsx"
-import { approx, int, type SReal } from "@/lib/sreal"
+import { approx, int, type SReal } from "@/lib/real"
 
 declare module "@/eval/ty" {
   interface Tys {

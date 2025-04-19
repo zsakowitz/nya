@@ -1,6 +1,6 @@
 import type { Package } from "#/types"
 import { FnDist } from "@/eval/ops/dist"
-import { frac } from "@/lib/sreal"
+import { frac } from "@/lib/real"
 
 export const FN_FLOOR = new FnDist(
   "floor",

@@ -1,4 +1,4 @@
-import { approx, frac, int, type SReal, type SRealFrac } from "@/lib/sreal"
+import { approx, frac, int, type SReal, type SRealFrac } from "@/lib/real"
 import type { GlslValue, JsValue } from "../ty"
 import { canCoerce, coerceValJs } from "../ty/coerce"
 import { splitValue } from "../ty/split"

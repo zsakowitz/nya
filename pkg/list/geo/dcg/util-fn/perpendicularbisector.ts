@@ -1,8 +1,8 @@
 import type { GlslContext } from "@/eval/lib/fn"
 import { FnDist } from "@/eval/ops/dist"
 import type { GlslVal, JsVal } from "@/eval/ty"
-import { pt, type SPoint } from "@/lib/spoint"
-import { int } from "@/lib/sreal"
+import { pt, type SPoint } from "@/lib/point"
+import { int } from "@/lib/real"
 
 function js(a: JsVal<"segment">): [SPoint, SPoint] {
   const m = a.value[0].add(a.value[1]).divR(int(2))

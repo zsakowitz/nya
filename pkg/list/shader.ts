@@ -10,10 +10,11 @@ import { ERR_COORDS_USED_OUTSIDE_GLSL } from "@/eval/ops/vars"
 import { canCoerce } from "@/eval/ty/coerce"
 import { TY_INFO } from "@/eval/ty/info"
 import { b, h, hx, li, p, paragraphTag } from "@/jsx"
-import { Store, defineExt } from "@/sheet/ext"
+import { Prop, Store, defineExt } from "@/sheet/ext"
 import { createLine } from "@/sheet/shader-line"
 import { circle } from "@/sheet/ui/expr/circle"
-import { PROP_SHOWN } from "@/show"
+
+const PROP_SHOWN = new Prop(() => true)
 
 const store = new Store((expr) => {
   const circEmpty = circle("empty")

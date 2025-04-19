@@ -1,6 +1,6 @@
 import type { Package } from "#/types"
 import { declareAddC64 } from "$/core/ops"
-import { xyint } from "@/lib/scomplex"
+import { xyint } from "@/lib/complex"
 import { FN_MEAN, FN_TOTAL } from "./statistics"
 
 FN_TOTAL.addSpread(

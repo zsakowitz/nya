@@ -1,7 +1,7 @@
 import type { GlslContext } from "@/eval/lib/fn"
 import type { GlslVal } from "@/eval/ty"
-import { pt, type SPoint } from "@/lib/spoint"
-import { int, type SReal } from "@/lib/sreal"
+import { pt, type SPoint } from "@/lib/point"
+import { int, type SReal } from "@/lib/real"
 import { FN_GLIDER } from "../../point"
 import { computeArcVal, glideArc } from "../util-arc"
 

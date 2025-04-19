@@ -1,7 +1,7 @@
 import { safe } from "@/eval/lib/util"
 import { Display } from "@/eval/ty/display"
 import type { Cursor, Span } from "@/field/model"
-import { int, type SReal } from "@/lib/sreal"
+import { int, type SReal } from "@/lib/real"
 
 export function write(
   cursor: Cursor,

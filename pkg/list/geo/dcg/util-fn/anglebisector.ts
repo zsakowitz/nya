@@ -1,7 +1,7 @@
 import type { GlslContext } from "@/eval/lib/fn"
 import { FnDist } from "@/eval/ops/dist"
 import type { GlslVal, JsVal } from "@/eval/ty"
-import type { SPoint } from "@/lib/spoint"
+import type { SPoint } from "@/lib/point"
 
 export function bisectAngleJs(
   a: JsVal<"angle" | "directedangle">,

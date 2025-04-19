@@ -29,7 +29,7 @@ import { L, R } from "@/field/dir"
 import { toText } from "@/field/latex"
 import { Block } from "@/field/model"
 import { b, h, paragraphTag, sx } from "@/jsx"
-import { approx, int, type SReal } from "@/lib/sreal"
+import { approx, int, type SReal } from "@/lib/real"
 import {
   assertCompat,
   badSum,

@@ -1,5 +1,5 @@
 import { FnDist } from "@/eval/ops/dist"
-import { int } from "@/lib/sreal"
+import { int } from "@/lib/real"
 
 export const FN_PERIMETER = new FnDist(
   "perimeter",

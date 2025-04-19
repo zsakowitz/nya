@@ -47,7 +47,7 @@ import { CmdRoot } from "@/field/cmd/math/root"
 import { CmdSupSub } from "@/field/cmd/math/supsub"
 import { L, R } from "@/field/dir"
 import { Block, Span } from "@/field/model"
-import { frac, int } from "@/lib/sreal"
+import { frac, int } from "@/lib/real"
 import { OP_PLOTSIGN } from "@/sheet/shader-line"
 
 // FIXME: use direct from source

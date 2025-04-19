@@ -1,5 +1,5 @@
-import { SPoint } from "@/lib/spoint"
-import { SReal } from "@/lib/sreal"
+import { SPoint } from "@/lib/point"
+import { SReal } from "@/lib/real"
 import type { GlslContext } from "../lib/fn"
 import { unifyLists } from "./coerce"
 import { TY_INFO } from "./info"

@@ -34,7 +34,7 @@ import { BRACKS } from "@/field/cmd/math/brack"
 import { L, R } from "@/field/dir"
 import { Block } from "@/field/model"
 import { h, hx } from "@/jsx"
-import { approx, frac, int, type SReal } from "@/lib/sreal"
+import { approx, frac, int, type SReal } from "@/lib/real"
 import { defineExt } from "@/sheet/ext"
 
 declare module "@/eval/ty" {

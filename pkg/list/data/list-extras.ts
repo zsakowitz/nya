@@ -4,7 +4,7 @@ import type { Fn } from "@/eval/ops"
 import { type WithDocs, ALL_DOCS } from "@/eval/ops/docs"
 import { issue } from "@/eval/ops/issue"
 import { canCoerce, coerceTyJs, coerceValJs } from "@/eval/ty/coerce"
-import type { SReal } from "@/lib/sreal"
+import type { SReal } from "@/lib/real"
 
 function sortJs(args: SReal[]) {
   return args.sort((a, b) => a.num() - b.num())

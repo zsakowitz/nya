@@ -1,6 +1,6 @@
 import type { Fn } from "@/eval/ops"
 import { ALL_DOCS, type WithDocs } from "@/eval/ops/docs"
-import type { SPoint } from "@/lib/spoint"
+import type { SPoint } from "@/lib/point"
 
 export const FN_VERTICES: Fn & WithDocs = {
   name: "vertices",

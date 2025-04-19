@@ -1,7 +1,7 @@
 import type { Addon } from "#/types"
 import type { Builtin } from "@/eval/ops/vars"
 import type { JsValue } from "@/eval/ty"
-import { int } from "@/lib/sreal"
+import { int } from "@/lib/real"
 import { unitsInShadersError } from "./pkg"
 import { UNITS } from "./util/units"
 

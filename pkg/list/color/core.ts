@@ -7,8 +7,8 @@ import { TY_INFO } from "@/eval/ty/info"
 import { CmdColor } from "@/field/cmd/leaf/color"
 import { L } from "@/field/dir"
 import { h } from "@/jsx"
-import { pt, ptnan, type SPoint } from "@/lib/spoint"
-import { int, type SReal } from "@/lib/sreal"
+import { pt, ptnan, type SPoint } from "@/lib/point"
+import { int, type SReal } from "@/lib/real"
 
 declare module "@/eval/ty" {
   interface Tys {

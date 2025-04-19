@@ -1,7 +1,7 @@
 import type { GlslContext } from "@/eval/lib/fn"
 import { FnDist } from "@/eval/ops/dist"
 import type { GlslVal, JsVal } from "@/eval/ty"
-import { int } from "@/lib/sreal"
+import { int } from "@/lib/real"
 import { crArcVal } from "../util-arc"
 
 function js(a: JsVal<"point32">, b: JsVal<"point32">) {

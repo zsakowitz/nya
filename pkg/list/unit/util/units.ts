@@ -1,4 +1,4 @@
-import { approx, frac, int, type SReal } from "@/lib/sreal"
+import { approx, frac, int, type SReal } from "@/lib/real"
 import type { UnitKind } from "./kind"
 import type { BaseUnit, Unit } from "./system"
 

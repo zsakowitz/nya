@@ -1,4 +1,4 @@
-import { int } from "@/lib/sreal"
+import { int } from "@/lib/real"
 import type { GlslValue, JsValue } from "."
 
 export function splitRaw(value: number): [number, number] {

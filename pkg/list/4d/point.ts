@@ -21,7 +21,7 @@ import { CmdBrack } from "@/field/cmd/math/brack"
 import { L, R } from "@/field/dir"
 import { Block } from "@/field/model"
 import { h, path, svgx } from "@/jsx"
-import { pt, ptnan, type SPoint } from "@/lib/spoint"
+import { pt, ptnan, type SPoint } from "@/lib/point"
 
 declare module "@/eval/ty" {
   interface Tys {

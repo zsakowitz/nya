@@ -1,5 +1,5 @@
 import { FnDist } from "@/eval/ops/dist"
-import { int } from "@/lib/sreal"
+import { int } from "@/lib/real"
 import { arcLength, computeArcVal } from "../util-arc"
 
 export const FN_LENGTH = new FnDist(
