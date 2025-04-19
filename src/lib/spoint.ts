@@ -50,6 +50,11 @@ export class SPoint<out N extends number = 2> {
     return pt(this.d.map((x) => x.abs())) as SPoint<any>
   }
 
+  /** Negates every dimension except the first. */
+  conj(): SPoint<N> {
+    return pt(this.d.map((x, i) => (i === 0 ? x : x.neg()))) as SPoint<any>
+  }
+
   neg(): SPoint<N> {
     return pt(this.d.map((x) => x.neg())) as SPoint<any>
   }

@@ -12,6 +12,7 @@ import { CmdWord } from "@/field/cmd/leaf/word"
 import { CmdSupSub } from "@/field/cmd/math/supsub"
 import { L, R } from "@/field/dir"
 import { Block } from "@/field/model"
+import { int } from "@/lib/sreal"
 
 export default {
   name: "symbolics core",

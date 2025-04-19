@@ -29,7 +29,7 @@ import { L, R } from "@/field/dir"
 import { toText } from "@/field/latex"
 import { Block } from "@/field/model"
 import { b, h, paragraphTag, sx } from "@/jsx"
-import { int, type SReal } from "@/lib/sreal"
+import { approx, int, type SReal } from "@/lib/sreal"
 import {
   assertCompat,
   badSum,
@@ -233,7 +233,7 @@ const INFO_R32U: TyInfoByName<"r32u"> = {
   coerce: {},
   write: {
     display([value, unit], props) {
-      props.value.num()
+      props.num(value)
       displayUnit(unit, props, false)
     },
     isApprox() {

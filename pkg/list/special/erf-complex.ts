@@ -1,10 +1,10 @@
 import erfC32Gl from "#/glsl/erf-c32.glsl"
 import type { Package } from "#/types"
-import { divP, expP, mulP, sqrP } from "@/eval/ops/complex"
+import { cx, type Complex } from "@/lib/complex"
 import { declareMulC32 } from "../num/complex"
 import { FN_ERF } from "./erf"
 
-export function faddeevaPt(z: Point): Point {
+export function faddeevaPt(z: Complex): Complex {
   const M = 4
   const N = 1 << (M - 1)
   const A = [
@@ -25,37 +25,38 @@ export function faddeevaPt(z: Point): Point {
 
   // Constrain to imag(z)>=0
   const sgni = z.y < 0 ? -1 : 1
-  z = px(z.x * sgni, z.y * sgni)
+  z = cx(z.x * sgni, z.y * sgni)
 
   // Approximate
-  let t: Point = px(z.x, z.y + s * 0.5)
-  let w: Point = px(0, 0)
+  let t = cx(z.x, z.y + s * 0.5)
+  let w = cx(0, 0)
 
   for (let m = 0; m < N; ++m) {
-    const dw = divP(
-      px(A[m]! + mulP(t, px(0, B[m]!)).x, mulP(t, px(0, B[m]!)).y),
-      px(C[m]! * C[m]! - sqrP(t).x, -sqrP(t).y),
+    // TODO: optimize all the zeroes out
+    const dw = cx(A[m]! + t.mul(cx(0, B[m]!)).x, t.mul(cx(0, B[m]!)).y).div(
+      cx(C[m]! * C[m]! - t.square().x, -t.square().y),
     )
-    w = px(w.x + dw.x, w.y + dw.y)
+    w = cx(w.x + dw.x, w.y + dw.y)
   }
 
   if (sgni < 0) {
-    w = px(2 * expP(sqrP(z)).x - w.x, 2 * expP(sqrP(z)).y - w.y)
+    const ze = z.square().exp()
+    w = cx(2 * ze.x - w.x, 2 * ze.y - w.y)
   }
 
   return w
 }
 
-function erfPos(z: Point): Point {
-  const z_1i = mulP(px(0, 1), z)
-  const res = mulP(expP(px(-sqrP(z).x, -sqrP(z).y)), faddeevaPt(z_1i))
-  return px(1 - res.x, -res.y)
+function erfPos(z: Complex): Complex {
+  const z_1i = z.mulI()
+  const res = cx(-z.square().x, -z.square().y).exp().mul(faddeevaPt(z_1i))
+  return cx(1 - res.x, -res.y)
 }
 
-function erfPt(z: Point): Point {
+function erfPt(z: Complex): Complex {
   if (z.x < 0) {
-    const res = erfPos(px(-z.x, -z.y))
-    return px(-res.x, -res.y)
+    const res = erfPos(cx(-z.x, -z.y))
+    return cx(-res.x, -res.y)
   }
 
   return erfPos(z)
@@ -64,7 +65,7 @@ function erfPt(z: Point): Point {
 FN_ERF.add(
   ["c32"],
   "c32",
-  (a) => rept(erfPt(a.value.xy())),
+  (a) => erfPt(a.value.ns()).s(),
   (ctx, a) => {
     declareMulC32(ctx)
     ctx.glslText(erfC32Gl)
@@ -75,9 +76,9 @@ FN_ERF.add(
   ["c32", "c32"],
   "c32",
   (a, b) => {
-    const ap = erfPt(a.value.xy())
-    const bp = erfPt(b.value.xy())
-    return rept(px(bp.x - ap.x, bp.y - ap.y))
+    const ap = erfPt(a.value.ns())
+    const bp = erfPt(b.value.ns())
+    return cx(bp.x - ap.x, bp.y - ap.y).s()
   },
   (ctx, a, b) => {
     declareMulC32(ctx)

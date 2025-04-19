@@ -43,12 +43,12 @@ import { FnDist } from "@/eval/ops/dist"
 import type { FnOverload, FnOverloadVar } from "@/eval/ops/dist-manual"
 import { FnList } from "@/eval/ops/list"
 import { unary } from "@/eval/sym"
-import type { SReal, Ty, TyName, Type } from "@/eval/ty"
-import { gl64 } from "@/eval/ty/create-r64"
+import type { Ty, TyName, Type } from "@/eval/ty"
 import type { TyWrite } from "@/eval/ty/display"
 import { highRes, type TyExtras } from "@/eval/ty/info"
 import { splitDual } from "@/eval/ty/split"
 import { h } from "@/jsx"
+import { approx, int, type SReal } from "@/lib/sreal"
 
 declare module "@/eval/ty" {
   interface Tys {
@@ -63,7 +63,7 @@ function cmpJs(a: { value: SReal }, b: { value: SReal }) {
   const ar = a.value.num()
   const br = b.value.num()
   return (
-    ar < br ? real(-1)
+    ar < br ? int(-1)
     : ar > br ? int(1)
     : int(0)
   )
@@ -109,10 +109,10 @@ export const FN_UNSIGN = new FnDist(
 
 const WRITE_REAL: TyWrite<SReal> = {
   isApprox(value) {
-    return value.type == "approx"
+    return value.isApprox()
   },
   display(value, props) {
-    props.value.num()
+    props.num(value)
   },
 }
 
@@ -181,7 +181,7 @@ export const FN_SIGN = new FnDist("sign", "gets the sign of a number", {
   .add(
     ["r64"],
     "r64",
-    (a) => real(Math.sign(a.value.num())),
+    (a) => a.value.sign(),
     (ctx, a) => {
       declareCmpR64(ctx)
       return `vec2(_helper_cmp_r64(${a.expr}, vec2(0.0)), 0)`
@@ -191,7 +191,7 @@ export const FN_SIGN = new FnDist("sign", "gets the sign of a number", {
   .add(
     ["r32"],
     "r32",
-    (a) => real(Math.sign(a.value.num())),
+    (a) => a.value.sign(),
     (_, a) => `sign(${a.expr})`,
     "sign(7.8)=1",
   )
@@ -312,13 +312,13 @@ export default {
     OP_ABS.add(
       ["r64"],
       "rabs64",
-      (a) => abs(a.value),
+      (a) => a.value.abs(),
       (ctx, a) => abs64(ctx, a.expr),
       [],
     ).add(
       ["r32"],
       "rabs32",
-      (a) => abs(a.value),
+      (a) => a.value.abs(),
       (_, a) => `abs(${a.expr})`,
       "|-3|=3",
     )
@@ -394,13 +394,13 @@ export default {
     OP_NEG.add(
       ["r64"],
       "r64",
-      (a) => neg(a.value),
+      (a) => a.value.neg(),
       (_, a) => `(-${a.expr})`,
       [],
     ).add(
       ["r32"],
       "r32",
-      (a) => neg(a.value),
+      (a) => a.value.neg(),
       (_, a) => `(-${a.expr})`,
       "-(2)=-2",
     )
@@ -483,16 +483,13 @@ export default {
     FN_UNSIGN.add(
       ["r64"],
       "r64",
-      (a) => abs(a.value),
+      (a) => a.value.abs(),
       (ctx, a) => abs64(ctx, a.expr),
       [],
     ).add(
       ["r32"],
       "r32",
-      (a) =>
-        a.value.type == "approx" ?
-          approx(Math.abs(a.value.value))
-        : frac(Math.abs(a.value.n), Math.abs(a.value.d)),
+      (a) => a.value.abs(),
       (_, a) => `abs(${a})`,
       "unsign(-7)=7",
     )
@@ -562,7 +559,7 @@ float _helper_cmp_r32(float a, float b) {
         namePlural: "real numbers",
         glsl: "vec2",
         toGlsl(val) {
-          return gl64(val)
+          return val.gl64()
         },
         garbage: { js: approx(NaN), glsl: "vec2(0.0/0.0)" },
         coerce: {
@@ -611,7 +608,7 @@ float _helper_cmp_r32(float a, float b) {
         namePlural: "positive real numbers",
         glsl: "vec2",
         toGlsl(val) {
-          return gl64(val)
+          return val.gl64()
         },
         garbage: { js: approx(NaN), glsl: "vec2(0.0/0.0)" },
         coerce: {

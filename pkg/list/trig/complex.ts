@@ -1,20 +1,12 @@
 import type { Package } from "#/types"
 import {
-  addPt,
   declareDiv,
   declareLn,
   declareMulC32,
   divGl,
-  divPt,
-  lnJs,
-  mulPt,
   recipGl,
-  recipPt,
-  subPt,
 } from "$/num/complex"
 import { fn, type GlslContext } from "@/eval/lib/fn"
-import { px, divP, recipP, sqrtP } from "@/eval/ops/complex"
-import type { SPoint } from "@/eval/ty"
 import type { RequireRadiansReason } from "@/sheet/ui/sheet"
 import {
   FN_ARCCOS,
@@ -54,37 +46,6 @@ export const cotGl = fn(
   ["c32"],
   "c32",
 )`return ${divGl}(${cosGl}(${0}), ${sinGl}(${0}));`
-
-export function sinJs(a: Point) {
-  return px(Math.sin(a.x) * Math.cosh(a.y), Math.cos(a.x) * Math.sinh(a.y))
-}
-
-export function cosJs(a: Point) {
-  return px(Math.cos(a.x) * Math.cosh(a.y), -Math.sin(a.x) * Math.sinh(a.y))
-}
-
-export function tanJs(a: Point) {
-  return divJs(sinJs(a), cosJs(a))
-}
-
-export function cotJs(a: Point) {
-  return divJs(cosJs(a), sinJs(a))
-}
-
-function recipJs(p: Point): SPoint {
-  return rept(recipP(p))
-}
-
-export function divJs(a: Point, b: Point): SPoint {
-  return rept(divP(a, b))
-}
-
-function sqrtJs(z: SPoint): SPoint {
-  return rept(sqrtP(z.xy()))
-}
-
-const I = rept(px(0, 1))
-const ONE = rept(px(1))
 
 export function declareSqrt(ctx: GlslContext) {
   ctx.glsl`vec2 _helper_sqrt(vec2 z) {
@@ -162,30 +123,6 @@ function acscGlsl(ctx: GlslContext, a: string): string {
   return `_helper_asin(_helper_div(vec2(1, 0), ${a}))`
 }
 
-function asinJs(a: SPoint) {
-  return mulPt(I, lnJs(subPt(sqrtJs(ONE.sub(a.mul(a))), I.mul(a))))
-}
-
-function acosJs(a: SPoint) {
-  return subPt(pt(real(Math.PI / 2), int(0)), asinJs(a))
-}
-
-function atanJs(a: SPoint) {
-  return mulPt(pt(int(0), frac(-1, 2)), lnJs(I.sub(a).div(I.add(a))))
-}
-
-function acotJs(a: SPoint) {
-  return mulPt(pt(int(0), frac(-1, 2)), lnJs(a.add(I).div(a.sub(I))))
-}
-
-function asecJs(a: SPoint) {
-  return acosJs(recipPt(a))
-}
-
-function acscJs(a: SPoint) {
-  return asinJs(recipPt(a))
-}
-
 export default {
   name: "complex trig",
   label: null,
@@ -208,7 +145,7 @@ export default {
       Q,
       ["c32"],
       "c32",
-      (a) => rept(sinJs(a.value.xy())),
+      (a) => a.value.ns().sin().s(),
       sinGl,
       "sin(2+3i)≈9.1545-4.1689i",
     )
@@ -217,7 +154,7 @@ export default {
       Q,
       ["c32"],
       "c32",
-      (a) => rept(cosJs(a.value.xy())),
+      (a) => a.value.ns().cos().s(),
       cosGl,
       "cos(2+3i)≈-4.1896-9.1092i",
     )
@@ -226,7 +163,7 @@ export default {
       Q,
       ["c32"],
       "c32",
-      (a) => tanJs(a.value.xy()),
+      (a) => a.value.ns().tan().s(),
       tanGl,
       "tan(2+3i)≈-0.0038+1.0032i",
     )
@@ -235,7 +172,7 @@ export default {
       Q,
       ["c32"],
       "c32",
-      (a) => recipJs(sinJs(a.value.xy())),
+      (a) => a.value.ns().sin().inv().s(),
       cscGl,
       "csc(2+3i)≈0.0905+0.0412i",
     )
@@ -244,7 +181,7 @@ export default {
       Q,
       ["c32"],
       "c32",
-      (a) => recipJs(cosJs(a.value.xy())),
+      (a) => a.value.ns().cos().inv().s(),
       secGl,
       "sec(2+3i)≈-0.0417+0.0906i",
     )
@@ -253,7 +190,7 @@ export default {
       Q,
       ["c32"],
       "c32",
-      (a) => cotJs(a.value.xy()),
+      (a) => a.value.ns().cot().s(),
       cotGl,
       "cot(2+3i)≈-0.0037-0.9968i",
     )
@@ -262,7 +199,7 @@ export default {
       Q,
       ["c32"],
       "c32",
-      (a) => asinJs(a.value),
+      (a) => a.value.ns().asin().s(),
       (ctx, a) => asinGlsl(ctx, a.expr),
       "arcsin(2+3i)≈0.5707+1.9834i",
     )
@@ -271,7 +208,7 @@ export default {
       Q,
       ["c32"],
       "c32",
-      (a) => acosJs(a.value),
+      (a) => a.value.ns().acos().s(),
       (ctx, a) => `(vec2(${Math.PI / 2},0) - ${asinGlsl(ctx, a.expr)})`,
       "arccos(2+3i)≈1.0001-1.9834i",
     )
@@ -280,7 +217,7 @@ export default {
       Q,
       ["c32"],
       "c32",
-      (a) => atanJs(a.value),
+      (a) => a.value.ns().atan().s(),
       (ctx, a) => atanGlsl(ctx, a.expr),
       "arctan(2+3i)≈1.4099+0.2291i",
     )
@@ -289,7 +226,7 @@ export default {
       Q,
       ["c32"],
       "c32",
-      (a) => acotJs(a.value),
+      (a) => a.value.ns().inv().atan().s(), // TODO: dedicated acot
       (ctx, a) => acotGlsl(ctx, a.expr),
       "arccot(2+3i)≈0.1609-0.2291i",
     )
@@ -298,7 +235,7 @@ export default {
       Q,
       ["c32"],
       "c32",
-      (a) => asecJs(a.value),
+      (a) => a.value.ns().inv().acos().s(),
       (ctx, a) => asecGlsl(ctx, a.expr),
       "arcsec(2+3i)≈1.4204+0.2313i",
     )
@@ -307,7 +244,7 @@ export default {
       Q,
       ["c32"],
       "c32",
-      (a) => acscJs(a.value),
+      (a) => a.value.ns().inv().asin().s(),
       (ctx, a) => acscGlsl(ctx, a.expr),
       "arccsc(2+3i)≈0.1504-0.2313i",
     )

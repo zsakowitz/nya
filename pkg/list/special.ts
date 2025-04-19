@@ -5,6 +5,8 @@ import zetaGl from "#/glsl/zeta.glsl"
 import type { Package } from "#/types"
 import type { GlslContext } from "@/eval/lib/fn"
 import { FnDist } from "@/eval/ops/dist"
+import { xy } from "@/lib/scomplex"
+import { approx, int } from "@/lib/sreal"
 import gammaln from "@stdlib/math/base/special/gammaln"
 import { complex, zeta } from "mathjs"
 import { declareFactorialC32, declareFactorialR32 } from "./factorial"
@@ -19,9 +21,9 @@ const FN_ZETA: FnDist = new FnDist("zeta", "computes the Riemann zeta function")
     (a) => {
       const val = zeta(complex(a.value.x.num(), a.value.y.num()))
       if (typeof val == "number") {
-        return pt(approx(val), int(0))
+        return xy(approx(val), int(0))
       }
-      return pt(approx(val.re), approx(val.im))
+      return xy(approx(val.re), approx(val.im))
     },
     (ctx, a) => {
       declareMulC32(ctx)
@@ -37,7 +39,7 @@ const FN_ZETA: FnDist = new FnDist("zeta", "computes the Riemann zeta function")
 const FN_FADDEEVA = new FnDist("faddeeva", "scaled complex error function").add(
   ["c32"],
   "c32",
-  (a) => rept(faddeevaPt(a.value.xy())),
+  (a) => faddeevaPt(a.value.ns()).s(),
   (ctx, a) => {
     declareMulC32(ctx)
     ctx.glslText(erfC32Gl)
@@ -77,7 +79,7 @@ const FN_SIGNBETA = new FnDist("signbeta", "sign of the beta function").add(
     const a = ar.value.num()
     const b = br.value.num()
     const s = (x: number) => (x > 0 || Math.floor(x) % 2 == 0 ? 1 : -1)
-    return real(s(a) * s(b) * s(a + b))
+    return int(s(a) * s(b) * s(a + b))
   },
   (ctx, a, b) => {
     declareBeta(ctx)

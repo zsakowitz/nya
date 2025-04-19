@@ -1,19 +1,4 @@
 import { FnDist } from "@/eval/ops/dist"
-import type { SPoint, SReal } from "@/eval/ty"
-
-export function sqrt(val: SReal) {
-  return real(val.num() ** 0.5)
-}
-
-export function hypot({ x: dx, y: dy }: SPoint) {
-  const dx2 = dx.mul(dx)
-  const dy2 = dy.mul(dy)
-  return dx2.add(dy2).sqrt()
-}
-
-export function dist(a: SPoint, b: SPoint) {
-  return hypot(pt(a.x.sub(b.x), a.y.sub(b.y)))
-}
 
 export const FN_DISTANCE = new FnDist<"r32">(
   "distance",
@@ -22,7 +7,7 @@ export const FN_DISTANCE = new FnDist<"r32">(
   .add(
     ["point32", "point32"],
     "r32",
-    (a, b) => dist(a.value, b.value),
+    (a, b) => a.value.sub(b.value).hypot(),
     (_, a, b) => `length(${a.expr} - ${b.expr})`,
     "distance((2,3),(5,-1))=5",
   )
@@ -37,13 +22,13 @@ export const FN_DISTANCE = new FnDist<"r32">(
       const y2 = a.value[1].y
       const x0 = b.value.x
       const y0 = b.value.y
-      const num = abs(
-        add(
-          y2.sub(y1).mul(x0).sub(x2.sub(x1).mul(y0)),
-          x2.mul(y1).sub(y2.mul(x1)),
-        ),
-      )
-      return div(num, dist(a.value[0], a.value[1]))
+      const num = y2
+        .sub(y1)
+        .mul(x0)
+        .sub(x2.sub(x1).mul(y0))
+        .add(x2.mul(y1).sub(y2.mul(x1)))
+        .abs()
+      return num.div(a.value[0].sub(a.value[1]).hypot())
     },
     (ctx, ar, br) => {
       const a = ctx.cache(ar)
