@@ -154,7 +154,7 @@ FN_XPRODY.add(
   "r32",
   (a, b) => {
     if (isNaN(b.value.num())) {
-      return int(NaN)
+      return approx(NaN)
     }
 
     if (a.value.zero()) {
@@ -564,7 +564,7 @@ float _helper_cmp_r32(float a, float b) {
         toGlsl(val) {
           return gl64(val)
         },
-        garbage: { js: int(NaN), glsl: "vec2(0.0/0.0)" },
+        garbage: { js: approx(NaN), glsl: "vec2(0.0/0.0)" },
         coerce: {
           r32: {
             js(self) {
@@ -591,9 +591,9 @@ float _helper_cmp_r32(float a, float b) {
         namePlural: "real numbers",
         glsl: "float",
         toGlsl(val) {
-          return gl(val)
+          return val.gl32()
         },
-        garbage: { js: int(NaN), glsl: "(0.0/0.0)" },
+        garbage: { js: approx(NaN), glsl: "(0.0/0.0)" },
         coerce: {},
         write: WRITE_REAL,
         order: null,
@@ -613,7 +613,7 @@ float _helper_cmp_r32(float a, float b) {
         toGlsl(val) {
           return gl64(val)
         },
-        garbage: { js: int(NaN), glsl: "vec2(0.0/0.0)" },
+        garbage: { js: approx(NaN), glsl: "vec2(0.0/0.0)" },
         coerce: {
           r32: {
             js: (x) => x,
@@ -644,9 +644,9 @@ float _helper_cmp_r32(float a, float b) {
         namePlural: "positive real numbers",
         glsl: "float",
         toGlsl(val) {
-          return gl(val)
+          return val.gl32()
         },
-        garbage: { js: int(NaN), glsl: "(0.0/0.0)" },
+        garbage: { js: approx(NaN), glsl: "(0.0/0.0)" },
         coerce: {
           r32: {
             js: (x) => x,
@@ -669,7 +669,7 @@ float _helper_cmp_r32(float a, float b) {
       bool: {
         r32: {
           js(self) {
-            return self ? int(1) : int(NaN)
+            return self ? int(1) : approx(NaN)
           },
           glsl(self) {
             return `(${self} ? 1.0 : 0.0/0.0)`
@@ -677,7 +677,7 @@ float _helper_cmp_r32(float a, float b) {
         },
         r64: {
           js(self) {
-            return self ? int(1) : int(NaN)
+            return self ? int(1) : approx(NaN)
           },
           glsl(self) {
             return `(${self} ? vec2(1, 0) : vec2(0.0/0.0))`
@@ -711,7 +711,7 @@ float _helper_cmp_r32(float a, float b) {
       "e": splitDual(Math.E, "euler's number"),
       "∞": {
         label: "limit as a number increases without bound",
-        js: { type: "r64", value: int(Infinity), list: false },
+        js: { type: "r64", value: approx(Infinity), list: false },
         glsl: { type: "r64", expr: "vec2(1.0/0.0)", list: false },
         display: false,
       },

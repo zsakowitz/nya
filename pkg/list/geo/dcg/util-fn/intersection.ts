@@ -1,5 +1,8 @@
 import type { GlslContext } from "@/eval/lib/fn"
-import type { GlslVal, SPoint, Tys, Val } from "@/eval/ty"
+import type { GlslVal, Tys, Val } from "@/eval/ty"
+import { px } from "@/lib/point"
+import { pt, ptnan, type SPoint } from "@/lib/spoint"
+import { int } from "@/lib/sreal"
 import { FN_INTERSECTION } from "../../point"
 import { computeArcVal } from "../util-arc"
 
@@ -18,29 +21,12 @@ export function intersectSLineLineJs(
   const x3y4 = x3.mul(y4)
   const x4y3 = y3.mul(x4)
 
-  return pt(
-    div(
-      // (x1 y2 - y1 x2) (x3 - x4) - (x1 - x2) (x3 y4 - y3 x4)
-      sub(
-        // (x1 y2 - y1 x2) (x3 - x4)
-        x1y2.sub(x2y1).mul(x3.sub(x4)),
-        // (x1 - x2) (x3 y4 - y3 x4)
-        x1.sub(x2).mul(x3y4.sub(x4y3)),
-      ),
-      d,
-    ),
+  const t1 = x1y2.sub(x2y1).mul(x3.sub(x4)) // (x1 y2 - y1 x2) (x3 - x4)
+  const t2 = x1y2.sub(x2y1).mul(y3.sub(y4)) // (x1 y2 - y1 x2) (y3 - y4)
+  const t3 = y1.sub(y2).mul(x3y4.sub(x4y3)) // (y1 - y2) (x3 y4 - y3 x4)
+  const t4 = x1.sub(x2).mul(x3y4.sub(x4y3)) // (x1 - x2) (x3 y4 - y3 x4)
 
-    div(
-      // (x1 y2 - y1 x2) (y3 - y4) - (x1 - x2) (x3 y4 - y3 x4)
-      sub(
-        // (x1 y2 - y1 x2) (y3 - y4)
-        x1y2.sub(x2y1).mul(y3.sub(y4)),
-        // (y1 - y2) (x3 y4 - y3 x4)
-        y1.sub(y2).mul(x3y4.sub(x4y3)),
-      ),
-      d,
-    ),
-  )
+  return pt([t1.sub(t4), t2.sub(t3)]).divR(d)
 }
 
 export function intersectLineLineGlsl(
@@ -97,17 +83,17 @@ function lineCircleJs(circ: Tys["circle"], lin: Tys["line"], index: -1 | 1) {
   const y1 = lin[0].y.num()
   const x2 = lin[1].x.num()
   const y2 = lin[1].y.num()
-  const v1 = { x: x2 - x1, y: y2 - y1 }
-  const v2 = { x: x1 - cx, y: y1 - cy }
+  const v1 = px(x2 - x1, y2 - y1)
+  const v2 = px(x1 - cx, y1 - cy)
   const b = -2 * (v1.x * v2.x + v1.y * v2.y)
   const c = 2 * (v1.x * v1.x + v1.y * v1.y)
   const d = Math.sqrt(b * b - 2 * c * (v2.x * v2.x + v2.y * v2.y - r * r))
   if (isNaN(d)) {
-    return SNANPT
+    return ptnan(2)
   }
   const u1 = (b + index * d) / c
-  const returned = { x: x1 + v1.x * u1, y: y1 + v1.y * u1 }
-  return pt(int(returned.x), int(returned.y))
+  const returned = px(x1 + v1.x * u1, y1 + v1.y * u1)
+  return returned.s()
 }
 
 function lineCircleGlsl(
@@ -139,10 +125,10 @@ function lineArcJs(ac: Tys["arc"], lin: Tys["line"], index: -1 | 1): SPoint {
   const arc = computeArcVal(ac)
   switch (arc.type) {
     case "invalid":
-      return SNANPT
+      return ptnan(2)
     case "segment":
     case "tworay":
-      return intersectSLineLineJs([rept(arc.p1), rept(arc.p3)], lin)
+      return intersectSLineLineJs([arc.p1.s(), arc.p3.s()], lin)
     case "circle":
       return lineCircleJs(
         {
@@ -180,15 +166,15 @@ function circleCircleJs(
   // Check for special cases
   if (d > r0 + r1) {
     // Circles do not intersect
-    return SNANPT
+    return ptnan(2)
   }
   if (d < Math.abs(r0 - r1)) {
     // One circle is contained within the other
-    return SNANPT
+    return ptnan(2)
   }
   if (d === 0 && r0 === r1) {
     // Circles are the same
-    return SNANPT
+    return ptnan(2)
   }
 
   // Calculate the intersection points
@@ -276,7 +262,7 @@ FN_INTERSECTION.add(
     const b = computeArcVal(br.value)
     switch (b.type) {
       case "invalid":
-        return SNANPT
+        return ptnan(2)
       case "segment":
       case "tworay":
         return lineCircleJs(ar.value, [rept(b.p1), rept(b.p3)], 1)
@@ -307,7 +293,7 @@ FN_INTERSECTION.add(
     const b = computeArcVal(ar.value)
     switch (b.type) {
       case "invalid":
-        return SNANPT
+        return ptnan(2)
       case "segment":
       case "tworay":
         return lineCircleJs(br.value, [rept(b.p1), rept(b.p3)], -1)
@@ -338,7 +324,7 @@ FN_INTERSECTION.add(
     const a = computeArcVal(ar.value)
     const b = computeArcVal(br.value)
     if (a.type == "invalid" || b.type == "invalid") {
-      return SNANPT
+      return ptnan(2)
     }
     if (a.type == "circle") {
       const ac = { center: rept(a.c), radius: int(a.r) }

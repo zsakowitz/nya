@@ -44,7 +44,7 @@ function parseExact(text: string, base: SRealFrac): SReal {
 
   const [a, b] = text.split(".") as [string, string?]
 
-  let total = frac(0, 1)
+  let total = int(0)
 
   for (let i = 0; i < a.length; i++) {
     const value = digitValue(a[i]!, base)

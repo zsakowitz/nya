@@ -67,15 +67,19 @@ export class SPoint<out N extends number = 2> {
   }
 
   // TODO: handle infinity
-  norm(): SPoint<N> {
+  norm(scale?: SReal): SPoint<N> {
     if (this.zero()) {
       return this
     }
-    return this.divR(this.hypot())
+    const r = this.divR(this.hypot())
+    if (scale) {
+      return r.mulR(scale)
+    }
+    return r
   }
 
-  normFrom(from: SPoint<N>): SPoint<N> {
-    return this.sub(from).norm().add(from)
+  normFrom(from: SPoint<N>, scale?: SReal): SPoint<N> {
+    return this.sub(from).norm(scale).add(from)
   }
 
   finite(): boolean {

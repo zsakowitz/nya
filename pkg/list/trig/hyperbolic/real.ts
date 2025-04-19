@@ -2,6 +2,7 @@ import { chaind, OP_JUXTAPOSE, OP_NEG, symSquare } from "#/list/core/ops"
 import type { Package } from "#/types"
 import { FnDist } from "@/eval/ops/dist"
 import { cl } from "@/eval/sym"
+import { approx } from "@/lib/sreal"
 
 export const FN_SINH: FnDist = new FnDist(
   "sinh",

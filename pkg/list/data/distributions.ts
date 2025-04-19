@@ -178,10 +178,10 @@ const FN_PDF = new FnDistDeriv("pdf", "probability distribution function")
       // to simplify things, we always do an isNaN(x) check
       // see https://www.desmos.com/calculator/x22o29smej for further examples
       if (isNaN(min) || isNaN(max) || isNaN(x) || min > max) {
-        return int(NaN)
+        return approx(NaN)
       }
       if (!isFinite(min) || !isFinite(max)) {
-        return min == max ? int(NaN) : int(0)
+        return min == max ? approx(NaN) : int(0)
       }
       return min <= x && x <= max ?
           dist.value[1].sub(dist.value[0]).inv()
@@ -225,7 +225,7 @@ function uniformdistcdfJs(
   // to simplify things, we always do an isNaN(x) check
   // see https://www.desmos.com/calculator/x22o29smej for further examples
   if (isNaN(min) || isNaN(max) || isNaN(x) || min > max) {
-    return int(NaN)
+    return approx(NaN)
   }
   if (!isFinite(min) || !isFinite(max)) {
     // COMPAT: our behavior at infinites is very different from desmos:
@@ -317,7 +317,7 @@ FN_QUANTILE.add(
     const mean = dist.value[0].num()
     const stdev = dist.value[1].num()
     const p = x.value.num()
-    if (!(0 <= p && p <= 1)) return int(NaN)
+    if (!(0 <= p && p <= 1)) return approx(NaN)
     return approx(mean + stdev * Math.SQRT2 * erfinv(2 * p - 1))
   },
   (ctx, dist, x) => {
@@ -333,7 +333,7 @@ FN_QUANTILE.add(
   (dist, x) => {
     const p = x.value.num()
     if (!(0 <= p && p <= 1) || !(dist.value[0].num() <= dist.value[1].num())) {
-      return int(NaN)
+      return approx(NaN)
     }
 
     return add(
@@ -401,10 +401,10 @@ export default {
         namePlural: "normal distributions",
         glsl: "vec2",
         toGlsl([a, b]) {
-          return `vec2(${gl(a)}, ${gl(b)})`
+          return `vec2(${a.gl32()}, ${b.gl32()})`
         },
         garbage: {
-          js: [int(NaN), int(NaN)],
+          js: [approx(NaN), approx(NaN)],
           glsl: "vec2(0.0/0.0)",
         },
         coerce: {},
@@ -458,7 +458,7 @@ export default {
           return `vec3(${x.map(gl).join(", ")})`
         },
         garbage: {
-          js: [int(NaN), int(NaN), int(NaN)],
+          js: [approx(NaN), approx(NaN), approx(NaN)],
           glsl: "vec3(0.0/0.0)",
         },
         coerce: {},
@@ -514,10 +514,10 @@ export default {
         namePlural: "uniform distributions",
         glsl: "vec2",
         toGlsl([a, b]) {
-          return `vec2(${gl(a)}, ${gl(b)})`
+          return `vec2(${a.gl32()}, ${b.gl32()})`
         },
         garbage: {
-          js: [int(NaN), int(NaN)],
+          js: [approx(NaN), approx(NaN)],
           glsl: "vec2(0.0/0.0)",
         },
         coerce: {},
@@ -575,10 +575,10 @@ export default {
         namePlural: "boltzmann distributions",
         glsl: "vec2",
         toGlsl([a]) {
-          return gl(a)
+          return a.gl32()
         },
         garbage: {
-          js: [int(NaN)],
+          js: [approx(NaN)],
           glsl: "(0.0/0.0)",
         },
         coerce: {},
@@ -627,10 +627,10 @@ export default {
         namePlural: "Poisson distributions",
         glsl: "float",
         toGlsl(a) {
-          return gl(a)
+          return a.gl32()
         },
         garbage: {
-          js: int(NaN),
+          js: approx(NaN),
           glsl: "(0.0/0.0)",
         },
         coerce: {},
@@ -691,10 +691,10 @@ export default {
         namePlural: "binomial distributions",
         glsl: "vec2",
         toGlsl([a, b]) {
-          return `vec2(${gl(a)}, ${gl(b)})`
+          return `vec2(${a.gl32()}, ${b.gl32()})`
         },
         garbage: {
-          js: [int(NaN), int(NaN)],
+          js: [approx(NaN), approx(NaN)],
           glsl: "vec2(0.0/0.0)",
         },
         coerce: {},

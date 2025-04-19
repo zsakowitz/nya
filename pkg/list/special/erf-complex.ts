@@ -25,37 +25,37 @@ export function faddeevaPt(z: Point): Point {
 
   // Constrain to imag(z)>=0
   const sgni = z.y < 0 ? -1 : 1
-  z = { x: z.x * sgni, y: z.y * sgni }
+  z = px(z.x * sgni, z.y * sgni)
 
   // Approximate
-  let t: Point = { x: z.x, y: z.y + s * 0.5 }
-  let w: Point = { x: 0, y: 0 }
+  let t: Point = px(z.x, z.y + s * 0.5)
+  let w: Point = px(0, 0)
 
   for (let m = 0; m < N; ++m) {
     const dw = divP(
-      px(A[m]! + mulP(t, { x: 0, y: B[m]! }).x, mulP(t, { x: 0, y: B[m]! }).y),
+      px(A[m]! + mulP(t, px(0, B[m]!)).x, mulP(t, px(0, B[m]!)).y),
       px(C[m]! * C[m]! - sqrP(t).x, -sqrP(t).y),
     )
-    w = { x: w.x + dw.x, y: w.y + dw.y }
+    w = px(w.x + dw.x, w.y + dw.y)
   }
 
   if (sgni < 0) {
-    w = { x: 2 * expP(sqrP(z)).x - w.x, y: 2 * expP(sqrP(z)).y - w.y }
+    w = px(2 * expP(sqrP(z)).x - w.x, 2 * expP(sqrP(z)).y - w.y)
   }
 
   return w
 }
 
 function erfPos(z: Point): Point {
-  const z_1i = mulP({ x: 0, y: 1 }, z)
+  const z_1i = mulP(px(0, 1), z)
   const res = mulP(expP(px(-sqrP(z).x, -sqrP(z).y)), faddeevaPt(z_1i))
   return px(1 - res.x, -res.y)
 }
 
 function erfPt(z: Point): Point {
   if (z.x < 0) {
-    const res = erfPos({ x: -z.x, y: -z.y })
-    return { x: -res.x, y: -res.y }
+    const res = erfPos(px(-z.x, -z.y))
+    return px(-res.x, -res.y)
   }
 
   return erfPos(z)
@@ -77,7 +77,7 @@ FN_ERF.add(
   (a, b) => {
     const ap = erfPt(a.value.xy())
     const bp = erfPt(b.value.xy())
-    return rept({ x: bp.x - ap.x, y: bp.y - ap.y })
+    return rept(px(bp.x - ap.x, bp.y - ap.y))
   },
   (ctx, a, b) => {
     declareMulC32(ctx)

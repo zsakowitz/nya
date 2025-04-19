@@ -1,7 +1,7 @@
 import { safe } from "@/eval/lib/util"
 import { Display } from "@/eval/ty/display"
 import type { Cursor, Span } from "@/field/model"
-import { frac, int, type SReal } from "@/lib/sreal"
+import { int, type SReal } from "@/lib/sreal"
 
 export function write(
   cursor: Cursor,
@@ -13,11 +13,11 @@ export function write(
   const base = baseRaw.num()
 
   if (!(safe(base) && 2 <= base && base <= 36)) {
-    new Display(cursor, baseRaw || frac(10, 1)).value(value.num(), signed)
+    new Display(cursor, baseRaw || int(10)).value(value.num(), signed)
     return
   }
 
-  const display = new Display(cursor, baseRaw || frac(10, 1))
+  const display = new Display(cursor, baseRaw || int(10))
   const step = baseRaw.pow(int(stepExp)).inv()
   let main = Math.round(value.div(step).num())
   if (main < 0) {
@@ -59,7 +59,7 @@ export class Writer {
     write(
       this.span.remove(),
       value,
-      frac(10, 1),
+      int(10),
       virtualStepExp(precision, 10),
       signed,
     )

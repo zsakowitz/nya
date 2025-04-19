@@ -177,7 +177,7 @@ export default {
         },
         display(value) {
           const block = new Block(null)
-          new Display(block.cursor(R), frac(10, 1)).output(value.value, false)
+          new Display(block.cursor(R), int(10)).output(value.value, false)
           let prec: number = Precedence.Numeric
           let el = block.ends[L]
           while (el) {

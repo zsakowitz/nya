@@ -197,7 +197,7 @@ const OP_TO_TEXT = new FnDist<"text">("text", "converts a value into text")
     "text",
     (a) => {
       const b = new Block(null)
-      new Display(b.cursor(R), frac(10, 1)).value(a.value.num())
+      new Display(b.cursor(R), int(10)).value(a.value.num())
       return [{ type: "latex", value: b.latex() }]
     },
     err,
@@ -208,7 +208,7 @@ const OP_TO_TEXT = new FnDist<"text">("text", "converts a value into text")
     "text",
     (a) => {
       const b = new Block(null)
-      new Display(b.cursor(R), frac(10, 1)).nums([
+      new Display(b.cursor(R), int(10)).nums([
         [a.value.x, ""],
         [a.value.y, "i"],
       ])

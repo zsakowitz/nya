@@ -99,8 +99,8 @@ export class SReal {
 
   sqrt(): SReal {
     if (this.d !== null && this.d > 0 && this.n > 0) {
-      const n = this.n.sqrt()
-      const d = this.d.sqrt()
+      const n = sqrt(this.n)
+      const d = sqrt(this.d)
       if (safe(n) && safe(d)) {
         return frac(n, d)
       }

@@ -16,10 +16,7 @@ export function reflectJs(by: ReflectionJs, target: SPoint) {
   const p = perpendicularJs(by, { value: target })
   const i = intersectSLineLineJs(p, by.value)
 
-  return pt(
-    sub(mul(frac(2, 1), i.x), target.x),
-    sub(mul(frac(2, 1), i.y), target.y),
-  )
+  return pt(sub(mul(int(2), i.x), target.x), sub(mul(int(2), i.y), target.y))
 }
 
 function reflectGlsl(ctx: GlslContext, by: ReflectionGlsl, target: string) {

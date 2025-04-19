@@ -12,8 +12,9 @@ import { L, R } from "@/field/dir"
 import { Block } from "@/field/model"
 import { h, path, svgx, sx } from "@/jsx"
 import { px, type Point } from "@/lib/point"
+import { xy } from "@/lib/scomplex"
 import { ptnan, type SPoint } from "@/lib/spoint"
-import { approx, type SReal } from "@/lib/sreal"
+import { approx, int, type SReal } from "@/lib/sreal"
 import { PICK_TY, definePickTy, toolbar, type Data } from "@/sheet/pick-ty"
 import { Color, Opacity, Order, Size } from "@/sheet/ui/cv/consts"
 import { Expr } from "@/sheet/ui/expr"
@@ -711,9 +712,9 @@ const INFO_POLYGON: TyInfoByName<"polygon"> = {
         const block = new Block(null)
         new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
         const inner = props.at(block.cursor(R))
-        inner.pt.x.num()
+        inner.num(pt.x)
         new CmdComma().insertAt(inner.cursor, L)
-        inner.pt.y.num()
+        inner.num(pt.y)
       }
     },
   },
@@ -774,16 +775,16 @@ const INFO_ARC: TyInfoByName<"arc"> = {
   namePlural: "arcs",
   glsl: "mat3x2",
   toGlsl(val) {
-    return `mat3x2(${val.map(({ x, y }) => `vec2(${gl(x)}, ${gl(y)})`).join(", ")})`
+    return `mat3x2(${val.map(({ x, y }) => `vec2(${x.gl32()}, ${y.gl32()})`).join(", ")})`
   },
   garbage: {
-    js: [SNANPT, SNANPT, SNANPT],
+    js: [ptnan(2), ptnan(2), ptnan(2)],
     glsl: "mat3x2(vec2(0.0/0.0),vec2(0.0/0.0),vec2(0.0/0.0))",
   },
   coerce: {},
   write: {
     isApprox(value) {
-      return value.some((x) => x.x.type == "approx" || x.y.type == "approx")
+      return value.some((x) => x.isApprox())
     },
     display(value, props) {
       new CmdWord("arc", "prefix").insertAt(props.cursor, L)
@@ -891,10 +892,10 @@ function angleInfo(
     namePlural: type == "angle" ? "angles" : "directed angles",
     glsl: "mat3x2",
     toGlsl(val) {
-      return `mat3x2(${val.map(({ x, y }) => `vec2(${gl(x)}, ${gl(y)})`).join(", ")})`
+      return `mat3x2(${val.map(({ x, y }) => `vec2(${x.gl32()}, ${y.gl32()})`).join(", ")})`
     },
     garbage: {
-      js: [SNANPT, SNANPT, SNANPT],
+      js: [ptnan(2), ptnan(2), ptnan(2)],
       glsl: "mat3x2(vec2(0.0/0.0),vec2(0.0/0.0),vec2(0.0/0.0))",
     },
     coerce: {
@@ -908,7 +909,7 @@ function angleInfo(
       },
       c32: {
         js(value) {
-          return pt(angleJs({ value, type }), int(0))
+          return xy(angleJs({ value, type }), int(0))
         },
         glsl(expr, ctx) {
           return `vec2(${angleGlsl(ctx, { expr, type })}, 0)`
@@ -932,13 +933,13 @@ function angleInfo(
           const block = new Block(null)
           new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
           const inner = props.at(block.cursor(R))
-          inner.pt.x.num()
+          inner.num(pt.x)
           new CmdComma().insertAt(inner.cursor, L)
-          inner.pt.y.num()
+          inner.num(pt.y)
         }
       },
       isApprox(value) {
-        return value.some((x) => x.x.type == "approx" || x.y.type == "approx")
+        return value.some((x) => x.isApprox())
       },
     },
     order: Order.Angle,
@@ -971,13 +972,13 @@ function angleInfo(
 
       const swap = measure > Math.PI
 
-      const o1 = { x: p1.x, y: -p1.y }
-      const o2 = { x: p2.x, y: -p2.y }
-      const o3 = { x: p3.x, y: -p3.y }
-      const s1 = normVector(o2, o1, LINE)
-      const s3 = normVector(o2, o3, LINE)
-      const a1 = normVector(o2, o1, ARC)
-      const a3 = normVector(o2, o3, ARC)
+      const o1 = px(p1.x, -p1.y)
+      const o2 = px(p2.x, -p2.y)
+      const o3 = px(p3.x, -p3.y)
+      const s1 = o1.normFrom(o2, LINE)
+      const s3 = o3.normFrom(o2, LINE)
+      const a1 = o1.normFrom(o2, ARC)
+      const a3 = o3.normFrom(o2, ARC)
 
       const els: SVGElement[] = []
 

@@ -8,7 +8,7 @@ import { CmdBrack } from "@/field/cmd/math/brack"
 import { CmdSupSub } from "@/field/cmd/math/supsub"
 import { L, R } from "@/field/dir"
 import { Block, type Cursor } from "@/field/model"
-import { type SReal, frac, int } from "@/lib/sreal"
+import { type SReal, int } from "@/lib/sreal"
 import type { JsVal, JsValue } from "."
 import type { Node } from "../ast/token"
 import { js } from "../ast/tx"
@@ -237,7 +237,7 @@ export class Display {
 
     if (this.canWriteBase() && this.base.num() != 10) {
       new CmdWord("base", "infix").insertAt(this.cursor, L)
-      new Display(this.cursor, frac(10, 1)).num(this.base)
+      new Display(this.cursor, int(10)).num(this.base)
     }
   }
 }

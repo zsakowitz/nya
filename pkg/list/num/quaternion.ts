@@ -260,7 +260,7 @@ export default {
           return `vec4(${val.map(gl).join(", ")})`
         },
         garbage: {
-          js: [int(NaN), int(NaN), int(NaN), int(NaN)],
+          js: [approx(NaN), approx(NaN), approx(NaN), approx(NaN)],
           glsl: "vec4(0.0/0.0)",
         },
         coerce: {},

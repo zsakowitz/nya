@@ -94,8 +94,8 @@ const EXT_SLOPE_FIELD = defineHideable<
               if (isNaN(slope)) continue
               const { x: dx, y: dy } =
                 slope == Infinity || slope == -Infinity ?
-                  { x: 0, y: size }
-                : norm({ x: 1, y: -slope }, size)
+                  px(0, size)
+                : norm(px(1, -slope), size)
               path.moveTo(at.x - dx / 2, at.y - dy / 2)
               path.lineTo(at.x + dx / 2, at.y + dy / 2)
             }
@@ -109,12 +109,12 @@ const EXT_SLOPE_FIELD = defineHideable<
               const dyRaw = vectorRaw[1].y.num() - vectorRaw[0].y.num()
               if (isNaN(dxRaw) || isNaN(dyRaw)) continue
               const { x: dx, y: dy } = cv.toPaperDelta(
-                norm({ x: dxRaw, y: -dyRaw }, size),
+                norm(px(dxRaw, -dyRaw), size),
               )
               const vPath = vectorPath(
                 cv,
-                { x: x - dx / 4, y: y - dy / 4 },
-                { x: x + dx / 4, y: y + dy / 4 },
+                px(x - dx / 4, y - dy / 4),
+                px(x + dx / 4, y + dy / 4),
                 Size.SlopeFieldVectorHead,
               )
               path.addPath(new Path2D(vPath))
@@ -129,12 +129,12 @@ const EXT_SLOPE_FIELD = defineHideable<
               const dyRaw = raw.y.num()
               if (isNaN(dxRaw) || isNaN(dyRaw)) continue
               const { x: dx, y: dy } = cv.toPaperDelta(
-                norm({ x: dxRaw, y: -dyRaw }, size),
+                norm(px(dxRaw, -dyRaw), size),
               )
               const vPath = vectorPath(
                 cv,
-                { x: x - dx / 4, y: y - dy / 4 },
-                { x: x + dx / 4, y: y + dy / 4 },
+                px(x - dx / 4, y - dy / 4),
+                px(x + dx / 4, y + dy / 4),
                 Size.SlopeFieldVectorHead,
               )
               path.addPath(new Path2D(vPath))
@@ -173,7 +173,7 @@ export default {
         garbage: {
           js: {
             type: "value",
-            value: { type: "r64", list: false, value: int(NaN) },
+            value: { type: "r64", list: false, value: approx(NaN) },
           },
           get glsl(): never {
             return glsl()

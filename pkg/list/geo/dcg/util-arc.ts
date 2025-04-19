@@ -1,5 +1,6 @@
 import type { Val } from "@/eval/ty"
 import { gliderOnLine } from "@/eval/ty/info"
+import { px, pxnan, type Point } from "@/lib/point"
 import { Cv } from "@/sheet/ui/cv"
 import { getRayBounds } from "./util-ext/ray"
 
@@ -15,9 +16,9 @@ function intersectLineLineJs(a: [Point, Point], b: [Point, Point]): Point {
   const x4y3 = y3 * x4
 
   return px(
-    ((x1y2 - x2y1) * (x3 - x4) - (x1 - x2) * (x3y4 - x4y3)) / d,
-    ((x1y2 - x2y1) * (y3 - y4) - (y1 - y2) * (x3y4 - x4y3)) / d,
-  )
+    (x1y2 - x2y1) * (x3 - x4) - (x1 - x2) * (x3y4 - x4y3),
+    (x1y2 - x2y1) * (y3 - y4) - (y1 - y2) * (x3y4 - x4y3),
+  ).divR(d)
 }
 
 // Arcs are very strange, since they can exist in a massive variety of states.
@@ -61,10 +62,10 @@ function computeArc(p1: Point, p2: Point, p3: Point): Arc {
     return { type: "invalid" }
   }
 
-  const l1a: Point = { x: (x1 + x2) / 2, y: (y1 + y2) / 2 }
-  const l1b: Point = { x: l1a.x - (y2 - y1), y: l1a.y + (x2 - x1) }
-  const l2a: Point = { x: (x3 + x2) / 2, y: (y3 + y2) / 2 }
-  const l2b: Point = { x: l2a.x - (y2 - y3), y: l2a.y + (x2 - x3) }
+  const l1a: Point = px((x1 + x2) / 2, (y1 + y2) / 2)
+  const l1b: Point = px(l1a.x - (y2 - y1), l1a.y + (x2 - x1))
+  const l2a: Point = px((x3 + x2) / 2, (y3 + y2) / 2)
+  const l2b: Point = px(l2a.x - (y2 - y3), l2a.y + (x2 - x3))
 
   const c = intersectLineLineJs([l1a, l1b], [l2a, l2b])
   const r = Math.hypot(c.x - x1, c.y - y1)
@@ -158,7 +159,7 @@ export function arcPath(cv: Cv, arc: Arc): ArcPath {
         ),
       }
     case "circle":
-      const delta = cv.toCanvasDelta({ x: arc.r, y: arc.r })
+      const delta = cv.toCanvasDelta(px(arc.r, arc.r))
       return {
         type: "circle",
         p1: cv.toCanvas(arc.p1),
@@ -171,7 +172,7 @@ export function arcPath(cv: Cv, arc: Arc): ArcPath {
 
 export function glideArc(arc: Arc, at: number): Point {
   if (!isFinite(at) || arc.type == "invalid") {
-    return NANPT
+    return pxnan()
   }
 
   const t = arc.type == "tworay" ? at : Math.max(0, Math.min(1, at))
@@ -181,7 +182,7 @@ export function glideArc(arc: Arc, at: number): Point {
     return px(Math.cos(a) * arc.r + arc.c.x, Math.sin(a) * arc.r + arc.c.y)
   } else {
     if (arc.type == "tworay" && 0 < at && at < 1) {
-      return NANPT
+      return pxnan()
     }
     return px(
       arc.p1.x * (1 - t) + arc.p3.x * t,
@@ -229,13 +230,13 @@ function crArc(
   { x: x3, y: y3 }: Point,
 ): { c: Point; r: number } {
   if (![x1, y1, x2, y2, x3, y3].every(isFinite)) {
-    return { c: NANPT, r: NaN }
+    return { c: pxnan(), r: NaN }
   }
 
-  const l1a: Point = { x: (x1 + x2) / 2, y: (y1 + y2) / 2 }
-  const l1b: Point = { x: l1a.x - (y2 - y1), y: l1a.y + (x2 - x1) }
-  const l2a: Point = { x: (x3 + x2) / 2, y: (y3 + y2) / 2 }
-  const l2b: Point = { x: l2a.x - (y2 - y3), y: l2a.y + (x2 - x3) }
+  const l1a: Point = px((x1 + x2) / 2, (y1 + y2) / 2)
+  const l1b: Point = px(l1a.x - (y2 - y1), l1a.y + (x2 - x1))
+  const l2a: Point = px((x3 + x2) / 2, (y3 + y2) / 2)
+  const l2b: Point = px(l2a.x - (y2 - y3), l2a.y + (x2 - x3))
 
   const c = intersectLineLineJs([l1a, l1b], [l2a, l2b])
   const r = Math.hypot(c.x - x1, c.y - y1)

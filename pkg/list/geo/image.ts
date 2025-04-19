@@ -124,8 +124,8 @@ export default {
               width: 0,
               height: 0,
             },
-            p1: SNANPT,
-            p2: SNANPT,
+            p1: ptnan(2),
+            p2: ptnan(2),
             aspect: null,
           },
           get glsl(): never {
@@ -155,7 +155,7 @@ export default {
             TY_INFO.segment.write.display([value.p1, value.p2], inner)
             if (value.aspect) {
               new CmdComma().insertAt(inner.cursor, L)
-              inner.value.aspect.num()
+              inner.num(value.aspect)
             }
             new CmdBrack("(", ")", null, block).insertAt(props.cursor, L)
           },

@@ -230,7 +230,7 @@ export const FN_TOTAL = new FnList("total", "returns the sum of its inputs")
 
 function meanJs(args: SReal[]): SReal {
   if (args.length == 0) {
-    return int(NaN)
+    return approx(NaN)
   }
 
   return args.reduce((a, b) => a.add(b), int(0)).div(int(args.length))
@@ -281,7 +281,7 @@ function sortJs(args: SReal[]) {
 
 function middleJs(value: SReal[]): SReal {
   if (value.length == 0) {
-    return int(NaN)
+    return approx(NaN)
   }
 
   if (value.length % 2) {
@@ -316,14 +316,14 @@ function quartile<L extends number | false>(
   quartile: JsValue<"r32", L>,
 ): JsValue<"r32", L> {
   if (list.length == 0) {
-    return map(quartile, "r32", () => int(NaN))
+    return map(quartile, "r32", () => approx(NaN))
   }
   sortJs(list)
 
   return map(quartile, "r32", (quartile) => {
     let q = quartile.num()
     if (!(0 <= q && q <= 4)) {
-      return int(NaN)
+      return approx(NaN)
     }
 
     q = Math.round(q)
@@ -348,7 +348,7 @@ function quartile<L extends number | false>(
         }
     }
 
-    return int(NaN)
+    return approx(NaN)
   })
 }
 
@@ -366,7 +366,7 @@ const FN_QUARTILE: Fn & WithDocs = {
           const quartile = quartileRaw.num()
 
           if (!(0 <= quartile && quartile <= 4)) {
-            return int(NaN)
+            return approx(NaN)
           }
 
           return stats[Math.round(quartile)]!
@@ -426,14 +426,14 @@ export const FN_QUANTILE = new (class extends FnDist {
       const quantile = coerceTyJs(args[1]!, "r32")
 
       if (list.length == 0) {
-        return map(quantile, "r32", () => int(NaN))
+        return map(quantile, "r32", () => approx(NaN))
       }
       sortJs(list)
 
       return map(quantile, "r32", (quartile) => {
         let q = quartile.num()
         if (!(0 <= q && q <= 1)) {
-          return int(NaN)
+          return approx(NaN)
         }
 
         const mid = quartile.mul(int(list.length - 1))
@@ -502,7 +502,7 @@ ALL_DOCS.push(FN_QUANTILE)
 
 function varJs(args: SReal[], sample: boolean): SReal {
   if (args.length == 0 || (sample && args.length == 1)) {
-    return int(NaN)
+    return approx(NaN)
   }
 
   const mean = meanJs(args)
@@ -600,7 +600,7 @@ const FN_MAD = new FnList("mad", "mean absolute deviation").addSpread(
   "r32",
   (args) => {
     if (args.length == 0) {
-      return int(NaN)
+      return approx(NaN)
     }
 
     const mean = meanJs(args)
@@ -623,7 +623,7 @@ const FN_MAD = new FnList("mad", "mean absolute deviation").addSpread(
 
 function covJs(a: SReal[], b: SReal[], sample: boolean) {
   if (a.length <= +sample) {
-    return int(NaN)
+    return approx(NaN)
   }
 
   const ma = meanJs(a)
@@ -851,7 +851,7 @@ const TY_STATS: TyInfoByName<"stats"> = {
     )
   },
   garbage: {
-    js: [int(NaN), int(NaN), int(NaN), int(NaN), int(NaN)],
+    js: [approx(NaN), approx(NaN), approx(NaN), approx(NaN), approx(NaN)],
     get glsl(): never {
       throw new Error(
         "Cannot create five-number statistical summaries in shaders.",

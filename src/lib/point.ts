@@ -1,3 +1,5 @@
+import { ptint, type SPoint } from "./spoint"
+
 const { abs, hypot } = Math
 
 type PointData<N extends number> =
@@ -55,15 +57,20 @@ export class Point<out N extends number = 2> {
   }
 
   // TODO: handle infinity
-  norm(): Point<N> {
+  norm(scale?: number): Point<N> {
     if (this.zero()) {
       return this
     }
-    return this.divR(this.hypot())
+    const r = this.divR(this.hypot())
+    if (scale) {
+      return r.mulR(scale)
+    }
+    return r
   }
 
-  normFrom(from: Point<N>): Point<N> {
-    return this.sub(from).norm().add(from)
+  // FIXME: check normFrom works everywhere it's used, including from SPoint
+  normFrom(from: Point<N>, scale?: number): Point<N> {
+    return this.sub(from).norm(scale).add(from)
   }
 
   finite(): boolean {
@@ -72,6 +79,10 @@ export class Point<out N extends number = 2> {
 
   gl32(this: Point<2 | 3 | 4>) {
     return `vec${this.d.length}(${this.d.map((x) => x.toExponential()).join(", ")})`
+  }
+
+  s(this: Point<2>): SPoint<2> {
+    return ptint([this.x, this.y])
   }
 }
 

@@ -1,15 +1,11 @@
 import { STORE_EVAL } from "$/eval"
 import type { GlslContext } from "@/eval/lib/fn"
-import {
-  each,
-  map,
-  type GlslVal,
-  type JsVal,
-  type JsValue,
-  type SPoint,
-} from "@/eval/ty"
+import { each, map, type GlslVal, type JsVal, type JsValue } from "@/eval/ty"
 import { Display } from "@/eval/ty/display"
 import { R } from "@/field/dir"
+import type { Point } from "@/lib/point"
+import type { SPoint } from "@/lib/spoint"
+import { int } from "@/lib/sreal"
 import { Prop } from "@/sheet/ext"
 import { defineHideable } from "@/sheet/ext/hideable"
 import type { Cv } from "@/sheet/ui/cv"
@@ -32,7 +28,7 @@ export function angleJs({ value, type }: JsVal<"angle" | "directedangle">) {
     (2 * Math.PI)
 
   if (measure > Math.PI) {
-    return real(type == "angle" ? 2 * Math.PI - measure : measure - 2 * Math.PI)
+    return int(type == "angle" ? 2 * Math.PI - measure : measure - 2 * Math.PI)
   } else {
     return int(measure)
   }
@@ -94,10 +90,10 @@ export function drawAngleCv(
   const o1 = cv.toCanvas(p1)
   const o2 = cv.toCanvas(p2)
   const o3 = cv.toCanvas(p3)
-  const s1 = normVector(o2, o1, cv.scale * LINE)
-  const s3 = normVector(o2, o3, cv.scale * LINE)
-  const a1 = normVector(o2, o1, cv.scale * ARC)
-  const a3 = normVector(o2, o3, cv.scale * ARC)
+  const s1 = o1.normFrom(o2, cv.scale * LINE)
+  const s3 = o3.normFrom(o2, cv.scale * LINE)
+  const a1 = o1.normFrom(o2, cv.scale * ARC)
+  const a3 = o3.normFrom(o2, cv.scale * ARC)
 
   const src = swap ? a3 : a1
   const dst = swap ? a1 : a3
@@ -180,8 +176,8 @@ function anglePath(
   const o1 = cv.toCanvas(p1)
   const o2 = cv.toCanvas(p2)
   const o3 = cv.toCanvas(p3)
-  const a1 = normVector(o2, o1, cv.scale * ARC)
-  const a3 = normVector(o2, o3, cv.scale * ARC)
+  const a1 = o2.normFrom(o1, cv.scale * ARC)
+  const a3 = o2.normFrom(o3, cv.scale * ARC)
 
   const src = swap ? a3 : a1
   const dst = swap ? a1 : a3

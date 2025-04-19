@@ -29,7 +29,7 @@ import { L, R } from "@/field/dir"
 import { toText } from "@/field/latex"
 import { Block } from "@/field/model"
 import { b, h, paragraphTag, sx } from "@/jsx"
-import type { SReal } from "@/lib/sreal"
+import { int, type SReal } from "@/lib/sreal"
 import {
   assertCompat,
   badSum,
@@ -225,7 +225,7 @@ const INFO_R32U: TyInfoByName<"r32u"> = {
   },
   toGlsl: glsl,
   garbage: {
-    js: [int(NaN), [{ exp: int(1), unit: nan }]],
+    js: [approx(NaN), [{ exp: int(1), unit: nan }]],
     get glsl() {
       return glsl()
     },
@@ -415,7 +415,7 @@ export default {
         if (f1.offset.num() != 0 && f2.offset.num() != 0) {
           badSum(u1, u2)
         }
-        const val = add(convert(v1, f1), convert(v2, f2))
+        const val = convert(v1, f1).add(convert(v2, f2))
         return [convertInv(val, f1), u1]
       },
       glsl,
@@ -432,7 +432,7 @@ export default {
         if (f1.offset.num() != 0 && f2.offset.num() != 0) {
           badSum(u1, u2)
         }
-        const val = sub(convert(v1, f1), convert(v2, f2))
+        const val = convert(v1, f1).sub(convert(v2, f2))
         return [convertInv(val, f1), u1]
       },
       glsl,
@@ -452,7 +452,7 @@ export default {
     OP_NEG.add(
       ["r32u"],
       "r32u",
-      ({ value: [a, u] }) => [neg(a), u],
+      ({ value: [a, u] }) => [a.neg(), u],
       glsl,
       "-7 unit m = -7 \\wordvar m",
     )

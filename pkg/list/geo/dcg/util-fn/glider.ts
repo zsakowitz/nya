@@ -1,5 +1,7 @@
 import type { GlslContext } from "@/eval/lib/fn"
-import type { GlslVal, SPoint, SReal } from "@/eval/ty"
+import type { GlslVal } from "@/eval/ty"
+import { pt, type SPoint } from "@/lib/spoint"
+import { int, type SReal } from "@/lib/sreal"
 import { FN_GLIDER } from "../../point"
 import { computeArcVal, glideArc } from "../util-arc"
 
@@ -7,8 +9,8 @@ function js(
   { value: [{ x: x1, y: y1 }, { x: x2, y: y2 }] }: { value: [SPoint, SPoint] },
   { value: t }: { value: SReal },
 ) {
-  const s = sub(int(1), t)
-  return pt(x1.mul(s).add(x2.mul(t)), y1.mul(s).add(y2.mul(t)))
+  const s = int(1).sub(t)
+  return pt([x1.mul(s).add(x2.mul(t)), y1.mul(s).add(y2.mul(t))])
 }
 
 function glsl(ctx: GlslContext, ar: GlslVal, b: GlslVal) {
@@ -34,7 +36,7 @@ FN_GLIDER.add(["segment", "r32"], "point32", js, glsl, [])
       const r = radius.num()
       const t = 2 * Math.PI * tr.value.num()
 
-      return pt(real(x + r * Math.cos(t)), real(y + r * Math.sin(t)))
+      return pt([int(x + r * Math.cos(t)), int(y + r * Math.sin(t))])
     },
     (ctx, ar, tr) => {
       const a = ctx.cache(ar)
@@ -50,7 +52,7 @@ FN_GLIDER.add(["segment", "r32"], "point32", js, glsl, [])
     ["arc", "r32"],
     "point32",
     (arc, t) => {
-      return rept(glideArc(computeArcVal(arc.value), t.value.num()))
+      return glideArc(computeArcVal(arc.value), t.value.num()).s()
     },
     () => {
       // TODO:

@@ -1,4 +1,6 @@
-import { type JsValue, type SPoint, each } from "@/eval/ty"
+import { type JsValue, each } from "@/eval/ty"
+import type { Point } from "@/lib/point"
+import type { SPoint } from "@/lib/spoint"
 import { Prop } from "@/sheet/ext"
 import { defineHideable } from "@/sheet/ext/hideable"
 import type { Cv } from "@/sheet/ui/cv"

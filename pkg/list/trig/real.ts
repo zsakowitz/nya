@@ -1,7 +1,8 @@
 import type { Package } from "#/types"
+import { chain, OP_NEG, OP_RAISE, toRad } from "$/core/ops"
 import { FnDist } from "@/eval/ops/dist"
 import { SYM_2, unary } from "@/eval/sym"
-import { chain, OP_NEG, OP_RAISE, toRad } from "$/core/ops"
+import { approx } from "@/lib/sreal"
 
 const FN_SIN: FnDist = new FnDist("sin", "takes the sine of an angle", {
   deriv: unary((wrt, a) => {

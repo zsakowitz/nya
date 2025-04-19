@@ -74,7 +74,7 @@ const EXT_SELECT = defineExt({
     }
     for (const item of items.value) {
       const block = new Block(null)
-      new Display(block.cursor(R), frac(10, 1)).plainVal({
+      new Display(block.cursor(R), int(10)).plainVal({
         type: items.type,
         value: item,
       })

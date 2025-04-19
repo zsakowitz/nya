@@ -37,9 +37,9 @@ export const FN_ARC = new FnDist(
 //       const r = ar.value.radius.num()
 //
 //       return [
-//         rept({ x: Math.cos(a1) * r + c.x, y: Math.sin(a1) * r + c.y }),
-//         rept({ x: Math.cos(a2) * r + c.x, y: Math.sin(a2) * r + c.y }),
-//         rept({ x: Math.cos(a3) * r + c.x, y: Math.sin(a3) * r + c.y }),
+//         rept(px(Math.cos(a1) * r + c.x, Math.sin(a1) * r + c.y)),
+//         rept(px(Math.cos(a2) * r + c.x, Math.sin(a2) * r + c.y)),
+//         rept(px(Math.cos(a3) * r + c.x, Math.sin(a3) * r + c.y)),
 //       ]
 //     },
 //     () => {
