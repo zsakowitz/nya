@@ -2,6 +2,8 @@ import { safe } from "@/eval/lib/util"
 
 const { floor, ceil, round, sqrt, sign } = Math
 
+export type SRealFrac = { n: number; d: number }
+
 /**
  * A real number type which preserves exact values for fractions (0.1 is
  * represented as 1/10, not
@@ -15,6 +17,13 @@ export class SReal {
     private readonly n: number,
     private readonly d: number | null,
   ) {}
+
+  asFrac(): SRealFrac | null {
+    if (this.d == null) {
+      return null
+    }
+    return { n: this.n, d: this.d }
+  }
 
   valueOf() {
     if (this.d === null) {

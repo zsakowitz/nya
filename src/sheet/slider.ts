@@ -1,5 +1,4 @@
 import { safe } from "@/eval/lib/util"
-import { isZero } from "@/eval/ty/check"
 import type { Cursor } from "@/field/model"
 import { h, hx } from "@/jsx"
 import { frac, int, type SReal } from "@/lib/sreal"
@@ -238,7 +237,7 @@ export class Slider {
   }
 
   get value() {
-    if (isZero(this._step)) {
+    if (this._step.zero()) {
       const step = this.virtualStep()
       return this._value.div(step).round().mul(step)
     } else {

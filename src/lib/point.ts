@@ -8,7 +8,7 @@ type PointData<N extends number> =
 
 /** A point type based on plain JavaScript floating-point numbers. */
 export class Point<out N extends number = 2> {
-  private constructor(readonly d: PointData<N>) {}
+  private constructor(private readonly d: PointData<N>) {}
 
   get x(): N extends 2 ? number : number | undefined {
     return this.d[0]
@@ -19,31 +19,31 @@ export class Point<out N extends number = 2> {
   }
 
   add(other: Point<N>): Point<N> {
-    return px(this.d.map((a, i) => a + other.d[i]!)) as Point<any>
+    return pxd(this.d.map((a, i) => a + other.d[i]!)) as Point<any>
   }
 
   sub(other: Point<N>): Point<N> {
-    return px(this.d.map((a, i) => a - other.d[i]!)) as Point<any>
+    return pxd(this.d.map((a, i) => a - other.d[i]!)) as Point<any>
   }
 
   mulEach(other: Point<N>): Point<N> {
-    return px(this.d.map((a, i) => a * other.d[i]!)) as Point<any>
+    return pxd(this.d.map((a, i) => a * other.d[i]!)) as Point<any>
   }
 
   mulR(other: number): Point<N> {
-    return px(this.d.map((x) => x * other)) as Point<any>
+    return pxd(this.d.map((x) => x * other)) as Point<any>
   }
 
   divR(other: number): Point<N> {
-    return px(this.d.map((x) => x / other)) as Point<any>
+    return pxd(this.d.map((x) => x / other)) as Point<any>
   }
 
   unsign(): Point<N> {
-    return px(this.d.map((x) => abs(x))) as Point<any>
+    return pxd(this.d.map((x) => abs(x))) as Point<any>
   }
 
   neg(): Point<N> {
-    return px(this.d.map((x) => -x)) as Point<any>
+    return pxd(this.d.map((x) => -x)) as Point<any>
   }
 
   hypot(): number {
@@ -75,12 +75,16 @@ export class Point<out N extends number = 2> {
   }
 }
 
-export function px<const T extends readonly number[]>(
-  data: T,
-): Point<T["length"]> {
-  return new (Point as any)(data)
+export function px(x: number, y: number): Point<2> {
+  return new (Point as any)([x, y])
 }
 
-export function pxnan<const N extends number>(n: N): Point<N> {
-  return px(Array.from({ length: n }, () => NaN)) as Point<any>
+export function pxd<const T extends readonly number[]>(
+  d: T,
+): Point<T["length"]> {
+  return new (Point as any)(d)
+}
+
+export function pxnan(): Point<2> {
+  return px(NaN, NaN)
 }

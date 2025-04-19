@@ -12,10 +12,10 @@ interface DilationGlsl {
 }
 
 export function dilateJs(by: DilationJs, target: SPoint) {
-  const x = sub(target.x, by.c.x)
-  const y = sub(target.y, by.c.y)
+  const x = target.x.sub(by.c.x)
+  const y = target.y.sub(by.c.y)
 
-  return pt(add(mul(x, by.s), by.c.x), add(mul(y, by.s), by.c.y))
+  return pt(add(x.mul(by.s), by.c.x), add(y.mul(by.s), by.c.y))
 }
 
 function dilateGlsl(ctx: GlslContext, by: DilationGlsl, target: string) {

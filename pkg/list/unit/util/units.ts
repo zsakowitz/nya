@@ -1,12 +1,12 @@
-import type { SReal } from "@/eval/ty"
+import { approx, frac, int, type SReal } from "@/lib/sreal"
 import type { UnitKind } from "./kind"
 import type { BaseUnit, Unit } from "./system"
 
 export function unit(
   label: string,
   category: UnitKind | BaseUnit[],
-  scale: SReal = frac(1, 1),
-  offset: SReal = frac(0, 1),
+  scale: SReal = int(1),
+  offset: SReal = int(0),
 ): Unit {
   return {
     label,
@@ -29,12 +29,12 @@ export const UNIT_MOLE = unit("mol", "mol")
 const cd = unit("cd", "cd")
 
 const g = unit("g", "kg", frac(1, 1e3))
-const au = unit("au", "m", real(149597870700))
+const au = unit("au", "m", int(149597870700))
 const min = unit("min", "s", frac(60, 1))
 const hr = unit("hr", "s", frac(3600, 1))
-const dC = unit("°C", "K", real(1), frac(5463, 20))
+const dC = unit("°C", "K", int(1), frac(5463, 20))
 const dF = unit("°F", "K", frac(5, 9), frac(45967, 180))
-const ddC = unit("∆°C", "K", real(1))
+const ddC = unit("∆°C", "K", int(1))
 const ddF = unit("∆°F", "K", frac(5, 9))
 const d = unit("d", "s", frac(86400, 1))
 const Hz = unit("Hz", [{ unit: "s", exp: -1 }], frac(1, 1))
@@ -133,7 +133,7 @@ const G = unit(
   ],
   frac(1, 1e4),
 )
-export const UNIT_AMU = unit("amu", "kg", real(1.6605390689252e-27))
+export const UNIT_AMU = unit("amu", "kg", int(1.6605390689252e-27))
 
 const SCALABLE: Record<string, Unit> = {
   // @ts-expect-error ts doesn't recognize __proto__
@@ -245,7 +245,7 @@ const SCALARS = Object.entries({
 const SCALED = Object.fromEntries(
   SCALARS.flatMap(([name, mx]) =>
     Object.entries(SCALABLE)
-      .filter((x) => num(x[1].base.offset) == 0)
+      .filter((x) => x[1].base.offset.zero())
       .map(([k, v]) => [
         name + k,
         {
@@ -253,7 +253,7 @@ const SCALED = Object.fromEntries(
           base: {
             dst: v.base.dst,
             offset: v.base.offset,
-            scale: mul(v.base.scale, mx),
+            scale: v.base.scale.mul(mx),
           },
         },
       ]),

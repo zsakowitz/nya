@@ -1,4 +1,4 @@
-import { px } from "./point"
+import { pxd, type Point } from "./point"
 import type { SComplex } from "./scomplex"
 import { approx, int, type SReal } from "./sreal"
 
@@ -82,15 +82,12 @@ export class SPoint<out N extends number = 2> {
     return `vec${2 * this.d.length}(${this.d.map((x) => x.gl64()).join(", ")})`
   }
 
-  ns() {
-    return px(this.d.map((x) => x.num()))
+  ns(): Point<N> {
+    return pxd(this.d.map((x) => x.num())) as Point<any>
   }
 
   xy(this: SPoint<2>) {
-    return {
-      x: this.d[0].num(),
-      y: this.d[1].num(),
-    }
+    return px(this.d[0].num(), this.d[1].num())
   }
 }
 

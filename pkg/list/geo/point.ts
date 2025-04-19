@@ -302,7 +302,7 @@ export default {
     OP_ADD.add(
       ["point64", "point64"],
       "point64",
-      (a, b) => pt(add(a.value.x, b.value.x), add(a.value.y, b.value.y)),
+      (a, b) => pt(a.value.x.add(b.value.x), a.value.y.add(b.value.y)),
       (ctx, ar, br) => {
         const a = ctx.cache(ar)
         const b = ctx.cache(br)
@@ -312,7 +312,7 @@ export default {
     ).add(
       ["point32", "point32"],
       "point32",
-      (a, b) => pt(add(a.value.x, b.value.x), add(a.value.y, b.value.y)),
+      (a, b) => pt(a.value.x.add(b.value.x), a.value.y.add(b.value.y)),
       (_, a, b) => `(${a.expr} + ${b.expr})`,
       "(2,3)+(4,-7)=(8,-4)",
     )
@@ -320,7 +320,7 @@ export default {
     OP_SUB.add(
       ["point64", "point64"],
       "point64",
-      (a, b) => pt(sub(a.value.x, b.value.x), sub(a.value.y, b.value.y)),
+      (a, b) => pt(a.value.x.sub(b.value.x), a.value.y.sub(b.value.y)),
       (ctx, ar, br) => {
         const a = ctx.cache(ar)
         const b = ctx.cache(br)
@@ -330,7 +330,7 @@ export default {
     ).add(
       ["point32", "point32"],
       "point32",
-      (a, b) => pt(sub(a.value.x, b.value.x), sub(a.value.y, b.value.y)),
+      (a, b) => pt(a.value.x.sub(b.value.x), a.value.y.sub(b.value.y)),
       (_, a, b) => `(${a.expr} - ${b.expr})`,
       "(2,3)-(4,-7)=(-2,10)",
     )
@@ -417,7 +417,7 @@ export default {
     OP_ODOT.add(
       ["point64", "point64"],
       "point64",
-      (a, b) => pt(mul(a.value.x, b.value.x), mul(a.value.y, b.value.y)),
+      (a, b) => pt(a.value.x.mul(b.value.x), a.value.y.mul(b.value.y)),
       (ctx, a, b) => {
         declareMulR64(ctx)
         declareOdotC64(ctx)
@@ -427,7 +427,7 @@ export default {
     ).add(
       ["point32", "point32"],
       "point32",
-      (a, b) => pt(mul(a.value.x, b.value.x), mul(a.value.y, b.value.y)),
+      (a, b) => pt(a.value.x.mul(b.value.x), a.value.y.mul(b.value.y)),
       (_, a, b) => {
         return `(${a.expr} * ${b.expr})`
       },
@@ -475,7 +475,7 @@ export default {
     OP_CDOT.add(
       ["point64", "r64"],
       "point64",
-      (a, b) => pt(mul(a.value.x, b.value), mul(a.value.y, b.value)),
+      (a, b) => pt(a.value.x.mul(b.value), a.value.y.mul(b.value)),
       (ctx, ar, br) => {
         declareMulR64(ctx)
         const a = ctx.cache(ar)
@@ -487,7 +487,7 @@ export default {
       .add(
         ["r64", "point64"],
         "point64",
-        (b, a) => pt(mul(a.value.x, b.value), mul(a.value.y, b.value)),
+        (b, a) => pt(a.value.x.mul(b.value), a.value.y.mul(b.value)),
         (ctx, br, ar) => {
           declareMulR64(ctx)
           const a = ctx.cache(ar)
@@ -499,14 +499,14 @@ export default {
       .add(
         ["point32", "r32"],
         "point32",
-        (a, b) => pt(mul(a.value.x, b.value), mul(a.value.y, b.value)),
+        (a, b) => pt(a.value.x.mul(b.value), a.value.y.mul(b.value)),
         (_, a, b) => `(${a.expr} * ${b.expr})`,
         [],
       )
       .add(
         ["r32", "point32"],
         "point32",
-        (b, a) => pt(mul(a.value.x, b.value), mul(a.value.y, b.value)),
+        (b, a) => pt(a.value.x.mul(b.value), a.value.y.mul(b.value)),
         (_, a, b) => `(${a.expr} * ${b.expr})`,
         "7\\cdot(8,-3)=(56,-21)",
       )
@@ -514,7 +514,7 @@ export default {
     OP_DIV.add(
       ["point32", "r32"],
       "point32",
-      (a, b) => pt(div(a.value.x, b.value), div(a.value.y, b.value)),
+      (a, b) => pt(a.value.x.div(b.value), a.value.y.div(b.value)),
       (_, a, b) => `(${a.expr} / ${b.expr})`,
       "(8,-6)/2=(4,-3)",
     )

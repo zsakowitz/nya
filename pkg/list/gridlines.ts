@@ -77,10 +77,7 @@ function createDrawAxes(paper: Cv) {
 
   function paperToCanvas(x: number, y: number) {
     const pt = paper.toOffset({ x, y })
-    return {
-      x: pt.x * scale(),
-      y: pt.y * scale(),
-    }
+    return px(pt.x * scale(), pt.y * scale())
   }
 
   function drawScreenLineX(x: number, w: number) {

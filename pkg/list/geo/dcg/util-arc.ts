@@ -1,6 +1,5 @@
 import type { Val } from "@/eval/ty"
 import { gliderOnLine } from "@/eval/ty/info"
-import type { Point } from "@/sheet/point"
 import { Cv } from "@/sheet/ui/cv"
 import { getRayBounds } from "./util-ext/ray"
 
@@ -15,10 +14,10 @@ function intersectLineLineJs(a: [Point, Point], b: [Point, Point]): Point {
   const x3y4 = x3 * y4
   const x4y3 = y3 * x4
 
-  return {
-    x: ((x1y2 - x2y1) * (x3 - x4) - (x1 - x2) * (x3y4 - x4y3)) / d,
-    y: ((x1y2 - x2y1) * (y3 - y4) - (y1 - y2) * (x3y4 - x4y3)) / d,
-  }
+  return px(
+    ((x1y2 - x2y1) * (x3 - x4) - (x1 - x2) * (x3y4 - x4y3)) / d,
+    ((x1y2 - x2y1) * (y3 - y4) - (y1 - y2) * (x3y4 - x4y3)) / d,
+  )
 }
 
 // Arcs are very strange, since they can exist in a massive variety of states.
@@ -147,14 +146,16 @@ export function arcPath(cv: Cv, arc: Arc): ArcPath {
     case "tworay":
       return {
         type: "tworay",
-        r1: getRayBounds(cv, arc.p1, {
-          x: 2 * arc.p1.x - arc.p3.x,
-          y: 2 * arc.p1.y - arc.p3.y,
-        }),
-        r3: getRayBounds(cv, arc.p3, {
-          x: 2 * arc.p3.x - arc.p1.x,
-          y: 2 * arc.p3.y - arc.p1.y,
-        }),
+        r1: getRayBounds(
+          cv,
+          arc.p1,
+          px(2 * arc.p1.x - arc.p3.x, 2 * arc.p1.y - arc.p3.y),
+        ),
+        r3: getRayBounds(
+          cv,
+          arc.p3,
+          px(2 * arc.p3.x - arc.p1.x, 2 * arc.p3.y - arc.p1.y),
+        ),
       }
     case "circle":
       const delta = cv.toCanvasDelta({ x: arc.r, y: arc.r })
@@ -177,18 +178,15 @@ export function glideArc(arc: Arc, at: number): Point {
 
   if (arc.type == "circle") {
     const a = arc.a1 * (1 - t) + arc.a3 * t
-    return {
-      x: Math.cos(a) * arc.r + arc.c.x,
-      y: Math.sin(a) * arc.r + arc.c.y,
-    }
+    return px(Math.cos(a) * arc.r + arc.c.x, Math.sin(a) * arc.r + arc.c.y)
   } else {
     if (arc.type == "tworay" && 0 < at && at < 1) {
       return NANPT
     }
-    return {
-      x: arc.p1.x * (1 - t) + arc.p3.x * t,
-      y: arc.p1.y * (1 - t) + arc.p3.y * t,
-    }
+    return px(
+      arc.p1.x * (1 - t) + arc.p3.x * t,
+      arc.p1.y * (1 - t) + arc.p3.y * t,
+    )
   }
 }
 

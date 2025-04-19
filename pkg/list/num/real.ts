@@ -44,7 +44,6 @@ import type { FnOverload, FnOverloadVar } from "@/eval/ops/dist-manual"
 import { FnList } from "@/eval/ops/list"
 import { unary } from "@/eval/sym"
 import type { SReal, Ty, TyName, Type } from "@/eval/ty"
-import { isZero } from "@/eval/ty/check"
 import { gl64 } from "@/eval/ty/create-r64"
 import type { TyWrite } from "@/eval/ty/display"
 import { highRes, type TyExtras } from "@/eval/ty/info"
@@ -162,7 +161,7 @@ FN_XPRODY.add(
       return real(0)
     }
 
-    return mul(a.value, b.value)
+    return a.value.mul(b.value)
   },
   (ctx, ar, br) => {
     const a = ctx.cache(ar)
@@ -327,13 +326,13 @@ export default {
     OP_ADD.add(
       ["r64", "r64"],
       "r64",
-      (a, b) => add(a.value, b.value),
+      (a, b) => a.value.add(b.value),
       (ctx, a, b) => addR64(ctx, a.expr, b.expr),
       [],
     ).add(
       ["r32", "r32"],
       "r32",
-      (a, b) => add(a.value, b.value),
+      (a, b) => a.value.add(b.value),
       (_, a, b) => `(${a.expr} + ${b.expr})`,
       "2+3=5",
     )
@@ -341,13 +340,13 @@ export default {
     OP_CROSS.add(
       ["r64", "r64"],
       "r64",
-      (a, b) => mul(a.value, b.value),
+      (a, b) => a.value.mul(b.value),
       (ctx, a, b) => mulR64(ctx, a.expr, b.expr),
       [],
     ).add(
       ["r32", "r32"],
       "r32",
-      (a, b) => mul(a.value, b.value),
+      (a, b) => a.value.mul(b.value),
       (_, a, b) => `(${a.expr} * ${b.expr})`,
       "2\\times3=6",
     )
@@ -355,7 +354,7 @@ export default {
     OP_DIV.add(
       ["r32", "r32"],
       "r32",
-      (a, b) => div(a.value, b.value),
+      (a, b) => a.value.div(b.value),
       (_, a, b) => `((${a.expr}) / (${b.expr}))`,
       "8÷-2=-4",
     )
@@ -381,13 +380,13 @@ export default {
     OP_CDOT.add(
       ["r64", "r64"],
       "r64",
-      (a, b) => mul(a.value, b.value),
+      (a, b) => a.value.mul(b.value),
       (ctx, a, b) => mulR64(ctx, a.expr, b.expr),
       [],
     ).add(
       ["r32", "r32"],
       "r32",
-      (a, b) => mul(a.value, b.value),
+      (a, b) => a.value.mul(b.value),
       (_, a, b) => `(${a.expr} * ${b.expr})`,
       "2\\cdot3=6",
     )
@@ -409,13 +408,13 @@ export default {
     OP_ODOT.add(
       ["r64", "r64"],
       "r64",
-      (a, b) => mul(a.value, b.value),
+      (a, b) => a.value.mul(b.value),
       (ctx, a, b) => mulR64(ctx, a.expr, b.expr),
       [],
     ).add(
       ["r32", "r32"],
       "r32",
-      (a, b) => mul(a.value, b.value),
+      (a, b) => a.value.mul(b.value),
       (_, a, b) => `(${a.expr} * ${b.expr})`,
       "2\\odot3=6",
     )
@@ -437,7 +436,7 @@ export default {
     OP_RAISE.add(
       ["r32", "r32"],
       "r32",
-      (a, b) => raise(a.value, b.value),
+      (a, b) => a.value.pow(b.value),
       (ctx, a, b) => {
         declarePowR32(ctx)
         return `_nya_pow_r32(${a.expr}, ${b.expr})`
@@ -448,13 +447,13 @@ export default {
     OP_SUB.add(
       ["r64", "r64"],
       "r64",
-      (a, b) => sub(a.value, b.value),
+      (a, b) => a.value.sub(b.value),
       (ctx, a, b) => subR64(ctx, a.expr, b.expr),
       [],
     ).add(
       ["r32", "r32"],
       "r32",
-      (a, b) => sub(a.value, b.value),
+      (a, b) => a.value.sub(b.value),
       (_, a, b) => `(${a.expr} - ${b.expr})`,
       "3-7=-4",
     )
@@ -462,13 +461,13 @@ export default {
     OP_PLOTSIGN.add(
       ["r64", "r64"],
       "r32",
-      (a, b) => sub(a.value, b.value),
+      (a, b) => a.value.sub(b.value),
       (ctx, a, b) => subR64(ctx, a.expr, b.expr) + ".x",
       [],
     ).add(
       ["r32", "r32"],
       "r32",
-      (a, b) => sub(a.value, b.value),
+      (a, b) => a.value.sub(b.value),
       (_, a, b) => `(${a.expr} - ${b.expr})`,
       "3-7=-4",
     )

@@ -11,7 +11,7 @@ import type { Package } from "#/types"
 import { fn, type GlslContext } from "@/eval/lib/fn"
 import {
   addP,
-  cx,
+  px,
   divP,
   lnP,
   mulP,
@@ -21,7 +21,6 @@ import {
   sqrtP,
   subP,
 } from "@/eval/ops/complex"
-import type { Point } from "@/sheet/point"
 import { declareSqrt, divJs } from "../complex"
 import {
   FN_ARCOSH,
@@ -39,17 +38,11 @@ import {
 } from "./real"
 
 export function sinhJs(a: Point) {
-  return {
-    x: Math.cos(-a.y) * Math.sinh(a.x),
-    y: -Math.sin(-a.y) * Math.cosh(a.x),
-  }
+  return px(Math.cos(-a.y) * Math.sinh(a.x), -Math.sin(-a.y) * Math.cosh(a.x))
 }
 
 export function coshJs(a: Point) {
-  return {
-    x: Math.cos(-a.y) * Math.cosh(a.x),
-    y: -Math.sin(-a.y) * Math.sinh(a.x),
-  }
+  return px(Math.cos(-a.y) * Math.cosh(a.x), -Math.sin(-a.y) * Math.sinh(a.x))
 }
 
 export function tanhJs(a: Point) {
@@ -87,21 +80,21 @@ export const cothGl = fn(
 )`return ${divGl}(${coshGl}(${0}), ${sinhGl}(${0}));`
 
 function asinhJs(a: Point) {
-  return lnP(addP(a, sqrtP(addP(sqrP(a), cx(1)))))
+  return lnP(addP(a, sqrtP(addP(sqrP(a), px(1)))))
 }
 
 function acoshJs(a: Point) {
-  const p1sqrt = sqrP(addP(a, cx(1)))
-  const m1sqrt = sqrP(addP(a, cx(-1)))
+  const p1sqrt = sqrP(addP(a, px(1)))
+  const m1sqrt = sqrP(addP(a, px(-1)))
   return lnP(addP(a, mulP(p1sqrt, m1sqrt)))
 }
 
 function atanhJs(a: Point) {
-  return scaleP(0.5, lnP(divP(addP(cx(1), a), subP(cx(1), a))))
+  return scaleP(0.5, lnP(divP(addP(px(1), a), subP(px(1), a))))
 }
 
 function acothJs(a: Point) {
-  return scaleP(0.5, lnP(divP(addP(a, cx(1)), subP(a, cx(1)))))
+  return scaleP(0.5, lnP(divP(addP(a, px(1)), subP(a, px(1)))))
 }
 
 function declareAsinh(ctx: GlslContext) {

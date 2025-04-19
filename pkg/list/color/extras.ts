@@ -1,7 +1,9 @@
 import type { Package } from "#/types"
-import { FnDist } from "@/eval/ops/dist"
-import { isDark } from "@/sheet/theme"
 import { FN_VALID } from "$/bool"
+import { FnDist } from "@/eval/ops/dist"
+import { pt } from "@/lib/spoint"
+import { int } from "@/lib/sreal"
+import { isDark } from "@/sheet/theme"
 import { oklab } from "./util-oklab"
 
 const FN_OKLAB = new FnDist(
@@ -36,14 +38,15 @@ const FN_LIGHTDARK = new FnDist(
     "color",
     (a) => {
       if (isDark()) {
-        return {
-          type: "color",
-          r: sub(frac(255, 0), a.value.r),
-          g: sub(frac(255, 0), a.value.g),
-          b: sub(frac(255, 0), a.value.b),
-          a: a.value.a,
-        }
-      } else return a.value
+        return pt([
+          int(1).sub(a.value.d[0]),
+          int(1).sub(a.value.d[1]),
+          int(1).sub(a.value.d[2]),
+          a.value.d[3],
+        ])
+      } else {
+        return a.value
+      }
     },
     (ctx, ar) => {
       const a = ctx.cache(ar)
@@ -71,17 +74,17 @@ export default {
       ["color"],
       "bool",
       ({ value: c }) => {
-        const r = c.r.num()
-        const g = c.g.num()
-        const b = c.b.num()
-        const a = c.a.num()
+        const r = c.d[0].num()
+        const g = c.d[1].num()
+        const b = c.d[2].num()
+        const a = c.d[3].num()
         return (
           0 <= r &&
-          r <= 255 &&
+          r <= 1 &&
           0 <= g &&
-          g <= 255 &&
+          g <= 1 &&
           0 <= b &&
-          b <= 255 &&
+          b <= 1 &&
           0 <= a &&
           a <= 1
         )
@@ -156,7 +159,7 @@ export default {
     FN_R.add(
       ["color"],
       "r32",
-      (a) => div(a.value.r, real(255)),
+      (a) => a.value.d[0],
       (_, a) => `${a.expr}.x`,
       "rgb(23,45,250).r=\\frac{23}{255}",
     )
@@ -164,7 +167,7 @@ export default {
     FN_G.add(
       ["color"],
       "r32",
-      (a) => div(a.value.g, real(255)),
+      (a) => a.value.d[1],
       (_, a) => `${a.expr}.y`,
       "rgb(23,45,250).g=\\frac{45}{255}",
     )
@@ -172,7 +175,7 @@ export default {
     FN_B.add(
       ["color"],
       "r32",
-      (a) => div(a.value.b, real(255)),
+      (a) => a.value.d[2],
       (_, a) => `${a.expr}.z`,
       "rgb(23,45,250).r=\\frac{250}{255}",
     )
@@ -180,7 +183,7 @@ export default {
     FN_A.add(
       ["color"],
       "r32",
-      (a) => a.value.a,
+      (a) => a.value.d[3],
       (_, a) => `${a.expr}.w`,
       "rgb(23,45,250,0.3).a=0.3",
     )

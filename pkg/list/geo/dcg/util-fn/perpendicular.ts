@@ -9,7 +9,7 @@ export function perpendicularJs(
   { value: b }: { value: SPoint },
 ): Val<"line"> {
   return Object.assign(
-    [b, pt(add(b.x, sub(B.y, A.y)), sub(b.y, sub(B.x, A.x)))] satisfies [
+    [b, pt(add(b.x, B.y.sub(A.y)), sub(b.y, B.x.sub(A.x)))] satisfies [
       SPoint,
       SPoint,
     ],

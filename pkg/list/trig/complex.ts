@@ -13,9 +13,8 @@ import {
   subPt,
 } from "$/num/complex"
 import { fn, type GlslContext } from "@/eval/lib/fn"
-import { cx, divP, recipP, sqrtP } from "@/eval/ops/complex"
+import { px, divP, recipP, sqrtP } from "@/eval/ops/complex"
 import type { SPoint } from "@/eval/ty"
-import type { Point } from "@/sheet/point"
 import type { RequireRadiansReason } from "@/sheet/ui/sheet"
 import {
   FN_ARCCOS,
@@ -57,17 +56,11 @@ export const cotGl = fn(
 )`return ${divGl}(${cosGl}(${0}), ${sinGl}(${0}));`
 
 export function sinJs(a: Point) {
-  return {
-    x: Math.sin(a.x) * Math.cosh(a.y),
-    y: Math.cos(a.x) * Math.sinh(a.y),
-  }
+  return px(Math.sin(a.x) * Math.cosh(a.y), Math.cos(a.x) * Math.sinh(a.y))
 }
 
 export function cosJs(a: Point) {
-  return {
-    x: Math.cos(a.x) * Math.cosh(a.y),
-    y: -Math.sin(a.x) * Math.sinh(a.y),
-  }
+  return px(Math.cos(a.x) * Math.cosh(a.y), -Math.sin(a.x) * Math.sinh(a.y))
 }
 
 export function tanJs(a: Point) {
@@ -90,8 +83,8 @@ function sqrtJs(z: SPoint): SPoint {
   return rept(sqrtP(z.xy()))
 }
 
-const I = rept(cx(0, 1))
-const ONE = rept(cx(1))
+const I = rept(px(0, 1))
+const ONE = rept(px(1))
 
 export function declareSqrt(ctx: GlslContext) {
   ctx.glsl`vec2 _helper_sqrt(vec2 z) {

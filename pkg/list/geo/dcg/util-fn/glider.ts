@@ -8,7 +8,7 @@ function js(
   { value: t }: { value: SReal },
 ) {
   const s = sub(real(1), t)
-  return pt(add(mul(x1, s), mul(x2, t)), add(mul(y1, s), mul(y2, t)))
+  return pt(add(x1.mul(s), x2.mul(t)), add(y1.mul(s), y2.mul(t)))
 }
 
 function glsl(ctx: GlslContext, ar: GlslVal, b: GlslVal) {

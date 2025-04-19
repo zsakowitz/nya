@@ -9,7 +9,7 @@ import { CmdWord } from "@/field/cmd/leaf/word"
 import { CmdBrack } from "@/field/cmd/math/brack"
 import { L, R } from "@/field/dir"
 import { Block } from "@/field/model"
-import { b, fa, h, px } from "@/jsx"
+import { b, fa, h, paragraphTag } from "@/jsx"
 import { defineExt } from "@/sheet/ext"
 import type { Cv } from "@/sheet/ui/cv"
 import { Order } from "@/sheet/ui/cv/consts"
@@ -198,18 +198,18 @@ export default {
       poster: String.raw`\operatorname{image}\left(i_{1},\operatorname{segment}\left(...\right)\right)`,
       render() {
         return [
-          px`In project nya, images are expressions, just like everything else. To create one, select the ${b("image")} item type in the second-topmost navigation bar.`,
-          px`To draw the image onto the graphpaper, use the ${b("image")} function.`,
+          paragraphTag`In project nya, images are expressions, just like everything else. To create one, select the ${b("image")} item type in the second-topmost navigation bar.`,
+          paragraphTag`To draw the image onto the graphpaper, use the ${b("image")} function.`,
           example(
             String.raw`\operatorname{image}\left(i_{1},\operatorname{segment}\left(\left(0,0\right),\left(1,0\right)\right)\right)`,
             null,
           ),
-          px`The ${b("image")} function places an image on top of a line segment with its preferred aspect ratio, so it isn't distorted. If you want distortion, you can pass your own aspect ratio:`,
+          paragraphTag`The ${b("image")} function places an image on top of a line segment with its preferred aspect ratio, so it isn't distorted. If you want distortion, you can pass your own aspect ratio:`,
           example(
             String.raw`\operatorname{image}\left(i_{1},\operatorname{segment}\left(\left(0,0\right),\left(1,0\right)\right,\frac23\right)`,
             null,
           ),
-          px`Negative values for the aspect ratio will draw a mirrored version of the image on the other side of the line segment.`,
+          paragraphTag`Negative values for the aspect ratio will draw a mirrored version of the image on the other side of the line segment.`,
         ]
       },
     },

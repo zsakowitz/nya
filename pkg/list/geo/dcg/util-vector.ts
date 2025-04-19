@@ -1,4 +1,3 @@
-import type { Point } from "@/sheet/point"
 import type { Cv } from "@/sheet/ui/cv"
 import { Size } from "@/sheet/ui/cv/consts"
 

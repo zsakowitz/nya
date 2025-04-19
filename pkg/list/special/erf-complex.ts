@@ -1,7 +1,6 @@
 import erfC32Gl from "#/glsl/erf-c32.glsl"
 import type { Package } from "#/types"
 import { divP, expP, mulP, sqrP } from "@/eval/ops/complex"
-import type { Point } from "@/sheet/point"
 import { declareMulC32 } from "../num/complex"
 import { FN_ERF } from "./erf"
 
@@ -34,14 +33,8 @@ export function faddeevaPt(z: Point): Point {
 
   for (let m = 0; m < N; ++m) {
     const dw = divP(
-      {
-        x: A[m]! + mulP(t, { x: 0, y: B[m]! }).x,
-        y: mulP(t, { x: 0, y: B[m]! }).y,
-      },
-      {
-        x: C[m]! * C[m]! - sqrP(t).x,
-        y: -sqrP(t).y,
-      },
+      px(A[m]! + mulP(t, { x: 0, y: B[m]! }).x, mulP(t, { x: 0, y: B[m]! }).y),
+      px(C[m]! * C[m]! - sqrP(t).x, -sqrP(t).y),
     )
     w = { x: w.x + dw.x, y: w.y + dw.y }
   }
@@ -55,17 +48,8 @@ export function faddeevaPt(z: Point): Point {
 
 function erfPos(z: Point): Point {
   const z_1i = mulP({ x: 0, y: 1 }, z)
-  const res = mulP(
-    expP({
-      x: -sqrP(z).x,
-      y: -sqrP(z).y,
-    }),
-    faddeevaPt(z_1i),
-  )
-  return {
-    x: 1 - res.x,
-    y: -res.y,
-  }
+  const res = mulP(expP(px(-sqrP(z).x, -sqrP(z).y)), faddeevaPt(z_1i))
+  return px(1 - res.x, -res.y)
 }
 
 function erfPt(z: Point): Point {

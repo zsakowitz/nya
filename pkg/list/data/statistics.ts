@@ -213,7 +213,7 @@ export const FN_TOTAL = new FnList("total", "returns the sum of its inputs")
   .addSpread(
     "r64",
     "r64",
-    (args) => args.reduce((a, b) => add(a, b), real(0)),
+    (args) => args.reduce((a, b) => a.add(b), real(0)),
     (ctx, ...args) =>
       args.length ?
         args.map((x) => x.expr).reduce((a, b) => addR64(ctx, a, b))
@@ -223,7 +223,7 @@ export const FN_TOTAL = new FnList("total", "returns the sum of its inputs")
   .addSpread(
     "r32",
     "r32",
-    (args) => args.reduce((a, b) => add(a, b), real(0)),
+    (args) => args.reduce((a, b) => a.add(b), real(0)),
     (_, ...args) => `(${args.map((x) => x.expr).join(" + ") || "0.0"})`,
     "total([8,2,9])=19",
   )
@@ -234,7 +234,7 @@ function meanJs(args: SReal[]): SReal {
   }
 
   return div(
-    args.reduce((a, b) => add(a, b), real(0)),
+    args.reduce((a, b) => a.add(b), real(0)),
     frac(args.length, 1),
   )
 }
@@ -293,7 +293,7 @@ function middleJs(value: SReal[]): SReal {
 
   const lhs = value[value.length / 2 - 1]!
   const rhs = value[value.length / 2]!
-  return div(add(lhs, rhs), real(2))
+  return div(lhs.add(rhs), real(2))
 }
 
 const FN_MEDIAN = new FnList("median", "takes the median of its inputs")
@@ -511,8 +511,8 @@ function varJs(args: SReal[], sample: boolean): SReal {
   const mean = meanJs(args)
 
   const devs = args.reduce((a, b) => {
-    const dev = sub(b, mean)
-    return add(a, mul(dev, dev))
+    const dev = b.sub(mean)
+    return add(a, dev.mul(dev))
   }, real(0))
 
   return div(devs, frac(args.length - +sample, 1))
@@ -607,7 +607,7 @@ const FN_MAD = new FnList("mad", "mean absolute deviation").addSpread(
     }
 
     const mean = meanJs(args)
-    const tad = args.reduce((a, b) => add(a, abs(sub(b, mean))), real(0))
+    const tad = args.reduce((a, b) => add(a, abs(b.sub(mean))), real(0))
     return div(tad, frac(args.length, 1))
   },
   (ctx, ...args) => {
@@ -633,7 +633,7 @@ function covJs(a: SReal[], b: SReal[], sample: boolean) {
   const mb = meanJs(b)
 
   return div(
-    a.reduce((c, a, i) => add(c, mul(sub(a, ma), sub(b[i]!, mb))), real(0)),
+    a.reduce((c, a, i) => add(c, mul(a.sub(ma), sub(b[i]!, mb))), real(0)),
     frac(a.length - +sample, 1),
   )
 }
@@ -871,7 +871,7 @@ const TY_STATS: TyInfoByName<"stats"> = {
       new CmdStats(
         value.map((value) => {
           const block = new Block(null)
-          props.at(block.cursor(R)).value.num()
+          props.at(block.cursor(R)).num(value)
           return block
         }) satisfies Block[] as any,
       ).insertAt(props.cursor, L)

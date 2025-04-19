@@ -1,5 +1,5 @@
+import { int } from "@/lib/sreal"
 import type { GlslValue, JsValue } from "."
-import { real } from "./create"
 
 export function splitRaw(value: number): [number, number] {
   const high = new Float32Array([value])[0]!
@@ -28,11 +28,7 @@ export function splitDual(
   return {
     label,
     glsl,
-    js: {
-      list: false,
-      type: glsl.type,
-      value: real(value),
-    },
+    js: { list: false, type: glsl.type, value: int(value) },
     display: true,
   }
 }

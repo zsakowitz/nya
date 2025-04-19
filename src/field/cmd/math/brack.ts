@@ -187,7 +187,7 @@ export class CmdBrack extends Command<[Block]> {
     const brack = new CmdBrack("[", "]", null, inner)
     const cursor = inner.cursor(R)
     for (const digit of BigInt(index).toString()) {
-      new Cmddigit.num().insertAt(cursor, L)
+      new CmdNum(digit).insertAt(cursor, L)
     }
     return brack
   }

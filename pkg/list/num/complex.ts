@@ -26,7 +26,6 @@ import { fn, type GlslContext } from "@/eval/lib/fn"
 import { FnDist } from "@/eval/ops/dist"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "@/eval/ops/vars"
 import type { GlslVal, SPoint } from "@/eval/ty"
-import { isZero } from "@/eval/ty/check"
 import { gl64 } from "@/eval/ty/create-r64"
 import type { TyWrite } from "@/eval/ty/display"
 import { highRes, type TyExtras } from "@/eval/ty/info"
@@ -252,28 +251,28 @@ function dotC32(
 }
 
 export function subPt(a: SPoint, b: SPoint) {
-  return pt(sub(a.x, b.x), sub(a.y, b.y))
+  return pt(a.x.sub(b.x), a.y.sub(b.y))
 }
 
 export function addPt(a: SPoint, b: SPoint) {
-  return pt(add(a.x, b.x), add(a.y, b.y))
+  return pt(a.x.add(b.x), a.y.add(b.y))
 }
 
 export function mulPt({ x: a, y: b }: SPoint, { x: c, y: d }: SPoint) {
-  return pt(sub(mul(a, c), mul(b, d)), add(mul(b, c), mul(a, d)))
+  return pt(sub(a.mul(c), b.mul(d)), add(b.mul(c), a.mul(d)))
 }
 
 export function divPt({ x: a, y: b }: SPoint, { x: c, y: d }: SPoint): SPoint {
-  const x = add(mul(a, c), mul(b, d))
-  const y = sub(mul(b, c), mul(a, d))
-  const denom = add(mul(c, c), mul(d, d))
-  return pt(div(x, denom), div(y, denom))
+  const x = add(a.mul(c), b.mul(d))
+  const y = sub(b.mul(c), a.mul(d))
+  const denom = add(c.mul(c), d.mul(d))
+  return pt(x.div(denom), y.div(denom))
 }
 
 export function recipPt({ x: c, y: d }: SPoint): SPoint {
-  const denom = add(mul(c, c), mul(d, d))
+  const denom = add(c.mul(c), d.mul(d))
   if (isZero(denom)) return pt(approx(1 / c.num()), approx(1 / d.num()))
-  return pt(div(c, denom), div(neg(d), denom))
+  return pt(c.div(denom), div(neg(d), denom))
 }
 
 export function declareDiv(ctx: GlslContext) {
@@ -339,7 +338,7 @@ export default {
       "c32",
       ({ value: a }) => {
         const denom = real(Math.hypot(a.x.num(), a.y.num()))
-        return pt(div(a.x, denom), div(a.y, denom))
+        return pt(a.x.div(denom), a.y.div(denom))
       },
       (ctx, ar) => {
         const a = ctx.cache(ar)
@@ -455,13 +454,13 @@ export default {
     FN_DOT.add(
       ["c64", "c64"],
       "r64",
-      (a, b) => sub(mul(a.value.x, b.value.x), mul(a.value.y, b.value.y)),
+      (a, b) => sub(a.value.x.mul(b.value.x), a.value.y.mul(b.value.y)),
       dotC64,
       [],
     ).add(
       ["c32", "c32"],
       "r32",
-      (a, b) => sub(mul(a.value.x, b.value.x), mul(a.value.y, b.value.y)),
+      (a, b) => sub(a.value.x.mul(b.value.x), a.value.y.mul(b.value.y)),
       dotC32,
       "dot(2+3i,4-5i)=23",
     )
@@ -600,7 +599,7 @@ export default {
     OP_ODOT.add(
       ["c64", "c64"],
       "c64",
-      (a, b) => pt(mul(a.value.x, b.value.x), mul(a.value.y, b.value.y)),
+      (a, b) => pt(a.value.x.mul(b.value.x), a.value.y.mul(b.value.y)),
       (ctx, a, b) => {
         declareMulR64(ctx)
         declareOdotC64(ctx)
@@ -610,7 +609,7 @@ export default {
     ).add(
       ["c32", "c32"],
       "c32",
-      (a, b) => pt(mul(a.value.x, b.value.x), mul(a.value.y, b.value.y)),
+      (a, b) => pt(a.value.x.mul(b.value.x), a.value.y.mul(b.value.y)),
       (_, a, b) => {
         return `(${a.expr} * ${b.expr})`
       },

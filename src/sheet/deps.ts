@@ -18,6 +18,7 @@ import type { Sym } from "@/eval/sym"
 import type { GlslValue, JsValue } from "@/eval/ty"
 import { Field } from "@/field/field"
 import type { Options } from "@/field/options"
+import { frac } from "@/lib/sreal"
 
 export class Scope {
   constructor(

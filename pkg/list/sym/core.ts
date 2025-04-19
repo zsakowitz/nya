@@ -104,7 +104,7 @@ export default {
             const c = block.cursor(R)
             for (const char of value.source.sub) {
               if ("0" <= char && char <= "9") {
-                new Cmdchar.num().insertAt(c, L)
+                new CmdNum(char).insertAt(c, L)
               } else {
                 new CmdWord(char, undefined, true).insertAt(c, L)
               }

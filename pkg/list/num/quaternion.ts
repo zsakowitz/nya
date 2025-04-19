@@ -49,10 +49,10 @@ function mulQ32(
   // + k(ah+bg-cf+de)
 
   return [
-    sub(sub(sub(mul(a, e), mul(b, f)), mul(c, g)), mul(d, h)),
-    sub(add(add(mul(a, f), mul(b, e)), mul(c, h)), mul(d, g)),
-    add(add(sub(mul(a, g), mul(b, h)), mul(c, e)), mul(d, f)),
-    add(sub(add(mul(a, h), mul(b, g)), mul(c, f)), mul(d, e)),
+    sub(sub(sub(a.mul(e), b.mul(f)), c.mul(g)), d.mul(h)),
+    sub(add(add(a.mul(f), b.mul(e)), c.mul(h)), d.mul(g)),
+    add(add(sub(a.mul(g), b.mul(h)), c.mul(e)), d.mul(f)),
+    add(sub(add(a.mul(h), b.mul(g)), c.mul(f)), d.mul(e)),
   ]
 }
 
@@ -178,7 +178,7 @@ export default {
       ["q32", "q32"],
       "q32",
       (a, { value: [r, i, j, k] }) => {
-        const hyp = add(mul(r, r), add(mul(i, i), add(mul(j, j), mul(k, k))))
+        const hyp = add(r.mul(r), add(i.mul(i), add(j.mul(j), k.mul(k))))
         const ret = mulQ32(a.value, [r, neg(i), neg(j), neg(k)])
         for (let i = 0; i < 4; i++) {
           ret[i] = div(ret[i]!, hyp)

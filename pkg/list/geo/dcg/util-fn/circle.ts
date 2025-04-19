@@ -9,10 +9,7 @@ function js(a: JsVal<"point32">, b: JsVal<"point32">) {
     center: a.value,
     // TODO: use approx and exact better
     radius: real(
-      Math.hypot(
-        num(sub(a.value.x, b.value.x)),
-        num(sub(a.value.y, b.value.y)),
-      ),
+      Math.hypot(num(a.value.x.sub(b.value.x)), num(a.value.y.sub(b.value.y))),
     ),
   }
 }

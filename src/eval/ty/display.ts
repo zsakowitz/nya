@@ -8,14 +8,13 @@ import { CmdBrack } from "@/field/cmd/math/brack"
 import { CmdSupSub } from "@/field/cmd/math/supsub"
 import { L, R } from "@/field/dir"
 import { Block, type Cursor } from "@/field/model"
-import type { JsVal, JsValue, SReal } from "."
+import { type SReal, frac, int } from "@/lib/sreal"
+import type { JsVal, JsValue } from "."
 import type { Node } from "../ast/token"
 import { js } from "../ast/tx"
 import type { PropsJs } from "../js"
 import { safe } from "../lib/util"
-import { isZero } from "./check"
 import { isReal } from "./coerce"
-import { frac, num, real } from "./create"
 import { TY_INFO } from "./info"
 
 export interface TyWrite<T> {
@@ -62,7 +61,7 @@ export class Display {
           break
         case "e": {
           if (digits[i + 1] != "+" && digits[i + 1] != "-") {
-            new Cmddigit.num().insertAt(cursor, L)
+            new CmdNum(digit).insertAt(cursor, L)
             break
           }
           if (tag) {
@@ -81,14 +80,14 @@ export class Display {
               if (digit == "-") {
                 new OpMinus().insertAt(cursor, L)
               } else if (digit != "+") {
-                new Cmddigit.num().insertAt(cursor, L)
+                new CmdNum(digit).insertAt(cursor, L)
               }
             }
           }
           break loop
         }
         default:
-          new Cmddigit.num().insertAt(cursor, L)
+          new CmdNum(digit).insertAt(cursor, L)
       }
     }
 
@@ -99,31 +98,14 @@ export class Display {
 
   protected canWriteBase() {
     const baseRaw = this.base
-
-    const base =
-      typeof baseRaw == "number" ? baseRaw
-      : baseRaw.type == "approx" ? baseRaw.value
-      : baseRaw.type == "exact" && baseRaw.d == 1 ? baseRaw.n
-      : null
-
-    return !(base == null || !safe(base) || base <= 1 || base > 36)
+    const base = baseRaw.num()
+    return safe(base) && 2 <= base && base <= 36
   }
 
   protected numToBase(value: number): string {
     const baseRaw = this.base
-
-    const base =
-      typeof baseRaw == "number" ? baseRaw
-      : baseRaw.type == "approx" ? baseRaw.value
-      : baseRaw.type == "exact" && baseRaw.d == 1 ? baseRaw.n
-      : null
-
-    if (
-      base == null ||
-      !safe(base) ||
-      !(2 <= base && base <= 36) ||
-      base == 10
-    ) {
+    const base = baseRaw.num()
+    if (!safe(base) || !(2 <= base && base <= 36) || base == 10) {
       let val = value.toPrecision(10)
       if (val.includes(".")) {
         if (val.includes("e")) {
@@ -182,7 +164,7 @@ export class Display {
     if (signed && val[0] != "-") val = "+" + val
     if (val == "Infinity") val = "∞"
     else if (val == "-Infinity") val = "-∞"
-    else if (numRaw.type == "approx" && val != "NaN" && val.indexOf(".") == -1)
+    else if (numRaw.isApprox() && val != "NaN" && val.indexOf(".") == -1)
       val += ".0"
     this.odigits(val, tag)
     return
@@ -192,7 +174,7 @@ export class Display {
     let wrote = false
 
     for (const [num, tag] of nums) {
-      if (!isZero(num)) {
+      if (!num.zero()) {
         this.num(num, tag, wrote)
         wrote = true
       }
@@ -228,7 +210,7 @@ export class Display {
         // TODO: dim remaining item count
         if (len > MAX_LEN) {
           new CmdComma().insertAt(this.cursor, L)
-          this.num(real(len - MAX_LEN))
+          this.num(int(len - MAX_LEN))
           new CmdWord("others", "var").insertAt(this.cursor, L)
         }
       } finally {
@@ -255,7 +237,7 @@ export class Display {
 
     if (this.canWriteBase() && this.base.num() != 10) {
       new CmdWord("base", "infix").insertAt(this.cursor, L)
-      new Display(this.cursor, frac(10, 1)).this.base.num()
+      new Display(this.cursor, frac(10, 1)).num(this.base)
     }
   }
 }
@@ -269,9 +251,9 @@ export function outputBase(node: Node, props: PropsJs): SReal {
       node.b.kind == "var" &&
       (node.b.value == "meow" || node.b.value == "mrrp")
     ) {
-      return { ...{ btw: node.b.value }, ...real(10) }
+      return Object.assign(int(10), { btw: node.b.value })
     }
-    const value = js(node.b, { ...props, base: real(10) })
+    const value = js(node.b, { ...props, base: int(10) })
     if (value.list !== false) {
       throw new Error("Cannot output in a list of bases yet.")
     }
@@ -281,5 +263,5 @@ export function outputBase(node: Node, props: PropsJs): SReal {
     return value.value
   }
 
-  return real(10)
+  return int(10)
 }

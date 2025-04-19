@@ -13,12 +13,12 @@ interface RotationGlsl {
 }
 
 export function rotateJs(by: RotationJs, target: SPoint) {
-  const x = sub(target.x, by.c.x)
-  const y = sub(target.y, by.c.y)
+  const x = target.x.sub(by.c.x)
+  const y = target.y.sub(by.c.y)
 
   return pt(
-    add(sub(mul(x, by.cos), mul(y, by.sin)), by.c.x),
-    add(add(mul(y, by.cos), mul(x, by.sin)), by.c.y),
+    add(sub(x.mul(by.cos), y.mul(by.sin)), by.c.x),
+    add(add(y.mul(by.cos), x.mul(by.sin)), by.c.y),
   )
 }
 

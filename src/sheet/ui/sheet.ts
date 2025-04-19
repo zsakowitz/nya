@@ -10,7 +10,9 @@ import { tidyCoercions } from "@/eval/ty/info"
 import { splitRaw } from "@/eval/ty/split"
 import type { Block } from "@/field/model"
 import type { Options } from "@/field/options"
-import { h, hx, px, t } from "@/jsx"
+import { h, hx, paragraphTag, t } from "@/jsx"
+import type { Point } from "@/lib/point"
+import { int } from "@/lib/sreal"
 import { createAddons } from "@/sheet/ui/addons"
 import { faBook } from "@fortawesome/free-solid-svg-icons/faBook"
 import { faCopy } from "@fortawesome/free-solid-svg-icons/faCopy"
@@ -21,7 +23,6 @@ import { Scope } from "../deps"
 import type { Exts } from "../ext"
 import type { SheetFactory } from "../factory"
 import { ItemListGlobal, type ItemRef } from "../items"
-import type { Point } from "../point"
 import { doMatchReglSize } from "../regl"
 import { REMARK } from "../remark"
 import { Slider } from "../slider"
@@ -39,7 +40,6 @@ import {
 } from "./cv/move"
 import { PickHandler2 } from "./cv/pick"
 import { Expr } from "./expr"
-import { int } from "@/lib/sreal"
 
 export type RequireRadiansReason = "with a complex number"
 export type RequireRadiansContext = `call '${string}' ${RequireRadiansReason}`
@@ -367,7 +367,7 @@ export class Sheet {
 
     const closeAddons = h(
       "mb-2 px-[calc(0.75rem_+_1px)] text-[--nya-text-prose] flex flex-col gap-2",
-      px`Addons extend project nya with extra functionality. They can add new functions, data types, and other constructs. Clicking the "Docs" icon will show additional guides after you've selected addons.`,
+      paragraphTag`Addons extend project nya with extra functionality. They can add new functions, data types, and other constructs. Clicking the "Docs" icon will show additional guides after you've selected addons.`,
     )
 
     const toolbarDependentAddonGradient = h(

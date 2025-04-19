@@ -23,6 +23,7 @@ import { FNS, OP_UNARY } from "@/eval/ops"
 import type { Sym } from "@/eval/sym"
 import { each, type GlslValue, type JsValue } from "@/eval/ty"
 import { canCoerce, coerceTyJs } from "@/eval/ty/coerce"
+import { int } from "@/lib/sreal"
 import { OP_JUXTAPOSE, OP_RAISE } from "./ops"
 
 function callJs(name: Var, args: Node[], props: PropsJs): JsValue {
@@ -48,7 +49,7 @@ function callJs(name: Var, args: Node[], props: PropsJs): JsValue {
               base: asNumericBase(
                 js(name.sup.sub, {
                   ...props,
-                  base: frac(10, 1),
+                  base: int(10),
                 }),
               ),
             })
@@ -138,7 +139,7 @@ function callSym(name: Var, args: Node[], props: PropsSym): Sym {
                 js(name.sup.sub, {
                   ...props,
                   bindingsJs: SYM_BINDINGS,
-                  base: frac(10, 1),
+                  base: int(10),
                 }),
               ),
             })
@@ -190,7 +191,7 @@ function callGlsl(name: Var, args: Node[], props: PropsGlsl): GlslValue {
               base: asNumericBase(
                 js(name.sup.sub, {
                   ...props,
-                  base: frac(10, 1),
+                  base: int(10),
                 }),
               ),
             })
@@ -260,7 +261,7 @@ function fnExponentGlsl(ctx: GlslContext, raw: JsValue): GlslValue<"r64"> {
   const expr = ctx.name()
   ctx.push`vec2 ${expr}[${value.list}];\n`
   for (let i = 0; i < value.list; i++) {
-    ctx.push`${expr}[${i}] = vec2(${num(value.value[i]!)}, 0);\n`
+    ctx.push`${expr}[${i}] = ${value.value[i]!.gl64()};\n`
   }
 
   return {

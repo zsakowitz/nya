@@ -1,6 +1,7 @@
 import type { Addon } from "#/types"
 import type { Builtin } from "@/eval/ops/vars"
 import type { JsValue } from "@/eval/ty"
+import { int } from "@/lib/sreal"
 import { unitsInShadersError } from "./pkg"
 import { UNITS } from "./util/units"
 
@@ -20,7 +21,7 @@ export default {
           js: {
             type: "unit",
             list: false,
-            value: [{ exp: real(1), unit: v }],
+            value: [{ exp: int(1), unit: v }],
           } satisfies JsValue<"unit">,
           display: false,
           get glsl() {

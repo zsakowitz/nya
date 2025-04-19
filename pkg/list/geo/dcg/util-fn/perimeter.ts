@@ -16,7 +16,7 @@ export const FN_PERIMETER = new FnDist(
     for (let i = 0; i < a.value.length; i++) {
       const self = a.value[i]!
       const next = a.value[(i + 1) % a.value.length]!
-      ret = add(ret, hypot(pt(sub(self.x, next.x), sub(self.y, next.y))))
+      ret = add(ret, hypot(pt(self.x.sub(next.x), self.y.sub(next.y))))
     }
 
     return ret

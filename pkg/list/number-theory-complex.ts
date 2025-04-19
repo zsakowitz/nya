@@ -34,11 +34,7 @@ export default {
     FN_ROUND.add(
       ["c32"],
       "c32",
-      (a) =>
-        rept({
-          x: Math.round(a.value.x.num()),
-          y: Math.round(a.value.y.num()),
-        }),
+      (a) => rept(px(Math.round(a.value.x.num()), Math.round(a.value.y.num()))),
       (_, a) => `floor(${a.expr} + 0.5)`,
       "round(2.4-3.6i)=2-4i",
     ).add(

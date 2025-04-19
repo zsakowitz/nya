@@ -72,7 +72,7 @@ function readExp(
     if (a == null) return null
     const b = readSigned(node.b.suffixes[0]!.exp, base)
     if (b == null) return null
-    value = mul(a, raise(base, b))
+    value = mul(a, base.pow(b))
   } else {
     value = readSigned(node, base)
   }

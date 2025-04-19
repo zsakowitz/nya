@@ -8,21 +8,21 @@ export function intersectSLineLineJs(
   [{ x: x3, y: y3 }, { x: x4, y: y4 }]: Val<"line">,
 ) {
   // (x1 - x2) (y3 - y4) - (y1 - y2) (x3 - x4)
-  const d = sub(mul(sub(x1, x2), sub(y3, y4)), mul(sub(y1, y2), sub(x3, x4)))
+  const d = sub(mul(x1.sub(x2), y3.sub(y4)), mul(y1.sub(y2), x3.sub(x4)))
 
-  const x1y2 = mul(x1, y2)
-  const x2y1 = mul(y1, x2)
-  const x3y4 = mul(x3, y4)
-  const x4y3 = mul(y3, x4)
+  const x1y2 = x1.mul(y2)
+  const x2y1 = y1.mul(x2)
+  const x3y4 = x3.mul(y4)
+  const x4y3 = y3.mul(x4)
 
   return pt(
     div(
       // (x1 y2 - y1 x2) (x3 - x4) - (x1 - x2) (x3 y4 - y3 x4)
       sub(
         // (x1 y2 - y1 x2) (x3 - x4)
-        mul(sub(x1y2, x2y1), sub(x3, x4)),
+        mul(x1y2.sub(x2y1), x3.sub(x4)),
         // (x1 - x2) (x3 y4 - y3 x4)
-        mul(sub(x1, x2), sub(x3y4, x4y3)),
+        mul(x1.sub(x2), x3y4.sub(x4y3)),
       ),
       d,
     ),
@@ -31,9 +31,9 @@ export function intersectSLineLineJs(
       // (x1 y2 - y1 x2) (y3 - y4) - (x1 - x2) (x3 y4 - y3 x4)
       sub(
         // (x1 y2 - y1 x2) (y3 - y4)
-        mul(sub(x1y2, x2y1), sub(y3, y4)),
+        mul(x1y2.sub(x2y1), y3.sub(y4)),
         // (y1 - y2) (x3 y4 - y3 x4)
-        mul(sub(y1, y2), sub(x3y4, x4y3)),
+        mul(y1.sub(y2), x3y4.sub(x4y3)),
       ),
       d,
     ),

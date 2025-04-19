@@ -2,6 +2,8 @@ import type { WordKind } from "@/field/cmd/leaf/var"
 import { CmdBrack } from "@/field/cmd/math/brack"
 import { L, R } from "@/field/dir"
 import { Block, type Command, type Cursor } from "@/field/model"
+import type { SPoint } from "@/lib/spoint"
+import { frac, int, type SReal } from "@/lib/sreal"
 import type { Deps } from "../deps"
 import type { PropsGlsl, PropsSym } from "../glsl"
 import type { PropsJs } from "../js"
@@ -9,8 +11,7 @@ import { id } from "../lib/binding"
 import type { JsContext } from "../lib/jsctx"
 import type { Fn } from "../ops"
 import type { DerivFn, DisplayFn } from "../ops/dist-manual"
-import type { GlslValue, JsValue, SColor, SPoint, SReal, Tys, Val } from "../ty"
-import { frac, real } from "../ty/create"
+import type { GlslValue, JsValue, Tys, Val } from "../ty"
 import { TY_INFO, type TyInfo } from "../ty/info"
 
 interface SymVarSource {
@@ -48,7 +49,6 @@ type AsSym<T> =
   T extends SymPreserve ? T
   : T extends SReal | boolean | number | Sym ? Sym
   : T extends SPoint ? [Sym, Sym]
-  : T extends SColor ? [Sym, Sym, Sym, Sym]
   : { [K in keyof T]: AsSym<T[K]> }
 
 export type TysSym = { [K in keyof Tys]: AsSym<Tys[K]> }
@@ -189,12 +189,12 @@ export function binary(f: (props: PropsDeriv, a: Sym, b: Sym) => Sym): DerivFn {
 
 export const SYM_0: Sym = {
   type: "js",
-  value: { type: "r32", list: false, value: real(0) },
+  value: { type: "r32", list: false, value: int(0) },
 }
 
 export const SYM_1: Sym = {
   type: "js",
-  value: { type: "r32", list: false, value: real(1) },
+  value: { type: "r32", list: false, value: int(1) },
 }
 
 export const SYM_FALSE: Sym = {
@@ -209,12 +209,12 @@ export const SYM_TRUE: Sym = {
 
 export const SYM_2: Sym = {
   type: "js",
-  value: { type: "r32", list: false, value: real(2) },
+  value: { type: "r32", list: false, value: int(2) },
 }
 
 export const SYM_180: Sym = {
   type: "js",
-  value: { type: "r32", list: false, value: real(180) },
+  value: { type: "r32", list: false, value: int(180) },
 }
 
 export const SYM_HALF: Sym = {

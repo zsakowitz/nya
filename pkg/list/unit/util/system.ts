@@ -1,5 +1,4 @@
-import { safe } from "@/eval/lib/util"
-import type { SReal } from "@/eval/ty"
+import { int, type SReal } from "@/lib/sreal"
 import { UNIT_KIND_NAMES, UNIT_KINDS, type UnitKind } from "./kind"
 import { UNIT_KIND_VALUES } from "./units"
 
@@ -38,49 +37,29 @@ export interface UnitEntry {
 
 export type UnitList = UnitEntry[]
 
-function raise(base: SReal, exp: SReal): SReal {
-  const val = exp.num()
-
-  if (base.num() == 0) {
-    return frac(0, 1)
-  } else if (val == 0) {
-    return frac(1, 1)
-  } else if (val == 1) {
-    return base
-  } else if (base.type == "exact" && safe(val)) {
-    const n = base.n ** val
-    const d = base.d ** val
-    if (safe(n) && safe(d)) {
-      return frac(n, d)
-    }
-  }
-
-  return real(base.num() ** val)
-}
-
 export function toSI(list: UnitList): ConversionFactor {
-  let scale = real(1)
-  let offset = real(0)
+  let scale = int(1)
+  let offset = int(0)
 
   for (const {
     exp,
     unit: { base },
   } of list) {
-    const ox = raise(base.offset, exp)
-    const sx = raise(base.scale, exp)
-    offset = add(offset, ox)
-    scale = mul(scale, sx)
+    const ox = base.offset.pow(exp)
+    const sx = base.scale.pow(exp)
+    offset = offset.add(ox)
+    scale = scale.mul(sx)
   }
 
   return { scale, offset }
 }
 
 export function convert(value: SReal, via: ConversionFactor) {
-  return add(mul(value, via.scale), via.offset)
+  return value.mul(via.scale).add(via.offset)
 }
 
 export function convertInv(value: SReal, via: ConversionFactor) {
-  return div(sub(value, via.offset), via.scale)
+  return value.sub(via.offset).div(via.scale)
 }
 
 export type SICoefficients = { [x in UnitKind]?: SReal }
@@ -130,7 +109,7 @@ function si(src: UnitList): SICoefficients {
     },
   } of src) {
     for (const { exp: localExp, unit } of dst) {
-      data[unit] = add(data[unit] ?? real(0), mul(exp, real(localExp)))
+      data[unit] = (data[unit] ?? int(0)).add(exp.mul(int(localExp)))
     }
   }
 
@@ -171,8 +150,8 @@ export function factor(src: UnitList, dst: UnitList): ConversionFactor {
   const sf = toSI(src)
   const df = toSI(dst)
   return {
-    scale: div(sf.scale, df.scale),
-    offset: div(sub(sf.offset, df.offset), df.scale),
+    scale: sf.scale.div(df.scale),
+    offset: sf.offset.sub(df.offset).div(df.scale),
   }
 }
 
@@ -206,6 +185,8 @@ export function check(list: UnitList) {
   return list
 }
 
+// TODO: unitlist should be a class
+
 export function badSum(src: UnitList, dst: UnitList): never {
   throw new Error(
     `Adding '${name(src)}' and '${name(dst)}' is not allowed, since both units are non-absolute. ${HELP}`,
@@ -217,14 +198,14 @@ export function multiply(a: UnitList, b: UnitList): UnitList {
 
   for (const entry of [...a, ...b]) {
     const existing = map.get(entry.unit)
-    map.set(entry.unit, existing ? add(existing, entry.exp) : entry.exp)
+    map.set(entry.unit, existing ? existing.add(entry.exp) : entry.exp)
   }
 
   return check([...map].map(([unit, exp]) => ({ exp, unit })))
 }
 
 export function inv(a: UnitList): UnitList {
-  return check(a.map(({ exp, unit }) => ({ exp: neg(exp), unit })))
+  return check(a.map(({ exp, unit }) => ({ exp: exp.neg(), unit })))
 }
 
 export function exp(a: UnitList, to: SReal): UnitList {
@@ -232,5 +213,5 @@ export function exp(a: UnitList, to: SReal): UnitList {
     return []
   }
 
-  return check(a.map(({ exp, unit }) => ({ exp: mul(exp, to), unit })))
+  return check(a.map(({ exp, unit }) => ({ exp: exp.mul(to), unit })))
 }

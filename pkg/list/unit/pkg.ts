@@ -28,7 +28,8 @@ import { CmdSupSub } from "@/field/cmd/math/supsub"
 import { L, R } from "@/field/dir"
 import { toText } from "@/field/latex"
 import { Block } from "@/field/model"
-import { b, h, px, sx } from "@/jsx"
+import { b, h, paragraphTag, sx } from "@/jsx"
+import type { SReal } from "@/lib/sreal"
 import {
   assertCompat,
   badSum,
@@ -80,7 +81,7 @@ function displayUnitPart(list: UnitList, display: Display, frac: boolean) {
     new CmdWord(label, "var").insertAt(display.cursor, L)
     if (ev != 1) {
       const sup = new Block(null)
-      display.at(sup.cursor(R)).exp.num()
+      display.at(sup.cursor(R)).num(exp)
       new CmdSupSub(null, sup).insertAt(display.cursor, L)
     }
   }
@@ -485,23 +486,23 @@ export default {
       poster: "37.2\\frac{\\wordvar{kJ}}{\\wordvar{mol}\\cdot\\wordvar{K}}",
       render() {
         return [
-          px`Type ${b("unit")} followed by a unit name to use that unit.`,
+          paragraphTag`Type ${b("unit")} followed by a unit name to use that unit.`,
           example("2unitm", "=2\\wordvar{m}"),
-          px`You can multiply and divide values of different units.`,
+          paragraphTag`You can multiply and divide values of different units.`,
           example(
             "\\frac{2unitm}{7units*4unitmin}",
             "=0.07142857143\\frac\\wordvar m{\\wordvar s\\cdot\\wordvar{min}}",
           ),
-          px`You can convert between various units with the ${b("into")} operator.`,
+          paragraphTag`You can convert between various units with the ${b("into")} operator.`,
           example("(20unitdC)intounitdF", "=68\\wordvar{°F}"),
-          px`Adding and subtracting prefers the first value's units, and requires the units to be compatiable.`,
+          paragraphTag`Adding and subtracting prefers the first value's units, and requires the units to be compatiable.`,
           example("7unitm+89unitcm", "=7.89\\wordvar m"),
-          px`You can use the ${b("intosi")} function to turn any unit value into its component SI units.`,
+          paragraphTag`You can use the ${b("intosi")} function to turn any unit value into its component SI units.`,
           example(
             "intosi(4unitcal)",
             "=16.736\\frac{\\wordvar{kg}\\cdot\\wordvar{m}^2}{\\wordvar s^2}",
           ),
-          px`Units must be prefixed with ${b("unit")} to avoid mixing up unit names and variables you define; imagine if we banned using m, s, C, J, A, K, and more as variable names! To shorten a reused unit, just define it as a variable.`,
+          paragraphTag`Units must be prefixed with ${b("unit")} to avoid mixing up unit names and variables you define; imagine if we banned using m, s, C, J, A, K, and more as variable names! To shorten a reused unit, just define it as a variable.`,
           example("m=unitm", null),
           example("s=units", null),
           example("h=unithr", null),
@@ -509,8 +510,8 @@ export default {
             "4\\frac{m}{s^2}in\\frac{m}{h^2}",
             "=51840000.0\\frac{\\wordvar{m}}{\\wordvar{hr}^2}",
           ),
-          px`Since ${b("C")} and ${b("F")} are used for coulomb and farad, respectively, use ${b("dC")} and ${b("dF")} for celsius and fahrenheit (the small d stands for degree).`,
-          px`The ${b("celsius")} and ${b("fahrenheit")} units have special behavior. See ${b("units (temperature)")} for more information, and for common errors you'll get when using these units.`,
+          paragraphTag`Since ${b("C")} and ${b("F")} are used for coulomb and farad, respectively, use ${b("dC")} and ${b("dF")} for celsius and fahrenheit (the small d stands for degree).`,
+          paragraphTag`The ${b("celsius")} and ${b("fahrenheit")} units have special behavior. See ${b("units (temperature)")} for more information, and for common errors you'll get when using these units.`,
         ]
       },
     },
@@ -519,17 +520,17 @@ export default {
       poster: "2\\wordvar{°C}\\cdot7.8\\wordvar{∆°F}",
       render() {
         return [
-          px`First: since ${b("C")} and ${b("F")} are used for coulomb and farad, respectively, use ${b("dC")} and ${b("dF")} for celsius and fahrenheit.`,
-          px`Second: temperature units like ${b("celsius")} and ${b("fahrenheit")} do not start at absolute zero (you have to add, not just multiply, to convert between them).`,
-          px`These units therefore come in two variants. The regular ${b("dC")} and ${b("dF")} units are used for measured temperature, and ${b("deltacelsius")} and ${b("deltafahrenheit")} (short form: ${b("ddC")} or ${b("ddF")}) are used for changes in temperature.`,
-          px`If you measure the temperature outside, ${b("celsius")} is the appropriate. But if you measure a 4 degree drop in temperature, use ${b("deltacelsius")}. The same goes for the Fahrenheit-based variants.`,
-          px`First problem: addition. Adding 2 °C and 3 °C is ambiguous, since it could mean 5 °C (adding the 2 and 3) or 278 °C (adding 3 °C in kelvin to 2 °C). project nya forces you to explain what you mean: either use ${b("deltacelsius")} to communicate that you want a 3 degree change, or convert to kelvin before adding.`,
+          paragraphTag`First: since ${b("C")} and ${b("F")} are used for coulomb and farad, respectively, use ${b("dC")} and ${b("dF")} for celsius and fahrenheit.`,
+          paragraphTag`Second: temperature units like ${b("celsius")} and ${b("fahrenheit")} do not start at absolute zero (you have to add, not just multiply, to convert between them).`,
+          paragraphTag`These units therefore come in two variants. The regular ${b("dC")} and ${b("dF")} units are used for measured temperature, and ${b("deltacelsius")} and ${b("deltafahrenheit")} (short form: ${b("ddC")} or ${b("ddF")}) are used for changes in temperature.`,
+          paragraphTag`If you measure the temperature outside, ${b("celsius")} is the appropriate. But if you measure a 4 degree drop in temperature, use ${b("deltacelsius")}. The same goes for the Fahrenheit-based variants.`,
+          paragraphTag`First problem: addition. Adding 2 °C and 3 °C is ambiguous, since it could mean 5 °C (adding the 2 and 3) or 278 °C (adding 3 °C in kelvin to 2 °C). project nya forces you to explain what you mean: either use ${b("deltacelsius")} to communicate that you want a 3 degree change, or convert to kelvin before adding.`,
           example(
             "2 unit dC + ((3 unit dC) into unit K)",
             "=278.15 \\wordvar{°C}",
           ),
           example("2 unit dC + 3 unit ddC", "=5 \\wordvar{°C}"),
-          px`Second problem: ratios. Dividing 5 J by 3 °C is ambiguous, since it could mean 5 J for every change of 3 °C, or 5 J for every total 276 K (3 °C in kelvin). Again, project nya forces you to disambiguate: either use ${b("deltacelsius")}, or convert into kelvin.`,
+          paragraphTag`Second problem: ratios. Dividing 5 J by 3 °C is ambiguous, since it could mean 5 J for every change of 3 °C, or 5 J for every total 276 K (3 °C in kelvin). Again, project nya forces you to disambiguate: either use ${b("deltacelsius")}, or convert into kelvin.`,
           example(
             "\\frac{5 unit J}{(3 unit dC) into unit K}",
             "=0.01810610176\\frac\\wordvar J\\wordvar K",
@@ -538,7 +539,7 @@ export default {
             "\\frac{5 unit J}{3 unit ddC}",
             "=1.66666666667\\frac\\wordvar J\\wordvar K",
           ),
-          px`Third problem: multiplication. Multiplying 2 °C and 3 °C is ambiguous, since it could be an addition of 2 °C for every 3 °C, the reverse problem, or an addition of 2 °C for every addition of 3 °C. Again, the solution is to disambiguate: either use ${b("deltacelsius")} or convert into kelvin.`,
+          paragraphTag`Third problem: multiplication. Multiplying 2 °C and 3 °C is ambiguous, since it could be an addition of 2 °C for every 3 °C, the reverse problem, or an addition of 2 °C for every addition of 3 °C. Again, the solution is to disambiguate: either use ${b("deltacelsius")} or convert into kelvin.`,
           example(
             "2 unit dC \\cdot ((3 unit dC) into unit K)",
             "=552.3 \\wordvar{°C}\\cdot\\wordvar K",
@@ -547,7 +548,7 @@ export default {
             "2 unit dC \\cdot 3 unit ddC",
             "=6 \\wordvar{°C}\\cdot\\wordvar{∆°C}",
           ),
-          px`(The upwards triangle is the Greek letter capital delta, which is normally used to denote a change in something.)`,
+          paragraphTag`(The upwards triangle is the Greek letter capital delta, which is normally used to denote a change in something.)`,
         ]
       },
     },
