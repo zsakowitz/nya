@@ -38,7 +38,7 @@ export const EXT_POLYGON = defineHideable<
       return each(data.value)
         .filter((raw) => raw.length >= 2)
         .flatMap((raw, poly): PolyItem[] => {
-          const val = raw.map(unpt)
+          const val = raw.map((x) => x.ns())
           return [
             ...val.map(
               (p1, index): PolyItem => ({

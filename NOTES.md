@@ -110,5 +110,5 @@ float sinpiSeries(float x) {
 
 ```js
 // matches many thing which use the old fn-based ops
-;/(?<![._])raise\((\w+(?:\.\w+|\[\d+\])*), (\w+(?:\.\w+|\[\d+\])*)\)(?! \{)/
+;/(?<![._])(rept)\((\w+(?:!|\.\w+(?:\(\w+(?:!|\.\w+(?:\(\))?|\[\w+\])*\))?|\[\w+\])*)\)(?! \{)/
 ```

@@ -12,7 +12,7 @@ import { CmdBrack } from "@/field/cmd/math/brack"
 import { CmdSupSub } from "@/field/cmd/math/supsub"
 import { L, R } from "@/field/dir"
 import { Block } from "@/field/model"
-import { ptint } from "@/lib/spoint"
+import { xyint } from "@/lib/scomplex"
 import { approx, int } from "@/lib/sreal"
 import digamma from "@stdlib/math/base/special/digamma"
 import factorial from "@stdlib/math/base/special/factorial"
@@ -253,14 +253,14 @@ const OP_FACTORIAL: FnDist = new FnDist("!", "computes a factorial", {
       const x = value.x.num()
       const y = value.y.num()
       if (y == 0 && x == Math.floor(x) && x < 0) {
-        return ptint([Infinity, 0])
+        return xyint(Infinity, 0)
       }
       // The type signature lies.
       const result = gamma(complex(x + 1, y)) as number | Complex
       if (typeof result == "number") {
-        return ptint([result, 0])
+        return xyint(result, 0)
       } else {
-        return ptint([result.re, result.im])
+        return xyint(result.re, result.im)
       }
     },
     (ctx, a) => {

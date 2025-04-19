@@ -1,7 +1,7 @@
 import type { JsVal, JsValue, TyName, Val } from "@/eval/ty"
 import { TY_INFO, type TyGlide } from "@/eval/ty/info"
 import { Block } from "@/field/model"
-import type { Point } from "../../point"
+import type { Point } from "@/lib/point"
 import type { Expr } from "../expr"
 import type { Sheet } from "../sheet"
 import { Size } from "./consts"

@@ -181,7 +181,7 @@ export default {
         const hyp = add(r.mul(r), i.mul(i).add(j.mul(j).add(k.mul(k))))
         const ret = mulQ32(a.value, [r, neg(i), neg(j), neg(k)])
         for (let i = 0; i < 4; i++) {
-          ret[i] = div(ret[i]!, hyp)
+          ret[i] = ret[i]!.div(hyp)
         }
         return ret
       },

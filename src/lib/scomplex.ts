@@ -169,6 +169,10 @@ export function xy(x: SReal, y: SReal): SComplex {
   return new (SComplex as any)(x, y)
 }
 
+export function xyint(x: number, y: number): SComplex {
+  return xy(int(x), int(y))
+}
+
 export function xynan() {
   return xy(approx(NaN), approx(NaN))
 }

@@ -3,8 +3,8 @@ import type { FnSignature } from "@/docs/signature"
 import type { Fn } from "@/eval/ops"
 import { type WithDocs, ALL_DOCS } from "@/eval/ops/docs"
 import { issue } from "@/eval/ops/issue"
-import type { SReal } from "@/eval/ty"
 import { canCoerce, coerceTyJs, coerceValJs } from "@/eval/ty/coerce"
+import type { SReal } from "@/lib/sreal"
 
 function sortJs(args: SReal[]) {
   return args.sort((a, b) => a.num() - b.num())

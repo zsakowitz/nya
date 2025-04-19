@@ -11,8 +11,9 @@ import { CmdBrack } from "@/field/cmd/math/brack"
 import { L, R } from "@/field/dir"
 import { Block } from "@/field/model"
 import { h, path, svgx, sx } from "@/jsx"
-import type { SPoint } from "@/lib/spoint"
-import type { SReal } from "@/lib/sreal"
+import { px, type Point } from "@/lib/point"
+import { ptnan, type SPoint } from "@/lib/spoint"
+import { approx, type SReal } from "@/lib/sreal"
 import { PICK_TY, definePickTy, toolbar, type Data } from "@/sheet/pick-ty"
 import { Color, Opacity, Order, Size } from "@/sheet/ui/cv/consts"
 import { Expr } from "@/sheet/ui/expr"
@@ -83,14 +84,14 @@ function lineInfo<T extends "segment" | "ray" | "line" | "vector">(
     name,
     namePlural,
     glsl: "vec4",
-    toGlsl([{ x: x1, y: y1 }, { x: x2, y: y2 }]) {
-      return `vec4(${gl(x1)}, ${gl(y1)}, ${gl(x2)}, ${gl(y2)})`
+    toGlsl([a, b]) {
+      return `vec4(${a.gl32()}, ${b.gl32()})`
     },
-    garbage: { js: [SNANPT, SNANPT], glsl: "vec4(0.0/0.0)" },
+    garbage: { js: [ptnan(2), ptnan(2)], glsl: "vec4(0.0/0.0)" },
     coerce: {},
     write: {
       isApprox(value) {
-        return value.some((x) => x.x.type == "approx" || x.y.type == "approx")
+        return value.some((x) => x.isApprox())
       },
       display(value, props) {
         new CmdWord(name, "prefix").insertAt(props.cursor, L)
@@ -119,14 +120,14 @@ function lineInfo<T extends "segment" | "ray" | "line" | "vector">(
           )
       ),
     token(val) {
-      return token(unpt(val[0]), unpt(val[1]), val)
+      return token(val[0].ns(), val[1].ns(), val)
     },
     glide:
       glide ?
         (props) => {
           const raw = gliderOnLine(
             props.cv,
-            [unpt(props.shape[0]), unpt(props.shape[1])],
+            [props.shape[0].ns(), props.shape[1].ns()],
             props.point,
           )
 
@@ -139,21 +140,25 @@ function lineInfo<T extends "segment" | "ray" | "line" | "vector">(
     preview(cv, val) {
       switch (name) {
         case "segment": {
-          cv.polygon(val.map(unpt), Size.Line, Color.Blue)
+          cv.polygon(
+            val.map((x) => x.ns()),
+            Size.Line,
+            Color.Blue,
+          )
           break
         }
         case "ray": {
-          const bounds = getRayBounds(cv, unpt(val[0]), unpt(val[1]))
+          const bounds = getRayBounds(cv, val[0].ns(), val[1].ns())
           if (bounds) cv.polygonByCanvas(bounds, Size.Line, Color.Blue)
           break
         }
         case "line": {
-          const bounds = getLineBounds(cv, unpt(val[0]), unpt(val[1]))
+          const bounds = getLineBounds(cv, val[0].ns(), val[1].ns())
           if (bounds) cv.polygonByCanvas(bounds, Size.Line, Color.Blue)
           break
         }
         case "vector": {
-          const path = vectorPath(cv, unpt(val[0]), unpt(val[1]))
+          const path = vectorPath(cv, val[0].ns(), val[1].ns())
           if (path) cv.path(new Path2D(path), Size.Line, Color.Blue, 1, 1)
           break
         }
@@ -263,7 +268,7 @@ const PICK_PERPENDICULAR = definePickTy(
   (sheet, p1, p2) => {
     if (p1 && p2) {
       const line = perpendicularJs(p1, p2)
-      const bounds = getLineBounds(sheet.cv, unpt(line[0]), unpt(line[1]))
+      const bounds = getLineBounds(sheet.cv, line[0].ns(), line[1].ns())
       sheet.cv.polygonByCanvas(bounds, Size.Line, Color.Blue)
     }
   },
@@ -278,7 +283,7 @@ const PICK_PARALLEL = definePickTy(
   (sheet, p1, p2) => {
     if (p1 && p2) {
       const line = parallelJs(p1, p2)
-      const bounds = getLineBounds(sheet.cv, unpt(line[0]), unpt(line[1]))
+      const bounds = getLineBounds(sheet.cv, line[0].ns(), line[1].ns())
       sheet.cv.polygonByCanvas(bounds, Size.Line, Color.Blue)
     }
   },
@@ -389,8 +394,8 @@ const PICK_MIDPOINT: Data = {
 
       let p1, p2
       if (a?.type == "segment") {
-        p1 = unpt(a.value[0])
-        p2 = unpt(a.value[1])
+        p1 = a.value[0].ns()
+        p2 = a.value[1].ns()
       } else if (a && b) {
         p1 = a.value.xy()
         p2 = b.value.xy()
@@ -399,7 +404,7 @@ const PICK_MIDPOINT: Data = {
       }
 
       sheet.cv.point(
-        { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 },
+        px((p1.x + p2.x) / 2, (p1.y + p2.y) / 2),
         Size.Point,
         Color.Purple,
       )
@@ -611,20 +616,16 @@ const INFO_CIRCLE: TyInfoByName<"circle"> = {
   namePlural: "circles",
   glsl: "vec3",
   toGlsl({ center: { x, y }, radius }) {
-    return `vec3(${gl(x)}, ${gl(y)}, ${gl(radius)})`
+    return `vec3(${x.gl32()}, ${y.gl32()}, ${radius.gl32()})`
   },
   garbage: {
-    js: { center: SNANPT, radius: int(NaN) },
+    js: { center: ptnan(2), radius: approx(NaN) },
     glsl: "vec3(0.0/0.0)",
   },
   coerce: {},
   write: {
     isApprox(value) {
-      return (
-        value.center.x.type == "approx" ||
-        value.center.y.type == "approx" ||
-        value.radius.type == "approx"
-      )
+      return value.center.isApprox() || value.radius.isApprox()
     },
     display(value, props) {
       new CmdWord("circle", "prefix").insertAt(props.cursor, L)
@@ -633,7 +634,7 @@ const INFO_CIRCLE: TyInfoByName<"circle"> = {
       const inner = props.at(block.cursor(R))
       WRITE_POINT.display(value.center, inner)
       new CmdComma().insertAt(inner.cursor, L)
-      inner.value.radius.num()
+      inner.num(value.radius)
     },
   },
   order: Order.Graph,
@@ -661,7 +662,10 @@ const INFO_CIRCLE: TyInfoByName<"circle"> = {
         0
       : Math.atan2(props.point.y - y, props.point.x - x)
     return {
-      precision: 2 * Math.PI * props.cv.offsetDistance(props.point, { x, y }),
+      precision:
+        2 *
+        Math.PI *
+        props.cv.offsetDistance(props.point, props.shape.center.ns()),
       value: angle / 2 / Math.PI,
     }
   },
@@ -689,7 +693,7 @@ const INFO_POLYGON: TyInfoByName<"polygon"> = {
   coerce: {},
   write: {
     isApprox(value) {
-      return value.some((x) => x.x.type == "approx" || x.y.type == "approx")
+      return value.some((x) => x.isApprox())
     },
     display(value, props) {
       new CmdWord("polygon", "prefix").insertAt(props.cursor, L)
@@ -738,7 +742,7 @@ const INFO_POLYGON: TyInfoByName<"polygon"> = {
     if (val.length < 2) {
       return null
     }
-    const pts = val.map(unpt)
+    const pts = val.map((x) => x.ns())
     return createToken(
       "#388c46",
       sx(
@@ -753,7 +757,14 @@ const INFO_POLYGON: TyInfoByName<"polygon"> = {
   // TODO: polygons can have perimeter gliders
   glide: null,
   preview(cv, val) {
-    cv.polygon(val.map(unpt), Size.Line, Color.Blue, 1, 0.3, false)
+    cv.polygon(
+      val.map((x) => x.ns()),
+      Size.Line,
+      Color.Blue,
+      1,
+      0.3,
+      false,
+    )
   },
   extras: null,
 }
@@ -948,9 +959,9 @@ function angleInfo(
       )
     },
     token(val) {
-      const p1 = unpt(val[0])
-      const p2 = unpt(val[1])
-      const p3 = unpt(val[2])
+      const p1 = val[0].ns()
+      const p2 = val[1].ns()
+      const p3 = val[2].ns()
 
       const measure =
         (Math.atan2(p1.x - p2.x, p1.y - p2.y) -
@@ -1033,7 +1044,7 @@ function angleInfo(
     },
     glide: null,
     preview(cv, val) {
-      drawAngleCv(cv, unpt(val[0]), unpt(val[1]), unpt(val[2]), { kind: type })
+      drawAngleCv(cv, val[0].ns(), val[1].ns(), val[2].ns(), { kind: type })
     },
     extras: null,
   }

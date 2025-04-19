@@ -124,7 +124,7 @@ function computeArc(p1: Point, p2: Point, p3: Point): Arc {
 }
 
 export function computeArcVal(val: Val<"arc">): Arc {
-  return computeArc(unpt(val[0]), unpt(val[1]), unpt(val[2]))
+  return computeArc(val[0].ns(), val[1].ns(), val[2].ns())
 }
 
 export type ArcPath =
@@ -244,7 +244,7 @@ function crArc(
 }
 
 export function crArcVal(val: Val<"arc">) {
-  return crArc(unpt(val[0]), unpt(val[1]), unpt(val[2]))
+  return crArc(val[0].ns(), val[1].ns(), val[2].ns())
 }
 
 export function arcLength(arc: Arc) {

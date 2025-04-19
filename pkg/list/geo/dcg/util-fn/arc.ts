@@ -33,7 +33,7 @@ export const FN_ARC = new FnDist(
 //         }
 //       }
 //       let a2 = a1 + (Math.min(d(a3, a1), d(a1, a3)) / 2) * Math.sign(a3 - a1)
-//       const c = unpt(ar.value.center)
+//       const c = ar.value.center.ns()
 //       const r = ar.value.radius.num()
 //
 //       return [
