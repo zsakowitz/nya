@@ -3,29 +3,27 @@ import source from "../examples/full.nya"
 
 const Kind = Object.freeze({
   Ident: 0, // struct, c32, viewport, f32
-  Builtin: 1, // @vec2, @vec4, @-, @>, @mix
-  Number: 2, // 2.3, 7
-  String: 3, // "hello world"
-  Comment: 4, // // world
-  Symbol: 7, // =, +, *, ;, :, ., $(, ]
-  DirectSource: 10, // anything inside a source block
+  Symbol: 1, // :m, :s, :A, :px
+  Builtin: 2, // @vec2, @vec4, @-, @>, @mix
+  Number: 3, // 2.3, 7
+  String: 4, // "hello world"
+  Comment: 5, // // world
+  Op: 6, // =, +, *, ;, :, ., $(, ]
+  DirectSource: 7, // anything inside a source block
 })
 
 type Kind = (typeof Kind)[keyof typeof Kind]
 
-const Colors = [
-  "opacity-20 bg-orange-300 text-black",
-  "opacity-20 bg-red-300 text-black",
-  "bg-fuchsia-300 text-black",
-  "opacity-20 bg-green-300 text-black",
-  "opacity-20 bg-blue-300 text-black",
-  "",
-  "",
-  "",
-  "",
-  "",
-  "",
-] satisfies Record<Kind, string>
+const Colors = {
+  [Kind.Ident]: "opacity-20 bg-orange-300 text-black",
+  [Kind.Symbol]: "opacity-20 bg-purple-300 text-black",
+  [Kind.Builtin]: "opacity-20 bg-red-300 text-black",
+  [Kind.Number]: "opacity-20 bg-fuchsia-300 text-black",
+  [Kind.String]: "opacity-20 bg-green-300 text-black",
+  [Kind.Comment]: "opacity-20 bg-blue-300 text-black",
+  [Kind.Op]: "opacity-20 bg-black text-white",
+  [Kind.DirectSource]: "opacity-20 bg-yellow-300 text-black",
+}
 
 class Token {
   constructor(
@@ -39,6 +37,7 @@ const ErrorCode = Object.freeze({
   InvalidBuiltinName: 20,
   UnknownChar: 21,
   FloatMustEndInDigit: 22,
+  UnterminatedString: 23,
 })
 
 type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode]
@@ -55,14 +54,21 @@ const ID_START = /[A-Za-z_]/
 const ID_CONT = /[A-Za-z0-9_]/
 const WS = /\s/
 const ANY_ID_START = /[@A-Za-z_]/
-const UNKNOWN = /[^A-Za-z0-9_\s/]/
+const UNKNOWN = /[^A-Za-z0-9_\s/"]/
 const DIGIT = /[0-9]/
 
-// binary operators:
-// + - * / ** ~ | & || &&
-//
-// unary operators:
-// - ~ !
+const OPS =
+  "+ - * / ** ~ | & || && @ \\ == != <= >= < > ~ ! ( ) [ ] { } $( ; , ? : -> => ::".split(
+    " ",
+  )
+
+const OP_SECOND_CHARS: Record<string, string[]> = Object.create(null)
+
+for (const op of OPS) {
+  if (op.length == 2) {
+    ;(OP_SECOND_CHARS[op[0]!] ??= []).push(op[1]!)
+  }
+}
 
 function is(regex: RegExp, char: string | undefined) {
   return char != null && regex.test(char)
@@ -83,21 +89,27 @@ export function tokens(source: string) {
 
     if (ID_START.test(char)) {
       while (is(ID_CONT, source[++i]));
+      if (source[i] == "^" && source[i + 1] == "-" && source[i + 2] == "1") {
+        i += 3
+      }
       ret.push(new Token(Kind.Ident, start, i))
       continue
     }
 
-    if (char == "@") {
-      let ok = is(ID_START, source[++i])
+    if (char == "@" || char == ":") {
+      if (!is(ID_START, source[i + 1])) {
+        ret.push(new Token(Kind.Op, start, ++i))
+        continue
+      }
       while (is(ID_CONT, source[++i]));
-      ret.push(new Token(Kind.Builtin, start, i))
-      if (!ok) issues.push(new Issue(ErrorCode.InvalidBuiltinName, start, i))
+      ret.push(new Token(char == "@" ? Kind.Builtin : Kind.Symbol, start, i))
+      issues.push(new Issue(ErrorCode.InvalidBuiltinName, start, i))
       continue
     }
 
     if (DIGIT.test(char)) {
       while (is(DIGIT, source[++i]));
-      if (source[i] == ".") {
+      if (source[i] == "." && source[i + 1] != ".") {
         if (is(DIGIT, source[i + 1])) {
           i++
           while (is(DIGIT, source[++i]));
@@ -114,6 +126,26 @@ export function tokens(source: string) {
       i++
       while (source[++i] != "\n");
       ret.push(new Token(Kind.Comment, start, i))
+      continue
+    }
+
+    if (char == '"') {
+      let terminated = false
+      while (i < source.length) {
+        i++
+        if (source[i] == '"') {
+          i++
+          terminated = true
+          break
+        }
+        if (source[i] == "\\") {
+          i++
+        }
+      }
+      ret.push(new Token(Kind.String, start, i))
+      if (!terminated) {
+        issues.push(new Issue(ErrorCode.UnterminatedString, start, i))
+      }
       continue
     }
 
@@ -135,7 +167,7 @@ for (let i = 0; i < source.length; ) {
   if (token && token.start == i) {
     pre.appendChild(
       h(
-        "border border-black border-1 -m-px " + Colors[token.kind],
+        "border-x border-black/50 border-1 -m-px " + Colors[token.kind],
         source.slice(token.start, token.end),
       ),
     )

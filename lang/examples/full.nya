@@ -11,7 +11,6 @@ type(float) f32 {
 let f32 {
   source js { 0 }
   source glsl { 0.0 }
-  4.
 }
 
 type u32 {
@@ -32,22 +31,22 @@ struct viewport = @vec4(c32);
 uniform vp: viewport;
 
 // Operator overloading
-fn +(a: f32, b: f32) -> f32 {
+fn +(a: f32, b: f32): f32 {
   source { $(a) + $(b) }
 }
 
 // Operator overloading
-fn -(a: f32, b: f32) -> f32 {
+fn -(a: f32, b: f32): f32 {
   source { $(a) - $(b) }
 }
 
 // Operator overloading
-fn *(a: f32, b: f32) -> f32 {
+fn *(a: f32, b: f32): f32 {
   source { $(a) * $(b) }
 }
 
 // Operator overloading
-fn /(a: f32, b: f32) -> f32 {
+fn /(a: f32, b: f32): f32 {
   source { $(a) / $(b) }
 }
 
@@ -63,7 +62,7 @@ type(resource) img {
 struct point32<N: u32> = @vec<N>(f32);
 
 // Comprehensions
-fn +<N: u32>(pa: point32<N>, pb: point32<N>) -> point32<N> {
+fn +<N: u32>(pa: point32<N>, pb: point32<N>): point32<N> {
   // @packed in a GLSL context returns whether a type is represented as a single
   // scalar, vec, or mat; @packed[scalar/vec/mat] do the same but individually
   only glsl {
@@ -77,7 +76,7 @@ fn +<N: u32>(pa: point32<N>, pb: point32<N>) -> point32<N> {
 }
 
 // Arrays with unknown (but capped) length
-fn unique<N: u32>(a: f32[N]) -> f32[..N] {
+fn unique<N: u32>(a: f32[N]): f32[..N] {
   let ret: f32[N];
   let len: u32;
 
@@ -131,19 +130,19 @@ type mathjscx {
 
 // Type coercion operator
 // In the case of split graphs (A->B, A->C, B->D, C->D, first "use" take precedence)
-fn |=>(a: mathjscx) -> c32 {
+fn |=>(a: mathjscx): c32 {
   c32(
     source js { typeof $(a) == 'number' ? $(a) : $(a).re },
     source js { typeof $(a) == 'number' ? 0 : $(a).im }
   )
 }
 
-fn mathjscx(a: c32) -> mathjscx {
+fn mathjscx(a: c32): mathjscx {
   using js { import { Complex } from "mathjs"; }
   source js { Complex($(a.re), $(a.im)) }
 }
 
-fn gamma(a: c32) -> c32 {
+fn gamma(a: c32): c32 {
   only js {
     // 'using' declares imports which must go outside function scope
     using js { import { gamma } from "mathjs"; }
@@ -158,7 +157,7 @@ fn gamma(a: c32) -> c32 {
 export fn + "add two values";
 export fn unique "returns a list with duplicates removed";
 
-fn asinh(a: f32) -> f32 {
+fn asinh(a: f32): f32 {
   // # is shorthand for getting to the math namespace in all respective
   // languages; this line is equivalent to Math.asinh in js and asinh in glsl
   #asinh(a)
@@ -171,9 +170,9 @@ export type f32 {
   // Naming rules are implemented directly in source
   // They should be localized, but that will happen later
   name {
-    1  = "real number"
-    1+ = "real numbers"
-    a  = "a real number"
+    :single => "real number",
+    :plural => "real numbers",
+    :indef  => "a real number",
   }
 }
 
@@ -183,9 +182,9 @@ type Cv {
 
 export type c32 {
   name {
-    1  = "complex number"
-    1+ = "complex numbers"
-    a  = "a complex number"
+    :single => "complex number",
+    :plural => "complex numbers",
+    :indef  => "a complex number",
   }
 }
 
@@ -200,26 +199,26 @@ struct Line<T> {
   p1: T,
 }
 
-fn pt<T>(x: T, y: T) -> Point<T> {
+fn pt<T>(x: T, y: T): Point<T> {
   Point { x, y }
 }
 
-fn *(a: Point<f32>, b: f32) -> Point<f32> {
+fn *(a: Point<f32>, b: f32): Point<f32> {
   only js { pt(a.x * b, a.y * b) }
   source glsl { $(a) * $(b) }
 }
 
-fn +(a: Point<f32>, b: Point<f32>) -> Point<f32> {
+fn +(a: Point<f32>, b: Point<f32>): Point<f32> {
   only js { pt(a.x + b.x, a.y + b.y) }
   source glsl { $(a) + $(b) }
 }
 
-fn offset_dist(cv: Cv, a: Point<f32>, b: Point<f32>) -> Point<f32> {
+fn offset_dist(cv: Cv, a: Point<f32>, b: Point<f32>): Point<f32> {
   source js { $(cv).offsetDistance($(a), $(b)) }
 }
 
 // We'll leave out point types other than `c32` for simplicity.
-fn glider(line: Line<Point<f32>>, at: f32) -> Point<f32> {
+fn glider(line: Line<Point<f32>>, at: f32): Point<f32> {
   only js { line.p0 * (1.0 - at) + line.p1 * at }
   source glsl { mix($(line.p0), $(line.p1), $(at)) }
 }
@@ -229,7 +228,7 @@ struct UnglideResult {
   precision: f32,
 }
 
-fn unglide(cv: Cv, { p0, p1 }: Line<c32>, { x, y }: c32) -> UnglideResult {
+fn unglide(cv: Cv, { p0, p1 }: Line<c32>, { x, y }: c32): UnglideResult {
   let { x1, y1 } = p0;
   let { x2, y2 } = p1;
 
@@ -287,15 +286,15 @@ enum ComputedArc {
   :arc { center: Point<f32>, radius: f32, start: f32, end: f32 },
 }
 
-fn nan() -> f32 {
+fn nan(): f32 {
   0.0 / 0.0
 }
 
-fn inf() -> f32 {
+fn inf(): f32 {
   1.0 / 0.0
 }
 
-fn arc_radius(arc: ComputedArc) -> f32 {
+fn arc_radius(arc: ComputedArc): f32 {
   match arc {
     :invalid => nan,
     :split_line | :segment => inf,
