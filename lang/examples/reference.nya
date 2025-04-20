@@ -37,21 +37,30 @@
 //   let name: type = expr;    declares a local variable
 //   for1 a in b { ... }       runs code for each value in an array
 //   for a in b { ... }        runs code for each value in an ndarray
+//   for a in 0..n { ... }     runs code for each value in exclusive range
 //   if a { ... }              Rust syntax if-else statement
 
 // Expressions may be:
 //   :symbolname               declares and outputs a symbol
 //   2.3e-5                    declares and outputs a floating-point value
 //   47                        declares and outputs an integer value
-//   a OP b                    binary operator
-//   UNARY a                   unary operator
 //   f(a, ...)                 function call
+//   a.f                       postfix function call
+//   a.f(...)                  postfix function call
 //   f<...>(a, ...)            function call with generics
 //   [a, b, c, ...]            creation of array
 //   a for1 b in c             comprehension over array
 //   a for b in c              comprehension over ndarray
+//   a for b in 0..n           comprehension over exclusive range
 //   a for b, c in d, e        comprehension over multiple same-size ndarrays
 //   if a { b } else { c }     ternary equivalent
+//   a :: b                    typecast operator
+//   a OP b                    binary operator
+//     + - * / ** | & || && @ . \ == != <= >= < >
+//   UNARY a                   unary operator
+//     - ~ !
+//   (a)                       regular parentheses
+//   match a { pat => ... }    pattern matching operator
 
 // Type declarations via `type` are for atomic types, not compounds.
 // They should not be used for `vec2` and friends.
