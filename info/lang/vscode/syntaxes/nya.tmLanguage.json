@@ -17,8 +17,15 @@
     "keywords": {
       "patterns": [
         {
-          "name": "keyword.control.nya",
-          "match": "\\b(return|for|test|use|struct|type|fn|syntax)\\b"
+          "match": "\\b(fn)\\s+(\\w+|[&|+\\-*\\/:=~\\\\=><]+)",
+          "captures": {
+            "1": { "name": "keyword.control" },
+            "2": { "name": "entity.name" }
+          }
+        },
+        {
+          "name": "keyword.control",
+          "match": "\\b(continue|for|if|break|in|return|for|test|use|struct|type|fn|syntax)\\b"
         }
       ]
     },
@@ -26,7 +33,7 @@
       "patterns": [
         {
           "name": "keyword.operator",
-          "match": "[&|+\\-*\\/:=~\\\\=><]+"
+          "match": "[@&|+\\-*\\/:=~\\\\=><]+"
         },
         {
           "name": "keyword.operator",
@@ -36,6 +43,28 @@
     },
     "identifier": {
       "patterns": [
+        {
+          "match": "('[A-Za-z]\\w*)\\s*(:)?",
+          "captures": {
+            "1": {
+              "name": "entity.name.section"
+            },
+            "2": {
+              "name": "keyword.operator"
+            }
+          }
+        },
+        {
+          "match": "(let)\\s*\\b([A-Za-z]\\w*)\\b(:)",
+          "captures": {
+            "1": {
+              "name": "keyword.operator"
+            },
+            "3": {
+              "name": "keyword.operator"
+            }
+          }
+        },
         {
           "match": "\\b([A-Za-z]\\w*)\\b(:)",
           "captures": {
@@ -82,7 +111,7 @@
           }
         },
         {
-          "match": "[cfui]\\d+",
+          "match": "\\b(?:[a-z]+\\d+|bool|img)\\b",
           "name": "entity.name.type.class.js"
         },
         {

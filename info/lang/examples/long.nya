@@ -1,0 +1,133 @@
+type bool "boolean" {
+  source js { boolean }
+  source glsl { bool }
+}
+
+type f32 "real number" {
+  source js { number }
+  source glsl { float }
+}
+
+type u32 "unsigned integer" {
+  source js { number }
+  source glsl { uint }
+}
+
+syntax #.(a) -> f32 {
+  source { $(a) }
+}
+
+syntax #(a) -> u32 {
+  source { $(a) }
+}
+
+fn +(a: f32, b: f32) -> f32 {
+  source { $(a) + $(b) }
+}
+
+fn +(a: u32, b: u32) -> u32 {
+  source { $(a) + $(b) }
+}
+
+fn sin(a: f32) -> f32 {
+  source js { Math.sin($(a)) }
+  source glsl { sin($(a)) }
+}
+
+fn cos(a: f32) -> f32 {
+  source js { Math.cos($(a)) }
+  source glsl { cos($(a)) }
+}
+
+fn sinh(a: f32) -> f32 {
+  source js { Math.sinh($(a)) }
+  source glsl { sinh($(a)) }
+}
+
+fn cosh(a: f32) -> f32 {
+  source js { Math.cosh($(a)) }
+  source glsl { cosh($(a)) }
+}
+
+fn exp(a: f32) -> f32 {
+  source js { Math.exp($(a)) }
+  source glsl { exp($(a)) }
+}
+
+struct c32 "complex number" = @vec2(f32)
+
+fn c32(re: f32, im: f32) -> c32 {
+  c32 { re, im }
+}
+
+fn |=>(a: f32) -> c32 {
+  c32(a, 0.0)
+}
+
+fn cis(t: f32) -> c32 {
+  c32(cos(t), sin(t))
+}
+
+fn re(a: c32) -> f32 {
+  a.0
+}
+
+fn im(a: c32) -> f32 {
+  a.1
+}
+
+fn +(a: c32, b: c32) -> c32 {
+  only js { c32(a.re + b.re, a.im + b.im) }
+  source glsl { $(a) + $(b) }
+}
+
+fn *(a: f32, b: c32) -> c32 {
+  only js { c32(a * b.re, a * b.im) }
+  source glsl { $(a) * $(b) }
+}
+
+fn exp(a: c32) -> c32 {
+  a.re.exp * a.im.cis
+}
+
+fn sin(a: c32) -> c32 {
+  x := this.re
+  y := this.im
+  c32(x.sin * y.cosh, x.cos * y.sinh)
+}
+
+type img "raw image data" {
+  source js { ImageData }
+  source glsl { texture2D }
+}
+
+fn unique[N: u32](a: f32[N]) -> f32[..=N] {
+  let ret: f32[N];
+  let len: u32;
+
+  'outer: for x in a {
+    for i = 0..len {
+      if ret[i] == a {
+        continue 'outer
+      }
+    }
+    ret[len] = x;
+    len += 1;
+  }
+
+  ret @ len
+}
+
+struct mat32[N: u32, M: u32] = @mat[N, M](f32);
+
+fn +[N: u32, M: u32](ma: mat32[N, M], mb: mat32[N, M]) -> mat32[N, M] {
+  a + b for a, b = ma, mb
+}
+
+fn odot[N: u32, M: u32](ma: mat32[N, M], mb: mat32[N, M]) -> mat32[N, M] {
+  a * b for a, b = ma, mb
+}
+
+deriv +(a, b) {
+  deriv(a) + deriv(b)
+}

@@ -31,6 +31,7 @@ Many problems exist with the current setup:
 - List comprehensions
 - Arrays with an unknown (but capped) length
 - Multi-dimensional arrays
+- Symbolic computation can be specified
 
 **P2: Developer usability**
 
