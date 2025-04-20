@@ -35,8 +35,9 @@
 //   expression;               evaluates an expression
 //   let name = expr;          declares a local variable
 //   let name: type = expr;    declares a local variable
-//   for a in b { ... }        runs code for each value in an array
-//   for a in ..b { ... }      runs code
+//   for1 a in b { ... }       runs code for each value in an array
+//   for a in b { ... }        runs code for each value in an ndarray
+//   if a { ... }              Rust syntax if-else statement
 
 // Expressions may be:
 //   :symbolname               declares and outputs a symbol
@@ -50,6 +51,7 @@
 //   a for1 b in c             comprehension over array
 //   a for b in c              comprehension over ndarray
 //   a for b, c in d, e        comprehension over multiple same-size ndarrays
+//   if a { b } else { c }     ternary equivalent
 
 // Type declarations via `type` are for atomic types, not compounds.
 // They should not be used for `vec2` and friends.
@@ -207,5 +209,4 @@ fn +<R: u32, C: u32>(a: Mat<R, C>, b: Mat<R, C>) -> Mat<R, C> {
 
   // We could alternatively write it using comprehensions:
   c + d for c, d in a, b
-  // The comprehension would 
 }
