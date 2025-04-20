@@ -231,7 +231,7 @@ const SCALARS = Object.entries({
   d: frac(1, 1e1),
   c: frac(1, 1e2),
   m: frac(1, 1e3),
-  μ: frac(1, 1e6),
+  u: frac(1, 1e6),
   n: frac(1, 1e9),
   p: frac(1, 1e12),
   f: frac(1, 1e15),

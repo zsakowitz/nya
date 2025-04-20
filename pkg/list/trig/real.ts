@@ -214,3 +214,5 @@ export default {
     },
   },
 } satisfies Package
+
+// EXPANSION: https://www.youtube.com/watch?v=Q533h4w5NnE just for funsies
