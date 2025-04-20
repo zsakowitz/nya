@@ -148,7 +148,7 @@ fn gamma(a: c32): c32 {
     using js { import { gamma } from "mathjs"; }
     // return type of 'source' is assumed to match fn return type; we explicitly
     // mark it as a mathjscx so automatic coercion works
-    source { gamma($(mathjscx(a))) } :: mathjscx
+    source { gamma($(a.mathjscx)) } :: mathjscx
   }
 }
 

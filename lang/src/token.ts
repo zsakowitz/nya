@@ -7,12 +7,14 @@ const Kind = Object.freeze({
   IdentAt: 2, // @vec2, @vec4, @-, @>, @mix
   IdentApos: 8, // 'outer, 'inner
   IdentHash: 9, // #asinh, #min, #max
+  IdentExtern: 10, // source, using
 
   Number: 3, // 2.3, 7
   String: 4, // "hello world"
   Comment: 5, // // world
   Op: 6, // =, +, *, ;, :, ., $(, ]
-  DirectSource: 7, // anything inside a source block
+  Source: 7, // anything inside a source block
+  Newline: 11, // a literal newline
 })
 
 type Kind = (typeof Kind)[keyof typeof Kind]
@@ -25,16 +27,18 @@ const IdentPrefixes = {
 }
 
 const Colors = {
-  [Kind.Ident]: "opacity-20 bg-orange-300 text-black",
-  [Kind.IdentColon]: "opacity-20 bg-purple-300 text-black",
-  [Kind.IdentAt]: "opacity-20 bg-red-300 text-black",
-  [Kind.IdentApos]: "opacity-20 bg-orange-300 text-black",
-  [Kind.IdentHash]: "opacity-20 bg-slate-300 text-black",
-  [Kind.Number]: "opacity-20 bg-fuchsia-300 text-black",
-  [Kind.String]: "opacity-20 bg-green-300 text-black",
-  [Kind.Comment]: "opacity-20 bg-blue-300 text-black",
-  [Kind.Op]: "opacity-20 bg-black text-white",
-  [Kind.DirectSource]: "opacity-20 bg-yellow-300 text-black",
+  [Kind.Ident]: "bg-orange-300 text-black",
+  [Kind.IdentExtern]: "bg-orange-300 text-black",
+  [Kind.IdentColon]: "bg-purple-300 text-black",
+  [Kind.IdentAt]: "bg-red-300 text-black",
+  [Kind.IdentApos]: "bg-orange-300 text-black",
+  [Kind.IdentHash]: "bg-slate-300 text-black",
+  [Kind.Number]: "bg-fuchsia-300 text-black",
+  [Kind.String]: "bg-green-300 text-black",
+  [Kind.Comment]: "bg-blue-300 text-black",
+  [Kind.Op]: "bg-black text-white",
+  [Kind.Source]: "bg-yellow-300 text-black",
+  [Kind.Newline]: "bg-black",
 }
 
 class Token {
@@ -45,19 +49,20 @@ class Token {
   ) {}
 }
 
-const ErrorCode = Object.freeze({
+const Code = Object.freeze({
   InvalidBuiltinName: 20,
   UnknownChar: 21,
   FloatMustEndInDigit: 22,
   UnterminatedString: 23,
+  UnterminatedSource: 25,
   UnknownOperator: 24,
 })
 
-type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode]
+type Code = (typeof Code)[keyof typeof Code]
 
 class Issue {
   constructor(
-    readonly code: ErrorCode,
+    readonly code: Code,
     readonly start: number,
     readonly end: number,
   ) {}
@@ -69,6 +74,7 @@ const WS = /\s/
 const ANY_ID_START = /[@A-Za-z_]/
 const UNKNOWN = /[^A-Za-z0-9_\s/"]/
 const DIGIT = /[0-9]/
+const INTERP = /\$\((?:([A-Za-z_]\w*)(?:(\.)(?:([A-Za-z_]\w*))?)?)?\)/g
 
 const OPS =
   "+ - * / ** ~ | & || && @ \\ == != <= >= < > ~ ! ( ) [ ] { } $( ; , ? : -> => :: . ..".split(
@@ -97,6 +103,12 @@ export function tokens(source: string) {
     const start = i
     const char = source[i]!
 
+    if (char == "\n") {
+      i++
+      ret.push(new Token(Kind.Newline, start, i))
+      continue
+    }
+
     if (WS.test(char)) {
       i++
       continue
@@ -107,7 +119,14 @@ export function tokens(source: string) {
       if (source[i] == "^" && source[i + 1] == "-" && source[i + 2] == "1") {
         i += 3
       }
-      ret.push(new Token(Kind.Ident, start, i))
+      const text = source.slice(start, i)
+      ret.push(
+        new Token(
+          text == "source" || text == "using" ? Kind.IdentExtern : Kind.Ident,
+          start,
+          i,
+        ),
+      )
       continue
     }
 
@@ -115,7 +134,7 @@ export function tokens(source: string) {
       if (!is(ID_START, source[i + 1])) {
         ret.push(new Token(Kind.Op, start, ++i))
         if (!OPS.includes(char)) {
-          issues.push(new Issue(ErrorCode.UnknownOperator, start, i))
+          issues.push(new Issue(Code.UnknownOperator, start, i))
         }
         continue
       }
@@ -123,7 +142,7 @@ export function tokens(source: string) {
       ret.push(
         new Token(IdentPrefixes[char as keyof typeof IdentPrefixes], start, i),
       )
-      issues.push(new Issue(ErrorCode.InvalidBuiltinName, start, i))
+      issues.push(new Issue(Code.InvalidBuiltinName, start, i))
       continue
     }
 
@@ -135,7 +154,7 @@ export function tokens(source: string) {
           while (is(DIGIT, source[++i]));
         } else if (!is(ANY_ID_START, source[i + 1])) {
           i++
-          issues.push(new Issue(ErrorCode.FloatMustEndInDigit, start, i))
+          issues.push(new Issue(Code.FloatMustEndInDigit, start, i))
         }
       }
       ret.push(new Token(Kind.Number, start, i))
@@ -164,7 +183,77 @@ export function tokens(source: string) {
       }
       ret.push(new Token(Kind.String, start, i))
       if (!terminated) {
-        issues.push(new Issue(ErrorCode.UnterminatedString, start, i))
+        issues.push(new Issue(Code.UnterminatedString, start, i))
+      }
+      continue
+    }
+
+    if (char == "{") {
+      const last = ret[ret.length - 1]
+      const last2 = ret[ret.length - 2]
+      if (
+        last?.kind == Kind.IdentExtern ||
+        (last?.kind == Kind.Ident && last2?.kind == Kind.IdentExtern)
+      ) {
+        let depth = 0
+        loop: while (true) {
+          const char = source[++i]
+          switch (char) {
+            case undefined:
+              i++
+              ret.push(new Token(Kind.Source, start, i))
+              issues.push(new Issue(Code.UnterminatedSource, start, i))
+              break loop
+            case "{":
+              depth++
+              break
+            case "}":
+              if (depth == 0) {
+                i++
+                ret.push(new Token(Kind.Op, start, start + 1))
+                const o = start + 1
+                const contents = source.slice(o, i - 1)
+                let match
+                INTERP.lastIndex = 0
+                let prev = 0
+                while ((match = INTERP.exec(contents))) {
+                  const start = o + match.index
+                  ret.push(new Token(Kind.Source, o + prev, start))
+                  const end = o + (prev = INTERP.lastIndex)
+                  ret.push(new Token(Kind.Op, start, start + 2))
+                  if (match[1]) {
+                    const l1 = match[1].length
+                    ret.push(new Token(Kind.Ident, start + 2, start + 2 + l1))
+                    if (match[2]) {
+                      const l2 = match[2].length
+                      ret.push(
+                        new Token(Kind.Op, start + 2 + l1, start + 2 + l1 + l2),
+                      )
+                      if (match[3]) {
+                        const l3 = match[3].length
+                        ret.push(
+                          new Token(
+                            Kind.Ident,
+                            start + 2 + l1 + l2,
+                            start + 2 + l1 + l2 + l3,
+                          ),
+                        )
+                      }
+                    }
+                  }
+                  ret.push(new Token(Kind.Op, end - 1, end))
+                }
+                ret.push(new Token(Kind.Source, o + prev, i - 1))
+                ret.push(new Token(Kind.Op, i - 1, i))
+                break loop
+              } else {
+                depth--
+                break
+              }
+          }
+        }
+      } else {
+        ret.push(new Token(Kind.Op, start, ++i))
       }
       continue
     }
@@ -179,13 +268,13 @@ export function tokens(source: string) {
       i++
       ret.push(new Token(Kind.Op, start, i))
       if (!OPS.includes(char)) {
-        issues.push(new Issue(ErrorCode.UnknownOperator, start, i))
+        issues.push(new Issue(Code.UnknownOperator, start, i))
       }
       continue
     }
 
     while (is(UNKNOWN, source[++i]));
-    issues.push(new Issue(ErrorCode.UnknownChar, start, i))
+    issues.push(new Issue(Code.UnknownChar, start, i))
     continue
   }
 
