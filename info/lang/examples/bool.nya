@@ -1,0 +1,26 @@
+type bool "boolean" {
+  source ts { boolean }
+  source glsl { bool }
+}
+
+fn &&(a: bool, b: bool) -> bool {
+  source { $(a) && $(b) }
+}
+
+// functions without arguments act like variables
+fn true() -> bool {
+  source { true }
+}
+
+fn false() -> bool {
+  source { false }
+}
+
+// 'test' may be defined to specify how a particular value behaves in tests
+fn test(a: bool) {
+  source js {
+    if (!$(a)) {
+      throw new Error("assertion failed")
+    }
+  }
+}

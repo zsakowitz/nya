@@ -1,0 +1,62 @@
+// imports must be at the beginning of the file
+use "./f32"
+use "./bool"
+
+struct c32 "complex number" {
+  // `@vec2` tells the compiler to use a vec2 to store `data`
+  // `f32` tells the compiler we will refer to the data via the `f32` type
+  // the compiler will check `f32` can be stored in a `vec2`
+  // we could also do `vec2(bool)`; the compiler would switch it to `bvec2`
+  data: @vec2(f32),
+}
+
+// the c32 type exists and is constructable via a struct, but we can make an
+// alias for it with re and im counterparts
+fn c32(re: f32, im: f32) {
+  c32 { data: [re, im] }
+}
+
+fn re(x: c32) -> f32 {
+  x.data[0]
+}
+
+fn im(x: c32) -> f32 {
+  x.data[1]
+}
+
+// shorter declaration with implicit im=0.0
+fn c32(re: f32) {
+  c32(re, 0.0)
+}
+
+fn +(a: c32, b: c32) -> c32 {
+  only js { c32(a.re + b.re, a.im + b.im) }
+  // $(...) is used for longer interpolations
+  source glsl { $(a.data) + $(b.data) }
+}
+
+fn ==(a: c32, b: c32) -> bool {
+  a.re == b.re && a.im == b.im
+}
+
+// a syntax block is essentially a macro of sorts;
+// that's why its arguments seem untyped
+syntax #.i(a) -> c32 {
+  c32(0.0, source { a })
+}
+
+// test is both used to declare a test group...
+test "complex addition" {
+  // ...and to declare individual assertions
+  test c32(2.0, 3.0) + c32(-7.0, 9.0) == c32(-5.0, 12.0);
+  test c32(1.0, -4.0) == c32(-7.0, 9.0) + c32(8.0, -13.0);
+}
+
+// those can be combined into a single shorthand
+test "complex equality" { c32(2.0, 3.0) == c32(2.0, 3.0) }
+
+// the |=> operator specifies coercions to be exposed in the calculator
+// coercions are never used in nya itself
+fn |=>(a: f32) -> c32 {
+  c32(a, 0.0)
+}

@@ -39,3 +39,12 @@ Many problems exist with the current setup:
 - Autocomplete
 - Errors in IDE
 - Automatically watched by esbuild
+
+## Notes
+
+There are no built-in types; everything is defined within nya code itself.
+
+Syntax should be similar-ish to Rust, since it's clear, concise, and will make
+sense to many people at first glance.
+
+Identifiers beginning with underscores will be used for operator overloading.

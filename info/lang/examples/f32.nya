@@ -1,0 +1,45 @@
+use "./bool"
+
+// `type` defines a basic data type (non-compound). We declare the type's script
+// name (f32), its human name (real number), and how to print it in various
+// target languages.
+type f32 "real number" {
+  // `source` blocks specify code to be directly written in a target language.
+
+  // `source ts` only specifies code during TS transpilation.
+  source ts { number }
+
+  // `source gl` only specifies code for GLSL transpilation.
+  source glsl { float }
+}
+
+// define a way to print numbers
+syntax #.(a) -> f32 {
+  source { $(a) }
+}
+
+// a single operator may be a function name; this is how operator overloading is defined
+fn +(a: f32, b: f32) -> f32 {
+  // since the source is the same in all languages, we just compile to `a + b`
+  source { $(a) + $(b) }
+}
+
+// binary - has two arguments
+fn -(a: f32, b: f32) -> f32 {
+  // since the source is the same in all languages, we just compile to `a - b`
+  source { $(a) - $(b) }
+}
+
+// unary - has one argument
+fn -(a: f32) -> f32 {
+  source { -$(a) }
+}
+
+fn ==(a: f32, b: f32) -> bool {
+  source { $(a) == $(b) }
+}
+
+fn floor(a: f32) -> f32 {
+  source ts { Math.floor($(a)) }
+  source glsl { floor($(a)) }
+}
