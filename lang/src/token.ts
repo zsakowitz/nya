@@ -7,20 +7,18 @@ const Kind = Object.freeze({
   Number: 2, // 2.3, 7
   String: 3, // "hello world"
   Comment: 4, // // world
-  ParenStart: 5, // (, [, {, $(, <
-  ParenEnd: 6, // ), ], }, ), >
-  Symbol: 7, // =, +, *, ;, :, .
+  Symbol: 7, // =, +, *, ;, :, ., $(, ]
   DirectSource: 10, // anything inside a source block
 })
 
 type Kind = (typeof Kind)[keyof typeof Kind]
 
 const Colors = [
-  "opacity-10 bg-orange-300 text-black",
-  "opacity-10 bg-red-300 text-black",
-  "opacity-10 bg-magenta-300 text-black",
-  "opacity-10 bg-green-300 text-black",
-  "opacity-10 bg-blue-300 text-black",
+  "opacity-20 bg-orange-300 text-black",
+  "opacity-20 bg-red-300 text-black",
+  "bg-fuchsia-300 text-black",
+  "opacity-20 bg-green-300 text-black",
+  "opacity-20 bg-blue-300 text-black",
   "",
   "",
   "",
@@ -38,8 +36,9 @@ class Token {
 }
 
 const ErrorCode = Object.freeze({
-  InvalidBuiltinName: 1,
-  UnknownChar: 2,
+  InvalidBuiltinName: 20,
+  UnknownChar: 21,
+  FloatMustEndInDigit: 22,
 })
 
 type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode]
@@ -55,7 +54,15 @@ class Issue {
 const ID_START = /[A-Za-z_]/
 const ID_CONT = /[A-Za-z0-9_]/
 const WS = /\s/
-const UNKNOWN = /[^A-Za-z0-9_\s]/
+const ANY_ID_START = /[@A-Za-z_]/
+const UNKNOWN = /[^A-Za-z0-9_\s/]/
+const DIGIT = /[0-9]/
+
+// binary operators:
+// + - * / ** ~ | & || &&
+//
+// unary operators:
+// - ~ !
 
 function is(regex: RegExp, char: string | undefined) {
   return char != null && regex.test(char)
@@ -88,6 +95,21 @@ export function tokens(source: string) {
       continue
     }
 
+    if (DIGIT.test(char)) {
+      while (is(DIGIT, source[++i]));
+      if (source[i] == ".") {
+        if (is(DIGIT, source[i + 1])) {
+          i++
+          while (is(DIGIT, source[++i]));
+        } else if (!is(ANY_ID_START, source[i + 1])) {
+          i++
+          issues.push(new Issue(ErrorCode.FloatMustEndInDigit, start, i))
+        }
+      }
+      ret.push(new Token(Kind.Number, start, i))
+      continue
+    }
+
     if (char == "/" && source[i + 1] == "/") {
       i++
       while (source[++i] != "\n");
@@ -111,7 +133,12 @@ for (let i = 0; i < source.length; ) {
   const token = ret[ret.length - 1]
 
   if (token && token.start == i) {
-    pre.appendChild(h(Colors[token.kind], source.slice(token.start, token.end)))
+    pre.appendChild(
+      h(
+        "border border-black border-1 -m-px " + Colors[token.kind],
+        source.slice(token.start, token.end),
+      ),
+    )
     i = token.end
     ret.pop()
   } else {

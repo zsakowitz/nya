@@ -2,7 +2,7 @@ node_modules/
 dist/
 tsconfig.tsbuildinfo
 **/.DS_Store
-index.css
+src/page/index.dist.css
 meta.json
 pkg/graphsource
 graph.svg

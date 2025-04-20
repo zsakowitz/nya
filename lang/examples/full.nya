@@ -11,6 +11,7 @@ type(float) f32 {
 let f32 {
   source js { 0 }
   source glsl { 0.0 }
+  4.
 }
 
 type u32 {
@@ -238,4 +239,66 @@ fn unglide(cv: Cv, { p0, p1 }: Line<c32>, { x, y }: c32) -> UnglideResult {
   let a = ((A * A - B * B) / C + C) / 2.0;
 
   UnglideResult { a / C, cv.offset_dist(p0, p1) }
+}
+
+// Enums declare a subset of usable symbols; these are converted to integers at
+// compile time
+enum UnitCategory {
+  :m,
+  :s,
+  :g,
+  :K,
+  :A,
+  :mol,
+  :cd,
+}
+
+struct BasicUnitData {
+  base: UnitCategory,
+  scale: f32,
+  // `offset` has a default value, since it's usually not specified
+  offset: f32 = 0.0,
+}
+
+// Enums can be defined as a map from keys to data; this allows `BasicUnit` to
+// be called with a `BasicUnit` and output the corresponding entry. It's
+// included b/c it's a pattern used often in project nya.
+enum BasicUnit: BasicUnitData {
+  :m => { :m, 1.0 },
+  :s => { :s, 1.0 },
+  :g => { :g, 1.0 },
+  :K => { :K, 1.0 },
+  :A => { :A, 1.0 },
+  :mol => { :mol, 1.0 },
+  :cd => { :cd, 1.0 },
+  :min => { :s, 60.0 },
+}
+
+// Enums can also have data associated with their variants.
+enum ComputedArc {
+  // Written as `:invalid` in an expression
+  :invalid,
+
+  // Written as `:split_line { a, b }` in an expression
+  :split_line { p0: Point<f32>, p1: Point<f32> },
+  :segment { p0: Point<f32>, p1: Point<f32> },
+
+  // Written as `:arc { a, b, c, d }` in an expression
+  :arc { center: Point<f32>, radius: f32, start: f32, end: f32 },
+}
+
+fn nan() -> f32 {
+  0.0 / 0.0
+}
+
+fn inf() -> f32 {
+  1.0 / 0.0
+}
+
+fn arc_radius(arc: ComputedArc) -> f32 {
+  match arc {
+    :invalid => nan,
+    :split_line | :segment => inf,
+    :arc { radius } => radius,
+  }
 }

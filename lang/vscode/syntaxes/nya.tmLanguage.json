@@ -25,7 +25,7 @@
         },
         {
           "name": "keyword.control",
-          "match": "\\b(simplify|else|let|uniform|deriv|resource|continue|for|if|break|in|return|for|test|use|struct|type|fn|syntax|using|source|export|const|float|int)\\b"
+          "match": "\\b(match|enum|simplify|else|let|uniform|deriv|resource|continue|for|if|break|in|return|for|test|use|struct|type|fn|syntax|using|source|export|const|float|int)\\b"
         }
       ]
     },
@@ -43,6 +43,10 @@
     },
     "identifier": {
       "patterns": [
+        {
+          "match": ":[A-Za-z]\\w*\\b",
+          "name": "entity.name.tag"
+        },
         {
           "match": "('[A-Za-z]\\w*)\\s*(:)?",
           "captures": {
