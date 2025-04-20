@@ -70,6 +70,11 @@
 //   UNARY a                   unary operator
 //     - ~ !
 //   match a { pat => ... }    pattern matching operator
+//     Patterns include:
+//       2                     plain integer
+//       2.3                   plain float
+//       :hi                   plain symbol
+//       :hi { a, b }          symbol with data
 //   { stmt; ...; expr }       inline block
 //   (a)                       regular parentheses
 //   source { ...$(a)... }     source code inlined into all languages
