@@ -1,0 +1,103 @@
+// Multiple files
+use "./bool"
+
+// TypeScript and GLSL output
+type f32 "real number" {
+  source js { number }
+  source glsl { float }
+}
+
+// `void` specifies how to initialize a value of this type in `let` statements
+void f32 {
+  source js { 0 }
+  source glsl { 0.0 }
+}
+
+type u32 "positive integer" {
+  source js { number }
+  source glsl { uint }
+}
+
+void u32 {
+  source js { 0 }
+  source glsl { 0.0 }
+}
+
+// Compound types
+struct c32 "complex number" = @vec2(f32);
+struct viewport "viewport" = @vec4(c32);
+
+// Values received from JS and GLSL uniforms
+uniform vp: viewport;
+
+// Operator overloading
+fn +(a: f32, b: f32) -> f32 {
+  source { $(a) + $(b) }
+}
+
+// GLSL textures
+resource img "raw image data" {
+  source js { ImageData }
+  source glsl { texture2D }
+}
+
+// Generic types
+struct point32<N: u32> = @vec<N>(f32);
+
+// Comprehensions
+fn +<N: u32>(pa: point32<N>, pb: point32<N>) -> point32<N> {
+  if 1 < N < 4 {
+    only glsl {
+      return source glsl { $(pa) + $(pb) }
+    }
+  }
+
+  a + b for a, b = pa, pb
+}
+
+// Arrays with unknown (but capped) length
+fn unique<N: u32>(a: f32[N]) -> f32[..N] {
+  let ret: f32[N];
+  let len: u32;
+
+  'outer: for el = a {
+    for i = 0..N {
+      if i >= len {
+        break
+      }
+      if ret[i] == el {
+        break 'outer
+      }
+    }
+    ret[len] = el
+    len += 1
+  }
+
+  // `array @ len` syntax specifies an actual length for a bounded array
+  ret @ len
+}
+
+// Symbolic computation can be specified
+deriv +(a, b) {
+  deriv(a) + deriv(b)
+}
+
+deriv *(a, b) {
+  deriv(a) * b + a * deriv(b)
+}
+
+simplify +(a: f32, b) {
+  if a == 0.0 {
+    b
+  } else {
+    a + b
+  }
+}
+
+simplify +(a, b: f32) {
+  if b == 0.0 {
+    a
+  } else {
+    a + b
+  }
+}

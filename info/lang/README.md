@@ -18,19 +18,19 @@ Many problems exist with the current setup:
 
 **P1: Essentials**
 
-- Multiple files
-- Compound types
-- TypeScript and GLSL output
-- Values received from JS data and GLSL uniforms
-- Operator overloading
-- GLSL textures
-- No cycles
-- Constant-time loop indices
-- Fast compilation
-- Generic types (e.g. n-dimensional points)
-- List comprehensions
-- Arrays with an unknown (but capped) length
-- Multi-dimensional arrays
+- ✅ Multiple files
+- ✅ Compound types
+- ✅ TypeScript and GLSL output
+- ✅ Values received from JS data and GLSL uniforms
+- ✅ Operator overloading
+- ✅ GLSL textures
+- ✅ No cycles
+- ✅ Constant-time loop indices
+- ✅ Fast compilation
+- ✅ Generic types (e.g. n-dimensional points)
+- ✅ Comprehensions
+- ✅ Arrays with an unknown (but capped) length
+- ✅ Multi-dimensional arrays
 - Symbolic computation can be specified
 
 **P2: Developer usability**

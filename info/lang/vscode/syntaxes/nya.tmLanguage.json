@@ -17,7 +17,7 @@
     "keywords": {
       "patterns": [
         {
-          "match": "\\b(fn)\\s+(\\w+|[&|+\\-*\\/:=~\\\\=><]+)",
+          "match": "\\b(fn)\\s+(\\w+|[@&|+\\-*\\/:=~\\\\!]+|[<>]=?|\\|=>)",
           "captures": {
             "1": { "name": "keyword.control" },
             "2": { "name": "entity.name" }
@@ -25,7 +25,7 @@
         },
         {
           "name": "keyword.control",
-          "match": "\\b(continue|for|if|break|in|return|for|test|use|struct|type|fn|syntax)\\b"
+          "match": "\\b(simplify|else|void|let|uniform|deriv|resource|continue|for|if|break|in|return|for|test|use|struct|type|fn|syntax)\\b"
         }
       ]
     },
@@ -33,7 +33,7 @@
       "patterns": [
         {
           "name": "keyword.operator",
-          "match": "[@&|+\\-*\\/:=~\\\\=><]+"
+          "match": "[@&|+\\-*\\/:=~\\\\!]+|[<>]=?|\\|=>"
         },
         {
           "name": "keyword.operator",
@@ -89,7 +89,7 @@
           }
         },
         {
-          "match": "(\\b[A-Za-z]\\w*\\b|[&|+\\-*\\/:=~\\\\=><]+|#(?:\\.#|\\.?\\w*))\\s*(\\()",
+          "match": "(\\b[A-Za-z]\\w*\\b|[&|+\\-*\\/:=~\\\\!]+|[<>]=|[<>]\\s+|\\|=>|#(?:\\.#|\\.?\\w*))\\s*(\\()",
           "captures": {
             "1": {
               "name": "entity.name"
@@ -111,7 +111,7 @@
           }
         },
         {
-          "match": "\\b(?:[a-z]+\\d+|bool|img)\\b",
+          "match": "\\b(?:[a-z]+\\d+|bool|img|viewport)\\b",
           "name": "entity.name.type.class.js"
         },
         {
