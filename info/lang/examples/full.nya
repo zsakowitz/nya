@@ -176,7 +176,7 @@ export type f32 {
   }
 }
 
-type canvas {
+type Cv {
   source js { import("@/sheet/ui.cv").Cv }
 }
 
@@ -213,6 +213,10 @@ fn +(a: Point<f32>, b: Point<f32>) -> Point<f32> {
   source glsl { $(a) + $(b) }
 }
 
+fn offset_dist(cv: Cv, a: Point<f32>, b: Point<f32>) -> Point<f32> {
+  source js { $(cv).offsetDistance($(a), $(b)) }
+}
+
 // We'll leave out point types other than `c32` for simplicity.
 fn glider(line: Line<Point<f32>>, at: f32) -> Point<f32> {
   only js { line.p0 * (1.0 - at) + line.p1 * at }
@@ -228,14 +232,10 @@ fn unglide(cv: Cv, { p0, p1 }: Line<c32>, { x, y }: c32) -> UnglideResult {
   let { x1, y1 } = p0;
   let { x2, y2 } = p1;
 
-  let B = hypot(x1 - x, y1 - y);
-  let A = hypot(x2 - x, y2 - y);
+  let A = hypot(x1 - x, y1 - y);
+  let B = hypot(x2 - x, y2 - y);
   let C = hypot(x1 - x2, y1 - y2);
+  let a = ((A * A - B * B) / C + C) / 2.0;
 
-  let a = ((B * B - A * A) / C + C) / 2.0;
-
-  UnglideResult {
-    a / C,
-    cv.offsetDistance(p0, p1),
-  }
+  UnglideResult { a / C, cv.offset_dist(p0, p1) }
 }
