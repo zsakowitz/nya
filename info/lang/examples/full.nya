@@ -30,6 +30,10 @@ struct viewport "viewport" = @vec4(c32);
 // Values received from JS and GLSL uniforms
 uniform vp: viewport;
 
+// Inline function labels
+fn + "adds two values";
+fn unique "returns a list with duplicates removed";
+
 // Operator overloading
 fn +(a: f32, b: f32) -> f32 {
   source { $(a) + $(b) }
@@ -42,7 +46,7 @@ resource img "raw image data" {
 }
 
 // Generic types
-struct point32<N: u32> = @vec<N>(f32);
+struct point32<N: u32> "$(N)d point" = @vec<N>(f32);
 
 // Comprehensions
 fn +<N: u32>(pa: point32<N>, pb: point32<N>) -> point32<N> {
