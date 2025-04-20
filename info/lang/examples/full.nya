@@ -35,6 +35,21 @@ fn +(a: f32, b: f32) -> f32 {
   source { $(a) + $(b) }
 }
 
+// Operator overloading
+fn -(a: f32, b: f32) -> f32 {
+  source { $(a) - $(b) }
+}
+
+// Operator overloading
+fn *(a: f32, b: f32) -> f32 {
+  source { $(a) * $(b) }
+}
+
+// Operator overloading
+fn /(a: f32, b: f32) -> f32 {
+  source { $(a) / $(b) }
+}
+
 // GLSL textures
 type(resource) img {
   source js { ImageData }
@@ -217,7 +232,7 @@ fn unglide(cv: Cv, { p0, p1 }: Line<c32>, { x, y }: c32) -> UnglideResult {
   let A = hypot(x2 - x, y2 - y);
   let C = hypot(x1 - x2, y1 - y2);
 
-  let a = ((B * B - A * A) / C + C) / 2;
+  let a = ((B * B - A * A) / C + C) / 2.0;
 
   UnglideResult {
     a / C,
