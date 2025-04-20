@@ -2,11 +2,10 @@ import { h, hx } from "@/jsx"
 import source from "../examples/full.nya"
 
 const Kind = Object.freeze({
-  Ident: 0, // struct, c32, viewport, f32
+  Ident: 0, // struct, c32, viewport, f32, %odot
   IdentColon: 1, // :m, :s, :A, :px
-  IdentAt: 2, // @vec2, @vec4, @-, @>, @mix
+  IdentAt: 2, // @vec2, @vec4, @-, @>, @mix, @asinh, @min
   IdentApos: 8, // 'outer, 'inner
-  IdentHash: 9, // #asinh, #min, #max
   IdentExtern: 10, // source, using
 
   Number: 3, // 2.3, 7
@@ -24,7 +23,7 @@ const IdentPrefixes = {
   ":": Kind.IdentColon,
   "@": Kind.IdentAt,
   "'": Kind.IdentApos,
-  "#": Kind.IdentHash,
+  "%": Kind.Ident,
 }
 
 const Colors = {
@@ -33,7 +32,6 @@ const Colors = {
   [Kind.IdentColon]: "bg-purple-300 text-black",
   [Kind.IdentAt]: "bg-red-300 text-black",
   [Kind.IdentApos]: "bg-orange-300 text-black",
-  [Kind.IdentHash]: "bg-slate-300 text-black",
   [Kind.Number]: "bg-fuchsia-300 text-black",
   [Kind.String]: "bg-green-300 text-black",
   [Kind.Comment]: "bg-blue-300 text-black",
@@ -73,8 +71,7 @@ class Issue {
 const ID_START = /[A-Za-z_]/
 const ID_CONT = /[A-Za-z0-9_]/
 const WS = /\s/
-const ANY_ID_START = /[@A-Za-z_]/
-const UNKNOWN = /[^A-Za-z0-9_\s/"]/
+const ANY_ID_START = /[@%:'A-Za-z_]/
 const DIGIT = /[0-9]/
 const INTERP = /\$\((?:([A-Za-z_]\w*)(?:(\.)(?:([A-Za-z_]\w*))?)?)?\)/g
 
@@ -292,8 +289,7 @@ export function tokens(source: string) {
       continue
     }
 
-    while (is(UNKNOWN, source[++i]));
-    issues.push(new Issue(Code.UnknownChar, start, i))
+    issues.push(new Issue(Code.UnknownChar, start, ++i))
     continue
   }
 
