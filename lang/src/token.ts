@@ -1,5 +1,5 @@
 import { h, hx } from "@/jsx"
-import source from "../examples/full.nya"
+import source from "../examples/reference.nya"
 
 const Kind = Object.freeze({
   Ident: 0, // struct, c32, viewport, f32, %odot
@@ -34,9 +34,9 @@ const Colors = {
   [Kind.IdentApos]: "bg-orange-300 text-black",
   [Kind.Number]: "bg-fuchsia-300 text-black",
   [Kind.String]: "bg-green-300 text-black",
-  [Kind.Comment]: "bg-blue-300 text-black",
+  [Kind.Comment]: "opacity-30 bg-blue-300 text-black",
   [Kind.Op]: "bg-black text-white",
-  [Kind.OpAt]: "bg-red-700 text-white",
+  [Kind.OpAt]: "bg-slate-600 text-white",
   [Kind.Source]: "bg-yellow-300 text-black",
   [Kind.Newline]: "bg-black",
 }
