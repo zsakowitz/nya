@@ -2,7 +2,7 @@
 use "./bool"
 
 // TypeScript and GLSL output
-type f32 "real number" {
+type(float) f32 {
   source js { number }
   source glsl { float }
 }
@@ -13,7 +13,7 @@ let f32 {
   source glsl { 0.0 }
 }
 
-type u32 "positive integer" {
+type u32 {
   source js { number }
   source glsl { uint }
 }
@@ -30,28 +30,27 @@ struct viewport "viewport" = @vec4(c32);
 // Values received from JS and GLSL uniforms
 uniform vp: viewport;
 
-// Inline function labels
-fn + "adds two values";
-fn unique "returns a list with duplicates removed";
-
 // Operator overloading
 fn +(a: f32, b: f32) -> f32 {
   source { $(a) + $(b) }
 }
 
 // GLSL textures
-resource img "raw image data" {
+type(resource) img {
   source js { ImageData }
   source glsl { texture2D }
 }
 
 // Generic types
-struct point32<N: u32> "$(N)d point" = @vec<N>(f32);
+struct point32<N: u32> = @vec<N>(f32);
 
 // Comprehensions
 fn +<N: u32>(pa: point32<N>, pb: point32<N>) -> point32<N> {
-  if 1 < N < 4 {
-    only glsl {
+  // @packed in a GLSL context returns whether a type is represented as a single
+  // scalar, vec, or mat; @packed[scalar/vec/mat] do the same but individually
+  only glsl {
+    // const if is guaranteed to be inlined
+    const if @packed(point32<N>) {
       return source glsl { $(pa) + $(pb) }
     }
   }
@@ -107,7 +106,7 @@ simplify +(a, b: f32) {
 }
 
 // Imports from JavaScript
-type mathjscx "mathjs complex number" {
+type mathjscx {
   source js { import("mathjs").Complex | number }
   // no source glsl means this isn't accessible from GLSL
 }
@@ -133,5 +132,28 @@ fn gamma(a: c32) -> c32 {
     // return type of 'source' is assumed to match fn return type; we explicitly
     // mark it as a mathjscx so automatic coercion works
     source { gamma($(mathjscx(a))) } :: mathjscx
+  }
+}
+
+// Everything in a file is usable from other files; 'export' makes it usable
+// from project nya, and provides any additional needed info.
+export fn + "add two values";
+export fn unique "returns a list with duplicates removed";
+
+fn asinh(a: f32) -> f32 {
+  // # is shorthand for getting to the math namespace in all respective
+  // languages; this line is equivalent to Math.asinh in js and asinh in glsl
+  #asinh(a)
+}
+
+// Functions may be exposed under other names
+export fn asinh { arcsinh, arsinh, sinh^-1 } "inverse hyperbolic sine";
+
+export type f32 {
+  name {
+    1 = "real number"
+    1+ = "real numbers"
+    the = "the real number"
+    a = "a real number"
   }
 }
