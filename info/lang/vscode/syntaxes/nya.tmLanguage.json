@@ -6,8 +6,8 @@
     "root": {
       "patterns": [
         { "include": "#comments" },
-        { "include": "#keywords" },
         { "include": "#source" },
+        { "include": "#keywords" },
         { "include": "#identifier" },
         { "include": "#operators" },
         { "include": "#strings" },
@@ -17,7 +17,7 @@
     "keywords": {
       "patterns": [
         {
-          "match": "\\b(fn)\\s+(\\w+|[@&|+\\-*\\/:=~\\\\!]+|[<>]=?|\\|=>)",
+          "match": "\\b(fn)\\s+(\\w+|\\|=>|[@&|+\\-*\\/:=~\\\\!]+|[<>]=?)",
           "captures": {
             "1": { "name": "keyword.control" },
             "2": { "name": "entity.name" }
@@ -25,7 +25,7 @@
         },
         {
           "name": "keyword.control",
-          "match": "\\b(simplify|else|let|uniform|deriv|resource|continue|for|if|break|in|return|for|test|use|struct|type|fn|syntax)\\b"
+          "match": "\\b(simplify|else|let|uniform|deriv|resource|continue|for|if|break|in|return|for|test|use|struct|type|fn|syntax|using|source)\\b"
         }
       ]
     },
@@ -33,7 +33,7 @@
       "patterns": [
         {
           "name": "keyword.operator",
-          "match": "[@&|+\\-*\\/:=~\\\\!]+|[<>]=?|\\|=>"
+          "match": "\\|=>|[@&|+\\-*\\/:=~\\\\!]+|[<>]=?"
         },
         {
           "name": "keyword.operator",
@@ -89,7 +89,7 @@
           }
         },
         {
-          "match": "(\\b[A-Za-z]\\w*\\b|[&|+\\-*\\/:=~\\\\!]+|[<>]=|[<>]\\s+|\\|=>|#(?:\\.#|\\.?\\w*))\\s*(\\()",
+          "match": "(\\b[A-Za-z]\\w*\\b|\\|=>|[&|+\\-*\\/:=~\\\\!]+|[<>]=|[<>]\\s+|#(?:\\.#|\\.?\\w*))\\s*(\\()",
           "captures": {
             "1": {
               "name": "entity.name"
@@ -111,8 +111,7 @@
           }
         },
         {
-          "match": "\\b(?:[a-z]+\\d+|bool|img|viewport)\\b",
-          "name": "entity.name.type.class.js"
+          "include": "#types"
         },
         {
           "name": "variable.name",
@@ -143,7 +142,7 @@
     "source": {
       "patterns": [
         {
-          "begin": "(source)\\s*(glsl)\\s*\\{",
+          "begin": "\\b(source)\\s*(glsl)\\s*\\{",
           "end": "\\}",
           "patterns": [
             { "include": "#source-interp" },
@@ -159,7 +158,7 @@
           }
         },
         {
-          "begin": "(source)\\s*(js)\\s*\\{",
+          "begin": "\\b(source)\\s*(js)\\s*\\{",
           "end": "\\}",
           "patterns": [
             { "include": "#source-interp" },
@@ -175,7 +174,23 @@
           }
         },
         {
-          "begin": "(source)\\s*\\{",
+          "begin": "\\b(using)\\s*(js)\\s*\\{",
+          "end": "\\}",
+          "patterns": [
+            { "include": "#source-interp" },
+            { "include": "source.js" }
+          ],
+          "beginCaptures": {
+            "1": {
+              "name": "keyword.operator"
+            },
+            "2": {
+              "name": "entity.name"
+            }
+          }
+        },
+        {
+          "begin": "\\b(source)\\s*\\{",
           "end": "\\}",
           "patterns": [
             { "include": "#source-interp" },
@@ -188,7 +203,7 @@
           }
         },
         {
-          "begin": "(only)\\s*(\\w+)\\s*\\{",
+          "begin": "\\b(only)\\s*(\\w+)\\s*\\{",
           "end": "\\}",
           "patterns": [{ "include": "#root" }],
           "beginCaptures": {
@@ -216,6 +231,10 @@
         }
       },
       "patterns": [{ "include": "#root" }]
+    },
+    "types": {
+      "match": "\\b(?:[a-z]+\\d+|bool|img|viewport|mathjscx)\\b",
+      "name": "entity.name.type.class.js"
     }
   },
   "scopeName": "source.nya"

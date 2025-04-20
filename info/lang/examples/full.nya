@@ -105,3 +105,33 @@ simplify +(a, b: f32) {
     a + b
   }
 }
+
+// Imports from JavaScript
+type mathjscx "mathjs complex number" {
+  source js { import("mathjs").Complex | number }
+  // no source glsl means this isn't accessible from GLSL
+}
+
+// Type coercion operator
+// In the case of split graphs (A->B, A->C, B->D, C->D, first "use" take precedence)
+fn |=>(a: mathjscx) -> c32 {
+  c32(
+    source js { typeof $(a) == 'number' ? $(a) : $(a).re },
+    source js { typeof $(a) == 'number' ? 0 : $(a).im }
+  )
+}
+
+fn mathjscx(a: c32) -> mathjscx {
+  using js { import { Complex } from "mathjs"; }
+  source js { Complex($(a.re), $(a.im)) }
+}
+
+fn gamma(a: c32) -> c32 {
+  only js {
+    // 'using' declares imports which must go outside function scope
+    using js { import { gamma } from "mathjs"; }
+    // return type of 'source' is assumed to match fn return type; we explicitly
+    // mark it as a mathjscx so automatic coercion works
+    source { gamma($(mathjscx(a))) } :: mathjscx
+  }
+}
