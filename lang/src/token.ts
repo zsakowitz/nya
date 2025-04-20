@@ -1,4 +1,5 @@
-import { readFileSync } from "node:fs"
+import { h, hx } from "@/jsx"
+import source from "../examples/full.nya"
 
 const Kind = Object.freeze({
   Ident: 0, // struct, c32, viewport, f32
@@ -13,6 +14,20 @@ const Kind = Object.freeze({
 })
 
 type Kind = (typeof Kind)[keyof typeof Kind]
+
+const Colors = [
+  "opacity-10 bg-orange-300 text-black",
+  "opacity-10 bg-red-300 text-black",
+  "opacity-10 bg-magenta-300 text-black",
+  "opacity-10 bg-green-300 text-black",
+  "opacity-10 bg-blue-300 text-black",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+] satisfies Record<Kind, string>
 
 class Token {
   constructor(
@@ -73,6 +88,13 @@ export function tokens(source: string) {
       continue
     }
 
+    if (char == "/" && source[i + 1] == "/") {
+      i++
+      while (source[++i] != "\n");
+      ret.push(new Token(Kind.Comment, start, i))
+      continue
+    }
+
     while (is(UNKNOWN, source[++i]));
     issues.push(new Issue(ErrorCode.UnknownChar, start, i))
     continue
@@ -81,7 +103,21 @@ export function tokens(source: string) {
   return { ret, issues }
 }
 
-const data = readFileSync("lang/examples/full.nya", { encoding: "ascii" })
-console.time()
-const { ret, issues } = tokens(data)
-console.timeEnd()
+const { ret, issues } = tokens(source)
+ret.reverse()
+const pre = hx("pre", "text-sm p-4")
+
+for (let i = 0; i < source.length; ) {
+  const token = ret[ret.length - 1]
+
+  if (token && token.start == i) {
+    pre.appendChild(h(Colors[token.kind], source.slice(token.start, token.end)))
+    i = token.end
+    ret.pop()
+  } else {
+    pre.append(source.slice(i, i + 1))
+    i++
+  }
+}
+
+document.body.appendChild(pre)
