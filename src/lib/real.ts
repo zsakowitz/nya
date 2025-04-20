@@ -248,7 +248,7 @@ export function frac(n: number, d: number): SReal {
 
 /** Returns the approximate result `~n`. */
 export function approx(n: number): SReal {
-  return new (SReal as any)(n)
+  return new (SReal as any)(n, null)
 }
 
 /**
