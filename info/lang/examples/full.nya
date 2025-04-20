@@ -24,8 +24,8 @@ let u32 {
 }
 
 // Compound types
-struct c32 "complex number" = @vec2(f32);
-struct viewport "viewport" = @vec4(c32);
+struct c32 = @vec2(f32);
+struct viewport = @vec4(c32);
 
 // Values received from JS and GLSL uniforms
 uniform vp: viewport;
@@ -42,6 +42,8 @@ type(resource) img {
 }
 
 // Generic types
+// `N: u32` means `N` is essentially a parameter which must be known at const
+// time, but it may be inferred
 struct point32<N: u32> = @vec<N>(f32);
 
 // Comprehensions
@@ -150,10 +152,75 @@ fn asinh(a: f32) -> f32 {
 export fn asinh { arcsinh, arsinh, sinh^-1 } "inverse hyperbolic sine";
 
 export type f32 {
+  // Naming rules are implemented directly in source
+  // They should be localized, but that will happen later
   name {
-    1 = "real number"
+    1  = "real number"
     1+ = "real numbers"
-    the = "the real number"
-    a = "a real number"
+    a  = "a real number"
+  }
+}
+
+type canvas {
+  source js { import("@/sheet/ui.cv").Cv }
+}
+
+export type c32 {
+  name {
+    1  = "complex number"
+    1+ = "complex numbers"
+    a  = "a complex number"
+  }
+}
+
+// Unconstrained `T` means `T` is some type.
+struct Point<T> {
+  x: T,
+  y: T,
+}
+
+struct Line<T> {
+  p0: T,
+  p1: T,
+}
+
+fn pt<T>(x: T, y: T) -> Point<T> {
+  Point { x, y }
+}
+
+fn *(a: Point<f32>, b: f32) -> Point<f32> {
+  only js { pt(a.x * b, a.y * b) }
+  source glsl { $(a) * $(b) }
+}
+
+fn +(a: Point<f32>, b: Point<f32>) -> Point<f32> {
+  only js { pt(a.x + b.x, a.y + b.y) }
+  source glsl { $(a) + $(b) }
+}
+
+// We'll leave out point types other than `c32` for simplicity.
+fn glider(line: Line<Point<f32>>, at: f32) -> Point<f32> {
+  only js { line.p0 * (1.0 - at) + line.p1 * at }
+  source glsl { mix($(line.p0), $(line.p1), $(at)) }
+}
+
+struct UnglideResult {
+  value: f32,
+  precision: f32,
+}
+
+fn unglide(cv: Cv, { p0, p1 }: Line<c32>, { x, y }: c32) -> UnglideResult {
+  let { x1, y1 } = p0;
+  let { x2, y2 } = p1;
+
+  let B = hypot(x1 - x, y1 - y);
+  let A = hypot(x2 - x, y2 - y);
+  let C = hypot(x1 - x2, y1 - y2);
+
+  let a = ((B * B - A * A) / C + C) / 2;
+
+  UnglideResult {
+    a / C,
+    cv.offsetDistance(p0, p1),
   }
 }
