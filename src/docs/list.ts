@@ -112,7 +112,7 @@ function createCategory(
           : null
 
         field.checked = state === true
-        field.indeterminate = state === null
+        field.indeterminate = state == null
 
         list.set(pkg, v)
       },

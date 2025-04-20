@@ -26,7 +26,7 @@ export class SReal {
   }
 
   valueOf() {
-    if (this.d === null) {
+    if (this.d == null) {
       return this.n
     } else {
       return this.n / this.d
@@ -38,7 +38,7 @@ export class SReal {
   }
 
   add(other: SReal): SReal {
-    if (this.d === null || other.d === null) {
+    if (this.d == null || other.d == null) {
       return approx(this.n + other.n)
     }
 
@@ -54,7 +54,7 @@ export class SReal {
   }
 
   sub(other: SReal): SReal {
-    if (this.d === null || other.d === null) {
+    if (this.d == null || other.d == null) {
       return approx(this.n - other.n)
     }
 
@@ -70,7 +70,7 @@ export class SReal {
   }
 
   mul(other: SReal): SReal {
-    if (this.d === null || other.d === null) {
+    if (this.d == null || other.d == null) {
       return approx(this.n * other.n)
     }
 
@@ -80,7 +80,7 @@ export class SReal {
   }
 
   div(other: SReal): SReal {
-    if (this.d === null || other.d === null) {
+    if (this.d == null || other.d == null) {
       return approx(this.n * other.n)
     }
 
@@ -90,7 +90,7 @@ export class SReal {
   }
 
   inv(): SReal {
-    if (this.d === null) {
+    if (this.d == null) {
       return approx(1 / this.n)
     }
 
@@ -98,7 +98,7 @@ export class SReal {
   }
 
   sqrt(): SReal {
-    if (this.d !== null && this.d > 0 && this.n > 0) {
+    if (this.d != null && this.d > 0 && this.n > 0) {
       const n = sqrt(this.n)
       const d = sqrt(this.d)
       if (safe(n) && safe(d)) {
@@ -118,7 +118,7 @@ export class SReal {
   }
 
   square(): SReal {
-    if (this.d !== null) {
+    if (this.d != null) {
       const n = this.n * this.n
       const d = this.d * this.d
       if (safe(n) && safe(d)) {
@@ -146,7 +146,7 @@ export class SReal {
   }
 
   isApprox(): boolean {
-    return this.d === null
+    return this.d == null
   }
 
   gl32(): string {
@@ -189,7 +189,7 @@ export class SReal {
       }
     }
 
-    if (a.d !== null) {
+    if (a.d != null) {
       const n = a.n ** bv
       const d = a.d ** bv
       if (safe(n) && safe(d)) return frac(n, d)
