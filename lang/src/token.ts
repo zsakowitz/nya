@@ -3,8 +3,11 @@ import source from "../examples/full.nya"
 
 const Kind = Object.freeze({
   Ident: 0, // struct, c32, viewport, f32
-  Symbol: 1, // :m, :s, :A, :px
-  Builtin: 2, // @vec2, @vec4, @-, @>, @mix
+  IdentColon: 1, // :m, :s, :A, :px
+  IdentAt: 2, // @vec2, @vec4, @-, @>, @mix
+  IdentApos: 8, // 'outer, 'inner
+  IdentHash: 9, // #asinh, #min, #max
+
   Number: 3, // 2.3, 7
   String: 4, // "hello world"
   Comment: 5, // // world
@@ -14,10 +17,19 @@ const Kind = Object.freeze({
 
 type Kind = (typeof Kind)[keyof typeof Kind]
 
+const IdentPrefixes = {
+  ":": Kind.IdentColon,
+  "@": Kind.IdentAt,
+  "'": Kind.IdentApos,
+  "#": Kind.IdentHash,
+}
+
 const Colors = {
   [Kind.Ident]: "opacity-20 bg-orange-300 text-black",
-  [Kind.Symbol]: "opacity-20 bg-purple-300 text-black",
-  [Kind.Builtin]: "opacity-20 bg-red-300 text-black",
+  [Kind.IdentColon]: "opacity-20 bg-purple-300 text-black",
+  [Kind.IdentAt]: "opacity-20 bg-red-300 text-black",
+  [Kind.IdentApos]: "opacity-20 bg-orange-300 text-black",
+  [Kind.IdentHash]: "opacity-20 bg-slate-300 text-black",
   [Kind.Number]: "opacity-20 bg-fuchsia-300 text-black",
   [Kind.String]: "opacity-20 bg-green-300 text-black",
   [Kind.Comment]: "opacity-20 bg-blue-300 text-black",
@@ -38,6 +50,7 @@ const ErrorCode = Object.freeze({
   UnknownChar: 21,
   FloatMustEndInDigit: 22,
   UnterminatedString: 23,
+  UnknownOperator: 24,
 })
 
 type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode]
@@ -58,7 +71,7 @@ const UNKNOWN = /[^A-Za-z0-9_\s/"]/
 const DIGIT = /[0-9]/
 
 const OPS =
-  "+ - * / ** ~ | & || && @ \\ == != <= >= < > ~ ! ( ) [ ] { } $( ; , ? : -> => ::".split(
+  "+ - * / ** ~ | & || && @ \\ == != <= >= < > ~ ! ( ) [ ] { } $( ; , ? : -> => :: . ..".split(
     " ",
   )
 
@@ -67,6 +80,8 @@ const OP_SECOND_CHARS: Record<string, string[]> = Object.create(null)
 for (const op of OPS) {
   if (op.length == 2) {
     ;(OP_SECOND_CHARS[op[0]!] ??= []).push(op[1]!)
+  } else if (op.length == 1) {
+    OP_SECOND_CHARS[op[0]!] ??= []
   }
 }
 
@@ -96,13 +111,18 @@ export function tokens(source: string) {
       continue
     }
 
-    if (char == "@" || char == ":") {
+    if (char in IdentPrefixes) {
       if (!is(ID_START, source[i + 1])) {
         ret.push(new Token(Kind.Op, start, ++i))
+        if (!OPS.includes(char)) {
+          issues.push(new Issue(ErrorCode.UnknownOperator, start, i))
+        }
         continue
       }
       while (is(ID_CONT, source[++i]));
-      ret.push(new Token(char == "@" ? Kind.Builtin : Kind.Symbol, start, i))
+      ret.push(
+        new Token(IdentPrefixes[char as keyof typeof IdentPrefixes], start, i),
+      )
       issues.push(new Issue(ErrorCode.InvalidBuiltinName, start, i))
       continue
     }
@@ -149,6 +169,21 @@ export function tokens(source: string) {
       continue
     }
 
+    if (char in OP_SECOND_CHARS) {
+      const next = source[i + 1]
+      if (next && OP_SECOND_CHARS[char]!.includes(next)) {
+        ret.push(new Token(Kind.Op, start, i + 2))
+        i += 2
+        continue
+      }
+      i++
+      ret.push(new Token(Kind.Op, start, i))
+      if (!OPS.includes(char)) {
+        issues.push(new Issue(ErrorCode.UnknownOperator, start, i))
+      }
+      continue
+    }
+
     while (is(UNKNOWN, source[++i]));
     issues.push(new Issue(ErrorCode.UnknownChar, start, i))
     continue
@@ -157,7 +192,7 @@ export function tokens(source: string) {
   return { ret, issues }
 }
 
-const { ret, issues } = tokens(source)
+const { ret } = tokens(source)
 ret.reverse()
 const pre = hx("pre", "text-sm p-4")
 
@@ -173,10 +208,16 @@ for (let i = 0; i < source.length; ) {
     )
     i = token.end
     ret.pop()
-  } else {
-    pre.append(source.slice(i, i + 1))
-    i++
+    continue
   }
+
+  const part = source.slice(i, i + 1)
+  if (/\S/.test(part)) {
+    pre.appendChild(h("bg-red-500", part))
+  } else {
+    pre.append(part)
+  }
+  i++
 }
 
 document.body.appendChild(pre)

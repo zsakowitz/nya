@@ -129,8 +129,8 @@ type mathjscx {
 }
 
 // Type coercion operator
-// In the case of split graphs (A->B, A->C, B->D, C->D, first "use" take precedence)
-fn |=>(a: mathjscx): c32 {
+// Implicit coercions are only allowed after declaring the coercion
+fn ->(a: mathjscx): c32 {
   c32(
     source js { typeof $(a) == 'number' ? $(a) : $(a).re },
     source js { typeof $(a) == 'number' ? 0 : $(a).im }
