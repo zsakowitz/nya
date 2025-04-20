@@ -1,0 +1,50 @@
+// Top-level declarations may be:
+//
+//   type(...) Name { source ... }
+//     available parenthesized modifiers are opaque
+//     opaque is for sampler-like types, which cannot be directly handled
+//
+//   syntax float/int/symbol -> Name;
+//     syntax float may output 0.4e3 or -5.4e-7
+//     syntax int/symbol may output 45 or -2983
+//
+//   struct Name<...> { a: u32, ... }
+//
+//   /// optional usage example
+//   fn name<...>(...): ... { ... }
+//     `name` can be an operator
+//
+//   use "./path"
+//
+//   deriv<...>(...) { ... }
+//     arguments to deriv do not take types
+//
+//   simplify<...>(...) { ... }
+//     arguments to simplify do not take types
+//
+//   expose type Name "description";
+//
+//   expose fn name "description";
+//   expose fn name alias "description";
+//   expose fn name { alias1, alias2, ... } "description";
+
+// Type declarations via `type` are for atomic types, not compounds.
+// They should not be used for `vec2` and friends.
+type f32 {
+  source js { number }
+  source glsl { float }
+}
+
+syntax float -> f32;
+
+struct Complex<T = f32> {
+  re: T,
+  im: T,
+}
+
+fn ->(a: u32) -> f32 {
+  
+}
+
+/// 2 + 3
+fn +(a: f32, b: f32) -> f32 {}

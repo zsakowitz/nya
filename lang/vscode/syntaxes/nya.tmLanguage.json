@@ -25,12 +25,16 @@
         },
         {
           "name": "keyword.control",
-          "match": "\\b(match|enum|simplify|else|let|uniform|deriv|resource|continue|for|if|break|in|return|for|test|use|struct|type|fn|syntax|using|source|export|const|float|int)\\b"
+          "match": "\\b(match|enum|simplify|else|let|uniform|deriv|opaque|resource|continue|for|if|break|in|return|for|test|use|struct|type|fn|syntax|using|source|expose|const|float|int)\\b"
         }
       ]
     },
     "operators": {
       "patterns": [
+        {
+          "name": "support",
+          "match": "@(->|[@&|+\\-*\\/:=~\\\\!]+|[<>]=?)"
+        },
         {
           "name": "keyword.operator",
           "match": "->|[@&|+\\-*\\/:=~\\\\!]+|[<>]=?"
@@ -82,7 +86,7 @@
         },
         {
           "match": "@\\b([A-Za-z]\\w*)",
-          "name": "entity.name"
+          "name": "support"
         },
         {
           "match": "(\\.)(\\d+)",
@@ -116,6 +120,10 @@
         },
         {
           "include": "#types"
+        },
+        {
+          "name": "entity.name",
+          "match": "\\b([A-Z]\\w*)\\b(?:\\^-1)?"
         },
         {
           "name": "variable.name",

@@ -154,8 +154,8 @@ fn gamma(a: c32): c32 {
 
 // Everything in a file is usable from other files; 'export' makes it usable
 // from project nya, and provides any additional needed info.
-export fn + "add two values";
-export fn unique "returns a list with duplicates removed";
+expose fn + "add two values";
+expose fn unique "returns a list with duplicates removed";
 
 fn asinh(a: f32): f32 {
   // # is shorthand for getting to the math namespace in all respective
@@ -164,9 +164,9 @@ fn asinh(a: f32): f32 {
 }
 
 // Functions may be exposed under other names
-export fn asinh { arcsinh, arsinh, sinh^-1 } "inverse hyperbolic sine";
+expose fn asinh { arcsinh, arsinh, sinh^-1 } "inverse hyperbolic sine";
 
-export type f32 {
+expose type f32 {
   // Naming rules are implemented directly in source
   // They should be localized, but that will happen later
   name {

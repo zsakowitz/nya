@@ -13,6 +13,7 @@ const Kind = Object.freeze({
   String: 4, // "hello world"
   Comment: 5, // // world
   Op: 6, // =, +, *, ;, :, ., $(, ]
+  OpAt: 12, // @==, @+, @*
   Source: 7, // anything inside a source block
   Newline: 11, // a literal newline
 })
@@ -37,6 +38,7 @@ const Colors = {
   [Kind.String]: "bg-green-300 text-black",
   [Kind.Comment]: "bg-blue-300 text-black",
   [Kind.Op]: "bg-black text-white",
+  [Kind.OpAt]: "bg-red-700 text-white",
   [Kind.Source]: "bg-yellow-300 text-black",
   [Kind.Newline]: "bg-black",
 }
@@ -127,6 +129,23 @@ export function tokens(source: string) {
           i,
         ),
       )
+      continue
+    }
+
+    if (char == "@" && source[i + 1] && source[i + 1]! in OP_SECOND_CHARS) {
+      i++
+      const char = source[i]!
+      const next = source[i + 1]
+      if (next && OP_SECOND_CHARS[char]!.includes(next)) {
+        ret.push(new Token(Kind.OpAt, start, i + 2))
+        i += 2
+        continue
+      }
+      i++
+      ret.push(new Token(Kind.OpAt, start, i))
+      if (!OPS.includes(char)) {
+        issues.push(new Issue(Code.UnknownOperator, start, i))
+      }
       continue
     }
 
