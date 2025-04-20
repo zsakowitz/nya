@@ -41,7 +41,7 @@ const Colors = {
   [Kind.Newline]: "bg-black",
 }
 
-class Token {
+export class Token {
   constructor(
     readonly kind: Kind,
     readonly start: number,
