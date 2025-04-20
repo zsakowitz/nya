@@ -1,5 +1,5 @@
 type bool "boolean" {
-  source ts { boolean }
+  source js \{ boolean }
   source glsl { bool }
 }
 

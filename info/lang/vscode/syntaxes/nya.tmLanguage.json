@@ -1,0 +1,193 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "nya script",
+  "patterns": [{ "include": "#root" }],
+  "repository": {
+    "root": {
+      "patterns": [
+        { "include": "#comments" },
+        { "include": "#keywords" },
+        { "include": "#source" },
+        { "include": "#identifier" },
+        { "include": "#operators" },
+        { "include": "#strings" },
+        { "include": "#number" }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.nya",
+          "match": "\\b(return|for|test|use|struct|type|fn|syntax)\\b"
+        }
+      ]
+    },
+    "operators": {
+      "patterns": [
+        {
+          "name": "keyword.operator",
+          "match": "[&|+\\-*\\/:=~\\\\=><]+"
+        },
+        {
+          "name": "keyword.operator",
+          "match": "\\.\\."
+        }
+      ]
+    },
+    "identifier": {
+      "patterns": [
+        {
+          "match": "\\b([A-Za-z]\\w*)\\b(:)",
+          "captures": {
+            "1": {
+              "name": "entity.name"
+            },
+            "2": {
+              "name": "keyword.operator"
+            }
+          }
+        },
+        {
+          "match": "@\\b([A-Za-z]\\w*)",
+          "name": "entity.name"
+        },
+        {
+          "match": "(\\.)(\\d+)",
+          "captures": {
+            "2": {
+              "name": "support.property-value"
+            }
+          }
+        },
+        {
+          "match": "(\\b[A-Za-z]\\w*\\b|[&|+\\-*\\/:=~\\\\=><]+|#(?:\\.#|\\.?\\w*))\\s*(\\()",
+          "captures": {
+            "1": {
+              "name": "entity.name"
+            },
+            "2": {
+              "name": "keyword.operator"
+            }
+          }
+        },
+        {
+          "match": "(?<!->\\s*)(\\b[A-Za-z]\\w*\\b)\\s*(\\{)",
+          "captures": {
+            "1": {
+              "name": "entity.name"
+            },
+            "2": {
+              "name": "keyword.operator"
+            }
+          }
+        },
+        {
+          "match": "[cfui]\\d+",
+          "name": "entity.name.type.class.js"
+        },
+        {
+          "name": "variable.name",
+          "match": "\\b([A-Za-z]\\w*)\\b"
+        }
+      ]
+    },
+    "strings": {
+      "name": "string.quoted.double.nya",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.nya",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "comments": {
+      "name": "comment.line.double-slash",
+      "begin": "//",
+      "end": "[\r\n]"
+    },
+    "number": {
+      "name": "constant.numeric",
+      "match": "-?\\d+(?:\\.\\d+)?"
+    },
+    "source": {
+      "patterns": [
+        {
+          "begin": "(source)\\s*(glsl)\\s*\\{",
+          "end": "\\}",
+          "patterns": [
+            { "include": "#source-interp" },
+            { "include": "source.glsl" }
+          ],
+          "beginCaptures": {
+            "1": {
+              "name": "keyword.operator"
+            },
+            "2": {
+              "name": "entity.name"
+            }
+          }
+        },
+        {
+          "begin": "(source)\\s*(js)\\s*\\{",
+          "end": "\\}",
+          "patterns": [
+            { "include": "#source-interp" },
+            { "include": "source.js" }
+          ],
+          "beginCaptures": {
+            "1": {
+              "name": "keyword.operator"
+            },
+            "2": {
+              "name": "entity.name"
+            }
+          }
+        },
+        {
+          "begin": "(source)\\s*\\{",
+          "end": "\\}",
+          "patterns": [
+            { "include": "#source-interp" },
+            { "include": "source.js" }
+          ],
+          "beginCaptures": {
+            "1": {
+              "name": "keyword.operator"
+            }
+          }
+        },
+        {
+          "begin": "(only)\\s*(\\w+)\\s*\\{",
+          "end": "\\}",
+          "patterns": [{ "include": "#root" }],
+          "beginCaptures": {
+            "1": {
+              "name": "keyword.operator"
+            },
+            "2": {
+              "name": "entity.name"
+            }
+          }
+        }
+      ]
+    },
+    "source-interp": {
+      "begin": "\\$\\(",
+      "beginCaptures": {
+        "0": {
+          "name": "keyword.other"
+        }
+      },
+      "end": "\\)",
+      "endCaptures": {
+        "0": {
+          "name": "keyword.other"
+        }
+      },
+      "patterns": [{ "include": "#root" }]
+    }
+  },
+  "scopeName": "source.nya"
+}

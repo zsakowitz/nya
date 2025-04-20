@@ -7,7 +7,7 @@ type f32 "real number" {
   // `source` blocks specify code to be directly written in a target language.
 
   // `source ts` only specifies code during TS transpilation.
-  source ts { number }
+  source js \{ number }
 
   // `source gl` only specifies code for GLSL transpilation.
   source glsl { float }
@@ -40,6 +40,6 @@ fn ==(a: f32, b: f32) -> bool {
 }
 
 fn floor(a: f32) -> f32 {
-  source ts { Math.floor($(a)) }
+  source js \{ Math.floor($(a)) }
   source glsl { floor($(a)) }
 }

@@ -1,0 +1,38 @@
+{
+  "name": "nya-lang",
+  "displayName": "project nya language support",
+  "description": "Language support for project nya scripts",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.99.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "nya",
+        "aliases": [
+          "nya script",
+          "nya"
+        ],
+        "extensions": [
+          ".nya"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "nya",
+        "scopeName": "source.nya",
+        "path": "./syntaxes/nya.tmLanguage.json",
+        "embeddedLanguages": {
+          "meta.embedded.block.javascript": "javascript",
+          "meta.embedded.block.glsl": "glsl"
+        }
+      }
+    ]
+  }
+}
