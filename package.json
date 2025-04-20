@@ -1,9 +1,9 @@
 {
   "scripts": {
     "dev": "bun run build:tw && bun run manifest && bun run esb",
-    "esb": "mkdir -p dist; cp src/page/index.dev.html dist/index.html && cp -R icon dist/icon && cp icon/favicon.ico dist/favicon.ico && esbuild --watch=forever --loader:.woff=file --loader:.ttf=file --loader:.nya=text --loader:.glsl=text --loader:.woff2=file --loader:.svg=file --loader:.eot=file --servedir=dist --format=esm --bundle --outdir=dist --splitting src/index.ts",
+    "esb": "mkdir -p dist; cp src/page/index.dev.html dist/index.html && cp -R src/icon dist/icon && cp src/icon/favicon.ico dist/favicon.ico && esbuild --watch=forever --loader:.woff=file --loader:.ttf=file --loader:.nya=text --loader:.glsl=text --loader:.woff2=file --loader:.svg=file --loader:.eot=file --servedir=dist --format=esm --bundle --outdir=dist --splitting src/index.ts",
     "tw": "tailwindcss -i ./src/page/index.postcss -o ./src/page/index.dist.css --watch",
-    "build": "bun run build:tw && bun run build:esb && cp src/page/index.prod.html dist/index.html && cp -R icon dist/icon && cp icon/favicon.ico dist/favicon.ico",
+    "build": "bun run build:tw && bun run build:esb && cp src/page/index.prod.html dist/index.html && cp -R src/icon dist/icon && cp src/icon/favicon.ico dist/favicon.ico",
     "build:esb": "esbuild --bundle --minify --format=esm --outdir=dist --splitting --loader:.woff=file --loader:.ttf=file --loader:.nya=text --loader:.glsl=text --loader:.woff2=file --loader:.svg=file --loader:.eot=file src/index.ts --metafile=meta.json --legal-comments=linked",
     "build:tw": "tailwindcss -i ./src/page/index.postcss -o ./src/page/index.dist.css --minify",
     "lint": "tsc && madge src/index.ts --ts-config tsconfig.json -c",
