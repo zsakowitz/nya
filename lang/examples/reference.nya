@@ -75,10 +75,19 @@
 //       2.3                   plain float
 //       :hi                   plain symbol
 //       :hi { a, b }          symbol with data
+//       pat | pat             alternative patterns
 //   { stmt; ...; expr }       inline block
+//   'a: { ...; expr }         labeled block
 //   (a)                       regular parentheses
 //   source { ...$(a)... }     source code inlined into all languages
 //   source js { ... }         source code inlined into only js
+//   return                    immediate return from function
+//   return ...                immediate return with value from function
+//   break                     break from loop
+//   break 'hi                 break from labeled loop or block
+//   break 'hi ...             break from labeled block with value
+//   continue                  continue loop
+//   continue 'hi              continue labeled loop
 
 // Types may be:
 //   name                      plain named type
