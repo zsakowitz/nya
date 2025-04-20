@@ -25,7 +25,7 @@
         },
         {
           "name": "keyword.control",
-          "match": "\\b(simplify|else|void|let|uniform|deriv|resource|continue|for|if|break|in|return|for|test|use|struct|type|fn|syntax)\\b"
+          "match": "\\b(simplify|else|let|uniform|deriv|resource|continue|for|if|break|in|return|for|test|use|struct|type|fn|syntax)\\b"
         }
       ]
     },

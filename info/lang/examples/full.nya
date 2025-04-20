@@ -7,8 +7,8 @@ type f32 "real number" {
   source glsl { float }
 }
 
-// `void` specifies how to initialize a value of this type in `let` statements
-void f32 {
+// `let` specifies how to initialize a value of this type in `let` statements
+let f32 {
   source js { 0 }
   source glsl { 0.0 }
 }
@@ -18,7 +18,7 @@ type u32 "positive integer" {
   source glsl { uint }
 }
 
-void u32 {
+let u32 {
   source js { 0 }
   source glsl { 0.0 }
 }
