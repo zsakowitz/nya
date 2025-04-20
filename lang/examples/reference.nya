@@ -44,10 +44,20 @@
 //   :symbolname               declares and outputs a symbol
 //   2.3e-5                    declares and outputs a floating-point value
 //   47                        declares and outputs an integer value
+//   f                         variable reference or function call
+//   f<...>                    variable reference or function call
+//   a.f                       function call
+//   a.f<...>                  function call
 //   f(a, ...)                 function call
-//   a.f                       postfix function call
-//   a.f(...)                  postfix function call
-//   f<...>(a, ...)            function call with generics
+//   f<...>(a, ...)            function call
+//   a.f(...)                  function call
+//   a.f<...>(...)             function call
+//   f { a, ... }              struct initialization
+//   f<...> { a, ... }         struct initialization
+//   _ { a, ... }              implicit struct initialization
+//   { a, ... }                shorthand implicit struct initialization
+//     This form of shorthand requires at least two fields be present, and that
+//     no semicolons are direct children of the block.
 //   [a, b, c, ...]            creation of array
 //   a for1 b in c             comprehension over array
 //   a for b in c              comprehension over ndarray
@@ -59,8 +69,16 @@
 //     + - * / ** | & || && @ . \ == != <= >= < >
 //   UNARY a                   unary operator
 //     - ~ !
-//   (a)                       regular parentheses
 //   match a { pat => ... }    pattern matching operator
+//   { stmt; ...; expr }       inline block
+//   (a)                       regular parentheses
+//   source { ...$(a)... }     source code inlined into all languages
+//   source js { ... }         source code inlined into only js
+
+// Types may be:
+//   name                      plain named type
+//   name<type, ...>           type with generics
+//   [type; len, ...]          array
 
 // Type declarations via `type` are for atomic types, not compounds.
 // They should not be used for `vec2` and friends.
