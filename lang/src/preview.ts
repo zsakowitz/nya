@@ -1,5 +1,6 @@
 import { h, hx } from "@/jsx"
 import source from "../examples/test.nya"
+import { parseToStream } from "./ast"
 import { TokenGroup } from "./group"
 import {
   AEq,
@@ -19,7 +20,6 @@ import {
   TString,
   TSym,
 } from "./kind"
-import { parseStream } from "./stream"
 import { Code, Issue, Token, tokens } from "./token"
 
 function color(kind: number) {
@@ -56,7 +56,7 @@ function color(kind: number) {
   return ""
 }
 
-const stream = parseStream(source, { comments: false })
+const stream = parseToStream(source, { comments: false })
 
 document.body.appendChild(
   hx(

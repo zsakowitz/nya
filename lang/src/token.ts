@@ -92,7 +92,7 @@ export function tokens(source: string, props: ToTokensProps) {
       }
       const text = source.slice(start, i)
       ret.push(
-        new Token((KWS[text] ?? text == "_") ? TIgnore : TIdent, start, i),
+        new Token(KWS[text] ?? (text == "_" ? TIgnore : TIdent), start, i),
       )
       continue
     }
