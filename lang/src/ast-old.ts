@@ -99,7 +99,12 @@ export interface ExprFor {
   value: Block
 }
 
+// 2.3
+// a.b<c>(d)
+//
+
 export type Expr =
+  | { type: "literal"; value: Lit; kind: "int" | "float" | "sym" }
   | {
       type: "var"
       receiver: Receiver | null
@@ -109,7 +114,6 @@ export type Expr =
       /** Delimited by parentheses or braces. */
       args: Args | null
     }
-  | { type: "literal"; value: Lit; kind: "int" | "float" | "sym" }
   | {
       type: "binary"
       lhs: Expr
