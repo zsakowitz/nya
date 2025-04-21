@@ -3,47 +3,103 @@ import source from "../examples/reference.nya"
 
 const Kind = Object.freeze({
   Ident: 0, // struct, c32, viewport, f32, %odot
-  IdentColon: 1, // :m, :s, :A, :px
-  IdentAt: 2, // @vec2, @vec4, @-, @>, @mix, @asinh, @min
-  IdentApos: 8, // 'outer, 'inner
-  IdentExtern: 10, // source, using
+  IdentSym: 1, // :m, :s, :A, :px
+  IdentBuiltin: 2, // @vec2, @vec4, @-, @>, @mix, @asinh, @min
+  IdentLabel: 8, // 'outer, 'inner
+
+  Ignore: 14, // _
+  Kw: 13, // if, for, in
+  KwExtern: 10, // source, using
 
   Number: 3, // 2.3, 7
   String: 4, // "hello world"
   Comment: 5, // // world
   Op: 6, // =, +, *, ;, :, ., $(, ]
-  OpAt: 12, // @==, @+, @*
+  OpBuiltin: 12, // @==, @+, @*
   Source: 7, // anything inside a source block
   Newline: 11, // a literal newline
 })
 
+export declare namespace Kind {
+  export type Ident = typeof Kind.Ident
+  export type IdentSym = typeof Kind.IdentSym
+  export type IdentBuiltin = typeof Kind.IdentBuiltin
+  export type IdentLabel = typeof Kind.IdentLabel
+
+  export type Ignore = typeof Kind.Ignore
+  export type Kw = typeof Kind.Kw
+  export type KwExtern = typeof Kind.KwExtern
+
+  export type Number = typeof Kind.Number
+  export type String = typeof Kind.String
+  export type Comment = typeof Kind.Comment
+  export type Op = typeof Kind.Op
+  export type OpBuiltin = typeof Kind.OpBuiltin
+  export type Source = typeof Kind.Source
+  export type Newline = typeof Kind.Newline
+
+  export type Lit = Number | IdentSym
+}
+
 type Kind = (typeof Kind)[keyof typeof Kind]
 
+const KEYWORDS = [
+  "if",
+  "else",
+  "for",
+  "match",
+  "deriv",
+  "simplify",
+  "expose",
+  "type",
+  "fn",
+  "struct",
+  "opaque",
+  "let",
+  "in",
+  "enum",
+  "syntax",
+  "return",
+  "break",
+  "continue",
+  "use",
+  "val",
+] as const
+
+export type Keyword = Extract<(typeof KEYWORDS)[keyof typeof KEYWORDS], string>
+
 const IdentPrefixes = {
-  ":": Kind.IdentColon,
-  "@": Kind.IdentAt,
-  "'": Kind.IdentApos,
+  ":": Kind.IdentSym,
+  "@": Kind.IdentBuiltin,
+  "'": Kind.IdentLabel,
   "%": Kind.Ident,
 }
 
 const Colors = {
   [Kind.Ident]: "bg-orange-300 text-black",
-  [Kind.IdentExtern]: "bg-orange-300 text-black",
-  [Kind.IdentColon]: "bg-purple-300 text-black",
-  [Kind.IdentAt]: "bg-red-300 text-black",
-  [Kind.IdentApos]: "bg-orange-300 text-black",
+  [Kind.IdentSym]: "bg-purple-300 text-black",
+  [Kind.IdentBuiltin]: "bg-red-300 text-black",
+  [Kind.IdentLabel]: "bg-orange-300 text-black",
+
+  [Kind.Kw]: "bg-orange-300 text-black",
+  [Kind.KwExtern]: "bg-orange-300 text-black",
+  [Kind.Ignore]: "bg-orange-300 text-black",
+
   [Kind.Number]: "bg-fuchsia-300 text-black",
   [Kind.String]: "bg-green-300 text-black",
   [Kind.Comment]: "opacity-30 bg-blue-300 text-black",
   [Kind.Op]: "bg-black text-white",
-  [Kind.OpAt]: "bg-slate-600 text-white",
+  [Kind.OpBuiltin]: "bg-slate-600 text-white",
   [Kind.Source]: "bg-yellow-300 text-black",
   [Kind.Newline]: "bg-black",
 }
 
-export class Token {
+export class Token<T extends Kind, V extends string = string> {
+  declare static readonly __kind: unique symbol;
+  declare [Token.__kind]: V
+
   constructor(
-    readonly kind: Kind,
+    readonly kind: T,
     readonly start: number,
     readonly end: number,
   ) {}
@@ -75,10 +131,46 @@ const ANY_ID_START = /[@%:'A-Za-z_]/
 const DIGIT = /[0-9]/
 const INTERP = /\$\((?:([A-Za-z_]\w*)(?:(\.)(?:([A-Za-z_]\w*))?)?)?\)/g
 
-const OPS =
-  "+ - * / ** ~ | & || && @ \\ == != <= >= < > ~ ! ( ) [ ] { } $( ; , : -> => :: . ..".split(
-    " ",
-  )
+const OPS = [
+  "+",
+  "-",
+  "*",
+  "/",
+  "**",
+  "~",
+  "|",
+  "&",
+  "||",
+  "&&",
+  "@",
+  "\\",
+  "==",
+  "!=",
+  "<=",
+  ">=",
+  "<",
+  ">",
+  "~",
+  "!",
+  "(",
+  ")",
+  "[",
+  "]",
+  "{",
+  "}",
+  "$(",
+  ";",
+  ",",
+  ":",
+  "->",
+  "=>",
+  "::",
+  ".",
+  "..",
+  "=",
+] as const
+
+export type Operator = Extract<(typeof OPS)[keyof typeof OPS], string>
 
 const OP_SECOND_CHARS: Record<string, string[]> = Object.create(null)
 
@@ -95,7 +187,7 @@ function is(regex: RegExp, char: string | undefined) {
 }
 
 export function tokens(source: string) {
-  const ret: Token[] = []
+  const ret: Token<Kind>[] = []
   const issues: Issue[] = []
 
   for (let i = 0; i < source.length; ) {
@@ -121,7 +213,10 @@ export function tokens(source: string) {
       const text = source.slice(start, i)
       ret.push(
         new Token(
-          text == "source" || text == "using" ? Kind.IdentExtern : Kind.Ident,
+          text == "source" || text == "using" ? Kind.KwExtern
+          : KEYWORDS.includes(text as any) ? Kind.Kw
+          : text == "_" ? Kind.Ignore
+          : Kind.Ident,
           start,
           i,
         ),
@@ -134,13 +229,13 @@ export function tokens(source: string) {
       const char = source[i]!
       const next = source[i + 1]
       if (next && OP_SECOND_CHARS[char]!.includes(next)) {
-        ret.push(new Token(Kind.OpAt, start, i + 2))
+        ret.push(new Token(Kind.OpBuiltin, start, i + 2))
         i += 2
         continue
       }
       i++
-      ret.push(new Token(Kind.OpAt, start, i))
-      if (!OPS.includes(char)) {
+      ret.push(new Token(Kind.OpBuiltin, start, i))
+      if (!OPS.includes(char as any)) {
         issues.push(new Issue(Code.UnknownOperator, start, i))
       }
       continue
@@ -149,7 +244,7 @@ export function tokens(source: string) {
     if (char in IdentPrefixes) {
       if (!is(ID_START, source[i + 1])) {
         ret.push(new Token(Kind.Op, start, ++i))
-        if (!OPS.includes(char)) {
+        if (!OPS.includes(char as any)) {
           issues.push(new Issue(Code.UnknownOperator, start, i))
         }
         continue
@@ -208,8 +303,8 @@ export function tokens(source: string) {
       const last = ret[ret.length - 1]
       const last2 = ret[ret.length - 2]
       if (
-        last?.kind == Kind.IdentExtern ||
-        (last?.kind == Kind.Ident && last2?.kind == Kind.IdentExtern)
+        last?.kind == Kind.KwExtern ||
+        (last?.kind == Kind.Ident && last2?.kind == Kind.KwExtern)
       ) {
         let depth = 0
         loop: while (true) {
@@ -283,7 +378,7 @@ export function tokens(source: string) {
       }
       i++
       ret.push(new Token(Kind.Op, start, i))
-      if (!OPS.includes(char)) {
+      if (!OPS.includes(char as any)) {
         issues.push(new Issue(Code.UnknownOperator, start, i))
       }
       continue
