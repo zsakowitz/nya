@@ -9,13 +9,13 @@ const Colors = {
   [Kind.IdentBuiltin]: "bg-red-300 text-black",
   [Kind.IdentLabel]: "bg-orange-300 text-black",
 
-  [Kind.Kw]: "bg-orange-300 text-black",
-  [Kind.KwExtern]: "bg-orange-300 text-black",
+  [Kind.Kw]: "bg-blue-300 text-black",
+  [Kind.KwExtern]: "bg-blue-300 text-black",
   [Kind.Ignore]: "bg-orange-300 text-black",
 
   [Kind.Number]: "bg-fuchsia-300 text-black",
   [Kind.String]: "bg-green-300 text-black",
-  [Kind.Comment]: "opacity-30 bg-blue-300 text-black",
+  [Kind.Comment]: "opacity-20 bg-blue-300 text-black",
   [Kind.Op]: "bg-slate-300 text-black",
   [Kind.OpBuiltin]: "bg-slate-600 text-white",
   [Kind.Source]: "bg-yellow-300 text-black",
@@ -28,7 +28,7 @@ const stream = parseStream(source, { comments: false })
 document.body.appendChild(
   hx(
     "pre",
-    "px-4 pt-4",
+    "px-4 pt-4 text-xs",
     JSON.stringify(
       stream,
       (_, v) =>
