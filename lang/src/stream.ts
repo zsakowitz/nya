@@ -1,62 +1,66 @@
-import { Code, Issue, Kind, Token, tokens, type ToTokensProps } from "./token"
+import {
+  MATCHING_PAREN,
+  OGt,
+  OLBrace,
+  OLBrack,
+  OLInterp,
+  OLParen,
+  OLt,
+  ORBrace,
+  ORBrack,
+  ORParen,
+  type KindL,
+} from "./kind"
+import { Code, Issue, Token, tokens, type ToTokensProps } from "./token"
 
-export class TokenGroup extends Token<Kind.Group> {
+export class TokenGroup<K extends KindL = KindL> extends Token<K> {
   constructor(
-    readonly lt: Token<Kind.Op>,
-    readonly gt: Token<Kind.Op>,
-    readonly text: "(" | "[" | "{" | "<" | "$(",
-    readonly contents: Token<Kind>[],
+    readonly lt: Token<K>,
+    readonly gt: Token<number>,
+    readonly contents: Token<number>[],
   ) {
-    super(Kind.Group, lt.start, gt.end)
+    super(lt.kind, lt.start, gt.end)
   }
 }
 
-type TokenGroupMut = { -readonly [K in keyof TokenGroup]: TokenGroup[K] }
-
-function matches(group: TokenGroup, rhs: ")" | "]" | "}" | ">") {
-  return (
-    rhs == ")" ? group.text == "(" || group.text == "$("
-    : rhs == "]" ? group.text == "["
-    : rhs == "}" ? group.text == "{"
-    : rhs == ">" ? group.text == "<"
-    : false
-  )
+type TokenGroupMut = {
+  -readonly [K in keyof TokenGroup]: TokenGroup[K]
 }
 
 export function parseStream(source: string, props: ToTokensProps) {
   const { issues, ret: raw } = tokens(source, props)
 
   const parens: TokenGroup[] = []
-  const root: Token<Kind>[] = []
-  let currentContents: Token<Kind>[] = root
+  const root: Token<number>[] = []
+  let currentContents: Token<number>[] = root
 
   main: for (let i = 0; i < raw.length; i++) {
     const token = raw[i]!
 
-    if (token.is(Kind.Op)) {
-      const text = source.slice(token.start, token.end)
-
-      if (
-        text == "(" ||
-        text == "$(" ||
-        text == "[" ||
-        text == "{" ||
-        // angle brackets are also less than and greater than, so we mandate no whitespace for them
-        (text == "<" && token.start == (raw[i - 1]?.end ?? 0))
-      ) {
-        const group = new TokenGroup(token, new Token(Kind.Op, 0, 0), text, [])
+    switch (token.kind) {
+      // @ts-expect-error intentional fallthrough
+      case OLt:
+        if (token.start !== raw[i - 1]?.end) break
+      case OLParen:
+      case OLBrack:
+      case OLBrace:
+      case OLInterp:
+        const group = new TokenGroup(
+          token as Token<KindL>,
+          new Token(MATCHING_PAREN[token.kind], 0, 0),
+          [],
+        )
         parens.push(group)
         currentContents.push(group)
         currentContents = group.contents
         continue
-      }
 
-      if (
-        text == ")" ||
-        text == "]" ||
-        text == "}" ||
-        (text == ">" && parens[parens.length - 1]?.text == "<")
-      ) {
+      // @ts-expect-error intentional fallthrough
+      case OGt:
+        if (parens[parens.length - 1]?.kind != OLt) break
+      case ORParen:
+      case ORBrack:
+      case ORBrace:
         const current = parens[parens.length - 1]
 
         // If no current paren, ignore and move on
@@ -68,7 +72,7 @@ export function parseStream(source: string, props: ToTokensProps) {
         }
 
         // If no match, close parens until we have a match
-        if (!matches(current, text)) {
+        if (MATCHING_PAREN[current.kind] != token.kind) {
           issues.push(
             new Issue(Code.MismatchedClosingParen, token.start, token.end),
           )
@@ -81,7 +85,7 @@ export function parseStream(source: string, props: ToTokensProps) {
             ),
           )
           ;(current as TokenGroupMut).gt = new Token(
-            Kind.Op,
+            MATCHING_PAREN[current.kind],
             token.start,
             token.start,
             true,
@@ -102,13 +106,13 @@ export function parseStream(source: string, props: ToTokensProps) {
                 current.lt.end,
               ),
             )
-            if (matches(current, text)) {
+            if (MATCHING_PAREN[current.kind] == token.kind) {
               ;(current as TokenGroupMut).gt = token
               ;(current as TokenGroupMut).end = token.end
               continue main
             }
             ;(current as TokenGroupMut).gt = new Token(
-              Kind.Op,
+              MATCHING_PAREN[current.kind],
               token.start,
               token.start,
               true,
@@ -122,7 +126,6 @@ export function parseStream(source: string, props: ToTokensProps) {
         parens.pop()
         currentContents = parens[parens.length - 1]?.contents ?? root
         continue
-      }
     }
 
     currentContents.push(token)
@@ -134,7 +137,7 @@ export function parseStream(source: string, props: ToTokensProps) {
 export class Stream {
   constructor(
     readonly source: string,
-    readonly tokens: Token<Kind>[],
+    readonly tokens: Token<number>[],
     readonly issues: Issue[],
   ) {}
 

@@ -1,83 +1,27 @@
-export const Kind = Object.freeze({
-  Ident: 0, // struct, c32, viewport, f32, %odot
-  IdentSym: 1, // :m, :s, :A, :px
-  IdentBuiltin: 2, // @vec2, @vec4, @-, @>, @mix, @asinh, @min
-  IdentLabel: 8, // 'outer, 'inner
+import {
+  IDENT_PREFIXES,
+  KSource,
+  KUse,
+  KWS,
+  ODot,
+  OLBrace,
+  OLInterp,
+  OPS,
+  OPS_AND_SECOND_CHARS,
+  ORBrace,
+  ORParen,
+  TComment,
+  TFloat,
+  TIdent,
+  TIgnore,
+  TInt,
+  TSource,
+  TString,
+} from "./kind"
 
-  Ignore: 14, // _
-  Kw: 13, // if, for, in
-  KwExtern: 10, // source, using
-
-  Number: 3, // 2.3, 7
-  String: 4, // "hello world"
-  Comment: 5, // // world
-  Op: 6, // =, +, *, ;, :, ., $(, ]
-  OpBuiltin: 12, // @==, @+, @*
-  Source: 7, // anything inside a source block
-
-  Group: 15, // (...) [...] {...} <...>
-})
-
-export declare namespace Kind {
-  export type Ident = typeof Kind.Ident
-  export type IdentSym = typeof Kind.IdentSym
-  export type IdentBuiltin = typeof Kind.IdentBuiltin
-  export type IdentLabel = typeof Kind.IdentLabel
-
-  export type Ignore = typeof Kind.Ignore
-  export type Kw = typeof Kind.Kw
-  export type KwExtern = typeof Kind.KwExtern
-
-  export type Number = typeof Kind.Number
-  export type String = typeof Kind.String
-  export type Comment = typeof Kind.Comment
-  export type Op = typeof Kind.Op
-  export type OpBuiltin = typeof Kind.OpBuiltin
-  export type Source = typeof Kind.Source
-
-  export type Group = typeof Kind.Group
-
-  export type Lit = Number | IdentSym
-}
-
-export type Kind = (typeof Kind)[keyof typeof Kind]
-
-const KEYWORDS = [
-  "if",
-  "else",
-  "for",
-  "match",
-  "deriv",
-  "simplify",
-  "expose",
-  "type",
-  "fn",
-  "struct",
-  "opaque",
-  "let",
-  "in",
-  "enum",
-  "syntax",
-  "return",
-  "break",
-  "continue",
-  "use",
-  "val",
-  "usage",
-] as const
-
-export type Keyword = Extract<(typeof KEYWORDS)[keyof typeof KEYWORDS], string>
-
-const IdentPrefixes = {
-  ":": Kind.IdentSym,
-  "@": Kind.IdentBuiltin,
-  "'": Kind.IdentLabel,
-  "%": Kind.Ident,
-}
-
-export class Token<T extends Kind, V extends string = string> {
+export class Token<T extends number> {
   declare static readonly __kind: unique symbol;
-  declare [Token.__kind]: V
+  declare [Token.__kind]: T
 
   constructor(
     readonly kind: T,
@@ -98,6 +42,7 @@ export const Code = Object.freeze({
   UnterminatedString: 23,
   UnterminatedSource: 25,
   UnknownOperator: 24,
+  ExpectedIdentifier: 30,
   MismatchedClosingParen: 28,
   MismatchedOpeningParen: 29,
 })
@@ -119,57 +64,6 @@ const ANY_ID_START = /[@%:'A-Za-z_]/
 const DIGIT = /[0-9]/
 const INTERP = /\$\((?:([A-Za-z_]\w*)(?:(\.)(?:([A-Za-z_]\w*))?)?)?\)/g
 
-const OPS = [
-  "+",
-  "-",
-  "*",
-  "/",
-  "**",
-  "~",
-  "|",
-  "&",
-  "||",
-  "&&",
-  "@",
-  "\\",
-  "==",
-  "!=",
-  "<=",
-  ">=",
-  "<",
-  ">",
-  "~",
-  "!",
-  "(",
-  ")",
-  "[",
-  "]",
-  "{",
-  "}",
-  "$(",
-  ";",
-  ",",
-  ":",
-  "->",
-  "=>",
-  "::",
-  ".",
-  "..",
-  "=",
-] as const
-
-export type Operator = Extract<(typeof OPS)[keyof typeof OPS], string>
-
-const OP_SECOND_CHARS: Record<string, string[]> = Object.create(null)
-
-for (const op of OPS) {
-  if (op.length == 2) {
-    ;(OP_SECOND_CHARS[op[0]!] ??= []).push(op[1]!)
-  } else if (op.length == 1) {
-    OP_SECOND_CHARS[op[0]!] ??= []
-  }
-}
-
 function is(regex: RegExp, char: string | undefined) {
   return char != null && regex.test(char)
 }
@@ -179,7 +73,7 @@ export interface ToTokensProps {
 }
 
 export function tokens(source: string, props: ToTokensProps) {
-  const ret: Token<Kind>[] = []
+  const ret: Token<number>[] = []
   const issues: Issue[] = []
 
   for (let i = 0; i < source.length; ) {
@@ -198,49 +92,44 @@ export function tokens(source: string, props: ToTokensProps) {
       }
       const text = source.slice(start, i)
       ret.push(
-        new Token(
-          text == "source" || text == "using" ? Kind.KwExtern
-          : KEYWORDS.includes(text as any) ? Kind.Kw
-          : text == "_" ? Kind.Ignore
-          : Kind.Ident,
-          start,
-          i,
-        ),
+        new Token((KWS[text] ?? text == "_") ? TIgnore : TIdent, start, i),
       )
       continue
     }
 
-    if (char == "@" && source[i + 1] && source[i + 1]! in OP_SECOND_CHARS) {
+    if (
+      char == "@" &&
+      source[i + 1] &&
+      source[i + 1]! in OPS_AND_SECOND_CHARS
+    ) {
       i++
       const char = source[i]!
       const next = source[i + 1]
-      if (next && OP_SECOND_CHARS[char]!.includes(next)) {
-        ret.push(new Token(Kind.OpBuiltin, start, i + 2))
+      if (next && OPS_AND_SECOND_CHARS[char]!.includes(next)) {
+        ret.push(new Token(OPS[char]!, start, i + 2))
         i += 2
         continue
       }
       i++
-      if (OPS.includes(char as any)) {
-        ret.push(new Token(Kind.OpBuiltin, start, i))
+      if (char in OPS) {
+        ret.push(new Token(OPS[char]!, start, i))
       } else {
         issues.push(new Issue(Code.UnknownOperator, start, i))
       }
       continue
     }
 
-    if (char in IdentPrefixes) {
+    if (char in IDENT_PREFIXES) {
       if (!is(ID_START, source[i + 1])) {
-        if (OPS.includes(char as any)) {
-          ret.push(new Token(Kind.Op, start, ++i))
+        if (char in OPS) {
+          ret.push(new Token(OPS[char]!, start, ++i))
         } else {
           issues.push(new Issue(Code.UnknownOperator, start, ++i))
         }
         continue
       }
       while (is(ID_CONT, source[++i]));
-      ret.push(
-        new Token(IdentPrefixes[char as keyof typeof IdentPrefixes], start, i),
-      )
+      ret.push(new Token(IDENT_PREFIXES[char]!, start, i))
       continue
     }
 
@@ -250,12 +139,14 @@ export function tokens(source: string, props: ToTokensProps) {
         if (is(DIGIT, source[i + 1])) {
           i++
           while (is(DIGIT, source[++i]));
+          ret.push(new Token(TFloat, start, i))
         } else if (!is(ANY_ID_START, source[i + 1])) {
           i++
           issues.push(new Issue(Code.FloatMustEndInDigit, start, i))
         }
+      } else {
+        ret.push(new Token(TInt, start, i))
       }
-      ret.push(new Token(Kind.Number, start, i))
       continue
     }
 
@@ -263,7 +154,7 @@ export function tokens(source: string, props: ToTokensProps) {
       i++
       while (source[++i] != "\n");
       if (props.comments) {
-        ret.push(new Token(Kind.Comment, start, i))
+        ret.push(new Token(TComment, start, i))
       }
       continue
     }
@@ -281,7 +172,7 @@ export function tokens(source: string, props: ToTokensProps) {
           i++
         }
       }
-      ret.push(new Token(Kind.String, start, i))
+      ret.push(new Token(TString, start, i))
       if (!terminated) {
         issues.push(new Issue(Code.UnterminatedString, start, i))
       }
@@ -289,11 +180,12 @@ export function tokens(source: string, props: ToTokensProps) {
     }
 
     if (char == "{") {
-      const last = ret[ret.length - 1]
+      const last1 = ret[ret.length - 1]
       const last2 = ret[ret.length - 2]
       if (
-        last?.kind == Kind.KwExtern ||
-        (last?.kind == Kind.Ident && last2?.kind == Kind.KwExtern)
+        last1?.kind == KSource || // source {
+        (last1?.kind == TIdent && last2?.kind == KSource) || // source js {
+        (last1?.kind == TIdent && last2?.kind == KUse) // use js {
       ) {
         let depth = 0
         loop: while (true) {
@@ -301,7 +193,7 @@ export function tokens(source: string, props: ToTokensProps) {
           switch (char) {
             case undefined:
               i++
-              ret.push(new Token(Kind.Source, start, i))
+              ret.push(new Token(TSource, start, i))
               issues.push(new Issue(Code.UnterminatedSource, start, i))
               break loop
             case "{":
@@ -310,7 +202,7 @@ export function tokens(source: string, props: ToTokensProps) {
             case "}":
               if (depth == 0) {
                 i++
-                ret.push(new Token(Kind.Op, start, start + 1))
+                ret.push(new Token(OLBrace, start, start + 1))
                 const o = start + 1
                 const contents = source.slice(o, i - 1)
                 let match
@@ -318,22 +210,22 @@ export function tokens(source: string, props: ToTokensProps) {
                 let prev = 0
                 while ((match = INTERP.exec(contents))) {
                   const start = o + match.index
-                  ret.push(new Token(Kind.Source, o + prev, start))
+                  ret.push(new Token(TSource, o + prev, start))
                   const end = o + (prev = INTERP.lastIndex)
-                  ret.push(new Token(Kind.Op, start, start + 2))
+                  ret.push(new Token(OLInterp, start, start + 2))
                   if (match[1]) {
                     const l1 = match[1].length
-                    ret.push(new Token(Kind.Ident, start + 2, start + 2 + l1))
+                    ret.push(new Token(TIdent, start + 2, start + 2 + l1))
                     if (match[2]) {
                       const l2 = match[2].length
                       ret.push(
-                        new Token(Kind.Op, start + 2 + l1, start + 2 + l1 + l2),
+                        new Token(ODot, start + 2 + l1, start + 2 + l1 + l2),
                       )
                       if (match[3]) {
                         const l3 = match[3].length
                         ret.push(
                           new Token(
-                            Kind.Ident,
+                            TIdent,
                             start + 2 + l1 + l2,
                             start + 2 + l1 + l2 + l3,
                           ),
@@ -341,10 +233,10 @@ export function tokens(source: string, props: ToTokensProps) {
                       }
                     }
                   }
-                  ret.push(new Token(Kind.Op, end - 1, end))
+                  ret.push(new Token(ORParen, end - 1, end))
                 }
-                ret.push(new Token(Kind.Source, o + prev, i - 1))
-                ret.push(new Token(Kind.Op, i - 1, i))
+                ret.push(new Token(TSource, o + prev, i - 1))
+                ret.push(new Token(ORBrace, i - 1, i))
                 break loop
               } else {
                 depth--
@@ -353,21 +245,21 @@ export function tokens(source: string, props: ToTokensProps) {
           }
         }
       } else {
-        ret.push(new Token(Kind.Op, start, ++i))
+        ret.push(new Token(OLBrace, start, ++i))
       }
       continue
     }
 
-    if (char in OP_SECOND_CHARS) {
+    if (char in OPS_AND_SECOND_CHARS) {
       const next = source[i + 1]
-      if (next && OP_SECOND_CHARS[char]!.includes(next)) {
-        ret.push(new Token(Kind.Op, start, i + 2))
+      if (next && OPS_AND_SECOND_CHARS[char]!.includes(next)) {
+        ret.push(new Token(OPS[char]!, start, i + 2))
         i += 2
         continue
       }
       i++
-      if (OPS.includes(char as any)) {
-        ret.push(new Token(Kind.Op, start, i))
+      if (char in OPS) {
+        ret.push(new Token(OPS[char]!, start, i))
       } else {
         issues.push(new Issue(Code.UnknownOperator, start, i))
       }

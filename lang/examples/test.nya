@@ -1,0 +1,250 @@
+// Top-level declarations may be:
+//
+//   type(...) Name { source ... }
+//     available parenthesized modifiers are opaque
+//     opaque is for sampler-like types, which cannot be directly handled
+//
+//   syntax float/int/symbol -> Name;
+//     syntax float may output 0.4e3 or -5.4e-7
+//     syntax int/symbol may output 45 or -2983
+//
+//   struct Name<...> { a: u32, ... }
+//
+//   enum Name<...> { :a, ... }
+//
+//   /// optional usage example
+//   fn name<...>(...): ... { ... }
+//     `name` can be an operator
+//
+//   use "./path"
+//
+//   deriv name<...>(...) { ... }
+//     arguments to deriv do not take types
+//
+//   simplify name<...>(...) { ... }
+//     arguments to simplify do not take types
+//
+//   expose type Name "description";
+//
+//   expose fn name "description";
+//   expose fn name alias "description";
+//   expose fn name { alias1, alias2, ... } "description";
+
+// Statements in a function may be:
+//
+//   expression;               evaluates an expression
+//   let name = expr;          declares a local variable
+//   let name: type = expr;    declares a local variable
+//   for and if expressions, but without requiring semicolons or terminators
+
+// Expressions may be:
+//   :symbolname               declares and outputs a symbol
+//   2.3e-5                    declares and outputs a floating-point value
+//   47                        declares and outputs an integer value
+//   f                         variable reference or function call
+//   f<...>                    variable reference or function call
+//   a.f                       function call
+//   a.f<...>                  function call
+//   f(a, ...)                 function call
+//   f<...>(a, ...)            function call
+//   a.f(...)                  function call
+//   a.f<...>(...)             function call
+//   f { a, ... }              struct initialization
+//   f<...> { a, ... }         struct initialization
+//   _ { a, ... }              implicit struct initialization
+//   { a, ... }                shorthand implicit struct initialization
+//     This form of shorthand requires at least two fields be present, and that
+//     no semicolons are direct children of the block.
+//   [a, b, c, ...]            creation of array
+//   for1 c = b { a }          comprehension over array
+//   for c = b { a }           comprehension over ndarray
+//   for c = 0..n { a }        comprehension over exclusive range
+//   for c, d = e, f { a }     comprehension over multiple same-size ndarrays
+//   if a { b } else { c }     ternary equivalent
+//   a :: b                    typecast operator
+//   a OP b                    binary operator
+//     + - * / ** | & || && @ . \ == != <= >= < >
+//   UNARY a                   unary operator
+//     - ~ !
+//   match a { pat => ... }    pattern matching operator
+//     Patterns include:
+//       2                     plain integer
+//       2.3                   plain float
+//       :hi                   plain symbol
+//       :hi { a, b }          symbol with data
+//       pat | pat             alternative patterns
+//   { stmt; ...; expr }       inline block
+//   'a: { ...; expr }         labeled block
+//   (a)                       regular parentheses
+//   source { ...$(a)... }     source code inlined into all languages
+//   source js { ... }         source code inlined into only js
+//   return                    immediate return from function
+//   return ...                immediate return with value from function
+//   break                     break from loop
+//   break 'hi                 break from labeled loop or block
+//   break 'hi ...             break from labeled block with value
+//   continue                  continue loop
+//   continue 'hi              continue labeled loop
+
+// Types may be:
+//   name                      plain named type
+//   name<type, ...>           type with generics
+//   [type; len, ...]          array
+
+// Type declarations via `type` are for atomic types, not compounds.
+// They should not be used for `vec2` and friends.
+type f32 {
+  source js { number }
+  source glsl { float }
+}
+
+// Syntax declarations specify what type a given part of syntax should be.
+syntax float -> f32;
+
+// Structs are values composed of inner values.
+struct Complex32 {
+  // The `re` property also generates a function which returns the value of `re`
+  // for a value of type `Complex32`.
+  re: f32,
+  im: f32,
+}
+
+// Function names follow JS conventions.
+fn makeC32(a: f32, b: f32) -> Complex32 {
+  // To create a struct, we just list values for each of its fields in order.
+  Complex32 { a, b }
+}
+
+// Structs can be generic. Here, T defaults to f32, but it may be other types.
+struct Complex<T = f32> {
+  re: T,
+  im: T,
+}
+
+// The special -> function is used for automatic type coercion. Here, we specify
+// how to coerce from f32 to Complex<f32>.
+fn ->(a: f32) -> Complex<f32> {
+  Complex { a, 0.0 }
+}
+
+// Operators are overloaded via normal function definitions.
+fn +(a: f32, b: f32) -> f32 {
+  // Operators prefixed by @ acting on a leaf type compile to that operator.
+  // If acting on a struct, they will distribute over the contents.
+  a @+ b;
+  // The semicolon is required above since we're not returning the value.
+
+  // We could alternatively write:
+  source { $(a) + $(b) }
+  // which would indicate we're interpolating the values of a and b into the
+  // `... + ...` in all target languages.
+}
+
+// If we had a bool.nya file in this directory, this would find it.
+// Module resolution is simple: attach a .nya suffix, then read that file.
+// `index.nya` files are not special-cased; just use "./bool/index".
+use "./bool";
+
+// A type(opaque) declaration acts like a regular type declaration, but won't
+// allow the value to be constructed or passed around.
+type(opaque) Sampler2D {
+  source js { ImageData }
+  source glsl { texture2D }
+}
+
+// Arrays can be declared as members of a struct.
+struct Data {
+  // An efficient representation will be chosen automatically in GLSL, like
+  // mat3x4.
+  data: [f32; 10],
+
+  // Multi-dimensional arrays work as expected. This is an array of length 3
+  // with elements of length 8 with elements of length 5 with elements of f32.
+  matrix: [[[f32; 5]; 8]; 3],
+
+  // There is a shorthand available, but it follows C and GLSL order, and is
+  // therefore reversed from nested syntax.
+  matrix2: [f32; 3, 8, 5],
+
+  // You can also declare an array with a maximum but unknown length. It is
+  // stored as the maximum length array and a length. The length may be accessed
+  // or set via @len(data).
+  upto10: [f32; ..10],
+}
+
+// Derivatives can be specified via the 'deriv' keyword.
+deriv +(a, b) {
+  deriv(a) + deriv(b)
+}
+
+// Arguments to derivatives are not typed.
+deriv *(a, b) {
+  deriv(a) * b + a * deriv(b)
+}
+
+// Function simplifications may also be provided.
+simplify +(a: f32, b) {
+  if a == 0 {
+    b
+  } else {
+    a + b
+  }
+}
+
+// Plain enums are types which accept a static list of values.
+enum SIUnitCategory {
+  :distance,
+  :time,
+  :mass,
+  :temperature,
+  :luminosity,
+  :amount,
+  :current,
+}
+
+// Enums may assign extra data to their variants.
+enum ComputedArc {
+  :invalid,
+  :split_line { p0: Complex32, p1: Complex32 },
+  :segment    { p0: Complex32, p1: Complex32 },
+  :arc        { center: Complex32, radius: f32, start: f32, end: f32 },
+}
+
+struct UnitData {
+  base: SIUnitCategory,
+  scale: f32,
+}
+
+// Plain enums may associate a value with each variant. This creates a function
+// `Unit(x)` which gets the respective data for the passed `Unit`.
+enum Unit -> UnitData {
+  :m  => { :distance, 1.0    },
+  :cm => { :distance, 0.01   },
+  :in => { :distance, 0.0254 },
+}
+
+// Functions starting with % are useful for symbols without ASCII names.
+deriv %odot(a, b) {
+  %odot(deriv(a), deriv(b))
+}
+
+type u32 {
+  source js { number }
+  source glsl { uint }
+}
+
+syntax int -> u32;
+
+// If a generic parameter has a type, the generic is a const-known value.
+struct Mat<R: u32, C: u32> {
+  data: [f32; R, C],
+}
+
+fn +<R: u32, C: u32>(a: Mat<R, C>, b: Mat<R, C>) -> Mat<R, C> {
+  // @+ works here since nya knows those are the same type, and can properly
+  // propogate the + throughout the matrices.
+  a @+ b;
+
+  // We could alternatively write it using comprehensions:
+  c + d for c, d in a, b
+}

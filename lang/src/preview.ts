@@ -1,26 +1,58 @@
 import { h, hx } from "@/jsx"
-import source from "../examples/reference.nya"
+import source from "../examples/test.nya"
+import {
+  AEq,
+  APlus,
+  KIf,
+  KSource,
+  OEq,
+  OPlus,
+  TBuiltin,
+  TComment,
+  TFloat,
+  TIdent,
+  TIgnore,
+  TInt,
+  TLabel,
+  TSource,
+  TString,
+  TSym,
+} from "./kind"
 import { parseStream, TokenGroup } from "./stream"
-import { Code, Issue, Kind, Token, tokens } from "./token"
+import { Code, Issue, Token, tokens } from "./token"
 
-const Colors = {
-  [Kind.Ident]: "bg-orange-300 text-black",
-  [Kind.IdentSym]: "bg-purple-300 text-black",
-  [Kind.IdentBuiltin]: "bg-red-300 text-black",
-  [Kind.IdentLabel]: "bg-orange-300 text-black",
-
-  [Kind.Kw]: "bg-blue-300 text-black",
-  [Kind.KwExtern]: "bg-blue-300 text-black",
-  [Kind.Ignore]: "bg-orange-300 text-black",
-
-  [Kind.Number]: "bg-fuchsia-300 text-black",
-  [Kind.String]: "bg-green-300 text-black",
-  [Kind.Comment]: "opacity-20 bg-blue-300 text-black",
-  [Kind.Op]: "bg-slate-300 text-black",
-  [Kind.OpBuiltin]: "bg-slate-600 text-white",
-  [Kind.Source]: "bg-yellow-300 text-black",
-
-  [Kind.Group]: "bg-red-300 text-black",
+function color(kind: number) {
+  if (kind == TIdent || kind == TLabel || kind == TIgnore) {
+    return "bg-orange-300 text-black"
+  }
+  if (kind == TSym) {
+    return "bg-purple-300 text-black"
+  }
+  if (kind == TBuiltin) {
+    return "bg-red-300 text-black"
+  }
+  if (KIf <= kind && kind <= KSource) {
+    return "bg-blue-300 text-black"
+  }
+  if (APlus <= kind && kind <= AEq) {
+    return "bg-slate-600 text-white"
+  }
+  if (OPlus <= kind && kind <= OEq) {
+    return "bg-slate-300 text-black"
+  }
+  if (kind == TSource) {
+    return "bg-yellow-300 text-black"
+  }
+  if (kind == TFloat || kind == TInt) {
+    return "bg-fuchsia-300 text-black"
+  }
+  if (kind == TString) {
+    return "bg-green-300 text-black"
+  }
+  if (kind == TComment) {
+    return "opacity-20 bg-blue-300 text-black"
+  }
+  return ""
 }
 
 const stream = parseStream(source, { comments: false })
@@ -65,7 +97,7 @@ for (let i = 0; i < source.length; ) {
   if (token && token.start == i) {
     pre.appendChild(
       h(
-        "border-x border-black/50 border-1 -m-px " + Colors[token.kind],
+        "border-x border-black/50 border-1 -m-px " + color(token.kind),
         source.slice(token.start, token.end),
       ),
     )
