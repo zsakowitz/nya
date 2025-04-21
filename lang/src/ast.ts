@@ -1,3 +1,4 @@
+import type { Print } from "./ast-print"
 import { createGroups } from "./group"
 import { TBuiltin, TFloat, TIdent, TInt, TSym } from "./kind"
 import { Code, Issue, Token, tokens, type ToTokensProps } from "./token"
@@ -43,6 +44,8 @@ export abstract class Node {
     readonly start: number,
     readonly end: number,
   ) {}
+
+  [x: string]: Print
 }
 
 export abstract class Expr extends Node {

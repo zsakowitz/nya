@@ -8,6 +8,7 @@ try {
   } else {
     await import("./sheet/dev")
   }
-} catch {
+} catch (e) {
+  console.error(e)
   await import("./sheet/dev")
 }
