@@ -14,6 +14,8 @@ export const Kind = Object.freeze({
   Op: 6, // =, +, *, ;, :, ., $(, ]
   OpBuiltin: 12, // @==, @+, @*
   Source: 7, // anything inside a source block
+
+  Group: 15, // (...) [...] {...} <...>
 })
 
 export declare namespace Kind {
@@ -32,6 +34,8 @@ export declare namespace Kind {
   export type Op = typeof Kind.Op
   export type OpBuiltin = typeof Kind.OpBuiltin
   export type Source = typeof Kind.Source
+
+  export type Group = typeof Kind.Group
 
   export type Lit = Number | IdentSym
 }
@@ -79,6 +83,7 @@ export class Token<T extends Kind, V extends string = string> {
     readonly kind: T,
     readonly start: number,
     readonly end: number,
+    readonly virtual = false,
   ) {}
 
   is<K extends T>(kind: K): this is Token<K> {
@@ -93,8 +98,8 @@ export const Code = Object.freeze({
   UnterminatedString: 23,
   UnterminatedSource: 25,
   UnknownOperator: 24,
-  UnexpectedTokenKind: 26,
-  UnexpectedTokenValue: 27,
+  MismatchedClosingParen: 28,
+  MismatchedOpeningParen: 29,
 })
 
 export type Code = (typeof Code)[keyof typeof Code]

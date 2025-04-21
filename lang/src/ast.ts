@@ -1,5 +1,4 @@
-import type { Stream } from "./stream"
-import { Kind, Token, type Keyword, type Operator } from "./token"
+import type { Keyword, Kind, Operator, Token } from "./token"
 
 export type Comma = Op<",">
 
@@ -252,59 +251,3 @@ export type Item =
       semi: Op<";"> | null
     }
 // expose, deriv, simplify
-
-export function takeItemPrefix(stream: Stream) {
-  return stream.require(
-    [Kind.Kw],
-    ["use", "type" /* , "struct", "enum", "fn", "syntax" */],
-  )
-}
-
-export function takeUse(stream: Stream, kw: Kw<"use">): Item {
-  return {
-    type: "use",
-    kw,
-    path: stream.require([Kind.String]),
-    semi: stream.op([";"]),
-  }
-}
-
-export function takeType(stream: Stream, kw: Kw<"type">): Item | null {
-  const attrs = stream.attrs(["opaque"])
-  const name = stream.require([Kind.Ident])
-  if (!name) return null
-
-  return {
-    type: "type",
-    kw,
-    attrs,
-    name,
-    write: {
-      lt: new Token(6, 0, 0),
-      value: [],
-      gt: null,
-    },
-  }
-}
-
-export function parseText(stream: Stream): Item[] {
-  const ret: Item[] = []
-
-  while (stream.tokens.length) {
-    const kw = takeItemPrefix(stream)
-    if (!kw) {
-      break
-    }
-
-    const item =
-      stream.has(kw, "use") ? takeUse(stream, kw)
-      : stream.has(kw, "type") ? takeType(stream, kw)
-      : null
-
-    if (item) {
-      ret.push(item)
-    }
-  }
-
-  return ret
-}

@@ -1,9 +1,134 @@
-import type { Comma, Delimited, Kw, PDelim } from "./ast"
-import { Code, Issue, Kind, tokens, type Keyword, type Token } from "./token"
+import { Code, Issue, Kind, Token, tokens } from "./token"
+
+export class TokenGroup extends Token<Kind.Group> {
+  constructor(
+    readonly lt: Token<Kind.Op>,
+    readonly gt: Token<Kind.Op>,
+    readonly text: "(" | "[" | "{" | "<" | "$(",
+    readonly contents: Token<Kind>[],
+  ) {
+    super(Kind.Group, lt.start, gt.end)
+  }
+}
+
+type TokenGroupMut = { -readonly [K in keyof TokenGroup]: TokenGroup[K] }
+
+function matches(group: TokenGroup, rhs: ")" | "]" | "}" | ">") {
+  return (
+    rhs == ")" ? group.text == "(" || group.text == "$("
+    : rhs == "]" ? group.text == "["
+    : rhs == "}" ? group.text == "{"
+    : rhs == ">" ? group.text == "<"
+    : false
+  )
+}
 
 export function parseStream(source: string) {
-  const { issues, ret } = tokens(source)
-  return new Stream(source, ret.reverse(), issues)
+  const { issues, ret: raw } = tokens(source)
+
+  const parens: TokenGroup[] = []
+  const root: Token<Kind>[] = []
+  let currentContents: Token<Kind>[] = []
+
+  main: for (let i = 0; i < raw.length; i++) {
+    const token = raw[i]!
+
+    if (token.is(Kind.Op)) {
+      const text = source.slice(token.start, token.end)
+
+      if (
+        text == "(" ||
+        text == "$(" ||
+        text == "[" ||
+        text == "{" ||
+        // angle brackets are also less than and greater than, so we mandate no whitespace for them
+        (text == "<" && token.start == (raw[i - 1]?.end ?? 0))
+      ) {
+        const group = new TokenGroup(token, new Token(Kind.Op, 0, 0), text, [])
+        parens.push(group)
+        currentContents.push(group)
+        currentContents = group.contents
+        continue
+      }
+
+      if (
+        text == ")" ||
+        text == "]" ||
+        text == "}" ||
+        (text == ">" && parens[parens.length - 1]?.text == "<")
+      ) {
+        const current = parens[parens.length - 1]
+
+        // If no current paren, ignore and move on
+        if (!current) {
+          issues.push(
+            new Issue(Code.MismatchedClosingParen, token.start, token.end),
+          )
+          continue
+        }
+
+        // If no match, close parens until we have a match
+        if (!matches(current, text)) {
+          issues.push(
+            new Issue(Code.MismatchedClosingParen, token.start, token.end),
+          )
+
+          issues.push(
+            new Issue(
+              Code.MismatchedOpeningParen,
+              current.lt.start,
+              current.lt.end,
+            ),
+          )
+          ;(current as TokenGroupMut).gt = new Token(
+            Kind.Op,
+            token.start,
+            token.start,
+            true,
+          )
+          ;(current as TokenGroupMut).end = token.start
+
+          while (true) {
+            parens.pop()
+            const current = parens[parens.length - 1]
+            currentContents = current?.contents ?? root
+            if (!current) {
+              continue main
+            }
+            issues.push(
+              new Issue(
+                Code.MismatchedOpeningParen,
+                current.lt.start,
+                current.lt.end,
+              ),
+            )
+            if (matches(current, text)) {
+              ;(current as TokenGroupMut).gt = token
+              ;(current as TokenGroupMut).end = token.end
+              continue main
+            }
+            ;(current as TokenGroupMut).gt = new Token(
+              Kind.Op,
+              token.start,
+              token.start,
+              true,
+            )
+            ;(current as TokenGroupMut).end = token.start
+          }
+        }
+
+        ;(current as TokenGroupMut).gt = token
+        ;(current as TokenGroupMut).end = token.end
+        parens.pop()
+        currentContents = parens[parens.length - 1]?.contents ?? root
+        continue
+      }
+    }
+
+    currentContents.push(token)
+  }
+
+  return new Stream(source, root, issues)
 }
 
 export class Stream {
@@ -13,124 +138,11 @@ export class Stream {
     readonly issues: Issue[],
   ) {}
 
-  get next() {
-    return this.tokens[this.tokens.length - 1]
-  }
-
   issue(code: Code, start: number, end: number) {
     this.issues.push(new Issue(code, start, end))
   }
 
   content(token: Token<Kind>) {
     return this.source.slice(token.start, token.end)
-  }
-
-  has<K extends Kind, T extends string>(
-    token: Token<K>,
-    value: T,
-  ): token is Token<K, T> {
-    return this.content(token) == value
-  }
-
-  is<K extends Kind, T extends string>(
-    token: Token<Kind>,
-    value: T,
-  ): token is Token<K, T> {
-    return this.content(token) == value
-  }
-
-  require<K extends readonly Kind[], const T extends readonly string[]>(
-    kinds: K,
-    values?: T,
-  ): Token<K[number], T[number]> | null {
-    const token = this.tokens.pop()
-    if (!token) {
-      return null
-    }
-
-    if (!kinds.includes(token.kind)) {
-      this.issue(Code.UnexpectedTokenKind, token.start, token.end)
-      this.tokens.push(token)
-      return null
-    }
-
-    if (values && !values.includes(this.content(token))) {
-      this.issue(Code.UnexpectedTokenValue, token.start, token.end)
-      this.tokens.push(token)
-      return null
-    }
-
-    return token
-  }
-
-  try<K extends readonly Kind[], const T extends readonly string[]>(
-    kinds: K,
-    values?: T,
-  ): Token<K[number], T[number]> | null {
-    const token = this.tokens.pop()
-    if (!token) {
-      return null
-    }
-
-    if (!kinds.includes(token.kind)) {
-      this.tokens.push(token)
-      return null
-    }
-
-    if (values && !values.includes(this.content(token))) {
-      this.tokens.push(token)
-      return null
-    }
-
-    return token
-  }
-
-  comma() {
-    if (this.next?.is(Kind.Op) && this.has(this.next, ",")) {
-      this.tokens.pop()
-      return this.next
-    } else {
-      return null
-    }
-  }
-
-  op<const T extends readonly string[]>(op: T) {
-    return this.require([Kind.Op], op)
-  }
-
-  attrs<const T extends readonly Keyword[]>(
-    words: T,
-  ): PDelim<Kw<T[number]>> | null {
-    if (!(this.next?.is(Kind.Op) && this.has(this.next, "("))) {
-      return null
-    }
-
-    const lt = this.next
-    const value = this.delim(() => this.try([Kind.Kw], words))
-    const gt = this.require([Kind.Op], [")"])
-
-    return { lt, value, gt }
-  }
-
-  delim<T extends {}>(f: () => T | null): Delimited<T> {
-    const items: T[] = []
-    const delims: Comma[] = []
-
-    const first = f()
-    if (first != null) {
-      items.push(first)
-
-      while (true) {
-        const c = this.comma()
-        if (c == null) break
-        delims.push(c)
-
-        const item = f()
-        if (item == null) break
-        items.push(item)
-      }
-    }
-
-    return { items, delims }
   }
 }

@@ -1,7 +1,6 @@
 import { h, hx } from "@/jsx"
 import source from "../examples/reference.nya"
-import { parseText } from "./ast"
-import { parseStream } from "./stream"
+import { parseStream, TokenGroup } from "./stream"
 import { Kind, Token, tokens } from "./token"
 
 const Colors = {
@@ -20,19 +19,27 @@ const Colors = {
   [Kind.Op]: "bg-black text-white",
   [Kind.OpBuiltin]: "bg-slate-600 text-white",
   [Kind.Source]: "bg-yellow-300 text-black",
-  [Kind.Newline]: "bg-black",
+
+  [Kind.Group]: "bg-red-300 text-black",
 }
 
 const stream = parseStream(source)
-const items = parseText(stream)
 
 document.body.appendChild(
   hx(
     "pre",
     "px-4 pt-4",
     JSON.stringify(
-      items,
-      (_, v) => (v instanceof Token ? stream.content(v) : v),
+      stream,
+      (_, v) =>
+        v instanceof TokenGroup ?
+          {
+            lt: stream.content(v.lt),
+            gt: stream.content(v.gt),
+            contents: v.contents,
+          }
+        : v instanceof Token ? stream.content(v)
+        : v,
       2,
     ),
   ),
