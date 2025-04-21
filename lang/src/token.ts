@@ -1,7 +1,4 @@
-import { h, hx } from "@/jsx"
-import source from "../examples/reference.nya"
-
-const Kind = Object.freeze({
+export const Kind = Object.freeze({
   Ident: 0, // struct, c32, viewport, f32, %odot
   IdentSym: 1, // :m, :s, :A, :px
   IdentBuiltin: 2, // @vec2, @vec4, @-, @>, @mix, @asinh, @min
@@ -17,7 +14,6 @@ const Kind = Object.freeze({
   Op: 6, // =, +, *, ;, :, ., $(, ]
   OpBuiltin: 12, // @==, @+, @*
   Source: 7, // anything inside a source block
-  Newline: 11, // a literal newline
 })
 
 export declare namespace Kind {
@@ -36,12 +32,11 @@ export declare namespace Kind {
   export type Op = typeof Kind.Op
   export type OpBuiltin = typeof Kind.OpBuiltin
   export type Source = typeof Kind.Source
-  export type Newline = typeof Kind.Newline
 
   export type Lit = Number | IdentSym
 }
 
-type Kind = (typeof Kind)[keyof typeof Kind]
+export type Kind = (typeof Kind)[keyof typeof Kind]
 
 const KEYWORDS = [
   "if",
@@ -76,25 +71,6 @@ const IdentPrefixes = {
   "%": Kind.Ident,
 }
 
-const Colors = {
-  [Kind.Ident]: "bg-orange-300 text-black",
-  [Kind.IdentSym]: "bg-purple-300 text-black",
-  [Kind.IdentBuiltin]: "bg-red-300 text-black",
-  [Kind.IdentLabel]: "bg-orange-300 text-black",
-
-  [Kind.Kw]: "bg-orange-300 text-black",
-  [Kind.KwExtern]: "bg-orange-300 text-black",
-  [Kind.Ignore]: "bg-orange-300 text-black",
-
-  [Kind.Number]: "bg-fuchsia-300 text-black",
-  [Kind.String]: "bg-green-300 text-black",
-  [Kind.Comment]: "opacity-30 bg-blue-300 text-black",
-  [Kind.Op]: "bg-black text-white",
-  [Kind.OpBuiltin]: "bg-slate-600 text-white",
-  [Kind.Source]: "bg-yellow-300 text-black",
-  [Kind.Newline]: "bg-black",
-}
-
 export class Token<T extends Kind, V extends string = string> {
   declare static readonly __kind: unique symbol;
   declare [Token.__kind]: V
@@ -104,20 +80,26 @@ export class Token<T extends Kind, V extends string = string> {
     readonly start: number,
     readonly end: number,
   ) {}
+
+  is<K extends T>(kind: K): this is Token<K> {
+    return this.kind == kind
+  }
 }
 
-const Code = Object.freeze({
+export const Code = Object.freeze({
   InvalidBuiltinName: 20,
   UnknownChar: 21,
   FloatMustEndInDigit: 22,
   UnterminatedString: 23,
   UnterminatedSource: 25,
   UnknownOperator: 24,
+  UnexpectedTokenKind: 26,
+  UnexpectedTokenValue: 27,
 })
 
-type Code = (typeof Code)[keyof typeof Code]
+export type Code = (typeof Code)[keyof typeof Code]
 
-class Issue {
+export class Issue {
   constructor(
     readonly code: Code,
     readonly start: number,
@@ -194,12 +176,6 @@ export function tokens(source: string) {
   for (let i = 0; i < source.length; ) {
     const start = i
     const char = source[i]!
-
-    if (char == "\n") {
-      i++
-      ret.push(new Token(Kind.Newline, start, i))
-      continue
-    }
 
     if (WS.test(char)) {
       i++
@@ -391,33 +367,3 @@ export function tokens(source: string) {
 
   return { ret, issues }
 }
-
-const { ret } = tokens(source)
-ret.reverse()
-const pre = hx("pre", "text-sm p-4")
-
-for (let i = 0; i < source.length; ) {
-  const token = ret[ret.length - 1]
-
-  if (token && token.start == i) {
-    pre.appendChild(
-      h(
-        "border-x border-black/50 border-1 -m-px " + Colors[token.kind],
-        source.slice(token.start, token.end),
-      ),
-    )
-    i = token.end
-    ret.pop()
-    continue
-  }
-
-  const part = source.slice(i, i + 1)
-  if (/\S/.test(part)) {
-    pre.appendChild(h("bg-red-500", part))
-  } else {
-    pre.append(part)
-  }
-  i++
-}
-
-document.body.appendChild(pre)

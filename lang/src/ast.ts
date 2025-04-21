@@ -1,6 +1,7 @@
-import type { Keyword, Kind, Operator, Token } from "./token"
+import type { Stream } from "./stream"
+import { Kind, Token, type Keyword, type Operator } from "./token"
 
-export type TokenComma = Op<",">
+export type Comma = Op<",">
 
 export type Kw<T extends Keyword> = Token<Kind.Kw, T>
 export type Op<T extends Operator> = Token<Kind.Op, T>
@@ -8,9 +9,9 @@ export type Ident = Token<Kind.Ident>
 export type Lit = Token<Kind.Lit>
 export type Sym = Token<Kind.IdentSym>
 
-export interface Delimited<T, K = TokenComma> {
+export interface Delimited<T> {
   items: T[]
-  delims: K[]
+  delims: Comma[]
 }
 
 export interface Bracketed<
@@ -20,17 +21,17 @@ export interface Bracketed<
 > {
   lt: Op<L>
   value: T
-  gt: Op<R>
+  gt: Op<R> | null
 }
 
 export type BDelim<
   T,
   L extends "(" | "[" | "<" | "$(",
   R extends ")" | "]" | ">" | ")",
-  K = TokenComma,
-> = Bracketed<Delimited<T, K>, L, R>
+> = Bracketed<Delimited<T>, L, R>
 
-export type CDelim<T, K = TokenComma> = Bracketed<Delimited<T, K>, "{", "}">
+export type PDelim<T> = Bracketed<Delimited<T>, "(", ")">
+export type CDelim<T> = Bracketed<Delimited<T>, "{", "}">
 
 export interface GenericParam {
   ident: Ident
@@ -203,7 +204,7 @@ export type Item =
       kw: Kw<"type">
       attrs: BDelim<Kw<"opaque">, "(", ")"> | null
       name: Ident
-      write: Bracketed<ExprSource, "{", "}">
+      write: Bracketed<ExprSource, "{", "}"> | null
     }
   | {
       type: "struct"
@@ -246,6 +247,64 @@ export type Item =
     }
   | {
       type: "use"
-      path: Token<Kind.String>
+      kw: Kw<"use">
+      path: Token<Kind.String> | null
+      semi: Op<";"> | null
     }
 // expose, deriv, simplify
+
+export function takeItemPrefix(stream: Stream) {
+  return stream.require(
+    [Kind.Kw],
+    ["use", "type" /* , "struct", "enum", "fn", "syntax" */],
+  )
+}
+
+export function takeUse(stream: Stream, kw: Kw<"use">): Item {
+  return {
+    type: "use",
+    kw,
+    path: stream.require([Kind.String]),
+    semi: stream.op([";"]),
+  }
+}
+
+export function takeType(stream: Stream, kw: Kw<"type">): Item | null {
+  const attrs = stream.attrs(["opaque"])
+  const name = stream.require([Kind.Ident])
+  if (!name) return null
+
+  return {
+    type: "type",
+    kw,
+    attrs,
+    name,
+    write: {
+      lt: new Token(6, 0, 0),
+      value: [],
+      gt: null,
+    },
+  }
+}
+
+export function parseText(stream: Stream): Item[] {
+  const ret: Item[] = []
+
+  while (stream.tokens.length) {
+    const kw = takeItemPrefix(stream)
+    if (!kw) {
+      break
+    }
+
+    const item =
+      stream.has(kw, "use") ? takeUse(stream, kw)
+      : stream.has(kw, "type") ? takeType(stream, kw)
+      : null
+
+    if (item) {
+      ret.push(item)
+    }
+  }
+
+  return ret
+}

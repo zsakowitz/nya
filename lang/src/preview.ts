@@ -1,0 +1,72 @@
+import { h, hx } from "@/jsx"
+import source from "../examples/reference.nya"
+import { parseText } from "./ast"
+import { parseStream } from "./stream"
+import { Kind, Token, tokens } from "./token"
+
+const Colors = {
+  [Kind.Ident]: "bg-orange-300 text-black",
+  [Kind.IdentSym]: "bg-purple-300 text-black",
+  [Kind.IdentBuiltin]: "bg-red-300 text-black",
+  [Kind.IdentLabel]: "bg-orange-300 text-black",
+
+  [Kind.Kw]: "bg-orange-300 text-black",
+  [Kind.KwExtern]: "bg-orange-300 text-black",
+  [Kind.Ignore]: "bg-orange-300 text-black",
+
+  [Kind.Number]: "bg-fuchsia-300 text-black",
+  [Kind.String]: "bg-green-300 text-black",
+  [Kind.Comment]: "opacity-30 bg-blue-300 text-black",
+  [Kind.Op]: "bg-black text-white",
+  [Kind.OpBuiltin]: "bg-slate-600 text-white",
+  [Kind.Source]: "bg-yellow-300 text-black",
+  [Kind.Newline]: "bg-black",
+}
+
+const stream = parseStream(source)
+const items = parseText(stream)
+
+document.body.appendChild(
+  hx(
+    "pre",
+    "px-4 pt-4",
+    JSON.stringify(
+      items,
+      (_, v) => (v instanceof Token ? stream.content(v) : v),
+      2,
+    ),
+  ),
+)
+document.body.appendChild(
+  hx("hr", "border-[--nya-border] mx-4 my-4 border-0 border-t"),
+)
+
+const { ret } = tokens(source)
+ret.reverse()
+const pre = hx("pre", "text-sm px-4 pb-4")
+
+for (let i = 0; i < source.length; ) {
+  const token = ret[ret.length - 1]
+
+  if (token && token.start == i) {
+    pre.appendChild(
+      h(
+        "border-x border-black/50 border-1 -m-px " + Colors[token.kind],
+        source.slice(token.start, token.end),
+      ),
+    )
+    i = token.end
+    ret.pop()
+    continue
+  }
+
+  const part = source.slice(i, i + 1)
+  if (/\S/.test(part)) {
+    pre.appendChild(h("bg-red-500", part))
+  } else {
+    pre.append(part)
+  }
+  i++
+}
+
+document.body.appendChild(pre)
