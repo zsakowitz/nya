@@ -1,12 +1,11 @@
-import type { Keyword, Kind, Operator, Token } from "./token"
+import type { TFloat, TIdent, TInt, TSym } from "./kind"
+import type { Token } from "./token"
 
 export type Comma = Op<",">
 
-export type Kw<T extends Keyword> = Token<Kind.Kw, T>
-export type Op<T extends Operator> = Token<Kind.Op, T>
-export type Ident = Token<Kind.Ident>
-export type Lit = Token<Kind.Lit>
-export type Sym = Token<Kind.IdentSym>
+export type Ident = Token<typeof TIdent>
+export type Lit = Token<typeof TFloat | typeof TInt | typeof TSym>
+export type Sym = Token<typeof TSym>
 
 export interface Delimited<T> {
   items: T[]

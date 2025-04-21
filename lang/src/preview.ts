@@ -1,5 +1,6 @@
 import { h, hx } from "@/jsx"
 import source from "../examples/test.nya"
+import { TokenGroup } from "./group"
 import {
   AEq,
   APlus,
@@ -18,7 +19,7 @@ import {
   TString,
   TSym,
 } from "./kind"
-import { parseStream, TokenGroup } from "./stream"
+import { parseStream } from "./stream"
 import { Code, Issue, Token, tokens } from "./token"
 
 function color(kind: number) {
