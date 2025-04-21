@@ -64,6 +64,7 @@ const KEYWORDS = [
   "continue",
   "use",
   "val",
+  "usage",
 ] as const
 
 export type Keyword = Extract<(typeof KEYWORDS)[keyof typeof KEYWORDS], string>

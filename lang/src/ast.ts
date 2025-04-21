@@ -4,6 +4,9 @@ type TokenComma = Op<",">
 
 type Kw<T extends Keyword> = Token<Kind.Kw, T>
 type Op<T extends Operator> = Token<Kind.Op, T>
+type Ident = Token<Kind.Ident>
+type Lit = Token<Kind.Lit>
+type Sym = Token<Kind.IdentSym>
 
 export interface Delimited<T, K = TokenComma> {
   items: T[]
@@ -22,12 +25,23 @@ export interface Bracketed<
 
 export type BDelim<
   T,
-  L extends "(" | "[" | "{" | "<" | "$(",
-  R extends ")" | "]" | "}" | ">" | ")",
+  L extends "(" | "[" | "<" | "$(",
+  R extends ")" | "]" | ">" | ")",
   K = TokenComma,
 > = Bracketed<Delimited<T, K>, L, R>
 
-export type TArgs = BDelim<GenericArg, "{", "}">
+export type CDelim<T, K = TokenComma> = Bracketed<Delimited<T, K>, "{", "}">
+
+export interface GenericParam {
+  ident: Ident
+  colon: Op<":"> | null
+  bound: Type | null
+  eq: Op<"="> | null
+  default: GenericArg | null
+}
+
+export type TParams = CDelim<GenericParam>
+export type TArgs = CDelim<GenericArg>
 export type Args = BDelim<Expr, "(", ")">
 
 export interface Receiver {
@@ -38,11 +52,11 @@ export interface Receiver {
 export type Block = Bracketed<{ stmts: Stmt[]; expr: Expr | null }, "{", "}">
 
 export type MatchPattern =
-  | { type: "literal"; value: Token<Kind.Lit>; kind: "int" | "float" | "sym" }
+  | { type: "literal"; value: Lit; kind: "int" | "float" | "sym" }
   | {
       type: "destruct"
       symbol: Token<Kind.IdentSym>
-      into: BDelim<Token<Kind.Ident>, "{", "}">
+      into: CDelim<Ident>
     }
   | { type: "ignore" }
 
@@ -80,7 +94,7 @@ export interface ExprIf {
 export interface ExprFor {
   type: "for"
   for: Kw<"for">
-  locals: Delimited<Token<Kind.Ident>>
+  locals: Delimited<Ident>
   eq: Op<"=">
   source: Delimited<Expr>
   value: Block
@@ -96,7 +110,7 @@ export type Expr =
       /** Delimited by parentheses or braces. */
       args: Args | null
     }
-  | { type: "literal"; value: Token<Kind.Lit>; kind: "int" | "float" | "sym" }
+  | { type: "literal"; value: Lit; kind: "int" | "float" | "sym" }
   | {
       type: "binary"
       lhs: Expr
@@ -110,22 +124,15 @@ export type Expr =
   | { type: "array"; of: Args }
   | ExprFor
   | ExprIf
+  | ExprSource
   | { type: "cast"; lhs: Expr; rhs: Type }
   | {
       type: "match"
       match: Kw<"match">
       on: Expr
-      arms: BDelim<MatchArm, "{", "}">
+      arms: CDelim<MatchArm>
     }
   | { type: "paren"; of: Bracketed<Expr, "(", ")"> }
-  | {
-      type: "source"
-      /** 'source' or 'using' */
-      source: Token<Kind.KwExtern, "source" | "using">
-      lang: Token<Kind.Ident> | null
-      parts: Token<Kind.Source>[]
-      interps: Bracketed<Expr, "$(", ")">[]
-    }
   | {
       type: "exit"
       /** "return", "break", or "continue" */
@@ -134,12 +141,23 @@ export type Expr =
       value: Expr | null
     }
 
+export type ExprSource1 = {
+  type: "source"
+  /** 'source' or 'using' */
+  source: Token<Kind.KwExtern, "source" | "using">
+  lang: Ident | null
+  parts: Token<Kind.Source>[]
+  interps: Bracketed<Expr, "$(", ")">[]
+}
+
+export type ExprSource = ExprSource1[]
+
 export type Stmt =
   | { type: "expr"; expr: Expr; semi: Op<";"> | null }
   | {
       type: "let"
       let: Kw<"let">
-      name: Token<Kind.Ident>
+      name: Ident
       colon: Op<":"> | null
       ty: Type | null
       eq: Op<"="> | null
@@ -149,11 +167,11 @@ export type Stmt =
 
 export type GenericArg =
   | Type
-  | { type: "literal"; value: Token<Kind.Lit>; kind: "int" | "float" | "sym" }
+  | { type: "literal"; value: Lit; kind: "int" | "float" | "sym" }
   | { type: "val"; val: Kw<"val">; of: Bracketed<Expr, "{", "}"> }
 
 export type Type =
-  | { type: "name"; name: Token<Kind.Ident>; targs: TArgs | null }
+  | { type: "name"; name: Ident; targs: TArgs | null }
   | {
       type: "array"
       array: Bracketed<
@@ -161,4 +179,72 @@ export type Type =
         "[",
         "]"
       >
+    }
+
+export interface FieldDecl {
+  ident: Ident
+  colon: Op<":"> | null
+  type: Type
+  eq: Op<"="> | null
+  value: Expr
+}
+
+export interface ParamDecl {
+  ident: Ident
+  colon: Op<":"> | null
+  type: Type
+}
+
+export type Params = BDelim<ParamDecl, "(", ")">
+
+export type Item =
+  | {
+      type: "type"
+      kw: Kw<"type">
+      attrs: BDelim<Kw<"opaque">, "(", ")"> | null
+      name: Ident
+      write: Bracketed<ExprSource, "{", "}">
+    }
+  | {
+      type: "struct"
+      kw: Kw<"struct">
+      name: Ident
+      tparams: TParams | null
+      fields: CDelim<{ name: Ident; comma: Op<","> | null; type: Type }>
+    }
+  | {
+      type: "syntax"
+      name: Ident
+      arrow: Op<"->"> | null
+      ret: Ident | null
+      semi: Op<";"> | null
+    }
+  | {
+      type: "enum+map"
+      name: Ident
+      tparams: TParams | null
+      arrow: Op<"->">
+      ret: Type
+      fields: CDelim<{ sym: Sym; arrow: Op<"=>"> | null; value: Expr | null }>
+    }
+  | {
+      type: "enum"
+      name: Ident
+      tparams: TParams | null
+      fields: CDelim<{ sym: Sym; fields: CDelim<FieldDecl> | null }>
+    }
+  | {
+      type: "fn"
+      name: Ident
+      tparams: TParams | null
+      params: Params | null
+      arrow: Op<"->"> | null
+      ret: Type | null
+      block: Block
+      usagekw: Kw<"usage"> | null
+      usage: Token<Kind.String> | BDelim<Token<Kind.String>, "[", "]"> | null
+    }
+  | {
+      type: "use"
+      path: Token<Kind.String>
     }
