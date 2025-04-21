@@ -1,4 +1,4 @@
-import { Code, Issue, Kind, Token, tokens } from "./token"
+import { Code, Issue, Kind, Token, tokens, type ToTokensProps } from "./token"
 
 export class TokenGroup extends Token<Kind.Group> {
   constructor(
@@ -23,12 +23,12 @@ function matches(group: TokenGroup, rhs: ")" | "]" | "}" | ">") {
   )
 }
 
-export function parseStream(source: string) {
-  const { issues, ret: raw } = tokens(source)
+export function parseStream(source: string, props: ToTokensProps) {
+  const { issues, ret: raw } = tokens(source, props)
 
   const parens: TokenGroup[] = []
   const root: Token<Kind>[] = []
-  let currentContents: Token<Kind>[] = []
+  let currentContents: Token<Kind>[] = root
 
   main: for (let i = 0; i < raw.length; i++) {
     const token = raw[i]!
@@ -142,7 +142,7 @@ export class Stream {
     this.issues.push(new Issue(code, start, end))
   }
 
-  content(token: Token<Kind>) {
+  content(token: { start: number; end: number }) {
     return this.source.slice(token.start, token.end)
   }
 }

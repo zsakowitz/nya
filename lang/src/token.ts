@@ -174,7 +174,11 @@ function is(regex: RegExp, char: string | undefined) {
   return char != null && regex.test(char)
 }
 
-export function tokens(source: string) {
+export interface ToTokensProps {
+  comments: boolean
+}
+
+export function tokens(source: string, props: ToTokensProps) {
   const ret: Token<Kind>[] = []
   const issues: Issue[] = []
 
@@ -216,8 +220,9 @@ export function tokens(source: string) {
         continue
       }
       i++
-      ret.push(new Token(Kind.OpBuiltin, start, i))
-      if (!OPS.includes(char as any)) {
+      if (OPS.includes(char as any)) {
+        ret.push(new Token(Kind.OpBuiltin, start, i))
+      } else {
         issues.push(new Issue(Code.UnknownOperator, start, i))
       }
       continue
@@ -225,9 +230,10 @@ export function tokens(source: string) {
 
     if (char in IdentPrefixes) {
       if (!is(ID_START, source[i + 1])) {
-        ret.push(new Token(Kind.Op, start, ++i))
-        if (!OPS.includes(char as any)) {
-          issues.push(new Issue(Code.UnknownOperator, start, i))
+        if (OPS.includes(char as any)) {
+          ret.push(new Token(Kind.Op, start, ++i))
+        } else {
+          issues.push(new Issue(Code.UnknownOperator, start, ++i))
         }
         continue
       }
@@ -235,7 +241,6 @@ export function tokens(source: string) {
       ret.push(
         new Token(IdentPrefixes[char as keyof typeof IdentPrefixes], start, i),
       )
-      issues.push(new Issue(Code.InvalidBuiltinName, start, i))
       continue
     }
 
@@ -257,7 +262,9 @@ export function tokens(source: string) {
     if (char == "/" && source[i + 1] == "/") {
       i++
       while (source[++i] != "\n");
-      ret.push(new Token(Kind.Comment, start, i))
+      if (props.comments) {
+        ret.push(new Token(Kind.Comment, start, i))
+      }
       continue
     }
 
@@ -359,8 +366,9 @@ export function tokens(source: string) {
         continue
       }
       i++
-      ret.push(new Token(Kind.Op, start, i))
-      if (!OPS.includes(char as any)) {
+      if (OPS.includes(char as any)) {
+        ret.push(new Token(Kind.Op, start, i))
+      } else {
         issues.push(new Issue(Code.UnknownOperator, start, i))
       }
       continue

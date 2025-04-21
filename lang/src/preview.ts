@@ -1,7 +1,7 @@
 import { h, hx } from "@/jsx"
 import source from "../examples/reference.nya"
 import { parseStream, TokenGroup } from "./stream"
-import { Kind, Token, tokens } from "./token"
+import { Code, Issue, Kind, Token, tokens } from "./token"
 
 const Colors = {
   [Kind.Ident]: "bg-orange-300 text-black",
@@ -16,14 +16,14 @@ const Colors = {
   [Kind.Number]: "bg-fuchsia-300 text-black",
   [Kind.String]: "bg-green-300 text-black",
   [Kind.Comment]: "opacity-30 bg-blue-300 text-black",
-  [Kind.Op]: "bg-black text-white",
+  [Kind.Op]: "bg-slate-300 text-black",
   [Kind.OpBuiltin]: "bg-slate-600 text-white",
   [Kind.Source]: "bg-yellow-300 text-black",
 
   [Kind.Group]: "bg-red-300 text-black",
 }
 
-const stream = parseStream(source)
+const stream = parseStream(source, { comments: false })
 
 document.body.appendChild(
   hx(
@@ -32,7 +32,14 @@ document.body.appendChild(
     JSON.stringify(
       stream,
       (_, v) =>
-        v instanceof TokenGroup ?
+        v instanceof Issue ?
+          {
+            code: Object.entries(Code).find((x) => x[1] == v.code)?.[0],
+            start: v.start,
+            end: v.end,
+            of: stream.content(v),
+          }
+        : v instanceof TokenGroup ?
           {
             lt: stream.content(v.lt),
             gt: stream.content(v.gt),
@@ -48,7 +55,7 @@ document.body.appendChild(
   hx("hr", "border-[--nya-border] mx-4 my-4 border-0 border-t"),
 )
 
-const { ret } = tokens(source)
+const { ret } = tokens(source, { comments: true })
 ret.reverse()
 const pre = hx("pre", "text-sm px-4 pb-4")
 
