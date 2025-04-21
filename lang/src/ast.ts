@@ -1,12 +1,12 @@
 import type { Keyword, Kind, Operator, Token } from "./token"
 
-type TokenComma = Op<",">
+export type TokenComma = Op<",">
 
-type Kw<T extends Keyword> = Token<Kind.Kw, T>
-type Op<T extends Operator> = Token<Kind.Op, T>
-type Ident = Token<Kind.Ident>
-type Lit = Token<Kind.Lit>
-type Sym = Token<Kind.IdentSym>
+export type Kw<T extends Keyword> = Token<Kind.Kw, T>
+export type Op<T extends Operator> = Token<Kind.Op, T>
+export type Ident = Token<Kind.Ident>
+export type Lit = Token<Kind.Lit>
+export type Sym = Token<Kind.IdentSym>
 
 export interface Delimited<T, K = TokenComma> {
   items: T[]
@@ -248,3 +248,4 @@ export type Item =
       type: "use"
       path: Token<Kind.String>
     }
+// expose, deriv, simplify
