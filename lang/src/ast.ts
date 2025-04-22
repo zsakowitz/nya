@@ -187,9 +187,7 @@ function exprAtom(stream: Stream, ctx: ExprContext): Expr {
 
     case OLParen: {
       const token = stream.matchGroup(OLParen)!
-      const e = expr(token.contents, { struct: true })
-      token.contents.requireDone()
-      return new ExprParen(token, e)
+      return new ExprParen(token, exprFull(token.contents))
     }
 
     case OLBrack: {
@@ -228,6 +226,16 @@ export class ExprProp extends Expr {
   }
 }
 
+export class ExprIndex extends Expr {
+  constructor(
+    readonly on: Expr,
+    readonly brack: TokenGroup<typeof OLBrack>,
+    readonly index: Expr,
+  ) {
+    super(on.start, brack.end)
+  }
+}
+
 function exprPropChain(stream: Stream, ctx: ExprContext) {
   let expr = exprAtom(stream, ctx)
 
@@ -241,6 +249,11 @@ function exprPropChain(stream: Stream, ctx: ExprContext) {
         } else {
           break loop
         }
+
+      case OLBrack:
+        const n = stream.matchGroup(OLBrack)!
+        expr = new ExprIndex(expr, n, exprFull(n.contents))
+        continue
 
       case ODot:
         expr = new ExprProp(
@@ -411,8 +424,14 @@ const exprBinaryOp = createBinOpL(
   ),
 )
 
-function expr(stream: Stream, ctx: ExprContext) {
+function expr(stream: Stream, ctx: ExprContext = { struct: true }) {
   return exprBinaryOp(stream, ctx)
+}
+
+function exprFull(stream: Stream) {
+  const e = expr(stream, { struct: true })
+  stream.requireDone()
+  return e
 }
 
 export class List<T extends Node> extends Node {
@@ -448,9 +467,9 @@ function createCommaOp<T extends Node>(
   }
 }
 
-const fnArguments = createCommaOp(OLParen, (s) => expr(s, { struct: true }))
-const structArguments = createCommaOp(OLBrace, (s) => expr(s, { struct: true }))
-const listValues = createCommaOp(OLBrack, (s) => expr(s, { struct: true }))
+const fnArguments = createCommaOp(OLParen, expr)
+const structArguments = createCommaOp(OLBrace, expr)
+const listValues = createCommaOp(OLBrack, expr)
 
 export class Block extends Expr {
   constructor(
@@ -465,13 +484,9 @@ function block(stream: Stream) {
   const group = stream.matchGroup(OLBrace)
   if (!group) return null
 
-  const of = expr(group.contents, { struct: true })
-  group.contents.requireDone()
-  return new Block(group, of)
+  return new Block(group, exprFull(group.contents))
 }
 
 export function parse(stream: Stream) {
-  const e = expr(stream, { struct: true })
-  stream.requireDone()
-  return e
+  return exprFull(stream)
 }
