@@ -23,9 +23,12 @@ import {
   AStarStar,
   ATilde,
   KElse,
+  KFn,
   KFor,
   KIf,
   KIn,
+  KSource,
+  KType,
   OAmp,
   OAmpAmp,
   OAt,
@@ -42,6 +45,7 @@ import {
   OLBrace,
   OLBrack,
   OLe,
+  OLInterp,
   OLParen,
   OLt,
   OMinus,
@@ -57,6 +61,7 @@ import {
   TFloat,
   TIdent,
   TInt,
+  TSource,
   TSym,
   type Brack,
 } from "./kind"
@@ -221,7 +226,7 @@ function exprAtom(stream: Stream, ctx: ExprContext): Expr {
 
     case OLParen: {
       const token = stream.matchGroup(OLParen)!
-      return new ExprParen(token, exprFull(token.contents))
+      return new ExprParen(token, token.contents.full(expr))
     }
 
     case OLBrack: {
@@ -237,6 +242,9 @@ function exprAtom(stream: Stream, ctx: ExprContext): Expr {
 
     case KFor:
       return exprFor(stream)!
+
+    case KSource:
+      return source(stream)!
   }
 
   stream.issue(Code.ExpectedExpression, stream.loc(), stream.loc())
@@ -274,14 +282,14 @@ export class ExprIndex extends Expr {
 }
 
 function exprPropChain(stream: Stream, ctx: ExprContext) {
-  let expr = exprAtom(stream, ctx)
+  let exp = exprAtom(stream, ctx)
 
   loop: while (true) {
     switch (stream.peek()) {
       case OLParen:
         const m = fnArguments(stream)
         if (m) {
-          expr = new ExprCall(expr, m)
+          exp = new ExprCall(exp, m)
           continue
         } else {
           break loop
@@ -289,12 +297,12 @@ function exprPropChain(stream: Stream, ctx: ExprContext) {
 
       case OLBrack:
         const n = stream.matchGroup(OLBrack)!
-        expr = new ExprIndex(expr, n, exprFull(n.contents))
+        exp = new ExprIndex(exp, n, n.contents.full(expr))
         continue
 
       case ODot:
-        expr = new ExprProp(
-          expr,
+        exp = new ExprProp(
+          exp,
           stream.match(ODot)!,
           stream.match(TIdent),
           fnArguments(stream),
@@ -305,7 +313,7 @@ function exprPropChain(stream: Stream, ctx: ExprContext) {
     break
   }
 
-  return expr
+  return exp
 }
 
 type ExprUnaryOp =
@@ -497,12 +505,6 @@ function expr(stream: Stream, ctx: ExprContext = { struct: true }) {
   return exprBinaryOp(stream, ctx)
 }
 
-function exprFull(stream: Stream) {
-  const e = expr(stream, { struct: true })
-  stream.requireDone()
-  return e
-}
-
 export class PlainList<T extends Print> extends Node {
   constructor(
     readonly items: T[],
@@ -538,7 +540,7 @@ function createUnbracketedCommaOp<T extends Print & { end: number }>(
   }
 }
 
-export class List<T extends Node> extends Node {
+export class List<T extends Print> extends Node {
   constructor(
     readonly bracket: TokenGroup,
     readonly items: T[],
@@ -547,9 +549,9 @@ export class List<T extends Node> extends Node {
   }
 }
 
-function createCommaOp<T extends Node>(
+function createCommaOp<T extends Print>(
   bracket: Brack,
-  fn: (stream: Stream) => T,
+  fn: (stream: Stream) => T | null,
 ) {
   return (stream: Stream) => {
     const group = stream.matchGroup(bracket)
@@ -558,10 +560,19 @@ function createCommaOp<T extends Node>(
     const list = new List<T>(group, [])
     if (!group.contents.isEmpty()) {
       const first = fn(group.contents)
+      if (!first) {
+        group.contents.requireDone()
+        return list
+      }
       list.items.push(first)
 
       while (group.contents.match(OComma)) {
-        list.items.push(fn(group.contents))
+        const val = fn(group.contents)
+        if (!val) {
+          group.contents.requireDone()
+          return list
+        }
+        list.items.push(val)
       }
 
       group.contents.match(OComma)
@@ -601,6 +612,138 @@ function block(stream: Stream) {
   return new Block(group, list)
 }
 
+export class Source extends Expr {
+  constructor(
+    readonly kw: Token<typeof KSource>,
+    readonly lang: Ident | null,
+    readonly braces: TokenGroup<typeof OLBrace> | null,
+    readonly parts: Token<typeof TSource>[],
+    readonly interps: SourceInterp[],
+    readonly alt: Source | null,
+  ) {
+    super(kw.start, (alt ?? braces ?? lang ?? kw).end)
+  }
+}
+
+export class SourceInterp extends Expr {
+  constructor(
+    readonly bracket: TokenGroup<typeof OLInterp>,
+    readonly of: Expr,
+  ) {
+    super(bracket.start, bracket.end)
+  }
+}
+
+function source(stream: Stream): Source | null {
+  const kw = stream.match(KSource)
+  if (!kw) return null
+
+  const lang = stream.match(TIdent)
+
+  const brace = stream.matchGroup(OLBrace)
+  const parts = []
+  const interps = []
+  contents: if (brace) {
+    const firstSource = brace.contents.match(TSource)
+    if (firstSource) {
+      parts.push(firstSource)
+    } else break contents
+
+    let m
+    while ((m = brace.contents.matchGroup(OLInterp))) {
+      interps.push(new SourceInterp(m, m.contents.full(expr)))
+      const nextSource = brace.contents.match(TSource)
+      if (nextSource) {
+        parts.push(nextSource)
+      } else break contents
+    }
+  }
+
+  return new Source(kw, lang, brace, parts, interps, source(stream))
+}
+
+export class Item extends Node {
+  declare private __brand_item
+}
+
+export class ItemType extends Item {
+  constructor(
+    readonly kw: Token<typeof KType>,
+    readonly ident: Ident | null,
+    readonly braces: TokenGroup<typeof OLBrace> | null,
+    readonly source: Source | null,
+  ) {
+    super(kw.start, (braces ?? ident ?? kw).end)
+  }
+}
+
+function itemType(stream: Stream) {
+  const kw = stream.match(KType)
+  if (!kw) return null
+
+  const ident = stream.match(TIdent)
+  const braces = stream.matchGroup(OLBrace)
+  const s = braces && braces.contents.full(source)
+
+  return new ItemType(kw, ident, braces, s)
+}
+
+export class ItemFn extends Item {
+  constructor(
+    readonly kw: Token<typeof KFn>,
+    readonly name: Ident | null,
+    readonly params: List<Ident> | null,
+    // readonly arrow: Token<typeof OArrowRet> | null,
+    // readonly retType:
+    readonly block: Block | null,
+  ) {
+    super(kw.start, (block ?? params ?? name ?? kw).end)
+  }
+}
+
+const fnParams = createCommaOp(OLParen, (s) => s.match(TIdent))
+
+function itemFn(stream: Stream) {
+  const kw = stream.match(KFn)
+  if (!kw) return null
+
+  return new ItemFn(kw, stream.match(TIdent), fnParams(stream), block(stream))
+}
+
+function item(stream: Stream): Item | null {
+  switch (stream.peek()) {
+    case KType:
+      return itemType(stream)!
+
+    case KFn:
+      return itemFn(stream)!
+  }
+
+  return null
+}
+
+export class Script extends Node {
+  constructor(
+    readonly items: Item[],
+    start: number,
+    end: number,
+  ) {
+    super(start, end)
+  }
+}
+
+function script(stream: Stream): Script {
+  const items = []
+
+  let m
+  while ((m = item(stream))) {
+    items.push(m)
+  }
+  stream.requireDone()
+
+  return new Script(items, stream.start, stream.end)
+}
+
 export function parse(stream: Stream) {
-  return exprFull(stream)
+  return script(stream)
 }

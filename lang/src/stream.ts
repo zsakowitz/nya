@@ -200,4 +200,10 @@ export class Stream {
   peek(): number | null {
     return this.next()?.kind ?? null
   }
+
+  full<T>(f: (stream: Stream) => T): T {
+    const val = f(this)
+    this.requireDone()
+    return val
+  }
 }
