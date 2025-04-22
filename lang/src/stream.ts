@@ -156,6 +156,13 @@ export class Stream {
     return this.tokens[this.index]
   }
 
+  issueOnNext(code: Code) {
+    const next = this.next()
+    this.issues.push(
+      new Issue(code, next?.start ?? this.end, next?.end ?? this.end),
+    )
+  }
+
   private accept() {
     this.index++
   }

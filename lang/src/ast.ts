@@ -21,6 +21,8 @@ import {
   AStar,
   AStarStar,
   ATilde,
+  KElse,
+  KIf,
   OAmp,
   OAmpAmp,
   OAt,
@@ -53,7 +55,7 @@ import {
   TSym,
   type Brack,
 } from "./kind"
-import { TokenGroup, type Stream } from "./stream"
+import { Stream, TokenGroup } from "./stream"
 import { Code, Token } from "./token"
 
 export abstract class Node {
@@ -122,6 +124,40 @@ export class ExprEmpty extends Expr {
   }
 }
 
+export class ExprIf extends Expr {
+  constructor(
+    readonly kwIf: Token<typeof KIf>,
+    readonly condition: Expr,
+    readonly blockIf: Block | null,
+    readonly kwElse: Token<typeof KElse> | null,
+    readonly blockElse: Block | ExprIf | null,
+  ) {
+    super(kwIf.start, blockIf?.end ?? condition.end)
+  }
+}
+
+export function exprIf(stream: Stream): ExprIf | null {
+  const kwIf = stream.match(KIf)
+  if (!kwIf) return null
+
+  const condition = expr(stream, { struct: false })
+  const blockIf = block(stream)
+
+  const kwElse = stream.match(KElse)
+  if (!kwElse) {
+    return new ExprIf(kwIf, condition, blockIf, null, null)
+  }
+
+  if (stream.peek() == KIf) {
+    return new ExprIf(kwIf, condition, blockIf, kwElse, exprIf(stream))
+  } else if (stream.peek() == OLBrace) {
+    return new ExprIf(kwIf, condition, blockIf, kwElse, block(stream))
+  } else {
+    stream.issueOnNext(Code.IfOrBlockMustFollowElse)
+    return new ExprIf(kwIf, condition, blockIf, null, null)
+  }
+}
+
 export class ExprParen extends Expr {
   constructor(
     readonly token: TokenGroup<typeof OLParen>,
@@ -147,6 +183,9 @@ function exprAtom(stream: Stream, ctx: ExprContext): Expr {
       const e = expr(token.contents, { struct: true })
       token.contents.requireDone()
       return new ExprParen(token, e)
+
+    case KIf:
+      return exprIf(stream)!
   }
 
   stream.issue(Code.ExpectedExpression, stream.loc(), stream.loc())
@@ -395,6 +434,24 @@ function createCommaOp<T extends Node>(
 
 const fnArguments = createCommaOp(OLParen, (s) => expr(s, { struct: true }))
 const structArguments = createCommaOp(OLBrace, (s) => expr(s, { struct: true }))
+
+export class Block extends Expr {
+  constructor(
+    readonly bracket: TokenGroup,
+    readonly of: Expr,
+  ) {
+    super(bracket.start, of.end)
+  }
+}
+
+function block(stream: Stream) {
+  const group = stream.matchGroup(OLBrace)
+  if (!group) return null
+
+  const of = expr(group.contents, { struct: true })
+  group.contents.requireDone()
+  return new Block(group, of)
+}
 
 export function parse(stream: Stream) {
   const e = expr(stream, { struct: true })

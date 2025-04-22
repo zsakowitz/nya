@@ -43,6 +43,7 @@ export const Code = Object.freeze({
   ExpectedIdentifier: 30,
   ExpectedExpression: 31,
   UnexpectedToken: 32,
+  IfOrBlockMustFollowElse: 33,
 })
 
 export type Code = (typeof Code)[keyof typeof Code]
