@@ -17,10 +17,32 @@ console.timeEnd("parse")
 if (stream.issues.length) {
   console.error("encountered some issue")
 }
+
+document.body.appendChild(
+  hx(
+    "pre",
+    "px-4 pt-4 text-xs",
+    JSON.stringify(
+      stream.issues.map((v) => ({
+        code: Object.entries(Code).find((x) => x[1] == v.code)?.[0],
+        start: v.start,
+        end: v.end,
+        of: stream.content(v),
+      })),
+      undefined,
+      2,
+    ),
+  ),
+)
+
+document.body.appendChild(
+  hx("hr", "border-[--nya-border] mx-4 my-4 border-0 border-t"),
+)
+
 const printed = print(stream, result)
 
 document.body.appendChild(
-  hx("pre", "px-4 pt-4 text-xs text-[--nya-text-prose]", printed),
+  hx("pre", "px-4 text-xs text-[--nya-text-prose]", printed),
 )
 
 document.body.appendChild(
@@ -43,30 +65,16 @@ function flat(x: Token<number>): string {
     )
   }
 
-  return source.slice(x.start, x.end) + `(${x.kind})`
+  return `${source.slice(x.start, x.end)}(${x.kind.toString()})`
 }
 
-document.body.appendChild(
-  hx("pre", "px-4 text-xs", stream.tokens.map(flat).join(" ")),
+const el = hx(
+  "pre",
+  "px-4 pb-4 text-xs whitespace-normal w-screen",
+  stream.tokens.map(flat).join(" "),
 )
-
-document.body.appendChild(
-  hx("hr", "border-[--nya-border] mx-4 my-4 border-0 border-t"),
+el.innerHTML = el.innerHTML.replace(
+  /\((\d+)\)/g,
+  `<sub class='opacity-30'>$1</sub>`,
 )
-
-document.body.appendChild(
-  hx(
-    "pre",
-    "px-4 text-xs",
-    JSON.stringify(
-      stream.issues.map((v) => ({
-        code: Object.entries(Code).find((x) => x[1] == v.code)?.[0],
-        start: v.start,
-        end: v.end,
-        of: stream.content(v),
-      })),
-      undefined,
-      2,
-    ),
-  ),
-)
+document.body.appendChild(el)
