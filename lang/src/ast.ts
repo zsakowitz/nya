@@ -421,11 +421,11 @@ function createCommaOp<T extends Node>(
       const first = fn(group.contents)
       list.items.push(first)
 
-      while (stream.match(OComma)) {
+      while (group.contents.match(OComma)) {
         list.items.push(fn(group.contents))
       }
 
-      stream.match(OComma)
+      group.contents.match(OComma)
     }
 
     return list

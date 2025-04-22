@@ -1,1 +1,7 @@
-if a { 3 } else if b { 5 + 7 } else { 98 }
+if is_zero(a.re) && a.re > 1.5 {
+  c32 { factorial_pos(a.re), 0.0 }
+} else if is_zero(a.im) {
+  optimized_imaginary_only_gamma(a.im)
+} else {
+  plain_gamma_approx(a.im)
+}
