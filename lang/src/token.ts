@@ -29,10 +29,6 @@ export class Token<T extends number> {
     readonly end: number,
     readonly virtual = false,
   ) {}
-
-  is<K extends T>(kind: K): this is Token<K> {
-    return this.kind == kind
-  }
 }
 
 export const Code = Object.freeze({

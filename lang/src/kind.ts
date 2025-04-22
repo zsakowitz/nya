@@ -72,44 +72,46 @@ export const AArrowMap = 65
 export const AColonColon = 66
 export const ADot = 67
 export const ADotDot = 68
-export const AEq = 69
+export const APercent = 69
+export const AEq = 70
 
 // operators not prefixed with @
-export const OPlus = 70
-export const OMinus = 71
-export const OStar = 72
-export const OSlash = 73
-export const OStarStar = 74
-export const OTilde = 75
-export const OBar = 76
-export const OAmp = 77
-export const OBarBar = 78
-export const OAmpAmp = 79
-export const OAt = 80
-export const OBackslash = 81
-export const OEqEq = 82
-export const ONe = 83
-export const OLe = 84
-export const OGe = 85
-export const OLt = 86
-export const OGt = 87
-export const OBang = 88
-export const OLParen = 89
-export const ORParen = 90
-export const OLBrack = 91
-export const ORBrack = 92
-export const OLBrace = 93
-export const ORBrace = 94
-export const OLInterp = 95
-export const OSemi = 96
-export const OComma = 97
-export const OColon = 98
-export const OArrowRet = 99
-export const OArrowMap = 100
-export const OColonColon = 101
-export const ODot = 102
-export const ODotDot = 103
-export const OEq = 104
+export const OPlus = 71
+export const OMinus = 72
+export const OStar = 73
+export const OSlash = 74
+export const OStarStar = 75
+export const OTilde = 76
+export const OBar = 77
+export const OAmp = 78
+export const OBarBar = 79
+export const OAmpAmp = 80
+export const OAt = 81
+export const OBackslash = 82
+export const OEqEq = 83
+export const ONe = 84
+export const OLe = 85
+export const OGe = 86
+export const OLt = 87
+export const OGt = 88
+export const OBang = 89
+export const OLParen = 90
+export const ORParen = 91
+export const OLBrack = 92
+export const ORBrack = 93
+export const OLBrace = 94
+export const ORBrace = 95
+export const OLInterp = 96
+export const OSemi = 97
+export const OComma = 98
+export const OColon = 99
+export const OArrowRet = 100
+export const OArrowMap = 101
+export const OColonColon = 102
+export const ODot = 103
+export const ODotDot = 104
+export const OPercent = 105
+export const OEq = 106
 
 export type KindL =
   | typeof OLParen
@@ -180,6 +182,7 @@ export const APS: Record<string, number> = {
   "::": AColonColon,
   ".": ADot,
   "..": ADotDot,
+  "%": APercent,
   "=": AEq,
 }
 
@@ -218,6 +221,7 @@ export const OPS: Record<string, number> = {
   "::": OColonColon,
   ".": ODot,
   "..": ODotDot,
+  "%": OPercent,
   "=": OEq,
 }
 

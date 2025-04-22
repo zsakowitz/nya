@@ -1,11 +1,47 @@
 import type { Print } from "./ast-print"
 import { createGroups } from "./group"
 import {
+  AAmp,
+  AAmpAmp,
+  AAt,
+  ABackslash,
   ABang,
+  ABar,
+  ABarBar,
+  ADotDot,
+  AEqEq,
+  AGe,
+  AGt,
+  ALe,
+  ALt,
   AMinus,
+  ANe,
+  APercent,
+  APlus,
+  ASlash,
+  AStar,
+  AStarStar,
   ATilde,
+  OAmp,
+  OAmpAmp,
+  OAt,
+  OBackslash,
   OBang,
+  OBar,
+  OBarBar,
+  ODotDot,
+  OEqEq,
+  OGe,
+  OGt,
+  OLe,
+  OLt,
   OMinus,
+  ONe,
+  OPercent,
+  OPlus,
+  OSlash,
+  OStar,
+  OStarStar,
   OTilde,
   TBuiltin,
   TFloat,
@@ -43,7 +79,17 @@ export class Stream {
 
   match<K extends number>(k: K): Token<K> | null {
     const next = this.tokens[this.tokens.length - 1]
-    if (next?.is(k)) {
+    if (next && next.kind == k) {
+      this.tokens.pop()
+      return next as Token<K>
+    } else {
+      return null
+    }
+  }
+
+  matchAny<const K extends readonly number[]>(k: K): Token<K[number]> | null {
+    const next = this.tokens[this.tokens.length - 1]
+    if (next && k.includes(next.kind)) {
       this.tokens.pop()
       return next
     } else {
@@ -93,7 +139,7 @@ function exprVar(stream: Stream) {
   if (token) return new ExprVar(token)
 }
 
-export class ExprInvalid extends Expr {
+export class ExprEmpty extends Expr {
   constructor(readonly at: number) {
     super(at, at)
   }
@@ -112,23 +158,24 @@ function exprAtom(stream: Stream): Expr {
   }
 
   stream.issue(Code.ExpectedExpression, stream.loc(), stream.loc())
-  return new ExprInvalid(stream.loc())
+  return new ExprEmpty(stream.loc())
 }
 
 function exprPropChain(stream: Stream) {
   return exprAtom(stream)
 }
 
+type ExprUnaryOp =
+  | typeof OMinus
+  | typeof AMinus
+  | typeof OTilde
+  | typeof ATilde
+  | typeof OBang
+  | typeof ABang
+
 export class ExprUnary extends Expr {
   constructor(
-    readonly op: Token<
-      | typeof OMinus
-      | typeof AMinus
-      | typeof OTilde
-      | typeof ATilde
-      | typeof OBang
-      | typeof ABang
-    >,
+    readonly op: Token<ExprUnaryOp>,
     readonly of: Expr,
   ) {
     super(op.start, of.end)
@@ -157,6 +204,120 @@ function exprUnary(stream: Stream): Expr {
   return expr
 }
 
+type ExprBinaryOp =
+  | typeof OPlus
+  | typeof OMinus
+  | typeof OStar
+  | typeof OSlash
+  | typeof OStarStar
+  | typeof OBar
+  | typeof OAmp
+  | typeof OBarBar
+  | typeof OAmpAmp
+  | typeof OAt
+  | typeof OBackslash
+  | typeof OEqEq
+  | typeof ONe
+  | typeof OLe
+  | typeof OGe
+  | typeof OLt
+  | typeof OGt
+  | typeof ODotDot
+  | typeof APlus
+  | typeof AMinus
+  | typeof AStar
+  | typeof ASlash
+  | typeof AStarStar
+  | typeof ABar
+  | typeof AAmp
+  | typeof ABarBar
+  | typeof AAmpAmp
+  | typeof AAt
+  | typeof ABackslash
+  | typeof AEqEq
+  | typeof ANe
+  | typeof ALe
+  | typeof AGe
+  | typeof ALt
+  | typeof AGt
+  | typeof ADotDot
+  | typeof OPercent
+  | typeof APercent
+
+export class ExprBinary extends Expr {
+  constructor(
+    readonly lhs: Expr,
+    readonly op: Token<ExprBinaryOp>,
+    readonly rhs: Expr,
+  ) {
+    super(lhs.start, rhs.end)
+  }
+}
+
+function exprBinarySingle(
+  permitted: ExprBinaryOp[],
+  side: (stream: Stream) => Expr,
+) {
+  return (stream: Stream): Expr => {
+    const lhs = side(stream)
+    const op = stream.matchAny(permitted)
+    if (op) {
+      const rhs = side(stream)
+      return new ExprBinary(lhs, op, rhs)
+    } else {
+      return lhs
+    }
+  }
+}
+
+function exprBinaryAssocL(
+  permitted: ExprBinaryOp[],
+  side: (stream: Stream) => Expr,
+) {
+  return (stream: Stream): Expr => {
+    let expr = side(stream)
+    let op
+    while ((op = stream.matchAny(permitted)))
+      expr = new ExprBinary(expr, op, side(stream))
+    return expr
+  }
+}
+
+const exprBinaryOp = exprBinaryAssocL(
+  [OBarBar, ABarBar],
+  exprBinaryAssocL(
+    [OAmpAmp, AAmpAmp],
+    exprBinarySingle(
+      [OEqEq, ONe, OLt, OGt, OLe, OGe, AEqEq, ANe, ALt, AGt, ALe, AGe],
+      exprBinaryAssocL(
+        [OBar, ABar],
+        exprBinaryAssocL(
+          [OAmp, AAmp],
+          exprBinaryAssocL(
+            [OPlus, OMinus, OPercent, APlus, AMinus, APercent],
+            exprBinaryAssocL(
+              [OStar, OSlash, AStar, ASlash],
+              exprBinarySingle(
+                // easier to ban multiple exponentiation
+                [OStarStar, AStarStar],
+                exprBinarySingle(
+                  // multiple ranges don't make sense
+                  [ODotDot, ADotDot],
+                  exprBinarySingle(
+                    // backslash will be for fractions
+                    [OBackslash, ABackslash],
+                    exprUnary,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
+  ),
+)
+
 export function parse(stream: Stream) {
-  return exprUnary(stream)
+  return exprBinaryOp(stream)
 }
