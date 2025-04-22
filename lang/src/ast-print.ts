@@ -24,7 +24,7 @@ function tag(prefix: Element, text: Element, suffix: string, level: number) {
     prefix.innerHTML = prefix.innerHTML.trimEnd()
     text.innerHTML = text.innerHTML.replace(
       /\n/g,
-      `\n<span class='${bg[level % bg.length]} relative'>  <span class='block absolute h-[calc(100%_+_0.5ch)] -top-[0.5ch] left-0 border-l border-inherit'>  </span></span>`,
+      `\n<span class='${bg[level % bg.length]} relative'>  <span class='block absolute h-[calc(100%_+_0.5ch)] -top-[0.5ch] left-0 border-l border-inherit'></span></span>`,
     )
     return h(
       "nya-ast-group",
