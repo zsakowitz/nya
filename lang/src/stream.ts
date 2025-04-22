@@ -9,11 +9,11 @@ import {
   ORBrace,
   ORBrack,
   ORParen,
-  type KindL,
+  type Brack,
 } from "./kind"
 import { Code, Issue, Token, tokens, type ToTokensProps } from "./token"
 
-export class TokenGroup<K extends KindL = KindL> extends Token<K> {
+export class TokenGroup<K extends Brack = Brack> extends Token<K> {
   constructor(
     readonly lt: Token<K>,
     readonly gt: Token<number>,
@@ -47,7 +47,7 @@ export function createStream(source: string, props: ToTokensProps) {
       case OLBrace:
       case OLInterp:
         const group = new TokenGroup(
-          token as Token<KindL>,
+          token as Token<Brack>,
           new Token(MATCHING_PAREN[token.kind], token.start, token.start),
           new Stream(source, [], issues, token.start, token.start),
         )
@@ -163,6 +163,17 @@ export class Stream {
     return this.source.slice(token.start, token.end)
   }
 
+  isEmpty() {
+    return this.tokens.length == 0
+  }
+
+  requireEmpty() {
+    const token = this.tokens[this.tokens.length - 1]
+    if (token) {
+      this.issue(Code.UnexpectedToken, token.start, token.end)
+    }
+  }
+
   match<K extends number>(k: K): Token<K> | null {
     const next = this.tokens[this.tokens.length - 1]
     if (next && next.kind == k) {
@@ -173,7 +184,7 @@ export class Stream {
     }
   }
 
-  matchGroup<K extends KindL>(k: K): TokenGroup<K> | null {
+  matchGroup<K extends Brack>(k: K): TokenGroup<K> | null {
     const next = this.tokens[this.tokens.length - 1]
     if (next && next instanceof TokenGroup && next.kind == k) {
       this.tokens.pop()

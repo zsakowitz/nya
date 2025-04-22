@@ -28,6 +28,7 @@ import {
   OBang,
   OBar,
   OBarBar,
+  OComma,
   ODotDot,
   OEqEq,
   OGe,
@@ -48,6 +49,7 @@ import {
   TIdent,
   TInt,
   TSym,
+  type Brack,
 } from "./kind"
 import { TokenGroup, type Stream } from "./stream"
 import { Code, Token } from "./token"
@@ -124,8 +126,24 @@ function exprAtom(stream: Stream): Expr {
   return new ExprEmpty(stream.loc())
 }
 
+export class ExprCall extends Expr {
+  constructor(
+    readonly on: Expr,
+    readonly args: List<Expr>,
+  ) {
+    super(on.start, args.end)
+  }
+}
+
 function exprPropChain(stream: Stream) {
-  return exprAtom(stream)
+  let expr = exprAtom(stream)
+
+  let m
+  while ((m = fnArguments(stream)!)) {
+    expr = new ExprCall(expr, m)
+  }
+
+  return expr
 }
 
 type ExprUnaryOp =
@@ -217,7 +235,7 @@ export class ExprBinary extends Expr {
   }
 }
 
-function exprBinarySingle(
+function createBinOp1(
   permitted: ExprBinaryOp[],
   side: (stream: Stream) => Expr,
 ) {
@@ -233,7 +251,7 @@ function exprBinarySingle(
   }
 }
 
-function exprBinaryAssocL(
+function createBinOpL(
   permitted: ExprBinaryOp[],
   side: (stream: Stream) => Expr,
 ) {
@@ -246,27 +264,27 @@ function exprBinaryAssocL(
   }
 }
 
-const exprBinaryOp = exprBinaryAssocL(
+const exprBinaryOp = createBinOpL(
   [OBarBar, ABarBar],
-  exprBinaryAssocL(
+  createBinOpL(
     [OAmpAmp, AAmpAmp],
-    exprBinarySingle(
+    createBinOp1(
       [OEqEq, ONe, OLt, OGt, OLe, OGe, AEqEq, ANe, ALt, AGt, ALe, AGe],
-      exprBinaryAssocL(
+      createBinOpL(
         [OBar, ABar],
-        exprBinaryAssocL(
+        createBinOpL(
           [OAmp, AAmp],
-          exprBinaryAssocL(
+          createBinOpL(
             [OPlus, OMinus, OPercent, APlus, AMinus, APercent],
-            exprBinaryAssocL(
+            createBinOpL(
               [OStar, OSlash, AStar, ASlash],
-              exprBinarySingle(
+              createBinOp1(
                 // easier to ban multiple exponentiation
                 [OStarStar, AStarStar],
-                exprBinarySingle(
+                createBinOp1(
                   // multiple ranges don't make sense
                   [ODotDot, ADotDot],
-                  exprBinarySingle(
+                  createBinOp1(
                     // backslash will be for fractions
                     [OBackslash, ABackslash],
                     exprUnary,
@@ -284,6 +302,41 @@ const exprBinaryOp = exprBinaryAssocL(
 function expr(stream: Stream) {
   return exprBinaryOp(stream)
 }
+
+export class List<T extends Node> extends Node {
+  constructor(
+    readonly bracket: TokenGroup,
+    readonly items: T[],
+  ) {
+    super(bracket.start, bracket.end)
+  }
+}
+
+function createCommaOp<T extends Node>(
+  bracket: Brack,
+  fn: (stream: Stream) => T,
+) {
+  return (stream: Stream) => {
+    const group = stream.matchGroup(bracket)
+    if (!group) return null
+
+    const list = new List<T>(group, [])
+    if (!group.contents.isEmpty()) {
+      const first = fn(group.contents)
+      list.items.push(first)
+
+      while (stream.match(OComma)) {
+        list.items.push(fn(group.contents))
+      }
+
+      stream.match(OComma)
+    }
+
+    return list
+  }
+}
+
+const fnArguments = createCommaOp(OLParen, expr)
 
 export function parse(stream: Stream) {
   return expr(stream)

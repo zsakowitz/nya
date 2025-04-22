@@ -42,6 +42,7 @@ export const Code = Object.freeze({
   MismatchedOpeningParen: 29,
   ExpectedIdentifier: 30,
   ExpectedExpression: 31,
+  UnexpectedToken: 32,
 })
 
 export type Code = (typeof Code)[keyof typeof Code]

@@ -113,7 +113,7 @@ export const ODotDot = 104
 export const OPercent = 105
 export const OEq = 106
 
-export type KindL =
+export type Brack =
   | typeof OLParen
   | typeof OLBrack
   | typeof OLBrace
@@ -225,7 +225,7 @@ export const OPS: Record<string, number> = {
   "=": OEq,
 }
 
-export const MATCHING_PAREN: Record<KindL, number> = {
+export const MATCHING_PAREN: Record<Brack, number> = {
   [OLParen]: ORParen,
   [OLBrack]: ORBrack,
   [OLBrace]: ORBrace,
