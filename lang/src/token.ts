@@ -42,9 +42,10 @@ export const Code = Object.freeze({
   UnterminatedString: 23,
   UnterminatedSource: 25,
   UnknownOperator: 24,
-  ExpectedIdentifier: 30,
   MismatchedClosingParen: 28,
   MismatchedOpeningParen: 29,
+  ExpectedIdentifier: 30,
+  ExpectedExpression: 31,
 })
 
 export type Code = (typeof Code)[keyof typeof Code]

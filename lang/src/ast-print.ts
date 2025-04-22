@@ -11,25 +11,29 @@ export type Print =
   | undefined
   | number
 
-export function tag(prefix: string, text: string, suffix: string) {
-  if (text.includes("\n") || text.length > 80) {
-    return `${prefix}\n  ${text.replace(/\n/g, "\n  ")}\n${suffix}`
+function tag(prefix: string, text: string, suffix: string, maxLen: number) {
+  if (text.includes("\n") || text.length > maxLen) {
+    return `${prefix.trimEnd()}\n  ${text.replace(/\n/g, "\n  ")}\n${suffix.trimStart()}`
   } else {
     return prefix + text + suffix
   }
 }
 
-export function list(items: string[]) {
-  if (items.join(", ").length > 80) {
+function list(items: string[], maxLen: number) {
+  if (items.join(", ").length > maxLen) {
     return items.join(",\n")
   } else {
     return items.join(", ")
   }
 }
 
-export function print(stream: Stream, a: Print): string {
+export function print(stream: Stream, a: Print, level = 0): string {
   if (a == null) {
     return "null"
+  }
+
+  if (typeof a == "number") {
+    return a.toString()
   }
 
   if (a instanceof Token) {
@@ -43,8 +47,10 @@ export function print(stream: Stream, a: Print): string {
     list(
       Object.entries(a)
         .filter(([k]) => k != "start" && k != "end")
-        .map(([k, v]) => `${k}: ${print(stream, v)}`),
+        .map(([k, v]) => `${k}: ${print(stream, v, level + 1)}`),
+      80 - 2 * level,
     ),
     " }",
+    80 - 2 * level,
   )
 }
