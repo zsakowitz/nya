@@ -1,5 +1,5 @@
 import type { Stream } from "./ast"
-import { TokenGroup } from "./group"
+import { TokenGroup } from "./stream"
 import * as Kind from "./kind"
 import { Token } from "./token"
 

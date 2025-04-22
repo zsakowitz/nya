@@ -1,5 +1,4 @@
 import type { Print } from "./ast-print"
-import { createGroups } from "./group"
 import {
   AAmp,
   AAmpAmp,
@@ -34,6 +33,7 @@ import {
   OGe,
   OGt,
   OLe,
+  OLParen,
   OLt,
   OMinus,
   ONe,
@@ -49,58 +49,8 @@ import {
   TInt,
   TSym,
 } from "./kind"
-import { Code, Issue, Token, tokens, type ToTokensProps } from "./token"
-
-export function parseToStream(source: string, props: ToTokensProps) {
-  const { issues, ret: raw } = tokens(source, props)
-  const ret = createGroups(raw, issues)
-  ret.reverse()
-  return new Stream(source, ret, issues)
-}
-
-export class Stream {
-  constructor(
-    readonly source: string,
-    readonly tokens: Token<number>[],
-    readonly issues: Issue[],
-  ) {}
-
-  loc() {
-    return this.tokens[this.tokens.length - 1]?.start ?? this.source.length
-  }
-
-  issue(code: Code, start: number, end: number) {
-    this.issues.push(new Issue(code, start, end))
-  }
-
-  content(token: { start: number; end: number }) {
-    return this.source.slice(token.start, token.end)
-  }
-
-  match<K extends number>(k: K): Token<K> | null {
-    const next = this.tokens[this.tokens.length - 1]
-    if (next && next.kind == k) {
-      this.tokens.pop()
-      return next as Token<K>
-    } else {
-      return null
-    }
-  }
-
-  matchAny<const K extends readonly number[]>(k: K): Token<K[number]> | null {
-    const next = this.tokens[this.tokens.length - 1]
-    if (next && k.includes(next.kind)) {
-      this.tokens.pop()
-      return next
-    } else {
-      return null
-    }
-  }
-
-  peek(): number | null {
-    return this.tokens[this.tokens.length - 1]?.kind ?? null
-  }
-}
+import { TokenGroup, type Stream } from "./stream"
+import { Code, Token } from "./token"
 
 export abstract class Node {
   constructor(
@@ -145,6 +95,15 @@ export class ExprEmpty extends Expr {
   }
 }
 
+export class ExprParen extends Expr {
+  constructor(
+    readonly token: TokenGroup<typeof OLParen>,
+    readonly of: Expr,
+  ) {
+    super(token.start, token.end)
+  }
+}
+
 function exprAtom(stream: Stream): Expr {
   switch (stream.peek()) {
     case TFloat:
@@ -155,6 +114,10 @@ function exprAtom(stream: Stream): Expr {
     case TIdent:
     case TBuiltin:
       return exprVar(stream)!
+
+    case OLParen:
+      const token = stream.matchGroup(OLParen)!
+      return new ExprParen(token, expr(token.contents))
   }
 
   stream.issue(Code.ExpectedExpression, stream.loc(), stream.loc())
@@ -318,6 +281,10 @@ const exprBinaryOp = exprBinaryAssocL(
   ),
 )
 
-export function parse(stream: Stream) {
+function expr(stream: Stream) {
   return exprBinaryOp(stream)
+}
+
+export function parse(stream: Stream) {
+  return expr(stream)
 }

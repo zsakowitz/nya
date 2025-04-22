@@ -1,8 +1,7 @@
 import { h, hx } from "@/jsx"
 import source from "../examples/test.nya"
-import { parse, parseToStream } from "./ast"
+import { parse } from "./ast"
 import { print } from "./ast-print"
-import { TokenGroup } from "./group"
 import {
   AEq,
   APlus,
@@ -21,6 +20,7 @@ import {
   TString,
   TSym,
 } from "./kind"
+import { createStream, TokenGroup } from "./stream"
 import { Code, Issue, Token, tokens } from "./token"
 
 function color(kind: number) {
@@ -57,7 +57,7 @@ function color(kind: number) {
   return ""
 }
 
-const stream1 = parseToStream(source, { comments: false })
+const stream1 = createStream(source, { comments: false })
 const result = parse(stream1)
 const printed = print(stream1, result)
 
@@ -66,7 +66,7 @@ document.body.appendChild(
   hx("hr", "border-[--nya-border] mx-4 my-4 border-0 border-t"),
 )
 
-const stream = parseToStream(source, { comments: false })
+const stream = createStream(source, { comments: false })
 
 document.body.appendChild(
   hx(

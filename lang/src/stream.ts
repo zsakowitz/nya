@@ -11,23 +11,26 @@ import {
   ORParen,
   type KindL,
 } from "./kind"
-import { Code, Issue, Token } from "./token"
+import { Code, Issue, Token, tokens, type ToTokensProps } from "./token"
 
 export class TokenGroup<K extends KindL = KindL> extends Token<K> {
   constructor(
     readonly lt: Token<K>,
     readonly gt: Token<number>,
-    readonly contents: Token<number>[],
+    readonly contents: Stream,
   ) {
     super(lt.kind, lt.start, gt.end)
   }
 }
 
 type TokenGroupMut = {
-  -readonly [K in keyof TokenGroup]: TokenGroup[K]
-}
+  -readonly [K in keyof TokenGroup as K extends "contents" ? never
+  : K]: TokenGroup[K]
+} & { readonly contents: { -readonly [K in keyof Stream]: Stream[K] } }
 
-export function createGroups(raw: Token<number>[], issues: Issue[]) {
+export function createStream(source: string, props: ToTokensProps) {
+  const { issues, ret: raw } = tokens(source, props)
+
   const parens: TokenGroup[] = []
   const root: Token<number>[] = []
   let currentContents: Token<number>[] = root
@@ -45,12 +48,12 @@ export function createGroups(raw: Token<number>[], issues: Issue[]) {
       case OLInterp:
         const group = new TokenGroup(
           token as Token<KindL>,
-          new Token(MATCHING_PAREN[token.kind], 0, 0),
-          [],
+          new Token(MATCHING_PAREN[token.kind], token.start, token.start),
+          new Stream(source, [], issues, token.start, token.start),
         )
         parens.push(group)
         currentContents.push(group)
-        currentContents = group.contents
+        currentContents = group.contents.tokens
         continue
 
       // @ts-expect-error intentional fallthrough
@@ -89,11 +92,12 @@ export function createGroups(raw: Token<number>[], issues: Issue[]) {
             true,
           )
           ;(current as TokenGroupMut).end = token.start
+          ;(current as TokenGroupMut).contents.end = token.end
 
           while (true) {
             parens.pop()
             const current = parens[parens.length - 1]
-            currentContents = current?.contents ?? root
+            currentContents = current?.contents.tokens ?? root
             if (!current) {
               continue main
             }
@@ -107,6 +111,7 @@ export function createGroups(raw: Token<number>[], issues: Issue[]) {
             if (MATCHING_PAREN[current.kind] == token.kind) {
               ;(current as TokenGroupMut).gt = token
               ;(current as TokenGroupMut).end = token.end
+              ;(current as TokenGroupMut).contents.end = token.end
               continue main
             }
             ;(current as TokenGroupMut).gt = new Token(
@@ -116,20 +121,79 @@ export function createGroups(raw: Token<number>[], issues: Issue[]) {
               true,
             )
             ;(current as TokenGroupMut).end = token.start
+            ;(current as TokenGroupMut).contents.end = token.start
           }
         }
 
         ;(current as TokenGroupMut).gt = token
         ;(current as TokenGroupMut).end = token.end
+        ;(current as TokenGroupMut).contents.end = token.end
         parens.pop()
-        currentContents = parens[parens.length - 1]?.contents ?? root
+        currentContents = parens[parens.length - 1]?.contents.tokens ?? root
         continue
     }
 
     currentContents.push(token)
   }
 
-  // check for remaining parens
+  // FIXME: check for remaining parens
 
-  return root
+  root.reverse()
+  return new Stream(source, root, issues, 0, source.length)
+}
+
+export class Stream {
+  constructor(
+    readonly source: string,
+    readonly tokens: Token<number>[],
+    readonly issues: Issue[],
+    readonly start: number,
+    readonly end: number,
+  ) {}
+
+  loc() {
+    return this.tokens[this.tokens.length - 1]?.start ?? this.end
+  }
+
+  issue(code: Code, start: number, end: number) {
+    this.issues.push(new Issue(code, start, end))
+  }
+
+  content(token: { start: number; end: number }) {
+    return this.source.slice(token.start, token.end)
+  }
+
+  match<K extends number>(k: K): Token<K> | null {
+    const next = this.tokens[this.tokens.length - 1]
+    if (next && next.kind == k) {
+      this.tokens.pop()
+      return next as Token<K>
+    } else {
+      return null
+    }
+  }
+
+  matchGroup<K extends KindL>(k: K): TokenGroup<K> | null {
+    const next = this.tokens[this.tokens.length - 1]
+    if (next && next instanceof TokenGroup && next.kind == k) {
+      this.tokens.pop()
+      return next as TokenGroup<K>
+    } else {
+      return null
+    }
+  }
+
+  matchAny<const K extends readonly number[]>(k: K): Token<K[number]> | null {
+    const next = this.tokens[this.tokens.length - 1]
+    if (next && k.includes(next.kind)) {
+      this.tokens.pop()
+      return next
+    } else {
+      return null
+    }
+  }
+
+  peek(): number | null {
+    return this.tokens[this.tokens.length - 1]?.kind ?? null
+  }
 }
