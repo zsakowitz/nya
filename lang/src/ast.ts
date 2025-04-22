@@ -3,6 +3,7 @@ import type { Print } from "./ast-print"
 import {
   AAmp,
   AAmpAmp,
+  AArrowRet,
   AAt,
   ABackslash,
   ABang,
@@ -31,6 +32,7 @@ import {
   KType,
   OAmp,
   OAmpAmp,
+  OArrowRet,
   OAt,
   OBackslash,
   OBang,
@@ -64,6 +66,7 @@ import {
   TSource,
   TSym,
   type Brack,
+  type OColonColon,
 } from "./kind"
 import { Stream, TokenGroup } from "./stream"
 import { Code, Token } from "./token"
@@ -79,6 +82,10 @@ export abstract class Node {
 
 export abstract class Expr extends Node {
   declare private _exprbrand
+}
+
+export abstract class Type extends Node {
+  declare private __brand_type
 }
 
 export class ExprLit extends Expr {
@@ -394,6 +401,8 @@ type ExprBinaryOp =
   | typeof ADotDot
   | typeof OPercent
   | typeof APercent
+  | typeof OArrowRet
+  | typeof AArrowRet
 
 export class ExprBinary extends Expr {
   constructor(
@@ -449,15 +458,12 @@ const exprBinaryOp = createBinOpL(
             createBinOpL(
               [OStar, OSlash, AStar, ASlash],
               createBinOp1(
-                // easier to ban multiple exponentiation
                 [OStarStar, AStarStar],
                 createBinOp1(
-                  // multiple ranges don't make sense
                   [ODotDot, ADotDot],
-                  createBinOp1(
-                    // backslash will be for fractions
-                    [OBackslash, ABackslash],
-                    exprUnary,
+                  createBinOpL(
+                    [OArrowRet, AArrowRet], // typecast operator
+                    createBinOp1([OBackslash, ABackslash], exprUnary),
                   ),
                 ),
               ),
@@ -469,7 +475,7 @@ const exprBinaryOp = createBinOpL(
   ),
 )
 
-export class Stmt extends Node {
+export abstract class Stmt extends Node {
   declare private __brand_stmt
 }
 
@@ -612,16 +618,26 @@ function block(stream: Stream) {
   return new Block(group, list)
 }
 
-export class Source extends Expr {
+export class SourceSingle extends Expr {
   constructor(
     readonly kw: Token<typeof KSource>,
     readonly lang: Ident | null,
     readonly braces: TokenGroup<typeof OLBrace> | null,
     readonly parts: Token<typeof TSource>[],
     readonly interps: SourceInterp[],
-    readonly alt: Source | null,
   ) {
-    super(kw.start, (alt ?? braces ?? lang ?? kw).end)
+    super(kw.start, (braces ?? lang ?? kw).end)
+  }
+}
+
+export class Source extends Expr {
+  constructor(
+    start: number,
+    end: number,
+    readonly parts: SourceSingle[],
+    readonly castOp: Token<typeof OColonColon> | null,
+  ) {
+    super(start, end)
   }
 }
 
@@ -634,7 +650,7 @@ export class SourceInterp extends Expr {
   }
 }
 
-function source(stream: Stream): Source | null {
+function sourceSingle(stream: Stream): SourceSingle | null {
   const kw = stream.match(KSource)
   if (!kw) return null
 
@@ -659,10 +675,23 @@ function source(stream: Stream): Source | null {
     }
   }
 
-  return new Source(kw, lang, brace, parts, interps, source(stream))
+  return new SourceSingle(kw, lang, brace, parts, interps)
 }
 
-export class Item extends Node {
+function source(stream: Stream): Source | null {
+  const parts = []
+  let m
+  while ((m = sourceSingle(stream))) {
+    parts.push(m)
+  }
+  if (!parts.length) {
+    return null
+  }
+
+  return new Source(parts[0]!.start, parts[parts.length - 1]!.end, parts, null)
+}
+
+export abstract class Item extends Node {
   declare private __brand_item
 }
 
