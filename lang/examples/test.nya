@@ -4,4 +4,9 @@ if true {
   c(a).b(c).re + { 2 + 3 }
 } else if false {
   [2, 3, 89][78](78)
+} else {
+  7 + 8;
+  for a, c in b, d {
+    2 + 3
+  }
 }

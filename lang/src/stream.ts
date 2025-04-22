@@ -155,6 +155,10 @@ export class Stream {
     return this.tokens.length == 0
   }
 
+  isDone() {
+    return this.index >= this.tokens.length
+  }
+
   requireDone() {
     const token = this.next()
     if (token) {

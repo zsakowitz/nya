@@ -1,6 +1,6 @@
 import { h } from "@/jsx"
 import * as Kind from "./kind"
-import { TokenGroup, type Stream } from "./stream"
+import { Stream, TokenGroup } from "./stream"
 import { Token } from "./token"
 
 export type Print =
@@ -10,6 +10,7 @@ export type Print =
   | null
   | undefined
   | number
+  | boolean
   | Print[]
 
 const bg = [
@@ -49,8 +50,8 @@ function list(items: Element[], maxLen: number): Element {
 }
 
 export function print(stream: Stream, a: Print, level = 0): Element {
-  if (a == null) {
-    return h("text-slate-500", "null")
+  if (a == null || typeof a == "boolean") {
+    return h("text-slate-500", "" + a)
   }
 
   if (typeof a == "number") {

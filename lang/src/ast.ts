@@ -1,3 +1,4 @@
+import type { Ident } from "./ast-old"
 import type { Print } from "./ast-print"
 import {
   AAmp,
@@ -22,7 +23,9 @@ import {
   AStarStar,
   ATilde,
   KElse,
+  KFor,
   KIf,
+  KIn,
   OAmp,
   OAmpAmp,
   OAt,
@@ -45,6 +48,7 @@ import {
   ONe,
   OPercent,
   OPlus,
+  OSemi,
   OSlash,
   OStar,
   OStarStar,
@@ -159,6 +163,36 @@ export function exprIf(stream: Stream): ExprIf | null {
   }
 }
 
+export class ExprFor extends Expr {
+  constructor(
+    readonly kw: Token<typeof KFor>,
+    readonly bound: PlainList<Ident>,
+    readonly eq: Token<typeof KIn> | null,
+    readonly sources: PlainList<Expr>,
+    readonly block: Block | null,
+  ) {
+    super(kw.start, block?.end ?? sources.end)
+  }
+}
+
+const forBindings = createUnbracketedCommaOp((stream) => stream.match(TIdent))
+const forSources = createUnbracketedCommaOp((stream) =>
+  expr(stream, { struct: false }),
+)
+
+export function exprFor(stream: Stream): ExprFor | null {
+  const kw = stream.match(KFor)
+  if (!kw) return null
+
+  return new ExprFor(
+    kw,
+    forBindings(stream),
+    stream.match(KIn),
+    forSources(stream),
+    block(stream),
+  )
+}
+
 export class ExprParen extends Expr {
   constructor(
     readonly token: TokenGroup<typeof OLParen>,
@@ -200,6 +234,9 @@ function exprAtom(stream: Stream, ctx: ExprContext): Expr {
 
     case KIf:
       return exprIf(stream)!
+
+    case KFor:
+      return exprFor(stream)!
   }
 
   stream.issue(Code.ExpectedExpression, stream.loc(), stream.loc())
@@ -424,6 +461,38 @@ const exprBinaryOp = createBinOpL(
   ),
 )
 
+export class Stmt extends Node {
+  declare private __brand_stmt
+}
+
+export class StmtExpr extends Stmt {
+  constructor(
+    readonly expr: Expr,
+    readonly semi: Token<typeof OSemi> | null,
+    /** `true` only if `expr` is a plain expr and has no semicolon. */
+    readonly terminatesBlock: boolean,
+  ) {
+    super(expr.start, semi?.end ?? expr.end)
+  }
+}
+
+function stmt(stream: Stream): Stmt | null {
+  if (stream.isDone()) {
+    return null
+  }
+
+  switch (stream.peek()) {
+    case KIf:
+      return new StmtExpr(exprIf(stream)!, stream.match(OSemi), false)
+    case KFor:
+      return new StmtExpr(exprFor(stream)!, stream.match(OSemi), false)
+    default:
+      const e = expr(stream)
+      const semi = stream.match(OSemi)
+      return new StmtExpr(e, semi, !semi)
+  }
+}
+
 function expr(stream: Stream, ctx: ExprContext = { struct: true }) {
   return exprBinaryOp(stream, ctx)
 }
@@ -432,6 +501,41 @@ function exprFull(stream: Stream) {
   const e = expr(stream, { struct: true })
   stream.requireDone()
   return e
+}
+
+export class PlainList<T extends Print> extends Node {
+  constructor(
+    readonly items: T[],
+    start: number,
+    end: number,
+  ) {
+    super(start, end)
+  }
+}
+
+function createUnbracketedCommaOp<T extends Print & { end: number }>(
+  fn: (stream: Stream) => T | null,
+) {
+  return (stream: Stream) => {
+    const list = new PlainList<T>([], stream.start, stream.start)
+    const first = fn(stream)
+    if (first) {
+      list.items.push(first)
+      let comma
+      while ((comma = stream.match(OComma))) {
+        const next = fn(stream)
+        if (next) {
+          list.items.push(next)
+          ;(list as any).end = next.end
+        } else {
+          ;(list as any).end = comma.end
+          break
+        }
+      }
+    }
+
+    return list
+  }
 }
 
 export class List<T extends Node> extends Node {
@@ -474,9 +578,9 @@ const listValues = createCommaOp(OLBrack, expr)
 export class Block extends Expr {
   constructor(
     readonly bracket: TokenGroup,
-    readonly of: Expr,
+    readonly of: Stmt[],
   ) {
-    super(bracket.start, of.end)
+    super(bracket.start, of[of.length - 1]?.end ?? bracket.end)
   }
 }
 
@@ -484,7 +588,17 @@ function block(stream: Stream) {
   const group = stream.matchGroup(OLBrace)
   if (!group) return null
 
-  return new Block(group, exprFull(group.contents))
+  const list: Stmt[] = []
+  let a
+  while ((a = stmt(group.contents))) {
+    list.push(a)
+    if (a instanceof StmtExpr && a.terminatesBlock) {
+      break
+    }
+  }
+  group.contents.requireDone()
+
+  return new Block(group, list)
 }
 
 export function parse(stream: Stream) {
