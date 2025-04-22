@@ -61,7 +61,9 @@ const stream1 = createStream(source, { comments: false })
 const result = parse(stream1)
 const printed = print(stream1, result)
 
-document.body.appendChild(hx("pre", "px-4 pt-4 text-xs", printed))
+document.body.appendChild(
+  hx("pre", "px-4 pt-4 text-xs text-[--nya-text-prose]", printed),
+)
 document.body.appendChild(
   hx("hr", "border-[--nya-border] mx-4 my-4 border-0 border-t"),
 )
@@ -71,7 +73,7 @@ const stream = createStream(source, { comments: false })
 document.body.appendChild(
   hx(
     "pre",
-    "px-4 pt-4 text-xs",
+    "px-4 text-xs",
     JSON.stringify(
       stream,
       (_, v) =>
