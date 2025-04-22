@@ -3,7 +3,10 @@ import "./page/index.dist.css"
 try {
   if (location.href.includes("showmanifest")) {
     await import("./manifest")
-  } else if (location.href.includes("showtokenized")) {
+  } else if (
+    location.href.includes("ast") ||
+    location.href.includes("localhost") // FIXME: remove
+  ) {
     await import("../lang/src/preview")
   } else {
     await import("./sheet/dev")

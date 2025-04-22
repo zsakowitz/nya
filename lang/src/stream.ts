@@ -136,7 +136,9 @@ export function createStream(source: string, props: ToTokensProps) {
     currentContents.push(token)
   }
 
-  // FIXME: check for remaining parens
+  for (const p of parens) {
+    issues.push(new Issue(Code.MismatchedOpeningParen, p.lt.start, p.lt.end))
+  }
 
   return new Stream(source, root, issues, 0, source.length)
 }

@@ -37,6 +37,7 @@ import {
   OGe,
   OGt,
   OLBrace,
+  OLBrack,
   OLe,
   OLParen,
   OLt,
@@ -167,6 +168,12 @@ export class ExprParen extends Expr {
   }
 }
 
+export class ExprArray extends Expr {
+  constructor(readonly of: List<Expr>) {
+    super(of.start, of.end)
+  }
+}
+
 function exprAtom(stream: Stream, ctx: ExprContext): Expr {
   switch (stream.peek()) {
     case TFloat:
@@ -178,11 +185,17 @@ function exprAtom(stream: Stream, ctx: ExprContext): Expr {
     case TBuiltin:
       return exprVar(stream, ctx)!
 
-    case OLParen:
+    case OLParen: {
       const token = stream.matchGroup(OLParen)!
       const e = expr(token.contents, { struct: true })
       token.contents.requireDone()
       return new ExprParen(token, e)
+    }
+
+    case OLBrack: {
+      const e = listValues(stream)!
+      return new ExprArray(e)
+    }
 
     case KIf:
       return exprIf(stream)!
@@ -434,6 +447,7 @@ function createCommaOp<T extends Node>(
 
 const fnArguments = createCommaOp(OLParen, (s) => expr(s, { struct: true }))
 const structArguments = createCommaOp(OLBrace, (s) => expr(s, { struct: true }))
+const listValues = createCommaOp(OLBrack, (s) => expr(s, { struct: true }))
 
 export class Block extends Expr {
   constructor(
