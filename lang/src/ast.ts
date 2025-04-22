@@ -197,6 +197,9 @@ function exprAtom(stream: Stream, ctx: ExprContext): Expr {
       return new ExprArray(e)
     }
 
+    case OLBrace:
+      return block(stream)!
+
     case KIf:
       return exprIf(stream)!
   }

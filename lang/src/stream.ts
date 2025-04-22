@@ -49,7 +49,7 @@ export function createStream(source: string, props: ToTokensProps) {
         const group = new TokenGroup(
           token as Token<Brack>,
           new Token(MATCHING_PAREN[token.kind], token.start, token.start),
-          new Stream(source, [], issues, token.start, token.start),
+          new Stream(source, [], issues, token.end, token.end),
         )
         parens.push(group)
         currentContents.push(group)
@@ -62,74 +62,44 @@ export function createStream(source: string, props: ToTokensProps) {
       case ORParen:
       case ORBrack:
       case ORBrace:
-        const current = parens[parens.length - 1]
-
         // If no current paren, ignore and move on
-        if (!current) {
+        if (!parens.some((x) => MATCHING_PAREN[x.kind] == token.kind)) {
           issues.push(
             new Issue(Code.MismatchedClosingParen, token.start, token.end),
           )
           continue
         }
 
-        // If no match, close parens until we have a match
-        if (MATCHING_PAREN[current.kind] != token.kind) {
-          issues.push(
-            new Issue(Code.MismatchedClosingParen, token.start, token.end),
-          )
+        let current = parens[parens.length - 1]!
 
-          issues.push(
-            new Issue(
-              Code.MismatchedOpeningParen,
-              current.lt.start,
-              current.lt.end,
-            ),
-          )
-          ;(current as TokenGroupMut).gt = new Token(
+        // Close parens until we match our kind. This is guaranteed to terminate
+        // since we check for the 'none exist' case in the if statement above.
+        while (MATCHING_PAREN[current.kind] != token.kind) {
+          // Pop 'current' from the parentheses stack
+          parens.pop()
+
+          // Make sure all text positions are correct
+          const mut = current as TokenGroupMut
+          mut.gt = new Token(
             MATCHING_PAREN[current.kind],
             token.start,
             token.start,
             true,
           )
-          ;(current as TokenGroupMut).end = token.start
-          ;(current as TokenGroupMut).contents.end = token.end
+          mut.end = token.start
+          mut.contents.end = token.start
 
-          while (true) {
-            parens.pop()
-            const current = parens[parens.length - 1]
-            currentContents = current?.contents.tokens ?? root
-            if (!current) {
-              continue main
-            }
-            issues.push(
-              new Issue(
-                Code.MismatchedOpeningParen,
-                current.lt.start,
-                current.lt.end,
-              ),
-            )
-            if (MATCHING_PAREN[current.kind] == token.kind) {
-              ;(current as TokenGroupMut).gt = token
-              ;(current as TokenGroupMut).end = token.end
-              ;(current as TokenGroupMut).contents.end = token.end
-              continue main
-            }
-            ;(current as TokenGroupMut).gt = new Token(
-              MATCHING_PAREN[current.kind],
-              token.start,
-              token.start,
-              true,
-            )
-            ;(current as TokenGroupMut).end = token.start
-            ;(current as TokenGroupMut).contents.end = token.start
-          }
+          current = parens[parens.length - 1]!
+          currentContents = current.contents.tokens
         }
 
-        ;(current as TokenGroupMut).gt = token
-        ;(current as TokenGroupMut).end = token.end
-        ;(current as TokenGroupMut).contents.end = token.end
+        const mut = current as TokenGroupMut
+        mut.gt = token
+        mut.end = token.end
+        mut.contents.end = token.start
         parens.pop()
         currentContents = parens[parens.length - 1]?.contents.tokens ?? root
+
         continue
     }
 
