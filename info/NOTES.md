@@ -56,7 +56,7 @@ float factorialMinimax(float x) {
     float d = 1.0 + x*(d1 + x*(d2 + x*d3));
     float xp1 = x+1.0;
 
-    return stirlingPrefactor(xp1,x)*xp1.sqrt()*(n/d);
+    return stirlingPrefactor(xp1,x)*sqrt(xp1)*(n/d);
 
 
 }
