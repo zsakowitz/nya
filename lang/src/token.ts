@@ -105,7 +105,7 @@ export function tokens(source: string, props: ToTokensProps) {
       const char = source[i]!
       const next = source[i + 1]
       if (next && OPS_AND_SECOND_CHARS[char]!.includes(next)) {
-        ret.push(new Token(OPS[char]!, start, i + 2))
+        ret.push(new Token(OPS[char + next]!, start, i + 2))
         i += 2
         continue
       }
@@ -252,7 +252,7 @@ export function tokens(source: string, props: ToTokensProps) {
     if (char in OPS_AND_SECOND_CHARS) {
       const next = source[i + 1]
       if (next && OPS_AND_SECOND_CHARS[char]!.includes(next)) {
-        ret.push(new Token(OPS[char]!, start, i + 2))
+        ret.push(new Token(OPS[char + next]!, start, i + 2))
         i += 2
         continue
       }

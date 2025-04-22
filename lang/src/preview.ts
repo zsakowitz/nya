@@ -43,7 +43,7 @@ function flat(x: Token<number>): string {
     )
   }
 
-  return source.slice(x.start, x.end)
+  return source.slice(x.start, x.end) + `(${x.kind})`
 }
 
 document.body.appendChild(
