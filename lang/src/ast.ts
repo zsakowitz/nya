@@ -29,10 +29,12 @@ import {
   OBar,
   OBarBar,
   OComma,
+  ODot,
   ODotDot,
   OEqEq,
   OGe,
   OGt,
+  OLBrace,
   OLe,
   OLParen,
   OLt,
@@ -81,14 +83,37 @@ function exprLit(stream: Stream) {
 }
 
 export class ExprVar extends Expr {
-  constructor(readonly name: Token<typeof TIdent | typeof TBuiltin>) {
+  constructor(
+    readonly name: Token<typeof TIdent | typeof TBuiltin>,
+    readonly args: List<Expr> | null,
+  ) {
     super(name.start, name.end)
   }
 }
 
-function exprVar(stream: Stream) {
+export class ExprStruct extends Expr {
+  constructor(
+    readonly name: Token<typeof TIdent | typeof TBuiltin>,
+    readonly args: List<Expr> | null,
+  ) {
+    super(name.start, name.end)
+  }
+}
+
+interface ExprContext {
+  struct: boolean
+}
+
+function exprVar(stream: Stream, ctx: ExprContext) {
   const token = stream.match(TIdent) || stream.match(TBuiltin)
-  if (token) return new ExprVar(token)
+  if (token) {
+    const struct = ctx.struct && structArguments(stream)
+    if (struct) {
+      return new ExprStruct(token, struct)
+    } else {
+      return new ExprVar(token, fnArguments(stream))
+    }
+  }
 }
 
 export class ExprEmpty extends Expr {
@@ -106,7 +131,7 @@ export class ExprParen extends Expr {
   }
 }
 
-function exprAtom(stream: Stream): Expr {
+function exprAtom(stream: Stream, ctx: ExprContext): Expr {
   switch (stream.peek()) {
     case TFloat:
     case TInt:
@@ -115,11 +140,13 @@ function exprAtom(stream: Stream): Expr {
 
     case TIdent:
     case TBuiltin:
-      return exprVar(stream)!
+      return exprVar(stream, ctx)!
 
     case OLParen:
       const token = stream.matchGroup(OLParen)!
-      return new ExprParen(token, expr(token.contents))
+      const e = expr(token.contents, { struct: true })
+      token.contents.requireDone()
+      return new ExprParen(token, e)
   }
 
   stream.issue(Code.ExpectedExpression, stream.loc(), stream.loc())
@@ -135,12 +162,42 @@ export class ExprCall extends Expr {
   }
 }
 
-function exprPropChain(stream: Stream) {
-  let expr = exprAtom(stream)
+export class ExprProp extends Expr {
+  constructor(
+    readonly on: Expr,
+    readonly dot: Token<typeof ODot>,
+    readonly name: Token<typeof TIdent> | null,
+    readonly args: List<Expr> | null,
+  ) {
+    super(on.start, name?.end ?? dot.end)
+  }
+}
 
-  let m
-  while ((m = fnArguments(stream)!)) {
-    expr = new ExprCall(expr, m)
+function exprPropChain(stream: Stream, ctx: ExprContext) {
+  let expr = exprAtom(stream, ctx)
+
+  loop: while (true) {
+    switch (stream.peek()) {
+      case OLParen:
+        const m = fnArguments(stream)
+        if (m) {
+          expr = new ExprCall(expr, m)
+          continue
+        } else {
+          break loop
+        }
+
+      case ODot:
+        expr = new ExprProp(
+          expr,
+          stream.match(ODot)!,
+          stream.match(TIdent),
+          fnArguments(stream),
+        )
+        continue
+    }
+
+    break
   }
 
   return expr
@@ -163,7 +220,7 @@ export class ExprUnary extends Expr {
   }
 }
 
-function exprUnary(stream: Stream): Expr {
+function exprUnary(stream: Stream, ctx: ExprContext): Expr {
   let ops = []
   let match
   while (
@@ -178,7 +235,7 @@ function exprUnary(stream: Stream): Expr {
     ops.push(match)
   }
 
-  let expr = exprPropChain(stream)
+  let expr = exprPropChain(stream, ctx)
   while (ops[0]) {
     expr = new ExprUnary(ops.pop()!, expr)
   }
@@ -237,13 +294,13 @@ export class ExprBinary extends Expr {
 
 function createBinOp1(
   permitted: ExprBinaryOp[],
-  side: (stream: Stream) => Expr,
+  side: (stream: Stream, ctx: ExprContext) => Expr,
 ) {
-  return (stream: Stream): Expr => {
-    const lhs = side(stream)
+  return (stream: Stream, ctx: ExprContext): Expr => {
+    const lhs = side(stream, ctx)
     const op = stream.matchAny(permitted)
     if (op) {
-      const rhs = side(stream)
+      const rhs = side(stream, ctx)
       return new ExprBinary(lhs, op, rhs)
     } else {
       return lhs
@@ -253,13 +310,13 @@ function createBinOp1(
 
 function createBinOpL(
   permitted: ExprBinaryOp[],
-  side: (stream: Stream) => Expr,
+  side: (stream: Stream, ctx: ExprContext) => Expr,
 ) {
-  return (stream: Stream): Expr => {
-    let expr = side(stream)
+  return (stream: Stream, ctx: ExprContext): Expr => {
+    let expr = side(stream, ctx)
     let op
     while ((op = stream.matchAny(permitted)))
-      expr = new ExprBinary(expr, op, side(stream))
+      expr = new ExprBinary(expr, op, side(stream, ctx))
     return expr
   }
 }
@@ -299,8 +356,8 @@ const exprBinaryOp = createBinOpL(
   ),
 )
 
-function expr(stream: Stream) {
-  return exprBinaryOp(stream)
+function expr(stream: Stream, ctx: ExprContext) {
+  return exprBinaryOp(stream, ctx)
 }
 
 export class List<T extends Node> extends Node {
@@ -336,8 +393,11 @@ function createCommaOp<T extends Node>(
   }
 }
 
-const fnArguments = createCommaOp(OLParen, expr)
+const fnArguments = createCommaOp(OLParen, (s) => expr(s, { struct: true }))
+const structArguments = createCommaOp(OLBrace, (s) => expr(s, { struct: true }))
 
 export function parse(stream: Stream) {
-  return expr(stream)
+  const e = expr(stream, { struct: true })
+  stream.requireDone()
+  return e
 }

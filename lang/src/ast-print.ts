@@ -50,7 +50,7 @@ function list(items: Element[], maxLen: number): Element {
 
 export function print(stream: Stream, a: Print, level = 0): Element {
   if (a == null) {
-    return h("text-rose-500", "null")
+    return h("text-slate-500", "null")
   }
 
   if (typeof a == "number") {

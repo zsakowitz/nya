@@ -138,7 +138,6 @@ export function createStream(source: string, props: ToTokensProps) {
 
   // FIXME: check for remaining parens
 
-  root.reverse()
   return new Stream(source, root, issues, 0, source.length)
 }
 
@@ -151,8 +150,18 @@ export class Stream {
     readonly end: number,
   ) {}
 
+  index = 0
+
+  private next() {
+    return this.tokens[this.index]
+  }
+
+  private accept() {
+    this.index++
+  }
+
   loc() {
-    return this.tokens[this.tokens.length - 1]?.start ?? this.end
+    return this.next()?.start ?? this.end
   }
 
   issue(code: Code, start: number, end: number) {
@@ -167,17 +176,18 @@ export class Stream {
     return this.tokens.length == 0
   }
 
-  requireEmpty() {
-    const token = this.tokens[this.tokens.length - 1]
+  requireDone() {
+    const token = this.next()
     if (token) {
+      console.error(this.source.slice(this.start, this.end))
       this.issue(Code.UnexpectedToken, token.start, token.end)
     }
   }
 
   match<K extends number>(k: K): Token<K> | null {
-    const next = this.tokens[this.tokens.length - 1]
+    const next = this.next()
     if (next && next.kind == k) {
-      this.tokens.pop()
+      this.accept()
       return next as Token<K>
     } else {
       return null
@@ -185,9 +195,9 @@ export class Stream {
   }
 
   matchGroup<K extends Brack>(k: K): TokenGroup<K> | null {
-    const next = this.tokens[this.tokens.length - 1]
+    const next = this.next()
     if (next && next instanceof TokenGroup && next.kind == k) {
-      this.tokens.pop()
+      this.accept()
       return next as TokenGroup<K>
     } else {
       return null
@@ -195,9 +205,9 @@ export class Stream {
   }
 
   matchAny<const K extends readonly number[]>(k: K): Token<K[number]> | null {
-    const next = this.tokens[this.tokens.length - 1]
+    const next = this.next()
     if (next && k.includes(next.kind)) {
-      this.tokens.pop()
+      this.accept()
       return next
     } else {
       return null
@@ -205,6 +215,6 @@ export class Stream {
   }
 
   peek(): number | null {
-    return this.tokens[this.tokens.length - 1]?.kind ?? null
+    return this.next()?.kind ?? null
   }
 }
