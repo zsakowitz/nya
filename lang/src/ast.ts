@@ -22,11 +22,15 @@ import {
   AStar,
   AStarStar,
   ATilde,
+  KBreak,
+  KContinue,
   KElse,
   KFn,
   KFor,
   KIf,
   KIn,
+  KMatch,
+  KReturn,
   KRule,
   KSource,
   KType,
@@ -70,7 +74,9 @@ import {
   TDerivIgnore,
   TFloat,
   TIdent,
+  TIgnore,
   TInt,
+  TLabel,
   TSource,
   TSym,
   type Brack,
@@ -97,6 +103,54 @@ export abstract class Expr extends Node {
 
 export abstract class Type extends Node {
   declare private __brand_type
+}
+
+export abstract class Pat extends Node {}
+
+export class PatIgnore extends Pat {
+  constructor(readonly name: Token<typeof TIgnore>) {
+    super(name.start, name.end)
+  }
+}
+
+export class PatVar extends Pat {
+  constructor(readonly name: Token<typeof TIdent>) {
+    super(name.start, name.end)
+  }
+}
+
+export class PatLit extends Pat {
+  constructor(readonly name: Token<typeof TFloat | typeof TInt | typeof TSym>) {
+    super(name.start, name.end)
+  }
+}
+
+export class PatEmpty extends Pat {
+  constructor(readonly at: number) {
+    super(at, at)
+  }
+}
+
+function patAtom(stream: Stream) {
+  switch (stream.peek()) {
+    case TIgnore:
+      return new PatIgnore(stream.match(TIgnore)!)
+
+    case TIdent:
+      return new PatVar(stream.match(TIdent)!)
+
+    case TInt:
+    case TFloat:
+    case TSym:
+      return new PatLit(stream.matchAny([TInt, TFloat, TSym])!)
+  }
+
+  stream.raiseNext(Code.ExpectedPat)
+  return new PatEmpty(stream.loc())
+}
+
+function pat(stream: Stream): Pat {
+  return patAtom(stream)
 }
 
 export class TypeVar extends Type {
@@ -189,6 +243,7 @@ export class ExprStruct extends Expr {
 
 interface ExprContext {
   struct: boolean
+  noErrorOnEmpty?: boolean
 }
 
 function exprVar(stream: Stream, ctx: ExprContext) {
@@ -277,6 +332,77 @@ export function exprFor(stream: Stream): ExprFor | null {
   )
 }
 
+export class ExprExit extends Expr {
+  constructor(
+    readonly kw: Token<typeof KReturn | typeof KBreak | typeof KContinue>,
+    readonly label: Token<typeof TLabel> | null,
+    readonly value: Expr | null,
+  ) {
+    super(kw.start, (value ?? label ?? kw).end)
+  }
+}
+
+export function exprExit(stream: Stream, ctx: ExprContext): ExprExit | null {
+  const kw = stream.matchAny([KReturn, KBreak, KContinue])
+  if (!kw) return null
+
+  const label = stream.match(TLabel)
+  let value: Expr | null = expr(stream, {
+    struct: ctx.struct,
+    noErrorOnEmpty: true,
+  })
+  if (value instanceof ExprEmpty) value = null
+
+  if (kw.kind == KReturn) {
+    if (label) {
+      stream.raise(Code.InvalidLabeledExit, label.start, label.end)
+    }
+  } else if (kw.kind == KContinue) {
+    if (value) {
+      stream.raise(Code.InvalidValuedExit, value.start, value.end)
+    }
+  }
+
+  return new ExprExit(kw, label, value)
+}
+
+export class MatchArm extends Node {
+  constructor(
+    readonly pat: Pat,
+    readonly arrow: Token<typeof OArrowMap> | null,
+    readonly expr: Expr,
+  ) {
+    super(pat.start, expr.end)
+  }
+}
+
+function matchArm(stream: Stream) {
+  return new MatchArm(
+    pat(stream),
+    stream.matchOr(OArrowMap, Code.ExpectedMatchArrow),
+    expr(stream),
+  )
+}
+
+export class ExprMatch extends Expr {
+  constructor(
+    readonly kw: Token<typeof KMatch>,
+    readonly on: Expr,
+    readonly arms: List<MatchArm> | null,
+  ) {
+    super(kw.start, (arms ?? kw).end)
+  }
+}
+
+const arms = createCommaOp(OLBrace, matchArm, Code.ExpectedMatchArms)
+
+function exprMatch(stream: Stream) {
+  const kw = stream.match(KMatch)
+  if (!kw) return null
+
+  return new ExprMatch(kw, expr(stream, { struct: false }), arms(stream))
+}
+
 export class ExprParen extends Expr {
   constructor(
     readonly token: TokenGroup<typeof OLParen>,
@@ -324,9 +450,19 @@ function exprAtom(stream: Stream, ctx: ExprContext): Expr {
 
     case KSource:
       return source(stream)!
+
+    case KReturn:
+    case KBreak:
+    case KContinue:
+      return exprExit(stream, ctx)!
+
+    case KMatch:
+      return exprMatch(stream)!
   }
 
-  stream.raise(Code.ExpectedExpression, stream.loc(), stream.loc())
+  if (!ctx.noErrorOnEmpty) {
+    stream.raise(Code.ExpectedExpression, stream.loc(), stream.loc())
+  }
   return new ExprEmpty(stream.loc())
 }
 
@@ -600,6 +736,9 @@ function stmt(stream: Stream): Stmt | null {
 
     case KFor:
       return new StmtExpr(exprFor(stream)!, stream.match(OSemi), false)
+
+    case KMatch:
+      return new StmtExpr(exprMatch(stream)!, stream.match(OSemi), false)
 
     default:
       const e = expr(stream)

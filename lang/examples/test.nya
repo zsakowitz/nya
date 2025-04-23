@@ -26,4 +26,17 @@ fn hi(a: float, b: ((float))) -> r32 {
   }
 }
 
-fn +(a: float, b: float) -> r32 usage 2 + 3 {}
+fn +(a: float, b: float) -> r32 usage 2 + 3 {
+  return;
+  return 23;
+
+  break;
+  break 'a;
+  break 23;
+  break 'a 23;
+
+  continue;
+  continue 'a;
+
+  match 45 { a => 23 } + 4
+}

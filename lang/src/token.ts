@@ -57,6 +57,11 @@ export const Code = Object.freeze({
   ExpectedColon: 42,
   ExpectedFnParams: 43,
   ExpectedFnName: 44,
+  InvalidLabeledExit: 45,
+  InvalidValuedExit: 46,
+  ExpectedPat: 47,
+  ExpectedMatchArrow: 48,
+  ExpectedMatchArms: 49,
 })
 
 export type Code = (typeof Code)[keyof typeof Code]
