@@ -49,6 +49,12 @@ use "./world";
 
 enum Hi {
   :a,
-  :b,
+  :b { a: i32 },
   :c,
+}
+
+enum Units -> float {
+  :meter => 1.0,
+  :cm => 0.01,
+  :km => 1000.0,
 }

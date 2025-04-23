@@ -65,6 +65,7 @@ export const Code = Object.freeze({
   ExpectedImportPath: 50,
   ExpectedStructFields: 51,
   ExpectedEnumVariants: 52,
+  ExpectedEnumVariantValue: 53,
 })
 
 export type Code = (typeof Code)[keyof typeof Code]

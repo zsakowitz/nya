@@ -1168,7 +1168,7 @@ export function enumVariant(stream: Stream) {
   const name = stream.match(TSym)
   if (!name) return null
 
-  return new EnumVariant(name, structFields(stream))
+  return new EnumVariant(name, enumFields(stream))
 }
 
 const enumVariants = createCommaOp(
@@ -1189,15 +1189,67 @@ export class ItemEnum extends Item {
   }
 }
 
+export class EnumMapVariant extends Node {
+  constructor(
+    readonly name: Token<typeof TSym>,
+    readonly arrow: Token<typeof OArrowMap> | null,
+    readonly of: Expr,
+  ) {
+    super(name.start, of.end)
+  }
+}
+
+function enumMapVariant(stream: Stream) {
+  const name = stream.match(TSym)
+  if (!name) return null
+
+  return new EnumMapVariant(
+    name,
+    stream.matchOr(OArrowMap, Code.ExpectedEnumVariantValue),
+    expr(stream),
+  )
+}
+
+const enumMapVariants = createCommaOp(
+  OLBrace,
+  enumMapVariant,
+  Code.ExpectedEnumVariants,
+  nonExhaustiveMarker,
+)
+
+export class ItemEnumMap extends Item {
+  constructor(
+    readonly kw: Token<typeof KEnum>,
+    readonly name: Ident | null,
+    readonly arrow: Token<typeof OArrowRet>,
+    readonly ret: Type,
+    readonly variants: List<
+      EnumMapVariant,
+      Token<typeof ODotDot> | null
+    > | null,
+  ) {
+    super(kw.start, (variants ?? ret).end)
+  }
+}
+
 export function itemEnum(stream: Stream) {
   const kw = stream.match(KEnum)
   if (!kw) return null
 
-  return new ItemEnum(
-    kw,
-    stream.matchOr(TIdent, Code.ExpectedIdent),
-    enumVariants(stream),
-  )
+  const ident = stream.matchOr(TIdent, Code.ExpectedIdent)
+  const arrow = stream.match(OArrowRet)
+
+  if (arrow) {
+    return new ItemEnumMap(
+      kw,
+      ident,
+      arrow,
+      type(stream),
+      enumMapVariants(stream),
+    )
+  } else {
+    return new ItemEnum(kw, ident, enumVariants(stream))
+  }
 }
 
 function item(stream: Stream): Item | null {
