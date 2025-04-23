@@ -40,6 +40,7 @@ import {
   OBang,
   OBar,
   OBarBar,
+  OColon,
   OColonColon,
   OComma,
   ODot,
@@ -116,6 +117,15 @@ export class TypeEmpty extends Type {
   }
 }
 
+export class TypeParen extends Type {
+  constructor(
+    readonly token: TokenGroup<typeof OLParen>,
+    readonly of: Type,
+  ) {
+    super(token.start, token.end)
+  }
+}
+
 function type(stream: Stream): Type {
   switch (stream.peek()) {
     case TIdent:
@@ -128,13 +138,17 @@ function type(stream: Stream): Type {
 
     case OLBrace:
       return new TypeBlock(block(stream)!)
+
+    case OLParen:
+      const token = stream.matchGroup(OLParen)!
+      return new TypeParen(token, token.contents.full(type))
   }
 
   stream.raiseNext(Code.ExpectedType)
   return new TypeEmpty(stream.loc())
 }
 
-const typeArgs = createCommaOp(OLAngle, type)
+const typeArgs = createCommaOp(OLAngle, type, null)
 
 export class ExprLit extends Expr {
   constructor(
@@ -372,7 +386,7 @@ function exprPropChain(stream: Stream, ctx: ExprContext) {
         exp = new ExprProp(
           exp,
           stream.match(ODot)!,
-          stream.matchOr(TIdent, Code.ExpectedIdentifier),
+          stream.matchOr(TIdent, Code.ExpectedIdent),
           typeArgs(stream),
           callArgs(stream),
         )
@@ -643,10 +657,16 @@ export class List<T extends Print> extends Node {
 function createCommaOp<T extends Print>(
   bracket: Brack,
   fn: (stream: Stream) => T | null,
+  code: Code | null,
 ) {
   return (stream: Stream) => {
     const group = stream.matchGroup(bracket)
-    if (!group) return null
+    if (!group) {
+      if (code != null) {
+        stream.raiseNext(code)
+      }
+      return null
+    }
 
     const list = new List<T>(group, [])
     if (!group.contents.isEmpty()) {
@@ -674,9 +694,9 @@ function createCommaOp<T extends Print>(
   }
 }
 
-const callArgs = createCommaOp(OLParen, expr)
-const structArgs = createCommaOp(OLBrace, expr)
-const listValues = createCommaOp(OLBrack, expr)
+const callArgs = createCommaOp(OLParen, expr, null)
+const structArgs = createCommaOp(OLBrace, expr, null)
+const listValues = createCommaOp(OLBrack, expr, null)
 
 export class ExprBlock extends Expr {
   constructor(
@@ -823,26 +843,54 @@ function itemType(stream: Stream) {
   return new ItemType(kw, ident, braces, s)
 }
 
+export class FnParam extends Node {
+  constructor(
+    readonly ident: Ident,
+    readonly colon: Token<typeof OColon> | null,
+    readonly type: Type,
+  ) {
+    super(ident.start, type.end)
+  }
+}
+
+function fnParam(stream: Stream) {
+  const ident = stream.match(TIdent)
+  if (!ident) return null
+
+  const colon = stream.matchOr(OColon, Code.ExpectedColon)
+  return new FnParam(ident, colon, type(stream))
+}
+
 export class ItemFn extends Item {
   constructor(
     readonly kw: Token<typeof KFn>,
     readonly name: Ident | null,
-    readonly params: List<Ident> | null,
-    // readonly arrow: Token<typeof OArrowRet> | null,
-    // readonly retType:
+    readonly params: List<FnParam> | null,
+    readonly arrow: Token<typeof OArrowRet> | null,
+    readonly retType: Type | null,
     readonly block: ExprBlock | null,
   ) {
-    super(kw.start, (block ?? params ?? name ?? kw).end)
+    super(kw.start, (block ?? retType ?? arrow ?? params ?? name ?? kw).end)
   }
 }
 
-const fnParams = createCommaOp(OLParen, (s) => s.match(TIdent))
+const fnParams = createCommaOp(OLParen, fnParam, Code.ExpectedFnParams)
 
 function itemFn(stream: Stream) {
   const kw = stream.match(KFn)
   if (!kw) return null
 
-  return new ItemFn(kw, stream.match(TIdent), fnParams(stream), block(stream))
+  const ident = stream.matchOr(TIdent, Code.ExpectedIdent)
+  const p = fnParams(stream)
+  const arrow = stream.match(OArrowRet) // not matchOr since return types are optional (void is implied)
+  let ty = null
+  if (arrow && stream.peek() == OLBrace) {
+    stream.raiseNext(Code.ExpectedType)
+  } else if (arrow) {
+    ty = type(stream)
+  }
+
+  return new ItemFn(kw, ident, p, arrow, ty, block(stream))
 }
 
 export class ItemRule extends Item {

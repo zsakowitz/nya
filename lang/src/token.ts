@@ -42,7 +42,7 @@ export const Code = Object.freeze({
   UnknownOperator: 24,
   MismatchedClosingParen: 28,
   MismatchedOpeningParen: 29,
-  ExpectedIdentifier: 30,
+  ExpectedIdent: 30,
   ExpectedExpression: 31,
   UnexpectedToken: 32,
   IfOrBlockMustFollowElse: 33,
@@ -54,6 +54,8 @@ export const Code = Object.freeze({
   ExpectedForSources: 39,
   ExpectedIn: 40,
   UnnecessarySemi: 41,
+  ExpectedColon: 42,
+  ExpectedFnParams: 43,
 })
 
 export type Code = (typeof Code)[keyof typeof Code]

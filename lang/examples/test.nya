@@ -11,7 +11,7 @@ fn some_types() {
   source { 23 } :: f32;
 }
 
-fn hi(a, b) {
+fn hi(a: float, b: ((float))) -> r32 {
   if true {
     c32 { 2.0, 3.4 }
   } else if 2 + 3 < 4 * 5 | 7 - (8 == 9 % 4) && 2 != 3 && -!4 == ~8 {

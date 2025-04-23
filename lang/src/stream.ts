@@ -137,7 +137,8 @@ export class Stream {
   }
 
   raiseNext(code: Code) {
-    const next = this.next()
+    let next = this.next()
+    if (next instanceof TokenGroup) next = next.lt
     this.issues.push(
       new Issue(code, next?.start ?? this.end, next?.end ?? this.end),
     )
