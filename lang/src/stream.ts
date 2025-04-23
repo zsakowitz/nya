@@ -136,7 +136,7 @@ export class Stream {
     return this.tokens[this.index]
   }
 
-  issueOnNext(code: Code) {
+  raiseNext(code: Code) {
     const next = this.next()
     this.issues.push(
       new Issue(code, next?.start ?? this.end, next?.end ?? this.end),
@@ -151,7 +151,7 @@ export class Stream {
     return this.next()?.start ?? this.end
   }
 
-  issue(code: Code, start: number, end: number) {
+  raise(code: Code, start: number, end: number) {
     this.issues.push(new Issue(code, start, end))
   }
 
@@ -171,7 +171,7 @@ export class Stream {
     const token = this.next()
     if (token) {
       console.error(this.source.slice(this.start, this.end))
-      this.issue(Code.UnexpectedToken, token.start, token.end)
+      this.raise(Code.UnexpectedToken, token.start, token.end)
     }
   }
 
@@ -183,6 +183,20 @@ export class Stream {
     } else {
       return null
     }
+  }
+
+  /** If the passed token kind is matched, raises an error. */
+  matchDrop<K extends number>(k: K, code: Code): Token<K> | null {
+    const token = this.match(k)
+    if (token) this.raiseNext(code)
+    return token
+  }
+
+  /** If the passed token kind is not matched, raises an error. */
+  matchOr<K extends number>(k: K, code: Code): Token<K> | null {
+    const token = this.match(k)
+    if (!token) this.raiseNext(code)
+    return token
   }
 
   matchGroup<K extends Brack>(k: K): TokenGroup<K> | null {

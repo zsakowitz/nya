@@ -1,32 +1,32 @@
 export const TIdent = 1 // f32, Complex
-export const TBuiltin = 2 // @vec2, @meter
-export const TLabel = 3 // 'hello, 'meter
-export const TIgnore = 4 // _
+export const TDeriv = 2 // d/dx, d/dwrt, d/dy
+export const TDerivIgnore = 3 // d/d_
+export const TBuiltin = 4 // @vec2, @meter
+export const TLabel = 5 // 'hello, 'meter
+export const TIgnore = 6 // _
 
-export const TInt = 5 // 2
-export const TFloat = 6 // 2.3
-export const TSym = 7 // :hello, :meter
-export const TString = 8 // "hello"
+export const TInt = 7 // 2
+export const TFloat = 8 // 2.3
+export const TSym = 9 // :hello, :meter
+export const TString = 10 // "hello"
 
-export const TComment = 9 // // world
-export const TSource = 10 // anything inside a source block
+export const TComment = 11 // // world
+export const TSource = 12 // anything inside a source block
 
 // keywords
-export const KIf = 11
-export const KElse = 12
-export const KFor = 13
-export const KMatch = 14
-export const KDeriv = 15
-export const KSimplify = 16
-export const KExpose = 17
-export const KType = 18
-export const KFn = 19
-export const KStruct = 20
-export const KOpaque = 21
-export const KLet = 22
-export const KIn = 23
-export const KEnum = 24
-export const KSyntax = 25
+export const KIf = 13
+export const KElse = 14
+export const KFor = 15
+export const KMatch = 16
+export const KRule = 17
+export const KExpose = 18
+export const KType = 19
+export const KFn = 20
+export const KStruct = 21
+export const KOpaque = 22
+export const KLet = 23
+export const KIn = 24
+export const KEnum = 25
 export const KReturn = 26
 export const KBreak = 27
 export const KContinue = 28
@@ -129,8 +129,7 @@ export const KWS: Record<string, number> = {
   else: KElse,
   for: KFor,
   match: KMatch,
-  deriv: KDeriv,
-  simplify: KSimplify,
+  rule: KRule,
   expose: KExpose,
   type: KType,
   fn: KFn,
@@ -139,7 +138,6 @@ export const KWS: Record<string, number> = {
   let: KLet,
   in: KIn,
   enum: KEnum,
-  syntax: KSyntax,
   return: KReturn,
   break: KBreak,
   continue: KContinue,

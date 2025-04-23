@@ -1,3 +1,6 @@
+rule a + 0.0 => a;
+rule d/dx(a * b) => d/dx(a) * b + a * d/dx(b);
+
 type f32 {
   source js { number }
   source glsl { float }

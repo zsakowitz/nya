@@ -28,10 +28,12 @@ import {
   KFor,
   KIf,
   KIn,
+  KRule,
   KSource,
   KType,
   OAmp,
   OAmpAmp,
+  OArrowMap,
   OArrowRet,
   OAt,
   OBackslash,
@@ -62,6 +64,8 @@ import {
   OStarStar,
   OTilde,
   TBuiltin,
+  TDeriv,
+  TDerivIgnore,
   TFloat,
   TIdent,
   TInt,
@@ -126,7 +130,7 @@ function type(stream: Stream): Type {
       return new TypeBlock(block(stream)!)
   }
 
-  stream.issueOnNext(Code.ExpectedType)
+  stream.raiseNext(Code.ExpectedType)
   return new TypeEmpty(stream.loc())
 }
 
@@ -215,7 +219,7 @@ export function exprIf(stream: Stream): ExprIf | null {
   } else if (stream.peek() == OLBrace) {
     return new ExprIf(kwIf, condition, blockIf, kwElse, block(stream))
   } else {
-    stream.issueOnNext(Code.IfOrBlockMustFollowElse)
+    stream.raiseNext(Code.IfOrBlockMustFollowElse)
     return new ExprIf(kwIf, condition, blockIf, null, null)
   }
 }
@@ -232,9 +236,13 @@ export class ExprFor extends Expr {
   }
 }
 
-const forBindings = createUnbracketedCommaOp((stream) => stream.match(TIdent))
-const forSources = createUnbracketedCommaOp((stream) =>
-  expr(stream, { struct: false }),
+const forBindings = createUnbracketedCommaOp(
+  (stream) => stream.match(TIdent),
+  Code.ExpectedForBindings,
+)
+const forSources = createUnbracketedCommaOp(
+  (stream) => expr(stream, { struct: false }),
+  Code.ExpectedForSources,
 )
 
 export function exprFor(stream: Stream): ExprFor | null {
@@ -244,7 +252,7 @@ export function exprFor(stream: Stream): ExprFor | null {
   return new ExprFor(
     kw,
     forBindings(stream),
-    stream.match(KIn),
+    stream.matchOr(KIn, Code.ExpectedIn),
     forSources(stream),
     block(stream),
   )
@@ -299,7 +307,7 @@ function exprAtom(stream: Stream, ctx: ExprContext): Expr {
       return source(stream)!
   }
 
-  stream.issue(Code.ExpectedExpression, stream.loc(), stream.loc())
+  stream.raise(Code.ExpectedExpression, stream.loc(), stream.loc())
   return new ExprEmpty(stream.loc())
 }
 
@@ -364,7 +372,7 @@ function exprPropChain(stream: Stream, ctx: ExprContext) {
         exp = new ExprProp(
           exp,
           stream.match(ODot)!,
-          stream.match(TIdent),
+          stream.matchOr(TIdent, Code.ExpectedIdentifier),
           typeArgs(stream),
           callArgs(stream),
         )
@@ -394,6 +402,16 @@ export class ExprUnary extends Expr {
   }
 }
 
+// d/dx notation is used as a shorthand since we need to represent a lot of derivatives
+export class ExprDeriv extends Expr {
+  constructor(
+    readonly wrt: Token<typeof TDeriv | typeof TDerivIgnore>,
+    readonly of: Expr,
+  ) {
+    super(wrt.start, wrt.end)
+  }
+}
+
 function exprUnary(stream: Stream, ctx: ExprContext): Expr {
   let ops = []
   let match
@@ -404,14 +422,21 @@ function exprUnary(stream: Stream, ctx: ExprContext): Expr {
       stream.match(OTilde) ||
       stream.match(ATilde) ||
       stream.match(OBang) ||
-      stream.match(ABang))
+      stream.match(ABang) ||
+      stream.match(TDeriv) ||
+      stream.match(TDerivIgnore))
   ) {
     ops.push(match)
   }
 
   let expr = exprPropChain(stream, ctx)
   while (ops[0]) {
-    expr = new ExprUnary(ops.pop()!, expr)
+    const a = ops.pop()!
+    if (a.kind == TDeriv || a.kind == TDerivIgnore) {
+      expr = new ExprDeriv(a, expr)
+    } else {
+      expr = new ExprUnary(a, expr)
+    }
   }
   return expr
 }
@@ -491,8 +516,9 @@ function createBinOpL(
   return (stream: Stream, ctx: ExprContext): Expr => {
     let expr = side(stream, ctx)
     let op
-    while ((op = stream.matchAny(permitted)))
+    while ((op = stream.matchAny(permitted))) {
       expr = new ExprBinary(expr, op, side(stream, ctx))
+    }
     return expr
   }
 }
@@ -552,8 +578,10 @@ function stmt(stream: Stream): Stmt | null {
   switch (stream.peek()) {
     case KIf:
       return new StmtExpr(exprIf(stream)!, stream.match(OSemi), false)
+
     case KFor:
       return new StmtExpr(exprFor(stream)!, stream.match(OSemi), false)
+
     default:
       const e = expr(stream)
       const semi = stream.match(OSemi)
@@ -577,6 +605,7 @@ export class PlainList<T extends Print> extends Node {
 
 function createUnbracketedCommaOp<T extends Print & { end: number }>(
   fn: (stream: Stream) => T | null,
+  onEmpty: Code,
 ) {
   return (stream: Stream) => {
     const list = new PlainList<T>([], stream.start, stream.start)
@@ -594,6 +623,8 @@ function createUnbracketedCommaOp<T extends Print & { end: number }>(
           break
         }
       }
+    } else {
+      stream.raiseNext(onEmpty)
     }
 
     return list
@@ -664,7 +695,10 @@ export class TypeBlock extends Type {
 
 function block(stream: Stream) {
   const group = stream.matchGroup(OLBrace)
-  if (!group) return null
+  if (!group) {
+    stream.raiseNext(Code.ExpectedBlock)
+    return null
+  }
 
   const list: Stmt[] = []
   let a
@@ -811,6 +845,36 @@ function itemFn(stream: Stream) {
   return new ItemFn(kw, stream.match(TIdent), fnParams(stream), block(stream))
 }
 
+export class ItemRule extends Item {
+  constructor(
+    readonly kw: Token<typeof KRule>,
+    readonly lhs: Expr,
+    readonly arrow: Token<typeof OArrowMap> | null,
+    readonly rhs: Expr,
+    readonly semi: Token<typeof OSemi> | null,
+  ) {
+    super(kw.start, rhs.end)
+  }
+}
+
+function itemRule(stream: Stream) {
+  const kw = stream.match(KRule)
+  if (!kw) return null
+
+  const lhs = expr(stream)
+  const op = stream.match(OArrowMap)
+  if (!op) {
+    stream.raiseNext(Code.MissingRuleArrow)
+  }
+  const rhs = expr(stream)
+  const semi = stream.match(OSemi)
+  if (!semi) {
+    stream.raiseNext(Code.MissingSemi)
+  }
+
+  return new ItemRule(kw, lhs, op, rhs, semi)
+}
+
 function item(stream: Stream): Item | null {
   switch (stream.peek()) {
     case KType:
@@ -818,6 +882,9 @@ function item(stream: Stream): Item | null {
 
     case KFn:
       return itemFn(stream)!
+
+    case KRule:
+      return itemRule(stream)!
   }
 
   return null

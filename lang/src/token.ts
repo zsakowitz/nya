@@ -11,6 +11,8 @@ import {
   ORBrace,
   ORParen,
   TComment,
+  TDeriv,
+  TDerivIgnore,
   TFloat,
   TIdent,
   TIgnore,
@@ -45,6 +47,13 @@ export const Code = Object.freeze({
   UnexpectedToken: 32,
   IfOrBlockMustFollowElse: 33,
   ExpectedType: 34,
+  MissingSemi: 35,
+  MissingRuleArrow: 36,
+  ExpectedBlock: 37,
+  ExpectedForBindings: 38,
+  ExpectedForSources: 39,
+  ExpectedIn: 40,
+  UnnecessarySemi: 41,
 })
 
 export type Code = (typeof Code)[keyof typeof Code]
@@ -82,6 +91,19 @@ export function tokens(source: string, props: ToTokensProps) {
 
     if (WS.test(char)) {
       i++
+      continue
+    }
+
+    if (
+      char == "d" &&
+      source[i + 1] == "/" &&
+      source[i + 2] == "d" &&
+      is(ID_START, source[i + 3])
+    ) {
+      i += 2
+      while (is(ID_CONT, source[++i]));
+      const text = source.slice(start, i)
+      ret.push(new Token(text == "d/d_" ? TDerivIgnore : TDeriv, start, i))
       continue
     }
 
