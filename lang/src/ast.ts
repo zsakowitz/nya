@@ -1,4 +1,3 @@
-import type { Ident } from "./ast-old"
 import type { Print } from "./ast-print"
 import {
   AAmp,
@@ -31,6 +30,7 @@ import {
   KRule,
   KSource,
   KType,
+  KUsage,
   OAmp,
   OAmpAmp,
   OArrowMap,
@@ -64,6 +64,7 @@ import {
   OStar,
   OStarStar,
   OTilde,
+  OVERLOADABLE,
   TBuiltin,
   TDeriv,
   TDerivIgnore,
@@ -73,9 +74,13 @@ import {
   TSource,
   TSym,
   type Brack,
+  type OOverloadable,
 } from "./kind"
 import { Stream, TokenGroup } from "./stream"
 import { Code, Token } from "./token"
+
+export type Ident = Token<typeof TIdent>
+export type IdentFnName = Token<typeof TIdent> | Token<OOverloadable>
 
 export abstract class Node {
   constructor(
@@ -864,13 +869,19 @@ function fnParam(stream: Stream) {
 export class ItemFn extends Item {
   constructor(
     readonly kw: Token<typeof KFn>,
-    readonly name: Ident | null,
+    readonly name: IdentFnName | null,
     readonly params: List<FnParam> | null,
     readonly arrow: Token<typeof OArrowRet> | null,
     readonly retType: Type | null,
+    readonly usageKw: Token<typeof KUsage> | null,
+    readonly usages: PlainList<Expr> | null,
     readonly block: ExprBlock | null,
   ) {
-    super(kw.start, (block ?? retType ?? arrow ?? params ?? name ?? kw).end)
+    super(
+      kw.start,
+      (block ?? usages ?? usageKw ?? retType ?? arrow ?? params ?? name ?? kw)
+        .end,
+    )
   }
 }
 
@@ -880,7 +891,8 @@ function itemFn(stream: Stream) {
   const kw = stream.match(KFn)
   if (!kw) return null
 
-  const ident = stream.matchOr(TIdent, Code.ExpectedIdent)
+  const ident = stream.match(TIdent) || stream.matchAny(OVERLOADABLE)
+  if (!ident) stream.raiseNext(Code.ExpectedFnName)
   const p = fnParams(stream)
   const arrow = stream.match(OArrowRet) // not matchOr since return types are optional (void is implied)
   let ty = null
@@ -889,9 +901,16 @@ function itemFn(stream: Stream) {
   } else if (arrow) {
     ty = type(stream)
   }
+  const usageKw = stream.match(KUsage)
+  const usages = usageKw && fnUsageExamples(stream)
 
-  return new ItemFn(kw, ident, p, arrow, ty, block(stream))
+  return new ItemFn(kw, ident, p, arrow, ty, usageKw, usages, block(stream))
 }
+
+const fnUsageExamples = createUnbracketedCommaOp(
+  (stream) => expr(stream, { struct: false }),
+  Code.ExpectedForBindings,
+)
 
 export class ItemRule extends Item {
   constructor(

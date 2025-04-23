@@ -255,3 +255,28 @@ export const IDENT_PREFIXES: Record<string, number> = {
   "'": TLabel,
   "%": TIdent,
 }
+
+export const OVERLOADABLE = Object.freeze([
+  OPlus, // add
+  OMinus, // subtract
+  OStar, // multiple
+  OSlash, // divide
+  OStarStar, // exponentiate
+  OTilde, // idk, but maybe useful
+  OBar, // union
+  OAmp, // intersection
+  OBarBar, // or
+  OAmpAmp, // and
+  OBackslash, // fraction
+  OEqEq, // eq
+  ONe, // ne
+  OLe, // le
+  OGe, // ge
+  OLt, // lt
+  OGt, // gt
+  OBang, // nots
+  OArrowRet, // type conversion
+  OPercent, // modulus
+] as const)
+
+export type OOverloadable = (typeof OVERLOADABLE)[number]
