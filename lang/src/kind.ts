@@ -31,7 +31,6 @@ export const KReturn = 26
 export const KBreak = 27
 export const KContinue = 28
 export const KUse = 29
-export const KVal = 30
 export const KUsage = 31
 export const KOnly = 32
 export const KSource = 33
@@ -142,7 +141,6 @@ export const KWS: Record<string, number> = {
   break: KBreak,
   continue: KContinue,
   use: KUse,
-  val: KVal,
   usage: KUsage,
   only: KOnly,
   source: KSource,
