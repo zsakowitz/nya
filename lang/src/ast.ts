@@ -1213,6 +1213,9 @@ function item(stream: Stream): Item | null {
 
     case KUse:
       return itemUse(stream)!
+
+    case KEnum:
+      return itemEnum(stream)!
   }
 
   return null

@@ -46,3 +46,9 @@ fn +(a: float, b: float) -> r32 usage 2 + 3 {
 }
 
 use "./world";
+
+enum Hi {
+  :a,
+  :b,
+  :c,
+}

@@ -20,30 +20,31 @@ function run() {
     const yp = Math.random()
     const y = y1 * (1 - yp) + y2 * yp
 
-    if (level > 0) {
+    if (x2 - x > 1 || y - y1 > 1) {
       go(x, y1, x2, y, level - 1)
     }
 
     p.push([x, y])
-    // ctx.beginPath()
-    // ctx.moveTo(Math.round(x), Math.round(y1))
-    // ctx.lineTo(Math.round(x), Math.round(y))
-    // ctx.lineTo(Math.round(x1), Math.round(y))
-    // ctx.strokeStyle = "black"
-    // ctx.stroke()
+    ctx.beginPath()
+    ctx.moveTo(Math.round(x), Math.round(y1))
+    ctx.lineTo(Math.round(x), Math.round(y))
+    ctx.lineTo(Math.round(x1), Math.round(y))
+    ctx.strokeStyle = "black"
+    ctx.stroke()
 
-    if (level > 0) {
+    if (x1 - x > 1 || y2 - y > 1) {
       go(x1, y, x, y2, level - 1)
     }
   }
   go(0, 0, 1000, 1000, 12)
-  ctx.beginPath()
-  ctx.moveTo(1000, 0)
-  for (const [x, y] of p) ctx.lineTo(x, y)
-  ctx.lineTo(0, 1000)
-  ctx.lineWidth = 2
-  ctx.strokeStyle = "black"
-  ctx.stroke()
+
+  // ctx.beginPath()
+  // ctx.moveTo(1000, 0)
+  // for (const [x, y] of p) ctx.lineTo(x, y)
+  // ctx.lineTo(0, 1000)
+  // ctx.lineWidth = 2
+  // ctx.strokeStyle = "black"
+  // ctx.stroke()
 }
 run()
 cv.onclick = run
