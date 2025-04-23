@@ -34,6 +34,7 @@ import {
   KReturn,
   KRule,
   KSource,
+  KStruct,
   KType,
   KUsage,
   KUse,
@@ -1232,7 +1233,7 @@ export class ItemEnumMap extends Item {
   }
 }
 
-export function itemEnum(stream: Stream) {
+function itemEnum(stream: Stream) {
   const kw = stream.match(KEnum)
   if (!kw) return null
 
@@ -1252,6 +1253,26 @@ export function itemEnum(stream: Stream) {
   }
 }
 
+export class ItemStruct extends Item {
+  constructor(
+    readonly kw: Token<typeof KStruct>,
+    readonly name: Ident | null,
+    // readonly tparams: Type,
+    readonly fields: List<StructField, Token<typeof ODotDot> | null> | null,
+  ) {
+    super(kw.start, (fields ?? name ?? kw).end)
+  }
+}
+
+function itemStruct(stream: Stream) {
+  const kw = stream.match(KStruct)
+  if (!kw) return null
+
+  const ident = stream.matchOr(TIdent, Code.ExpectedIdent)
+
+  return new ItemStruct(kw, ident, structFields(stream))
+}
+
 function item(stream: Stream): Item | null {
   switch (stream.peek()) {
     case KType:
@@ -1268,6 +1289,9 @@ function item(stream: Stream): Item | null {
 
     case KEnum:
       return itemEnum(stream)!
+
+    case KStruct:
+      return itemStruct(stream)!
   }
 
   return null

@@ -1,5 +1,6 @@
 rule a + 0.0 => a;
 rule d/dx(a * b) => d/dx(a) * b + a * d/dx(b);
+rule 0.0 * a => a;
 
 type f32 {
   source js { number }
@@ -57,4 +58,9 @@ enum Units -> float {
   :meter => 1.0,
   :cm => 0.01,
   :km => 1000.0,
+}
+
+struct Complex {
+  re: float,
+  im: float
 }
