@@ -30,6 +30,7 @@ import {
   KFor,
   KIf,
   KIn,
+  KLet,
   KMatch,
   KReturn,
   KRule,
@@ -52,6 +53,7 @@ import {
   OComma,
   ODot,
   ODotDot,
+  OEq,
   OEqEq,
   OGe,
   OGt,
@@ -189,6 +191,29 @@ export class TypeParen extends Type {
   }
 }
 
+export class TypeArray extends Type {
+  constructor(
+    readonly brack: TokenGroup<typeof OLBrack>,
+    readonly of: Type,
+    readonly semi: Token<typeof OSemi> | null,
+    readonly sizes: PlainList<Expr>,
+  ) {
+    super(brack.start, sizes.end)
+  }
+}
+
+const arraySizes = createUnbracketedCommaOp(expr, Code.ExpectedExpression)
+
+function typeArray(stream: Stream) {
+  const group = stream.matchGroup(OLBrack)
+  if (!group) return null
+
+  const of = type(group.contents)
+  const semi = group.contents.matchOr(OSemi, Code.MissingSemi)
+  const exprs = arraySizes(group.contents)
+  return new TypeArray(group, of, semi, exprs)
+}
+
 function type(stream: Stream): Type {
   switch (stream.peek()) {
     case TIdent:
@@ -205,6 +230,9 @@ function type(stream: Stream): Type {
     case OLParen:
       const token = stream.matchGroup(OLParen)!
       return new TypeParen(token, token.contents.full(type))
+
+    case OLBrack:
+      return typeArray(stream)!
   }
 
   stream.raiseNext(Code.ExpectedType)
@@ -422,6 +450,17 @@ export class ExprArray extends Expr {
   }
 }
 
+export class ExprArrayByRepetition extends Expr {
+  constructor(
+    readonly brack: TokenGroup<typeof OLBrack>,
+    readonly of: Expr,
+    readonly semi: Token<typeof OSemi> | null,
+    readonly sizes: PlainList<Expr>,
+  ) {
+    super(brack.start, sizes.end)
+  }
+}
+
 function exprAtom(stream: Stream, ctx: ExprContext): Expr {
   switch (stream.peek()) {
     case TFloat:
@@ -439,8 +478,31 @@ function exprAtom(stream: Stream, ctx: ExprContext): Expr {
     }
 
     case OLBrack: {
-      const e = listValues(stream)!
-      return new ExprArray(e)
+      const lt = stream.matchGroup(OLBrack)!
+      const first = expr(lt.contents)
+
+      switch (lt.contents.peek()) {
+        case OSemi:
+          const semi = lt.contents.match(OSemi)!
+          const sizes = arraySizes(lt.contents)
+          return new ExprArrayByRepetition(lt, first, semi, sizes)
+
+        case OComma:
+          const items = [first]
+          while (lt.contents.match(OComma)) {
+            if (lt.contents.isDone()) {
+              break
+            }
+            items.push(expr(lt.contents))
+          }
+          return new ExprArray(new List(lt, items, null))
+
+        case null:
+          return new ExprArray(new List(lt, [first], null))
+      }
+
+      lt.contents.raiseNext(Code.ExpectedCommaOrSemi)
+      return new ExprArray(new List(lt, [first], null))
     }
 
     case OLBrace:
@@ -729,12 +791,43 @@ export class StmtExpr extends Stmt {
   }
 }
 
+export class StmtLet extends Stmt {
+  constructor(
+    readonly kw: Token<typeof KLet>,
+    readonly ident: Ident | null,
+    readonly colon: Token<typeof OColon> | null,
+    readonly type: Type | null,
+    readonly eq: Token<typeof OEq> | null,
+    readonly value: Expr | null,
+    readonly semi: Token<typeof OSemi> | null,
+  ) {
+    super(kw.start, (semi ?? value ?? eq ?? type ?? colon ?? ident ?? kw).end)
+  }
+}
+
+function stmtLet(stream: Stream): StmtLet | null {
+  const kw = stream.match(KLet)
+  if (!kw) return null
+
+  const ident = stream.matchOr(TIdent, Code.ExpectedIdent)
+  const colon = stream.match(OColon)
+  const ty = colon && type(stream)
+  const eq = stream.match(OEq)
+  const value = eq && expr(stream)
+  const semi = stream.matchOr(OSemi, Code.MissingSemi)
+
+  return new StmtLet(kw, ident, colon, ty, eq, value, semi)
+}
+
 function stmt(stream: Stream): Stmt | null {
   if (stream.isDone()) {
     return null
   }
 
   switch (stream.peek()) {
+    case KLet:
+      return stmtLet(stream)!
+
     case KIf:
       return new StmtExpr(exprIf(stream)!, stream.match(OSemi), false)
 
@@ -861,7 +954,6 @@ function createCommaOp<
 
 const callArgs = createCommaOp(OLParen, expr, null)
 const structArgs = createCommaOp(OLBrace, expr, null)
-const listValues = createCommaOp(OLBrack, expr, null)
 
 export class ExprBlock extends Expr {
   constructor(
@@ -1325,12 +1417,8 @@ export function parse(stream: Stream) {
 
 // TODO:
 // - let statement
-// - array types
-// - array exprs
-// - range exprs
+// - enum variant with data expr
+// - assignment
 //
 // ITEMS:
-// - struct
-// - plain enum
-// - map enum
 // - expose

@@ -66,6 +66,7 @@ export const Code = Object.freeze({
   ExpectedStructFields: 51,
   ExpectedEnumVariants: 52,
   ExpectedEnumVariantValue: 53,
+  ExpectedCommaOrSemi: 54,
 })
 
 export type Code = (typeof Code)[keyof typeof Code]

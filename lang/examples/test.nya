@@ -62,5 +62,13 @@ enum Units -> float {
 
 struct Complex {
   re: float,
-  im: float
+  im: [float; 5, 7, 8]
+}
+
+fn array_test() {
+  let x;
+  let x: float;
+  let x = 2.3;
+  let x: float = 2.3;
+  [float; 5, 7, 8]
 }
