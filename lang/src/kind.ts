@@ -63,61 +63,65 @@ export const ALBrack = 56
 export const ARBrack = 57
 export const ALBrace = 58
 export const ARBrace = 59
-export const ALInterp = 60
-export const ASemi = 61
-export const AComma = 62
-export const AColon = 63
-export const AArrowRet = 64
-export const AArrowMap = 65
-export const AColonColon = 66
-export const ADot = 67
-export const ADotDot = 68
-export const APercent = 69
-export const AEq = 70
+export const ALAngle = 60
+export const ARAngle = 61
+export const ALInterp = 62
+export const ASemi = 63
+export const AComma = 64
+export const AColon = 65
+export const AArrowRet = 66
+export const AArrowMap = 67
+export const AColonColon = 68
+export const ADot = 69
+export const ADotDot = 70
+export const APercent = 71
+export const AEq = 72
 
 // operators not prefixed with @
-export const OPlus = 71
-export const OMinus = 72
-export const OStar = 73
-export const OSlash = 74
-export const OStarStar = 75
-export const OTilde = 76
-export const OBar = 77
-export const OAmp = 78
-export const OBarBar = 79
-export const OAmpAmp = 80
-export const OAt = 81
-export const OBackslash = 82
-export const OEqEq = 83
-export const ONe = 84
-export const OLe = 85
-export const OGe = 86
-export const OLt = 87
-export const OGt = 88
-export const OBang = 89
-export const OLParen = 90
-export const ORParen = 91
-export const OLBrack = 92
-export const ORBrack = 93
-export const OLBrace = 94
-export const ORBrace = 95
-export const OLInterp = 96
-export const OSemi = 97
-export const OComma = 98
-export const OColon = 99
-export const OArrowRet = 100
-export const OArrowMap = 101
-export const OColonColon = 102
-export const ODot = 103
-export const ODotDot = 104
-export const OPercent = 105
-export const OEq = 106
+export const OPlus = 73
+export const OMinus = 74
+export const OStar = 75
+export const OSlash = 76
+export const OStarStar = 77
+export const OTilde = 78
+export const OBar = 79
+export const OAmp = 80
+export const OBarBar = 81
+export const OAmpAmp = 82
+export const OAt = 83
+export const OBackslash = 84
+export const OEqEq = 85
+export const ONe = 86
+export const OLe = 87
+export const OGe = 88
+export const OLt = 89
+export const OGt = 90
+export const OBang = 91
+export const OLParen = 92
+export const ORParen = 93
+export const OLBrack = 94
+export const ORBrack = 95
+export const OLBrace = 96
+export const ORBrace = 97
+export const OLAngle = 98
+export const ORAngle = 99
+export const OLInterp = 100
+export const OSemi = 101
+export const OComma = 102
+export const OColon = 103
+export const OArrowRet = 104
+export const OArrowMap = 105
+export const OColonColon = 106
+export const ODot = 107
+export const ODotDot = 108
+export const OPercent = 109
+export const OEq = 110
 
 export type Brack =
   | typeof OLParen
   | typeof OLBrack
   | typeof OLBrace
-  | typeof OLt
+  | typeof OLAngle
   | typeof OLInterp
 
 export const KWS: Record<string, number> = {
@@ -229,7 +233,7 @@ export const MATCHING_PAREN: Record<Brack, number> = {
   [OLParen]: ORParen,
   [OLBrack]: ORBrack,
   [OLBrace]: ORBrace,
-  [OLt]: OGt,
+  [OLAngle]: ORAngle,
   [OLInterp]: ORParen,
 }
 

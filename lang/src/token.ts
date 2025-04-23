@@ -44,6 +44,7 @@ export const Code = Object.freeze({
   ExpectedExpression: 31,
   UnexpectedToken: 32,
   IfOrBlockMustFollowElse: 33,
+  ExpectedType: 34,
 })
 
 export type Code = (typeof Code)[keyof typeof Code]
@@ -118,15 +119,7 @@ export function tokens(source: string, props: ToTokensProps) {
       continue
     }
 
-    if (char in IDENT_PREFIXES) {
-      if (!is(ID_START, source[i + 1])) {
-        if (char in OPS) {
-          ret.push(new Token(OPS[char]!, start, ++i))
-        } else {
-          issues.push(new Issue(Code.UnknownOperator, start, ++i))
-        }
-        continue
-      }
+    if (char in IDENT_PREFIXES && is(ID_START, source[i + 1])) {
       while (is(ID_CONT, source[++i]));
       ret.push(new Token(IDENT_PREFIXES[char]!, start, i))
       continue

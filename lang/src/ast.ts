@@ -38,12 +38,14 @@ import {
   OBang,
   OBar,
   OBarBar,
+  OColonColon,
   OComma,
   ODot,
   ODotDot,
   OEqEq,
   OGe,
   OGt,
+  OLAngle,
   OLBrace,
   OLBrack,
   OLe,
@@ -66,7 +68,6 @@ import {
   TSource,
   TSym,
   type Brack,
-  type OColonColon,
 } from "./kind"
 import { Stream, TokenGroup } from "./stream"
 import { Code, Token } from "./token"
@@ -88,6 +89,49 @@ export abstract class Type extends Node {
   declare private __brand_type
 }
 
+export class TypeVar extends Type {
+  constructor(
+    readonly name: Token<typeof TIdent>,
+    readonly targs: List<Type> | null,
+  ) {
+    super(name.start, (targs ?? name).end)
+  }
+}
+
+export class TypeLit extends Type {
+  constructor(
+    readonly token: Token<typeof TInt | typeof TFloat | typeof TSym>,
+  ) {
+    super(token.start, token.end)
+  }
+}
+
+export class TypeEmpty extends Type {
+  constructor(readonly at: number) {
+    super(at, at)
+  }
+}
+
+function type(stream: Stream): Type {
+  switch (stream.peek()) {
+    case TIdent:
+      return new TypeVar(stream.match(TIdent)!, typeArgs(stream))
+
+    case TInt:
+    case TFloat:
+    case TSym:
+      return new TypeLit(stream.matchAny([TInt, TFloat, TSym])!)
+
+    case OLBrace:
+      return new TypeBlock(block(stream)!)
+  }
+
+  stream.issueOnNext(Code.ExpectedType)
+  return new TypeEmpty(stream.loc())
+}
+
+const typeArgs = createCommaOp(OLAngle, type)
+
 export class ExprLit extends Expr {
   constructor(
     readonly value: Token<typeof TFloat | typeof TInt | typeof TSym>,
@@ -104,6 +148,7 @@ function exprLit(stream: Stream) {
 export class ExprVar extends Expr {
   constructor(
     readonly name: Token<typeof TIdent | typeof TBuiltin>,
+    readonly targs: List<Type> | null,
     readonly args: List<Expr> | null,
   ) {
     super(name.start, name.end)
@@ -126,11 +171,11 @@ interface ExprContext {
 function exprVar(stream: Stream, ctx: ExprContext) {
   const token = stream.match(TIdent) || stream.match(TBuiltin)
   if (token) {
-    const struct = ctx.struct && structArguments(stream)
+    const struct = ctx.struct && structArgs(stream)
     if (struct) {
       return new ExprStruct(token, struct)
     } else {
-      return new ExprVar(token, fnArguments(stream))
+      return new ExprVar(token, typeArgs(stream), callArgs(stream))
     }
   }
 }
@@ -145,9 +190,9 @@ export class ExprIf extends Expr {
   constructor(
     readonly kwIf: Token<typeof KIf>,
     readonly condition: Expr,
-    readonly blockIf: Block | null,
+    readonly blockIf: ExprBlock | null,
     readonly kwElse: Token<typeof KElse> | null,
-    readonly blockElse: Block | ExprIf | null,
+    readonly blockElse: ExprBlock | ExprIf | null,
   ) {
     super(kwIf.start, blockIf?.end ?? condition.end)
   }
@@ -181,7 +226,7 @@ export class ExprFor extends Expr {
     readonly bound: PlainList<Ident>,
     readonly eq: Token<typeof KIn> | null,
     readonly sources: PlainList<Expr>,
-    readonly block: Block | null,
+    readonly block: ExprBlock | null,
   ) {
     super(kw.start, block?.end ?? sources.end)
   }
@@ -261,9 +306,10 @@ function exprAtom(stream: Stream, ctx: ExprContext): Expr {
 export class ExprCall extends Expr {
   constructor(
     readonly on: Expr,
-    readonly args: List<Expr>,
+    readonly targs: List<Type> | null,
+    readonly args: List<Expr> | null,
   ) {
-    super(on.start, args.end)
+    super(on.start, (args ?? targs ?? on).end)
   }
 }
 
@@ -272,6 +318,7 @@ export class ExprProp extends Expr {
     readonly on: Expr,
     readonly dot: Token<typeof ODot>,
     readonly name: Token<typeof TIdent> | null,
+    readonly targs: List<Type> | null,
     readonly args: List<Expr> | null,
   ) {
     super(on.start, name?.end ?? dot.end)
@@ -293,10 +340,16 @@ function exprPropChain(stream: Stream, ctx: ExprContext) {
 
   loop: while (true) {
     switch (stream.peek()) {
+      case OLAngle:
+        const t = typeArgs(stream)!
+        const a = callArgs(stream)
+        exp = new ExprCall(exp, t, a)
+        continue
+
       case OLParen:
-        const m = fnArguments(stream)
+        const m = callArgs(stream)
         if (m) {
-          exp = new ExprCall(exp, m)
+          exp = new ExprCall(exp, null, m)
           continue
         } else {
           break loop
@@ -312,7 +365,8 @@ function exprPropChain(stream: Stream, ctx: ExprContext) {
           exp,
           stream.match(ODot)!,
           stream.match(TIdent),
-          fnArguments(stream),
+          typeArgs(stream),
+          callArgs(stream),
         )
         continue
     }
@@ -582,22 +636,29 @@ function createCommaOp<T extends Print>(
       }
 
       group.contents.match(OComma)
+      group.contents.requireDone()
     }
 
     return list
   }
 }
 
-const fnArguments = createCommaOp(OLParen, expr)
-const structArguments = createCommaOp(OLBrace, expr)
+const callArgs = createCommaOp(OLParen, expr)
+const structArgs = createCommaOp(OLBrace, expr)
 const listValues = createCommaOp(OLBrack, expr)
 
-export class Block extends Expr {
+export class ExprBlock extends Expr {
   constructor(
     readonly bracket: TokenGroup,
     readonly of: Stmt[],
   ) {
     super(bracket.start, of[of.length - 1]?.end ?? bracket.end)
+  }
+}
+
+export class TypeBlock extends Type {
+  constructor(readonly block: ExprBlock) {
+    super(block.start, block.end)
   }
 }
 
@@ -615,7 +676,7 @@ function block(stream: Stream) {
   }
   group.contents.requireDone()
 
-  return new Block(group, list)
+  return new ExprBlock(group, list)
 }
 
 export class SourceSingle extends Expr {
@@ -636,6 +697,7 @@ export class Source extends Expr {
     end: number,
     readonly parts: SourceSingle[],
     readonly castOp: Token<typeof OColonColon> | null,
+    readonly cast: Type | null,
   ) {
     super(start, end)
   }
@@ -673,6 +735,7 @@ function sourceSingle(stream: Stream): SourceSingle | null {
         parts.push(nextSource)
       } else break contents
     }
+    brace.contents.requireDone()
   }
 
   return new SourceSingle(kw, lang, brace, parts, interps)
@@ -688,7 +751,16 @@ function source(stream: Stream): Source | null {
     return null
   }
 
-  return new Source(parts[0]!.start, parts[parts.length - 1]!.end, parts, null)
+  const colon = stream.match(OColonColon)
+  const ty = colon && type(stream)
+
+  return new Source(
+    parts[0]!.start,
+    (ty ?? colon ?? parts[parts.length - 1]!).end,
+    parts,
+    colon,
+    ty,
+  )
 }
 
 export abstract class Item extends Node {
@@ -724,7 +796,7 @@ export class ItemFn extends Item {
     readonly params: List<Ident> | null,
     // readonly arrow: Token<typeof OArrowRet> | null,
     // readonly retType:
-    readonly block: Block | null,
+    readonly block: ExprBlock | null,
   ) {
     super(kw.start, (block ?? params ?? name ?? kw).end)
   }

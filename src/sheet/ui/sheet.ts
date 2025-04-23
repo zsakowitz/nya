@@ -196,7 +196,7 @@ export class Sheet {
       return label
     }
     const trigKindEl = h(
-      "block w-48 bg-[--nya-bg] outline outline-1 outline-[--nya-pixel-ratio] rounded-full p-0.5 text-[--nya-text-prose] font-['Symbola'] grid grid-cols-3",
+      "w-48 bg-[--nya-bg] outline outline-1 outline-[--nya-pixel-ratio] rounded-full p-0.5 text-[--nya-text-prose] font-['Symbola'] grid grid-cols-3",
       trigLabel("rad"),
       trigLabel("deg"),
       trigLabel("rot"),
@@ -374,7 +374,7 @@ export class Sheet {
     )
 
     const addons = h(
-      "hidden relative [grid-area:cv] backdrop-blur flex h-full max-h-full",
+      "relative [grid-area:cv] backdrop-blur flex h-full max-h-full",
       h("absolute top-0 left-0 h-full w-full bg-[--nya-bg-sidebar] opacity-80"),
       toolbarDependentAddonGradient,
       h(

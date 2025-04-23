@@ -3,6 +3,11 @@ type f32 {
   source glsl { float }
 }
 
+fn some_types() {
+  a<b, 45, :sym, { c.q }, d<e<g>>>;
+  source { 23 } :: f32;
+}
+
 fn hi(a, b) {
   if true {
     c32 { 2.0, 3.4 }

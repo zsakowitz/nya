@@ -1,11 +1,13 @@
 import {
   MATCHING_PAREN,
   OGt,
+  OLAngle,
   OLBrace,
   OLBrack,
   OLInterp,
   OLParen,
   OLt,
+  ORAngle,
   ORBrace,
   ORBrack,
   ORParen,
@@ -42,13 +44,18 @@ export function createStream(source: string, props: ToTokensProps) {
       // @ts-expect-error intentional fallthrough
       case OLt:
         if (token.start !== raw[i - 1]?.end) break
+        ;(token as any).kind = OLAngle
       case OLParen:
       case OLBrack:
       case OLBrace:
       case OLInterp:
         const group = new TokenGroup(
           token as Token<Brack>,
-          new Token(MATCHING_PAREN[token.kind], token.start, token.start),
+          new Token(
+            MATCHING_PAREN[token.kind as Brack],
+            token.start,
+            token.start,
+          ),
           new Stream(source, [], issues, token.end, token.end),
         )
         parens.push(group)
@@ -58,7 +65,8 @@ export function createStream(source: string, props: ToTokensProps) {
 
       // @ts-expect-error intentional fallthrough
       case OGt:
-        if (parens[parens.length - 1]?.kind != OLt) break
+        if (parens[parens.length - 1]?.kind != OLAngle) break
+        ;(token as any).kind = ORAngle
       case ORParen:
       case ORBrack:
       case ORBrace:
