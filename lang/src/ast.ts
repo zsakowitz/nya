@@ -25,6 +25,7 @@ import {
   KBreak,
   KContinue,
   KElse,
+  KEnum,
   KFn,
   KFor,
   KIf,
@@ -35,6 +36,7 @@ import {
   KSource,
   KType,
   KUsage,
+  KUse,
   OAmp,
   OAmpAmp,
   OArrowMap,
@@ -78,6 +80,7 @@ import {
   TInt,
   TLabel,
   TSource,
+  TString,
   TSym,
   type Brack,
   type OOverloadable,
@@ -789,19 +792,24 @@ function createUnbracketedCommaOp<T extends Print & { end: number }>(
   }
 }
 
-export class List<T extends Print> extends Node {
+export class List<T extends Print, U extends Print | null = null> extends Node {
   constructor(
     readonly bracket: TokenGroup,
     readonly items: T[],
+    readonly terminator: U,
   ) {
     super(bracket.start, bracket.end)
   }
 }
 
-function createCommaOp<T extends Print>(
+function createCommaOp<
+  T extends Print,
+  U extends (Print & { end: number }) | null = null,
+>(
   bracket: Brack,
   fn: (stream: Stream) => T | null,
   code: Code | null,
+  terminator?: (stream: Stream) => U | null,
 ) {
   return (stream: Stream) => {
     const group = stream.matchGroup(bracket)
@@ -812,25 +820,37 @@ function createCommaOp<T extends Print>(
       return null
     }
 
-    const list = new List<T>(group, [])
+    const list = new List<T, U | null>(group, [], null)
     if (!group.contents.isEmpty()) {
       const first = fn(group.contents)
       if (!first) {
+        const tx = terminator?.(group.contents)
+        if (tx != null) {
+          ;(list as any).terminator = tx
+          ;(list as any).end = tx.end
+        }
         group.contents.requireDone()
         return list
       }
       list.items.push(first)
 
       while (group.contents.match(OComma)) {
+        if (group.contents.isDone()) {
+          break
+        }
         const val = fn(group.contents)
         if (!val) {
+          const tx = terminator?.(group.contents)
+          if (tx != null) {
+            ;(list as any).terminator = tx
+            ;(list as any).end = tx.end
+          }
           group.contents.requireDone()
           return list
         }
         list.items.push(val)
       }
 
-      group.contents.match(OComma)
       group.contents.requireDone()
     }
 
@@ -1081,6 +1101,105 @@ function itemRule(stream: Stream) {
   return new ItemRule(kw, lhs, op, rhs, semi)
 }
 
+export class ItemUse extends Item {
+  constructor(
+    readonly kw: Token<typeof KUse>,
+    readonly source: Token<typeof TString> | null,
+    readonly semi: Token<typeof OSemi> | null,
+  ) {
+    super(kw.start, (semi ?? source ?? kw).end)
+  }
+}
+
+function itemUse(stream: Stream) {
+  const kw = stream.match(KUse)
+  if (!kw) return null
+
+  return new ItemUse(
+    kw,
+    stream.matchOr(TString, Code.ExpectedImportPath),
+    stream.matchOr(OSemi, Code.MissingSemi),
+  )
+}
+
+export class StructField extends Node {
+  constructor(
+    readonly name: Ident,
+    readonly colon: Token<typeof OColon> | null,
+    readonly type: Type,
+  ) {
+    super(name.start, type.end)
+  }
+}
+
+function structField(stream: Stream) {
+  const ident = stream.match(TIdent)
+  if (!ident) return null
+
+  return new StructField(
+    ident,
+    stream.matchOr(OColon, Code.ExpectedColon),
+    type(stream),
+  )
+}
+
+const structFields = createCommaOp(
+  OLBrace,
+  structField,
+  Code.ExpectedStructFields,
+)
+
+function nonExhaustiveMarker(stream: Stream) {
+  return stream.match(ODotDot)
+}
+
+const enumFields = createCommaOp(OLBrace, structField, null)
+
+export class EnumVariant extends Node {
+  constructor(
+    readonly name: Token<typeof TSym>,
+    readonly fields: List<StructField> | null,
+  ) {
+    super(name.start, (fields ?? name).end)
+  }
+}
+
+export function enumVariant(stream: Stream) {
+  const name = stream.match(TSym)
+  if (!name) return null
+
+  return new EnumVariant(name, structFields(stream))
+}
+
+const enumVariants = createCommaOp(
+  OLBrace,
+  enumVariant,
+  Code.ExpectedEnumVariants,
+  nonExhaustiveMarker,
+)
+
+export class ItemEnum extends Item {
+  constructor(
+    readonly kw: Token<typeof KEnum>,
+    readonly name: Ident | null,
+    // readonly tparams: Type,
+    readonly variants: List<EnumVariant, Token<typeof ODotDot> | null> | null,
+  ) {
+    super(kw.start, (variants ?? name ?? kw).end)
+  }
+}
+
+export function itemEnum(stream: Stream) {
+  const kw = stream.match(KEnum)
+  if (!kw) return null
+
+  return new ItemEnum(
+    kw,
+    stream.matchOr(TIdent, Code.ExpectedIdent),
+    enumVariants(stream),
+  )
+}
+
 function item(stream: Stream): Item | null {
   switch (stream.peek()) {
     case KType:
@@ -1091,6 +1210,9 @@ function item(stream: Stream): Item | null {
 
     case KRule:
       return itemRule(stream)!
+
+    case KUse:
+      return itemUse(stream)!
   }
 
   return null
@@ -1125,10 +1247,11 @@ export function parse(stream: Stream) {
 // TODO:
 // - let statement
 // - array types
+// - array exprs
+// - range exprs
 //
 // ITEMS:
 // - struct
 // - plain enum
 // - map enum
-// - use
 // - expose
