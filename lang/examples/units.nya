@@ -42,6 +42,7 @@ enum UnitName -> UnitMapping {
   :m => um(:m),
   :s => um(:s),
   :g => um(:kg, 1e-3),
+  :kg => um(:kg),
   :min => um(:s, 60.0),
   :hr => um(:s, 3600.0),
   :N => um([.{ :kg, 1.0 }, .{ :m, 1.0 }, .{ :s, -2.0 }]),
@@ -96,3 +97,22 @@ fn unit_bases(unit: Unit) -> UnitBase {
 
   .{ bases, scale }
 }
+
+fn conversion_factor(src: Unit, dst: Unit) -> real {
+  let b_src = unit_bases(src);
+  let b_dst = unit_bases(dst);
+  assert b_src.bases == b_dst.bases else "incompatible units";
+  b_src.scale / b_dst.scale
+}
+
+struct RealWithUnit {
+  value: real,
+  unit: Unit,
+}
+
+fn +(a: RealWithUnit, b: RealWithUnit) -> RealWithUnit {
+  let scale = conversion_factor(b.unit, a.unit);
+  .{ a.unit, a + b * scale }
+}
+
+expose fn + "add two values with units";

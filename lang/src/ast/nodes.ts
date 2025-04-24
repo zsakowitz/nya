@@ -512,9 +512,11 @@ export class StmtAssert extends Stmt {
   constructor(
     readonly kw: Token<typeof KAssert>,
     readonly expr: Expr,
+    readonly elseKw: Token<typeof KElse> | null,
+    readonly message: Token<typeof TString> | null,
     readonly semi: Token<typeof OSemi> | null,
   ) {
-    super(kw.start, (semi ?? expr).end)
+    super(kw.start, (semi ?? message ?? elseKw ?? expr).end)
   }
 }
 
@@ -743,6 +745,8 @@ export class ItemTest extends Item {
   constructor(
     readonly kw: Token<typeof KAssert>,
     readonly expr: Expr,
+    readonly kwElse: Token<typeof KElse> | null,
+    readonly message: Token<typeof TString> | null,
     readonly semi: Token<typeof OSemi> | null,
   ) {
     super(kw.start, (semi ?? expr).end)

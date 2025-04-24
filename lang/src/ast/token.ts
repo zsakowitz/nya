@@ -74,6 +74,7 @@ export const Code = Object.freeze({
   ExpectedExposeString: 57,
   InvalidLabel: 58,
   OnlyValidAsExposedAlias: 59,
+  ExpectedAssertFailureReason: 60,
 
   // future error ideas:
   // match on nonexhaustive enum

@@ -671,9 +671,15 @@ function stmtAssert(stream: Stream) {
   const kw = stream.match(KAssert)
   if (!kw) return null
 
+  const e = expr(stream)
+  const kw2 = stream.match(KElse)
+  const msg = kw2 && stream.matchOr(TString, Code.ExpectedAssertFailureReason)
+
   return new StmtAssert(
     kw,
-    expr(stream),
+    e,
+    kw2,
+    msg,
     stream.matchOr(OSemi, Code.MissingSemi),
   )
 }
@@ -1082,7 +1088,11 @@ function itemTest(stream: Stream) {
   const kw = stream.match(KAssert)
   if (!kw) return null
 
-  return new ItemTest(kw, expr(stream), stream.matchOr(OSemi, Code.MissingSemi))
+  const e = expr(stream)
+  const kw2 = stream.match(KElse)
+  const msg = kw2 && stream.matchOr(TString, Code.ExpectedAssertFailureReason)
+
+  return new ItemTest(kw, e, kw2, msg, stream.matchOr(OSemi, Code.MissingSemi))
 }
 
 function fnName(stream: Stream): IdentFnName | null {
@@ -1131,7 +1141,8 @@ export function itemExpose(stream: Stream) {
     return null
   }
 
-  const name = stream.matchOr(TIdent, Code.ExpectedIdent)
+  const name = fnName(stream)
+  if (!name) stream.raiseNext(Code.ExpectedFnName)
   if (kw2.kind == KFn && stream.peek() == OLAngle) {
     stream.raiseNext(Code.NoGenericsOnExposedFn)
   }
