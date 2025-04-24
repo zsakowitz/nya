@@ -1,5 +1,5 @@
 import { hx } from "@/jsx"
-import source from "../examples/units.nya"
+import source from "../examples/test.nya"
 import { Code } from "./ast/issue"
 import { ORAngle, ORBrace, ORBrack, ORParen } from "./ast/kind"
 import { parse } from "./ast/parse"
