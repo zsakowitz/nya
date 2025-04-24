@@ -10,6 +10,7 @@ import {
   OPS_AND_SECOND_CHARS,
   ORBrace,
   ORParen,
+  TAliasOnly,
   TComment,
   TDeriv,
   TDerivIgnore,
@@ -71,7 +72,7 @@ export const Code = Object.freeze({
   NoGenericsOnExposedFn: 56,
   ExpectedExposeString: 57,
   InvalidLabel: 58,
-  FnNamesMayNotBeginWithDots: 59,
+  OnlyValidAsExposedAlias: 59,
 
   // future error ideas:
   // match on nonexhaustive enum
@@ -137,7 +138,14 @@ export function tokens(source: string, props: ToTokensProps) {
       }
       const text = source.slice(start, i)
       ret.push(
-        new Token(KWS[text] ?? (text == "_" ? TIgnore : TIdent), start, i),
+        new Token(
+          KWS[text] ??
+            (text == "_" ? TIgnore
+            : text.endsWith("^-1") ? TAliasOnly
+            : TIdent),
+          start,
+          i,
+        ),
       )
       continue
     }

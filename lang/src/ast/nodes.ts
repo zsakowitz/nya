@@ -75,6 +75,7 @@ import {
   OStar,
   OStarStar,
   OTilde,
+  type TAliasOnly,
   TBuiltin,
   TDeriv,
   TDerivIgnore,
@@ -94,10 +95,9 @@ import type { Token } from "./token"
 
 export type Ident = Token<typeof TIdent>
 
-export type IdentFnName =
-  | Token<typeof TIdent>
-  | Token<typeof TProp>
-  | Token<OOverloadable>
+export type IdentFnName = Token<
+  typeof TIdent | typeof TAliasOnly | typeof TProp | OOverloadable
+>
 
 export abstract class Node {
   constructor(

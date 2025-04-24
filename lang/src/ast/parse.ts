@@ -75,6 +75,7 @@ import {
   OStarStar,
   OTilde,
   OVERLOADABLE,
+  TAliasOnly,
   TBuiltin,
   TDeriv,
   TDerivIgnore,
@@ -1062,27 +1063,38 @@ function itemTest(stream: Stream) {
 }
 
 function fnName(stream: Stream): IdentFnName | null {
-  if (stream.peek() == TProp) {
-    stream.raiseNext(Code.FnNamesMayNotBeginWithDots)
-    return stream.match(TProp)
-  }
+  switch (stream.peek()) {
+    case TIdent:
+      return stream.match(TIdent)
 
-  return stream.match(TIdent) || stream.matchAny(OVERLOADABLE)
+    case TProp:
+      stream.raiseNext(Code.OnlyValidAsExposedAlias)
+      return stream.match(TProp)
+
+    case TAliasOnly:
+      stream.raiseNext(Code.OnlyValidAsExposedAlias)
+      return stream.match(TAliasOnly)
+
+    default:
+      return stream.matchAny(OVERLOADABLE)
+  }
 }
 
-function fnNameOrProp(stream: Stream): IdentFnName | null {
+function fnAliasName(stream: Stream): IdentFnName | null {
   return (
-    stream.match(TIdent) || stream.match(TProp) || stream.matchAny(OVERLOADABLE)
+    stream.matchAny([TProp, TAliasOnly, TIdent]) ||
+    stream.matchAny(OVERLOADABLE)
   )
 }
 
-const aliasList = createCommaOp(OLBrace, fnNameOrProp, null)
+const aliasList = createCommaOp(OLBrace, fnAliasName, null)
 
 function exposeAliases(stream: Stream) {
   const as = stream.match(KAs)
   if (!as) return null
 
-  const aliases = stream.peek() == OLBrace ? aliasList(stream) : fnName(stream)
+  const aliases =
+    stream.peek() == OLBrace ? aliasList(stream) : fnAliasName(stream)
   return new ExposeAliases(as, aliases)
 }
 

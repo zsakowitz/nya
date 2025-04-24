@@ -1,3 +1,4 @@
+export const TAliasOnly = 0 // x^-1
 export const TIdent = 1 // f32, Complex
 export const TDeriv = 2 // d/dx, d/dwrt, d/dy
 export const TDerivIgnore = 3 // d/d_
