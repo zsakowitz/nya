@@ -23,8 +23,10 @@ import {
   AStarStar,
   ATilde,
   KAs,
+  KAssert,
   KBreak,
   KContinue,
+  KData,
   KElse,
   KEnum,
   KExpose,
@@ -910,6 +912,27 @@ export class StmtLet extends Stmt {
   }
 }
 
+export class StmtAssert extends Stmt {
+  constructor(
+    readonly kw: Token<typeof KAssert>,
+    readonly expr: Expr,
+    readonly semi: Token<typeof OSemi> | null,
+  ) {
+    super(kw.start, (semi ?? expr).end)
+  }
+}
+
+function stmtAssert(stream: Stream) {
+  const kw = stream.match(KAssert)
+  if (!kw) return null
+
+  return new StmtAssert(
+    kw,
+    expr(stream),
+    stream.matchOr(OSemi, Code.MissingSemi),
+  )
+}
+
 function stmtLet(stream: Stream): StmtLet | null {
   const kw = stream.match(KLet)
   if (!kw) return null
@@ -950,6 +973,9 @@ function stmt(stream: Stream): Stmt | null {
       const semi = stream.match(OSemi)
       return new StmtExpr(expr, semi, needsSemi && !semi)
     }
+
+    case KAssert:
+      return stmtAssert(stream)!
 
     default:
       const e = expr(stream)
@@ -1489,6 +1515,48 @@ function itemStruct(stream: Stream) {
   return new ItemStruct(kw, ident, structFields(stream))
 }
 
+export class ItemData extends Item {
+  constructor(
+    readonly data: Token<typeof KData>,
+    readonly name: Ident | null,
+    readonly colon: Token<typeof OColon> | null,
+    readonly type: Type,
+    readonly semi: Token<typeof OSemi> | null,
+  ) {
+    super(data.start, (semi ?? type).end)
+  }
+}
+
+function itemData(stream: Stream) {
+  const kw = stream.match(KData)
+  if (!kw) return null
+
+  return new ItemData(
+    kw,
+    stream.matchOr(TIdent, Code.ExpectedIdent),
+    stream.matchOr(OColon, Code.ExpectedColon),
+    type(stream),
+    stream.matchOr(OSemi, Code.MissingSemi),
+  )
+}
+
+export class ItemTest extends Item {
+  constructor(
+    readonly kw: Token<typeof KAssert>,
+    readonly expr: Expr,
+    readonly semi: Token<typeof OSemi> | null,
+  ) {
+    super(kw.start, (semi ?? expr).end)
+  }
+}
+
+function itemTest(stream: Stream) {
+  const kw = stream.match(KAssert)
+  if (!kw) return null
+
+  return new ItemTest(kw, expr(stream), stream.matchOr(OSemi, Code.MissingSemi))
+}
+
 class ExposeAliases extends Node {
   constructor(
     readonly as: Token<typeof KAs>,
@@ -1586,6 +1654,12 @@ function item(stream: Stream): Item | null {
 
     case KExpose:
       return itemExpose(stream) // no ! because this returns null if not expose fn or expose type
+
+    case KData:
+      return itemData(stream)!
+
+    case KAssert:
+      return itemTest(stream)!
   }
 
   return null
@@ -1617,4 +1691,4 @@ export function parse(stream: Stream) {
   return script(stream)
 }
 
-// TODO: opaque, uniform
+// TODO: opaque

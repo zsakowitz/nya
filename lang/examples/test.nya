@@ -86,3 +86,8 @@ fn labels_test() {
   'hi: { a = a + 2 }
   'world: for a in b {}
 }
+
+data x: float;
+data y: float;
+
+assert 2.0 < 3.0;
