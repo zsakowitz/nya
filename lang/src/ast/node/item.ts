@@ -1,3 +1,5 @@
+import type { EmitDecl } from "../../emit/block"
+import type { ScopeFile } from "../../emit/scope"
 import type {
   KAssert,
   KData,
@@ -36,6 +38,12 @@ import type { Type } from "./type"
 
 export abstract class Item extends Node {
   declare private __brand_item
+
+  emit(scope: ScopeFile, decl: EmitDecl) {
+    scope
+    decl
+    throw new Error(`Cannot emit '${this.constructor.name}' yet.`)
+  }
 }
 
 export class ItemType extends Item {
@@ -160,6 +168,16 @@ export class ItemTest extends Item {
     readonly semi: Token<typeof OSemi> | null,
   ) {
     super(kw.start, (semi ?? expr).end)
+  }
+
+  emit(scope1: ScopeFile, decl: EmitDecl): void {
+    const emit = decl.block()
+    const scope = scope1.block()
+    const result = this.expr.emit(scope, emit)
+    decl.source += `if (!(${result})) {
+  throw new Error("test failed: " + ${JSON.stringify(scope1.source.slice(this.start, this.end))})
+}
+`
   }
 }
 

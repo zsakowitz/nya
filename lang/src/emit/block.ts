@@ -24,6 +24,10 @@ export class EmitDecl {
   raise(code: Code, pos: Pos) {
     this.issues.raise(code, pos)
   }
+
+  block() {
+    return new EmitBlock(this)
+  }
 }
 
 /** Something which can be interpolated when emitted to a block. */

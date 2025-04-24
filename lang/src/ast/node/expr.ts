@@ -1,3 +1,5 @@
+import type { EmitBlock } from "../../emit/block"
+import type { ScopeBlock } from "../../emit/scope"
 import type {
   AAmp,
   AAmpAmp,
@@ -86,6 +88,12 @@ import type { Type } from "./type"
 
 export abstract class Expr extends Node {
   declare private __brand_expr
+
+  emit(scope: ScopeBlock, decl: EmitBlock): string {
+    scope
+    decl
+    throw new Error(`Cannot emit '${this.constructor.name}' yet.`)
+  }
 }
 
 export class ExprLit extends Expr {

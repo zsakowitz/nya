@@ -6,6 +6,8 @@ import { parse } from "./ast/parse"
 import { print } from "./ast/print"
 import { createStream, TokenGroup } from "./ast/stream"
 import { type Token } from "./ast/token"
+import { EmitDecl } from "./emit/block"
+import { ScopeProgram } from "./emit/scope"
 
 console.time("stream")
 const stream = createStream(source, { comments: false })
@@ -14,6 +16,18 @@ console.timeEnd("stream")
 console.time("parse")
 const result = parse(stream)
 console.timeEnd("parse")
+
+const scopeProgram = new ScopeProgram(true)
+const scopeFile = scopeProgram.file(stream.source)
+const emit = new EmitDecl("js", stream.issues)
+
+try {
+  for (const item of result.items) {
+    item.emit(scopeFile, emit)
+  }
+} catch (e) {
+  console.warn("[script emit]", e)
+}
 
 if (!stream.issues.ok()) {
   console.error("encountered some issue")
@@ -50,6 +64,14 @@ el.innerHTML = el.innerHTML.replace(
   `<sub class='opacity-30'>$1</sub>`,
 )
 document.body.appendChild(el)
+
+document.body.appendChild(
+  hx("hr", "border-[--nya-border] mx-4 border-0 border-t"),
+)
+
+document.body.appendChild(
+  hx("pre", "p-4 text-xs whitespace-normal w-screen", emit.source),
+)
 
 document.body.appendChild(
   hx("hr", "border-[--nya-border] mx-4 border-0 border-t"),

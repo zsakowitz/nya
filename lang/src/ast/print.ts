@@ -12,6 +12,7 @@ export type Print =
   | number
   | boolean
   | Print[]
+  | ((this: any, ...args: any[]) => any)
 
 function tag(prefix: Element, text: Element, suffix: string, _level: number) {
   if (text.innerHTML.includes("\n")) {
@@ -71,7 +72,7 @@ export function print(stream: Stream, a: Print, level = 0): Element {
   }
 
   const els = Object.entries(a)
-    .filter(([k]) => k != "start" && k != "end")
+    .filter(([k, v]) => k != "start" && k != "end" && typeof v != "function")
     .map(([k, v]) => h("", k, ": ", print(stream, v, level + 1)))
 
   return tag(
