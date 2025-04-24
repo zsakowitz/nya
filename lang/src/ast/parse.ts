@@ -1,4 +1,3 @@
-import type { Print } from "../ast-print"
 import {
   AAmp,
   AAmpAmp,
@@ -88,9 +87,7 @@ import {
   TString,
   TSym,
   type Brack,
-} from "../kind"
-import { Stream } from "../stream"
-import { Code } from "../token"
+} from "./kind"
 import {
   EnumMapVariant,
   EnumVariant,
@@ -159,6 +156,9 @@ import {
   type ExprBinaryOp,
   type IdentFnName,
 } from "./nodes"
+import type { Print } from "./print"
+import { Stream } from "./stream"
+import { Code } from "./token"
 
 function patAtom(stream: Stream) {
   switch (stream.peek()) {

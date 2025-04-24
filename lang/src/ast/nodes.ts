@@ -1,4 +1,3 @@
-import type { Print } from "../ast-print"
 import {
   AAmp,
   AAmpAmp,
@@ -87,9 +86,10 @@ import {
   TSource,
   TString,
   TSym,
-} from "../kind"
-import type { TokenGroup } from "../stream"
-import { type Token } from "../token"
+} from "./kind"
+import type { Print } from "./print"
+import type { TokenGroup } from "./stream"
+import { type Token } from "./token"
 
 export type Ident = Token<typeof TIdent>
 export type IdentFnName = Token<typeof TIdent> | Token<OOverloadable>

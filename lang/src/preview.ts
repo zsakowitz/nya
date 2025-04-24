@@ -1,10 +1,10 @@
 import { hx } from "@/jsx"
 import source from "../examples/test.nya"
-import { print } from "./ast-print"
+import { ORAngle, ORBrace, ORBrack, ORParen } from "./ast/kind"
 import { parse } from "./ast/parse"
-import { ORAngle, ORBrace, ORBrack, ORParen } from "./kind"
-import { createStream, TokenGroup } from "./stream"
-import { Code, type Token } from "./token"
+import { print } from "./ast/print"
+import { createStream, TokenGroup } from "./ast/stream"
+import { Code, type Token } from "./ast/token"
 
 console.time("stream")
 const stream = createStream(source, { comments: false })
