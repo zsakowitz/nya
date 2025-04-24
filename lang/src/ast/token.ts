@@ -1,3 +1,4 @@
+import { Code, Issues, Pos } from "./issue"
 import {
   IDENT_PREFIXES,
   KSource,
@@ -21,75 +22,18 @@ import {
   TString,
 } from "./kind"
 
-export class Token<T extends number> {
+export class Token<T extends number> extends Pos {
   declare static readonly __kind: unique symbol;
   declare [Token.__kind]: T
 
   constructor(
     readonly kind: T,
-    readonly start: number,
-    readonly end: number,
+    start: number,
+    end: number,
     readonly virtual = false,
-  ) {}
-}
-
-export const Code = Object.freeze({
-  LetterDirectlyAfterNumber: 19,
-  InvalidBuiltinName: 20,
-  UnknownChar: 21,
-  FloatMustEndInDigit: 22,
-  UnterminatedString: 23,
-  UnknownOperator: 24,
-  UnterminatedSource: 25,
-  UnterminatedStringIdent: 26,
-  MismatchedClosingParen: 28,
-  MismatchedOpeningParen: 29,
-  ExpectedIdent: 30,
-  ExpectedExpression: 31,
-  UnexpectedToken: 32,
-  IfOrBlockMustFollowElse: 33,
-  ExpectedType: 34,
-  MissingSemi: 35,
-  MissingRuleArrow: 36,
-  ExpectedBlock: 37,
-  ExpectedForBindings: 38,
-  ExpectedForSources: 39,
-  ExpectedIn: 40,
-  UnnecessarySemi: 41,
-  ExpectedColon: 42,
-  ExpectedFnParams: 43,
-  ExpectedFnName: 44,
-  InvalidLabeledExit: 45,
-  InvalidValuedExit: 46,
-  ExpectedPat: 47,
-  ExpectedMatchArrow: 48,
-  ExpectedMatchArms: 49,
-  ExpectedImportPath: 50,
-  ExpectedStructFields: 51,
-  ExpectedEnumVariants: 52,
-  ExpectedEnumVariantValue: 53,
-  ExpectedCommaOrSemi: 54,
-  MustExposeFnOrType: 55,
-  NoGenericsOnExposedFn: 56,
-  ExpectedExposeString: 57,
-  InvalidLabel: 58,
-  OnlyValidAsExposedAlias: 59,
-  ExpectedAssertFailureReason: 60,
-
-  // future error ideas:
-  // match on nonexhaustive enum
-  // exposed function uses unexposed types
-  // unused label
-})
-
-export type Code = (typeof Code)[keyof typeof Code]
-
-export class Issue {
-  constructor(
-    readonly code: Code,
-    readonly start: number,
-    readonly end: number,
-  ) {}
+  ) {
+    super(start, end)
+  }
 }
 
 const ID_START = /[A-Za-z_]/
@@ -111,7 +55,7 @@ export interface ToTokensProps {
 
 export function tokens(source: string, props: ToTokensProps) {
   const ret: Token<number>[] = []
-  const issues: Issue[] = []
+  const issues = new Issues()
 
   for (let i = 0; i < source.length; ) {
     const start = i
@@ -160,7 +104,7 @@ export function tokens(source: string, props: ToTokensProps) {
       }
       ret.push(new Token(TIdent, start, i))
       if (!terminated) {
-        issues.push(new Issue(Code.UnterminatedStringIdent, start, i))
+        issues.raise(Code.UnterminatedStringIdent, new Pos(start, i))
       }
       continue
     }
@@ -182,7 +126,7 @@ export function tokens(source: string, props: ToTokensProps) {
       if (char in OPS) {
         ret.push(new Token(OPS[char]!, start, i))
       } else {
-        issues.push(new Issue(Code.UnknownOperator, start, i))
+        issues.raise(Code.UnknownOperator, new Pos(start, i))
       }
       continue
     }
@@ -202,7 +146,7 @@ export function tokens(source: string, props: ToTokensProps) {
         ret.push(new Token(TInt, start, i))
       }
       if (is(ANY_ID_START, source[i])) {
-        issues.push(new Issue(Code.LetterDirectlyAfterNumber, i, i + 1))
+        issues.raise(Code.LetterDirectlyAfterNumber, new Pos(i, i + 1))
       }
       continue
     }
@@ -231,7 +175,7 @@ export function tokens(source: string, props: ToTokensProps) {
       }
       ret.push(new Token(TString, start, i))
       if (!terminated) {
-        issues.push(new Issue(Code.UnterminatedString, start, i))
+        issues.raise(Code.UnterminatedString, new Pos(start, i))
       }
       continue
     }
@@ -251,7 +195,7 @@ export function tokens(source: string, props: ToTokensProps) {
             case undefined:
               i++
               ret.push(new Token(TSource, start, i))
-              issues.push(new Issue(Code.UnterminatedSource, start, i))
+              issues.raise(Code.UnterminatedSource, new Pos(start, i))
               break loop
             case "{":
               depth++
@@ -318,12 +262,12 @@ export function tokens(source: string, props: ToTokensProps) {
       if (char in OPS) {
         ret.push(new Token(OPS[char]!, start, i))
       } else {
-        issues.push(new Issue(Code.UnknownOperator, start, i))
+        issues.raise(Code.UnknownOperator, new Pos(start, i))
       }
       continue
     }
 
-    issues.push(new Issue(Code.UnknownChar, start, ++i))
+    issues.raise(Code.UnknownChar, new Pos(start, ++i))
     continue
   }
 

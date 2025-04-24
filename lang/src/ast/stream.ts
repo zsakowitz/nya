@@ -1,3 +1,4 @@
+import { Code, Pos, type Issues } from "./issue"
 import {
   MATCHING_PAREN,
   OGt,
@@ -13,7 +14,7 @@ import {
   ORParen,
   type Brack,
 } from "./kind"
-import { Code, Issue, Token, tokens, type ToTokensProps } from "./token"
+import { Token, tokens, type ToTokensProps } from "./token"
 
 export class TokenGroup<K extends Brack = Brack> extends Token<K> {
   constructor(
@@ -72,9 +73,7 @@ export function createStream(source: string, props: ToTokensProps) {
       case ORBrace:
         // If no current paren, ignore and move on
         if (!parens.some((x) => MATCHING_PAREN[x.kind] == token.kind)) {
-          issues.push(
-            new Issue(Code.MismatchedClosingParen, token.start, token.end),
-          )
+          issues.raise(Code.MismatchedClosingParen, token)
           continue
         }
 
@@ -115,7 +114,7 @@ export function createStream(source: string, props: ToTokensProps) {
   }
 
   for (const p of parens) {
-    issues.push(new Issue(Code.MismatchedOpeningParen, p.lt.start, p.lt.end))
+    issues.raise(Code.MismatchedOpeningParen, p.lt)
   }
 
   return new Stream(source, root, issues, 0, source.length)
@@ -125,7 +124,7 @@ export class Stream {
   constructor(
     readonly source: string,
     readonly tokens: Token<number>[],
-    readonly issues: Issue[],
+    readonly issues: Issues,
     readonly start: number,
     readonly end: number,
   ) {}
@@ -139,9 +138,7 @@ export class Stream {
   raiseNext(code: Code) {
     let next = this.next()
     if (next instanceof TokenGroup) next = next.lt
-    this.issues.push(
-      new Issue(code, next?.start ?? this.end, next?.end ?? this.end),
-    )
+    this.issues.raise(code, next ?? this)
   }
 
   private accept() {
@@ -152,11 +149,16 @@ export class Stream {
     return this.next()?.start ?? this.end
   }
 
-  raise(code: Code, start: number, end: number) {
-    this.issues.push(new Issue(code, start, end))
+  pos() {
+    const loc = this.loc()
+    return new Pos(loc, loc)
   }
 
-  content(token: { start: number; end: number }) {
+  raise(code: Code, pos: Pos) {
+    this.issues.raise(code, pos)
+  }
+
+  content(token: Pos) {
     return this.source.slice(token.start, token.end)
   }
 
@@ -171,8 +173,7 @@ export class Stream {
   requireDone() {
     const token = this.next()
     if (token) {
-      console.error(this.source.slice(this.start, this.end))
-      this.raise(Code.UnexpectedToken, token.start, token.end)
+      this.raise(Code.UnexpectedToken, token)
     }
   }
 

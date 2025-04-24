@@ -1,3 +1,4 @@
+import { Code, Pos } from "./issue"
 import {
   AAmp,
   AAmpAmp,
@@ -89,10 +90,6 @@ import {
   type Brack,
 } from "./kind"
 import {
-  EnumMapVariant,
-  EnumVariant,
-  ExposeAliases,
-  Expr,
   ExprArray,
   ExprArrayByRepetition,
   ExprBinary,
@@ -105,7 +102,6 @@ import {
   ExprFor,
   ExprIf,
   ExprIndex,
-  ExprLabel,
   ExprLit,
   ExprMatch,
   ExprParen,
@@ -115,10 +111,29 @@ import {
   ExprSymStruct,
   ExprUnary,
   ExprVar,
+  Source,
+  SourceInterp,
+  SourceSingle,
+  type Expr,
+  type ExprBinaryOp,
+} from "./node/expr"
+import {
+  EnumMapVariant,
+  EnumVariant,
+  ExposeAliases,
+  ExprLabel,
   FnParam,
   GenericParam,
   GenericParams,
-  Item,
+  List,
+  MatchArm,
+  PlainList,
+  Prop,
+  Script,
+  StructArg,
+  StructFieldDecl,
+} from "./node/extra"
+import {
   ItemData,
   ItemEnum,
   ItemEnumMap,
@@ -130,38 +145,22 @@ import {
   ItemTest,
   ItemType,
   ItemUse,
-  List,
-  MatchArm,
-  Pat,
-  PatEmpty,
-  PatIgnore,
-  PatLit,
-  PatVar,
-  PlainList,
-  Prop,
-  Script,
-  Source,
-  SourceInterp,
-  SourceSingle,
-  Stmt,
-  StmtAssert,
-  StmtExpr,
-  StmtLet,
-  StructArg,
-  StructFieldDecl,
-  Type,
+  type Item,
+} from "./node/item"
+import type { IdentFnName } from "./node/node"
+import { PatEmpty, PatIgnore, PatLit, PatVar, type Pat } from "./node/pat"
+import { StmtAssert, StmtExpr, StmtLet, type Stmt } from "./node/stmt"
+import {
   TypeArray,
   TypeBlock,
   TypeEmpty,
   TypeLit,
   TypeParen,
   TypeVar,
-  type ExprBinaryOp,
-  type IdentFnName,
-} from "./nodes"
+  type Type,
+} from "./node/type"
 import type { Print } from "./print"
 import { Stream } from "./stream"
-import { Code } from "./token"
 
 function patAtom(stream: Stream) {
   switch (stream.peek()) {
@@ -178,7 +177,7 @@ function patAtom(stream: Stream) {
   }
 
   stream.raiseNext(Code.ExpectedPat)
-  return new PatEmpty(stream.loc())
+  return new PatEmpty(stream.pos())
 }
 
 function pat(stream: Stream): Pat {
@@ -336,7 +335,10 @@ export function exprLabeled(stream: Stream): [Expr, needsSemi: boolean] | null {
       return [block(stream, label)!, false]
   }
 
-  stream.raise(Code.InvalidLabel, labelIdent.start, (colon ?? labelIdent).end)
+  stream.raise(
+    Code.InvalidLabel,
+    new Pos(labelIdent.start, (colon ?? labelIdent).end),
+  )
   return [expr(stream), true]
 }
 
@@ -353,11 +355,11 @@ export function exprExit(stream: Stream, ctx: ExprContext): ExprExit | null {
 
   if (kw.kind == KReturn) {
     if (label) {
-      stream.raise(Code.InvalidLabeledExit, label.start, label.end)
+      stream.raise(Code.InvalidLabeledExit, label)
     }
   } else if (kw.kind == KContinue) {
     if (value) {
-      stream.raise(Code.InvalidValuedExit, value.start, value.end)
+      stream.raise(Code.InvalidValuedExit, value)
     }
   }
 
@@ -453,7 +455,7 @@ function exprAtom(stream: Stream, ctx: ExprContext): Expr {
   }
 
   if (!ctx.noErrorOnEmpty) {
-    stream.raise(Code.ExpectedExpression, stream.loc(), stream.loc())
+    stream.raise(Code.ExpectedExpression, stream.pos())
   }
   return new ExprEmpty(stream.loc())
 }

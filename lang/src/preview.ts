@@ -1,10 +1,11 @@
 import { hx } from "@/jsx"
 import source from "../examples/units.nya"
+import { Code } from "./ast/issue"
 import { ORAngle, ORBrace, ORBrack, ORParen } from "./ast/kind"
 import { parse } from "./ast/parse"
 import { print } from "./ast/print"
 import { createStream, TokenGroup } from "./ast/stream"
-import { Code, type Token } from "./ast/token"
+import { type Token } from "./ast/token"
 
 console.time("stream")
 const stream = createStream(source, { comments: false })
@@ -14,7 +15,7 @@ console.time("parse")
 const result = parse(stream)
 console.timeEnd("parse")
 
-if (stream.issues.length) {
+if (!stream.issues.ok()) {
   console.error("encountered some issue")
 }
 
@@ -23,11 +24,11 @@ document.body.appendChild(
     "pre",
     "p-4 text-xs",
     JSON.stringify(
-      stream.issues.map((v) => ({
+      stream.issues.entries.map((v) => ({
         code: Object.entries(Code).find((x) => x[1] == v.code)?.[0],
-        start: v.start,
-        end: v.end,
-        of: stream.content(v),
+        start: v.pos.start,
+        end: v.pos.end,
+        of: stream.content(v.pos),
       })),
       undefined,
       2,
