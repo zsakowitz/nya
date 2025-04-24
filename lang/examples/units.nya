@@ -115,4 +115,5 @@ fn +(a: RealWithUnit, b: RealWithUnit) -> RealWithUnit {
   .{ a.unit, a + b * scale }
 }
 
+expose type RealWithUnit "a real number with a unit attached";
 expose fn + "add two values with units";
