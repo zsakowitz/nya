@@ -9,16 +9,42 @@ enum UnitCategory {
   :cd,
 }
 
+struct UnitMappingOne {
+  base: UnitCategory,
+  exp: real,
+}
+
 // A mapping from a named unit to a set of universal unit categories.
 struct UnitMapping {
   // 'bases' is an array with unknown length; it can only be operated on at
   // compile time.
-  bases: [UnitCategory; ..],
+  bases: [UnitMappingOne; ..],
   scale: real,
 }
 
+fn um(category: UnitCategory, scale: real) -> UnitMapping {
+  .{ [.{ category, 1.0 }], scale }
+}
+
+fn um(category: UnitCategory) -> UnitMapping {
+  .{ [.{ category, 1.0 }], 1.0 }
+}
+
+fn um(category: [UnitMappingOne; ..]) -> UnitMapping {
+  .{ category, 1.0 }
+}
+
+fn um(category: [UnitMappingOne; ..], scale: real) -> UnitMapping {
+  .{ category, scale }
+}
+
 enum Unit -> UnitMapping {
-  :m => .{ [:m], 1 },
-  :s => .{ [:s], 1 },
-  :g => .{ [:g], 1e-3 },
+  :m => um(:m),
+  :s => um(:s),
+  :g => um(:kg, 1e-3),
+  :min => um(:s, 60.0),
+  :hr => um(:s, 3600.0),
+  :N => um([.{ :kg, 1.0 }, .{ :m, 1.0 }, .{ :s, -2.0 }]),
+  :J => um([.{ :kg, 1.0 }, .{ :m, 2.0 }, .{ :s, -2.0 }]),
+  :cal => um([.{ :kg, 1.0 }, .{ :m, 2.0 }, .{ :s, -2.0 }], 4.184.inv),
 }
