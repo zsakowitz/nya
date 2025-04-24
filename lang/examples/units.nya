@@ -23,19 +23,19 @@ struct UnitMapping {
 }
 
 fn um(category: UnitCategory, scale: real) -> UnitMapping {
-  .{ [.{ category, 1.0 }], scale }
+  .{ bases: [.{ base: category, exp: 1.0 }], scale }
 }
 
 fn um(category: UnitCategory) -> UnitMapping {
-  .{ [.{ category, 1.0 }], 1.0 }
+  .{ bases: [.{ base: category, exp: 1.0 }], scale: 1.0 }
 }
 
 fn um(category: [UnitMappingOne; ..]) -> UnitMapping {
-  .{ category, 1.0 }
+  .{ bases: category, scale: 1.0 }
 }
 
 fn um(category: [UnitMappingOne; ..], scale: real) -> UnitMapping {
-  .{ category, scale }
+  .{ bases: category, scale }
 }
 
 enum UnitName -> UnitMapping {
@@ -45,9 +45,9 @@ enum UnitName -> UnitMapping {
   :kg => um(:kg),
   :min => um(:s, 60.0),
   :hr => um(:s, 3600.0),
-  :N => um([.{ :kg, 1.0 }, .{ :m, 1.0 }, .{ :s, -2.0 }]),
-  :J => um([.{ :kg, 1.0 }, .{ :m, 2.0 }, .{ :s, -2.0 }]),
-  :cal => um([.{ :kg, 1.0 }, .{ :m, 2.0 }, .{ :s, -2.0 }], 4.184.inv),
+  :N => um([.{ base: :kg, exp: 1.0 }, .{ base: :m, exp: 1.0 }, .{ base: :s, exp: -2.0 }]),
+  :J => um([.{ base: :kg, exp: 1.0 }, .{ base: :m, exp: 2.0 }, .{ base: :s, exp: -2.0 }]),
+  :cal => um([.{ base: :kg, exp: 1.0 }, .{ base: :m, exp: 2.0 }, .{ base: :s, exp: -2.0 }], 1.0 / 4.184),
 }
 
 struct UnitSingle {
@@ -112,7 +112,7 @@ struct RealWithUnit {
 
 fn +(a: RealWithUnit, b: RealWithUnit) -> RealWithUnit {
   let scale = conversion_factor(b.unit, a.unit);
-  .{ a + b * scale, a.unit }
+  .{ value: a + b * scale, unit: a.unit }
 }
 
 expose type RealWithUnit "a real number with a unit attached";

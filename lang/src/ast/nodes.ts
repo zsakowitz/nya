@@ -206,6 +206,16 @@ export class TypeArray extends Type {
   }
 }
 
+export class StructArg extends Node {
+  constructor(
+    readonly name: Ident,
+    readonly colon: Token<typeof OColon> | null,
+    readonly expr: Expr | null,
+  ) {
+    super(name.start, (expr ?? colon ?? name).end)
+  }
+}
+
 export class ExprLit extends Expr {
   constructor(
     readonly value: Token<typeof TFloat | typeof TInt | typeof TSym>,
@@ -227,7 +237,7 @@ export class ExprVar extends Expr {
 export class ExprStruct extends Expr {
   constructor(
     readonly name: Token<typeof TIdent | typeof TBuiltin | typeof ODot>,
-    readonly args: List<Expr> | null,
+    readonly args: List<StructArg> | null,
   ) {
     super(name.start, (args ?? name).end)
   }
@@ -236,7 +246,7 @@ export class ExprStruct extends Expr {
 export class ExprSymStruct extends Expr {
   constructor(
     readonly name: Token<typeof TSym>,
-    readonly args: List<Expr> | null,
+    readonly args: List<StructArg> | null,
   ) {
     super(name.start, (args ?? name).end)
   }
@@ -654,7 +664,7 @@ export class ItemUse extends Item {
   }
 }
 
-export class StructField extends Node {
+export class StructFieldDecl extends Node {
   constructor(
     readonly constKw: Token<typeof KConst> | null,
     readonly name: Ident | null,
@@ -668,7 +678,7 @@ export class StructField extends Node {
 export class EnumVariant extends Node {
   constructor(
     readonly name: Token<typeof TSym>,
-    readonly fields: List<StructField> | null,
+    readonly fields: List<StructFieldDecl> | null,
   ) {
     super(name.start, (fields ?? name).end)
   }
@@ -716,7 +726,7 @@ export class ItemStruct extends Item {
     readonly kw: Token<typeof KStruct>,
     readonly name: Ident | null,
     readonly tparams: GenericParams | null,
-    readonly fields: List<StructField, Token<typeof ODotDot> | null> | null,
+    readonly fields: List<StructFieldDecl, Token<typeof ODotDot> | null> | null,
   ) {
     super(kw.start, (fields ?? name ?? kw).end)
   }

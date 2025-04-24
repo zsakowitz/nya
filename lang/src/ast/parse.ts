@@ -147,7 +147,8 @@ import {
   StmtAssert,
   StmtExpr,
   StmtLet,
-  StructField,
+  StructArg,
+  StructFieldDecl,
   Type,
   TypeArray,
   TypeBlock,
@@ -812,8 +813,18 @@ function createCommaOp<
   }
 }
 
+function structArg(stream: Stream) {
+  const ident = stream.match(TIdent)
+  if (!ident) return null
+
+  const colon = stream.match(OColon)
+  const e = colon && expr(stream)
+
+  return new StructArg(ident, colon, e)
+}
+
 const callArgs = createCommaOp(OLParen, expr, null)
-const structArgs = createCommaOp(OLBrace, expr, null)
+const structArgs = createCommaOp(OLBrace, structArg, null)
 
 function block(stream: Stream, label: ExprLabel | null) {
   const group = stream.matchGroup(OLBrace)
@@ -979,7 +990,7 @@ function structField(stream: Stream) {
   const ident = stream.match(TIdent)
   if (!ident) return null
 
-  return new StructField(
+  return new StructFieldDecl(
     constKw,
     ident,
     stream.matchOr(OColon, Code.ExpectedColon),
