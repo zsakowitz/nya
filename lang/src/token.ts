@@ -67,6 +67,15 @@ export const Code = Object.freeze({
   ExpectedEnumVariants: 52,
   ExpectedEnumVariantValue: 53,
   ExpectedCommaOrSemi: 54,
+  MustExposeFnOrType: 55,
+  NoGenericsOnExposedFn: 56,
+  ExpectedExposeString: 57,
+  InvalidLabel: 58,
+
+  // future error ideas:
+  // match on nonexhaustive enum
+  // exposed function uses unexposed types
+  // unused label
 })
 
 export type Code = (typeof Code)[keyof typeof Code]

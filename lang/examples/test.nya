@@ -52,12 +52,14 @@ enum Hi {
   :a,
   :b { a: i32 },
   :c,
+  ..
 }
 
 enum Units -> float {
   :meter => 1.0,
   :cm => 0.01,
   :km => 1000.0,
+  ..
 }
 
 struct Complex {
@@ -70,5 +72,17 @@ fn array_test() {
   let x: float;
   let x = 2.3;
   let x: float = 2.3;
-  [float; 5, 7, 8]
+  [float; 5, 7, 8];
+  :a { 2, 3 };
+  .{ 2, 3 };
+  2 ** 3 ** 4;
+  a -> b -> c;
+}
+
+expose fn sinh "hyperbolic sine" as { arcsinh, arsinh, sinh^-1 };
+expose type sinh "hyperbolic sine" as { arcsinh, arsinh, sinh^-1 };
+
+fn labels_test() {
+  'hi: { a = a + 2 }
+  'world: for a in b {}
 }

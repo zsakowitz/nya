@@ -2,13 +2,13 @@ import type { Print } from "./ast-print"
 import {
   AAmp,
   AAmpAmp,
-  AArrowRet,
   AAt,
   ABackslash,
   ABang,
   ABar,
   ABarBar,
   ADotDot,
+  AEq,
   AEqEq,
   AGe,
   AGt,
@@ -22,10 +22,12 @@ import {
   AStar,
   AStarStar,
   ATilde,
+  KAs,
   KBreak,
   KContinue,
   KElse,
   KEnum,
+  KExpose,
   KFn,
   KFor,
   KIf,
@@ -225,7 +227,7 @@ function type(stream: Stream): Type {
       return new TypeLit(stream.matchAny([TInt, TFloat, TSym])!)
 
     case OLBrace:
-      return new TypeBlock(block(stream)!)
+      return new TypeBlock(block(stream, null)!)
 
     case OLParen:
       const token = stream.matchGroup(OLParen)!
@@ -249,9 +251,18 @@ export class ExprLit extends Expr {
   }
 }
 
-function exprLit(stream: Stream) {
+function exprLit(stream: Stream, ctx: ExprContext) {
   const token = stream.match(TFloat) || stream.match(TInt) || stream.match(TSym)
-  if (token) return new ExprLit(token)
+  if (!token) return null
+
+  if (token.kind == TSym && ctx.struct && stream.peek() == OLBrace) {
+    const struct = structArgs(stream)
+    if (struct) {
+      return new ExprSymStruct(token, struct)
+    }
+  }
+
+  return new ExprLit(token)
 }
 
 export class ExprVar extends Expr {
@@ -266,10 +277,19 @@ export class ExprVar extends Expr {
 
 export class ExprStruct extends Expr {
   constructor(
-    readonly name: Token<typeof TIdent | typeof TBuiltin>,
+    readonly name: Token<typeof TIdent | typeof TBuiltin | typeof ODot>,
     readonly args: List<Expr> | null,
   ) {
-    super(name.start, name.end)
+    super(name.start, (args ?? name).end)
+  }
+}
+
+export class ExprSymStruct extends Expr {
+  constructor(
+    readonly name: Token<typeof TSym>,
+    readonly args: List<Expr> | null,
+  ) {
+    super(name.start, (args ?? name).end)
   }
 }
 
@@ -296,6 +316,15 @@ export class ExprEmpty extends Expr {
   }
 }
 
+export class ExprLabel extends Node {
+  constructor(
+    readonly label: Token<typeof TLabel>,
+    readonly colon: Token<typeof OColon> | null,
+  ) {
+    super(label.start, (colon ?? label).end)
+  }
+}
+
 export class ExprIf extends Expr {
   constructor(
     readonly kwIf: Token<typeof KIf>,
@@ -313,7 +342,7 @@ export function exprIf(stream: Stream): ExprIf | null {
   if (!kwIf) return null
 
   const condition = expr(stream, { struct: false })
-  const blockIf = block(stream)
+  const blockIf = block(stream, null)
 
   const kwElse = stream.match(KElse)
   if (!kwElse) {
@@ -323,7 +352,7 @@ export function exprIf(stream: Stream): ExprIf | null {
   if (stream.peek() == KIf) {
     return new ExprIf(kwIf, condition, blockIf, kwElse, exprIf(stream))
   } else if (stream.peek() == OLBrace) {
-    return new ExprIf(kwIf, condition, blockIf, kwElse, block(stream))
+    return new ExprIf(kwIf, condition, blockIf, kwElse, block(stream, null))
   } else {
     stream.raiseNext(Code.IfOrBlockMustFollowElse)
     return new ExprIf(kwIf, condition, blockIf, null, null)
@@ -332,13 +361,14 @@ export function exprIf(stream: Stream): ExprIf | null {
 
 export class ExprFor extends Expr {
   constructor(
+    readonly label: ExprLabel | null,
     readonly kw: Token<typeof KFor>,
     readonly bound: PlainList<Ident>,
     readonly eq: Token<typeof KIn> | null,
     readonly sources: PlainList<Expr>,
     readonly block: ExprBlock | null,
   ) {
-    super(kw.start, block?.end ?? sources.end)
+    super((label ?? kw).start, (block ?? sources).end)
   }
 }
 
@@ -351,17 +381,40 @@ const forSources = createUnbracketedCommaOp(
   Code.ExpectedForSources,
 )
 
-export function exprFor(stream: Stream): ExprFor | null {
+export function exprFor(
+  stream: Stream,
+  label: ExprLabel | null,
+): ExprFor | null {
   const kw = stream.match(KFor)
   if (!kw) return null
 
   return new ExprFor(
+    label,
     kw,
     forBindings(stream),
     stream.matchOr(KIn, Code.ExpectedIn),
     forSources(stream),
-    block(stream),
+    block(stream, null),
   )
+}
+
+export function exprLabeled(stream: Stream): [Expr, needsSemi: boolean] | null {
+  const labelIdent = stream.match(TLabel)
+  if (!labelIdent) return null
+
+  const colon = stream.matchOr(OColon, Code.ExpectedColon)
+  const label = new ExprLabel(labelIdent, colon)
+
+  switch (stream.peek()) {
+    case KFor:
+      return [exprFor(stream, label)!, false]
+
+    case OLBrace:
+      return [block(stream, label)!, false]
+  }
+
+  stream.raise(Code.InvalidLabel, labelIdent.start, (colon ?? labelIdent).end)
+  return [expr(stream), true]
 }
 
 export class ExprExit extends Expr {
@@ -463,10 +516,13 @@ export class ExprArrayByRepetition extends Expr {
 
 function exprAtom(stream: Stream, ctx: ExprContext): Expr {
   switch (stream.peek()) {
+    case ODot:
+      return new ExprStruct(stream.match(ODot)!, structArgs(stream))
+
     case TFloat:
     case TInt:
     case TSym:
-      return exprLit(stream)!
+      return exprLit(stream, ctx)!
 
     case TIdent:
     case TBuiltin:
@@ -506,13 +562,13 @@ function exprAtom(stream: Stream, ctx: ExprContext): Expr {
     }
 
     case OLBrace:
-      return block(stream)!
+      return block(stream, null)!
 
     case KIf:
       return exprIf(stream)!
 
     case KFor:
-      return exprFor(stream)!
+      return exprFor(stream, null)!
 
     case KSource:
       return source(stream)!
@@ -524,6 +580,9 @@ function exprAtom(stream: Stream, ctx: ExprContext): Expr {
 
     case KMatch:
       return exprMatch(stream)!
+
+    case TLabel:
+      return exprLabeled(stream)![0]
   }
 
   if (!ctx.noErrorOnEmpty) {
@@ -701,14 +760,24 @@ type ExprBinaryOp =
   | typeof ADotDot
   | typeof OPercent
   | typeof APercent
-  | typeof OArrowRet
-  | typeof AArrowRet
+  | typeof OEq
+  | typeof AEq
 
 export class ExprBinary extends Expr {
   constructor(
     readonly lhs: Expr,
     readonly op: Token<ExprBinaryOp>,
     readonly rhs: Expr,
+  ) {
+    super(lhs.start, rhs.end)
+  }
+}
+
+export class ExprCast extends Expr {
+  constructor(
+    readonly lhs: Expr,
+    readonly op: Token<typeof OArrowRet>,
+    readonly rhs: Type,
   ) {
     super(lhs.start, rhs.end)
   }
@@ -744,27 +813,63 @@ function createBinOpL(
   }
 }
 
-const exprBinaryOp = createBinOpL(
-  [OBarBar, ABarBar],
+function createBinOpArrowRet(side: (stream: Stream, ctx: ExprContext) => Expr) {
+  return (stream: Stream, ctx: ExprContext): Expr => {
+    let expr = side(stream, ctx)
+    let op
+    while ((op = stream.match(OArrowRet))) {
+      expr = new ExprCast(expr, op, type(stream))
+    }
+    return expr
+  }
+}
+
+function createBinOpR(
+  permitted: ExprBinaryOp[],
+  side: (stream: Stream, ctx: ExprContext) => Expr,
+) {
+  return (stream: Stream, ctx: ExprContext): Expr => {
+    let rhs = side(stream, ctx)
+    let op
+    let parts = []
+    while ((op = stream.matchAny(permitted))) {
+      parts.push({ lhs: rhs, op })
+      rhs = side(stream, ctx)
+    }
+    while (parts.length) {
+      const { lhs, op } = parts.pop()!
+      rhs = new ExprBinary(lhs, op, rhs)
+    }
+    return rhs
+  }
+}
+
+const exprBinaryOp = createBinOpR(
+  [OEq, AEq],
   createBinOpL(
-    [OAmpAmp, AAmpAmp],
-    createBinOp1(
-      [OEqEq, ONe, OLt, OGt, OLe, OGe, AEqEq, ANe, ALt, AGt, ALe, AGe],
-      createBinOpL(
-        [OBar, ABar],
-        createBinOpL(
-          [OAmp, AAmp],
+    [OBarBar, ABarBar],
+    createBinOpL(
+      [OAmpAmp, AAmpAmp],
+      createBinOp1(
+        [OEqEq, ONe, OLt, OGt, OLe, OGe, AEqEq, ANe, ALt, AGt, ALe, AGe],
+        createBinOpArrowRet(
           createBinOpL(
-            [OPlus, OMinus, OPercent, APlus, AMinus, APercent],
+            [OBar, ABar],
             createBinOpL(
-              [OStar, OSlash, AStar, ASlash],
-              createBinOp1(
-                [OStarStar, AStarStar],
-                createBinOp1(
-                  [ODotDot, ADotDot],
-                  createBinOpL(
-                    [OArrowRet, AArrowRet], // typecast operator
-                    createBinOp1([OBackslash, ABackslash], exprUnary),
+              [OAmp, AAmp],
+              createBinOpL(
+                [OPlus, OMinus, OPercent, APlus, AMinus, APercent],
+                createBinOpL(
+                  [OStar, OSlash, AStar, ASlash],
+                  createBinOpR(
+                    [OStarStar, AStarStar],
+                    createBinOp1(
+                      [ODotDot, ADotDot],
+                      createBinOp1(
+                        [OBackslash, ABackslash], // exact fraction operator
+                        exprUnary,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -832,10 +937,19 @@ function stmt(stream: Stream): Stmt | null {
       return new StmtExpr(exprIf(stream)!, stream.match(OSemi), false)
 
     case KFor:
-      return new StmtExpr(exprFor(stream)!, stream.match(OSemi), false)
+      return new StmtExpr(exprFor(stream, null)!, stream.match(OSemi), false)
 
     case KMatch:
       return new StmtExpr(exprMatch(stream)!, stream.match(OSemi), false)
+
+    case OLBrace:
+      return new StmtExpr(block(stream, null)!, stream.match(OSemi), false)
+
+    case TLabel: {
+      const [expr, needsSemi] = exprLabeled(stream)!
+      const semi = stream.match(OSemi)
+      return new StmtExpr(expr, semi, needsSemi && !semi)
+    }
 
     default:
       const e = expr(stream)
@@ -957,10 +1071,11 @@ const structArgs = createCommaOp(OLBrace, expr, null)
 
 export class ExprBlock extends Expr {
   constructor(
+    readonly label: ExprLabel | null,
     readonly bracket: TokenGroup,
     readonly of: Stmt[],
   ) {
-    super(bracket.start, of[of.length - 1]?.end ?? bracket.end)
+    super((label ?? bracket).start, of[of.length - 1]?.end ?? bracket.end)
   }
 }
 
@@ -970,7 +1085,7 @@ export class TypeBlock extends Type {
   }
 }
 
-function block(stream: Stream) {
+function block(stream: Stream, label: ExprLabel | null) {
   const group = stream.matchGroup(OLBrace)
   if (!group) {
     stream.raiseNext(Code.ExpectedBlock)
@@ -987,7 +1102,7 @@ function block(stream: Stream) {
   }
   group.contents.requireDone()
 
-  return new ExprBlock(group, list)
+  return new ExprBlock(label, group, list)
 }
 
 export class SourceSingle extends Expr {
@@ -1156,7 +1271,16 @@ function itemFn(stream: Stream) {
   const usageKw = stream.match(KUsage)
   const usages = usageKw && fnUsageExamples(stream)
 
-  return new ItemFn(kw, ident, p, arrow, ty, usageKw, usages, block(stream))
+  return new ItemFn(
+    kw,
+    ident,
+    p,
+    arrow,
+    ty,
+    usageKw,
+    usages,
+    block(stream, null),
+  )
 }
 
 const fnUsageExamples = createUnbracketedCommaOp(
@@ -1365,6 +1489,81 @@ function itemStruct(stream: Stream) {
   return new ItemStruct(kw, ident, structFields(stream))
 }
 
+class ExposeAliases extends Node {
+  constructor(
+    readonly as: Token<typeof KAs>,
+    readonly alias: IdentFnName | List<IdentFnName> | null,
+  ) {
+    super(as.start, (alias ?? as).end)
+  }
+}
+
+function fnName(stream: Stream): IdentFnName | null {
+  return stream.match(TIdent) || stream.matchAny(OVERLOADABLE)
+}
+
+const aliasList = createCommaOp(OLBrace, fnName, null)
+
+function exposeAliases(stream: Stream) {
+  const as = stream.match(KAs)
+  if (!as) return null
+
+  const aliases = stream.peek() == OLBrace ? aliasList(stream) : fnName(stream)
+  return new ExposeAliases(as, aliases)
+}
+
+export class ItemExposeFn extends Item {
+  constructor(
+    readonly kw1: Token<typeof KExpose>,
+    readonly kw2: Token<typeof KFn>,
+    readonly name: IdentFnName | null,
+    readonly label: Token<typeof TString> | null,
+    readonly as: ExposeAliases | null,
+    readonly semi: Token<typeof OSemi> | null,
+  ) {
+    super(kw1.start, (semi ?? as ?? label ?? name ?? kw2).end)
+  }
+}
+
+export class ItemExposeType extends Item {
+  constructor(
+    readonly kw1: Token<typeof KExpose>,
+    readonly kw2: Token<typeof KType>,
+    readonly name: IdentFnName | null,
+    readonly targs: List<Type> | null,
+    readonly label: Token<typeof TString> | null,
+    readonly as: ExposeAliases | null,
+    readonly semi: Token<typeof OSemi> | null,
+  ) {
+    super(kw1.start, (semi ?? as ?? label ?? targs ?? name ?? kw2).end)
+  }
+}
+
+export function itemExpose(stream: Stream) {
+  const kw1 = stream.match(KExpose)
+  if (!kw1) return null
+
+  const kw2 = stream.match(KFn) || stream.match(KType)
+  if (!kw2) {
+    stream.raiseNext(Code.MustExposeFnOrType)
+    return null
+  }
+
+  const name = stream.matchOr(TIdent, Code.ExpectedIdent)
+  if (kw2.kind == KFn && stream.peek() == OLAngle) {
+    stream.raiseNext(Code.NoGenericsOnExposedFn)
+  }
+
+  const targs = typeArgs(stream)
+  const label = stream.matchOr(TString, Code.ExpectedExposeString)
+  const as = exposeAliases(stream)
+  const semi = stream.matchOr(OSemi, Code.MissingSemi)
+
+  return kw2.kind == KType ?
+      new ItemExposeType(kw1, kw2, name, targs, label, as, semi)
+    : new ItemExposeFn(kw1, kw2, name, label, as, semi)
+}
+
 function item(stream: Stream): Item | null {
   switch (stream.peek()) {
     case KType:
@@ -1384,6 +1583,9 @@ function item(stream: Stream): Item | null {
 
     case KStruct:
       return itemStruct(stream)!
+
+    case KExpose:
+      return itemExpose(stream) // no ! because this returns null if not expose fn or expose type
   }
 
   return null
@@ -1415,10 +1617,4 @@ export function parse(stream: Stream) {
   return script(stream)
 }
 
-// TODO:
-// - let statement
-// - enum variant with data expr
-// - assignment
-//
-// ITEMS:
-// - expose
+// TODO: opaque, uniform
