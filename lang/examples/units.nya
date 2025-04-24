@@ -1,0 +1,24 @@
+// All possible basic unit categories; conversion is done via these.
+enum UnitCategory {
+  :m,
+  :s,
+  :mol,
+  :A,
+  :K,
+  :kg,
+  :cd,
+}
+
+// A mapping from a named unit to a set of universal unit categories.
+struct UnitMapping {
+  // 'bases' is an array with unknown length; it can only be operated on at
+  // compile time.
+  bases: [UnitCategory; ..],
+  scale: real,
+}
+
+enum Unit -> UnitMapping {
+  :m => .{ [:m], 1 },
+  :s => .{ [:s], 1 },
+  :g => .{ [:g], 1e-3 },
+}

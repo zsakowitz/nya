@@ -233,7 +233,7 @@
     },
     "number": {
       "name": "constant.numeric",
-      "match": "-?\\d+(?:\\.\\d+)?"
+      "match": "0x[\\da-f]+(?:\\.[\\da-f]+)?(?:p[+-]?\\d+)?|\\d+(?:\\.\\d+)?(?:e[+-]?\\d+)?"
     },
     "source-interp": {
       "begin": "\\$\\(",
@@ -251,7 +251,7 @@
       "patterns": [{ "include": "#root" }]
     },
     "types": {
-      "match": "\\b(?:[a-z]+\\d+|bool|img|viewport|mathjscx)\\b",
+      "match": "\\b(?:[a-z]+\\d+|real|complex|bool|img|viewport|mathjscx)\\b",
       "name": "entity.name.type.class.js"
     }
   },

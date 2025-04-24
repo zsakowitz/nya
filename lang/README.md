@@ -41,9 +41,13 @@ Many problems exist with the current setup:
 - Errors in IDE
 - Automatically watched by esbuild
 
-## Notes
+## Syntax
 
-There are no built-in types; everything is defined within nya code itself.
+project nya's language has somewhat odd syntax, since it is meant to describe
+many things in a single file:
 
-Syntax should be similar-ish to Rust, since it's clear, concise, and will make
-sense to many people at first glance.
+1. Data types
+2. Functions which operate on those types
+3. Symbolic transformations
+4. Properties required for scripts to function
+5. Function and type documentation

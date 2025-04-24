@@ -6,7 +6,6 @@ import {
   ABang,
   ABar,
   ABarBar,
-  ADotDot,
   AEq,
   AEqEq,
   AGe,
@@ -432,7 +431,6 @@ export type ExprBinaryOp =
   | typeof OGe
   | typeof OLt
   | typeof OGt
-  | typeof ODotDot
   | typeof APlus
   | typeof AMinus
   | typeof AStar
@@ -450,7 +448,6 @@ export type ExprBinaryOp =
   | typeof AGe
   | typeof ALt
   | typeof AGt
-  | typeof ADotDot
   | typeof OPercent
   | typeof APercent
   | typeof OEq
@@ -463,6 +460,16 @@ export class ExprBinary extends Expr {
     readonly rhs: Expr,
   ) {
     super(lhs.start, rhs.end)
+  }
+}
+
+export class ExprRange extends Expr {
+  constructor(
+    readonly lhs: Expr | null,
+    readonly op: Token<typeof ODotDot>,
+    readonly rhs: Expr | null,
+  ) {
+    super((lhs ?? op).start, (rhs ?? op).end)
   }
 }
 

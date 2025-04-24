@@ -5,7 +5,6 @@ import {
   ABang,
   ABar,
   ABarBar,
-  ADotDot,
   AEq,
   AEqEq,
   AGe,
@@ -112,6 +111,7 @@ import {
   ExprMatch,
   ExprParen,
   ExprProp,
+  ExprRange,
   ExprStruct,
   ExprSymStruct,
   ExprUnary,
@@ -587,6 +587,30 @@ function createBinOpArrowRet(side: (stream: Stream, ctx: ExprContext) => Expr) {
   }
 }
 
+function createRangeOp(side: (stream: Stream, ctx: ExprContext) => Expr) {
+  return (stream: Stream, ctx: ExprContext): Expr => {
+    if (stream.peek() == ODotDot) {
+      const dot = stream.match(ODotDot)!
+      const rhs = side(stream, { struct: ctx.struct, noErrorOnEmpty: true })
+      if (rhs instanceof ExprEmpty) {
+        return new ExprRange(null, dot, null)
+      } else {
+        return new ExprRange(null, dot, rhs)
+      }
+    }
+
+    const lhs = side(stream, ctx)
+    const dot = stream.match(ODotDot)
+    if (!dot) return lhs
+    const rhs = side(stream, { struct: ctx.struct, noErrorOnEmpty: true })
+    if (rhs instanceof ExprEmpty) {
+      return new ExprRange(lhs, dot, null)
+    } else {
+      return new ExprRange(lhs, dot, rhs)
+    }
+  }
+}
+
 function createBinOpR(
   permitted: ExprBinaryOp[],
   side: (stream: Stream, ctx: ExprContext) => Expr,
@@ -626,8 +650,7 @@ const exprBinaryOp = createBinOpR(
                   [OStar, OSlash, AStar, ASlash],
                   createBinOpR(
                     [OStarStar, AStarStar],
-                    createBinOp1(
-                      [ODotDot, ADotDot],
+                    createRangeOp(
                       createBinOp1(
                         [OBackslash, ABackslash], // exact fraction operator
                         exprUnary,

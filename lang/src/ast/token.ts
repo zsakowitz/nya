@@ -35,6 +35,7 @@ export class Token<T extends number> {
 }
 
 export const Code = Object.freeze({
+  LetterDirectlyAfterNumber: 19,
   InvalidBuiltinName: 20,
   UnknownChar: 21,
   FloatMustEndInDigit: 22,
@@ -95,6 +96,8 @@ const ID_CONT = /[A-Za-z0-9_]/
 const WS = /\s/
 const ANY_ID_START = /[@%:'A-Za-z_]/
 const DIGIT = /[0-9]/
+const NUMERIC =
+  /^(?:0x[\da-f]+(?:\.[\da-f]+)?(?:p[+-]?\d+)?|\d+(?:\.\d+)?(?:e[+-]?\d+)?)/i
 const INTERP = /\$\((?:([A-Za-z_]\w*)(?:(\.)(?:([A-Za-z_]\w*))?)?)?\)/g
 
 function is(regex: RegExp, char: string | undefined) {
@@ -179,18 +182,15 @@ export function tokens(source: string, props: ToTokensProps) {
     }
 
     if (DIGIT.test(char)) {
-      while (is(DIGIT, source[++i]));
-      if (source[i] == "." && source[i + 1] != ".") {
-        if (is(DIGIT, source[i + 1])) {
-          i++
-          while (is(DIGIT, source[++i]));
-          ret.push(new Token(TFloat, start, i))
-        } else if (!is(ANY_ID_START, source[i + 1])) {
-          i++
-          issues.push(new Issue(Code.FloatMustEndInDigit, start, i))
-        }
+      const m = source.slice(i).match(NUMERIC)![0]
+      i += m.length
+      if (/[.ep]/.test(m)) {
+        ret.push(new Token(TFloat, start, i))
       } else {
         ret.push(new Token(TInt, start, i))
+      }
+      if (is(ANY_ID_START, source[i])) {
+        issues.push(new Issue(Code.LetterDirectlyAfterNumber, i, i + 1))
       }
       continue
     }
