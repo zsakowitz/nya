@@ -38,7 +38,7 @@ fn um(category: [UnitMappingOne; ..], scale: real) -> UnitMapping {
   .{ category, scale }
 }
 
-enum Unit -> UnitMapping {
+enum UnitName -> UnitMapping {
   :m => um(:m),
   :s => um(:s),
   :g => um(:kg, 1e-3),
@@ -47,4 +47,52 @@ enum Unit -> UnitMapping {
   :N => um([.{ :kg, 1.0 }, .{ :m, 1.0 }, .{ :s, -2.0 }]),
   :J => um([.{ :kg, 1.0 }, .{ :m, 2.0 }, .{ :s, -2.0 }]),
   :cal => um([.{ :kg, 1.0 }, .{ :m, 2.0 }, .{ :s, -2.0 }], 4.184.inv),
+}
+
+struct UnitSingle {
+  name: UnitName,
+  exp: real,
+}
+
+struct Unit {
+  of: [UnitSingle; ..],
+}
+
+struct UnitBases {
+  m: real,
+  s: real,
+  mol: real,
+  A: real,
+  K: real,
+  kg: real,
+  cd: real,
+}
+
+struct UnitBase {
+  bases: UnitBases,
+  scale: real,
+}
+
+fn unit_bases(unit: Unit) -> UnitBase {
+  let bases = @zero(UnitBases);
+  let scale = 1.0;
+
+  for u in unit.of {
+    let mapping = UnitName(u.name);
+    for entry in mapping.bases {
+      let exp = entry.exp * u.exp;
+      scale = scale * entry.scale ** exp;
+      match entry.base {
+        :m => bases.m = bases.m + exp,
+        :s => bases.s = bases.s + exp,
+        :mol => bases.mol = bases.mol + exp,
+        :A => bases.A = bases.A + exp,
+        :K => bases.K = bases.K + exp,
+        :kg => bases.kg = bases.kg + exp,
+        :cd => bases.cd = bases.cd + exp,
+      }
+    }
+  }
+
+  .{ bases, scale }
 }
