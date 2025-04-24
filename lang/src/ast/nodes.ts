@@ -83,16 +83,21 @@ import {
   TIgnore,
   TInt,
   TLabel,
+  type TProp,
   TSource,
   TString,
   TSym,
 } from "./kind"
 import type { Print } from "./print"
 import type { TokenGroup } from "./stream"
-import { type Token } from "./token"
+import type { Token } from "./token"
 
 export type Ident = Token<typeof TIdent>
-export type IdentFnName = Token<typeof TIdent> | Token<OOverloadable>
+
+export type IdentFnName =
+  | Token<typeof TIdent>
+  | Token<typeof TProp>
+  | Token<OOverloadable>
 
 export abstract class Node {
   constructor(
@@ -216,7 +221,7 @@ export class ExprLit extends Expr {
 
 export class ExprVar extends Expr {
   constructor(
-    readonly name: Token<typeof TIdent | typeof TBuiltin>,
+    readonly name: Token<typeof TIdent | typeof TBuiltin | typeof TProp>,
     readonly targs: List<Type> | null,
     readonly args: List<Expr> | null,
   ) {
@@ -226,7 +231,9 @@ export class ExprVar extends Expr {
 
 export class ExprStruct extends Expr {
   constructor(
-    readonly name: Token<typeof TIdent | typeof TBuiltin | typeof ODot>,
+    readonly name: Token<
+      typeof TIdent | typeof TBuiltin | typeof ODot | typeof TProp
+    >,
     readonly args: List<Expr> | null,
   ) {
     super(name.start, (args ?? name).end)
@@ -348,15 +355,25 @@ export class ExprCall extends Expr {
   }
 }
 
+export class Prop extends Node {
+  constructor(dot: Token<typeof ODot> | null, name: Token<typeof TIdent> | null)
+  constructor(dot: null, name: Token<typeof TProp>)
+  constructor(
+    readonly dot: Token<typeof ODot> | null,
+    readonly name: Token<typeof TIdent | typeof TProp> | null,
+  ) {
+    super((dot ?? name)!.start, (name ?? dot)!.end)
+  }
+}
+
 export class ExprProp extends Expr {
   constructor(
     readonly on: Expr,
-    readonly dot: Token<typeof ODot>,
-    readonly name: Token<typeof TIdent> | null,
+    readonly prop: Prop,
     readonly targs: List<Type> | null,
     readonly args: List<Expr> | null,
   ) {
-    super(on.start, name?.end ?? dot.end)
+    super(on.start, (args ?? targs ?? prop).end)
   }
 }
 

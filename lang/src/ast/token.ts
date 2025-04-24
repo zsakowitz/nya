@@ -71,6 +71,7 @@ export const Code = Object.freeze({
   NoGenericsOnExposedFn: 56,
   ExpectedExposeString: 57,
   InvalidLabel: 58,
+  FnNamesMayNotBeginWithDots: 59,
 
   // future error ideas:
   // match on nonexhaustive enum
