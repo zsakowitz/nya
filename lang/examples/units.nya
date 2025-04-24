@@ -107,12 +107,12 @@ fn conversion_factor(src: Unit, dst: Unit) -> real {
 
 struct RealWithUnit {
   value: real,
-  unit: Unit,
+  const unit: Unit,
 }
 
 fn +(a: RealWithUnit, b: RealWithUnit) -> RealWithUnit {
   let scale = conversion_factor(b.unit, a.unit);
-  .{ a.unit, a + b * scale }
+  .{ a + b * scale, a.unit }
 }
 
 expose type RealWithUnit "a real number with a unit attached";

@@ -1,0 +1,7 @@
+struct Matrix<R: uint, C: uint> {
+  entries: [real; R, C],
+}
+
+fn +<R: uint, C: uint>(a: Matrix<R, C>, b: Matrix<R, C>) -> Matrix<R, C> {
+  a @+ b
+}

@@ -23,6 +23,7 @@ import {
   KAs,
   KAssert,
   KBreak,
+  type KConst,
   KContinue,
   KData,
   KElse,
@@ -664,11 +665,12 @@ export class ItemUse extends Item {
 
 export class StructField extends Node {
   constructor(
-    readonly name: Ident,
+    readonly constKw: Token<typeof KConst> | null,
+    readonly name: Ident | null,
     readonly colon: Token<typeof OColon> | null,
     readonly type: Type,
   ) {
-    super(name.start, type.end)
+    super((constKw ?? name).start, type.end)
   }
 }
 

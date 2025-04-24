@@ -22,6 +22,7 @@ import {
   KAs,
   KAssert,
   KBreak,
+  KConst,
   KContinue,
   KData,
   KElse,
@@ -985,10 +986,13 @@ function itemUse(stream: Stream) {
 }
 
 function structField(stream: Stream) {
+  const constKw = stream.match(KConst)
+
   const ident = stream.match(TIdent)
   if (!ident) return null
 
   return new StructField(
+    constKw,
     ident,
     stream.matchOr(OColon, Code.ExpectedColon),
     type(stream),
