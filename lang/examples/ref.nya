@@ -14,7 +14,7 @@ fn some_types() {
 
 fn hi(a: float, b: ((float))) -> r32 {
   if true {
-    c32 { 2.0, 3.4 }
+    c32 { re: 2.0, im: 3.4 }
   } else if 2 + 3 < 4 * 5 | 7 - (8 == 9 % 4) && 2 != 3 && -!4 == ~8 {
     c(a).b(c).re + { 2 + 3 }
   } else if false {
@@ -73,14 +73,14 @@ fn array_test<a, b: float>() {
   let x = 2.3;
   let x: float = 2.3;
   [float; 5, 7, 8];
-  :a { 2, 3 };
-  .{ 2, 3 };
+  :a { a: 2, b: 3 };
+  .{ a: 2, b: 3 };
   2 ** 3 ** 4;
   a -> b -> c;
 }
 
-expose fn sinh "hyperbolic sine" as { arcsinh, arsinh, sinh^-1 };
-expose type sinh "hyperbolic sine" as { arcsinh, arsinh, sinh^-1 };
+expose fn sinh "hyperbolic sine" as { arcsinh, arsinh, %"sinh^-1" };
+expose type sinh "hyperbolic sine" as { arcsinh, arsinh, %"sinh^-1" };
 
 fn labels_test() {
   'hi: { a = a + 2 }
