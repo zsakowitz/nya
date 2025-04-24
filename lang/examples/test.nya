@@ -1,4 +1,4 @@
-rule a + 0.0 => a;
+rule<a, b: float> a + 0.0 => a;
 rule d/dx(a * b) => d/dx(a) * b + a * d/dx(b);
 rule 0.0 * a => a;
 
@@ -48,26 +48,26 @@ fn +(a: float, b: float) -> r32 usage 2 + 3 {
 
 use "./world";
 
-enum Hi {
+enum Hi<a, b: float> {
   :a,
   :b { a: i32 },
   :c,
   ..
 }
 
-enum Units -> float {
+enum Units<a, b: float> -> float {
   :meter => 1.0,
   :cm => 0.01,
   :km => 1000.0,
   ..
 }
 
-struct Complex {
+struct Complex<a, b: float> {
   re: float,
   im: [float; 5, 7, 8]
 }
 
-fn array_test() {
+fn array_test<a, b: float>() {
   let x;
   let x: float;
   let x = 2.3;

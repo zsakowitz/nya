@@ -1,7 +1,7 @@
 import { hx } from "@/jsx"
 import source from "../examples/test.nya"
-import { parse } from "./ast"
 import { print } from "./ast-print"
+import { parse } from "./ast/parse"
 import { ORAngle, ORBrace, ORBrack, ORParen } from "./kind"
 import { createStream, TokenGroup } from "./stream"
 import { Code, type Token } from "./token"

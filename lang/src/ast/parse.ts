@@ -1,8 +1,7 @@
-import type { Print } from "./ast-print"
+import type { Print } from "../ast-print"
 import {
   AAmp,
   AAmpAmp,
-  AAt,
   ABackslash,
   ABang,
   ABar,
@@ -47,7 +46,6 @@ import {
   OAmpAmp,
   OArrowMap,
   OArrowRet,
-  OAt,
   OBackslash,
   OBang,
   OBar,
@@ -90,56 +88,77 @@ import {
   TString,
   TSym,
   type Brack,
-  type OOverloadable,
-} from "./kind"
-import { Stream, TokenGroup } from "./stream"
-import { Code, Token } from "./token"
-
-export type Ident = Token<typeof TIdent>
-export type IdentFnName = Token<typeof TIdent> | Token<OOverloadable>
-
-export abstract class Node {
-  constructor(
-    readonly start: number,
-    readonly end: number,
-  ) {}
-
-  [x: string]: Print
-}
-
-export abstract class Expr extends Node {
-  declare private _exprbrand
-}
-
-export abstract class Type extends Node {
-  declare private __brand_type
-}
-
-export abstract class Pat extends Node {}
-
-export class PatIgnore extends Pat {
-  constructor(readonly name: Token<typeof TIgnore>) {
-    super(name.start, name.end)
-  }
-}
-
-export class PatVar extends Pat {
-  constructor(readonly name: Token<typeof TIdent>) {
-    super(name.start, name.end)
-  }
-}
-
-export class PatLit extends Pat {
-  constructor(readonly name: Token<typeof TFloat | typeof TInt | typeof TSym>) {
-    super(name.start, name.end)
-  }
-}
-
-export class PatEmpty extends Pat {
-  constructor(readonly at: number) {
-    super(at, at)
-  }
-}
+} from "../kind"
+import { Stream } from "../stream"
+import { Code } from "../token"
+import {
+  EnumMapVariant,
+  EnumVariant,
+  ExposeAliases,
+  Expr,
+  ExprArray,
+  ExprArrayByRepetition,
+  ExprBinary,
+  ExprBlock,
+  ExprCall,
+  ExprCast,
+  ExprDeriv,
+  ExprEmpty,
+  ExprExit,
+  ExprFor,
+  ExprIf,
+  ExprIndex,
+  ExprLabel,
+  ExprLit,
+  ExprMatch,
+  ExprParen,
+  ExprProp,
+  ExprStruct,
+  ExprSymStruct,
+  ExprUnary,
+  ExprVar,
+  FnParam,
+  GenericParam,
+  GenericParams,
+  Item,
+  ItemData,
+  ItemEnum,
+  ItemEnumMap,
+  ItemExposeFn,
+  ItemExposeType,
+  ItemFn,
+  ItemRule,
+  ItemStruct,
+  ItemTest,
+  ItemType,
+  ItemUse,
+  List,
+  MatchArm,
+  Pat,
+  PatEmpty,
+  PatIgnore,
+  PatLit,
+  PatVar,
+  PlainList,
+  Script,
+  Source,
+  SourceInterp,
+  SourceSingle,
+  Stmt,
+  StmtAssert,
+  StmtExpr,
+  StmtLet,
+  StructField,
+  Type,
+  TypeArray,
+  TypeBlock,
+  TypeEmpty,
+  TypeLit,
+  TypeParen,
+  TypeVar,
+  type ExprBinaryOp,
+  type IdentFnName,
+} from "./nodes"
 
 function patAtom(stream: Stream) {
   switch (stream.peek()) {
@@ -163,47 +182,22 @@ function pat(stream: Stream): Pat {
   return patAtom(stream)
 }
 
-export class TypeVar extends Type {
-  constructor(
-    readonly name: Token<typeof TIdent>,
-    readonly targs: List<Type> | null,
-  ) {
-    super(name.start, (targs ?? name).end)
-  }
+function genericParam(stream: Stream) {
+  const ident = stream.match(TIdent)
+  if (!ident) return null
+
+  const colon = stream.match(OColon)
+  const ty = colon && type(stream)
+
+  return new GenericParam(ident, colon, ty)
 }
 
-export class TypeLit extends Type {
-  constructor(
-    readonly token: Token<typeof TInt | typeof TFloat | typeof TSym>,
-  ) {
-    super(token.start, token.end)
-  }
-}
+const genericParamsRaw = createCommaOp(OLAngle, genericParam, null)
 
-export class TypeEmpty extends Type {
-  constructor(readonly at: number) {
-    super(at, at)
-  }
-}
-
-export class TypeParen extends Type {
-  constructor(
-    readonly token: TokenGroup<typeof OLParen>,
-    readonly of: Type,
-  ) {
-    super(token.start, token.end)
-  }
-}
-
-export class TypeArray extends Type {
-  constructor(
-    readonly brack: TokenGroup<typeof OLBrack>,
-    readonly of: Type,
-    readonly semi: Token<typeof OSemi> | null,
-    readonly sizes: PlainList<Expr>,
-  ) {
-    super(brack.start, sizes.end)
-  }
+function genericParams(stream: Stream) {
+  const raw = genericParamsRaw(stream)
+  if (raw) return new GenericParams(raw)
+  return null
 }
 
 const arraySizes = createUnbracketedCommaOp(expr, Code.ExpectedExpression)
@@ -245,14 +239,6 @@ function type(stream: Stream): Type {
 
 const typeArgs = createCommaOp(OLAngle, type, null)
 
-export class ExprLit extends Expr {
-  constructor(
-    readonly value: Token<typeof TFloat | typeof TInt | typeof TSym>,
-  ) {
-    super(value.start, value.end)
-  }
-}
-
 function exprLit(stream: Stream, ctx: ExprContext) {
   const token = stream.match(TFloat) || stream.match(TInt) || stream.match(TSym)
   if (!token) return null
@@ -265,34 +251,6 @@ function exprLit(stream: Stream, ctx: ExprContext) {
   }
 
   return new ExprLit(token)
-}
-
-export class ExprVar extends Expr {
-  constructor(
-    readonly name: Token<typeof TIdent | typeof TBuiltin>,
-    readonly targs: List<Type> | null,
-    readonly args: List<Expr> | null,
-  ) {
-    super(name.start, name.end)
-  }
-}
-
-export class ExprStruct extends Expr {
-  constructor(
-    readonly name: Token<typeof TIdent | typeof TBuiltin | typeof ODot>,
-    readonly args: List<Expr> | null,
-  ) {
-    super(name.start, (args ?? name).end)
-  }
-}
-
-export class ExprSymStruct extends Expr {
-  constructor(
-    readonly name: Token<typeof TSym>,
-    readonly args: List<Expr> | null,
-  ) {
-    super(name.start, (args ?? name).end)
-  }
 }
 
 interface ExprContext {
@@ -309,33 +267,6 @@ function exprVar(stream: Stream, ctx: ExprContext) {
     } else {
       return new ExprVar(token, typeArgs(stream), callArgs(stream))
     }
-  }
-}
-
-export class ExprEmpty extends Expr {
-  constructor(readonly at: number) {
-    super(at, at)
-  }
-}
-
-export class ExprLabel extends Node {
-  constructor(
-    readonly label: Token<typeof TLabel>,
-    readonly colon: Token<typeof OColon> | null,
-  ) {
-    super(label.start, (colon ?? label).end)
-  }
-}
-
-export class ExprIf extends Expr {
-  constructor(
-    readonly kwIf: Token<typeof KIf>,
-    readonly condition: Expr,
-    readonly blockIf: ExprBlock | null,
-    readonly kwElse: Token<typeof KElse> | null,
-    readonly blockElse: ExprBlock | ExprIf | null,
-  ) {
-    super(kwIf.start, blockIf?.end ?? condition.end)
   }
 }
 
@@ -358,19 +289,6 @@ export function exprIf(stream: Stream): ExprIf | null {
   } else {
     stream.raiseNext(Code.IfOrBlockMustFollowElse)
     return new ExprIf(kwIf, condition, blockIf, null, null)
-  }
-}
-
-export class ExprFor extends Expr {
-  constructor(
-    readonly label: ExprLabel | null,
-    readonly kw: Token<typeof KFor>,
-    readonly bound: PlainList<Ident>,
-    readonly eq: Token<typeof KIn> | null,
-    readonly sources: PlainList<Expr>,
-    readonly block: ExprBlock | null,
-  ) {
-    super((label ?? kw).start, (block ?? sources).end)
   }
 }
 
@@ -419,16 +337,6 @@ export function exprLabeled(stream: Stream): [Expr, needsSemi: boolean] | null {
   return [expr(stream), true]
 }
 
-export class ExprExit extends Expr {
-  constructor(
-    readonly kw: Token<typeof KReturn | typeof KBreak | typeof KContinue>,
-    readonly label: Token<typeof TLabel> | null,
-    readonly value: Expr | null,
-  ) {
-    super(kw.start, (value ?? label ?? kw).end)
-  }
-}
-
 export function exprExit(stream: Stream, ctx: ExprContext): ExprExit | null {
   const kw = stream.matchAny([KReturn, KBreak, KContinue])
   if (!kw) return null
@@ -453,32 +361,12 @@ export function exprExit(stream: Stream, ctx: ExprContext): ExprExit | null {
   return new ExprExit(kw, label, value)
 }
 
-export class MatchArm extends Node {
-  constructor(
-    readonly pat: Pat,
-    readonly arrow: Token<typeof OArrowMap> | null,
-    readonly expr: Expr,
-  ) {
-    super(pat.start, expr.end)
-  }
-}
-
 function matchArm(stream: Stream) {
   return new MatchArm(
     pat(stream),
     stream.matchOr(OArrowMap, Code.ExpectedMatchArrow),
     expr(stream),
   )
-}
-
-export class ExprMatch extends Expr {
-  constructor(
-    readonly kw: Token<typeof KMatch>,
-    readonly on: Expr,
-    readonly arms: List<MatchArm> | null,
-  ) {
-    super(kw.start, (arms ?? kw).end)
-  }
 }
 
 const arms = createCommaOp(OLBrace, matchArm, Code.ExpectedMatchArms)
@@ -488,32 +376,6 @@ function exprMatch(stream: Stream) {
   if (!kw) return null
 
   return new ExprMatch(kw, expr(stream, { struct: false }), arms(stream))
-}
-
-export class ExprParen extends Expr {
-  constructor(
-    readonly token: TokenGroup<typeof OLParen>,
-    readonly of: Expr,
-  ) {
-    super(token.start, token.end)
-  }
-}
-
-export class ExprArray extends Expr {
-  constructor(readonly of: List<Expr>) {
-    super(of.start, of.end)
-  }
-}
-
-export class ExprArrayByRepetition extends Expr {
-  constructor(
-    readonly brack: TokenGroup<typeof OLBrack>,
-    readonly of: Expr,
-    readonly semi: Token<typeof OSemi> | null,
-    readonly sizes: PlainList<Expr>,
-  ) {
-    super(brack.start, sizes.end)
-  }
 }
 
 function exprAtom(stream: Stream, ctx: ExprContext): Expr {
@@ -593,38 +455,6 @@ function exprAtom(stream: Stream, ctx: ExprContext): Expr {
   return new ExprEmpty(stream.loc())
 }
 
-export class ExprCall extends Expr {
-  constructor(
-    readonly on: Expr,
-    readonly targs: List<Type> | null,
-    readonly args: List<Expr> | null,
-  ) {
-    super(on.start, (args ?? targs ?? on).end)
-  }
-}
-
-export class ExprProp extends Expr {
-  constructor(
-    readonly on: Expr,
-    readonly dot: Token<typeof ODot>,
-    readonly name: Token<typeof TIdent> | null,
-    readonly targs: List<Type> | null,
-    readonly args: List<Expr> | null,
-  ) {
-    super(on.start, name?.end ?? dot.end)
-  }
-}
-
-export class ExprIndex extends Expr {
-  constructor(
-    readonly on: Expr,
-    readonly brack: TokenGroup<typeof OLBrack>,
-    readonly index: Expr,
-  ) {
-    super(on.start, brack.end)
-  }
-}
-
 function exprPropChain(stream: Stream, ctx: ExprContext) {
   let exp = exprAtom(stream, ctx)
 
@@ -667,33 +497,6 @@ function exprPropChain(stream: Stream, ctx: ExprContext) {
   return exp
 }
 
-type ExprUnaryOp =
-  | typeof OMinus
-  | typeof AMinus
-  | typeof OTilde
-  | typeof ATilde
-  | typeof OBang
-  | typeof ABang
-
-export class ExprUnary extends Expr {
-  constructor(
-    readonly op: Token<ExprUnaryOp>,
-    readonly of: Expr,
-  ) {
-    super(op.start, of.end)
-  }
-}
-
-// d/dx notation is used as a shorthand since we need to represent a lot of derivatives
-export class ExprDeriv extends Expr {
-  constructor(
-    readonly wrt: Token<typeof TDeriv | typeof TDerivIgnore>,
-    readonly of: Expr,
-  ) {
-    super(wrt.start, wrt.end)
-  }
-}
-
 function exprUnary(stream: Stream, ctx: ExprContext): Expr {
   let ops = []
   let match
@@ -721,68 +524,6 @@ function exprUnary(stream: Stream, ctx: ExprContext): Expr {
     }
   }
   return expr
-}
-
-type ExprBinaryOp =
-  | typeof OPlus
-  | typeof OMinus
-  | typeof OStar
-  | typeof OSlash
-  | typeof OStarStar
-  | typeof OBar
-  | typeof OAmp
-  | typeof OBarBar
-  | typeof OAmpAmp
-  | typeof OAt
-  | typeof OBackslash
-  | typeof OEqEq
-  | typeof ONe
-  | typeof OLe
-  | typeof OGe
-  | typeof OLt
-  | typeof OGt
-  | typeof ODotDot
-  | typeof APlus
-  | typeof AMinus
-  | typeof AStar
-  | typeof ASlash
-  | typeof AStarStar
-  | typeof ABar
-  | typeof AAmp
-  | typeof ABarBar
-  | typeof AAmpAmp
-  | typeof AAt
-  | typeof ABackslash
-  | typeof AEqEq
-  | typeof ANe
-  | typeof ALe
-  | typeof AGe
-  | typeof ALt
-  | typeof AGt
-  | typeof ADotDot
-  | typeof OPercent
-  | typeof APercent
-  | typeof OEq
-  | typeof AEq
-
-export class ExprBinary extends Expr {
-  constructor(
-    readonly lhs: Expr,
-    readonly op: Token<ExprBinaryOp>,
-    readonly rhs: Expr,
-  ) {
-    super(lhs.start, rhs.end)
-  }
-}
-
-export class ExprCast extends Expr {
-  constructor(
-    readonly lhs: Expr,
-    readonly op: Token<typeof OArrowRet>,
-    readonly rhs: Type,
-  ) {
-    super(lhs.start, rhs.end)
-  }
 }
 
 function createBinOp1(
@@ -883,45 +624,6 @@ const exprBinaryOp = createBinOpR(
   ),
 )
 
-export abstract class Stmt extends Node {
-  declare private __brand_stmt
-}
-
-export class StmtExpr extends Stmt {
-  constructor(
-    readonly expr: Expr,
-    readonly semi: Token<typeof OSemi> | null,
-    /** `true` only if `expr` is a plain expr and has no semicolon. */
-    readonly terminatesBlock: boolean,
-  ) {
-    super(expr.start, semi?.end ?? expr.end)
-  }
-}
-
-export class StmtLet extends Stmt {
-  constructor(
-    readonly kw: Token<typeof KLet>,
-    readonly ident: Ident | null,
-    readonly colon: Token<typeof OColon> | null,
-    readonly type: Type | null,
-    readonly eq: Token<typeof OEq> | null,
-    readonly value: Expr | null,
-    readonly semi: Token<typeof OSemi> | null,
-  ) {
-    super(kw.start, (semi ?? value ?? eq ?? type ?? colon ?? ident ?? kw).end)
-  }
-}
-
-export class StmtAssert extends Stmt {
-  constructor(
-    readonly kw: Token<typeof KAssert>,
-    readonly expr: Expr,
-    readonly semi: Token<typeof OSemi> | null,
-  ) {
-    super(kw.start, (semi ?? expr).end)
-  }
-}
-
 function stmtAssert(stream: Stream) {
   const kw = stream.match(KAssert)
   if (!kw) return null
@@ -988,16 +690,6 @@ function expr(stream: Stream, ctx: ExprContext = { struct: true }) {
   return exprBinaryOp(stream, ctx)
 }
 
-export class PlainList<T extends Print> extends Node {
-  constructor(
-    readonly items: T[],
-    start: number,
-    end: number,
-  ) {
-    super(start, end)
-  }
-}
-
 function createUnbracketedCommaOp<T extends Print & { end: number }>(
   fn: (stream: Stream) => T | null,
   onEmpty: Code,
@@ -1023,16 +715,6 @@ function createUnbracketedCommaOp<T extends Print & { end: number }>(
     }
 
     return list
-  }
-}
-
-export class List<T extends Print, U extends Print | null = null> extends Node {
-  constructor(
-    readonly bracket: TokenGroup,
-    readonly items: T[],
-    readonly terminator: U,
-  ) {
-    super(bracket.start, bracket.end)
   }
 }
 
@@ -1095,22 +777,6 @@ function createCommaOp<
 const callArgs = createCommaOp(OLParen, expr, null)
 const structArgs = createCommaOp(OLBrace, expr, null)
 
-export class ExprBlock extends Expr {
-  constructor(
-    readonly label: ExprLabel | null,
-    readonly bracket: TokenGroup,
-    readonly of: Stmt[],
-  ) {
-    super((label ?? bracket).start, of[of.length - 1]?.end ?? bracket.end)
-  }
-}
-
-export class TypeBlock extends Type {
-  constructor(readonly block: ExprBlock) {
-    super(block.start, block.end)
-  }
-}
-
 function block(stream: Stream, label: ExprLabel | null) {
   const group = stream.matchGroup(OLBrace)
   if (!group) {
@@ -1129,39 +795,6 @@ function block(stream: Stream, label: ExprLabel | null) {
   group.contents.requireDone()
 
   return new ExprBlock(label, group, list)
-}
-
-export class SourceSingle extends Expr {
-  constructor(
-    readonly kw: Token<typeof KSource>,
-    readonly lang: Ident | null,
-    readonly braces: TokenGroup<typeof OLBrace> | null,
-    readonly parts: Token<typeof TSource>[],
-    readonly interps: SourceInterp[],
-  ) {
-    super(kw.start, (braces ?? lang ?? kw).end)
-  }
-}
-
-export class Source extends Expr {
-  constructor(
-    start: number,
-    end: number,
-    readonly parts: SourceSingle[],
-    readonly castOp: Token<typeof OColonColon> | null,
-    readonly cast: Type | null,
-  ) {
-    super(start, end)
-  }
-}
-
-export class SourceInterp extends Expr {
-  constructor(
-    readonly bracket: TokenGroup<typeof OLInterp>,
-    readonly of: Expr,
-  ) {
-    super(bracket.start, bracket.end)
-  }
 }
 
 function sourceSingle(stream: Stream): SourceSingle | null {
@@ -1215,21 +848,6 @@ function source(stream: Stream): Source | null {
   )
 }
 
-export abstract class Item extends Node {
-  declare private __brand_item
-}
-
-export class ItemType extends Item {
-  constructor(
-    readonly kw: Token<typeof KType>,
-    readonly ident: Ident | null,
-    readonly braces: TokenGroup<typeof OLBrace> | null,
-    readonly source: Source | null,
-  ) {
-    super(kw.start, (braces ?? ident ?? kw).end)
-  }
-}
-
 function itemType(stream: Stream) {
   const kw = stream.match(KType)
   if (!kw) return null
@@ -1241,41 +859,12 @@ function itemType(stream: Stream) {
   return new ItemType(kw, ident, braces, s)
 }
 
-export class FnParam extends Node {
-  constructor(
-    readonly ident: Ident,
-    readonly colon: Token<typeof OColon> | null,
-    readonly type: Type,
-  ) {
-    super(ident.start, type.end)
-  }
-}
-
 function fnParam(stream: Stream) {
   const ident = stream.match(TIdent)
   if (!ident) return null
 
   const colon = stream.matchOr(OColon, Code.ExpectedColon)
   return new FnParam(ident, colon, type(stream))
-}
-
-export class ItemFn extends Item {
-  constructor(
-    readonly kw: Token<typeof KFn>,
-    readonly name: IdentFnName | null,
-    readonly params: List<FnParam> | null,
-    readonly arrow: Token<typeof OArrowRet> | null,
-    readonly retType: Type | null,
-    readonly usageKw: Token<typeof KUsage> | null,
-    readonly usages: PlainList<Expr> | null,
-    readonly block: ExprBlock | null,
-  ) {
-    super(
-      kw.start,
-      (block ?? usages ?? usageKw ?? retType ?? arrow ?? params ?? name ?? kw)
-        .end,
-    )
-  }
 }
 
 const fnParams = createCommaOp(OLParen, fnParam, Code.ExpectedFnParams)
@@ -1286,7 +875,8 @@ function itemFn(stream: Stream) {
 
   const ident = stream.match(TIdent) || stream.matchAny(OVERLOADABLE)
   if (!ident) stream.raiseNext(Code.ExpectedFnName)
-  const p = fnParams(stream)
+  const tparams = genericParams(stream)
+  const params = fnParams(stream)
   const arrow = stream.match(OArrowRet) // not matchOr since return types are optional (void is implied)
   let ty = null
   if (arrow && stream.peek() == OLBrace) {
@@ -1300,7 +890,8 @@ function itemFn(stream: Stream) {
   return new ItemFn(
     kw,
     ident,
-    p,
+    tparams,
+    params,
     arrow,
     ty,
     usageKw,
@@ -1314,22 +905,11 @@ const fnUsageExamples = createUnbracketedCommaOp(
   Code.ExpectedForBindings,
 )
 
-export class ItemRule extends Item {
-  constructor(
-    readonly kw: Token<typeof KRule>,
-    readonly lhs: Expr,
-    readonly arrow: Token<typeof OArrowMap> | null,
-    readonly rhs: Expr,
-    readonly semi: Token<typeof OSemi> | null,
-  ) {
-    super(kw.start, rhs.end)
-  }
-}
-
 function itemRule(stream: Stream) {
   const kw = stream.match(KRule)
   if (!kw) return null
 
+  const tparams = genericParams(stream)
   const lhs = expr(stream)
   const op = stream.match(OArrowMap)
   if (!op) {
@@ -1341,17 +921,7 @@ function itemRule(stream: Stream) {
     stream.raiseNext(Code.MissingSemi)
   }
 
-  return new ItemRule(kw, lhs, op, rhs, semi)
-}
-
-export class ItemUse extends Item {
-  constructor(
-    readonly kw: Token<typeof KUse>,
-    readonly source: Token<typeof TString> | null,
-    readonly semi: Token<typeof OSemi> | null,
-  ) {
-    super(kw.start, (semi ?? source ?? kw).end)
-  }
+  return new ItemRule(kw, tparams, lhs, op, rhs, semi)
 }
 
 function itemUse(stream: Stream) {
@@ -1363,16 +933,6 @@ function itemUse(stream: Stream) {
     stream.matchOr(TString, Code.ExpectedImportPath),
     stream.matchOr(OSemi, Code.MissingSemi),
   )
-}
-
-export class StructField extends Node {
-  constructor(
-    readonly name: Ident,
-    readonly colon: Token<typeof OColon> | null,
-    readonly type: Type,
-  ) {
-    super(name.start, type.end)
-  }
 }
 
 function structField(stream: Stream) {
@@ -1398,15 +958,6 @@ function nonExhaustiveMarker(stream: Stream) {
 
 const enumFields = createCommaOp(OLBrace, structField, null)
 
-export class EnumVariant extends Node {
-  constructor(
-    readonly name: Token<typeof TSym>,
-    readonly fields: List<StructField> | null,
-  ) {
-    super(name.start, (fields ?? name).end)
-  }
-}
-
 export function enumVariant(stream: Stream) {
   const name = stream.match(TSym)
   if (!name) return null
@@ -1420,27 +971,6 @@ const enumVariants = createCommaOp(
   Code.ExpectedEnumVariants,
   nonExhaustiveMarker,
 )
-
-export class ItemEnum extends Item {
-  constructor(
-    readonly kw: Token<typeof KEnum>,
-    readonly name: Ident | null,
-    // readonly tparams: Type,
-    readonly variants: List<EnumVariant, Token<typeof ODotDot> | null> | null,
-  ) {
-    super(kw.start, (variants ?? name ?? kw).end)
-  }
-}
-
-export class EnumMapVariant extends Node {
-  constructor(
-    readonly name: Token<typeof TSym>,
-    readonly arrow: Token<typeof OArrowMap> | null,
-    readonly of: Expr,
-  ) {
-    super(name.start, of.end)
-  }
-}
 
 function enumMapVariant(stream: Stream) {
   const name = stream.match(TSym)
@@ -1460,49 +990,25 @@ const enumMapVariants = createCommaOp(
   nonExhaustiveMarker,
 )
 
-export class ItemEnumMap extends Item {
-  constructor(
-    readonly kw: Token<typeof KEnum>,
-    readonly name: Ident | null,
-    readonly arrow: Token<typeof OArrowRet>,
-    readonly ret: Type,
-    readonly variants: List<
-      EnumMapVariant,
-      Token<typeof ODotDot> | null
-    > | null,
-  ) {
-    super(kw.start, (variants ?? ret).end)
-  }
-}
-
 function itemEnum(stream: Stream) {
   const kw = stream.match(KEnum)
   if (!kw) return null
 
   const ident = stream.matchOr(TIdent, Code.ExpectedIdent)
+  const tparams = genericParams(stream)
   const arrow = stream.match(OArrowRet)
 
   if (arrow) {
     return new ItemEnumMap(
       kw,
       ident,
+      tparams,
       arrow,
       type(stream),
       enumMapVariants(stream),
     )
   } else {
-    return new ItemEnum(kw, ident, enumVariants(stream))
-  }
-}
-
-export class ItemStruct extends Item {
-  constructor(
-    readonly kw: Token<typeof KStruct>,
-    readonly name: Ident | null,
-    // readonly tparams: Type,
-    readonly fields: List<StructField, Token<typeof ODotDot> | null> | null,
-  ) {
-    super(kw.start, (fields ?? name ?? kw).end)
+    return new ItemEnum(kw, ident, tparams, enumVariants(stream))
   }
 }
 
@@ -1511,20 +1017,9 @@ function itemStruct(stream: Stream) {
   if (!kw) return null
 
   const ident = stream.matchOr(TIdent, Code.ExpectedIdent)
+  const generics = genericParams(stream)
 
-  return new ItemStruct(kw, ident, structFields(stream))
-}
-
-export class ItemData extends Item {
-  constructor(
-    readonly data: Token<typeof KData>,
-    readonly name: Ident | null,
-    readonly colon: Token<typeof OColon> | null,
-    readonly type: Type,
-    readonly semi: Token<typeof OSemi> | null,
-  ) {
-    super(data.start, (semi ?? type).end)
-  }
+  return new ItemStruct(kw, ident, generics, structFields(stream))
 }
 
 function itemData(stream: Stream) {
@@ -1540,30 +1035,11 @@ function itemData(stream: Stream) {
   )
 }
 
-export class ItemTest extends Item {
-  constructor(
-    readonly kw: Token<typeof KAssert>,
-    readonly expr: Expr,
-    readonly semi: Token<typeof OSemi> | null,
-  ) {
-    super(kw.start, (semi ?? expr).end)
-  }
-}
-
 function itemTest(stream: Stream) {
   const kw = stream.match(KAssert)
   if (!kw) return null
 
   return new ItemTest(kw, expr(stream), stream.matchOr(OSemi, Code.MissingSemi))
-}
-
-class ExposeAliases extends Node {
-  constructor(
-    readonly as: Token<typeof KAs>,
-    readonly alias: IdentFnName | List<IdentFnName> | null,
-  ) {
-    super(as.start, (alias ?? as).end)
-  }
 }
 
 function fnName(stream: Stream): IdentFnName | null {
@@ -1578,33 +1054,6 @@ function exposeAliases(stream: Stream) {
 
   const aliases = stream.peek() == OLBrace ? aliasList(stream) : fnName(stream)
   return new ExposeAliases(as, aliases)
-}
-
-export class ItemExposeFn extends Item {
-  constructor(
-    readonly kw1: Token<typeof KExpose>,
-    readonly kw2: Token<typeof KFn>,
-    readonly name: IdentFnName | null,
-    readonly label: Token<typeof TString> | null,
-    readonly as: ExposeAliases | null,
-    readonly semi: Token<typeof OSemi> | null,
-  ) {
-    super(kw1.start, (semi ?? as ?? label ?? name ?? kw2).end)
-  }
-}
-
-export class ItemExposeType extends Item {
-  constructor(
-    readonly kw1: Token<typeof KExpose>,
-    readonly kw2: Token<typeof KType>,
-    readonly name: IdentFnName | null,
-    readonly targs: List<Type> | null,
-    readonly label: Token<typeof TString> | null,
-    readonly as: ExposeAliases | null,
-    readonly semi: Token<typeof OSemi> | null,
-  ) {
-    super(kw1.start, (semi ?? as ?? label ?? targs ?? name ?? kw2).end)
-  }
 }
 
 export function itemExpose(stream: Stream) {
@@ -1663,16 +1112,6 @@ function item(stream: Stream): Item | null {
   }
 
   return null
-}
-
-export class Script extends Node {
-  constructor(
-    readonly items: Item[],
-    start: number,
-    end: number,
-  ) {
-    super(start, end)
-  }
 }
 
 function script(stream: Stream): Script {
