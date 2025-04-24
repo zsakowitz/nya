@@ -1,11 +1,9 @@
-export const TAliasOnly = 0 // x^-1
-export const TIdent = 1 // f32, Complex
+export const TIdent = 1 // f32, Complex, %"\odot"
 export const TDeriv = 2 // d/dx, d/dwrt, d/dy
 export const TDerivIgnore = 3 // d/d_
 export const TBuiltin = 4 // @vec2, @meter
 export const TLabel = 5 // 'hello, 'meter
 export const TIgnore = 6 // _
-export const TProp = 7 // .x, .y, .z
 
 export const TInt = 8 // 2
 export const TFloat = 9 // 2.3
@@ -263,8 +261,6 @@ export const IDENT_PREFIXES: Record<string, number> = {
   ":": TSym,
   "@": TBuiltin,
   "'": TLabel,
-  "%": TIdent,
-  ".": TProp,
 }
 
 export const OVERLOADABLE = Object.freeze([

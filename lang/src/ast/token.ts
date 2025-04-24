@@ -10,7 +10,6 @@ import {
   OPS_AND_SECOND_CHARS,
   ORBrace,
   ORParen,
-  TAliasOnly,
   TComment,
   TDeriv,
   TDerivIgnore,
@@ -40,8 +39,9 @@ export const Code = Object.freeze({
   UnknownChar: 21,
   FloatMustEndInDigit: 22,
   UnterminatedString: 23,
-  UnterminatedSource: 25,
   UnknownOperator: 24,
+  UnterminatedSource: 25,
+  UnterminatedStringIdent: 26,
   MismatchedClosingParen: 28,
   MismatchedOpeningParen: 29,
   ExpectedIdent: 30,
@@ -137,20 +137,31 @@ export function tokens(source: string, props: ToTokensProps) {
 
     if (ID_START.test(char)) {
       while (is(ID_CONT, source[++i]));
-      if (source[i] == "^" && source[i + 1] == "-" && source[i + 2] == "1") {
-        i += 3
-      }
       const text = source.slice(start, i)
       ret.push(
-        new Token(
-          KWS[text] ??
-            (text == "_" ? TIgnore
-            : text.endsWith("^-1") ? TAliasOnly
-            : TIdent),
-          start,
-          i,
-        ),
+        new Token(KWS[text] ?? (text == "_" ? TIgnore : TIdent), start, i),
       )
+      continue
+    }
+
+    if (char == "%" && source[i + 1] == '"') {
+      i++
+      let terminated = false
+      while (i < source.length) {
+        i++
+        if (source[i] == '"') {
+          i++
+          terminated = true
+          break
+        }
+        if (source[i] == "\\") {
+          i++
+        }
+      }
+      ret.push(new Token(TIdent, start, i))
+      if (!terminated) {
+        issues.push(new Issue(Code.UnterminatedStringIdent, start, i))
+      }
       continue
     }
 

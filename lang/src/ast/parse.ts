@@ -75,7 +75,6 @@ import {
   OStarStar,
   OTilde,
   OVERLOADABLE,
-  TAliasOnly,
   TBuiltin,
   TDeriv,
   TDerivIgnore,
@@ -84,7 +83,6 @@ import {
   TIgnore,
   TInt,
   TLabel,
-  TProp,
   TSource,
   TString,
   TSym,
@@ -263,8 +261,7 @@ interface ExprContext {
 }
 
 function exprVar(stream: Stream, ctx: ExprContext) {
-  const token =
-    stream.match(TIdent) || stream.match(TBuiltin) || stream.match(TProp)
+  const token = stream.match(TIdent) || stream.match(TBuiltin)
   if (token) {
     const struct = ctx.struct && structArgs(stream)
     if (struct) {
@@ -395,7 +392,6 @@ function exprAtom(stream: Stream, ctx: ExprContext): Expr {
 
     case TIdent:
     case TBuiltin:
-    case TProp:
       return exprVar(stream, ctx)!
 
     case OLParen: {
@@ -462,18 +458,11 @@ function exprAtom(stream: Stream, ctx: ExprContext): Expr {
 }
 
 function prop(stream: Stream) {
-  switch (stream.peek()) {
-    case ODot:
-      const dot = stream.match(ODot)!
-      const ident = stream.matchOr(TIdent, Code.ExpectedIdent)
-      return new Prop(dot, ident)
+  const dot = stream.match(ODot)
+  if (!dot) return null
 
-    case TProp:
-      const prop = stream.match(TProp)!
-      return new Prop(null, prop)
-  }
-
-  return null
+  const ident = stream.matchOr(TIdent, Code.ExpectedIdent)
+  return new Prop(dot, ident)
 }
 
 function exprPropChain(stream: Stream, ctx: ExprContext) {
@@ -502,7 +491,6 @@ function exprPropChain(stream: Stream, ctx: ExprContext) {
         continue
 
       case ODot:
-      case TProp:
         exp = new ExprProp(
           exp,
           prop(stream)!,
@@ -1100,38 +1088,16 @@ function itemTest(stream: Stream) {
 }
 
 function fnName(stream: Stream): IdentFnName | null {
-  switch (stream.peek()) {
-    case TIdent:
-      return stream.match(TIdent)
-
-    case TProp:
-      stream.raiseNext(Code.OnlyValidAsExposedAlias)
-      return stream.match(TProp)
-
-    case TAliasOnly:
-      stream.raiseNext(Code.OnlyValidAsExposedAlias)
-      return stream.match(TAliasOnly)
-
-    default:
-      return stream.matchAny(OVERLOADABLE)
-  }
+  return stream.match(TIdent) || stream.matchAny(OVERLOADABLE)
 }
 
-function fnAliasName(stream: Stream): IdentFnName | null {
-  return (
-    stream.matchAny([TProp, TAliasOnly, TIdent]) ||
-    stream.matchAny(OVERLOADABLE)
-  )
-}
-
-const aliasList = createCommaOp(OLBrace, fnAliasName, null)
+const aliasList = createCommaOp(OLBrace, fnName, null)
 
 function exposeAliases(stream: Stream) {
   const as = stream.match(KAs)
   if (!as) return null
 
-  const aliases =
-    stream.peek() == OLBrace ? aliasList(stream) : fnAliasName(stream)
+  const aliases = stream.peek() == OLBrace ? aliasList(stream) : fnName(stream)
   return new ExposeAliases(as, aliases)
 }
 

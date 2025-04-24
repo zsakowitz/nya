@@ -75,7 +75,6 @@ import {
   OStar,
   OStarStar,
   OTilde,
-  type TAliasOnly,
   TBuiltin,
   TDeriv,
   TDerivIgnore,
@@ -84,7 +83,6 @@ import {
   TIgnore,
   TInt,
   TLabel,
-  type TProp,
   TSource,
   TString,
   TSym,
@@ -94,10 +92,7 @@ import type { TokenGroup } from "./stream"
 import type { Token } from "./token"
 
 export type Ident = Token<typeof TIdent>
-
-export type IdentFnName = Token<
-  typeof TIdent | typeof TAliasOnly | typeof TProp | OOverloadable
->
+export type IdentFnName = Token<typeof TIdent> | Token<OOverloadable>
 
 export abstract class Node {
   constructor(
@@ -221,7 +216,7 @@ export class ExprLit extends Expr {
 
 export class ExprVar extends Expr {
   constructor(
-    readonly name: Token<typeof TIdent | typeof TBuiltin | typeof TProp>,
+    readonly name: Token<typeof TIdent | typeof TBuiltin>,
     readonly targs: List<Type> | null,
     readonly args: List<Expr> | null,
   ) {
@@ -231,9 +226,7 @@ export class ExprVar extends Expr {
 
 export class ExprStruct extends Expr {
   constructor(
-    readonly name: Token<
-      typeof TIdent | typeof TBuiltin | typeof ODot | typeof TProp
-    >,
+    readonly name: Token<typeof TIdent | typeof TBuiltin | typeof ODot>,
     readonly args: List<Expr> | null,
   ) {
     super(name.start, (args ?? name).end)
@@ -356,13 +349,11 @@ export class ExprCall extends Expr {
 }
 
 export class Prop extends Node {
-  constructor(dot: Token<typeof ODot> | null, name: Token<typeof TIdent> | null)
-  constructor(dot: null, name: Token<typeof TProp>)
   constructor(
-    readonly dot: Token<typeof ODot> | null,
-    readonly name: Token<typeof TIdent | typeof TProp> | null,
+    readonly dot: Token<typeof ODot>,
+    readonly name: Token<typeof TIdent> | null,
   ) {
-    super((dot ?? name)!.start, (name ?? dot)!.end)
+    super(dot.start, (name ?? dot).end)
   }
 }
 
@@ -670,7 +661,7 @@ export class StructField extends Node {
     readonly colon: Token<typeof OColon> | null,
     readonly type: Type,
   ) {
-    super((constKw ?? name).start, type.end)
+    super((constKw ?? name ?? colon ?? type).start, type.end)
   }
 }
 
