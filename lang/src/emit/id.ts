@@ -12,3 +12,8 @@ export function id(source: string): Id {
   ids.set(source, id)
   return id as Id
 }
+
+export function nextId(): Id {
+  const id = ++lastId
+  return id as Id
+}

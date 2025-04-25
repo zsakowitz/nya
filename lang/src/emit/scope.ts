@@ -1,7 +1,12 @@
+import type { FnDeclaration } from "./decl/fn"
+import type { Id } from "./id"
+
 export class ScopeProgram {
   declare private __brand_scope_program
 
   constructor(readonly emitTests: boolean) {}
+
+  readonly fns = new Map<Id, FnDeclaration[]>()
 
   file(source: string) {
     return new ScopeFile(this, source)
