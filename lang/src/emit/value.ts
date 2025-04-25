@@ -1,13 +1,13 @@
 import type { EmitBlock } from "./block"
 import type { Lang } from "./lang"
-import type { Type } from "./type"
+import type { VType } from "./type"
 
 export type ConstValue = number | boolean | readonly ConstValue[]
 export type DynValue = string | ConstValue | readonly DynValue[]
 
 export class Value {
   constructor(
-    readonly type: Type,
+    readonly type: VType,
     readonly value: DynValue,
   ) {}
 

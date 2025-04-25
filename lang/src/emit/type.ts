@@ -3,7 +3,7 @@ import { nextId, type Id } from "./id"
 import type { Lang } from "./lang"
 import type { DynValue } from "./value"
 
-export class Type {
+export class VType {
   constructor(
     readonly id: Id,
     readonly emit: (value: DynValue, lang: Lang, block: EmitBlock) => string,
@@ -14,7 +14,7 @@ export class Type {
   }
 }
 
-export const YUint = new Type(nextId(), (v) => {
+export const VUint = new VType(nextId(), (v) => {
   if (typeof v == "string") {
     return `(${v})`
   }
@@ -24,7 +24,7 @@ export const YUint = new Type(nextId(), (v) => {
   throw new Error("Value of type 'uint' was stored incorrectly.")
 })
 
-export const YReal = new Type(nextId(), (v) => {
+export const VReal = new VType(nextId(), (v) => {
   if (typeof v == "string") {
     return `(${v})`
   }
@@ -34,7 +34,7 @@ export const YReal = new Type(nextId(), (v) => {
   throw new Error("Value of type 'real' was stored incorrectly.")
 })
 
-export const YBool = new Type(nextId(), (v) => {
+export const VBool = new VType(nextId(), (v) => {
   if (typeof v == "string") {
     return `(${v})`
   }
@@ -44,7 +44,7 @@ export const YBool = new Type(nextId(), (v) => {
   throw new Error("Value of type 'bool' was stored incorrectly.")
 })
 
-export const YSym = new Type(nextId(), (v) => {
+export const VSym = new VType(nextId(), (v) => {
   if (typeof v == "string") {
     return `(${v})`
   }
