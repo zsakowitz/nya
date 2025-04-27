@@ -1,75 +1,80 @@
 import type { EmitBlock } from "../../emit/block"
+import { IdSource } from "../../emit/id"
 import type { ScopeBlock } from "../../emit/scope"
-import type {
-  AAmp,
-  AAmpAmp,
-  AAt,
-  ABackslash,
-  ABang,
-  ABar,
-  ABarBar,
-  AEq,
-  AEqEq,
-  AGe,
-  AGt,
-  ALe,
-  ALt,
-  AMinus,
-  ANe,
-  APercent,
-  APlus,
-  ASlash,
-  AStar,
-  AStarStar,
-  ATilde,
-  KBreak,
-  KContinue,
-  KElse,
-  KFor,
-  KIf,
-  KIn,
-  KMatch,
-  KReturn,
-  KSource,
-  OAmp,
-  OAmpAmp,
-  OArrowRet,
-  OAt,
-  OBackslash,
-  OBang,
-  OBar,
-  OBarBar,
-  OColonColon,
-  ODot,
-  ODotDot,
-  OEq,
-  OEqEq,
-  OGe,
-  OGt,
-  OLBrace,
-  OLBrack,
-  OLe,
-  OLInterp,
-  OLParen,
-  OLt,
-  OMinus,
-  ONe,
-  OPercent,
-  OPlus,
-  OSemi,
-  OSlash,
-  OStar,
-  OStarStar,
-  OTilde,
-  TBuiltin,
-  TDeriv,
-  TDerivIgnore,
+import { VReal, VSym, VUint, type VType } from "../../emit/type"
+import { Value } from "../../emit/value"
+import {
+  KFalse,
+  KTrue,
   TFloat,
   TIdent,
   TInt,
-  TLabel,
-  TSource,
   TSym,
+  type AAmp,
+  type AAmpAmp,
+  type AAt,
+  type ABackslash,
+  type ABang,
+  type ABar,
+  type ABarBar,
+  type AEq,
+  type AEqEq,
+  type AGe,
+  type AGt,
+  type ALe,
+  type ALt,
+  type AMinus,
+  type ANe,
+  type APercent,
+  type APlus,
+  type ASlash,
+  type AStar,
+  type AStarStar,
+  type ATilde,
+  type KBreak,
+  type KContinue,
+  type KElse,
+  type KFor,
+  type KIf,
+  type KIn,
+  type KMatch,
+  type KReturn,
+  type KSource,
+  type OAmp,
+  type OAmpAmp,
+  type OArrowRet,
+  type OAt,
+  type OBackslash,
+  type OBang,
+  type OBar,
+  type OBarBar,
+  type OColonColon,
+  type ODot,
+  type ODotDot,
+  type OEq,
+  type OEqEq,
+  type OGe,
+  type OGt,
+  type OLBrace,
+  type OLBrack,
+  type OLe,
+  type OLInterp,
+  type OLParen,
+  type OLt,
+  type OMinus,
+  type ONe,
+  type OPercent,
+  type OPlus,
+  type OSemi,
+  type OSlash,
+  type OStar,
+  type OStarStar,
+  type OTilde,
+  type TBuiltin,
+  type TDeriv,
+  type TDerivIgnore,
+  type TLabel,
+  type TSource,
 } from "../kind"
 import type { TokenGroup } from "../stream"
 import type { Token } from "../token"
@@ -89,18 +94,53 @@ import type { Type } from "./type"
 export abstract class Expr extends Node {
   declare private __brand_expr
 
-  emit(scope: ScopeBlock, decl: EmitBlock): string {
+  /**
+   * @param scope A scope holding function, type, and variable names.
+   * @param block A place to put contextually needed statements.
+   * @param result The expected result type.
+   */
+  emit(scope: ScopeBlock, block: EmitBlock, result: VType | null): Value {
     scope
-    decl
+    block
+    result
     throw new Error(`Cannot emit '${this.constructor.name}' yet.`)
   }
 }
 
+const SYM_IDS = new IdSource()
+
 export class ExprLit extends Expr {
   constructor(
-    readonly value: Token<typeof TFloat | typeof TInt | typeof TSym>,
+    readonly value: Token<
+      typeof TFloat | typeof TInt | typeof TSym | typeof KTrue | typeof KFalse
+    >,
   ) {
     super(value.start, value.end)
+  }
+
+  emit(scope: ScopeBlock, block: EmitBlock, result: VType | null): Value {
+    const src = scope.file.at(this)
+
+    if (result == null) {
+      switch (this.value.kind) {
+        case TFloat:
+          return new Value(VReal, +src)
+
+        case TInt:
+          const val = +src
+          if (0 <= val && val <= 2 ** 31 - 1) {
+            return new Value(VUint, val)
+          } else {
+            throw new Error("Integer literals must be within [0,2**31).")
+          }
+
+        case TSym:
+          return new Value(VSym, +src)
+
+        case KTrue:
+        case KFalse:
+      }
+    }
   }
 }
 

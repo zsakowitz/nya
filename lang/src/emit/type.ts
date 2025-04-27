@@ -1,12 +1,18 @@
 import type { EmitBlock } from "./block"
+import { isConstValueEq, type ConstValue } from "./const-value"
 import { nextId, type Id } from "./id"
 import type { Lang } from "./lang"
-import type { DynValue } from "./value"
+import type { DynValue, ValueConst } from "./value"
 
-export class VType {
+export class VTypeRaw {
   constructor(
     readonly id: Id,
-    readonly emit: (value: DynValue, lang: Lang, block: EmitBlock) => string,
+    readonly emit: (
+      value: DynValue,
+      args: ConstValue[],
+      lang: Lang,
+      block: EmitBlock,
+    ) => string,
   ) {}
 
   toString(): string {
@@ -14,42 +20,73 @@ export class VType {
   }
 }
 
-export const VUint = new VType(nextId(), (v) => {
-  if (typeof v == "string") {
-    return `(${v})`
-  }
-  if (typeof v == "number") {
-    return `(${v})`
-  }
-  throw new Error("Value of type 'uint' was stored incorrectly.")
-})
+export class VType {
+  constructor(
+    readonly raw: VTypeRaw,
+    readonly args: ValueConst[],
+  ) {}
 
-export const VReal = new VType(nextId(), (v) => {
-  if (typeof v == "string") {
-    return `(${v})`
+  toString(): string {
+    throw new Error("Cannot stringify a type.")
   }
-  if (typeof v == "number") {
-    return `(${v.toExponential()})`
-  }
-  throw new Error("Value of type 'real' was stored incorrectly.")
-})
 
-export const VBool = new VType(nextId(), (v) => {
-  if (typeof v == "string") {
-    return `(${v})`
+  is(other: VType) {
+    return (
+      this.raw.id === other.raw.id &&
+      this.args.length === other.args.length &&
+      this.args.every((a, i) => isConstValueEq(a.value, other.args[i]!.value))
+    )
   }
-  if (typeof v == "boolean") {
-    return `(${v})`
-  }
-  throw new Error("Value of type 'bool' was stored incorrectly.")
-})
+}
 
-export const VSym = new VType(nextId(), (v) => {
-  if (typeof v == "string") {
-    return `(${v})`
-  }
-  if (typeof v == "number") {
-    return `(${v})`
-  }
-  throw new Error("Value of type 'sym' was stored incorrectly.")
-})
+export const VUint = new VType(
+  new VTypeRaw(nextId(), (v) => {
+    if (typeof v == "string") {
+      return `(${v})`
+    }
+    if (typeof v == "number") {
+      return `(${v})`
+    }
+    throw new Error("Value of type 'uint' was stored incorrectly.")
+  }),
+  [],
+)
+
+export const VReal = new VType(
+  new VTypeRaw(nextId(), (v) => {
+    if (typeof v == "string") {
+      return `(${v})`
+    }
+    if (typeof v == "number") {
+      return `(${v.toExponential()})`
+    }
+    throw new Error("Value of type 'real' was stored incorrectly.")
+  }),
+  [],
+)
+
+export const VBool = new VType(
+  new VTypeRaw(nextId(), (v) => {
+    if (typeof v == "string") {
+      return `(${v})`
+    }
+    if (typeof v == "boolean") {
+      return `(${v})`
+    }
+    throw new Error("Value of type 'bool' was stored incorrectly.")
+  }),
+  [],
+)
+
+export const VSym = new VType(
+  new VTypeRaw(nextId(), (v) => {
+    if (typeof v == "string") {
+      return `(${v})`
+    }
+    if (typeof v == "number") {
+      return `(${v})`
+    }
+    throw new Error("Value of type 'sym' was stored incorrectly.")
+  }),
+  [],
+)

@@ -29,6 +29,7 @@ import {
   KElse,
   KEnum,
   KExpose,
+  KFalse,
   KFn,
   KFor,
   KIf,
@@ -39,6 +40,7 @@ import {
   KRule,
   KSource,
   KStruct,
+  KTrue,
   KType,
   KUsage,
   KUse,
@@ -222,7 +224,10 @@ function type(stream: Stream): Type {
     case TInt:
     case TFloat:
     case TSym:
-      return new TypeLit(stream.matchAny([TInt, TFloat, TSym])!)
+    case KTrue:
+    case KFalse:
+      // TODO: maybe enums with data can be supported directly
+      return new TypeLit(stream.matchAny([TInt, TFloat, TSym, KTrue, KFalse])!)
 
     case OLBrace:
       return new TypeBlock(block(stream, null)!)
@@ -242,7 +247,8 @@ function type(stream: Stream): Type {
 const typeArgs = createCommaOp(OLAngle, type, null)
 
 function exprLit(stream: Stream, ctx: ExprContext) {
-  const token = stream.match(TFloat) || stream.match(TInt) || stream.match(TSym)
+  const token =
+    stream.match(TSym) || stream.matchAny([TFloat, TInt, KFalse, KTrue])
   if (!token) return null
 
   if (token.kind == TSym && ctx.struct && stream.peek() == OLBrace) {
@@ -391,6 +397,8 @@ function exprAtom(stream: Stream, ctx: ExprContext): Expr {
     case TFloat:
     case TInt:
     case TSym:
+    case KTrue:
+    case KFalse:
       return exprLit(stream, ctx)!
 
     case TIdent:

@@ -1,12 +1,7 @@
-import type { FnDeclaration } from "./decl/fn"
-import type { Id } from "./id"
+import type { Pos } from "../ast/issue"
 
 export class ScopeProgram {
-  declare private __brand_scope_program
-
   constructor(readonly emitTests: boolean) {}
-
-  readonly fns = new Map<Id, FnDeclaration[]>()
 
   file(source: string) {
     return new ScopeFile(this, source)
@@ -14,8 +9,6 @@ export class ScopeProgram {
 }
 
 export class ScopeFile {
-  declare private __brand_scope_file
-
   constructor(
     readonly program: ScopeProgram,
     readonly source: string,
@@ -24,13 +17,15 @@ export class ScopeFile {
   block() {
     return new ScopeBlock(this, null)
   }
+
+  at(pos: Pos) {
+    return this.source.slice(pos.start, pos.end)
+  }
 }
 
 export class ScopeBlock {
-  declare private __brand_scope_block
-
   constructor(
-    readonly script: ScopeFile,
+    readonly file: ScopeFile,
     readonly parent: ScopeBlock | null,
   ) {}
 }

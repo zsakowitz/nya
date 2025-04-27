@@ -1,16 +1,19 @@
-let lastId = 0
-const ids = new Map<string, number>()
+let lastId = 0n
 
 declare const BRAND: unique symbol
-export type Id = number & { [BRAND]: "id" }
+export type Id = bigint & { [BRAND]: "id" }
 
-export function id(source: string): Id {
-  const existing = ids.get(source)
-  if (existing !== undefined) return existing as Id
+export class IdSource {
+  private readonly map = new Map<string, bigint>()
 
-  const id = ++lastId
-  ids.set(source, id)
-  return id as Id
+  get(source: string) {
+    const existing = this.map.get(source)
+    if (existing !== undefined) return existing as Id
+
+    const id = nextId()
+    this.map.set(source, id)
+    return id as Id
+  }
 }
 
 export function nextId(): Id {

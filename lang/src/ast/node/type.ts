@@ -1,4 +1,6 @@
 import type {
+  KFalse,
+  KTrue,
   OLBrack,
   OLParen,
   OSemi,
@@ -28,7 +30,9 @@ export class TypeVar extends Type {
 
 export class TypeLit extends Type {
   constructor(
-    readonly token: Token<typeof TInt | typeof TFloat | typeof TSym>,
+    readonly token: Token<
+      typeof TInt | typeof TFloat | typeof TSym | typeof KTrue | typeof KFalse
+    >,
   ) {
     super(token.start, token.end)
   }

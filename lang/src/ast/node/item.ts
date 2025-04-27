@@ -1,5 +1,7 @@
 import type { EmitDecl } from "../../emit/block"
 import type { ScopeFile } from "../../emit/scope"
+import { VBool } from "../../emit/type"
+import { Code } from "../issue"
 import type {
   KAssert,
   KData,
@@ -39,8 +41,8 @@ import type { Type } from "./type"
 export abstract class Item extends Node {
   declare private __brand_item
 
-  emit(scope: ScopeFile, decl: EmitDecl) {
-    scope
+  emit(root: ScopeFile, decl: EmitDecl) {
+    root
     decl
     throw new Error(`Cannot emit '${this.constructor.name}' yet.`)
   }
@@ -170,14 +172,18 @@ export class ItemTest extends Item {
     super(kw.start, (semi ?? expr).end)
   }
 
-  emit(scope1: ScopeFile, decl: EmitDecl): void {
+  emit(root: ScopeFile, decl: EmitDecl): void {
     const emit = decl.block()
-    const scope = scope1.block()
-    const result = this.expr.emit(scope, emit)
-    decl.source += `if (!(${result})) {
-  throw new Error("test failed: " + ${JSON.stringify(scope1.source.slice(this.start, this.end))})
+    const scope = root.block()
+    const result = this.expr.emit(scope, emit, VBool)
+    if (result.type.is(VBool)) {
+      decl.source += `if (!(${result})) {
+  console.error("test failed: " + ${JSON.stringify(root.source.slice(this.start, this.end))})
 }
 `
+    } else {
+      decl.issues.raise(Code.AssertionsMustResultInBool, this)
+    }
   }
 }
 

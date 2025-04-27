@@ -1,8 +1,8 @@
-import type { VType } from "../type"
+import type { VTypeRaw } from "../type"
 
 export class FnDeclaration {
   constructor(
     readonly argCount: number,
-    readonly args: VType[],
+    readonly args: VTypeRaw[],
   ) {}
 }

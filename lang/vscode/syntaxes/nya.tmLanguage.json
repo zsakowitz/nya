@@ -6,12 +6,12 @@
     "root": {
       "patterns": [
         { "include": "#comments" },
+        { "include": "#number" },
         { "include": "#source" },
         { "include": "#keywords" },
         { "include": "#identifier" },
         { "include": "#operators" },
-        { "include": "#strings" },
-        { "include": "#number" }
+        { "include": "#strings" }
       ]
     },
     "comments": {
@@ -257,8 +257,16 @@
       ]
     },
     "number": {
-      "name": "constant.numeric",
-      "match": "0x[\\da-f]+(?:\\.[\\da-f]+)?(?:p[+-]?\\d+)?|\\d+(?:\\.\\d+)?(?:e[+-]?\\d+)?"
+      "patterns": [
+        {
+          "name": "constant.numeric",
+          "match": "0x[\\da-f]+(?:\\.[\\da-f]+)?(?:p[+-]?\\d+)?|\\d+(?:\\.\\d+)?(?:e[+-]?\\d+)?"
+        },
+        {
+          "name": "constant.other",
+          "match": "\\b(true|false)\\b"
+        }
+      ]
     },
     "source-interp": {
       "begin": "\\$\\(",

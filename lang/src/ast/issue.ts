@@ -43,6 +43,7 @@ export const Code = Object.freeze({
 
   // Emit errors
   IntTooLarge: 70,
+  AssertionsMustResultInBool: 71,
 
   // future error ideas:
   // match on nonexhaustive enum
