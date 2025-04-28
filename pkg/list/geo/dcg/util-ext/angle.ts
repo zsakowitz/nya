@@ -245,19 +245,6 @@ export const EXT_ANGLE = defineHideable<
     target: {
       hits(target, at, hint) {
         if (!hint.allows(target.data.value.type)) return false
-        target.data.expr.sheet.cv.path(
-          anglePath(
-            target.data.expr.sheet.cv,
-            target.item[0].ns(),
-            target.item[1].ns(),
-            target.item[2].ns(),
-            { kind: target.data.value.type },
-          ),
-          12,
-          "blue",
-          1,
-          0.2,
-        )
         return target.data.expr.sheet.cv.hits(
           at,
           anglePath(
