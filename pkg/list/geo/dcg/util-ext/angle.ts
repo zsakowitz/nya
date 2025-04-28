@@ -3,8 +3,7 @@ import type { GlslContext } from "@/eval/lib/fn"
 import { each, map, type GlslVal, type JsVal, type JsValue } from "@/eval/ty"
 import { Display } from "@/eval/ty/display"
 import { R } from "@/field/dir"
-import type { Point } from "@/lib/point"
-import type { SPoint } from "@/lib/point"
+import type { Point, SPoint } from "@/lib/point"
 import { int } from "@/lib/real"
 import { Prop } from "@/sheet/ext"
 import { defineHideable } from "@/sheet/ext/hideable"
@@ -176,8 +175,8 @@ function anglePath(
   const o1 = cv.toCanvas(p1)
   const o2 = cv.toCanvas(p2)
   const o3 = cv.toCanvas(p3)
-  const a1 = o2.normFrom(o1, cv.scale * ARC)
-  const a3 = o2.normFrom(o3, cv.scale * ARC)
+  const a1 = o1.normFrom(o2, cv.scale * ARC)
+  const a3 = o3.normFrom(o2, cv.scale * ARC)
 
   const src = swap ? a3 : a1
   const dst = swap ? a1 : a3
@@ -246,6 +245,19 @@ export const EXT_ANGLE = defineHideable<
     target: {
       hits(target, at, hint) {
         if (!hint.allows(target.data.value.type)) return false
+        target.data.expr.sheet.cv.path(
+          anglePath(
+            target.data.expr.sheet.cv,
+            target.item[0].ns(),
+            target.item[1].ns(),
+            target.item[2].ns(),
+            { kind: target.data.value.type },
+          ),
+          12,
+          "blue",
+          1,
+          0.2,
+        )
         return target.data.expr.sheet.cv.hits(
           at,
           anglePath(
