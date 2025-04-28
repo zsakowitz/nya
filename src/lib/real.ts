@@ -38,40 +38,36 @@ export class SReal {
   }
 
   add(other: SReal): SReal {
-    if (this.d == null || other.d == null) {
-      return approx(this.n + other.n)
+    if (this.d != null && other.d != null) {
+      const a = this.n * other.d
+      const b = other.n * this.d
+      const c = a + b
+      const d = this.d * other.d
+      if (safe(a) && safe(b) && safe(c) && safe(d)) {
+        return frac(c, d)
+      }
     }
 
-    const a = this.n * other.d
-    const b = other.n * this.d
-    const c = a + b
-    const d = this.d * other.d
-    if (safe(a) && safe(b) && safe(c) && safe(d)) {
-      return frac(c, d)
-    }
-
-    return approx(this.n + other.n)
+    return approx(this.num() + other.num())
   }
 
   sub(other: SReal): SReal {
-    if (this.d == null || other.d == null) {
-      return approx(this.n - other.n)
+    if (this.d != null && other.d != null) {
+      const a = this.n * other.d
+      const b = other.n * this.d
+      const c = a - b
+      const d = this.d * other.d
+      if (safe(a) && safe(b) && safe(c) && safe(d)) {
+        return frac(c, d)
+      }
     }
 
-    const a = this.n * other.d
-    const b = other.n * this.d
-    const c = a - b
-    const d = this.d * other.d
-    if (safe(a) && safe(b) && safe(c) && safe(d)) {
-      return frac(c, d)
-    }
-
-    return approx(this.n + other.n)
+    return approx(this.num() + other.num())
   }
 
   mul(other: SReal): SReal {
     if (this.d == null || other.d == null) {
-      return approx(this.n * other.n)
+      return approx(this.num() * other.num())
     }
 
     const a = this.n * other.n
@@ -81,7 +77,7 @@ export class SReal {
 
   div(other: SReal): SReal {
     if (this.d == null || other.d == null) {
-      return approx(this.n * other.n)
+      return approx(this.num() / other.num())
     }
 
     const a = this.n * other.d
