@@ -85,6 +85,7 @@ import type {
   PlainList,
   Prop,
   StructArg,
+  VarWithout,
 } from "./extra"
 import type { Ident } from "./node"
 import { Node } from "./node"
@@ -147,10 +148,11 @@ export class ExprLit extends Expr {
 export class ExprVar extends Expr {
   constructor(
     readonly name: Token<typeof TIdent | typeof TBuiltin>,
+    readonly without: VarWithout | null,
     readonly targs: List<Type> | null,
     readonly args: List<Expr> | null,
   ) {
-    super(name.start, name.end)
+    super(name.start, (args ?? targs ?? without ?? name).end)
   }
 }
 

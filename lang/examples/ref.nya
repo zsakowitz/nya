@@ -1,6 +1,10 @@
 rule<a, b: float> a + 0.0 => a;
 rule d/dx(a * b) => d/dx(a) * b + a * d/dx(b);
-rule 0.0 * a => a;
+
+rule d/dx(a!x ** b!x) => 0.0;
+rule d/dx(a ** b!x) => b * a ** (b - 1);
+rule d/dx(a!x ** b) => xprody((d/dx b) * (a ** b), ln(a));
+rule d/dx(a ** b) => a ** (b - 1) * (b * d/dx a + xprody(a * d/dx b, ln(a)));
 
 type f32 {
   source js { number }
@@ -81,6 +85,7 @@ fn array_test<a, b: float>() {
 
 expose fn sinh "hyperbolic sine" as { arcsinh, arsinh, %"sinh^-1" };
 expose type sinh "hyperbolic sine" as { arcsinh, arsinh, %"sinh^-1" };
+expose let %"π" "mathematical constant pi": real = 2.0;
 
 fn labels_test() {
   'hi: { a = a + 2 }

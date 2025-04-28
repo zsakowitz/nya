@@ -134,12 +134,14 @@ import {
   Script,
   StructArg,
   StructFieldDecl,
+  VarWithout,
 } from "./node/extra"
 import {
   ItemData,
   ItemEnum,
   ItemEnumMap,
   ItemExposeFn,
+  ItemExposeLet,
   ItemExposeType,
   ItemFn,
   ItemRule,
@@ -219,7 +221,11 @@ function typeArray(stream: Stream) {
 function type(stream: Stream): Type {
   switch (stream.peek()) {
     case TIdent:
-      return new TypeVar(stream.match(TIdent)!, typeArgs(stream))
+      return new TypeVar(
+        stream.match(TIdent)!,
+        varWithout(stream),
+        typeArgs(stream),
+      )
 
     case TInt:
     case TFloat:
@@ -273,7 +279,12 @@ function exprVar(stream: Stream, ctx: ExprContext) {
     if (struct) {
       return new ExprStruct(token, struct)
     } else {
-      return new ExprVar(token, typeArgs(stream), callArgs(stream))
+      return new ExprVar(
+        token,
+        varWithout(stream),
+        typeArgs(stream),
+        callArgs(stream),
+      )
     }
   }
 }
@@ -1126,10 +1137,35 @@ export function itemExpose(stream: Stream) {
   const kw1 = stream.match(KExpose)
   if (!kw1) return null
 
-  const kw2 = stream.match(KFn) || stream.match(KType)
+  const kw2 = stream.match(KFn) || stream.match(KType) || stream.match(KLet)
   if (!kw2) {
-    stream.raiseNext(Code.MustExposeFnOrType)
+    stream.raiseNext(Code.InvalidExposeKind)
     return null
+  }
+
+  if (kw2.kind == KLet) {
+    const name = stream.match(TIdent)
+    if (!name) stream.raiseNext(Code.ExpectedIdent)
+    const label = stream.matchOr(TString, Code.ExpectedExposeString)
+    const colon = stream.match(OColon)
+    const ty = colon && type(stream)
+    const as = exposeAliases(stream)
+    const eq = stream.match(OEq)
+    const value = expr(stream)
+    const semi = stream.matchOr(OSemi, Code.MissingSemi)
+
+    return new ItemExposeLet(
+      kw1,
+      kw2,
+      name,
+      label,
+      colon,
+      ty,
+      as,
+      eq,
+      value,
+      semi,
+    )
   }
 
   const name = fnName(stream)
@@ -1191,6 +1227,19 @@ function script(stream: Stream): Script {
   stream.requireDone()
 
   return new Script(items, stream.start, stream.end)
+}
+
+const varWithoutList = createCommaOp(
+  OLBrack,
+  (s) => s.match(TIdent),
+  Code.ExpectedConstWrtList,
+)
+
+function varWithout(stream: Stream): VarWithout | null {
+  const bang = stream.match(OBang)
+  if (!bang) return null
+
+  return new VarWithout(bang, stream.match(TIdent) ?? varWithoutList(stream))
 }
 
 export function parse(stream: Stream) {

@@ -34,12 +34,13 @@ export const Code = Object.freeze({
   ExpectedEnumVariants: 52,
   ExpectedEnumVariantValue: 53,
   ExpectedCommaOrSemi: 54,
-  MustExposeFnOrType: 55,
+  InvalidExposeKind: 55,
   NoGenericsOnExposedFn: 56,
   ExpectedExposeString: 57,
   InvalidLabel: 58,
   OnlyValidAsExposedAlias: 59,
   ExpectedAssertFailureReason: 60,
+  ExpectedConstWrtList: 61,
 
   // Emit errors
   IntTooLarge: 70,

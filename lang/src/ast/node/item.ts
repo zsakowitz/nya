@@ -9,6 +9,7 @@ import type {
   KEnum,
   KExpose,
   KFn,
+  KLet,
   KRule,
   KStruct,
   KType,
@@ -18,8 +19,10 @@ import type {
   OArrowRet,
   OColon,
   ODotDot,
+  OEq,
   OLBrace,
   OSemi,
+  TIgnore,
   TString,
 } from "../kind"
 import type { TokenGroup } from "../stream"
@@ -211,5 +214,22 @@ export class ItemExposeType extends Item {
     readonly semi: Token<typeof OSemi> | null,
   ) {
     super(kw1.start, (semi ?? as ?? label ?? targs ?? name ?? kw2).end)
+  }
+}
+
+export class ItemExposeLet extends Item {
+  constructor(
+    readonly kw1: Token<typeof KExpose>,
+    readonly kw2: Token<typeof KLet>,
+    readonly name: IdentFnName | Token<typeof TIgnore> | null,
+    readonly label: Token<typeof TString> | null,
+    readonly colon: Token<typeof OColon> | null,
+    readonly type: Type | null,
+    readonly as: ExposeAliases | null,
+    readonly eq: Token<typeof OEq> | null,
+    readonly value: Expr,
+    readonly semi: Token<typeof OSemi> | null,
+  ) {
+    super(kw1.start, (semi ?? as ?? type ?? colon ?? label ?? name ?? kw2).end)
   }
 }

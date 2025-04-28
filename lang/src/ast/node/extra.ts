@@ -2,6 +2,7 @@ import type {
   KAs,
   KConst,
   OArrowMap,
+  OBang,
   OColon,
   ODot,
   TIdent,
@@ -147,5 +148,14 @@ export class Script extends Node {
     end: number,
   ) {
     super(start, end)
+  }
+}
+
+export class VarWithout extends Node {
+  constructor(
+    readonly bang: Token<typeof OBang>,
+    readonly names: Ident | List<Ident> | null,
+  ) {
+    super(bang.start, (names ?? bang).end)
   }
 }
