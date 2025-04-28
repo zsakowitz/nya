@@ -1,10 +1,10 @@
-f\left(x\right)=\operatorname{sin}\left(\left(x-4\right)^{2}\right)
+f\left(x\right)=\operatorname{sin}x^{2}
 f\left(x\right)
 y<v\operatorname{with}a=0,b=x
 a=-4.94
 b=2.5
-s=.01
-n=200
+s=.02
+n=50
 \left(a,f\left(a\right)\right)
 \left(b,f\left(b\right)\right)
 h\left(x\right)=\frac{\left(x+1\right)\left(b-a\right)}{2}+a
