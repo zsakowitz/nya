@@ -213,17 +213,28 @@ export const FN_TOTAL = new FnList("total", "returns the sum of its inputs")
     "r64",
     "r64",
     (args) => args.reduce((a, b) => a.add(b), int(0)),
-    (ctx, ...args) =>
-      args.length ?
-        args.map((x) => x.expr).reduce((a, b) => addR64(ctx, a, b))
-      : "vec2(0)",
+    (ctx, ...args) => {
+      const ret = ctx.name()
+      ctx.push`vec2 ${ret} = vec2(0.0);\n`
+      for (const arg of args) {
+        ctx.push`${ret} = ${addR64(ctx, ret, arg.expr)};\n`
+      }
+      return ret
+    },
     [],
   )
   .addSpread(
     "r32",
     "r32",
     (args) => args.reduce((a, b) => a.add(b), int(0)),
-    (_, ...args) => `(${args.map((x) => x.expr).join(" + ") || "0.0"})`,
+    (ctx, ...args) => {
+      const ret = ctx.name()
+      ctx.push`float ${ret} = 0.0;\n`
+      for (const arg of args) {
+        ctx.push`${ret} += ${arg.expr};\n`
+      }
+      return ret
+    },
     "total([8,2,9])=19",
   )
 

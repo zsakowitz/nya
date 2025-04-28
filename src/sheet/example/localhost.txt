@@ -1,8 +1,15 @@
-\token{0}=\left(-6.65,2.51\right)
-\token{1}=\left(-5.4,7.71\right)
-\token{2}=\left(1.75,7.67\right)
-\token{3}=\operatorname{angle}\left(\token{0},\token{1},\token{2}\right)
-\token{4}=\operatorname{anglebisector}\left(\token{3}\right)
-\token{5}=\left(-7.04,-9.19\right)
-\token{6}=\left(-3.63,-7.41\right)
-\token{7}=\operatorname{line}\left(\token{5},\token{6}\right)
+f\left(x\right)=\operatorname{sin}\left(\left(x-4\right)^{2}\right)
+f\left(x\right)
+y<v\operatorname{with}a=0,b=x
+a=-4.94
+b=2.5
+s=.01
+n=200
+\left(a,f\left(a\right)\right)
+\left(b,f\left(b\right)\right)
+h\left(x\right)=\frac{\left(x+1\right)\left(b-a\right)}{2}+a
+g\left(x\right)=f\left(h\left(x\right)\right)
+X\left(k\right)=\operatorname{tanh}\left(\frac{1}{2}\pi \operatorname{sinh}ks\right)
+W\left(k\right)=\frac{\frac{1}{2}s\pi \operatorname{cosh}ks}{\operatorname{cosh}^{2}\left(\frac{1}{2}\pi \operatorname{sinh}ks\right)}
+v=\frac{b-a}{2}\operatorname{total}\left(W\left(k\right)g\left(X\left(k\right)\right)\operatorname{for}k=K\right)
+K=\operatorname{forcejs}\operatorname{iterate}.a^{2n+1}a\to \operatorname{join}\left(a,n\right),n\to n+1\operatorname{from}a=\left[\right],n=-n
