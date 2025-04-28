@@ -3,3 +3,6 @@
 \token{2}=\left(1.75,7.67\right)
 \token{3}=\operatorname{angle}\left(\token{0},\token{1},\token{2}\right)
 \token{4}=\operatorname{anglebisector}\left(\token{3}\right)
+\token{5}=\left(-7.04,-9.19\right)
+\token{6}=\left(-3.63,-7.41\right)
+\token{7}=\operatorname{line}\left(\token{5},\token{6}\right)

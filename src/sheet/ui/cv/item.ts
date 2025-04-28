@@ -136,6 +136,7 @@ export class Hint {
         )
 
         let p1 = o1 && FN_INTERSECTION.js1(sheet.scope.ctxJs, a.val, b.val)
+        console.log("p1= ", p1 && p1.value.d.map((x) => x.num()))
         if (
           !(
             p1 &&

@@ -62,7 +62,7 @@ export class SReal {
       }
     }
 
-    return approx(this.num() + other.num())
+    return approx(this.num() - other.num())
   }
 
   mul(other: SReal): SReal {
