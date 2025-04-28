@@ -16,7 +16,7 @@ function glsl(ctx: GlslContext, a: GlslVal<"angle" | "directedangle">) {
   ctx.glsl`vec4 _helper_anglebisector(mat3x2 a) {
   return vec4(
     a[1],
-    a[1] + norm(a[0] + a[2] - a[1]),
+    a[1] + norm(norm(a[0] - a[1]) + norm(a[2] - a[1])),
   );
 }
 `
