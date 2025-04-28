@@ -41,6 +41,9 @@ export const Code = Object.freeze({
   OnlyValidAsExposedAlias: 59,
   ExpectedAssertFailureReason: 60,
   ExpectedConstWrtList: 61,
+  VarParamFollowedByArguments: 62,
+  NonParamFollowedByConstMarker: 63,
+  NonParamFollowedByTypeAssertion: 64,
 
   // Emit errors
   IntTooLarge: 70,

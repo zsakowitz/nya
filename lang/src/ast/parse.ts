@@ -86,6 +86,7 @@ import {
   TIgnore,
   TInt,
   TLabel,
+  TParam,
   TSource,
   TString,
   TSym,
@@ -113,6 +114,7 @@ import {
   ExprSymStruct,
   ExprUnary,
   ExprVar,
+  ExprVarParam,
   Source,
   SourceInterp,
   SourceSingle,
@@ -272,21 +274,36 @@ interface ExprContext {
   noErrorOnEmpty?: boolean
 }
 
+function exprVarParam(stream: Stream) {
+  const token = stream.match(TParam)
+  if (!token) return null
+
+  const wo = varWithout(stream)
+  const dc = stream.match(OColonColon)
+  const ty = dc && type(stream)
+
+  if (stream.peek() == OLAngle || stream.peek() == OLParen) {
+    stream.raiseNext(Code.VarParamFollowedByArguments)
+  }
+  return new ExprVarParam(token, wo, dc, ty)
+}
+
 function exprVar(stream: Stream, ctx: ExprContext) {
   const token = stream.match(TIdent) || stream.match(TBuiltin)
-  if (token) {
-    const struct = ctx.struct && structArgs(stream)
-    if (struct) {
-      return new ExprStruct(token, struct)
-    } else {
-      return new ExprVar(
-        token,
-        varWithout(stream),
-        typeArgs(stream),
-        callArgs(stream),
-      )
-    }
+  if (!token) return null
+
+  const struct = ctx.struct && structArgs(stream)
+  if (struct) {
+    return new ExprStruct(token, struct)
   }
+
+  if (stream.peek() == OBang)
+    stream.raiseNext(Code.NonParamFollowedByConstMarker)
+
+  if (stream.peek() == OColonColon)
+    stream.raiseNext(Code.NonParamFollowedByTypeAssertion)
+
+  return new ExprVar(token, typeArgs(stream), callArgs(stream))
 }
 
 export function exprIf(stream: Stream): ExprIf | null {
@@ -411,6 +428,9 @@ function exprAtom(stream: Stream, ctx: ExprContext): Expr {
     case KTrue:
     case KFalse:
       return exprLit(stream, ctx)!
+
+    case TParam:
+      return exprVarParam(stream)!
 
     case TIdent:
     case TBuiltin:

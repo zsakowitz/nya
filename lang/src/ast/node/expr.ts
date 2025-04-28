@@ -1,5 +1,4 @@
 import type { EmitBlock } from "../../emit/block"
-import { IdSource } from "../../emit/id"
 import type { ScopeBlock } from "../../emit/scope"
 import { VReal, VSym, VUint, type VType } from "../../emit/type"
 import { Value } from "../../emit/value"
@@ -74,6 +73,7 @@ import {
   type TDeriv,
   type TDerivIgnore,
   type TLabel,
+  type TParam,
   type TSource,
 } from "../kind"
 import type { TokenGroup } from "../stream"
@@ -108,8 +108,14 @@ export abstract class Expr extends Node {
   }
 }
 
-const SYM_IDS = new IdSource()
-
+/**
+ * ```nya
+ * 2 // int literal
+ * 2.4 // float literal
+ * true // bool literal
+ * :world // symbol literal
+ * ```
+ */
 export class ExprLit extends Expr {
   constructor(
     readonly value: Token<
@@ -145,14 +151,39 @@ export class ExprLit extends Expr {
   }
 }
 
+/**
+ * ```nya
+ * $a // parameter to a rule or interpolation of a rule parameter
+ * $a!x // parameter which doesn't depend on variable `x`
+ * $a::normaldist // parameter which is of type `normaldist`
+ * $a!x::normaldist // parameter constant w.r.t. `x` of type `normaldist`
+ * ```
+ */
+export class ExprVarParam extends Expr {
+  constructor(
+    readonly name: Token<typeof TParam>,
+    readonly without: VarWithout | null,
+    readonly dcolon: Token<typeof OColonColon> | null,
+    readonly type: Type | null,
+  ) {
+    super(name.start, (type ?? dcolon ?? without ?? name).end)
+  }
+}
+
+/**
+ * ```nya
+ * a // variable reference or zero-argument function call
+ * a<23>; // zero-argument function call with type args
+ * a(45) // function call
+ * ```
+ */
 export class ExprVar extends Expr {
   constructor(
     readonly name: Token<typeof TIdent | typeof TBuiltin>,
-    readonly without: VarWithout | null,
     readonly targs: List<Type> | null,
     readonly args: List<Expr> | null,
   ) {
-    super(name.start, (args ?? targs ?? without ?? name).end)
+    super(name.start, (args ?? targs ?? name).end)
   }
 }
 
