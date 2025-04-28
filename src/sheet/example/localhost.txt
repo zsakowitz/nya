@@ -1,1 +1,5 @@
-A=(2,3)
+\token{0}=\left(-6.65,2.51\right)
+\token{1}=\left(-5.4,7.71\right)
+\token{2}=\left(1.75,7.67\right)
+\token{3}=\operatorname{angle}\left(\token{0},\token{1},\token{2}\right)
+\token{4}=\operatorname{anglebisector}\left(\token{3}\right)

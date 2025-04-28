@@ -7,9 +7,9 @@ export function bisectAngleJs(
   a: JsVal<"angle" | "directedangle">,
 ): [SPoint, SPoint] {
   const b = a.value[1]
-  const p1 = a.value[0].normFrom(b)
-  const p3 = a.value[2].normFrom(b)
-  return [b, p1.add(p3).sub(b).normFrom(b)]
+  const p1 = a.value[0].sub(b).norm()
+  const p3 = a.value[2].sub(b).norm()
+  return [b, p1.add(p3).norm().add(b)]
 }
 
 function glsl(ctx: GlslContext, a: GlslVal<"angle" | "directedangle">) {
