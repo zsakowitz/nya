@@ -97,9 +97,9 @@ made complicated by 'with', sums, and user definitions.
 ## Output modes
 
 1. List of exposed functions, types, and variables
-2. Statically genericized functions for JS
-3. Monomorphizied functions for GLSL
-4. Derivative rules
+2. Derivative rules
+3. Statically genericized functions for JS
+4. Monomorphizied functions for GLSL
 
 ## Parsing and compiling
 
