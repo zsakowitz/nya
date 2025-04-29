@@ -10,6 +10,7 @@ import type {
   KExpose,
   KFn,
   KLet,
+  KLocal,
   KRule,
   KStruct,
   KType,
@@ -155,6 +156,7 @@ export class ItemStruct extends Item {
 export class ItemData extends Item {
   constructor(
     readonly data: Token<typeof KData>,
+    readonly local: Token<typeof KLocal> | null,
     readonly name: Ident | null,
     readonly colon: Token<typeof OColon> | null,
     readonly type: Type,

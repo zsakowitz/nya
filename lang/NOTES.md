@@ -93,3 +93,13 @@ defined and emitted from nyalang.
 
 The best-case scenario would be to handle everything inside nyalang. This is
 made complicated by 'with', sums, and user definitions.
+
+## Parsing and compiling
+
+There are many stages of internal layers:
+
+1. Source code
+2. Array of tokens
+3. Array of tokens with resolved grouping operators
+4. AST directly from token list
+5. Unified AST

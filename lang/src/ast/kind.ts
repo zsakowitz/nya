@@ -43,6 +43,7 @@ export const KRaise = 38
 export const KConst = 39
 export const KTrue = 40
 export const KFalse = 41
+export const KLocal = 0
 
 // operators prefixed with @
 export const APlus = 42
@@ -160,6 +161,7 @@ export const KWS: Record<string, number> = {
   const: KConst,
   true: KTrue,
   false: KFalse,
+  local: KLocal,
 }
 
 export const APS: Record<string, number> = {

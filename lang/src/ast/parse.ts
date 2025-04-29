@@ -35,6 +35,7 @@ import {
   KIf,
   KIn,
   KLet,
+  KLocal,
   KMatch,
   KReturn,
   KRule,
@@ -1121,6 +1122,7 @@ function itemData(stream: Stream) {
 
   return new ItemData(
     kw,
+    stream.match(KLocal),
     stream.matchOr(TIdent, Code.ExpectedIdent),
     stream.matchOr(OColon, Code.ExpectedColon),
     type(stream),
