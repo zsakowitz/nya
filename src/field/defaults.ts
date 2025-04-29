@@ -183,6 +183,7 @@ const autos = new WordMap<Init>([
   ["tau", SymTau],
   ["infinity", SymInfinity],
   ["infty", SymInfinity],
+  ["deg", SymDegree],
   ["degree", SymDegree],
 ]).freeze()
 

@@ -7,9 +7,11 @@ import {
   Span,
   type Command,
   type Cursor,
+  type Init,
   type InitProps,
   type InitRet,
 } from "../../model"
+import { CmdVar } from "./num"
 
 function sym(
   latex: string,
@@ -68,4 +70,8 @@ export const SymTau = sym("\\tau ", " tau ", "τ", "tau")
 export const SymPsi = sym("\\psi ", " psi ", "ψ", "psi", true)
 export const SymGamma = sym("\\Gamma ", " gamma ", "Γ", "Gamma")
 export const SymInfinity = sym("\\infinity ", " infinity ", "∞", "infinity")
-export const SymDegree = sym("°", " degrees ", "°", "degrees", true)
+export const SymDegree: Init = {
+  init(cursor, props) {
+    new CmdVar("°", props.options).insertAt(cursor, L)
+  },
+}

@@ -133,6 +133,7 @@ const G = unit(
   ],
   frac(1, 1e4),
 )
+const mi = unit("mi", "m", frac(201168, 125))
 export const UNIT_AMU = unit("amu", "kg", int(1.6605390689252e-27))
 
 const SCALABLE: Record<string, Unit> = {
@@ -150,8 +151,12 @@ const SCALABLE: Record<string, Unit> = {
   d,
   dC: dC,
   dF: dF,
+  "°C": dC,
+  "°F": dF,
   ddC: ddC,
   ddF: ddF,
+  "d°C": ddC,
+  "d°F": ddF,
   N,
   joule: UNIT_JOULE,
   cal,
@@ -176,6 +181,7 @@ const SCALABLE: Record<string, Unit> = {
   Da: UNIT_AMU,
   u: UNIT_AMU,
   amu: UNIT_AMU,
+  mi,
 
   meter: m,
   kelvin: UNIT_KELVIN,
@@ -213,6 +219,7 @@ const SCALABLE: Record<string, Unit> = {
   gram: g,
   hertz: Hz,
   dalton: UNIT_AMU,
+  mile: mi,
 }
 
 const SCALARS = Object.entries({
@@ -280,6 +287,7 @@ export const UNITS: Record<string, Unit> = {
   Cal: SCALED.kcal!,
   Calorie: SCALED.kcal!,
   Calourie: SCALED.kcal!,
+  unitless: unit("unitless", []),
 }
 
 export const UNIT_KILOJOULE = UNITS.kJ!

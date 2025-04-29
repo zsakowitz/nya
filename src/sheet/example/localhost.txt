@@ -1,15 +1,1 @@
-f\left(x\right)=\operatorname{sin}x^{2}
-f\left(x\right)
-y<v\operatorname{with}a=0,b=x
-a=-4.94
-b=2.5
-s=.02
-n=50
-\left(a,f\left(a\right)\right)
-\left(b,f\left(b\right)\right)
-h\left(x\right)=\frac{\left(x+1\right)\left(b-a\right)}{2}+a
-g\left(x\right)=f\left(h\left(x\right)\right)
-X\left(k\right)=\operatorname{tanh}\left(\frac{1}{2}\pi \operatorname{sinh}ks\right)
-W\left(k\right)=\frac{\frac{1}{2}s\pi \operatorname{cosh}ks}{\operatorname{cosh}^{2}\left(\frac{1}{2}\pi \operatorname{sinh}ks\right)}
-v=\frac{b-a}{2}\operatorname{total}\left(W\left(k\right)g\left(X\left(k\right)\right)\operatorname{for}k=K\right)
-K=\operatorname{forcejs}\operatorname{iterate}.a^{2n+1}a\to \operatorname{join}\left(a,n\right),n\to n+1\operatorname{from}a=\left[\right],n=-n
+\frac{\operatorname{mile}}{\operatorname{ft}}\operatorname{into}\operatorname{unitless}

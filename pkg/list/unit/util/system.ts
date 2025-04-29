@@ -45,10 +45,8 @@ export function toSI(list: UnitList): ConversionFactor {
     exp,
     unit: { base },
   } of list) {
-    const ox = base.offset.pow(exp)
-    const sx = base.scale.pow(exp)
-    offset = offset.add(ox)
-    scale = scale.mul(sx)
+    offset = base.offset.zero() ? offset : base.offset.pow(exp).add(offset)
+    scale = base.scale.pow(exp).mul(scale)
   }
 
   return { scale, offset }

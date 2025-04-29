@@ -228,7 +228,6 @@ export class CmdVar extends Leaf {
     const { input, options } = props
     const self = new CmdVar(input, options)
     self.insertAt(cursor, L)
-    if (self.kind != null) return
     if (options.autos) {
       const cmds = options.autos
       const maxLen = cmds.maxLen
@@ -331,7 +330,11 @@ export class CmdVar extends Leaf {
         (prop ? ` nya-cmd-${kind ? "word" : "var"}-prop` : ""),
       h(
         "font-['Times_New_Roman'] [line-height:.9]" +
-          (kind == null ? " italic" : "") +
+          (kind == null ?
+            text != "°" ?
+              " italic"
+            : ""
+          : "") +
           // `relative` helps keep f above other letters, which is important in selections
           (text == "f" ?
             " mx-[.1em] [.nya-cmd-word>:where(&)]:mx-0 relative"

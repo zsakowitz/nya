@@ -177,6 +177,7 @@ export class SReal {
       if (isNaN(bv)) {
         return approx(NaN)
       } else if (bv < 0) {
+        console.error({ bv })
         return approx(Infinity)
       } else if (bv == 0) {
         return int(1)
