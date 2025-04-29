@@ -93,6 +93,7 @@ import {
   TSym,
   type Brack,
 } from "./kind"
+import { ExposeFn, ExposeLet, ExposeType } from "./node/expose"
 import {
   ExprArray,
   ExprArrayByRepetition,
@@ -134,6 +135,7 @@ import {
   MatchArm,
   PlainList,
   Prop,
+  Rule,
   Script,
   StructArg,
   StructFieldDecl,
@@ -143,9 +145,7 @@ import {
   ItemData,
   ItemEnum,
   ItemEnumMap,
-  ItemExposeFn,
-  ItemExposeLet,
-  ItemExposeType,
+  ItemExpose,
   ItemFn,
   ItemRule,
   ItemStruct,
@@ -888,6 +888,34 @@ function block(stream: Stream, label: ExprLabel | null) {
   return new ExprBlock(label, group, list)
 }
 
+function createBlockOp<T extends Print>(
+  take: (stream: Stream) => T | null,
+  code: Code | null,
+) {
+  return (stream: Stream) => {
+    const group = stream.matchGroup(OLBrace)
+    if (!group) {
+      if (code != null) {
+        stream.raiseNext(code)
+      }
+      return null
+    }
+
+    const list: T[] = []
+    let a
+    let last = group.contents.index
+    while ((a = take(group.contents))) {
+      if (group.contents.isDone()) break
+      if (last == group.contents.index) break
+      last = group.contents.index
+      list.push(a)
+    }
+    group.contents.requireDone()
+
+    return new List(group, list, null)
+  }
+}
+
 function sourceSingle(stream: Stream): SourceSingle | null {
   const kw = stream.match(KSource)
   if (!kw) return null
@@ -996,11 +1024,7 @@ const fnUsageExamples = createUnbracketedCommaOp(
   Code.ExpectedForBindings,
 )
 
-function itemRule(stream: Stream) {
-  const kw = stream.match(KRule)
-  if (!kw) return null
-
-  const tparams = genericParams(stream)
+function rule(stream: Stream) {
   const lhs = expr(stream)
   const op = stream.match(OArrowMap)
   if (!op) {
@@ -1012,7 +1036,22 @@ function itemRule(stream: Stream) {
     stream.raiseNext(Code.MissingSemi)
   }
 
-  return new ItemRule(kw, tparams, lhs, op, rhs, semi)
+  return new Rule(lhs, op, rhs, semi)
+}
+
+const ruleBlock = createBlockOp(rule, null)
+
+function itemRule(stream: Stream) {
+  const kw = stream.match(KRule)
+  if (!kw) return null
+
+  const tparams = genericParams(stream)
+
+  return new ItemRule(
+    kw,
+    tparams,
+    stream.peek() == OLBrace ? ruleBlock(stream) : rule(stream),
+  )
 }
 
 function itemUse(stream: Stream) {
@@ -1155,17 +1194,14 @@ function exposeAliases(stream: Stream) {
   return new ExposeAliases(as, aliases)
 }
 
-export function itemExpose(stream: Stream) {
-  const kw1 = stream.match(KExpose)
-  if (!kw1) return null
-
-  const kw2 = stream.match(KFn) || stream.match(KType) || stream.match(KLet)
-  if (!kw2) {
+function expose(stream: Stream) {
+  const kw = stream.match(KFn) || stream.match(KType) || stream.match(KLet)
+  if (!kw) {
     stream.raiseNext(Code.InvalidExposeKind)
     return null
   }
 
-  if (kw2.kind == KLet) {
+  if (kw.kind == KLet) {
     const name = stream.match(TIdent)
     if (!name) stream.raiseNext(Code.ExpectedIdent)
     const label = stream.matchOr(TString, Code.ExpectedExposeString)
@@ -1176,23 +1212,12 @@ export function itemExpose(stream: Stream) {
     const value = expr(stream)
     const semi = stream.matchOr(OSemi, Code.MissingSemi)
 
-    return new ItemExposeLet(
-      kw1,
-      kw2,
-      name,
-      label,
-      colon,
-      ty,
-      as,
-      eq,
-      value,
-      semi,
-    )
+    return new ExposeLet(kw, name, label, colon, ty, as, eq, value, semi)
   }
 
   const name = fnName(stream)
   if (!name) stream.raiseNext(Code.ExpectedFnName)
-  if (kw2.kind == KFn && stream.peek() == OLAngle) {
+  if (kw.kind == KFn && stream.peek() == OLAngle) {
     stream.raiseNext(Code.NoGenericsOnExposedFn)
   }
 
@@ -1201,9 +1226,21 @@ export function itemExpose(stream: Stream) {
   const as = exposeAliases(stream)
   const semi = stream.matchOr(OSemi, Code.MissingSemi)
 
-  return kw2.kind == KType ?
-      new ItemExposeType(kw1, kw2, name, targs, label, as, semi)
-    : new ItemExposeFn(kw1, kw2, name, label, as, semi)
+  return kw.kind == KType ?
+      new ExposeType(kw, name, targs, label, as, semi)
+    : new ExposeFn(kw, name, label, as, semi)
+}
+
+const exposeList = createBlockOp(expose, null)
+
+function itemExpose(stream: Stream) {
+  const kw = stream.match(KExpose)
+  if (!kw) return null
+
+  return new ItemExpose(
+    kw,
+    stream.peek() == OLBrace ? exposeList(stream) : expose(stream),
+  )
 }
 
 function item(stream: Stream): Item | null {

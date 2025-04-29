@@ -9,34 +9,31 @@ import type {
   KEnum,
   KExpose,
   KFn,
-  KLet,
   KLocal,
   KRule,
   KStruct,
   KType,
   KUsage,
   KUse,
-  OArrowMap,
   OArrowRet,
   OColon,
   ODotDot,
-  OEq,
   OLBrace,
   OSemi,
-  TIgnore,
   TString,
 } from "../kind"
 import type { TokenGroup } from "../stream"
 import type { Token } from "../token"
+import type { Expose } from "./expose"
 import type { Expr, ExprBlock, Source } from "./expr"
 import type {
   EnumMapVariant,
   EnumVariant,
-  ExposeAliases,
   FnParam,
   GenericParams,
   List,
   PlainList,
+  Rule,
   StructFieldDecl,
 } from "./extra"
 import { Node, type Ident, type IdentFnName } from "./node"
@@ -96,12 +93,9 @@ export class ItemRule extends Item {
   constructor(
     readonly kw: Token<typeof KRule>,
     readonly tparams: GenericParams | null,
-    readonly lhs: Expr,
-    readonly arrow: Token<typeof OArrowMap> | null,
-    readonly rhs: Expr,
-    readonly semi: Token<typeof OSemi> | null,
+    readonly value: Rule | List<Rule> | null,
   ) {
-    super(kw.start, rhs.end)
+    super(kw.start, (value ?? tparams ?? kw).end)
   }
 }
 
@@ -192,46 +186,11 @@ export class ItemTest extends Item {
   }
 }
 
-export class ItemExposeFn extends Item {
+export class ItemExpose extends Item {
   constructor(
-    readonly kw1: Token<typeof KExpose>,
-    readonly kw2: Token<typeof KFn>,
-    readonly name: IdentFnName | null,
-    readonly label: Token<typeof TString> | null,
-    readonly as: ExposeAliases | null,
-    readonly semi: Token<typeof OSemi> | null,
+    readonly kw: Token<typeof KExpose>,
+    readonly item: Expose | List<Expose> | null,
   ) {
-    super(kw1.start, (semi ?? as ?? label ?? name ?? kw2).end)
-  }
-}
-
-export class ItemExposeType extends Item {
-  constructor(
-    readonly kw1: Token<typeof KExpose>,
-    readonly kw2: Token<typeof KType>,
-    readonly name: IdentFnName | null,
-    readonly targs: List<Type> | null,
-    readonly label: Token<typeof TString> | null,
-    readonly as: ExposeAliases | null,
-    readonly semi: Token<typeof OSemi> | null,
-  ) {
-    super(kw1.start, (semi ?? as ?? label ?? targs ?? name ?? kw2).end)
-  }
-}
-
-export class ItemExposeLet extends Item {
-  constructor(
-    readonly kw1: Token<typeof KExpose>,
-    readonly kw2: Token<typeof KLet>,
-    readonly name: IdentFnName | Token<typeof TIgnore> | null,
-    readonly label: Token<typeof TString> | null,
-    readonly colon: Token<typeof OColon> | null,
-    readonly type: Type | null,
-    readonly as: ExposeAliases | null,
-    readonly eq: Token<typeof OEq> | null,
-    readonly value: Expr,
-    readonly semi: Token<typeof OSemi> | null,
-  ) {
-    super(kw1.start, (semi ?? as ?? type ?? colon ?? label ?? name ?? kw2).end)
+    super(kw.start, (item ?? kw).end)
   }
 }

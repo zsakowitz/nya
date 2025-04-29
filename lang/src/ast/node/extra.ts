@@ -5,6 +5,7 @@ import type {
   OBang,
   OColon,
   ODot,
+  OSemi,
   TIdent,
   TLabel,
   TSym,
@@ -157,5 +158,16 @@ export class VarWithout extends Node {
     readonly names: Ident | List<Ident> | null,
   ) {
     super(bang.start, (names ?? bang).end)
+  }
+}
+
+export class Rule extends Node {
+  constructor(
+    readonly lhs: Expr,
+    readonly arrow: Token<typeof OArrowMap> | null,
+    readonly rhs: Expr,
+    readonly semi: Token<typeof OSemi> | null,
+  ) {
+    super(lhs.start, (semi ?? rhs).end)
   }
 }

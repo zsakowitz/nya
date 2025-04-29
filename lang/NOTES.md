@@ -94,6 +94,13 @@ defined and emitted from nyalang.
 The best-case scenario would be to handle everything inside nyalang. This is
 made complicated by 'with', sums, and user definitions.
 
+## Output modes
+
+1. List of exposed functions, types, and variables
+2. Statically genericized functions for JS
+3. Monomorphizied functions for GLSL
+4. Derivative rules
+
 ## Parsing and compiling
 
 There are many stages of internal layers:
@@ -102,4 +109,7 @@ There are many stages of internal layers:
 2. Array of tokens
 3. Array of tokens with resolved grouping operators
 4. AST directly from token list
-5. Unified AST
+5. HIR = AST but:
+   1. unified function call/variable syntax
+   2. identifiers and symbols are replaced with ids
+   3. no parentheses
