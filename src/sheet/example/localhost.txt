@@ -1,13 +1,18 @@
-\operatorname{lightdark}\begin{cases}\operatorname{rgb}\left(255,128,128,.4\right)&\left|z-A\right|=q\\\operatorname{rgb}\left(128,255,128,.4\right)&\left|z-B\right|=q\\\operatorname{rgb}\left(128,128,255,.4\right)&\end{cases}\operatorname{with}q=\operatorname{min}\left(\left|z-A\right|,\left|z-B\right|,\left|z-C\right|\right)\operatorname{with}z=\operatorname{iterate}^{20}z\to z-\frac{\left(z-A\right)\cdot \left(z-B\right)\cdot \left(z-C\right)}{3z^{2}-2\cdot \left(A+B+C\right)z+\left(AB+BC+CA\right)}\operatorname{from}z=p
-A=0.665-0.149i
-B=0+0i
-C=.3+.4i
-q_{2}=3.18
-a\left\{\operatorname{valid}a\and y>0\and -8<x<0\right\}\operatorname{with}a=\operatorname{oklch}\left(\frac{q_{2}+10}{20},\frac{y}{8},\frac{360x}{8}\right)
-\operatorname{firstvalid}\operatorname{oklab}\left(C.\operatorname{real}+.4,.5\cdot \frac{x}{5}+0.25,0.5\cdot \frac{y}{5}+0.25\right)
-\operatorname{firstvalid}\left(\operatorname{oklch}\left(.4,y,360x\right),\operatorname{oklch}\left(.5,y,360x\right),\operatorname{oklch}\left(.6,y,360x\right),\operatorname{oklch}\left(.7,y,360x\right),\operatorname{oklch}\left(.8,y,360x\right),\operatorname{oklch}\left(.9,y,360x\right),\operatorname{oklch}\left(.95,y,360x\right)\right)
-\left(4-5\right)\odot \left(3+9i\right)
-\frac{2}{3}i-\sqrt{4}
-\left[2,3\right]\times \left[4,5\right]
-\left(11\operatorname{mod}6\right)^{7.3}
--2\cdot \pi \operatorname{mod}6
+A=\left[\token{5},\token{6},\token{7},\token{8},\token{9}\right]
+\token{5}=\left(-21.59,17.96\right)
+\token{6}=\left(6.29,19.09\right)
+\token{7}=\left(-8.19,-5.01\right)
+\token{8}=\left(7.71,-3.17\right)
+\token{9}=\left(-6.19,7.18\right)
+a=\operatorname{forcejs}\left(a\operatorname{with}\operatorname{iterate}^{A.\operatorname{count}}a\to \operatorname{join}\left(a,n\right),n\to n+1\operatorname{from}a=\left[\right],n=1\right)
+\operatorname{hsv}\left(\frac{360c}{A.\operatorname{count}},1,1\right)\operatorname{with}c=\operatorname{firstvalid}\left(\left\{m=q.x:q.y\right\}\operatorname{for}q=q\right)\operatorname{with}m=\operatorname{min}\left(q.x\right)\operatorname{with}q=\left(\operatorname{distance}\left(A,p.\operatorname{point}\right),a,A.x,A.y\right)
+
+\token{10}=\left(-1745000,-2211000\right)
+\token{11}=\left(97700,17090\right)
+a<\left|\operatorname{exp}\frac{p-\token{10}.\operatorname{complex}}{\token{11}.\operatorname{complex}-p}\right|<e
+a=e^{-3}
+\token{12}=\operatorname{midpoint}\left(\token{16},\token{11}\right)
+\token{13}=\operatorname{circle}\left(\token{12},\token{11}\right)
+\token{14}=\operatorname{rotate}\left(\token{12},\token{11},\pi \right)
+\token{15}=\operatorname{circle}\left(\token{14},\token{11}\right)
+\token{16}=\operatorname{glider}\left(\operatorname{line}\left(\token{11},\token{10}\right),.5\right)
