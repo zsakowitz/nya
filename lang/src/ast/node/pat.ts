@@ -1,6 +1,15 @@
-import type { Pos } from "../issue"
-import type { TFloat, TIdent, TIgnore, TInt, TSym } from "../kind"
+import type {
+  KFalse,
+  KTrue,
+  ODot,
+  TFloat,
+  TIdent,
+  TIgnore,
+  TInt,
+  TSym,
+} from "../kind"
 import type { Token } from "../token"
+import type { List, StructPatProp } from "./extra"
 import { Node } from "./node"
 
 export abstract class Pat extends Node {
@@ -20,13 +29,20 @@ export class PatVar extends Pat {
 }
 
 export class PatLit extends Pat {
-  constructor(readonly name: Token<typeof TFloat | typeof TInt | typeof TSym>) {
+  constructor(
+    readonly name: Token<
+      typeof TFloat | typeof TInt | typeof TSym | typeof KTrue | typeof KFalse
+    >,
+  ) {
     super(name.start, name.end)
   }
 }
 
-export class PatEmpty extends Pat {
-  constructor(pos: Pos) {
-    super(pos.start, pos.end)
+export class PatStruct extends Pat {
+  constructor(
+    readonly name: Token<typeof ODot | typeof TSym>,
+    readonly of: List<StructPatProp> | null,
+  ) {
+    super(name.start, (of ?? name).end)
   }
 }

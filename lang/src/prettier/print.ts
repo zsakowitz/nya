@@ -29,6 +29,7 @@ import {
   OBangUnary,
   OBar,
   OBarBar,
+  ODot,
   ODotDot,
   OEq,
   OEqEq,
@@ -49,36 +50,55 @@ import {
   TDeriv,
 } from "../ast/kind"
 import {
+  Expr,
+  ExprArray,
   ExprBinary,
   ExprBlock,
+  ExprCall,
   ExprDeriv,
   ExprExit,
   ExprFor,
   ExprIf,
+  ExprIndex,
   ExprLit,
   ExprMatch,
   ExprParen,
   ExprProp,
+  ExprRange,
+  ExprStruct,
+  ExprSymStruct,
   ExprUnary,
   ExprVar,
   ExprVarParam,
+  Source,
+  SourceInterp,
+  SourceSingle,
 } from "../ast/node/expr"
 import {
+  Bracketed,
+  Else,
+  ExprLabel,
   FnParam,
   FnReturnType,
   FnUsage,
   GenericParam,
   GenericParams,
   List,
+  MatchArm,
   ParamType,
   PlainList,
+  PrescribedType,
   Prop,
   Rule,
   Script,
+  StructArg,
+  StructPatProp,
+  StructPatPropPat,
   VarWithout,
 } from "../ast/node/extra"
-import { ItemFn, ItemRule } from "../ast/node/item"
+import { ItemFn, ItemRule, ItemType, ItemUse } from "../ast/node/item"
 import type { Node } from "../ast/node/node"
+import { PatLit, PatStruct, PatVar } from "../ast/node/pat"
 import { StmtExpr } from "../ast/node/stmt"
 import { TypeBlock, TypeLit, TypeParen, TypeVar } from "../ast/node/type"
 import { Token } from "../ast/token"
@@ -90,9 +110,19 @@ export interface Subprint<T> {
   sub<A extends keyof T>(a: A, b: keyof T[A], ifNull?: Doc): Doc
   all(k: keyof T): Doc[]
   paren(k: keyof T, force?: boolean): Doc
+  as(node: unknown, f: () => Doc): Doc
 }
 
-const { group, softline, line, ifBreak, indent, join, hardline } = builders
+const {
+  group,
+  softline,
+  line,
+  ifBreak,
+  indent,
+  join,
+  hardline,
+  hardlineWithoutBreakParent,
+} = builders
 
 const BEq = 1
 const BBarBar = 2
@@ -207,7 +237,7 @@ function needsParensBeforeSuffix(node: Node) {
 
 function op(node: Node) {
   if (node instanceof ExprParen) {
-    return op(node.of)
+    return op(node.of.value)
   }
   if (node instanceof ExprUnary) {
     return node.op.kind
@@ -218,28 +248,82 @@ function op(node: Node) {
   return null
 }
 
-function exprNeedsSemi(node: Node) {
-  if (node instanceof ExprParen) {
-    return exprNeedsSemi(node.of)
-  }
-  return !(
-    node instanceof ExprIf ||
-    node instanceof ExprFor ||
-    node instanceof ExprBlock ||
-    node instanceof ExprMatch
-  )
+function printIf(node: ExprIf, sb: Subprint<any>) {
+  return [
+    sb("kw"),
+    " ",
+    sb.paren("condition", needsParensToAvoidStruct(node.condition)),
+    " ",
+    ifBreak(
+      sb.as((node as ExprIf).block?.of, () =>
+        group([
+          sb.sub("bracket", "lt"),
+          indent([hardlineWithoutBreakParent, join(line, sb.all("items"))]),
+          hardlineWithoutBreakParent,
+          sb.sub("bracket", "gt"),
+        ]),
+      ),
+      sb.sub("block", "of"),
+    ),
+    sb.opt("rest"),
+  ]
 }
 
-export function print(node: Node | Token<number>, sb: Subprint<any>) {
-  const sp = sb
+function needsParensToAvoidStruct(node: Node): boolean {
+  if (node instanceof ExprParen) {
+    return needsParensToAvoidStruct(node.of.value)
+  }
+  if (node instanceof ExprStruct || node instanceof ExprSymStruct) {
+    return true
+  }
+  if (
+    node instanceof ExprIndex ||
+    node instanceof ExprCall ||
+    node instanceof ExprProp
+  ) {
+    return needsParensToAvoidStruct(node.on)
+  }
+  if (node instanceof ExprUnary) {
+    return needsParensToAvoidStruct(node.of)
+  }
+  if (node instanceof ExprBinary) {
+    return (
+      needsParensToAvoidStruct(node.lhs) || needsParensToAvoidStruct(node.rhs)
+    )
+  }
+  return false
+}
 
+function setBlockContentsToMultiline(node: Node) {
+  if (node instanceof ExprParen) {
+    setBlockContentsToMultiline(node.of.value)
+  } else if (node instanceof ExprIf) {
+    if (node.block) {
+      node.block.of.block = true
+    }
+  } else if (node instanceof ExprFor) {
+    if (node.block) {
+      node.block.of.block = true
+    }
+  } else if (node instanceof ExprMatch) {
+    if (node.arms) {
+      node.arms.block = true
+    }
+  } else if (node instanceof ExprBlock) {
+    node.of.block = true
+  }
+}
+
+export const UNPRINTED = new Set<string>()
+
+export function print(node: Node | Token<number>, sb: Subprint<any>) {
   switch (node.constructor) {
     case ExprLit:
       return (node as ExprLit).value.val
     case FnUsage:
-      return [sp("kw"), " ", sp("usages")]
+      return [sb("kw"), " ", sb("usages")]
     case FnReturnType:
-      return [sp("arrow"), " ", sp.paren("retType"), " "]
+      return [sb("arrow"), " ", sb.paren("retType"), " "]
     case ItemFn:
       return [
         "fn ",
@@ -252,43 +336,61 @@ export function print(node: Node | Token<number>, sb: Subprint<any>) {
         sb.alt("block", "{}"),
       ]
     case ItemRule:
-      return ["rule", sp.alt("tparams", ""), " ", sp.alt("value", ";")]
+      return ["rule", sb.alt("tparams", ""), " ", sb.alt("value", ";")]
     case Rule:
       return [
-        sp("lhs"),
+        sb("lhs"),
         " ",
-        sp.alt("arrow", "=>"),
+        sb.alt("arrow", "=>"),
         " ",
-        sp("rhs"),
-        sp.alt("semi", ";"),
+        sb("rhs"),
+        sb.alt("semi", ";"),
       ]
     case Script:
-      return join([hardline, hardline], sp.all("items"))
+      return join([hardline, hardline], sb.all("items"))
     case GenericParams:
-      return sp("list")
-    case PlainList:
+      return sb("list")
+    case PlainList: {
+      const self = node as PlainList<any>
+
+      const contents = self.items.map((x, i) =>
+        x instanceof Expr && needsParensToAvoidStruct(x) ?
+          group(["(", indent([softline, sb.sub("items", i)]), softline, ")"])
+        : sb.sub("items", i),
+      )
+
       return group([
-        indent([
-          softline,
-          join([",", line], sp.all("items")),
-          ifBreak([","], ""),
-        ]),
+        indent([softline, join([",", line], contents), ifBreak([","], "")]),
         line,
       ])
+    }
     case List: {
       const self = node as List<any, any>
+
+      if (self.items.length == 0) {
+        if (self.block) {
+          return group([
+            sb.sub("bracket", "lt"),
+            hardline,
+            sb.sub("bracket", "gt"),
+          ])
+        }
+
+        return [sb.sub("bracket", "lt"), sb.sub("bracket", "gt")]
+      }
+
       const edge =
-        self.block && self.items.length >= 2 ? hardline
+        self.block ? hardline
         : self.bracket.kind == OLBrace ? line
         : softline
       const br = self.commas ? [",", line] : line
-      const comma = self.commas ? ifBreak(",") : ""
+      const comma = self.commas && self.items.length > 0 ? ifBreak(",") : ""
 
       return group([
-        sp.sub("bracket", "lt"),
-        indent([edge, join(br, sp.all("items")), comma]),
+        sb.sub("bracket", "lt"),
+        indent([edge, join(br, sb.all("items")), comma]),
         edge,
-        sp.sub("bracket", "gt"),
+        sb.sub("bracket", "gt"),
       ])
     }
     case Token:
@@ -297,20 +399,20 @@ export function print(node: Node | Token<number>, sb: Subprint<any>) {
       const self = node as ExprDeriv
       const needs = needsParens(TDeriv, op(self.of), true)
       return [
-        sp("wrt"),
+        sb("wrt"),
         needs ?
-          group(["(", softline, indent(sp("of")), softline, ")"])
+          group(["(", softline, indent(sb("of")), softline, ")"])
         : group([
             ifBreak("(", " "),
             softline,
-            indent(sp("of")),
+            indent(sb("of")),
             softline,
             ifBreak(")"),
           ]),
       ]
     }
     case ExprParen:
-      return sp("of")
+      return sb.sub("of", "value")
     case ExprBinary: {
       const self = node as ExprBinary
       const needsL = needsParens(self.op.kind, op(self.lhs), false)
@@ -319,68 +421,234 @@ export function print(node: Node | Token<number>, sb: Subprint<any>) {
         ifBreak("("),
         indent([
           softline,
-          sp.paren("lhs", needsL),
+          sb.paren("lhs", needsL),
           " ",
-          sp("op"),
-          indent([line, sp.paren("rhs", needsR)]),
+          sb("op"),
+          indent([line, sb.paren("rhs", needsR)]),
         ]),
         softline,
         ifBreak(")"),
       ])
     }
     case ExprVarParam:
-      return [sp("name"), sp.opt("without"), sp.opt("type")]
+      return [sb("name"), sb.opt("without"), sb.opt("type")]
     case VarWithout:
-      return [sp("bang"), sp("names")]
+      return [sb("bang"), sb("names")]
     case GenericParam:
-      return [sp("name"), sp.opt("type")]
+      return [sb("name"), sb.opt("type")]
     case ParamType:
       return [
-        sp("colon"),
+        sb("colon"),
         " ",
         group([
           ifBreak("("),
-          indent([softline, sp("type")]),
+          indent([softline, sb("type")]),
           softline,
           ifBreak(")"),
         ]),
       ]
     case TypeVar:
-      return [sp("name"), sp.opt("targs")]
+      return [sb("name"), sb.opt("targs")]
     case ExprBlock:
-      return [sp.opt("label"), sp("of")]
+      return [sb.opt("label"), sb("of")]
     case ExprVar:
-      return [sp("name"), sp.opt("targs"), sp.opt("args")]
+      return [sb("name"), sb.opt("targs"), sb.opt("args")]
     case StmtExpr: {
       const self = node as StmtExpr
-      return [sp("expr"), self.semi != null ? sp.alt("semi", ";") : ""]
+      setBlockContentsToMultiline(self.expr)
+      return [sb("expr"), self.semi != null ? sb.alt("semi", ";") : ""]
     }
     case TypeLit:
-      return sp("token")
+      return sb("token")
     case TypeBlock:
-      return sp("block")
+      return sb("block")
     case ExprExit: {
       const self = node as ExprExit
       return [
-        sp("kw"),
-        self.label ? [" ", sp("label")] : "",
-        self.value ? [" ", sp.paren("value")] : "",
+        sb("kw"),
+        self.label ? [" ", sb("label")] : "",
+        self.value ? [" ", sb.paren("value")] : "",
       ]
     }
     case ExprProp:
       return [
-        sp.paren("on", needsParensBeforeSuffix((node as ExprProp).on)),
-        sp("prop"),
-        sp.opt("targs"),
-        sp.opt("args"),
+        sb.paren("on", needsParensBeforeSuffix((node as ExprProp).on)),
+        sb("prop"),
+        sb.opt("targs"),
+        sb.opt("args"),
+      ]
+    case ExprCall:
+      return [
+        sb.paren("on", needsParensBeforeSuffix((node as ExprProp).on)),
+        sb.opt("targs"),
+        sb.opt("args"),
+      ]
+    case ExprIndex:
+      return [
+        sb.paren("on", needsParensBeforeSuffix((node as ExprProp).on)),
+        sb("index"),
       ]
     case Prop:
-      return [sp("dot"), sp("name")]
+      return [sb("dot"), sb("name")]
     case FnParam:
-      return [sp("ident"), sp.alt("colon", ":"), " ", sp.paren("type")]
+      return [sb("ident"), sb.alt("colon", ":"), " ", sb.paren("type")]
     case TypeParen:
-      return sp("of")
+      return sb("of")
+    case ItemType:
+      return [
+        sb("kw"),
+        " ",
+        sb("ident"),
+        " ",
+        group([
+          sb.sub("braces", "lt"),
+          indent([hardline, sb("source")]),
+          hardline,
+          sb.sub("braces", "gt"),
+        ]),
+      ]
+    case Source: {
+      const self = node as Source
+      if (self.parts.length == 1) {
+        return group([
+          sb.sub("parts", 0),
+          self.cast ? line : "",
+          sb.opt("cast"),
+        ])
+      } else {
+        const lb = self.block ? hardline : line
+        return group([
+          join(lb, sb.all("parts")),
+          indent([self.cast ? lb : "", sb.opt("cast")]),
+        ])
+      }
+    }
+    case PrescribedType:
+      return group([sb("dcolon"), " ", sb.paren("type")])
+    case SourceSingle: {
+      const self = node as SourceSingle
+      return [
+        sb("kw"),
+        self.lang ? " " : "",
+        sb.opt("lang"),
+        " ",
+        sb.sub("braces", "lt"),
+        self.parts.map((_, i) =>
+          i == 0 ?
+            sb.sub("parts", i)
+          : [sb.sub("interps", i - 1), sb.sub("parts", i)],
+        ),
+        sb.sub("braces", "gt"),
+      ]
+    }
+    case SourceInterp:
+      return sb("of")
+    case ExprIf:
+      return group(printIf(node as ExprIf, sb))
+    case Else: {
+      const self = node as Else
+      return [
+        " ",
+        sb("kw"),
+        " ",
+        self.block instanceof ExprBlock ?
+          ifBreak(
+            sb.as(self.block?.of, () =>
+              group([
+                sb.sub("bracket", "lt"),
+                indent([
+                  hardlineWithoutBreakParent,
+                  join(hardlineWithoutBreakParent, sb.all("items")),
+                ]),
+                hardlineWithoutBreakParent,
+                sb.sub("bracket", "gt"),
+              ]),
+            ),
+            sb("block"),
+          )
+        : self.block instanceof ExprIf ?
+          sb.as(self.block, () => printIf(self.block as ExprIf, sb))
+        : sb("block"),
+      ]
+    }
+    case ExprStruct:
+      return [
+        sb("name"),
+        (node as ExprStruct).name.kind == ODot ? "" : " ",
+        sb("args"),
+      ]
+    case StructArg:
+      return [sb("name"), sb("colon"), " ", sb.paren("expr")]
+    case ExprUnary: {
+      const self = node as ExprUnary
+      const needsR = needsParens(self.op.kind, op(self.of), true)
+      return group([
+        ifBreak("("),
+        indent([sb("op"), indent([softline, sb.paren("of", needsR)])]),
+        softline,
+        ifBreak(")"),
+      ])
+    }
+    case ExprArray:
+      return sb("of")
+    case Bracketed:
+      return group([
+        sb.sub("brack", "lt"),
+        indent([softline, sb("value")]),
+        softline,
+        sb.sub("brack", "gt"),
+      ])
+    case ExprFor:
+      return [
+        sb.opt("label"),
+        sb("kw"),
+        " ",
+        sb("bound"),
+        sb("eq"),
+        " ",
+        sb("sources"),
+        sb("block"),
+      ]
+    case ExprLabel:
+      return [sb("label"), sb.alt("colon", ":"), " "]
+    case ExprMatch:
+      return [
+        sb("kw"),
+        " ",
+        sb.paren("on", needsParensToAvoidStruct((node as ExprMatch).on)),
+        " ",
+        sb("arms"),
+      ]
+    case MatchArm:
+      return [sb("pat"), " ", sb("arrow"), " ", sb.paren("expr")]
+    case PatVar:
+      return sb("name")
+    case PatLit:
+      return sb("name")
+    case PatStruct:
+      return [
+        sb("name"),
+        (node as PatStruct).name.kind == ODot ? "" : " ",
+        sb("of"),
+      ]
+    case StructPatProp:
+      return [sb("key"), sb.opt("pat")]
+    case StructPatPropPat:
+      return [sb("colon"), " ", sb("pat")]
+    case ExprRange: {
+      const self = node as ExprRange
+      const needsL = self.lhs && needsParens(BDotDot, op(self.lhs), false)
+      const needsR = self.rhs && needsParens(BDotDot, op(self.rhs), true)
+      return [
+        needsL == null ? "" : sb.paren("lhs", needsL),
+        sb("op"),
+        needsR == null ? "" : sb.paren("rhs", needsR),
+      ]
+    }
+    case ItemUse:
+      return [sb("kw"), " ", sb("source"), sb.alt("semi", ";")]
   }
 
+  UNPRINTED.add(node.constructor.name)
   return node.constructor.name
 }

@@ -1,6 +1,8 @@
 import {
+  type Brack,
   type KAs,
   type KConst,
+  type KElse,
   type KUsage,
   type OArrowMap,
   type OArrowRet,
@@ -15,7 +17,7 @@ import {
 } from "../kind"
 import type { TokenGroup } from "../stream"
 import type { Token } from "../token"
-import type { Expr } from "./expr"
+import type { Expr, ExprBlock, ExprIf } from "./expr"
 import type { Item } from "./item"
 import { Node, type Ident, type IdentFnName } from "./node"
 import type { Pat } from "./pat"
@@ -45,7 +47,7 @@ export class GenericParams extends Node {
   }
 }
 
-export class PlainList<T> extends Node {
+export class PlainList<T extends Expr | Ident> extends Node {
   constructor(
     readonly items: T[],
     start: number,
@@ -61,7 +63,11 @@ export class List<T, U = null> extends Node {
     readonly items: T[],
     readonly terminator: U,
     readonly commas: boolean,
-    readonly block: boolean,
+    /**
+     * Whether to force each item onto a separate line when pretty-printing. May
+     * be mutated during printing.
+     */
+    public block: boolean,
   ) {
     super(bracket.start, bracket.end)
   }
@@ -173,7 +179,7 @@ export class VarWithout extends Node {
   }
 }
 
-export class VarPrescribedType extends Node {
+export class PrescribedType extends Node {
   constructor(
     readonly dcolon: Token<typeof OColonColon>,
     readonly type: Type | null,
@@ -208,5 +214,44 @@ export class FnUsage extends Node {
     readonly usages: PlainList<Expr> | null,
   ) {
     super(kw.start, (usages ?? kw).end)
+  }
+}
+
+export class Else extends Node {
+  constructor(
+    readonly kw: Token<typeof KElse>,
+    readonly block: ExprBlock | ExprIf | null,
+  ) {
+    super(kw.start, (block ?? kw).end)
+  }
+}
+
+export class Bracketed<
+  K extends Brack,
+  T extends { end: number },
+> extends Node {
+  constructor(
+    readonly brack: TokenGroup<K>,
+    readonly value: T,
+  ) {
+    super(brack.start, value.end)
+  }
+}
+
+export class StructPatProp extends Node {
+  constructor(
+    readonly key: Ident,
+    readonly pat: StructPatPropPat | null,
+  ) {
+    super(key.start, (pat ?? key).end)
+  }
+}
+
+export class StructPatPropPat extends Node {
+  constructor(
+    readonly colon: Token<typeof OColon>,
+    readonly pat: Pat,
+  ) {
+    super(colon.start, pat.end)
   }
 }

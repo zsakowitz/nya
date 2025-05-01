@@ -1,4 +1,4 @@
-import { hx } from "@/jsx"
+import { h, hx } from "@/jsx"
 import { doc } from "prettier"
 import source from "../examples/ref.nya"
 import { Code } from "./ast/issue"
@@ -10,6 +10,7 @@ import { type Token } from "./ast/token"
 import { EmitDecl } from "./emit/block"
 import { ScopeProgram } from "./emit/scope"
 import { printVanilla } from "./prettier"
+import { UNPRINTED } from "./prettier/print"
 
 console.time("stream")
 const stream = createStream(source, { comments: false })
@@ -66,7 +67,11 @@ const { formatted } = doc.printer.printDocToString(printVanilla(result), {
   tabWidth: 2,
 })
 
-pre(formatted)
+pre([...UNPRINTED].join(", "))
+hr()
+const q = pre(formatted)
+q.classList.add("relative")
+q.appendChild(h("absolute left-[80ch] inset-y-4 bg-[--nya-border] w-px"))
 hr()
 show(elIssues)
 hr()
@@ -103,5 +108,7 @@ function show(el: Node) {
 }
 
 function pre(el: Node | string) {
-  show(hx("pre", `p-4 text-xs w-screen text-[--nya-text-prose]`, el))
+  const p = hx("pre", `p-4 text-xs w-screen text-[--nya-text-prose]`, el)
+  show(p)
+  return p
 }

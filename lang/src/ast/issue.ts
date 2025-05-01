@@ -45,6 +45,8 @@ export const Code = Object.freeze({
   NonParamFollowedByConstMarker: 63,
   NonParamFollowedByTypeAssertion: 64,
   ExpectedUsageExamples: 65,
+  ExpectedDestructuring: 66,
+  UseDotAsAStructNameForDestructuringInPatterns: 67,
 
   // Emit errors
   IntTooLarge: 70,

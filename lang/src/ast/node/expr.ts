@@ -33,7 +33,6 @@ import {
   type ATildeUnary,
   type KBreak,
   type KContinue,
-  type KElse,
   type KFor,
   type KIf,
   type KIn,
@@ -48,7 +47,6 @@ import {
   type OBangUnary,
   type OBar,
   type OBarBar,
-  type OColonColon,
   type ODot,
   type ODotDot,
   type OEq,
@@ -81,13 +79,15 @@ import {
 import type { TokenGroup } from "../stream"
 import type { Token } from "../token"
 import type {
+  Bracketed,
+  Else,
   ExprLabel,
   List,
   MatchArm,
   PlainList,
+  PrescribedType,
   Prop,
   StructArg,
-  VarPrescribedType,
   VarWithout,
 } from "./extra"
 import type { Ident } from "./node"
@@ -141,7 +141,7 @@ export class ExprVarParam extends Expr {
   constructor(
     readonly name: Token<typeof TParam>,
     readonly without: VarWithout | null,
-    readonly type: VarPrescribedType | null,
+    readonly type: PrescribedType | null,
   ) {
     super(name.start, (type ?? without ?? name).end)
   }
@@ -190,13 +190,12 @@ export class ExprEmpty extends Expr {
 
 export class ExprIf extends Expr {
   constructor(
-    readonly kwIf: Token<typeof KIf>,
+    readonly kw: Token<typeof KIf>,
     readonly condition: Expr,
-    readonly blockIf: ExprBlock | null,
-    readonly kwElse: Token<typeof KElse> | null,
-    readonly blockElse: ExprBlock | ExprIf | null,
+    readonly block: ExprBlock | null,
+    readonly rest: Else | null,
   ) {
-    super(kwIf.start, blockIf?.end ?? condition.end)
+    super(kw.start, (rest ?? block ?? condition).end)
   }
 }
 
@@ -234,11 +233,8 @@ export class ExprMatch extends Expr {
 }
 
 export class ExprParen extends Expr {
-  constructor(
-    readonly token: TokenGroup<typeof OLParen>,
-    readonly of: Expr,
-  ) {
-    super(token.start, token.end)
+  constructor(readonly of: Bracketed<typeof OLParen, Expr>) {
+    super(of.start, of.end)
   }
 }
 
@@ -283,10 +279,9 @@ export class ExprProp extends Expr {
 export class ExprIndex extends Expr {
   constructor(
     readonly on: Expr,
-    readonly brack: TokenGroup<typeof OLBrack>,
-    readonly index: Expr,
+    readonly index: Bracketed<typeof OLBrack, Expr>,
   ) {
-    super(on.start, brack.end)
+    super(on.start, index.end)
   }
 }
 
@@ -413,18 +408,16 @@ export class Source extends Expr {
     start: number,
     end: number,
     readonly parts: SourceSingle[],
-    readonly castOp: Token<typeof OColonColon> | null,
-    readonly cast: Type | null,
+    readonly cast: PrescribedType | null,
+    /** Whether to print as multiline. */
+    readonly block: boolean,
   ) {
     super(start, end)
   }
 }
 
 export class SourceInterp extends Expr {
-  constructor(
-    readonly bracket: TokenGroup<typeof OLInterp>,
-    readonly of: Expr,
-  ) {
-    super(bracket.start, bracket.end)
+  constructor(readonly of: Bracketed<typeof OLInterp, Expr>) {
+    super(of.start, of.end)
   }
 }

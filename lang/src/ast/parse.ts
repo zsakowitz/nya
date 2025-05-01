@@ -126,6 +126,8 @@ import {
   type ExprBinaryOp,
 } from "./node/expr"
 import {
+  Bracketed,
+  Else,
   EnumMapVariant,
   EnumVariant,
   ExposeAliases,
@@ -139,12 +141,14 @@ import {
   MatchArm,
   ParamType,
   PlainList,
+  PrescribedType,
   Prop,
   Rule,
   Script,
   StructArg,
   StructFieldDecl,
-  VarPrescribedType,
+  StructPatProp,
+  StructPatPropPat,
   VarWithout,
 } from "./node/extra"
 import {
@@ -160,8 +164,8 @@ import {
   ItemUse,
   type Item,
 } from "./node/item"
-import type { IdentFnName } from "./node/node"
-import { PatEmpty, PatIgnore, PatLit, PatVar, type Pat } from "./node/pat"
+import type { Ident, IdentFnName } from "./node/node"
+import { PatIgnore, PatLit, PatStruct, PatVar, type Pat } from "./node/pat"
 import { StmtAssert, StmtExpr, StmtLet, type Stmt } from "./node/stmt"
 import {
   TypeArray,
@@ -173,7 +177,25 @@ import {
   type Type,
 } from "./node/type"
 import { Stream } from "./stream"
-import type { Token } from "./token"
+import { Token } from "./token"
+
+function patStructProp(stream: Stream) {
+  const key = stream.match(TIdent)
+  if (!key) return null
+
+  const colon = stream.match(OColon)
+
+  return new StructPatProp(
+    key,
+    colon && new StructPatPropPat(colon, pat(stream)),
+  )
+}
+
+const patStructBody = createCommaOp(
+  OLBrace,
+  patStructProp,
+  Code.ExpectedDestructuring,
+)
 
 function patAtom(stream: Stream) {
   switch (stream.peek()) {
@@ -181,16 +203,39 @@ function patAtom(stream: Stream) {
       return new PatIgnore(stream.match(TIgnore)!)
 
     case TIdent:
-      return new PatVar(stream.match(TIdent)!)
+      const id = stream.match(TIdent)!
+      if (stream.peek() == OLBrace) {
+        stream.raiseNext(Code.UseDotAsAStructNameForDestructuringInPatterns)
+      }
+      return new PatVar(id)
+
+    case ODot: {
+      const name = stream.match(ODot)!
+      const of = patStructBody(stream)
+      return new PatStruct(name, of)
+    }
+
+    case TSym: {
+      const name = stream.match(TSym)!
+      if (stream.peek() == OLBrace) {
+        const of = patStructBody(stream)
+        return new PatStruct(name, of)
+      } else {
+        return new PatLit(name)
+      }
+    }
 
     case TInt:
     case TFloat:
-    case TSym:
-      return new PatLit(stream.matchAny([TInt, TFloat, TSym])!)
+    case KTrue:
+    case KFalse:
+      return new PatLit(stream.matchAny([TInt, TFloat, KTrue, KFalse])!)
   }
 
   stream.raiseNext(Code.ExpectedPat)
-  return new PatEmpty(stream.pos())
+  return new PatIgnore(
+    new Token(stream.source, TIgnore, stream.loc(), stream.loc(), true),
+  )
 }
 
 function pat(stream: Stream): Pat {
@@ -289,7 +334,7 @@ function exprVarParam(stream: Stream) {
     stream.raiseNext(Code.VarParamFollowedByArguments)
   }
 
-  return new ExprVarParam(token, wo, dc && new VarPrescribedType(dc, ty))
+  return new ExprVarParam(token, wo, dc && new PrescribedType(dc, ty))
 }
 
 function exprVar(stream: Stream, ctx: ExprContext) {
@@ -319,16 +364,26 @@ export function exprIf(stream: Stream): ExprIf | null {
 
   const kwElse = stream.match(KElse)
   if (!kwElse) {
-    return new ExprIf(kwIf, condition, blockIf, null, null)
+    return new ExprIf(kwIf, condition, blockIf, null)
   }
 
   if (stream.peek() == KIf) {
-    return new ExprIf(kwIf, condition, blockIf, kwElse, exprIf(stream))
+    return new ExprIf(
+      kwIf,
+      condition,
+      blockIf,
+      new Else(kwElse, exprIf(stream)),
+    )
   } else if (stream.peek() == OLBrace) {
-    return new ExprIf(kwIf, condition, blockIf, kwElse, block(stream, null))
+    return new ExprIf(
+      kwIf,
+      condition,
+      blockIf,
+      new Else(kwElse, block(stream, null)),
+    )
   } else {
     stream.raiseNext(Code.IfOrBlockMustFollowElse)
-    return new ExprIf(kwIf, condition, blockIf, null, null)
+    return new ExprIf(kwIf, condition, blockIf, null)
   }
 }
 
@@ -337,7 +392,8 @@ const forBindings = createUnbracketedCommaOp(
   Code.ExpectedForBindings,
 )
 const forSources = createUnbracketedCommaOp(
-  (stream) => expr(stream, { struct: false }),
+  (stream) =>
+    stream.peek() == OLBrace ? null : expr(stream, { struct: false }),
   Code.ExpectedForSources,
 )
 
@@ -442,7 +498,7 @@ function exprAtom(stream: Stream, ctx: ExprContext): Expr {
 
     case OLParen: {
       const token = stream.matchGroup(OLParen)!
-      return new ExprParen(token, token.contents.full(expr))
+      return new ExprParen(new Bracketed(token, token.contents.full(expr)))
     }
 
     case OLBrack: {
@@ -483,7 +539,7 @@ function exprAtom(stream: Stream, ctx: ExprContext): Expr {
       return exprFor(stream, null)!
 
     case KSource:
-      return source(stream)!
+      return source(stream, false)!
 
     case KReturn:
     case KBreak:
@@ -533,7 +589,7 @@ function exprPropChain(stream: Stream, ctx: ExprContext) {
 
       case OLBrack:
         const n = stream.matchGroup(OLBrack)!
-        exp = new ExprIndex(exp, n, n.contents.full(expr))
+        exp = new ExprIndex(exp, new Bracketed(n, n.contents.full(expr)))
         continue
 
       case ODot:
@@ -781,7 +837,7 @@ function expr(stream: Stream, ctx: ExprContext = { struct: true }) {
   return exprBinaryOp(stream, ctx)
 }
 
-function createUnbracketedCommaOp<T extends { end: number }>(
+function createUnbracketedCommaOp<T extends Expr | Ident>(
   fn: (stream: Stream) => T | null,
   onEmpty: Code,
 ) {
@@ -875,7 +931,11 @@ function structArg(stream: Stream) {
 const callArgs = createCommaOp(OLParen, expr, null)
 const structArgs = createCommaOp(OLBrace, structArg, null)
 
-function block(stream: Stream, label: ExprLabel | null) {
+function block(
+  stream: Stream,
+  label: ExprLabel | null,
+  forceMultiline = false,
+) {
   const group = stream.matchGroup(OLBrace)
   if (!group) {
     stream.raiseNext(Code.ExpectedBlock)
@@ -892,7 +952,10 @@ function block(stream: Stream, label: ExprLabel | null) {
   }
   group.contents.requireDone()
 
-  return new ExprBlock(label, new List(group, list, null, false, true))
+  return new ExprBlock(
+    label,
+    new List(group, list, null, false, forceMultiline),
+  )
 }
 
 function createBlockOp<T>(
@@ -940,7 +1003,7 @@ function sourceSingle(stream: Stream): SourceSingle | null {
 
     let m
     while ((m = brace.contents.matchGroup(OLInterp))) {
-      interps.push(new SourceInterp(m, m.contents.full(expr)))
+      interps.push(new SourceInterp(new Bracketed(m, m.contents.full(expr))))
       const nextSource = brace.contents.match(TSource)
       if (nextSource) {
         parts.push(nextSource)
@@ -952,7 +1015,7 @@ function sourceSingle(stream: Stream): SourceSingle | null {
   return new SourceSingle(kw, lang, brace, parts, interps)
 }
 
-function source(stream: Stream): Source | null {
+function source(stream: Stream, block: boolean): Source | null {
   const parts = []
   let m
   while ((m = sourceSingle(stream))) {
@@ -969,8 +1032,8 @@ function source(stream: Stream): Source | null {
     parts[0]!.start,
     (ty ?? colon ?? parts[parts.length - 1]!).end,
     parts,
-    colon,
-    ty,
+    colon && new PrescribedType(colon, ty),
+    block,
   )
 }
 
@@ -980,7 +1043,7 @@ function itemType(stream: Stream) {
 
   const ident = stream.match(TIdent)
   const braces = stream.matchGroup(OLBrace)
-  const s = braces && braces.contents.full(source)
+  const s = braces && braces.contents.full((x) => source(x, true))
 
   return new ItemType(kw, ident, braces, s)
 }
@@ -1020,7 +1083,7 @@ function itemFn(stream: Stream) {
     params,
     ret,
     usageKw && new FnUsage(usageKw, fnUsageExamples(stream)),
-    block(stream, null),
+    block(stream, null, true),
   )
 }
 

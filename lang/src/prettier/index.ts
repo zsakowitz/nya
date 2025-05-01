@@ -88,5 +88,15 @@ export function printVanilla(node: Node) {
     ])
   }
 
+  sp.as = (k: any, f: () => Doc): Doc => {
+    const prev = current
+    try {
+      current = k
+      return f()
+    } finally {
+      current = prev
+    }
+  }
+
   return print(node, sp)
 }
