@@ -12,7 +12,7 @@ import type {
 import type { TokenGroup } from "../stream"
 import type { Token } from "../token"
 import type { Expr, ExprBlock } from "./expr"
-import type { List, PlainList, VarWithout } from "./extra"
+import type { List, PlainList } from "./extra"
 import { Node } from "./node"
 
 export abstract class Type extends Node {
@@ -22,10 +22,9 @@ export abstract class Type extends Node {
 export class TypeVar extends Type {
   constructor(
     readonly name: Token<typeof TIdent>,
-    readonly without: VarWithout | null,
     readonly targs: List<Type> | null,
   ) {
-    super(name.start, (targs ?? without ?? name).end)
+    super(name.start, (targs ?? name).end)
   }
 }
 

@@ -3,17 +3,6 @@ import * as Kind from "./kind"
 import { Stream, TokenGroup } from "./stream"
 import { Token } from "./token"
 
-export type Print =
-  | Token<number>
-  | TokenGroup
-  | { [x: string]: Print }
-  | null
-  | undefined
-  | number
-  | boolean
-  | Print[]
-  | ((this: any, ...args: any[]) => any)
-
 function tag(prefix: Element, text: Element, suffix: string, _level: number) {
   if (text.innerHTML.includes("\n")) {
     prefix.innerHTML = prefix.innerHTML.trimEnd()
@@ -32,7 +21,7 @@ function list(items: Element[], maxLen: number): Element {
   }
 }
 
-export function print(stream: Stream, a: Print, level = 0): Element {
+export function print(stream: Stream, a: unknown, level = 0): Element {
   if (a == null || typeof a == "boolean") {
     return h("text-slate-500", "" + a)
   }

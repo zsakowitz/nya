@@ -13,7 +13,6 @@ import type {
   KRule,
   KStruct,
   KType,
-  KUsage,
   KUse,
   OArrowRet,
   OColon,
@@ -30,9 +29,10 @@ import type {
   EnumMapVariant,
   EnumVariant,
   FnParam,
+  FnReturnType,
+  FnUsage,
   GenericParams,
   List,
-  PlainList,
   Rule,
   StructFieldDecl,
 } from "./extra"
@@ -66,25 +66,13 @@ export class ItemFn extends Item {
     readonly name: IdentFnName | null,
     readonly tparams: GenericParams | null,
     readonly params: List<FnParam> | null,
-    readonly arrow: Token<typeof OArrowRet> | null,
-    readonly retType: Type | null,
-    readonly usageKw: Token<typeof KUsage> | null,
-    readonly usages: PlainList<Expr> | null,
+    readonly ret: FnReturnType | null,
+    readonly usage: FnUsage | null,
     readonly block: ExprBlock | null,
   ) {
     super(
       kw.start,
-      (
-        block ??
-        usages ??
-        usageKw ??
-        retType ??
-        arrow ??
-        params ??
-        tparams ??
-        name ??
-        kw
-      ).end,
+      (block ?? usage ?? ret ?? params ?? tparams ?? name ?? kw).end,
     )
   }
 }

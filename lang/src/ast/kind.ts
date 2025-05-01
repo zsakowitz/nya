@@ -48,82 +48,84 @@ export const KLocal = 0
 // operators prefixed with @
 export const APlus = 42
 export const AMinus = 43
-export const AStar = 44
-export const ASlash = 45
-export const AStarStar = 46
-export const ATilde = 47
-export const ABar = 48
-export const AAmp = 49
-export const ABarBar = 50
-export const AAmpAmp = 51
-export const AAt = 52
-export const ABackslash = 53
-export const AEqEq = 54
-export const ANe = 55
-export const ALe = 56
-export const AGe = 57
-export const ALt = 58
-export const AGt = 59
-export const ABang = 60
-export const ALParen = 61
-export const ARParen = 62
-export const ALBrack = 63
-export const ARBrack = 64
-export const ALBrace = 65
-export const ARBrace = 66
-export const ALAngle = 67
-export const ARAngle = 68
-export const ALInterp = 69
-export const ASemi = 70
-export const AComma = 71
-export const AColon = 72
-export const AArrowRet = 73
-export const AArrowMap = 74
-export const AColonColon = 75
-export const ADot = 76
-export const ADotDot = 77
-export const APercent = 78
-export const AEq = 79
+export const AMinusUnary = 44 // replaces AMinus if in an ExprUnary
+export const AStar = 45
+export const ASlash = 46
+export const AStarStar = 47
+export const ATildeUnary = 48
+export const ABar = 49
+export const AAmp = 50
+export const ABarBar = 51
+export const AAmpAmp = 52
+export const AAt = 53
+export const ABackslash = 54
+export const AEqEq = 55
+export const ANe = 56
+export const ALe = 57
+export const AGe = 58
+export const ALt = 59
+export const AGt = 60
+export const ABangUnary = 61
+export const ALParen = 62
+export const ARParen = 63
+export const ALBrack = 64
+export const ARBrack = 65
+export const ALBrace = 66
+export const ARBrace = 67
+export const ALAngle = 68
+export const ARAngle = 69
+export const ALInterp = 70
+export const ASemi = 71
+export const AComma = 72
+export const AColon = 73
+export const AArrowRet = 74
+export const AArrowMap = 75
+export const AColonColon = 76
+export const ADot = 77
+export const ADotDot = 78
+export const APercent = 79
+export const AEq = 80
 
 // operators not prefixed with @
-export const OPlus = 80
-export const OMinus = 81
-export const OStar = 82
-export const OSlash = 83
-export const OStarStar = 84
-export const OTilde = 85
-export const OBar = 86
-export const OAmp = 87
-export const OBarBar = 88
-export const OAmpAmp = 89
-export const OAt = 90
-export const OBackslash = 91
-export const OEqEq = 92
-export const ONe = 93
-export const OLe = 94
-export const OGe = 95
-export const OLt = 96
-export const OGt = 97
-export const OBang = 98
-export const OLParen = 99
-export const ORParen = 100
-export const OLBrack = 101
-export const ORBrack = 102
-export const OLBrace = 103
-export const ORBrace = 104
-export const OLAngle = 105
-export const ORAngle = 106
-export const OLInterp = 107
-export const OSemi = 108
-export const OComma = 109
-export const OColon = 110
-export const OArrowRet = 111
-export const OArrowMap = 112
-export const OColonColon = 113
-export const ODot = 114
-export const ODotDot = 115
-export const OPercent = 116
-export const OEq = 117
+export const OPlus = 81
+export const OMinus = 82
+export const OMinusUnary = 83 // replaces OMinus if in an ExprUnary
+export const OStar = 84
+export const OSlash = 85
+export const OStarStar = 86
+export const OTildeUnary = 87
+export const OBar = 88
+export const OAmp = 89
+export const OBarBar = 90
+export const OAmpAmp = 91
+export const OAt = 92
+export const OBackslash = 93
+export const OEqEq = 94
+export const ONe = 95
+export const OLe = 96
+export const OGe = 97
+export const OLt = 98
+export const OGt = 99
+export const OBangUnary = 100
+export const OLParen = 101
+export const ORParen = 102
+export const OLBrack = 103
+export const ORBrack = 104
+export const OLBrace = 105
+export const ORBrace = 106
+export const OLAngle = 107
+export const ORAngle = 108
+export const OLInterp = 109
+export const OSemi = 110
+export const OComma = 111
+export const OColon = 112
+export const OArrowRet = 113
+export const OArrowMap = 114
+export const OColonColon = 115
+export const ODot = 116
+export const ODotDot = 117
+export const OPercent = 118
+export const OEq = 119
 
 export type Brack =
   | typeof OLParen
@@ -170,7 +172,7 @@ export const APS: Record<string, number> = {
   "*": AStar,
   "/": ASlash,
   "**": AStarStar,
-  "~": ATilde,
+  "~": ATildeUnary,
   "|": ABar,
   "&": AAmp,
   "||": ABarBar,
@@ -183,7 +185,7 @@ export const APS: Record<string, number> = {
   ">=": AGe,
   "<": ALt,
   ">": AGt,
-  "!": ABang,
+  "!": ABangUnary,
   "(": ALParen,
   ")": ARParen,
   "[": ALBrack,
@@ -209,7 +211,7 @@ export const OPS: Record<string, number> = {
   "*": OStar,
   "/": OSlash,
   "**": OStarStar,
-  "~": OTilde,
+  "~": OTildeUnary,
   "|": OBar,
   "&": OAmp,
   "||": OBarBar,
@@ -222,7 +224,7 @@ export const OPS: Record<string, number> = {
   ">=": OGe,
   "<": OLt,
   ">": OGt,
-  "!": OBang,
+  "!": OBangUnary,
   "(": OLParen,
   ")": ORParen,
   "[": OLBrack,
@@ -277,7 +279,7 @@ export const OVERLOADABLE = Object.freeze([
   OStar, // multiple
   OSlash, // divide
   OStarStar, // exponentiate
-  OTilde, // idk, but maybe useful
+  OTildeUnary, // idk, but maybe useful
   OBar, // union
   OAmp, // intersection
   OBarBar, // or
@@ -289,9 +291,115 @@ export const OVERLOADABLE = Object.freeze([
   OGe, // ge
   OLt, // lt
   OGt, // gt
-  OBang, // nots
+  OBangUnary, // nots
   OArrowRet, // type conversion
   OPercent, // modulus
 ] as const)
 
 export type OOverloadable = (typeof OVERLOADABLE)[number]
+
+export const OP_TEXT = {
+  [OPlus]: "+",
+  [APlus]: "@+",
+  [OMinus]: "-",
+  [OMinusUnary]: "-",
+  [AMinus]: "@-",
+  [AMinusUnary]: "@-",
+  [OStar]: "*",
+  [AStar]: "@*",
+  [OSlash]: "/",
+  [ASlash]: "@/",
+  [OStarStar]: "**",
+  [AStarStar]: "@**",
+  [OTildeUnary]: "~",
+  [ATildeUnary]: "@~",
+  [OBar]: "|",
+  [ABar]: "@|",
+  [OAmp]: "&",
+  [AAmp]: "@&",
+  [OBarBar]: "||",
+  [ABarBar]: "@||",
+  [OAmpAmp]: "&&",
+  [AAmpAmp]: "@&&",
+  [OAt]: "@",
+  [AAt]: "@@",
+  [OBackslash]: "\\",
+  [ABackslash]: "@\\",
+  [OEqEq]: "==",
+  [AEqEq]: "@==",
+  [ONe]: "!=",
+  [ANe]: "@!=",
+  [OLe]: "<=",
+  [ALe]: "@<=",
+  [OGe]: ">=",
+  [AGe]: "@>=",
+  [OLt]: "<",
+  [ALt]: "@<",
+  [OGt]: ">",
+  [AGt]: "@>",
+  [OBangUnary]: "!",
+  [ABangUnary]: "@!",
+  [OLParen]: "(",
+  [ALParen]: "@(",
+  [ORParen]: ")",
+  [ARParen]: "@)",
+  [OLBrack]: "[",
+  [ALBrack]: "@[",
+  [ORBrack]: "]",
+  [ARBrack]: "@]",
+  [OLBrace]: "{",
+  [ALBrace]: "@{",
+  [ORBrace]: "}",
+  [ARBrace]: "@}",
+  [OLInterp]: "$(",
+  [ALInterp]: "@$(",
+  [OSemi]: ";",
+  [ASemi]: "@;",
+  [OComma]: ",",
+  [AComma]: "@,",
+  [OColon]: ":",
+  [AColon]: "@:",
+  [OArrowRet]: "->",
+  [AArrowRet]: "@->",
+  [OArrowMap]: "=>",
+  [AArrowMap]: "@=>",
+  [OColonColon]: "::",
+  [AColonColon]: "@::",
+  [ODot]: ".",
+  [ADot]: "@.",
+  [ODotDot]: "..",
+  [ADotDot]: "@..",
+  [OPercent]: "%",
+  [APercent]: "@%",
+  [OEq]: "=",
+  [AEq]: "@=",
+  [KIf]: "if",
+  [KElse]: "else",
+  [KFor]: "for",
+  [KMatch]: "match",
+  [KRule]: "rule",
+  [KExpose]: "expose",
+  [KType]: "type",
+  [KFn]: "fn",
+  [KStruct]: "struct",
+  [KOpaque]: "opaque",
+  [KLet]: "let",
+  [KIn]: "in",
+  [KEnum]: "enum",
+  [KReturn]: "return",
+  [KBreak]: "break",
+  [KContinue]: "continue",
+  [KUse]: "use",
+  [KUsage]: "usage",
+  [KAs]: "as",
+  [KOnly]: "only",
+  [KSource]: "source",
+  [KData]: "data",
+  [KRef]: "ref",
+  [KAssert]: "assert",
+  [KRaise]: "raise",
+  [KConst]: "const",
+  [KTrue]: "true",
+  [KFalse]: "false",
+  [KLocal]: "local",
+}

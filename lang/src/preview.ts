@@ -1,4 +1,5 @@
 import { hx } from "@/jsx"
+import { doc } from "prettier"
 import source from "../examples/ref.nya"
 import { Code } from "./ast/issue"
 import { ORAngle, ORBrace, ORBrack, ORParen } from "./ast/kind"
@@ -8,6 +9,7 @@ import { createStream, TokenGroup } from "./ast/stream"
 import { type Token } from "./ast/token"
 import { EmitDecl } from "./emit/block"
 import { ScopeProgram } from "./emit/scope"
+import { printVanilla } from "./prettier"
 
 console.time("stream")
 const stream = createStream(source, { comments: false })
@@ -33,55 +35,46 @@ if (!stream.issues.ok()) {
   console.error("encountered some issue")
 }
 
-document.body.appendChild(
-  hx(
-    "pre",
-    "p-4 text-xs",
-    JSON.stringify(
-      stream.issues.entries.map((v) => ({
-        code: Object.entries(Code).find((x) => x[1] == v.code)?.[0],
-        start: v.pos.start,
-        end: v.pos.end,
-        of: stream.content(v.pos),
-      })),
-      undefined,
-      2,
-    ),
-  ),
-)
-
-document.body.appendChild(
-  hx("hr", "border-[--nya-border] mx-4 border-0 border-t"),
-)
-
-const el = hx(
+const elTokenStream = hx(
   "pre",
   "p-4 text-xs whitespace-normal w-screen",
   stream.tokens.map(flat).join(" "),
 )
-el.innerHTML = el.innerHTML.replace(
+elTokenStream.innerHTML = elTokenStream.innerHTML.replace(
   /\((\d+)\)/g,
   `<sub class='opacity-30'>$1</sub>`,
 )
-document.body.appendChild(el)
-
-document.body.appendChild(
-  hx("hr", "border-[--nya-border] mx-4 border-0 border-t"),
-)
-
-document.body.appendChild(
-  hx("pre", "p-4 text-xs whitespace-normal w-screen", emit.source),
-)
-
-document.body.appendChild(
-  hx("hr", "border-[--nya-border] mx-4 border-0 border-t"),
-)
-
 const printed = print(stream, result)
 
-document.body.appendChild(
-  hx("pre", "p-4 text-xs text-[--nya-text-prose]", printed),
+const elIssues = hx(
+  "pre",
+  "p-4 text-xs",
+  JSON.stringify(
+    stream.issues.entries.map((v) => ({
+      code: Object.entries(Code).find((x) => x[1] == v.code)?.[0],
+      start: v.pos.start,
+      end: v.pos.end,
+      of: stream.content(v.pos),
+    })),
+    undefined,
+    2,
+  ),
 )
+
+const { formatted } = doc.printer.printDocToString(printVanilla(result), {
+  printWidth: 80,
+  tabWidth: 2,
+})
+
+pre(formatted)
+hr()
+show(elIssues)
+hr()
+show(elTokenStream)
+hr()
+// pre(emit.source)
+// hr()
+pre(printed)
 
 function flat(x: Token<number>): string {
   if (x instanceof TokenGroup) {
@@ -99,4 +92,16 @@ function flat(x: Token<number>): string {
   }
 
   return `${source.slice(x.start, x.end)}(${x.kind.toString()})`
+}
+
+function hr() {
+  show(hx("hr", "border-[--nya-border] mx-4 border-0 border-t"))
+}
+
+function show(el: Node) {
+  document.body.appendChild(el)
+}
+
+function pre(el: Node | string) {
+  show(hx("pre", `p-4 text-xs w-screen text-[--nya-text-prose]`, el))
 }

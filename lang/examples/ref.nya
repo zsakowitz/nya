@@ -33,7 +33,7 @@ fn hi(a: float, b: ((float))) -> r32 {
   }
 }
 
-fn +(a: float, b: float) -> r32 usage 2 + 3 {
+fn +(a: float, b: float) -> r32 usage 2 + 3,4+548754623498746293874692387934872639847 {
   return;
   return 23;
 

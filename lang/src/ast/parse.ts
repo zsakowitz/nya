@@ -3,7 +3,7 @@ import {
   AAmp,
   AAmpAmp,
   ABackslash,
-  ABang,
+  ABangUnary,
   ABar,
   ABarBar,
   AEq,
@@ -13,13 +13,14 @@ import {
   ALe,
   ALt,
   AMinus,
+  AMinusUnary,
   ANe,
   APercent,
   APlus,
   ASlash,
   AStar,
   AStarStar,
-  ATilde,
+  ATildeUnary,
   KAs,
   KAssert,
   KBreak,
@@ -50,7 +51,7 @@ import {
   OArrowMap,
   OArrowRet,
   OBackslash,
-  OBang,
+  OBangUnary,
   OBar,
   OBarBar,
   OColon,
@@ -70,6 +71,7 @@ import {
   OLParen,
   OLt,
   OMinus,
+  OMinusUnary,
   ONe,
   OPercent,
   OPlus,
@@ -77,7 +79,7 @@ import {
   OSlash,
   OStar,
   OStarStar,
-  OTilde,
+  OTildeUnary,
   OVERLOADABLE,
   TBuiltin,
   TDeriv,
@@ -129,16 +131,20 @@ import {
   ExposeAliases,
   ExprLabel,
   FnParam,
+  FnReturnType,
+  FnUsage,
   GenericParam,
   GenericParams,
   List,
   MatchArm,
+  ParamType,
   PlainList,
   Prop,
   Rule,
   Script,
   StructArg,
   StructFieldDecl,
+  VarPrescribedType,
   VarWithout,
 } from "./node/extra"
 import {
@@ -166,8 +172,8 @@ import {
   TypeVar,
   type Type,
 } from "./node/type"
-import type { Print } from "./print"
 import { Stream } from "./stream"
+import type { Token } from "./token"
 
 function patAtom(stream: Stream) {
   switch (stream.peek()) {
@@ -198,7 +204,7 @@ function genericParam(stream: Stream) {
   const colon = stream.match(OColon)
   const ty = colon && type(stream)
 
-  return new GenericParam(ident, colon, ty)
+  return new GenericParam(ident, colon && new ParamType(colon, ty))
 }
 
 const genericParamsRaw = createCommaOp(OLAngle, genericParam, null)
@@ -224,11 +230,7 @@ function typeArray(stream: Stream) {
 function type(stream: Stream): Type {
   switch (stream.peek()) {
     case TIdent:
-      return new TypeVar(
-        stream.match(TIdent)!,
-        varWithout(stream),
-        typeArgs(stream),
-      )
+      return new TypeVar(stream.match(TIdent)!, typeArgs(stream))
 
     case TInt:
     case TFloat:
@@ -286,7 +288,8 @@ function exprVarParam(stream: Stream) {
   if (stream.peek() == OLAngle || stream.peek() == OLParen) {
     stream.raiseNext(Code.VarParamFollowedByArguments)
   }
-  return new ExprVarParam(token, wo, dc, ty)
+
+  return new ExprVarParam(token, wo, dc && new VarPrescribedType(dc, ty))
 }
 
 function exprVar(stream: Stream, ctx: ExprContext) {
@@ -298,7 +301,7 @@ function exprVar(stream: Stream, ctx: ExprContext) {
     return new ExprStruct(token, struct)
   }
 
-  if (stream.peek() == OBang)
+  if (stream.peek() == OBangUnary)
     stream.raiseNext(Code.NonParamFollowedByConstMarker)
 
   if (stream.peek() == OColonColon)
@@ -460,14 +463,14 @@ function exprAtom(stream: Stream, ctx: ExprContext): Expr {
             }
             items.push(expr(lt.contents))
           }
-          return new ExprArray(new List(lt, items, null))
+          return new ExprArray(new List(lt, items, null, true, false))
 
         case null:
-          return new ExprArray(new List(lt, [first], null))
+          return new ExprArray(new List(lt, [first], null, true, false))
       }
 
       lt.contents.raiseNext(Code.ExpectedCommaOrSemi)
-      return new ExprArray(new List(lt, [first], null))
+      return new ExprArray(new List(lt, [first], null, true, false))
     }
 
     case OLBrace:
@@ -554,14 +557,14 @@ function exprUnary(stream: Stream, ctx: ExprContext): Expr {
   let match
   while (
     (match =
-      stream.match(OMinus) ||
-      stream.match(AMinus) ||
-      stream.match(OTilde) ||
-      stream.match(ATilde) ||
-      stream.match(OBang) ||
-      stream.match(ABang) ||
-      stream.match(TDeriv) ||
-      stream.match(TDerivIgnore))
+      stream.matchAny([
+        OMinus,
+        AMinus,
+        OTildeUnary,
+        ATildeUnary,
+        OBangUnary,
+        ABangUnary,
+      ]) || stream.matchAny([TDeriv, TDerivIgnore]))
   ) {
     ops.push(match)
   }
@@ -572,7 +575,14 @@ function exprUnary(stream: Stream, ctx: ExprContext): Expr {
     if (a.kind == TDeriv || a.kind == TDerivIgnore) {
       expr = new ExprDeriv(a, expr)
     } else {
-      expr = new ExprUnary(a, expr)
+      // makes precedence rules easier to manage
+      if (a.kind == OMinus) {
+        ;(a as any).kind = OMinusUnary
+      } else if (a.kind == AMinus) {
+        ;(a as any).kind = AMinusUnary
+      }
+
+      expr = new ExprUnary(a as Token<any>, expr)
     }
   }
   return expr
@@ -677,9 +687,9 @@ const exprBinaryOp = createBinOpR(
             createBinOpL(
               [OAmp, AAmp],
               createBinOpL(
-                [OPlus, OMinus, OPercent, APlus, AMinus, APercent],
+                [OPlus, OMinus, APlus, AMinus],
                 createBinOpL(
-                  [OStar, OSlash, AStar, ASlash],
+                  [OStar, OSlash, OPercent, AStar, ASlash, APercent],
                   createBinOpR(
                     [OStarStar, AStarStar],
                     createRangeOp(
@@ -771,7 +781,7 @@ function expr(stream: Stream, ctx: ExprContext = { struct: true }) {
   return exprBinaryOp(stream, ctx)
 }
 
-function createUnbracketedCommaOp<T extends Print & { end: number }>(
+function createUnbracketedCommaOp<T extends { end: number }>(
   fn: (stream: Stream) => T | null,
   onEmpty: Code,
 ) {
@@ -799,10 +809,7 @@ function createUnbracketedCommaOp<T extends Print & { end: number }>(
   }
 }
 
-function createCommaOp<
-  T extends Print,
-  U extends (Print & { end: number }) | null = null,
->(
+function createCommaOp<T, U extends { end: number } | null = null>(
   bracket: Brack,
   fn: (stream: Stream) => T | null,
   code: Code | null,
@@ -817,7 +824,7 @@ function createCommaOp<
       return null
     }
 
-    const list = new List<T, U | null>(group, [], null)
+    const list = new List<T, U | null>(group, [], null, true, false)
     if (!group.contents.isEmpty()) {
       const first = fn(group.contents)
       if (!first) {
@@ -885,10 +892,10 @@ function block(stream: Stream, label: ExprLabel | null) {
   }
   group.contents.requireDone()
 
-  return new ExprBlock(label, group, list)
+  return new ExprBlock(label, new List(group, list, null, false, true))
 }
 
-function createBlockOp<T extends Print>(
+function createBlockOp<T>(
   take: (stream: Stream) => T | null,
   code: Code | null,
 ) {
@@ -912,7 +919,7 @@ function createBlockOp<T extends Print>(
     }
     group.contents.requireDone()
 
-    return new List(group, list, null)
+    return new List(group, list, null, false, true)
   }
 }
 
@@ -1003,25 +1010,23 @@ function itemFn(stream: Stream) {
   } else if (arrow) {
     ty = type(stream)
   }
+  const ret = arrow && new FnReturnType(arrow, ty)
   const usageKw = stream.match(KUsage)
-  const usages = usageKw && fnUsageExamples(stream)
 
   return new ItemFn(
     kw,
     ident,
     tparams,
     params,
-    arrow,
-    ty,
-    usageKw,
-    usages,
+    ret,
+    usageKw && new FnUsage(usageKw, fnUsageExamples(stream)),
     block(stream, null),
   )
 }
 
 const fnUsageExamples = createUnbracketedCommaOp(
   (stream) => expr(stream, { struct: false }),
-  Code.ExpectedForBindings,
+  Code.ExpectedUsageExamples,
 )
 
 function rule(stream: Stream) {
@@ -1295,7 +1300,7 @@ const varWithoutList = createCommaOp(
 )
 
 function varWithout(stream: Stream): VarWithout | null {
-  const bang = stream.match(OBang)
+  const bang = stream.match(OBangUnary)
   if (!bang) return null
 
   return new VarWithout(bang, stream.match(TIdent) ?? varWithoutList(stream))

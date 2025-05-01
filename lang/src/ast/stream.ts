@@ -18,11 +18,12 @@ import { Token, tokens, type ToTokensProps } from "./token"
 
 export class TokenGroup<K extends Brack = Brack> extends Token<K> {
   constructor(
+    source: string,
     readonly lt: Token<K>,
     readonly gt: Token<number>,
     readonly contents: Stream,
   ) {
-    super(lt.kind, lt.start, gt.end)
+    super(source, lt.kind, lt.start, gt.end)
   }
 }
 
@@ -51,8 +52,10 @@ export function createStream(source: string, props: ToTokensProps) {
       case OLBrace:
       case OLInterp:
         const group = new TokenGroup(
+          source,
           token as Token<Brack>,
           new Token(
+            source,
             MATCHING_PAREN[token.kind as Brack],
             token.start,
             token.start,
@@ -88,6 +91,7 @@ export function createStream(source: string, props: ToTokensProps) {
           // Make sure all text positions are correct
           const mut = current as TokenGroupMut
           mut.gt = new Token(
+            source,
             MATCHING_PAREN[current.kind],
             token.start,
             token.start,

@@ -1,6 +1,6 @@
 import type { EmitBlock } from "../../emit/block"
 import type { ScopeBlock } from "../../emit/scope"
-import { VReal, VSym, VUint, type VType } from "../../emit/type"
+import { type VType } from "../../emit/type"
 import { Value } from "../../emit/value"
 import {
   KFalse,
@@ -13,7 +13,7 @@ import {
   type AAmpAmp,
   type AAt,
   type ABackslash,
-  type ABang,
+  type ABangUnary,
   type ABar,
   type ABarBar,
   type AEq,
@@ -23,13 +23,14 @@ import {
   type ALe,
   type ALt,
   type AMinus,
+  type AMinusUnary,
   type ANe,
   type APercent,
   type APlus,
   type ASlash,
   type AStar,
   type AStarStar,
-  type ATilde,
+  type ATildeUnary,
   type KBreak,
   type KContinue,
   type KElse,
@@ -44,7 +45,7 @@ import {
   type OArrowRet,
   type OAt,
   type OBackslash,
-  type OBang,
+  type OBangUnary,
   type OBar,
   type OBarBar,
   type OColonColon,
@@ -61,6 +62,7 @@ import {
   type OLParen,
   type OLt,
   type OMinus,
+  type OMinusUnary,
   type ONe,
   type OPercent,
   type OPlus,
@@ -68,7 +70,7 @@ import {
   type OSlash,
   type OStar,
   type OStarStar,
-  type OTilde,
+  type OTildeUnary,
   type TBuiltin,
   type TDeriv,
   type TDerivIgnore,
@@ -85,6 +87,7 @@ import type {
   PlainList,
   Prop,
   StructArg,
+  VarPrescribedType,
   VarWithout,
 } from "./extra"
 import type { Ident } from "./node"
@@ -124,31 +127,6 @@ export class ExprLit extends Expr {
   ) {
     super(value.start, value.end)
   }
-
-  emit(scope: ScopeBlock, block: EmitBlock, result: VType | null): Value {
-    const src = scope.file.at(this)
-
-    if (result == null) {
-      switch (this.value.kind) {
-        case TFloat:
-          return new Value(VReal, +src)
-
-        case TInt:
-          const val = +src
-          if (0 <= val && val <= 2 ** 31 - 1) {
-            return new Value(VUint, val)
-          } else {
-            throw new Error("Integer literals must be within [0,2**31).")
-          }
-
-        case TSym:
-          return new Value(VSym, +src)
-
-        case KTrue:
-        case KFalse:
-      }
-    }
-  }
 }
 
 /**
@@ -163,10 +141,9 @@ export class ExprVarParam extends Expr {
   constructor(
     readonly name: Token<typeof TParam>,
     readonly without: VarWithout | null,
-    readonly dcolon: Token<typeof OColonColon> | null,
-    readonly type: Type | null,
+    readonly type: VarPrescribedType | null,
   ) {
-    super(name.start, (type ?? dcolon ?? without ?? name).end)
+    super(name.start, (type ?? without ?? name).end)
   }
 }
 
@@ -314,12 +291,12 @@ export class ExprIndex extends Expr {
 }
 
 export type ExprUnaryOp =
-  | typeof OMinus
-  | typeof AMinus
-  | typeof OTilde
-  | typeof ATilde
-  | typeof OBang
-  | typeof ABang
+  | typeof OMinusUnary
+  | typeof AMinusUnary
+  | typeof OTildeUnary
+  | typeof ATildeUnary
+  | typeof OBangUnary
+  | typeof ABangUnary
 
 export class ExprUnary extends Expr {
   constructor(
@@ -413,10 +390,9 @@ export class ExprCast extends Expr {
 export class ExprBlock extends Expr {
   constructor(
     readonly label: ExprLabel | null,
-    readonly bracket: TokenGroup,
-    readonly of: Stmt[],
+    readonly of: List<Stmt>,
   ) {
-    super((label ?? bracket).start, of[of.length - 1]?.end ?? bracket.end)
+    super((label ?? of).start, of.end)
   }
 }
 

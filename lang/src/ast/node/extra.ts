@@ -1,16 +1,18 @@
-import type {
-  KAs,
-  KConst,
-  OArrowMap,
-  OBang,
-  OColon,
-  ODot,
-  OSemi,
-  TIdent,
-  TLabel,
-  TSym,
+import {
+  type KAs,
+  type KConst,
+  type KUsage,
+  type OArrowMap,
+  type OArrowRet,
+  type OBangUnary,
+  type OColon,
+  type OColonColon,
+  type ODot,
+  type OSemi,
+  type TIdent,
+  type TLabel,
+  type TSym,
 } from "../kind"
-import type { Print } from "../print"
 import type { TokenGroup } from "../stream"
 import type { Token } from "../token"
 import type { Expr } from "./expr"
@@ -19,13 +21,21 @@ import { Node, type Ident, type IdentFnName } from "./node"
 import type { Pat } from "./pat"
 import type { Type } from "./type"
 
+export class ParamType extends Node {
+  constructor(
+    readonly colon: Token<typeof OColon>,
+    readonly type: Type | null,
+  ) {
+    super(colon.start, (type ?? colon).end)
+  }
+}
+
 export class GenericParam extends Node {
   constructor(
     readonly name: Ident,
-    readonly colon: Token<typeof OColon> | null,
-    readonly type: Type | null,
+    readonly type: ParamType | null,
   ) {
-    super(name.start, (type ?? colon ?? name).end)
+    super(name.start, (type ?? name).end)
   }
 }
 
@@ -35,7 +45,7 @@ export class GenericParams extends Node {
   }
 }
 
-export class PlainList<T extends Print> extends Node {
+export class PlainList<T> extends Node {
   constructor(
     readonly items: T[],
     start: number,
@@ -45,11 +55,13 @@ export class PlainList<T extends Print> extends Node {
   }
 }
 
-export class List<T extends Print, U extends Print | null = null> extends Node {
+export class List<T, U = null> extends Node {
   constructor(
     readonly bracket: TokenGroup,
     readonly items: T[],
     readonly terminator: U,
+    readonly commas: boolean,
+    readonly block: boolean,
   ) {
     super(bracket.start, bracket.end)
   }
@@ -154,10 +166,19 @@ export class Script extends Node {
 
 export class VarWithout extends Node {
   constructor(
-    readonly bang: Token<typeof OBang>,
+    readonly bang: Token<typeof OBangUnary>,
     readonly names: Ident | List<Ident> | null,
   ) {
     super(bang.start, (names ?? bang).end)
+  }
+}
+
+export class VarPrescribedType extends Node {
+  constructor(
+    readonly dcolon: Token<typeof OColonColon>,
+    readonly type: Type | null,
+  ) {
+    super(dcolon.start, (type ?? dcolon).end)
   }
 }
 
@@ -169,5 +190,23 @@ export class Rule extends Node {
     readonly semi: Token<typeof OSemi> | null,
   ) {
     super(lhs.start, (semi ?? rhs).end)
+  }
+}
+
+export class FnReturnType extends Node {
+  constructor(
+    readonly arrow: Token<typeof OArrowRet>,
+    readonly retType: Type | null,
+  ) {
+    super(arrow.start, (retType ?? arrow).end)
+  }
+}
+
+export class FnUsage extends Node {
+  constructor(
+    readonly kw: Token<typeof KUsage>,
+    readonly usages: PlainList<Expr> | null,
+  ) {
+    super(kw.start, (usages ?? kw).end)
   }
 }
