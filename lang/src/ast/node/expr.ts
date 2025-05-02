@@ -1,7 +1,3 @@
-import type { EmitBlock } from "../../emit/block"
-import type { ScopeBlock } from "../../emit/scope"
-import { type VType } from "../../emit/type"
-import { Value } from "../../emit/value"
 import {
   KFalse,
   KTrue,
@@ -97,18 +93,6 @@ import type { Type } from "./type"
 
 export abstract class Expr extends Node {
   declare private __brand_expr
-
-  /**
-   * @param scope A scope holding function, type, and variable names.
-   * @param block A place to put contextually needed statements.
-   * @param result The expected result type.
-   */
-  emit(scope: ScopeBlock, block: EmitBlock, result: VType | null): Value {
-    scope
-    block
-    result
-    throw new Error(`Cannot emit '${this.constructor.name}' yet.`)
-  }
 }
 
 /**

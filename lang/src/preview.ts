@@ -7,8 +7,6 @@ import { parse } from "./ast/parse"
 import { print } from "./ast/print"
 import { createStream, TokenGroup } from "./ast/stream"
 import type { Token } from "./ast/token"
-import { EmitDecl } from "./emit/block"
-import { ScopeProgram } from "./emit/scope"
 import { printVanilla } from "./prettier"
 import { UNPRINTED } from "./prettier/print"
 
@@ -113,20 +111,14 @@ function showIssues() {
 }
 
 function showEmit() {
-  const scopeProgram = new ScopeProgram(true)
-  const scopeFile = scopeProgram.file(stream.source)
-  const emit = new EmitDecl("js", stream.issues)
-
   try {
-    for (const item of result.items) {
-      item.emit(scopeFile, emit)
-    }
+    // TODO: emit stuff
   } catch (e) {
     console.warn("[script emit]", e)
   }
 
   hr()
-  pre(emit.source)
+  pre("TODO: emit stuff")
 }
 
 const parts = Object.entries({

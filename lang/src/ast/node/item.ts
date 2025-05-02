@@ -1,7 +1,3 @@
-import type { EmitDecl } from "../../emit/block"
-import type { ScopeFile } from "../../emit/scope"
-import { VBool } from "../../emit/type"
-import { Code } from "../issue"
 import type {
   KAssert,
   KData,
@@ -18,7 +14,6 @@ import type {
   ODotDot,
   OLBrace,
   OSemi,
-  TComment,
   TString,
 } from "../kind"
 import type { TokenGroup } from "../stream"
@@ -43,12 +38,6 @@ import type { Type } from "./type"
 
 export abstract class Item extends Node {
   declare private __brand_item
-
-  emit(root: ScopeFile, decl: EmitDecl) {
-    root
-    decl
-    throw new Error(`Cannot emit '${this.constructor.name}' yet.`)
-  }
 }
 
 export class ItemType extends Item {
@@ -158,20 +147,6 @@ export class ItemAssert extends Item {
     readonly semi: Token<typeof OSemi> | null,
   ) {
     super(kw.start, (semi ?? message ?? expr).end)
-  }
-
-  emit(root: ScopeFile, decl: EmitDecl): void {
-    const emit = decl.block()
-    const scope = root.block()
-    const result = this.expr.emit(scope, emit, VBool)
-    if (result.type.is(VBool)) {
-      decl.source += `if (!(${result})) {
-  console.error("test failed: " + ${JSON.stringify(root.source.slice(this.start, this.end))})
-}
-`
-    } else {
-      decl.issues.raise(Code.AssertionsMustResultInBool, this)
-    }
   }
 }
 
