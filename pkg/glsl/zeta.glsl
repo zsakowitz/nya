@@ -19,7 +19,10 @@ vec2 zetaLargeS(vec2 s) {
 vec2 zetaSmallS(vec2 s) {
   vec2 z = vec2(0);
 
-  return _helper_div(Dirichletn(s), vec2(1, 0) - _helper_pow_c32(vec2(2, 0), vec2(1, 0) - s));
+  return _helper_div(
+    Dirichletn(s),
+    vec2(1, 0) - _helper_pow_c32(vec2(2, 0), vec2(1, 0) - s)
+  );
 }
 vec2 zetagtz(vec2 s) {
   return mix(zetaSmallS(s), zetaLargeS(s), smoothstep(1.5, 2.5, s.x));

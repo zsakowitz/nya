@@ -14,7 +14,7 @@ vec2 _nya_helper_cx_factorial_pos(vec2 z) {
   vec2 x = vec2(1.0000018972739440364, 0.0);
   x += _helper_div(vec2(76.180082222642137322, 0), z + vec2(1, 0));
   x += _helper_div(vec2(-86.505092037054859197, 0), z + vec2(2, 0));
-  x += _helper_div(vec2(24.012898581922685900, 0), z + vec2(3, 0));
+  x += _helper_div(vec2(24.0128985819226859, 0), z + vec2(3, 0));
   x += _helper_div(vec2(-1.2296028490285820771, 0), z + vec2(4, 0));
 
   vec2 t = z + vec2(_nya_cxfact_g, 0) + vec2(0.5, 0);
@@ -22,7 +22,7 @@ vec2 _nya_helper_cx_factorial_pos(vec2 z) {
   // 2.5066282746310007 = sqrt(2π)
   y = _helper_mul_c32(y, _helper_exp(-t));
   y = _helper_mul_c32(y, x);
-  return (y);
+  return y;
 }
 
 vec2 _nya_helper_factorial(vec2 z) {
@@ -34,9 +34,12 @@ vec2 _nya_helper_factorial(vec2 z) {
     // u! (-u-1)! = π/sin(πz)
     // u! = π/sin(πz)/(-u-1)!
     // u! = π/(sin(πz)*(-u-1)!)
-    vec2 res = -_nya_helper_cx_factorial_pos(-z-vec2(1,0));
+    vec2 res = -_nya_helper_cx_factorial_pos(-z - vec2(1, 0));
     vec2 sinArg = 3.141592653589793 * z;
-    vec2 sinVal = vec2(sin(sinArg.x) * cosh(sinArg.y), cos(sinArg.x) * sinh(sinArg.y));
+    vec2 sinVal = vec2(
+      sin(sinArg.x) * cosh(sinArg.y),
+      cos(sinArg.x) * sinh(sinArg.y)
+    );
     return _helper_div(
       vec2(3.141592653589793, 0),
       _helper_mul_c32(sinVal, res)

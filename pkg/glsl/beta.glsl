@@ -1,5 +1,7 @@
 float beta_gammasign(float x) {
-  return x > 0.0 || mod(floor(x), 2.0) == 0.0 ? 1.0 : -1.0;
+  return x > 0.0 || mod(floor(x), 2.0) == 0.0
+    ? 1.0
+    : -1.0;
 }
 
 float beta_sign(float x, float y) {
@@ -7,7 +9,9 @@ float beta_sign(float x, float y) {
 }
 
 float beta_ln(float x, float y) {
-  return _nya_helper_lngamma(x) + _nya_helper_lngamma(y) - _nya_helper_lngamma(x + y);
+  return _nya_helper_lngamma(x) +
+  _nya_helper_lngamma(y) -
+  _nya_helper_lngamma(x + y);
 }
 
 float beta(float x, float y) {
