@@ -3,6 +3,7 @@ import { builders } from "prettier/doc.js"
 import {
   AAmp,
   AAmpAmp,
+  AAt,
   ABackslash,
   ABangUnary,
   ABar,
@@ -25,6 +26,7 @@ import {
   OAmp,
   OAmpAmp,
   OArrowRet,
+  OAt,
   OBackslash,
   OBangUnary,
   OBar,
@@ -49,7 +51,7 @@ import {
   OTildeUnary,
   TDeriv,
 } from "../ast/kind"
-import { ExposeFn, ExposeType } from "../ast/node/expose"
+import { ExposeFn, ExposeLet, ExposeType } from "../ast/node/expose"
 import {
   Expr,
   ExprArray,
@@ -119,7 +121,7 @@ import {
   ItemUse,
 } from "../ast/node/item"
 import type { Node } from "../ast/node/node"
-import { PatLit, PatStruct, PatVar } from "../ast/node/pat"
+import { PatIgnore, PatLit, PatStruct, PatVar } from "../ast/node/pat"
 import { StmtAssert, StmtExpr, StmtLet } from "../ast/node/stmt"
 import {
   TypeArray,
@@ -153,22 +155,25 @@ const {
 } = builders
 
 const BEq = 1
-const BBarBar = 2
-const BAmpAmp = 3
-const BCmp = 4
-const BArrowRet = 5
-const BBar = 6
-const BAmp = 7
-const BSum = 8
-const BProd = 9
-const BStarStar = 10
-const BDotDot = 11
-const BBackslash = 12
-const BUnary = 13
+const BDynArraySize = 2
+const BBarBar = 3
+const BAmpAmp = 4
+const BCmp = 5
+const BArrowRet = 6
+const BBar = 7
+const BAmp = 8
+const BSum = 9
+const BProd = 10
+const BStarStar = 11
+const BDotDot = 12
+const BBackslash = 13
+const BUnary = 14
 
 const bucket = {
   [OEq]: BEq,
   [AEq]: BEq,
+  [OAt]: BDynArraySize,
+  [AAt]: BDynArraySize,
   [OBarBar]: BBarBar,
   [ABarBar]: BBarBar,
   [OAmpAmp]: BAmpAmp,
@@ -771,9 +776,23 @@ export function print(node: Node | Token<number>, sb: Subprint<any>) {
         " ",
         sb("name"),
         sb.opt("targs"),
+        sb.opt("as"),
         " ",
         sb("label"),
-        sb("as"),
+        sb.alt("semi", ";"),
+      ]
+    case ExposeLet:
+      return [
+        sb("kw"),
+        " ",
+        sb("name"),
+        sb.opt("as"),
+        sb.opt("colon"),
+        sb.opt("type"),
+        " ",
+        sb("eq"),
+        " ",
+        sb.paren("value"),
         sb.alt("semi", ";"),
       ]
     case ExposeAliases:
@@ -801,6 +820,8 @@ export function print(node: Node | Token<number>, sb: Subprint<any>) {
       ]
     case AssertionMessage:
       return [" ", sb("kw"), " ", sb("message")]
+    case PatIgnore:
+      return sb("name")
   }
 
   UNPRINTED.add(node.constructor.name)

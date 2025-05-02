@@ -1,0 +1,176 @@
+expose fn fn_name "description";
+expose fn fn_name as alias "description";
+expose fn fn_name as { alias1, alias2 } "description";
+
+expose {
+  fn fn_name "description";
+
+  type complex "description";
+  type complex as alias "description";
+  type complex<type_arg> "description";
+
+  let name "label" = 3.0;
+  let name "label": ty_name = 3.0;
+  let name as alias "label": ty_name = 3.0;
+}
+
+fn all_exprs() {
+  2;
+  2.4;
+  true;
+  :world;
+  $var;
+  $var!x;
+  $var![a, b];
+  $var!x::real;
+  $var::real;
+  var;
+  var<a, b>;
+  var(c, d);
+  var { a: 23, b: 45 };
+  var { a: 23, b: 45, };
+  var {};
+  :sym { a: 23, b: 45, };
+  :sym {};
+  if 2 { 3 };
+  if 2 { 3 } else { 4 };
+  if 2 { 3 } else if 5 { 6 } else { 4 };
+  for a in b { .. };
+  for a, b, in c, d, { .. };
+  return;
+  return 2;
+  break;
+  break 3;
+  break 'a;
+  break 'a 3;
+  continue;
+  continue 'a;
+  match 0 {
+    _ => 0,
+    a => 0,
+    3.0 => 0,
+    4 => 0,
+    :world => 0,
+    true => 0,
+    false => 0,
+    :world { a } => 0,
+  };
+  (2);
+  [2, 3];
+  [2, 3,];
+  [2; 3];
+  [2; 3, 4];
+  [2; 3, 4,];
+  (a)(3);
+  (a)<4>;
+  (a)<4>(3);
+  (a).b;
+  (a).b<3>;
+  (a).b(3);
+  (a).b<4>(3);
+  a[3];
+  !a;
+  @!a;
+  -a;
+  @-a;
+  ~a;
+  @~a;
+  d/dx a;
+  a + b;
+  a - b;
+  a * b;
+  a / b;
+  a % b;
+  a | b;
+  a & b;
+  a ** b;
+  a || b;
+  a && b;
+  a = b;
+  a @ b;
+  a \ b;
+  a == b;
+  a != b;
+  a < b;
+  a > b;
+  a <= b;
+  a >= b;
+  ..;
+  a..;
+  ..b;
+  a..b;
+  a -> b;
+  { a; b };
+  source js { 2 $(a) };
+  source js { 2 $(a) } source glsl { 5 };
+  source js { 2 $(a) } source glsl { 5 } :: real;
+  source js { 2 $(a) } :: real;
+}
+
+type real {
+  source js { number }
+  source glsl { float }
+}
+
+rule a => b;
+
+rule {
+  a => b;
+  c => d;
+}
+
+use "./world";
+
+enum name {
+  :a,
+  :b { c: real }
+}
+
+enum name {
+  :a,
+  :b { c: real },
+}
+
+enum name {
+  :a,
+  :b { c: real },
+  ..
+}
+
+enum name<a, b: real> {
+  :a
+}
+
+enum name -> real {
+  :a => 23,
+  :b => 45,
+}
+
+struct name {
+  a: real,
+  c: complex,
+}
+
+struct name<a, b: real> {
+  a: real,
+  c: complex,
+}
+
+data x: real;
+data y: real;
+
+assert 2 <= 3;
+
+fn all_stmts() {
+  let a;
+  let a: real;
+  let a = 2.3;
+  let a: real = 2.3;
+  assert 2 <= 3;
+}
+
+fn labeled() {
+  'a: {};
+  'a: for a in 2 { 3 };
+  assert 2 <= 3 else "world";
+}

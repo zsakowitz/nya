@@ -2,6 +2,7 @@ import { Code, Pos } from "./issue"
 import {
   AAmp,
   AAmpAmp,
+  AAt,
   ABackslash,
   ABangUnary,
   ABar,
@@ -50,6 +51,7 @@ import {
   OAmpAmp,
   OArrowMap,
   OArrowRet,
+  OAt,
   OBackslash,
   OBangUnary,
   OBar,
@@ -734,26 +736,29 @@ function createBinOpR(
 const exprBinaryOp = createBinOpR(
   [OEq, AEq],
   createBinOpL(
-    [OBarBar, ABarBar],
+    [OAt, AAt],
     createBinOpL(
-      [OAmpAmp, AAmpAmp],
-      createBinOp1(
-        [OEqEq, ONe, OLt, OGt, OLe, OGe, AEqEq, ANe, ALt, AGt, ALe, AGe],
-        createBinOpArrowRet(
-          createBinOpL(
-            [OBar, ABar],
+      [OBarBar, ABarBar],
+      createBinOpL(
+        [OAmpAmp, AAmpAmp],
+        createBinOp1(
+          [OEqEq, ONe, OLt, OGt, OLe, OGe, AEqEq, ANe, ALt, AGt, ALe, AGe],
+          createBinOpArrowRet(
             createBinOpL(
-              [OAmp, AAmp],
+              [OBar, ABar],
               createBinOpL(
-                [OPlus, OMinus, APlus, AMinus],
+                [OAmp, AAmp],
                 createBinOpL(
-                  [OStar, OSlash, OPercent, AStar, ASlash, APercent],
-                  createBinOpR(
-                    [OStarStar, AStarStar],
-                    createRangeOp(
-                      createBinOp1(
-                        [OBackslash, ABackslash], // exact fraction operator
-                        exprUnary,
+                  [OPlus, OMinus, APlus, AMinus],
+                  createBinOpL(
+                    [OStar, OSlash, OPercent, AStar, ASlash, APercent],
+                    createBinOpR(
+                      [OStarStar, AStarStar],
+                      createRangeOp(
+                        createBinOp1(
+                          [OBackslash, ABackslash], // exact fraction operator
+                          exprUnary,
+                        ),
                       ),
                     ),
                   ),
@@ -858,6 +863,9 @@ function createUnbracketedCommaOp<T extends Expr | Ident>(
       list.items.push(first)
       let comma
       while ((comma = stream.match(OComma))) {
+        if (stream.isDone()) {
+          break
+        }
         const next = fn(stream)
         if (next) {
           list.items.push(next)
@@ -985,10 +993,10 @@ function createBlockOp<T>(
     let a
     let last = group.contents.index
     while ((a = take(group.contents))) {
-      if (group.contents.isDone()) break
       if (last == group.contents.index) break
       last = group.contents.index
       list.push(a)
+      if (group.contents.isDone()) break
     }
     group.contents.requireDone()
 
@@ -1290,15 +1298,24 @@ function expose(stream: Stream) {
   if (kw.kind == KLet) {
     const name = stream.match(TIdent)
     if (!name) stream.raiseNext(Code.ExpectedIdent)
+    const as = exposeAliases(stream)
     const label = stream.matchOr(TString, Code.ExpectedExposeString)
     const colon = stream.match(OColon)
     const ty = colon && type(stream)
-    const as = exposeAliases(stream)
     const eq = stream.match(OEq)
     const value = expr(stream)
     const semi = stream.matchOr(OSemi, Code.MissingSemi)
 
-    return new ExposeLet(kw, name, label, colon, ty, as, eq, value, semi)
+    return new ExposeLet(
+      kw,
+      name,
+      as,
+      label,
+      colon && new ParamType(colon, ty),
+      eq,
+      value,
+      semi,
+    )
   }
 
   const name = fnName(stream)
@@ -1308,12 +1325,12 @@ function expose(stream: Stream) {
   }
 
   const targs = typeArgs(stream)
-  const label = stream.matchOr(TString, Code.ExpectedExposeString)
   const as = exposeAliases(stream)
+  const label = stream.matchOr(TString, Code.ExpectedExposeString)
   const semi = stream.matchOr(OSemi, Code.MissingSemi)
 
   return kw.kind == KType ?
-      new ExposeType(kw, name, targs, label, as, semi)
+      new ExposeType(kw, name, targs, as, label, semi)
     : new ExposeFn(kw, name, label, as, semi)
 }
 
