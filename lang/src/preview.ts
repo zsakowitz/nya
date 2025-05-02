@@ -13,7 +13,7 @@ import { printVanilla } from "./prettier"
 import { UNPRINTED } from "./prettier/print"
 
 console.time("stream")
-export const stream = createStream(source, { comments: false })
+const stream = createStream(source, { comments: false })
 console.timeEnd("stream")
 
 console.time("parse")

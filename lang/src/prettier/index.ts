@@ -7,6 +7,19 @@ import { print } from "./print"
 
 const { group, indent, softline, ifBreak } = builders
 
+export type K = string | number
+
+export interface Subprint {
+  (k: K): Doc
+  opt(k: K): Doc
+  alt(k: K, ifNull: Doc): Doc
+  sub(a: K, b: K): Doc
+  all(k: K): Doc[]
+  paren(k: K, force?: boolean): Doc
+  as(k: K | K[], f: () => Doc): Doc
+  source: string
+}
+
 export function printVanilla(node: Node, source: string) {
   let current = node
 
@@ -89,10 +102,16 @@ export function printVanilla(node: Node, source: string) {
     ])
   }
 
-  sp.as = (k: any, f: () => Doc): Doc => {
-    const prev = current
+  sp.as = (k: keyof any | (keyof any)[], f: () => Doc): Doc => {
+    let prev = current
     try {
-      current = k
+      if (Array.isArray(k)) {
+        for (const el of k) {
+          current = (current as any)[el]
+        }
+      } else {
+        current = (current as any)[k]
+      }
       return f()
     } finally {
       current = prev

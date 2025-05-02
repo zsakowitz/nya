@@ -1,5 +1,6 @@
 import type { Doc } from "prettier"
 import { builders } from "prettier/doc.js"
+import type { Subprint } from "."
 import {
   AAmp,
   AAmpAmp,
@@ -132,19 +133,7 @@ import {
 } from "../ast/node/type"
 import { Token } from "../ast/token"
 
-export interface Subprint<T> {
-  (k: keyof T): Doc
-  opt(k: keyof T): Doc
-  alt(k: keyof T, ifNull: Doc): Doc
-  sub<A extends keyof T>(a: A, b: keyof T[A], ifNull?: Doc): Doc
-  all(k: keyof T): Doc[]
-  paren(k: keyof T, force?: boolean): Doc
-  as(node: unknown, f: () => Doc): Doc
-  source: string
-}
-
 const {
-  fill,
   group,
   softline,
   line,
@@ -282,14 +271,14 @@ function op(node: Node) {
   return null
 }
 
-function printIf(node: ExprIf, sb: Subprint<any>) {
+function printIf(node: ExprIf, sb: Subprint) {
   return [
     sb("kw"),
     " ",
     sb.paren("condition", needsParensToAvoidStruct(node.condition)),
     " ",
     ifBreak(
-      sb.as((node as ExprIf).block?.of, () =>
+      sb.as(["block", "of"], () =>
         group([
           sb.sub("bracket", "lt"),
           indent([hardlineWithoutBreakParent, join(line, sb.all("items"))]),
@@ -350,7 +339,7 @@ function setBlockContentsToMultiline(node: Node) {
 
 export const UNPRINTED = new Set<string>()
 
-export function print(node: Node | Token<number>, sb: Subprint<any>): Doc {
+export function print(node: Node | Token<number>, sb: Subprint): Doc {
   switch (node.constructor) {
     case ExprLit:
       return (node as ExprLit).value.val
@@ -657,7 +646,7 @@ export function print(node: Node | Token<number>, sb: Subprint<any>): Doc {
         " ",
         self.block instanceof ExprBlock ?
           ifBreak(
-            sb.as(self.block?.of, () =>
+            sb.as(["block", "of"], () =>
               group([
                 sb.sub("bracket", "lt"),
                 indent([
@@ -671,7 +660,7 @@ export function print(node: Node | Token<number>, sb: Subprint<any>): Doc {
             sb("block"),
           )
         : self.block instanceof ExprIf ?
-          sb.as(self.block, () => printIf(self.block as ExprIf, sb))
+          sb.as("block", () => printIf(self.block as ExprIf, sb))
         : sb("block"),
       ]
     }
@@ -824,16 +813,7 @@ export function print(node: Node | Token<number>, sb: Subprint<any>): Doc {
     case ExprArrayByRepetition: {
       return group([
         sb.sub("brack", "lt"),
-        indent([
-          softline,
-          sb("of"),
-          sb("semi"),
-          line,
-          sb.as((node as TypeArray).sizes, () =>
-            fill(join([",", line], sb.all("items"))),
-          ),
-          ifBreak(","),
-        ]),
+        indent([softline, sb("of"), sb("semi"), line, sb("sizes")]),
         softline,
         sb.sub("brack", "gt"),
       ])

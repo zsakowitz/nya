@@ -18,6 +18,7 @@ import type {
   ODotDot,
   OLBrace,
   OSemi,
+  TComment,
   TString,
 } from "../kind"
 import type { TokenGroup } from "../stream"
@@ -179,5 +180,11 @@ export class ItemExpose extends Item {
     readonly item: Expose | List<Expose> | null,
   ) {
     super(kw.start, (item ?? kw).end)
+  }
+}
+
+export class ItemComment extends Item {
+  constructor(readonly token: Token<typeof TComment>) {
+    super(token.start, token.end)
   }
 }

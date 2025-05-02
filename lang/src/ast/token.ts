@@ -45,12 +45,15 @@ export class Token<T extends number> extends Pos {
 
     return this.source.slice(this.start, this.end)
   }
+
+  get value() {
+    return this.val
+  }
 }
 
 const ID_START = /[A-Za-z_]/
 const ID_CONT = /[A-Za-z0-9_]/
 const WS = /\s/
-const ANY_ID_START = /[@%:'A-Za-z_]/
 const DIGIT = /[0-9]/
 const NUMERIC =
   /^(?:0x[\da-f]+(?:\.[\da-f]+)?(?:p[+-]?\d+)?|\d+(?:\.\d+)?(?:e[+-]?\d+)?)/i

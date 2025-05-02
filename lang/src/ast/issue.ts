@@ -77,7 +77,7 @@ export class Issue {
   ) {}
 
   toString() {
-    return `${Object.entries(Code).find(([k, v]) => v == this.code)?.[0] || "Unknown issue"} @ ${this.pos}`
+    return `${Object.entries(Code).find(([, v]) => v == this.code)?.[0] || "Unknown issue"} @ ${this.pos}`
   }
 }
 

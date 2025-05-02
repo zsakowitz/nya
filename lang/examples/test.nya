@@ -1,3 +1,5 @@
+// world
 fn hi() -> a<{ 2 + 3 }> {
-  let a = 4;
+  let a = 4 
+  ;
 }

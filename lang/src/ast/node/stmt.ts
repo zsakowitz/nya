@@ -1,7 +1,8 @@
-import type { KAssert, KLet, OSemi } from "../kind"
+import type { KAssert, KLet, OSemi, TComment } from "../kind"
 import type { Token } from "../token"
 import type { Expr } from "./expr"
 import type { AssertionMessage, Initializer, ParamType } from "./extra"
+import { Item } from "./item"
 import { Node, type Ident } from "./node"
 
 export abstract class Stmt extends Node {
@@ -39,5 +40,11 @@ export class StmtAssert extends Stmt {
     readonly semi: Token<typeof OSemi> | null,
   ) {
     super(kw.start, (semi ?? message ?? expr).end)
+  }
+}
+
+export class StmtComment extends Item {
+  constructor(readonly token: Token<typeof TComment>) {
+    super(token.start, token.end)
   }
 }

@@ -84,6 +84,7 @@ import {
   OTildeUnary,
   OVERLOADABLE,
   TBuiltin,
+  TComment,
   TDeriv,
   TDerivIgnore,
   TFloat,
@@ -157,6 +158,7 @@ import {
 } from "./node/extra"
 import {
   ItemAssert,
+  ItemComment,
   ItemData,
   ItemEnum,
   ItemEnumMap,
@@ -1348,6 +1350,9 @@ function itemExpose(stream: Stream) {
 
 function item(stream: Stream): Item | null {
   switch (stream.peek()) {
+    case TComment:
+      return new ItemComment(stream.match(TComment)!)
+
     case KType:
       return itemType(stream)!
 

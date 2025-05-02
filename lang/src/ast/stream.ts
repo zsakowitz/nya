@@ -39,7 +39,7 @@ export function createStream(source: string, props: ToTokensProps) {
   const root: Token<number>[] = []
   let currentContents: Token<number>[] = root
 
-  main: for (let i = 0; i < raw.length; i++) {
+  for (let i = 0; i < raw.length; i++) {
     const token = raw[i]!
 
     switch (token.kind) {
