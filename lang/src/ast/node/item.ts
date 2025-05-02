@@ -5,7 +5,6 @@ import { Code } from "../issue"
 import type {
   KAssert,
   KData,
-  KElse,
   KEnum,
   KExpose,
   KFn,
@@ -26,6 +25,7 @@ import type { Token } from "../token"
 import type { Expose } from "./expose"
 import type { Expr, ExprBlock, Source } from "./expr"
 import type {
+  AssertionMessage,
   EnumMapVariant,
   EnumVariant,
   FnParam,
@@ -148,15 +148,14 @@ export class ItemData extends Item {
   }
 }
 
-export class ItemTest extends Item {
+export class ItemAssert extends Item {
   constructor(
     readonly kw: Token<typeof KAssert>,
     readonly expr: Expr,
-    readonly kwElse: Token<typeof KElse> | null,
-    readonly message: Token<typeof TString> | null,
+    readonly message: AssertionMessage | null,
     readonly semi: Token<typeof OSemi> | null,
   ) {
-    super(kw.start, (semi ?? expr).end)
+    super(kw.start, (semi ?? message ?? expr).end)
   }
 
   emit(root: ScopeFile, decl: EmitDecl): void {

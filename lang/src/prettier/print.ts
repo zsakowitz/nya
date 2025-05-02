@@ -49,13 +49,17 @@ import {
   OTildeUnary,
   TDeriv,
 } from "../ast/kind"
+import { ExposeFn, ExposeType } from "../ast/node/expose"
 import {
   Expr,
   ExprArray,
+  ExprArrayByRepetition,
   ExprBinary,
   ExprBlock,
   ExprCall,
+  ExprCast,
   ExprDeriv,
+  ExprEmpty,
   ExprExit,
   ExprFor,
   ExprIf,
@@ -75,14 +79,19 @@ import {
   SourceSingle,
 } from "../ast/node/expr"
 import {
+  AssertionMessage,
   Bracketed,
   Else,
+  EnumMapVariant,
+  EnumVariant,
+  ExposeAliases,
   ExprLabel,
   FnParam,
   FnReturnType,
   FnUsage,
   GenericParam,
   GenericParams,
+  Initializer,
   List,
   MatchArm,
   ParamType,
@@ -92,15 +101,33 @@ import {
   Rule,
   Script,
   StructArg,
+  StructFieldDecl,
   StructPatProp,
   StructPatPropPat,
   VarWithout,
 } from "../ast/node/extra"
-import { ItemFn, ItemRule, ItemType, ItemUse } from "../ast/node/item"
+import {
+  ItemAssert,
+  ItemData,
+  ItemEnum,
+  ItemEnumMap,
+  ItemExpose,
+  ItemFn,
+  ItemRule,
+  ItemStruct,
+  ItemType,
+  ItemUse,
+} from "../ast/node/item"
 import type { Node } from "../ast/node/node"
 import { PatLit, PatStruct, PatVar } from "../ast/node/pat"
-import { StmtExpr } from "../ast/node/stmt"
-import { TypeBlock, TypeLit, TypeParen, TypeVar } from "../ast/node/type"
+import { StmtAssert, StmtExpr, StmtLet } from "../ast/node/stmt"
+import {
+  TypeArray,
+  TypeBlock,
+  TypeLit,
+  TypeParen,
+  TypeVar,
+} from "../ast/node/type"
 import { Token } from "../ast/token"
 
 export interface Subprint<T> {
@@ -114,6 +141,7 @@ export interface Subprint<T> {
 }
 
 const {
+  fill,
   group,
   softline,
   line,
@@ -367,7 +395,7 @@ export function print(node: Node | Token<number>, sb: Subprint<any>) {
     case List: {
       const self = node as List<any, any>
 
-      if (self.items.length == 0) {
+      if (self.items.length == 0 && !self.terminator) {
         if (self.block) {
           return group([
             sb.sub("bracket", "lt"),
@@ -388,7 +416,14 @@ export function print(node: Node | Token<number>, sb: Subprint<any>) {
 
       return group([
         sb.sub("bracket", "lt"),
-        indent([edge, join(br, sb.all("items")), comma]),
+        indent([
+          edge,
+          join(
+            br,
+            sb.all("items").concat(self.terminator ? [sb("terminator")] : []),
+          ),
+          self.terminator ? "" : comma,
+        ]),
         edge,
         sb.sub("bracket", "gt"),
       ])
@@ -414,20 +449,18 @@ export function print(node: Node | Token<number>, sb: Subprint<any>) {
     case ExprParen:
       return sb.sub("of", "value")
     case ExprBinary: {
+      // TODO: output like prettier for js
       const self = node as ExprBinary
       const needsL = needsParens(self.op.kind, op(self.lhs), false)
       const needsR = needsParens(self.op.kind, op(self.rhs), true)
       return group([
-        ifBreak("("),
+        needsL ? sb.paren("lhs", true) : sb("lhs"),
         indent([
-          softline,
-          sb.paren("lhs", needsL),
-          " ",
+          line,
           sb("op"),
-          indent([line, sb.paren("rhs", needsR)]),
+          " ",
+          needsR ? sb.paren("rhs", true) : sb("rhs"),
         ]),
-        softline,
-        ifBreak(")"),
       ])
     }
     case ExprVarParam:
@@ -572,6 +605,7 @@ export function print(node: Node | Token<number>, sb: Subprint<any>) {
       ]
     }
     case ExprStruct:
+    case ExprSymStruct:
       return [
         sb("name"),
         (node as ExprStruct).name.kind == ODot ? "" : " ",
@@ -647,6 +681,126 @@ export function print(node: Node | Token<number>, sb: Subprint<any>) {
     }
     case ItemUse:
       return [sb("kw"), " ", sb("source"), sb.alt("semi", ";")]
+    case ItemEnum:
+      const v = (node as ItemEnum).variants
+      if (v) {
+        v.block = true
+      }
+      return [sb("kw"), " ", sb("name"), sb.opt("tparams"), " ", sb("variants")]
+    case ExprEmpty:
+      throw new Error("Empty expression.")
+    case EnumVariant:
+      return [
+        sb("name"),
+        (node as EnumVariant).fields ? " " : "",
+        sb.opt("fields"),
+      ]
+    case StructFieldDecl:
+      return [
+        sb.opt("constKw"),
+        (node as StructFieldDecl).constKw ? " " : "",
+        sb("name"),
+        sb("colon"),
+        " ",
+        sb.paren("type"),
+      ]
+    case ItemEnumMap: {
+      const v = (node as ItemEnumMap).variants
+      if (v) {
+        v.block = true
+      }
+      return [
+        sb("kw"),
+        " ",
+        sb("name"),
+        sb.opt("tparams"),
+        " ",
+        sb("arrow"),
+        " ",
+        sb("ret"),
+        " ",
+        sb("variants"),
+      ]
+    }
+    case EnumMapVariant:
+      return [sb("name"), " ", sb("arrow"), " ", sb.paren("of")]
+    case ItemStruct: {
+      const v = (node as ItemStruct).fields
+      if (v) {
+        v.block = true
+      }
+      return [sb("kw"), " ", sb("name"), sb.opt("tparams"), " ", sb("fields")]
+    }
+    case TypeArray:
+    case ExprArrayByRepetition: {
+      return group([
+        sb.sub("brack", "lt"),
+        indent([
+          softline,
+          sb("of"),
+          sb("semi"),
+          line,
+          sb.as((node as TypeArray).sizes, () =>
+            fill(join([",", line], sb.all("items"))),
+          ),
+          ifBreak(","),
+        ]),
+        softline,
+        sb.sub("brack", "gt"),
+      ])
+    }
+    case StmtLet:
+      return [
+        sb("kw"),
+        " ",
+        sb("ident"),
+        sb.opt("type"),
+        sb.opt("value"),
+        sb.alt("semi", ";"),
+      ]
+    case Initializer:
+      return [" ", sb("eq"), " ", sb("value")]
+    case ExprCast:
+      return [sb.paren("lhs"), " ", sb("op"), " ", sb("rhs")]
+    case ItemExpose:
+      return [sb("kw"), " ", sb("item")]
+    case ExposeFn:
+    case ExposeType:
+      return [
+        sb("kw"),
+        " ",
+        sb("name"),
+        sb.opt("targs"),
+        " ",
+        sb("label"),
+        sb("as"),
+        sb.alt("semi", ";"),
+      ]
+    case ExposeAliases:
+      return [" ", sb("as"), " ", sb("alias")]
+    case ItemData:
+      return [
+        sb("data"),
+        (node as ItemData).local ? " " : "",
+        sb.opt("local"),
+        " ",
+        sb("name"),
+        sb("colon"),
+        " ",
+        sb("type"),
+        sb.alt("semi", ";"),
+      ]
+    case ItemAssert:
+    case StmtAssert:
+      return [
+        sb("kw"),
+        " ",
+        sb.paren("expr"),
+        sb.opt("message"),
+        sb.alt("semi", ";"),
+      ]
+    case AssertionMessage:
+      return [" ", sb("kw"), " ", sb("message")]
   }
 
   UNPRINTED.add(node.constructor.name)

@@ -126,6 +126,7 @@ import {
   type ExprBinaryOp,
 } from "./node/expr"
 import {
+  AssertionMessage,
   Bracketed,
   Else,
   EnumMapVariant,
@@ -137,6 +138,7 @@ import {
   FnUsage,
   GenericParam,
   GenericParams,
+  Initializer,
   List,
   MatchArm,
   ParamType,
@@ -152,6 +154,7 @@ import {
   VarWithout,
 } from "./node/extra"
 import {
+  ItemAssert,
   ItemData,
   ItemEnum,
   ItemEnumMap,
@@ -159,7 +162,6 @@ import {
   ItemFn,
   ItemRule,
   ItemStruct,
-  ItemTest,
   ItemType,
   ItemUse,
   type Item,
@@ -771,13 +773,15 @@ function stmtAssert(stream: Stream) {
 
   const e = expr(stream)
   const kw2 = stream.match(KElse)
-  const msg = kw2 && stream.matchOr(TString, Code.ExpectedAssertFailureReason)
 
   return new StmtAssert(
     kw,
     e,
-    kw2,
-    msg,
+    kw2 &&
+      new AssertionMessage(
+        kw2,
+        stream.matchOr(TString, Code.ExpectedAssertFailureReason),
+      ),
     stream.matchOr(OSemi, Code.MissingSemi),
   )
 }
@@ -793,7 +797,13 @@ function stmtLet(stream: Stream): StmtLet | null {
   const value = eq && expr(stream)
   const semi = stream.matchOr(OSemi, Code.MissingSemi)
 
-  return new StmtLet(kw, ident, colon, ty, eq, value, semi)
+  return new StmtLet(
+    kw,
+    ident,
+    colon && new ParamType(colon, ty),
+    eq && new Initializer(eq, value!),
+    semi,
+  )
 }
 
 function stmt(stream: Stream): Stmt | null {
@@ -1243,9 +1253,17 @@ function itemTest(stream: Stream) {
 
   const e = expr(stream)
   const kw2 = stream.match(KElse)
-  const msg = kw2 && stream.matchOr(TString, Code.ExpectedAssertFailureReason)
 
-  return new ItemTest(kw, e, kw2, msg, stream.matchOr(OSemi, Code.MissingSemi))
+  return new ItemAssert(
+    kw,
+    e,
+    kw2 &&
+      new AssertionMessage(
+        kw2,
+        stream.matchOr(TString, Code.ExpectedAssertFailureReason),
+      ),
+    stream.matchOr(OSemi, Code.MissingSemi),
+  )
 }
 
 function fnName(stream: Stream): IdentFnName | null {

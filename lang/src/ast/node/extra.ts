@@ -10,9 +10,11 @@ import {
   type OColon,
   type OColonColon,
   type ODot,
+  type OEq,
   type OSemi,
   type TIdent,
   type TLabel,
+  type TString,
   type TSym,
 } from "../kind"
 import type { TokenGroup } from "../stream"
@@ -253,5 +255,23 @@ export class StructPatPropPat extends Node {
     readonly pat: Pat,
   ) {
     super(colon.start, pat.end)
+  }
+}
+
+export class Initializer extends Node {
+  constructor(
+    readonly eq: Token<typeof OEq>,
+    readonly value: Expr,
+  ) {
+    super(eq.start, (value ?? eq).end)
+  }
+}
+
+export class AssertionMessage extends Node {
+  constructor(
+    readonly kw: Token<typeof KElse>,
+    readonly message: Token<typeof TString> | null,
+  ) {
+    super(kw.start, (message ?? kw).end)
   }
 }

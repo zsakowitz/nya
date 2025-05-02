@@ -60,7 +60,7 @@ export class TypeArray extends Type {
     readonly semi: Token<typeof OSemi> | null,
     readonly sizes: PlainList<Expr>,
   ) {
-    super(brack.start, sizes.end)
+    super(brack.start, brack.end) // brack.end since it encloses everything
   }
 }
 

@@ -1,4 +1,24 @@
+enum Hi<a, b: float> {
+  :a,
+  :b { a: i32 },
+  :c { a: i32, d: f32 },
+  :d
+}
 
+enum Hi<a, b: float> {
+..
+}
+
+enum Hi<a, b: float> {
+}
+
+enum Hi<a, b: float> {
+  :a,
+  :b { a: i32 },
+  :c { a: i32, d: f32 },
+  :d,
+  ..
+}
 
 fn hard_to_print() usage (a{b:2}) {
   if (a{b:2}) {23}
@@ -81,13 +101,6 @@ fn +(a: float, b: float) -> r32 usage 2 + 3,4+5487546234987462938746923879348726
 
 use "./world";
 
-enum Hi<a, b: float> {
-  :a,
-  :b { a: i32 },
-  :c,
-  ..
-}
-
 enum Units<a, b: float> -> float {
   :meter => 1.0,
   :cm => 0.01,
@@ -97,7 +110,7 @@ enum Units<a, b: float> -> float {
 
 struct Complex<a, b: float> {
   re: float,
-  im: [float; 5, 7, 8]
+  im: [float<float<{2+3}>>; 5, 7, 8]
 }
 
 fn array_test<a, b: float>() {
@@ -128,3 +141,4 @@ data x: float;
 data y: float;
 
 assert 2.0 < 3.0;
+assert 2.0 < 3.0 else "world";
