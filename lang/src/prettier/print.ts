@@ -360,7 +360,8 @@ export function print(node: Node | Token<number>, sb: Subprint<any>): Doc {
       return [sb("arrow"), " ", sb.paren("retType"), " "]
     case ItemFn:
       return [
-        "fn ",
+        sb("kw"),
+        " ",
         sb("name"),
         sb.alt("tparams", ""),
         sb.alt("params", "()"),
@@ -681,8 +682,26 @@ export function print(node: Node | Token<number>, sb: Subprint<any>): Doc {
         (node as ExprStruct).name.kind == ODot ? "" : " ",
         sb("args"),
       ]
-    case StructArg:
-      return [sb("name"), sb("colon"), " ", sb.paren("expr")]
+    case StructArg: {
+      const self = node as StructArg
+      if (self.colon) {
+        let e = self.expr
+        if (e) {
+          while (e instanceof ExprParen) {
+            e = e.of.value
+          }
+          if (e instanceof ExprVar && e.args == null && e.targs == null) {
+            if (e.name.val == self.name.val) {
+              return sb("name")
+            }
+          }
+        }
+
+        return [sb("name"), sb("colon"), " ", sb.paren("expr")]
+      } else {
+        return sb("name")
+      }
+    }
     case ExprUnary: {
       const self = node as ExprUnary
       const needsR = needsParens(self.op.kind, op(self.of), true)

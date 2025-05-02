@@ -284,7 +284,7 @@
       "patterns": [{ "include": "#root" }]
     },
     "types": {
-      "match": "\\b(?:uint|real|complex|bool|img|viewport|mathjscx)\\b",
+      "match": "\\b(?:uint|num|complex|bool|img|viewport|mathjscx)\\b",
       "name": "entity.name.type.class.js"
     }
   },

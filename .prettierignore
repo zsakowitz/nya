@@ -8,3 +8,4 @@ pkg/manifest/data.json
 pkg/graphsource
 graph.svg
 lang/examples/noprettier/*.nya
+lang/examples/outdated
