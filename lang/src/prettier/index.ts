@@ -10,7 +10,7 @@ const { group, indent, softline, ifBreak } = builders
 export function printVanilla(node: Node, source: string) {
   let current = node
 
-  function go(next: Token<number> | Node | unknown) :Doc {
+  function go(next: Token<number> | Node | unknown): Doc {
     if (next instanceof Token) {
       return next.val
     }
@@ -25,7 +25,7 @@ export function printVanilla(node: Node, source: string) {
       }
     }
 
-    return "<invalid>"
+    throw new Error("invalid token")
   }
 
   function sp(k: keyof any): Doc {

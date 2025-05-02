@@ -7,8 +7,8 @@ export const languages = [
   {
     name: "NyaLangScript",
     parsers: ["nya-parse"],
-extensions:['.nya'],
-vscodeLanguageIds:['nya'],
+    extensions: [".nya"],
+    vscodeLanguageIds: ["nya"],
   } satisfies SupportLanguage,
 ]
 
@@ -17,7 +17,12 @@ export const parsers = {
     parse(text) {
       const stream = createStream(text, { comments: false })
       const result = parse(stream)
-      Object.assign(result, {source:text})
+      if (stream.issues.entries.length) {
+        throw new Error(
+          "Issues encountered: " + stream.issues.entries.join("\n"),
+        )
+      }
+      Object.assign(result, { source: text })
       return result
     },
     astFormat: "nya-ast",

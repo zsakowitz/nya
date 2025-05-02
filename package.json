@@ -10,7 +10,7 @@
     "lint:cycles": "madge --ts-config tsconfig.json --circular src/index.ts",
     "graph:pkg": "madge --image graph.svg --ts-config tsconfig.json --exclude 'src|util[-/]' pkg/list/{*.ts,**/*.ts,**/**/*.ts,**/**/**/*.ts}",
     "manifest": "bun pkg/manifest/generate.ts > pkg/manifest/data.json",
-    "build:prettier": "esbuild lang/src/prettier/plugin.ts --bundle --minify --platform=node --format=esm --external:prettier --outfile=lang/src/prettier/plugin.js"
+    "build:prettier": "esbuild lang/src/prettier/plugin.ts --bundle --minify --platform=node --format=cjs --external:prettier --outfile=lang/src/prettier/plugin.js"
   },
   "dependencies": {
     "@fortawesome/free-regular-svg-icons": "^6.7.2",

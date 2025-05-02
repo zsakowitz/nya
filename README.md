@@ -4,6 +4,9 @@ project nya is a graphing calculator designed to be extended. It's 100%
 open-source (you can look at our code if you want), and adding new features is
 as simple as writing and including a single JavaScript file.
 
+**Developing? Try This:** Build the Prettier plugin via `bun build:prettier`,
+then run `bun dev` to build the CSS file and start a dev server via esbuild.
+
 # Why choose project nya, as a user?
 
 **Totally new features:**
