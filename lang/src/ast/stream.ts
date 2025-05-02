@@ -12,6 +12,7 @@ import {
   ORBrace,
   ORBrack,
   ORParen,
+  TComment,
   type Brack,
 } from "./kind"
 import { Token, tokens, type ToTokensProps } from "./token"
@@ -177,7 +178,12 @@ export class Stream {
   requireDone() {
     const token = this.next()
     if (token) {
-      this.raise(Code.UnexpectedToken, token)
+      this.raise(
+        token.kind == TComment ?
+          Code.CommentsMustBeItemsOrStatementsWhenPrettyPrinting
+        : Code.UnexpectedToken,
+        token,
+      )
     }
   }
 

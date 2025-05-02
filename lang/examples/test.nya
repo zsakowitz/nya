@@ -1,5 +1,2 @@
-// world
-fn hi() -> a<{ 2 + 3 }> {
-  let a = 4 
-  ;
+fn hi() {
 }

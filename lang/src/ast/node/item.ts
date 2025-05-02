@@ -27,6 +27,7 @@ import type { Expose } from "./expose"
 import type { Expr, ExprBlock, Source } from "./expr"
 import type {
   AssertionMessage,
+  Comments,
   EnumMapVariant,
   EnumVariant,
   FnParam,
@@ -184,7 +185,7 @@ export class ItemExpose extends Item {
 }
 
 export class ItemComment extends Item {
-  constructor(readonly token: Token<typeof TComment>) {
-    super(token.start, token.end)
+  constructor(readonly of: Comments) {
+    super(of.start, of.end)
   }
 }

@@ -46,6 +46,7 @@ export const Code = Object.freeze({
   ExpectedDestructuring: 66,
   UseDotAsAStructNameForDestructuringInPatterns: 67,
   FnReturnTypeMustNotBeBlock: 68,
+  CommentsMustBeItemsOrStatementsWhenPrettyPrinting: 69,
 
   // Emit errors
   IntTooLarge: 70,

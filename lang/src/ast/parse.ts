@@ -131,6 +131,7 @@ import {
 import {
   AssertionMessage,
   Bracketed,
+  Comments,
   Else,
   EnumMapVariant,
   EnumVariant,
@@ -172,7 +173,13 @@ import {
 } from "./node/item"
 import type { Ident, IdentFnName } from "./node/node"
 import { PatIgnore, PatLit, PatStruct, PatVar, type Pat } from "./node/pat"
-import { StmtAssert, StmtExpr, StmtLet, type Stmt } from "./node/stmt"
+import {
+  StmtAssert,
+  StmtComment,
+  StmtExpr,
+  StmtLet,
+  type Stmt,
+} from "./node/stmt"
 import {
   TypeArray,
   TypeBlock,
@@ -819,6 +826,9 @@ function stmt(stream: Stream): Stmt | null {
   }
 
   switch (stream.peek()) {
+    case TComment:
+      return new StmtComment(comments(stream))
+
     case KLet:
       return stmtLet(stream)!
 
@@ -964,7 +974,9 @@ function block(
 
   const list: Stmt[] = []
   let a
+  while (group.contents.match(OSemi));
   while ((a = stmt(group.contents))) {
+    while (group.contents.match(OSemi));
     list.push(a)
     if (a instanceof StmtExpr && a.terminatesBlock) {
       break
@@ -1348,10 +1360,22 @@ function itemExpose(stream: Stream) {
   )
 }
 
+function comments(stream: Stream) {
+  let c = []
+  let a
+  while ((a = stream.match(TComment))) {
+    c.push(a)
+  }
+  if (c.length == 0) {
+    throw new Error("Expected at least one comment.")
+  }
+  return new Comments(c)
+}
+
 function item(stream: Stream): Item | null {
   switch (stream.peek()) {
     case TComment:
-      return new ItemComment(stream.match(TComment)!)
+      return new ItemComment(comments(stream))
 
     case KType:
       return itemType(stream)!

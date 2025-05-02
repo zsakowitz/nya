@@ -178,7 +178,7 @@ export function tokens(source: string, props: ToTokensProps) {
 
     if (char == "/" && source[i + 1] == "/") {
       i++
-      while (source[++i] != "\n");
+      while (source[++i] && source[i] != "\n");
       if (props.comments) {
         ret.push(new Token(source, TComment, start, i))
       }

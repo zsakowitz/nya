@@ -84,6 +84,7 @@ import {
 import {
   AssertionMessage,
   Bracketed,
+  Comments,
   Else,
   EnumMapVariant,
   EnumVariant,
@@ -111,6 +112,7 @@ import {
 } from "../ast/node/extra"
 import {
   ItemAssert,
+  ItemComment,
   ItemData,
   ItemEnum,
   ItemEnumMap,
@@ -123,7 +125,7 @@ import {
 } from "../ast/node/item"
 import type { Node } from "../ast/node/node"
 import { PatIgnore, PatLit, PatStruct, PatVar } from "../ast/node/pat"
-import { StmtAssert, StmtExpr, StmtLet } from "../ast/node/stmt"
+import { StmtAssert, StmtComment, StmtExpr, StmtLet } from "../ast/node/stmt"
 import {
   TypeArray,
   TypeBlock,
@@ -142,6 +144,8 @@ const {
   join,
   hardline,
   hardlineWithoutBreakParent,
+  lineSuffix,
+  fill,
 } = builders
 
 const BEq = 1
@@ -813,7 +817,13 @@ export function print(node: Node | Token<number>, sb: Subprint): Doc {
     case ExprArrayByRepetition: {
       return group([
         sb.sub("brack", "lt"),
-        indent([softline, sb("of"), sb("semi"), line, sb("sizes")]),
+        indent([
+          softline,
+          sb("of"),
+          sb("semi"),
+          line,
+          sb.as("sizes", () => fill(join(line, sb.all("items")))),
+        ]),
         softline,
         sb.sub("brack", "gt"),
       ])
@@ -886,8 +896,20 @@ export function print(node: Node | Token<number>, sb: Subprint): Doc {
       return [" ", sb("kw"), " ", sb("message")]
     case PatIgnore:
       return sb("name")
+    case ItemComment:
+    case StmtComment:
+      return sb("of")
+    case Comments:
+      return join(
+        hardline,
+        (node as Comments).tokens.map((x) => {
+          const rest = x.val.slice(2).trim()
+          return lineSuffix("//" + (rest ? " " + rest : ""))
+        }),
+      )
   }
 
-  UNPRINTED.add(node.constructor.name)
-  return node.constructor.name
+  throw new Error(
+    `Cannot print ${node.constructor.name} '${sb.source.slice(node.start, node.end)}'.`,
+  )
 }

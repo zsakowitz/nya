@@ -12,6 +12,7 @@ import {
   type ODot,
   type OEq,
   type OSemi,
+  type TComment,
   type TIdent,
   type TLabel,
   type TString,
@@ -275,5 +276,11 @@ export class AssertionMessage extends Node {
     readonly message: Token<typeof TString> | null,
   ) {
     super(kw.start, (message ?? kw).end)
+  }
+}
+
+export class Comments extends Node {
+  constructor(readonly tokens: Token<typeof TComment>[]) {
+    super(tokens[0]!.start, tokens[tokens.length - 1]!.end)
   }
 }
