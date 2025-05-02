@@ -350,7 +350,7 @@ function setBlockContentsToMultiline(node: Node) {
 
 export const UNPRINTED = new Set<string>()
 
-export function print(node: Node | Token<number>, sb: Subprint<any>):Doc {
+export function print(node: Node | Token<number>, sb: Subprint<any>): Doc {
   switch (node.constructor) {
     case ExprLit:
       return (node as ExprLit).value.val
@@ -381,13 +381,16 @@ export function print(node: Node | Token<number>, sb: Subprint<any>):Doc {
         sb.alt("semi", ";"),
       ]
     case Script:
-      return (node as Script).items.map((x,i,a)=>{
-          const next = a[i+1];
-          const tilNext = sb.source.slice(x.end, next?.start)
-          const n1 = tilNext.indexOf('\n')
-          const n2 = n1!=-1 && tilNext.includes('\n',n1+1)
-          return [sb.sub('items',i),next&& n2?[hardline,hardline]:hardline]
-        })
+      return (node as Script).items.map((x, i, a) => {
+        const next = a[i + 1]
+        const tilNext = sb.source.slice(x.end, next?.start)
+        const n1 = tilNext.indexOf("\n")
+        const n2 = n1 != -1 && tilNext.includes("\n", n1 + 1)
+        return [
+          sb.sub("items", i),
+          next && n2 ? [hardline, hardline] : hardline,
+        ]
+      })
     case GenericParams:
       return sb("list")
     case PlainList: {
@@ -419,45 +422,56 @@ export function print(node: Node | Token<number>, sb: Subprint<any>):Doc {
         return [sb.sub("bracket", "lt"), sb.sub("bracket", "gt")]
       }
 
-// common case when extra line breaks may be desired
-      if (!self.terminator  && self.bracket.kind == OLBrace && !self.commas) {
+      // common case when extra line breaks may be desired
+      if (!self.terminator && self.bracket.kind == OLBrace && !self.commas) {
         if (self.block) {
-        return group([
-        sb.sub("bracket", "lt"),
-        indent([
-          hardline,
-          (node as Script).items.map((x,i,a)=>{
-          const next = a[i+1];
-          const tilNext = sb.source.slice(x.end, next?.start)
-          const n1 = tilNext.indexOf('\n')
-          const n2 = n1!=-1 && tilNext.includes('\n',n1+1)
-          return [sb.sub('items',i),next? n2?[hardline,hardline]:hardline:'']
-        }),
-        ]),
-        hardline,
-        sb.sub("bracket", "gt"),
-      ])}
+          return group([
+            sb.sub("bracket", "lt"),
+            indent([
+              hardline,
+              (node as Script).items.map((x, i, a) => {
+                const next = a[i + 1]
+                const tilNext = sb.source.slice(x.end, next?.start)
+                const n1 = tilNext.indexOf("\n")
+                const n2 = n1 != -1 && tilNext.includes("\n", n1 + 1)
+                return [
+                  sb.sub("items", i),
+                  next ?
+                    n2 ? [hardline, hardline]
+                    : hardline
+                  : "",
+                ]
+              }),
+            ]),
+            hardline,
+            sb.sub("bracket", "gt"),
+          ])
+        }
 
-      if (self.items.length >= 2) {
-        return group([
-        sb.sub("bracket", "lt"),
-        indent([
-          hardline,
-          (node as Script).items.map((x,i,a)=>{
-          const next = a[i+1];
-          const tilNext = sb.source.slice(x.end, next?.start)
-          const n1 = tilNext.indexOf('\n')
-          const n2 = n1!=-1 && tilNext.includes('\n',n1+1)
-          return [sb.sub('items',i),next? n2?[hardline,hardline]:hardline:'']
-        }),
-        ]),
-        hardline,
-        sb.sub("bracket", "gt"),
-      ])
+        if (self.items.length >= 2) {
+          return group([
+            sb.sub("bracket", "lt"),
+            indent([
+              hardline,
+              (node as Script).items.map((x, i, a) => {
+                const next = a[i + 1]
+                const tilNext = sb.source.slice(x.end, next?.start)
+                const n1 = tilNext.indexOf("\n")
+                const n2 = n1 != -1 && tilNext.includes("\n", n1 + 1)
+                return [
+                  sb.sub("items", i),
+                  next ?
+                    n2 ? [hardline, hardline]
+                    : hardline
+                  : "",
+                ]
+              }),
+            ]),
+            hardline,
+            sb.sub("bracket", "gt"),
+          ])
+        }
       }
-      }
-
-
 
       const edge =
         self.block ? hardline
@@ -609,7 +623,11 @@ export function print(node: Node | Token<number>, sb: Subprint<any>):Doc {
       }
     }
     case PrescribedType:
-      return group([sb("dcolon"), (node as PrescribedType).spaced? " ":'', sb.paren("type")])
+      return group([
+        sb("dcolon"),
+        (node as PrescribedType).spaced ? " " : "",
+        sb.paren("type"),
+      ])
     case SourceSingle: {
       const self = node as SourceSingle
       return [

@@ -1,5 +1,6 @@
 import { Code, Issues, Pos } from "./issue"
 import {
+  APS,
   IDENT_PREFIXES,
   KSource,
   KUse,
@@ -135,13 +136,17 @@ export function tokens(source: string, props: ToTokensProps) {
       const char = source[i]!
       const next = source[i + 1]
       if (next && OPS_AND_SECOND_CHARS[char]!.includes(next)) {
-        ret.push(new Token(source, OPS[char + next]!, start, i + 2))
+        if (char + next in APS) {
+          ret.push(new Token(source, APS[char + next]!, start, i + 2))
+        } else {
+          issues.raise(Code.UnknownOperator, new Pos(start, i))
+        }
         i += 2
         continue
       }
       i++
-      if (char in OPS) {
-        ret.push(new Token(source, OPS[char]!, start, i))
+      if (char in APS) {
+        ret.push(new Token(source, APS[char]!, start, i))
       } else {
         issues.raise(Code.UnknownOperator, new Pos(start, i))
       }
@@ -162,7 +167,7 @@ export function tokens(source: string, props: ToTokensProps) {
       } else {
         ret.push(new Token(source, TInt, start, i))
       }
-      if (is(ANY_ID_START, source[i])) {
+      if (is(ID_START, source[i])) {
         issues.raise(Code.LetterDirectlyAfterNumber, new Pos(i, i + 1))
       }
       continue

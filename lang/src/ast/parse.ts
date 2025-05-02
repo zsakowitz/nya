@@ -338,7 +338,7 @@ function exprVarParam(stream: Stream) {
     stream.raiseNext(Code.VarParamFollowedByArguments)
   }
 
-  return new ExprVarParam(token, wo, dc && new PrescribedType(dc, ty,false))
+  return new ExprVarParam(token, wo, dc && new PrescribedType(dc, ty, false))
 }
 
 function exprVar(stream: Stream, ctx: ExprContext) {
@@ -1050,7 +1050,7 @@ function source(stream: Stream, block: boolean): Source | null {
     parts[0]!.start,
     (ty ?? colon ?? parts[parts.length - 1]!).end,
     parts,
-    colon && new PrescribedType(colon, ty,true),
+    colon && new PrescribedType(colon, ty, true),
     block,
   )
 }
@@ -1087,7 +1087,7 @@ function itemFn(stream: Stream) {
   const arrow = stream.match(OArrowRet) // not matchOr since return types are optional (void is implied)
   let ty = null
   if (arrow && stream.peek() == OLBrace) {
-    stream.raiseNext(Code.ExpectedType)
+    stream.raiseNext(Code.FnReturnTypeMustNotBeBlock)
   } else if (arrow) {
     ty = type(stream)
   }

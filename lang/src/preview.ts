@@ -1,12 +1,12 @@
 import { h, hx } from "@/jsx"
 import { doc } from "prettier"
-import source from "../examples/ref.nya"
+import source from "../examples/test.nya"
 import { Code } from "./ast/issue"
 import { ORAngle, ORBrace, ORBrack, ORParen } from "./ast/kind"
 import { parse } from "./ast/parse"
 import { print } from "./ast/print"
 import { createStream, TokenGroup } from "./ast/stream"
-import { type Token } from "./ast/token"
+import type { Token } from "./ast/token"
 import { EmitDecl } from "./emit/block"
 import { ScopeProgram } from "./emit/scope"
 import { printVanilla } from "./prettier"
@@ -78,10 +78,10 @@ function showPrinted() {
 }
 
 function showPrettier() {
-  const { formatted } = doc.printer.printDocToString(printVanilla(result), {
-    printWidth: 80,
-    tabWidth: 2,
-  })
+  const { formatted } = doc.printer.printDocToString(
+    printVanilla(result, source),
+    { printWidth: 80, tabWidth: 2 },
+  )
 
   hr()
   pre([...UNPRINTED].join(", "))

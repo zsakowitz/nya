@@ -45,6 +45,7 @@ export const Code = Object.freeze({
   ExpectedUsageExamples: 65,
   ExpectedDestructuring: 66,
   UseDotAsAStructNameForDestructuringInPatterns: 67,
+  FnReturnTypeMustNotBeBlock: 68,
 
   // Emit errors
   IntTooLarge: 70,
@@ -63,6 +64,10 @@ export class Pos {
     readonly start: number,
     readonly end: number,
   ) {}
+
+  toString() {
+    return `${this.start}..${this.end}`
+  }
 }
 
 export class Issue {
@@ -70,6 +75,10 @@ export class Issue {
     readonly code: Code,
     readonly pos: Pos,
   ) {}
+
+  toString() {
+    return `${Object.entries(Code).find(([k, v]) => v == this.code)?.[0] || "Unknown issue"} @ ${this.pos}`
+  }
 }
 
 export class Issues {

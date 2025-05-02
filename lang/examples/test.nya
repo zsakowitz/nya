@@ -1,1 +1,3 @@
-assert true;
+fn hi() -> a<{ 2 + 3 }> {
+  let a = 4;
+}
