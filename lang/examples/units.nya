@@ -15,9 +15,9 @@ struct UnitMappingOne {
 }
 
 // A mapping from a named unit to a set of universal unit categories.
+// 'bases' is an array with unknown length; it can only be operated on at
+// compile time.
 struct UnitMapping {
-  // 'bases' is an array with unknown length; it can only be operated on at
-  // compile time.
   bases: [UnitMappingOne; ..],
   scale: real,
 }
@@ -45,9 +45,34 @@ enum UnitName -> UnitMapping {
   :kg => um(:kg),
   :min => um(:s, 60.0),
   :hr => um(:s, 3600.0),
-  :N => um([.{ base: :kg, exp: 1.0 }, .{ base: :m, exp: 1.0 }, .{ base: :s, exp: -2.0 }]),
-  :J => um([.{ base: :kg, exp: 1.0 }, .{ base: :m, exp: 2.0 }, .{ base: :s, exp: -2.0 }]),
-  :cal => um([.{ base: :kg, exp: 1.0 }, .{ base: :m, exp: 2.0 }, .{ base: :s, exp: -2.0 }], 1.0 / 4.184),
+  :N => (
+    um(
+      [
+        .{ base: :kg, exp: 1.0 },
+        .{ base: :m, exp: 1.0 },
+        .{ base: :s, exp: -2.0 },
+      ],
+    )
+  ),
+  :J => (
+    um(
+      [
+        .{ base: :kg, exp: 1.0 },
+        .{ base: :m, exp: 2.0 },
+        .{ base: :s, exp: -2.0 },
+      ],
+    )
+  ),
+  :cal => (
+    um(
+      [
+        .{ base: :kg, exp: 1.0 },
+        .{ base: :m, exp: 2.0 },
+        .{ base: :s, exp: -2.0 },
+      ],
+      1.0 / 4.184,
+    )
+  ),
 }
 
 struct UnitSingle {
@@ -109,7 +134,9 @@ struct RealWithUnit<U: Unit> {
   value: real,
 }
 
-fn +<A: Unit, B: Unit>(a: RealWithUnit<A>, b: RealWithUnit<B>) -> RealWithUnit<A> {
+fn +<A: Unit, B: Unit>(a: RealWithUnit<A>, b: RealWithUnit<B>) -> (
+  RealWithUnit<A>
+) {
   let scale = conversion_factor(b.unit, a.unit);
   .{ value: a + b * scale }
 }
