@@ -185,6 +185,8 @@ export class PrescribedType extends Node {
   constructor(
     readonly dcolon: Token<typeof OColonColon>,
     readonly type: Type | null,
+    /** Whether to print with spaces after the `::`. */
+    readonly spaced: boolean,
   ) {
     super(dcolon.start, (type ?? dcolon).end)
   }

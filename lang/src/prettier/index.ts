@@ -7,10 +7,10 @@ import { print } from "./print"
 
 const { group, indent, softline, ifBreak } = builders
 
-export function printVanilla(node: Node) {
+export function printVanilla(node: Node, source: string) {
   let current = node
 
-  function go(next: Token<number> | Node | unknown) {
+  function go(next: Token<number> | Node | unknown) :Doc {
     if (next instanceof Token) {
       return next.val
     }
@@ -70,9 +70,10 @@ export function printVanilla(node: Node) {
   }
 
   sp.paren = (k: keyof any, force: boolean): Doc => {
-    const doc = go((current as any)[k])
+    const next = (current as any)[k]
+    const doc = go(next)
 
-    if (doc instanceof List || doc instanceof PlainList) {
+    if (next instanceof List || next instanceof PlainList) {
       return doc
     }
 
@@ -97,6 +98,8 @@ export function printVanilla(node: Node) {
       current = prev
     }
   }
+
+  sp.source = source
 
   return print(node, sp)
 }
