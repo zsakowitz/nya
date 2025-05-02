@@ -19,7 +19,12 @@ export const parsers = {
       const result = parse(stream)
       if (stream.issues.entries.length) {
         throw new Error(
-          "Issues encountered: " + stream.issues.entries.join("\n"),
+          stream.issues.entries
+            .map(
+              (x) =>
+                `${x} '${stream.source.slice(x.pos.start - 10, x.pos.end + 10)}'`,
+            )
+            .join("\n\n"),
         )
       }
       Object.assign(result, { source: text })

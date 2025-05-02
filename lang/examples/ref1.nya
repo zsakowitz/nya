@@ -95,7 +95,6 @@ fn +(a: float, b: float) -> r32 usage 2 + 3,4+5487546234987462938746923879348726
   match 23 {
     a => 45,
     :hi => 67..45,
-    // :arc { a, b } => 78,
   }
 }
 
@@ -125,10 +124,10 @@ fn array_test<a, b: float>() {
   a -> b -> c;
 }
 
-expose fn sinh "hyperbolic sine" as { arcsinh, arsinh, %"sinh^-1" };
+expose fn sinh as { arcsinh, arsinh, %"sinh^-1" } "hyperbolic sine";
 
 expose {
-  type complex "complex number" as c32;
+  type complex  as c32"complex number";
   let %"π" "mathematical constant pi": real = 2.0;
 }
 
