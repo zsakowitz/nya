@@ -1,0 +1,35 @@
+struct complex {
+  re: num,
+  im: num,
+}
+
+fn +(a: complex, b: complex) -> complex {
+  complex { re: a.re + b.re, im: a.im + b.im }
+}
+
+fn -(a: complex, b: complex) -> complex {
+  complex { re: a.re - b.re, im: a.im - b.im }
+}
+
+fn *(a: complex, b: complex) -> complex {
+  complex { re: a.re * b.re - a.im * b.im, im: a.im * b.re + a.re * b.im }
+}
+
+fn length2(a: complex) -> num {
+  a.re * a.re + a.im * a.im
+}
+
+fn conj(a: complex) -> complex {
+  complex { re: a.re, im: -a.im }
+}
+
+fn /(a: complex, b: num) -> complex {
+  complex { re: a.re / b, im: a.im / b }
+}
+
+fn /(a: complex, b: complex) -> complex {
+  // (a+bi)/(c+di)
+  // = (a+bi)(c-di)/(c+di)(c-di)
+  // = (a+bi)(c-di)/(c^2+d^2)
+  return a * b.conj / length2(b)
+}
