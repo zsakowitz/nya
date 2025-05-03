@@ -200,7 +200,7 @@ function broadcastBinary(
     return { value: fromScalars(arg1.type, els), type: arg1.type }
   } else if (r1.count == 1) {
     const els = s2.map((x) => op(props, x, s1[0]!, true))
-    return { value: fromScalars(arg1.type, els), type: arg2.type }
+    return { value: fromScalars(arg2.type, els), type: arg2.type }
   } else if (r1.count == r2.count) {
     const els = s1.map((x, i) => op(props, x, s2[i]!, true))
     return { value: fromScalars(arg1.type, els), type: arg1.type }

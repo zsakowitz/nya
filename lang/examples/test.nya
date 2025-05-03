@@ -3,80 +3,69 @@ struct complex {
   im: num,
 }
 
-struct c3d {
-  a: complex,
-  b: num,
+fn i() -> complex {
+  complex { re: 0.0, im: 1.0 }
 }
 
-fn add(a: c3d, b: c3d) -> c3d {
+fn +(a: complex, b: complex) -> complex {
   a @+ b
 }
 
-//
-// fn i() -> complex {
-// complex { re: 0.0, im: 1.0 }
-// }
-//
-// fn +(a: complex, b: complex) -> complex {
-// complex { re: a.re + b.re, im: a.im + b.im }
-// // a @+ b
-// }
-//
-// fn qqq(a: c3d) -> complex {
-// a.a
-// }
-//
-// fn -(a: complex, b: complex) -> complex {
-// complex { re: a.re - b.re, im: a.im - b.im }
-// }
-//
-// fn *(a: num, b: complex) -> complex {
-// complex { re: a * b.re, im: a * b.im }
-// }
-//
-// fn *(a: complex, b: complex) -> complex {
-// complex { re: a.re * b.re - a.im * b.im, im: a.im * b.re + a.re * b.im }
-// }
-//
-// fn length2(a: complex) -> num {
-// a.re * a.re + a.im * a.im
-// }
-//
-// fn conj(a: complex) -> complex {
-// complex { re: a.re, im: -a.im }
-// }
-//
-// fn /(a: complex, b: num) -> complex {
-// complex { re: a.re / b, im: a.im / b }
-// }
-//
-// fn /(a: complex, b: complex) -> complex {
-// // (a+bi)/(c+di)
-// // = (a+bi)(c-di)/(c+di)(c-di)
-// // = (a+bi)(c-di)/(c^2+d^2)
-// a * b.conj / length2(b)
-// }
-//
-// fn exp(a: complex) -> complex {
-// exp(a.re) * complex { re: a.im.cos, im: a.im.sin }
-// }
-//
-// fn abs(a: complex) -> num {
-// hypot(a.re, a.im)
-// }
-//
-// fn arg(a: complex) -> num {
-// atan(a.im, a.re)
-// }
-//
-// fn ln(a: complex) -> complex {
-// // if a == 0.0 {
-// // complex { re: -1.0 / 0.0, im: 0.0 }
-// // } else {
-// // }
-// complex { re: a.abs.ln, im: a.arg }
-// }
-//
-// fn **(a: complex, b: complex) -> complex {
-// exp(b * ln(a))
-// }
+fn -(a: complex, b: complex) -> complex {
+  a @- b
+}
+
+fn *(a: num, b: complex) -> complex {
+  a @* b
+}
+
+fn *(a: complex, b: complex) -> complex {
+  complex { re: a.re * b.re - a.im * b.im, im: a.im * b.re + a.re * b.im }
+}
+
+fn length2(a: complex) -> num {
+  a.re * a.re + a.im * a.im
+}
+
+fn conj(a: complex) -> complex {
+  complex { re: a.re, im: -a.im }
+}
+
+fn /(a: complex, b: num) -> complex {
+  a @/ b
+}
+
+fn /(a: complex, b: complex) -> complex {
+  // (a+bi)/(c+di)
+  // = (a+bi)(c-di)/(c+di)(c-di)
+  // = (a+bi)(c-di)/(c^2+d^2)
+  a * b.conj / b.length2
+}
+
+fn cis(a: num) -> complex {
+  complex { re: a.cos, im: a.sin }
+}
+
+fn exp(a: complex) -> complex {
+  exp(a.re) * cis(a.im)
+}
+
+fn abs(a: complex) -> num {
+  hypot(a.re, a.im)
+}
+
+fn arg(a: complex) -> num {
+  atan(a.im, a.re)
+}
+
+fn ln(a: complex) -> complex {
+  // if a == 0.0 {
+  // complex { re: -1.0 / 0.0, im: 0.0 }
+  // } else {
+  // }
+  complex { re: a.abs.ln, im: a.arg }
+}
+
+fn **(a: complex, b: complex) -> complex {
+  exp(b * ln(a))
+}
