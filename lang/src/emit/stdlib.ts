@@ -2,11 +2,17 @@ import { Declarations, Fn, ScalarTy } from "./decl"
 import { name, names } from "./id"
 import type { EmitProps } from "./props"
 
-export const num = new ScalarTy(name`num`, (props) =>
-  props.lang == "glsl" ? "float" : "number",
+export const num = new ScalarTy(
+  name`num`,
+  (props) => (props.lang == "glsl" ? "float" : "number"),
+  { type: "vec", of: "float", count: 1 },
 )
-export const bool = new ScalarTy(name`bool`, () => "boolean")
-export const void_ = new ScalarTy(name`void`, () => "void")
+export const bool = new ScalarTy(name`bool`, () => "boolean", {
+  type: "vec",
+  of: "bool",
+  count: 1,
+})
+export const void_ = new ScalarTy(name`void`, () => "void", { type: "void" })
 
 export const types = [num, bool]
 

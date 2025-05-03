@@ -1,10 +1,12 @@
-import type { Id } from "./id"
+import { type Id } from "./id"
 import type { EmitProps } from "./props"
+import type { GlslRepr } from "./repr"
 
 export class ScalarTy {
   constructor(
     readonly id: Id,
     readonly emit: (props: EmitProps) => string,
+    readonly repr: GlslRepr,
   ) {}
 
   toString() {
@@ -15,13 +17,11 @@ export class ScalarTy {
 export class Struct {
   constructor(
     readonly id: Id,
-    readonly fields: { id: Id; type: ScalarTy }[],
-    readonly name: (props: EmitProps) => string = () => `s${id}`,
+    readonly emit: string,
+    readonly repr: GlslRepr,
+    readonly fields: { id: Id; type: Type; get: (source: string) => string }[],
+    readonly cons: (of: string[]) => string,
   ) {}
-
-  emitValues(props: EmitProps, args: string[]): string {
-    return `${this.name(props)}(${args.join(",")})`
-  }
 
   toString() {
     return `struct ${this.id.label}`

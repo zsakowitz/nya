@@ -246,6 +246,29 @@ export const OPS: Record<string, number> = {
   "=": OEq,
 }
 
+export const EXPORTED_ALTS: Record<number, string> = {
+  [OPlus]: "_add",
+  [OMinus]: "_sub",
+  [OStar]: "_prod",
+  [OSlash]: "_div",
+  [OStarStar]: "_pow",
+  [OTildeUnary]: "_tilde",
+  [OBar]: "_bar",
+  [OAmp]: "_amp",
+  [OBarBar]: "_or",
+  [OAmpAmp]: "_and",
+  [OBackslash]: "_over",
+  [OEqEq]: "_eq",
+  [ONe]: "_ne",
+  [OLe]: "_le",
+  [OGe]: "_ge",
+  [OLt]: "_lt",
+  [OGt]: "_gt",
+  [OBangUnary]: "_not",
+  [OArrowRet]: "_cast",
+  [OPercent]: "_mod",
+} satisfies Record<OOverloadable, string>
+
 export const MATCHING_PAREN: Record<Brack, number> = {
   [OLParen]: ORParen,
   [OLBrack]: ORBrack,
@@ -272,7 +295,7 @@ export const IDENT_PREFIXES: Record<string, number> = {
   ":": TSym,
   "@": TBuiltin,
   "'": TLabel,
-  "$": TParam,
+  $: TParam,
 }
 
 export const OVERLOADABLE = Object.freeze([

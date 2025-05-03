@@ -6,7 +6,7 @@ export class Id {
   constructor(readonly label: string) {}
 
   toString() {
-    return this.label
+    return this.label + "#" + this.value
   }
 }
 
@@ -22,4 +22,8 @@ export const names = new IdSet()
 
 export function name(label: TemplateStringsArray) {
   return names.of(label[0]!)
+}
+
+export function getNextId() {
+  return nextId++
 }

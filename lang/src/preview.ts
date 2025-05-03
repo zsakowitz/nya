@@ -7,7 +7,7 @@ import { parse } from "./ast/parse"
 import { print } from "./ast/print"
 import { createStream, TokenGroup } from "./ast/stream"
 import type { Token } from "./ast/token"
-import { emitItem } from "./emit/emit"
+import { createExports, emitItem } from "./emit/emit"
 import { EmitProps, type Lang } from "./emit/props"
 import { createStdlibDecls } from "./emit/stdlib"
 import { printVanilla } from "./prettier"
@@ -125,11 +125,42 @@ function showEmit(lang: Lang) {
   try {
     const decl = createStdlibDecls()
     const props = new EmitProps(lang)
+    const exportsActual: Record<string, string[]> = Object.create(null)
+    const exportsTypeOnly: Record<string, string[]> = Object.create(null)
     const res = result.items
-      .map((x) => emitItem(x, decl, props) ?? "<null>")
-      .join("\n\n")
+      .map((x) => {
+        const result = emitItem(x, decl, props)
+
+        for (const exp of result?.exports?.actual ?? []) {
+          ;(exportsActual[exp.exported] ??= []).push(exp.internal)
+        }
+        for (const exp of result?.exports?.typeOnly ?? []) {
+          ;(exportsTypeOnly[exp.exported] ??= []).push(exp.internal)
+        }
+
+        if (result?.typeOnly) {
+          return [result.actual, "\n", h("opacity-30", result.typeOnly)]
+        } else if (result?.actual) {
+          return result.actual
+        }
+
+        return [h("opacity-30", "<null>")]
+      })
+      .flatMap((x, i) => (i == 0 ? x : ["\n\n", ...x]))
+    const exports1 = Object.entries(exportsActual)
+      .map(([as, of]) => createExports(of, as, false))
+      .join("\n")
+    const exports2 = Object.entries(exportsTypeOnly)
+      .map(([as, of]) => createExports(of, as, true))
+      .join("\n")
+    const exports =
+      exports2 ? [exports1, "\n", h("opacity-30", exports2)] : [exports1]
+    if (exports) {
+      res.push("\n\n")
+      res.push(...exports)
+    }
     hr()
-    pre(res)
+    pre(h("", ...res))
   } catch (e) {
     hr()
     pre(String(e))
@@ -143,7 +174,6 @@ const parts = Object.entries({
   prettier: showPrettier,
   ast: showPrinted,
   "emit-js:native": () => showEmit("js:native"),
-  "emit-dts": () => showEmit("dts"),
   "emit-glsl": () => showEmit("glsl"),
 })
 
