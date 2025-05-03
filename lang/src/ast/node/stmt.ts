@@ -1,6 +1,6 @@
 import type { KAssert, KLet, OSemi } from "../kind"
 import type { Token } from "../token"
-import type { Expr } from "./expr"
+import type { NodeExpr } from "./expr"
 import type {
   AssertionMessage,
   Comments,
@@ -9,13 +9,13 @@ import type {
 } from "./extra"
 import { Node, type Ident } from "./node"
 
-export abstract class Stmt extends Node {
+export abstract class NodeStmt extends Node {
   declare private __brand_stmt
 }
 
-export class StmtExpr extends Stmt {
+export class StmtExpr extends NodeStmt {
   constructor(
-    readonly expr: Expr,
+    readonly expr: NodeExpr,
     readonly semi: Token<typeof OSemi> | null,
     /** `true` only if `expr` is a plain expr and has no semicolon. */
     readonly terminatesBlock: boolean,
@@ -24,7 +24,7 @@ export class StmtExpr extends Stmt {
   }
 }
 
-export class StmtLet extends Stmt {
+export class StmtLet extends NodeStmt {
   constructor(
     readonly kw: Token<typeof KLet>,
     readonly ident: Ident | null,
@@ -36,10 +36,10 @@ export class StmtLet extends Stmt {
   }
 }
 
-export class StmtAssert extends Stmt {
+export class StmtAssert extends NodeStmt {
   constructor(
     readonly kw: Token<typeof KAssert>,
-    readonly expr: Expr,
+    readonly expr: NodeExpr,
     readonly message: AssertionMessage | null,
     readonly semi: Token<typeof OSemi> | null,
   ) {
@@ -47,7 +47,7 @@ export class StmtAssert extends Stmt {
   }
 }
 
-export class StmtComment extends Stmt {
+export class StmtComment extends NodeStmt {
   constructor(readonly of: Comments) {
     super(of.start, of.end)
   }

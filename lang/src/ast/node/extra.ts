@@ -20,16 +20,16 @@ import {
 } from "../kind"
 import type { TokenGroup } from "../stream"
 import type { Token } from "../token"
-import type { Expr, ExprBlock, ExprIf } from "./expr"
-import type { Item } from "./item"
+import type { NodeExpr, ExprBlock, ExprIf } from "./expr"
+import type { NodeItem } from "./item"
 import { Node, type Ident, type IdentFnName } from "./node"
-import type { Pat } from "./pat"
-import type { Type } from "./type"
+import type { NodePat } from "./pat"
+import type { NodeType } from "./type"
 
 export class ParamType extends Node {
   constructor(
     readonly colon: Token<typeof OColon>,
-    readonly type: Type | null,
+    readonly type: NodeType | null,
   ) {
     super(colon.start, (type ?? colon).end)
   }
@@ -50,7 +50,7 @@ export class GenericParams extends Node {
   }
 }
 
-export class PlainList<T extends Expr | Ident> extends Node {
+export class PlainList<T extends NodeExpr | Ident> extends Node {
   constructor(
     readonly items: T[],
     start: number,
@@ -80,7 +80,7 @@ export class StructArg extends Node {
   constructor(
     readonly name: Ident,
     readonly colon: Token<typeof OColon> | null,
-    readonly expr: Expr | null,
+    readonly expr: NodeExpr | null,
   ) {
     super(name.start, (expr ?? colon ?? name).end)
   }
@@ -97,9 +97,9 @@ export class ExprLabel extends Node {
 
 export class MatchArm extends Node {
   constructor(
-    readonly pat: Pat,
+    readonly pat: NodePat,
     readonly arrow: Token<typeof OArrowMap> | null,
-    readonly expr: Expr,
+    readonly expr: NodeExpr,
   ) {
     super(pat.start, expr.end)
   }
@@ -118,7 +118,7 @@ export class FnParam extends Node {
   constructor(
     readonly ident: Ident,
     readonly colon: Token<typeof OColon> | null,
-    readonly type: Type,
+    readonly type: NodeType,
   ) {
     super(ident.start, type.end)
   }
@@ -129,7 +129,7 @@ export class StructFieldDecl extends Node {
     readonly constKw: Token<typeof KConst> | null,
     readonly name: Ident | null,
     readonly colon: Token<typeof OColon> | null,
-    readonly type: Type,
+    readonly type: NodeType,
   ) {
     super((constKw ?? name ?? colon ?? type).start, type.end)
   }
@@ -148,7 +148,7 @@ export class EnumMapVariant extends Node {
   constructor(
     readonly name: Token<typeof TSym>,
     readonly arrow: Token<typeof OArrowMap> | null,
-    readonly of: Expr,
+    readonly of: NodeExpr,
   ) {
     super(name.start, of.end)
   }
@@ -165,7 +165,7 @@ export class ExposeAliases extends Node {
 
 export class Script extends Node {
   constructor(
-    readonly items: Item[],
+    readonly items: NodeItem[],
     start: number,
     end: number,
   ) {
@@ -185,7 +185,7 @@ export class VarWithout extends Node {
 export class PrescribedType extends Node {
   constructor(
     readonly dcolon: Token<typeof OColonColon>,
-    readonly type: Type | null,
+    readonly type: NodeType | null,
     /** Whether to print with spaces after the `::`. */
     readonly spaced: boolean,
   ) {
@@ -195,9 +195,9 @@ export class PrescribedType extends Node {
 
 export class Rule extends Node {
   constructor(
-    readonly lhs: Expr,
+    readonly lhs: NodeExpr,
     readonly arrow: Token<typeof OArrowMap> | null,
-    readonly rhs: Expr,
+    readonly rhs: NodeExpr,
     readonly semi: Token<typeof OSemi> | null,
   ) {
     super(lhs.start, (semi ?? rhs).end)
@@ -207,7 +207,7 @@ export class Rule extends Node {
 export class FnReturnType extends Node {
   constructor(
     readonly arrow: Token<typeof OArrowRet>,
-    readonly retType: Type | null,
+    readonly retType: NodeType | null,
   ) {
     super(arrow.start, (retType ?? arrow).end)
   }
@@ -216,7 +216,7 @@ export class FnReturnType extends Node {
 export class FnUsage extends Node {
   constructor(
     readonly kw: Token<typeof KUsage>,
-    readonly usages: PlainList<Expr> | null,
+    readonly usages: PlainList<NodeExpr> | null,
   ) {
     super(kw.start, (usages ?? kw).end)
   }
@@ -255,7 +255,7 @@ export class StructPatProp extends Node {
 export class StructPatPropPat extends Node {
   constructor(
     readonly colon: Token<typeof OColon>,
-    readonly pat: Pat,
+    readonly pat: NodePat,
   ) {
     super(colon.start, pat.end)
   }
@@ -264,7 +264,7 @@ export class StructPatPropPat extends Node {
 export class Initializer extends Node {
   constructor(
     readonly eq: Token<typeof OEq>,
-    readonly value: Expr,
+    readonly value: NodeExpr,
   ) {
     super(eq.start, (value ?? eq).end)
   }

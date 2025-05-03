@@ -1,15 +1,15 @@
 import type { KFn, KLet, KType, OEq, OSemi, TIgnore, TString } from "../kind"
 import type { Token } from "../token"
-import type { Expr } from "./expr"
+import type { NodeExpr } from "./expr"
 import type { ExposeAliases, List, ParamType } from "./extra"
 import { Node, type IdentFnName } from "./node"
-import type { Type } from "./type"
+import type { NodeType } from "./type"
 
-export class Expose extends Node {
+export class NodeExpose extends Node {
   declare private __brand_expose
 }
 
-export class ExposeFn extends Expose {
+export class ExposeFn extends NodeExpose {
   constructor(
     readonly kw: Token<typeof KFn>,
     readonly name: IdentFnName | null,
@@ -21,11 +21,11 @@ export class ExposeFn extends Expose {
   }
 }
 
-export class ExposeType extends Expose {
+export class ExposeType extends NodeExpose {
   constructor(
     readonly kw: Token<typeof KType>,
     readonly name: IdentFnName | null,
-    readonly targs: List<Type> | null,
+    readonly targs: List<NodeType> | null,
     readonly as: ExposeAliases | null,
     readonly label: Token<typeof TString> | null,
     readonly semi: Token<typeof OSemi> | null,
@@ -34,7 +34,7 @@ export class ExposeType extends Expose {
   }
 }
 
-export class ExposeLet extends Expose {
+export class ExposeLet extends NodeExpose {
   constructor(
     readonly kw: Token<typeof KLet>,
     readonly name: IdentFnName | Token<typeof TIgnore> | null,
@@ -42,7 +42,7 @@ export class ExposeLet extends Expose {
     readonly label: Token<typeof TString> | null,
     readonly type: ParamType | null,
     readonly eq: Token<typeof OEq> | null,
-    readonly value: Expr,
+    readonly value: NodeExpr,
     readonly semi: Token<typeof OSemi> | null,
   ) {
     super(kw.start, (semi ?? as ?? type ?? label ?? name ?? kw).end)

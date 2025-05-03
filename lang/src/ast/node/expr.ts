@@ -88,10 +88,10 @@ import type {
 } from "./extra"
 import type { Ident } from "./node"
 import { Node } from "./node"
-import type { Stmt } from "./stmt"
-import type { Type } from "./type"
+import type { NodeStmt } from "./stmt"
+import type { NodeType } from "./type"
 
-export abstract class Expr extends Node {
+export abstract class NodeExpr extends Node {
   declare private __brand_expr
 }
 
@@ -103,7 +103,7 @@ export abstract class Expr extends Node {
  * :world // symbol literal
  * ```
  */
-export class ExprLit extends Expr {
+export class ExprLit extends NodeExpr {
   constructor(
     readonly value: Token<
       typeof TFloat | typeof TInt | typeof TSym | typeof KTrue | typeof KFalse
@@ -121,7 +121,7 @@ export class ExprLit extends Expr {
  * $a!x::normaldist // parameter constant w.r.t. `x` of type `normaldist`
  * ```
  */
-export class ExprVarParam extends Expr {
+export class ExprVarParam extends NodeExpr {
   constructor(
     readonly name: Token<typeof TParam>,
     readonly without: VarWithout | null,
@@ -138,17 +138,17 @@ export class ExprVarParam extends Expr {
  * a(45) // function call
  * ```
  */
-export class ExprVar extends Expr {
+export class ExprVar extends NodeExpr {
   constructor(
     readonly name: Token<typeof TIdent | typeof TBuiltin>,
-    readonly targs: List<Type> | null,
-    readonly args: List<Expr> | null,
+    readonly targs: List<NodeType> | null,
+    readonly args: List<NodeExpr> | null,
   ) {
     super(name.start, (args ?? targs ?? name).end)
   }
 }
 
-export class ExprStruct extends Expr {
+export class ExprStruct extends NodeExpr {
   constructor(
     readonly name: Token<typeof TIdent | typeof TBuiltin | typeof ODot>,
     readonly args: List<StructArg> | null,
@@ -157,7 +157,7 @@ export class ExprStruct extends Expr {
   }
 }
 
-export class ExprSymStruct extends Expr {
+export class ExprSymStruct extends NodeExpr {
   constructor(
     readonly name: Token<typeof TSym>,
     readonly args: List<StructArg> | null,
@@ -166,16 +166,16 @@ export class ExprSymStruct extends Expr {
   }
 }
 
-export class ExprEmpty extends Expr {
+export class ExprEmpty extends NodeExpr {
   constructor(readonly at: number) {
     super(at, at)
   }
 }
 
-export class ExprIf extends Expr {
+export class ExprIf extends NodeExpr {
   constructor(
     readonly kw: Token<typeof KIf>,
-    readonly condition: Expr,
+    readonly condition: NodeExpr,
     readonly block: ExprBlock | null,
     readonly rest: Else | null,
   ) {
@@ -183,87 +183,87 @@ export class ExprIf extends Expr {
   }
 }
 
-export class ExprFor extends Expr {
+export class ExprFor extends NodeExpr {
   constructor(
     readonly label: ExprLabel | null,
     readonly kw: Token<typeof KFor>,
     readonly bound: PlainList<Ident>,
     readonly eq: Token<typeof KIn> | null,
-    readonly sources: PlainList<Expr>,
+    readonly sources: PlainList<NodeExpr>,
     readonly block: ExprBlock | null,
   ) {
     super((label ?? kw).start, (block ?? sources).end)
   }
 }
 
-export class ExprExit extends Expr {
+export class ExprExit extends NodeExpr {
   constructor(
     readonly kw: Token<typeof KReturn | typeof KBreak | typeof KContinue>,
     readonly label: Token<typeof TLabel> | null,
-    readonly value: Expr | null,
+    readonly value: NodeExpr | null,
   ) {
     super(kw.start, (value ?? label ?? kw).end)
   }
 }
 
-export class ExprMatch extends Expr {
+export class ExprMatch extends NodeExpr {
   constructor(
     readonly kw: Token<typeof KMatch>,
-    readonly on: Expr,
+    readonly on: NodeExpr,
     readonly arms: List<MatchArm> | null,
   ) {
     super(kw.start, (arms ?? kw).end)
   }
 }
 
-export class ExprParen extends Expr {
-  constructor(readonly of: Bracketed<typeof OLParen, Expr>) {
+export class ExprParen extends NodeExpr {
+  constructor(readonly of: Bracketed<typeof OLParen, NodeExpr>) {
     super(of.start, of.end)
   }
 }
 
-export class ExprArray extends Expr {
-  constructor(readonly of: List<Expr>) {
+export class ExprArray extends NodeExpr {
+  constructor(readonly of: List<NodeExpr>) {
     super(of.start, of.end)
   }
 }
 
-export class ExprArrayByRepetition extends Expr {
+export class ExprArrayByRepetition extends NodeExpr {
   constructor(
     readonly brack: TokenGroup<typeof OLBrack>,
-    readonly of: Expr,
+    readonly of: NodeExpr,
     readonly semi: Token<typeof OSemi> | null,
-    readonly sizes: PlainList<Expr>,
+    readonly sizes: PlainList<NodeExpr>,
   ) {
     super(brack.start, sizes.end)
   }
 }
 
-export class ExprCall extends Expr {
+export class ExprCall extends NodeExpr {
   constructor(
-    readonly on: Expr,
-    readonly targs: List<Type> | null,
-    readonly args: List<Expr> | null,
+    readonly on: NodeExpr,
+    readonly targs: List<NodeType> | null,
+    readonly args: List<NodeExpr> | null,
   ) {
     super(on.start, (args ?? targs ?? on).end)
   }
 }
 
-export class ExprProp extends Expr {
+export class ExprProp extends NodeExpr {
   constructor(
-    readonly on: Expr,
+    readonly on: NodeExpr,
     readonly prop: Prop,
-    readonly targs: List<Type> | null,
-    readonly args: List<Expr> | null,
+    readonly targs: List<NodeType> | null,
+    readonly args: List<NodeExpr> | null,
   ) {
     super(on.start, (args ?? targs ?? prop).end)
   }
 }
 
-export class ExprIndex extends Expr {
+export class ExprIndex extends NodeExpr {
   constructor(
-    readonly on: Expr,
-    readonly index: Bracketed<typeof OLBrack, Expr>,
+    readonly on: NodeExpr,
+    readonly index: Bracketed<typeof OLBrack, NodeExpr>,
   ) {
     super(on.start, index.end)
   }
@@ -277,20 +277,20 @@ export type ExprUnaryOp =
   | typeof OBangUnary
   | typeof ABangUnary
 
-export class ExprUnary extends Expr {
+export class ExprUnary extends NodeExpr {
   constructor(
     readonly op: Token<ExprUnaryOp>,
-    readonly of: Expr,
+    readonly of: NodeExpr,
   ) {
     super(op.start, of.end)
   }
 }
 
 // d/dx notation is used as a shorthand since we need to represent a lot of derivatives
-export class ExprDeriv extends Expr {
+export class ExprDeriv extends NodeExpr {
   constructor(
     readonly wrt: Token<typeof TDeriv | typeof TDerivIgnore>,
-    readonly of: Expr,
+    readonly of: NodeExpr,
   ) {
     super(wrt.start, wrt.end)
   }
@@ -336,46 +336,46 @@ export type ExprBinaryOp =
   | typeof OEq
   | typeof AEq
 
-export class ExprBinary extends Expr {
+export class ExprBinary extends NodeExpr {
   constructor(
-    readonly lhs: Expr,
+    readonly lhs: NodeExpr,
     readonly op: Token<ExprBinaryOp>,
-    readonly rhs: Expr,
+    readonly rhs: NodeExpr,
   ) {
     super(lhs.start, rhs.end)
   }
 }
 
-export class ExprRange extends Expr {
+export class ExprRange extends NodeExpr {
   constructor(
-    readonly lhs: Expr | null,
+    readonly lhs: NodeExpr | null,
     readonly op: Token<typeof ODotDot>,
-    readonly rhs: Expr | null,
+    readonly rhs: NodeExpr | null,
   ) {
     super((lhs ?? op).start, (rhs ?? op).end)
   }
 }
 
-export class ExprCast extends Expr {
+export class ExprCast extends NodeExpr {
   constructor(
-    readonly lhs: Expr,
+    readonly lhs: NodeExpr,
     readonly op: Token<typeof OArrowRet>,
-    readonly rhs: Type,
+    readonly rhs: NodeType,
   ) {
     super(lhs.start, rhs.end)
   }
 }
 
-export class ExprBlock extends Expr {
+export class ExprBlock extends NodeExpr {
   constructor(
     readonly label: ExprLabel | null,
-    readonly of: List<Stmt>,
+    readonly of: List<NodeStmt>,
   ) {
     super((label ?? of).start, of.end)
   }
 }
 
-export class SourceSingle extends Expr {
+export class SourceSingle extends NodeExpr {
   constructor(
     readonly kw: Token<typeof KSource>,
     readonly lang: Ident | null,
@@ -387,7 +387,7 @@ export class SourceSingle extends Expr {
   }
 }
 
-export class Source extends Expr {
+export class Source extends NodeExpr {
   constructor(
     start: number,
     end: number,
@@ -400,8 +400,8 @@ export class Source extends Expr {
   }
 }
 
-export class SourceInterp extends Expr {
-  constructor(readonly of: Bracketed<typeof OLInterp, Expr>) {
+export class SourceInterp extends NodeExpr {
+  constructor(readonly of: Bracketed<typeof OLInterp, NodeExpr>) {
     super(of.start, of.end)
   }
 }

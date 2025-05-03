@@ -125,7 +125,7 @@ import {
   Source,
   SourceInterp,
   SourceSingle,
-  type Expr,
+  type NodeExpr,
   type ExprBinaryOp,
 } from "./node/expr"
 import {
@@ -169,16 +169,16 @@ import {
   ItemStruct,
   ItemType,
   ItemUse,
-  type Item,
+  type NodeItem,
 } from "./node/item"
 import type { Ident, IdentFnName } from "./node/node"
-import { PatIgnore, PatLit, PatStruct, PatVar, type Pat } from "./node/pat"
+import { PatIgnore, PatLit, PatStruct, PatVar, type NodePat } from "./node/pat"
 import {
   StmtAssert,
   StmtComment,
   StmtExpr,
   StmtLet,
-  type Stmt,
+  type NodeStmt,
 } from "./node/stmt"
 import {
   TypeArray,
@@ -187,7 +187,7 @@ import {
   TypeLit,
   TypeParen,
   TypeVar,
-  type Type,
+  type NodeType,
 } from "./node/type"
 import { Stream } from "./stream"
 import { Token } from "./token"
@@ -251,7 +251,7 @@ function patAtom(stream: Stream) {
   )
 }
 
-function pat(stream: Stream): Pat {
+function pat(stream: Stream): NodePat {
   return patAtom(stream)
 }
 
@@ -285,7 +285,7 @@ function typeArray(stream: Stream) {
   return new TypeArray(group, of, semi, exprs)
 }
 
-function type(stream: Stream): Type {
+function type(stream: Stream): NodeType {
   switch (stream.peek()) {
     case TIdent:
       return new TypeVar(stream.match(TIdent)!, typeArgs(stream))
@@ -427,7 +427,9 @@ export function exprFor(
   )
 }
 
-export function exprLabeled(stream: Stream): [Expr, needsSemi: boolean] | null {
+export function exprLabeled(
+  stream: Stream,
+): [NodeExpr, needsSemi: boolean] | null {
   const labelIdent = stream.match(TLabel)
   if (!labelIdent) return null
 
@@ -454,7 +456,7 @@ export function exprExit(stream: Stream, ctx: ExprContext): ExprExit | null {
   if (!kw) return null
 
   const label = stream.match(TLabel)
-  let value: Expr | null = expr(stream, {
+  let value: NodeExpr | null = expr(stream, {
     struct: ctx.struct,
     noErrorOnEmpty: true,
   })
@@ -490,7 +492,7 @@ function exprMatch(stream: Stream) {
   return new ExprMatch(kw, expr(stream, { struct: false }), arms(stream))
 }
 
-function exprAtom(stream: Stream, ctx: ExprContext): Expr {
+function exprAtom(stream: Stream, ctx: ExprContext): NodeExpr {
   switch (stream.peek()) {
     case ODot:
       return new ExprStruct(stream.match(ODot)!, structArgs(stream))
@@ -621,7 +623,7 @@ function exprPropChain(stream: Stream, ctx: ExprContext) {
   return exp
 }
 
-function exprUnary(stream: Stream, ctx: ExprContext): Expr {
+function exprUnary(stream: Stream, ctx: ExprContext): NodeExpr {
   let ops = []
   let match
   while (
@@ -659,9 +661,9 @@ function exprUnary(stream: Stream, ctx: ExprContext): Expr {
 
 function createBinOp1(
   permitted: ExprBinaryOp[],
-  side: (stream: Stream, ctx: ExprContext) => Expr,
+  side: (stream: Stream, ctx: ExprContext) => NodeExpr,
 ) {
-  return (stream: Stream, ctx: ExprContext): Expr => {
+  return (stream: Stream, ctx: ExprContext): NodeExpr => {
     const lhs = side(stream, ctx)
     const op = stream.matchAny(permitted)
     if (op) {
@@ -675,9 +677,9 @@ function createBinOp1(
 
 function createBinOpL(
   permitted: ExprBinaryOp[],
-  side: (stream: Stream, ctx: ExprContext) => Expr,
+  side: (stream: Stream, ctx: ExprContext) => NodeExpr,
 ) {
-  return (stream: Stream, ctx: ExprContext): Expr => {
+  return (stream: Stream, ctx: ExprContext): NodeExpr => {
     let expr = side(stream, ctx)
     let op
     while ((op = stream.matchAny(permitted))) {
@@ -687,8 +689,10 @@ function createBinOpL(
   }
 }
 
-function createBinOpArrowRet(side: (stream: Stream, ctx: ExprContext) => Expr) {
-  return (stream: Stream, ctx: ExprContext): Expr => {
+function createBinOpArrowRet(
+  side: (stream: Stream, ctx: ExprContext) => NodeExpr,
+) {
+  return (stream: Stream, ctx: ExprContext): NodeExpr => {
     let expr = side(stream, ctx)
     let op
     while ((op = stream.match(OArrowRet))) {
@@ -698,8 +702,8 @@ function createBinOpArrowRet(side: (stream: Stream, ctx: ExprContext) => Expr) {
   }
 }
 
-function createRangeOp(side: (stream: Stream, ctx: ExprContext) => Expr) {
-  return (stream: Stream, ctx: ExprContext): Expr => {
+function createRangeOp(side: (stream: Stream, ctx: ExprContext) => NodeExpr) {
+  return (stream: Stream, ctx: ExprContext): NodeExpr => {
     if (stream.peek() == ODotDot) {
       const dot = stream.match(ODotDot)!
       const rhs = side(stream, { struct: ctx.struct, noErrorOnEmpty: true })
@@ -724,9 +728,9 @@ function createRangeOp(side: (stream: Stream, ctx: ExprContext) => Expr) {
 
 function createBinOpR(
   permitted: ExprBinaryOp[],
-  side: (stream: Stream, ctx: ExprContext) => Expr,
+  side: (stream: Stream, ctx: ExprContext) => NodeExpr,
 ) {
-  return (stream: Stream, ctx: ExprContext): Expr => {
+  return (stream: Stream, ctx: ExprContext): NodeExpr => {
     let rhs = side(stream, ctx)
     let op
     let parts = []
@@ -820,7 +824,7 @@ function stmtLet(stream: Stream): StmtLet | null {
   )
 }
 
-function stmt(stream: Stream): Stmt | null {
+function stmt(stream: Stream): NodeStmt | null {
   if (stream.isDone()) {
     return null
   }
@@ -864,7 +868,7 @@ function expr(stream: Stream, ctx: ExprContext = { struct: true }) {
   return exprBinaryOp(stream, ctx)
 }
 
-function createUnbracketedCommaOp<T extends Expr | Ident>(
+function createUnbracketedCommaOp<T extends NodeExpr | Ident>(
   fn: (stream: Stream) => T | null,
   onEmpty: Code,
 ) {
@@ -972,7 +976,7 @@ function block(
     return null
   }
 
-  const list: Stmt[] = []
+  const list: NodeStmt[] = []
   let a
   while (group.contents.match(OSemi));
   while ((a = stmt(group.contents))) {
@@ -1372,7 +1376,7 @@ function comments(stream: Stream) {
   return new Comments(c)
 }
 
-function item(stream: Stream): Item | null {
+function item(stream: Stream): NodeItem | null {
   switch (stream.peek()) {
     case TComment:
       return new ItemComment(comments(stream))

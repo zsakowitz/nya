@@ -18,8 +18,8 @@ import type {
 } from "../kind"
 import type { TokenGroup } from "../stream"
 import type { Token } from "../token"
-import type { Expose } from "./expose"
-import type { Expr, ExprBlock, Source } from "./expr"
+import type { NodeExpose } from "./expose"
+import type { NodeExpr, ExprBlock, Source } from "./expr"
 import type {
   AssertionMessage,
   Comments,
@@ -34,13 +34,13 @@ import type {
   StructFieldDecl,
 } from "./extra"
 import { Node, type Ident, type IdentFnName } from "./node"
-import type { Type } from "./type"
+import type { NodeType } from "./type"
 
-export abstract class Item extends Node {
+export abstract class NodeItem extends Node {
   declare private __brand_item
 }
 
-export class ItemType extends Item {
+export class ItemType extends NodeItem {
   constructor(
     readonly kw: Token<typeof KType>,
     readonly ident: Ident | null,
@@ -51,7 +51,7 @@ export class ItemType extends Item {
   }
 }
 
-export class ItemFn extends Item {
+export class ItemFn extends NodeItem {
   constructor(
     readonly kw: Token<typeof KFn>,
     readonly name: IdentFnName | null,
@@ -68,7 +68,7 @@ export class ItemFn extends Item {
   }
 }
 
-export class ItemRule extends Item {
+export class ItemRule extends NodeItem {
   constructor(
     readonly kw: Token<typeof KRule>,
     readonly tparams: GenericParams | null,
@@ -78,7 +78,7 @@ export class ItemRule extends Item {
   }
 }
 
-export class ItemUse extends Item {
+export class ItemUse extends NodeItem {
   constructor(
     readonly kw: Token<typeof KUse>,
     readonly source: Token<typeof TString> | null,
@@ -88,7 +88,7 @@ export class ItemUse extends Item {
   }
 }
 
-export class ItemEnum extends Item {
+export class ItemEnum extends NodeItem {
   constructor(
     readonly kw: Token<typeof KEnum>,
     readonly name: Ident | null,
@@ -99,13 +99,13 @@ export class ItemEnum extends Item {
   }
 }
 
-export class ItemEnumMap extends Item {
+export class ItemEnumMap extends NodeItem {
   constructor(
     readonly kw: Token<typeof KEnum>,
     readonly name: Ident | null,
     readonly tparams: GenericParams | null,
     readonly arrow: Token<typeof OArrowRet>,
-    readonly ret: Type,
+    readonly ret: NodeType,
     readonly variants: List<
       EnumMapVariant,
       Token<typeof ODotDot> | null
@@ -115,7 +115,7 @@ export class ItemEnumMap extends Item {
   }
 }
 
-export class ItemStruct extends Item {
+export class ItemStruct extends NodeItem {
   constructor(
     readonly kw: Token<typeof KStruct>,
     readonly name: Ident | null,
@@ -126,23 +126,23 @@ export class ItemStruct extends Item {
   }
 }
 
-export class ItemData extends Item {
+export class ItemData extends NodeItem {
   constructor(
     readonly data: Token<typeof KData>,
     readonly local: Token<typeof KLocal> | null,
     readonly name: Ident | null,
     readonly colon: Token<typeof OColon> | null,
-    readonly type: Type,
+    readonly type: NodeType,
     readonly semi: Token<typeof OSemi> | null,
   ) {
     super(data.start, (semi ?? type).end)
   }
 }
 
-export class ItemAssert extends Item {
+export class ItemAssert extends NodeItem {
   constructor(
     readonly kw: Token<typeof KAssert>,
-    readonly expr: Expr,
+    readonly expr: NodeExpr,
     readonly message: AssertionMessage | null,
     readonly semi: Token<typeof OSemi> | null,
   ) {
@@ -150,16 +150,16 @@ export class ItemAssert extends Item {
   }
 }
 
-export class ItemExpose extends Item {
+export class ItemExpose extends NodeItem {
   constructor(
     readonly kw: Token<typeof KExpose>,
-    readonly item: Expose | List<Expose> | null,
+    readonly item: NodeExpose | List<NodeExpose> | null,
   ) {
     super(kw.start, (item ?? kw).end)
   }
 }
 
-export class ItemComment extends Item {
+export class ItemComment extends NodeItem {
   constructor(readonly of: Comments) {
     super(of.start, of.end)
   }

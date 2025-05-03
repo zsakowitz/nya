@@ -54,7 +54,7 @@ import {
 } from "../ast/kind"
 import { ExposeFn, ExposeLet, ExposeType } from "../ast/node/expose"
 import {
-  Expr,
+  NodeExpr,
   ExprArray,
   ExprArrayByRepetition,
   ExprBinary,
@@ -391,7 +391,7 @@ export function print(node: Node | Token<number>, sb: Subprint): Doc {
       const self = node as PlainList<any>
 
       const contents = self.items.map((x, i) =>
-        x instanceof Expr && needsParensToAvoidStruct(x) ?
+        x instanceof NodeExpr && needsParensToAvoidStruct(x) ?
           group(["(", indent([softline, sb.sub("items", i)]), softline, ")"])
         : sb.sub("items", i),
       )

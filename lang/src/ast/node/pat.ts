@@ -12,23 +12,23 @@ import type { Token } from "../token"
 import type { List, StructPatProp } from "./extra"
 import { Node } from "./node"
 
-export abstract class Pat extends Node {
+export abstract class NodePat extends Node {
   declare private __brand_pat
 }
 
-export class PatIgnore extends Pat {
+export class PatIgnore extends NodePat {
   constructor(readonly name: Token<typeof TIgnore>) {
     super(name.start, name.end)
   }
 }
 
-export class PatVar extends Pat {
+export class PatVar extends NodePat {
   constructor(readonly name: Token<typeof TIdent>) {
     super(name.start, name.end)
   }
 }
 
-export class PatLit extends Pat {
+export class PatLit extends NodePat {
   constructor(
     readonly name: Token<
       typeof TFloat | typeof TInt | typeof TSym | typeof KTrue | typeof KFalse
@@ -38,7 +38,7 @@ export class PatLit extends Pat {
   }
 }
 
-export class PatStruct extends Pat {
+export class PatStruct extends NodePat {
   constructor(
     readonly name: Token<typeof ODot | typeof TSym>,
     readonly of: List<StructPatProp> | null,
