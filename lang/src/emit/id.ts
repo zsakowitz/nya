@@ -5,8 +5,12 @@ export class Id {
 
   constructor(readonly label: string) {}
 
+  ident() {
+    return `f` + this.value.toString(36)
+  }
+
   toString() {
-    return this.label + "#" + this.value
+    return this.label + "#" + this.value.toString(36)
   }
 }
 

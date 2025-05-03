@@ -40,7 +40,7 @@ function numericFn(name: string) {
     names.of(name),
     [xnum],
     num,
-    math((_, [a]) => `${name}(${a})`),
+    math((_, args) => `${name}(${args.join(",")})`),
   )
 }
 
@@ -72,7 +72,7 @@ export const fns = [
     .split(" ")
     .map(numericFn),
   new Fn(
-    name`tan`,
+    name`atan`,
     [
       { id: name`y`, type: num },
       { id: name`x`, type: num },
@@ -82,6 +82,7 @@ export const fns = [
       props.lang == "glsl" ? `atan(${y},${x})` : `Math.atan2(${y},${x})`,
   ),
   new Fn(name`ln`, [xnum], num, numericFn("log").of),
+  new Fn(name`hypot`, [lnum, rnum], num, numericFn("hypot").of),
 
   // Boolean comparison operators
   new Fn(name`==`, [lbool, rbool], bool, (_, [a, b]) => `(${a})==(${b})`),

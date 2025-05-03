@@ -45,7 +45,7 @@ function encodeIdentForTypescriptDeclaration(x: string) {
   if (isAcceptableJsIdent(x)) {
     return x
   }
-  return "p" + new Id("").value
+  return new Id("").ident()
 }
 
 function todo(x: string): never {
@@ -306,7 +306,7 @@ function createFunctionDTS(
   args: { id: Id; type: Type; value: string }[],
   ret: Type,
 ): string {
-  return `function f${name.value}(${args.map((x) => `${encodeIdentForTypescriptDeclaration(x.id.label)}: ${emitType(x.type, props)}`).join(", ")}): ${emitType(ret, props)}`
+  return `function ${name.ident()}(${args.map((x) => `${encodeIdentForTypescriptDeclaration(x.id.label)}: ${emitType(x.type, props)}`).join(", ")}): ${emitType(ret, props)}`
 }
 
 function createFunction(
@@ -319,10 +319,10 @@ function createFunction(
 ): string {
   switch (props.lang) {
     case "glsl":
-      return `${emitType(ret, props)} f${name.value}(${args.map((x) => `${emitType(x.type, props)} ${x.value!}`).join(",")}){${block.source}${retValue == null ? "" : `return(${retValue});`}}`
+      return `${emitType(ret, props)} ${name.ident()}(${args.map((x) => `${emitType(x.type, props)} ${x.value!}`).join(",")}){${block.source}${retValue == null ? "" : `return(${retValue});`}}`
     default:
       props.lang satisfies `js:${string}`
-      return `function f${name.value}(${args.map((x) => x.value!).join(",")}){${block.source}${retValue == null ? "" : `return(${retValue})`}}`
+      return `function ${name.ident()}(${args.map((x) => x.value!).join(",")}){${block.source}${retValue == null ? "" : `return(${retValue})`}}`
   }
 }
 
@@ -385,7 +385,7 @@ function emitStruct(
   const name =
     props.lang == "glsl" ?
       emitGlslRepr(repr.repr)
-    : `S` + new Id(item.name.val).value
+    : new Id(item.name.val).ident()
   const fields2 = fields.map((x, i) => ({
     id: x.id,
     type: x.type,
@@ -398,7 +398,7 @@ function emitStruct(
     if (props.lang == "glsl") {
       return repr.create(of)
     } else {
-      return `f${idFn.value}(${of.join(",")})`
+      return `${idFn.ident()}(${of.join(",")})`
     }
   })
   if (!decl.types.canDefine(id)) {
@@ -420,11 +420,11 @@ function emitStruct(
 
   const fieldsEncoded = fields.map((_, i) => fieldName(i)).join(",")
   return {
-    actual: `function f${idFn.value}(${fieldsEncoded}){return{${fieldsEncoded}}}`,
+    actual: `function ${idFn.ident()}(${fieldsEncoded}){return{${fieldsEncoded}}}`,
     typeOnly: `interface ${name} { readonly __brand: unique symbol; ${fields.map((field, i) => fieldName(i) + ": " + emitType(field.type, props)).join("; ")} }
-function f${idFn.value}(${fields.map((field) => encodeIdentForTypescriptDeclaration(field.id.label) + ": " + emitType(field.type, props)).join(", ")}): ${name}`,
+function ${idFn.ident()}(${fields.map((field) => encodeIdentForTypescriptDeclaration(field.id.label) + ": " + emitType(field.type, props)).join(", ")}): ${name}`,
     exports: {
-      actual: [{ internal: `f${idFn.value}`, exported: id.label }],
+      actual: [{ internal: `${idFn.ident()}`, exported: id.label }],
       typeOnly: [{ internal: name, exported: id.label }],
     },
   }
@@ -500,7 +500,7 @@ export function emitItem(
       name,
       args,
       ret,
-      (_, args) => `f${name.value}(${args.join(",")})`,
+      (_, args) => `${name.ident()}(${args.join(",")})`,
     )
 
     decl.fns.push(names.of(item.name.val), f)
@@ -517,7 +517,7 @@ export function emitItem(
         : {
             actual: [
               {
-                internal: `f${name.value}`,
+                internal: name.ident(),
                 exported: EXPORTED_ALTS[item.name.kind] ?? name.label,
               },
             ],
