@@ -6,7 +6,7 @@ export class Id {
   constructor(readonly label: string) {}
 
   ident() {
-    return `f` + this.value.toString(36)
+    return "_" + this.value.toString(36)
   }
 
   toString() {
