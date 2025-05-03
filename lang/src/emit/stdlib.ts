@@ -82,7 +82,9 @@ export const fns = [
       props.lang == "glsl" ? `atan(${y},${x})` : `Math.atan2(${y},${x})`,
   ),
   new Fn(name`ln`, [xnum], num, numericFn("log").of),
-  new Fn(name`hypot`, [lnum, rnum], num, numericFn("hypot").of),
+  new Fn(name`hypot`, [lnum, rnum], num, (props, [a, b]) =>
+    props.lang == "glsl" ? `length(vec2(${a},${b}))` : `Math.hypot(${a},${b})`,
+  ),
 
   // Boolean comparison operators
   new Fn(name`==`, [lbool, rbool], bool, (_, [a, b]) => `(${a})==(${b})`),

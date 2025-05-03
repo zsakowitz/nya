@@ -31,3 +31,10 @@ export function name(label: TemplateStringsArray) {
 export function getNextId() {
   return nextId++
 }
+
+export function fieldName(index: number) {
+  return (
+    "xyzwABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuv"[index] ??
+    `_` + index.toString(36)
+  )
+}

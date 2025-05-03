@@ -1,4 +1,4 @@
-import type { Id } from "./id"
+import { fieldName, Id } from "./id"
 
 export interface GlslReprVec {
   type: "vec"
@@ -21,7 +21,7 @@ export function emitGlslRepr(repr: GlslRepr): string {
   if (repr.of == "float") {
     return repr.count == 1 ? "float" : `vec${repr.count}`
   }
-  return repr.count == 1 ? repr.type : `${repr.of[0]}${repr.count}`
+  return repr.count == 1 ? repr.of : `${repr.of[0]}vec${repr.count}`
 }
 
 function voidRepr() {
@@ -38,7 +38,7 @@ export interface GlslReprData {
 }
 
 export function createGlslRepr(
-  _label: string,
+  label: string,
   itemsRaw: GlslRepr[],
 ): GlslReprData {
   const items = itemsRaw
@@ -94,7 +94,25 @@ export function createGlslRepr(
     }
   }
 
-  throw new Error(
-    "FIXME: Structs must be packable into a GLSL scalar, vector, or void type.",
+  const structId = new Id(label)
+  const fields = itemsRaw.map((x, i) =>
+    x.type == "void" ? null : { x, key: fieldName(i), type: emitGlslRepr(x) },
   )
+  const decl = `struct ${structId.ident()} {${fields
+    .filter((x) => x != null)
+    .map((x) => `${x.type} ${x.key};`)
+    .join("")}};`
+  const indices = fields
+    .map((x, i) => ({ ...x, i }))
+    .filter((x) => x.key != null)
+    .map((x) => x.i)
+
+  return {
+    repr: { type: "struct", id: structId },
+    structDecl: decl,
+    create(x) {
+      return `(${structId.ident()}(${indices.map((i) => x[i]!).join(",")}))`
+    },
+    fields: fields.map((x) => (x ? (s) => s + "." + x.key : () => "false")),
+  }
 }

@@ -123,6 +123,7 @@ function showIssues() {
 
 function showEmit(lang: Lang) {
   try {
+    console.time("emit")
     const decl = createStdlibDecls()
     const props = new EmitProps(lang)
     const exportsActual: Record<string, string[]> = Object.create(null)
@@ -147,6 +148,7 @@ function showEmit(lang: Lang) {
         return [h("opacity-30", "<null>")]
       })
       .flatMap((x, i) => (i == 0 ? x : ["\n\n", ...x]))
+    console.timeEnd("emit")
     const exports1 = Object.entries(exportsActual)
       .map(([as, of]) => createExports(of, as, false))
       .join("\n")

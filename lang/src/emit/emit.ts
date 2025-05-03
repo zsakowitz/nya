@@ -27,7 +27,7 @@ import {
   type Declarations,
   type Type,
 } from "./decl"
-import { Id, name, names } from "./id"
+import { fieldName, Id, name, names } from "./id"
 import type { EmitProps } from "./props"
 import { createGlslRepr, emitGlslRepr } from "./repr"
 import { bool, num, void_ } from "./stdlib"
@@ -326,13 +326,6 @@ function createFunction(
   }
 }
 
-function fieldName(index: number) {
-  return (
-    "xyzwABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuv"[index] ??
-    `_` + index.toString(36)
-  )
-}
-
 export interface ItemEmit {
   actual: string
   typeOnly?: string
@@ -481,7 +474,7 @@ export function emitItem(
       }
       const ty = getType(param.type, decl)
       const lid = new Id(param.ident.val)
-      const value = "p" + lid.value
+      const value = lid.ident()
       const val = { type: ty, value }
       locals.init(id, val)
       args.push({ id, type: ty, value })
