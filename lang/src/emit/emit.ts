@@ -421,7 +421,7 @@ function emitStruct(
   const fieldsEncoded = fields.map((_, i) => fieldName(i)).join(",")
   return {
     actual: `function f${idFn.value}(${fieldsEncoded}){return{${fieldsEncoded}}}`,
-    typeOnly: `interface ${name} { ${fields.map((field, i) => fieldName(i) + ": " + emitType(field.type, props)).join("; ")} }
+    typeOnly: `interface ${name} { readonly __brand: unique symbol; ${fields.map((field, i) => fieldName(i) + ": " + emitType(field.type, props)).join("; ")} }
 function f${idFn.value}(${fields.map((field) => encodeIdentForTypescriptDeclaration(field.id.label) + ": " + emitType(field.type, props)).join(", ")}): ${name}`,
     exports: {
       actual: [{ internal: `f${idFn.value}`, exported: id.label }],
