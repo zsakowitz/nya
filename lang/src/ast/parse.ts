@@ -125,8 +125,8 @@ import {
   Source,
   SourceInterp,
   SourceSingle,
-  type NodeExpr,
   type ExprBinaryOp,
+  type NodeExpr,
 } from "./node/expr"
 import {
   AssertionMessage,
@@ -1109,7 +1109,7 @@ function itemFn(stream: Stream) {
   } else if (arrow) {
     ty = type(stream)
   }
-  const ret = arrow && new FnReturnType(arrow, ty)
+  const ret = arrow && new FnReturnType(arrow, ty!)
   const usageKw = stream.match(KUsage)
 
   return new ItemFn(

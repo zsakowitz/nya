@@ -207,9 +207,9 @@ export class Rule extends Node {
 export class FnReturnType extends Node {
   constructor(
     readonly arrow: Token<typeof OArrowRet>,
-    readonly retType: NodeType | null,
+    readonly retType: NodeType,
   ) {
-    super(arrow.start, (retType ?? arrow).end)
+    super(arrow.start, retType.end)
   }
 }
 

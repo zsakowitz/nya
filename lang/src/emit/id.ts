@@ -6,7 +6,7 @@ export class Id {
   constructor(readonly label: string) {}
 
   toString() {
-    return this.value.toString()
+    return this.label
   }
 }
 

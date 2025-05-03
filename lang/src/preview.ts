@@ -7,6 +7,9 @@ import { parse } from "./ast/parse"
 import { print } from "./ast/print"
 import { createStream, TokenGroup } from "./ast/stream"
 import type { Token } from "./ast/token"
+import { emitItem } from "./emit/emit"
+import { EmitProps, type Lang } from "./emit/props"
+import { createStdlibDecls } from "./emit/stdlib"
 import { printVanilla } from "./prettier"
 import { UNPRINTED } from "./prettier/print"
 
@@ -81,8 +84,10 @@ function showPrettier() {
     { printWidth: 80, tabWidth: 2 },
   )
 
-  hr()
-  pre([...UNPRINTED].join(", "))
+  if (UNPRINTED.size) {
+    hr()
+    pre([...UNPRINTED].join(", "))
+  }
 
   hr()
   const q = pre(formatted)
@@ -91,6 +96,12 @@ function showPrettier() {
 }
 
 function showIssues() {
+  if (!stream.issues.entries.length) {
+    hr()
+    pre("No issues found while parsing.")
+    return
+  }
+
   const elIssues = hx(
     "pre",
     "p-4 text-xs",
@@ -110,15 +121,20 @@ function showIssues() {
   show(elIssues)
 }
 
-function showEmit() {
+function showEmit(lang: Lang) {
   try {
-    // TODO: emit stuff
+    const decl = createStdlibDecls()
+    const props = new EmitProps(lang)
+    const res = result.items
+      .map((x) => emitItem(x, decl, props) ?? "<null>")
+      .join("\n\n")
+    hr()
+    pre(res)
   } catch (e) {
-    console.warn("[script emit]", e)
+    hr()
+    pre(String(e))
+    console.error("[script emit]", e)
   }
-
-  hr()
-  pre("TODO: emit stuff")
 }
 
 const parts = Object.entries({
@@ -126,7 +142,9 @@ const parts = Object.entries({
   stream: showTokenStream,
   prettier: showPrettier,
   ast: showPrinted,
-  emit: showEmit,
+  "emit-js:native": () => showEmit("js:native"),
+  "emit-dts": () => showEmit("dts"),
+  "emit-glsl": () => showEmit("glsl"),
 })
 
 const chosen = new Set(

@@ -1,2 +1,9 @@
-fn hi() {
+assert 2 <= 3;
+
+fn hi(a: num, b: num) -> num {
+  a - b * b + sin(a)
+}
+
+fn world(a: num) -> num {
+  hi(a, a)
 }

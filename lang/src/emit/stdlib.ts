@@ -1,10 +1,12 @@
-import { Fn } from "./decl"
+import { Declarations, Fn, ScalarTy } from "./decl"
 import { name, names } from "./id"
 import type { EmitProps } from "./props"
-import { Type } from "./type"
 
-export const num = new Type(name`num`)
-export const bool = new Type(name`bool`)
+export const num = new ScalarTy(name`num`, (props) =>
+  props.lang == "glsl" ? "float" : "number",
+)
+export const bool = new ScalarTy(name`bool`, () => "boolean")
+export const void_ = new ScalarTy(name`void`, () => "void")
 
 export const types = [num, bool]
 
@@ -82,3 +84,14 @@ export const fns = [
   new Fn(name`||`, [lbool, rbool], bool, (_, [a, b]) => `(${a})||(${b})`),
   new Fn(name`!`, [xbool], bool, (_, [a]) => `!(${a})`),
 ]
+
+export function createStdlibDecls() {
+  const decl = new Declarations(null)
+  for (const ty of types) {
+    decl.types.init(ty.id, ty)
+  }
+  for (const fn of fns) {
+    decl.fns.push(fn.id, fn)
+  }
+  return decl
+}

@@ -1,18 +1,34 @@
 import type { Id } from "./id"
 import type { EmitProps } from "./props"
-import { Type } from "./type"
+
+export class ScalarTy {
+  constructor(
+    readonly id: Id,
+    readonly emit: (props: EmitProps) => string,
+  ) {}
+
+  toString() {
+    return `scalar ${this.id.label}`
+  }
+}
 
 export class Struct {
   constructor(
     readonly id: Id,
-    readonly fields: { id: Id; type: Type }[],
-    private readonly cons = `s${id}`,
+    readonly fields: { id: Id; type: ScalarTy }[],
+    readonly name: (props: EmitProps) => string = () => `s${id}`,
   ) {}
 
-  of(args: string[]) {
-    return `${this.cons}(${args.join(",")})`
+  emitValues(props: EmitProps, args: string[]): string {
+    return `${this.name(props)}(${args.join(",")})`
+  }
+
+  toString() {
+    return `struct ${this.id.label}`
   }
 }
+
+export type Type = ScalarTy | Struct
 
 export class Fn {
   constructor(
@@ -63,7 +79,7 @@ export class IdMapMany<T> {
 }
 
 export class Declarations {
-  readonly types: IdMap<Type | Struct>
+  readonly types: IdMap<Type>
   readonly fns: IdMapMany<Fn>
 
   constructor(parent: Declarations | null) {

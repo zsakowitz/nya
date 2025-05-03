@@ -42,8 +42,7 @@
       "./lang/src/prettier/plugin.js"
     ],
     "experimentalTernaries": true,
-    "proseWrap": "always",
-    "quoteProps": "consistent"
+    "proseWrap": "always"
   },
   "madge": {
     "detectiveOptions": {

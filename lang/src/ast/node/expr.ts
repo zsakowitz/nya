@@ -151,6 +151,7 @@ export class ExprVar extends NodeExpr {
 export class ExprStruct extends NodeExpr {
   constructor(
     readonly name: Token<typeof TIdent | typeof TBuiltin | typeof ODot>,
+    // TODO: this needs targs eventually
     readonly args: List<StructArg> | null,
   ) {
     super(name.start, (args ?? name).end)

@@ -1,6 +1,7 @@
 export type Lang =
-  | "js:native" // for native javascript numbers and booleans
-  | "glsl" // for glsl
+  | "js:native" // uses JS's native floating-point numbers
+  | "dts"
+  | "glsl"
 
 export class EmitProps {
   constructor(readonly lang: Lang) {}
