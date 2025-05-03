@@ -1,16 +1,20 @@
 import { type Id } from "./id"
 import type { EmitProps } from "./props"
-import type { GlslRepr } from "./repr"
+import type { GlslRepr, GlslReprScalar } from "./repr"
 
 export class ScalarTy {
   constructor(
     readonly id: Id,
     readonly emit: (props: EmitProps) => string,
-    readonly repr: GlslRepr,
+    readonly repr: GlslReprScalar,
   ) {}
 
   toString() {
     return `scalar ${this.id.label}`
+  }
+
+  cons(value: string[]) {
+    return value[0]!
   }
 }
 

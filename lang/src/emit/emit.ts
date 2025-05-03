@@ -29,8 +29,8 @@ import {
 } from "./decl"
 import { fieldName, Id, name, names } from "./id"
 import type { EmitProps } from "./props"
-import { createGlslRepr, emitGlslRepr } from "./repr"
-import { bool, num, void_ } from "./stdlib"
+import { createGlslRepr, emitGlslRepr, type GlslScalar } from "./repr"
+import { bool, broadcastBinaryOps, num, void_ } from "./stdlib"
 
 const JS_KEYWORDS =
   "break case catch class const continue debugger default delete do else enum export extends false finally for function if import in instanceof new null return super switch this throw true try typeof var void while with implements interface let package private protected public static yield abstract accessor async await boolean constructor declare keyof module namespace readonly number object set undefined as".split(
@@ -53,6 +53,10 @@ function todo(x: string): never {
 }
 
 function issue(x: string): never {
+  throw new Error(x)
+}
+
+function bug(x: string): never {
   throw new Error(x)
 }
 
@@ -99,11 +103,127 @@ class Block {
   }
 }
 
-type Value = { value: string | null; type: Type }
+export interface BroadcastBinaryDefinition {
+  name: string
+  on: GlslScalar[]
+  op(props: EmitProps, a: string, b: string, scalar: boolean): string
+}
+
+function toScalars(arg: { value: string; type: Type }): string[] {
+  if (arg.type.repr.type == "void") {
+    return []
+  }
+
+  if (arg.type instanceof ScalarTy) {
+    return [arg.value]
+  }
+
+  if (arg.type instanceof Struct) {
+    return arg.type.fields
+      .filter((x) => x.type.repr.type != "void")
+      .flatMap((x) => toScalars({ value: x.get(arg.value), type: x.type }))
+  }
+
+  bug(`Unable to get scalar components of value.`)
+}
+
+function fromScalars(type: Type, scalars: string[]): string {
+  if (type instanceof ScalarTy) {
+    return scalars[0]!
+  }
+
+  if (type instanceof Struct) {
+    const values = type.fields.map((f) => {
+      if (f.type.repr.type == "void") {
+        return "false"
+      }
+      if (f.type.repr.type == "vec") {
+        return fromScalars(f.type, scalars.splice(0, f.type.repr.count))
+      }
+      bug(`Tried to construct non-vector struct from scalar components.`)
+    })
+    return type.cons(values)
+  }
+
+  bug(`Unable to create value from scalar components.`)
+}
+
+/**
+ * Only usable if the operator returns the same type as its inputs.
+ *
+ * `op` is guaranteed to be passed two values of the same type, and they will
+ * both be scalars.
+ */
+function broadcastBinary(
+  props: EmitProps,
+  { name, on, op }: BroadcastBinaryDefinition,
+  arg1: Value,
+  arg2: Value,
+): Value {
+  const r1 = arg1.type.repr
+  const r2 = arg2.type.repr
+
+  if (r1.type != "vec" || r2.type != "vec") {
+    issue(
+      "Broadcast operators are only available on structs or scalars with 1-4 elements of the same type.",
+    )
+  }
+
+  if (r1.of != r2.of || !on.includes(r1.of)) {
+    issue(`The operator '${name}' only broadcasts over '${on.join(", ")}'`)
+  }
+
+  if (arg1.value == null || arg2.value == null) {
+    issue(`The operator '${name}' does not accept void arguments.`)
+  }
+
+  if (r1.count != 1 && r2.count != 1 && r1.count != r2.count) {
+    issue(`Cannot broadcast between sizes of '${r1.count}' and '${r2.count}'.`)
+  }
+
+  if (props.lang == "glsl") {
+    return {
+      type:
+        r2.count == 1 ? arg1.type
+        : r1.count == 1 ? arg2.type
+        : arg1.type,
+      value: op(props, arg1.value, arg2.value, r1.count == 1 && r2.count == 1),
+    }
+  }
+
+  // We checked for `value: null` earlier
+  const s1 = toScalars(arg1 as { value: string; type: Type })
+  const s2 = toScalars(arg2 as { value: string; type: Type })
+
+  if (r2.count == 1) {
+    const els = s1.map((x) => op(props, x, s2[0]!, true))
+    return { value: fromScalars(arg1.type, els), type: arg1.type }
+  } else if (r1.count == 1) {
+    const els = s2.map((x) => op(props, x, s1[0]!, true))
+    return { value: fromScalars(arg1.type, els), type: arg2.type }
+  } else if (r1.count == r2.count) {
+    const els = s1.map((x, i) => op(props, x, s2[i]!, true))
+    return { value: fromScalars(arg1.type, els), type: arg1.type }
+  } else {
+    bug(`Unable to broadcast.`)
+  }
+}
+
+export interface Value {
+  value: string | null
+  type: Type
+}
 
 function performCall(id: Id, block: Block, args: Value[]): Value {
   const fns = block.decl.fns.get(id)
   if (!fns) {
+    if (args.length == 2) {
+      const bb = broadcastBinaryOps[id.value]
+      if (bb) {
+        return broadcastBinary(block.props, bb, args[0]!, args[1]!)
+      }
+    }
+
     issue(`Function '${id}' is not defined.`)
   }
 

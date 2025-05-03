@@ -1,15 +1,16 @@
 import { fieldName, Id } from "./id"
 
+export type GlslScalar = "bool" | "int" | "uint" | "float"
+
 export interface GlslReprVec {
   type: "vec"
-  of: "bool" | "int" | "uint" | "float"
+  of: GlslScalar
   count: 1 | 2 | 3 | 4
 }
 
-export type GlslRepr =
-  | { type: "void" }
-  | GlslReprVec
-  | { type: "struct"; id: Id }
+export type GlslReprScalar = { type: "void" } | GlslReprVec
+
+export type GlslRepr = GlslReprScalar | { type: "struct"; id: Id }
 
 export function emitGlslRepr(repr: GlslRepr): string {
   if (repr.type == "void") {

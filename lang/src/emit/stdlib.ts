@@ -1,4 +1,5 @@
 import { Declarations, Fn, ScalarTy } from "./decl"
+import type { BroadcastBinaryDefinition } from "./emit"
 import { name, names } from "./id"
 import type { EmitProps } from "./props"
 
@@ -103,4 +104,19 @@ export function createStdlibDecls() {
     decl.fns.push(fn.id, fn)
   }
   return decl
+}
+
+function bbOp(name: string): BroadcastBinaryDefinition {
+  return {
+    name: "@" + name,
+    on: ["float", "int", "uint"],
+    op: (_, a, b) => `(${a})${name}(${b})`,
+  }
+}
+
+export const broadcastBinaryOps = {
+  [name`@+`.value]: bbOp("+"),
+  [name`@-`.value]: bbOp("-"),
+  [name`@*`.value]: bbOp("*"),
+  [name`@/`.value]: bbOp("/"),
 }
