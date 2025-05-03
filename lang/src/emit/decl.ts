@@ -63,13 +63,11 @@ export class IdMapMany<T> {
 }
 
 export class Declarations {
-  readonly types: IdMap<Type>
-  readonly structs: IdMap<Struct>
+  readonly types: IdMap<Type | Struct>
   readonly fns: IdMapMany<Fn>
 
   constructor(parent: Declarations | null) {
     this.types = new IdMap(parent?.types ?? null)
-    this.structs = new IdMap(parent?.structs ?? null)
     this.fns = parent?.fns ?? new IdMapMany()
   }
 }
