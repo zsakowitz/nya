@@ -102,7 +102,7 @@
           ]
         },
         {
-          "match": "\\b(fn)\\s+(\\w+|->|[@&|+\\-*\\/:=~\\\\!%]+|[<>]=?)",
+          "match": "\\b(fn)\\s+(\\w+|->|[@#&|+\\-*\\/:=~\\\\!%]+|[<>]=?)",
           "captures": {
             "1": { "name": "keyword.control" },
             "2": { "name": "entity.name" }
@@ -117,7 +117,7 @@
         },
         {
           "name": "keyword.control",
-          "match": "\\b(rule|val|match|enum|else|let|data|assert|opaque|resource|continue|for|if|break|in|return|usage|test|use|struct|type|fn|syntax|using|source|expose|as|const)\\b"
+          "match": "\\b(rule|val|match|enum|else|let|data|assert|opaque|resource|continue|for|if|break|in|return|usage|test|use|struct|matrix|type|fn|syntax|using|source|expose|as|const)\\b"
         }
       ]
     },
@@ -184,21 +184,10 @@
           }
         },
         {
-          "match": "(%?\\b[A-Za-z]\\w*\\b(?:\\^-1)?|->|[&%|+\\-*\\/:=~\\\\!]+|[<>]=|[<>]\\s+)(\\()",
+          "match": "(%?\\b[A-Za-z]\\w*\\b(?:\\^-1)?|->|[&%#|+\\-*\\/:=~\\\\!]+|[<>]=|[<>]\\s+)(\\()",
           "captures": {
             "1": {
               "name": "entity.name"
-            },
-            "2": {
-              "name": "keyword.operator"
-            }
-          }
-        },
-        {
-          "match": "(#[A-Za-z_]\\w*)(\\()",
-          "captures": {
-            "1": {
-              "name": "support"
             },
             "2": {
               "name": "keyword.operator"
@@ -233,11 +222,11 @@
       "patterns": [
         {
           "name": "support",
-          "match": "@(->|[@&|+\\-*\\/:=~\\\\!%]+|[<>]=?)"
+          "match": "@(->|[@#&|+\\-*\\/:=~\\\\!%]+|[<>]=?)"
         },
         {
           "name": "keyword.operator",
-          "match": "->|[@&|+\\-*\\/:=~\\\\!%]+|[<>]=?"
+          "match": "->|[@#&|+\\-*\\/:=~\\\\!%]+|[<>]=?"
         },
         {
           "name": "keyword.operator",

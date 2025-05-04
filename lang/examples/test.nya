@@ -329,15 +329,105 @@ fn erf(z: complex) -> complex {
   }
 }
 
-struct color {
+fn rgb_to_srgb(c: num) -> num {
+  if c < 0.0031308 {
+    c * 12.92
+  } else {
+    1.055 * c ** 0.4166666666666667 - 0.055
+  }
+}
+
+struct rgb {
+  r: num,
+  g: num,
+  b: num,
+}
+
+matrix color_space_conversion {
+  a: rgb,
+  b: rgb,
+  c: rgb,
+}
+
+struct oklab {
+  l: num,
+  a: num,
+  b: num,
+}
+
+fn oklab_to_rgb(src: oklab) -> rgb {
+  let A = color_space_conversion {
+    a: rgb { r: 1.0, g: 1.0, b: 1.0 },
+    b: rgb { r: 0.3963377774, g: -0.1055613458, b: -0.0894841775 },
+    c: rgb { r: 0.2158037573, g: -0.0638541728, b: -1.2914855480 },
+  };
+
+  let B = color_space_conversion {
+    a: rgb { r: 4.0767416621, g: -1.2684380046, b: -0.0041960863 },
+    b: rgb { r: -3.3077115913, g: 2.6097574011, b: -0.7034186147 },
+    c: rgb { r: 0.2309699292, g: -0.3413193965, b: 1.7076147010 },
+  };
+
+  let lms = A @# src;
+  let v = B @# (lms @* lms @* lms);
+  let epsilon = 1e-10;
+
+  rgb {
+    r: rgb_to_srgb(v.l - epsilon),
+    g: rgb_to_srgb(v.a - epsilon),
+    b: rgb_to_srgb(v.b - epsilon),
+  }
+}
+
+fn is_valid(z: complex) -> bool {
+  !(is_inf(z.re) || is_inf(z.im) || is_nan(z.re) || is_nan(z.im))
+}
+
+struct rgba {
   r: num,
   g: num,
   b: num,
   a: num,
 }
 
-fn main(z: complex) -> color {
+fn rgba(colors: rgb, a: num) -> rgba {
+  rgba { r: colors.r, g: colors.g, b: colors.b, a }
+}
+
+fn cplot(z: complex) -> rgba {
+  if !is_valid(z) {
+    rgba { r: 0.0, g: 0.0, b: 0.0, a: 0.0 }
+  } else {
+    let angle = arg(z);
+    let absval_scaled = z.abs / (z.abs + 1.0);
+    let r0 = 0.08499547839164734 * 1.28;
+    let offset = 0.8936868 * pi;
+    let rd = 1.5 * r0 * (1.0 - 2.0 * abs(absval_scaled - 0.5));
+    let ok_coords = oklab {
+      l: absval_scaled,
+      a: rd * cos(angle + offset),
+      b: rd * sin(angle + offset),
+    };
+    rgba(oklab_to_rgb(ok_coords), 1.0)
+  }
+}
+
+fn is_valid(x: num) -> bool {
+  !(is_inf(x) || is_nan(x))
+}
+
+fn cplot_abs(x: num) -> rgba {
+  if !is_valid(x) {
+    rgba { r: 0.0, g: 0.0, b: 0.0, a: 0.0 }
+  } else {
+    let absval_scaled = x.abs / (x.abs + 1.0);
+    let ok_coords = oklab { l: absval_scaled, a: 0.0, b: 0.0 };
+    rgba { r: 0.0, g: 0.0, b: 0.0, a: 1.0 - oklab_to_rgb(ok_coords).r }
+  }
+}
+
+fn main(z: complex) -> rgba {
   z = 3.0 * z;
   let result = erf(z);
-  color { r: abs(result), g: 0.0, b: 0.0, a: 1.0 }
+  cplot(result)
 }

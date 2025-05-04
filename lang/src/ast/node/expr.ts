@@ -16,6 +16,7 @@ import {
   type AEqEq,
   type AGe,
   type AGt,
+  type AHash,
   type ALe,
   type ALt,
   type AMinus,
@@ -50,6 +51,7 @@ import {
   type OEqEq,
   type OGe,
   type OGt,
+  type OHash,
   type OLBrace,
   type OLBrack,
   type OLe,
@@ -304,6 +306,7 @@ export type ExprBinaryOp =
   | typeof OMinus
   | typeof OStar
   | typeof OSlash
+  | typeof OHash
   | typeof OStarStar
   | typeof OBar
   | typeof OAmp
@@ -321,6 +324,7 @@ export type ExprBinaryOp =
   | typeof AMinus
   | typeof AStar
   | typeof ASlash
+  | typeof AHash
   | typeof AStarStar
   | typeof ABar
   | typeof AAmp

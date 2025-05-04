@@ -10,6 +10,7 @@ import {
   AEqEq,
   AGe,
   AGt,
+  AHash,
   ALe,
   ALt,
   AMinus,
@@ -39,6 +40,7 @@ import {
   KLet,
   KLocal,
   KMatch,
+  KMatrix,
   KReturn,
   KRule,
   KSource,
@@ -65,6 +67,7 @@ import {
   OEqEq,
   OGe,
   OGt,
+  OHash,
   OLAngle,
   OLBrace,
   OLBrack,
@@ -138,13 +141,13 @@ import {
   EnumMapVariant,
   EnumVariant,
   ExposeAliases,
-  Label,
   FnParam,
   FnReturnType,
   FnUsage,
   GenericParam,
   GenericParams,
   Initializer,
+  Label,
   List,
   MatchArm,
   ParamType,
@@ -859,7 +862,16 @@ const exprBinaryOp = createAssignOp(
                 createBinOpL(
                   [OPlus, OMinus, APlus, AMinus],
                   createBinOpL(
-                    [OStar, OSlash, OPercent, AStar, ASlash, APercent],
+                    [
+                      OStar,
+                      OSlash,
+                      OPercent,
+                      OHash,
+                      AStar,
+                      ASlash,
+                      APercent,
+                      AHash,
+                    ],
                     createBinOpR(
                       [OStarStar, AStarStar],
                       createRangeOp(
@@ -1341,7 +1353,7 @@ function itemEnum(stream: Stream) {
 }
 
 function itemStruct(stream: Stream) {
-  const kw = stream.match(KStruct)
+  const kw = stream.matchAny([KStruct, KMatrix])
   if (!kw) return null
 
   const ident = stream.matchOr(TIdent, Code.ExpectedIdent)
@@ -1488,6 +1500,7 @@ function item(stream: Stream): NodeItem | null {
       return itemEnum(stream)!
 
     case KStruct:
+    case KMatrix:
       return itemStruct(stream)!
 
     case KExpose:

@@ -44,8 +44,7 @@ export const KConst = 39
 export const KTrue = 40
 export const KFalse = 41
 export const KLocal = 42
-export const KInf = 43
-export const KNan = 44
+export const KMatrix = 43
 
 // operators prefixed with @
 export const APlus = 45
@@ -88,6 +87,7 @@ export const ADotDot = 81
 export const APercent = 82
 export const AEq = 83
 export const ATildeEq = 124
+export const AHash = 128
 
 // operators not prefixed with @
 export const OPlus = 84
@@ -130,6 +130,7 @@ export const ODotDot = 120
 export const OPercent = 121
 export const OEq = 122
 export const OTildeEq = 123
+export const OHash = 127
 
 export type Brack =
   | typeof OLParen
@@ -168,6 +169,7 @@ export const KWS: Record<string, number> = {
   true: KTrue,
   false: KFalse,
   local: KLocal,
+  matrix: KMatrix,
 }
 
 export const APS: Record<string, number> = {
@@ -175,6 +177,7 @@ export const APS: Record<string, number> = {
   "-": AMinus,
   "*": AStar,
   "/": ASlash,
+  "#": AHash,
   "**": AStarStar,
   "~": ATildeUnary,
   "|": ABar,
@@ -215,6 +218,7 @@ export const OPS: Record<string, number> = {
   "-": OMinus,
   "*": OStar,
   "/": OSlash,
+  "#": OHash,
   "**": OStarStar,
   "~": OTildeUnary,
   "|": OBar,
@@ -255,6 +259,7 @@ export const EXPORTED_ALTS: Record<number, string> = {
   [OMinus]: "_sub",
   [OStar]: "_prod",
   [OSlash]: "_div",
+  [OHash]: "_hash",
   [OStarStar]: "_pow",
   [OTildeUnary]: "_tilde",
   [OBar]: "_bar",
@@ -306,8 +311,9 @@ export const IDENT_PREFIXES: Record<string, number> = {
 export const OVERLOADABLE = Object.freeze([
   OPlus, // add
   OMinus, // subtract
-  OStar, // multiple
+  OStar, // multiply
   OSlash, // divide
+  OHash, // matrix multiplication
   OStarStar, // exponentiate
   OTildeUnary, // idk, but maybe useful
   OBar, // union
@@ -321,10 +327,10 @@ export const OVERLOADABLE = Object.freeze([
   OGe, // ge
   OLt, // lt
   OGt, // gt
-  OBangUnary, // nots
+  OBangUnary, // not
   OArrowRet, // type conversion
   OPercent, // modulus
-  OTildeEq, // eq within epsilon
+  OTildeEq, // approximate eq
 ] as const)
 
 export type OOverloadable = (typeof OVERLOADABLE)[number]
@@ -340,6 +346,8 @@ export const OP_TEXT = {
   [AStar]: "@*",
   [OSlash]: "/",
   [ASlash]: "@/",
+  [OHash]: "#",
+  [AHash]: "@#",
   [OStarStar]: "**",
   [AStarStar]: "@**",
   [OTildeUnary]: "~",
@@ -435,4 +443,5 @@ export const OP_TEXT = {
   [KTrue]: "true",
   [KFalse]: "false",
   [KLocal]: "local",
+  [KMatrix]: "matrix",
 }

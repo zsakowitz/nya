@@ -5,6 +5,7 @@ import type {
   KExpose,
   KFn,
   KLocal,
+  KMatrix,
   KRule,
   KStruct,
   KType,
@@ -19,7 +20,7 @@ import type {
 import type { TokenGroup } from "../stream"
 import type { Token } from "../token"
 import type { NodeExpose } from "./expose"
-import type { NodeExpr, ExprBlock, Source } from "./expr"
+import type { ExprBlock, NodeExpr, Source } from "./expr"
 import type {
   AssertionMessage,
   Comments,
@@ -117,12 +118,12 @@ export class ItemEnumMap extends NodeItem {
 
 export class ItemStruct extends NodeItem {
   constructor(
-    readonly kw: Token<typeof KStruct>,
+    readonly kw: Token<typeof KStruct | typeof KMatrix>,
     readonly name: Ident | null,
     readonly tparams: GenericParams | null,
     readonly fields: List<StructFieldDecl, Token<typeof ODotDot> | null> | null,
   ) {
-    super(kw.start, (fields ?? name ?? kw).end)
+    super(kw.start, (fields ?? tparams ?? name ?? kw).end)
   }
 }
 

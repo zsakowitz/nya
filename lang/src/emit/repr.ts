@@ -1,3 +1,4 @@
+import { issue, todo } from "./error"
 import { fieldName, Id } from "./id"
 
 export type GlslScalar = "bool" | "int" | "uint" | "float"
@@ -8,7 +9,13 @@ export interface GlslReprVec {
   count: 1 | 2 | 3 | 4
 }
 
-export type GlslReprScalar = { type: "void" } | GlslReprVec
+export interface GlslReprMat {
+  type: "mat"
+  rows: 2 | 3 | 4
+  cols: 2 | 3 | 4
+}
+
+export type GlslReprScalar = { type: "void" } | GlslReprVec | GlslReprMat
 
 export type GlslRepr =
   | GlslReprScalar
@@ -30,6 +37,13 @@ export function emitGlslRepr(repr: GlslRepr): string {
       of = of.of
     }
     return emitGlslRepr(of) + sizes
+  }
+  if (repr.type == "mat") {
+    if (repr.cols == repr.rows) {
+      return `mat${repr.cols}`
+    } else {
+      return `mat${repr.cols}x${repr.rows}`
+    }
   }
   if (repr.of == "float") {
     return repr.count == 1 ? "float" : `vec${repr.count}`
@@ -53,6 +67,7 @@ export interface GlslReprData {
 export function createGlslRepr(
   label: string,
   itemsRaw: GlslRepr[],
+  matrix: boolean,
 ): GlslReprData {
   const items = itemsRaw
     .map((x) => (x.type == "void" ? null : x))
@@ -77,15 +92,56 @@ export function createGlslRepr(
     }
   }
 
-  packed: if (items.every((x) => x.type == "vec")) {
+  if (matrix) {
+    const cols = items.length
+    if (!(cols == 2 || cols == 3 || cols == 4)) {
+      issue(`A matrix struct must have 2-4 columns.`)
+    }
+    if (!items.every((x) => x.type == "vec")) {
+      issue(`Every field in a matrix struct must be a vector.`)
+    }
+
+    const of = items[0]!.of
+    if (of != "float") {
+      todo(`A matrix struct can currently only be composed of numbers.`)
+    }
+    if (!items.every((x) => x.of == of)) {
+      issue(`Every field in a matrix struct must be a vector of the same type.`)
+    }
+
+    const rows = items[0]!.count
+    if (!items.every((x) => x.count == rows)) {
+      issue(`Every field in a matrix struct must be the same length.`)
+    }
+
+    if (!(rows == 2 || rows == 3 || rows == 4)) {
+      issue(`A matrix struct must have column vectors of 2-4 items.`)
+    }
+
+    let i = 0
+    return {
+      repr: { type: "mat", cols, rows },
+      structDecl: null,
+      fields: itemsRaw.map((x) => {
+        if (x.type == "void") return voidRepr
+        const col = i++
+        return (x) => `${x}[${col}]`
+      }),
+      create(x) {
+        return `mat${cols}x${rows}(${x.join(",")})`
+      },
+    }
+  }
+
+  vec: if (items.every((x) => x.type == "vec")) {
     const of = items[0]!.of
     if (!items.every((x) => x.of == of)) {
-      break packed
+      break vec
     }
 
     const count = items.reduce((a, b) => a + b.count, 0)
     if (!(count == 1 || count == 2 || count == 3 || count == 4)) {
-      break packed
+      break vec
     }
 
     let i = 0

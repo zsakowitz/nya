@@ -15,11 +15,7 @@ export const num = new ScalarTy(
 export const bool = new ScalarTy(
   name`bool`,
   (props) => (props.lang == "glsl" ? "bool" : "boolean"),
-  {
-    type: "vec",
-    of: "bool",
-    count: 1,
-  },
+  { type: "vec", of: "bool", count: 1 },
 )
 export const void_ = new ScalarTy(name`void`, () => "void", { type: "void" })
 
@@ -56,14 +52,6 @@ function numericFn(name: string) {
 function epsilon(lang: Lang) {
   return lang == "glsl" ? "1.1920928955078125e-7" : "2.220446049250313e-16"
 }
-
-// function epsilonM1(lang: Lang) {
-//   return lang == "glsl" ? "0.9999999403953552" : "0.9999999999999999"
-// }
-//
-// function epsilonP1(lang: Lang) {
-//   return lang == "glsl" ? "1.0000001192092896" : "1.0000000000000002"
-// }
 
 export const fns = [
   // Basic numeric operators
@@ -126,6 +114,14 @@ export const fns = [
   new Fn(name`pi`, [], num, () => Math.PI.toString()),
   new Fn(name`e`, [], num, () => Math.E.toString()),
   new Fn(name`epsilon`, [], num, (p) => epsilon(p.lang)),
+
+  // Numeric checks
+  new Fn(name`is_inf`, [xnum], bool, (p, [a]) =>
+    p.lang == "glsl" ? `isinf(${a})` : `0==1/(${a})`,
+  ),
+  new Fn(name`is_nan`, [xnum], bool, (p, [a]) =>
+    p.lang == "glsl" ? `isnan(${a})` : `isNaN(${a})`,
+  ),
 ]
 
 export function createStdlibDecls() {

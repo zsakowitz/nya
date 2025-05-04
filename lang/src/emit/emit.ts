@@ -1,6 +1,7 @@
 import {
   EXPORTED_ALTS,
   KFalse,
+  KMatrix,
   KTrue,
   OEq,
   TFloat,
@@ -33,6 +34,7 @@ import {
 import { StmtComment, StmtExpr, StmtLet, type NodeStmt } from "../ast/node/stmt"
 import { TypeEmpty, TypeVar, type NodeType } from "../ast/node/type"
 import { Fn, IdMap, type Declarations } from "./decl"
+import { bug, issue, todo } from "./error"
 import { fieldName, Id, name, names } from "./id"
 import type { EmitProps } from "./props"
 import { createGlslRepr, emitGlslRepr, type GlslScalar } from "./repr"
@@ -59,18 +61,6 @@ function encodeIdentForTypescriptDeclaration(x: string) {
     return x
   }
   return new Id("").ident()
-}
-
-function todo(x: string): never {
-  throw new Error(x)
-}
-
-function issue(x: string): never {
-  throw new Error(x)
-}
-
-function bug(x: string): never {
-  throw new Error(x)
 }
 
 class Block {
@@ -246,6 +236,29 @@ function broadcastUnary(
   return { value: fromScalars(arg1.type, els), type: arg1.type }
 }
 
+function matrixMultiply(props: EmitProps, arg1: Value, arg2: Value): Value {
+  if (props.lang == "glsl") {
+    const r1 = arg1.type.repr
+    const r2 = arg2.type.repr
+
+    // mat * vec = vec
+    if (r1.type == "mat" && r2.type == "vec" && r2.of == "float") {
+      if (r1.cols == r1.rows && r1.rows == r2.count) {
+        return {
+          value: `(${arg1.value})*(${arg2.value})`,
+          type: arg2.type,
+        }
+      } else {
+        todo(
+          `Can only multiply matrices and vectors if the matrix is square and the vector has the same size as the matrix.`,
+        )
+      }
+    }
+  }
+
+  todo("Matrix multiplication is not available here.")
+}
+
 export interface Value {
   value: string | null
   type: Type
@@ -253,6 +266,7 @@ export interface Value {
 
 function performCall(id: Id, block: Block, args: Value[]): Value {
   const fns = block.decl.fns.get(id)
+
   if (!fns) {
     if (args.length == 1) {
       const bb = broadcastUnaryOps[id.value]
@@ -262,6 +276,10 @@ function performCall(id: Id, block: Block, args: Value[]): Value {
     }
 
     if (args.length == 2) {
+      if (id == names.of("@#")) {
+        return matrixMultiply(block.props, args[0]!, args[1]!)
+      }
+
       const bb = broadcastBinaryOps[id.value]
       if (bb) {
         return broadcastBinary(block.props, bb, args[0]!, args[1]!)
@@ -371,6 +389,7 @@ function emitStruct(
   const repr = createGlslRepr(
     item.name.val,
     fields.map((x) => x.type.repr),
+    item.kw.kind == KMatrix,
   )
   const name = props.lang == "glsl" ? emitGlslRepr(repr.repr) : idFn.ident()
   const fields2 = fields.map((x, i) => ({
