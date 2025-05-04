@@ -330,14 +330,14 @@ fn erf(z: complex) -> complex {
 }
 
 struct color {
-  x: num,
-  y: num,
-  z: num,
-  w: num,
+  r: num,
+  g: num,
+  b: num,
+  a: num,
 }
 
 fn main(z: complex) -> color {
   z = 3.0 * z;
   let result = erf(z);
-  color { x: abs(result), y: 0.0, z: 0.0, w: 1.0 }
+  color { r: abs(result), g: 0.0, b: 0.0, a: 1.0 }
 }
