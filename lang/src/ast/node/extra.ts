@@ -29,7 +29,7 @@ import type { NodeType } from "./type"
 export class ParamType extends Node {
   constructor(
     readonly colon: Token<typeof OColon>,
-    readonly type: NodeType | null,
+    readonly type: NodeType,
   ) {
     super(colon.start, (type ?? colon).end)
   }

@@ -31,17 +31,6 @@ export type ExprStateOk =
 
 type ExprState = { ok: false; reason: string; ext?: undefined } | ExprStateOk
 
-/**
- * The generic `T` doesn't actually affect any code in the slightest; it's only
- * there to catch errors in our item implementation, which is so generic it
- * often slips up and passes the wrong data.
- *
- * This is a case where we really need a type to be qualified over all possible
- * values, but that's not possible, so we just set it to some absurd value and
- * call it done.
- *
- * TODO: remove
- */
 export class Expr {
   static of(sheet: Sheet, geo?: boolean) {
     return sheet.list.create(FACTORY_EXPR, { from: { geo } }).data

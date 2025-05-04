@@ -7,7 +7,7 @@ import { parse } from "./ast/parse"
 import { print } from "./ast/print"
 import { createStream, TokenGroup } from "./ast/stream"
 import type { Token } from "./ast/token"
-import { createExports, emitItem } from "./emit/emit"
+import { createExports, emitItem, NYA_LANG_TEST_PRELUDE } from "./emit/emit"
 import { EmitProps, type Lang } from "./emit/props"
 import { createStdlibDecls } from "./emit/stdlib"
 import { printVanilla } from "./prettier"
@@ -140,12 +140,12 @@ function showEmit(lang: Lang) {
         }
 
         if (result?.typeOnly) {
-          return [result.actual, "\n", h("opacity-30", result.typeOnly)]
+          return [h("opacity-30", result.typeOnly), "\n", result.actual]
         } else if (result?.actual) {
           return result.actual
         }
 
-        return [h("opacity-30", "<null>")]
+        return [h("opacity-30", "// <null>")]
       })
       .flatMap((x, i) => (i == 0 ? x : ["\n\n", ...x]))
     console.timeEnd("emit")
@@ -170,12 +170,38 @@ function showEmit(lang: Lang) {
   }
 }
 
+function showEmitTests(lang: Lang) {
+  try {
+    console.time("emit")
+    const decl = createStdlibDecls()
+    const props = new EmitProps(lang)
+    const res =
+      NYA_LANG_TEST_PRELUDE +
+      result.items
+        .map((x) => emitItem(x, decl, props)?.actual)
+        .filter((x) => x != null)
+        .join("\n") +
+      "\nNYA_TEST.report();"
+    console.timeEnd("emit")
+    console.time("run tests")
+    const data: string[] = (0, eval)(res)
+    console.timeEnd("run tests")
+    hr()
+    pre(data.join("\n"))
+  } catch (e) {
+    hr()
+    pre(String(e))
+    console.error("[script emit]", e)
+  }
+}
+
 const parts = Object.entries({
   issues: showIssues,
   stream: showTokenStream,
   prettier: showPrettier,
   ast: showPrinted,
   "emit-js:native": () => showEmit("js:native"),
+  "emit-js:native+tests": () => showEmitTests("js:native-tests"),
   "emit-glsl": () => showEmit("glsl"),
 })
 

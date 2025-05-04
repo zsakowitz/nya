@@ -68,6 +68,10 @@ export class IdMap<T> {
     }
     return (this.map[id.value] = value)
   }
+
+  set(id: Id, value: T) {
+    this.map[id.value] = value
+  }
 }
 
 export class IdMapMany<T> {

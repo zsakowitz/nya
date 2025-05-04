@@ -26,6 +26,7 @@ import {
   type ASlash,
   type AStar,
   type AStarStar,
+  type ATildeEq,
   type ATildeUnary,
   type KBreak,
   type KContinue,
@@ -64,6 +65,7 @@ import {
   type OSlash,
   type OStar,
   type OStarStar,
+  type OTildeEq,
   type OTildeUnary,
   type TBuiltin,
   type TDeriv,
@@ -336,6 +338,8 @@ export type ExprBinaryOp =
   | typeof APercent
   | typeof OEq
   | typeof AEq
+  | typeof OTildeEq
+  | typeof ATildeEq
 
 export class ExprBinary extends NodeExpr {
   constructor(

@@ -3,7 +3,9 @@ import {
   ExprBinary,
   ExprBlock,
   ExprEmpty,
+  ExprIf,
   ExprLit,
+  ExprParen,
   ExprProp,
   ExprStruct,
   ExprUnary,
@@ -17,7 +19,7 @@ import {
   ItemStruct,
   type NodeItem,
 } from "../ast/node/item"
-import { StmtComment, StmtExpr, type NodeStmt } from "../ast/node/stmt"
+import { StmtComment, StmtExpr, StmtLet, type NodeStmt } from "../ast/node/stmt"
 import { TypeEmpty, TypeVar, type NodeType } from "../ast/node/type"
 import {
   Fn,
@@ -30,7 +32,13 @@ import {
 import { fieldName, Id, name, names } from "./id"
 import type { EmitProps } from "./props"
 import { createGlslRepr, emitGlslRepr, type GlslScalar } from "./repr"
-import { bool, broadcastBinaryOps, num, void_ } from "./stdlib"
+import {
+  bool,
+  broadcastBinaryOps,
+  broadcastUnaryOps,
+  num,
+  void_,
+} from "./stdlib"
 
 const JS_KEYWORDS =
   "break case catch class const continue debugger default delete do else enum export extends false finally for function if import in instanceof new null return super switch this throw true try typeof var void while with implements interface let package private protected public static yield abstract accessor async await boolean constructor declare keyof module namespace readonly number object set undefined as".split(
@@ -107,6 +115,12 @@ export interface BroadcastBinaryDefinition {
   name: string
   on: GlslScalar[]
   op(props: EmitProps, a: string, b: string, scalar: boolean): string
+}
+
+export interface BroadcastUnaryDefinition {
+  name: string
+  on: GlslScalar[]
+  op(props: EmitProps, a: string, scalar: boolean): string
 }
 
 function toScalars(arg: { value: string; type: Type }): string[] {
@@ -209,6 +223,46 @@ function broadcastBinary(
   }
 }
 
+/**
+ * Only usable if the operator returns the same type as its inputs.
+ *
+ * `op` is guaranteed to be passed two values of the same type, and they will
+ * both be scalars.
+ */
+function broadcastUnary(
+  props: EmitProps,
+  { name, on, op }: BroadcastUnaryDefinition,
+  arg1: Value,
+): Value {
+  const r1 = arg1.type.repr
+
+  if (r1.type != "vec") {
+    issue(
+      "Broadcast operators are only available on structs or scalars with 1-4 elements of the same type.",
+    )
+  }
+
+  if (!on.includes(r1.of)) {
+    issue(`The operator '${name}' only broadcasts over '${on.join(", ")}'`)
+  }
+
+  if (arg1.value == null) {
+    issue(`The operator '${name}' does not accept void arguments.`)
+  }
+
+  if (props.lang == "glsl") {
+    return {
+      type: arg1.type,
+      value: op(props, arg1.value, r1.count == 1),
+    }
+  }
+
+  // We checked for `value: null` earlier
+  const s1 = toScalars(arg1 as { value: string; type: Type })
+  const els = s1.map((x) => op(props, x, true))
+  return { value: fromScalars(arg1.type, els), type: arg1.type }
+}
+
 export interface Value {
   value: string | null
   type: Type
@@ -217,6 +271,13 @@ export interface Value {
 function performCall(id: Id, block: Block, args: Value[]): Value {
   const fns = block.decl.fns.get(id)
   if (!fns) {
+    if (args.length == 1) {
+      const bb = broadcastUnaryOps[id.value]
+      if (bb) {
+        return broadcastUnary(block.props, bb, args[0]!)
+      }
+    }
+
     if (args.length == 2) {
       const bb = broadcastBinaryOps[id.value]
       if (bb) {
@@ -256,7 +317,21 @@ function performCall(id: Id, block: Block, args: Value[]): Value {
 // In the future, this will need an expected type, so that enums and structs
 // work. We'll leave it simple for now.
 export function emitExpr(expr: NodeExpr, block: Block): Value {
-  if (expr instanceof ExprBinary) {
+  if (expr instanceof ExprBlock) {
+    const child = block.child()
+    let last: Value = { value: null, type: void_ }
+    for (const stmt of expr.of.items) {
+      if (stmt instanceof StmtComment) continue
+      if (last.value) {
+        block.source += last.value + ";"
+      }
+      last = emitStmt(stmt, child)
+    }
+    if (child.source) {
+      block.source += child.source
+    }
+    return last
+  } else if (expr instanceof ExprBinary) {
     return performCall(names.of(expr.op.val), block, [
       emitExpr(expr.lhs, block),
       emitExpr(expr.rhs, block),
@@ -372,17 +447,6 @@ export function emitExpr(expr: NodeExpr, block: Block): Value {
       ),
       type: ty,
     }
-  } else if (expr instanceof ExprBlock) {
-    const child = block.child()
-    let last: Value = { value: null, type: void_ }
-    for (const stmt of expr.of.items) {
-      if (stmt instanceof StmtComment) continue
-      if (last.value) {
-        block.source += last.value + ";"
-      }
-      last = emitStmt(stmt, child)
-    }
-    return last
   } else if (expr instanceof ExprEmpty) {
     issue(`Empty expression.`)
   } else if (expr instanceof ExprProp) {
@@ -399,6 +463,68 @@ export function emitExpr(expr: NodeExpr, block: Block): Value {
       }
     }
     return performCall(names.of(expr.prop.name.val), block, args)
+  } else if (expr instanceof ExprIf) {
+    const cond = emitExpr(expr.condition, block)
+    if (cond.type != bool) {
+      issue(`The condition of an 'if' statement must be a boolean value.`)
+    }
+    if (cond.value == null) {
+      issue(`The condition of an 'if' statement must not be void.`)
+    }
+
+    const child1 = block.child()
+    if (!expr.block) {
+      issue(`Missing block on 'if' statement.`)
+    }
+    const main = emitExpr(expr.block, child1)
+
+    const child2 = block.child()
+    let alt: Value = { value: null, type: void_ }
+    if (expr.rest) {
+      if (!expr.rest.block) {
+        issue(`Missing block on 'else' branch of 'if' statement.`)
+      }
+      alt = emitExpr(expr.rest.block, child2)
+    }
+
+    if (main.type != alt.type) {
+      if (main.type != void_ && !expr.rest) {
+        issue(`An 'if' statement with a value must have an 'else' block.`)
+      } else {
+        issue(`Branches of 'if' statement has different types.`)
+      }
+    }
+
+    // Optimization for ternaries, since those are quite frequent
+    if (main.value && alt.value && !child1.source && !child2.source) {
+      return {
+        value: `(${cond.value})?(${main.value}):(${alt.value})`,
+        type: main.type,
+      }
+    }
+
+    // Optimization for plain 'if' block when there is no alternative
+    if (!alt.value && !child2.source) {
+      block.source += `if(${cond.value}){${child1.source}${main.value == null ? "" : main.value + ";"}}`
+      return { value: null, type: void_ }
+    }
+
+    // Optimization for when 'if' block is only for side-effects
+    if (main.type == void_ || !main.value || !alt.value) {
+      block.source += `if(${cond.value}){${child1.source}${main.value == null ? "" : main.value + ";"}}else{${child2.source}${alt.value == null ? "" : alt.value + ";"}}`
+      return { value: null, type: void_ }
+    }
+
+    const ret = new Id("return_value")
+    if (block.props.lang == "glsl") {
+      block.source += `${emitType(main.type, block.props)} ${ret.ident()};`
+    } else {
+      block.source += `var ${ret.ident()};`
+    }
+    block.source += `if(${cond.value}){${child1.source}${ret.ident()}=${main.value};}else{${child2.source}${ret.ident()}=${alt.value};}`
+    return { value: ret.ident(), type: main.type }
+  } else if (expr instanceof ExprParen) {
+    return emitExpr(expr.of.value, block)
   } else {
     todo(`Cannot emit '${expr.constructor.name}' yet.`)
   }
@@ -415,6 +541,46 @@ export function emitStmt(stmt: NodeStmt, block: Block): Value {
     } else {
       return ret
     }
+  } else if (stmt instanceof StmtLet) {
+    if (!stmt.ident) {
+      issue(`Missing identifier for 'let' statement.`)
+    }
+    if (!(stmt.value || stmt.type)) {
+      issue(`'let' statement must specify type or value.`)
+    }
+
+    const value = stmt.value && emitExpr(stmt.value.value, block)
+    const type =
+      (stmt.type && getType(stmt.type.type, block.decl)) || value!.type
+    if (value && !value.value) {
+      issue(`Cannot set a variable to void.`)
+    }
+    if (value && value.type != type) {
+      issue(
+        `Mismatched types for variable '${stmt.ident.val}'; expected '${type}', but got '${value.type}'.`,
+      )
+    }
+
+    const gid = names.of(stmt.ident.val)
+    const lid = new Id(stmt.ident.val)
+    const name = lid.ident()
+
+    if (block.props.lang == "glsl") {
+      if (value) {
+        block.source += `${emitType(type, block.props)} ${name}=${value.value};`
+      } else {
+        block.source += `${emitType(type, block.props)} ${name};`
+      }
+    } else {
+      if (value) {
+        block.source += `var ${name}=${value.value};`
+      } else {
+        block.source += `var ${name};`
+      }
+    }
+
+    block.locals.set(gid, { value: name, type })
+    return { value: null, type: void_ }
   } else {
     todo(`Cannot emit '${stmt.constructor.name}' yet.`)
   }
@@ -495,10 +661,7 @@ function emitStruct(
     item.name.val,
     fields.map((x) => x.type.repr),
   )
-  const name =
-    props.lang == "glsl" ?
-      emitGlslRepr(repr.repr)
-    : new Id(item.name.val).ident()
+  const name = props.lang == "glsl" ? emitGlslRepr(repr.repr) : idFn.ident()
   const fields2 = fields.map((x, i) => ({
     id: x.id,
     type: x.type,
@@ -532,13 +695,15 @@ function emitStruct(
   }
 
   const fieldsEncoded = fields.map((_, i) => fieldName(i)).join(",")
+  const brand = new Id("brand")
   return {
     actual: `function ${idFn.ident()}(${fieldsEncoded}){return{${fieldsEncoded}}}`,
-    typeOnly: `interface ${name} { readonly __brand: unique symbol; ${fields.map((field, i) => fieldName(i) + ": " + emitType(field.type, props)).join("; ")} }
+    typeOnly: `declare const ${brand.ident()}: unique symbol
+interface ${name} { readonly [${brand.ident()}]: unique symbol; ${fields.map((field, i) => fieldName(i) + ": " + emitType(field.type, props)).join("; ")} }
 function ${idFn.ident()}(${fields.map((field) => encodeIdentForTypescriptDeclaration(field.id.label) + ": " + emitType(field.type, props)).join(", ")}): ${name}`,
     exports: {
       actual: [{ internal: `${idFn.ident()}`, exported: id.label }],
-      typeOnly: [{ internal: name, exported: id.label }],
+      typeOnly: [],
     },
   }
 }
@@ -549,6 +714,10 @@ export function emitItem(
   props: EmitProps,
 ): ItemEmit | null {
   if (item instanceof ItemAssert) {
+    if (!/^js:.+-tests$/.test(props.lang)) {
+      return null
+    }
+
     const block = new Block(decl, props)
     const { value, type } = emitExpr(item.expr, block)
     if (type != bool) {
@@ -563,10 +732,7 @@ export function emitItem(
     }
 
     return {
-      actual:
-        block.source ?
-          `(()=>{${block.source}return(${value})})()`
-        : `(${value})`,
+      actual: `NYA_TEST.check(()=>{${block.source}return(${value})},${JSON.stringify(item.kw.source.slice(item.expr.start, item.expr.end))}${item.message?.message ? "," + JSON.stringify(JSON.parse(item.message.message.val)) : ""});`,
     }
   } else if (item instanceof ItemFn) {
     if (!item.name) {
@@ -603,7 +769,7 @@ export function emitItem(
     const { value, type } = emitExpr(item.block, block)
     if (type != ret) {
       issue(
-        `Expected to return '${type}' from function '${item.name.val}'; actual return value is '${ret}'.`,
+        `Expected to return '${ret}' from function '${item.name.val}'; actual return value is '${type}'.`,
       )
     }
 
@@ -668,3 +834,50 @@ export function createExports(of: string[], as: string, typeOnly: boolean) {
     )
     .join("\n")
 }
+
+export const NYA_LANG_TEST_PRELUDE = `const NYA_TEST = {
+  successes: [],
+  fails: [],
+  check(cb, source, message) {
+    try {
+      const value = cb()
+      if (value === true) {
+        NYA_TEST.successes.push({
+          source,
+        })
+      } else if (value === false) {
+        NYA_TEST.fails.push({
+          source,
+          message,
+        })
+      } else {
+        NYA_TEST.fails.push({
+          source,
+          message,
+          error: "test did not return a boolean value",
+        })
+      }
+    } catch (e) {
+      NYA_TEST.fails.push({
+        source,
+        message,
+        error: e,
+      })
+    }
+  },
+  report() {
+    let ret = []
+    for (const { source } of NYA_TEST.fails) {
+      ret.push(\`❌ \${source.trim().slice(0, 20).padEnd(20)}\`)
+    }
+    ret.push('ℹ️ ' + (NYA_TEST.successes.length + NYA_TEST.fails.length) + ' tests run.')
+    if (NYA_TEST.successes.length) {
+      ret.push('✅ ' + NYA_TEST.successes.length + ' tests passed.')
+    }
+    if (NYA_TEST.fails.length) {
+      ret.push('⚠️ ' + NYA_TEST.fails.length + ' tests failed.')
+    }
+    return ret
+  },
+}
+`

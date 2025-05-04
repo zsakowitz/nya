@@ -21,6 +21,7 @@ import {
   ASlash,
   AStar,
   AStarStar,
+  ATildeEq,
   ATildeUnary,
   KAs,
   KAssert,
@@ -81,6 +82,7 @@ import {
   OSlash,
   OStar,
   OStarStar,
+  OTildeEq,
   OTildeUnary,
   OVERLOADABLE,
   TBuiltin,
@@ -262,7 +264,7 @@ function genericParam(stream: Stream) {
   const colon = stream.match(OColon)
   const ty = colon && type(stream)
 
-  return new GenericParam(ident, colon && new ParamType(colon, ty))
+  return new GenericParam(ident, colon && new ParamType(colon, ty!))
 }
 
 const genericParamsRaw = createCommaOp(OLAngle, genericParam, null)
@@ -755,7 +757,22 @@ const exprBinaryOp = createBinOpR(
       createBinOpL(
         [OAmpAmp, AAmpAmp],
         createBinOp1(
-          [OEqEq, ONe, OLt, OGt, OLe, OGe, AEqEq, ANe, ALt, AGt, ALe, AGe],
+          [
+            OEqEq,
+            ONe,
+            OLt,
+            OGt,
+            OLe,
+            OGe,
+            OTildeEq,
+            AEqEq,
+            ANe,
+            ALt,
+            AGt,
+            ALe,
+            AGe,
+            ATildeEq,
+          ],
           createBinOpArrowRet(
             createBinOpL(
               [OBar, ABar],
@@ -818,7 +835,7 @@ function stmtLet(stream: Stream): StmtLet | null {
   return new StmtLet(
     kw,
     ident,
-    colon && new ParamType(colon, ty),
+    colon && new ParamType(colon, ty!),
     eq && new Initializer(eq, value!),
     semi,
   )
@@ -1329,7 +1346,7 @@ function expose(stream: Stream) {
       name,
       as,
       label,
-      colon && new ParamType(colon, ty),
+      colon && new ParamType(colon, ty!),
       eq,
       value,
       semi,

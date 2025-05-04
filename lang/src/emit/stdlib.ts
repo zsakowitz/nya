@@ -1,7 +1,10 @@
 import { Declarations, Fn, ScalarTy } from "./decl"
-import type { BroadcastBinaryDefinition } from "./emit"
+import type {
+  BroadcastBinaryDefinition,
+  BroadcastUnaryDefinition,
+} from "./emit"
 import { name, names } from "./id"
-import type { EmitProps } from "./props"
+import type { EmitProps, Lang } from "./props"
 
 export const num = new ScalarTy(
   name`num`,
@@ -45,13 +48,27 @@ function numericFn(name: string) {
   )
 }
 
+function epsilon(lang: Lang) {
+  return lang == "glsl" ? "1.1920928955078125e-7" : "2.220446049250313e-16"
+}
+
+// function epsilonM1(lang: Lang) {
+//   return lang == "glsl" ? "0.9999999403953552" : "0.9999999999999999"
+// }
+//
+// function epsilonP1(lang: Lang) {
+//   return lang == "glsl" ? "1.0000001192092896" : "1.0000000000000002"
+// }
+
 export const fns = [
   // Basic numeric operators
   new Fn(name`-`, [xnum], num, (_, [a]) => `-(${a})`),
   new Fn(name`+`, [lnum, rnum], num, (_, [a, b]) => `(${a})+(${b})`),
   new Fn(name`-`, [lnum, rnum], num, (_, [a, b]) => `(${a})-(${b})`),
   new Fn(name`*`, [lnum, rnum], num, (_, [a, b]) => `(${a})*(${b})`),
-  new Fn(name`%`, [lnum, rnum], num, (_, [a, b]) => `(${a})%(${b})`),
+  new Fn(name`%`, [lnum, rnum], num, (props, [a, b]) =>
+    props.lang == "glsl" ? `mod(${a},${b})` : `(${a})%(${b})`,
+  ),
   new Fn(name`/`, [lnum, rnum], num, (_, [a, b]) => `(${a})/(${b})`),
   new Fn(
     name`**`,
@@ -62,6 +79,10 @@ export const fns = [
 
   // Numeric comparison operators
   new Fn(name`==`, [lnum, rnum], bool, (_, [a, b]) => `(${a})==(${b})`),
+  new Fn(name`~=`, [lnum, rnum], bool, (props, [a, b]) => {
+    const abs = props.lang == "glsl" ? "abs" : "Math.abs"
+    return `${abs}((${a})-(${b}))<=${epsilon(props.lang)}`
+  }),
   new Fn(name`!=`, [lnum, rnum], bool, (_, [a, b]) => `(${a})!=(${b})`),
   new Fn(name`<`, [lnum, rnum], bool, (_, [a, b]) => `(${a})<(${b})`),
   new Fn(name`>`, [lnum, rnum], bool, (_, [a, b]) => `(${a})>(${b})`),
@@ -93,6 +114,13 @@ export const fns = [
   new Fn(name`&&`, [lbool, rbool], bool, (_, [a, b]) => `(${a})&&(${b})`),
   new Fn(name`||`, [lbool, rbool], bool, (_, [a, b]) => `(${a})||(${b})`),
   new Fn(name`!`, [xbool], bool, (_, [a]) => `!(${a})`),
+
+  // Additional constants
+  new Fn(name`inf`, [], num, (p) => (p.lang == "glsl" ? "(1.0/0.0)" : "(1/0)")),
+  new Fn(name`nan`, [], num, (p) => (p.lang == "glsl" ? "(0.0/0.0)" : "(0/0)")),
+  new Fn(name`pi`, [], num, () => Math.PI.toString()),
+  new Fn(name`e`, [], num, () => Math.E.toString()),
+  new Fn(name`epsilon`, [], num, (p) => epsilon(p.lang)),
 ]
 
 export function createStdlibDecls() {
@@ -114,9 +142,21 @@ function bbOp(name: string): BroadcastBinaryDefinition {
   }
 }
 
+function buOp(name: string): BroadcastUnaryDefinition {
+  return {
+    name: "@" + name,
+    on: ["float", "int", "uint"],
+    op: (_, a) => `${name}(${a})`,
+  }
+}
+
 export const broadcastBinaryOps = {
   [name`@+`.value]: bbOp("+"),
   [name`@-`.value]: bbOp("-"),
   [name`@*`.value]: bbOp("*"),
   [name`@/`.value]: bbOp("/"),
+}
+
+export const broadcastUnaryOps = {
+  [name`@-`.value]: buOp("-"),
 }

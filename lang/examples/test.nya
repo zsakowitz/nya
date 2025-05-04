@@ -11,8 +11,24 @@ fn +(a: complex, b: complex) -> complex {
   a @+ b
 }
 
+fn +(a: num, b: complex) -> complex {
+  complex { re: a + b.re, im: b.im }
+}
+
+fn +(a: complex, b: num) -> complex {
+  complex { re: a.re + b, im: a.im }
+}
+
 fn -(a: complex, b: complex) -> complex {
   a @- b
+}
+
+fn -(a: complex, b: num) -> complex {
+  complex { re: a.re - b, im: a.im }
+}
+
+fn -(a: num, b: complex) -> complex {
+  complex { re: a - b.re, im: -b.im }
 }
 
 fn *(a: num, b: complex) -> complex {
@@ -42,6 +58,11 @@ fn /(a: complex, b: complex) -> complex {
   a * b.conj / b.length2
 }
 
+fn inv(a: complex) -> complex {
+  // TODO: optimize
+  complex { re: 1.0, im: 0.0 } / a
+}
+
 fn cis(a: num) -> complex {
   complex { re: a.cos, im: a.sin }
 }
@@ -58,14 +79,180 @@ fn arg(a: complex) -> num {
   atan(a.im, a.re)
 }
 
+fn ==(a: complex, b: num) -> bool {
+  a.re == b && a.im == 0.0
+}
+
+fn ==(a: complex, b: complex) -> bool {
+  a.re == b.re && a.im == b.im
+}
+
 fn ln(a: complex) -> complex {
-  // if a == 0.0 {
-  // complex { re: -1.0 / 0.0, im: 0.0 }
-  // } else {
-  // }
-  complex { re: a.abs.ln, im: a.arg }
+  if a == 0.0 {
+    complex { re: -1.0 / 0.0, im: 0.0 }
+  } else {
+    complex { re: a.abs.ln, im: a.arg }
+  }
 }
 
 fn **(a: complex, b: complex) -> complex {
   exp(b * ln(a))
 }
+
+fn rt(r: num, t: num) -> complex {
+  r * t.cis
+}
+
+fn sqrt(a: complex) -> complex {
+  a.abs.sqrt * cis(a.arg / 2)
+}
+
+fn -(a: complex) -> complex {
+  @-a
+}
+
+fn floor(a: complex) -> complex {
+  let px = a.re;
+  let py = a.im;
+  let bx = px.floor;
+  let by = py.floor;
+  let x = px - bx;
+  let y = py - by;
+
+  if 1.0 <= x + y {
+    if x >= y {
+      complex { re: bx + 1, im: by }
+    } else {
+      complex { re: bx, im: by + 1 }
+    }
+  } else {
+    complex { re: bx, im: by }
+  }
+}
+
+fn ceil(a: complex) -> complex {
+  let px = a.re + 0.5;
+  let py = a.im + 0.5;
+  let bx = px.floor;
+  let by = py.floor;
+  let x = px - bx;
+  let y = py - by;
+
+  if 1.0 < x + y {
+    if x >= y {
+      complex { re: bx + 1, im: by }
+    } else {
+      complex { re: bx, im: by + 1 }
+    }
+  } else {
+    complex { re: bx, im: by }
+  }
+}
+
+fn sin(a: complex) -> complex {
+  complex { re: a.re.sin * a.im.cosh, im: a.re.cos * a.im.sinh }
+}
+
+fn cos(a: complex) -> complex {
+  complex { re: a.re.cos * a.im.cosh, im: -a.re.sin * a.im.sinh }
+}
+
+fn tan(a: complex) -> complex {
+  a.sin / a.cos
+}
+
+fn cot(a: complex) -> complex {
+  a.cos / a.sin
+}
+
+fn csc(a: complex) -> complex {
+  a.sin.inv
+}
+
+fn sec(a: complex) -> complex {
+  a.cos.inv
+}
+
+fn asin(a: complex) -> complex {
+  i * ln(sqrt(1.0 - a * a) - a * i)
+}
+
+fn acos(a: complex) -> complex {
+  -ln((1.0 - a * a) * i + a) * i
+}
+
+fn atan(a: complex) -> complex {
+  -ln((i - a) / (i + a)) * i / 2.0
+}
+
+fn acot(a: complex) -> complex {
+  a.inv.atan
+}
+
+fn acsc(a: complex) -> complex {
+  a.inv.asin
+}
+
+fn asec(a: complex) -> complex {
+  a.inv.acos
+}
+
+fn sinh(a: complex) -> complex {
+  complex { re: a.im.cos * a.re.sinh, im: a.im.sin * a.re.cosh }
+}
+
+fn cosh(a: complex) -> complex {
+  complex { re: a.im.cos * a.re.cosh, im: a.im.sin * a.re.sinh }
+}
+
+fn tanh(a: complex) -> complex {
+  a.sinh / a.cosh
+}
+
+fn coth(a: complex) -> complex {
+  a.cosh / a.sinh
+}
+
+fn sech(a: complex) -> complex {
+  a.cosh.inv
+}
+
+fn csch(a: complex) -> complex {
+  a.sinh.inv
+}
+
+fn asinh(a: complex) -> complex {
+  ln(sqrt(a * a + 1.0) + a)
+}
+
+fn acosh(a: complex) -> complex {
+  ln(sqrt(a + 1.0) * sqrt(a - 1.0) + a)
+}
+
+fn atanh(a: complex) -> complex {
+  ln((1.0 + a) / (1.0 - a)) / 2.0
+}
+
+fn acoth(a: complex) -> complex {
+  ln((a + 1.0) / (a - 1.0)) / 2.0
+}
+
+fn asech(a: complex) -> complex {
+  a.inv.acosh
+}
+
+fn acsch(a: complex) -> complex {
+  a.inv.asinh
+}
+
+fn ~=(a: complex, b: complex) -> bool {
+  a.re ~= b.re && a.im ~= b.im
+}
+
+assert sin(2 + 3 * i) ~= 9.154499146911429573 - 4.16890695996656435 * i;
+assert cos(2 + 3 * i) ~= -4.189625690968807230 - 9.109227893755336598 * i;
+assert tan(2 + 3 * i) ~= -0.0037640256415042483 + 1.0032386273536098014 * i;
+assert cot(2 + 3 * i) ~= -0.0037397103763369567 - 0.9967577965693583105 * i;
+
+assert sinh(2 + 3 * i) ~= -3.590564589985779952 + 0.530921086248519805 * i;
+assert cosh(2 + 3 * i) ~= -3.724545504915322565 + 0.511822569987384609 * i;

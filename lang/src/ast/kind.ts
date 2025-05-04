@@ -87,6 +87,7 @@ export const ADot = 80
 export const ADotDot = 81
 export const APercent = 82
 export const AEq = 83
+export const ATildeEq = 124
 
 // operators not prefixed with @
 export const OPlus = 84
@@ -128,6 +129,7 @@ export const ODot = 119
 export const ODotDot = 120
 export const OPercent = 121
 export const OEq = 122
+export const OTildeEq = 123
 
 export type Brack =
   | typeof OLParen
@@ -187,6 +189,7 @@ export const APS: Record<string, number> = {
   ">=": AGe,
   "<": ALt,
   ">": AGt,
+  "~=": ATildeEq,
   "!": ABangUnary,
   "(": ALParen,
   ")": ARParen,
@@ -226,6 +229,7 @@ export const OPS: Record<string, number> = {
   ">=": OGe,
   "<": OLt,
   ">": OGt,
+  "~=": OTildeEq,
   "!": OBangUnary,
   "(": OLParen,
   ")": ORParen,
@@ -264,6 +268,7 @@ export const EXPORTED_ALTS: Record<number, string> = {
   [OGe]: "_ge",
   [OLt]: "_lt",
   [OGt]: "_gt",
+  [OTildeEq]: "_approxeq",
   [OBangUnary]: "_not",
   [OArrowRet]: "_cast",
   [OPercent]: "_mod",
@@ -319,6 +324,7 @@ export const OVERLOADABLE = Object.freeze([
   OBangUnary, // nots
   OArrowRet, // type conversion
   OPercent, // modulus
+  OTildeEq, // eq within epsilon
 ] as const)
 
 export type OOverloadable = (typeof OVERLOADABLE)[number]
@@ -398,6 +404,8 @@ export const OP_TEXT = {
   [APercent]: "@%",
   [OEq]: "=",
   [AEq]: "@=",
+  [OTildeEq]: "~=",
+  [ATildeEq]: "@~=",
   [KIf]: "if",
   [KElse]: "else",
   [KFor]: "for",
