@@ -7,7 +7,6 @@ import {
   ABangUnary,
   ABar,
   ABarBar,
-  AEq,
   AEqEq,
   AGe,
   AGt,
@@ -105,6 +104,7 @@ import {
   ExprArray,
   ExprArrayByRepetition,
   ExprBinary,
+  ExprBinaryAssign,
   ExprBlock,
   ExprCall,
   ExprCast,
@@ -138,7 +138,7 @@ import {
   EnumMapVariant,
   EnumVariant,
   ExposeAliases,
-  ExprLabel,
+  Label,
   FnParam,
   FnReturnType,
   FnUsage,
@@ -412,10 +412,7 @@ const forSources = createUnbracketedCommaOp(
   Code.ExpectedForSources,
 )
 
-export function exprFor(
-  stream: Stream,
-  label: ExprLabel | null,
-): ExprFor | null {
+export function exprFor(stream: Stream, label: Label | null): ExprFor | null {
   const kw = stream.match(KFor)
   if (!kw) return null
 
@@ -436,7 +433,7 @@ export function exprLabeled(
   if (!labelIdent) return null
 
   const colon = stream.matchOr(OColon, Code.ExpectedColon)
-  const label = new ExprLabel(labelIdent, colon)
+  const label = new Label(labelIdent, colon)
 
   switch (stream.peek()) {
     case KFor:
@@ -669,6 +666,10 @@ function createBinOp1(
     const lhs = side(stream, ctx)
     const op = stream.matchAny(permitted)
     if (op) {
+      if (stream.peek() == OEq) {
+        stream.possiblyExponentialTimeBacktrack()
+        return lhs
+      }
       const rhs = side(stream, ctx)
       return new ExprBinary(lhs, op, rhs)
     } else {
@@ -685,6 +686,10 @@ function createBinOpL(
     let expr = side(stream, ctx)
     let op
     while ((op = stream.matchAny(permitted))) {
+      if (stream.peek() == OEq) {
+        stream.possiblyExponentialTimeBacktrack()
+        break
+      }
       expr = new ExprBinary(expr, op, side(stream, ctx))
     }
     return expr
@@ -737,6 +742,10 @@ function createBinOpR(
     let op
     let parts = []
     while ((op = stream.matchAny(permitted))) {
+      if (stream.peek() == OEq) {
+        stream.possiblyExponentialTimeBacktrack()
+        break
+      }
       parts.push({ lhs: rhs, op })
       rhs = side(stream, ctx)
     }
@@ -748,8 +757,77 @@ function createBinOpR(
   }
 }
 
-const exprBinaryOp = createBinOpR(
-  [OEq, AEq],
+const ASSIGNABLE_BINARY_OPS = [
+  OBarBar,
+  ABarBar,
+
+  OAmpAmp,
+  AAmpAmp,
+
+  OEqEq,
+  ONe,
+  OLt,
+  OGt,
+  OLe,
+  OGe,
+  OTildeEq,
+  AEqEq,
+  ANe,
+  ALt,
+  AGt,
+  ALe,
+  AGe,
+  ATildeEq,
+
+  OBar,
+  ABar,
+
+  OAmp,
+  AAmp,
+
+  OPlus,
+  OMinus,
+  APlus,
+  AMinus,
+
+  OStar,
+  OSlash,
+  OPercent,
+  AStar,
+  ASlash,
+  APercent,
+
+  OStarStar,
+  AStarStar,
+
+  OBackslash,
+  ABackslash,
+] satisfies ExprBinaryOp[]
+
+function createAssignOp(
+  side: (stream: Stream, ctx: ExprContext) => NodeExpr,
+): (stream: Stream, ctx: ExprContext) => NodeExpr {
+  return (stream, ctx) => {
+    const lhs = side(stream, ctx)
+    const op = stream.match(OEq) || stream.matchAny(ASSIGNABLE_BINARY_OPS)
+
+    if (!op) {
+      return lhs
+    }
+
+    if (op.kind == OEq) {
+      return new ExprBinary(lhs, op, side(stream, ctx))
+    }
+
+    const eq = stream.matchOr(OEq, Code.ShouldHaveAlreadyParsedBinaryOperator)
+
+    return eq ?
+        new ExprBinaryAssign(lhs, op, eq, side(stream, ctx))
+      : new ExprBinary(lhs, op, side(stream, ctx))
+  }
+}
+
+const exprBinaryOp = createAssignOp(
   createBinOpL(
     [OAt, AAt],
     createBinOpL(
@@ -982,11 +1060,7 @@ function structArg(stream: Stream) {
 const callArgs = createCommaOp(OLParen, expr, null)
 const structArgs = createCommaOp(OLBrace, structArg, null)
 
-function block(
-  stream: Stream,
-  label: ExprLabel | null,
-  forceMultiline = false,
-) {
+function block(stream: Stream, label: Label | null, forceMultiline = false) {
   const group = stream.matchGroup(OLBrace)
   if (!group) {
     stream.raiseNext(Code.ExpectedBlock)

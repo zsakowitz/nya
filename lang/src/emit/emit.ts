@@ -1,8 +1,19 @@
-import { EXPORTED_ALTS, KFalse, KTrue, TFloat, TInt, TSym } from "../ast/kind"
 import {
+  EXPORTED_ALTS,
+  KFalse,
+  KTrue,
+  OEq,
+  TFloat,
+  TInt,
+  TSym,
+} from "../ast/kind"
+import {
+  ExprArray,
   ExprBinary,
+  ExprBinaryAssign,
   ExprBlock,
   ExprEmpty,
+  ExprFor,
   ExprIf,
   ExprLit,
   ExprParen,
@@ -21,14 +32,7 @@ import {
 } from "../ast/node/item"
 import { StmtComment, StmtExpr, StmtLet, type NodeStmt } from "../ast/node/stmt"
 import { TypeEmpty, TypeVar, type NodeType } from "../ast/node/type"
-import {
-  Fn,
-  IdMap,
-  ScalarTy,
-  Struct,
-  type Declarations,
-  type Type,
-} from "./decl"
+import { Fn, IdMap, type Declarations } from "./decl"
 import { fieldName, Id, name, names } from "./id"
 import type { EmitProps } from "./props"
 import { createGlslRepr, emitGlslRepr, type GlslScalar } from "./repr"
@@ -39,6 +43,7 @@ import {
   num,
   void_,
 } from "./stdlib"
+import { Array, ScalarTy, Struct, type Type } from "./type"
 
 const JS_KEYWORDS =
   "break case catch class const continue debugger default delete do else enum export extends false finally for function if import in instanceof new null return super switch this throw true try typeof var void while with implements interface let package private protected public static yield abstract accessor async await boolean constructor declare keyof module namespace readonly number object set undefined as".split(
@@ -68,35 +73,6 @@ function bug(x: string): never {
   throw new Error(x)
 }
 
-export function getType(type: NodeType, decl: Declarations): Type {
-  if (type instanceof TypeVar) {
-    if (type.targs) {
-      todo(`Cannot use generics yet.`)
-    }
-
-    const ty = decl.types.get(names.of(type.name.val))
-    if (!ty) {
-      issue(`Type '${type.name.val}' is not defined.`)
-    }
-
-    return ty
-  } else if (type instanceof TypeEmpty) {
-    issue(`Empty type.`)
-  } else {
-    todo(`Cannot emit '${type.constructor.name}' yet.`)
-  }
-}
-
-export function emitType(type: Type, props: EmitProps): string {
-  if (type instanceof ScalarTy) {
-    return type.emit(props)
-  } else if (type instanceof Struct) {
-    return type.emit
-  }
-
-  return type satisfies never
-}
-
 class Block {
   source = ""
 
@@ -124,6 +100,10 @@ export interface BroadcastUnaryDefinition {
 }
 
 function toScalars(arg: { value: string; type: Type }): string[] {
+  if (arg.type instanceof Array) {
+    todo(`Cannot yet convert arrays into scalar components.`)
+  }
+
   if (arg.type.repr.type == "void") {
     return []
   }
@@ -133,9 +113,9 @@ function toScalars(arg: { value: string; type: Type }): string[] {
   }
 
   if (arg.type instanceof Struct) {
-    return arg.type.fields
-      .filter((x) => x.type.repr.type != "void")
-      .flatMap((x) => toScalars({ value: x.get(arg.value), type: x.type }))
+    return arg.type.fields.flatMap((x) =>
+      toScalars({ value: x.get(arg.value), type: x.type }),
+    )
   }
 
   bug(`Unable to get scalar components of value.`)
@@ -148,6 +128,9 @@ function fromScalars(type: Type, scalars: string[]): string {
 
   if (type instanceof Struct) {
     const values = type.fields.map((f) => {
+      if (f.type instanceof Array) {
+        todo(`Cannot yet generate arrays from scalar components.`)
+      }
       if (f.type.repr.type == "void") {
         return "false"
       }
@@ -314,9 +297,274 @@ function performCall(id: Id, block: Block, args: Value[]): Value {
   }
 }
 
+function createFunctionDTS(
+  props: EmitProps,
+  name: Id,
+  args: { id: Id; type: Type; value: string }[],
+  ret: Type,
+): string {
+  return `function ${name.ident()}(${args.map((x) => `${encodeIdentForTypescriptDeclaration(x.id.label)}: ${emitType(x.type, props)}`).join(", ")}): ${emitType(ret, props)}`
+}
+
+function createFunction(
+  props: EmitProps,
+  name: Id,
+  args: { id: Id; type: Type; value: string }[],
+  block: Block,
+  retValue: string | null,
+  ret: Type,
+): string {
+  switch (props.lang) {
+    case "glsl":
+      return `${emitType(ret, props)} ${name.ident()}(${args.map((x) => `${emitType(x.type, props)} ${x.value!}`).join(",")}){${block.source}${retValue == null ? "" : `return(${retValue});`}}`
+    default:
+      props.lang satisfies `js:${string}`
+      return `function ${name.ident()}(${args.map((x) => x.value!).join(",")}){${block.source}${retValue == null ? "" : `return(${retValue})`}}`
+  }
+}
+
+export interface ItemEmit {
+  actual: string
+  typeOnly?: string
+  exports?: { actual: Export[]; typeOnly: Export[] }
+}
+
+export interface Export {
+  internal: string
+  exported: string
+}
+
+function emitStruct(
+  item: ItemStruct,
+  decl: Declarations,
+  props: EmitProps,
+): ItemEmit | null {
+  if (!item.name) {
+    issue(`Missing struct name.`)
+  }
+  if (!item.fields) {
+    issue(`Missing fields on struct '${item.name.val}'.`)
+  }
+  if (item.tparams) {
+    todo(`Type generics are not supported yet.`)
+  }
+
+  const id = names.of(item.name.val)
+  const fields: { id: Id; type: Type }[] = []
+  for (const field of item.fields.items) {
+    if (field.constKw) {
+      todo(`Const struct fields are not supported yet.`)
+    }
+    if (!field.name) {
+      issue(`Missing field name in struct '${item.name.val}'.`)
+    }
+    const id = names.of(field.name.val)
+    if (fields.some((x) => x.id == id)) {
+      issue(
+        `Field '${id}' was declared multiple times in struct '${item.name.val}'.`,
+      )
+    }
+    fields.push({ id, type: getType(field.type, decl) })
+  }
+
+  const idFn = new Id(item.name.val)
+  const repr = createGlslRepr(
+    item.name.val,
+    fields.map((x) => x.type.repr),
+  )
+  const name = props.lang == "glsl" ? emitGlslRepr(repr.repr) : idFn.ident()
+  const fields2 = fields.map((x, i) => ({
+    id: x.id,
+    type: x.type,
+    get:
+      props.lang == "glsl" ?
+        (source: string) => repr.fields[i]!(source)
+      : (s: string) => s + "." + fieldName(i),
+  }))
+  const struct = new Struct(id, name, repr.repr, fields2, (of) => {
+    if (props.lang == "glsl") {
+      return repr.create(of)
+    } else {
+      return `${idFn.ident()}(${of.join(",")})`
+    }
+  })
+  if (!decl.types.canDefine(id)) {
+    issue(`Type '${id}' was declared multiple times.`)
+  }
+  decl.types.init(id, struct)
+  for (const field of fields2) {
+    decl.fns.push(
+      field.id,
+      new Fn(field.id, [{ id, type: struct }], field.type, (_, [s]) =>
+        field.get(s!),
+      ),
+    )
+  }
+
+  if (props.lang == "glsl") {
+    return repr.structDecl ? { actual: repr.structDecl } : null
+  }
+
+  const fieldsEncoded = fields.map((_, i) => fieldName(i)).join(",")
+  const brand = new Id("brand")
+  return {
+    actual: `function ${idFn.ident()}(${fieldsEncoded}){return{${fieldsEncoded}}}`,
+    typeOnly: `declare const ${brand.ident()}: unique symbol
+interface ${name} { readonly [${brand.ident()}]: unique symbol; ${fields.map((field, i) => fieldName(i) + ": " + emitType(field.type, props)).join("; ")} }
+function ${idFn.ident()}(${fields.map((field) => encodeIdentForTypescriptDeclaration(field.id.label) + ": " + emitType(field.type, props)).join(", ")}): ${name}`,
+    exports: {
+      actual: [{ internal: `${idFn.ident()}`, exported: id.label }],
+      typeOnly: [],
+    },
+  }
+}
+
+function exportedName(x: string) {
+  if (isAcceptableJsIdent(x)) {
+    return x
+  } else {
+    return JSON.stringify(x)
+  }
+}
+
+export function createExports(of: string[], as: string, typeOnly: boolean) {
+  if (of.length == 0) {
+    return null
+  }
+  if (of.length == 1) {
+    return `export ${typeOnly ? "type " : ""}{ ${of[0]!} as ${exportedName(as)} }`
+  }
+  return of
+    .map(
+      (x, i) =>
+        `export ${typeOnly ? "type " : ""}{ ${x} as ${exportedName(as + "_" + (i + 1))} }`,
+    )
+    .join("\n")
+}
+
+export const NYA_LANG_TEST_PRELUDE = `const NYA_TEST = {
+  successes: [],
+  fails: [],
+  check(cb, source, message) {
+    try {
+      const value = cb()
+      if (value === true) {
+        NYA_TEST.successes.push({
+          source,
+        })
+      } else if (value === false) {
+        NYA_TEST.fails.push({
+          source,
+          message,
+        })
+      } else {
+        NYA_TEST.fails.push({
+          source,
+          message,
+          error: "test did not return a boolean value",
+        })
+      }
+    } catch (e) {
+      NYA_TEST.fails.push({
+        source,
+        message,
+        error: e,
+      })
+    }
+  },
+  report() {
+    let ret = []
+    for (const { source } of NYA_TEST.fails) {
+      ret.push(\`❌ \${source.trim().slice(0, 20).padEnd(20)}\`)
+    }
+    ret.push('ℹ️ ' + (NYA_TEST.successes.length + NYA_TEST.fails.length) + ' tests run.')
+    if (NYA_TEST.successes.length) {
+      ret.push('✅ ' + NYA_TEST.successes.length + ' tests passed.')
+    }
+    if (NYA_TEST.fails.length) {
+      ret.push('⚠️ ' + NYA_TEST.fails.length + ' tests failed.')
+    }
+    return ret
+  },
+}
+`
+
+function getType(type: NodeType, decl: Declarations): Type {
+  if (type instanceof TypeVar) {
+    if (type.targs) {
+      todo(`Cannot use generics yet.`)
+    }
+
+    const ty = decl.types.get(names.of(type.name.val))
+    if (!ty) {
+      issue(`Type '${type.name.val}' is not defined.`)
+    }
+
+    return ty
+  } else if (type instanceof TypeEmpty) {
+    issue(`Empty type.`)
+  } else {
+    todo(`Cannot emit '${type.constructor.name}' yet.`)
+  }
+}
+
+function emitType(type: Type, props: EmitProps): string {
+  if (props.lang == "glsl") {
+    return emitGlslRepr(type.repr)
+  }
+
+  if (type instanceof ScalarTy) {
+    return type.emit(props)
+  } else if (type instanceof Struct) {
+    return type.emit
+  } else if (type instanceof Array) {
+    return emitType(type.of, props) + "[]"
+  }
+
+  return type satisfies never
+}
+
+function emitAssignmentTarget(expr: NodeExpr, block: Block): Value {
+  if (expr instanceof ExprVar) {
+    const id = names.of(expr.name.val)
+    if (expr.targs) {
+      todo("Type generics are not supported yet.")
+    }
+
+    const local = block.locals.get(id)
+    if (local) {
+      if (expr.args) {
+        issue(`Cannot call locally defined variable '${id}'.`)
+      }
+      return local
+    }
+
+    issue(`Cannot assign to variables other than locally defined ones.`)
+  } else if (expr instanceof ExprParen) {
+    return emitAssignmentTarget(expr.of.value, block)
+  } else {
+    todo(`Cannot assign to '${expr.constructor.name}' yet.`)
+  }
+}
+
+function cacheValue(value: Value, block: Block): string {
+  if (value.value == null) {
+    bug(`Cannot cache void values.`)
+  }
+
+  // We can't ignore values which are plain idents since we need to copy them before usage.
+
+  const ident = new Id("cached value").ident()
+  block.source +=
+    block.props.lang == "glsl" ?
+      `${emitType(value.type, block.props)} ${ident}=${value.value};`
+    : `var ${ident}=${value.value};`
+  return ident
+}
+
 // In the future, this will need an expected type, so that enums and structs
 // work. We'll leave it simple for now.
-export function emitExpr(expr: NodeExpr, block: Block): Value {
+function emitExpr(expr: NodeExpr, block: Block): Value {
   if (expr instanceof ExprBlock) {
     const child = block.child()
     let last: Value = { value: null, type: void_ }
@@ -332,10 +580,23 @@ export function emitExpr(expr: NodeExpr, block: Block): Value {
     }
     return last
   } else if (expr instanceof ExprBinary) {
+    if (expr.op.kind == OEq) {
+      const lhs = emitAssignmentTarget(expr.lhs, block)
+      const rhs = emitExpr(expr.rhs, block)
+      block.source += `${lhs.value}=${rhs.value};`
+      return { value: null, type: void_ }
+    }
+
     return performCall(names.of(expr.op.val), block, [
       emitExpr(expr.lhs, block),
       emitExpr(expr.rhs, block),
     ])
+  } else if (expr instanceof ExprBinaryAssign) {
+    const lhs = emitAssignmentTarget(expr.lhs, block)
+    const rhs = emitExpr(expr.rhs, block)
+    const ret = performCall(names.of(expr.op.val), block, [lhs, rhs])
+    block.source += `${lhs.value}=${ret.value};`
+    return { value: null, type: void_ }
   } else if (expr instanceof ExprUnary) {
     return performCall(names.of(expr.op.val), block, [emitExpr(expr.of, block)])
   } else if (expr instanceof ExprVar) {
@@ -525,18 +786,94 @@ export function emitExpr(expr: NodeExpr, block: Block): Value {
     return { value: ret.ident(), type: main.type }
   } else if (expr instanceof ExprParen) {
     return emitExpr(expr.of.value, block)
+  } else if (expr instanceof ExprArray) {
+    const items = expr.of.items.map((x) => emitExpr(x, block))
+    if (items.length == 0) {
+      todo("Cannot construct arrays of length zero yet.")
+    }
+    const type = items[0]!.type
+    const incorrectTypes = items.filter((x) => x.type != type)
+    if (incorrectTypes.length) {
+      issue(
+        `Mismatched types in array: ${[type, ...incorrectTypes].map((x) => `'${x}'`).join(", ")}.`,
+      )
+    }
+    if (!items.every((x) => x.value != null)) {
+      issue(`Cannot create arrays of void.`)
+    }
+    const els = items.map((x) => x.value).join(",")
+    const value =
+      block.props.lang == "glsl" ?
+        `${emitType(type, block.props)}[${items.length}](${els})`
+      : `[${els}]`
+    return { value, type: new Array(type, items.length) }
+  } else if (expr instanceof ExprFor) {
+    if (expr.bound.items.length != expr.sources.items.length) {
+      issue(
+        `'for' loops must have the same number of bound variables and sources.`,
+      )
+    }
+    if (!expr.sources.items.length) {
+      issue(`'for' loops must have at least one source.`)
+    }
+    if (!expr.block) {
+      issue(`Missing body of 'for' loop.`)
+    }
+
+    const child = block.child()
+    let size: number | null = null
+
+    const index = new Id("for loop index").ident()
+    for (let i = 0; i < expr.bound.items.length; i++) {
+      const x = expr.bound.items[i]!
+
+      const gid = names.of(x.val)
+      if (child.locals.has(gid)) {
+        issue(`Variable '${gid}' was declared twice in a 'for' loop.`)
+      }
+
+      const source = emitExpr(expr.sources.items[i]!, block)
+      if (!(source.type instanceof Array)) {
+        issue(`'for' loop sources must be arrays.`)
+      }
+      if (source.value == null) {
+        issue(`'for' loop sources must not be void.`)
+      }
+      if (size == null) {
+        size = source.type.size
+      } else if (source.type.size != size) {
+        issue(`'for' loop sources must have identical lengths.`)
+      }
+
+      const sourceCached = cacheValue(source, block)
+      const value: Value = {
+        value: `${sourceCached}[${index}]`,
+        type: source.type.of,
+      }
+      child.locals.set(gid, value)
+    }
+
+    const ret = emitExpr(expr.block, child)
+    if (ret.type != void_) {
+      todo(`The body of a 'for' loop must return 'void'; found '${ret.type}'.`)
+    }
+    const final = ret.value ? ret.value + ";" : ""
+    block.source += `for(${block.props.lang == "glsl" ? "int" : "var"} ${index}=0;${index}<${size!};${index}++) {${child.source}${final}}`
+    return { value: null, type: void_ }
   } else {
     todo(`Cannot emit '${expr.constructor.name}' yet.`)
   }
 }
 
-export function emitStmt(stmt: NodeStmt, block: Block): Value {
+function emitStmt(stmt: NodeStmt, block: Block): Value {
   if (stmt instanceof StmtComment) {
     issue("Unable to emit comments.")
   } else if (stmt instanceof StmtExpr) {
     const ret = emitExpr(stmt.expr, block)
     if (stmt.semi) {
-      block.source += ret.value + ";" // works in JS and GLSL
+      if (ret.value) {
+        block.source += ret.value + ";" // works in JS and GLSL
+      }
       return { value: null, type: void_ }
     } else {
       return ret
@@ -583,128 +920,6 @@ export function emitStmt(stmt: NodeStmt, block: Block): Value {
     return { value: null, type: void_ }
   } else {
     todo(`Cannot emit '${stmt.constructor.name}' yet.`)
-  }
-}
-
-function createFunctionDTS(
-  props: EmitProps,
-  name: Id,
-  args: { id: Id; type: Type; value: string }[],
-  ret: Type,
-): string {
-  return `function ${name.ident()}(${args.map((x) => `${encodeIdentForTypescriptDeclaration(x.id.label)}: ${emitType(x.type, props)}`).join(", ")}): ${emitType(ret, props)}`
-}
-
-function createFunction(
-  props: EmitProps,
-  name: Id,
-  args: { id: Id; type: Type; value: string }[],
-  block: Block,
-  retValue: string | null,
-  ret: Type,
-): string {
-  switch (props.lang) {
-    case "glsl":
-      return `${emitType(ret, props)} ${name.ident()}(${args.map((x) => `${emitType(x.type, props)} ${x.value!}`).join(",")}){${block.source}${retValue == null ? "" : `return(${retValue});`}}`
-    default:
-      props.lang satisfies `js:${string}`
-      return `function ${name.ident()}(${args.map((x) => x.value!).join(",")}){${block.source}${retValue == null ? "" : `return(${retValue})`}}`
-  }
-}
-
-export interface ItemEmit {
-  actual: string
-  typeOnly?: string
-  exports?: { actual: Export[]; typeOnly: Export[] }
-}
-
-export interface Export {
-  internal: string
-  exported: string
-}
-
-function emitStruct(
-  item: ItemStruct,
-  decl: Declarations,
-  props: EmitProps,
-): ItemEmit | null {
-  if (!item.name) {
-    issue(`Missing struct name.`)
-  }
-  if (!item.fields) {
-    issue(`Missing fields on struct '${item.name.val}'.`)
-  }
-  if (item.tparams) {
-    todo(`Type generics are not supported yet.`)
-  }
-
-  const id = names.of(item.name.val)
-  const fields: { id: Id; type: Type }[] = []
-  for (const field of item.fields.items) {
-    if (field.constKw) {
-      todo(`Const struct fields are not supported yet.`)
-    }
-    if (!field.name) {
-      issue(`Missing field name in struct '${item.name.val}'.`)
-    }
-    const id = names.of(field.name.val)
-    if (fields.some((x) => x.id == id)) {
-      issue(
-        `Field '${id}' was declared multiple times in struct '${item.name.val}'.`,
-      )
-    }
-    fields.push({ id, type: getType(field.type, decl) })
-  }
-
-  const idFn = new Id(item.name.val)
-  const repr = createGlslRepr(
-    item.name.val,
-    fields.map((x) => x.type.repr),
-  )
-  const name = props.lang == "glsl" ? emitGlslRepr(repr.repr) : idFn.ident()
-  const fields2 = fields.map((x, i) => ({
-    id: x.id,
-    type: x.type,
-    get:
-      props.lang == "glsl" ?
-        (source: string) => repr.fields[i]!(source)
-      : (s: string) => s + "." + fieldName(i),
-  }))
-  const struct = new Struct(id, name, repr.repr, fields2, (of) => {
-    if (props.lang == "glsl") {
-      return repr.create(of)
-    } else {
-      return `${idFn.ident()}(${of.join(",")})`
-    }
-  })
-  if (!decl.types.canDefine(id)) {
-    issue(`Type '${id}' was declared multiple times.`)
-  }
-  decl.types.init(id, struct)
-  for (const field of fields2) {
-    decl.fns.push(
-      field.id,
-      new Fn(field.id, [{ id, type: struct }], field.type, (_, [s]) =>
-        field.get(s!),
-      ),
-    )
-  }
-
-  if (props.lang == "glsl") {
-    return repr.structDecl ? { actual: repr.structDecl } : null
-  }
-
-  const fieldsEncoded = fields.map((_, i) => fieldName(i)).join(",")
-  const brand = new Id("brand")
-  return {
-    actual: `function ${idFn.ident()}(${fieldsEncoded}){return{${fieldsEncoded}}}`,
-    typeOnly: `declare const ${brand.ident()}: unique symbol
-interface ${name} { readonly [${brand.ident()}]: unique symbol; ${fields.map((field, i) => fieldName(i) + ": " + emitType(field.type, props)).join("; ")} }
-function ${idFn.ident()}(${fields.map((field) => encodeIdentForTypescriptDeclaration(field.id.label) + ": " + emitType(field.type, props)).join(", ")}): ${name}`,
-    exports: {
-      actual: [{ internal: `${idFn.ident()}`, exported: id.label }],
-      typeOnly: [],
-    },
   }
 }
 
@@ -811,73 +1026,3 @@ export function emitItem(
     todo(`Cannot emit '${item.constructor.name}' yet.`)
   }
 }
-
-function exportedName(x: string) {
-  if (isAcceptableJsIdent(x)) {
-    return x
-  } else {
-    return JSON.stringify(x)
-  }
-}
-
-export function createExports(of: string[], as: string, typeOnly: boolean) {
-  if (of.length == 0) {
-    return null
-  }
-  if (of.length == 1) {
-    return `export ${typeOnly ? "type " : ""}{ ${of[0]!} as ${exportedName(as)} }`
-  }
-  return of
-    .map(
-      (x, i) =>
-        `export ${typeOnly ? "type " : ""}{ ${x} as ${exportedName(as + "_" + (i + 1))} }`,
-    )
-    .join("\n")
-}
-
-export const NYA_LANG_TEST_PRELUDE = `const NYA_TEST = {
-  successes: [],
-  fails: [],
-  check(cb, source, message) {
-    try {
-      const value = cb()
-      if (value === true) {
-        NYA_TEST.successes.push({
-          source,
-        })
-      } else if (value === false) {
-        NYA_TEST.fails.push({
-          source,
-          message,
-        })
-      } else {
-        NYA_TEST.fails.push({
-          source,
-          message,
-          error: "test did not return a boolean value",
-        })
-      }
-    } catch (e) {
-      NYA_TEST.fails.push({
-        source,
-        message,
-        error: e,
-      })
-    }
-  },
-  report() {
-    let ret = []
-    for (const { source } of NYA_TEST.fails) {
-      ret.push(\`❌ \${source.trim().slice(0, 20).padEnd(20)}\`)
-    }
-    ret.push('ℹ️ ' + (NYA_TEST.successes.length + NYA_TEST.fails.length) + ' tests run.')
-    if (NYA_TEST.successes.length) {
-      ret.push('✅ ' + NYA_TEST.successes.length + ' tests passed.')
-    }
-    if (NYA_TEST.fails.length) {
-      ret.push('⚠️ ' + NYA_TEST.fails.length + ' tests failed.')
-    }
-    return ret
-  },
-}
-`

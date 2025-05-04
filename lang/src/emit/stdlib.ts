@@ -1,21 +1,26 @@
-import { Declarations, Fn, ScalarTy } from "./decl"
+import { Declarations, Fn } from "./decl"
 import type {
   BroadcastBinaryDefinition,
   BroadcastUnaryDefinition,
 } from "./emit"
 import { name, names } from "./id"
 import type { EmitProps, Lang } from "./props"
+import { ScalarTy } from "./type"
 
 export const num = new ScalarTy(
   name`num`,
   (props) => (props.lang == "glsl" ? "float" : "number"),
   { type: "vec", of: "float", count: 1 },
 )
-export const bool = new ScalarTy(name`bool`, () => "boolean", {
-  type: "vec",
-  of: "bool",
-  count: 1,
-})
+export const bool = new ScalarTy(
+  name`bool`,
+  (props) => (props.lang == "glsl" ? "bool" : "boolean"),
+  {
+    type: "vec",
+    of: "bool",
+    count: 1,
+  },
+)
 export const void_ = new ScalarTy(name`void`, () => "void", { type: "void" })
 
 export const types = [num, bool]

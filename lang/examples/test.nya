@@ -245,10 +245,6 @@ fn acsch(a: complex) -> complex {
   a.inv.asinh
 }
 
-fn ~=(a: complex, b: complex) -> bool {
-  a.re ~= b.re && a.im ~= b.im
-}
-
 assert sin(2 + 3 * i) ~= 9.154499146911429573 - 4.16890695996656435 * i;
 assert cos(2 + 3 * i) ~= -4.189625690968807230 - 9.109227893755336598 * i;
 assert tan(2 + 3 * i) ~= -0.0037640256415042483 + 1.0032386273536098014 * i;
@@ -256,3 +252,92 @@ assert cot(2 + 3 * i) ~= -0.0037397103763369567 - 0.9967577965693583105 * i;
 
 assert sinh(2 + 3 * i) ~= -3.590564589985779952 + 0.530921086248519805 * i;
 assert cosh(2 + 3 * i) ~= -3.724545504915322565 + 0.511822569987384609 * i;
+
+fn ~=(a: complex, b: complex) -> bool {
+  a.re ~= b.re && a.im ~= b.im
+}
+
+fn *(a: complex, b: num) -> complex {
+  a @* b
+}
+
+fn faddeeva(z: complex) -> complex {
+  // Precomputed Faddeeva function approximation coefficients (M==4)
+  // real part only
+  let A = [
+    complex { re: 0.983046454995208, im: 0.0 },
+    complex { re: -0.095450491368505, im: 0.0 },
+    complex { re: -0.106397537035019, im: 0.0 },
+    complex { re: 0.004553979597404, im: 0.0 },
+    complex { re: -0.000012773721299, im: 0.0 },
+    complex { re: -0.000000071458742, im: 0.0 },
+    complex { re: 0.000000000080803, im: 0.0 },
+    complex { re: -0.000000000000007, im: 0.0 },
+  ];
+
+  // imaginary part only
+  let B = [
+    complex { re: 0.0, im: -1.338045597353875 },
+    complex { re: 0.0, im: 0.822618936152688 },
+    complex { re: 0.0, im: -0.044470795125534 },
+    complex { re: 0.0, im: -0.000502542048995 },
+    complex { re: 0.0, im: 0.000011914499129 },
+    complex { re: 0.0, im: -0.000000020157171 },
+    complex { re: 0.0, im: -0.000000000001558 },
+    complex { re: 0.0, im: 0.000000000000003 },
+  ];
+
+  // real part only
+  let C = [
+    complex { re: 0.392699081698724, im: 0.0 },
+    complex { re: 1.178097245096172, im: 0.0 },
+    complex { re: 1.963495408493621, im: 0.0 },
+    complex { re: 2.748893571891069, im: 0.0 },
+    complex { re: 3.534291735288517, im: 0.0 },
+    complex { re: 4.319689898685965, im: 0.0 },
+    complex { re: 5.105088062083414, im: 0.0 },
+    complex { re: 5.890486225480862, im: 0.0 },
+  ];
+
+  let s = 2.75;
+  let sgni = if z.im < 0.0 { -1.0 } else { 1.0 };
+  z *= sgni;
+
+  let t = z + complex { re: 0.0, im: 0.5 * s };
+  let w = complex { re: 0.0, im: 0.0 };
+
+  for a, b, c in A, B, C {
+    w += (a + t * b) / (c * c - t * t);
+  }
+
+  if sgni < 0.0 {
+    w = 2.0 * exp(-z * z) - w;
+  }
+
+  w
+}
+
+fn erf_pos(z: complex) -> complex {
+  1.0 - exp(-z * z) * faddeeva(z * i)
+}
+
+fn erf(z: complex) -> complex {
+  if z.re < 0.0 {
+    -erf_pos(-z)
+  } else {
+    erf_pos(z)
+  }
+}
+
+struct color {
+  x: num,
+  y: num,
+  z: num,
+  w: num,
+}
+
+fn main(z: complex) -> color {
+  z = 3.0 * z;
+  let result = erf(z);
+  color { x: abs(result), y: 0.0, z: 0.0, w: 1.0 }
+}

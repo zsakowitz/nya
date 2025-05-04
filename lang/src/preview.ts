@@ -1,5 +1,6 @@
 import { h, hx } from "@/jsx"
 import { doc } from "prettier"
+import REGL from "regl"
 import source from "../examples/test.nya"
 import { Code } from "./ast/issue"
 import { ORAngle, ORBrace, ORBrack, ORParen } from "./ast/kind"
@@ -8,6 +9,7 @@ import { print } from "./ast/print"
 import { createStream, TokenGroup } from "./ast/stream"
 import type { Token } from "./ast/token"
 import { createExports, emitItem, NYA_LANG_TEST_PRELUDE } from "./emit/emit"
+import { name } from "./emit/id"
 import { EmitProps, type Lang } from "./emit/props"
 import { createStdlibDecls } from "./emit/stdlib"
 import { printVanilla } from "./prettier"
@@ -170,6 +172,86 @@ function showEmit(lang: Lang) {
   }
 }
 
+function showEmitTestsGl(lang: "glsl") {
+  let fragDebug
+  try {
+    console.time("emit")
+    const decl = createStdlibDecls()
+    const props = new EmitProps(lang)
+    const emit = result.items
+      .map((x) => emitItem(x, decl, props)?.actual)
+      .filter((x) => x != null)
+      .join("\n")
+    console.timeEnd("emit")
+    const cv = hx("canvas", {
+      width: "800",
+      height: "800",
+      class: "size-[400px]",
+    })
+    const gl = cv.getContext("webgl2")!
+    gl.clearColor(0.0, 0.0, 0.0, 1.0)
+    gl.clear(gl.COLOR_BUFFER_BIT)
+    const regl = REGL(gl)
+    const mainFn = decl.fns.get(name`main`)?.[0]
+    if (!mainFn) {
+      throw new Error("No 'main' function was declared.")
+    }
+    if (mainFn.args.length != 1) {
+      throw new Error("'main' should accept a single argument.")
+    }
+    const r1 = mainFn.args[0]!.type.repr
+    if (!(r1.type == "vec" && r1.of == "float" && r1.count == 2)) {
+      throw new Error("'main' should accept a struct of 2 'num'.")
+    }
+    const r2 = mainFn.ret.repr
+    if (!(r2.type == "vec" && r2.of == "float" && r2.count == 4)) {
+      throw new Error("'main' should return a struct of 4 'num'.")
+    }
+    const frag =
+      "#version 300 es\nprecision highp float;\nin vec4 pos;\nout vec4 color;\n" +
+      emit +
+      `
+void main() {
+  color = ${mainFn.id.ident()}(pos.xy);
+}`
+    fragDebug = frag
+      .split("\n")
+      .map((x, i) => i.toString().padStart(3) + " " + x)
+      .join("\n")
+    const program = regl({
+      vert: `#version 300 es
+precision highp float;
+in vec2 aVertexPosition;
+out vec4 pos;
+void main() {
+  gl_Position = pos = vec4(aVertexPosition, 0, 1);
+}`,
+      frag,
+      attributes: {
+        aVertexPosition: [
+          [-1, 1],
+          [-1, -1],
+          [1, 1],
+          [1, -1],
+          [-1, -1],
+          [1, 1],
+        ],
+      },
+      count: 6,
+    })
+    show(cv)
+    program()
+  } catch (e) {
+    if (fragDebug) {
+      hr()
+      pre(fragDebug)
+    }
+    hr()
+    pre(String(e))
+    console.error("[glsl emit]", e)
+  }
+}
+
 function showEmitTests(lang: Lang) {
   try {
     console.time("emit")
@@ -201,8 +283,9 @@ const parts = Object.entries({
   prettier: showPrettier,
   ast: showPrinted,
   "emit-js:native": () => showEmit("js:native"),
-  "emit-js:native+tests": () => showEmitTests("js:native-tests"),
+  "emit+tests-js:native": () => showEmitTests("js:native-tests"),
   "emit-glsl": () => showEmit("glsl"),
+  "emit+tests:glsl": () => showEmitTestsGl("glsl"),
 })
 
 const chosen = new Set(

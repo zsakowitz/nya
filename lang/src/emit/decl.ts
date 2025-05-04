@@ -1,38 +1,6 @@
-import { type Id } from "./id"
+import type { Id } from "./id"
 import type { EmitProps } from "./props"
-import type { GlslRepr, GlslReprScalar } from "./repr"
-
-export class ScalarTy {
-  constructor(
-    readonly id: Id,
-    readonly emit: (props: EmitProps) => string,
-    readonly repr: GlslReprScalar,
-  ) {}
-
-  toString() {
-    return `scalar ${this.id.label}`
-  }
-
-  cons(value: string[]) {
-    return value[0]!
-  }
-}
-
-export class Struct {
-  constructor(
-    readonly id: Id,
-    readonly emit: string,
-    readonly repr: GlslRepr,
-    readonly fields: { id: Id; type: Type; get: (source: string) => string }[],
-    readonly cons: (of: string[]) => string,
-  ) {}
-
-  toString() {
-    return `struct ${this.id.label}`
-  }
-}
-
-export type Type = ScalarTy | Struct
+import type { Type } from "./type"
 
 export class Fn {
   constructor(

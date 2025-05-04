@@ -86,7 +86,7 @@ export class StructArg extends Node {
   }
 }
 
-export class ExprLabel extends Node {
+export class Label extends Node {
   constructor(
     readonly label: Token<typeof TLabel>,
     readonly colon: Token<typeof OColon> | null,

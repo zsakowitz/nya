@@ -10,14 +10,26 @@ export interface GlslReprVec {
 
 export type GlslReprScalar = { type: "void" } | GlslReprVec
 
-export type GlslRepr = GlslReprScalar | { type: "struct"; id: Id }
+export type GlslRepr =
+  | GlslReprScalar
+  | { type: "struct"; id: Id }
+  | { type: "array"; of: GlslRepr; size: number }
 
 export function emitGlslRepr(repr: GlslRepr): string {
   if (repr.type == "void") {
-    return "bool"
+    return "void"
   }
   if (repr.type == "struct") {
     return `s${repr.id.value}`
+  }
+  if (repr.type == "array") {
+    let of = repr.of
+    let sizes = `[${repr.size}]`
+    while (of.type == "array") {
+      sizes += `[${of.size}]`
+      of = of.of
+    }
+    return emitGlslRepr(of) + sizes
   }
   if (repr.of == "float") {
     return repr.count == 1 ? "float" : `vec${repr.count}`

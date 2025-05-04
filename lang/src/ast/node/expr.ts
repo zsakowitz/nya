@@ -79,7 +79,7 @@ import type { Token } from "../token"
 import type {
   Bracketed,
   Else,
-  ExprLabel,
+  Label,
   List,
   MatchArm,
   PlainList,
@@ -188,7 +188,7 @@ export class ExprIf extends NodeExpr {
 
 export class ExprFor extends NodeExpr {
   constructor(
-    readonly label: ExprLabel | null,
+    readonly label: Label | null,
     readonly kw: Token<typeof KFor>,
     readonly bound: PlainList<Ident>,
     readonly eq: Token<typeof KIn> | null,
@@ -351,6 +351,17 @@ export class ExprBinary extends NodeExpr {
   }
 }
 
+export class ExprBinaryAssign extends NodeExpr {
+  constructor(
+    readonly lhs: NodeExpr,
+    readonly op: Token<ExprBinaryOp>,
+    readonly eq: Token<typeof OEq>,
+    readonly rhs: NodeExpr,
+  ) {
+    super(lhs.start, rhs.end)
+  }
+}
+
 export class ExprRange extends NodeExpr {
   constructor(
     readonly lhs: NodeExpr | null,
@@ -373,7 +384,7 @@ export class ExprCast extends NodeExpr {
 
 export class ExprBlock extends NodeExpr {
   constructor(
-    readonly label: ExprLabel | null,
+    readonly label: Label | null,
     readonly of: List<NodeStmt>,
   ) {
     super((label ?? of).start, of.end)

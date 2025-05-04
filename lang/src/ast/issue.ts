@@ -47,6 +47,7 @@ export const Code = Object.freeze({
   UseDotAsAStructNameForDestructuringInPatterns: 246,
   FnReturnTypeMustNotBeBlock: 247,
   CommentsMustBeItemsOrStatementsWhenPrettyPrinting: 248,
+  ShouldHaveAlreadyParsedBinaryOperator: 249,
 
   // Emit errors
   ItemDeclaredTwice: 301,

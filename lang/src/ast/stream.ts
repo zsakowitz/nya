@@ -150,6 +150,10 @@ export class Stream {
     this.index++
   }
 
+  possiblyExponentialTimeBacktrack() {
+    this.index--
+  }
+
   loc() {
     return this.next()?.start ?? this.end
   }

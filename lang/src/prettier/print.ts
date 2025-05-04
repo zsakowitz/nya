@@ -59,6 +59,7 @@ import {
   ExprArray,
   ExprArrayByRepetition,
   ExprBinary,
+  ExprBinaryAssign,
   ExprBlock,
   ExprCall,
   ExprCast,
@@ -91,7 +92,7 @@ import {
   EnumMapVariant,
   EnumVariant,
   ExposeAliases,
-  ExprLabel,
+  Label,
   FnParam,
   FnReturnType,
   FnUsage,
@@ -527,6 +528,22 @@ export function print(node: Node | Token<number>, sb: Subprint): Doc {
         ]),
       ])
     }
+    case ExprBinaryAssign: {
+      // TODO: output like prettier for js
+      const self = node as ExprBinaryAssign
+      const needsL = needsParens(self.eq.kind, op(self.lhs), false)
+      const needsR = needsParens(self.eq.kind, op(self.rhs), true)
+      return group([
+        needsL ? sb.paren("lhs", true) : sb("lhs"),
+        indent([
+          line,
+          sb("op"),
+          sb("eq"),
+          " ",
+          needsR ? sb.paren("rhs", true) : sb("rhs"),
+        ]),
+      ])
+    }
     case ExprVarParam:
       return [sb("name"), sb.opt("without"), sb.opt("type")]
     case VarWithout:
@@ -729,7 +746,7 @@ export function print(node: Node | Token<number>, sb: Subprint): Doc {
         sb("sources"),
         sb("block"),
       ]
-    case ExprLabel:
+    case Label:
       return [sb("label"), sb.alt("colon", ":"), " "]
     case ExprMatch:
       return [
