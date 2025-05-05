@@ -535,7 +535,7 @@ export const NYA_LANG_TEST_PRELUDE = `const NYA_TEST = {
   report() {
     let ret = []
     for (const { source } of NYA_TEST.fails) {
-      ret.push(\`❌ \${source.trim().slice(0, 20).padEnd(20)}\`)
+      ret.push(\`❌ \${source.trim().slice(0, 80)}\`)
     }
     ret.push('ℹ️ ' + (NYA_TEST.successes.length + NYA_TEST.fails.length) + ' tests run.')
     if (NYA_TEST.successes.length) {

@@ -3,13 +3,33 @@ struct complex {
   im: num,
 }
 
+fn complex(re: num, im: num) -> complex {
+  complex { re, im }
+}
+
+fn ==(a: complex, b: complex) -> bool {
+  a.re == b.re && a.im == b.im
+}
+
+assert complex(2.0, 3.0) == complex(2.0, 3.0);
+
+fn ~=(a: complex, b: complex) -> bool {
+  a.re ~= b.re && a.im ~= b.im
+}
+
+assert complex(2.0, 3.0) ~= complex(2.0, 3.0);
+
 fn i() -> complex {
   complex { re: 0.0, im: 1.0 }
 }
 
+assert i() == complex(0.0, 1.0);
+
 fn +(a: complex, b: complex) -> complex {
   a @+ b
 }
+
+assert complex(0.1, 4.2) + complex(0.2, -5.7) ~= complex(0.3, -1.5);
 
 fn +(a: num, b: complex) -> complex {
   complex { re: a + b.re, im: b.im }
@@ -47,6 +67,8 @@ fn conj(a: complex) -> complex {
   complex { re: a.re, im: -a.im }
 }
 
+assert conj(2 + 3 * i) == 2 - 3 * i;
+
 fn /(a: complex, b: num) -> complex {
   a @/ b
 }
@@ -81,14 +103,6 @@ fn arg(a: complex) -> num {
 
 fn ==(a: complex, b: num) -> bool {
   a.re == b && a.im == 0.0
-}
-
-fn ==(a: complex, b: complex) -> bool {
-  a.re == b.re && a.im == b.im
-}
-
-fn ~=(a: complex, b: complex) -> bool {
-  a.re ~= b.re && a.im ~= b.im
 }
 
 fn ln(a: complex) -> complex {
@@ -430,9 +444,13 @@ fn main(z: complex) -> rgba {
   z = 3.0 * z;
   let c = z;
 
-  for a in [0.0; 20] {
-    if z.abs < 2.0 {
-      z = z * z + c;
+  if z.abs > 2.0 {
+    z = erf(z);
+  } else {
+    for a in [0.0; 20] {
+      if z.abs < 2.0 {
+        z = z * z + c
+      }
     }
   }
 

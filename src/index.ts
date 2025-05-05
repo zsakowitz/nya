@@ -4,8 +4,8 @@ if (
   location.href.includes("nyalang") ||
   location.href.includes("localhost") // FIXME: remove
 ) {
-  await import("../lang/src/bench")
-  // await import("../lang/src/preview")
+  // await import("../lang/src/bench")
+  await import("../lang/src/preview")
 } else {
   try {
     if (location.href.includes("showmanifest")) {
