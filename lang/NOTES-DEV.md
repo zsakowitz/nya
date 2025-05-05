@@ -113,15 +113,3 @@ There are many stages of internal layers:
    1. unified function call/variable syntax
    2. identifiers and symbols are replaced with ids
    3. no parentheses
-
-## Performance
-
-Tested in Chrome.
-
-**base performance**
-
-```js
-//       js:native: 1.5ms ± 108µs     (5 groups, 1000/group)
-// js:native-tests: 1.5ms ± 127µs     (5 groups, 1000/group)
-//            glsl: 1.4ms ± 16µs      (5 groups, 1000/group)
-```
