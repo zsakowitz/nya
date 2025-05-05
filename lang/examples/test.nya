@@ -117,6 +117,10 @@ fn **(a: complex, b: complex) -> complex {
   exp(b * ln(a))
 }
 
+fn **(a: complex, b: num) -> complex {
+  exp(b * ln(a))
+}
+
 fn rt(r: num, t: num) -> complex {
   r * t.cis
 }

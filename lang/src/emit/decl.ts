@@ -47,14 +47,22 @@ export class IdMap<T> {
 }
 
 export class IdMapMany<T> {
-  private readonly map: Record<number, T[]> = Object.create(null)
+  private readonly rec: Record<number, T[]> = Object.create(null)
 
   get(id: Id) {
-    return this.map[id.value]
+    return this.rec[id.value]
   }
 
   push(id: Id, value: T) {
-    ;(this.map[id.value] ??= []).push(value)
+    ;(this.rec[id.value] ??= []).push(value)
+  }
+
+  map<U>(f: (items: T[], index: number, array: T[][]) => U): U[] {
+    return Object.values(this.rec).map(f)
+  }
+
+  mapEach<U>(f: (items: T, index: number, array: T[]) => U): U[] {
+    return Object.values(this.rec).flat().map(f)
   }
 }
 

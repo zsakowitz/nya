@@ -1,4 +1,5 @@
-import { h, hx } from "@/jsx"
+import { h, hx, t } from "@/jsx"
+import FuzzySearch from "fuzzy-search"
 import { doc, formatWithCursor } from "prettier"
 import REGL from "regl"
 import source from "../examples/test.nya"
@@ -277,6 +278,7 @@ function createRepl(lang: Lang) {
 
   return {
     emit,
+    decl,
     run(uc: string) {
       const stream = createStream(uc, { comments: false })
       if (stream.issues.entries.length) {
@@ -361,7 +363,7 @@ void main() {
 }
 
 function showJointRepl(lang: Exclude<Lang, "glsl">, langGl: "glsl") {
-  const { emit: emitJs, run: runJs } = createRepl(lang)
+  const { emit: emitJs, run: runJs, decl } = createRepl(lang)
   const { emit: emitGl, run: runGl } = createRepl(langGl)
   const { cv, go: showGl } = createCanvas()
   const area = hx("textarea", {
@@ -383,16 +385,24 @@ function showJointRepl(lang: Exclude<Lang, "glsl">, langGl: "glsl") {
     "block border border-[--nya-border] rounded-b font-mono px-2 py-1 bg-[--nya-bg] text-sm -mt-4 text-left",
     "Press Ctrl+Enter or click here to format code.",
   )
+  const libnow = t("")
+  const lib = h(
+    "overflow-y-auto absolute top-0 left-0 w-full h-full flex flex-col font-mono text-xs whitespace-pre-wrap text-[--nya-text-prose]",
+    h("font-semibold text-[--nya-text]", libnow),
+    ...decl.fns.mapEach((fn) => fn.toString()).join("\n"),
+  )
   hr()
   show(
     h(
       "flex pl-4 py-4 gap-4",
       h("flex flex-col h-full gap-4 w-[50ch]", area, ret, time, formatBtn),
+      h("flex relative w-[20rem]", lib),
       cv,
     ),
   )
   cv.classList.add("opacity-0")
   area.addEventListener("input", () => {
+    checkCurrentFn()
     const start = performance.now()
     try {
       if (area.value.replace(/\/\/[^\n]*/g, "").match(/\bz\b/)) {
@@ -420,6 +430,7 @@ function showJointRepl(lang: Exclude<Lang, "glsl">, langGl: "glsl") {
       format()
     }
   })
+  area.addEventListener("selectionchange", checkCurrentFn)
   formatBtn.addEventListener("click", format)
   formatBtn.addEventListener("pointerdown", format)
   async function format() {
@@ -433,6 +444,38 @@ function showJointRepl(lang: Exclude<Lang, "glsl">, langGl: "glsl") {
     })
     area.value = formatted
     area.setSelectionRange(cursorOffset, cursorOffset, "none")
+  }
+  const allNames = decl.fns.map((x) => x[0]!.id.label)
+  const search = new FuzzySearch(allNames, undefined, { sort: true })
+  async function checkCurrentFn() {
+    libnow.data = ""
+    if (area.selectionStart != area.selectionEnd) {
+      return
+    }
+    const c = area.selectionStart
+    const s = area.value
+      .slice(0, c)
+      .match(/(?:[+\-*\/#~|&@\\=!<>%]+|\w+)\s*(?:\(\s*)?$/)?.[0]
+    const e = area.value
+      .slice(c)
+      .match(/^\s*(?:\w+|[+\-*\/#~|&@\\=!<>%]+)/)?.[0]
+    const word = ((s ?? "") + (e ?? "")).match(
+      /[+\-*\/#~|&@\\=!<>%]+|[A-Za-z_]\w*/,
+    )?.[0]
+    if (!word) {
+      return
+    }
+    const fns = search
+      .search(word)
+      .map((x) => decl.fns.get(names.of(x)))
+      .filter((x) => x != null)
+    if (fns.length) {
+      libnow.data =
+        fns
+          .flat()
+          .map((x) => x.toString())
+          .join("\n") + "\n\n"
+    }
   }
 }
 
