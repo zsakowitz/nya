@@ -80,6 +80,7 @@ const C_SLASH = "/".charCodeAt(0)
 const C_DQUOTE = '"'.charCodeAt(0)
 const C_LBRACE = "{".charCodeAt(0)
 
+// PERF IMPROVEMENTS OVER TIME
 // 610.6µs ± 23µs baseline
 // 552.8µs ± 32µs adding charcodeat
 // 528.9µs ± ??µs whitespace, d/dx, plain ident
@@ -128,8 +129,8 @@ function isIdCont(cc: number) {
 export function tokens(source: string, props: ToTokensProps) {
   const ret: Token<number>[] = []
   const issues = new Issues()
-
-  for (let i = 0; i < source.length; ) {
+  const length = source.length
+  for (let i = 0; i < length; ) {
     const start = i
     const char = source[i]!
     const cc = source.charCodeAt(i)

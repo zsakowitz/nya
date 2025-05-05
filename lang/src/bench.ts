@@ -1,7 +1,9 @@
 import source from "../examples/test.nya"
 import { parse } from "./ast/parse"
 import { createStream } from "./ast/stream"
-import type { Lang } from "./emit/props"
+import { EmitProps, type Lang } from "./emit/props"
+import { createStdlibDecls, emitItem } from "./pkg"
+import { result } from "./preview"
 
 const ret: any[] = []
 
@@ -12,9 +14,9 @@ function go(lang: Lang, rounds: number) {
       comments: false,
     })
     ret.push(parse(stream))
-    // const decl = createStdlibDecls()
-    // const props = new EmitProps(lang)
-    // result.items.forEach((x) => ret.push(emitItem(x, decl, props)))
+    const decl = createStdlibDecls()
+    const props = new EmitProps(lang)
+    result.items.forEach((x) => ret.push(emitItem(x, decl, props)))
   }
 }
 

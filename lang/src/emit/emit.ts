@@ -634,337 +634,374 @@ function cacheValue(
 
 // In the future, this will need an expected type, so that enums and structs
 // work. We'll leave it simple for now.
-function emitExpr(expr: NodeExpr, block: Block): Value {
-  if (expr instanceof ExprBlock) {
-    const child = block.child()
-    let last: Value = { value: null, type: void_ }
-    for (const stmt of expr.of.items) {
-      if (stmt instanceof StmtComment) continue
-      if (last.value) {
-        block.source += last.value + ";"
+function emitExpr<T extends NodeExpr>(
+  expr: [T] extends [ExprBlock] ? never : T,
+  block: Block,
+): Value {
+  const raw = expr as NodeExpr
+  switch (expr.constructor) {
+    case ExprBlock:
+      return emitExprBlock(raw as ExprBlock, block)
+    case ExprBinary: {
+      const expr = raw as ExprBinary
+      if (expr.op.kind == OEq) {
+        const lhs = emitAssignmentTarget(expr.lhs, block)
+        const rhs = emitExpr(expr.rhs, block)
+        block.source += `${lhs.value}=${rhs.value};`
+        return { value: null, type: void_ }
       }
-      last = emitStmt(stmt, child)
+
+      return performCall(names.of(expr.op.val), block, [
+        emitExpr(expr.lhs, block),
+        emitExpr(expr.rhs, block),
+      ])
     }
-    if (child.source) {
-      block.source += child.source
-    }
-    return last
-  } else if (expr instanceof ExprBinary) {
-    if (expr.op.kind == OEq) {
+    case ExprBinaryAssign: {
+      const expr = raw as ExprBinaryAssign
       const lhs = emitAssignmentTarget(expr.lhs, block)
       const rhs = emitExpr(expr.rhs, block)
-      block.source += `${lhs.value}=${rhs.value};`
+      const ret = performCall(names.of(expr.op.val), block, [lhs, rhs])
+      block.source += `${lhs.value}=${ret.value};`
       return { value: null, type: void_ }
     }
-
-    return performCall(names.of(expr.op.val), block, [
-      emitExpr(expr.lhs, block),
-      emitExpr(expr.rhs, block),
-    ])
-  } else if (expr instanceof ExprBinaryAssign) {
-    const lhs = emitAssignmentTarget(expr.lhs, block)
-    const rhs = emitExpr(expr.rhs, block)
-    const ret = performCall(names.of(expr.op.val), block, [lhs, rhs])
-    block.source += `${lhs.value}=${ret.value};`
-    return { value: null, type: void_ }
-  } else if (expr instanceof ExprUnary) {
-    return performCall(names.of(expr.op.val), block, [emitExpr(expr.of, block)])
-  } else if (expr instanceof ExprVar) {
-    const id = names.of(expr.name.val)
-    if (expr.targs) {
-      todo("Type generics are not supported yet.")
+    case ExprUnary: {
+      const expr = raw as ExprUnary
+      return performCall(names.of(expr.op.val), block, [
+        emitExpr(expr.of, block),
+      ])
     }
-
-    const local = block.locals.get(id)
-    if (local) {
-      if (expr.args) {
-        issue(`Cannot call locally defined variable '${id}'.`)
+    case ExprVar: {
+      const expr = raw as ExprVar
+      const id = names.of(expr.name.val)
+      if (expr.targs) {
+        todo("Type generics are not supported yet.")
       }
-      return local
-    }
 
-    return performCall(
-      id,
-      block,
-      expr.args ? expr.args.items.map((x) => emitExpr(x, block)) : [],
-    )
-  } else if (expr instanceof ExprLit) {
-    switch (expr.value.kind) {
-      case TSym:
-        todo("Symbols are not supported yet.")
-
-      case TFloat:
-      case TInt:
-        if (expr.value.val.includes("p")) {
-          todo("Hexadecimal literals with exponents are not supported yet.")
+      const local = block.locals.get(id)
+      if (local) {
+        if (expr.args) {
+          issue(`Cannot call locally defined variable '${id}'.`)
         }
-        return {
-          value: parseFloat(expr.value.val).toExponential(),
-          type: num,
+        return local
+      }
+
+      return performCall(
+        id,
+        block,
+        expr.args ? expr.args.items.map((x) => emitExpr(x, block)) : [],
+      )
+    }
+    case ExprLit: {
+      const expr = raw as ExprLit
+      switch (expr.value.kind) {
+        case TSym:
+          todo("Symbols are not supported yet.")
+
+        case TFloat:
+        case TInt:
+          if (expr.value.val.includes("p")) {
+            todo("Hexadecimal literals with exponents are not supported yet.")
+          }
+          return {
+            value: parseFloat(expr.value.val).toExponential(),
+            type: num,
+          }
+
+        case KTrue:
+          return { value: "true", type: bool }
+        case KFalse:
+          return { value: "false", type: bool }
+      }
+    }
+    case ExprStruct: {
+      const expr = raw as ExprStruct
+      const id = names.of(expr.name.val)
+      if (id == name`.`) {
+        todo(`Implicit struct names are not supported yet.`)
+      }
+      if (block.locals.has(id)) {
+        issue(`Locally defined variable '${id}' is not a struct type.`)
+      }
+
+      const ty = block.decl.types.get(id)
+      if (!(ty instanceof Struct)) {
+        issue(`Type '${id}' is not a struct.`)
+      }
+
+      // Missing args are checked in parsing stage; assume they exist.
+      const args = expr.args?.items ?? []
+
+      if (args.length != ty.fields.length) {
+        const missing = ty.fields
+          .map((x) => x.id)
+          .filter((x) => !args.some((arg) => names.of(arg.name.val) == x))
+        if (missing.length) {
+          issue(
+            `Missing fields ${missing.map((x) => `'${x}'`).join(", ")} to struct '${ty.id}'.`,
+          )
+        } else {
+          issue(
+            `Incorrect fields were passed to struct '${ty.id}': expected ${ty.fields.length}, received ${args.length}.`,
+          )
         }
-
-      case KTrue:
-        return { value: "true", type: bool }
-      case KFalse:
-        return { value: "false", type: bool }
-    }
-  } else if (expr instanceof ExprStruct) {
-    const id = names.of(expr.name.val)
-    if (id == name`.`) {
-      todo(`Implicit struct names are not supported yet.`)
-    }
-    if (block.locals.has(id)) {
-      issue(`Locally defined variable '${id}' is not a struct type.`)
-    }
-
-    const ty = block.decl.types.get(id)
-    if (!(ty instanceof Struct)) {
-      issue(`Type '${id}' is not a struct.`)
-    }
-
-    // Missing args are checked in parsing stage; assume they exist.
-    const args = expr.args?.items ?? []
-
-    if (args.length != ty.fields.length) {
-      const missing = ty.fields
-        .map((x) => x.id)
-        .filter((x) => !args.some((arg) => names.of(arg.name.val) == x))
-      if (missing.length) {
-        issue(
-          `Missing fields ${missing.map((x) => `'${x}'`).join(", ")} to struct '${ty.id}'.`,
-        )
-      } else {
-        issue(
-          `Incorrect fields were passed to struct '${ty.id}': expected ${ty.fields.length}, received ${args.length}.`,
-        )
       }
-    }
 
-    const ids: Record<number, Value> = Object.create(null)
-    for (const arg of args) {
-      const id = names.of(arg.name.val)
-      const value =
-        arg.expr ?
-          emitExpr(arg.expr, block)
-        : (block.locals.get(id) ?? performCall(id, block, []))
-      if (id.value in ids) {
-        issue(`Field '${id}' was passed multiple times to struct '${ty.id}'.`)
+      const ids: Record<number, Value> = Object.create(null)
+      for (const arg of args) {
+        const id = names.of(arg.name.val)
+        const value =
+          arg.expr ?
+            emitExpr(arg.expr, block)
+          : (block.locals.get(id) ?? performCall(id, block, []))
+        if (id.value in ids) {
+          issue(`Field '${id}' was passed multiple times to struct '${ty.id}'.`)
+        }
+        ids[id.value] = value
       }
-      ids[id.value] = value
-    }
 
-    return {
-      value: ty.cons(
-        ty.fields.map(({ id, type }): string => {
-          const value = ids[id.value]
-          if (!value) {
-            issue(`Missing field '${id}' to struct '${ty.id}'.`)
-          }
-
-          if (type != value.type) {
-            issue(
-              `Expected '${ty.id}.${id}' to be '${type}'; received '${value.type}'.`,
-            )
-          }
-
-          if (value.value == null) {
-            issue(
-              `Cannot construct struct '${ty.id}' with a void value for '${id}'.`,
-            )
-          }
-
-          return value.value
-        }),
-      ),
-      type: ty,
-    }
-  } else if (expr instanceof ExprEmpty) {
-    issue(`Empty expression.`)
-  } else if (expr instanceof ExprProp) {
-    if (expr.targs) {
-      todo(`Type generics are not supported yet.`)
-    }
-    if (!expr.prop.name) {
-      todo(`Missing function name in dotted access.`)
-    }
-    const args = [emitExpr(expr.on, block)]
-    if (expr.args) {
-      for (const arg of expr.args.items) {
-        args.push(emitExpr(arg, block))
-      }
-    }
-    return performCall(names.of(expr.prop.name.val), block, args)
-  } else if (expr instanceof ExprIf) {
-    const cond = emitExpr(expr.condition, block)
-    if (cond.type != bool) {
-      issue(`The condition of an 'if' statement must be a boolean value.`)
-    }
-    if (cond.value == null) {
-      issue(`The condition of an 'if' statement must not be void.`)
-    }
-
-    const child1 = block.child()
-    if (!expr.block) {
-      issue(`Missing block on 'if' statement.`)
-    }
-    const main = emitExpr(expr.block, child1)
-
-    const child2 = block.child()
-    let alt: Value = { value: null, type: void_ }
-    if (expr.rest) {
-      if (!expr.rest.block) {
-        issue(`Missing block on 'else' branch of 'if' statement.`)
-      }
-      alt = emitExpr(expr.rest.block, child2)
-    }
-
-    if (main.type != alt.type) {
-      if (main.type != void_ && !expr.rest) {
-        issue(`An 'if' statement with a value must have an 'else' block.`)
-      } else {
-        issue(`Branches of 'if' statement has different types.`)
-      }
-    }
-
-    // Optimization for ternaries, since those are quite frequent
-    if (main.value && alt.value && !child1.source && !child2.source) {
       return {
-        value: `(${cond.value})?(${main.value}):(${alt.value})`,
-        type: main.type,
+        value: ty.cons(
+          ty.fields.map(({ id, type }): string => {
+            const value = ids[id.value]
+            if (!value) {
+              issue(`Missing field '${id}' to struct '${ty.id}'.`)
+            }
+
+            if (type != value.type) {
+              issue(
+                `Expected '${ty.id}.${id}' to be '${type}'; received '${value.type}'.`,
+              )
+            }
+
+            if (value.value == null) {
+              issue(
+                `Cannot construct struct '${ty.id}' with a void value for '${id}'.`,
+              )
+            }
+
+            return value.value
+          }),
+        ),
+        type: ty,
       }
     }
-
-    // Optimization for plain 'if' block when there is no alternative
-    if (!alt.value && !child2.source) {
-      block.source += `if(${cond.value}){${child1.source}${main.value == null ? "" : main.value + ";"}}`
-      return { value: null, type: void_ }
-    }
-
-    // Optimization for when 'if' block is only for side-effects
-    if (main.type == void_ || !main.value || !alt.value) {
-      block.source += `if(${cond.value}){${child1.source}${main.value == null ? "" : main.value + ";"}}else{${child2.source}${alt.value == null ? "" : alt.value + ";"}}`
-      return { value: null, type: void_ }
-    }
-
-    const ret = new Id("return_value")
-    if (block.props.lang == "glsl") {
-      block.source += `${emitType(main.type, block.props)} ${ret.ident()};`
-    } else {
-      block.source += `var ${ret.ident()};`
-    }
-    block.source += `if(${cond.value}){${child1.source}${ret.ident()}=${main.value};}else{${child2.source}${ret.ident()}=${alt.value};}`
-    return { value: ret.ident(), type: main.type }
-  } else if (expr instanceof ExprParen) {
-    return emitExpr(expr.of.value, block)
-  } else if (expr instanceof ExprArray) {
-    const items = expr.of.items.map((x) => emitExpr(x, block))
-    if (items.length == 0) {
-      todo("Cannot construct arrays of length zero yet.")
-    }
-    const type = items[0]!.type
-    const incorrectTypes = items.filter((x) => x.type != type)
-    if (incorrectTypes.length) {
-      issue(
-        `Mismatched types in array: ${[type, ...incorrectTypes].map((x) => `'${x}'`).join(", ")}.`,
-      )
-    }
-    if (!items.every((x) => x.value != null)) {
-      issue(`Cannot create arrays of void.`)
-    }
-    const els = items.map((x) => x.value).join(",")
-    const value =
-      block.props.lang == "glsl" ?
-        `${emitType(type, block.props)}[${items.length}](${els})`
-      : `[${els}]`
-    return { value, type: new Array(type, items.length) }
-  } else if (expr instanceof ExprFor) {
-    if (expr.bound.items.length != expr.sources.items.length) {
-      issue(
-        `'for' loops must have the same number of bound variables and sources.`,
-      )
-    }
-    if (!expr.sources.items.length) {
-      issue(`'for' loops must have at least one source.`)
-    }
-    if (!expr.block) {
-      issue(`Missing body of 'for' loop.`)
-    }
-
-    const child = block.child()
-    let size: number | null = null
-
-    const index = new Id("for loop index").ident()
-    for (let i = 0; i < expr.bound.items.length; i++) {
-      const x = expr.bound.items[i]!
-
-      const gid = names.of(x.val)
-      if (child.locals.has(gid)) {
-        issue(`Variable '${gid}' was declared twice in a 'for' loop.`)
+    case ExprEmpty:
+      issue(`Empty expression.`)
+    case ExprProp: {
+      const expr = raw as ExprProp
+      if (expr.targs) {
+        todo(`Type generics are not supported yet.`)
       }
-
-      const source = emitExpr(expr.sources.items[i]!, block)
-      if (!(source.type instanceof Array)) {
-        issue(`'for' loop sources must be arrays.`)
+      if (!expr.prop.name) {
+        todo(`Missing function name in dotted access.`)
       }
-      if (source.value == null) {
-        issue(`'for' loop sources must not be void.`)
-      }
-      if (size == null) {
-        size = source.type.size
-      } else if (source.type.size != size) {
-        issue(`'for' loop sources must have identical lengths.`)
-      }
-
-      const sourceCached = cacheValue(source, block, false)
-      const value: Value = {
-        value: `${sourceCached}[${index}]`,
-        type: source.type.of,
-      }
-      child.locals.set(gid, value)
-    }
-
-    const ret = emitExpr(expr.block, child)
-    if (ret.type != void_) {
-      todo(`The body of a 'for' loop must return 'void'; found '${ret.type}'.`)
-    }
-    const final = ret.value ? ret.value + ";" : ""
-    block.source += `for(${block.props.lang == "glsl" ? "int" : "var"} ${index}=0;${index}<${size!};${index}++) {${child.source}${final}}`
-    return { value: null, type: void_ }
-  } else if (expr instanceof ExprArrayByRepetition) {
-    const item = emitExpr(expr.of, block)
-    if (item.value == null) {
-      issue(`Cannot construct an array of void.`)
-    }
-
-    const sizes = expr.sizes.items.map((x) =>
-      x instanceof ExprLit && x.value.kind == TInt ?
-        parseInt(x.value.val, 10)
-      : null,
-    )
-    if (!sizes.every((x) => x != null)) {
-      todo(`Array sizes must currently be constant integers.`)
-    }
-
-    if (sizes.length == 0) {
-      return item
-    }
-
-    return sizes.reduceRight<ValueNN>((item, size): ValueNN => {
-      const type = new Array(item.type, size)
-
-      if (block.props.lang == "glsl") {
-        const cached = cacheValue(item, block, true)
-        return {
-          value: `${emitType(type, block.props)}(${(cached + ",").repeat(size).slice(0, -1)})`,
-          type,
+      const args = [emitExpr(expr.on, block)]
+      if (expr.args) {
+        for (const arg of expr.args.items) {
+          args.push(emitExpr(arg, block))
         }
-      } else {
-        return { value: `Array(${size}).fill(${item.value})`, type }
       }
-    }, item as ValueNN)
-  } else {
-    todo(`Cannot emit '${expr.constructor.name}' yet.`)
+      return performCall(names.of(expr.prop.name.val), block, args)
+    }
+    case ExprIf: {
+      const expr = raw as ExprIf
+      const cond = emitExpr(expr.condition, block)
+      if (cond.type != bool) {
+        issue(`The condition of an 'if' statement must be a boolean value.`)
+      }
+      if (cond.value == null) {
+        issue(`The condition of an 'if' statement must not be void.`)
+      }
+
+      const child1 = block.child()
+      if (!expr.block) {
+        issue(`Missing block on 'if' statement.`)
+      }
+      const main = emitExprBlock(expr.block, child1)
+
+      const child2 = block.child()
+      let alt: Value = { value: null, type: void_ }
+      if (expr.rest) {
+        if (!expr.rest.block) {
+          issue(`Missing block on 'else' branch of 'if' statement.`)
+        }
+        alt = emitExpr(expr.rest.block, child2)
+      }
+
+      if (main.type != alt.type) {
+        if (main.type != void_ && !expr.rest) {
+          issue(`An 'if' statement with a value must have an 'else' block.`)
+        } else {
+          issue(`Branches of 'if' statement has different types.`)
+        }
+      }
+
+      // Optimization for ternaries, since those are quite frequent
+      if (main.value && alt.value && !child1.source && !child2.source) {
+        return {
+          value: `(${cond.value})?(${main.value}):(${alt.value})`,
+          type: main.type,
+        }
+      }
+
+      // Optimization for plain 'if' block when there is no alternative
+      if (!alt.value && !child2.source) {
+        block.source += `if(${cond.value}){${child1.source}${main.value == null ? "" : main.value + ";"}}`
+        return { value: null, type: void_ }
+      }
+
+      // Optimization for when 'if' block is only for side-effects
+      if (main.type == void_ || !main.value || !alt.value) {
+        block.source += `if(${cond.value}){${child1.source}${main.value == null ? "" : main.value + ";"}}else{${child2.source}${alt.value == null ? "" : alt.value + ";"}}`
+        return { value: null, type: void_ }
+      }
+
+      const ret = new Id("return_value")
+      if (block.props.lang == "glsl") {
+        block.source += `${emitType(main.type, block.props)} ${ret.ident()};`
+      } else {
+        block.source += `var ${ret.ident()};`
+      }
+      block.source += `if(${cond.value}){${child1.source}${ret.ident()}=${main.value};}else{${child2.source}${ret.ident()}=${alt.value};}`
+      return { value: ret.ident(), type: main.type }
+    }
+    case ExprParen: {
+      const expr = raw as ExprParen
+      return emitExpr(expr.of.value, block)
+    }
+    case ExprArray: {
+      const expr = raw as ExprArray
+      const items = expr.of.items.map((x) => emitExpr(x, block))
+      if (items.length == 0) {
+        todo("Cannot construct arrays of length zero yet.")
+      }
+      const type = items[0]!.type
+      const incorrectTypes = items.filter((x) => x.type != type)
+      if (incorrectTypes.length) {
+        issue(
+          `Mismatched types in array: ${[type, ...incorrectTypes].map((x) => `'${x}'`).join(", ")}.`,
+        )
+      }
+      if (!items.every((x) => x.value != null)) {
+        issue(`Cannot create arrays of void.`)
+      }
+      const els = items.map((x) => x.value).join(",")
+      const value =
+        block.props.lang == "glsl" ?
+          `${emitType(type, block.props)}[${items.length}](${els})`
+        : `[${els}]`
+      return { value, type: new Array(type, items.length) }
+    }
+    case ExprFor: {
+      const expr = raw as ExprFor
+      if (expr.bound.items.length != expr.sources.items.length) {
+        issue(
+          `'for' loops must have the same number of bound variables and sources.`,
+        )
+      }
+      if (!expr.sources.items.length) {
+        issue(`'for' loops must have at least one source.`)
+      }
+      if (!expr.block) {
+        issue(`Missing body of 'for' loop.`)
+      }
+
+      const child = block.child()
+      let size: number | null = null
+
+      const index = new Id("for loop index").ident()
+      for (let i = 0; i < expr.bound.items.length; i++) {
+        const x = expr.bound.items[i]!
+
+        const gid = names.of(x.val)
+        if (child.locals.has(gid)) {
+          issue(`Variable '${gid}' was declared twice in a 'for' loop.`)
+        }
+
+        const source = emitExpr(expr.sources.items[i]!, block)
+        if (!(source.type instanceof Array)) {
+          issue(`'for' loop sources must be arrays.`)
+        }
+        if (source.value == null) {
+          issue(`'for' loop sources must not be void.`)
+        }
+        if (size == null) {
+          size = source.type.size
+        } else if (source.type.size != size) {
+          issue(`'for' loop sources must have identical lengths.`)
+        }
+
+        const sourceCached = cacheValue(source, block, false)
+        const value: Value = {
+          value: `${sourceCached}[${index}]`,
+          type: source.type.of,
+        }
+        child.locals.set(gid, value)
+      }
+
+      const ret = emitExprBlock(expr.block, child)
+      if (ret.type != void_) {
+        todo(
+          `The body of a 'for' loop must return 'void'; found '${ret.type}'.`,
+        )
+      }
+      const final = ret.value ? ret.value + ";" : ""
+      block.source += `for(${block.props.lang == "glsl" ? "int" : "var"} ${index}=0;${index}<${size!};${index}++) {${child.source}${final}}`
+      return { value: null, type: void_ }
+    }
+    case ExprArrayByRepetition: {
+      const expr = raw as ExprArrayByRepetition
+      const item = emitExpr(expr.of, block)
+      if (item.value == null) {
+        issue(`Cannot construct an array of void.`)
+      }
+
+      const sizes = expr.sizes.items.map((x) =>
+        x instanceof ExprLit && x.value.kind == TInt ?
+          parseInt(x.value.val, 10)
+        : null,
+      )
+      if (!sizes.every((x) => x != null)) {
+        todo(`Array sizes must currently be constant integers.`)
+      }
+
+      if (sizes.length == 0) {
+        return item
+      }
+
+      return sizes.reduceRight<ValueNN>((item, size): ValueNN => {
+        const type = new Array(item.type, size)
+
+        if (block.props.lang == "glsl") {
+          const cached = cacheValue(item, block, true)
+          return {
+            value: `${emitType(type, block.props)}(${(cached + ",").repeat(size).slice(0, -1)})`,
+            type,
+          }
+        } else {
+          return { value: `Array(${size}).fill(${item.value})`, type }
+        }
+      }, item as ValueNN)
+    }
   }
+
+  todo(`Cannot emit '${expr.constructor.name}' yet.`)
+}
+
+function emitExprBlock(expr: ExprBlock, block: Block): Value {
+  const child = block.child()
+  let last: Value = { value: null, type: void_ }
+  for (const stmt of expr.of.items) {
+    if (stmt instanceof StmtComment) continue
+    if (last.value) {
+      block.source += last.value + ";"
+    }
+    last = emitStmt(stmt, child)
+  }
+  if (child.source) {
+    block.source += child.source
+  }
+  return last
 }
 
 function emitStmt(stmt: NodeStmt, block: Block): Value {
@@ -1083,7 +1120,7 @@ export function emitItem(
       args.push({ id, type: ty, value })
     }
     const block = new Block(decl, props, locals)
-    const { value, type } = emitExpr(item.block, block)
+    const { value, type } = emitExprBlock(item.block, block)
     if (type != ret) {
       issue(
         `Expected to return '${ret}' from function '${item.name.val}'; actual return value is '${type}'.`,
@@ -1128,3 +1165,8 @@ export function emitItem(
     todo(`Cannot emit '${item.constructor.name}' yet.`)
   }
 }
+
+// PERF IMPROVEMENTS OVER TIME
+// js:native: 711.8µs ± 51µs       (5 groups, 1000/group) baseline
+// js:native: 697.5µs ± 35µs       (5 groups, 1000/group) emitExprBlock special
+// js:native: 685.0µs ± 34µs       (5 groups, 1000/group) switch on constructor
