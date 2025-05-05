@@ -9,6 +9,10 @@ export class Fn {
     readonly ret: Type,
     readonly of: (props: EmitProps, args: string[]) => string,
   ) {}
+
+  toString() {
+    return `${this.id}(${this.args.map((x) => x.type).join(", ")}) -> ${this.ret}`
+  }
 }
 
 export class IdMap<T> {

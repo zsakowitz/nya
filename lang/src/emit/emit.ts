@@ -164,7 +164,7 @@ function broadcastBinary(
   }
 
   if (r1.of != r2.of || !on.includes(r1.of)) {
-    issue(`The operator '${name}' only broadcasts over '${on.join(", ")}'`)
+    issue(`The operator '${name}' only broadcasts over ${list(on, null)}`)
   }
 
   if (arg1.value == null || arg2.value == null) {
@@ -305,6 +305,26 @@ export interface ValueNN {
   type: Type
 }
 
+function list(a: { toString(): string }[], empty: "no arguments" | null) {
+  if (a.length == 0) {
+    return empty ?? "<null>"
+  }
+  if (a.length == 1) {
+    return `'${a[0]!}'`
+  }
+  if (a.length == 2) {
+    return `'${a[0]!}' and '${a[1]!}'`
+  }
+  return (
+    a
+      .slice(0, -1)
+      .map((x) => `'${x}'`)
+      .join(", ") +
+    ", and " +
+    `'${a[a.length - 1]}'`
+  )
+}
+
 export function performCall(id: Id, block: Block, args: Value[]): Value {
   const fns = block.decl.fns.get(id)
 
@@ -337,7 +357,10 @@ export function performCall(id: Id, block: Block, args: Value[]): Value {
   )
   if (!overload) {
     issue(
-      `No overload of '${id}' accepts arguments of type '${args.map((x) => x.type).join(", ")}'.`,
+      `No overload of '${id}' accepts ${list(
+        args.map((x) => x.type),
+        "no arguments",
+      )}. Try:` + fns.map((x) => "\n" + x.toString()).join(""),
     )
   }
 
@@ -737,7 +760,7 @@ function emitExpr<T extends NodeExpr>(
           .filter((x) => !args.some((arg) => names.of(arg.name.val) == x))
         if (missing.length) {
           issue(
-            `Missing fields ${missing.map((x) => `'${x}'`).join(", ")} to struct '${ty.id}'.`,
+            `Missing field${missing.length == 1 ? "" : "s"} ${list(missing, null)} to struct '${ty.id}'.`,
           )
         } else {
           issue(
@@ -879,7 +902,7 @@ function emitExpr<T extends NodeExpr>(
       const incorrectTypes = items.filter((x) => x.type != type)
       if (incorrectTypes.length) {
         issue(
-          `Mismatched types in array: ${[type, ...incorrectTypes].map((x) => `'${x}'`).join(", ")}.`,
+          `Mismatched types in array: ${list([type, ...incorrectTypes], null)}.`,
         )
       }
       if (!items.every((x) => x.value != null)) {

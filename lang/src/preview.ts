@@ -1,5 +1,5 @@
 import { h, hx } from "@/jsx"
-import { doc } from "prettier"
+import { doc, formatWithCursor } from "prettier"
 import REGL from "regl"
 import source from "../examples/test.nya"
 import { Code } from "./ast/issue"
@@ -8,7 +8,6 @@ import { parse, parseBlockContents } from "./ast/parse"
 import { print } from "./ast/print"
 import { createStream, TokenGroup } from "./ast/stream"
 import { Token } from "./ast/token"
-import { many } from "./bench"
 import {
   Block,
   createExports,
@@ -18,10 +17,11 @@ import {
   performCall,
 } from "./emit/emit"
 import { issue } from "./emit/error"
-import { name, names } from "./emit/id"
+import { names } from "./emit/id"
 import { EmitProps, type Lang } from "./emit/props"
 import { createStdlibDecls } from "./emit/stdlib"
 import { printVanilla } from "./prettier"
+import * as plugin from "./prettier/plugin"
 import { UNPRINTED } from "./prettier/print"
 
 console.time("stream")
@@ -198,86 +198,6 @@ function showEmit(lang: Lang) {
   }
 }
 
-function showEmitTestsGl(lang: "glsl") {
-  let fragDebug
-  try {
-    console.time("emit " + lang)
-    const decl = createStdlibDecls()
-    const props = new EmitProps(lang)
-    const emit = result.items
-      .map((x) => emitItem(x, decl, props)?.actual)
-      .filter((x) => x != null)
-      .join("\n")
-    console.timeEnd("emit " + lang)
-    const cv = hx("canvas", {
-      width: "800",
-      height: "800",
-      class: "size-[400px] ml-4",
-    })
-    const gl = cv.getContext("webgl2")!
-    gl.clearColor(0.0, 0.0, 0.0, 1.0)
-    gl.clear(gl.COLOR_BUFFER_BIT)
-    const regl = REGL(gl)
-    const mainFn = decl.fns.get(name`main`)?.[0]
-    if (!mainFn) {
-      throw new Error("No 'main' function was declared.")
-    }
-    if (mainFn.args.length != 1) {
-      throw new Error("'main' should accept a single argument.")
-    }
-    const r1 = mainFn.args[0]!.type.repr
-    if (!(r1.type == "vec" && r1.of == "float" && r1.count == 2)) {
-      throw new Error("'main' should accept a struct of 2 'num'.")
-    }
-    const r2 = mainFn.ret.repr
-    if (!(r2.type == "vec" && r2.of == "float" && r2.count == 4)) {
-      throw new Error("'main' should return a struct of 4 'num'.")
-    }
-    const frag =
-      "#version 300 es\nprecision highp float;\nin vec4 pos;\nout vec4 color;\n" +
-      emit +
-      `
-void main() {
-  color = ${mainFn.id.ident()}(pos.xy);
-}`
-    fragDebug = frag
-      .split("\n")
-      .map((x, i) => i.toString().padStart(3) + " " + x)
-      .join("\n")
-    const program = regl({
-      vert: `#version 300 es
-precision highp float;
-in vec2 aVertexPosition;
-out vec4 pos;
-void main() {
-  gl_Position = pos = vec4(aVertexPosition, 0, 1);
-}`,
-      frag,
-      attributes: {
-        aVertexPosition: [
-          [-1, 1],
-          [-1, -1],
-          [1, 1],
-          [1, -1],
-          [-1, -1],
-          [1, 1],
-        ],
-      },
-      count: 6,
-    })
-    show(cv)
-    program()
-  } catch (e) {
-    if (fragDebug) {
-      hr()
-      pre(fragDebug)
-    }
-    hr()
-    pre(String(e))
-    console.error("[glsl emit]", e)
-  }
-}
-
 function showEmitTests(lang: Lang) {
   try {
     console.time("emit " + lang)
@@ -397,7 +317,7 @@ function createCanvas() {
     height: "800",
     class: "size-[400px]",
   })
-  const gl = cv.getContext("webgl2")!
+  const gl = cv.getContext("webgl2", { premultipliedAlpha: false })!
   gl.clearColor(0.0, 0.0, 0.0, 1.0)
   gl.clear(gl.COLOR_BUFFER_BIT)
   const regl = REGL(gl)
@@ -446,23 +366,28 @@ function showJointRepl(lang: Exclude<Lang, "glsl">, langGl: "glsl") {
   const { cv, go: showGl } = createCanvas()
   const area = hx("textarea", {
     class:
-      "block resize-y w-96 min-h-40 border border-[--nya-border] rounded font-mono px-2 py-1 focus:border-[--nya-expr-focus] focus:ring-1 ring-[--nya-expr-focus] focus:outline-none bg-[--nya-bg]",
+      "block resize-y min-h-60 border border-[--nya-border] rounded font-mono p-2 focus:border-[--nya-expr-focus] focus:ring-1 ring-[--nya-expr-focus] focus:outline-none bg-[--nya-bg] text-sm",
     spellcheck: "false",
   })
   const ret = hx(
     "output",
-    "block w-96 min-h-40 border border-[--nya-border] rounded font-mono px-2 py-1 bg-[--nya-bg]",
+    "block min-h-20 border border-[--nya-border] rounded-t font-mono px-2 py-1 bg-[--nya-bg] whitespace-pre-wrap text-sm",
   )
   const time = hx(
     "output",
-    "block w-96 border border-[--nya-border] rounded font-mono px-2 py-1 bg-[--nya-bg]",
+    "block border border-[--nya-border] font-mono px-2 py-1 bg-[--nya-bg] text-sm border-y-0 -mt-4",
     "No timing available.",
+  )
+  const formatBtn = hx(
+    "button",
+    "block border border-[--nya-border] rounded-b font-mono px-2 py-1 bg-[--nya-bg] text-sm -mt-4 text-left",
+    "Press Ctrl+Enter or click here to format code.",
   )
   hr()
   show(
     h(
       "flex pl-4 py-4 gap-4",
-      h("flex flex-col h-full gap-4", area, ret, time),
+      h("flex flex-col h-full gap-4 w-[50ch]", area, ret, time, formatBtn),
       cv,
     ),
   )
@@ -490,24 +415,34 @@ function showJointRepl(lang: Exclude<Lang, "glsl">, langGl: "glsl") {
     const ms = performance.now() - start
     time.value = ms.toFixed(1) + "ms"
   })
-}
-
-function showParseBenchmark(lang: Lang) {
-  console.profile()
-  hr()
-  pre(many(lang, 5, 1e3).trim())
-  console.profileEnd()
+  area.addEventListener("keydown", (e) => {
+    if (e.key == "Enter" && e.ctrlKey != e.metaKey) {
+      format()
+    }
+  })
+  formatBtn.addEventListener("click", format)
+  formatBtn.addEventListener("pointerdown", format)
+  async function format() {
+    const cstart = area.selectionStart
+    const { formatted, cursorOffset } = await formatWithCursor(area.value, {
+      cursorOffset: cstart,
+      plugins: [plugin],
+      parser: "nya-parse-block-contents",
+      printWidth: 50,
+      tabWidth: 2,
+    })
+    area.value = formatted
+    area.setSelectionRange(cursorOffset, cursorOffset, "none")
+  }
 }
 
 const parts = Object.entries({
-  issues: showIssues,
+  Issues: showIssues,
+  Playground: () => showJointRepl("js:native", "glsl"),
+
   stream: showTokenStream,
   prettier: showPrettier,
   ast: showPrinted,
-
-  "repl-js:native": () => showJointRepl("js:native", "glsl"),
-
-  "parse-js:native": () => showParseBenchmark("js:native"),
 
   "bench-js:native": () => showEmitBenchmark("js:native"),
   "bench-js:native-tests": () => showEmitBenchmark("js:native-tests"),
@@ -518,8 +453,6 @@ const parts = Object.entries({
   "emit-glsl": () => showEmit("glsl"),
 
   "test-js:native-tests": () => showEmitTests("js:native-tests"),
-
-  "preview-glsl": () => showEmitTestsGl("glsl"),
 })
 
 const chosen = new Set(
