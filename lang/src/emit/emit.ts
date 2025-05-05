@@ -64,7 +64,7 @@ function encodeIdentForTypescriptDeclaration(x: string) {
   return new Id("").ident()
 }
 
-class Block {
+export class Block {
   source = ""
 
   constructor(
@@ -305,7 +305,7 @@ export interface ValueNN {
   type: Type
 }
 
-function performCall(id: Id, block: Block, args: Value[]): Value {
+export function performCall(id: Id, block: Block, args: Value[]): Value {
   const fns = block.decl.fns.get(id)
 
   if (!fns) {
@@ -988,7 +988,7 @@ function emitExpr<T extends NodeExpr>(
   todo(`Cannot emit '${expr.constructor.name}' yet.`)
 }
 
-function emitExprBlock(expr: ExprBlock, block: Block): Value {
+export function emitExprBlock(expr: ExprBlock, block: Block): Value {
   const child = block.child()
   let last: Value = { value: null, type: void_ }
   for (const stmt of expr.of.items) {

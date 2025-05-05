@@ -440,6 +440,22 @@ fn cplot_abs(x: num) -> rgba {
   }
 }
 
+fn plot(z: num) -> rgba {
+  cplot(complex { re: z, im: 0.0 })
+}
+
+fn plot(z: complex) -> rgba {
+  cplot(z)
+}
+
+fn plot(z: rgb) -> rgba {
+  rgba(z, 1.0)
+}
+
+fn plot(z: rgba) -> rgba {
+  z
+}
+
 fn main(z: complex) -> rgba {
   z = 3.0 * z;
   let c = z;

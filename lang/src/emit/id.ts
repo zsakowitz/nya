@@ -10,7 +10,7 @@ export class Id {
   }
 
   toString() {
-    return this.label + "#" + this.value.toString(36)
+    return this.label
   }
 }
 

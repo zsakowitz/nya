@@ -194,7 +194,7 @@ import {
   TypeVar,
   type NodeType,
 } from "./node/type"
-import { Stream } from "./stream"
+import { Stream, TokenGroup } from "./stream"
 import { Token } from "./token"
 
 function patStructProp(stream: Stream) {
@@ -1072,6 +1072,30 @@ function structArg(stream: Stream) {
 const callArgs = createCommaOp(OLParen, expr, null)
 const structArgs = createCommaOp(OLBrace, structArg, null)
 
+function blockContents(
+  group: TokenGroup,
+  stream: Stream,
+  label: Label | null,
+  forceMultiline = false,
+) {
+  const list: NodeStmt[] = []
+  let a
+  while (stream.match(OSemi));
+  while ((a = stmt(stream))) {
+    while (stream.match(OSemi));
+    list.push(a)
+    if (a instanceof StmtExpr && a.terminatesBlock) {
+      break
+    }
+  }
+  stream.requireDone()
+
+  return new ExprBlock(
+    label,
+    new List(group, list, null, false, forceMultiline),
+  )
+}
+
 function block(stream: Stream, label: Label | null, forceMultiline = false) {
   const group = stream.matchGroup(OLBrace)
   if (!group) {
@@ -1079,22 +1103,7 @@ function block(stream: Stream, label: Label | null, forceMultiline = false) {
     return null
   }
 
-  const list: NodeStmt[] = []
-  let a
-  while (group.contents.match(OSemi));
-  while ((a = stmt(group.contents))) {
-    while (group.contents.match(OSemi));
-    list.push(a)
-    if (a instanceof StmtExpr && a.terminatesBlock) {
-      break
-    }
-  }
-  group.contents.requireDone()
-
-  return new ExprBlock(
-    label,
-    new List(group, list, null, false, forceMultiline),
-  )
+  return blockContents(group, group.contents, label, forceMultiline)
 }
 
 function createBlockOp<T>(
@@ -1543,6 +1552,20 @@ function varWithout(stream: Stream): VarWithout | null {
 
 export function parse(stream: Stream) {
   return script(stream)
+}
+
+export function parseBlockContents(stream: Stream) {
+  return blockContents(
+    new TokenGroup(
+      stream.source,
+      new Token(stream.source, OLBrace, 0, 0, true),
+      new Token(stream.source, OLBrace, stream.end, stream.end, true),
+      stream,
+    ),
+    stream,
+    null,
+    true,
+  )
 }
 
 // TODO: opaque
