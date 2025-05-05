@@ -19,19 +19,19 @@ function go(lang: Lang, rounds: number) {
 }
 
 function write(time: number, precision: number) {
-  if (time <= 1e2) {
+  if (time <= 1e3) {
     return time.toFixed(precision) + "ns"
   }
 
-  if (time <= 1e5) {
+  if (time <= 1e6) {
     return (time / 1e3).toFixed(precision) + "µs"
   }
 
-  if (time <= 1e8) {
+  if (time <= 1e9) {
     return (time / 1e6).toFixed(precision) + "ms"
   }
 
-  if (time <= 1e11) {
+  if (time <= 1e12) {
     return (time / 1e9).toFixed(precision) + "s"
   }
 

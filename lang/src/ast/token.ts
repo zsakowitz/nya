@@ -67,6 +67,66 @@ export interface ToTokensProps {
   comments: boolean
 }
 
+const C_SPACE = " ".charCodeAt(0)
+const C_SPACE1 = "\n".charCodeAt(0)
+const C_SPACE2 = "\r".charCodeAt(0)
+const C_SPACE3 = "\f".charCodeAt(0)
+const C_SPACE4 = "\v".charCodeAt(0)
+const C_SPACE5 = "\t".charCodeAt(0)
+
+const C_UNDERSCORE = "_".charCodeAt(0)
+const C_A = "A".charCodeAt(0)
+const C_Z = "Z".charCodeAt(0)
+const C_a = "a".charCodeAt(0)
+const C_z = "z".charCodeAt(0)
+const C_d = "d".charCodeAt(0)
+const C_0 = "0".charCodeAt(0)
+const C_9 = "9".charCodeAt(0)
+
+const C_PERCENT = "%".charCodeAt(0)
+const C_AT = "@".charCodeAt(0)
+const C_SLASH = "/".charCodeAt(0)
+const C_DQUOTE = '"'.charCodeAt(0)
+const C_LBRACE = "{".charCodeAt(0)
+
+// 610.6µs ± 23µs baseline
+// 552.8µs ± 32µs adding charcodeat
+// 528.9µs ± ??µs whitespace, d/dx, plain ident
+// 529.8µs ± 29µs %id, @id
+// 520.1µs ± 45µs numbers
+// 510.1µs ± 33µs comments
+// 509.0µs ± 28µs string, lbrace
+
+function isWs(cc: number) {
+  return (
+    cc === C_SPACE ||
+    cc === C_SPACE1 ||
+    cc === C_SPACE2 ||
+    cc === C_SPACE3 ||
+    cc === C_SPACE4 ||
+    cc === C_SPACE5
+  )
+}
+
+function isIdStart(cc: number) {
+  return (
+    (C_A <= cc && cc <= C_Z) || (C_a <= cc && cc <= C_z) || cc == C_UNDERSCORE
+  )
+}
+
+function isDigit(cc: number) {
+  return C_0 <= cc && cc <= C_9
+}
+
+function isIdCont(cc: number) {
+  return (
+    (C_A <= cc && cc <= C_Z) ||
+    (C_a <= cc && cc <= C_z) ||
+    (C_0 <= cc && cc <= C_9) ||
+    cc == C_UNDERSCORE
+  )
+}
+
 export function tokens(source: string, props: ToTokensProps) {
   const ret: Token<number>[] = []
   const issues = new Issues()
@@ -74,14 +134,15 @@ export function tokens(source: string, props: ToTokensProps) {
   for (let i = 0; i < source.length; ) {
     const start = i
     const char = source[i]!
+    const cc = source.charCodeAt(i)
 
-    if (WS.test(char)) {
+    if (isWs(cc)) {
       i++
       continue
     }
 
     if (
-      char == "d" &&
+      cc === C_d &&
       source[i + 1] == "/" &&
       source[i + 2] == "d" &&
       is(ID_START, source[i + 3])
@@ -95,7 +156,7 @@ export function tokens(source: string, props: ToTokensProps) {
       continue
     }
 
-    if (ID_START.test(char)) {
+    if (isIdStart(cc)) {
       while (is(ID_CONT, source[++i]));
       const text = source.slice(start, i)
       ret.push(
@@ -109,7 +170,7 @@ export function tokens(source: string, props: ToTokensProps) {
       continue
     }
 
-    if (char == "%" && source[i + 1] == '"') {
+    if (cc == C_PERCENT && source[i + 1] == '"') {
       i++
       let terminated = false
       while (i < source.length) {
@@ -130,11 +191,7 @@ export function tokens(source: string, props: ToTokensProps) {
       continue
     }
 
-    if (
-      char == "@" &&
-      source[i + 1] &&
-      source[i + 1]! in OPS_AND_SECOND_CHARS
-    ) {
+    if (cc == C_AT && source[i + 1] && source[i + 1]! in OPS_AND_SECOND_CHARS) {
       i++
       const char = source[i]!
       const next = source[i + 1]
@@ -162,7 +219,7 @@ export function tokens(source: string, props: ToTokensProps) {
       continue
     }
 
-    if (DIGIT.test(char)) {
+    if (isDigit(cc)) {
       const m = source.slice(i).match(NUMERIC)![0]
       i += m.length
       if (/[.ep]/.test(m)) {
@@ -176,7 +233,7 @@ export function tokens(source: string, props: ToTokensProps) {
       continue
     }
 
-    if (char == "/" && source[i + 1] == "/") {
+    if (cc === C_SLASH && source.charCodeAt(i + 1) === C_SLASH) {
       i++
       while (source[++i] && source[i] != "\n");
       if (props.comments) {
@@ -185,7 +242,7 @@ export function tokens(source: string, props: ToTokensProps) {
       continue
     }
 
-    if (char == '"') {
+    if (cc === C_DQUOTE) {
       let terminated = false
       while (i < source.length) {
         i++
@@ -205,7 +262,7 @@ export function tokens(source: string, props: ToTokensProps) {
       continue
     }
 
-    if (char == "{") {
+    if (cc === C_LBRACE) {
       const last1 = ret[ret.length - 1]
       const last2 = ret[ret.length - 2]
       if (

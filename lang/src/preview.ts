@@ -24,7 +24,13 @@ console.time("parse")
 export const result = parse(stream)
 console.timeEnd("parse")
 
-show(hx("h2", "text-center pt-4 text-lg font-semibold", "nyalang debug window"))
+show(
+  hx(
+    "h2",
+    "text-center pt-4 text-lg font-semibold",
+    `nyalang debug window — ${Math.random().toString().slice(2, 6)}`,
+  ),
+)
 
 function hr() {
   show(
