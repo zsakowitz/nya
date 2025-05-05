@@ -287,16 +287,19 @@ export const MATCHING_PAREN: Record<Brack, number> = {
   [OLInterp]: ORParen,
 }
 
-export const OPS_AND_SECOND_CHARS: Record<string, string[]> =
-  Object.create(null)
+export const OPS_AND_SECOND_CHARS: Record<number, Set<number>> = Object.create(
+  null,
+)
 
 for (const op in OPS) {
   switch (op.length) {
     case 1:
-      OPS_AND_SECOND_CHARS[op] ??= []
+      OPS_AND_SECOND_CHARS[op.charCodeAt(0)] ??= new Set()
       break
     case 2:
-      ;(OPS_AND_SECOND_CHARS[op[0]!] ??= []).push(op[1]!)
+      ;(OPS_AND_SECOND_CHARS[op.charCodeAt(0)] ??= new Set()).add(
+        op.charCodeAt(1),
+      )
       break
   }
 }

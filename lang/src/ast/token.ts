@@ -96,6 +96,8 @@ const C_LBRACE = "{".charCodeAt(0)
 // 520.1µs ± 45µs numbers
 // 510.1µs ± 33µs comments
 // 509.0µs ± 28µs string, lbrace
+// 503.8µs ± 27µs string, ops
+// 490.1µs ± 22µs string, set for ops
 
 function isWs(cc: number) {
   return (
@@ -191,11 +193,16 @@ export function tokens(source: string, props: ToTokensProps) {
       continue
     }
 
-    if (cc == C_AT && source[i + 1] && source[i + 1]! in OPS_AND_SECOND_CHARS) {
+    if (
+      cc == C_AT &&
+      source[i + 1] &&
+      source.charCodeAt(i + 1) in OPS_AND_SECOND_CHARS
+    ) {
       i++
       const char = source[i]!
       const next = source[i + 1]
-      if (next && OPS_AND_SECOND_CHARS[char]!.includes(next)) {
+      const nextcc = source.charCodeAt(i + 1)
+      if (next && OPS_AND_SECOND_CHARS[cc]!.has(nextcc)) {
         if (char + next in APS) {
           ret.push(new Token(source, APS[char + next]!, start, i + 2))
         } else {
@@ -341,9 +348,10 @@ export function tokens(source: string, props: ToTokensProps) {
       continue
     }
 
-    if (char in OPS_AND_SECOND_CHARS) {
+    if (cc in OPS_AND_SECOND_CHARS) {
       const next = source[i + 1]
-      if (next && OPS_AND_SECOND_CHARS[char]!.includes(next)) {
+      const nextcc = source.charCodeAt(i + 1)
+      if (next && OPS_AND_SECOND_CHARS[cc]!.has(nextcc)) {
         ret.push(new Token(source, OPS[char + next]!, start, i + 2))
         i += 2
         continue
