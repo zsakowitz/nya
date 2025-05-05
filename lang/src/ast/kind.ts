@@ -304,11 +304,11 @@ for (const op in OPS) {
   }
 }
 
-export const IDENT_PREFIXES: Record<string, number> = {
-  ":": TSym,
-  "@": TBuiltin,
-  "'": TLabel,
-  $: TParam,
+export const IDENT_PREFIXES: Record<number, number> = {
+  [":".charCodeAt(0)]: TSym,
+  ["@".charCodeAt(0)]: TBuiltin,
+  ["'".charCodeAt(0)]: TLabel,
+  ["$".charCodeAt(0)]: TParam,
 }
 
 export const OVERLOADABLE = Object.freeze([

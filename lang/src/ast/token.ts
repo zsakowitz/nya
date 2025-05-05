@@ -51,17 +51,9 @@ export class Token<T extends number> extends Pos {
   }
 }
 
-const ID_START = /[A-Za-z_]/
-const ID_CONT = /[A-Za-z0-9_]/
-const WS = /\s/
-const DIGIT = /[0-9]/
 const NUMERIC =
   /^(?:0x[\da-f]+(?:\.[\da-f]+)?(?:p[+-]?\d+)?|\d+(?:\.\d+)?(?:e[+-]?\d+)?)/i
 const INTERP = /\$\((?:([A-Za-z_]\w*)(?:(\.)(?:([A-Za-z_]\w*))?)?)?\)/g
-
-function is(regex: RegExp, char: string | undefined) {
-  return char != null && regex.test(char)
-}
 
 export interface ToTokensProps {
   comments: boolean
@@ -96,8 +88,11 @@ const C_LBRACE = "{".charCodeAt(0)
 // 520.1µs ± 45µs numbers
 // 510.1µs ± 33µs comments
 // 509.0µs ± 28µs string, lbrace
-// 503.8µs ± 27µs string, ops
-// 490.1µs ± 22µs string, set for ops
+// 503.8µs ± 27µs ops
+// 490.1µs ± 22µs set for ops
+// 478.3µs ± 33µs numerics for ident prefixes
+// 445.3µs ± 38µs more isIdCont
+// 445.4µs ± 38µs more id fns
 
 function isWs(cc: number) {
   return (
@@ -147,10 +142,10 @@ export function tokens(source: string, props: ToTokensProps) {
       cc === C_d &&
       source[i + 1] == "/" &&
       source[i + 2] == "d" &&
-      is(ID_START, source[i + 3])
+      isIdStart(source.charCodeAt(i + 3))
     ) {
       i += 2
-      while (is(ID_CONT, source[++i]));
+      while (isIdCont(source.charCodeAt(++i)));
       const text = source.slice(start, i)
       ret.push(
         new Token(source, text == "d/d_" ? TDerivIgnore : TDeriv, start, i),
@@ -159,7 +154,7 @@ export function tokens(source: string, props: ToTokensProps) {
     }
 
     if (isIdStart(cc)) {
-      while (is(ID_CONT, source[++i]));
+      while (isIdCont(source.charCodeAt(++i)));
       const text = source.slice(start, i)
       ret.push(
         new Token(
@@ -220,9 +215,9 @@ export function tokens(source: string, props: ToTokensProps) {
       continue
     }
 
-    if (char in IDENT_PREFIXES && is(ID_START, source[i + 1])) {
-      while (is(ID_CONT, source[++i]));
-      ret.push(new Token(source, IDENT_PREFIXES[char]!, start, i))
+    if (cc in IDENT_PREFIXES && isIdStart(source.charCodeAt(i + 1))) {
+      while (isIdCont(source.charCodeAt(++i)));
+      ret.push(new Token(source, IDENT_PREFIXES[cc]!, start, i))
       continue
     }
 
@@ -234,7 +229,7 @@ export function tokens(source: string, props: ToTokensProps) {
       } else {
         ret.push(new Token(source, TInt, start, i))
       }
-      if (is(ID_START, source[i])) {
+      if (isIdStart(source.charCodeAt(i))) {
         issues.raise(Code.LetterDirectlyAfterNumber, new Pos(i, i + 1))
       }
       continue
