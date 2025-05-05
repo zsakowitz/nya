@@ -8,6 +8,7 @@ import { parse } from "./ast/parse"
 import { print } from "./ast/print"
 import { createStream, TokenGroup } from "./ast/stream"
 import type { Token } from "./ast/token"
+import { many } from "./bench"
 import { createExports, emitItem, NYA_LANG_TEST_PRELUDE } from "./emit/emit"
 import { name } from "./emit/id"
 import { EmitProps, type Lang } from "./emit/props"
@@ -317,11 +318,20 @@ function showEmitBenchmark(lang: Lang) {
 `)
 }
 
+function showParseBenchmark(lang: Lang) {
+  console.time()
+  hr()
+  pre(many(lang, 5, 1e3).trim())
+  console.timeEnd()
+}
+
 const parts = Object.entries({
   issues: showIssues,
   stream: showTokenStream,
   prettier: showPrettier,
   ast: showPrinted,
+
+  "parse-js:native": () => showParseBenchmark("js:native"),
 
   "bench-js:native": () => showEmitBenchmark("js:native"),
   "bench-js:native-tests": () => showEmitBenchmark("js:native-tests"),
