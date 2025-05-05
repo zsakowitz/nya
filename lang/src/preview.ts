@@ -325,10 +325,10 @@ function showEmitBenchmark(lang: Lang) {
 }
 
 function showParseBenchmark(lang: Lang) {
-  console.time()
+  console.profile()
   hr()
   pre(many(lang, 5, 1e3).trim())
-  console.timeEnd()
+  console.profileEnd()
 }
 
 const parts = Object.entries({

@@ -140,6 +140,8 @@ export type Brack =
   | typeof OLInterp
 
 export const KWS: Record<string, number> = {
+  // @ts-ignore
+  __proto__: null,
   if: KIf,
   else: KElse,
   for: KFor,
@@ -170,9 +172,12 @@ export const KWS: Record<string, number> = {
   false: KFalse,
   local: KLocal,
   matrix: KMatrix,
+  _: TIgnore,
 }
 
 export const APS: Record<string, number> = {
+  // @ts-ignore
+  __proto__: null,
   "+": APlus,
   "-": AMinus,
   "*": AStar,
@@ -214,6 +219,8 @@ export const APS: Record<string, number> = {
 }
 
 export const OPS: Record<string, number> = {
+  // @ts-ignore
+  __proto__: null,
   "+": OPlus,
   "-": OMinus,
   "*": OStar,
@@ -255,6 +262,8 @@ export const OPS: Record<string, number> = {
 }
 
 export const EXPORTED_ALTS: Record<number, string> = {
+  // @ts-ignore
+  __proto__: null,
   [OPlus]: "_add",
   [OMinus]: "_sub",
   [OStar]: "_prod",
@@ -280,6 +289,8 @@ export const EXPORTED_ALTS: Record<number, string> = {
 } satisfies Record<OOverloadable, string>
 
 export const MATCHING_PAREN: Record<Brack, number> = {
+  // @ts-ignore
+  __proto__: null,
   [OLParen]: ORParen,
   [OLBrack]: ORBrack,
   [OLBrace]: ORBrace,
@@ -305,13 +316,15 @@ for (const op in OPS) {
 }
 
 export const IDENT_PREFIXES: Record<number, number> = {
+  // @ts-ignore
+  __proto__: null,
   [":".charCodeAt(0)]: TSym,
   ["@".charCodeAt(0)]: TBuiltin,
   ["'".charCodeAt(0)]: TLabel,
   ["$".charCodeAt(0)]: TParam,
 }
 
-export const OVERLOADABLE = Object.freeze([
+export const OVERLOADABLE = [
   OPlus, // add
   OMinus, // subtract
   OStar, // multiply
@@ -334,11 +347,13 @@ export const OVERLOADABLE = Object.freeze([
   OArrowRet, // type conversion
   OPercent, // modulus
   OTildeEq, // approximate eq
-] as const)
+] as const
 
 export type OOverloadable = (typeof OVERLOADABLE)[number]
 
-export const OP_TEXT = {
+export const OP_TEXT: Record<number, string> = {
+  // @ts-ignore
+  __proto__: null,
   [OPlus]: "+",
   [APlus]: "@+",
   [OMinus]: "-",
@@ -448,3 +463,13 @@ export const OP_TEXT = {
   [KLocal]: "local",
   [KMatrix]: "matrix",
 }
+
+Object.freeze(KWS)
+Object.freeze(APS)
+Object.freeze(OPS)
+Object.freeze(EXPORTED_ALTS)
+Object.freeze(MATCHING_PAREN)
+Object.freeze(OPS_AND_SECOND_CHARS)
+Object.freeze(IDENT_PREFIXES)
+Object.freeze(OVERLOADABLE)
+Object.freeze(OP_TEXT)

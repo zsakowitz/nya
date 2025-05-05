@@ -18,7 +18,6 @@ import {
   TDerivIgnore,
   TFloat,
   TIdent,
-  TIgnore,
   TInt,
   TSource,
   TString,
@@ -40,7 +39,7 @@ export class Token<T extends number> extends Pos {
 
   get val(): string {
     if (this.kind in OP_TEXT) {
-      return OP_TEXT[this.kind as keyof typeof OP_TEXT]
+      return OP_TEXT[this.kind]!
     }
 
     return this.source.slice(this.start, this.end)
@@ -93,6 +92,8 @@ const C_LBRACE = "{".charCodeAt(0)
 // 478.3µs ± 33µs numerics for ident prefixes
 // 445.3µs ± 38µs more isIdCont
 // 445.4µs ± 38µs more id fns
+// 451.6µs ± 30µs remove special _ case
+// 444.0µs ± ??µs freeze objects + null proto
 
 function isWs(cc: number) {
   return (
@@ -156,14 +157,7 @@ export function tokens(source: string, props: ToTokensProps) {
     if (isIdStart(cc)) {
       while (isIdCont(source.charCodeAt(++i)));
       const text = source.slice(start, i)
-      ret.push(
-        new Token(
-          source,
-          KWS[text] ?? (text == "_" ? TIgnore : TIdent),
-          start,
-          i,
-        ),
-      )
+      ret.push(new Token(source, KWS[text] ?? TIdent, start, i))
       continue
     }
 
