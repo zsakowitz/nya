@@ -16,11 +16,11 @@ import { printVanilla } from "./prettier"
 import { UNPRINTED } from "./prettier/print"
 
 console.time("stream")
-const stream = createStream(source, { comments: false })
+export const stream = createStream(source, { comments: false })
 console.timeEnd("stream")
 
 console.time("parse")
-const result = parse(stream)
+export const result = parse(stream)
 console.timeEnd("parse")
 
 show(hx("h2", "text-center pt-4 text-lg font-semibold", "nyalang debug window"))
@@ -36,7 +36,11 @@ function show(el: Node) {
 }
 
 function pre(el: Node | string) {
-  const p = hx("pre", `p-4 text-xs w-screen text-[--nya-text-prose]`, el)
+  const p = hx(
+    "pre",
+    `select-all p-4 text-xs w-screen text-[--nya-text-prose]`,
+    el,
+  )
   show(p)
   return p
 }
@@ -125,7 +129,7 @@ function showIssues() {
 
 function showEmit(lang: Lang) {
   try {
-    console.time("emit")
+    console.time("emit " + lang)
     const decl = createStdlibDecls()
     const props = new EmitProps(lang)
     const exportsActual: Record<string, string[]> = Object.create(null)
@@ -142,15 +146,19 @@ function showEmit(lang: Lang) {
         }
 
         if (result?.typeOnly) {
-          return [h("opacity-30", result.typeOnly), "\n", result.actual]
+          return [
+            h("opacity-30 select-none", result.typeOnly),
+            "\n",
+            result.actual,
+          ]
         } else if (result?.actual) {
           return result.actual
         }
 
-        return [h("opacity-30", "// <null>")]
+        return [h("opacity-30 select-none", "// <null>")]
       })
       .flatMap((x, i) => (i == 0 ? x : ["\n\n", ...x]))
-    console.timeEnd("emit")
+    console.timeEnd("emit " + lang)
     const exports1 = Object.entries(exportsActual)
       .map(([as, of]) => createExports(of, as, false))
       .join("\n")
@@ -158,7 +166,9 @@ function showEmit(lang: Lang) {
       .map(([as, of]) => createExports(of, as, true))
       .join("\n")
     const exports =
-      exports2 ? [exports1, "\n", h("opacity-30", exports2)] : [exports1]
+      exports2 ?
+        [exports1, "\n", h("opacity-30 select-none", exports2)]
+      : [exports1]
     if (exports) {
       res.push("\n\n")
       res.push(...exports)
@@ -175,18 +185,18 @@ function showEmit(lang: Lang) {
 function showEmitTestsGl(lang: "glsl") {
   let fragDebug
   try {
-    console.time("emit")
+    console.time("emit " + lang)
     const decl = createStdlibDecls()
     const props = new EmitProps(lang)
     const emit = result.items
       .map((x) => emitItem(x, decl, props)?.actual)
       .filter((x) => x != null)
       .join("\n")
-    console.timeEnd("emit")
+    console.timeEnd("emit " + lang)
     const cv = hx("canvas", {
       width: "800",
       height: "800",
-      class: "size-[400px]",
+      class: "size-[400px] ml-4",
     })
     const gl = cv.getContext("webgl2")!
     gl.clearColor(0.0, 0.0, 0.0, 1.0)
@@ -254,7 +264,7 @@ void main() {
 
 function showEmitTests(lang: Lang) {
   try {
-    console.time("emit")
+    console.time("emit " + lang)
     const decl = createStdlibDecls()
     const props = new EmitProps(lang)
     const res =
@@ -264,7 +274,7 @@ function showEmitTests(lang: Lang) {
         .filter((x) => x != null)
         .join("\n") +
       "\nNYA_TEST.report();"
-    console.timeEnd("emit")
+    console.timeEnd("emit " + lang)
     console.time("run tests")
     const data: string[] = (0, eval)(res)
     console.timeEnd("run tests")
@@ -277,15 +287,53 @@ function showEmitTests(lang: Lang) {
   }
 }
 
+function showEmitBenchmark(lang: Lang) {
+  function once() {
+    const decl = createStdlibDecls()
+    const props = new EmitProps(lang)
+    result.items.forEach((x) => emitItem(x, decl, props))
+  }
+
+  const m0 = performance.now()
+
+  once()
+  const m1 = performance.now()
+
+  for (let i = 0; i < 10; i++) once()
+  const m10 = performance.now()
+
+  for (let i = 0; i < 1000; i++) once()
+  const m1000 = performance.now()
+
+  for (let i = 0; i < 10000; i++) once()
+  const m10000 = performance.now()
+
+  hr()
+  pre(`Benchmark results for '${lang}'
+    1x: ${(m1 - m0).toFixed(4)}
+   10x: ${((m10 - m1) / 10).toFixed(4)}
+ 1000x: ${((m1000 - m10) / 1000).toFixed(4)}
+10000x: ${((m10000 - m1000) / 10000).toFixed(4)}
+`)
+}
+
 const parts = Object.entries({
   issues: showIssues,
   stream: showTokenStream,
   prettier: showPrettier,
   ast: showPrinted,
+
+  "bench-js:native": () => showEmitBenchmark("js:native"),
+  "bench-js:native-tests": () => showEmitBenchmark("js:native-tests"),
+  "bench-glsl": () => showEmitBenchmark("glsl"),
+
   "emit-js:native": () => showEmit("js:native"),
-  "emit+tests-js:native": () => showEmitTests("js:native-tests"),
+  "emit-js:native-tests": () => showEmit("js:native-tests"),
   "emit-glsl": () => showEmit("glsl"),
-  "emit+tests:glsl": () => showEmitTestsGl("glsl"),
+
+  "test-js:native-tests": () => showEmitTests("js:native-tests"),
+
+  "preview-glsl": () => showEmitTestsGl("glsl"),
 })
 
 const chosen = new Set(

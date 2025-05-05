@@ -87,6 +87,10 @@ fn ==(a: complex, b: complex) -> bool {
   a.re == b.re && a.im == b.im
 }
 
+fn ~=(a: complex, b: complex) -> bool {
+  a.re ~= b.re && a.im ~= b.im
+}
+
 fn ln(a: complex) -> complex {
   if a == 0.0 {
     complex { re: -1.0 / 0.0, im: 0.0 }
@@ -252,10 +256,6 @@ assert cot(2 + 3 * i) ~= -0.0037397103763369567 - 0.9967577965693583105 * i;
 
 assert sinh(2 + 3 * i) ~= -3.590564589985779952 + 0.530921086248519805 * i;
 assert cosh(2 + 3 * i) ~= -3.724545504915322565 + 0.511822569987384609 * i;
-
-fn ~=(a: complex, b: complex) -> bool {
-  a.re ~= b.re && a.im ~= b.im
-}
 
 fn *(a: complex, b: num) -> complex {
   a @* b
@@ -428,6 +428,13 @@ fn cplot_abs(x: num) -> rgba {
 
 fn main(z: complex) -> rgba {
   z = 3.0 * z;
-  let result = erf(z);
-  cplot(result)
+  let c = z;
+
+  for a in [0.0; 20] {
+    if z.abs < 2.0 {
+      z = z * z + c;
+    }
+  }
+
+  cplot(z)
 }

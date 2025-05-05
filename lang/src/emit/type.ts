@@ -1,3 +1,4 @@
+import { todo } from "./error"
 import type { Id } from "./id"
 import type { EmitProps } from "./props"
 import type { GlslRepr, GlslReprScalar } from "./repr"
@@ -47,6 +48,10 @@ export class Array {
     readonly of: Type,
     readonly size: number,
   ) {
+    if (of instanceof Array) {
+      todo("Nested arrays are not supported yet.")
+    }
+
     const l1 = arrayCache.get(of)
 
     const cached = l1?.[size]

@@ -10,6 +10,7 @@ import {
 } from "../ast/kind"
 import {
   ExprArray,
+  ExprArrayByRepetition,
   ExprBinary,
   ExprBinaryAssign,
   ExprBlock,
@@ -89,7 +90,10 @@ export interface BroadcastUnaryDefinition {
   op(props: EmitProps, a: string, scalar: boolean): string
 }
 
-function toScalars(arg: { value: string; type: Type }): string[] {
+function toScalars(
+  arg: { value: string; type: Type },
+  block: Block | null,
+): string[] {
   if (arg.type instanceof Array) {
     todo(`Cannot yet convert arrays into scalar components.`)
   }
@@ -103,8 +107,10 @@ function toScalars(arg: { value: string; type: Type }): string[] {
   }
 
   if (arg.type instanceof Struct) {
+    let val = arg.value
+    if (block) val = cacheValue(arg, block, true)
     return arg.type.fields.flatMap((x) =>
-      toScalars({ value: x.get(arg.value), type: x.type }),
+      toScalars({ value: x.get(val), type: x.type }, null),
     )
   }
 
@@ -142,11 +148,12 @@ function fromScalars(type: Type, scalars: string[]): string {
  * both be scalars.
  */
 function broadcastBinary(
-  props: EmitProps,
+  block: Block,
   { name, on, op }: BroadcastBinaryDefinition,
   arg1: Value,
   arg2: Value,
 ): Value {
+  const props = block.props
   const r1 = arg1.type.repr
   const r2 = arg2.type.repr
 
@@ -179,8 +186,8 @@ function broadcastBinary(
   }
 
   // We checked for `value: null` earlier
-  const s1 = toScalars(arg1 as { value: string; type: Type })
-  const s2 = toScalars(arg2 as { value: string; type: Type })
+  const s1 = toScalars(arg1 as { value: string; type: Type }, block)
+  const s2 = toScalars(arg2 as { value: string; type: Type }, block)
 
   if (r2.count == 1) {
     const els = s1.map((x) => op(props, x, s2[0]!, true))
@@ -203,7 +210,7 @@ function broadcastBinary(
  * both be scalars.
  */
 function broadcastUnary(
-  props: EmitProps,
+  block: Block,
   { name, on, op }: BroadcastUnaryDefinition,
   arg1: Value,
 ): Value {
@@ -223,6 +230,8 @@ function broadcastUnary(
     issue(`The operator '${name}' does not accept void arguments.`)
   }
 
+  const { props } = block
+
   if (props.lang == "glsl") {
     return {
       type: arg1.type,
@@ -231,28 +240,55 @@ function broadcastUnary(
   }
 
   // We checked for `value: null` earlier
-  const s1 = toScalars(arg1 as { value: string; type: Type })
+  const s1 = toScalars(arg1 as { value: string; type: Type }, block)
   const els = s1.map((x) => op(props, x, true))
   return { value: fromScalars(arg1.type, els), type: arg1.type }
 }
 
-function matrixMultiply(props: EmitProps, arg1: Value, arg2: Value): Value {
-  if (props.lang == "glsl") {
-    const r1 = arg1.type.repr
-    const r2 = arg2.type.repr
+function matrixMultiply(block: Block, arg1: Value, arg2: Value): Value {
+  if (!(arg1.value && arg2.value)) {
+    issue(`Cannot matrix multiply a void value.`)
+  }
 
-    // mat * vec = vec
-    if (r1.type == "mat" && r2.type == "vec" && r2.of == "float") {
-      if (r1.cols == r1.rows && r1.rows == r2.count) {
+  const r1 = arg1.type.repr
+  const r2 = arg2.type.repr
+
+  // mat * vec = vec
+  if (r1.type == "mat" && r2.type == "vec" && r2.of == "float") {
+    if (r1.cols == r1.rows && r1.rows == r2.count) {
+      if (block.props.lang == "glsl") {
         return {
           value: `(${arg1.value})*(${arg2.value})`,
           type: arg2.type,
         }
       } else {
-        todo(
-          `Can only multiply matrices and vectors if the matrix is square and the vector has the same size as the matrix.`,
-        )
+        const a1scalars = toScalars(arg1 as ValueNN, block)
+        const a2scalars = toScalars(arg2 as ValueNN, block)
+        a1scalars // [c1r1 c1r2 .. c1rn] .. [cnr1 cnr2 .. cnrn]
+        a2scalars // r1 r2 r3 ..
+
+        return {
+          value: fromScalars(
+            arg2.type,
+            a2scalars.map((_, i) => {
+              let r = ""
+              for (let j = 0; j < r1.cols; j++) {
+                if (j != 0) {
+                  r += "+"
+                }
+                r += `(${a1scalars[j * r1.rows + i]})*(${a2scalars[j]})`
+                // u[i] = m[0][i] * v[0] + m[1][i] * v[1] + m[2][i] * v[2];
+              }
+              return r
+            }),
+          ),
+          type: arg2.type,
+        }
       }
+    } else {
+      todo(
+        `Can only multiply matrices and vectors if the matrix is square and the vector has the same size as the matrix.`,
+      )
     }
   }
 
@@ -264,6 +300,11 @@ export interface Value {
   type: Type
 }
 
+export interface ValueNN {
+  value: string
+  type: Type
+}
+
 function performCall(id: Id, block: Block, args: Value[]): Value {
   const fns = block.decl.fns.get(id)
 
@@ -271,18 +312,18 @@ function performCall(id: Id, block: Block, args: Value[]): Value {
     if (args.length == 1) {
       const bb = broadcastUnaryOps[id.value]
       if (bb) {
-        return broadcastUnary(block.props, bb, args[0]!)
+        return broadcastUnary(block, bb, args[0]!)
       }
     }
 
     if (args.length == 2) {
       if (id == names.of("@#")) {
-        return matrixMultiply(block.props, args[0]!, args[1]!)
+        return matrixMultiply(block, args[0]!, args[1]!)
       }
 
       const bb = broadcastBinaryOps[id.value]
       if (bb) {
-        return broadcastBinary(block.props, bb, args[0]!, args[1]!)
+        return broadcastBinary(block, bb, args[0]!, args[1]!)
       }
     }
 
@@ -566,9 +607,19 @@ function emitAssignmentTarget(expr: NodeExpr, block: Block): Value {
   }
 }
 
-function cacheValue(value: Value, block: Block): string {
+const PRECACHED = /^(?:[+-]?\d+(?:\.\d+)?(?:e[+-]?\d+)?|[A-Za-z_$][\w_$]+)$/
+
+function cacheValue(
+  value: Value,
+  block: Block,
+  skipIfPrecached: boolean,
+): string {
   if (value.value == null) {
     bug(`Cannot cache void values.`)
+  }
+
+  if (skipIfPrecached && PRECACHED.test(value.value)) {
+    return value.value
   }
 
   // We can't ignore values which are plain idents since we need to copy them before usage.
@@ -864,7 +915,7 @@ function emitExpr(expr: NodeExpr, block: Block): Value {
         issue(`'for' loop sources must have identical lengths.`)
       }
 
-      const sourceCached = cacheValue(source, block)
+      const sourceCached = cacheValue(source, block, false)
       const value: Value = {
         value: `${sourceCached}[${index}]`,
         type: source.type.of,
@@ -879,6 +930,38 @@ function emitExpr(expr: NodeExpr, block: Block): Value {
     const final = ret.value ? ret.value + ";" : ""
     block.source += `for(${block.props.lang == "glsl" ? "int" : "var"} ${index}=0;${index}<${size!};${index}++) {${child.source}${final}}`
     return { value: null, type: void_ }
+  } else if (expr instanceof ExprArrayByRepetition) {
+    const item = emitExpr(expr.of, block)
+    if (item.value == null) {
+      issue(`Cannot construct an array of void.`)
+    }
+
+    const sizes = expr.sizes.items.map((x) =>
+      x instanceof ExprLit && x.value.kind == TInt ?
+        parseInt(x.value.val, 10)
+      : null,
+    )
+    if (!sizes.every((x) => x != null)) {
+      todo(`Array sizes must currently be constant integers.`)
+    }
+
+    if (sizes.length == 0) {
+      return item
+    }
+
+    return sizes.reduceRight<ValueNN>((item, size): ValueNN => {
+      const type = new Array(item.type, size)
+
+      if (block.props.lang == "glsl") {
+        const cached = cacheValue(item, block, true)
+        return {
+          value: `${emitType(type, block.props)}(${(cached + ",").repeat(size).slice(0, -1)})`,
+          type,
+        }
+      } else {
+        return { value: `Array(${size}).fill(${item.value})`, type }
+      }
+    }, item as ValueNN)
   } else {
     todo(`Cannot emit '${expr.constructor.name}' yet.`)
   }
