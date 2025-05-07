@@ -7,5 +7,5 @@ export function issue(x: string): never {
 }
 
 export function bug(x: string): never {
-  throw new Error(x)
+  throw new Error(x + " THIS IS A BUG; PLEASE REPORT IT.")
 }

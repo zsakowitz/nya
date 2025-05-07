@@ -16,7 +16,7 @@ export class Id {
 
 const idMap: Record<string, Id> = Object.create(null)
 
-export function global(label: string) {
+export function globalIdent(label: string) {
   return (idMap[label] ??= new Id(label))
 }
 

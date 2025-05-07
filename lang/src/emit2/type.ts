@@ -1,4 +1,5 @@
 import { fieldIdent, Id } from "./id"
+import { encodeIdentForTS } from "./ident"
 import type { EmitProps } from "./props"
 import { emitGlslVec, type GlslScalar, type Repr } from "./repr"
 import { Value, type ConstValue } from "./value"
@@ -10,6 +11,12 @@ export class Fn {
     readonly ret: Type,
     readonly run: (args: Value[]) => Value,
   ) {}
+
+  tyDecl(props: EmitProps) {
+    return props.lang == "glsl" ?
+        null
+      : `function ${this.id.ident()}(${this.args.map((x) => encodeIdentForTS(x.name) + ":" + x.type.emit).join(",")}): ${this.ret.emit};`
+  }
 }
 
 export class Scalar {
@@ -17,7 +24,7 @@ export class Scalar {
     readonly name: string,
     readonly emit: string,
     readonly repr: Repr,
-    readonly toRuntime: (value: ConstValue) => string,
+    readonly toRuntime: (value: ConstValue) => string | null,
   ) {}
 
   toString() {
