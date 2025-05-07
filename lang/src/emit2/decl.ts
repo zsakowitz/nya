@@ -63,9 +63,11 @@ export class Declarations {
   private readonly source = new Set<string>()
 
   constructor(
+    readonly props: EmitProps,
     parent: Declarations | null,
     void_: Scalar,
     readonly createLiteral: (literal: ExprLit) => Value,
+    readonly arraySize: (value: Value) => number | null,
   ) {
     this.void = void_
     this.types = new IdMap(parent?.types ?? null)
@@ -85,16 +87,16 @@ export class Block {
   source = ""
 
   readonly lang
+  readonly props
 
   constructor(
     readonly decl: Declarations,
-    readonly props: EmitProps,
     readonly locals: IdMap<Value> = new IdMap(null),
   ) {
-    this.lang = props.lang
+    this.lang = (this.props = decl.props).lang
   }
 
   child() {
-    return new Block(this.decl, this.props, new IdMap(this.locals))
+    return new Block(this.decl, new IdMap(this.locals))
   }
 }
