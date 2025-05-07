@@ -1,8 +1,9 @@
 import source from "../examples/test.nya"
 import { parse } from "./ast/parse"
 import { createStream } from "./ast/stream"
+import { emitItem } from "./emit/emit"
 import { EmitProps, type Lang } from "./emit/props"
-import { createStdlibDecls, emitItem } from "./pkg"
+import { createStdlibDecls } from "./emit/stdlib"
 import { result } from "./preview"
 
 const ret: any[] = []
