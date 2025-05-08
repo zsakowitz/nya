@@ -1,42 +1,40 @@
-import { parseBlockContents } from "./ast/parse"
+import { parse, parseBlockContents } from "./ast/parse"
 import { createStream } from "./ast/stream"
 import { Block } from "./emit2/decl"
-import { emitBlock } from "./emit2/emit"
-import { ident } from "./emit2/id"
+import { emitBlock, emitItem } from "./emit2/emit"
 import { addInspectKeys } from "./emit2/inspect"
 import { EmitProps } from "./emit2/props"
 import { createStdlib } from "./emit2/stdlib"
-import { Struct, type Scalar } from "./emit2/type"
-import { Value } from "./emit2/value"
 
 addInspectKeys()
-const props = new EmitProps("glsl")
-const decl = createStdlib(props)
-const num = decl.types.get(ident("num")) as Scalar
-const bool = decl.types.get(ident("bool")) as Scalar
-if (true) {
-  const empty = Struct.unify(props, "empty", []).struct
-  const result = Struct.unify(props, "world", [
-    { name: "void", type: empty },
-    { name: "re", type: num },
-    { name: "im", type: num },
-    // { name: "is_active", type: bool },
-  ])
-  const accessors = result.struct.generateFieldAccessors(decl)
-  const value = result.struct.with([
-    empty.with([]),
-    new Value(45, num),
-    new Value(23, num),
-    // new Value(false, bool),
-  ])
-  console.log(value)
-  console.log(accessors?.map((x) => x.run([value])))
-} else {
-  const source = `is_inf(x)+y`
-  const stream = createStream(source, { comments: false })
-  const node = parseBlockContents(stream)
+try {
+  console.time()
+  const props = new EmitProps("glsl")
+  const decl = createStdlib(props)
+  const context = `
+  
+  struct complex {re: num, im: num }
+  `
+  let root = []
+  let rootTy = []
+  for (const item of parse(createStream(context, { comments: false })).items) {
+    const result = emitItem(item, decl)
+    if (result?.decl) {
+      root.push(result.decl)
+    }
+    if (result?.declTy) {
+      rootTy.push(result.declTy)
+    }
+  }
+  const expr = `complex{ re: 2, im: 3}`
   const block = new Block(decl)
-  const value = emitBlock(node, block)
-  console.log(decl.globals())
+  const value = emitBlock(
+    parseBlockContents(createStream(expr, { comments: false })),
+    block,
+  )
+  console.timeEnd()
   console.log(value)
+} catch (e) {
+  console.log(e instanceof Error ? e.message : String(e))
+  process.exit(1)
 }

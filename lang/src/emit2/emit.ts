@@ -14,7 +14,7 @@ import { StmtExpr, type NodeStmt } from "../ast/node/stmt"
 import { TypeEmpty, TypeParen, TypeVar, type NodeType } from "../ast/node/type"
 import type { Block, Declarations } from "./decl"
 import { issue, todo } from "./error"
-import { ident as ident, type Id } from "./id"
+import { ident, type Id } from "./id"
 import { Struct, type Type } from "./type"
 import { Value } from "./value"
 
@@ -185,7 +185,7 @@ function emitStmt(node: NodeStmt, block: Block): Value {
 
 export type ItemResult = { decl: string; declTy?: string } | null
 
-function emitItem(node: NodeItem, decl: Declarations): ItemResult {
+export function emitItem(node: NodeItem, decl: Declarations): ItemResult {
   if (node instanceof ItemStruct) {
     if (!node.name) {
       issue(`Missing name in struct declaration.`)
@@ -209,13 +209,8 @@ function emitItem(node: NodeItem, decl: Declarations): ItemResult {
       fields.push({ name: name.val, type: ty })
     }
     const result = Struct.of(decl.props, id.label, fields)
-    if (result instanceof Struct) {
-      decl.types.set(id, result)
-      return null
-    } else {
-      decl.types.set(id, result.struct)
-      return { decl: result.decl, declTy: result.declTyOnly || undefined }
-    }
+    decl.types.set(id, result.struct)
+    return result.decl ? { decl: result.decl, declTy: result.declTyOnly } : null
   } else {
     todo(`Cannot emit '${node.constructor.name}' as an item yet.`)
   }

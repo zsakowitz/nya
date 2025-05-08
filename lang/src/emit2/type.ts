@@ -43,7 +43,7 @@ export class Scalar {
 }
 
 export class Struct {
-  static of(
+  static #of(
     props: EmitProps,
     name: string,
     fields: { name: string; type: Type }[],
@@ -134,19 +134,25 @@ export class Struct {
         `struct ${id.ident()} {${nvFields.map(({ type }, i) => `${type.emit} ${fieldIdent(i)};`).join("")}}`
       : `function ${id.ident()}(${nvFields.map((_, i) => `${fieldIdent(i)}`).join(",")}) {return {${nvFields.map((_, i) => `${fieldIdent(i)}`).join(",")}}}`
     const declTyOnly =
-      props.lang != "glsl" &&
-      `declare const ${brandId.ident()}: unique symbol
+      props.lang == "glsl" ?
+        undefined
+      : `declare const ${brandId.ident()}: unique symbol
 interface ${id.ident()} {[${brandId.ident()}]: "__brand";${nvFields.map(({ type }, i) => `${fieldIdent(i)}: ${type.emit};`).join("")}}
 ${fn.tyDecl(props)}`
     return { struct, fn, decl, declTyOnly }
   }
 
-  static unify(
+  static of(
     props: EmitProps,
     name: string,
     fields: { name: string; type: Type }[],
-  ) {
-    const ret = Struct.of(props, name, fields)
+  ): {
+    struct: Struct
+    fn?: Fn
+    decl?: string
+    declTyOnly?: string
+  } {
+    const ret = Struct.#of(props, name, fields)
     if (ret instanceof Struct) {
       return { struct: ret }
     } else {
@@ -225,16 +231,13 @@ ${fn.tyDecl(props)}`
   }
 
   generateFieldAccessors(decl: Declarations): Fn[] {
+    const arg = [{ name: "target", type: this }]
+
     // Void optimization
     if (this.#nvFields.length == 0) {
       return this.#fields.map(
         ({ name, type }) =>
-          new Fn(
-            ident(name),
-            [{ name: "target", type: this }],
-            type,
-            () => new Value(0, type),
-          ),
+          new Fn(ident(name), arg, type, () => new Value(0, type)),
       )
     }
 
@@ -244,7 +247,7 @@ ${fn.tyDecl(props)}`
         ({ name, type }) =>
           new Fn(
             ident(name),
-            [{ name: "target", type: this }],
+            arg,
             type,
             type.repr.type == "void" ?
               () => new Value(0, decl.void)
@@ -276,7 +279,7 @@ ${fn.tyDecl(props)}`
 
         return new Fn(
           ident(name),
-          [{ name: "target", type: this }],
+          arg,
           type,
           mask == null ?
             () => new Value(0, type)
@@ -298,6 +301,22 @@ ${fn.tyDecl(props)}`
 
     // Plain struct representation
     let index = 0
+    return this.#fields.map(({ name, type }) => {
+      const id = ident(name)
+      if (type.repr.type == "void") {
+        return new Fn(id, arg, type, () => new Value(0, type))
+      }
+
+      const idx = index++
+      const idnt = fieldIdent(idx)
+      return new Fn(id, arg, type, ([a]): Value => {
+        if (a!.const()) {
+          return new Value((a.value as ConstValue[])[idx]!, type)
+        } else {
+          return new Value(a!.toString() + "." + idnt, type)
+        }
+      })
+    })
   }
 
   toString() {

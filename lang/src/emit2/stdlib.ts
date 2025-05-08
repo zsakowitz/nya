@@ -13,9 +13,14 @@ export function createStdlib(props: EmitProps) {
     "num",
     lang == "glsl" ? "float" : "number",
     { type: "vec", count: 1, of: "float" },
-    lang == "glsl" ?
-      (v) => (v as number).toExponential()
-    : (v) => "" + (v as number),
+    (v) => {
+      const name = (v as number).toString()
+      if (name.includes(".") || name.includes("e")) {
+        return name
+      } else {
+        return name + "."
+      }
+    },
   )
   const bool = new Scalar(
     "bool",
