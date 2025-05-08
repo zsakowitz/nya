@@ -4,17 +4,18 @@ import {
   ExprEmpty,
   ExprLit,
   ExprParen,
+  ExprStruct,
   ExprUnary,
   ExprVar,
   type NodeExpr,
 } from "../ast/node/expr"
-import type { NodeItem } from "../ast/node/item"
+import { ItemStruct, type NodeItem } from "../ast/node/item"
 import { StmtExpr, type NodeStmt } from "../ast/node/stmt"
 import { TypeEmpty, TypeParen, TypeVar, type NodeType } from "../ast/node/type"
 import type { Block, Declarations } from "./decl"
 import { issue, todo } from "./error"
-import { globalIdent as ident, type Id } from "./id"
-import type { Type } from "./type"
+import { ident as ident, type Id } from "./id"
+import { Struct, type Type } from "./type"
 import { Value } from "./value"
 
 function list(a: { toString(): string }[], empty: "no arguments" | null) {
@@ -84,9 +85,9 @@ function emitType(node: NodeType, decl: Declarations): Type {
       issue(`Type '${node.name.val}' is not defined.`)
     }
     return ty
+  } else {
+    todo(`Cannot emit '${node.constructor.name}' as a type yet.`)
   }
-
-  todo(`Cannot emit '${node.constructor.name}' as a type yet.`)
 }
 
 function nonNull(value: Value | null): Value {
@@ -123,9 +124,34 @@ function emitExpr(node: NodeExpr, block: Block): Value {
     )
   } else if (node instanceof ExprParen) {
     return emitExpr(node.of.value, block)
-  }
+  } else if (node instanceof ExprStruct) {
+    const name = node.name.val
+    if (!node.args) {
+      issue(`No arguments were passed to struct '${name}'.`)
+    }
 
-  todo(`Cannot emit '${node.constructor.name}' as an expression yet.`)
+    const ty = block.decl.types.get(ident(name))
+    if (!ty) {
+      issue(`Type '${name}' is not defined.`)
+    }
+    if (!(ty instanceof Struct)) {
+      issue(`Type '${name}' is not a struct.`)
+    }
+
+    const map = new Map<string, Value>()
+    for (const arg of node.args.items) {
+      map.set(
+        arg.name.val,
+        arg.expr ?
+          emitExpr(arg.expr, block)
+        : performCall(ident(arg.name.val), block, []),
+      )
+    }
+
+    return ty.with(ty.verifyAndOrderFields(map))
+  } else {
+    todo(`Cannot emit '${node.constructor.name}' as an expression yet.`)
+  }
 }
 
 function emitLvalue(node: NodeExpr, block: Block): { current: Value; id: Id } {
@@ -152,11 +178,45 @@ function emitStmt(node: NodeStmt, block: Block): Value {
       return nullValue(block)
     }
     return expr
+  } else {
+    todo(`Cannot emit '${node.constructor.name}' as a statement yet.`)
   }
-
-  todo(`Cannot emit '${node.constructor.name}' as a statement yet.`)
 }
 
-function emitItem(node: NodeItem, decl: Declarations) {
-  todo(`Cannot emit '${node.constructor.name}' as an item yet.`)
+export type ItemResult = { decl: string; declTy?: string } | null
+
+function emitItem(node: NodeItem, decl: Declarations): ItemResult {
+  if (node instanceof ItemStruct) {
+    if (!node.name) {
+      issue(`Missing name in struct declaration.`)
+    }
+    const id = ident(node.name.val)
+    if (!node.fields) {
+      issue(`Missing fields when declaring struct '${id}'.`)
+    }
+    if (node.tparams) {
+      issue("Type parameters are not supported yet.")
+    }
+    if (!decl.types.canDefine(id)) {
+      issue(`Type '${id}' was declared multiple times.`)
+    }
+    const fields = []
+    for (const { name, type } of node.fields.items) {
+      if (!name) {
+        issue(`Missing name for field when declaring struct '${id}'.`)
+      }
+      const ty = emitType(type, decl)
+      fields.push({ name: name.val, type: ty })
+    }
+    const result = Struct.of(decl.props, id.label, fields)
+    if (result instanceof Struct) {
+      decl.types.set(id, result)
+      return null
+    } else {
+      decl.types.set(id, result.struct)
+      return { decl: result.decl, declTy: result.declTyOnly || undefined }
+    }
+  } else {
+    todo(`Cannot emit '${node.constructor.name}' as an item yet.`)
+  }
 }

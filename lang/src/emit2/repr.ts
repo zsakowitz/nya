@@ -16,3 +16,7 @@ export function emitGlslVec(repr: ReprVec): string {
     : `${repr.of[0]}vec${repr.count}`
   )
 }
+
+export function emitGlslMat(repr: ReprMat): string {
+  return `mat${repr.cols}${repr.rows == repr.cols ? "" : "x" + repr.rows}`
+}

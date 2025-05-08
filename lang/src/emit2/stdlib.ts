@@ -1,12 +1,13 @@
 import { KFalse, KTrue, TFloat, TInt, TSym } from "../ast/kind"
 import { Declarations } from "./decl"
-import { globalIdent as g, Id } from "./id"
+import { ident as g, Id } from "./id"
 import type { EmitProps } from "./props"
 import { Fn, Scalar } from "./type"
 import { Value } from "./value"
 
 export function createStdlib(props: EmitProps) {
   const lang = props.lang
+  const epsilon = lang == "glsl" ? 1.1920928955078125e-7 : Number.EPSILON
 
   const num = new Scalar(
     "num",
@@ -66,8 +67,14 @@ export function createStdlib(props: EmitProps) {
 
   const lnum = { name: "lhs", type: num }
   const rnum = { name: "rhs", type: num }
+  const anum = { name: "a", type: num }
+  const bnum = { name: "b", type: num }
   const xnum = { name: "x", type: num }
   const ynum = { name: "y", type: num }
+
+  const lbool = { name: "lhs", type: bool }
+  const rbool = { name: "rhs", type: bool }
+  const xbool = { name: "x", type: bool }
 
   function numBinOp(
     op: "+" | "-" | "*" | "/" | "<" | ">" | "==" | "!=" | "<=" | ">=",
@@ -82,10 +89,22 @@ export function createStdlib(props: EmitProps) {
     })
   }
 
-  function numMathOp(name: string) {
+  function boolBinOp(
+    op: "&&" | "||" | "==" | "!=",
+    of: (a: boolean, b: boolean) => boolean,
+  ) {
+    return new Fn(g(op), [lbool, rbool], bool, ([a, b]) => {
+      if (a!.const() && b!.const()) {
+        return new Value(of(a.value as boolean, b.value as boolean), bool)
+      }
+      return new Value(`(${a})${op}(${b})`, num)
+    })
+  }
+
+  function numMathOp(fnName: string, name = fnName) {
     const op = Math[name as keyof typeof Math] as (x: number) => number
-    const id = new Id(name).ident()
-    return new Fn(g(name), [xnum], num, ([a]) => {
+    const id = new Id(fnName).ident()
+    return new Fn(g(fnName), [xnum], num, ([a]) => {
       if (a!.const()) {
         return new Value(op(a.value as number), num)
       }
@@ -98,15 +117,16 @@ export function createStdlib(props: EmitProps) {
   }
 
   const atanId = new Id("Math.atan2").ident()
-  const logId = new Id("Math.log").ident()
   const hypotId = new Id("Math.hypot").ident()
+  const absId = new Id("Math.abs").ident()
+  const isFiniteId = new Id("glsl is_finite polyfill").ident()
 
   const fns: Fn[] = [
-    // Something which isn't constant for testing purposes
+    // Non-constants for testing purposes
     new Fn(g("x"), [], num, () => new Value("pos.x", num)),
     new Fn(g("y"), [], num, () => new Value("pos.y", num)),
 
-    // The easy numeric operators
+    // Easy numeric operators
     numBinOp("+", num, (a, b) => a + b),
     numBinOp("-", num, (a, b) => a - b),
     numBinOp("*", num, (a, b) => a * b),
@@ -118,7 +138,7 @@ export function createStdlib(props: EmitProps) {
     numBinOp("==", bool, (a, b) => a == b),
     numBinOp("!=", bool, (a, b) => a != b),
 
-    // The annoying numeric operators
+    // Annoying numeric operators
     new Fn(g("-"), [xnum], num, ([a]) => {
       if (a!.const()) {
         return new Value(-(a.value as number), num)
@@ -141,12 +161,13 @@ export function createStdlib(props: EmitProps) {
       return new Value(lang == "glsl" ? `mod(${a},${b})` : `(${a})%(${b})`, num)
     }),
 
-    // The easy numeric functions
+    // Easy numeric functions
     ..."sin cos tan asin acos atan sinh cosh tanh asinh acosh atanh exp abs cbrt sqrt ceil floor round sign log10"
       .split(" ")
-      .map(numMathOp),
+      .map((x) => numMathOp(x)),
+    numMathOp("ln", "log"),
 
-    // The hard numeric functions
+    // Annoying numeric functions
     new Fn(g("atan"), [ynum, xnum], num, ([y, x]) => {
       if (y!.const() && x!.const()) {
         return new Value(Math.atan2(y.value as number, x.value as number), num)
@@ -159,11 +180,92 @@ export function createStdlib(props: EmitProps) {
         num,
       )
     }),
+    new Fn(g("hypot"), [anum, bnum], num, ([a, b]) => {
+      if (a!.const() && b!.const()) {
+        return new Value(Math.hypot(a.value as number, b.value as number), num)
+      }
+      if (props.lang != "glsl") {
+        decl.global(`const ${hypotId}=Math.hypot;`)
+      }
+      return new Value(
+        props.lang == "glsl" ?
+          `length(vec2(${a!},${b!}))`
+        : `${hypotId}(${a!},${b!})`,
+        num,
+      )
+    }),
+    new Fn(g("~="), [lnum, rnum], bool, ([l, r]) => {
+      if (l!.const() && r!.const()) {
+        return new Value(
+          Math.abs((l.value as number) - (r.value as number)) < epsilon,
+          bool,
+        )
+      }
+      if (props.lang != "glsl") {
+        decl.global(`const ${absId}=Math.abs;`)
+      }
+      return new Value(
+        props.lang == "glsl" ?
+          `abs(${l!},${r!})<${epsilon}`
+        : `${absId}(${l!},${r!})<${epsilon}`,
+        bool,
+      )
+    }),
 
-    // TODO: ln hypot ~=
-    // TODO: inf nan pi e epsilon
-    // TODO: is_inf is_nan is_finite
-    // TODO: && || == != !
+    // Numeric constants
+    new Fn(g("inf"), [], num, () => new Value(1 / 0, num)),
+    new Fn(g("nan"), [], num, () => new Value(0 / 0, num)),
+    new Fn(g("pi"), [], num, () => new Value(Math.PI, num)),
+    new Fn(g("e"), [], num, () => new Value(Math.E, num)),
+    new Fn(g("epsilon"), [], num, () => new Value(epsilon, num)),
+
+    // Numeric checks
+    new Fn(g("is_inf"), [xnum], bool, ([a]) => {
+      if (a!.const()) {
+        return new Value(1 / (a.value as number) == 0, bool)
+      }
+      return new Value(
+        props.lang == "glsl" ? `isinf(${a})` : `1.0/(${a})==0.0`,
+        bool,
+      )
+    }),
+    new Fn(g("is_nan"), [xnum], bool, ([a]) => {
+      if (a!.const()) {
+        return new Value(isNaN(a.value as number), bool)
+      }
+      return new Value(
+        props.lang == "glsl" ? `isnan(${a})` : `isNaN(${a})`,
+        bool,
+      )
+    }),
+    new Fn(g("is_finite"), [xnum], bool, ([a]) => {
+      if (a!.const()) {
+        return new Value(isFinite(a.value as number), bool)
+      }
+      if (props.lang == "glsl") {
+        decl.global(
+          `bool ${isFiniteId}(float x){return!is_nan(x)&&!is_inf(x);}`,
+        )
+      }
+      return new Value(
+        props.lang == "glsl" ? `${isFiniteId}(${a})` : `isFinite(${a})`,
+        bool,
+      )
+    }),
+
+    // Easy boolean operators
+    boolBinOp("&&", (a, b) => a && b),
+    boolBinOp("||", (a, b) => a || b),
+    boolBinOp("==", (a, b) => a == b),
+    boolBinOp("!=", (a, b) => a != b),
+
+    // Annoying boolean operators
+    new Fn(g("!"), [xbool], bool, ([a]) => {
+      if (a!.const()) {
+        return new Value(!(a.value as boolean), bool)
+      }
+      return new Value(`!(${a})`, bool)
+    }),
   ]
 
   for (const f of fns) {

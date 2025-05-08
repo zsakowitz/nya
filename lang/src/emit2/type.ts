@@ -1,4 +1,6 @@
-import { fieldIdent, Id } from "./id"
+import type { Declarations } from "./decl"
+import { bug, issue, todo } from "./error"
+import { fieldIdent, Id, ident } from "./id"
 import { encodeIdentForTS } from "./ident"
 import type { EmitProps } from "./props"
 import { emitGlslVec, type GlslScalar, type Repr } from "./repr"
@@ -15,7 +17,15 @@ export class Fn {
   tyDecl(props: EmitProps) {
     return props.lang == "glsl" ?
         null
-      : `function ${this.id.ident()}(${this.args.map((x) => encodeIdentForTS(x.name) + ":" + x.type.emit).join(",")}): ${this.ret.emit};`
+      : `function ${this.id.ident()}(${this.args
+          .map((x) => encodeIdentForTS(x.name) + ":" + x.type.emit)
+          .join(",")}): ${this.ret.emit};`
+  }
+
+  toString() {
+    return `${this.id.label}(${this.args
+      .map((x) => x.name + ": " + x.type)
+      .join(", ")}) -> ${this.ret}`
   }
 }
 
@@ -46,7 +56,7 @@ export class Struct {
       .map((x) => x.i)
 
     if (nvFields.length == 0) {
-      return new Struct(name, "void", { type: "void" }, true, nvIndices)
+      return new Struct(name, "void", { type: "void" }, true, [], [], fields)
     }
 
     if (nvFields.length == 1) {
@@ -56,6 +66,8 @@ export class Struct {
         nvFields[0]!.type.repr,
         false,
         nvIndices,
+        nvFields.map((x) => x.type),
+        fields,
       )
     }
 
@@ -82,9 +94,19 @@ export class Struct {
       repr = { type: "vec", of: kind, count }
 
       if (props.lang == "glsl") {
-        return new Struct(name, emitGlslVec(repr), repr, false, nvIndices)
+        return new Struct(
+          name,
+          emitGlslVec(repr),
+          repr,
+          false,
+          nvIndices,
+          nvFields.map((x) => x.type),
+          fields,
+        )
       }
     }
+
+    // TODO: matrix optimization
 
     const id = new Id(name)
     const brandId = new Id(name)
@@ -96,6 +118,7 @@ export class Struct {
       false,
       nvIndices,
       nvFields.map((x) => x.type),
+      fields,
     )
     const fn = new Fn(id, fields, struct, (args) => {
       const vals = nvIndices.map((i) => args[i]!)
@@ -113,12 +136,28 @@ export class Struct {
     const declTyOnly =
       props.lang != "glsl" &&
       `declare const ${brandId.ident()}: unique symbol
-interface ${id.ident()} {[${brandId.ident()}]: "__brand";${nvFields.map(({ type }, i) => `${fieldIdent(i)}: ${type.emit};`).join("")}}`
+interface ${id.ident()} {[${brandId.ident()}]: "__brand";${nvFields.map(({ type }, i) => `${fieldIdent(i)}: ${type.emit};`).join("")}}
+${fn.tyDecl(props)}`
     return { struct, fn, decl, declTyOnly }
+  }
+
+  static unify(
+    props: EmitProps,
+    name: string,
+    fields: { name: string; type: Type }[],
+  ) {
+    const ret = Struct.of(props, name, fields)
+    if (ret instanceof Struct) {
+      return { struct: ret }
+    } else {
+      return ret
+    }
   }
 
   readonly #nvIndices
   readonly #nvFields
+  readonly #fields
+  readonly #fieldNames
 
   private constructor(
     readonly name: string,
@@ -126,10 +165,13 @@ interface ${id.ident()} {[${brandId.ident()}]: "__brand";${nvFields.map(({ type 
     readonly repr: Repr,
     _isVoid: boolean,
     nvIndices: number[],
-    nvFields: Type[] = [],
+    nvFields: Type[],
+    fields: { name: string; type: Type }[],
   ) {
     this.#nvIndices = nvIndices
     this.#nvFields = nvFields
+    this.#fields = fields
+    this.#fieldNames = fields.map((x) => x.name)
   }
 
   with(args: Value[]): Value {
@@ -161,6 +203,105 @@ interface ${id.ident()} {[${brandId.ident()}]: "__brand";${nvFields.map(({ type 
     }
 
     return `${this.emit}(${this.#nvFields.map((type, i) => type.toRuntime(fields[i]!))})`
+  }
+
+  verifyAndOrderFields(fields: Map<string, Value>): Value[] {
+    const self = this.#fieldNames
+    const name = this.name
+    if (fields.size != self.length) {
+      issue(`Invalid number of fields passed to struct '${name}'.`)
+    }
+
+    return this.#fieldNames.map((fieldName) => {
+      const v = fields.get(fieldName)
+      if (!v) {
+        issue(
+          `Missing field '${fieldName}' when constructing struct '${this.name}'.`,
+        )
+      }
+
+      return v
+    })
+  }
+
+  generateFieldAccessors(decl: Declarations): Fn[] {
+    // Void optimization
+    if (this.#nvFields.length == 0) {
+      return this.#fields.map(
+        ({ name, type }) =>
+          new Fn(
+            ident(name),
+            [{ name: "target", type: this }],
+            type,
+            () => new Value(0, type),
+          ),
+      )
+    }
+
+    // Single-field optimization
+    if (this.#nvFields.length == 1) {
+      return this.#fields.map(
+        ({ name, type }) =>
+          new Fn(
+            ident(name),
+            [{ name: "target", type: this }],
+            type,
+            type.repr.type == "void" ?
+              () => new Value(0, decl.void)
+            : ([a]) => new Value(a!.value, this),
+          ),
+      )
+    }
+
+    const lang = decl.props.lang
+
+    // GLSL vector optimization
+    if (lang == "glsl" && this.repr.type == "vec") {
+      const MASK = "xyzw"
+      let index = 0
+      let constIndex = 0
+      return this.#fields.map(({ name, type }) => {
+        const mask =
+          type.repr.type == "void" ? null
+          : type.repr.type == "vec" ?
+            "." + MASK.slice(index, (index += type.repr.count))
+          : bug(
+              "Structs with a vector representation can only contain void items and other vectors.",
+            )
+
+        const idx = constIndex
+        if (type.repr.type == "vec") {
+          constIndex++
+        }
+
+        return new Fn(
+          ident(name),
+          [{ name: "target", type: this }],
+          type,
+          mask == null ?
+            () => new Value(0, type)
+          : ([a]): Value => {
+              if (a!.const()) {
+                return new Value((a.value as ConstValue[])[idx]!, type)
+              } else {
+                return new Value(a!.toString() + mask!, type)
+              }
+            },
+        )
+      })
+    }
+
+    // GLSL matrix optimization
+    if (lang == "glsl" && this.repr.type == "mat") {
+      todo("Matrix-repr'd structs are not allowed yet.")
+    }
+
+    // Plain struct representation
+    let index = 0
+  }
+
+  toString() {
+    return this.name
   }
 }
 
