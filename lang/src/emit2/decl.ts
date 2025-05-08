@@ -1,36 +1,37 @@
 import type { ExprLit } from "../ast/node/expr"
-import type { Id } from "./id"
+import type { FnBroadcast } from "./broadcast"
+import { Id, type GlobalId } from "./id"
 import type { EmitProps } from "./props"
 import type { Fn, Scalar, Type } from "./type"
-import type { Value } from "./value"
+import { Value } from "./value"
 
 export class IdMap<T> {
   constructor(private readonly parent: IdMap<T> | null) {}
 
   private readonly map: Record<number, T> = Object.create(null)
 
-  get(id: Id): T | undefined {
+  get(id: GlobalId): T | undefined {
     return this.map[id.value] ?? this.parent?.get(id)
   }
 
-  has(id: Id): boolean {
+  has(id: GlobalId): boolean {
     return id.value in this.map || (this.parent != null && this.parent?.has(id))
   }
 
   /** Inverse of `.has`, but doesn't check parent scopes. */
-  canDefine(id: Id) {
+  canDefine(id: GlobalId) {
     return !(id.value in this.map)
   }
 
   /** Returns a value if it's already been initialized. */
-  init(id: Id, value: T): T {
+  init(id: GlobalId, value: T): T {
     if (this.has(id)) {
       return this.get(id)!
     }
     return (this.map[id.value] = value)
   }
 
-  set(id: Id, value: T) {
+  set(id: GlobalId, value: T) {
     this.map[id.value] = value
   }
 }
@@ -38,11 +39,11 @@ export class IdMap<T> {
 export class IdMapMany<T> {
   private readonly rec: Record<number, T[]> = Object.create(null)
 
-  get(id: Id) {
+  get(id: GlobalId) {
     return this.rec[id.value]
   }
 
-  push(id: Id, value: T) {
+  push(id: GlobalId, value: T) {
     ;(this.rec[id.value] ??= []).push(value)
   }
 
@@ -68,6 +69,7 @@ export class Declarations {
     void_: Scalar,
     readonly createLiteral: (literal: ExprLit) => Value,
     readonly arraySize: (value: Value) => number | null,
+    readonly broadcasts: IdMapMany<FnBroadcast>,
   ) {
     this.void = void_
     this.types = new IdMap(parent?.types ?? null)
@@ -94,6 +96,18 @@ export class Block {
     readonly locals: IdMap<Value> = new IdMap(null),
   ) {
     this.lang = (this.props = decl.props).lang
+  }
+
+  cache(value: Value): Value {
+    if (value.const()) {
+      return value
+    } else if (value.type.repr.type == "void") {
+      return new Value(0, value.type)
+    } else {
+      const ident = new Id("cached value").ident()
+      this.source += `${this.props.lang == "glsl" ? value.type.emit : "var"} ${ident}=${value};`
+      return new Value(ident, value.type)
+    }
   }
 
   child() {

@@ -4,18 +4,19 @@ import {
   ExprEmpty,
   ExprLit,
   ExprParen,
+  ExprProp,
   ExprStruct,
   ExprUnary,
   ExprVar,
   type NodeExpr,
 } from "../ast/node/expr"
-import { ItemStruct, type NodeItem } from "../ast/node/item"
+import { ItemFn, ItemStruct, type NodeItem } from "../ast/node/item"
 import { StmtExpr, type NodeStmt } from "../ast/node/stmt"
 import { TypeEmpty, TypeParen, TypeVar, type NodeType } from "../ast/node/type"
-import type { Block, Declarations } from "./decl"
+import { Block, IdMap, type Declarations } from "./decl"
 import { issue, todo } from "./error"
-import { ident, type Id } from "./id"
-import { Struct, type Type } from "./type"
+import { Id, ident, type GlobalId } from "./id"
+import { Fn, Struct, type Type } from "./type"
 import { Value } from "./value"
 
 function list(a: { toString(): string }[], empty: "no arguments" | null) {
@@ -38,7 +39,17 @@ function list(a: { toString(): string }[], empty: "no arguments" | null) {
   )
 }
 
-function performCall(id: Id, block: Block, args: Value[]): Value {
+function performCall(id: GlobalId, block: Block, args: Value[]): Value {
+  const local = block.locals.get(id)
+
+  if (local) {
+    if (args.length != 0) {
+      issue(`Locally defined variable '${id}' is not a function.`)
+    }
+
+    return local
+  }
+
   const fns = block.decl.fns.get(id)
 
   if (!fns) {
@@ -49,7 +60,7 @@ function performCall(id: Id, block: Block, args: Value[]): Value {
   const overload = fns.find(
     (x) =>
       x.args.length == args.length &&
-      x.args.every((a, i) => a.type == args[i]!.type),
+      x.args.every((a, i) => a.type.canConvertFrom(args[i]!.type)),
   )
   if (!overload) {
     issue(
@@ -61,12 +72,12 @@ function performCall(id: Id, block: Block, args: Value[]): Value {
   }
 
   return overload.run(
-    args.map((x) => {
+    args.map((x, i) => {
       if (x.value == null) {
         issue(`Cannot pass a void value to '${id}'.`)
       }
 
-      return x
+      return overload.args[i]!.type.convertFrom(x)
     }),
   )
 }
@@ -149,14 +160,25 @@ function emitExpr(node: NodeExpr, block: Block): Value {
     }
 
     return ty.with(ty.verifyAndOrderFields(map))
+  } else if (node instanceof ExprProp) {
+    if (node.targs) {
+      todo("Type arguments are not supported yet.")
+    }
+    if (!node.prop.name) {
+      issue(`Missing property name for dotted property access.`)
+    }
+    return performCall(ident(node.prop.name.val), block, [
+      emitExpr(node.on, block),
+      ...(node.args?.items.map((e) => nonNull(emitExpr(e, block))) ?? []),
+    ])
   } else {
     todo(`Cannot emit '${node.constructor.name}' as an expression yet.`)
   }
 }
 
-function emitLvalue(node: NodeExpr, block: Block): { current: Value; id: Id } {
-  todo(`Cannot emit '${node.constructor.name}' as an assignment target yet.`)
-}
+// function emitLvalue(node: NodeExpr, block: Block): { current: Value; id: Id } {
+//   todo(`Cannot emit '${node.constructor.name}' as an assignment target yet.`)
+// }
 
 export function emitBlock(node: ExprBlock, block: Block): Value {
   let ret = nullValue(block)
@@ -210,8 +232,82 @@ export function emitItem(node: NodeItem, decl: Declarations): ItemResult {
     }
     const result = Struct.of(decl.props, id.label, fields)
     decl.types.set(id, result.struct)
+    const fns = result.struct.generateFieldAccessors(decl.props)
+    for (const fn of fns) {
+      decl.fns.push(fn.id as GlobalId, fn)
+    }
     return result.decl ? { decl: result.decl, declTy: result.declTyOnly } : null
+  } else if (node instanceof ItemFn) {
+    const fname = node.name?.val
+    if (fname == null) {
+      issue(`Function declaration is missing a name.`)
+    }
+    if (node.tparams) {
+      issue(`Type parameters are not supported yet.`)
+    }
+    if (!node.params) {
+      issue(`Function '${fname}' is missing a parameter list.`)
+    }
+    if (node.usage) {
+      todo(`The 'usage' keyword is not implemented yet.`)
+    }
+    if (!node.block) {
+      issue(`Function '${fname}' is missing its contents.`)
+    }
+    const ret = node.ret ? emitType(node.ret.retType, decl) : decl.void
+    const locals = new IdMap<Value>(null)
+    const params = node.params.items.map((x) => {
+      const local = ident(x.ident.val)
+      const name = new Id(x.ident.val)
+      if (locals.has(local)) {
+        issue(`Parameter '${local}' is declared twice in function '${fname}'.`)
+      }
+      const type = emitType(x.type, decl)
+      locals.set(local, new Value(name.ident(), type))
+      return { name, type }
+    })
+    const fparams = params.map((x) => ({ name: x.name.label, type: x.type }))
+    const block = new Block(decl, locals)
+    const value = ret.convertFrom(emitBlock(node.block, block))
+    const lid = new Id(fname)
+    const gid = ident(fname)
+    const lident = lid.ident()
+    const body =
+      decl.props.lang == "glsl" ?
+        `${ret.emit} ${lident}(${params
+          .filter((x) => x.type.repr.type != "void")
+          .map((x) => x.type.emit + " " + x.name.ident())
+          .join(",")}) {${block.source}${returnValue(value)}}`
+      : `function ${lident}(${params
+          .filter((x) => x.type.repr.type != "void")
+          .map((x) => x.name.ident())
+          .join(",")}) {${block.source}${returnValue(value)}}`
+
+    const fn =
+      block.source == "" && value.const() ?
+        // Non-side-effecting constant optimization
+        new Fn(gid, fparams, ret, () => value)
+      : new Fn(gid, fparams, ret, (args) => {
+          const actualArgs = args.map((x, i) => params[i]!.type.convertFrom(x))
+          const expr = `${lident}(${actualArgs
+            .filter((x) => x.type.repr.type != "void")
+            .map((x) => x.toRuntime())
+            .join(",")})`
+          return new Value(expr, ret)
+        })
+
+    decl.fns.push(gid, fn)
+    return { decl: body }
   } else {
     todo(`Cannot emit '${node.constructor.name}' as an item yet.`)
+  }
+}
+
+function returnValue(val: Value) {
+  const text = val.toRuntime()
+  if (text == null) {
+    return ""
+  } else {
+    return `return(${text});`
   }
 }

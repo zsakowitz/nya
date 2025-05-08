@@ -1,6 +1,7 @@
 import { KFalse, KTrue, TFloat, TInt, TSym } from "../ast/kind"
-import { Declarations } from "./decl"
-import { ident as g, Id } from "./id"
+import { FnBroadcast } from "./broadcast"
+import { Declarations, IdMapMany } from "./decl"
+import { ident as g, Id, type GlobalId } from "./id"
 import type { EmitProps } from "./props"
 import { Fn, Scalar } from "./type"
 import { Value } from "./value"
@@ -21,20 +22,63 @@ export function createStdlib(props: EmitProps) {
         return name + "."
       }
     },
+    (v) => [v],
+    (v) => v.pop()!,
   )
   const bool = new Scalar(
     "bool",
     lang == "glsl" ? "bool" : "boolean",
     { type: "vec", count: 1, of: "bool" },
     (v) => "" + (v as boolean),
+    (v) => [v],
+    (v) => v.pop()!,
   )
   const sym = new Scalar(
     "sym",
     lang == "glsl" ? "uint" : "number",
     { type: "vec", count: 1, of: "uint" },
     (v) => "" + (v as number),
+    (v) => [v],
+    (v) => v.pop()!,
   )
-  const void_ = new Scalar("void", "void", { type: "void" }, () => null)
+  const void_: Scalar = new Scalar(
+    "void",
+    "void",
+    { type: "void" },
+    () => null,
+    () => [],
+    () => new Value(0, void_),
+  )
+
+  const broadcasts = new IdMapMany<FnBroadcast>()
+  // for (const item of [
+  //   new FnBroadcast(
+  //     ident("+"),
+  //     ["float", "float"],
+  //     "float",
+  //     ([a, b]) => new Value(`(${a})+(${b})`, num),
+  //   ),
+  //   new FnBroadcast(
+  //     ident("-"),
+  //     ["float", "float"],
+  //     "float",
+  //     ([a, b]) => new Value(`(${a})-(${b})`, num),
+  //   ),
+  //   new FnBroadcast(
+  //     ident("*"),
+  //     ["float", "float"],
+  //     "float",
+  //     ([a, b]) => new Value(`(${a})*(${b})`, num),
+  //   ),
+  //   new FnBroadcast(
+  //     ident("/"),
+  //     ["float", "float"],
+  //     "float",
+  //     ([a, b]) => new Value(`(${a})/(${b})`, num),
+  //   ),
+  // ]) {
+  //   broadcasts.push(item.id, item)
+  // }
 
   const decl = new Declarations(
     props,
@@ -64,6 +108,7 @@ export function createStdlib(props: EmitProps) {
       }
       return null
     },
+    broadcasts,
   )
 
   for (const v of [num, bool]) {
@@ -274,7 +319,7 @@ export function createStdlib(props: EmitProps) {
   ]
 
   for (const f of fns) {
-    decl.fns.push(f.id, f)
+    decl.fns.push(f.id as GlobalId, f)
   }
 
   return decl

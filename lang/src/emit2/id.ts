@@ -14,10 +14,15 @@ export class Id {
   }
 }
 
-const idMap: Record<string, Id> = Object.create(null)
+const idMap: Record<string, GlobalId> = Object.create(null)
+
+declare const brand: unique symbol
+export interface GlobalId extends Id {
+  [brand]: "__global_id"
+}
 
 export function ident(label: string) {
-  return (idMap[label] ??= new Id(label))
+  return (idMap[label] ??= new Id(label) as GlobalId)
 }
 
 export function fieldIdent(index: number) {

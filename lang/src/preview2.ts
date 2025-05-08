@@ -14,6 +14,9 @@ try {
   const context = `
   
   struct complex {re: num, im: num }
+  fn +(a: complex, b: complex) -> complex {
+  complex{re: a.re + b.re, im: a.im + b.im}
+  }
   `
   let root = []
   let rootTy = []
@@ -26,14 +29,15 @@ try {
       rootTy.push(result.declTy)
     }
   }
-  const expr = `complex{ re: 2, im: 3}`
+  const expr = `complex{ re: 2, im: 3} + complex{re: 4, im: -7}`
   const block = new Block(decl)
   const value = emitBlock(
     parseBlockContents(createStream(expr, { comments: false })),
     block,
   )
+  const scalars = value.type.toScalars(value)
   console.timeEnd()
-  console.log(value)
+  console.log(scalars)
 } catch (e) {
   console.log(e instanceof Error ? e.message : String(e))
   process.exit(1)

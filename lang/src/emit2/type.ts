@@ -1,10 +1,24 @@
-import type { Declarations } from "./decl"
 import { bug, issue, todo } from "./error"
 import { fieldIdent, Id, ident } from "./id"
 import { encodeIdentForTS } from "./ident"
 import type { EmitProps } from "./props"
 import { emitGlslVec, type GlslScalar, type Repr } from "./repr"
 import { Value, type ConstValue } from "./value"
+
+export interface TypeBase {
+  repr: Repr
+  emit: string
+  toScalars(value: Value): Value[]
+  fromScalars(values: Value[]): Value
+  canConvertFrom(type: Type): boolean
+  convertFrom(value: Value): Value
+  toRuntime(value: ConstValue): string | null
+}
+
+export interface FnType {
+  canConvertFrom(type: Type): boolean
+  convertFrom(value: Value): Value
+}
 
 export class Fn {
   constructor(
@@ -29,20 +43,37 @@ export class Fn {
   }
 }
 
-export class Scalar {
+export class Scalar implements TypeBase {
   constructor(
     readonly name: string,
     readonly emit: string,
     readonly repr: Repr,
     readonly toRuntime: (value: ConstValue) => string | null,
+    readonly toScalars: (value: Value) => Value[],
+    /** Should pop values from the end as needed. */
+    readonly fromScalars: (value: Value[]) => Value,
   ) {}
 
   toString() {
     return this.name
   }
+
+  canConvertFrom(type: Type): boolean {
+    return type == this
+  }
+
+  convertFrom(value: Value): Value {
+    if (value.type == this) {
+      return value
+    } else {
+      issue(
+        `Incompatible types: '${this}' expected, but '${value.type}' found.`,
+      )
+    }
+  }
 }
 
-export class Struct {
+export class Struct implements TypeBase {
   static #of(
     props: EmitProps,
     name: string,
@@ -56,7 +87,16 @@ export class Struct {
       .map((x) => x.i)
 
     if (nvFields.length == 0) {
-      return new Struct(name, "void", { type: "void" }, true, [], [], fields)
+      return new Struct(
+        name,
+        "void",
+        { type: "void" },
+        true,
+        [],
+        [],
+        fields,
+        props,
+      )
     }
 
     if (nvFields.length == 1) {
@@ -68,6 +108,7 @@ export class Struct {
         nvIndices,
         nvFields.map((x) => x.type),
         fields,
+        props,
       )
     }
 
@@ -102,6 +143,7 @@ export class Struct {
           nvIndices,
           nvFields.map((x) => x.type),
           fields,
+          props,
         )
       }
     }
@@ -119,6 +161,7 @@ export class Struct {
       nvIndices,
       nvFields.map((x) => x.type),
       fields,
+      props,
     )
     const fn = new Fn(id, fields, struct, (args) => {
       const vals = nvIndices.map((i) => args[i]!)
@@ -164,6 +207,7 @@ ${fn.tyDecl(props)}`
   readonly #nvFields
   readonly #fields
   readonly #fieldNames
+  readonly #accessors
 
   private constructor(
     readonly name: string,
@@ -173,11 +217,13 @@ ${fn.tyDecl(props)}`
     nvIndices: number[],
     nvFields: Type[],
     fields: { name: string; type: Type }[],
+    props: EmitProps,
   ) {
     this.#nvIndices = nvIndices
     this.#nvFields = nvFields
     this.#fields = fields
     this.#fieldNames = fields.map((x) => x.name)
+    this.#accessors = this.generateFieldAccessors(props)
   }
 
   with(args: Value[]): Value {
@@ -218,7 +264,7 @@ ${fn.tyDecl(props)}`
       issue(`Invalid number of fields passed to struct '${name}'.`)
     }
 
-    return this.#fieldNames.map((fieldName) => {
+    return this.#fields.map(({ name: fieldName, type }) => {
       const v = fields.get(fieldName)
       if (!v) {
         issue(
@@ -226,11 +272,11 @@ ${fn.tyDecl(props)}`
         )
       }
 
-      return v
+      return type.convertFrom(v)
     })
   }
 
-  generateFieldAccessors(decl: Declarations): Fn[] {
+  generateFieldAccessors(props: EmitProps): Fn[] {
     const arg = [{ name: "target", type: this }]
 
     // Void optimization
@@ -250,13 +296,13 @@ ${fn.tyDecl(props)}`
             arg,
             type,
             type.repr.type == "void" ?
-              () => new Value(0, decl.void)
-            : ([a]) => new Value(a!.value, this),
+              () => new Value(0, type)
+            : ([a]) => new Value(a!.value, type),
           ),
       )
     }
 
-    const lang = decl.props.lang
+    const lang = props.lang
 
     // GLSL vector optimization
     if (lang == "glsl" && this.repr.type == "vec") {
@@ -322,6 +368,65 @@ ${fn.tyDecl(props)}`
   toString() {
     return this.name
   }
+
+  canConvertFrom(type: Type): boolean {
+    return type == this
+  }
+
+  convertFrom(value: Value): Value {
+    if (value.type == this) {
+      return value
+    } else {
+      issue(
+        `Incompatible types: '${this}' expected, but '${value.type}' found.`,
+      )
+    }
+  }
+
+  toScalars(value: Value): Value[] {
+    return this.#accessors.flatMap((f) => f.ret.toScalars(f.run([value])))
+  }
+
+  fromScalars(value: Value[]): Value {
+    return this.with(
+      this.#fields
+        .slice()
+        .reverse()
+        .map(({ type }) => type.fromScalars(value)),
+    )
+  }
 }
 
-export type Type = Scalar | Struct
+// export const AnyLengthScalar: TypeBase = {
+//   get repr() {
+//     return bug(
+//       `The 'AnyLengthScalar' type is not a real type, and does not have a fixed GLSL representation.`,
+//     )
+//   },
+//   get emit() {
+//     return bug(
+//       `The 'AnyLengthScalar' type is not a real type, and does not have a fixed output representation.`,
+//     )
+//   },
+//   toScalars(value) {
+//     if (value.type == AnyLengthScalar) {
+//       bug(
+//         `The 'AnyLengthScalar' type is not a real type, and should not be used as such.`,
+//       )
+//     }
+//     return value.type.toScalars(value)
+//   },
+//   fromScalars(value) {
+//     if (value.type == AnyLengthScalar) {
+//       bug(
+//         `The 'AnyLengthScalar' type is not a real type, and should not be used as such.`,
+//       )
+//     }
+//     return value.type.fromScalars(value)
+//   },
+// }
+
+// TODO: actually implement
+export interface AnyLengthScalar extends TypeBase {}
+
+export type Type = Scalar | Struct | AnyLengthScalar
