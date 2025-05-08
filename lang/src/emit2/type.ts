@@ -13,28 +13,22 @@ export interface TypeBase {
   canConvertFrom(type: Type): boolean
   convertFrom(value: Value): Value
   toRuntime(value: ConstValue): string | null
+  toString(): string
 }
 
 export interface FnType {
   canConvertFrom(type: Type): boolean
   convertFrom(value: Value): Value
+  toString(): string
 }
 
 export class Fn {
   constructor(
     readonly id: Id,
-    readonly args: { name: string; type: Type }[],
-    readonly ret: Type,
+    readonly args: { name: string; type: FnType }[],
+    readonly ret: FnType,
     readonly run: (args: Value[]) => Value,
   ) {}
-
-  tyDecl(props: EmitProps) {
-    return props.lang == "glsl" ?
-        null
-      : `function ${this.id.ident()}(${this.args
-          .map((x) => encodeIdentForTS(x.name) + ":" + x.type.emit)
-          .join(",")}): ${this.ret.emit};`
-  }
 
   toString() {
     return `${this.id.label}(${this.args
@@ -181,7 +175,9 @@ export class Struct implements TypeBase {
         undefined
       : `declare const ${brandId.ident()}: unique symbol
 interface ${id.ident()} {[${brandId.ident()}]: "__brand";${nvFields.map(({ type }, i) => `${fieldIdent(i)}: ${type.emit};`).join("")}}
-${fn.tyDecl(props)}`
+function ${id.ident()}(${nvFields
+          .map((x) => `${encodeIdentForTS(x.name)}: ${x.type.emit}`)
+          .join(",")}): ${struct.emit};`
     return { struct, fn, decl, declTyOnly }
   }
 
@@ -384,7 +380,9 @@ ${fn.tyDecl(props)}`
   }
 
   toScalars(value: Value): Value[] {
-    return this.#accessors.flatMap((f) => f.ret.toScalars(f.run([value])))
+    return this.#accessors.flatMap((f, i) =>
+      this.#fields[i]!.type.toScalars(f.run([value])),
+    )
   }
 
   fromScalars(value: Value[]): Value {
