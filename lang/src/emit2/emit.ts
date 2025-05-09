@@ -2,6 +2,7 @@ import {
   ExprBinary,
   ExprBlock,
   ExprEmpty,
+  ExprIf,
   ExprLit,
   ExprParen,
   ExprProp,
@@ -10,12 +11,14 @@ import {
   ExprVar,
   type NodeExpr,
 } from "../ast/node/expr"
-import { ItemFn, ItemStruct, type NodeItem } from "../ast/node/item"
+import { ItemAssert, ItemFn, ItemStruct, type NodeItem } from "../ast/node/item"
 import { StmtExpr, type NodeStmt } from "../ast/node/stmt"
 import { TypeEmpty, TypeParen, TypeVar, type NodeType } from "../ast/node/type"
+import { issue } from "../emit/error"
+import { Id } from "../emit/id"
 import { Block, IdMap, type Declarations } from "./decl"
-import { issue, todo } from "./error"
-import { Id, ident, type GlobalId } from "./id"
+import { todo } from "./error"
+import { ident, type GlobalId } from "./id"
 import { Fn, Struct, type Type } from "./type"
 import { Value } from "./value"
 
@@ -172,6 +175,65 @@ function emitExpr(node: NodeExpr, block: Block): Value {
       emitExpr(node.on, block),
       ...(node.args?.items.map((e) => nonNull(emitExpr(e, block))) ?? []),
     ])
+  } else if (node instanceof ExprIf) {
+    const cond = emitExpr(node.condition, block)
+    const { bool, void: void_ } = block.decl
+    if (cond.type != bool) {
+      issue(`The condition of an 'if' statement must be a boolean value.`)
+    }
+    if (cond.value == null) {
+      issue(`The condition of an 'if' statement must not be void.`)
+    }
+
+    const child1 = block.child()
+    if (!node.block) {
+      issue(`Missing block on 'if' statement.`)
+    }
+    const main = emitBlock(node.block, child1)
+
+    const child2 = block.child()
+    let alt: Value = new Value(0, block.decl.void)
+    if (node.rest) {
+      if (!node.rest.block) {
+        issue(`Missing block on 'else' branch of 'if' statement.`)
+      }
+      alt = emitExpr(node.rest.block, child2)
+    }
+
+    if (main.type != alt.type) {
+      if (main.type != void_ && !node.rest) {
+        issue(`An 'if' statement with a value must have an 'else' block.`)
+      } else {
+        issue(`Branches of an 'if' statement must have the same type.`)
+      }
+    }
+
+    // Special handling when void output is specified
+    if (main.type.repr.type == "void") {
+      if (child1.source && child2.source) {
+        block.source += `if(${cond}){${child1.source}}else{${child2.source}}`
+      } else if (child1.source) {
+        block.source += `if(${cond}){${child1.source}}`
+      } else if (child2.source) {
+        block.source += `if(!(${cond})){${child2.source}}`
+      }
+
+      return new Value(0, main.type)
+    }
+
+    // Optimization for ternaries, since those are quite frequent
+    if (!child1.source && !child2.source) {
+      return new Value(`(${cond})?(${main}):(${alt})`, main.type)
+    }
+
+    const ret = new Id("return_value")
+    if (block.props.lang == "glsl") {
+      block.source += `${main.type.emit} ${ret.ident()};`
+    } else {
+      block.source += `var ${ret.ident()};`
+    }
+    block.source += `if(${cond.value}){${child1.source}${ret.ident()}=${main.value};}else{${child2.source}${ret.ident()}=${alt.value};}`
+    return new Value(ret.ident(), main.type)
   } else {
     todo(`Cannot emit '${node.constructor.name}' as an expression yet.`)
   }
@@ -299,6 +361,8 @@ export function emitItem(node: NodeItem, decl: Declarations): ItemResult {
 
     decl.fns.push(gid, fn)
     return { decl: body }
+  } else if (node instanceof ItemAssert) {
+    return null // FIXME: emit them
   } else {
     todo(`Cannot emit '${node.constructor.name}' as an item yet.`)
   }

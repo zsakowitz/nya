@@ -1,5 +1,8 @@
 import { KFalse, KTrue, TFloat, TInt, TSym } from "../ast/kind"
-import { createUnaryBroadcastingFn } from "./broadcast"
+import {
+  createBinaryBroadcastingFn,
+  createUnaryBroadcastingFn,
+} from "./broadcast"
 import { Declarations } from "./decl"
 import { ident as g, Id, type GlobalId } from "./id"
 import type { EmitProps } from "./props"
@@ -54,6 +57,7 @@ export function createStdlib(props: EmitProps) {
     props,
     null,
     void_,
+    bool,
     (literal) => {
       switch (literal.value.kind) {
         case KTrue:
@@ -95,8 +99,32 @@ export function createStdlib(props: EmitProps) {
   const rbool = { name: "rhs", type: bool }
   const xbool = { name: "x", type: bool }
 
-  function numBinOp(
-    op: "+" | "-" | "*" | "/" | "<" | ">" | "==" | "!=" | "<=" | ">=",
+  const bxl = { name: "lhs", type: "float" as const }
+  const bxr = { name: "rhs", type: "float" as const }
+  const bxx = { name: "x", type: "float" as const }
+
+  function numBinOpArith(
+    op: "+" | "-" | "*" | "/",
+    of: (a: number, b: number) => number,
+  ) {
+    return [
+      new Fn(g(op), [lnum, rnum], num, ([a, b]) => {
+        if (a!.const() && b!.const()) {
+          return new Value(of(a.value as number, b.value as number), num)
+        }
+        return new Value(`(${a})${op}(${b})`, num)
+      }),
+      createBinaryBroadcastingFn(props, g("@" + op), bxl, bxr, num, {
+        glsl1: (a, b) => `(${a})${op}(${b})`,
+        glslVec: (a, b) => `(${a})${op}(${b})`,
+        js1: (a, b) => `(${a})${op}(${b})`,
+        const: of as any,
+      }),
+    ]
+  }
+
+  function numBinOpBool(
+    op: "<" | ">" | "==" | "!=" | "<=" | ">=",
     ret: Scalar,
     of: (a: number, b: number) => number | boolean,
   ) {
@@ -104,7 +132,7 @@ export function createStdlib(props: EmitProps) {
       if (a!.const() && b!.const()) {
         return new Value(of(a.value as number, b.value as number), ret)
       }
-      return new Value(`(${a})${op}(${b})`, num)
+      return new Value(`(${a})${op}(${b})`, ret)
     })
   }
 
@@ -116,7 +144,7 @@ export function createStdlib(props: EmitProps) {
       if (a!.const() && b!.const()) {
         return new Value(of(a.value as boolean, b.value as boolean), bool)
       }
-      return new Value(`(${a})${op}(${b})`, num)
+      return new Value(`(${a})${op}(${b})`, bool)
     })
   }
 
@@ -146,16 +174,16 @@ export function createStdlib(props: EmitProps) {
     new Fn(g("y"), [], num, () => new Value("pos.y", num)),
 
     // Easy numeric operators
-    numBinOp("+", num, (a, b) => a + b),
-    numBinOp("-", num, (a, b) => a - b),
-    numBinOp("*", num, (a, b) => a * b),
-    numBinOp("/", num, (a, b) => a / b),
-    numBinOp("<", bool, (a, b) => a < b),
-    numBinOp(">", bool, (a, b) => a > b),
-    numBinOp("<=", bool, (a, b) => a <= b),
-    numBinOp(">=", bool, (a, b) => a >= b),
-    numBinOp("==", bool, (a, b) => a == b),
-    numBinOp("!=", bool, (a, b) => a != b),
+    ...numBinOpArith("+", (a, b) => a + b),
+    ...numBinOpArith("-", (a, b) => a - b),
+    ...numBinOpArith("*", (a, b) => a * b),
+    ...numBinOpArith("/", (a, b) => a / b),
+    numBinOpBool("<", bool, (a, b) => a < b),
+    numBinOpBool(">", bool, (a, b) => a > b),
+    numBinOpBool("<=", bool, (a, b) => a <= b),
+    numBinOpBool(">=", bool, (a, b) => a >= b),
+    numBinOpBool("==", bool, (a, b) => a == b),
+    numBinOpBool("!=", bool, (a, b) => a != b),
 
     // Annoying numeric operators
     new Fn(g("-"), [xnum], num, ([a]) => {
@@ -163,6 +191,12 @@ export function createStdlib(props: EmitProps) {
         return new Value(-(a.value as number), num)
       }
       return new Value(`-(${a})`, num)
+    }),
+    createUnaryBroadcastingFn(props, g("@-"), bxx, num, {
+      glsl1: (a) => `-(${a})`,
+      glslVec: (a) => `-(${a})`,
+      js1: (a) => `-(${a})`,
+      const: (a) => -(a as number),
     }),
     new Fn(g("**"), [lnum, rnum], num, ([a, b]) => {
       if (a!.const() && b!.const()) {
@@ -285,28 +319,6 @@ export function createStdlib(props: EmitProps) {
       }
       return new Value(`!(${a})`, bool)
     }),
-
-    // Distributed numeric operators
-    createUnaryBroadcastingFn(
-      props,
-      g("@-"),
-      { name: "x", type: "float" },
-      num,
-      {
-        glsl1(a) {
-          return `-(${a})`
-        },
-        glslVec(a) {
-          return `-(${a})`
-        },
-        js1(a) {
-          return `-(${a})`
-        },
-        const(a) {
-          return -(a as number)
-        },
-      },
-    ),
   ]
 
   for (const f of fns) {

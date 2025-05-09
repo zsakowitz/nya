@@ -66,6 +66,7 @@ export class Declarations {
     readonly props: EmitProps,
     parent: Declarations | null,
     void_: Scalar,
+    readonly bool: Scalar,
     readonly createLiteral: (literal: ExprLit) => Value,
     readonly arraySize: (value: Value) => number | null,
   ) {
@@ -96,19 +97,26 @@ export class Block {
     this.lang = (this.props = decl.props).lang
   }
 
-  cache(value: Value): Value {
+  cache(value: Value, assumeReadonly: boolean): Value {
     if (value.const()) {
       return value
     } else if (value.type.repr.type == "void") {
       return new Value(0, value.type)
-    } else {
-      const ident = new Id("cached value").ident()
-      this.source += `${this.props.lang == "glsl" ? value.type.emit : "var"} ${ident}=${value};`
-      return new Value(ident, value.type)
+    } else if (assumeReadonly) {
+      const v = value.toString()
+      if (PRECACHED.test(v)) {
+        return value
+      }
     }
+
+    const ident = new Id("cached value").ident()
+    this.source += `${this.props.lang == "glsl" ? value.type.emit : "var"} ${ident}=${value};`
+    return new Value(ident, value.type)
   }
 
   child() {
     return new Block(this.decl, new IdMap(this.locals))
   }
 }
+
+const PRECACHED = /^(?:[+-]?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?|[$A-Za-z_]\w*)$/

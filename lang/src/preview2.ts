@@ -1,3 +1,4 @@
+import context from "../examples/test.nya"
 import { parse, parseBlockContents } from "./ast/parse"
 import { createStream } from "./ast/stream"
 import { Block } from "./emit2/decl"
@@ -10,13 +11,6 @@ addInspectKeys()
 try {
   const props = new EmitProps("js")
   const decl = createStdlib(props)
-  const context = `
-  
-  struct complex {re: num, im: num }
-  fn +(a: complex, b: complex) -> complex {
-  a @+ b
-  }
-  `
   let root = []
   let rootTy = []
   for (const item of parse(createStream(context, { comments: false })).items) {
@@ -28,16 +22,16 @@ try {
       rootTy.push(result.declTy)
     }
   }
-  const expr = `@- complex{ re: x, im: 3} `
+  const expr = `hi(5.0)`
   const block = new Block(decl)
   const value = emitBlock(
     parseBlockContents(createStream(expr, { comments: false })),
     block,
   )
-  console.log(decl.globals())
-  console.log(root.join("\n"))
-  console.log(block.source)
   console.log(value)
+  console.log(
+    (0, eval)(`${decl.globals()}${root.join("\n")}${block.source}${value}`),
+  )
 } catch (e) {
   console.error(e)
   console.log(e instanceof Error ? e.message : String(e))
