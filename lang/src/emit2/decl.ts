@@ -1,5 +1,4 @@
 import type { ExprLit } from "../ast/node/expr"
-import type { FnBroadcast } from "./broadcast"
 import { Id, type GlobalId } from "./id"
 import type { EmitProps } from "./props"
 import type { Fn, Scalar, Type } from "./type"
@@ -69,7 +68,6 @@ export class Declarations {
     void_: Scalar,
     readonly createLiteral: (literal: ExprLit) => Value,
     readonly arraySize: (value: Value) => number | null,
-    readonly broadcasts: IdMapMany<FnBroadcast>,
   ) {
     this.void = void_
     this.types = new IdMap(parent?.types ?? null)

@@ -1,3 +1,4 @@
+import type { Block } from "./decl"
 import { bug, issue, todo } from "./error"
 import { fieldIdent, Id, ident } from "./id"
 import { encodeIdentForTS } from "./ident"
@@ -27,7 +28,7 @@ export class Fn {
     readonly id: Id,
     readonly args: { name: string; type: FnType }[],
     readonly ret: FnType,
-    readonly run: (args: Value[]) => Value,
+    readonly run: (args: Value[], block: Block) => Value,
   ) {}
 
   toString() {
@@ -210,9 +211,9 @@ function ${id.ident()}(${nvFields
     readonly emit: string,
     readonly repr: Repr,
     _isVoid: boolean,
-    nvIndices: number[],
-    nvFields: Type[],
-    fields: { name: string; type: Type }[],
+    nvIndices: readonly number[],
+    nvFields: readonly Type[],
+    fields: readonly { name: string; type: Type }[],
     props: EmitProps,
   ) {
     this.#nvIndices = nvIndices
@@ -272,7 +273,7 @@ function ${id.ident()}(${nvFields
     })
   }
 
-  generateFieldAccessors(props: EmitProps): Fn[] {
+  generateFieldAccessors(props: EmitProps): readonly Fn[] {
     const arg = [{ name: "target", type: this }]
 
     // Void optimization
@@ -381,50 +382,14 @@ function ${id.ident()}(${nvFields
 
   toScalars(value: Value): Value[] {
     return this.#accessors.flatMap((f, i) =>
-      this.#fields[i]!.type.toScalars(f.run([value])),
+      // @ts-expect-error `Fn` created by #accessors never require a block argument
+      this.#fields[i]!.type.toScalars(f.run([value], null)),
     )
   }
 
   fromScalars(value: Value[]): Value {
-    return this.with(
-      this.#fields
-        .slice()
-        .reverse()
-        .map(({ type }) => type.fromScalars(value)),
-    )
+    return this.with(this.#fields.map(({ type }) => type.fromScalars(value)))
   }
 }
 
-// export const AnyLengthScalar: TypeBase = {
-//   get repr() {
-//     return bug(
-//       `The 'AnyLengthScalar' type is not a real type, and does not have a fixed GLSL representation.`,
-//     )
-//   },
-//   get emit() {
-//     return bug(
-//       `The 'AnyLengthScalar' type is not a real type, and does not have a fixed output representation.`,
-//     )
-//   },
-//   toScalars(value) {
-//     if (value.type == AnyLengthScalar) {
-//       bug(
-//         `The 'AnyLengthScalar' type is not a real type, and should not be used as such.`,
-//       )
-//     }
-//     return value.type.toScalars(value)
-//   },
-//   fromScalars(value) {
-//     if (value.type == AnyLengthScalar) {
-//       bug(
-//         `The 'AnyLengthScalar' type is not a real type, and should not be used as such.`,
-//       )
-//     }
-//     return value.type.fromScalars(value)
-//   },
-// }
-
-// TODO: actually implement
-export interface AnyLengthScalar extends TypeBase {}
-
-export type Type = Scalar | Struct | AnyLengthScalar
+export type Type = Scalar | Struct

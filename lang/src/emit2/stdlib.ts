@@ -1,6 +1,6 @@
 import { KFalse, KTrue, TFloat, TInt, TSym } from "../ast/kind"
-import { FnBroadcast } from "./broadcast"
-import { Declarations, IdMapMany } from "./decl"
+import { createUnaryBroadcastingFn } from "./broadcast"
+import { Declarations } from "./decl"
 import { ident as g, Id, type GlobalId } from "./id"
 import type { EmitProps } from "./props"
 import { Fn, Scalar } from "./type"
@@ -50,36 +50,6 @@ export function createStdlib(props: EmitProps) {
     () => new Value(0, void_),
   )
 
-  const broadcasts = new IdMapMany<FnBroadcast>()
-  // for (const item of [
-  //   new FnBroadcast(
-  //     ident("+"),
-  //     ["float", "float"],
-  //     "float",
-  //     ([a, b]) => new Value(`(${a})+(${b})`, num),
-  //   ),
-  //   new FnBroadcast(
-  //     ident("-"),
-  //     ["float", "float"],
-  //     "float",
-  //     ([a, b]) => new Value(`(${a})-(${b})`, num),
-  //   ),
-  //   new FnBroadcast(
-  //     ident("*"),
-  //     ["float", "float"],
-  //     "float",
-  //     ([a, b]) => new Value(`(${a})*(${b})`, num),
-  //   ),
-  //   new FnBroadcast(
-  //     ident("/"),
-  //     ["float", "float"],
-  //     "float",
-  //     ([a, b]) => new Value(`(${a})/(${b})`, num),
-  //   ),
-  // ]) {
-  //   broadcasts.push(item.id, item)
-  // }
-
   const decl = new Declarations(
     props,
     null,
@@ -108,7 +78,6 @@ export function createStdlib(props: EmitProps) {
       }
       return null
     },
-    broadcasts,
   )
 
   for (const v of [num, bool]) {
@@ -316,6 +285,28 @@ export function createStdlib(props: EmitProps) {
       }
       return new Value(`!(${a})`, bool)
     }),
+
+    // Distributed numeric operators
+    createUnaryBroadcastingFn(
+      props,
+      g("@-"),
+      { name: "x", type: "float" },
+      num,
+      {
+        glsl1(a) {
+          return `-(${a})`
+        },
+        glslVec(a) {
+          return `-(${a})`
+        },
+        js1(a) {
+          return `-(${a})`
+        },
+        const(a) {
+          return -(a as number)
+        },
+      },
+    ),
   ]
 
   for (const f of fns) {

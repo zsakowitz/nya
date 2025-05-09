@@ -79,6 +79,7 @@ function performCall(id: GlobalId, block: Block, args: Value[]): Value {
 
       return overload.args[i]!.type.convertFrom(x)
     }),
+    block,
   )
 }
 

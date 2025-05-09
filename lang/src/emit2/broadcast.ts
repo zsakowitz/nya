@@ -1,9 +1,31 @@
-import { issue } from "../emit/error"
 import type { Block } from "./decl"
-import { bug } from "./error"
-import type { Repr } from "./repr"
-import type { Fn } from "./type"
-import type { Value } from "./value"
+import { bug, issue } from "./error"
+import type { GlobalId } from "./id"
+import type { EmitProps } from "./props"
+import type { GlslScalar, Repr, ReprVec } from "./repr"
+import { Fn, type FnType, type Scalar, type Type } from "./type"
+import { Value, type ConstValue } from "./value"
+
+export class AnyVector implements FnType {
+  constructor(readonly of: GlslScalar) {}
+
+  canConvertFrom(type: Type): boolean {
+    return type.repr.type == "vec" && type.repr.of == this.of
+  }
+
+  convertFrom(value: Value): Value {
+    if (!this.canConvertFrom(value.type)) {
+      issue(
+        `Incompatible types: '${this}' expected, but '${value.type}' found.`,
+      )
+    }
+    return value
+  }
+
+  toString(): string {
+    return `vec<${this.of}>`
+  }
+}
 
 export function canAutomaticallyBroadcast(repr: Repr) {
   return repr.type == "vec"
@@ -13,81 +35,75 @@ export function toScalars(value: Value, block: Block) {
   return value.type.toScalars(block.cache(value))
 }
 
-/**
- * A `FnBroadcast` promises that in GLSL, its source text is still valid even if
- * a vector and scalar, or a scalar and vector, or a vector and another vector
- * of equal length are plugged in.
- *
- * Normally, a `Fn` is always called with arguments of the correct type, but a
- * `FnBroadcast` will call its underlying function with arguments of vectors of
- * the expected type. This will only happen if at least one argument is not
- * const; if both arguments are const, the function will receive const arguments
- * with the expected types. The return value of the `Fn` will also be ignored
- * and overriden.
- */
-export class FnBroadcast {
-  constructor(fn: Fn) {
-    const r0 = fn.ret.repr
-    if (!(r0.type == "vec" && r0.count == 1)) {
-      bug(`Cannot construct `)
-    }
-
-    switch (fn.args.length) {
-      case 1: {
-        const r1 = fn.args[0]!.type.repr
-        if (!(r1.type == "vec" && r1.count == 1)) {
-          bug(
-            `Cannot construct a unary broadcast function unless the first argument is expected to be a single-element vector.`,
-          )
-        }
-        break
-      }
-      case 2: {
-        const r1 = fn.args[0]!.type.repr
-        const r2 = fn.args[1]!.type.repr
-        if (
-          !(
-            r1.type == "vec" &&
-            r1.count == 1 &&
-            r2.type == "vec" &&
-            r2.count == 1
-          )
-        ) {
-          bug(
-            `Cannot construct a unary broadcast function unless the first argument is expected to be a single-element vector.`,
-          )
-        }
-        break
-      }
-      default:
-        bug(`Cannot construct a broadcasting function`)
-    }
-    if (fn.args.length == 1) {
-      if (fn.args[0]!.type.repr.type != "vec") {
-        throw new Error()
-      }
-    }
-  }
+export function fromScalars(type: Type, value: Value[]) {
+  value.reverse()
+  return type.fromScalars(value)
 }
 
-export function broadcastBinary(
-  _op: FnBroadcast,
-  block: Block,
-  arg1: Value,
-  arg2: Value,
+export function createUnaryBroadcastingFn(
+  props: EmitProps,
+  id: GlobalId,
+  arg1: { name: string; type: GlslScalar },
+  ret: Scalar,
+  fns: {
+    glsl1(a: string): string
+    glslVec(a: string): string
+    js1(a: string): string
+    const(a: ConstValue): ConstValue
+  },
 ) {
-  const r1 = arg1.type.repr
-  const r2 = arg2.type.repr
+  const r1 = ret.repr
+  if (!(r1.type == "vec" && r1.count == 1)) {
+    bug(`A broadcasting function must return a single scalar.`)
+  }
+  const of = r1.of
 
-  if (r1.type != "vec" || r2.type != "vec") {
-    issue("Automatic broadcasting is only supported on vectors.")
+  const { glsl1, glslVec, js1, const: constFn } = fns
+
+  if (props.lang == "glsl") {
+    return new Fn(
+      id,
+      [{ name: arg1.name, type: new AnyVector(arg1.type) }],
+      new AnyVector(of),
+      ([a]): Value => {
+        a = a!
+        if (a.const()) {
+          return fromScalars(
+            a.type,
+            a.type
+              .toScalars(a)
+              .map((x) => new Value(constFn(x.value as ConstValue), ret)),
+          )
+        }
+        if ((a.type.repr as ReprVec).count == 1) {
+          return new Value(glsl1(a.toString()), a.type)
+        }
+        return new Value(glslVec(a.toString()), a.type)
+      },
+    )
   }
 
-  const s1 = toScalars(arg1, block)
-  const s2 = toScalars(arg2, block)
-
-  if (block.lang == "glsl") {
-    if (s1.length == 1 && s2.length > 1) {
-    }
-  }
+  return new Fn(
+    id,
+    [{ name: arg1.name, type: new AnyVector(arg1.type) }],
+    new AnyVector(of),
+    ([a], block): Value => {
+      a = a!
+      if (a.const()) {
+        return fromScalars(
+          a.type,
+          a.type
+            .toScalars(a)
+            .map((x) => new Value(constFn(x.value as ConstValue), ret)),
+        )
+      }
+      if ((a.type.repr as ReprVec).count == 1) {
+        return new Value(js1(a.toString()), a.type)
+      }
+      return fromScalars(
+        a.type,
+        toScalars(a, block).map((x) => new Value(js1(x.toString()), ret)),
+      )
+    },
+  )
 }
