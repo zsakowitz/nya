@@ -1,5 +1,5 @@
 export function todo(x: string): never {
-  throw new Error(x)
+  throw new Error(x + " This may be changed in a future version of nyalang.")
 }
 
 export function issue(x: string): never {

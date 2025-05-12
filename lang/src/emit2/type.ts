@@ -38,6 +38,13 @@ export class Fn {
   }
 }
 
+function invalidType(
+  expected: { toString(): string },
+  actual: { toString(): string },
+): never {
+  issue(`Incompatible types: '${expected}' expected, but '${actual}' found.`)
+}
+
 export class Scalar implements TypeBase {
   constructor(
     readonly name: string,
@@ -61,9 +68,7 @@ export class Scalar implements TypeBase {
     if (value.type == this) {
       return value
     } else {
-      issue(
-        `Incompatible types: '${this}' expected, but '${value.type}' found.`,
-      )
+      invalidType(this, value.type)
     }
   }
 }
@@ -145,12 +150,13 @@ export class Struct implements TypeBase {
 
     // TODO: matrix optimization
 
-    const id = new Id(name)
+    const lid = new Id(name)
+    const lident = lid.ident()
     const brandId = new Id(name)
-    repr ??= { type: "struct", id }
+    repr ??= { type: "struct", id: lid }
     const struct = new Struct(
       name,
-      id.ident(),
+      lident,
       repr,
       false,
       nvIndices,
@@ -158,25 +164,25 @@ export class Struct implements TypeBase {
       fields,
       props,
     )
-    const fn = new Fn(id, fields, struct, (args) => {
+    const fn = new Fn(lid, fields, struct, (args) => {
       const vals = nvIndices.map((i) => args[i]!)
       return new Value(
         vals.every((x) => x.const()) ?
           vals.map((x) => x.value)
-        : `${id.ident()}(${vals.join(",")})`,
+        : `${lident}(${vals.join(",")})`,
         struct,
       )
     })
     const decl =
       props.lang == "glsl" ?
-        `struct ${id.ident()} {${nvFields.map(({ type }, i) => `${type.emit} ${fieldIdent(i)};`).join("")}}`
-      : `function ${id.ident()}(${nvFields.map((_, i) => `${fieldIdent(i)}`).join(",")}) {return {${nvFields.map((_, i) => `${fieldIdent(i)}`).join(",")}}}`
+        `struct ${lident} {${nvFields.map(({ type }, i) => `${type.emit} ${fieldIdent(i)};`).join("")}}`
+      : `function ${lident}(${nvFields.map((_, i) => `${fieldIdent(i)}`).join(",")}) {return {${nvFields.map((_, i) => `${fieldIdent(i)}`).join(",")}}}`
     const declTyOnly =
       props.lang == "glsl" ?
         undefined
       : `declare const ${brandId.ident()}: unique symbol
-interface ${id.ident()} {[${brandId.ident()}]: "__brand";${nvFields.map(({ type }, i) => `${fieldIdent(i)}: ${type.emit};`).join("")}}
-function ${id.ident()}(${nvFields
+interface ${lident} {[${brandId.ident()}]: "__brand";${nvFields.map(({ type }, i) => `${fieldIdent(i)}: ${type.emit};`).join("")}}
+function ${lident}(${nvFields
           .map((x) => `${encodeIdentForTS(x.name)}: ${x.type.emit}`)
           .join(",")}): ${struct.emit};`
     return { struct, fn, decl, declTyOnly }
@@ -374,9 +380,7 @@ function ${id.ident()}(${nvFields
     if (value.type == this) {
       return value
     } else {
-      issue(
-        `Incompatible types: '${this}' expected, but '${value.type}' found.`,
-      )
+      invalidType(this, value.type)
     }
   }
 
@@ -392,4 +396,103 @@ function ${id.ident()}(${nvFields
   }
 }
 
-export type Type = Scalar | Struct
+export const ArrayEmpty: TypeBase = {
+  repr: { type: "void" },
+  emit: "void",
+  toScalars() {
+    return []
+  },
+  fromScalars() {
+    return new Value(0, ArrayEmpty)
+  },
+  canConvertFrom(type) {
+    return type == ArrayEmpty
+  },
+  convertFrom(value) {
+    if (value.type != ArrayEmpty) {
+      invalidType(this, value.type)
+    }
+
+    return new Value(0, ArrayEmpty)
+  },
+  toRuntime() {
+    return null
+  },
+  toString() {
+    return "[unknown; 0]"
+  },
+}
+
+export class Array implements TypeBase {
+  readonly repr: Repr
+  readonly emit: string
+
+  constructor(
+    private readonly props: EmitProps,
+    readonly item: Type,
+    readonly count: number,
+  ) {
+    if (item.repr.type == "void" || count == 0) {
+      this.repr = { type: "void" }
+      this.emit = "void"
+      return
+    }
+
+    if (item.repr.type == "array") {
+      todo(
+        `An array cannot yet contain arrays unless the inner array is a void type.`,
+      )
+    }
+
+    this.repr = { type: "array", of: item.repr, count }
+    this.emit =
+      props.lang == "glsl" ? item.emit + `[${count}]` : item.emit + "[]"
+  }
+
+  canConvertFrom(type: Type): boolean {
+    return (
+      (type == ArrayEmpty && this.count == 0) ||
+      (type instanceof Array &&
+        type.item == this.item &&
+        type.count == this.count)
+    )
+  }
+
+  convertFrom(value: Value): Value {
+    if (value.type == ArrayEmpty && this.count == 0) {
+      return new Value(0, this)
+    }
+
+    if (!this.canConvertFrom(value.type)) {
+      invalidType(this, value.type)
+    }
+
+    return value
+  }
+
+  fromScalars(_values: Value[]): Value {
+    todo(`Broadcasting over arrays is not supported yet.`)
+  }
+
+  toScalars(_value: Value): Value[] {
+    todo(`Broadcasting over arrays is not supported yet.`)
+  }
+
+  toRuntime(value: ConstValue): string | null {
+    if (this.repr.type == "void") {
+      return null
+    }
+
+    if (this.props.lang == "glsl") {
+      return `${this.emit}(${(value as ConstValue[]).map((x) => this.item.toRuntime(x))})`
+    }
+
+    return `[${(value as ConstValue[]).map((x) => this.item.toRuntime(x))}]`
+  }
+
+  toString(): string {
+    return `[${this.item}; ${this.count}]`
+  }
+}
+
+export type Type = Scalar | Struct | Array | typeof ArrayEmpty

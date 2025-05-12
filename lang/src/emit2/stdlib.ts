@@ -18,6 +18,13 @@ export function createStdlib(props: EmitProps) {
     lang == "glsl" ? "float" : "number",
     { type: "vec", count: 1, of: "float" },
     (v) => {
+      if (Number.isNaN(v)) {
+        return `(0./0.)`
+      } else if (v == 1 / 0) {
+        return `(1./0.)`
+      } else if (v == -1 / 0) {
+        return `(-1./0.)`
+      }
       const name = (v as number).toString()
       if (name.includes(".") || name.includes("e")) {
         return name
@@ -80,6 +87,7 @@ export function createStdlib(props: EmitProps) {
       ) {
         return value.value
       }
+
       return null
     },
   )
@@ -166,7 +174,7 @@ export function createStdlib(props: EmitProps) {
   const atanId = new Id("Math.atan2").ident()
   const hypotId = new Id("Math.hypot").ident()
   const absId = new Id("Math.abs").ident()
-  const isFiniteId = new Id("glsl is_finite polyfill").ident()
+  const isFiniteId = new Id("is_finite").ident()
 
   const fns: Fn[] = [
     // Non-constants for testing purposes
@@ -229,7 +237,7 @@ export function createStdlib(props: EmitProps) {
         decl.global(`const ${atanId}=Math.atan2;`)
       }
       return new Value(
-        props.lang == "glsl" ? `atan2(${y!},${x!})` : `${atanId}(${y!},${x!})`,
+        props.lang == "glsl" ? `atan2(${y},${x})` : `${atanId}(${y},${x})`,
         num,
       )
     }),

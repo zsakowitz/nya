@@ -10,7 +10,7 @@ export class Value {
   ) {}
 
   const(): this is { value: ConstValue } {
-    return typeof this.value != "string"
+    return typeof this.value != "string" && this.value != null
   }
 
   toRuntime() {

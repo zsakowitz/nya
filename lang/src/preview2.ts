@@ -22,16 +22,21 @@ try {
       rootTy.push(result.declTy)
     }
   }
-  const expr = `hi(5.0)`
+  const expr = `for a in [2*i,3+0*i,4+0*i] {}`
   const block = new Block(decl)
   const value = emitBlock(
     parseBlockContents(createStream(expr, { comments: false })),
     block,
   )
-  console.log(value)
-  console.log(
-    (0, eval)(`${decl.globals()}${root.join("\n")}${block.source}${value}`),
-  )
+  const a = [
+    decl.globals(),
+    root.join("\n"),
+    block.source,
+    value.toRuntime() + "",
+  ]
+    .filter((x) => x)
+    .join("\n")
+  console.log((0, eval)(a))
 } catch (e) {
   console.error(e)
   console.log(e instanceof Error ? e.message : String(e))

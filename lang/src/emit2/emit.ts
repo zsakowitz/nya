@@ -1,7 +1,9 @@
 import {
+  ExprArray,
   ExprBinary,
   ExprBlock,
   ExprEmpty,
+  ExprFor,
   ExprIf,
   ExprLit,
   ExprParen,
@@ -12,14 +14,12 @@ import {
   type NodeExpr,
 } from "../ast/node/expr"
 import { ItemAssert, ItemFn, ItemStruct, type NodeItem } from "../ast/node/item"
-import { StmtExpr, type NodeStmt } from "../ast/node/stmt"
+import { StmtExpr, StmtLet, type NodeStmt } from "../ast/node/stmt"
 import { TypeEmpty, TypeParen, TypeVar, type NodeType } from "../ast/node/type"
-import { issue } from "../emit/error"
-import { Id } from "../emit/id"
 import { Block, IdMap, type Declarations } from "./decl"
-import { todo } from "./error"
-import { ident, type GlobalId } from "./id"
-import { Fn, Struct, type Type } from "./type"
+import { issue, todo } from "./error"
+import { Id, ident, type GlobalId } from "./id"
+import { Array, ArrayEmpty, Fn, Struct, type Type } from "./type"
 import { Value } from "./value"
 
 function list(a: { toString(): string }[], empty: "no arguments" | null) {
@@ -110,6 +110,16 @@ function nonNull(value: Value | null): Value {
     issue(`Expected non-void value.`)
   }
   return value
+}
+
+function arraySize(size: number | null): number {
+  if (size == null) {
+    issue(
+      `Array sizes must be constant integers; an array's size cannot depend on local variables.`,
+    )
+  }
+
+  return size
 }
 
 function emitExpr(node: NodeExpr, block: Block): Value {
@@ -226,7 +236,7 @@ function emitExpr(node: NodeExpr, block: Block): Value {
       return new Value(`(${cond})?(${main}):(${alt})`, main.type)
     }
 
-    const ret = new Id("return_value")
+    const ret = new Id("return value")
     if (block.props.lang == "glsl") {
       block.source += `${main.type.emit} ${ret.ident()};`
     } else {
@@ -234,9 +244,106 @@ function emitExpr(node: NodeExpr, block: Block): Value {
     }
     block.source += `if(${cond.value}){${child1.source}${ret.ident()}=${main.value};}else{${child2.source}${ret.ident()}=${alt.value};}`
     return new Value(ret.ident(), main.type)
+  } else if (node instanceof ExprArray) {
+    const items = node.of.items.map((item) => emitExpr(item, block))
+    if (items.length == 0) {
+      return new Value(0, ArrayEmpty)
+    }
+
+    const ty = items[0]!.type
+    if (!items.every((x) => x.type == ty)) {
+      issue(
+        `All elements in an array must be the same type; found ${list(
+          items
+            .map((x) => x.type.toString())
+            .filter((x, i, a) => a.indexOf(x) == i),
+          null,
+        )}.`, // TODO: automatic casting of array elements
+      )
+    }
+
+    const type = new Array(block.props, ty, items.length)
+    if (items.every((x) => x.const())) {
+      return new Value(
+        items.map((x) => x.value),
+        type,
+      )
+    }
+
+    const strings = items.map((x) => x.toString())
+    if (block.props.lang == "glsl") {
+      return new Value(`${type.emit}(${strings.join(",")})`, type)
+    } else {
+      return new Value(`[${strings.join(",")}]`, type)
+    }
+  } else if (node instanceof ExprFor) {
+    const expr = node
+    if (expr.bound.items.length != expr.sources.items.length) {
+      issue(
+        `'for' loops must have the same number of bound variables and sources.`,
+      )
+    }
+    if (!expr.sources.items.length) {
+      issue(`'for' loops must have at least one source.`)
+    }
+    if (!expr.block) {
+      issue(`Missing body of 'for' loop.`)
+    }
+
+    const child = block.child()
+    let size: number | null = null
+
+    const index = new Id("for loop index").ident()
+    for (let i = 0; i < expr.bound.items.length; i++) {
+      const x = expr.bound.items[i]!
+
+      const gid = ident(x.val)
+      if (child.locals.has(gid)) {
+        issue(`Variable '${gid}' was declared twice in a 'for' loop.`)
+      }
+
+      const source = emitExpr(expr.sources.items[i]!, block)
+
+      if (source.type == ArrayEmpty) {
+        todo(`'for' loop sources may not be empty arrays.`)
+      }
+      if (!(source.type instanceof Array)) {
+        issue(`'for' loop sources must be arrays.`)
+      }
+      if (source.type.item instanceof Array) {
+        todo(`'for' loop sources cannot be multidimensional arrays.`)
+      }
+      if (source.value == null) {
+        todo(`'for' loop sources must not be void.`)
+      }
+      if (size == null) {
+        size = source.type.count
+      } else if (source.type.count != size) {
+        issue(`'for' loop sources must have identical lengths.`)
+      }
+
+      const sourceCached = block.cache(source, false)
+      const value = new Value(`${sourceCached}[${index}]`, source.type.item)
+      child.locals.set(gid, value)
+    }
+
+    const ret = emitBlock(expr.block, child)
+    if (ret.type != block.decl.void) {
+      todo(`The body of a 'for' loop must return 'void'; found '${ret.type}'.`)
+    }
+    const final = ret.value ? ret.value + ";" : ""
+    block.source += `for(${block.props.lang == "glsl" ? "int" : "var"} ${index}=0;${index}<${size!};${index}++) {${child.source}${final}}`
+    return new Value(0, block.decl.void)
   } else {
     todo(`Cannot emit '${node.constructor.name}' as an expression yet.`)
   }
+
+  //   else if (node instanceof ExprArrayByRepetition) {
+  //     const item = emitExpr(node.of, block)
+  //     const sizes = node.sizes.items.map((size) =>
+  //       arraySize(block.decl.arraySize(emitExpr(size, block))),
+  //     )
+  //   }
 }
 
 // function emitLvalue(node: NodeExpr, block: Block): { current: Value; id: Id } {
@@ -263,6 +370,27 @@ function emitStmt(node: NodeStmt, block: Block): Value {
       return nullValue(block)
     }
     return expr
+  } else if (node instanceof StmtLet) {
+    const { ident: identName, type } = node
+    if (!identName) {
+      issue(`Missing identifier for 'let' statement.`)
+    }
+    const init = node.value?.value
+    if (!init) {
+      todo(`'let' statements must have initializers for now.`)
+    }
+    let value = emitExpr(init, block)
+    if (type) {
+      value = emitType(type.type, block.decl).convertFrom(value)
+    }
+    if (value.type.repr.type == "void") {
+      todo(`'let' statements cannot have void values.`)
+    }
+    const gid = ident(identName.val)
+    const lid = new Id(identName.val)
+    block.locals.set(gid, new Value(lid.ident(), value.type))
+    block.source += `${block.lang == "glsl" ? value.type.emit : "var"} ${lid.ident()}=${value};`
+    return new Value(null, block.decl.void)
   } else {
     todo(`Cannot emit '${node.constructor.name}' as a statement yet.`)
   }
@@ -340,11 +468,11 @@ export function emitItem(node: NodeItem, decl: Declarations): ItemResult {
         `${ret.emit} ${lident}(${params
           .filter((x) => x.type.repr.type != "void")
           .map((x) => x.type.emit + " " + x.name.ident())
-          .join(",")}) {${block.source}${returnValue(value)}}`
+          .join(",")}) {${block.source}${returnValue(value)}} // ${fname}`
       : `function ${lident}(${params
           .filter((x) => x.type.repr.type != "void")
           .map((x) => x.name.ident())
-          .join(",")}) {${block.source}${returnValue(value)}}`
+          .join(",")}) {${block.source}${returnValue(value)}} // ${fname}`
 
     const fn =
       block.source == "" && value.const() ?

@@ -8,9 +8,11 @@ export class Id {
   ident() {
     return "_" + this.value.toString(36)
   }
+}
 
-  toString() {
-    return this.label
+export class IdGlobal extends Id {
+  ident(): string {
+    throw new Error("Global IDs should not be used as identifiers.")
   }
 }
 
@@ -22,7 +24,7 @@ export interface GlobalId extends Id {
 }
 
 export function ident(label: string) {
-  return (idMap[label] ??= new Id(label) as GlobalId)
+  return (idMap[label] ??= new IdGlobal(label) as GlobalId)
 }
 
 export function fieldIdent(index: number) {

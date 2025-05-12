@@ -6,8 +6,10 @@ export type ReprVec = { type: "vec"; of: GlslScalar; count: 1 | 2 | 3 | 4 }
 export type ReprMat = { type: "mat"; cols: 2 | 3 | 4; rows: 2 | 3 | 4 }
 export type ReprStruct = { type: "struct"; id: Id }
 export type ReprVoid = { type: "void" }
+export type ReprArray = { type: "array"; of: ReprNonArray; count: number }
 
-export type Repr = ReprVec | ReprMat | ReprStruct | ReprVoid
+export type ReprNonArray = ReprVec | ReprMat | ReprStruct | ReprVoid
+export type Repr = ReprNonArray | ReprArray
 
 export function emitGlslVec(repr: ReprVec): string {
   return (
