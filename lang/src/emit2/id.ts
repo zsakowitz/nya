@@ -8,6 +8,10 @@ export class Id {
   ident() {
     return "_" + this.value.toString(36)
   }
+
+  toString() {
+    return this.label
+  }
 }
 
 export class IdGlobal extends Id {

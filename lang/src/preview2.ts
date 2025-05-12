@@ -1,3 +1,4 @@
+import { writeFileSync } from "fs"
 import context from "../examples/test.nya"
 import { parse, parseBlockContents } from "./ast/parse"
 import { createStream } from "./ast/stream"
@@ -22,7 +23,9 @@ try {
       rootTy.push(result.declTy)
     }
   }
-  const expr = `for a in [2*i,3+0*i,4+0*i] {}`
+  const expr = `
+  erf(2+3*i)
+  `
   const block = new Block(decl)
   const value = emitBlock(
     parseBlockContents(createStream(expr, { comments: false })),
@@ -36,6 +39,7 @@ try {
   ]
     .filter((x) => x)
     .join("\n")
+  writeFileSync(new URL("./compiled.js", import.meta.url), a)
   console.log((0, eval)(a))
 } catch (e) {
   console.error(e)

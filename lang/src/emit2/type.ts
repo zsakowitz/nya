@@ -3,7 +3,13 @@ import { bug, issue, todo } from "./error"
 import { fieldIdent, Id, ident } from "./id"
 import { encodeIdentForTS } from "./ident"
 import type { EmitProps } from "./props"
-import { emitGlslVec, type GlslScalar, type Repr } from "./repr"
+import {
+  emitGlslMat,
+  emitGlslVec,
+  type GlslScalar,
+  type Repr,
+  type ReprVec,
+} from "./repr"
 import { Value, type ConstValue } from "./value"
 
 export interface TypeBase {
@@ -78,6 +84,7 @@ export class Struct implements TypeBase {
     props: EmitProps,
     name: string,
     fields: { name: string; type: Type }[],
+    matrix: boolean,
   ) {
     const nvFields = fields.filter((x) => x.type.repr.type != "void")
 
@@ -148,7 +155,43 @@ export class Struct implements TypeBase {
       }
     }
 
-    // TODO: matrix optimization
+    mat: if (
+      !repr &&
+      nvFields.every(
+        (x): x is typeof x & { type: { repr: ReprVec } } =>
+          x.type.repr.type == "vec",
+      )
+    ) {
+      if (!nvFields.every((x) => x.type.repr.of == "float")) {
+        break mat
+      }
+
+      const rows = nvFields[0]!.type.repr.count
+      if (rows == 1) {
+        break mat
+      }
+      if (!nvFields.every((x) => x.type.repr.count == rows)) {
+        break mat
+      }
+      const cols = nvFields.length
+      if (!(cols == 2 || cols == 3 || cols == 4)) {
+        break mat
+      }
+
+      repr = { type: "mat", cols, rows, op: matrix }
+      if (props.lang == "glsl") {
+        return new Struct(
+          name,
+          emitGlslMat(repr),
+          repr,
+          false,
+          nvIndices,
+          nvFields.map((x) => x.type),
+          fields,
+          props,
+        )
+      }
+    }
 
     const lid = new Id(name)
     const lident = lid.ident()
@@ -192,13 +235,14 @@ function ${lident}(${nvFields
     props: EmitProps,
     name: string,
     fields: { name: string; type: Type }[],
+    matrix: boolean,
   ): {
     struct: Struct
     fn?: Fn
     decl?: string
     declTyOnly?: string
   } {
-    const ret = Struct.#of(props, name, fields)
+    const ret = Struct.#of(props, name, fields, matrix)
     if (ret instanceof Struct) {
       return { struct: ret }
     } else {

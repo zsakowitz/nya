@@ -7,6 +7,7 @@ export class Value {
   constructor(
     readonly value: string | null | ConstValue,
     readonly type: Type,
+    readonly assignable = false,
   ) {}
 
   const(): this is { value: ConstValue } {

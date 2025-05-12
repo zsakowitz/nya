@@ -1,6 +1,8 @@
+import { KMatrix, OEq, TBuiltin } from "../ast/kind"
 import {
   ExprArray,
   ExprBinary,
+  ExprBinaryAssign,
   ExprBlock,
   ExprEmpty,
   ExprFor,
@@ -16,6 +18,7 @@ import {
 import { ItemAssert, ItemFn, ItemStruct, type NodeItem } from "../ast/node/item"
 import { StmtExpr, StmtLet, type NodeStmt } from "../ast/node/stmt"
 import { TypeEmpty, TypeParen, TypeVar, type NodeType } from "../ast/node/type"
+import { fromScalars, toScalars } from "./broadcast"
 import { Block, IdMap, type Declarations } from "./decl"
 import { issue, todo } from "./error"
 import { Id, ident, type GlobalId } from "./id"
@@ -42,7 +45,14 @@ function list(a: { toString(): string }[], empty: "no arguments" | null) {
   )
 }
 
+const ID_MATMUL = ident("@#")
 function performCall(id: GlobalId, block: Block, args: Value[]): Value {
+  if (id == ID_MATMUL) {
+    if (args.length == 2) {
+      return matrixMultiply(block, args[0]!, args[1]!)
+    }
+  }
+
   const local = block.locals.get(id)
 
   if (local) {
@@ -105,35 +115,39 @@ function emitType(node: NodeType, decl: Declarations): Type {
   }
 }
 
-function nonNull(value: Value | null): Value {
-  if (value == null) {
-    issue(`Expected non-void value.`)
-  }
-  return value
-}
-
-function arraySize(size: number | null): number {
-  if (size == null) {
-    issue(
-      `Array sizes must be constant integers; an array's size cannot depend on local variables.`,
-    )
-  }
-
-  return size
-}
+// function arraySize(size: number | null): number {
+//   if (size == null) {
+//     issue(
+//       `Array sizes must be constant integers; an array's size cannot depend on local variables.`,
+//     )
+//   }
+//
+//   return size
+// }
 
 function emitExpr(node: NodeExpr, block: Block): Value {
   if (node instanceof ExprBlock) {
     return emitBlock(node, block)
   } else if (node instanceof ExprBinary) {
+    if (node.op.kind == OEq) {
+      const { current, id } = emitLvalue(node.lhs, block)
+      const rhs = emitExpr(node.rhs, block)
+
+      if (current.const()) {
+        block.locals.set(id, rhs)
+      } else {
+        block.source += `${current}=${rhs};`
+      }
+
+      return new Value(0, block.decl.void)
+    }
+
     return performCall(ident(node.op.val), block, [
-      nonNull(emitExpr(node.lhs, block)),
-      nonNull(emitExpr(node.rhs, block)),
+      emitExpr(node.lhs, block),
+      emitExpr(node.rhs, block),
     ])
   } else if (node instanceof ExprUnary) {
-    return performCall(ident(node.op.val), block, [
-      nonNull(emitExpr(node.of, block)),
-    ])
+    return performCall(ident(node.op.val), block, [emitExpr(node.of, block)])
   } else if (node instanceof ExprEmpty) {
     issue("Empty expression.")
   } else if (node instanceof ExprLit) {
@@ -145,7 +159,7 @@ function emitExpr(node: NodeExpr, block: Block): Value {
     return performCall(
       ident(node.name.val),
       block,
-      node.args?.items.map((e) => nonNull(emitExpr(e, block))) ?? [],
+      node.args?.items.map((e) => emitExpr(e, block)) ?? [],
     )
   } else if (node instanceof ExprParen) {
     return emitExpr(node.of.value, block)
@@ -183,7 +197,7 @@ function emitExpr(node: NodeExpr, block: Block): Value {
     }
     return performCall(ident(node.prop.name.val), block, [
       emitExpr(node.on, block),
-      ...(node.args?.items.map((e) => nonNull(emitExpr(e, block))) ?? []),
+      ...(node.args?.items.map((e) => emitExpr(e, block)) ?? []),
     ])
   } else if (node instanceof ExprIf) {
     const cond = emitExpr(node.condition, block)
@@ -277,6 +291,8 @@ function emitExpr(node: NodeExpr, block: Block): Value {
       return new Value(`[${strings.join(",")}]`, type)
     }
   } else if (node instanceof ExprFor) {
+    // TODO: some for loops can be evaluated at const time
+
     const expr = node
     if (expr.bound.items.length != expr.sources.items.length) {
       issue(
@@ -334,6 +350,18 @@ function emitExpr(node: NodeExpr, block: Block): Value {
     const final = ret.value ? ret.value + ";" : ""
     block.source += `for(${block.props.lang == "glsl" ? "int" : "var"} ${index}=0;${index}<${size!};${index}++) {${child.source}${final}}`
     return new Value(0, block.decl.void)
+  } else if (node instanceof ExprBinaryAssign) {
+    const { current, id } = emitLvalue(node.lhs, block)
+    const rhs = emitExpr(node.rhs, block)
+    const updated = performCall(ident(node.op.val), block, [current, rhs])
+
+    if (current.const()) {
+      block.locals.set(id, updated)
+    } else {
+      block.source += `${current}=${updated};`
+    }
+
+    return new Value(0, block.decl.void)
   } else {
     todo(`Cannot emit '${node.constructor.name}' as an expression yet.`)
   }
@@ -346,9 +374,83 @@ function emitExpr(node: NodeExpr, block: Block): Value {
   //   }
 }
 
-// function emitLvalue(node: NodeExpr, block: Block): { current: Value; id: Id } {
-//   todo(`Cannot emit '${node.constructor.name}' as an assignment target yet.`)
-// }
+function emitLvalue(
+  node: NodeExpr,
+  block: Block,
+): { current: Value; id: GlobalId } {
+  if (node instanceof ExprVar) {
+    if (node.targs) {
+      issue("Cannot assign to something with type arguments.")
+    }
+    if (node.args) {
+      issue("Cannot assign to a function call.")
+    }
+    if (node.name.kind == TBuiltin) {
+      issue("Cannot assign to a builtin function.")
+    }
+
+    const id = ident(node.name.val)
+    const current = block.locals.get(id)
+    if (!current) {
+      issue(`Variable '${id}' is not locally defined.`)
+    }
+    if (!current?.assignable) {
+      issue(
+        `Cannot assign to '${id}'. If it's a function parameter, it's readonly.`,
+      )
+    }
+
+    return { current, id }
+  } else {
+    todo(`Cannot emit '${node.constructor.name}' as an assignment target yet.`)
+  }
+}
+
+function matrixMultiply(block: Block, arg1: Value, arg2: Value): Value {
+  if (arg1.type.repr.type == "void" || arg2.type.repr.type == "void") {
+    issue(`Cannot matrix multiply a void value.`)
+  }
+
+  const r1 = arg1.type.repr
+  const r2 = arg2.type.repr
+
+  // mat * vec = vec
+  if (r1.type == "mat" && r2.type == "vec" && r2.of == "float") {
+    if (r1.cols == r1.rows && r1.rows == r2.count) {
+      if (block.props.lang == "glsl") {
+        return new Value(`(${arg1.value})*(${arg2.value})`, arg2.type)
+      } else {
+        const a1scalars = toScalars(arg1, block)
+        const a2scalars = toScalars(arg2, block)
+        a1scalars // [c1r1 c1r2 .. c1rn] .. [cnr1 cnr2 .. cnrn]
+        a2scalars // r1 r2 r3 ..
+
+        return fromScalars(
+          arg2.type,
+          a2scalars.map((_, i) => {
+            let r = ""
+            for (let j = 0; j < r1.cols; j++) {
+              if (j != 0) {
+                r += "+"
+              }
+              r += `(${a1scalars[j * r1.rows + i]})*(${a2scalars[j]})`
+              // u[i] = m[0][i] * v[0] + m[1][i] * v[1] + m[2][i] * v[2];
+            }
+            return new Value(r, _.type)
+          }),
+        )
+      }
+    } else {
+      todo(
+        `Can only multiply matrices and vectors if the matrix is square and the vector has the same size as the matrix.`,
+      )
+    }
+  }
+
+  todo(
+    `Cannot multiply '${arg1.type}' by '${arg2.type}' via matrix multiplication.`,
+  )
+}
 
 export function emitBlock(node: ExprBlock, block: Block): Value {
   let ret = nullValue(block)
@@ -388,7 +490,7 @@ function emitStmt(node: NodeStmt, block: Block): Value {
     }
     const gid = ident(identName.val)
     const lid = new Id(identName.val)
-    block.locals.set(gid, new Value(lid.ident(), value.type))
+    block.locals.set(gid, new Value(lid.ident(), value.type, true))
     block.source += `${block.lang == "glsl" ? value.type.emit : "var"} ${lid.ident()}=${value};`
     return new Value(null, block.decl.void)
   } else {
@@ -421,7 +523,15 @@ export function emitItem(node: NodeItem, decl: Declarations): ItemResult {
       const ty = emitType(type, decl)
       fields.push({ name: name.val, type: ty })
     }
-    const result = Struct.of(decl.props, id.label, fields)
+    const result = Struct.of(
+      decl.props,
+      id.label,
+      fields,
+      node.kw.kind == KMatrix,
+    )
+    if (node.kw.kind == KMatrix && result.struct.repr.type != "mat") {
+      issue(`Unable to create struct '${id.label}' as a matrix.`)
+    }
     decl.types.set(id, result.struct)
     const fns = result.struct.generateFieldAccessors(decl.props)
     for (const fn of fns) {
