@@ -420,8 +420,7 @@ const forBindings = createUnbracketedCommaOp(
   Code.ExpectedForBindings,
 )
 const forSources = createUnbracketedCommaOp(
-  (stream) =>
-    stream.peek() == OLBrace ? null : expr(stream, { struct: false }),
+  exprButNotBlockOrSemi,
   Code.ExpectedForSources,
 )
 
@@ -985,6 +984,12 @@ function expr(stream: Stream, ctx: ExprContext = { struct: true }) {
   return exprBinaryOp(stream, ctx)
 }
 
+function exprButNotBlockOrSemi(stream: Stream) {
+  return stream.peek() == OLBrace || stream.peek() == OSemi ?
+      null
+    : expr(stream, { struct: false })
+}
+
 function createUnbracketedCommaOp<T extends NodeExpr | Ident>(
   fn: (stream: Stream) => T | null,
   onEmpty: Code,
@@ -1234,6 +1239,8 @@ function itemFn(stream: Stream) {
   }
   const ret = arrow && new FnReturnType(arrow, ty!)
   const usageKw = stream.match(KUsage)
+  const usage = usageKw && new FnUsage(usageKw, fnUsageExamples(stream))
+  const semi = stream.match(OSemi)
 
   return new ItemFn(
     kw,
@@ -1241,13 +1248,14 @@ function itemFn(stream: Stream) {
     tparams,
     params,
     ret,
-    usageKw && new FnUsage(usageKw, fnUsageExamples(stream)),
-    block(stream, null, true),
+    usage,
+    semi ? null : block(stream, null, true),
+    semi,
   )
 }
 
 const fnUsageExamples = createUnbracketedCommaOp(
-  (stream) => expr(stream, { struct: false }),
+  exprButNotBlockOrSemi,
   Code.ExpectedUsageExamples,
 )
 

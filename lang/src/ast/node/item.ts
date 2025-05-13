@@ -75,10 +75,11 @@ export class ItemFn extends NodeItem {
     readonly ret: FnReturnType | null,
     readonly usage: FnUsage | null,
     readonly block: ExprBlock | null,
+    readonly semi: Token<typeof OSemi> | null,
   ) {
     super(
       kw.start,
-      (block ?? usage ?? ret ?? params ?? tparams ?? name ?? kw).end,
+      (semi ?? block ?? usage ?? ret ?? params ?? tparams ?? name ?? kw).end,
     )
   }
 }

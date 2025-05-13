@@ -357,19 +357,26 @@ export function print(node: Node | Token<number>, sb: Subprint): Doc {
     case FnUsage:
       return [sb("kw"), " ", sb("usages")]
     case FnReturnType:
-      return [sb("arrow"), " ", sb.paren("retType"), " "]
-    case ItemFn:
+      return [sb("arrow"), " ", sb.paren("retType")]
+    case ItemFn: {
+      const self = node as ItemFn
+      if (self.usage?.usages) {
+        self.usage.usages.spaceAfter = !self.semi
+      }
       return [
         sb("kw"),
         " ",
         sb("name"),
         sb.alt("tparams", ""),
         sb.alt("params", "()"),
-        " ",
+        self.ret ? " " : "",
         sb.alt("ret", ""),
+        self.usage ? " " : "",
         sb.alt("usage", ""),
-        sb.alt("block", "{}"),
+        !self.usage && !self.semi ? " " : "",
+        self.semi ? sb.alt("semi", ";") : sb.alt("block", "{}"),
       ]
+    }
     case ItemRule:
       return ["rule", sb.alt("tparams", ""), " ", sb.alt("value", ";")]
     case Rule:
@@ -405,7 +412,7 @@ export function print(node: Node | Token<number>, sb: Subprint): Doc {
 
       return group([
         indent([softline, join([",", line], contents), ifBreak([","], "")]),
-        line,
+        self.spaceAfter ? line : softline,
       ])
     }
     case List: {

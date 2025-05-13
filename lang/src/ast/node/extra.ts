@@ -55,6 +55,7 @@ export class PlainList<T extends NodeExpr | Ident> extends Node {
     readonly items: T[],
     start: number,
     end: number,
+    public spaceAfter = true,
   ) {
     super(start, end)
   }

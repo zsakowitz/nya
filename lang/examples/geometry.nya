@@ -252,7 +252,7 @@ fn intersection(a: Circle, b: Circle) -> Point {
 }
 
 fn glider(a: Circle, at: num) -> Point {
-  let at = @clamp(at, 0.0, 1.0);
+  let at = clamp(at, 0.0, 1.0);
   Point { x: a.center.x + cos(2 * pi * at), y: a.center.y + sin(2 * pi * at) }
 }
 
@@ -261,11 +261,11 @@ fn glider(l: Line, at: num) -> Point {
 }
 
 fn glider(l: Ray, at: num) -> Point {
-  @mix(l.p1, l.p2, @max(0.0, at))
+  @mix(l.p1, l.p2, max(0.0, at))
 }
 
 fn glider(l: Segment, at: num) -> Point {
-  @mix(l.p1, l.p2, @clamp(at, 0.0, 1.0))
+  @mix(l.p1, l.p2, clamp(at, 0.0, 1.0))
 }
 
 // "glider"
