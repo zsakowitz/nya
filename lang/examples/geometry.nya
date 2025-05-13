@@ -101,8 +101,15 @@ fn anglebisector(v: angle) -> ray {
   }
 }
 
+// maybe use an @as primitive?
+fn anglebisector(v: directed_angle) -> ray {
+  ray {
+    p1: v.p2,
+    p2: @norm(@norm(v.p1 @- v.p2) @+ @norm(v.p3 @- v.p2)) @+ v.p2,
+  }
+}
+
 // circle
-// arc
 // polygon
 //
 // "center"
@@ -119,7 +126,6 @@ fn anglebisector(v: angle) -> ray {
 // "vertices"
 // "angles"
 // "directed angles"
-// "angle bisector"
 // "perpendicular bisector"
 // "translate"
 // "rotate"
