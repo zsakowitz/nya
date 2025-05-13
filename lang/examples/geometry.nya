@@ -199,20 +199,27 @@ fn intersection(c1: Circle, c2: Circle, which: num) -> Point {
   }
 }
 
+fn perpendicular_bisector(p1: Point, p2: Point) -> Line {
+  let l1a = midpoint(p1, p2);
+  let l1b = point(l1a.x + (p2.y - p1.y), l1a.y - (p2.x - p1.x));
+  Line { p1: l1a, p2: l1b }
+}
+
+fn perpendicular_bisector(s: Segment) -> Line {
+  perpendicular_bisector(s.p1, s.p2)
+}
+
 fn circle(arc: Arc) -> Circle {
   let p1 = arc.p1;
   let p2 = arc.p2;
   let p3 = arc.p3;
 
-  let l1a = midpoint(p1, p2);
-  let l1b = point(l1a.x - (p2.y - p1.y), l1a.y + (p2.x - p1.x));
-  let l2a = midpoint(p3, p2);
-  let l2b = point(l2a.x - (p2.y - p3.y), l2a.y + (p2.x - p3.x));
+  let c = intersection(
+    perpendicular_bisector(p1, p2),
+    perpendicular_bisector(p3, p2),
+  );
 
-  let c = intersection(Line { p1: l1a, p2: l1b }, Line { p1: l2a, p2: l2b });
-  let r = @length(c @- p1);
-
-  Circle { center: c, radius: r }
+  Circle { center: c, radius: @length(c @- p1) }
 }
 
 fn intersection(c: Circle, l: AnyLine) -> Point {
@@ -235,18 +242,17 @@ fn intersection(a: Circle, b: Circle) -> Point {
 // "vertices"
 // "angles"
 // "directed angles"
-// "perpendicular bisector"
 // "translate"
 // "rotate"
 // "dilate"
 // "reflect"
 // "perimeter"
 
-fn main() -> Point {
+fn main() -> Line {
   let A = point(-5.28, 0.84);
   let B = point(-2.64, 1.40);
   let C = point(-0.47, 0.75);
   let a = line(A, B);
   let b = circle(C, 3.0);
-  intersection(b, a)
+  perpendicular_bisector(A, B)
 }
