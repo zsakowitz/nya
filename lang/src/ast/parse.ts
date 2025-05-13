@@ -1205,8 +1205,8 @@ function itemType(stream: Stream) {
   if (!kw) return null
 
   const ident = stream.matchOr(TIdent, Code.ExpectedIdent)
-  const eq = stream.matchOr(OEq, Code.ExpectedEq)
-  const ty = type(stream)
+  const eq = stream.match(OEq)
+  const ty = eq && type(stream)
   const semi = stream.matchOr(OSemi, Code.MissingSemi)
 
   return new ItemTypeAlias(kw, ident, eq, ty, semi)

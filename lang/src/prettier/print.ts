@@ -955,6 +955,9 @@ export function print(node: Node | Token<number>, sb: Subprint): Doc {
     case TypeAlt:
       return [sb("lhs"), " ", sb("op"), " ", sb("rhs")]
     case ItemTypeAlias:
+      if (!(node as ItemTypeAlias).eq) {
+        return [sb("kw"), " ", sb("ident"), sb.alt("semi", ";")]
+      }
       return [
         sb("kw"),
         " ",

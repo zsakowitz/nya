@@ -535,7 +535,11 @@ function emitStmt(node: NodeStmt, block: Block): Value {
   }
 }
 
-export type ItemResult = { decl: string; declTy?: string } | null
+export type ItemResult = {
+  decl?: string
+  declTy?: string
+  declNya?: { name: string; of: string; kind: "type" | "fn" }[]
+} | null
 
 export function emitItem(node: NodeItem, decl: Declarations): ItemResult {
   if (node instanceof ItemStruct) {
@@ -588,16 +592,23 @@ export function emitItem(node: NodeItem, decl: Declarations): ItemResult {
     for (const fn of accessors) {
       decl.fns.push(fn.id as GlobalId, fn)
     }
-    return result[0]!.decl ?
-        {
-          decl: result.map((x) => x.decl).join("\n"),
-          declTy:
-            result
-              .map((x) => x.declTyOnly)
-              .filter((x) => x)
-              .join("\n") || undefined,
-        }
-      : null
+    return {
+      decl:
+        result
+          .map((x) => x.decl)
+          .filter((x) => x)
+          .join("\n") || undefined,
+      declTy:
+        result
+          .map((x) => x.declTyOnly)
+          .filter((x) => x)
+          .join("\n") || undefined,
+      declNya: result.map((x) => ({
+        name: x.struct.name,
+        of: x.struct.declaration(),
+        kind: "type",
+      })),
+    }
   } else if (node instanceof ItemFn) {
     const fname = node.name?.val
     if (fname == null) {
@@ -658,7 +669,10 @@ export function emitItem(node: NodeItem, decl: Declarations): ItemResult {
         })
 
     decl.fns.push(gid, fn)
-    return { decl: body }
+    return {
+      decl: body,
+      declNya: [{ name: fn.id.label, of: fn.declaration(), kind: "fn" }],
+    }
   } else if (node instanceof ItemTypeAlias) {
     const val = node.ident?.val
     if (!val) {
@@ -669,11 +683,23 @@ export function emitItem(node: NodeItem, decl: Declarations): ItemResult {
     if (!decl.types.canDefine(id)) {
       issue(`Type '${id}' was declared twice.`)
     }
+    if (!node.of) {
+      issue(`Type alias '${id}' is missing an aliased type.`)
+    }
 
     const ty = emitType(node.of, decl)
     decl.types.init(id, ty)
 
-    return null // TODO: should this be a ts type alias?
+    return {
+      // TODO: should this output a ts type alias?
+      declNya: [
+        {
+          name: node.ident.val,
+          of: `type ${node.ident.val} = ${ty};`,
+          kind: "type",
+        },
+      ],
+    }
   } else {
     todo(`Cannot emit '${node.constructor.name}' as an item yet.`)
   }

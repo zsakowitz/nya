@@ -59,10 +59,10 @@ export class ItemTypeAlias extends NodeItem {
     readonly kw: Token<typeof KType>,
     readonly ident: Ident | null,
     readonly eq: Token<typeof OEq> | null,
-    readonly of: NodeType,
+    readonly of: NodeType | null,
     readonly semi: Token<typeof OSemi> | null,
   ) {
-    super(kw.start, (semi ?? of).end)
+    super(kw.start, (semi ?? of ?? eq ?? ident ?? kw).end)
   }
 }
 

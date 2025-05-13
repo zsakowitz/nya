@@ -44,6 +44,8 @@ function emitJs(lang: Lang) {
   const decl = createStdlib(props)
   let root = []
   let rootTy = []
+  const declNyaFn: Record<string, string[]> = Object.create(null)
+  const declNyaType: Record<string, string[]> = Object.create(null)
   for (const item of parse(createStream(source, { comments: false })).items) {
     const result = emitItem(item, decl)
     if (result?.decl) {
@@ -51,6 +53,15 @@ function emitJs(lang: Lang) {
     }
     if (result?.declTy) {
       rootTy.push(result.declTy)
+    }
+    if (result?.declNya) {
+      for (const item of result.declNya) {
+        if (item.kind == "fn") {
+          ;(declNyaFn[item.name] ??= []).push(item.of)
+        } else {
+          ;(declNyaType[item.name] ??= []).push(item.of)
+        }
+      }
     }
   }
   const expr = "main"
@@ -67,7 +78,26 @@ function emitJs(lang: Lang) {
   ]
     .filter((x) => x)
     .join("\n")
+  const nyaDecl1 = Object.entries(declNyaType)
+    .sort(([a], [b]) =>
+      a < b ? -1
+      : a > b ? 1
+      : 0,
+    )
+    .map((x) => x[1].join("\n"))
+    .join("\n")
+  const nyaDecl2 = Object.entries(declNyaFn)
+    .sort(([a], [b]) =>
+      a < b ? -1
+      : a > b ? 1
+      : 0,
+    )
+    .map((x) => x[1].join("\n"))
+    .join("\n\n")
+  const nyaDecl =
+    nyaDecl1 && nyaDecl2 ? nyaDecl1 + "\n\n" + nyaDecl2 : nyaDecl1 || nyaDecl2
   writeFileSync(new URL("./compiled.js", import.meta.url), a)
+  writeFileSync(new URL("./compiled.nya", import.meta.url), nyaDecl)
   console.log((0, eval)(a))
 }
 

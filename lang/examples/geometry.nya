@@ -166,7 +166,7 @@ fn intersection(l1: AnyLine, l2: AnyLine) -> Point {
 
 //! https://stackoverflow.com/a/37225895
 // `which` should be -1 | 1
-fn intersection(l: AnyLine, c: Circle, which: num) -> Point {
+fn _intersection(l: AnyLine, c: Circle, which: num) -> Point {
   let cx = c.center.x;
   let cy = c.center.y;
   let r = c.radius;
@@ -191,7 +191,7 @@ fn intersection(l: AnyLine, c: Circle, which: num) -> Point {
 }
 
 // `which` should be -1 | 1
-fn intersection(c1: Circle, c2: Circle, which: num) -> Point {
+fn _intersection(c1: Circle, c2: Circle, which: num) -> Point {
   let x0 = c1.center.x;
   let y0 = c1.center.y;
   let r0 = c1.radius;
@@ -240,15 +240,15 @@ fn circle(arc: Arc) -> Circle {
 }
 
 fn intersection(c: Circle, l: AnyLine) -> Point {
-  intersection(l, c, 1)
+  _intersection(l, c, 1)
 }
 
 fn intersection(l: AnyLine, c: Circle) -> Point {
-  intersection(l, c, -1)
+  _intersection(l, c, -1)
 }
 
 fn intersection(a: Circle, b: Circle) -> Point {
-  intersection(a, b, 1)
+  _intersection(a, b, 1)
 }
 
 fn glider(a: Circle, at: num) -> Point {

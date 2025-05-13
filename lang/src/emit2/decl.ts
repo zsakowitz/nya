@@ -9,6 +9,10 @@ export class IdMap<T> {
 
   private readonly map: Record<number, T> = Object.create(null)
 
+  all() {
+    return Object.entries(this.map)
+  }
+
   get(id: GlobalId): T | undefined {
     return this.map[id.value] ?? this.parent?.get(id)
   }

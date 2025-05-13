@@ -42,6 +42,10 @@ export class Fn {
       .map((x) => x.name + ": " + x.type)
       .join(", ")}) -> ${this.ret}`
   }
+
+  declaration() {
+    return `fn ${this.id.label}(${this.args.map((x) => `${x.name}: ${x.type}`).join(", ")}) -> ${this.ret};`
+  }
 }
 
 export function invalidType(
@@ -76,6 +80,10 @@ export class Scalar implements TypeBase {
     } else {
       invalidType(this, value.type)
     }
+  }
+
+  declaration() {
+    return `type ${this.name};`
   }
 }
 
@@ -468,6 +476,13 @@ function ${lident}(${nvFields
 
   fromScalars(value: Value[]): Value {
     return this.with(this.#fields.map(({ type }) => type.fromScalars(value)))
+  }
+
+  declaration() {
+    if (this.#fields.length == 0) {
+      return `struct ${this.name} {}`
+    }
+    return `struct ${this.name} { ${this.#fields.map((x) => `${x.name}: ${x.type}`).join(", ")} }`
   }
 }
 
