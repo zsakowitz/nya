@@ -183,10 +183,6 @@ export function createStdlib(props: EmitProps) {
   const maxId = new Id("Math.max").ident()
 
   const fns: Fn[] = [
-    // Non-constants for testing purposes
-    new Fn(g("x"), [], num, () => new Value("pos.x", num)),
-    new Fn(g("y"), [], num, () => new Value("pos.y", num)),
-
     // Easy numeric operators
     ...numBinOpArith("+", (a, b) => a + b),
     ...numBinOpArith("-", (a, b) => a - b),
@@ -243,7 +239,7 @@ export function createStdlib(props: EmitProps) {
         decl.global(`const ${atanId}=Math.atan2;`)
       }
       return new Value(
-        props.lang == "glsl" ? `atan2(${y},${x})` : `${atanId}(${y},${x})`,
+        props.lang == "glsl" ? `atan(${y},${x})` : `${atanId}(${y},${x})`,
         num,
       )
     }),
@@ -324,8 +320,8 @@ export function createStdlib(props: EmitProps) {
       }
       return new Value(
         props.lang == "glsl" ?
-          `abs(${l!},${r!})<${epsilon}`
-        : `${absId}(${l!},${r!})<${epsilon}`,
+          `abs((${l!})-(${r!}))<${epsilon}`
+        : `${absId}((${l!})-(${r!}))<${epsilon}`,
         bool,
       )
     }),
@@ -485,7 +481,7 @@ export function createStdlib(props: EmitProps) {
 
         // glsl path
         if (block.lang == "glsl") {
-          return new Value(`norm(${val})`, val.type)
+          return new Value(`normalize(${val})`, val.type)
         }
 
         // js path

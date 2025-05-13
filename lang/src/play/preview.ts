@@ -2,28 +2,23 @@ import { h, hx, t } from "@/jsx"
 import FuzzySearch from "fuzzy-search"
 import { doc, formatWithCursor } from "prettier"
 import REGL from "regl"
-import source from "../examples/test.nya"
-import { Code } from "./ast/issue"
-import { ORAngle, ORBrace, ORBrack, ORParen } from "./ast/kind"
-import { parse, parseBlockContents } from "./ast/parse"
-import { print } from "./ast/print"
-import { createStream, TokenGroup } from "./ast/stream"
-import { Token } from "./ast/token"
-import {
-  Block,
-  createExports,
-  emitExprBlock,
-  emitItem,
-  NYA_LANG_TEST_PRELUDE,
-  performCall,
-} from "./emit/emit"
-import { issue } from "./emit/error"
-import { names } from "./emit/id"
-import { EmitProps, type Lang } from "./emit/props"
-import { createStdlibDecls } from "./emit/stdlib"
-import { printVanilla } from "./prettier"
-import * as plugin from "./prettier/plugin"
-import { UNPRINTED } from "./prettier/print"
+import { Code } from "../ast/issue"
+import { ORAngle, ORBrace, ORBrack, ORParen } from "../ast/kind"
+import { parse, parseBlockContents } from "../ast/parse"
+import { print } from "../ast/print"
+import { createStream, TokenGroup } from "../ast/stream"
+import { Token } from "../ast/token"
+import { Block } from "../emit/decl"
+import { emitBlock, emitItem, performCall } from "../emit/emit"
+import { issue } from "../emit/error"
+import { ident } from "../emit/id"
+import { EmitProps, type Lang } from "../emit/props"
+import { createStdlib } from "../emit/stdlib"
+import { Value } from "../emit/value"
+import { printVanilla } from "../prettier"
+import * as plugin from "../prettier/plugin"
+import { UNPRINTED } from "../prettier/print"
+import { source } from "./source"
 
 console.time("stream")
 export const stream = createStream(source, { comments: false })
@@ -143,126 +138,84 @@ function showIssues() {
   show(elIssues)
 }
 
-function showEmit(lang: Lang) {
-  try {
-    console.time("emit " + lang)
-    const decl = createStdlibDecls()
-    const props = new EmitProps(lang)
-    const exportsActual: Record<string, string[]> = Object.create(null)
-    const exportsTypeOnly: Record<string, string[]> = Object.create(null)
-    const res = result.items
-      .map((x) => {
-        const result = emitItem(x, decl, props)
+// function showEmitTests(lang: Lang) {
+//   try {
+//     console.time("emit " + lang)
+//     const decl = createStdlib()
+//     const props = new EmitProps(lang)
+//     const res =
+//       NYA_LANG_TEST_PRELUDE +
+//       result.items
+//         .map((x) => emitItem(x, decl, props)?.actual)
+//         .filter((x) => x != null)
+//         .join("\n") +
+//       "\nNYA_TEST.report();"
+//     console.timeEnd("emit " + lang)
+//     console.time("run tests")
+//     const data: string[] = (0, eval)(res)
+//     console.timeEnd("run tests")
+//     hr()
+//     pre(data.join("\n"))
+//   } catch (e) {
+//     hr()
+//     pre(String(e))
+//     console.error("[script emit]", e)
+//   }
+// }
 
-        for (const exp of result?.exports?.actual ?? []) {
-          ;(exportsActual[exp.exported] ??= []).push(exp.internal)
-        }
-        for (const exp of result?.exports?.typeOnly ?? []) {
-          ;(exportsTypeOnly[exp.exported] ??= []).push(exp.internal)
-        }
-
-        if (result?.typeOnly) {
-          return [
-            h("opacity-30 select-none", result.typeOnly),
-            "\n",
-            result.actual,
-          ]
-        } else if (result?.actual) {
-          return result.actual
-        }
-
-        return null
-      })
-      .filter((x) => x != null)
-      .flatMap((x, i) => (i == 0 ? x : ["\n", ...x]))
-    console.timeEnd("emit " + lang)
-    const exports1 = Object.entries(exportsActual)
-      .map(([as, of]) => createExports(of, as, false))
-      .join("\n")
-    const exports2 = Object.entries(exportsTypeOnly)
-      .map(([as, of]) => createExports(of, as, true))
-      .join("\n")
-    const exports =
-      exports2 ?
-        [exports1, "\n", h("opacity-30 select-none", exports2)]
-      : [exports1]
-    if (exports) {
-      res.push("\n")
-      res.push(...exports)
-    }
-    hr()
-    pre(h("", ...res))
-  } catch (e) {
-    hr()
-    pre(String(e))
-    console.error("[script emit]", e)
-  }
-}
-
-function showEmitTests(lang: Lang) {
-  try {
-    console.time("emit " + lang)
-    const decl = createStdlibDecls()
-    const props = new EmitProps(lang)
-    const res =
-      NYA_LANG_TEST_PRELUDE +
-      result.items
-        .map((x) => emitItem(x, decl, props)?.actual)
-        .filter((x) => x != null)
-        .join("\n") +
-      "\nNYA_TEST.report();"
-    console.timeEnd("emit " + lang)
-    console.time("run tests")
-    const data: string[] = (0, eval)(res)
-    console.timeEnd("run tests")
-    hr()
-    pre(data.join("\n"))
-  } catch (e) {
-    hr()
-    pre(String(e))
-    console.error("[script emit]", e)
-  }
-}
-
-function showEmitBenchmark(lang: Lang) {
-  function once() {
-    const decl = createStdlibDecls()
-    const props = new EmitProps(lang)
-    result.items.forEach((x) => emitItem(x, decl, props))
-  }
-
-  const m0 = performance.now()
-
-  once()
-  const m1 = performance.now()
-
-  for (let i = 0; i < 10; i++) once()
-  const m10 = performance.now()
-
-  for (let i = 0; i < 1000; i++) once()
-  const m1000 = performance.now()
-
-  for (let i = 0; i < 10000; i++) once()
-  const m10000 = performance.now()
-
-  hr()
-  pre(`Benchmark results for '${lang}'
-    1x: ${(m1 - m0).toFixed(4)}
-   10x: ${((m10 - m1) / 10).toFixed(4)}
- 1000x: ${((m1000 - m10) / 1000).toFixed(4)}
-10000x: ${((m10000 - m1000) / 10000).toFixed(4)}
-`)
-}
+// function showEmitBenchmark(lang: Lang) {
+//   function once() {
+//     const decl = createStdlib()
+//     const props = new EmitProps(lang)
+//     result.items.forEach((x) => emitItem(x, decl))
+//   }
+//
+//   const m0 = performance.now()
+//
+//   once()
+//   const m1 = performance.now()
+//
+//   for (let i = 0; i < 10; i++) once()
+//   const m10 = performance.now()
+//
+//   for (let i = 0; i < 1000; i++) once()
+//   const m1000 = performance.now()
+//
+//   for (let i = 0; i < 10000; i++) once()
+//   const m10000 = performance.now()
+//
+//   hr()
+//   pre(`Benchmark results for '${lang}'
+//     1x: ${(m1 - m0).toFixed(4)}
+//    10x: ${((m10 - m1) / 10).toFixed(4)}
+//  1000x: ${((m1000 - m10) / 1000).toFixed(4)}
+// 10000x: ${((m10000 - m1000) / 10000).toFixed(4)}
+// `)
+// }
 
 function createRepl(lang: Lang) {
-  const decl = createStdlibDecls()
   const props = new EmitProps(lang)
+  const decl = createStdlib(props)
   const emit = result.items
-    .map((x) => emitItem(x, decl, props)?.actual)
+    .map((x) => emitItem(x, decl)?.decl)
     .filter((x) => x != null)
     .join("\n")
 
-  const complex = decl.types.get(names.of("complex"))
+  const point = decl.types.get(ident("Point"))
+  if (!point) {
+    throw new Error("Expected struct 'Point' to be defined.")
+  }
+  if (
+    !(
+      point.repr.type == "vec" &&
+      point.repr.count == 2 &&
+      point.repr.of == "float"
+    )
+  ) {
+    throw new Error("Expected struct 'Point' to have the layout of a vec2.")
+  }
+
+  const complex = decl.types.get(ident("complex"))
   if (!complex) {
     throw new Error("Expected struct 'complex' to be defined.")
   }
@@ -291,13 +244,14 @@ function createRepl(lang: Lang) {
       if (!expr) {
         issue("Unable to parse block contents.")
       }
-      const block = new Block(decl, props)
+      const block = new Block(decl)
       if (lang == "glsl") {
-        block.locals.init(names.of("z"), { value: "POS", type: complex })
+        block.locals.init(ident("p"), new Value("POS", point))
+        block.locals.init(ident("z"), new Value("POS", complex))
       }
-      let ret = emitExprBlock(expr, block)
+      let ret = emitBlock(expr, block)
       if (lang == "glsl") {
-        ret = performCall(names.of("plot"), block, [ret])
+        ret = performCall(ident("plot"), block, [ret])
         if (ret.value == null) {
           issue("A shader example must return a value.")
         }
@@ -308,7 +262,8 @@ function createRepl(lang: Lang) {
           )
         }
       }
-      return `${block.source}${ret.value ? "return(" + ret.value + ");" : ""}`
+      const r = ret.toRuntime()
+      return `${block.source}${r ? "return(" + r + ");" : ""}`
     },
   }
 }
@@ -405,16 +360,16 @@ function showJointRepl(lang: Exclude<Lang, "glsl">, langGl: "glsl") {
     checkCurrentFn()
     const start = performance.now()
     try {
-      if (area.value.replace(/\/\/[^\n]*/g, "").match(/\bz\b/)) {
+      if (area.value.replace(/\/\/[^\n]*/g, "").match(/\b[zp]\b/)) {
         cv.classList.remove("opacity-0")
-        ret.value = "Previewing as shader since variable 'z' was used."
+        ret.value = "Previewing as shader since variable 'z' or 'p' was used."
         const value = runGl(area.value)
         showGl(emitGl, value)
       } else {
         cv.classList.add("opacity-0")
         const value = runJs(area.value)
         ret.value = JSON.stringify(
-          (0, eval)(`${emitJs};(()=>{${value}})()`),
+          (0, eval)(`${emitJs}\n;(()=>{${value}})()`),
           undefined,
           2,
         )
@@ -467,7 +422,7 @@ function showJointRepl(lang: Exclude<Lang, "glsl">, langGl: "glsl") {
     }
     const fns = search
       .search(word)
-      .map((x) => decl.fns.get(names.of(x)))
+      .map((x) => decl.fns.get(ident(x)))
       .filter((x) => x != null)
     if (fns.length) {
       libnow.data =
@@ -481,21 +436,21 @@ function showJointRepl(lang: Exclude<Lang, "glsl">, langGl: "glsl") {
 
 const parts = Object.entries({
   Issues: showIssues,
-  Playground: () => showJointRepl("js:native", "glsl"),
+  Playground: () => showJointRepl("js", "glsl"),
 
   stream: showTokenStream,
   prettier: showPrettier,
   ast: showPrinted,
 
-  "bench-js:native": () => showEmitBenchmark("js:native"),
-  "bench-js:native-tests": () => showEmitBenchmark("js:native-tests"),
-  "bench-glsl": () => showEmitBenchmark("glsl"),
-
-  "emit-js:native": () => showEmit("js:native"),
-  "emit-js:native-tests": () => showEmit("js:native-tests"),
-  "emit-glsl": () => showEmit("glsl"),
-
-  "test-js:native-tests": () => showEmitTests("js:native-tests"),
+  //   "bench-js:native": () => showEmitBenchmark("js:native"),
+  //   "bench-js:native-tests": () => showEmitBenchmark("js:native-tests"),
+  //   "bench-glsl": () => showEmitBenchmark("glsl"),
+  //
+  //   "emit-js:native": () => showEmit("js:native"),
+  //   "emit-js:native-tests": () => showEmit("js:native-tests"),
+  //   "emit-glsl": () => showEmit("glsl"),
+  //
+  //   "test-js:native-tests": () => showEmitTests("js:native-tests"),
 })
 
 const chosen = new Set(
@@ -514,7 +469,7 @@ for (const [k] of parts) {
     }
     location.href =
       location.origin +
-      "/?parts=" +
+      "/?nyalang&parts=" +
       [...chosen].map(encodeURIComponent).join(",")
   })
   show(el)

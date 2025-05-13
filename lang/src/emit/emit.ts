@@ -58,7 +58,7 @@ function list(a: { toString(): string }[], empty: "no arguments" | null) {
 }
 
 const ID_MATMUL = ident("@#")
-function performCall(id: GlobalId, block: Block, args: Value[]): Value {
+export function performCall(id: GlobalId, block: Block, args: Value[]): Value {
   if (id == ID_MATMUL) {
     if (args.length == 2) {
       return matrixMultiply(block, args[0]!, args[1]!)
@@ -293,7 +293,7 @@ function emitExpr(node: NodeExpr, block: Block): Value {
     } else {
       block.source += `var ${ret.ident()};`
     }
-    block.source += `if(${cond.value}){${child1.source}${ret.ident()}=${main.value};}else{${child2.source}${ret.ident()}=${alt.value};}`
+    block.source += `if(${cond}){${child1.source}${ret.ident()}=${main};}else{${child2.source}${ret.ident()}=${alt};}`
     return new Value(ret.ident(), main.type)
   } else if (node instanceof ExprArray) {
     const items = node.of.items.map((item) => emitExpr(item, block))
@@ -384,8 +384,7 @@ function emitExpr(node: NodeExpr, block: Block): Value {
     if (ret.type != block.decl.void) {
       todo(`The body of a 'for' loop must return 'void'; found '${ret.type}'.`)
     }
-    const final = ret.value ? ret.value + ";" : ""
-    block.source += `for(${block.props.lang == "glsl" ? "int" : "var"} ${index}=0;${index}<${size!};${index}++) {${child.source}${final}}`
+    block.source += `for(${block.props.lang == "glsl" ? "int" : "var"} ${index}=0;${index}<${size!};${index}++) {${child.source}}`
     return new Value(0, block.decl.void)
   } else if (node instanceof ExprBinaryAssign) {
     const { current, id } = emitLvalue(node.lhs, block)
@@ -455,7 +454,7 @@ function matrixMultiply(block: Block, arg1: Value, arg2: Value): Value {
   if (r1.type == "mat" && r2.type == "vec" && r2.of == "float") {
     if (r1.cols == r1.rows && r1.rows == r2.count) {
       if (block.props.lang == "glsl") {
-        return new Value(`(${arg1.value})*(${arg2.value})`, arg2.type)
+        return new Value(`(${arg1})*(${arg2})`, arg2.type)
       } else {
         const a1scalars = toScalars(arg1, block)
         const a2scalars = toScalars(arg2, block)

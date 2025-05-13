@@ -1,11 +1,11 @@
 import { writeFileSync } from "fs"
 import { parse, parseBlockContents } from "../ast/parse"
 import { createStream } from "../ast/stream"
-import { Block } from "../emit2/decl"
-import { emitBlock, emitItem } from "../emit2/emit"
-import { addInspectKeys } from "../emit2/inspect"
-import { EmitProps, type Lang } from "../emit2/props"
-import { createStdlib } from "../emit2/stdlib"
+import { Block } from "../emit/decl"
+import { emitBlock, emitItem } from "../emit/emit"
+import { addInspectKeys } from "../emit/inspect"
+import { EmitProps, type Lang } from "../emit/props"
+import { createStdlib } from "../emit/stdlib"
 import { source } from "./source"
 
 function emitGl() {

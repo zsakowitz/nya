@@ -1,7 +1,7 @@
 import "./page/index.dist.css"
 
 if (location.href.includes("nyalang")) {
-  await import("../lang/src/preview")
+  await import("../lang/src/play/preview")
 } else {
   try {
     if (location.href.includes("showmanifest")) {

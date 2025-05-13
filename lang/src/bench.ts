@@ -3,8 +3,8 @@ import { parse } from "./ast/parse"
 import { createStream } from "./ast/stream"
 import { emitItem } from "./emit/emit"
 import { EmitProps, type Lang } from "./emit/props"
-import { createStdlibDecls } from "./emit/stdlib"
-import { result } from "./preview"
+import { createStdlib } from "./emit/stdlib"
+import { result } from "./play/preview"
 
 const ret: any[] = []
 
@@ -15,9 +15,9 @@ function go(lang: Lang, rounds: number) {
       comments: false,
     })
     ret.push(parse(stream))
-    const decl = createStdlibDecls()
     const props = new EmitProps(lang)
-    result.items.forEach((x) => ret.push(emitItem(x, decl, props)))
+    const decl = createStdlib(props)
+    result.items.forEach((x) => ret.push(emitItem(x, decl)))
   }
 }
 
