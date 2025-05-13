@@ -44,7 +44,6 @@ function emitJs(lang: Lang) {
   const decl = createStdlib(props)
   let root = []
   let rootTy = []
-  const declNyaFn: Record<string, string[]> = Object.create(null)
   const declNyaType: Record<string, string[]> = Object.create(null)
   for (const item of parse(createStream(source, { comments: false })).items) {
     const result = emitItem(item, decl)
@@ -56,9 +55,7 @@ function emitJs(lang: Lang) {
     }
     if (result?.declNya) {
       for (const item of result.declNya) {
-        if (item.kind == "fn") {
-          ;(declNyaFn[item.name] ??= []).push(item.of)
-        } else {
+        if (item.kind != "fn") {
           ;(declNyaType[item.name] ??= []).push(item.of)
         }
       }
@@ -86,7 +83,9 @@ function emitJs(lang: Lang) {
     )
     .map((x) => x[1].join("\n"))
     .join("\n")
-  const nyaDecl2 = Object.entries(declNyaFn)
+  const nyaDecl2 = decl.fns
+    .all()
+    .map((a) => [a[0]!.id.label, a.map((x) => x.declaration())] as const)
     .sort(([a], [b]) =>
       a < b ? -1
       : a > b ? 1

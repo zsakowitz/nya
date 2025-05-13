@@ -170,6 +170,7 @@ import {
   ItemEnumMap,
   ItemExpose,
   ItemFn,
+  ItemLet,
   ItemRule,
   ItemStruct,
   ItemTypeAlias,
@@ -940,6 +941,26 @@ function stmtLet(stream: Stream): StmtLet | null {
   )
 }
 
+function itemLet(stream: Stream): ItemLet | null {
+  const kw = stream.match(KLet)
+  if (!kw) return null
+
+  const ident = stream.matchOr(TIdent, Code.ExpectedIdent)
+  const colon = stream.match(OColon)
+  const ty = colon && type(stream)
+  const eq = stream.match(OEq)
+  const value = eq && expr(stream)
+  const semi = stream.matchOr(OSemi, Code.MissingSemi)
+
+  return new ItemLet(
+    kw,
+    ident,
+    colon && new ParamType(colon, ty!),
+    eq && new Initializer(eq, value!),
+    semi,
+  )
+}
+
 function stmt(stream: Stream): NodeStmt | null {
   if (stream.isDone()) {
     return null
@@ -1516,6 +1537,9 @@ function item(stream: Stream): NodeItem | null {
   switch (stream.peek()) {
     case TComment:
       return new ItemComment(comments(stream))
+
+    case KLet:
+      return itemLet(stream)!
 
     case KType:
       return itemType(stream)!

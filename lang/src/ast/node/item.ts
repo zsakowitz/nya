@@ -4,6 +4,7 @@ import type {
   KEnum,
   KExpose,
   KFn,
+  KLet,
   KLocal,
   KMatrix,
   KRule,
@@ -31,7 +32,9 @@ import type {
   FnReturnType,
   FnUsage,
   GenericParams,
+  Initializer,
   List,
+  ParamType,
   PlainList,
   Rule,
   StructFieldDecl,
@@ -81,6 +84,18 @@ export class ItemFn extends NodeItem {
       kw.start,
       (semi ?? block ?? usage ?? ret ?? params ?? tparams ?? name ?? kw).end,
     )
+  }
+}
+
+export class ItemLet extends NodeItem {
+  constructor(
+    readonly kw: Token<typeof KLet>,
+    readonly ident: Ident | null,
+    readonly type: ParamType | null,
+    readonly value: Initializer | null,
+    readonly semi: Token<typeof OSemi> | null,
+  ) {
+    super(kw.start, (semi ?? value ?? type ?? ident ?? kw).end)
   }
 }
 

@@ -42,6 +42,10 @@ export class IdMap<T> {
 export class IdMapMany<T> {
   private readonly rec: Record<number, T[]> = Object.create(null)
 
+  all() {
+    return Object.values(this.rec)
+  }
+
   get(id: GlobalId) {
     return this.rec[id.value]
   }
@@ -123,4 +127,5 @@ export class Block {
   }
 }
 
-const PRECACHED = /^(?:[+-]?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?|[$A-Za-z_]\w*)$/
+export const PRECACHED =
+  /^(?:[+-]?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?|[$A-Za-z_]\w*)$/

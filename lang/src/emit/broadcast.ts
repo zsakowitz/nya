@@ -29,7 +29,7 @@ export function canAutomaticallyBroadcast(repr: Repr) {
   return repr.type == "vec"
 }
 
-export function toScalars(value: Value, block: Block) {
+export function scalars(value: Value, block: Block) {
   return value.type.toScalars(block.cache(value, true))
 }
 
@@ -100,7 +100,7 @@ export function createUnaryBroadcastingFn(
       }
       return fromScalars(
         a.type,
-        toScalars(a, block).map((x) => new Value(js1(x.toString()), ret)),
+        scalars(a, block).map((x) => new Value(js1(x.toString()), ret)),
       )
     },
   )
@@ -204,28 +204,28 @@ export function createBinaryBroadcastingFn(
         }
       } else {
         if (rb.count > 1 && ra.count == 1) {
-          const [av] = toScalars(a, block)
+          const [av] = scalars(a, block)
           return fromScalars(
             b.type,
-            toScalars(b, block).map(
+            scalars(b, block).map(
               (b) => new Value(js1(av!.toString(), b.toString()), ret),
             ),
           )
         }
 
         if (ra.count > 1 && rb.count == 1) {
-          const [bv] = toScalars(b, block)
+          const [bv] = scalars(b, block)
           return fromScalars(
             a.type,
-            toScalars(a, block).map(
+            scalars(a, block).map(
               (a) => new Value(js1(a.toString(), bv!.toString()), ret),
             ),
           )
         }
 
         if (ra.count == rb.count) {
-          const as = toScalars(a, block)
-          const bs = toScalars(b, block)
+          const as = scalars(a, block)
+          const bs = scalars(b, block)
           return fromScalars(
             a.type,
             as.map(

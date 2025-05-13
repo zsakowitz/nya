@@ -289,11 +289,18 @@ fn end(a: Arc) -> Point {
 // "reflect"
 // "perimeter"
 
-fn main() -> Line {
-  let A = point(-5.28, 0.84);
-  let B = point(-2.64, 1.40);
-  let C = point(-0.47, 0.75);
-  let a = line(A, B);
-  let b = circle(C, 3.0);
-  perpendicular_bisector(A, B)
+fn main() -> num {
+  1.0
+}
+
+let dcg_blue = rgb { r: 0x2d / 255, g: 0x70 / 255, b: 0xb3 / 255 };
+let dcg_purple = rgb { r: 0x60 / 255, g: 0x42 / 255, b: 0xa6 / 255 };
+let dcg_green = rgb { r: 0x38 / 255, g: 0x8c / 255, b: 0x46 / 255 };
+
+fn plot(cv: Canvas, p: Segment) -> Path {
+  path
+    .move_to(p.p1.to_cv_coords(cv))
+    .line_to(p.p2.to_cv_coords(cv))
+    .stroke_color(dcg_blue)
+    .stroke_width(3)
 }

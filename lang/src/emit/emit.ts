@@ -17,6 +17,7 @@ import {
 } from "../ast/node/expr"
 import {
   ItemFn,
+  ItemLet,
   ItemStruct,
   ItemTypeAlias,
   type NodeItem,
@@ -30,7 +31,7 @@ import {
   TypeVar,
   type NodeType,
 } from "../ast/node/type"
-import { fromScalars, toScalars } from "./broadcast"
+import { fromScalars, scalars } from "./broadcast"
 import { Block, IdMap, type Declarations } from "./decl"
 import { issue, todo } from "./error"
 import { Id, ident, type GlobalId } from "./id"
@@ -97,13 +98,7 @@ export function performCall(id: GlobalId, block: Block, args: Value[]): Value {
   }
 
   return overload.run(
-    args.map((x, i) => {
-      if (x.value == null) {
-        issue(`Cannot pass a void value to '${id}'.`)
-      }
-
-      return overload.args[i]!.type.convertFrom(x)
-    }),
+    args.map((x, i) => overload.args[i]!.type.convertFrom(x)),
     block,
   )
 }
@@ -456,8 +451,8 @@ function matrixMultiply(block: Block, arg1: Value, arg2: Value): Value {
       if (block.props.lang == "glsl") {
         return new Value(`(${arg1})*(${arg2})`, arg2.type)
       } else {
-        const a1scalars = toScalars(arg1, block)
-        const a2scalars = toScalars(arg2, block)
+        const a1scalars = scalars(arg1, block)
+        const a2scalars = scalars(arg2, block)
         a1scalars // [c1r1 c1r2 .. c1rn] .. [cnr1 cnr2 .. cnrn]
         a2scalars // r1 r2 r3 ..
 
@@ -521,14 +516,15 @@ function emitStmt(node: NodeStmt, block: Block): Value {
     if (type) {
       value = emitType(type.type, block.decl).convertFrom(value)
     }
-    if (value.type.repr.type == "void") {
-      todo(`'let' statements cannot have void values.`)
-    }
     const gid = ident(identName.val)
     const lid = new Id(identName.val)
+    if (value.type.repr.type == "void") {
+      block.locals.set(gid, new Value(0, value.type))
+      return new Value(0, block.decl.void)
+    }
     block.locals.set(gid, new Value(lid.ident(), value.type, true))
     block.source += `${block.lang == "glsl" ? value.type.emit : "var"} ${lid.ident()}=${value};`
-    return new Value(null, block.decl.void)
+    return new Value(0, block.decl.void)
   } else {
     todo(`Cannot emit '${node.constructor.name}' as a statement yet.`)
   }
@@ -667,6 +663,37 @@ export function emitItem(node: NodeItem, decl: Declarations): ItemResult {
           return new Value(expr, ret)
         })
 
+    decl.fns.push(gid, fn)
+    return {
+      decl: body,
+      declNya: [{ name: fn.id.label, of: fn.declaration(), kind: "fn" }],
+    }
+  } else if (node instanceof ItemLet) {
+    const fname = node.ident?.val
+    if (fname == null) {
+      issue(`'let' declaration is missing a name.`)
+    }
+    if (!node.value) {
+      issue(`Function '${fname}' is missing its contents.`)
+    }
+    const expected = node.type ? emitType(node.type.type, decl) : null
+    const locals = new IdMap<Value>(null)
+    const block = new Block(decl, locals)
+    let value = emitExpr(node.value.value, block)
+    if (expected) value = expected.convertFrom(value)
+    const ret = value.type
+    const lid = new Id(fname)
+    const gid = ident(fname)
+    const lident = lid.ident()
+    const body =
+      decl.props.lang == "glsl" ?
+        `${ret.emit} ${lident}() {${block.source}${returnValue(value)}} // ${fname}`
+      : `function ${lident}() {${block.source}${returnValue(value)}} // ${fname}`
+    const fn =
+      block.source == "" && value.const() ?
+        // Non-side-effecting constant optimization
+        new Fn(gid, [], ret, () => value)
+      : new Fn(gid, [], ret, () => new Value(`${lident}()`, ret))
     decl.fns.push(gid, fn)
     return {
       decl: body,

@@ -1,7 +1,7 @@
 import { bug } from "./error"
 import type { Type } from "./type"
 
-export type ConstValue = number | boolean | ConstValue[]
+export type ConstValue = number | boolean | { data: unknown } | ConstValue[]
 
 export class Value {
   constructor(
@@ -28,5 +28,9 @@ export class Value {
       bug("A null value was produced while printing a value.")
     }
     return val
+  }
+
+  toScalars() {
+    return this.type.toScalars(this)
   }
 }

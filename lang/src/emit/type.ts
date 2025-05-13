@@ -29,12 +29,19 @@ export interface FnType {
   toString(): string
 }
 
+export type FnParam = { name: string; type: FnType }
+export type FnExec = (args: Value[], block: Block) => Value
+
+export function fn(id: Id, args: FnParam[], ret: FnType, run: FnExec) {
+  return new Fn(id, args, ret, run)
+}
+
 export class Fn {
   constructor(
     readonly id: Id,
-    readonly args: { name: string; type: FnType }[],
+    readonly args: FnParam[],
     readonly ret: FnType,
-    readonly run: (args: Value[], block: Block) => Value,
+    readonly run: FnExec,
   ) {}
 
   toString() {

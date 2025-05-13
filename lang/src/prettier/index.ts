@@ -16,7 +16,9 @@ export interface Subprint {
   sub(a: K, b: K): Doc
   all(k: K): Doc[]
   paren(k: K, force?: boolean): Doc
+  runParen(v: unknown, force?: boolean): Doc
   as(k: K | K[], f: () => Doc): Doc
+  run(v: unknown): Doc
   source: string
 }
 
@@ -44,6 +46,8 @@ export function printVanilla(node: Node, source: string) {
   function sp(k: keyof any): Doc {
     return go((current as any)[k])
   }
+
+  sp.run = go
 
   sp.alt = (k: keyof any, v: Doc): Doc => {
     let next: any = (current as any)[k]
@@ -84,6 +88,25 @@ export function printVanilla(node: Node, source: string) {
 
   sp.paren = (k: keyof any, force: boolean): Doc => {
     const next = (current as any)[k]
+    const doc = go(next)
+
+    if (next instanceof List || next instanceof PlainList) {
+      return doc
+    }
+
+    if (force) {
+      return group(["(", indent([softline, doc]), softline, ")"])
+    }
+
+    return group([
+      ifBreak("("),
+      indent([softline, doc]),
+      softline,
+      ifBreak(")"),
+    ])
+  }
+
+  sp.runParen = (next: any, force: boolean): Doc => {
     const doc = go(next)
 
     if (next instanceof List || next instanceof PlainList) {

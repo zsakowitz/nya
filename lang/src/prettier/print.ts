@@ -121,6 +121,7 @@ import {
   ItemEnumMap,
   ItemExpose,
   ItemFn,
+  ItemLet,
   ItemRule,
   ItemStruct,
   ItemType,
@@ -151,6 +152,7 @@ const {
   hardlineWithoutBreakParent,
   lineSuffix,
   fill,
+  breakParent,
 } = builders
 
 const BEq = 1
@@ -593,13 +595,27 @@ export function print(node: Node | Token<number>, sb: Subprint): Doc {
         self.value ? [" ", sb.paren("value")] : "",
       ]
     }
-    case ExprProp:
-      return [
-        sb.paren("on", needsParensBeforeSuffix((node as ExprProp).on)),
-        sb("prop"),
-        sb.opt("targs"),
-        sb.opt("args"),
-      ]
+    case ExprProp: {
+      let self = node as NodeExpr
+      const suffixes: Doc[] = []
+      while (self instanceof ExprProp) {
+        suffixes.unshift([
+          softline,
+          sb.run(self.prop),
+          self.targs ? sb.run(self.targs) : "",
+          self.args ? sb.run(self.args) : "",
+        ])
+        self = self.on
+        while (self instanceof ExprParen) {
+          self = self.of.value
+        }
+      }
+      return group([
+        suffixes.length > 2 ? breakParent : "",
+        sb.runParen(self, needsParensBeforeSuffix(self)),
+        indent(suffixes),
+      ])
+    }
     case ExprCall:
       return [
         sb.paren("on", needsParensBeforeSuffix((node as ExprProp).on)),
@@ -866,6 +882,7 @@ export function print(node: Node | Token<number>, sb: Subprint): Doc {
       ])
     }
     case StmtLet:
+    case ItemLet:
       return [
         sb("kw"),
         " ",
