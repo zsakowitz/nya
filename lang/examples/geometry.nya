@@ -63,7 +63,24 @@ fn directed_angle(p1: Point, p2: Point, p3: Point) -> DirectedAngle {
 fn distance(p1: Point, p2: Point) -> num {
   @length(p1 @- p2)
 }
-// line-point distance
+
+//! https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
+fn distance(l: Line, p: Point) -> num {
+  let x1 = l.p1.x;
+  let y1 = l.p1.y;
+  let x2 = l.p2.x;
+  let y2 = l.p2.y;
+
+  let x0 = p.x;
+  let y0 = p.y;
+
+  abs((y2 - y1) * x0 - (x2 - x1) * y0 + x2 * y1 - y2 * x1)
+    / distance(l.p1, l.p2)
+}
+
+fn distance(p: Point, l: Line) -> num {
+  distance(l, p)
+}
 
 fn length(s: Segment | Vector) -> num {
   distance(s.p1, s.p2)
@@ -234,7 +251,23 @@ fn intersection(a: Circle, b: Circle) -> Point {
   intersection(a, b, 1)
 }
 
-// "distance"
+fn glider(a: Circle, at: num) -> Point {
+  let at = @clamp(at, 0.0, 1.0);
+  Point { x: a.center.x + cos(2 * pi * at), y: a.center.y + sin(2 * pi * at) }
+}
+
+fn glider(l: Line, at: num) -> Point {
+  @mix(l.p1, l.p2, at)
+}
+
+fn glider(l: Ray, at: num) -> Point {
+  @mix(l.p1, l.p2, @max(0.0, at))
+}
+
+fn glider(l: Segment, at: num) -> Point {
+  @mix(l.p1, l.p2, @clamp(at, 0.0, 1.0))
+}
+
 // "glider"
 // "intersection"
 // "polygon"

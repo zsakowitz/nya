@@ -179,6 +179,8 @@ export function createStdlib(props: EmitProps) {
   const hypotId = new Id("Math.hypot").ident()
   const absId = new Id("Math.abs").ident()
   const isFiniteId = new Id("is_finite").ident()
+  const minId = new Id("Math.min").ident()
+  const maxId = new Id("Math.max").ident()
 
   const fns: Fn[] = [
     // Non-constants for testing purposes
@@ -259,6 +261,57 @@ export function createStdlib(props: EmitProps) {
         num,
       )
     }),
+    new Fn(g("min"), [anum, bnum], num, ([a, b]) => {
+      if (a!.const() && b!.const()) {
+        return new Value(Math.min(a.value as number, b.value as number), num)
+      }
+      if (props.lang != "glsl") {
+        decl.global(`const ${minId}=Math.min;`)
+      }
+      return new Value(
+        props.lang == "glsl" ? `min(${a},${b})` : `${minId}(${a},${b})`,
+        num,
+      )
+    }),
+    new Fn(g("max"), [anum, bnum], num, ([a, b]) => {
+      if (a!.const() && b!.const()) {
+        return new Value(Math.max(a.value as number, b.value as number), num)
+      }
+      if (props.lang != "glsl") {
+        decl.global(`const ${maxId}=Math.max;`)
+      }
+      return new Value(
+        props.lang == "glsl" ? `max(${a},${b})` : `${maxId}(${a},${b})`,
+        num,
+      )
+    }),
+    new Fn(
+      g("clamp"),
+      [
+        { name: "value", type: num },
+        { name: "min", type: num },
+        { name: "max", type: num },
+      ],
+      num,
+      ([a, min, max]) => {
+        if (a!.const() && min!.const() && max!.const()) {
+          return new Value(
+            Math.min(
+              Math.max(a.value as number, min.value as number),
+              max.value as number,
+            ),
+            num,
+          )
+        }
+        if (props.lang == "glsl") {
+          return new Value(`clamp(${a},${min},${max})`, num)
+        }
+
+        decl.global(`const ${minId}=Math.min;`)
+        decl.global(`const ${maxId}=Math.max;`)
+        return new Value(`${minId}(${maxId}(${a},${min}),${max})`, num)
+      },
+    ),
     new Fn(g("~="), [lnum, rnum], bool, ([l, r]) => {
       if (l!.const() && r!.const()) {
         return new Value(
@@ -449,7 +502,7 @@ export function createStdlib(props: EmitProps) {
       },
     ),
     new Fn(
-      g("@log"),
+      g("@debuglog"),
       [{ name: "value", type: new AnyVector("float") }],
       new AnyVector("float"),
       (raw, block) => {
