@@ -407,9 +407,44 @@ export function createStdlib(props: EmitProps) {
         // js path
         const s0 = toScalars(val, block)
         decl.global(`const ${hypotId}=Math.hypot;`)
-        return new Value(
-          `${hypotId}(${s0.map((x) => x.toString()).join(",")})`,
-          num,
+        return new Value(`${hypotId}(${s0.join(",")})`, num)
+      },
+    ),
+    new Fn(
+      g("@norm"),
+      [{ name: "value", type: new AnyVector("float") }],
+      new AnyVector("float"),
+      (raw, block) => {
+        const val = raw[0]!
+
+        // const path
+        if (val.const()) {
+          const s0 = toScalars(val, block)
+          if (s0.every((x) => x.value === 0)) {
+            return val
+          }
+          const hypot = Math.hypot(...s0.map((a) => a.value as number))
+          return fromScalars(
+            val.type,
+            s0.map((a) => new Value((a.value as number) / hypot, num)),
+          )
+        }
+
+        // glsl path
+        if (block.lang == "glsl") {
+          return new Value(`norm(${val})`, val.type)
+        }
+
+        // js path
+        const s0 = toScalars(val, block)
+        decl.global(`const ${hypotId}=Math.hypot;`)
+        const hy = block.cache(
+          new Value(`${hypotId}(${s0.join(",")})`, num),
+          true,
+        )
+        return fromScalars(
+          val.type,
+          s0.map((x) => new Value(`(${x})/${hy}`, num)),
         )
       },
     ),
