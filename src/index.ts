@@ -1,6 +1,8 @@
 import "./page/index.dist.css"
 
-if (location.href.includes("nyalang")) {
+if (location.href.includes("nyalangcv")) {
+  await import("../lang/src/play/withcv")
+} else if (location.href.includes("nyalang")) {
   await import("../lang/src/play/preview")
 } else {
   try {
