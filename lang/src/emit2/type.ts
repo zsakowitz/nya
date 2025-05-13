@@ -389,7 +389,30 @@ function ${lident}(${nvFields
 
     // GLSL matrix optimization
     if (lang == "glsl" && this.repr.type == "mat") {
-      todo("Matrix-repr'd structs are not allowed yet.")
+      let index = 0
+      return this.#fields.map(({ name, type }) => {
+        const idx =
+          type.repr.type == "vec" ? index++
+          : type.repr.type == "void" ? null
+          : bug(
+              "Structs with a matrix representation can only contain void items and vectors.",
+            )
+
+        return new Fn(
+          ident(name),
+          arg,
+          type,
+          idx == null ?
+            () => new Value(0, type)
+          : ([a]): Value => {
+              if (a!.const()) {
+                return new Value((a.value as ConstValue[])[idx]!, type)
+              } else {
+                return new Value(a!.toString() + `[${idx}]`, type)
+              }
+            },
+        )
+      })
     }
 
     // Plain struct representation
