@@ -92,6 +92,10 @@ fn midpoint(s: Segment) -> Point {
   @mix(s.p1, s.p2, 0.5)
 }
 
+fn midpoint(p1: Point, p2: Point) -> Point {
+  @mix(p1, p2, 0.5)
+}
+
 struct Circle {
   center: Point,
   radius: num,
@@ -127,6 +131,8 @@ fn intersection(l1: AnyLine, l2: AnyLine) -> Point {
   let x4 = l2.p2.x;
   let y4 = l2.p2.y;
 
+  let d = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
+
   let x1y2 = x1 * y2;
   let x2y1 = y1 * x2;
   let x3y4 = x3 * y4;
@@ -138,7 +144,23 @@ fn intersection(l1: AnyLine, l2: AnyLine) -> Point {
   };
 
   // TODO: optimize this as a determinant call
-  base @/ ((x1 - x2) * (y3 - y4) - (y1 - y3) * (x3 - x4))
+  base @/ d
+}
+
+fn circle(arc: Arc) -> Circle {
+  let p1 = arc.p1;
+  let p2 = arc.p2;
+  let p3 = arc.p3;
+
+  let l1a = midpoint(p1, p2);
+  let l1b = point(l1a.x - (p2.y - p1.y), l1a.y + (p2.x - p1.x));
+  let l2a = midpoint(p3, p2);
+  let l2b = point(l2a.x - (p2.y - p3.y), l2a.y + (p2.x - p3.x));
+
+  let c = intersection(Line { p1: l1a, p2: l1b }, Line { p1: l2a, p2: l2b });
+  let r = @length(c @- p1);
+
+  Circle { center: c, radius: r }
 }
 
 //! https://stackoverflow.com/a/37225895
@@ -182,10 +204,6 @@ fn intersection(c1: Circle, c2: Circle, which: num) -> Point {
   // TODO: dot product
   let d = sqrt(dx * dx + dy * dy);
 
-  @log(r0);
-  @log(r1);
-  @log(d);
-
   // circles do not intersect
   if d > r0 + r1 || d < abs(r0 - r1) || d == 0 && r0 == r1 {
     point(nan, nan)
@@ -216,13 +234,9 @@ fn intersection(c1: Circle, c2: Circle, which: num) -> Point {
 // "reflect"
 // "perimeter"
 
-fn main() -> Point {
-  let x0 = point(-5.28, 0.84);
-  let x1 = point(-2.14, 1.23);
-  let x2 = circle(x0, x1);
-  let x3 = point(-0.62, -0.29);
-  let x4 = point(-3.79, 0.53);
-  let x5 = circle(x3, x4);
-  let x6 = intersection(x2, x5, 1);
-  x6
+fn main() -> Circle {
+  let A = point(-5.28, 0.84);
+  let B = point(-2.64, 1.40);
+  let C = point(-0.47, 0.75);
+  arc(A, B, C).circle
 }

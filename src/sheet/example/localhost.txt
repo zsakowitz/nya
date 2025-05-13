@@ -1,18 +1,11 @@
-A=\left[\token{5},\token{6},\token{7},\token{8},\token{9}\right]
-\token{5}=\left(-21.59,17.96\right)
-\token{6}=\left(6.29,19.09\right)
-\token{7}=\left(-8.19,-5.01\right)
-\token{8}=\left(7.71,-3.17\right)
-\token{9}=\left(-6.19,7.18\right)
-a=\operatorname{forcejs}\left(a\operatorname{with}\operatorname{iterate}^{A.\operatorname{count}}a\to \operatorname{join}\left(a,n\right),n\to n+1\operatorname{from}a=\left[\right],n=1\right)
-\operatorname{hsv}\left(\frac{360c}{A.\operatorname{count}},1,1\right)\operatorname{with}c=\operatorname{firstvalid}\left(\left\{m=q.x:q.y\right\}\operatorname{for}q=q\right)\operatorname{with}m=\operatorname{min}\left(q.x\right)\operatorname{with}q=\left(\operatorname{distance}\left(A,p.\operatorname{point}\right),a,A.x,A.y\right)
-
-\token{10}=\left(-1745000,-2211000\right)
-\token{11}=\left(97700,17090\right)
-a<\left|\operatorname{exp}\frac{p-\token{10}.\operatorname{complex}}{\token{11}.\operatorname{complex}-p}\right|<e
-a=e^{-3}
-\token{12}=\operatorname{midpoint}\left(\token{16},\token{11}\right)
-\token{13}=\operatorname{circle}\left(\token{12},\token{11}\right)
-\token{14}=\operatorname{rotate}\left(\token{12},\token{11},\pi \right)
-\token{15}=\operatorname{circle}\left(\token{14},\token{11}\right)
-\token{16}=\operatorname{glider}\left(\operatorname{line}\left(\token{11},\token{10}\right),.5\right)
+A=\left(-5.28,0.84\right)
+B=\left(-2.64,1.4\right)
+C=\left(-0.47,0.75\right)
+l_{1a}=\operatorname{midpoint}\left(A,B\right)
+l_{1b}=\left(l_{1a}.x-\left(B.y-A.y\right),l_{1a}.y+\left(B.x-A.x\right)\right)
+l_{2a}=\operatorname{midpoint}\left(C,B\right)
+l_{2b}=\left(l_{2a}.x-\left(B.y-C.y\right),l_{2a}.y+\left(B.x-C.x\right)\right)
+\token{0}=\operatorname{line}\left(l_{1a},l_{1b}\right)
+\token{1}=\operatorname{line}\left(l_{2a},l_{2b}\right)
+\token{2}=\operatorname{intersection}\left(\token{0},\token{1}\right)
+\left|\token{2}-A\right|
