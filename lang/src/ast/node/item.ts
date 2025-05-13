@@ -13,6 +13,7 @@ import type {
   OArrowRet,
   OColon,
   ODotDot,
+  OEq,
   OLBrace,
   OSemi,
   TString,
@@ -31,6 +32,7 @@ import type {
   FnUsage,
   GenericParams,
   List,
+  PlainList,
   Rule,
   StructFieldDecl,
 } from "./extra"
@@ -49,6 +51,18 @@ export class ItemType extends NodeItem {
     readonly source: Source | null,
   ) {
     super(kw.start, (braces ?? ident ?? kw).end)
+  }
+}
+
+export class ItemTypeAlias extends NodeItem {
+  constructor(
+    readonly kw: Token<typeof KType>,
+    readonly ident: Ident | null,
+    readonly eq: Token<typeof OEq> | null,
+    readonly of: NodeType,
+    readonly semi: Token<typeof OSemi> | null,
+  ) {
+    super(kw.start, (semi ?? of).end)
   }
 }
 
@@ -119,11 +133,11 @@ export class ItemEnumMap extends NodeItem {
 export class ItemStruct extends NodeItem {
   constructor(
     readonly kw: Token<typeof KStruct | typeof KMatrix>,
-    readonly name: Ident | null,
+    readonly name: PlainList<Ident>,
     readonly tparams: GenericParams | null,
     readonly fields: List<StructFieldDecl, Token<typeof ODotDot> | null> | null,
   ) {
-    super(kw.start, (fields ?? tparams ?? name ?? kw).end)
+    super(kw.start, (fields ?? tparams ?? name).end)
   }
 }
 

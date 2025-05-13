@@ -1,142 +1,169 @@
-struct point {
+struct Point {
   x: num,
   y: num,
 }
 
-fn point(x: num, y: num) -> point {
-  point { x, y }
+fn point(x: num, y: num) -> Point {
+  Point { x, y }
 }
 
-struct line {
-  p1: point,
-  p2: point,
+// Special syntax to declare multiple structs with the exact same layout.
+// Especially useful for geometry functions, which are polymorphic over the
+// various types of line and angle.
+struct Line, Vector, Segment, Ray {
+  p1: Point,
+  p2: Point,
 }
 
-fn line(p1: point, p2: point) -> line {
-  line { p1, p2 }
+type AnyLine = Line | Vector | Segment | Ray;
+
+fn line(p1: Point, p2: Point) -> Line {
+  Line { p1, p2 }
 }
 
-struct vector {
-  p1: point,
-  p2: point,
+fn vector(p1: Point, p2: Point) -> Vector {
+  Vector { p1, p2 }
 }
 
-fn vector(p1: point, p2: point) -> vector {
-  vector { p1, p2 }
+fn segment(p1: Point, p2: Point) -> Segment {
+  Segment { p1, p2 }
 }
 
-struct segment {
-  p1: point,
-  p2: point,
+fn ray(p1: Point, p2: Point) -> Ray {
+  Ray { p1, p2 }
 }
 
-fn segment(p1: point, p2: point) -> segment {
-  segment { p1, p2 }
+struct Arc {
+  p1: Point,
+  p2: Point,
+  p3: Point,
 }
 
-struct ray {
-  p1: point,
-  p2: point,
+fn arc(p1: Point, p2: Point, p3: Point) -> Arc {
+  Arc { p1, p2, p3 }
 }
 
-fn ray(p1: point, p2: point) -> ray {
-  ray { p1, p2 }
+struct Angle, DirectedAngle {
+  p1: Point,
+  p2: Point,
+  p3: Point,
 }
 
-struct arc {
-  p1: point,
-  p2: point,
-  p3: point,
+type AnyAngle = Angle | DirectedAngle;
+
+fn angle(p1: Point, p2: Point, p3: Point) -> Angle {
+  Angle { p1, p2, p3 }
 }
 
-fn arc(p1: point, p2: point, p3: point) -> arc {
-  arc { p1, p2, p3 }
+fn directed_angle(p1: Point, p2: Point, p3: Point) -> DirectedAngle {
+  DirectedAngle { p1, p2, p3 }
 }
 
-struct angle {
-  p1: point,
-  p2: point,
-  p3: point,
-}
-
-fn angle(p1: point, p2: point, p3: point) -> angle {
-  angle { p1, p2, p3 }
-}
-
-struct directed_angle {
-  p1: point,
-  p2: point,
-  p3: point,
-}
-
-fn directed_angle(p1: point, p2: point, p3: point) -> directed_angle {
-  directed_angle { p1, p2, p3 }
-}
-
-fn distance(p1: point, p2: point) -> num {
+fn distance(p1: Point, p2: Point) -> num {
   @length(p1 @- p2)
 }
 // line-point distance
 
-fn length(s: segment) -> num {
+fn length(s: Segment | Vector) -> num {
   distance(s.p1, s.p2)
 }
 
-fn glider(pt: line, at: num) -> point {
+fn glider(pt: Line, at: num) -> Point {
   @mix(pt.p1, pt.p2, at)
 }
 
-fn start(v: vector) -> point {
+fn start(v: Vector) -> Point {
   v.p1
 }
 
-fn end(v: vector) -> point {
+fn end(v: Vector) -> Point {
   v.p2
 }
 
-fn anglebisector(v: angle) -> ray {
-  ray {
+fn anglebisector(v: AnyAngle) -> Ray {
+  Ray {
     p1: v.p2,
     p2: @norm(@norm(v.p1 @- v.p2) @+ @norm(v.p3 @- v.p2)) @+ v.p2,
   }
 }
 
-// maybe use an @as primitive?
-fn anglebisector(v: directed_angle) -> ray {
-  ray {
-    p1: v.p2,
-    p2: @norm(@norm(v.p1 @- v.p2) @+ @norm(v.p3 @- v.p2)) @+ v.p2,
-  }
-}
-
-fn midpoint(s: segment) -> point {
+fn midpoint(s: Segment) -> Point {
   @mix(s.p1, s.p2, 0.5)
 }
 
-struct circle {
-  center: point,
+struct Circle {
+  center: Point,
   radius: num,
 }
 
-fn circle(center: point, radius: num) -> circle {
-  circle { center, radius }
+fn circle(center: Point, radius: num) -> Circle {
+  Circle { center, radius }
 }
 
-// TODO: how to avoid duplicating code so many times
-fn parallel(l: line, p: point) -> line {
-  line { p1: p, p2: l.p2 @- l.p1 @+ p }
+fn circle(center: Point, point_on_radius: Point) -> Circle {
+  Circle { center, radius: distance(center, point_on_radius) }
 }
 
-fn parallel(l: segment, p: point) -> line {
-  line { p1: p, p2: l.p2 @- l.p1 @+ p }
+fn parallel(l: AnyLine, p: Point) -> Line {
+  Line { p1: p, p2: l.p2 @- l.p1 @+ p }
 }
 
-fn parallel(l: ray, p: point) -> line {
-  line { p1: p, p2: l.p2 @- l.p1 @+ p }
+fn perpendicular(l: AnyLine, p: Point) -> Line {
+  Line {
+    p1: p,
+    p2: Point { x: p.x + l.p2.y - l.p1.y, y: p.y + l.p1.x - l.p2.x },
+  }
 }
 
-fn parallel(l: vector, p: point) -> line {
-  line { p1: p, p2: l.p2 @- l.p1 @+ p }
+fn intersection(l1: AnyLine, l2: AnyLine) -> Point {
+  let x1 = l1.p1.x;
+  let y1 = l1.p1.y;
+  let x2 = l1.p2.x;
+  let y2 = l1.p2.y;
+
+  let x3 = l2.p1.x;
+  let y3 = l2.p1.y;
+  let x4 = l2.p2.x;
+  let y4 = l2.p2.y;
+
+  let x1y2 = x1 * y2;
+  let x2y1 = y1 * x2;
+  let x3y4 = x3 * y4;
+  let x4y3 = y3 * x4;
+
+  let base = Point {
+    x: (x1y2 - x2y1) * (x3 - x4) - (x1 - x2) * (x3y4 - x4y3),
+    y: (x1y2 - x2y1) * (y3 - y4) - (y1 - y2) * (x3y4 - x4y3),
+  };
+
+  // TODO: optimize this as a determinant call
+  base @/ ((x1 - x2) * (y3 - y4) - (y1 - y3) * (x3 - x4))
+}
+
+//! https://stackoverflow.com/a/37225895
+// `which` should be -1 | 1
+fn intersection(l: AnyLine, c: Circle, which: num) -> Point {
+  let cx = c.center.x;
+  let cy = c.center.y;
+  let r = c.radius;
+
+  let x1 = l.p1.x;
+  let y1 = l.p1.y;
+  let x2 = l.p2.x;
+  let y2 = l.p2.y;
+
+  let v1 = l.p2 @- l.p1;
+  let v2 = l.p1 @- c.center;
+
+  let b = -2.0 * (v1.x * v2.x + v1.y * v2.y);
+  let c = 2.0 * (v1.x * v1.x + v1.y * v1.y);
+  let d = sqrt(b * b - 2.0 * c * (v2.x * v2.x + v2.y * v2.y - r * r));
+
+  if is_nan(d) {
+    point(nan, nan)
+  } else {
+    l.p1 @+ v1 @* ((b + which * d) / c)
+  }
 }
 
 // circle
@@ -146,7 +173,6 @@ fn parallel(l: vector, p: point) -> line {
 // "distance"
 // "glider"
 // "intersection"
-// "perpendicular"
 // "polygon"
 // "segments"
 // "vertices"
@@ -159,9 +185,11 @@ fn parallel(l: vector, p: point) -> line {
 // "reflect"
 // "perimeter"
 
-fn main() -> ray {
+fn main() -> Point {
   let a = point(2.0, 3.0);
-  let b = point(7, -4);
-  let c = point(3.5, -1);
-  anglebisector(angle(a, b, c))
+  let b = point(7.0, -4.0);
+  let c = point(3.5, -1.0);
+  let d = point(5.0, 2.0);
+  let e = point(-9.0, -6.0);
+  line(a, b).intersection(circle(c, d), 1)
 }

@@ -85,6 +85,7 @@ export class Struct implements TypeBase {
     name: string,
     fields: { name: string; type: Type }[],
     matrix: boolean,
+    group: Id,
   ) {
     const nvFields = fields.filter((x) => x.type.repr.type != "void")
 
@@ -102,7 +103,7 @@ export class Struct implements TypeBase {
         [],
         [],
         fields,
-        props,
+        group,
       )
     }
 
@@ -115,7 +116,7 @@ export class Struct implements TypeBase {
         nvIndices,
         nvFields.map((x) => x.type),
         fields,
-        props,
+        group,
       )
     }
 
@@ -150,7 +151,7 @@ export class Struct implements TypeBase {
           nvIndices,
           nvFields.map((x) => x.type),
           fields,
-          props,
+          group,
         )
       }
     }
@@ -188,7 +189,7 @@ export class Struct implements TypeBase {
           nvIndices,
           nvFields.map((x) => x.type),
           fields,
-          props,
+          group,
         )
       }
     }
@@ -205,7 +206,7 @@ export class Struct implements TypeBase {
       nvIndices,
       nvFields.map((x) => x.type),
       fields,
-      props,
+      group,
     )
     const fn = new Fn(lid, fields, struct, (args) => {
       const vals = nvIndices.map((i) => args[i]!)
@@ -236,13 +237,14 @@ function ${lident}(${nvFields
     name: string,
     fields: { name: string; type: Type }[],
     matrix: boolean,
+    group: Id,
   ): {
     struct: Struct
     fn?: Fn
     decl?: string
     declTyOnly?: string
   } {
-    const ret = Struct.#of(props, name, fields, matrix)
+    const ret = Struct.#of(props, name, fields, matrix, group)
     if (ret instanceof Struct) {
       return { struct: ret }
     } else {
@@ -254,23 +256,26 @@ function ${lident}(${nvFields
   readonly #nvFields
   readonly #fields
   readonly #fieldNames
-  readonly #accessors
+  #accessors!: readonly Fn[]
 
   private constructor(
-    readonly name: string,
+    public name: string,
     readonly emit: string,
     readonly repr: Repr,
     _isVoid: boolean,
     nvIndices: readonly number[],
     nvFields: readonly Type[],
     fields: readonly { name: string; type: Type }[],
-    props: EmitProps,
+    readonly group: Id,
   ) {
     this.#nvIndices = nvIndices
     this.#nvFields = nvFields
     this.#fields = fields
     this.#fieldNames = fields.map((x) => x.name)
-    this.#accessors = this.generateFieldAccessors(props)
+  }
+
+  createAccessors(props: EmitProps, argumentType: FnType) {
+    return (this.#accessors = this.#generateFieldAccessors(props, argumentType))
   }
 
   with(args: Value[]): Value {
@@ -323,8 +328,11 @@ function ${lident}(${nvFields
     })
   }
 
-  generateFieldAccessors(props: EmitProps): readonly Fn[] {
-    const arg = [{ name: "target", type: this }]
+  #generateFieldAccessors(
+    props: EmitProps,
+    argumentType: FnType,
+  ): readonly Fn[] {
+    const arg = [{ name: "target", type: argumentType }]
 
     // Void optimization
     if (this.#nvFields.length == 0) {
@@ -562,4 +570,76 @@ export class Array implements TypeBase {
   }
 }
 
-export type Type = Scalar | Struct | Array | typeof ArrayEmpty
+function isSubset(expectedSuper: Type[], expectedSub: Type[]) {
+  for (const el of expectedSub) {
+    if (!expectedSuper.includes(el)) {
+      return false
+    }
+  }
+
+  return true
+}
+
+export class Alt implements TypeBase {
+  readonly a: Struct
+
+  constructor(readonly alts: Struct[]) {
+    if (alts.length < 2) {
+      bug(`An Alt must have at least two types.`)
+    }
+
+    const a = (this.a = alts[0]!)
+    if (!alts.every((x) => x.group == a.group)) {
+      issue(
+        `A type with alternatives may only be composed of structs created in a single declaration.`,
+      )
+    }
+    this.repr = a.repr
+    this.emit = a.emit
+  }
+
+  readonly repr: Repr
+  readonly emit: string
+
+  toScalars(value: Value): Value[] {
+    return this.a.toScalars(value)
+  }
+
+  fromScalars(values: Value[]): Value {
+    return new Value(this.a.fromScalars(values).value, this)
+  }
+
+  canConvertFrom(type: Type): boolean {
+    if (type instanceof Alt) {
+      return isSubset(this.alts, type.alts)
+    }
+
+    return this.alts.includes(type as any)
+  }
+
+  convertFrom(value: Value): Value {
+    if (value.type instanceof Alt) {
+      if (isSubset(this.alts, value.type.alts)) {
+        return value
+      }
+    }
+
+    for (const alt of this.alts) {
+      if (alt == value.type) {
+        return value
+      }
+    }
+
+    invalidType(this, value.type)
+  }
+
+  toRuntime(value: ConstValue): string | null {
+    return this.a.toRuntime(value)
+  }
+
+  toString(): string {
+    return this.alts.join(" | ")
+  }
+}
+
+export type Type = Scalar | Struct | Array | Alt | typeof ArrayEmpty

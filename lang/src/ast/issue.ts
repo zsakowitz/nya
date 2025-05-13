@@ -48,6 +48,7 @@ export const Code = Object.freeze({
   FnReturnTypeMustNotBeBlock: 247,
   CommentsMustBeItemsOrStatementsWhenPrettyPrinting: 248,
   ShouldHaveAlreadyParsedBinaryOperator: 249,
+  ExpectedEq: 250,
 
   // Emit errors
   ItemDeclaredTwice: 301,

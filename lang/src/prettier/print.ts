@@ -124,12 +124,14 @@ import {
   ItemRule,
   ItemStruct,
   ItemType,
+  ItemTypeAlias,
   ItemUse,
 } from "../ast/node/item"
 import type { Node } from "../ast/node/node"
 import { PatIgnore, PatLit, PatStruct, PatVar } from "../ast/node/pat"
 import { StmtAssert, StmtComment, StmtExpr, StmtLet } from "../ast/node/stmt"
 import {
+  TypeAlt,
   TypeArray,
   TypeBlock,
   TypeLit,
@@ -832,7 +834,14 @@ export function print(node: Node | Token<number>, sb: Subprint): Doc {
       if (v) {
         v.block = true
       }
-      return [sb("kw"), " ", sb("name"), sb.opt("tparams"), " ", sb("fields")]
+      return [
+        sb("kw"),
+        " ",
+        sb.as("name", () => join(", ", sb.all("items"))),
+        sb.opt("tparams"),
+        " ",
+        sb("fields"),
+      ]
     }
     case TypeArray:
     case ExprArrayByRepetition: {
@@ -936,6 +945,19 @@ export function print(node: Node | Token<number>, sb: Subprint): Doc {
           }
         }),
       )
+    case TypeAlt:
+      return [sb("lhs"), " ", sb("op"), " ", sb("rhs")]
+    case ItemTypeAlias:
+      return [
+        sb("kw"),
+        " ",
+        sb("ident"),
+        " ",
+        sb("eq"),
+        " ",
+        sb.paren("of"),
+        sb.alt("semi", ";"),
+      ]
   }
 
   throw new Error(

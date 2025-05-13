@@ -15,14 +15,25 @@ import {
   ExprVar,
   type NodeExpr,
 } from "../ast/node/expr"
-import { ItemAssert, ItemFn, ItemStruct, type NodeItem } from "../ast/node/item"
+import {
+  ItemFn,
+  ItemStruct,
+  ItemTypeAlias,
+  type NodeItem,
+} from "../ast/node/item"
 import { StmtExpr, StmtLet, type NodeStmt } from "../ast/node/stmt"
-import { TypeEmpty, TypeParen, TypeVar, type NodeType } from "../ast/node/type"
+import {
+  TypeAlt,
+  TypeEmpty,
+  TypeParen,
+  TypeVar,
+  type NodeType,
+} from "../ast/node/type"
 import { fromScalars, toScalars } from "./broadcast"
 import { Block, IdMap, type Declarations } from "./decl"
 import { issue, todo } from "./error"
 import { Id, ident, type GlobalId } from "./id"
-import { Array, ArrayEmpty, Fn, Struct, type Type } from "./type"
+import { Alt, Array, ArrayEmpty, Fn, Struct, type Type } from "./type"
 import { Value } from "./value"
 
 function list(a: { toString(): string }[], empty: "no arguments" | null) {
@@ -110,6 +121,22 @@ function emitType(node: NodeType, decl: Declarations): Type {
       issue(`Type '${node.name.val}' is not defined.`)
     }
     return ty
+  } else if (node instanceof TypeAlt) {
+    const lhs = emitType(node.lhs, decl)
+    const rhs = emitType(node.rhs, decl)
+    const l =
+      lhs instanceof Alt ? lhs.alts
+      : lhs instanceof Struct ? [lhs]
+      : issue(
+          `Types may only be used in a union if both types were initially declared in a single 'struct' declaration.`,
+        )
+    const r =
+      rhs instanceof Alt ? rhs.alts
+      : rhs instanceof Struct ? [rhs]
+      : issue(
+          `Types may only be used in a union if both types were initially declared in a single 'struct' declaration.`,
+        )
+    return new Alt([...l, ...r])
   } else {
     todo(`Cannot emit '${node.constructor.name}' as a type yet.`)
   }
@@ -502,42 +529,65 @@ export type ItemResult = { decl: string; declTy?: string } | null
 
 export function emitItem(node: NodeItem, decl: Declarations): ItemResult {
   if (node instanceof ItemStruct) {
-    if (!node.name) {
+    const ids = node.name.items.map((x) => ident(x.val))
+    if (ids.length == 0) {
       issue(`Missing name in struct declaration.`)
     }
-    const id = ident(node.name.val)
+    const label =
+      ids.length == 1 ? `struct '${ids[0]}'` : `structs ${list(ids, null)}`
     if (!node.fields) {
-      issue(`Missing fields when declaring struct '${id}'.`)
+      issue(`Missing fields when declaring ${label}.`)
     }
     if (node.tparams) {
       issue("Type parameters are not supported yet.")
     }
-    if (!decl.types.canDefine(id)) {
-      issue(`Type '${id}' was declared multiple times.`)
+    for (const id of ids) {
+      if (
+        !decl.types.canDefine(id) ||
+        ids.reduce((a, b) => a + +(b == id), 0) != 1
+      ) {
+        issue(`Type '${id}' was declared multiple times.`)
+      }
     }
-    const fields = []
+    const fields: { name: string; type: Type }[] = []
     for (const { name, type } of node.fields.items) {
       if (!name) {
-        issue(`Missing name for field when declaring struct '${id}'.`)
+        issue(`Missing name for field when declaring ${label}.`)
       }
       const ty = emitType(type, decl)
       fields.push({ name: name.val, type: ty })
     }
-    const result = Struct.of(
-      decl.props,
-      id.label,
-      fields,
-      node.kw.kind == KMatrix,
+    const group = new Id("struct group")
+    const result = ids.map((id) =>
+      Struct.of(decl.props, id.label, fields, node.kw.kind == KMatrix, group),
     )
-    if (node.kw.kind == KMatrix && result.struct.repr.type != "mat") {
-      issue(`Unable to create struct '${id.label}' as a matrix.`)
+    if (node.kw.kind == KMatrix && result[0]!.struct.repr.type != "mat") {
+      issue(`Unable to create ${label} as a matrix.`)
     }
-    decl.types.set(id, result.struct)
-    const fns = result.struct.generateFieldAccessors(decl.props)
-    for (const fn of fns) {
+    const type =
+      result.length == 1 ?
+        result[0]!.struct
+      : new Alt(result.map((x) => x.struct))
+    let accessors!: readonly Fn[]
+    result.forEach(
+      (x) => (accessors = x.struct.createAccessors(decl.props, type)),
+    )
+    for (let i = 0; i < ids.length; i++) {
+      decl.types.set(ids[i]!, result[i]!.struct)
+    }
+    for (const fn of accessors) {
       decl.fns.push(fn.id as GlobalId, fn)
     }
-    return result.decl ? { decl: result.decl, declTy: result.declTyOnly } : null
+    return result[0]!.decl ?
+        {
+          decl: result.map((x) => x.decl).join("\n"),
+          declTy:
+            result
+              .map((x) => x.declTyOnly)
+              .filter((x) => x)
+              .join("\n") || undefined,
+        }
+      : null
   } else if (node instanceof ItemFn) {
     const fname = node.name?.val
     if (fname == null) {
@@ -599,8 +649,21 @@ export function emitItem(node: NodeItem, decl: Declarations): ItemResult {
 
     decl.fns.push(gid, fn)
     return { decl: body }
-  } else if (node instanceof ItemAssert) {
-    return null // FIXME: emit them
+  } else if (node instanceof ItemTypeAlias) {
+    const val = node.ident?.val
+    if (!val) {
+      issue(`Missing name for type alias.`)
+    }
+
+    const id = ident(val)
+    if (!decl.types.canDefine(id)) {
+      issue(`Type '${id}' was declared twice.`)
+    }
+
+    const ty = emitType(node.of, decl)
+    decl.types.init(id, ty)
+
+    return null // TODO: should this be a ts type alias?
   } else {
     todo(`Cannot emit '${node.constructor.name}' as an item yet.`)
   }

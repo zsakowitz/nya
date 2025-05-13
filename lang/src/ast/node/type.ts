@@ -1,6 +1,7 @@
 import type {
   KFalse,
   KTrue,
+  OBar,
   OLBrack,
   OLParen,
   OSemi,
@@ -61,6 +62,16 @@ export class TypeArray extends NodeType {
     readonly sizes: PlainList<NodeExpr>,
   ) {
     super(brack.start, brack.end) // brack.end since it encloses everything
+  }
+}
+
+export class TypeAlt extends NodeType {
+  constructor(
+    readonly lhs: NodeType,
+    readonly op: Token<typeof OBar> | null,
+    readonly rhs: NodeType,
+  ) {
+    super(lhs.start, rhs.end)
   }
 }
 

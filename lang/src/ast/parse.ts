@@ -172,7 +172,7 @@ import {
   ItemFn,
   ItemRule,
   ItemStruct,
-  ItemType,
+  ItemTypeAlias,
   ItemUse,
   type NodeItem,
 } from "./node/item"
@@ -186,6 +186,7 @@ import {
   type NodeStmt,
 } from "./node/stmt"
 import {
+  TypeAlt,
   TypeArray,
   TypeBlock,
   TypeEmpty,
@@ -290,7 +291,7 @@ function typeArray(stream: Stream) {
   return new TypeArray(group, of, semi, exprs)
 }
 
-function type(stream: Stream): NodeType {
+function typeAtom(stream: Stream): NodeType {
   switch (stream.peek()) {
     case TIdent:
       return new TypeVar(stream.match(TIdent)!, typeArgs(stream))
@@ -316,6 +317,15 @@ function type(stream: Stream): NodeType {
 
   stream.raiseNext(Code.ExpectedType)
   return new TypeEmpty(stream.loc())
+}
+
+function type(stream: Stream): NodeType {
+  let lhs = typeAtom(stream)
+  let op
+  while ((op = stream.match(OBar))) {
+    lhs = new TypeAlt(lhs, op, typeAtom(stream))
+  }
+  return lhs
 }
 
 const typeArgs = createCommaOp(OLAngle, type, null)
@@ -1189,11 +1199,12 @@ function itemType(stream: Stream) {
   const kw = stream.match(KType)
   if (!kw) return null
 
-  const ident = stream.match(TIdent)
-  const braces = stream.matchGroup(OLBrace)
-  const s = braces && braces.contents.full((x) => source(x, true))
+  const ident = stream.matchOr(TIdent, Code.ExpectedIdent)
+  const eq = stream.matchOr(OEq, Code.ExpectedEq)
+  const ty = type(stream)
+  const semi = stream.matchOr(OSemi, Code.MissingSemi)
 
-  return new ItemType(kw, ident, braces, s)
+  return new ItemTypeAlias(kw, ident, eq, ty, semi)
 }
 
 function fnParam(stream: Stream) {
@@ -1361,11 +1372,16 @@ function itemEnum(stream: Stream) {
   }
 }
 
+const structNames = createUnbracketedCommaOp(
+  (s) => s.match(TIdent),
+  Code.ExpectedIdent,
+)
+
 function itemStruct(stream: Stream) {
   const kw = stream.matchAny([KStruct, KMatrix])
   if (!kw) return null
 
-  const ident = stream.matchOr(TIdent, Code.ExpectedIdent)
+  const ident = structNames(stream)
   const generics = genericParams(stream)
 
   return new ItemStruct(kw, ident, generics, structFields(stream))

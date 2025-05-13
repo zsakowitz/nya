@@ -20,7 +20,7 @@ import {
 } from "../kind"
 import type { TokenGroup } from "../stream"
 import type { Token } from "../token"
-import type { NodeExpr, ExprBlock, ExprIf } from "./expr"
+import type { ExprBlock, ExprIf, NodeExpr } from "./expr"
 import type { NodeItem } from "./item"
 import { Node, type Ident, type IdentFnName } from "./node"
 import type { NodePat } from "./pat"
