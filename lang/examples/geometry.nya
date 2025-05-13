@@ -15,7 +15,8 @@ struct Line, Vector, Segment, Ray {
   p2: Point,
 }
 
-type AnyLine = Line | Vector | Segment | Ray;
+type AnyLine = Line | Segment | Ray;
+type AnySlope = Line | Vector | Segment | Ray;
 
 fn line(p1: Point, p2: Point) -> Line {
   Line { p1, p2 }
@@ -104,11 +105,11 @@ fn circle(center: Point, point_on_radius: Point) -> Circle {
   Circle { center, radius: distance(center, point_on_radius) }
 }
 
-fn parallel(l: AnyLine, p: Point) -> Line {
-  Line { p1: p, p2: l.p2 @- l.p1 @+ p }
+fn parallel(l: Line | Segment | Vector | Ray, p: Point) -> Line {
+  Line { p1: p, p2: p @+ l.p2 @- l.p1 }
 }
 
-fn perpendicular(l: AnyLine, p: Point) -> Line {
+fn perpendicular(l: AnySlope, p: Point) -> Line {
   Line {
     p1: p,
     p2: Point { x: p.x + l.p2.y - l.p1.y, y: p.y + l.p1.x - l.p2.x },
@@ -166,6 +167,36 @@ fn intersection(l: AnyLine, c: Circle, which: num) -> Point {
   }
 }
 
+// `which` should be -1 | 1
+fn intersection(c1: Circle, c2: Circle, which: num) -> Point {
+  let x0 = c1.center.x;
+  let y0 = c1.center.y;
+  let r0 = c1.radius;
+
+  let x1 = c2.center.x;
+  let y1 = c2.center.y;
+  let r1 = c2.radius;
+
+  let dx = x1 - x0;
+  let dy = y1 - y0;
+  // TODO: dot product
+  let d = sqrt(dx * dx + dy * dy);
+
+  @log(r0);
+  @log(r1);
+  @log(d);
+
+  // circles do not intersect
+  if d > r0 + r1 || d < abs(r0 - r1) || d == 0 && r0 == r1 {
+    point(nan, nan)
+  } else {
+    // dot product
+    let a = (r0 * r0 - r1 * r1 + d * d) / (2 * d);
+    let h = sqrt(r0 * r0 - a * a);
+    c1.center @+ point(-dy, dx) @* (which * h / d) @+ point(dx, dy) @* (a / d)
+  }
+}
+
 // circle
 // polygon
 
@@ -186,10 +217,12 @@ fn intersection(l: AnyLine, c: Circle, which: num) -> Point {
 // "perimeter"
 
 fn main() -> Point {
-  let a = point(2.0, 3.0);
-  let b = point(7.0, -4.0);
-  let c = point(3.5, -1.0);
-  let d = point(5.0, 2.0);
-  let e = point(-9.0, -6.0);
-  line(a, b).intersection(circle(c, d), 1)
+  let x0 = point(-5.28, 0.84);
+  let x1 = point(-2.14, 1.23);
+  let x2 = circle(x0, x1);
+  let x3 = point(-0.62, -0.29);
+  let x4 = point(-3.79, 0.53);
+  let x5 = circle(x3, x4);
+  let x6 = intersection(x2, x5, 1);
+  x6
 }

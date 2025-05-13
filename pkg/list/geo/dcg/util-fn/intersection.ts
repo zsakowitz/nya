@@ -1,7 +1,6 @@
 import type { GlslContext } from "@/eval/lib/fn"
 import type { GlslVal, Tys, Val } from "@/eval/ty"
-import { px } from "@/lib/point"
-import { pt, ptint, ptnan, type SPoint } from "@/lib/point"
+import { pt, ptint, ptnan, px, type SPoint } from "@/lib/point"
 import { frac, int } from "@/lib/real"
 import { FN_INTERSECTION } from "../../point"
 import { computeArcVal } from "../util-arc"
@@ -162,6 +161,10 @@ function circleCircleJs(
   const dx = x1 - x0
   const dy = y1 - y0
   const d = Math.sqrt(dx * dx + dy * dy)
+
+  console.log(r0)
+  console.log(r1)
+  console.log(d)
 
   // Check for special cases
   if (d > r0 + r1) {

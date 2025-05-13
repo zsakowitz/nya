@@ -24,6 +24,7 @@ import {
 import { StmtExpr, StmtLet, type NodeStmt } from "../ast/node/stmt"
 import {
   TypeAlt,
+  TypeArray,
   TypeEmpty,
   TypeParen,
   TypeVar,
@@ -137,20 +138,29 @@ function emitType(node: NodeType, decl: Declarations): Type {
           `Types may only be used in a union if both types were initially declared in a single 'struct' declaration.`,
         )
     return new Alt([...l, ...r])
+  } else if (node instanceof TypeArray) {
+    const item = emitType(node.of, decl)
+    if (item instanceof Array || node.sizes.items.length != 1) {
+      todo(`Multidimensional arrays are not supported yet.`)
+    }
+    const count = arraySize(
+      decl.arraySize(emitExpr(node.sizes.items[0]!, new Block(decl))),
+    )
+    return new Array(decl.props, item, count)
   } else {
     todo(`Cannot emit '${node.constructor.name}' as a type yet.`)
   }
 }
 
-// function arraySize(size: number | null): number {
-//   if (size == null) {
-//     issue(
-//       `Array sizes must be constant integers; an array's size cannot depend on local variables.`,
-//     )
-//   }
-//
-//   return size
-// }
+function arraySize(size: number | null): number {
+  if (size == null) {
+    issue(
+      `Array sizes must be constant integers; an array's size cannot depend on local variables.`,
+    )
+  }
+
+  return size
+}
 
 function emitExpr(node: NodeExpr, block: Block): Value {
   if (node instanceof ExprBlock) {

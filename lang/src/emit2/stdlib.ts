@@ -448,6 +448,22 @@ export function createStdlib(props: EmitProps) {
         )
       },
     ),
+    new Fn(
+      g("@log"),
+      [{ name: "value", type: new AnyVector("float") }],
+      new AnyVector("float"),
+      (raw, block) => {
+        const val = raw[0]!
+
+        // glsl path
+        if (block.lang == "glsl") {
+          return val
+        }
+
+        block.source += `console.log(${val});`
+        return val
+      },
+    ),
   ]
 
   for (const f of fns) {

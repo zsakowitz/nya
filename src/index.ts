@@ -1,10 +1,6 @@
 import "./page/index.dist.css"
 
-if (
-  location.href.includes("nyalang") ||
-  location.href.includes("localhost") // FIXME: remove
-) {
-  // await import("../lang/src/bench")
+if (location.href.includes("nyalang")) {
   await import("../lang/src/preview")
 } else {
   try {
