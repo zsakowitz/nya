@@ -147,22 +147,6 @@ fn intersection(l1: AnyLine, l2: AnyLine) -> Point {
   base @/ d
 }
 
-fn circle(arc: Arc) -> Circle {
-  let p1 = arc.p1;
-  let p2 = arc.p2;
-  let p3 = arc.p3;
-
-  let l1a = midpoint(p1, p2);
-  let l1b = point(l1a.x - (p2.y - p1.y), l1a.y + (p2.x - p1.x));
-  let l2a = midpoint(p3, p2);
-  let l2b = point(l2a.x - (p2.y - p3.y), l2a.y + (p2.x - p3.x));
-
-  let c = intersection(Line { p1: l1a, p2: l1b }, Line { p1: l2a, p2: l2b });
-  let r = @length(c @- p1);
-
-  Circle { center: c, radius: r }
-}
-
 //! https://stackoverflow.com/a/37225895
 // `which` should be -1 | 1
 fn intersection(l: AnyLine, c: Circle, which: num) -> Point {
@@ -215,10 +199,34 @@ fn intersection(c1: Circle, c2: Circle, which: num) -> Point {
   }
 }
 
-// circle
-// polygon
+fn circle(arc: Arc) -> Circle {
+  let p1 = arc.p1;
+  let p2 = arc.p2;
+  let p3 = arc.p3;
 
-// "circle"
+  let l1a = midpoint(p1, p2);
+  let l1b = point(l1a.x - (p2.y - p1.y), l1a.y + (p2.x - p1.x));
+  let l2a = midpoint(p3, p2);
+  let l2b = point(l2a.x - (p2.y - p3.y), l2a.y + (p2.x - p3.x));
+
+  let c = intersection(Line { p1: l1a, p2: l1b }, Line { p1: l2a, p2: l2b });
+  let r = @length(c @- p1);
+
+  Circle { center: c, radius: r }
+}
+
+fn intersection(c: Circle, l: AnyLine) -> Point {
+  intersection(l, c, 1)
+}
+
+fn intersection(l: AnyLine, c: Circle) -> Point {
+  intersection(l, c, -1)
+}
+
+fn intersection(a: Circle, b: Circle) -> Point {
+  intersection(a, b, 1)
+}
+
 // "distance"
 // "glider"
 // "intersection"
@@ -234,9 +242,11 @@ fn intersection(c1: Circle, c2: Circle, which: num) -> Point {
 // "reflect"
 // "perimeter"
 
-fn main() -> Circle {
+fn main() -> Point {
   let A = point(-5.28, 0.84);
   let B = point(-2.64, 1.40);
   let C = point(-0.47, 0.75);
-  arc(A, B, C).circle
+  let a = line(A, B);
+  let b = circle(C, 3.0);
+  intersection(b, a)
 }
