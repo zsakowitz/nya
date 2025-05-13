@@ -282,8 +282,16 @@
       "patterns": [{ "include": "#root" }]
     },
     "types": {
-      "match": "\\b(?:uint|num|complex|bool|img|viewport|mathjscx|rgb|rgba|oklab|color_space_conversion|point|segment|line|ray|vector|circle|arc|polygon|angle|directed_angle|anyline|anyangle|[A-Z]\\w*)\\b",
-      "name": "entity.name.type.class.js"
+      "patterns": [
+        {
+          "match": "\\b(?:[A-Z]\\w*)\\b",
+          "name": "entity.name.type.class.js"
+        },
+        {
+          "match": "\\b(?:uint|num|complex|bool|img|viewport|mathjscx|rgb|rgba|oklab|color_space_conversion)\\b",
+          "name": "support"
+        }
+      ]
     }
   },
   "scopeName": "source.nya"
