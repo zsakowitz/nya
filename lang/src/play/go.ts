@@ -36,7 +36,7 @@ function emitGl() {
   ]
     .filter((x) => x)
     .join("\n")
-  writeFileSync(new URL("./compiled.glsl", import.meta.url), a)
+  writeFileSync(new URL("./compiled.glsl", import.meta.url), a + "\n")
 }
 
 function emitJs(lang: Lang) {
@@ -96,8 +96,8 @@ function emitJs(lang: Lang) {
     .join("\n\n")
   const nyaDecl =
     nyaDecl1 && nyaDecl2 ? nyaDecl1 + "\n\n" + nyaDecl2 : nyaDecl1 || nyaDecl2
-  writeFileSync(new URL("./compiled.js", import.meta.url), a)
-  writeFileSync(new URL("./compiled.nya", import.meta.url), nyaDecl)
+  writeFileSync(new URL("./compiled.js", import.meta.url), a + "\n")
+  writeFileSync(new URL("./compiled.nya", import.meta.url), nyaDecl + "\n")
   console.log((0, eval)(a))
 }
 

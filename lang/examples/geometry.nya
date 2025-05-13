@@ -268,6 +268,14 @@ fn glider(l: Segment, at: num) -> Point {
   @mix(l.p1, l.p2, clamp(at, 0.0, 1.0))
 }
 
+fn start(a: Arc) -> Point {
+  a.p1
+}
+
+fn end(a: Arc) -> Point {
+  a.p3
+}
+
 // "glider"
 // "intersection"
 // "polygon"
