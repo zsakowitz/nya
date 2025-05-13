@@ -3,7 +3,7 @@ import { bug, issue } from "./error"
 import type { GlobalId } from "./id"
 import type { EmitProps } from "./props"
 import type { GlslScalar, Repr, ReprVec } from "./repr"
-import { Fn, type FnType, type Scalar, type Type } from "./type"
+import { Fn, invalidType, type FnType, type Scalar, type Type } from "./type"
 import { Value, type ConstValue } from "./value"
 
 export class AnyVector implements FnType {
@@ -15,9 +15,7 @@ export class AnyVector implements FnType {
 
   convertFrom(value: Value): Value {
     if (!this.canConvertFrom(value.type)) {
-      issue(
-        `Incompatible types: '${this}' expected, but '${value.type}' found.`,
-      )
+      invalidType(this, value.type)
     }
     return value
   }

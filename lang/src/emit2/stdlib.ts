@@ -1,9 +1,13 @@
 import { KFalse, KTrue, TFloat, TInt, TSym } from "../ast/kind"
 import {
+  AnyVector,
   createBinaryBroadcastingFn,
   createUnaryBroadcastingFn,
+  fromScalars,
+  toScalars,
 } from "./broadcast"
 import { Declarations } from "./decl"
+import { issue } from "./error"
 import { ident as g, Id, type GlobalId } from "./id"
 import type { EmitProps } from "./props"
 import { Fn, Scalar } from "./type"
@@ -327,6 +331,88 @@ export function createStdlib(props: EmitProps) {
       }
       return new Value(`!(${a})`, bool)
     }),
+
+    // @-style builtins
+    new Fn(
+      g("@mix"),
+      [
+        { name: "start", type: new AnyVector("float") },
+        { name: "end", type: new AnyVector("float") },
+        { name: "at", type: num },
+      ],
+      new AnyVector("float"),
+      (raw, block) => {
+        const [v0, v1, at] = raw as [Value, Value, Value]
+
+        if (v0.type != v1.type) {
+          issue(`The first two arguments to @mix must be the same type.`)
+        }
+
+        // const path
+        if (v0.const() && v1.const() && at.const()) {
+          const s0 = toScalars(v0, block)
+          const s1 = toScalars(v1, block)
+
+          const mixval = at.value as number
+          return fromScalars(
+            v0.type,
+            s0.map(
+              (a, i) =>
+                new Value(
+                  (a.value as number) * (1 - mixval) +
+                    (s1[i]!.value as number) * mixval,
+                  num,
+                ),
+            ),
+          )
+        }
+
+        // glsl path
+        if (block.lang == "glsl") {
+          return new Value(`mix(${v0},${v1},${at})`, v0.type)
+        }
+
+        // js path
+        {
+          const s0 = toScalars(v0, block)
+          const s1 = toScalars(v1, block)
+          const mv = block.cache(at, true)
+          return fromScalars(
+            v0.type,
+            s0.map(
+              (a, i) => new Value(`(${a})*(1.-${mv})+(${s1[i]!}*(${mv}))`, num),
+            ),
+          )
+        }
+      },
+    ),
+    new Fn(
+      g("@length"),
+      [{ name: "value", type: new AnyVector("float") }],
+      num,
+      (raw, block) => {
+        const val = raw[0]!
+
+        // const path
+        if (val.const()) {
+          const s0 = toScalars(val, block)
+          return new Value(Math.hypot(...s0.map((a) => a.value as number)), num)
+        }
+
+        // glsl path
+        if (block.lang == "glsl") {
+          return new Value(`length(${val})`, num)
+        }
+
+        // js path
+        const s0 = toScalars(val, block)
+        decl.global(`const ${hypotId}=Math.hypot;`)
+        return new Value(
+          `${hypotId}(${s0.map((x) => x.toString()).join(",")})`,
+          num,
+        )
+      },
+    ),
   ]
 
   for (const f of fns) {

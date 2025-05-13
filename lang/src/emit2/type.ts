@@ -44,7 +44,7 @@ export class Fn {
   }
 }
 
-function invalidType(
+export function invalidType(
   expected: { toString(): string },
   actual: { toString(): string },
 ): never {

@@ -273,7 +273,7 @@
       "patterns": [{ "include": "#root" }]
     },
     "types": {
-      "match": "\\b(?:uint|num|complex|bool|img|viewport|mathjscx|rgb|rgba|oklab|color_space_conversion)\\b",
+      "match": "\\b(?:uint|num|complex|bool|img|viewport|mathjscx|rgb|rgba|oklab|color_space_conversion|point|segment|line|ray|vector|circle|arc|polygon|angle|directedangle)\\b",
       "name": "entity.name.type.class.js"
     }
   },

@@ -1,5 +1,5 @@
 import { writeFileSync } from "fs"
-import context from "../examples/test.nya"
+import context from "../examples/geometry.nya"
 import { parse, parseBlockContents } from "./ast/parse"
 import { createStream } from "./ast/stream"
 import { Block } from "./emit2/decl"
@@ -23,9 +23,7 @@ try {
       rootTy.push(result.declTy)
     }
   }
-  const expr = `
-  erf(2+3*i)
-  `
+  const expr = "main"
   const block = new Block(decl)
   const value = emitBlock(
     parseBlockContents(createStream(expr, { comments: false })),

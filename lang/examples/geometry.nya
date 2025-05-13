@@ -1,0 +1,119 @@
+struct point {
+  x: num,
+  y: num,
+}
+
+fn point(x: num, y: num) -> point {
+  point { x, y }
+}
+
+struct line {
+  p1: point,
+  p2: point,
+}
+
+fn line(p1: point, p2: point) -> line {
+  line { p1, p2 }
+}
+
+struct vector {
+  p1: point,
+  p2: point,
+}
+
+fn vector(p1: point, p2: point) -> vector {
+  vector { p1, p2 }
+}
+
+struct segment {
+  p1: point,
+  p2: point,
+}
+
+fn segment(p1: point, p2: point) -> segment {
+  segment { p1, p2 }
+}
+
+struct ray {
+  p1: point,
+  p2: point,
+}
+
+fn ray(p1: point, p2: point) -> ray {
+  ray { p1, p2 }
+}
+
+struct arc {
+  p1: point,
+  p2: point,
+  p3: point,
+}
+
+fn arc(p1: point, p2: point, p3: point) -> arc {
+  arc { p1, p2, p3 }
+}
+
+struct angle {
+  p1: point,
+  p2: point,
+  p3: point,
+}
+
+fn angle(p1: point, p2: point, p3: point) -> angle {
+  angle { p1, p2, p3 }
+}
+
+struct directed_angle {
+  p1: point,
+  p2: point,
+  p3: point,
+}
+
+fn directed_angle(p1: point, p2: point, p3: point) -> directed_angle {
+  directed_angle { p1, p2, p3 }
+}
+
+fn distance(p1: point, p2: point) -> num {
+  @length(p1 @- p2)
+}
+// line-point distance
+
+fn length(s: segment) -> num {
+  distance(s.p1, s.p2)
+}
+
+fn glider(pt: line, at: num) -> point {
+  @mix(pt.p1, pt.p2, at)
+}
+
+// circle
+// arc
+// polygon
+//
+// "center"
+// "circle"
+// "distance"
+// "end"
+// "glider"
+// "intersection"
+// "midpoint"
+// "parallel"
+// "perpendicular"
+// "polygon"
+// "radius"
+// "segments"
+// "start"
+// "vertices"
+// "angles"
+// "directed angles"
+// "angle bisector"
+// "perpendicular bisector"
+// "translate"
+// "rotate"
+// "dilate"
+// "reflect"
+// "perimeter"
+
+fn main() -> point {
+  glider(line(point { x: 2.0, y: 3.0 }, point { x: 5.0, y: -7.0 }), 0.2)
+}
