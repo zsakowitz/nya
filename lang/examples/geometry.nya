@@ -109,19 +109,45 @@ fn anglebisector(v: directed_angle) -> ray {
   }
 }
 
+fn midpoint(s: segment) -> point {
+  @mix(s.p1, s.p2, 0.5)
+}
+
+struct circle {
+  center: point,
+  radius: num,
+}
+
+fn circle(center: point, radius: num) -> circle {
+  circle { center, radius }
+}
+
+// TODO: how to avoid duplicating code so many times
+fn parallel(l: line, p: point) -> line {
+  line { p1: p, p2: l.p2 @- l.p1 @+ p }
+}
+
+fn parallel(l: segment, p: point) -> line {
+  line { p1: p, p2: l.p2 @- l.p1 @+ p }
+}
+
+fn parallel(l: ray, p: point) -> line {
+  line { p1: p, p2: l.p2 @- l.p1 @+ p }
+}
+
+fn parallel(l: vector, p: point) -> line {
+  line { p1: p, p2: l.p2 @- l.p1 @+ p }
+}
+
 // circle
 // polygon
-//
-// "center"
+
 // "circle"
 // "distance"
 // "glider"
 // "intersection"
-// "midpoint"
-// "parallel"
 // "perpendicular"
 // "polygon"
-// "radius"
 // "segments"
 // "vertices"
 // "angles"
@@ -134,5 +160,8 @@ fn anglebisector(v: directed_angle) -> ray {
 // "perimeter"
 
 fn main() -> ray {
-  anglebisector(angle(point(2.0, 3.0), point(7, -4), point(3.5, -1)))
+  let a = point(2.0, 3.0);
+  let b = point(7, -4);
+  let c = point(3.5, -1);
+  anglebisector(angle(a, b, c))
 }

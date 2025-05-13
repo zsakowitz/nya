@@ -92,13 +92,13 @@ import {
   EnumMapVariant,
   EnumVariant,
   ExposeAliases,
-  Label,
   FnParam,
   FnReturnType,
   FnUsage,
   GenericParam,
   GenericParams,
   Initializer,
+  Label,
   List,
   MatchArm,
   ParamType,
@@ -925,9 +925,15 @@ export function print(node: Node | Token<number>, sb: Subprint): Doc {
     case Comments:
       return join(
         hardline,
-        (node as Comments).tokens.map((x) => {
-          const rest = x.val.slice(2).trim()
-          return lineSuffix("//" + (rest ? " " + rest : ""))
+        (node as Comments).tokens.map((x, i, a) => {
+          const sepPrev =
+            i > 0 && x.source.slice(a[i - 1]!.end, x.start).includes("\n\n")
+          const suffix = lineSuffix("//" + x.val.slice(2).trimEnd())
+          if (sepPrev) {
+            return [hardline, suffix]
+          } else {
+            return suffix
+          }
         }),
       )
   }
