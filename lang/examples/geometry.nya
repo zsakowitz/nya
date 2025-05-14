@@ -304,17 +304,17 @@ fn stroke(p: Path, c: rgb) -> Path {
     .stroke_width(3)
 }
 
-fn plot(cv: Canvas, p: Point) -> [Path; 2] {
-  [
+fn plot(cv: Canvas, p: Point) -> Path {
+  // [
     path
-      .circle(p.to_cv_coords(cv), 6)
-      .color(dcg_purple)
-      .fill_opacity(0.3),
-    path
-      .circle(p.to_cv_coords(cv), 4)
+      .circle(p.to_cv_coords(cv), 4.0)
       .color(dcg_purple)
       .fill_opacity(1.0),
-  ]
+  //   path
+  //     .circle(p.to_cv_coords(cv), 6.0)
+  //     .color(dcg_purple)
+  //     .fill_opacity(0.3),
+  // ]
 }
 
 fn plot(cv: Canvas, p: Circle) -> Path {

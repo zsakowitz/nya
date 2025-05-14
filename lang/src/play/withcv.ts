@@ -203,9 +203,9 @@ interface CanvasJs {
 
 function cvToCanvas(): CanvasJs {
   const { xmin, w, ymin, h } = cv.bounds()
-  const { width, height, scale } = cv
-  const xs = (width * scale) / w
-  const ys = height * scale
+  const { width, height } = cv
+  const xs = width / w
+  const ys = height
   return {
     sx: xs,
     sy: -ys / h,
@@ -309,20 +309,27 @@ const VALUE=(()=>{${emit}})();
 
   function draw() {
     const canvas = cvToCanvas()
+    const ctx = cv.ctx
 
+    ctx.resetTransform()
+    ctx.scale(cv.scale, cv.scale)
+    ctx.lineCap = "round"
+    ctx.lineJoin = "round"
     for (const el of canvasObjects) {
       const path = el(canvas)
 
       if ((path.z[0] > 0 && path.z[1] > 0) || path.z[2] > 0) {
-        cv.path(
-          path.x,
-          path.z[0],
-          `rgb(${255 * path.y[0]} ${255 * path.y[1]} ${255 * path.y[2]})`,
-          path.z[1],
-          path.z[2],
-        )
+        ctx.strokeStyle =
+          ctx.fillStyle = `rgb(${255 * path.y[0]} ${255 * path.y[1]} ${255 * path.y[2]})`
+        ctx.lineWidth = path.z[0]
+        ctx.globalAlpha = path.z[2]
+        ctx.fill(path.x)
+        ctx.globalAlpha = path.z[1]
+        ctx.stroke(path.x)
       }
     }
+    ctx.globalAlpha = 1
+    ctx.resetTransform()
   }
 
   area.addEventListener("input", go)

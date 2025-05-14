@@ -169,8 +169,6 @@ function createPathLib(props: EmitProps, num: Scalar) {
       canvasProp("ymin", "y0"),
       canvasProp("xmax", "x1"),
       canvasProp("ymax", "y1"),
-      canvasProp("width", "wx"),
-      canvasProp("height", "wy"),
 
       pathFn(
         "path",

@@ -4,4 +4,6 @@ fn main() {
   line(point(7, -3), point(5, 0));
 
   circle(point(2, 3), point(4, 5));
+
+  point(2, 3);
 }
