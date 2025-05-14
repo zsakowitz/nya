@@ -3,12 +3,60 @@ struct complex {
   im: num,
 }
 
+fn complex(re: num, im: num) -> complex {
+  complex { re, im }
+}
+
+fn arg(a: complex) -> num {
+  atan(a.im, a.re)
+}
+
+fn ==(a: complex, b: complex) -> bool {
+  a.re == b.re && a.im == b.im
+}
+
+assert complex(2.0, 3.0) == complex(2.0, 3.0);
+
+fn ~=(a: complex, b: complex) -> bool {
+  a.re ~= b.re && a.im ~= b.im
+}
+
+assert complex(2.0, 3.0) ~= complex(2.0, 3.0);
+
+fn i() -> complex {
+  complex { re: 0.0, im: 1.0 }
+}
+
+assert i() == complex(0.0, 1.0);
+
 fn +(a: complex, b: complex) -> complex {
-  complex { re: a.re + b.re, im: a.im + b.im }
+  a @+ b
+}
+
+assert complex(0.1, 4.2) + complex(0.2, -5.7) ~= complex(0.3, -1.5);
+
+fn +(a: num, b: complex) -> complex {
+  complex { re: a + b.re, im: b.im }
+}
+
+fn +(a: complex, b: num) -> complex {
+  complex { re: a.re + b, im: a.im }
 }
 
 fn -(a: complex, b: complex) -> complex {
-  complex { re: a.re - b.re, im: a.im - b.im }
+  a @- b
+}
+
+fn -(a: complex, b: num) -> complex {
+  complex { re: a.re - b, im: a.im }
+}
+
+fn -(a: num, b: complex) -> complex {
+  complex { re: a - b.re, im: -b.im }
+}
+
+fn *(a: num, b: complex) -> complex {
+  a @* b
 }
 
 fn *(a: complex, b: complex) -> complex {
@@ -23,13 +71,427 @@ fn conj(a: complex) -> complex {
   complex { re: a.re, im: -a.im }
 }
 
+assert conj(2 + 3 * i) == 2 - 3 * i;
+
 fn /(a: complex, b: num) -> complex {
-  complex { re: a.re / b, im: a.im / b }
+  a @/ b
 }
 
 fn /(a: complex, b: complex) -> complex {
   // (a+bi)/(c+di)
   // = (a+bi)(c-di)/(c+di)(c-di)
   // = (a+bi)(c-di)/(c^2+d^2)
-  return a * b.conj / length2(b)
+  a * b.conj / b.length2
 }
+
+fn inv(a: complex) -> complex {
+  // TODO: optimize
+  complex { re: 1.0, im: 0.0 } / a
+}
+
+fn cis(a: num) -> complex {
+  complex { re: a.cos, im: a.sin }
+}
+
+fn exp(a: complex) -> complex {
+  exp(a.re) * cis(a.im)
+}
+fn abs(a: complex) -> num {
+  hypot(a.re, a.im)
+}
+
+fn ==(a: complex, b: num) -> bool {
+  a.re == b && a.im == 0.0
+}
+
+fn ln(a: complex) -> complex {
+  if a == 0.0 {
+    complex { re: -1.0 / 0.0, im: 0.0 }
+  } else {
+    complex { re: a.abs.ln, im: a.arg }
+  }
+}
+
+fn **(a: complex, b: complex) -> complex {
+  exp(b * ln(a))
+}
+
+fn **(a: complex, b: num) -> complex {
+  exp(b * ln(a))
+}
+
+fn rt(r: num, t: num) -> complex {
+  r * t.cis
+}
+
+fn sqrt(a: complex) -> complex {
+  a.abs.sqrt * cis(a.arg / 2)
+}
+
+fn -(a: complex) -> complex {
+  @-a
+}
+
+fn floor(a: complex) -> complex {
+  let px = a.re;
+  let py = a.im;
+  let bx = px.floor;
+  let by = py.floor;
+  let x = px - bx;
+  let y = py - by;
+
+  if 1.0 <= x + y {
+    if x >= y {
+      complex { re: bx + 1, im: by }
+    } else {
+      complex { re: bx, im: by + 1 }
+    }
+  } else {
+    complex { re: bx, im: by }
+  }
+}
+
+fn ceil(a: complex) -> complex {
+  let px = a.re + 0.5;
+  let py = a.im + 0.5;
+  let bx = px.floor;
+  let by = py.floor;
+  let x = px - bx;
+  let y = py - by;
+
+  if 1.0 < x + y {
+    if x >= y {
+      complex { re: bx + 1, im: by }
+    } else {
+      complex { re: bx, im: by + 1 }
+    }
+  } else {
+    complex { re: bx, im: by }
+  }
+}
+
+fn sin(a: complex) -> complex {
+  complex { re: a.re.sin * a.im.cosh, im: a.re.cos * a.im.sinh }
+}
+
+fn cos(a: complex) -> complex {
+  complex { re: a.re.cos * a.im.cosh, im: -a.re.sin * a.im.sinh }
+}
+
+fn tan(a: complex) -> complex {
+  a.sin / a.cos
+}
+
+fn cot(a: complex) -> complex {
+  a.cos / a.sin
+}
+
+fn csc(a: complex) -> complex {
+  a.sin.inv
+}
+
+fn sec(a: complex) -> complex {
+  a.cos.inv
+}
+
+fn asin(a: complex) -> complex {
+  i * ln(sqrt(1.0 - a * a) - a * i)
+}
+
+fn acos(a: complex) -> complex {
+  -ln((1.0 - a * a) * i + a) * i
+}
+
+fn atan(a: complex) -> complex {
+  -ln((i - a) / (i + a)) * i / 2.0
+}
+
+fn acot(a: complex) -> complex {
+  a.inv.atan
+}
+
+fn acsc(a: complex) -> complex {
+  a.inv.asin
+}
+
+fn asec(a: complex) -> complex {
+  a.inv.acos
+}
+
+fn sinh(a: complex) -> complex {
+  complex { re: a.im.cos * a.re.sinh, im: a.im.sin * a.re.cosh }
+}
+
+fn cosh(a: complex) -> complex {
+  complex { re: a.im.cos * a.re.cosh, im: a.im.sin * a.re.sinh }
+}
+
+fn tanh(a: complex) -> complex {
+  a.sinh / a.cosh
+}
+
+fn coth(a: complex) -> complex {
+  a.cosh / a.sinh
+}
+
+fn sech(a: complex) -> complex {
+  a.cosh.inv
+}
+
+fn csch(a: complex) -> complex {
+  a.sinh.inv
+}
+
+fn asinh(a: complex) -> complex {
+  ln(sqrt(a * a + 1.0) + a)
+}
+
+fn acosh(a: complex) -> complex {
+  ln(sqrt(a + 1.0) * sqrt(a - 1.0) + a)
+}
+
+fn atanh(a: complex) -> complex {
+  ln((1.0 + a) / (1.0 - a)) / 2.0
+}
+
+fn acoth(a: complex) -> complex {
+  ln((a + 1.0) / (a - 1.0)) / 2.0
+}
+
+fn asech(a: complex) -> complex {
+  a.inv.acosh
+}
+
+fn acsch(a: complex) -> complex {
+  a.inv.asinh
+}
+
+assert sin(2 + 3 * i) ~= 9.154499146911429573 - 4.16890695996656435 * i;
+assert cos(2 + 3 * i) ~= -4.189625690968807230 - 9.109227893755336598 * i;
+assert tan(2 + 3 * i) ~= -0.0037640256415042483 + 1.0032386273536098014 * i;
+assert cot(2 + 3 * i) ~= -0.0037397103763369567 - 0.9967577965693583105 * i;
+
+assert sinh(2 + 3 * i) ~= -3.590564589985779952 + 0.530921086248519805 * i;
+assert cosh(2 + 3 * i) ~= -3.724545504915322565 + 0.511822569987384609 * i;
+
+fn *(a: complex, b: num) -> complex {
+  a @* b
+}
+
+fn faddeeva(z: complex) -> complex {
+  // Precomputed Faddeeva function approximation coefficients (M==4)
+  // real part only
+  let A = [
+    complex { re: 0.983046454995208, im: 0.0 },
+    complex { re: -0.095450491368505, im: 0.0 },
+    complex { re: -0.106397537035019, im: 0.0 },
+    complex { re: 0.004553979597404, im: 0.0 },
+    complex { re: -0.000012773721299, im: 0.0 },
+    complex { re: -0.000000071458742, im: 0.0 },
+    complex { re: 0.000000000080803, im: 0.0 },
+    complex { re: -0.000000000000007, im: 0.0 },
+  ];
+
+  // imaginary part only
+  let B = [
+    complex { re: 0.0, im: -1.338045597353875 },
+    complex { re: 0.0, im: 0.822618936152688 },
+    complex { re: 0.0, im: -0.044470795125534 },
+    complex { re: 0.0, im: -0.000502542048995 },
+    complex { re: 0.0, im: 0.000011914499129 },
+    complex { re: 0.0, im: -0.000000020157171 },
+    complex { re: 0.0, im: -0.000000000001558 },
+    complex { re: 0.0, im: 0.000000000000003 },
+  ];
+
+  // real part only
+  let C = [
+    complex { re: 0.392699081698724, im: 0.0 },
+    complex { re: 1.178097245096172, im: 0.0 },
+    complex { re: 1.963495408493621, im: 0.0 },
+    complex { re: 2.748893571891069, im: 0.0 },
+    complex { re: 3.534291735288517, im: 0.0 },
+    complex { re: 4.319689898685965, im: 0.0 },
+    complex { re: 5.105088062083414, im: 0.0 },
+    complex { re: 5.890486225480862, im: 0.0 },
+  ];
+
+  let s = 2.75;
+  let sgni = if z.im < 0.0 { -1.0 } else { 1.0 };
+  let z = z * sgni;
+
+  let t = z + complex { re: 0.0, im: 0.5 * s };
+  let w = complex { re: 0.0, im: 0.0 };
+
+  for a, b, c in A, B, C {
+    w += (a + t * b) / (c * c - t * t);
+  }
+
+  if sgni < 0.0 {
+    w = 2.0 * exp(-z * z) - w;
+  }
+
+  w
+}
+
+fn erf_pos(z: complex) -> complex {
+  1.0 - exp(-z * z) * faddeeva(z * i)
+}
+
+fn erf(z: complex) -> complex {
+  if z.re < 0.0 {
+    -erf_pos(-z)
+  } else {
+    erf_pos(z)
+  }
+}
+
+fn rgb_to_srgb(c: num) -> num {
+  if c < 0.0031308 {
+    c * 12.92
+  } else {
+    1.055 * c ** 0.4166666666666667 - 0.055
+  }
+}
+
+struct rgb {
+  r: num,
+  g: num,
+  b: num,
+}
+
+matrix color_space_conversion {
+  a: rgb,
+  b: rgb,
+  c: rgb,
+}
+
+struct oklab {
+  l: num,
+  a: num,
+  b: num,
+}
+
+fn oklab_to_rgb(src: oklab) -> rgb {
+  let A = color_space_conversion {
+    a: rgb { r: 1.0, g: 1.0, b: 1.0 },
+    b: rgb { r: 0.3963377774, g: -0.1055613458, b: -0.0894841775 },
+    c: rgb { r: 0.2158037573, g: -0.0638541728, b: -1.2914855480 },
+  };
+
+  let B = color_space_conversion {
+    a: rgb { r: 4.0767416621, g: -1.2684380046, b: -0.0041960863 },
+    b: rgb { r: -3.3077115913, g: 2.6097574011, b: -0.7034186147 },
+    c: rgb { r: 0.2309699292, g: -0.3413193965, b: 1.7076147010 },
+  };
+
+  let lms = A @# src;
+  let v = B @# (lms @* lms @* lms);
+  let epsilon = 1e-10;
+
+  rgb {
+    r: rgb_to_srgb(v.l - epsilon),
+    g: rgb_to_srgb(v.a - epsilon),
+    b: rgb_to_srgb(v.b - epsilon),
+  }
+}
+
+fn is_valid(z: complex) -> bool {
+  !(is_inf(z.re) || is_inf(z.im) || is_nan(z.re) || is_nan(z.im))
+}
+
+struct rgba {
+  r: num,
+  g: num,
+  b: num,
+  a: num,
+}
+
+fn rgba(colors: rgb, a: num) -> rgba {
+  rgba { r: colors.r, g: colors.g, b: colors.b, a }
+}
+
+fn cplot(z: complex) -> rgba {
+  if !is_valid(z) {
+    rgba { r: 0.0, g: 0.0, b: 0.0, a: 0.0 }
+  } else {
+    let angle = arg(z);
+    let absval_scaled = z.abs / (z.abs + 1.0);
+    let r0 = 0.08499547839164734 * 1.28;
+    let offset = 0.8936868 * pi;
+    let rd = 1.5 * r0 * (1.0 - 2.0 * abs(absval_scaled - 0.5));
+    let ok_coords = oklab {
+      l: absval_scaled,
+      a: rd * cos(angle + offset),
+      b: rd * sin(angle + offset),
+    };
+    rgba(oklab_to_rgb(ok_coords), 1.0)
+  }
+}
+
+fn is_valid(x: num) -> bool {
+  !(is_inf(x) || is_nan(x))
+}
+
+fn cplot_abs(x: num) -> rgba {
+  if !is_valid(x) {
+    rgba { r: 0.0, g: 0.0, b: 0.0, a: 0.0 }
+  } else {
+    let absval_scaled = x.abs / (x.abs + 1.0);
+    let ok_coords = oklab { l: absval_scaled, a: 0.0, b: 0.0 };
+    rgba { r: 0.0, g: 0.0, b: 0.0, a: 1.0 - oklab_to_rgb(ok_coords).r }
+  }
+}
+
+fn plot(z: num) -> rgba {
+  cplot(complex { re: z, im: 0.0 })
+}
+
+fn plot(z: complex) -> rgba {
+  cplot(z)
+}
+
+fn plot(z: rgb) -> rgba {
+  rgba(z, 1.0)
+}
+
+fn plot(z: rgba) -> rgba {
+  z
+}
+
+fn plot(z: bool) -> rgba {
+  if z {
+    rgba { r: 0.1764705882, g: 0.4392156863, b: 0.7019607843, a: 0.5 }
+  } else {
+    rgba { r: 0.0, g: 0.0, b: 0.0, a: 0.0 }
+  }
+}
+
+fn sign(z: complex) -> complex {
+  if z == 0.0 {
+    z
+  } else {
+    z / z.abs
+  }
+}
+
+// fn main(z: complex) -> rgba {
+// let z = 3.0 * z;
+// let c = z;
+//
+// if z.abs > 2.0 {
+// z = erf(z);
+// } else {
+// for a in [0.0; 20] {
+// if z.abs < 2.0 {
+// z = z * z + c
+// }
+// }
+// }
+//
+// cplot(z)
+// }
+//
+// fn i(a: num) -> complex {
+// complex { re: 0.0, im: a }
+// }

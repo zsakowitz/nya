@@ -297,11 +297,25 @@ let dcg_blue = rgb { r: 0x2d / 255, g: 0x70 / 255, b: 0xb3 / 255 };
 let dcg_purple = rgb { r: 0x60 / 255, g: 0x42 / 255, b: 0xa6 / 255 };
 let dcg_green = rgb { r: 0x38 / 255, g: 0x8c / 255, b: 0x46 / 255 };
 
+fn stroke(p: Path, c: rgb) -> Path {
+  p
+    .color(c)
+    .stroke_opacity(1)
+    .stroke_width(3)
+}
+
 fn plot(cv: Canvas, p: Segment) -> Path {
   path
     .move_to(p.p1.to_cv_coords(cv))
     .line_to(p.p2.to_cv_coords(cv))
-    .color(dcg_blue)
-    .stroke_opacity(1)
-    .stroke_width(3)
+    .stroke(dcg_blue)
+}
+
+fn plot(cv: Canvas, p: Circle) -> Path {
+  path
+    .ellipse(
+      p.center.to_cv_coords(cv),
+      point(p.radius, p.radius).to_cv_delta(cv),
+    )
+    .stroke(dcg_green)
 }

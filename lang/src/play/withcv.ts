@@ -20,8 +20,7 @@ import { createStdlib } from "../emit/stdlib"
 import type { Type } from "../emit/type"
 import { Value } from "../emit/value"
 import * as plugin from "../prettier/plugin"
-import { result } from "./preview"
-import { source } from "./source"
+import { mini, source } from "./source"
 
 const cv = new Cv("absolute inset-0 size-full touch-none")
 
@@ -110,6 +109,8 @@ function createAutocomplete() {
 }
 
 function createRepl(lang: Lang) {
+  const stream = createStream(source, { comments: false })
+  const result = parse(stream)
   const props = new EmitProps(lang)
   const decl = createStdlib(props)
   const emit = result.items
@@ -326,7 +327,7 @@ const VALUE=(()=>{${emit}})();
 
   area.addEventListener("input", go)
   cv.fn(OrderMajor.Canvas, draw)
-  area.value = "segment(point(2,0),point(4,5))"
+  area.value = mini
   setTimeout(go)
 }
 

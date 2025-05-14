@@ -1,0 +1,7 @@
+fn main() {
+  segment(point(2, 3), point(4, 5));
+
+  segment(point(2, 3), point(4, 5));
+
+  circle(point(2, 3), point(4, 5));
+}

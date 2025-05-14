@@ -130,6 +130,24 @@ function createPathLib(props: EmitProps, num: Scalar) {
           },
       ), // to_cv_coords
       fn(
+        g("to_cv_delta"),
+        [
+          { name: "point", type: vec2 },
+          { name: "canvas", type: canvas },
+        ],
+        vec2,
+        lang == "glsl" ?
+          ([a]) => a!
+        : ([pt, cv], block): Value => {
+            const [x, y] = scalars(pt!, block)
+            const c = block.cache(cv!, true).toRuntime()!
+            return fromScalars(pt!.type, [
+              new Value(`(${c}).sx*(${x})`, num),
+              new Value(`-(${c}).sy*(${y})`, num),
+            ])
+          },
+      ), // to_cv_delta
+      fn(
         g("to_math_coords"),
         [
           { name: "point", type: vec2 },
