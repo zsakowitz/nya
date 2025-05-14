@@ -885,6 +885,8 @@ export function print(node: Node | Token<number>, sb: Subprint): Doc {
     case ItemLet:
       return [
         sb("kw"),
+        (node as StmtLet).mut ? " " : "",
+        sb.opt("mut"),
         " ",
         sb("ident"),
         sb.opt("type"),

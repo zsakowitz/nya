@@ -41,6 +41,7 @@ import {
   KLocal,
   KMatch,
   KMatrix,
+  KMut,
   KReturn,
   KRule,
   KSource,
@@ -925,6 +926,8 @@ function stmtLet(stream: Stream): StmtLet | null {
   const kw = stream.match(KLet)
   if (!kw) return null
 
+  const mut = stream.match(KMut)
+
   const ident = stream.matchOr(TIdent, Code.ExpectedIdent)
   const colon = stream.match(OColon)
   const ty = colon && type(stream)
@@ -934,6 +937,7 @@ function stmtLet(stream: Stream): StmtLet | null {
 
   return new StmtLet(
     kw,
+    mut,
     ident,
     colon && new ParamType(colon, ty!),
     eq && new Initializer(eq, value!),

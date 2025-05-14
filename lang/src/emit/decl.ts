@@ -92,6 +92,10 @@ export class Declarations {
   }
 }
 
+export class Exits {
+  constructor(readonly returnType: Type | null) {}
+}
+
 export class Block {
   source = ""
 
@@ -100,6 +104,7 @@ export class Block {
 
   constructor(
     readonly decl: Declarations,
+    readonly exits: Exits,
     readonly locals: IdMap<Value> = new IdMap(null),
   ) {
     this.lang = (this.props = decl.props).lang
@@ -122,8 +127,8 @@ export class Block {
     return new Value(ident, value.type)
   }
 
-  child() {
-    return new Block(this.decl, new IdMap(this.locals))
+  child(exits: Exits) {
+    return new Block(this.decl, exits, new IdMap(this.locals))
   }
 }
 

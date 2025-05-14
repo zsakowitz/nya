@@ -8,7 +8,7 @@ import { parse, parseBlockContents } from "../ast/parse"
 import { print } from "../ast/print"
 import { createStream, TokenGroup } from "../ast/stream"
 import { Token } from "../ast/token"
-import { Block } from "../emit/decl"
+import { Block, Exits } from "../emit/decl"
 import { emitBlock, emitItem, performCall } from "../emit/emit"
 import { issue } from "../emit/error"
 import { ident } from "../emit/id"
@@ -244,7 +244,7 @@ function createRepl(lang: Lang) {
       if (!expr) {
         issue("Unable to parse block contents.")
       }
-      const block = new Block(decl)
+      const block = new Block(decl, new Exits(null))
       if (lang == "glsl") {
         block.locals.init(ident("p"), new Value("POS", point))
         block.locals.init(ident("z"), new Value("POS", complex))

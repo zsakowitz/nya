@@ -304,11 +304,17 @@ fn stroke(p: Path, c: rgb) -> Path {
     .stroke_width(3)
 }
 
-fn plot(cv: Canvas, p: Segment) -> Path {
-  path
-    .move_to(p.p1.to_cv_coords(cv))
-    .line_to(p.p2.to_cv_coords(cv))
-    .stroke(dcg_blue)
+fn plot(cv: Canvas, p: Point) -> [Path; 2] {
+  [
+    path
+      .circle(p.to_cv_coords(cv), 6)
+      .color(dcg_purple)
+      .fill_opacity(0.3),
+    path
+      .circle(p.to_cv_coords(cv), 4)
+      .color(dcg_purple)
+      .fill_opacity(1.0),
+  ]
 }
 
 fn plot(cv: Canvas, p: Circle) -> Path {
@@ -318,4 +324,79 @@ fn plot(cv: Canvas, p: Circle) -> Path {
       point(p.radius, p.radius).to_cv_delta(cv),
     )
     .stroke(dcg_green)
+}
+
+fn plot(cv: Canvas, p: Segment) -> Path {
+  path
+    .move_to(p.p1.to_cv_coords(cv))
+    .line_to(p.p2.to_cv_coords(cv))
+    .stroke(dcg_blue)
+}
+
+fn plot(cv: Canvas, l: Line) -> Path {
+  let x1 = l.p1.x;
+  let y1 = l.p1.y;
+  let x2 = l.p2.x;
+  let y2 = l.p2.y;
+
+  if x1 == x2 && y1 == y2 {
+    return path;
+  }
+
+  let ymin = 2 * cv.ymin - cv.ymax;
+  let ymax = 2 * cv.ymax - cv.ymin;
+  let xmin = 2 * cv.xmin - cv.xmax;
+  let xmax = 2 * cv.xmax - cv.xmin;
+
+  let p = if x1 == x2 {
+    path
+      .move_to(point(x1, ymin).to_cv_coords(cv))
+      .line_to(point(x1, ymax).to_cv_coords(cv))
+  } else {
+    let m = (y2 - y1) / (x2 - x1);
+    path
+      .move_to(point(xmin, m * (xmin - x1) + y1).to_cv_coords(cv))
+      .line_to(point(xmax, m * (xmax - x1) + y1).to_cv_coords(cv))
+  };
+
+  p.stroke(dcg_blue)
+}
+
+fn plot(cv: Canvas, l: Ray) -> Path {
+  let x1 = l.p1.x;
+  let y1 = l.p1.y;
+  let x2 = l.p2.x;
+  let y2 = l.p2.y;
+
+  if x1 == x2 && y1 == y2 {
+    return path;
+  }
+
+  let ymin = 2 * cv.ymin - cv.ymax;
+  let ymax = 2 * cv.ymax - cv.ymin;
+  let xmin = 2 * cv.xmin - cv.xmax;
+  let xmax = 2 * cv.xmax - cv.xmin;
+
+  let mut p = path.move_to(l.p1.to_cv_coords(cv)).stroke(dcg_blue);
+
+  if x1 == x2 {
+    if y1 < y2 {
+      if !(y1 > ymax) {
+        p.line_to(point(x1, ymax).to_cv_coords(cv));
+      }
+    } else if !(y1 < ymin) {
+      p.line_to(point(x1, ymin).to_cv_coords(cv));
+    }
+  } else {
+    let m = (y2 - y1) / (x2 - x1);
+    if x1 < x2 {
+      if !(x2 > xmax) {
+        p.line_to(point(xmax, m * (xmax - x1) + y1).to_cv_coords(cv));
+      }
+    } else if !(x1 < xmin) {
+      p.line_to(point(xmin, m * (xmin - x1) + y1).to_cv_coords(cv));
+    }
+  }
+
+  p
 }

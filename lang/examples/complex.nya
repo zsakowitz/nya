@@ -321,7 +321,7 @@ fn faddeeva(z: complex) -> complex {
   let z = z * sgni;
 
   let t = z + complex { re: 0.0, im: 0.5 * s };
-  let w = complex { re: 0.0, im: 0.0 };
+  let mut w = complex { re: 0.0, im: 0.0 };
 
   for a, b, c in A, B, C {
     w += (a + t * b) / (c * c - t * t);

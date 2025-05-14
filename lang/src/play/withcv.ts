@@ -11,7 +11,7 @@ import FuzzySearch from "fuzzy-search"
 import { formatWithCursor } from "prettier"
 import { parse, parseBlockContents } from "../ast/parse"
 import { createStream } from "../ast/stream"
-import { Block } from "../emit/decl"
+import { Block, Exits } from "../emit/decl"
 import { emitBlock, emitItem, performCall } from "../emit/emit"
 import { issue } from "../emit/error"
 import { ident } from "../emit/id"
@@ -161,7 +161,7 @@ function createRepl(lang: Lang) {
       if (!expr) {
         issue("Unable to parse block contents.")
       }
-      const block = new Block(decl)
+      const block = new Block(decl, new Exits(null))
       if (lang == "glsl") {
         block.locals.init(ident("p"), new Value("POS", point))
         block.locals.init(ident("z"), new Value("POS", complex))
@@ -222,7 +222,7 @@ function cvToCanvas(): CanvasJs {
 
 function createExecutor() {
   const { emit: emitJs, run: runJs, decl } = createRepl("js")
-  const { emit: emitGl, run: runGl } = createRepl("glsl")
+  const { run: runGl } = createRepl("glsl")
   const plot = decl.fns.get(ident("plot")) ?? []
   const canvas = decl.types.get(ident("Canvas"))!
   const path = decl.types.get(ident("Path"))!
@@ -262,7 +262,7 @@ function createExecutor() {
               x.args[1]!.type.canConvertFrom(type) &&
               x.ret == path,
           )
-          const plotBlock = new Block(decl)
+          const plotBlock = new Block(decl, new Exits(null))
           const plotValue = plotFn?.run(
             [new Value("CANVAS", canvas), new Value("VALUE", type)],
             plotBlock,

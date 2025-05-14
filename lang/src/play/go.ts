@@ -1,7 +1,7 @@
 import { writeFileSync } from "fs"
 import { parse, parseBlockContents } from "../ast/parse"
 import { createStream } from "../ast/stream"
-import { Block } from "../emit/decl"
+import { Block, Exits } from "../emit/decl"
 import { emitBlock, emitItem } from "../emit/emit"
 import { addInspectKeys } from "../emit/inspect"
 import { EmitProps, type Lang } from "../emit/props"
@@ -23,7 +23,7 @@ function emitGl() {
     }
   }
   const expr = "main"
-  const block = new Block(decl)
+  const block = new Block(decl, new Exits(null))
   const value = emitBlock(
     parseBlockContents(createStream(expr, { comments: false })),
     block,
@@ -62,7 +62,7 @@ function emitJs(lang: Lang) {
     }
   }
   const expr = "main"
-  const block = new Block(decl)
+  const block = new Block(decl, new Exits(null))
   const value = emitBlock(
     parseBlockContents(createStream(expr, { comments: false })),
     block,

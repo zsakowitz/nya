@@ -45,6 +45,7 @@ export const KTrue = 40
 export const KFalse = 41
 export const KLocal = 42
 export const KMatrix = 43
+export const KMut = 44
 
 // operators prefixed with @
 export const APlus = 45
@@ -172,6 +173,7 @@ export const KWS: Record<string, number> = {
   false: KFalse,
   local: KLocal,
   matrix: KMatrix,
+  mut: KMut,
   _: TIgnore,
 }
 

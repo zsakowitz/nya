@@ -1,4 +1,4 @@
-import type { KAssert, KLet, OSemi } from "../kind"
+import type { KAssert, KLet, KMut, OSemi } from "../kind"
 import type { Token } from "../token"
 import type { NodeExpr } from "./expr"
 import type {
@@ -27,12 +27,13 @@ export class StmtExpr extends NodeStmt {
 export class StmtLet extends NodeStmt {
   constructor(
     readonly kw: Token<typeof KLet>,
+    readonly mut: Token<typeof KMut> | null,
     readonly ident: Ident | null,
     readonly type: ParamType | null,
     readonly value: Initializer | null,
     readonly semi: Token<typeof OSemi> | null,
   ) {
-    super(kw.start, (semi ?? value ?? type ?? ident ?? kw).end)
+    super(kw.start, (semi ?? value ?? type ?? ident ?? mut ?? kw).end)
   }
 }
 

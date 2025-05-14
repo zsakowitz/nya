@@ -1,10 +1,11 @@
-import { KMatrix, OEq, TBuiltin } from "../ast/kind"
+import { KBreak, KContinue, KMatrix, KReturn, OEq, TBuiltin } from "../ast/kind"
 import {
   ExprArray,
   ExprBinary,
   ExprBinaryAssign,
   ExprBlock,
   ExprEmpty,
+  ExprExit,
   ExprFor,
   ExprIf,
   ExprLit,
@@ -32,7 +33,7 @@ import {
   type NodeType,
 } from "../ast/node/type"
 import { fromScalars, scalars } from "./broadcast"
-import { Block, IdMap, type Declarations } from "./decl"
+import { Block, Exits, IdMap, type Declarations } from "./decl"
 import { issue, todo } from "./error"
 import { Id, ident, type GlobalId } from "./id"
 import { Alt, Array, ArrayEmpty, Fn, Struct, type Type } from "./type"
@@ -69,17 +70,18 @@ export function performCall(id: GlobalId, block: Block, args: Value[]): Value {
   const local = block.locals.get(id)
 
   if (local) {
-    if (args.length != 0) {
-      issue(`Locally defined variable '${id}' is not a function.`)
+    if (args.length == 0) {
+      return local
     }
-
-    return local
   }
 
   const fns = block.decl.fns.get(id)
 
   if (!fns) {
-    // FIXME: broadcasting
+    if (local) {
+      issue(`Locally defined variable '${id}' is not a function.`)
+    }
+
     issue(`Function '${id}' is not defined.`)
   }
 
@@ -139,7 +141,9 @@ function emitType(node: NodeType, decl: Declarations): Type {
       todo(`Multidimensional arrays are not supported yet.`)
     }
     const count = arraySize(
-      decl.arraySize(emitExpr(node.sizes.items[0]!, new Block(decl))),
+      decl.arraySize(
+        emitExpr(node.sizes.items[0]!, new Block(decl, new Exits(null))),
+      ),
     )
     return new Array(decl.props, item, count)
   } else {
@@ -241,13 +245,13 @@ function emitExpr(node: NodeExpr, block: Block): Value {
       issue(`The condition of an 'if' statement must not be void.`)
     }
 
-    const child1 = block.child()
+    const child1 = block.child(block.exits)
     if (!node.block) {
       issue(`Missing block on 'if' statement.`)
     }
     const main = emitBlock(node.block, child1)
 
-    const child2 = block.child()
+    const child2 = block.child(block.exits)
     let alt: Value = new Value(0, block.decl.void)
     if (node.rest) {
       if (!node.rest.block) {
@@ -309,6 +313,10 @@ function emitExpr(node: NodeExpr, block: Block): Value {
     }
 
     const type = new Array(block.props, ty, items.length)
+    if (type.repr.type == "void") {
+      return new Value(0, type)
+    }
+
     if (items.every((x) => x.const())) {
       return new Value(
         items.map((x) => x.value),
@@ -338,7 +346,8 @@ function emitExpr(node: NodeExpr, block: Block): Value {
       issue(`Missing body of 'for' loop.`)
     }
 
-    const child = block.child()
+    // TODO: add break and continue as exits
+    const child = block.child(block.exits)
     let size: number | null = null
 
     const index = new Id("for loop index").ident()
@@ -393,6 +402,25 @@ function emitExpr(node: NodeExpr, block: Block): Value {
     }
 
     return new Value(0, block.decl.void)
+  } else if (node instanceof ExprExit) {
+    switch (node.kw.kind) {
+      case KBreak:
+      case KContinue:
+        todo(`'${node.kw}' statements are not supported yet.`)
+
+      case KReturn:
+        if (!block.exits.returnType) {
+          issue(`Cannot return from this context.`)
+        }
+        if (node.label) {
+          issue(`'return' statements cannot be labeled.`)
+        }
+        return block.exits.returnType.convertFrom(
+          node.value ?
+            emitExpr(node.value, block)
+          : new Value(0, block.decl.void),
+        )
+    }
   } else {
     todo(`Cannot emit '${node.constructor.name}' as an expression yet.`)
   }
@@ -427,7 +455,7 @@ function emitLvalue(
     }
     if (!current?.assignable) {
       issue(
-        `Cannot assign to '${id}'. If it's a function parameter, it's readonly.`,
+        `'${id}' must be a variable declared with 'let mut' in order to be assignable.`,
       )
     }
 
@@ -517,13 +545,17 @@ function emitStmt(node: NodeStmt, block: Block): Value {
       value = emitType(type.type, block.decl).convertFrom(value)
     }
     const gid = ident(identName.val)
-    const lid = new Id(identName.val)
+
     if (value.type.repr.type == "void") {
       block.locals.set(gid, new Value(0, value.type))
-      return new Value(0, block.decl.void)
+    } else if (!node.mut && value.const()) {
+      block.locals.set(gid, new Value(value.value, value.type))
+    } else {
+      const lid = new Id(identName.val)
+      block.locals.set(gid, new Value(lid.ident(), value.type, !!node.mut))
+      block.source += `${block.lang == "glsl" ? value.type.emit : "var"} ${lid.ident()}=${value};`
     }
-    block.locals.set(gid, new Value(lid.ident(), value.type, true))
-    block.source += `${block.lang == "glsl" ? value.type.emit : "var"} ${lid.ident()}=${value};`
+
     return new Value(0, block.decl.void)
   } else {
     todo(`Cannot emit '${node.constructor.name}' as a statement yet.`)
@@ -634,7 +666,7 @@ export function emitItem(node: NodeItem, decl: Declarations): ItemResult {
       return { name, type }
     })
     const fparams = params.map((x) => ({ name: x.name.label, type: x.type }))
-    const block = new Block(decl, locals)
+    const block = new Block(decl, new Exits(ret), locals)
     const value = ret.convertFrom(emitBlock(node.block, block))
     const lid = new Id(fname)
     const gid = ident(fname)
@@ -677,8 +709,10 @@ export function emitItem(node: NodeItem, decl: Declarations): ItemResult {
       issue(`Function '${fname}' is missing its contents.`)
     }
     const expected = node.type ? emitType(node.type.type, decl) : null
-    const locals = new IdMap<Value>(null)
-    const block = new Block(decl, locals)
+    // even though 'let' is implemented as a function, this is an implementation
+    // detail and should not be relied on. it's also harder to detect the proper
+    // output type when 'return' is allowed
+    const block = new Block(decl, new Exits(null))
     let value = emitExpr(node.value.value, block)
     if (expected) value = expected.convertFrom(value)
     const ret = value.type
@@ -732,6 +766,9 @@ export function emitItem(node: NodeItem, decl: Declarations): ItemResult {
 }
 
 function returnValue(val: Value) {
+  if (val.type.repr.type == "void") {
+    return ""
+  }
   const text = val.toRuntime()
   if (text == null) {
     return ""
