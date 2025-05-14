@@ -301,6 +301,7 @@ fn plot(cv: Canvas, p: Segment) -> Path {
   path
     .move_to(p.p1.to_cv_coords(cv))
     .line_to(p.p2.to_cv_coords(cv))
-    .stroke_color(dcg_blue)
+    .color(dcg_blue)
+    .stroke_opacity(1)
     .stroke_width(3)
 }

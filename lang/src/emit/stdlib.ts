@@ -51,9 +51,8 @@ function createPathLib(props: EmitProps, num: Scalar) {
   interface PathJs {
     data: {
       x: string // svg path
-      y: [number, number, number, number] // stroke color
-      z: [number, number, number, number] // fill color
-      w: number // stroke width
+      y: [number, number, number] // color
+      z: [number, number, number] // stroke width, stroke opacity, fill opacity
     }
   }
 
@@ -67,7 +66,7 @@ function createPathLib(props: EmitProps, num: Scalar) {
       () => null
     : (v) => {
         const d = (v as PathJs).data
-        return `{x:new Path2D(${JSON.stringify(d.x)}),y:${JSON.stringify(d.y)},z:${JSON.stringify(d.z)},w:${JSON.stringify(d.w)}}`
+        return `{x:new Path2D(${JSON.stringify(d.x)}),y:${JSON.stringify(d.y)},z:${JSON.stringify(d.z)}}`
       },
     () => issue(`Cannot convert 'Path' into scalars.`),
     () => issue(`Cannot create 'Path' from scalars.`),
@@ -89,7 +88,6 @@ function createPathLib(props: EmitProps, num: Scalar) {
   const xpath = { name: "path", type: path }
   const vec2 = vec(2)
   const vec3 = vec(3)
-  const vec4 = vec(4)
 
   const pDest = { name: "destination", type: vec2 }
   const pCenter = { name: "center", type: vec2 }
@@ -98,7 +96,6 @@ function createPathLib(props: EmitProps, num: Scalar) {
   const pRadiusY = { name: "radius_y", type: num }
   const pRadii = { name: "radii", type: vec2 }
   const pColorRgb = { name: "color_rgb", type: vec3 }
-  const pColorRgba = { name: "color_rgba", type: vec4 }
 
   function canvasProp(nyaname: string, jsname: string) {
     return fn(
@@ -160,7 +157,7 @@ function createPathLib(props: EmitProps, num: Scalar) {
         [],
         () =>
           new Value(
-            { data: { x: "", y: [0, 0, 0, 0], z: [0, 0, 0, 0], w: 0 } },
+            { data: { x: "", y: [0, 0, 0], z: [0, 0, 0] } } satisfies PathJs,
             path,
           ),
       ), // empty_path
@@ -223,11 +220,11 @@ function createPathLib(props: EmitProps, num: Scalar) {
       pathEditingFn(
         "stroke_width",
         [{ name: "width", type: num }],
-        (d, [a]) => (d.data.w = a!.value as number),
-        (d, [a], block) => (block.source += `${d}.w=${a};`),
+        (d, [a]) => (d.data.z[0] = a!.value as number),
+        (d, [a], block) => (block.source += `${d}.z[0]=${a};`),
       ), // stroke_width
       pathEditingFn(
-        "stroke_color",
+        "color",
         [pColorRgb],
         (d, [c]) => {
           const [r, g, b] = c!.toScalars()
@@ -235,76 +232,24 @@ function createPathLib(props: EmitProps, num: Scalar) {
             r!.value as number,
             g!.value as number,
             b!.value as number,
-            1,
           ]
         },
         (d, [c], block) => {
           const [r, g, b] = scalars(c!, block)
           block.source += `${d}.y=[${r},${g},${b},1];`
         },
-      ), // stroke_color(rgb)
-      pathEditingFn(
-        "stroke_color",
-        [pColorRgba],
-        (d, [c]) => {
-          const [r, g, b, a] = c!.toScalars()
-          d.data.y = [
-            r!.value as number,
-            g!.value as number,
-            b!.value as number,
-            a!.value as number,
-          ]
-        },
-        (d, [c], block) => {
-          const [r, g, b, a] = scalars(c!, block)
-          block.source += `${d}.y=[${r},${g},${b},${a}];`
-        },
-      ), // stroke_color(rgb)
-      pathEditingFn(
-        "fill_color",
-        [pColorRgb],
-        (d, [c]) => {
-          const [r, g, b] = c!.toScalars()
-          d.data.z = [
-            r!.value as number,
-            g!.value as number,
-            b!.value as number,
-            1,
-          ]
-        },
-        (d, [c], block) => {
-          const [r, g, b] = scalars(c!, block)
-          block.source += `${d}.z=[${r},${g},${b},1];`
-        },
-      ), // fill_color(rgb)
-      pathEditingFn(
-        "fill_color",
-        [pColorRgba],
-        (d, [c]) => {
-          const [r, g, b, a] = c!.toScalars()
-          d.data.z = [
-            r!.value as number,
-            g!.value as number,
-            b!.value as number,
-            a!.value as number,
-          ]
-        },
-        (d, [c], block) => {
-          const [r, g, b, a] = scalars(c!, block)
-          block.source += `${d}.z=[${r},${g},${b},${a}];`
-        },
-      ), // fill_color(rgb)
+      ), // color(rgb)
       pathEditingFn(
         "stroke_opacity",
         [{ name: "opacity", type: num }],
-        (d, [a]) => (d.data.y[3] = a!.value as number),
-        (d, [a], block) => (block.source += `${d}.y[3]=${a};`),
+        (d, [a]) => (d.data.z[1] = a!.value as number),
+        (d, [a], block) => (block.source += `${d}.z[1]=${a};`),
       ), // stroke_opacity
       pathEditingFn(
         "fill_opacity",
         [{ name: "opacity", type: num }],
-        (d, [a]) => (d.data.z[3] = a!.value as number),
-        (d, [a], block) => (block.source += `${d}.z[3]=${a};`),
+        (d, [a]) => (d.data.z[2] = a!.value as number),
+        (d, [a], block) => (block.source += `${d}.z[2]=${a};`),
       ), // fill_opacity
     ],
   }

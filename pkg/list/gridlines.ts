@@ -64,7 +64,7 @@ export function gridlineCoords(
   return values
 }
 
-function createDrawAxes(paper: Cv) {
+export function createDrawAxes(paper: Cv) {
   if (location.href.includes("nogrid")) {
     return
   }
