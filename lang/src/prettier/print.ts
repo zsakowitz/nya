@@ -291,14 +291,16 @@ function printIf(node: ExprIf, sb: Subprint) {
     sb.paren("condition", needsParensToAvoidStruct(node.condition)),
     " ",
     ifBreak(
-      sb.as(["block", "of"], () =>
-        group([
+      sb.as(["block", "of"], () => {
+        const items = sb.all("items")
+        const ln = items.length >= 2 ? hardline : hardlineWithoutBreakParent
+        return group([
           sb.sub("bracket", "lt"),
-          indent([hardlineWithoutBreakParent, join(line, sb.all("items"))]),
-          hardlineWithoutBreakParent,
+          indent([ln, join(line, items)]),
+          ln,
           sb.sub("bracket", "gt"),
-        ]),
-      ),
+        ])
+      }),
       sb.sub("block", "of"),
     ),
     sb.opt("rest"),

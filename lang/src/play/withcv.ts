@@ -9,6 +9,7 @@ import {
 } from "@/sheet/ui/cv/move"
 import FuzzySearch from "fuzzy-search"
 import { formatWithCursor } from "prettier"
+import REGL from "regl"
 import { parse, parseBlockContents } from "../ast/parse"
 import { createStream } from "../ast/stream"
 import { Block, Exits } from "../emit/decl"
@@ -220,9 +221,17 @@ function cvToCanvas(): CanvasJs {
   }
 }
 
+const glCanvas = hx(
+  "canvas",
+  "absolute w-full h-full top-0 left-0 pointer-events-none",
+)
+const gl = glCanvas.getContext("webgl2", { premultipliedAlpha: false })!
+const regl = REGL({ canvas: glCanvas, gl })
+cv.el.insertBefore(glCanvas, cv.el.firstChild)
+
 function createExecutor() {
   const { emit: emitJs, run: runJs, decl } = createRepl("js")
-  const { run: runGl } = createRepl("glsl")
+  const { emit: emitGl, run: runGl, decl: declGl } = createRepl("glsl")
   const plot = decl.fns.get(ident("plot")) ?? []
   const canvas = decl.types.get(ident("Canvas"))!
   const path = decl.types.get(ident("Path"))!
@@ -239,9 +248,11 @@ function createExecutor() {
     | { ok: true; lang: "js"; value: unknown; type: Type }
 
   let canvasObjects: ((cv: CanvasJs) => Path)[] = []
+  let programs: REGL.DrawCommand[] = []
 
   function go() {
     canvasObjects.length = 0
+    programs.length = 0
 
     const results = area.value
       .trim()
@@ -249,7 +260,51 @@ function createExecutor() {
       .map((v): Result => {
         try {
           if (/\b[zp]\b/.test(v)) {
-            return { ok: true, lang: "glsl", emit: runGl(v).emit }
+            const emit = runGl(v).emit
+            const draw = regl({
+              attributes: {
+                position: [
+                  [-1, 1],
+                  [-1, -1],
+                  [1, 1],
+                  [1, -1],
+                  [-1, -1],
+                  [1, 1],
+                ],
+              },
+              count: 6,
+              uniforms: {
+                // @ts-expect-error regl requires generics in weird places
+                u_scale: regl.prop("u_scale"),
+                // @ts-expect-error regl requires generics in weird places
+                u_shift: regl.prop("u_shift"),
+              },
+              vert: `#version 300 es
+precision highp float;
+in vec2 position;
+void main() {
+  gl_Position = vec4(position, 0, 1);
+}
+`,
+              frag: `#version 300 es
+precision highp float;
+out vec4 color;
+vec2 POS;
+uniform vec2 u_scale;
+uniform vec2 u_shift;
+${declGl.globals()}
+${emitGl}
+vec4 get_main() {
+  ${emit}
+}
+void main() {
+  POS = gl_FragCoord.xy * u_scale + u_shift;
+  color = get_main();
+}
+`,
+            })
+            programs.push(draw)
+            return { ok: true, lang: "glsl", emit }
           }
 
           const { emit, value: rawValue } = runJs(v)
@@ -332,7 +387,23 @@ const VALUE=(()=>{${emit}})();
     ctx.resetTransform()
   }
 
+  function drawShader() {
+    glCanvas.width = cv.width * cv.scale
+    glCanvas.height = cv.height * cv.scale
+    regl.poll()
+    regl.clear({ color: [0, 0, 0, 0] })
+    const p = programs[0]!
+    if (!p) return
+
+    const { xmin, w, ymin, h } = cv.bounds()
+    p({
+      u_scale: [w / gl.drawingBufferWidth, h / gl.drawingBufferHeight],
+      u_shift: [xmin, ymin],
+    })
+  }
+
   area.addEventListener("input", go)
+  cv.fn(OrderMajor.Shader, drawShader)
   cv.fn(OrderMajor.Canvas, draw)
   area.value = mini
   setTimeout(go)

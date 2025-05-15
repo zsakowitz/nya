@@ -657,9 +657,7 @@ export function createStdlib(props: EmitProps) {
         return new Value(isFinite(a.value as number), bool)
       }
       if (props.lang == "glsl") {
-        decl.global(
-          `bool ${isFiniteId}(float x){return!is_nan(x)&&!is_inf(x);}`,
-        )
+        decl.global(`bool ${isFiniteId}(float x){return!isnan(x)&&!isinf(x);}`)
       }
       return new Value(
         props.lang == "glsl" ? `${isFiniteId}(${a})` : `isFinite(${a})`,

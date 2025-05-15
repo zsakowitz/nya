@@ -6,4 +6,17 @@ fn main() {
   circle(point(2, 3), point(4, 5));
 
   point(2, 3);
+
+  if z.abs < 2 {
+    let c = z;
+    let mut z = z;
+    for i in [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] {
+      if z.abs < 2 {
+        z = z * z + c;
+      }
+    }
+    z
+  } else {
+    erf(z)
+  }
 }

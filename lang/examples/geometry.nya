@@ -305,16 +305,17 @@ fn stroke(p: Path, c: rgb) -> Path {
 }
 
 fn plot(cv: Canvas, p: Point) -> Path {
-  // [
-    path
-      .circle(p.to_cv_coords(cv), 4.0)
-      .color(dcg_purple)
-      .fill_opacity(1.0),
-  //   path
-  //     .circle(p.to_cv_coords(cv), 6.0)
-  //     .color(dcg_purple)
-  //     .fill_opacity(0.3),
-  // ]
+  path
+    .circle(p.to_cv_coords(cv), 4.0)
+    .color(dcg_purple)
+    .fill_opacity(1.0)
+}
+
+fn plot(cv: Canvas, p: complex) -> Path {
+  path
+    .circle(p.to_cv_coords(cv), 4.0)
+    .color(dcg_purple)
+    .fill_opacity(1.0)
 }
 
 fn plot(cv: Canvas, p: Circle) -> Path {
@@ -400,3 +401,5 @@ fn plot(cv: Canvas, l: Ray) -> Path {
 
   p
 }
+
+2 %*odot 3
