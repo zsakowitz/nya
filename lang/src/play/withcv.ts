@@ -32,7 +32,7 @@ const area = hx("textarea", {
 })
 const ret = hx(
   "output",
-  "block resize-none h-full w-full border-r border-t border-[--nya-border] font-mono p-2 bg-[--nya-bg] text-sm whitespace-pre-wrap",
+  "block resize-none h-full w-full border-r border-t border-[--nya-border] font-mono p-4 bg-[--nya-bg] text-xs whitespace-pre-wrap text-[--nya-prose]",
 )
 const lib = createAutocomplete()
 createFormatter()
@@ -356,9 +356,10 @@ const VALUE=(()=>{${emit}})();
         : null,
       )
       .filter((x) => x)
-      .join("\n\n")
+      .map((x) => h("block -indent-4 pl-4", x))
 
-    ret.value = log
+    while (ret.firstChild) ret.firstChild.remove()
+    ret.append(...log)
     cv.queue()
   }
 
