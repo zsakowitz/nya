@@ -1,7 +1,7 @@
-import complex from "../../examples/complex.nya"
-import geometry from "../../examples/geometry.nya"
-import lngamma from "../../examples/lngamma.nya"
-import withcv from "../../examples/withcv.nya"
+import complex from "../../lib/complex.nya"
+import geometry from "../../lib/geometry.nya"
+import lngamma from "../../lib/lngamma.nya"
+import withcv from "./base.nya"
 
 export const source =
   complex.replace(/assert.+/g, "") + "\n" + lngamma + "\n\n" + geometry
