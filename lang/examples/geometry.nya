@@ -401,5 +401,3 @@ fn plot(cv: Canvas, l: Ray) -> Path {
 
   p
 }
-
-2 %*odot 3
