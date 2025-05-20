@@ -1,5 +1,7 @@
 import type {
+  KAny,
   KFalse,
+  KSyntax,
   KTrue,
   OBar,
   OLBrack,
@@ -13,11 +15,26 @@ import type {
 import type { TokenGroup } from "../stream"
 import type { Token } from "../token"
 import type { ExprBlock, NodeExpr } from "./expr"
-import type { List, PlainList } from "./extra"
+import type { Bracketed, List, PlainList } from "./extra"
 import { Node } from "./node"
 
 export abstract class NodeType extends Node {
   declare private __brand_type
+}
+
+export class TypeSyntax extends NodeType {
+  constructor(readonly kw: Token<typeof KSyntax>) {
+    super(kw.start, kw.end)
+  }
+}
+
+export class TypeAny extends NodeType {
+  constructor(
+    readonly kw: Token<typeof KAny>,
+    readonly of: NodeType,
+  ) {
+    super(kw.start, of.end)
+  }
 }
 
 export class TypeVar extends NodeType {
@@ -51,6 +68,12 @@ export class TypeParen extends NodeType {
     readonly of: NodeType,
   ) {
     super(token.start, token.end)
+  }
+}
+
+export class TypeArrayUnsized extends NodeType {
+  constructor(readonly of: Bracketed<typeof OLBrack, NodeType>) {
+    super(of.start, of.end) // brack.end since it encloses everything
   }
 }
 

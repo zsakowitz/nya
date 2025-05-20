@@ -34,16 +34,16 @@ interface PuncListCmp {
 
 /** Tokens which can be binary operators. */
 export interface PuncListInfix extends PuncListPm, PuncListCmp {
-  "for": 0
-  "with": 0
-  "withseq": 0
-  "base": 0
-  "deriv": 0
+  for: 0
+  with: 0
+  withseq: 0
+  base: 0
+  deriv: 0
   "..": 0
   "...": 0
   "\\cdot ": 0
   "÷": 0
-  "mod": 0
+  mod: 0
   "\\to ": 0
   "\\Rightarrow ": 0
   ".": 0

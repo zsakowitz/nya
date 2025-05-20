@@ -1,0 +1,37 @@
+type num {
+  source js  = "number";
+  source glsl ="float";
+
+  variants {
+    *2 { source glsl = "vec2" }
+    *3 { source glsl = "vec3" }
+    *4 { source glsl = "vec4" }
+  }
+}
+
+type bool {
+  source js  = "boolean";
+  source glsl ="bool";
+
+  variants {
+    *2 { source glsl = "bvec2" }
+    *3 { source glsl = "bvec3" }
+    *4 { source glsl = "bvec4" }
+  }
+}
+
+fn +(a: num, b: num) -> num {
+  source js { $(a) + $(b) }
+  source glsl { $(a) + $(b) }
+    :: num
+}
+
+fn +(a: any num*2, b: any num*2) -> typeof a {
+  source glsl {}
+}
+
+fn +(a: any [num], b: any [num]) -> typeof a {
+  for a, b in a, b {
+    a + b
+  }
+}

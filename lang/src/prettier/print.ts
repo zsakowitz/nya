@@ -93,7 +93,8 @@ import {
   EnumVariant,
   ExposeAliases,
   FnParam,
-  FnReturnType,
+  FnReturnTypePlain,
+  FnReturnTypeTypeof,
   FnUsage,
   GenericParam,
   GenericParams,
@@ -133,10 +134,13 @@ import { PatIgnore, PatLit, PatStruct, PatVar } from "../ast/node/pat"
 import { StmtAssert, StmtComment, StmtExpr, StmtLet } from "../ast/node/stmt"
 import {
   TypeAlt,
+  TypeAny,
   TypeArray,
+  TypeArrayUnsized,
   TypeBlock,
   TypeLit,
   TypeParen,
+  TypeSyntax,
   TypeVar,
 } from "../ast/node/type"
 import { Token } from "../ast/token"
@@ -347,6 +351,8 @@ function setBlockContentsToMultiline(node: Node) {
     if (node.arms) {
       node.arms.block = true
     }
+  } else if (node instanceof Source) {
+    node.block = true
   } else if (node instanceof ExprBlock) {
     node.of.block = true
   }
@@ -360,7 +366,7 @@ export function print(node: Node | Token<number>, sb: Subprint): Doc {
       return (node as ExprLit).value.val
     case FnUsage:
       return [sb("kw"), " ", sb("usages")]
-    case FnReturnType:
+    case FnReturnTypePlain:
       return [sb("arrow"), " ", sb.paren("retType")]
     case ItemFn: {
       const self = node as ItemFn
@@ -989,6 +995,14 @@ export function print(node: Node | Token<number>, sb: Subprint): Doc {
         sb.paren("of"),
         sb.alt("semi", ";"),
       ]
+    case TypeSyntax:
+      return [sb("kw")]
+    case TypeAny:
+      return [sb("kw"), " ", sb("of")]
+    case TypeArrayUnsized:
+      return sb("of")
+    case FnReturnTypeTypeof:
+      return [sb("arrow"), " ", sb("kw"), " ", sb("into")]
   }
 
   throw new Error(

@@ -1,0 +1,40 @@
+// syntax CommaList {
+//   items: [syntax],
+// }
+//
+// syntax(node: CommaList) {
+//   assert false else "Cannot use a comma-delimited list here.";
+// }
+
+enum Brack {
+  :round,
+  :square,
+  :brace,
+  :abs_bar,
+  :exclm,
+  :angle,
+}
+
+struct Bracketed {
+  lhs: BrackLhs,
+  rhs: BrackRhs,
+  contents: syntax,
+}
+
+fn syntaxa(node: Bracketed) {
+  source { point($(a)) 
+  
+  }
+}
+
+// syntax(node: Bracketed) if node.lhs == :round && node.rhs == :round {
+//   syntax(node.contents[0])
+// }
+//
+// syntax(node: Bracketed) if node.lhs == :square && node.rhs == :square && node.contents is CommaList {
+//   [...syntax(node.contents.items)]
+// }
+//
+// syntax(node: Bracketed) if node.lhs == :square && node.rhs == :square {
+//   [syntax(node.contents)]
+// }

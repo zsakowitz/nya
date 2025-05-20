@@ -9,6 +9,7 @@ import type {
   KMatrix,
   KRule,
   KStruct,
+  KSyntax,
   KType,
   KUse,
   OArrowRet,
@@ -148,7 +149,7 @@ export class ItemEnumMap extends NodeItem {
 
 export class ItemStruct extends NodeItem {
   constructor(
-    readonly kw: Token<typeof KStruct | typeof KMatrix>,
+    readonly kw: Token<typeof KStruct | typeof KMatrix | typeof KSyntax>,
     readonly name: PlainList<Ident>,
     readonly tparams: GenericParams | null,
     readonly fields: List<StructFieldDecl, Token<typeof ODotDot> | null> | null,

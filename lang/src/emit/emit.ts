@@ -16,6 +16,7 @@ import {
   ExprVar,
   type NodeExpr,
 } from "../ast/node/expr"
+import { FnReturnTypeTypeof } from "../ast/node/extra"
 import {
   ItemFn,
   ItemLet,
@@ -652,6 +653,9 @@ export function emitItem(node: NodeItem, decl: Declarations): ItemResult {
     }
     if (!node.block) {
       issue(`Function '${fname}' is missing its contents.`)
+    }
+    if (node.ret instanceof FnReturnTypeTypeof) {
+      todo(`Function return types may not use 'typeof' yet.`)
     }
     const ret = node.ret ? emitType(node.ret.retType, decl) : decl.void
     const locals = new IdMap<Value>(null)

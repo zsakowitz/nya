@@ -1,0 +1,26 @@
+type num {
+  :js => "number",
+  :glsl => "float",
+  :glsl*2 => "vec2",
+  :glsl*3 => "vec3",
+  :glsl*4 => "vec4",
+}
+
+fn +(a: num, b: num) -> num {
+  source {
+    js => `$(a) + $(b)`,
+    glsl => `$(a) + $(b)`,
+  }
+}
+
+fn @+(a: num, b: num) -> typeof a {
+  for a in a { a + b }
+}
+
+fn @+(a: num, b: any num) -> typeof b {
+  for b in b { a + b }
+}
+
+fn @+(a: any num, b: any num) -> typeof a {
+  for a, b in a, b { a + b }
+}

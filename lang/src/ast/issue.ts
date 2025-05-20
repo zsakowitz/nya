@@ -49,6 +49,8 @@ export const Code = Object.freeze({
   CommentsMustBeItemsOrStatementsWhenPrettyPrinting: 248,
   ShouldHaveAlreadyParsedBinaryOperator: 249,
   ExpectedEq: 250,
+  NoGenericsOnSyntaxKindDeclaration: 251,
+  NoNestedAny: 252,
 
   // Emit errors
   ItemDeclaredTwice: 301,

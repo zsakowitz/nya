@@ -1,0 +1,53 @@
+syntax Number {
+  value: str,
+  sub: ?syntax,
+}
+
+syntax NumberHex {
+  value: str,
+}
+
+syntax Variable {
+  name: str,
+  sub: ?str,
+}
+
+syntax FnCall {
+  name: str,
+  args: [syntax],
+}
+
+syntax BrackParen {
+  value: syntax,
+}
+
+syntax BrackParenPoint {
+  items: [syntax],
+}
+
+syntax BrackSquare {
+  items: [syntax],
+}
+
+syntax BrackBrace {
+  items: [syntax],
+}
+
+syntax Fraction {
+  sup: syntax,
+  sub: syntax,
+}
+
+syntax MixedFraction {
+  int: str,
+  sup: str,
+  sub: str,
+}
+
+struct Piece {
+  
+}
+
+syntax Piecewise {
+  pieces: [Piece],
+}

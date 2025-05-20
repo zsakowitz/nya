@@ -7,6 +7,10 @@ import { FNS } from "./ops"
 import type { Sym } from "./sym"
 import type { JsValue } from "./ty"
 
+export interface PropsNya {
+  __props_nya: "__props_nya_brand"
+}
+
 export interface PropsJs {
   base: SReal
   bindingsJs: Bindings<JsValue | BindingFn>

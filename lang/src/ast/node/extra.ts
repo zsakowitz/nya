@@ -3,6 +3,7 @@ import {
   type KAs,
   type KConst,
   type KElse,
+  type KTypeof,
   type KUsage,
   type OArrowMap,
   type OArrowRet,
@@ -205,7 +206,7 @@ export class Rule extends Node {
   }
 }
 
-export class FnReturnType extends Node {
+export class FnReturnTypePlain extends Node {
   constructor(
     readonly arrow: Token<typeof OArrowRet>,
     readonly retType: NodeType,
@@ -213,6 +214,18 @@ export class FnReturnType extends Node {
     super(arrow.start, retType.end)
   }
 }
+
+export class FnReturnTypeTypeof extends Node {
+  constructor(
+    readonly arrow: Token<typeof OArrowRet>,
+    readonly kw: Token<typeof KTypeof>,
+    readonly into: Ident | null,
+  ) {
+    super(arrow.start, (into ?? kw).end)
+  }
+}
+
+export type FnReturnType = FnReturnTypePlain | FnReturnTypeTypeof
 
 export class FnUsage extends Node {
   constructor(

@@ -414,7 +414,7 @@ export class Source extends NodeExpr {
     readonly parts: SourceSingle[],
     readonly cast: PrescribedType | null,
     /** Whether to print as multiline. */
-    readonly block: boolean,
+    public block: boolean,
   ) {
     super(start, end)
   }

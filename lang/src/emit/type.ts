@@ -12,7 +12,7 @@ import {
 } from "./repr"
 import { Value, type ConstValue } from "./value"
 
-export interface TypeBase {
+export interface Type {
   repr: Repr
   emit: string
   toScalars(value: Value): Value[]
@@ -62,7 +62,7 @@ export function invalidType(
   issue(`Incompatible types: '${expected}' expected, but '${actual}' found.`)
 }
 
-export class Scalar implements TypeBase {
+export class Scalar implements Type {
   constructor(
     readonly name: string,
     readonly emit: string,
@@ -94,7 +94,7 @@ export class Scalar implements TypeBase {
   }
 }
 
-export class Struct implements TypeBase {
+export class Struct implements Type {
   static #of(
     props: EmitProps,
     name: string,
@@ -493,7 +493,7 @@ function ${lident}(${nvFields
   }
 }
 
-export const ArrayEmpty: TypeBase = {
+export const ArrayEmpty: Type = {
   repr: { type: "void" },
   emit: "void",
   toScalars() {
@@ -520,7 +520,7 @@ export const ArrayEmpty: TypeBase = {
   },
 }
 
-export class Array implements TypeBase {
+export class Array implements Type {
   readonly repr: Repr
   readonly emit: string
 
@@ -602,7 +602,7 @@ function isSubset(expectedSuper: Type[], expectedSub: Type[]) {
   return true
 }
 
-export class Alt implements TypeBase {
+export class Alt implements Type {
   readonly a: Struct
 
   constructor(readonly alts: Struct[]) {
@@ -663,5 +663,3 @@ export class Alt implements TypeBase {
     return this.alts.join(" | ")
   }
 }
-
-export type Type = Scalar | Struct | Array | Alt | typeof ArrayEmpty

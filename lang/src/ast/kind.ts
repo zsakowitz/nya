@@ -46,92 +46,98 @@ export const KFalse = 41
 export const KLocal = 42
 export const KMatrix = 43
 export const KMut = 44
+export const KSyntax = 45
+export const KIs = 46
+export const KAny = 47
+export const KTypeof = 48
+export const KMap = 49
 
 // operators prefixed with @
-export const APlus = 45
-export const AMinus = 46
-export const AMinusUnary = 47 // replaces AMinus if in an ExprUnary
-export const AStar = 48
-export const ASlash = 49
-export const AStarStar = 50
-export const ATildeUnary = 51
-export const ABar = 52
-export const AAmp = 53
-export const ABarBar = 54
-export const AAmpAmp = 55
-export const AAt = 56
-export const ABackslash = 57
-export const AEqEq = 58
-export const ANe = 59
-export const ALe = 60
-export const AGe = 61
-export const ALt = 62
-export const AGt = 63
-export const ABangUnary = 64
-export const ALParen = 65
-export const ARParen = 66
-export const ALBrack = 67
-export const ARBrack = 68
-export const ALBrace = 69
-export const ARBrace = 70
-export const ALAngle = 71
-export const ARAngle = 72
-export const ALInterp = 73
-export const ASemi = 74
-export const AComma = 75
-export const AColon = 76
-export const AArrowRet = 77
-export const AArrowMap = 78
-export const AColonColon = 79
-export const ADot = 80
-export const ADotDot = 81
-export const APercent = 82
-export const AEq = 83
-export const ATildeEq = 124
-export const AHash = 128
+export const APlus = 50
+export const AMinus = 51
+export const AMinusUnary = 52 // replaces AMinus if in an ExprUnary
+export const AStar = 53
+export const ASlash = 54
+export const AStarStar = 55
+export const ATildeUnary = 56
+export const ABar = 57
+export const AAmp = 58
+export const ABarBar = 59
+export const AAmpAmp = 60
+export const AAt = 61
+export const ABackslash = 62
+export const AEqEq = 63
+export const ANe = 64
+export const ALe = 65
+export const AGe = 66
+export const ALt = 67
+export const AGt = 68
+export const ABangUnary = 69
+export const ALParen = 70
+export const ARParen = 71
+export const ALBrack = 72
+export const ARBrack = 73
+export const ALBrace = 74
+export const ARBrace = 75
+export const ALAngle = 76
+export const ARAngle = 77
+export const ALInterp = 78
+export const ASemi = 79
+export const AComma = 80
+export const AColon = 81
+export const AArrowRet = 82
+export const AArrowMap = 83
+export const AColonColon = 84
+export const ADot = 85
+export const ADotDot = 86
+export const APercent = 87
+export const AEq = 88
+export const ATildeEq = 89
+export const AHash = 90
 
 // operators not prefixed with @
-export const OPlus = 84
-export const OMinus = 85
-export const OMinusUnary = 86 // replaces OMinus if in an ExprUnary
-export const OStar = 87
-export const OSlash = 88
-export const OStarStar = 89
-export const OTildeUnary = 90
-export const OBar = 91
-export const OAmp = 92
-export const OBarBar = 93
-export const OAmpAmp = 94
-export const OAt = 95
-export const OBackslash = 96
-export const OEqEq = 97
-export const ONe = 98
-export const OLe = 99
-export const OGe = 100
-export const OLt = 101
-export const OGt = 102
-export const OBangUnary = 103
-export const OLParen = 104
-export const ORParen = 105
-export const OLBrack = 106
-export const ORBrack = 107
-export const OLBrace = 108
-export const ORBrace = 109
-export const OLAngle = 110
-export const ORAngle = 111
-export const OLInterp = 112
-export const OSemi = 113
-export const OComma = 114
-export const OColon = 115
-export const OArrowRet = 116
-export const OArrowMap = 117
-export const OColonColon = 118
-export const ODot = 119
-export const ODotDot = 120
-export const OPercent = 121
-export const OEq = 122
-export const OTildeEq = 123
-export const OHash = 127
+export const OPlus = 91
+export const OMinus = 92
+export const OMinusUnary = 93 // replaces OMinus if in an ExprUnary
+export const OStar = 94
+export const OSlash = 95
+export const OStarStar = 96
+export const OTildeUnary = 97
+export const OBar = 98
+export const OAmp = 99
+export const OBarBar = 100
+export const OAmpAmp = 101
+export const OAt = 102
+export const OBackslash = 103
+export const OEqEq = 104
+export const ONe = 105
+export const OLe = 106
+export const OGe = 107
+export const OLt = 108
+export const OGt = 109
+export const OBangUnary = 110
+export const OLParen = 111
+export const ORParen = 112
+export const OLBrack = 113
+export const ORBrack = 114
+export const OLBrace = 115
+export const ORBrace = 116
+export const OLAngle = 117
+export const ORAngle = 118
+export const OLInterp = 119
+export const OSemi = 120
+export const OComma = 121
+export const OColon = 122
+export const OArrowRet = 123
+export const OArrowMap = 124
+export const OColonColon = 125
+export const ODot = 126
+export const ODotDot = 127
+export const OPercent = 128
+export const OEq = 129
+export const OTildeEq = 130
+export const OHash = 131
+export const ODotDotDot = 132
 
 export type Brack =
   | typeof OLParen
@@ -174,6 +180,11 @@ export const KWS: Record<string, number> = {
   local: KLocal,
   matrix: KMatrix,
   mut: KMut,
+  syntax: KSyntax,
+  is: KIs,
+  any: KAny,
+  typeof: KTypeof,
+  map: KMap,
   _: TIgnore,
 }
 
@@ -351,7 +362,33 @@ export const OVERLOADABLE = [
   OTildeEq, // approximate eq
 ] as const
 
+export const AVERLOADABLE = [
+  APlus, // add
+  AMinus, // subtract
+  AStar, // multiply
+  ASlash, // divide
+  AHash, // matrix multiplication
+  AStarStar, // exponentiate
+  ATildeUnary, // idk, but maybe useful
+  ABar, // union
+  AAmp, // intersection
+  ABarBar, // or
+  AAmpAmp, // and
+  ABackslash, // fraction
+  AEqEq, // eq
+  ANe, // ne
+  ALe, // le
+  AGe, // ge
+  ALt, // lt
+  AGt, // gt
+  ABangUnary, // not
+  AArrowRet, // type conversion
+  APercent, // modulus
+  ATildeEq, // approximate eq
+] as const
+
 export type OOverloadable = (typeof OVERLOADABLE)[number]
+export type AOverloadable = (typeof AVERLOADABLE)[number]
 
 export const OP_TEXT: Record<number, string> = {
   // @ts-ignore
@@ -464,6 +501,12 @@ export const OP_TEXT: Record<number, string> = {
   [KFalse]: "false",
   [KLocal]: "local",
   [KMatrix]: "matrix",
+  [KSyntax]: "syntax",
+  [KIs]: "is",
+  [KAny]: "any",
+  [KTypeof]: "typeof",
+  [KMap]: "map",
+  [ODotDotDot]: "...",
 }
 
 Object.freeze(KWS)

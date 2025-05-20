@@ -1,3 +1,4 @@
+import { Block } from "../emit/decl"
 import { Code, Pos } from "./issue"
 import {
   AAmp,
@@ -23,6 +24,7 @@ import {
   AStarStar,
   ATildeEq,
   ATildeUnary,
+  KAny,
   KAs,
   KAssert,
   KBreak,
@@ -46,8 +48,10 @@ import {
   KRule,
   KSource,
   KStruct,
+  KSyntax,
   KTrue,
   KType,
+  KTypeof,
   KUsage,
   KUse,
   OAmp,
@@ -88,6 +92,7 @@ import {
   OTildeEq,
   OTildeUnary,
   OVERLOADABLE,
+  AVERLOADABLE,
   TBuiltin,
   TComment,
   TDeriv,
@@ -143,7 +148,8 @@ import {
   EnumVariant,
   ExposeAliases,
   FnParam,
-  FnReturnType,
+  FnReturnTypePlain,
+  FnReturnTypeTypeof,
   FnUsage,
   GenericParam,
   GenericParams,
@@ -162,6 +168,7 @@ import {
   StructPatProp,
   StructPatPropPat,
   VarWithout,
+  type FnReturnType,
 } from "./node/extra"
 import {
   ItemAssert,
@@ -189,11 +196,14 @@ import {
 } from "./node/stmt"
 import {
   TypeAlt,
+  TypeAny,
   TypeArray,
+  TypeArrayUnsized,
   TypeBlock,
   TypeEmpty,
   TypeLit,
   TypeParen,
+  TypeSyntax,
   TypeVar,
   type NodeType,
 } from "./node/type"
@@ -288,13 +298,27 @@ function typeArray(stream: Stream) {
   if (!group) return null
 
   const of = type(group.contents)
-  const semi = group.contents.matchOr(OSemi, Code.MissingSemi)
+  const semi = group.contents.match(OSemi)
+  if (!semi) {
+    group.contents.requireDone()
+    return new TypeArrayUnsized(new Bracketed(group, of))
+  }
+
   const exprs = arraySizes(group.contents)
   return new TypeArray(group, of, semi, exprs)
 }
 
-function typeAtom(stream: Stream): NodeType {
+function typeAtom(stream: Stream, allowAny = true): NodeType {
   switch (stream.peek()) {
+    case KAny:
+      if (!allowAny) {
+        stream.raiseNext(Code.NoNestedAny)
+      }
+      return new TypeAny(stream.match(KAny)!, typeAtom(stream, false))
+
+    case KSyntax:
+      return new TypeSyntax(stream.match(KSyntax)!)
+
     case TIdent:
       return new TypeVar(stream.match(TIdent)!, typeArgs(stream))
 
@@ -965,6 +989,15 @@ function itemLet(stream: Stream): ItemLet | null {
   )
 }
 
+function isSemiOptional(expr: NodeExpr): boolean {
+  return (
+    expr instanceof ExprIf ||
+    expr instanceof ExprFor ||
+    expr instanceof ExprMatch ||
+    expr instanceof Block
+  )
+}
+
 function stmt(stream: Stream): NodeStmt | null {
   if (stream.isDone()) {
     return null
@@ -977,31 +1010,13 @@ function stmt(stream: Stream): NodeStmt | null {
     case KLet:
       return stmtLet(stream)!
 
-    case KIf:
-      return new StmtExpr(exprIf(stream)!, stream.match(OSemi), false)
-
-    case KFor:
-      return new StmtExpr(exprFor(stream, null)!, stream.match(OSemi), false)
-
-    case KMatch:
-      return new StmtExpr(exprMatch(stream)!, stream.match(OSemi), false)
-
-    case OLBrace:
-      return new StmtExpr(block(stream, null)!, stream.match(OSemi), false)
-
-    case TLabel: {
-      const [expr, needsSemi] = exprLabeled(stream)!
-      const semi = stream.match(OSemi)
-      return new StmtExpr(expr, semi, needsSemi && !semi)
-    }
-
     case KAssert:
       return stmtAssert(stream)!
 
     default:
       const e = expr(stream)
       const semi = stream.match(OSemi)
-      return new StmtExpr(e, semi, !semi)
+      return new StmtExpr(e, semi, !isSemiOptional(e) && !semi)
   }
 }
 
@@ -1256,13 +1271,21 @@ function itemFn(stream: Stream) {
   const tparams = genericParams(stream)
   const params = fnParams(stream)
   const arrow = stream.match(OArrowRet) // not matchOr since return types are optional (void is implied)
-  let ty = null
+  let ret: FnReturnType | null = null
   if (arrow && stream.peek() == OLBrace) {
     stream.raiseNext(Code.FnReturnTypeMustNotBeBlock)
   } else if (arrow) {
-    ty = type(stream)
+    const kw = stream.match(KTypeof)
+    if (kw) {
+      ret = new FnReturnTypeTypeof(
+        arrow,
+        kw,
+        stream.matchOr(TIdent, Code.ExpectedIdent),
+      )
+    } else {
+      ret = new FnReturnTypePlain(arrow, type(stream))
+    }
   }
-  const ret = arrow && new FnReturnType(arrow, ty!)
   const usageKw = stream.match(KUsage)
   const usage = usageKw && new FnUsage(usageKw, fnUsageExamples(stream))
   const semi = stream.match(OSemi)
@@ -1411,11 +1434,14 @@ const structNames = createUnbracketedCommaOp(
 )
 
 function itemStruct(stream: Stream) {
-  const kw = stream.matchAny([KStruct, KMatrix])
+  const kw = stream.matchAny([KStruct, KMatrix, KSyntax])
   if (!kw) return null
 
   const ident = structNames(stream)
   const generics = genericParams(stream)
+  if (kw.kind == KSyntax && generics) {
+    stream.raise(Code.NoGenericsOnSyntaxKindDeclaration, generics)
+  }
 
   return new ItemStruct(kw, ident, generics, structFields(stream))
 }
@@ -1454,7 +1480,11 @@ function itemTest(stream: Stream) {
 }
 
 function fnName(stream: Stream): IdentFnName | null {
-  return stream.match(TIdent) || stream.matchAny(OVERLOADABLE)
+  return (
+    stream.match(TIdent) ||
+    stream.matchAny(OVERLOADABLE) ||
+    stream.matchAny(AVERLOADABLE)
+  )
 }
 
 const aliasList = createCommaOp(OLBrace, fnName, null)
