@@ -1,3 +1,4 @@
+import { issue } from "../../lang/src/emit/error"
 import {
   Bracket,
   Infix,
@@ -49,7 +50,7 @@ type ItemBrack = {
 }
 
 class LexError extends Error {
-  constructor(message: string, lexer: Lexer, on: number) {
+  constructor(message: string, _lexer: Lexer, _on: number) {
     super(message)
   }
 }
@@ -87,7 +88,7 @@ class Lexer {
     return { type: "brack", via: [lhs, rhs], of: [contents] }
   }
 
-  expr(min_bp: number): Item {
+  expr(min: number): Item {
     const next = this.next()
 
     let lhs: Item =
@@ -95,24 +96,19 @@ class Lexer {
       : next.type == Leaf ? { type: "atom", of: next.val }
       : next.type == Bracket ? this.takeBracket(next)
       : next.type == Prefix || next.type == PrxIfx ?
-        { type: "op", via: next, of: [this.expr(next.p)] }
+        { type: "op", via: next, of: [this.expr(next.fr)] }
       : this.raisePrev("Expected expression.")
 
-    while (true) {
+    loop: while (true) {
       const op = this.peek()
+
       if (op == null) {
         break
       }
 
-      if (op.type == Leaf) {
-        this.raiseNext(
-          "Unexpected expression; implicit multiplication is not supported yet.",
-        )
-      }
-
       if (op.type == Suffix) {
-        const l_bp = op.p
-        if (l_bp < min_bp) {
+        const l = op.p
+        if (l < min) {
           break
         }
         this.next()
@@ -125,13 +121,48 @@ class Lexer {
         continue
       }
 
-      if (op.type == Infix || op.type == PrxIfx) {
-        if (op.pl < min_bp) {
+      if (op.type == Leaf || op.type == Prefix) {
+        if (JUXTAPOSE.il < min) {
           break
         }
+
+        for (let i = this.index; ; i++) {
+          const el = this.ir[i]
+          if (!el) {
+            break
+          }
+          if (el.type == PrxIfx || el.type == Prefix) {
+            if (el.fl < min) {
+              break loop
+            }
+          }
+        }
+
+        const rhs = this.expr(JUXTAPOSE.ir)
+        lhs = { type: "op", via: JUXTAPOSE, of: [lhs, rhs] }
+        continue
+      }
+
+      if (op.type == Infix || op.type == PrxIfx) {
+        if ((min == 0 ? (op.il0 ?? op.il) : op.il) < min) {
+          break
+        }
+
+        for (let i = this.index + 1; ; i++) {
+          const el = this.ir[i]
+          if (!el) {
+            break
+          }
+          if (el.type == PrxIfx || el.type == Prefix) {
+            if (el.fl < min) {
+              break loop
+            }
+          }
+        }
+
         this.next()
 
-        const rhs = this.expr(op.pr)
+        const rhs = this.expr(min == 0 ? (op.ir0 ?? op.ir) : op.ir)
         lhs = { type: "op", via: op, of: [lhs, rhs] }
         continue
       }
@@ -141,33 +172,18 @@ class Lexer {
 
     return lhs
   }
-}
 
-const T1: IR = { type: Leaf, val: { type: "num", data: "1" } }
-const T2: IR = { type: Leaf, val: { type: "num", data: "2" } }
-const T3: IR = { type: Leaf, val: { type: "num", data: "3" } }
-const T4: IR = { type: Leaf, val: { type: "num", data: "4" } }
-const T5: IR = { type: Leaf, val: { type: "num", data: "5" } }
-const T6: IR = { type: Leaf, val: { type: "num", data: "6" } }
+  parse() {
+    const item = this.expr(0)
+    if (this.index < this.ir.length) {
+      this.raiseNext("I don't understand this.")
+    }
+    return item
+  }
+}
 
 function o(data: string) {
   return { type: "op" as const, data }
-}
-
-const OPlus: IR = { type: PrxIfx, val: o("+"), pl: 5, pr: 6, p: 12 }
-const OMinus: IR = { type: PrxIfx, val: o("-"), pl: 5, pr: 6, p: 12 }
-const OTimes: IR = { type: Infix, val: o("*"), pl: 8, pr: 10 }
-const OSine: IR = { type: Prefix, val: o("sin"), p: 7 }
-
-function emit(data: Item): string {
-  switch (data.type) {
-    case "atom":
-      return "" + data.of.data
-    case "op":
-      return `(${data.via.val.data} ${data.of.map(emit).join(" ")})`
-    case "brack":
-      return `(${data.via[0].val.data}..${data.via[1].val.data} ${data.of.map(emit).join(" ")})`
-  }
 }
 
 function emit2(data: Item): string {
@@ -185,52 +201,99 @@ function emit2(data: Item): string {
 }
 
 function go(a: IR[]) {
-  const lexer = new Lexer(a)
-  // console.log(
-  //   JSON.stringify(
-  //     lexer.expr_bp(0),
-  //     (_, v) => {
-  //       if (typeof v == "object" && v && "type" in v) {
-  //         if ("via" in v && "of" in v) {
-  //           return {
-  //             type: v.type,
-  //             via:
-  //               Array.isArray(v.via) ? v.via.map((x: any) => x.val) : v.via.val,
-  //             of: v.of,
-  //           }
-  //         }
-  //         if ("data" in v && typeof v.data == "string") {
-  //           return v.data
-  //         }
-  //       }
-  //       return v
-  //     },
-  //     2,
-  //   ),
-  // )
-  const e = lexer.expr(0)
-  // console.log(emit(e))
-  console.log(emit2(e))
-  // console.log()
+  const e = new Lexer(a).parse()
+  return emit2(e)
 }
 
-go([T2, OTimes, T3])
-go([OSine, T2, OTimes, OSine, T3])
+const JUXTAPOSE: IRInfix = { type: Infix, val: o("*"), il: 10, ir: 11 }
 
-function g(p1: number, p2: number, p3: number) {
-  const OTimes: IR = { type: Infix, val: o("*"), pl: p1, pr: p2 }
-  const OSine: IR = { type: Prefix, val: o("sin"), p: p3 }
-  go([OSine, T2, OTimes, OSine, T3]) // ((sin 2) * (sin 3))
-  go([OSine, T2, OTimes, T3]) // (sin (2 * 3))
+const ops: Record<string, IR> = {
+  // @ts-expect-error
+  __proto__: null,
+
+  ",": { type: Infix, val: o(","), il: 1, ir: 2 },
+  with: { type: Infix, val: o("with"), il: 1, ir: 2 },
+
+  not: { type: Prefix, val: o("not"), fl: 2, fr: 2 },
+
+  "==": { type: Infix, val: o("=="), il: 3, ir: 4 },
+  "!=": { type: Infix, val: o("!="), il: 3, ir: 4 },
+
+  "+": { type: PrxIfx, val: o("+"), il: 5, ir: 6, fl: 10, fr: 10 },
+  "-": { type: PrxIfx, val: o("-"), il: 5, ir: 6, fl: 10, fr: 10 },
+
+  sum: { type: Prefix, val: o("sum"), fl: 7, fr: 7 },
+
+  sin: { type: Prefix, val: o("sin"), fl: 8, fr: 9 },
+  exp: { type: Prefix, val: o("exp"), fl: 8, fr: 9 },
+
+  "*": { type: Infix, val: o("*"), il: 10, ir: 11 },
+  "/": { type: Infix, val: o("/"), il: 10, ir: 11 },
+  mod: { type: Infix, val: o("mod"), il: 10, ir: 11 },
+  odot: { type: Infix, val: o("odot"), il: 10, ir: 11 },
+  "%": { type: Infix, val: o("%"), il: 10, ir: 11 },
+
+  "^": { type: Infix, val: o("^"), il: 13, ir: 12 },
 }
 
-for (const a of [0, 1, 2, 3]) {
-  for (const b of [0, 1, 2, 3]) {
-    for (const c of [0, 1, 2, 3]) {
-      g(a, b, c)
-    }
-  }
+function parse(x: string) {
+  const ir = (x.match(/[A-Za-z]+|\d+|[=!<>]=|&&|\|\||\S/g) ?? []).map(
+    (x): IR => {
+      if (/^\w$/.test(x)) {
+        return { type: Leaf, val: { type: "num", data: x } }
+      }
+      return ops[x] ?? issue("Invalid token " + x + ".")
+    },
+  )
+
+  return go(ir)
 }
+
+for (const a of [1, 2, 3, 4])
+  for (const b of [1, 2, 3, 4])
+    for (const c of [1, 2, 3, 4])
+      for (const e of [1, 2, 3, 4])
+        for (const f of [1, 2, 3, 4])
+          for (const g of [1, 2, 3, 4])
+            for (const h of [1, 2, 3, 4])
+              for (const d of [1, 2, 3, 4]) {
+                ops[","] = {
+                  type: Infix,
+                  val: o(","),
+                  il: a,
+                  il0: b,
+                  ir: c,
+                  ir0: d,
+                }
+                ops["with"] = {
+                  type: Infix,
+                  val: o("with"),
+                  il: e,
+                  il0: f,
+                  ir: g,
+                  ir0: h,
+                }
+                if (
+                  parse(`2 , 3 with 4 , 5 with 6 , 7`) ==
+                  "(2 , ((3 with (4 , 5)) with (6 , 7)))"
+                ) {
+                  const n = +(a == b) + +(c == d) + +(e == f) + +(g == h)
+                  if (n >= 3) {
+                    console.log([a, b, c, d, e, f, g, h].join(" ") + " // " + n)
+                  }
+                }
+              }
+
+// (2 , ((3 with (4 , 5)) with (6 , 7)))
+
+//
+// ;`
+// 2 , 3 with 4 , 5
+// `
+//   .split("\n")
+//   .map((x) => x.trim())
+//   .filter((x) => x)
+//   .forEach(parse)
 
 // Notational oddities:
 //   sin a b = sin (a b)

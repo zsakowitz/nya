@@ -56,7 +56,8 @@ export const Bracket = 7
 export interface IRPrefix {
   type: typeof Prefix
   val: Data<Prefix>
-  p: number
+  fl: number
+  fr: number
 }
 
 export interface IRSuffix {
@@ -73,16 +74,19 @@ export interface IRSuffix {
 export interface IRInfix {
   type: typeof Infix
   val: Data<Infix>
-  pl: number
-  pr: number
+  il: number
+  ir: number
+  il0?: number
+  ir0?: number
 }
 
 export interface IRPrefixInfix {
   type: typeof PrxIfx
   val: Data<PrefixInfix>
-  pl: number
-  pr: number
-  p: number
+  il: number
+  ir: number
+  fl: number
+  fr: number
 }
 
 export interface IRBracket {
