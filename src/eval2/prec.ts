@@ -232,6 +232,59 @@ for (const a of [0, 1, 2, 3]) {
   }
 }
 
+// (1 , ((2 with (3 , 4)) with (5 , 6)))
+// (, 1 (with (, 2 3) (with 4 (, 5 6)))))
+
+// function resolveOperators(ir: IR[]) {
+//   let expressionImmediatelyPreceding = true
+//
+//   for (let i = 0; i < ir.length; i++) {
+//     const el = ir[i]!
+//
+//     switch (el.type) {
+//       // ... 2, x, height
+//       case Leaf:
+//         expressionImmediatelyPreceding = true
+//         break
+//
+//       // ... sin, exp
+//       case Prefix:
+//         expressionImmediatelyPreceding = false
+//         break
+//
+//       // ... !, ², .sin, .glider(0.5)
+//       case Suffix:
+//         if (!expressionImmediatelyPreceding) {
+//           throw new Error(
+//             `Suffix '${el.type}' encountered without preceding expression.`,
+//           )
+//         }
+//         expressionImmediatelyPreceding = true
+//         break
+//
+//       // *, mod
+//       case Infix:
+//         if (!expressionImmediatelyPreceding) {
+//           throw new Error(
+//             `Infix operator '${el.type}' encountered without preceding expression.`,
+//           )
+//         }
+//         expressionImmediatelyPreceding = false
+//         break
+//
+//       // +, -
+//       case PrxIfx:
+//         if (expressionImmediatelyPreceding) {
+//           el.type = Infix
+//         } else {
+//           el.type = Prefix
+//           el.p = el.pp
+//         }
+//         expressionImmediatelyPreceding = false
+//     }
+//   }
+// }
+
 // Notational oddities:
 //   sin a b = sin (a b)
 //   sum a b = sum (a b)
