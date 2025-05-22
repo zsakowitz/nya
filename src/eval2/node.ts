@@ -1,4 +1,5 @@
 import type { ParenLhs, ParenRhs } from "@/field/cmd/math/brack"
+import type { Item } from "./prec"
 
 export interface Leaf {
   num: string
@@ -16,8 +17,8 @@ export interface Leaf {
 }
 
 export interface Prefix {
-  op: { name: string }
-  integral: { sup: Node | null; sub: Node | null }
+  op: string
+  big: { kind: "sum" | "prod" | "int"; sup: Node | null; sub: Node | null }
   derivative: { name: string }
 }
 
@@ -30,7 +31,12 @@ export interface Suffix {
 }
 
 export interface Infix {
-  op: { name: string }
+  juxtaposition: null
+  op: string
+}
+
+export interface Bracket {
+  paren: null
 }
 
 export type PrefixInfix = {
@@ -45,21 +51,59 @@ export const Prefix = 2
 export const Suffix = 3
 export const Infix = 4
 export const PrxIfx = 5
+export const Bracket = 7
 
-type PrxIfx = typeof Prefix | typeof Infix | typeof PrxIfx
+export interface IRPrefix {
+  type: typeof Prefix
+  val: Data<Prefix>
+  p: number
+}
+
+export interface IRSuffix {
+  type: typeof Suffix
+  val: Data<Suffix>
+  p: number
+  /**
+   * If present, this suffix is treated like a left-hand bracket, and a matching
+   * IRBracket will be expected to follow.
+   */
+  matches?(bracket: IRBracket): boolean
+}
+
+export interface IRInfix {
+  type: typeof Infix
+  val: Data<Infix>
+  pl: number
+  pr: number
+}
+
+export interface IRPrefixInfix {
+  type: typeof PrxIfx
+  val: Data<PrefixInfix>
+  pl: number
+  pr: number
+  p: number
+}
+
+export interface IRBracket {
+  type: typeof Bracket
+  val: Data<Bracket>
+  /**
+   * If absent, this is a right-hand-only bracket. If present, this is a
+   * left-hand bracket, and the function checks if it matches an opposing
+   * bracket.
+   */
+  matches?(other: IRBracket): boolean
+}
 
 export type IR =
-  | { type: typeof Leaf; val: Node }
-  | { type: typeof Prefix; val: Data<Prefix>; p: number }
-  | { type: typeof Suffix; val: Data<Suffix> }
-  | { type: typeof Infix; val: Data<Infix>; p: number }
-  | { type: PrxIfx; val: Data<PrefixInfix>; p: number }
-
-export type Node =
-  | { type: typeof Empty }
   | { type: typeof Leaf; val: Data<Leaf> }
-  | { type: typeof Prefix; via: Data<Prefix>; on: Node }
-  | { type: typeof Suffix; via: Data<Suffix>; on: Node }
-  | { type: typeof Infix; via: Data<Infix>; lhs: Node; rhs: Node }
+  | IRPrefix
+  | IRSuffix
+  | IRInfix
+  | IRPrefixInfix
+  | IRBracket
 
-// Higher precedence is tighter
+export type IR2Node = { val: Node; p: IRPrefix[]; s: IRSuffix[] }
+
+export type Node = Item
