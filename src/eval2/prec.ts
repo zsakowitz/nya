@@ -88,7 +88,7 @@ class Lexer {
     return { type: "brack", via: [lhs, rhs], of: [contents] }
   }
 
-  expr(min: number): Item {
+  expr(min: number, innerPrefixBound: number = min): Item {
     const next = this.next()
 
     let lhs: Item =
@@ -96,7 +96,11 @@ class Lexer {
       : next.type == Leaf ? { type: "atom", of: next.val }
       : next.type == Bracket ? this.takeBracket(next)
       : next.type == Prefix || next.type == PrxIfx ?
-        { type: "op", via: next, of: [this.expr(next.fr)] }
+        {
+          type: "op",
+          via: next,
+          of: [this.expr(next.fr, Math.max(next.fr, innerPrefixBound))],
+        }
       : this.raisePrev("Expected expression.")
 
     loop: while (true) {
@@ -121,30 +125,8 @@ class Lexer {
         continue
       }
 
-      if (op.type == Leaf || op.type == Prefix) {
-        if (JUXTAPOSE.il < min) {
-          break
-        }
-
-        for (let i = this.index; ; i++) {
-          const el = this.ir[i]
-          if (!el) {
-            break
-          }
-          if (el.type == PrxIfx || el.type == Prefix) {
-            if (el.fl < min) {
-              break loop
-            }
-          }
-        }
-
-        const rhs = this.expr(JUXTAPOSE.ir)
-        lhs = { type: "op", via: JUXTAPOSE, of: [lhs, rhs] }
-        continue
-      }
-
       if (op.type == Infix || op.type == PrxIfx) {
-        if ((min == 0 ? (op.il0 ?? op.il) : op.il) < min) {
+        if (op.il < min) {
           break
         }
 
@@ -154,15 +136,16 @@ class Lexer {
             break
           }
           if (el.type == PrxIfx || el.type == Prefix) {
-            if (el.fl < min) {
+            if (el.fl < innerPrefixBound) {
               break loop
             }
-          }
+          } else break
         }
 
         this.next()
 
-        const rhs = this.expr(min == 0 ? (op.ir0 ?? op.ir) : op.ir)
+        const pr = min == 0 ? (op.ir0 ?? op.ir) : op.ir
+        const rhs = this.expr(pr, Math.max(min, pr))
         lhs = { type: "op", via: op, of: [lhs, rhs] }
         continue
       }
@@ -205,36 +188,36 @@ function go(a: IR[]) {
   return emit2(e)
 }
 
-const JUXTAPOSE: IRInfix = { type: Infix, val: o("*"), il: 10, ir: 11 }
-
 const ops: Record<string, IR> = {
   // @ts-expect-error
   __proto__: null,
 
-  ",": { type: Infix, val: o(","), il: 1, ir: 2 },
+  ",": { type: Infix, val: o(","), il: 2, ir: 2, ir0: 1 },
   with: { type: Infix, val: o("with"), il: 1, ir: 2 },
 
-  not: { type: Prefix, val: o("not"), fl: 2, fr: 2 },
+  not: { type: Prefix, val: o("not"), fl: 12, fr: 12 },
 
-  "==": { type: Infix, val: o("=="), il: 3, ir: 4 },
-  "!=": { type: Infix, val: o("!="), il: 3, ir: 4 },
+  "==": { type: Infix, val: o("=="), il: 13, ir: 14 },
+  "!=": { type: Infix, val: o("!="), il: 13, ir: 14 },
 
-  "+": { type: PrxIfx, val: o("+"), il: 5, ir: 6, fl: 10, fr: 10 },
-  "-": { type: PrxIfx, val: o("-"), il: 5, ir: 6, fl: 10, fr: 10 },
+  "+": { type: PrxIfx, val: o("+"), il: 15, ir: 16, fl: 18, fr: 18 },
+  "-": { type: PrxIfx, val: o("-"), il: 15, ir: 16, fl: 18, fr: 18 },
 
-  sum: { type: Prefix, val: o("sum"), fl: 7, fr: 7 },
+  sum: { type: Prefix, val: o("sum"), fl: 17, fr: 17 },
 
-  sin: { type: Prefix, val: o("sin"), fl: 8, fr: 9 },
-  exp: { type: Prefix, val: o("exp"), fl: 8, fr: 9 },
+  sin: { type: Prefix, val: o("sin"), fl: 19, fr: 20 },
+  exp: { type: Prefix, val: o("exp"), fl: 19, fr: 20 },
 
-  "*": { type: Infix, val: o("*"), il: 10, ir: 11 },
-  "/": { type: Infix, val: o("/"), il: 10, ir: 11 },
-  mod: { type: Infix, val: o("mod"), il: 10, ir: 11 },
-  odot: { type: Infix, val: o("odot"), il: 10, ir: 11 },
-  "%": { type: Infix, val: o("%"), il: 10, ir: 11 },
+  "*": { type: Infix, val: o("*"), il: 21, ir: 22 },
+  "/": { type: Infix, val: o("/"), il: 21, ir: 22 },
+  mod: { type: Infix, val: o("mod"), il: 21, ir: 22 },
+  odot: { type: Infix, val: o("odot"), il: 21, ir: 22 },
+  "%": { type: Infix, val: o("%"), il: 21, ir: 22 },
 
-  "^": { type: Infix, val: o("^"), il: 13, ir: 12 },
+  "^": { type: Infix, val: o("^"), il: 24, ir: 23 },
 }
+
+const JUXTAPOSE: IRInfix = ops["*"] as IRInfix
 
 function parse(x: string) {
   const ir = (x.match(/[A-Za-z]+|\d+|[=!<>]=|&&|\|\||\S/g) ?? []).map(
@@ -249,51 +232,34 @@ function parse(x: string) {
   return go(ir)
 }
 
-for (const a of [1, 2, 3, 4])
-  for (const b of [1, 2, 3, 4])
-    for (const c of [1, 2, 3, 4])
-      for (const e of [1, 2, 3, 4])
-        for (const f of [1, 2, 3, 4])
-          for (const g of [1, 2, 3, 4])
-            for (const h of [1, 2, 3, 4])
-              for (const d of [1, 2, 3, 4]) {
-                ops[","] = {
-                  type: Infix,
-                  val: o(","),
-                  il: a,
-                  il0: b,
-                  ir: c,
-                  ir0: d,
-                }
-                ops["with"] = {
-                  type: Infix,
-                  val: o("with"),
-                  il: e,
-                  il0: f,
-                  ir: g,
-                  ir0: h,
-                }
-                if (
-                  parse(`2 , 3 with 4 , 5 with 6 , 7`) ==
-                  "(2 , ((3 with (4 , 5)) with (6 , 7)))"
-                ) {
-                  const n = +(a == b) + +(c == d) + +(e == f) + +(g == h)
-                  if (n >= 3) {
-                    console.log([a, b, c, d, e, f, g, h].join(" ") + " // " + n)
-                  }
-                }
-              }
-
 // (2 , ((3 with (4 , 5)) with (6 , 7)))
 
-//
-// ;`
-// 2 , 3 with 4 , 5
-// `
-//   .split("\n")
-//   .map((x) => x.trim())
-//   .filter((x) => x)
-//   .forEach(parse)
+const result = `
+2 , 3 with 4 , 5 with 6 , 7 // (2 , ((3 with (4 , 5)) with (6 , 7)))
+2 + 3 * 4 // (2 + (3 * 4))
+2 * 3 * 4 // ((2 * 3) * 4)
+2 ^ 3 ^ 4 // (2 ^ (3 ^ 4))
+2 , 3 with 4 , 5 // (2 , (3 with (4 , 5)))
+sin exp - x // (sin (exp (- x)))
+sin exp - 2 * 3 // (sin (exp (- (2 * 3))))
+sin - 2 * sin 3 // ((sin (- 2)) * (sin 3))
+sin 2 * sin 3 // ((sin 2) * (sin 3))
+sum 2 * sum 3 // (sum (2 * (sum 3)))
+2 * 3 ^ - 4 * sin 5 // ((2 * (3 ^ (- 4))) * (sin 5))
+2 * 3 ^ 4 // (2 * (3 ^ 4))
+2 * 3 ^ - 4 // (2 * (3 ^ (- 4)))
+`
+  .split("\n")
+  .map((x) => x.trim())
+  .filter((x) => x)
+  .map((x) => {
+    const [i, o] = x.split(" // ")
+    const ret = parse(i!)
+    return (ret === o ? "✅ " : "❌ ") + ret
+  })
+  .join("\n")
+
+Bun.write("./text", result, { createPath: true })
 
 // Notational oddities:
 //   sin a b = sin (a b)

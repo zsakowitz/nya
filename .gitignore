@@ -8,3 +8,4 @@ pkg/graphsource
 graph.svg
 lang/src/prettier/plugin.js
 lang/src/play/compiled.*
+text

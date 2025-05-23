@@ -76,7 +76,6 @@ export interface IRInfix {
   val: Data<Infix>
   il: number
   ir: number
-  il0?: number
   ir0?: number
 }
 
@@ -87,6 +86,7 @@ export interface IRPrefixInfix {
   ir: number
   fl: number
   fr: number
+  ir0?: number
 }
 
 export interface IRBracket {
