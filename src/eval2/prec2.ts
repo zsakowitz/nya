@@ -15,8 +15,13 @@ const ops: Record<string, IR<string>> = {
   true: leaf("true"),
   false: leaf("false"),
 
-  ",": infx(",", 4, 5, 1),
+  ",": infx(",", 8, 9, 0),
   with: infx("with", 2, 3),
+
+  iterate: prfx("iterate", 6),
+  from: infx("from", 6, 7),
+  until: infx("until", 6, 7),
+  while: infx("while", 6, 7),
 
   not: prfx("not", 12),
 
@@ -30,9 +35,8 @@ const ops: Record<string, IR<string>> = {
   sum: prfx("sum", 17),
 
   sin: prfx("sin", 18, 19),
+  cos: prfx("cos", 18, 19),
   exp: prfx("exp", 18, 19),
-
-  cos: prfx("cos", 1, 19),
 
   "*": infx("*", 20, 21),
   "/": infx("/", 20, 21),
@@ -40,6 +44,35 @@ const ops: Record<string, IR<string>> = {
   "^": infx("^", 24, 23),
 
   "!": sufx("!", 25),
+}
+
+function play(
+  p1: number,
+  p2: number,
+  p3: number,
+  p4: number,
+  p5: number,
+  p6: number,
+) {
+  ops[","] = infx(",", p1, p2, p3)
+  ops["with"] = infx("with", p4, p5, p6)
+  if (
+    (log(of("3 , 4 , 5").parse()) == "((3 , 4) , 5)" ||
+      log(of("3 , 4 , 5").parse()) == "(3 , (4 , 5))") &&
+    log(of("3 , 4 with 5").parse()) == "(3 , (4 with 5))" &&
+    log(of("3 , 4 with 5 , 6").parse()) == "(3 , (4 with (5 , 6)))" &&
+    log(of("3 , 4 with 5 , 6 with 7 , 8").parse()) ==
+      "(3 , ((4 with (5 , 6)) with (7 , 8)))" &&
+    log(of("3 , 2 , 4 with 5 , 6 with 7 , 8").parse()).includes(
+      "((4 with (5 , 6)) with (7 , 8))",
+    ) &&
+    [p1, p2, p4, p5].filter((x, i, a) => a.indexOf(x) == i).length == 4 &&
+    [p3, p4, p5].filter((x, i, a) => a.indexOf(x) == i).length == 3 &&
+    [p6, p1, p2].filter((x, i, a) => a.indexOf(x) == i).length == 3
+  ) {
+    return true
+  }
+  return false
 }
 
 function of(text: string) {
@@ -65,6 +98,10 @@ function log(node: Node<string>): string {
 }
 
 const sources = `
+iterate f from z = 0
+iterate f from z = 0 until z < 5
+iterate f from z = 0 until z < 5 with z = 5
+2 , iterate f
 a , b with c , d with e , f
 2 = 3 = 4 = 5 = 6
 true < false > true < false > true < false > true + 2 * 3 * 4 + 5 * 8 * - 9 * sin 4 * 4 * not true < 2
@@ -83,12 +120,14 @@ sin 4 !
 2 = 3 + 4 * 5 ^ 6
 2 ! * 3 * - 4 !
 2 sin 4 sin 3 !
+3 , 2 , 4 , 5 , 8 , 9
+3 , 2 , 3 with 4
 `
   .split("\n")
   .map((x) => x.trim())
   .filter((x) => x)
 
-const rounds = 1e4
+const rounds = 1e1
 function round() {
   let now = performance.now()
   for (let i = 0; i < rounds; i++) {
@@ -110,8 +149,24 @@ console.log(
   `${((mean / rounds) * 1e3).toFixed(2)}µs ± ${((stdev(data) / rounds) * 1e6).toFixed(2)}ns`,
 )
 
-const ret = sources.map((x) => log(of(x).parse())).join("\n")
+console.time()
+let ret = sources.map((x) => log(of(x).parse())).join("\n")
+let i = 0
+for (const p1 of [0, 1, 2, 3, 4, 5, 6])
+  for (const p2 of [0, 1, 2, 3, 4, 5, 6])
+    for (const p3 of [0, 1, 2, 3, 4, 5, 6])
+      for (const p4 of [0, 1, 2, 3, 4, 5, 6])
+        for (const p5 of [0, 1, 2, 3, 4, 5, 6])
+          for (const p6 of [0, 1, 2, 3, 4, 5, 6]) {
+            const p = [p1, p2, p3, p4, p5, p6]
+            if (play(p1, p2, p3, p4, p5, p6)) {
+              ret += "\n" + p.join(" ")
+              i++
+            }
+          }
+console.timeEnd()
+console.log(`${i} / ${7 ** 6} = ${((i / 7 ** 6) * 100).toFixed(2)}%`)
 
 writeFileSync("./text", ret)
 
-// current algorithm is 7.4~7.5µs
+// current algorithm is 20~27µs
