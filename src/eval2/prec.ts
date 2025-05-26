@@ -29,4 +29,6 @@ export const enum Precedence {
 
   ExponentR,
   ExponentL,
+
+  Suffixed,
 }

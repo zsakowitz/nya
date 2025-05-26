@@ -1,49 +1,49 @@
 import { writeFileSync } from "node:fs"
 import { todo } from "../../lang/src/emit/error"
 import {
-  infx,
-  leaf,
+  pInfx,
+  pLeaf,
   Parser,
-  pifx,
-  prfx,
-  sufx,
-  type IR,
-  type Node,
+  pPifx,
+  pPrfx,
+  pSufx,
+  type ParseIR,
+  type ParseNode,
 } from "./parse"
 
-const ops: Record<string, IR<string>> = {
-  true: leaf("true"),
-  false: leaf("false"),
+const ops: Record<string, ParseIR<string>> = {
+  true: pLeaf("true"),
+  false: pLeaf("false"),
 
-  ",": infx(",", 8, 9, 0),
-  with: infx("with", 2, 3),
+  ",": pInfx(",", 8, 9, 0),
+  with: pInfx("with", 2, 3),
 
-  iterate: prfx("iterate", 5),
-  from: infx("from", 6, 7),
-  until: infx("until", 6, 7),
-  while: infx("while", 6, 7),
+  iterate: pPrfx("iterate", 5),
+  from: pInfx("from", 6, 7),
+  until: pInfx("until", 6, 7),
+  while: pInfx("while", 6, 7),
 
-  not: prfx("not", 12),
+  not: pPrfx("not", 12),
 
-  "=": infx("=", 13, 14),
-  "<": infx("<", 13, 14),
-  ">": infx(">", 13, 14),
+  "=": pInfx("=", 13, 14),
+  "<": pInfx("<", 13, 14),
+  ">": pInfx(">", 13, 14),
 
-  "+": pifx("+", 15, 16, 22),
-  "-": pifx("-", 15, 16, 22),
+  "+": pPifx("+", 15, 16, 22),
+  "-": pPifx("-", 15, 16, 22),
 
-  sum: prfx("sum", 17),
+  sum: pPrfx("sum", 17),
 
-  sin: prfx("sin", 18, 19),
-  cos: prfx("cos", 18, 19),
-  exp: prfx("exp", 18, 19),
+  sin: pPrfx("sin", 18, 19),
+  cos: pPrfx("cos", 18, 19),
+  exp: pPrfx("exp", 18, 19),
 
-  "*": infx("*", 20, 21),
-  "/": infx("/", 20, 21),
+  "*": pInfx("*", 20, 21),
+  "/": pInfx("/", 20, 21),
 
-  "^": infx("^", 24, 23),
+  "^": pInfx("^", 24, 23),
 
-  "!": sufx("!", 25),
+  "!": pSufx("!", 25),
 }
 
 function play(
@@ -54,8 +54,8 @@ function play(
   p5: number,
   p6: number,
 ) {
-  ops[","] = infx(",", p1, p2, p3)
-  ops["with"] = infx("with", p4, p5, p6)
+  ops[","] = pInfx(",", p1, p2, p3)
+  ops["with"] = pInfx("with", p4, p5, p6)
   if (
     (log(of("3 , 4 , 5").parse()) == "((3 , 4) , 5)" ||
       log(of("3 , 4 , 5").parse()) == "(3 , (4 , 5))") &&
@@ -79,14 +79,14 @@ function of(text: string) {
   return new Parser(
     (text.match(/[A-Za-z]+|\d+|\S/g) ?? []).map((x) =>
       /^\w$|^\d+$/.test(x) ?
-        leaf(x)
+        pLeaf(x)
       : (ops[x] ?? todo(`Unknown token '${x}'.`)),
     ),
     ops["*"]!,
   )
 }
 
-function log(node: Node<string>): string {
+function log(node: ParseNode<string>): string {
   const op = node.data
 
   return (

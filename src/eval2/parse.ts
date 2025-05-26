@@ -42,9 +42,9 @@ export interface IRInfx<T> {
   pr0: number
 }
 
-export class IR<T> {
+export class ParseIR<T> {
   constructor(
-    readonly leaf: Node<T> | null,
+    readonly leaf: ParseNode<T> | null,
     readonly prfx: IRPrfx<T> | null,
     readonly sufx: IRSufx<T> | null,
     readonly infx: IRInfx<T> | null,
@@ -52,25 +52,25 @@ export class IR<T> {
 }
 
 /** A parsed node. Leaf nodes are represented by having no arguments. */
-export class Node<T> {
+export class ParseNode<T> {
   constructor(
     readonly data: T,
-    readonly args: readonly Node<T>[] | null,
+    readonly args: readonly ParseNode<T>[] | null,
   ) {}
 }
 
 export class Parser<T> {
   private index = 0
-  private readonly j: IR<T> | null
+  private readonly j: ParseIR<T> | null
 
   constructor(
-    private readonly ir: IR<T>[],
+    private readonly ir: ParseIR<T>[],
 
     /**
      * The token automatically inserted between two values if not separated by
      * an infix operator. May be used to implement implicit multiplication.
      */
-    juxtaposeToken: IR<T> | null,
+    juxtaposeToken: ParseIR<T> | null,
   ) {
     this.j = juxtaposeToken
   }
@@ -97,7 +97,7 @@ export class Parser<T> {
     return ir
   }
 
-  private leaf(): Node<T> {
+  private leaf(): ParseNode<T> {
     const next = this.next()
 
     if (next == null) {
@@ -109,7 +109,7 @@ export class Parser<T> {
     }
 
     if (next.prfx) {
-      return new Node(next.prfx.data, [this.expr(next.prfx.pr)])
+      return new ParseNode(next.prfx.data, [this.expr(next.prfx.pr)])
     }
 
     this.raisePrev(`Expected expression.`)
@@ -128,7 +128,7 @@ export class Parser<T> {
     return false
   }
 
-  private expr(min: number): Node<T> {
+  private expr(min: number): ParseNode<T> {
     let lhs = this.leaf()
 
     while (true) {
@@ -141,7 +141,7 @@ export class Parser<T> {
       if (next.sufx) {
         if (next.sufx.prec > min) {
           this.next()
-          lhs = new Node(next.sufx.data, [lhs])
+          lhs = new ParseNode(next.sufx.data, [lhs])
           continue
         } else break
       }
@@ -154,7 +154,7 @@ export class Parser<T> {
       if (skip) {
         this.next()
       }
-      lhs = new Node(infx.data, [
+      lhs = new ParseNode(infx.data, [
         lhs,
         this.expr(min === 0 ? infx.pr0 : infx.pr),
       ])
@@ -164,7 +164,7 @@ export class Parser<T> {
     return lhs
   }
 
-  parse(): Node<T> {
+  parse(): ParseNode<T> {
     const item = this.expr(0)
     if (this.index < this.ir.length) {
       this.raiseNext("Unable to parse expression.")
@@ -174,8 +174,8 @@ export class Parser<T> {
 }
 
 /** Creates a leaf node. */
-export function leaf<T>(data: T) {
-  return new IR(new Node(data, null), null, null, null)
+export function pLeaf<T>(data: T) {
+  return new ParseIR(new ParseNode(data, null), null, null, null)
 }
 
 /**
@@ -183,13 +183,13 @@ export function leaf<T>(data: T) {
  * an operator where `op 2 * op 3 == (op 2) * (op 3)`; use the one-argument form
  * if `op 2 * op 3 == op (2 * op 3)`.
  */
-export function prfx<T>(data: T, pl: number, pr = pl) {
-  return new IR(null, { data, pl, pr }, null, null)
+export function pPrfx<T>(data: T, pl: number, pr = pl) {
+  return new ParseIR(null, { data, pl, pr }, null, null)
 }
 
 /** Creates a suffix operator. */
-export function sufx<T>(data: T, prec: number) {
-  return new IR(null, null, { data, prec }, null)
+export function pSufx<T>(data: T, prec: number) {
+  return new ParseIR(null, null, { data, prec }, null)
 }
 
 /**
@@ -198,13 +198,13 @@ export function sufx<T>(data: T, prec: number) {
  * the right-hand-side if parsed at the root level of an expression (e.g. for
  * commas).
  */
-export function infx<T>(data: T, pl: number, pr: number, pr0 = pr) {
-  return new IR(null, null, null, { data, pl, pr, pr0 })
+export function pInfx<T>(data: T, pl: number, pr: number, pr0 = pr) {
+  return new ParseIR(null, null, null, { data, pl, pr, pr0 })
 }
 
 /** Creates a prefix+infix operator, like the plus and minus signs. */
-export function pifx<T>(data: T, pl: number, pr: number, prec: number) {
-  return new IR(null, { data, pl: prec, pr: prec }, null, {
+export function pPifx<T>(data: T, pl: number, pr: number, prec: number) {
+  return new ParseIR(null, { data, pl: prec, pr: prec }, null, {
     data,
     pl,
     pr,
