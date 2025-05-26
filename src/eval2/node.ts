@@ -1,5 +1,4 @@
 import type { ParenLhs, ParenRhs } from "@/field/cmd/math/brack"
-import type { Item } from "./prec"
 
 export interface Leaf {
   num: string

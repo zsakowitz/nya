@@ -11,7 +11,13 @@ class IR<T> {
     readonly leaf: Item<T> | null,
     readonly prfx: { data: T; pl: number; pr: number } | null,
     readonly sufx: { data: T; prec: number } | null,
-    readonly infx: { data: T; pl: number; pr: number } | null,
+    readonly infx: {
+      data: T
+      pl: number
+      pr: number
+      /** A special precedence to use for the RHS when parsing at root level. */
+      pr0: number
+    } | null,
   ) {}
 }
 
@@ -34,17 +40,25 @@ function sufx<T>(data: T, prec: number) {
   return new IR(null, null, { data, prec }, null)
 }
 
-function infx<T>(data: T, pl: number, pr: number) {
-  return new IR(null, null, null, { data, pl, pr })
+function infx<T>(data: T, pl: number, pr: number, pr0 = pr) {
+  return new IR(null, null, null, { data, pl, pr, pr0 })
 }
 
 function pifx<T>(data: T, pl: number, pr: number, prec: number) {
-  return new IR(null, { data, pl: prec, pr: prec }, null, { data, pl, pr })
+  return new IR(null, { data, pl: prec, pr: prec }, null, {
+    data,
+    pl,
+    pr,
+    pr0: pr,
+  })
 }
 
 const ops: Record<string, IR<string>> = {
   true: leaf("true"),
   false: leaf("false"),
+
+  ",": infx(",", 4, 5, 1),
+  with: infx("with", 2, 3),
 
   not: prfx("not", 12),
 
@@ -159,7 +173,10 @@ class Lexer<T> {
       if (skip) {
         this.next()
       }
-      lhs = new Item(infx.data, [lhs, this.expr(infx.pr)])
+      lhs = new Item(infx.data, [
+        lhs,
+        this.expr(min === 0 ? infx.pr0 : infx.pr),
+      ])
       continue
     }
 
@@ -198,6 +215,7 @@ function log(item: Item<string>): string {
 }
 
 const sources = `
+a , b with c , d with e , f
 2 = 3 = 4 = 5 = 6
 true < false > true < false > true < false > true + 2 * 3 * 4 + 5 * 8 * - 9 * sin 4 * 4 * not true < 2
 2 + 3 + 4 * 5 * 6 + 2 * - 3 * 4 * sin 4 * sin 3
@@ -245,4 +263,4 @@ const ret = sources.map((x) => log(of(x).parse())).join("\n")
 
 writeFileSync("./text", ret)
 
-// current algorithm is 6.9~7.2µs
+// current algorithm is 7.4~7.5µs
