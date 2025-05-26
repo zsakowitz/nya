@@ -12,8 +12,6 @@ class IR {
     readonly prfx: { data: string; pl: number; pr: number } | null,
     readonly sufx: { data: string; prec: number } | null,
     readonly infx: { data: string; pl: number; pr: number } | null,
-    readonly brkl: {} | null, // starts a bracket group; other keys specify behavior
-    readonly brkr: {} | null, // ends a bracket group; other keys are ignored
   ) {}
 }
 
@@ -24,30 +22,23 @@ type Item =
 type Brack = { bl: string; br: string }
 
 function leaf(data: string): IR {
-  return new IR({ type: "leaf", data }, null, null, null, null, null)
+  return new IR({ type: "leaf", data }, null, null, null)
 }
 
 function prfx(data: string, pl: number, pr = pl): IR {
-  return new IR(null, { data, pl, pr }, null, null, null, null)
+  return new IR(null, { data, pl, pr }, null, null)
 }
 
 function sufx(data: string, prec: number): IR {
-  return new IR(null, null, { data, prec }, null, null, null)
+  return new IR(null, null, { data, prec }, null)
 }
 
 function infx(data: string, pl: number, pr: number): IR {
-  return new IR(null, null, null, { data, pl, pr }, null, null)
+  return new IR(null, null, null, { data, pl, pr })
 }
 
 function pifx(data: string, pl: number, pr: number, prec: number): IR {
-  return new IR(
-    null,
-    { data, pl: prec, pr: prec },
-    null,
-    { data, pl, pr },
-    null,
-    null,
-  )
+  return new IR(null, { data, pl: prec, pr: prec }, null, { data, pl, pr })
 }
 
 const ops: Record<string, IR> = {
@@ -70,9 +61,6 @@ const ops: Record<string, IR> = {
   "^": infx("^", 24, 23),
 
   "!": sufx("!", 25),
-
-  "(": new IR({ type: "leaf", data: "()" }, null, null, null, "()", null),
-  ")": new IR(null, null, null, null, null, "()"),
 }
 
 class Lexer {
@@ -113,7 +101,7 @@ class Lexer {
     return ir
   }
 
-  private leaf(min: number): Item {
+  private leaf(): Item {
     const next = this.next()
 
     if (next == null) {
@@ -149,7 +137,7 @@ class Lexer {
   }
 
   private expr(min: number): Item {
-    let lhs = this.leaf(min)
+    let lhs = this.leaf()
 
     while (true) {
       const next = this.peek()
@@ -185,11 +173,15 @@ class Lexer {
     return lhs
   }
 
-  parse(): Item {
+  parse(source: string): Item {
     const item = this.expr(0)
-    // if (this.index < this.ir.length) {
-    //   this.raisePrev(`I don't understand this.`)
-    // }
+    if (this.index < this.ir.length) {
+      return {
+        type: "op",
+        op: `error "${source}" ${this.index}`,
+        args: [item],
+      }
+    }
     return item
   }
 }
@@ -219,11 +211,12 @@ sin 4 !
 - 4 * 5
 4 * - 5
 4 * not 2 + 3
+( 4 + 5 ) * 5
 `
   .split("\n")
   .map((x) => x.trim())
   .filter((x) => x)
-  .map((x) => log(Lexer.of(x).parse()))
+  .map((x) => log(Lexer.of(x).parse(x)))
   .join("\n")
 
 writeFileSync("./text", ret)
