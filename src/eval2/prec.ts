@@ -1,19 +1,32 @@
 export const enum Precedence {
-  CommaR0 = 1,
-  CommaL,
+  CommaR0,
   WithL,
   WithR,
-  Not,
+  Iterate,
+  IterateHelperL,
+  IterateHelperR,
+  CommaL,
+  CommaR,
+
+  BoolNot,
+  BoolOrL,
+  BoolOrR,
+  BoolAndL,
+  BoolAndR,
+
   CmpL,
   CmpR,
+
   SumL,
   SumR,
-  Big,
-  ImplicitFn,
+
+  BigSym,
+  ImplicitFnL,
+  ImplicitFnR,
+
   ProductL,
   ProductR,
-  PrefixSum,
+
   ExponentR,
   ExponentL,
-  Factorial,
 }

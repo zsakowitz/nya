@@ -18,7 +18,7 @@ const ops: Record<string, IR<string>> = {
   ",": infx(",", 8, 9, 0),
   with: infx("with", 2, 3),
 
-  iterate: prfx("iterate", 6),
+  iterate: prfx("iterate", 5),
   from: infx("from", 6, 7),
   until: infx("until", 6, 7),
   while: infx("while", 6, 7),
