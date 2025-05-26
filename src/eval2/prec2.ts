@@ -199,7 +199,7 @@ function log(item: Item): string {
     : `(${op} ${item.args.map(log).join(" ")})`
 }
 
-const ret = `
+const sources = `
 2 + 3 + 4 * 5 * 6 + 2 * - 3 * 4 * sin 4 * sin 3
 sin 2 * 3
 sin 2 * 3 * sin 4
@@ -211,12 +211,33 @@ sin 4 !
 - 4 * 5
 4 * - 5
 4 * not 2 + 3
-( 4 + 5 ) * 5
 `
   .split("\n")
   .map((x) => x.trim())
   .filter((x) => x)
-  .map((x) => log(Lexer.of(x).parse(x)))
-  .join("\n")
+
+const rounds = 1e4
+function round() {
+  let now = performance.now()
+  for (let i = 0; i < rounds; i++) {
+    sources.map((x) => Lexer.of(x).parse(x))
+  }
+  return performance.now() - now
+}
+
+function stdev(data: number[]) {
+  const mean = data.reduce((a, b) => a + b, 0) / data.length
+  return (
+    data.map((x) => (x - mean) ** 2).reduce((a, b) => a + b) / (data.length - 1)
+  )
+}
+
+const data = Array.from<void>({ length: 6 }).fill().map(round).slice(1)
+const mean = data.reduce((a, b) => a + b, 0) / data.length
+console.log(
+  `${((mean / rounds) * 1e3).toFixed(2)}µs ± ${((stdev(data) / rounds) * 1e6).toFixed(2)}ns`,
+)
+
+const ret = sources.map((x) => log(Lexer.of(x).parse(x))).join("\n")
 
 writeFileSync("./text", ret)
