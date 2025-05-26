@@ -17,9 +17,7 @@ class IR {
 
 type Item =
   | { type: "leaf"; data: string }
-  | { type: "op"; op: string | Brack; args: readonly Item[] }
-
-type Brack = { bl: string; br: string }
+  | { type: "op"; op: string; args: readonly Item[] }
 
 function leaf(data: string): IR {
   return new IR({ type: "leaf", data }, null, null, null)
@@ -42,10 +40,14 @@ function pifx(data: string, pl: number, pr: number, prec: number): IR {
 }
 
 const ops: Record<string, IR> = {
+  true: leaf("true"),
+  false: leaf("false"),
+
   not: prfx("not", 12),
 
-  "==": infx("==", 13, 14),
-  "!=": infx("!=", 13, 14),
+  "=": infx("=", 13, 14),
+  "<": infx("<", 13, 14),
+  ">": infx(">", 13, 14),
 
   "+": pifx("+", 15, 16, 22),
   "-": pifx("-", 15, 16, 22),
@@ -191,8 +193,7 @@ function log(item: Item): string {
     return item.data
   }
 
-  const op =
-    typeof item.op == "string" ? item.op : `${item.op.bl}...${item.op.br}`
+  const op = item.op
 
   return item.args.length == 2 ?
       `(${log(item.args[0]!)} ${op} ${log(item.args[1]!)})`
@@ -200,6 +201,8 @@ function log(item: Item): string {
 }
 
 const sources = `
+2 = 3 = 4 = 5 = 6
+true < false > true < false > true < false > true + 2 * 3 * 4 + 5 * 8 * - 9 * sin 4 * 4 * not true < 2
 2 + 3 + 4 * 5 * 6 + 2 * - 3 * 4 * sin 4 * sin 3
 sin 2 * 3
 sin 2 * 3 * sin 4
@@ -211,6 +214,8 @@ sin 4 !
 - 4 * 5
 4 * - 5
 4 * not 2 + 3
+2 = 3 + 4 * 5 ^ 6
+2 ! * 3 * - 4 !
 `
   .split("\n")
   .map((x) => x.trim())
@@ -232,7 +237,7 @@ function stdev(data: number[]) {
   )
 }
 
-const data = Array.from<void>({ length: 6 }).fill().map(round).slice(1)
+const data = Array.from<void>({ length: 10 }).fill().map(round).slice(1)
 const mean = data.reduce((a, b) => a + b, 0) / data.length
 console.log(
   `${((mean / rounds) * 1e3).toFixed(2)}µs ± ${((stdev(data) / rounds) * 1e6).toFixed(2)}ns`,
@@ -241,3 +246,5 @@ console.log(
 const ret = sources.map((x) => log(Lexer.of(x).parse(x))).join("\n")
 
 writeFileSync("./text", ret)
+
+// current algorithm is 6.3~6.6µs
