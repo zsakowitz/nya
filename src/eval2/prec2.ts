@@ -1,6 +1,8 @@
 import { writeFileSync } from "node:fs"
 import { todo } from "../../lang/src/emit/error"
 
+type Data = string | bigint
+
 /**
  * Everything is either present or `null` to allow for shape-based
  * optimizations, and so that tokens like `+`, which could either be prefixes or
@@ -9,33 +11,33 @@ import { todo } from "../../lang/src/emit/error"
 class IR {
   constructor(
     readonly leaf: Item | null,
-    readonly prfx: { data: string; pl: number; pr: number } | null,
-    readonly sufx: { data: string; prec: number } | null,
-    readonly infx: { data: string; pl: number; pr: number } | null,
+    readonly prfx: { data: Data; pl: number; pr: number } | null,
+    readonly sufx: { data: Data; prec: number } | null,
+    readonly infx: { data: Data; pl: number; pr: number } | null,
   ) {}
 }
 
 type Item =
-  | { type: "leaf"; data: string }
-  | { type: "op"; op: string; args: readonly Item[] }
+  | { type: "leaf"; data: Data }
+  | { type: "op"; op: Data; args: readonly Item[] }
 
-function leaf(data: string): IR {
+function leaf(data: Data): IR {
   return new IR({ type: "leaf", data }, null, null, null)
 }
 
-function prfx(data: string, pl: number, pr = pl): IR {
+function prfx(data: Data, pl: number, pr = pl): IR {
   return new IR(null, { data, pl, pr }, null, null)
 }
 
-function sufx(data: string, prec: number): IR {
+function sufx(data: Data, prec: number): IR {
   return new IR(null, null, { data, prec }, null)
 }
 
-function infx(data: string, pl: number, pr: number): IR {
+function infx(data: Data, pl: number, pr: number): IR {
   return new IR(null, null, null, { data, pl, pr })
 }
 
-function pifx(data: string, pl: number, pr: number, prec: number): IR {
+function pifx(data: Data, pl: number, pr: number, prec: number): IR {
   return new IR(null, { data, pl: prec, pr: prec }, null, { data, pl, pr })
 }
 
@@ -65,6 +67,8 @@ const ops: Record<string, IR> = {
   "!": sufx("!", 25),
 }
 
+const IR_JUXTAPOSE = ops["*"]!
+
 class Lexer {
   static of(text: string) {
     return new Lexer(
@@ -76,9 +80,9 @@ class Lexer {
     )
   }
 
-  index = 0
+  private index = 0
 
-  constructor(readonly ir: IR[]) {}
+  constructor(private readonly ir: IR[]) {}
 
   private raiseAt(message: string, index: number): never {
     console.error(this.ir[index])
@@ -125,8 +129,8 @@ class Lexer {
     this.raisePrev(`Expected expression.`)
   }
 
-  private isNextOpLowerThan(min: number): boolean {
-    for (let i = this.index + 1; i < this.ir.length; i++) {
+  private isNextOpLowerThan(min: number, skip: 0 | 1): boolean {
+    for (let i = this.index + skip; i < this.ir.length; i++) {
       const el = this.ir[i]!
       if (el.prfx && el.prfx.pl < min) {
         return true
@@ -156,20 +160,21 @@ class Lexer {
         } else break
       }
 
-      if (next.infx && next.infx.pl > min) {
-        if (this.isNextOpLowerThan(min)) {
-          break
-        }
-        this.next()
-        lhs = {
-          type: "op",
-          op: next.infx.data,
-          args: [lhs, this.expr(next.infx.pr)],
-        }
-        continue
-      }
+      let skip: 0 | 1 = 1
+      const infx = next.infx || ((skip = 0), IR_JUXTAPOSE.infx!)
 
-      break
+      if (infx.pl < min || this.isNextOpLowerThan(min, skip)) {
+        break
+      }
+      if (skip) {
+        this.next()
+      }
+      lhs = {
+        type: "op",
+        op: infx.data,
+        args: [lhs, this.expr(infx.pr)],
+      }
+      continue
     }
 
     return lhs
@@ -180,7 +185,7 @@ class Lexer {
     if (this.index < this.ir.length) {
       return {
         type: "op",
-        op: `error "${source}" ${this.index}`,
+        op: `error "${source}"[${this.index}]`,
         args: [item],
       }
     }
@@ -190,7 +195,7 @@ class Lexer {
 
 function log(item: Item): string {
   if (item.type == "leaf") {
-    return item.data
+    return String(item.data)
   }
 
   const op = item.op
@@ -213,15 +218,16 @@ sin 2 * sin 3 !
 sin 4 !
 - 4 * 5
 4 * - 5
-4 * not 2 + 3
+4 * not 2 + 3 < 4
 2 = 3 + 4 * 5 ^ 6
 2 ! * 3 * - 4 !
+2 sin 4 sin 3 !
 `
   .split("\n")
   .map((x) => x.trim())
   .filter((x) => x)
 
-const rounds = 1e4
+const rounds = 1e3
 function round() {
   let now = performance.now()
   for (let i = 0; i < rounds; i++) {
