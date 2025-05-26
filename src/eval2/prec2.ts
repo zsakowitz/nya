@@ -6,55 +6,48 @@ import { todo } from "../../lang/src/emit/error"
  * optimizations, and so that tokens like `+`, which could either be prefixes or
  * infixes, may exist without specialized token types.
  */
-interface IR {
-  leaf: { data: string } | null
-  prfx: { data: string; pl: number; pr: number } | null
-  sufx: { data: string; prec: number } | null
-  infx: { data: string; pl: number; pr: number } | null
+class IR {
+  constructor(
+    readonly leaf: Item | null,
+    readonly prfx: { data: string; pl: number; pr: number } | null,
+    readonly sufx: { data: string; prec: number } | null,
+    readonly infx: { data: string; pl: number; pr: number } | null,
+    readonly brkl: {} | null, // starts a bracket group; other keys specify behavior
+    readonly brkr: {} | null, // ends a bracket group; other keys are ignored
+  ) {}
 }
 
 type Item =
   | { type: "leaf"; data: string }
-  | { type: "op"; op: string; args: readonly Item[] }
+  | { type: "op"; op: string | Brack; args: readonly Item[] }
+
+type Brack = { bl: string; br: string }
 
 function leaf(data: string): IR {
-  return { leaf: { data }, prfx: null, sufx: null, infx: null }
+  return new IR({ type: "leaf", data }, null, null, null, null, null)
 }
 
 function prfx(data: string, pl: number, pr = pl): IR {
-  return {
-    leaf: null,
-    prfx: { data, pl, pr },
-    sufx: null,
-    infx: null,
-  }
+  return new IR(null, { data, pl, pr }, null, null, null, null)
 }
 
 function sufx(data: string, prec: number): IR {
-  return {
-    leaf: null,
-    prfx: null,
-    sufx: { data, prec },
-    infx: null,
-  }
+  return new IR(null, null, { data, prec }, null, null, null)
 }
 
 function infx(data: string, pl: number, pr: number): IR {
-  return {
-    leaf: null,
-    prfx: null,
-    sufx: null,
-    infx: { data, pl, pr },
-  }
+  return new IR(null, null, null, { data, pl, pr }, null, null)
 }
 
 function pifx(data: string, pl: number, pr: number, prec: number): IR {
-  return {
-    leaf: null,
-    prfx: { data, pl: prec, pr: prec },
-    sufx: null,
-    infx: { data, pl, pr },
-  }
+  return new IR(
+    null,
+    { data, pl: prec, pr: prec },
+    null,
+    { data, pl, pr },
+    null,
+    null,
+  )
 }
 
 const ops: Record<string, IR> = {
@@ -76,7 +69,10 @@ const ops: Record<string, IR> = {
 
   "^": infx("^", 24, 23),
 
-  "!": sufx("!", 26),
+  "!": sufx("!", 25),
+
+  "(": new IR({ type: "leaf", data: "()" }, null, null, null, "()", null),
+  ")": new IR(null, null, null, null, null, "()"),
 }
 
 class Lexer {
@@ -124,8 +120,8 @@ class Lexer {
       this.raiseNext(`Unexpected end of expression.`)
     }
 
-    if (next.leaf) {
-      return { type: "leaf", data: next.leaf.data }
+    if (next.leaf != null) {
+      return next.leaf
     }
 
     if (next.prfx) {
@@ -199,12 +195,16 @@ class Lexer {
 }
 
 function log(item: Item): string {
-  return (
-    item.type == "leaf" ? item.data
-    : item.args.length == 2 ?
-      `(${log(item.args[0]!)} ${item.op} ${log(item.args[1]!)})`
-    : `(${item.op} ${item.args.map(log).join(" ")})`
-  )
+  if (item.type == "leaf") {
+    return item.data
+  }
+
+  const op =
+    typeof item.op == "string" ? item.op : `${item.op.bl}...${item.op.br}`
+
+  return item.args.length == 2 ?
+      `(${log(item.args[0]!)} ${op} ${log(item.args[1]!)})`
+    : `(${op} ${item.args.map(log).join(" ")})`
 }
 
 const ret = `
