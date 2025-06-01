@@ -5,6 +5,7 @@ import type { GlslResult } from "@/eval/lib/fn"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "@/eval/ops/vars"
 import type { JsValue } from "@/eval/ty"
 import { outputBase } from "@/eval/ty/display"
+import { ScriptBlock, ScriptDecls } from "@/eval2/tx"
 import { OpEq } from "@/field/cmd/leaf/cmp"
 import { CmdToken } from "@/field/cmd/leaf/token"
 import { CmdVar } from "@/field/cmd/leaf/var"
@@ -20,6 +21,8 @@ import type { ItemRef } from "../../items"
 import { PICK_CURSOR } from "../../pick-cursor"
 import type { Sheet } from "../sheet"
 import { Field } from "./field"
+
+import "@/eval2/txs"
 
 const ID_X = id({ value: "x" })
 const ID_Y = id({ value: "y" })
@@ -55,8 +58,9 @@ export class Expr {
     )
     this.elOutput = h("contents")
     this.elError = h(
-      "block hidden mx-1 -mt-2 px-1 pb-1 leading-tight italic text-[--nya-expr-error] whitespace-pre-wrap font-sans pointer-events-none",
+      "block mx-1 -mt-2 px-1 pb-1 leading-tight italic text-[--nya-expr-error] whitespace-pre-wrap font-sans pointer-events-none",
     )
+    this.elError.classList.add("hidden") // stops tailwind errors from block+hidden; hidden overrides
     this.aside = h(
       "contents",
       fa(
@@ -254,6 +258,19 @@ export class Expr {
       console.warn("[display]", msg)
       this.state = { ok: false, reason: msg }
       this.setError(msg)
+    }
+
+    // FIXME: remove
+    {
+      try {
+        const tl = this.field.block.parseTopLevel()
+        const nya = new ScriptBlock(new ScriptDecls()).eval(tl)
+        this.setError("[nyalang] " + nya)
+      } catch (e) {
+        this.setError(
+          "[nyalang] " + (e instanceof Error ? e.message : String(e)),
+        )
+      }
     }
   }
 
