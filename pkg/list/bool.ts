@@ -44,8 +44,8 @@ declare module "@/eval/ast/token" {
   interface PuncListInfix {
     "\\and ": 0
     "\\or ": 0
-    "and": 0
-    "or": 0
+    and: 0
+    or: 0
   }
 }
 
@@ -417,9 +417,9 @@ export default {
     op: {
       binary: {
         "\\and ": { precedence: Precedence.BoolAnd, fn: OP_AND },
-        "and": { precedence: Precedence.BoolAnd, fn: OP_AND },
+        and: { precedence: Precedence.BoolAnd, fn: OP_AND },
         "\\or ": { precedence: Precedence.BoolOr, fn: OP_OR },
-        "or": { precedence: Precedence.BoolOr, fn: OP_OR },
+        or: { precedence: Precedence.BoolOr, fn: OP_OR },
       },
     },
     fn: {

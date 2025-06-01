@@ -32,7 +32,7 @@ import { TY_INFO, type TyInfoByName } from "@/eval/ty/info"
 import { Leaf } from "@/field/cmd/leaf"
 import { BRACKS } from "@/field/cmd/math/brack"
 import { L, R } from "@/field/dir"
-import { Block } from "@/field/model"
+import { Block, type IRBuilder } from "@/field/model"
 import { h, hx } from "@/jsx"
 import { approx, frac, int, type SReal } from "@/lib/real"
 import { defineExt } from "@/sheet/ext"
@@ -805,6 +805,8 @@ export class CmdStats extends Leaf {
   }
 
   ir(_tokens: Node[]): true | void {}
+
+  ir2(_ret: IRBuilder): void {}
 
   reader(): string {
     return ` Five Statistic Summary\

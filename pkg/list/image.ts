@@ -8,6 +8,7 @@ import { CmdToken, TokenCtx } from "@/field/cmd/leaf/token"
 import { CmdWord } from "@/field/cmd/leaf/word"
 import { L, R } from "@/field/dir"
 import { toText } from "@/field/latex"
+import type { IRBuilder } from "@/field/model"
 import { fa, h, hx, path, svgx, t } from "@/jsx"
 import { frac, int } from "@/lib/real"
 import { FieldComputed } from "@/sheet/deps"
@@ -81,9 +82,13 @@ class CmdImgRaw extends Leaf {
       } satisfies JsValue<"image">,
     })
   }
+
+  ir2(_ret: IRBuilder): void {
+    throw new Error("Images are not supported in nyalang yet.")
+  }
 }
 
-class CmdImg extends Leaf {
+class CmdImgPreview extends Leaf {
   constructor(readonly src: string) {
     super(
       "",
@@ -114,6 +119,8 @@ class CmdImg extends Leaf {
   }
 
   ir(): true | void {}
+
+  ir2(_ret: IRBuilder): void {}
 }
 
 interface Data {
@@ -364,7 +371,7 @@ export default {
         write: {
           display(value, props) {
             if (value.src) {
-              new CmdImg(value.src.url).insertAt(props.cursor, L)
+              new CmdImgPreview(value.src.url).insertAt(props.cursor, L)
             } else {
               new CmdWord("undefined", "var").insertAt(props.cursor, L)
             }

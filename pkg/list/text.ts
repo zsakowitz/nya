@@ -11,7 +11,13 @@ import { Leaf } from "@/field/cmd/leaf"
 import { L, R, type Dir } from "@/field/dir"
 import type { FieldInert } from "@/field/field-inert"
 import { LatexParser, toText } from "@/field/latex"
-import { Block, type Command, type Cursor, type InitProps } from "@/field/model"
+import {
+  Block,
+  type Command,
+  type Cursor,
+  type InitProps,
+  type IRBuilder,
+} from "@/field/model"
 import { h, hx, t } from "@/jsx"
 import { int } from "@/lib/real"
 import { defineExt, Store } from "@/sheet/ext"
@@ -62,6 +68,11 @@ export class CmdTextInert extends Leaf {
         value: [{ type: "plain", value: this.value }],
       })
     }
+  }
+
+  ir2(ret: IRBuilder): void {
+    // TODO: allow latex
+    ret.leaf({ type: "text", data: this.value })
   }
 }
 
@@ -167,6 +178,13 @@ class CmdText extends Leaf {
         value: [{ type: "plain", value: this.input.value }],
       })
     }
+  }
+
+  ir2(ret: IRBuilder): void {
+    ret.leaf({
+      type: "text",
+      data: this.input.value,
+    })
   }
 
   moveInto(cursor: Cursor, towards: Dir): void {

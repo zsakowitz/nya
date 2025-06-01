@@ -32,6 +32,7 @@ import {
   unglossWord,
 } from "@zsnout/ithkuil/ungloss"
 import * as categories from "./util-categories"
+import type { IRBuilder } from "@/field/model"
 
 // TODO: reduce ithkuil root and affix data size (it's 56% of the bundle currently)
 
@@ -74,6 +75,8 @@ class CmdIthkuilScript extends Leaf {
   }
 
   ir(): true | void {}
+
+  ir2(_ret: IRBuilder): void {}
 }
 
 const recognize = createRecognizer(affixes, roots)
