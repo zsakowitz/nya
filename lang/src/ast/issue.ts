@@ -51,6 +51,7 @@ export const Code = Object.freeze({
   ExpectedEq: 250,
   NoGenericsOnSyntaxKindDeclaration: 251,
   NoNestedAny: 252,
+  ExpectedIdentOrOperator: 253,
 
   // Emit errors
   ItemDeclaredTwice: 301,

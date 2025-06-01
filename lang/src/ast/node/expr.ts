@@ -30,6 +30,7 @@ import {
   type ATildeEq,
   type ATildeUnary,
   type KBreak,
+  type KCall,
   type KContinue,
   type KFor,
   type KIf,
@@ -61,6 +62,7 @@ import {
   type OMinus,
   type OMinusUnary,
   type ONe,
+  type OOverloadable,
   type OPercent,
   type OPlus,
   type OSemi,
@@ -149,6 +151,19 @@ export class ExprVar extends NodeExpr {
     readonly args: List<NodeExpr> | null,
   ) {
     super(name.start, (args ?? targs ?? name).end)
+  }
+}
+
+export class ExprDirectCall extends NodeExpr {
+  constructor(
+    readonly kw: Token<typeof KCall>,
+    readonly name: Token<
+      typeof TIdent | typeof TBuiltin | OOverloadable
+    > | null,
+    readonly targs: List<NodeType> | null,
+    readonly args: List<NodeExpr> | null,
+  ) {
+    super(kw.start, (args ?? targs ?? name ?? kw).end)
   }
 }
 

@@ -4,6 +4,7 @@ import {
   ExprBinary,
   ExprBinaryAssign,
   ExprBlock,
+  ExprDirectCall,
   ExprEmpty,
   ExprExit,
   ExprFor,
@@ -192,6 +193,18 @@ function emitExpr(node: NodeExpr, block: Block): Value {
   } else if (node instanceof ExprVar) {
     if (node.targs) {
       todo("Type arguments are not supported yet.")
+    }
+    return performCall(
+      ident(node.name.val),
+      block,
+      node.args?.items.map((e) => emitExpr(e, block)) ?? [],
+    )
+  } else if (node instanceof ExprDirectCall) {
+    if (node.targs) {
+      todo("Type arguments are not supported yet.")
+    }
+    if (!node.name) {
+      issue("Function call via 'call' syntax is missing a function name.")
     }
     return performCall(
       ident(node.name.val),

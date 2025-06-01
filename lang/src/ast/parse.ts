@@ -24,10 +24,12 @@ import {
   AStarStar,
   ATildeEq,
   ATildeUnary,
+  AVERLOADABLE,
   KAny,
   KAs,
   KAssert,
   KBreak,
+  KCall,
   KConst,
   KContinue,
   KData,
@@ -92,7 +94,6 @@ import {
   OTildeEq,
   OTildeUnary,
   OVERLOADABLE,
-  AVERLOADABLE,
   TBuiltin,
   TComment,
   TDeriv,
@@ -118,6 +119,7 @@ import {
   ExprCall,
   ExprCast,
   ExprDeriv,
+  ExprDirectCall,
   ExprEmpty,
   ExprExit,
   ExprFor,
@@ -409,6 +411,23 @@ function exprVar(stream: Stream, ctx: ExprContext) {
   return new ExprVar(token, typeArgs(stream), callArgs(stream))
 }
 
+function exprCall(stream: Stream) {
+  const kw = stream.match(KCall)!
+
+  const token =
+    stream.matchAny(OVERLOADABLE) ||
+    stream.match(TIdent) ||
+    stream.matchOr(TBuiltin, Code.ExpectedIdentOrOperator)
+
+  if (stream.peek() == OBangUnary)
+    stream.raiseNext(Code.NonParamFollowedByConstMarker)
+
+  if (stream.peek() == OColonColon)
+    stream.raiseNext(Code.NonParamFollowedByTypeAssertion)
+
+  return new ExprDirectCall(kw, token, typeArgs(stream), callArgs(stream))
+}
+
 export function exprIf(stream: Stream): ExprIf | null {
   const kwIf = stream.match(KIf)
   if (!kwIf) return null
@@ -547,6 +566,9 @@ function exprAtom(stream: Stream, ctx: ExprContext): NodeExpr {
     case TIdent:
     case TBuiltin:
       return exprVar(stream, ctx)!
+
+    case KCall:
+      return exprCall(stream)!
 
     case OLParen: {
       const token = stream.matchGroup(OLParen)!
