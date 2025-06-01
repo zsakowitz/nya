@@ -1,9 +1,11 @@
 import type { Node } from "@/eval/ast/token"
+import { infx } from "@/eval2/node"
+import { Precedence } from "@/eval2/prec"
 import { L } from "@/field/dir"
 import { h } from "@/jsx"
 import { Leaf } from "."
 import type { LatexParser } from "../../latex"
-import type { Command, Cursor } from "../../model"
+import type { Command, Cursor, IRBuilder } from "../../model"
 
 export class CmdComma extends Leaf {
   static init(cursor: Cursor) {
@@ -44,6 +46,17 @@ export class CmdComma extends Leaf {
       tokens.push({ type: "void" })
     }
     tokens.push({ type: "punc", kind: "infix", value: "," })
+  }
+
+  ir2(ret: IRBuilder): void {
+    ret.push(
+      infx(
+        { type: "list", data: null },
+        Precedence.CommaL,
+        Precedence.CommaR,
+        Precedence.CommaR0,
+      ),
+    )
   }
 
   endsImplicitGroup(): boolean {

@@ -1,8 +1,15 @@
 import type { Node } from "@/eval/ast/token"
+import { Precedence } from "@/eval2/prec"
 import { D, L, R, U, type Dir, type VDir } from "@/field/dir"
 import { h } from "@/jsx"
 import type { LatexParser } from "../../latex"
-import { Block, Command, type Cursor, type InitProps } from "../../model"
+import {
+  Block,
+  Command,
+  type Cursor,
+  type InitProps,
+  type IRBuilder,
+} from "../../model"
 import { focusEdge } from "../leaf"
 import { OpEq } from "../leaf/cmp"
 import { CmdUnknown } from "../leaf/unknown"
@@ -190,5 +197,19 @@ export class CmdBig extends Command<
       sub: this.blocks[0].ast(),
       sup: this.blocks[1]?.ast(),
     })
+  }
+
+  ir2(ret: IRBuilder): void {
+    ret.prfx(
+      {
+        type: "big",
+        data: {
+          sub: this.blocks[0].parse(),
+          sup: this.blocks[1]?.parse() ?? null,
+          kind: this.ctrlSeq,
+        },
+      },
+      Precedence.BigSym,
+    )
   }
 }

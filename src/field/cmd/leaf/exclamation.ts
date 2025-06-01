@@ -3,7 +3,7 @@ import { L } from "@/field/dir"
 import { h } from "@/jsx"
 import { Leaf } from "."
 import type { LatexParser } from "../../latex"
-import type { Command, Cursor } from "../../model"
+import type { Command, Cursor, IRBuilder } from "../../model"
 
 export class CmdExclamation extends Leaf {
   static init(cursor: Cursor) {
@@ -32,5 +32,9 @@ export class CmdExclamation extends Leaf {
 
   ir(tokens: Node[]): void {
     tokens.push({ type: "punc", value: "!", kind: "suffix" })
+  }
+
+  ir2(ret: IRBuilder): void {
+    ret.suffixed({ type: "factorial", data: null })
   }
 }

@@ -8,6 +8,7 @@ import {
   type Cursor,
   type InitProps,
   type InitRet,
+  type IRBuilder,
 } from "../../model"
 import { focusEdge } from "../leaf"
 
@@ -205,6 +206,10 @@ export class CmdInt extends Command<BlocksInt> {
       sub: this.blocks[0]?.ast(),
       sup: this.blocks[1]?.ast(),
     })
+  }
+
+  ir2(_ret: IRBuilder): void {
+    throw new Error("TODO: add integrals")
   }
 
   get autoCmd() {

@@ -9,6 +9,7 @@ import {
   type Cursor,
   type InitProps,
   type InitRet,
+  type IRBuilder,
   type Selection,
 } from "../../model"
 import { CmdComma } from "../leaf/comma"
@@ -499,6 +500,17 @@ export class CmdBrack extends Command<[Block]> {
       lhs: this.lhs,
       rhs: this.rhs,
       value: this.blocks[0].ast(),
+    })
+  }
+
+  ir2(ret: IRBuilder): void {
+    ret.leaf({
+      type: "group",
+      data: {
+        lhs: this.lhs,
+        rhs: this.rhs,
+        contents: this.blocks[0].parse(),
+      },
     })
   }
 

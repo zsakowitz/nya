@@ -1,9 +1,14 @@
 import type { Node } from "@/eval/ast/token"
+import {
+  Precedence,
+  PRECEDENCE_WORD_BINARY,
+  PRECEDENCE_WORD_UNARY,
+} from "@/eval2/prec"
 import { L, R } from "@/field/dir"
 import type { LatexParser } from "@/field/latex"
 import { h } from "@/jsx"
 import { Leaf } from "."
-import { Span, type Command } from "../../model"
+import { Span, type Command, type IRBuilder } from "../../model"
 import { CmdUnknown } from "./unknown"
 import type { WordKind } from "./var"
 
@@ -77,5 +82,34 @@ export class CmdWord extends Leaf {
       kind: this.kind == "builtin" ? "prefix" : this.kind,
       span: new Span(this.parent, this[L], this[R]),
     })
+  }
+
+  ir2(ret: IRBuilder): void {
+    switch (this.kind) {
+      case "prefix":
+      case "builtin": {
+        const p = PRECEDENCE_WORD_UNARY[this.text]
+        ret.prfx(
+          { type: "op", data: this.text },
+          p == null ? Precedence.ImplicitFnL : p,
+          p == null ? Precedence.ImplicitFnR : p,
+        )
+        break
+      }
+
+      case "infix": {
+        const p = PRECEDENCE_WORD_BINARY[this.text]
+        ret.prfx(
+          { type: "op", data: this.text },
+          p ? p[0] : Precedence.ProdL,
+          p ? p[1] : Precedence.ProdR,
+        )
+        break
+      }
+
+      case "var":
+        ret.leaf({ type: "bvar", data: { name: this.text, sub: null } })
+        break
+    }
   }
 }

@@ -1,9 +1,17 @@
 import type { Node, Punc, PuncInfix, PuncPm } from "@/eval/ast/token"
+import { infx, pifx, type IR } from "@/eval2/node"
+import { Precedence as P } from "@/eval2/prec"
 import { L, R } from "@/field/dir"
 import { h } from "@/jsx"
 import { Leaf } from "."
 import type { LatexParser } from "../../latex"
-import { Span, type Command, type Cursor, type InitProps } from "../../model"
+import {
+  Span,
+  type Command,
+  type Cursor,
+  type InitProps,
+  type IRBuilder,
+} from "../../model"
 import { CmdSupSub } from "../math/supsub"
 import { Op } from "./op-core"
 
@@ -43,6 +51,7 @@ abstract class OpPm extends Op {
 
 function op(
   punc: (self: Op) => Punc,
+  ir2: IR,
   latex: string,
   mathspeak: string,
   html = latex,
@@ -82,11 +91,17 @@ function op(
     ir(tokens: Node[]): void {
       tokens.push(punc(this))
     }
+
+    ir2(ret: IRBuilder): void {
+      ret.push(ir2)
+    }
   }
 }
 
 export function opp(
   latex: Exclude<PuncInfix, ".">,
+  pl: P,
+  pr: P,
   mathspeak: string,
   html?: string,
   ascii?: string,
@@ -99,6 +114,7 @@ export function opp(
       value: latex,
       span: new Span(self.parent, self[L], self[R]),
     }),
+    infx({ type: "op", data: latex }, pl, pr),
     latex,
     mathspeak,
     html,
@@ -152,6 +168,10 @@ function opm(
         span: new Span(this.parent, this[L], this[R]),
       })
     }
+
+    ir2(ret: IRBuilder): void {
+      ret.push(pifx({ type: "op", data: latex }, P.SumL, P.SumR, P.Negation))
+    }
   }
 }
 
@@ -160,17 +180,46 @@ export const OpMinus = opm("-", " minus ")
 export const OpPlusMinus = opm("\\pm ", " plus-or-minus ", "±")
 export const OpMinusPlus = opm("\\mp ", " minus-or-plus ", "∓")
 
-export const OpCdot = opp("\\cdot ", " times ", "·", "*")
-export const OpTimes = opp("\\times ", " cross ", "×", "*")
-export const OpOdot = opp("\\odot ", " encircled dot ", "⊙", "⊙")
-export const OpOtimes = opp("\\otimes ", " encircled cross ", "⊗", "⊗")
+export const OpCdot = opp("\\cdot ", P.ProdL, P.ProdR, " times ", "·", "*")
+export const OpTimes = opp("\\times ", P.ProdL, P.ProdR, " cross ", "×", "*")
+export const OpOdot = opp(
+  "\\odot ",
+  P.ProdL,
+  P.ProdR,
+  " encircled dot ",
+  "⊙",
+  "⊙",
+)
+export const OpOtimes = opp(
+  "\\otimes ",
+  P.ProdL,
+  P.ProdR,
+  " encircled cross ",
+  "⊗",
+  "⊗",
+)
 
-export const OpDiv = opp("÷", " divided by ", "÷", "/")
+export const OpDiv = opp("÷", P.ProdL, P.ProdR, " divided by ", "÷", "/")
 
-export const OpAnd = opp("\\and ", " and ", "∧", "∧", true)
-export const OpOr = opp("\\or ", " or ", "⋁", "⋁", true)
+export const OpAnd = opp(
+  "\\and ",
+  P.BoolAndL,
+  P.BoolAndR,
+  " and ",
+  "∧",
+  "∧",
+  true,
+)
+export const OpOr = opp("\\or ", P.BoolOrL, P.BoolOrR, " or ", "⋁", "⋁", true)
 
-export const OpUpArrow = opp("\\uparrow ", " up arrow ", "↑", "↑")
+export const OpUpArrow = opp(
+  "\\uparrow ",
+  P.ExponentL,
+  P.ExponentR,
+  " up arrow ",
+  "↑",
+  "↑",
+)
 
 export class OpNeg extends Leaf {
   static init(cursor: Cursor, _props: InitProps) {
@@ -210,6 +259,10 @@ export class OpNeg extends Leaf {
 
   ir(tokens: Node[]): void {
     tokens.push({ type: "punc", kind: "prefix", value: "\\neg " })
+  }
+
+  ir2(ret: IRBuilder): void {
+    ret.prfx({ type: "op", data: "\\neg" }, P.BoolNot)
   }
 
   endsImplicitGroup(): boolean {

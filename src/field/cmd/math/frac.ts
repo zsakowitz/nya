@@ -3,7 +3,13 @@ import { tryId } from "@/eval/lib/binding"
 import { D, L, R, U, type Dir, type VDir } from "@/field/dir"
 import { U_ZERO_WIDTH_SPACE, h } from "@/jsx"
 import type { LatexParser } from "../../latex"
-import { Block, Command, type Cursor, type Selection } from "../../model"
+import {
+  Block,
+  Command,
+  type Cursor,
+  type IRBuilder,
+  type Selection,
+} from "../../model"
 import { focusEdge } from "../leaf"
 import { OpCeq } from "../leaf/cmp"
 import { OpDiv } from "../leaf/op"
@@ -173,6 +179,13 @@ export class CmdFrac extends Command<[Block, Block]> {
       type: "frac",
       a: this.blocks[0].ast(),
       b: this.blocks[1].ast(),
+    })
+  }
+
+  ir2(ret: IRBuilder): void {
+    ret.leaf({
+      type: "frac",
+      data: [this.blocks[0].parse(), this.blocks[1].parse()],
     })
   }
 }

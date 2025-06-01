@@ -42,9 +42,9 @@ export interface IRInfx<T> {
   pr0: number
 }
 
-export class ParseIR<T> {
+export class ParseIR<T extends {}> {
   constructor(
-    readonly leaf: ParseNode<T> | null,
+    readonly leaf: T | null,
     readonly prfx: IRPrfx<T> | null,
     readonly sufx: IRSufx<T> | null,
     readonly infx: IRInfx<T> | null,
@@ -52,15 +52,15 @@ export class ParseIR<T> {
 }
 
 /** A parsed node. Leaf nodes are represented by having no arguments. */
-export class ParseNode<T> {
+export class ParseNode<T extends {}> {
   constructor(
     readonly data: T,
     readonly args: readonly ParseNode<T>[] | null,
   ) {}
 }
 
-export class Parser<T> {
-  private index = 0
+export class Parser<T extends {}> {
+  index = 0
   private readonly j: ParseIR<T> | null
 
   constructor(
@@ -105,7 +105,7 @@ export class Parser<T> {
     }
 
     if (next.leaf != null) {
-      return next.leaf
+      return new ParseNode(next.leaf, null)
     }
 
     if (next.prfx) {
@@ -174,8 +174,8 @@ export class Parser<T> {
 }
 
 /** Creates a leaf node. */
-export function pLeaf<T>(data: T) {
-  return new ParseIR(new ParseNode(data, null), null, null, null)
+export function pLeaf<T extends {}>(data: T) {
+  return new ParseIR(data, null, null, null)
 }
 
 /**
@@ -183,12 +183,12 @@ export function pLeaf<T>(data: T) {
  * an operator where `op 2 * op 3 == (op 2) * (op 3)`; use the one-argument form
  * if `op 2 * op 3 == op (2 * op 3)`.
  */
-export function pPrfx<T>(data: T, pl: number, pr = pl) {
+export function pPrfx<T extends {}>(data: T, pl: number, pr = pl) {
   return new ParseIR(null, { data, pl, pr }, null, null)
 }
 
 /** Creates a suffix operator. */
-export function pSufx<T>(data: T, prec: number) {
+export function pSufx<T extends {}>(data: T, prec: number) {
   return new ParseIR(null, null, { data, prec }, null)
 }
 
@@ -198,12 +198,17 @@ export function pSufx<T>(data: T, prec: number) {
  * the right-hand-side if parsed at the root level of an expression (e.g. for
  * commas).
  */
-export function pInfx<T>(data: T, pl: number, pr: number, pr0 = pr) {
+export function pInfx<T extends {}>(data: T, pl: number, pr: number, pr0 = pr) {
   return new ParseIR(null, null, null, { data, pl, pr, pr0 })
 }
 
 /** Creates a prefix+infix operator, like the plus and minus signs. */
-export function pPifx<T>(data: T, pl: number, pr: number, prec: number) {
+export function pPifx<T extends {}>(
+  data: T,
+  pl: number,
+  pr: number,
+  prec: number,
+) {
   return new ParseIR(null, { data, pl: prec, pr: prec }, null, {
     data,
     pl,

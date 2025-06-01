@@ -2,7 +2,7 @@ import type { Node } from "@/eval/ast/token"
 import { L, R } from "@/field/dir"
 import { h } from "@/jsx"
 import { Leaf } from "."
-import { Block } from "../../model"
+import { Block, type IRBuilder } from "../../model"
 
 /**
  * Created when a LaTeX string terminates too early (e.g. before closing a
@@ -39,4 +39,11 @@ export class CmdEOF extends Leaf {
   }
 
   ir(_tokens: Node[]): true | void {}
+
+  ir2(_ret: IRBuilder): void {
+    // TODO: location info
+    throw new Error(
+      `Expected '${this.expected}' when pasting LaTeX, but the pasted text ended unexpectedly. Try removing any blocks marked [EOF].`,
+    )
+  }
 }

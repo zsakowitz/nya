@@ -2,7 +2,13 @@ import type { Node } from "@/eval/ast/token"
 import { D, L, R, U, type Dir, type VDir } from "@/field/dir"
 import { h } from "@/jsx"
 import type { LatexParser } from "../../latex"
-import { Block, Command, type Cursor, type InitRet } from "../../model"
+import {
+  Block,
+  Command,
+  type Cursor,
+  type InitRet,
+  type IRBuilder,
+} from "../../model"
 import { focusEdge } from "../leaf"
 import { BRACKS } from "../math/brack"
 import { closestGridCell } from "../math/matrix"
@@ -269,6 +275,20 @@ export class CmdPiecewise extends Command {
     tokens.push({
       type: "piecewise",
       pieces,
+    })
+  }
+
+  ir2(ret: IRBuilder): void {
+    const pieces = []
+    for (let i = 0; i < this.blocks.length - 1; i += 2) {
+      pieces.push({
+        value: this.blocks[i]!.parse(),
+        condition: this.blocks[i + 1]!.parse(),
+      })
+    }
+    ret.leaf({
+      type: "piecewise",
+      data: pieces,
     })
   }
 }

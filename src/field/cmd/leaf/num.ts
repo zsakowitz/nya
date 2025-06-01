@@ -8,13 +8,21 @@ import {
 } from "@/eval/ast/token"
 import { TXR_MAGICVAR } from "@/eval/ast/tx"
 import { subscript } from "@/eval/lib/text"
+import { P, PRECEDENCE_WORD_BINARY, PRECEDENCE_WORD_UNARY } from "@/eval2/prec"
 import { L, R, type Dir } from "@/field/dir"
 import type { Options, WordMapWithoutSpaces } from "@/field/options"
 import { h } from "@/jsx"
 import type { Scope } from "@/sheet/deps"
 import { Leaf } from "."
 import type { LatexInit, LatexParser } from "../../latex"
-import { Block, Cursor, Span, type Command, type InitProps } from "../../model"
+import {
+  Block,
+  Cursor,
+  Span,
+  type Command,
+  type InitProps,
+  type IRBuilder,
+} from "../../model"
 import { CmdSupSub } from "../math/supsub"
 import { CmdToken, TokenCtx } from "./token"
 import { CmdWord } from "./word"
@@ -104,6 +112,38 @@ export class CmdNum extends Leaf {
       })
     }
   }
+
+  ir2(ret: IRBuilder): void {
+    let data = ""
+    let self: CmdNum = this
+    while (ret.next instanceof CmdNum) {
+      ret.next = (self = ret.next)[R]
+      data += self.text
+    }
+    decimal: if (ret.next instanceof CmdDot) {
+      if (ret.next[R] instanceof CmdDot) {
+        break decimal
+      }
+      if (ret.next[R] instanceof CmdVar) {
+        const text = ret.next[R].wordToRight()
+        // TODO: throw a location-identifying error
+        throw new Error(
+          `I don't understand '${data}.${text}'. Does it mean '(${data})${text}', or '(${data}).${text}'? Use parentheses to clarify.`,
+        )
+      }
+      if (!(ret.next[R] instanceof CmdNum)) {
+        ret.next = ret.next[R]
+        break decimal
+      }
+      data += "."
+      ret.next = ret.next[R]
+      while (ret.next instanceof CmdNum) {
+        data += ret.next.text
+        ret.next = ret.next[R]
+      }
+    }
+    ret.leaf({ type: "num", data })
+  }
 }
 
 export class CmdDot extends Leaf {
@@ -182,6 +222,10 @@ export class CmdDot extends Leaf {
       kind: "infix",
       span: new Span(this.parent, this[L], this[R]),
     })
+  }
+
+  ir2(_ret: IRBuilder): void {
+    throw new Error("TODO: .2, .., ..., .x, .y, .min, .min(2,3)")
   }
 
   moveAcrossWord(cursor: Cursor, dir: Dir): void {
@@ -655,6 +699,44 @@ export class CmdVar extends Leaf {
     })
   }
 
+  ir2(ret: IRBuilder): void {
+    const [name, next] = this.wordToRightAndEndpoint()
+    ret.next = next[R]
+    switch (this.kind) {
+      case null:
+        ret.leaf({ type: "uvar", data: { name, sub: null } })
+        break
+      case "var":
+        ret.leaf({ type: "bvar", data: { name, sub: null } })
+        break
+      case "prefix":
+      case "magicprefix":
+        const p = PRECEDENCE_WORD_UNARY[name]
+        ret.prfx(
+          { type: "op", data: name },
+          p == null ? P.ImplicitFnL : p,
+          p == null ? P.ImplicitFnR : p,
+        )
+        break
+      case "infix": {
+        const p = PRECEDENCE_WORD_BINARY[name]
+        ret.prfx(
+          { type: "op", data: name },
+          p ? p[0] : P.ProdL,
+          p ? p[1] : P.ProdR,
+        )
+        break
+      }
+      case "magicprefixword": {
+        // TODO:
+        throw new Error(
+          "Operators of type 'magicprefixword' are not supported yet.",
+        )
+      }
+    }
+    null
+  }
+
   get autoCmd(): string {
     return this.text
   }
@@ -676,6 +758,29 @@ export class CmdVar extends Leaf {
       {}.hasOwnProperty.call(PRECEDENCE_MAP, text) &&
       PRECEDENCE_MAP[text as PuncBinaryStr]! <= Precedence.Sum
     )
+  }
+
+  /** Gets the word this letter begins, assuming this letter begins a word. */
+  wordToRight(): string {
+    return this.wordToRightAndEndpoint()[0]
+  }
+
+  /** Gets the word this letter begins, assuming this letter begins a word. */
+  wordToRightAndEndpoint(): [string, last: CmdVar] {
+    let ret = this.text
+    if (this.kind == null) {
+      return [ret, this]
+    }
+    let self: CmdVar = this
+    if (this.part == L) {
+      while (self[R] instanceof CmdVar) {
+        ret += (self = self[R]).text
+        if (self.part == R) {
+          break
+        }
+      }
+    }
+    return [ret, self]
   }
 }
 

@@ -2,7 +2,13 @@ import type { Node } from "@/eval/ast/token"
 import { D, L, R, U, type Dir, type VDir } from "@/field/dir"
 import { h } from "@/jsx"
 import type { LatexParser } from "../../latex"
-import { Block, Command, Cursor, getBoundingClientRect } from "../../model"
+import {
+  Block,
+  Command,
+  Cursor,
+  getBoundingClientRect,
+  type IRBuilder,
+} from "../../model"
 import { focusEdge } from "../leaf"
 
 type Coords = [row: number, col: number]
@@ -431,6 +437,16 @@ export class CmdMatrix extends Command<Block[]> {
       type: "matrix",
       cols: this.cols,
       values: this.blocks.map((block) => block.ast()),
+    })
+  }
+
+  ir2(ret: IRBuilder): void {
+    ret.leaf({
+      type: "matrix",
+      data: {
+        cols: this.cols,
+        data: this.blocks.map((block) => block.parse()),
+      },
     })
   }
 }

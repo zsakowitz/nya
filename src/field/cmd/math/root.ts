@@ -8,6 +8,7 @@ import {
   type Cursor,
   type InitProps,
   type InitRet,
+  type IRBuilder,
   type Selection,
 } from "../../model"
 
@@ -261,5 +262,19 @@ export class CmdRoot extends Command<
       root: this.blocks[1]?.ast(),
       contents: this.blocks[0].ast(),
     })
+  }
+
+  ir2(ret: IRBuilder): void {
+    ret.leaf(
+      this.blocks.length == 1 ?
+        { type: "sqrt", data: this.blocks[0].parse() }
+      : {
+          type: "nthroot",
+          data: {
+            root: this.blocks[1].parse(),
+            contents: this.blocks[0].parse(),
+          },
+        },
+    )
   }
 }

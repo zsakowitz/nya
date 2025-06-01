@@ -1,8 +1,14 @@
 import type { Node } from "@/eval/ast/token"
 import { D, L, R, U, type Dir, type VDir } from "@/field/dir"
-import { U_ZERO_WIDTH_SPACE, h } from "@/jsx"
+import { h, U_ZERO_WIDTH_SPACE } from "@/jsx"
 import type { LatexParser } from "../../latex"
-import { Block, Command, Cursor, type InitProps } from "../../model"
+import {
+  Block,
+  Command,
+  Cursor,
+  type InitProps,
+  type IRBuilder,
+} from "../../model"
 import { focusEdge } from "../leaf"
 import { CmdUnknown } from "../leaf/unknown"
 
@@ -323,6 +329,15 @@ export class CmdSupSub extends Command {
       } else {
         tokens.push({ type: "sup", sup: this.sup.ast() })
       }
+    }
+  }
+
+  ir2(ret: IRBuilder): void {
+    if (this.sub) {
+      throw new Error("Subscripts are not allowed here.") // TODO:
+    }
+    if (this.sup) {
+      ret.suffixed({ type: "exponent", data: this.sup.parse() })
     }
   }
 }

@@ -1,12 +1,25 @@
 import { tokensToAst } from "@/eval/ast/complete"
 import type { Node } from "@/eval/ast/token"
+import {
+  infx,
+  JUXTAPOSE_TOKEN,
+  leaf,
+  prfx,
+  sufx,
+  type Data,
+  type IR,
+  type OpKind,
+  type Suffix,
+} from "@/eval2/node"
+import { ParseNode, Parser } from "@/eval2/parse"
+import { Precedence } from "@/eval2/prec"
 import { h } from "@/jsx"
 import type { Scope } from "@/sheet/deps"
 import type { CmdFrac } from "./cmd/math/frac"
+import { D, L, R, U, type Dir, type VDir } from "./dir"
 import type { FieldInert } from "./field-inert"
 import type { LatexParser } from "./latex"
 import type { Options } from "./options"
-import { D, L, R, U, type Dir, type VDir } from "./dir"
 
 export function getBoundingClientRect(el: Element) {
   return el.getBoundingClientRect()
@@ -85,6 +98,60 @@ export class Block {
   /** Tokenizes this {@linkcode Block}'s contents into an AST. */
   ast(): Node {
     return tokensToAst(this.ir(), false)
+  }
+
+  private parseIR() {
+    if (this.ends[L] == null) {
+      return []
+    }
+    const builder = new IRBuilder([], this.ends[L])
+    while (builder.next) {
+      const prev = builder.next
+      builder.next.ir2(builder)
+      if (builder.next == prev) {
+        builder.next = prev[R]
+      }
+    }
+    return builder.ir
+  }
+
+  /** Parses this {@linkcode Block}'s contents as a sub-expression. */
+  parse(): ParseNode<Data> {
+    if (this.ends[L] == null) {
+      return new ParseNode({ type: "list", data: null }, null)
+    }
+    const ir = this.parseIR()
+    return new Parser(ir, JUXTAPOSE_TOKEN).parse()
+  }
+
+  /** Parses this {@linkcode Block}'s contents as a top-level expression. */
+  parseTopLevel(): ParseNode<Data> {
+    const ir = this.parseIR()
+
+    // a = 3
+    // a(b) = 4
+    if (
+      ir.length >= 2 &&
+      (ir[0]?.leaf?.type == "uvar" || ir[0]?.leaf?.type == "ucall") &&
+      ir[1]?.infx?.data.type == "op" &&
+      ir[1]?.infx.data.data == "cmp-eq"
+    ) {
+      const name = ir[0].leaf
+      const parser = new Parser(ir, JUXTAPOSE_TOKEN)
+      parser.index = 2
+      return new ParseNode<Data>(
+        {
+          type: "binding",
+          data: {
+            name: name.type == "ucall" ? name.data.name : name.data,
+            args: name.type == "ucall" ? name.data.arg : null,
+          },
+        },
+        [parser.parse()],
+      )
+    }
+
+    return new Parser(ir, JUXTAPOSE_TOKEN).parse()
   }
 
   /**
@@ -1163,6 +1230,51 @@ interface CommandMut extends Command {
   parent: Block | null
 }
 
+export class IRBuilder {
+  constructor(
+    readonly ir: IR[],
+    public next: Command | null,
+  ) {}
+
+  push(ir: IR) {
+    this.ir.push(ir)
+  }
+
+  prfx(data: Data, pl: Precedence, pr = pl) {
+    this.push(prfx(data, pl, pr))
+  }
+
+  infx(data: Data, pl: Precedence, pr: Precedence) {
+    this.push(infx(data, pl, pr))
+  }
+
+  leaf(data: Data) {
+    this.push(leaf(data))
+  }
+
+  last() {
+    return this.ir[this.ir.length - 1]
+  }
+
+  lastOf<K extends keyof OpKind>(
+    type: K,
+  ): { type: K; data: OpKind[K] } | undefined {
+    const ir = this.last()
+    if (ir?.leaf?.type === type) {
+      return ir.leaf as any
+    }
+  }
+
+  suffixed(data: Suffix) {
+    const suffix = this.lastOf("suffix")
+    if (suffix) {
+      suffix.data.push(data)
+    } else {
+      this.push(sufx({ type: "suffix", data: [data] }, Precedence.Suffixed))
+    }
+  }
+}
+
 /**
  * A single item inside a {@linkcode Block}.
  *
@@ -1179,6 +1291,7 @@ interface CommandMut extends Command {
  * - `latex` to output LaTeX math
  * - `ascii` to output ASCII math
  * - `reader` to output screen-readable math
+ * - `ir` to output the AST representation
  *
  * The abstract methods used for movement are:
  *
@@ -1623,6 +1736,12 @@ export abstract class Command<
 
   /** Tokenizes this {@linkcode Command}'s contents as LaTeX. */
   abstract ir(tokens: Node[]): true | void
+
+  /**
+   * Tokenizes this {@linkcode Command}'s contents into an intermediate
+   * representation.
+   */
+  abstract ir2(ret: IRBuilder): void
 
   /**
    * Called when a comma is typed. Return `true` if action was taken to prevent

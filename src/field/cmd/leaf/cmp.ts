@@ -1,7 +1,8 @@
 import type { Node, PuncCmp } from "@/eval/ast/token"
+import { Precedence } from "@/eval2/prec"
 import { L, R, type Dir } from "@/field/dir"
 import type { LatexParser } from "../../latex"
-import type { Command, Cursor, InitProps } from "../../model"
+import type { Command, Cursor, InitProps, IRBuilder } from "../../model"
 import { OpMinus, opp } from "./op"
 import { Op } from "./op-core"
 
@@ -108,6 +109,14 @@ function ceq(eq: Data, ne: Data, endsImplicitGroup = true) {
         value: op[4],
       })
     }
+
+    ir2(ret: IRBuilder): void {
+      ret.infx(
+        { type: "op", data: (this.neg ? ne : eq)[4] },
+        Precedence.CmpL,
+        Precedence.CmpR,
+      )
+    }
   }
 }
 
@@ -199,6 +208,14 @@ function cmp(
         value: this.op[4],
       })
     }
+
+    ir2(ret: IRBuilder): void {
+      ret.infx(
+        { type: "op", data: getOp(this.neg, this.eq)[4] },
+        Precedence.CmpL,
+        Precedence.CmpR,
+      )
+    }
   }
 }
 
@@ -284,6 +301,8 @@ export class OpGt extends cmp(
 
 export class OpDoubleRightArrow extends opp(
   "\\Rightarrow ",
+  Precedence.MapsToL,
+  Precedence.MapsToR,
   " maps to ",
   "⇒",
   "=>",
@@ -303,7 +322,15 @@ export class OpDoubleRightArrow extends opp(
   }
 }
 
-export class OpRightArrow extends opp("\\to ", " becomes ", "→", "->", true) {
+export class OpRightArrow extends opp(
+  "\\to ",
+  Precedence.BecomesL,
+  Precedence.BecomesR,
+  " becomes ",
+  "→",
+  "->",
+  true,
+) {
   delete(cursor: Cursor, from: Dir): void {
     if (from == R) {
       const minus = new OpMinus()

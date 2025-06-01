@@ -14,6 +14,7 @@ import {
   type Cursor,
   type InitProps,
   type InitRet,
+  type IRBuilder,
 } from "../../model"
 import { CmdUnknown } from "./unknown"
 
@@ -48,9 +49,9 @@ export function createToken(color: string, ...paths: SVGElement[]) {
   const svg = sx(
     "svg",
     {
-      "class":
+      class:
         "size-[16px] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 fill-transparent stroke-current overflow-visible",
-      "viewBox": "0 0 1 1",
+      viewBox: "0 0 1 1",
       "stroke-linejoin": "round",
       "stroke-linecap": "round",
     },
@@ -249,6 +250,10 @@ export class CmdToken extends Leaf {
       span: new Span(this.parent, this[L], this[R]),
       value: "$" + this.id,
     })
+  }
+
+  ir2(ret: IRBuilder): void {
+    ret.leaf({ type: "uvar", data: { name: "$" + this.id, sub: null } })
   }
 
   ascii(): string {

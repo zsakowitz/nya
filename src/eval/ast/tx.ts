@@ -32,7 +32,7 @@ export interface TxrAst<T> {
   glsl(node: T, props: PropsGlsl): GlslValue
   sym(node: T, props: PropsSym): Sym
   deps(node: T, deps: Deps): void
-  nya(node: T, props: PropsNya): string
+  nya?(node: T, props: PropsNya): string
   drag: DragTarget<T>
   /**
    * If two packages attempt to load the same transformer, the one with a higher
@@ -246,9 +246,6 @@ export const TXR_AST: { [K in NodeName]?: TxrAst<Nodes[K]> } = {
     sym(node, props) {
       return group(node).sym(node.value, props)
     },
-    nya(node, props) {
-      return group(node).nya(node.value, props)
-    },
     drag: {
       num(node, props) {
         return group(node).drag.num(node.value, props)
@@ -280,12 +277,6 @@ export const TXR_AST: { [K in NodeName]?: TxrAst<Nodes[K]> } = {
     sym(node, props) {
       if (node.value in TXR_MAGICVAR) {
         return TXR_MAGICVAR[node.value]!.sym(node as never, props)
-      }
-      throw new Error(`The '${node.value}' operator is not defined.`)
-    },
-    nya(node, props) {
-      if (node.value in TXR_MAGICVAR) {
-        return TXR_MAGICVAR[node.value]!.nya(node as never, props)
       }
       throw new Error(`The '${node.value}' operator is not defined.`)
     },
@@ -434,28 +425,6 @@ export const TXR_AST: { [K in NodeName]?: TxrAst<Nodes[K]> } = {
             fn: op,
             args: [sym(node.a, props)],
           }
-        }
-      }
-      throw new Error(`The operator '${node.kind}' is not defined.`)
-    },
-    nya(node, props) {
-      if (node.b) {
-        const txr = TXR_OP_BINARY[node.kind]
-        if (txr) {
-          return txr.nya({ lhs: node.a, rhs: node.b }, props)
-        }
-        const op = OP_BINARY[node.kind]
-        if (op) {
-          return op.nya(props.ctx, [glsl(node.a, props), nya(node.b, props)])
-        }
-      } else {
-        const txr = TXR_OP_UNARY[node.kind]
-        if (txr) {
-          return txr.nya(node.a, props)
-        }
-        const op = OP_UNARY[node.kind]
-        if (op) {
-          return op.nya(props.ctx, [nya(node.a, props)])
         }
       }
       throw new Error(`The operator '${node.kind}' is not defined.`)
@@ -759,12 +728,4 @@ export function js(node: Node, props: PropsJs): JsValue {
     throw new Error(`The '${node.type}' transformer is not defined.`)
   }
   return txr.js(node as never, props)
-}
-
-export function nya(node: Node, props: PropsNya): string {
-  const txr = TXR_AST[node.type]
-  if (!txr) {
-    throw new Error(`The '${node.type}' transformer is not defined.`)
-  }
-  return txr.nya(node as never, props)
 }

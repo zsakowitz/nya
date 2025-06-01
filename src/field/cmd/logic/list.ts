@@ -1,8 +1,9 @@
 import type { Node } from "@/eval/ast/token"
+import { ParseNode } from "@/eval2/parse"
 import { D, L, R, U, type Dir, type VDir } from "@/field/dir"
 import { h } from "@/jsx"
 import type { LatexParser } from "../../latex"
-import { Block, Command, type Cursor } from "../../model"
+import { Block, Command, type Cursor, type IRBuilder } from "../../model"
 import { focusEdge, Leaf } from "../leaf"
 import { closestGridCell } from "../math/matrix"
 
@@ -135,6 +136,23 @@ export class CmdList extends Command {
         : this.blocks.length ?
           { type: "commalist", items: this.blocks.map((x) => x.ast()) }
         : { type: "void" },
+    })
+  }
+
+  ir2(ret: IRBuilder): void {
+    ret.leaf({
+      type: "group",
+      data: {
+        lhs: "[",
+        rhs: "]",
+        contents:
+          this.blocks.length == 1 ?
+            this.blocks[0]!.parse()
+          : new ParseNode(
+              { type: "list", data: null },
+              this.blocks.map((x) => x.parse()),
+            ),
+      },
     })
   }
 

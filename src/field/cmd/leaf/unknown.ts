@@ -1,4 +1,5 @@
 import type { Node } from "@/eval/ast/token"
+import type { IRBuilder } from "@/field/model"
 import { h } from "@/jsx"
 import { Leaf } from "."
 
@@ -9,7 +10,13 @@ import { Leaf } from "."
  */
 export class CmdUnknown extends Leaf {
   constructor(readonly source: string) {
-    super("\\unknown ", h("text-[--nya-latex-error]", source))
+    super(
+      "\\unknown ",
+      h(
+        "px-[.1em]",
+        h("text-[--nya-latex-error] border border-current px-1", source),
+      ),
+    )
   }
 
   reader(): string {
@@ -25,4 +32,11 @@ export class CmdUnknown extends Leaf {
   }
 
   ir(_tokens: Node[]): true | void {}
+
+  ir2(_ret: IRBuilder): void {
+    // TODO: location info
+    throw new Error(
+      `I don't understand the LaTeX command '${this.source}', which you pasted.`,
+    )
+  }
 }

@@ -7,6 +7,7 @@ import {
   type Cursor,
   type InitProps,
   type InitRet,
+  type IRBuilder,
 } from "../../model"
 import type { Options } from "../../options"
 import { Leaf } from "../leaf"
@@ -124,5 +125,9 @@ export class CmdPrompt extends Leaf {
 
   ir(_tokens: Node[]): void {
     // Empty, as {@linkcode CmdPrompt} isn't a complete command
+  }
+
+  ir2(_ret: IRBuilder): void {
+    // Empty, since this isn't a complete command
   }
 }
