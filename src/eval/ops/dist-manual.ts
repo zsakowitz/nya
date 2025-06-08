@@ -313,4 +313,4 @@ export abstract class FnDistCaching<
   }
 }
 
-// FIXME: floor^(2_3) claims 3 isn't in base 3
+// TODO: floor^(2_3) claims 3 isn't in base 3

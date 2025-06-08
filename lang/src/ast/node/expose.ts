@@ -17,7 +17,7 @@ export class ExposeFn extends NodeExpose {
     readonly as: ExposeAliases | null,
     readonly semi: Token<typeof OSemi> | null,
   ) {
-    super(kw.start, (semi ?? as ?? label ?? name ?? kw).end)
+    super(kw.start, (semi ?? as ?? label ?? name ?? kw).end, kw.info)
   }
 }
 
@@ -30,7 +30,7 @@ export class ExposeType extends NodeExpose {
     readonly label: Token<typeof TString> | null,
     readonly semi: Token<typeof OSemi> | null,
   ) {
-    super(kw.start, (semi ?? as ?? label ?? targs ?? name ?? kw).end)
+    super(kw.start, (semi ?? as ?? label ?? targs ?? name ?? kw).end, kw.info)
   }
 }
 
@@ -45,6 +45,6 @@ export class ExposeLet extends NodeExpose {
     readonly value: NodeExpr,
     readonly semi: Token<typeof OSemi> | null,
   ) {
-    super(kw.start, (semi ?? as ?? type ?? label ?? name ?? kw).end)
+    super(kw.start, (semi ?? as ?? type ?? label ?? name ?? kw).end, kw.info)
   }
 }

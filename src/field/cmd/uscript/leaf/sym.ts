@@ -153,7 +153,7 @@ export class CmuSym extends CmuLeaf {
     }
 
     if (this.sym[0] == "v") {
-      ret.leaf({ type: "var", data: { name: this.sym, sub: null } })
+      ret.leaf({ type: "uvar", data: { name: this.sym, sub: null } })
       return
     }
 

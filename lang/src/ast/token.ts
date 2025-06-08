@@ -1,4 +1,4 @@
-import { Code, Issues, Pos } from "./issue"
+import { Chunk, Code, Issues, Pos } from "./issue"
 import {
   APS,
   IDENT_PREFIXES,
@@ -32,13 +32,13 @@ export class Token<T extends number> extends Pos {
   declare [Token.__kind]: T
 
   constructor(
-    readonly source: string,
+    info: Chunk,
     readonly kind: T,
     start: number,
     end: number,
     readonly virtual = false,
   ) {
-    super(start, end)
+    super(start, end, info)
   }
 
   get val(): string {
@@ -46,7 +46,7 @@ export class Token<T extends number> extends Pos {
       return OP_TEXT[this.kind]!
     }
 
-    return this.source.slice(this.start, this.end)
+    return this.info.source.slice(this.start, this.end)
   }
 
   get value() {
@@ -134,13 +134,15 @@ function isIdCont(cc: number) {
 }
 
 export function tokens(
-  source: string,
+  info: Chunk,
+  issues: Issues,
   props: ToTokensProps,
   start = 0,
-  end = source.length,
+  end = info.source.length,
 ) {
+  const source = info.source
+
   const ret: Token<number>[] = []
-  const issues = new Issues(source)
   for (let i = start; i < end; ) {
     const start = i
     const char = source[i]!
@@ -161,7 +163,7 @@ export function tokens(
       while (isIdCont(source.charCodeAt(++i)));
       const text = source.slice(start, i)
       ret.push(
-        new Token(source, text == "d/d_" ? TDerivIgnore : TDeriv, start, i),
+        new Token(info, text == "d/d_" ? TDerivIgnore : TDeriv, start, i),
       )
       continue
     }
@@ -175,7 +177,7 @@ export function tokens(
       const text = source.slice(start, i)
       const idStart = start
       const idEnd = i
-      const ident = new Token(source, KWS[text] ?? TIdent, idStart, idEnd)
+      const ident = new Token(info, KWS[text] ?? TIdent, idStart, idEnd)
       if (
         ident.kind != TIdent ||
         !(source.charCodeAt(i) == C_HASH || source.charCodeAt(i) == C_DQUOTE)
@@ -190,17 +192,17 @@ export function tokens(
         i++
       }
       if (source.charCodeAt(i) != C_DQUOTE) {
-        issues.raise(Code.InvalidRawString, new Pos(idStart, i))
+        issues.raise(Code.InvalidRawString, new Pos(idStart, i, info))
         ret.push(ident)
         continue
       }
       i++
-      ret.push(new Token(source, RTag, idStart, idEnd))
+      ret.push(new Token(info, RTag, idStart, idEnd))
       let textStart = i
       let textEnd: number
       while (true) {
         if (i >= source.length) {
-          issues.raise(Code.UnterminatedString, new Pos(i, i))
+          issues.raise(Code.UnterminatedString, new Pos(i, i, info))
           textEnd = i
           break
         }
@@ -223,7 +225,7 @@ export function tokens(
           break
         } else if (next == C_DOLLARSIGN) {
           if (source.charCodeAt(i + 1) != C_LBRACE) break special
-          ret.push(new Token(source, RString, textStart, i))
+          ret.push(new Token(info, RString, textStart, i))
 
           i += 2
           // source[i] is unknown
@@ -233,7 +235,7 @@ export function tokens(
           while (true) {
             if (i >= source.length) {
               interpEnd = i
-              issues.raise(Code.UnterminatedStringInterp, new Pos(i, i))
+              issues.raise(Code.UnterminatedStringInterp, new Pos(i, i, info))
               break
             }
 
@@ -254,15 +256,15 @@ export function tokens(
               i++
             }
           }
-          ret.push(new Token(source, RInterp, interpStart, interpEnd))
+          ret.push(new Token(info, RInterp, interpStart, interpEnd))
           textStart = interpEnd + 1
           continue
         }
 
         i++
       }
-      ret.push(new Token(source, RString, textStart, textEnd))
-      ret.push(new Token(source, RTerminal, i, i))
+      ret.push(new Token(info, RString, textStart, textEnd))
+      ret.push(new Token(info, RTerminal, i, i))
       continue
     }
 
@@ -280,9 +282,9 @@ export function tokens(
           i++
         }
       }
-      ret.push(new Token(source, TIdent, start, i))
+      ret.push(new Token(info, TIdent, start, i))
       if (!terminated) {
-        issues.raise(Code.UnterminatedStringIdent, new Pos(start, i))
+        issues.raise(Code.UnterminatedStringIdent, new Pos(start, i, info))
       }
       continue
     }
@@ -298,25 +300,25 @@ export function tokens(
       const nextcc = source.charCodeAt(i + 1)
       if (next && OPS_AND_SECOND_CHARS[cc]!.has(nextcc)) {
         if (char + next in APS) {
-          ret.push(new Token(source, APS[char + next]!, start, i + 2))
+          ret.push(new Token(info, APS[char + next]!, start, i + 2))
         } else {
-          issues.raise(Code.UnknownOperator, new Pos(start, i))
+          issues.raise(Code.UnknownOperator, new Pos(start, i, info))
         }
         i += 2
         continue
       }
       i++
       if (char in APS) {
-        ret.push(new Token(source, APS[char]!, start, i))
+        ret.push(new Token(info, APS[char]!, start, i))
       } else {
-        issues.raise(Code.UnknownOperator, new Pos(start, i))
+        issues.raise(Code.UnknownOperator, new Pos(start, i, info))
       }
       continue
     }
 
     if (cc in IDENT_PREFIXES && isIdStart(source.charCodeAt(i + 1))) {
       while (isIdCont(source.charCodeAt(++i)));
-      ret.push(new Token(source, IDENT_PREFIXES[cc]!, start, i))
+      ret.push(new Token(info, IDENT_PREFIXES[cc]!, start, i))
       continue
     }
 
@@ -324,12 +326,12 @@ export function tokens(
       const m = source.slice(i).match(NUMERIC)![0]
       i += m.length
       if (/[.ep]/.test(m)) {
-        ret.push(new Token(source, TFloat, start, i))
+        ret.push(new Token(info, TFloat, start, i))
       } else {
-        ret.push(new Token(source, TInt, start, i))
+        ret.push(new Token(info, TInt, start, i))
       }
       if (isIdStart(source.charCodeAt(i))) {
-        issues.raise(Code.LetterDirectlyAfterNumber, new Pos(i, i + 1))
+        issues.raise(Code.LetterDirectlyAfterNumber, new Pos(i, i + 1, info))
       }
       continue
     }
@@ -338,7 +340,7 @@ export function tokens(
       i++
       while (source[++i] && source[i] != "\n");
       if (props.comments) {
-        ret.push(new Token(source, TComment, start, i))
+        ret.push(new Token(info, TComment, start, i))
       }
       continue
     }
@@ -356,9 +358,9 @@ export function tokens(
           i++
         }
       }
-      ret.push(new Token(source, TString, start, i))
+      ret.push(new Token(info, TString, start, i))
       if (!terminated) {
-        issues.raise(Code.UnterminatedString, new Pos(start, i))
+        issues.raise(Code.UnterminatedString, new Pos(start, i, info))
       }
       continue
     }
@@ -377,8 +379,8 @@ export function tokens(
           switch (char) {
             case undefined:
               i++
-              ret.push(new Token(source, TSource, start, i))
-              issues.raise(Code.UnterminatedSource, new Pos(start, i))
+              ret.push(new Token(info, TSource, start, i))
+              issues.raise(Code.UnterminatedSource, new Pos(start, i, info))
               break loop
             case "{":
               depth++
@@ -386,7 +388,7 @@ export function tokens(
             case "}":
               if (depth == 0) {
                 i++
-                ret.push(new Token(source, OLBrace, start, start + 1))
+                ret.push(new Token(info, OLBrace, start, start + 1))
                 const o = start + 1
                 const contents = source.slice(o, i - 1)
                 let match
@@ -394,19 +396,17 @@ export function tokens(
                 let prev = 0
                 while ((match = INTERP.exec(contents))) {
                   const start = o + match.index
-                  ret.push(new Token(source, TSource, o + prev, start))
+                  ret.push(new Token(info, TSource, o + prev, start))
                   const end = o + (prev = INTERP.lastIndex)
-                  ret.push(new Token(source, OLInterp, start, start + 2))
+                  ret.push(new Token(info, OLInterp, start, start + 2))
                   if (match[1]) {
                     const l1 = match[1].length
-                    ret.push(
-                      new Token(source, TIdent, start + 2, start + 2 + l1),
-                    )
+                    ret.push(new Token(info, TIdent, start + 2, start + 2 + l1))
                     if (match[2]) {
                       const l2 = match[2].length
                       ret.push(
                         new Token(
-                          source,
+                          info,
                           ODot,
                           start + 2 + l1,
                           start + 2 + l1 + l2,
@@ -416,7 +416,7 @@ export function tokens(
                         const l3 = match[3].length
                         ret.push(
                           new Token(
-                            source,
+                            info,
                             TIdent,
                             start + 2 + l1 + l2,
                             start + 2 + l1 + l2 + l3,
@@ -425,10 +425,10 @@ export function tokens(
                       }
                     }
                   }
-                  ret.push(new Token(source, ORParen, end - 1, end))
+                  ret.push(new Token(info, ORParen, end - 1, end))
                 }
-                ret.push(new Token(source, TSource, o + prev, i - 1))
-                ret.push(new Token(source, ORBrace, i - 1, i))
+                ret.push(new Token(info, TSource, o + prev, i - 1))
+                ret.push(new Token(info, ORBrace, i - 1, i))
                 break loop
               } else {
                 depth--
@@ -437,7 +437,7 @@ export function tokens(
           }
         }
       } else {
-        ret.push(new Token(source, OLBrace, start, ++i))
+        ret.push(new Token(info, OLBrace, start, ++i))
       }
       continue
     }
@@ -446,22 +446,22 @@ export function tokens(
       const next = source[i + 1]
       const nextcc = source.charCodeAt(i + 1)
       if (next && OPS_AND_SECOND_CHARS[cc]!.has(nextcc)) {
-        ret.push(new Token(source, OPS[char + next]!, start, i + 2))
+        ret.push(new Token(info, OPS[char + next]!, start, i + 2))
         i += 2
         continue
       }
       i++
       if (char in OPS) {
-        ret.push(new Token(source, OPS[char]!, start, i))
+        ret.push(new Token(info, OPS[char]!, start, i))
       } else {
-        issues.raise(Code.UnknownOperator, new Pos(start, i))
+        issues.raise(Code.UnknownOperator, new Pos(start, i, info))
       }
       continue
     }
 
-    issues.raise(Code.UnknownChar, new Pos(start, ++i))
+    issues.raise(Code.UnknownChar, new Pos(start, ++i, info))
     continue
   }
 
-  return { ret, issues }
+  return ret
 }

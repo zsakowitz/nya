@@ -20,7 +20,7 @@ export class StmtExpr extends NodeStmt {
     /** `true` only if `expr` is a plain expr and has no semicolon. */
     readonly terminatesBlock: boolean,
   ) {
-    super(expr.start, semi?.end ?? expr.end)
+    super(expr.start, semi?.end ?? expr.end, expr.info)
   }
 }
 
@@ -33,7 +33,7 @@ export class StmtLet extends NodeStmt {
     readonly value: Initializer | null,
     readonly semi: Token<typeof OSemi> | null,
   ) {
-    super(kw.start, (semi ?? value ?? type ?? ident ?? mut ?? kw).end)
+    super(kw.start, (semi ?? value ?? type ?? ident ?? mut ?? kw).end, kw.info)
   }
 }
 
@@ -44,12 +44,12 @@ export class StmtAssert extends NodeStmt {
     readonly message: AssertionMessage | null,
     readonly semi: Token<typeof OSemi> | null,
   ) {
-    super(kw.start, (semi ?? message ?? expr).end)
+    super(kw.start, (semi ?? message ?? expr).end, kw.info)
   }
 }
 
 export class StmtComment extends NodeStmt {
   constructor(readonly of: Comments) {
-    super(of.start, of.end)
+    super(of.start, of.end, of.info)
   }
 }

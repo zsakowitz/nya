@@ -1,3 +1,4 @@
+import type { Pos } from "../ast/issue"
 import type { Block } from "./decl"
 import { bug, issue } from "./error"
 import type { IdGlobal } from "./id"
@@ -13,9 +14,9 @@ export class AnyVector implements FnType {
     return type.repr.type == "vec" && type.repr.of == this.of
   }
 
-  convertFrom(value: Value): Value {
+  convertFrom(value: Value, pos: Pos): Value {
     if (!this.canConvertFrom(value.type)) {
-      invalidType(this, value.type)
+      invalidType(this, value.type, pos)
     }
     return value
   }

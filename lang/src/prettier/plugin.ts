@@ -1,6 +1,7 @@
 import type { Parser, Printer, SupportLanguage } from "prettier"
 import { builders } from "prettier/doc.js"
 import { printVanilla } from "."
+import { Chunk, Issues } from "../ast/issue"
 import type { List } from "../ast/node/extra"
 import type { Node } from "../ast/node/node"
 import { parse, parseBlockContents } from "../ast/parse"
@@ -17,15 +18,16 @@ export const languages = [
 
 export const parsers = {
   "nya-parse": {
-    parse(text) {
-      const stream = createStream(text, { comments: true })
+    parse(text, options) {
+      const chunk = new Chunk(options.filepath, text)
+      const stream = createStream(chunk, new Issues(), { comments: true })
       const result = parse(stream)
       if (stream.issues.entries.length) {
         throw new Error(
           stream.issues.entries
             .map(
               (x) =>
-                `${x} '${stream.source.slice(x.pos.start - 10, x.pos.end + 10)}'`,
+                `${x} '${chunk.source.slice(x.pos.start - 10, x.pos.end + 10)}'`,
             )
             .join("\n\n"),
         )
@@ -42,15 +44,19 @@ export const parsers = {
     },
   } satisfies Parser,
   "nya-parse-block-contents": {
-    parse(text) {
-      const stream = createStream(text, { comments: true })
+    parse(text, options) {
+      const stream = createStream(
+        new Chunk(options.filepath, text),
+        new Issues(),
+        { comments: true },
+      )
       const result = parseBlockContents(stream).of
       if (stream.issues.entries.length) {
         throw new Error(
           stream.issues.entries
             .map(
               (x) =>
-                `${x} '${stream.source.slice(x.pos.start - 10, x.pos.end + 10)}'`,
+                `${x} '${stream.info.source.slice(x.pos.start - 10, x.pos.end + 10)}'`,
             )
             .join("\n\n"),
         )
@@ -79,7 +85,7 @@ export const printers = {
       return builders.join(
         builders.hardline,
         path.node.items.map((x: Node) =>
-          printVanilla(x, (path.node as List<any>).bracket.source),
+          printVanilla(x, (path.node as List<any>).bracket.info.source),
         ),
       )
     },

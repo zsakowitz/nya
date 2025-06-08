@@ -1,3 +1,4 @@
+import type { Pos } from "../ast/issue"
 import {
   KBreak,
   KContinue,
@@ -71,7 +72,13 @@ function list(a: { toString(): string }[], empty: "no arguments" | null) {
 }
 
 const ID_MATMUL = ident("@#")
-export function performCall(id: IdGlobal, block: Block, args: Value[]): Value {
+export function performCall(
+  id: IdGlobal,
+  block: Block,
+  args: Value[],
+  namePos: Pos,
+  fullPos: Pos,
+): Value {
   if (id == ID_MATMUL) {
     if (args.length == 2) {
       return matrixMultiply(block, args[0]!, args[1]!)
@@ -90,10 +97,10 @@ export function performCall(id: IdGlobal, block: Block, args: Value[]): Value {
 
   if (!fns) {
     if (local) {
-      issue(`Locally defined variable '${id}' is not a function.`)
+      issue(`Locally defined variable '${id}' is not a function.`, namePos)
     }
 
-    issue(`Function '${id}' is not defined.`)
+    issue(`Function '${id}' is not defined.`, namePos)
   }
 
   const overload = fns.find(
@@ -107,12 +114,15 @@ export function performCall(id: IdGlobal, block: Block, args: Value[]): Value {
         args.map((x) => x.type),
         "no arguments",
       )}. Try:` + fns.map((x) => "\n" + x.toString()).join(""),
+      fullPos,
     )
   }
 
   return overload.run(
-    args.map((x, i) => overload.args[i]!.type.convertFrom(x)),
+    args.map((x, i) => overload.args[i]!.type.convertFrom(x, fullPos)),
     block,
+    namePos,
+    fullPos,
   )
 }
 
@@ -120,14 +130,14 @@ function emitType(node: NodeType, decl: Declarations): Type {
   if (node instanceof TypeParen) {
     return emitType(node.of, decl)
   } else if (node instanceof TypeEmpty) {
-    issue("Empty type.")
+    issue("Empty type.", node)
   } else if (node instanceof TypeVar) {
     if (node.targs) {
       todo("Type arguments are not supported yet.")
     }
     const ty = decl.types.get(ident(node.name.val))
     if (!ty) {
-      issue(`Type '${node.name.val}' is not defined.`)
+      issue(`Type '${node.name.val}' is not defined.`, node.name)
     }
     return ty
   } else if (node instanceof TypeAlt) {
@@ -138,12 +148,14 @@ function emitType(node: NodeType, decl: Declarations): Type {
       : lhs instanceof Struct ? [lhs]
       : issue(
           `Types may only be used in a union if both types were initially declared in a single 'struct' declaration.`,
+          node,
         )
     const r =
       rhs instanceof Alt ? rhs.alts
       : rhs instanceof Struct ? [rhs]
       : issue(
           `Types may only be used in a union if both types were initially declared in a single 'struct' declaration.`,
+          node,
         )
     return new Alt([...l, ...r])
   } else if (node instanceof TypeArray) {
@@ -189,14 +201,23 @@ function emitExpr(node: NodeExpr, block: Block): Value {
       return new Value(0, block.decl.void)
     }
 
-    return performCall(ident(node.op.val), block, [
-      emitExpr(node.lhs, block),
-      emitExpr(node.rhs, block),
-    ])
+    return performCall(
+      ident(node.op.val),
+      block,
+      [emitExpr(node.lhs, block), emitExpr(node.rhs, block)],
+      node.op,
+      node,
+    )
   } else if (node instanceof ExprUnary) {
-    return performCall(ident(node.op.val), block, [emitExpr(node.of, block)])
+    return performCall(
+      ident(node.op.val),
+      block,
+      [emitExpr(node.of, block)],
+      node.op,
+      node,
+    )
   } else if (node instanceof ExprEmpty) {
-    issue("Empty expression.")
+    issue("Empty expression.", node)
   } else if (node instanceof ExprLit) {
     return block.decl.createLiteral(node)
   } else if (node instanceof ExprVar) {
@@ -207,18 +228,25 @@ function emitExpr(node: NodeExpr, block: Block): Value {
       ident(node.name.val),
       block,
       node.args?.items.map((e) => emitExpr(e, block)) ?? [],
+      node.name,
+      node,
     )
   } else if (node instanceof ExprDirectCall) {
     if (node.targs) {
       todo("Type arguments are not supported yet.")
     }
     if (!node.name) {
-      issue("Function call via 'call' syntax is missing a function name.")
+      issue(
+        "Function call via 'call' syntax is missing a function name.",
+        node.kw,
+      )
     }
     return performCall(
       ident(node.name.val),
       block,
       node.args?.items.map((e) => emitExpr(e, block)) ?? [],
+      node.name,
+      node,
     )
   } else if (node instanceof ExprParen) {
     return emitExpr(node.of.value, block)
@@ -237,16 +265,18 @@ function emitExpr(node: NodeExpr, block: Block): Value {
     }
 
     const map = new Map<string, Value>()
+    const mapPos = new Map<string, Pos>()
     for (const arg of node.args.items) {
       map.set(
         arg.name.val,
         arg.expr ?
           emitExpr(arg.expr, block)
-        : performCall(ident(arg.name.val), block, []),
+        : performCall(ident(arg.name.val), block, [], arg.name, arg.name),
       )
+      mapPos.set(arg.name.val, arg)
     }
 
-    return ty.with(ty.verifyAndOrderFields(map))
+    return ty.with(ty.verifyAndOrderFields(map, mapPos))
   } else if (node instanceof ExprProp) {
     if (node.targs) {
       todo("Type arguments are not supported yet.")
@@ -254,10 +284,16 @@ function emitExpr(node: NodeExpr, block: Block): Value {
     if (!node.prop.name) {
       issue(`Missing property name for dotted property access.`)
     }
-    return performCall(ident(node.prop.name.val), block, [
-      emitExpr(node.on, block),
-      ...(node.args?.items.map((e) => emitExpr(e, block)) ?? []),
-    ])
+    return performCall(
+      ident(node.prop.name.val),
+      block,
+      [
+        emitExpr(node.on, block),
+        ...(node.args?.items.map((e) => emitExpr(e, block)) ?? []),
+      ],
+      node.prop.name,
+      node,
+    )
   } else if (node instanceof ExprIf) {
     const cond = emitExpr(node.condition, block)
     const { bool, void: void_ } = block.decl
@@ -287,7 +323,7 @@ function emitExpr(node: NodeExpr, block: Block): Value {
       if (main.type != void_ && !node.rest) {
         issue(`An 'if' statement with a value must have an 'else' block.`)
       } else {
-        issue(`Branches of an 'if' statement must have the same type.`)
+        issue(`Branches of an 'if' statement must have the same type.`, node)
       }
     }
 
@@ -423,7 +459,13 @@ function emitExpr(node: NodeExpr, block: Block): Value {
   } else if (node instanceof ExprBinaryAssign) {
     const { current, id } = emitLvalue(node.lhs, block)
     const rhs = emitExpr(node.rhs, block)
-    const updated = performCall(ident(node.op.val), block, [current, rhs])
+    const updated = performCall(
+      ident(node.op.val),
+      block,
+      [current, rhs],
+      node.op,
+      node,
+    )
 
     if (current.const()) {
       block.locals.set(id, updated)
@@ -449,6 +491,7 @@ function emitExpr(node: NodeExpr, block: Block): Value {
           node.value ?
             emitExpr(node.value, block)
           : new Value(0, block.decl.void),
+          node.value ?? node.kw,
         )
     }
   } else if (node instanceof ExprTaggedString) {
@@ -460,6 +503,7 @@ function emitExpr(node: NodeExpr, block: Block): Value {
     return tag.create(
       node.parts.map((x) => x.val),
       interps,
+      node.interps,
       block,
     )
   } else {
@@ -480,23 +524,24 @@ function emitLvalue(
 ): { current: Value; id: IdGlobal } {
   if (node instanceof ExprVar) {
     if (node.targs) {
-      issue("Cannot assign to something with type arguments.")
+      issue("Cannot assign to something with type arguments.", node.targs)
     }
     if (node.args) {
-      issue("Cannot assign to a function call.")
+      issue("Cannot assign to a function call.", node.args)
     }
     if (node.name.kind == TBuiltin) {
-      issue("Cannot assign to a builtin function.")
+      issue("Cannot assign to a builtin function.", node.name)
     }
 
     const id = ident(node.name.val)
     const current = block.locals.get(id)
     if (!current) {
-      issue(`Variable '${id}' is not locally defined.`)
+      issue(`Variable '${id}' is not locally defined.`, node.name)
     }
     if (!current?.assignable) {
       issue(
         `'${id}' must be a variable declared with 'let mut' in order to be assignable.`,
+        node.name,
       )
     }
 
@@ -583,7 +628,7 @@ function emitStmt(node: NodeStmt, block: Block): Value {
     }
     let value = emitExpr(init, block)
     if (type) {
-      value = emitType(type.type, block.decl).convertFrom(value)
+      value = emitType(type.type, block.decl).convertFrom(value, init)
     }
     const gid = ident(identName.val)
 
@@ -711,7 +756,7 @@ export function emitItem(node: NodeItem, decl: Declarations): ItemResult {
     })
     const fparams = params.map((x) => ({ name: x.name.label, type: x.type }))
     const block = new Block(decl, new Exits(ret), locals)
-    const value = ret.convertFrom(emitBlock(node.block, block))
+    const value = ret.convertFrom(emitBlock(node.block, block), node.block)
     const lid = new Id(fname)
     const gid = ident(fname)
     const lident = lid.ident()
@@ -730,8 +775,10 @@ export function emitItem(node: NodeItem, decl: Declarations): ItemResult {
       block.source == "" && value.const() ?
         // Non-side-effecting constant optimization
         new Fn(gid, fparams, ret, () => value)
-      : new Fn(gid, fparams, ret, (args) => {
-          const actualArgs = args.map((x, i) => params[i]!.type.convertFrom(x))
+      : new Fn(gid, fparams, ret, (args, _, pos) => {
+          const actualArgs = args.map((x, i) =>
+            params[i]!.type.convertFrom(x, pos),
+          )
           const expr = `${lident}(${actualArgs
             .filter((x) => x.type.repr.type != "void")
             .map((x) => x.toRuntime())
@@ -758,7 +805,7 @@ export function emitItem(node: NodeItem, decl: Declarations): ItemResult {
     // output type when 'return' is allowed
     const block = new Block(decl, new Exits(null))
     let value = emitExpr(node.value.value, block)
-    if (expected) value = expected.convertFrom(value)
+    if (expected) value = expected.convertFrom(value, node.value.value)
     const ret = value.type
     const lid = new Id(fname)
     const gid = ident(fname)

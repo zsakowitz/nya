@@ -57,7 +57,7 @@ export function createLine(
   const i = props.ctx.name()
   props.ctx.push`for (int ${i} = 0; ${i} < ${jsOffsets.length}; ${i}++) {\n`
   const o = props.ctx.name()
-  // FIXME: zooming in a lot means this offset doesn't matter; it should be capped
+  // TODO: zooming in a lot means this offset doesn't matter; it should be capped
   props.ctx
     .push`vec4 ${o} = vec4(u_unit_per_hpx.xy * ${offsets}[${i}].x, u_unit_per_hpx.zw * ${offsets}[${i}].y);\n`
   props.ctx.push`v_coords += ${o};\n`

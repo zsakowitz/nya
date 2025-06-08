@@ -46,11 +46,11 @@ fn hsv(h: num, s: num, v: num) -> Color3 {
   // return c.z * mix(_helper_hsv_const.xxx, clamp(p - _helper_hsv_const.xxx, 0.0, 1.0), c.y);
   // }
 
-  h /= 360.0;
+  let h = h / 360.0;
   let p = @abs(
     @fract(h @+ Color3 { r: 1.0, g: 2.0 / 3.0, b: 1.0 / 3.0 }) @* 6.0 @- 3.0,
   );
-  v * @mix(1.0, @clamp(p @- 1.0, 0.0, 1.0), s)
+  v @* @mix(Color3 { r: 1.0, g: 1.0, b: 1.0 }, @clamp(p @- 1.0, 0.0, 1.0), s)
 }
 
 fn hsv(h: num, s: num, v: num, a: num) -> Color {

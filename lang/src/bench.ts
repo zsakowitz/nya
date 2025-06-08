@@ -1,4 +1,5 @@
 import source from "../examples/test.nya"
+import { Chunk, Issues } from "./ast/issue"
 import { parse } from "./ast/parse"
 import { createStream } from "./ast/stream"
 import { emitItem } from "./emit/emit"
@@ -8,16 +9,19 @@ import { result } from "./play/preview"
 
 const ret: any[] = []
 
+const issues = new Issues()
 let j = 0
 function go(lang: Lang, rounds: number) {
   for (let i = 0; i < rounds; i++) {
-    const stream = createStream(source + "\n//" + i + " " + ++j, {
-      comments: false,
-    })
+    const stream = createStream(
+      new Chunk("examples/test.nya", source + "\n//" + i + " " + ++j),
+      issues,
+      { comments: false },
+    )
     ret.push(parse(stream))
     const props = new EmitProps(lang)
     const decl = createStdlib(props)
-    result.items.forEach((x) => ret.push(emitItem(x, decl)))
+    result.flatMap((x) => x.items).forEach((x) => ret.push(emitItem(x, decl)))
   }
 }
 

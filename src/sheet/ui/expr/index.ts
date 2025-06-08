@@ -260,8 +260,8 @@ export class Expr {
       this.setError(msg)
     }
 
-    // FIXME: remove
-    {
+    // TODO: remove dev things
+    if (location.href.includes("localhost")) {
       try {
         const tl = this.field.block.parseTopLevel()
         const nya = new ScriptBlock(new ScriptDecls()).eval(tl)

@@ -390,9 +390,3 @@ export function pass2_implicits(tokens: Node[]): Node[] {
     }
   }
 }
-
-// FIXME: before implementing sum, prod, coprod, or integral, redo precedence rules for them
-// currently sin2∫3 = sin(2∫3), but it should be (sin 2)∫3
-// also, 2*-∫3 is parsed as 2*∫3 and the signs just get totally skipped
-// also, -∫3 doesn't parse at all
-// replace ∫ with d/dx for a result which exists now

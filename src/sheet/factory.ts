@@ -35,6 +35,7 @@ import {
   WordMapWithoutSpaces,
   type Options,
 } from "@/field/options"
+import { Chunk, Issues } from "../../lang/src/ast/issue"
 import { parse } from "../../lang/src/ast/parse"
 import { createStream } from "../../lang/src/ast/stream"
 import { emitItem } from "../../lang/src/emit/emit"
@@ -65,8 +66,20 @@ export class SheetFactory {
   readonly libJs = createStdlib({ lang: "js" })
   public mainGl = ""
   public mainJs = ""
-  private loadScript(script: string) {
-    const stream = createStream(script, { comments: false })
+  readonly preloadedScriptIssues = new Issues()
+  readonly loadedScripts = new Set<string>()
+  private loadScript(script: string, fromPackage: PackageId) {
+    const stream = createStream(
+      new Chunk(`<package ${fromPackage}>`, script),
+      this.preloadedScriptIssues,
+      { comments: false },
+    )
+    if (this.loadedScripts.has(script)) {
+      console.warn(
+        `a script from package '${fromPackage}' is being loaded twice`,
+      )
+    }
+    this.loadedScripts.add(script)
     for (const item of parse(stream).items) {
       const resultGl = emitItem(item, this.libGl)
       if (resultGl?.decl) {
@@ -96,7 +109,7 @@ export class SheetFactory {
 
     if (pkg.scripts) {
       for (const script of pkg.scripts) {
-        this.loadScript(script)
+        this.loadScript(script, id)
       }
     }
 

@@ -22,7 +22,7 @@ fn unsign(a: Point4D) -> Point4D {
 }
 
 fn abs(a: Point4D) -> num {
-  @hypot(a)
+  @length(a)
 }
 
 fn -(a: Point4D) -> Point4D {

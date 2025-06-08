@@ -58,7 +58,7 @@ export interface Package {
   category: PackageCategory
   deps: PackageId[]
   /** `.nya` scripts. Loaded after all dependencies. */
-  scripts: readonly string[]
+  scripts?: readonly string[] // FIXME: make this required
 
   load?(): void
   init?: {

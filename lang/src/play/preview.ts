@@ -2,7 +2,7 @@ import { h, hx, t } from "@/jsx"
 import FuzzySearch from "fuzzy-search"
 import { doc, formatWithCursor } from "prettier"
 import REGL from "regl"
-import { Code } from "../ast/issue"
+import { Chunk, Code, Issues, PosVirtual } from "../ast/issue"
 import { ORAngle, ORBrace, ORBrack, ORParen } from "../ast/kind"
 import { parse, parseBlockContents } from "../ast/parse"
 import { print } from "../ast/print"
@@ -20,12 +20,15 @@ import * as plugin from "../prettier/plugin"
 import { UNPRINTED } from "../prettier/print"
 import { source } from "./source"
 
+const issues = new Issues()
 console.time("stream")
-export const stream = createStream(source, { comments: false })
+const stream = source.map((chunk) =>
+  createStream(chunk, issues, { comments: false }),
+)
 console.timeEnd("stream")
 
 console.time("parse")
-export const result = parse(stream)
+export const result = stream.map(parse)
 console.timeEnd("parse")
 
 show(
@@ -60,7 +63,10 @@ function showTokenStream() {
   const elTokenStream = hx(
     "pre",
     "p-4 text-xs whitespace-normal w-screen",
-    stream.tokens.map(flat).join(" "),
+    stream
+      .flatMap((x) => x.tokens)
+      .map(flat)
+      .join(" "),
   )
   elTokenStream.innerHTML = elTokenStream.innerHTML.replace(
     /\((\d+)\)/g,
@@ -90,16 +96,23 @@ function showTokenStream() {
 }
 
 function showPrinted() {
-  const printed = print(stream, result)
+  const printed = stream.map((x) => print(x, result))
   hr()
-  pre(printed)
+  for (const el of printed) {
+    pre(el)
+  }
 }
 
 function showPrettier() {
-  const { formatted } = doc.printer.printDocToString(
-    printVanilla(result, source),
-    { printWidth: 80, tabWidth: 2 },
-  )
+  const formatted = result
+    .map(
+      (x) =>
+        doc.printer.printDocToString(printVanilla(x, x.info.source), {
+          printWidth: 80,
+          tabWidth: 2,
+        }).formatted,
+    )
+    .join("\n\n")
 
   if (UNPRINTED.size) {
     hr()
@@ -113,7 +126,8 @@ function showPrettier() {
 }
 
 function showIssues() {
-  if (!stream.issues.entries.length) {
+  const issues = stream.flatMap((x) => x.issues.entries)
+  if (!issues.length) {
     hr()
     pre("No issues found while parsing.")
     return
@@ -123,11 +137,11 @@ function showIssues() {
     "pre",
     "p-4 text-xs",
     JSON.stringify(
-      stream.issues.entries.map((v) => ({
+      issues.map((v) => ({
         code: Object.entries(Code).find((x) => x[1] == v.code)?.[0],
         start: v.pos.start,
         end: v.pos.end,
-        of: stream.content(v.pos),
+        of: v.content(),
       })),
       undefined,
       2,
@@ -196,7 +210,8 @@ function showIssues() {
 function createRepl(lang: Lang) {
   const props = new EmitProps(lang)
   const decl = createStdlib(props)
-  const emit = result.items
+  const emit = result
+    .flatMap((x) => x.items)
     .map((x) => emitItem(x, decl)?.decl)
     .filter((x) => x != null)
     .join("\n")
@@ -233,7 +248,9 @@ function createRepl(lang: Lang) {
     emit,
     decl,
     run(uc: string) {
-      const stream = createStream(uc, { comments: false })
+      const stream = createStream(new Chunk("<repl>", uc), new Issues(), {
+        comments: false,
+      })
       if (stream.issues.entries.length) {
         issue(stream.issues.entries.join("\n"))
       }
@@ -251,7 +268,13 @@ function createRepl(lang: Lang) {
       }
       let ret = emitBlock(expr, block)
       if (lang == "glsl") {
-        ret = performCall(ident("plot"), block, [ret])
+        ret = performCall(
+          ident("plot"),
+          block,
+          [ret],
+          new PosVirtual("<automatic plot call from repl>"),
+          new PosVirtual("<automatic plot call from repl>"),
+        )
         if (ret.value == null) {
           issue("A shader example must return a value.")
         }

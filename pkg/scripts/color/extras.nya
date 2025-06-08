@@ -35,8 +35,8 @@ fn oklab(l: num, a: num, b: num) -> Color3 {
   let epsilon = 1e-10;
 
   Color3 {
-    r: rgb_to_srgb(v.l - epsilon),
-    g: rgb_to_srgb(v.a - epsilon),
+    r: rgb_to_srgb(v.r - epsilon),
+    g: rgb_to_srgb(v.g - epsilon),
     b: rgb_to_srgb(v.b - epsilon),
   }
 }

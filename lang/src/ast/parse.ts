@@ -276,7 +276,7 @@ function patAtom(stream: Stream) {
 
   stream.raiseNext(Code.ExpectedPat)
   return new PatIgnore(
-    new Token(stream.source, TIgnore, stream.loc(), stream.loc(), true),
+    new Token(stream.info, TIgnore, stream.loc(), stream.loc(), true),
   )
 }
 
@@ -353,7 +353,7 @@ function typeAtom(stream: Stream, allowAny = true): NodeType {
   }
 
   stream.raiseNext(Code.ExpectedType)
-  return new TypeEmpty(stream.loc())
+  return new TypeEmpty(stream.loc(), stream.info)
 }
 
 function type(stream: Stream): NodeType {
@@ -524,7 +524,7 @@ function exprLabeled(stream: Stream): [NodeExpr, needsSemi: boolean] | null {
 
   stream.raise(
     Code.InvalidLabel,
-    new Pos(labelIdent.start, (colon ?? labelIdent).end),
+    new Pos(labelIdent.start, (colon ?? labelIdent).end, labelIdent.info),
   )
   return [expr(stream), true]
 }
@@ -693,7 +693,7 @@ function exprAtom(stream: Stream, ctx: ExprContext): NodeExpr {
   if (!ctx.noErrorOnEmpty) {
     stream.raise(Code.ExpectedExpression, stream.pos())
   }
-  return new ExprEmpty(stream.loc())
+  return new ExprEmpty(stream.loc(), stream.info)
 }
 
 function prop(stream: Stream) {
@@ -1120,7 +1120,7 @@ function createUnbracketedCommaOp<T extends NodeExpr | Ident>(
   onEmpty: Code,
 ) {
   return (stream: Stream) => {
-    const list = new PlainList<T>([], stream.start, stream.start)
+    const list = new PlainList<T>([], stream.start, stream.start, stream.info)
     const first = fn(stream)
     if (first) {
       list.items.push(first)
@@ -1701,7 +1701,7 @@ function script(stream: Stream): Script {
   }
   stream.requireDone()
 
-  return new Script(items, stream.start, stream.end)
+  return new Script(items, stream.start, stream.end, stream.info)
 }
 
 const varWithoutList = createCommaOp(
@@ -1724,9 +1724,9 @@ export function parse(stream: Stream) {
 export function parseBlockContents(stream: Stream) {
   return blockContents(
     new TokenGroup(
-      stream.source,
-      new Token(stream.source, OLBrace, 0, 0, true),
-      new Token(stream.source, OLBrace, stream.end, stream.end, true),
+      stream.info,
+      new Token(stream.info, OLBrace, 0, 0, true),
+      new Token(stream.info, OLBrace, stream.end, stream.end, true),
       stream,
     ),
     stream,

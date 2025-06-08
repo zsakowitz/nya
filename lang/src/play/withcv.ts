@@ -10,6 +10,7 @@ import {
 import FuzzySearch from "fuzzy-search"
 import { formatWithCursor } from "prettier"
 import REGL from "regl"
+import { Chunk, Issues, PosVirtual } from "../ast/issue"
 import { parse, parseBlockContents } from "../ast/parse"
 import { createStream } from "../ast/stream"
 import { Block, Exits } from "../emit/decl"
@@ -59,10 +60,13 @@ function createFormatter() {
 }
 
 function createAutocomplete() {
+  const issues = new Issues()
   const props = new EmitProps("js")
   const stdlib = createStdlib(props)
-  const stream = createStream(source, { comments: false })
-  for (const item of parse(stream).items) emitItem(item, stdlib)
+  for (const chunk of source) {
+    const stream = createStream(chunk, issues, { comments: false })
+    for (const item of parse(stream).items) emitItem(item, stdlib)
+  }
 
   const allNames = stdlib.fns.map((x) => x[0]!.id.label)
   const search = new FuzzySearch(allNames, undefined, { sort: true })
@@ -110,11 +114,16 @@ function createAutocomplete() {
 }
 
 function createRepl(lang: Lang) {
-  const stream = createStream(source, { comments: false })
-  const result = parse(stream)
   const props = new EmitProps(lang)
   const decl = createStdlib(props)
-  const emit = result.items
+
+  const issues = new Issues()
+  const emit = source
+    .flatMap((chunk) => {
+      const stream = createStream(chunk, issues, { comments: false })
+      const result = parse(stream)
+      return result.items
+    })
     .map((x) => emitItem(x, decl)?.decl)
     .filter((x) => x != null)
     .join("\n")
@@ -151,7 +160,9 @@ function createRepl(lang: Lang) {
     emit,
     decl,
     run(uc: string) {
-      const stream = createStream(uc, { comments: false })
+      const stream = createStream(new Chunk("<repl>", uc), new Issues(), {
+        comments: false,
+      })
       if (stream.issues.entries.length) {
         issue(stream.issues.entries.join("\n"))
       }
@@ -169,7 +180,13 @@ function createRepl(lang: Lang) {
       }
       let ret = emitBlock(expr, block)
       if (lang == "glsl") {
-        ret = performCall(ident("plot"), block, [ret])
+        ret = performCall(
+          ident("plot"),
+          block,
+          [ret],
+          new PosVirtual("automatic plot call in repl"),
+          new PosVirtual("automatic plot call in repl"),
+        )
         if (ret.value == null) {
           issue("A shader example must return a value.")
         }
@@ -321,6 +338,8 @@ void main() {
           const plotValue = plotFn?.run(
             [new Value("CANVAS", canvas), new Value("VALUE", type)],
             plotBlock,
+            new PosVirtual("<canvas>"),
+            new PosVirtual("<canvas>"),
           )
           const value = (0, eval)(
             `${decl.globals()}\n${emitJs}\n;(()=>{${emit}})()`,

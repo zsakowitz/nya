@@ -1,17 +1,13 @@
 import type { Package } from "#/types"
-import { OP_PLOT } from "$/color/core"
 import { example } from "@/docs/core"
-import { glsl, js } from "@/eval/ast/tx"
+import { js } from "@/eval/ast/tx"
 import { jsToGlsl } from "@/eval/js-to-glsl"
-import { id } from "@/eval/lib/binding"
 import type { Fn } from "@/eval/ops"
 import { ALL_DOCS, type WithDocs } from "@/eval/ops/docs"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "@/eval/ops/vars"
-import { canCoerce } from "@/eval/ty/coerce"
 import { TY_INFO } from "@/eval/ty/info"
 import { b, h, hx, li, p, px } from "@/jsx"
 import { Prop, Store, defineExt } from "@/sheet/ext"
-import { createLine } from "@/sheet/shader-line"
 import { circle } from "@/sheet/ui/expr/circle"
 
 const PROP_SHOWN = new Prop(() => true)
@@ -72,57 +68,57 @@ const EXT_GLSL = defineExt({
   aside(data) {
     return data.el
   },
-  glsl(data) {
-    if (!data.show) return
-
-    const props = data.expr.sheet.scope.propsGlsl()
-    let ast = data.expr.field.ast
-    if (
-      ast.type == "cmplist" &&
-      ast.ops.length == 1 &&
-      ast.ops[0]! == "cmp-eq"
-    ) {
-      const lhs = ast.items[0]!
-      const rhs = ast.items[1]!
-      return createLine(
-        data.expr.sheet.cv,
-        props,
-        () => glsl(lhs, props),
-        () => glsl(rhs, props),
-      )
-    }
-
-    if (ast.type == "binding") {
-      ast = ast.value
-    }
-
-    const fork = props.ctx.fork()
-    const value = glsl(ast, { ...props, ctx: fork })
-    if (canCoerce(value.type, "r32")) {
-      const deps = data.expr.field.allDeps()
-      const usesX = deps.has(id({ value: "x" }))
-      const usesY = deps.has(id({ value: "y" }))
-      const usesP = deps.has(id({ value: "p" }))
-      if (usesX && !usesY && !usesP) {
-        return createLine(
-          data.expr.sheet.cv,
-          props,
-          () => ({ type: "r64", expr: "v_coords.zw", list: false }),
-          () => {
-            props.ctx.push`${fork.block}`
-            return value
-          },
-        )
-      }
-    }
-
-    props.ctx.push`${fork.block}`
-    const color = OP_PLOT.glsl(props.ctx, [value])
-    if (color.list !== false) {
-      throw new Error("Shaders must return a single color.")
-    }
-    return [props.ctx, color.expr]
-  },
+  // FIXME: we are ignoring all glsl-related things
+  // glsl(): undefined {
+  //   // if (!data.show) return
+  //   //     const props = data.expr.sheet.scope.propsGlsl()
+  //   //     let ast = data.expr.field.ast
+  //   //     if (
+  //   //       ast.type == "cmplist" &&
+  //   //       ast.ops.length == 1 &&
+  //   //       ast.ops[0]! == "cmp-eq"
+  //   //     ) {
+  //   //       const lhs = ast.items[0]!
+  //   //       const rhs = ast.items[1]!
+  //   //       return createLine(
+  //   //         data.expr.sheet.cv,
+  //   //         props,
+  //   //         () => glsl(lhs, props),
+  //   //         () => glsl(rhs, props),
+  //   //       )
+  //   //     }
+  //   //
+  //   //     if (ast.type == "binding") {
+  //   //       ast = ast.value
+  //   //     }
+  //   //
+  //   //     const fork = props.ctx.fork()
+  //   //     const value = glsl(ast, { ...props, ctx: fork })
+  //   //     if (canCoerce(value.type, "r32")) {
+  //   //       const deps = data.expr.field.allDeps()
+  //   //       const usesX = deps.has(id({ value: "x" }))
+  //   //       const usesY = deps.has(id({ value: "y" }))
+  //   //       const usesP = deps.has(id({ value: "p" }))
+  //   //       if (usesX && !usesY && !usesP) {
+  //   //         return createLine(
+  //   //           data.expr.sheet.cv,
+  //   //           props,
+  //   //           () => ({ type: "r64", expr: "v_coords.zw", list: false }),
+  //   //           () => {
+  //   //             props.ctx.push`${fork.block}`
+  //   //             return value
+  //   //           },
+  //   //         )
+  //   //       }
+  //   //     }
+  //   //
+  //   //     props.ctx.push`${fork.block}`
+  //   //     const color = OP_PLOT.glsl(props.ctx, [value])
+  //   //     if (color.list !== false) {
+  //   //       throw new Error("Shaders must return a single color.")
+  //   //     }
+  //   //     return [props.ctx, color.expr]
+  // },
 })
 
 const forceshader: Fn & WithDocs = {

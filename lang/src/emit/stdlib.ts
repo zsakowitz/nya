@@ -36,9 +36,9 @@ function libPath(props: EmitProps, num: Scalar) {
 
     const self: FnType = {
       canConvertFrom,
-      convertFrom(value) {
+      convertFrom(value, pos) {
         if (!canConvertFrom(value.type)) {
-          invalidType(`vec${count}<float>`, value.type)
+          invalidType(`vec${count}<float>`, value.type, pos)
         }
         return value
       },
@@ -430,9 +430,15 @@ function libLatex(decl: Declarations, num: Scalar, bool: Scalar) {
       tagIdent,
       lang == "glsl" ?
         () => new Value(0, latex)
-      : (text, interps, block) => {
-          const results = interps.map((x) => {
-            const result = performCall(fnIdent, block, [x])
+      : (text, interps, interpsPos, block) => {
+          const results = interps.map((x, i) => {
+            const result = performCall(
+              fnIdent,
+              block,
+              [x],
+              interpsPos[i]!,
+              interpsPos[i]!,
+            )
             if (result.type == latex) {
               return result
             }
@@ -643,6 +649,9 @@ export function createStdlib(props: EmitProps) {
   const isFiniteId = new Id("is_finite").ident()
   const minId = new Id("Math.min").ident()
   const maxId = new Id("Math.max").ident()
+  const fractId = new Id("fract").ident()
+  const fractFn = () =>
+    decl.global(`function ${fractId}(x){return x-Math.floor(x)}`)
 
   const fns: Fn[] = [
     // Easy numeric operators
@@ -743,6 +752,9 @@ export function createStdlib(props: EmitProps) {
         num,
       )
     }),
+    // clamp currently outputs `max` if `min>max`; this should not be considered
+    // defined behavior, and may change in the future to match the CSS spec
+    // instead of the GLSL spec.
     new Fn(
       g("clamp"),
       [
@@ -895,6 +907,109 @@ export function createStdlib(props: EmitProps) {
         }
       },
     ),
+    // Note: @clamp currently follows GLSL rules where if min>max, the result is
+    // `max`. This is the opposite of CSS's result, which would give `min`
+    // instead. This should be considered temporarily undefined behavior, and
+    // leaving min>max may give different results in the future.
+    new Fn(
+      g("@clamp"),
+      [
+        { name: "value", type: new AnyVector("float") },
+        { name: "min", type: new AnyVector("float") },
+        { name: "max", type: new AnyVector("float") },
+      ],
+      new AnyVector("float"),
+      (raw, block) => {
+        const [val, min, max] = raw as [Value, Value, Value]
+
+        if (min.type == num && max.type == num) {
+          // const path
+          if (min.const() && max.const() && val.const()) {
+            const sval = scalars(val, block)
+
+            return fromScalars(
+              val.type,
+              sval.map(
+                (a) =>
+                  new Value(
+                    Math.min(
+                      Math.max(a.value as number, min.value as number),
+                      max.value as number,
+                    ),
+                    num,
+                  ),
+              ),
+            )
+          }
+
+          // glsl path
+          if (block.lang == "glsl") {
+            return new Value(`clamp(${val},${min},${max})`, val.type)
+          }
+
+          // js path
+          {
+            const s0 = block.cache(min, true)
+            const s1 = block.cache(max, true)
+            const s2 = scalars(val, block)
+            decl.global(`const ${minId}=Math.min;`)
+            decl.global(`const ${maxId}=Math.max;`)
+            return fromScalars(
+              val.type,
+              s2.map(
+                (a) => new Value(`${minId}(${maxId}(${a},${s0}),${s1})`, num),
+              ),
+            )
+          }
+        }
+
+        if (min.type != max.type || max.type != val.type) {
+          issue(`All arguments to @clamp must be the same type.`)
+        }
+
+        // const path
+        if (min.const() && max.const() && val.const()) {
+          const smin = scalars(min, block)
+          const smax = scalars(max, block)
+          const sval = scalars(val, block)
+
+          return fromScalars(
+            min.type,
+            sval.map(
+              (a, i) =>
+                new Value(
+                  Math.min(
+                    Math.max(a.value as number, smin[i]!.value as number),
+                    smax[i]!.value as number,
+                  ),
+                  num,
+                ),
+            ),
+          )
+        }
+
+        // glsl path
+        if (block.lang == "glsl") {
+          return new Value(`clamp(${min},${max},${val})`, min.type)
+        }
+
+        // js path
+        {
+          const s0 = scalars(min, block)
+          const s1 = scalars(max, block)
+          const s2 = scalars(val, block)
+          decl.global(`const ${minId}=Math.min;`)
+          decl.global(`const ${maxId}=Math.max;`)
+          return fromScalars(
+            min.type,
+            s2.map(
+              (a, i) =>
+                new Value(`${minId}(${maxId}(${a},${s0[i]}),${s1[i]})`, num),
+            ),
+          )
+        }
+      },
+    ),
     new Fn(
       g("@length"),
       [{ name: "value", type: new AnyVector("float") }],
@@ -971,6 +1086,78 @@ export function createStdlib(props: EmitProps) {
 
         block.source += `console.log(${val});`
         return val
+      },
+    ),
+    new Fn(
+      g("@abs"),
+      [{ name: "value", type: new AnyVector("float") }],
+      new AnyVector("float"),
+      (raw, block) => {
+        const val = raw[0]!
+
+        // const path
+        if (val.const()) {
+          const s0 = scalars(val, block)
+          if (s0.every((x) => x.value === 0)) {
+            return val
+          }
+          return fromScalars(
+            val.type,
+            s0.map((a) => new Value(Math.abs(a.value as number), num)),
+          )
+        }
+
+        // glsl path
+        if (block.lang == "glsl") {
+          return new Value(`abs(${val})`, val.type)
+        }
+
+        // js path
+        const s0 = scalars(val, block)
+        decl.global(`const ${absId}=Math.abs;`)
+        return fromScalars(
+          val.type,
+          s0.map((x) => new Value(`${absId}(${x})`, num)),
+        )
+      },
+    ),
+    new Fn(
+      g("@fract"),
+      [{ name: "value", type: new AnyVector("float") }],
+      new AnyVector("float"),
+      (raw, block) => {
+        const val = raw[0]!
+
+        // const path
+        if (val.const()) {
+          const s0 = scalars(val, block)
+          if (s0.every((x) => x.value === 0)) {
+            return val
+          }
+          return fromScalars(
+            val.type,
+            s0.map(
+              (a) =>
+                new Value(
+                  (a.value as number) - Math.floor(a.value as number),
+                  num,
+                ),
+            ),
+          )
+        }
+
+        // glsl path
+        if (block.lang == "glsl") {
+          return new Value(`fract(${val})`, val.type)
+        }
+
+        // js path
+        const s0 = scalars(val, block)
+        fractFn()
+        return fromScalars(
+          val.type,
+          s0.map((x) => new Value(`${fractId}(${x})`, num)),
+        )
       },
     ),
 

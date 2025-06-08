@@ -995,7 +995,8 @@ export function print(node: Node | Token<number>, sb: Subprint): Doc {
         hardline,
         (node as Comments).tokens.map((x, i, a) => {
           const sepPrev =
-            i > 0 && x.source.slice(a[i - 1]!.end, x.start).includes("\n\n")
+            i > 0 &&
+            x.info.source.slice(a[i - 1]!.end, x.start).includes("\n\n")
           const suffix = lineSuffix("//" + x.val.slice(2).trimEnd())
           if (sepPrev) {
             return [hardline, suffix]

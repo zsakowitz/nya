@@ -1,4 +1,4 @@
-import { Code, Pos, type Issues } from "./issue"
+import { Code, Pos, type Chunk, type Issues } from "./issue"
 import {
   MATCHING_PAREN,
   OGt,
@@ -21,12 +21,12 @@ import { Token, tokens, type ToTokensProps } from "./token"
 
 export class TokenGroup<K extends Brack = Brack> extends Token<K> {
   constructor(
-    source: string,
+    info: Chunk,
     readonly lt: Token<K>,
     readonly gt: Token<number>,
     readonly contents: Stream,
   ) {
-    super(source, lt.kind, lt.start, gt.end)
+    super(info, lt.kind, lt.start, gt.end)
   }
 }
 
@@ -36,12 +36,14 @@ type TokenGroupMut = {
 } & { readonly contents: { -readonly [K in keyof Stream]: Stream[K] } }
 
 export function createStream(
-  source: string,
+  info: Chunk,
+  issues: Issues,
   props: ToTokensProps,
   start?: number,
   end?: number,
 ) {
-  const { issues, ret: raw } = tokens(source, props, start, end)
+  const raw = tokens(info, issues, props, start, end)
+  const source = info.source
 
   const parens: TokenGroup[] = []
   const root: Token<number>[] = []
@@ -60,15 +62,15 @@ export function createStream(
       case OLBrace:
       case OLInterp:
         const group = new TokenGroup(
-          source,
+          info,
           token as Token<Brack>,
           new Token(
-            source,
+            info,
             MATCHING_PAREN[token.kind as Brack],
             token.start,
             token.start,
           ),
-          new Stream(source, [], issues, token.end, token.end),
+          new Stream(info, [], issues, token.end, token.end),
         )
         parens.push(group)
         currentContents.push(group)
@@ -99,7 +101,7 @@ export function createStream(
           // Make sure all text positions are correct
           const mut = current as TokenGroupMut
           mut.gt = new Token(
-            source,
+            info,
             MATCHING_PAREN[current.kind],
             token.start,
             token.start,
@@ -122,18 +124,15 @@ export function createStream(
         continue
 
       case RInterp: {
-        const inner = createStream(source, props, token.start, token.end)
+        const inner = createStream(info, issues, props, token.start, token.end)
         currentContents.push(
           new TokenGroup(
-            source,
-            new Token(source, OLRawInterp, token.start - 2, token.start, false),
-            new Token(source, ORBrace, token.end, token.end + 1, false),
+            info,
+            new Token(info, OLRawInterp, token.start - 2, token.start, false),
+            new Token(info, ORBrace, token.end, token.end + 1, false),
             inner,
           ),
         )
-        issues.entries.push(...inner.issues.entries)
-        // @ts-expect-error
-        inner.issues = issues
         continue
       }
     }
@@ -145,12 +144,12 @@ export function createStream(
     issues.raise(Code.MismatchedOpeningParen, p.lt)
   }
 
-  return new Stream(source, root, issues, 0, source.length)
+  return new Stream(info, root, issues, 0, source.length)
 }
 
 export class Stream {
   constructor(
-    readonly source: string,
+    readonly info: Chunk,
     readonly tokens: Token<number>[],
     readonly issues: Issues,
     readonly start: number,
@@ -166,7 +165,7 @@ export class Stream {
   raiseNext(code: Code) {
     let next = this.next()
     if (next instanceof TokenGroup) next = next.lt
-    this.issues.raise(code, next ?? this)
+    this.issues.raise(code, next ?? new Pos(this.end, this.end, this.info))
   }
 
   private accept() {
@@ -183,7 +182,7 @@ export class Stream {
 
   pos() {
     const loc = this.loc()
-    return new Pos(loc, loc)
+    return new Pos(loc, loc, this.info)
   }
 
   raise(code: Code, pos: Pos) {
@@ -191,7 +190,7 @@ export class Stream {
   }
 
   content(token: Pos) {
-    return this.source.slice(token.start, token.end)
+    return this.info.source.slice(token.start, token.end)
   }
 
   isEmpty() {

@@ -54,7 +54,7 @@ export class ItemType extends NodeItem {
     readonly braces: TokenGroup<typeof OLBrace> | null,
     readonly source: Source | null,
   ) {
-    super(kw.start, (braces ?? ident ?? kw).end)
+    super(kw.start, (braces ?? ident ?? kw).end, kw.info)
   }
 }
 
@@ -66,7 +66,7 @@ export class ItemTypeAlias extends NodeItem {
     readonly of: NodeType | null,
     readonly semi: Token<typeof OSemi> | null,
   ) {
-    super(kw.start, (semi ?? of ?? eq ?? ident ?? kw).end)
+    super(kw.start, (semi ?? of ?? eq ?? ident ?? kw).end, kw.info)
   }
 }
 
@@ -84,6 +84,7 @@ export class ItemFn extends NodeItem {
     super(
       kw.start,
       (semi ?? block ?? usage ?? ret ?? params ?? tparams ?? name ?? kw).end,
+      kw.info,
     )
   }
 }
@@ -96,7 +97,7 @@ export class ItemLet extends NodeItem {
     readonly value: Initializer | null,
     readonly semi: Token<typeof OSemi> | null,
   ) {
-    super(kw.start, (semi ?? value ?? type ?? ident ?? kw).end)
+    super(kw.start, (semi ?? value ?? type ?? ident ?? kw).end, kw.info)
   }
 }
 
@@ -106,7 +107,7 @@ export class ItemRule extends NodeItem {
     readonly tparams: GenericParams | null,
     readonly value: Rule | List<Rule> | null,
   ) {
-    super(kw.start, (value ?? tparams ?? kw).end)
+    super(kw.start, (value ?? tparams ?? kw).end, kw.info)
   }
 }
 
@@ -116,7 +117,7 @@ export class ItemUse extends NodeItem {
     readonly source: Token<typeof TString> | null,
     readonly semi: Token<typeof OSemi> | null,
   ) {
-    super(kw.start, (semi ?? source ?? kw).end)
+    super(kw.start, (semi ?? source ?? kw).end, kw.info)
   }
 }
 
@@ -127,7 +128,7 @@ export class ItemEnum extends NodeItem {
     readonly tparams: GenericParams | null,
     readonly variants: List<EnumVariant, Token<typeof ODotDot> | null> | null,
   ) {
-    super(kw.start, (variants ?? tparams ?? name ?? kw).end)
+    super(kw.start, (variants ?? tparams ?? name ?? kw).end, kw.info)
   }
 }
 
@@ -143,7 +144,7 @@ export class ItemEnumMap extends NodeItem {
       Token<typeof ODotDot> | null
     > | null,
   ) {
-    super(kw.start, (variants ?? ret).end)
+    super(kw.start, (variants ?? ret).end, kw.info)
   }
 }
 
@@ -154,20 +155,20 @@ export class ItemStruct extends NodeItem {
     readonly tparams: GenericParams | null,
     readonly fields: List<StructFieldDecl, Token<typeof ODotDot> | null> | null,
   ) {
-    super(kw.start, (fields ?? tparams ?? name).end)
+    super(kw.start, (fields ?? tparams ?? name).end, kw.info)
   }
 }
 
 export class ItemData extends NodeItem {
   constructor(
-    readonly data: Token<typeof KData>,
+    readonly kw: Token<typeof KData>,
     readonly local: Token<typeof KLocal> | null,
     readonly name: Ident | null,
     readonly colon: Token<typeof OColon> | null,
     readonly type: NodeType,
     readonly semi: Token<typeof OSemi> | null,
   ) {
-    super(data.start, (semi ?? type).end)
+    super(kw.start, (semi ?? type).end, kw.info)
   }
 }
 
@@ -178,7 +179,7 @@ export class ItemAssert extends NodeItem {
     readonly message: AssertionMessage | null,
     readonly semi: Token<typeof OSemi> | null,
   ) {
-    super(kw.start, (semi ?? message ?? expr).end)
+    super(kw.start, (semi ?? message ?? expr).end, kw.info)
   }
 }
 
@@ -187,12 +188,12 @@ export class ItemExpose extends NodeItem {
     readonly kw: Token<typeof KExpose>,
     readonly item: NodeExpose | List<NodeExpose> | null,
   ) {
-    super(kw.start, (item ?? kw).end)
+    super(kw.start, (item ?? kw).end, kw.info)
   }
 }
 
 export class ItemComment extends NodeItem {
   constructor(readonly of: Comments) {
-    super(of.start, of.end)
+    super(of.start, of.end, of.info)
   }
 }

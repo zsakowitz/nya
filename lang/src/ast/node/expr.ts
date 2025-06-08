@@ -1,3 +1,4 @@
+import type { Chunk } from "../issue"
 import {
   KFalse,
   KTrue,
@@ -118,7 +119,7 @@ export class ExprLit extends NodeExpr {
       typeof TFloat | typeof TInt | typeof TSym | typeof KTrue | typeof KFalse
     >,
   ) {
-    super(value.start, value.end)
+    super(value.start, value.end, value.info)
   }
 }
 
@@ -136,7 +137,7 @@ export class ExprVarParam extends NodeExpr {
     readonly without: VarWithout | null,
     readonly type: PrescribedType | null,
   ) {
-    super(name.start, (type ?? without ?? name).end)
+    super(name.start, (type ?? without ?? name).end, name.info)
   }
 }
 
@@ -153,7 +154,7 @@ export class ExprVar extends NodeExpr {
     readonly targs: List<NodeType> | null,
     readonly args: List<NodeExpr> | null,
   ) {
-    super(name.start, (args ?? targs ?? name).end)
+    super(name.start, (args ?? targs ?? name).end, name.info)
   }
 }
 
@@ -166,7 +167,7 @@ export class ExprDirectCall extends NodeExpr {
     readonly targs: List<NodeType> | null,
     readonly args: List<NodeExpr> | null,
   ) {
-    super(kw.start, (args ?? targs ?? name ?? kw).end)
+    super(kw.start, (args ?? targs ?? name ?? kw).end, kw.info)
   }
 }
 
@@ -176,7 +177,7 @@ export class ExprStruct extends NodeExpr {
     // TODO: this needs targs eventually
     readonly args: List<StructArg> | null,
   ) {
-    super(name.start, (args ?? name).end)
+    super(name.start, (args ?? name).end, name.info)
   }
 }
 
@@ -185,13 +186,16 @@ export class ExprSymStruct extends NodeExpr {
     readonly name: Token<typeof TSym>,
     readonly args: List<StructArg> | null,
   ) {
-    super(name.start, (args ?? name).end)
+    super(name.start, (args ?? name).end, name.info)
   }
 }
 
 export class ExprEmpty extends NodeExpr {
-  constructor(readonly at: number) {
-    super(at, at)
+  constructor(
+    readonly at: number,
+    info: Chunk,
+  ) {
+    super(at, at, info)
   }
 }
 
@@ -202,7 +206,7 @@ export class ExprIf extends NodeExpr {
     readonly block: ExprBlock | null,
     readonly rest: Else | null,
   ) {
-    super(kw.start, (rest ?? block ?? condition).end)
+    super(kw.start, (rest ?? block ?? condition).end, kw.info)
   }
 }
 
@@ -213,7 +217,7 @@ export class ExprFor extends NodeExpr {
     readonly headers: ForHeaders,
     readonly block: ExprBlock | null,
   ) {
-    super((label ?? kw).start, (block ?? headers).end)
+    super((label ?? kw).start, (block ?? headers).end, kw.info)
   }
 }
 
@@ -223,7 +227,7 @@ export class ExprExit extends NodeExpr {
     readonly label: Token<typeof TLabel> | null,
     readonly value: NodeExpr | null,
   ) {
-    super(kw.start, (value ?? label ?? kw).end)
+    super(kw.start, (value ?? label ?? kw).end, kw.info)
   }
 }
 
@@ -233,19 +237,19 @@ export class ExprMatch extends NodeExpr {
     readonly on: NodeExpr,
     readonly arms: List<MatchArm> | null,
   ) {
-    super(kw.start, (arms ?? kw).end)
+    super(kw.start, (arms ?? kw).end, kw.info)
   }
 }
 
 export class ExprParen extends NodeExpr {
   constructor(readonly of: Bracketed<typeof OLParen, NodeExpr>) {
-    super(of.start, of.end)
+    super(of.start, of.end, of.info)
   }
 }
 
 export class ExprArray extends NodeExpr {
   constructor(readonly of: List<NodeExpr>) {
-    super(of.start, of.end)
+    super(of.start, of.end, of.info)
   }
 }
 
@@ -256,7 +260,7 @@ export class ExprArrayByRepetition extends NodeExpr {
     readonly semi: Token<typeof OSemi> | null,
     readonly sizes: PlainList<NodeExpr>,
   ) {
-    super(brack.start, sizes.end)
+    super(brack.start, sizes.end, brack.info)
   }
 }
 
@@ -266,7 +270,7 @@ export class ExprCall extends NodeExpr {
     readonly targs: List<NodeType> | null,
     readonly args: List<NodeExpr> | null,
   ) {
-    super(on.start, (args ?? targs ?? on).end)
+    super(on.start, (args ?? targs ?? on).end, on.info)
   }
 }
 
@@ -277,7 +281,7 @@ export class ExprProp extends NodeExpr {
     readonly targs: List<NodeType> | null,
     readonly args: List<NodeExpr> | null,
   ) {
-    super(on.start, (args ?? targs ?? prop).end)
+    super(on.start, (args ?? targs ?? prop).end, on.info)
   }
 }
 
@@ -286,7 +290,7 @@ export class ExprIndex extends NodeExpr {
     readonly on: NodeExpr,
     readonly index: Bracketed<typeof OLBrack, NodeExpr>,
   ) {
-    super(on.start, index.end)
+    super(on.start, index.end, on.info)
   }
 }
 
@@ -303,7 +307,7 @@ export class ExprUnary extends NodeExpr {
     readonly op: Token<ExprUnaryOp>,
     readonly of: NodeExpr,
   ) {
-    super(op.start, of.end)
+    super(op.start, of.end, op.info)
   }
 }
 
@@ -313,7 +317,7 @@ export class ExprDeriv extends NodeExpr {
     readonly wrt: Token<typeof TDeriv | typeof TDerivIgnore>,
     readonly of: NodeExpr,
   ) {
-    super(wrt.start, wrt.end)
+    super(wrt.start, wrt.end, wrt.info)
   }
 }
 
@@ -367,7 +371,7 @@ export class ExprBinary extends NodeExpr {
     readonly op: Token<ExprBinaryOp>,
     readonly rhs: NodeExpr,
   ) {
-    super(lhs.start, rhs.end)
+    super(lhs.start, rhs.end, lhs.info)
   }
 }
 
@@ -378,7 +382,7 @@ export class ExprBinaryAssign extends NodeExpr {
     readonly eq: Token<typeof OEq>,
     readonly rhs: NodeExpr,
   ) {
-    super(lhs.start, rhs.end)
+    super(lhs.start, rhs.end, lhs.info)
   }
 }
 
@@ -388,7 +392,7 @@ export class ExprRange extends NodeExpr {
     readonly op: Token<typeof ODotDot>,
     readonly rhs: NodeExpr | null,
   ) {
-    super((lhs ?? op).start, (rhs ?? op).end)
+    super((lhs ?? op).start, (rhs ?? op).end, op.info)
   }
 }
 
@@ -398,7 +402,7 @@ export class ExprCast extends NodeExpr {
     readonly op: Token<typeof OArrowRet>,
     readonly rhs: NodeType,
   ) {
-    super(lhs.start, rhs.end)
+    super(lhs.start, rhs.end, op.info)
   }
 }
 
@@ -407,7 +411,7 @@ export class ExprBlock extends NodeExpr {
     readonly label: Label | null,
     readonly of: List<NodeStmt>,
   ) {
-    super((label ?? of).start, of.end)
+    super((label ?? of).start, of.end, of.info)
   }
 }
 
@@ -418,7 +422,7 @@ export class ExprTaggedString extends NodeExpr {
     readonly interps: NodeExpr[],
     end: number,
   ) {
-    super(tag.start, end)
+    super(tag.start, end, tag.info)
   }
 }
 
@@ -430,7 +434,7 @@ export class SourceSingle extends NodeExpr {
     readonly parts: Token<typeof TSource>[],
     readonly interps: SourceInterp[],
   ) {
-    super(kw.start, (braces ?? lang ?? kw).end)
+    super(kw.start, (braces ?? lang ?? kw).end, kw.info)
   }
 }
 
@@ -443,12 +447,12 @@ export class Source extends NodeExpr {
     /** Whether to print as multiline. */
     public block: boolean,
   ) {
-    super(start, end)
+    super(start, end, (parts[0] ?? cast)!.info)
   }
 }
 
 export class SourceInterp extends NodeExpr {
   constructor(readonly of: Bracketed<typeof OLInterp, NodeExpr>) {
-    super(of.start, of.end)
+    super(of.start, of.end, of.info)
   }
 }

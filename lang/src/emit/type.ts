@@ -1,3 +1,4 @@
+import type { Pos } from "../ast/issue"
 import type { Block } from "./decl"
 import { bug, issue, todo } from "./error"
 import { fieldIdent, Id, ident } from "./id"
@@ -18,19 +19,24 @@ export interface Type {
   toScalars(value: Value): Value[]
   fromScalars(values: Value[]): Value
   canConvertFrom(type: Type): boolean
-  convertFrom(value: Value): Value
+  convertFrom(value: Value, pos: Pos): Value
   toRuntime(value: ConstValue): string | null
   toString(): string
 }
 
 export interface FnType {
   canConvertFrom(type: Type): boolean
-  convertFrom(value: Value): Value
+  convertFrom(value: Value, pos: Pos): Value
   toString(): string
 }
 
 export type FnParam = { name: string; type: FnType }
-export type FnExec = (args: Value[], block: Block) => Value
+export type FnExec = (
+  args: Value[],
+  block: Block,
+  namePos: Pos,
+  fullPos: Pos,
+) => Value
 
 export function fn(id: Id, args: FnParam[], ret: FnType, run: FnExec) {
   return new Fn(id, args, ret, run)
@@ -58,8 +64,12 @@ export class Fn {
 export function invalidType(
   expected: { toString(): string },
   actual: { toString(): string },
+  pos: Pos,
 ): never {
-  issue(`Incompatible types: '${expected}' expected, but '${actual}' found.`)
+  issue(
+    `Incompatible types: '${expected}' expected, but '${actual}' found.`,
+    pos,
+  )
 }
 
 export class Scalar implements Type {
@@ -81,11 +91,11 @@ export class Scalar implements Type {
     return type == this
   }
 
-  convertFrom(value: Value): Value {
+  convertFrom(value: Value, pos: Pos): Value {
     if (value.type == this) {
       return value
     } else {
-      invalidType(this, value.type)
+      invalidType(this, value.type, pos)
     }
   }
 
@@ -324,7 +334,10 @@ function ${lident}(${nvFields
     return `${this.emit}(${this.#nvFields.map((type, i) => type.toRuntime(fields[i]!))})`
   }
 
-  verifyAndOrderFields(fields: Map<string, Value>): Value[] {
+  verifyAndOrderFields(
+    fields: Map<string, Value>,
+    pos: Map<string, Pos>,
+  ): Value[] {
     const self = this.#fieldNames
     const name = this.name
     if (fields.size != self.length) {
@@ -339,7 +352,7 @@ function ${lident}(${nvFields
         )
       }
 
-      return type.convertFrom(v)
+      return type.convertFrom(v, pos.get(fieldName)!)
     })
   }
 
@@ -466,11 +479,11 @@ function ${lident}(${nvFields
     return type == this
   }
 
-  convertFrom(value: Value): Value {
+  convertFrom(value: Value, pos: Pos): Value {
     if (value.type == this) {
       return value
     } else {
-      invalidType(this, value.type)
+      invalidType(this, value.type, pos)
     }
   }
 
@@ -505,9 +518,9 @@ export const ArrayEmpty: Type = {
   canConvertFrom(type) {
     return type == ArrayEmpty
   },
-  convertFrom(value) {
+  convertFrom(value, pos) {
     if (value.type != ArrayEmpty) {
-      invalidType(this, value.type)
+      invalidType(this, value.type, pos)
     }
 
     return new Value(0, ArrayEmpty)
@@ -555,13 +568,13 @@ export class Array implements Type {
     )
   }
 
-  convertFrom(value: Value): Value {
+  convertFrom(value: Value, pos: Pos): Value {
     if (value.type == ArrayEmpty && this.count == 0) {
       return new Value(0, this)
     }
 
     if (!this.canConvertFrom(value.type)) {
-      invalidType(this, value.type)
+      invalidType(this, value.type, pos)
     }
 
     return value
@@ -639,7 +652,7 @@ export class Alt implements Type {
     return this.alts.includes(type as any)
   }
 
-  convertFrom(value: Value): Value {
+  convertFrom(value: Value, pos: Pos): Value {
     if (value.type instanceof Alt) {
       if (isSubset(this.alts, value.type.alts)) {
         return value
@@ -652,7 +665,7 @@ export class Alt implements Type {
       }
     }
 
-    invalidType(this, value.type)
+    invalidType(this, value.type, pos)
   }
 
   toRuntime(value: ConstValue): string | null {

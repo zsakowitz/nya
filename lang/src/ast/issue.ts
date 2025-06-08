@@ -66,14 +66,47 @@ export const Code = Object.freeze({
 
 export type Code = (typeof Code)[keyof typeof Code]
 
+export class Chunk {
+  constructor(
+    readonly name: string,
+    readonly source: string,
+  ) {}
+
+  coords(pos: number) {
+    let row = 1
+    let col = 0
+    for (let i = 0; i < pos; i++) {
+      const char = this.source[i]
+      if (char == "\n") {
+        row++
+        col = 0
+      } else {
+        col++
+      }
+    }
+    return `${row}:${col}`
+  }
+}
+
 export class Pos {
   constructor(
     readonly start: number,
     readonly end: number,
+    readonly info: Chunk,
   ) {}
 
   toString() {
-    return `${this.start}..${this.end}`
+    return `${this.info.name}:${this.info.coords(this.start)}..${this.info.coords(this.end)}`
+  }
+}
+
+export class PosVirtual extends Pos {
+  constructor(readonly vfilename: string) {
+    super(0, 0, new Chunk(vfilename, ""))
+  }
+
+  toString(): string {
+    return `<${this.vfilename}>`
   }
 }
 
@@ -81,8 +114,11 @@ export class Issue {
   constructor(
     readonly code: Code,
     readonly pos: Pos,
-    readonly source: string,
   ) {}
+
+  get source() {
+    return this.pos.info.source
+  }
 
   toString() {
     return `${
@@ -90,15 +126,19 @@ export class Issue {
       "Unknown issue"
     } @ ${posIndexToLineCol(this.source, this.pos.start)}..${posIndexToLineCol(this.source, this.pos.end)}`
   }
+
+  content() {
+    return this.source.slice(this.pos.start, this.pos.end)
+  }
 }
 
 export class Issues {
   readonly entries: Issue[] = []
 
-  constructor(readonly source: string) {}
+  constructor() {}
 
   raise(code: Code, pos: Pos) {
-    this.entries.push(new Issue(code, pos, this.source))
+    this.entries.push(new Issue(code, pos))
   }
 
   ok() {

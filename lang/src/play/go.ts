@@ -1,4 +1,5 @@
 import { writeFileSync } from "fs"
+import { Chunk, Issues } from "../ast/issue"
 import { parse, parseBlockContents } from "../ast/parse"
 import { createStream } from "../ast/stream"
 import { Block, Exits } from "../emit/decl"
@@ -8,74 +9,40 @@ import { EmitProps, type Lang } from "../emit/props"
 import { createStdlib } from "../emit/stdlib"
 import { sourceWithExample as source } from "./source"
 
-function emitGl() {
-  const props = new EmitProps("glsl")
-  const decl = createStdlib(props)
-  let root = []
-  let rootTy = []
-  for (const item of parse(createStream(source, { comments: false })).items) {
-    const result = emitItem(item, decl)
-    if (result?.decl) {
-      root.push(result.decl)
-    }
-    if (result?.declTy) {
-      rootTy.push(result.declTy)
-    }
-  }
-  const expr = "main"
-  const block = new Block(decl, new Exits(null))
-  const value = emitBlock(
-    parseBlockContents(createStream(expr, { comments: false })),
-    block,
-  )
-  const a = [
-    decl.globals(),
-    root.join("\n"),
-    block.source,
-    value.toRuntime() + "",
-  ]
-    .filter((x) => x)
-    .join("\n")
-  writeFileSync(new URL("./compiled.glsl", import.meta.url), a + "\n")
-}
-
-function emitJs(lang: Lang) {
-  const props = new EmitProps(lang)
-  const decl = createStdlib(props)
-  let root = []
-  let rootTy = []
-  const declNyaType: Record<string, string[]> = Object.create(null)
-  for (const item of parse(createStream(source, { comments: false })).items) {
-    const result = emitItem(item, decl)
-    if (result?.decl) {
-      root.push(result.decl)
-    }
-    if (result?.declTy) {
-      rootTy.push(result.declTy)
-    }
-    if (result?.declNya) {
-      for (const item of result.declNya) {
-        if (item.kind != "fn") {
-          ;(declNyaType[item.name] ??= []).push(item.of)
+function emitCore(props: EmitProps) {
+  const issues = new Issues()
+  const lib = createStdlib(props)
+  const root = []
+  const decls: Record<string, string[]> = Object.create(null)
+  for (const chunk of source) {
+    for (const item of parse(createStream(chunk, issues, { comments: false }))
+      .items) {
+      const result = emitItem(item, lib)
+      if (result?.decl) {
+        root.push(result.decl)
+      }
+      if (result?.declNya) {
+        for (const item of result.declNya) {
+          if (item.kind != "fn") {
+            ;(decls[item.name] ??= []).push(item.of)
+          }
         }
       }
     }
   }
-  const expr = "main"
-  const block = new Block(decl, new Exits(null))
+
+  const expr = new Chunk("<main>", "main")
+  const block = new Block(lib, new Exits(null))
   const value = emitBlock(
-    parseBlockContents(createStream(expr, { comments: false })),
+    parseBlockContents(createStream(expr, issues, { comments: false })),
     block,
   )
-  const a = [
-    decl.globals(),
-    root.join("\n"),
-    block.source,
-    value.toRuntime() + "",
-  ]
-    .filter((x) => x)
-    .join("\n")
-  const nyaDecl1 = Object.entries(declNyaType)
+  const a =
+    [lib.globals(), root.join("\n"), block.source, value.toRuntime() + ""]
+      .filter((x) => x)
+      .join("\n") + "\n"
+
+  const nyaDecl1 = Object.entries(decls)
     .sort(([a], [b]) =>
       a < b ? -1
       : a > b ? 1
@@ -83,7 +50,8 @@ function emitJs(lang: Lang) {
     )
     .map((x) => x[1].join("\n"))
     .join("\n")
-  const nyaDecl2 = decl.fns
+
+  const nyaDecl2 = lib.fns
     .all()
     .map((a) => [a[0]!.id.label, a.map((x) => x.declaration())] as const)
     .sort(([a], [b]) =>
@@ -93,11 +61,27 @@ function emitJs(lang: Lang) {
     )
     .map((x) => x[1].join("\n"))
     .join("\n\n")
-  const nyaDecl =
+
+  const finalDeclarationFile =
     nyaDecl1 && nyaDecl2 ? nyaDecl1 + "\n\n" + nyaDecl2 : nyaDecl1 || nyaDecl2
-  writeFileSync(new URL("./compiled.js", import.meta.url), a + "\n")
-  writeFileSync(new URL("./compiled.nya", import.meta.url), nyaDecl + "\n")
-  console.log((0, eval)(a))
+
+  return {
+    lib,
+    compiledScript: a,
+    compiledDecls: finalDeclarationFile,
+  }
+}
+
+function emitGl() {
+  const { compiledScript } = emitCore(new EmitProps("glsl"))
+  writeFileSync(new URL("./compiled.glsl", import.meta.url), compiledScript)
+}
+
+function emitJs(lang: Lang) {
+  const { compiledScript, compiledDecls } = emitCore(new EmitProps(lang))
+  writeFileSync(new URL("./compiled.js", import.meta.url), compiledScript)
+  writeFileSync(new URL("./compiled.nya", import.meta.url), compiledDecls)
+  console.log((0, eval)(compiledScript))
 }
 
 addInspectKeys()

@@ -98,7 +98,7 @@ fn pdf(dist: UniformDist, at: num) -> num {
   if is_nan(dist.min) || is_nan(dist.max) || is_nan(at) || dist.min > dist.max {
     nan
   } else if is_inf(dist.min) || is_inf(dist.max) {
-    if min == max {
+    if dist.min == dist.max {
       nan
     } else {
       0
@@ -147,9 +147,9 @@ fn cdf(dist: UniformDist, at: num) -> num {
     } else {
       0.0
     }
-  } else if at < min {
+  } else if at < dist.min {
     0.0
-  } else if at > max {
+  } else if at > dist.max {
     1.0
   } else {
     (at - dist.min) / (dist.max - dist.min)
