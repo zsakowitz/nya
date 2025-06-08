@@ -35,6 +35,10 @@ import {
   WordMapWithoutSpaces,
   type Options,
 } from "@/field/options"
+import { parse } from "../../lang/src/ast/parse"
+import { createStream } from "../../lang/src/ast/stream"
+import { emitItem } from "../../lang/src/emit/emit"
+import { createStdlib } from "../../lang/src/emit/stdlib"
 import { Exts } from "./ext"
 import { FACTORY_EXPR } from "./factory-expr"
 import type { AnyItemFactory } from "./item"
@@ -57,6 +61,25 @@ export class SheetFactory {
     }
   }
 
+  readonly libGl = createStdlib({ lang: "glsl" })
+  readonly libJs = createStdlib({ lang: "js" })
+  public mainGl = ""
+  public mainJs = ""
+  private loadScript(script: string) {
+    const stream = createStream(script, { comments: false })
+    for (const item of parse(stream).items) {
+      const resultGl = emitItem(item, this.libGl)
+      if (resultGl?.decl) {
+        this.mainGl += "\n" + resultGl.decl
+      }
+
+      const resultJs = emitItem(item, this.libJs)
+      if (resultJs?.decl) {
+        this.mainGl += "\n" + resultJs.decl
+      }
+    }
+  }
+
   readonly loaded: Partial<Record<PackageId, Package>> = Object.create(null)
   private queuedCoercions: Record<string, Record<string, TyCoerce<any, any>>> =
     Object.create(null)
@@ -70,6 +93,12 @@ export class SheetFactory {
       await Promise.all(pkg.deps.map((x) => this.load(x)))
     }
     pkg.load?.()
+
+    if (pkg.scripts) {
+      for (const script of pkg.scripts) {
+        this.loadScript(script)
+      }
+    }
 
     for (const k in pkg.ty?.info) {
       const key = k as TyName

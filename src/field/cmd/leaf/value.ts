@@ -1,6 +1,7 @@
 import { Leaf } from "."
 import type { Node } from "@/eval/ast/token"
 import type { JsValue, TyName } from "@/eval/ty"
+import type { IRBuilder } from "@/field/model"
 import { h } from "@/jsx"
 
 /**

@@ -15,6 +15,7 @@ import { ParseNode, Parser } from "@/eval2/parse"
 import { Precedence } from "@/eval2/prec"
 import { h } from "@/jsx"
 import type { Scope } from "@/sheet/deps"
+import { todo } from "../../lang/src/emit/error"
 import type { CmdFrac } from "./cmd/math/frac"
 import { D, L, R, U, type Dir, type VDir } from "./dir"
 import type { FieldInert } from "./field-inert"
@@ -1741,7 +1742,12 @@ export abstract class Command<
    * Tokenizes this {@linkcode Command}'s contents into an intermediate
    * representation.
    */
-  abstract ir2(ret: IRBuilder): void
+  ir2(ret: IRBuilder): void {
+    ret
+    todo(
+      `Method 'ir2' must be overriden on command '${this.constructor.name}'.`,
+    )
+  }
 
   /**
    * Called when a comma is typed. Return `true` if action was taken to prevent
