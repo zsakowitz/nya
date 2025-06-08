@@ -1,4 +1,5 @@
 import { Block } from "../emit/decl"
+import { bug } from "../emit/error"
 import { Code, Pos } from "./issue"
 import {
   AAmp,
@@ -43,6 +44,7 @@ import {
   KIn,
   KLet,
   KLocal,
+  KMap,
   KMatch,
   KMatrix,
   KMut,
@@ -81,6 +83,7 @@ import {
   OLe,
   OLInterp,
   OLParen,
+  OLRawInterp,
   OLt,
   OMinus,
   OMinusUnary,
@@ -94,6 +97,9 @@ import {
   OTildeEq,
   OTildeUnary,
   OVERLOADABLE,
+  RString,
+  RTag,
+  RTerminal,
   TBuiltin,
   TComment,
   TDeriv,
@@ -132,6 +138,7 @@ import {
   ExprRange,
   ExprStruct,
   ExprSymStruct,
+  ExprTaggedString,
   ExprUnary,
   ExprVar,
   ExprVarParam,
@@ -153,6 +160,8 @@ import {
   FnReturnTypePlain,
   FnReturnTypeTypeof,
   FnUsage,
+  ForHeader,
+  ForHeaders,
   GenericParam,
   GenericParams,
   Initializer,
@@ -469,23 +478,36 @@ const forSources = createUnbracketedCommaOp(
   Code.ExpectedForSources,
 )
 
-export function exprFor(stream: Stream, label: Label | null): ExprFor | null {
-  const kw = stream.match(KFor)
-  if (!kw) return null
-
-  return new ExprFor(
-    label,
-    kw,
+function forHeader(stream: Stream) {
+  return new ForHeader(
     forBindings(stream),
     stream.matchOr(KIn, Code.ExpectedIn),
     forSources(stream),
-    block(stream, null),
   )
 }
 
-export function exprLabeled(
-  stream: Stream,
-): [NodeExpr, needsSemi: boolean] | null {
+function forHeaders(stream: Stream) {
+  const items = [forHeader(stream)]
+
+  while (stream.match(OSemi)) {
+    if (stream.peek() == OLBrace) {
+      break
+    }
+
+    items.push(forHeader(stream))
+  }
+
+  return new ForHeaders(items)
+}
+
+function exprFor(stream: Stream, label: Label | null): ExprFor | null {
+  const kw = stream.match(KFor) || stream.match(KMap)
+  if (!kw) return null
+
+  return new ExprFor(label, kw, forHeaders(stream), block(stream, null))
+}
+
+function exprLabeled(stream: Stream): [NodeExpr, needsSemi: boolean] | null {
   const labelIdent = stream.match(TLabel)
   if (!labelIdent) return null
 
@@ -507,7 +529,7 @@ export function exprLabeled(
   return [expr(stream), true]
 }
 
-export function exprExit(stream: Stream, ctx: ExprContext): ExprExit | null {
+function exprExit(stream: Stream, ctx: ExprContext): ExprExit | null {
   const kw = stream.matchAny([KReturn, KBreak, KContinue])
   if (!kw) return null
 
@@ -548,6 +570,44 @@ function exprMatch(stream: Stream) {
   return new ExprMatch(kw, expr(stream, { struct: false }), arms(stream))
 }
 
+function exprTag(stream: Stream): ExprTaggedString {
+  const tag = stream.match(RTag)!
+  const part0 = stream.match(RString)
+  if (!part0) {
+    bug(`Invalid raw string constructed in token stream.`)
+  }
+
+  const parts = [part0]
+  const interps = []
+
+  loop: while (true) {
+    switch (stream.peek()) {
+      case RTerminal:
+        stream.match(RTerminal)
+        break loop
+
+      case OLRawInterp:
+        const group = stream.match(OLRawInterp) as TokenGroup<
+          typeof OLRawInterp
+        >
+        const contents = expr(group.contents)
+        group.contents.requireDone()
+        interps.push(contents)
+        const nextPart = stream.match(RString)
+        if (!nextPart) {
+          bug(`Invalid raw string constructed in token stream.`)
+        }
+        parts.push(nextPart)
+        break
+
+      default:
+        bug(`Invalid raw string constructed in token stream.`)
+    }
+  }
+
+  return new ExprTaggedString(tag, parts, interps, stream.loc())
+}
+
 function exprAtom(stream: Stream, ctx: ExprContext): NodeExpr {
   switch (stream.peek()) {
     case ODot:
@@ -566,6 +626,9 @@ function exprAtom(stream: Stream, ctx: ExprContext): NodeExpr {
     case TIdent:
     case TBuiltin:
       return exprVar(stream, ctx)!
+
+    case RTag:
+      return exprTag(stream)
 
     case KCall:
       return exprCall(stream)!

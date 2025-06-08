@@ -22,6 +22,7 @@ import type { Builtin } from "@/eval/ops/vars"
 import type { SymName, Syms, TxrSym } from "@/eval/sym"
 import type { TyName, Tys } from "@/eval/ty"
 import type { TyCoerceMap, TyInfo } from "@/eval/ty/info"
+import type { Precedence } from "@/eval2/prec"
 import type { ParenLhs, ParenRhs } from "@/field/cmd/math/brack"
 import type { LatexInit } from "@/field/latex"
 import type { Init } from "@/field/model"
@@ -56,6 +57,8 @@ export interface Package {
   label: string | null // TODO: write better labels
   category: PackageCategory
   deps: PackageId[]
+  /** `.nya` scripts. Loaded after all dependencies. */
+  scripts: readonly string[]
 
   load?(): void
   init?: {
@@ -95,6 +98,12 @@ export interface Package {
     }
     // `sym` is separated from other `tx` since it works separately
     sym?: { [K in SymName]?: TxrSym<Syms[K] & { type: K }> }
+  }
+
+  eval2?: {
+    prec?: {
+      binary?: List<[Precedence, Precedence], PuncInfix>
+    }
   }
 
   sheet?: {

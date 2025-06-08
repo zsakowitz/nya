@@ -6,7 +6,7 @@ import { emitBlock, emitItem } from "../emit/emit"
 import { addInspectKeys } from "../emit/inspect"
 import { EmitProps, type Lang } from "../emit/props"
 import { createStdlib } from "../emit/stdlib"
-import { source } from "./source"
+import { sourceWithExample as source } from "./source"
 
 function emitGl() {
   const props = new EmitProps("glsl")

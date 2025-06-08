@@ -76,6 +76,7 @@ import {
   ExprRange,
   ExprStruct,
   ExprSymStruct,
+  ExprTaggedString,
   ExprUnary,
   ExprVar,
   ExprVarParam,
@@ -96,6 +97,8 @@ import {
   FnReturnTypePlain,
   FnReturnTypeTypeof,
   FnUsage,
+  ForHeader,
+  ForHeaders,
   GenericParam,
   GenericParams,
   Initializer,
@@ -670,6 +673,26 @@ export function print(node: Node | Token<number>, sb: Subprint): Doc {
         ])
       }
     }
+    case ExprTaggedString: {
+      const self = node as ExprTaggedString
+      const hashesNeeded = self.parts.reduce(
+        (a, x) =>
+          Math.max(
+            a,
+            x.val.match(/"#*/)?.reduce((a, x) => Math.max(a, x.length), 0) ?? 0,
+          ),
+        0,
+      )
+      const ret = [sb("tag"), "#".repeat(hashesNeeded), '"']
+      for (let i = 0; i < self.parts.length; i++) {
+        ret.push(sb.sub("parts", i))
+        if (i != self.parts.length - 1) {
+          ret.push(group(["${", sb.sub("interps", i), "}"]))
+        }
+      }
+      ret.push('"', "#".repeat(hashesNeeded))
+      return group(ret)
+    }
     case PrescribedType:
       return group([
         sb("dcolon"),
@@ -768,17 +791,19 @@ export function print(node: Node | Token<number>, sb: Subprint): Doc {
         softline,
         sb.sub("brack", "gt"),
       ])
+    case ForHeaders:
+      return group([
+        indent([
+          softline,
+          join([";", line], sb.all("items")),
+          ifBreak([";"], ""),
+        ]),
+        line,
+      ])
+    case ForHeader:
+      return [sb("bound"), sb("eq"), " ", sb("sources")]
     case ExprFor:
-      return [
-        sb.opt("label"),
-        sb("kw"),
-        " ",
-        sb("bound"),
-        sb("eq"),
-        " ",
-        sb("sources"),
-        sb("block"),
-      ]
+      return [sb.opt("label"), sb("kw"), " ", sb("headers"), sb("block")]
     case Label:
       return [sb("label"), sb.alt("colon", ":"), " "]
     case ExprMatch:

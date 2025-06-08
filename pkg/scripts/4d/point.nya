@@ -1,0 +1,54 @@
+struct Point4D {
+  x: num,
+  y: num,
+  z: num,
+  w: num,
+}
+
+fn point(x: num, y: num, z: num, w: num) -> Point4D {
+  Point4D { x, y, z, w }
+}
+
+fn +(a: Point4D, b: Point4D) -> Point4D {
+  a @+ b
+}
+
+fn -(a: Point4D, b: Point4D) -> Point4D {
+  a @- b
+}
+
+fn unsign(a: Point4D) -> Point4D {
+  @abs(a)
+}
+
+fn abs(a: Point4D) -> num {
+  @hypot(a)
+}
+
+fn -(a: Point4D) -> Point4D {
+  @-a
+}
+
+fn %odot(a: Point4D, b: Point4D) -> Point4D {
+  a @* b
+}
+
+fn +(a: Point4D) -> Point4D {
+  a
+}
+
+fn *(a: Point4D, b: num) -> Point4D {
+  a @* b
+}
+
+fn *(a: num, b: Point4D) -> Point4D {
+  a @* b
+}
+
+fn /(a: Point4D, b: num) -> Point4D {
+  a @/ b
+}
+
+fn point(a: Point4D) -> Point4D {
+  a
+}

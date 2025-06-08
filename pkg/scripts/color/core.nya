@@ -1,0 +1,90 @@
+struct Color3 {
+  r: num,
+  g: num,
+  b: num,
+}
+
+struct Color {
+  r: num,
+  g: num,
+  b: num,
+  a: num,
+}
+
+fn plot(x: bool) -> Color {
+  if x {
+    Color { r: 0.1764705882, g: 0.4392156863, b: 0.7019607843, a: 0.5 }
+  } else {
+    Color { r: 0.0, g: 0.0, b: 0.0, a: 0.0 }
+  }
+}
+
+fn plot(x: Color) -> Color {
+  x
+}
+
+fn plot(x: Color3) -> Color {
+  Color { r: x.r, g: x.g, b: x.b, a: 1.0 }
+}
+
+fn rgb(r: num, g: num, b: num) -> Color3 {
+  Color3 { r: r / 255.0, g: g / 255.0, b: b / 255.0 }
+}
+
+fn rgb(r: num, g: num, b: num, a: num) -> Color {
+  Color { r: r / 255.0, g: g / 255.0, b: b / 255.0, a }
+}
+
+fn rgba(base: Color3, a: num) -> Color {
+  Color { r: base.r, g: base.g, b: base.b, a }
+}
+
+fn hsv(h: num, s: num, v: num) -> Color3 {
+  // const vec4 _helper_hsv_const = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+  // vec3 _helper_hsv(vec3 c) {
+  // vec3 p = abs(fract(c.xxx + _helper_hsv_const.xyz) * 6.0 - _helper_hsv_const.www);
+  // return c.z * mix(_helper_hsv_const.xxx, clamp(p - _helper_hsv_const.xxx, 0.0, 1.0), c.y);
+  // }
+
+  h /= 360.0;
+  let p = @abs(
+    @fract(h @+ Color3 { r: 1.0, g: 2.0 / 3.0, b: 1.0 / 3.0 }) @* 6.0 @- 3.0,
+  );
+  v * @mix(1.0, @clamp(p @- 1.0, 0.0, 1.0), s)
+}
+
+fn hsv(h: num, s: num, v: num, a: num) -> Color {
+  rgba(hsv(h, s, v), a)
+}
+
+fn %juxtapose(a: Color3, b: bool) -> Color3 {
+  if b {
+    a
+  } else {
+    Color3 { r: nan, g: nan, b: nan }
+  }
+}
+
+fn %juxtapose(b: bool, a: Color3) -> Color3 {
+  if b {
+    a
+  } else {
+    Color3 { r: nan, g: nan, b: nan }
+  }
+}
+
+fn %juxtapose(a: Color, b: bool) -> Color {
+  if b {
+    a
+  } else {
+    Color { r: nan, g: nan, b: nan, a: 0.0 }
+  }
+}
+
+fn %juxtapose(b: bool, a: Color) -> Color {
+  if b {
+    a
+  } else {
+    Color { r: nan, g: nan, b: nan, a: 0.0 }
+  }
+}

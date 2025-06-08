@@ -1,6 +1,6 @@
 import type { Block } from "./decl"
 import { bug, issue } from "./error"
-import type { GlobalId } from "./id"
+import type { IdGlobal } from "./id"
 import type { EmitProps } from "./props"
 import type { GlslScalar, Repr, ReprVec } from "./repr"
 import { Fn, invalidType, type FnType, type Scalar, type Type } from "./type"
@@ -40,7 +40,7 @@ export function fromScalars(type: Type, value: Value[]) {
 
 export function createUnaryBroadcastingFn(
   props: EmitProps,
-  id: GlobalId,
+  id: IdGlobal,
   arg1: { name: string; type: GlslScalar },
   ret: Scalar,
   fns: {
@@ -108,7 +108,7 @@ export function createUnaryBroadcastingFn(
 
 export function createBinaryBroadcastingFn(
   props: EmitProps,
-  id: GlobalId,
+  id: IdGlobal,
   arg1: { name: string; type: GlslScalar },
   arg2: { name: string; type: GlslScalar },
   ret: Scalar,

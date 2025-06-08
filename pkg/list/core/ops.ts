@@ -37,6 +37,7 @@ import {
 } from "@/eval/sym"
 import { TY_INFO } from "@/eval/ty/info"
 import { splitValue } from "@/eval/ty/split"
+import { P } from "@/eval2/prec"
 import { CmdComma } from "@/field/cmd/leaf/comma"
 import { CmdNum } from "@/field/cmd/leaf/num"
 import { OpCdot, OpMinus, OpOdot, OpPlus, OpTimes } from "@/field/cmd/leaf/op"
@@ -646,6 +647,7 @@ export default {
   label: null,
   category: "numbers",
   deps: [],
+  scripts: [`// NYALANG: this should define derivatives`],
   eval: {
     tx: {
       binary: {
@@ -1178,9 +1180,23 @@ export default {
         "\\cdot ": { fn: OP_CDOT, precedence: Precedence.Product },
         "÷": { fn: OP_DIV, precedence: Precedence.Product },
         "\\odot ": { fn: OP_ODOT, precedence: Precedence.Product },
-        "mod": { fn: OP_MOD, precedence: Precedence.Product },
+        mod: { fn: OP_MOD, precedence: Precedence.Product },
         "\\times ": { fn: OP_CROSS, precedence: Precedence.Product },
         "\\uparrow ": { fn: OP_RAISE, precedence: Precedence.Exponential },
+      },
+    },
+  },
+  eval2: {
+    prec: {
+      binary: {
+        "+": [P.SumL, P.SumR],
+        "-": [P.SumL, P.SumR],
+        "\\cdot ": [P.ProdL, P.ProdR],
+        "÷": [P.ProdL, P.ProdR],
+        "\\odot ": [P.ProdL, P.ProdR],
+        mod: [P.ProdL, P.ProdR],
+        "\\times ": [P.ProdL, P.ProdR],
+        "\\uparrow ": [P.ExponentL, P.ExponentR],
       },
     },
   },

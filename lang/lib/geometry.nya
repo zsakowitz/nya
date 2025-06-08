@@ -289,10 +289,6 @@ fn end(a: Arc) -> Point {
 // "reflect"
 // "perimeter"
 
-fn main() -> num {
-  1.0
-}
-
 let dcg_blue = rgb { r: 0x2d / 255, g: 0x70 / 255, b: 0xb3 / 255 };
 let dcg_purple = rgb { r: 0x60 / 255, g: 0x42 / 255, b: 0xa6 / 255 };
 let dcg_green = rgb { r: 0x38 / 255, g: 0x8c / 255, b: 0x46 / 255 };

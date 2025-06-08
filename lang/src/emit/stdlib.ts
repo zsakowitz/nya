@@ -7,9 +7,11 @@ import {
   scalars,
 } from "./broadcast"
 import { Declarations, PRECACHED, type Block } from "./decl"
+import { performCall } from "./emit"
 import { bug, issue } from "./error"
-import { ident as g, Id, type GlobalId } from "./id"
+import { ident as g, Id, IdGlobal } from "./id"
 import type { EmitProps } from "./props"
+import { Tag } from "./tag"
 import {
   fn,
   Fn,
@@ -22,7 +24,7 @@ import {
 } from "./type"
 import { Value } from "./value"
 
-function createPathLib(props: EmitProps, num: Scalar) {
+function libPath(props: EmitProps, num: Scalar) {
   function vec(count: 2 | 3 | 4): FnType {
     function canConvertFrom(type: Type) {
       return (
@@ -312,6 +314,165 @@ function createPathLib(props: EmitProps, num: Scalar) {
   }
 }
 
+function libLatex(decl: Declarations, num: Scalar, bool: Scalar) {
+  const fns = decl.fns
+  const lang = decl.props.lang
+
+  const idDisplay = g("%display")
+  const idDebug = g("%debug")
+
+  const latex = new Scalar(
+    "latex",
+    lang == "glsl" ? "void" : "string",
+    lang == "glsl" ? { type: "void" } : { type: "struct", id: new Id("latex") },
+    lang == "glsl" ? () => null : (v) => (v as { data: string }).data,
+    () => issue(`Cannot convert LaTeX text to a set of scalars.`),
+    () => issue(`Cannot create LaTeX text from a set of scalars.`),
+  )
+
+  // `num` %display
+  {
+    const idLatexHelper = new Id("%display(x: num) -> latex")
+    const fnLatexHelper = `function ${idLatexHelper}(v){return v===v?v===1/0?'\\\\inf':v===-1/0?'-\\\\inf':v.toString():'\\\\wordvar{undefined}'}`
+    // prettier-ignore
+    function fLatexHelper(v: number)                   {return v===v?v===1/0?  '\\inf':v===-1/0?'  -\\inf':v.toString():  '\\wordvar{undefined}'}
+
+    fns.push(
+      idDisplay,
+      new Fn(
+        idDisplay,
+        [{ name: "value", type: num }],
+        latex,
+
+        lang == "glsl" ?
+          () => new Value(0, latex)
+        : ([v]) =>
+            new Value(
+              v!.const() ?
+                fLatexHelper(v.value as number)
+              : (decl.global(fnLatexHelper),
+                `${idLatexHelper}(${v!.toRuntime()})`),
+              latex,
+            ),
+      ),
+    )
+  }
+
+  // `num` %debug
+  {
+    const idLatexHelper = new Id("%debug(x: num) -> latex")
+    const fnLatexHelper = `function ${idLatexHelper}(v){return v===v?v===1/0?'\\\\inf':v===-1/0?'-\\\\inf':1/v==1/-0?'-0':v.toString():'\\\\wordvar{NaN}'}`
+    // prettier-ignore
+    function fLatexHelper(v: number)                   {return v===v?v===1/0?  '\\inf':v===-1/0?'  -\\inf':1/v==1/-0?'-0':v.toString():  '\\wordvar{NaN}'}
+
+    fns.push(
+      idDebug,
+      new Fn(
+        idDebug,
+        [{ name: "value", type: num }],
+        latex,
+        lang == "glsl" ?
+          () => new Value(0, latex)
+        : ([v]) =>
+            new Value(
+              v!.const() ?
+                fLatexHelper(v.value as number)
+              : (decl.global(fnLatexHelper),
+                `${idLatexHelper}(${v!.toRuntime()})`),
+              latex,
+            ),
+      ),
+    )
+  }
+
+  // `bool` %display, %debug
+  {
+    const idLatexHelper = new Id("%{display,debug}(x: bool) -> latex")
+    const fnLatexHelper = `function ${idLatexHelper}(v){return '\\\\wordvar{'+v+'}'}`
+    // prettier-ignore
+    function fLatexHelper(v: boolean)                  {return   '\\wordvar{'+v+'}'}
+
+    const f =
+      lang == "glsl" ?
+        () => new Value(0, latex)
+      : ([v]: Value[]) =>
+          new Value(
+            v!.const() ?
+              fLatexHelper(v.value as boolean)
+            : (decl.global(fnLatexHelper),
+              `${idLatexHelper}(${v!.toRuntime()})`),
+            latex,
+          )
+    fns.push(
+      idDisplay,
+      new Fn(idDisplay, [{ name: "value", type: bool }], latex, f),
+    )
+    fns.push(
+      idDebug,
+      new Fn(idDebug, [{ name: "value", type: bool }], latex, f),
+    )
+  }
+
+  // `latex` %display, %debug
+  {
+    fns.push(
+      idDisplay,
+      new Fn(idDisplay, [{ name: "value", type: latex }], latex, (x) => x[0]!),
+    )
+    fns.push(
+      idDebug,
+      new Fn(idDebug, [{ name: "value", type: latex }], latex, (x) => x[0]!),
+    )
+  }
+
+  function createTag(tagIdent: IdGlobal, fnIdent: IdGlobal) {
+    return new Tag(
+      tagIdent,
+      lang == "glsl" ?
+        () => new Value(0, latex)
+      : (text, interps, block) => {
+          const results = interps.map((x) => {
+            const result = performCall(fnIdent, block, [x])
+            if (result.type == latex) {
+              return result
+            }
+            issue(
+              `The '${tagIdent.label}' tag cannot be used if calling %display on any interpolation does not return LaTeX.`,
+            )
+          })
+
+          if (results.every((x) => x.const())) {
+            return new Value(
+              {
+                data: text.map((x, i) =>
+                  i == 0 ? x : (
+                    (results[i - 1]!.value as { data: string }).data + x
+                  ),
+                ),
+              },
+              latex,
+            )
+          }
+
+          return new Value(
+            text
+              .map((x, i) =>
+                i == 0 ?
+                  JSON.stringify(x)
+                : results[i - 1]!.toRuntime()! + "+" + JSON.stringify(x),
+              )
+              .join("+"),
+            latex,
+          )
+        },
+    )
+  }
+
+  decl.tags.set(g("display"), createTag(g("display"), idDisplay))
+  decl.tags.set(g("debug"), createTag(g("debug"), idDebug))
+  decl.types.set(g("latex"), latex)
+}
+
 export function createStdlib(props: EmitProps) {
   const lang = props.lang
   const epsilon = lang == "glsl" ? 1.1920928955078125e-7 : Number.EPSILON
@@ -349,7 +510,7 @@ export function createStdlib(props: EmitProps) {
   const sym = new Scalar(
     "sym",
     lang == "glsl" ? "uint" : "number",
-    { type: "vec", count: 1, of: "uint" },
+    { type: "vec", count: 1, of: "symint" },
     (v) => "" + (v as number),
     (v) => [v],
     (v) => v.pop()!,
@@ -395,7 +556,8 @@ export function createStdlib(props: EmitProps) {
     },
   )
 
-  const pathLib = createPathLib(props, num)
+  const pathLib = libPath(props, num)
+  libLatex(decl, num, bool)
   for (const v of [num, bool, ...pathLib.types]) {
     decl.types.set(g(v.name), v)
   }
@@ -816,7 +978,7 @@ export function createStdlib(props: EmitProps) {
   ]
 
   for (const f of fns) {
-    decl.fns.push(f.id as GlobalId, f)
+    decl.fns.push(f.id as IdGlobal, f)
   }
 
   return decl

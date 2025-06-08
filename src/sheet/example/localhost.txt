@@ -1,11 +1,6 @@
-A=\left(-5.28,0.84\right)
-B=\left(-2.64,1.4\right)
-C=\left(-0.47,0.75\right)
-l_{1a}=\operatorname{midpoint}\left(A,B\right)
-l_{1b}=\left(l_{1a}.x-\left(B.y-A.y\right),l_{1a}.y+\left(B.x-A.x\right)\right)
-l_{2a}=\operatorname{midpoint}\left(C,B\right)
-l_{2b}=\left(l_{2a}.x-\left(B.y-C.y\right),l_{2a}.y+\left(B.x-C.x\right)\right)
-\token{0}=\operatorname{line}\left(l_{1a},l_{1b}\right)
-\token{1}=\operatorname{line}\left(l_{2a},l_{2b}\right)
-\token{2}=\operatorname{intersection}\left(\token{0},\token{1}\right)
-\left|\token{2}-A\right|
+a=2
+b=3
+a+b
+x^{2}
+sin 3
+cos sin 4

@@ -6,6 +6,12 @@ import withcv from "./base.nya"
 export const source =
   complex.replace(/assert.+/g, "") + "\n" + lngamma + "\n\n" + geometry
 
+export const sourceWithExample = `${source}
+fn main() ->latex{
+  display"\\left(\${2+4},\${3+4}\\right)"
+}
+`
+
 export const mini = withcv
   .slice("fn main() {".length, -"}\n".length)
   .trim()

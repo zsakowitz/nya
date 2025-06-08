@@ -1,0 +1,50 @@
+// builtin by stdlib:
+// ==, >, >=, <, <=, !=
+// - (unary), - (binary), + (binary)
+// exp, pow, abs, *, /, sign, ln, log10
+
+// TODO: valid, count
+
+fn cmp(a: num, b: num) -> num {
+  if a < b {
+    -1.0
+  } else if a > b {
+    1.0
+  } else {
+    0.0
+  }
+}
+
+fn unsign(a: num) -> num {
+  abs(a)
+}
+
+fn %plotsign(a: num, b: num) -> num {
+  a - b
+}
+
+fn +(a: num) -> num {
+  a
+}
+
+fn %odot(a: num, b: num) -> num {
+  a * b
+}
+
+fn mod(a: num, b: num) -> num {
+  a - floor(a / b) * b
+}
+
+fn %cross(a: num, b: num) -> num {
+  a * b
+}
+
+fn %xprody(a: num, b: num) -> num {
+  if is_nan(b) {
+    nan
+  } else if a == 0.0 {
+    0.0
+  } else {
+    a * b
+  }
+}

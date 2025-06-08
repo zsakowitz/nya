@@ -1,27 +1,7 @@
+import script from "!/num/complex.nya"
 import type { Package } from "#/types"
-import { FN_VALID } from "$/bool"
-import { OP_PLOT, plotJs } from "$/color/core"
-import {
-  abs64,
-  addR64,
-  declareAddR64,
-  declareMulR64,
-  declareOdotC64,
-  declareSubR64,
-  FN_LN,
-  FN_XPRODY,
-  OP_ABS,
-  OP_ADD,
-  OP_CDOT,
-  OP_DIV,
-  OP_NEG,
-  OP_ODOT,
-  OP_POS,
-  OP_RAISE,
-  OP_SUB,
-  subR64,
-} from "$/core/ops"
-import { declareDebugPoint, FN_DEBUGPOINT, FN_POINT } from "$/geo/point"
+import { plotJs } from "$/color/core"
+import { FN_POINT } from "$/geo/point"
 import { fn, type GlslContext } from "@/eval/lib/fn"
 import { FnDist } from "@/eval/ops/dist"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "@/eval/ops/vars"
@@ -30,11 +10,10 @@ import type { TyWrite } from "@/eval/ty/display"
 import { highRes, type TyExtras } from "@/eval/ty/info"
 import { h } from "@/jsx"
 import { xy, xynan, type SComplex } from "@/lib/complex"
-import { pt } from "@/lib/point"
-import { approx, int } from "@/lib/real"
+import { int } from "@/lib/real"
 import { Order } from "@/sheet/ui/cv/consts"
 import { declareOklab } from "../color/util-oklab"
-import { FN_EXP, FN_LOG10, FN_SIGN, FN_UNSIGN } from "./real"
+import { FN_SIGN } from "./real"
 
 declare module "@/eval/ty" {
   interface Tys {
@@ -214,33 +193,6 @@ const extras: TyExtras<SComplex> = {
   },
 }
 
-function dotC64(
-  ctx: GlslContext,
-  a: GlslVal<"c64" | "point64">,
-  b: GlslVal<"c64" | "point64">,
-) {
-  declareSubR64(ctx)
-  declareMulR64(ctx)
-  ctx.glsl`vec2 _helper_dot_c64(vec4 a, vec4 b) {
-  return _helper_sub_r64(
-    _helper_mul_r64(a.xy, b.xy),
-    _helper_mul_r64(a.zw, b.zw)
-  );
-}`
-  return `_helper_dot_c64(${a.expr}, ${b.expr})`
-}
-
-function dotC32(
-  ctx: GlslContext,
-  a: GlslVal<"c32" | "point32">,
-  b: GlslVal<"c32" | "point32">,
-) {
-  ctx.glsl`float _helper_dot_c32(vec2 a, vec2 b) {
-  return a.x * b.x - a.y * b.y;
-}`
-  return `_helper_dot_c32(${a.expr}, ${b.expr})`
-}
-
 export function declareDiv(ctx: GlslContext) {
   ctx.glsl`vec2 _helper_div(vec2 a, vec2 b) {
   return vec2(
@@ -284,437 +236,8 @@ export default {
   name: "complex numbers",
   label: "basic support for complex numbers",
   category: "numbers (multi-dimensional)",
-  load() {
-    FN_ARG.add(
-      ["c32"],
-      "r32",
-      function ({ value: a }) {
-        return approx(a.arg() / this.rad())
-      },
-      (ctx, ar) => {
-        // TODO: arg p = 45 does weird things b/c discontinuous
-        const a = ctx.cache(ar)
-        return `(atan(${a}.y, ${a}.x) / ${ctx.rad()})`
-      },
-      ["arg(\\frac12+\\frac\\sqrt32i)=\\frac\\pi2", "arg(-3i)=-\\frac\\pi2"],
-    )
-
-    FN_SIGN.add(
-      ["c32"],
-      "c32",
-      ({ value: a }) => a.sign(),
-      (ctx, ar) => {
-        const a = ctx.cache(ar)
-        return `(${a} == vec2(0) ? vec2(0) : normalize(${a}))`
-      },
-      "sign(3-4i)=\\frac35-\\frac45i",
-    )
-
-    FN_EXP.addRadOnly(
-      "with a complex number",
-      ["c32"],
-      "c32",
-      ({ value: a }) => a.ns().exp().s(),
-      (ctx, a) => {
-        declareExp(ctx)
-        return `_helper_exp(${a.expr})`
-      },
-      "exp(2i)≈-0.416+0.909i",
-    )
-
-    FN_LN.addRadOnly(
-      "with a complex number",
-      ["c32"],
-      "c32",
-      (a) => a.value.ns().ln().s(),
-      (ctx, a) => {
-        declareLn(ctx)
-        return `_helper_ln(${a.expr})`
-      },
-      "ln(-0.416+0.909i)≈2i",
-    )
-
-    FN_XPRODY.add(
-      ["c32", "c32"],
-      "c32",
-      (a, b) => {
-        if (isNaN(b.value.x.num()) || isNaN(b.value.y.num())) {
-          return xynan()
-        }
-
-        if (a.value.zero()) {
-          return xy(int(0), int(0))
-        }
-
-        return a.value.mul(b.value)
-      },
-      (ctx, ar, br) => {
-        declareMulC32(ctx)
-        declareLn(ctx)
-        const a = ctx.cache(ar)
-        const b = ctx.cache(br)
-        return `(isnan(${b}.x) || isnan(${b}.y) ? vec2(0.0/0.0) : ${a} == vec2(0) ? vec2(0) : _helper_mul_c32(${a}, ${b}))`
-      },
-      ["2i\\nyaop{xprody}3=6i", "0\\nyaop{xprody}(-\\infty i)=0"],
-    )
-
-    FN_LOG10.addRadOnly(
-      "with a complex number",
-      ["c32"],
-      "c32",
-      ({ value: a }) => a.ns().ln().divR(Math.LN10).s(),
-      (ctx, a) => {
-        declareLn(ctx)
-        return `(_helper_ln(${a.expr}) / vec2(log(10.0)))`
-      },
-      "log(100i)≈2+0.682i",
-    )
-
-    // TODO: logb
-
-    FN_VALID.add(
-      ["c32"],
-      "bool",
-      (a) => isFinite(a.value.x.num()) && isFinite(a.value.y.num()),
-      (ctx, ar) => {
-        const a = ctx.cache(ar)
-        return `(!isnan(${a}.x) && !isinf(${a}.x) && !isnan(${a}.y) && !isinf(${a}.y))`
-      },
-      ["valid(2+3i)=true", "valid(\\frac{2+3i}0)=false"],
-    )
-
-    FN_CONJ.add(
-      ["c64"],
-      "c64",
-      (a) => a.value.conj(),
-      (_, a) => `(${a} * vec4(1, 1, -1, -1))`,
-      [],
-    ).add(
-      ["c32"],
-      "c32",
-      (a) => a.value.conj(),
-      (_, a) => `(${a} * vec2(1, -1))`,
-      "conj(-2+3i)=2-3i",
-    )
-
-    FN_DOT.add(
-      ["c64", "c64"],
-      "r64",
-      (a, b) => a.value.x.mul(b.value.x).sub(a.value.y.mul(b.value.y)),
-      dotC64,
-      [],
-    ).add(
-      ["c32", "c32"],
-      "r32",
-      (a, b) => a.value.x.mul(b.value.x).sub(a.value.y.mul(b.value.y)),
-      dotC32,
-      "dot(2+3i,4-5i)=23",
-    )
-
-    FN_UNSIGN.add(
-      ["c64"],
-      "c64",
-      (a) => a.value.unsign(),
-      (ctx, a) => {
-        const name = ctx.cache(a)
-        return `vec4(${abs64(ctx, `${name}.xy`)}, ${abs64(ctx, `${name}.zw`)})`
-      },
-      [],
-    ).add(
-      ["c32"],
-      "c32",
-      (a) => a.value.unsign(),
-      (_, a) => `abs(${a.expr})`,
-      "unsign(4-5i)=4+5i",
-    )
-
-    FN_IMAG.add(
-      ["c64"],
-      "r64",
-      (a) => a.value.y,
-      (_, a) => `${a.expr}.zw`,
-      // TODO: decide whether high res variants should have usage examples
-      [],
-    ).add(
-      ["c32"],
-      "r32",
-      (a) => a.value.y,
-      (_, a) => `${a.expr}.y`,
-      "imag(-9+8i)=8",
-    )
-
-    FN_I.add(
-      ["c64"],
-      "r64",
-      (a) => a.value.y,
-      (_, a) => `${a.expr}.zw`,
-      // TODO: decide whether high res variants should have usage examples
-      [],
-    ).add(
-      ["c32"],
-      "r32",
-      (a) => a.value.y,
-      (_, a) => `${a.expr}.y`,
-      "(-9+8i).i=8",
-    )
-
-    FN_REAL.add(
-      ["c64"],
-      "r64",
-      (a) => a.value.x,
-      (_, a) => `${a.expr}.xy`,
-      [],
-    ).add(
-      ["c32"],
-      "r32",
-      (a) => a.value.x,
-      (_, a) => `${a.expr}.x`,
-      "real(-9+8i)=-9",
-    )
-
-    FN_DEBUGPOINT.add(
-      ["c32"],
-      "color",
-      () => {
-        throw new Error(ERR_COORDS_USED_OUTSIDE_GLSL)
-      },
-      (ctx, a) => declareDebugPoint(ctx, a),
-      "debugpoint(e^{2i})",
-    )
-
-    OP_SUB.add(
-      ["c64", "c64"],
-      "c64",
-      (a, b) => a.value.sub(b.value),
-      (ctx, ar, br) => {
-        const a = ctx.cache(ar)
-        const b = ctx.cache(br)
-        return `vec4(${subR64(ctx, `${a}.xy`, `${b}.xy`)}, ${subR64(ctx, `${a}.zw`, `${b}.zw`)})`
-      },
-      [],
-    ).add(
-      ["c32", "c32"],
-      "c32",
-      (a, b) => a.value.sub(b.value),
-      (_, a, b) => `(${a.expr} - ${b.expr})`,
-      "(2+3i)-(4-7i)=-2+10i",
-    )
-
-    OP_RAISE.addRadOnly(
-      "with a complex number",
-      ["c32", "c32"],
-      "c32",
-      (a, b) => a.value.pow(b.value),
-      (ctx, a, b) => {
-        declarePowC32(ctx)
-        return `_helper_pow_c32(${a.expr}, ${b.expr})`
-      },
-      "(4+5i)^(2\\pi i)≈0.00223-0.00281i",
-    )
-
-    OP_ODOT.add(
-      ["c64", "c64"],
-      "c64",
-      (a, b) => a.value.mulEach(b.value),
-      (ctx, a, b) => {
-        declareMulR64(ctx)
-        declareOdotC64(ctx)
-        return `_helper_odot_c64(${a.expr}, ${b.expr})`
-      },
-      [],
-    ).add(
-      ["c32", "c32"],
-      "c32",
-      (a, b) => a.value.mulEach(b.value),
-      (_, a, b) => {
-        return `(${a.expr} * ${b.expr})`
-      },
-      "(2+3i)\\odot(1-2i)=2-6i",
-    )
-
-    OP_ADD.add(
-      ["c64", "c64"],
-      "c64",
-      (a, b) => a.value.add(b.value),
-      (ctx, ar, br) => {
-        const a = ctx.cache(ar)
-        const b = ctx.cache(br)
-        return `vec4(${addR64(ctx, `${a}.xy`, `${b}.xy`)}, ${addR64(ctx, `${a}.zw`, `${b}.zw`)})`
-      },
-      [],
-    ).add(
-      ["c32", "c32"],
-      "c32",
-      (a, b) => a.value.add(b.value),
-      (_, a, b) => `(${a.expr} + ${b.expr})`,
-      "(2+3i)+(1-2i)=3+i",
-    )
-
-    OP_CDOT.add(
-      ["c64", "c64"],
-      "c64",
-      (a, b) => a.value.mul(b.value),
-      (ctx, a, b) => {
-        declareAddR64(ctx)
-        declareSubR64(ctx)
-        declareMulR64(ctx)
-        ctx.glsl`
-vec4 _helper_mul_c64(vec4 a, vec4 b) {
-  return vec4(
-    _helper_sub_r64(_helper_mul_r64(a.xy, b.xy), _helper_mul_r64(a.zw, b.zw)),
-    _helper_add_r64(_helper_mul_r64(a.zw, b.xy), _helper_mul_r64(a.xy, b.zw))
-  );
-}
-`
-        return `_helper_mul_c64(${a.expr}, ${b.expr})`
-      },
-      [],
-    ).add(
-      ["c32", "c32"],
-      "c32",
-      (a, b) => a.value.mul(b.value),
-      (ctx, a, b) => {
-        declareMulC32(ctx)
-        return `_helper_mul_c32(${a.expr}, ${b.expr})`
-      },
-      "(-2+3i)\\cdot(4-9i)=19+30i",
-    )
-
-    FN_COMPLEX.add(
-      ["c64"],
-      "c64",
-      (a) => a.value,
-      (_, a) => a.expr,
-      [],
-    )
-      .add(
-        ["c32"],
-        "c32",
-        (a) => a.value,
-        (_, a) => a.expr,
-        "complex(2+3i)=2+3i",
-      )
-      .add(
-        ["point64"],
-        "c64",
-        (a) => xy(a.value.x, a.value.y),
-        (_, a) => a.expr,
-        [],
-      )
-      .add(
-        ["point32"],
-        "c32",
-        (a) => xy(a.value.x, a.value.y),
-        (_, a) => a.expr,
-        "complex((2,3))=2+3i",
-      )
-
-    FN_POINT.add(
-      ["c64"],
-      "point64",
-      (a) => pt([a.value.x, a.value.y]),
-      (_, a) => a.expr,
-      [],
-    )
-      .add(
-        ["c32"],
-        "point32",
-        (a) => pt([a.value.x, a.value.y]),
-        (_, a) => a.expr,
-        "point(2+3i)=(2,3)",
-      )
-      .add(
-        ["point64"],
-        "point64",
-        (a) => a.value,
-        (_, a) => a.expr,
-        [],
-      )
-      .add(
-        ["point32"],
-        "point32",
-        (a) => a.value,
-        (_, a) => a.expr,
-        "point((2,3))=(2,3)",
-      )
-
-    OP_ABS.add(
-      ["c32"],
-      "rabs32",
-      // TODO: this is exact for some values
-      (a) => approx(Math.hypot(a.value.x.num(), a.value.y.num())),
-      (_, a) => `length(${a.expr})`,
-      "|3-4i|=5",
-    )
-
-    OP_DIV.add(
-      ["c32", "c32"],
-      "c32",
-      (a, b) => a.value.div(b.value),
-      (ctx, a, b) => {
-        declareDiv(ctx)
-        return `_helper_div(${a.expr}, ${b.expr})`
-      },
-      "\\frac{2+3i}{-3+4i}=0.24-0.68i",
-    )
-
-    OP_NEG.add(
-      ["c64"],
-      "c64",
-      (a) => a.value.neg(),
-      (_, a) => `(-${a.expr})`,
-      [],
-    ).add(
-      ["c32"],
-      "c32",
-      (a) => a.value.neg(),
-      (_, a) => `(-${a.expr})`,
-      "-(2+3i)=-2-3i",
-    )
-
-    /*!
-     * Source from https://github.com/nschloe/cplot/blob/main/src/cplot/_colors.py
-     *
-     * Licensed under GNU General Public License v3.0
-     */
-
-    OP_PLOT.add(
-      ["rabs32"],
-      "color",
-      plotJs,
-      cplotAbs,
-      "\\nyaop{plot}(|2|)=\\color{#b8b8b8}",
-    )
-      .add(
-        ["c32"],
-        "color",
-        plotJs,
-        cplot,
-        "\\nyaop{plot}(2+3i)=\\color{#83c4d6}",
-      )
-      .add(
-        ["point32"],
-        "color",
-        plotJs,
-        cplot,
-        "\\nyaop{plot}((2,3))=\\color{#83c4d6}",
-      )
-
-    OP_POS.add(
-      ["c64"],
-      "c64",
-      (a) => a.value,
-      (_, a) => a.expr,
-      [],
-    ).add(
-      ["c32"],
-      "c32",
-      (a) => a.value,
-      (_, a) => a.expr,
-      "+(2-3i)=2-3i",
-    )
-  },
   deps: ["num/real", "geo/point", "core/ops", "color/core", "bool"],
+  scripts: [script],
   ty: {
     coerce: {
       r32: {
@@ -818,19 +341,19 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
   },
   eval: {
     fn: {
-      "arg": FN_ARG,
-      "conj": FN_CONJ,
-      "imag": FN_IMAG,
-      "real": FN_REAL,
-      "sign": FN_SIGN,
+      arg: FN_ARG,
+      conj: FN_CONJ,
+      imag: FN_IMAG,
+      real: FN_REAL,
+      sign: FN_SIGN,
       // DCG: dot doesn't exist for complex numbers in desmos
-      "dot": FN_DOT,
+      dot: FN_DOT,
       // DCG: everything below doesn't exist in vanilla desmos
-      "complex": FN_COMPLEX,
-      "point": FN_POINT,
+      complex: FN_COMPLEX,
+      point: FN_POINT,
       ".i": FN_I,
-      "cplot": FN_CPLOT,
-      "cplothue": FN_CPLOTHUE,
+      cplot: FN_CPLOT,
+      cplothue: FN_CPLOTHUE,
     },
     var: {
       p: {

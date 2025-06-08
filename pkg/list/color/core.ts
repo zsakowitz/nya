@@ -1,13 +1,10 @@
+import script from "!/color/core.nya"
 import type { Package } from "#/types"
-import { OP_CDOT } from "$/core/ops"
-import type { GlslContext } from "@/eval/lib/fn"
-import { FnDist } from "@/eval/ops/dist"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "@/eval/ops/vars"
-import { TY_INFO } from "@/eval/ty/info"
 import { CmdColor } from "@/field/cmd/leaf/color"
 import { L } from "@/field/dir"
 import { h } from "@/jsx"
-import { pt, ptnan, type SPoint } from "@/lib/point"
+import { ptnan, type SPoint } from "@/lib/point"
 import { int, type SReal } from "@/lib/real"
 
 declare module "@/eval/ty" {
@@ -16,157 +13,16 @@ declare module "@/eval/ty" {
   }
 }
 
-const FN_RGB = new FnDist(
-  "rgb",
-  "creates a color given its red, green, and blue components",
-)
-
-function hsv(hr: SReal, sr: SReal, vr: SReal, a: SReal): SPoint<4> {
-  const h = hr.num() / 360
-  const s = sr.num()
-  const v = vr.num()
-
-  // https://stackoverflow.com/questions/17242144/javascript-convert-hsb-hsv-color-to-rgb-accurately
-  let r, g, b
-  let i = Math.floor(h * 6)
-  let f = h * 6 - i
-  let p = v * (1 - s)
-  let q = v * (1 - f * s)
-  let t = v * (1 - (1 - f) * s)
-  switch (i % 6) {
-    case 0:
-      ;(r = v), (g = t), (b = p)
-      break
-    case 1:
-      ;(r = q), (g = v), (b = p)
-      break
-    case 2:
-      ;(r = p), (g = v), (b = t)
-      break
-    case 3:
-      ;(r = p), (g = q), (b = v)
-      break
-    case 4:
-      ;(r = t), (g = p), (b = v)
-      break
-    case 5:
-      ;(r = v), (g = p), (b = q)
-      break
-    default:
-      throw new Error("Never occurs.")
-  }
-  return pt([int(r), int(g), int(b), a])
-}
-
-function declareHsv(ctx: GlslContext) {
-  ctx.glsl`const vec4 _helper_hsv_const = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
-
-vec3 _helper_hsv(vec3 c) {
-  vec3 p = abs(fract(c.xxx + _helper_hsv_const.xyz) * 6.0 - _helper_hsv_const.www);
-  return c.z * mix(_helper_hsv_const.xxx, clamp(p - _helper_hsv_const.xxx, 0.0, 1.0), c.y);
-}
-`
-}
-
-const FN_HSV = new FnDist(
-  "hsv",
-  "creates a color given its hue (0-360), saturation (0-1), and value (0-1)",
-)
-
 export function plotJs(): never {
   throw new Error(ERR_COORDS_USED_OUTSIDE_GLSL)
 }
-
-export const OP_PLOT = new FnDist<"color">(
-  "plot",
-  "converts an expression to the color it plots as a shader",
-  { message: `Cannot plot %%.` },
-)
 
 export default {
   name: "color functions core",
   label: "rgb and hsv functions",
   category: "color",
   deps: ["num/real", "bool"],
-  load() {
-    OP_PLOT.add(
-      ["bool"],
-      "color",
-      plotJs,
-      (_, a) =>
-        `(${a.expr} ? vec4(0.1764705882, 0.4392156863, 0.7019607843, .5) : vec4(0))`,
-      "\\nyaop{plot}(true)=\\nyacolor{rgb(45,112,179)}", // TODO: update once custom graph colors work
-    )
-
-    FN_RGB.add(
-      ["r32", "r32", "r32"],
-      "color",
-      (r, g, b) =>
-        pt([
-          r.value.div(int(255)),
-          g.value.div(int(255)),
-          b.value.div(int(255)),
-          int(1),
-        ]),
-      (_, r, g, b) => `vec4(vec3(${r.expr}, ${g.expr}, ${b.expr}) / 255.0, 1)`,
-      "rgb(70,255,128)=\\nyacolor{rgb(70,255,128)}",
-    ).add(
-      ["r32", "r32", "r32", "r32"],
-      "color",
-      (r, g, b, a) =>
-        pt([
-          r.value.div(int(255)),
-          g.value.div(int(255)),
-          b.value.div(int(255)),
-          a.value,
-        ]),
-      (_, r, g, b, a) =>
-        `vec4(vec3(${r.expr}, ${g.expr}, ${b.expr}) / 255.0, ${a.expr})`,
-      "rgb(70,255,128,.4)=\\nyacolor{rgb(70,255,128,.4)}",
-    )
-
-    FN_HSV.add(
-      ["r32", "r32", "r32"],
-      "color",
-      (hr, sr, vr) => hsv(hr.value, sr.value, vr.value, int(1)),
-      (ctx, hr, sr, vr) => {
-        declareHsv(ctx)
-        return `vec4(_helper_hsv(vec3(${hr.expr} / 360.0, ${sr.expr}, ${vr.expr})), 1)`
-      },
-      "hsv(180,.5,.7)=\\nyacolor{#59b2b2}",
-    ).add(
-      ["r32", "r32", "r32", "r32"],
-      "color",
-      (hr, sr, vr, ar) => hsv(hr.value, sr.value, vr.value, ar.value),
-      (ctx, hr, sr, vr, ar) => {
-        declareHsv(ctx)
-        return `vec4(_helper_hsv(vec3(${hr.expr} / 360.0, ${sr.expr}, ${vr.expr})), ${ar.expr})`
-      },
-      "hsv(180,.5,.7,.5)=\\nyacolor{#59b2b280}",
-    )
-
-    OP_PLOT.add(
-      ["color"],
-      "color",
-      plotJs,
-      (_, a) => a.expr,
-      "\\nyaop{plot}(rgb(2,128,40))=\\nyacolor{#028028}",
-    )
-
-    OP_CDOT.add(
-      ["bool", "color"],
-      "color",
-      (b, a) => (b.value ? a.value : TY_INFO.color.garbage.js),
-      (_, b, a) => `(${b.expr} ? ${a.expr} : ${TY_INFO.color.garbage.glsl})`,
-      [],
-    ).add(
-      ["color", "bool"],
-      "color",
-      (a, b) => (b.value ? a.value : TY_INFO.color.garbage.js),
-      (_, a, b) => `(${b.expr} ? ${a.expr} : ${TY_INFO.color.garbage.glsl})`,
-      "rgb(70,8,9)\\cdot\\left{3>2\\right}=rgb(70,8,9)",
-    )
-  },
+  scripts: [script],
   ty: {
     info: {
       color: {
@@ -243,12 +99,6 @@ export default {
         preview: null,
         extras: null,
       },
-    },
-  },
-  eval: {
-    fn: {
-      rgb: FN_RGB,
-      hsv: FN_HSV,
     },
   },
 } satisfies Package

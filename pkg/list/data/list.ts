@@ -117,6 +117,7 @@ export default {
   label: null,
   category: "lists",
   deps: ["num/real"],
+  scripts: [`// NYALANG: how to represent 'join' function?`],
   eval: {
     fn: {
       join: FN_JOIN,

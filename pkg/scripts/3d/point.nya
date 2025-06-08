@@ -1,0 +1,61 @@
+struct Point3D {
+  x: num,
+  y: num,
+  z: num,
+}
+
+fn point(x: num, y: num, z: num) -> Point3D {
+  Point3D { x, y, z }
+}
+
+fn +(a: Point3D, b: Point3D) -> Point3D {
+  a @+ b
+}
+
+fn -(a: Point3D, b: Point3D) -> Point3D {
+  a @- b
+}
+
+fn unsign(a: Point3D) -> Point3D {
+  @abs(a)
+}
+
+fn abs(a: Point3D) -> num {
+  @hypot(a)
+}
+
+fn -(a: Point3D) -> Point3D {
+  @-a
+}
+
+fn %odot(a: Point3D, b: Point3D) -> Point3D {
+  a @* b
+}
+
+fn +(a: Point3D) -> Point3D {
+  a
+}
+
+fn *(a: Point3D, b: num) -> Point3D {
+  a @* b
+}
+
+fn *(a: num, b: Point3D) -> Point3D {
+  a @* b
+}
+
+fn /(a: Point3D, b: num) -> Point3D {
+  a @/ b
+}
+
+fn point(a: Point3D) -> Point3D {
+  a
+}
+
+fn %cross(a: Point3D, b: Point3D) -> Point3D {
+  Point3D {
+    x: a.y * b.z - a.z * b.y,
+    y: a.z * b.x - a.x * b.z,
+    z: a.x * b.y - a.y * b.x,
+  }
+}

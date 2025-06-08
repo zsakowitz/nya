@@ -1,6 +1,7 @@
 import type { ExprLit } from "../ast/node/expr"
-import { Id, type GlobalId } from "./id"
+import { Id, type IdGlobal } from "./id"
 import type { EmitProps } from "./props"
+import type { Tag } from "./tag"
 import type { Fn, Scalar, Type } from "./type"
 import { Value } from "./value"
 
@@ -13,28 +14,28 @@ export class IdMap<T> {
     return Object.entries(this.map)
   }
 
-  get(id: GlobalId): T | undefined {
+  get(id: IdGlobal): T | undefined {
     return this.map[id.value] ?? this.parent?.get(id)
   }
 
-  has(id: GlobalId): boolean {
+  has(id: IdGlobal): boolean {
     return id.value in this.map || (this.parent != null && this.parent?.has(id))
   }
 
   /** Inverse of `.has`, but doesn't check parent scopes. */
-  canDefine(id: GlobalId) {
+  canDefine(id: IdGlobal) {
     return !(id.value in this.map)
   }
 
   /** Returns a value if it's already been initialized. */
-  init(id: GlobalId, value: T): T {
+  init(id: IdGlobal, value: T): T {
     if (this.has(id)) {
       return this.get(id)!
     }
     return (this.map[id.value] = value)
   }
 
-  set(id: GlobalId, value: T) {
+  set(id: IdGlobal, value: T) {
     this.map[id.value] = value
   }
 }
@@ -46,11 +47,11 @@ export class IdMapMany<T> {
     return Object.values(this.rec)
   }
 
-  get(id: GlobalId) {
+  get(id: IdGlobal) {
     return this.rec[id.value]
   }
 
-  push(id: GlobalId, value: T) {
+  push(id: IdGlobal, value: T) {
     ;(this.rec[id.value] ??= []).push(value)
   }
 
@@ -66,6 +67,7 @@ export class IdMapMany<T> {
 export class Declarations {
   readonly types: IdMap<Type>
   readonly fns: IdMapMany<Fn>
+  readonly tags: IdMap<Tag>
   readonly void: Scalar
 
   private readonly source = new Set<string>()
@@ -81,6 +83,7 @@ export class Declarations {
     this.void = void_
     this.types = new IdMap(parent?.types ?? null)
     this.fns = parent?.fns ?? new IdMapMany()
+    this.tags = new IdMap(parent?.tags ?? null)
   }
 
   global(text: string) {

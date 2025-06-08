@@ -20,15 +20,16 @@ export class IdGlobal extends Id {
   }
 }
 
-const idMap: Record<string, GlobalId> = Object.create(null)
+const idMap: Record<string, IdGlobal> = Object.create(null)
 
 declare const brand: unique symbol
-export interface GlobalId extends Id {
+
+export interface IdGlobal {
   [brand]: "__global_id"
 }
 
 export function ident(label: string) {
-  return (idMap[label] ??= new IdGlobal(label) as GlobalId)
+  return (idMap[label] ??= new IdGlobal(label))
 }
 
 export function fieldIdent(index: number) {

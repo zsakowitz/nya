@@ -13,6 +13,10 @@ import {
   OPS_AND_SECOND_CHARS,
   ORBrace,
   ORParen,
+  RInterp,
+  RString,
+  RTag,
+  RTerminal,
   TComment,
   TDeriv,
   TDerivIgnore,
@@ -78,7 +82,10 @@ const C_PERCENT = "%".charCodeAt(0)
 const C_AT = "@".charCodeAt(0)
 const C_SLASH = "/".charCodeAt(0)
 const C_DQUOTE = '"'.charCodeAt(0)
+const C_HASH = "#".charCodeAt(0)
 const C_LBRACE = "{".charCodeAt(0)
+const C_RBRACE = "}".charCodeAt(0)
+const C_DOLLARSIGN = "$".charCodeAt(0)
 
 // PERF IMPROVEMENTS OVER TIME
 // 610.6µs ± 23µs baseline
@@ -126,11 +133,15 @@ function isIdCont(cc: number) {
   )
 }
 
-export function tokens(source: string, props: ToTokensProps) {
+export function tokens(
+  source: string,
+  props: ToTokensProps,
+  start = 0,
+  end = source.length,
+) {
   const ret: Token<number>[] = []
-  const issues = new Issues()
-  const length = source.length
-  for (let i = 0; i < length; ) {
+  const issues = new Issues(source)
+  for (let i = start; i < end; ) {
     const start = i
     const char = source[i]!
     const cc = source.charCodeAt(i)
@@ -155,10 +166,103 @@ export function tokens(source: string, props: ToTokensProps) {
       continue
     }
 
-    if (isIdStart(cc)) {
+    if (
+      isIdStart(cc) ||
+      (cc == C_PERCENT && isIdStart(source.charCodeAt(i + 1)))
+    ) {
+      if (cc == C_PERCENT) i++
       while (isIdCont(source.charCodeAt(++i)));
       const text = source.slice(start, i)
-      ret.push(new Token(source, KWS[text] ?? TIdent, start, i))
+      const idStart = start
+      const idEnd = i
+      const ident = new Token(source, KWS[text] ?? TIdent, idStart, idEnd)
+      if (
+        ident.kind != TIdent ||
+        !(source.charCodeAt(i) == C_HASH || source.charCodeAt(i) == C_DQUOTE)
+      ) {
+        ret.push(ident)
+        continue
+      }
+
+      let hashes = 0
+      while (source.charCodeAt(i) == C_HASH) {
+        hashes++
+        i++
+      }
+      if (source.charCodeAt(i) != C_DQUOTE) {
+        issues.raise(Code.InvalidRawString, new Pos(idStart, i))
+        ret.push(ident)
+        continue
+      }
+      i++
+      ret.push(new Token(source, RTag, idStart, idEnd))
+      let textStart = i
+      let textEnd: number
+      while (true) {
+        if (i >= source.length) {
+          issues.raise(Code.UnterminatedString, new Pos(i, i))
+          textEnd = i
+          break
+        }
+
+        const next = source.charCodeAt(i)
+
+        special: if (next == C_DQUOTE) {
+          // source[i] is "
+          for (let j = 0; j < hashes; j++) {
+            if (source.charCodeAt(i + j + 1) != C_HASH) {
+              break special
+            }
+          }
+          // source[i+1..i+1+j] is #
+
+          // source[i] is "
+          textEnd = i
+          i += hashes + 1
+          // source[i] is unknown
+          break
+        } else if (next == C_DOLLARSIGN) {
+          if (source.charCodeAt(i + 1) != C_LBRACE) break special
+          ret.push(new Token(source, RString, textStart, i))
+
+          i += 2
+          // source[i] is unknown
+          let braces = 0
+          const interpStart = i
+          let interpEnd: number
+          while (true) {
+            if (i >= source.length) {
+              interpEnd = i
+              issues.raise(Code.UnterminatedStringInterp, new Pos(i, i))
+              break
+            }
+
+            const next = source.charCodeAt(i)
+            if (next == C_LBRACE) {
+              i++
+              braces++
+            } else if (next == C_RBRACE) {
+              if (braces > 0) {
+                braces--
+                i++
+              } else {
+                interpEnd = i
+                i++
+                break
+              }
+            } else {
+              i++
+            }
+          }
+          ret.push(new Token(source, RInterp, interpStart, interpEnd))
+          textStart = interpEnd + 1
+          continue
+        }
+
+        i++
+      }
+      ret.push(new Token(source, RString, textStart, textEnd))
+      ret.push(new Token(source, RTerminal, i, i))
       continue
     }
 

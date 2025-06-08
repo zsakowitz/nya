@@ -52,6 +52,8 @@ export const Code = Object.freeze({
   NoGenericsOnSyntaxKindDeclaration: 251,
   NoNestedAny: 252,
   ExpectedIdentOrOperator: 253,
+  InvalidRawString: 254,
+  UnterminatedStringInterp: 255,
 
   // Emit errors
   ItemDeclaredTwice: 301,
@@ -79,21 +81,41 @@ export class Issue {
   constructor(
     readonly code: Code,
     readonly pos: Pos,
+    readonly source: string,
   ) {}
 
   toString() {
-    return `${Object.entries(Code).find(([, v]) => v == this.code)?.[0] || "Unknown issue"} @ ${this.pos.start}..${this.pos.end}`
+    return `${
+      Object.entries(Code).find(([, v]) => v == this.code)?.[0] ||
+      "Unknown issue"
+    } @ ${posIndexToLineCol(this.source, this.pos.start)}..${posIndexToLineCol(this.source, this.pos.end)}`
   }
 }
 
 export class Issues {
   readonly entries: Issue[] = []
 
+  constructor(readonly source: string) {}
+
   raise(code: Code, pos: Pos) {
-    this.entries.push(new Issue(code, pos))
+    this.entries.push(new Issue(code, pos, this.source))
   }
 
   ok() {
     return this.entries.length == 0
   }
+}
+
+function posIndexToLineCol(source: string, index: number) {
+  let row = 1
+  let col = 0
+  for (let i = 0; i < index; i++) {
+    if (source[i] == "\n") {
+      row++
+      col = 0
+    } else {
+      col++
+    }
+  }
+  return `${row}:${col}`
 }

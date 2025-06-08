@@ -3,6 +3,7 @@ import {
   type KAs,
   type KConst,
   type KElse,
+  type KIn,
   type KTypeof,
   type KUsage,
   type OArrowMap,
@@ -296,5 +297,21 @@ export class AssertionMessage extends Node {
 export class Comments extends Node {
   constructor(readonly tokens: Token<typeof TComment>[]) {
     super(tokens[0]!.start, tokens[tokens.length - 1]!.end)
+  }
+}
+
+export class ForHeader extends Node {
+  constructor(
+    readonly bound: PlainList<Ident>,
+    readonly eq: Token<typeof KIn> | null,
+    readonly sources: PlainList<NodeExpr>,
+  ) {
+    super(bound.start, sources.end)
+  }
+}
+
+export class ForHeaders extends Node {
+  constructor(readonly items: ForHeader[]) {
+    super(items[0]!.start, items[items.length - 1]!.end)
   }
 }

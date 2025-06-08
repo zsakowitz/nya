@@ -1,4 +1,12 @@
-import { KBreak, KContinue, KMatrix, KReturn, OEq, TBuiltin } from "../ast/kind"
+import {
+  KBreak,
+  KContinue,
+  KMap,
+  KMatrix,
+  KReturn,
+  OEq,
+  TBuiltin,
+} from "../ast/kind"
 import {
   ExprArray,
   ExprBinary,
@@ -13,6 +21,7 @@ import {
   ExprParen,
   ExprProp,
   ExprStruct,
+  ExprTaggedString,
   ExprUnary,
   ExprVar,
   type NodeExpr,
@@ -37,7 +46,7 @@ import {
 import { fromScalars, scalars } from "./broadcast"
 import { Block, Exits, IdMap, type Declarations } from "./decl"
 import { issue, todo } from "./error"
-import { Id, ident, type GlobalId } from "./id"
+import { Id, ident, type IdGlobal } from "./id"
 import { Alt, Array, ArrayEmpty, Fn, Struct, type Type } from "./type"
 import { Value } from "./value"
 
@@ -62,7 +71,7 @@ function list(a: { toString(): string }[], empty: "no arguments" | null) {
 }
 
 const ID_MATMUL = ident("@#")
-export function performCall(id: GlobalId, block: Block, args: Value[]): Value {
+export function performCall(id: IdGlobal, block: Block, args: Value[]): Value {
   if (id == ID_MATMUL) {
     if (args.length == 2) {
       return matrixMultiply(block, args[0]!, args[1]!)
@@ -348,12 +357,19 @@ function emitExpr(node: NodeExpr, block: Block): Value {
     // TODO: some for loops can be evaluated at const time
 
     const expr = node
-    if (expr.bound.items.length != expr.sources.items.length) {
+    if (node.kw.kind == KMap) {
+      todo(`'map' loops are not supported yet.`)
+    }
+    if (node.headers.items.length != 1) {
+      todo(`'for' loops with multiple headers are not supported yet.`)
+    }
+    const header = expr.headers.items[0]
+    if (header?.bound.items.length != header?.sources.items.length) {
       issue(
         `'for' loops must have the same number of bound variables and sources.`,
       )
     }
-    if (!expr.sources.items.length) {
+    if (!header?.sources.items.length) {
       issue(`'for' loops must have at least one source.`)
     }
     if (!expr.block) {
@@ -365,15 +381,15 @@ function emitExpr(node: NodeExpr, block: Block): Value {
     let size: number | null = null
 
     const index = new Id("for loop index").ident()
-    for (let i = 0; i < expr.bound.items.length; i++) {
-      const x = expr.bound.items[i]!
+    for (let i = 0; i < header?.bound.items.length; i++) {
+      const x = header?.bound.items[i]!
 
       const gid = ident(x.val)
       if (child.locals.has(gid)) {
         issue(`Variable '${gid}' was declared twice in a 'for' loop.`)
       }
 
-      const source = emitExpr(expr.sources.items[i]!, block)
+      const source = emitExpr(header?.sources.items[i]!, block)
 
       if (source.type == ArrayEmpty) {
         todo(`'for' loop sources may not be empty arrays.`)
@@ -435,6 +451,17 @@ function emitExpr(node: NodeExpr, block: Block): Value {
           : new Value(0, block.decl.void),
         )
     }
+  } else if (node instanceof ExprTaggedString) {
+    const tag = block.decl.tags.get(ident(node.tag.val))
+    if (!tag) {
+      issue(`Tag '${node.tag.val}' does not exist.`)
+    }
+    const interps = node.interps.map((x) => emitExpr(x, block))
+    return tag.create(
+      node.parts.map((x) => x.val),
+      interps,
+      block,
+    )
   } else {
     todo(`Cannot emit '${node.constructor.name}' as an expression yet.`)
   }
@@ -450,7 +477,7 @@ function emitExpr(node: NodeExpr, block: Block): Value {
 function emitLvalue(
   node: NodeExpr,
   block: Block,
-): { current: Value; id: GlobalId } {
+): { current: Value; id: IdGlobal } {
   if (node instanceof ExprVar) {
     if (node.targs) {
       issue("Cannot assign to something with type arguments.")
@@ -631,7 +658,7 @@ export function emitItem(node: NodeItem, decl: Declarations): ItemResult {
       decl.types.set(ids[i]!, result[i]!.struct)
     }
     for (const fn of accessors) {
-      decl.fns.push(fn.id as GlobalId, fn)
+      decl.fns.push(fn.id as IdGlobal, fn)
     }
     return {
       decl:

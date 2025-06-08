@@ -287,6 +287,7 @@ export default {
   label: "basic support for boolean values",
   category: "logic",
   deps: ["core/cmp"],
+  scripts: [`// NYALANG: are there any actual boolean ops?`],
   load() {
     OP_AND.add(
       ["bool", "bool"],

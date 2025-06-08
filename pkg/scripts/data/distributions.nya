@@ -1,0 +1,180 @@
+// #region types
+
+struct NormalDist {
+  mean: num,
+  stdev: num,
+}
+
+struct TDist {
+  degrees: num,
+  shift: num,
+  scale: num,
+}
+
+struct PoissonDist {
+  _arg: num,
+}
+
+struct BinomialDist {
+  trials: num,
+  chance: num,
+}
+
+struct UniformDist {
+  min: num,
+  max: num,
+}
+
+struct BoltzmannDist {
+  _arg: num,
+}
+
+// #region constructors
+
+// TODO: use functions with optional parameters instead
+
+fn normaldist() -> NormalDist {
+  NormalDist { mean: 0.0, stdev: 1.0 }
+}
+
+fn normaldist(mean: num) -> NormalDist {
+  NormalDist { mean, stdev: 1.0 }
+}
+
+fn normaldist(mean: num, stdev: num) -> NormalDist {
+  NormalDist { mean, stdev }
+}
+
+fn tdist(degrees: num) -> TDist {
+  TDist { degrees, shift: 0.0, scale: 1.0 }
+}
+
+fn tdist(degrees: num, shift: num) -> TDist {
+  TDist { degrees, shift, scale: 1.0 }
+}
+
+fn tdist(degrees: num, shift: num, scale: num) -> TDist {
+  TDist { degrees, shift, scale }
+}
+
+fn uniformdist() -> UniformDist {
+  UniformDist { min: 0.0, max: 1.0 }
+}
+
+fn uniformdist(min: num) -> UniformDist {
+  UniformDist { min, max: 1.0 }
+}
+
+fn uniformdist(min: num, max: num) -> UniformDist {
+  UniformDist { min, max }
+}
+
+fn boltzmanndist(_arg: num) -> BoltzmannDist {
+  BoltzmannDist { _arg }
+}
+
+fn poissondist(_arg: num) -> PoissonDist {
+  PoissonDist { _arg }
+}
+
+fn binomialdist(trials: num) -> BinomialDist {
+  BinomialDist { trials, chance: 0.5 }
+}
+
+fn binomialdist(trials: num, chance: num) -> BinomialDist {
+  BinomialDist { trials, chance }
+}
+
+// #region distribution functions
+
+fn pdf(dist: NormalDist, at: num) -> num {
+  let mean = dist.mean;
+  let var = dist.stdev * dist.stdev;
+  e ** ((at - dist.mean) * (at - dist.mean) / (2.0 * var))
+    / (dist.stdev * sqrt(2.0 * pi))
+}
+
+fn pdf(dist: UniformDist, at: num) -> num {
+  if is_nan(dist.min) || is_nan(dist.max) || is_nan(at) || dist.min > dist.max {
+    nan
+  } else if is_inf(dist.min) || is_inf(dist.max) {
+    if min == max {
+      nan
+    } else {
+      0
+    }
+  } else if dist.min <= at && at <= dist.max {
+    1.0 / (dist.max - dist.min)
+  } else {
+    0.0
+  }
+}
+
+fn cdf(dist: NormalDist, at: num) -> num {
+  (1.0 + erf((at - dist.mean) / (dist.stdev * sqrt(2.0)))) / 2.0
+}
+
+fn cdf(dist: NormalDist, lhs: num, rhs: num) -> num {
+  // COMPAT: arguments are not automatically reordered
+  dist.cdf(rhs) - dist.cdf(lhs)
+}
+
+fn cdf(dist: UniformDist, at: num) -> num {
+  // COMPAT: desmos doesn't do an isNaN(x) check except sometimes
+  // calculating uniformdist(1,2).pdf(x{x>1.5}withx=1.2) results in 1
+  // but plotting uniformdist(1,2).pdf(x{x>1.5}) doesn't plot a value for x=1.2
+  // to simplify things, we always do an isNaN(x) check
+  // see https://www.desmos.com/calculator/x22o29smej for further examples
+
+  // COMPAT: our behavior at infinites is very different from desmos:
+  // we aim that d/dx cdf = pdf, and have fewer NaN values with infinite bounds
+  // nya test suite is at src/sheet/example/test/uniformdistcdf.txt
+  // desmos tests are at https://www.desmos.com/calculator/wikg5utgi7
+
+  // COMPAT: uniformdist(3,3).cdf(3) is 1 in desmos, but NaN in project nya
+
+  if is_nan(dist.min) || is_nan(dist.max) || is_nan(at) || dist.min > dist.max {
+    nan
+  } else if is_inf(dist.min) || is_inf(dist.max) {
+    if dist.min == -inf {
+      if at == -inf || dist.max == inf {
+        nan
+      } else {
+        1
+      }
+    } else if at == inf {
+      nan
+    } else {
+      0.0
+    }
+  } else if at < min {
+    0.0
+  } else if at > max {
+    1.0
+  } else {
+    (at - dist.min) / (dist.max - dist.min)
+  }
+}
+
+fn cdf(dist: UniformDist, lhs: num, rhs: num) -> num {
+  // COMPAT: arguments are not automatically reordered
+  dist.cdf(rhs) - dist.cdf(lhs)
+}
+
+// TODO: expose cdf^-1 as alias for quantile
+
+fn quantile(dist: NormalDist, p: num) -> num {
+  if 0.0 <= p && p <= 1.0 {
+    dist.mean + dist.stdev * sqrt(2) * erf_inv(2.0 * p - 1.0)
+  } else {
+    nan
+  }
+}
+
+fn quantile(dist: UniformDist, p: num) -> num {
+  if 0.0 <= p && p <= 1.0 && dist.min <= dist.max {
+    @mix(dist.min, dist.max, p) // TODO: verify argument order
+  } else {
+    nan
+  }
+}

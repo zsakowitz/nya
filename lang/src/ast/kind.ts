@@ -126,19 +126,25 @@ export const ORBrace = 117
 export const OLAngle = 118
 export const ORAngle = 119
 export const OLInterp = 120
-export const OSemi = 121
-export const OComma = 122
-export const OColon = 123
-export const OArrowRet = 124
-export const OArrowMap = 125
-export const OColonColon = 126
-export const ODot = 127
-export const ODotDot = 128
-export const OPercent = 129
-export const OEq = 130
-export const OTildeEq = 131
-export const OHash = 132
-export const ODotDotDot = 133
+export const OLRawInterp = 121
+export const OSemi = 122
+export const OComma = 123
+export const OColon = 124
+export const OArrowRet = 125
+export const OArrowMap = 126
+export const OColonColon = 127
+export const ODot = 128
+export const ODotDot = 129
+export const OPercent = 130
+export const OEq = 131
+export const OTildeEq = 132
+export const OHash = 133
+export const ODotDotDot = 134
+
+export const RTag = 135 // in latex#"world${2+3}hi"#, the 'latex'
+export const RString = 136 // in latex#"world${2+3}hi"#, the 'world' and 'hi'
+export const RInterp = 137 // in latex#"world${2+3}hi"#, the '2+3'
+export const RTerminal = 138 // in latex#"world${2+3}hi"#, an invisible marker after the final hash
 
 export type Brack =
   | typeof OLParen
@@ -146,6 +152,7 @@ export type Brack =
   | typeof OLBrace
   | typeof OLAngle
   | typeof OLInterp
+  | typeof OLRawInterp
 
 export const KWS: Record<string, number> = {
   // @ts-ignore

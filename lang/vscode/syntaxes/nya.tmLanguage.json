@@ -7,11 +7,32 @@
       "patterns": [
         { "include": "#comments" },
         { "include": "#number" },
+        { "include": "#tagged-string" },
         { "include": "#source" },
         { "include": "#keywords" },
         { "include": "#identifier" },
+        { "include": "#groups" },
         { "include": "#operators" },
         { "include": "#strings" }
+      ]
+    },
+    "groups": {
+      "patterns": [
+        {
+          "begin": "\\(",
+          "end": "\\)",
+          "patterns": [{ "include": "#root" }]
+        },
+        {
+          "begin": "\\[",
+          "end": "\\]",
+          "patterns": [{ "include": "#root" }]
+        },
+        {
+          "begin": "\\{",
+          "end": "\\}",
+          "patterns": [{ "include": "#root" }]
+        }
       ]
     },
     "comments": {
@@ -243,6 +264,27 @@
         }
       ]
     },
+    "tagged-string": {
+      "begin": "(%?[A-Za-z_][A-Za-z_0-9]*)(#*)(\")",
+      "end": "(\"\\2)",
+      "beginCaptures": {
+        "1": { "name": "support" },
+        "2": { "name": "string.quoted.double" },
+        "3": { "name": "string.quoted.double" }
+      },
+      "endCaptures": {
+        "1": { "name": "string.quoted.double" }
+      },
+      "contentName": "string.quoted.double",
+      "patterns": [
+        {
+          "begin": "\\$\\{",
+          "end": "\\}",
+          "captures": { "0": { "name": "keyword.operator" } },
+          "patterns": [{ "include": "#root" }]
+        }
+      ]
+    },
     "strings": {
       "name": "string.quoted.double.nya",
       "begin": "\"",
@@ -288,7 +330,7 @@
           "name": "entity.name.type.class.js"
         },
         {
-          "match": "\\b(?:uint|num|str|complex|bool|img|viewport|mathjscx|rgb|rgba|oklab|color_space_conversion)\\b",
+          "match": "\\b(?:uint|num|str|complex|bool|img|viewport|mathjscx|rgb|rgba|oklab|color_space_conversion|latex)\\b",
           "name": "support"
         }
       ]

@@ -7,11 +7,13 @@ import {
   OLBrack,
   OLInterp,
   OLParen,
+  OLRawInterp,
   OLt,
   ORAngle,
   ORBrace,
   ORBrack,
   ORParen,
+  RInterp,
   TComment,
   type Brack,
 } from "./kind"
@@ -33,8 +35,13 @@ type TokenGroupMut = {
   : K]: TokenGroup[K]
 } & { readonly contents: { -readonly [K in keyof Stream]: Stream[K] } }
 
-export function createStream(source: string, props: ToTokensProps) {
-  const { issues, ret: raw } = tokens(source, props)
+export function createStream(
+  source: string,
+  props: ToTokensProps,
+  start?: number,
+  end?: number,
+) {
+  const { issues, ret: raw } = tokens(source, props, start, end)
 
   const parens: TokenGroup[] = []
   const root: Token<number>[] = []
@@ -113,6 +120,22 @@ export function createStream(source: string, props: ToTokensProps) {
         currentContents = parens[parens.length - 1]?.contents.tokens ?? root
 
         continue
+
+      case RInterp: {
+        const inner = createStream(source, props, token.start, token.end)
+        currentContents.push(
+          new TokenGroup(
+            source,
+            new Token(source, OLRawInterp, token.start - 2, token.start, false),
+            new Token(source, ORBrace, token.end, token.end + 1, false),
+            inner,
+          ),
+        )
+        issues.entries.push(...inner.issues.entries)
+        // @ts-expect-error
+        inner.issues = issues
+        continue
+      }
     }
 
     currentContents.push(token)

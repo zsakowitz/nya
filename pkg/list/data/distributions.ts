@@ -1,11 +1,9 @@
-import erfGl from "#/glsl/erf.glsl"
-import erfinvGl from "#/glsl/erfinv.glsl"
+import script from "!/data/distributions.nya"
 import type { Package } from "#/types"
 import { EXT_EVAL } from "$/eval"
 import { jsToGlsl } from "@/eval/js-to-glsl"
-import { FnDist } from "@/eval/ops/dist"
 import { FnDistDeriv } from "@/eval/ops/dist-deriv"
-import type { GlslValue, JsVal } from "@/eval/ty"
+import type { GlslValue } from "@/eval/ty"
 import { TY_INFO } from "@/eval/ty/info"
 import { CmdComma } from "@/field/cmd/leaf/comma"
 import { CmdWord } from "@/field/cmd/leaf/word"
@@ -13,12 +11,9 @@ import { CmdBrack } from "@/field/cmd/math/brack"
 import { L, R } from "@/field/dir"
 import { Block } from "@/field/model"
 import { g, h, path, svgx } from "@/jsx"
-import { approx, frac, int, type SReal } from "@/lib/real"
+import { approx, type SReal } from "@/lib/real"
 import { defineHideable } from "@/sheet/ext/hideable"
 import { createLine } from "@/sheet/shader-line"
-import erf from "@stdlib/math/base/special/erf"
-import erfinv from "@stdlib/math/base/special/erfinv"
-import { FN_QUANTILE } from "./statistics"
 
 declare module "@/eval/ty" {
   interface Tys {
@@ -31,322 +26,7 @@ declare module "@/eval/ty" {
   }
 }
 
-const normaldist = new FnDist("normaldist", "creates a normal distribution")
-  .add(
-    [],
-    "normaldist",
-    () => [int(0), int(1)],
-    () => "vec2(0,1)",
-    "normaldist()=normaldist(0,1)",
-  )
-  .add(
-    ["r32"],
-    "normaldist",
-    (a) => [a.value, int(1)],
-    (_, a) => `vec2(${a.expr}, 1)`,
-    "normaldist(3)=normaldist(3,1)",
-  )
-  .add(
-    ["r32", "r32"],
-    "normaldist",
-    (a, b) => [a.value, b.value],
-    (_, a, b) => `vec2(${a.expr}, ${b.expr})`,
-    "normaldist(3,2.7)",
-  )
-
-const tdist = new FnDist("tdist", "creates a t-distribution")
-  .add(
-    ["r32"],
-    "tdist",
-    (a) => [a.value, int(0), int(1)],
-    (_, a) => `vec3(${a.expr}, 0, 1)`,
-    "tdist(2.5)=tdist(2.5,0,1)",
-  )
-  .add(
-    ["r32", "r32"],
-    "tdist",
-    (a, b) => [a.value, b.value, int(1)],
-    (_, a, b) => `vec3(${a.expr}, ${b.expr}, 1)`,
-    "tdist(2.5,3)=tdist(2.5,3,1)",
-  )
-  .add(
-    ["r32", "r32", "r32"],
-    "tdist",
-    (a, b, c) => [a.value, b.value, c.value],
-    (_, a, b, c) => `vec3(${a.expr}, ${b.expr}, ${c.expr})`,
-    "tdist(2.5,3,7.8)",
-  )
-
-const uniformdist = new FnDist("uniformdist", "creates a uniform distribution")
-  .add(
-    [],
-    "uniformdist",
-    () => [int(0), int(1)],
-    () => "vec2(0,1)",
-    "uniformdist()=uniformdist(0,1)",
-  )
-  .add(
-    ["r32"],
-    "uniformdist",
-    (a) => [a.value, int(1)],
-    (_, a) => `vec2(${a.expr}, 1)`,
-    "uniformdist(0.7)=uniformdist(0.7,1)",
-  )
-  .add(
-    ["r32", "r32"],
-    "uniformdist",
-    (a, b) => [a.value, b.value],
-    (_, a, b) => `vec2(${a.expr}, ${b.expr})`,
-    "uniformdist(8,23)=uniformdist(8,23)",
-  )
-
-const boltzmanndist = new FnDist(
-  "boltzmanndist",
-  "creates a Maxwell-Boltzmann distribution",
-).add(
-  ["r32"],
-  "boltzmanndist",
-  (a) => [a.value],
-  (_, a) => a.expr,
-  "boltzmanndist(4.3)",
-)
-
-const poissondist = new FnDist(
-  "poissondist",
-  "creates a Poisson distribution",
-).add(
-  ["r32"],
-  "poissondist",
-  (a) => a.value,
-  (_, a) => a.expr,
-  "poissondist(2.5)",
-)
-
-const binomialdist = new FnDist(
-  "binomialdist",
-  "creates a binomial distribution",
-)
-  .add(
-    ["r32"],
-    "binomialdist",
-    (a) => [a.value, frac(1, 2)],
-    (_, a) => `vec2(${a.expr}, 0.5)`,
-    "binomialdist(6)=binomialdist(6,0.5)",
-  )
-  .add(
-    ["r32", "r32"],
-    "binomialdist",
-    (a, b) => [a.value, b.value],
-    (_, a, b) => `vec2(${a.expr}, ${b.expr})`,
-    "binomialdist(6,0.3)",
-  )
-
 const FN_PDF = new FnDistDeriv("pdf", "probability distribution function")
-  .add(
-    ["normaldist", "r32"],
-    "r32",
-    (dist, xRaw) => {
-      const mean = dist.value[0].num()
-      const stdev = dist.value[1].num()
-      const x = xRaw.value.num()
-      return approx(
-        Math.E ** (-((x - mean) ** 2) / (2 * stdev * stdev)) /
-          Math.sqrt(2 * Math.PI * stdev * stdev),
-      )
-    },
-    (ctx, a, b) => {
-      ctx.glsl`float nya_normaldist_pdf(vec2 dist, float x) {
-  float mean = dist.x;
-  float variance = dist.y * dist.y;
-  return pow(2.718281828459045, -(x-mean) * (x-mean) / (2.0 * variance))
-    / (2.5066282746310007 * abs(dist.y));
-}`
-      return `nya_normaldist_pdf(${a.expr}, ${b.expr})`
-    },
-    "normaldist().pdf(1)≈0.24197",
-  )
-  .add(
-    ["uniformdist", "r32"],
-    "r32",
-    (dist, xRaw) => {
-      const min = dist.value[0].num()
-      const max = dist.value[1].num()
-      const x = xRaw.value.num()
-      // COMPAT: desmos doesn't do an isNaN(x) check except sometimes
-      // calculating uniformdist(1,2).pdf(x{x>1.5}withx=1.2) results in 1
-      // but plotting uniformdist(1,2).pdf(x{x>1.5}) doesn't plot a value for x=1.2
-      // to simplify things, we always do an isNaN(x) check
-      // see https://www.desmos.com/calculator/x22o29smej for further examples
-      if (isNaN(min) || isNaN(max) || isNaN(x) || min > max) {
-        return approx(NaN)
-      }
-      if (!isFinite(min) || !isFinite(max)) {
-        return min == max ? approx(NaN) : int(0)
-      }
-      return min <= x && x <= max ?
-          dist.value[1].sub(dist.value[0]).inv()
-        : int(0)
-    },
-    (ctx, dist, xRaw) => {
-      const d = ctx.cache(dist)
-      const x = ctx.cache(xRaw)
-      return `(
-  isnan(${d}.x) || isnan(${d}.y) || isnan(${x}) || ${d}.x > ${d}.y ? 0.0/0.0 :
-  isinf(${d}.x) || isinf(${d}.y) ? ${d}.x == ${d}.y ? 0.0/0.0 : 0.0 :
-  ${d}.x <= ${x} && ${x} <= ${d}.y ? 1.0 / (${d}.y - ${d}.x) : 0.0
-)`
-    },
-    ["uniformdist(3,8).pdf(4)=\\frac15", "uniformdist(3,8).pdf(19)=0"],
-  )
-
-function uniformdistcdfGlsl(dist: string, x: string) {
-  return `(
-  isnan(${dist}.x) || isnan(${dist}.y) || isnan(${x}) || ${dist}.x > ${dist}.y ? 0.0/0.0
-  : isinf(${dist}.x) || isinf(${dist}.y) ?
-    ${dist}.x == -1.0/0.0 ? ${x} == -1.0/0.0 || ${dist}.y == 1.0/0.0 ? 0.0/0.0 : 1.0
-    : ${x} == 1.0/0.0 ? 0.0/0.0 : 0.0
-  : ${x} < ${dist}.x ? 0.0
-  : ${x} > ${dist}.y ? 1.0
-  : ${dist}.x == ${dist}.y ? 0.0/0.0
-  : (${x} - ${dist}.x) / (${dist}.y - ${dist}.x)
-)`
-}
-
-function uniformdistcdfJs(
-  dist: JsVal<"uniformdist">,
-  xRaw: JsVal<"r32">,
-): SReal {
-  const min = dist.value[0].num()
-  const max = dist.value[1].num()
-  const x = xRaw.value.num()
-  // COMPAT: desmos doesn't do an isNaN(x) check except sometimes
-  // calculating uniformdist(1,2).pdf(x{x>1.5}withx=1.2) results in 1
-  // but plotting uniformdist(1,2).pdf(x{x>1.5}) doesn't plot a value for x=1.2
-  // to simplify things, we always do an isNaN(x) check
-  // see https://www.desmos.com/calculator/x22o29smej for further examples
-  if (isNaN(min) || isNaN(max) || isNaN(x) || min > max) {
-    return approx(NaN)
-  }
-  if (!isFinite(min) || !isFinite(max)) {
-    // COMPAT: our behavior at infinites is very different from desmos:
-    // we aim that d/dx cdf = pdf, and have fewer NaN values with infinite bounds
-    // nya test suite is at src/sheet/example/test/uniformdistcdf.txt
-    // desmos tests are at https://www.desmos.com/calculator/wikg5utgi7
-    return int(
-      min == -Infinity ?
-        x == -Infinity || max == Infinity ?
-          NaN
-        : 1
-      : x == Infinity ? NaN
-      : 0,
-    )
-  }
-  // COMPAT: uniformdist(3,3).cdf(3) is 1 in desmos, but NaN in project nya
-  return (
-    x < min ? int(0)
-    : x > max ? int(1)
-    : xRaw.value.sub(dist.value[0]).div(dist.value[1].sub(dist.value[0]))
-  )
-}
-
-const FN_CDF = new FnDistDeriv("cdf", "cumulative distribution function")
-  .add(
-    ["normaldist", "r32"],
-    "r32",
-    (dist, xRaw) => {
-      const mean = dist.value[0].num()
-      const stdev = dist.value[1].num()
-      const x = xRaw.value.num()
-      return approx((1 + erf((x - mean) / (stdev * Math.SQRT2))) / 2)
-    },
-    (ctx, dist, x) => {
-      ctx.glslText(erfGl)
-      const d = ctx.cache(dist)
-      return `((1.0 + _nya_helper_erf((${x.expr} - ${d}.x) / (${d}.y * ${Math.SQRT2}))) / 2.0)`
-    },
-    "normaldist().cdf(1)≈0.8413",
-  )
-  // COMPAT: cdf does not automatically order its arguments
-  // wrap cdf calls in absolute value signs to use dcg behavior
-  .add(
-    ["normaldist", "r32", "r32"],
-    "r32",
-    (dist, lRaw, rRaw) => {
-      const mean = dist.value[0].num()
-      const stdev = dist.value[1].num()
-      const l = lRaw.value.num()
-      const r = rRaw.value.num()
-      return approx(
-        (erf((r - mean) / (stdev * Math.SQRT2)) -
-          erf((l - mean) / (stdev * Math.SQRT2))) /
-          2,
-      )
-    },
-    (ctx, dist, x, y) => {
-      ctx.glslText(erfGl)
-      const d = ctx.cache(dist)
-      return `((_nya_helper_erf((${y.expr} - ${d}.x) / (${d}.y * ${Math.SQRT2})) - _nya_helper_erf((${x.expr} - ${d}.x) / (${d}.y * ${Math.SQRT2}))) / 2.0)`
-    },
-    "normaldist().cdf(-1,1)≈0.68",
-  )
-  .add(
-    ["uniformdist", "r32"],
-    "r32",
-    uniformdistcdfJs,
-    (ctx, a, b) => uniformdistcdfGlsl(ctx.cache(a), ctx.cache(b)),
-    ["uniformdist(4,8).cdf(7)=0.75"],
-  )
-  .add(
-    ["uniformdist", "r32", "r32"],
-    "r32",
-    (dist, lhs, rhs) =>
-      uniformdistcdfJs(dist, rhs).sub(uniformdistcdfJs(dist, lhs)),
-    (ctx, ar, b, c) => {
-      const a = ctx.cache(ar)
-      return `(${uniformdistcdfGlsl(a, ctx.cache(b))} - ${uniformdistcdfGlsl(a, ctx.cache(c))})`
-    },
-    ["uniformdist(4,8).cdf(7,9)=0.25"],
-  )
-
-const FN_INVERSECDF = FN_QUANTILE.with("inversecdf", FN_QUANTILE.label)
-
-FN_QUANTILE.add(
-  ["normaldist", "r32"],
-  "r32",
-  (dist, x) => {
-    const mean = dist.value[0].num()
-    const stdev = dist.value[1].num()
-    const p = x.value.num()
-    if (!(0 <= p && p <= 1)) return approx(NaN)
-    return approx(mean + stdev * Math.SQRT2 * erfinv(2 * p - 1))
-  },
-  (ctx, dist, x) => {
-    const d = ctx.cache(dist)
-    const p = ctx.cache(x)
-    ctx.glslText(erfinvGl)
-    return `(0.0 <= ${p} && ${p} <= 1.0 ? ${d}.x + ${d}.y * ${Math.SQRT2} * _nya_helper_erfinv(2.0 * ${p} - 1.0) : 0.0/0.0)`
-  },
-  ["quantile(normaldist(),.84)≈.9944"],
-).add(
-  ["uniformdist", "r32"],
-  "r32",
-  (dist, x) => {
-    const p = x.value.num()
-    if (!(0 <= p && p <= 1) || !(dist.value[0].num() <= dist.value[1].num())) {
-      return approx(NaN)
-    }
-
-    return dist.value[0]
-      .mul(int(1).sub(x.value))
-      .add(dist.value[1].mul(x.value))
-  },
-  (ctx, dist, x) => {
-    const d = ctx.cache(dist)
-    const p = ctx.cache(x)
-    return `(0.0 <= ${p} && ${p} <= 1.0 && ${d}.x <= ${d}.y ? ${d}.x * (1.0 - ${p}) + ${d}.y * ${p} : 0.0/0.0)`
-  },
-  ["quantile(uniformdist(4,6),.3)=4.6"],
-)
 
 // TODO: tokens for distributions
 
@@ -393,6 +73,7 @@ export default {
   label: null,
   category: "statistics",
   deps: ["num/real", "data/statistics"],
+  scripts: [script],
   ty: {
     info: {
       normaldist: {
@@ -751,20 +432,6 @@ export default {
         preview: null,
         extras: null,
       },
-    },
-  },
-  eval: {
-    fn: {
-      normaldist,
-      tdist,
-      boltzmanndist,
-      uniformdist,
-      poissondist,
-      binomialdist,
-      "pdf": FN_PDF,
-      "cdf": FN_CDF,
-      "cdf^-1": FN_INVERSECDF, // DCG: cdf^-1 is not available in standard desmos
-      "inversecdf": FN_INVERSECDF,
     },
   },
   sheet: {

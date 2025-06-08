@@ -34,7 +34,7 @@ import {
   type KContinue,
   type KFor,
   type KIf,
-  type KIn,
+  type KMap,
   type KMatch,
   type KReturn,
   type KSource,
@@ -71,6 +71,8 @@ import {
   type OStarStar,
   type OTildeEq,
   type OTildeUnary,
+  type RString,
+  type RTag,
   type TBuiltin,
   type TDeriv,
   type TDerivIgnore,
@@ -83,6 +85,7 @@ import type { Token } from "../token"
 import type {
   Bracketed,
   Else,
+  ForHeaders,
   Label,
   List,
   MatchArm,
@@ -206,13 +209,11 @@ export class ExprIf extends NodeExpr {
 export class ExprFor extends NodeExpr {
   constructor(
     readonly label: Label | null,
-    readonly kw: Token<typeof KFor>,
-    readonly bound: PlainList<Ident>,
-    readonly eq: Token<typeof KIn> | null,
-    readonly sources: PlainList<NodeExpr>,
+    readonly kw: Token<typeof KFor> | Token<typeof KMap>,
+    readonly headers: ForHeaders,
     readonly block: ExprBlock | null,
   ) {
-    super((label ?? kw).start, (block ?? sources).end)
+    super((label ?? kw).start, (block ?? headers).end)
   }
 }
 
@@ -407,6 +408,17 @@ export class ExprBlock extends NodeExpr {
     readonly of: List<NodeStmt>,
   ) {
     super((label ?? of).start, of.end)
+  }
+}
+
+export class ExprTaggedString extends NodeExpr {
+  constructor(
+    readonly tag: Token<typeof RTag>,
+    readonly parts: Token<typeof RString>[],
+    readonly interps: NodeExpr[],
+    end: number,
+  ) {
+    super(tag.start, end)
   }
 }
 
