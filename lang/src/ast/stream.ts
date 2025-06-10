@@ -36,14 +36,14 @@ type TokenGroupMut = {
 } & { readonly contents: { -readonly [K in keyof Stream]: Stream[K] } }
 
 export function createStream(
-  info: Chunk,
+  chunk: Chunk,
   issues: Issues,
   props: ToTokensProps,
   start?: number,
   end?: number,
 ) {
-  const raw = tokens(info, issues, props, start, end)
-  const source = info.source
+  const raw = tokens(chunk, issues, props, start, end)
+  const source = chunk.source
 
   const parens: TokenGroup[] = []
   const root: Token<number>[] = []
@@ -62,15 +62,15 @@ export function createStream(
       case OLBrace:
       case OLInterp:
         const group = new TokenGroup(
-          info,
+          chunk,
           token as Token<Brack>,
           new Token(
-            info,
+            chunk,
             MATCHING_PAREN[token.kind as Brack],
             token.start,
             token.start,
           ),
-          new Stream(info, [], issues, token.end, token.end),
+          new Stream(chunk, [], issues, token.end, token.end),
         )
         parens.push(group)
         currentContents.push(group)
@@ -101,7 +101,7 @@ export function createStream(
           // Make sure all text positions are correct
           const mut = current as TokenGroupMut
           mut.gt = new Token(
-            info,
+            chunk,
             MATCHING_PAREN[current.kind],
             token.start,
             token.start,
@@ -124,12 +124,12 @@ export function createStream(
         continue
 
       case RInterp: {
-        const inner = createStream(info, issues, props, token.start, token.end)
+        const inner = createStream(chunk, issues, props, token.start, token.end)
         currentContents.push(
           new TokenGroup(
-            info,
-            new Token(info, OLRawInterp, token.start - 2, token.start, false),
-            new Token(info, ORBrace, token.end, token.end + 1, false),
+            chunk,
+            new Token(chunk, OLRawInterp, token.start - 2, token.start, false),
+            new Token(chunk, ORBrace, token.end, token.end + 1, false),
             inner,
           ),
         )
@@ -144,7 +144,7 @@ export function createStream(
     issues.raise(Code.MismatchedOpeningParen, p.lt)
   }
 
-  return new Stream(info, root, issues, 0, source.length)
+  return new Stream(chunk, root, issues, 0, source.length)
 }
 
 export class Stream {

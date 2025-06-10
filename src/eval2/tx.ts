@@ -1,5 +1,4 @@
 import type { ParenLhs, ParenRhs } from "@/field/cmd/math/brack"
-import type { NodeStmt } from "../../lang/src/ast/node/stmt"
 import { todo } from "../../lang/src/emit/error"
 import { Id, ident } from "../../lang/src/emit/id"
 import type { Name, Node, OpKind, Suffix, SuffixKind } from "./node"
@@ -12,12 +11,6 @@ export class ScriptDecls {
 
 export class ScriptBlock {
   constructor(readonly decls: ScriptDecls) {}
-
-  readonly stmts: NodeStmt[] = []
-
-  push(stmt: NodeStmt) {
-    this.stmts.push(stmt)
-  }
 
   eval(node: Node): string {
     switch (node.data.type) {

@@ -35,11 +35,7 @@ import {
   WordMapWithoutSpaces,
   type Options,
 } from "@/field/options"
-import { Chunk, Issues } from "../../lang/src/ast/issue"
-import { parse } from "../../lang/src/ast/parse"
-import { createStream } from "../../lang/src/ast/stream"
-import { emitItem } from "../../lang/src/emit/emit"
-import { createStdlib } from "../../lang/src/emit/stdlib"
+import { ScriptEnvironment } from "../../lang/src/loader"
 import { Exts } from "./ext"
 import { FACTORY_EXPR } from "./factory-expr"
 import type { AnyItemFactory } from "./item"
@@ -50,6 +46,7 @@ export class SheetFactory {
   readonly toolbar: Record<number, ToolbarItem[]> = Object.create(null)
   readonly keys: Record<string, (sheet: Sheet) => void> = Object.create(null)
   readonly items: Record<string, AnyItemFactory> = Object.create(null)
+  readonly env = new ScriptEnvironment()
   defaultItem: AnyItemFactory = FACTORY_EXPR
 
   options
@@ -59,37 +56,6 @@ export class SheetFactory {
       inits: options.inits?.clone() ?? new Inits(),
       words: options.words?.clone() ?? new WordMapWithoutSpaces([]),
       latex: options.latex?.clone() ?? new WordMap([]),
-    }
-  }
-
-  readonly libGl = createStdlib({ lang: "glsl" })
-  readonly libJs = createStdlib({ lang: "js" })
-  public mainGl = ""
-  public mainJs = ""
-  readonly preloadedScriptIssues = new Issues()
-  readonly loadedScripts = new Set<string>()
-  private loadScript(script: string, fromPackage: PackageId) {
-    const stream = createStream(
-      new Chunk(`<package ${fromPackage}>`, script),
-      this.preloadedScriptIssues,
-      { comments: false },
-    )
-    if (this.loadedScripts.has(script)) {
-      console.warn(
-        `a script from package '${fromPackage}' is being loaded twice`,
-      )
-    }
-    this.loadedScripts.add(script)
-    for (const item of parse(stream).items) {
-      const resultGl = emitItem(item, this.libGl)
-      if (resultGl?.decl) {
-        this.mainGl += "\n" + resultGl.decl
-      }
-
-      const resultJs = emitItem(item, this.libJs)
-      if (resultJs?.decl) {
-        this.mainGl += "\n" + resultJs.decl
-      }
     }
   }
 
@@ -108,8 +74,12 @@ export class SheetFactory {
     pkg.load?.()
 
     if (pkg.scripts) {
-      for (const script of pkg.scripts) {
-        this.loadScript(script, id)
+      for (let i = 0; i < pkg.scripts.length; i++) {
+        const script = pkg.scripts[i]!
+        this.env.load(
+          `pkg:${id}${pkg.scripts.length == 1 ? "" : "/" + i}`,
+          script,
+        )
       }
     }
 

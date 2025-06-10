@@ -17,3 +17,13 @@ relied on:
    a `matMxN`. When compiling to GLSL, this is the true representation; in JS, a
    struct is still created.
 5. Otherwise, a struct is created.
+
+Standards-breaking design decisions:
+
+- Use of `^` instead of `**` for exponentiation is justified since this is
+  primarily for maths, not bitwise operations.
+- Use of `%` for `mod` instead of `rem` is justified since
+- Use of `min(MAX, max(MIN, VAL))` for `clamp` is justified by its similarity to
+  a standard CSS and JS implementation, where a minimum is usually more
+  important on websites (since it is often used for styling) than a maximum,
+  even though it could result in slightly longer runtimes for GLSL.

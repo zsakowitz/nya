@@ -34,7 +34,7 @@ fn /(a: Complex, b: Complex) -> Complex {
     @/ (b.real * b.real + b.imag * b.imag)
 }
 
-fn _recip(a: Complex) -> Complex {
+fn inv(a: Complex) -> Complex {
   Complex { real: a.real, imag: -a.imag } @/ (a.real * a.real + a.imag * a.imag)
 }
 

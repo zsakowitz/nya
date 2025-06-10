@@ -27,7 +27,7 @@ import {
   type APlus,
   type ASlash,
   type AStar,
-  type AStarStar,
+  type ACarat,
   type ATildeEq,
   type ATildeUnary,
   type KBreak,
@@ -69,7 +69,7 @@ import {
   type OSemi,
   type OSlash,
   type OStar,
-  type OStarStar,
+  type OCarat,
   type OTildeEq,
   type OTildeUnary,
   type RString,
@@ -327,7 +327,7 @@ export type ExprBinaryOp =
   | typeof OStar
   | typeof OSlash
   | typeof OHash
-  | typeof OStarStar
+  | typeof OCarat
   | typeof OBar
   | typeof OAmp
   | typeof OBarBar
@@ -345,7 +345,7 @@ export type ExprBinaryOp =
   | typeof AStar
   | typeof ASlash
   | typeof AHash
-  | typeof AStarStar
+  | typeof ACarat
   | typeof ABar
   | typeof AAmp
   | typeof ABarBar

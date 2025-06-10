@@ -22,7 +22,7 @@ import {
   APlus,
   ASlash,
   AStar,
-  AStarStar,
+  ACarat,
   ATildeEq,
   ATildeUnary,
   AVERLOADABLE,
@@ -93,7 +93,7 @@ import {
   OSemi,
   OSlash,
   OStar,
-  OStarStar,
+  OCarat,
   OTildeEq,
   OTildeUnary,
   OVERLOADABLE,
@@ -920,8 +920,8 @@ const ASSIGNABLE_BINARY_OPS = [
   ASlash,
   APercent,
 
-  OStarStar,
-  AStarStar,
+  OCarat,
+  ACarat,
 
   OBackslash,
   ABackslash,
@@ -993,7 +993,7 @@ const exprBinaryOp = createAssignOp(
                       AHash,
                     ],
                     createBinOpR(
-                      [OStarStar, AStarStar],
+                      [OCarat, ACarat],
                       createRangeOp(
                         createBinOp1(
                           [OBackslash, ABackslash], // exact fraction operator

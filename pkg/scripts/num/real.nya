@@ -31,10 +31,6 @@ fn %odot(a: num, b: num) -> num {
   a * b
 }
 
-fn mod(a: num, b: num) -> num {
-  a - floor(a / b) * b
-}
-
 fn %cross(a: num, b: num) -> num {
   a * b
 }

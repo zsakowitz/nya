@@ -90,7 +90,9 @@ fn binomialdist(trials: num, chance: num) -> BinomialDist {
 fn pdf(dist: NormalDist, at: num) -> num {
   let mean = dist.mean;
   let var = dist.stdev * dist.stdev;
-  e ** ((at - dist.mean) * (at - dist.mean) / (2.0 * var))
+  e ^ ((at - dist.mean) * (at - dist.mean) / (2.0 * var))
+
+  
     / (dist.stdev * sqrt(2.0 * pi))
 }
 

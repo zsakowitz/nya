@@ -59,7 +59,7 @@ export const AMinus = 52
 export const AMinusUnary = 53 // replaces AMinus if in an ExprUnary
 export const AStar = 54
 export const ASlash = 55
-export const AStarStar = 56
+export const ACarat = 56
 export const ATildeUnary = 57
 export const ABar = 58
 export const AAmp = 59
@@ -102,7 +102,7 @@ export const OMinus = 93
 export const OMinusUnary = 94 // replaces OMinus if in an ExprUnary
 export const OStar = 95
 export const OSlash = 96
-export const OStarStar = 97
+export const OCarat = 97
 export const OTildeUnary = 98
 export const OBar = 99
 export const OAmp = 100
@@ -205,7 +205,7 @@ export const APS: Record<string, number> = {
   "*": AStar,
   "/": ASlash,
   "#": AHash,
-  "**": AStarStar,
+  "^": ACarat,
   "~": ATildeUnary,
   "|": ABar,
   "&": AAmp,
@@ -248,7 +248,7 @@ export const OPS: Record<string, number> = {
   "*": OStar,
   "/": OSlash,
   "#": OHash,
-  "**": OStarStar,
+  "^": OCarat,
   "~": OTildeUnary,
   "|": OBar,
   "&": OAmp,
@@ -291,7 +291,7 @@ export const EXPORTED_ALTS: Record<number, string> = {
   [OStar]: "_prod",
   [OSlash]: "_div",
   [OHash]: "_hash",
-  [OStarStar]: "_pow",
+  [OCarat]: "_pow",
   [OTildeUnary]: "_tilde",
   [OBar]: "_bar",
   [OAmp]: "_amp",
@@ -352,7 +352,7 @@ export const OVERLOADABLE = [
   OStar, // multiply
   OSlash, // divide
   OHash, // matrix multiplication
-  OStarStar, // exponentiate
+  OCarat, // exponentiate
   OTildeUnary, // idk, but maybe useful
   OBar, // union
   OAmp, // intersection
@@ -377,7 +377,7 @@ export const AVERLOADABLE = [
   AStar, // multiply
   ASlash, // divide
   AHash, // matrix multiplication
-  AStarStar, // exponentiate
+  ACarat, // exponentiate
   ATildeUnary, // idk, but maybe useful
   ABar, // union
   AAmp, // intersection
@@ -414,8 +414,8 @@ export const OP_TEXT: Record<number, string> = {
   [ASlash]: "@/",
   [OHash]: "#",
   [AHash]: "@#",
-  [OStarStar]: "**",
-  [AStarStar]: "@**",
+  [OCarat]: "^",
+  [ACarat]: "@^",
   [OTildeUnary]: "~",
   [ATildeUnary]: "@~",
   [OBar]: "|",

@@ -113,3 +113,14 @@ There are many stages of internal layers:
    1. unified function call/variable syntax
    2. identifiers and symbols are replaced with ids
    3. no parentheses
+
+## Things we want
+
+- Arbitrary-length polygons
+- Arbitrary-size matrices
+- Sparse matrices
+- Actions (a->a+1)
+  - These don't need to store an expression for the RHS; the RHS can be
+    evaluated in advance
+  - `index` is annoying though, since it is usable anywhere on the RHS and
+    cannot be known until an object is clicked

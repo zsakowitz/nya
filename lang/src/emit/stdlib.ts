@@ -650,6 +650,9 @@ export function createStdlib(props: EmitProps) {
   const minId = new Id("Math.min").ident()
   const maxId = new Id("Math.max").ident()
   const fractId = new Id("fract").ident()
+  const floorId = new Id("Math.floor for mod").ident()
+  const modId = new Id("mod").ident()
+  const modFn = `const ${floorId}=Math.floor;\nfunction ${modId}(a,b){return a-${floorId}(a/b)*b}`
   const fractFn = () =>
     decl.global(`function ${fractId}(x){return x-Math.floor(x)}`)
 
@@ -679,7 +682,7 @@ export function createStdlib(props: EmitProps) {
       js1: (a) => `-(${a})`,
       const: (a) => -(a as number),
     }),
-    new Fn(g("**"), [lnum, rnum], num, ([a, b]) => {
+    new Fn(g("^"), [lnum, rnum], num, ([a, b]) => {
       if (a!.const() && b!.const()) {
         return new Value((a.value as number) ** (b.value as number), num)
       }
@@ -688,7 +691,21 @@ export function createStdlib(props: EmitProps) {
         num,
       )
     }),
+    // % is used for true modulo, which matches the sign of the divisor
     new Fn(g("%"), [lnum, rnum], num, ([a, b]) => {
+      if (a!.const() && b!.const()) {
+        const av = a.value as number
+        const bv = b.value as number
+        return new Value(av - Math.floor(av / bv) * bv, num)
+      }
+      if (props.lang == "glsl") {
+        // Love it when programming languages implement `mod` as `mod` and not `rem`.
+        return new Value(`mod(${a},${b})`, num)
+      }
+      decl.global(modFn)
+      return new Value(`${modId}(${a},${b})`, num)
+    }),
+    new Fn(g("rem"), [lnum, rnum], num, ([a, b]) => {
       if (a!.const() && b!.const()) {
         return new Value((a.value as number) % (b.value as number), num)
       }

@@ -112,11 +112,11 @@ fn ln(a: complex) -> complex {
   }
 }
 
-fn **(a: complex, b: complex) -> complex {
+fn ^(a: complex, b: complex) -> complex {
   exp(b * ln(a))
 }
 
-fn **(a: complex, b: num) -> complex {
+fn ^(a: complex, b: num) -> complex {
   exp(b * ln(a))
 }
 
@@ -323,7 +323,7 @@ fn faddeeva(z: complex) -> complex {
   let t = z + complex { re: 0.0, im: 0.5 * s };
   let mut w = complex { re: 0.0, im: 0.0 };
 
-  for a, b, c in A, B, C {
+  for a, b, c in A, B, C  {
     w += (a + t * b) / (c * c - t * t);
   }
 
@@ -350,7 +350,7 @@ fn rgb_to_srgb(c: num) -> num {
   if c < 0.0031308 {
     c * 12.92
   } else {
-    1.055 * c ** 0.4166666666666667 - 0.055
+    1.055 * c ^ 0.4166666666666667 - 0.055
   }
 }
 

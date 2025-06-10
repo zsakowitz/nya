@@ -54,6 +54,7 @@ export const Code = Object.freeze({
   ExpectedIdentOrOperator: 253,
   InvalidRawString: 254,
   UnterminatedStringInterp: 255,
+  UseCaratAsExponentiationOperator: 256,
 
   // Emit errors
   ItemDeclaredTwice: 301,
@@ -124,7 +125,7 @@ export class Issue {
     return `${
       Object.entries(Code).find(([, v]) => v == this.code)?.[0] ||
       "Unknown issue"
-    } @ ${posIndexToLineCol(this.source, this.pos.start)}..${posIndexToLineCol(this.source, this.pos.end)}`
+    } @ ${this.pos}`
   }
 
   content() {
