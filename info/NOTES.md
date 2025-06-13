@@ -112,3 +112,46 @@ float sinpiSeries(float x) {
 // matches many thing which use the old fn-based ops
 ;/(?<![._])(rept)\((\w+(?:!|\.\w+(?:\(\w+(?:!|\.\w+(?:\(\))?|\[\w+\])*\))?|\[\w+\])*)\)(?! \{)/
 ```
+
+## decimal to fraction
+
+```js
+/*! from desmos source */
+function pc(e, t = 1e6) {
+  if (e === 1 / 0)
+    return {
+      n: 1 / 0,
+      d: 1,
+    }
+  if (e === -1 / 0)
+    return {
+      n: -1 / 0,
+      d: 1,
+    }
+  if (!isFinite(e))
+    return {
+      n: NaN,
+      d: 1,
+    }
+  let n,
+    r = 0,
+    o = 1,
+    i = 1,
+    s = 0,
+    a,
+    u
+  for (
+    ;
+    (n = Math.floor(e)),
+      (a = n * o + r),
+      (u = n * s + i),
+      !(u > t || ((r = o), (i = s), (o = a), (s = u), e === n));
+
+  )
+    e = 1 / (e - n)
+  return {
+    n: o,
+    d: s,
+  }
+}
+```

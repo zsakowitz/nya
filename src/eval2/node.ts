@@ -12,15 +12,16 @@ import { Precedence } from "./prec"
 
 export type Keyed<T> = { [K in keyof T]: { type: K; data: T[K] } }[keyof T]
 
-export type Name = { name: string; sub: Node | null }
+export type NameRaw = { name: string; sub: Node | null }
+export type NameCooked = { name: string; sub: string | null }
 
 export interface OpKind {
   num: string
   num16: string
-  uvar: Name // name of a user-defined variable
-  bvar: Name // name of a builtin variable
-  ucall: { name: Name; arg: Node } // call of a user-defined function (not min, max, sin, etc.)
-  bcall: { name: Name; arg: Node | null } // call of a builtin function
+  uvar: NameCooked // name of a user-defined variable
+  bvar: NameRaw // name of a builtin variable
+  ucall: { name: NameCooked; arg: Node } // call of a user-defined function (not min, max, sin, etc.)
+  bcall: { name: NameRaw; arg: Node | null } // call of a builtin function
   frac: [Node, Node]
   matrix: { cols: number; data: Node[] }
   group: { lhs: ParenLhs; rhs: ParenRhs; contents: Node }
@@ -32,9 +33,9 @@ export interface OpKind {
   text: string
   op: string
   big: { kind: string; sup: Node | null; sub: Node | null }
-  derivative: Name
+  derivative: NameCooked
   suffix: Suffix[]
-  binding: { name: Name; args: Node | null }
+  binding: { name: NameCooked; args: Node | null }
   /** Operator arguments are used as list contents. */
   list: null
 }
@@ -42,8 +43,13 @@ export interface OpKind {
 export interface SuffixKind {
   factorial: null
   exponent: Node
-  property: { name: Name }
-  method: { name: Name; arg: Node }
+  /** Italicized property; .x or .y */
+  uprop: NameCooked
+  /** Built-in property; .real or .imag */
+  bprop: NameRaw
+  // There is no `ucall` node, since `A.x(3)` should behave like `(A.x)(3)`.
+  /** Built-in method call; .glider(...) or .min(...) */
+  bcall: { name: NameRaw; arg: Node }
   index: Node
 }
 

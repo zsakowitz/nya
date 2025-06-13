@@ -1,10 +1,11 @@
 import type { ParenLhs, ParenRhs } from "@/field/cmd/math/brack"
 import { todo } from "../../lang/src/emit/error"
 import { Id, ident } from "../../lang/src/emit/id"
-import type { Name, Node, OpKind, Suffix, SuffixKind } from "./node"
+import type { NameCooked, Node, OpKind, Suffix, SuffixKind } from "./node"
 
 export class ScriptDecls {
-  isFunction(_name: Name): boolean {
+  constructor() {}
+  isFunction(_name: NameCooked): boolean {
     return false
   }
 }
@@ -44,24 +45,7 @@ export class ScriptBlock {
   }
 
   evalList(node: Node): string[] {
-    if (node.data.type != "list") {
-      return [this.eval(node)]
-    }
-
-    if (!node.args?.length) {
-      return []
-    }
-
-    const ret = [this.eval(node.args[0]!)]
-    let rest = node.args[1]
-    while (rest?.data.type == "list") {
-      ret.push(this.eval(rest.args![0]!))
-      rest = rest.args![1]
-    }
-    if (rest) {
-      ret.push(this.eval(rest))
-    }
-    return ret
+    return listItems(node).map((x) => this.eval(x))
   }
 
   of(text: TemplateStringsArray, ...items: Node[]): string {
@@ -77,7 +61,7 @@ export class ScriptBlock {
 export class ScriptDeps {
   readonly deps = new Set<string>()
 
-  add(name: Name): void {
+  add(name: NameCooked): void {
     this.deps.add(nameIdent(name))
   }
 
@@ -110,6 +94,8 @@ export class ScriptDeps {
   }
 }
 
+export type ReadonlyScriptDeps = Pick<ScriptDeps, "deps">
+
 export function subscript(node: Node): string {
   switch (node.data.type) {
     case "num":
@@ -124,13 +110,13 @@ export function subscript(node: Node): string {
   throw new Error("Subscripts may only contain letters are numbers.")
 }
 
-export function nameIdent(name: Name): string {
-  return (
-    "_u" +
+export type NameIdent = string & { __brand_name_ident: undefined }
+
+export function nameIdent(name: NameCooked): NameIdent {
+  return ("_u" +
     Id.prototype.ident.call(
-      ident(name.name + (name.sub ? "_" + subscript(name.sub) : "")),
-    )
-  )
+      ident(name.name + (name.sub ? "_" + name.sub : "")),
+    )) as NameIdent
 }
 
 export interface TxOp<T> {
@@ -160,4 +146,25 @@ export const TX_OPS_OPS: TxOpsOps = Object.create(null)
 
 export function setGroupTxr(lhs: ParenLhs, rhs: ParenRhs, group: TxGroup) {
   ;(TX_OPS_GROUP[lhs] ??= Object.create(null))[rhs] = group
+}
+
+export function listItems(node: Node): Node[] {
+  if (node.data.type != "list") {
+    return [node]
+  }
+
+  if (!node.args?.length) {
+    return []
+  }
+
+  const ret = [node.args[0]!]
+  let rest = node.args[1]
+  while (rest?.data.type == "list") {
+    ret.push(rest.args![0]!)
+    rest = rest.args![1]
+  }
+  if (rest) {
+    ret.push(rest)
+  }
+  return ret
 }

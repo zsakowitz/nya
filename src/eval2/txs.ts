@@ -48,8 +48,10 @@ TX_OPS.ucall = {
     const args = block.evalList(op.arg).join(",")
     if (block.decls.isFunction(op.name)) {
       return `${nameIdent(op.name)}(${args})`
+    } else if (args.length == 1) {
+      return `${nameIdent(op.name)}*(${args})`
     } else {
-      return `${nameIdent(op.name)}(${args})`
+      return `${nameIdent(op.name)}*%point(${args})`
     }
   },
   deps(op, _, deps) {
