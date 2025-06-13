@@ -1,14 +1,15 @@
+import type { Node } from "@/eval2/node"
 import {
   ScriptBlock,
   ScriptDeps,
   type NameIdent,
   type ReadonlyScriptDeps,
 } from "@/eval2/tx"
+import { IdMap } from "../emit/decl"
 import { Kind, SKIP, type Executable, type State } from "./state"
 
 export class EntrySet {
-  constructor(readonly entries: Set<Entry>) {}
-
+  readonly entries = new Set<Entry>()
   readonly defs = new Map<NameIdent, Entry[]>()
   // TODO: add dependency optimization
 
@@ -45,6 +46,16 @@ export class EntrySet {
   private performUpdate() {
     // @ts-expect-error
     this.entries.forEach((x) => x._checkExe())
+  }
+
+  global(name: NameIdent): Node | null {
+    return null
+  }
+
+  globalOrFn(
+    name: NameIdent,
+  ): { args: NameIdent[] | null; value: Node } | null {
+    return null
   }
 }
 
@@ -127,7 +138,7 @@ export class Entry {
     const s = this._state
     if (s.error) return
 
-    const block = new ScriptBlock(this.set)
+    const block = new ScriptBlock(this.set, new IdMap(null), new IdMap(null))
 
     this._exe =
       s.type == Kind.Expr ? { args: [], expr: block.eval(s.data) }

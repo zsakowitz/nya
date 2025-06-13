@@ -5,7 +5,6 @@ import type { GlslResult } from "@/eval/lib/fn"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "@/eval/ops/vars"
 import type { JsValue } from "@/eval/ty"
 import { outputBase } from "@/eval/ty/display"
-import { ScriptBlock, ScriptDecls } from "@/eval2/tx"
 import { OpEq } from "@/field/cmd/leaf/cmp"
 import { CmdToken } from "@/field/cmd/leaf/token"
 import { CmdVar } from "@/field/cmd/leaf/var"
@@ -23,6 +22,7 @@ import type { Sheet } from "../sheet"
 import { Field } from "./field"
 
 import "@/eval2/txs"
+import { Entry } from "../../../../lang/src/exec/item"
 
 const ID_X = id({ value: "x" })
 const ID_Y = id({ value: "y" })
@@ -45,6 +45,7 @@ export class Expr {
   private readonly elError
   readonly aside
   readonly main
+  readonly entry
 
   state: ExprState = { ok: false, reason: "Not computed yet." }
 
@@ -52,6 +53,7 @@ export class Expr {
     readonly sheet: Sheet,
     readonly ref: ItemRef<Expr>,
   ) {
+    this.entry = new Entry(sheet.set)
     this.field = new Field(
       this,
       "block overflow-x-auto [&::-webkit-scrollbar]:hidden min-h-[3.265rem] max-w-[calc(var(--nya-sidebar)_-_2.5rem_-_1px)] p-4 focus:outline-none",
@@ -258,19 +260,6 @@ export class Expr {
       console.warn("[display]", msg)
       this.state = { ok: false, reason: msg }
       this.setError(msg)
-    }
-
-    // TODO: remove dev things
-    if (location.href.includes("localhost")) {
-      try {
-        const tl = this.field.block.parseTopLevel()
-        const nya = new ScriptBlock(new ScriptDecls()).eval(tl)
-        this.setError("[nyalang] " + nya)
-      } catch (e) {
-        this.setError(
-          "[nyalang] " + (e instanceof Error ? e.message : String(e)),
-        )
-      }
     }
   }
 

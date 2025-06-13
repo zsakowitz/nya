@@ -1,4 +1,5 @@
 import { doesIdentNeedEscaping, escapeIdentName } from "../../lang/src/ast/kind"
+import { issue } from "../../lang/src/emit/error"
 import { nameIdent, setGroupTxr, TX_OPS, TX_OPS_OPS, TX_SUFFIXES } from "./tx"
 
 TX_OPS.binding = {
@@ -43,15 +44,39 @@ TX_OPS.list = {
   },
 }
 
+TX_OPS.uvar = {
+  eval(op, _, block) {
+    const id = nameIdent(op)
+    return (
+      block.local(id) ??
+      (op.sub ?
+        issue(`Variable '${id}' is not defined.`)
+      : escapeIdentName(op.name, false))
+    )
+  },
+  deps(op, _, deps) {
+    deps.add(op)
+  },
+}
+
 TX_OPS.ucall = {
   eval(op, _, block) {
-    const args = block.evalList(op.arg).join(",")
-    if (block.decls.isFunction(op.name)) {
-      return `${nameIdent(op.name)}(${args})`
-    } else if (args.length == 1) {
-      return `${nameIdent(op.name)}*(${args})`
+    const args = block.evalList(op.arg)
+    const id = nameIdent(op.name)
+    const fn = block.localOrFn(id)
+    if (fn == null) {
+      issue(`Variable '${id}' is not defined.`)
+    }
+    if (typeof fn == "object") {
+      if (fn.args.length != args.length) {
+        issue(`Incorrect number of arguments to function '${id}'.`)
+      }
+      return `{${fn.args.map((name, i) => `let ${name}=${args[i]};`).join("")}${fn.body}}`
+    }
+    if (args.length == 1) {
+      return `${fn}*(${args[0]!})`
     } else {
-      return `${nameIdent(op.name)}*%point(${args})`
+      return `${fn}*%point(${args.join(",")})`
     }
   },
   deps(op, _, deps) {
@@ -120,15 +145,6 @@ TX_OPS.suffix = {
     for (const suffix of op) {
       TX_SUFFIXES[suffix.type]?.deps(suffix.data as never, null, deps)
     }
-  },
-}
-
-TX_OPS.uvar = {
-  eval(op) {
-    return nameIdent(op)
-  },
-  deps(op, _, deps) {
-    deps.add(op)
   },
 }
 

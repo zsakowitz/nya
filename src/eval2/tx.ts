@@ -1,17 +1,56 @@
 import type { ParenLhs, ParenRhs } from "@/field/cmd/math/brack"
+import { IdMap } from "../../lang/src/emit/decl"
 import { todo } from "../../lang/src/emit/error"
 import { Id, ident } from "../../lang/src/emit/id"
+import type { EntrySet } from "../../lang/src/exec/item"
 import type { NameCooked, Node, OpKind, Suffix, SuffixKind } from "./node"
 
-export class ScriptDecls {
-  constructor() {}
-  isFunction(_name: NameCooked): boolean {
-    return false
-  }
-}
-
 export class ScriptBlock {
-  constructor(readonly decls: ScriptDecls) {}
+  constructor(
+    readonly set: EntrySet,
+    readonly tightLocals: IdMap<string>,
+    readonly leakyLocals: IdMap<string>,
+  ) {}
+
+  local(name: NameIdent): string | null {
+    const early =
+      this.tightLocals.get(ident(name)) ?? this.leakyLocals.get(ident(name))
+    if (early != null) return early
+
+    const value = this.set.global(name)
+    return value == null ? null : this.evalInSeparateScope(value)
+  }
+
+  localOrFn(name: NameIdent): string | { args: string[]; body: string } | null {
+    const early =
+      this.tightLocals.get(ident(name)) ?? this.leakyLocals.get(ident(name))
+    if (early != null) return early
+
+    const value = this.set.globalOrFn(name)
+    if (value == null) {
+      return null
+    }
+    if (value.args == null) {
+      return this.evalInSeparateScope(value.value)
+    }
+
+    const map = new IdMap<string>(null)
+    const args = value.args.map((x) => {
+      const internalName = new Id(x).ident()
+      map.set(ident(x), internalName)
+      return internalName
+    })
+    return {
+      args,
+      body: new ScriptBlock(this.set, map, this.leakyLocals).eval(value.value),
+    }
+  }
+
+  evalInSeparateScope(node: Node): string {
+    return new ScriptBlock(this.set, new IdMap(null), this.leakyLocals).eval(
+      node,
+    )
+  }
 
   eval(node: Node): string {
     switch (node.data.type) {

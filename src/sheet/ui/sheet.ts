@@ -18,6 +18,7 @@ import { faCopy } from "@fortawesome/free-solid-svg-icons/faCopy"
 import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash"
 import type { Regl } from "regl"
 import regl from "regl"
+import { EntrySet } from "../../../lang/src/exec/item"
 import { Scope } from "../deps"
 import type { Exts } from "../ext"
 import type { SheetFactory } from "../factory"
@@ -54,6 +55,7 @@ export class Sheet {
   readonly cv = new Cv("absolute inset-0 size-full touch-none")
   readonly scope: Scope
   readonly list = new ItemListGlobal(this)
+  readonly set = new EntrySet()
 
   private readonly pixelRatio
   private readonly setPixelRatio
