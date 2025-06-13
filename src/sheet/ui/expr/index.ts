@@ -199,68 +199,35 @@ export class Expr {
 
   glsl: GlslResult | undefined
   display() {
-    if (this.glsl) {
-      this.glsl = undefined
-      this.sheet.queueGlsl()
-    }
-
-    if (!this.state.ok) {
-      this.setError(this.state.reason)
+    if (this.entry.hasError()) {
+      this.elOutput.classList.add("hidden")
+      this.elError.classList.remove("hidden")
+      this.elError.textContent = this.entry.errorMessage
       return
     }
 
-    if (this.state.ext == null) {
-      this.clearEls()
+    this.entry._checkExe()
+    const exe = this.entry.exe
+    if (!exe || exe.args) {
       this.elError.classList.add("hidden")
+      this.elOutput.classList.add("hidden")
       return
     }
 
     try {
+      const { raw, cooked } = this.sheet.factory.env.evalDetailed(exe.expr)
+      this.elOutput.classList.remove("hidden")
       this.elError.classList.add("hidden")
-
-      // .aside()
-      {
-        const aside = this.state.ext.aside?.(this.state.data)
-        if (aside != this.elAside.firstChild) {
-          while (this.elAside.firstChild) {
-            this.elAside.firstChild.remove()
-          }
-          if (aside) {
-            this.elAside.appendChild(aside)
-          }
-        }
-      }
-
-      // .el()
-      {
-        const el = this.state.ext.el?.(this.state.data)
-        if (el != this.elOutput.firstChild) {
-          while (this.elOutput.firstChild) {
-            this.elOutput.firstChild.remove()
-          }
-          if (el) {
-            this.elOutput.appendChild(el)
-          }
-        }
-      }
-
-      // .plotGl()
-      {
-        const gl = this.state.ext.glsl?.(
-          this.state.data,
-          this.sheet.scope.helpers,
-        )
-        if (gl) {
-          this.glsl = gl
-          this.sheet.queueGlsl()
-        }
-      }
+      this.elOutput.textContent = JSON.stringify(cooked, undefined, 2)
     } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e)
-      console.warn("[display]", msg)
-      this.state = { ok: false, reason: msg }
-      this.setError(msg)
+      this.elOutput.classList.add("hidden")
+      this.elError.classList.remove("hidden")
+      this.elError.textContent = e instanceof Error ? e.message : String(e)
     }
+
+    // TODO: display result as glsl
+    // TODO: plot result via %plot
+    // TODO: use extensions (aside, output, plot, glsl)
   }
 
   delete() {

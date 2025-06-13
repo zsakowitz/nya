@@ -11,7 +11,13 @@ export class Field extends FieldComputed {
   }
 
   recompute(): void {
-    this.expr.compute()
+    try {
+      this.expr.entry.setTo(this.block.parseTopLevel(), !this.leaf)
+    } catch (e) {
+      console.warn(`[recompute parse]`, e)
+      this.expr.entry.setToError(e)
+    }
+    // this.expr.compute()
     this.expr.display()
   }
 

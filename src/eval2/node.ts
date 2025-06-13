@@ -35,7 +35,7 @@ export interface OpKind {
   big: { kind: string; sup: Node | null; sub: Node | null }
   derivative: NameCooked
   suffix: Suffix[]
-  binding: { name: NameCooked; args: Node | null }
+  binding: { name: NameCooked; args: NameCooked[] | null }
   /** Operator arguments are used as list contents. */
   list: null
 }

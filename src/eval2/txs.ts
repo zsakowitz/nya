@@ -198,7 +198,7 @@ setGroupTxr("(", ")", {
 
 TX_SUFFIXES.exponent = {
   eval(op, on, block) {
-    return `%pow(${on},${block.eval(op)})`
+    return `call ^(${on},${block.eval(op)})`
   },
   deps(op, _, deps) {
     deps.check(op)

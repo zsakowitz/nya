@@ -146,17 +146,3 @@ export class Issues {
     return this.entries.length == 0
   }
 }
-
-function posIndexToLineCol(source: string, index: number) {
-  let row = 1
-  let col = 0
-  for (let i = 0; i < index; i++) {
-    if (source[i] == "\n") {
-      row++
-      col = 0
-    } else {
-      col++
-    }
-  }
-  return `${row}:${col}`
-}

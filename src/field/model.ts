@@ -8,11 +8,13 @@ import {
   sufx,
   type Data,
   type IR,
+  type NameCooked,
   type OpKind,
   type Suffix,
 } from "@/eval2/node"
 import { ParseNode, Parser } from "@/eval2/parse"
 import { Precedence } from "@/eval2/prec"
+import { listItems } from "@/eval2/tx"
 import { h } from "@/jsx"
 import type { Scope } from "@/sheet/deps"
 import { todo } from "../../lang/src/emit/error"
@@ -131,13 +133,26 @@ export class Block {
 
     // a = 3
     // a(b) = 4
-    if (
+    binding: if (
       ir.length >= 2 &&
       (ir[0]?.leaf?.type == "uvar" || ir[0]?.leaf?.type == "ucall") &&
       ir[1]?.infx?.data.type == "op" &&
       ir[1]?.infx.data.data == "cmp-eq"
     ) {
       const name = ir[0].leaf
+      let args: NameCooked[] | null = null
+      if (name.type == "ucall") {
+        let items = listItems(name.data.arg)
+        if (
+          !items.every(
+            (x): x is typeof x & { data: { type: "uvar" } } =>
+              x.data.type == "uvar",
+          )
+        ) {
+          break binding
+        }
+        args = items.map((x) => x.data.data)
+      }
       const parser = new Parser(ir, JUXTAPOSE_TOKEN)
       parser.index = 2
       return new ParseNode<Data>(
@@ -145,7 +160,7 @@ export class Block {
           type: "binding",
           data: {
             name: name.type == "ucall" ? name.data.name : name.data,
-            args: name.type == "ucall" ? name.data.arg : null,
+            args,
           },
         },
         [parser.parse()],

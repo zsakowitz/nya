@@ -35,7 +35,8 @@ import {
   WordMapWithoutSpaces,
   type Options,
 } from "@/field/options"
-import { ScriptEnvironment } from "../../lang/src/loader"
+import { EntrySet } from "../../lang/src/exec/item"
+import { ScriptEnvironment } from "../../lang/src/exec/loader"
 import { Exts } from "./ext"
 import { FACTORY_EXPR } from "./factory-expr"
 import type { AnyItemFactory } from "./item"
@@ -47,6 +48,7 @@ export class SheetFactory {
   readonly keys: Record<string, (sheet: Sheet) => void> = Object.create(null)
   readonly items: Record<string, AnyItemFactory> = Object.create(null)
   readonly env = new ScriptEnvironment()
+  readonly set = new EntrySet()
   defaultItem: AnyItemFactory = FACTORY_EXPR
 
   options

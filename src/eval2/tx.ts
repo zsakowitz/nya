@@ -31,7 +31,7 @@ export class ScriptBlock {
       return null
     }
     if (value.args == null) {
-      return this.evalInSeparateScope(value.value)
+      return this.evalInSeparateScope(value.of)
     }
 
     const map = new IdMap<string>(null)
@@ -42,7 +42,7 @@ export class ScriptBlock {
     })
     return {
       args,
-      body: new ScriptBlock(this.set, map, this.leakyLocals).eval(value.value),
+      body: new ScriptBlock(this.set, map, this.leakyLocals).eval(value.of),
     }
   }
 
