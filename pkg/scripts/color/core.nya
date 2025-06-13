@@ -1,15 +1,4 @@
-struct Color3 {
-  r: num,
-  g: num,
-  b: num,
-}
-
-struct Color {
-  r: num,
-  g: num,
-  b: num,
-  a: num,
-}
+use "color";
 
 fn plot(x: bool) -> Color {
   if x {
@@ -25,18 +14,6 @@ fn plot(x: Color) -> Color {
 
 fn plot(x: Color3) -> Color {
   Color { r: x.r, g: x.g, b: x.b, a: 1.0 }
-}
-
-fn rgb(r: num, g: num, b: num) -> Color3 {
-  Color3 { r: r / 255.0, g: g / 255.0, b: b / 255.0 }
-}
-
-fn rgb(r: num, g: num, b: num, a: num) -> Color {
-  Color { r: r / 255.0, g: g / 255.0, b: b / 255.0, a }
-}
-
-fn rgba(base: Color3, a: num) -> Color {
-  Color { r: base.r, g: base.g, b: base.b, a }
 }
 
 fn hsv(h: num, s: num, v: num) -> Color3 {

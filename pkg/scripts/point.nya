@@ -1,0 +1,52 @@
+struct Point {
+  x: num,
+  y: num,
+}
+
+fn point(x: num, y: num) -> Point {
+  Point { x, y }
+}
+
+fn %point(x: num, y: num) -> Point {
+  Point { x, y }
+}
+
+fn +(a: Point) -> Point {
+  a
+}
+
+fn +(a: Point, b: Point) -> Point {
+  a @+ b
+}
+
+fn -(a: Point) -> Point {
+  @-a
+}
+
+fn -(a: Point, b: Point) -> Point {
+  a @- b
+}
+
+fn *(a: num, b: Point) -> Point {
+  a @* b
+}
+
+fn *(a: Point, b: num) -> Point {
+  a @* b
+}
+
+fn /(a: Point, b: num) -> Point {
+  a @/ b
+}
+
+fn ==(a: Point, b: Point) -> bool {
+  a.x == b.x && a.y == b.y
+}
+
+fn !=(a: Point, b: Point) -> bool {
+  !(a.x == b.x && a.y == b.y)
+}
+
+fn unsign(z: Point) -> Point {
+  @abs(z)
+}

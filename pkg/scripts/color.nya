@@ -1,0 +1,28 @@
+struct Color3 {
+  r: num,
+  g: num,
+  b: num,
+}
+
+struct Color {
+  r: num,
+  g: num,
+  b: num,
+  a: num,
+}
+
+fn rgb(r: num, g: num, b: num) -> Color3 {
+  Color3 { r: r / 255.0, g: g / 255.0, b: b / 255.0 }
+}
+
+fn rgb(r: num, g: num, b: num, a: num) -> Color {
+  Color { r: r / 255.0, g: g / 255.0, b: b / 255.0, a }
+}
+
+fn rgba(r: num, g: num, b: num, a: num) -> Color {
+  rgb(r, g, b, a)
+}
+
+fn rgba(base: Color3, a: num) -> Color {
+  Color { r: base.r, g: base.g, b: base.b, a }
+}
