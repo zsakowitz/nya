@@ -1,13 +1,35 @@
-import { issue } from "@/eval/ops/issue"
-import type { Node, OpKind } from "@/eval2/node"
-import { ScriptBlock, ScriptDecls, ScriptDeps } from "@/eval2/tx"
-import type { IdGlobal } from "../emit/id"
+// @ts-nocheck FIXME: delete file
+
+import type { Node } from "@/eval2/node"
+import {
+  listItems,
+  nameIdent,
+  ScriptBlock,
+  ScriptDecls,
+  ScriptDeps,
+  type NameIdent,
+  type ReadonlyScriptDeps,
+} from "@/eval2/tx"
+import { issue } from "../emit/error"
 import type { ScriptEnvironment } from "./loader"
 
 export const enum Kind {
+  /** An empty item. */
   Skip,
+
+  /** A plain expression. */
   Expr,
+
+  /**
+   * A variable declaration. A user might type `a=3` to get this, and it would
+   * be represented as { source: "3" }.
+   */
   Var,
+
+  /**
+   * A function declaration. A user might type `a(b)=b^2` to get this, and it
+   * would be represented as { source: "_u_12^2", args: ["_u_12"] }.
+   */
   Fn,
 }
 
@@ -17,16 +39,26 @@ export class ScriptGroup {
   readonly items = new Set<Item>()
 }
 
+interface State {
+  readonly args: NameIdent[]
+  readonly deps: ReadonlyScriptDeps
+  readonly error: unknown | null
+  readonly kind: Kind
+  readonly name: NameIdent | null
+  readonly source: string | null
+}
+
+const STATE_EMPTY: State = {
+  args: [],
+  deps: new ScriptDeps(),
+  error: null,
+  kind: Kind.Skip,
+  name: null,
+  source: null,
+}
+
 export class Item {
-  // Pre-evaluation state should not be changed by externals, but TypeScript
-  // does not have a privacy setting which acts like `readonly` externally and
-  // `mut` internally. These properties should always be updated in a unified
-  // batch.
-  public kind: Kind = Kind.Skip
-  public source: string | null = null
-  public deps = new ScriptDeps()
-  public name: IdGlobal | null = null
-  public error: unknown | null = null
+  state: State = STATE_EMPTY
 
   constructor(readonly group: ScriptGroup) {
     group.items.add(this)
@@ -36,7 +68,21 @@ export class Item {
     this.group.items.delete(this)
   }
 
-  private setBinding(binding: OpKind["binding"], value: Node) {}
+  private setError(
+    kind: Kind,
+    name: NameIdent | null,
+    args: NameIdent[],
+    error: unknown,
+  ) {
+    this.state = {
+      args,
+      deps: new ScriptDeps(),
+      error: error ?? new Error("<null error>"),
+      kind,
+      name,
+      source: null,
+    }
+  }
 
   private setPlain(value: Node) {
     try {
@@ -46,27 +92,95 @@ export class Item {
       const decls = new ScriptDecls()
       const block = new ScriptBlock(decls)
       const expr = block.eval(value)
+
+      this.state = {
+        args: [],
+        deps,
+        error: null,
+        kind: Kind.Expr,
+        name: null,
+        source: expr,
+      }
     } catch (e) {
-      this.kind = Kind.Expr
-      this.error = e ?? new Error("<null error>")
+      this.setError(Kind.Expr, null, [], e)
     }
   }
 
-  set(node: Node, possiblyBinding: boolean) {
-    if (node.data.type == "list" && !node.args?.length) {
-      this.kind = Kind.Skip
-      this.source = null
-      this.deps = new ScriptDeps()
-      this.name = null
-      this.error = null
-    } else if (node.data.type == "binding") {
-      if (possiblyBinding) {
-        this.setBinding(node.data.data, node.args![0]!)
-      } else {
-        issue(`Use a plain expression here.`)
-      }
-    } else {
-      this.setPlain(node)
+  private setBindingVar(name: NameIdent, value: Node) {
+    try {
+    } catch (e) {
+      this.setError(Kind.Var, name, [], e)
     }
+  }
+
+  private setBindingFn(name: NameIdent, args: NameIdent[], value: Node) {
+    try {
+    } catch (e) {
+      this.setError(Kind.Fn, name, args, e)
+    }
+  }
+
+  /** Sets what this script item evaluates to. */
+  set(node: Node, allowBinding: boolean) {
+    // Empty expression
+    if (node.data.type == "list" && !node.args?.length) {
+      this.state = STATE_EMPTY
+      return
+    }
+
+    // Plain expression
+    if (node.data.type != "binding") {
+      this.setPlain(node)
+      return
+    }
+
+    // Binding, but it's not allowed
+    if (!allowBinding) {
+      this.setError(
+        Kind.Expr,
+        null,
+        [],
+        new Error("Use a plain expression here."),
+      )
+      return
+    }
+
+    const { name, args } = node.data.data
+
+    // Get the name of the binding; fail early if invalid subscript
+    let ident
+    try {
+      ident = nameIdent(name)
+    } catch (e) {
+      this.setError(Kind.Expr, null, [], e)
+      return
+    }
+
+    const contents = node.args![0]!
+
+    // Plain variable
+    if (!args) {
+      this.setBindingVar(ident, contents)
+      return
+    }
+
+    // Function definition
+    let idents
+    try {
+      idents = listItems(args).map((arg) =>
+        arg.data.type != "uvar" ?
+          issue(`Function parameters must be variable names.`)
+        : nameIdent(arg.data.data),
+      )
+    } catch (e) {
+      this.setError(
+        Kind.Fn,
+        ident,
+        listItems(args).map((_, i) => nameIdent({ name: "" + i, sub: null })),
+        e,
+      )
+      return
+    }
+    this.setBindingFn(ident, idents, contents)
   }
 }
