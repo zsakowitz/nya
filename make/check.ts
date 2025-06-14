@@ -1,5 +1,6 @@
 import { SCRIPTS, type ScriptName } from "#/script-index"
 import { ident } from "../lang/src/emit/id"
+import { Alt } from "../lang/src/emit/type"
 import { ScriptEnvironment } from "../lang/src/exec/loader"
 
 if (await checkEach()) {
@@ -67,38 +68,56 @@ async function checkFn() {
   }
   const tys = env.libJs.types.all()
   let ok = false
+  let count = 0
+  const noDisplay = []
+  const noDebug = []
   for (const [, ty] of tys) {
-    if (ty.toString().startsWith("_")) {
+    if (ty.toString().startsWith("_") || ty instanceof Alt) {
       continue
     }
+    count++
     const fDisplay = fnDisplay.find(
       (x) => x.args.length == 1 && x.args[0]!.type.canConvertFrom(ty),
     )
     const fDebug = fnDebug.find(
       (x) => x.args.length == 1 && x.args[0]!.type.canConvertFrom(ty),
     )
-    const e1 =
-      fDisplay ?
-        fDisplay.ret == env.libJs.tyLatex ?
-          null
-        : `%display returns ${fDisplay.ret}`
-      : `no %display`
-    const e2 =
-      fDebug ?
-        fDebug.ret == env.libJs.tyLatex ?
-          null
-        : `%debug returns ${fDebug.ret}`
-      : `no %debug`
-    if (e1 || e2) {
+    if (fDisplay) {
+      if (fDisplay.ret != env.libJs.tyLatex) {
+        console.error(
+          `\x1b[36m${ty}\x1b[30m: \x1b[31m%display does not return formatted LaTeX.`,
+        )
+        ok = false
+      }
+    } else {
+      noDisplay.push(ty.toString())
       ok = false
-      console.error(
-        `\x1b[36m${ty}\x1b[30m: \x1b[31m${e1 && e2 ? e1 + "; " + e2 : e1 || e2}`,
-      )
     }
+    if (fDebug) {
+      if (fDebug.ret != env.libJs.tyLatex) {
+        console.error(
+          `\x1b[36m${ty}\x1b[30m: \x1b[31m%debug does not return formatted LaTeX.`,
+        )
+        ok = false
+      }
+    } else {
+      noDebug.push(ty.toString())
+      ok = false
+    }
+  }
+  if (noDisplay.length) {
+    console.error(
+      `\x1b[31mmissing %display (${noDisplay.length})\x1b[30m: \x1b[36m${noDisplay.join("\x1b[30m, \x1b[36m")}`,
+    )
+  }
+  if (noDebug.length) {
+    console.error(
+      `\x1b[31mmissing %debug   (${noDisplay.length})\x1b[30m: \x1b[36m${noDebug.join("\x1b[30m, \x1b[36m")}`,
+    )
   }
 
   if (ok) {
-    console.log(`✅ ${tys.length} types all have %display and %debug impls!`)
+    console.log(`✅ ${count} types all have %display and %debug impls!`)
   } else {
     process.exitCode = 1
   }
