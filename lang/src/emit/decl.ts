@@ -68,19 +68,24 @@ export class Declarations {
   readonly types: IdMap<Type>
   readonly fns: IdMapMany<Fn>
   readonly tags: IdMap<Tag>
-  readonly void: Scalar
+  readonly tyVoid: Scalar
 
   private readonly source = new Set<string>()
+
+  void() {
+    return new Value(0, this.tyVoid)
+  }
 
   constructor(
     readonly props: EmitProps,
     parent: Declarations | null,
     void_: Scalar,
-    readonly bool: Scalar,
+    readonly tyBool: Scalar,
     readonly createLiteral: (literal: ExprLit) => Value,
-    readonly arraySize: (value: Value) => number | null,
+    readonly toArraySize: (value: Value) => number | null,
+    readonly tyLatex: Scalar,
   ) {
-    this.void = void_
+    this.tyVoid = void_
     this.types = new IdMap(parent?.types ?? null)
     this.fns = parent?.fns ?? new IdMapMany()
     this.tags = new IdMap(parent?.tags ?? null)

@@ -21,7 +21,11 @@ import { PICK_CURSOR } from "../../pick-cursor"
 import type { Sheet } from "../sheet"
 import { Field } from "./field"
 
+import { STORE_EVAL } from "#/list/eval"
 import "@/eval2/txs"
+import { PosVirtual } from "../../../../lang/src/ast/issue"
+import { tryPerformCall } from "../../../../lang/src/emit/emit"
+import { ident } from "../../../../lang/src/emit/id"
 import { Entry } from "../../../../lang/src/exec/item"
 
 const ID_X = id({ value: "x" })
@@ -199,8 +203,11 @@ export class Expr {
 
   glsl: GlslResult | undefined
   display() {
+    this.elOutput.classList.add("hidden")
+    this.elError.classList.add("hidden")
+
+    // If errored:
     if (this.entry.hasError()) {
-      this.elOutput.classList.add("hidden")
       this.elError.classList.remove("hidden")
       this.elError.textContent = this.entry.errorMessage
       return
@@ -208,20 +215,44 @@ export class Expr {
 
     this.entry.checkExe()
     const exe = this.entry.exe
+
+    // If a function or empty:
     if (!exe || exe.args) {
-      this.elError.classList.add("hidden")
-      this.elOutput.classList.add("hidden")
       return
     }
 
     try {
-      const { raw, cooked } = this.sheet.factory.env.evalDetailed(exe.expr)
+      const env = this.sheet.factory.env
+      const { block, value } = env.compile(exe.expr, "<expression>")
+      const display = tryPerformCall(
+        ident("%display"),
+        block,
+        [value],
+        new PosVirtual("<display>"),
+        new PosVirtual("<display>"),
+      )
+      let latex
+      this.clearEls()
+      if (
+        display &&
+        display.type == env.libJs.tyLatex &&
+        typeof (latex = env.compute(block, display)) == "string"
+      ) {
+        const { field, el } = STORE_EVAL.get(this)
+        field.block.clear()
+        field.typeLatex("=" + latex.replace(/\+-/g, "-"))
+        this.elOutput.appendChild(el)
+      } else {
+        const json = JSON.stringify(env.compute(block, value), undefined, 2)
+        this.elOutput.appendChild(
+          h(
+            "-mt-2 mb-1 text-xs font-mono px-2 ml-auto whitespace-pre",
+            `= ${value.type} ${json.replace(/\n/g, "\n  ")}`,
+          ),
+        )
+      }
       this.elOutput.classList.remove("hidden")
-      this.elError.classList.add("hidden")
-      this.elOutput.textContent =
-        raw.type.toString() + "\t" + JSON.stringify(cooked, undefined, 2)
     } catch (e) {
-      this.elOutput.classList.add("hidden")
       this.elError.classList.remove("hidden")
       this.elError.textContent = e instanceof Error ? e.message : String(e)
     }

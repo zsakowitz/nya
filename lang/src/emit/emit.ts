@@ -202,7 +202,7 @@ function emitType(node: NodeType, decl: Declarations): Type {
       todo(`Multidimensional arrays are not supported yet.`)
     }
     const count = arraySize(
-      decl.arraySize(
+      decl.toArraySize(
         emitExpr(node.sizes.items[0]!, new Block(decl, new Exits(null))),
       ),
     )
@@ -236,7 +236,7 @@ function emitExpr(node: NodeExpr, block: Block): Value {
         block.source += `${current}=${rhs};`
       }
 
-      return new Value(0, block.decl.void)
+      return nullValue(block)
     }
 
     return performCall(
@@ -341,7 +341,7 @@ function emitExpr(node: NodeExpr, block: Block): Value {
     )
   } else if (node instanceof ExprIf) {
     const cond = emitExpr(node.condition, block)
-    const { bool, void: void_ } = block.decl
+    const { tyBool: bool, tyVoid: void_ } = block.decl
     if (cond.type != bool) {
       issue(`The condition of an 'if' statement must be a boolean value.`)
     }
@@ -356,7 +356,7 @@ function emitExpr(node: NodeExpr, block: Block): Value {
     const main = emitBlock(node.block, child1)
 
     const child2 = block.child(block.exits)
-    let alt: Value = new Value(0, block.decl.void)
+    let alt: Value = nullValue(block)
     if (node.rest) {
       if (!node.rest.block) {
         issue(`Missing block on 'else' branch of 'if' statement.`)
@@ -496,11 +496,11 @@ function emitExpr(node: NodeExpr, block: Block): Value {
     }
 
     const ret = emitBlock(expr.block, child)
-    if (ret.type != block.decl.void) {
+    if (ret.type != block.decl.tyVoid) {
       todo(`The body of a 'for' loop must return 'void'; found '${ret.type}'.`)
     }
     block.source += `for(${block.props.lang == "glsl" ? "int" : "var"} ${index}=0;${index}<${size!};${index}++) {${child.source}}`
-    return new Value(0, block.decl.void)
+    return nullValue(block)
   } else if (node instanceof ExprBinaryAssign) {
     const { current, id } = emitLvalue(node.lhs, block)
     const rhs = emitExpr(node.rhs, block)
@@ -518,7 +518,7 @@ function emitExpr(node: NodeExpr, block: Block): Value {
       block.source += `${current}=${updated};`
     }
 
-    return new Value(0, block.decl.void)
+    return nullValue(block)
   } else if (node instanceof ExprExit) {
     switch (node.kw.kind) {
       case KBreak:
@@ -533,9 +533,7 @@ function emitExpr(node: NodeExpr, block: Block): Value {
           issue(`'return' statements cannot be labeled.`)
         }
         return block.exits.returnType.convertFrom(
-          node.value ?
-            emitExpr(node.value, block)
-          : new Value(0, block.decl.void),
+          node.value ? emitExpr(node.value, block) : nullValue(block),
           node.value ?? node.kw,
         )
     }
@@ -651,7 +649,7 @@ export function emitBlock(node: ExprBlock, block: Block): Value {
 }
 
 function nullValue(block: Block) {
-  return new Value(null, block.decl.void)
+  return block.decl.void()
 }
 
 function emitStmt(node: NodeStmt, block: Block): Value {
@@ -687,7 +685,7 @@ function emitStmt(node: NodeStmt, block: Block): Value {
       block.source += `${block.lang == "glsl" ? value.type.emit : "var"} ${lid.ident()}=${value};`
     }
 
-    return new Value(0, block.decl.void)
+    return nullValue(block)
   } else {
     todo(`Cannot emit '${node.constructor.name}' as a statement yet.`)
   }
@@ -787,7 +785,7 @@ export function emitItem(node: NodeItem, decl: Declarations): ItemResult {
     if (node.ret instanceof FnReturnTypeTypeof) {
       todo(`Function return types may not use 'typeof' yet.`)
     }
-    const ret = node.ret ? emitType(node.ret.retType, decl) : decl.void
+    const ret = node.ret ? emitType(node.ret.retType, decl) : decl.tyVoid
     const locals = new IdMap<Value>(null)
     const params = node.params.items.map((x) => {
       const local = ident(x.ident.val)

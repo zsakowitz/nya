@@ -10,7 +10,7 @@ import { Declarations, PRECACHED, type Block } from "./decl"
 import { performCall } from "./emit"
 import { bug, issue } from "./error"
 import { ident as g, Id, IdGlobal } from "./id"
-import type { EmitProps } from "./props"
+import type { EmitProps, Lang } from "./props"
 import { Tag } from "./tag"
 import {
   fn,
@@ -314,6 +314,19 @@ function libPath(props: EmitProps, num: Scalar) {
   }
 }
 
+function libLatexScalar(lang: Lang) {
+  return new Scalar(
+    "latex",
+    lang == "glsl" ? "void" : "string",
+    lang == "glsl" ? { type: "void" } : { type: "struct", id: new Id("latex") },
+    lang == "glsl" ?
+      () => null
+    : (v) => JSON.stringify((v as { data: string }).data),
+    () => issue(`Cannot convert LaTeX text to a set of scalars.`),
+    () => issue(`Cannot create LaTeX text from a set of scalars.`),
+  )
+}
+
 function libLatex(decl: Declarations, num: Scalar, bool: Scalar) {
   const fns = decl.fns
   const lang = decl.props.lang
@@ -321,18 +334,11 @@ function libLatex(decl: Declarations, num: Scalar, bool: Scalar) {
   const idDisplay = g("%display")
   const idDebug = g("%debug")
 
-  const latex = new Scalar(
-    "latex",
-    lang == "glsl" ? "void" : "string",
-    lang == "glsl" ? { type: "void" } : { type: "struct", id: new Id("latex") },
-    lang == "glsl" ? () => null : (v) => (v as { data: string }).data,
-    () => issue(`Cannot convert LaTeX text to a set of scalars.`),
-    () => issue(`Cannot create LaTeX text from a set of scalars.`),
-  )
+  const latex = decl.tyLatex
 
   // `num` %display
   {
-    const idLatexHelper = new Id("%display(x: num) -> latex")
+    const idLatexHelper = new Id("%display(x: num) -> latex").ident()
     const fnLatexHelper = `function ${idLatexHelper}(v){return v===v?v===1/0?'\\\\inf':v===-1/0?'-\\\\inf':v.toString():'\\\\wordvar{undefined}'}`
     // prettier-ignore
     function fLatexHelper(v: number)                   {return v===v?v===1/0?  '\\inf':v===-1/0?'  -\\inf':v.toString():  '\\wordvar{undefined}'}
@@ -343,13 +349,12 @@ function libLatex(decl: Declarations, num: Scalar, bool: Scalar) {
         idDisplay,
         [{ name: "value", type: num }],
         latex,
-
         lang == "glsl" ?
           () => new Value(0, latex)
         : ([v]) =>
             new Value(
               v!.const() ?
-                fLatexHelper(v.value as number)
+                { data: fLatexHelper(v.value as number) }
               : (decl.global(fnLatexHelper),
                 `${idLatexHelper}(${v!.toRuntime()})`),
               latex,
@@ -360,7 +365,7 @@ function libLatex(decl: Declarations, num: Scalar, bool: Scalar) {
 
   // `num` %debug
   {
-    const idLatexHelper = new Id("%debug(x: num) -> latex")
+    const idLatexHelper = new Id("%debug(x: num) -> latex").ident()
     const fnLatexHelper = `function ${idLatexHelper}(v){return v===v?v===1/0?'\\\\inf':v===-1/0?'-\\\\inf':1/v==1/-0?'-0':v.toString():'\\\\wordvar{NaN}'}`
     // prettier-ignore
     function fLatexHelper(v: number)                   {return v===v?v===1/0?  '\\inf':v===-1/0?'  -\\inf':1/v==1/-0?'-0':v.toString():  '\\wordvar{NaN}'}
@@ -376,7 +381,7 @@ function libLatex(decl: Declarations, num: Scalar, bool: Scalar) {
         : ([v]) =>
             new Value(
               v!.const() ?
-                fLatexHelper(v.value as number)
+                { data: fLatexHelper(v.value as number) }
               : (decl.global(fnLatexHelper),
                 `${idLatexHelper}(${v!.toRuntime()})`),
               latex,
@@ -387,7 +392,7 @@ function libLatex(decl: Declarations, num: Scalar, bool: Scalar) {
 
   // `bool` %display, %debug
   {
-    const idLatexHelper = new Id("%{display,debug}(x: bool) -> latex")
+    const idLatexHelper = new Id("%{display,debug}(x: bool) -> latex").ident()
     const fnLatexHelper = `function ${idLatexHelper}(v){return '\\\\wordvar{'+v+'}'}`
     // prettier-ignore
     function fLatexHelper(v: boolean)                  {return   '\\wordvar{'+v+'}'}
@@ -398,7 +403,7 @@ function libLatex(decl: Declarations, num: Scalar, bool: Scalar) {
       : ([v]: Value[]) =>
           new Value(
             v!.const() ?
-              fLatexHelper(v.value as boolean)
+              { data: fLatexHelper(v.value as boolean) }
             : (decl.global(fnLatexHelper),
               `${idLatexHelper}(${v!.toRuntime()})`),
             latex,
@@ -450,11 +455,13 @@ function libLatex(decl: Declarations, num: Scalar, bool: Scalar) {
           if (results.every((x) => x.const())) {
             return new Value(
               {
-                data: text.map((x, i) =>
-                  i == 0 ? x : (
-                    (results[i - 1]!.value as { data: string }).data + x
-                  ),
-                ),
+                data: text
+                  .map((x, i) =>
+                    i == 0 ? x : (
+                      (results[i - 1]!.value as { data: string }).data + x
+                    ),
+                  )
+                  .join(""),
               },
               latex,
             )
@@ -560,6 +567,7 @@ export function createStdlib(props: EmitProps) {
 
       return null
     },
+    libLatexScalar(lang),
   )
 
   const pathLib = libPath(props, num)

@@ -69,7 +69,8 @@ export class ScriptEnvironment {
     }
   }
 
-  evalDetailed(script: string, name = "<repl>", locals?: IdMap<Value>) {
+  /** Compiles a script as an expression within the JavaScript context. */
+  compile(script: string, name = "<repl>", locals?: IdMap<Value>) {
     const chunk = new Chunk(name, script)
     const issues = new Issues()
     const stream = createStream(chunk, issues, { comments: false })
@@ -78,27 +79,32 @@ export class ScriptEnvironment {
       throw new Error(issues.entries.join("\n"))
     }
     const block = new Block(this.libJs, new Exits(null), locals)
-    const result = emitBlock(contents, block)
+    const value = emitBlock(contents, block)
     if (!issues.ok()) {
       throw new Error(issues.entries.join("\n"))
     }
-    const value = result.toRuntime()
-    const evald: unknown = (0, eval)(`${this.libJs.globals()}
-${this.mainJs}
-${block.source}
-${value}`)
-    return { raw: result, cooked: evald }
+    return { block, value }
   }
 
-  eval(script: string, name?: string, locals?: IdMap<Value>) {
-    return this.evalDetailed(script, name, locals).cooked
+  /** Executes a block and value compiled within the JavaScript context. */
+  compute(block: Block, value: Value): unknown {
+    const runtime = value.toRuntime()
+    return (0, eval)(`${this.libJs.globals()}
+${this.mainJs}
+${block.source}
+${runtime}`)
   }
 
   log(script: string, name?: string, locals?: IdMap<Value>) {
     try {
-      const { raw, cooked } = this.evalDetailed(script, name, locals)
+      const { block, value } = this.compile(script, name, locals)
+      const cooked = this.compute(block, value)
       console.group(`\x1b[30m${script} =\x1b[0m`)
-      console.log(cooked, `\x1b[30m::\x1b[35m`, raw.type.toString() + "\x1b[0m")
+      console.log(
+        cooked,
+        `\x1b[30m::\x1b[35m`,
+        value.type.toString() + "\x1b[0m",
+      )
       console.groupEnd()
     } catch (e) {
       console.error(e instanceof Error ? e.message : e)

@@ -46,7 +46,7 @@ export function createMultiEval(items: (Node | string)[]) {
           "contents",
           h(""),
           h(
-            "bg-[--nya-bg-sidebar] border border-[--nya-border] px-2 rounded-l inline-block [line-height:1] flex items-center",
+            "bg-[--nya-bg-sidebar] border border-[--nya-border] px-2 rounded-l [line-height:1] flex items-center",
             label,
           ),
           fields,

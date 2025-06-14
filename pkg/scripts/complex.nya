@@ -6,6 +6,10 @@ struct Complex {
   imag: num,
 }
 
+fn %display(z: Complex) -> latex {
+  display"${z.real}+${z.imag}i"
+}
+
 fn +(z: Complex) -> Complex {
   z
 }
