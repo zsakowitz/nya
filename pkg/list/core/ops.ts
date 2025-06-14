@@ -647,7 +647,7 @@ export default {
   label: null,
   category: "numbers",
   deps: [],
-  scripts: [`// NYALANG: this should define derivatives`],
+  scripts: ["core/ops"],
   eval: {
     tx: {
       binary: {

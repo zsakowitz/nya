@@ -1,4 +1,3 @@
-import script from "!/num/complex.nya"
 import type { Package } from "#/types"
 import { plotJs } from "$/color/core"
 import { FN_POINT } from "$/geo/point"
@@ -237,7 +236,7 @@ export default {
   label: "basic support for complex numbers",
   category: "numbers (multi-dimensional)",
   deps: ["num/real", "geo/point", "core/ops", "color/core", "bool"],
-  scripts: [script],
+  scripts: ["complex"],
   ty: {
     coerce: {
       r32: {

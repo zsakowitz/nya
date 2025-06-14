@@ -1,4 +1,3 @@
-import script from "!/core/cmp.nya"
 import type { Package } from "#/types"
 import { Precedence } from "@/eval/ast/token"
 import { glsl, js, NO_DRAG, sym } from "@/eval/ast/tx"
@@ -41,7 +40,7 @@ export default {
   label: null,
   category: "logic",
   deps: [], // almost all usages rely on bool, but cmp itself does not mention it anywhere
-  scripts: [script],
+  scripts: ["core/cmp"],
   eval: {
     tx: {
       ast: {

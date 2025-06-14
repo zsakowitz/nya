@@ -10,7 +10,8 @@ import s8 from "./scripts/color/extras.nya"
 import s9 from "./scripts/color/oklab.nya"
 import s10 from "./scripts/color/core.nya"
 import s11 from "./scripts/core/cmp.nya"
-import s12 from "./scripts/3d/point.nya"
+import s12 from "./scripts/core/ops.nya"
+import s13 from "./scripts/3d/point.nya"
 
 export const SCRIPTS = new Map([
   ["real", s0],
@@ -25,7 +26,8 @@ export const SCRIPTS = new Map([
   ["color/oklab", s9],
   ["color/core", s10],
   ["core/cmp", s11],
-  ["3d/point", s12],
+  ["core/ops", s12],
+  ["3d/point", s13],
 ])
 
 export type ScriptName =
@@ -41,4 +43,5 @@ export type ScriptName =
   | "color/oklab"
   | "color/core"
   | "core/cmp"
+  | "core/ops"
   | "3d/point"

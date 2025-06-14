@@ -1,4 +1,3 @@
-import script from "!/3d/point.nya"
 import type { Package } from "#/types"
 import { highRes } from "@/eval/ty/info"
 import { CmdComma } from "@/field/cmd/leaf/comma"
@@ -44,7 +43,7 @@ export default {
     "enables cross-products and basic arithmetic on three-dimensional points",
   category: "geometry",
   deps: ["bool", "geo/point", "core/ops", "num/real"],
-  scripts: [script],
+  scripts: ["3d/point"],
   ty: {
     info: {
       p3d32: {

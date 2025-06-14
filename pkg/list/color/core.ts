@@ -1,4 +1,3 @@
-import script from "!/color/core.nya"
 import type { Package } from "#/types"
 import { ERR_COORDS_USED_OUTSIDE_GLSL } from "@/eval/ops/vars"
 import { CmdColor } from "@/field/cmd/leaf/color"
@@ -22,7 +21,7 @@ export default {
   label: "rgb and hsv functions",
   category: "color",
   deps: ["num/real", "bool"],
-  scripts: [script],
+  scripts: ["color/core"],
   ty: {
     info: {
       color: {

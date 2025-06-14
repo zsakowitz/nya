@@ -1,4 +1,3 @@
-import script from "!/4d/point.nya"
 import type { Addon } from "#/types"
 import { highRes } from "@/eval/ty/info"
 import { CmdComma } from "@/field/cmd/leaf/comma"
@@ -43,7 +42,7 @@ export default {
   label: "for when you need to pack four numbers into a single value",
   category: "geometry",
   deps: ["bool", "geo/point", "core/ops", "num/real"],
-  scripts: [script],
+  scripts: ["4d/point"],
   ty: {
     info: {
       p4d32: {

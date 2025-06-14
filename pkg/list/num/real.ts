@@ -1,4 +1,3 @@
-import script from "!/num/real.nya"
 import type { Package } from "#/types"
 import { chain } from "$/core/ops"
 import { js } from "@/eval/ast/tx"
@@ -109,7 +108,7 @@ export default {
   label: "support for real numbers",
   category: "numbers",
   deps: ["bool"],
-  scripts: [script],
+  scripts: ["real"],
   ty: {
     info: {
       r64: {

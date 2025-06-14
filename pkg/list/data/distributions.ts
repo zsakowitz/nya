@@ -1,5 +1,3 @@
-import script2 from "!/data/distributions.nya"
-import script1 from "!/erf.nya"
 import type { Package } from "#/types"
 import { EXT_EVAL } from "$/eval"
 import { jsToGlsl } from "@/eval/js-to-glsl"
@@ -74,7 +72,7 @@ export default {
   label: null,
   category: "statistics",
   deps: ["num/real", "data/statistics"],
-  scripts: [script1, script2],
+  scripts: ["data/distributions"],
   ty: {
     info: {
       normaldist: {

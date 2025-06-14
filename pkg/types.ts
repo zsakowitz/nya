@@ -30,6 +30,7 @@ import type { AnyExt } from "@/sheet/ext"
 import type { AnyItemFactory } from "@/sheet/item"
 import type { Sheet } from "@/sheet/ui/sheet"
 import type { PackageId } from "."
+import type { ScriptName } from "./script-index"
 
 type List<T, K extends PropertyKey = string> = { readonly [_ in K]?: T }
 
@@ -57,8 +58,7 @@ export interface Package {
   label: string | null // TODO: write better labels
   category: PackageCategory
   deps: PackageId[]
-  /** `.nya` scripts. Loaded after all dependencies. */
-  scripts?: readonly string[] // FIXME: make this required
+  scripts?: readonly ScriptName[]
 
   load?(): void
   init?: {
