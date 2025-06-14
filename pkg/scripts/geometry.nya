@@ -295,21 +295,21 @@ fn stroke(p: Path, c: Color3) -> Path {
     .stroke_width(3)
 }
 
-fn plot(cv: Canvas, p: Point) -> Path {
+fn %plot(cv: Canvas, p: Point) -> Path {
   path
     .circle(p.to_cv_coords(cv), 4.0)
     .color(dcg_purple)
     .fill_opacity(1.0)
 }
 
-fn plot(cv: Canvas, p: Complex) -> Path {
+fn %plot(cv: Canvas, p: Complex) -> Path {
   path
     .circle(p.to_cv_coords(cv), 4.0)
     .color(dcg_purple)
     .fill_opacity(1.0)
 }
 
-fn plot(cv: Canvas, p: Circle) -> Path {
+fn %plot(cv: Canvas, p: Circle) -> Path {
   path
     .ellipse(
       p.center.to_cv_coords(cv),
@@ -318,14 +318,14 @@ fn plot(cv: Canvas, p: Circle) -> Path {
     .stroke(dcg_green)
 }
 
-fn plot(cv: Canvas, p: Segment) -> Path {
+fn %plot(cv: Canvas, p: Segment) -> Path {
   path
     .move_to(p.p1.to_cv_coords(cv))
     .line_to(p.p2.to_cv_coords(cv))
     .stroke(dcg_blue)
 }
 
-fn plot(cv: Canvas, l: Line) -> Path {
+fn %plot(cv: Canvas, l: Line) -> Path {
   let x1 = l.p1.x;
   let y1 = l.p1.y;
   let x2 = l.p2.x;
@@ -354,7 +354,7 @@ fn plot(cv: Canvas, l: Line) -> Path {
   p.stroke(dcg_blue)
 }
 
-fn plot(cv: Canvas, l: Ray) -> Path {
+fn %plot(cv: Canvas, l: Ray) -> Path {
   let x1 = l.p1.x;
   let y1 = l.p1.y;
   let x2 = l.p2.x;
