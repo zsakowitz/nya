@@ -1111,22 +1111,6 @@ export function createStdlib(props: EmitProps) {
       },
     ),
     new Fn(
-      g("@debuglog"),
-      [{ name: "value", type: new AnyVector("float") }],
-      new AnyVector("float"),
-      (raw, block) => {
-        const val = raw[0]!
-
-        // glsl path
-        if (block.lang == "glsl") {
-          return val
-        }
-
-        block.source += `console.log(${val});`
-        return val
-      },
-    ),
-    new Fn(
       g("@abs"),
       [{ name: "value", type: new AnyVector("float") }],
       new AnyVector("float"),

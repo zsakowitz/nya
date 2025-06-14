@@ -1,4 +1,5 @@
-before nyalang edit can be released:
+before nyalang version can be released:
+❌ exact fractions
 ❌ automatic coercion
 ❌ list distribution
 ❌ min(1,2,7,9) still works
