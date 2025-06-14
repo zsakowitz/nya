@@ -33,7 +33,7 @@ export class ScriptEnvironment {
   }
 
   async load(name: ScriptName) {
-    await this._load(name, SCRIPTS.get(name)!)
+    await this._load(name + ".nya", SCRIPTS.get(name)!)
   }
 
   private async _load(name: string, script: string) {

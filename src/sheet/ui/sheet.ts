@@ -167,42 +167,43 @@ export class Sheet {
     this.glPixelRatio.onInput = () =>
       this.setPixelRatio(this.glPixelRatio.value.num())
 
-    const radioName = "_nya_radio_" + Math.random().toString().slice(2)
-    const trigLabel = (name: Sheet["trigKind"]) => {
-      const input = hx("input", {
-        type: "radio",
-        name: radioName,
-        value: "deg",
-        class: "sr-only",
-      })
-      input.defaultChecked = this.trigKind == name
-      input.addEventListener("input", () => {
-        this.trigKind = name
-        this.scope.queueGlobalRecompute()
-      })
-      const label = hx(
-        "label",
-        "contents cursor-pointer",
-        input,
-        h(
-          "opacity-30 hover:opacity-100 [:checked+&]:opacity-100 inline-block [:checked+&]:bg-[--nya-bg-sidebar] px-2 text-center rounded-sm [:first-child>&]:rounded-l-full [:last-child>&]:rounded-r-full",
-          name,
-        ),
-      )
-      label.addEventListener("pointerdown", () => {
-        input.value = name
-        input.checked = true
-        this.trigKind = name
-        this.scope.queueGlobalRecompute()
-      })
-      return label
-    }
-    const trigKindEl = h(
-      "w-48 bg-[--nya-bg] outline outline-1 outline-[--nya-pixel-ratio] rounded-full p-0.5 text-[--nya-text-prose] font-['Symbola'] grid grid-cols-3",
-      trigLabel("rad"),
-      trigLabel("deg"),
-      trigLabel("rot"),
-    )
+    // FIXME: put back trig stuff
+    // const radioName = "_nya_radio_" + Math.random().toString().slice(2)
+    // const trigLabel = (name: Sheet["trigKind"]) => {
+    //   const input = hx("input", {
+    //     type: "radio",
+    //     name: radioName,
+    //     value: "deg",
+    //     class: "sr-only",
+    //   })
+    //   input.defaultChecked = this.trigKind == name
+    //   input.addEventListener("input", () => {
+    //     this.trigKind = name
+    //     this.scope.queueGlobalRecompute()
+    //   })
+    //   const label = hx(
+    //     "label",
+    //     { class: "contents cursor-pointer" },
+    //     input,
+    //     h(
+    //       "opacity-30 hover:opacity-100 [:checked+&]:opacity-100 inline-block [:checked+&]:bg-[--nya-bg-sidebar] px-2 text-center rounded-sm [:first-child>&]:rounded-l-full [:last-child>&]:rounded-r-full",
+    //       name,
+    //     ),
+    //   )
+    //   label.addEventListener("pointerdown", () => {
+    //     input.value = name
+    //     input.checked = true
+    //     this.trigKind = name
+    //     this.scope.queueGlobalRecompute()
+    //   })
+    //   return label
+    // }
+    // const trigKindEl = h(
+    //   "w-48 bg-[--nya-bg] outline outline-1 outline-[--nya-pixel-ratio] rounded-full p-0.5 text-[--nya-text-prose] font-['Symbola'] grid grid-cols-3",
+    //   trigLabel("rad"),
+    //   trigLabel("deg"),
+    //   trigLabel("rot"),
+    // )
 
     const switchToDocs = btnSkin("a", faBook, "Docs")
     switchToDocs.href =
@@ -357,7 +358,7 @@ export class Sheet {
       h(
         "absolute flex flex-col top-2 right-2 gap-2",
         this.glPixelRatio.el,
-        trigKindEl,
+        // trigKindEl, // FIXME: put back trig angle kind picker once it's supported
       ),
       h(
         "absolute flex flex-col bottom-2 right-2 text-right font-['Symbola'] text-[--nya-title] pointer-events-none [-webkit-text-stroke:2px_var(--nya-bg)] [paint-order:stroke] opacity-30",
