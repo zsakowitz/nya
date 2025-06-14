@@ -277,6 +277,7 @@ export class Expr {
     }
 
     this.field.unlink()
+    this.entry.remove()
   }
 
   focus() {

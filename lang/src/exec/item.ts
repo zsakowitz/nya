@@ -115,6 +115,7 @@ export class Entry {
   }
 
   remove() {
+    this._unsetDef()
     this.set.entries.delete(this)
   }
 
