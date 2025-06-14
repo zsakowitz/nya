@@ -84,6 +84,7 @@ to do list for non-desmos stuff is:
 ❌ tetration
 ❌ editable text boxes
 ❌ collaborative editing
+❌ /*! https://nbviewer.org/url/jakevdp.github.io/downloads/notebooks/XKCD_plots.ipynb */
 ✅ slope field
 
 to do list for 110% compatiability is:

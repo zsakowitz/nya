@@ -496,39 +496,53 @@ export class CmdBrack extends Command<[Block]> {
 
   ir2(ret: IRBuilder): void {
     const last = ret.last()
-    console.log(last)
-    if (
-      this.lhs == "(" &&
-      this.rhs == ")" &&
-      last?.prfx?.data.type == "sop" &&
-      last.prfx.pl == P.ImplicitFnL &&
-      last.prfx.pr == P.ImplicitFnR &&
-      !last.infx &&
-      !last.leaf &&
-      !last.sufx
-    ) {
-      ret.ir.pop()
-      ret.leaf({
-        type: "bcall",
-        data: {
-          name: {
-            name: last.prfx.data.data.name,
-            sub: last.prfx.data.data.sub,
+    if (this.lhs == "(" && this.rhs == ")") {
+      if (
+        last?.leaf?.type == "uvar" &&
+        !last.prfx &&
+        !last.infx &&
+        !last.sufx
+      ) {
+        ret.ir.pop()
+        ret.leaf({
+          type: "ucall",
+          data: { name: last.leaf.data, arg: this.blocks[0].parse() },
+        })
+        return
+      }
+
+      if (
+        last?.prfx?.data.type == "sop" &&
+        last.prfx.pl == P.ImplicitFnL &&
+        last.prfx.pr == P.ImplicitFnR &&
+        !last.infx &&
+        !last.leaf &&
+        !last.sufx
+      ) {
+        ret.ir.pop()
+        ret.leaf({
+          type: "bcall",
+          data: {
+            name: {
+              name: last.prfx.data.data.name,
+              sub: last.prfx.data.data.sub,
+            },
+            sup: last.prfx.data.data.sup,
+            arg: this.blocks[0].parse(),
           },
-          sup: last.prfx.data.data.sup,
-          arg: this.blocks[0].parse(),
-        },
-      })
-    } else {
-      ret.leaf({
-        type: "group",
-        data: {
-          lhs: this.lhs,
-          rhs: this.rhs,
-          contents: this.blocks[0].parse(),
-        },
-      })
+        })
+        return
+      }
     }
+
+    ret.leaf({
+      type: "group",
+      data: {
+        lhs: this.lhs,
+        rhs: this.rhs,
+        contents: this.blocks[0].parse(),
+      },
+    })
   }
 
   onSiblingChange(dir: Dir): void {

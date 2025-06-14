@@ -150,7 +150,15 @@ export class Expr {
       return
     }
 
-    this.entry.checkExe()
+    try {
+      this.entry.checkExe()
+    } catch (e) {
+      this.elOutput.classList.add("hidden")
+      this.elError.classList.remove("hidden")
+      this.elError.textContent = e instanceof Error ? e.message : String(e)
+      return
+    }
+
     const exe = this.entry.exe
 
     // If a function or empty:

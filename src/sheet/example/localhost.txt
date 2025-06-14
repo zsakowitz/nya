@@ -1,3 +1,4 @@
+f(x)=x^2
 \wordprefix{rgb}\left(2,30,255\right)
 A=3+4i
 B=(7,8)
