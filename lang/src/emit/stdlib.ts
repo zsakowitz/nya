@@ -657,10 +657,9 @@ export function createStdlib(props: EmitProps) {
   const minId = new Id("Math.min").ident()
   const maxId = new Id("Math.max").ident()
   const fractId = new Id("fract").ident()
-  const floorId = new Id("Math.floor for mod").ident()
   const modId = new Id("mod").ident()
   const roundId = new Id("Math.round").ident()
-  const modFn = `const ${floorId}=Math.floor;\nfunction ${modId}(a,b){return a-${floorId}(a/b)*b}`
+  const modFn = `function ${modId}(a,b){return ((a%b)+b)%b}`
   const fractFn = () =>
     decl.global(`function ${fractId}(x){return x-Math.floor(x)}`)
 
@@ -704,7 +703,7 @@ export function createStdlib(props: EmitProps) {
       if (a!.const() && b!.const()) {
         const av = a.value as number
         const bv = b.value as number
-        return new Value(av - Math.floor(av / bv) * bv, num)
+        return new Value(((av % bv) + bv) % bv, num)
       }
       if (props.lang == "glsl") {
         // Love it when programming languages implement `mod` as `mod` and not `rem`.
