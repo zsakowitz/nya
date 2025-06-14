@@ -356,10 +356,26 @@ function libLatex(decl: Declarations, num: Scalar, bool: Scalar) {
 
   // `num` %display
   {
+    const fLatexHelper = (x: number): string => {
+      if (x != x) return `\\wordvar{undefined}`
+      if (x == 1 / 0) return `\\infty`
+      if (x == -1 / 0) return `-\\infty`
+      let str = x.toPrecision(8)
+      const expIndex = str.indexOf("e")
+      let exp = ""
+      if (expIndex != -1) {
+        const power = str.slice(expIndex + 1).replace(/^\+/, "")
+        str = str.slice(0, expIndex)
+        exp = `\\times10^{${power}}`
+      }
+      if (str.includes(".")) {
+        str = str.replace(/\.?0*$/, "")
+      }
+      return str + exp
+    }
+
     const idLatexHelper = new Id("%display(x: num) -> latex").ident()
-    const fnLatexHelper = `function ${idLatexHelper}(v){return v===v?v===1/0?'\\\\inf':v===-1/0?'-\\\\inf':v.toString():'\\\\wordvar{undefined}'}`
-    // prettier-ignore
-    function fLatexHelper(v: number)                   {return v===v?v===1/0?  '\\inf':v===-1/0?'  -\\inf':v.toString():  '\\wordvar{undefined}'}
+    const fnLatexHelper = `const ${idLatexHelper}=${fLatexHelper};`
 
     fns.push(
       idDisplay,
