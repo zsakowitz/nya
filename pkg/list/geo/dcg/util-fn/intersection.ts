@@ -162,10 +162,6 @@ function circleCircleJs(
   const dy = y1 - y0
   const d = Math.sqrt(dx * dx + dy * dy)
 
-  console.log(r0)
-  console.log(r1)
-  console.log(d)
-
   // Check for special cases
   if (d > r0 + r1) {
     // Circles do not intersect

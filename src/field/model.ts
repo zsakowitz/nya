@@ -114,7 +114,6 @@ export class Block {
   parseTopLevel(): ParseNode<Data> {
     const ir = this.parseIR()
 
-    console.log(ir[0]!)
     // a = 3
     // a(b) = 4
     binding: if (

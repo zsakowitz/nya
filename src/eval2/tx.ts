@@ -66,11 +66,49 @@ export class ScriptBlock {
           )
         ).eval(node.data.data, node.args ?? [], this)
 
-      case "op":
+      case "op": {
         const op = TX_OPS_OPS[node.data.data]
         if (op) {
           return op.eval(node.data.data, node.args ?? [], this)
         }
+        break
+      }
+
+      case "sop": {
+        if (!(node.data.data.sub || node.data.data.sup)) {
+          const op = TX_OPS_OPS[node.data.data.name]
+          if (op) {
+            return op.eval(node.data.data.name, node.args ?? [], this)
+          }
+        }
+        const op = TX_OPS_SOPS[node.data.data.name]
+        if (op) {
+          return op.eval(node.data.data, node.args ?? [], this)
+        }
+        break
+      }
+
+      case "bcall": {
+        if (!(node.data.data.name.sub || node.data.data.sup)) {
+          const op = TX_OPS_OPS[node.data.data.name.name]
+          if (op) {
+            return op.eval(node.data.data.name.name, [node.data.data.arg], this)
+          }
+        }
+        const op = TX_OPS_SOPS[node.data.data.name.name]
+        if (op) {
+          return op.eval(
+            {
+              name: node.data.data.name.name,
+              sub: node.data.data.name.sub,
+              sup: node.data.data.sup,
+            },
+            [node.data.data.arg],
+            this,
+          )
+        }
+        break
+      }
     }
 
     const txr =
@@ -169,6 +207,7 @@ export interface TxOp<T> {
 
 export type TxGroup = TxOp<OpKind["group"]>
 export type TxOpOp = TxOp<OpKind["op"]>
+export type TxOpSop = TxOp<OpKind["sop"]>
 
 export interface TxSuffix<T> {
   eval(op: T, on: string, block: ScriptBlock): string
@@ -180,12 +219,14 @@ export type TxOps = {
 }
 export type TxOpsGroup = { [L in ParenLhs]?: { [R in ParenRhs]?: TxGroup } }
 export type TxOpsOps = { [x: string]: TxOpOp }
+export type TxOpsSops = { [x: string]: TxOpSop }
 export type TxSuffixes = { [K in keyof SuffixKind]?: TxSuffix<SuffixKind[K]> }
 
 export const TX_OPS: TxOps = Object.create(null)
 export const TX_SUFFIXES: TxSuffixes = Object.create(null)
 export const TX_OPS_GROUP: TxOpsGroup = Object.create(null)
 export const TX_OPS_OPS: TxOpsOps = Object.create(null)
+export const TX_OPS_SOPS: TxOpsSops = Object.create(null)
 
 export function setGroupTxr(lhs: ParenLhs, rhs: ParenRhs, group: TxGroup) {
   ;(TX_OPS_GROUP[lhs] ??= Object.create(null))[rhs] = group

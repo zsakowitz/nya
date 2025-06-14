@@ -1,4 +1,5 @@
 before nyalang version can be released:
+❌ mutating functions like `stroke` and `path` shouldn't really exist
 ❌ exact fractions
 ❌ automatic coercion
 ❌ list distribution

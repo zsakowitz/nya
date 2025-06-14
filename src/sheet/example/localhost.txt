@@ -1,3 +1,5 @@
+debugAst(2mod3)
+path()
 f(x)=x^2
 \wordprefix{rgb}\left(2,30,255\right)
 A=3+4i

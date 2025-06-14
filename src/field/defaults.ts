@@ -1,3 +1,4 @@
+import { CmdTextInert } from "#/list/text"
 import {
   OpApprox,
   OpDoubleRightArrow,
@@ -190,6 +191,9 @@ const words = new WordMapWithoutSpaces<WordKind>([
   // Custom variables
   ["mrrp", "var"],
   ["meow", "var"],
+  ["debugAst", "prefix"],
+  ["debugScript", "prefix"],
+  ["mod", "infix"],
 ]).freeze()
 
 const latexWords =
@@ -254,6 +258,7 @@ const latex = new WordMap<LatexInit>([
   ["\\nyaop", CmdWord],
   ["\\nyacolor", CmdColor],
   ["\\psi", SymPsi],
+  ["\\text", CmdTextInert],
   ...latexWords.map((x) => ["\\" + x, OperatorName] as const),
 ])
 

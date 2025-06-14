@@ -9,7 +9,7 @@ import {
 import { Declarations, PRECACHED, type Block } from "./decl"
 import { performCall } from "./emit"
 import { bug, issue } from "./error"
-import { ident as g, Id, IdGlobal } from "./id"
+import { ident as g, Id, ident, IdGlobal } from "./id"
 import type { EmitProps, Lang } from "./props"
 import { Tag } from "./tag"
 import {
@@ -87,7 +87,7 @@ function libPath(props: EmitProps, num: Scalar) {
       () => null
     : (v) => {
         const d = (v as PathJs).data
-        return `{x:new Path2D(${JSON.stringify(d.x)}),y:${JSON.stringify(d.y)},z:${JSON.stringify(d.z)}}`
+        return `({x:new Path2D(${JSON.stringify(d.x)}),y:${JSON.stringify(d.y)},z:${JSON.stringify(d.z)}})`
       },
     () => issue(`Cannot convert 'Path' into scalars.`),
     () => issue(`Cannot create 'Path' from scalars.`),
@@ -1244,6 +1244,29 @@ export function createStdlib(props: EmitProps) {
   for (const f of fns) {
     decl.fns.push(f.id as IdGlobal, f)
   }
+
+  const json = new Scalar(
+    "json",
+    lang == "glsl" ? "void" : "string",
+    lang == "glsl" ? { type: "void" } : { type: "struct", id: new Id("Json") },
+    (v) => `(${JSON.stringify((v as { data: unknown }).data)})`,
+    () => issue(`Cannot convert raw JSON data into scalars.`),
+    () => issue(`Cannot convert scalars into raw JSON data.`),
+  )
+  decl.types.set(ident("json"), json)
+  decl.tags.set(
+    ident("json"),
+    new Tag(ident("json"), (text) => {
+      if (text.length != 1) {
+        issue(`The 'json' tag accepts a single string.`)
+      }
+      try {
+        return new Value({ data: JSON.parse(text[0]!) }, json)
+      } catch {
+        issue(`Malformed JSON was passed to the 'json' tag.`)
+      }
+    }),
+  )
 
   return decl
 }

@@ -1,3 +1,4 @@
+import type { PuncCmp } from "@/eval/ast/token"
 import { escapeIdentName } from "../../lang/src/ast/kind"
 import { issue } from "../../lang/src/emit/error"
 import type { Node, OpKind, Suffix } from "./node"
@@ -280,15 +281,33 @@ TX_OPS.sop = {
   },
 }
 
-TX_OPS_OPS["cmp-eq"] = {
-  eval(_, [a, b], block) {
-    return block.of`(${a!})==(${b!})`
-  },
-  deps(_, [a, b], deps) {
-    deps.check(a!)
-    deps.check(b!)
-  },
+function cmp(name: PuncCmp, nameneg: PuncCmp, nya: string) {
+  TX_OPS_OPS[name] = {
+    eval(_, [a, b], block) {
+      return `(${block.eval(a!)}) ${nya}(${block.eval(b!)})`
+    },
+    deps(_, [a, b], deps) {
+      deps.check(a!)
+      deps.check(b!)
+    },
+  }
+
+  TX_OPS_OPS[nameneg] = {
+    eval(_, [a, b], block) {
+      return `!((${block.eval(a!)}) ${nya}(${block.eval(b!)}))`
+    },
+    deps(_, [a, b], deps) {
+      deps.check(a!)
+      deps.check(b!)
+    },
+  }
 }
+
+cmp("cmp-eq", "cmp-neq", "==")
+cmp("cmp-lt", "cmp-nlt", "<")
+cmp("cmp-lte", "cmp-nlte", "<=")
+cmp("cmp-gt", "cmp-ngt", ">")
+cmp("cmp-gte", "cmp-ngte", ">=")
 
 // calls %juxtapose or *, preferring %juxtapose
 TX_OPS_OPS["%juxtapose"] = {
@@ -305,6 +324,18 @@ TX_OPS_OPS["%juxtapose"] = {
 TX_OPS_OPS["\\cdot "] = {
   eval(_, [a, b], block) {
     return block.of`call * %dot(${a!},${b!})`
+  },
+  deps(_, [a, b], deps) {
+    deps.check(a!)
+    deps.check(b!)
+  },
+}
+
+// calls mod or %, preferring mod
+TX_OPS_OPS["mod"] = {
+  eval(_, [a, b], block) {
+    console.log(a, b)
+    return block.of`call % mod(${a!},${b!})`
   },
   deps(_, [a, b], deps) {
     deps.check(a!)
@@ -351,5 +382,24 @@ TX_SUFFIXES.exponent = {
   },
   deps(op, _, deps) {
     deps.check(op)
+  },
+}
+
+// calls %mod or %, preferring %mod
+TX_OPS_OPS["debugAst"] = {
+  eval(_, [a]) {
+    return `json#"${JSON.stringify(a, undefined, 2)}"#`
+  },
+  deps(_) {},
+}
+
+// calls %mod or %, preferring %mod
+TX_OPS_OPS["debugScript"] = {
+  eval(_, [a], block) {
+    const evald = block.eval(a!)
+    return `json#"${JSON.stringify(evald, undefined, 2)}"#`
+  },
+  deps(_, [a], deps) {
+    deps.check(a!)
   },
 }
