@@ -31,28 +31,6 @@ TX_OPS.binding = {
   },
 }
 
-const VALID_NAME = /^[A-Za-z][A-Za-z0-9_]*$/
-
-TX_OPS.bcall = {
-  eval(op, _, block) {
-    const arg = op.arg
-    if (!VALID_NAME.test(op.name.name)) {
-      throw new Error(`Function '${op.name.name}' does not have a legal name.`)
-    }
-    if (op.name.sub) {
-      const sub = block.eval(op.name.sub)
-      const args = block.evalList(arg).join(",")
-      return `${op.name.name}_(${sub},${args})`
-    }
-    const args = block.evalList(arg).join(",")
-    return `${op.name.name}(${args})`
-  },
-  deps(op, _, deps) {
-    deps.check(op.name.sub)
-    deps.check(op.arg)
-  },
-}
-
 TX_OPS.list = {
   eval() {
     throw new Error(`Cannot directly evaluate a comma-separated list.`)
@@ -233,6 +211,28 @@ TX_OPS.op = {
   },
 }
 
+// Similar to 'sop'; make sure to match changes between the two.
+TX_OPS.bcall = {
+  eval(op, _, block) {
+    const sub = op.name.sub ? block.eval(op.name.sub) : null
+    const args = block.evalList(op.arg).join(",")
+    const sup = op.sup ? fnSuperscript(op.sup) : null
+    const name =
+      op.name.name + (sub == null ? "" : "_") + (sup == "-1" ? "^-1" : "")
+    const inner = `call ${escapeIdentName(name in ALIASES ? ALIASES[name]! : name, true)}(${sub == null ? "" : sub + ","}${args})`
+    if (sup != null && sup != "-1") {
+      return `(${inner})^${sup}`
+    } else {
+      return inner
+    }
+  },
+  deps(op, _, deps) {
+    deps.check(op.name.sub)
+    deps.check(op.arg)
+  },
+}
+
+// Similar to 'bcall'; make sure to match changes between the two.
 TX_OPS.sop = {
   eval(op, children, block) {
     const sub = op.sub ? block.eval(op.sub) : null

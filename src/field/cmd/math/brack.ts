@@ -511,7 +511,10 @@ export class CmdBrack extends Command<[Block]> {
       ret.leaf({
         type: "bcall",
         data: {
-          name: { name: last.prfx.data.data.name, sub: null },
+          name: {
+            name: last.prfx.data.data.name,
+            sub: last.prfx.data.data.sub,
+          },
           sup: last.prfx.data.data.sup,
           arg: this.blocks[0].parse(),
         },

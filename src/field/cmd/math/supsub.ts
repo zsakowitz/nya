@@ -1,5 +1,7 @@
+import { subscript } from "@/eval2/tx"
 import { D, L, R, U, type Dir, type VDir } from "@/field/dir"
 import { h, U_ZERO_WIDTH_SPACE } from "@/jsx"
+import { issue } from "../../../../lang/src/emit/error"
 import type { LatexParser } from "../../latex"
 import {
   Block,
@@ -305,8 +307,49 @@ export class CmdSupSub extends Command {
   }
 
   ir2(ret: IRBuilder): void {
+    const last = ret.last()
+    if (
+      last?.leaf &&
+      !last.prfx &&
+      !last.sufx &&
+      !last.infx &&
+      last.leaf.type == "uvar"
+    ) {
+      if (this.sub) {
+        if (last.leaf.data.sub) {
+          issue(`Cannot have duplicate subscripts.`)
+        }
+        last.leaf.data.sub = subscript(this.sub.parse())
+      }
+      if (this.sup) {
+        ret.suffixed({ type: "exponent", data: this.sup.parse() })
+      }
+      return
+    }
+    if (
+      last?.prfx &&
+      !last.infx &&
+      !last.sufx &&
+      !last.infx &&
+      last.prfx.data.type == "sop"
+    ) {
+      if (this.sub) {
+        if (last.prfx.data.data.sub) {
+          issue(`Cannot have duplicate subscripts.`)
+        }
+        last.prfx.data.data.sub = this.sub.parse()
+      }
+      if (this.sup) {
+        if (last.prfx.data.data.sup) {
+          issue(`Cannot have duplicate supscripts.`)
+        }
+        last.prfx.data.data.sup = this.sup.parse()
+      }
+      return
+    }
+
     if (this.sub) {
-      throw new Error("Subscripts are not allowed here.") // TODO:
+      throw new Error("Subscripts are not allowed here.")
     }
     if (this.sup) {
       ret.suffixed({ type: "exponent", data: this.sup.parse() })
