@@ -70,7 +70,7 @@ export class ScriptEnvironment {
   }
 
   /** Compiles a script as an expression within the JavaScript context. */
-  compile(script: string, name = "<repl>", locals?: IdMap<Value>) {
+  process(script: string, name = "<repl>", locals?: IdMap<Value>) {
     const chunk = new Chunk(name, script)
     const issues = new Issues()
     const stream = createStream(chunk, issues, { comments: false })
@@ -86,6 +86,21 @@ export class ScriptEnvironment {
     return { block, value }
   }
 
+  /** Creates a function which can be called repeatedly. */
+  compile(
+    block: Block,
+    value: Value,
+    args: string,
+  ): (...args: unknown[]) => unknown {
+    const runtime = value.toRuntime()
+    return (0, eval)(`${this.libJs.globals()}
+${this.mainJs}
+;(function(${args}){
+${block.source}
+return ${runtime}
+})`)
+  }
+
   /** Executes a block and value compiled within the JavaScript context. */
   compute(block: Block, value: Value): unknown {
     const runtime = value.toRuntime()
@@ -97,7 +112,7 @@ ${runtime}`)
 
   log(script: string, name?: string, locals?: IdMap<Value>) {
     try {
-      const { block, value } = this.compile(script, name, locals)
+      const { block, value } = this.process(script, name, locals)
       const cooked = this.compute(block, value)
       console.group(`\x1b[30m${script} =\x1b[0m`)
       console.log(

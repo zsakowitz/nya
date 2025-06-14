@@ -1,10 +1,7 @@
 import type { PlainVar } from "@/eval/ast/token"
-import { js } from "@/eval/ast/tx"
 import { id } from "@/eval/lib/binding"
 import type { GlslResult } from "@/eval/lib/fn"
-import { ERR_COORDS_USED_OUTSIDE_GLSL } from "@/eval/ops/vars"
 import type { JsValue } from "@/eval/ty"
-import { outputBase } from "@/eval/ty/display"
 import { OpEq } from "@/field/cmd/leaf/cmp"
 import { CmdToken } from "@/field/cmd/leaf/token"
 import { CmdVar } from "@/field/cmd/leaf/var"
@@ -26,6 +23,8 @@ import "@/eval2/txs"
 import { PosVirtual } from "../../../../lang/src/ast/issue"
 import { tryPerformCall } from "../../../../lang/src/emit/emit"
 import { ident } from "../../../../lang/src/emit/id"
+import type { CanvasJs, PathJs } from "../../../../lang/src/emit/stdlib"
+import { Value } from "../../../../lang/src/emit/value"
 import { Entry } from "../../../../lang/src/exec/item"
 
 const ID_X = id({ value: "x" })
@@ -93,98 +92,6 @@ export class Expr {
   }
 
   js: { value: JsValue; base: SReal } | undefined
-  computeJs() {
-    this.js = undefined
-
-    if (
-      this.field.deps.isBound(ID_X) ||
-      this.field.deps.isBound(ID_Y) ||
-      this.field.deps.isBound(ID_P)
-    ) {
-      return
-    }
-
-    try {
-      let ast = this.field.ast
-      if (ast.type == "binding") {
-        ast = ast.value
-      }
-
-      const value = js(ast, this.field.scope.propsJs)
-      const base = outputBase(ast, this.field.scope.propsJs)
-      this.js = { value, base }
-    } catch (e) {
-      if (!(e instanceof Error && e.message == ERR_COORDS_USED_OUTSIDE_GLSL)) {
-        throw e
-      }
-    }
-  }
-
-  compute() {
-    let destroyed = false
-
-    if (this.field.error != null) {
-      if (!destroyed) {
-        if (this.state.ok && this.state.ext) {
-          this.state.ext.destroy?.(this.state.data)
-        }
-        if (this.state.ok && this.state.ext?.plot) {
-          this.sheet.cv.queue()
-        }
-      }
-      this.state = { ok: false, reason: this.field.error }
-      return
-    }
-
-    if (this.field.ast.type == "binding" && this.field.ast.params) {
-      this.state = { ok: true, ext: null }
-      return
-    }
-
-    try {
-      this.computeJs()
-
-      for (const ext of this.sheet.exts.exts) {
-        const data = ext.data(this)
-        if (data != null) {
-          if (this.state.ok && this.state.ext && this.state.ext != ext) {
-            this.state.ext.destroy?.(this.state.data)
-          }
-          if (this.state.ok && this.state.ext?.plot) {
-            this.sheet.cv.queue()
-          }
-          destroyed = true
-          this.state = { ok: true, ext: ext as any, data: data as any }
-          if (ext.plot) {
-            this.sheet.cv.queue()
-          }
-          return
-        }
-      }
-
-      if (this.state.ok && this.state.ext) {
-        this.state.ext.destroy?.(this.state.data)
-      }
-      if (this.state.ok && this.state.ext?.plot) {
-        this.sheet.cv.queue()
-      }
-      destroyed = true
-      this.state = { ok: true, ext: null }
-      this.elOutput.appendChild(h(JSON.stringify(this.state)))
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e)
-      console.warn("[compute]", msg)
-      if (!destroyed) {
-        if (this.state.ok && this.state.ext) {
-          this.state.ext.destroy?.(this.state.data)
-        }
-        if (this.state.ok && this.state.ext?.plot) {
-          this.sheet.cv.queue()
-        }
-      }
-      this.state = { ok: false, reason: msg }
-    }
-  }
 
   clearEls() {
     while (this.elOutput.firstChild) {
@@ -201,8 +108,38 @@ export class Expr {
     this.elError.textContent = reason
   }
 
+  drawSelf() {
+    if (!this.plot) {
+      return
+    }
+
+    const path = this.plot(this.sheet.cv.nya())
+    const { ctx, scale } = this.sheet.cv
+
+    ctx.resetTransform()
+    try {
+      ctx.scale(scale, scale)
+      ctx.lineCap = "round"
+      ctx.lineJoin = "round"
+      if ((path.z[0] > 0 && path.z[1] > 0) || path.z[2] > 0) {
+        ctx.strokeStyle =
+          ctx.fillStyle = `rgb(${255 * path.y[0]} ${255 * path.y[1]} ${255 * path.y[2]})`
+        ctx.lineWidth = path.z[0]
+        ctx.globalAlpha = path.z[2]
+        ctx.fill(path.x)
+        ctx.globalAlpha = path.z[1]
+        ctx.stroke(path.x)
+      }
+      ctx.globalAlpha = 1
+    } finally {
+      ctx.resetTransform()
+    }
+  }
+
+  plot: ((canvas: CanvasJs) => PathJs) | null = null
   glsl: GlslResult | undefined
   display() {
+    this.plot = null
     this.elOutput.classList.add("hidden")
     this.elError.classList.add("hidden")
 
@@ -223,7 +160,9 @@ export class Expr {
 
     try {
       const env = this.sheet.factory.env
-      const { block, value } = env.compile(exe.expr, "<expression>")
+      const { block, value } = env.process(exe.expr, "<expression>")
+      const val = env.compute(block, value)
+
       const display = tryPerformCall(
         ident("%display"),
         block,
@@ -243,7 +182,7 @@ export class Expr {
         field.typeLatex("=" + latex.replace(/\+-/g, "-"))
         this.elOutput.appendChild(el)
       } else {
-        const json = JSON.stringify(env.compute(block, value), undefined, 2)
+        const json = JSON.stringify(val, undefined, 2)
         this.elOutput.appendChild(
           h(
             "-mt-2 mb-1 text-xs font-mono px-2 ml-auto whitespace-pre",
@@ -252,6 +191,27 @@ export class Expr {
         )
       }
       this.elOutput.classList.remove("hidden")
+
+      {
+        const canvas = env.libJs.types.get(ident("Canvas"))!
+        const path = env.libJs.types.get(ident("Path"))!
+        const plot = tryPerformCall(
+          ident("%plot"),
+          block,
+          [new Value("CANVAS", canvas), new Value("VALUE", value.type)],
+          new PosVirtual("<plot>"),
+          new PosVirtual("<plot>"),
+        )
+        if (plot && plot.type == path) {
+          const fn = env.compile(block, plot, "CANVAS,VALUE") as (
+            cv: CanvasJs,
+            value: unknown,
+          ) => PathJs
+          const val = env.compute(block, value)
+          this.plot = (cv) => fn(cv, val)
+          this.sheet.cv.queue()
+        }
+      }
     } catch (e) {
       this.elOutput.classList.add("hidden")
       this.elError.classList.remove("hidden")

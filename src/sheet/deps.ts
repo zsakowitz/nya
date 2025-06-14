@@ -484,12 +484,6 @@ export class FieldComputed extends Field {
     this.scope.queueUpdate()
   }
 
-  allDeps() {
-    const deps = new Set(Object.keys(this.deps.ids))
-    this.scope.addNestedDeps(deps)
-    return deps
-  }
-
   recompute?(): void
 }
 

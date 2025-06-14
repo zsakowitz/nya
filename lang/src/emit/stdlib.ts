@@ -24,6 +24,25 @@ import {
 } from "./type"
 import { Value } from "./value"
 
+export interface PathJs {
+  x: Path2D
+  y: [number, number, number]
+  z: [number, number, number] // stroke width, stroke opacity, fill opacity
+}
+
+export interface CanvasJs {
+  sx: number
+  sy: number
+  ox: number
+  oy: number
+  x0: number
+  x1: number
+  y0: number
+  y1: number
+  wx: number
+  wy: number
+}
+
 function libPath(props: EmitProps, num: Scalar) {
   function vec(count: 2 | 3 | 4): FnType {
     function canConvertFrom(type: Type) {

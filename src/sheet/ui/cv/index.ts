@@ -1,5 +1,6 @@
 import { hx } from "@/jsx"
 import { px, type Point } from "@/lib/point"
+import type { CanvasJs } from "../../../../lang/src/emit/stdlib"
 import { onTheme } from "../../theme"
 import { Size } from "./consts"
 
@@ -138,6 +139,25 @@ export class Cv {
       }
     } else {
       return this.rawBounds
+    }
+  }
+
+  nya(): CanvasJs {
+    const { xmin, w, ymin, h } = this.bounds()
+    const { width, height } = this
+    const xs = width / w
+    const ys = height
+    return {
+      sx: xs,
+      sy: -ys / h,
+      ox: -xmin * xs,
+      oy: (ymin * ys) / h + ys,
+      x0: xmin,
+      x1: xmin + w,
+      y0: ymin,
+      y1: ymin + h,
+      wx: w,
+      wy: h,
     }
   }
 

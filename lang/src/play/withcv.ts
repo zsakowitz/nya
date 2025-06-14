@@ -18,7 +18,7 @@ import { emitBlock, emitItem, performCall } from "../emit/emit"
 import { issue } from "../emit/error"
 import { ident } from "../emit/id"
 import { EmitProps, type Lang } from "../emit/props"
-import { createStdlib } from "../emit/stdlib"
+import { createStdlib, type CanvasJs, type PathJs } from "../emit/stdlib"
 import type { Type } from "../emit/type"
 import { Value } from "../emit/value"
 import * as plugin from "../prettier/plugin"
@@ -181,7 +181,7 @@ function createRepl(lang: Lang) {
       let ret = emitBlock(expr, block)
       if (lang == "glsl") {
         ret = performCall(
-          ident("plot"),
+          ident("%plot"),
           block,
           [ret],
           new PosVirtual("automatic plot call in repl"),
@@ -206,38 +206,6 @@ function createRepl(lang: Lang) {
   }
 }
 
-interface CanvasJs {
-  sx: number
-  sy: number
-  ox: number
-  oy: number
-  x0: number
-  x1: number
-  y0: number
-  y1: number
-  wx: number
-  wy: number
-}
-
-function cvToCanvas(): CanvasJs {
-  const { xmin, w, ymin, h } = cv.bounds()
-  const { width, height } = cv
-  const xs = width / w
-  const ys = height
-  return {
-    sx: xs,
-    sy: -ys / h,
-    ox: -xmin * xs,
-    oy: (ymin * ys) / h + ys,
-    x0: xmin,
-    x1: xmin + w,
-    y0: ymin,
-    y1: ymin + h,
-    wx: w,
-    wy: h,
-  }
-}
-
 const glCanvas = hx(
   "canvas",
   "absolute w-full h-full top-0 left-0 pointer-events-none",
@@ -249,22 +217,16 @@ cv.el.insertBefore(glCanvas, cv.el.firstChild)
 function createExecutor() {
   const { emit: emitJs, run: runJs, decl } = createRepl("js")
   const { emit: emitGl, run: runGl, decl: declGl } = createRepl("glsl")
-  const plot = decl.fns.get(ident("plot")) ?? []
+  const plot = decl.fns.get(ident("%plot")) ?? []
   const canvas = decl.types.get(ident("Canvas"))!
   const path = decl.types.get(ident("Path"))!
-
-  type Path = {
-    x: Path2D
-    y: [number, number, number]
-    z: [number, number, number] // stroke width, stroke opacity, fill opacity
-  }
 
   type Result =
     | { ok: false; error: unknown }
     | { ok: true; lang: "glsl"; emit: string }
     | { ok: true; lang: "js"; value: unknown; type: Type }
 
-  let canvasObjects: ((cv: CanvasJs) => Path)[] = []
+  let canvasObjects: ((cv: CanvasJs) => PathJs)[] = []
   let programs: REGL.DrawCommand[] = []
 
   function go() {
@@ -383,7 +345,7 @@ const VALUE=(()=>{${emit}})();
   }
 
   function draw() {
-    const canvas = cvToCanvas()
+    const canvas = cv.nya()
     const ctx = cv.ctx
 
     ctx.resetTransform()

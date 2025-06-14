@@ -3,6 +3,7 @@ import { LatexParser } from "@/field/latex"
 import { Block } from "@/field/model"
 import { faSquareRootVariable } from "@fortawesome/free-solid-svg-icons"
 import type { ItemFactory } from "./item"
+import { Order } from "./ui/cv/consts"
 import type { ItemData } from "./ui/cv/move"
 import type { Expr, ExprStateOk } from "./ui/expr"
 
@@ -42,19 +43,23 @@ export const FACTORY_EXPR: ItemFactory<Expr, { geo?: boolean }> = {
   },
   plot: {
     order(data) {
-      if (data.state.ok && data.state.ext?.plot) {
-        return data.state.ext.plot.order(data.state.data)
-      }
-
-      return null
+      //       if (data.state.ok && data.state.ext?.plot) {
+      //         return data.state.ext.plot.order(data.state.data)
+      //       }
+      //
+      //       return null
+      return Order.Graph
     },
     items(data) {
-      return data.state.ext?.plot?.items(data.state.data) ?? []
+      return data.plot ? [1] : [] // data.state.ext?.plot?.items(data.state.data) ?? []
     },
     draw(data, item, index) {
+      // if (index == 0) {
+      data.drawSelf()
+      // }
       // This cast is safe since it wouldn't be called unless `items` returned.
-      const state = data.state as ExprStateOk
-      state.ext!.plot!.draw(state.data!, item, index)
+      // const state = data.state as ExprStateOk
+      // state.ext!.plot!.draw(state.data!, item, index)
     },
     target: {
       hits(data, at, hint) {
