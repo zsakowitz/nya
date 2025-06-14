@@ -1,5 +1,4 @@
 import type { PlainVar } from "@/eval/ast/token"
-import { id } from "@/eval/lib/binding"
 import type { GlslResult } from "@/eval/lib/fn"
 import type { JsValue } from "@/eval/ty"
 import { OpEq } from "@/field/cmd/leaf/cmp"
@@ -26,10 +25,6 @@ import { ident } from "../../../../lang/src/emit/id"
 import type { CanvasJs, PathJs } from "../../../../lang/src/emit/stdlib"
 import { Value } from "../../../../lang/src/emit/value"
 import { Entry } from "../../../../lang/src/exec/item"
-
-const ID_X = id({ value: "x" })
-const ID_Y = id({ value: "y" })
-const ID_P = id({ value: "p" })
 
 export type ExprStateOk =
   | { ok: true; ext: AnyExt | null; data: {} }

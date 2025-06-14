@@ -1,7 +1,14 @@
 import { escapeIdentName } from "../../lang/src/ast/kind"
 import { issue } from "../../lang/src/emit/error"
-import type { Node } from "./node"
-import { nameIdent, setGroupTxr, TX_OPS, TX_OPS_OPS, TX_SUFFIXES } from "./tx"
+import type { Node, OpKind, Suffix } from "./node"
+import {
+  printVar,
+  setGroupTxr,
+  TX_OPS,
+  TX_OPS_OPS,
+  TX_SUFFIXES,
+  type ScriptBlock,
+} from "./tx"
 
 function fnSuperscript({ data, args }: Node): string {
   if (data.type == "num") {
@@ -44,11 +51,10 @@ TX_OPS.list = {
 
 TX_OPS.uvar = {
   eval(op, _, block) {
-    const id = nameIdent(op)
     return (
-      block.local(id) ??
+      block.local(op) ??
       (op.sub ?
-        issue(`Variable '${id}' is not defined.`)
+        issue(`Variable '${printVar(op)}' is not defined.`)
       : escapeIdentName(op.name, false))
     )
   },
@@ -57,29 +63,66 @@ TX_OPS.uvar = {
   },
 }
 
+function ucall(
+  op: OpKind["ucall"],
+  block: ScriptBlock,
+  suffix: (x: string) => string,
+) {
+  const args = block.evalList(op.arg)
+  const fn = block.localOrFn(op.name)
+  if (fn == null) {
+    issue(`Variable '${printVar(op.name)}' is not defined.`)
+  }
+  if (typeof fn == "object") {
+    if (fn.args.length != args.length) {
+      issue(`Incorrect number of arguments to function '${printVar(op.name)}'.`)
+    }
+    return suffix(
+      `{${fn.args.map((name, i) => `let ${name}=${args[i]};`).join("")}${fn.body}}`,
+    )
+  }
+  if (args.length == 1) {
+    return `call * %juxtapose(${fn},${suffix(args[0]!)})`
+  } else {
+    return `call * %juxtapose(${fn},${suffix(`%point(${args.join(",")})`)})`
+  }
+}
+
+// This is special-cased in `suffix` so that c(3)^2 is evaluated as (4)(3^2) is c=4
 TX_OPS.ucall = {
   eval(op, _, block) {
-    const args = block.evalList(op.arg)
-    const id = nameIdent(op.name)
-    const fn = block.localOrFn(id)
-    if (fn == null) {
-      issue(`Variable '${id}' is not defined.`)
-    }
-    if (typeof fn == "object") {
-      if (fn.args.length != args.length) {
-        issue(`Incorrect number of arguments to function '${id}'.`)
-      }
-      return `{${fn.args.map((name, i) => `let ${name}=${args[i]};`).join("")}${fn.body}}`
-    }
-    if (args.length == 1) {
-      return `${fn}*(${args[0]!})`
-    } else {
-      return `${fn}*%point(${args.join(",")})`
-    }
+    return ucall(op, block, (x) => x)
   },
   deps(op, _, deps) {
     deps.add(op.name)
     deps.check(op.arg)
+  },
+}
+
+function evalSuffixes(base: string, block: ScriptBlock, suffixes: Suffix[]) {
+  for (const suffix of suffixes) {
+    base = block.evalSuffix(suffix, base)
+  }
+  return base
+}
+
+TX_OPS.suffix = {
+  eval(suffixes, children, block) {
+    const arg = children[0]!
+
+    // Special casing for 'ucall' nodes so that c(3)^2 is evaluated as (4)(3^2) if c=4
+    if (arg.data.type == "ucall") {
+      const op = arg.data.data
+      return ucall(op, block, (x) => evalSuffixes(x, block, suffixes))
+    }
+
+    return evalSuffixes(block.eval(arg), block, suffixes)
+  },
+  deps(op, children, deps) {
+    deps.check(children[0]!)
+    for (const suffix of op) {
+      TX_SUFFIXES[suffix.type]?.deps(suffix.data as never, null, deps)
+    }
   },
 }
 
@@ -127,22 +170,6 @@ TX_OPS.sqrt = {
   },
   deps(contents, _, deps) {
     deps.check(contents)
-  },
-}
-
-TX_OPS.suffix = {
-  eval(op, children, block) {
-    let base = block.eval(children[0]!)
-    for (const suffix of op) {
-      base = block.evalSuffix(suffix, base)
-    }
-    return base
-  },
-  deps(op, children, deps) {
-    deps.check(children[0]!)
-    for (const suffix of op) {
-      TX_SUFFIXES[suffix.type]?.deps(suffix.data as never, null, deps)
-    }
   },
 }
 

@@ -1,6 +1,7 @@
-import type { Node } from "@/eval2/node"
+import type { NameCooked, Node } from "@/eval2/node"
 import {
   nameIdent,
+  printVar,
   ScriptBlock,
   ScriptDeps,
   type NameIdent,
@@ -53,8 +54,8 @@ export class EntrySet {
     this.entries.forEach((x) => x.checkExe())
   }
 
-  global(name: NameIdent): Node | null {
-    const defs = this.defs.get(name)
+  global(name: NameCooked): Node | null {
+    const defs = this.defs.get(nameIdent(name))
     if (defs?.length == 1) {
       const d = defs[0]!
       if (d.state.error) {
@@ -71,19 +72,19 @@ export class EntrySet {
           bug(`A plain expression was used as a global variable.`)
         case Kind.Var:
           if (d.state.data.args) {
-            issue(`'${name}' is a function. Try using parentheses.`)
+            issue(`'${printVar(name)}' is a function. Try using parentheses.`)
           }
           return d.state.data.of
       }
     } else if (!defs?.length) {
       return null
     } else {
-      issue(`Variable '${name}' is defined in multiple places.`)
+      issue(`Variable '${printVar(name)}' is defined in multiple places.`)
     }
   }
 
-  globalOrFn(name: NameIdent): { args: NameIdent[] | null; of: Node } | null {
-    const defs = this.defs.get(name)
+  globalOrFn(name: NameCooked): { args: NameIdent[] | null; of: Node } | null {
+    const defs = this.defs.get(nameIdent(name))
     if (defs?.length == 1) {
       const d = defs[0]!
       if (d.state.error) {
@@ -104,7 +105,7 @@ export class EntrySet {
     } else if (!defs?.length) {
       return null
     } else {
-      issue(`Variable '${name}' is defined in multiple places.`)
+      issue(`Variable '${printVar(name)}' is defined in multiple places.`)
     }
   }
 }

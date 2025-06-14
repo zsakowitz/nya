@@ -138,7 +138,7 @@ export function performCall(
       issue(`Locally defined variable '${id}' is not a function.`, namePos)
     }
 
-    issue(`Function '${id}' is not defined.`, namePos)
+    issue(`'${id}' is not defined.`, namePos)
   }
 
   const overload = fns.find(

@@ -392,3 +392,7 @@ fn %plot(cv: Canvas, l: Ray) -> Path {
 
   p
 }
+
+fn %juxtapose(a: Point, b: Point) -> num {
+  @length(a @- b)
+}

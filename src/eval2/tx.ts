@@ -12,18 +12,22 @@ export class ScriptBlock {
     readonly leakyLocals: IdMap<string>,
   ) {}
 
-  local(name: NameIdent): string | null {
-    const early =
-      this.tightLocals.get(ident(name)) ?? this.leakyLocals.get(ident(name))
+  local(name: NameCooked): string | null {
+    const id = ident(nameIdent(name))
+
+    const early = this.tightLocals.get(id) ?? this.leakyLocals.get(id)
     if (early != null) return early
 
     const value = this.set.global(name)
     return value == null ? null : this.evalInSeparateScope(value)
   }
 
-  localOrFn(name: NameIdent): string | { args: string[]; body: string } | null {
-    const early =
-      this.tightLocals.get(ident(name)) ?? this.leakyLocals.get(ident(name))
+  localOrFn(
+    name: NameCooked,
+  ): string | { args: string[]; body: string } | null {
+    const id = ident(nameIdent(name))
+
+    const early = this.tightLocals.get(id) ?? this.leakyLocals.get(id)
     if (early != null) return early
 
     const value = this.set.globalOrFn(name)
@@ -206,4 +210,8 @@ export function listItems(node: Node): Node[] {
     ret.push(rest)
   }
   return ret
+}
+
+export function printVar(name: NameCooked) {
+  return name.name + (name.sub ? name.sub : "")
 }
