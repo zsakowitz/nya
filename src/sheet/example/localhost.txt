@@ -1,5 +1,4 @@
-debugScript(23)
-debugAst(2mod3)
+debugScript(23+47+-5)
 path()
 f(x)=x^2
 \wordprefix{rgb}\left(2,30,255\right)
