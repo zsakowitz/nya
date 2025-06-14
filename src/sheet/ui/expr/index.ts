@@ -253,6 +253,7 @@ export class Expr {
       }
       this.elOutput.classList.remove("hidden")
     } catch (e) {
+      this.elOutput.classList.add("hidden")
       this.elError.classList.remove("hidden")
       this.elError.textContent = e instanceof Error ? e.message : String(e)
     }

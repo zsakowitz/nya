@@ -14,8 +14,8 @@ TX_OPS.binding = {
 const VALID_NAME = /^[A-Za-z][A-Za-z0-9_]*$/
 
 TX_OPS.bcall = {
-  eval(op, children, block) {
-    const arg = op.arg || children[0]!
+  eval(op, _, block) {
+    const arg = op.arg
     if (!VALID_NAME.test(op.name.name)) {
       throw new Error(`Function '${op.name.name}' does not have a legal name.`)
     }
@@ -27,9 +27,9 @@ TX_OPS.bcall = {
     const args = block.evalList(arg).join(",")
     return `${op.name.name}(${args})`
   },
-  deps(op, children, deps) {
+  deps(op, _, deps) {
     deps.check(op.name.sub)
-    deps.check(op.arg || children[0]!)
+    deps.check(op.arg)
   },
 }
 
@@ -97,7 +97,7 @@ TX_OPS.combination = {
 
 TX_OPS.frac = {
   eval([a, b], _, block) {
-    return block.of`%frac(${a},${b})`
+    return block.of`call / %frac(${a},${b})`
   },
   deps([a, b], _, deps) {
     deps.check(a)
@@ -233,6 +233,15 @@ setGroupTxr("(", ")", {
     } else {
       return block.eval(contents)
     }
+  },
+  deps({ contents }, _, deps) {
+    deps.check(contents)
+  },
+})
+
+setGroupTxr("|", "|", {
+  eval({ contents }, _, block) {
+    return block.of`call abs %abs(${contents})`
   },
   deps({ contents }, _, deps) {
     deps.check(contents)

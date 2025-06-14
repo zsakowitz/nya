@@ -9,6 +9,14 @@ fn %point(x: num, y: num, z: num, w: num) -> Point4D {
   Point4D { x, y, z, w }
 }
 
+fn %display(a: Point4D) -> latex {
+  display"(${a.x},${a.y},${a.z},${a.w})"
+}
+
+fn %debug(a: Point4D) -> latex {
+  debug"(${a.x},${a.y},${a.z},${a.w})"
+}
+
 fn +(a: Point4D, b: Point4D) -> Point4D {
   a @+ b
 }

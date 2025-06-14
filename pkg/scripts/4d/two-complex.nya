@@ -1,0 +1,58 @@
+use "complex";
+
+struct PointComplex4D {
+  x: Complex,
+  y: Complex,
+}
+
+fn %point(x: Complex, y: Complex) -> PointComplex4D {
+  PointComplex4D { x, y }
+}
+
+fn %display(a: PointComplex4D) -> latex {
+  display"(${a.x},${a.y})"
+}
+
+fn %debug(a: PointComplex4D) -> latex {
+  debug"(${a.x},${a.y})"
+}
+
+fn +(a: PointComplex4D, b: PointComplex4D) -> PointComplex4D {
+  a @+ b
+}
+
+fn -(a: PointComplex4D, b: PointComplex4D) -> PointComplex4D {
+  a @- b
+}
+
+fn unsign(a: PointComplex4D) -> PointComplex4D {
+  @abs(a)
+}
+
+fn -(a: PointComplex4D) -> PointComplex4D {
+  @-a
+}
+
+fn %odot(a: PointComplex4D, b: PointComplex4D) -> PointComplex4D {
+  a @* b
+}
+
+fn +(a: PointComplex4D) -> PointComplex4D {
+  a
+}
+
+fn *(a: PointComplex4D, b: num) -> PointComplex4D {
+  a @* b
+}
+
+fn *(a: num, b: PointComplex4D) -> PointComplex4D {
+  a @* b
+}
+
+fn /(a: PointComplex4D, b: num) -> PointComplex4D {
+  a @/ b
+}
+
+fn point(a: PointComplex4D) -> PointComplex4D {
+  a
+}

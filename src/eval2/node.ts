@@ -21,7 +21,7 @@ export interface OpKind {
   uvar: NameCooked // name of a user-defined variable
   bvar: NameRaw // name of a builtin variable
   ucall: { name: NameCooked; arg: Node } // call of a user-defined function (not min, max, sin, etc.)
-  bcall: { name: NameRaw; arg: Node | null } // call of a builtin function
+  bcall: { name: NameRaw; arg: Node } // call of a builtin function
   frac: [Node, Node]
   matrix: { cols: number; data: Node[] }
   group: { lhs: ParenLhs; rhs: ParenRhs; contents: Node }

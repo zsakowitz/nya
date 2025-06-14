@@ -494,14 +494,34 @@ export class CmdBrack extends Command<[Block]> {
   }
 
   ir2(ret: IRBuilder): void {
-    ret.leaf({
-      type: "group",
-      data: {
-        lhs: this.lhs,
-        rhs: this.rhs,
-        contents: this.blocks[0].parse(),
-      },
-    })
+    const last = ret.last()
+    console.log(last)
+    if (
+      this.lhs == "(" &&
+      this.rhs == ")" &&
+      last?.prfx?.data.type == "op" &&
+      !last.infx &&
+      !last.leaf &&
+      !last.sufx
+    ) {
+      ret.ir.pop()
+      ret.leaf({
+        type: "bcall",
+        data: {
+          name: { name: last.prfx.data.data, sub: null },
+          arg: this.blocks[0].parse(),
+        },
+      })
+    } else {
+      ret.leaf({
+        type: "group",
+        data: {
+          lhs: this.lhs,
+          rhs: this.rhs,
+          contents: this.blocks[0].parse(),
+        },
+      })
+    }
   }
 
   onSiblingChange(dir: Dir): void {
