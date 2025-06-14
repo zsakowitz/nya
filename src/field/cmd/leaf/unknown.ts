@@ -1,4 +1,3 @@
-import type { Node } from "@/eval/ast/token"
 import type { IRBuilder } from "@/field/model"
 import { h } from "@/jsx"
 import { Leaf } from "."
@@ -30,8 +29,6 @@ export class CmdUnknown extends Leaf {
   ascii(): string {
     return ""
   }
-
-  ir(_tokens: Node[]): true | void {}
 
   ir2(_ret: IRBuilder): void {
     // TODO: location info

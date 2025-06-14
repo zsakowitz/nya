@@ -1,5 +1,4 @@
-import type { Node, PlainVar } from "@/eval/ast/token"
-import { tryId } from "@/eval/lib/binding"
+import { Precedence } from "@/eval2/prec"
 import { D, L, R, U, type Dir, type VDir } from "@/field/dir"
 import { U_ZERO_WIDTH_SPACE, h } from "@/jsx"
 import type { LatexParser } from "../../latex"
@@ -124,68 +123,28 @@ export class CmdFrac extends Command<[Block, Block]> {
     }
   }
 
-  ir(tokens: Node[]): void {
-    const a = this.blocks[0].ast()
-    const b = this.blocks[1].ast()
-
-    derivative: if (
-      a.type == "var" &&
-      a.kind == "var" &&
-      a.value == "d" &&
-      !a.sup &&
-      !a.sub &&
-      b.type == "juxtaposed" &&
-      b.nodes.length == 2 &&
-      b.nodes[0]!.type == "var" &&
-      b.nodes[0]!.kind == "var" &&
-      b.nodes[0]!.value == "d" &&
-      !b.nodes[0]!.sup &&
-      !b.nodes[0]!.sub &&
-      b.nodes[1]!.type == "var" &&
-      b.nodes[1]!.kind == "var" &&
-      !b.nodes[1]!.sup
-    ) {
-      const id = tryId(b.nodes[1]!)
-      if (!id) break derivative
-
-      tokens.push({ type: "dd", wrt: b.nodes[1]! as PlainVar })
-      return
-    }
-
-    const last = tokens[tokens.length - 1]
-    if (
-      last &&
-      last.type == "num" &&
-      !last.sub &&
-      last.value.indexOf(".") == -1 &&
-      a.type == "num" &&
-      !a.sub &&
-      a.value.indexOf(".") == -1 &&
-      b.type == "num" &&
-      !b.sub &&
-      b.value.indexOf(".") == -1
-    ) {
-      tokens.pop()
-      tokens.push({
-        type: "mixed",
-        integer: last.value,
-        a: a.value,
-        b: b.value,
-      })
-      return
-    }
-
-    tokens.push({
-      type: "frac",
-      a: this.blocks[0].ast(),
-      b: this.blocks[1].ast(),
-    })
-  }
-
   ir2(ret: IRBuilder): void {
-    ret.leaf({
-      type: "frac",
-      data: [this.blocks[0].parse(), this.blocks[1].parse()],
-    })
+    const a = this.blocks[0].parse()
+    const b = this.blocks[1].parse()
+
+    if (
+      a.data.type == "uvar" &&
+      b.data.type == "op" &&
+      b.data.data == "%juxtapose"
+    ) {
+      const bl = b.args?.[0]?.data
+      const br = b.args?.[1]?.data
+      if (
+        bl?.type == "uvar" &&
+        bl.data.name == "d" &&
+        !bl.data.sub &&
+        br?.type == "uvar"
+      ) {
+        ret.prfx({ type: "derivative", data: br.data }, Precedence.BigSym)
+        return
+      }
+    }
+
+    ret.leaf({ type: "frac", data: [a, b] })
   }
 }

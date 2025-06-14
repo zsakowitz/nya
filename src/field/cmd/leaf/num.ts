@@ -1,12 +1,9 @@
 import {
   Precedence,
   PRECEDENCE_MAP,
-  type Node,
   type PuncBinaryStr,
-  type PuncInfix,
   type Var,
 } from "@/eval/ast/token"
-import { TXR_MAGICVAR } from "@/eval/ast/tx"
 import { subscript } from "@/eval/lib/text"
 import { P, PRECEDENCE_WORD_BINARY, PRECEDENCE_WORD_UNARY } from "@/eval2/prec"
 import { L, R, type Dir } from "@/field/dir"
@@ -92,27 +89,6 @@ export class CmdNum extends Leaf {
     }
   }
 
-  ir(tokens: Node[]): void {
-    const last = tokens[tokens.length - 1]
-    if (last && last.type == "num") {
-      tokens.pop()
-      if (last.span) {
-        last.span[R] = this[R]
-      }
-      tokens.push({
-        type: "num",
-        value: last.value + this.text,
-        span: last.span,
-      })
-    } else {
-      tokens.push({
-        type: "num",
-        value: this.text,
-        span: new Span(this.parent, this[L], this[R]),
-      })
-    }
-  }
-
   ir2(ret: IRBuilder): void {
     let data = ""
     let self: CmdNum = this
@@ -190,38 +166,6 @@ export class CmdDot extends Leaf {
 
   latex(): string {
     return "."
-  }
-
-  ir(tokens: Node[]): void {
-    const last = tokens[tokens.length - 1]
-    if (last?.type == "punc") {
-      if (last.value == "." || last.value == "..") {
-        tokens.pop()
-        tokens.push({
-          type: "punc",
-          value: `${last.value}.`,
-          kind: "infix",
-        })
-
-        const prev = tokens[tokens.length - 2]
-        if (!prev) {
-          tokens.splice(0, 0, { type: "void" })
-        } else if (prev.type == "punc" && prev.value == ",") {
-          tokens.splice(tokens.length - 1, 0, { type: "void" })
-        }
-        if (!this[R]) {
-          tokens.push({ type: "void" })
-        }
-
-        return
-      }
-    }
-    tokens.push({
-      type: "punc",
-      value: ".",
-      kind: "infix",
-      span: new Span(this.parent, this[L], this[R]),
-    })
   }
 
   ir2(_ret: IRBuilder): void {
@@ -590,113 +534,6 @@ export class CmdVar extends Leaf {
         (cursor[L] as CmdVar).part != R
       )
     }
-  }
-
-  ir(tokens: Node[]): true | void {
-    magicprefix: if (
-      (this.kind == "magicprefix" || this.kind == "magicprefixword") &&
-      this.part == L
-    ) {
-      let value = this.text
-      let el: Command = this
-      let prop: string | undefined
-      while (el[R] instanceof CmdVar) {
-        const name = (el = el[R])
-        value += name.text
-        if (name.part == R) break
-      }
-      if (TXR_MAGICVAR[value]?.fnlike) {
-        break magicprefix
-      }
-      if (el[R] instanceof CmdDot) {
-        if (el[R][R] instanceof CmdVar) {
-          let nextEl: CmdVar = el[R][R]
-          let value = nextEl.text
-          if (nextEl.kind != null) {
-            while (nextEl[R] instanceof CmdVar) {
-              nextEl = nextEl[R]
-              value += nextEl.text
-              if (nextEl.part == R) break
-            }
-          }
-          prop = value
-          el = nextEl
-        }
-      }
-      const ss = el?.[R] instanceof CmdSupSub ? el[R] : null
-      tokens.push({
-        type: "magicvar",
-        value,
-        prop,
-        sub: ss?.sub?.ast(),
-        sup: ss?.sup?.ast(),
-        contents: new Span(this.parent, ss || el, null).ast(),
-      })
-      return true
-    }
-
-    if (this.kind) {
-      if (this.part == "both") {
-        tokens.push({
-          type: "var",
-          value: this.text,
-          kind:
-            this.kind == "magicprefix" ? "prefix"
-            : this.kind == "magicprefixword" ? "magicprefixword"
-            : this.kind,
-          span: new Span(this.parent, this[L], this[R]),
-        })
-        return
-      }
-
-      if (this.part == L) {
-        tokens.push({
-          type: "var",
-          value: this.text,
-          kind:
-            this.kind == "magicprefix" ? "prefix"
-            : this.kind == "magicprefixword" ? "magicprefixword"
-            : this.kind,
-          span: new Span(this.parent, this[L], this[R]),
-        })
-        return
-      }
-
-      let last = tokens[tokens.length - 1]
-      if (last && last.type == "var" && !last.sub && !last.sup) {
-        last.value += this.text
-        if (last.span) {
-          last.span[R] = this[R]
-        }
-      } else {
-        tokens.push(
-          (last = {
-            type: "var",
-            value: this.text,
-            kind: this.kind,
-            span: new Span(this.parent, this[L], this[R]),
-          }),
-        )
-      }
-
-      if (this.part == R && last.value in PRECEDENCE_MAP) {
-        tokens.pop()
-        tokens.push({
-          type: "punc",
-          kind: "infix",
-          value: last.value as Exclude<PuncInfix, ".">,
-        })
-      }
-
-      return
-    }
-
-    tokens.push({
-      type: "var",
-      value: this.text,
-      kind: "var",
-      span: new Span(this.parent, this[L], this[R]),
-    })
   }
 
   ir2(ret: IRBuilder): void {

@@ -1,4 +1,3 @@
-import type { Node } from "@/eval/ast/token"
 import type { JsValue, TyName } from "@/eval/ty"
 import { h } from "@/jsx"
 import { Leaf } from "."
@@ -21,10 +20,6 @@ export class CmdValue<
 
   reader(): string {
     return " RawValue "
-  }
-
-  ir(tokens: Node[]): true | void {
-    tokens.push({ type: "value", value: this.value })
   }
 
   latex(): string {

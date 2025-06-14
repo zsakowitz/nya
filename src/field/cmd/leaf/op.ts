@@ -1,4 +1,4 @@
-import type { Node, Punc, PuncInfix, PuncPm } from "@/eval/ast/token"
+import type { PuncInfix, PuncPm } from "@/eval/ast/token"
 import { infx, pifx, type IR } from "@/eval2/node"
 import { Precedence as P } from "@/eval2/prec"
 import { L, R } from "@/field/dir"
@@ -6,7 +6,6 @@ import { h } from "@/jsx"
 import { Leaf } from "."
 import type { LatexParser } from "../../latex"
 import {
-  Span,
   type Command,
   type Cursor,
   type InitProps,
@@ -50,7 +49,6 @@ abstract class OpPm extends Op {
 }
 
 function op(
-  punc: (self: Op) => Punc,
   ir2: IR,
   latex: string,
   mathspeak: string,
@@ -88,10 +86,6 @@ function op(
       return latex
     }
 
-    ir(tokens: Node[]): void {
-      tokens.push(punc(this))
-    }
-
     ir2(ret: IRBuilder): void {
       ret.push(ir2)
     }
@@ -108,12 +102,6 @@ export function opp(
   endsImplicitGroup?: boolean,
 ) {
   return op(
-    (self) => ({
-      type: "punc",
-      kind: "infix",
-      value: latex,
-      span: new Span(self.parent, self[L], self[R]),
-    }),
     infx({ type: "op", data: latex }, pl, pr),
     latex,
     mathspeak,
@@ -158,15 +146,6 @@ function opm(
 
     latex(): string {
       return latex
-    }
-
-    ir(tokens: Node[]): void {
-      tokens.push({
-        type: "punc",
-        kind: "pm",
-        value: latex,
-        span: new Span(this.parent, this[L], this[R]),
-      })
     }
 
     ir2(ret: IRBuilder): void {
@@ -255,10 +234,6 @@ export class OpNeg extends Leaf {
 
   latex(): string {
     return "\\neg "
-  }
-
-  ir(tokens: Node[]): void {
-    tokens.push({ type: "punc", kind: "prefix", value: "\\neg " })
   }
 
   ir2(ret: IRBuilder): void {

@@ -1,4 +1,3 @@
-import type { Node } from "@/eval/ast/token"
 import { D, L, R, U, type Dir, type VDir } from "@/field/dir"
 import { h, U_ZERO_WIDTH_SPACE } from "@/jsx"
 import type { LatexParser } from "../../latex"
@@ -197,15 +196,6 @@ export class CmdInt extends Command<BlocksInt> {
     }
 
     return focusEdge(this, x)
-  }
-
-  ir(tokens: Node[]): void {
-    tokens.push({
-      type: "bigsym",
-      cmd: "\\int",
-      sub: this.blocks[0]?.ast(),
-      sup: this.blocks[1]?.ast(),
-    })
   }
 
   ir2(_ret: IRBuilder): void {

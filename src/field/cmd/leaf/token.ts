@@ -1,15 +1,13 @@
-import type { Node } from "@/eval/ast/token"
 import { BindingFn, BindingGlslValue, id } from "@/eval/lib/binding"
 import type { JsVal, TyName } from "@/eval/ty"
 import { TY_INFO } from "@/eval/ty/info"
-import { L, R } from "@/field/dir"
+import { L } from "@/field/dir"
 import { fa, h, sx } from "@/jsx"
 import type { Scope } from "@/sheet/deps"
 import { faWarning } from "@fortawesome/free-solid-svg-icons/faWarning"
 import { Leaf } from "."
 import type { LatexParser } from "../../latex"
 import {
-  Span,
   type Command,
   type Cursor,
   type InitProps,
@@ -241,15 +239,6 @@ export class CmdToken extends Leaf {
 
   reader(): string {
     return ` Token #${this.id} `
-  }
-
-  ir(tokens: Node[]): true | void {
-    tokens.push({
-      type: "var",
-      kind: "var",
-      span: new Span(this.parent, this[L], this[R]),
-      value: "$" + this.id,
-    })
   }
 
   ir2(ret: IRBuilder): void {

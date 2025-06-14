@@ -1,4 +1,4 @@
-import type { Node, PuncCmp } from "@/eval/ast/token"
+import type { PuncCmp } from "@/eval/ast/token"
 import { Precedence } from "@/eval2/prec"
 import { L, R, type Dir } from "@/field/dir"
 import type { LatexParser } from "../../latex"
@@ -101,15 +101,6 @@ function ceq(eq: Data, ne: Data, endsImplicitGroup = true) {
       super.delete(cursor, from)
     }
 
-    ir(tokens: Node[]): void {
-      const op = this.neg ? ne : eq
-      tokens.push({
-        type: "punc",
-        kind: "cmp",
-        value: op[4],
-      })
-    }
-
     ir2(ret: IRBuilder): void {
       ret.infx(
         { type: "op", data: (this.neg ? ne : eq)[4] },
@@ -199,14 +190,6 @@ function cmp(
         return
       }
       super.delete(cursor, from)
-    }
-
-    ir(tokens: Node[]): void {
-      tokens.push({
-        type: "punc",
-        kind: "cmp",
-        value: this.op[4],
-      })
     }
 
     ir2(ret: IRBuilder): void {

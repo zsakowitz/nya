@@ -1,4 +1,3 @@
-import type { Node } from "@/eval/ast/token"
 import { D, L, R, U, type Dir, type VDir } from "@/field/dir"
 import { h } from "@/jsx"
 import type { LatexParser } from "../../latex"
@@ -262,20 +261,6 @@ export class CmdPiecewise extends Command {
     } else {
       return focusEdge(this, x)
     }
-  }
-
-  ir(tokens: Node[]): void {
-    const pieces = []
-    for (let i = 0; i < this.blocks.length - 1; i += 2) {
-      pieces.push({
-        value: this.blocks[i]!.ast(),
-        condition: this.blocks[i + 1]!.ast(),
-      })
-    }
-    tokens.push({
-      type: "piecewise",
-      pieces,
-    })
   }
 
   ir2(ret: IRBuilder): void {

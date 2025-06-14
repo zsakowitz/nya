@@ -1,4 +1,3 @@
-import type { Node } from "@/eval/ast/token"
 import { D, L, R, U, type Dir, type VDir } from "@/field/dir"
 import { h } from "@/jsx"
 import type { LatexParser } from "../../latex"
@@ -430,14 +429,6 @@ export class CmdMatrix extends Command<Block[]> {
     } else {
       return focusEdge(this, x)
     }
-  }
-
-  ir(tokens: Node[]): void {
-    tokens.push({
-      type: "matrix",
-      cols: this.cols,
-      values: this.blocks.map((block) => block.ast()),
-    })
   }
 
   ir2(ret: IRBuilder): void {

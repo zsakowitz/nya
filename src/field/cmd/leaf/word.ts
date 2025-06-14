@@ -1,14 +1,12 @@
-import type { Node } from "@/eval/ast/token"
 import {
   Precedence,
   PRECEDENCE_WORD_BINARY,
   PRECEDENCE_WORD_UNARY,
 } from "@/eval2/prec"
-import { L, R } from "@/field/dir"
 import type { LatexParser } from "@/field/latex"
 import { h } from "@/jsx"
 import { Leaf } from "."
-import { Span, type Command, type IRBuilder } from "../../model"
+import { type Command, type IRBuilder } from "../../model"
 import { CmdUnknown } from "./unknown"
 import type { WordKind } from "./var"
 
@@ -73,15 +71,6 @@ export class CmdWord extends Leaf {
     } else {
       return " " + this.text + " "
     }
-  }
-
-  ir(tokens: Node[]): true | void {
-    tokens.push({
-      type: "var",
-      value: this.text,
-      kind: this.kind == "builtin" ? "prefix" : this.kind,
-      span: new Span(this.parent, this[L], this[R]),
-    })
   }
 
   ir2(ret: IRBuilder): void {

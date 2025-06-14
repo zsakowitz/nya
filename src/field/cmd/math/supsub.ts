@@ -1,4 +1,3 @@
-import type { Node } from "@/eval/ast/token"
 import { D, L, R, U, type Dir, type VDir } from "@/field/dir"
 import { h, U_ZERO_WIDTH_SPACE } from "@/jsx"
 import type { LatexParser } from "../../latex"
@@ -302,33 +301,6 @@ export class CmdSupSub extends Command {
       return this.sup.focus(x, y)
     } else {
       return this.sub.focus(x, y)
-    }
-  }
-
-  ir(tokens: Node[]): void {
-    if (this.sub) {
-      const last = tokens[tokens.length - 1]
-      if (last && (last.type == "num" || last.type == "var")) {
-        if (last.sub) {
-          tokens.push({ type: "error", reason: "Double subscript." })
-          return
-        }
-        last.sub = this.sub.ast()
-      } else {
-        tokens.push({ type: "sub", sub: this.sub.ast() })
-      }
-    }
-    if (this.sup) {
-      const last = tokens[tokens.length - 1]
-      if (last && last.type == "var") {
-        if (last.sup) {
-          tokens.push({ type: "error", reason: "Double superscript." })
-          return
-        }
-        last.sup = this.sup.ast()
-      } else {
-        tokens.push({ type: "sup", sup: this.sup.ast() })
-      }
     }
   }
 

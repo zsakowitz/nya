@@ -1,4 +1,3 @@
-import type { Node } from "@/eval/ast/token"
 import { L } from "@/field/dir"
 import { h } from "@/jsx"
 import { Leaf } from "."
@@ -28,10 +27,6 @@ export class CmdExclamation extends Leaf {
 
   latex(): string {
     return "!"
-  }
-
-  ir(tokens: Node[]): void {
-    tokens.push({ type: "punc", value: "!", kind: "suffix" })
   }
 
   ir2(ret: IRBuilder): void {

@@ -1,11 +1,9 @@
-import type { Node } from "@/eval/ast/token"
 import { Precedence } from "@/eval2/prec"
-import { L, R } from "@/field/dir"
+import { L } from "@/field/dir"
 import { h, usvg } from "@/jsx"
 import { CmuLeaf } from "."
 import type { LatexParser } from "../../../latex"
 import {
-  Span,
   type Command,
   type Cursor,
   type InitProps,
@@ -114,36 +112,6 @@ export class CmuSym extends CmuLeaf {
 
   reader(): string {
     return "[redacted]"
-  }
-
-  ir(tokens: Node[]): void {
-    if (this.sym == "+" || this.sym == "-") {
-      tokens.push({
-        type: "punc",
-        kind: "pm",
-        value: this.sym,
-        span: new Span(this.parent, this[L], this[R]),
-      })
-      return
-    }
-
-    if (this.sym[0] == "v") {
-      tokens.push({
-        type: "var",
-        value: this.sym,
-        kind: "var",
-        span: new Span(this.parent, this[L], this[R]),
-      })
-      return
-    }
-
-    const last = tokens[tokens.length - 1]
-    if (last?.type == "num16") {
-      tokens.pop()
-      tokens.push({ type: "num16", value: last.value + this.sym })
-    } else {
-      tokens.push({ type: "num16", value: this.sym })
-    }
   }
 
   ir2(ret: IRBuilder): void {

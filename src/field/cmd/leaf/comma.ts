@@ -1,4 +1,3 @@
-import type { Node } from "@/eval/ast/token"
 import { infx } from "@/eval2/node"
 import { Precedence } from "@/eval2/prec"
 import { L } from "@/field/dir"
@@ -38,14 +37,6 @@ export class CmdComma extends Leaf {
 
   invalidatesTransparentWrapper(): boolean {
     return true
-  }
-
-  ir(tokens: Node[]): void {
-    const last = tokens[tokens.length - 1]
-    if (last?.type == "punc" && (last.value == ".." || last.value == "...")) {
-      tokens.push({ type: "void" })
-    }
-    tokens.push({ type: "punc", kind: "infix", value: "," })
   }
 
   ir2(ret: IRBuilder): void {

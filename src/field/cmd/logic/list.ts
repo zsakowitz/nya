@@ -1,4 +1,3 @@
-import type { Node } from "@/eval/ast/token"
 import { ParseNode } from "@/eval2/parse"
 import { D, L, R, U, type Dir, type VDir } from "@/field/dir"
 import { h } from "@/jsx"
@@ -124,19 +123,6 @@ export class CmdList extends Command {
     } else {
       return focusEdge(this, x)
     }
-  }
-
-  ir(tokens: Node[]): void {
-    tokens.push({
-      type: "group",
-      lhs: "[",
-      rhs: "]",
-      value:
-        this.blocks.length == 1 ? this.blocks[0]!.ast()
-        : this.blocks.length ?
-          { type: "commalist", items: this.blocks.map((x) => x.ast()) }
-        : { type: "void" },
-    })
   }
 
   ir2(ret: IRBuilder): void {

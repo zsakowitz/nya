@@ -1,4 +1,3 @@
-import type { Node } from "@/eval/ast/token"
 import { L } from "@/field/dir"
 import type { LatexParser } from "@/field/latex"
 import { h, hx } from "@/jsx"
@@ -105,34 +104,5 @@ export class CmdColor extends Leaf {
 ${parseInt(color.slice(1, 3), 16)},\
 ${parseInt(color.slice(3, 5), 16)},\
 ${parseInt(color.slice(5, 7), 16)}\\right)`
-  }
-
-  ir(tokens: Node[]): void {
-    const color = this.color
-    const r = parseInt(color.slice(1, 3), 16).toString()
-    const g = parseInt(color.slice(3, 5), 16).toString()
-    const b = parseInt(color.slice(5, 7), 16).toString()
-    tokens.push({
-      type: "suffixed",
-      base: {
-        type: "var",
-        value: "rgb",
-        kind: "prefix",
-        span: null,
-      },
-      suffixes: [
-        {
-          type: "call",
-          args: {
-            type: "commalist",
-            items: [
-              { type: "num", value: r, span: null },
-              { type: "num", value: g, span: null },
-              { type: "num", value: b, span: null },
-            ],
-          },
-        },
-      ],
-    })
   }
 }

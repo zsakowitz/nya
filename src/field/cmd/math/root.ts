@@ -1,4 +1,3 @@
-import type { Node } from "@/eval/ast/token"
 import { L, R, type Dir, type VDir } from "@/field/dir"
 import { h, path, svg } from "@/jsx"
 import type { LatexParser } from "../../latex"
@@ -254,14 +253,6 @@ export class CmdRoot extends Command<
     } else {
       return this.blocks[1].focus(x, y)
     }
-  }
-
-  ir(tokens: Node[]): void {
-    tokens.push({
-      type: "root",
-      root: this.blocks[1]?.ast(),
-      contents: this.blocks[0].ast(),
-    })
   }
 
   ir2(ret: IRBuilder): void {

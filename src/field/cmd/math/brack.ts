@@ -1,4 +1,3 @@
-import type { Node } from "@/eval/ast/token"
 import { L, R, type Dir } from "@/field/dir"
 import { h, path, svg } from "@/jsx"
 import type { LatexParser } from "../../latex"
@@ -492,15 +491,6 @@ export class CmdBrack extends Command<[Block]> {
     }
 
     return this.blocks[0].focus(x, y)
-  }
-
-  ir(tokens: Node[]): void {
-    tokens.push({
-      type: "group",
-      lhs: this.lhs,
-      rhs: this.rhs,
-      value: this.blocks[0].ast(),
-    })
   }
 
   ir2(ret: IRBuilder): void {

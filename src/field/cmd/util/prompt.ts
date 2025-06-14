@@ -1,4 +1,3 @@
-import type { Node } from "@/eval/ast/token"
 import { L, R } from "@/field/dir"
 import { h, hx } from "@/jsx"
 import type { FieldInert } from "../../field-inert"
@@ -121,10 +120,6 @@ export class CmdPrompt extends Leaf {
 
   latex(): string {
     return "\\text{typing...}"
-  }
-
-  ir(_tokens: Node[]): void {
-    // Empty, as {@linkcode CmdPrompt} isn't a complete command
   }
 
   ir2(_ret: IRBuilder): void {

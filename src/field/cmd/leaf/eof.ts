@@ -1,4 +1,3 @@
-import type { Node } from "@/eval/ast/token"
 import { L, R } from "@/field/dir"
 import { h } from "@/jsx"
 import { Leaf } from "."
@@ -37,8 +36,6 @@ export class CmdEOF extends Leaf {
   ascii(): string {
     return ""
   }
-
-  ir(_tokens: Node[]): true | void {}
 
   ir2(_ret: IRBuilder): void {
     // TODO: location info
