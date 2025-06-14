@@ -1,4 +1,7 @@
+use "erf";
+
 // #region types
+
 
 struct NormalDist {
   mean: num,

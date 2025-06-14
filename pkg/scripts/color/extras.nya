@@ -1,49 +1,5 @@
-// TODO: lightdark
-// TODO: valid
-
-fn rgb_to_srgb(c: num) -> num {
-  if c < 0.0031308 {
-    c * 12.92
-  } else {
-    1.055 * c ^ 0.4166666666666667 - 0.055
-  }
-}
-
-matrix _OklabRgbConversion {
-  a: Color3,
-  b: Color3,
-  c: Color3,
-}
-
-fn oklab(l: num, a: num, b: num) -> Color3 {
-  let src = Color3 { r: l, g: a, b };
-
-  let A = _OklabRgbConversion {
-    a: Color3 { r: 1.0, g: 1.0, b: 1.0 },
-    b: Color3 { r: 0.3963377774, g: -0.1055613458, b: -0.0894841775 },
-    c: Color3 { r: 0.2158037573, g: -0.0638541728, b: -1.2914855480 },
-  };
-
-  let B = _OklabRgbConversion {
-    a: Color3 { r: 4.0767416621, g: -1.2684380046, b: -0.0041960863 },
-    b: Color3 { r: -3.3077115913, g: 2.6097574011, b: -0.7034186147 },
-    c: Color3 { r: 0.2309699292, g: -0.3413193965, b: 1.7076147010 },
-  };
-
-  let lms = A @# src;
-  let v = B @# (lms @* lms @* lms);
-  let epsilon = 1e-10;
-
-  Color3 {
-    r: rgb_to_srgb(v.r - epsilon),
-    g: rgb_to_srgb(v.g - epsilon),
-    b: rgb_to_srgb(v.b - epsilon),
-  }
-}
-
-fn oklab(l: num, a: num, b: num, alpha: num) -> Color {
-  rgba(oklab(l, a, b), alpha)
-}
+use "color";
+use "color/oklab";
 
 fn oklch(l: num, c: num, h: num) -> Color3 {
   let h = h * (2.0 * pi / 360.0);
@@ -54,5 +10,7 @@ fn oklch(l: num, c: num, h: num, alpha: num) -> Color {
   rgba(oklch(l, c, h), alpha)
 }
 
+// TODO: lightdark
+// TODO: valid
 // TODO: hsl
 // H\left(h,s,l\right)=\operatorname{hsv}\left(h,\left\{v=0:0,2\left(1-\frac{l}{v}\right)\right\},v\right)\operatorname{with}v=l+s\operatorname{min}\left(l,1-l\right)
