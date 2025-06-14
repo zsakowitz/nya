@@ -13,6 +13,7 @@ and nyalang expressions, some expressions compile using alternative operators or
 | `\choose A B`  | `%choose(A, B)`            |
 | `(A, B, ...)`  | `%point(A, B, ...)`        |
 | `\|A\|`        | `call abs %abs(A)`         |
+| `\sqrt{A}`     | `%sqrt(A)`                 |
 | `sin_A(B)`     | `sin_(A, B)`               |
 | `sin_A^3(B)`   | `(sin_(A, B)) ^ 3`         |
 | `sin^3 A`      | `(sin(A)) ^ 3`             |

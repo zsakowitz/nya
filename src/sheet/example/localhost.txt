@@ -1,4 +1,4 @@
-2344555555555555555555\operatorname{mod}3
+debugScript(23)
 debugAst(2mod3)
 path()
 f(x)=x^2

@@ -281,79 +281,6 @@ TX_OPS.sop = {
   },
 }
 
-function cmp(name: PuncCmp, nameneg: PuncCmp, nya: string) {
-  TX_OPS_OPS[name] = {
-    eval(_, [a, b], block) {
-      return `(${block.eval(a!)}) ${nya}(${block.eval(b!)})`
-    },
-    deps(_, [a, b], deps) {
-      deps.check(a!)
-      deps.check(b!)
-    },
-  }
-
-  TX_OPS_OPS[nameneg] = {
-    eval(_, [a, b], block) {
-      return `!((${block.eval(a!)}) ${nya}(${block.eval(b!)}))`
-    },
-    deps(_, [a, b], deps) {
-      deps.check(a!)
-      deps.check(b!)
-    },
-  }
-}
-
-cmp("cmp-eq", "cmp-neq", "==")
-cmp("cmp-lt", "cmp-nlt", "<")
-cmp("cmp-lte", "cmp-nlte", "<=")
-cmp("cmp-gt", "cmp-ngt", ">")
-cmp("cmp-gte", "cmp-ngte", ">=")
-
-// calls %juxtapose or *, preferring %juxtapose
-TX_OPS_OPS["%juxtapose"] = {
-  eval(_, [a, b], block) {
-    return block.of`call * %juxtapose(${a!},${b!})`
-  },
-  deps(_, [a, b], deps) {
-    deps.check(a!)
-    deps.check(b!)
-  },
-}
-
-// calls %dot or *, preferring %dot
-TX_OPS_OPS["\\cdot "] = {
-  eval(_, [a, b], block) {
-    return block.of`call * %dot(${a!},${b!})`
-  },
-  deps(_, [a, b], deps) {
-    deps.check(a!)
-    deps.check(b!)
-  },
-}
-
-// calls mod or %, preferring mod
-TX_OPS_OPS["mod"] = {
-  eval(_, [a, b], block) {
-    console.log(a, b)
-    return block.of`call % mod(${a!},${b!})`
-  },
-  deps(_, [a, b], deps) {
-    deps.check(a!)
-    deps.check(b!)
-  },
-}
-
-// calls %cross or *, preferring %cross
-TX_OPS_OPS["\\times "] = {
-  eval(_, [a, b], block) {
-    return block.of`call * %cross(${a!},${b!})`
-  },
-  deps(_, [a, b], deps) {
-    deps.check(a!)
-    deps.check(b!)
-  },
-}
-
 setGroupTxr("(", ")", {
   eval({ contents }, _, block) {
     if (contents.data.type == "list") {
@@ -385,7 +312,53 @@ TX_SUFFIXES.exponent = {
   },
 }
 
-// calls %mod or %, preferring %mod
+function alias(name: string, nya: string) {
+  TX_OPS_OPS[name] = {
+    eval(_, x, block) {
+      return `call ${nya}(${x.map((x) => block.eval(x))})`
+    },
+    deps(_, x, deps) {
+      for (const el of x) {
+        deps.check(el)
+      }
+    },
+  }
+}
+
+function cmp(name: PuncCmp, nameneg: PuncCmp, nya: string) {
+  TX_OPS_OPS[name] = {
+    eval(_, [a, b], block) {
+      return `(${block.eval(a!)}) ${nya}(${block.eval(b!)})`
+    },
+    deps(_, [a, b], deps) {
+      deps.check(a!)
+      deps.check(b!)
+    },
+  }
+
+  TX_OPS_OPS[nameneg] = {
+    eval(_, [a, b], block) {
+      return `!((${block.eval(a!)}) ${nya}(${block.eval(b!)}))`
+    },
+    deps(_, [a, b], deps) {
+      deps.check(a!)
+      deps.check(b!)
+    },
+  }
+}
+
+cmp("cmp-eq", "cmp-neq", "==")
+cmp("cmp-lt", "cmp-nlt", "<")
+cmp("cmp-lte", "cmp-nlte", "<=")
+cmp("cmp-gt", "cmp-ngt", ">")
+cmp("cmp-gte", "cmp-ngte", ">=")
+
+alias("%juxtapose", "* %juxtapose")
+alias("\\cdot ", "* %dot")
+alias("\\times ", "* %cross")
+alias("mod", "% mod")
+alias("\\odot ", "%odot")
+
 TX_OPS_OPS["debugAst"] = {
   eval(_, [a]) {
     return `json#"${JSON.stringify(a, undefined, 2)}"#`
@@ -393,7 +366,6 @@ TX_OPS_OPS["debugAst"] = {
   deps(_) {},
 }
 
-// calls %mod or %, preferring %mod
 TX_OPS_OPS["debugScript"] = {
   eval(_, [a], block) {
     const evald = block.eval(a!)
