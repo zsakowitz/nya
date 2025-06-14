@@ -642,6 +642,7 @@ export function createStdlib(props: EmitProps) {
   const fractId = new Id("fract").ident()
   const floorId = new Id("Math.floor for mod").ident()
   const modId = new Id("mod").ident()
+  const roundId = new Id("Math.round").ident()
   const modFn = `const ${floorId}=Math.floor;\nfunction ${modId}(a,b){return a-${floorId}(a/b)*b}`
   const fractFn = () =>
     decl.global(`function ${fractId}(x){return x-Math.floor(x)}`)
@@ -703,12 +704,42 @@ export function createStdlib(props: EmitProps) {
     }),
 
     // Easy numeric functions
-    ..."sin cos tan asin acos atan sinh cosh tanh asinh acosh atanh exp abs cbrt sqrt ceil floor round sign log10"
+    ..."sin cos tan asin acos atan sinh cosh tanh asinh acosh atanh exp abs cbrt sqrt ceil floor sign log10"
       .split(" ")
       .map((x) => numMathOp(x)),
     numMathOp("ln", "log"),
 
     // Annoying numeric functions
+    new Fn(g("round"), [xnum], num, ([a]) => {
+      if (a!.const()) {
+        return new Value(Math.round(a.value as number), num)
+      }
+      if (props.lang == "glsl") {
+        return new Value(`floor(${a}+0.5)`, num)
+      }
+      decl.global(`const ${roundId}=Math.round;`)
+      return new Value(`${roundId}(${a})`, num)
+    }),
+    new Fn(g("fract"), [{ name: "value", type: num }], num, (raw, block) => {
+      const a = raw[0]!
+
+      // const path
+      if (a.const()) {
+        return new Value(
+          (a.value as number) - Math.floor(a.value as number),
+          num,
+        )
+      }
+
+      // glsl path
+      if (block.lang == "glsl") {
+        return new Value(`fract(${a})`, num)
+      }
+
+      // js path
+      fractFn()
+      return new Value(`${fractId}(${a})`, num)
+    }),
     new Fn(g("atan"), [ynum, xnum], num, ([y, x]) => {
       if (y!.const() && x!.const()) {
         return new Value(Math.atan2(y.value as number, x.value as number), num)

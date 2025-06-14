@@ -82,6 +82,11 @@ export class SheetFactory {
       }
     }
 
+    this.env.libJs.fns
+      .map((x) => x[0]?.id.label)
+      .filter((x): x is string => x != null && /^[A-Za-z]{2,}$/.test(x))
+      .forEach((x) => this.options.words.set(x, "prefix"))
+
     for (const k in pkg.ty?.info) {
       const key = k as TyName
       TY_INFO[key] = pkg.ty.info[key]! as any

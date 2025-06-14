@@ -1,0 +1,56 @@
+use "numtheory-real";
+use "complex";
+
+fn round(value: Complex) -> Complex {
+  Complex { real: round(value.real), imag: round(value.imag) }
+}
+
+fn round(value: Complex, places: num) -> Complex {
+  Complex { real: round(value.real, places), imag: round(value.imag, places) }
+}
+
+fn floor(value: Complex) -> Complex {
+  let px = value.real;
+  let py = value.imag;
+  let bx = floor(px);
+  let by = floor(py);
+  let x = px - bx;
+  let y = py - by;
+
+  if 1.0 <= x + y {
+    if x >= y {
+      Complex { real: bx + 1, imag: by }
+    } else {
+      Complex { real: bx, imag: by + 1 }
+    }
+  } else {
+    Complex { real: bx, imag: by }
+  }
+}
+
+fn ceil(value: Complex) -> Complex {
+  let px = value.real + 0.5;
+  let py = value.imag + 0.5;
+  let bx = floor(px);
+  let by = floor(py);
+  let x = px - bx;
+  let y = py - by;
+
+  if 1.0 < x + y {
+    if x >= y {
+      Complex { real: bx + 1, imag: by }
+    } else {
+      Complex { real: bx, imag: by + 1 }
+    }
+  } else {
+    Complex { real: bx, imag: by }
+  }
+}
+
+fn fract(value: Complex) -> Complex {
+  value - floor(value)
+}
+
+fn %(a: Complex, b: Complex) -> Complex {
+  a - floor(a / b) * b
+}
