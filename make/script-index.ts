@@ -1,4 +1,4 @@
-const scripts = new URL("./scripts", import.meta.url)
+const scripts = new URL("../pkg/scripts", import.meta.url)
 const glob = new Bun.Glob("**/*.nya")
 
 let imports = ""
@@ -18,4 +18,4 @@ for await (const file of glob.scan(scripts.pathname)) {
 const source =
   imports +
   `\nexport const SCRIPTS = new Map([${items}\n])\n\nexport type ScriptName =${name}\n`
-await Bun.write(new URL("./script-index.ts", import.meta.url), source)
+await Bun.write(new URL("../pkg/script-index.ts", import.meta.url), source)

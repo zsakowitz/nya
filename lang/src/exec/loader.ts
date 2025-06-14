@@ -1,8 +1,11 @@
+import { SCRIPTS } from "#/script-index"
 import { Chunk, Issues } from "../ast/issue"
+import { ItemUse } from "../ast/node/item"
 import { parse, parseBlockContents } from "../ast/parse"
 import { createStream } from "../ast/stream"
 import { Block, Exits, type IdMap } from "../emit/decl"
 import { emitBlock, emitItem } from "../emit/emit"
+import { bug } from "../emit/error"
 import { createStdlib } from "../emit/stdlib"
 import type { Value } from "../emit/value"
 
@@ -14,16 +17,29 @@ export class ScriptEnvironment {
   private readonly issues = new Issues()
   private readonly loaded = new Set<string>()
 
+  async getDependency(name: ItemUse) {
+    if (!name.source) {
+      bug(`'use' statement is missing a script name.`)
+    }
+    const depName = name.source.val.slice(1, -1)
+    const scriptUri = SCRIPTS.get(depName)
+    if (!scriptUri) {
+      bug(`Dependency '${depName}' does not exist.`)
+    }
+    return [depName, scriptUri] as const // TODO: switch to async loading eventually
+    // return [depName, await (await fetch(scriptUri)).text()] as const
+  }
+
   get scriptCount() {
     return this.loaded.size
   }
 
-  load(name: string, script: string) {
+  async load(name: string, script: string) {
     const stream = createStream(new Chunk(name, script), this.issues, {
       comments: false,
     })
     if (this.loaded.has(script)) {
-      console.warn(`The script '${name}' has been loaded twice.`)
+      return
     }
     this.loaded.add(script)
     const items = parse(stream).items
@@ -31,6 +47,11 @@ export class ScriptEnvironment {
       throw new Error(this.issues.entries.map((x) => x.toString()).join("\n"))
     }
     for (const item of items) {
+      if (item instanceof ItemUse) {
+        const [name, script] = await this.getDependency(item)
+        await this.load(name, script)
+        continue
+      }
       const resultGl = emitItem(item, this.libGl)
       if (resultGl?.decl) {
         this.mainGl += "\n" + resultGl.decl

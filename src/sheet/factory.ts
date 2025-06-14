@@ -78,7 +78,7 @@ export class SheetFactory {
     if (pkg.scripts) {
       for (let i = 0; i < pkg.scripts.length; i++) {
         const script = pkg.scripts[i]!
-        this.env.load(
+        await this.env.load(
           `pkg:${id}${pkg.scripts.length == 1 ? "" : "/" + i}`,
           script,
         )
