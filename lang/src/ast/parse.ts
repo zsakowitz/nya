@@ -9,6 +9,7 @@ import {
   ABangUnary,
   ABar,
   ABarBar,
+  ACarat,
   AEqEq,
   AGe,
   AGt,
@@ -22,7 +23,6 @@ import {
   APlus,
   ASlash,
   AStar,
-  ACarat,
   ATildeEq,
   ATildeUnary,
   AVERLOADABLE,
@@ -67,6 +67,7 @@ import {
   OBangUnary,
   OBar,
   OBarBar,
+  OCarat,
   OColon,
   OColonColon,
   OComma,
@@ -93,7 +94,6 @@ import {
   OSemi,
   OSlash,
   OStar,
-  OCarat,
   OTildeEq,
   OTildeUnary,
   OVERLOADABLE,
@@ -423,10 +423,16 @@ function exprVar(stream: Stream, ctx: ExprContext) {
 function exprCall(stream: Stream) {
   const kw = stream.match(KCall)!
 
-  const token =
+  const name1 =
     stream.matchAny(OVERLOADABLE) ||
     stream.match(TIdent) ||
     stream.matchOr(TBuiltin, Code.ExpectedIdentOrOperator)
+
+  const name2 =
+    name1 &&
+    (stream.matchAny(OVERLOADABLE) ||
+      stream.match(TIdent) ||
+      stream.match(TBuiltin))
 
   if (stream.peek() == OBangUnary)
     stream.raiseNext(Code.NonParamFollowedByConstMarker)
@@ -434,7 +440,13 @@ function exprCall(stream: Stream) {
   if (stream.peek() == OColonColon)
     stream.raiseNext(Code.NonParamFollowedByTypeAssertion)
 
-  return new ExprDirectCall(kw, token, typeArgs(stream), callArgs(stream))
+  return new ExprDirectCall(
+    kw,
+    name1,
+    name2,
+    typeArgs(stream),
+    callArgs(stream),
+  )
 }
 
 export function exprIf(stream: Stream): ExprIf | null {

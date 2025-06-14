@@ -13,6 +13,7 @@ import {
   type ABangUnary,
   type ABar,
   type ABarBar,
+  type ACarat,
   type AEq,
   type AEqEq,
   type AGe,
@@ -27,7 +28,6 @@ import {
   type APlus,
   type ASlash,
   type AStar,
-  type ACarat,
   type ATildeEq,
   type ATildeUnary,
   type KBreak,
@@ -47,6 +47,7 @@ import {
   type OBangUnary,
   type OBar,
   type OBarBar,
+  type OCarat,
   type ODot,
   type ODotDot,
   type OEq,
@@ -69,7 +70,6 @@ import {
   type OSemi,
   type OSlash,
   type OStar,
-  type OCarat,
   type OTildeEq,
   type OTildeUnary,
   type RString,
@@ -161,13 +161,16 @@ export class ExprVar extends NodeExpr {
 export class ExprDirectCall extends NodeExpr {
   constructor(
     readonly kw: Token<typeof KCall>,
-    readonly name: Token<
+    readonly name1: Token<
+      typeof TIdent | typeof TBuiltin | OOverloadable
+    > | null,
+    readonly name2: Token<
       typeof TIdent | typeof TBuiltin | OOverloadable
     > | null,
     readonly targs: List<NodeType> | null,
     readonly args: List<NodeExpr> | null,
   ) {
-    super(kw.start, (args ?? targs ?? name ?? kw).end, kw.info)
+    super(kw.start, (args ?? targs ?? name2 ?? name1 ?? kw).end, kw.info)
   }
 }
 

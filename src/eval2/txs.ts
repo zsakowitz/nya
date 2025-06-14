@@ -173,14 +173,57 @@ TX_OPS_OPS["cmp-eq"] = {
   },
 }
 
+// calls %juxtapose or *, preferring %juxtapose
 TX_OPS_OPS["%juxtapose"] = {
   eval(_, [a, b], block) {
-    return block.of`(${a!})*(${b!})`
+    return block.of`call * %juxtapose(${a!},${b!})`
   },
   deps(_, [a, b], deps) {
     deps.check(a!)
     deps.check(b!)
   },
+}
+
+// calls %dot or *, preferring %dot
+TX_OPS_OPS["\\cdot "] = {
+  eval(_, [a, b], block) {
+    return block.of`call * %dot(${a!},${b!})`
+  },
+  deps(_, [a, b], deps) {
+    deps.check(a!)
+    deps.check(b!)
+  },
+}
+
+// calls %cross or *, preferring %cross
+TX_OPS_OPS["\\times "] = {
+  eval(_, [a, b], block) {
+    return block.of`call * %cross(${a!},${b!})`
+  },
+  deps(_, [a, b], deps) {
+    deps.check(a!)
+    deps.check(b!)
+  },
+}
+
+for (const k of ["sin", "cos", "tan", "csc", "sec", "cot"]) {
+  TX_OPS_OPS["arc" + k] = {
+    eval(_, [a], block) {
+      return `a${k}(${block.eval(a!)})`
+    },
+    deps(_, [a], deps) {
+      deps.check(a!)
+    },
+  }
+
+  TX_OPS_OPS["arc" + k + "h"] = TX_OPS_OPS["ar" + k + "h"] = {
+    eval(_, [a], block) {
+      return `a${k}h(${block.eval(a!)})`
+    },
+    deps(_, [a], deps) {
+      deps.check(a!)
+    },
+  }
 }
 
 setGroupTxr("(", ")", {

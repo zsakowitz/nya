@@ -206,7 +206,7 @@ export class Expr {
       return
     }
 
-    this.entry._checkExe()
+    this.entry.checkExe()
     const exe = this.entry.exe
     if (!exe || exe.args) {
       this.elError.classList.add("hidden")
@@ -218,7 +218,8 @@ export class Expr {
       const { raw, cooked } = this.sheet.factory.env.evalDetailed(exe.expr)
       this.elOutput.classList.remove("hidden")
       this.elError.classList.add("hidden")
-      this.elOutput.textContent = JSON.stringify(cooked, undefined, 2)
+      this.elOutput.textContent =
+        raw.type.toString() + "\t" + JSON.stringify(cooked, undefined, 2)
     } catch (e) {
       this.elOutput.classList.add("hidden")
       this.elError.classList.remove("hidden")

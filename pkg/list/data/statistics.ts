@@ -2,7 +2,6 @@ import type { Package } from "#/types"
 import { addR64 } from "$/core/ops"
 import { createMultiEval } from "$/eval"
 import type { FnSignature } from "@/docs/signature"
-import type { Node } from "@/eval/ast/token"
 import type { GlslContext } from "@/eval/lib/fn"
 import type { JsContext } from "@/eval/lib/jsctx"
 import type { Fn } from "@/eval/ops"
@@ -803,8 +802,6 @@ export class CmdStats extends Leaf {
   latex(): string {
     return ""
   }
-
-  ir(_tokens: Node[]): true | void {}
 
   ir2(_ret: IRBuilder): void {}
 

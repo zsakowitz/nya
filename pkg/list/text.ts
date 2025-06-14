@@ -1,6 +1,5 @@
 import type { Package } from "#/types"
 import type { FnSignature } from "@/docs/signature"
-import type { Node } from "@/eval/ast/token"
 import { NO_DRAG, NO_SYM } from "@/eval/ast/tx"
 import { FnDist } from "@/eval/ops/dist"
 import { FnDistManual, type FnOverload } from "@/eval/ops/dist-manual"
@@ -54,20 +53,6 @@ export class CmdTextInert extends Leaf {
 
   latex(): string {
     return "\\text{" + toText(this.value) + "}"
-  }
-
-  ir(tokens: Node[]): void {
-    if (/^\$(?!\s).*\S\$$/.test(this.value)) {
-      tokens.push({
-        type: "text",
-        value: [{ type: "latex", value: this.value.slice(1, -1) }],
-      })
-    } else {
-      tokens.push({
-        type: "text",
-        value: [{ type: "plain", value: this.value }],
-      })
-    }
   }
 
   ir2(ret: IRBuilder): void {
@@ -164,20 +149,6 @@ class CmdText extends Leaf {
 
   latex(): string {
     return "\\text{" + toText(this.input.value) + "}"
-  }
-
-  ir(tokens: Node[]): void {
-    if (/^\$(?!\s).*\S\$$/.test(this.input.value)) {
-      tokens.push({
-        type: "text",
-        value: [{ type: "latex", value: this.input.value.slice(1, -1) }],
-      })
-    } else {
-      tokens.push({
-        type: "text",
-        value: [{ type: "plain", value: this.input.value }],
-      })
-    }
   }
 
   ir2(ret: IRBuilder): void {

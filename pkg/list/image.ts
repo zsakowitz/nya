@@ -1,7 +1,6 @@
 import type { Package } from "#/types"
-import type { Node } from "@/eval/ast/token"
 import { FnDist } from "@/eval/ops/dist"
-import type { JsValue, Val } from "@/eval/ty"
+import type { Val } from "@/eval/ty"
 import { Leaf } from "@/field/cmd/leaf"
 import { OpEq } from "@/field/cmd/leaf/cmp"
 import { CmdToken, TokenCtx } from "@/field/cmd/leaf/token"
@@ -72,17 +71,6 @@ class CmdImgRaw extends Leaf {
     return `\\imgraw{${toText(this.data.src?.url ?? "")}}`
   }
 
-  ir(tokens: Node[]): true | void {
-    tokens.push({
-      type: "value",
-      value: {
-        type: "image",
-        list: false,
-        value: this.data,
-      } satisfies JsValue<"image">,
-    })
-  }
-
   ir2(_ret: IRBuilder): void {
     throw new Error("Images are not supported in nyalang yet.")
   }
@@ -117,8 +105,6 @@ class CmdImgPreview extends Leaf {
   latex(): string {
     return ""
   }
-
-  ir(): true | void {}
 
   ir2(_ret: IRBuilder): void {}
 }

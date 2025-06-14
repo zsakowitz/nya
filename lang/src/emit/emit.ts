@@ -72,6 +72,44 @@ function list(a: { toString(): string }[], empty: "no arguments" | null) {
 }
 
 const ID_MATMUL = ident("@#")
+
+export function tryPerformCall(
+  id: IdGlobal,
+  block: Block,
+  args: Value[],
+  namePos: Pos,
+  fullPos: Pos,
+): Value | null {
+  if (id == ID_MATMUL) {
+    if (args.length == 2) {
+      return matrixMultiply(block, args[0]!, args[1]!)
+    }
+  }
+
+  const local = block.locals.get(id)
+
+  if (local && args.length == 0) {
+    return local
+  }
+
+  const fns = block.decl.fns.get(id)
+  if (!fns) return null
+
+  const overload = fns.find(
+    (x) =>
+      x.args.length == args.length &&
+      x.args.every((a, i) => a.type.canConvertFrom(args[i]!.type)),
+  )
+  if (!overload) return null
+
+  return overload.run(
+    args.map((x, i) => overload.args[i]!.type.convertFrom(x, fullPos)),
+    block,
+    namePos,
+    fullPos,
+  )
+}
+
 export function performCall(
   id: IdGlobal,
   block: Block,
@@ -235,19 +273,26 @@ function emitExpr(node: NodeExpr, block: Block): Value {
     if (node.targs) {
       todo("Type arguments are not supported yet.")
     }
-    if (!node.name) {
+    if (!node.name1) {
       issue(
         "Function call via 'call' syntax is missing a function name.",
         node.kw,
       )
     }
-    return performCall(
-      ident(node.name.val),
-      block,
-      node.args?.items.map((e) => emitExpr(e, block)) ?? [],
-      node.name,
-      node,
-    )
+    const args = node.args?.items.map((e) => emitExpr(e, block)) ?? []
+    if (node.name2 != null) {
+      const result = tryPerformCall(
+        ident(node.name2.val),
+        block,
+        args,
+        node.name2,
+        node,
+      )
+      if (result != null) {
+        return result
+      }
+    }
+    return performCall(ident(node.name1.val), block, args, node.name1, node)
   } else if (node instanceof ExprParen) {
     return emitExpr(node.of.value, block)
   } else if (node instanceof ExprStruct) {

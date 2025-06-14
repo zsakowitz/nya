@@ -9,7 +9,6 @@ import {
 import { IdMap } from "../emit/decl"
 import { bug, issue, issueError } from "../emit/error"
 import { err, Kind, ok, SKIP, type Executable, type State } from "./state"
-import type { UnitKind } from "#/list/unit/util/kind"
 
 export class EntrySet {
   readonly entries = new Set<Entry>()
@@ -51,8 +50,7 @@ export class EntrySet {
 
   private performUpdate() {
     this.ts++
-    // @ts-expect-error
-    this.entries.forEach((x) => x._checkExe())
+    this.entries.forEach((x) => x.checkExe())
   }
 
   global(name: NameIdent): Node | null {
@@ -199,7 +197,7 @@ export class Entry {
     }
   }
 
-  private _checkExe() {
+  checkExe() {
     this._exe = null
     const s = this._state
     if (s.error) return

@@ -8,6 +8,7 @@ import { Leaf } from "@/field/cmd/leaf"
 import { OpEq } from "@/field/cmd/leaf/cmp"
 import { CmdComma } from "@/field/cmd/leaf/comma"
 import { L } from "@/field/dir"
+import type { IRBuilder } from "@/field/model"
 import { h, path, svgx } from "@/jsx"
 import { defineExt } from "@/sheet/ext"
 import { circle } from "@/sheet/ui/expr/circle"
@@ -32,7 +33,6 @@ import {
   unglossWord,
 } from "@zsnout/ithkuil/ungloss"
 import * as categories from "./util-categories"
-import type { IRBuilder } from "@/field/model"
 
 // TODO: reduce ithkuil root and affix data size (it's 56% of the bundle currently)
 
@@ -73,8 +73,6 @@ class CmdIthkuilScript extends Leaf {
   latex(): string {
     return " IthkuilScript "
   }
-
-  ir(): true | void {}
 
   ir2(_ret: IRBuilder): void {}
 }

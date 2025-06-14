@@ -87,21 +87,9 @@ export class Block {
     return new Span(this, null, null).splice()
   }
 
-  /** Tokenizes this {@linkcode Block}'s contents as LaTeX. */
-  ir(): Node[] {
-    const tokens: Node[] = []
-    let el = this.ends[L]
-    while (el) {
-      if (el.ir(tokens)) break
-      el = el[R]
-    }
-    return tokens
-  }
-
-  /** Tokenizes this {@linkcode Block}'s contents into an AST. */
-  ast(): Node {
-    return tokensToAst(this.ir(), false)
-  }
+  declare ir: never
+  declare ast: never;
+  [2]: number = "3" // reminder to remove items above
 
   private parseIR() {
     if (this.ends[L] == null) {
@@ -170,13 +158,10 @@ export class Block {
     return new Parser(ir, JUXTAPOSE_TOKEN).parse()
   }
 
-  /**
-   * Tokenizes this {@linkcode Block}'s contents into an AST, possibly with a
-   * top-level binding.
-   */
-  expr(maybeBinding = true): Node {
-    return tokensToAst(this.ir(), maybeBinding)
+  expr(_maybeBinding = true): Node {
+    return { type: "num", value: "3948394", span: null }
   }
+  [2]: number = "3" // reminder to remove above items
 
   /** Creates a cursor focused at the given position in this {@linkcode Block}. */
   focus(x: number, y: number): Cursor {
@@ -762,16 +747,8 @@ export class Span {
     return latex
   }
 
-  /** Tokenizes this {@linkcode Span}'s contents into AST tokens. */
-  ir(): Node[] {
-    const tokens: Node[] = []
-    let el = this.at(L)
-    while (el && el != this[R]) {
-      if (el.ir(tokens)) break
-      el = el[R]
-    }
-    return tokens
-  }
+  declare ir: never;
+  [2]: 3
 
   /** Parses this {@linkcode Span}'s contents as a full AST. */
   ast(): Node {
@@ -1750,8 +1727,8 @@ export abstract class Command<
    */
   insRow?(cursor: Cursor, block: Block, dir: VDir | null): void
 
-  /** Tokenizes this {@linkcode Command}'s contents as LaTeX. */
-  abstract ir(tokens: Node[]): true | void
+  declare ir: never;
+  [2]: number = "3" // reminder to remove items above
 
   /**
    * Tokenizes this {@linkcode Command}'s contents into an intermediate
