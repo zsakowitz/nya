@@ -1073,6 +1073,44 @@ export function createStdlib(props: EmitProps) {
       },
     ),
     new Fn(
+      g("@dot"),
+      [
+        { name: "a", type: new AnyVector("float") },
+        { name: "b", type: new AnyVector("float") },
+      ],
+      num,
+      (raw, block) => {
+        const val1 = raw[0]!
+        const val2 = raw[1]!
+
+        // const path
+        if (val1.const() && val2.const()) {
+          const s1 = scalars(val1, block)
+          const s2 = scalars(val2, block)
+          return new Value(
+            s1.reduce(
+              (a, b, i) => a + (b.value as number) * (s2[i]!.value as number),
+              0,
+            ),
+            num,
+          )
+        }
+
+        // glsl path
+        if (block.lang == "glsl") {
+          return new Value(`dot(${val1},${val2})`, num)
+        }
+
+        // js path
+        const s1 = scalars(val1, block)
+        const s2 = scalars(val2, block)
+        return new Value(
+          `(${s1.map((a, i) => `${a}*${s2[i]!}`).join("+")})`,
+          num,
+        )
+      },
+    ),
+    new Fn(
       g("@norm"),
       [{ name: "value", type: new AnyVector("float") }],
       new AnyVector("float"),

@@ -159,7 +159,40 @@ export const OpMinus = opm("-", " minus ")
 export const OpPlusMinus = opm("\\pm ", " plus-or-minus ", "±")
 export const OpMinusPlus = opm("\\mp ", " minus-or-plus ", "∓")
 
-export const OpCdot = opp("\\cdot ", P.ProdL, P.ProdR, " times ", "·", "*")
+export const OpCdot = class extends Op {
+  static fromLatex(_cmd: string, _parser: LatexParser): Command {
+    return new this()
+  }
+
+  static init(cursor: Cursor, props: InitProps) {
+    this.exitSupSub(cursor, props)
+    new this().insertAt(cursor, L)
+  }
+
+  constructor() {
+    super("\\cdot ", "·", h("nya-cmd-op", h("px-[.25em] inline-block", "·")))
+  }
+
+  endsImplicitGroup(): boolean {
+    return false
+  }
+
+  ascii(): string {
+    return "*"
+  }
+
+  reader(): string {
+    return " Dot "
+  }
+
+  latex(): string {
+    return "\\cdot "
+  }
+
+  ir2(ret: IRBuilder): void {
+    ret.infx({ type: "op", data: "\\cdot " }, P.ProdL, P.ProdR)
+  }
+}
 export const OpTimes = opp("\\times ", P.ProdL, P.ProdR, " cross ", "×", "*")
 export const OpOdot = opp(
   "\\odot ",

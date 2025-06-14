@@ -56,3 +56,7 @@ fn /(a: Point4D, b: num) -> Point4D {
 fn point(a: Point4D) -> Point4D {
   a
 }
+
+fn %dot(a: Point4D, b: Point4D) -> num {
+  @dot(a, b)
+}

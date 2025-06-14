@@ -50,3 +50,7 @@ fn !=(a: Point, b: Point) -> bool {
 fn unsign(z: Point) -> Point {
   @abs(z)
 }
+
+fn %dot(a: Point, b: Point) -> num {
+  @dot(a, b)
+}
