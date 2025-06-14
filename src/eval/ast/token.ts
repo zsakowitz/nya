@@ -290,21 +290,3 @@ export type Node = { [K in NodeName]: Nodes[K] & { type: K } }[NodeName]
 export type Suffix = {
   [K in SuffixName]: Suffixes[K] & { type: K }
 }[SuffixName]
-
-/**
- * Returns whether the passed token is a value or not (e.g. can directly be
- * computed as a mathematical expression). For instance, `23` is a token, but
- * `.` is not.
- */
-export function isValueToken(token: Node | undefined) {
-  return !(
-    token == null ||
-    token.type == "bigsym" ||
-    token.type == "error" ||
-    token.type == "punc" ||
-    token.type == "sub" ||
-    token.type == "sup" ||
-    (token.type == "var" && token.kind != "var") ||
-    token.type == "dd"
-  )
-}

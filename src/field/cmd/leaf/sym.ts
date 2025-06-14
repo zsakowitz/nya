@@ -2,12 +2,7 @@ import { L } from "@/field/dir"
 import { h } from "@/jsx"
 import { Leaf } from "."
 import type { LatexParser } from "../../latex"
-import {
-  type Command,
-  type Cursor,
-  type InitProps,
-  type InitRet,
-} from "../../model"
+import type { Command, Cursor, InitProps, InitRet } from "../../model"
 
 function sym(
   latex: string,
