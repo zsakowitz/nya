@@ -550,7 +550,7 @@ export class CmdVar extends Leaf {
       case "magicprefix":
         const p = PRECEDENCE_WORD_UNARY[name]
         ret.prfx(
-          { type: "op", data: name },
+          { type: "sop", data: { name, sub: null, sup: null } },
           p == null ? P.ImplicitFnL : p,
           p == null ? P.ImplicitFnR : p,
         )
@@ -558,7 +558,7 @@ export class CmdVar extends Leaf {
       case "infix": {
         const p = PRECEDENCE_WORD_BINARY[name]
         ret.prfx(
-          { type: "op", data: name },
+          { type: "sop", data: { name, sub: null, sup: null } },
           p ? p[0] : P.ProdL,
           p ? p[1] : P.ProdR,
         )

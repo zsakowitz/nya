@@ -79,7 +79,7 @@ export class CmdWord extends Leaf {
       case "builtin": {
         const p = PRECEDENCE_WORD_UNARY[this.text]
         ret.prfx(
-          { type: "op", data: this.text },
+          { type: "sop", data: { name: this.text, sub: null, sup: null } },
           p == null ? Precedence.ImplicitFnL : p,
           p == null ? Precedence.ImplicitFnR : p,
         )
@@ -89,7 +89,7 @@ export class CmdWord extends Leaf {
       case "infix": {
         const p = PRECEDENCE_WORD_BINARY[this.text]
         ret.prfx(
-          { type: "op", data: this.text },
+          { type: "sop", data: { name: this.text, sub: null, sup: null } },
           p ? p[0] : Precedence.ProdL,
           p ? p[1] : Precedence.ProdR,
         )

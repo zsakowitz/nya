@@ -1,6 +1,26 @@
-import { doesIdentNeedEscaping, escapeIdentName } from "../../lang/src/ast/kind"
+import { escapeIdentName } from "../../lang/src/ast/kind"
 import { issue } from "../../lang/src/emit/error"
+import type { Node } from "./node"
 import { nameIdent, setGroupTxr, TX_OPS, TX_OPS_OPS, TX_SUFFIXES } from "./tx"
+
+function fnSuperscript({ data, args }: Node): string {
+  if (data.type == "num") {
+    if (/^\d+$/.test(data.data)) {
+      return data.data
+    }
+  }
+
+  if (data.type == "op" && args?.length == 1 && data.data == "-") {
+    const d1 = args[0]!.data
+    if (d1.type == "num" && d1.data == "1") {
+      return "-1"
+    }
+  }
+
+  issue(
+    `Function names may only take positive integers and -1 as superscripts.`,
+  )
+}
 
 TX_OPS.binding = {
   eval(_, children, block) {
@@ -148,13 +168,83 @@ TX_OPS.suffix = {
   },
 }
 
+const ALIASES: Record<string, string> = {
+  // @ts-expect-error
+  __proto__: null,
+  log: "log10",
+
+  "arcsin^-1": "sin",
+  "arccos^-1": "cos",
+  "arctan^-1": "tan",
+  "arccsc^-1": "csc",
+  "arcsec^-1": "sec",
+  "arccot^-1": "cot",
+
+  arcsin: "asin",
+  arccos: "acos",
+  arctan: "atan",
+  arccsc: "acsc",
+  arcsec: "asec",
+  arccot: "acot",
+  "sin^-1": "asin",
+  "cos^-1": "acos",
+  "tan^-1": "atan",
+  "csc^-1": "acsc",
+  "sec^-1": "asec",
+  "cot^-1": "acot",
+
+  "arcsinh^-1": "sinh",
+  "arccosh^-1": "cosh",
+  "arctanh^-1": "tanh",
+  "arccsch^-1": "csch",
+  "arcsech^-1": "sech",
+  "arccoth^-1": "coth",
+  "arsinh^-1": "sinh",
+  "arcosh^-1": "cosh",
+  "artanh^-1": "tanh",
+  "arcsch^-1": "csch",
+  "arsech^-1": "sech",
+  "arcoth^-1": "coth",
+
+  arcsinh: "asinh",
+  arccosh: "acosh",
+  arctanh: "atanh",
+  arccsch: "acsch",
+  arcsech: "asech",
+  arccoth: "acoth",
+  "sinh^-1": "asinh",
+  "cosh^-1": "acosh",
+  "tanh^-1": "atanh",
+  "csch^-1": "acsch",
+  "sech^-1": "asech",
+  "coth^-1": "acoth",
+}
+
 TX_OPS.op = {
   eval(op, children, block) {
     const args = children.map((x) => block.eval(x)).join(",")
-    if (!doesIdentNeedEscaping(op)) {
-      return `${op}(${args})`
+    const name = op
+    return `call ${escapeIdentName(name, true)}(${args})`
+  },
+  deps(_, children, deps) {
+    for (const el of children) {
+      deps.check(el)
     }
-    return `call ${escapeIdentName(op, true)}(${args})`
+  },
+}
+
+TX_OPS.sop = {
+  eval(op, children, block) {
+    const sub = op.sub ? block.eval(op.sub) : null
+    const args = children.map((x) => block.eval(x)).join(",")
+    const sup = op.sup ? fnSuperscript(op.sup) : null
+    const name = op.name + (sub == null ? "" : "_") + (sup == "-1" ? "^-1" : "")
+    const inner = `call ${escapeIdentName(name in ALIASES ? ALIASES[name]! : name, true)}(${sub == null ? "" : sub + ","}${args})`
+    if (sup != null && sup != "-1") {
+      return `(${inner})^${sup}`
+    } else {
+      return inner
+    }
   },
   deps(_, children, deps) {
     for (const el of children) {
@@ -204,26 +294,6 @@ TX_OPS_OPS["\\times "] = {
     deps.check(a!)
     deps.check(b!)
   },
-}
-
-for (const k of ["sin", "cos", "tan", "csc", "sec", "cot"]) {
-  TX_OPS_OPS["arc" + k] = {
-    eval(_, [a], block) {
-      return `a${k}(${block.eval(a!)})`
-    },
-    deps(_, [a], deps) {
-      deps.check(a!)
-    },
-  }
-
-  TX_OPS_OPS["arc" + k + "h"] = TX_OPS_OPS["ar" + k + "h"] = {
-    eval(_, [a], block) {
-      return `a${k}h(${block.eval(a!)})`
-    },
-    deps(_, [a], deps) {
-      deps.check(a!)
-    },
-  }
 }
 
 setGroupTxr("(", ")", {

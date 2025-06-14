@@ -21,7 +21,7 @@ export interface OpKind {
   uvar: NameCooked // name of a user-defined variable
   bvar: NameRaw // name of a builtin variable
   ucall: { name: NameCooked; arg: Node } // call of a user-defined function (not min, max, sin, etc.)
-  bcall: { name: NameRaw; arg: Node } // call of a builtin function
+  bcall: { name: NameRaw; sup: Node | null; arg: Node } // call of a builtin function
   frac: [Node, Node]
   matrix: { cols: number; data: Node[] }
   group: { lhs: ParenLhs; rhs: ParenRhs; contents: Node }
@@ -31,8 +31,9 @@ export interface OpKind {
   combination: [Node, Node]
   piecewise: { condition: Node | null; value: Node }[]
   text: string
-  op: string
-  big: { kind: string; sup: Node | null; sub: Node | null }
+  op: string // plain operator
+  sop: { name: string; sub: Node | null; sup: Node | null } // supsubable operator
+  big: { kind: string; sub: Node | null; sup: Node | null }
   derivative: NameCooked
   suffix: Suffix[]
   binding: { name: NameCooked; args: NameCooked[] | null }

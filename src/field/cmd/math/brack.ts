@@ -1,3 +1,4 @@
+import { P } from "@/eval2/prec"
 import { L, R, type Dir } from "@/field/dir"
 import { h, path, svg } from "@/jsx"
 import type { LatexParser } from "../../latex"
@@ -499,7 +500,9 @@ export class CmdBrack extends Command<[Block]> {
     if (
       this.lhs == "(" &&
       this.rhs == ")" &&
-      last?.prfx?.data.type == "op" &&
+      last?.prfx?.data.type == "sop" &&
+      last.prfx.pl == P.ImplicitFnL &&
+      last.prfx.pr == P.ImplicitFnR &&
       !last.infx &&
       !last.leaf &&
       !last.sufx
@@ -508,7 +511,8 @@ export class CmdBrack extends Command<[Block]> {
       ret.leaf({
         type: "bcall",
         data: {
-          name: { name: last.prfx.data.data, sub: null },
+          name: { name: last.prfx.data.data.name, sub: null },
+          sup: last.prfx.data.data.sup,
           arg: this.blocks[0].parse(),
         },
       })
