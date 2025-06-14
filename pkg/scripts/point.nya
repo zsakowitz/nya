@@ -11,10 +11,6 @@ fn %display(a: Point) -> latex {
   display"(${a.x},${a.y})"
 }
 
-fn %debug(a: Point) -> latex {
-  debug"(${a.x},${a.y})"
-}
-
 fn +(a: Point) -> Point {
   a
 }

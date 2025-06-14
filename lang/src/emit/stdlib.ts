@@ -332,7 +332,6 @@ function libLatex(decl: Declarations, num: Scalar, bool: Scalar) {
   const lang = decl.props.lang
 
   const idDisplay = g("%display")
-  const idDebug = g("%debug")
 
   const latex = decl.tyLatex
 
@@ -363,36 +362,9 @@ function libLatex(decl: Declarations, num: Scalar, bool: Scalar) {
     )
   }
 
-  // `num` %debug
+  // `bool` %display
   {
-    const idLatexHelper = new Id("%debug(x: num) -> latex").ident()
-    const fnLatexHelper = `function ${idLatexHelper}(v){return v===v?v===1/0?'\\\\inf':v===-1/0?'-\\\\inf':1/v==1/-0?'-0':v.toString():'\\\\wordvar{NaN}'}`
-    // prettier-ignore
-    function fLatexHelper(v: number)                   {return v===v?v===1/0?  '\\inf':v===-1/0?'  -\\inf':1/v==1/-0?'-0':v.toString():  '\\wordvar{NaN}'}
-
-    fns.push(
-      idDebug,
-      new Fn(
-        idDebug,
-        [{ name: "value", type: num }],
-        latex,
-        lang == "glsl" ?
-          () => new Value(0, latex)
-        : ([v]) =>
-            new Value(
-              v!.const() ?
-                { data: fLatexHelper(v.value as number) }
-              : (decl.global(fnLatexHelper),
-                `${idLatexHelper}(${v!.toRuntime()})`),
-              latex,
-            ),
-      ),
-    )
-  }
-
-  // `bool` %display, %debug
-  {
-    const idLatexHelper = new Id("%{display,debug}(x: bool) -> latex").ident()
+    const idLatexHelper = new Id("%display(x: bool) -> latex").ident()
     const fnLatexHelper = `function ${idLatexHelper}(v){return '\\\\wordvar{'+v+'}'}`
     // prettier-ignore
     function fLatexHelper(v: boolean)                  {return   '\\wordvar{'+v+'}'}
@@ -412,21 +384,13 @@ function libLatex(decl: Declarations, num: Scalar, bool: Scalar) {
       idDisplay,
       new Fn(idDisplay, [{ name: "value", type: bool }], latex, f),
     )
-    fns.push(
-      idDebug,
-      new Fn(idDebug, [{ name: "value", type: bool }], latex, f),
-    )
   }
 
-  // `latex` %display, %debug
+  // `latex` %display
   {
     fns.push(
       idDisplay,
       new Fn(idDisplay, [{ name: "value", type: latex }], latex, (x) => x[0]!),
-    )
-    fns.push(
-      idDebug,
-      new Fn(idDebug, [{ name: "value", type: latex }], latex, (x) => x[0]!),
     )
   }
 
@@ -482,7 +446,6 @@ function libLatex(decl: Declarations, num: Scalar, bool: Scalar) {
   }
 
   decl.tags.set(g("display"), createTag(g("display"), idDisplay))
-  decl.tags.set(g("debug"), createTag(g("debug"), idDebug))
   decl.types.set(g("latex"), latex)
 }
 

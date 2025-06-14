@@ -12,10 +12,6 @@ fn %display(a: Point3D) -> latex {
   display"(${a.x},${a.y},${a.z})"
 }
 
-fn %debug(a: Point3D) -> latex {
-  debug"(${a.x},${a.y},${a.z})"
-}
-
 fn +(a: Point3D, b: Point3D) -> Point3D {
   a @+ b
 }

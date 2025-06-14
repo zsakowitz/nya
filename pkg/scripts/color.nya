@@ -8,10 +8,6 @@ fn %display(c: Color3) -> latex {
   display"\nyacolor{rgb(${255.0 * c.r},${255.0 * c.g},${255.0 * c.b})}"
 }
 
-fn %debug(c: Color3) -> latex {
-  debug"\wordprefix{rgb}(${255.0 * c.r},${255.0 * c.g},${255.0 * c.b})"
-}
-
 struct Color {
   r: num,
   g: num,
@@ -21,10 +17,6 @@ struct Color {
 
 fn %display(c: Color) -> latex {
   display"\nyacolor{rgb(${255.0 * c.r},${255.0 * c.g},${255.0 * c.b},${c.a})}"
-}
-
-fn %debug(c: Color) -> latex {
-  debug"\wordprefix{rgb}(${255.0 * c.r},${255.0 * c.g},${255.0 * c.b},${c.a})"
 }
 
 fn rgb(r: num, g: num, b: num) -> Color3 {
