@@ -5,11 +5,6 @@ import { Id, ident } from "../../lang/src/emit/id"
 import type { EntrySet } from "../../lang/src/exec/item"
 import type { NameCooked, Node, OpKind, Suffix, SuffixKind } from "./node"
 
-export interface Definition {
-  args: NameIdent[] | null
-  of: Node
-}
-
 export class ScriptBlock {
   constructor(
     readonly set: EntrySet,

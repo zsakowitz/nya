@@ -2,7 +2,9 @@ import type { PuncCmp } from "@/eval/ast/token"
 import { escapeIdentName } from "../../lang/src/ast/kind"
 import { issue } from "../../lang/src/emit/error"
 import type { Node, OpKind, Suffix } from "./node"
+import { P, PRECEDENCE_WORD_BINARY } from "./prec"
 import {
+  listItems,
   printVar,
   setGroupTxr,
   TX_OPS,
@@ -358,6 +360,10 @@ alias("\\cdot ", "* %dot")
 alias("\\times ", "* %cross")
 alias("mod", "% mod")
 alias("\\odot ", "%odot")
+alias("and", "&& and")
+alias("or", "|| or")
+PRECEDENCE_WORD_BINARY.and = [P.BoolAndL, P.BoolOrR]
+PRECEDENCE_WORD_BINARY.or = [P.BoolOrL, P.BoolOrR]
 
 TX_OPS_OPS["debugAst"] = {
   eval(_, [a]) {
@@ -374,6 +380,29 @@ TX_OPS_OPS["debugScript"] = {
   deps(_, [a], deps) {
     deps.check(a!)
   },
+}
+
+function toBinding(node: Node): [OpKind["binding"], Node] | null {
+  if (
+    node.data.type == "op" &&
+    node.data.data == "cmp-eq" &&
+    node.args?.length == 2
+  ) {
+    const lhs = node.args[0]!
+    const rhs = node.args[1]!
+    if (lhs.data.type == "uvar") {
+      return [{ name: lhs.data.data, args: null }, rhs]
+    }
+    if (lhs.data.type == "ucall") {
+      const { name, arg } = lhs.data.data
+      const args = listItems(arg).map((x) => x.data)
+      if (args.every((x) => x.type == "uvar")) {
+        return [{ name, args: args.map((x) => x.data) }, rhs]
+      }
+    }
+  }
+
+  return null
 }
 
 // function parseAsBinding() {}

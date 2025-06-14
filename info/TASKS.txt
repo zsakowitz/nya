@@ -1,9 +1,10 @@
 before nyalang version can be released:
+❌ `2 < 3 < 4` works as expected
 ❌ mutating functions like `stroke` and `path` shouldn't really exist
 ❌ exact fractions
 ❌ automatic coercion
 ❌ list distribution
-❌ min(1,2,7,9) still works
+❌ `min(1, 2, 7, 9)` still works
 ❌ trig angle
 ❌ shaders
 ❌ geometric object plotting
@@ -90,6 +91,8 @@ to do list for non-desmos stuff is:
 ✅ slope field
 
 to do list for 110% compatiability is:
+❌ width and height as variables
+❌ `f(min)=2` throws a more reasonable error
 ❌ trigAngleMultiplier
 ❌ rtxsqpone(r32) = r32^2 + 1
 ❌ rtxsqmone(r32) = r32^2 - 1
