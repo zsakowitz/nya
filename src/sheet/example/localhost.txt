@@ -1,9 +1,10 @@
 \wordprefix{rgb}\left(2,30,255\right)
-3+4i
-(7,8)
+A=3+4i
+B=(7,8)
 a=2
 b=3
 a+b
 x^{2}
 sin 3
 cos sin 4
+ray((realA,imagA),B)
