@@ -1,0 +1,97 @@
+// builtin types: num, bool, sym, Path, Canvas, latex, void
+
+opaque void = void "void";
+opaque num = "number";
+opaque bool = "boolean";
+opaque sym = "number";
+opaque Path = "{x:Path2D,y:[number,number,number],z:[number,number,number]}";
+opaque Canvas = "{sx:number,sy:number,ox:number,oy:number,x0:number,x1:number,y0:number,y1:number,wx:number,wy:number}";
+opaque latex = "string";
+
+struct Point {
+  x: num,
+  y: num,
+}
+
+struct CanvasPoint {
+  x: num,
+  y: num,
+}
+
+fn to_cv_coords(pt: Point, cv: Canvas) -> CanvasPoint {
+  CanvasPoint {
+    x: eval"${cv}.sx*${pt.x}+${cv}.ox",
+    y: eval"${cv}.sy*${pt.y}+${cv}.oy",
+  }
+}
+
+struct PointDelta {
+  dx: num,
+  dy: num,
+}
+
+struct CanvasPointDelta {
+  dx: num,
+  dy: num,
+}
+
+fn to_cv_delta(dpt: PointDelta, cv: Canvas) -> CanvasPointDelta {
+  CanvasPointDelta {
+    dx: eval"${cv}.sx*${dpt.dx}",
+    dy: eval"-${cv}.sy*${dpt.dy}",
+  }
+}
+
+fn to_math_coords(pt: CanvasPoint, cv: Canvas) -> Point {
+  Point {
+    x: eval"(${pt.x}-${c}.ox)/${c}.sx",
+    y: eval"(${pt.y}-${c}.oy)/${c}.sy",
+  }
+}
+
+fn xmin(cv: Canvas) -> num {
+  eval"${cv}.x0"
+}
+
+fn xmax(cv: Canvas) -> num {
+  eval"${cv}.x1"
+}
+
+fn ymin(cv: Canvas) -> num {
+  eval"${cv}.y0"
+}
+
+fn ymax(cv: Canvas) -> num {
+  eval"${cv}.y1"
+}
+
+fn path() -> Path {
+  eval"{x:new Path2D,y:[0,0,0],z:[0,0,0]}"
+}
+
+fn move_to(p: Path, dest: CanvasPoint) -> Path {
+  eval"${p}.x.moveTo(${dest.x},${dest.y});";
+  p
+}
+
+fn line_to(p: Path, dest: CanvasPoint) -> Path {
+  eval"${p}.x.lineTo(${dest.x},${dest.y});";
+  p
+}
+
+fn circle(p: Path, center: CanvasPoint, radius: num) -> Path {
+  eval"${p}.x.ellipse(${center.x},${center.y},${radius},${radius},0,0,${2.0
+    * pi};)";
+  p
+}
+
+fn ellipse(p: Path, center: CanvasPoint, radii: CanvasPointDelta) -> Path {
+  eval"${p}.x.ellipse(${center.x},${center.y},${radii.dx},${radii.dy},0,0,${2.0
+    * pi};)";
+  p
+}
+
+fn ellipse(p: Path, center: CanvasPoint, rx: num, ry: num) -> Path {
+  eval"${p}.x.ellipse(${center.x},${center.y},${rx},${ry},0,0,${2.0 * pi};)";
+  p
+}

@@ -3,7 +3,6 @@ import type {
   KData,
   KEnum,
   KExpose,
-  KFi,
   KFn,
   KLet,
   KLocal,
@@ -87,22 +86,6 @@ export class ItemFn extends NodeItem {
       (semi ?? block ?? usage ?? ret ?? params ?? tparams ?? name ?? kw).end,
       kw.info,
     )
-  }
-}
-
-/**
- * A variant of `fn` which is untyped and basically inlined at each call site.
- * Used to match how Desmos functions work.
- */
-export class ItemFi extends NodeItem {
-  constructor(
-    readonly kw: Token<typeof KFi>,
-    readonly name: IdentFnName | null,
-    readonly params: List<Ident> | null,
-    readonly block: ExprBlock | null,
-    readonly semi: Token<typeof OSemi> | null,
-  ) {
-    super(kw.start, (semi ?? block ?? params ?? name ?? kw).end, kw.info)
   }
 }
 

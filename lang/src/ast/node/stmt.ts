@@ -1,8 +1,9 @@
-import type { KAssert, KLet, KMut, OSemi } from "../kind"
+import type { KAssert, KLet, KMut, KType, OEq, OSemi, TString } from "../kind"
 import type { Token } from "../token"
 import type { NodeExpr } from "./expr"
 import type {
   AssertionMessage,
+  BuiltinTypePackSize,
   Comments,
   Initializer,
   ParamType,
@@ -51,5 +52,19 @@ export class StmtAssert extends NodeStmt {
 export class StmtComment extends NodeStmt {
   constructor(readonly of: Comments) {
     super(of.start, of.end, of.info)
+  }
+}
+
+export class StmtBuiltinType extends NodeStmt {
+  constructor(
+    readonly kw: Token<typeof KType>,
+    readonly ident: Ident | null,
+    readonly pack: BuiltinTypePackSize | null,
+    readonly eq: Token<typeof OEq>,
+    readonly classifier: Ident | null,
+    readonly source: Token<typeof TString> | null,
+    readonly semi: Token<typeof OSemi> | null,
+  ) {
+    super(kw.start, (semi ?? ident ?? kw).end, kw.info)
   }
 }

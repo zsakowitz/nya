@@ -15,8 +15,10 @@ import {
   type ODot,
   type OEq,
   type OSemi,
+  type OStar,
   type TComment,
   type TIdent,
+  type TInt,
   type TLabel,
   type TString,
   type TSym,
@@ -316,5 +318,14 @@ export class ForHeader extends Node {
 export class ForHeaders extends Node {
   constructor(readonly items: ForHeader[]) {
     super(items[0]!.start, items[items.length - 1]!.end, items[0]!.info)
+  }
+}
+
+export class BuiltinTypePackSize extends Node {
+  constructor(
+    readonly op: Token<typeof OStar>,
+    readonly size: Token<typeof TInt> | null,
+  ) {
+    super(op.start, (size ?? op).end, op.info)
   }
 }

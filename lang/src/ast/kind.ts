@@ -23,7 +23,6 @@ export const KRule = 18
 export const KExpose = 19
 export const KType = 20
 export const KFn = 21
-export const KFi = 22
 export const KStruct = 23
 export const KOpaque = 24
 export const KLet = 25
@@ -166,7 +165,6 @@ export const KWS: Record<string, number> = {
   expose: KExpose,
   type: KType,
   fn: KFn,
-  fi: KFi,
   struct: KStruct,
   opaque: KOpaque,
   let: KLet,
@@ -490,7 +488,6 @@ export const OP_TEXT: Record<number, string> = {
   [KExpose]: "expose",
   [KType]: "type",
   [KFn]: "fn",
-  [KFi]: "fi",
   [KStruct]: "struct",
   [KOpaque]: "opaque",
   [KLet]: "let",
