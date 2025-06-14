@@ -166,8 +166,8 @@ class RangeControls {
 
     this.min.latex`-10`
     this.max.latex`10`
-    this.min.ast = this.min.block.ast()
-    this.max.ast = this.max.block.ast()
+    this.min.ast = this.min.block.expr(false)
+    this.max.ast = this.max.block.expr(false)
   }
 
   unlink() {

@@ -375,3 +375,14 @@ TX_OPS_OPS["debugScript"] = {
     deps.check(a!)
   },
 }
+
+// function parseAsBinding() {}
+//
+// function parseBindingList() {
+//   listItems()
+// }
+//
+// TX_OPS_OPS["with"] = {
+//   eval(op, [value, bindings], block) {},
+//   deps(op, [value, bindings], deps) {},
+// }

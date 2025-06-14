@@ -1,19 +1,9 @@
 import { L, R, U } from "@/field/dir"
 import { LatexParser } from "@/field/latex"
-import { Block } from "@/field/model"
 import { faSquareRootVariable } from "@fortawesome/free-solid-svg-icons"
 import type { ItemFactory } from "./item"
 import { Order } from "./ui/cv/consts"
-import type { ItemData } from "./ui/cv/move"
-import type { Expr, ExprStateOk } from "./ui/expr"
-
-function local(data: ItemData<Expr, unknown>): ItemData<{}> {
-  return {
-    data: (data.data.state as ExprStateOk).data!,
-    index: data.index,
-    item: data.item,
-  }
-}
+import type { Expr } from "./ui/expr"
 
 export const FACTORY_EXPR: ItemFactory<Expr, { geo?: boolean }> = {
   id: "nya:expr",
@@ -42,7 +32,7 @@ export const FACTORY_EXPR: ItemFactory<Expr, { geo?: boolean }> = {
     return data.main
   },
   plot: {
-    order(data) {
+    order(_data) {
       //       if (data.state.ok && data.state.ext?.plot) {
       //         return data.state.ext.plot.order(data.state.data)
       //       }
@@ -53,7 +43,7 @@ export const FACTORY_EXPR: ItemFactory<Expr, { geo?: boolean }> = {
     items(data) {
       return data.plot ? [1] : [] // data.state.ext?.plot?.items(data.state.data) ?? []
     },
-    draw(data, item, index) {
+    draw(data, _item, _index) {
       // if (index == 0) {
       data.drawSelf()
       // }
