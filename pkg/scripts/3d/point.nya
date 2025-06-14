@@ -4,7 +4,7 @@ struct Point3D {
   z: num,
 }
 
-fn point(x: num, y: num, z: num) -> Point3D {
+fn %point(x: num, y: num, z: num) -> Point3D {
   Point3D { x, y, z }
 }
 

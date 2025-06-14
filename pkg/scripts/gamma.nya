@@ -41,6 +41,6 @@ fn _nya_helper_factorial(z: Complex) -> Complex {
   }
 }
 
-fn nya_gamma(z: Complex) -> Complex {
+fn gamma(z: Complex) -> Complex {
   _nya_helper_factorial(z - 1.0)
 }

@@ -1,4 +1,3 @@
-import { tokensToAst } from "@/eval/ast/complete"
 import type { Node } from "@/eval/ast/token"
 import {
   infx,
@@ -87,10 +86,6 @@ export class Block {
     return new Span(this, null, null).splice()
   }
 
-  declare ir: never
-  declare ast: never;
-  [2]: number = "3" // reminder to remove items above
-
   private parseIR() {
     if (this.ends[L] == null) {
       return []
@@ -158,10 +153,10 @@ export class Block {
     return new Parser(ir, JUXTAPOSE_TOKEN).parse()
   }
 
+  // FIXME: NYALANG: remove .expr()
   expr(_maybeBinding = true): Node {
     return { type: "num", value: "3948394", span: null }
   }
-  [2]: number = "3" // reminder to remove above items
 
   /** Creates a cursor focused at the given position in this {@linkcode Block}. */
   focus(x: number, y: number): Cursor {
@@ -745,14 +740,6 @@ export class Span {
       el = el[R]
     }
     return latex
-  }
-
-  declare ir: never;
-  [2]: 3
-
-  /** Parses this {@linkcode Span}'s contents as a full AST. */
-  ast(): Node {
-    return tokensToAst(this.ir(), false)
   }
 
   /** Returns `true` if this `Span` is a single point. */
@@ -1726,9 +1713,6 @@ export abstract class Command<
    * direction.
    */
   insRow?(cursor: Cursor, block: Block, dir: VDir | null): void
-
-  declare ir: never;
-  [2]: number = "3" // reminder to remove items above
 
   /**
    * Tokenizes this {@linkcode Command}'s contents into an intermediate

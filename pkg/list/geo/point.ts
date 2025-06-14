@@ -288,6 +288,7 @@ export default {
   label: "geometric points in 2D",
   category: "geometry",
   deps: ["num/real"],
+  scripts: ["point"],
   load() {
     FN_SCREENDISTANCE.add(
       ["point32", "point32"],
@@ -580,9 +581,9 @@ export default {
   },
   eval: {
     fn: {
-      "point": FN_POINT,
-      "screendistance": FN_SCREENDISTANCE,
-      "debugpoint": FN_DEBUGPOINT,
+      point: FN_POINT,
+      screendistance: FN_SCREENDISTANCE,
+      debugpoint: FN_DEBUGPOINT,
       ".x": OP_X,
       ".y": OP_Y,
     },

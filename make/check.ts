@@ -47,7 +47,7 @@ await Promise.all(
         await env.load(k as ScriptName)
       }
     } catch (e) {
-      console.error(e instanceof Error ? e.message : String(e))
+      console.error(e)
       process.exitCode = 1
       ok = false
     }

@@ -5,7 +5,7 @@ struct Point4D {
   w: num,
 }
 
-fn point(x: num, y: num, z: num, w: num) -> Point4D {
+fn %point(x: num, y: num, z: num, w: num) -> Point4D {
   Point4D { x, y, z, w }
 }
 

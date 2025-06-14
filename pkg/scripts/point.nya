@@ -3,10 +3,6 @@ struct Point {
   y: num,
 }
 
-fn point(x: num, y: num) -> Point {
-  Point { x, y }
-}
-
 fn %point(x: num, y: num) -> Point {
   Point { x, y }
 }

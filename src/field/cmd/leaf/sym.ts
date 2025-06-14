@@ -1,10 +1,8 @@
-import type { Node } from "@/eval/ast/token"
-import { L, R } from "@/field/dir"
+import { L } from "@/field/dir"
 import { h } from "@/jsx"
 import { Leaf } from "."
 import type { LatexParser } from "../../latex"
 import {
-  Span,
   type Command,
   type Cursor,
   type InitProps,
@@ -46,15 +44,6 @@ function sym(
 
     latex(): string {
       return latex
-    }
-
-    ir(tokens: Node[]): void {
-      tokens.push({
-        type: "var",
-        kind: "var",
-        value: text,
-        span: new Span(this.parent, this[L], this[R]),
-      })
     }
 
     get autoCmd() {
