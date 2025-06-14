@@ -557,7 +557,7 @@ export class CmdVar extends Leaf {
         break
       case "infix": {
         const p = PRECEDENCE_WORD_BINARY[name]
-        ret.prfx(
+        ret.infx(
           { type: "sop", data: { name, sub: null, sup: null } },
           p ? p[0] : P.ProdL,
           p ? p[1] : P.ProdR,
