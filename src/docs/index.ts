@@ -76,13 +76,13 @@ export function createDocs2(sheet: Sheet) {
   const [elF, checkF] = secFunctions(sheet, list, true, "functions")
   const [elO, checkO] = secFunctions(sheet, list, false, "operators")
   const names: Record<string, HTMLElement> = {
-    "about": secAbout(),
-    "guides": guidesEl,
+    about: secAbout(),
+    guides: guidesEl,
     "data types": secDataTypes(list),
-    "functions": elF,
-    "operators": elO,
+    functions: elF,
+    operators: elO,
     // @ts-expect-error it can't handle null prototype initializer
-    "__proto__": null,
+    __proto__: null,
   }
   let which = path?.tab && path.tab in names ? path.tab : "about"
 

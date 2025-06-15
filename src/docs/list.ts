@@ -130,8 +130,8 @@ function createCategory(
 
   const id = "s" + Math.random().toString().slice(2)
   const openCheckbox = hx("input", {
-    "type": "checkbox",
-    "class": "sr-only",
+    type: "checkbox",
+    class: "sr-only",
     "aria-label": "whether to show all packages in this category",
     id,
   })

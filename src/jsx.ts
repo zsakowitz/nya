@@ -136,14 +136,14 @@ export function li(
 }
 
 interface SVGDrawProps {
-  "stroke"?: string
+  stroke?: string
   "stroke-width"?: number
   "stroke-opacity"?: number
   "stroke-linecap"?: "round"
   "stroke-linejoin"?: "round"
-  "fill"?: string
+  fill?: string
   "fill-opacity"?: number
-  "transform"?: string
+  transform?: string
 }
 
 interface SVGProps {
