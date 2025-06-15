@@ -1,0 +1,69 @@
+//! @stdlib/math/base/special/polygamma/lib/main.js
+
+use "real/parity";
+use "gamma/digamma";
+use "gamma/trigamma";
+
+fn _neg_if_even(n: num) -> num {
+  if is_even(n) {
+    -1
+  } else {
+    1
+  }
+}
+
+fn _polygamma_ge2_posx(n: num, x: num) -> num {
+  let x_small_limit = min(5.0 / n, 0.25);
+
+  if x < x_small_limit {
+    return nearzero(n, x);
+  }
+
+  if x > 0.4 * DIGITS_BASE10 + 4 * n {
+    return atinfinityplus(n, x);
+  }
+
+  if x == 1.0 {
+    return _neg_if_even(n) * %exclm(n) * zeta(n + 1);
+  }
+
+  if x == 0.5 {
+    let result = _neg_if_even(n) * %exclm(n) * zeta(n + 1);
+    if abs(result) > ldexp(MAX, -n - 1) {
+      return if sign(result) == 1 { inf } else { -inf };
+      // TODO: check sign
+    }
+    return result * ldexp(1.0, n + 1) - 1.0;
+  }
+
+  attransitionplus(n, x)
+}
+
+fn polygamma(n: num, x: num) -> num {
+  if n == 0.0 {
+    return digamma(x);
+  }
+
+  if n == 1.0 {
+    return trigamma(x);
+  }
+
+  if !(is_finite(n) && n == floor(n) && n > 0) {
+    // TODO: wolfram|alpha defines non-nan values; we should copy them
+    return nan;
+  }
+
+  if x < 0.0 {
+    if x == floor(x) {
+      return inf_unsigned;
+    }
+    let result = _polygamma_ge2_posx(n, x) + pi * polycotpi(n, 1.0 - x, x);
+    if is_even(n) {
+      result
+    } else {
+      -result
+    }
+  } else {
+    _polygamma_ge2_posx(n, x)
+  }
+}

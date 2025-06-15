@@ -8,6 +8,9 @@ let name = ""
 
 // Scans the current working directory and each of its sub-directories recursively
 for await (const file of glob.scan(scripts.pathname)) {
+  if (file.split("/").some((x) => x[0] == "_")) {
+    continue
+  }
   const idx = index++
   const alias = JSON.stringify(
     file.slice(0, file.endsWith("/index.nya") ? -10 : -4),

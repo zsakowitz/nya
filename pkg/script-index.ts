@@ -8,19 +8,20 @@ import s6 from "../nya/4d/point.nya"
 import s7 from "../nya/color/extras.nya"
 import s8 from "../nya/color/oklab.nya"
 import s9 from "../nya/color/core.nya"
-import s10 from "../nya/real/index.nya"
-import s11 from "../nya/real/number-theory.nya"
-import s12 from "../nya/complex/index.nya"
-import s13 from "../nya/complex/trig-hyperbolic.nya"
-import s14 from "../nya/complex/trig.nya"
-import s15 from "../nya/complex/number-theory.nya"
-import s16 from "../nya/core/cmp.nya"
-import s17 from "../nya/core/ops.nya"
-import s18 from "../nya/3d/point.nya"
-import s19 from "../nya/gamma/lngamma.nya"
-import s20 from "../nya/gamma/trigamma.nya"
-import s21 from "../nya/gamma/digamma.nya"
-import s22 from "../nya/gamma/gamma.nya"
+import s10 from "../nya/real/parity.nya"
+import s11 from "../nya/real/index.nya"
+import s12 from "../nya/real/number-theory.nya"
+import s13 from "../nya/complex/index.nya"
+import s14 from "../nya/complex/trig-hyperbolic.nya"
+import s15 from "../nya/complex/trig.nya"
+import s16 from "../nya/complex/number-theory.nya"
+import s17 from "../nya/core/cmp.nya"
+import s18 from "../nya/core/ops.nya"
+import s19 from "../nya/3d/point.nya"
+import s20 from "../nya/gamma/lngamma.nya"
+import s21 from "../nya/gamma/trigamma.nya"
+import s22 from "../nya/gamma/digamma.nya"
+import s23 from "../nya/gamma/gamma.nya"
 
 export const SCRIPTS = new Map([
   ["point", s0],
@@ -33,19 +34,20 @@ export const SCRIPTS = new Map([
   ["color/extras", s7],
   ["color/oklab", s8],
   ["color/core", s9],
-  ["real", s10],
-  ["real/number-theory", s11],
-  ["complex", s12],
-  ["complex/trig-hyperbolic", s13],
-  ["complex/trig", s14],
-  ["complex/number-theory", s15],
-  ["core/cmp", s16],
-  ["core/ops", s17],
-  ["3d/point", s18],
-  ["gamma/lngamma", s19],
-  ["gamma/trigamma", s20],
-  ["gamma/digamma", s21],
-  ["gamma/gamma", s22],
+  ["real/parity", s10],
+  ["real", s11],
+  ["real/number-theory", s12],
+  ["complex", s13],
+  ["complex/trig-hyperbolic", s14],
+  ["complex/trig", s15],
+  ["complex/number-theory", s16],
+  ["core/cmp", s17],
+  ["core/ops", s18],
+  ["3d/point", s19],
+  ["gamma/lngamma", s20],
+  ["gamma/trigamma", s21],
+  ["gamma/digamma", s22],
+  ["gamma/gamma", s23],
 ])
 
 export type ScriptName =
@@ -59,6 +61,7 @@ export type ScriptName =
   | "color/extras"
   | "color/oklab"
   | "color/core"
+  | "real/parity"
   | "real"
   | "real/number-theory"
   | "complex"

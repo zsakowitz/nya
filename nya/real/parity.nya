@@ -1,0 +1,4 @@
+fn is_even(n: num) -> bool {
+  // `rem` is inlined in JS
+  rem(n, 2) == 0
+}

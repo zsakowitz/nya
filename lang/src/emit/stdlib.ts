@@ -720,7 +720,7 @@ export function createStdlib(props: EmitProps) {
     }),
 
     // Easy numeric functions
-    ..."sin cos tan asin acos atan sinh cosh tanh asinh acosh atanh exp abs cbrt sqrt ceil floor sign log10"
+    ..."sin cos tan asin acos atan sinh cosh tanh asinh acosh atanh exp abs cbrt sqrt ceil floor trunc sign log10"
       .split(" ")
       .map((x) => numMathOp(x)),
     numMathOp("ln", "log"),
