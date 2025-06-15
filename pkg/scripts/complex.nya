@@ -140,7 +140,7 @@ fn conj(z: Complex) -> Complex {
 }
 
 fn dot(a: Complex, b: Complex) -> num {
-  a.real * b.real - a.imag * b.imag
+  @dot(a, b)
 }
 
 fn unsign(z: Complex) -> Complex {
