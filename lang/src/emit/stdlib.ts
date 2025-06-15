@@ -856,6 +856,8 @@ export function createStdlib(props: EmitProps) {
 
     // Numeric constants
     new Fn(g("inf"), [], num, () => new Value(1 / 0, num)),
+    // `inf_unsigned` is a signal to the reader, but is equal to `inf`
+    new Fn(g("inf_unsigned"), [], num, () => new Value(1 / 0, num)),
     new Fn(g("nan"), [], num, () => new Value(0 / 0, num)),
     new Fn(g("pi"), [], num, () => new Value(Math.PI, num)),
     new Fn(g("e"), [], num, () => new Value(Math.E, num)),

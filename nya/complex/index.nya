@@ -121,6 +121,7 @@ fn exp(z: Complex) -> Complex {
 
 fn ln(z: Complex) -> Complex {
   if z.real == 0.0 && z.imag == 0.0 {
+    // limit is negative infinity
     Complex { real: -inf, imag: 0.0 }
   } else {
     Complex { real: @length(z), imag: atan(z.imag, z.real) }

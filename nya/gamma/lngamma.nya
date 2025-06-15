@@ -168,6 +168,7 @@ fn lngamma(x: num) -> num {
   let mut flg = 0.0;
 
   if x == 0.0 {
+    // limit is positive infinity
     return inf;
   }
 
@@ -180,10 +181,12 @@ fn lngamma(x: num) -> num {
 
   // adjustment for negatives
   if is_neg {
+    // it must be a negative integer; limit is positive infinity
     if x >= _lngamma_TWO52 {
       return inf;
     }
     let t = sin(pi * x);
+    // it must be a negative integer; limit is positive infinity
     if t == 0.0 {
       return inf;
     }

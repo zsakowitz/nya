@@ -18,7 +18,8 @@ import s16 from "../nya/core/cmp.nya"
 import s17 from "../nya/core/ops.nya"
 import s18 from "../nya/3d/point.nya"
 import s19 from "../nya/gamma/lngamma.nya"
-import s20 from "../nya/gamma/gamma.nya"
+import s20 from "../nya/gamma/digamma.nya"
+import s21 from "../nya/gamma/gamma.nya"
 
 export const SCRIPTS = new Map([
   ["point", s0],
@@ -41,7 +42,8 @@ export const SCRIPTS = new Map([
   ["core/ops", s17],
   ["3d/point", s18],
   ["gamma/lngamma", s19],
-  ["gamma/gamma", s20],
+  ["gamma/digamma", s20],
+  ["gamma/gamma", s21],
 ])
 
 export type ScriptName =
@@ -65,4 +67,5 @@ export type ScriptName =
   | "core/ops"
   | "3d/point"
   | "gamma/lngamma"
+  | "gamma/digamma"
   | "gamma/gamma"
