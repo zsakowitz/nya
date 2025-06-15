@@ -20,7 +20,7 @@ fn _nya_helper_cx_factorial_pos(z: Complex) -> Complex {
   sqrt(2.0 * pi) * t ^ (z + 0.5) * exp(-t) * x
 }
 
-fn _nya_helper_factorial(z: Complex) -> Complex {
+fn %exclm(z: Complex) -> Complex {
   if z.real < 1.5 {
     // G(z) = (z-1)!
     // G(z)G(1-z) = π/sin(πz)
@@ -42,5 +42,5 @@ fn _nya_helper_factorial(z: Complex) -> Complex {
 }
 
 fn gamma(z: Complex) -> Complex {
-  _nya_helper_factorial(z - 1.0)
+  %exclm(z - 1.0)
 }

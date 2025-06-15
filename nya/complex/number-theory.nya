@@ -1,4 +1,4 @@
-use "numtheory-real";
+use "real/number-theory";
 use "complex";
 
 fn round(value: Complex) -> Complex {
