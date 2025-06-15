@@ -1,0 +1,57 @@
+use "complex";
+
+//! https://en.wikipedia.org/wiki/Inverse_hyperbolic_functions
+
+fn sinh(a: Complex) -> Complex {
+  Complex {
+    real: cos(a.imag) * sinh(a.real),
+    imag: sin(a.imag) * cosh(a.real),
+  }
+}
+
+fn cosh(a: Complex) -> Complex {
+  Complex {
+    real: cos(a.imag) * cosh(a.real),
+    imag: sin(a.imag) * sinh(a.real),
+  }
+}
+
+fn tanh(a: Complex) -> Complex {
+  sinh(a) / cosh(a)
+}
+
+fn csch(a: Complex) -> Complex {
+  inv(sinh(a))
+}
+
+fn sech(a: Complex) -> Complex {
+  inv(cosh(a))
+}
+
+fn coth(a: Complex) -> Complex {
+  cosh(a) / sinh(a)
+}
+
+fn asinh(a: Complex) -> Complex {
+  ln(%sqrt(a * a + 1.0) + a)
+}
+
+fn acosh(a: Complex) -> Complex {
+  ln(%sqrt(a + 1.0) * %sqrt(a - 1.0) + a)
+}
+
+fn atanh(a: Complex) -> Complex {
+  ln((1.0 + a) / (1.0 - a)) / 2.0
+}
+
+fn acsch(a: Complex) -> Complex {
+  asinh(inv(a))
+}
+
+fn asech(a: Complex) -> Complex {
+  acosh(inv(a))
+}
+
+fn acoth(a: Complex) -> Complex {
+  ln((a + 1.0) / (a - 1.0)) / 2.0
+}

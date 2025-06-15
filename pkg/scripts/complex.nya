@@ -38,6 +38,10 @@ fn -(a: Complex, b: num) -> Complex {
   Complex { real: a.real - b, imag: a.imag }
 }
 
+fn -(a: num, b: Complex) -> Complex {
+  Complex { real: a - b.real, imag: b.imag }
+}
+
 fn *(a: Complex, b: Complex) -> Complex {
   Complex {
     real: a.real * b.real - a.imag * b.imag,
@@ -63,6 +67,10 @@ fn inv(a: Complex) -> Complex {
 
 fn /(a: num, b: Complex) -> Complex {
   a @* inv(b)
+}
+
+fn /(a: Complex, b: num) -> Complex {
+  a @/ b
 }
 
 fn ==(a: Complex, b: Complex) -> bool {
@@ -173,4 +181,9 @@ fn complex(a: Complex) -> Complex {
 
 fn abs(a: Complex) -> num {
   @length(a)
+}
+
+fn %sqrt(z: Complex) -> Complex {
+  let a = atan(z.imag, z.real) / 2.0;
+  Complex { real: cos(a), imag: sin(a) } @* sqrt(@length(z))
 }

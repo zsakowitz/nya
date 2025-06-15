@@ -1,49 +1,55 @@
 import s0 from "./scripts/numtheory-real.nya"
-import s1 from "./scripts/real.nya"
-import s2 from "./scripts/complex.nya"
-import s3 from "./scripts/point.nya"
-import s4 from "./scripts/color.nya"
-import s5 from "./scripts/erf.nya"
-import s6 from "./scripts/numtheory-complex.nya"
-import s7 from "./scripts/geometry.nya"
-import s8 from "./scripts/gamma.nya"
-import s9 from "./scripts/data/distributions.nya"
-import s10 from "./scripts/4d/two-complex.nya"
-import s11 from "./scripts/4d/point.nya"
-import s12 from "./scripts/color/extras.nya"
-import s13 from "./scripts/color/oklab.nya"
-import s14 from "./scripts/color/core.nya"
-import s15 from "./scripts/core/cmp.nya"
-import s16 from "./scripts/core/ops.nya"
-import s17 from "./scripts/3d/point.nya"
+import s1 from "./scripts/complex-trig-hyperbolic.nya"
+import s2 from "./scripts/real.nya"
+import s3 from "./scripts/complex.nya"
+import s4 from "./scripts/point.nya"
+import s5 from "./scripts/color.nya"
+import s6 from "./scripts/complex-trig.nya"
+import s7 from "./scripts/erf.nya"
+import s8 from "./scripts/numtheory-complex.nya"
+import s9 from "./scripts/geometry.nya"
+import s10 from "./scripts/gamma.nya"
+import s11 from "./scripts/data/distributions.nya"
+import s12 from "./scripts/4d/two-complex.nya"
+import s13 from "./scripts/4d/point.nya"
+import s14 from "./scripts/color/extras.nya"
+import s15 from "./scripts/color/oklab.nya"
+import s16 from "./scripts/color/core.nya"
+import s17 from "./scripts/core/cmp.nya"
+import s18 from "./scripts/core/ops.nya"
+import s19 from "./scripts/3d/point.nya"
 
 export const SCRIPTS = new Map([
   ["numtheory-real", s0],
-  ["real", s1],
-  ["complex", s2],
-  ["point", s3],
-  ["color", s4],
-  ["erf", s5],
-  ["numtheory-complex", s6],
-  ["geometry", s7],
-  ["gamma", s8],
-  ["data/distributions", s9],
-  ["4d/two-complex", s10],
-  ["4d/point", s11],
-  ["color/extras", s12],
-  ["color/oklab", s13],
-  ["color/core", s14],
-  ["core/cmp", s15],
-  ["core/ops", s16],
-  ["3d/point", s17],
+  ["complex-trig-hyperbolic", s1],
+  ["real", s2],
+  ["complex", s3],
+  ["point", s4],
+  ["color", s5],
+  ["complex-trig", s6],
+  ["erf", s7],
+  ["numtheory-complex", s8],
+  ["geometry", s9],
+  ["gamma", s10],
+  ["data/distributions", s11],
+  ["4d/two-complex", s12],
+  ["4d/point", s13],
+  ["color/extras", s14],
+  ["color/oklab", s15],
+  ["color/core", s16],
+  ["core/cmp", s17],
+  ["core/ops", s18],
+  ["3d/point", s19],
 ])
 
 export type ScriptName =
   | "numtheory-real"
+  | "complex-trig-hyperbolic"
   | "real"
   | "complex"
   | "point"
   | "color"
+  | "complex-trig"
   | "erf"
   | "numtheory-complex"
   | "geometry"

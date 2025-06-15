@@ -1,0 +1,55 @@
+use "complex";
+
+fn sin(z: Complex) -> Complex {
+  Complex {
+    real: sin(z.real) * cosh(z.imag),
+    imag: cos(z.real) * sinh(z.imag),
+  }
+}
+
+fn cos(z: Complex) -> Complex {
+  Complex {
+    real: cos(z.real) * cosh(z.imag),
+    imag: -sin(z.real) * sinh(z.imag),
+  }
+}
+
+fn tan(z: Complex) -> Complex {
+  sin(z) / cos(z)
+}
+
+fn csc(z: Complex) -> Complex {
+  inv(sin(z))
+}
+
+fn sec(z: Complex) -> Complex {
+  inv(cos(z))
+}
+
+fn cot(z: Complex) -> Complex {
+  cos(z) / sin(z)
+}
+
+fn asin(z: Complex) -> Complex {
+  i * ln(%sqrt(1.0 - z * z) - z * i)
+}
+
+fn acos(z: Complex) -> Complex {
+  ln((1.0 - z * z) * i + z) / i
+}
+
+fn atan(z: Complex) -> Complex {
+  ln((i - z) / (i + z)) / i / 2.0
+}
+
+fn acsc(a: Complex) -> Complex {
+  asin(inv(a))
+}
+
+fn asec(a: Complex) -> Complex {
+  acos(inv(a))
+}
+
+fn acot(a: Complex) -> Complex {
+  atan(inv(a))
+}
