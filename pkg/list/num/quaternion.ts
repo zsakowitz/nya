@@ -354,9 +354,9 @@ export default {
       },
     },
     fn: {
-      "unsign": FN_UNSIGN,
-      "conj": FN_CONJ,
-      "real": FN_REAL,
+      unsign: FN_UNSIGN,
+      conj: FN_CONJ,
+      real: FN_REAL,
       ".i": FN_I,
       ".j": FN_J,
       ".k": FN_K,

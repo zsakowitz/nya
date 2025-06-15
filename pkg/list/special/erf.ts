@@ -85,7 +85,7 @@ export default {
   deps: ["num/real", "core/ops"],
   eval: {
     fn: {
-      "erf": FN_ERF,
+      erf: FN_ERF,
       "erf^-1": FN_ERFINV,
     },
   },
