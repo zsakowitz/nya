@@ -2,9 +2,6 @@ import type { Package } from "#/types"
 import { OP_POINT } from "$/core/ops"
 import { EXT_EVAL } from "$/eval"
 import { dragPoint, type DragResultPoint } from "@/eval/ast/tx"
-import type { GlslContext } from "@/eval/lib/fn"
-import { FnDist } from "@/eval/ops/dist"
-import { ERR_COORDS_USED_OUTSIDE_GLSL } from "@/eval/ops/vars"
 import { each, type JsValue } from "@/eval/ty"
 import type { TyWrite } from "@/eval/ty/display"
 import { highRes, TY_INFO, type TyGlide } from "@/eval/ty/info"
@@ -186,32 +183,6 @@ const EXT_POINT = defineHideable<
 // TODO: directly reference this so pkg/geo-point isn't a requirement
 export { FN_GLIDER, FN_INTERSECTION }
 
-const FN_SCREENDISTANCE = new FnDist<"r32">(
-  "screendistance",
-  "calculates the distance between two points in terms of pixels on your screen, rather than graphpaper units",
-)
-
-export const FN_DEBUGPOINT = new FnDist(
-  "debugpoint",
-  "given some point p, returns a color depending on which side of the currently active shader pixel that point p is on",
-)
-
-export function declareDebugPoint(
-  ctx: GlslContext,
-  a: { type: "c32" | "point32"; expr: string },
-): string {
-  ctx.glsl`vec4 _helper_debugpoint_c32(vec2 z) {
-  return vec4(
-    sign(v_coords.x - z.x) / 2.0 + 0.5,
-    sign(v_coords.z - z.y) / 2.0 + 0.5,
-    1,
-    .5
-  );
-}
-`
-  return `_helper_debugpoint_c32(${a.expr})`
-}
-
 export const WRITE_POINT: TyWrite<SPoint> = {
   isApprox(value) {
     return value.isApprox()
@@ -269,29 +240,6 @@ export default {
   category: "geometry",
   deps: ["num/real"],
   scripts: ["point"],
-  load() {
-    FN_SCREENDISTANCE.add(
-      ["point32", "point32"],
-      "r32",
-      () => {
-        throw new Error("Cannot calculate screendistance outside of shaders.")
-      },
-      (_, a, b) => {
-        return `length((${a.expr} - ${b.expr}) * u_px_per_unit.xz)`
-      },
-      "screendistance((2,3),(4,-5))",
-    )
-
-    FN_DEBUGPOINT.add(
-      ["point32"],
-      "color",
-      () => {
-        throw new Error(ERR_COORDS_USED_OUTSIDE_GLSL)
-      },
-      (ctx, a) => declareDebugPoint(ctx, a),
-      "debugpoint((9,-2))",
-    )
-  },
   ty: {
     info: {
       point64: {
@@ -347,12 +295,6 @@ export default {
         },
         extras: null,
       },
-    },
-  },
-  eval: {
-    fn: {
-      screendistance: FN_SCREENDISTANCE,
-      debugpoint: FN_DEBUGPOINT,
     },
   },
   sheet: {

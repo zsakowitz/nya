@@ -316,6 +316,13 @@ TX_SUFFIXES.exponent = {
   },
 }
 
+TX_SUFFIXES.factorial = {
+  eval(_, on) {
+    return `%factorial(${on})`
+  },
+  deps() {},
+}
+
 function alias(name: string, nya: string) {
   TX_OPS_OPS[name] = {
     eval(_, x, block) {

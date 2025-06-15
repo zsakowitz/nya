@@ -1,3 +1,5 @@
+\wordprefix{_nya_helper_cx_factorial_pos}(2+3i)
+(2+3i)!
 debugScript(23+47+-5)
 f(x)=x^2
 rgb\left(2,30,255,0.8\right)

@@ -20,7 +20,7 @@ fn _nya_helper_cx_factorial_pos(z: Complex) -> Complex {
   sqrt(2.0 * pi) * t ^ (z + 0.5) * exp(-t) * x
 }
 
-fn %exclm(z: Complex) -> Complex {
+fn %factorial(z: Complex) -> Complex {
   if z.real < 1.5 {
     // G(z) = (z-1)!
     // G(z)G(1-z) = π/sin(πz)
@@ -30,7 +30,7 @@ fn %exclm(z: Complex) -> Complex {
     // u! = π/sin(πz)/(-u-1)!
     // u! = π/(sin(πz)*(-u-1)!)
     let res = -_nya_helper_cx_factorial_pos(-z - 1.0);
-    let sinArg = 3.141592653589793 * z;
+    let sinArg = pi * z;
     let sinVal = Complex {
       real: sin(sinArg.real) * cosh(sinArg.imag),
       imag: cos(sinArg.real) * sinh(sinArg.imag),
@@ -42,5 +42,5 @@ fn %exclm(z: Complex) -> Complex {
 }
 
 fn gamma(z: Complex) -> Complex {
-  %exclm(z - 1.0)
+  %factorial(z - 1.0)
 }

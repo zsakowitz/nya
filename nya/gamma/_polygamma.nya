@@ -24,11 +24,11 @@ fn _polygamma_ge2_posx(n: num, x: num) -> num {
   }
 
   if x == 1.0 {
-    return _neg_if_even(n) * %exclm(n) * zeta(n + 1);
+    return _neg_if_even(n) * %factorial(n) * zeta(n + 1);
   }
 
   if x == 0.5 {
-    let result = _neg_if_even(n) * %exclm(n) * zeta(n + 1);
+    let result = _neg_if_even(n) * %factorial(n) * zeta(n + 1);
     if abs(result) > ldexp(MAX, -n - 1) {
       return if sign(result) == 1 { inf } else { -inf };
       // TODO: check sign

@@ -7,7 +7,13 @@ struct Complex {
 }
 
 fn %display(z: Complex) -> latex {
-  display"${z.real}+${z.imag}i"
+  if z.imag == 0.0 {
+    display"${z.real}"
+  } else if z.real == 0.0 {
+    display"${z.imag}i"
+  } else {
+    display"${z.real}+${z.imag}i"
+  }
 }
 
 fn +(z: Complex) -> Complex {
@@ -124,7 +130,7 @@ fn ln(z: Complex) -> Complex {
     // limit is negative infinity
     Complex { real: -inf, imag: 0.0 }
   } else {
-    Complex { real: @length(z), imag: atan(z.imag, z.real) }
+    Complex { real: ln(@length(z)), imag: atan(z.imag, z.real) }
   }
 }
 
@@ -142,8 +148,6 @@ fn log10(z: Complex) -> Complex {
   ln(z) @/ ln(10.0)
 }
 
-// TODO: valid
-
 fn conj(z: Complex) -> Complex {
   Complex { real: z.real, imag: -z.imag }
 }
@@ -159,8 +163,6 @@ fn unsign(z: Complex) -> Complex {
 fn i(z: Complex) -> num {
   z.imag
 }
-
-// TODO: debugpoint
 
 fn ^(a: Complex, b: Complex) -> Complex {
   if a.real == 0.0 && a.imag == 0.0 {
@@ -178,8 +180,6 @@ fn complex(a: Complex) -> Complex {
   a
 }
 
-// TODO: point
-
 fn abs(a: Complex) -> num {
   @length(a)
 }
@@ -188,3 +188,5 @@ fn %sqrt(z: Complex) -> Complex {
   let a = atan(z.imag, z.real) / 2.0;
   Complex { real: cos(a), imag: sin(a) } @* sqrt(@length(z))
 }
+
+// TODO: debugpoint, screendistance, point
