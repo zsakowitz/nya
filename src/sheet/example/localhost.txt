@@ -1,7 +1,7 @@
 debugScript(23+47+-5)
-path()
 f(x)=x^2
-\wordprefix{rgb}\left(2,30,255\right)
+rgb\left(2,30,255,0.8\right)
+\operatorname{rgb}\left(2,30,255,0.000000008\right)
 A=3+4i
 B=(7,8)
 a=2

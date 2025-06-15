@@ -382,6 +382,16 @@ TX_OPS_OPS["debugScript"] = {
   },
 }
 
+TX_OPS_OPS["debugDisplay"] = {
+  eval(_, [a], block) {
+    const evald = block.of`%display(${a!})`
+    return `json#"${JSON.stringify(evald, undefined, 2)}"#`
+  },
+  deps(_, [a], deps) {
+    deps.check(a!)
+  },
+}
+
 function toBinding(node: Node): [OpKind["binding"], Node] | null {
   if (
     node.data.type == "op" &&

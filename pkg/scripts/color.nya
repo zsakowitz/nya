@@ -5,7 +5,10 @@ struct Color3 {
 }
 
 fn %display(c: Color3) -> latex {
-  display"\nyacolor{rgb(${255.0 * c.r},${255.0 * c.g},${255.0 * c.b})}"
+  // rounding is necessary b/c the %display(num) implementation would otherwise create 2.3*10^{34}
+  display"\nyacolor{rgb(${round(255.0 * c.r)},${round(255.0 * c.g)},${round(
+    255.0 * c.b,
+  )})}"
 }
 
 struct Color {
@@ -16,7 +19,10 @@ struct Color {
 }
 
 fn %display(c: Color) -> latex {
-  display"\nyacolor{rgb(${255.0 * c.r},${255.0 * c.g},${255.0 * c.b},${c.a})}"
+  // rounding is necessary b/c the %display(num) implementation would otherwise create 2.3*10^{34}
+  display"\nyacolor{rgb(${round(255.0 * c.r)},${round(255.0 * c.g)},${round(
+    255.0 * c.b,
+  )},${round(c.a * 255.0) / 255.0})}"
 }
 
 fn rgb(r: num, g: num, b: num) -> Color3 {
