@@ -192,6 +192,7 @@ const words = new WordMapWithoutSpaces<WordKind>([
   ["mrrp", "var"],
   ["meow", "var"],
   ["debugAst", "prefix"],
+  ["debugAstType", "prefix"],
   ["debugScript", "prefix"],
   ["mod", "infix"],
 ]).freeze()

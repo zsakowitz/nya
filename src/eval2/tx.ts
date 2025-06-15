@@ -137,13 +137,48 @@ export class ScriptBlock {
     }
     return ret
   }
+
+  child() {
+    return new ScriptBlock(
+      this.set,
+      new IdMap(this.tightLocals),
+      new IdMap(this.leakyLocals),
+    )
+  }
 }
 
 export class ScriptDeps {
-  readonly deps = new Set<string>()
+  readonly deps = new Set<NameIdent>()
+  private readonly ignoring = new Set<NameIdent>()
 
-  add(name: NameCooked): void {
-    this.deps.add(nameIdent(name))
+  add(name: NameCooked) {
+    const id = nameIdent(name)
+    if (!this.ignoring.has(id)) {
+      this.deps.add(id)
+    }
+  }
+
+  ignore<T>(names: NameCooked[] | null, f: () => T): T {
+    if (names == null) {
+      return f()
+    }
+    const ids = names.map(nameIdent)
+    const reignore = new Set<NameIdent>()
+    try {
+      for (const id of ids) {
+        if (!this.ignoring.has(id)) {
+          reignore.add(id)
+          this.ignoring.add(id)
+        }
+      }
+      return f()
+    } finally {
+      reignore.forEach((id) => this.ignoring.delete(id))
+    }
+  }
+
+  nore(name: NameCooked) {
+    this.ignoring.add(nameIdent(name))
   }
 
   check(node: Node | null) {
@@ -241,7 +276,13 @@ export function listItems(node: Node): Node[] {
     return []
   }
 
+  // non-root list nodes look like list(list(list(A, B), C), D); this expands them:
   const ret = [node.args[0]!]
+  while (ret[0]!.data.type == "list") {
+    ret.splice(0, 2, ...ret[0]!.args!)
+  }
+
+  // root list nodes look like list(A, list(B, list(C, D))); this expands them:
   let rest = node.args[1]
   while (rest?.data.type == "list") {
     ret.push(rest.args![0]!)
@@ -250,6 +291,7 @@ export function listItems(node: Node): Node[] {
   if (rest) {
     ret.push(rest)
   }
+
   return ret
 }
 

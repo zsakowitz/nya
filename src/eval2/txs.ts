@@ -1,16 +1,18 @@
 import type { PuncCmp } from "@/eval/ast/token"
 import { escapeIdentName } from "../../lang/src/ast/kind"
-import { issue } from "../../lang/src/emit/error"
-import type { Node, OpKind, Suffix } from "./node"
+import { issue, todo } from "../../lang/src/emit/error"
+import { Id, ident } from "../../lang/src/emit/id"
+import type { NameCooked, Node, OpKind, Suffix } from "./node"
 import { P, PRECEDENCE_WORD_BINARY } from "./prec"
 import {
   listItems,
+  nameIdent,
   printVar,
+  ScriptBlock,
   setGroupTxr,
   TX_OPS,
   TX_OPS_OPS,
   TX_SUFFIXES,
-  type ScriptBlock,
 } from "./tx"
 
 function fnSuperscript({ data, args }: Node): string {
@@ -372,27 +374,32 @@ TX_OPS_OPS["debugAst"] = {
   deps(_) {},
 }
 
+function dbg(a: Node): string {
+  const ty = a.data.type
+  const sub = a.args?.map(dbg)
+  return ty + (sub?.length ? `(${sub.join(", ")})` : "")
+}
+
+TX_OPS_OPS["debugAstType"] = {
+  eval(_, [a]) {
+    return `json#"${JSON.stringify(dbg(a!))}"#`
+  },
+  deps(_) {},
+}
+
 TX_OPS_OPS["debugScript"] = {
   eval(_, [a], block) {
     const evald = block.eval(a!)
-    return `json#"${JSON.stringify(evald, undefined, 2)}"#`
+    return `json#"${JSON.stringify(evald)}"#`
   },
   deps(_, [a], deps) {
     deps.check(a!)
   },
 }
 
-TX_OPS_OPS["debugDisplay"] = {
-  eval(_, [a], block) {
-    const evald = block.of`%display(${a!})`
-    return `json#"${JSON.stringify(evald, undefined, 2)}"#`
-  },
-  deps(_, [a], deps) {
-    deps.check(a!)
-  },
-}
+type LocalBinding = [OpKind["binding"], Node]
 
-function toBinding(node: Node): [OpKind["binding"], Node] | null {
+function parseAsBinding(node: Node): LocalBinding | null {
   if (
     node.data.type == "op" &&
     node.data.data == "cmp-eq" &&
@@ -415,13 +422,60 @@ function toBinding(node: Node): [OpKind["binding"], Node] | null {
   return null
 }
 
-// function parseAsBinding() {}
-//
-// function parseBindingList() {
-//   listItems()
-// }
-//
-// TX_OPS_OPS["with"] = {
-//   eval(op, [value, bindings], block) {},
-//   deps(op, [value, bindings], deps) {},
-// }
+function parseAsBindingList(
+  node: Node,
+  errFirst: string,
+  errNonFirst: string,
+): LocalBinding[] {
+  const items = listItems(node)
+  if (items.length == 0) {
+    return []
+  }
+  const first = parseAsBinding(items[0]!)
+  if (!first) {
+    issue("0 " + errFirst)
+  }
+  const rest = items
+    .slice(1)
+    .map((x, i) => parseAsBinding(x) || issue(i + 1 + " " + errNonFirst))
+  return [first, ...rest]
+}
+
+TX_OPS_OPS["with"] = {
+  eval(_, [value, bindings], block) {
+    const items = parseAsBindingList(
+      bindings!,
+      `'with' must be followed by one or more variable definitions.`,
+      `'with' must be followed by one or more variable definitions.`,
+    )
+    const sub = block.child()
+    let decls = ""
+    for (const [binding, value] of items) {
+      if (binding.args) {
+        todo(`'with' cannot be followed by a function definition.`)
+      }
+      const thisValue = block.eval(value)
+      const thisName = binding.name
+      const cachedName = new Id(nameIdent(thisName)).ident()
+      sub.leakyLocals.set(ident(nameIdent(thisName)), cachedName)
+      decls += `let ${cachedName}=${thisValue};`
+    }
+    return `{${decls}${sub.eval(value!)}}`
+  },
+  deps(_, [value, bindings], deps) {
+    const items = parseAsBindingList(
+      bindings!,
+      `'with' must be followed by one or more variable definitions.`,
+      `'with' must be followed by one or more variable definitions.`,
+    )
+    const ids: NameCooked[] = []
+    for (const [binding, value] of items) {
+      ids.push(binding.name)
+      deps.ignore(binding.args, () => deps.check(value))
+    }
+    deps.ignore(ids, () => deps.check(value!))
+  },
+}
+
+PRECEDENCE_WORD_BINARY.with = [P.WithL, P.WithR]
+PRECEDENCE_WORD_BINARY.for = [P.WithL, P.WithR]
