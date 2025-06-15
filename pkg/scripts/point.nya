@@ -54,3 +54,15 @@ fn unsign(z: Point) -> Point {
 fn %dot(a: Point, b: Point) -> num {
   @dot(a, b)
 }
+
+fn %odot(a: Point, b: Point) -> Point {
+  a @* b
+}
+
+fn point(a: Point) -> Point {
+  a
+}
+
+fn %abs(a: Point) -> num {
+  @length(a)
+}

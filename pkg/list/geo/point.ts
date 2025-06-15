@@ -1,23 +1,6 @@
 import type { Package } from "#/types"
-import { FN_VALID } from "$/bool"
-import {
-  abs64,
-  addR64,
-  declareMulR64,
-  declareOdotC64,
-  OP_ABS,
-  OP_ADD,
-  OP_CDOT,
-  OP_DIV,
-  OP_NEG,
-  OP_ODOT,
-  OP_POINT,
-  OP_POS,
-  OP_SUB,
-  subR64,
-} from "$/core/ops"
+import { OP_POINT } from "$/core/ops"
 import { EXT_EVAL } from "$/eval"
-import { FN_UNSIGN } from "$/num/real"
 import { dragPoint, type DragResultPoint } from "@/eval/ast/tx"
 import type { GlslContext } from "@/eval/lib/fn"
 import { FnDist } from "@/eval/ops/dist"
@@ -32,7 +15,7 @@ import { L, R } from "@/field/dir"
 import { Block } from "@/field/model"
 import { h } from "@/jsx"
 import type { SComplex } from "@/lib/complex"
-import { pt, ptnan, type SPoint } from "@/lib/point"
+import { ptnan, type SPoint } from "@/lib/point"
 import { int } from "@/lib/real"
 import { defineHideable } from "@/sheet/ext/hideable"
 import { TransitionProp } from "@/sheet/transition"
@@ -213,9 +196,6 @@ export const FN_DEBUGPOINT = new FnDist(
   "given some point p, returns a color depending on which side of the currently active shader pixel that point p is on",
 )
 
-export const OP_X = new FnDist(".x", "gets the x-coordinate of a point")
-export const OP_Y = new FnDist(".y", "gets the y-coordinate of a point")
-
 export function declareDebugPoint(
   ctx: GlslContext,
   a: { type: "c32" | "point32"; expr: string },
@@ -302,169 +282,6 @@ export default {
       "screendistance((2,3),(4,-5))",
     )
 
-    OP_ADD.add(
-      ["point64", "point64"],
-      "point64",
-      (a, b) => a.value.add(b.value),
-      (ctx, ar, br) => {
-        const a = ctx.cache(ar)
-        const b = ctx.cache(br)
-        return `vec4(${addR64(ctx, `${a}.xy`, `${b}.xy`)}, ${addR64(ctx, `${a}.zw`, `${b}.zw`)})`
-      },
-      [],
-    ).add(
-      ["point32", "point32"],
-      "point32",
-      (a, b) => a.value.add(b.value),
-      (_, a, b) => `(${a.expr} + ${b.expr})`,
-      "(2,3)+(4,-7)=(8,-4)",
-    )
-
-    OP_SUB.add(
-      ["point64", "point64"],
-      "point64",
-      (a, b) => a.value.sub(b.value),
-      (ctx, ar, br) => {
-        const a = ctx.cache(ar)
-        const b = ctx.cache(br)
-        return `vec4(${subR64(ctx, `${a}.xy`, `${b}.xy`)}, ${subR64(ctx, `${a}.zw`, `${b}.zw`)})`
-      },
-      [],
-    ).add(
-      ["point32", "point32"],
-      "point32",
-      (a, b) => a.value.sub(b.value),
-      (_, a, b) => `(${a.expr} - ${b.expr})`,
-      "(2,3)-(4,-7)=(-2,10)",
-    )
-
-    FN_UNSIGN.add(
-      ["point64"],
-      "point64",
-      (a) => a.value.unsign(),
-      (ctx, a) => {
-        const name = ctx.cache(a)
-        return `vec4(${abs64(ctx, `${name}.xy`)}, ${abs64(ctx, `${name}.zw`)})`
-      },
-      [],
-    ).add(
-      ["point32"],
-      "point32",
-      (a) => a.value.unsign(),
-      (_, a) => `abs(${a.expr})`,
-      "unsign((4,-7))=(4,7)",
-    )
-
-    OP_X.add(
-      ["point64"],
-      "r64",
-      (a) => a.value.x,
-      (_, a) => `${a.expr}.xy`,
-      [],
-    ).add(
-      ["point32"],
-      "r32",
-      (a) => a.value.x,
-      (_, a) => `${a.expr}.x`,
-      "(2,3).x=2",
-    )
-
-    OP_Y.add(
-      ["point64"],
-      "r64",
-      (a) => a.value.y,
-      (_, a) => `${a.expr}.zw`,
-      [],
-    ).add(
-      ["point32"],
-      "r32",
-      (a) => a.value.y,
-      (_, a) => `${a.expr}.y`,
-      "(2,3).y=3",
-    )
-
-    OP_ABS.add(
-      ["point32"],
-      "rabs32",
-      // TODO: this is exact for some values
-      (a) => a.value.hypot(),
-      (_, a) => `length(${a.expr})`,
-      "|(3,-4)|=5",
-    )
-
-    OP_NEG.add(
-      ["point64"],
-      "point64",
-      (a) => a.value.neg(),
-      (_, a) => `(-${a.expr})`,
-      [],
-    ).add(
-      ["point32"],
-      "point32",
-      (a) => a.value.neg(),
-      (_, a) => `(-${a.expr})`,
-      "-(7,-9)=(-7,9)",
-    )
-
-    FN_VALID.add(
-      ["point32"],
-      "bool",
-      (a) => isFinite(a.value.x.num()) && isFinite(a.value.y.num()),
-      (ctx, ar) => {
-        const a = ctx.cache(ar)
-        return `(!isnan(${a}.x) && !isinf(${a}.x) && !isnan(${a}.y) && !isinf(${a}.y))`
-      },
-      "valid((5,\\frac{7}{0}))=false",
-    )
-
-    OP_ODOT.add(
-      ["point64", "point64"],
-      "point64",
-      (a, b) => a.value.mulEach(b.value),
-      (ctx, a, b) => {
-        declareMulR64(ctx)
-        declareOdotC64(ctx)
-        return `_helper_odot_c64(${a.expr}, ${b.expr})`
-      },
-      [],
-    ).add(
-      ["point32", "point32"],
-      "point32",
-      (a, b) => a.value.mulEach(b.value),
-      (_, a, b) => {
-        return `(${a.expr} * ${b.expr})`
-      },
-      "(2,3)\\odot(5,-7)=(10,-21)",
-    )
-
-    OP_POINT.add(
-      ["r64", "r64"],
-      "point64",
-      (x, y) => pt([x.value, y.value]),
-      (_, x, y) => `vec4(${x.expr}, ${y.expr})`,
-      [],
-    ).add(
-      ["r32", "r32"],
-      "point32",
-      (x, y) => pt([x.value, y.value]),
-      (_, x, y) => `vec2(${x.expr}, ${y.expr})`,
-      "(4,7)",
-    )
-
-    OP_POS.add(
-      ["point64"],
-      "point64",
-      (a) => a.value,
-      (_, a) => a.expr,
-      [],
-    ).add(
-      ["point32"],
-      "point32",
-      (a) => a.value,
-      (_, a) => a.expr,
-      "+(4,-7)=(4,-7)",
-    )
-
     FN_DEBUGPOINT.add(
       ["point32"],
       "color",
@@ -473,53 +290,6 @@ export default {
       },
       (ctx, a) => declareDebugPoint(ctx, a),
       "debugpoint((9,-2))",
-    )
-
-    OP_CDOT.add(
-      ["point64", "r64"],
-      "point64",
-      (a, b) => a.value.mulR(b.value),
-      (ctx, ar, br) => {
-        declareMulR64(ctx)
-        const a = ctx.cache(ar)
-        const b = ctx.cache(br)
-        return `vec4(_helper_mul_r64(${a}.xy, ${b}), _helper_mul_r64(${a}.zw, ${b}))`
-      },
-      [],
-    )
-      .add(
-        ["r64", "point64"],
-        "point64",
-        (a, b) => b.value.mulR(a.value),
-        (ctx, br, ar) => {
-          declareMulR64(ctx)
-          const a = ctx.cache(ar)
-          const b = ctx.cache(br)
-          return `vec4(_helper_mul_r64(${a}.xy, ${b}), _helper_mul_r64(${a}.zw, ${b}))`
-        },
-        [],
-      )
-      .add(
-        ["point32", "r32"],
-        "point32",
-        (a, b) => a.value.mulR(b.value),
-        (_, a, b) => `(${a.expr} * ${b.expr})`,
-        [],
-      )
-      .add(
-        ["r32", "point32"],
-        "point32",
-        (a, b) => b.value.mulR(a.value),
-        (_, a, b) => `(${a.expr} * ${b.expr})`,
-        "7\\cdot(8,-3)=(56,-21)",
-      )
-
-    OP_DIV.add(
-      ["point32", "r32"],
-      "point32",
-      (a, b) => a.value.divR(b.value),
-      (_, a, b) => `(${a.expr} / ${b.expr})`,
-      "(8,-6)/2=(4,-3)",
     )
   },
   ty: {
@@ -581,11 +351,8 @@ export default {
   },
   eval: {
     fn: {
-      point: FN_POINT,
       screendistance: FN_SCREENDISTANCE,
       debugpoint: FN_DEBUGPOINT,
-      ".x": OP_X,
-      ".y": OP_Y,
     },
   },
   sheet: {
