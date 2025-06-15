@@ -1,0 +1,19 @@
+//! @stdlib/math/base/special/polygamma/lib/main.js
+
+use "gamma/digamma";
+use "gamma/trigamma";
+
+fn polygamma(n: num, x: num) -> num {
+  if n == 0.0 {
+    digamma(x)
+  } else if n == 1.0 {
+    trigamma(x)
+  } else if !(is_finite(n) && n == floor(n) && n > 0) {
+    // TODO: wolfram|alpha defines non-nan values; we should copy them
+    nan
+  } else if x == floor(x) {
+    inf_unsigned
+  } else {
+    nan
+  }
+}

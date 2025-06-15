@@ -5,5 +5,11 @@ export default {
   label: "functions related to the factorial and its derivative",
   category: "numbers",
   deps: ["core/ops", "num/complex", "factorial"],
-  scripts: ["gamma/gamma", "gamma/lngamma", "gamma/digamma", "gamma/trigamma"],
+  scripts: [
+    "gamma/gamma",
+    "gamma/lngamma",
+    "gamma/digamma",
+    "gamma/trigamma",
+    "gamma/polygamma",
+  ],
 } satisfies Package
