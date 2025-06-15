@@ -9,6 +9,7 @@ import {
   ABangUnary,
   ABar,
   ABarBar,
+  ACarat,
   AEq,
   AEqEq,
   AGe,
@@ -22,7 +23,6 @@ import {
   APlus,
   ASlash,
   AStar,
-  ACarat,
   ATildeEq,
   ATildeUnary,
   OAmp,
@@ -33,6 +33,7 @@ import {
   OBangUnary,
   OBar,
   OBarBar,
+  OCarat,
   ODot,
   ODotDot,
   OEq,
@@ -49,7 +50,6 @@ import {
   OPlus,
   OSlash,
   OStar,
-  OCarat,
   OTildeEq,
   OTildeUnary,
   TDeriv,
@@ -746,12 +746,22 @@ export function print(node: Node | Token<number>, sb: Subprint): Doc {
       ]
     }
     case ExprStruct:
-    case ExprSymStruct:
+    case ExprSymStruct: {
+      const self = node as ExprStruct | ExprSymStruct
+      const forceBreak =
+        self.args?.items[0] &&
+        self.info.source
+          .slice(self.args.start, self.args.items[0].start)
+          .includes("\n")
+      if (forceBreak) {
+        self.args.block = true
+      }
       return [
         sb("name"),
         (node as ExprStruct).name.kind == ODot ? "" : " ",
         sb("args"),
       ]
+    }
     case StructArg: {
       const self = node as StructArg
       if (self.colon) {
