@@ -19,8 +19,7 @@
     "paths": {
       "@/*": ["./src/*"],
       "#/*": ["./pkg/*"],
-      "$/*": ["./pkg/list/*"],
-      "!/*": ["./pkg/scripts/*"]
+      "$/*": ["./pkg/list/*"]
     }
   },
   "exclude": ["src/pkg-beta"]

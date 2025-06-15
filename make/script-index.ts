@@ -1,4 +1,4 @@
-const scripts = new URL("../pkg/scripts", import.meta.url)
+const scripts = new URL("../nya", import.meta.url)
 const glob = new Bun.Glob("**/*.nya")
 
 let imports = ""
@@ -10,7 +10,7 @@ let name = ""
 for await (const file of glob.scan(scripts.pathname)) {
   const idx = index++
   const alias = JSON.stringify(file.slice(0, -4))
-  imports += `import s${idx} from ${JSON.stringify("./scripts/" + file)}\n`
+  imports += `import s${idx} from ${JSON.stringify("../nya/" + file)}\n`
   items += `\n  [${alias}, s${idx}],`
   name += `\n  | ${alias}`
 }
