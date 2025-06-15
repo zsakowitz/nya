@@ -363,6 +363,48 @@ function setBlockContentsToMultiline(node: Node) {
 
 export const UNPRINTED = new Set<string>()
 
+function unwrap(node: NodeExpr): NodeExpr {
+  return node instanceof ExprParen ? node.of.value : node
+}
+
+function numText(node: NodeExpr): string | null {
+  if (node instanceof ExprLit) {
+    return node.value.val
+  }
+  if (node instanceof ExprUnary && node.op.kind == OMinusUnary) {
+    const rhs = unwrap(node.of)
+    if (rhs instanceof ExprLit) {
+      return `-${rhs.value.val}`
+    }
+  }
+  return null
+}
+
+function polyText(node: ExprBinary): string | null {
+  let lhs, rhs, name, inner
+  if (
+    node.op.kind == OPlus &&
+    (lhs = numText(node.lhs)) &&
+    (rhs = unwrap(node.rhs)) instanceof ExprBinary &&
+    rhs.op.kind == OStar &&
+    (name = unwrap(rhs.lhs)) instanceof ExprVar &&
+    !name.targs &&
+    !name.args &&
+    ((inner = unwrap(rhs.rhs)),
+    inner instanceof ExprBinary ||
+      inner instanceof ExprLit ||
+      inner instanceof ExprUnary)
+  ) {
+    let rhs =
+      inner instanceof ExprBinary ? `(${polyText(inner)})` : numText(inner)
+    if (rhs != null) {
+      return `${lhs} + ${name.name.value} * ${rhs}`
+    }
+  }
+
+  return null
+}
+
 export function print(node: Node | Token<number>, sb: Subprint): Doc {
   switch (node.constructor) {
     case ExprLit:
@@ -538,6 +580,9 @@ export function print(node: Node | Token<number>, sb: Subprint): Doc {
     case ExprBinary: {
       // TODO: output like prettier for js
       const self = node as ExprBinary
+      const res = polyText(self)
+      if (res != null)
+        return res.split("\n").map((x, i) => (i == 0 ? x : [hardline, x]))
       const needsL = needsParens(self.op.kind, op(self.lhs), false)
       const needsR = needsParens(self.op.kind, op(self.rhs), true)
       return group([
