@@ -1,6 +1,6 @@
 import type { Addon, Package } from "./types"
 
-export type IndexOf<T> = Record<PackageId, () => Promise<{ default: T }>>
+type IndexOf<T> = Record<PackageId, () => Promise<{ default: T }>>
 
 type IndexPartial = Partial<IndexOf<Package>>
 type IndexAddons = Partial<IndexOf<Addon>>

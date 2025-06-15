@@ -691,7 +691,7 @@ function emitStmt(node: NodeStmt, block: Block): Value {
   }
 }
 
-export type ItemResult = {
+type ItemResult = {
   decl?: string
   declTy?: string
   declNya?: { name: string; of: string; kind: "type" | "fn" }[]

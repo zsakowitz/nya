@@ -111,7 +111,7 @@ export class PosVirtual extends Pos {
   }
 }
 
-export class Issue {
+class Issue {
   constructor(
     readonly code: Code,
     readonly pos: Pos,

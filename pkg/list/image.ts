@@ -52,8 +52,6 @@ class ImageData {
   }
 }
 
-export type { ImageData }
-
 class CmdImgRaw extends Leaf {
   constructor(public data: Val<"image">) {
     super("", h(""))

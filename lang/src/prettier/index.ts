@@ -7,7 +7,7 @@ import { print } from "./print"
 
 const { group, indent, softline, ifBreak } = builders
 
-export type K = string | number
+type K = string | number
 
 export interface Subprint {
   (k: K): Doc

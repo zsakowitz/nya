@@ -102,11 +102,8 @@ export class WordMap<T> {
   }
 }
 
-export type Despace<T extends string> =
-  T extends `${infer A} ${infer B}` ? `${A}${Despace<B>}` : T
-
-export function despace<K extends string>(t: K): Despace<K> {
-  return t.replace(/ /g, "") as any
+export function despace(t: string): string {
+  return t.replace(/ /g, "")
 }
 
 /**

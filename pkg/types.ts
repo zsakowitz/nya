@@ -34,7 +34,7 @@ import type { ScriptName } from "./script-index"
 
 type List<T, K extends PropertyKey = string> = { readonly [_ in K]?: T }
 
-export type PackageCategory =
+type PackageCategory =
   | "chemistry"
   | "color"
   | "geometry"

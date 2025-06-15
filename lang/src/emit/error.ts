@@ -12,7 +12,7 @@ export function issue(x: string, pos?: Pos): never {
   throw issueError(x, pos)
 }
 
-export function bugError(x: string): Error {
+function bugError(x: string): Error {
   return new Error(x + " THIS IS A BUG; PLEASE REPORT IT.")
 }
 

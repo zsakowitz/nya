@@ -3,7 +3,7 @@ import type { Block } from "./decl"
 import { bug, issue } from "./error"
 import type { IdGlobal } from "./id"
 import type { EmitProps } from "./props"
-import type { GlslScalar, Repr, ReprVec } from "./repr"
+import type { GlslScalar, ReprVec } from "./repr"
 import { Fn, invalidType, type FnType, type Scalar, type Type } from "./type"
 import { Value, type ConstValue } from "./value"
 
@@ -24,10 +24,6 @@ export class AnyVector implements FnType {
   toString(): string {
     return `vec<${this.of}>`
   }
-}
-
-export function canAutomaticallyBroadcast(repr: Repr) {
-  return repr.type == "vec"
 }
 
 export function scalars(value: Value, block: Block) {

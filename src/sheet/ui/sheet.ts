@@ -615,7 +615,7 @@ void main() {
   }
 }
 
-export class SheetHandler implements Handler {
+class SheetHandler implements Handler {
   constructor(readonly sheet: Sheet) {}
 
   find(at: Point, hint: Hint) {

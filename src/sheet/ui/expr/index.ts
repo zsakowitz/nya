@@ -26,7 +26,7 @@ import type { CanvasJs, PathJs } from "../../../../lang/src/emit/stdlib"
 import { Value } from "../../../../lang/src/emit/value"
 import { Entry } from "../../../../lang/src/exec/item"
 
-export type ExprStateOk =
+type ExprStateOk =
   | { ok: true; ext: AnyExt | null; data: {} }
   | { ok: true; ext: null; data?: undefined }
 

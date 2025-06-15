@@ -449,7 +449,7 @@ function exprCall(stream: Stream) {
   )
 }
 
-export function exprIf(stream: Stream): ExprIf | null {
+function exprIf(stream: Stream): ExprIf | null {
   const kwIf = stream.match(KIf)
   if (!kwIf) return null
 
@@ -1471,7 +1471,7 @@ function nonExhaustiveMarker(stream: Stream) {
 
 const enumFields = createCommaOp(OLBrace, structField, null)
 
-export function enumVariant(stream: Stream) {
+function enumVariant(stream: Stream) {
   const name = stream.match(TSym)
   if (!name) return null
 

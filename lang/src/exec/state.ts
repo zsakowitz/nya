@@ -7,7 +7,7 @@ export const enum Kind {
   Var,
 }
 
-export interface VarData<T = Node> {
+interface VarData<T = Node> {
   name: NameIdent
   args: NameIdent[] | null
   of: T
