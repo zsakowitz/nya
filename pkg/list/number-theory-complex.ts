@@ -5,5 +5,5 @@ export default {
   label: "for complex numbers with integer components",
   category: "number theory",
   deps: ["num/real", "num/complex", "number-theory"],
-  scripts: ["numtheory-complex"],
+  scripts: ["complex/number-theory"],
 } satisfies Package

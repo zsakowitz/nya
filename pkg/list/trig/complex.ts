@@ -5,5 +5,5 @@ export default {
   label: null,
   category: "trigonometry",
   deps: ["trig/real", "num/complex"],
-  scripts: ["complex-trig"],
+  scripts: ["complex/trig"],
 } satisfies Package

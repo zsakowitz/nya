@@ -9,7 +9,9 @@ let name = ""
 // Scans the current working directory and each of its sub-directories recursively
 for await (const file of glob.scan(scripts.pathname)) {
   const idx = index++
-  const alias = JSON.stringify(file.slice(0, -4))
+  const alias = JSON.stringify(
+    file.slice(0, file.endsWith("/index.nya") ? -10 : -4),
+  )
   imports += `import s${idx} from ${JSON.stringify("../nya/" + file)}\n`
   items += `\n  [${alias}, s${idx}],`
   name += `\n  | ${alias}`

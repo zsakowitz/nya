@@ -127,7 +127,7 @@ export function declareFactorialC32(ctx: GlslContext) {
   ctx.glslText(gammaGl)
 }
 
-export const FN_DIGAMMA: FnDist = new FnDist(
+const FN_DIGAMMA: FnDist = new FnDist(
   "digamma",
   "computes the derivative of the natural logarithm of the gamma function",
   {
@@ -165,7 +165,7 @@ export const FN_DIGAMMA: FnDist = new FnDist(
   "\\psi(2)≈0.422784",
 )
 
-export const FN_POLYGAMMA: FnDist = new FnDist(
+const FN_POLYGAMMA: FnDist = new FnDist(
   "polygamma",
   "computes repeated derivatives of the natural logarithm of the gamma function",
   {

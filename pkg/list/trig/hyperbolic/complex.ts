@@ -5,5 +5,5 @@ export default {
   label: "hyperbolic trig on complex numbers",
   category: "trigonometry",
   deps: ["num/complex"],
-  scripts: ["complex-trig-hyperbolic"],
+  scripts: ["complex/trig-hyperbolic"],
 } satisfies Package

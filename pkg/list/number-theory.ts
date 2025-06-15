@@ -5,5 +5,5 @@ export default {
   label: "functions for working with integers",
   category: "number theory",
   deps: ["num/real"],
-  scripts: ["numtheory-real"],
+  scripts: ["real/number-theory"],
 } satisfies Package
