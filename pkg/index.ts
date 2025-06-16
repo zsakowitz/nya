@@ -1,3 +1,7 @@
+import {
+  NYALANG_PACKAGES_ADDONS,
+  NYALANG_PACKAGES_BUILTIN,
+} from "./index-nyalang"
 import type { Addon, Package } from "./types"
 
 type IndexOf<T> = Record<PackageId, () => Promise<{ default: T }>>
@@ -7,8 +11,9 @@ type IndexAddons = Partial<IndexOf<Addon>>
 type Index = IndexOf<Package>
 
 const rawBuiltin = {
+  // @ts-expect-error
   __proto__: null,
-  "3d/point": () => import("$/3d/point"),
+  // "3d/point": () => import("$/3d/point"),
   bool: () => import("$/bool"),
   "color/core": () => import("$/color/core"),
   "color/extras": () => import("$/color/extras"),
@@ -44,11 +49,12 @@ const rawBuiltin = {
   "trig/hyperbolic/complex": () => import("$/trig/hyperbolic/complex"),
   "trig/real": () => import("$/trig/real"),
   with: () => import("$/with"),
+  ...NYALANG_PACKAGES_BUILTIN,
 }
 
 const rawAddons = {
+  // @ts-expect-error
   __proto__: null,
-  "4d/point": () => import("$/4d/point"),
   base: () => import("$/base"),
   "chem/elements": () => import("$/chem/elements"),
   debug: () => import("$/debug"),
@@ -64,6 +70,7 @@ const rawAddons = {
   "unit/word": () => import("$/unit/word"),
   text: () => import("$/text"),
   withseq: () => import("$/withseq"),
+  ...NYALANG_PACKAGES_ADDONS,
 }
 
 const rawIndex = {

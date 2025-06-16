@@ -51,13 +51,14 @@ type PackageCategory =
   | "substitution"
   | "symbolic computation"
   | "trigonometry"
+  | "auto-generated (nyalang)"
 
 // SHAPE: maybe use consistent shapes
 export interface Package {
   name: string
   label: string | null // TODO: write better labels
   category: PackageCategory
-  deps: PackageId[]
+  deps: readonly PackageId[]
   scripts?: readonly ScriptName[]
 
   load?(): void

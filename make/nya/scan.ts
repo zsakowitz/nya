@@ -32,5 +32,3 @@ const source =
   imports +
   `\nexport const SCRIPTS = new Map([${items}\n])\n\nexport type ScriptName =${name}\n`
 await Bun.write(new URL("../../pkg/script-index.ts", import.meta.url), source)
-
-await import("./predefined-packages")

@@ -60,3 +60,9 @@ fn point(a: Point4D) -> Point4D {
 fn %dot(a: Point4D, b: Point4D) -> num {
   @dot(a, b)
 }
+
+expose package {
+  name: "4d points",
+  default: false,
+  label: "basic operations on 4d points",
+}
