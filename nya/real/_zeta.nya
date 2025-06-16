@@ -28,7 +28,7 @@ fn d(x: num, n: num) -> num {
 fn _zeta_pos(x: num) -> num {
   let c = inv(d(0.0, _zeta_digits) * (1.0 - 2 ^ (1.0 - x)));
   let mut S = 0.0;
-  for k in _zeta_digits_each  {
+  for k in _zeta_digits_each {
     S += -1 ^ (k - 1) * d(k, _zeta_digits) / k ^ s;
   }
   c * S
