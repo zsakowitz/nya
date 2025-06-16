@@ -8,6 +8,7 @@ import {
   OEq,
   TBuiltin,
 } from "../ast/kind"
+import { ExposePackage, type NodeExpose } from "../ast/node/expose"
 import {
   ExprArray,
   ExprBinary,
@@ -28,8 +29,9 @@ import {
   ExprVar,
   type NodeExpr,
 } from "../ast/node/expr"
-import { FnReturnTypeTypeof } from "../ast/node/extra"
+import { FnReturnTypeTypeof, List } from "../ast/node/extra"
 import {
+  ItemExpose,
   ItemFn,
   ItemLet,
   ItemStruct,
@@ -731,6 +733,14 @@ type ItemResult = {
   declNya?: { name: string; of: string; kind: "type" | "fn" }[]
 } | null
 
+function emitExpose(node: NodeExpose, _decl: Declarations) {
+  if (node instanceof ExposePackage) {
+    // skip it since it should be preprocessed
+  } else {
+    todo(`Cannot expose '${node.constructor.name}' as an item yet.`)
+  }
+}
+
 export function emitItem(node: NodeItem, decl: Declarations): ItemResult {
   if (node instanceof ItemStruct) {
     const ids = node.name.items.map((x) => ident(x.val))
@@ -928,6 +938,17 @@ export function emitItem(node: NodeItem, decl: Declarations): ItemResult {
         },
       ],
     }
+  } else if (node instanceof ItemExpose) {
+    const items =
+      node.item instanceof List ?
+        node.item.items
+      : [node.item ?? issue(`Expected exposable item after 'expose'.`)]
+
+    for (const item of items) {
+      emitExpose(item, decl)
+    }
+
+    return null
   } else {
     todo(`Cannot emit '${node.constructor.name}' as an item yet.`)
   }

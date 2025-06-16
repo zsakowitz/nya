@@ -370,7 +370,8 @@ const typeArgs = createCommaOp(OLAngle, type, null)
 
 function exprLit(stream: Stream, ctx: ExprContext) {
   const token =
-    stream.match(TSym) || stream.matchAny([TFloat, TInt, KFalse, KTrue])
+    stream.match(TSym) ||
+    stream.matchAny([TFloat, TInt, KFalse, KTrue, TString])
   if (!token) return null
 
   if (token.kind == TSym && ctx.struct && stream.peek() == OLBrace) {

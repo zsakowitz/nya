@@ -147,7 +147,7 @@
         },
         {
           "name": "keyword.control",
-          "match": "\\b(rule|val|mut|match|enum|else|let|data|assert|opaque|resource|continue|for|if|break|in|return|usage|test|use|struct|matrix|type|fn|syntax|call|any|typeof|is|using|source|expose|as|const)\\b"
+          "match": "\\b(rule|val|mut|match|enum|else|let|data|assert|opaque|resource|continue|for|if|break|in|return|usage|test|use|struct|matrix|type|fn|syntax|call|any|typeof|is|using|source|expose|as|const|package)\\b"
         }
       ]
     },
