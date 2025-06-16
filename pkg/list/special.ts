@@ -92,7 +92,7 @@ export default {
     "factorial",
     "gamma",
   ],
-  scripts: ["real/zeta"],
+  scripts: ["complex/zeta"],
   eval: {
     fn: {
       faddeeva: FN_FADDEEVA,
