@@ -1,26 +1,5 @@
 let _zeta_digits = 20;
-let _zeta_digits_each = [
-  1,
-  2,
-  3,
-  4,
-  5,
-  6,
-  7,
-  8,
-  9,
-  10,
-  11,
-  12,
-  13,
-  14,
-  15,
-  16,
-  17,
-  18,
-  19,
-  20,
-];
+let _zeta_digits_each = 1..=_zeta_digits;
 
 fn d(x: num, n: num) -> num {
 }
