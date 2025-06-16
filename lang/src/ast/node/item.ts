@@ -1,3 +1,4 @@
+import { issue } from "../../emit/error"
 import type {
   KAssert,
   KData,
@@ -24,21 +25,21 @@ import type { TokenGroup } from "../stream"
 import type { Token } from "../token"
 import type { NodeExpose } from "./expose"
 import type { ExprBlock, NodeExpr, Source } from "./expr"
-import type {
-  AssertionMessage,
-  Comments,
-  EnumMapVariant,
-  EnumVariant,
-  FnParam,
-  FnReturnType,
-  FnUsage,
-  GenericParams,
-  Initializer,
+import {
   List,
-  ParamType,
-  PlainList,
-  Rule,
-  StructFieldDecl,
+  type AssertionMessage,
+  type Comments,
+  type EnumMapVariant,
+  type EnumVariant,
+  type FnParam,
+  type FnReturnType,
+  type FnUsage,
+  type GenericParams,
+  type Initializer,
+  type ParamType,
+  type PlainList,
+  type Rule,
+  type StructFieldDecl,
 } from "./extra"
 import { Node, type Ident, type IdentFnName } from "./node"
 import type { NodeType } from "./type"
@@ -189,6 +190,14 @@ export class ItemExpose extends NodeItem {
     readonly item: NodeExpose | List<NodeExpose> | null,
   ) {
     super(kw.start, (item ?? kw).end, kw.info)
+  }
+
+  get items() {
+    return (
+      this.item instanceof List ? this.item.items
+      : this.item ? [this.item]
+      : issue(`'expose' must be followed by one or more exposed items.`, this)
+    )
   }
 }
 

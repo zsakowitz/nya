@@ -225,7 +225,7 @@ function arraySize(size: number | null): number {
   return size
 }
 
-function emitExpr(node: NodeExpr, block: Block): Value {
+export function emitExpr(node: NodeExpr, block: Block): Value {
   if (node instanceof ExprBlock) {
     return emitBlock(node, block)
   } else if (node instanceof ExprBinary) {

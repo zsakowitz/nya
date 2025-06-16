@@ -1,11 +1,11 @@
-const scripts = new URL("../nya", import.meta.url)
+const scripts = new URL("../../nya", import.meta.url)
 const glob = new Bun.Glob("**/*.nya")
 
 let imports = ""
 let index = 0
 let items = ""
 let name = ""
-const entries = new Map<string, string>()
+const entries = new Set<string>()
 
 // Scans the current working directory and each of its sub-directories recursively
 for await (const file of glob.scan(scripts.pathname)) {
@@ -22,7 +22,7 @@ for await (const file of glob.scan(scripts.pathname)) {
       `Script '${rawAlias}' is defined twice, likely under the names '${rawAlias}/index.nya' and '${rawAlias}.nya'. Delete one.`,
     )
   }
-  entries.set(rawAlias, scripts.pathname + file)
+  entries.add(rawAlias)
   imports += `import s${idx} from ${JSON.stringify("../nya/" + file)}\n`
   items += `\n  [${alias}, s${idx}],`
   name += `\n  | ${alias}`
@@ -31,4 +31,6 @@ for await (const file of glob.scan(scripts.pathname)) {
 const source =
   imports +
   `\nexport const SCRIPTS = new Map([${items}\n])\n\nexport type ScriptName =${name}\n`
-await Bun.write(new URL("../pkg/script-index.ts", import.meta.url), source)
+await Bun.write(new URL("../../pkg/script-index.ts", import.meta.url), source)
+
+await import("./predefined-packages")

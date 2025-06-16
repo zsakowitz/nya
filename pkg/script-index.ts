@@ -1,33 +1,33 @@
-import s0 from "../nya/point.nya"
-import s1 from "../nya/geometry.nya"
-import s2 from "../nya/data/distributions.nya"
-import s3 from "../nya/4d/two-complex.nya"
+import s24 from "../nya/3d/point.nya"
 import s4 from "../nya/4d/point.nya"
-import s5 from "../nya/color/index.nya"
-import s6 from "../nya/color/extras.nya"
-import s7 from "../nya/color/oklab.nya"
+import s3 from "../nya/4d/two-complex.nya"
 import s8 from "../nya/color/core.nya"
-import s9 from "../nya/real/parity.nya"
-import s10 from "../nya/real/index.nya"
-import s11 from "../nya/real/trig-hyperbolic.nya"
-import s12 from "../nya/real/trig.nya"
-import s13 from "../nya/real/erf.nya"
-import s14 from "../nya/real/number-theory.nya"
+import s6 from "../nya/color/extras.nya"
+import s5 from "../nya/color/index.nya"
+import s7 from "../nya/color/oklab.nya"
+import s19 from "../nya/complex/beta.nya"
+import s18 from "../nya/complex/erf.nya"
 import s15 from "../nya/complex/index.nya"
+import s21 from "../nya/complex/number-theory.nya"
 import s16 from "../nya/complex/trig-hyperbolic.nya"
 import s17 from "../nya/complex/trig.nya"
-import s18 from "../nya/complex/erf.nya"
-import s19 from "../nya/complex/beta.nya"
 import s20 from "../nya/complex/zeta.nya"
-import s21 from "../nya/complex/number-theory.nya"
 import s22 from "../nya/core/cmp.nya"
 import s23 from "../nya/core/ops.nya"
-import s24 from "../nya/3d/point.nya"
-import s25 from "../nya/gamma/lngamma.nya"
-import s26 from "../nya/gamma/trigamma.nya"
+import s2 from "../nya/data/distributions.nya"
 import s27 from "../nya/gamma/digamma.nya"
-import s28 from "../nya/gamma/polygamma.nya"
 import s29 from "../nya/gamma/gamma.nya"
+import s25 from "../nya/gamma/lngamma.nya"
+import s28 from "../nya/gamma/polygamma.nya"
+import s26 from "../nya/gamma/trigamma.nya"
+import s1 from "../nya/geometry.nya"
+import s0 from "../nya/point.nya"
+import s13 from "../nya/real/erf.nya"
+import s10 from "../nya/real/index.nya"
+import s14 from "../nya/real/number-theory.nya"
+import s9 from "../nya/real/parity.nya"
+import s11 from "../nya/real/trig-hyperbolic.nya"
+import s12 from "../nya/real/trig.nya"
 
 export const SCRIPTS = new Map([
   ["point", s0],
@@ -61,6 +61,12 @@ export const SCRIPTS = new Map([
   ["gamma/polygamma", s28],
   ["gamma/gamma", s29],
 ])
+
+export const SCRIPT_NAMES = Array.from(SCRIPTS.keys()) as readonly ScriptName[]
+
+export async function getScriptContent(name: ScriptName): Promise<string> {
+  return SCRIPTS.get(name)!
+}
 
 export type ScriptName =
   | "point"
