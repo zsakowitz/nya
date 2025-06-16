@@ -1,0 +1,22 @@
+use "real/parity";
+use "gamma/lngamma";
+
+fn _beta_gammasign(x: num) -> num {
+  if x > 0.0 || is_even(floor(x)) {
+    1.0
+  } else {
+    -1.0
+  }
+}
+
+fn sign_beta(x: num, y: num) -> num {
+  _beta_gammasign(x) * _beta_gammasign(y) * _beta_gammasign(x + y)
+}
+
+fn ln_beta(x: num, y: num) -> num {
+  lngamma(x) + lngamma(y) - lngamma(x + y)
+}
+
+fn beta(x: num, y: num) -> num {
+  sign_beta(x, y) * exp(ln_beta(x, y))
+}
