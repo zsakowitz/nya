@@ -44,3 +44,8 @@ fn %xprody(a: num, b: num) -> num {
     a * b
   }
 }
+
+expose package {
+  name: "core real operations",
+  default: true,
+}

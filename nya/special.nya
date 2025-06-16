@@ -1,0 +1,12 @@
+use "complex/beta";
+use "complex/zeta";
+use "gamma/gamma";
+use "gamma/digamma";
+use "gamma/lngamma";
+use "gamma/trigamma";
+
+expose package {
+  name: "special functions",
+  default: false,
+  label: "beta, gamma, and zeta",
+}

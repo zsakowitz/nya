@@ -59,3 +59,8 @@ fn faddeeva(z: Complex) -> Complex {
 fn erf(z: Complex) -> Complex {
   1.0 - exp(-z * z) * faddeeva(z * i)
 }
+
+expose package {
+  name: "complex erf() and faddeeva()",
+  default: true,
+}

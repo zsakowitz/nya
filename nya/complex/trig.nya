@@ -53,3 +53,8 @@ fn asec(a: Complex) -> Complex {
 fn acot(a: Complex) -> Complex {
   atan(inv(a))
 }
+
+expose package {
+  name: "complex trigonometry",
+  default: true,
+}

@@ -1,3 +1,5 @@
+use "color/dcg";
+
 struct Point {
   x: num,
   y: num,
@@ -65,6 +67,13 @@ fn point(a: Point) -> Point {
 
 fn %abs(a: Point) -> num {
   @length(a)
+}
+
+fn %plot(cv: Canvas, p: Point) -> Path {
+  path
+    .circle(p.to_cv_coords(cv), 4.0)
+    .color(dcg_purple)
+    .fill_opacity(1.0)
 }
 
 // TODO: debugpoint, screendistance, point

@@ -25,7 +25,7 @@ async function createPredefinedPackages() {
 export const NYALANG_PACKAGES_ADDONS = {\n  __proto__: null,\n${packages
     .filter((x) => !x.builtin)
     .map((x) => x.decl)
-    .join(",")}} as const
+    .join("")}} as const
 `
 
   await Bun.write(

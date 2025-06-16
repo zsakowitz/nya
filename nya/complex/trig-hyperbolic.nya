@@ -55,3 +55,8 @@ fn asech(a: Complex) -> Complex {
 fn acoth(a: Complex) -> Complex {
   ln((a + 1.0) / (a - 1.0)) / 2.0
 }
+
+expose package {
+  name: "complex hyperbolic trig",
+  default: true,
+}

@@ -10,6 +10,11 @@ fn oklch(l: num, c: num, h: num, alpha: num) -> Color {
   rgba(oklch(l, c, h), alpha)
 }
 
+expose package {
+  name: "oklch() and oklab()",
+  default: true,
+}
+
 // TODO: lightdark
 // TODO: valid
 // TODO: hsl

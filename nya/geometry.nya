@@ -1,5 +1,6 @@
 use "point";
 use "color";
+use "color/dcg";
 use "complex";
 
 // Special syntax to declare multiple structs with the exact same layout.
@@ -284,22 +285,11 @@ fn end(a: Arc) -> Point {
 // "reflect"
 // "perimeter"
 
-let dcg_blue = Color3 { r: 0x2d / 255, g: 0x70 / 255, b: 0xb3 / 255 };
-let dcg_purple = Color3 { r: 0x60 / 255, g: 0x42 / 255, b: 0xa6 / 255 };
-let dcg_green = Color3 { r: 0x38 / 255, g: 0x8c / 255, b: 0x46 / 255 };
-
 fn stroke(p: Path, c: Color3) -> Path {
   p
     .color(c)
     .stroke_opacity(1)
     .stroke_width(3)
-}
-
-fn %plot(cv: Canvas, p: Point) -> Path {
-  path
-    .circle(p.to_cv_coords(cv), 4.0)
-    .color(dcg_purple)
-    .fill_opacity(1.0)
 }
 
 fn %plot(cv: Canvas, p: Complex) -> Path {
@@ -395,4 +385,9 @@ fn %plot(cv: Canvas, l: Ray) -> Path {
 
 fn %juxtapose(a: Point, b: Point) -> num {
   @length(a @- b)
+}
+
+expose package {
+  name: "2D geometry",
+  default: true,
 }

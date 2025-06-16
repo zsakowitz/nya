@@ -167,7 +167,7 @@ fn cdf(dist: UniformDist, lhs: num, rhs: num) -> num {
 
 fn quantile(dist: NormalDist, p: num) -> num {
   if 0.0 <= p && p <= 1.0 {
-    dist.mean + dist.stdev * sqrt(2) * erf_inv(2.0 * p - 1.0)
+    dist.mean + dist.stdev * sqrt(2) * %"erf^-1"(2.0 * p - 1.0)
   } else {
     nan
   }
@@ -180,4 +180,9 @@ fn quantile(dist: UniformDist, p: num) -> num {
   } else {
     nan
   }
+}
+
+expose package {
+  name: "distributions",
+  default: true,
 }

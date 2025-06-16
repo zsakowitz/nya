@@ -535,10 +535,13 @@ export function emitExpr(node: NodeExpr, block: Block): Value {
         if (node.label) {
           issue(`'return' statements cannot be labeled.`)
         }
-        return block.exits.returnType.convertFrom(
+        const returned = block.exits.returnType.convertFrom(
           node.value ? emitExpr(node.value, block) : nullValue(block),
           node.value ?? node.kw,
         )
+        const r = returned.toRuntime()
+        block.source += r == null ? `return;` : `return(${r});`
+        return nullValue(block) // TODO: this should return something like TS's `never` type
     }
   } else if (node instanceof ExprTaggedString) {
     const tag = block.decl.tags.get(ident(node.tag.val))

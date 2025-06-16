@@ -1,0 +1,5 @@
+use "color";
+
+let dcg_blue = Color3 { r: 0x2d / 255, g: 0x70 / 255, b: 0xb3 / 255 };
+let dcg_purple = Color3 { r: 0x60 / 255, g: 0x42 / 255, b: 0xa6 / 255 };
+let dcg_green = Color3 { r: 0x38 / 255, g: 0x8c / 255, b: 0x46 / 255 };

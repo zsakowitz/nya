@@ -65,7 +65,6 @@ fn %cross(a: Point3D, b: Point3D) -> Point3D {
 }
 
 expose package {
-  default: true,
   name: "3d points",
-  label: "cross-products and basic arithmetic on three-dimensional points",
+  default: true,
 }

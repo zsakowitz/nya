@@ -17,7 +17,10 @@ export function issue(x: string, pos?: Pos): never {
 }
 
 function bugError(x: string): Error {
-  return new Error(x + " THIS IS A BUG; PLEASE REPORT IT.")
+  // stack manually added since we remove the stack in many places
+  return new Error(
+    x + " THIS IS A BUG; PLEASE REPORT IT." + "\n" + new Error().stack,
+  )
 }
 
 export function bug(x: string): never {

@@ -282,7 +282,7 @@ let _erfinvY3 = 8.07220458984375e-1;
 let _erfinvY4 = 9.3995571136474609375e-1;
 let _erfinvY5 = 9.8362827301025390625e-1;
 
-fn erf_inv(x: num) -> num {
+fn %"erf^-1"(x: num) -> num {
   let mut sign = 0.0;
   let mut ax = 0.0;
   let mut qs = 0.0;
@@ -352,4 +352,9 @@ fn erf_inv(x: num) -> num {
   qs = q - 6.0;
   r = _erfinvR5(qs);
   sign * (_erfinvY5 * q + r * q)
+}
+
+expose package {
+  name: "real erf",
+  default: true,
 }

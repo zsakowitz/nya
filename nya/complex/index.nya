@@ -1,4 +1,5 @@
 use "color";
+use "color/dcg";
 use "color/oklab";
 
 struct Complex {
@@ -197,6 +198,18 @@ fn abs(a: Complex) -> num {
 fn %sqrt(z: Complex) -> Complex {
   let a = atan(z.imag, z.real) / 2.0;
   Complex { real: cos(a), imag: sin(a) } @* sqrt(@length(z))
+}
+
+fn %plot(cv: Canvas, p: Complex) -> Path {
+  path
+    .circle(p.to_cv_coords(cv), 4.0)
+    .color(dcg_purple)
+    .fill_opacity(1.0)
+}
+
+expose package {
+  name: "complex numbeers",
+  default: true,
 }
 
 // TODO: debugpoint, screendistance, point

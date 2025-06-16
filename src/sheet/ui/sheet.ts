@@ -40,6 +40,7 @@ import {
 } from "./cv/move"
 import { PickHandler2 } from "./cv/pick"
 import { Expr } from "./expr"
+import { createDrawAxes } from "./gridlines"
 
 export type RequireRadiansReason = "with a complex number"
 export type RequireRadiansContext = `call '${string}' ${RequireRadiansReason}`
@@ -446,6 +447,8 @@ export class Sheet {
     })
 
     this.checkToolbar = checkToolbar
+
+    createDrawAxes(this.cv)
   }
   private checkToolbar
 

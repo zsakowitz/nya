@@ -1,6 +1,6 @@
 use "color";
 
-fn plot(x: bool) -> Color {
+fn %plot(x: bool) -> Color {
   if x {
     Color { r: 0.1764705882, g: 0.4392156863, b: 0.7019607843, a: 0.5 }
   } else {
@@ -8,11 +8,11 @@ fn plot(x: bool) -> Color {
   }
 }
 
-fn plot(x: Color) -> Color {
+fn %plot(x: Color) -> Color {
   x
 }
 
-fn plot(x: Color3) -> Color {
+fn %plot(x: Color3) -> Color {
   Color { r: x.r, g: x.g, b: x.b, a: 1.0 }
 }
 
@@ -64,4 +64,9 @@ fn %juxtapose(b: bool, a: Color) -> Color {
   } else {
     Color { r: nan, g: nan, b: nan, a: 0.0 }
   }
+}
+
+expose package {
+  name: "rgb() and hsv()",
+  default: true,
 }

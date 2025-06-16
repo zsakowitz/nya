@@ -54,3 +54,8 @@ fn fract(value: Complex) -> Complex {
 fn %(a: Complex, b: Complex) -> Complex {
   a - floor(a / b) * b
 }
+
+expose package {
+  name: "complex number theory",
+  default: true,
+}

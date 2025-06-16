@@ -1,3 +1,4 @@
+import type { Lang } from "!/emit/props"
 import { SCRIPTS, type ScriptName } from "#/script-index"
 import { Chunk, Issues } from "../ast/issue"
 import { ItemUse } from "../ast/node/item"
@@ -37,12 +38,11 @@ export class ScriptEnvironment {
   }
 
   private async _load(name: string, script: string) {
-    const stream = createStream(new Chunk(name, script), this.issues, {
-      comments: false,
-    })
     if (this.loaded.has(script)) {
       return
     }
+    const chunk = new Chunk(name, script)
+    const stream = createStream(chunk, this.issues, { comments: false })
     this.loaded.add(script)
     const items = parse(stream).items
     if (!this.issues.ok()) {
@@ -124,5 +124,11 @@ ${runtime}`)
     } catch (e) {
       console.error(e instanceof Error ? e.message : e)
     }
+  }
+
+  getMain(lang: Lang): string {
+    const lib = lang == "glsl" ? this.libGl : this.libJs
+    const main = lang == "glsl" ? this.mainGl : this.mainJs
+    return lib.globals() + "\n" + main
   }
 }

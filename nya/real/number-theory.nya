@@ -2,3 +2,8 @@ fn round(value: num, places: num) -> num {
   let x = 10 ^ round(places);
   round(value * x) / x
 }
+
+expose package {
+  name: "real round()",
+  default: true,
+}

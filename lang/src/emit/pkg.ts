@@ -61,9 +61,17 @@ export function parseExposePackage(node: ExposePackage): PackageProperties {
       issue(`Missing '${name}' in 'expose package' declaration.`, node.kw)
     )
   }
+  const fDefault = bool(field("default"))
+  const fLabel = fields.label == null ? null : str(field("label"))
+  if (fDefault && fLabel) {
+    issue(`A default package may not have a label.`, node.kw)
+  }
+  if (!fDefault && !fLabel) {
+    issue(`A non-default package must have a label.`, node.kw)
+  }
   return {
     name: str(field("name")),
-    default: bool(field("default")),
-    label: fields.label == null ? null : str(field("label")),
+    default: fDefault,
+    label: fLabel,
   }
 }

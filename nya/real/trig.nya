@@ -21,3 +21,8 @@ fn asec(a: num) -> num {
 fn acot(a: num) -> num {
   atan(1.0 / a)
 }
+
+expose package {
+  name: "real trigonometry",
+  default: true,
+}

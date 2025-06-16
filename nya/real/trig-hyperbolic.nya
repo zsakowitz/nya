@@ -21,3 +21,8 @@ fn asech(a: num) -> num {
 fn acoth(a: num) -> num {
   atanh(1.0 / a)
 }
+
+expose package {
+  name: "real hyperbolic trig",
+  default: true,
+}
