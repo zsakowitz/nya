@@ -663,6 +663,11 @@ export function createStdlib(props: EmitProps) {
   const modFn = `function ${modId}(a,b){return ((a%b)+b)%b}`
   const fractFn = () =>
     decl.global(`function ${fractId}(x){return x-Math.floor(x)}`)
+  const smoothstepId = new Id("smoothstep").ident()
+  const smoothstepFn = () =>
+    decl.global(
+      `function ${smoothstepId}(e0,e1,x){var t=(x-e0)/(e1-e0);if(t<0)t=0;if(t>1)t=1;return t*t*(3-2*t)}`,
+    )
 
   const fns: Fn[] = [
     // Easy numeric operators
@@ -1237,6 +1242,34 @@ export function createStdlib(props: EmitProps) {
           val.type,
           s0.map((x) => new Value(`${fractId}(${x})`, num)),
         )
+      },
+    ),
+    new Fn(
+      g("@smoothstep"),
+      [
+        { name: "edge0", type: num },
+        { name: "edge1", type: num },
+        { name: "x", type: num },
+      ],
+      num,
+      (raw, block) => {
+        const edge0 = raw[0]!
+        const edge1 = raw[1]!
+        const x = raw[2]!
+
+        if (edge0.const() && edge1.const() && x.const()) {
+          let t = (+x.value - +edge0.value) / (+edge1.value - +edge0.value)
+          if (t < 0) t = 0
+          if (t > 1) t = 1
+          return new Value(t * t * (3.0 - 2.0 * t), num)
+        }
+
+        if (block.lang == "glsl") {
+          return new Value(`smoothstep(${edge0},${edge1},${x})`, num)
+        }
+
+        smoothstepFn()
+        return new Value(`${smoothstepId}(${edge0},${edge1},${x})`, num)
       },
     ),
 
