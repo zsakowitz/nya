@@ -224,6 +224,5 @@ fn quantile(dist: UniformDist, p: num) -> num {
 
 expose package {
   name: "distributions",
-  default: false,
-  label: "hi",
+  default: true,
 }

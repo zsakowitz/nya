@@ -82,10 +82,11 @@ export class SheetFactory {
       }
     }
 
+    const FN_NAME = /^[A-Za-z]{2,}(?:_[A-Za-z]{2,})*$/
     this.env.libJs.fns
       .map((x) => x[0]?.id.label)
-      .filter((x): x is string => x != null && /^[A-Za-z]{2,}$/.test(x))
-      .forEach((x) => this.options.words.set(x, "prefix"))
+      .filter((x): x is string => x != null && FN_NAME.test(x))
+      .forEach((x) => this.options.words.set(x.replace(/_/g, " "), "prefix"))
 
     for (const k in pkg.ty?.info) {
       const key = k as TyName

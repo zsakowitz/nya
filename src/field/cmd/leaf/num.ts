@@ -611,6 +611,9 @@ export class CmdVar extends Leaf {
     let self: CmdVar = this
     if (this.part == L) {
       while (self[R] instanceof CmdVar) {
+        if (self[R].renderPart == L || self[R].renderPart == "both") {
+          ret += "_"
+        }
         ret += (self = self[R]).text
         if (self.part == R) {
           break

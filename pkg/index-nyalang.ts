@@ -2,6 +2,7 @@ export const NYALANG_PACKAGES_BUILTIN = {
   __proto__: null,
   "nya:point": ()=>Promise.resolve({default:{"name":"2D points","label":null,"category":"auto-generated (nyalang)","deps":[],"scripts":["point"]} as const}),
   "nya:geometry": ()=>Promise.resolve({default:{"name":"2D geometry","label":null,"category":"auto-generated (nyalang)","deps":[],"scripts":["geometry"]} as const}),
+  "nya:data/distributions": ()=>Promise.resolve({default:{"name":"distributions","label":null,"category":"auto-generated (nyalang)","deps":[],"scripts":["data/distributions"]} as const}),
   "nya:color/extras": ()=>Promise.resolve({default:{"name":"oklch() and oklab()","label":null,"category":"auto-generated (nyalang)","deps":[],"scripts":["color/extras"]} as const}),
   "nya:color/core": ()=>Promise.resolve({default:{"name":"rgb() and hsv()","label":null,"category":"auto-generated (nyalang)","deps":[],"scripts":["color/core"]} as const}),
   "nya:real": ()=>Promise.resolve({default:{"name":"core real operations","label":null,"category":"auto-generated (nyalang)","deps":[],"scripts":["real"]} as const}),
@@ -21,7 +22,6 @@ export const NYALANG_PACKAGES_BUILTIN = {
 export const NYALANG_PACKAGES_ADDONS = {
   __proto__: null,
   "nya:special": ()=>Promise.resolve({default:{"name":"special functions","label":"beta, gamma, and zeta","category":"auto-generated (nyalang)","deps":[],"scripts":["special"]} as const}),
-  "nya:data/distributions": ()=>Promise.resolve({default:{"name":"distributions","label":"hi","category":"auto-generated (nyalang)","deps":[],"scripts":["data/distributions"]} as const}),
   "nya:4d/two-complex": ()=>Promise.resolve({default:{"name":"4D points (bicomplex)","label":"points with two complex coordinates","category":"auto-generated (nyalang)","deps":[],"scripts":["4d/two-complex"]} as const}),
   "nya:4d/point": ()=>Promise.resolve({default:{"name":"4D points","label":"points with four real coordinates","category":"auto-generated (nyalang)","deps":[],"scripts":["4d/point"]} as const}),
 } as const
