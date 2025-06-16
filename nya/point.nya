@@ -68,3 +68,8 @@ fn %abs(a: Point) -> num {
 }
 
 // TODO: debugpoint, screendistance, point
+
+expose package {
+  name: "2D points",
+  default: true,
+}

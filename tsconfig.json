@@ -19,9 +19,9 @@
     "paths": {
       "@/*": ["./src/*"],
       "#/*": ["./pkg/*"],
-      "$/*": ["./pkg/list/*"],
+      // "$/*": ["./pkg/list/*"],
       "!/*": ["./lang/src/*"]
     }
   },
-  "exclude": ["src/pkg-beta"]
+  "exclude": ["src/pkg-beta", "pkg/list"]
 }

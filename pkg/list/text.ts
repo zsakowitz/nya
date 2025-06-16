@@ -18,6 +18,7 @@ import {
   type IRBuilder,
 } from "@/field/model"
 import { h, hx, t } from "@/jsx"
+import { CmdTextInert } from "@/field/cmd/leaf/text-inert"
 import { int } from "@/lib/real"
 import { defineExt, Store } from "@/sheet/ext"
 import { circle } from "@/sheet/ui/expr/circle"
@@ -34,32 +35,7 @@ declare module "@/eval/ast/token" {
   }
 }
 
-export class CmdTextInert extends Leaf {
-  static fromLatex(_cmd: string, parser: LatexParser): Command {
-    return new this(parser.text())
-  }
-
-  constructor(readonly value: string) {
-    super("\\text", h("", "“", h("font-['Times_New_Roman']", value), "”"))
-  }
-
-  reader(): string {
-    return " Text " + this.value + " EndText "
-  }
-
-  ascii(): string {
-    return "text(" + this.value + ")"
-  }
-
-  latex(): string {
-    return "\\text{" + toText(this.value) + "}"
-  }
-
-  ir2(ret: IRBuilder): void {
-    // TODO: allow latex
-    ret.leaf({ type: "text", data: this.value })
-  }
-}
+export { CmdTextInert }
 
 class CmdText extends Leaf {
   static init(cursor: Cursor, props: InitProps) {

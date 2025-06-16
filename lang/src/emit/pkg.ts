@@ -6,7 +6,7 @@ import { issue } from "./error"
 interface PackageProperties {
   name: string
   default: boolean
-  label: string
+  label: string | null
 }
 
 function lit(node: NodeExpr) {
@@ -64,6 +64,6 @@ export function parseExposePackage(node: ExposePackage): PackageProperties {
   return {
     name: str(field("name")),
     default: bool(field("default")),
-    label: str(field("label")),
+    label: fields.label == null ? null : str(field("label")),
   }
 }
