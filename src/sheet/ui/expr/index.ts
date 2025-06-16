@@ -17,14 +17,14 @@ import { PICK_CURSOR } from "../../pick-cursor"
 import type { Sheet } from "../sheet"
 import { Field } from "./field"
 
+import { PosVirtual } from "!/ast/issue"
+import { tryPerformCall } from "!/emit/emit"
+import { ident } from "!/emit/id"
+import type { CanvasJs, PathJs } from "!/emit/stdlib"
+import { Value } from "!/emit/value"
+import { Entry } from "!/exec/item"
 import { STORE_EVAL } from "#/list/eval"
 import "@/eval2/txs"
-import { PosVirtual } from "../../../../lang/src/ast/issue"
-import { tryPerformCall } from "../../../../lang/src/emit/emit"
-import { ident } from "../../../../lang/src/emit/id"
-import type { CanvasJs, PathJs } from "../../../../lang/src/emit/stdlib"
-import { Value } from "../../../../lang/src/emit/value"
-import { Entry } from "../../../../lang/src/exec/item"
 
 type ExprStateOk =
   | { ok: true; ext: AnyExt | null; data: {} }

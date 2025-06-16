@@ -1,7 +1,7 @@
+import { escapeIdentName } from "!/ast/kind"
+import { issue, todo } from "!/emit/error"
+import { Id, ident } from "!/emit/id"
 import type { PuncCmp } from "@/eval/ast/token"
-import { escapeIdentName } from "../../lang/src/ast/kind"
-import { issue, todo } from "../../lang/src/emit/error"
-import { Id, ident } from "../../lang/src/emit/id"
 import type { NameCooked, Node, OpKind, Suffix } from "./node"
 import { P, PRECEDENCE_WORD_BINARY } from "./prec"
 import {

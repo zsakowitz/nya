@@ -1,3 +1,5 @@
+import { EntrySet } from "!/exec/item"
+import { ScriptEnvironment } from "!/exec/loader"
 import { index, type PackageId } from "#/index"
 import type { Package, ToolbarItem } from "#/types"
 import { FNLIKE_MAGICVAR } from "@/eval/ast/fnlike"
@@ -35,8 +37,6 @@ import {
   WordMapWithoutSpaces,
   type Options,
 } from "@/field/options"
-import { EntrySet } from "../../lang/src/exec/item"
-import { ScriptEnvironment } from "../../lang/src/exec/loader"
 import { Exts } from "./ext"
 import { FACTORY_EXPR } from "./factory-expr"
 import type { AnyItemFactory } from "./item"

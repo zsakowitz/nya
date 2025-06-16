@@ -1,3 +1,4 @@
+import { todo } from "!/emit/error"
 import type { Node } from "@/eval/ast/token"
 import {
   infx,
@@ -16,7 +17,6 @@ import { Precedence } from "@/eval2/prec"
 import { listItems } from "@/eval2/tx"
 import { h } from "@/jsx"
 import type { Scope } from "@/sheet/deps"
-import { todo } from "../../lang/src/emit/error"
 import type { CmdFrac } from "./cmd/math/frac"
 import { D, L, R, U, type Dir, type VDir } from "./dir"
 import type { FieldInert } from "./field-inert"

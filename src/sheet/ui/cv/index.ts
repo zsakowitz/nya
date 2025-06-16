@@ -1,6 +1,6 @@
+import type { CanvasJs } from "!/emit/stdlib"
 import { hx } from "@/jsx"
 import { px, type Point } from "@/lib/point"
-import type { CanvasJs } from "../../../../lang/src/emit/stdlib"
 import { onTheme } from "../../theme"
 import { Size } from "./consts"
 

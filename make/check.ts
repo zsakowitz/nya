@@ -1,7 +1,7 @@
+import { ident } from "!/emit/id"
+import { Alt } from "!/emit/type"
+import { ScriptEnvironment } from "!/exec/loader"
 import { SCRIPTS, type ScriptName } from "#/script-index"
-import { ident } from "../lang/src/emit/id"
-import { Alt } from "../lang/src/emit/type"
-import { ScriptEnvironment } from "../lang/src/exec/loader"
 
 if (await checkEach()) {
   await checkFn()

@@ -1,8 +1,8 @@
+import { IdMap } from "!/emit/decl"
+import { todo } from "!/emit/error"
+import { Id, ident } from "!/emit/id"
+import type { EntrySet } from "!/exec/item"
 import type { ParenLhs, ParenRhs } from "@/field/cmd/math/brack"
-import { IdMap } from "../../lang/src/emit/decl"
-import { todo } from "../../lang/src/emit/error"
-import { Id, ident } from "../../lang/src/emit/id"
-import type { EntrySet } from "../../lang/src/exec/item"
 import type { NameCooked, Node, OpKind, Suffix, SuffixKind } from "./node"
 
 export class ScriptBlock {
