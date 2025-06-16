@@ -321,17 +321,16 @@ function ${lident}(${nvFields
     )
   }
 
-  toRuntime(fields: ConstValue): string | null
-  toRuntime(fields: ConstValue[]): string | null {
+  toRuntime(fields: ConstValue): string | null {
     if (this.#nvIndices.length == 0) {
       return null
     }
 
     if (this.#nvIndices.length == 1) {
-      return this.#nvFields[0]!.toRuntime(fields[0]!)
+      return this.#nvFields[0]!.toRuntime(fields)
     }
 
-    return `${this.emit}(${this.#nvFields.map((type, i) => type.toRuntime(fields[i]!))})`
+    return `${this.emit}(${this.#nvFields.map((type, i) => type.toRuntime((fields as ConstValue[])[i]!))})`
   }
 
   verifyAndOrderFields(
@@ -675,4 +674,16 @@ export class Alt implements Type {
   toString(): string {
     return this.alts.join(" | ")
   }
+}
+
+export const Any: FnType = {
+  canConvertFrom() {
+    return true
+  },
+  convertFrom(value) {
+    return value
+  },
+  toString() {
+    return "any"
+  },
 }

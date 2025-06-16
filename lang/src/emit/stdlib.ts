@@ -13,6 +13,7 @@ import { ident as g, Id, ident, IdGlobal } from "./id"
 import type { EmitProps, Lang } from "./props"
 import { Tag } from "./tag"
 import {
+  Any,
   fn,
   Fn,
   invalidType,
@@ -500,6 +501,9 @@ export function createStdlib(props: EmitProps) {
         return `(1./0.)`
       } else if (v == -1 / 0) {
         return `(-1./0.)`
+      }
+      if (typeof v != "number") {
+        console.warn(v)
       }
       const name = (v as number).toString()
       if (name.includes(".") || name.includes("e")) {
@@ -1273,6 +1277,16 @@ export function createStdlib(props: EmitProps) {
 
         smoothstepFn()
         return new Value(`${smoothstepId}(${edge0},${edge1},${x})`, num)
+      },
+    ),
+
+    new Fn(
+      g("@compiletimelog"),
+      [{ name: "value", type: Any }],
+      Any,
+      ([a], _, _1, pos) => {
+        console.warn(a!.value, `:: ${a!.type.toString()} @ ${pos}`)
+        return a!
       },
     ),
 

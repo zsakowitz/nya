@@ -2,6 +2,7 @@ use "real/erf";
 
 // #region types
 
+// continuous
 struct NormalDist {
   mean: num,
   stdev: num,
@@ -13,6 +14,20 @@ struct TDist {
   scale: num,
 }
 
+struct UniformDist {
+  min: num,
+  max: num,
+}
+
+struct BoltzmannDist {
+  _arg: num,
+}
+
+struct ChiSquareDist {
+  degrees: num,
+}
+
+// discrete
 struct PoissonDist {
   _arg: num,
 }
@@ -22,13 +37,8 @@ struct BinomialDist {
   chance: num,
 }
 
-struct UniformDist {
-  min: num,
-  max: num,
-}
-
-struct BoltzmannDist {
-  _arg: num,
+struct GeometricDist {
+  chance: num,
 }
 
 // #region constructors
@@ -75,6 +85,10 @@ fn boltzmanndist(_arg: num) -> BoltzmannDist {
   BoltzmannDist { _arg }
 }
 
+fn chisqdist(degrees: num) -> ChiSquareDist {
+  ChiSquareDist { degrees }
+}
+
 fn poissondist(_arg: num) -> PoissonDist {
   PoissonDist { _arg }
 }
@@ -87,6 +101,14 @@ fn binomialdist(trials: num, chance: num) -> BinomialDist {
   BinomialDist { trials, chance }
 }
 
+fn geodist() -> GeometricDist {
+  GeometricDist { chance: 0.5 }
+}
+
+fn geodist(chance: num) -> GeometricDist {
+  GeometricDist { chance }
+}
+
 // #region distribution functions
 
 fn pdf(dist: NormalDist, at: num) -> num {
@@ -94,6 +116,13 @@ fn pdf(dist: NormalDist, at: num) -> num {
   let var = dist.stdev * dist.stdev;
   e ^ ((at - dist.mean) * (at - dist.mean) / (2.0 * var))
     / (dist.stdev * sqrt(2.0 * pi))
+}
+
+fn pdf(dist: TDist, at: num) -> num {
+  let at = at / dist.scale - dist.shift;
+  let v = dist.degrees;
+  gamma((v + 1) / 2) / (sqrt(pi * v) * gamma(v / 2))
+    * (1 + at * at / v) ^ -((v + 1) / 2)
 }
 
 fn pdf(dist: UniformDist, at: num) -> num {
@@ -110,6 +139,16 @@ fn pdf(dist: UniformDist, at: num) -> num {
   } else {
     0.0
   }
+}
+
+fn pdf(dist: BoltzmannDist, at: num) -> num {
+  let a = dist._arg;
+  sqrt(2 / pi) * (at * at / (a * a * a)) * exp(-at * at / (2.0 * a * a))
+}
+
+fn pdf(dist: ChiSquareDist, at: num) -> num {
+  let k = dist.degrees;
+  inv(2 ^ (k / 2) * gamma(k / 2)) * at ^ (k / 2 - 1) * exp(-at / 2)
 }
 
 fn cdf(dist: NormalDist, at: num) -> num {
