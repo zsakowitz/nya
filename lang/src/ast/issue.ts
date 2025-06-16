@@ -55,9 +55,7 @@ export const Code = Object.freeze({
   InvalidRawString: 254,
   UnterminatedStringInterp: 255,
   UseCaratAsExponentiationOperator: 256,
-
-  // Emit errors
-  ItemDeclaredTwice: 301,
+  ExpectedParametersToExposePackage: 257,
 
   // future error ideas:
   // match on nonexhaustive enum

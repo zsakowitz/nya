@@ -1,4 +1,4 @@
-import { KFalse, KTrue, TFloat, TInt, TSym } from "../ast/kind"
+import { KFalse, KTrue, TFloat, TInt, TString, TSym } from "../ast/kind"
 import {
   AnyVector,
   createBinaryBroadcastingFn,
@@ -8,7 +8,7 @@ import {
 } from "./broadcast"
 import { Declarations, PRECACHED, type Block } from "./decl"
 import { performCall } from "./emit"
-import { bug, issue } from "./error"
+import { bug, issue, todo } from "./error"
 import { ident as g, Id, ident, IdGlobal } from "./id"
 import type { EmitProps, Lang } from "./props"
 import { Tag } from "./tag"
@@ -553,6 +553,9 @@ export function createStdlib(props: EmitProps) {
 
         case TSym:
           return new Value(g(literal.value.val).value, sym)
+
+        case TString:
+          todo(`String literals cannot be used as expression values.`)
       }
     },
     (value) => {

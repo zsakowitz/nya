@@ -54,7 +54,12 @@ import {
   OTildeUnary,
   TDeriv,
 } from "../ast/kind"
-import { ExposeFn, ExposeLet, ExposeType } from "../ast/node/expose"
+import {
+  ExposeFn,
+  ExposeLet,
+  ExposePackage,
+  ExposeType,
+} from "../ast/node/expose"
 import {
   ExprArray,
   ExprArrayByRepetition,
@@ -801,11 +806,14 @@ export function print(node: Node | Token<number>, sb: Subprint): Doc {
       if (forceBreak) {
         self.args.block = true
       }
-      return [
-        sb("name"),
-        (node as ExprStruct).name.kind == ODot ? "" : " ",
-        sb("args"),
-      ]
+      return [sb("name"), self.name.kind == ODot ? "" : " ", sb("args")]
+    }
+    case ExposePackage: {
+      const self = node as ExposePackage
+      if (self.args) {
+        self.args.block = true
+      }
+      return [sb("kw"), " ", sb("args")]
     }
     case StructArg: {
       const self = node as StructArg

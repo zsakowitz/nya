@@ -48,6 +48,7 @@ import {
   KMatch,
   KMatrix,
   KMut,
+  KPackage,
   KReturn,
   KRule,
   KSource,
@@ -115,7 +116,7 @@ import {
   TSym,
   type Brack,
 } from "./kind"
-import { ExposeFn, ExposeLet, ExposeType } from "./node/expose"
+import { ExposeFn, ExposeLet, ExposePackage, ExposeType } from "./node/expose"
 import {
   ExprArray,
   ExprArrayByRepetition,
@@ -628,6 +629,7 @@ function exprAtom(stream: Stream, ctx: ExprContext): NodeExpr {
     case TFloat:
     case TInt:
     case TSym:
+    case TString:
     case KTrue:
     case KFalse:
       return exprLit(stream, ctx)!
@@ -1605,10 +1607,22 @@ function exposeAliases(stream: Stream) {
 }
 
 function expose(stream: Stream) {
-  const kw = stream.match(KFn) || stream.match(KType) || stream.match(KLet)
+  const kw =
+    stream.match(KFn) ||
+    stream.match(KType) ||
+    stream.match(KLet) ||
+    stream.match(KPackage)
   if (!kw) {
     stream.raiseNext(Code.InvalidExposeKind)
     return null
+  }
+
+  if (kw.kind == KPackage) {
+    const args = structArgs(stream)
+    if (args == null) {
+      stream.raiseNext(Code.ExpectedParametersToExposePackage)
+    }
+    return new ExposePackage(kw, args)
   }
 
   if (kw.kind == KLet) {

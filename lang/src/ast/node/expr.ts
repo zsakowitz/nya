@@ -80,6 +80,7 @@ import {
   type TLabel,
   type TParam,
   type TSource,
+  type TString,
 } from "../kind"
 import type { TokenGroup } from "../stream"
 import type { Token } from "../token"
@@ -116,7 +117,12 @@ export abstract class NodeExpr extends Node {
 export class ExprLit extends NodeExpr {
   constructor(
     readonly value: Token<
-      typeof TFloat | typeof TInt | typeof TSym | typeof KTrue | typeof KFalse
+      | typeof TFloat
+      | typeof TInt
+      | typeof TSym
+      | typeof KTrue
+      | typeof KFalse
+      | typeof TString
     >,
   ) {
     super(value.start, value.end, value.info)

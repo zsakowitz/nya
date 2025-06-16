@@ -1,7 +1,16 @@
-import type { KFn, KLet, KType, OEq, OSemi, TIgnore, TString } from "../kind"
+import type {
+  KFn,
+  KLet,
+  KPackage,
+  KType,
+  OEq,
+  OSemi,
+  TIgnore,
+  TString,
+} from "../kind"
 import type { Token } from "../token"
 import type { NodeExpr } from "./expr"
-import type { ExposeAliases, List, ParamType } from "./extra"
+import type { ExposeAliases, List, ParamType, StructArg } from "./extra"
 import { Node, type IdentFnName } from "./node"
 import type { NodeType } from "./type"
 
@@ -46,5 +55,14 @@ export class ExposeLet extends NodeExpose {
     readonly semi: Token<typeof OSemi> | null,
   ) {
     super(kw.start, (semi ?? as ?? type ?? label ?? name ?? kw).end, kw.info)
+  }
+}
+
+export class ExposePackage extends NodeExpose {
+  constructor(
+    readonly kw: Token<typeof KPackage>,
+    readonly args: List<StructArg> | null,
+  ) {
+    super(kw.start, (args ?? kw).end, kw.info)
   }
 }
