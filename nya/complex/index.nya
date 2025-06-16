@@ -6,6 +6,8 @@ struct Complex {
   imag: num,
 }
 
+let _complex_zero = Complex { real: 0.0, imag: 0.0 };
+
 fn %display(z: Complex) -> latex {
   if z.imag == 0.0 {
     display"${z.real}"
@@ -115,7 +117,7 @@ fn arg(z: Complex) -> num {
 
 fn sign(z: Complex) -> Complex {
   if z.real == 0.0 && z.imag == 0.0 {
-    Complex { real: 0.0, imag: 0.0 }
+    _complex_zero
   } else {
     @norm(z)
   }
@@ -138,7 +140,7 @@ fn %xprody(x: Complex, y: Complex) -> Complex {
   if is_nan(y.real) || is_nan(y.imag) {
     Complex { real: nan, imag: nan }
   } else if x.real == 0.0 && x.imag == 0.0 {
-    Complex { real: 0.0, imag: 0.0 }
+    _complex_zero
   } else {
     x * y
   }
@@ -166,7 +168,15 @@ fn i(z: Complex) -> num {
 
 fn ^(a: Complex, b: Complex) -> Complex {
   if a.real == 0.0 && a.imag == 0.0 {
-    Complex { real: 0.0, imag: 0.0 }
+    _complex_zero
+  } else {
+    exp(ln(a) * b)
+  }
+}
+
+fn ^(a: num, b: Complex) -> Complex {
+  if a == 0.0 {
+    _complex_zero
   } else {
     exp(ln(a) * b)
   }

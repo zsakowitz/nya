@@ -1,40 +1,14 @@
 import betaGl from "#/glsl/beta.glsl"
 import erfC32Gl from "#/glsl/erf-c32.glsl"
 import lngammaGl from "#/glsl/lngamma.glsl"
-import zetaGl from "#/glsl/zeta.glsl"
 import type { Package } from "#/types"
 import type { GlslContext } from "@/eval/lib/fn"
 import { FnDist } from "@/eval/ops/dist"
-import { xy } from "@/lib/complex"
 import { approx, int } from "@/lib/real"
 import gammaln from "@stdlib/math/base/special/gammaln"
-import { complex, zeta } from "mathjs"
-import { declareFactorialC32, declareFactorialR32 } from "./factorial"
-import { declareDiv, declareMulC32, declarePowC32 } from "./num/complex"
+import { declareFactorialR32 } from "./factorial"
+import { declareMulC32 } from "./num/complex"
 import { faddeevaPt } from "./special/erf-complex"
-
-const FN_ZETA: FnDist = new FnDist("zeta", "computes the Riemann zeta function")
-  .addJs(["r32"], "r32", (a) => approx(zeta(a.value.num())), "zeta2≈1.645")
-  .add(
-    ["c32"],
-    "c32",
-    (a) => {
-      const val = zeta(complex(a.value.x.num(), a.value.y.num()))
-      if (typeof val == "number") {
-        return xy(approx(val), int(0))
-      }
-      return xy(approx(val.re), approx(val.im))
-    },
-    (ctx, a) => {
-      declareMulC32(ctx)
-      declarePowC32(ctx)
-      declareDiv(ctx)
-      declareFactorialC32(ctx)
-      ctx.glslText(zetaGl)
-      return `zeta(${a.expr})`
-    },
-    "zeta(2+3i)≈0.798-0.114i",
-  )
 
 const FN_FADDEEVA = new FnDist("faddeeva", "scaled complex error function").add(
   ["c32"],
@@ -118,9 +92,9 @@ export default {
     "factorial",
     "gamma",
   ],
+  scripts: ["real/zeta"],
   eval: {
     fn: {
-      zeta: FN_ZETA,
       faddeeva: FN_FADDEEVA,
       beta: FN_BETA,
       lnbeta: FN_LNBETA,

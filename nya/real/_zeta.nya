@@ -1,0 +1,54 @@
+let _zeta_digits = 20;
+let _zeta_digits_each = [
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  17,
+  18,
+  19,
+  20,
+];
+
+fn d(x: num, n: num) -> num {
+}
+
+fn _zeta_pos(x: num) -> num {
+  let c = inv(d(0.0, _zeta_digits) * (1.0 - 2 ^ (1.0 - x)));
+  let mut S = 0.0;
+  for k in _zeta_digits_each  {
+    S += -1 ^ (k - 1) * d(k, _zeta_digits) / k ^ s;
+  }
+  c * S
+}
+
+fn zeta(x: num) -> num {
+  if x == 0.0 {
+    -0.5
+  } else if x == 1.0 {
+    nan
+  } else if x == inf {
+    1.0
+  } else if x == -inf || x == nan {
+    nan
+  } else if x > -(_zeta_digits - 1) / 2 {
+    _zeta_pos(x)
+  } else {
+    let c = 2.0 ^ x * pi ^ (x - 1.0);
+    let c = c * sin(pi / 2 * x);
+    let c = c * gamma(1.0 - x);
+    c * _zeta_pos(1.0 - x)
+  }
+}

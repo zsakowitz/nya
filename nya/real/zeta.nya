@@ -1,0 +1,46 @@
+use "complex";
+use "complex/trig";
+use "gamma/gamma";
+
+// https://www.shadertoy.com/view/llV3R1
+// TODO: this is a bad approximation and should be improved
+
+fn _zeta_dirichletn(s: Complex) -> Complex {
+  let mut z = _complex_zero;
+
+  for j in 1..=32 {
+    z += if j % 2 == 0 { -1.0 } else { 1.0 } * j ^ -s;
+  }
+
+  z
+}
+
+fn _zeta_large_s(s: Complex) -> Complex {
+  let mut z = _complex_zero;
+  for j in 1..=32 {
+    z += j ^ -s;
+  }
+  z
+}
+
+fn _zeta_small_s(s: Complex) -> Complex {
+  _zeta_dirichletn(s) / (1.0 - 2.0 ^ (1.0 - s))
+}
+
+fn _zeta_gtz(s: Complex) -> Complex {
+  @mix(_zeta_small_s(s), _zeta_large_s(s), @smoothstep(1.5, 2.5, s.real))
+}
+
+fn zeta(s: Complex) -> Complex {
+  let a = _zeta_gtz(s);
+  if s.real > 0.75 {
+    return a;
+  }
+  let sr = 1.0 - s;
+  let b = _zeta_gtz(sr) * gamma(sr)
+    * (2.0 * cos(pi / 2.0 * sr) * (2.0 * pi) ^ -sr);
+  if s.real < 0.25 {
+    return b;
+  }
+  @mix(b, a, @smoothstep(0.25, 0.75, s.real))
+}
