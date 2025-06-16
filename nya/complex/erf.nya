@@ -1,0 +1,61 @@
+use "complex";
+
+fn faddeeva(z: Complex) -> Complex {
+  // Precomputed Faddeeva function approximation coefficients (M==4)
+  // real part only
+  let A = [
+    0.983046454995208,
+    -0.095450491368505,
+    -0.106397537035019,
+    0.004553979597404,
+    -0.000012773721299,
+    -0.000000071458742,
+    0.000000000080803,
+    -0.000000000000007,
+  ];
+
+  // imaginary part only
+  let B = [
+    Complex { real: 0.0, imag: -1.338045597353875 },
+    Complex { real: 0.0, imag: 0.822618936152688 },
+    Complex { real: 0.0, imag: -0.044470795125534 },
+    Complex { real: 0.0, imag: -0.000502542048995 },
+    Complex { real: 0.0, imag: 0.000011914499129 },
+    Complex { real: 0.0, imag: -0.000000020157171 },
+    Complex { real: 0.0, imag: -0.000000000001558 },
+    Complex { real: 0.0, imag: 0.000000000000003 },
+  ];
+
+  // real part only
+  let C = [
+    0.392699081698724,
+    1.178097245096172,
+    1.963495408493621,
+    2.748893571891069,
+    3.534291735288517,
+    4.319689898685965,
+    5.105088062083414,
+    5.890486225480862,
+  ];
+
+  let s = 2.75;
+  let sgni = if z.imag < 0.0 { -1.0 } else { 1.0 };
+  let z = sgni * z;
+
+  let t = z + Complex { real: 0.0, imag: 0.5 * s };
+  let mut w = Complex { real: 0.0, imag: 0.0 };
+
+  for a, b, c in A, B, C {
+    w += (a + t * b) / (c * c - t * t);
+  }
+
+  if sgni < 0.0 {
+    w = 2.0 * exp(-z * z) - w;
+  }
+
+  w
+}
+
+fn erf(z: Complex) -> Complex {
+  1.0 - exp(-z * z) * faddeeva(z * i)
+}

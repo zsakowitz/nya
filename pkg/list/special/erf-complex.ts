@@ -93,6 +93,7 @@ export default {
   label: null,
   category: "numbers (multi-dimensional)",
   deps: ["special/erf", "num/complex"],
+  scripts: ["complex/erf"],
   eval: {
     fn: {
       erf: FN_ERF,

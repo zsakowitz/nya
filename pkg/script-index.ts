@@ -14,17 +14,18 @@ import s12 from "../nya/real/number-theory.nya"
 import s13 from "../nya/complex/index.nya"
 import s14 from "../nya/complex/trig-hyperbolic.nya"
 import s15 from "../nya/complex/trig.nya"
-import s16 from "../nya/complex/beta.nya"
-import s17 from "../nya/complex/zeta.nya"
-import s18 from "../nya/complex/number-theory.nya"
-import s19 from "../nya/core/cmp.nya"
-import s20 from "../nya/core/ops.nya"
-import s21 from "../nya/3d/point.nya"
-import s22 from "../nya/gamma/lngamma.nya"
-import s23 from "../nya/gamma/trigamma.nya"
-import s24 from "../nya/gamma/digamma.nya"
-import s25 from "../nya/gamma/polygamma.nya"
-import s26 from "../nya/gamma/gamma.nya"
+import s16 from "../nya/complex/erf.nya"
+import s17 from "../nya/complex/beta.nya"
+import s18 from "../nya/complex/zeta.nya"
+import s19 from "../nya/complex/number-theory.nya"
+import s20 from "../nya/core/cmp.nya"
+import s21 from "../nya/core/ops.nya"
+import s22 from "../nya/3d/point.nya"
+import s23 from "../nya/gamma/lngamma.nya"
+import s24 from "../nya/gamma/trigamma.nya"
+import s25 from "../nya/gamma/digamma.nya"
+import s26 from "../nya/gamma/polygamma.nya"
+import s27 from "../nya/gamma/gamma.nya"
 
 export const SCRIPTS = new Map([
   ["point", s0],
@@ -43,17 +44,18 @@ export const SCRIPTS = new Map([
   ["complex", s13],
   ["complex/trig-hyperbolic", s14],
   ["complex/trig", s15],
-  ["complex/beta", s16],
-  ["complex/zeta", s17],
-  ["complex/number-theory", s18],
-  ["core/cmp", s19],
-  ["core/ops", s20],
-  ["3d/point", s21],
-  ["gamma/lngamma", s22],
-  ["gamma/trigamma", s23],
-  ["gamma/digamma", s24],
-  ["gamma/polygamma", s25],
-  ["gamma/gamma", s26],
+  ["complex/erf", s16],
+  ["complex/beta", s17],
+  ["complex/zeta", s18],
+  ["complex/number-theory", s19],
+  ["core/cmp", s20],
+  ["core/ops", s21],
+  ["3d/point", s22],
+  ["gamma/lngamma", s23],
+  ["gamma/trigamma", s24],
+  ["gamma/digamma", s25],
+  ["gamma/polygamma", s26],
+  ["gamma/gamma", s27],
 ])
 
 export type ScriptName =
@@ -73,6 +75,7 @@ export type ScriptName =
   | "complex"
   | "complex/trig-hyperbolic"
   | "complex/trig"
+  | "complex/erf"
   | "complex/beta"
   | "complex/zeta"
   | "complex/number-theory"

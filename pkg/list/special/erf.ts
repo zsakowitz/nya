@@ -83,6 +83,7 @@ export default {
   label: "on the real numbers",
   category: "numbers",
   deps: ["num/real", "core/ops"],
+  scripts: ["real/erf"],
   eval: {
     fn: {
       erf: FN_ERF,
