@@ -1,4 +1,5 @@
 before nyalang version can be released:
+❌ proper docs
 ❌ `2 < 3 < 4` works as expected
 ❌ mutating functions like `stroke` and `path` shouldn't really exist
 ❌ exact fractions

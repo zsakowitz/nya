@@ -206,6 +206,26 @@ export class Sheet {
     //   trigLabel("rot"),
     // )
 
+    const index = btn(faBook, "index", () => {
+      const text = this.factory.env.libJs.fns
+        .mapEach((x) => (x.id.label.startsWith("_") ? null : x.toString()))
+        .filter((x) => x != null)
+        .join("\n")
+      const href = URL.createObjectURL(
+        new Blob(
+          [
+            `// ${this.factory.env.libJs.fns.all().length} functions, ${this.factory.env.libJs.types.all().length} types\n`,
+            text,
+          ],
+          { type: "text/plain" },
+        ),
+      )
+      const a = hx("a", { href, class: "hidden", target: "_blank" })
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+    })
+
     const switchToDocs = btnSkin("a", faBook, "Docs")
     switchToDocs.href =
       location.origin +
@@ -298,7 +318,8 @@ export class Sheet {
         clearAll,
         h("m-auto text-2xl", "project nya"),
         showAddons,
-        switchToDocs,
+        index,
+        // switchToDocs, TODO: proper docs
       ),
     )
 
