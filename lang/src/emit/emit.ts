@@ -21,6 +21,7 @@ import {
   ExprLit,
   ExprParen,
   ExprProp,
+  ExprRange,
   ExprStruct,
   ExprTaggedString,
   ExprUnary,
@@ -549,6 +550,39 @@ function emitExpr(node: NodeExpr, block: Block): Value {
       node.interps,
       block,
     )
+  } else if (node instanceof ExprRange) {
+    const lb = new Block(block.decl, new Exits(null), block.locals)
+    const rb = new Block(block.decl, new Exits(null), block.locals)
+    const lv = emitExpr(node.lhs ?? todo(`Ranges must have lower bounds.`), lb)
+    const rv = emitExpr(node.rhs ?? todo(`Ranges must have upper bounds.`), rb)
+    if (lv.type != block.decl.tyNum || rv.type != block.decl.tyNum) {
+      todo(`Range bounds must be of 'num' type.`, node)
+    }
+    if (lb.source || rb.source || !lv.const() || !rv.const()) {
+      todo(`Range bounds must be simple constants.`, node)
+    }
+    const value = `${lv.value}..${node.eq ? "=" : ""}${rv.value}`
+    if (
+      !(Number.isSafeInteger as (x: unknown) => x is number)(lv.value) ||
+      !(Number.isSafeInteger as (x: unknown) => x is number)(rv.value)
+    ) {
+      todo(`Range bounds in ${value} must be integers.`, node)
+    }
+    if (!(lv.value < rv.value)) {
+      todo(`Range bounds in ${value} must be in proper order.`, node)
+    }
+    let count = rv.value - lv.value + +!!node.eq
+    if (count > 64) {
+      todo(
+        `Range ${value} has ${count} entries, but may only contain up to 64.`,
+        node,
+      )
+    }
+    return new Value(
+      `[${globalThis.Array.from({ length: count }, (_, i) => i + (lv.value as number)).join(",")}]`,
+      new Array(block.props, block.decl.tyNum, count),
+    )
+    // TODO: NYALANG: this outputs horrible code in `for` loops, and should be optimized to a plain `for (let i = 0; i < 20; i++)` loop
   } else {
     todo(`Cannot emit '${node.constructor.name}' as an expression yet.`)
   }

@@ -84,6 +84,7 @@ export class Declarations {
     readonly createLiteral: (literal: ExprLit) => Value,
     readonly toArraySize: (value: Value) => number | null,
     readonly tyLatex: Scalar,
+    readonly tyNum: Scalar,
   ) {
     this.tyVoid = void_
     this.types = new IdMap(parent?.types ?? null)

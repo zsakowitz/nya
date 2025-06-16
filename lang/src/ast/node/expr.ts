@@ -393,6 +393,7 @@ export class ExprRange extends NodeExpr {
   constructor(
     readonly lhs: NodeExpr | null,
     readonly op: Token<typeof ODotDot>,
+    readonly eq: Token<typeof OEq> | null,
     readonly rhs: NodeExpr | null,
   ) {
     super((lhs ?? op).start, (rhs ?? op).end, op.info)

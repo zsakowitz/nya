@@ -567,6 +567,7 @@ export function createStdlib(props: EmitProps) {
       return null
     },
     libLatexScalar(lang),
+    num,
   )
 
   const pathLib = libPath(props, num)

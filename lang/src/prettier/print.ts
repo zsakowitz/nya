@@ -847,13 +847,16 @@ export function print(node: Node | Token<number>, sb: Subprint): Doc {
         sb.sub("brack", "gt"),
       ])
     case ForHeaders:
+      ;(node as ForHeaders).items.map(
+        (x, i, a) => (x.sources.spaceAfter = i == a.length - 1),
+      )
       return group([
         indent([
           softline,
           join([";", line], sb.all("items")),
           ifBreak([";"], ""),
         ]),
-        line,
+        softline,
       ])
     case ForHeader:
       return [sb("bound"), sb("eq"), " ", sb("sources")]
@@ -892,6 +895,7 @@ export function print(node: Node | Token<number>, sb: Subprint): Doc {
       return [
         needsL == null ? "" : sb.paren("lhs", needsL),
         sb("op"),
+        sb.opt("eq"),
         needsR == null ? "" : sb.paren("rhs", needsR),
       ]
     }

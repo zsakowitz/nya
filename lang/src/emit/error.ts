@@ -1,7 +1,11 @@
 import type { Pos } from "../ast/issue"
 
-export function todo(x: string): never {
-  throw new Error(x + " This may be changed in a future version of nyalang.")
+export function todo(x: string, pos?: Pos): never {
+  throw new Error(
+    x +
+      " This may be changed in a future version of nyalang." +
+      (pos ? ` @ ${pos}` : ""),
+  )
 }
 
 export function issueError(x: string, pos?: Pos): Error {

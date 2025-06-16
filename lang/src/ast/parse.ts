@@ -848,22 +848,32 @@ function createRangeOp(side: (stream: Stream, ctx: ExprContext) => NodeExpr) {
   return (stream: Stream, ctx: ExprContext): NodeExpr => {
     if (stream.peek() == ODotDot) {
       const dot = stream.match(ODotDot)!
+      let eq = stream.match(OEq)
+      if (eq && dot.end != eq.start) {
+        stream.possiblyExponentialTimeBacktrack()
+        eq = null
+      }
       const rhs = side(stream, { struct: ctx.struct, noErrorOnEmpty: true })
       if (rhs instanceof ExprEmpty) {
-        return new ExprRange(null, dot, null)
+        return new ExprRange(null, dot, eq, null)
       } else {
-        return new ExprRange(null, dot, rhs)
+        return new ExprRange(null, dot, eq, rhs)
       }
     }
 
     const lhs = side(stream, ctx)
     const dot = stream.match(ODotDot)
     if (!dot) return lhs
+    let eq = stream.match(OEq)
+    if (eq && dot.end != eq.start) {
+      stream.possiblyExponentialTimeBacktrack()
+      eq = null
+    }
     const rhs = side(stream, { struct: ctx.struct, noErrorOnEmpty: true })
     if (rhs instanceof ExprEmpty) {
-      return new ExprRange(lhs, dot, null)
+      return new ExprRange(lhs, dot, eq, null)
     } else {
-      return new ExprRange(lhs, dot, rhs)
+      return new ExprRange(lhs, dot, eq, rhs)
     }
   }
 }
