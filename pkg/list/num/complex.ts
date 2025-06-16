@@ -236,7 +236,7 @@ export default {
   label: "basic support for complex numbers",
   category: "numbers (multi-dimensional)",
   deps: ["num/real", "geo/point", "core/ops", "color/core", "bool"],
-  scripts: ["complex"],
+  scripts: ["complex", "gamma/gamma"],
   ty: {
     coerce: {
       r32: {
