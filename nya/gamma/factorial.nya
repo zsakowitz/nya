@@ -1,4 +1,5 @@
 use "complex";
+use "gamma/lngamma";
 
 let _nya_cxfact_g = 5.0;
 let _nya_cxfact_epsilon = 1e-7;
@@ -18,6 +19,10 @@ fn _nya_helper_cx_factorial_pos(z: Complex) -> Complex {
     - 1.2296028490285820771 / (z + 4.0);
   let t = z + _nya_cxfact_g + 0.5;
   sqrt(2.0 * pi) * t ^ (z + 0.5) * exp(-t) * x
+}
+
+fn %factorial(z: num) -> num {
+  sign_gamma(z + 1.0) * exp(lngamma(z + 1.0))
 }
 
 fn %factorial(z: Complex) -> Complex {

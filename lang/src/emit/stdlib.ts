@@ -749,6 +749,15 @@ export function createStdlib(props: EmitProps) {
       decl.global(`const ${roundId}=Math.round;`)
       return new Value(`${roundId}(${a})`, num)
     }),
+    new Fn(g("inv"), [xnum], num, ([a]) => {
+      if (a!.const()) {
+        return new Value(1.0 / (a.value as number), num)
+      }
+      if (props.lang == "glsl") {
+        return new Value(`1.0/(${a})`, num)
+      }
+      return new Value(`1/(${a})`, num)
+    }),
     new Fn(g("fract"), [{ name: "value", type: num }], num, (raw, block) => {
       const a = raw[0]!
 

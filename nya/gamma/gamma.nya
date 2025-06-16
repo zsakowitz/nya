@@ -1,5 +1,9 @@
 use "gamma/factorial";
 
+fn gamma(z: num) -> num {
+  %factorial(z - 1.0)
+}
+
 fn gamma(z: Complex) -> Complex {
   %factorial(z - 1.0)
 }
