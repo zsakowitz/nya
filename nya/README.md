@@ -13,3 +13,29 @@ bun --watch make/nya
 
 You will have to manually restart the command if you add, delete, rename, or
 move a `.nya` file.
+
+## things left to convert
+
+- chem/elements
+- `sort`, `unique`
+- `join`
+- statistics/complex
+- statistics
+- geo/image
+- item/docs-fn
+- item/folder
+- item/note
+- ithkuil
+- sym/core
+- sym/deriv
+- sym/extras
+- unit
+- base
+- debug
+- image
+- iterate
+- shader
+- slider
+- `slopefield`
+- text
+- `withseq`
