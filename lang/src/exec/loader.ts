@@ -50,10 +50,10 @@ export class ScriptEnvironment {
     }
     for (const item of items) {
       if (item instanceof ItemUse) {
-        const name = extractDepName(item)
-        await this.load(name)
+        this.load(extractDepName(item)) // FIXME: this needs to be awaited but breaks everything if it is
         continue
       }
+
       const resultGl = emitItem(item, this.libGl)
       if (resultGl?.decl) {
         this.mainGl += "\n" + resultGl.decl

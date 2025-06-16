@@ -71,13 +71,14 @@ export class SheetFactory {
     this.loaded[id] = pkg
 
     if (pkg.deps) {
-      await Promise.all(pkg.deps.map((x) => this.load(x)))
+      for (const dep of pkg.deps) {
+        await this.load(dep)
+      }
     }
     pkg.load?.()
 
     if (pkg.scripts) {
-      for (let i = 0; i < pkg.scripts.length; i++) {
-        const script = pkg.scripts[i]!
+      for (const script of pkg.scripts) {
         await this.env.load(script)
       }
     }

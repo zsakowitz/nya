@@ -208,7 +208,11 @@ export class Sheet {
 
     const index = btn(faBook, "index", () => {
       const text = this.factory.env.libJs.fns
-        .mapEach((x) => (x.id.label.startsWith("_") ? null : x.toString()))
+        .map((x) =>
+          x.length == 0 || x[0]!.id.label.startsWith("_") ?
+            []
+          : `${x[0]!.id.label}${x.map((x) => "\n  " + x.toString().slice(x.id.label.length)).join("\n")}`,
+        )
         .filter((x) => x != null)
         .join("\n")
       const href = URL.createObjectURL(
