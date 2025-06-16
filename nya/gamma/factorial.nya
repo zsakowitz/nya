@@ -22,7 +22,7 @@ fn _nya_helper_cx_factorial_pos(z: Complex) -> Complex {
 }
 
 fn %factorial(z: num) -> num {
-  sign_gamma(z + 1.0) * exp(lngamma(z + 1.0))
+  sign_gamma(z + 1.0) * exp(ln_gamma(z + 1.0))
 }
 
 fn %factorial(z: Complex) -> Complex {

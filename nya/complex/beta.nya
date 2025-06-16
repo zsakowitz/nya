@@ -6,7 +6,7 @@ fn sign_beta(x: num, y: num) -> num {
 }
 
 fn ln_beta(x: num, y: num) -> num {
-  lngamma(x) + lngamma(y) - lngamma(x + y)
+  ln_gamma(x) + ln_gamma(y) - ln_gamma(x + y)
 }
 
 fn beta(x: num, y: num) -> num {
