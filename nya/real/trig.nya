@@ -1,0 +1,23 @@
+fn csc(a: num) -> num {
+  1.0 / sin(a)
+}
+
+fn sec(a: num) -> num {
+  1.0 / cos(a)
+}
+
+fn cot(a: num) -> num {
+  1.0 / tan(a)
+}
+
+fn acsc(a: num) -> num {
+  asin(1.0 / a)
+}
+
+fn asec(a: num) -> num {
+  acos(1.0 / a)
+}
+
+fn acot(a: num) -> num {
+  atan(1.0 / a)
+}

@@ -1,0 +1,23 @@
+fn csch(a: num) -> num {
+  1.0 / sinh(a)
+}
+
+fn sech(a: num) -> num {
+  1.0 / cosh(a)
+}
+
+fn coth(a: num) -> num {
+  1.0 / tanh(a)
+}
+
+fn acsch(a: num) -> num {
+  asinh(1.0 / a)
+}
+
+fn asech(a: num) -> num {
+  acosh(1.0 / a)
+}
+
+fn acoth(a: num) -> num {
+  atanh(1.0 / a)
+}

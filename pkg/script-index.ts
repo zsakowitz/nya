@@ -9,23 +9,25 @@ import s7 from "../nya/color/oklab.nya"
 import s8 from "../nya/color/core.nya"
 import s9 from "../nya/real/parity.nya"
 import s10 from "../nya/real/index.nya"
-import s11 from "../nya/real/erf.nya"
-import s12 from "../nya/real/number-theory.nya"
-import s13 from "../nya/complex/index.nya"
-import s14 from "../nya/complex/trig-hyperbolic.nya"
-import s15 from "../nya/complex/trig.nya"
-import s16 from "../nya/complex/erf.nya"
-import s17 from "../nya/complex/beta.nya"
-import s18 from "../nya/complex/zeta.nya"
-import s19 from "../nya/complex/number-theory.nya"
-import s20 from "../nya/core/cmp.nya"
-import s21 from "../nya/core/ops.nya"
-import s22 from "../nya/3d/point.nya"
-import s23 from "../nya/gamma/lngamma.nya"
-import s24 from "../nya/gamma/trigamma.nya"
-import s25 from "../nya/gamma/digamma.nya"
-import s26 from "../nya/gamma/polygamma.nya"
-import s27 from "../nya/gamma/gamma.nya"
+import s11 from "../nya/real/trig-hyperbolic.nya"
+import s12 from "../nya/real/trig.nya"
+import s13 from "../nya/real/erf.nya"
+import s14 from "../nya/real/number-theory.nya"
+import s15 from "../nya/complex/index.nya"
+import s16 from "../nya/complex/trig-hyperbolic.nya"
+import s17 from "../nya/complex/trig.nya"
+import s18 from "../nya/complex/erf.nya"
+import s19 from "../nya/complex/beta.nya"
+import s20 from "../nya/complex/zeta.nya"
+import s21 from "../nya/complex/number-theory.nya"
+import s22 from "../nya/core/cmp.nya"
+import s23 from "../nya/core/ops.nya"
+import s24 from "../nya/3d/point.nya"
+import s25 from "../nya/gamma/lngamma.nya"
+import s26 from "../nya/gamma/trigamma.nya"
+import s27 from "../nya/gamma/digamma.nya"
+import s28 from "../nya/gamma/polygamma.nya"
+import s29 from "../nya/gamma/gamma.nya"
 
 export const SCRIPTS = new Map([
   ["point", s0],
@@ -39,23 +41,25 @@ export const SCRIPTS = new Map([
   ["color/core", s8],
   ["real/parity", s9],
   ["real", s10],
-  ["real/erf", s11],
-  ["real/number-theory", s12],
-  ["complex", s13],
-  ["complex/trig-hyperbolic", s14],
-  ["complex/trig", s15],
-  ["complex/erf", s16],
-  ["complex/beta", s17],
-  ["complex/zeta", s18],
-  ["complex/number-theory", s19],
-  ["core/cmp", s20],
-  ["core/ops", s21],
-  ["3d/point", s22],
-  ["gamma/lngamma", s23],
-  ["gamma/trigamma", s24],
-  ["gamma/digamma", s25],
-  ["gamma/polygamma", s26],
-  ["gamma/gamma", s27],
+  ["real/trig-hyperbolic", s11],
+  ["real/trig", s12],
+  ["real/erf", s13],
+  ["real/number-theory", s14],
+  ["complex", s15],
+  ["complex/trig-hyperbolic", s16],
+  ["complex/trig", s17],
+  ["complex/erf", s18],
+  ["complex/beta", s19],
+  ["complex/zeta", s20],
+  ["complex/number-theory", s21],
+  ["core/cmp", s22],
+  ["core/ops", s23],
+  ["3d/point", s24],
+  ["gamma/lngamma", s25],
+  ["gamma/trigamma", s26],
+  ["gamma/digamma", s27],
+  ["gamma/polygamma", s28],
+  ["gamma/gamma", s29],
 ])
 
 export type ScriptName =
@@ -70,6 +74,8 @@ export type ScriptName =
   | "color/core"
   | "real/parity"
   | "real"
+  | "real/trig-hyperbolic"
+  | "real/trig"
   | "real/erf"
   | "real/number-theory"
   | "complex"
