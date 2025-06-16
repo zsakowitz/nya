@@ -12,7 +12,7 @@
     "graph:pkg": "madge --image graph.svg --ts-config tsconfig.json --exclude 'src|util[-/]' pkg/list/{*.ts,**/*.ts,**/**/*.ts,**/**/**/*.ts}",
     "manifest": "bun pkg/manifest/generate.ts > pkg/manifest/data.json",
     "build:prettier": "esbuild lang/src/prettier/plugin.ts --bundle --minify --platform=node --format=cjs --external:prettier --outfile=lang/src/prettier/plugin.js",
-    "watch:scripts": "bun make/script-index.ts && bun --watch make/check.ts"
+    "watch:scripts": "bun make/scripts.ts && bun --watch make/check.ts"
   },
   "dependencies": {
     "@fortawesome/free-regular-svg-icons": "^6.7.2",
