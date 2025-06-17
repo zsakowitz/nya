@@ -394,14 +394,13 @@ function exprVarParam(stream: Stream) {
   if (!token) return null
 
   const wo = varWithout(stream)
-  const dc = stream.match(OColonColon)
-  const ty = dc && type(stream)
+  const ty = prescribedType(stream, false)
 
   if (stream.peek() == OLAngle || stream.peek() == OLParen) {
     stream.raiseNext(Code.VarParamFollowedByArguments)
   }
 
-  return new ExprVarParam(token, wo, dc && new PrescribedType(dc, ty, false))
+  return new ExprVarParam(token, wo, ty)
 }
 
 function exprVar(stream: Stream, ctx: ExprContext) {
@@ -619,7 +618,13 @@ function exprTag(stream: Stream): ExprTaggedString {
     }
   }
 
-  return new ExprTaggedString(tag, parts, interps, stream.loc())
+  return new ExprTaggedString(
+    tag,
+    parts,
+    interps,
+    prescribedType(stream, true),
+    stream.loc(),
+  )
 }
 
 function exprAtom(stream: Stream, ctx: ExprContext): NodeExpr {
@@ -1338,16 +1343,22 @@ function source(stream: Stream, block: boolean): Source | null {
     return null
   }
 
-  const colon = stream.match(OColonColon)
-  const ty = colon && type(stream)
+  const ty = prescribedType(stream, true)
 
   return new Source(
     parts[0]!.start,
-    (ty ?? colon ?? parts[parts.length - 1]!).end,
+    (ty ?? parts[parts.length - 1]!).end,
     parts,
-    colon && new PrescribedType(colon, ty, true),
+    ty,
     block,
   )
+}
+
+function prescribedType(stream: Stream, spaced: boolean) {
+  const colon = stream.match(OColonColon)
+  if (!colon) return null
+
+  return new PrescribedType(colon, type(stream), spaced)
 }
 
 function itemType(stream: Stream) {

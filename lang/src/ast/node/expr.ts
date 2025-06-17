@@ -430,6 +430,7 @@ export class ExprTaggedString extends NodeExpr {
     readonly tag: Token<typeof RTag>,
     readonly parts: Token<typeof RString>[],
     readonly interps: NodeExpr[],
+    readonly type: PrescribedType | null,
     end: number,
   ) {
     super(tag.start, end, tag.info)
