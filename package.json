@@ -53,8 +53,5 @@
         "skipTypeImports": true
       }
     }
-  },
-  "patchedDependencies": {
-    "prettier-plugin-glsl@0.2.1": "patches/prettier-plugin-glsl@0.2.1.patch"
   }
 }
