@@ -1,3 +1,4 @@
+import { Struct } from "!/emit/type"
 import { EntrySet } from "!/exec/item"
 import type { PackageId } from "#/index"
 import type { ToolbarItem } from "#/types"
@@ -207,19 +208,28 @@ export class Sheet {
     // )
 
     const index = btn(faBook, "index", () => {
-      const text = this.factory.env.libJs.fns
+      const structs = this.factory.env.libGl.types
+        .all()
+        .filter((x) => x[1] instanceof Struct && x[0][0] != "_")
+        .map((x) => (x[1] as Struct).declaration(true))
+      let fnCount = 0
+      const fns = this.factory.env.libJs.fns
         .map((x) =>
           x.length == 0 || x[0]!.id.label.startsWith("_") ?
-            []
-          : `${x[0]!.id.label}${x.map((x) => "\n  " + x.toString().slice(x.id.label.length)).join("\n")}`,
+            null
+          : `${x[0]!.id.label}${x.map((x) => (fnCount++, "\n  " + x.toString().slice(x.id.label.length))).join("")}`,
         )
         .filter((x) => x != null)
-        .join("\n")
       const href = URL.createObjectURL(
         new Blob(
           [
-            `// ${this.factory.env.libJs.fns.all().length} functions, ${this.factory.env.libJs.types.all().length} types\n`,
-            text,
+            `// ${structs.length} defined struct types
+
+${structs.join("\n\n")}
+
+// ${fns.length} functions with ${fnCount} overloads
+
+${fns.join("\n\n")}`,
           ],
           { type: "text/plain" },
         ),

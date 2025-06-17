@@ -497,9 +497,12 @@ function ${lident}(${nvFields
     return this.with(this.#fields.map(({ type }) => type.fromScalars(value)))
   }
 
-  declaration() {
+  declaration(nl = false) {
     if (this.#fields.length == 0) {
       return `struct ${this.name} {}`
+    }
+    if (nl) {
+      return `struct ${this.name} {${this.#fields.map((x) => `\n  ${x.name}: ${x.type},`).join("")}\n}`
     }
     return `struct ${this.name} { ${this.#fields.map((x) => `${x.name}: ${x.type}`).join(", ")} }`
   }
