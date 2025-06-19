@@ -1,0 +1,5 @@
+\operatorname{cplot}\operatorname{sin}\left(y+a\right)\left\{y<0\right\}
+a=-5.3
+s=22.41
+P=s\operatorname{forcejs}\left(x-5+0i\operatorname{for}x=\operatorname{iterate}.a^{9}a\to \operatorname{join}\left(a,n\right),n\to n+1\operatorname{from}a=\left[\right],n=1\right)
+\operatorname{total}\left(\operatorname{sin}\left(\left|p-P\right|+a\right)\right)
