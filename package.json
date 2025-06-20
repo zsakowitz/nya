@@ -45,7 +45,15 @@
       "./lang/src/prettier/plugin.js"
     ],
     "experimentalTernaries": true,
-    "proseWrap": "always"
+    "proseWrap": "always",
+    "overrides": [
+      {
+        "files": "lang/src/std/**/*",
+        "options": {
+          "printWidth": 160
+        }
+      }
+    ]
   },
   "madge": {
     "detectiveOptions": {
