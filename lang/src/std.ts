@@ -121,3 +121,35 @@ export function libBasic(api: NyaApi) {
   // @smoothstep(num, num, num)
   // @compiletimelog(any)
 }
+
+/*
+
+type json
+tag json
+type Path
+type Canvas
+to_cv_coords(vec2, Canvas)
+to_cv_delta(vec2, Canvas)
+to_math_coords(vec2, Canvas)
+xmin(Canvas)
+ymin(Canvas)
+xmax(Canvas)
+ymax(Canvas)
+path()
+move_to(Path, vec2)
+line_to(Path, vec2)
+circle(Path, vec2, num)
+ellipse(Path, vec2, vec2)
+ellipse(Path, vec2, num, num)
+stroke_width(Path, num)
+color(Path, vec3)
+stroke_opacity(Path, num)
+fill_opacity(Path, num)
+
+type latex
+tag display
+%display(num)
+%display(bool)
+%display(latex)
+
+ */
