@@ -1,6 +1,6 @@
 import type { ExprLit } from "../ast/node/expr"
 import { bug } from "./error"
-import { Id, type IdGlobal } from "./id"
+import { Id, ident, type IdGlobal } from "./id"
 import type { EmitProps } from "./props"
 import type { Tag } from "./tag"
 import type { Fn, Scalar, Type } from "./type"
@@ -90,7 +90,23 @@ export class Declarations {
   readonly types: IdMap<Type>
   readonly fns: IdMapMany<Fn>
   readonly tags: IdMap<Tag>
-  readonly tyVoid: Scalar
+
+  _tyVoid: Scalar | undefined
+  get tyVoid() {
+    return (this._tyVoid ??= this.types.get(ident("void")) as Scalar)
+  }
+  _tyBool: Scalar | undefined
+  get tyBool() {
+    return (this._tyBool ??= this.types.get(ident("bool")) as Scalar)
+  }
+  _tyNum: Scalar | undefined
+  get tyNum() {
+    return (this._tyNum ??= this.types.get(ident("num")) as Scalar)
+  }
+  _tyLatex: Scalar | undefined
+  get tyLatex() {
+    return (this._tyLatex ??= this.types.get(ident("latex")) as Scalar)
+  }
 
   private readonly source = new Set<string>()
 
@@ -101,14 +117,9 @@ export class Declarations {
   constructor(
     readonly props: EmitProps,
     parent: Declarations | null,
-    void_: Scalar,
-    readonly tyBool: Scalar,
     readonly createLiteral: (literal: ExprLit) => Value,
     readonly toArraySize: (value: Value) => number | null,
-    readonly tyLatex: Scalar,
-    readonly tyNum: Scalar,
   ) {
-    this.tyVoid = void_
     this.types = new IdMap(parent?.types ?? null)
     this.fns = parent?.fns ?? new IdMapMany()
     this.tags = new IdMap(parent?.tags ?? null)

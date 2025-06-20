@@ -178,13 +178,13 @@ fn cdf(dist: UniformDist, at: num) -> num {
   if is_nan(dist.min) || is_nan(dist.max) || is_nan(at) || dist.min > dist.max {
     nan
   } else if is_inf(dist.min) || is_inf(dist.max) {
-    if dist.min == -inf {
-      if at == -inf || dist.max == inf {
+    if dist.min == neg_inf {
+      if at == neg_inf || dist.max == pos_inf {
         nan
       } else {
         1
       }
-    } else if at == inf {
+    } else if at == pos_inf {
       nan
     } else {
       0.0

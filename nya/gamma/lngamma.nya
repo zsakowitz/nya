@@ -80,7 +80,7 @@ fn ln_gamma(x: num) -> num {
 
   if x == 0.0 {
     // limit is positive infinity
-    return inf;
+    return pos_inf;
   }
 
   let is_neg = x < 0.0;
@@ -94,12 +94,12 @@ fn ln_gamma(x: num) -> num {
   if is_neg {
     // it must be a negative integer; limit is positive infinity
     if x >= _ln_gamma_TWO52 {
-      return inf;
+      return pos_inf;
     }
     let t = sin(pi * x);
     // it must be a negative integer; limit is positive infinity
     if t == 0.0 {
-      return inf;
+      return pos_inf;
     }
     nadj = ln(pi / abs(t * x));
   }

@@ -483,7 +483,6 @@ function libLatex(decl: Declarations, num: Scalar, bool: Scalar) {
   }
 
   decl.tags.set(g("display"), createTag(g("display"), idDisplay))
-  decl.types.set(g("latex"), latex)
 }
 
 export function createStdlib(props: EmitProps) {
@@ -543,8 +542,6 @@ export function createStdlib(props: EmitProps) {
   const decl = new Declarations(
     props,
     null,
-    void_,
-    bool,
     (literal) => {
       switch (literal.value.kind) {
         case KTrue:
@@ -573,12 +570,13 @@ export function createStdlib(props: EmitProps) {
 
       return null
     },
-    libLatexScalar(lang),
-    num,
   )
+  decl.types.set(g("void"), void_)
+  const latexScalar = libLatexScalar(lang)
+  decl.types.set(g("latex"), latexScalar)
 
-  const pathLib = libPath(props, num)
   libLatex(decl, num, bool)
+  const pathLib = libPath(props, num)
   for (const v of [num, bool, ...pathLib.types]) {
     decl.types.set(g(v.name), v)
   }
@@ -877,9 +875,12 @@ export function createStdlib(props: EmitProps) {
     }),
 
     // Numeric constants
-    new Fn(g("inf"), [], num, () => new Value(1 / 0, num)),
-    // `inf_unsigned` is a signal to the reader, but is equal to `inf`
-    new Fn(g("inf_unsigned"), [], num, () => new Value(1 / 0, num)),
+    new Fn(g("pos_inf"), [], num, () => new Value(1 / 0, num)),
+    new Fn(g("neg_inf"), [], num, () => new Value(-1 / 0, num)),
+    // `any_inf` is like Wolfram|Alpha's complex infinity. it's equal to
+    // 'pos_inf` for computational simplicity, but its usage is helpful
+    // to a reader
+    new Fn(g("any_inf"), [], num, () => new Value(1 / 0, num)),
     new Fn(g("nan"), [], num, () => new Value(0 / 0, num)),
     new Fn(g("pi"), [], num, () => new Value(Math.PI, num)),
     new Fn(g("e"), [], num, () => new Value(Math.E, num)),

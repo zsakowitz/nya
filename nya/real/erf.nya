@@ -68,11 +68,11 @@ fn erf(x: num) -> num {
     return nan;
   }
   // Special case: +infinity
-  if x == inf {
+  if x == pos_inf {
     return 1.0;
   }
   // Special case: -infinity
-  if x == -inf {
+  if x == neg_inf {
     return -1.0;
   }
   // Special case: +-0
@@ -108,7 +108,7 @@ fn erf(x: num) -> num {
     q = _erf_QAC + s * _erf_polyQA(s);
     return if sign { -_erf_ERX - p / q } else { _erf_ERX + p / q };
   }
-  // +inf > |x| >= 6
+  // +pos_inf > |x| >= 6
   if ax >= 6.0 {
     return if sign { _erf_TINY - 1.0 } else { 1.0 - _erf_TINY };
     // raise inexact
@@ -296,11 +296,11 @@ fn %"erf^-1"(x: num) -> num {
   }
   // Special case: 1
   if x == 1.0 {
-    return inf;
+    return pos_inf;
   }
   // Special case: -1
   if x == -1.0 {
-    return -inf;
+    return neg_inf;
   }
   // Special case: +-0
   if x == 0.0 {

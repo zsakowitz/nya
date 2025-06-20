@@ -18,9 +18,9 @@ fn zeta(x: num) -> num {
     -0.5
   } else if x == 1.0 {
     nan
-  } else if x == inf {
+  } else if x == pos_inf {
     1.0
-  } else if x == -inf || x == nan {
+  } else if x == neg_inf || x == nan {
     nan
   } else if x > -(_zeta_digits - 1) / 2 {
     _zeta_pos(x)

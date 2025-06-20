@@ -30,7 +30,7 @@ fn _polygamma_ge2_posx(n: num, x: num) -> num {
   if x == 0.5 {
     let result = _neg_if_even(n) * %factorial(n) * zeta(n + 1);
     if abs(result) > ldexp(MAX, -n - 1) {
-      return if sign(result) == 1 { inf } else { -inf };
+      return if sign(result) == 1 { pos_inf } else { neg_inf };
       // TODO: check sign
     }
     return result * ldexp(1.0, n + 1) - 1.0;
@@ -55,7 +55,7 @@ fn polygamma(n: num, x: num) -> num {
 
   if x < 0.0 {
     if x == floor(x) {
-      return inf_unsigned;
+      return any_inf;
     }
     let result = _polygamma_ge2_posx(n, x) + pi * polycotpi(n, 1.0 - x, x);
     if is_even(n) {

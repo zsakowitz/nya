@@ -35,7 +35,7 @@ fn digamma(x: num) -> num {
     return nan;
   }
   if x == 0.0 {
-    return inf_unsigned;
+    return any_inf;
   }
 
   let mut x = x;
@@ -43,7 +43,7 @@ fn digamma(x: num) -> num {
     x = 1.0 - x;
     let rem = x - round(x);
     if rem == 0.0 {
-      return inf_unsigned;
+      return any_inf;
     }
     pi / tan(pi * rem)
   } else {

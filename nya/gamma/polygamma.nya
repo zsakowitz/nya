@@ -12,7 +12,7 @@ fn polygamma(n: num, x: num) -> num {
     // TODO: wolfram|alpha defines non-nan values; we should copy them
     nan
   } else if x == floor(x) {
-    inf_unsigned
+    any_inf
   } else {
     nan
   }

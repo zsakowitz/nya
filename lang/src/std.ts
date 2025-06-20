@@ -77,18 +77,14 @@ export function libBasic(api: NyaApi) {
   // ~=
 
   // Mathematical constants
-  // api.f1("pos_inf", {}, num, v`1./0.`)
-  // api.f1("neg_inf", {}, num, v`-1./0.`)
-  // api.f1("any_inf", {}, num, v`1./0.`)
+  api.f1("pos_inf", {}, num, v`1./0.`)
+  api.f1("neg_inf", {}, num, v`-1./0.`)
+  api.f1("any_inf", {}, num, v`1./0.`)
   api.f1("unsigned_inf", {}, num, v`1./0.`) // TODO: replace with signed infinities
   api.f1("inf", {}, num, v`1./0.`) // TODO: replace with signed infinities
   api.f1("nan", {}, num, v`0./0.`)
   api.f1("pi", {}, num, v`${Math.PI}`)
   api.f1("e", {}, num, v`${Math.E}`)
-  api.fn("epsilon", {}, num, {
-    glsl: v`1.1920928955078125e-7`,
-    js: v`${Number.EPSILON}`,
-  })
 
   // Numeric checks
   api.fn("is_inf", { value: num }, bool, {
