@@ -1,4 +1,4 @@
-import type { Lang } from "!/emit/props"
+import { EmitProps, type Lang } from "!/emit/props"
 import { SCRIPTS, type ScriptName } from "#/script-index"
 import { Chunk, Issues } from "../ast/issue"
 import { ItemUse } from "../ast/node/item"
@@ -22,8 +22,8 @@ function extractDepName(item: ItemUse) {
 }
 
 export class ScriptEnvironment {
-  readonly libGl = createStdlib({ lang: "glsl" })
-  readonly libJs = createStdlib({ lang: "js" })
+  readonly libGl = createStdlib(new EmitProps("glsl"))
+  readonly libJs = createStdlib(new EmitProps("js"))
   private mainGl = ""
   private mainJs = ""
   private readonly issues = new Issues()

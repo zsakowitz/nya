@@ -908,7 +908,14 @@ export function print(node: Node | Token<number>, sb: Subprint): Doc {
       ]
     }
     case ItemUse:
-      return [sb("kw"), " ", sb("source"), sb.alt("semi", ";")]
+      return [
+        sb("kw"),
+        " ",
+        sb.opt("extern"),
+        (node as ItemUse).extern ? " " : "",
+        sb("source"),
+        sb.alt("semi", ";"),
+      ]
     case ItemEnum:
       const v = (node as ItemEnum).variants
       if (v) {

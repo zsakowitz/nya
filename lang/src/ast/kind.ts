@@ -53,99 +53,100 @@ export const KTypeof = 49
 export const KMap = 50
 export const KCall = 51
 export const KPackage = 52
+export const KExtern = 53
 
 // operators prefixed with @
-export const APlus = 53
-export const AMinus = 54
-export const AMinusUnary = 55 // replaces AMinus if in an ExprUnary
-export const AStar = 56
-export const ASlash = 57
-export const ACarat = 58
-export const ATildeUnary = 59
-export const ABar = 60
-export const AAmp = 61
-export const ABarBar = 62
-export const AAmpAmp = 63
-export const AAt = 64
-export const ABackslash = 65
-export const AEqEq = 66
-export const ANe = 67
-export const ALe = 68
-export const AGe = 69
-export const ALt = 70
-export const AGt = 71
-export const ABangUnary = 72
-export const ALParen = 73
-export const ARParen = 74
-export const ALBrack = 75
-export const ARBrack = 76
-export const ALBrace = 77
-export const ARBrace = 78
-export const ALAngle = 79
-export const ARAngle = 80
-export const ALInterp = 81
-export const ASemi = 82
-export const AComma = 83
-export const AColon = 84
-export const AArrowRet = 85
-export const AArrowMap = 86
-export const AColonColon = 87
-export const ADot = 88
-export const ADotDot = 89
-export const APercent = 90
-export const AEq = 91
-export const ATildeEq = 92
-export const AHash = 93
+export const APlus = 60
+export const AMinus = 61
+export const AMinusUnary = 62 // replaces AMinus if in an ExprUnary
+export const AStar = 63
+export const ASlash = 64
+export const ACarat = 65
+export const ATildeUnary = 66
+export const ABar = 67
+export const AAmp = 68
+export const ABarBar = 69
+export const AAmpAmp = 70
+export const AAt = 71
+export const ABackslash = 72
+export const AEqEq = 73
+export const ANe = 74
+export const ALe = 75
+export const AGe = 76
+export const ALt = 77
+export const AGt = 78
+export const ABangUnary = 79
+export const ALParen = 80
+export const ARParen = 81
+export const ALBrack = 82
+export const ARBrack = 83
+export const ALBrace = 84
+export const ARBrace = 85
+export const ALAngle = 86
+export const ARAngle = 87
+export const ALInterp = 88
+export const ASemi = 89
+export const AComma = 90
+export const AColon = 91
+export const AArrowRet = 92
+export const AArrowMap = 93
+export const AColonColon = 94
+export const ADot = 95
+export const ADotDot = 96
+export const APercent = 97
+export const AEq = 98
+export const ATildeEq = 99
+export const AHash = 100
 
 // operators not prefixed with @
-export const OPlus = 94
-export const OMinus = 95
-export const OMinusUnary = 96 // replaces OMinus if in an ExprUnary
-export const OStar = 97
-export const OSlash = 98
-export const OCarat = 99
-export const OTildeUnary = 100
-export const OBar = 101
-export const OAmp = 102
-export const OBarBar = 103
-export const OAmpAmp = 104
-export const OAt = 105
-export const OBackslash = 106
-export const OEqEq = 107
-export const ONe = 108
-export const OLe = 109
-export const OGe = 110
-export const OLt = 111
-export const OGt = 112
-export const OBangUnary = 113
-export const OLParen = 114
-export const ORParen = 115
-export const OLBrack = 116
-export const ORBrack = 117
-export const OLBrace = 118
-export const ORBrace = 119
-export const OLAngle = 120
-export const ORAngle = 121
-export const OLInterp = 122
-export const OLRawInterp = 123
-export const OSemi = 124
-export const OComma = 125
-export const OColon = 126
-export const OArrowRet = 127
-export const OArrowMap = 128
-export const OColonColon = 129
-export const ODot = 130
-export const ODotDot = 131
-export const OPercent = 132
-export const OEq = 133
-export const OTildeEq = 134
-export const OHash = 135
-export const ODotDotDot = 136
+export const OPlus = 101
+export const OMinus = 102
+export const OMinusUnary = 103 // replaces OMinus if in an ExprUnary
+export const OStar = 104
+export const OSlash = 105
+export const OCarat = 106
+export const OTildeUnary = 107
+export const OBar = 108
+export const OAmp = 109
+export const OBarBar = 110
+export const OAmpAmp = 111
+export const OAt = 112
+export const OBackslash = 113
+export const OEqEq = 114
+export const ONe = 115
+export const OLe = 116
+export const OGe = 117
+export const OLt = 118
+export const OGt = 119
+export const OBangUnary = 120
+export const OLParen = 121
+export const ORParen = 122
+export const OLBrack = 123
+export const ORBrack = 124
+export const OLBrace = 125
+export const ORBrace = 126
+export const OLAngle = 127
+export const ORAngle = 128
+export const OLInterp = 129
+export const OLRawInterp = 130
+export const OSemi = 131
+export const OComma = 132
+export const OColon = 133
+export const OArrowRet = 134
+export const OArrowMap = 135
+export const OColonColon = 136
+export const ODot = 137
+export const ODotDot = 138
+export const OPercent = 139
+export const OEq = 140
+export const OTildeEq = 141
+export const OHash = 142
+export const ODotDotDot = 143
 
-export const RTag = 137 // in latex#"world${2+3}hi"#, the 'latex'
-export const RString = 138 // in latex#"world${2+3}hi"#, the 'world' and 'hi'
-export const RInterp = 139 // in latex#"world${2+3}hi"#, the '2+3'
-export const RTerminal = 140 // in latex#"world${2+3}hi"#, an invisible marker after the final hash
+export const RTag = 144 // in latex#"world${2+3}hi"#, the 'latex'
+export const RString = 145 // in latex#"world${2+3}hi"#, the 'world' and 'hi'
+export const RInterp = 146 // in latex#"world${2+3}hi"#, the '2+3'
+export const RTerminal = 147 // in latex#"world${2+3}hi"#, an invisible marker after the final hash
 
 export type Brack =
   | typeof OLParen
@@ -196,6 +197,7 @@ export const KWS: Record<string, number> = {
   map: KMap,
   call: KCall,
   package: KPackage,
+  extern: KExtern,
   _: TIgnore,
 }
 
@@ -519,6 +521,7 @@ export const OP_TEXT: Record<number, string> = {
   [KMap]: "map",
   [KCall]: "call",
   [KPackage]: "package",
+  [KExtern]: "extern",
   [ODotDotDot]: "...",
 }
 

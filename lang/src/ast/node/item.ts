@@ -4,6 +4,7 @@ import type {
   KData,
   KEnum,
   KExpose,
+  KExtern,
   KFn,
   KLet,
   KLocal,
@@ -115,6 +116,7 @@ export class ItemRule extends NodeItem {
 export class ItemUse extends NodeItem {
   constructor(
     readonly kw: Token<typeof KUse>,
+    readonly extern: Token<typeof KExtern> | null,
     readonly source: Token<typeof TString> | null,
     readonly semi: Token<typeof OSemi> | null,
   ) {

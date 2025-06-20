@@ -1,4 +1,5 @@
 import type { ExprLit } from "../ast/node/expr"
+import { bug } from "./error"
 import { Id, type IdGlobal } from "./id"
 import type { EmitProps } from "./props"
 import type { Tag } from "./tag"
@@ -35,6 +36,17 @@ export class IdMap<T> {
     return (this.map[id.value] = value)
   }
 
+  setOrThrow(
+    id: IdGlobal,
+    value: T,
+    message = `'${id.label}' is already defined.`,
+  ) {
+    if (!this.canDefine(id)) {
+      bug(message)
+    }
+    this.map[id.value] = value
+  }
+
   set(id: IdGlobal, value: T) {
     this.map[id.value] = value
   }
@@ -61,6 +73,16 @@ export class IdMapMany<T> {
 
   mapEach<U>(f: (items: T, index: number, array: T[]) => U): U[] {
     return Object.values(this.rec).flat().map(f)
+  }
+}
+
+export class Globals {
+  constructor(readonly props: EmitProps) {}
+
+  private readonly source = new Set<string>()
+
+  global(text: string) {
+    this.source.add(text)
   }
 }
 

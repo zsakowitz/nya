@@ -37,6 +37,7 @@ import {
   KElse,
   KEnum,
   KExpose,
+  KExtern,
   KFalse,
   KFn,
   KFor,
@@ -1464,6 +1465,7 @@ function itemUse(stream: Stream) {
 
   return new ItemUse(
     kw,
+    stream.match(KExtern),
     stream.matchOr(TString, Code.ExpectedImportPath),
     stream.matchOr(OSemi, Code.MissingSemi),
   )
