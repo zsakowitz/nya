@@ -324,9 +324,7 @@ export function libLatex(api: NyaApi) {
             return new Value(
               text
                 .map((x, i) =>
-                  i == 0 ? x : (
-                    (results[i - 1]!.value as { data: string }).data + x
-                  ),
+                  i == 0 ? x : (results[i - 1]!.value as string) + x,
                 )
                 .join(""),
               latex,
