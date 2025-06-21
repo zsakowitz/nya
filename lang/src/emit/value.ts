@@ -1,7 +1,12 @@
 import { bug } from "./error"
 import type { Type } from "./type"
 
-export type ConstValue = number | boolean | { data: unknown } | ConstValue[]
+export type ConstValue =
+  | number
+  | boolean
+  | { data: unknown }
+  | ConstValue[]
+  | string
 
 export class Value {
   readonly _const

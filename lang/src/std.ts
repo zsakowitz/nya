@@ -1,13 +1,16 @@
 import { Impl, NyaApi, v } from "!/emit/api"
-import { Declarations } from "./emit/decl"
-import { bug } from "./emit/error"
-import { EmitProps } from "./emit/props"
+import { performCall } from "./emit/emit"
+import { issue } from "./emit/error"
+import { Id, ident, type IdGlobal } from "./emit/id"
+import { Tag } from "./emit/tag"
+import { Fn } from "./emit/type"
+import { Value } from "./emit/value"
 
 export function libBasic(api: NyaApi) {
-  const num = api.createVector("num", "float", true)
-  const bool = api.createVector("bool", "bool", true)
-  api.createVector("sym", "symint", true)
-  api.createOpaque("void", { glsl: null, js: null })
+  const num = api.scalar("num", "float", true)
+  const bool = api.scalar("bool", "bool", true)
+  api.scalar("sym", "symint", true)
+  api.opaque("void", { glsl: null, js: null })
 
   // Basic numeric operators
   for (const op of "+-*/")
@@ -86,13 +89,13 @@ export function libBasic(api: NyaApi) {
   api.f1("unsigned_inf", {}, num, v`1./0.`) // TODO: replace with signed infinities
   api.f1("inf", {}, num, v`1./0.`) // TODO: replace with signed infinities
   api.f1("nan", {}, num, v`0./0.`)
-  api.f1("pi", {}, num, v`${Math.PI}`)
-  api.f1("e", {}, num, v`${Math.E}`)
+  api.f1("pi", {}, num, v`${"" + Math.PI}`)
+  api.f1("e", {}, num, v`${"" + Math.E}`)
 
   // Numeric checks
   api.fn("is_inf", { value: num }, bool, {
     glsl: v`isinf(${0})`,
-    js: v`${`function %%(x){return x===1/0||x===-1/0}`}(${0})1/${0}==0`,
+    js: v`${`function %%(x){return x===1/0||x===-1/0}`}(${0})`,
   })
   api.fn("is_nan", { value: num }, bool, {
     glsl: v`isnan(${0})`,
@@ -121,40 +124,240 @@ export function libBasic(api: NyaApi) {
   // @compiletimelog(any)
 }
 
-const lib = new NyaApi(
-  new Declarations(
-    new EmitProps("glsl"),
-    null,
-    () => bug(`not suppored`),
-    () => null,
-  ),
-)
+export interface NyaCanvas {
+  sx: number
+  sy: number
+  ox: number
+  oy: number
+  x0: number
+  x1: number
+  y0: number
+  y1: number
+  wx: number
+  wy: number
+}
 
-const num = lib.createVector("num", "float", true)
-lib.fn("floor", { lhs: num }, num, {
-  glsl: v`floor(${0})`,
-  js: v`${"const %%=Math.floor"}(${0})`,
-})
+export function libCanvas(api: NyaApi) {
+  const num = api.lib.tyNum
+
+  const Canvas = api.opaque("Canvas", {
+    glsl: null,
+    js: `interface %% { ${"sx sy ox oy x0 x1 y0 y1 wx wy"
+      .split(" ")
+      .map((x) => x + ": number")
+      .join(", ")} }`,
+  })
+
+  const CanvasPoint = api.opaque("CanvasPoint", {
+    glsl: null,
+    js: `interface %% { x: number, y: number }`,
+  })
+
+  const CanvasDelta = api.opaque("CanvasDelta", {
+    glsl: null,
+    js: `interface %% { x: number, y: number }`,
+  })
+
+  api.fn("point_at", { cv: Canvas, x: num, y: num }, CanvasPoint, {
+    glsl: null,
+    js: v`${"function %%(cv,x,y){return {x:cv.sx*x+cv.ox,y:cv.sy*y+cv.oy}}"}(${0},${1},${2})`,
+  })
+
+  api.fn("delta_by", { cv: Canvas, d: num }, CanvasDelta, {
+    glsl: null,
+    js: v`${"function %%(cv,d){return {x:cv.sx*d,y:cv.sy*d}}"}(${0},${1})`,
+  })
+
+  api.fn("delta_by", { cv: Canvas, dx: num, dy: num }, CanvasDelta, {
+    glsl: null,
+    js: v`${"function %%(cv,x,y){return {x:cv.sx*x,y:cv.sy*y}}"}(${0},${1},${2})`,
+  })
+
+  // TODO: have a better glsl value
+  api.fn("xmin", { cv: Canvas }, num, { glsl: v`0./0.`, js: v`${0}.x0` })
+  api.fn("xmax", { cv: Canvas }, num, { glsl: v`0./0.`, js: v`${0}.x1` })
+  api.fn("ymin", { cv: Canvas }, num, { glsl: v`0./0.`, js: v`${0}.y0` })
+  api.fn("ymax", { cv: Canvas }, num, { glsl: v`0./0.`, js: v`${0}.y1` })
+
+  const Path = api.opaque("Path", {
+    glsl: null,
+    js: "string",
+  })
+
+  api.fn("path", {}, Path, { glsl: null, js: v`new Path2D()` }, false)
+  api.fn("move_to", { path: Path, to: CanvasPoint }, Path, {
+    glsl: null,
+    js: v`${"function %%(path,pt){path.moveTo(pt.x,pt.y);return path}"}(${0},${1})`,
+  })
+  api.fn("line_to", { path: Path, to: CanvasPoint }, Path, {
+    glsl: null,
+    js: v`${"function %%(path,pt){path.lineTo(pt.x,pt.y);return path}"}(${0},${1})`,
+  })
+  api.fn("circle", { path: Path, center: CanvasPoint, radius: num }, Path, {
+    glsl: null,
+    js: v`${`function %%(path,c,r){path.ellipse(c.x,c.y,r,r,0,0,${2 * Math.PI});return path}`}(${0},${1},${2})`,
+  })
+  api.fn(
+    "ellipse",
+    { path: Path, center: CanvasPoint, radii: CanvasDelta },
+    Path,
+    {
+      glsl: null,
+      js: v`${`function %%(path,c,r){path.ellipse(c.x,c.y,r.x,r.y,0,0,${2 * Math.PI});return path}`}(${0},${1},${2})`,
+    },
+  )
+}
+
+export function libLatex(api: NyaApi) {
+  const latex = api.opaque("latex", { glsl: null, js: "string" })
+  latex.toRuntime = (v) => v as any as string
+
+  const decl = api.lib
+  const num = decl.tyNum
+  const bool = decl.tyBool
+  const fns = decl.fns
+  const lang = decl.props.lang
+
+  const idDisplay = ident("%display")
+
+  // `num` %display
+  {
+    // TODO: this should get shorter the deeper it is; 2.349834+3.3498734i takes up too much space in a displayed list
+    const fLatexHelper = (x: number): string => {
+      if (x != x) return "\\wordvar{undefined}"
+      if (x == 1 / 0) return "\\infty"
+      if (x == -1 / 0) return "-\\infty"
+      let str = x.toPrecision(8)
+      const expIndex = str.indexOf("e")
+      let exp = ""
+      if (expIndex != -1) {
+        const power = str.slice(expIndex + 1).replace(/^\+/, "")
+        str = str.slice(0, expIndex)
+        exp = "\\times10^{" + power + "}"
+      }
+      if (str.includes(".")) {
+        str = str.replace(/\.?0*$/, "")
+      }
+      return str + exp
+    }
+
+    const idLatexHelper = new Id("%display(x: num) -> latex").ident()
+    const fnLatexHelper = `const ${idLatexHelper}=${fLatexHelper};` // TODO: Function.prototype.toString is scary
+
+    fns.push(
+      idDisplay,
+      new Fn(
+        idDisplay,
+        [{ name: "value", type: num }],
+        latex,
+        lang == "glsl" ?
+          () => new Value(0, latex, true)
+        : ([v]) =>
+            new Value(
+              v!.const() ?
+                fLatexHelper(v.value as number)
+              : (decl.global(fnLatexHelper),
+                `${idLatexHelper}(${v!.toRuntime()})`),
+              latex,
+              v!.const(),
+            ),
+      ),
+    )
+  }
+
+  // `bool` %display
+  {
+    const idLatexHelper = new Id("%display(x: bool) -> latex").ident()
+    const fnLatexHelper = `function ${idLatexHelper}(v){return '\\\\wordvar{'+v+'}'}`
+    // prettier-ignore
+    function fLatexHelper(v: boolean)                  {return   '\\wordvar{'+v+'}'}
+
+    const f =
+      lang == "glsl" ?
+        () => new Value(0, latex, true)
+      : ([v]: Value[]) =>
+          new Value(
+            v!.const() ?
+              fLatexHelper(v.value as boolean)
+            : (decl.global(fnLatexHelper),
+              `${idLatexHelper}(${v!.toRuntime()})`),
+            latex,
+            v!.const(),
+          )
+    fns.push(
+      idDisplay,
+      new Fn(idDisplay, [{ name: "value", type: bool }], latex, f),
+    )
+  }
+
+  // `latex` %display
+  {
+    fns.push(
+      idDisplay,
+      new Fn(idDisplay, [{ name: "value", type: latex }], latex, (x) => x[0]!),
+    )
+  }
+
+  function createTag(tagIdent: IdGlobal, fnIdent: IdGlobal) {
+    return new Tag(
+      tagIdent,
+      lang == "glsl" ?
+        () => new Value(0, latex, true)
+      : (text, interps, interpsPos, block) => {
+          const results = interps.map((x, i) => {
+            const result = performCall(
+              fnIdent,
+              block,
+              [x],
+              interpsPos[i]!,
+              interpsPos[i]!,
+            )
+            if (result.type == latex) {
+              return result
+            }
+            issue(
+              `The '${tagIdent.label}' tag cannot be used if calling %display on any interpolation does not return LaTeX.`,
+            )
+          })
+
+          if (results.every((x) => x.const())) {
+            return new Value(
+              text
+                .map((x, i) =>
+                  i == 0 ? x : (
+                    (results[i - 1]!.value as { data: string }).data + x
+                  ),
+                )
+                .join(""),
+              latex,
+              true,
+            )
+          }
+
+          return new Value(
+            text
+              .map((x, i) =>
+                i == 0 ?
+                  JSON.stringify(x)
+                : results[i - 1]!.toRuntime()! + "+" + JSON.stringify(x),
+              )
+              .join("+"),
+            latex,
+            false,
+          )
+        },
+    )
+  }
+
+  decl.tags.set(ident("display"), createTag(ident("display"), idDisplay))
+}
 
 /*
 
 type json
 tag json
+
 type Path
-type Canvas
-to_cv_coords(vec2, Canvas)
-to_cv_delta(vec2, Canvas)
-to_math_coords(vec2, Canvas)
-xmin(Canvas)
-ymin(Canvas)
-xmax(Canvas)
-ymax(Canvas)
-path()
-move_to(Path, vec2)
-line_to(Path, vec2)
-circle(Path, vec2, num)
-ellipse(Path, vec2, vec2)
-ellipse(Path, vec2, num, num)
 stroke_width(Path, num)
 color(Path, vec3)
 stroke_opacity(Path, num)

@@ -3,7 +3,7 @@ import type { Declarations } from "./decl"
 import { bug, issue } from "./error"
 import { Id, ident } from "./id"
 import type { EmitProps, Lang } from "./props"
-import { Fn, Scalar, type FnParam, type Type } from "./type"
+import { Fn, Scalar, type FnParam, type FnType, type Type } from "./type"
 import { Value } from "./value"
 
 const NAME = /^[A-Za-z]\w*$/
@@ -58,7 +58,7 @@ export class NyaApi {
         (v) => [v]
       : () => bug(`Type '${name}' cannot be used as a set of scalars.`),
       convertableToScalars ?
-        ([v]) => v!
+        (v) => v.pop()!
       : () => bug(`Type '${name}' cannot be used as a set of scalars.`),
     )
     this.lib.types.setOrThrow(id, type)
@@ -154,7 +154,7 @@ export class NyaApi {
    */
   f1(
     name: string,
-    params: Record<string, Type>,
+    params: Record<string, FnType>,
     ret: Type,
     impl: ScriptingInterfaceFnImpl | null,
     implConst: ScriptingInterfaceFnImpl | null = impl,
@@ -240,7 +240,7 @@ export class NyaApi {
    */
   fn(
     name: string,
-    params: Record<string, Type>,
+    params: Record<string, FnType>,
     ret: Type,
     impls: Record<Lang, ScriptingInterfaceFnImpl | null>,
     addConstTimeImpl = true,

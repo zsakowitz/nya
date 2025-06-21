@@ -77,10 +77,10 @@ export class Scalar implements Type {
     readonly name: string,
     readonly emit: string,
     readonly repr: Repr,
-    readonly toRuntime: (value: ConstValue) => string | null,
-    readonly toScalars: (value: Value) => Value[],
+    public toRuntime: (value: ConstValue) => string | null,
+    public toScalars: (value: Value) => Value[],
     /** Should pop values from the end as needed. */
-    readonly fromScalars: (value: Value[]) => Value,
+    public fromScalars: (value: Value[]) => Value,
   ) {}
 
   toString() {
