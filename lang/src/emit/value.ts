@@ -38,12 +38,12 @@ export class Value {
     return this._const
   }
 
-  toRuntime() {
-    if (typeof this.value == "string" || this.value == null) {
-      return this.value
+  toRuntime(): string | null {
+    if (this.const()) {
+      return this.type.toRuntime(this.value)
+    } else {
+      return this.value as string | null
     }
-
-    return this.type.toRuntime(this.value)
   }
 
   toString(): string {

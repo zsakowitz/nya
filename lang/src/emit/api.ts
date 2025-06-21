@@ -1,12 +1,15 @@
 import { OP_TEXT, OVERLOADABLE } from "!/ast/kind"
-import type { Declarations } from "./decl"
+import { AnyVector } from "./broadcast"
+import type { Block, Declarations } from "./decl"
 import { bug, issue } from "./error"
 import { Id, ident } from "./id"
 import type { EmitProps, Lang } from "./props"
+import type { GlslScalar, ReprVec } from "./repr"
 import { Fn, Scalar, type FnParam, type FnType, type Type } from "./type"
 import { Value } from "./value"
 
 const NAME = /^[A-Za-z]\w*$/
+const NAME_FN = /^@?[A-Za-z]\w*$/
 
 function validateTypeName(name: string) {
   if (!NAME.test(name)) {
@@ -23,7 +26,15 @@ function validateVarName(name: string) {
 const overloadableNames = OVERLOADABLE.map((x) => OP_TEXT[x] ?? "")
 
 function validateFnName(name: string) {
-  if (!(name && (overloadableNames.includes(name) || NAME.test(name)))) {
+  if (
+    !(
+      name &&
+      ((name[0] == "@" ?
+        overloadableNames.includes(name.slice(1))
+      : overloadableNames.includes(name)) ||
+        NAME_FN.test(name))
+    )
+  ) {
     bug(`'${name}' is not a valid function name.`)
   }
 }
@@ -141,6 +152,53 @@ export class NyaApi {
     return s
   }
 
+  private _fText(
+    impl: ScriptingInterfaceFnImpl,
+    values: readonly string[],
+    block: Block,
+    ret: Type,
+  ): Value {
+    const { sideEffects, globals, texts, args: params } = impl
+    const max = texts.length - 1
+
+    if (globals) {
+      this.lib.global(globals)
+    }
+    let text = ""
+    for (let i = 0; i < max; i++) {
+      text += texts[i]!
+      text += values[params[i]!]!
+    }
+    text += texts[max]!
+    if (sideEffects) {
+      if (!block) {
+        bug(
+          `Tried to call side-effecting function implementation but no output block was provided.`,
+        )
+      }
+      block.source += text
+      return new Value(0, ret, true)
+    } else {
+      return new Value(text, ret, false)
+    }
+  }
+
+  private _f(
+    impl: ScriptingInterfaceFnImpl,
+    values: Value[],
+    block: Block,
+    ret: Type,
+  ): Value {
+    return this._fText(
+      impl,
+      impl.cacheArgs ?
+        values.map((x) => block.cache(x, true).toString())
+      : values.map((x) => x.toString()),
+      block,
+      ret,
+    )
+  }
+
   /**
    * Declares a function.
    *
@@ -172,7 +230,9 @@ export class NyaApi {
     if (impl == null) {
       // `implConst` is ignored if there is no base impl
       if (ret.repr.type == "void") {
-        return new Fn(id, fnParams, ret, () => new Value(0, ret, true))
+        const f = new Fn(id, fnParams, ret, () => new Value(0, ret, true))
+        this.lib.fns.push(id, f)
+        return
       } else {
         bug(
           `'${name}' has a void implementation but returns non-void type '${ret}'.`,
@@ -200,32 +260,12 @@ export class NyaApi {
       fConst = (0, eval)(source) as (...args: any[]) => any
     }
 
-    const { sideEffects, globals, texts, args, cacheArgs } = impl
-    const max = texts.length - 1
-
     const f = new Fn(id, fnParams, ret, (values, block) => {
       if (implConst && values.every((x) => x.const())) {
         const val = fConst!(...values.map((x) => x.value))
         return new Value(val, ret, true)
       }
-      if (globals) {
-        this.lib.global(globals)
-      }
-      let text = ""
-      if (cacheArgs) {
-        values = values.map((x) => block.cache(x, true))
-      }
-      for (let i = 0; i < max; i++) {
-        text += texts[i]!
-        text += values[args[i]!]!.toString()
-      }
-      text += texts[max]!
-      if (sideEffects) {
-        block.source += text
-        return new Value(0, ret, true)
-      } else {
-        return new Value(text, ret, false)
-      }
+      return this._f(impl, values, block, ret)
     })
 
     this.lib.fns.push(id, f)
@@ -253,9 +293,168 @@ export class NyaApi {
       addConstTimeImpl ? impls.js : null,
     )
   }
+
+  /**
+   * Creates a broadcasting function like + or clamp(), which broadcast across
+   * vectors.
+   */
+  fb(
+    name: string,
+    params: Record<string, GlslScalar | FnType>,
+    ret: GlslScalar,
+    impls: {
+      js1: ScriptingInterfaceFnImpl
+      glslN: ScriptingInterfaceFnImpl
+    },
+  ) {
+    validateFnName(name)
+    const id = ident(name)
+
+    const fnParams: FnParam[] = []
+    const broadcast = new Set<number>()
+    let i = 0
+    for (const name in params) {
+      if (!hasOwn(params, name)) continue
+      validateVarName(name)
+      const raw = params[name]!
+      const type =
+        typeof raw == "string" ? (broadcast.add(i), new AnyVector(raw)) : raw
+      fnParams.push({ name, type })
+      i++
+    }
+
+    if (broadcast.size == 0) {
+      bug(
+        `Broadcasting function '${name}' does not take any broadcastable arguments.`,
+      )
+    }
+
+    const fn = new Fn(id, fnParams, new AnyVector(ret), (args, block) => {
+      const v: Value[] = args.map((x) => block.cache(x, true))
+      let retType: Type | undefined
+      for (let i = 0; i < args.length; i++) {
+        const arg = args[i]!
+        if (broadcast.has(i)) {
+          const s = arg.type.repr as ReprVec
+          if (s.count != 1) {
+            if (retType == null) {
+              retType = arg.type
+            } else if (retType != arg.type) {
+              issue(
+                `Multi-value arguments to '${name}' must all be of the same type.`,
+              )
+            }
+          }
+        }
+      }
+
+      if (retType == null) {
+        issue(
+          `'${name}' should be called with at least one multi-value struct.`,
+        )
+      }
+      if (this.lib.props.lang == "glsl") {
+        return this._f(impls.glslN, v, block, retType)
+      } else {
+        const vals = v.map((x, i) =>
+          broadcast.has(i) ? retType.toScalars(x) : x,
+        )
+        return retType.fromScalars(
+          Array.from({ length: (retType.repr as ReprVec).count }, (_, i) =>
+            this._f(
+              impls.js1,
+              vals.map((x) => (Array.isArray(x) ? x[i]! : x)),
+              block,
+              null!,
+            ),
+          ),
+        )
+      }
+    })
+    this.lib.fns.push(id, fn)
+  }
+
+  /**
+   * Creates a debroadcasting function like norm() and length(), which condense
+   * many values into one.
+   */
+  fu(
+    name: string,
+    params: Record<string, GlslScalar | FnType>,
+    ret: Type,
+    impls: {
+      glsl: ScriptingInterfaceFnImpl
+      js2: ScriptingInterfaceFnImpl
+      js3: ScriptingInterfaceFnImpl
+      js4: ScriptingInterfaceFnImpl
+    },
+  ) {
+    validateFnName(name)
+    const id = ident(name)
+
+    const fnParams: FnParam[] = []
+    const broadcast = new Set<number>()
+    let i = 0
+    for (const name in params) {
+      if (!hasOwn(params, name)) continue
+      validateVarName(name)
+      const raw = params[name]!
+      const type =
+        typeof raw == "string" ? (broadcast.add(i), new AnyVector(raw)) : raw
+      fnParams.push({ name, type })
+      i++
+    }
+
+    if (broadcast.size == 0) {
+      bug(
+        `Broadcasting function '${name}' does not take any broadcastable arguments.`,
+      )
+    }
+
+    const fn = new Fn(id, fnParams, ret, (args, block) => {
+      const v: Value[] = args.map((x) => block.cache(x, true))
+      let vecType: Type | undefined
+      for (let i = 0; i < args.length; i++) {
+        const arg = args[i]!
+        if (broadcast.has(i)) {
+          const s = arg.type.repr as ReprVec
+          if (s.count != 1) {
+            if (vecType == null) {
+              vecType = arg.type
+            } else if (vecType != arg.type) {
+              issue(
+                `Multi-value arguments to '${name}' must all be of the same type.`,
+              )
+            }
+          }
+        }
+      }
+
+      if (vecType == null) {
+        issue(
+          `'${name}' should be called with at least one multi-value struct.`,
+        )
+      }
+
+      if (this.lib.props.lang == "glsl") {
+        return this._f(impls.glsl, v, block, ret)
+      }
+
+      const impl = impls[`js${(vecType.repr as ReprVec).count as 2 | 3 | 4}`]
+      return this._fText(
+        impl,
+        v.map((x, i) =>
+          broadcast.has(i) ? x.toScalars().join(`),(`) : x.toString(),
+        ),
+        block,
+        ret,
+      )
+    })
+    this.lib.fns.push(id, fn)
+  }
 }
 
-export type FnInterp = string | `${string}%%${string}` | 0 | 1 | 2
+export type FnInterp = string | `${string}%%${string}` | 0 | 1 | 2 | 3
 
 function f(
   sideEffects: boolean,

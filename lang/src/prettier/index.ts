@@ -40,7 +40,7 @@ export function printVanilla(node: Node, source: string) {
       }
     }
 
-    throw new Error("invalid token")
+    throw new Error("invalid token:: " + next)
   }
 
   function sp(k: keyof any): Doc {

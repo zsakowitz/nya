@@ -70,10 +70,8 @@ fn %abs(a: Point) -> num {
 }
 
 fn %plot(cv: Canvas, p: Point) -> Path {
-  path
-    .circle(p.to_cv_coords(cv), 4.0)
-    .color(dcg_purple)
-    .fill_opacity(1.0)
+  // purple, full opacity 1.0
+  path.circle(cv.point_at(p.x, p.y), 4.0)
 }
 
 // TODO: debugpoint, screendistance, point

@@ -1,4 +1,5 @@
-import { Impl, NyaApi, v } from "!/emit/api"
+import { Impl, type NyaApi, v } from "!/emit/api"
+import { AnyVector, fromScalars, scalars } from "./emit/broadcast"
 import { performCall } from "./emit/emit"
 import { issue } from "./emit/error"
 import { Id, ident, type IdGlobal } from "./emit/id"
@@ -6,7 +7,7 @@ import { Tag } from "./emit/tag"
 import { Fn } from "./emit/type"
 import { Value } from "./emit/value"
 
-export function libBasic(api: NyaApi) {
+export function libNumBool(api: NyaApi) {
   const num = api.scalar("num", "float", true)
   const bool = api.scalar("bool", "bool", true)
   api.scalar("sym", "symint", true)
@@ -40,6 +41,10 @@ export function libBasic(api: NyaApi) {
     api.fn(op, { value: num }, num, {
       glsl: v`${op}(${0})`,
       js: v`${`const %%=Math.${op}`}(${0})`,
+    })
+    api.fb("@" + op, { value: "float" }, "float", {
+      glslN: v`${op}(${0})`,
+      js1: v`${`const %%=Math.${op}`}(${0})`,
     })
   }
   api.fn("ln", { value: num }, num, {
@@ -124,6 +129,77 @@ export function libBasic(api: NyaApi) {
   // @compiletimelog(any)
 }
 
+export function libBroadcasting(api: NyaApi) {
+  const num = api.lib.tyNum
+
+  for (const c of "+-*/") {
+    api.fb("@" + c, { lhs: "float", rhs: "float" }, "float", {
+      js1: v`${0}${c}${1}`,
+      glslN: v`${0}${c}${1}`,
+    })
+  }
+
+  api.fb("@-", { value: "float" }, "float", {
+    js1: v`-${0}`,
+    glslN: v`-${0}`,
+  })
+
+  api.fu("@dot", { v1: "float", v2: "float" }, num, {
+    glsl: v`dot(${0},${1})`,
+    js2: v`${"function %%(x1,x2,y1,y2){return x1*y1+x2*y2}"}(${0},${1})`,
+    js3: v`${"function %%(x1,x2,x3,y1,y2,y3){return x1*y1+x2*y2+x3*y3}"}(${0},${1},${2})`,
+    js4: v`${"function %%(x1,x2,x3,x4,y1,y2,y3,y4){return x1*y1+x2*y2+x3*y3+x4*y4}"}(${0},${1},${2},${3})`,
+  })
+
+  api.fu("@length", { value: "float" }, num, {
+    glsl: v`length(${0})`,
+    js2: v`${"const %%=Math.hypot"}(${0},${1})`,
+    js3: v`${"const %%=Math.hypot"}(${0},${1},${2})`,
+    js4: v`${"const %%=Math.hypot"}(${0},${1},${2},${3})`,
+  })
+
+  const hypotId = new Id("Math.hypot").ident()
+  const fNorm = new Fn(
+    ident("@norm"),
+    [{ name: "value", type: new AnyVector("float") }],
+    new AnyVector("float"),
+    (raw, block) => {
+      const val = raw[0]!
+
+      // const path
+      if (val.const()) {
+        const s0 = scalars(val, block)
+        if (s0.every((x) => x.value === 0)) {
+          return val
+        }
+        const hypot = Math.hypot(...s0.map((a) => a.value as number))
+        return fromScalars(
+          val.type,
+          s0.map((a) => new Value((a.value as number) / hypot, num, true)),
+        )
+      }
+
+      // glsl path
+      if (block.lang == "glsl") {
+        return new Value(`normalize(${val})`, val.type, false)
+      }
+
+      // js path
+      const s0 = scalars(val, block)
+      api.lib.global(`const ${hypotId}=Math.hypot;`)
+      const hy = block.cache(
+        new Value(`${hypotId}(${s0.join(",")})`, num, false),
+        true,
+      )
+      return fromScalars(
+        val.type,
+        s0.map((x) => new Value(`(${x})/${hy}`, num, false)),
+      )
+    },
+  )
+  api.lib.fns.push(ident("@norm"), fNorm)
+}
+
 export interface NyaCanvas {
   sx: number
   sy: number
@@ -140,23 +216,9 @@ export interface NyaCanvas {
 export function libCanvas(api: NyaApi) {
   const num = api.lib.tyNum
 
-  const Canvas = api.opaque("Canvas", {
-    glsl: null,
-    js: `interface %% { ${"sx sy ox oy x0 x1 y0 y1 wx wy"
-      .split(" ")
-      .map((x) => x + ": number")
-      .join(", ")} }`,
-  })
-
-  const CanvasPoint = api.opaque("CanvasPoint", {
-    glsl: null,
-    js: `interface %% { x: number, y: number }`,
-  })
-
-  const CanvasDelta = api.opaque("CanvasDelta", {
-    glsl: null,
-    js: `interface %% { x: number, y: number }`,
-  })
+  const Canvas = api.opaque("Canvas", { glsl: null, js: " " })
+  const CanvasPoint = api.opaque("CanvasPoint", { glsl: null, js: " " })
+  const CanvasDelta = api.opaque("CanvasDelta", { glsl: null, js: " " })
 
   api.fn("point_at", { cv: Canvas, x: num, y: num }, CanvasPoint, {
     glsl: null,
@@ -210,7 +272,7 @@ export function libCanvas(api: NyaApi) {
 
 export function libLatex(api: NyaApi) {
   const latex = api.opaque("latex", { glsl: null, js: "string" })
-  latex.toRuntime = (v) => v as any as string
+  latex.toRuntime = (v) => JSON.stringify(v as any as string)
 
   const decl = api.lib
   const num = decl.tyNum
@@ -259,6 +321,7 @@ export function libLatex(api: NyaApi) {
               : (decl.global(fnLatexHelper),
                 `${idLatexHelper}(${v!.toRuntime()})`),
               latex,
+              // @ts-expect-error
               v!.const(),
             ),
       ),
@@ -282,6 +345,7 @@ export function libLatex(api: NyaApi) {
             : (decl.global(fnLatexHelper),
               `${idLatexHelper}(${v!.toRuntime()})`),
             latex,
+            // @ts-expect-error
             v!.const(),
           )
     fns.push(

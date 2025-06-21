@@ -4,7 +4,7 @@ import { Chunk, Issues } from "../ast/issue"
 import { ItemUse } from "../ast/node/item"
 import { parse, parseBlockContents } from "../ast/parse"
 import { createStream } from "../ast/stream"
-import { Block, Exits, type IdMap } from "../emit/decl"
+import { Block, Exits, type Declarations, type IdMap } from "../emit/decl"
 import { emitBlock, emitItem } from "../emit/emit"
 import { bug } from "../emit/error"
 import { createStdlib } from "../emit/stdlib"
@@ -70,7 +70,12 @@ export class ScriptEnvironment {
   }
 
   /** Compiles a script as an expression within the JavaScript context. */
-  process(script: string, name = "<repl>", locals?: IdMap<Value>) {
+  process(
+    script: string,
+    name = "<repl>",
+    locals?: IdMap<Value>,
+    lib: Declarations = this.libJs,
+  ) {
     const chunk = new Chunk(name, script)
     const issues = new Issues()
     const stream = createStream(chunk, issues, { comments: false })
@@ -78,7 +83,7 @@ export class ScriptEnvironment {
     if (!issues.ok()) {
       throw new Error(issues.entries.join("\n"))
     }
-    const block = new Block(this.libJs, new Exits(null), locals)
+    const block = new Block(lib, new Exits(null), locals)
     const value = emitBlock(contents, block)
     if (!issues.ok()) {
       throw new Error(issues.entries.join("\n"))
@@ -93,21 +98,23 @@ export class ScriptEnvironment {
     args: string,
   ): (...args: unknown[]) => unknown {
     const runtime = value.toRuntime()
-    return (0, eval)(`${this.libJs.globals()}
+    const source = `${this.libJs.globals()}
 ${this.mainJs}
 ;(function(${args}){
 ${block.source}
 return ${runtime}
-})`)
+})`
+    return (0, eval)(source)
   }
 
   /** Executes a block and value compiled within the JavaScript context. */
   compute(block: Block, value: Value): unknown {
     const runtime = value.toRuntime()
-    return (0, eval)(`${this.libJs.globals()}
+    const source = `${this.libJs.globals()}
 ${this.mainJs}
 ${block.source}
-${runtime}`)
+${runtime}`
+    return (0, eval)(source)
   }
 
   log(script: string, name?: string, locals?: IdMap<Value>) {

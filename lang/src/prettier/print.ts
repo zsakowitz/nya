@@ -740,7 +740,12 @@ export function print(node: Node | Token<number>, sb: Subprint): Doc {
           ret.push(group(["${", sb.sub("interps", i), "}"]))
         }
       }
-      ret.push('"', "#".repeat(hashesNeeded), self.type ? " " : "", sb("type"))
+      ret.push(
+        '"',
+        "#".repeat(hashesNeeded),
+        self.type ? " " : "",
+        sb.opt("type"),
+      )
       return group(ret)
     }
     case PrescribedType:
