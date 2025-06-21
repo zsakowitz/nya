@@ -91,23 +91,23 @@ export class Declarations {
   readonly fns: IdMapMany<Fn>
   readonly tags: IdMap<Tag>
 
-  _tyVoid: Scalar | undefined
+  private _tyVoid: Scalar | undefined
   get tyVoid() {
     return (this._tyVoid ??= this.types.get(ident("void")) as Scalar)
   }
-  _tyBool: Scalar | undefined
+  private _tyBool: Scalar | undefined
   get tyBool() {
     return (this._tyBool ??= this.types.get(ident("bool")) as Scalar)
   }
-  _tyNum: Scalar | undefined
+  private _tyNum: Scalar | undefined
   get tyNum() {
     return (this._tyNum ??= this.types.get(ident("num")) as Scalar)
   }
-  _tyLatex: Scalar | undefined
+  private _tyLatex: Scalar | undefined
   get tyLatex() {
     return (this._tyLatex ??= this.types.get(ident("latex")) as Scalar)
   }
-  _tySym: Scalar | undefined
+  private _tySym: Scalar | undefined
   get tySym() {
     return (this._tySym ??= this.types.get(ident("sym")) as Scalar)
   }

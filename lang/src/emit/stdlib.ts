@@ -1,5 +1,5 @@
 import type { ExprLit } from "!/ast/node/expr"
-import { libBasic, libCanvas, libLatex, libPath } from "!/std"
+import { libBasic, libCanvas, libLatex } from "!/std"
 import { KFalse, KTrue, TFloat, TInt, TString, TSym } from "../ast/kind"
 import { NyaApi } from "./api"
 import { Declarations } from "./decl"
@@ -69,7 +69,6 @@ export function createStdlib(props: EmitProps): Declarations {
 
   libBasic(api)
   libCanvas(api)
-  libPath(api)
   libLatex(api)
 
   return lib

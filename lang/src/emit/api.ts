@@ -243,8 +243,15 @@ export class NyaApi {
     params: Record<string, Type>,
     ret: Type,
     impls: Record<Lang, ScriptingInterfaceFnImpl | null>,
+    addConstTimeImpl = true,
   ) {
-    this.f1(name, params, ret, impls[this.lib.props.lang], impls.js)
+    this.f1(
+      name,
+      params,
+      ret,
+      impls[this.lib.props.lang],
+      addConstTimeImpl ? impls.js : null,
+    )
   }
 }
 
