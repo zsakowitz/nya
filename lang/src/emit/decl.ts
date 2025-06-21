@@ -107,11 +107,15 @@ export class Declarations {
   get tyLatex() {
     return (this._tyLatex ??= this.types.get(ident("latex")) as Scalar)
   }
+  _tySym: Scalar | undefined
+  get tySym() {
+    return (this._tySym ??= this.types.get(ident("sym")) as Scalar)
+  }
 
   private readonly source = new Set<string>()
 
   void() {
-    return new Value(0, this.tyVoid)
+    return new Value(0, this.tyVoid, true)
   }
 
   constructor(
@@ -156,7 +160,7 @@ export class Block {
     if (value.const()) {
       return value
     } else if (value.type.repr.type == "void") {
-      return new Value(0, value.type)
+      return new Value(0, value.type, true)
     } else if (assumeReadonly) {
       const v = value.toString()
       if (PRECACHED.test(v)) {
@@ -166,7 +170,7 @@ export class Block {
 
     const ident = new Id("cached value").ident()
     this.source += `${this.props.lang == "glsl" ? value.type.emit : "var"} ${ident}=${value};`
-    return new Value(ident, value.type)
+    return new Value(ident, value.type, false)
   }
 
   child(exits: Exits) {

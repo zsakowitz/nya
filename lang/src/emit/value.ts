@@ -4,14 +4,33 @@ import type { Type } from "./type"
 export type ConstValue = number | boolean | { data: unknown } | ConstValue[]
 
 export class Value {
+  readonly _const
+
+  constructor(
+    value: ConstValue,
+    type: Type,
+    isConst: true,
+    assignable?: boolean,
+  )
+
+  constructor(
+    value: string | null,
+    type: Type,
+    isConst: false,
+    assignable?: boolean,
+  )
+
   constructor(
     readonly value: string | null | ConstValue,
     readonly type: Type,
+    isConst: boolean,
     readonly assignable = false,
-  ) {}
+  ) {
+    this._const = isConst
+  }
 
   const(): this is { value: ConstValue } {
-    return typeof this.value != "string" && this.value != null
+    return this._const
   }
 
   toRuntime() {
@@ -32,5 +51,10 @@ export class Value {
 
   toScalars() {
     return this.type.toScalars(this)
+  }
+
+  unsafeWithType(type: Type) {
+    return new Value(this.value as any, type, this._const as false)
+    // technically false but whatever
   }
 }

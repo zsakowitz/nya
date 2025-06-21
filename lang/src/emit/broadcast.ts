@@ -67,13 +67,13 @@ export function createUnaryBroadcastingFn(
             a.type,
             a.type
               .toScalars(a)
-              .map((x) => new Value(constFn(x.value as ConstValue), ret)),
+              .map((x) => new Value(constFn(x.value as ConstValue), ret, true)),
           )
         }
         if ((a.type.repr as ReprVec).count == 1) {
-          return new Value(glsl1(a.toString()), a.type)
+          return new Value(glsl1(a.toString()), a.type, false)
         }
-        return new Value(glslVec(a.toString()), a.type)
+        return new Value(glslVec(a.toString()), a.type, false)
       },
     )
   }
@@ -89,15 +89,15 @@ export function createUnaryBroadcastingFn(
           a.type,
           a.type
             .toScalars(a)
-            .map((x) => new Value(constFn(x.value as ConstValue), ret)),
+            .map((x) => new Value(constFn(x.value as ConstValue), ret, true)),
         )
       }
       if ((a.type.repr as ReprVec).count == 1) {
-        return new Value(js1(a.toString()), a.type)
+        return new Value(js1(a.toString()), a.type, false)
       }
       return fromScalars(
         a.type,
-        scalars(a, block).map((x) => new Value(js1(x.toString()), ret)),
+        scalars(a, block).map((x) => new Value(js1(x.toString()), ret, false)),
       )
     },
   )
@@ -149,6 +149,7 @@ export function createBinaryBroadcastingFn(
                   new Value(
                     constFn(av!.value as ConstValue, b.value as ConstValue),
                     ret,
+                    true,
                   ),
               ),
           )
@@ -165,6 +166,7 @@ export function createBinaryBroadcastingFn(
                   new Value(
                     constFn(a.value as ConstValue, bv!.value as ConstValue),
                     ret,
+                    true,
                   ),
               ),
           )
@@ -180,6 +182,7 @@ export function createBinaryBroadcastingFn(
                 new Value(
                   constFn(a.value as ConstValue, bs[i]!.value as ConstValue),
                   ret,
+                  true,
                 ),
             ),
           )
@@ -193,11 +196,12 @@ export function createBinaryBroadcastingFn(
           return new Value(
             glslVec(a.toString(), b.toString()),
             ra.count == 1 ? b.type : a.type,
+            false,
           )
         }
 
         if (ra.count == 1 && rb.count == 1) {
-          return new Value(glsl1(a.toString(), b.toString()), a.type)
+          return new Value(glsl1(a.toString(), b.toString()), a.type, false)
         }
       } else {
         if (rb.count > 1 && ra.count == 1) {
@@ -205,7 +209,7 @@ export function createBinaryBroadcastingFn(
           return fromScalars(
             b.type,
             scalars(b, block).map(
-              (b) => new Value(js1(av!.toString(), b.toString()), ret),
+              (b) => new Value(js1(av!.toString(), b.toString()), ret, false),
             ),
           )
         }
@@ -215,7 +219,7 @@ export function createBinaryBroadcastingFn(
           return fromScalars(
             a.type,
             scalars(a, block).map(
-              (a) => new Value(js1(a.toString(), bv!.toString()), ret),
+              (a) => new Value(js1(a.toString(), bv!.toString()), ret, false),
             ),
           )
         }
@@ -226,7 +230,8 @@ export function createBinaryBroadcastingFn(
           return fromScalars(
             a.type,
             as.map(
-              (a, i) => new Value(js1(a.toString(), bs[i]!.toString()), ret),
+              (a, i) =>
+                new Value(js1(a.toString(), bs[i]!.toString()), ret, false),
             ),
           )
         }

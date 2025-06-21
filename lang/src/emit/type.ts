@@ -235,12 +235,15 @@ export class Struct implements Type {
     )
     const fn = new Fn(lid, fields, struct, (args) => {
       const vals = nvIndices.map((i) => args[i]!)
-      return new Value(
-        vals.every((x) => x.const()) ?
-          vals.map((x) => x.value)
-        : `${lident}(${vals.join(",")})`,
-        struct,
-      )
+      if (vals.every((x) => x.const())) {
+        return new Value(
+          vals.map((x) => x.value),
+          struct,
+          true,
+        )
+      } else {
+        return new Value(`${lident}(${vals.join(",")})`, struct, false)
+      }
     })
     const decl =
       props.lang == "glsl" ?
@@ -305,20 +308,24 @@ function ${lident}(${nvFields
 
   with(args: Value[]): Value {
     if (this.#nvIndices.length == 0) {
-      return new Value(0, this)
+      return new Value(0, this, true)
     }
 
     if (this.#nvIndices.length == 1) {
-      return new Value(args[this.#nvIndices[0]!]!.value, this)
+      return args[this.#nvIndices[0]!]!.unsafeWithType(this)
     }
 
     const vals = this.#nvIndices.map((i) => args[i]!)
-    return new Value(
-      vals.every((x) => x.const()) ?
-        vals.map((x) => x.value)
-      : `${this.emit}(${vals.join(",")})`,
-      this,
-    )
+    const isConst = vals.every((x) => x.const())
+    if (isConst) {
+      return new Value(
+        vals.map((x) => x.value),
+        this,
+        true,
+      )
+    } else {
+      return new Value(`${this.emit}(${vals.join(",")})`, this, false)
+    }
   }
 
   toRuntime(fields: ConstValue): string | null {
@@ -365,7 +372,7 @@ function ${lident}(${nvFields
     if (this.#nvFields.length == 0) {
       return this.#fields.map(
         ({ name, type }) =>
-          new Fn(ident(name), arg, type, () => new Value(0, type)),
+          new Fn(ident(name), arg, type, () => new Value(0, type, true)),
       )
     }
 
@@ -378,8 +385,8 @@ function ${lident}(${nvFields
             arg,
             type,
             type.repr.type == "void" ?
-              () => new Value(0, type)
-            : ([a]) => new Value(a!.value, type),
+              () => new Value(0, type, true)
+            : ([a]) => a!.unsafeWithType(type),
           ),
       )
     }
@@ -410,12 +417,12 @@ function ${lident}(${nvFields
           arg,
           type,
           mask == null ?
-            () => new Value(0, type)
+            () => new Value(0, type, true)
           : ([a]): Value => {
               if (a!.const()) {
-                return new Value((a.value as ConstValue[])[idx]!, type)
+                return new Value((a.value as ConstValue[])[idx]!, type, true)
               } else {
-                return new Value(a!.toString() + mask!, type)
+                return new Value(a!.toString() + mask!, type, false)
               }
             },
         )
@@ -438,12 +445,12 @@ function ${lident}(${nvFields
           arg,
           type,
           idx == null ?
-            () => new Value(0, type)
+            () => new Value(0, type, true)
           : ([a]): Value => {
               if (a!.const()) {
-                return new Value((a.value as ConstValue[])[idx]!, type)
+                return new Value((a.value as ConstValue[])[idx]!, type, true)
               } else {
-                return new Value(a!.toString() + `[${idx}]`, type)
+                return new Value(a!.toString() + `[${idx}]`, type, false)
               }
             },
         )
@@ -455,16 +462,16 @@ function ${lident}(${nvFields
     return this.#fields.map(({ name, type }) => {
       const id = ident(name)
       if (type.repr.type == "void") {
-        return new Fn(id, arg, type, () => new Value(0, type))
+        return new Fn(id, arg, type, () => new Value(0, type, true))
       }
 
       const idx = index++
       const idnt = fieldIdent(idx)
       return new Fn(id, arg, type, ([a]): Value => {
         if (a!.const()) {
-          return new Value((a.value as ConstValue[])[idx]!, type)
+          return new Value((a.value as ConstValue[])[idx]!, type, true)
         } else {
-          return new Value(a!.toString() + "." + idnt, type)
+          return new Value(a!.toString() + "." + idnt, type, false)
         }
       })
     })
@@ -515,7 +522,7 @@ export const ArrayEmpty: Type = {
     return []
   },
   fromScalars() {
-    return new Value(0, ArrayEmpty)
+    return new Value(0, ArrayEmpty, true)
   },
   canConvertFrom(type) {
     return type == ArrayEmpty
@@ -525,7 +532,7 @@ export const ArrayEmpty: Type = {
       invalidType(this, value.type, pos)
     }
 
-    return new Value(0, ArrayEmpty)
+    return new Value(0, ArrayEmpty, true)
   },
   toRuntime() {
     return null
@@ -572,7 +579,7 @@ export class Array implements Type {
 
   convertFrom(value: Value, pos: Pos): Value {
     if (value.type == ArrayEmpty && this.count == 0) {
-      return new Value(0, this)
+      return new Value(0, this, true)
     }
 
     if (!this.canConvertFrom(value.type)) {
@@ -643,7 +650,7 @@ export class Alt implements Type {
   }
 
   fromScalars(values: Value[]): Value {
-    return new Value(this.a.fromScalars(values).value, this)
+    return this.a.fromScalars(values).unsafeWithType(this)
   }
 
   canConvertFrom(type: Type): boolean {

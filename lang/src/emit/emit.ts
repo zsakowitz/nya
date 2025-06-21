@@ -385,12 +385,12 @@ export function emitExpr(node: NodeExpr, block: Block): Value {
         block.source += `if(!(${cond})){${child2.source}}`
       }
 
-      return new Value(0, main.type)
+      return new Value(0, main.type, true)
     }
 
     // Optimization for ternaries, since those are quite frequent
     if (!child1.source && !child2.source) {
-      return new Value(`(${cond})?(${main}):(${alt})`, main.type)
+      return new Value(`(${cond})?(${main}):(${alt})`, main.type, false)
     }
 
     const ret = new Id("return value")
@@ -400,11 +400,11 @@ export function emitExpr(node: NodeExpr, block: Block): Value {
       block.source += `var ${ret.ident()};`
     }
     block.source += `if(${cond}){${child1.source}${ret.ident()}=${main};}else{${child2.source}${ret.ident()}=${alt};}`
-    return new Value(ret.ident(), main.type)
+    return new Value(ret.ident(), main.type, false)
   } else if (node instanceof ExprArray) {
     const items = node.of.items.map((item) => emitExpr(item, block))
     if (items.length == 0) {
-      return new Value(0, ArrayEmpty)
+      return new Value(0, ArrayEmpty, true)
     }
 
     const ty = items[0]!.type
@@ -421,21 +421,22 @@ export function emitExpr(node: NodeExpr, block: Block): Value {
 
     const type = new Array(block.props, ty, items.length)
     if (type.repr.type == "void") {
-      return new Value(0, type)
+      return new Value(0, type, true)
     }
 
     if (items.every((x) => x.const())) {
       return new Value(
         items.map((x) => x.value),
         type,
+        true,
       )
     }
 
     const strings = items.map((x) => x.toString())
     if (block.props.lang == "glsl") {
-      return new Value(`${type.emit}(${strings.join(",")})`, type)
+      return new Value(`${type.emit}(${strings.join(",")})`, type, false)
     } else {
-      return new Value(`[${strings.join(",")}]`, type)
+      return new Value(`[${strings.join(",")}]`, type, false)
     }
   } else if (node instanceof ExprFor) {
     // TODO: some for loops can be evaluated at const time
@@ -494,7 +495,11 @@ export function emitExpr(node: NodeExpr, block: Block): Value {
       }
 
       const sourceCached = block.cache(source, false)
-      const value = new Value(`${sourceCached}[${index}]`, source.type.item)
+      const value = new Value(
+        `${sourceCached}[${index}]`,
+        source.type.item,
+        false,
+      )
       child.locals.set(gid, value)
     }
 
@@ -586,6 +591,7 @@ export function emitExpr(node: NodeExpr, block: Block): Value {
     return new Value(
       `[${globalThis.Array.from({ length: count }, (_, i) => i + (lv.value as number)).join(",")}]`,
       new Array(block.props, block.decl.tyNum, count),
+      false,
     )
     // TODO: NYALANG: this outputs horrible code in `for` loops, and should be optimized to a plain `for (let i = 0; i < 20; i++)` loop
   } else {
@@ -645,7 +651,7 @@ function matrixMultiply(block: Block, arg1: Value, arg2: Value): Value {
   if (r1.type == "mat" && r2.type == "vec" && r2.of == "float") {
     if (r1.cols == r1.rows && r1.rows == r2.count) {
       if (block.props.lang == "glsl") {
-        return new Value(`(${arg1})*(${arg2})`, arg2.type)
+        return new Value(`(${arg1})*(${arg2})`, arg2.type, false)
       } else {
         const a1scalars = scalars(arg1, block)
         const a2scalars = scalars(arg2, block)
@@ -663,7 +669,7 @@ function matrixMultiply(block: Block, arg1: Value, arg2: Value): Value {
               r += `(${a1scalars[j * r1.rows + i]})*(${a2scalars[j]})`
               // u[i] = m[0][i] * v[0] + m[1][i] * v[1] + m[2][i] * v[2];
             }
-            return new Value(r, _.type)
+            return new Value(r, _.type, false)
           }),
         )
       }
@@ -715,12 +721,15 @@ function emitStmt(node: NodeStmt, block: Block): Value {
     const gid = ident(identName.val)
 
     if (value.type.repr.type == "void") {
-      block.locals.set(gid, new Value(0, value.type))
+      block.locals.set(gid, new Value(0, value.type, true))
     } else if (!node.mut && value.const()) {
-      block.locals.set(gid, new Value(value.value, value.type))
+      block.locals.set(gid, new Value(value.value, value.type, true))
     } else {
       const lid = new Id(identName.val)
-      block.locals.set(gid, new Value(lid.ident(), value.type, !!node.mut))
+      block.locals.set(
+        gid,
+        new Value(lid.ident(), value.type, false, !!node.mut),
+      )
       block.source += `${block.lang == "glsl" ? value.type.emit : "var"} ${lid.ident()}=${value};`
     }
 
@@ -841,7 +850,7 @@ export function emitItem(node: NodeItem, decl: Declarations): ItemResult {
         issue(`Parameter '${local}' is declared twice in function '${fname}'.`)
       }
       const type = emitType(x.type, decl)
-      locals.set(local, new Value(name.ident(), type))
+      locals.set(local, new Value(name.ident(), type, false))
       return { name, type }
     })
     const fparams = params.map((x) => ({ name: x.name.label, type: x.type }))
@@ -873,7 +882,7 @@ export function emitItem(node: NodeItem, decl: Declarations): ItemResult {
             .filter((x) => x.type.repr.type != "void")
             .map((x) => x.toRuntime())
             .join(",")})`
-          return new Value(expr, ret)
+          return new Value(expr, ret, false)
         })
 
     decl.fns.push(gid, fn)
@@ -908,7 +917,7 @@ export function emitItem(node: NodeItem, decl: Declarations): ItemResult {
       block.source == "" && value.const() ?
         // Non-side-effecting constant optimization
         new Fn(gid, [], ret, () => value)
-      : new Fn(gid, [], ret, () => new Value(`${lident}()`, ret))
+      : new Fn(gid, [], ret, () => new Value(`${lident}()`, ret, false))
     decl.fns.push(gid, fn)
     return {
       decl: body,

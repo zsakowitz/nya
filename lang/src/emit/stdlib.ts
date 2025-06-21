@@ -1,28 +1,11 @@
+import type { ExprLit } from "!/ast/node/expr"
+import { libBasic, libCanvas, libLatex, libPath } from "!/std"
 import { KFalse, KTrue, TFloat, TInt, TString, TSym } from "../ast/kind"
-import {
-  AnyVector,
-  createBinaryBroadcastingFn,
-  createUnaryBroadcastingFn,
-  fromScalars,
-  scalars,
-} from "./broadcast"
-import { Declarations, PRECACHED, type Block } from "./decl"
-import { performCall } from "./emit"
-import { bug, issue, todo } from "./error"
-import { ident as g, Id, ident, IdGlobal } from "./id"
-import type { EmitProps, Lang } from "./props"
-import { Tag } from "./tag"
-import {
-  Any,
-  fn,
-  Fn,
-  invalidType,
-  Scalar,
-  type FnExec,
-  type FnParam,
-  type FnType,
-  type Type,
-} from "./type"
+import { NyaApi } from "./api"
+import { Declarations } from "./decl"
+import { todo } from "./error"
+import { ident as g } from "./id"
+import type { EmitProps } from "./props"
 import { Value } from "./value"
 
 export interface PathJs {
@@ -44,448 +27,56 @@ export interface CanvasJs {
   wy: number
 }
 
-function libPath(props: EmitProps, num: Scalar) {
-  function vec(count: 2 | 3 | 4): FnType {
-    function canConvertFrom(type: Type) {
-      return (
-        type.repr.type == "vec" &&
-        type.repr.count == count &&
-        type.repr.of == "float"
-      )
-    }
+export function createStdlib(props: EmitProps): Declarations {
+  const createLiteral = (literal: ExprLit) => {
+    switch (literal.value.kind) {
+      case KTrue:
+      case KFalse:
+        return new Value(literal.value.val === "true", lib.tyBool, true)
 
-    const self: FnType = {
-      canConvertFrom,
-      convertFrom(value, pos) {
-        if (!canConvertFrom(value.type)) {
-          invalidType(`vec${count}<float>`, value.type, pos)
-        }
-        return value
-      },
-      toString() {
-        return `vec${count}<float>`
-      },
-    }
+      case TFloat:
+      case TInt:
+        return new Value(+literal.value.val, lib.tyNum, true)
 
-    return self
-  }
+      case TSym:
+        return new Value(g(literal.value.val).value, lib.tySym, true)
 
-  interface PathJs {
-    data: {
-      x: string // svg path
-      y: [number, number, number] // color
-      z: [number, number, number] // stroke width, stroke opacity, fill opacity
+      case TString:
+        todo(`String literals cannot be used as expression values.`)
     }
   }
 
-  const lang = props.lang
+  const toArraySize = (value: Value) => {
+    if (
+      value.type == lib.tyNum &&
+      value.const() &&
+      typeof value.value == "number" &&
+      Number.isSafeInteger(value.value)
+    ) {
+      return value.value
+    }
 
-  const path = new Scalar(
-    "Path",
-    lang == "glsl" ? "void" : "NyaPath", // TODO: generate appropriate ts signature
-    lang == "glsl" ? { type: "void" } : { type: "struct", id: new Id("Path") },
-    lang == "glsl" ?
-      () => null
-    : (v) => {
-        const d = (v as PathJs).data
-        return `({x:new Path2D(${JSON.stringify(d.x)}),y:${JSON.stringify(d.y)},z:${JSON.stringify(d.z)}})`
-      },
-    () => issue(`Cannot convert 'Path' into scalars.`),
-    () => issue(`Cannot create 'Path' from scalars.`),
+    return null
+  }
+
+  const lib: Declarations = new Declarations(
+    props,
+    null,
+    createLiteral,
+    toArraySize,
   )
-  const canvas = new Scalar(
-    "Canvas",
-    lang == "glsl" ? "void" : "NyaCanvas", // TODO: generate appropriate ts signature
-    lang == "glsl" ?
-      { type: "void" }
-    : { type: "struct", id: new Id("Canvas") },
-    () =>
-      bug(
-        `Cannot convert 'Canvas' into a runtime value since it should never be created at compile time.`,
-      ),
-    () => issue(`Cannot convert 'Canvas' into scalars.`),
-    () => issue(`Cannot create 'Canvas' from scalars.`),
-  )
+  const api = new NyaApi(lib)
 
-  const xpath = { name: "path", type: path }
-  const vec2 = vec(2)
-  const vec3 = vec(3)
+  libBasic(api)
+  libCanvas(api)
+  libPath(api)
+  libLatex(api)
 
-  const pDest = { name: "destination", type: vec2 }
-  const pCenter = { name: "center", type: vec2 }
-  const pRadius = { name: "radius", type: num }
-  const pRadiusX = { name: "radius_x", type: num }
-  const pRadiusY = { name: "radius_y", type: num }
-  const pRadii = { name: "radii", type: vec2 }
-  const pColorRgb = { name: "color_rgb", type: vec3 }
-
-  function canvasProp(nyaname: string, jsname: string) {
-    return fn(
-      g(nyaname),
-      [{ name: "canvas", type: canvas }],
-      num,
-      lang == "glsl" ?
-        () => new Value(NaN, num)
-      : ([cv]) => new Value(`(${cv}).${jsname}`, num),
-    )
-  }
-
-  return {
-    types: [path, canvas],
-    fns: [
-      fn(
-        g("to_cv_coords"),
-        [
-          { name: "point", type: vec2 },
-          { name: "canvas", type: canvas },
-        ],
-        vec2,
-        lang == "glsl" ?
-          ([a]) => a!
-        : ([pt, cv], block): Value => {
-            const [x, y] = scalars(pt!, block)
-            const c = block.cache(cv!, true).toRuntime()!
-            return fromScalars(pt!.type, [
-              new Value(`(${c}).sx*(${x})+(${c}).ox`, num),
-              new Value(`(${c}).sy*(${y})+(${c}).oy`, num),
-            ])
-          },
-      ), // to_cv_coords
-      fn(
-        g("to_cv_delta"),
-        [
-          { name: "point", type: vec2 },
-          { name: "canvas", type: canvas },
-        ],
-        vec2,
-        lang == "glsl" ?
-          ([a]) => a!
-        : ([pt, cv], block): Value => {
-            const [x, y] = scalars(pt!, block)
-            const c = block.cache(cv!, true).toRuntime()!
-            return fromScalars(pt!.type, [
-              new Value(`(${c}).sx*(${x})`, num),
-              new Value(`-(${c}).sy*(${y})`, num),
-            ])
-          },
-      ), // to_cv_delta
-      fn(
-        g("to_math_coords"),
-        [
-          { name: "point", type: vec2 },
-          { name: "canvas", type: canvas },
-        ],
-        vec2,
-        lang == "glsl" ?
-          ([a]) => a!
-        : ([pt, cv], block): Value => {
-            const [x, y] = scalars(pt!, block)
-            const c = block.cache(cv!, true).toRuntime()!
-            return fromScalars(pt!.type, [
-              new Value(`((${x})-(${c}).ox)/(${c}).sx`, num),
-              new Value(`((${y})-(${c}).oy)/(${c}).sy`, num),
-            ])
-          },
-      ), // to_math_coords
-      canvasProp("xmin", "x0"),
-      canvasProp("ymin", "y0"),
-      canvasProp("xmax", "x1"),
-      canvasProp("ymax", "y1"),
-
-      pathFn(
-        "path",
-        [],
-        () =>
-          new Value(
-            { data: { x: "", y: [0, 0, 0], z: [0, 0, 0] } } satisfies PathJs,
-            path,
-          ),
-      ), // empty_path
-      pathEditingFn(
-        "move_to",
-        [pDest],
-        (d, [dest]) => {
-          const [x, y] = dest!.type.toScalars(dest!)
-          d.data.x += `M${x} ${y}`
-        },
-        (d, [dest], block) => {
-          const [x, y] = scalars(dest!, block)
-          block.source += `${d}.x.moveTo(${x},${y});`
-        },
-      ), // move_to
-      pathEditingFn(
-        "line_to",
-        [pDest],
-        (d, [dest]) => {
-          const [x, y] = dest!.type.toScalars(dest!)
-          d.data.x += `L${x} ${y}`
-        },
-        (d, [dest], block) => {
-          const [x, y] = scalars(dest!, block)
-          block.source += `${d}.x.lineTo(${x},${y});`
-        },
-      ), // line_to
-      pathEditingFn(
-        "circle",
-        [pCenter, pRadius],
-        null,
-        (d, [center, radius], block) => {
-          const [x, y] = scalars(center!, block)
-          const r = block.cache(radius!, true)
-          block.source += `${d}.x.ellipse(${x},${y},${r},${r},0,0,${2 * Math.PI});`
-        },
-      ), // circle
-      pathEditingFn(
-        "ellipse",
-        [pCenter, pRadii],
-        null,
-        (d, [center, radii], block) => {
-          const [x, y] = scalars(center!, block)
-          const [rx, ry] = scalars(radii!, block)
-          block.source += `${d}.x.ellipse(${x},${y},${rx},${ry},0,0,${2 * Math.PI});`
-        },
-      ), // ellipse(center, { rx, ry })
-      pathEditingFn(
-        "ellipse",
-        [pCenter, pRadiusX, pRadiusY],
-        null,
-        (d, [center, rxraw, ryraw], block) => {
-          const [x, y] = scalars(center!, block)
-          block.source += `${d}.x.ellipse(${x},${y},${rxraw!},${ryraw!},0,0,${2 * Math.PI});`
-        },
-      ), // ellipse(center, rx, ry)
-      // TODO: arc arcTo bezierCurveTo closePath ellipse quadraticCurveTo rect roundRect
-      // https://www.w3.org/TR/SVG11/implnote.html#ArcImplementationNotes
-
-      pathEditingFn(
-        "stroke_width",
-        [{ name: "width", type: num }],
-        (d, [a]) => (d.data.z[0] = a!.value as number),
-        (d, [a], block) => (block.source += `${d}.z[0]=${a};`),
-      ), // stroke_width
-      pathEditingFn(
-        "color",
-        [pColorRgb],
-        (d, [c]) => {
-          const [r, g, b] = c!.toScalars()
-          d.data.y = [
-            r!.value as number,
-            g!.value as number,
-            b!.value as number,
-          ]
-        },
-        (d, [c], block) => {
-          const [r, g, b] = scalars(c!, block)
-          block.source += `${d}.y=[${r},${g},${b},1];`
-        },
-      ), // color(rgb)
-      pathEditingFn(
-        "stroke_opacity",
-        [{ name: "opacity", type: num }],
-        (d, [a]) => (d.data.z[1] = a!.value as number),
-        (d, [a], block) => (block.source += `${d}.z[1]=${a};`),
-      ), // stroke_opacity
-      pathEditingFn(
-        "fill_opacity",
-        [{ name: "opacity", type: num }],
-        (d, [a]) => (d.data.z[2] = a!.value as number),
-        (d, [a], block) => (block.source += `${d}.z[2]=${a};`),
-      ), // fill_opacity
-    ],
-  }
-
-  function pathFn(name: string, params: FnParam[], exec: FnExec) {
-    return new Fn(
-      g(name),
-      params,
-      path,
-      lang == "glsl" ? () => new Value(null, path) : exec,
-    )
-  }
-
-  function pathEditingFn(
-    name: string,
-    params: FnParam[],
-    execConst: ((d: PathJs, args: Value[]) => void) | null,
-    execRuntime: (d: string, args: Value[], block: Block) => void,
-  ) {
-    return new Fn(
-      g(name),
-      [xpath, ...params],
-      path,
-      lang == "glsl" ?
-        () => new Value(null, path)
-      : (args, block): Value => {
-          if (execConst && args.every((x) => x.const())) {
-            execConst(args[0]!.value as PathJs, args.slice(1))
-            return args[0]!
-          } else {
-            let runtime = args[0]!.toRuntime()!
-            if (!PRECACHED.test(runtime)) {
-              const id = new Id("cached path").ident()
-              block.source += `${id}=${runtime};`
-              runtime = id
-            }
-            execRuntime(runtime, args.slice(1), block)
-            return new Value(runtime, path)
-          }
-        },
-    )
-  }
+  return lib
 }
 
-function libLatexScalar(lang: Lang) {
-  return new Scalar(
-    "latex",
-    lang == "glsl" ? "void" : "string",
-    lang == "glsl" ? { type: "void" } : { type: "struct", id: new Id("latex") },
-    lang == "glsl" ?
-      () => null
-    : (v) => JSON.stringify((v as { data: string }).data),
-    () => issue(`Cannot convert LaTeX text to a set of scalars.`),
-    () => issue(`Cannot create LaTeX text from a set of scalars.`),
-  )
-}
-
-function libLatex(decl: Declarations, num: Scalar, bool: Scalar) {
-  const fns = decl.fns
-  const lang = decl.props.lang
-
-  const idDisplay = g("%display")
-
-  const latex = decl.tyLatex
-
-  // `num` %display
-  {
-    // TODO: this should get shorter the deeper it is; 2.349834+3.3498734i takes up too much space in a displayed list
-    const fLatexHelper = (x: number): string => {
-      if (x != x) return "\\wordvar{undefined}"
-      if (x == 1 / 0) return "\\infty"
-      if (x == -1 / 0) return "-\\infty"
-      let str = x.toPrecision(8)
-      const expIndex = str.indexOf("e")
-      let exp = ""
-      if (expIndex != -1) {
-        const power = str.slice(expIndex + 1).replace(/^\+/, "")
-        str = str.slice(0, expIndex)
-        exp = "\\times10^{" + power + "}"
-      }
-      if (str.includes(".")) {
-        str = str.replace(/\.?0*$/, "")
-      }
-      return str + exp
-    }
-
-    const idLatexHelper = new Id("%display(x: num) -> latex").ident()
-    const fnLatexHelper = `const ${idLatexHelper}=${fLatexHelper};` // TODO: Function.prototype.toString is scary
-
-    fns.push(
-      idDisplay,
-      new Fn(
-        idDisplay,
-        [{ name: "value", type: num }],
-        latex,
-        lang == "glsl" ?
-          () => new Value(0, latex)
-        : ([v]) =>
-            new Value(
-              v!.const() ?
-                { data: fLatexHelper(v.value as number) }
-              : (decl.global(fnLatexHelper),
-                `${idLatexHelper}(${v!.toRuntime()})`),
-              latex,
-            ),
-      ),
-    )
-  }
-
-  // `bool` %display
-  {
-    const idLatexHelper = new Id("%display(x: bool) -> latex").ident()
-    const fnLatexHelper = `function ${idLatexHelper}(v){return '\\\\wordvar{'+v+'}'}`
-    // prettier-ignore
-    function fLatexHelper(v: boolean)                  {return   '\\wordvar{'+v+'}'}
-
-    const f =
-      lang == "glsl" ?
-        () => new Value(0, latex)
-      : ([v]: Value[]) =>
-          new Value(
-            v!.const() ?
-              { data: fLatexHelper(v.value as boolean) }
-            : (decl.global(fnLatexHelper),
-              `${idLatexHelper}(${v!.toRuntime()})`),
-            latex,
-          )
-    fns.push(
-      idDisplay,
-      new Fn(idDisplay, [{ name: "value", type: bool }], latex, f),
-    )
-  }
-
-  // `latex` %display
-  {
-    fns.push(
-      idDisplay,
-      new Fn(idDisplay, [{ name: "value", type: latex }], latex, (x) => x[0]!),
-    )
-  }
-
-  function createTag(tagIdent: IdGlobal, fnIdent: IdGlobal) {
-    return new Tag(
-      tagIdent,
-      lang == "glsl" ?
-        () => new Value(0, latex)
-      : (text, interps, interpsPos, block) => {
-          const results = interps.map((x, i) => {
-            const result = performCall(
-              fnIdent,
-              block,
-              [x],
-              interpsPos[i]!,
-              interpsPos[i]!,
-            )
-            if (result.type == latex) {
-              return result
-            }
-            issue(
-              `The '${tagIdent.label}' tag cannot be used if calling %display on any interpolation does not return LaTeX.`,
-            )
-          })
-
-          if (results.every((x) => x.const())) {
-            return new Value(
-              {
-                data: text
-                  .map((x, i) =>
-                    i == 0 ? x : (
-                      (results[i - 1]!.value as { data: string }).data + x
-                    ),
-                  )
-                  .join(""),
-              },
-              latex,
-            )
-          }
-
-          return new Value(
-            text
-              .map((x, i) =>
-                i == 0 ?
-                  JSON.stringify(x)
-                : results[i - 1]!.toRuntime()! + "+" + JSON.stringify(x),
-              )
-              .join("+"),
-            latex,
-          )
-        },
-    )
-  }
-
-  decl.tags.set(g("display"), createTag(g("display"), idDisplay))
-}
-
-export function createStdlib(props: EmitProps) {
+/*
+export function createStdlib1(props: EmitProps): Declarations {
   const lang = props.lang
   const epsilon = lang == "glsl" ? 1.1920928955078125e-7 : Number.EPSILON
 
@@ -1332,3 +923,447 @@ export function createStdlib(props: EmitProps) {
 
   return decl
 }
+*/
+
+/*
+function libPath(props: EmitProps, num: Scalar) {
+  function vec(count: 2 | 3 | 4): FnType {
+    function canConvertFrom(type: Type) {
+      return (
+        type.repr.type == "vec" &&
+        type.repr.count == count &&
+        type.repr.of == "float"
+      )
+    }
+
+    const self: FnType = {
+      canConvertFrom,
+      convertFrom(value, pos) {
+        if (!canConvertFrom(value.type)) {
+          invalidType(`vec${count}<float>`, value.type, pos)
+        }
+        return value
+      },
+      toString() {
+        return `vec${count}<float>`
+      },
+    }
+
+    return self
+  }
+
+  interface PathJs {
+    data: {
+      x: string // svg path
+      y: [number, number, number] // color
+      z: [number, number, number] // stroke width, stroke opacity, fill opacity
+    }
+  }
+
+  const lang = props.lang
+
+  const path = new Scalar(
+    "Path",
+    lang == "glsl" ? "void" : "NyaPath", // TODO: generate appropriate ts signature
+    lang == "glsl" ? { type: "void" } : { type: "struct", id: new Id("Path") },
+    lang == "glsl" ?
+      () => null
+    : (v) => {
+        const d = (v as PathJs).data
+        return `({x:new Path2D(${JSON.stringify(d.x)}),y:${JSON.stringify(d.y)},z:${JSON.stringify(d.z)}})`
+      },
+    () => issue(`Cannot convert 'Path' into scalars.`),
+    () => issue(`Cannot create 'Path' from scalars.`),
+  )
+  const canvas = new Scalar(
+    "Canvas",
+    lang == "glsl" ? "void" : "NyaCanvas", // TODO: generate appropriate ts signature
+    lang == "glsl" ?
+      { type: "void" }
+    : { type: "struct", id: new Id("Canvas") },
+    () =>
+      bug(
+        `Cannot convert 'Canvas' into a runtime value since it should never be created at compile time.`,
+      ),
+    () => issue(`Cannot convert 'Canvas' into scalars.`),
+    () => issue(`Cannot create 'Canvas' from scalars.`),
+  )
+
+  const xpath = { name: "path", type: path }
+  const vec2 = vec(2)
+  const vec3 = vec(3)
+
+  const pDest = { name: "destination", type: vec2 }
+  const pCenter = { name: "center", type: vec2 }
+  const pRadius = { name: "radius", type: num }
+  const pRadiusX = { name: "radius_x", type: num }
+  const pRadiusY = { name: "radius_y", type: num }
+  const pRadii = { name: "radii", type: vec2 }
+  const pColorRgb = { name: "color_rgb", type: vec3 }
+
+  function canvasProp(nyaname: string, jsname: string) {
+    return fn(
+      g(nyaname),
+      [{ name: "canvas", type: canvas }],
+      num,
+      lang == "glsl" ?
+        () => new Value(NaN, num)
+      : ([cv]) => new Value(`(${cv}).${jsname}`, num),
+    )
+  }
+
+  return {
+    types: [path, canvas],
+    fns: [
+      fn(
+        g("to_cv_coords"),
+        [
+          { name: "point", type: vec2 },
+          { name: "canvas", type: canvas },
+        ],
+        vec2,
+        lang == "glsl" ?
+          ([a]) => a!
+        : ([pt, cv], block): Value => {
+            const [x, y] = scalars(pt!, block)
+            const c = block.cache(cv!, true).toRuntime()!
+            return fromScalars(pt!.type, [
+              new Value(`(${c}).sx*(${x})+(${c}).ox`, num),
+              new Value(`(${c}).sy*(${y})+(${c}).oy`, num),
+            ])
+          },
+      ), // to_cv_coords
+      fn(
+        g("to_cv_delta"),
+        [
+          { name: "point", type: vec2 },
+          { name: "canvas", type: canvas },
+        ],
+        vec2,
+        lang == "glsl" ?
+          ([a]) => a!
+        : ([pt, cv], block): Value => {
+            const [x, y] = scalars(pt!, block)
+            const c = block.cache(cv!, true).toRuntime()!
+            return fromScalars(pt!.type, [
+              new Value(`(${c}).sx*(${x})`, num),
+              new Value(`-(${c}).sy*(${y})`, num),
+            ])
+          },
+      ), // to_cv_delta
+      fn(
+        g("to_math_coords"),
+        [
+          { name: "point", type: vec2 },
+          { name: "canvas", type: canvas },
+        ],
+        vec2,
+        lang == "glsl" ?
+          ([a]) => a!
+        : ([pt, cv], block): Value => {
+            const [x, y] = scalars(pt!, block)
+            const c = block.cache(cv!, true).toRuntime()!
+            return fromScalars(pt!.type, [
+              new Value(`((${x})-(${c}).ox)/(${c}).sx`, num),
+              new Value(`((${y})-(${c}).oy)/(${c}).sy`, num),
+            ])
+          },
+      ), // to_math_coords
+      canvasProp("xmin", "x0"),
+      canvasProp("ymin", "y0"),
+      canvasProp("xmax", "x1"),
+      canvasProp("ymax", "y1"),
+
+      pathFn(
+        "path",
+        [],
+        () =>
+          new Value(
+            { data: { x: "", y: [0, 0, 0], z: [0, 0, 0] } } satisfies PathJs,
+            path,
+          ),
+      ), // empty_path
+      pathEditingFn(
+        "move_to",
+        [pDest],
+        (d, [dest]) => {
+          const [x, y] = dest!.type.toScalars(dest!)
+          d.data.x += `M${x} ${y}`
+        },
+        (d, [dest], block) => {
+          const [x, y] = scalars(dest!, block)
+          block.source += `${d}.x.moveTo(${x},${y});`
+        },
+      ), // move_to
+      pathEditingFn(
+        "line_to",
+        [pDest],
+        (d, [dest]) => {
+          const [x, y] = dest!.type.toScalars(dest!)
+          d.data.x += `L${x} ${y}`
+        },
+        (d, [dest], block) => {
+          const [x, y] = scalars(dest!, block)
+          block.source += `${d}.x.lineTo(${x},${y});`
+        },
+      ), // line_to
+      pathEditingFn(
+        "circle",
+        [pCenter, pRadius],
+        null,
+        (d, [center, radius], block) => {
+          const [x, y] = scalars(center!, block)
+          const r = block.cache(radius!, true)
+          block.source += `${d}.x.ellipse(${x},${y},${r},${r},0,0,${2 * Math.PI});`
+        },
+      ), // circle
+      pathEditingFn(
+        "ellipse",
+        [pCenter, pRadii],
+        null,
+        (d, [center, radii], block) => {
+          const [x, y] = scalars(center!, block)
+          const [rx, ry] = scalars(radii!, block)
+          block.source += `${d}.x.ellipse(${x},${y},${rx},${ry},0,0,${2 * Math.PI});`
+        },
+      ), // ellipse(center, { rx, ry })
+      pathEditingFn(
+        "ellipse",
+        [pCenter, pRadiusX, pRadiusY],
+        null,
+        (d, [center, rxraw, ryraw], block) => {
+          const [x, y] = scalars(center!, block)
+          block.source += `${d}.x.ellipse(${x},${y},${rxraw!},${ryraw!},0,0,${2 * Math.PI});`
+        },
+      ), // ellipse(center, rx, ry)
+      // TODO: arc arcTo bezierCurveTo closePath ellipse quadraticCurveTo rect roundRect
+      // https://www.w3.org/TR/SVG11/implnote.html#ArcImplementationNotes
+
+      pathEditingFn(
+        "stroke_width",
+        [{ name: "width", type: num }],
+        (d, [a]) => (d.data.z[0] = a!.value as number),
+        (d, [a], block) => (block.source += `${d}.z[0]=${a};`),
+      ), // stroke_width
+      pathEditingFn(
+        "color",
+        [pColorRgb],
+        (d, [c]) => {
+          const [r, g, b] = c!.toScalars()
+          d.data.y = [
+            r!.value as number,
+            g!.value as number,
+            b!.value as number,
+          ]
+        },
+        (d, [c], block) => {
+          const [r, g, b] = scalars(c!, block)
+          block.source += `${d}.y=[${r},${g},${b},1];`
+        },
+      ), // color(rgb)
+      pathEditingFn(
+        "stroke_opacity",
+        [{ name: "opacity", type: num }],
+        (d, [a]) => (d.data.z[1] = a!.value as number),
+        (d, [a], block) => (block.source += `${d}.z[1]=${a};`),
+      ), // stroke_opacity
+      pathEditingFn(
+        "fill_opacity",
+        [{ name: "opacity", type: num }],
+        (d, [a]) => (d.data.z[2] = a!.value as number),
+        (d, [a], block) => (block.source += `${d}.z[2]=${a};`),
+      ), // fill_opacity
+    ],
+  }
+
+  function pathFn(name: string, params: FnParam[], exec: FnExec) {
+    return new Fn(
+      g(name),
+      params,
+      path,
+      lang == "glsl" ? () => new Value(null, path) : exec,
+    )
+  }
+
+  function pathEditingFn(
+    name: string,
+    params: FnParam[],
+    execConst: ((d: PathJs, args: Value[]) => void) | null,
+    execRuntime: (d: string, args: Value[], block: Block) => void,
+  ) {
+    return new Fn(
+      g(name),
+      [xpath, ...params],
+      path,
+      lang == "glsl" ?
+        () => new Value(null, path)
+      : (args, block): Value => {
+          if (execConst && args.every((x) => x.const())) {
+            execConst(args[0]!.value as PathJs, args.slice(1))
+            return args[0]!
+          } else {
+            let runtime = args[0]!.toRuntime()!
+            if (!PRECACHED.test(runtime)) {
+              const id = new Id("cached path").ident()
+              block.source += `${id}=${runtime};`
+              runtime = id
+            }
+            execRuntime(runtime, args.slice(1), block)
+            return new Value(runtime, path)
+          }
+        },
+    )
+  }
+}
+
+function libLatexScalar(lang: Lang) {
+  return new Scalar(
+    "latex",
+    lang == "glsl" ? "void" : "string",
+    lang == "glsl" ? { type: "void" } : { type: "struct", id: new Id("latex") },
+    lang == "glsl" ?
+      () => null
+    : (v) => JSON.stringify((v as { data: string }).data),
+    () => issue(`Cannot convert LaTeX text to a set of scalars.`),
+    () => issue(`Cannot create LaTeX text from a set of scalars.`),
+  )
+}
+
+function libLatex(decl: Declarations, num: Scalar, bool: Scalar) {
+  const fns = decl.fns
+  const lang = decl.props.lang
+
+  const idDisplay = g("%display")
+
+  const latex = decl.tyLatex
+
+  // `num` %display
+  {
+    // TODO: this should get shorter the deeper it is; 2.349834+3.3498734i takes up too much space in a displayed list
+    const fLatexHelper = (x: number): string => {
+      if (x != x) return "\\wordvar{undefined}"
+      if (x == 1 / 0) return "\\infty"
+      if (x == -1 / 0) return "-\\infty"
+      let str = x.toPrecision(8)
+      const expIndex = str.indexOf("e")
+      let exp = ""
+      if (expIndex != -1) {
+        const power = str.slice(expIndex + 1).replace(/^\+/, "")
+        str = str.slice(0, expIndex)
+        exp = "\\times10^{" + power + "}"
+      }
+      if (str.includes(".")) {
+        str = str.replace(/\.?0*$/, "")
+      }
+      return str + exp
+    }
+
+    const idLatexHelper = new Id("%display(x: num) -> latex").ident()
+    const fnLatexHelper = `const ${idLatexHelper}=${fLatexHelper};` // TODO: Function.prototype.toString is scary
+
+    fns.push(
+      idDisplay,
+      new Fn(
+        idDisplay,
+        [{ name: "value", type: num }],
+        latex,
+        lang == "glsl" ?
+          () => new Value(0, latex)
+        : ([v]) =>
+            new Value(
+              v!.const() ?
+                { data: fLatexHelper(v.value as number) }
+              : (decl.global(fnLatexHelper),
+                `${idLatexHelper}(${v!.toRuntime()})`),
+              latex,
+            ),
+      ),
+    )
+  }
+
+  // `bool` %display
+  {
+    const idLatexHelper = new Id("%display(x: bool) -> latex").ident()
+    const fnLatexHelper = `function ${idLatexHelper}(v){return '\\\\wordvar{'+v+'}'}`
+    // prettier-ignore
+    function fLatexHelper(v: boolean)                  {return   '\\wordvar{'+v+'}'}
+
+    const f =
+      lang == "glsl" ?
+        () => new Value(0, latex)
+      : ([v]: Value[]) =>
+          new Value(
+            v!.const() ?
+              { data: fLatexHelper(v.value as boolean) }
+            : (decl.global(fnLatexHelper),
+              `${idLatexHelper}(${v!.toRuntime()})`),
+            latex,
+          )
+    fns.push(
+      idDisplay,
+      new Fn(idDisplay, [{ name: "value", type: bool }], latex, f),
+    )
+  }
+
+  // `latex` %display
+  {
+    fns.push(
+      idDisplay,
+      new Fn(idDisplay, [{ name: "value", type: latex }], latex, (x) => x[0]!),
+    )
+  }
+
+  function createTag(tagIdent: IdGlobal, fnIdent: IdGlobal) {
+    return new Tag(
+      tagIdent,
+      lang == "glsl" ?
+        () => new Value(0, latex)
+      : (text, interps, interpsPos, block) => {
+          const results = interps.map((x, i) => {
+            const result = performCall(
+              fnIdent,
+              block,
+              [x],
+              interpsPos[i]!,
+              interpsPos[i]!,
+            )
+            if (result.type == latex) {
+              return result
+            }
+            issue(
+              `The '${tagIdent.label}' tag cannot be used if calling %display on any interpolation does not return LaTeX.`,
+            )
+          })
+
+          if (results.every((x) => x.const())) {
+            return new Value(
+              {
+                data: text
+                  .map((x, i) =>
+                    i == 0 ? x : (
+                      (results[i - 1]!.value as { data: string }).data + x
+                    ),
+                  )
+                  .join(""),
+              },
+              latex,
+            )
+          }
+
+          return new Value(
+            text
+              .map((x, i) =>
+                i == 0 ?
+                  JSON.stringify(x)
+                : results[i - 1]!.toRuntime()! + "+" + JSON.stringify(x),
+              )
+              .join("+"),
+            latex,
+          )
+        },
+    )
+  }
+
+  decl.tags.set(g("display"), createTag(g("display"), idDisplay))
+}
+*/

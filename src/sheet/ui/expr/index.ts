@@ -201,7 +201,10 @@ export class Expr {
         const plot = tryPerformCall(
           ident("%plot"),
           block,
-          [new Value("CANVAS", canvas), new Value("VALUE", value.type)],
+          [
+            new Value("CANVAS", canvas, false),
+            new Value("VALUE", value.type, false),
+          ],
           new PosVirtual("<plot>"),
           new PosVirtual("<plot>"),
         )
