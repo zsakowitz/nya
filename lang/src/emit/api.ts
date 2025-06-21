@@ -125,6 +125,7 @@ export class NyaApi {
     params: Record<string, Type>,
     ret: Type,
     impl: ScriptingInterfaceFnImpl,
+    implConst: ScriptingInterfaceFnImpl | null = impl,
   ) {
     validateFnName(name)
     const id = ident(name)
@@ -136,13 +137,37 @@ export class NyaApi {
       fnParams.push({ name, type: params[name]! })
     }
 
-    const { sideEffects, globals, texts, args, cacheArgs } = impl
-    const max = texts.length - 1
-    if (globals) {
-      this.lib.global(globals)
+    let fConst
+    if (implConst) {
+      const source = `${implConst.globals}
+;(function(${
+        (implConst.args.length == 0) == null ?
+          ""
+        : Array.from(
+            { length: Math.max(...implConst.args) + 1 },
+            (_, i) => "$" + i,
+          ).join(",")
+      }){${
+        implConst.sideEffects || ret.repr.type == "void" ? "" : "return "
+      }${implConst.texts
+        .map((x, i, a) =>
+          i == a.length - 1 ? x : x + `$` + implConst.args[i]!,
+        )
+        .join("")}})`
+      fConst = (0, eval)(source) as (...args: any[]) => any
     }
 
+    const { sideEffects, globals, texts, args, cacheArgs } = impl
+    const max = texts.length - 1
+
     const f = new Fn(id, fnParams, ret, (values, block) => {
+      // if (implConst && values.every((x) => x.const())) {
+      //   const val = fConst!(...values.map((x) => 'data' in x.value  ?x.value.data:x.value))
+      //   return new Value(, ret)
+      // }
+      if (globals) {
+        this.lib.global(globals)
+      }
       let text = ""
       if (cacheArgs) {
         values = values.map((x) => block.cache(x, true))
@@ -176,7 +201,7 @@ export class NyaApi {
     ret: Type,
     impls: Record<Lang, ScriptingInterfaceFnImpl>,
   ) {
-    this.f1(name, params, ret, impls[this.lib.props.lang])
+    this.f1(name, params, ret, impls[this.lib.props.lang], impls.js)
   }
 }
 
@@ -201,10 +226,9 @@ function f(
       if (argIndices.includes(arg)) {
         cacheArgs = true
       }
-      texts[text.length - 1] += "("
+      texts[texts.length - 1] += "("
       argIndices.push(arg)
-      texts[text.length - 1] += ")"
-      texts.push(text)
+      texts.push(")" + text)
     } else if (arg.includes("%%")) {
       const id = new Id(arg).ident()
       if (globals) globals += "\n"

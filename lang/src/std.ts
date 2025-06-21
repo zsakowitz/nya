@@ -1,4 +1,7 @@
-import { Impl, v, type NyaApi } from "!/emit/api"
+import { Impl, NyaApi, v } from "!/emit/api"
+import { Declarations } from "./emit/decl"
+import { bug } from "./emit/error"
+import { EmitProps } from "./emit/props"
 
 export function libBasic(api: NyaApi) {
   const num = api.createVector("num", "float", true)
@@ -89,7 +92,7 @@ export function libBasic(api: NyaApi) {
   // Numeric checks
   api.fn("is_inf", { value: num }, bool, {
     glsl: v`isinf(${0})`,
-    js: v`1/${0}==0`,
+    js: v`${`function %%(x){return x===1/0||x===-1/0}`}(${0})1/${0}==0`,
   })
   api.fn("is_nan", { value: num }, bool, {
     glsl: v`isnan(${0})`,
@@ -117,6 +120,21 @@ export function libBasic(api: NyaApi) {
   // @smoothstep(num, num, num)
   // @compiletimelog(any)
 }
+
+const lib = new NyaApi(
+  new Declarations(
+    new EmitProps("glsl"),
+    null,
+    () => bug(`not suppored`),
+    () => null,
+  ),
+)
+
+const num = lib.createVector("num", "float", true)
+lib.fn("floor", { lhs: num }, num, {
+  glsl: v`floor(${0})`,
+  js: v`${"const %%=Math.floor"}(${0})`,
+})
 
 /*
 
