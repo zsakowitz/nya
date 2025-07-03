@@ -221,7 +221,7 @@ export class CmdBrack extends Command<[Block]> {
         parent.parent.attach(block, null, R)
         parent.setSide(null)
         // Repair cursor
-        cursor.moveIn(parent.blocks[0], R)
+        cursor.moveIn(parent.blocks[0], L)
         return
       }
     }
@@ -458,12 +458,18 @@ export class CmdBrack extends Command<[Block]> {
       cursor.moveTo(this, R)
       this.remove()
       cursor.insert(this.blocks[0], from == L ? R : L)
-    } else {
-      this.setSide(from == L ? R : L)
-      this.checkSvg(from)
+    } else if (from == R) {
+      this.setSide(L)
+      this.checkSvg(R)
       const spliced = new Span(this.parent, this, null).splice()
-      cursor.moveIn(this.blocks[0], from)
-      cursor.insert(spliced, from)
+      cursor.moveIn(this.blocks[0], R)
+      cursor.insert(spliced, R)
+    } else if (from == L) {
+      this.setSide(R)
+      this.checkSvg(L)
+      const spliced = new Span(this.parent, null, this).splice()
+      cursor.moveIn(this.blocks[0], L)
+      cursor.insert(spliced, L)
     }
   }
 
