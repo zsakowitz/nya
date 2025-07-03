@@ -285,20 +285,6 @@ fn end(a: Arc) -> Point {
 // "reflect"
 // "perimeter"
 
-fn stroke(p: Path, c: Color3) -> Path {
-  p
-    .color(c)
-    .stroke_opacity(1)
-    .stroke_width(3)
-}
-
-fn %plot(cv: Canvas, p: Complex) -> Path {
-  path
-    .circle(p.to_cv_coords(cv), 4.0)
-    .color(dcg_purple)
-    .fill_opacity(1.0)
-}
-
 fn %plot(cv: Canvas, p: Circle) -> Path {
   path
     .ellipse(

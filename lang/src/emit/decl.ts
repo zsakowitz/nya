@@ -74,6 +74,10 @@ export class IdMapMany<T> {
   mapEach<U>(f: (items: T, index: number, array: T[]) => U): U[] {
     return Object.values(this.rec).flat().map(f)
   }
+
+  alias(src: IdGlobal, dst: IdGlobal) {
+    this.rec[dst.value] ??= this.rec[src.value] ??= []
+  }
 }
 
 export class Globals {

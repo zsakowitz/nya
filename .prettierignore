@@ -8,4 +8,4 @@ pkg/manifest/data.json
 pkg/graphsource
 graph.svg
 lang/lib
-pkg/index-nyalang.ts
+pkg/script-index.ts

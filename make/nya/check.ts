@@ -2,10 +2,14 @@ import { ident } from "!/emit/id"
 import { Alt } from "!/emit/type"
 import { ScriptEnvironment } from "!/exec/loader"
 import { SCRIPTS, type ScriptName } from "#/script-index"
+import { SCRIPT_NAMES } from "#/scripts"
 
-if (await checkEach()) {
-  await checkFn()
-  await checkAll(10)
+console.log("checking each")
+if (checkEach()) {
+  console.log("checking fn")
+  checkFn()
+  console.log("checking all")
+  checkAll(10)
 }
 
 /*! https://stackoverflow.com/a/12646864 */
@@ -18,23 +22,28 @@ function shuffleArray(array: unknown[]) {
   }
 }
 
-async function checkEach() {
+function checkEach() {
   let ok = true
 
-  await Promise.all(
-    [...SCRIPTS.keys()].map(async (key) => {
-      try {
-        const env = new ScriptEnvironment()
-        await env.load(key as ScriptName)
-      } catch (e) {
-        ok = false
-        console.error(
-          `\x1b[30min \x1b[36m${key}\x1b[30m: \x1b[31m${e instanceof Error ? e.message : String(e)}`,
-        )
-        process.exitCode = 1
-      }
-    }),
-  )
+  // from error to source package
+  const errors = new Map<string, string[]>()
+  for (const key of SCRIPT_NAMES) {
+    try {
+      const env = new ScriptEnvironment()
+      env.load(key as ScriptName)
+    } catch (e) {
+      ok = false
+      const msg = e instanceof Error ? e.message : String(e)
+      errors.get(msg)?.push(key) ?? errors.set(msg, [key])
+      process.exitCode = 1
+    }
+  }
+
+  for (const [e, key] of errors) {
+    console.error(
+      `\x1b[30min \x1b[36m${key[0]}\x1b[30m${key.length > 1 ? "+" + (key.length - 1) : ""}: \x1b[31m${e}`,
+    )
+  }
 
   if (!ok) {
     process.exitCode = 1
@@ -45,14 +54,14 @@ async function checkEach() {
   return true
 }
 
-async function checkFn() {
+function checkFn() {
   try {
     const scripts = Array.from(SCRIPTS.keys())
     shuffleArray(scripts)
     // decreases risk of order-dependent errors
     var env = new ScriptEnvironment()
     for (const k of scripts) {
-      await env.load(k as ScriptName)
+      env.load(k as ScriptName)
     }
   } catch (e) {
     console.error(e instanceof Error ? e.message : String(e))
@@ -103,26 +112,24 @@ async function checkFn() {
   return ok
 }
 
-async function checkAll(count: number) {
+function checkAll(count: number) {
   let ok = true
 
-  await Promise.all(
-    Array.from({ length: count }, async () => {
-      try {
-        const scripts = Array.from(SCRIPTS.keys())
-        shuffleArray(scripts)
-        // decreases risk of order-dependent errors
-        const env = new ScriptEnvironment()
-        for (const k of scripts) {
-          await env.load(k as ScriptName)
-        }
-      } catch (e) {
-        console.error(e instanceof Error ? e.message : String(e))
-        process.exitCode = 1
-        ok = false
+  for (let i = 0; i < count; i++) {
+    try {
+      const scripts = Array.from(SCRIPTS.keys())
+      shuffleArray(scripts)
+      // decreases risk of order-dependent errors
+      const env = new ScriptEnvironment()
+      for (const k of scripts) {
+        env.load(k as ScriptName)
       }
-    }),
-  )
+    } catch (e) {
+      console.error(e instanceof Error ? e.message : String(e))
+      process.exitCode = 1
+      ok = false
+    }
+  }
 
   if (ok) {
     console.log(

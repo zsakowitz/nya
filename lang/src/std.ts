@@ -42,7 +42,7 @@ export function libNumBool(api: NyaApi) {
       glsl: v`${op}(${0})`,
       js: v`${`const %%=Math.${op}`}(${0})`,
     })
-    api.fb("@" + op, { value: "float" }, "float", {
+    api.fb("@" + op, { value: "float" }, "float", false, {
       glslN: v`${op}(${0})`,
       js1: v`${`const %%=Math.${op}`}(${0})`,
     })
@@ -65,6 +65,15 @@ export function libNumBool(api: NyaApi) {
       js: fn.of`${fract}(${0})`,
     })
   }
+  /* @fract */ {
+    const fn = new Impl()
+    const floor = fn.cache(`const %%=Math.floor`)
+    const fract = fn.cache(`function %%(x){return x-${floor}(x)}`)
+    api.fb("@fract", { value: "float" }, "float", false, {
+      glslN: v`fract(${0})`,
+      js1: fn.of`${fract}(${0})`,
+    })
+  }
   api.fn("atan", { y: num, x: num }, num, {
     glsl: v`atan(${0},${1})`,
     js: v`${`const %%=Math.atan2`}(${0},${1})`,
@@ -84,6 +93,10 @@ export function libNumBool(api: NyaApi) {
   api.fn("clamp", { value: num, min: num, max: num }, num, {
     glsl: v`clamp(${0},${1},${2})`,
     js: v`${`const %%=Math.min`}(${`const %%=Math.max`}(${0},${1}),${2})`,
+  })
+  api.fb("@clamp", { value: "float", min: num, max: num }, "float", false, {
+    glslN: v`clamp(${0},${1},${2})`,
+    js1: v`${`const %%=Math.min`}(${`const %%=Math.max`}(${0},${1}),${2})`,
   })
   // ~=
 
@@ -120,12 +133,7 @@ export function libNumBool(api: NyaApi) {
 
   // @mix(vec<num>, vec<num>, num)
   // @clamp(vec<num>, vec<num>, vec<num>)
-  // @length(vec<num>)
-  // @dot(vec<num>, vec<num>)
-  // @norm(vec<num>)
-  // @abs(vec<num>)
   // @fract(vec<num>)
-  // @smoothstep(num, num, num)
   // @compiletimelog(any)
 }
 
@@ -133,13 +141,13 @@ export function libBroadcasting(api: NyaApi) {
   const num = api.lib.tyNum
 
   for (const c of "+-*/") {
-    api.fb("@" + c, { lhs: "float", rhs: "float" }, "float", {
+    api.fb("@" + c, { lhs: "float", rhs: "float" }, "float", true, {
       js1: v`${0}${c}${1}`,
       glslN: v`${0}${c}${1}`,
     })
   }
 
-  api.fb("@-", { value: "float" }, "float", {
+  api.fb("@-", { value: "float" }, "float", true, {
     js1: v`-${0}`,
     glslN: v`-${0}`,
   })
@@ -158,46 +166,58 @@ export function libBroadcasting(api: NyaApi) {
     js4: v`${"const %%=Math.hypot"}(${0},${1},${2},${3})`,
   })
 
-  const hypotId = new Id("Math.hypot").ident()
-  const fNorm = new Fn(
-    ident("@norm"),
-    [{ name: "value", type: new AnyVector("float") }],
-    new AnyVector("float"),
-    (raw, block) => {
-      const val = raw[0]!
+  /* @norm */ {
+    const hypotId = new Id("Math.hypot").ident()
+    const fNorm = new Fn(
+      ident("@norm"),
+      [{ name: "value", type: new AnyVector("float") }],
+      new AnyVector("float"),
+      (raw, block) => {
+        const val = raw[0]!
 
-      // const path
-      if (val.const()) {
-        const s0 = scalars(val, block)
-        if (s0.every((x) => x.value === 0)) {
-          return val
+        // const path
+        if (val.const()) {
+          const s0 = scalars(val, block)
+          if (s0.every((x) => x.value === 0)) {
+            return val
+          }
+          const hypot = Math.hypot(...s0.map((a) => a.value as number))
+          return fromScalars(
+            val.type,
+            s0.map((a) => new Value((a.value as number) / hypot, num, true)),
+          )
         }
-        const hypot = Math.hypot(...s0.map((a) => a.value as number))
+
+        // glsl path
+        if (block.lang == "glsl") {
+          return new Value(`normalize(${val})`, val.type, false)
+        }
+
+        // js path
+        const s0 = scalars(val, block)
+        api.lib.global(`const ${hypotId}=Math.hypot;`)
+        const hy = block.cache(
+          new Value(`${hypotId}(${s0.join(",")})`, num, false),
+          true,
+        )
         return fromScalars(
           val.type,
-          s0.map((a) => new Value((a.value as number) / hypot, num, true)),
+          s0.map((x) => new Value(`(${x})/${hy}`, num, false)),
         )
-      }
+      },
+    )
+    api.lib.fns.push(ident("@norm"), fNorm)
+  }
 
-      // glsl path
-      if (block.lang == "glsl") {
-        return new Value(`normalize(${val})`, val.type, false)
-      }
+  api.fn("@smoothstep", { edge0: num, edge1: num, at: num }, num, {
+    glsl: v`smoothstep(${0},${1},${2})`,
+    js: v`${"function %%(v0,v1,x){var t=(x-v0)/(v1-v0);if(t<0)t=0;if(t>1)t=1;return t*t*(3-2*t)}"}(${0},${1},${2})`,
+  })
 
-      // js path
-      const s0 = scalars(val, block)
-      api.lib.global(`const ${hypotId}=Math.hypot;`)
-      const hy = block.cache(
-        new Value(`${hypotId}(${s0.join(",")})`, num, false),
-        true,
-      )
-      return fromScalars(
-        val.type,
-        s0.map((x) => new Value(`(${x})/${hy}`, num, false)),
-      )
-    },
-  )
-  api.lib.fns.push(ident("@norm"), fNorm)
+  api.fb("@mix", { edge0: "float", edge1: "float", at: num }, "float", false, {
+    glslN: v`mix(${0},${1},${2})`,
+    js1: v`${"function %%(v0,v1,x){return (1-x)*v0+x*v1}"}(${0},${1},${2})`,
+  })
 }
 
 export interface NyaCanvas {

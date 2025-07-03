@@ -6,6 +6,7 @@ let index = 0
 let items = ""
 let name = ""
 const entries = new Set<string>()
+let indexFiles = ""
 
 // Scans the current working directory and each of its sub-directories recursively
 for await (const file of glob.scan(scripts.pathname)) {
@@ -13,10 +14,12 @@ for await (const file of glob.scan(scripts.pathname)) {
     continue
   }
   const idx = index++
-  const rawAlias = file.slice(0, file.endsWith("/index.nya") ? -10 : -4)
-  const alias = JSON.stringify(
-    file.slice(0, file.endsWith("/index.nya") ? -10 : -4),
-  )
+  const isIndex = file.endsWith("/index.nya")
+  const rawAlias = file.slice(0, isIndex ? -10 : -4)
+  const alias = JSON.stringify(rawAlias)
+  if (isIndex) {
+    indexFiles += `${alias},`
+  }
   if (entries.has(rawAlias)) {
     throw new Error(
       `Script '${rawAlias}' is defined twice, likely under the names '${rawAlias}/index.nya' and '${rawAlias}.nya'. Delete one.`,
@@ -30,5 +33,5 @@ for await (const file of glob.scan(scripts.pathname)) {
 
 const source =
   imports +
-  `\nexport const SCRIPTS = new Map([${items}\n])\n\nexport type ScriptName =${name}\n`
+  `\nexport const SCRIPTS = new Map([${items}\n])\n\nexport const SCRIPT_INDICES = new Set([${indexFiles}])\n\nexport type ScriptName =${name}\n`
 await Bun.write(new URL("../../pkg/script-index.ts", import.meta.url), source)

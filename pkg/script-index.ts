@@ -68,6 +68,8 @@ export const SCRIPTS = new Map([
   ["gamma/gamma", s32],
 ])
 
+export const SCRIPT_INDICES = new Set(["color","real","complex",])
+
 export type ScriptName =
   | "point"
   | "special"

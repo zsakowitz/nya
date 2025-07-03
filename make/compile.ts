@@ -16,7 +16,7 @@ try {
   }
 
   const env = new ScriptEnvironment()
-  await env.load(name)
+  env.load(name)
   const main = env.getMain(lang)
   if (file) {
     await Bun.write(file, main)

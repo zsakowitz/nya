@@ -302,6 +302,7 @@ export class NyaApi {
     name: string,
     params: Record<string, GlslScalar | FnType>,
     ret: GlslScalar,
+    allowSingleValues: boolean,
     impls: {
       js1: ScriptingInterfaceFnImpl
       glslN: ScriptingInterfaceFnImpl
@@ -329,48 +330,54 @@ export class NyaApi {
       )
     }
 
-    const fn = new Fn(id, fnParams, new AnyVector(ret), (args, block) => {
-      const v: Value[] = args.map((x) => block.cache(x, true))
-      let retType: Type | undefined
-      for (let i = 0; i < args.length; i++) {
-        const arg = args[i]!
-        if (broadcast.has(i)) {
-          const s = arg.type.repr as ReprVec
-          if (s.count != 1) {
-            if (retType == null) {
+    const fn = new Fn(
+      id,
+      fnParams,
+      new AnyVector(ret),
+      (args, block, _, pos) => {
+        const v: Value[] = args.map((x) => block.cache(x, true))
+        let retType: Type | undefined
+        let backupType: Type | undefined
+        for (let i = 0; i < args.length; i++) {
+          const arg = args[i]!
+          if (broadcast.has(i)) {
+            if (allowSingleValues && (arg.type.repr as ReprVec).count == 1) {
+              backupType ??= arg.type
+            } else if (retType == null) {
               retType = arg.type
             } else if (retType != arg.type) {
               issue(
-                `Multi-value arguments to '${name}' must all be of the same type.`,
+                `Broadcasted arguments to '${name}' must all be of the same type.`,
+                pos,
               )
             }
           }
         }
-      }
+        retType ??= backupType
+        if (!retType) {
+          issue(`At least one argument to '${name}' must be a non-scalar.`, pos)
+        }
 
-      if (retType == null) {
-        issue(
-          `'${name}' should be called with at least one multi-value struct.`,
-        )
-      }
-      if (this.lib.props.lang == "glsl") {
-        return this._f(impls.glslN, v, block, retType)
-      } else {
-        const vals = v.map((x, i) =>
-          broadcast.has(i) ? retType.toScalars(x) : x,
-        )
-        return retType.fromScalars(
-          Array.from({ length: (retType.repr as ReprVec).count }, (_, i) =>
-            this._f(
-              impls.js1,
-              vals.map((x) => (Array.isArray(x) ? x[i]! : x)),
-              block,
-              null!,
+        console.log(retType.toString())
+        if (this.lib.props.lang == "glsl") {
+          return this._f(impls.glslN, v, block, retType)
+        } else {
+          const vals = v.map((x, i) =>
+            broadcast.has(i) ? retType.toScalars(x) : x,
+          )
+          return retType.fromScalars(
+            Array.from({ length: (retType.repr as ReprVec).count }, (_, i) =>
+              this._f(
+                impls.js1,
+                vals.map((x) => (Array.isArray(x) ? x[i]! : x)),
+                block,
+                null!,
+              ),
             ),
-          ),
-        )
-      }
-    })
+          )
+        }
+      },
+    )
     this.lib.fns.push(id, fn)
   }
 

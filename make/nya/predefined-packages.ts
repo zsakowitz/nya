@@ -55,7 +55,7 @@ async function getPackage(name: ScriptName) {
   const props = parseExposePackage(pkg)
   const actualPackageDeclaration: Package = {
     name: props.name,
-    label: props.label,
+    label: props.label ?? "<TODO: no label>",
     category: "auto-generated (nyalang)",
     deps: [],
     scripts: [name],

@@ -73,12 +73,12 @@ export class Chunk {
 
   coords(pos: number) {
     let row = 1
-    let col = 0
+    let col = 1
     for (let i = 0; i < pos; i++) {
       const char = this.source[i]
       if (char == "\n") {
         row++
-        col = 0
+        col = 1
       } else {
         col++
       }

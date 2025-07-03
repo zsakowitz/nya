@@ -1,5 +1,6 @@
 import { EmitProps, type Lang } from "!/emit/props"
 import { SCRIPTS, type ScriptName } from "#/script-index"
+import { getScriptPath } from "#/scripts"
 import { Chunk, Issues } from "../ast/issue"
 import { ItemUse } from "../ast/node/item"
 import { parse, parseBlockContents } from "../ast/parse"
@@ -33,11 +34,14 @@ export class ScriptEnvironment {
     return this.loaded.size
   }
 
-  async load(name: ScriptName) {
-    await this._load(name + ".nya", SCRIPTS.get(name)!)
+  load(name: ScriptName) {
+    this._load(getScriptPath(name), SCRIPTS.get(name)!)
   }
 
-  private async _load(name: string, script: string) {
+  // eventually this will be async since scripts may load dependencies
+  // asynchronously, but the current architecture of "all scripts known at
+  // comptime" means it's fine as synchronous for now
+  private _load(name: string, script: string) {
     if (this.loaded.has(script)) {
       return
     }
@@ -50,7 +54,7 @@ export class ScriptEnvironment {
     }
     for (const item of items) {
       if (item instanceof ItemUse) {
-        this.load(extractDepName(item)) // FIXME: this needs to be awaited but breaks everything if it is
+        this.load(extractDepName(item))
         continue
       }
 

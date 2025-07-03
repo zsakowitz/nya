@@ -371,7 +371,10 @@ export function emitExpr(node: NodeExpr, block: Block): Value {
       if (main.type != void_ && !node.rest) {
         issue(`An 'if' statement with a value must have an 'else' block.`)
       } else {
-        issue(`Branches of an 'if' statement must have the same type.`, node)
+        issue(
+          `Types of 'if' (${main.type}) and 'else' branches (${alt.type}) must match.`,
+          node,
+        )
       }
     }
 

@@ -200,11 +200,8 @@ fn %sqrt(z: Complex) -> Complex {
   Complex { real: cos(a), imag: sin(a) } @* sqrt(@length(z))
 }
 
-fn %plot(cv: Canvas, p: Complex) -> Path {
-  path
-    .circle(p.to_cv_coords(cv), 4.0)
-    .color(dcg_purple)
-    .fill_opacity(1.0)
+fn %plot(cv: Canvas, p: Complex) -> CanvasPoint {
+  cv.point_at(p.real, p.imag)
 }
 
 expose package {
