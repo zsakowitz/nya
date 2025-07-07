@@ -303,10 +303,7 @@ export class NyaApi {
     params: Record<string, GlslScalar | FnType>,
     ret: GlslScalar,
     allowSingleValues: boolean,
-    impls: {
-      js1: ScriptingInterfaceFnImpl
-      glslN: ScriptingInterfaceFnImpl
-    },
+    impls: { js1: ScriptingInterfaceFnImpl; glslN: ScriptingInterfaceFnImpl },
   ) {
     validateFnName(name)
     const id = ident(name)
@@ -358,7 +355,6 @@ export class NyaApi {
           issue(`At least one argument to '${name}' must be a non-scalar.`, pos)
         }
 
-        console.log(retType.toString())
         if (this.lib.props.lang == "glsl") {
           return this._f(impls.glslN, v, block, retType)
         } else {

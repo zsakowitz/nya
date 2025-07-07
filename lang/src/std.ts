@@ -1,10 +1,11 @@
 import { Impl, type NyaApi, v } from "!/emit/api"
+import { dim, magenta, reset } from "./ansi"
 import { AnyVector, fromScalars, scalars } from "./emit/broadcast"
 import { performCall } from "./emit/emit"
 import { issue } from "./emit/error"
 import { Id, ident, type IdGlobal } from "./emit/id"
 import { Tag } from "./emit/tag"
-import { Fn } from "./emit/type"
+import { Any, Fn } from "./emit/type"
 import { Value } from "./emit/value"
 
 export function libNumBool(api: NyaApi) {
@@ -218,6 +219,21 @@ export function libBroadcasting(api: NyaApi) {
     glslN: v`mix(${0},${1},${2})`,
     js1: v`${"function %%(v0,v1,x){return (1-x)*v0+x*v1}"}(${0},${1},${2})`,
   })
+
+  api.lib.fns.push(
+    ident("@debug"),
+    new Fn(
+      ident("@debug"),
+      [{ name: "arg", type: Any }],
+      Any,
+      ([v], _, full) => {
+        console.log(
+          `${dim}@debug(${reset}${magenta}${v!.type}${reset}${dim}) @ ${reset}${full}${reset}`,
+        )
+        return v!
+      },
+    ),
+  )
 }
 
 export interface NyaCanvas {
