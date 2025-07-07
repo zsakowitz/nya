@@ -1,5 +1,5 @@
 import { Impl, type NyaApi, v } from "!/emit/api"
-import { dim, magenta, reset } from "./ansi"
+import { blue, dim, magenta, reset, yellow } from "./ansi"
 import { AnyVector, fromScalars, scalars } from "./emit/broadcast"
 import { performCall } from "./emit/emit"
 import { issue } from "./emit/error"
@@ -228,7 +228,7 @@ export function libBroadcasting(api: NyaApi) {
       Any,
       ([v], _, full) => {
         console.log(
-          `${dim}@debug(${reset}${magenta}${v!.type}${reset}${dim}) @ ${reset}${full}${reset}`,
+          `${blue}[${_.lang}] ${yellow}${v}${reset}${dim}: ${reset}${magenta}${v!.type}${reset}${dim} in ${reset}${full}${reset}`,
         )
         return v!
       },
