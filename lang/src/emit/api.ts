@@ -367,7 +367,7 @@ export class NyaApi {
                 impls.js1,
                 vals.map((x) => (Array.isArray(x) ? x[i]! : x)),
                 block,
-                null!,
+                this.lib.tyNum,
               ),
             ),
           )

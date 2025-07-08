@@ -215,8 +215,7 @@ fn quantile(dist: NormalDist, p: num) -> num {
 
 fn quantile(dist: UniformDist, p: num) -> num {
   if 0.0 <= p && p <= 1.0 && dist.min <= dist.max {
-    // TODO: verify argument order
-    @debug(@mix(dist.min, dist.max, p))
+    @mix(dist.min, dist.max, p)
   } else {
     nan
   }
