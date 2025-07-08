@@ -1,3 +1,4 @@
+\surreal{3^4,5_6}{2,\sum}
 2+3i
 S\left(a\right)=\operatorname{surreal}\left(\left[a\right],\left[\right]\right)
 B\left(a,b\right)=\operatorname{surreal}\left(a,b\right)
