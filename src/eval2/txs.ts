@@ -2,7 +2,7 @@ import { escapeIdentName } from "!/ast/kind"
 import { issue, todo } from "!/emit/error"
 import { Id, ident } from "!/emit/id"
 import type { PuncCmp } from "@/eval/ast/token"
-import type { NameCooked, Node, OpKind, Suffix } from "./node"
+import { type NameCooked, type Node, type OpKind, type Suffix } from "./node"
 import { P, PRECEDENCE_WORD_BINARY } from "./prec"
 import {
   listItems,
@@ -348,6 +348,15 @@ function alias(name: string, nya: string) {
 function cmp(name: PuncCmp, nameneg: PuncCmp, nya: string) {
   TX_OPS_OPS[name] = {
     eval(_, [a, b], block) {
+      // TODO: chain comparisons
+      // if (b!.data.type == "op" && b!.data.data.startsWith("cmp-")) {
+      //   const mid = b!.args![0]!
+      //   const id = new Id("middle value")
+      //   const srhs = new ParseNode<Data>({ type: "op", data: b!.data.data }, [
+      //     new ParseNode<Data>(),
+      //   ])
+      //   return `{let ${id}=${block.eval(mid)};(${block.eval(a!)}) ${nya}(${id})&&(${block.eval(new ParseNode())})}`
+      // }
       return `(${block.eval(a!)}) ${nya}(${block.eval(b!)})`
     },
     deps(_, [a, b], deps) {
