@@ -1242,8 +1242,8 @@ function libLatex(decl: Declarations, num: Scalar, bool: Scalar) {
     // TODO: this should get shorter the deeper it is; 2.349834+3.3498734i takes up too much space in a displayed list
     const fLatexHelper = (x: number): string => {
       if (x != x) return "\\wordvar{undefined}"
-      if (x == 1 / 0) return "\\infty"
-      if (x == -1 / 0) return "-\\infty"
+      if (x == 1 / 0) return "\\infty "
+      if (x == -1 / 0) return "-\\infty "
       let str = x.toPrecision(8)
       const expIndex = str.indexOf("e")
       let exp = ""
