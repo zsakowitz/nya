@@ -546,4 +546,9 @@ export class Impl {
 
 type ScriptingInterfaceFnImpl = ReturnType<typeof f>
 
-export type Plugin = (api: NyaApi) => void
+export interface Plugin {
+  meta:
+    | { name: string; default: true }
+    | { name: string; default: false; label: string }
+  load(api: NyaApi): void
+}
