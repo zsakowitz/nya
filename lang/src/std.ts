@@ -228,7 +228,27 @@ export function libBroadcasting(api: NyaApi) {
       Any,
       ([v], _, full) => {
         console.log(
-          `${blue}[${_.lang}] ${yellow}${v}${reset}${dim}: ${reset}${magenta}${v!.type}${reset}${dim} in ${reset}${full}${reset}`,
+          `${blue}[${_.lang.padEnd(4)}] ${yellow}${v}${reset}${dim}: ${reset}${magenta}${v!.type}${reset}${dim} in ${reset}${full}${reset}`,
+        )
+        return v!
+      },
+    ),
+  )
+
+  api.lib.fns.push(
+    ident("@debug_scalars"),
+    new Fn(
+      ident("@debug_scalars"),
+      [{ name: "arg", type: Any }],
+      Any,
+      ([v], _, full) => {
+        console.log(
+          `${blue}[${_.lang.padEnd(4)}] ${yellow}${v!
+            .toScalars()
+            .map((x) => x.toRuntime())
+            .join(
+              reset + ", " + yellow,
+            )}${reset}${dim}: ${reset}${magenta}${v!.type}${reset}${dim} in ${reset}${full}${reset}`,
         )
         return v!
       },

@@ -359,7 +359,6 @@ export class NyaApi {
             }
           }
         }
-        retType ??= backupType
         if (!retType) {
           issue(`At least one argument to '${name}' must be a non-scalar.`, pos)
         }
@@ -380,7 +379,7 @@ export class NyaApi {
                 block,
                 this.lib.tyNum,
               ),
-            ),
+            ).reverse(),
           )
         }
       },
