@@ -1,3 +1,5 @@
+import { NyaApi } from "!/emit/api"
+import PKG_SURREAL from "../nya/woc/surreal"
 import {
   NYALANG_PACKAGES_ADDONS,
   NYALANG_PACKAGES_BUILTIN,
@@ -11,6 +13,25 @@ type IndexAddons = Partial<IndexOf<Addon>>
 type Index = IndexOf<Package>
 
 const rawBuiltin = NYALANG_PACKAGES_BUILTIN
+rawBuiltin["nya:surreal"] = () =>
+  Promise.resolve({
+    default: {
+      name: "surreal numbeers",
+      label: "<TODO: no label>",
+      category: "auto-generated (nyalang)",
+      deps: [],
+      init: {
+        intents: ["intent 1"],
+        fn(sheet) {
+          const api1 = new NyaApi(sheet.factory.env.libJs)
+          PKG_SURREAL.load(api1)
+          const api2 = new NyaApi(sheet.factory.env.libGl)
+          PKG_SURREAL.load(api2)
+          sheet.options.words!.set("surreal", "prefix")
+        },
+      },
+    } satisfies Package,
+  })
 
 const rawAddons = NYALANG_PACKAGES_ADDONS
 

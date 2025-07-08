@@ -1,15 +1,3 @@
-\wordprefix{_nya_helper_cx_factorial_pos}(2+3i)
-(2+3i)!
-debugScript(23+47+-5)
-f(x)=x^2
-rgb\left(2,30,255,0.8\right)
-\operatorname{rgb}\left(2,30,255,0.000000008\right)
-A=3+4i
-B=(7,8)
-a=2
-b=3
-a+b
-x^{2}
-sin 3
-cos sin 4
-ray((realA,imagA),B)
+\operatorname{Szero}\left(\right)\leq \operatorname{Sone}\left(\right)
+\operatorname{Sone}\left(\right)\leq \operatorname{Szero}\left(\right)
+a=S()

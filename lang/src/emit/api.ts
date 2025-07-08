@@ -109,7 +109,11 @@ export class NyaApi {
   //   return type
   // }
 
-  opaque(name: string, declaration: Record<Lang, string | null>) {
+  opaque(
+    name: string,
+    declaration: Record<Lang, string | null>,
+    pod?: boolean,
+  ) {
     validateTypeName(name)
     const decl = declaration[this.lib.props.lang]
     if (decl == null) {
@@ -133,7 +137,10 @@ export class NyaApi {
         name,
         emit,
         { type: "struct", id },
-        () => issue(`Opaque type '${name}' cannot be created at compile time.`),
+        pod && this.lib.props.lang == "js" ?
+          (v) => `(${JSON.stringify(v)})`
+        : () =>
+            issue(`Opaque type '${name}' cannot be created at compile time.`),
         () => issue(`Cannot use broadcasting operators on '${name}'.`),
         () => issue(`Cannot use broadcasting operators on '${name}'.`),
       )
@@ -144,7 +151,9 @@ export class NyaApi {
       name,
       decl,
       { type: "struct", id: new Id(name) },
-      () => issue(`Opaque type '${name}' cannot be created at compile time.`),
+      pod && this.lib.props.lang == "js" ?
+        (v) => `(${JSON.stringify(v)})`
+      : () => issue(`Opaque type '${name}' cannot be created at compile time.`),
       () => issue(`Cannot use broadcasting operators on '${name}'.`),
       () => issue(`Cannot use broadcasting operators on '${name}'.`),
     )

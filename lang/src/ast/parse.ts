@@ -661,6 +661,9 @@ function exprAtom(stream: Stream, ctx: ExprContext): NodeExpr {
 
     case OLBrack: {
       const lt = stream.matchGroup(OLBrack)!
+      if (lt.contents.isEmpty()) {
+        return new ExprArray(new List(lt, [], null, true, false))
+      }
       const first = expr(lt.contents)
 
       switch (lt.contents.peek()) {

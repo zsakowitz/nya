@@ -535,7 +535,7 @@ export const ArrayEmpty: Type = {
     return new Value(0, ArrayEmpty, true)
   },
   toRuntime() {
-    return null
+    return "[]" // FIXME: there are probably horrible things broken by type=void and this but whatever
   },
   toString() {
     return "[unknown; 0]"
@@ -599,7 +599,7 @@ export class Array implements Type {
 
   toRuntime(value: ConstValue): string | null {
     if (this.repr.type == "void") {
-      return null
+      return "[]" // FIXME: there are probably horrible things broken by type=void and this but whatever
     }
 
     if (this.props.lang == "glsl") {
@@ -611,6 +611,38 @@ export class Array implements Type {
 
   toString(): string {
     return `[${this.item}; ${this.count}]`
+  }
+}
+
+export class AnyArray implements FnType {
+  constructor(readonly item: Type) {
+    if (item.repr.type == "array") {
+      todo(
+        `An array cannot yet contain arrays unless the inner array is a void type.`,
+      )
+    }
+  }
+
+  canConvertFrom(type: Type): boolean {
+    return (
+      type == ArrayEmpty || (type instanceof Array && type.item == this.item)
+    )
+  }
+
+  convertFrom(value: Value, pos: Pos): Value {
+    if (value.type == ArrayEmpty) {
+      return new Value([], ArrayEmpty, true)
+    }
+
+    if (!this.canConvertFrom(value.type)) {
+      invalidType(this, value.type, pos)
+    }
+
+    return value
+  }
+
+  toString(): string {
+    return `[${this.item}; ...]`
   }
 }
 

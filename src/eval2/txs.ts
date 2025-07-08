@@ -298,6 +298,15 @@ setGroupTxr("(", ")", {
   },
 })
 
+setGroupTxr("[", "]", {
+  eval({ contents }, _, block) {
+    return `[${block.evalList(contents).join(",")}]`
+  },
+  deps({ contents }, _, deps) {
+    deps.check(contents)
+  },
+})
+
 setGroupTxr("|", "|", {
   eval({ contents }, _, block) {
     return block.of`call abs %abs(${contents})`
