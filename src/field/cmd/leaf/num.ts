@@ -232,7 +232,6 @@ export class CmdVar extends Leaf {
         text.unshift(leftmost.autoCmd!)
       }
 
-      console.log(text)
       // Try each combination
       while (text.length) {
         const word = text.join("")
