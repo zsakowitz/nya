@@ -196,6 +196,7 @@ const words = new WordMapWithoutSpaces<WordKind>([
   ["debugAstType", "prefix"],
   ["debugScript", "prefix"],
   ["mod", "infix"],
+  ["label", "prefix"],
 ]).freeze()
 
 const latexWords =

@@ -1,0 +1,3 @@
+fn >=(a: Surreal, b: Surreal) -> bool {
+  b <= a
+}

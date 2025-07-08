@@ -35,7 +35,7 @@ export function bug(x: string): never {
 
 export function errorText(e: unknown) {
   return (
-    e instanceof TypeError ? e.message + "\n" + e.stack
+    e instanceof TypeError ? (console.warn(e), e.message + "\n" + e.stack)
     : e instanceof Error ? e.message
     : String(e)
   )

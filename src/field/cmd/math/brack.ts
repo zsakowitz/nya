@@ -581,7 +581,9 @@ export class CmdSurreal extends Command<[Block, Block]> {
   }
 
   static init(cursor: Cursor, _props: InitProps): InitRet {
-    new CmdSurreal(new Block(null), new Block(null)).insertAt(cursor, L)
+    const b0 = new Block(null)
+    new CmdSurreal(b0, new Block(null)).insertAt(cursor, L)
+    cursor.moveIn(b0, L)
   }
 
   static render(lhs: Block, rhs: Block) {

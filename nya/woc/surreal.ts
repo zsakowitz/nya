@@ -22,7 +22,7 @@ export default {
 
     api.fn("%surreal", { lhs: new AnyArray(S), rhs: new AnyArray(S) }, S, {
       glsl: v``,
-      js: v`({x:${0},y:${1},z:null})`,
+      js: v`({x:${0}||[],y:${1}||[],z:null})`,
     })
 
     {
@@ -54,5 +54,10 @@ export default {
         js: impl.of`${fn}(${0})`,
       })
     }
+
+    api.fn("label", { lhs: S, rhs: api.lib.tyNum }, S, {
+      glsl: v``,
+      js: v`${"function %%(a,z){return{x:a.x,y:a.y,z:z}}"}(${0},${1})`,
+    })
   },
 } satisfies Plugin
