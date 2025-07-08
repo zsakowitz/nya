@@ -27,6 +27,7 @@ export interface OpKind {
   group: { lhs: ParenLhs; rhs: ParenRhs; contents: Node }
   sqrt: Node
   nthroot: { root: Node; contents: Node }
+  surreal: { lhs: Node; rhs: Node }
   mixed: { int: string; num: string; denom: string }
   combination: [Node, Node]
   piecewise: { condition: Node | null; value: Node }[]

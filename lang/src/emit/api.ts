@@ -9,7 +9,7 @@ import { Fn, Scalar, type FnParam, type FnType, type Type } from "./type"
 import { Value } from "./value"
 
 const NAME = /^[A-Za-z]\w*$/
-const NAME_FN = /^@?[A-Za-z]\w*$/
+const NAME_FN = /^[@%]?[A-Za-z]\w*$/
 
 function validateTypeName(name: string) {
   if (!NAME.test(name)) {

@@ -1,6 +1,6 @@
 import { P } from "@/eval2/prec"
 import { L, R, type Dir } from "@/field/dir"
-import { h, path, svg } from "@/jsx"
+import { h, path, svg, svgx } from "@/jsx"
 import type { LatexParser } from "../../latex"
 import {
   Block,
@@ -151,6 +151,10 @@ export const BRACKS = {
   }
 >
 Object.setPrototypeOf(BRACKS, null)
+
+export function barPlain(className: string) {
+  return svgx("0 0 10 54", className, path("M4.4 0 L4.4 54 L5.6 54 L5.6 0"))
+}
 
 export type ParenLhs = "(" | "[" | "{" | "|" | "¡"
 export type ParenRhs = ")" | "]" | "}" | "|" | "!"
@@ -553,5 +557,3 @@ export class CmdBrack extends Command<[Block]> {
     }
   }
 }
-
-// TODO: typing 2), then going to the left of 2 and typing ( jumps cursor to after the 2

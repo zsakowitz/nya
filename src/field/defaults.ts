@@ -42,6 +42,7 @@ import { CmdInt } from "./cmd/math/int"
 import { CmdMatrix } from "./cmd/math/matrix"
 import { CmdRoot } from "./cmd/math/root"
 import { CmdSupSub } from "./cmd/math/supsub"
+import { CmdSurreal } from "./cmd/math/surreal"
 import { CmuSym } from "./cmd/uscript/leaf/sym"
 import { ByRegex } from "./cmd/util/by-regex"
 import {
@@ -260,6 +261,7 @@ const latex = new WordMap<LatexInit>([
   ["\\nyacolor", CmdColor],
   ["\\psi", SymPsi],
   ["\\text", CmdTextInert],
+  ["\\surreal", CmdSurreal],
   ...latexWords.map((x) => ["\\" + x, OperatorName] as const),
 ])
 

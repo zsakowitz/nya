@@ -1,3 +1,7 @@
-\operatorname{Szero}\left(\right)\leq \operatorname{Sone}\left(\right)
-\operatorname{Sone}\left(\right)\leq \operatorname{Szero}\left(\right)
-a=S()
+S\left(a\right)=\operatorname{surreal}\left(\left[a\right],\left[\right]\right)
+B\left(a,b\right)=\operatorname{surreal}\left(a,b\right)
+x_{0}=\operatorname{surreal}\left(0\right)
+x_{1}=S\left(x_{0}\right)
+x_{2}=S\left(x_{1}\right)
+x_{3}=S\left(x_{2}\right)
+x_{3}<x_{3}
