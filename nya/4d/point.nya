@@ -63,6 +63,5 @@ fn %dot(a: Point4D, b: Point4D) -> num {
 
 expose package {
   name: "4D points",
-  default: false,
-  label: "points with four real coordinates",
+  default: true,
 }

@@ -62,6 +62,6 @@ async function getPackage(name: ScriptName) {
   }
   return {
     decl: `  ${JSON.stringify(`nya:${name}`)}: ()=>Promise.resolve({default:${JSON.stringify(actualPackageDeclaration)} as const}),\n`,
-    builtin: name == "complex",
+    builtin: props.default,
   }
 }
