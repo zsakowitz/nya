@@ -1,3 +1,4 @@
+import { errorText } from "@/error"
 import { BindingFn, BindingGlslValue, id } from "@/eval/lib/binding"
 import type { JsVal, TyName } from "@/eval/ty"
 import { TY_INFO } from "@/eval/ty/info"
@@ -143,10 +144,7 @@ export class TokenCtx {
             type = value.type
           }
         } catch {
-          console.warn(
-            "[tokenctx.update]",
-            e instanceof Error ? e.message : String(e),
-          )
+          console.warn("[tokenctx.update]", errorText(e))
         }
       }
 

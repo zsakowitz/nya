@@ -7,7 +7,7 @@ import { parse, parseBlockContents } from "../ast/parse"
 import { createStream } from "../ast/stream"
 import { Block, Exits, type Declarations, type IdMap } from "../emit/decl"
 import { emitBlock, emitItem } from "../emit/emit"
-import { bug } from "../emit/error"
+import { bug, errorText } from "../emit/error"
 import { createStdlib } from "../emit/stdlib"
 import type { Value } from "../emit/value"
 
@@ -133,7 +133,7 @@ ${runtime}`
       )
       console.groupEnd()
     } catch (e) {
-      console.error(e instanceof Error ? e.message : e)
+      console.error(errorText(e))
     }
   }
 

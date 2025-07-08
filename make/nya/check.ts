@@ -3,6 +3,7 @@ import { Alt } from "!/emit/type"
 import { ScriptEnvironment } from "!/exec/loader"
 import { SCRIPTS, type ScriptName } from "#/script-index"
 import { SCRIPT_NAMES } from "#/scripts"
+import { errorText } from "@/error"
 
 console.log("checking each")
 if (checkEach()) {
@@ -33,7 +34,7 @@ function checkEach() {
       env.load(key as ScriptName)
     } catch (e) {
       ok = false
-      const msg = e instanceof Error ? e.message : String(e)
+      const msg = errorText(e)
       errors.get(msg)?.push(key) ?? errors.set(msg, [key])
       process.exitCode = 1
     }
@@ -64,7 +65,7 @@ function checkFn() {
       env.load(k as ScriptName)
     }
   } catch (e) {
-    console.error(e instanceof Error ? e.message : String(e))
+    console.error(errorText(e))
     process.exitCode = 1
     return false
   }
@@ -125,7 +126,7 @@ function checkAll(count: number) {
         env.load(k as ScriptName)
       }
     } catch (e) {
-      console.error(e instanceof Error ? e.message : String(e))
+      console.error(errorText(e))
       process.exitCode = 1
       ok = false
     }

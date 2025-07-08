@@ -24,6 +24,7 @@ import type { CanvasJs, PathJs } from "!/emit/stdlib"
 import { Value } from "!/emit/value"
 import { Entry } from "!/exec/item"
 import { STORE_EVAL } from "#/list/eval"
+import { errorText } from "@/error"
 import "@/eval2/txs"
 
 type ExprStateOk =
@@ -150,7 +151,7 @@ export class Expr {
     } catch (e) {
       this.elOutput.classList.add("hidden")
       this.elError.classList.remove("hidden")
-      this.elError.textContent = e instanceof Error ? e.message : String(e)
+      this.elError.textContent = errorText(e)
       return
     }
 
@@ -221,7 +222,7 @@ export class Expr {
     } catch (e) {
       this.elOutput.classList.add("hidden")
       this.elError.classList.remove("hidden")
-      this.elError.textContent = e instanceof Error ? e.message : String(e)
+      this.elError.textContent = errorText(e)
     }
 
     // TODO: display result as glsl

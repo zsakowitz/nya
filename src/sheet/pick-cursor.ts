@@ -1,3 +1,4 @@
+import { errorText } from "@/error"
 import { js } from "@/eval/ast/tx"
 import { each } from "@/eval/ty"
 import { TY_INFO } from "@/eval/ty/info"
@@ -82,10 +83,7 @@ export const PICK_CURSOR: Picker<Data> = {
           )
         }
       } catch (e) {
-        console.warn(
-          "[pickcursor.preview]",
-          e instanceof Error ? e.message : String(e),
-        )
+        console.warn("[pickcursor.preview]", errorText(e))
       }
     } finally {
       sel.remove()

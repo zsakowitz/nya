@@ -1,3 +1,4 @@
+import { errorText } from "@/error"
 import type { Node } from "@/eval/ast/token"
 import { glsl, js, sym, type PropsDrag } from "@/eval/ast/tx"
 import { Deps } from "@/eval/deps"
@@ -159,7 +160,7 @@ export class Scope {
         field.deps = myDeps
         field.dirtyAst = false
       } catch (e) {
-        const msg = e instanceof Error ? e.message : String(e)
+        const msg = errorText(e)
         console.warn("[deps]", msg)
         field.error = toError(e)
         field.recompute?.()

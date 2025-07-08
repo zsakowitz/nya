@@ -1,4 +1,4 @@
-import { issue } from "!/emit/error"
+import { errorText, issue } from "!/emit/error"
 import { ScriptEnvironment } from "!/exec/loader"
 import { isScriptName } from "#/scripts"
 
@@ -24,5 +24,5 @@ try {
     console.log(main)
   }
 } catch (e) {
-  console.error(e instanceof Error ? e.message : e)
+  console.error(errorText(e))
 }

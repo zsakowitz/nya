@@ -1,3 +1,4 @@
+import { errorText } from "@/error"
 import type { GlslResult } from "@/eval/lib/fn"
 import { D, L, U, type Dir, type VDir } from "@/field/dir"
 import { h, t } from "@/jsx"
@@ -203,10 +204,7 @@ abstract class ItemList {
             ref.factory.plot!.draw(ref.data, items[i]!, i)
           } catch (e) {
             console.warn("[itemlist.draw]", e)
-            ref.factory.error?.(
-              ref.data,
-              e instanceof Error ? e.message : String(e),
-            )
+            ref.factory.error?.(ref.data, errorText(e))
           }
         }
       }
