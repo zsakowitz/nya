@@ -368,7 +368,9 @@ export class NyaApi {
           return this._f(impls.glslN, v, block, retType)
         } else {
           const vals = v.map((x, i) =>
-            broadcast.has(i) ? retType.toScalars(x) : x,
+            broadcast.has(i) && (x.type.repr as ReprVec).count != 1 ?
+              retType.toScalars(x)
+            : x,
           )
           return retType.fromScalars(
             Array.from({ length: (retType.repr as ReprVec).count }, (_, i) =>
