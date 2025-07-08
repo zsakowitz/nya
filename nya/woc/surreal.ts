@@ -1,5 +1,5 @@
 import { Impl, v, type Plugin } from "!/emit/api"
-import { AnyArray } from "!/emit/type"
+import { AnyArray, Array } from "!/emit/type"
 import { numToLatex } from "!/std"
 
 export default {
@@ -8,43 +8,22 @@ export default {
     default: true,
   },
   load(api) {
-    const num = api.lib.tyNum
     const S = api.opaque("Surreal", { glsl: null, js: "" }, true)
 
-    api.fn("surreal", {}, S, {
-      glsl: v``,
-      js: v`({x:[],y:[],z:null})`,
+    api.fn("%surreal_join", {}, new Array(api.lib.props, S, 0), {
+      glsl: v`[]`,
+      js: v`[]`,
     })
 
-    api.fn("surreal", { z: num }, S, {
-      glsl: v``,
-      js: v`({x:[],y:[],z:${0}})`,
+    api.fn("%surreal_join", { arg1: S }, new Array(api.lib.props, S, 1), {
+      glsl: v`[]`,
+      js: v`[${0}]`,
     })
 
-    api.fn("surreal", { lhs: S, rhs: S }, S, {
-      glsl: v``,
-      js: v`({x:[${0}],y:[${1}],z:null})`,
-    })
-
-    api.fn("surreal", { lhs: S, rhs: S, z: num }, S, {
-      glsl: v``,
-      js: v`({x:[${0}],y:[${1}],z:${2}})`,
-    })
-
-    api.fn("surreal", { lhs: new AnyArray(S), rhs: new AnyArray(S) }, S, {
+    api.fn("%surreal", { lhs: new AnyArray(S), rhs: new AnyArray(S) }, S, {
       glsl: v``,
       js: v`({x:${0},y:${1},z:null})`,
     })
-
-    api.fn(
-      "surreal",
-      { lhs: new AnyArray(S), rhs: new AnyArray(S), z: num },
-      S,
-      {
-        glsl: v``,
-        js: v`({x:${0},y:${1},z:${2}})`,
-      },
-    )
 
     {
       const bool = api.lib.tyBool

@@ -27,7 +27,6 @@ rawBuiltin["nya:surreal"] = () =>
           PKG_SURREAL.load(api1)
           const api2 = new NyaApi(sheet.factory.env.libGl)
           PKG_SURREAL.load(api2)
-          sheet.options.words!.set("surreal", "prefix")
         },
       },
     } satisfies Package,

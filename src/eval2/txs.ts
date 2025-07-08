@@ -502,5 +502,15 @@ TX_OPS_OPS["with"] = {
   },
 }
 
+TX_OPS.surreal = {
+  eval({ lhs, rhs }, _, block) {
+    return `%surreal(%surreal_join(${block.evalList(lhs)}),%surreal_join(${block.evalList(rhs)}))`
+  },
+  deps(op, _, deps) {
+    deps.check(op.lhs)
+    deps.check(op.rhs)
+  },
+}
+
 PRECEDENCE_WORD_BINARY.with = [P.WithL, P.WithR]
 PRECEDENCE_WORD_BINARY.for = [P.WithL, P.WithR]

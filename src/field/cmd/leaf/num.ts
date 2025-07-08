@@ -216,7 +216,9 @@ export class CmdVar extends Leaf {
     const { input, options } = props
     const self = new CmdVar(input, options)
     self.insertAt(cursor, L)
-    if (self.kind != null) return
+    // TODO: there used to be a "if (self.kind != null) return" check here
+    // it was removed since "surreal" conflicts with "real", and "pi" conflicts with nyalang's pi function, among other issues
+    // figure out why it was here, since it was probably there for a reason
     if (options.autos) {
       const cmds = options.autos
       const maxLen = cmds.maxLen
@@ -230,6 +232,7 @@ export class CmdVar extends Leaf {
         text.unshift(leftmost.autoCmd!)
       }
 
+      console.log(text)
       // Try each combination
       while (text.length) {
         const word = text.join("")

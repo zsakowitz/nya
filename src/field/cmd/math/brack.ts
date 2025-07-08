@@ -580,6 +580,10 @@ export class CmdSurreal extends Command<[Block, Block]> {
     return new CmdSurreal(lhs, rhs)
   }
 
+  static init(cursor: Cursor, _props: InitProps): InitRet {
+    new CmdSurreal(new Block(null), new Block(null)).insertAt(cursor, L)
+  }
+
   static render(lhs: Block, rhs: Block) {
     const lhsSymbol = BRACKS["{"]
     const rhsSymbol = BRACKS["}"]
@@ -587,9 +591,9 @@ export class CmdSurreal extends Command<[Block, Block]> {
     return h(
       "inline-flex",
       h("relative inline-block " + lhsSymbol.w, lhsSymbol.html()),
-      h("self-baseline my-[.1em]", lhs.el),
+      h("self-baseline my-[.1em] *:contents", lhs.el),
       h("relative inline-block " + barSymbol.w, barSymbol.html()),
-      h("self-baseline my-[.1em]", rhs.el),
+      h("self-baseline my-[.1em] *:contents", rhs.el),
       h("relative inline-block " + rhsSymbol.w, rhsSymbol.html()),
     )
   }

@@ -1,4 +1,4 @@
-\left\{0,1\middle|2\right\}
+\left\{\middle|\right\}
 \left\{0,1\middle|2\right\)
 \left\{0,1\middle[2\right\)
 2+3i

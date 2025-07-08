@@ -162,6 +162,7 @@ const autos = new WordMap<Init>([
   ["nthroot", CmdRoot],
   ["color", CmdColor],
   ["list", CmdList],
+  ["surreal", CmdSurreal],
 
   // Various names for piecewise
   ["cases", CmdPiecewise],

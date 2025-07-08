@@ -1,6 +1,7 @@
+import type { Pos } from "!/ast/issue"
 import { OP_TEXT, OVERLOADABLE } from "!/ast/kind"
 import { AnyVector } from "./broadcast"
-import type { Block, Declarations } from "./decl"
+import { Block, type Declarations } from "./decl"
 import { bug, issue } from "./error"
 import { Id, ident } from "./id"
 import type { EmitProps, Lang } from "./props"
@@ -464,6 +465,18 @@ export class NyaApi {
       )
     })
     this.lib.fns.push(id, fn)
+  }
+
+  fmanual(
+    name: string,
+    args: Record<string, FnType>,
+    ret: FnType,
+    exec: (args: Value[], block: Block, namePos: Pos, fullPos: Pos) => Value,
+  ) {
+    const params = Object.entries(args).map((x) => ({ name: x[0], type: x[1] }))
+    validateFnName(name)
+    const fn = new Fn(ident(name), params, ret, exec)
+    this.lib.fns.push(ident(name), fn)
   }
 }
 
