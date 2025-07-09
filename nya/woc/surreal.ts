@@ -97,9 +97,9 @@ export default {
       js: v`${0}`,
     })
 
-    api.fn("+", { a: S, b: S }, S, {
-      glsl: v``,
-      js: v`${"function %%(a,b){}"}(${0},${1})`,
-    })
+    // api.fn("+", { a: S, b: S }, S, {
+    //   glsl: v``,
+    //   js: v`${"function %%(a,b){}"}(${0},${1})`,
+    // })
   },
 } satisfies Plugin
