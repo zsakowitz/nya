@@ -71,6 +71,10 @@ export default {
         glsl: v``,
         js: cmp.of`${cons}(${0}??[],${1}??[])`,
       })
+      api.fn("label", { value: S, lhs: S, rhs: api.lib.tyNum }, S, {
+        glsl: v``,
+        js: cmp.of`${`function %%(a,m,z){return m&&(${eq}(a,m)?{x:a.x,y:a.y,z:z}:{x:a.x.map(v=>%%(v,m,z)),y:a.y.map(v=>%%(v,m,z)),z:a.z})}`}(${0},${1},${2})`,
+      })
     }
 
     {
@@ -92,7 +96,7 @@ export default {
 
     api.fn("unlabel", { value: S }, S, {
       glsl: v``,
-      js: v`${"function %%(a){return a&&{x:a.x,y:a.y,z:null}}"}(${0})`,
+      js: v`${"function %%(a){return a&&{x:a.x.map(%%),y:a.y.map(%%),z:null}}"}(${0})`,
     })
 
     api.fn("-", { arg: S }, S, {
