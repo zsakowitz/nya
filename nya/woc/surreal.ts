@@ -35,6 +35,9 @@ export default {
       js: v`[${0},${1},${2}]`,
     })
 
+    // {0|1} + {0|}
+    // {{0|1}|{1|2}}
+
     {
       const bool = api.lib.tyBool
       const cmp = new Impl()
@@ -87,6 +90,11 @@ export default {
       js: v`${"function %%(a,z){return a===null?null:{x:a.x,y:a.y,z:z}}"}(${0},${1})`,
     })
 
+    api.fn("unlabel", { value: S }, S, {
+      glsl: v``,
+      js: v`${"function %%(a){return a&&{x:a.x,y:a.y,z:null}}"}(${0})`,
+    })
+
     api.fn("-", { arg: S }, S, {
       glsl: v``,
       js: v`${"function %%(x){return x&&{x:x.y.map(%%).reverse(),y:x.x.map(%%).reverse(),z:x.z&&-x.z}}"}(${0})`,
@@ -97,9 +105,21 @@ export default {
       js: v`${0}`,
     })
 
-    // api.fn("+", { a: S, b: S }, S, {
-    //   glsl: v``,
-    //   js: v`${"function %%(a,b){}"}(${0},${1})`,
-    // })
+    // surreal +:
+    // a + {   |   } = a
+    // a + { 0 |   } = { a |   } =? { a + 0 | }
+    //     api.fn("+", { a: S, b: S }, S, {
+    //       glsl: v``,
+    //       js: v`${`function %%(a,b,c){
+    //   if(a===null||b===null)return null;
+    //   var z=a.z===null||b.z===null?null:a.z+b.z;
+    //   if(b.x.length==0&&b.y.length==0)return a;
+    //   if(b.x.length==1&&b.y.length==0)return {x:[%%(a,b.x[0])],y:[],z:z};
+    //   if(b.x.length==0&&b.y.length==1)return {x:[],y:[%%(a,b.y[0])],z:z};
+    //   if(b.x.length==1&&b.y.length==1)return {x:[%%(a,b.x[0])],y:[%%(a,b.y[0])],z:z};
+    //   if(c)return null;
+    //   return %%(b,a,true);
+    // }`}(${0},${1},false)`,
+    //     })
   },
 } satisfies Plugin

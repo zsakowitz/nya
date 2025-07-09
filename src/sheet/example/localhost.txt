@@ -3,5 +3,12 @@ A=\operatorname{label}\left(\left\{\middle|\right\},0\right)
 B=\operatorname{label}\left(\left\{A\middle|\right\},1\right)
 C=\operatorname{label}\left(\left\{A\middle|B\right\},0.5\right)
 D=\operatorname{label}\left(\left\{B\middle|\right\},2\right)
-E=\left\{C\middle|\right\}
-F=\left\{B\middle|D\right\}
+E=\operatorname{label}\left(\left\{A\middle|C\right\},0.25\right)
+
+A_1=\left\{\middle|\right\}
+B_1=\left\{A_1\middle|\right\}
+C_1=\left\{A_1\middle|B_1\right\}
+D_1=\left\{A_1\middle|C_1\right\}
+E_1=\left\{C_1\middle|B_1\right\}
+F_1=\left\{D_1\middle|E_1\right\}
+(C_1=F_1)
