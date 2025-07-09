@@ -4,6 +4,7 @@ export const NYALANG_PACKAGES_BUILTIN = {
   "nya:geometry": ()=>Promise.resolve({default:{"name":"2D geometry","label":"<TODO: no label>","category":"auto-generated (nyalang)","deps":[],"scripts":["geometry"]} as const}),
   "nya:data/distributions": ()=>Promise.resolve({default:{"name":"distributions","label":"<TODO: no label>","category":"auto-generated (nyalang)","deps":[],"scripts":["data/distributions"]} as const}),
   "nya:4d/point": ()=>Promise.resolve({default:{"name":"4D points","label":"<TODO: no label>","category":"auto-generated (nyalang)","deps":[],"scripts":["4d/point"]} as const}),
+  "nya:4d/quaternion": ()=>Promise.resolve({default:{"name":"quaternions","label":"<TODO: no label>","category":"auto-generated (nyalang)","deps":[],"scripts":["4d/quaternion"]} as const}),
   "nya:color/extras": ()=>Promise.resolve({default:{"name":"oklch() and oklab()","label":"<TODO: no label>","category":"auto-generated (nyalang)","deps":[],"scripts":["color/extras"]} as const}),
   "nya:color/core": ()=>Promise.resolve({default:{"name":"rgb() and hsv()","label":"<TODO: no label>","category":"auto-generated (nyalang)","deps":[],"scripts":["color/core"]} as const}),
   "nya:real": ()=>Promise.resolve({default:{"name":"core real operations","label":"<TODO: no label>","category":"auto-generated (nyalang)","deps":[],"scripts":["real"]} as const}),

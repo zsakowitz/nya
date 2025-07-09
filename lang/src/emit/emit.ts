@@ -230,14 +230,14 @@ export function emitExpr(node: NodeExpr, block: Block): Value {
     return emitBlock(node, block)
   } else if (node instanceof ExprBinary) {
     if (node.op.kind == OEq) {
-      const { current, id } = emitLvalue(node.lhs, block)
+      const { current } = emitLvalue(node.lhs, block)
       const rhs = emitExpr(node.rhs, block)
 
-      if (current.const()) {
-        block.locals.set(id, rhs)
-      } else {
+      if (current.type.repr.type != "void") {
+        // no const check since it hasn't been tested in if-else constructs
         block.source += `${current}=${rhs};`
       }
+      // TODO: should we include rhs in case it has side effects?
 
       return nullValue(block)
     }
@@ -724,7 +724,7 @@ function emitStmt(node: NodeStmt, block: Block): Value {
     const gid = ident(identName.val)
 
     if (value.type.repr.type == "void") {
-      block.locals.set(gid, new Value(0, value.type, true))
+      block.locals.set(gid, new Value(0, value.type, true, true))
     } else if (!node.mut && value.const()) {
       block.locals.set(gid, new Value(value.value, value.type, true))
     } else {

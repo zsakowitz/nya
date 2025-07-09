@@ -59,7 +59,10 @@ export class Expr {
     )
     this.elOutput = h("contents")
     this.elError = h(
-      "block mx-1 -mt-2 px-1 pb-1 leading-tight italic text-[--nya-expr-error] whitespace-pre-wrap font-sans pointer-events-none",
+      "block mx-1 -mt-2 px-1 pb-1 leading-tight italic text-[--nya-expr-error] whitespace-pre-wrap font-sans pointer-events-none" +
+        (new URL(location.href).searchParams.has("errorless") ?
+          " !hidden"
+        : ""),
     )
     this.elError.classList.add("hidden") // stops tailwind errors from block+hidden; hidden overrides
     this.aside = h(

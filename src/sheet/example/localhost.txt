@@ -1,5 +1,7 @@
+2+i
 A=\operatorname{label}\left(\left\{\middle|\right\},0\right)
 B=\operatorname{label}\left(\left\{A\middle|\right\},1\right)
-C=\operatorname{label}\left(\left\{\middle|A\right\},-1\right)
-\left\{B\middle|A\right\}
-\left\{A\middle|B\right\}
+C=\operatorname{label}\left(\left\{A\middle|B\right\},0.5\right)
+D=\operatorname{label}\left(\left\{B\middle|\right\},2\right)
+E=\left\{C\middle|\right\}
+F=\left\{B\middle|D\right\}

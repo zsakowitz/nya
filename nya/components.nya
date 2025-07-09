@@ -1,0 +1,29 @@
+fn base(value: num) -> latex {
+  if value == 0.0 {
+    display""
+  } else {
+    display"${value}"
+  }
+}
+
+fn with_component(base: latex, name: latex, value: num) -> latex {
+  if value == 0.0 {
+    base
+  } else {
+    display"${base}+${if value == 1.0 {
+      name
+    } else if value == -1.0 {
+      display"-${name}"
+    } else {
+      display"${value}${name}"
+    }}"
+  }
+}
+
+fn finalize(base: latex) -> latex {
+  if base.empty {
+    display"0"
+  } else {
+    base
+  }
+}

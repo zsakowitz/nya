@@ -1,0 +1,98 @@
+struct Quaternion {
+  real: num,
+  imag: num,
+  j: num,
+  k: num,
+}
+
+fn +(x: Quaternion) -> Quaternion {
+  x
+}
+
+fn -(x: Quaternion) -> Quaternion {
+  @-x
+}
+
+fn +(a: Quaternion, b: Quaternion) -> Quaternion {
+  a @+ b
+}
+
+fn -(a: Quaternion, b: Quaternion) -> Quaternion {
+  a @- b
+}
+
+fn abs(a: Quaternion) -> num {
+  @length(a)
+}
+
+fn unsign(a: Quaternion) -> Quaternion {
+  @abs(a)
+}
+
+fn %odot(a: Quaternion, b: Quaternion) -> Quaternion {
+  a @* b
+}
+
+fn *(x: Quaternion, y: Quaternion) -> Quaternion {
+  let a = x.real;
+  let b = x.imag;
+  let c = x.j;
+  let d = x.k;
+  let e = y.real;
+  let f = y.imag;
+  let g = y.j;
+  let h = y.k;
+
+  Quaternion {
+    real: a * e - b * f - c * g - d * h,
+    imag: a * f + b * e + c * h - d * g,
+    j: a * g - b * h + c * e + d * f,
+    k: a * h + b * g - c * f + d * e,
+  }
+}
+
+let j = Quaternion { real: 0.0, imag: 0.0, j: 1.0, k: 0.0 };
+let k = Quaternion { real: 0.0, imag: 0.0, j: 0.0, k: 1.0 };
+
+fn %display(v: Quaternion) -> latex {
+  let mut empty = true;
+  let mut ret = display"";
+
+  if v.imag != 0.0 {
+    ret = display"${v.imag}i";
+    empty = false;
+  }
+
+  if v.j != 0.0 {
+    if empty {
+      ret = display"${v.j}j";
+    } else {
+      ret = display"${ret}+${v.j}j";
+    }
+    empty = false;
+  }
+
+  if v.k != 0.0 {
+    if empty {
+      ret = display"${v.k}k";
+    } else {
+      ret = display"${ret}+${v.k}k";
+    }
+    empty = false;
+  }
+
+  if v.real == 0.0 && !empty {
+    ret
+  } else if empty {
+    display"${v.real}"
+  } else {
+    display"${v.real}+${ret}"
+  }
+}
+
+// TODO: point, complex
+
+expose package {
+  name: "quaternions",
+  default: true,
+}

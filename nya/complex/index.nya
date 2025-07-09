@@ -1,6 +1,7 @@
 use "color";
 use "color/dcg";
 use "color/oklab";
+use "components";
 
 struct Complex {
   real: num,
@@ -13,7 +14,13 @@ fn %display(z: Complex) -> latex {
   if z.imag == 0.0 {
     display"${z.real}"
   } else if z.real == 0.0 {
-    display"${z.imag}i"
+    if z.imag == 1.0 {
+      display"i"
+    } else if z.imag == -1.0 {
+      display"-i"
+    } else {
+      display"${z.imag}i"
+    }
   } else {
     display"${z.real}+${z.imag}i"
   }
