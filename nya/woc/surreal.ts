@@ -42,7 +42,12 @@ export default {
       const bool = api.lib.tyBool
       const cmp = new Impl()
       const lte = cmp.cache(
-        "function %%(a,b){if(a===null||b===null)return false;for(var i=0;i<a.x.length;i++)if(%%(b,a.x[i]))return false;for(var i=0;i<b.y.length;i++)if(%%(b.y[i],a))return false;return true;}",
+        `function %%(a,b){
+  if(a===null||b===null)return false;
+  for(var i=0;i<a.x.length;i++)if(%%(b,a.x[i]))return false;
+  for(var i=0;i<b.y.length;i++)if(%%(b.y[i],a))return false;
+  return true;
+}`,
       )
       const eq = cmp.cache(`function %%(a,b){return ${lte}(a,b)&&${lte}(b,a)}`)
       const lt = cmp.cache(`function %%(a,b){return ${lte}(a,b)&&!${lte}(b,a)}`)
