@@ -6,3 +6,4 @@ index.css
 meta.json
 pkg/graphsource
 graph.svg
+lang/src/prettier/plugin.js
