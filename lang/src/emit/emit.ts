@@ -923,17 +923,23 @@ export function emitItem(node: NodeItem, decl: Declarations): ItemResult {
     const fn =
       block.source == "" && value.const() ?
         // Non-side-effecting constant optimization
-        new Fn(gid, fparams, ret, () => value)
-      : new Fn(gid, fparams, ret, (args, _, pos) => {
-          const actualArgs = args.map((x, i) =>
-            params[i]!.type.convertFrom(x, pos),
-          )
-          const expr = `${lident}(${actualArgs
-            .filter((x) => x.type.repr.type != "void")
-            .map((x) => x.toRuntime())
-            .join(",")})`
-          return new Value(expr, ret, false)
-        })
+        new Fn(gid, fparams, ret, () => value, node)
+      : new Fn(
+          gid,
+          fparams,
+          ret,
+          (args, _, pos) => {
+            const actualArgs = args.map((x, i) =>
+              params[i]!.type.convertFrom(x, pos),
+            )
+            const expr = `${lident}(${actualArgs
+              .filter((x) => x.type.repr.type != "void")
+              .map((x) => x.toRuntime())
+              .join(",")})`
+            return new Value(expr, ret, false)
+          },
+          node,
+        )
 
     // Functions names "->" are used for coercions instead of normal definitions
     if (isCoercion) {
@@ -979,8 +985,8 @@ export function emitItem(node: NodeItem, decl: Declarations): ItemResult {
     const fn =
       block.source == "" && value.const() ?
         // Non-side-effecting constant optimization
-        new Fn(gid, [], ret, () => value)
-      : new Fn(gid, [], ret, () => new Value(`${lident}()`, ret, false))
+        new Fn(gid, [], ret, () => value, node)
+      : new Fn(gid, [], ret, () => new Value(`${lident}()`, ret, false), node)
     decl.fns.push(gid, fn)
     return {
       decl: body,

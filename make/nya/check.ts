@@ -1,11 +1,12 @@
+import { suppressesOverload } from "!/emit/coerce"
+import type { Fn } from "!/emit/type"
 import { ScriptEnvironment } from "!/exec/loader"
 import { SCRIPTS, type ScriptName } from "#/script-index"
 import { SCRIPT_NAMES } from "#/scripts"
 import { errorText } from "@/error"
+import { ANSI } from "./ansi"
 
-if (checkEach()) {
-  checkAll(10)
-}
+checkEach() && checkAll(10) && checkOverloads()
 
 /*! https://stackoverflow.com/a/12646864 */
 function shuffleArray(array: unknown[]) {
@@ -45,8 +46,70 @@ function checkEach() {
     return false
   }
 
-  console.log(`✅ ${SCRIPTS.size} scripts checked individually with no errors!`)
+  console.log(`✅ ${SCRIPTS.size} scripts checked individually with no errors`)
   return true
+}
+
+function checkOverloads() {
+  let env
+
+  try {
+    const scripts = Array.from(SCRIPTS.keys())
+    shuffleArray(scripts)
+    // decreases risk of order-dependent errors
+    env = new ScriptEnvironment()
+    for (const k of scripts) {
+      env.load(k as ScriptName)
+    }
+  } catch (e) {
+    console.error(errorText(e))
+    process.exitCode = 1
+    return false
+  }
+
+  const suppressed: { earlier: Fn; later: Fn }[] = []
+
+  for (const fn of env.libJs.fns.all()) {
+    if (!fn.length) continue
+
+    for (let i = 1; i < fn.length; i++) {
+      const later = fn[i]!
+
+      for (let j = 0; j < i; j++) {
+        const earlier = fn[j]!
+
+        if (
+          later.args.length == earlier.args.length &&
+          suppressesOverload(
+            env.libJs.coercions,
+            earlier.args.map((x) => x.type),
+            later.args.map((x) => x.type),
+          )
+        ) {
+          suppressed.push({ earlier, later })
+          continue
+        }
+      }
+    }
+  }
+
+  if (suppressed.length) {
+    console.log(
+      `❌ ${suppressed.length} functions are suppressed due to coercion:`,
+    )
+    for (const el of suppressed.slice(0, 10)) {
+      console.log(
+        `\n${ANSI.magenta}${el.later} ${ANSI.reset}@ ${ANSI.cyan}${el.later.pos}
+  ${ANSI.reset}${ANSI.dim}by ${ANSI.blue}${el.earlier} ${ANSI.reset}${ANSI.dim}@ ${ANSI.cyan}${el.earlier.pos}${ANSI.reset}`,
+      )
+    }
+    process.exitCode = 1
+    return false
+  }
+
+  const count = env.libJs.fns.all().reduce((a, b) => a + b.length, 0)
+
+  console.log(`✅ ${count} function overloads are all accessible!`)
 }
 
 function checkAll(count: number) {
@@ -70,7 +133,7 @@ function checkAll(count: number) {
 
   if (ok) {
     console.log(
-      `✅ ${SCRIPTS.size} scripts loaded together in ${count} different orders with no errors!`,
+      `✅ ${SCRIPTS.size} scripts loaded together in ${count} different orders with no errors`,
     )
   } else {
     process.exitCode = 1

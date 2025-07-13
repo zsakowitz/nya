@@ -48,6 +48,7 @@ export class Fn {
     readonly args: FnParam[],
     readonly ret: FnType,
     readonly run: FnExec,
+    readonly pos?: Pos,
   ) {}
 
   toString() {

@@ -82,10 +82,6 @@ fn length(s: Segment | Vector) -> num {
   distance(s.p1, s.p2)
 }
 
-fn glider(pt: Line, at: num) -> Point {
-  @mix(pt.p1, pt.p2, at)
-}
-
 fn start(v: Vector) -> Point {
   v.p1
 }

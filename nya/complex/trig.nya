@@ -1,3 +1,4 @@
+use "real/trig";
 use "complex";
 
 fn sin(z: Complex) -> Complex {

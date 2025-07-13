@@ -32,6 +32,10 @@ export class Coercions {
     return this.byFrom.get(type) ?? []
   }
 
+  into(type: Type): Coercion[] {
+    return this.byInto.get(type) ?? []
+  }
+
   for(from: Type, into: FnType): Coercion | null {
     return this.single.get(from)?.get(into) ?? null
   }
@@ -218,4 +222,37 @@ export class Coercions {
       `\n}`
     )
   }
+}
+
+export function suppressesType(
+  coercions: Coercions,
+  earlier: FnType,
+  later: FnType,
+): boolean {
+  const a1sources = coercions
+    .into(earlier as any) // .into() doesn't use Type-specific methods so this is fine
+    .map((x): FnType => x.from)
+    .concat(earlier)
+
+  const a2sources = coercions
+    .into(later as Type) // .into() doesn't use Type-specific methods so this is fine
+    .map((x): FnType => x.from)
+    .concat(later)
+
+  return a2sources.every((x) => a1sources.includes(x))
+}
+
+/**
+ * Returns `true` if things which would match 'args2' could always coerce into
+ * 'args1' instead.
+ */
+export function suppressesOverload(
+  coercions: Coercions,
+  earlier: FnType[],
+  later: FnType[],
+) {
+  return (
+    earlier.length == later.length &&
+    earlier.every((x, i) => suppressesType(coercions, x, later[i]!))
+  )
 }

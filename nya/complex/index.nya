@@ -1,3 +1,4 @@
+use "real";
 use "color";
 use "color/dcg";
 use "color/oklab";
@@ -41,14 +42,6 @@ fn +(a: Complex, b: Complex) -> Complex {
   a @+ b
 }
 
-fn +(a: Complex, b: num) -> Complex {
-  Complex { real: a.real + b, imag: a.imag }
-}
-
-fn +(a: num, b: Complex) -> Complex {
-  Complex { real: b.real + a, imag: b.imag }
-}
-
 fn -(z: Complex) -> Complex {
   @-z
 }
@@ -57,23 +50,11 @@ fn -(a: Complex, b: Complex) -> Complex {
   a @- b
 }
 
-fn -(a: Complex, b: num) -> Complex {
-  Complex { real: a.real - b, imag: a.imag }
-}
-
-fn -(a: num, b: Complex) -> Complex {
-  Complex { real: a - b.real, imag: b.imag }
-}
-
 fn *(a: Complex, b: Complex) -> Complex {
   Complex {
     real: a.real * b.real - a.imag * b.imag,
     imag: a.imag * b.real + a.real * b.imag,
   }
-}
-
-fn *(a: num, b: Complex) -> Complex {
-  a @* b
 }
 
 fn /(a: Complex, b: Complex) -> Complex {
@@ -86,14 +67,6 @@ fn /(a: Complex, b: Complex) -> Complex {
 
 fn inv(a: Complex) -> Complex {
   Complex { real: a.real, imag: -a.imag } @/ (a.real * a.real + a.imag * a.imag)
-}
-
-fn /(a: num, b: Complex) -> Complex {
-  a @* inv(b)
-}
-
-fn /(a: Complex, b: num) -> Complex {
-  a @/ b
 }
 
 fn ==(a: Complex, b: Complex) -> bool {
@@ -183,14 +156,6 @@ fn i(z: Complex) -> num {
 
 fn ^(a: Complex, b: Complex) -> Complex {
   if a.real == 0.0 && a.imag == 0.0 {
-    _complex_zero
-  } else {
-    exp(ln(a) * b)
-  }
-}
-
-fn ^(a: num, b: Complex) -> Complex {
-  if a == 0.0 {
     _complex_zero
   } else {
     exp(ln(a) * b)
