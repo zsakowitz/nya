@@ -1,9 +1,13 @@
-import { Impl, type NyaApi, v } from "!/emit/api"
+import { Impl, NyaApi, v } from "!/emit/api"
 import { blue, dim, magenta, reset, yellow } from "./ansi"
+import { KFalse, KTrue, TFloat, TInt, TString, TSym } from "./ast/kind"
+import type { ExprLit } from "./ast/node/expr"
 import { AnyVector, fromScalars, scalars } from "./emit/broadcast"
+import { Declarations } from "./emit/decl"
 import { performCall } from "./emit/emit"
-import { issue } from "./emit/error"
+import { issue, todo } from "./emit/error"
 import { Id, ident, type IdGlobal } from "./emit/id"
+import type { EmitProps } from "./emit/props"
 import { Tag } from "./emit/tag"
 import { Any, Fn } from "./emit/type"
 import { Value } from "./emit/value"
@@ -473,6 +477,73 @@ export function libLatex(api: NyaApi) {
     glsl: v`true`,
     js: v`${0}==""`,
   })
+}
+
+export interface PathJs {
+  x: Path2D
+  y: [number, number, number]
+  z: [number, number, number] // stroke width, stroke opacity, fill opacity
+}
+
+export interface CanvasJs {
+  sx: number
+  sy: number
+  ox: number
+  oy: number
+  x0: number
+  x1: number
+  y0: number
+  y1: number
+  wx: number
+  wy: number
+}
+
+export function createStdlib(props: EmitProps): Declarations {
+  const createLiteral = (literal: ExprLit) => {
+    switch (literal.value.kind) {
+      case KTrue:
+      case KFalse:
+        return new Value(literal.value.val === "true", lib.tyBool, true)
+
+      case TFloat:
+      case TInt:
+        return new Value(+literal.value.val, lib.tyNum, true)
+
+      case TSym:
+        return new Value(ident(literal.value.val).value, lib.tySym, true)
+
+      case TString:
+        todo(`String literals cannot be used as expression values.`)
+    }
+  }
+
+  const toArraySize = (value: Value) => {
+    if (
+      value.type == lib.tyNum &&
+      value.const() &&
+      typeof value.value == "number" &&
+      Number.isSafeInteger(value.value)
+    ) {
+      return value.value
+    }
+
+    return null
+  }
+
+  const lib: Declarations = new Declarations(
+    props,
+    null,
+    createLiteral,
+    toArraySize,
+  )
+  const api = new NyaApi(lib)
+
+  libNumBool(api)
+  libBroadcasting(api)
+  libCanvas(api)
+  libLatex(api)
+
+  return lib
 }
 
 /*

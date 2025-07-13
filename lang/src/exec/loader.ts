@@ -1,4 +1,5 @@
 import { EmitProps, type Lang } from "!/emit/props"
+import { createStdlib } from "!/std"
 import { SCRIPTS, type ScriptName } from "#/script-index"
 import { getScriptPath } from "#/scripts"
 import { Chunk, Issues } from "../ast/issue"
@@ -8,7 +9,6 @@ import { createStream } from "../ast/stream"
 import { Block, Exits, type Declarations, type IdMap } from "../emit/decl"
 import { emitBlock, emitItem } from "../emit/emit"
 import { bug, errorText } from "../emit/error"
-import { createStdlib } from "../emit/stdlib"
 import type { Value } from "../emit/value"
 
 function extractDepName(item: ItemUse) {
