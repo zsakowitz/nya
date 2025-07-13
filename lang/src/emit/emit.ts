@@ -48,11 +48,11 @@ import {
   type NodeType,
 } from "../ast/node/type"
 import { fromScalars, scalars } from "./broadcast"
-import { Coercion } from "./coerce"
+import { Coercion, isEligibleForCoercion, type CoercionTarget } from "./coerce"
 import { Block, Exits, IdMap, type Declarations } from "./decl"
 import { issue, issueError, todo } from "./error"
 import { Id, ident, type IdGlobal } from "./id"
-import { Alt, Array, ArrayEmpty, Fn, Scalar, Struct, type Type } from "./type"
+import { Alt, Array, ArrayEmpty, Fn, Struct, type Type } from "./type"
 import { Value } from "./value"
 
 function list(a: { toString(): string }[], empty: "no arguments" | null) {
@@ -86,6 +86,7 @@ export function performCallRaw(
   namePos: Pos,
   fullPos: Pos,
 ): CallResult {
+  // Matrix multiplication is special, so no coercion is performed
   if (id == ID_MATMUL) {
     if (args.length == 2) {
       return { ok: true, value: matrixMultiply(block, args[0]!, args[1]!) }
@@ -94,6 +95,7 @@ export function performCallRaw(
 
   const local = block.locals.get(id)
 
+  // Locals do not receive coercion since there are no arguments
   if (local) {
     if (args.length == 0) {
       return { ok: true, value: local }
@@ -115,28 +117,43 @@ export function performCallRaw(
     }
   }
 
-  const overload = fns.find(
-    (x) =>
-      x.args.length == args.length &&
-      x.args.every((a, i) => a.type.canConvertFrom(args[i]!.type)),
-  )
-  if (!overload) {
-    issue(
+  const count = args.length
+  nextOverload: for (const x of fns) {
+    if (x.args.length != count) continue
+
+    const coercions: Coercion[] = []
+
+    for (let i = 0; i < count; i++) {
+      const expected = x.args[i]!.type
+      const actual = args[i]!.type
+      if (expected.canConvertFrom(actual)) continue
+
+      const coercion = block.decl.coercions.for(actual, expected)
+      if (!coercion) continue nextOverload
+      coercions[i] = coercion
+    }
+
+    const args2 = args.map((arg, i) =>
+      coercions[i] ?
+        coercions[i].exec(arg, block, fullPos)
+      : x.args[i]!.type.convertFrom(arg, fullPos),
+    )
+
+    const value = x.run(args2, block, namePos, fullPos)
+
+    return { ok: true, value }
+  }
+
+  return {
+    ok: false,
+    error: issueError(
       `No overload of '${id}' accepts ${list(
         args.map((x) => x.type),
         "no arguments",
       )}. Try:` + fns.map((x) => "\n" + x.toString()).join(""),
       fullPos,
-    )
+    ),
   }
-
-  const args2 = args.map((x, i) =>
-    overload.args[i]!.type.convertFrom(x, fullPos),
-  )
-
-  const value = overload.run(args2, block, namePos, fullPos)
-
-  return { ok: true, value }
 }
 
 export function tryPerformCall(
@@ -868,16 +885,16 @@ export function emitItem(node: NodeItem, decl: Declarations): ItemResult {
         issue(`Coercion functions must take exactly one argument.`, node.params)
       }
       const ptype = fparams[0]!.type
-      if (!(ptype instanceof Scalar || ptype instanceof Struct)) {
+      if (!isEligibleForCoercion(ptype)) {
         issue(
-          `Argument type '${ptype}' in coercion function must be a scalar or struct.`,
+          `Argument type '${ptype}' must be a scalar or struct; coercion is not allowed for other types.`,
           node.params.items[0]!,
         )
       }
       const rtype = ret
-      if (!(rtype instanceof Scalar || rtype instanceof Struct)) {
+      if (!isEligibleForCoercion(rtype)) {
         issue(
-          `Return type '${rtype}' in coercion function must be a scalar or struct.`,
+          `Return type '${rtype}' must be a scalar or struct; coercion is not allowed for other types.`,
           node.ret ?? node.name!,
         )
       }
@@ -921,8 +938,8 @@ export function emitItem(node: NodeItem, decl: Declarations): ItemResult {
     // Functions names "->" are used for coercions instead of normal definitions
     if (isCoercion) {
       const coercion = new Coercion(
-        fparams[0]!.type,
-        ret,
+        fparams[0]!.type as CoercionTarget, // this was checked earlier
+        ret as CoercionTarget, // this was checked earlier
         false,
         (v, block, pos) => fn.run([v], block, pos, pos),
       )

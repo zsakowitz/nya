@@ -1,13 +1,19 @@
 import type { Pos } from "!/ast/issue"
 import { issue } from "@/error"
 import type { Block } from "./decl"
-import type { Type } from "./type"
+import { Scalar, Struct, type FnType, type Type } from "./type"
 import type { Value } from "./value"
+
+export type CoercionTarget = Scalar | Struct
+
+export function isEligibleForCoercion(type: Type): type is CoercionTarget {
+  return type instanceof Scalar || type instanceof Struct
+}
 
 export class Coercion {
   constructor(
-    readonly from: Type,
-    readonly into: Type,
+    readonly from: CoercionTarget,
+    readonly into: CoercionTarget,
     readonly auto: boolean,
     readonly exec: (value: Value, block: Block, pos: Pos) => Value,
   ) {}
@@ -20,14 +26,18 @@ function cycle(from: Type, into: Type, pos: Pos): never {
 export class Coercions {
   private readonly byFrom = new Map<Type, Coercion[]>()
   private readonly byInto = new Map<Type, Coercion[]>()
-  private readonly single = new Map<Type, Map<Type, Coercion>>()
+  private readonly single = new Map<Type, Map<FnType, Coercion>>()
 
   from(type: Type): Coercion[] {
     return this.byFrom.get(type) ?? []
   }
 
-  for(from: Type, into: Type): Coercion | null {
+  for(from: Type, into: FnType): Coercion | null {
     return this.single.get(from)?.get(into) ?? null
+  }
+
+  has(from: Type, into: FnType): boolean {
+    return !!this.single.get(from)?.has(into)
   }
 
   private add(coercion: Coercion, pos: Pos) {
