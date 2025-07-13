@@ -174,6 +174,11 @@ function libGame(api: NyaApi, S: Scalar) {
     .fa("sub", "-", { a: Game, b: Game }, Game)
     .fa("neg", "-", { game: Game }, Game)
     .fa("eq", "==", { a: Game, b: Game }, api.lib.tyBool)
+    .fa("ne", "!=", { a: Game, b: Game }, api.lib.tyBool)
+    .fa("lt", "<", { a: Game, b: Game }, api.lib.tyBool)
+    .fa("gamelte", "<=", { a: Game, b: Game }, api.lib.tyBool)
+    .fa("gt", ">", { a: Game, b: Game }, api.lib.tyBool)
+    .fa("gte", ">=", { a: Game, b: Game }, api.lib.tyBool)
     .fa("display_sign", "%display", { a: Sign }, api.lib.tyLatex)
     .fn("eval", { game: Game }, S)
     .fn("tree", {}, GameTree)
@@ -275,8 +280,6 @@ function libGameActual() {
 
     return opp
   }
-
-  const ZERO: Surreal = { x: [], y: [], z: 0 }
 
   function lte(a: Surreal, b: Surreal) {
     if (a === null || b === null) return false
@@ -404,6 +407,36 @@ function libGameActual() {
     const va = evaluate(a)
     const vb = evaluate(b)
     return lte(va, vb) && lte(vb, va)
+  }
+
+  function gamelte(a: Game, b: Game) {
+    const va = evaluate(a)
+    const vb = evaluate(b)
+    return lte(va, vb)
+  }
+
+  function lt(a: Game, b: Game) {
+    const va = evaluate(a)
+    const vb = evaluate(b)
+    return lte(va, vb) && !lte(vb, va)
+  }
+
+  function gte(a: Game, b: Game) {
+    const va = evaluate(a)
+    const vb = evaluate(b)
+    return lte(vb, va)
+  }
+
+  function gt(a: Game, b: Game) {
+    const va = evaluate(a)
+    const vb = evaluate(b)
+    return lte(vb, va) && !lte(va, vb)
+  }
+
+  function ne(a: Game, b: Game) {
+    const va = evaluate(a)
+    const vb = evaluate(b)
+    return !(lte(va, vb) && lte(vb, va))
   }
 
   function evaluate(a: Game): Surreal {
@@ -678,5 +711,10 @@ function libGameActual() {
     },
     delivery: () => new Delivery(),
     lemon,
+    gamelte,
+    lt,
+    gte,
+    gt,
+    ne,
   }
 }
