@@ -258,9 +258,6 @@ function libGameActual() {
   }
 
   const ZERO: Surreal = { x: [], y: [], z: 0 }
-  const P1: Surreal = { x: [ZERO], y: [], z: 1 }
-  const N1: Surreal = { x: [], y: [ZERO], z: -1 }
-  const STAR: Surreal = { x: [ZERO], y: [ZERO], z: "\\digit{∗}" }
 
   function lte(a: Surreal, b: Surreal) {
     if (a === null || b === null) return false

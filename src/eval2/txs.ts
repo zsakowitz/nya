@@ -301,6 +301,27 @@ TX_OPS.bvar = {
   },
 }
 
+// Similar to 'sop' and 'bvar'; make sure to match changes between the two.
+TX_SUFFIXES.bcall = {
+  eval(op, on, block) {
+    const sub = op.name.sub ? block.eval(op.name.sub) : null
+    const args = on + "," + block.evalList(op.arg).join(",")
+    const sup = op.sup ? fnSuperscript(op.sup) : null
+    const name =
+      op.name.name + (sub == null ? "" : "_") + (sup == "-1" ? "^-1" : "")
+    const inner = `call ${escapeIdentName(name in ALIASES ? ALIASES[name]! : name, true)}(${sub == null ? "" : sub + ","}${args})`
+    if (sup != null && sup != "-1") {
+      return `(${inner})^${sup}`
+    } else {
+      return inner
+    }
+  },
+  deps(op, _, deps) {
+    deps.check(op.name.sub)
+    deps.check(op.arg)
+  },
+}
+
 setGroupTxr("(", ")", {
   eval({ contents }, _, block) {
     if (contents.data.type == "list") {

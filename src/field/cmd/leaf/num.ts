@@ -20,6 +20,7 @@ import {
   type InitProps,
   type IRBuilder,
 } from "../../model"
+import { CmdBrack } from "../math/brack"
 import { CmdSupSub } from "../math/supsub"
 import { CmdToken, TokenCtx } from "./token"
 import { CmdWord } from "./word"
@@ -168,7 +169,27 @@ export class CmdDot extends Leaf {
     return "."
   }
 
-  ir2(_ret: IRBuilder): void {
+  ir2(ret: IRBuilder): void {
+    if (this[R] instanceof CmdVar) {
+      const v = this[R]
+      if (v.kind == "prefix") {
+        const [word, endpoint] = v.wordToRightAndEndpoint()
+        // TODO: this creates a cyclic import
+        if (
+          endpoint[R] instanceof CmdBrack &&
+          endpoint[R].lhs == "(" &&
+          endpoint[R].rhs == ")"
+        ) {
+          const arg = endpoint[R].blocks[0].parse()
+          ret.next = endpoint[R][R]
+          ret.suffixed({
+            type: "bcall",
+            data: { name: { name: word, sub: null }, sup: null, arg },
+          })
+          return
+        }
+      }
+    }
     throw new Error("TODO: .2, .., ..., .x, .y, .min, .min(2,3)")
   }
 
