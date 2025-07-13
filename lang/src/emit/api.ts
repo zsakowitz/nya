@@ -613,10 +613,19 @@ export class ImplByFunction<T> {
   }
 
   fn(name: Extract<keyof T, string>, params: Record<string, Type>, ret: Type) {
+    return this.fa(name, name, params, ret)
+  }
+
+  fa(
+    name: Extract<keyof T, string>,
+    alias: string,
+    params: Record<string, Type>,
+    ret: Type,
+  ) {
     const p = Object.entries(params).length
 
     this.api.fn(
-      name,
+      alias,
       params,
       ret,
       {

@@ -153,15 +153,26 @@ function libGame(api: NyaApi, S: Scalar) {
   const Game = api.opaque("Game", { glsl: null, js: null }, false)
   const GameEmpty = api.opaque("GameEmpty", { glsl: null, js: null }, false)
   const GameNim = api.opaque("GameNim", { glsl: null, js: null }, false)
+  const GameConstantInteger = api.opaque(
+    "GameConstantInteger",
+    { glsl: null, js: null },
+    false,
+  )
 
   jsFn(api, libGameActual)
     .fn("empty", {}, GameEmpty)
     .fn("nim", { size: api.lib.tyNum }, GameNim)
     .fn("winner", { game: Game, player: Player }, Player)
     .fn("sign", { game: Game }, S)
+    .fn("const_int", { size: api.lib.tyNum }, GameConstantInteger)
+    .fa("sum", "+", { a: Game, b: Game }, Game)
+    .fa("neg", "-", { game: Game }, Game)
+    .fa("pos", "+", { game: Game }, Game)
+    .fa("eq", "==", { a: Game, b: Game }, api.lib.tyBool)
 
   api.tcoercion(GameEmpty, Game)
   api.tcoercion(GameNim, Game)
+  api.tcoercion(GameConstantInteger, Game)
 }
 
 function libGameActual() {
@@ -199,10 +210,17 @@ function libGameActual() {
     return opp
   }
 
-  const Z: Surreal = { x: [], y: [], z: 0 }
-  const P1: Surreal = { x: [Z], y: [], z: 1 }
-  const N1: Surreal = { x: [], y: [Z], z: -1 }
-  const STAR: Surreal = { x: [Z], y: [Z], z: "\\digit{∗}" }
+  const ZERO: Surreal = { x: [], y: [], z: 0 }
+  const P1: Surreal = { x: [ZERO], y: [], z: 1 }
+  const N1: Surreal = { x: [], y: [ZERO], z: -1 }
+  const STAR: Surreal = { x: [ZERO], y: [ZERO], z: "\\digit{∗}" }
+
+  function lte(a: Surreal, b: Surreal) {
+    if (a === null || b === null) return false
+    for (var i = 0; i < a.x.length; i++) if (lte(b, a.x[i]!)) return false
+    for (var i = 0; i < b.y.length; i++) if (lte(b.y[i]!, a)) return false
+    return true
+  }
 
   function sign(game: Game): Surreal {
     const wl = winner(game, -1) == -1
@@ -212,7 +230,7 @@ function libGameActual() {
       wl ?
         wr ? N1
         : STAR
-      : wr ? Z
+      : wr ? ZERO
       : P1
     )
   }
@@ -242,6 +260,76 @@ function libGameActual() {
     }
   }
 
+  function const_int(size: number): Game<number> {
+    size = Math.floor(size)
+    if (!Number.isSafeInteger(size)) {
+      size = 0
+    }
+    if (size > 16) {
+      size = 16
+    }
+    if (size < -16) {
+      size = -16
+    }
+    return {
+      x(p) {
+        return Math.sign(size) == p ? [p] : []
+      },
+      y(x) {
+        size -= x
+      },
+      z(x) {
+        size += x
+      },
+    }
+  }
+
+  function sum(a: Game, b: Game): Game<{ x: Game; y: unknown }> {
+    if (a == b) {
+      throw new Error(
+        `Adding games only works if the games are different. If both games come from a single variable, addition is undefined.`,
+      )
+    }
+
+    return {
+      x(p) {
+        const ret = []
+        for (const mv of a.x(p)) {
+          ret.push({ x: a, y: mv })
+        }
+        for (const mv of b.x(p)) {
+          ret.push({ x: b, y: mv })
+        }
+        return ret
+      },
+      y(x) {
+        x.x.y(x.y)
+      },
+      z(x) {
+        x.x.z(x.y)
+      },
+    }
+  }
+
+  function neg<T>(a: Game<T>): Game<T> {
+    return {
+      x(p) {
+        return a.x(-p as Player)
+      },
+      y(x) {
+        a.y(x)
+      },
+      z(x) {
+        a.z(x)
+      },
+    }
+  }
+
+  function eq(a: Game, b: Game) {
+    const val = sign(sum(a, b))
+    return lte(val, ZERO) && lte(ZERO, val)
+  }
+
   return {
     empty(): Game<void> {
       return {
@@ -253,5 +341,10 @@ function libGameActual() {
     winner,
     sign,
     nim,
+    sum,
+    neg,
+    pos: (x: unknown) => x,
+    eq,
+    const_int,
   }
 }
