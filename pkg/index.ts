@@ -16,7 +16,7 @@ const rawBuiltin = NYALANG_PACKAGES_BUILTIN
 rawBuiltin["nya:surreal"] = () =>
   Promise.resolve({
     default: {
-      name: "surreal numbeers",
+      name: "surreal numbers",
       label: "<TODO: no label>",
       category: "auto-generated (nyalang)",
       deps: [],

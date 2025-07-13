@@ -184,7 +184,7 @@ fn %plot(cv: Canvas, p: Complex) -> CanvasPoint {
 }
 
 expose package {
-  name: "complex numbeers",
+  name: "complex numbers",
   default: true,
 }
 
