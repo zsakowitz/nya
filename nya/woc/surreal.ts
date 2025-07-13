@@ -162,6 +162,7 @@ function libGame(api: NyaApi, S: Scalar) {
   const GameTree = api.opaque("GameTree", { glsl: null, js: null }, false)
   const GameInt = api.opaque("GameInt", { glsl: null, js: null }, false)
   const GameDeliver = api.opaque("GameDeliver", { glsl: null, js: null }, false)
+  const GameLemon = api.opaque("GameLemon", { glsl: null, js: null }, false)
 
   jsFn(api, libGameActual)
     .fn("empty", {}, GameEmpty)
@@ -177,6 +178,7 @@ function libGame(api: NyaApi, S: Scalar) {
     .fn("eval", { game: Game }, S)
     .fn("tree", {}, GameTree)
     .fn("delivery", {}, GameDeliver)
+    .fn("lemon", { pile1: api.lib.tyNum, pile2: api.lib.tyNum }, GameLemon)
 
   api.fn("+", { game: Game }, Game, { glsl: v`${0}`, js: v`${0}` }, false)
 
@@ -228,11 +230,13 @@ function libGame(api: NyaApi, S: Scalar) {
     false,
   )
 
-  api.tcoercion(GameEmpty, Game)
-  api.tcoercion(GameNim, Game)
-  api.tcoercion(GameInt, Game)
-  api.tcoercion(GameTree, Game)
-  api.tcoercion(GameDeliver, Game)
+  api
+    .tcoercion(GameEmpty, Game)
+    .tcoercion(GameNim, Game)
+    .tcoercion(GameInt, Game)
+    .tcoercion(GameTree, Game)
+    .tcoercion(GameDeliver, Game)
+    .tcoercion(GameLemon, Game)
 }
 
 function libGameActual() {
@@ -603,6 +607,45 @@ function libGameActual() {
     }
   }
 
+  type LemonMove = [0 | 1 | 2, number]
+
+  function lemon(a: number, b: number): Game<LemonMove> {
+    return {
+      x() {
+        const ret: LemonMove[] = []
+        for (let i = 0; i < a; i++) {
+          ret.push([0, i + 1])
+        }
+        for (let i = 0; i < b; i++) {
+          ret.push([1, i + 1])
+        }
+        for (let i = 0; i < a && i < b; i++) {
+          ret.push([2, i + 1])
+        }
+        return ret
+      },
+      y([pile, count]) {
+        if (pile != 1) {
+          a -= count
+        }
+        if (pile != 0) {
+          b -= count
+        }
+      },
+      z([pile, count]) {
+        if (pile != 1) {
+          a += count
+        }
+        if (pile != 0) {
+          b += count
+        }
+      },
+      w() {
+        return `\\wordprefix{lemon}(${a},${b})`
+      },
+    }
+  }
+
   return {
     empty(): Game<void> {
       return {
@@ -633,5 +676,6 @@ function libGameActual() {
       }[sign]
     },
     delivery: () => new Delivery(),
+    lemon,
   }
 }

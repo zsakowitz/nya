@@ -231,8 +231,9 @@ export class NyaApi {
     )
   }
 
-  tcoercion(from: Type, into: Type) {
+  tcoercion(from: Type, into: Type): this {
     this.fn("->", { from }, into, { glsl: v`${0}`, js: v`${0}` })
+    return this
   }
 
   /**
