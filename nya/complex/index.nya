@@ -19,19 +19,7 @@ fn ->(x: num) -> Complex {
 let _complex_zero = Complex { real: 0.0, imag: 0.0 };
 
 fn %display(z: Complex) -> latex {
-  if z.imag == 0.0 {
-    display"${z.real}"
-  } else if z.real == 0.0 {
-    if z.imag == 1.0 {
-      display"i"
-    } else if z.imag == -1.0 {
-      display"-i"
-    } else {
-      display"${z.imag}i"
-    }
-  } else {
-    display"${z.real}+${z.imag}i"
-  }
+  base(z.real).with_component(display"i", z.imag).finalize
 }
 
 fn +(z: Complex) -> Complex {

@@ -92,13 +92,13 @@ function checkOverloads() {
 
   if (suppressed.length) {
     console.log(
-      `❌ ${suppressed.length} function overload${suppressed.length == 1 ? " is" : "s are"} suppressed:`,
+      `❌ ${suppressed.length} function overload${suppressed.length == 1 ? " is" : "s are"} shadowed:`,
     )
     for (const el of suppressed.slice(0, 10)) {
-      const head = `\n${ANSI.magenta}${el.later} ${ANSI.reset}@ ${ANSI.cyan}${el.later.pos ?? "<std>"}`
+      const head = `  ${ANSI.magenta}${el.later} ${ANSI.reset}@ ${ANSI.cyan}${el.later.pos ?? "<std>"}`
       const tail = el.earlier.map(
         (x, i, a) =>
-          `\n  ${ANSI.reset}${ANSI.dim}${
+          `\n    ${ANSI.reset}${ANSI.dim}${
             i == 0 ?
               a.length > 1 ?
                 "by "

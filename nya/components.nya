@@ -8,15 +8,21 @@ fn base(value: num) -> latex {
 
 fn with_component(base: latex, name: latex, value: num) -> latex {
   if value == 0.0 {
-    base
+    return base;
+  }
+
+  let self = if value == 1.0 {
+    name
+  } else if value == -1.0 {
+    display"-${name}"
   } else {
-    display"${base}+${if value == 1.0 {
-      name
-    } else if value == -1.0 {
-      display"-${name}"
-    } else {
-      display"${value}${name}"
-    }}"
+    display"${value}${name}"
+  };
+
+  if base.is_empty {
+    self
+  } else {
+    display"${base}+${self}"
   }
 }
 

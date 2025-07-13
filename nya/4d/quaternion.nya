@@ -1,10 +1,19 @@
 use "complex";
+use "components";
 
 struct Quaternion {
   real: num,
   imag: num,
   j: num,
   k: num,
+}
+
+fn %display(v: Quaternion) -> latex {
+  base(v.real)
+    .with_component(display"i", v.imag)
+    .with_component(display"j", v.j)
+    .with_component(display"k", v.k)
+    .finalize
 }
 
 fn ->(x: Complex) -> Quaternion {
@@ -64,42 +73,6 @@ fn *(x: Quaternion, y: Quaternion) -> Quaternion {
 
 let j = Quaternion { real: 0.0, imag: 0.0, j: 1.0, k: 0.0 };
 let k = Quaternion { real: 0.0, imag: 0.0, j: 0.0, k: 1.0 };
-
-fn %display(v: Quaternion) -> latex {
-  let mut empty = true;
-  let mut ret = display"";
-
-  if v.imag != 0.0 {
-    ret = display"${v.imag}i";
-    empty = false;
-  }
-
-  if v.j != 0.0 {
-    if empty {
-      ret = display"${v.j}j";
-    } else {
-      ret = display"${ret}+${v.j}j";
-    }
-    empty = false;
-  }
-
-  if v.k != 0.0 {
-    if empty {
-      ret = display"${v.k}k";
-    } else {
-      ret = display"${ret}+${v.k}k";
-    }
-    empty = false;
-  }
-
-  if v.real == 0.0 && !empty {
-    ret
-  } else if empty {
-    display"${v.real}"
-  } else {
-    display"${v.real}+${ret}"
-  }
-}
 
 // TODO: point, complex
 

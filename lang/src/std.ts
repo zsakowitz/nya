@@ -461,7 +461,7 @@ export function libLatex(api: NyaApi) {
               .map((x, i) =>
                 i == 0 ?
                   JSON.stringify(x)
-                : results[i - 1]!.toRuntime()! + "+" + JSON.stringify(x),
+                : `(${results[i - 1]!.toRuntime()!})` + "+" + JSON.stringify(x),
               )
               .join("+"),
             latex,
