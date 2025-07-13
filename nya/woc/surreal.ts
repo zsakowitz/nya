@@ -181,6 +181,7 @@ function libGame(api: NyaApi, S: Scalar) {
     .fn("tree", {}, GameTree)
 
   api.fn("+", { game: Game }, Game, { glsl: v`${0}`, js: v`${0}` }, false)
+
   api.fn(
     "%display",
     { game: Game },
@@ -439,7 +440,7 @@ function libGameActual() {
       }
     }
 
-    #checkAccess() {
+    checkAccess() {
       for (const edge of this.edges) {
         edge.grounded = false
       }
@@ -448,7 +449,7 @@ function libGameActual() {
     }
 
     x(player: Player): Branch[] {
-      this.#checkAccess()
+      this.checkAccess()
 
       return this.edges.filter(
         (x) =>
@@ -467,13 +468,18 @@ function libGameActual() {
     }
 
     w(): string {
-      return `\\wordprefix{tree}(${this.edges.length}\\wordvar{branch${this.edges.length == 1 ? "" : "es"}})`
+      return `\\wordprefix{tree}(${this.edges.map((x) => x.e0 + "\\to " + x.e1)})`
     }
 
     #clone() {
       const t = new Tree()
-      ;(t as any).edges = this.edges.map((x) => ({ ...x }))
-      ;(t as any).#edges = this.#edges.map((x) => x.map((x) => ({ ...x })))
+      const map = new Map()
+      ;(t as any).edges = this.edges.map((x) => {
+        const y = { ...x }
+        map.set(x, y)
+        return y
+      })
+      ;(t as any).#edges = this.#edges.map((x) => x.map((x) => map.get(x)!))
       return t
     }
   }
