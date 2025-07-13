@@ -3,7 +3,6 @@ before nyalang version can be released:
 ❌ `2 < 3 < 4` works as expected
 ❌ mutating functions like `stroke` and `path` shouldn't really exist
 ❌ exact fractions
-❌ automatic coercion
 ❌ list distribution
 ❌ `min(1, 2, 7, 9)` still works
 ❌ trig angle
@@ -14,6 +13,8 @@ before nyalang version can be released:
 ❌ sliders
 ❌ tokens
 ❌ derivatives
+❌ mobile keyboard
+✅ automatic coercion
 
 to do list for things desmos hid is:
 ❌ apply, rotation, etc.

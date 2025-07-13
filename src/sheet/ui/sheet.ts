@@ -327,10 +327,14 @@ ${fns.join("\n\n")}`,
     const titlebar = h(
       "font-['Symbola','Times_New_Roman',sans-serif] sticky top-0 w-full bg-[--nya-bg-sidebar] border-r border-[--nya-border] text-center text-[--nya-title] z-20 [grid-area:titlebar] border-t sm:border-t-0",
       h(
-        "flex w-full h-12 min-h-12 max-h-12 p-1 border-b border-[--nya-border]",
+        "flex w-full h-12 min-h-12 max-h-12 p-1 border-b border-[--nya-border] [container-type:size]",
         copyAll,
         clearAll,
-        h("m-auto text-2xl", "project nya"),
+        h("m-auto text-2xl [@container(min-width:300px)]:hidden", "nya"),
+        h(
+          "m-auto text-2xl hidden [@container(min-width:300px)]:inline",
+          "project nya",
+        ),
         showAddons,
         index,
         // switchToDocs, TODO: proper docs
