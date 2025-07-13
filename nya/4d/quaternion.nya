@@ -1,8 +1,19 @@
+use "complex";
+
 struct Quaternion {
   real: num,
   imag: num,
   j: num,
   k: num,
+}
+
+fn ->(x: Complex) -> Quaternion {
+  Quaternion {
+    real: x.real,
+    imag: x.imag,
+    j: 0.0,
+    k: 0.0,
+  }
 }
 
 fn +(x: Quaternion) -> Quaternion {

@@ -374,6 +374,43 @@ fn %juxtapose(a: Point, b: Point) -> num {
   @length(a @- b)
 }
 
+fn _measure(a: Angle) -> num {
+  let measure = (
+    atan(a.p1.x - a.p2.x, a.p1.y - a.p2.y)
+      - atan(a.p3.x - a.p2.x, a.p3.y - a.p2.y)
+  )
+    % (2 * pi);
+
+  if measure > pi {
+    2.0 * pi - measure
+  } else {
+    measure
+  }
+}
+
+fn _measure(a: DirectedAngle) -> num {
+  let measure = (
+    atan(a.p1.x - a.p2.x, a.p1.y - a.p2.y)
+      - atan(a.p3.x - a.p2.x, a.p3.y - a.p2.y)
+      + 2 * pi
+  )
+    % (2 * pi);
+
+  if measure > pi {
+    measure - 2 * pi
+  } else {
+    measure
+  }
+}
+
+fn ->(a: Angle) -> num {
+  _measure(a)
+}
+
+fn ->(a: DirectedAngle) -> num {
+  _measure(a)
+}
+
 expose package {
   name: "2D geometry",
   default: true,

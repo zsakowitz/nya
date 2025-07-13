@@ -1,3 +1,5 @@
+// ensure real erf loads before complex erf
+use "real/erf";
 use "complex";
 
 fn faddeeva(z: Complex) -> Complex {
