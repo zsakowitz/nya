@@ -473,7 +473,7 @@ export function libLatex(api: NyaApi) {
 
   decl.tags.set(ident("display"), createTag(ident("display"), idDisplay))
 
-  api.fn("empty", { value: latex }, bool, {
+  api.fn("is_empty", { value: latex }, bool, {
     glsl: v`true`,
     js: v`${0}==""`,
   })

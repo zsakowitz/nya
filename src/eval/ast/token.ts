@@ -42,6 +42,7 @@ export interface PuncListInfix extends PuncListPm, PuncListCmp {
   "..": 0
   "...": 0
   "\\cdot ": 0
+  "\\ast ": 0
   "÷": 0
   mod: 0
   "\\to ": 0

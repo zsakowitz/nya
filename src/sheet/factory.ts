@@ -1,3 +1,4 @@
+import { NyaApi } from "!/emit/api"
 import { EntrySet } from "!/exec/item"
 import { ScriptEnvironment } from "!/exec/loader"
 import { index, type PackageId } from "#/index"
@@ -76,6 +77,10 @@ export class SheetFactory {
       }
     }
     pkg.load?.()
+    if (pkg.api) {
+      pkg.api(new NyaApi(this.env.libGl))
+      pkg.api(new NyaApi(this.env.libJs))
+    }
 
     if (pkg.scripts) {
       for (const script of pkg.scripts) {
@@ -85,9 +90,16 @@ export class SheetFactory {
 
     const FN_NAME = /^[A-Za-z]{2,}(?:_[A-Za-z]{2,})*$/
     this.env.libJs.fns
-      .map((x) => x[0]?.id.label)
-      .filter((x): x is string => x != null && FN_NAME.test(x))
-      .forEach((x) => this.options.words.set(x.replace(/_/g, " "), "prefix"))
+      .map((x) => [x[0]?.id.label, x.some((x) => x.args.length > 0)] as const)
+      .filter((x) => x[0] != null && FN_NAME.test(x[0]))
+      .forEach(
+        // TODO: make this robust against adding future overloads; maybe functions shouldn't all implicitly require an argument? or make them both prefix and var, but prefer the prefix interpretation
+        (x) =>
+          this.options.words.set(
+            x[0]!.replace(/_/g, " "),
+            x[1] ? "prefix" : "var",
+          ),
+      )
 
     for (const k in pkg.ty?.info) {
       const key = k as TyName

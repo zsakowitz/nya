@@ -1,6 +1,7 @@
 import type { Pos } from "!/ast/issue"
 import { OP_TEXT, OVERLOADABLE } from "!/ast/kind"
 import { AnyVector } from "./broadcast"
+import { Coercion, isEligibleForCoercion, type CoercionTarget } from "./coerce"
 import { Block, type Declarations } from "./decl"
 import { bug, issue } from "./error"
 import { Id, ident } from "./id"
@@ -209,6 +210,31 @@ export class NyaApi {
     )
   }
 
+  coercion(fn: Fn) {
+    if (fn.args.length != 1) {
+      bug(`A coercion function must accept exactly one argument.`)
+    }
+    if (!isEligibleForCoercion(fn.args[0]!.type as Type)) {
+      bug(`A coercion function's argument must be a scalar or struct.`)
+    }
+    if (!isEligibleForCoercion(fn.ret as Type)) {
+      bug(`A coercion function's return type must be a scalar or struct.`)
+    }
+    this.lib.coercions.addCoercion(
+      new Coercion(
+        fn.args[0]!.type as CoercionTarget,
+        fn.ret as CoercionTarget,
+        false,
+        (v, block, pos) => fn.run([v], block, pos, pos),
+      ),
+      undefined,
+    )
+  }
+
+  tcoercion(from: Type, into: Type) {
+    this.fn("->", { from }, into, { glsl: v`${0}`, js: v`${0}` })
+  }
+
   /**
    * Declares a function.
    *
@@ -241,7 +267,11 @@ export class NyaApi {
       // `implConst` is ignored if there is no base impl
       if (ret.repr.type == "void") {
         const f = new Fn(id, fnParams, ret, () => new Value(0, ret, true))
-        this.lib.fns.push(id, f)
+        if (name == "->") {
+          this.coercion(f)
+        } else {
+          this.lib.fns.push(id, f)
+        }
         return
       } else {
         bug(
@@ -278,7 +308,11 @@ export class NyaApi {
       return this._f(impl, values, block, ret)
     })
 
-    this.lib.fns.push(id, f)
+    if (name == "->") {
+      this.coercion(f)
+    } else {
+      this.lib.fns.push(id, f)
+    }
   }
 
   /**
@@ -565,6 +599,58 @@ export class Impl {
   of(strings: TemplateStringsArray, ...args: FnInterp[]) {
     return f(this.sideEffects, strings, args, this.globals)
   }
+}
+
+export class ImplByFunction<T> {
+  constructor(
+    readonly api: NyaApi,
+    readonly impl: Impl,
+    readonly f: Record<keyof T, string>,
+  ) {}
+
+  of(strings: TemplateStringsArray, ...args: FnInterp[]) {
+    return this.impl.of(strings, ...args)
+  }
+
+  fn(name: Extract<keyof T, string>, params: Record<string, Type>, ret: Type) {
+    const p = Object.entries(params).length
+
+    this.api.fn(
+      name,
+      params,
+      ret,
+      {
+        glsl: v``,
+        js:
+          p == 1 ? this.of`${this.f[name]}(${0})`
+          : p == 2 ? this.of`${this.f[name]}(${0},${1})`
+          : p == 3 ? this.of`${this.f[name]}(${0},${1},${2})`
+          : p == 4 ? this.of`${this.f[name]}(${0},${1},${2},${3})`
+          : this.of`${this.f[name]}()`,
+      },
+      false,
+    )
+
+    return this
+  }
+}
+
+export function jsFn<T>(api: NyaApi, f: () => T): ImplByFunction<T> {
+  if (f.toString().includes("%%")) {
+    bug(`'jsFn' functions cannot include %%.`)
+  }
+
+  // eval is good b/c it ensures the function is actually scope-independent
+  const keys = Object.keys((0, eval)(`(${f})()`))
+
+  const impl = new Impl()
+  const base = impl.cache(`const %%=(${f})();`)
+  const ret = Object.create(null)
+  for (const key of keys) {
+    ret[key] = impl.cache(`const %%=${base}[${JSON.stringify(key)}];`)
+  }
+
+  return new ImplByFunction(api, impl, ret)
 }
 
 type ScriptingInterfaceFnImpl = ReturnType<typeof f>

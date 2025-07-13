@@ -21,7 +21,7 @@ fn with_component(base: latex, name: latex, value: num) -> latex {
 }
 
 fn finalize(base: latex) -> latex {
-  if base.empty {
+  if base.is_empty {
     display"0"
   } else {
     base

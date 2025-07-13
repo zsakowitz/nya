@@ -19,7 +19,7 @@ export class Coercion {
   ) {}
 }
 
-function cycle(from: Type, into: Type, pos: Pos): never {
+function cycle(from: Type, into: Type, pos: Pos | undefined): never {
   issue(`Coercion cycle detected: ${from} -> ${into}`, pos)
 }
 
@@ -44,7 +44,7 @@ export class Coercions {
     return !!this.single.get(from)?.has(into)
   }
 
-  private add(coercion: Coercion, pos: Pos) {
+  private add(coercion: Coercion, pos: Pos | undefined) {
     if (coercion.from == coercion.into) {
       cycle(coercion.from, coercion.into, pos)
     }
@@ -110,7 +110,7 @@ export class Coercions {
     }
   }
 
-  addCoercion(coercion: Coercion, pos: Pos) {
+  addCoercion(coercion: Coercion, pos: Pos | undefined) {
     if (coercion.from == coercion.into) {
       cycle(coercion.from, coercion.into, pos)
     }
@@ -179,7 +179,7 @@ export class Coercions {
   }
 
   /*! From https://en.wikipedia.org/wiki/Topological_sorting. */
-  private order(pos: Pos) {
+  private order(pos: Pos | undefined) {
     const { byFrom, byInto } = this
     const unmarked = new Set([...byFrom.keys(), ...byInto.keys()])
     const permanent = new Set<Type>()

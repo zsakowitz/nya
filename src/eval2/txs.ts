@@ -243,7 +243,7 @@ TX_OPS.op = {
   },
 }
 
-// Similar to 'sop'; make sure to match changes between the two.
+// Similar to 'sop' and 'bvar'; make sure to match changes between the two.
 TX_OPS.bcall = {
   eval(op, _, block) {
     const sub = op.name.sub ? block.eval(op.name.sub) : null
@@ -264,7 +264,7 @@ TX_OPS.bcall = {
   },
 }
 
-// Similar to 'bcall'; make sure to match changes between the two.
+// Similar to 'bcall' and 'bvar'; make sure to match changes between the two.
 TX_OPS.sop = {
   eval(op, children, block) {
     const sub = op.sub ? block.eval(op.sub) : null
@@ -277,6 +277,22 @@ TX_OPS.sop = {
     } else {
       return inner
     }
+  },
+  deps(_, children, deps) {
+    for (const el of children) {
+      deps.check(el)
+    }
+  },
+}
+
+// Similar to 'bcall' and 'sop'; make sure to match changes.
+TX_OPS.bvar = {
+  eval(op, children, block) {
+    const sub = op.sub ? block.eval(op.sub) : null
+    const args = children.map((x) => block.eval(x)).join(",")
+    const name = op.name + (sub == null ? "" : "_")
+    const inner = `call ${escapeIdentName(name in ALIASES ? ALIASES[name]! : name, true)}(${sub == null ? "" : sub + ","}${args})`
+    return inner
   },
   deps(_, children, deps) {
     for (const el of children) {

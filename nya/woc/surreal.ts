@@ -1,5 +1,5 @@
-import { Impl, v, type Plugin } from "!/emit/api"
-import { AnyArray, Array } from "!/emit/type"
+import { Impl, jsFn, v, type NyaApi, type Plugin } from "!/emit/api"
+import { AnyArray, Array, type Scalar } from "!/emit/type"
 import { numToLatex } from "!/std"
 
 export default {
@@ -86,7 +86,7 @@ export default {
       const impl = new Impl()
       const num = impl.cache(`const %%=${numToLatex};`)
       const fn = impl.cache(
-        `function %%(x){return x===null?'\\\\wordvar{undefined}':x.z===null?\`\\\\surreal{\${x.x.map(%%).join(',')}}{\${x.y.map(%%).join(',')}}\`:${num}(x.z)}`,
+        `function %%(x){return x===null?'\\\\wordvar{undefined}':typeof x.z=='string'?x.z:x.z===null?\`\\\\surreal{\${x.x.map(%%).join(',')}}{\${x.y.map(%%).join(',')}}\`:${num}(x.z)}`,
       )
       api.fn("%display", { value: S }, api.lib.tyLatex, {
         glsl: v``,
@@ -112,7 +112,7 @@ export default {
     {
       const impl = new Impl()
       const neg = impl.cache(
-        "function %%(x){return x&&{x:x.y.map(%%).reverse(),y:x.x.map(%%).reverse(),z:x.z&&-x.z}}",
+        "function %%(x){return x&&{x:x.y.map(%%).reverse(),y:x.x.map(%%).reverse(),z:typeof x.z=='number'?-x.z:null}}",
       )
       const add = impl.cache(`function %%(a,b){return a&&b&&{
   x:a.x.map(x=>%%(x,b)).concat(b.x.map(x=>%%(x,a))),
@@ -135,5 +135,123 @@ export default {
         js: impl.of`${add}(${0},${neg}(${1}))`,
       })
     }
+
+    libGame(api, S)
   },
 } satisfies Plugin
+
+function libGame(api: NyaApi, S: Scalar) {
+  const Player = api.opaque("Player", { glsl: "int", js: null }, true)
+  api.fn("left", {}, Player, { glsl: v`1`, js: v`1` }, false) // apparently these don't serialize well
+  api.fn("right", {}, Player, { glsl: v`-1`, js: v`-1` }, false) // apparently these don't serialize well
+  api.fn("inv", { x: Player }, Player, { glsl: v`-${0}`, js: v`-${0}` })
+  api.fn("%display", { x: Player }, api.lib.tyLatex, {
+    glsl: v``,
+    js: v`${0}==1?"\\\\wordvar{left}":"\\\\wordvar{right}"`,
+  })
+
+  const Game = api.opaque("Game", { glsl: null, js: null }, false)
+  const GameEmpty = api.opaque("GameEmpty", { glsl: null, js: null }, false)
+  const GameNim = api.opaque("GameNim", { glsl: null, js: null }, false)
+
+  jsFn(api, libGameActual)
+    .fn("empty", {}, GameEmpty)
+    .fn("nim", { size: api.lib.tyNum }, GameNim)
+    .fn("winner", { game: Game, player: Player }, Player)
+    .fn("sign", { game: Game }, S)
+
+  api.tcoercion(GameEmpty, Game)
+  api.tcoercion(GameNim, Game)
+}
+
+function libGameActual() {
+  type Player = -1 | 1
+
+  interface Surreal {
+    x: Surreal[]
+    y: Surreal[]
+    z: number | string | null
+  }
+
+  interface Game<T = unknown> {
+    x(p: -1 | 1): T[]
+    y(x: T): void
+    z(x: T): void
+  }
+
+  function winner(game: Game, player: Player): Player {
+    const opp = -player as Player
+    const moves = game.x(player)
+    if (moves.length == 0) {
+      return opp
+    }
+
+    for (let i = 0; i < moves.length; i++) {
+      const mv = moves[i]!
+      game.y(mv)
+      const sign = winner(game, opp)
+      game.z(mv)
+      if (sign == player) {
+        return player
+      }
+    }
+
+    return opp
+  }
+
+  const Z: Surreal = { x: [], y: [], z: 0 }
+  const P1: Surreal = { x: [Z], y: [], z: 1 }
+  const N1: Surreal = { x: [], y: [Z], z: -1 }
+  const STAR: Surreal = { x: [Z], y: [Z], z: "\\digit{∗}" }
+
+  function sign(game: Game): Surreal {
+    const wl = winner(game, -1) == -1
+    const wr = winner(game, 1) == -1
+
+    return (
+      wl ?
+        wr ? N1
+        : STAR
+      : wr ? Z
+      : P1
+    )
+  }
+
+  function nim(size: number): Game<number> {
+    size = Math.floor(size)
+    if (!Number.isSafeInteger(size)) {
+      size = 0
+    }
+    if (size > 16) {
+      size = 16
+    }
+    return {
+      x() {
+        const ret: number[] = []
+        for (let i = 0; i < size; i++) {
+          ret.push(i + 1)
+        }
+        return ret
+      },
+      y(x) {
+        size -= x
+      },
+      z(x) {
+        size += x
+      },
+    }
+  }
+
+  return {
+    empty(): Game<void> {
+      return {
+        x: () => [],
+        y() {},
+        z() {},
+      }
+    },
+    winner,
+    sign,
+    nim,
+  }
+}

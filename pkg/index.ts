@@ -1,4 +1,3 @@
-import { NyaApi } from "!/emit/api"
 import PKG_SURREAL from "../nya/woc/surreal"
 import {
   NYALANG_PACKAGES_ADDONS,
@@ -20,14 +19,8 @@ rawBuiltin["nya:surreal"] = () =>
       label: "<TODO: no label>",
       category: "auto-generated (nyalang)",
       deps: [],
-      init: {
-        intents: ["intent 1"],
-        fn(sheet) {
-          const api1 = new NyaApi(sheet.factory.env.libJs)
-          PKG_SURREAL.load(api1)
-          const api2 = new NyaApi(sheet.factory.env.libGl)
-          PKG_SURREAL.load(api2)
-        },
+      api(api) {
+        PKG_SURREAL.load(api)
       },
     } satisfies Package,
   })

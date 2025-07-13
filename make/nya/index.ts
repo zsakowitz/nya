@@ -1,3 +1,5 @@
+import "../../nya/woc/surreal" // so `bun --watch` works
+
 try {
   await import("./scan") // scan to build the script index
   await import("./predefined-packages") // find which scripts define packages

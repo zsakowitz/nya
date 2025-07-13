@@ -1,3 +1,4 @@
+import type { NyaApi } from "!/emit/api"
 import type {
   NodeName,
   Nodes,
@@ -61,6 +62,7 @@ export interface Package {
   deps: readonly PackageId[]
   scripts?: readonly ScriptName[]
 
+  api?(api: NyaApi): void
   load?(): void
   init?: {
     intents: readonly string[]
