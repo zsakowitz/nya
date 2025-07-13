@@ -160,18 +160,15 @@ function libGame(api: NyaApi, S: Scalar) {
   const GameEmpty = api.opaque("GameEmpty", { glsl: null, js: null }, false)
   const GameNim = api.opaque("GameNim", { glsl: null, js: null }, false)
   const GameTree = api.opaque("GameTree", { glsl: null, js: null }, false)
-  const GameConstantInteger = api.opaque(
-    "GameConstantInteger",
-    { glsl: null, js: null },
-    false,
-  )
+  const GameInt = api.opaque("GameInt", { glsl: null, js: null }, false)
+  const GameDeliver = api.opaque("GameDeliver", { glsl: null, js: null }, false)
 
   jsFn(api, libGameActual)
     .fn("empty", {}, GameEmpty)
     .fn("nim", { size: api.lib.tyNum }, GameNim)
     .fn("winner", { game: Game, player: Player }, Player)
     .fn("sign", { game: Game }, Sign)
-    .fn("const_int", { size: api.lib.tyNum }, GameConstantInteger)
+    .fn("const_int", { size: api.lib.tyNum }, GameInt)
     .fa("sum", "+", { a: Game, b: Game }, Game)
     .fa("sub", "-", { a: Game, b: Game }, Game)
     .fa("neg", "-", { game: Game }, Game)
@@ -179,6 +176,7 @@ function libGame(api: NyaApi, S: Scalar) {
     .fa("display_sign", "%display", { a: Sign }, api.lib.tyLatex)
     .fn("eval", { game: Game }, S)
     .fn("tree", {}, GameTree)
+    .fn("delivery", {}, GameDeliver)
 
   api.fn("+", { game: Game }, Game, { glsl: v`${0}`, js: v`${0}` }, false)
 
@@ -192,11 +190,7 @@ function libGame(api: NyaApi, S: Scalar) {
 
   api.fn(
     "branch",
-    {
-      game: GameTree,
-      src: api.lib.tyNum,
-      dst: api.lib.tyNum,
-    },
+    { game: GameTree, src: api.lib.tyNum, dst: api.lib.tyNum },
     GameTree,
     { glsl: v``, js: v`${0}.branch(${1},${2})` },
     false,
@@ -204,21 +198,41 @@ function libGame(api: NyaApi, S: Scalar) {
 
   api.fn(
     "branch",
-    {
-      game: GameTree,
-      src: api.lib.tyNum,
-      dst: api.lib.tyNum,
-      owner: Player,
-    },
+    { game: GameTree, src: api.lib.tyNum, dst: api.lib.tyNum, owner: Player },
     GameTree,
     { glsl: v``, js: v`${0}.branch(${1},${2},${3})` },
     false,
   )
 
+  api.fn(
+    "branch",
+    { game: GameDeliver, src: api.lib.tyNum, dst: api.lib.tyNum },
+    GameDeliver,
+    { glsl: v``, js: v`${0}.connect(${1},${2})` },
+    false,
+  )
+
+  api.fn(
+    "chain",
+    { game: GameDeliver, src: api.lib.tyNum, length: api.lib.tyNum },
+    GameDeliver,
+    { glsl: v``, js: v`${0}.chain(${1},${2})` },
+    false,
+  )
+
+  api.fn(
+    "cycle",
+    { game: GameDeliver, src: api.lib.tyNum, length: api.lib.tyNum },
+    GameDeliver,
+    { glsl: v``, js: v`${0}.cycle(${1},${2})` },
+    false,
+  )
+
   api.tcoercion(GameEmpty, Game)
   api.tcoercion(GameNim, Game)
-  api.tcoercion(GameConstantInteger, Game)
+  api.tcoercion(GameInt, Game)
   api.tcoercion(GameTree, Game)
+  api.tcoercion(GameDeliver, Game)
 }
 
 function libGameActual() {
@@ -484,6 +498,111 @@ function libGameActual() {
     }
   }
 
+  interface DeliveryEdge {
+    x: number
+    y: number
+  }
+
+  type DeliveryMove = [on: number, fruit: 1 | 2]
+
+  class Delivery implements Game<DeliveryMove> {
+    vl: (0 | 1 | 2)[] = []
+    el: DeliveryEdge[] = []
+    ev: DeliveryEdge[][] = []
+
+    private add(x: number, y: number) {
+      if (x == y) return
+
+      this.vl[x] ??= 0
+      this.vl[y] ??= 0
+      const edge: DeliveryEdge = { x, y }
+      this.el.push(edge)
+      ;(this.ev[x] ??= []).push(edge)
+      ;(this.ev[y] ??= []).push(edge)
+    }
+
+    clone() {
+      const game = new Delivery()
+      game.vl = this.vl
+      const edges = new Map<DeliveryEdge, DeliveryEdge>()
+      game.el = this.el.map((x) => {
+        const next = { ...x }
+        edges.set(x, next)
+        return next
+      })
+      game.ev = this.ev.map((x) => x.map((y) => edges.get(y)!))
+      return game
+    }
+
+    connect(x: number, y: number) {
+      const self = this.clone()
+      self.add(x, y)
+      return self
+    }
+
+    chain(x: number, size: number) {
+      const self = this.clone()
+      this.vl[x] ??= 0
+      for (let i = 0; i < size; i++) {
+        self.add(x, (x = self.vl.length))
+      }
+      return self
+    }
+
+    cycle(x: number, size: number) {
+      const self = this.clone()
+      this.vl[x] ??= 0
+      const og = x
+      for (let i = 0; i < size - 1; i++) {
+        self.add(x, (x = self.vl.length))
+      }
+      self.add(x, og)
+      return self
+    }
+
+    place(x: number, fruit: 1 | 2) {
+      const self = this.clone()
+      self.vl[x] = fruit
+      return self
+    }
+
+    x(): [number, 1 | 2][] {
+      const moves = this.vl.map((x, i) => ({
+        1: x == 0 ? ([i, 1] as DeliveryMove) : null,
+        2: x == 0 ? ([i, 2] as DeliveryMove) : null,
+      }))
+
+      for (const edge of this.el) {
+        if (this.vl[edge.x] == 1) {
+          moves[edge.y]![1] = null
+        }
+        if (this.vl[edge.x] == 2) {
+          moves[edge.y]![2] = null
+        }
+        if (this.vl[edge.y] == 1) {
+          moves[edge.x]![1] = null
+        }
+        if (this.vl[edge.y] == 2) {
+          moves[edge.x]![2] = null
+        }
+      }
+
+      return moves.flatMap((x) => [x[1], x[2]]).filter((x) => x != null)
+    }
+
+    y([on, fruit]: [on: number, fruit: 2 | 1]): void {
+      this.vl[on] = fruit
+    }
+
+    z(x: [on: number, fruit: 2 | 1]): void {
+      this.vl[x[0]] = 0
+    }
+
+    w(): string {
+      return `\\wordprefix{delivery}(${this.el.map((x) => x.x + "\\to " + x.y)})`
+    }
+  }
+
   return {
     empty(): Game<void> {
       return {
@@ -513,5 +632,6 @@ function libGameActual() {
         [3]: "\\digit{∗}",
       }[sign]
     },
+    delivery: () => new Delivery(),
   }
 }
