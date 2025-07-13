@@ -163,6 +163,7 @@ function libGame(api: NyaApi, S: Scalar) {
   const GameInt = api.opaque("GameInt", { glsl: null, js: null }, false)
   const GameDeliver = api.opaque("GameDeliver", { glsl: null, js: null }, false)
   const GameLemon = api.opaque("GameLemon", { glsl: null, js: null }, false)
+  const GameDyadic = api.opaque("GameDyadic", { glsl: null, js: null }, false)
 
   jsFn(api, libGameActual)
     .fn("empty", {}, GameEmpty)
@@ -184,6 +185,7 @@ function libGame(api: NyaApi, S: Scalar) {
     .fn("tree", {}, GameTree)
     .fn("delivery", {}, GameDeliver)
     .fn("lemon", { pile1: api.lib.tyNum, pile2: api.lib.tyNum }, GameLemon)
+    .fn("dyadic", { size: api.lib.tyNum }, GameDyadic)
 
   api.fn("+", { game: Game }, Game, { glsl: v`${0}`, js: v`${0}` }, false)
 
@@ -242,6 +244,7 @@ function libGame(api: NyaApi, S: Scalar) {
     .tcoercion(GameTree, Game)
     .tcoercion(GameDeliver, Game)
     .tcoercion(GameLemon, Game)
+    .tcoercion(GameDyadic, Game)
 }
 
 function libGameActual() {
@@ -254,7 +257,7 @@ function libGameActual() {
     z: number | string | null
   }
 
-  interface Game<T = unknown> {
+  interface Game<out T = unknown> {
     x(p: -1 | 1): T[]
     y(x: T): void
     z(x: T): void
@@ -680,15 +683,92 @@ function libGameActual() {
     }
   }
 
-  return {
-    empty(): Game<void> {
-      return {
-        x: () => [],
-        y() {},
-        z() {},
-        w: () => `\\wordvar{empty}`,
+  interface DyadicMove {
+    fexp: number
+    fsize: number
+    nexp: number
+    nsize: number
+  }
+
+  function dyadic(size: number, exp: number): Game<DyadicMove> {
+    if (
+      !(
+        Number.isSafeInteger(exp) &&
+        Number.isSafeInteger(size) &&
+        exp >= 0 &&
+        -(2 ** exp) <= size &&
+        size <= 2 ** exp
+      )
+    ) {
+      return empty("\\wordvar{undefined}")
+    }
+
+    simplify()
+
+    return {
+      x(player) {
+        if (exp == 0) {
+          if (size == player) {
+            return [{ fexp: 0, fsize: player, nexp: 0, nsize: 0 }]
+          } else {
+            return []
+          }
+        }
+
+        return [
+          {
+            fexp: exp,
+            fsize: size,
+            nexp: exp - 1,
+            nsize: (size - player) / 2,
+          },
+        ]
+      },
+      y(x) {
+        simplify()
+        size = x.nsize
+        exp = x.nexp
+      },
+      z(x) {
+        size = x.fsize
+        exp = x.fexp
+      },
+      w() {
+        return `\\wordprefix{dyadic}(\\frac{${size}}{2^{${exp}}})`
+      },
+    }
+
+    function simplify() {
+      while (size % 2 == 0 && exp > 0) {
+        exp--
+        size /= 2
       }
-    },
+    }
+  }
+
+  function empty(label: string): Game<any> {
+    return {
+      x: () => [],
+      y() {},
+      z() {},
+      w: () => label,
+    }
+  }
+
+  function dyadicFromUnit(x: number, sign: 1 | -1) {
+    let ret = 0
+    let exp = 0
+    for (let i = 0; i < 16 && x != 0; i++) {
+      exp++
+      const f = Math.floor(2 * x)
+      ret = 2 * ret + f
+      x = 2 * x - f
+    }
+    return dyadic(ret * sign, exp)
+  }
+
+  return {
+    empty: () => empty(`\\wordvar{empty}`),
     winner,
     sign,
     nim,
@@ -716,5 +796,17 @@ function libGameActual() {
     gte,
     gt,
     ne,
+    dyadic(x: number): Game<DyadicMove> {
+      if (x == 0) {
+        return empty(`\\frac{0}{2^0}`)
+      }
+      if (x <= 1) {
+        return dyadicFromUnit(x, 1)
+      }
+      if (x >= -1) {
+        return dyadicFromUnit(-x, -1)
+      }
+      return empty(`\\wordvar{undefined}`)
+    },
   }
 }
