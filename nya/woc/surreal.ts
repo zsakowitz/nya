@@ -166,9 +166,19 @@ function libGame(api: NyaApi, S: Scalar) {
     .fn("sign", { game: Game }, S)
     .fn("const_int", { size: api.lib.tyNum }, GameConstantInteger)
     .fa("sum", "+", { a: Game, b: Game }, Game)
+    .fa("sub", "-", { a: Game, b: Game }, Game)
     .fa("neg", "-", { game: Game }, Game)
-    .fa("pos", "+", { game: Game }, Game)
     .fa("eq", "==", { a: Game, b: Game }, api.lib.tyBool)
+    .fn("eval", { game: Game }, S)
+
+  api.fn("+", { game: Game }, Game, { glsl: v`${0}`, js: v`${0}` }, false)
+  api.fn(
+    "%display",
+    { game: Game },
+    api.lib.tyLatex,
+    { glsl: v``, js: v`${0}.w()` },
+    false,
+  )
 
   api.tcoercion(GameEmpty, Game)
   api.tcoercion(GameNim, Game)
@@ -188,6 +198,7 @@ function libGameActual() {
     x(p: -1 | 1): T[]
     y(x: T): void
     z(x: T): void
+    w(): string
   }
 
   function winner(game: Game, player: Player): Player {
@@ -257,6 +268,9 @@ function libGameActual() {
       z(x) {
         size += x
       },
+      w() {
+        return `\\wordprefix{nim}(${size})`
+      },
     }
   }
 
@@ -280,6 +294,9 @@ function libGameActual() {
       },
       z(x) {
         size += x
+      },
+      w() {
+        return `\\wordprefix{const_int}(${size})`
       },
     }
   }
@@ -308,6 +325,9 @@ function libGameActual() {
       z(x) {
         x.x.z(x.y)
       },
+      w() {
+        return `${a.w()}+${b.w()}`
+      },
     }
   }
 
@@ -322,6 +342,9 @@ function libGameActual() {
       z(x) {
         a.z(x)
       },
+      w() {
+        return `-${a.w()}`
+      },
     }
   }
 
@@ -330,12 +353,31 @@ function libGameActual() {
     return lte(val, ZERO) && lte(ZERO, val)
   }
 
+  function evaluate(a: Game): Surreal {
+    const lhs: Surreal[] = []
+    for (const move of a.x(1)) {
+      a.y(move)
+      lhs.push(evaluate(a))
+      a.z(move)
+    }
+
+    const rhs: Surreal[] = []
+    for (const move of a.x(-1)) {
+      a.y(move)
+      rhs.push(evaluate(a))
+      a.z(move)
+    }
+
+    return { x: lhs, y: rhs, z: null }
+  }
+
   return {
     empty(): Game<void> {
       return {
         x: () => [],
         y() {},
         z() {},
+        w: () => `\\wordvar{empty}`,
       }
     },
     winner,
@@ -343,8 +385,11 @@ function libGameActual() {
     nim,
     sum,
     neg,
-    pos: (x: unknown) => x,
     eq,
     const_int,
+    eval: evaluate,
+    sub(a: Game, b: Game): Game {
+      return sum(a, neg(b))
+    },
   }
 }
