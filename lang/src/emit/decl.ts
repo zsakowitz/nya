@@ -1,4 +1,5 @@
 import type { ExprLit } from "../ast/node/expr"
+import { Coercions } from "./coerce"
 import { bug } from "./error"
 import { Id, ident, type IdGlobal } from "./id"
 import type { EmitProps } from "./props"
@@ -94,6 +95,7 @@ export class Declarations {
   readonly types: IdMap<Type>
   readonly fns: IdMapMany<Fn>
   readonly tags: IdMap<Tag>
+  readonly coercions = new Coercions()
 
   private _tyVoid: Scalar | undefined
   get tyVoid() {
