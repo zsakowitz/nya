@@ -150,9 +150,16 @@ function libGame(api: NyaApi, S: Scalar) {
     js: v`${0}==1?"\\\\wordvar{left}":"\\\\wordvar{right}"`,
   })
 
+  const Sign = api.opaque("Sign", { glsl: "int", js: null }, true)
+  api.fn("inv", { x: Sign }, Sign, {
+    glsl: v`${"int %%(int x){return x==3?3:-x;}"}(${0})`,
+    js: v`${"function %%(x){return x==3?3:x==0?0:-x;}"}(${0})`,
+  })
+
   const Game = api.opaque("Game", { glsl: null, js: null }, false)
   const GameEmpty = api.opaque("GameEmpty", { glsl: null, js: null }, false)
   const GameNim = api.opaque("GameNim", { glsl: null, js: null }, false)
+  const GameTree = api.opaque("GameTree", { glsl: null, js: null }, false)
   const GameConstantInteger = api.opaque(
     "GameConstantInteger",
     { glsl: null, js: null },
@@ -163,13 +170,15 @@ function libGame(api: NyaApi, S: Scalar) {
     .fn("empty", {}, GameEmpty)
     .fn("nim", { size: api.lib.tyNum }, GameNim)
     .fn("winner", { game: Game, player: Player }, Player)
-    .fn("sign", { game: Game }, S)
+    .fn("sign", { game: Game }, Sign)
     .fn("const_int", { size: api.lib.tyNum }, GameConstantInteger)
     .fa("sum", "+", { a: Game, b: Game }, Game)
     .fa("sub", "-", { a: Game, b: Game }, Game)
     .fa("neg", "-", { game: Game }, Game)
     .fa("eq", "==", { a: Game, b: Game }, api.lib.tyBool)
+    .fa("display_sign", "%display", { a: Sign }, api.lib.tyLatex)
     .fn("eval", { game: Game }, S)
+    .fn("tree", {}, GameTree)
 
   api.fn("+", { game: Game }, Game, { glsl: v`${0}`, js: v`${0}` }, false)
   api.fn(
@@ -180,13 +189,40 @@ function libGame(api: NyaApi, S: Scalar) {
     false,
   )
 
+  api.fn(
+    "branch",
+    {
+      game: GameTree,
+      src: api.lib.tyNum,
+      dst: api.lib.tyNum,
+    },
+    GameTree,
+    { glsl: v``, js: v`${0}.branch(${1},${2})` },
+    false,
+  )
+
+  api.fn(
+    "branch",
+    {
+      game: GameTree,
+      src: api.lib.tyNum,
+      dst: api.lib.tyNum,
+      owner: Player,
+    },
+    GameTree,
+    { glsl: v``, js: v`${0}.branch(${1},${2},${3})` },
+    false,
+  )
+
   api.tcoercion(GameEmpty, Game)
   api.tcoercion(GameNim, Game)
   api.tcoercion(GameConstantInteger, Game)
+  api.tcoercion(GameTree, Game)
 }
 
 function libGameActual() {
   type Player = -1 | 1
+  type Sign = -1 | 1 | 0 | 3
 
   interface Surreal {
     x: Surreal[]
@@ -233,16 +269,16 @@ function libGameActual() {
     return true
   }
 
-  function sign(game: Game): Surreal {
+  function sign(game: Game): Sign {
     const wl = winner(game, -1) == -1
     const wr = winner(game, 1) == -1
 
     return (
       wl ?
-        wr ? N1
-        : STAR
-      : wr ? ZERO
-      : P1
+        wr ? -1
+        : 3
+      : wr ? 0
+      : 1
     )
   }
 
@@ -349,7 +385,7 @@ function libGameActual() {
   }
 
   function eq(a: Game, b: Game) {
-    const val = sign(sum(a, b))
+    const val = evaluate(sum(a, b))
     return lte(val, ZERO) && lte(ZERO, val)
   }
 
@@ -371,6 +407,80 @@ function libGameActual() {
     return { x: lhs, y: rhs, z: null }
   }
 
+  interface Branch {
+    e0: number
+    e1: number
+    color: Player | void
+    hacked: boolean
+    grounded: boolean
+  }
+
+  class Tree implements Game<Branch> {
+    readonly #edges: Branch[][] = []
+    readonly edges: Branch[] = []
+
+    branch(e0: number, e1: number, color: Player | void) {
+      const self = this.#clone()
+      const branch: Branch = { e0, e1, color, hacked: false, grounded: false }
+      ;(self.#edges[e0] ??= []).push(branch)
+      ;(self.#edges[e1] ??= []).push(branch)
+      self.edges.push(branch)
+      return self
+    }
+
+    #markGroundedFrom(vertex: number, marked: Set<number>) {
+      if (marked.has(vertex)) return
+      marked.add(vertex)
+      const edges = this.#edges[vertex]
+      if (!edges) return
+
+      for (const edge of edges) {
+        if (!(edge.hacked || edge.grounded)) {
+          edge.grounded = true
+          this.#markGroundedFrom(edge.e1 != vertex ? edge.e1 : edge.e0, marked)
+        }
+      }
+    }
+
+    #checkAccess() {
+      for (const edge of this.edges) {
+        edge.grounded = false
+      }
+
+      this.#markGroundedFrom(0, new Set())
+    }
+
+    x(player: Player): Branch[] {
+      this.#checkAccess()
+
+      return this.edges.filter(
+        (x) =>
+          (x.color === player || x.color === undefined) &&
+          !x.hacked &&
+          x.grounded,
+      )
+    }
+
+    y(move: Branch): void {
+      move.hacked = true
+    }
+
+    z(move: Branch): void {
+      move.hacked = false
+    }
+
+    w(): string {
+      return `\\wordprefix{tree}(${this.edges.length}\\wordvar{branch${this.edges.length == 1 ? "" : "es"}})`
+    }
+
+    #clone() {
+      const t = new Tree()
+      ;(t as any).edges = this.edges.map((x) => ({ ...x }))
+      ;(t as any).#edges = this.#edges.map((x) => x.map((x) => ({ ...x })))
+      return t
+    }
+  }
+
   return {
     empty(): Game<void> {
       return {
@@ -390,6 +500,15 @@ function libGameActual() {
     eval: evaluate,
     sub(a: Game, b: Game): Game {
       return sum(a, neg(b))
+    },
+    tree: () => new Tree(),
+    display_sign(sign: Sign): string {
+      return {
+        [-1]: "\\wordvar{right}",
+        [1]: "\\wordvar{left}",
+        [0]: "0",
+        [3]: "\\digit{∗}",
+      }[sign]
     },
   }
 }

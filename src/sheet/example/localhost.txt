@@ -1,3 +1,4 @@
+\operatorname{sign}\left(\operatorname{branch}\left(\operatorname{tree},0,1,\operatorname{left}\right)\right)
 \operatorname{nim}\left(1\right)+\operatorname{nim}\left(2\right)=\operatorname{nim}\left(3\right)
 \operatorname{sign}\left(\operatorname{nim}\left(1\right)+\operatorname{nim}\left(2\right)+\operatorname{nim}\left(4\right)\right)
 \operatorname{sign}\left(\operatorname{nim}\left(4\right)+\operatorname{nim}\left(1\right)+\operatorname{nim}\left(5\right)\right)
