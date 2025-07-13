@@ -47,11 +47,8 @@ export interface SuffixKind {
   exponent: Node
   /** Italicized property; .x or .y */
   uprop: NameCooked
-  /** Built-in property; .real or .imag */
-  bprop: { name: NameRaw; sup: Node | null }
-  // There is no `ucall` node, since `A.x(3)` should behave like `(A.x)(3)`.
-  /** Built-in method call; .glider(...) or .min(...) */
-  bcall: { name: NameRaw; sup: Node | null; arg: Node }
+  /** Built-in method call or property access; .glider(...), .min(...), .real */
+  bcall: { name: NameRaw; sup: Node | null; arg: Node | null }
   index: Node
 }
 

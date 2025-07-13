@@ -5,6 +5,7 @@ import {
   type Var,
 } from "@/eval/ast/token"
 import { subscript } from "@/eval/lib/text"
+import type { NameRaw } from "@/eval2/node"
 import { P, PRECEDENCE_WORD_BINARY, PRECEDENCE_WORD_UNARY } from "@/eval2/prec"
 import { L, R, type Dir } from "@/field/dir"
 import type { Options, WordMapWithoutSpaces } from "@/field/options"
@@ -20,7 +21,7 @@ import {
   type InitProps,
   type IRBuilder,
 } from "../../model"
-import { CmdBrack } from "../math/brack"
+import { CmdBrack } from "../math/brack" // TODO: this is a cyclic import
 import { CmdSupSub } from "../math/supsub"
 import { CmdToken, TokenCtx } from "./token"
 import { CmdWord } from "./word"
@@ -174,20 +175,31 @@ export class CmdDot extends Leaf {
       const v = this[R]
       if (v.kind == "prefix") {
         const [word, endpoint] = v.wordToRightAndEndpoint()
-        // TODO: this creates a cyclic import
-        if (
-          endpoint[R] instanceof CmdBrack &&
-          endpoint[R].lhs == "(" &&
-          endpoint[R].rhs == ")"
-        ) {
-          const arg = endpoint[R].blocks[0].parse()
-          ret.next = endpoint[R][R]
-          ret.suffixed({
-            type: "bcall",
-            data: { name: { name: word, sub: null }, sup: null, arg },
-          })
-          return
+        let next = endpoint[R]
+
+        const name: NameRaw = {
+          name: word,
+          sub: (next instanceof CmdSupSub && next.sub?.parse()) || null,
         }
+
+        let sup
+        if (next instanceof CmdSupSub) {
+          sup = next.sup?.parse() ?? null
+          next = next[R]
+        } else {
+          sup = null
+        }
+
+        if (next instanceof CmdBrack && next.lhs == "(" && next.rhs == ")") {
+          const arg = next.blocks[0].parse()
+          ret.suffixed({ type: "bcall", data: { name, sup, arg } })
+          next = next[R]
+        } else {
+          ret.suffixed({ type: "bcall", data: { name, sup, arg: null } })
+        }
+
+        ret.next = next
+        return
       }
     }
     throw new Error("TODO: .2, .., ..., .x, .y, .min, .min(2,3)")

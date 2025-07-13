@@ -305,7 +305,8 @@ TX_OPS.bvar = {
 TX_SUFFIXES.bcall = {
   eval(op, on, block) {
     const sub = op.name.sub ? block.eval(op.name.sub) : null
-    const args = on + "," + block.evalList(op.arg).join(",")
+    const opArgs = op.arg ? block.evalList(op.arg).join(",") : ""
+    const args = on + (opArgs ? "," + opArgs : "")
     const sup = op.sup ? fnSuperscript(op.sup) : null
     const name =
       op.name.name + (sub == null ? "" : "_") + (sup == "-1" ? "^-1" : "")
@@ -318,6 +319,7 @@ TX_SUFFIXES.bcall = {
   },
   deps(op, _, deps) {
     deps.check(op.name.sub)
+    deps.check(op.sup)
     deps.check(op.arg)
   },
 }
