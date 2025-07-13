@@ -67,42 +67,48 @@ function checkOverloads() {
     return false
   }
 
-  const suppressed: { earlier: Fn; later: Fn }[] = []
+  const suppressed: { earlier: Fn[]; later: Fn }[] = []
 
   for (const fn of env.libJs.fns.all()) {
     if (!fn.length) continue
 
-    for (let i = 1; i < fn.length; i++) {
+    nextFn: for (let i = 1; i < fn.length; i++) {
       const later = fn[i]!
 
-      for (let j = 0; j < i; j++) {
-        const earlier = fn[j]!
-
-        if (
+      const suppressors = fn.slice(0, i).filter(
+        (earlier) =>
           later.args.length == earlier.args.length &&
           suppressesOverload(
             env.libJs.coercions,
             earlier.args.map((x) => x.type),
             later.args.map((x) => x.type),
-          )
-        ) {
-          suppressed.push({ earlier, later })
-          continue
-        }
+          ),
+      )
+      if (suppressors.length) {
+        suppressed.push({ earlier: suppressors, later })
       }
     }
   }
 
   if (suppressed.length) {
     console.log(
-      `❌ ${suppressed.length} functions are suppressed due to coercion:`,
+      `❌ ${suppressed.length} function overload${suppressed.length == 1 ? " is" : "s are"} suppressed:`,
     )
     for (const el of suppressed.slice(0, 10)) {
-      console.log(
-        `\n${ANSI.magenta}${el.later} ${ANSI.reset}@ ${ANSI.cyan}${el.later.pos}
-  ${ANSI.reset}${ANSI.dim}by ${ANSI.blue}${el.earlier} ${ANSI.reset}${ANSI.dim}@ ${ANSI.cyan}${el.earlier.pos}${ANSI.reset}`,
+      const head = `\n${ANSI.magenta}${el.later} ${ANSI.reset}@ ${ANSI.cyan}${el.later.pos ?? "<std>"}`
+      const tail = el.earlier.map(
+        (x, i, a) =>
+          `\n  ${ANSI.reset}${ANSI.dim}${
+            i == 0 ?
+              a.length > 1 ?
+                "by "
+              : "by"
+            : "and"
+          } ${ANSI.blue}${x} ${ANSI.reset}${ANSI.dim}@ ${ANSI.cyan}${x.pos ?? "<std>"}${ANSI.reset}`,
       )
+      console.log(head + tail.join(""))
     }
+
     process.exitCode = 1
     return false
   }
