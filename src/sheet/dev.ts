@@ -1,7 +1,7 @@
 import { builtin, type PackageId } from "#/index"
 import { options } from "@/field/defaults"
 import SRC_LOCALHOST from "./example/localhost.txt"
-import SRC_STANDARD from "./example/standard.txt"
+import SRC_STANDARD from "./example/localhost.txt"
 import { SheetFactory } from "./factory"
 
 import { createDocs2 } from "@/docs"
