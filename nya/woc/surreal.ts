@@ -401,8 +401,9 @@ function libGameActual() {
   }
 
   function eq(a: Game, b: Game) {
-    const val = evaluate(sum(a, b))
-    return lte(val, ZERO) && lte(ZERO, val)
+    const va = evaluate(a)
+    const vb = evaluate(b)
+    return lte(va, vb) && lte(vb, va)
   }
 
   function evaluate(a: Game): Surreal {

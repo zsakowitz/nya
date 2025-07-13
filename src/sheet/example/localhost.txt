@@ -1,4 +1,4 @@
-eval\operatorname{lemon}\left(3,4\right)=eval\operatorname{nim}2
+\operatorname{lemon}\left(3,4\right)=\operatorname{nim}2
 \operatorname{tree}.\operatorname{branch}\left(0,1,\operatorname{left}\right).\operatorname{branch}\left(1,2,\operatorname{right}\right)
 \operatorname{eval}\left(\operatorname{tree}.\operatorname{branch}\left(0,1,\operatorname{left}\right).\operatorname{branch}\left(1,2,\operatorname{left}\right)\right)
 \operatorname{sign}\left(\operatorname{branch}\left(\operatorname{tree},0,1,\operatorname{left}\right)\right)
