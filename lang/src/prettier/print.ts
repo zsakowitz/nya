@@ -69,6 +69,7 @@ import {
   ExprCall,
   ExprCast,
   ExprDeriv,
+  ExprDirectCall,
   ExprEmpty,
   ExprExit,
   ExprFor,
@@ -680,6 +681,16 @@ export function print(node: Node | Token<number>, sb: Subprint): Doc {
     case ExprCall:
       return [
         sb.paren("on", needsParensBeforeSuffix((node as ExprProp).on)),
+        sb.opt("targs"),
+        sb.opt("args"),
+      ]
+    case ExprDirectCall:
+      return [
+        sb("kw"),
+        " ",
+        sb("name1"),
+        (node as ExprDirectCall).name2 ? " " : "",
+        sb.opt("name2"),
         sb.opt("targs"),
         sb.opt("args"),
       ]

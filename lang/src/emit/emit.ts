@@ -1,4 +1,4 @@
-import type { Pos } from "../ast/issue"
+import { Pos } from "../ast/issue"
 import {
   KBreak,
   KContinue,
@@ -48,10 +48,11 @@ import {
   type NodeType,
 } from "../ast/node/type"
 import { fromScalars, scalars } from "./broadcast"
+import { Coercion } from "./coerce"
 import { Block, Exits, IdMap, type Declarations } from "./decl"
-import { issue, todo } from "./error"
+import { issue, issueError, todo } from "./error"
 import { Id, ident, type IdGlobal } from "./id"
-import { Alt, Array, ArrayEmpty, Fn, Struct, type Type } from "./type"
+import { Alt, Array, ArrayEmpty, Fn, Scalar, Struct, type Type } from "./type"
 import { Value } from "./value"
 
 function list(a: { toString(): string }[], empty: "no arguments" | null) {
@@ -76,53 +77,18 @@ function list(a: { toString(): string }[], empty: "no arguments" | null) {
 
 const ID_MATMUL = ident("@#")
 
-export function tryPerformCall(
+type CallResult = { ok: true; value: Value } | { ok: false; error: Error }
+
+export function performCallRaw(
   id: IdGlobal,
   block: Block,
   args: Value[],
   namePos: Pos,
   fullPos: Pos,
-): Value | null {
+): CallResult {
   if (id == ID_MATMUL) {
     if (args.length == 2) {
-      return matrixMultiply(block, args[0]!, args[1]!)
-    }
-  }
-
-  const local = block.locals.get(id)
-
-  if (local && args.length == 0) {
-    return local
-  }
-
-  const fns = block.decl.fns.get(id)
-  if (!fns) return null
-
-  const overload = fns.find(
-    (x) =>
-      x.args.length == args.length &&
-      x.args.every((a, i) => a.type.canConvertFrom(args[i]!.type)),
-  )
-  if (!overload) return null
-
-  return overload.run(
-    args.map((x, i) => overload.args[i]!.type.convertFrom(x, fullPos)),
-    block,
-    namePos,
-    fullPos,
-  )
-}
-
-export function performCall(
-  id: IdGlobal,
-  block: Block,
-  args: Value[],
-  namePos: Pos,
-  fullPos: Pos,
-): Value {
-  if (id == ID_MATMUL) {
-    if (args.length == 2) {
-      return matrixMultiply(block, args[0]!, args[1]!)
+      return { ok: true, value: matrixMultiply(block, args[0]!, args[1]!) }
     }
   }
 
@@ -130,18 +96,23 @@ export function performCall(
 
   if (local) {
     if (args.length == 0) {
-      return local
+      return { ok: true, value: local }
     }
   }
 
   const fns = block.decl.fns.get(id)
 
   if (!fns) {
-    if (local) {
-      issue(`Locally defined variable '${id}' is not a function.`, namePos)
+    return {
+      ok: false,
+      error:
+        local ?
+          issueError(
+            `Locally defined variable '${id}' is not a function.`,
+            namePos,
+          )
+        : issueError(`'${id}' is not defined.`, namePos),
     }
-
-    issue(`'${id}' is not defined.`, namePos)
   }
 
   const overload = fns.find(
@@ -159,12 +130,45 @@ export function performCall(
     )
   }
 
-  return overload.run(
-    args.map((x, i) => overload.args[i]!.type.convertFrom(x, fullPos)),
-    block,
-    namePos,
-    fullPos,
+  const args2 = args.map((x, i) =>
+    overload.args[i]!.type.convertFrom(x, fullPos),
   )
+
+  const value = overload.run(args2, block, namePos, fullPos)
+
+  return { ok: true, value }
+}
+
+export function tryPerformCall(
+  id: IdGlobal,
+  block: Block,
+  args: Value[],
+  namePos: Pos,
+  fullPos: Pos,
+): Value | null {
+  const result: CallResult = performCallRaw(id, block, args, namePos, fullPos)
+
+  if (result.ok) {
+    return result.value
+  } else {
+    return null
+  }
+}
+
+export function performCall(
+  id: IdGlobal,
+  block: Block,
+  args: Value[],
+  namePos: Pos,
+  fullPos: Pos,
+): Value {
+  const result: CallResult = performCallRaw(id, block, args, namePos, fullPos)
+
+  if (result.ok) {
+    return result.value
+  } else {
+    throw result.error
+  }
 }
 
 function emitType(node: NodeType, decl: Declarations): Type {
@@ -857,6 +861,32 @@ export function emitItem(node: NodeItem, decl: Declarations): ItemResult {
       return { name, type }
     })
     const fparams = params.map((x) => ({ name: x.name.label, type: x.type }))
+    let isCoercion = false
+    if (fname == "->") {
+      isCoercion = true
+      if (fparams.length != 1) {
+        issue(`Coercion functions must take exactly one argument.`, node.params)
+      }
+      const ptype = fparams[0]!.type
+      if (!(ptype instanceof Scalar || ptype instanceof Struct)) {
+        issue(
+          `Argument type '${ptype}' in coercion function must be a scalar or struct.`,
+          node.params.items[0]!,
+        )
+      }
+      const rtype = ret
+      if (!(rtype instanceof Scalar || rtype instanceof Struct)) {
+        issue(
+          `Return type '${rtype}' in coercion function must be a scalar or struct.`,
+          node.ret ?? node.name!,
+        )
+      }
+      if (fparams[0]!.type == ret) {
+        issue(
+          `A coercion function must define a coercion between different types.`,
+        )
+      }
+    }
     const block = new Block(decl, new Exits(ret), locals)
     const value = ret.convertFrom(emitBlock(node.block, block), node.block)
     const lid = new Id(fname)
@@ -888,7 +918,20 @@ export function emitItem(node: NodeItem, decl: Declarations): ItemResult {
           return new Value(expr, ret, false)
         })
 
-    decl.fns.push(gid, fn)
+    // Functions names "->" are used for coercions instead of normal definitions
+    if (isCoercion) {
+      const coercion = new Coercion(
+        fparams[0]!.type,
+        ret,
+        false,
+        (v, block, pos) => fn.run([v], block, pos, pos),
+      )
+
+      decl.coercions.addCoercion(coercion, node)
+    } else {
+      decl.fns.push(gid, fn)
+    }
+
     return {
       decl: body,
       declNya: [{ name: fn.id.label, of: fn.declaration(), kind: "fn" }],

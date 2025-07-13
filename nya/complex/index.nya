@@ -8,6 +8,13 @@ struct Complex {
   imag: num,
 }
 
+fn ->(x: num) -> Complex {
+  Complex {
+    real: x,
+    imag: 0.0,
+  }
+}
+
 let _complex_zero = Complex { real: 0.0, imag: 0.0 };
 
 fn %display(z: Complex) -> latex {
