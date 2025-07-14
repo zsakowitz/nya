@@ -1,74 +1,26 @@
-// +
-// -
-// *
-// /
-// ||
-// x
-// y
-// ^2 √
-// ^ √
-// _
-// ±
-// ,
-// ( )
-// [ ]
-// { }
-// -> !
-// ᴇ \infty
-// 1
-// 2
-// 3
-// 4
-// 5
-// 6
-// 7
-// 8
-// 9
-// 0
-// i
-// .
-// pi
-// e
-// = !=
-// < <=
-// > >=
-// '
-
-// Desmos keyboard is 170px tall:
-// x   y  ^2  ^b    7 8 9 ÷    functions
-// (   )  <   >     4 5 6 *    left    right
-// ||  ,  <=  >=    1 2 3 -    delete
-// 🔤  🔊  √   a     0 . = +    enter
-
 import { options } from "@/field/defaults"
 import { LatexParser } from "@/field/latex"
 import { fa, h } from "@/jsx"
 import type { IconDefinition } from "@fortawesome/free-solid-svg-icons"
 import { faArrowPointer } from "@fortawesome/free-solid-svg-icons/faArrowPointer"
-import { twMerge } from "tailwind-merge"
-
-// ABC goes to:
-// qwertyuiop
-// asdfghjklθ
-// shift zcvbnm backspace
-// num sub !% [] {} ~: ,' enter
-
-// Functions are:
-// trig 6
-// invtrig 6
-// stats
-// list ops
-// visualizations
-// probability distributions
-// inference
-// calculus
-// trigh
-// geometry
-// rgb, hsv
-// tone
-// number theory
 
 const parser = new LatexParser(options, null, "")
+
+function key(base?: string | Node, clsx?: string, active?: boolean) {
+  const contents =
+    typeof base == "string" ?
+      h("font-['Symbola'] last:*:*:*:pr-0", parser.run(base).el)
+    : (base ?? "")
+
+  return h(
+    "flex rounded-sm h-[36px] text-center items-center justify-center [line-height:1] " +
+      (active ?
+        "text-[--nya-kbd-key-active-text] bg-[--nya-kbd-key-active-bg] fill-[--nya-kbd-key-active-text]"
+      : "text-[--nya-kbd-key-text] bg-[--nya-kbd-key-bg] fill-[--nya-kbd-key-text]") +
+      (clsx ? " " + clsx : ""),
+    h("font-['Symbola'] last:*:*:*:pr-0", contents),
+  )
+}
 
 type Size = 1 | 2 | 4 | 5 | 10
 
@@ -92,7 +44,7 @@ const span = {
 
 function keyFrom(k: Key) {
   if (typeof k == "string") {
-    return key(k)
+    return key(k, "col-span-4")
   }
 
   if (typeof k == "number") {
@@ -109,18 +61,10 @@ function keyFrom(k: Key) {
   )
 }
 
-function key(base?: string | Node, clsx?: string, active?: boolean) {
-  const contents =
-    typeof base == "string" ?
-      h("font-['Symbola'] last:*:*:*:pr-0", parser.run(base).el)
-    : (base ?? "")
-
+export function createKeyboard(layout: Key[]) {
   return h(
-    twMerge(
-      "flex text-[--nya-kbd-key-text] bg-[--nya-kbd-key-bg] rounded-sm h-[36px] text-center items-center justify-center col-span-4 [line-height:1]",
-      clsx ? " " + clsx : "",
-    ),
-    h("font-['Symbola'] last:*:*:*:pr-0", contents),
+    "grid w-full grid-cols-[repeat(40,1fr)] gap-1 p-1 bg-[--nya-kbd-bg] [line-height:1]",
+    ...layout.map(keyFrom),
   )
 }
 
@@ -147,7 +91,7 @@ export const LAYOUT_STANDARD: Key[] = [
   ".",
   ",",
 
-  { size: 5, text: "⇧" },
+  { size: 5, text: "⇧", active: true },
   1,
   { latex: "(\\nyafiller)", clsx: "pt-0.5" },
   { latex: "[\\nyafiller]", clsx: "pt-0.5" },
@@ -169,10 +113,3 @@ export const LAYOUT_STANDARD: Key[] = [
   2,
   { size: 10, text: "⏎" },
 ]
-
-export function createKeyboard(layout: Key[]) {
-  return h(
-    "grid w-full grid-cols-[repeat(40,1fr)] gap-1 p-1 bg-[--nya-kbd-bg] [line-height:1]",
-    ...layout.map(keyFrom),
-  )
-}
