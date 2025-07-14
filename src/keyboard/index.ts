@@ -91,7 +91,7 @@ export const LAYOUT_STANDARD: Key[] = [
   ".",
   ",",
 
-  { size: 5, text: "⇧", active: true },
+  { size: 5, text: "⇧" },
   1,
   { latex: "(\\nyafiller)", clsx: "pt-0.5" },
   { latex: "[\\nyafiller]", clsx: "pt-0.5" },
