@@ -115,7 +115,7 @@ function btm(mode: "num" | "alpha" | "sym" | "cursor" | "opts"): Key[] {
   ]
 }
 
-export const LAYOUT: Key[] = [
+const LAYOUT_NUM: Key[] = [
   "1",
   "2",
   "3",
@@ -153,7 +153,7 @@ export const LAYOUT: Key[] = [
   ...btm("num"),
 ]
 
-export const LAYOUT_SHIFT: Key[] = [
+const LAYOUT_NUM_SHIFT: Key[] = [
   "1",
   "2",
   "3",
@@ -191,7 +191,7 @@ export const LAYOUT_SHIFT: Key[] = [
   ...btm("num"),
 ]
 
-export const LAYOUT_ABC: Key[] = [
+const LAYOUT_ABC: Key[] = [
   ..."qwertyuiopasdfghjkl".split(""),
   { latex: "θ", clsx: "pr-0.5" },
 
@@ -204,7 +204,7 @@ export const LAYOUT_ABC: Key[] = [
   ...btm("alpha"),
 ]
 
-export const LAYOUT_ABC_SHIFT: Key[] = [
+const LAYOUT_ABC_SHIFT: Key[] = [
   ..."QWERTYUIOPASDFGHJKL".split(""),
   "\\tau",
 
@@ -217,7 +217,7 @@ export const LAYOUT_ABC_SHIFT: Key[] = [
   ...btm("alpha"),
 ]
 
-export const LAYOUT_SYMBOL: Key[] = [
+const LAYOUT_SYMBOL: Key[] = [
   { latex: "\\wordprefix{sin}", size: 6 },
   { latex: "\\wordprefix{cos}", size: 6 },
   { latex: "\\wordprefix{tan}", size: 6 },
@@ -248,7 +248,7 @@ export const LAYOUT_SYMBOL: Key[] = [
   ...btm("sym"),
 ]
 
-export const LAYOUT_SYMBOL_SHIFT: Key[] = [
+const LAYOUT_SYMBOL_SHIFT: Key[] = [
   { latex: "\\wordprefix{csc}", size: 6 },
   { latex: "\\wordprefix{sec}", size: 6 },
   { latex: "\\wordprefix{cot}", size: 6 },
@@ -325,12 +325,12 @@ function layoutCursor(select: boolean): Key[] {
   ]
 }
 
-export const LAYOUT_CURSOR = layoutCursor(false)
-export const LAYOUT_SELECT = layoutCursor(true)
+const LAYOUT_CURSOR = layoutCursor(false)
+const LAYOUT_SELECT = layoutCursor(true)
 
 export const LAYOUTS = [
-  LAYOUT,
-  LAYOUT_SHIFT,
+  LAYOUT_NUM,
+  LAYOUT_NUM_SHIFT,
   LAYOUT_ABC,
   LAYOUT_ABC_SHIFT,
   LAYOUT_SYMBOL,
