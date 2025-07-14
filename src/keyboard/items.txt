@@ -1,9 +1,10 @@
-❌ ±
-❌ -> !
-❌ ᴇ \infty
+❌ %
 ❌ audio
 ❌ configure
-❌ select
+✅ ±
+✅ -> !
+✅ ᴇ \infty
+✅ select
 ✅ i
 ✅ E _
 ✅ , '

@@ -35,6 +35,7 @@ import {
   SymPi,
   SymPsi,
   SymTau,
+  SymTheta,
 } from "./cmd/leaf/sym"
 import { CmdTextInert } from "./cmd/leaf/text-inert"
 import { CmdToken } from "./cmd/leaf/token"
@@ -268,10 +269,13 @@ const latex = new WordMap<LatexInit>([
   ["\\nyaop", CmdWord],
   ["\\nyacolor", CmdColor],
   ["\\nyafiller", CmdFiller],
+  ["\\nyafillersmall", CmdFiller],
   ["\\psi", SymPsi],
   ["\\text", CmdTextInert],
   ["\\surreal", CmdSurreal],
   ["ᴇ", SymE],
+  ["\\theta", SymTheta],
+  ["θ", SymTheta],
   ...latexWords.map((x) => ["\\" + x, OperatorName] as const),
 ])
 

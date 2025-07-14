@@ -3,12 +3,12 @@ import { h } from "@/jsx"
 import { Leaf } from "."
 
 export class CmdFiller extends Leaf {
-  static fromLatex(): Command {
-    return new CmdFiller()
+  static fromLatex(cmd: string): Command {
+    return new CmdFiller(cmd == "\\nyafillersmall")
   }
 
-  constructor() {
-    super("", h("inline-block w-1"))
+  constructor(small: boolean) {
+    super("", small ? h("inline-block") : h("inline-block w-1"))
   }
 
   reader(): string {

@@ -41,8 +41,7 @@ export class CmdRoot extends Command<
   }
 
   static fromLatex(_cmd: string, parser: LatexParser): Command {
-    const root =
-      parser.peek() == "[" ? (parser.argMaybe("["), parser.until("]")) : null
+    const root = parser.peek() == "[" ? (parser.i++, parser.until("]")) : null
     const body = parser.arg()
     return new this(body, root)
   }

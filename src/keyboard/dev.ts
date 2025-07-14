@@ -1,10 +1,12 @@
 import { h } from "@/jsx"
-import { createKeyboard, LAYOUT_STANDARD } from "."
+import { createKeyboard, LAYOUTS } from "."
 
 const el = h(
-  "flex h-screen bg-[--nya-kbd-bg] gap-8",
-  h("flex w-[320px] mt-auto", createKeyboard(LAYOUT_STANDARD)),
-  h("flex w-[320px] mt-auto", createKeyboard(LAYOUT_STANDARD)),
+  "block bg-[--nya-kbd-bg] h-screen",
+  h(
+    "grid grid-cols-[300px,300px] bg-[--nya-kbd-bg] gap-4 py-8 justify-center",
+    ...LAYOUTS.map(createKeyboard),
+  ),
 )
 
 document.body.appendChild(el)
