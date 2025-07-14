@@ -42,8 +42,8 @@ type Contents = OneOf<{
   icon: IconDefinition
 }>
 
-type Key =
-  | string // shortcut for 4-width, latex
+export type Key =
+  | string // shortcut for 4-width, latex, typed is same as written
   | (Contents & { size?: Size; clsx?: string; active?: boolean }) // plain key
   | Size // spacer
   | null // tbd
@@ -61,7 +61,7 @@ const span = {
   10: "col-span-10",
 }
 
-function keyFrom(k: Key) {
+export function keyFrom(k: Key) {
   if (typeof k == "string") {
     return key(k, "col-span-4")
   }
@@ -83,6 +83,27 @@ function keyFrom(k: Key) {
     k.active,
   )
 }
+
+export const CONTROLS = {
+  shift: { size: 5, text: "⇧" },
+  backspace: { size: 5, text: "⌫" },
+
+  abc: {
+    size: 5,
+    latex: "\\digit{ABC}",
+    clsx: "text-sm/[1]",
+  },
+  sym: {
+    size: 5,
+    latex: "\\digit{∑}f",
+    clsx: "[letter-spacing:.1em] pl-0.5",
+  },
+  arrowL: { size: 5, text: "←" },
+  arrowR: { size: 5, text: "→" },
+  cursor: { size: 4, icon: faArrowPointer },
+  opts: { size: 4, icon: faGears, clsx: "opacity-30" },
+  enter: { size: 10, text: "⏎" },
+} satisfies Record<string, Key>
 
 export function createKeyboard(layout: Key[]) {
   return h(
@@ -115,7 +136,42 @@ function btm(mode: "num" | "alpha" | "sym" | "cursor" | "opts"): Key[] {
   ]
 }
 
-const LAYOUT_NUM: Key[] = [
+export const LAYOUT_NUM: Layout = {
+  hi: [
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "0",
+
+    "+",
+    "-",
+    "\\times",
+    "÷",
+    "a^2",
+    "a^b",
+    "\\digit{E}",
+    "x",
+    "y",
+    "\\pi",
+  ],
+  lo: [
+    ".",
+    ",",
+    { latex: "(\\nyafiller)", clsx: "pt-0.5" },
+    { latex: "[\\nyafiller]", clsx: "pt-0.5" },
+    "<",
+    "=",
+    ">",
+  ],
+}
+
+const KEYS_NUM: Key[] = [
   "1",
   "2",
   "3",
@@ -153,7 +209,7 @@ const LAYOUT_NUM: Key[] = [
   ...btm("num"),
 ]
 
-const LAYOUT_NUM_SHIFT: Key[] = [
+const KEYS_NUM_SHIFT: Key[] = [
   "1",
   "2",
   "3",
@@ -191,7 +247,7 @@ const LAYOUT_NUM_SHIFT: Key[] = [
   ...btm("num"),
 ]
 
-const LAYOUT_ABC: Key[] = [
+const KEYS_ABC: Key[] = [
   ..."qwertyuiopasdfghjkl".split(""),
   { latex: "θ", clsx: "pr-0.5" },
 
@@ -204,7 +260,7 @@ const LAYOUT_ABC: Key[] = [
   ...btm("alpha"),
 ]
 
-const LAYOUT_ABC_SHIFT: Key[] = [
+const KEYS_ABC_SHIFT: Key[] = [
   ..."QWERTYUIOPASDFGHJKL".split(""),
   "\\tau",
 
@@ -217,13 +273,13 @@ const LAYOUT_ABC_SHIFT: Key[] = [
   ...btm("alpha"),
 ]
 
-const LAYOUT_SYMBOL: Key[] = [
+const KEYS_SYMBOL: Key[] = [
   { latex: "\\wordprefix{sin}", size: 6 },
   { latex: "\\wordprefix{cos}", size: 6 },
   { latex: "\\wordprefix{tan}", size: 6 },
   "\\digit{∑}",
   { latex: "\\wordprefix{exp}", size: 6 },
-  { latex: "\\wordprefix{10^a}", size: 6 },
+  { latex: "10^a", size: 6 },
   { latex: "\\wordprefix{min}", size: 6 },
 
   { latex: "\\wordprefix{asin}", size: 6 },
@@ -248,7 +304,7 @@ const LAYOUT_SYMBOL: Key[] = [
   ...btm("sym"),
 ]
 
-const LAYOUT_SYMBOL_SHIFT: Key[] = [
+const KEYS_SYMBOL_SHIFT: Key[] = [
   { latex: "\\wordprefix{csc}", size: 6 },
   { latex: "\\wordprefix{sec}", size: 6 },
   { latex: "\\wordprefix{cot}", size: 6 },
@@ -325,16 +381,21 @@ function layoutCursor(select: boolean): Key[] {
   ]
 }
 
-const LAYOUT_CURSOR = layoutCursor(false)
-const LAYOUT_SELECT = layoutCursor(true)
+const KEYS_CURSOR = layoutCursor(false)
+const KEYS_SELECT = layoutCursor(true)
 
 export const LAYOUTS = [
-  LAYOUT_NUM,
-  LAYOUT_NUM_SHIFT,
-  LAYOUT_ABC,
-  LAYOUT_ABC_SHIFT,
-  LAYOUT_SYMBOL,
-  LAYOUT_SYMBOL_SHIFT,
-  LAYOUT_CURSOR,
-  LAYOUT_SELECT,
+  KEYS_NUM,
+  KEYS_NUM_SHIFT,
+  KEYS_ABC,
+  KEYS_ABC_SHIFT,
+  KEYS_SYMBOL,
+  KEYS_SYMBOL_SHIFT,
+  KEYS_CURSOR,
+  KEYS_SELECT,
 ]
+
+export interface Layout {
+  hi: Key[]
+  lo: Key[]
+}

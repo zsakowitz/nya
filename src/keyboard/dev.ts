@@ -1,5 +1,8 @@
 import { h } from "@/jsx"
-import { createKeyboard, LAYOUTS } from "."
+import { KeyboardController } from "./controller"
+import { createKeyboard, LAYOUTS } from "./layout"
+
+document.body.appendChild(new KeyboardController().el)
 
 const el = h(
   "block bg-[--nya-kbd-bg] h-screen",
