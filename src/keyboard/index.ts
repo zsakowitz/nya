@@ -2,11 +2,13 @@ import { options } from "@/field/defaults"
 import { LatexParser } from "@/field/latex"
 import { fa, h } from "@/jsx"
 import { faCopy, faPaste } from "@fortawesome/free-regular-svg-icons"
-import { type IconDefinition } from "@fortawesome/free-solid-svg-icons"
+import { faCut, type IconDefinition } from "@fortawesome/free-solid-svg-icons"
+import { faAngleLeft } from "@fortawesome/free-solid-svg-icons/faAngleLeft"
+import { faAngleRight } from "@fortawesome/free-solid-svg-icons/faAngleRight"
 import { faAnglesLeft } from "@fortawesome/free-solid-svg-icons/faAnglesLeft"
 import { faAnglesRight } from "@fortawesome/free-solid-svg-icons/faAnglesRight"
 import { faArrowPointer } from "@fortawesome/free-solid-svg-icons/faArrowPointer"
-import { faCut } from "@fortawesome/free-solid-svg-icons/faCut"
+import { faArrowsLeftRight } from "@fortawesome/free-solid-svg-icons/faArrowsLeftRight"
 
 const parser = new LatexParser(options, null, "")
 
@@ -82,6 +84,30 @@ export function createKeyboard(layout: Key[]) {
   )
 }
 
+function btm(mode: "num" | "alpha" | "sym" | "cursor"): Key[] {
+  return [
+    {
+      size: 5,
+      latex: "\\digit{ABC}",
+      clsx: "text-sm/[1]",
+      active: mode == "alpha",
+    },
+    {
+      size: 5,
+      latex: "\\digit{∑}f",
+      clsx: "[letter-spacing:.1em] pl-0.5",
+      active: mode == "sym",
+    },
+    2,
+    { size: 5, text: "←" },
+    { size: 5, text: "→" },
+    2,
+    { size: 4, icon: faArrowPointer, active: mode == "cursor" },
+    2,
+    { size: 10, text: "⏎" },
+  ]
+}
+
 export const LAYOUT: Key[] = [
   "1",
   "2",
@@ -117,15 +143,7 @@ export const LAYOUT: Key[] = [
   1,
   { size: 5, text: "⌫" },
 
-  { size: 5, latex: "\\digit{ABC}", clsx: "text-sm/[1]" },
-  { size: 5, latex: "\\digit{∑}f", clsx: "[letter-spacing:.1em] pl-0.5" },
-  2,
-  { size: 5, text: "←" },
-  { size: 5, text: "→" },
-  2,
-  { size: 4, icon: faArrowPointer },
-  2,
-  { size: 10, text: "⏎" },
+  ...btm("num"),
 ]
 
 export const LAYOUT_SHIFT: Key[] = [
@@ -163,15 +181,7 @@ export const LAYOUT_SHIFT: Key[] = [
   1,
   { size: 5, text: "⌫" },
 
-  { size: 5, latex: "\\digit{ABC}", clsx: "text-sm/[1]" },
-  { size: 5, latex: "\\digit{∑}f", clsx: "[letter-spacing:.1em] pl-0.5" },
-  2,
-  { size: 5, text: "←" },
-  { size: 5, text: "→" },
-  2,
-  { size: 4, icon: faArrowPointer },
-  2,
-  { size: 10, text: "⏎" },
+  ...btm("num"),
 ]
 
 export const LAYOUT_ABC: Key[] = [
@@ -184,15 +194,7 @@ export const LAYOUT_ABC: Key[] = [
   1,
   { size: 5, text: "⌫" },
 
-  { size: 5, latex: "\\digit{ABC}", clsx: "text-sm/[1]", active: true },
-  { size: 5, latex: "\\digit{∑}f", clsx: "[letter-spacing:.1em] pl-0.5" },
-  2,
-  { size: 5, text: "←" },
-  { size: 5, text: "→" },
-  2,
-  { size: 4, icon: faArrowPointer },
-  2,
-  { size: 10, text: "⏎" },
+  ...btm("alpha"),
 ]
 
 export const LAYOUT_ABC_SHIFT: Key[] = [
@@ -205,15 +207,7 @@ export const LAYOUT_ABC_SHIFT: Key[] = [
   1,
   { size: 5, text: "⌫" },
 
-  { size: 5, latex: "\\digit{ABC}", clsx: "text-sm/[1]", active: true },
-  { size: 5, latex: "\\digit{∑}f", clsx: "[letter-spacing:.1em] pl-0.5" },
-  2,
-  { size: 5, text: "←" },
-  { size: 5, text: "→" },
-  2,
-  { size: 4, icon: faArrowPointer },
-  2,
-  { size: 10, text: "⏎" },
+  ...btm("alpha"),
 ]
 
 export const LAYOUT_SYMBOL: Key[] = [
@@ -237,28 +231,14 @@ export const LAYOUT_SYMBOL: Key[] = [
   1,
   "\\infty",
   "\\digit{∑}",
+  "\\digit{∏}",
   "\\digit{∫}",
   "\\frac{d}{dx}",
-  null,
-  null,
-  null,
+  { size: 8, latex: "\\surreal{}{}" },
   1,
   { size: 5, text: "⌫" },
 
-  { size: 5, latex: "\\digit{ABC}", clsx: "text-sm/[1]" },
-  {
-    size: 5,
-    latex: "\\digit{∑}f",
-    clsx: "[letter-spacing:.1em] pl-0.5",
-    active: true,
-  },
-  2,
-  { size: 5, text: "←" },
-  { size: 5, text: "→" },
-  2,
-  { size: 4, icon: faArrowPointer },
-  2,
-  { size: 10, text: "⏎" },
+  ...btm("sym"),
 ]
 
 export const LAYOUT_SYMBOL_SHIFT: Key[] = [
@@ -280,65 +260,58 @@ export const LAYOUT_SYMBOL_SHIFT: Key[] = [
 
   { size: 5, text: "⇧", active: true },
   1,
-  { latex: "\\wordprefix{round}", size: 8 },
-  { latex: "\\wordprefix{floor}", size: 6 },
-  { latex: "\\wordprefix{ceil}", size: 6 },
   { latex: "\\wordprefix{nPr}", size: 4 },
   { latex: "\\wordprefix{nCr}", size: 4 },
+  { latex: "\\wordprefix{floor}", size: 6 },
+  { latex: "\\wordprefix{ceil}", size: 6 },
+  { latex: "\\wordprefix{round}", size: 8 },
   1,
   { size: 5, text: "⌫" },
 
-  { size: 5, latex: "\\digit{ABC}", clsx: "text-sm/[1]" },
-  {
-    size: 5,
-    latex: "\\digit{∑}f",
-    clsx: "[letter-spacing:.1em] pl-0.5",
-    active: true,
-  },
-  2,
-  { size: 5, text: "←" },
-  { size: 5, text: "→" },
-  2,
-  { size: 4, icon: faArrowPointer },
-  2,
-  { size: 10, text: "⏎" },
+  ...btm("sym"),
 ]
 
-export const LAYOUT_CURSOR: Key[] = [
-  { size: 6, latex: "(\\nyafiller)", clsx: "pt-0.5" },
-  { size: 6, latex: "[\\nyafiller]", clsx: "pt-0.5" },
-  "a^b",
-  6,
-  10,
-  { icon: faAnglesLeft },
-  { icon: faAnglesRight },
+function layoutCursor(select: boolean): Key[] {
+  return [
+    ...(select ?
+      ([
+        { size: 8, latex: "(\\nyafiller)", clsx: "pt-0.5" },
+        { size: 8, latex: "[\\nyafiller]", clsx: "pt-0.5" },
+      ] satisfies Key[])
+    : ["\\digit{(}", "\\digit{)}", "\\digit{[}", "\\digit{]}"]),
+    "a^b",
+    "\\sqrt{\\nyafiller}",
+    8,
+    { icon: faAngleLeft },
+    { icon: faAngleRight },
 
-  { size: 6, latex: "\\left\\{\\nyafiller\\right\\}", clsx: "pt-0.5" },
-  { size: 6, latex: "|\\nyafiller|", clsx: "pt-0.5" },
-  "a_b",
-  6,
-  10,
-  8,
+    ...(select ?
+      ([
+        { size: 8, latex: "\\left\\{\\nyafiller\\right\\}", clsx: "pt-0.5" },
+        { size: 8, latex: "|\\nyafiller|", clsx: "pt-0.5" },
+      ] satisfies Key[])
+    : ["\\digit{\\{}", "\\digit{\\}}", "\\digit{|}", "\\digit{|}"]),
+    "a_b",
+    "\\sqrt[n]{\\nyafillersmall}",
+    8,
+    { icon: faAnglesLeft },
+    { icon: faAnglesRight },
 
-  { size: 5, text: "⇧" },
-  1,
-  { size: 5, icon: faCopy },
-  { size: 5, icon: faCut },
-  { size: 5, icon: faPaste },
-  10,
-  4,
-  { size: 5, text: "⌫" },
+    { size: 5, text: "⇧" },
+    1,
+    { size: 7, icon: faCopy, clsx: select ? "" : "opacity-30" },
+    { size: 7, icon: faCut, clsx: select ? "" : "opacity-30" },
+    { size: 7, icon: faPaste },
+    { size: 7, icon: faArrowsLeftRight },
+    1,
+    { size: 5, text: "⌫" },
 
-  { size: 5, latex: "\\digit{ABC}", clsx: "text-sm/[1]" },
-  { size: 5, latex: "\\digit{∑}f", clsx: "[letter-spacing:.1em] pl-0.5" },
-  2,
-  { size: 5, text: "←" },
-  { size: 5, text: "→" },
-  2,
-  { size: 4, icon: faArrowPointer, active: true },
-  2,
-  { size: 10, text: "⏎" },
-]
+    ...btm("cursor"),
+  ]
+}
+
+export const LAYOUT_CURSOR = layoutCursor(false)
+export const LAYOUT_SELECT = layoutCursor(true)
 
 export const LAYOUTS = [
   LAYOUT,
@@ -348,4 +321,5 @@ export const LAYOUTS = [
   LAYOUT_SYMBOL,
   LAYOUT_SYMBOL_SHIFT,
   LAYOUT_CURSOR,
+  LAYOUT_SELECT,
 ]
