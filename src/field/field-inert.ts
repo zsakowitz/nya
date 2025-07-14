@@ -1,9 +1,9 @@
 import type { Scope } from "@/sheet/deps"
 import { twMerge } from "tailwind-merge"
+import { L, R, type Dir, type VDir } from "./dir"
 import { LatexParser } from "./latex"
 import { Block, performInit, Selection, type Init } from "./model"
 import type { Options } from "./options"
-import { L, R, type Dir, type VDir } from "./dir"
 
 /** Props passed to `Display.init()` and `Display.type()`. */
 interface FieldInitProps {
@@ -81,12 +81,7 @@ export class FieldInert {
     if (!skipChangeHandlers) {
       this.onBeforeChange?.()
     }
-    const block = new LatexParser(
-      this.options,
-      this.scope,
-      source,
-      this,
-    ).parse()
+    const block = new LatexParser(this.options, this.scope, source).parse()
     const cursor = this.sel.remove()
     cursor.insert(block, L)
     this.sel = cursor.selection()

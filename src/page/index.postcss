@@ -115,6 +115,19 @@ body {
   }
 }
 
+:root,
+body {
+  --nya-kbd-bg: theme("colors.slate.300");
+  --nya-kbd-key-bg: theme("colors.white");
+  --nya-kbd-key-text: theme("colors.slate.900");
+
+  @media (prefers-color-scheme: dark) {
+    --nya-kbd-bg: theme("colors.slate.800");
+    --nya-kbd-key-bg: theme("colors.slate.900");
+    --nya-kbd-key-text: theme("colors.white");
+  }
+}
+
 .nya-sx {
   --nya-border: var(--nya-sx-border);
   --nya-bg: var(--nya-sx-bg);

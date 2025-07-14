@@ -11,6 +11,7 @@ import { CmdColon } from "./cmd/leaf/colon"
 import { CmdColor } from "./cmd/leaf/color"
 import { CmdComma } from "./cmd/leaf/comma"
 import { CmdExclamation } from "./cmd/leaf/exclamation"
+import { CmdFiller } from "./cmd/leaf/filler"
 import { CmdDot, CmdNum, OperatorName } from "./cmd/leaf/num"
 import {
   OpAnd,
@@ -27,7 +28,14 @@ import {
   OpTimes,
   OpUpArrow,
 } from "./cmd/leaf/op"
-import { SymDegree, SymInfinity, SymPi, SymPsi, SymTau } from "./cmd/leaf/sym"
+import {
+  SymDegree,
+  SymE,
+  SymInfinity,
+  SymPi,
+  SymPsi,
+  SymTau,
+} from "./cmd/leaf/sym"
 import { CmdTextInert } from "./cmd/leaf/text-inert"
 import { CmdToken } from "./cmd/leaf/token"
 import { CmdTyName } from "./cmd/leaf/tyname"
@@ -259,9 +267,11 @@ const latex = new WordMap<LatexInit>([
   ["\\wordinfix", CmdWord],
   ["\\nyaop", CmdWord],
   ["\\nyacolor", CmdColor],
+  ["\\nyafiller", CmdFiller],
   ["\\psi", SymPsi],
   ["\\text", CmdTextInert],
   ["\\surreal", CmdSurreal],
+  ["ᴇ", SymE],
   ...latexWords.map((x) => ["\\" + x, OperatorName] as const),
 ])
 

@@ -213,7 +213,7 @@ export class CmdToken extends Leaf {
     const arg = parser.text()
     const id = BigInt(arg)
 
-    if (id >= 0n) {
+    if (id >= 0n && parser.scope) {
       return new CmdToken(id, new TokenCtx(parser.scope))
     }
 

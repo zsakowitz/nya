@@ -1,10 +1,9 @@
 import type { Scope } from "@/sheet/deps"
 import { CmdEOF } from "./cmd/leaf/eof"
 import { CmdUnknown } from "./cmd/leaf/unknown"
-import type { FieldInert } from "./field-inert"
+import { L, R } from "./dir"
 import { Block, type Command } from "./model"
 import { WordMap, type Options } from "./options"
-import { L, R } from "./dir"
 
 export interface LatexInit {
   fromLatex(cmd: string, parser: LatexParser): Command | Block
@@ -31,11 +30,16 @@ export class LatexParser {
 
   constructor(
     readonly options: Options,
-    readonly scope: Scope,
-    private readonly source: string,
-    readonly field: FieldInert | null,
+    readonly scope: Scope | null,
+    private source: string,
   ) {
     this.cmds = options.latex || new WordMap([])
+  }
+
+  run(text: string) {
+    this.source = text
+    this.i = 0
+    return this.parse()
   }
 
   _i = 0

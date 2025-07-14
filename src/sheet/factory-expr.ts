@@ -17,7 +17,6 @@ export const FACTORY_EXPR: ItemFactory<Expr, { geo?: boolean }> = {
         ref.root.sheet.options,
         ref.root.sheet.scope,
         source,
-        expr.field,
       ).parse()
       expr.field.block.insert(block, null, null)
       expr.field.sel = expr.field.block.cursor(R).selection()
