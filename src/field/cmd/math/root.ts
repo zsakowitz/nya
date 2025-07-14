@@ -50,10 +50,7 @@ export class CmdRoot extends Command<
     if (root) {
       return h(
         "inline-block",
-        h(
-          "relative z-[1] ml-[.2em] mr-[-.6em] min-w-[.5em] align-[.8em] text-[80%]",
-          root.el,
-        ),
+        h("ml-[.2em] mr-[-.6em] min-w-[.5em] align-[.8em] text-[80%]", root.el),
         h(
           "relative inline-block",
           h(

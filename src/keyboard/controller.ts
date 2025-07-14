@@ -8,7 +8,7 @@ export class KeyboardController {
 
   constructor() {
     this.el = h(
-      "fixed bottom-0 right-0 w-[300px] grid grid-cols-[repeat(40,1fr)] gap-1 p-1 bg-[--nya-kbd-bg] [line-height:1] whitespace-nowrap z-10",
+      "fixed bottom-0 right-0 w-[300px] grid grid-cols-[repeat(40,1fr)] gap-1 p-2 bg-[--nya-kbd-bg] [line-height:1] whitespace-nowrap z-10 select-none",
 
       (this.hi = h("contents")),
       keyFrom(CONTROLS.shift),
@@ -36,5 +36,3 @@ export class KeyboardController {
     this.lo.replaceChildren(...layout.lo.map(keyFrom))
   }
 }
-
-const controller = new KeyboardController()

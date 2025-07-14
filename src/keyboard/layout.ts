@@ -1,6 +1,6 @@
 import { options } from "@/field/defaults"
 import { LatexParser } from "@/field/latex"
-import { fa, h } from "@/jsx"
+import { fa, h, hx } from "@/jsx"
 import { faCopy, faPaste } from "@fortawesome/free-regular-svg-icons"
 import { faCut, type IconDefinition } from "@fortawesome/free-solid-svg-icons"
 import { faAngleLeft } from "@fortawesome/free-solid-svg-icons/faAngleLeft"
@@ -19,13 +19,15 @@ function key(base?: string | Node, clsx?: string, active?: boolean) {
       h("font-['Symbola'] last:*:*:*:pr-0", parser.run(base).el)
     : (base ?? "")
 
-  return h(
-    "flex rounded-sm h-[36px] text-center items-center justify-center [line-height:1] " +
+  return hx(
+    "button",
+    "flex rounded-sm h-[36px] sm:h-[40px] text-center items-center justify-center [line-height:1] relative " +
       (active ?
         "text-[--nya-kbd-key-active-text] bg-[--nya-kbd-key-active-bg] fill-[--nya-kbd-key-active-text]"
-      : "text-[--nya-kbd-key-text] bg-[--nya-kbd-key-bg] fill-[--nya-kbd-key-text]") +
+      : "text-[--nya-kbd-key-text] bg-[--nya-kbd-key-bg] fill-[--nya-kbd-key-text] hover:bg-[--nya-kbd-key-hover-bg]") +
       (clsx ? " " + clsx : ""),
     h("font-['Symbola']", contents),
+    h("absolute -inset-0.5"),
   )
 }
 
@@ -162,7 +164,7 @@ export const LAYOUT_NUM: Layout = {
   ],
   lo: [
     ".",
-    ",",
+    "\\digit{,}",
     { latex: "(\\nyafiller)", clsx: "pt-0.5" },
     { latex: "[\\nyafiller]", clsx: "pt-0.5" },
     "<",
@@ -197,7 +199,7 @@ const KEYS_NUM: Key[] = [
   { size: 5, text: "⇧" },
   1,
   ".",
-  ",",
+  "\\digit{,}",
   { latex: "(\\nyafiller)", clsx: "pt-0.5" },
   { latex: "[\\nyafiller]", clsx: "pt-0.5" },
   "<",
@@ -239,7 +241,7 @@ const KEYS_NUM_SHIFT: Key[] = [
   { latex: "\\left\\{\\nyafillersmall\\right\\}", clsx: "pt-0.5" },
   { latex: "|\\nyafiller|", clsx: "pt-0.5" },
   "\\leq",
-  "\\neq",
+  { latex: "\\wordprefix{h}", clsx: "opacity-30" },
   "\\geq",
   1,
   { size: 5, text: "⌫" },
@@ -293,7 +295,7 @@ const KEYS_SYMBOL: Key[] = [
   { size: 5, text: "⇧" },
   1,
   ".",
-  ",",
+  "\\digit{,}",
   "\\infty",
   "\\digit{∫}",
   "\\frac{d}{dx}",
@@ -324,7 +326,7 @@ const KEYS_SYMBOL_SHIFT: Key[] = [
   { size: 5, text: "⇧", active: true },
   1,
   ".",
-  "\\wordprefix{h}",
+  "\\digit{,}",
   { latex: "\\wordprefix{floor}", size: 6 },
   { latex: "\\wordprefix{ceil}", size: 6 },
   { latex: "\\wordprefix{round}", size: 8 },
