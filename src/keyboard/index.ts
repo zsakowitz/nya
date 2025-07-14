@@ -43,6 +43,7 @@
 import { options } from "@/field/defaults"
 import { LatexParser } from "@/field/latex"
 import { fa, h } from "@/jsx"
+import type { IconDefinition } from "@fortawesome/free-solid-svg-icons"
 import { faArrowPointer } from "@fortawesome/free-solid-svg-icons/faArrowPointer"
 import { twMerge } from "tailwind-merge"
 
@@ -72,12 +73,13 @@ const parser = new LatexParser(options, null, "")
 type Size = 1 | 2 | 4 | 5 | 10
 
 type Contents =
-  | { latex: string; text?: undefined }
-  | { latex?: undefined; text: string }
+  | { latex: string; text?: undefined; icon?: undefined }
+  | { latex?: undefined; text: string; icon?: undefined }
+  | { latex?: undefined; text?: undefined; icon: IconDefinition }
 
 type Key =
   | string // shortcut for 4-width, latex
-  | (Contents & { size: Size; clsx?: string; active?: boolean }) // plain key
+  | (Contents & { size?: Size; clsx?: string; active?: boolean }) // plain key
   | Size // spacer
 
 const span = {
@@ -92,19 +94,19 @@ function keyFrom(k: Key) {
   if (typeof k == "string") {
     return key(k)
   }
+
   if (typeof k == "number") {
     return h(span[k])
   }
-  if (k.latex) {
-    return key(k.latex, span[k.size ?? 4] + " " + k.clsx, k.active)
-  }
-  if (k.text) {
-    return key(
-      h("font-[system-ui]", k.text),
-      span[k.size ?? 4] + " " + k.clsx,
-      k.active,
-    )
-  }
+
+  return key(
+    k.latex ??
+      (k.text ? h("font-[system-ui]", k.text)
+      : k.icon ? fa(k.icon, "size-4")
+      : h("")),
+    span[k.size ?? 4] + " " + k.clsx,
+    k.active,
+  )
 }
 
 function key(base?: string | Node, clsx?: string, active?: boolean) {
@@ -122,13 +124,7 @@ function key(base?: string | Node, clsx?: string, active?: boolean) {
   )
 }
 
-function keys(text: string) {
-  return (text.includes("  ") ? text.split("  ") : text.split(" ")).map((x) =>
-    key(x),
-  )
-}
-
-const layout: Key[] = [
+export const LAYOUT_STANDARD: Key[] = [
   "1",
   "2",
   "3",
@@ -139,6 +135,7 @@ const layout: Key[] = [
   "8",
   "9",
   "0",
+
   "+",
   "-",
   "\\times",
@@ -149,64 +146,33 @@ const layout: Key[] = [
   "\\pi",
   ".",
   ",",
+
+  { size: 5, text: "⇧" },
+  1,
+  { latex: "(\\nyafiller)", clsx: "pt-0.5" },
+  { latex: "[\\nyafiller]", clsx: "pt-0.5" },
+  "<",
+  "=",
+  ">",
+  "x",
+  "y",
+  1,
+  { size: 5, text: "⌫" },
+
+  { size: 5, latex: "\\digit{ABC}", clsx: "text-sm/[1]" },
+  { size: 5, latex: "\\digit{∑}f", clsx: "[letter-spacing:.1em] pl-0.5" },
+  2,
+  { size: 5, text: "←" },
+  { size: 5, text: "→" },
+  2,
+  { size: 4, icon: faArrowPointer },
+  2,
+  { size: 10, text: "⏎" },
 ]
 
-export function createKeyboard() {
-  const kDigits = keys("1 2 3 4 5 6 7 8 9 0")
-
-  const kShift = key(h("font-[system-ui]", "⇧"), "col-span-5")
-  const kDel = key(h("font-[system-ui]", "⌫"), "col-span-5")
-  const kLeft = key(h("font-[system-ui]", "←"), "col-span-5")
-  const kRight = key(h("font-[system-ui]", "→"), "col-span-5")
-
-  const kAlt1 = key(h("font-['Symbola'] text-sm/[1]", "ABC"), "col-span-5")
-  const kAlt2 = key(
-    h(
-      "",
-      h("font-['Symbola']", "∑"),
-      h("font-['Times_New_Roman'] italic pl-1 pr-0.5", "f"),
-    ),
-    "col-span-5",
-  )
-  const kEnter = key(h("font-[system-ui]", "⏎"), "col-span-10")
-  const kMouse = key(fa(faArrowPointer, "size-4"), "col-span-4")
-
+export function createKeyboard(layout: Key[]) {
   return h(
     "grid w-full grid-cols-[repeat(40,1fr)] gap-1 p-1 bg-[--nya-kbd-bg] [line-height:1]",
-
-    ...kDigits,
-
-    key("+"),
-    key("-"),
-    key("\\times"),
-    key("÷"),
-    key("a^2"),
-    key("a^b"),
-    key("\\digit{E}"),
-    key("\\pi"),
-    key("."),
-    key(","),
-
-    kShift,
-    h(),
-    key("(\\nyafiller)", "pt-0.5"),
-    key("[\\nyafiller]", "pt-0.5"),
-    key("<"),
-    key("="),
-    key(">"),
-    key("x"),
-    key("y"),
-    h(),
-    kDel,
-
-    kAlt1,
-    kAlt2,
-    h("col-span-2"),
-    kLeft,
-    kRight,
-    h("col-span-2"),
-    kMouse,
-    h("col-span-2"),
-    kEnter,
+    ...layout.map(keyFrom),
   )
 }
