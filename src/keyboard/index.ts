@@ -1,8 +1,12 @@
 import { options } from "@/field/defaults"
 import { LatexParser } from "@/field/latex"
 import { fa, h } from "@/jsx"
-import type { IconDefinition } from "@fortawesome/free-solid-svg-icons"
+import { faCopy, faPaste } from "@fortawesome/free-regular-svg-icons"
+import { type IconDefinition } from "@fortawesome/free-solid-svg-icons"
+import { faAnglesLeft } from "@fortawesome/free-solid-svg-icons/faAnglesLeft"
+import { faAnglesRight } from "@fortawesome/free-solid-svg-icons/faAnglesRight"
 import { faArrowPointer } from "@fortawesome/free-solid-svg-icons/faArrowPointer"
+import { faCut } from "@fortawesome/free-solid-svg-icons/faCut"
 
 const parser = new LatexParser(options, null, "")
 
@@ -216,20 +220,18 @@ export const LAYOUT_SYMBOL: Key[] = [
   { latex: "\\wordprefix{sin}", size: 6 },
   { latex: "\\wordprefix{cos}", size: 6 },
   { latex: "\\wordprefix{tan}", size: 6 },
+  4,
   { latex: "\\wordprefix{exp}", size: 6 },
   { latex: "10^a", size: 6 },
   { latex: "\\wordprefix{min}", size: 6 },
-  null,
 
   { latex: "\\wordprefix{asin}", size: 6 },
   { latex: "\\wordprefix{acos}", size: 6 },
   { latex: "\\wordprefix{atan}", size: 6 },
+  4,
   { latex: "\\wordprefix{ln}", size: 6 },
   { latex: "\\wordprefix{log}", size: 6 },
   { latex: "\\wordprefix{max}", size: 6 },
-  null,
-
-  // round mean stdev stdevp nPr nCr
 
   { size: 5, text: "⇧" },
   1,
@@ -263,17 +265,18 @@ export const LAYOUT_SYMBOL_SHIFT: Key[] = [
   { latex: "\\wordprefix{csc}", size: 6 },
   { latex: "\\wordprefix{sec}", size: 6 },
   { latex: "\\wordprefix{cot}", size: 6 },
+  4,
   { latex: "\\wordprefix{sinh}", size: 6 },
   { latex: "\\wordprefix{cosh}", size: 6 },
   { latex: "\\wordprefix{tanh}", size: 6 },
-  null,
 
   { latex: "\\wordprefix{acsc}", size: 6 },
   { latex: "\\wordprefix{asec}", size: 6 },
   { latex: "\\wordprefix{acot}", size: 6 },
+  4,
   { latex: "\\wordprefix{mean}", size: 6 },
   { latex: "\\wordprefix{stdev}", size: 6 },
-  { latex: "\\wordprefix{stdevp}", size: 10 },
+  { latex: "\\wordprefix{stdevp}", size: 6, clsx: "text-sm" },
 
   { size: 5, text: "⇧", active: true },
   1,
@@ -301,6 +304,42 @@ export const LAYOUT_SYMBOL_SHIFT: Key[] = [
   { size: 10, text: "⏎" },
 ]
 
+export const LAYOUT_CURSOR: Key[] = [
+  { size: 6, latex: "(\\nyafiller)", clsx: "pt-0.5" },
+  { size: 6, latex: "[\\nyafiller]", clsx: "pt-0.5" },
+  "a^b",
+  6,
+  10,
+  { icon: faAnglesLeft },
+  { icon: faAnglesRight },
+
+  { size: 6, latex: "\\left\\{\\nyafiller\\right\\}", clsx: "pt-0.5" },
+  { size: 6, latex: "|\\nyafiller|", clsx: "pt-0.5" },
+  "a_b",
+  6,
+  10,
+  8,
+
+  { size: 5, text: "⇧" },
+  1,
+  { size: 5, icon: faCopy },
+  { size: 5, icon: faCut },
+  { size: 5, icon: faPaste },
+  10,
+  4,
+  { size: 5, text: "⌫" },
+
+  { size: 5, latex: "\\digit{ABC}", clsx: "text-sm/[1]" },
+  { size: 5, latex: "\\digit{∑}f", clsx: "[letter-spacing:.1em] pl-0.5" },
+  2,
+  { size: 5, text: "←" },
+  { size: 5, text: "→" },
+  2,
+  { size: 4, icon: faArrowPointer, active: true },
+  2,
+  { size: 10, text: "⏎" },
+]
+
 export const LAYOUTS = [
   LAYOUT,
   LAYOUT_SHIFT,
@@ -308,4 +347,5 @@ export const LAYOUTS = [
   LAYOUT_ABC_SHIFT,
   LAYOUT_SYMBOL,
   LAYOUT_SYMBOL_SHIFT,
+  LAYOUT_CURSOR,
 ]
