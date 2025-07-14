@@ -23,3 +23,25 @@ export class CmdFiller extends Leaf {
     return ""
   }
 }
+
+export class CmdFillerBlock extends Leaf {
+  static fromLatex(): Command {
+    return new CmdFillerBlock()
+  }
+
+  constructor() {
+    super("", h("inline-flex [letter-spacing:.2em] pl-[.225em]", "···"))
+  }
+
+  reader(): string {
+    return ""
+  }
+
+  ascii(): string {
+    return ""
+  }
+
+  latex(): string {
+    return ""
+  }
+}

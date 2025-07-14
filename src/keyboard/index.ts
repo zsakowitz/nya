@@ -131,22 +131,22 @@ export const LAYOUT: Key[] = [
   "-",
   "\\times",
   "÷",
-  ".",
-  ",",
   "a^2",
   "a^b",
   "\\digit{E}",
+  "x",
+  "y",
   "\\pi",
 
   { size: 5, text: "⇧" },
   1,
+  ".",
+  ",",
   { latex: "(\\nyafiller)", clsx: "pt-0.5" },
   { latex: "[\\nyafiller]", clsx: "pt-0.5" },
   "<",
   "=",
   ">",
-  "x",
-  "y",
   1,
   { size: 5, text: "⌫" },
 
@@ -169,22 +169,22 @@ export const LAYOUT_SHIFT: Key[] = [
   "\\to",
   "~",
   { latex: "a^{-1}", clsx: "text-xs" },
-  ":",
-  "\\digit{'}",
   "\\sqrt{\\nyafiller}",
   "\\sqrt[n]{\\nyafillersmall}",
   "a_b",
+  "e",
+  "i",
   "\\tau",
 
   { size: 5, text: "⇧", active: true },
   1,
+  "\\digit{:}",
+  "\\digit{'}",
   { latex: "\\left\\{\\nyafillersmall\\right\\}", clsx: "pt-0.5" },
   { latex: "|\\nyafiller|", clsx: "pt-0.5" },
   "\\leq",
   "\\neq",
   "\\geq",
-  "e",
-  "i",
   1,
   { size: 5, text: "⌫" },
 
@@ -254,9 +254,9 @@ export const LAYOUT_SYMBOL_SHIFT: Key[] = [
   { latex: "\\wordprefix{sec}", size: 6 },
   { latex: "\\wordprefix{cot}", size: 6 },
   4,
-  { latex: "\\wordprefix{sinh}", size: 6 },
-  { latex: "\\wordprefix{cosh}", size: 6 },
-  { latex: "\\wordprefix{tanh}", size: 6 },
+  { latex: "\\wordprefix{erf}", size: 6 },
+  { latex: "\\wordprefix{total}", size: 6 },
+  { latex: "\\wordprefix{median}", size: 6, clsx: "text-sm" },
 
   { latex: "\\wordprefix{acsc}", size: 6 },
   { latex: "\\wordprefix{asec}", size: 6 },
@@ -283,34 +283,42 @@ function layoutCursor(select: boolean): Key[] {
   return [
     ...(select ?
       ([
-        { size: 8, latex: "(\\nyafiller)", clsx: "pt-0.5" },
-        { size: 8, latex: "[\\nyafiller]", clsx: "pt-0.5" },
+        { size: 8, latex: "(\\nyafillerblock)", clsx: "pt-0.5" },
+        { size: 8, latex: "[\\nyafillerblock]", clsx: "pt-0.5" },
       ] satisfies Key[])
     : ["\\digit{(}", "\\digit{)}", "\\digit{[}", "\\digit{]}"]),
     "a^b",
     "\\sqrt{\\nyafiller}",
-    { size: 8, latex: "\\wordvar{select}" },
+    4,
+    4,
     { icon: faAngleLeft },
     { icon: faAngleRight },
 
     ...(select ?
       ([
-        { size: 8, latex: "\\left\\{\\nyafiller\\right\\}", clsx: "pt-0.5" },
-        { size: 8, latex: "|\\nyafiller|", clsx: "pt-0.5" },
+        {
+          size: 8,
+          latex: "\\left\\{\\nyafillerblock\\right\\}",
+          clsx: "pt-0.5",
+        },
+        { size: 8, latex: "|\\nyafillerblock|", clsx: "pt-0.5" },
       ] satisfies Key[])
     : ["\\digit{\\{}", "\\digit{\\}}", "\\digit{|}", "\\digit{|}"]),
     "a_b",
-    "\\sqrt[n]{\\nyafillersmall}",
-    { size: 8, latex: "\\wordvar{select all}" },
-    { icon: faAnglesLeft },
-    { icon: faAnglesRight },
+    "\\sqrt[b]{\\nyafillersmall}",
+    4,
+    4,
+    { icon: faAnglesLeft }, // extend to beginning
+    { icon: faAnglesRight }, // extend to end
 
     { size: 5, text: "⇧" },
     1,
     { size: 7, icon: faCut, clsx: select ? "" : "opacity-30" },
     { size: 7, icon: faCopy, clsx: select ? "" : "opacity-30" },
     { size: 7, icon: faPaste },
-    { size: 7, icon: faArrowsLeftRight },
+    select ?
+      { size: 7, icon: faArrowsLeftRight }
+    : { size: 7, latex: "\\wordvar{select}" }, // select / select word / expand word selection
     1,
     { size: 5, text: "⌫" },
 

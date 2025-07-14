@@ -11,7 +11,7 @@ import { CmdColon } from "./cmd/leaf/colon"
 import { CmdColor } from "./cmd/leaf/color"
 import { CmdComma } from "./cmd/leaf/comma"
 import { CmdExclamation } from "./cmd/leaf/exclamation"
-import { CmdFiller } from "./cmd/leaf/filler"
+import { CmdFiller, CmdFillerBlock } from "./cmd/leaf/filler"
 import { CmdDot, CmdNum, OperatorName } from "./cmd/leaf/num"
 import {
   OpAnd,
@@ -270,6 +270,7 @@ const latex = new WordMap<LatexInit>([
   ["\\nyacolor", CmdColor],
   ["\\nyafiller", CmdFiller],
   ["\\nyafillersmall", CmdFiller],
+  ["\\nyafillerblock", CmdFillerBlock],
   ["\\psi", SymPsi],
   ["\\text", CmdTextInert],
   ["\\surreal", CmdSurreal],
