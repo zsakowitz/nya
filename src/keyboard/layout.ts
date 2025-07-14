@@ -107,38 +107,7 @@ export const CONTROLS = {
   enter: { size: 10, text: "⏎" },
 } satisfies Record<string, Key>
 
-export function createKeyboard(layout: Key[]) {
-  return h(
-    "grid w-full grid-cols-[repeat(40,1fr)] gap-1 p-1 bg-[--nya-kbd-bg] [line-height:1] whitespace-nowrap",
-    ...layout.map(keyFrom),
-  )
-}
-
-function btm(mode: "num" | "alpha" | "sym" | "cursor" | "opts"): Key[] {
-  return [
-    {
-      size: 5,
-      latex: "\\digit{ABC}",
-      clsx: "text-sm/[1]",
-      active: mode == "alpha",
-    },
-    {
-      size: 5,
-      latex: "\\digit{∑}f",
-      clsx: "[letter-spacing:.1em] pl-0.5",
-      active: mode == "sym",
-    },
-    1,
-    { size: 5, text: "←" },
-    { size: 5, text: "→" },
-    { size: 4, icon: faArrowPointer, active: mode == "cursor" },
-    { size: 4, icon: faGears, active: mode == "opts", clsx: "opacity-30" },
-    1,
-    { size: 10, text: "⏎" },
-  ]
-}
-
-export const LAYOUT_NUM: Layout = {
+export const NUM: Layout = {
   hi: [
     "1",
     "2",
@@ -173,222 +142,113 @@ export const LAYOUT_NUM: Layout = {
   ],
 }
 
-const KEYS_NUM: Key[] = [
-  "1",
-  "2",
-  "3",
-  "4",
-  "5",
-  "6",
-  "7",
-  "8",
-  "9",
-  "0",
+export const NUM_SHIFT: Layout = {
+  hi: [
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "0",
 
-  "+",
-  "-",
-  "\\times",
-  "÷",
-  "a^2",
-  "a^b",
-  "\\digit{E}",
-  "x",
-  "y",
-  "\\pi",
-
-  { size: 5, text: "⇧" },
-  1,
-  ".",
-  "\\digit{,}",
-  { latex: "(\\nyafiller)", clsx: "pt-0.5" },
-  { latex: "[\\nyafiller]", clsx: "pt-0.5" },
-  "<",
-  "=",
-  ">",
-  1,
-  { size: 5, text: "⌫" },
-
-  ...btm("num"),
-]
-
-const KEYS_NUM_SHIFT: Key[] = [
-  "1",
-  "2",
-  "3",
-  "4",
-  "5",
-  "6",
-  "7",
-  "8",
-  "9",
-  "0",
-
-  "!",
-  "\\to",
-  "~",
-  { latex: "a^{-1}", clsx: "text-xs" },
-  "\\sqrt{\\nyafiller}",
-  "\\sqrt[n]{\\nyafillersmall}",
-  "a_b",
-  "e",
-  "i",
-  "\\tau",
-
-  { size: 5, text: "⇧", active: true },
-  1,
-  "\\digit{:}",
-  "\\digit{'}",
-  { latex: "\\left\\{\\nyafillersmall\\right\\}", clsx: "pt-0.5" },
-  { latex: "|\\nyafiller|", clsx: "pt-0.5" },
-  "\\leq",
-  { latex: "\\wordprefix{h}", clsx: "opacity-30" },
-  "\\geq",
-  1,
-  { size: 5, text: "⌫" },
-
-  ...btm("num"),
-]
-
-const KEYS_ABC: Key[] = [
-  ..."qwertyuiopasdfghjkl".split(""),
-  { latex: "θ", clsx: "pr-0.5" },
-
-  { size: 5, text: "⇧" },
-  1,
-  ..."zxcvbnm".split(""),
-  1,
-  { size: 5, text: "⌫" },
-
-  ...btm("alpha"),
-]
-
-const KEYS_ABC_SHIFT: Key[] = [
-  ..."QWERTYUIOPASDFGHJKL".split(""),
-  "\\tau",
-
-  { size: 5, text: "⇧", active: true },
-  1,
-  ..."ZXCVBNM".split(""),
-  1,
-  { size: 5, text: "⌫" },
-
-  ...btm("alpha"),
-]
-
-const KEYS_SYMBOL: Key[] = [
-  { latex: "\\wordprefix{sin}", size: 6 },
-  { latex: "\\wordprefix{cos}", size: 6 },
-  { latex: "\\wordprefix{tan}", size: 6 },
-  "\\digit{∑}",
-  { latex: "\\wordprefix{exp}", size: 6 },
-  { latex: "10^a", size: 6 },
-  { latex: "\\wordprefix{min}", size: 6 },
-
-  { latex: "\\wordprefix{asin}", size: 6 },
-  { latex: "\\wordprefix{acos}", size: 6 },
-  { latex: "\\wordprefix{atan}", size: 6 },
-  "\\digit{∏}",
-  { latex: "\\wordprefix{ln}", size: 6 },
-  { latex: "\\wordprefix{log}", size: 6 },
-  { latex: "\\wordprefix{max}", size: 6 },
-
-  { size: 5, text: "⇧" },
-  1,
-  ".",
-  "\\digit{,}",
-  "\\infty",
-  "\\digit{∫}",
-  "\\frac{d}{dx}",
-  { size: 8, latex: "\\surreal{}{}" },
-  1,
-  { size: 5, text: "⌫" },
-
-  ...btm("sym"),
-]
-
-const KEYS_SYMBOL_SHIFT: Key[] = [
-  { latex: "\\wordprefix{csc}", size: 6 },
-  { latex: "\\wordprefix{sec}", size: 6 },
-  { latex: "\\wordprefix{cot}", size: 6 },
-  { latex: "\\wordprefix{nPr}", size: 4 },
-  { latex: "\\wordprefix{erf}", size: 6 },
-  { latex: "\\wordprefix{total}", size: 6 },
-  { latex: "\\wordprefix{median}", size: 6, clsx: "text-sm" },
-
-  { latex: "\\wordprefix{acsc}", size: 6 },
-  { latex: "\\wordprefix{asec}", size: 6 },
-  { latex: "\\wordprefix{acot}", size: 6 },
-  { latex: "\\wordprefix{nCr}", size: 4 },
-  { latex: "\\wordprefix{mean}", size: 6 },
-  { latex: "\\wordprefix{stdev}", size: 6 },
-  { latex: "\\wordprefix{stdevp}", size: 6, clsx: "text-sm" },
-
-  { size: 5, text: "⇧", active: true },
-  1,
-  ".",
-  "\\digit{,}",
-  { latex: "\\wordprefix{floor}", size: 6 },
-  { latex: "\\wordprefix{ceil}", size: 6 },
-  { latex: "\\wordprefix{round}", size: 8 },
-  1,
-  { size: 5, text: "⌫" },
-
-  ...btm("sym"),
-]
-
-function layoutCursor(select: boolean): Key[] {
-  return [
-    ...(select ?
-      ([
-        { size: 8, latex: "(\\nyafillerblock)", clsx: "pt-0.5" },
-        { size: 8, latex: "[\\nyafillerblock]", clsx: "pt-0.5" },
-      ] satisfies Key[])
-    : ["\\digit{(}", "\\digit{)}", "\\digit{[}", "\\digit{]}"]),
-    "a^b",
+    "!",
+    "\\to",
+    "~",
+    { latex: "a^{-1}", clsx: "text-xs" },
     "\\sqrt{\\nyafiller}",
-    4,
-    4,
-    { icon: faAngleLeft },
-    { icon: faAngleRight },
-
-    ...(select ?
-      ([
-        {
-          size: 8,
-          latex: "\\left\\{\\nyafillerblock\\right\\}",
-          clsx: "pt-0.5",
-        },
-        { size: 8, latex: "|\\nyafillerblock|", clsx: "pt-0.5" },
-      ] satisfies Key[])
-    : ["\\digit{\\{}", "\\digit{\\}}", "\\digit{|}", "\\digit{|}"]),
+    "\\sqrt[n]{\\nyafillersmall}",
     "a_b",
-    "\\sqrt[b]{\\nyafillersmall}",
-    4,
-    4,
-    { icon: faAnglesLeft }, // extend to beginning
-    { icon: faAnglesRight }, // extend to end
-
-    { size: 5, text: "⇧" },
-    1,
-    { size: 7, icon: faCut, clsx: select ? "" : "opacity-30" },
-    { size: 7, icon: faCopy, clsx: select ? "" : "opacity-30" },
-    { size: 7, icon: faPaste },
-    select ?
-      { size: 7, icon: faArrowsLeftRight }
-    : { size: 7, latex: "\\wordvar{select}" }, // select / select word / expand word selection
-    1,
-    { size: 5, text: "⌫" },
-
-    ...btm("cursor"),
-  ]
+    "e",
+    "i",
+    "\\tau",
+  ],
+  lo: [
+    "\\digit{:}",
+    "\\digit{'}",
+    { latex: "\\left\\{\\nyafillersmall\\right\\}", clsx: "pt-0.5" },
+    { latex: "|\\nyafiller|", clsx: "pt-0.5" },
+    "\\leq",
+    { latex: "\\wordprefix{h}", clsx: "opacity-30" },
+    "\\geq",
+  ],
 }
 
-const KEYS_CURSOR = layoutCursor(false)
-const KEYS_SELECT = layoutCursor(true)
+export const KEYS_ABC: Layout = {
+  hi: [..."qwertyuiopasdfghjkl".split(""), { latex: "θ", clsx: "pr-0.5" }],
+  lo: "zxcvbnm".split(""),
+}
+
+export const KEYS_ABC_SHIFT: Layout = {
+  hi: [..."QWERTYUIOPASDFGHJKL".split(""), "\\tau"],
+  lo: "ZXCVBNM".split(""),
+}
+
+export const KEYS_SYMBOL: Layout = {
+  hi: [
+    { latex: "\\wordprefix{sin}", size: 6 },
+    { latex: "\\wordprefix{cos}", size: 6 },
+    { latex: "\\wordprefix{tan}", size: 6 },
+    "\\digit{∑}",
+    { latex: "\\wordprefix{exp}", size: 6 },
+    { latex: "10^a", size: 6 },
+    { latex: "\\wordprefix{min}", size: 6 },
+
+    { latex: "\\wordprefix{asin}", size: 6 },
+    { latex: "\\wordprefix{acos}", size: 6 },
+    { latex: "\\wordprefix{atan}", size: 6 },
+    "\\digit{∏}",
+    { latex: "\\wordprefix{ln}", size: 6 },
+    { latex: "\\wordprefix{log}", size: 6 },
+    { latex: "\\wordprefix{max}", size: 6 },
+  ],
+  lo: [
+    ".",
+    "\\digit{,}",
+    "\\infty",
+    "\\digit{∫}",
+    "\\frac{d}{dx}",
+    { size: 8, latex: "\\surreal{}{}" },
+  ],
+}
+
+export const KEYS_SYMBOL_SHIFT: Layout = {
+  hi: [
+    { latex: "\\wordprefix{csc}", size: 6 },
+    { latex: "\\wordprefix{sec}", size: 6 },
+    { latex: "\\wordprefix{cot}", size: 6 },
+    { latex: "\\wordprefix{nPr}", size: 4 },
+    { latex: "\\wordprefix{erf}", size: 6 },
+    { latex: "\\wordprefix{total}", size: 6 },
+    { latex: "\\wordprefix{median}", size: 6, clsx: "text-sm" },
+
+    { latex: "\\wordprefix{acsc}", size: 6 },
+    { latex: "\\wordprefix{asec}", size: 6 },
+    { latex: "\\wordprefix{acot}", size: 6 },
+    { latex: "\\wordprefix{nCr}", size: 4 },
+    { latex: "\\wordprefix{mean}", size: 6 },
+    { latex: "\\wordprefix{stdev}", size: 6 },
+    { latex: "\\wordprefix{stdevp}", size: 6, clsx: "text-sm" },
+  ],
+  lo: [
+    ".",
+    "\\digit{,}",
+    { latex: "\\wordprefix{floor}", size: 6 },
+    { latex: "\\wordprefix{ceil}", size: 6 },
+    { latex: "\\wordprefix{round}", size: 8 },
+  ],
+}
+
+export const KEYS_CURSOR = layoutCursor(false)
+
+export const KEYS_SELECT = layoutCursor(true)
 
 export const LAYOUTS = [
-  KEYS_NUM,
-  KEYS_NUM_SHIFT,
+  NUM,
+  NUM_SHIFT,
   KEYS_ABC,
   KEYS_ABC_SHIFT,
   KEYS_SYMBOL,
@@ -400,4 +260,48 @@ export const LAYOUTS = [
 export interface Layout {
   hi: Key[]
   lo: Key[]
+}
+
+function layoutCursor(select: boolean): Layout {
+  return {
+    hi: [
+      ...(select ?
+        ([
+          { size: 8, latex: "(\\nyafillerblock)", clsx: "pt-0.5" },
+          { size: 8, latex: "[\\nyafillerblock]", clsx: "pt-0.5" },
+        ] satisfies Key[])
+      : ["\\digit{(}", "\\digit{)}", "\\digit{[}", "\\digit{]}"]),
+      "a^b",
+      "\\sqrt{\\nyafiller}",
+      4,
+      4,
+      { icon: faAngleLeft },
+      { icon: faAngleRight },
+
+      ...(select ?
+        ([
+          {
+            size: 8,
+            latex: "\\left\\{\\nyafillerblock\\right\\}",
+            clsx: "pt-0.5",
+          },
+          { size: 8, latex: "|\\nyafillerblock|", clsx: "pt-0.5" },
+        ] satisfies Key[])
+      : ["\\digit{\\{}", "\\digit{\\}}", "\\digit{|}", "\\digit{|}"]),
+      "a_b",
+      "\\sqrt[b]{\\nyafillersmall}",
+      4,
+      4,
+      { icon: faAnglesLeft }, // extend to beginning
+      { icon: faAnglesRight }, // extend to end
+    ],
+    lo: [
+      { size: 7, icon: faCut, clsx: select ? "" : "opacity-30" },
+      { size: 7, icon: faCopy, clsx: select ? "" : "opacity-30" },
+      { size: 7, icon: faPaste },
+      select ?
+        { size: 7, icon: faArrowsLeftRight }
+      : { size: 7, latex: "\\wordvar{select}" }, // select / select word / expand word selection
+    ],
+  }
 }

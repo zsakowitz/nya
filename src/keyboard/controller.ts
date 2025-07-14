@@ -1,5 +1,5 @@
 import { h } from "@/jsx"
-import { CONTROLS, keyFrom, LAYOUT_NUM, type Layout } from "./layout"
+import { CONTROLS, keyFrom, NUM, type Layout } from "./layout"
 
 export class KeyboardController {
   readonly hi
@@ -28,7 +28,7 @@ export class KeyboardController {
       keyFrom(CONTROLS.enter),
     )
 
-    this.show(LAYOUT_NUM)
+    this.show(NUM)
   }
 
   show(layout: Layout) {
