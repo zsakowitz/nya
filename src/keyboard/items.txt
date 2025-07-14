@@ -5,7 +5,7 @@
 ❌ configure
 ❌ select
 ✅ i
-✅ _
+✅ E _
 ✅ , '
 ✅ pi tau
 ✅ x e

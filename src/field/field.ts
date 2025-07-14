@@ -4,10 +4,14 @@ import { FieldInert } from "./field-inert"
 import { Selection } from "./model"
 import type { Options } from "./options"
 
-export class Field extends FieldInert {
-  readonly cursor = h(
+export function cursor() {
+  return h(
     "relative nya-cursor border-current w-px -ml-px border-l [.nya-display:has(.nya-cmd-prompt)_&]:hidden [.nya-display:not(:focus)_&]:hidden",
   )
+}
+
+export class Field extends FieldInert {
+  readonly cursor = cursor()
 
   constructor(options: Options, scope: Scope, className?: string) {
     super(options, scope, className)
