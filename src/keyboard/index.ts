@@ -93,8 +93,9 @@ export function createKeyboard() {
   const kDigits = keys("1 2 3 4 5 6 7 8 9 0")
 
   const kShift = key(h("font-[system-ui]", "⇧"), "col-span-5")
-  const kOps = keys("+ - \\times ÷")
   const kDel = key(h("font-[system-ui]", "⌫"), "col-span-5")
+  const kLeft = key(h("font-[system-ui]", "←"), "col-span-4")
+  const kRight = key(h("font-[system-ui]", "→"), "col-span-4")
 
   const kAlt1 = key(h("font-['Symbola'] text-sm/[1]", "ABC"), "col-span-5")
   const kAlt2 = key(
@@ -113,27 +114,26 @@ export function createKeyboard() {
 
     ...kDigits,
 
-    h("col-span-2"),
     key("+"),
     key("-"),
     key("\\times"),
     key("÷"),
-    key(),
-    key(),
-    key(),
-    key(),
-    key(),
-    h("col-span-2"),
+    key("a^2"),
+    key("a^b"),
+    key("a_b"),
+    key("\\pi"),
+    key("."),
+    key(","),
 
     kShift,
     h(),
     key("(\\nyafiller)", "pt-0.5"),
     key("[\\nyafiller]", "pt-0.5"),
-    key(),
-    key(),
-    key(),
-    key(),
-    key(),
+    key("<"),
+    key("="),
+    key(">"),
+    key("x"),
+    key("y"),
     h(),
     kDel,
 
@@ -141,8 +141,8 @@ export function createKeyboard() {
     kAlt2,
     h("col-span-2"),
     key(),
-    key(),
-    key(),
+    kLeft,
+    kRight,
     key(),
     h("col-span-2"),
     kEnter,

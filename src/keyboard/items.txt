@@ -1,22 +1,23 @@
-❌ ||
-❌ x
-❌ y
-❌ ^2 √
-❌ ^ √
-❌ _
 ❌ ±
-❌ ,
-❌ { }
 ❌ -> !
 ❌ ᴇ \infty
-❌ i
-❌ .
-❌ pi
-❌ e
-❌ = !=
-❌ < <=
-❌ > >=
-❌ '
+❌ audio
+❌ configure
+❌ select
+✅ i
+✅ _
+✅ , '
+✅ pi tau
+✅ x e
+✅ y i
+✅ . :
+✅ ^2 √
+✅ ^ √
+✅ = !=
+✅ < <=
+✅ > >=
+✅ left up
+✅ right down
 ✅ shift
 ✅ backspace
 ✅ letters
@@ -36,5 +37,5 @@
 ✅ -
 ✅ *
 ✅ /
-✅ ( )
-✅ [ ]
+✅ () {}
+✅ [] ||
