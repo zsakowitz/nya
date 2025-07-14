@@ -9,6 +9,7 @@ import { faAnglesLeft } from "@fortawesome/free-solid-svg-icons/faAnglesLeft"
 import { faAnglesRight } from "@fortawesome/free-solid-svg-icons/faAnglesRight"
 import { faArrowPointer } from "@fortawesome/free-solid-svg-icons/faArrowPointer"
 import { faArrowsLeftRight } from "@fortawesome/free-solid-svg-icons/faArrowsLeftRight"
+import { faGears } from "@fortawesome/free-solid-svg-icons/faGears"
 
 const parser = new LatexParser(options, null, "")
 
@@ -30,10 +31,16 @@ function key(base?: string | Node, clsx?: string, active?: boolean) {
 
 type Size = keyof typeof span
 
-type Contents =
-  | { latex: string; text?: undefined; icon?: undefined }
-  | { latex?: undefined; text: string; icon?: undefined }
-  | { latex?: undefined; text?: undefined; icon: IconDefinition }
+type OneOf<T> = {
+  [K in keyof T]: Record<K, T[K]> &
+    Partial<Record<Exclude<keyof T, K>, undefined>>
+}[keyof T]
+
+type Contents = OneOf<{
+  latex: string
+  text: string
+  icon: IconDefinition
+}>
 
 type Key =
   | string // shortcut for 4-width, latex
@@ -79,12 +86,12 @@ function keyFrom(k: Key) {
 
 export function createKeyboard(layout: Key[]) {
   return h(
-    "grid w-full grid-cols-[repeat(40,1fr)] gap-1 p-1 bg-[--nya-kbd-bg] [line-height:1]",
+    "grid w-full grid-cols-[repeat(40,1fr)] gap-1 p-1 bg-[--nya-kbd-bg] [line-height:1] whitespace-nowrap",
     ...layout.map(keyFrom),
   )
 }
 
-function btm(mode: "num" | "alpha" | "sym" | "cursor"): Key[] {
+function btm(mode: "num" | "alpha" | "sym" | "cursor" | "opts"): Key[] {
   return [
     {
       size: 5,
@@ -98,12 +105,12 @@ function btm(mode: "num" | "alpha" | "sym" | "cursor"): Key[] {
       clsx: "[letter-spacing:.1em] pl-0.5",
       active: mode == "sym",
     },
-    2,
+    1,
     { size: 5, text: "←" },
     { size: 5, text: "→" },
-    2,
     { size: 4, icon: faArrowPointer, active: mode == "cursor" },
-    2,
+    { size: 4, icon: faGears, active: mode == "opts", clsx: "opacity-30" },
+    1,
     { size: 10, text: "⏎" },
   ]
 }
@@ -124,12 +131,12 @@ export const LAYOUT: Key[] = [
   "-",
   "\\times",
   "÷",
+  ".",
+  ",",
   "a^2",
   "a^b",
   "\\digit{E}",
   "\\pi",
-  ".",
-  ",",
 
   { size: 5, text: "⇧" },
   1,
@@ -162,12 +169,12 @@ export const LAYOUT_SHIFT: Key[] = [
   "\\to",
   "~",
   { latex: "a^{-1}", clsx: "text-xs" },
+  ":",
+  "\\digit{'}",
   "\\sqrt{\\nyafiller}",
   "\\sqrt[n]{\\nyafillersmall}",
   "a_b",
   "\\tau",
-  ":",
-  "\\digit{'}",
 
   { size: 5, text: "⇧", active: true },
   1,
@@ -214,15 +221,16 @@ export const LAYOUT_SYMBOL: Key[] = [
   { latex: "\\wordprefix{sin}", size: 6 },
   { latex: "\\wordprefix{cos}", size: 6 },
   { latex: "\\wordprefix{tan}", size: 6 },
-  4,
+  { latex: "10^a", size: 4 },
   { latex: "\\wordprefix{exp}", size: 6 },
-  { latex: "10^a", size: 6 },
+  { latex: "\\wordprefix{total}", size: 6 },
   { latex: "\\wordprefix{min}", size: 6 },
 
   { latex: "\\wordprefix{asin}", size: 6 },
   { latex: "\\wordprefix{acos}", size: 6 },
   { latex: "\\wordprefix{atan}", size: 6 },
-  4,
+  ".",
+  // { latex: "\\wordprefix{median}", size: 6 },
   { latex: "\\wordprefix{ln}", size: 6 },
   { latex: "\\wordprefix{log}", size: 6 },
   { latex: "\\wordprefix{max}", size: 6 },
@@ -253,7 +261,7 @@ export const LAYOUT_SYMBOL_SHIFT: Key[] = [
   { latex: "\\wordprefix{acsc}", size: 6 },
   { latex: "\\wordprefix{asec}", size: 6 },
   { latex: "\\wordprefix{acot}", size: 6 },
-  4,
+  ".",
   { latex: "\\wordprefix{mean}", size: 6 },
   { latex: "\\wordprefix{stdev}", size: 6 },
   { latex: "\\wordprefix{stdevp}", size: 6, clsx: "text-sm" },
@@ -281,7 +289,7 @@ function layoutCursor(select: boolean): Key[] {
     : ["\\digit{(}", "\\digit{)}", "\\digit{[}", "\\digit{]}"]),
     "a^b",
     "\\sqrt{\\nyafiller}",
-    8,
+    { size: 8, latex: "\\wordvar{select}" },
     { icon: faAngleLeft },
     { icon: faAngleRight },
 
@@ -293,14 +301,14 @@ function layoutCursor(select: boolean): Key[] {
     : ["\\digit{\\{}", "\\digit{\\}}", "\\digit{|}", "\\digit{|}"]),
     "a_b",
     "\\sqrt[n]{\\nyafillersmall}",
-    8,
+    { size: 8, latex: "\\wordvar{select all}" },
     { icon: faAnglesLeft },
     { icon: faAnglesRight },
 
     { size: 5, text: "⇧" },
     1,
-    { size: 7, icon: faCopy, clsx: select ? "" : "opacity-30" },
     { size: 7, icon: faCut, clsx: select ? "" : "opacity-30" },
+    { size: 7, icon: faCopy, clsx: select ? "" : "opacity-30" },
     { size: 7, icon: faPaste },
     { size: 7, icon: faArrowsLeftRight },
     1,
