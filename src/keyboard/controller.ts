@@ -37,7 +37,7 @@ const enum Mode {
  *
  * - "exclusive" means "no key besides the modifier has been pressed"
  */
-enum LockState {
+const enum LockState {
   Disabled,
 
   HeldExclusive,
@@ -144,7 +144,7 @@ class Lock {
     }
   }
 
-  active() {
+  isActive() {
     return this.state != LockState.Disabled
   }
 
@@ -157,6 +157,16 @@ class Lock {
       s == LockState.HeldTwice ||
       s == LockState.HeldTwiceExclusive ||
       this.isOtherHeld
+    )
+  }
+
+  isLocked() {
+    const s = this.state
+
+    return (
+      s == LockState.HeldTwice ||
+      s == LockState.HeldTwiceExclusive ||
+      s == LockState.ReleasedTwice
     )
   }
 }
@@ -260,33 +270,37 @@ export class KeyboardController {
     modifier(this.kCursor, Mode.Cursor, true)
 
     this.update()
-
-    setInterval(() => console.log(LockState[this.shift.state]))
   }
 
   update() {
-    if (!this.lock.active()) {
+    if (!this.lock.isActive()) {
       this.mode = Mode.Num
     }
-    const next = getLayout(this.mode, this.shift.active())
+    const next = getLayout(this.mode, this.shift.isActive())
     const prev = this.displaying
     if (next != prev) {
       this.show(next)
       this.displaying = next
     }
-    this.kShift.classList.toggle("nya-kbd-active", this.shift.active())
-    this.kAbc.classList.toggle(
-      "nya-kbd-active",
-      this.mode == Mode.Alpha && this.lock.active(),
-    )
-    this.kSym.classList.toggle(
-      "nya-kbd-active",
-      this.mode == Mode.Sym && this.lock.active(),
-    )
-    this.kCursor.classList.toggle(
-      "nya-kbd-active",
-      this.mode == Mode.Cursor && this.lock.active(),
-    )
+
+    const mod = (key: HTMLSpanElement, mode: Mode) => {
+      key.classList.toggle(
+        "nya-kbd-active",
+        this.mode == mode && this.lock.isActive(),
+      )
+
+      key.classList.toggle(
+        "nya-kbd-locked",
+        this.mode == mode && this.lock.isLocked(),
+      )
+    }
+
+    this.kShift.classList.toggle("nya-kbd-active", this.shift.isActive())
+    this.kShift.classList.toggle("nya-kbd-locked", this.shift.isLocked())
+
+    mod(this.kAbc, Mode.Alpha)
+    mod(this.kSym, Mode.Sym)
+    mod(this.kCursor, Mode.Cursor)
   }
 
   exec(action: KeyAction) {

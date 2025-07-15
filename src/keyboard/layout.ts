@@ -25,6 +25,7 @@ import { faAnglesRight } from "@fortawesome/free-solid-svg-icons/faAnglesRight"
 import { faArrowPointer } from "@fortawesome/free-solid-svg-icons/faArrowPointer"
 import { faGears } from "@fortawesome/free-solid-svg-icons/faGears"
 import { faLeftRight } from "@fortawesome/free-solid-svg-icons/faLeftRight"
+import { faLock } from "@fortawesome/free-solid-svg-icons/faLock"
 
 const parser = new LatexParser(options, null, "")
 
@@ -40,7 +41,10 @@ function key(base?: string | Node, clsx?: string, active?: boolean) {
       (active ? " nya-kbd-active" : "") +
       (clsx ? " " + clsx : ""),
     h("font-['Symbola'] pointer-events-none", contents),
-    h("absolute -inset-0.5"),
+    h(
+      "nya-kbd-lock hidden absolute top-0.5 right-0.5",
+      fa(faLock, "size-2 opacity-30"),
+    ),
   )
 }
 
