@@ -509,6 +509,23 @@ export class Cursor {
     return false
   }
 
+  /**
+   * Moves this cursor in the given direction, returning whether any movement
+   * happened. If this happens to move into or out of a block, it acts as if Tab
+   * was used, so that every block is traversed. Useful for arrow keys on
+   * mobile.
+   */
+  moveViaTab(dir: Dir): boolean {
+    if (this[dir]) {
+      this[dir].tabInto(this, dir)
+      return true
+    } else if (this.parent?.parent) {
+      this.parent.parent.tabOutOf(this, dir, this.parent)
+      return true
+    }
+    return false
+  }
+
   /** Gets a list of ancestors of this `Cursor`, starting with `this.parent`. */
   parents(): [block: Block, child: Command | Cursor][] {
     const ret: [block: Block, child: Command | Cursor][] = []

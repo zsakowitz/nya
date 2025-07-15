@@ -164,7 +164,7 @@ export const CONTROLS = {
     action(field) {
       if (field.sel.isCursor()) {
         const c = field.sel.cursor(L)
-        if (c.move(L)) {
+        if (c.moveViaTab(L)) {
           field.sel = c.selection()
         } else {
           field.onMoveOut?.(L)
@@ -180,7 +180,7 @@ export const CONTROLS = {
     action(field) {
       if (field.sel.isCursor()) {
         const c = field.sel.cursor(R)
-        if (c.move(R)) {
+        if (c.moveViaTab(R)) {
           field.sel = c.selection()
         } else {
           field.onMoveOut?.(R)
