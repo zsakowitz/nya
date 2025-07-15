@@ -9,9 +9,14 @@ import { LAYOUTS } from "../layout"
 const field = new Field(
   options,
   new Scope(options, new JsContext(null)),
-  "block overflow-x-auto [&::-webkit-scrollbar]:hidden min-h-[3.265rem] p-4 focus:outline-none max-w-[calc(100%_-_1rem)] bg-[--nya-bg] rounded mt-2 mx-auto w-96 [&.\\!bg-transparent]:!bg-[--nya-bg]",
+  "block overflow-x-auto [&::-webkit-scrollbar]:hidden min-h-[3.265rem] p-4 focus:outline-none w-full",
 )
-document.body.appendChild(h("flex", field.el))
+document.body.appendChild(
+  h(
+    "flex bg-[--nya-bg] rounded mx-auto w-96 mt-2 max-w-[calc(100%_-_1rem)]",
+    field.el,
+  ),
+)
 
 const env = new KeyboardController(() => field)
 env.show(LAYOUTS[0]!)
