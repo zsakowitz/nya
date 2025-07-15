@@ -257,7 +257,7 @@ export class KeyboardController {
 
     modifier(this.kAbc, Mode.Alpha, true)
     modifier(this.kSym, Mode.Sym, false)
-    modifier(this.kCursor, Mode.Alpha, true)
+    modifier(this.kCursor, Mode.Cursor, true)
 
     this.update()
 
