@@ -162,12 +162,20 @@ export class CmdInt extends Command<BlocksInt> {
     super.deleteBlock(cursor, at, block)
   }
 
-  supSub(part: VDir, side: Dir, cursor: Cursor): boolean {
+  supSub(
+    part: VDir,
+    side: Dir,
+    cursor: Cursor,
+    contents: Block | null,
+  ): boolean {
     if (!this.blocks.length) {
       this.render([new Block(this), new Block(this)])
     }
 
     cursor.moveIn(this.blocks[part == U ? 1 : 0]!, side)
+    if (contents) {
+      contents.insertAt(cursor, L)
+    }
     return true
   }
 

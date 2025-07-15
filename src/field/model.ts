@@ -409,6 +409,11 @@ export class Block {
     }
     return false
   }
+
+  /** Returns a {@linkcode Selection} containing this block. */
+  selection(focus: Dir) {
+    return new Selection(this, this.ends[L], this.ends[R], focus)
+  }
 }
 
 /** An interface used for type-safe changes to {@linkcode Cursor}s. */
@@ -1532,9 +1537,12 @@ export abstract class Command<
    * This is used on the {@linkcode CmdBig} and {@linkcode CmdInt} commands, for
    * example, to move into their appropriate subscripts and superscripts.
    */
-  supSub(_part: VDir, _side: Dir, _cursor: Cursor): boolean {
-    return false
-  }
+  supSub?(
+    part: VDir,
+    side: Dir,
+    cursor: Cursor,
+    contents: Block | null,
+  ): boolean
 
   protected setEl(el: HTMLSpanElement) {
     this.el.replaceWith(el)

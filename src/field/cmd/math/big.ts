@@ -165,12 +165,20 @@ export class CmdBig extends Command<
     return true
   }
 
-  supSub(part: VDir, side: Dir, cursor: Cursor): boolean {
+  supSub(
+    part: VDir,
+    side: Dir,
+    cursor: Cursor,
+    contents: Block | null,
+  ): boolean {
     if (part == U && !this.blocks[1]) {
       this.blocks[1] = new Block(this)
       this.setEl(CmdBig.render(this.ctrlSeq, this.blocks[0], this.blocks[1]))
     }
     cursor.moveIn(this.blocks[part == U ? 1 : 0]!, side)
+    if (contents) {
+      contents.insertAt(cursor, L)
+    }
     return true
   }
 

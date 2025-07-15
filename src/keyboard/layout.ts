@@ -1,5 +1,10 @@
+import { CmdBrack, type ParenLhs, type ParenRhs } from "@/field/cmd/math/brack"
+import { CmdRoot } from "@/field/cmd/math/root"
 import { options } from "@/field/defaults"
+import { L, R } from "@/field/dir"
+import type { Field } from "@/field/field"
 import { LatexParser } from "@/field/latex"
+import { Block, type Command } from "@/field/model"
 import { fa, h, hx } from "@/jsx"
 import { faCopy, faPaste } from "@fortawesome/free-regular-svg-icons"
 import { faCut, type IconDefinition } from "@fortawesome/free-solid-svg-icons"
@@ -26,10 +31,23 @@ function key(base?: string | Node, clsx?: string, active?: boolean) {
         "text-[--nya-kbd-key-active-text] bg-[--nya-kbd-key-active-bg] fill-[--nya-kbd-key-active-text]"
       : "text-[--nya-kbd-key-text] bg-[--nya-kbd-key-bg] fill-[--nya-kbd-key-text] hover:bg-[--nya-kbd-key-hover-bg]") +
       (clsx ? " " + clsx : ""),
-    h("font-['Symbola']", contents),
+    h("font-['Symbola'] pointer-events-none", contents),
     h("absolute -inset-0.5"),
   )
 }
+
+export const CANCEL_CHANGES = Symbol()
+
+export type KeyActionReturn =
+  | Block // block to be inserted left of cursor
+  | Command // command to be inserted left of cursor
+  | string // latex
+  | void // this command wrote its output already
+  | typeof CANCEL_CHANGES // this command did not modify anything
+
+export type KeyAction =
+  | string
+  | ((field: Field) => Block | Command | string | void | typeof CANCEL_CHANGES)
 
 type Size = keyof typeof span
 
@@ -46,9 +64,24 @@ type Contents = OneOf<{
 
 export type Key =
   | string // shortcut for 4-width, latex, typed is same as written
-  | (Contents & { size?: Size; clsx?: string; active?: boolean }) // plain key
+  | (Contents & { size?: Size; clsx?: string; active?: boolean }) // normal key
   | Size // spacer
-  | null // tbd
+
+export type ActionKey =
+  | string
+  | (Contents & {
+      action: KeyAction
+      size?: Size
+      clsx?: string
+      active?: boolean
+    })
+  | ({ latex: string } & {
+      action?: KeyAction
+      size?: Size
+      clsx?: string
+      active?: boolean
+    })
+  | Size
 
 const span = {
   1: "col-span-1",
@@ -84,6 +117,16 @@ export function keyFrom(k: Key) {
     span[k.size ?? 4] + " " + k.clsx,
     k.active,
   )
+}
+
+const kSqrt: ActionKey = {
+  latex: "\\sqrt{\\nyafiller}",
+  action: wrapper((x) => new CmdRoot(x, null)),
+}
+
+const kRoot: ActionKey = {
+  latex: "\\sqrt[b]{\\nyafillersmall}",
+  action: wrapper((x) => new CmdRoot(new Block(null), x)),
 }
 
 export const CONTROLS = {
@@ -122,20 +165,27 @@ export const NUM: Layout = {
 
     "+",
     "-",
-    "\\times",
-    "÷",
-    "a^2",
-    "a^b",
-    "\\digit{E}",
+    { latex: "\\times", action: "\\cdot" },
+    { latex: "÷", action: "/" },
+    {
+      latex: "a^2",
+      action(field) {
+        field.type("^")
+        field.type("2")
+        field.type("ArrowRight")
+      },
+    },
+    { latex: "a^b", action: "^" },
+    { latex: "\\digit{E}", action: "ᴇ", clsx: "opacity-30" },
     "x",
     "y",
     "\\pi",
   ],
   lo: [
     ".",
-    "\\digit{,}",
-    { latex: "(\\nyafiller)", clsx: "pt-0.5" },
-    { latex: "[\\nyafiller]", clsx: "pt-0.5" },
+    { latex: "\\digit{,}", action: "," },
+    brackWrapper("(\\nyafiller)", "(", ")", 4),
+    brackWrapper("[\\nyafiller]", "[", "]", 4),
     "<",
     "=",
     ">",
@@ -158,10 +208,26 @@ export const NUM_SHIFT: Layout = {
     "!",
     "\\to",
     "~",
-    { latex: "a^{-1}", clsx: "text-xs" },
-    "\\sqrt{\\nyafiller}",
-    "\\sqrt[n]{\\nyafillersmall}",
-    "a_b",
+    {
+      latex: "a^{-1}",
+      action(field) {
+        const c = field.sel.remove()
+        field.type("^")
+        field.type("(")
+        field.type("-")
+        field.type("1")
+        field.type("ArrowLeft")
+        field.type("ArrowLeft")
+        field.type("Backspace")
+        field.type("ArrowRight")
+        field.type("ArrowRight")
+        field.type("ArrowRight")
+      },
+      clsx: "text-xs",
+    },
+    kSqrt,
+    kRoot,
+    { latex: "a_b", action: "_" },
     "e",
     "i",
     "\\tau",
@@ -172,7 +238,7 @@ export const NUM_SHIFT: Layout = {
     { latex: "\\left\\{\\nyafillersmall\\right\\}", clsx: "pt-0.5" },
     { latex: "|\\nyafiller|", clsx: "pt-0.5" },
     "\\leq",
-    { latex: "\\wordprefix{h}", clsx: "opacity-30" },
+    fn("h", 4, "opacity-30"),
     "\\geq",
   ],
 }
@@ -187,23 +253,40 @@ export const KEYS_ABC_SHIFT: Layout = {
   lo: "ZXCVBNM".split(""),
 }
 
+function fn(name: string, size: Size, clsx?: string): ActionKey {
+  return {
+    latex: `\\wordprefix{${name}}`,
+    size,
+    clsx,
+    action(field) {
+      const block = field.sel.splice()
+      field.typeLatex(name)
+      field.type("(")
+      field.type(")")
+      field.type("ArrowLeft")
+      block.insertAt(field.sel.cursor(L), L)
+      field.sel = field.sel.cursor(R).selection()
+    },
+  }
+}
+
 export const KEYS_SYMBOL: Layout = {
   hi: [
-    { latex: "\\wordprefix{sin}", size: 6 },
-    { latex: "\\wordprefix{cos}", size: 6 },
-    { latex: "\\wordprefix{tan}", size: 6 },
+    fn("sin", 6),
+    fn("cos", 6),
+    fn("tan", 6),
     "\\digit{∑}",
-    { latex: "\\wordprefix{exp}", size: 6 },
+    fn("exp", 6),
     { latex: "10^a", size: 6 },
-    { latex: "\\wordprefix{min}", size: 6 },
+    fn("min", 6),
 
-    { latex: "\\wordprefix{asin}", size: 6 },
-    { latex: "\\wordprefix{acos}", size: 6 },
-    { latex: "\\wordprefix{atan}", size: 6 },
+    fn("asin", 6),
+    fn("acos", 6),
+    fn("atan", 6),
     "\\digit{∏}",
-    { latex: "\\wordprefix{ln}", size: 6 },
-    { latex: "\\wordprefix{log}", size: 6 },
-    { latex: "\\wordprefix{max}", size: 6 },
+    fn("ln", 6),
+    fn("log", 6),
+    fn("max", 6),
   ],
   lo: [
     ".",
@@ -217,29 +300,23 @@ export const KEYS_SYMBOL: Layout = {
 
 export const KEYS_SYMBOL_SHIFT: Layout = {
   hi: [
-    { latex: "\\wordprefix{csc}", size: 6 },
-    { latex: "\\wordprefix{sec}", size: 6 },
-    { latex: "\\wordprefix{cot}", size: 6 },
-    { latex: "\\wordprefix{nPr}", size: 4 },
-    { latex: "\\wordprefix{erf}", size: 6 },
-    { latex: "\\wordprefix{total}", size: 6 },
-    { latex: "\\wordprefix{median}", size: 6, clsx: "text-sm" },
+    fn("csc", 6),
+    fn("sec", 6),
+    fn("cot", 6),
+    fn("nPr", 4),
+    fn("erf", 6),
+    fn("total", 6),
+    fn("median", 6, "text-sm"),
 
-    { latex: "\\wordprefix{acsc}", size: 6 },
-    { latex: "\\wordprefix{asec}", size: 6 },
-    { latex: "\\wordprefix{acot}", size: 6 },
-    { latex: "\\wordprefix{nCr}", size: 4 },
-    { latex: "\\wordprefix{mean}", size: 6 },
-    { latex: "\\wordprefix{stdev}", size: 6 },
-    { latex: "\\wordprefix{stdevp}", size: 6, clsx: "text-sm" },
+    fn("acsc", 6),
+    fn("asec", 6),
+    fn("acot", 6),
+    fn("nCr", 4),
+    fn("mean", 6),
+    fn("stdev", 6),
+    fn("stdevp", 6, "text-sm"),
   ],
-  lo: [
-    ".",
-    "\\digit{,}",
-    { latex: "\\wordprefix{floor}", size: 6 },
-    { latex: "\\wordprefix{ceil}", size: 6 },
-    { latex: "\\wordprefix{round}", size: 8 },
-  ],
+  lo: [".", "\\digit{,}", fn("floor", 6), fn("ceil", 6), fn("round", 8)],
 }
 
 export const KEYS_CURSOR = layoutCursor(false)
@@ -258,47 +335,123 @@ export const LAYOUTS = [
 ]
 
 export interface Layout {
-  hi: Key[]
-  lo: Key[]
+  hi: ActionKey[]
+  lo: ActionKey[]
+}
+
+function wrapper(action: (contents: Block) => Command): KeyAction {
+  return (field) => {
+    const contents = field.sel.splice()
+    const c = field.sel.cursor(L)
+    const command = action(contents)
+    command.insertAt(c, L)
+    field.sel =
+      ((command instanceof CmdRoot && command.blocks[1]) || command.blocks[0])
+        ?.cursor(L)
+        .selection() ?? c.selection()
+  }
+}
+
+function brackWrapper(
+  latex: string,
+  lhs: ParenLhs,
+  rhs: ParenRhs,
+  size: Size,
+): ActionKey {
+  return {
+    size,
+    latex,
+    clsx: "pt-0.5",
+    action: wrapper((contents) => new CmdBrack(lhs, rhs, null, contents)),
+  }
 }
 
 function layoutCursor(select: boolean): Layout {
-  return {
-    hi: [
-      ...(select ?
-        ([
-          { size: 8, latex: "(\\nyafillerblock)", clsx: "pt-0.5" },
-          { size: 8, latex: "[\\nyafillerblock]", clsx: "pt-0.5" },
-        ] satisfies Key[])
-      : ["\\digit{(}", "\\digit{)}", "\\digit{[}", "\\digit{]}"]),
-      "a^b",
-      "\\sqrt{\\nyafiller}",
-      4,
-      4,
-      { icon: faAngleLeft },
-      { icon: faAngleRight },
+  const parens: ActionKey[] =
+    select ?
+      ([
+        brackWrapper("(\\nyafillerblock)", "(", ")", 8),
+        brackWrapper("[\\nyafillerblock]", "[", "]", 8),
+      ] satisfies ActionKey[])
+    : ([
+        { latex: "\\digit{(}", action: "(" },
+        { latex: "\\digit{)}", action: ")" },
+        { latex: "\\digit{[}", action: "[" },
+        { latex: "\\digit{]}", action: "]" },
+      ] satisfies ActionKey[])
 
-      ...(select ?
-        ([
-          {
-            size: 8,
-            latex: "\\left\\{\\nyafillerblock\\right\\}",
-            clsx: "pt-0.5",
-          },
-          { size: 8, latex: "|\\nyafillerblock|", clsx: "pt-0.5" },
-        ] satisfies Key[])
-      : ["\\digit{\\{}", "\\digit{\\}}", "\\digit{|}", "\\digit{|}"]),
-      "a_b",
-      "\\sqrt[b]{\\nyafillersmall}",
-      4,
-      4,
-      { icon: faAnglesLeft }, // extend to beginning
-      { icon: faAnglesRight }, // extend to end
-    ],
+  const row1: ActionKey[] = [
+    ...parens,
+    { latex: "a^b", action: "^" },
+    kSqrt,
+    4,
+    4,
+    {
+      icon: faAngleLeft,
+      action(field) {
+        field.type("ArrowLeft")
+      },
+    },
+    {
+      icon: faAngleRight,
+      action(field) {
+        field.type("ArrowRight")
+      },
+    },
+  ]
+
+  const parens2: ActionKey[] =
+    select ?
+      ([
+        brackWrapper("\\left\\{\\nyafillerblock\\right\\}", "{", "}", 8),
+        brackWrapper("|\\nyafillerblock|", "|", "|", 8),
+      ] satisfies ActionKey[])
+    : [
+        { latex: "\\digit{\\{}}", action: "{" },
+        { latex: "\\digit{\\}}", action: "}" },
+        { latex: "\\digit{|}", action: "|lhs" },
+        { latex: "\\digit{|}", action: "|rhs" },
+      ]
+
+  const row2: ActionKey[] = [
+    ...parens2,
+    { latex: "a_b", action: "_" },
+    kRoot,
+    4,
+    4,
+    { icon: faAnglesLeft, action(field) {} }, // extend to beginning
+    { icon: faAnglesRight, action(field) {} }, // extend to end
+  ]
+
+  return {
+    hi: [...row1, ...row2],
     lo: [
-      { size: 7, icon: faCut, clsx: select ? "" : "opacity-30" },
-      { size: 7, icon: faCopy, clsx: select ? "" : "opacity-30" },
-      { size: 7, icon: faPaste },
+      {
+        size: 7,
+        icon: faCut,
+        clsx: select ? "" : "opacity-30",
+        action(field) {
+          navigator.clipboard.writeText(field.sel.latex())
+          field.sel.splice()
+        },
+      },
+      {
+        size: 7,
+        icon: faCopy,
+        clsx: select ? "" : "opacity-30",
+        action(field) {
+          navigator.clipboard.writeText(field.sel.latex())
+          return CANCEL_CHANGES
+        },
+      },
+      {
+        size: 7,
+        icon: faPaste,
+        action(field) {
+          navigator.clipboard.readText().then((x) => field.typeLatex(x))
+          return CANCEL_CHANGES
+        },
+      },
       select ?
         { size: 7, icon: faArrowsLeftRight }
       : { size: 7, latex: "\\wordvar{select}" }, // select / select word / expand word selection

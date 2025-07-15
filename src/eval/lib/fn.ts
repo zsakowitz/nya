@@ -140,11 +140,11 @@ ${interps
 
   /** Returns a `float`. */
   rad() {
-    return this.helpers.jsCtx.sheet.toRadiansR32()
+    return this.helpers.jsCtx.rad()
   }
 
   requireRad(ctx: RequireRadiansContext) {
-    return this.helpers.jsCtx.sheet.requireRadians(ctx)
+    return this.helpers.jsCtx.requireRad(ctx)
   }
 }
 

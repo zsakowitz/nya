@@ -9,41 +9,58 @@ import {
   Cursor,
   type InitProps,
   type IRBuilder,
+  type Selection,
 } from "../../model"
 import { focusEdge } from "../leaf"
 import { CmdUnknown } from "../leaf/unknown"
 
+export function initSupSub(
+  input: "^" | "_",
+  cursor: Cursor,
+  contents: Block | null,
+) {
+  const part =
+    input == "^" ? ([U, null, true] as const)
+    : input == "_" ? ([D, true, null] as const)
+    : null
+
+  if (!part) {
+    return
+  }
+
+  // Move into an existing sup-/subscript on the left side
+  const prev = cursor[L]
+  if (prev?.supSub?.(part[0], R, cursor, contents)) {
+    return
+  }
+
+  // Move into an existing sup-/subscript on the right side
+  const next = cursor[R]
+  if (next && next instanceof CmdSupSub) {
+    next.supSub(part[0], R, cursor, contents)
+    return
+  }
+
+  // Fallback to creating a new SupSub instance
+  const block = contents ?? new Block(null)
+  new CmdSupSub(part[1] && block, part[2] && block).insertAt(cursor, L)
+  cursor.moveIn(block, R)
+}
+
 export class CmdSupSub extends Command {
   static init(cursor: Cursor, { input }: InitProps) {
-    const part =
-      input == "^" ? (["sup", U, null, true] as const)
-      : input == "_" ? (["sub", D, true, null] as const)
-      : null
-
-    if (!part) {
-      return
+    if (input == "^" || input == "_") {
+      initSupSub(input, cursor, null)
     }
+  }
 
-    // Move into an existing sup-/subscript on the left side
-    const prev = cursor[L]
-    if (prev instanceof CmdSupSub) {
-      cursor.moveIn(prev.create(part[0]), R)
-      return
-    } else if (prev && prev.supSub(part[1], R, cursor)) {
-      return
+  static initOn(selection: Selection, { input }: InitProps) {
+    if (input == "^" || input == "_") {
+      const contents = selection.splice()
+      const c = selection.cursor(L)
+      initSupSub(input, c, contents)
+      return c
     }
-
-    // Move into an existing sup-/subscript on the right side
-    const next = cursor[R]
-    if (next instanceof CmdSupSub) {
-      cursor.moveIn(next.create(part[0]), L)
-      return
-    }
-
-    // Fallback to creating a new SupSub instance
-    const block = new Block(null)
-    new CmdSupSub(part[2] && block, part[3] && block).insertAt(cursor, L)
-    cursor.moveIn(block, R)
   }
 
   static fromLatex(cmd: string, parser: LatexParser): Command {
@@ -85,8 +102,17 @@ export class CmdSupSub extends Command {
     )
   }
 
-  supSub(part: VDir, side: Dir, cursor: Cursor): boolean {
-    cursor.moveIn(this.create(part == U ? "sup" : "sub"), side)
+  supSub(
+    part: VDir,
+    side: Dir,
+    cursor: Cursor,
+    contents: Block | null,
+  ): boolean {
+    const parent = this.create(part == U ? "sup" : "sub")
+    cursor.moveIn(parent, side)
+    if (contents) {
+      contents.insertAt(cursor, L)
+    }
     return true
   }
 

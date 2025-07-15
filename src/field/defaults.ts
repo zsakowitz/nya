@@ -79,7 +79,7 @@ const inits = new Inits()
       [/^u.+$/, new CmdMap(CmuSym, (x) => x.slice(1))],
       [/^\w$/, CmdVar],
       [/^\s$/, CmdNoop],
-      [/^[()|[\]{}]$/, CmdBrack],
+      [/^[()|[\]{}](?:lhs|rhs)?$/, CmdBrack],
     ]),
   )
   // basic ops

@@ -186,6 +186,30 @@ function is(brack: string, dir: Dir) {
   return side == dir || side == null
 }
 
+function getSide(
+  brack: string,
+): [ParenLhs, typeof L] | [ParenRhs, typeof R] | null {
+  if (brack.endsWith("lhs")) {
+    const name = brack.slice(0, -3)
+    if (is(name, L)) return [name, L]
+  }
+
+  if (brack.endsWith("rhs")) {
+    const name = brack.slice(0, -3)
+    if (is(name, R)) return [name, R]
+  }
+
+  if (is(brack, L)) {
+    return [brack, L]
+  }
+
+  if (is(brack, R)) {
+    return [brack, R]
+  }
+
+  return null
+}
+
 export class CmdBrack extends Command<[Block]> {
   static index(index: number) {
     const inner = new Block(null)
@@ -197,10 +221,14 @@ export class CmdBrack extends Command<[Block]> {
     return brack
   }
 
-  static init(cursor: Cursor, { input }: InitProps) {
+  static init(cursor: Cursor, { input: inputRaw }: InitProps) {
     if (!cursor.parent) return
 
-    if (is(input, L)) {
+    const data = getSide(inputRaw)
+    if (!data) return
+    const [input, side] = data
+
+    if (side == L) {
       const rhs = matchParen(input satisfies ParenLhs)
 
       if (
@@ -231,7 +259,7 @@ export class CmdBrack extends Command<[Block]> {
       }
     }
 
-    if (is(input, R)) {
+    if (side == R) {
       const lhs = matchParen(input satisfies ParenRhs)
 
       if (
@@ -261,7 +289,7 @@ export class CmdBrack extends Command<[Block]> {
       }
     }
 
-    if (is(input, L)) {
+    if (side == L) {
       const rhs = matchParen(input satisfies ParenLhs)
       const span = cursor.span().extendToEnd(R)
       const brack = new CmdBrack(input, rhs, L, span.splice())
@@ -273,7 +301,7 @@ export class CmdBrack extends Command<[Block]> {
       return
     }
 
-    if (is(input, R)) {
+    if (side == R) {
       const lhs = matchParen(input satisfies ParenRhs)
       const span = cursor.span().extendToEnd(L)
       const brack = new CmdBrack(lhs, input, R, span.splice())
@@ -286,15 +314,15 @@ export class CmdBrack extends Command<[Block]> {
     }
   }
 
-  static initOn(selection: Selection, { input }: InitProps): InitRet {
-    if (!(is(input, L) || is(input, R))) {
-      return
-    }
+  static initOn(selection: Selection, { input: inputRaw }: InitProps): InitRet {
+    const data = getSide(inputRaw)
+    if (!data) return
+    const [input, side] = data
 
     const block = selection.splice()
     const cursor = selection.cursor(R)
 
-    if (is(input, L)) {
+    if (side == L) {
       const brack = new CmdBrack(input, matchParen(input), null, block)
       brack.insertAt(cursor, L)
       cursor.moveIn(block, L)
