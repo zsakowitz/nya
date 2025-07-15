@@ -9,8 +9,10 @@ if (new URL(location.href).searchParams.has("logeval")) {
 
 if (location.href.includes("showmanifest")) {
   await import("./manifest")
-} else if (location.href.includes("showkeyboard")) {
-  await import("./keyboard/dev")
+} else if (location.href.includes("showkeyboards")) {
+  await import("./keyboard/dev/all")
+} else if (location.href.includes("showmobilekeyboard")) {
+  await import("./keyboard/dev/mobile")
 } else {
   await import("./sheet/dev")
 }

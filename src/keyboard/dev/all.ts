@@ -3,8 +3,8 @@ import { options } from "@/field/defaults"
 import { Field } from "@/field/field"
 import { h } from "@/jsx"
 import { Scope } from "@/sheet/deps"
-import { KeyboardController } from "./controller"
-import { LAYOUTS } from "./layout"
+import { KeyboardController } from "../controller"
+import { LAYOUTS } from "../layout"
 
 const field = new Field(
   options,
