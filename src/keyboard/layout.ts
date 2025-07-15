@@ -277,8 +277,8 @@ export const NUM_SHIFT: Layout = {
     "\\tau",
   ],
   lo: [
-    "\\digit{:}",
-    "\\digit{'}",
+    { latex: "\\digit{:}", action: ":" },
+    { clsx: "opacity-30", latex: "\\digit{'}", action: "'" },
     { latex: "\\left\\{\\nyafillersmall\\right\\}", clsx: "pt-0.5" },
     { latex: "|\\nyafiller|", clsx: "pt-0.5" },
     "\\leq",
@@ -400,7 +400,13 @@ export const KEYS_SYMBOL_SHIFT: Layout = {
     fn("stdev", 6),
     fn("stdevp", 6, "text-sm"),
   ],
-  lo: [".", "\\digit{,}", fn("floor", 6), fn("ceil", 6), fn("round", 8)],
+  lo: [
+    ".",
+    { latex: "\\digit{,}", action: "," },
+    fn("floor", 6),
+    fn("ceil", 6),
+    fn("round", 8),
+  ],
 }
 
 export const KEYS_CURSOR = layoutCursor(false)
@@ -470,8 +476,8 @@ function layoutCursor(select: boolean): Layout {
     kSqrt,
     4,
     4,
-    { icon: faAngleLeft, action(field) {} },
-    { icon: faAngleRight, action(field) {} },
+    { clsx: "opacity-30", icon: faAngleLeft, action(field) {} },
+    { clsx: "opacity-30", icon: faAngleRight, action(field) {} },
   ]
 
   const parens2: ActionKey[] =
@@ -493,8 +499,8 @@ function layoutCursor(select: boolean): Layout {
     kRoot,
     4,
     4,
-    { icon: faAnglesLeft, action(field) {} }, // extend to beginning
-    { icon: faAnglesRight, action(field) {} }, // extend to end
+    { clsx: "opacity-30", icon: faAnglesLeft, action(field) {} }, // extend to beginning
+    { clsx: "opacity-30", icon: faAnglesRight, action(field) {} }, // extend to end
   ]
 
   return {
@@ -527,8 +533,14 @@ function layoutCursor(select: boolean): Layout {
         },
       },
       select ?
-        { size: 7, icon: faArrowsLeftRight }
-      : { size: 7, latex: "\\wordvar{select}" }, // select / select word / expand word selection
+        { clsx: "opacity-30", size: 7, icon: faArrowsLeftRight, action() {} }
+      : {
+          clsx: "opacity-30",
+          size: 7,
+          latex: "\\wordvar{select}",
+          action() {},
+        },
+      // select / select word / expand word selection
     ],
   }
 }
