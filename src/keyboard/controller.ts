@@ -79,6 +79,7 @@ class Lock {
       case LockState.ReleasedExclusive:
       case LockState.Released:
         if (
+          !this.preserveModifier &&
           this.releaseTs != null &&
           Date.now() < this.releaseTs + DOUBLE_CLICK_RANGE
         ) {
@@ -103,7 +104,10 @@ class Lock {
         this.releaseTs = Date.now()
         return
       case LockState.HeldTwiceExclusive:
-        this.state = LockState.ReleasedTwice
+        this.state =
+          this.preserveModifier ?
+            LockState.ReleasedExclusive
+          : LockState.ReleasedTwice
         break
       case LockState.Held:
       case LockState.HeldTwice:
@@ -125,7 +129,8 @@ class Lock {
         this.state = LockState.Released
         break
       case LockState.HeldTwiceExclusive:
-        this.state = LockState.HeldTwice
+        this.state =
+          this.preserveModifier ? LockState.Held : LockState.HeldTwice
     }
   }
 
@@ -247,9 +252,9 @@ export class KeyboardController {
         if (this.mode != mode && this.lock.isHeld()) {
           return
         }
-        this.mode = mode
         if (this.mode != mode) {
           this.lock.state = LockState.Disabled
+          this.mode = mode
         }
         this.lock.preserveModifier = preserve
         this.lock.pressSelf()
