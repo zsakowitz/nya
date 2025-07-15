@@ -37,7 +37,7 @@ const enum Mode {
  *
  * - "exclusive" means "no key besides the modifier has been pressed"
  */
-const enum LockState {
+enum LockState {
   Disabled,
 
   HeldExclusive,
@@ -260,6 +260,8 @@ export class KeyboardController {
     modifier(this.kCursor, Mode.Alpha, true)
 
     this.update()
+
+    setInterval(() => console.log(LockState[this.shift.state]))
   }
 
   update() {
@@ -321,6 +323,12 @@ export class KeyboardController {
       const action = key.action ?? key.latex
       if (action) this.exec(action)
     }
+
+    this.shift.pressOther()
+    this.shift.releaseOther()
+    this.lock.pressOther()
+    this.lock.releaseOther()
+    this.update()
   }
 
   show(layout: Layout) {
