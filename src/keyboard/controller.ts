@@ -6,7 +6,13 @@ import {
   CANCEL_CHANGES,
   CONTROLS,
   keyFrom,
+  KEYS_ABC,
+  KEYS_ABC_SHIFT,
+  KEYS_CURSOR,
+  KEYS_SYMBOL,
+  KEYS_SYMBOL_SHIFT,
   NUM,
+  NUM_SHIFT,
   type ActionKey,
   type Key,
   type KeyAction,
@@ -19,28 +25,178 @@ function handle(key: Key, ev: () => void) {
   return el
 }
 
+const enum Mode {
+  Num,
+  Alpha,
+  Sym,
+  Cursor,
+}
+
+/**
+ * Terminology:
+ *
+ * - "exclusive" means "no key besides the modifier has been pressed"
+ */
+const enum LockState {
+  Disabled,
+
+  HeldExclusive,
+  ReleasedExclusive,
+  HeldTwiceExclusive,
+
+  Held,
+  Released,
+  HeldTwice,
+
+  ReleasedTwice, // necessarily not exclusive; the key would be released otherwise
+  WaitingForRelease, // another key is still held but the modifier was released
+}
+
+const DOUBLE_CLICK_RANGE = 300
+
+class Lock {
+  state: LockState = LockState.Disabled
+  preserveModifier = false
+  private releaseTs: number | null = null
+  private isOtherHeld = false
+
+  pressSelf() {
+    if (this.state == LockState.WaitingForRelease) {
+      return
+    }
+
+    switch (this.state) {
+      case LockState.Disabled:
+        this.state = LockState.HeldExclusive
+        break
+      case LockState.ReleasedTwice:
+        if (this.isOtherHeld) {
+          this.state = LockState.WaitingForRelease
+        } else {
+          this.state = LockState.Disabled
+        }
+        break
+      case LockState.ReleasedExclusive:
+      case LockState.Released:
+        if (
+          this.releaseTs != null &&
+          Date.now() < this.releaseTs + DOUBLE_CLICK_RANGE
+        ) {
+          this.state =
+            this.state == LockState.ReleasedExclusive ?
+              LockState.HeldTwiceExclusive
+            : LockState.HeldTwice
+        } else if (this.isOtherHeld) {
+          this.state = LockState.WaitingForRelease
+        } else {
+          this.state = LockState.Disabled
+        }
+    }
+
+    this.releaseTs = null
+  }
+
+  releaseSelf() {
+    switch (this.state) {
+      case LockState.HeldExclusive:
+        this.state = LockState.ReleasedExclusive
+        this.releaseTs = Date.now()
+        return
+      case LockState.HeldTwiceExclusive:
+        this.state = LockState.ReleasedTwice
+        break
+      case LockState.Held:
+      case LockState.HeldTwice:
+        this.state =
+          this.isOtherHeld ? LockState.WaitingForRelease : LockState.Disabled
+    }
+
+    this.releaseTs = null
+  }
+
+  pressOther() {
+    this.isOtherHeld = true
+
+    switch (this.state) {
+      case LockState.HeldExclusive:
+        this.state = LockState.Held
+        break
+      case LockState.ReleasedExclusive:
+        this.state = LockState.Released
+        break
+      case LockState.HeldTwiceExclusive:
+        this.state = LockState.HeldTwice
+    }
+  }
+
+  releaseOther(preserveModifier = this.preserveModifier) {
+    this.isOtherHeld = false
+
+    switch (this.state) {
+      case LockState.WaitingForRelease:
+        this.state = LockState.Disabled
+        break
+      case LockState.Released:
+        if (!preserveModifier) {
+          this.state = LockState.Disabled
+        }
+        break
+    }
+  }
+
+  active() {
+    return this.state != LockState.Disabled
+  }
+}
+
+function getLayout(mode: Mode, shift: boolean): Layout {
+  switch (mode) {
+    case Mode.Num:
+      return shift ? NUM_SHIFT : NUM
+    case Mode.Alpha:
+      return shift ? KEYS_ABC_SHIFT : KEYS_ABC
+    case Mode.Sym:
+      return shift ? KEYS_SYMBOL_SHIFT : KEYS_SYMBOL
+    case Mode.Cursor:
+      return KEYS_CURSOR
+  }
+}
+
 export class KeyboardController {
-  readonly hi
-  readonly lo
+  private readonly hi
+  private readonly lo
   readonly el
+
+  private readonly kShift
+  private readonly kAbc
+  private readonly kSym
+  private readonly kCursor
+
+  /** The current layout. */
+  private mode: Mode = Mode.Num
+  private lock = new Lock()
+  private shift = new Lock()
+
+  /** What the keyboard is currently displaying. */
+  private displaying: Layout | null = null
 
   constructor(readonly field: () => Field) {
     this.el = h(
       "fixed bottom-0 right-0 w-full grid grid-cols-[repeat(40,1fr)] gap-1 p-2 bg-[--nya-kbd-bg] [line-height:1] whitespace-nowrap z-10 select-none text-lg",
 
       (this.hi = h("contents")),
-      keyFrom(CONTROLS.shift),
+      (this.kShift = keyFrom(CONTROLS.shift)),
       keyFrom(1),
       (this.lo = h("contents")),
       keyFrom(1),
       handle(CONTROLS.backspace, () => this.execKey(CONTROLS.backspace)),
 
-      keyFrom(CONTROLS.abc),
-      keyFrom(CONTROLS.sym),
+      (this.kAbc = keyFrom(CONTROLS.abc)),
+      (this.kSym = keyFrom(CONTROLS.sym)),
       keyFrom(1),
       handle(CONTROLS.arrowL, () => this.execKey(CONTROLS.arrowL)),
       handle(CONTROLS.arrowR, () => this.execKey(CONTROLS.arrowR)),
-      keyFrom(CONTROLS.cursor),
+      (this.kCursor = keyFrom(CONTROLS.cursor)),
       keyFrom(CONTROLS.opts),
       keyFrom(1),
       keyFrom(CONTROLS.enter),
@@ -54,7 +210,27 @@ export class KeyboardController {
       this.field().el.focus()
     })
 
-    this.show(NUM)
+    this.kShift.addEventListener("pointerdown", () => {
+      this.shift.pressSelf()
+      this.update()
+    })
+
+    this.kShift.addEventListener("pointerup", () => {
+      this.shift.releaseSelf()
+      this.update()
+    })
+
+    this.update()
+  }
+
+  update() {
+    const next = getLayout(this.mode, this.shift.active())
+    const prev = this.displaying
+    if (next != prev) {
+      this.show(next)
+      this.displaying = next
+    }
+    this.kShift.classList.toggle("nya-kbd-active", this.shift.active())
   }
 
   exec(action: KeyAction) {
