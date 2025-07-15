@@ -3,6 +3,7 @@ import { OpCdot } from "@/field/cmd/leaf/op"
 import {
   CmdBrack,
   CmdSurreal,
+  tryFixNearbyBracket,
   type ParenLhs,
   type ParenRhs,
 } from "@/field/cmd/math/brack"
@@ -279,8 +280,8 @@ export const NUM_SHIFT: Layout = {
   lo: [
     { latex: "\\digit{:}", action: ":" },
     { clsx: "opacity-30", latex: "\\digit{'}", action: "'" },
-    { latex: "\\left\\{\\nyafillersmall\\right\\}", clsx: "pt-0.5" },
-    { latex: "|\\nyafiller|", clsx: "pt-0.5" },
+    brackWrapper("\\left\\{\\nyafillersmall\\right\\}", "{", "}", 4),
+    brackWrapper("|\\nyafiller|", "|", "|", 4),
     "\\leq",
     fn("h", 4, "opacity-30"),
     "\\geq",
@@ -429,8 +430,8 @@ export interface Layout {
   lo: ActionKey[]
 }
 
-function wrapper(action: (contents: Block) => Command): KeyAction {
-  return (field) => {
+function wrapper(action: (contents: Block) => Command) {
+  return (field: Field) => {
     const contents = field.sel.splice()
     const c = field.sel.cursor(L)
     const command = action(contents)
@@ -448,11 +449,24 @@ function brackWrapper(
   rhs: ParenRhs,
   size: Size,
 ): ActionKey {
+  const wrappingAction = wrapper(
+    (contents) => new CmdBrack(lhs, rhs, null, contents),
+  )
+
   return {
     size,
     latex,
     clsx: "pt-0.5",
-    action: wrapper((contents) => new CmdBrack(lhs, rhs, null, contents)),
+    action(field) {
+      if (field.sel.isCursor()) {
+        const c = field.sel.cursor(L)
+        if (tryFixNearbyBracket(c, lhs, rhs)) {
+          field.sel = c.selection()
+          return
+        }
+      }
+      wrappingAction(field)
+    },
   }
 }
 

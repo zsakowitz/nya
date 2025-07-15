@@ -188,7 +188,11 @@ function is(brack: string, dir: Dir) {
 
 function getSide(
   brack: string,
-): [ParenLhs, typeof L] | [ParenRhs, typeof R] | null {
+):
+  | [ParenLhs, typeof L]
+  | [ParenRhs, typeof R]
+  | [ParenLhs & ParenRhs, null]
+  | null {
   if (brack.endsWith("lhs")) {
     const name = brack.slice(0, -3)
     if (is(name, L)) return [name, L]
@@ -199,15 +203,96 @@ function getSide(
     if (is(name, R)) return [name, R]
   }
 
-  if (is(brack, L)) {
+  const l = is(brack, L)
+  const r = is(brack, R)
+
+  if (l && r) {
+    return [brack, null]
+  } else if (l) {
     return [brack, L]
-  }
-
-  if (is(brack, R)) {
+  } else if (r) {
     return [brack, R]
+  } else {
+    return null
+  }
+}
+
+/** Returns `true` if an enclosing or adjacent bracket was modified. */
+export function tryFixNearbyBracket(
+  cursor: Cursor,
+  inputLhs: string,
+  inputRhs: string,
+): boolean {
+  if (!cursor.parent) return false
+
+  {
+    const data = getSide(inputLhs)
+    if (!data) return false
+    const [input, side] = data
+
+    if (side != R) {
+      if (
+        cursor[R] instanceof CmdBrack &&
+        cursor[R].side == R &&
+        cursor[R].lhs == input
+      ) {
+        cursor[R].setSide(null)
+        cursor.moveIn(cursor[R].blocks[0], L)
+        return true
+      }
+
+      const parent = cursor.parent.parent
+
+      if (
+        parent instanceof CmdBrack &&
+        parent.lhs == input &&
+        parent.side == R &&
+        parent.parent
+      ) {
+        const block = cursor.span().extendToEnd(L).splice()
+        parent.parent.attach(block, null, R)
+        parent.setSide(null)
+        // Repair cursor
+        cursor.moveIn(parent.blocks[0], L)
+        return true
+      }
+    }
   }
 
-  return null
+  {
+    const data = getSide(inputRhs)
+    if (!data) return false
+    const [input, side] = data
+
+    if (side != L) {
+      if (
+        cursor[L] instanceof CmdBrack &&
+        cursor[L].side == L &&
+        cursor[L].rhs == input
+      ) {
+        cursor[L].setSide(null)
+        return true
+      }
+
+      const parent = cursor.parent.parent
+
+      if (
+        parent instanceof CmdBrack &&
+        parent.rhs == input &&
+        parent.side == L &&
+        parent.parent
+      ) {
+        const block = cursor.span().extendToEnd(R).splice()
+        parent.parent.attach(block, null, L)
+        parent.setSide(null)
+        // Repair cursor
+        cursor.moveTo(parent, R)
+        return true
+      }
+    }
+  }
+
+  return false
 }
 
 export class CmdBrack extends Command<[Block]> {
@@ -222,74 +307,15 @@ export class CmdBrack extends Command<[Block]> {
   }
 
   static init(cursor: Cursor, { input: inputRaw }: InitProps) {
-    if (!cursor.parent) return
+    if (!cursor.parent || tryFixNearbyBracket(cursor, inputRaw, inputRaw)) {
+      return
+    }
 
     const data = getSide(inputRaw)
     if (!data) return
     const [input, side] = data
 
-    if (side == L) {
-      const rhs = matchParen(input satisfies ParenLhs)
-
-      if (
-        cursor[R] instanceof CmdBrack &&
-        cursor[R].side == R &&
-        cursor[R].lhs == input &&
-        cursor[R].rhs == rhs
-      ) {
-        cursor[R].setSide(null)
-        cursor.moveIn(cursor[R].blocks[0], L)
-        return
-      }
-
-      const parent = cursor.parent.parent
-
-      if (
-        parent instanceof CmdBrack &&
-        parent.rhs == rhs &&
-        parent.side == R &&
-        parent.parent
-      ) {
-        const block = cursor.span().extendToEnd(L).splice()
-        parent.parent.attach(block, null, R)
-        parent.setSide(null)
-        // Repair cursor
-        cursor.moveIn(parent.blocks[0], R)
-        return
-      }
-    }
-
-    if (side == R) {
-      const lhs = matchParen(input satisfies ParenRhs)
-
-      if (
-        cursor[L] instanceof CmdBrack &&
-        cursor[L].side == L &&
-        cursor[L].lhs == lhs &&
-        cursor[L].rhs == input
-      ) {
-        cursor[L].setSide(null)
-        return
-      }
-
-      const parent = cursor.parent.parent
-
-      if (
-        parent instanceof CmdBrack &&
-        parent.lhs == lhs &&
-        parent.side == L &&
-        parent.parent
-      ) {
-        const block = cursor.span().extendToEnd(R).splice()
-        parent.parent.attach(block, null, L)
-        parent.setSide(null)
-        // Repair cursor
-        cursor.moveTo(parent, R)
-        return
-      }
-    }
-
-    if (side == L) {
+    if (side != R) {
       const rhs = matchParen(input satisfies ParenLhs)
       const span = cursor.span().extendToEnd(R)
       const brack = new CmdBrack(input, rhs, L, span.splice())
@@ -301,17 +327,15 @@ export class CmdBrack extends Command<[Block]> {
       return
     }
 
-    if (side == R) {
-      const lhs = matchParen(input satisfies ParenRhs)
-      const span = cursor.span().extendToEnd(L)
-      const brack = new CmdBrack(lhs, input, R, span.splice())
-      // The `span.remove()` call invalidates the cursor, so we need
-      // to fix it using the span (either side works, since it's empty)
-      cursor.setTo(span.cursor(R))
-      brack.insertAt(cursor, R)
-      cursor.moveTo(brack, R)
-      return
-    }
+    const lhs = matchParen(input satisfies ParenRhs)
+    const span = cursor.span().extendToEnd(L)
+    const brack = new CmdBrack(lhs, input, R, span.splice())
+    // The `span.remove()` call invalidates the cursor, so we need
+    // to fix it using the span (either side works, since it's empty)
+    cursor.setTo(span.cursor(R))
+    brack.insertAt(cursor, R)
+    cursor.moveTo(brack, R)
+    return
   }
 
   static initOn(selection: Selection, { input: inputRaw }: InitProps): InitRet {
@@ -322,7 +346,7 @@ export class CmdBrack extends Command<[Block]> {
     const block = selection.splice()
     const cursor = selection.cursor(R)
 
-    if (side == L) {
+    if (side != R) {
       const brack = new CmdBrack(input, matchParen(input), null, block)
       brack.insertAt(cursor, L)
       cursor.moveIn(block, L)

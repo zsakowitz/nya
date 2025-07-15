@@ -11,6 +11,7 @@ const field = new Field(
   new Scope(options, new JsContext(null)),
   "block overflow-x-auto [&::-webkit-scrollbar]:hidden min-h-[3.265rem] p-4 focus:outline-none max-w-full bg-[--nya-bg] rounded mt-8 mx-auto w-96 [&.\\!bg-transparent]:!bg-[--nya-bg]",
 )
+field.typeLatex(String.raw`\left(23\right]`)
 document.body.appendChild(h("flex bg-[--nya-kbd-bg]", field.el))
 
 const el = h(
