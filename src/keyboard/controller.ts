@@ -147,6 +147,18 @@ class Lock {
   active() {
     return this.state != LockState.Disabled
   }
+
+  isHeld() {
+    const s = this.state
+
+    return (
+      s == LockState.Held ||
+      s == LockState.HeldExclusive ||
+      s == LockState.HeldTwice ||
+      s == LockState.HeldTwiceExclusive ||
+      this.isOtherHeld
+    )
+  }
 }
 
 function getLayout(mode: Mode, shift: boolean): Layout {
@@ -220,10 +232,40 @@ export class KeyboardController {
       this.update()
     })
 
+    const modifier = (key: HTMLSpanElement, mode: Mode, preserve: boolean) => {
+      key.addEventListener("pointerdown", () => {
+        if (this.mode != mode && this.lock.isHeld()) {
+          return
+        }
+        this.mode = mode
+        if (this.mode != mode) {
+          this.lock.state = LockState.Disabled
+        }
+        this.lock.preserveModifier = preserve
+        this.lock.pressSelf()
+        this.update()
+      })
+
+      key.addEventListener("pointerup", () => {
+        if (this.mode != mode) {
+          return
+        }
+        this.lock.releaseSelf()
+        this.update()
+      })
+    }
+
+    modifier(this.kAbc, Mode.Alpha, true)
+    modifier(this.kSym, Mode.Sym, false)
+    modifier(this.kCursor, Mode.Alpha, true)
+
     this.update()
   }
 
   update() {
+    if (!this.lock.active()) {
+      this.mode = Mode.Num
+    }
     const next = getLayout(this.mode, this.shift.active())
     const prev = this.displaying
     if (next != prev) {
@@ -231,6 +273,18 @@ export class KeyboardController {
       this.displaying = next
     }
     this.kShift.classList.toggle("nya-kbd-active", this.shift.active())
+    this.kAbc.classList.toggle(
+      "nya-kbd-active",
+      this.mode == Mode.Alpha && this.lock.active(),
+    )
+    this.kSym.classList.toggle(
+      "nya-kbd-active",
+      this.mode == Mode.Sym && this.lock.active(),
+    )
+    this.kCursor.classList.toggle(
+      "nya-kbd-active",
+      this.mode == Mode.Cursor && this.lock.active(),
+    )
   }
 
   exec(action: KeyAction) {
