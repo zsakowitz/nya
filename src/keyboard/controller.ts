@@ -8,9 +8,16 @@ import {
   keyFrom,
   NUM,
   type ActionKey,
+  type Key,
   type KeyAction,
   type Layout,
 } from "./layout"
+
+function handle(key: Key, ev: () => void) {
+  const el = keyFrom(key)
+  el.addEventListener("click", ev)
+  return el
+}
 
 export class KeyboardController {
   readonly hi
@@ -26,18 +33,26 @@ export class KeyboardController {
       keyFrom(1),
       (this.lo = h("contents")),
       keyFrom(1),
-      keyFrom(CONTROLS.backspace),
+      handle(CONTROLS.backspace, () => this.execKey(CONTROLS.backspace)),
 
       keyFrom(CONTROLS.abc),
       keyFrom(CONTROLS.sym),
       keyFrom(1),
-      keyFrom(CONTROLS.arrowL),
-      keyFrom(CONTROLS.arrowR),
+      handle(CONTROLS.arrowL, () => this.execKey(CONTROLS.arrowL)),
+      handle(CONTROLS.arrowR, () => this.execKey(CONTROLS.arrowR)),
       keyFrom(CONTROLS.cursor),
       keyFrom(CONTROLS.opts),
       keyFrom(1),
       keyFrom(CONTROLS.enter),
     )
+
+    this.el.addEventListener("pointerdown", (e) => {
+      e.preventDefault()
+    })
+
+    this.el.addEventListener("click", () => {
+      this.field().el.focus()
+    })
 
     this.show(NUM)
   }
@@ -80,27 +95,11 @@ export class KeyboardController {
 
   show(layout: Layout) {
     this.hi.replaceChildren(
-      ...layout.hi.map((key) => {
-        const el = keyFrom(key)
-        el.addEventListener("pointerdown", (e) => e.preventDefault())
-        el.addEventListener("click", () => {
-          this.execKey(key)
-          this.field().el.focus()
-        })
-        return el
-      }),
+      ...layout.hi.map((key) => handle(key, () => this.execKey(key))),
     )
 
     this.lo.replaceChildren(
-      ...layout.lo.map((key) => {
-        const el = keyFrom(key)
-        el.addEventListener("pointerdown", (e) => e.preventDefault())
-        el.addEventListener("click", () => {
-          this.execKey(key)
-          this.field().el.focus()
-        })
-        return el
-      }),
+      ...layout.lo.map((key) => handle(key, () => this.execKey(key))),
     )
   }
 }

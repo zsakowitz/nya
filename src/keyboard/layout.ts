@@ -140,8 +140,13 @@ const kRoot: ActionKey = {
 
 export const CONTROLS = {
   shift: { size: 5, text: "⇧" },
-  backspace: { size: 5, text: "⌫" },
-
+  backspace: {
+    size: 5,
+    text: "⌫",
+    action(field) {
+      field.type("Backspace", { skipChangeHandlers: true })
+    },
+  },
   abc: {
     size: 5,
     latex: "\\digit{ABC}",
@@ -152,12 +157,42 @@ export const CONTROLS = {
     latex: "\\digit{∑}f",
     clsx: "[letter-spacing:.1em] pl-0.5",
   },
-  arrowL: { size: 5, text: "←" },
-  arrowR: { size: 5, text: "→" },
+  arrowL: {
+    size: 5,
+    text: "←",
+    action(field) {
+      if (field.sel.isCursor()) {
+        const c = field.sel.cursor(L)
+        if (c.move(L)) {
+          field.sel = c.selection()
+        } else {
+          field.onMoveOut?.(L)
+        }
+      } else {
+        field.sel = field.sel.cursor(L).selection()
+      }
+    },
+  },
+  arrowR: {
+    size: 5,
+    text: "→",
+    action(field) {
+      if (field.sel.isCursor()) {
+        const c = field.sel.cursor(R)
+        if (c.move(R)) {
+          field.sel = c.selection()
+        } else {
+          field.onMoveOut?.(R)
+        }
+      } else {
+        field.sel = field.sel.cursor(R).selection()
+      }
+    },
+  },
   cursor: { size: 4, icon: faArrowPointer },
   opts: { size: 4, icon: faGears, clsx: "opacity-30" },
   enter: { size: 10, text: "⏎" },
-} satisfies Record<string, Key>
+} satisfies Record<string, Key | ActionKey>
 
 export const NUM: Layout = {
   hi: [
@@ -435,18 +470,8 @@ function layoutCursor(select: boolean): Layout {
     kSqrt,
     4,
     4,
-    {
-      icon: faAngleLeft,
-      action(field) {
-        field.type("ArrowLeft")
-      },
-    },
-    {
-      icon: faAngleRight,
-      action(field) {
-        field.type("ArrowRight")
-      },
-    },
+    { icon: faAngleLeft, action(field) {} },
+    { icon: faAngleRight, action(field) {} },
   ]
 
   const parens2: ActionKey[] =
