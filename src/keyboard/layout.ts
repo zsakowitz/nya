@@ -39,7 +39,7 @@ function key(base?: string | Node, clsx?: string, active?: boolean) {
     "flex rounded-sm h-[40px] text-center items-center justify-center [line-height:1] relative " +
       (active ?
         "text-[--nya-kbd-key-active-text] bg-[--nya-kbd-key-active-bg] fill-[--nya-kbd-key-active-text]"
-      : "text-[--nya-kbd-key-text] bg-[--nya-kbd-key-bg] fill-[--nya-kbd-key-text] any-hover:hover:bg-[--nya-kbd-key-hover-bg]") +
+      : "text-[--nya-kbd-key-text] bg-[--nya-kbd-key-bg] fill-[--nya-kbd-key-text] any-hover:hover:bg-[--nya-kbd-key-hover-bg] active:bg-[--nya-kbd-key-hover-bg]") +
       (clsx ? " " + clsx : ""),
     h("font-['Symbola'] pointer-events-none", contents),
     h("absolute -inset-0.5"),
