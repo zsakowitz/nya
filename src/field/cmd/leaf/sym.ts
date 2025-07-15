@@ -10,10 +10,12 @@ function sym(
   text: string,
   ascii: string,
   symbola?: boolean,
+  italic?: boolean,
 ) {
   const clsx =
     text == "∞" || text == "°" ? "[line-height:1] relative top-[-.05em]"
     : symbola ? "font-['Symbola'] italic"
+    : italic ? "font-['Times_New_Roman'] [line-height:.9] italic"
     : "font-['Times_New_Roman'] [line-height:.9]"
 
   return class extends Leaf {
@@ -54,4 +56,4 @@ export const SymPsi = sym("\\psi ", " psi ", "ψ", "psi", true)
 export const SymInfinity = sym("\\infinity ", " infinity ", "∞", "infinity")
 export const SymDegree = sym("°", " degrees ", "°", "degrees", true)
 export const SymE = sym("ᴇ", " times ten to the ", "ᴇ", "E")
-export const SymTheta = sym("\\theta ", " theta ", "θ", "theta", true)
+export const SymTheta = sym("\\theta ", " theta ", "θ", "theta", false, true)

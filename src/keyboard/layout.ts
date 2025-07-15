@@ -1,5 +1,14 @@
-import { CmdBrack, type ParenLhs, type ParenRhs } from "@/field/cmd/math/brack"
+import { CmdDot, CmdNum, CmdVar } from "@/field/cmd/leaf/num"
+import { OpCdot } from "@/field/cmd/leaf/op"
+import {
+  CmdBrack,
+  CmdSurreal,
+  type ParenLhs,
+  type ParenRhs,
+} from "@/field/cmd/math/brack"
+import { CmdFrac } from "@/field/cmd/math/frac"
 import { CmdRoot } from "@/field/cmd/math/root"
+import { CmdSupSub } from "@/field/cmd/math/supsub"
 import { options } from "@/field/defaults"
 import { L, R } from "@/field/dir"
 import type { Field } from "@/field/field"
@@ -244,7 +253,10 @@ export const NUM_SHIFT: Layout = {
 }
 
 export const KEYS_ABC: Layout = {
-  hi: [..."qwertyuiopasdfghjkl".split(""), { latex: "θ", clsx: "pr-0.5" }],
+  hi: [
+    ..."qwertyuiopasdfghjkl".split(""),
+    { latex: "θ", clsx: "pr-0.5", action: "\\theta" },
+  ],
   lo: "zxcvbnm".split(""),
 }
 
@@ -275,26 +287,63 @@ export const KEYS_SYMBOL: Layout = {
     fn("sin", 6),
     fn("cos", 6),
     fn("tan", 6),
-    "\\digit{∑}",
+    { latex: "\\digit{∑}", action: "∑" },
     fn("exp", 6),
-    { latex: "10^a", size: 6 },
+    {
+      latex: "10^a",
+      size: 6,
+      action(field) {
+        const contents = field.sel.splice()
+        const c = field.sel.cursor(L)
+        if (c[L] instanceof CmdNum || c[L] instanceof CmdDot) {
+          new OpCdot().insertAt(c, L)
+        }
+        new CmdNum("1").insertAt(c, L)
+        new CmdNum("0").insertAt(c, L)
+        new CmdSupSub(null, contents).insertAt(c, L)
+        field.sel = contents.cursor(R).selection()
+      },
+    },
     fn("min", 6),
 
     fn("asin", 6),
     fn("acos", 6),
     fn("atan", 6),
-    "\\digit{∏}",
+    { latex: "\\digit{∏}", action: "∏" },
     fn("ln", 6),
     fn("log", 6),
     fn("max", 6),
   ],
   lo: [
     ".",
-    "\\digit{,}",
+    { latex: "\\digit{,}", action: "," },
     "\\infty",
-    "\\digit{∫}",
-    "\\frac{d}{dx}",
-    { size: 8, latex: "\\surreal{}{}" },
+    { latex: "\\digit{∫}", action: "\\int" },
+    {
+      latex: "\\frac{d}{dx}",
+      action(field) {
+        const num = new Block(null)
+        const denom = new Block(null)
+        new CmdVar("d", field.options).insertAt(num.cursor(L), L)
+        const c = denom.cursor(L)
+        new CmdVar("d", field.options).insertAt(c, L)
+        new CmdFrac(num, denom).insertAt(field.sel.remove(), L)
+        field.sel = c.selection()
+        // TODO: maybe go to the letter menu by default here?
+      },
+    },
+    {
+      size: 8,
+      latex: "\\surreal{}{}",
+      action(field) {
+        const contents = field.sel.splice()
+        const lhs = contents ?? new Block(null)
+        const rhs = new Block(null)
+        const cursor = field.sel.cursor(L)
+        new CmdSurreal(lhs, rhs).insertAt(cursor, L)
+        field.sel = (lhs.isEmpty() ? lhs.cursor(L) : rhs.cursor(L)).selection()
+      },
+    },
   ],
 }
 
