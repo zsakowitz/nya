@@ -36,7 +36,7 @@ function key(base?: string | Node, clsx?: string, active?: boolean) {
 
   return hx(
     "button",
-    "flex rounded-sm h-[36px] sm:h-[40px] text-center items-center justify-center [line-height:1] relative " +
+    "flex rounded-sm h-[40px] text-center items-center justify-center [line-height:1] relative " +
       (active ?
         "text-[--nya-kbd-key-active-text] bg-[--nya-kbd-key-active-bg] fill-[--nya-kbd-key-active-text]"
       : "text-[--nya-kbd-key-text] bg-[--nya-kbd-key-bg] fill-[--nya-kbd-key-text] hover:bg-[--nya-kbd-key-hover-bg]") +
