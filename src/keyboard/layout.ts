@@ -39,7 +39,7 @@ function key(base?: string | Node, clsx?: string, active?: boolean) {
     "flex rounded-sm h-[40px] text-center items-center justify-center [line-height:1] relative " +
       (active ?
         "text-[--nya-kbd-key-active-text] bg-[--nya-kbd-key-active-bg] fill-[--nya-kbd-key-active-text]"
-      : "text-[--nya-kbd-key-text] bg-[--nya-kbd-key-bg] fill-[--nya-kbd-key-text] hover:bg-[--nya-kbd-key-hover-bg]") +
+      : "text-[--nya-kbd-key-text] bg-[--nya-kbd-key-bg] fill-[--nya-kbd-key-text] any-hover:hover:bg-[--nya-kbd-key-hover-bg]") +
       (clsx ? " " + clsx : ""),
     h("font-['Symbola'] pointer-events-none", contents),
     h("absolute -inset-0.5"),
@@ -69,7 +69,7 @@ type OneOf<T> = {
 type Contents = OneOf<{
   latex: string
   text: string
-  icon: IconDefinition
+  icon: IconDefinition // TODO: switch to heroicons
 }>
 
 export type Key =
@@ -116,7 +116,7 @@ export function keyFrom(k: Key) {
   }
 
   if (k == null) {
-    return key(undefined, "col-span-4 text-sm")
+    return key(undefined, "col-span-4 text-[.875em]")
   }
 
   return key(
@@ -151,7 +151,7 @@ export const CONTROLS = {
   abc: {
     size: 5,
     latex: "\\digit{ABC}",
-    clsx: "text-sm/[1]",
+    clsx: "text-[.875em]/[1]",
   },
   sym: {
     size: 5,
@@ -269,7 +269,7 @@ export const NUM_SHIFT: Layout = {
         field.type("ArrowRight")
         field.type("ArrowRight")
       },
-      clsx: "text-xs",
+      clsx: "text-[.75em]",
     },
     kSqrt,
     kRoot,
@@ -392,7 +392,7 @@ export const KEYS_SYMBOL_SHIFT: Layout = {
     fn("nPr", 4),
     fn("erf", 6),
     fn("total", 6),
-    fn("median", 6, "text-sm"),
+    fn("median", 6, "text-[.875em]"),
 
     fn("acsc", 6),
     fn("asec", 6),
@@ -400,7 +400,7 @@ export const KEYS_SYMBOL_SHIFT: Layout = {
     fn("nCr", 4),
     fn("mean", 6),
     fn("stdev", 6),
-    fn("stdevp", 6, "text-sm"),
+    fn("stdevp", 6, "text-[.875em]"),
   ],
   lo: [
     ".",

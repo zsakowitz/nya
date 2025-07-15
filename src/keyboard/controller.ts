@@ -26,7 +26,7 @@ export class KeyboardController {
 
   constructor(readonly field: () => Field) {
     this.el = h(
-      "fixed bottom-0 right-0 w-full grid grid-cols-[repeat(40,1fr)] gap-1 p-2 bg-[--nya-kbd-bg] [line-height:1] whitespace-nowrap z-10 select-none",
+      "fixed bottom-0 right-0 w-full grid grid-cols-[repeat(40,1fr)] gap-1 p-2 bg-[--nya-kbd-bg] [line-height:1] whitespace-nowrap z-10 select-none text-lg",
 
       (this.hi = h("contents")),
       keyFrom(CONTROLS.shift),
