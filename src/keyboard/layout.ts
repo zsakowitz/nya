@@ -11,10 +11,10 @@ import { CmdFrac } from "@/field/cmd/math/frac"
 import { CmdRoot } from "@/field/cmd/math/root"
 import { CmdSupSub } from "@/field/cmd/math/supsub"
 import { options } from "@/field/defaults"
-import { L, R } from "@/field/dir"
+import { L, R, type Dir } from "@/field/dir"
 import type { Field } from "@/field/field"
 import { LatexParser } from "@/field/latex"
-import { Block, type Command } from "@/field/model"
+import { Block, Selection, type Command } from "@/field/model"
 import { fa, h, hx } from "@/jsx"
 import { faCopy, faPaste } from "@fortawesome/free-regular-svg-icons"
 import { faCut, type IconDefinition } from "@fortawesome/free-solid-svg-icons"
@@ -23,8 +23,8 @@ import { faAngleRight } from "@fortawesome/free-solid-svg-icons/faAngleRight"
 import { faAnglesLeft } from "@fortawesome/free-solid-svg-icons/faAnglesLeft"
 import { faAnglesRight } from "@fortawesome/free-solid-svg-icons/faAnglesRight"
 import { faArrowPointer } from "@fortawesome/free-solid-svg-icons/faArrowPointer"
-import { faArrowsLeftRight } from "@fortawesome/free-solid-svg-icons/faArrowsLeftRight"
 import { faGears } from "@fortawesome/free-solid-svg-icons/faGears"
+import { faLeftRight } from "@fortawesome/free-solid-svg-icons/faLeftRight"
 
 const parser = new LatexParser(options, null, "")
 
@@ -215,6 +215,7 @@ export const NUM: Layout = {
     {
       latex: "a^2",
       action(field) {
+        field.sel.remove()
         field.type("^")
         field.type("2")
         field.type("ArrowRight")
@@ -256,7 +257,7 @@ export const NUM_SHIFT: Layout = {
     {
       latex: "a^{-1}",
       action(field) {
-        const c = field.sel.remove()
+        field.sel.remove()
         field.type("^")
         field.type("(")
         field.type("-")
@@ -484,14 +485,23 @@ function layoutCursor(select: boolean): Layout {
         { latex: "\\digit{]}", action: "]" },
       ] satisfies ActionKey[])
 
+  function selectInDir(dir: Dir): ActionKey {
+    return {
+      icon: dir == L ? faAngleLeft : faAngleRight,
+      action(field) {
+        field.sel.moveFocus(dir)
+      },
+    }
+  }
+
   const row1: ActionKey[] = [
     ...parens,
     { latex: "a^b", action: "^" },
     kSqrt,
     4,
     4,
-    { clsx: "opacity-30", icon: faAngleLeft, action(field) {} },
-    { clsx: "opacity-30", icon: faAngleRight, action(field) {} },
+    selectInDir(L),
+    selectInDir(R),
   ]
 
   const parens2: ActionKey[] =
@@ -507,14 +517,23 @@ function layoutCursor(select: boolean): Layout {
         { latex: "\\digit{|}", action: "|rhs" },
       ]
 
+  function selectToEnd(dir: Dir): ActionKey {
+    return {
+      icon: dir == L ? faAnglesLeft : faAnglesRight,
+      action(field) {
+        field.sel.moveFocusFast(dir)
+      },
+    }
+  }
+
   const row2: ActionKey[] = [
     ...parens2,
     { latex: "a_b", action: "_" },
     kRoot,
     4,
     4,
-    { clsx: "opacity-30", icon: faAnglesLeft, action(field) {} }, // extend to beginning
-    { clsx: "opacity-30", icon: faAnglesRight, action(field) {} }, // extend to end
+    selectToEnd(L),
+    selectToEnd(R),
   ]
 
   return {
@@ -546,15 +565,22 @@ function layoutCursor(select: boolean): Layout {
           return CANCEL_CHANGES
         },
       },
-      select ?
-        { clsx: "opacity-30", size: 7, icon: faArrowsLeftRight, action() {} }
-      : {
-          clsx: "opacity-30",
-          size: 7,
-          latex: "\\wordvar{select}",
-          action() {},
+      {
+        size: 7,
+        icon: faLeftRight,
+        action(field) {
+          if (field.sel[L] || field.sel[R]) {
+            field.sel = new Selection(field.sel.parent, null, null, R)
+          } else if (field.sel.parent?.parent) {
+            field.sel = new Selection(
+              field.sel.parent?.parent.parent,
+              field.sel.parent?.parent[L],
+              field.sel.parent?.parent[R],
+              R,
+            )
+          }
         },
-      // select / select word / expand word selection
+      },
     ],
   }
 }
