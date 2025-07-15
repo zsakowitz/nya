@@ -10,14 +10,11 @@ import {
 import { CmdFrac } from "@/field/cmd/math/frac"
 import { CmdRoot } from "@/field/cmd/math/root"
 import { CmdSupSub } from "@/field/cmd/math/supsub"
-import { options } from "@/field/defaults"
 import { L, R, type Dir } from "@/field/dir"
 import type { Field } from "@/field/field"
-import { LatexParser } from "@/field/latex"
 import { Block, Selection, type Command } from "@/field/model"
-import { fa, h, hx } from "@/jsx"
 import { faCopy, faPaste } from "@fortawesome/free-regular-svg-icons"
-import { faCut, type IconDefinition } from "@fortawesome/free-solid-svg-icons"
+import { faCut } from "@fortawesome/free-solid-svg-icons"
 import { faAngleLeft } from "@fortawesome/free-solid-svg-icons/faAngleLeft"
 import { faAngleRight } from "@fortawesome/free-solid-svg-icons/faAngleRight"
 import { faAnglesLeft } from "@fortawesome/free-solid-svg-icons/faAnglesLeft"
@@ -25,120 +22,11 @@ import { faAnglesRight } from "@fortawesome/free-solid-svg-icons/faAnglesRight"
 import { faArrowPointer } from "@fortawesome/free-solid-svg-icons/faArrowPointer"
 import { faGears } from "@fortawesome/free-solid-svg-icons/faGears"
 import { faLeftRight } from "@fortawesome/free-solid-svg-icons/faLeftRight"
-import { faLock } from "@fortawesome/free-solid-svg-icons/faLock"
+import { CANCEL_CHANGES, type ActionKey, type Key, type Size } from "./key"
 
-const parser = new LatexParser(options, null, "")
-
-function key(base?: string | Node, clsx?: string, active?: boolean) {
-  const contents =
-    typeof base == "string" ?
-      h("font-['Symbola'] last:*:*:*:pr-0", parser.run(base).el)
-    : (base ?? "")
-
-  return hx(
-    "button",
-    "flex rounded-sm h-[40px] text-center items-center justify-center [line-height:1] relative nya-kbd" +
-      (active ? " nya-kbd-active" : "") +
-      (clsx ? " " + clsx : ""),
-    h("font-['Symbola'] pointer-events-none", contents),
-    h(
-      "nya-kbd-lock hidden absolute top-0.5 right-0.5",
-      fa(faLock, "size-2 opacity-30"),
-    ),
-  )
-}
-
-export const CANCEL_CHANGES = Symbol()
-
-export type KeyActionReturn =
-  | Block // block to be inserted left of cursor
-  | Command // command to be inserted left of cursor
-  | string // latex
-  | void // this command wrote its output already
-  | typeof CANCEL_CHANGES // this command did not modify anything
-
-export type KeyAction =
-  | string
-  | ((field: Field) => Block | Command | string | void | typeof CANCEL_CHANGES)
-
-type Size = keyof typeof span
-
-type OneOf<T> = {
-  [K in keyof T]: Record<K, T[K]> &
-    Partial<Record<Exclude<keyof T, K>, undefined>>
-}[keyof T]
-
-type Contents = OneOf<{
-  latex: string
-  text: string
-  icon: IconDefinition // TODO: switch to heroicons
-}>
-
-export type Key =
-  | string // shortcut for 4-width, latex, typed is same as written
-  | (Contents & { size?: Size; clsx?: string; active?: boolean }) // normal key
-  | Size // spacer
-
-export type ActionKey =
-  | string
-  | (Contents & {
-      action: KeyAction
-      size?: Size
-      clsx?: string
-      active?: boolean
-    })
-  | ({ latex: string } & {
-      action?: KeyAction
-      size?: Size
-      clsx?: string
-      active?: boolean
-    })
-  | Size
-
-const span = {
-  1: "col-span-1",
-  2: "col-span-2",
-  3: "col-span-3",
-  4: "col-span-4",
-  5: "col-span-5",
-  6: "col-span-6",
-  7: "col-span-7",
-  8: "col-span-8",
-  9: "col-span-9",
-  10: "col-span-10",
-}
-
-export function keyFrom(k: Key) {
-  if (typeof k == "string") {
-    return key(k, "col-span-4")
-  }
-
-  if (typeof k == "number") {
-    return h(span[k])
-  }
-
-  if (k == null) {
-    return key(undefined, "col-span-4 text-[.875em]")
-  }
-
-  return key(
-    k.latex ??
-      (k.text ? h("font-[system-ui]", k.text)
-      : k.icon ? fa(k.icon, "size-4")
-      : h("")),
-    span[k.size ?? 4] + " " + k.clsx,
-    k.active,
-  )
-}
-
-const kSqrt: ActionKey = {
-  latex: "\\sqrt{\\nyafiller}",
-  action: wrapper((x) => new CmdRoot(x, null)),
-}
-
-const kRoot: ActionKey = {
-  latex: "\\sqrt[b]{\\nyafillersmall}",
-  action: wrapper((x) => new CmdRoot(new Block(null), x)),
+export interface Layout {
+  hi: ActionKey[]
+  lo: ActionKey[]
 }
 
 export const CONTROLS = {
@@ -196,6 +84,16 @@ export const CONTROLS = {
   opts: { size: 4, icon: faGears, clsx: "opacity-30" },
   enter: { size: 10, text: "⏎" },
 } satisfies Record<string, Key | ActionKey>
+
+const kSqrt: ActionKey = {
+  latex: "\\sqrt{\\nyafiller}",
+  action: wrapper((x) => new CmdRoot(x, null)),
+}
+
+const kRoot: ActionKey = {
+  latex: "\\sqrt[b]{\\nyafillersmall}",
+  action: wrapper((x) => new CmdRoot(new Block(null), x)),
+}
 
 export const NUM: Layout = {
   hi: [
@@ -302,23 +200,6 @@ export const KEYS_ABC: Layout = {
 export const KEYS_ABC_SHIFT: Layout = {
   hi: [..."QWERTYUIOPASDFGHJKL".split(""), "\\tau"],
   lo: "ZXCVBNM".split(""),
-}
-
-function fn(name: string, size: Size, clsx?: string): ActionKey {
-  return {
-    latex: `\\wordprefix{${name}}`,
-    size,
-    clsx,
-    action(field) {
-      const block = field.sel.splice()
-      field.typeLatex(name)
-      field.type("(")
-      field.type(")")
-      field.type("ArrowLeft")
-      block.insertAt(field.sel.cursor(L), L)
-      field.sel = field.sel.cursor(R).selection()
-    },
-  }
 }
 
 export const KEYS_SYMBOL: Layout = {
@@ -428,9 +309,21 @@ export const LAYOUTS = [
   KEYS_SELECT,
 ]
 
-export interface Layout {
-  hi: ActionKey[]
-  lo: ActionKey[]
+function fn(name: string, size: Size, clsx?: string): ActionKey {
+  return {
+    latex: `\\wordprefix{${name}}`,
+    size,
+    clsx,
+    action(field) {
+      const block = field.sel.splice()
+      field.typeLatex(name)
+      field.type("(")
+      field.type(")")
+      field.type("ArrowLeft")
+      block.insertAt(field.sel.cursor(L), L)
+      field.sel = field.sel.cursor(R).selection()
+    },
+  }
 }
 
 function wrapper(action: (contents: Block) => Command) {

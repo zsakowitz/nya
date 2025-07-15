@@ -4,8 +4,13 @@ import { Block, Command } from "@/field/model"
 import { h } from "@/jsx"
 import {
   CANCEL_CHANGES,
-  CONTROLS,
   keyFrom,
+  type ActionKey,
+  type Key,
+  type KeyAction,
+} from "./key"
+import {
+  CONTROLS,
   KEYS_ABC,
   KEYS_ABC_SHIFT,
   KEYS_CURSOR,
@@ -13,9 +18,6 @@ import {
   KEYS_SYMBOL_SHIFT,
   NUM,
   NUM_SHIFT,
-  type ActionKey,
-  type Key,
-  type KeyAction,
   type Layout,
 } from "./layout"
 
