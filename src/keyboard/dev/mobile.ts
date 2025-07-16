@@ -18,6 +18,7 @@ document.body.appendChild(
   ),
 )
 
-const env = new KeyboardController(() => field)
-env.show(LAYOUTS[0]!)
+const env = new KeyboardController()
+env.field = field
+env.setLayout(LAYOUTS[0]!)
 document.body.appendChild(env.el)

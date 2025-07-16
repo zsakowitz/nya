@@ -11,6 +11,12 @@ interface FieldInitProps {
   skipChangeHandlers?: boolean
 }
 
+declare global {
+  interface Element {
+    nyaField: FieldInert | undefined
+  }
+}
+
 /** A math field which registers no event listeners and is effectively inert. */
 export class FieldInert {
   readonly el
@@ -24,9 +30,10 @@ export class FieldInert {
   ) {
     this.el = this.block.el
     this.el.className = twMerge(
-      "nya-display cursor-text whitespace-nowrap font-['Symbola','Times_New_Roman',serif] text-[1.265em] font-normal not-italic [line-height:1] cursor-text block select-none inline-block",
+      "nya-kbd-field nya-display cursor-text whitespace-nowrap font-['Symbola','Times_New_Roman',serif] text-[1.265em] font-normal not-italic [line-height:1] cursor-text block select-none inline-block",
       className,
     )
+    this.el.nyaField = this
   }
 
   setPrefix(block: Block | ((field: FieldInert) => void)) {

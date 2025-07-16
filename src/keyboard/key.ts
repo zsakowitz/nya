@@ -1,5 +1,5 @@
 import { options } from "@/field/defaults"
-import type { Field } from "@/field/field"
+import type { FieldInert } from "@/field/field-inert"
 import { LatexParser } from "@/field/latex"
 import type { Block, Command } from "@/field/model"
 import { fa, h, hx } from "@/jsx"
@@ -16,9 +16,13 @@ function key(base?: string | Node, clsx?: string, active?: boolean) {
 
   return hx(
     "button",
-    "flex rounded-sm h-[40px] text-center items-center justify-center [line-height:1] relative nya-kbd" +
-      (active ? " nya-kbd-active" : "") +
-      (clsx ? " " + clsx : ""),
+    {
+      class:
+        "flex rounded-sm h-[40px] text-center items-center justify-center [line-height:1] relative nya-kbd" +
+        (active ? " nya-kbd-active" : "") +
+        (clsx ? " " + clsx : ""),
+      tabindex: "-1",
+    },
     h("font-['Symbola'] pointer-events-none", contents),
     h(
       "nya-kbd-lock hidden absolute top-0.5 right-0.5",
@@ -38,7 +42,9 @@ export type KeyActionReturn =
 
 export type KeyAction =
   | string
-  | ((field: Field) => Block | Command | string | void | typeof CANCEL_CHANGES)
+  | ((
+      field: FieldInert,
+    ) => Block | Command | string | void | typeof CANCEL_CHANGES)
 
 export type Size = keyof typeof span
 

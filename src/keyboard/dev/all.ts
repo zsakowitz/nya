@@ -19,8 +19,9 @@ const el = h(
   h(
     "grid grid-cols-[300px,300px] bg-[--nya-kbd-bg] gap-4 justify-center",
     ...LAYOUTS.map((x) => {
-      const env = new KeyboardController(() => field)
-      env.show(x)
+      const env = new KeyboardController()
+      env.field = field
+      env.setLayout(x)
       env.el.classList.remove("fixed")
       return env.el
     }),

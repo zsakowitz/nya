@@ -1,4 +1,5 @@
 import { U, type Dir, type VDir } from "@/field/dir"
+import { hideKeyboard, showKeyboard } from "@/keyboard/global"
 import type { Expr } from "."
 import { FieldComputed } from "../../deps"
 
@@ -8,6 +9,14 @@ export class Field extends FieldComputed {
     className?: string,
   ) {
     super(expr.sheet.scope, className)
+    this.el.addEventListener("focus", () => {
+      showKeyboard(this)
+    })
+    this.el.addEventListener("blur", () => {
+      if (!document.activeElement) {
+        hideKeyboard()
+      }
+    })
   }
 
   recompute(): void {

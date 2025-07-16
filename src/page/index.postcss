@@ -115,14 +115,20 @@ body {
   }
 }
 
+:root {
+  --nya-kbd-grid-height: 0px;
+}
+
 :root,
 body {
-  --nya-kbd-bg: theme("colors.slate.300");
+  --nya-kbd-bg: theme("colors.slate.200");
   --nya-kbd-key-bg: theme("colors.white");
   --nya-kbd-key-hover-bg: theme("colors.slate.100");
   --nya-kbd-key-text: theme("colors.slate.900");
   --nya-kbd-key-active-bg: theme("colors.slate.600");
   --nya-kbd-key-active-text: theme("colors.white");
+  --nya-kbd-toggle-icon: theme("colors.slate.500");
+  --nya-kbd-height: calc(var(--nya-kbd-grid-height) + 1rem);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -134,6 +140,7 @@ body {
     --nya-kbd-key-text: theme("colors.white");
     --nya-kbd-key-active-bg: theme("colors.slate.500");
     --nya-kbd-key-active-text: theme("colors.slate.900");
+    --nya-kbd-toggle-icon: theme("colors.slate.500");
   }
 }
 

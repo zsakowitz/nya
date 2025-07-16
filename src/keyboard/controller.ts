@@ -1,7 +1,9 @@
 import { L } from "@/field/dir"
-import { Field } from "@/field/field"
+import type { FieldInert } from "@/field/field-inert"
 import { Block, Command } from "@/field/model"
-import { h } from "@/jsx"
+import { fa, h, hx } from "@/jsx"
+import { faKeyboard } from "@fortawesome/free-regular-svg-icons"
+import { faCaretUp } from "@fortawesome/free-solid-svg-icons/faCaretUp"
 import {
   CANCEL_CHANGES,
   keyFrom,
@@ -192,9 +194,12 @@ function getLayout(mode: Mode, shift: boolean): Layout {
 }
 
 export class KeyboardController {
+  field: FieldInert | null = null
+  readonly el
+
   private readonly hi
   private readonly lo
-  readonly el
+  private readonly elGrid
 
   private readonly kShift
   private readonly kAbc
@@ -209,34 +214,77 @@ export class KeyboardController {
   /** What the keyboard is currently displaying. */
   private displaying: Layout | null = null
 
-  constructor(readonly field: () => Field) {
+  setVisible(visible: boolean) {
+    if (visible) {
+      if (!this.field) {
+        const el = document.querySelector(".nya-kbd-field")
+        if (el && el.nyaField) {
+          this.field = el.nyaField
+        } else {
+          return
+        }
+      }
+      if (document.activeElement != this.field.el) {
+        this.field.el.focus()
+      }
+    }
+    this.el.classList.toggle("nya-kbd-open", visible)
+    this.elGrid.inert = !visible
+  }
+
+  constructor() {
+    let elToggle
+
     this.el = h(
-      "fixed bottom-0 right-0 w-full grid grid-cols-[repeat(40,1fr)] gap-1 p-2 bg-[--nya-kbd-bg] [line-height:1] whitespace-nowrap z-10 select-none text-lg",
+      "fixed right-0 w-full p-2 bg-[--nya-kbd-bg] [line-height:1] whitespace-nowrap z-10 select-none text-lg [&.nya-kbd-open]:bottom-0 -bottom-[--nya-kbd-height] transition-[bottom]",
+      (elToggle = hx(
+        "button",
+        {
+          class:
+            "absolute bottom-full left-0 flex items-center bg-[--nya-kbd-bg] pr-4 pl-4 pt-2 pb-2 rounded-tr gap-2 fill-[--nya-kbd-toggle-icon] [.nya-kbd-open_&]:pb-1 transition-[padding-bottom]",
+          tabindex: "-1",
+        },
+        fa(faKeyboard, "size-6"),
+        fa(faCaretUp, "size-4 [.nya-kbd-open_&]:rotate-180 transition"),
+      )),
+      (this.elGrid = h(
+        "grid grid-cols-[repeat(40,1fr)] gap-1 md:max-w-xl mx-auto",
+        (this.hi = h("contents")),
+        (this.kShift = keyFrom(CONTROLS.shift)),
+        keyFrom(1),
+        (this.lo = h("contents")),
+        keyFrom(1),
+        handle(CONTROLS.backspace, () => this.execKey(CONTROLS.backspace)),
 
-      (this.hi = h("contents")),
-      (this.kShift = keyFrom(CONTROLS.shift)),
-      keyFrom(1),
-      (this.lo = h("contents")),
-      keyFrom(1),
-      handle(CONTROLS.backspace, () => this.execKey(CONTROLS.backspace)),
-
-      (this.kAbc = keyFrom(CONTROLS.abc)),
-      (this.kSym = keyFrom(CONTROLS.sym)),
-      keyFrom(1),
-      handle(CONTROLS.arrowL, () => this.execKey(CONTROLS.arrowL)),
-      handle(CONTROLS.arrowR, () => this.execKey(CONTROLS.arrowR)),
-      (this.kCursor = keyFrom(CONTROLS.cursor)),
-      keyFrom(CONTROLS.opts),
-      keyFrom(1),
-      keyFrom(CONTROLS.enter),
+        (this.kAbc = keyFrom(CONTROLS.abc)),
+        (this.kSym = keyFrom(CONTROLS.sym)),
+        keyFrom(1),
+        handle(CONTROLS.arrowL, () => this.execKey(CONTROLS.arrowL)),
+        handle(CONTROLS.arrowR, () => this.execKey(CONTROLS.arrowR)),
+        (this.kCursor = keyFrom(CONTROLS.cursor)),
+        keyFrom(CONTROLS.opts),
+        keyFrom(1),
+        keyFrom(CONTROLS.enter),
+      )),
     )
+
+    elToggle.addEventListener("click", () => {
+      this.setVisible(!this.el.classList.contains("nya-kbd-open"))
+    })
+
+    new ResizeObserver(([entry]) => {
+      document.documentElement.style.setProperty(
+        "--nya-kbd-grid-height",
+        entry!.contentRect.height + "px",
+      )
+    }).observe(this.elGrid)
 
     this.el.addEventListener("pointerdown", (e) => {
       e.preventDefault()
     })
 
     this.el.addEventListener("click", () => {
-      this.field().el.focus()
+      this.field?.el.focus()
     })
 
     this.kShift.addEventListener("pointerdown", () => {
@@ -279,14 +327,14 @@ export class KeyboardController {
     this.update()
   }
 
-  update() {
+  private update() {
     if (!this.lock.isActive()) {
       this.mode = Mode.Num
     }
     const next = getLayout(this.mode, this.shift.isActive())
     const prev = this.displaying
     if (next != prev) {
-      this.show(next)
+      this.setLayout(next)
       this.displaying = next
     }
 
@@ -310,15 +358,16 @@ export class KeyboardController {
     mod(this.kCursor, Mode.Cursor)
   }
 
-  exec(action: KeyAction) {
-    const f = this.field()
+  private exec(action: KeyAction) {
+    const f = this.field
+    if (!f) return
 
     if (typeof action == "string") {
       f.type(action)
       return
     }
 
-    f.onBeforeChange()
+    f.onBeforeChange?.()
 
     let wasChangeCanceled = false
 
@@ -333,11 +382,11 @@ export class KeyboardController {
         ret.insertAt(f.sel.remove(), L)
       }
     } finally {
-      f.onAfterChange(wasChangeCanceled)
+      f.onAfterChange?.(wasChangeCanceled)
     }
   }
 
-  execKey(key: ActionKey) {
+  private execKey(key: ActionKey) {
     if (typeof key == "string") {
       this.exec(key)
     } else if (typeof key == "object" && key) {
@@ -352,7 +401,7 @@ export class KeyboardController {
     this.update()
   }
 
-  show(layout: Layout) {
+  setLayout(layout: Layout) {
     this.hi.replaceChildren(
       ...layout.hi.map((key) => handle(key, () => this.execKey(key))),
     )
