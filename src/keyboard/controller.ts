@@ -214,25 +214,6 @@ export class KeyboardController {
   /** What the keyboard is currently displaying. */
   private displaying: Layout | null = null
 
-  setVisible(visible: boolean) {
-    if (visible) {
-      if (!this.field) {
-        const el = document.querySelector(".nya-kbd-field")
-        if (el && el.nyaField) {
-          this.field = el.nyaField
-        } else {
-          return
-        }
-      }
-      if (document.activeElement != this.field.el) {
-        this.field.el.focus()
-      }
-    }
-    this.el.classList.toggle("nya-kbd-open", visible)
-    document.documentElement.classList.toggle("nya-any-kbd-open", visible)
-    this.elGrid.inert = !visible
-  }
-
   constructor() {
     let elToggle
 
@@ -266,7 +247,7 @@ export class KeyboardController {
         (this.kCursor = keyFrom(CONTROLS.cursor)),
         keyFrom(CONTROLS.opts),
         keyFrom(1),
-        keyFrom(CONTROLS.enter),
+        handle(CONTROLS.enter, () => this.execKey(CONTROLS.enter)),
       )),
     )
 
@@ -327,6 +308,25 @@ export class KeyboardController {
     modifier(this.kCursor, Mode.Cursor, true)
 
     this.update()
+  }
+
+  setVisible(visible: boolean) {
+    if (visible) {
+      if (!this.field) {
+        const el = document.querySelector(".nya-kbd-field")
+        if (el && el.nyaField) {
+          this.field = el.nyaField
+        } else {
+          return
+        }
+      }
+      if (document.activeElement != this.field.el) {
+        this.field.el.focus()
+      }
+    }
+    this.el.classList.toggle("nya-kbd-open", visible)
+    document.documentElement.classList.toggle("nya-any-kbd-open", visible)
+    this.elGrid.inert = !visible
   }
 
   private update() {

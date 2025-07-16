@@ -11,7 +11,7 @@ import { CmdFrac } from "@/field/cmd/math/frac"
 import { CmdRoot } from "@/field/cmd/math/root"
 import { CmdSupSub } from "@/field/cmd/math/supsub"
 import { L, R, type Dir } from "@/field/dir"
-import type { Field } from "@/field/field"
+import type { FieldInert } from "@/field/field-inert"
 import { Block, Selection, type Command } from "@/field/model"
 import { faCopy, faPaste } from "@fortawesome/free-regular-svg-icons"
 import { faCut } from "@fortawesome/free-solid-svg-icons"
@@ -82,7 +82,13 @@ export const CONTROLS = {
   },
   cursor: { size: 4, icon: faArrowPointer },
   opts: { size: 4, icon: faGears, clsx: "opacity-30" },
-  enter: { size: 10, text: "⏎" },
+  enter: {
+    size: 10,
+    text: "⏎",
+    action(field) {
+      field.el.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }))
+    },
+  },
 } satisfies Record<string, Key | ActionKey>
 
 const kSqrt: ActionKey = {
@@ -327,7 +333,7 @@ function fn(name: string, size: Size, clsx?: string): ActionKey {
 }
 
 function wrapper(action: (contents: Block) => Command) {
-  return (field: Field) => {
+  return (field: FieldInert) => {
     const contents = field.sel.splice()
     const c = field.sel.cursor(L)
     const command = action(contents)
