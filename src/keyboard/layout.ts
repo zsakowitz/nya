@@ -232,9 +232,9 @@ export const KEYS_SYMBOL: Layout = {
     },
     fn("min", 6),
 
-    fn("asin", 6),
-    fn("acos", 6),
-    fn("atan", 6),
+    fnatrig("sin", 6),
+    fnatrig("cos", 6),
+    fnatrig("tan", 6),
     { latex: "\\digit{∏}", action: "∏" },
     fn("ln", 6),
     fn("log", 6),
@@ -283,9 +283,9 @@ export const KEYS_SYMBOL_SHIFT: Layout = {
     fn("total", 6),
     fn("median", 6, "text-[.875em]"),
 
-    fn("acsc", 6),
-    fn("asec", 6),
-    fn("acot", 6),
+    fnatrig("csc", 6),
+    fnatrig("sec", 6),
+    fnatrig("cot", 6),
     fn("nCr", 4),
     fn("mean", 6),
     fn("stdev", 6),
@@ -323,6 +323,23 @@ function fn(name: string, size: Size, clsx?: string): ActionKey {
     action(field) {
       const block = field.sel.splice()
       field.typeLatex(name)
+      field.type("(")
+      field.type(")")
+      field.type("ArrowLeft")
+      block.insertAt(field.sel.cursor(L), L)
+      field.sel = field.sel.cursor(R).selection()
+    },
+  }
+}
+
+function fnatrig(name: string, size: Size, clsx?: string): ActionKey {
+  return {
+    latex: `\\wordprefix{a${name}}`,
+    size,
+    clsx,
+    action(field) {
+      const block = field.sel.splice()
+      field.typeLatex("arc" + name)
       field.type("(")
       field.type(")")
       field.type("ArrowLeft")
