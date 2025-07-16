@@ -186,6 +186,7 @@ function libGame(api: NyaApi, S: Scalar) {
     .fn("delivery", {}, GameDeliver)
     .fn("lemon", { pile1: api.lib.tyNum, pile2: api.lib.tyNum }, GameLemon)
     .fn("dyadic", { size: api.lib.tyNum }, GameDyadic)
+    .fn("hallways", { game: GameDeliver }, api.lib.tyNum)
 
   api.fn("+", { game: Game }, Game, { glsl: v`${0}`, js: v`${0}` }, false)
 
@@ -642,6 +643,50 @@ function libGameActual() {
     w(): string {
       return `\\wordprefix{delivery}(${this.el.map((x) => x.x + "\\to " + x.y)})`
     }
+
+    hExterminator(bug: number, filled: Set<DeliveryEdge>): number {
+      let best = Infinity
+      for (const edge of this.el) {
+        if (!filled.has(edge)) {
+          filled.add(edge)
+          const nextScore = this.hMoveBug(bug, filled)
+          if (nextScore < best) best = nextScore
+          filled.delete(edge)
+        }
+      }
+      return best == Infinity ? filled.size : best
+    }
+
+    hMoveBug(bug: number, filled: Set<DeliveryEdge>): number {
+      const targets = new Set<number>()
+      const todo = new Set<number>([bug])
+      const checked = new Set<number>([])
+      for (const el of todo) {
+        if (checked.has(el)) {
+          continue
+        }
+        checked.add(el)
+
+        for (const adj of this.ev[el]?.filter((x) => !filled.has(x)) ?? []) {
+          targets.add(adj.x)
+          targets.add(adj.y)
+          todo.add(adj.y)
+        }
+      }
+      targets.delete(bug)
+      let max = filled.size
+      for (const nextBug of targets) {
+        const possible = this.hExterminator(nextBug, filled)
+        if (possible > max) max = possible
+      }
+      return max
+    }
+
+    hallways() {
+      return this.vl
+        .map((_, i) => this.hMoveBug(i, new Set()))
+        .reduce((a, b) => Math.max(a, b), 0)
+    }
   }
 
   type LemonMove = [0 | 1 | 2, number]
@@ -807,6 +852,9 @@ function libGameActual() {
         return dyadicFromUnit(-x, -1)
       }
       return empty(`\\wordvar{undefined}`)
+    },
+    hallways(x: Delivery) {
+      return x.hallways()
     },
   }
 }
