@@ -205,6 +205,25 @@ const words = new WordMapWithoutSpaces<WordKind>([
   ["debugAstType", "prefix"],
   ["debugScript", "prefix"],
   ["mod", "infix"],
+
+  ["arcsin", "prefix"],
+  ["arccos", "prefix"],
+  ["arctan", "prefix"],
+  ["arccsc", "prefix"],
+  ["arcsec", "prefix"],
+  ["arccot", "prefix"],
+  ["arcsinh", "prefix"],
+  ["arccosh", "prefix"],
+  ["arctanh", "prefix"],
+  ["arccsch", "prefix"],
+  ["arcsech", "prefix"],
+  ["arccoth", "prefix"],
+  ["arcsinh", "prefix"],
+  ["arcosh", "prefix"],
+  ["artanh", "prefix"],
+  ["arcsch", "prefix"],
+  ["arsech", "prefix"],
+  ["arcoth", "prefix"],
 ]).freeze()
 
 const latexWords =
