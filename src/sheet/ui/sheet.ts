@@ -372,8 +372,10 @@ ${fns.join("\n\n")}`,
       // fake expression
       nextExpression,
 
-      // right border on remainder of the flexbox
-      h("flex-1 sm:border-r min-h-24 border-[--nya-border]"),
+      // bottom padding
+      h(
+        "flex-1 sm:border-r min-h-24 [.nya-any-kbd-open_&]:min-h-[calc(var(--nya-kbd-height)_+_2rem)] border-[--nya-border]",
+      ),
     )
 
     const hasToolbar = () => (toolbarItems.length ? true : null)
