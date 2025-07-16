@@ -19,6 +19,7 @@
 
 :root,
 body {
+  touch-action: manipulation;
   --nya-bg: white;
   --nya-text: black;
   --nya-text-prose: theme("colors.slate.700");
@@ -518,9 +519,14 @@ body {
 }
 
 .nya-expr-bar {
-  :where(:focus-within) > &,
-  :where(:active):not(:has(.nya-not-expr-focus-target:active)) > & {
+  :where(:focus-within) > & {
     @apply bg-[--nya-expr-focus] text-[--nya-expr-focus-index] border-[--nya-expr-focus];
+  }
+
+  @media (any-hover: hover) {
+    :where(:active):not(:has(.nya-not-expr-focus-target:active)) > & {
+      @apply bg-[--nya-expr-focus] text-[--nya-expr-focus-index] border-[--nya-expr-focus];
+    }
   }
 }
 

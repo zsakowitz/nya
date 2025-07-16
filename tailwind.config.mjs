@@ -36,6 +36,7 @@ export default {
       )
 
       api.addVariant("any-hover", "@media (any-hover: hover)")
+      api.addVariant("hover", "@media (any-hover: hover) { &:hover }")
     },
   ],
 }

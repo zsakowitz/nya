@@ -53,7 +53,7 @@ abstract class ItemList {
       ),
       main,
       h(
-        "hidden absolute -inset-y-px inset-x-0 [:first-child>&]:top-0 border-2 border-[--nya-expr-focus] pointer-events-none [:focus-within>&]:block [:active>&]:block",
+        "hidden absolute -inset-y-px inset-x-0 [:first-child>&]:top-0 border-2 border-[--nya-expr-focus] pointer-events-none [:focus-within>&]:block any-hover:[:active>&]:block",
       ),
     ))
 
