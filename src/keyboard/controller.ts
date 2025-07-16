@@ -325,7 +325,7 @@ export class KeyboardController {
       }
     }
     this.el.classList.toggle("nya-kbd-open", visible)
-    document.documentElement.classList.toggle("nya-any-kbd-open", visible)
+    document.documentElement.classList.toggle("nya-kbd-any-open", visible)
     this.elGrid.inert = !visible
   }
 

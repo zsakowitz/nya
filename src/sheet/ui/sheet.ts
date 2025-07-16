@@ -374,7 +374,7 @@ ${fns.join("\n\n")}`,
 
       // bottom padding
       h(
-        "flex-1 sm:border-r min-h-24 [.nya-any-kbd-open_&]:min-h-[calc(var(--nya-kbd-height)_+_2rem)] border-[--nya-border]",
+        "flex-1 min-h-8 sm:border-r sm:min-h-24 sm:[.nya-kbd-any-open_&]:min-h-[calc(var(--nya-kbd-height)_+_2rem)] border-[--nya-border]",
       ),
     )
 
@@ -448,7 +448,7 @@ ${fns.join("\n\n")}`,
       }
 
       this.el.classList =
-        "bg-[--nya-bg] fixed inset-0 grid select-none grid-cols-[1fr] grid-rows-[3rem_1fr_calc(3rem_+_1px)_1fr] sm:grid-cols-[min(500px,40vw)_1fr] sm:grid-rows-[3rem_1fr] " +
+        "bg-[--nya-bg] fixed inset-0 grid select-none grid-cols-[1fr] grid-rows-[3rem_1fr_calc(3rem_+_1px)_1fr_var(--nya-kbd-sheet-offset)] sm:grid-cols-[min(500px,40vw)_1fr] sm:grid-rows-[3rem_1fr_var(--nya-kbd-sheet-offset)] sm:[--nya-kbd-sheet-offset:0] " +
         (hasToolbar() ?
           "[grid-template-areas:'toolbar'_'cv'_'titlebar'_'sidebar'] sm:[grid-template-areas:'titlebar_toolbar'_'sidebar_cv']"
         : "[grid-template-areas:'cv'_'cv'_'titlebar'_'sidebar'] sm:[grid-template-areas:'titlebar_cv'_'sidebar_cv']")

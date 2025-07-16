@@ -1,4 +1,4 @@
-import type { Field } from "@/field/field"
+import type { FieldInert } from "@/field/field-inert"
 import { KeyboardController } from "./controller"
 
 const GLOBAL_KEYBOARD = new KeyboardController()
@@ -8,7 +8,7 @@ function detectMobile() {
   return !matchMedia("(pointer: fine) and (hover: hover)").matches
 }
 
-export function showKeyboard(field: Field) {
+export function showKeyboard(field: FieldInert) {
   GLOBAL_KEYBOARD.field = field
   if (detectMobile()) {
     GLOBAL_KEYBOARD.setVisible(true)

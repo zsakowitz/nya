@@ -129,6 +129,12 @@ body {
   --nya-kbd-key-active-text: theme("colors.white");
   --nya-kbd-toggle-icon: theme("colors.slate.500");
   --nya-kbd-height: calc(var(--nya-kbd-grid-height) + 1rem);
+  --nya-kbd-sheet-offset: 0px;
+}
+
+.nya-kbd-any-open,
+.nya-kbd-any-open body {
+  --nya-kbd-sheet-offset: var(--nya-kbd-height);
 }
 
 @media (prefers-color-scheme: dark) {

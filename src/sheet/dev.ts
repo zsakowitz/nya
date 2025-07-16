@@ -7,6 +7,7 @@ import {
 import { SheetFactory } from "./factory"
 
 import { createDocs2 } from "@/docs"
+import { showKeyboard } from "@/keyboard/global"
 
 const factory = new SheetFactory(options)
 
@@ -43,6 +44,11 @@ if (globalThis.location?.href.includes("docs")) {
   document.body.appendChild(createDocs2(sheet))
 } else {
   document.body.appendChild(sheet.el)
+  if (globalThis.location?.href.includes("keyboard")) {
+    setTimeout(() => {
+      showKeyboard(document.querySelector(".nya-kbd-field")!.nyaField!)
+    }, 100)
+  }
 }
 
 const src = IS_DEV ? SRC_LOCALHOST : SRC_STANDARD
