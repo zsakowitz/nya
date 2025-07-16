@@ -13,7 +13,7 @@ before nyalang version can be released:
 ❌ sliders
 ❌ tokens
 ❌ derivatives
-❌ mobile keyboard
+✅ mobile keyboard
 ✅ automatic coercion
 
 to do list for things desmos hid is:
@@ -24,6 +24,7 @@ to do list for functions is:
 ❌ chisqdist
 ❌ chisqtest
 ❌ geodist
+❌ apparently they have twenty inference functions now ???
 ❌ random, shuffle
 ❌ visualizations
 ❌ distributions
