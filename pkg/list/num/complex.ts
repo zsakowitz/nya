@@ -387,13 +387,13 @@ export default {
       ["c64"],
       "c64",
       (a) => a.value.conj(),
-      (_, a) => `(${a} * vec4(1, 1, -1, -1))`,
+      (_, a) => `(${a.expr} * vec4(1, 1, -1, -1))`,
       [],
     ).add(
       ["c32"],
       "c32",
       (a) => a.value.conj(),
-      (_, a) => `(${a} * vec2(1, -1))`,
+      (_, a) => `(${a.expr} * vec2(1, -1))`,
       "conj(-2+3i)=2-3i",
     )
 
@@ -818,19 +818,19 @@ vec4 _helper_mul_c64(vec4 a, vec4 b) {
   },
   eval: {
     fn: {
-      "arg": FN_ARG,
-      "conj": FN_CONJ,
-      "imag": FN_IMAG,
-      "real": FN_REAL,
-      "sign": FN_SIGN,
+      arg: FN_ARG,
+      conj: FN_CONJ,
+      imag: FN_IMAG,
+      real: FN_REAL,
+      sign: FN_SIGN,
       // DCG: dot doesn't exist for complex numbers in desmos
-      "dot": FN_DOT,
+      dot: FN_DOT,
       // DCG: everything below doesn't exist in vanilla desmos
-      "complex": FN_COMPLEX,
-      "point": FN_POINT,
+      complex: FN_COMPLEX,
+      point: FN_POINT,
       ".i": FN_I,
-      "cplot": FN_CPLOT,
-      "cplothue": FN_CPLOTHUE,
+      cplot: FN_CPLOT,
+      cplothue: FN_CPLOTHUE,
     },
     var: {
       p: {
