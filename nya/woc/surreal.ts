@@ -162,6 +162,7 @@ function libGame(api: NyaApi, S: Scalar) {
   const GameTree = api.opaque("GameTree", { glsl: null, js: null }, false)
   const GameInt = api.opaque("GameInt", { glsl: null, js: null }, false)
   const GameDeliver = api.opaque("GameDeliver", { glsl: null, js: null }, false)
+  const GameBug = api.opaque("GameBug", { glsl: null, js: null }, false)
   const GameLemon = api.opaque("GameLemon", { glsl: null, js: null }, false)
   const GameDyadic = api.opaque("GameDyadic", { glsl: null, js: null }, false)
 
@@ -184,9 +185,16 @@ function libGame(api: NyaApi, S: Scalar) {
     .fn("eval", { game: Game }, S)
     .fn("tree", {}, GameTree)
     .fn("delivery", {}, GameDeliver)
+    .fa("delivery", "bug", {}, GameBug)
     .fn("lemon", { pile1: api.lib.tyNum, pile2: api.lib.tyNum }, GameLemon)
     .fn("dyadic", { size: api.lib.tyNum }, GameDyadic)
-    .fn("hallways", { game: GameDeliver }, api.lib.tyNum)
+    .fn("hallways", { game: GameBug }, api.lib.tyNum)
+    .fa(
+      "hallwaysFrom",
+      "hallways",
+      { game: GameBug, start: api.lib.tyNum },
+      api.lib.tyNum,
+    )
 
   api.fn("+", { game: Game }, Game, { glsl: v`${0}`, js: v`${0}` }, false)
 
@@ -214,29 +222,31 @@ function libGame(api: NyaApi, S: Scalar) {
     false,
   )
 
-  api.fn(
-    "branch",
-    { game: GameDeliver, src: api.lib.tyNum, dst: api.lib.tyNum },
-    GameDeliver,
-    { glsl: v``, js: v`${0}.connect(${1},${2})` },
-    false,
-  )
+  for (const x of [GameDeliver, GameBug]) {
+    api.fn(
+      "branch",
+      { game: x, src: api.lib.tyNum, dst: api.lib.tyNum },
+      x,
+      { glsl: v``, js: v`${0}.connect(${1},${2})` },
+      false,
+    )
 
-  api.fn(
-    "chain",
-    { game: GameDeliver, src: api.lib.tyNum, length: api.lib.tyNum },
-    GameDeliver,
-    { glsl: v``, js: v`${0}.chain(${1},${2})` },
-    false,
-  )
+    api.fn(
+      "chain",
+      { game: x, src: api.lib.tyNum, length: api.lib.tyNum },
+      x,
+      { glsl: v``, js: v`${0}.chain(${1},${2})` },
+      false,
+    )
 
-  api.fn(
-    "cycle",
-    { game: GameDeliver, src: api.lib.tyNum, length: api.lib.tyNum },
-    GameDeliver,
-    { glsl: v``, js: v`${0}.cycle(${1},${2})` },
-    false,
-  )
+    api.fn(
+      "cycle",
+      { game: x, src: api.lib.tyNum, length: api.lib.tyNum },
+      x,
+      { glsl: v``, js: v`${0}.cycle(${1},${2})` },
+      false,
+    )
+  }
 
   api
     .tcoercion(GameEmpty, Game)
@@ -543,6 +553,7 @@ function libGameActual() {
   interface DeliveryEdge {
     x: number
     y: number
+    id: number
   }
 
   type DeliveryMove = [on: number, fruit: 1 | 2]
@@ -551,13 +562,14 @@ function libGameActual() {
     vl: (0 | 1 | 2)[] = []
     el: DeliveryEdge[] = []
     ev: DeliveryEdge[][] = []
+    maxId = 0
 
     private add(x: number, y: number) {
       if (x == y) return
 
       this.vl[x] ??= 0
       this.vl[y] ??= 0
-      const edge: DeliveryEdge = { x, y }
+      const edge: DeliveryEdge = { x, y, id: this.maxId++ }
       this.el.push(edge)
       ;(this.ev[x] ??= []).push(edge)
       ;(this.ev[y] ??= []).push(edge)
@@ -644,48 +656,84 @@ function libGameActual() {
       return `\\wordprefix{delivery}(${this.el.map((x) => x.x + "\\to " + x.y)})`
     }
 
-    hExterminator(bug: number, filled: Set<DeliveryEdge>): number {
+    hExterminator(
+      bug: number,
+      filled: Uint8Array,
+      cache: Map<string, number>,
+    ): number {
+      const cacheKey = this.cacheKey(bug, filled)
+      if (cache.has(cacheKey)) {
+        return cache.get(cacheKey)!
+      }
+
       let best = Infinity
       for (const edge of this.el) {
-        if (!filled.has(edge)) {
-          filled.add(edge)
-          const nextScore = this.hMoveBug(bug, filled)
+        if (!filled[edge.id]) {
+          filled[edge.id] = 1
+          const nextScore = this.hMoveBug(bug, filled, cache)
           if (nextScore < best) best = nextScore
-          filled.delete(edge)
+          filled[edge.id] = 0
         }
       }
-      return best == Infinity ? filled.size : best
+      const score = best
+      cache.set(cacheKey, score)
+      return score
     }
 
-    hMoveBug(bug: number, filled: Set<DeliveryEdge>): number {
+    cacheKey(bug: number, filled: Uint8Array) {
+      return bug + ";" + filled.join("")
+    }
+
+    hMoveBug(
+      bug: number,
+      filled: Uint8Array,
+      cache: Map<string, number>,
+    ): number {
+      const cacheKey = this.cacheKey(bug, filled)
+      if (cache.has(cacheKey)) {
+        return cache.get(cacheKey)!
+      }
+
       const targets = new Set<number>()
       const todo = new Set<number>([bug])
       const checked = new Set<number>([])
+
       for (const el of todo) {
-        if (checked.has(el)) {
-          continue
-        }
+        if (checked.has(el)) continue
         checked.add(el)
 
-        for (const adj of this.ev[el]?.filter((x) => !filled.has(x)) ?? []) {
-          targets.add(adj.x)
-          targets.add(adj.y)
-          todo.add(adj.y)
+        for (const adj of this.ev[el]?.filter((x) => !filled[x.id]) ?? []) {
+          const alt = adj.x == el ? adj.y : adj.x
+          targets.add(alt)
+          if (!checked.has(alt)) todo.add(alt)
         }
       }
+
       targets.delete(bug)
-      let max = filled.size
+      let max = 0
+      for (const el of filled) {
+        max += el
+      }
       for (const nextBug of targets) {
-        const possible = this.hExterminator(nextBug, filled)
+        const possible = this.hExterminator(nextBug, filled, cache)
         if (possible > max) max = possible
       }
+      cache.set(cacheKey, max)
       return max
     }
 
     hallways() {
+      const cache = new Map<string, number>()
+      const filled = new Uint8Array(this.el.length)
       return this.vl
-        .map((_, i) => this.hMoveBug(i, new Set()))
+        .map((_, i) => this.hExterminator(i, filled, cache))
         .reduce((a, b) => Math.max(a, b), 0)
+    }
+
+    hallwaysFrom(i: number) {
+      const cache = new Map<string, number>()
+      const filled = new Uint8Array(this.el.length)
+      return this.hExterminator(i, filled, cache)
     }
   }
 
@@ -855,6 +903,9 @@ function libGameActual() {
     },
     hallways(x: Delivery) {
       return x.hallways()
+    },
+    hallwaysFrom(x: Delivery, i: number) {
+      return x.hallwaysFrom(i)
     },
   }
 }
