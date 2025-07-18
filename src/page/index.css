@@ -1,7 +1,5 @@
 @import "tailwindcss";
 
-@config "../../tailwind.config.mjs";
-
 @utility bg-nya-empty {
   &:where(:not(.nya-display)) {
     @apply bg-(--nya-empty);
@@ -10,6 +8,12 @@
 
 @utility nya-selected {
   background-color: var(--nya-selection);
+}
+
+@custom-variant any-hover {
+  @media (any-hover: hover) {
+    @slot;
+  }
 }
 
 @font-face {
