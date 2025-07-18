@@ -1,5 +1,68 @@
 <h1 align="center"><code>nya</code></h1>
 
+project nya is a graphing calculator designed with extensibility and GPU
+rendering as first priorities.
+
+<u>**Developing?**</u> Build the Prettier plugin via `bun build:prettier`, then
+run `bun dev` to build the CSS file and start a dev server via esbuild.
+
+> [!IMPORTANT]
+>
+> project nya is currently undergoing a major rewrite. The code and feature set
+> is unstable, and will be for a while.
+
+If you have a feature request or bug report, check [TASKS.txt](./info/TASKS.txt)
+first; it's probably already there, in the massive backlog of functionality
+which needs to be included.
+
+The top-level folders of this repo are:
+
+- [info/](info/): informative files, notes, and the backlog
+- [lang/](lang/): the nyalang checker, compiler, minimal standard library, and
+  Prettier plugin
+- [make/](make/): builder of .nya files
+- [nya/](nya/): extended standard library loaded into the calculator
+- [pkg/](pkg/): old versions of packages which are no longer in use, except for
+  a few files which are used
+- [src/](src/): the main renderer, field editor, and command handler
+
+Yes, there are two standard libraries for nyalang:
+
+1. The one in [lang/src/std.ts](lang/src/std.ts), which defines builtins which
+   are implemented directly in JS and GLSL.
+2. The ones in [nya/](nya/), which define functions and types available in the
+   calculator.
+
+## the `.nya` language
+
+`.nya` files define functions and types accessible in the graphing calculator
+and in math expressions, and are compiled to JS and GLSL when needed. The
+benefits are many:
+
+- Instead of the old error-prone dependency system for GLSL, files now
+  explicitly mark their dependencies.
+- Functions can be type-checked before publishing a new version of project nya.
+- Non-cyclic dependency graphs can be enforced as a rule, rather than by lints.
+- Cross-compilation means one code block counts as JS and GLSL.
+- If exact numeric types were added, it would be as simple as changing a single
+  stdlib file, instead of a global change across all files.
+- Operator overloading is supported, so long `.add.sub.mul.inv` chains are no
+  longer needed to work with complex numbers or geometric points.
+- Functionality like quaternions can be directly expressed, with no overhead of
+  JS type declarations.
+
+Of course, there still exists a simple API for extending nyalang's functionality
+with JS-only functions; see [./nya/woc/surreal.ts](./nya/woc/surreal.ts) for an
+example of how this is used to define surreal numbers and various games.
+
+> [!WARNING]
+>
+> The README below is likely outdated, since it comes from the non-beta branch
+> and hasn't been touched since April 2025, but it is included for reference
+> anyway.
+
+---
+
 project nya is a graphing calculator designed to be extended. It's 100%
 open-source (you can look at our code if you want), and adding new features is
 as simple as writing and including a single JavaScript file.

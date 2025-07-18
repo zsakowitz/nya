@@ -16,6 +16,15 @@ before nyalang version can be released:
 ✅ mobile keyboard
 ✅ automatic coercion
 
+keyboard improvements:
+❌ split parentheses
+❌ press and hold for l/r parentheses
+❌ press and hold for more trig
+❌ unified greek letters
+❌ use native keyboard with extra keys
+❌ six-row layout
+❌ vim mode
+
 to do list for things desmos hid is:
 ❌ apply, rotation, etc.
 ✅ erf
