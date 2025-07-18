@@ -27,7 +27,7 @@ const FACTORY: ItemFactory<Data> = {
 
     const field = hx(
       "select",
-      "relative -mx-4 px-3 py-2 -mb-2 bg-transparent text-[1.265rem] focus:outline-none font-['Times_New_Roman']",
+      "relative -mx-4 px-3 py-2 -mb-2 bg-transparent text-[1.265rem] focus:outline-hidden font-['Times_New_Roman']",
       hx(
         "option",
         { value: "-1", disabled: "disabled", selected: "selected" },
@@ -41,7 +41,7 @@ const FACTORY: ItemFactory<Data> = {
     const body = h(
       "contents",
       h(
-        "text-[--nya-title] text-sm -mb-1",
+        "text-(--nya-title) text-sm -mb-1",
         "Choose a function to show information about.",
       ),
     )

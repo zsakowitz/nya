@@ -81,13 +81,13 @@ export class Field extends FieldInert {
     }
     const onFocus = () => {
       this.showCursor(false)
-      this.cursor.classList.add("[scroll-margin:1rem]")
+      this.cursor.classList.add("scroll-m-4")
       this.cursor.scrollIntoView({
         behavior: "instant",
         block: "nearest",
         inline: "nearest",
       })
-      this.cursor.classList.remove("[scroll-margin:1rem]")
+      this.cursor.classList.remove("scroll-m-4")
     }
     const onBlur = () => {
       this.onBeforeChange()
@@ -101,7 +101,7 @@ export class Field extends FieldInert {
     this.el.addEventListener("keydown", onKeyDown)
     this.el.addEventListener("paste", (ev) => this.onPaste(ev))
     this.el.addEventListener("focus", onFocus)
-    this.el.addEventListener("blur", onBlur)
+    this.el.addEventListener("blur-sm", onBlur)
   }
 
   onPaste(event: ClipboardEvent) {
@@ -114,7 +114,7 @@ export class Field extends FieldInert {
     this.sel.cursor(this.sel.focused).render(this.cursor)
     this.sel.parent?.checkIfEmpty()
     this.cursor.classList.toggle("text-transparent", !this.sel.isEmpty())
-    this.cursor.parentElement?.classList.add("!bg-transparent")
+    this.cursor.parentElement?.classList.add("bg-transparent!")
     this.cursor.parentElement?.parentElement?.classList.remove("nya-has-empty")
     if (scrollIntoView) {
       this.cursor.scrollIntoView({
@@ -128,7 +128,7 @@ export class Field extends FieldInert {
   onBeforeChange() {
     super.onBeforeChange?.()
     this.sel.each(({ el }) => el.classList.remove("nya-selected"))
-    this.cursor.parentElement?.classList.remove("!bg-transparent")
+    this.cursor.parentElement?.classList.remove("bg-transparent!")
     this.cursor.remove()
     this.sel.parent?.checkIfEmpty()
   }

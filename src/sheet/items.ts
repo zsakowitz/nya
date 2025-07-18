@@ -44,16 +44,16 @@ abstract class ItemList {
     const el = ((ref as ItemRefMut).el = h(
       {
         class:
-          "grid sm:border-r border-b relative nya-expr border-[--nya-border]",
+          "grid sm:border-r border-b relative nya-expr border-(--nya-border)",
         style: `grid-template-columns:2.5rem${" 1rem".repeat(this.depth)} auto;--nya-sidebar:calc(var(--nya-sidebar-raw) - ${this.depth}*1rem)`,
       },
       ref.elGrayBar,
       ...Array.from({ length: this.depth }, () =>
-        h("border-r border-[--nya-border] my-1"),
+        h("border-r border-(--nya-border) my-1"),
       ),
       main,
       h(
-        "hidden absolute -inset-y-px inset-x-0 [:first-child>&]:top-0 border-2 border-[--nya-expr-focus] pointer-events-none [:focus-within>&]:block any-hover:[:active>&]:block",
+        "hidden absolute -inset-y-px inset-x-0 [:first-child>&]:top-0 border-2 border-(--nya-expr-focus) pointer-events-none [:focus-within>&]:block any-hover:[:active>&]:block",
       ),
     ))
 
@@ -113,7 +113,7 @@ abstract class ItemList {
       h(
         {
           class:
-            "nya-expr-bar inline-flex bg-[--nya-bg-sidebar] flex-col p-0.5 border-r border-[--nya-border] font-sans text-[--nya-expr-index] text-[65%] leading-none focus:outline-none",
+            "nya-expr-bar inline-flex bg-(--nya-bg-sidebar) flex-col p-0.5 border-r border-(--nya-border) font-sans text-(--nya-expr-index) text-[65%] leading-none focus:outline-hidden",
           tabindex: "-1",
         },
         elIndex,
@@ -145,7 +145,7 @@ abstract class ItemList {
       h(
         {
           class:
-            "nya-expr-bar inline-flex bg-[--nya-bg-sidebar] flex-col p-0.5 border-r border-[--nya-border] font-sans text-[--nya-expr-index] text-[65%] leading-none focus:outline-none",
+            "nya-expr-bar inline-flex bg-(--nya-bg-sidebar) flex-col p-0.5 border-r border-(--nya-border) font-sans text-(--nya-expr-index) text-[65%] leading-none focus:outline-hidden",
           tabindex: "-1",
         },
         index,

@@ -49,18 +49,18 @@ export class CmdPrompt extends Leaf {
     readonly active: Element | null,
   ) {
     const field = hx("input", {
-      class: "bg-transparent min-w-[3ch] focus:outline-none",
+      class: "bg-transparent min-w-[3ch] focus:outline-hidden",
       autocomplete: "off",
     })
     field.addEventListener("keydown", onKeyDown)
     field.addEventListener("input", resize)
-    field.addEventListener("blur", onBlur)
+    field.addEventListener("blur-sm", onBlur)
     resize()
 
     const form = hx("form", "contents", field)
     form.addEventListener("submit", (ev) => {
       ev.preventDefault()
-      field.removeEventListener("blur", onBlur)
+      field.removeEventListener("blur-sm", onBlur)
       if (field.value) {
         this.confirm(field.value)
       }
@@ -87,7 +87,7 @@ export class CmdPrompt extends Leaf {
       event.stopPropagation()
 
       if (event.key == "Backspace" && field.value == "") {
-        field.removeEventListener("blur", onBlur)
+        field.removeEventListener("blur-sm", onBlur)
         self.cancel()
       }
     }

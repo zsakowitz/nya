@@ -11,7 +11,7 @@ const tds = Object.entries(manifest.fns)
     hx(
       "tr",
       "contents",
-      hx("td", "text-[--nya-text]", makeDocName(k)),
+      hx("td", "text-(--nya-text)", makeDocName(k)),
       hx("td", "", manifestFnKinds[v[3]]),
       hx(
         "td",
@@ -21,20 +21,20 @@ const tds = Object.entries(manifest.fns)
           return h(
             {
               class:
-                "px-1 rounded-sm break-inside-avoid mx-0.5 bg-[--l] text-[--d] dark:bg-[--m] dark:text-[--l]",
+                "px-1 rounded-xs break-inside-avoid mx-0.5 bg-(--l) text-(--d) dark:bg-(--m) dark:text-(--l)",
               style: `--l:${l};--m:${m};--d:${d}`,
             },
             name,
           )
         }),
       ),
-      hx("td", "mb-2 text-sm text-[--nya-title]", v[1]),
+      hx("td", "mb-2 text-sm text-(--nya-title)", v[1]),
     ),
   )
 
 const table = hx(
   "table",
-  "grid [grid-template-columns:repeat(4,auto)] gap-x-4 text-[--nya-text-prose]",
+  "grid grid-cols-[repeat(4,auto)] gap-x-4 text-(--nya-text-prose)",
   // hx(
   //   "thead",
   //   "contents",

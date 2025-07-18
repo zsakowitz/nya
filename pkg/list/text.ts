@@ -62,7 +62,7 @@ class CmdText extends Leaf {
   ) {
     const input = hx("input", {
       class:
-        "relative focus:outline-none font-['Times_New_Roman'] bg-transparent -mx-[.5ch] px-[.5ch] [box-sizing:content-box] ![field-sizing:content]",
+        "relative focus:outline-hidden font-['Times_New_Roman'] bg-transparent -mx-[.5ch] px-[.5ch] box-content field-sizing-content!",
       autocomplete: "off",
     })
     input.spellcheck = false
@@ -245,7 +245,7 @@ const FN_CONCAT = new (class extends FnDistManual<"text"> {
 
 export const store = new Store((expr) => {
   const el = h(
-    "flex flex-col px-2 pb-1 -mt-2 w-[calc(var(--nya-sidebar)_-_2.5rem_-_1px)] overflow-x-auto [&::-webkit-scrollbar]:hidden font-sans [.nya-expr:has(&):not(:focus-within)_.nya-display]:sr-only [.nya-expr:has(&):not(:focus-within)_&]:px-4 [.nya-expr:has(&):not(:focus-within)_&]:py-3 [.nya-expr:has(&):not(:focus-within)_&]:mt-0 [white-space:preserve_wrap] [line-height:1.5] gap-2 max-h-[400px] select-text nya-not-expr-focus-target",
+    "flex flex-col px-2 pb-1 -mt-2 w-[calc(var(--nya-sidebar)-2.5rem-1px)] overflow-x-auto [&::-webkit-scrollbar]:hidden font-sans [.nya-expr:has(&):not(:focus-within)_.nya-display]:sr-only [.nya-expr:has(&):not(:focus-within)_&]:px-4 [.nya-expr:has(&):not(:focus-within)_&]:py-3 [.nya-expr:has(&):not(:focus-within)_&]:mt-0 [white-space:preserve_wrap] [line-height:1.5] gap-2 max-h-[400px] select-text nya-not-expr-focus-target",
   )
   let moved = false
   el.addEventListener("pointerdown", () => {
@@ -362,7 +362,7 @@ export default {
           return h(
             "",
             h(
-              "text-[oklch(0.518_0.253_323.949)] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px]",
+              "text-[oklch(0.518_0.253_323.949)] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-(--nya-bg) inline-block relative border-2 border-current rounded-[4px]",
               h(
                 "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
               ),

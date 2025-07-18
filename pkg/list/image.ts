@@ -79,9 +79,9 @@ class CmdImgPreview extends Leaf {
     super(
       "",
       h(
-        "relative inline-block size-24 border border-[--nya-border] rounded overflow-hidden align-middle",
+        "relative inline-block size-24 border border-(--nya-border) rounded-sm overflow-hidden align-middle",
         hx("img", {
-          class: "absolute object-cover inset-0 size-24 blur scale-[120%]",
+          class: "absolute object-cover inset-0 size-24 blur-sm scale-[120%]",
           src,
         }),
         hx("img", {
@@ -125,9 +125,9 @@ const FACTORY: ItemFactory<Data> = {
     const msg = t("")
 
     const msgEl = h(
-      "hidden [line-height:1] text-center absolute inset-x-2 z-10 bottom-1 bg-[--nya-bg] text-[--nya-expr-error] font-sans",
+      "hidden [line-height:1] text-center absolute inset-x-2 z-10 bottom-1 bg-(--nya-bg) text-(--nya-expr-error) font-sans",
       h(
-        "absolute bottom-full inset-x-0 from-[--nya-bg] to-transparent bg-gradient-to-t h-2",
+        "absolute bottom-full inset-x-0 from-(--nya-bg) to-transparent bg-linear-to-t h-2",
       ),
       msg,
     )
@@ -161,7 +161,7 @@ const FACTORY: ItemFactory<Data> = {
 
     const img1 = hx(
       "img",
-      "hidden absolute size-full inset-0 object-cover blur",
+      "hidden absolute size-full inset-0 object-cover blur-sm",
     )
     const img2 = hx("img", "hidden absolute size-full inset-0 object-contain")
     img2.addEventListener("load", () => {
@@ -188,7 +188,7 @@ const FACTORY: ItemFactory<Data> = {
         new OpEq(false).el,
         hx(
           "label",
-          "relative flex h-32 min-w-32 flex-1 bg-[--nya-bg-sidebar] rounded border border-[--nya-border] overflow-hidden",
+          "relative flex h-32 min-w-32 flex-1 bg-(--nya-bg-sidebar) rounded-sm border border-(--nya-border) overflow-hidden",
           field,
           none,
           img1,
@@ -370,7 +370,7 @@ export default {
           return h(
             "",
             h(
-              "text-[theme(colors.slate.500)] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px]",
+              "text-slate-500 size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-(--nya-bg) inline-block relative border-2 border-current rounded-[4px]",
               h(
                 "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
               ),
@@ -388,7 +388,7 @@ export default {
           return h(
             "",
             h(
-              "text-[theme(colors.slate.500)] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block border-2 border-current relative rounded-[4px] overflow-hidden",
+              "text-slate-500 size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-(--nya-bg) inline-block border-2 border-current relative rounded-[4px] overflow-hidden",
               h(
                 "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
               ),

@@ -219,16 +219,16 @@ export class KeyboardController {
 
     document.documentElement.style.setProperty("--nya-kbd-visible-height", "0")
     this.el = h(
-      "fixed right-0 w-full p-2 bg-[--nya-kbd-bg] [line-height:1] whitespace-nowrap z-10 select-none text-lg [&.nya-kbd-open]:bottom-0 -bottom-[--nya-kbd-height] transition-[bottom]",
+      "fixed right-0 w-full p-2 bg-(--nya-kbd-bg) [line-height:1] whitespace-nowrap z-10 select-none text-lg [&.nya-kbd-open]:bottom-0 -bottom-(--nya-kbd-height) transition-[bottom]",
       (elToggle = hx(
         "button",
         {
           class:
-            "absolute bottom-full left-0 flex items-center bg-[--nya-kbd-bg] pr-4 pl-4 pt-2 pb-2 rounded-tr gap-2 fill-[--nya-kbd-toggle-icon] [.nya-kbd-open_&]:pb-1 transition-[padding-bottom]",
+            "absolute bottom-full left-0 flex items-center bg-(--nya-kbd-bg) pr-4 pl-4 pt-2 pb-2 rounded-tr gap-2 fill-(--nya-kbd-toggle-icon) in-[.nya-kbd-open]:pb-1 transition-[padding-bottom]",
           tabindex: "-1",
         },
         fa(faKeyboard, "size-6"),
-        fa(faCaretUp, "size-4 [.nya-kbd-open_&]:rotate-180 transition"),
+        fa(faCaretUp, "size-4 in-[.nya-kbd-open]:rotate-180 transition"),
       )),
       (this.elGrid = h(
         "grid grid-cols-[repeat(40,1fr)] gap-1 md:max-w-xl mx-auto",

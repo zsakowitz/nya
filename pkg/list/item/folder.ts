@@ -32,7 +32,7 @@ const FACTORY: ItemFactory<Data> = {
 
     const field = hx("textarea", {
       class:
-        "px-4 py-3 focus:outline-none font-sans resize-none bg-transparent",
+        "px-4 py-3 focus:outline-hidden font-sans resize-none bg-transparent",
       spellcheck: "false",
     })
     field.value = contents
@@ -105,7 +105,7 @@ const FACTORY: ItemFactory<Data> = {
   main(data) {
     return h(
       "grid grid-cols-[1rem_auto]",
-      h("border-r border-t border-[--nya-border] mb-1 ml-1 mt-[1.5rem]"),
+      h("border-r border-t border-(--nya-border) mb-1 ml-1 mt-6"),
       data.field,
     )
   },

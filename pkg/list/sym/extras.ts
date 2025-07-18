@@ -82,12 +82,12 @@ export default {
           return h(
             "",
             h(
-              "text-[#00786F] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px]",
+              "text-[#00786F] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-(--nya-bg) inline-block relative border-2 border-current rounded-[4px]",
               h(
                 "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
               ),
               h(
-                "absolute top-1/2 left-1/2 -translate-x-1/2 translate-y-[calc(-50%_-_1.5px)] font-['Times_New_Roman'] italic text-[100%]",
+                "absolute top-1/2 left-1/2 -translate-x-1/2 translate-y-[calc(-50%-1.5px)] font-['Times_New_Roman'] italic text-[100%]",
                 "f",
               ),
             ),

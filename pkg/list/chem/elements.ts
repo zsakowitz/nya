@@ -5435,12 +5435,12 @@ const INFO_ELEMENT: TyInfoByName<"element"> = {
     return h(
       "",
       h(
-        "text-yellow-600 size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px]",
+        "text-yellow-600 size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-(--nya-bg) inline-block relative border-2 border-current rounded-[4px]",
         h(
           "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
         ),
         h(
-          "absolute top-1/2 left-1/2 -translate-x-1/2 translate-y-[calc(-50%_+_1px)] font-['Times_New_Roman'] text-[100%]",
+          "absolute top-1/2 left-1/2 -translate-x-1/2 translate-y-[calc(-50%+1px)] font-['Times_New_Roman'] text-[100%]",
           hx("sup", "font-['Symbola']", "1"),
           "H",
         ),
@@ -5466,17 +5466,17 @@ const INFO_ELEMENT: TyInfoByName<"element"> = {
       h(
         {
           class:
-            "size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative rounded-[4px] overflow-hidden border-2 border-slate-950/30 dark:border-slate-50/50",
+            "size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-(--nya-bg) inline-block relative rounded-[4px] overflow-hidden border-2 border-slate-950/30 dark:border-slate-50/50",
           style: `background-color:${color};color:${text}`,
         },
         sz > 1 ?
           h(
-            "absolute flex flex-col top-1/2 left-1/2 -translate-x-1/2 translate-y-[calc(-50%_+_1px)] font-['Times_New_Roman'] text-[75%] [line-height:.9] text-center",
+            "absolute flex flex-col top-1/2 left-1/2 -translate-x-1/2 translate-y-[calc(-50%+1px)] font-['Times_New_Roman'] text-[75%] [line-height:.9] text-center",
             h("", value.symbol),
             h("font-['Symbola']", "" + value.number),
           )
         : h(
-            "absolute top-1/2 left-1/2 -translate-x-1/2 translate-y-[calc(-50%_+_1px)] font-['Times_New_Roman'] " +
+            "absolute top-1/2 left-1/2 -translate-x-1/2 translate-y-[calc(-50%+1px)] font-['Times_New_Roman'] " +
               (sz > 0 ? "text-[80%]" : "text-[100%]"),
             hx("sup", "font-['Symbola']", "" + value.number),
             value.symbol,

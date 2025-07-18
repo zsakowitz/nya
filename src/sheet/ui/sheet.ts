@@ -106,7 +106,7 @@ export class Sheet {
   readonly el
   readonly elExpressions = h("flex flex-col", this.list.el)
   readonly elNextIndex = h(
-    "font-sans text-[--nya-expr-index] text-[65%] leading-none",
+    "font-sans text-(--nya-expr-index) text-[65%] leading-none",
     this.list.nextIndex,
   )
 
@@ -188,7 +188,7 @@ export class Sheet {
     //     { class: "contents cursor-pointer" },
     //     input,
     //     h(
-    //       "opacity-30 hover:opacity-100 [:checked+&]:opacity-100 inline-block [:checked+&]:bg-[--nya-bg-sidebar] px-2 text-center rounded-sm [:first-child>&]:rounded-l-full [:last-child>&]:rounded-r-full",
+    //       "opacity-30 hover:opacity-100 [:checked+&]:opacity-100 inline-block [:checked+&]:bg-(--nya-bg-sidebar) px-2 text-center rounded-xs [:first-child>&]:rounded-l-full [:last-child>&]:rounded-r-full",
     //       name,
     //     ),
     //   )
@@ -201,7 +201,7 @@ export class Sheet {
     //   return label
     // }
     // const trigKindEl = h(
-    //   "w-48 bg-[--nya-bg] outline outline-1 outline-[--nya-pixel-ratio] rounded-full p-0.5 text-[--nya-text-prose] font-['Symbola'] grid grid-cols-3",
+    //   "w-48 bg-(--nya-bg) outline-solid outline-1 outline-(--nya-pixel-ratio) rounded-full p-0.5 text-(--nya-text-prose) font-['Symbola'] grid grid-cols-3",
     //   trigLabel("rad"),
     //   trigLabel("deg"),
     //   trigLabel("rot"),
@@ -306,16 +306,16 @@ ${fns.join("\n\n")}`,
       "button",
       {
         class:
-          "relative text-left grid grid-cols-[2.5rem_auto] min-h-[3.625rem] sm:border-r border-[--nya-border]",
+          "relative text-left grid grid-cols-[2.5rem_auto] min-h-14.5 sm:border-r border-(--nya-border)",
         tabindex: "-1",
       },
 
       // grey side of expression
       h(
-        "inline-flex bg-gradient-to-b from-[--nya-bg-sidebar] to-transparent flex-col p-0.5 relative h-full",
+        "inline-flex bg-linear-to-b from-(--nya-bg-sidebar) to-transparent flex-col p-0.5 relative h-full",
         this.elNextIndex,
         h(
-          "absolute right-0 inset-y-0 w-px from-[--nya-border] to-transparent bg-gradient-to-b",
+          "absolute right-0 inset-y-0 w-px from-(--nya-border) to-transparent bg-linear-to-b",
         ),
       ),
     )
@@ -325,9 +325,9 @@ ${fns.join("\n\n")}`,
     })
 
     const titlebar = h(
-      "font-['Symbola','Times_New_Roman',sans-serif] sticky top-0 w-full bg-[--nya-bg-sidebar] border-r border-[--nya-border] text-center text-[--nya-title] z-20 [grid-area:titlebar] border-t sm:border-t-0",
+      "font-['Symbola','Times_New_Roman',sans-serif] sticky top-0 w-full bg-(--nya-bg-sidebar) border-r border-(--nya-border) text-center text-(--nya-title) z-20 [grid-area:titlebar] border-t sm:border-t-0",
       h(
-        "flex w-full h-12 min-h-12 max-h-12 p-1 border-b border-[--nya-border] [container-type:size]",
+        "flex w-full h-12 min-h-12 max-h-12 p-1 border-b border-(--nya-border) @container-[size]",
         copyAll,
         clearAll,
         h("m-auto text-2xl [@container(min-width:300px)]:hidden", "nya"),
@@ -342,13 +342,13 @@ ${fns.join("\n\n")}`,
     )
 
     const sidebar = h(
-      "font-['Symbola','Times_New_Roman',sans-serif] flex flex-col overflow-y-auto [grid-area:sidebar] border-[--nya-border]",
+      "font-['Symbola','Times_New_Roman',sans-serif] flex flex-col overflow-y-auto [grid-area:sidebar] border-(--nya-border)",
 
       // title bar
       h(
-        "sticky top-0 w-full bg-[--nya-bg-sidebar] sm:border-r border-[--nya-border] text-center text-[--nya-title] z-20",
+        "sticky top-0 w-full bg-(--nya-bg-sidebar) sm:border-r border-(--nya-border) text-center text-(--nya-title) z-20",
         h(
-          "grid grid-cols-[repeat(auto-fill,2.5rem)] p-1 border-b border-[--nya-border]",
+          "grid grid-cols-[repeat(auto-fill,2.5rem)] p-1 border-b border-(--nya-border)",
           ...factory
             .itemFactories()
             .sort((a, b) =>
@@ -374,19 +374,19 @@ ${fns.join("\n\n")}`,
 
       // bottom padding
       h(
-        "flex-1 min-h-8 sm:border-r sm:min-h-24 sm:[.nya-kbd-any-open_&]:min-h-[calc(var(--nya-kbd-height)_+_2rem)] border-[--nya-border]",
+        "flex-1 min-h-8 sm:border-r sm:min-h-24 sm:in-[.nya-kbd-any-open]:min-h-[calc(var(--nya-kbd-height)+2rem)] border-(--nya-border)",
       ),
     )
 
     const hasToolbar = () => (toolbarItems.length ? true : null)
     const createToolbar = () =>
       h(
-        "font-['Symbola','Times_New_Roman',sans-serif] flex overflow-x-auto h-12 min-h-12 bg-[--nya-bg-sidebar] border-b border-[--nya-border] first:*:ml-auto last:*:mr-auto [&::-webkit-scrollbar]:hidden px-2 [grid-area:toolbar]",
+        "font-['Symbola','Times_New_Roman',sans-serif] flex overflow-x-auto h-12 min-h-12 bg-(--nya-bg-sidebar) border-b border-(--nya-border) *:first:ml-auto *:last:mr-auto [&::-webkit-scrollbar]:hidden px-2 [grid-area:toolbar]",
         ...toolbarItems.map((x) => x(this)),
       )
 
     const toolbarDependentCvGradient = h(
-      "absolute block top-0 left-0 right-0 h-1 from-[--nya-sidebar-shadow] to-transparent bg-gradient-to-b",
+      "absolute block top-0 left-0 right-0 h-1 from-(--nya-sidebar-shadow) to-transparent bg-linear-to-b",
     )
 
     const cv = h(
@@ -395,7 +395,7 @@ ${fns.join("\n\n")}`,
       this.cv.el,
       toolbarDependentCvGradient,
       h(
-        "absolute block sm:top-0 bottom-0 left-0 sm:w-1 w-full h-1 sm:h-full from-[--nya-sidebar-shadow] to-transparent bg-gradient-to-t sm:bg-gradient-to-r",
+        "absolute block sm:top-0 bottom-0 left-0 sm:w-1 w-full h-1 sm:h-full from-(--nya-sidebar-shadow) to-transparent bg-linear-to-t sm:bg-linear-to-r",
       ),
       h(
         "absolute flex flex-col top-2 right-2 gap-2",
@@ -403,27 +403,27 @@ ${fns.join("\n\n")}`,
         // trigKindEl, // FIXME: put back trig angle kind picker once it's supported
       ),
       h(
-        "absolute flex flex-col bottom-2 right-2 text-right font-['Symbola'] text-[--nya-title] pointer-events-none [-webkit-text-stroke:2px_var(--nya-bg)] [paint-order:stroke] opacity-30",
+        "absolute flex flex-col bottom-2 right-2 text-right font-['Symbola'] text-(--nya-title) pointer-events-none [-webkit-text-stroke:2px_var(--nya-bg)] [paint-order:stroke] opacity-30",
         h("text-3xl/[1]", "project nya"),
         h("italic text-sm leading-none", REMARK),
       ),
     )
 
     const closeAddons = h(
-      "mb-2 px-[calc(0.75rem_+_1px)] text-[--nya-text-prose] flex flex-col gap-2",
+      "mb-2 px-[calc(0.75rem+1px)] text-(--nya-text-prose) flex flex-col gap-2",
       px`Addons extend project nya with extra functionality. They can add new functions, data types, and other constructs. Clicking the "Docs" icon will show additional guides after you've selected addons.`,
     )
 
     const toolbarDependentAddonGradient = h(
-      "absolute block top-0 left-0 right-0 h-1 from-[--nya-sidebar-shadow] to-transparent bg-gradient-to-b",
+      "absolute block top-0 left-0 right-0 h-1 from-(--nya-sidebar-shadow) to-transparent bg-linear-to-b",
     )
 
     const addons = h(
-      "relative [grid-area:cv] backdrop-blur flex h-full max-h-full",
-      h("absolute top-0 left-0 h-full w-full bg-[--nya-bg-sidebar] opacity-80"),
+      "relative [grid-area:cv] backdrop-blur-sm flex h-full max-h-full",
+      h("absolute top-0 left-0 h-full w-full bg-(--nya-bg-sidebar) opacity-80"),
       toolbarDependentAddonGradient,
       h(
-        "absolute block sm:top-0 bottom-0 left-0 sm:w-1 w-full h-1 sm:h-full from-[--nya-sidebar-shadow] to-transparent bg-gradient-to-t sm:bg-gradient-to-r",
+        "absolute block sm:top-0 bottom-0 left-0 sm:w-1 w-full h-1 sm:h-full from-(--nya-sidebar-shadow) to-transparent bg-linear-to-t sm:bg-linear-to-r",
       ),
       h(
         "absolute top-0 left-0 w-full h-full overflow-y-auto p-4",
@@ -438,7 +438,7 @@ ${fns.join("\n\n")}`,
 
     // dom
     this.glPixelRatio.el.className =
-      "block w-48 bg-[--nya-bg] outline outline-1 outline-[--nya-pixel-ratio] rounded-full p-1"
+      "block w-48 bg-(--nya-bg) outline-solid outline-1 outline-(--nya-pixel-ratio) rounded-full p-1"
     const toolbarEl = h("contents")
     this.el = h("", titlebar, sidebar, toolbarEl, cv, addons)
 
@@ -448,7 +448,7 @@ ${fns.join("\n\n")}`,
       }
 
       this.el.classList =
-        "bg-[--nya-bg] fixed inset-0 grid select-none grid-cols-[1fr] grid-rows-[3rem_1fr_calc(3rem_+_1px)_1fr_var(--nya-kbd-sheet-offset)] sm:grid-cols-[min(500px,40vw)_1fr] sm:grid-rows-[3rem_1fr_var(--nya-kbd-sheet-offset)] sm:[--nya-kbd-sheet-offset:0] " +
+        "bg-(--nya-bg) fixed inset-0 grid select-none grid-cols-[1fr] grid-rows-[3rem_1fr_calc(3rem+1px)_1fr_var(--nya-kbd-sheet-offset)] sm:grid-cols-[min(500px,40vw)_1fr] sm:grid-rows-[3rem_1fr_var(--nya-kbd-sheet-offset)] sm:[--nya-kbd-sheet-offset:0] " +
         (hasToolbar() ?
           "[grid-template-areas:'toolbar'_'cv'_'titlebar'_'sidebar'] sm:[grid-template-areas:'titlebar_toolbar'_'sidebar_cv']"
         : "[grid-template-areas:'cv'_'cv'_'titlebar'_'sidebar'] sm:[grid-template-areas:'titlebar_cv'_'sidebar_cv']")

@@ -20,7 +20,7 @@ export class CmdEOF extends Leaf {
       "\\error ",
       h(
         "px-[.1em]",
-        h("text-[--nya-latex-error] border border-current px-1", "EOF"),
+        h("text-(--nya-latex-error) border border-current px-1", "EOF"),
       ),
     )
   }

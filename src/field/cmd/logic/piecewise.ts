@@ -34,7 +34,7 @@ export class CmdPiecewise extends Command {
       h(
         `my-[.1em] inline-block ${BRACKS["{"].mx} ${BRACKS["}"].mx}`,
         h(
-          "inline-grid grid-cols-[auto,auto] gap-y-[.2em] align-middle items-baseline",
+          "inline-grid grid-cols-[auto_auto] gap-y-[.2em] align-middle items-baseline",
           ...blocks.map((block, index) =>
             h(
               "inline-block py-[.1em]" +

@@ -118,29 +118,29 @@ export function createDocs2(sheet: Sheet) {
   }
 
   const main = h(
-    "relative grid grid-cols-[auto,1px,18rem] [&.nya-docs-open]:grid-cols-[auto] min-h-screen text-[--nya-text]",
+    "relative grid grid-cols-[auto_1px_18rem] [&.nya-docs-open]:grid-cols-[auto] min-h-screen text-(--nya-text)",
     h(
-      "relative block z-[0]",
+      "relative block z-0",
       h(
-        "fixed left-0 right-[calc(18rem_+_1px)] [.nya-docs-open_&]:right-0 top-0 pt-2 flex text-center bg-[--nya-bg] z-10 h-[calc(3rem_+_1px)]",
-        h("border-b border-[--nya-border] w-2"),
+        "fixed left-0 right-[calc(18rem+1px)] in-[.nya-docs-open]:right-0 top-0 pt-2 flex text-center bg-(--nya-bg) z-10 h-[calc(3rem+1px)]",
+        h("border-b border-(--nya-border) w-2"),
         ...tabs.map((x) => x.el),
-        h("border-b border-[--nya-border] w-2"),
+        h("border-b border-(--nya-border) w-2"),
         h(
-          "absolute top-full inset-x-0 h-2 from-[--nya-bg-sidebar] to-transparent bg-gradient-to-b pointer-events-none",
+          "absolute top-full inset-x-0 h-2 from-(--nya-bg-sidebar) to-transparent bg-linear-to-b pointer-events-none",
         ),
       ),
-      h("block w-full h-[calc(3rem_+_1px)]"),
+      h("block w-full h-[calc(3rem+1px)]"),
       h(
-        "flex min-h-[calc(100%_-_3rem_-_1px)] p-4 bg-[--nya-bg-sidebar]",
+        "flex min-h-[calc(100%-3rem-1px)] p-4 bg-(--nya-bg-sidebar)",
         ...Object.values(names),
       ),
     ),
-    h("[.nya-docs-open_&]:hidden bg-[--nya-border]"),
+    h("in-[.nya-docs-open]:hidden bg-(--nya-border)"),
     h(
-      "[.nya-docs-open_&]:hidden overflow-y-auto fixed inset-y-0 right-0 w-[18rem] h-full pb-4 px-4 bg-[--nya-bg]",
+      "in-[.nya-docs-open]:hidden overflow-y-auto fixed inset-y-0 right-0 w-[18rem] h-full pb-4 px-4 bg-(--nya-bg)",
       h(
-        "block sticky top-0 pt-4 bg-[--nya-bg] pb-2 mb-3 border-b border-[--nya-border] text-center font-semibold",
+        "block sticky top-0 pt-4 bg-(--nya-bg) pb-2 mb-3 border-b border-(--nya-border) text-center font-semibold",
         list.with(t("filter packages"), (v) => {
           if (list.active) {
             v.data = `packages (${list.count} selected)`
@@ -170,19 +170,19 @@ function tabBorders() {
   return h(
     "",
     h(
-      "absolute bottom-[--size] inset-x-0 top-0 border-x border-t border-[--nya-border] rounded-t-[--size]",
+      "absolute bottom-(--size) inset-x-0 top-0 border-x border-t border-(--nya-border) rounded-t-(--size)",
     ),
     h(
-      "absolute bottom-0 left-full size-[--size] -translate-x-px bg-[--nya-bg-sidebar]",
+      "absolute bottom-0 left-full size-(--size) -translate-x-px bg-(--nya-bg-sidebar)",
     ),
     h(
-      "absolute bottom-0 left-full size-[--size] -translate-x-px rounded-bl-[--size] border-b border-l border-[--nya-border] bg-[--nya-bg] [:has(+:hover)>*>&]:bg-[--nya-bg-sidebar]",
+      "absolute bottom-0 left-full size-(--size) -translate-x-px rounded-bl-(--size) border-b border-l border-(--nya-border) bg-(--nya-bg) [:has(+:hover)>*>&]:bg-(--nya-bg-sidebar)",
     ),
     h(
-      "absolute bottom-0 right-full size-[--size] translate-x-px bg-[--nya-bg-sidebar]",
+      "absolute bottom-0 right-full size-(--size) translate-x-px bg-(--nya-bg-sidebar)",
     ),
     h(
-      "absolute bottom-0 right-full size-[--size] translate-x-px rounded-br-[--size] border-b border-r border-[--nya-border] bg-[--nya-bg] [:hover+*>*>&]:bg-[--nya-bg-sidebar]",
+      "absolute bottom-0 right-full size-(--size) translate-x-px rounded-br-(--size) border-b border-r border-(--nya-border) bg-(--nya-bg) [:hover+*>*>&]:bg-(--nya-bg-sidebar)",
     ),
   )
 }
@@ -192,17 +192,17 @@ function tab(title: string, open: boolean) {
 
   const el = hx(
     "button",
-    "py-2 font-semibold relative [--size:.5rem] border-[--nya-border] hover:bg-[--nya-bg-sidebar] rounded-t-[--size] -ml-px first:ml-0 px-6 flex-1",
+    "py-2 font-semibold relative [--size:.5rem] border-(--nya-border) hover:bg-(--nya-bg-sidebar) rounded-t-(--size) -ml-px first:ml-0 px-6 flex-1",
     title,
     borders,
   )
 
   function check() {
     borders.hidden = !open
-    el.classList.toggle("pb-[calc(0.5rem_+_1px)]", open)
+    el.classList.toggle("pb-[calc(0.5rem+1px)]", open)
     el.classList.toggle("border-b", !open)
     el.classList.toggle("z-10", open)
-    el.classList.toggle("bg-[--nya-bg-sidebar]", open)
+    el.classList.toggle("bg-(--nya-bg-sidebar)", open)
   }
   check()
 
@@ -219,12 +219,12 @@ function tab(title: string, open: boolean) {
 function highlightedFunction(sheet: Sheet, fn: WithDocs, close: () => void) {
   const closeEl = hx(
     "button",
-    "flex size-8 border-[--nya-border] border-l border-b rounded-bl-lg hover:bg-[--nya-bg-sidebar]",
-    fa(faClose, "size-5 fill-[--nya-title] m-auto"),
+    "flex size-8 border-(--nya-border) border-l border-b rounded-bl-lg hover:bg-(--nya-bg-sidebar)",
+    fa(faClose, "size-5 fill-(--nya-title) m-auto"),
   )
   closeEl.addEventListener("click", close)
   return h(
-    "flex flex-col bg-[--nya-bg] border-[--nya-border] border border-b-0 rounded-t-lg max-h-[min(48rem,100vh_-_4rem_-_1px)] overflow-y-auto",
+    "flex flex-col bg-(--nya-bg) border-(--nya-border) border border-b-0 rounded-t-lg max-h-[min(48rem,100vh-4rem-1px)] overflow-y-auto",
     h(
       "flex",
       h(
@@ -240,7 +240,7 @@ function highlightedFunction(sheet: Sheet, fn: WithDocs, close: () => void) {
             : fn.name,
           ),
         ),
-        h("px-2 text-[--nya-title] text-sm", fn.label),
+        h("px-2 text-(--nya-title) text-sm", fn.label),
       ),
       closeEl,
     ),
@@ -289,7 +289,7 @@ function secFunctions(
       : 0),
   )
   const highlighted = h(
-    "sticky bottom-0 mt-4 -mb-4 left-4 w-[calc(100vw_-_20rem_-_1px)] max-w-2xl hidden",
+    "sticky bottom-0 mt-4 -mb-4 left-4 w-[calc(100vw-20rem-1px)] max-w-2xl hidden",
   )
   function set(fn: WithDocs, path: boolean) {
     while (highlighted.firstChild) {
@@ -335,13 +335,13 @@ function secFunctions(
 
           const tr = hx(
             "tr",
-            "border-t border-[--nya-border] hover:bg-[--nya-bg] cursor-pointer select-none",
+            "border-t border-(--nya-border) hover:bg-(--nya-bg) cursor-pointer select-none",
             hx(
               "td",
-              "align-baseline font-['Times_New_Roman'] text-[1.265rem] text-[--nya-text] whitespace-nowrap pl-4",
+              "align-baseline font-['Times_New_Roman'] text-[1.265rem] text-(--nya-text) whitespace-nowrap pl-4",
               makeDocName(doc.name),
             ),
-            hx("td", "align-baseline px-4 py-1 text-[--nya-title]", doc.label),
+            hx("td", "align-baseline px-4 py-1 text-(--nya-title)", doc.label),
           )
 
           tr.addEventListener("click", () => set(doc, true))
@@ -361,7 +361,7 @@ function secFunctions(
 }
 
 function math(sheet: Sheet, data: string) {
-  const field = new FieldInert(sheet.options, sheet.scope, "text-[--nya-text]")
+  const field = new FieldInert(sheet.options, sheet.scope, "text-(--nya-text)")
   field.typeLatex(data)
   return field.el
 }
@@ -385,11 +385,11 @@ function secDataTypes(list: PackageList) {
 
         const tr = hx(
           "tr",
-          "border-t border-[--nya-border]",
+          "border-t border-(--nya-border)",
           hx("td", "pt-[2px]", doc.icon()),
           hx(
             "td",
-            "align-baseline font-['Times_New_Roman'] text-[1.265rem] text-[--nya-text] whitespace-nowrap",
+            "align-baseline font-['Times_New_Roman'] text-[1.265rem] text-(--nya-text) whitespace-nowrap",
             doc.name,
           ),
         )
@@ -406,10 +406,10 @@ function secDataTypes(list: PackageList) {
 
 function secAbout() {
   return h(
-    "flex flex-col gap-2 w-full max-w-prose border rounded-lg p-4 mx-auto text-[--nya-text-prose] bg-[--nya-bg] border-[--nya-border]",
+    "flex flex-col gap-2 w-full max-w-prose border rounded-lg p-4 mx-auto text-(--nya-text-prose) bg-(--nya-bg) border-(--nya-border)",
     hx(
       "h2",
-      "text-2xl font-semibold border-b border-[--nya-border] pb-1 mb-2 text-[--nya-text]",
+      "text-2xl font-semibold border-b border-(--nya-border) pb-1 mb-2 text-(--nya-text)",
       "Introduction",
     ),
     px`project nya is a graphing calculator, shader playground, unit converter, and symbolic computation tool. Its author is ${hx("a", { class: "text-blue-500 underline underline-offset-2", href: "https://github.com/zsakowitz" }, "sakawi (she/her)")}, who tries to update it daily. All its code is available ${hx("a", { class: "text-blue-500 underline underline-offset-2", href: "https://github.com/zsakowitz/nya" }, "for free on GitHub")}.`,
@@ -417,7 +417,7 @@ function secAbout() {
     px`project nya is designed to be extensible, so that new features can be added easily. This extensibility is why project nya can convert units, work with quaternions, provide chemical data, and plot recursive images.`,
     hx(
       "h2",
-      "text-2xl font-semibold border-b border-[--nya-border] pb-1 my-2 text-[--nya-text]",
+      "text-2xl font-semibold border-b border-(--nya-border) pb-1 my-2 text-(--nya-text)",
       "How to use it",
     ),
     px`The best idea is just to experiment! Type something, see what happens, edit it, and repeat. Or use the geometry tools at the top, which will help you construct geometrical objects.`,
@@ -431,7 +431,7 @@ function secAbout() {
       "flex flex-col gap-2",
       hx(
         "h2",
-        "text-2xl font-semibold border-b border-[--nya-border] pb-1 my-2 text-[--nya-text]",
+        "text-2xl font-semibold border-b border-(--nya-border) pb-1 my-2 text-(--nya-text)",
         "The package system",
       ),
       px`Warning: this may be incredibly boring. However, this is my website, and I am very proud of the package system, so I am allowed to infodump about it.`,
@@ -470,14 +470,14 @@ function secGuides(sheet: Sheet, list: PackageList) {
   const activeContents = h("flex flex-col gap-4")
   const btn = hx(
     "button",
-    "fixed right-[calc(18.5rem_+_1px)] top-[calc(3.5rem_+_1px)] size-8 bg-[--nya-bg] border border-[--nya-border] rounded-lg flex",
-    fa(faClose, "size-5 fill-[--nya-title] m-auto"),
+    "fixed right-[calc(18.5rem+1px)] top-[calc(3.5rem+1px)] size-8 bg-(--nya-bg) border border-(--nya-border) rounded-lg flex",
+    fa(faClose, "size-5 fill-(--nya-title) m-auto"),
   )
   const btn2 = h(
     "-mb-4 -mx-4 block w-full mt-auto",
     hx(
       "button",
-      "block w-[calc(100%_+_2rem)] mt-4 p-4 italic text-[--nya-text-prose] text-sm underline underline-offset-2 rounded-b-lg",
+      "block w-[calc(100%+2rem)] mt-4 p-4 italic text-(--nya-text-prose) text-sm underline underline-offset-2 rounded-b-lg",
       "Click to show all guides.",
     ),
   )
@@ -492,13 +492,13 @@ function secGuides(sheet: Sheet, list: PackageList) {
     check()
   })
   const active = h(
-    "hidden w-full max-w-prose flex flex-col gap-4 mx-auto text-[--nya-text-prose] flex-1",
+    "hidden w-full max-w-prose flex flex-col gap-4 mx-auto text-(--nya-text-prose) flex-1",
     btn,
     h(
-      "flex flex-col gap-2 border rounded-lg p-4 bg-[--nya-bg] border-[--nya-border] flex-1",
+      "flex flex-col gap-2 border rounded-lg p-4 bg-(--nya-bg) border-(--nya-border) flex-1",
       hx(
         "h2",
-        "text-2xl font-semibold border-b border-[--nya-border] pb-1 mb-2 text-[--nya-text]",
+        "text-2xl font-semibold border-b border-(--nya-border) pb-1 mb-2 text-(--nya-text)",
         activeTitle,
       ),
       activeContents,
@@ -520,9 +520,9 @@ function secGuides(sheet: Sheet, list: PackageList) {
         "button",
         "flex flex-col",
         h(
-          "flex items-center justify-center border border-[--nya-border] bg-[--nya-bg] aspect-[16/9] rounded-lg relative",
+          "flex items-center justify-center border border-(--nya-border) bg-(--nya-bg) aspect-video rounded-lg relative",
           h("*:cursor-pointer", math(v.poster)),
-          h("absolute left-2 bottom-1 text-[--nya-text-prose]", v.name),
+          h("absolute left-2 bottom-1 text-(--nya-text-prose)", v.name),
         ),
       )
 
@@ -575,10 +575,10 @@ function secGuides(sheet: Sheet, list: PackageList) {
   )
   const empty = h(
     "m-auto flex flex-col",
-    fa(faFaceSadTear, "size-8 fill-[--nya-title] mx-auto mb-4"),
+    fa(faFaceSadTear, "size-8 fill-(--nya-title) mx-auto mb-4"),
     hx(
       "p",
-      "w-full max-w-96 text-[--nya-text-prose]",
+      "w-full max-w-96 text-(--nya-text-prose)",
       "There are no in-depth guides available for the packages you have selected. Try deselecting some packages.",
     ),
   )
@@ -605,7 +605,7 @@ function secGuides(sheet: Sheet, list: PackageList) {
     const field = new FieldInert(
       sheet.options,
       sheet.scope,
-      "text-[--nya-text]",
+      "text-(--nya-text)",
     )
     field.typeLatex(data)
     return field.el

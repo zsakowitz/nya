@@ -118,8 +118,8 @@ export function createAddons(
     ({ i: index, x: [id, name, colorL, colorM, colorD, label] }) => {
       const head = h(
         "flex flex-col",
-        h("row-1 col-[1] text-[--nya-text] font-semibold", name),
-        h("row-2 col-[1] text-[--nya-title] text-sm", label),
+        h("row-1 col-1 text-(--nya-text) font-semibold", name),
+        h("row-2 col-1 text-(--nya-title) text-sm", label),
       )
 
       const sideItems = fns.filter((x) =>
@@ -129,7 +129,7 @@ export function createAddons(
       const MAX_ITEMS = 20
 
       const side = h(
-        "*:!text-base/[1.15] text-base/[1.15]",
+        "*:text-base/[1.15]! text-base/[1.15]",
         ...sideItems
           .slice(0, MAX_ITEMS)
           .flatMap((x, i) => [
@@ -150,7 +150,7 @@ export function createAddons(
       const reqsContent = t("")
 
       const reqs = h(
-        "col-span-2 italic text-[--nya-text-prose] text-sm mt-2",
+        "col-span-2 italic text-(--nya-text-prose) text-sm mt-2",
         "required by ",
         reqsContent,
       )
@@ -159,7 +159,7 @@ export function createAddons(
         "button",
         {
           class:
-            "grid grid-cols-[40%_auto] bg-[--nya-bg] border border-[--nya-border] text-[--d] px-3 py-2 rounded-lg text-[--nya-text-prose] gap-x-4 text-left items-start" +
+            "grid grid-cols-[40%_auto] bg-(--nya-bg) border border-(--nya-border) text-(--d) px-3 py-2 rounded-lg text-(--nya-text-prose) gap-x-4 text-left items-start" +
             (has(id) ? " nya-sx"
             : id in sheet.factory.loaded ? " nya-yx"
             : ""),
@@ -169,7 +169,7 @@ export function createAddons(
         side,
         reqs,
         h(
-          "col-span-2 italic text-[--nya-text-prose] hidden [.nya-yx>&]:block mt-2 text-sm",
+          "col-span-2 italic text-(--nya-text-prose) hidden [.nya-yx>&]:block mt-2 text-sm",
           'Reload the page to finish removing this addon. This will erase your graph; click "Copy" to copy the graph\'s contents to your clipboard before reloading.',
         ),
       )

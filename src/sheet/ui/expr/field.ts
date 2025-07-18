@@ -12,7 +12,7 @@ export class Field extends FieldComputed {
     this.el.addEventListener("focus", () => {
       showKeyboard(this)
     })
-    this.el.addEventListener("blur", () => {
+    this.el.addEventListener("blur-sm", () => {
       if (!document.activeElement) {
         hideKeyboard()
       }

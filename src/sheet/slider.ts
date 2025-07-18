@@ -40,7 +40,7 @@ export class Slider {
           autocomplete: "off",
         })),
         (this.elStepsOuter = h(
-          "relative block w-full h-1.5 bg-[--nya-border] rounded-full",
+          "relative block w-full h-1.5 bg-(--nya-border) rounded-full",
           (this.elSteps = h(
             "absolute block top-0.5 h-0.5 left-0.5 right-1 rounded-full",
           )),
@@ -48,9 +48,9 @@ export class Slider {
         h(
           "absolute top-0 left-0 right-6 h-6 touch-none",
           (this.elScroller = h(
-            "absolute block size-6 rounded-full bg-blue-500/40 top-0 left-0 flex group/nya-scroller group-focus-within/nya-slider:ring-2 ring-offset-2 ring-blue-500/40 ring-offset-[--nya-bg]",
+            "absolute block size-6 rounded-full bg-blue-500/40 top-0 left-0 flex group/nya-scroller group-focus-within/nya-slider:ring-2 ring-offset-2 ring-blue-500/40 ring-offset-(--nya-bg)",
             h(
-              "block size-1.5 rounded-full bg-blue-500 group-hover/nya-scroller:size-6 [.nya-scrolleractive_&]:size-6 m-auto transition-[width,height]",
+              "block size-1.5 rounded-full bg-blue-500 group-hover/nya-scroller:size-6 in-[.nya-scrolleractive]:size-6 m-auto transition-[width,height]",
             ),
           )),
         ),
@@ -83,7 +83,7 @@ export class Slider {
       { passive: true },
     )
     addEventListener(
-      "blur",
+      "blur-sm",
       () => {
         dragging = false
         this.elScroller.classList.remove("nya-scrolleractive")
@@ -160,7 +160,7 @@ export class Slider {
     const steps = (this._steps = (max - min) / step)
     if (0 < steps && steps <= 100) {
       for (let i = 0; i <= steps; i++) {
-        const el = h("absolute top-0 size-0.5 bg-[--nya-bg] rounded-full")
+        const el = h("absolute top-0 size-0.5 bg-(--nya-bg) rounded-full")
         el.style.left = 100 * (i / steps) + "%"
         this.elSteps.appendChild(el)
       }
@@ -168,7 +168,7 @@ export class Slider {
     const zero = -min / (max - min)
     if (0 <= zero && zero <= 1) {
       const el = h(
-        "absolute top-0 size-0.5 bg-[--nya-slider-zero] rounded-full",
+        "absolute top-0 size-0.5 bg-(--nya-slider-zero) rounded-full",
       )
       el.style.left = 100 * zero + "%"
       this.elSteps.appendChild(el)

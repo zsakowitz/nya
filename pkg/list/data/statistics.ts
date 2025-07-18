@@ -777,7 +777,7 @@ export class CmdStats extends Leaf {
         h(
           `my-[.1em] inline-block ${BRACKS["{"].mx} ${BRACKS["}"].mx}`,
           h(
-            "inline-grid grid-cols-[auto,auto] gap-y-[.2em] align-middle items-baseline",
+            "inline-grid grid-cols-[auto_auto] gap-y-[.2em] align-middle items-baseline",
             ...["min", "Q1", "median", "Q3", "max"].flatMap((label, i) => [
               h(
                 "inline-block py-[.1em] pr-[.4em] font-['Times_New_Roman']",
@@ -877,12 +877,12 @@ const TY_STATS: TyInfoByName<"stats"> = {
     return h(
       "",
       h(
-        "text-[#00786F] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px]",
+        "text-[#00786F] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-(--nya-bg) inline-block relative border-2 border-current rounded-[4px]",
         h(
           "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
         ),
         h(
-          "absolute top-1/2 left-1/2 -translate-x-1/2 translate-y-[calc(-50%_-_1.5px)] font-['Times_New_Roman'] italic text-[100%]",
+          "absolute top-1/2 left-1/2 -translate-x-1/2 translate-y-[calc(-50%-1.5px)] font-['Times_New_Roman'] italic text-[100%]",
           "Q",
           hx("sub", "", "x"),
         ),

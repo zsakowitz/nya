@@ -107,7 +107,7 @@ export default {
           return h(
             "",
             h(
-              "text-[#c74440] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px]",
+              "text-[#c74440] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-(--nya-bg) inline-block relative border-2 border-current rounded-[4px]",
               h(
                 "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
               ),
@@ -163,7 +163,7 @@ export default {
           return h(
             "",
             h(
-              "text-[#c74440] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px]",
+              "text-[#c74440] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-(--nya-bg) inline-block relative border-2 border-current rounded-[4px]",
               h(
                 "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
               ),
@@ -220,7 +220,7 @@ export default {
           return h(
             "",
             h(
-              "text-[#c74440] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px]",
+              "text-[#c74440] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-(--nya-bg) inline-block relative border-2 border-current rounded-[4px]",
               h(
                 "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
               ),
@@ -279,7 +279,7 @@ export default {
           return h(
             "",
             h(
-              "text-[#c74440] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px]",
+              "text-[#c74440] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-(--nya-bg) inline-block relative border-2 border-current rounded-[4px]",
               h(
                 "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
               ),
@@ -331,7 +331,7 @@ export default {
           return h(
             "",
             h(
-              "text-[#c74440] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-current rounded-[4px] border-2",
+              "text-[#c74440] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-(--nya-bg) inline-block relative border-current rounded-[4px] border-2",
               h("opacity-25 block bg-current absolute inset-0"),
               h(
                 "size-[16px] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
@@ -397,12 +397,12 @@ export default {
           return h(
             "",
             h(
-              "text-[#c74440] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-current rounded-[4px] border-2",
+              "text-[#c74440] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-(--nya-bg) inline-block relative border-current rounded-[4px] border-2",
               h("opacity-25 block bg-current absolute inset-0"),
               h(
                 "size-[16px] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
                 h(
-                  "size-[3px] bg-current absolute rounded-full -translate-x-1/2 -translate-y-1/2 left-[100%] top-[85%]",
+                  "size-[3px] bg-current absolute rounded-full -translate-x-1/2 -translate-y-1/2 left-full top-[85%]",
                 ),
                 h(
                   "size-[3px] bg-current absolute rounded-full -translate-x-1/2 -translate-y-1/2 left-[83.3%] top-[40%]",

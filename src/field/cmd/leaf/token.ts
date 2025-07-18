@@ -21,7 +21,7 @@ function iconError() {
   return h(
     "",
     h(
-      "text-orange-500 size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-current rounded-[4px] border-2",
+      "text-orange-500 size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-(--nya-bg) inline-block relative border-current rounded-[4px] border-2",
       h("opacity-25 block bg-current absolute inset-0"),
       fa(
         faWarning,
@@ -35,7 +35,7 @@ function iconFunction() {
   return h(
     "",
     h(
-      "text-slate-500 size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-current rounded-[4px] border-2",
+      "text-slate-500 size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-(--nya-bg) inline-block relative border-current rounded-[4px] border-2",
       h("opacity-25 block bg-current absolute inset-0"),
       h(
         "size-[7px] bg-current absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
@@ -75,7 +75,7 @@ export function createToken(color: string, ...paths: SVGElement[]) {
     h(
       {
         class:
-          "size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-current rounded-[4px] border-2",
+          "size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-(--nya-bg) inline-block relative border-current rounded-[4px] border-2",
         style: `color:${color}`,
       },
       h("opacity-25 block bg-current absolute inset-0"),

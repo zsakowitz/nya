@@ -10,7 +10,7 @@ export function h(
 }
 
 export function b(text: string) {
-  return h("font-semibold text-[--nya-text]", text)
+  return h("font-semibold text-(--nya-text)", text)
 }
 
 export function hx<K extends keyof HTMLElementTagNameMap>(

@@ -12,7 +12,7 @@ export function btnSkin2<K extends keyof HTMLElementTagNameMap>(
 ) {
   return hx(
     kind,
-    "flex flex-col h-[calc(2.5rem_-_1px)] min-w-10 [line-height:1] hover:bg-[--nya-sidebar-hover] hover:text-[--nya-title-dark] rounded focus:outline-none focus-visible:ring ring-[--nya-expr-focus]",
+    "flex flex-col h-[calc(2.5rem-1px)] min-w-10 [line-height:1] hover:bg-(--nya-sidebar-hover) hover:text-(--nya-title-dark) rounded-sm focus:outline-hidden focus-visible:ring-3 ring-(--nya-expr-focus)",
     h(
       "flex flex-col m-auto",
       icon,
@@ -67,7 +67,7 @@ export function makeDoc(
 
 export function example(input: string, value: string | null) {
   return h(
-    "block -mr-4 w-[calc(100%_+_1rem)] border-l border-[--nya-border] nya-doc-ex [.nya-doc-ex+&]:-mt-4 [.nya-doc-ex+&]:pt-2",
+    "block -mr-4 w-[calc(100%+1rem)] border-l border-(--nya-border) nya-doc-ex [.nya-doc-ex+&]:-mt-4 [.nya-doc-ex+&]:pt-2",
     h(
       "block px-4 w-full overflow-x-auto [&::-webkit-scrollbar]:hidden text-left",
       hx("samp", "", input),
@@ -76,7 +76,7 @@ export function example(input: string, value: string | null) {
       h(
         "pt-2 block px-2 w-full overflow-x-auto [&::-webkit-scrollbar]:hidden text-right",
         h(
-          "bg-[--nya-bg-sidebar] [line-height:1] border border-[--nya-border] px-2 py-1 rounded ml-auto inline-block",
+          "bg-(--nya-bg-sidebar) [line-height:1] border border-(--nya-border) px-2 py-1 rounded-sm ml-auto inline-block",
           hx("samp", "", value),
         ),
       )

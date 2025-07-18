@@ -55,13 +55,13 @@ export class Expr {
     this.entry = new Entry(sheet.set)
     this.field = new Field(
       this,
-      "block overflow-x-auto [&::-webkit-scrollbar]:hidden min-h-[3.265rem] max-w-[calc(var(--nya-sidebar)_-_2.5rem_-_1px)] p-4 focus:outline-none",
+      "block overflow-x-auto [&::-webkit-scrollbar]:hidden min-h-[3.265rem] max-w-[calc(var(--nya-sidebar)-2.5rem-1px)] p-4 focus:outline-hidden",
     )
     this.elOutput = h("contents")
     this.elError = h(
-      "block mx-1 -mt-2 px-1 pb-1 leading-tight italic text-[--nya-expr-error] whitespace-pre-wrap font-sans pointer-events-none" +
+      "block mx-1 -mt-2 px-1 pb-1 leading-tight italic text-(--nya-expr-error) whitespace-pre-wrap font-sans pointer-events-none" +
         (new URL(location.href).searchParams.has("errorless") ?
-          " !hidden"
+          " hidden!"
         : ""),
     )
     this.elError.classList.add("hidden") // stops tailwind errors from block+hidden; hidden overrides
@@ -69,7 +69,7 @@ export class Expr {
       "contents",
       fa(
         faWarning,
-        "hidden mb-1.5 mx-auto size-6 fill-[--nya-icon-error] [.nya-expr-error_&]:block",
+        "hidden mb-1.5 mx-auto size-6 fill-(--nya-icon-error) in-[.nya-expr-error]:block",
       ),
       (this.elAside = h("contents")),
     )

@@ -7,14 +7,14 @@ export function title(label: string, rlabel: string | null) {
   return {
     el: hx(
       "summary",
-      "[[open]_&]:sticky top-0 z-20 bg-[--nya-bg] pt-2 list-none",
+      "in-[[open]]:sticky top-0 z-20 bg-(--nya-bg) pt-2 list-none",
       h(
-        "flex bg-[--nya-bg-sidebar] border border-[--nya-border] pt-0.5 -mx-2 rounded-lg px-2 font-['Symbola'] text-[1.265rem] items-center [[data-nya-disabled=true]_&]:opacity-30",
+        "flex bg-(--nya-bg-sidebar) border border-(--nya-border) pt-0.5 -mx-2 rounded-lg px-2 font-['Symbola'] text-[1.265rem] items-center in-data-[nya-disabled=true]:opacity-30",
         h(
           "",
           fa(
             faCaretRight,
-            "size-4 fill-[--nya-title] [[open]_&]:rotate-90 -mt-0.5 transition-transform",
+            "size-4 fill-(--nya-title) in-[[open]]:rotate-90 -mt-0.5 transition-transform",
           ),
         ),
         el,

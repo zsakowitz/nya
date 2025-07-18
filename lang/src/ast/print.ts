@@ -65,7 +65,7 @@ export function print(stream: Stream, a: unknown, level = 0): Element {
     .map(([k, v]) => h("", k, ": ", print(stream, v, level + 1)))
 
   return tag(
-    h("", h("text-[--nya-text] font-semibold", a.constructor.name), " { "),
+    h("", h("text-(--nya-text) font-semibold", a.constructor.name), " { "),
     list(els, els.length >= 2 ? 0 : 80 - 2 * level),
     " }",
     level,

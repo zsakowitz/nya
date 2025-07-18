@@ -11,10 +11,10 @@ export const STORE_EVAL = new Store((e) => {
   const field = new FieldInert(
     e.field.options,
     e.sheet.scope,
-    "bg-[--nya-bg-sidebar] border border-[--nya-border] px-2 pt-[.35rem] pb-[.25rem] rounded inline-block",
+    "bg-(--nya-bg-sidebar) border border-(--nya-border) px-2 pt-[.35rem] pb-[.25rem] rounded-sm inline-block",
   )
   const el = h(
-    "flex px-2 pb-2 -mt-2 w-[calc(var(--nya-sidebar)_-_2.5rem_-_1px)] overflow-x-auto [&::-webkit-scrollbar]:hidden items-baseline",
+    "flex px-2 pb-2 -mt-2 w-[calc(var(--nya-sidebar)-2.5rem-1px)] overflow-x-auto [&::-webkit-scrollbar]:hidden items-baseline",
     h(
       "ml-auto inline-block pt-[.35rem] text-[1.265rem] pr-1.5 text-slate-400",
       "=",
@@ -50,7 +50,7 @@ export function createMultiEval(items: (Node | string)[]) {
           "contents",
           h(""),
           h(
-            "bg-[--nya-bg-sidebar] border border-[--nya-border] px-2 rounded-l [line-height:1] flex items-center",
+            "bg-(--nya-bg-sidebar) border border-(--nya-border) px-2 rounded-l [line-height:1] flex items-center",
             label,
           ),
           fields,
@@ -59,7 +59,7 @@ export function createMultiEval(items: (Node | string)[]) {
       }
     })
     const el = h(
-      "grid grid-cols-[1fr,auto] px-2 pb-2 -mt-2 w-[calc(var(--nya-sidebar)_-_2.5rem_-_1px)] overflow-x-auto [&::-webkit-scrollbar]:hidden gap-y-1",
+      "grid grid-cols-[1fr_auto] px-2 pb-2 -mt-2 w-[calc(var(--nya-sidebar)-2.5rem-1px)] overflow-x-auto [&::-webkit-scrollbar]:hidden gap-y-1",
       ...labels.map((x) => x.el),
     )
     return { labels: labels.map((x) => x.fields), el }
@@ -78,7 +78,7 @@ export function createMultiEval(items: (Node | string)[]) {
         const { el } = new FieldInert(
           expr.field.options,
           expr.sheet.scope,
-          "bg-[--nya-bg-sidebar] border border-[--nya-border] px-2 py-1 border-l-0 last:rounded-r inline-block",
+          "bg-(--nya-bg-sidebar) border border-(--nya-border) px-2 py-1 border-l-0 last:rounded-r inline-block",
         )
         label.appendChild(el)
         el.classList.remove("text-[1.265em]")
@@ -101,7 +101,7 @@ export function createMultiEval(items: (Node | string)[]) {
         const field = new FieldInert(
           expr.field.options,
           expr.sheet.scope,
-          "bg-[--nya-bg-sidebar] border border-[--nya-border] px-2 py-1 border-l-0 last:rounded-r inline-block",
+          "bg-(--nya-bg-sidebar) border border-(--nya-border) px-2 py-1 border-l-0 last:rounded-r inline-block",
         )
         const display = new Display(field.block.cursor(R), int(10))
         display.num(x[i]!)

@@ -31,7 +31,7 @@ const FACTORY: ItemFactory<Data> = {
 
     const field = hx("textarea", {
       class:
-        "px-4 py-3 focus:outline-none font-sans resize-none bg-transparent",
+        "px-4 py-3 focus:outline-hidden font-sans resize-none bg-transparent",
       spellcheck: "false",
     })
     field.value = contents

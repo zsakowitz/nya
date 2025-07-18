@@ -104,9 +104,9 @@ function readSlider(node: Node): { value: SReal; base: SReal | null } | null {
 const RED = [
   "border-b-2",
   "-mb-px",
-  "focus:!border-b-[--nya-range-error]",
-  "!border-b-[--nya-range-error]",
-  "[.nya-range-error_&]:border-b-2",
+  "focus:border-b-(--nya-range-error)!",
+  "border-b-(--nya-range-error)!",
+  "in-[.nya-range-error]:border-b-2",
 ]
 
 class RangeControls {
@@ -158,7 +158,7 @@ class RangeControls {
       this.max.el,
       h(
         "contents nya-range-bounds",
-        h("ml-4 font-sans text-sm text-[--nya-range-step]", "Step: "),
+        h("ml-4 font-sans text-sm text-(--nya-range-step)", "Step: "),
         this.step.el,
       ),
       this.scrubber.el,

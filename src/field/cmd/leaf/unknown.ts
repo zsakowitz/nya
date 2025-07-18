@@ -13,7 +13,7 @@ export class CmdUnknown extends Leaf {
       "\\unknown ",
       h(
         "px-[.1em]",
-        h("text-[--nya-latex-error] border border-current px-1", source),
+        h("text-(--nya-latex-error) border border-current px-1", source),
       ),
     )
   }

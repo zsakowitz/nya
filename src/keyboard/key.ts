@@ -11,14 +11,14 @@ const parser = new LatexParser(options, null, "")
 function key(base?: string | Node, clsx?: string, active?: boolean) {
   const contents =
     typeof base == "string" ?
-      h("font-['Symbola'] last:*:*:*:pr-0", parser.run(base).el)
+      h("font-['Symbola'] *:*:*:last:pr-0", parser.run(base).el)
     : (base ?? "")
 
   return hx(
     "button",
     {
       class:
-        "flex rounded-sm h-[40px] text-center items-center justify-center [line-height:1] relative nya-kbd" +
+        "flex rounded-xs h-[40px] text-center items-center justify-center [line-height:1] relative nya-kbd" +
         (active ? " nya-kbd-active" : "") +
         (clsx ? " " + clsx : ""),
       tabindex: "-1",

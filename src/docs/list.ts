@@ -77,7 +77,7 @@ function createCheckbox(onInput: (v: boolean) => void, label: Node) {
       "flex gap-2 items-center select-none",
       field,
       h(
-        "size-4 border border-[--nya-border] rounded flex [:hover+&]:border-[--nya-border-hover] [:checked+&]:bg-[--nya-expr-focus] [:checked+&]:border-transparent [:hover:checked+&]:border-transparent [:indeterminate+&]:bg-[--nya-expr-focus] [:indeterminate+&]:border-transparent [:hover:indeterminate+&]:border-transparent",
+        "size-4 border border-(--nya-border) rounded-sm flex [:hover+&]:border-(--nya-border-hover) [:checked+&]:bg-(--nya-expr-focus) [:checked+&]:border-transparent [:hover:checked+&]:border-transparent [:indeterminate+&]:bg-(--nya-expr-focus) [:indeterminate+&]:border-transparent [:hover:indeterminate+&]:border-transparent",
         fa(faCheck, "size-3 fill-white m-auto hidden [:checked+*_&]:block"),
         fa(
           faMinus,
@@ -121,7 +121,7 @@ function createCategory(
         pkg.name,
         labels ?
           pkg.label &&
-            h("text-[--nya-title-dark] text-sm pl-4 font-normal", pkg.label)
+            h("text-(--nya-title-dark) text-sm pl-4 font-normal", pkg.label)
         : null,
       ),
     )
@@ -150,7 +150,7 @@ function createCategory(
         openCheckbox,
         fa(
           faChevronRight,
-          "size-3 fill-[--nya-dropdown] [:checked+&]:rotate-90",
+          "size-3 fill-(--nya-dropdown) [:checked+&]:rotate-90",
         ),
       ),
       el,

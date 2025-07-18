@@ -2,7 +2,6 @@ node_modules/
 dist/
 tsconfig.tsbuildinfo
 **/.DS_Store
-index.css
 meta.json
 pkg/manifest/data.json
 pkg/graphsource

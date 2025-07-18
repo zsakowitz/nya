@@ -51,7 +51,7 @@ export class CmdInt extends Command<BlocksInt> {
       return h(
         "relative inline-block",
         h(
-          "relative inline-block scale-x-[70%] align-[-.12em] text-[200%]",
+          "relative inline-block scale-x-70 align-[-.12em] text-[200%]",
           "∫",
         ),
       )
@@ -59,7 +59,7 @@ export class CmdInt extends Command<BlocksInt> {
 
     return h(
       "relative inline-block",
-      h("relative inline-block scale-x-[70%] align-[-.12em] text-[200%]", "∫"),
+      h("relative inline-block scale-x-70 align-[-.12em] text-[200%]", "∫"),
       h(
         "mb-[-.2em] inline-block pb-[.2em] pr-[.2em] text-left align-[-1.1em] text-[80%]",
         h("block", h("align-[1.3em]", blocks[1].el)),

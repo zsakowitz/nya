@@ -1,15 +1,15 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-@layer components {
-  .bg-nya-empty:where(:not(.nya-display)) {
-    @apply bg-[--nya-empty];
-  }
+@config "../../tailwind.config.mjs";
 
-  .nya-selected {
-    background-color: var(--nya-selection);
+@utility bg-nya-empty {
+  &:where(:not(.nya-display)) {
+    @apply bg-(--nya-empty);
   }
+}
+
+@utility nya-selected {
+  background-color: var(--nya-selection);
 }
 
 @font-face {
@@ -64,7 +64,7 @@ body {
   --nya-yx-title: theme("colors.yellow.900");
   color-scheme: light;
 
-  @apply bg-[--nya-bg-sidebar] text-[--nya-text];
+  @apply bg-(--nya-bg-sidebar) text-(--nya-text);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -152,11 +152,11 @@ body {
 }
 
 .nya-kbd {
-  @apply text-[--nya-kbd-key-text] bg-[--nya-kbd-key-bg] fill-[--nya-kbd-key-text] any-hover:hover:bg-[--nya-kbd-key-hover-bg] active:bg-[--nya-kbd-key-hover-bg];
+  @apply any-hover:hover:bg-(--nya-kbd-key-hover-bg) bg-(--nya-kbd-key-bg) fill-(--nya-kbd-key-text) text-(--nya-kbd-key-text) active:bg-(--nya-kbd-key-hover-bg);
 }
 
 .nya-kbd-active {
-  @apply text-[--nya-kbd-key-active-text] bg-[--nya-kbd-key-active-bg] fill-[--nya-kbd-key-active-text] any-hover:hover:bg-[--nya-kbd-key-active-bg] active:bg-[--nya-kbd-key-active-bg];
+  @apply any-hover:hover:bg-(--nya-kbd-key-active-bg) bg-(--nya-kbd-key-active-bg) fill-(--nya-kbd-key-active-text) text-(--nya-kbd-key-active-text) active:bg-(--nya-kbd-key-active-bg);
 }
 
 .nya-kbd-locked .nya-kbd-lock {
@@ -472,7 +472,7 @@ body {
 }
 
 .nya-range-bound {
-  @apply border-[--nya-border];
+  @apply border-(--nya-border);
 }
 
 :where(
@@ -481,11 +481,11 @@ body {
   )
   :where(.nya-range:not(.nya-range-error)) {
   & {
-    @apply [:where(&)]:flex text-[.6rem] items-center text-[--nya-range-bounds] px-3 -mt-3;
+    @apply -mt-3 items-center px-3 text-[.6rem] text-(--nya-range-bounds) [:where(&)]:flex;
   }
 
   .nya-range-bound {
-    @apply font-sans pb-2;
+    @apply pb-2 font-sans;
   }
 
   .nya-range-bounds {
@@ -498,11 +498,11 @@ body {
   .nya-range-error
 ) {
   & {
-    @apply -mt-2 px-4 leading-none pb-2 text-[1.265em];
+    @apply -mt-2 px-4 pb-2 text-[1.265em] leading-none;
   }
 
   .nya-range-bound {
-    @apply text-[1rem] p-1 pr-2 border-b min-w-12 max-w-24 min-h-[calc(1.5rem_+_1px)] focus:outline-none focus:border-b-[--nya-expr-focus] focus:border-b-2 [&::-webkit-scrollbar]:hidden overflow-x-auto align-middle focus:-mb-px;
+    @apply min-h-[calc(1.5rem+1px)] max-w-24 min-w-12 overflow-x-auto border-b p-1 pr-2 align-middle text-[1rem] focus:-mb-px focus:border-b-2 focus:border-b-(--nya-expr-focus) focus:outline-hidden [&::-webkit-scrollbar]:hidden;
   }
 
   .nya-range-scrubber {
@@ -515,68 +515,68 @@ body {
 }
 
 .mq-frozen:before {
-  @apply absolute left-1/2 top-full inline-block h-[calc(0.75em_+_4px)] -translate-x-1/2 -translate-y-1/2 rounded bg-blue-500 px-[.2em] text-[50%] text-blue-50 content-[--label];
+  @apply absolute top-full left-1/2 inline-block h-[calc(0.75em+4px)] -translate-x-1/2 -translate-y-1/2 rounded-sm bg-blue-500 px-[.2em] text-[50%] text-blue-50 content-(--label);
 }
 
 .nya-expr-bar {
   :where(:focus-within) > & {
-    @apply bg-[--nya-expr-focus] text-[--nya-expr-focus-index] border-[--nya-expr-focus];
+    @apply border-(--nya-expr-focus) bg-(--nya-expr-focus) text-(--nya-expr-focus-index);
   }
 
   @media (any-hover: hover) {
     :where(:active):not(:has(.nya-not-expr-focus-target:active)) > & {
-      @apply bg-[--nya-expr-focus] text-[--nya-expr-focus-index] border-[--nya-expr-focus];
+      @apply border-(--nya-expr-focus) bg-(--nya-expr-focus) text-(--nya-expr-focus-index);
     }
   }
 }
 
 .nya-ast-group {
-  @apply text-blue-700 [--nya-ast-bg:theme(colors.blue.200)] [--nya-text:theme(colors.blue.800)] dark:text-blue-300 dark:[--nya-ast-bg:theme(colors.blue.800)] dark:[--nya-text:theme(colors.blue.400)];
+  @apply text-blue-700 [--nya-ast-bg:var(--color-blue-200)] [--nya-text:var(--color-blue-800)] dark:text-blue-300 dark:[--nya-ast-bg:var(--color-blue-800)] dark:[--nya-text:var(--color-blue-400)];
 
   .nya-ast-group {
-    @apply text-pink-700 [--nya-ast-bg:theme(colors.pink.200)] [--nya-text:theme(colors.pink.800)] dark:text-pink-300 dark:[--nya-ast-bg:theme(colors.pink.800)] dark:[--nya-text:theme(colors.pink.400)];
+    @apply text-pink-700 [--nya-ast-bg:var(--color-pink-200)] [--nya-text:var(--color-pink-800)] dark:text-pink-300 dark:[--nya-ast-bg:var(--color-pink-800)] dark:[--nya-text:var(--color-pink-400)];
 
     .nya-ast-group {
-      @apply text-green-700 [--nya-ast-bg:theme(colors.green.200)] [--nya-text:theme(colors.green.800)] dark:text-green-300 dark:[--nya-ast-bg:theme(colors.green.800)] dark:[--nya-text:theme(colors.green.400)];
+      @apply text-green-700 [--nya-ast-bg:var(--color-green-200)] [--nya-text:var(--color-green-800)] dark:text-green-300 dark:[--nya-ast-bg:var(--color-green-800)] dark:[--nya-text:var(--color-green-400)];
 
       .nya-ast-group {
-        @apply text-purple-700 [--nya-ast-bg:theme(colors.purple.200)] [--nya-text:theme(colors.purple.800)] dark:text-purple-300 dark:[--nya-ast-bg:theme(colors.purple.800)] dark:[--nya-text:theme(colors.purple.400)];
+        @apply text-purple-700 [--nya-ast-bg:var(--color-purple-200)] [--nya-text:var(--color-purple-800)] dark:text-purple-300 dark:[--nya-ast-bg:var(--color-purple-800)] dark:[--nya-text:var(--color-purple-400)];
 
         .nya-ast-group {
-          @apply text-blue-700 [--nya-ast-bg:theme(colors.blue.200)] [--nya-text:theme(colors.blue.800)] dark:text-blue-300 dark:[--nya-ast-bg:theme(colors.blue.800)] dark:[--nya-text:theme(colors.blue.400)];
+          @apply text-blue-700 [--nya-ast-bg:var(--color-blue-200)] [--nya-text:var(--color-blue-800)] dark:text-blue-300 dark:[--nya-ast-bg:var(--color-blue-800)] dark:[--nya-text:var(--color-blue-400)];
 
           .nya-ast-group {
-            @apply text-pink-700 [--nya-ast-bg:theme(colors.pink.200)] [--nya-text:theme(colors.pink.800)] dark:text-pink-300 dark:[--nya-ast-bg:theme(colors.pink.800)] dark:[--nya-text:theme(colors.pink.400)];
+            @apply text-pink-700 [--nya-ast-bg:var(--color-pink-200)] [--nya-text:var(--color-pink-800)] dark:text-pink-300 dark:[--nya-ast-bg:var(--color-pink-800)] dark:[--nya-text:var(--color-pink-400)];
 
             .nya-ast-group {
-              @apply text-green-700 [--nya-ast-bg:theme(colors.green.200)] [--nya-text:theme(colors.green.800)] dark:text-green-300 dark:[--nya-ast-bg:theme(colors.green.800)] dark:[--nya-text:theme(colors.green.400)];
+              @apply text-green-700 [--nya-ast-bg:var(--color-green-200)] [--nya-text:var(--color-green-800)] dark:text-green-300 dark:[--nya-ast-bg:var(--color-green-800)] dark:[--nya-text:var(--color-green-400)];
 
               .nya-ast-group {
-                @apply text-purple-700 [--nya-ast-bg:theme(colors.purple.200)] [--nya-text:theme(colors.purple.800)] dark:text-purple-300 dark:[--nya-ast-bg:theme(colors.purple.800)] dark:[--nya-text:theme(colors.purple.400)];
+                @apply text-purple-700 [--nya-ast-bg:var(--color-purple-200)] [--nya-text:var(--color-purple-800)] dark:text-purple-300 dark:[--nya-ast-bg:var(--color-purple-800)] dark:[--nya-text:var(--color-purple-400)];
 
                 .nya-ast-group {
-                  @apply text-blue-700 [--nya-ast-bg:theme(colors.blue.200)] [--nya-text:theme(colors.blue.800)] dark:text-blue-300 dark:[--nya-ast-bg:theme(colors.blue.800)] dark:[--nya-text:theme(colors.blue.400)];
+                  @apply text-blue-700 [--nya-ast-bg:var(--color-blue-200)] [--nya-text:var(--color-blue-800)] dark:text-blue-300 dark:[--nya-ast-bg:var(--color-blue-800)] dark:[--nya-text:var(--color-blue-400)];
 
                   .nya-ast-group {
-                    @apply text-pink-700 [--nya-ast-bg:theme(colors.pink.200)] [--nya-text:theme(colors.pink.800)] dark:text-pink-300 dark:[--nya-ast-bg:theme(colors.pink.800)] dark:[--nya-text:theme(colors.pink.400)];
+                    @apply text-pink-700 [--nya-ast-bg:var(--color-pink-200)] [--nya-text:var(--color-pink-800)] dark:text-pink-300 dark:[--nya-ast-bg:var(--color-pink-800)] dark:[--nya-text:var(--color-pink-400)];
 
                     .nya-ast-group {
-                      @apply text-green-700 [--nya-ast-bg:theme(colors.green.200)] [--nya-text:theme(colors.green.800)] dark:text-green-300 dark:[--nya-ast-bg:theme(colors.green.800)] dark:[--nya-text:theme(colors.green.400)];
+                      @apply text-green-700 [--nya-ast-bg:var(--color-green-200)] [--nya-text:var(--color-green-800)] dark:text-green-300 dark:[--nya-ast-bg:var(--color-green-800)] dark:[--nya-text:var(--color-green-400)];
 
                       .nya-ast-group {
-                        @apply text-purple-700 [--nya-ast-bg:theme(colors.purple.200)] [--nya-text:theme(colors.purple.800)] dark:text-purple-300 dark:[--nya-ast-bg:theme(colors.purple.800)] dark:[--nya-text:theme(colors.purple.400)];
+                        @apply text-purple-700 [--nya-ast-bg:var(--color-purple-200)] [--nya-text:var(--color-purple-800)] dark:text-purple-300 dark:[--nya-ast-bg:var(--color-purple-800)] dark:[--nya-text:var(--color-purple-400)];
 
                         .nya-ast-group {
-                          @apply text-blue-700 [--nya-ast-bg:theme(colors.blue.200)] [--nya-text:theme(colors.blue.800)] dark:text-blue-300 dark:[--nya-ast-bg:theme(colors.blue.800)] dark:[--nya-text:theme(colors.blue.400)];
+                          @apply text-blue-700 [--nya-ast-bg:var(--color-blue-200)] [--nya-text:var(--color-blue-800)] dark:text-blue-300 dark:[--nya-ast-bg:var(--color-blue-800)] dark:[--nya-text:var(--color-blue-400)];
 
                           .nya-ast-group {
-                            @apply text-pink-700 [--nya-ast-bg:theme(colors.pink.200)] [--nya-text:theme(colors.pink.800)] dark:text-pink-300 dark:[--nya-ast-bg:theme(colors.pink.800)] dark:[--nya-text:theme(colors.pink.400)];
+                            @apply text-pink-700 [--nya-ast-bg:var(--color-pink-200)] [--nya-text:var(--color-pink-800)] dark:text-pink-300 dark:[--nya-ast-bg:var(--color-pink-800)] dark:[--nya-text:var(--color-pink-400)];
 
                             .nya-ast-group {
-                              @apply text-green-700 [--nya-ast-bg:theme(colors.green.200)] [--nya-text:theme(colors.green.800)] dark:text-green-300 dark:[--nya-ast-bg:theme(colors.green.800)] dark:[--nya-text:theme(colors.green.400)];
+                              @apply text-green-700 [--nya-ast-bg:var(--color-green-200)] [--nya-text:var(--color-green-800)] dark:text-green-300 dark:[--nya-ast-bg:var(--color-green-800)] dark:[--nya-text:var(--color-green-400)];
 
                               .nya-ast-group {
-                                @apply text-purple-700 [--nya-ast-bg:theme(colors.purple.200)] [--nya-text:theme(colors.purple.800)] dark:text-purple-300 dark:[--nya-ast-bg:theme(colors.purple.800)] dark:[--nya-text:theme(colors.purple.400)];
+                                @apply text-purple-700 [--nya-ast-bg:var(--color-purple-200)] [--nya-text:var(--color-purple-800)] dark:text-purple-300 dark:[--nya-ast-bg:var(--color-purple-800)] dark:[--nya-text:var(--color-purple-400)];
                               }
                             }
                           }

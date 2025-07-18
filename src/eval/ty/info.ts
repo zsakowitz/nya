@@ -106,7 +106,7 @@ export function gliderOnLine(
 
 export function highRes() {
   return h(
-    "absolute bottom-[.5px] right-[1px] font-['Symbola'] text-[50%]/[1]",
+    "absolute bottom-[.5px] right-px font-['Symbola'] text-[50%]/[1]",
     "+",
   )
 }
@@ -118,7 +118,7 @@ export function any(
     "",
     h(
       color +
-        " size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px]",
+        " size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-(--nya-bg) inline-block relative border-2 border-current rounded-[4px]",
       h(
         "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
       ),
@@ -198,12 +198,12 @@ TY_INFO.never = {
     return h(
       "",
       h(
-        "text-[theme(colors.slate.500)] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px]",
+        "text-slate-500 size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-(--nya-bg) inline-block relative border-2 border-current rounded-[4px]",
         h(
           "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
         ),
         h(
-          "w-[30px] h-0 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-t-2 border-current -rotate-[45deg] border-dashed",
+          "w-[30px] h-0 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-t-2 border-current -rotate-45 border-dashed",
         ),
       ),
     )

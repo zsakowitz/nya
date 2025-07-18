@@ -168,7 +168,7 @@ export default {
           return h(
             "",
             h(
-              "text-[theme(colors.slate.500)] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px]",
+              "text-slate-500 size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-(--nya-bg) inline-block relative border-2 border-current rounded-[4px]",
               h(
                 "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
               ),

@@ -196,21 +196,21 @@ export function toolbar(icon: () => HTMLSpanElement, props: Data, key: string) {
       "button",
       {
         class:
-          "flex flex-col w-11 hover:bg-[--nya-bg] border-x border-transparent hover:border-[--nya-border] focus:outline-none -mr-px last:mr-0 justify-center",
+          "flex flex-col w-11 hover:bg-(--nya-bg) border-x border-transparent hover:border-(--nya-border) focus:outline-hidden -mr-px last:mr-0 justify-center",
         tabindex: "-1",
       },
       icon(),
       h(
-        "[line-height:1] -mt-0.5 -mb-1 text-[--nya-title] font-sans text-xs opacity-50",
+        "[line-height:1] -mt-0.5 -mb-1 text-(--nya-title) font-sans text-xs opacity-50",
         key,
       ),
     )
     function check() {
       if (sheet.pick.id == props.src.id) {
-        btn.classList.add("bg-[--nya-bg]", "border-[--nya-border]")
+        btn.classList.add("bg-(--nya-bg)", "border-(--nya-border)")
         btn.classList.remove("border-transparent")
       } else {
-        btn.classList.remove("bg-[--nya-bg]", "border-[--nya-border]")
+        btn.classList.remove("bg-(--nya-bg)", "border-(--nya-border)")
         btn.classList.add("border-transparent")
       }
     }

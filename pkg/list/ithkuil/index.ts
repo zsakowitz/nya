@@ -54,7 +54,7 @@ class CmdIthkuilScript extends Leaf {
       "\\ithkuil ",
       h(
         {
-          class: "inline-block *:h-[--h]",
+          class: "inline-block *:h-(--h)",
           style: `--h:${hx / 70}em;vertical-align:${-0.22 - (y - 35) / 70}em`,
         },
         el,
@@ -182,7 +182,7 @@ export default {
           return h(
             "",
             h(
-              "text-[theme(colors.slate.500)] size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-[--nya-bg] inline-block relative border-2 border-current rounded-[4px]",
+              "text-slate-500 size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-(--nya-bg) inline-block relative border-2 border-current rounded-[4px]",
               h(
                 "opacity-25 block w-full h-full bg-current absolute inset-0 rounded-[2px]",
               ),
@@ -434,7 +434,7 @@ export default {
                 const el = x[1]
                 return h(
                   {
-                    class: "px-4 inline-block *:h-[--h]",
+                    class: "px-4 inline-block *:h-(--h)",
                     style: `--h:${(el.viewBox.baseVal.height / 70) * 2}rem`,
                   },
                   el,

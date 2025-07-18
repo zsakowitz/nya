@@ -58,7 +58,7 @@ export class Cv {
     this.el = hx(
       "div",
       (className ?? "") +
-        " nya-svg-display focus:outline-none ring-inset focus-visible:ring ring-[--nya-expr-focus]",
+        " nya-svg-display focus:outline-hidden ring-inset focus-visible:ring-3 ring-(--nya-expr-focus)",
       this.canvas,
     )
     this.el.addEventListener("keydown", (event) => {
