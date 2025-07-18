@@ -1,6 +1,6 @@
 \left(\frac{x}{y+2},-\frac{1}{y+2}\right)
 g\left(z\right)=\left(a,b\right)\operatorname{with}a=z.x\cdot \left(b+q\right)\operatorname{with}b=-\frac{q}{z.y}-q
-q=2.71
+q=2
 g\left(\left(x,y\right)\right)
 g\left(\left(x,y\right)\right).x=-1
 g\left(\left(x,y\right)\right).x=1
