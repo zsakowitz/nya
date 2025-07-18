@@ -170,23 +170,12 @@ export class Expr {
       const { block, value } = env.process(exe.expr, "<expression>")
       const val = env.compute(block, value)
 
-      const display = tryPerformCall(
-        ident("%display"),
-        block,
-        [value],
-        new PosVirtual("<display>"),
-        new PosVirtual("<display>"),
-      )
-      let latex
+      const latex = env.display(value.type, val)
       this.clearEls()
-      if (
-        display &&
-        display.type == env.libJs.tyLatex &&
-        typeof (latex = env.compute(block, display)) == "string"
-      ) {
+      if (latex) {
         const { field, el } = STORE_EVAL.get(this)
         field.block.clear()
-        field.typeLatex("=" + latex.replace(/\+-/g, "-"))
+        field.typeLatex(latex.replace(/\+-/g, "-"))
         this.elOutput.appendChild(el)
       } else {
         const json = JSON.stringify(val, undefined, 2)
