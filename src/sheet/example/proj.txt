@@ -1,5 +1,5 @@
-\left(\frac{x}{y+2},-\frac{1}{y+2}\right)
-g\left(z\right)=\left(a,b\right)\operatorname{with}a=z.x\cdot \left(b+q\right)\operatorname{with}b=-\frac{q}{z.y}-q
+g\left(z\right)=\left(a,b\right)\operatorname{with}a=-z.x\cdot \frac{q}{z.y}\operatorname{with}b=-\frac{q}{z.y}-q
+f\left(z\right)=\left(\frac{z.x}{z.y+q},-\frac{q}{z.y+q}\right)
 q=2
 g\left(\left(x,y\right)\right)
 g\left(\left(x,y\right)\right).x=-1
@@ -8,3 +8,5 @@ g\left(\left(x,y\right)\right).y=0
 g\left(\left(x,y\right)\right).y=-1
 g\left(\left(x,y\right)\right).y=1
 g\left(\left(x,y\right)\right).y=2
+f\left(g\left(\left(x,y\right)\right)\right)
+g\left(f\left(\left(x,y\right)\right)\right)
