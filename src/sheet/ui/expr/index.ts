@@ -135,7 +135,9 @@ export class Expr {
     }
   }
 
-  plot: ((canvas: CanvasJs) => PathJs) | null = null
+  plot2: ((ctx: CanvasRenderingContext2D, canvas: CanvasJs) => void) | null =
+    null
+  plot: ((cv: CanvasJs) => PathJs) | null = null
   glsl: GlslResult | undefined
   display() {
     this.plot = null
@@ -190,7 +192,6 @@ export class Expr {
 
       {
         const canvas = env.libJs.types.get(ident("Canvas"))!
-        const path = env.libJs.types.get(ident("Path"))!
         const plot = tryPerformCall(
           ident("%plot"),
           block,
@@ -201,15 +202,31 @@ export class Expr {
           new PosVirtual("<plot>"),
           new PosVirtual("<plot>"),
         )
-        if (plot && plot.type == path) {
-          const fn = env.compile(block, plot, "CANVAS,VALUE") as (
-            cv: CanvasJs,
-            value: unknown,
-          ) => PathJs
-          const val = env.compute(block, value)
-          this.plot = (cv) => fn(cv, val)
-          this.sheet.cv.queue()
+
+        if (!plot) return
+        const fn = env.compile(block, plot, "CANVAS,VALUE") as (
+          cv: CanvasJs,
+          value: unknown,
+        ) => unknown
+
+        switch (plot.type) {
+          case env.libJs.ty("CanvasPoint"):
+            const val = env.compute(block, value)
+            this.plot2 = (ctx, cv) => {
+              // const { x, y } = fn(cv, val) as { x: number; y: number }
+            }
+            this.sheet.cv.queue()
         }
+        //
+        //         if (plot && plot.type == path) {
+        //           const fn = env.compile(block, plot, "CANVAS,VALUE") as (
+        //             cv: CanvasJs,
+        //             value: unknown,
+        //           ) => PathJs
+        //           const val = env.compute(block, value)
+        //           this.plot = (cv) => fn(cv, val)
+        //           this.sheet.cv.queue()
+        //         }
       }
     } catch (e) {
       this.elOutput.classList.add("hidden")

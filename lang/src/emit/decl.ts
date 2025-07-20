@@ -4,7 +4,7 @@ import { bug } from "./error"
 import { Id, ident, type IdGlobal } from "./id"
 import type { EmitProps } from "./props"
 import type { Tag } from "./tag"
-import type { Fn, Scalar, Type } from "./type"
+import { Scalar, type Fn, type Type } from "./type"
 import { Value } from "./value"
 
 export class IdMap<T> {
@@ -101,21 +101,32 @@ export class Declarations {
   get tyVoid() {
     return (this._tyVoid ??= this.types.get(ident("void")) as Scalar)
   }
+
   private _tyBool: Scalar | undefined
   get tyBool() {
     return (this._tyBool ??= this.types.get(ident("bool")) as Scalar)
   }
+
   private _tyNum: Scalar | undefined
   get tyNum() {
     return (this._tyNum ??= this.types.get(ident("num")) as Scalar)
   }
+
   private _tyLatex: Scalar | undefined
   get tyLatex() {
     return (this._tyLatex ??= this.types.get(ident("latex")) as Scalar)
   }
+
   private _tySym: Scalar | undefined
   get tySym() {
     return (this._tySym ??= this.types.get(ident("sym")) as Scalar)
+  }
+
+  ty(name: string): Scalar | undefined {
+    const ty = this.types.get(ident(name))
+    if (ty instanceof Scalar) {
+      return ty
+    }
   }
 
   private readonly source = new Set<string>()
