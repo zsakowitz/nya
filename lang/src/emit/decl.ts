@@ -50,6 +50,7 @@ export class IdMap<T> {
 
   set(id: IdGlobal, value: T) {
     this.map[id.value] = value
+    return this
   }
 }
 

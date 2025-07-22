@@ -568,9 +568,14 @@ export function emitExpr(node: NodeExpr, block: Block): Value {
           node.value ? emitExpr(node.value, block) : nullValue(block),
           node.value ?? node.kw,
         )
-        const r = returned.toRuntime()
-        block.source += r == null ? `return;` : `return(${r});`
-        return nullValue(block) // TODO: this should return something like TS's `never` type
+        if (returned.type.repr.type == "void") {
+          block.source += `return;`
+        } else {
+          const r = returned.toRuntime()
+          block.source += r == null ? `return;` : `return(${r});`
+        }
+        // TODO: this should return something like TS's `never` type
+        return nullValue(block)
     }
   } else if (node instanceof ExprTaggedString) {
     const tag = block.decl.tags.get(ident(node.tag.val))

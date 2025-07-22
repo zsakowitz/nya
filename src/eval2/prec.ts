@@ -1,5 +1,6 @@
 export const enum Precedence {
   CommaR0,
+  Shader,
   WithL,
   WithR,
   Iterate,

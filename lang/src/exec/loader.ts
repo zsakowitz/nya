@@ -27,8 +27,8 @@ function extractDepName(item: ItemUse) {
 export class ScriptEnvironment {
   readonly libGl = createStdlib(new EmitProps("glsl"))
   readonly libJs = createStdlib(new EmitProps("js"))
-  private mainGl = ""
-  private mainJs = ""
+  mainGl = ""
+  mainJs = ""
   private readonly issues = new Issues()
   private readonly loaded = new Set<string>()
 
@@ -75,7 +75,7 @@ export class ScriptEnvironment {
     }
   }
 
-  /** Compiles a script as an expression within the JavaScript context. */
+  /** Compiles a script as an expression. Defaults to a JavaScript context. */
   process(
     script: string,
     name = "<repl>",
@@ -203,6 +203,4 @@ ${runtime}`
     }
     return null
   }
-
-  exec(strings: TemplateStringsArray) {}
 }

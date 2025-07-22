@@ -608,14 +608,17 @@ vec4 _nya_helper_compose(vec4 base, vec4 added) {
     w
   );
 }
-${this.scope.helpers.helpers}void main() {
+${this.factory.env.libGl.globals()}
+${this.factory.env.mainGl}
+void main() {
 vec2 e_tx = vec2(gl_FragCoord.x, 0);
 vec2 e_ty = vec2(gl_FragCoord.y, 0);
 v_coords = vec4(
   _helper_add_r64(u_cx, _helper_mul_r64(e_tx, u_scale)),
   _helper_add_r64(u_cy, _helper_mul_r64(e_ty, u_scale))
 );
-${compiled.map((x) => x[0].block).join("")}color = ${compiled.map((x) => x[1]).reduce((a, b) => `_nya_helper_compose(${a},${b})`)};
+${compiled.map((x) => x.block).join("")}
+color = ${compiled.map((x) => x.value).reduce((a, b) => `_nya_helper_compose(${a},${b})`)};
       }
       `
     if (globalThis.location?.search.includes("logfrag")) {

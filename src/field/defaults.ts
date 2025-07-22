@@ -204,6 +204,9 @@ const words = new WordMapWithoutSpaces<WordKind>([
   ["debugAst", "prefix"],
   ["debugAstType", "prefix"],
   ["debugScript", "prefix"],
+  ["shader", "prefix"],
+  ["with", "infix"],
+  ["for", "infix"],
   ["mod", "infix"],
 
   ["arcsin", "prefix"],

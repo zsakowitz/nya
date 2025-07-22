@@ -1,3 +1,4 @@
+shader x
 cplot 1
 (2,3)
 [1,2,3]

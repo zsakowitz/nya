@@ -34,10 +34,6 @@ export function libNumBool(api: NyaApi) {
     glsl: v`mod(${0},${1})`,
     js: v`${"function %%(a,b){return((a%b)+b)%b}"}(${0},${1})`,
   })
-  api.fn("rem", { lhs: num, rhs: num }, num, {
-    glsl: v`rem(${0},${1})`,
-    js: v`${0}%${1}`,
-  })
 
   // Special functions
   for (const op of "sin cos tan asin acos atan sinh cosh tanh asinh acosh atanh exp abs cbrt sqrt ceil floor trunc sign log10".split(
@@ -118,14 +114,14 @@ export function libNumBool(api: NyaApi) {
   // Numeric checks
   api.fn("is_inf", { value: num }, bool, {
     glsl: v`isinf(${0})`,
-    js: v`${`function %%(x){return x===1/0||x===-1/0}`}(${0})`,
+    js: v`${`function %%(x){return x===1/0||x===-1/0;}`}(${0})`,
   })
   api.fn("is_nan", { value: num }, bool, {
     glsl: v`isnan(${0})`,
     js: v`${`const %%=isNaN`}(${0})`,
   })
   api.fn("is_finite", { value: num }, bool, {
-    glsl: v`${`bool %%(float x){return !(isinf(x)||isnan(x))}`}(${0})`,
+    glsl: v`${`bool %%(float x){return !(isinf(x)||isnan(x));}`}(${0})`,
     js: v`${`const %%=isFinite`}(${0})`,
   })
 

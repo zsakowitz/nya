@@ -66,6 +66,7 @@ let i = Complex { real: 0.0, imag: 1.0 };
 // TODO: cplothue(complex), cplothue(point)
 
 // TODO: cplot(point), cplot(r32abs)
+
 fn cplot(z: Complex) -> Color {
   if !is_finite(z.real) || !is_finite(z.imag) {
     return Color { r: 0.0, g: 0.0, b: 0.0, a: 0.0 };
@@ -78,6 +79,10 @@ fn cplot(z: Complex) -> Color {
   let rd = 1.5 * r0 * (1.0 - 2.0 * abs(absval_scaled - 0.5));
 
   oklab(absval_scaled, rd * cos(angle + offset), rd * sin(angle + offset), 1.0)
+}
+
+fn %plot(z: Complex) -> Color {
+  cplot(z)
 }
 
 // TODO: cplot on absolute value

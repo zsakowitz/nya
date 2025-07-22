@@ -3,7 +3,7 @@ import { issue, todo } from "!/emit/error"
 import { Id, ident } from "!/emit/id"
 import type { PuncCmp } from "@/eval/ast/token"
 import { type NameCooked, type Node, type OpKind, type Suffix } from "./node"
-import { P, PRECEDENCE_WORD_BINARY } from "./prec"
+import { P, PRECEDENCE_WORD_BINARY, PRECEDENCE_WORD_UNARY } from "./prec"
 import {
   listItems,
   nameIdent,
@@ -453,8 +453,7 @@ TX_OPS_OPS["debugAstType"] = {
 
 TX_OPS_OPS["debugScript"] = {
   eval(_, [a], block) {
-    const evald = block.eval(a!)
-    return `json#"${JSON.stringify(evald)}"#`
+    return block.of`@debug(${a!})`
   },
   deps(_, [a], deps) {
     deps.check(a!)
@@ -541,6 +540,16 @@ TX_OPS_OPS["with"] = {
   },
 }
 
+TX_OPS_OPS["shader"] = {
+  eval(_, [value], block) {
+    return block.of`{//NYALANG_SHADER
+${value!}}`
+  },
+  deps(_, [value], deps) {
+    deps.check(value!)
+  },
+}
+
 TX_OPS.surreal = {
   eval({ lhs, rhs }, _, block) {
     return `%surreal(%surreal_join(${block.evalList(lhs)}),%surreal_join(${block.evalList(rhs)}))`
@@ -551,5 +560,6 @@ TX_OPS.surreal = {
   },
 }
 
+PRECEDENCE_WORD_UNARY.shader = P.Shader
 PRECEDENCE_WORD_BINARY.with = [P.WithL, P.WithR]
 PRECEDENCE_WORD_BINARY.for = [P.WithL, P.WithR]

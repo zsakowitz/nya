@@ -1,5 +1,5 @@
 import type { PlainVar } from "@/eval/ast/token"
-import type { GlslResult } from "@/eval/lib/fn"
+import { type GlslResult } from "@/eval/lib/fn"
 import type { JsValue } from "@/eval/ty"
 import { OpEq } from "@/field/cmd/leaf/cmp"
 import { CmdToken } from "@/field/cmd/leaf/token"
@@ -18,10 +18,12 @@ import type { Sheet } from "../sheet"
 import { Field } from "./field"
 
 import { PosVirtual } from "!/ast/issue"
+import { IdMap } from "!/emit/decl"
 import { tryPerformCall } from "!/emit/emit"
 import { ident } from "!/emit/id"
 import { Value } from "!/emit/value"
 import { Entry } from "!/exec/item"
+import type { Executable } from "!/exec/state"
 import type { CanvasJs, PathJs } from "!/std"
 import { STORE_EVAL } from "#/list/eval"
 import { errorText } from "@/error"
@@ -39,9 +41,9 @@ export class Expr {
   }
 
   readonly field
-  private readonly elOutput
-  private readonly elAside
-  private readonly elError
+  readonly elOutput
+  readonly elAside
+  readonly elError
   readonly aside
   readonly main
   readonly entry
@@ -153,80 +155,14 @@ export class Expr {
 
     try {
       this.entry.checkExe()
-    } catch (e) {
-      this.elOutput.classList.add("hidden")
-      this.elError.classList.remove("hidden")
-      this.elError.textContent = errorText(e)
-      return
-    }
 
-    const exe = this.entry.exe
+      const exe = this.entry.exe
+      if (!exe || exe.args) return
 
-    // If a function or empty:
-    if (!exe || exe.args) {
-      return
-    }
-
-    try {
-      const env = this.sheet.factory.env
-      const { block, value } = env.process(exe.expr, "<expression>")
-      const val = env.compute(block, value)
-
-      const latex = env.display(value.type, val)
-      this.clearEls()
-      if (latex) {
-        const { field, el } = STORE_EVAL.get(this)
-        field.block.clear()
-        field.typeLatex(latex.replace(/\+-/g, "-"))
-        this.elOutput.appendChild(el)
+      if (exe.expr.includes("\/\/NYALANG_SHADER\n")) {
+        compileForGlsl(this, exe)
       } else {
-        const json = JSON.stringify(val, undefined, 2)
-        this.elOutput.appendChild(
-          h(
-            "-mt-2 mb-1 text-xs font-mono px-2 ml-auto whitespace-pre",
-            `= ${value.type} ${json.replace(/\n/g, "\n  ")}`,
-          ),
-        )
-      }
-      this.elOutput.classList.remove("hidden")
-
-      {
-        const canvas = env.libJs.types.get(ident("Canvas"))!
-        const plot = tryPerformCall(
-          ident("%plot"),
-          block,
-          [
-            new Value("CANVAS", canvas, false),
-            new Value("VALUE", value.type, false),
-          ],
-          new PosVirtual("<plot>"),
-          new PosVirtual("<plot>"),
-        )
-
-        if (!plot) return
-        const fn = env.compile(block, plot, "CANVAS,VALUE") as (
-          cv: CanvasJs,
-          value: unknown,
-        ) => unknown
-
-        switch (plot.type) {
-          case env.libJs.ty("CanvasPoint"):
-            const val = env.compute(block, value)
-            this.plot2 = (ctx, cv) => {
-              // const { x, y } = fn(cv, val) as { x: number; y: number }
-            }
-            this.sheet.cv.queue()
-        }
-        //
-        //         if (plot && plot.type == path) {
-        //           const fn = env.compile(block, plot, "CANVAS,VALUE") as (
-        //             cv: CanvasJs,
-        //             value: unknown,
-        //           ) => PathJs
-        //           const val = env.compute(block, value)
-        //           this.plot = (cv) => fn(cv, val)
-        //           this.sheet.cv.queue()
-        //         }
+        compileForJs(this, exe)
       }
     } catch (e) {
       this.elOutput.classList.add("hidden")
@@ -308,5 +244,85 @@ export class Expr {
     }
 
     return block
+  }
+}
+
+function compileForGlsl(self: Expr, exe: Executable) {
+  const env = self.sheet.factory.env
+
+  const { block, value } = env.process(
+    `{let x: Color = %plot(${exe.expr});x}`,
+    "<expression>",
+    new IdMap<Value>(null)
+      .set(ident("x"), new Value("x", env.libGl.tyNum, false))
+      .set(ident("y"), new Value("y", env.libGl.tyNum, false)),
+    env.libGl,
+  )
+
+  const result = value.toString()
+  self.glsl = { block: block.source, value: result }
+  self.sheet.queueGlsl()
+}
+
+function compileForJs(self: Expr, exe: Executable) {
+  const env = self.sheet.factory.env
+  const { block, value } = env.process(exe.expr, "<expression>")
+  const val = env.compute(block, value)
+
+  const latex = env.display(value.type, val)
+  self.clearEls()
+  if (latex) {
+    const { field, el } = STORE_EVAL.get(self)
+    field.block.clear()
+    field.typeLatex(latex.replace(/\+-/g, "-"))
+    self.elOutput.appendChild(el)
+  } else {
+    const json = JSON.stringify(val, undefined, 2)
+    self.elOutput.appendChild(
+      h(
+        "-mt-2 mb-1 text-xs font-mono px-2 ml-auto whitespace-pre",
+        `= ${value.type} ${json.replace(/\n/g, "\n  ")}`,
+      ),
+    )
+  }
+  self.elOutput.classList.remove("hidden")
+
+  {
+    const canvas = env.libJs.types.get(ident("Canvas"))!
+    const plot = tryPerformCall(
+      ident("%plot"),
+      block,
+      [
+        new Value("CANVAS", canvas, false),
+        new Value("VALUE", value.type, false),
+      ],
+      new PosVirtual("<plot>"),
+      new PosVirtual("<plot>"),
+    )
+
+    if (!plot) return
+    const fn = env.compile(block, plot, "CANVAS,VALUE") as (
+      cv: CanvasJs,
+      value: unknown,
+    ) => unknown
+
+    switch (plot.type) {
+      case env.libJs.ty("CanvasPoint"):
+        const val = env.compute(block, value)
+        self.plot2 = (ctx, cv) => {
+          // const { x, y } = fn(cv, val) as { x: number; y: number }
+        }
+        self.sheet.cv.queue()
+    }
+    //
+    //         if (plot && plot.type == path) {
+    //           const fn = env.compile(block, plot, "CANVAS,VALUE") as (
+    //             cv: CanvasJs,
+    //             value: unknown,
+    //           ) => PathJs
+    //           const val = env.compute(block, value)
+    //           this.plot = (cv) => fn(cv, val)
+    //           this.sheet.cv.queue()
+    //         }
   }
 }

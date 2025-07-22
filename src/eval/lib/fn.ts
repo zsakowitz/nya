@@ -148,7 +148,10 @@ ${interps
   }
 }
 
-export type GlslResult = readonly [block: GlslContext, expr: string]
+export interface GlslResult {
+  readonly block: string
+  readonly value: string
+}
 
 interface GlslFn<T extends readonly TyName[] = readonly TyName[]> {
   (ctx: GlslContext, ...args: { [K in keyof T]: GlslVal<T[K]> }): string
