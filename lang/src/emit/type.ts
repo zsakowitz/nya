@@ -1,9 +1,10 @@
+import { cyan, reset, yellow } from "!/ansi"
 import type { Pos } from "../ast/issue"
 import type { Block } from "./decl"
 import { bug, issue, todo } from "./error"
 import { fieldIdent, Id, ident } from "./id"
 import { encodeIdentForTS } from "./ident"
-import type { EmitProps } from "./props"
+import { EmitProps } from "./props"
 import {
   emitGlslMat,
   emitGlslVec,
@@ -49,6 +50,7 @@ export class Fn {
     readonly ret: FnType,
     readonly run: FnExec,
     readonly pos?: Pos,
+    readonly source?: string,
   ) {}
 
   toString() {
@@ -59,6 +61,13 @@ export class Fn {
 
   declaration() {
     return `fn ${this.id.label}(${this.args.map((x) => `${x.name}: ${x.type}`).join(", ")}) -> ${this.ret};`
+  }
+
+  declarationANSI() {
+    const R = reset
+    const Y = reset + yellow
+    const G = reset + cyan
+    return `${R}fn ${Y}${this.id.label}${R}(${this.args.map((x) => `${Y}${x.name}${R}: ${G}${x.type}`).join(R + ", ")}${Y}${R}) -> ${G}${this.ret}${R};${reset}`
   }
 }
 

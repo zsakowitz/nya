@@ -1,5 +1,5 @@
 import { Impl, NyaApi, v } from "!/emit/api"
-import { blue, dim, magenta, reset, yellow } from "./ansi"
+import { blue, cyan, dim, magenta, reset, yellow } from "./ansi"
 import { KFalse, KTrue, TFloat, TInt, TString, TSym } from "./ast/kind"
 import type { ExprLit } from "./ast/node/expr"
 import { AnyVector, fromScalars, scalars } from "./emit/broadcast"
@@ -237,6 +237,42 @@ export function libBroadcasting(api: NyaApi) {
         return v!
       },
     ),
+  )
+
+  const Json = api.opaque("Json", { glsl: null, js: "" }, true)
+
+  api.lib.tags.setOrThrow(
+    ident("debug_fn"),
+    new Tag(ident("debug_fn"), (text, interps, _, _1, _2, full) => {
+      if (interps.length || text.length != 1) {
+        issue(`debug_fn"..." should be called with no interpolations.`)
+      }
+      const id = ident(text[0]!)
+      const fns = api.lib.fns.get(id)
+
+      console.log(
+        `${blue}[${api.lib.props.lang.padEnd(4)}] ${cyan}debug_fn"${id}"${reset}${dim} (in ${reset}${full}${dim})${reset}`,
+      )
+      fns?.forEach((x) => {
+        console.log(`  ${x.declarationANSI()}`)
+        console.log(`    ${dim}${x.source}${reset}`)
+      })
+      return api.lib.void()
+    }),
+  )
+
+  api.lib.tags.setOrThrow(
+    ident("json"),
+    new Tag(ident("json"), (text, interps) => {
+      if (interps.length || text.length != 1) {
+        issue(`json"..." should be called with no interpolations.`)
+      }
+      return new Value(
+        "(" + JSON.stringify(JSON.parse(text[0]!)) + ")",
+        Json,
+        false,
+      )
+    }),
   )
 
   api.lib.fns.push(

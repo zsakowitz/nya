@@ -1,0 +1,9 @@
+D_{2}\left(C_{1}\right)=\left[1\cdot C_{1}.x+0.3963377774\cdot C_{1}.y+0.2158037573\cdot C_{1}.z,1\cdot C_{1}.x+-0.1055613458\cdot C_{1}.y+-0.0638541728\cdot C_{1}.z,1\cdot C_{1}.x+-0.0894841775\cdot C_{1}.y+-1.291485548\cdot C_{1}.z\right]
+D_{3}\left(C_{2}\right)=C_{2}C_{2}C_{2}
+D_{4}\left(C_{3raw}\right)=\left[4.0767416621\cdot C_{3}.x+-3.3077115913\cdot C_{3}.y+0.2309699292\cdot C_{3}.z,-1.2684380046\cdot C_{3}.x+2.6097574011\cdot C_{3}.y+-0.3413193965\cdot C_{3}.z,-0.0041960863\cdot C_{3}.x+-0.7034186147\cdot C_{3}.y+1.707614701\cdot C_{3}.z\right]\operatorname{with}C_{3}=\left(C_{3raw}\left[1\right],C_{3raw}\left[2\right],C_{3raw}\left[3\right]\right)
+D_{5}\left(C\right)=\left\{c<0.0031308:12.92,1.055\cdot c^{0.4166666666666667}-0.055\right\}\operatorname{for}c=C
+D_{6}\left(c\right)=\operatorname{rgb}\left(c\left[1\right],c\left[2\right],c\left[3\right]\right)
+D_{oklab}\left(l,a,b\right)=D_{6}\left(255D_{5}\left(D_{4}\left(D_{3}\left(D_{2}\left(\left(l,a,b\right)\right)\right)\right)\right)\right)
+D_{finite}\left(z\right)=\left\{\left|z\right|=\infinity :0,z=z:1,0\right\}
+D_{cplot}\left(x,y\right)=D_{oklab}\left(D_{absval},D_{rd}\operatorname{cos}\left(D_{angle}+D_{offset}\right),D_{rd}\operatorname{sin}\left(D_{angle}+D_{offset}\right)\right)\operatorname{with}D_{rd}=0.1631913185\cdot \left(1-2\left|\frac{\left|\left(x,y\right)\right|}{\left|\left(x,y\right)\right|+1}-0.5\right|\right),D_{offset}=0.8936868\cdot 3.141592653589793,D_{r0}=0.08499547839164734\cdot 1.28,D_{absval}=\frac{\left|\left(x,y\right)\right|}{\left|\left(x,y\right)\right|+1},D_{angle}=\operatorname{arctan}\left(y,x\right)
+D_{cplot}\left(x,y\right)

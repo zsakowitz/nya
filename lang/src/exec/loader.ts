@@ -203,4 +203,6 @@ ${runtime}`
     }
     return null
   }
+
+  exec(strings: TemplateStringsArray) {}
 }

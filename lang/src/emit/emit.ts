@@ -583,6 +583,8 @@ export function emitExpr(node: NodeExpr, block: Block): Value {
       interps,
       node.interps,
       block,
+      node.tag,
+      node,
     )
   } else if (node instanceof ExprRange) {
     const lb = new Block(block.decl, new Exits(null), block.locals)
@@ -693,7 +695,7 @@ function matrixMultiply(block: Block, arg1: Value, arg2: Value): Value {
               r += `(${a1scalars[j * r1.rows + i]})*(${a2scalars[j]})`
               // u[i] = m[0][i] * v[0] + m[1][i] * v[1] + m[2][i] * v[2];
             }
-            return new Value(r, _.type, false)
+            return new Value(r, block.decl.tyNum, false)
           }),
         )
       }
@@ -954,6 +956,8 @@ export function emitItem(node: NodeItem, decl: Declarations): ItemResult {
     } else {
       decl.fns.push(gid, fn)
     }
+
+    Object.assign(fn, { source: body })
 
     return {
       decl: body,

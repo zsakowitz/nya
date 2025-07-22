@@ -1,3 +1,4 @@
+import type { Pos } from "!/ast/issue"
 import type { NodeExpr } from "../ast/node/expr"
 import type { Block } from "./decl"
 import type { IdGlobal } from "./id"
@@ -11,6 +12,8 @@ export class Tag {
       interpValues: Value[],
       interpPositions: NodeExpr[],
       block: Block,
+      namePos: Pos,
+      fullPos: Pos,
     ) => Value,
   ) {}
 }
