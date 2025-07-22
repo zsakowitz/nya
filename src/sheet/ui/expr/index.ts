@@ -254,8 +254,8 @@ function compileForGlsl(self: Expr, exe: Executable) {
     `{let x: Color = %plot(${exe.expr});x}`,
     "<expression>",
     new IdMap<Value>(null)
-      .set(ident("x"), new Value("x", env.libGl.tyNum, false))
-      .set(ident("y"), new Value("y", env.libGl.tyNum, false)),
+      .set(ident("x"), new Value("vl_coords.x", env.libGl.tyNum, false))
+      .set(ident("y"), new Value("vl_coords.y", env.libGl.tyNum, false)),
     env.libGl,
   )
 

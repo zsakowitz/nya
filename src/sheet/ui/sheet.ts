@@ -591,6 +591,7 @@ ${fns.join("\n\n")}`,
 precision highp float;
 out vec4 color;
 vec4 v_coords;
+vec2 vl_coords;
 uniform vec4 u_darkmul;
 uniform vec4 u_darkoffset;
 uniform bool u_is_dark;
@@ -613,9 +614,9 @@ ${this.factory.env.mainGl}
 void main() {
 vec2 e_tx = vec2(gl_FragCoord.x, 0);
 vec2 e_ty = vec2(gl_FragCoord.y, 0);
-v_coords = vec4(
-  _helper_add_r64(u_cx, _helper_mul_r64(e_tx, u_scale)),
-  _helper_add_r64(u_cy, _helper_mul_r64(e_ty, u_scale))
+vl_coords = vec2(
+  (u_cx.x + (e_tx.x * u_scale.x)),
+  (u_cy.x + (e_ty.x * u_scale.x))
 );
 ${compiled.map((x) => x.block).join("")}
 color = ${compiled.map((x) => x.value).reduce((a, b) => `_nya_helper_compose(${a},${b})`)};
