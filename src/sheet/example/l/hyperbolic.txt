@@ -1,0 +1,10 @@
+f\left(A,B\right)=\left\{A.\operatorname{real}=B.\operatorname{real}:\operatorname{arc}\left(\left(A.\operatorname{real},0\right),\left(A.\operatorname{real},1\right),\left(A.\operatorname{real},-10^{6}\right)\right),\operatorname{arc}\left(p-\left(r,0\right),p+\left(0,r\right),p+\left(r,0\right)\right)\operatorname{with}r=\left|A-p.x\right|\operatorname{with}p=\left(\frac{\left|B\right|^{2}-\left|A\right|^{2}}{2\left(B.\operatorname{real}-A.\operatorname{real}\right)},0\right)\right\}\operatorname{with}A=A.\operatorname{complex},B=B.\operatorname{complex}
+f\left(\token{2},\token{3}\right)
+\token{2}=\left(-3.69,2.52\right)
+\token{3}=\left(3.8,5.11\right)
+f\left(\token{4},\token{5}\right)
+\token{4}=\left(-8.83,1.73\right)
+\token{5}=\left(-4.91,4.44\right)
+f\left(\token{6},\token{7}\right)
+\token{6}=\left(6.45,1.34\right)
+\token{7}=\left(6.45,5.85\right)

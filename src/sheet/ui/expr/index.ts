@@ -153,6 +153,11 @@ export class Expr {
       return
     }
 
+    if (this.glsl) {
+      this.glsl = undefined
+      this.sheet.queueGlsl()
+    }
+
     try {
       this.entry.checkExe()
 

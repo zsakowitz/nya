@@ -1,0 +1,7 @@
+f\left(A,B\right)=\left(p,\left|A-p\right|\right)\operatorname{with}p=\frac{\left|B\right|^{2}-\left|A\right|^{2}}{2\left(B.\operatorname{real}-A.\operatorname{real}\right)}
+q\left(A,B\right)=\left(f\left(A,B\right).x,0\right)
+r\left(A,B\right)=f\left(A,B\right).y
+A=6.37+6.44i
+z=\operatorname{angle}\left(A.\operatorname{point},\left(Q.x,0\right),B.\operatorname{point}\right)Q.y\operatorname{with}Q=f\left(A,B\right)\operatorname{with}B=x+yi
+1=z
+z-\left|A-p\right|
