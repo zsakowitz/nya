@@ -27,7 +27,7 @@ export function libNumBool(api: NyaApi) {
   api.f1("-", { value: num }, num, v`-${0}`)
   // @-
   api.fn("^", { lhs: num, rhs: num }, num, {
-    glsl: v`pow(${0},${1})`,
+    glsl: v`${"float %%(float x,float y){return y==floor(y)?mod(y,2.)==0.?pow(abs(x),y):pow(abs(x),y)*sign(x):pow(x,y);}"}(${0},${1})`,
     js: v`${0}**${1}`,
   })
   api.fn("%", { lhs: num, rhs: num }, num, {

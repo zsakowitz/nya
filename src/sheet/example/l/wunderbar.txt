@@ -1,10 +1,9 @@
 n=1
-a=2
-b=-.25
+a=4
+b=-3
 c=1
-d=3
+d=2
 f\left(z\right)=\frac{az+b}{cz+d}
-\frac{a-d+\sqrt{0i+\left(a-d\right)^{2}+4bc}}{2c}
-\frac{a-d-\sqrt{0i+\left(a-d\right)^{2}+4bc}}{2c}
-\operatorname{iterate}^{n}z\to f\left(z\right)\operatorname{from}z=p
-\operatorname{iterate}^{n}z\to f\left(z\right)\operatorname{from}z=\left(x+yi\operatorname{for}x=a,y=a\operatorname{with}a=\operatorname{join}\left(a,-a,0\right)\operatorname{with}a=\left[1,2,3,4,5,6,7,8,9,10\right]\right)
+\frac{a-d+\left[1,-1\right]\sqrt{0i+\left(a-d\right)^{2}+4bc}}{2c}
+\operatorname{iterate}.q^{100}q\to \operatorname{join}\left(q,p\right),p\to f\left(p\right)\operatorname{from}p=P,q=\left[\right]
+P=3.1+0.48i

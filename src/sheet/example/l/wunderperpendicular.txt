@@ -1,0 +1,11 @@
+n=1
+a=4
+b=-3
+c=1
+d=2
+f\left(z\right)=\frac{az+b}{cz+d}
+C=\frac{a-d+\left[1,-1\right]\sqrt{0i+\left(a-d\right)^{2}+4bc}}{2c}
+\operatorname{iterate}.q^{100}q\to \operatorname{join}\left(q,p\right),p\to f\left(p\right)\operatorname{from}p=P,q=\left[\right]
+P=3.1+0.48i
+g\left(A,B\right)=\left\{A.\operatorname{real}=B.\operatorname{real}:\operatorname{arc}\left(\left(A.\operatorname{real},0\right),\left(A.\operatorname{real},1\right),\left(A.\operatorname{real},-10^{6}\right)\right),\operatorname{arc}\left(p-\left(r,0\right),p+\left(0,r\right),p+\left(r,0\right)\right)\operatorname{with}r=\left|A-p.x\right|\operatorname{with}p=\left(\frac{\left|B\right|^{2}-\left|A\right|^{2}}{2\left(B.\operatorname{real}-A.\operatorname{real}\right)},0\right)\right\}\operatorname{with}A=A.\operatorname{complex},B=B.\operatorname{complex}
+g\left(C\left[1\right],p_{2}\right)\operatorname{for}p_{2}=\left[-20,-15,-10,-5,-2,2,5,10,15,20,50,-50,200,-200\right]
