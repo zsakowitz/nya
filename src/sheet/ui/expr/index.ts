@@ -137,12 +137,12 @@ export class Expr {
     }
   }
 
-  plot2: ((ctx: CanvasRenderingContext2D, canvas: CanvasJs) => void) | null =
-    null
-  plot: ((cv: CanvasJs) => PathJs) | null = null
+  plot2: ((ctx: CanvasRenderingContext2D, canvas: CanvasJs) => void) | undefined
+  plot: ((cv: CanvasJs) => PathJs) | undefined
   glsl: GlslResult | undefined
+
   display() {
-    this.plot = null
+    this.plot = undefined
     this.elOutput.classList.add("hidden")
     this.elError.classList.add("hidden")
 
