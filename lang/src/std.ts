@@ -167,6 +167,11 @@ function libBroadcasting(api: NyaApi) {
     js4: v`${"const %%=Math.hypot"}(${0},${1},${2},${3})`,
   })
 
+  api.fn("@length", { v1: num, v2: num }, num, {
+    glsl: v`length(vec2(${0},${1}))`,
+    js: v`${"const %%=Math.hypot"}(${0},${1})`,
+  })
+
   /* @norm */ {
     const hypotId = new Id("Math.hypot").ident()
     const fNorm = new Fn(
@@ -303,6 +308,12 @@ function libCanvas(api: NyaApi) {
     glsl: null,
     js: v`${"function %%(cv,x,y){return {x:cv.sx*x+cv.ox,y:cv.sy*y+cv.oy}}"}(${0},${1},${2})`,
   })
+  api.fn("point_at_raw", { x: num, y: num }, CanvasPoint, {
+    glsl: null,
+    js: v`({x:${0},y:${1}})`,
+  })
+  api.fn("x", { pt: CanvasPoint }, num, { glsl: v`0.`, js: v`${0}.x` })
+  api.fn("y", { pt: CanvasPoint }, num, { glsl: v`0.`, js: v`${0}.y` })
 
   api.fn("delta_by", { cv: Canvas, d: num }, CanvasDelta, {
     glsl: null,
@@ -365,9 +376,20 @@ function libPlotStyle(api: NyaApi) {
     glsl: null,
     js: v`({x:${0},y:[0,0,0],z:1,w:0,a:3})`,
   })
+  api.fn(
+    "styled",
+    { x: PathStyled },
+    PathStyled,
+    { glsl: null, js: v`${0}` },
+    false,
+  )
   api.fn("color", { x: PathStyled, r: num, g: num, b: num }, PathStyled, {
     glsl: null,
     js: v`({...${0},y:[${1},${2},${3}]})`,
+  })
+  api.fn("fill_opacity", { x: PathStyled, o: num }, PathStyled, {
+    glsl: null,
+    js: v`({...${0},w:${1}})`,
   })
 }
 

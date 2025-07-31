@@ -290,10 +290,10 @@ fn %plot_2d(cv: Canvas, p: Circle) -> PathStyled {
     .color(dcg_green.r, dcg_green.g, dcg_green.b)
 }
 
-fn %plot_2d(cv: Canvas, p: Segment) -> Path {
+fn %plot_2d(cv: Canvas, l: Segment) -> Path {
   path
-    .move_to(cv.point_at(p.p1.x, p.p1.y))
-    .line_to(cv.point_at(p.p2.x, p.p2.y))
+    .move_to(cv.point_at(l.p1.x, l.p1.y))
+    .line_to(cv.point_at(l.p2.x, l.p2.y))
 }
 
 fn %plot_2d(cv: Canvas, l: Line) -> Path {
@@ -368,8 +368,37 @@ fn %plot_2d(cv: Canvas, l: Ray) -> Path {
   }
 }
 
-fn %juxtapose(a: Point, b: Point) -> num {
-  @length(a @- b)
+fn %plot_2d(cv: Canvas, l: Vector) -> PathStyled {
+  // vector head size
+  let size = 12;
+
+  // vector width ratio
+  let w = 0.4;
+
+  let o1 = cv.point_at(l.p1.x, l.p1.y);
+  let o2 = cv.point_at(l.p2.x, l.p2.y);
+  if (
+    !(is_finite(o1.x) && is_finite(o1.y) && is_finite(o2.x) && is_finite(o2.y))
+  ) {
+    return path.styled;
+  }
+
+  let dx = o2.x - o1.x;
+  let dy = o2.y - o1.y;
+  let nx = size * dx / @length(dx, dy);
+  let ny = size * dy / @length(dx, dy);
+  let ox = o2.x - nx;
+  let oy = o2.y - ny;
+
+  path
+    .move_to(o1)
+    .line_to(o2)
+    .move_to(o2)
+    .line_to(point_at_raw(ox + w * ny, oy - w * nx))
+    .line_to(point_at_raw(ox - w * ny, oy + w * nx))
+    .line_to(o2)
+    .fill_opacity(1.0)
+    .color(dcg_blue.r, dcg_blue.g, dcg_blue.b)
 }
 
 fn ->(a: Angle) -> num {
