@@ -9,15 +9,13 @@ import type { CanvasJs } from "!/std"
 type ExecKey = number & ((...args: any[]) => any)
 
 export interface UtilityFn {
-  display: {
-    arg: Type
-    exec: (value: unknown) => string
-  }
-  "plot-2d": {
-    arg: Type
-    output: "point"
-    exec: (cv: CanvasJs, value: unknown) => { x: number; y: number }
-  }
+  display: { exec(value: unknown): string }
+  "plot-2d":
+    | {
+        output: "pt"
+        exec(cv: CanvasJs, value: unknown): { x: number; y: number }
+      }
+    | { output: "path"; exec(cv: CanvasJs, value: unknown): Path2D }
 }
 
 type Utilities = { [K in keyof UtilityFn]: Map<Type, UtilityFn[K]> }
@@ -53,6 +51,7 @@ export class UtilityFnCache {
     const tyLatex = lib.tyLatex
     const tyCanvas = lib.ty("Canvas")!
     const tyCanvasPoint = lib.ty("CanvasPoint")!
+    const tyPath = lib.ty("Path")!
 
     // collecting functions so they can be evaluated in bulk means only one eval()
     // is necessary, but has the downside of not having actual callables until
@@ -68,7 +67,6 @@ export class UtilityFnCache {
         fn.ret == tyLatex
       ) {
         utilities["display"].set(fn.args[0]!.type, {
-          arg: fn.args[0]!.type,
           exec: (ret.push(fn) - 1) as ExecKey,
         })
       }
@@ -82,8 +80,12 @@ export class UtilityFnCache {
       ) {
         if (fn.ret == tyCanvasPoint) {
           utilities["plot-2d"].set(fn.args[1]!.type, {
-            arg: fn.args[1]!.type,
-            output: "point",
+            output: "pt",
+            exec: (ret.push(fn) - 1) as ExecKey,
+          })
+        } else if (fn.ret == tyPath) {
+          utilities["plot-2d"].set(fn.args[1]!.type, {
+            output: "path",
             exec: (ret.push(fn) - 1) as ExecKey,
           })
         }

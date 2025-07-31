@@ -281,6 +281,10 @@ fn end(a: Arc) -> Point {
 // "reflect"
 // "perimeter"
 
+fn %plot_2d(cv: Canvas, p: Segment) -> Path {
+  path.move_to(cv.point_at(p.p1.x, p.p1.y)).line_to(cv.point_at(p.p2.x, p.p2.y))
+}
+
 // TODO: allow plotting points and things
 // fn %plot(cv: Canvas, p: Circle) -> Path {
 //   path

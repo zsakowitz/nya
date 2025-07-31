@@ -292,19 +292,6 @@ export function libBroadcasting(api: NyaApi) {
   )
 }
 
-export interface NyaCanvas {
-  sx: number
-  sy: number
-  ox: number
-  oy: number
-  x0: number
-  x1: number
-  y0: number
-  y1: number
-  wx: number
-  wy: number
-}
-
 export function libCanvas(api: NyaApi) {
   const num = api.lib.tyNum
 
@@ -328,10 +315,10 @@ export function libCanvas(api: NyaApi) {
   })
 
   // TODO: have a better glsl value
-  api.fn("xmin", { cv: Canvas }, num, { glsl: v`0./0.`, js: v`${0}.x0` })
-  api.fn("xmax", { cv: Canvas }, num, { glsl: v`0./0.`, js: v`${0}.x1` })
-  api.fn("ymin", { cv: Canvas }, num, { glsl: v`0./0.`, js: v`${0}.y0` })
-  api.fn("ymax", { cv: Canvas }, num, { glsl: v`0./0.`, js: v`${0}.y1` })
+  api.fn("xmin", { cv: Canvas }, num, { glsl: v`0.`, js: v`${0}.x0` })
+  api.fn("xmax", { cv: Canvas }, num, { glsl: v`1.`, js: v`${0}.x1` })
+  api.fn("ymin", { cv: Canvas }, num, { glsl: v`0.`, js: v`${0}.y0` })
+  api.fn("ymax", { cv: Canvas }, num, { glsl: v`1.`, js: v`${0}.y1` })
 
   const Path = api.opaque("Path", {
     glsl: null,
@@ -341,15 +328,15 @@ export function libCanvas(api: NyaApi) {
   api.fn("path", {}, Path, { glsl: null, js: v`new Path2D()` }, false)
   api.fn("move_to", { path: Path, to: CanvasPoint }, Path, {
     glsl: null,
-    js: v`${"function %%(path,pt){path.moveTo(pt.x,pt.y);return path}"}(${0},${1})`,
+    js: v`${"function %%(path,pt){path.moveTo(pt.x,pt.y);return path}"}(new Path2D(${0}),${1})`,
   })
   api.fn("line_to", { path: Path, to: CanvasPoint }, Path, {
     glsl: null,
-    js: v`${"function %%(path,pt){path.lineTo(pt.x,pt.y);return path}"}(${0},${1})`,
+    js: v`${"function %%(path,pt){path.lineTo(pt.x,pt.y);return path}"}(new Path2D(${0}),${1})`,
   })
   api.fn("circle", { path: Path, center: CanvasPoint, radius: num }, Path, {
     glsl: null,
-    js: v`${`function %%(path,c,r){path.ellipse(c.x,c.y,r,r,0,0,${2 * Math.PI});return path}`}(${0},${1},${2})`,
+    js: v`${`function %%(path,c,r){path.ellipse(c.x,c.y,r,r,0,0,${2 * Math.PI});return path}`}(new Path2D(${0}),${1},${2})`,
   })
   api.fn(
     "ellipse",
@@ -357,7 +344,7 @@ export function libCanvas(api: NyaApi) {
     Path,
     {
       glsl: null,
-      js: v`${`function %%(path,c,r){path.ellipse(c.x,c.y,r.x,r.y,0,0,${2 * Math.PI});return path}`}(${0},${1},${2})`,
+      js: v`${`function %%(path,c,r){path.ellipse(c.x,c.y,r.x,r.y,0,0,${2 * Math.PI});return path}`}(new Path2D(${0}),${1},${2})`,
     },
   )
 }

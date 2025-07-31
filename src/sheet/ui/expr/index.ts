@@ -291,15 +291,31 @@ function plotJs(self: Expr, value: unknown, type: Type) {
 
   const utils = self.sheet.factory.env.utils
   const plot2d = utils.get("plot-2d", type)
+
   if (plot2d) {
     changed = true
-    self.plot3 = (ctx, cv) => {
-      const { x, y } = plot2d.exec(cv, value)
-      ctx.beginPath()
-      ctx.ellipse(x, y, Size.Point, Size.Point, 0, 0, 2 * Math.PI)
-      ctx.fillStyle = Color.Purple
-      ctx.globalAlpha = 1
-      ctx.fill()
+
+    switch (plot2d.output) {
+      case "pt":
+        self.plot3 = (ctx, cv) => {
+          const { x, y } = plot2d.exec(cv, value)
+          ctx.beginPath()
+          ctx.ellipse(x, y, Size.Point, Size.Point, 0, 0, 2 * Math.PI)
+          ctx.fillStyle = Color.Purple
+          ctx.globalAlpha = 1
+          ctx.fill()
+        }
+        break
+
+      case "path":
+        self.plot3 = (ctx, cv) => {
+          const path = plot2d.exec(cv, value)
+          ctx.strokeStyle = Color.Blue
+          ctx.lineWidth = Size.Line
+          ctx.globalAlpha = 1
+          ctx.stroke(path)
+        }
+        break
     }
   }
 
