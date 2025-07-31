@@ -39,16 +39,16 @@ export class ScriptEnvironment {
 
   load(name: ScriptName) {
     this._load(getScriptPath(name), SCRIPTS.get(name)!)
-    this.utils.markStale()
   }
 
   // eventually this will be async since scripts may load dependencies
   // asynchronously, but the current architecture of "all scripts known at
   // comptime" means it's fine as synchronous for now
-  private _load(name: string, script: string) {
+  _load(name: string, script: string) {
     if (this.loaded.has(script)) {
       return
     }
+    this.utils.markStale()
     const chunk = new Chunk(name, script)
     const stream = createStream(chunk, this.issues, { comments: false })
     this.loaded.add(script)
