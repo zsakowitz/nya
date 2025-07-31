@@ -23,7 +23,7 @@ import type { Type } from "!/emit/type"
 import { Value } from "!/emit/value"
 import { Entry } from "!/exec/item"
 import type { Executable } from "!/exec/state"
-import type { CanvasJs, PathJs } from "!/std"
+import type { CanvasJs } from "!/std"
 import { STORE_EVAL } from "#/list/eval"
 import { errorText } from "@/error"
 import "@/eval2/txs"
@@ -114,7 +114,7 @@ export class Expr {
   }
 
   drawSelf() {
-    if (!this.plot3) {
+    if (!this.plot) {
       return
     }
 
@@ -125,19 +125,16 @@ export class Expr {
     ctx.lineCap = "round"
     ctx.lineJoin = "round"
     try {
-      this.plot3(ctx, this.sheet.cv.nya())
+      this.plot(ctx, this.sheet.cv.nya())
     } finally {
       ctx.resetTransform()
     }
   }
 
-  plot3: ((ctx: RenderingContext2D, canvas: CanvasJs) => void) | undefined
-  plot2: ((ctx: CanvasRenderingContext2D, canvas: CanvasJs) => void) | undefined
-  plot: ((cv: CanvasJs) => PathJs) | undefined
+  plot: ((ctx: RenderingContext2D, canvas: CanvasJs) => void) | undefined
   glsl: GlslResult | undefined
 
   display() {
-    this.plot = undefined
     this.elOutput.classList.add("hidden")
     this.elError.classList.add("hidden")
 
@@ -272,7 +269,7 @@ function printJs(self: Expr, latex: string | null, value: unknown, type: Type) {
     field.block.clear()
     field.typeLatex(latex.replace(/\+-/g, "-"))
     self.elOutput.appendChild(el)
-  } else {
+  } else if (!self.plot) {
     const json = JSON.stringify(value, undefined, 2)
     self.elOutput.appendChild(
       h(
@@ -286,8 +283,8 @@ function printJs(self: Expr, latex: string | null, value: unknown, type: Type) {
 }
 
 function plotJs(self: Expr, value: unknown, type: Type) {
-  let changed = !!self.plot3
-  self.plot3 = undefined
+  let changed = !!self.plot
+  self.plot = undefined
 
   const utils = self.sheet.factory.env.utils
   const plot2d = utils.get("plot-2d", type)
@@ -297,7 +294,7 @@ function plotJs(self: Expr, value: unknown, type: Type) {
 
     switch (plot2d.output) {
       case "pt":
-        self.plot3 = (ctx, cv) => {
+        self.plot = (ctx, cv) => {
           const { x, y } = plot2d.exec(cv, value)
           ctx.beginPath()
           ctx.ellipse(x, y, Size.Point, Size.Point, 0, 0, 2 * Math.PI)
@@ -308,7 +305,7 @@ function plotJs(self: Expr, value: unknown, type: Type) {
         break
 
       case "path1":
-        self.plot3 = (ctx, cv) => {
+        self.plot = (ctx, cv) => {
           const path = plot2d.exec(cv, value)
           ctx.strokeStyle = Color.Blue
           ctx.lineWidth = Size.Line
@@ -318,7 +315,7 @@ function plotJs(self: Expr, value: unknown, type: Type) {
         break
 
       case "path1*":
-        self.plot3 = (ctx, cv) => {
+        self.plot = (ctx, cv) => {
           const path = plot2d.exec(cv, value)
           ctx.strokeStyle =
             ctx.fillStyle = `rgb(${255 * path.y[0]},${255 * path.y[1]},${255 * path.y[2]})`
@@ -342,6 +339,6 @@ function compileForJs(self: Expr, exe: Executable) {
   const { block, value } = env.process(exe.expr, "<expression>")
   const result = env.compute(block, value)
 
-  printJs(self, env.display(value.type, result), result, value.type)
   plotJs(self, result, value.type)
+  printJs(self, env.display(value.type, result), result, value.type)
 }
