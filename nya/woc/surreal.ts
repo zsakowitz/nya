@@ -147,7 +147,7 @@ function libGame(api: NyaApi, S: Scalar) {
   api.fn("inv", { x: Player }, Player, { glsl: v`-${0}`, js: v`-${0}` })
   api.fn("%display", { x: Player }, api.lib.tyLatex, {
     glsl: v``,
-    js: v`${0}==1?"\\\\wordvar{left}":"\\\\wordvar{right}"`,
+    js: v`${0}==1?"\\\\wordvar{left}\\\\digit{+}":"\\\\wordvar{right}\\\\digit{-}"`,
   })
 
   const Sign = api.opaque("Sign", { glsl: "int", js: null }, true)
@@ -338,7 +338,7 @@ function libGameActual() {
         size += x
       },
       w() {
-        return `\\wordprefix{nim}(${size})`
+        return `\\digit{∗}${size}`
       },
     }
   }
@@ -876,8 +876,8 @@ function libGameActual() {
     tree: () => new Tree(),
     display_sign(sign: Sign): string {
       return {
-        [-1]: "\\wordvar{right}",
-        [1]: "\\wordvar{left}",
+        [-1]: "\\wordvar{right}\\digit{-}",
+        [1]: "\\wordvar{left}\\digit{+}",
         [0]: "0",
         [3]: "\\digit{∗}",
       }[sign]
