@@ -336,7 +336,7 @@ export function libCanvas(api: NyaApi) {
   })
   api.fn("circle", { path: Path, center: CanvasPoint, radius: num }, Path, {
     glsl: null,
-    js: v`${`function %%(path,c,r){path.ellipse(c.x,c.y,r,r,0,0,${2 * Math.PI});return path}`}(new Path2D(${0}),${1},${2})`,
+    js: v`${`function %%(path,c,r){path.ellipse(c.x,c.y,Math.abs(r),Math.abs(r),0,0,${2 * Math.PI});return path}`}(new Path2D(${0}),${1},${2})`,
   })
   api.fn(
     "ellipse",
@@ -344,7 +344,7 @@ export function libCanvas(api: NyaApi) {
     Path,
     {
       glsl: null,
-      js: v`${`function %%(path,c,r){path.ellipse(c.x,c.y,r.x,r.y,0,0,${2 * Math.PI});return path}`}(new Path2D(${0}),${1},${2})`,
+      js: v`${`function %%(path,c,r){path.ellipse(c.x,c.y,Math.abs(r.x),Math.abs(r.y),0,0,${2 * Math.PI});return path}`}(new Path2D(${0}),${1},${2})`,
     },
   )
 }

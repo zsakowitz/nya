@@ -281,58 +281,47 @@ fn end(a: Arc) -> Point {
 // "reflect"
 // "perimeter"
 
+fn %plot_2d(cv: Canvas, p: Circle) -> Path {
+  path
+    .ellipse(
+      cv.point_at(p.center.x, p.center.y),
+      cv.delta_by(p.radius, p.radius),
+    )
+}
+
 fn %plot_2d(cv: Canvas, p: Segment) -> Path {
   path
     .move_to(cv.point_at(p.p1.x, p.p1.y))
     .line_to(cv.point_at(p.p2.x, p.p2.y))
 }
 
-// TODO: allow plotting points and things
-// fn %plot(cv: Canvas, p: Circle) -> Path {
-//   path
-//     .ellipse(
-//       p.center.to_cv_coords(cv),
-//       %point(p.radius, p.radius).to_cv_delta(cv),
-//     )
-//     .stroke(dcg_green)
-// }
-//
-// fn %plot(cv: Canvas, p: Segment) -> Path {
-//   path
-//     .move_to(p.p1.to_cv_coords(cv))
-//     .line_to(p.p2.to_cv_coords(cv))
-//     .stroke(dcg_blue)
-// }
-//
-// fn %plot(cv: Canvas, l: Line) -> Path {
-//   let x1 = l.p1.x;
-//   let y1 = l.p1.y;
-//   let x2 = l.p2.x;
-//   let y2 = l.p2.y;
-//
-//   if x1 == x2 && y1 == y2 {
-//     return path;
-//   }
-//
-//   let ymin = 2 * cv.ymin - cv.ymax;
-//   let ymax = 2 * cv.ymax - cv.ymin;
-//   let xmin = 2 * cv.xmin - cv.xmax;
-//   let xmax = 2 * cv.xmax - cv.xmin;
-//
-//   let p = if x1 == x2 {
-//     path
-//       .move_to(%point(x1, ymin).to_cv_coords(cv))
-//       .line_to(%point(x1, ymax).to_cv_coords(cv))
-//   } else {
-//     let m = (y2 - y1) / (x2 - x1);
-//     path
-//       .move_to(%point(xmin, m * (xmin - x1) + y1).to_cv_coords(cv))
-//       .line_to(%point(xmax, m * (xmax - x1) + y1).to_cv_coords(cv))
-//   };
-//
-//   p.stroke(dcg_blue)
-// }
-//
+fn %plot_2d(cv: Canvas, l: Line) -> Path {
+  let x1 = l.p1.x;
+  let y1 = l.p1.y;
+  let x2 = l.p2.x;
+  let y2 = l.p2.y;
+
+  if x1 == x2 && y1 == y2 {
+    return path;
+  }
+
+  let ymin = 2 * cv.ymin - cv.ymax;
+  let ymax = 2 * cv.ymax - cv.ymin;
+  let xmin = 2 * cv.xmin - cv.xmax;
+  let xmax = 2 * cv.xmax - cv.xmin;
+
+  if x1 == x2 {
+    path
+      .move_to(cv.point_at(x1, ymin))
+      .line_to(cv.point_at(x1, ymax))
+  } else {
+    let m = (y2 - y1) / (x2 - x1);
+    path
+      .move_to(cv.point_at(xmin, m * (xmin - x1) + y1))
+      .line_to(cv.point_at(xmax, m * (xmax - x1) + y1))
+  }
+}
+
 // fn %plot(cv: Canvas, l: Ray) -> Path {
 //   let x1 = l.p1.x;
 //   let y1 = l.p1.y;
