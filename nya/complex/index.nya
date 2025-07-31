@@ -81,7 +81,7 @@ fn cplot(z: Complex) -> Color {
   oklab(absval_scaled, rd * cos(angle + offset), rd * sin(angle + offset), 1.0)
 }
 
-fn %plot(z: Complex) -> Color {
+fn %plot_shader(z: Complex) -> Color {
   cplot(z)
 }
 
@@ -172,7 +172,7 @@ fn %sqrt(z: Complex) -> Complex {
   Complex { real: cos(a), imag: sin(a) } @* sqrt(@length(z))
 }
 
-fn %plot(cv: Canvas, p: Complex) -> CanvasPoint {
+fn %plot_shader(cv: Canvas, p: Complex) -> CanvasPoint {
   cv.point_at(p.real, p.imag)
 }
 

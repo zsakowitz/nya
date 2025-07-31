@@ -69,7 +69,7 @@ fn %abs(a: Point) -> num {
   @length(a)
 }
 
-fn %plot(cv: Canvas, p: Point) -> CanvasPoint {
+fn %plot_2d(cv: Canvas, p: Point) -> CanvasPoint {
   // purple, full opacity 1.0
   cv.point_at(p.x, p.y)
 }
