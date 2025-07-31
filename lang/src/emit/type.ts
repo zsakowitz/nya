@@ -31,7 +31,16 @@ export interface FnType {
   toString(): string
 }
 
+export function isType(ty: FnType): ty is Type {
+  return (
+    typeof (ty as Type).emit != "undefined" &&
+    typeof (ty as Type).toRuntime != "undefined" &&
+    typeof (ty as Type).fromScalars != "undefined"
+  )
+}
+
 export type FnParam = { name: string; type: FnType }
+
 export type FnExec = (
   args: Value[],
   block: Block,

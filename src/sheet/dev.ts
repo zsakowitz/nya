@@ -40,6 +40,7 @@ if (IS_DEV) {
 }
 
 const sheet = factory.create()
+Object.assign(globalThis, { sheet })
 if (globalThis.location?.href.includes("docs")) {
   document.body.appendChild(createDocs2(sheet))
 } else {

@@ -256,7 +256,7 @@ function compileForGlsl(self: Expr, exe: Executable) {
   const env = self.sheet.factory.env
 
   const { block, value } = env.process(
-    `{let x: Color = %plot(${exe.expr});x}`,
+    `{let x: Color = %plot_shader(${exe.expr});x}`,
     "<expression>",
     new IdMap<Value>(null)
       .set(ident("x"), new Value("vl_coords.x", env.libGl.tyNum, false))

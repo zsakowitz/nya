@@ -4,6 +4,7 @@ import { Array, ArrayEmpty, type Type } from "!/emit/type"
 import { createStdlib } from "!/std"
 import { SCRIPTS, type ScriptName } from "#/script-index"
 import { getScriptPath } from "#/scripts"
+import { UtilityFnCache } from "@/eval2/util"
 import { Chunk, Issues, PosVirtual } from "../ast/issue"
 import { ItemUse } from "../ast/node/item"
 import { parse, parseBlockContents } from "../ast/parse"
@@ -31,6 +32,7 @@ export class ScriptEnvironment {
   mainJs = ""
   private readonly issues = new Issues()
   private readonly loaded = new Set<string>()
+  readonly utils = new UtilityFnCache(this)
 
   get scriptCount() {
     return this.loaded.size
@@ -38,6 +40,10 @@ export class ScriptEnvironment {
 
   load(name: ScriptName) {
     this._load(getScriptPath(name), SCRIPTS.get(name)!)
+    if (!this.utils.stale) {
+      queueMicrotask(() => this.utils.recollect())
+    }
+    this.utils.stale = true
   }
 
   // eventually this will be async since scripts may load dependencies
@@ -97,6 +103,14 @@ export class ScriptEnvironment {
     return { block, value }
   }
 
+  /** Executes a string compiled within the JavaScript context. */
+  evalRaw(text: string): unknown {
+    const source = `${this.libJs.globals()}
+${this.mainJs}
+${text}`
+    return (0, eval)(source)
+  }
+
   /** Creates a function which can be called repeatedly. */
   compile(
     block: Block,
@@ -104,23 +118,17 @@ export class ScriptEnvironment {
     args: string,
   ): (...args: unknown[]) => unknown {
     const runtime = value.toRuntime()
-    const source = `${this.libJs.globals()}
-${this.mainJs}
+    return this.evalRaw(`
 ;(function(${args}){
 ${block.source}
 return ${runtime}
-})`
-    return (0, eval)(source)
+})`) as any
   }
 
   /** Executes a block and value compiled within the JavaScript context. */
   compute(block: Block, value: Value): unknown {
     const runtime = value.toRuntime()
-    const source = `${this.libJs.globals()}
-${this.mainJs}
-${block.source}
-${runtime}`
-    return (0, eval)(source)
+    return this.evalRaw(block.source + "\n" + runtime)
   }
 
   log(script: string, name?: string, locals?: IdMap<Value>) {
