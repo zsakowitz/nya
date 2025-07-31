@@ -1,16 +1,15 @@
-import { ident } from "!/emit/id"
 import { EmitProps, type Lang } from "!/emit/props"
 import { Array, ArrayEmpty, type Type } from "!/emit/type"
 import { createStdlib } from "!/std"
 import { SCRIPTS, type ScriptName } from "#/script-index"
 import { getScriptPath } from "#/scripts"
 import { UtilityFnCache } from "@/eval2/util"
-import { Chunk, Issues, PosVirtual } from "../ast/issue"
+import { Chunk, Issues } from "../ast/issue"
 import { ItemUse } from "../ast/node/item"
 import { parse, parseBlockContents } from "../ast/parse"
 import { createStream } from "../ast/stream"
 import { Block, Exits, type Declarations, type IdMap } from "../emit/decl"
-import { emitBlock, emitItem, tryPerformCall } from "../emit/emit"
+import { emitBlock, emitItem } from "../emit/emit"
 import { bug, errorText } from "../emit/error"
 import { Value } from "../emit/value"
 
@@ -154,7 +153,7 @@ return ${runtime}
   }
 
   /** Displays a precomputed value. */
-  display(type: Type, value: unknown) {
+  display(type: Type, value: unknown): string | null {
     if (type == ArrayEmpty) {
       return "[]"
     }
@@ -164,51 +163,11 @@ return ${runtime}
         return "[]"
       }
 
-      const b = new Block(this.libJs, new Exits(null))
-
-      const latex = tryPerformCall(
-        ident("%display"),
-        b,
-        [new Value("input", type.item, false)],
-        new PosVirtual("<display>"),
-        new PosVirtual("<display>"),
-      )
-
-      if (latex?.type != this.libJs.tyLatex) {
-        return null
-      }
-
-      if (!globalThis.Array.isArray(value)) {
-        return null
-      }
-
-      const retfn = this.compile(b, latex, "input")
-      const ret = value.slice(0, 5).map((x) => retfn(x))
-      if (ret.every((x) => typeof x == "string")) {
-        return `[${ret.join(",")}]`
-      } else {
-        return null
-      }
+      const ret = this.utils.get("display", type.item)
+      if (!ret) return null
+      return `[${(value as any[]).map((x) => ret.exec(x)).join(",")}]`
     }
 
-    const b = new Block(this.libJs, new Exits(null))
-
-    const latex = tryPerformCall(
-      ident("%display"),
-      b,
-      [new Value("input", type, false)],
-      new PosVirtual("<display>"),
-      new PosVirtual("<display>"),
-    )
-
-    if (latex?.type != this.libJs.tyLatex) {
-      return null
-    }
-
-    const ret = this.compile(b, latex, "input")(value)
-    if (typeof ret == "string") {
-      return ret
-    }
-    return null
+    return this.utils.get("display", type)?.exec(value) ?? null
   }
 }
