@@ -1,5 +1,5 @@
+circle((2,3),2)
 \operatorname{line}\left(\left(2,3\right),\left(4,7\right)\right)
-shader x
 cplot 1
 (2,3)
 [1,2,3]

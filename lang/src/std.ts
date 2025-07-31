@@ -12,7 +12,7 @@ import { Tag } from "./emit/tag"
 import { Any, Fn } from "./emit/type"
 import { Value } from "./emit/value"
 
-export function libNumBool(api: NyaApi) {
+function libNumBool(api: NyaApi) {
   const num = api.scalar("num", "float", true)
   const bool = api.scalar("bool", "bool", true)
   api.scalar("sym", "symint", true)
@@ -138,7 +138,7 @@ export function libNumBool(api: NyaApi) {
   // @compiletimelog(any)
 }
 
-export function libBroadcasting(api: NyaApi) {
+function libBroadcasting(api: NyaApi) {
   const num = api.lib.tyNum
 
   for (const c of "+-*/") {
@@ -292,7 +292,7 @@ export function libBroadcasting(api: NyaApi) {
   )
 }
 
-export function libCanvas(api: NyaApi) {
+function libCanvas(api: NyaApi) {
   const num = api.lib.tyNum
 
   const Canvas = api.opaque("Canvas", { glsl: null, js: " " })
@@ -349,6 +349,28 @@ export function libCanvas(api: NyaApi) {
   )
 }
 
+export interface PathStyled {
+  x: Path2D // path
+  y: [number, number, number] // color
+  z: number // stroke opacity
+  w: number // fill opacity
+  a: number // stroke width
+}
+
+function libPlotStyle(api: NyaApi) {
+  const Path = api.lib.ty("Path")!
+  const num = api.lib.tyNum
+  const PathStyled = api.opaque("PathStyled", { glsl: null, js: "" }, true)
+  api.fn("->", { x: Path }, PathStyled, {
+    glsl: null,
+    js: v`({x:${0},y:[0,0,0],z:1,w:0,a:3})`,
+  })
+  api.fn("color", { x: PathStyled, r: num, g: num, b: num }, PathStyled, {
+    glsl: null,
+    js: v`({...${0},y:[${1},${2},${3}]})`,
+  })
+}
+
 // TODO: this should get shorter the deeper it is; 2.349834+3.3498734i takes up too much space in a displayed list
 export const numToLatex = (x: number): string => {
   if (x != x) return "\\wordvar{undefined}"
@@ -368,7 +390,7 @@ export const numToLatex = (x: number): string => {
   return str + exp
 }
 
-export function libLatex(api: NyaApi) {
+function libLatex(api: NyaApi) {
   const latex = api.opaque("latex", { glsl: null, js: "string" })
   latex.toRuntime = (v) => JSON.stringify(v as any as string)
 
@@ -560,6 +582,7 @@ export function createStdlib(props: EmitProps): Declarations {
   libNumBool(api)
   libBroadcasting(api)
   libCanvas(api)
+  libPlotStyle(api)
   libLatex(api)
 
   return lib

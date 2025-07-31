@@ -4,7 +4,7 @@ import { Id, ident } from "!/emit/id"
 import { isType, type Type } from "!/emit/type"
 import { Value } from "!/emit/value"
 import type { ScriptEnvironment } from "!/exec/loader"
-import type { CanvasJs } from "!/std"
+import type { CanvasJs, PathStyled } from "!/std"
 
 type ExecKey = number & ((...args: any[]) => any)
 
@@ -15,7 +15,8 @@ export interface UtilityFn {
         output: "pt"
         exec(cv: CanvasJs, value: unknown): { x: number; y: number }
       }
-    | { output: "path"; exec(cv: CanvasJs, value: unknown): Path2D }
+    | { output: "path1"; exec(cv: CanvasJs, value: unknown): Path2D }
+    | { output: "path1*"; exec(cv: CanvasJs, value: unknown): PathStyled }
 }
 
 type Utilities = { [K in keyof UtilityFn]: Map<Type, UtilityFn[K]> }
@@ -52,6 +53,7 @@ export class UtilityFnCache {
     const tyCanvas = lib.ty("Canvas")!
     const tyCanvasPoint = lib.ty("CanvasPoint")!
     const tyPath = lib.ty("Path")!
+    const tyPathStyled = lib.ty("PathStyled")!
 
     // collecting functions so they can be evaluated in bulk means only one eval()
     // is necessary, but has the downside of not having actual callables until
@@ -78,16 +80,14 @@ export class UtilityFnCache {
         fn.args[0]!.type == tyCanvas &&
         isType(fn.args[1]!.type)
       ) {
-        if (fn.ret == tyCanvasPoint) {
-          utilities["plot-2d"].set(fn.args[1]!.type, {
-            output: "pt",
-            exec: (ret.push(fn) - 1) as ExecKey,
-          })
-        } else if (fn.ret == tyPath) {
-          utilities["plot-2d"].set(fn.args[1]!.type, {
-            output: "path",
-            exec: (ret.push(fn) - 1) as ExecKey,
-          })
+        const kind =
+          fn.ret == tyCanvasPoint ? "pt"
+          : fn.ret == tyPath ? "path1"
+          : fn.ret == tyPathStyled ? "path1*"
+          : null
+        if (kind) {
+          const exec = (ret.push(fn) - 1) as ExecKey
+          utilities["plot-2d"].set(fn.args[1]!.type, { output: kind, exec })
         }
       }
     }

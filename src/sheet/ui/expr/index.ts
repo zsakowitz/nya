@@ -307,13 +307,26 @@ function plotJs(self: Expr, value: unknown, type: Type) {
         }
         break
 
-      case "path":
+      case "path1":
         self.plot3 = (ctx, cv) => {
           const path = plot2d.exec(cv, value)
           ctx.strokeStyle = Color.Blue
           ctx.lineWidth = Size.Line
           ctx.globalAlpha = 1
           ctx.stroke(path)
+        }
+        break
+
+      case "path1*":
+        self.plot3 = (ctx, cv) => {
+          const path = plot2d.exec(cv, value)
+          ctx.strokeStyle =
+            ctx.fillStyle = `rgb(${255 * path.y[0]},${255 * path.y[1]},${255 * path.y[2]})`
+          ctx.lineWidth = path.a
+          ctx.globalAlpha = path.w
+          ctx.fill(path.x)
+          ctx.globalAlpha = path.z
+          ctx.stroke(path.x)
         }
         break
     }

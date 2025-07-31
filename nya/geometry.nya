@@ -281,12 +281,13 @@ fn end(a: Arc) -> Point {
 // "reflect"
 // "perimeter"
 
-fn %plot_2d(cv: Canvas, p: Circle) -> Path {
+fn %plot_2d(cv: Canvas, p: Circle) -> PathStyled {
   path
     .ellipse(
       cv.point_at(p.center.x, p.center.y),
       cv.delta_by(p.radius, p.radius),
     )
+    .color(dcg_green.r, dcg_green.g, dcg_green.b)
 }
 
 fn %plot_2d(cv: Canvas, p: Segment) -> Path {
@@ -322,50 +323,56 @@ fn %plot_2d(cv: Canvas, l: Line) -> Path {
   }
 }
 
-// fn %plot(cv: Canvas, l: Ray) -> Path {
-//   let x1 = l.p1.x;
-//   let y1 = l.p1.y;
-//   let x2 = l.p2.x;
-//   let y2 = l.p2.y;
-//
-//   if x1 == x2 && y1 == y2 {
-//     return path;
-//   }
-//
-//   let ymin = 2 * cv.ymin - cv.ymax;
-//   let ymax = 2 * cv.ymax - cv.ymin;
-//   let xmin = 2 * cv.xmin - cv.xmax;
-//   let xmax = 2 * cv.xmax - cv.xmin;
-//
-//   let mut p = path.move_to(l.p1.to_cv_coords(cv)).stroke(dcg_blue);
-//
-//   if x1 == x2 {
-//     if y1 < y2 {
-//       if !(y1 > ymax) {
-//         p.line_to(%point(x1, ymax).to_cv_coords(cv));
-//       }
-//     } else if !(y1 < ymin) {
-//       p.line_to(%point(x1, ymin).to_cv_coords(cv));
-//     }
-//   } else {
-//     let m = (y2 - y1) / (x2 - x1);
-//     if x1 < x2 {
-//       if !(x2 > xmax) {
-//         p.line_to(%point(xmax, m * (xmax - x1) + y1).to_cv_coords(cv));
-//       }
-//     } else if !(x1 < xmin) {
-//       p.line_to(%point(xmin, m * (xmin - x1) + y1).to_cv_coords(cv));
-//     }
-//   }
-//
-//   p
-// }
+fn %plot_2d(cv: Canvas, l: Ray) -> Path {
+  let x1 = l.p1.x;
+  let y1 = l.p1.y;
+  let x2 = l.p2.x;
+  let y2 = l.p2.y;
+
+  if x1 == x2 && y1 == y2 {
+    return path;
+  }
+
+  let ymin = 2 * cv.ymin - cv.ymax;
+  let ymax = 2 * cv.ymax - cv.ymin;
+  let xmin = 2 * cv.xmin - cv.xmax;
+  let xmax = 2 * cv.xmax - cv.xmin;
+
+  let p = path.move_to(cv.point_at(l.p1.x, l.p1.y));
+
+  if x1 == x2 {
+    if y1 < y2 {
+      if !(y1 > ymax) {
+        p.line_to(cv.point_at(x1, ymax))
+      } else {
+        p
+      }
+    } else if !(y1 < ymin) {
+      p.line_to(cv.point_at(x1, ymin))
+    } else {
+      p
+    }
+  } else {
+    let m = (y2 - y1) / (x2 - x1);
+    if x1 < x2 {
+      if !(x2 > xmax) {
+        p.line_to(cv.point_at(xmax, m * (xmax - x1) + y1))
+      } else {
+        p
+      }
+    } else if !(x1 < xmin) {
+      p.line_to(cv.point_at(xmin, m * (xmin - x1) + y1))
+    } else {
+      p
+    }
+  }
+}
 
 fn %juxtapose(a: Point, b: Point) -> num {
   @length(a @- b)
 }
 
-fn _measure(a: Angle) -> num {
+fn ->(a: Angle) -> num {
   let measure = (
     atan(a.p1.x - a.p2.x, a.p1.y - a.p2.y)
       - atan(a.p3.x - a.p2.x, a.p3.y - a.p2.y)
@@ -379,7 +386,7 @@ fn _measure(a: Angle) -> num {
   }
 }
 
-fn _measure(a: DirectedAngle) -> num {
+fn ->(a: DirectedAngle) -> num {
   let measure = (
     atan(a.p1.x - a.p2.x, a.p1.y - a.p2.y)
       - atan(a.p3.x - a.p2.x, a.p3.y - a.p2.y)
@@ -392,14 +399,6 @@ fn _measure(a: DirectedAngle) -> num {
   } else {
     measure
   }
-}
-
-fn ->(a: Angle) -> num {
-  _measure(a)
-}
-
-fn ->(a: DirectedAngle) -> num {
-  _measure(a)
 }
 
 expose package {
