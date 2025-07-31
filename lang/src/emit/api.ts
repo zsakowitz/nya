@@ -426,6 +426,14 @@ export class NyaApi {
   /**
    * Creates a debroadcasting function like norm() and length(), which condense
    * many values into one.
+   *
+   * The impls will each receive as many comma-separated arguments as there are
+   * broadcastable arguments, so something like `@length(vec2)` should be
+   * defined as
+   *
+   *     v`Math.hypot(${0})`,
+   *
+   * which will automatically receive two arguments when needed.
    */
   fu(
     name: string,
@@ -490,14 +498,11 @@ export class NyaApi {
       }
 
       const impl = impls[`js${(vecType.repr as ReprVec).count as 2 | 3 | 4}`]
-      return this._fText(
-        impl,
-        v.map((x, i) =>
-          broadcast.has(i) ? x.toScalars().join(`),(`) : x.toString(),
-        ),
-        block,
-        ret,
+      const values = v.map((x, i) =>
+        broadcast.has(i) ? x.toScalars().join(`),(`) : x.toString(),
       )
+      console.log(values)
+      return this._fText(impl, values, block, ret)
     })
     this.lib.fns.push(id, fn)
   }

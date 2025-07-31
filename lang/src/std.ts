@@ -156,15 +156,15 @@ function libBroadcasting(api: NyaApi) {
   api.fu("@dot", { v1: "float", v2: "float" }, num, {
     glsl: v`dot(${0},${1})`,
     js2: v`${"function %%(x1,x2,y1,y2){return x1*y1+x2*y2}"}(${0},${1})`,
-    js3: v`${"function %%(x1,x2,x3,y1,y2,y3){return x1*y1+x2*y2+x3*y3}"}(${0},${1},${2})`,
-    js4: v`${"function %%(x1,x2,x3,x4,y1,y2,y3,y4){return x1*y1+x2*y2+x3*y3+x4*y4}"}(${0},${1},${2},${3})`,
+    js3: v`${"function %%(x1,x2,x3,y1,y2,y3){return x1*y1+x2*y2+x3*y3}"}(${0},${1})`,
+    js4: v`${"function %%(x1,x2,x3,x4,y1,y2,y3,y4){return x1*y1+x2*y2+x3*y3+x4*y4}"}(${0},${1})`,
   })
 
   api.fu("@length", { value: "float" }, num, {
     glsl: v`length(${0})`,
-    js2: v`${"const %%=Math.hypot"}(${0},${1})`,
-    js3: v`${"const %%=Math.hypot"}(${0},${1},${2})`,
-    js4: v`${"const %%=Math.hypot"}(${0},${1},${2},${3})`,
+    js2: v`${"const %%=Math.hypot"}(${0})`,
+    js3: v`${"const %%=Math.hypot"}(${0})`,
+    js4: v`${"const %%=Math.hypot"}(${0})`,
   })
 
   api.fn("@length", { v1: num, v2: num }, num, {

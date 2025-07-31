@@ -47,6 +47,7 @@
     ],
     "experimentalTernaries": true,
     "proseWrap": "always",
+    "jsdocCapitalizeDescription": false,
     "overrides": [
       {
         "files": "lang/src/std/**/*",
