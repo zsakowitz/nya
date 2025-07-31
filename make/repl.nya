@@ -1,0 +1,29 @@
+struct vec2 {
+  x: num,
+  y: num,
+}
+
+fn vec2() -> vec2 {
+  vec2 { x: 1, y: 2 }
+}
+
+struct vec3 {
+  x: num,
+  y: num,
+  z: num,
+}
+
+fn vec3() -> vec3 {
+  vec3 { x: 1, y: 2, z: 3 }
+}
+
+struct vec4 {
+  x: num,
+  y: num,
+  z: num,
+  w: num,
+}
+
+fn vec4() -> vec4 {
+  vec4 { x: 1, y: 2, z: 3, w: 4 }
+}
