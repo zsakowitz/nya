@@ -1,7 +1,8 @@
 import { PosVirtual } from "!/ast/issue"
 import { Block, Exits } from "!/emit/decl"
+import { tryPerformCall } from "!/emit/emit"
 import { Id, ident } from "!/emit/id"
-import { isType, type Type } from "!/emit/type"
+import { type Type } from "!/emit/type"
 import { Value } from "!/emit/value"
 import type { ScriptEnvironment } from "!/exec/loader"
 import type { CanvasJs, PathStyled } from "!/std"
@@ -65,50 +66,47 @@ export class UtilityFnCache {
     // collecting functions so they can be evaluated in bulk means only one eval()
     // is necessary, but has the downside of not having actual callables until
     // all JS is finished. but that's fine, since
-    const ret = []
+    const ret: [Value[], Block, Value][] = []
 
     const utilities: Utilities = newUtilities()
 
-    for (const fn of lib.fns.get(ident("%display")) ?? []) {
-      if (
-        fn.args.length == 1 &&
-        isType(fn.args[0]!.type) &&
-        fn.ret == tyLatex
-      ) {
-        utilities["display"].set(fn.args[0]!.type, {
-          exec: (ret.push(fn) - 1) as ExecKey,
-        })
-      }
-    }
+    const pos1 = new PosVirtual("UtilityFnCache.recollect")
+    for (const [name, ty] of lib.types.all()) {
+      const arg = new Value(new Id(name).ident(), ty, false)
 
-    for (const fn of lib.fns.get(ident("%plot_2d")) ?? []) {
-      if (
-        fn.args.length == 2 &&
-        fn.args[0]!.type == tyCanvas &&
-        isType(fn.args[1]!.type)
-      ) {
-        const kind =
-          fn.ret == tyCanvasPoint ? "pt"
-          : fn.ret == tyPath ? "path1"
-          : fn.ret == tyPathStyled ? "path1*"
-          : null
-        if (kind) {
-          const exec = (ret.push(fn) - 1) as ExecKey
-          utilities["plot-2d"].set(fn.args[1]!.type, { output: kind, exec })
+      {
+        const b1 = new Block(lib, new Exits(null))
+        const val = tryPerformCall(ident("%display"), b1, [arg], pos1, pos1)
+        if (val && val.type == tyLatex) {
+          utilities["display"].set(ty, {
+            exec: (ret.push([[arg], b1, val]) - 1) as ExecKey,
+          })
+        }
+      }
+
+      {
+        const v1 = new Value("canvas", tyCanvas, false)
+        const b1 = new Block(lib, new Exits(null))
+        const val = tryPerformCall(ident("%plot_2d"), b1, [v1, arg], pos1, pos1)
+        if (val) {
+          const kind =
+            val.type == tyCanvasPoint ? "pt"
+            : val.type == tyPath ? "path1"
+            : val.type == tyPathStyled ? "path1*"
+            : null
+          if (kind) {
+            utilities["plot-2d"].set(ty, {
+              output: kind,
+              exec: (ret.push([[v1, arg], b1, val]) - 1) as ExecKey,
+            })
+          }
         }
       }
     }
 
-    const pos = new PosVirtual("utility-fn-cache")
-
     const fns = this.lib.evalRaw(`[
 ${ret
-  .map((fn) => {
-    const args = fn.args.map(
-      ({ name, type }) => new Value(new Id(name).ident(), type as Type, false),
-    )
-    const block = new Block(this.lib.libJs, new Exits(null))
-    const ret = fn.run(args, block, pos, pos)
+  .map(([args, block, ret]) => {
     return `(${args.map((x) => x.value).join(",")})=>{
 ${block.source}
 return ${ret.toRuntime() ?? ""}
