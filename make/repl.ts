@@ -25,3 +25,5 @@ ${ANSI.blue}${block.source ? block.source + "\n" : ""}${value.toRuntime()}${ANSI
   }
   console.write("> ")
 })
+// TODO: @length(vec2) seems to print @length(ans.x, ans.y, undefined); fix
+// TODO: @length(vec3) seems to print @length(ans.x, ans.y, ans.z, undefined, undefined); fix
