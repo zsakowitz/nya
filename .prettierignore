@@ -8,3 +8,4 @@ pkg/graphsource
 graph.svg
 lang/lib
 pkg/script-index.ts
+pkg/index-nyalang.ts

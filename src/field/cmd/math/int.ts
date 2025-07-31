@@ -50,10 +50,7 @@ export class CmdInt extends Command<BlocksInt> {
     if (blocks.length == 0) {
       return h(
         "relative inline-block",
-        h(
-          "relative inline-block scale-x-70 align-[-.12em] text-[200%]",
-          "∫",
-        ),
+        h("relative inline-block scale-x-70 align-[-.12em] text-[200%]", "∫"),
       )
     }
 

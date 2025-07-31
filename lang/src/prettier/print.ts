@@ -660,7 +660,11 @@ export function print(node: Node | Token<number>, sb: Subprint): Doc {
     case ExprProp: {
       let self = node as NodeExpr
       const suffixes: Doc[] = []
+      let bigSuffixes = 0
       while (self instanceof ExprProp) {
+        if (self.targs || self.args) {
+          bigSuffixes++
+        }
         suffixes.unshift([
           softline,
           sb.run(self.prop),
@@ -673,7 +677,7 @@ export function print(node: Node | Token<number>, sb: Subprint): Doc {
         }
       }
       return group([
-        suffixes.length > 2 ? breakParent : "",
+        suffixes.length > 2 || bigSuffixes >= 2 ? breakParent : "",
         sb.runParen(self, needsParensBeforeSuffix(self)),
         indent(suffixes),
       ])
