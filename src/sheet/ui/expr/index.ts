@@ -142,12 +142,24 @@ export class Expr {
     if (this.entry.hasError()) {
       this.elError.classList.remove("hidden")
       this.elError.textContent = this.entry.errorMessage
+      if (this.glsl) {
+        this.glsl = undefined
+        this.sheet.queueGlsl()
+      }
+      if (this.plot) {
+        this.plot = undefined
+        this.sheet.cv.queue()
+      }
       return
     }
 
     if (this.glsl) {
       this.glsl = undefined
       this.sheet.queueGlsl()
+    }
+    if (this.plot) {
+      this.plot = undefined
+      this.sheet.cv.queue()
     }
 
     try {

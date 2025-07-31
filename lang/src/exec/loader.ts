@@ -39,10 +39,7 @@ export class ScriptEnvironment {
 
   load(name: ScriptName) {
     this._load(getScriptPath(name), SCRIPTS.get(name)!)
-    if (!this.utils.stale) {
-      queueMicrotask(() => this.utils.recollect())
-    }
-    this.utils.stale = true
+    this.utils.markStale()
   }
 
   // eventually this will be async since scripts may load dependencies

@@ -30,9 +30,16 @@ function newUtilities(): Utilities {
 
 export class UtilityFnCache {
   private utilities: Utilities = newUtilities()
-  stale = false
+  private stale = false
 
   constructor(readonly lib: ScriptEnvironment) {}
+
+  markStale() {
+    if (!this.stale) {
+      this.stale = true
+      queueMicrotask(() => this.recollect())
+    }
+  }
 
   get<K extends keyof UtilityFn>(kind: K, ty: Type): UtilityFn[K] | null {
     if (this.stale) {

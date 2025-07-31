@@ -80,6 +80,7 @@ export class SheetFactory {
     if (pkg.api) {
       pkg.api(new NyaApi(this.env.libGl))
       pkg.api(new NyaApi(this.env.libJs))
+      this.env.utils.markStale()
     }
 
     if (pkg.scripts) {
