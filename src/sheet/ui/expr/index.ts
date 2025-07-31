@@ -17,10 +17,9 @@ import { PICK_CURSOR } from "../../pick-cursor"
 import type { Sheet } from "../sheet"
 import { Field } from "./field"
 
-import { PosVirtual } from "!/ast/issue"
 import { IdMap } from "!/emit/decl"
-import { tryPerformCall } from "!/emit/emit"
 import { ident } from "!/emit/id"
+import type { Type } from "!/emit/type"
 import { Value } from "!/emit/value"
 import { Entry } from "!/exec/item"
 import type { Executable } from "!/exec/state"
@@ -28,6 +27,11 @@ import type { CanvasJs, PathJs } from "!/std"
 import { STORE_EVAL } from "#/list/eval"
 import { errorText } from "@/error"
 import "@/eval2/txs"
+import { Color, Size } from "../cv/consts"
+
+type RenderingContext2D =
+  | CanvasRenderingContext2D
+  | OffscreenCanvasRenderingContext2D
 
 type ExprStateOk =
   | { ok: true; ext: AnyExt | null; data: {} }
@@ -110,33 +114,24 @@ export class Expr {
   }
 
   drawSelf() {
-    if (!this.plot) {
+    if (!this.plot3) {
       return
     }
 
-    const path = this.plot(this.sheet.cv.nya())
     const { ctx, scale } = this.sheet.cv
 
     ctx.resetTransform()
+    ctx.scale(scale, scale)
+    ctx.lineCap = "round"
+    ctx.lineJoin = "round"
     try {
-      ctx.scale(scale, scale)
-      ctx.lineCap = "round"
-      ctx.lineJoin = "round"
-      if ((path.z[0] > 0 && path.z[1] > 0) || path.z[2] > 0) {
-        ctx.strokeStyle =
-          ctx.fillStyle = `rgb(${255 * path.y[0]} ${255 * path.y[1]} ${255 * path.y[2]})`
-        ctx.lineWidth = path.z[0]
-        ctx.globalAlpha = path.z[2]
-        ctx.fill(path.x)
-        ctx.globalAlpha = path.z[1]
-        ctx.stroke(path.x)
-      }
-      ctx.globalAlpha = 1
+      this.plot3(ctx, this.sheet.cv.nya())
     } finally {
       ctx.resetTransform()
     }
   }
 
+  plot3: ((ctx: RenderingContext2D, canvas: CanvasJs) => void) | undefined
   plot2: ((ctx: CanvasRenderingContext2D, canvas: CanvasJs) => void) | undefined
   plot: ((cv: CanvasJs) => PathJs) | undefined
   glsl: GlslResult | undefined
@@ -269,65 +264,55 @@ function compileForGlsl(self: Expr, exe: Executable) {
   self.sheet.queueGlsl()
 }
 
-function compileForJs(self: Expr, exe: Executable) {
-  const env = self.sheet.factory.env
-  const { block, value } = env.process(exe.expr, "<expression>")
-  const val = env.compute(block, value)
-
-  const latex = env.display(value.type, val)
+function printJs(self: Expr, latex: string | null, value: unknown, type: Type) {
   self.clearEls()
+
   if (latex) {
     const { field, el } = STORE_EVAL.get(self)
     field.block.clear()
     field.typeLatex(latex.replace(/\+-/g, "-"))
     self.elOutput.appendChild(el)
   } else {
-    const json = JSON.stringify(val, undefined, 2)
+    const json = JSON.stringify(value, undefined, 2)
     self.elOutput.appendChild(
       h(
         "-mt-2 mb-1 text-xs font-mono px-2 ml-auto whitespace-pre",
-        `= ${value.type} ${json.replace(/\n/g, "\n  ")}`,
+        `= ${type} ${json.replace(/\n/g, "\n  ")}`,
       ),
     )
   }
+
   self.elOutput.classList.remove("hidden")
+}
 
-  {
-    const canvas = env.libJs.types.get(ident("Canvas"))!
-    const plot = tryPerformCall(
-      ident("%plot"),
-      block,
-      [
-        new Value("CANVAS", canvas, false),
-        new Value("VALUE", value.type, false),
-      ],
-      new PosVirtual("<plot>"),
-      new PosVirtual("<plot>"),
-    )
+function plotJs(self: Expr, value: unknown, type: Type) {
+  let changed = !!self.plot3
+  self.plot3 = undefined
 
-    if (!plot) return
-    const fn = env.compile(block, plot, "CANVAS,VALUE") as (
-      cv: CanvasJs,
-      value: unknown,
-    ) => unknown
-
-    switch (plot.type) {
-      case env.libJs.ty("CanvasPoint"):
-        const val = env.compute(block, value)
-        self.plot2 = (ctx, cv) => {
-          // const { x, y } = fn(cv, val) as { x: number; y: number }
-        }
-        self.sheet.cv.queue()
+  const utils = self.sheet.factory.env.utils
+  const plot2d = utils.get("plot-2d", type)
+  if (plot2d) {
+    changed = true
+    self.plot3 = (ctx, cv) => {
+      const { x, y } = plot2d.exec(cv, value)
+      ctx.beginPath()
+      ctx.ellipse(x, y, Size.Point, Size.Point, 0, 0, 2 * Math.PI)
+      ctx.fillStyle = Color.Purple
+      ctx.globalAlpha = 1
+      ctx.fill()
     }
-    //
-    //         if (plot && plot.type == path) {
-    //           const fn = env.compile(block, plot, "CANVAS,VALUE") as (
-    //             cv: CanvasJs,
-    //             value: unknown,
-    //           ) => PathJs
-    //           const val = env.compute(block, value)
-    //           this.plot = (cv) => fn(cv, val)
-    //           this.sheet.cv.queue()
-    //         }
   }
+
+  if (changed) {
+    self.sheet.cv.queue()
+  }
+}
+
+function compileForJs(self: Expr, exe: Executable) {
+  const env = self.sheet.factory.env
+  const { block, value } = env.process(exe.expr, "<expression>")
+  const result = env.compute(block, value)
+
+  printJs(self, env.display(value.type, result), result, value.type)
+  plotJs(self, result, value.type)
 }

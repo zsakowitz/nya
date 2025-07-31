@@ -31,24 +31,14 @@ export const FACTORY_EXPR: ItemFactory<Expr, { geo?: boolean }> = {
     return data.main
   },
   plot: {
-    order(_data) {
-      //       if (data.state.ok && data.state.ext?.plot) {
-      //         return data.state.ext.plot.order(data.state.data)
-      //       }
-      //
-      //       return null
+    order() {
       return Order.Graph
     },
     items(data) {
-      return data.plot ? [1] : [] // data.state.ext?.plot?.items(data.state.data) ?? []
+      return data.plot3 ? [1] : [] // data.state.ext?.plot?.items(data.state.data) ?? []
     },
-    draw(data, _item, _index) {
-      // if (index == 0) {
+    draw(data) {
       data.drawSelf()
-      // }
-      // This cast is safe since it wouldn't be called unless `items` returned.
-      // const state = data.state as ExprStateOk
-      // state.ext!.plot!.draw(state.data!, item, index)
     },
     // target: {
     //   hits(data, at, hint) {

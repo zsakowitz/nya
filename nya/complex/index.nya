@@ -172,7 +172,7 @@ fn %sqrt(z: Complex) -> Complex {
   Complex { real: cos(a), imag: sin(a) } @* sqrt(@length(z))
 }
 
-fn %plot_shader(cv: Canvas, p: Complex) -> CanvasPoint {
+fn %plot_2d(cv: Canvas, p: Complex) -> CanvasPoint {
   cv.point_at(p.real, p.imag)
 }
 
