@@ -132,7 +132,7 @@ return ${runtime}
       const { block, value } = this.process(script, name, locals)
       const cooked = this.compute(block, value)
       console.group(`\x1b[30m${script} =\x1b[0m`)
-      console.log(
+      console.info(
         cooked,
         `\x1b[30m::\x1b[35m`,
         value.type.toString() + "\x1b[0m",
@@ -162,7 +162,7 @@ return ${runtime}
 
       const ret = this.utils.get("display", type.item)
       if (!ret) return null
-      console.log(value, type)
+      console.info(value, type)
       return `[${(value as any[]).map((x) => ret.exec(x)).join(",")}]`
     }
 

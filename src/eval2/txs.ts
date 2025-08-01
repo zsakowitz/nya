@@ -340,7 +340,6 @@ setGroupTxr("(", ")", {
 setGroupTxr("[", "]", {
   eval({ contents }, _, block) {
     const els = block.evalList(contents)
-    console.log(els)
     return `[${els.join(",")}]`
   },
   deps({ contents }, _, deps) {

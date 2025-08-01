@@ -277,6 +277,7 @@ function libGameActual() {
     y(x: T): void
     z(x: T): void
     w(): string
+    _neg?: Game<T>
   }
 
   function winner(game: Game, player: Player): Player {
@@ -327,7 +328,7 @@ function libGameActual() {
     if (size > 16) {
       size = 16
     }
-    return {
+    const game: Game<number> = {
       x() {
         const ret: number[] = []
         for (let i = 0; i < size; i++) {
@@ -344,7 +345,10 @@ function libGameActual() {
       w() {
         return `\\digit{∗}${size}`
       },
+      _neg: null!,
     }
+    game._neg = game
+    return game
   }
 
   function const_int(size: number): Game<number> {
@@ -369,7 +373,10 @@ function libGameActual() {
         size += x
       },
       w() {
-        return `\\wordprefix{const_int}(${size})`
+        return `\\wordprefix{const int}(${size})`
+      },
+      get _neg() {
+        return const_int(-size)
       },
     }
   }
@@ -401,10 +408,17 @@ function libGameActual() {
       w() {
         return `${a.w()}+${b.w()}`
       },
+      get _neg() {
+        return sum(neg(a), neg(b))
+      },
     }
   }
 
   function neg<T>(a: Game<T>): Game<T> {
+    if (a._neg) {
+      return a._neg
+    }
+
     return {
       x(p) {
         return a.x(-p as Player)
@@ -418,6 +432,7 @@ function libGameActual() {
       w() {
         return `-${a.w()}`
       },
+      _neg: a,
     }
   }
 
@@ -744,7 +759,7 @@ function libGameActual() {
   type LemonMove = [0 | 1 | 2, number]
 
   function lemon(a: number, b: number): Game<LemonMove> {
-    return {
+    const self: Game<LemonMove> = {
       x() {
         const ret: LemonMove[] = []
         for (let i = 0; i < a; i++) {
@@ -777,7 +792,10 @@ function libGameActual() {
       w() {
         return `\\wordprefix{lemon}(${a},${b})`
       },
+      _neg: null!,
     }
+    self._neg = self
+    return self
   }
 
   interface DyadicMove {
@@ -831,7 +849,11 @@ function libGameActual() {
         exp = x.fexp
       },
       w() {
-        return `\\wordprefix{dyadic}(\\frac{${size}}{2^{${exp}}})`
+        const approx = (size / Math.pow(2, exp)).toFixed(6)
+        return `\\wordprefix{dyadic}(\\frac{${size}}{2^{${exp}}}\\approx ${approx})`
+      },
+      get _neg() {
+        return dyadic(-size, exp)
       },
     }
 
@@ -849,6 +871,9 @@ function libGameActual() {
       y() {},
       z() {},
       w: () => label,
+      get _neg() {
+        return empty(label)
+      },
     }
   }
 

@@ -21,7 +21,7 @@ try {
   if (file) {
     await Bun.write(file, main)
   } else {
-    console.log(main)
+    console.info(main)
   }
 } catch (e) {
   console.error(errorText(e))

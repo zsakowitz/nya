@@ -232,7 +232,7 @@ function libBroadcasting(api: NyaApi) {
       [{ name: "arg", type: Any }],
       Any,
       ([v], _, full) => {
-        console.log(
+        console.info(
           `${blue}[${_.lang.padEnd(4)}] ${yellow}${v}${reset}${dim}: ${reset}${magenta}${v!.type}${reset}${dim} in ${reset}${full}${reset}`,
         )
         return v!
@@ -251,12 +251,12 @@ function libBroadcasting(api: NyaApi) {
       const id = ident(text[0]!)
       const fns = api.lib.fns.get(id)
 
-      console.log(
+      console.info(
         `${blue}[${api.lib.props.lang.padEnd(4)}] ${cyan}debug_fn"${id}"${reset}${dim} (in ${reset}${full}${dim})${reset}`,
       )
       fns?.forEach((x) => {
-        console.log(`  ${x.declarationANSI()}`)
-        console.log(`    ${dim}${x.source}${reset}`)
+        console.info(`  ${x.declarationANSI()}`)
+        console.info(`    ${dim}${x.source}${reset}`)
       })
       return api.lib.void()
     }),
@@ -283,7 +283,7 @@ function libBroadcasting(api: NyaApi) {
       [{ name: "arg", type: Any }],
       Any,
       ([v], _, full) => {
-        console.log(
+        console.info(
           `${blue}[${_.lang.padEnd(4)}] ${yellow}${v!
             .toScalars()
             .map((x) => x.toRuntime())

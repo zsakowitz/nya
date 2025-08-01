@@ -19,9 +19,9 @@ for await (const line of rl) {
       env._load("repl", line)
     } else {
       const { block, value } = env.process(line)
-      console.log(`${ANSI.cyan}${value.type}
+      console.info(`${ANSI.cyan}${value.type}
 ${ANSI.blue}${block.source ? block.source + "\n" : ""}${value.toRuntime()}${ANSI.reset}`)
-      console.log(env.evalRaw(block.source + "\n" + value.toRuntime()))
+      console.info(env.evalRaw(block.source + "\n" + value.toRuntime()))
     }
   } catch (e) {
     console.error(`${ANSI.red}${errorText(e)}${ANSI.reset}`)

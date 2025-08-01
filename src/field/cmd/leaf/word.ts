@@ -47,7 +47,14 @@ export class CmdWord extends Leaf {
           (kind == "builtin" ? "font-['Symbola']" : (
             "font-['Times_New_Roman']"
           )) + " [line-height:.9]",
-          text,
+          text.includes(" ") ?
+            h(
+              "contents",
+              ...text
+                .split(" ")
+                .map((x) => h("first:pl-0 last:pr-0 px-[.05em]", x)),
+            )
+          : text,
         ),
       ),
     )

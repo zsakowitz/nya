@@ -623,7 +623,7 @@ color = ${compiled.map((x) => x.value).reduce((a, b) => `_nya_helper_compose(${a
       }
       `
     if (globalThis.location?.search.includes("logfrag")) {
-      console.log(frag)
+      console.info(frag)
     }
     try {
       this.program = this.regl({

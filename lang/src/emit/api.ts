@@ -550,7 +550,7 @@ export function v(strings: TemplateStringsArray, ...args: FnInterp[]) {
  * value-returning expression.
  *
  * @example
- *   e`console.log(${0})` // logs the 0th argument
+ *   e`console.info(${0})` // logs the 0th argument
  */
 export function e(strings: TemplateStringsArray, ...args: FnInterp[]) {
   return f(true, strings, args)
