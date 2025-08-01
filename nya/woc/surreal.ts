@@ -13,7 +13,7 @@ export default {
     const SN = (n: number) => new Array(api.lib.props, S, n)
     const S0 = SN(0)
     const S1 = SN(1)
-    const SX = new AnyArray(S)
+    const SX = new AnyArray(api.lib.props, S)
 
     api.fn("%surreal_join", {}, S0, {
       glsl: v`[]`,

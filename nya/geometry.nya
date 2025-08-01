@@ -434,3 +434,6 @@ expose package {
   name: "2D geometry",
   default: true,
 }
+
+fn hi(x: [num]) {
+}

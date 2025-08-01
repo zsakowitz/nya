@@ -14,22 +14,21 @@ import {
 } from "./repr"
 import { Value, type ConstValue } from "./value"
 
-export interface Type {
-  repr: Repr
-  emit: string
-  toScalars(value: Value): Value[]
-  fromScalars(values: Value[], block: Block): Value
-  canConvertFrom(type: Type): boolean
-  convertFrom(value: Value, pos: Pos): Value
-  toRuntime(value: ConstValue): string | null
-  toString(): string
-}
-
 export interface FnType {
   canConvertFrom(type: Type): boolean
   convertFrom(value: Value, pos: Pos): Value
   toString(): string
 }
+
+export interface Type extends FnType {
+  repr: Repr
+  emit: string
+  toScalars(value: Value): Value[]
+  fromScalars(values: Value[], block: Block): Value
+  toRuntime(value: ConstValue): string | null
+}
+
+export type UserFnType = Type | (FnType & { concreteInstance(): Type })
 
 export function isType(ty: FnType): ty is Type {
   return (
@@ -631,8 +630,11 @@ export class Array implements Type {
   }
 }
 
-export class AnyArray implements FnType {
-  constructor(readonly item: Type) {
+export class AnyArray {
+  constructor(
+    readonly props: EmitProps,
+    readonly item: Type,
+  ) {
     if (item.repr.type == "array") {
       todo(
         `An array cannot yet contain arrays unless the inner array is a void type.`,
@@ -659,7 +661,11 @@ export class AnyArray implements FnType {
   }
 
   toString(): string {
-    return `[${this.item}; ...]`
+    return `[${this.item}]`
+  }
+
+  concreteInstance(): Type {
+    return new Array(this.props, this.item, 1)
   }
 }
 

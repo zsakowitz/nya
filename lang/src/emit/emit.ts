@@ -42,6 +42,7 @@ import { StmtExpr, StmtLet, type NodeStmt } from "../ast/node/stmt"
 import {
   TypeAlt,
   TypeArray,
+  TypeArrayUnsized,
   TypeEmpty,
   TypeParen,
   TypeVar,
@@ -52,7 +53,17 @@ import { Coercion, isEligibleForCoercion, type CoercionTarget } from "./coerce"
 import { Block, BlockGlobals, Exits, IdMap, type Declarations } from "./decl"
 import { issue, issueError, todo } from "./error"
 import { Id, ident, type IdGlobal } from "./id"
-import { Alt, Array, ArrayEmpty, Fn, Struct, type Type } from "./type"
+import {
+  Alt,
+  AnyArray,
+  Array,
+  ArrayEmpty,
+  Fn,
+  isType,
+  Struct,
+  type Type,
+  type UserFnType,
+} from "./type"
 import { Value } from "./value"
 
 function list(a: { toString(): string }[], empty: "no arguments" | null) {
@@ -188,9 +199,9 @@ export function performCall(
   }
 }
 
-function emitType(node: NodeType, decl: Declarations): Type {
+function emitTypeGeneric(node: NodeType, decl: Declarations): UserFnType {
   if (node instanceof TypeParen) {
-    return emitType(node.of, decl)
+    return emitTypeGeneric(node.of, decl)
   } else if (node instanceof TypeEmpty) {
     issue("Empty type.", node)
   } else if (node instanceof TypeVar) {
@@ -203,8 +214,8 @@ function emitType(node: NodeType, decl: Declarations): Type {
     }
     return ty
   } else if (node instanceof TypeAlt) {
-    const lhs = emitType(node.lhs, decl)
-    const rhs = emitType(node.rhs, decl)
+    const lhs = emitTypeGeneric(node.lhs, decl)
+    const rhs = emitTypeGeneric(node.rhs, decl)
     const l =
       lhs instanceof Alt ? lhs.alts
       : lhs instanceof Struct ? [lhs]
@@ -221,7 +232,10 @@ function emitType(node: NodeType, decl: Declarations): Type {
         )
     return new Alt([...l, ...r])
   } else if (node instanceof TypeArray) {
-    const item = emitType(node.of, decl)
+    const item = emitTypeGeneric(node.of, decl)
+    if (!isType(item)) {
+      issue(`The element type of an array must be a concrete type.`)
+    }
     if (item instanceof Array || node.sizes.items.length != 1) {
       todo(`Multidimensional arrays are not supported yet.`)
     }
@@ -234,9 +248,23 @@ function emitType(node: NodeType, decl: Declarations): Type {
       ),
     )
     return new Array(decl.props, item, count)
+  } else if (node instanceof TypeArrayUnsized) {
+    const item = emitTypeGeneric(node.of.value, decl)
+    if (!isType(item)) {
+      issue(`The element type of an array must be a concrete type.`)
+    }
+    return new AnyArray(decl.props, item)
   } else {
     todo(`Cannot emit '${node.constructor.name}' as a type yet.`)
   }
+}
+
+function emitType(node: NodeType, decl: Declarations): Type {
+  const ty = emitTypeGeneric(node, decl)
+  if (isType(ty)) {
+    return ty
+  }
+  issue(`Expected concrete type, but found ${ty} instead.`, node)
 }
 
 function arraySize(size: number | null): number {
@@ -782,226 +810,238 @@ function emitExpose(node: NodeExpose, _decl: Declarations) {
   }
 }
 
-export function emitItem(node: NodeItem, decl: Declarations): void {
-  if (node instanceof ItemStruct) {
-    const ids = node.name.items.map((x) => ident(x.val))
-    if (ids.length == 0) {
-      issue(`Missing name in struct declaration.`)
+function emitItemStruct(node: ItemStruct, decl: Declarations) {
+  const ids = node.name.items.map((x) => ident(x.val))
+  if (ids.length == 0) {
+    issue(`Missing name in struct declaration.`)
+  }
+  const label =
+    ids.length == 1 ? `struct '${ids[0]}'` : `structs ${list(ids, null)}`
+  if (!node.fields) {
+    issue(`Missing fields when declaring ${label}.`)
+  }
+  if (node.tparams) {
+    issue("Type parameters are not supported yet.")
+  }
+  for (const id of ids) {
+    if (
+      !decl.types.canDefine(id) ||
+      ids.reduce((a, b) => a + +(b == id), 0) != 1
+    ) {
+      issue(`Type '${id}' was declared multiple times.`)
     }
-    const label =
-      ids.length == 1 ? `struct '${ids[0]}'` : `structs ${list(ids, null)}`
-    if (!node.fields) {
-      issue(`Missing fields when declaring ${label}.`)
+  }
+  const fields: { name: string; type: Type }[] = []
+  for (const { name, type } of node.fields.items) {
+    if (!name) {
+      issue(`Missing name for field when declaring ${label}.`)
     }
-    if (node.tparams) {
-      issue("Type parameters are not supported yet.")
+    const ty = emitType(type, decl)
+    fields.push({ name: name.val, type: ty })
+  }
+  const group = new Id("struct group")
+  const result = ids.map((id) =>
+    Struct.of(decl.props, id.label, fields, node.kw.kind == KMatrix, group),
+  )
+  if (node.kw.kind == KMatrix && result[0]!.struct.repr.type != "mat") {
+    issue(`Unable to create ${label} as a matrix.`)
+  }
+  const type =
+    result.length == 1 ?
+      result[0]!.struct
+    : new Alt(result.map((x) => x.struct))
+  let accessors!: readonly Fn[]
+  result.forEach(
+    (x) => (accessors = x.struct.createAccessors(decl.props, type)),
+  )
+  for (let i = 0; i < ids.length; i++) {
+    decl.types.set(ids[i]!, result[i]!.struct)
+  }
+  for (const fn of accessors) {
+    decl.fns.push(fn.id as IdGlobal, fn)
+  }
+  decl.addTypeDeclaration(
+    result
+      .map((x) => x.decl)
+      .filter((x) => x)
+      .join("\n"),
+  )
+}
+
+function emitItemFn(node: ItemFn, decl: Declarations) {
+  const fname = node.name?.val
+  if (fname == null) {
+    issue(`Function declaration is missing a name.`)
+  }
+  if (node.tparams) {
+    issue(`Type parameters are not supported yet.`)
+  }
+  if (!node.params) {
+    issue(`Function '${fname}' is missing a parameter list.`)
+  }
+  if (node.usage) {
+    todo(`The 'usage' keyword is not implemented yet.`)
+  }
+  if (!node.block) {
+    issue(`Function '${fname}' is missing its contents.`)
+  }
+  if (node.ret instanceof FnReturnTypeTypeof) {
+    todo(`Function return types may not use 'typeof' yet.`)
+  }
+  const ret = node.ret ? emitType(node.ret.retType, decl) : decl.tyVoid
+  const locals = new IdMap<Value>(null)
+  const params = node.params.items.map((x) => {
+    const local = ident(x.ident.val)
+    const name = new Id(x.ident.val)
+    if (locals.has(local)) {
+      issue(`Parameter '${local}' is declared twice in function '${fname}'.`)
     }
-    for (const id of ids) {
-      if (
-        !decl.types.canDefine(id) ||
-        ids.reduce((a, b) => a + +(b == id), 0) != 1
-      ) {
-        issue(`Type '${id}' was declared multiple times.`)
-      }
+    const type = emitType(x.type, decl)
+    locals.set(local, new Value(name.ident(), type, false))
+    return { name, type }
+  })
+  const fparams = params.map((x) => ({ name: x.name.label, type: x.type }))
+  let isCoercion = false
+  if (fname == "->") {
+    isCoercion = true
+    if (fparams.length != 1) {
+      issue(`Coercion functions must take exactly one argument.`, node.params)
     }
-    const fields: { name: string; type: Type }[] = []
-    for (const { name, type } of node.fields.items) {
-      if (!name) {
-        issue(`Missing name for field when declaring ${label}.`)
-      }
-      const ty = emitType(type, decl)
-      fields.push({ name: name.val, type: ty })
-    }
-    const group = new Id("struct group")
-    const result = ids.map((id) =>
-      Struct.of(decl.props, id.label, fields, node.kw.kind == KMatrix, group),
-    )
-    if (node.kw.kind == KMatrix && result[0]!.struct.repr.type != "mat") {
-      issue(`Unable to create ${label} as a matrix.`)
-    }
-    const type =
-      result.length == 1 ?
-        result[0]!.struct
-      : new Alt(result.map((x) => x.struct))
-    let accessors!: readonly Fn[]
-    result.forEach(
-      (x) => (accessors = x.struct.createAccessors(decl.props, type)),
-    )
-    for (let i = 0; i < ids.length; i++) {
-      decl.types.set(ids[i]!, result[i]!.struct)
-    }
-    for (const fn of accessors) {
-      decl.fns.push(fn.id as IdGlobal, fn)
-    }
-    decl.addTypeDeclaration(
-      result
-        .map((x) => x.decl)
-        .filter((x) => x)
-        .join("\n"),
-    )
-  } else if (node instanceof ItemFn) {
-    const fname = node.name?.val
-    if (fname == null) {
-      issue(`Function declaration is missing a name.`)
-    }
-    if (node.tparams) {
-      issue(`Type parameters are not supported yet.`)
-    }
-    if (!node.params) {
-      issue(`Function '${fname}' is missing a parameter list.`)
-    }
-    if (node.usage) {
-      todo(`The 'usage' keyword is not implemented yet.`)
-    }
-    if (!node.block) {
-      issue(`Function '${fname}' is missing its contents.`)
-    }
-    if (node.ret instanceof FnReturnTypeTypeof) {
-      todo(`Function return types may not use 'typeof' yet.`)
-    }
-    const ret = node.ret ? emitType(node.ret.retType, decl) : decl.tyVoid
-    const locals = new IdMap<Value>(null)
-    const params = node.params.items.map((x) => {
-      const local = ident(x.ident.val)
-      const name = new Id(x.ident.val)
-      if (locals.has(local)) {
-        issue(`Parameter '${local}' is declared twice in function '${fname}'.`)
-      }
-      const type = emitType(x.type, decl)
-      locals.set(local, new Value(name.ident(), type, false))
-      return { name, type }
-    })
-    const fparams = params.map((x) => ({ name: x.name.label, type: x.type }))
-    let isCoercion = false
-    if (fname == "->") {
-      isCoercion = true
-      if (fparams.length != 1) {
-        issue(`Coercion functions must take exactly one argument.`, node.params)
-      }
-      const ptype = fparams[0]!.type
-      if (!isEligibleForCoercion(ptype)) {
-        issue(
-          `Argument type '${ptype}' must be a scalar or struct; coercion is not allowed for other types.`,
-          node.params.items[0]!,
-        )
-      }
-      const rtype = ret
-      if (!isEligibleForCoercion(rtype)) {
-        issue(
-          `Return type '${rtype}' must be a scalar or struct; coercion is not allowed for other types.`,
-          node.ret ?? node.name!,
-        )
-      }
-      if (fparams[0]!.type == ret) {
-        issue(
-          `A coercion function must define a coercion between different types.`,
-        )
-      }
-    }
-    const globals = new BlockGlobals(decl)
-    const block = new Block(globals, new Exits(ret), locals)
-    const value = ret.convertFrom(emitBlock(node.block, block), node.block)
-    const lid = new Id(fname)
-    const gid = ident(fname)
-    const lident = lid.ident()
-    const body =
-      decl.props.lang == "glsl" ?
-        `${ret.emit} ${lident}(${params
-          .filter((x) => x.type.repr.type != "void")
-          .map((x) => x.type.emit + " " + x.name.ident())
-          .join(",")}) {${block.source}${returnValue(value)}} // ${fname}`
-      : `function ${lident}(${params
-          .filter((x) => x.type.repr.type != "void")
-          .map((x) => x.name.ident())
-          .join(",")}) {${block.source}${returnValue(value)}} // ${fname}`
-    const fn =
-      block.source == "" && value.const() ?
-        // Non-side-effecting constant optimization
-        new Fn(
-          gid,
-          fparams,
-          ret,
-          (_, caller) => {
-            caller.addGlobalsFrom(globals)
-            return value
-          },
-          node,
-        )
-      : new Fn(
-          gid,
-          fparams,
-          ret,
-          (args, caller, pos) => {
-            caller.addGlobalsFrom(globals)
-            caller.addGlobal(body)
-            const actualArgs = args.map((x, i) =>
-              params[i]!.type.convertFrom(x, pos),
-            )
-            const expr = `${lident}(${actualArgs
-              .filter((x) => x.type.repr.type != "void")
-              .map((x) => x.toRuntime())
-              .join(",")})`
-            return new Value(expr, ret, false)
-          },
-          node,
-        )
-    // Functions names "->" are used for coercions instead of normal definitions
-    if (isCoercion) {
-      const coercion = new Coercion(
-        fparams[0]!.type as CoercionTarget, // this was checked earlier
-        ret as CoercionTarget, // this was checked earlier
-        false,
-        (v, block, pos) => fn.run([v], block, pos, pos),
+    const ptype = fparams[0]!.type
+    if (!isEligibleForCoercion(ptype)) {
+      issue(
+        `Argument type '${ptype}' must be a scalar or struct; coercion is not allowed for other types.`,
+        node.params.items[0]!,
       )
-
-      decl.coercions.addCoercion(coercion, node)
-    } else {
-      decl.fns.push(gid, fn)
     }
-
-    Object.assign(fn, { source: body })
-  } else if (node instanceof ItemLet) {
-    const fname = node.ident?.val
-    if (fname == null) {
-      issue(`'let' declaration is missing a name.`)
+    const rtype = ret
+    if (!isEligibleForCoercion(rtype)) {
+      issue(
+        `Return type '${rtype}' must be a scalar or struct; coercion is not allowed for other types.`,
+        node.ret ?? node.name!,
+      )
     }
-    if (!node.value) {
-      issue(`Function '${fname}' is missing its contents.`)
+    if (fparams[0]!.type == ret) {
+      issue(
+        `A coercion function must define a coercion between different types.`,
+      )
     }
-    const expected = node.type ? emitType(node.type.type, decl) : null
-    // even though 'let' is implemented as a function, this is an implementation
-    // detail and should not be relied on. it's also harder to detect the proper
-    // output type when 'return' is allowed
-    const globals = new BlockGlobals(decl)
-    const block = new Block(globals, new Exits(null))
-    let value = emitExpr(node.value.value, block)
-    if (expected) value = expected.convertFrom(value, node.value.value)
-    const ret = value.type
-    const lid = new Id(fname)
-    const gid = ident(fname)
-    const lident = lid.ident()
-    const body =
-      decl.props.lang == "glsl" ?
-        `${ret.emit} ${lident}() {${block.source}${returnValue(value)}} // ${fname}`
-      : `function ${lident}() {${block.source}${returnValue(value)}} // ${fname}`
-    const fn = new Fn(
-      gid,
-      [],
-      ret,
-      block.source == "" && value.const() ?
-        // Non-side-effecting constant optimization
+  }
+  const globals = new BlockGlobals(decl)
+  const block = new Block(globals, new Exits(ret), locals)
+  const value = ret.convertFrom(emitBlock(node.block, block), node.block)
+  const lid = new Id(fname)
+  const gid = ident(fname)
+  const lident = lid.ident()
+  const body =
+    decl.props.lang == "glsl" ?
+      `${ret.emit} ${lident}(${params
+        .filter((x) => x.type.repr.type != "void")
+        .map((x) => x.type.emit + " " + x.name.ident())
+        .join(",")}) {${block.source}${returnValue(value)}} // ${fname}`
+    : `function ${lident}(${params
+        .filter((x) => x.type.repr.type != "void")
+        .map((x) => x.name.ident())
+        .join(",")}) {${block.source}${returnValue(value)}} // ${fname}`
+  const fn =
+    block.source == "" && value.const() ?
+      // Non-side-effecting constant optimization
+      new Fn(
+        gid,
+        fparams,
+        ret,
         (_, caller) => {
           caller.addGlobalsFrom(globals)
           return value
-        }
-      : (_, caller) => {
+        },
+        node,
+      )
+    : new Fn(
+        gid,
+        fparams,
+        ret,
+        (args, caller, pos) => {
           caller.addGlobalsFrom(globals)
           caller.addGlobal(body)
-          return new Value(`${lident}()`, ret, false)
+          const actualArgs = args.map((x, i) =>
+            params[i]!.type.convertFrom(x, pos),
+          )
+          const expr = `${lident}(${actualArgs
+            .filter((x) => x.type.repr.type != "void")
+            .map((x) => x.toRuntime())
+            .join(",")})`
+          return new Value(expr, ret, false)
         },
-      node,
+        node,
+      )
+  // Functions names "->" are used for coercions instead of normal definitions
+  if (isCoercion) {
+    const coercion = new Coercion(
+      fparams[0]!.type as CoercionTarget, // this was checked earlier
+      ret as CoercionTarget, // this was checked earlier
+      false,
+      (v, block, pos) => fn.run([v], block, pos, pos),
     )
+
+    decl.coercions.addCoercion(coercion, node)
+  } else {
     decl.fns.push(gid, fn)
+  }
+
+  Object.assign(fn, { source: body })
+}
+
+function emitItemLet(node: ItemLet, decl: Declarations) {
+  const fname = node.ident?.val
+  if (fname == null) {
+    issue(`'let' declaration is missing a name.`)
+  }
+  if (!node.value) {
+    issue(`Function '${fname}' is missing its contents.`)
+  }
+  const expected = node.type ? emitType(node.type.type, decl) : null
+  // even though 'let' is implemented as a function, this is an implementation
+  // detail and should not be relied on. it's also harder to detect the proper
+  // output type when 'return' is allowed
+  const globals = new BlockGlobals(decl)
+  const block = new Block(globals, new Exits(null))
+  let value = emitExpr(node.value.value, block)
+  if (expected) value = expected.convertFrom(value, node.value.value)
+  const ret = value.type
+  const lid = new Id(fname)
+  const gid = ident(fname)
+  const lident = lid.ident()
+  const body =
+    decl.props.lang == "glsl" ?
+      `${ret.emit} ${lident}() {${block.source}${returnValue(value)}} // ${fname}`
+    : `function ${lident}() {${block.source}${returnValue(value)}} // ${fname}`
+  const fn = new Fn(
+    gid,
+    [],
+    ret,
+    block.source == "" && value.const() ?
+      // Non-side-effecting constant optimization
+      (_, caller) => {
+        caller.addGlobalsFrom(globals)
+        return value
+      }
+    : (_, caller) => {
+        caller.addGlobalsFrom(globals)
+        caller.addGlobal(body)
+        return new Value(`${lident}()`, ret, false)
+      },
+    node,
+  )
+  decl.fns.push(gid, fn)
+}
+
+export function emitItem(node: NodeItem, decl: Declarations): void {
+  if (node instanceof ItemStruct) {
+    emitItemStruct(node, decl)
+  } else if (node instanceof ItemFn) {
+    emitItemFn(node, decl)
+  } else if (node instanceof ItemLet) {
+    emitItemLet(node, decl)
   } else if (node instanceof ItemTypeAlias) {
     const val = node.ident?.val
     if (!val) {
