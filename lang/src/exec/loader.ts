@@ -162,6 +162,7 @@ return ${runtime}
 
       const ret = this.utils.get("display", type.item)
       if (!ret) return null
+      console.log(value, type)
       return `[${(value as any[]).map((x) => ret.exec(x)).join(",")}]`
     }
 

@@ -85,7 +85,7 @@ export class SheetFactory {
 
     if (pkg.scripts) {
       for (const script of pkg.scripts) {
-        await this.env.load(script)
+        this.env.load(script)
       }
     }
 

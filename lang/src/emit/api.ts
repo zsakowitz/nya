@@ -78,39 +78,6 @@ export class NyaApi {
     return type
   }
 
-  // vec(
-  //   name: string,
-  //   kind: "float" | "bool" | "int" | "uint" | "symint",
-  //   count: 2 | 3 | 4,
-  // ) {
-  //   validateTypeName(name)
-  //   const id = ident(name)
-  //   const repr: ReprVec = { type: "vec", of: kind, count }
-  //   const vecName = emitGlslVec(repr)
-  //   const type = new Scalar(
-  //     name,
-  //     kind == "symint" ? "int" : kind,
-  //     repr,
-  //     kind == "float" ?
-  //       (v) =>
-  //         `${vecName}(${(v as number[])
-  //           .map((v) =>
-  //             v === Infinity ? `(1./0.)`
-  //             : v === -Infinity ? `(-1./0.)`
-  //             : v !== v ? `(0./0.)`
-  //             : /[.e]/.test("" + v) ? "" + v
-  //             : v + ".",
-  //           )
-  //           .join(",")})`
-  //     : (v) =>
-  //         `${vecName}(${(v as unknown[]).map((x) => String(x)).join(",")})`,
-  //     () => bug(`Type '${name}' cannot be used as a set of scalars.`),
-  //     () => bug(`Type '${name}' cannot be used as a set of scalars.`),
-  //   )
-  //   this.lib.types.setOrThrow(id, type)
-  //   return type
-  // }
-
   opaque(
     name: string,
     declaration: Record<Lang, string | null>,

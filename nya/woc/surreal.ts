@@ -141,7 +141,7 @@ export default {
 } satisfies Plugin
 
 function libGame(api: NyaApi, S: Scalar) {
-  const Player = api.opaque("Player", { glsl: "int", js: null }, true)
+  const Player = api.opaque("Player", { glsl: "int", js: "" }, true)
   api.fn("left", {}, Player, { glsl: v`1`, js: v`1` }, false) // apparently these don't serialize well
   api.fn("right", {}, Player, { glsl: v`-1`, js: v`-1` }, false) // apparently these don't serialize well
   api.fn("inv", { x: Player }, Player, { glsl: v`-${0}`, js: v`-${0}` })
@@ -150,21 +150,21 @@ function libGame(api: NyaApi, S: Scalar) {
     js: v`${0}==1?"\\\\wordvar{left}\\\\digit{+}":"\\\\wordvar{right}\\\\digit{-}"`,
   })
 
-  const Sign = api.opaque("Sign", { glsl: "int", js: null }, true)
+  const Sign = api.opaque("Sign", { glsl: "int", js: "" }, true)
   api.fn("inv", { x: Sign }, Sign, {
     glsl: v`${"int %%(int x){return x==3?3:-x;}"}(${0})`,
     js: v`${"function %%(x){return x==3?3:x==0?0:-x;}"}(${0})`,
   })
 
-  const Game = api.opaque("Game", { glsl: null, js: null }, false)
-  const GameEmpty = api.opaque("GameEmpty", { glsl: null, js: null }, false)
-  const GameNim = api.opaque("GameNim", { glsl: null, js: null }, false)
-  const GameTree = api.opaque("GameTree", { glsl: null, js: null }, false)
-  const GameInt = api.opaque("GameInt", { glsl: null, js: null }, false)
-  const GameDeliver = api.opaque("GameDeliver", { glsl: null, js: null }, false)
-  const GameBug = api.opaque("GameBug", { glsl: null, js: null }, false)
-  const GameLemon = api.opaque("GameLemon", { glsl: null, js: null }, false)
-  const GameDyadic = api.opaque("GameDyadic", { glsl: null, js: null }, false)
+  const Game = api.opaque("Game", { glsl: null, js: "" }, false)
+  const GameEmpty = api.opaque("GameEmpty", { glsl: null, js: "" }, false)
+  const GameNim = api.opaque("GameNim", { glsl: null, js: "" }, false)
+  const GameTree = api.opaque("GameTree", { glsl: null, js: "" }, false)
+  const GameInt = api.opaque("GameInt", { glsl: null, js: "" }, false)
+  const GameDeliver = api.opaque("GameDeliver", { glsl: null, js: "" }, false)
+  const GameBug = api.opaque("GameBug", { glsl: null, js: "" }, false)
+  const GameLemon = api.opaque("GameLemon", { glsl: null, js: "" }, false)
+  const GameDyadic = api.opaque("GameDyadic", { glsl: null, js: "" }, false)
 
   jsFn(api, libGameActual)
     .fn("empty", {}, GameEmpty)
