@@ -11,7 +11,7 @@ export const STORE_EVAL = new Store((e) => {
   const el = h(
     "flex px-2 pb-2 -mt-2 w-[calc(var(--nya-sidebar)-2.5rem-1px)] overflow-x-auto [&::-webkit-scrollbar]:hidden items-baseline",
     h(
-      "ml-auto inline-block pt-[.35rem] text-[1.265rem] pr-1.5 text-slate-400",
+      "ml-auto inline-block relative top-[-.1rem] text-[1.1rem] pr-1.5 text-slate-400",
       "=",
     ),
     field.el,
