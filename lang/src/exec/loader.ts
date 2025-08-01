@@ -8,7 +8,13 @@ import { Chunk, Issues } from "../ast/issue"
 import { ItemUse } from "../ast/node/item"
 import { parse, parseBlockContents } from "../ast/parse"
 import { createStream } from "../ast/stream"
-import { Block, Exits, type Declarations, type IdMap } from "../emit/decl"
+import {
+  Block,
+  BlockGlobals,
+  Exits,
+  type Declarations,
+  type IdMap,
+} from "../emit/decl"
 import { emitBlock, emitItem } from "../emit/emit"
 import { bug, errorText } from "../emit/error"
 import { Value } from "../emit/value"
@@ -27,8 +33,7 @@ function extractDepName(item: ItemUse) {
 export class ScriptEnvironment {
   readonly libGl = createStdlib(new EmitProps("glsl"))
   readonly libJs = createStdlib(new EmitProps("js"))
-  mainGl = ""
-  mainJs = ""
+
   private readonly issues = new Issues()
   private readonly loaded = new Set<string>()
   readonly utils = new UtilityFnCache(this)
@@ -62,15 +67,8 @@ export class ScriptEnvironment {
         continue
       }
 
-      const resultGl = emitItem(item, this.libGl)
-      if (resultGl?.decl) {
-        this.mainGl += "\n" + resultGl.decl
-      }
-
-      const resultJs = emitItem(item, this.libJs)
-      if (resultJs?.decl) {
-        this.mainJs += "\n" + resultJs.decl
-      }
+      emitItem(item, this.libGl)
+      emitItem(item, this.libJs)
     }
     if (!this.issues.ok()) {
       throw new Error(this.issues.entries.map((x) => x.toString()).join("\n"))
@@ -91,7 +89,8 @@ export class ScriptEnvironment {
     if (!issues.ok()) {
       throw new Error(issues.entries.join("\n"))
     }
-    const block = new Block(lib, new Exits(null), locals)
+    const globals = new BlockGlobals(lib)
+    const block = new Block(globals, new Exits(null), locals)
     const value = emitBlock(contents, block)
     if (!issues.ok()) {
       throw new Error(issues.entries.join("\n"))
@@ -101,9 +100,8 @@ export class ScriptEnvironment {
 
   /** Executes a string compiled within the JavaScript context. */
   evalRaw(text: string): unknown {
-    const source = `${this.libJs.globals()}
-${this.mainJs}
-${text}`
+    const source = `${this.libJs.getTypeDeclarations()}
+;${text}`
     return (0, eval)(source)
   }
 
@@ -115,16 +113,20 @@ ${text}`
   ): (...args: unknown[]) => unknown {
     const runtime = value.toRuntime()
     return this.evalRaw(`
+${block.globals.getText()}
 ;(function(${args}){
 ${block.source}
-return ${runtime}
+;return ${runtime}
 })`) as any
   }
 
   /** Executes a block and value compiled within the JavaScript context. */
   compute(block: Block, value: Value): unknown {
     const runtime = value.toRuntime()
-    return this.evalRaw(block.source + "\n" + runtime)
+    return this.evalRaw(`
+${block.globals.getText()}
+${block.source}
+;${runtime}`)
   }
 
   log(script: string, name?: string, locals?: IdMap<Value>) {
@@ -143,10 +145,8 @@ return ${runtime}
     }
   }
 
-  getMain(lang: Lang): string {
-    const lib = lang == "glsl" ? this.libGl : this.libJs
-    const main = lang == "glsl" ? this.mainGl : this.mainJs
-    return lib.globals() + "\n" + main
+  lib(lang: Lang): Declarations {
+    return lang == "glsl" ? this.libGl : this.libJs
   }
 
   /** Displays a precomputed value. */

@@ -101,7 +101,7 @@ export class NyaApi {
       const id = new Id(name)
       const emit = id.ident()
       const decl2 = decl.replace(/%%/g, emit)
-      this.lib.global(decl2)
+      this.lib.addTypeDeclaration(decl2)
       const s = new Scalar(
         name,
         emit,
@@ -137,17 +137,17 @@ export class NyaApi {
     ret: Type,
   ): Value {
     const { sideEffects, globals, texts, args: params } = impl
+    block.addGlobal(globals)
+
     const max = texts.length - 1
 
-    if (globals) {
-      this.lib.global(globals)
-    }
     let text = ""
     for (let i = 0; i < max; i++) {
       text += texts[i]!
       text += values[params[i]!]!
     }
     text += texts[max]!
+
     if (sideEffects) {
       if (!block) {
         bug(
@@ -383,6 +383,7 @@ export class NyaApi {
                 this.lib.tyNum,
               ),
             ).reverse(),
+            block,
           )
         }
       },

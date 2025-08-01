@@ -609,8 +609,8 @@ vec4 _nya_helper_compose(vec4 base, vec4 added) {
     w
   );
 }
-${this.factory.env.libGl.globals()}
-${this.factory.env.mainGl}
+${this.factory.env.libGl.getTypeDeclarations()}
+${Array.from(new Set(compiled.flatMap((x) => x.globals))).join("\n")}
 void main() {
 vec2 e_tx = vec2(gl_FragCoord.x, 0);
 vec2 e_ty = vec2(gl_FragCoord.y, 0);

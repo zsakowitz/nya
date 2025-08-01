@@ -49,7 +49,7 @@ import {
 } from "../ast/node/type"
 import { fromScalars, scalars } from "./broadcast"
 import { Coercion, isEligibleForCoercion, type CoercionTarget } from "./coerce"
-import { Block, Exits, IdMap, type Declarations } from "./decl"
+import { Block, BlockGlobals, Exits, IdMap, type Declarations } from "./decl"
 import { issue, issueError, todo } from "./error"
 import { Id, ident, type IdGlobal } from "./id"
 import { Alt, Array, ArrayEmpty, Fn, Struct, type Type } from "./type"
@@ -227,7 +227,10 @@ function emitType(node: NodeType, decl: Declarations): Type {
     }
     const count = arraySize(
       decl.toArraySize(
-        emitExpr(node.sizes.items[0]!, new Block(decl, new Exits(null))),
+        emitExpr(
+          node.sizes.items[0]!,
+          new Block(new BlockGlobals(decl), new Exits(null)),
+        ),
       ),
     )
     return new Array(decl.props, item, count)
@@ -345,7 +348,7 @@ export function emitExpr(node: NodeExpr, block: Block): Value {
       mapPos.set(arg.name.val, arg)
     }
 
-    return ty.with(ty.verifyAndOrderFields(map, mapPos))
+    return ty.with(ty.verifyAndOrderFields(map, mapPos), block)
   } else if (node instanceof ExprProp) {
     if (node.targs) {
       todo("Type arguments are not supported yet.")
@@ -592,8 +595,8 @@ export function emitExpr(node: NodeExpr, block: Block): Value {
       node,
     )
   } else if (node instanceof ExprRange) {
-    const lb = new Block(block.decl, new Exits(null), block.locals)
-    const rb = new Block(block.decl, new Exits(null), block.locals)
+    const lb = new Block(block.globals, new Exits(null), block.locals)
+    const rb = new Block(block.globals, new Exits(null), block.locals)
     const lv = emitExpr(node.lhs ?? todo(`Ranges must have lower bounds.`), lb)
     const rv = emitExpr(node.rhs ?? todo(`Ranges must have upper bounds.`), rb)
     if (lv.type != block.decl.tyNum || rv.type != block.decl.tyNum) {
@@ -702,6 +705,7 @@ function matrixMultiply(block: Block, arg1: Value, arg2: Value): Value {
             }
             return new Value(r, block.decl.tyNum, false)
           }),
+          block,
         )
       }
     } else {
@@ -770,12 +774,6 @@ function emitStmt(node: NodeStmt, block: Block): Value {
   }
 }
 
-type ItemResult = {
-  decl?: string
-  declTy?: string
-  declNya?: { name: string; of: string; kind: "type" | "fn" }[]
-} | null
-
 function emitExpose(node: NodeExpose, _decl: Declarations) {
   if (node instanceof ExposePackage) {
     // skip it since it should be preprocessed
@@ -784,7 +782,7 @@ function emitExpose(node: NodeExpose, _decl: Declarations) {
   }
 }
 
-export function emitItem(node: NodeItem, decl: Declarations): ItemResult {
+export function emitItem(node: NodeItem, decl: Declarations): void {
   if (node instanceof ItemStruct) {
     const ids = node.name.items.map((x) => ident(x.val))
     if (ids.length == 0) {
@@ -835,23 +833,12 @@ export function emitItem(node: NodeItem, decl: Declarations): ItemResult {
     for (const fn of accessors) {
       decl.fns.push(fn.id as IdGlobal, fn)
     }
-    return {
-      decl:
-        result
-          .map((x) => x.decl)
-          .filter((x) => x)
-          .join("\n") || undefined,
-      declTy:
-        result
-          .map((x) => x.declTyOnly)
-          .filter((x) => x)
-          .join("\n") || undefined,
-      declNya: result.map((x) => ({
-        name: x.struct.name,
-        of: x.struct.declaration(),
-        kind: "type",
-      })),
-    }
+    decl.addTypeDeclaration(
+      result
+        .map((x) => x.decl)
+        .filter((x) => x)
+        .join("\n"),
+    )
   } else if (node instanceof ItemFn) {
     const fname = node.name?.val
     if (fname == null) {
@@ -911,7 +898,8 @@ export function emitItem(node: NodeItem, decl: Declarations): ItemResult {
         )
       }
     }
-    const block = new Block(decl, new Exits(ret), locals)
+    const globals = new BlockGlobals(decl)
+    const block = new Block(globals, new Exits(ret), locals)
     const value = ret.convertFrom(emitBlock(node.block, block), node.block)
     const lid = new Id(fname)
     const gid = ident(fname)
@@ -926,7 +914,7 @@ export function emitItem(node: NodeItem, decl: Declarations): ItemResult {
           .filter((x) => x.type.repr.type != "void")
           .map((x) => x.name.ident())
           .join(",")}) {${block.source}${returnValue(value)}} // ${fname}`
-
+    globals.add(body)
     const fn =
       block.source == "" && value.const() ?
         // Non-side-effecting constant optimization
@@ -935,7 +923,8 @@ export function emitItem(node: NodeItem, decl: Declarations): ItemResult {
           gid,
           fparams,
           ret,
-          (args, _, pos) => {
+          (args, caller, pos) => {
+            caller.addGlobalsFrom(globals)
             const actualArgs = args.map((x, i) =>
               params[i]!.type.convertFrom(x, pos),
             )
@@ -947,7 +936,6 @@ export function emitItem(node: NodeItem, decl: Declarations): ItemResult {
           },
           node,
         )
-
     // Functions names "->" are used for coercions instead of normal definitions
     if (isCoercion) {
       const coercion = new Coercion(
@@ -963,11 +951,6 @@ export function emitItem(node: NodeItem, decl: Declarations): ItemResult {
     }
 
     Object.assign(fn, { source: body })
-
-    return {
-      decl: body,
-      declNya: [{ name: fn.id.label, of: fn.declaration(), kind: "fn" }],
-    }
   } else if (node instanceof ItemLet) {
     const fname = node.ident?.val
     if (fname == null) {
@@ -980,7 +963,8 @@ export function emitItem(node: NodeItem, decl: Declarations): ItemResult {
     // even though 'let' is implemented as a function, this is an implementation
     // detail and should not be relied on. it's also harder to detect the proper
     // output type when 'return' is allowed
-    const block = new Block(decl, new Exits(null))
+    const globals = new BlockGlobals(decl)
+    const block = new Block(globals, new Exits(null))
     let value = emitExpr(node.value.value, block)
     if (expected) value = expected.convertFrom(value, node.value.value)
     const ret = value.type
@@ -991,16 +975,22 @@ export function emitItem(node: NodeItem, decl: Declarations): ItemResult {
       decl.props.lang == "glsl" ?
         `${ret.emit} ${lident}() {${block.source}${returnValue(value)}} // ${fname}`
       : `function ${lident}() {${block.source}${returnValue(value)}} // ${fname}`
+    globals.add(body)
     const fn =
       block.source == "" && value.const() ?
         // Non-side-effecting constant optimization
         new Fn(gid, [], ret, () => value, node)
-      : new Fn(gid, [], ret, () => new Value(`${lident}()`, ret, false), node)
+      : new Fn(
+          gid,
+          [],
+          ret,
+          (_, caller) => {
+            caller.addGlobalsFrom(globals)
+            return new Value(`${lident}()`, ret, false)
+          },
+          node,
+        )
     decl.fns.push(gid, fn)
-    return {
-      decl: body,
-      declNya: [{ name: fn.id.label, of: fn.declaration(), kind: "fn" }],
-    }
   } else if (node instanceof ItemTypeAlias) {
     const val = node.ident?.val
     if (!val) {
@@ -1017,17 +1007,6 @@ export function emitItem(node: NodeItem, decl: Declarations): ItemResult {
 
     const ty = emitType(node.of, decl)
     decl.types.init(id, ty)
-
-    return {
-      // TODO: should this output a ts type alias?
-      declNya: [
-        {
-          name: node.ident.val,
-          of: `type ${node.ident.val} = ${ty};`,
-          kind: "type",
-        },
-      ],
-    }
   } else if (node instanceof ItemExpose) {
     const items =
       node.item instanceof List ?
@@ -1037,8 +1016,6 @@ export function emitItem(node: NodeItem, decl: Declarations): ItemResult {
     for (const item of items) {
       emitExpose(item, decl)
     }
-
-    return null
   } else {
     todo(`Cannot emit '${node.constructor.name}' as an item yet.`)
   }

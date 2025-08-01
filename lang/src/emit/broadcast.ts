@@ -27,7 +27,7 @@ export function scalars(value: Value, block: Block) {
   return value.type.toScalars(block.cache(value, true))
 }
 
-export function fromScalars(type: Type, value: Value[]) {
+export function fromScalars(type: Type, value: Value[], block: Block) {
   value.reverse()
-  return type.fromScalars(value)
+  return type.fromScalars(value, block)
 }

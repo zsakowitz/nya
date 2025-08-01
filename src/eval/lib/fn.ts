@@ -149,6 +149,7 @@ ${interps
 }
 
 export interface GlslResult {
+  readonly globals: ReadonlySet<string>
   readonly block: string
   readonly value: string
 }

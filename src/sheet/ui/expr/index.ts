@@ -269,7 +269,11 @@ function compileForGlsl(self: Expr, exe: Executable) {
   )
 
   const result = value.toString()
-  self.glsl = { block: block.source, value: result }
+  self.glsl = {
+    globals: block.globals.get(),
+    block: block.source,
+    value: result,
+  }
   self.sheet.queueGlsl()
 }
 

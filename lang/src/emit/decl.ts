@@ -82,16 +82,6 @@ export class IdMapMany<T> {
   }
 }
 
-export class Globals {
-  constructor(readonly props: EmitProps) {}
-
-  private readonly source = new Set<string>()
-
-  global(text: string) {
-    this.source.add(text)
-  }
-}
-
 export class Declarations {
   readonly types: IdMap<Type>
   readonly fns: IdMapMany<Fn>
@@ -130,8 +120,6 @@ export class Declarations {
     }
   }
 
-  private readonly source = new Set<string>()
-
   void() {
     return new Value(0, this.tyVoid, true)
   }
@@ -147,12 +135,12 @@ export class Declarations {
     this.tags = new IdMap(parent?.tags ?? null)
   }
 
-  global(text: string) {
-    this.source.add(text)
+  private readonly typeDeclarations = new Set<string>()
+  addTypeDeclaration(text: string) {
+    this.typeDeclarations.add(text)
   }
-
-  globals() {
-    return Array.from(this.source).join("\n")
+  getTypeDeclarations() {
+    return Array.from(this.typeDeclarations).join("\n")
   }
 }
 
@@ -160,19 +148,50 @@ export class Exits {
   constructor(readonly returnType: Type | null) {}
 }
 
+export class BlockGlobals {
+  private readonly sources = new Set<string>()
+
+  constructor(readonly decl: Declarations) {}
+
+  add(text: string) {
+    this.sources.add(text)
+  }
+
+  addAll(texts: ReadonlySet<string>) {
+    for (const el of texts) {
+      this.sources.add(el)
+    }
+  }
+
+  get(): ReadonlySet<string> {
+    return this.sources
+  }
+
+  getText(): string {
+    return Array.from(this.sources).join("\n")
+  }
+}
+
 export class Block {
   source = ""
 
-  readonly lang
-  readonly props
+  get decl() {
+    return this.globals.decl
+  }
+
+  get props() {
+    return this.globals.decl.props
+  }
+
+  get lang() {
+    return this.globals.decl.props.lang
+  }
 
   constructor(
-    readonly decl: Declarations,
+    readonly globals: BlockGlobals,
     readonly exits: Exits,
     readonly locals: IdMap<Value> = new IdMap(null),
-  ) {
-    this.lang = (this.props = decl.props).lang
-  }
+  ) {}
 
   cache(value: Value, assumeReadonly: boolean): Value {
     if (value.const()) {
@@ -192,9 +211,16 @@ export class Block {
   }
 
   child(exits: Exits) {
-    return new Block(this.decl, exits, new IdMap(this.locals))
+    return new Block(this.globals, exits, new IdMap(this.locals))
+  }
+
+  addGlobal(source: string) {
+    this.globals.add(source)
+  }
+
+  addGlobalsFrom(sources: BlockGlobals) {
+    this.globals.addAll(sources.get())
   }
 }
 
-export const PRECACHED =
-  /^(?:[+-]?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?|[$A-Za-z_]\w*)$/
+const PRECACHED = /^(?:[+-]?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?|[$A-Za-z_]\w*)$/

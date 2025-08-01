@@ -4,7 +4,14 @@ Error.isError ??= (x) => x instanceof Error
 
 if (new URL(location.href).searchParams.has("logeval")) {
   const e = eval
-  globalThis.eval = (x) => (console.log(x), e(x))
+  globalThis.eval = (x) => {
+    const text = x
+      .split("\n")
+      .filter((x) => x && x != ";")
+      .join("\n")
+    console.log(text)
+    return e(x)
+  }
 }
 
 if (location.href.includes("showmanifest")) {

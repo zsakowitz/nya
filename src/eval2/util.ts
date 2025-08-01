@@ -1,5 +1,5 @@
 import { PosVirtual } from "!/ast/issue"
-import { Block, Exits } from "!/emit/decl"
+import { Block, BlockGlobals, Exits } from "!/emit/decl"
 import { tryPerformCall } from "!/emit/emit"
 import { Id, ident } from "!/emit/id"
 import { type Type } from "!/emit/type"
@@ -71,11 +71,12 @@ export class UtilityFnCache {
     const utilities: Utilities = newUtilities()
 
     const pos1 = new PosVirtual("UtilityFnCache.recollect")
+    const globals = new BlockGlobals(lib)
     for (const [name, ty] of lib.types.all()) {
       const arg = new Value(new Id(name).ident(), ty, false)
 
       {
-        const b1 = new Block(lib, new Exits(null))
+        const b1 = new Block(globals, new Exits(null))
         const val = tryPerformCall(ident("%display"), b1, [arg], pos1, pos1)
         if (val && val.type == tyLatex) {
           utilities["display"].set(ty, {
@@ -86,7 +87,7 @@ export class UtilityFnCache {
 
       {
         const v1 = new Value("canvas", tyCanvas, false)
-        const b1 = new Block(lib, new Exits(null))
+        const b1 = new Block(globals, new Exits(null))
         const val = tryPerformCall(ident("%plot_2d"), b1, [v1, arg], pos1, pos1)
         if (val) {
           const kind =
@@ -104,7 +105,9 @@ export class UtilityFnCache {
       }
     }
 
-    const fns = this.lib.evalRaw(`[
+    const fns = this.lib.evalRaw(`
+${Array.from(globals.get()).join("\n")}
+;[
 ${ret
   .map(([args, block, ret]) => {
     return `(${args.map((x) => x.value).join(",")})=>{

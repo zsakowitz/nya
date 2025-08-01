@@ -18,7 +18,7 @@ export interface Type {
   repr: Repr
   emit: string
   toScalars(value: Value): Value[]
-  fromScalars(values: Value[]): Value
+  fromScalars(values: Value[], block: Block): Value
   canConvertFrom(type: Type): boolean
   convertFrom(value: Value, pos: Pos): Value
   toRuntime(value: ConstValue): string | null
@@ -47,10 +47,6 @@ export type FnExec = (
   namePos: Pos,
   fullPos: Pos,
 ) => Value
-
-export function fn(id: Id, args: FnParam[], ret: FnType, run: FnExec) {
-  return new Fn(id, args, ret, run)
-}
 
 export class Fn {
   constructor(
@@ -148,6 +144,7 @@ export class Struct implements Type {
         [],
         fields,
         group,
+        "",
       )
     }
 
@@ -161,6 +158,7 @@ export class Struct implements Type {
         nvFields.map((x) => x.type),
         fields,
         group,
+        "",
       )
     }
 
@@ -196,6 +194,7 @@ export class Struct implements Type {
           nvFields.map((x) => x.type),
           fields,
           group,
+          "",
         )
       }
     }
@@ -234,6 +233,7 @@ export class Struct implements Type {
           nvFields.map((x) => x.type),
           fields,
           group,
+          "",
         )
       }
     }
@@ -242,6 +242,10 @@ export class Struct implements Type {
     const lident = lid.ident()
     const brandId = new Id(name)
     repr ??= { type: "struct", id: lid }
+    const consDecl =
+      props.lang == "glsl" ?
+        ""
+      : `function ${lident}(${nvFields.map((_, i) => `${fieldIdent(i)}`).join(",")}) {return {${nvFields.map((_, i) => `${fieldIdent(i)}`).join(",")}}}`
     const struct = new Struct(
       name,
       lident,
@@ -251,23 +255,12 @@ export class Struct implements Type {
       nvFields.map((x) => x.type),
       fields,
       group,
+      consDecl,
     )
-    const fn = new Fn(lid, fields, struct, (args) => {
-      const vals = nvIndices.map((i) => args[i]!)
-      if (vals.every((x) => x.const())) {
-        return new Value(
-          vals.map((x) => x.value),
-          struct,
-          true,
-        )
-      } else {
-        return new Value(`${lident}(${vals.join(",")})`, struct, false)
-      }
-    })
-    const decl =
+    const typeDecl =
       props.lang == "glsl" ?
         `struct ${lident} {${nvFields.map(({ type }, i) => `${type.emit} ${fieldIdent(i)};`).join("")}}`
-      : `function ${lident}(${nvFields.map((_, i) => `${fieldIdent(i)}`).join(",")}) {return {${nvFields.map((_, i) => `${fieldIdent(i)}`).join(",")}}}`
+      : ""
     const declTyOnly =
       props.lang == "glsl" ?
         undefined
@@ -276,7 +269,7 @@ interface ${lident} {[${brandId.ident()}]: "__brand";${nvFields.map(({ type }, i
 function ${lident}(${nvFields
           .map((x) => `${encodeIdentForTS(x.name)}: ${x.type.emit}`)
           .join(",")}): ${struct.emit};`
-    return { struct, fn, decl, declTyOnly }
+    return { struct, decl: typeDecl, declTyOnly }
   }
 
   static of(
@@ -314,6 +307,7 @@ function ${lident}(${nvFields
     nvFields: readonly Type[],
     fields: readonly { name: string; type: Type }[],
     readonly group: Id,
+    readonly consDecl: string,
   ) {
     this.#nvIndices = nvIndices
     this.#nvFields = nvFields
@@ -325,7 +319,7 @@ function ${lident}(${nvFields
     return (this.#accessors = this.#generateFieldAccessors(props, argumentType))
   }
 
-  with(args: Value[]): Value {
+  with(args: Value[], block: Block): Value {
     if (this.#nvIndices.length == 0) {
       return new Value(0, this, true)
     }
@@ -343,6 +337,7 @@ function ${lident}(${nvFields
         true,
       )
     } else {
+      block.addGlobal(this.consDecl)
       return new Value(`${this.emit}(${vals.join(",")})`, this, false)
     }
   }
@@ -519,8 +514,11 @@ function ${lident}(${nvFields
     )
   }
 
-  fromScalars(value: Value[]): Value {
-    return this.with(this.#fields.map(({ type }) => type.fromScalars(value)))
+  fromScalars(value: Value[], block: Block): Value {
+    return this.with(
+      this.#fields.map(({ type }) => type.fromScalars(value, block)),
+      block,
+    )
   }
 
   declaration(nl = false) {
@@ -700,8 +698,8 @@ export class Alt implements Type {
     return this.a.toScalars(value)
   }
 
-  fromScalars(values: Value[]): Value {
-    return this.a.fromScalars(values).unsafeWithType(this)
+  fromScalars(values: Value[], block: Block): Value {
+    return this.a.fromScalars(values, block).unsafeWithType(this)
   }
 
   canConvertFrom(type: Type): boolean {

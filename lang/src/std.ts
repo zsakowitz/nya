@@ -3,7 +3,7 @@ import { blue, cyan, dim, magenta, reset, yellow } from "./ansi"
 import { KFalse, KTrue, TFloat, TInt, TString, TSym } from "./ast/kind"
 import type { ExprLit } from "./ast/node/expr"
 import { AnyVector, fromScalars, scalars } from "./emit/broadcast"
-import { Declarations } from "./emit/decl"
+import { Declarations, type Block } from "./emit/decl"
 import { performCall } from "./emit/emit"
 import { issue, todo } from "./emit/error"
 import { Id, ident, type IdGlobal } from "./emit/id"
@@ -192,6 +192,7 @@ function libBroadcasting(api: NyaApi) {
           return fromScalars(
             val.type,
             s0.map((a) => new Value((a.value as number) / hypot, num, true)),
+            block,
           )
         }
 
@@ -202,7 +203,7 @@ function libBroadcasting(api: NyaApi) {
 
         // js path
         const s0 = scalars(val, block)
-        api.lib.global(`const ${hypotId}=Math.hypot;`)
+        block.addGlobal(`const ${hypotId}=Math.hypot;`)
         const hy = block.cache(
           new Value(`${hypotId}(${s0.join(",")})`, num, false),
           true,
@@ -210,6 +211,7 @@ function libBroadcasting(api: NyaApi) {
         return fromScalars(
           val.type,
           s0.map((x) => new Value(`(${x})/${hy}`, num, false)),
+          block,
         )
       },
     )
@@ -438,11 +440,11 @@ function libLatex(api: NyaApi) {
         latex,
         lang == "glsl" ?
           () => new Value(0, latex, true)
-        : ([v]) =>
+        : ([v], caller) =>
             new Value(
               v!.const() ?
                 numToLatex(v.value as number)
-              : (decl.global(fnLatexHelper),
+              : (caller.addGlobal(fnLatexHelper),
                 `${idLatexHelper}(${v!.toRuntime()})`),
               latex,
               // @ts-expect-error
@@ -462,11 +464,11 @@ function libLatex(api: NyaApi) {
     const f =
       lang == "glsl" ?
         () => new Value(0, latex, true)
-      : ([v]: Value[]) =>
+      : ([v]: Value[], caller: Block) =>
           new Value(
             v!.const() ?
               fLatexHelper(v.value as boolean)
-            : (decl.global(fnLatexHelper),
+            : (caller.addGlobal(fnLatexHelper),
               `${idLatexHelper}(${v!.toRuntime()})`),
             latex,
             // @ts-expect-error

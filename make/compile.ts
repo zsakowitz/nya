@@ -8,7 +8,7 @@ const file = process.argv[4]
 
 try {
   if (!(lang == "js" || lang == "glsl")) {
-    issue(`First argument to 'make/compile' must be js, glsl, or nya.`)
+    issue(`First argument to 'make/compile' must be 'js' or 'glsl'.`)
   }
 
   if (!name || !isScriptName(name)) {
@@ -17,7 +17,7 @@ try {
 
   const env = new ScriptEnvironment()
   env.load(name)
-  const main = env.getMain(lang)
+  const main = env.lib(lang).getTypeDeclarations()
   if (file) {
     await Bun.write(file, main)
   } else {
