@@ -13,6 +13,18 @@ fn %display(a: Point4D) -> latex {
   display"(${a.x},${a.y},${a.z},${a.w})"
 }
 
+fn -(a: Point4D) -> Point4D {
+  @-a
+}
+
+fn %odot(a: Point4D, b: Point4D) -> Point4D {
+  a @* b
+}
+
+fn +(a: Point4D) -> Point4D {
+  a
+}
+
 fn +(a: Point4D, b: Point4D) -> Point4D {
   a @+ b
 }
@@ -27,18 +39,6 @@ fn unsign(a: Point4D) -> Point4D {
 
 fn abs(a: Point4D) -> num {
   @length(a)
-}
-
-fn -(a: Point4D) -> Point4D {
-  @-a
-}
-
-fn %odot(a: Point4D, b: Point4D) -> Point4D {
-  a @* b
-}
-
-fn +(a: Point4D) -> Point4D {
-  a
 }
 
 fn *(a: Point4D, b: num) -> Point4D {

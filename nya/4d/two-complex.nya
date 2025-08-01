@@ -15,18 +15,6 @@ fn %display(a: PointComplex4D) -> latex {
   display"(${a.x},${a.y})"
 }
 
-fn +(a: PointComplex4D, b: PointComplex4D) -> PointComplex4D {
-  a @+ b
-}
-
-fn -(a: PointComplex4D, b: PointComplex4D) -> PointComplex4D {
-  a @- b
-}
-
-fn unsign(a: PointComplex4D) -> PointComplex4D {
-  @abs(a)
-}
-
 fn -(a: PointComplex4D) -> PointComplex4D {
   @-a
 }
@@ -37,6 +25,18 @@ fn %odot(a: PointComplex4D, b: PointComplex4D) -> PointComplex4D {
 
 fn +(a: PointComplex4D) -> PointComplex4D {
   a
+}
+
+fn +(a: PointComplex4D, b: PointComplex4D) -> PointComplex4D {
+  a @+ b
+}
+
+fn -(a: PointComplex4D, b: PointComplex4D) -> PointComplex4D {
+  a @- b
+}
+
+fn unsign(a: PointComplex4D) -> PointComplex4D {
+  @abs(a)
 }
 
 fn *(a: PointComplex4D, b: num) -> PointComplex4D {

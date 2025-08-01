@@ -23,10 +23,6 @@ fn %plotsign(a: num, b: num) -> num {
   a - b
 }
 
-fn +(a: num) -> num {
-  a
-}
-
 fn %odot(a: num, b: num) -> num {
   a * b
 }

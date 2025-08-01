@@ -18,13 +18,14 @@ function libNumBool(api: NyaApi) {
   api.scalar("sym", "symint", true)
   api.opaque("void", { glsl: null, js: null })
 
+  api.f1("+", { value: num }, num, v`${0}`)
+  api.f1("-", { value: num }, num, v`-${0}`)
   // Basic numeric operators
   for (const op of "+-*/")
     api.f1(op, { lhs: num, rhs: num }, num, v`${0}${op}${1}`)
   // @+ @- @* @/
   for (const op of ["==", "!=", "<", ">", "<=", ">="])
     api.f1(op, { lhs: num, rhs: num }, bool, v`${0}${op}${1}`)
-  api.f1("-", { value: num }, num, v`-${0}`)
   // @-
   api.fn("^", { lhs: num, rhs: num }, num, {
     glsl: v`${"float %%(float x,float y){return y==floor(y)?mod(y,2.)==0.?pow(abs(x),y):pow(abs(x),y)*sign(x):pow(x,y);}"}(${0},${1})`,

@@ -170,6 +170,8 @@ function libGame(api: NyaApi, S: Scalar) {
   const GameLemon = api.opaque("GameLemon", { glsl: null, js: "" }, false)
   const GameDyadic = api.opaque("GameDyadic", { glsl: null, js: "" }, false)
 
+  api.fn("+", { game: Game }, Game, { glsl: v`${0}`, js: v`${0}` }, false)
+
   jsFn(api, libGameActual)
     .fn("empty", {}, GameEmpty)
     .fn("nim", { size: api.lib.tyNum }, GameNim)
@@ -177,8 +179,8 @@ function libGame(api: NyaApi, S: Scalar) {
     .fn("sign", { game: Game }, Sign)
     .fn("const_int", { size: api.lib.tyNum }, GameInt)
     .fa("sum", "+", { a: Game, b: Game }, Game)
-    .fa("sub", "-", { a: Game, b: Game }, Game)
     .fa("neg", "-", { game: Game }, Game)
+    .fa("sub", "-", { a: Game, b: Game }, Game)
     .fa("eq", "==", { a: Game, b: Game }, api.lib.tyBool)
     .fa("ne", "!=", { a: Game, b: Game }, api.lib.tyBool)
     .fa("lt", "<", { a: Game, b: Game }, api.lib.tyBool)
@@ -199,8 +201,6 @@ function libGame(api: NyaApi, S: Scalar) {
       { game: GameBug, start: api.lib.tyNum },
       api.lib.tyNum,
     )
-
-  api.fn("+", { game: Game }, Game, { glsl: v`${0}`, js: v`${0}` }, false)
 
   api.fn(
     "%display",

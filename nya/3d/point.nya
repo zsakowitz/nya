@@ -12,8 +12,16 @@ fn %display(a: Point3D) -> latex {
   display"(${a.x},${a.y},${a.z})"
 }
 
+fn +(a: Point3D) -> Point3D {
+  a
+}
+
 fn +(a: Point3D, b: Point3D) -> Point3D {
   a @+ b
+}
+
+fn -(a: Point3D) -> Point3D {
+  @-a
 }
 
 fn -(a: Point3D, b: Point3D) -> Point3D {
@@ -28,16 +36,8 @@ fn abs(a: Point3D) -> num {
   @length(a)
 }
 
-fn -(a: Point3D) -> Point3D {
-  @-a
-}
-
 fn %odot(a: Point3D, b: Point3D) -> Point3D {
   a @* b
-}
-
-fn +(a: Point3D) -> Point3D {
-  a
 }
 
 fn *(a: Point3D, b: num) -> Point3D {
