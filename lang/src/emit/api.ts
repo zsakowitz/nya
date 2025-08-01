@@ -501,7 +501,6 @@ export class NyaApi {
       const values = v.map((x, i) =>
         broadcast.has(i) ? x.toScalars().join(`),(`) : x.toString(),
       )
-      console.log(values)
       return this._fText(impl, values, block, ret)
     })
     this.lib.fns.push(id, fn)

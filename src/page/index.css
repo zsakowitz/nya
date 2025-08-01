@@ -534,66 +534,15 @@ body {
   }
 }
 
-.nya-ast-group {
-  @apply text-blue-700 [--nya-ast-bg:var(--color-blue-200)] [--nya-text:var(--color-blue-800)] dark:text-blue-300 dark:[--nya-ast-bg:var(--color-blue-800)] dark:[--nya-text:var(--color-blue-400)];
+.nya-cmd-colon:has(+ .nya-cmd-eq),
+.nya-cmd-colon:has(+ :where(.nya-cursor) + .nya-cmd-eq),
+.nya-cmd-colon:has(+ :where(.nya-cursor:last-child)):not(
+    .nya-cmd-brack > * > * > *
+  ) {
+  @apply pr-0 pl-[.2em] *:relative *:top-[-.05em];
+}
 
-  .nya-ast-group {
-    @apply text-pink-700 [--nya-ast-bg:var(--color-pink-200)] [--nya-text:var(--color-pink-800)] dark:text-pink-300 dark:[--nya-ast-bg:var(--color-pink-800)] dark:[--nya-text:var(--color-pink-400)];
-
-    .nya-ast-group {
-      @apply text-green-700 [--nya-ast-bg:var(--color-green-200)] [--nya-text:var(--color-green-800)] dark:text-green-300 dark:[--nya-ast-bg:var(--color-green-800)] dark:[--nya-text:var(--color-green-400)];
-
-      .nya-ast-group {
-        @apply text-purple-700 [--nya-ast-bg:var(--color-purple-200)] [--nya-text:var(--color-purple-800)] dark:text-purple-300 dark:[--nya-ast-bg:var(--color-purple-800)] dark:[--nya-text:var(--color-purple-400)];
-
-        .nya-ast-group {
-          @apply text-blue-700 [--nya-ast-bg:var(--color-blue-200)] [--nya-text:var(--color-blue-800)] dark:text-blue-300 dark:[--nya-ast-bg:var(--color-blue-800)] dark:[--nya-text:var(--color-blue-400)];
-
-          .nya-ast-group {
-            @apply text-pink-700 [--nya-ast-bg:var(--color-pink-200)] [--nya-text:var(--color-pink-800)] dark:text-pink-300 dark:[--nya-ast-bg:var(--color-pink-800)] dark:[--nya-text:var(--color-pink-400)];
-
-            .nya-ast-group {
-              @apply text-green-700 [--nya-ast-bg:var(--color-green-200)] [--nya-text:var(--color-green-800)] dark:text-green-300 dark:[--nya-ast-bg:var(--color-green-800)] dark:[--nya-text:var(--color-green-400)];
-
-              .nya-ast-group {
-                @apply text-purple-700 [--nya-ast-bg:var(--color-purple-200)] [--nya-text:var(--color-purple-800)] dark:text-purple-300 dark:[--nya-ast-bg:var(--color-purple-800)] dark:[--nya-text:var(--color-purple-400)];
-
-                .nya-ast-group {
-                  @apply text-blue-700 [--nya-ast-bg:var(--color-blue-200)] [--nya-text:var(--color-blue-800)] dark:text-blue-300 dark:[--nya-ast-bg:var(--color-blue-800)] dark:[--nya-text:var(--color-blue-400)];
-
-                  .nya-ast-group {
-                    @apply text-pink-700 [--nya-ast-bg:var(--color-pink-200)] [--nya-text:var(--color-pink-800)] dark:text-pink-300 dark:[--nya-ast-bg:var(--color-pink-800)] dark:[--nya-text:var(--color-pink-400)];
-
-                    .nya-ast-group {
-                      @apply text-green-700 [--nya-ast-bg:var(--color-green-200)] [--nya-text:var(--color-green-800)] dark:text-green-300 dark:[--nya-ast-bg:var(--color-green-800)] dark:[--nya-text:var(--color-green-400)];
-
-                      .nya-ast-group {
-                        @apply text-purple-700 [--nya-ast-bg:var(--color-purple-200)] [--nya-text:var(--color-purple-800)] dark:text-purple-300 dark:[--nya-ast-bg:var(--color-purple-800)] dark:[--nya-text:var(--color-purple-400)];
-
-                        .nya-ast-group {
-                          @apply text-blue-700 [--nya-ast-bg:var(--color-blue-200)] [--nya-text:var(--color-blue-800)] dark:text-blue-300 dark:[--nya-ast-bg:var(--color-blue-800)] dark:[--nya-text:var(--color-blue-400)];
-
-                          .nya-ast-group {
-                            @apply text-pink-700 [--nya-ast-bg:var(--color-pink-200)] [--nya-text:var(--color-pink-800)] dark:text-pink-300 dark:[--nya-ast-bg:var(--color-pink-800)] dark:[--nya-text:var(--color-pink-400)];
-
-                            .nya-ast-group {
-                              @apply text-green-700 [--nya-ast-bg:var(--color-green-200)] [--nya-text:var(--color-green-800)] dark:text-green-300 dark:[--nya-ast-bg:var(--color-green-800)] dark:[--nya-text:var(--color-green-400)];
-
-                              .nya-ast-group {
-                                @apply text-purple-700 [--nya-ast-bg:var(--color-purple-200)] [--nya-text:var(--color-purple-800)] dark:text-purple-300 dark:[--nya-ast-bg:var(--color-purple-800)] dark:[--nya-text:var(--color-purple-400)];
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
+.nya-cmd-colon + .nya-cmd-eq,
+.nya-cmd-colon + :where(.nya-cursor) + .nya-cmd-eq {
+  @apply *:!pl-0;
 }

@@ -216,6 +216,19 @@ export class OpEq extends ceq(
 
     return super.init(cursor, props)
   }
+
+  constructor(neg: boolean) {
+    super(neg)
+    this.setHtml(this.html())
+  }
+
+  override setHtml(html: string) {
+    const el = Op.render(html)
+    if (!this.neg) {
+      el.classList.add("nya-cmd-eq")
+    }
+    this.setEl(el)
+  }
 }
 
 export class OpTilde extends ceq(
