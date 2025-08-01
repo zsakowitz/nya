@@ -1,10 +1,11 @@
+import type { Pos } from "!/ast/issue"
 import type { ExprLit } from "../ast/node/expr"
 import { Coercions } from "./coerce"
-import { bug } from "./error"
+import { bug, issue, todo } from "./error"
 import { Id, ident, type IdGlobal } from "./id"
 import type { EmitProps } from "./props"
 import type { Tag } from "./tag"
-import { Scalar, type Fn, type Type } from "./type"
+import { invalidType, Scalar, type Fn, type FnType, type Type } from "./type"
 import { Value } from "./value"
 
 export class IdMap<T> {
@@ -145,7 +146,35 @@ export class Declarations {
 }
 
 export class Exits {
-  constructor(readonly returnType: Type | null) {}
+  concreteReturnType: Type | undefined
+
+  constructor(
+    readonly returnType: FnType | null,
+    readonly cannotReturnDueToGenericFn?: boolean,
+  ) {}
+
+  return(value: Value, pos: Pos, overrideGenericFnIgnore?: boolean) {
+    if (this.cannotReturnDueToGenericFn) {
+      if (!overrideGenericFnIgnore) {
+        todo(`Cannot use 'return' in generic functions yet.`, pos)
+      }
+    }
+    if (!this.returnType) {
+      issue(`Cannot return from this context.`, pos)
+    }
+    if (!this.returnType.canConvertFrom(value.type)) {
+      invalidType(this.returnType, value.type, pos)
+    }
+    const ret = this.returnType.convertFrom(value, pos)
+    if (this.concreteReturnType) {
+      if (this.concreteReturnType != ret.type) {
+        invalidType(this.concreteReturnType, ret.type, pos)
+      }
+    } else {
+      this.concreteReturnType = ret.type
+    }
+    return ret
+  }
 }
 
 export class BlockGlobals {
@@ -194,7 +223,7 @@ export class Block {
   ) {}
 
   cache(value: Value, assumeReadonly: boolean): Value {
-    if (value.const()) {
+    if (value.const() && !Array.isArray(value.value)) {
       return value
     } else if (value.type.repr.type == "void") {
       return new Value(0, value.type, true)

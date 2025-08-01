@@ -752,3 +752,17 @@ export const Any: FnType = {
     return "any"
   },
 }
+
+export const FixedSizeArray: FnType = {
+  canConvertFrom(x) {
+    return x instanceof Array
+  },
+  convertFrom(value, pos) {
+    return value.type instanceof Array ?
+        value
+      : invalidType(FixedSizeArray, value.type, pos)
+  },
+  toString() {
+    return "[any]"
+  },
+}

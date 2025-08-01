@@ -9,7 +9,13 @@ import { issue, todo } from "./emit/error"
 import { Id, ident, type IdGlobal } from "./emit/id"
 import type { EmitProps } from "./emit/props"
 import { Tag } from "./emit/tag"
-import { Any, Fn } from "./emit/type"
+import {
+  Any,
+  FixedSizeArray,
+  Fn,
+  invalidType,
+  Array as NyaArray,
+} from "./emit/type"
 import { Value } from "./emit/value"
 
 function libNumBool(api: NyaApi) {
@@ -259,7 +265,7 @@ function libBroadcasting(api: NyaApi) {
       )
       fns?.forEach((x) => {
         console.info(`  ${x.declarationANSI()}`)
-        console.info(`    ${dim}${x.source}${reset}`)
+        console.info(`    ${dim}${x.source ?? "<no source>"}${reset}`)
       })
       return api.lib.void()
     }),
@@ -609,6 +615,18 @@ export function createStdlib(props: EmitProps): Declarations {
   libCanvas(api)
   libPlotStyle(api)
   libLatex(api)
+
+  api.fmanual(
+    "count",
+    { x: FixedSizeArray },
+    lib.tyNum,
+    (args, _, _1, fullPos) => {
+      if (args[0]!.type instanceof NyaArray) {
+        return new Value(args[0]!.type.count, lib.tyNum, true)
+      }
+      invalidType(FixedSizeArray, args[0]!.type, fullPos)
+    },
+  )
 
   return lib
 }

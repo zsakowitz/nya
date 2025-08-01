@@ -1,0 +1,82 @@
+fn min(x: [num]) -> num {
+  let mut ret = nan;
+  for el in x {
+    if !(el >= ret) {
+      ret = el;
+    }
+  }
+  ret
+}
+
+fn max(x: [num]) -> num {
+  let mut ret = nan;
+  for el in x {
+    if !(el <= ret) {
+      ret = el;
+    }
+  }
+  ret
+}
+
+fn total(x: [num]) -> num {
+  let mut ret = 0.0;
+  for el in x {
+    ret += el;
+  }
+  ret
+}
+
+fn mean(x: [num]) -> num {
+  total(x) / count(x)
+}
+
+// median
+// quartile
+// quantile
+
+fn var(x: [num]) -> num {
+  let mut ret = 0.0;
+  let m = mean(x);
+  for el in x {
+    ret += (el - m) * (el - m);
+  }
+  ret / count(x)
+}
+
+fn varp(x: [num]) -> num {
+  let mut ret = 0.0;
+  let m = mean(x);
+  for el in x {
+    ret += (el - m) * (el - m);
+  }
+  ret / (count(x) - 1.0)
+}
+
+fn stdev(x: [num]) -> num {
+  sqrt(var(x))
+}
+
+fn stdevp(x: [num]) -> num {
+  sqrt(varp(x))
+}
+
+fn stddev(x: [num]) -> num {
+  stdev(x)
+}
+
+fn stddevp(x: [num]) -> num {
+  stdevp(x)
+}
+
+// mad
+// cov
+// covp
+// corr
+// stats
+// ranks
+// spearman
+
+expose package {
+  default: true,
+  name: "rudimentary statistics functions",
+}

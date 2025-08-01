@@ -1,12 +1,14 @@
 import type { Pos } from "!/ast/issue"
 import { issue } from "@/error"
 import type { Block } from "./decl"
-import { Scalar, Struct, type FnType, type Type } from "./type"
+import { Scalar, Struct, type FnType, type Type, type UserFnType } from "./type"
 import type { Value } from "./value"
 
 export type CoercionTarget = Scalar | Struct
 
-export function isEligibleForCoercion(type: Type): type is CoercionTarget {
+export function isEligibleForCoercion(
+  type: UserFnType,
+): type is CoercionTarget {
   return type instanceof Scalar || type instanceof Struct
 }
 

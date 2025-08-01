@@ -51,7 +51,7 @@ import {
 import { fromScalars, scalars } from "./broadcast"
 import { Coercion, isEligibleForCoercion, type CoercionTarget } from "./coerce"
 import { Block, BlockGlobals, Exits, IdMap, type Declarations } from "./decl"
-import { issue, issueError, todo } from "./error"
+import { bug, issue, issueError, todo } from "./error"
 import { Id, ident, type IdGlobal } from "./id"
 import {
   Alt,
@@ -586,16 +586,13 @@ export function emitExpr(node: NodeExpr, block: Block): Value {
     switch (node.kw.kind) {
       case KBreak:
       case KContinue:
-        todo(`'${node.kw}' statements are not supported yet.`)
+        todo(`'${node.kw}' statements are not supported yet.`, node)
 
       case KReturn:
-        if (!block.exits.returnType) {
-          issue(`Cannot return from this context.`)
-        }
         if (node.label) {
-          issue(`'return' statements cannot be labeled.`)
+          issue(`'return' statements cannot be labeled.`, node)
         }
-        const returned = block.exits.returnType.convertFrom(
+        const returned = block.exits.return(
           node.value ? emitExpr(node.value, block) : nullValue(block),
           node.value ?? node.kw,
         )
@@ -611,7 +608,7 @@ export function emitExpr(node: NodeExpr, block: Block): Value {
   } else if (node instanceof ExprTaggedString) {
     const tag = block.decl.tags.get(ident(node.tag.val))
     if (!tag) {
-      issue(`Tag '${node.tag.val}' does not exist.`)
+      issue(`Tag '${node.tag.val}' does not exist.`, node.tag)
     }
     const interps = node.interps.map((x) => emitExpr(x, block))
     return tag.create(
@@ -756,7 +753,7 @@ export function emitBlock(node: ExprBlock, block: Block): Value {
   return ret
 }
 
-function nullValue(block: Block) {
+export function nullValue(block: Block) {
   return block.decl.void()
 }
 
@@ -868,39 +865,112 @@ function emitItemStruct(node: ItemStruct, decl: Declarations) {
   )
 }
 
+function emitItemFnGeneric(
+  node: ItemFn,
+  decl: Declarations,
+  fname: string,
+  retType: UserFnType,
+  params: { local: IdGlobal; name: Id; type: UserFnType }[],
+  locals: IdMap<Value>,
+  fparams: { name: string; type: UserFnType }[],
+  nodeBlock: ExprBlock,
+) {
+  // Preliminary run of the function; this ensures it probably has no cycles
+  // (TODO: cycling might be possible via coercion abuse. not sure though)
+  {
+    const globals = new BlockGlobals(decl)
+    const exits = new Exits(retType, true)
+    const block = new Block(globals, exits, locals)
+    exits.return(emitBlock(nodeBlock, block), nodeBlock, true)
+  }
+
+  const fn = new Fn(
+    ident(fname),
+    fparams,
+    retType,
+    (args, block) => {
+      const locals = new IdMap<Value>(null)
+      for (let i = 0; i < args.length; i++) {
+        locals.set(params[i]!.local, block.cache(args[i]!, true))
+      }
+      const exits = new Exits(retType, true)
+      const fBlock = new Block(block.globals, exits, locals)
+      const retval = exits.return(emitBlock(nodeBlock, fBlock), nodeBlock, true)
+      block.source += fBlock.source
+      return retval
+    },
+    node,
+  )
+
+  decl.fns.push(ident(fname), fn)
+}
+
+function assert(x: boolean): asserts x {
+  if (!x) {
+    bug(`Assertion failed.`)
+  }
+}
+
 function emitItemFn(node: ItemFn, decl: Declarations) {
+  // Ensure all data is in order
   const fname = node.name?.val
-  if (fname == null) {
-    issue(`Function declaration is missing a name.`)
-  }
-  if (node.tparams) {
-    issue(`Type parameters are not supported yet.`)
-  }
-  if (!node.params) {
-    issue(`Function '${fname}' is missing a parameter list.`)
-  }
-  if (node.usage) {
-    todo(`The 'usage' keyword is not implemented yet.`)
-  }
-  if (!node.block) {
-    issue(`Function '${fname}' is missing its contents.`)
-  }
-  if (node.ret instanceof FnReturnTypeTypeof) {
+  if (fname == null) issue(`Function declaration is missing a name.`)
+  if (node.tparams) issue(`Type parameters are not supported yet.`)
+  if (!node.params) issue(`Function '${fname}' is missing a parameter list.`)
+  if (node.usage) todo(`The 'usage' keyword is not implemented yet.`)
+  if (!node.block) issue(`Function '${fname}' is missing its contents.`)
+  if (node.ret instanceof FnReturnTypeTypeof)
     todo(`Function return types may not use 'typeof' yet.`)
-  }
-  const ret = node.ret ? emitType(node.ret.retType, decl) : decl.tyVoid
+
+  // Set up for evaluation
+  const ret = node.ret ? emitTypeGeneric(node.ret.retType, decl) : decl.tyVoid
   const locals = new IdMap<Value>(null)
+  let fnIsGeneric = !isType(ret)
   const params = node.params.items.map((x) => {
     const local = ident(x.ident.val)
     const name = new Id(x.ident.val)
     if (locals.has(local)) {
       issue(`Parameter '${local}' is declared twice in function '${fname}'.`)
     }
-    const type = emitType(x.type, decl)
-    locals.set(local, new Value(name.ident(), type, false))
-    return { name, type }
+    const type = emitTypeGeneric(x.type, decl)
+
+    locals.set(
+      local,
+      new Value(
+        name.ident(),
+        isType(type) ? type : ((fnIsGeneric = true), type.concreteInstance()),
+        false,
+      ),
+    )
+    return { local, name, type }
   })
   const fparams = params.map((x) => ({ name: x.name.label, type: x.type }))
+
+  // Perform a different series of steps if it's a generic function
+  if (fnIsGeneric) {
+    if (fname == "->") {
+      todo(`Coercion functions cannot be generic yet.`)
+    }
+    emitItemFnGeneric(
+      node,
+      decl,
+      fname,
+      ret,
+      params,
+      locals,
+      fparams,
+      node.block,
+    )
+    return
+  }
+  assert(
+    params.every((x): x is { local: IdGlobal; name: Id; type: Type } =>
+      isType(x.type),
+    ),
+  )
+  assert(isType(ret))
+
+  // Do pre-checks for coercions
   let isCoercion = false
   if (fname == "->") {
     isCoercion = true
@@ -927,6 +997,7 @@ function emitItemFn(node: ItemFn, decl: Declarations) {
       )
     }
   }
+
   const globals = new BlockGlobals(decl)
   const block = new Block(globals, new Exits(ret), locals)
   const value = ret.convertFrom(emitBlock(node.block, block), node.block)
