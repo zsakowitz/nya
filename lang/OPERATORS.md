@@ -25,6 +25,6 @@ Additional functions are also used:
 - If an expression evaluates to `v` with type `T` and `fn %display(T) -> latex`
   exists, it is called with `v` and shown as the evaluation result.
 - If an expression evaluates to `v` with type `T` and
-  `fn %plot(Canvas, T) -> Path` exists, it is called with `v` and plotted onto
-  the canvas. The `%plot` function will be recalled every time the canvas moves,
-  but `v` will not be recomputed.
+  `fn %plot_2d(Canvas, T) -> Path` exists, it is called with `v` and plotted
+  onto the canvas. The `%plot_2d` function will be recalled every time the
+  canvas moves, but `v` will not be recomputed.
