@@ -1,8 +1,6 @@
 before nyalang version can be released:
-❌ `UtilityFnCache` works as expected with coercions
 ❌ proper docs
 ❌ `2 < 3 < 4` works as expected
-❌ mutating functions like `stroke` and `path` shouldn't really exist
 ❌ exact fractions
 ❌ list distribution
 ❌ `min(1, 2, 7, 9)` still works
@@ -14,6 +12,8 @@ before nyalang version can be released:
 ❌ sliders
 ❌ tokens
 ❌ derivatives
+✅ mutating functions like `stroke` and `path` shouldn't really exist
+✅ `UtilityFnCache` works as expected with coercions
 ✅ mobile keyboard
 ✅ automatic coercion
 

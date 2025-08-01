@@ -5,6 +5,10 @@
 
 // TODO: valid, count
 
+fn %plot_2d(cv: Canvas, p: num) {
+  // prevents numbers from being plotted as complex numbers
+}
+
 fn cmp(a: num, b: num) -> num {
   if a < b {
     -1.0
