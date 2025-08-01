@@ -1,3 +1,6 @@
+i
+j
+k
 vector((2,3),(4,1))
 circle((2,3),2)
 \operatorname{line}\left(\left(2,3\right),\left(4,7\right)\right)

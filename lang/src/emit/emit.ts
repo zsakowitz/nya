@@ -914,17 +914,26 @@ export function emitItem(node: NodeItem, decl: Declarations): void {
           .filter((x) => x.type.repr.type != "void")
           .map((x) => x.name.ident())
           .join(",")}) {${block.source}${returnValue(value)}} // ${fname}`
-    globals.add(body)
     const fn =
       block.source == "" && value.const() ?
         // Non-side-effecting constant optimization
-        new Fn(gid, fparams, ret, () => value, node)
+        new Fn(
+          gid,
+          fparams,
+          ret,
+          (_, caller) => {
+            caller.addGlobalsFrom(globals)
+            return value
+          },
+          node,
+        )
       : new Fn(
           gid,
           fparams,
           ret,
           (args, caller, pos) => {
             caller.addGlobalsFrom(globals)
+            caller.addGlobal(body)
             const actualArgs = args.map((x, i) =>
               params[i]!.type.convertFrom(x, pos),
             )
@@ -975,21 +984,23 @@ export function emitItem(node: NodeItem, decl: Declarations): void {
       decl.props.lang == "glsl" ?
         `${ret.emit} ${lident}() {${block.source}${returnValue(value)}} // ${fname}`
       : `function ${lident}() {${block.source}${returnValue(value)}} // ${fname}`
-    globals.add(body)
-    const fn =
+    const fn = new Fn(
+      gid,
+      [],
+      ret,
       block.source == "" && value.const() ?
         // Non-side-effecting constant optimization
-        new Fn(gid, [], ret, () => value, node)
-      : new Fn(
-          gid,
-          [],
-          ret,
-          (_, caller) => {
-            caller.addGlobalsFrom(globals)
-            return new Value(`${lident}()`, ret, false)
-          },
-          node,
-        )
+        (_, caller) => {
+          caller.addGlobalsFrom(globals)
+          return value
+        }
+      : (_, caller) => {
+          caller.addGlobalsFrom(globals)
+          caller.addGlobal(body)
+          return new Value(`${lident}()`, ret, false)
+        },
+      node,
+    )
     decl.fns.push(gid, fn)
   } else if (node instanceof ItemTypeAlias) {
     const val = node.ident?.val

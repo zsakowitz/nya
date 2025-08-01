@@ -328,6 +328,7 @@ function ${lident}(${nvFields
       return args[this.#nvIndices[0]!]!.unsafeWithType(this)
     }
 
+    block.addGlobal(this.consDecl)
     const vals = this.#nvIndices.map((i) => args[i]!)
     const isConst = vals.every((x) => x.const())
     if (isConst) {
@@ -337,7 +338,6 @@ function ${lident}(${nvFields
         true,
       )
     } else {
-      block.addGlobal(this.consDecl)
       return new Value(`${this.emit}(${vals.join(",")})`, this, false)
     }
   }

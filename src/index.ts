@@ -2,15 +2,25 @@ import "./page/index.dist.css"
 
 Error.isError ??= (x) => x instanceof Error
 
-if (new URL(location.href).searchParams.has("logeval")) {
+const logeval = new URL(location.href).searchParams.get("logeval")
+
+if (logeval != null) {
   const e = eval
   globalThis.eval = (x) => {
     const text = x
       .split("\n")
       .filter((x) => x && x != ";")
       .join("\n")
-    console.log(text)
-    return e(x)
+    try {
+      const result = e(x)
+      if (logeval != "errors") {
+        console.log(text)
+      }
+      return result
+    } catch (e) {
+      console.error(text, "\n", e)
+      throw e
+    }
   }
 }
 

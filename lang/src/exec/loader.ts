@@ -162,7 +162,6 @@ ${block.source}
 
       const ret = this.utils.get("display", type.item)
       if (!ret) return null
-      console.info(value, type)
       return `[${(value as any[]).map((x) => ret.exec(x)).join(",")}]`
     }
 
