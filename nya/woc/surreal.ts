@@ -144,17 +144,21 @@ function libGame(api: NyaApi, S: Scalar) {
   const Player = api.opaque("Player", { glsl: "int", js: "" }, true)
   api.fn("left", {}, Player, { glsl: v`1`, js: v`1` }, false) // apparently these don't serialize well
   api.fn("right", {}, Player, { glsl: v`-1`, js: v`-1` }, false) // apparently these don't serialize well
-  api.fn("inv", { x: Player }, Player, { glsl: v`-${0}`, js: v`-${0}` })
+  api.fn("+", { x: Player }, Player, { glsl: v`${0}`, js: v`${0}` })
+  api.fn("-", { x: Player }, Player, { glsl: v`-${0}`, js: v`-${0}` })
   api.fn("%display", { x: Player }, api.lib.tyLatex, {
     glsl: v``,
     js: v`${0}==1?"\\\\wordvar{left}\\\\digit{+}":"\\\\wordvar{right}\\\\digit{-}"`,
   })
 
   const Sign = api.opaque("Sign", { glsl: "int", js: "" }, true)
-  api.fn("inv", { x: Sign }, Sign, {
+  api.fn("+", { x: Sign }, Sign, { glsl: v`${0}`, js: v`${0}` })
+  api.fn("-", { x: Sign }, Sign, {
     glsl: v`${"int %%(int x){return x==3?3:-x;}"}(${0})`,
     js: v`${"function %%(x){return x==3?3:x==0?0:-x;}"}(${0})`,
   })
+  api.fn("sign", { x: Sign }, Sign, { glsl: v`${0}`, js: v`${0}` })
+  api.fn("->", { x: Player }, Sign, { glsl: v`${0}`, js: v`${0}` })
 
   const Game = api.opaque("Game", { glsl: null, js: "" }, false)
   const GameEmpty = api.opaque("GameEmpty", { glsl: null, js: "" }, false)
