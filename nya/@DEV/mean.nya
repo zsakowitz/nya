@@ -1,0 +1,7 @@
+// fn mean(els: [num]) -> num {
+//   let mut sum = 0;
+//   for el in els {
+//     sum += el;
+//   }
+//   sum / len(els)
+// }

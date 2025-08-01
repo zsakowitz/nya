@@ -1,0 +1,4 @@
+// fn hypot(a: num, b: num) -> num {
+//   let id = eval_global"const %%=Math.hypot;";
+//   eval"${id}(${a},${b})" :: num
+// }
