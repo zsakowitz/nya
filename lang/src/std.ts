@@ -1,7 +1,7 @@
-import { Impl, NyaApi, v } from "!/emit/api"
 import { blue, cyan, dim, magenta, reset, yellow } from "./ansi"
 import { KFalse, KTrue, TFloat, TInt, TString, TSym } from "./ast/kind"
 import type { ExprLit } from "./ast/node/expr"
+import { Impl, NyaApi, v } from "./emit/api"
 import { AnyVector, fromScalars, scalars } from "./emit/broadcast"
 import { performCall } from "./emit/call"
 import { Declarations, type Block } from "./emit/decl"
@@ -15,7 +15,7 @@ import {
   FixedSizeArray,
   Fn,
   invalidType,
-  Array as NyaArray,
+  NyaArray,
 } from "./emit/type"
 import { Value } from "./emit/value"
 
