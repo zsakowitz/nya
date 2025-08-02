@@ -337,7 +337,7 @@ export class Struct implements Type {
     )
     const typeDecl =
       props.lang == "glsl" ?
-        `struct ${lident} {${nvFields.map(({ type }, i) => `${type.emit} ${fieldIdent(i)};`).join("")}}`
+        `struct ${lident} {${nvFields.map(({ type }, i) => `${type.emit} ${fieldIdent(i)};`).join("")}};`
       : ""
     const declTyOnly =
       props.lang == "glsl" ?

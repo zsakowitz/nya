@@ -4,6 +4,9 @@ import readline from "readline"
 import { ANSI } from "./nya/ansi"
 import repl from "./repl.nya"
 
+const glsl = process.argv[2] == "--glsl"
+console.log(glsl)
+
 const env = new ScriptEnvironment()
 env._load("repl.nya", repl)
 
@@ -12,13 +15,14 @@ const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
 })
+const lib = env.lib(glsl ? "glsl" : "js")
 
 for await (const line of rl) {
   try {
     if (/^(struct|enum|fn|let|use)\b/.test(line)) {
       env._load("repl", line)
     } else {
-      const { block, value } = env.process(line)
+      const { block, value } = env.process(line, undefined, undefined, lib)
       console.info(
         ANSI.cyan +
           value.type +
@@ -32,7 +36,9 @@ for await (const line of rl) {
           value.toRuntime() +
           ANSI.reset,
       )
-      console.info(env.compute(block, value))
+      if (!glsl) {
+        console.info(env.compute(block, value))
+      }
     }
   } catch (e) {
     console.error(`${ANSI.red}${errorText(e)}${ANSI.reset}`)

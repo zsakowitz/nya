@@ -1,15 +1,95 @@
 import type { Pos } from "!/ast/issue"
-import { issueError } from "@/error"
-import { createTypedArray } from "./coerce"
+import { issue, issueError } from "@/error"
+import { createTypedArray, getCommonSupertype } from "./coerce"
 import { Block } from "./decl"
 import { list, matrixMultiply } from "./emit"
-import { ident, type IdGlobal } from "./id"
+import { Id, ident, type IdGlobal } from "./id"
 import { ArrayEmpty, FixedArray, isArrayValue } from "./type"
 import { Value } from "./value"
 
 const ID_MATMUL = ident("@#")
+const ID_JOIN = ident("join")
+const ID_COUNT = ident("count")
 
 type CallResult = { ok: true; value: Value } | { ok: false; error: Error }
+
+// special-cased since it's polymorphic to the core
+function fnJoin(
+  args: Value[],
+  block: Block,
+  namePos: Pos,
+  fullPos: Pos,
+): Value {
+  args = args.filter((x) => x.type != ArrayEmpty)
+  if (args.length == 0) {
+    return new Value(0, ArrayEmpty, true)
+  }
+
+  const st = getCommonSupertype(
+    args.map((x) => (x.type instanceof FixedArray ? x.type.item : x.type)),
+    block.decl,
+  )
+  if (st.type == "no-items") {
+    return new Value(0, ArrayEmpty, true)
+  }
+  if (st.type == "impossible") {
+    issue(
+      `Cannot join ${list(
+        args.map((x) => x.type),
+        null,
+      )}.`,
+      fullPos,
+    )
+  }
+
+  const into = st.type == "identical" ? st.as : st.into
+
+  const coerced =
+    st.type == "identical" ?
+      args
+    : args.map((x) =>
+        block.decl.coercions.coerce(
+          x,
+          x.type instanceof FixedArray ?
+            new FixedArray(block.props, into, x.type.count)
+          : into,
+          block,
+          fullPos,
+        ),
+      )
+
+  const count = args.reduce(
+    (a, b) => a + (b.type instanceof FixedArray ? b.type.count : 1),
+    0,
+  )
+
+  const type = new FixedArray(block.props, into, count)
+
+  if (block.lang == "js") {
+    return new Value(
+      `[${coerced.map((x) => (x.type instanceof FixedArray ? "..." + x : x)).join(",")}]`,
+      type,
+      false,
+    )
+  }
+
+  const retId = new Id("join result").ident()
+  const ret = new Value(retId, type, false)
+  const idxId = new Id("join index").ident()
+  block.source += `${type.emit} ${retId};`
+  let min = 0
+  for (const el of coerced) {
+    if (el.type instanceof FixedArray) {
+      const cached = block.cache(el, true)
+      block.source += `for(int ${idxId}=0;${idxId}<${el.type.count};${idxId}++)${retId}[${idxId}+${min}]=${cached}[${idxId}];`
+      min += el.type.count
+    } else {
+      block.source += `${retId}[${min}]=${el};`
+      min++
+    }
+  }
+  return ret
+}
 
 export function performCallRaw(
   id: IdGlobal,
@@ -23,6 +103,8 @@ export function performCallRaw(
     if (args.length == 2) {
       return { ok: true, value: matrixMultiply(block, args[0]!, args[1]!) }
     }
+  } else if (id == ID_JOIN) {
+    return { ok: true, value: fnJoin(args, block, namePos, fullPos) }
   }
 
   const local = block.locals.get(id)
@@ -234,8 +316,6 @@ export function performCallRaw(
           return fn.run(args, block, namePos, fullPos)
         }),
       }
-
-      continue overloads
     }
 
     if (!args.every((arg, i) => cx.can(arg.type, fn.args[i]!.type))) {
@@ -296,4 +376,8 @@ export function performCall(
   } else {
     throw result.error
   }
+}
+
+Set.prototype.toString = () => {
+  throw new Error("nuh uh")
 }

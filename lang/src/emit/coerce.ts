@@ -2,11 +2,11 @@ import type { Pos } from "!/ast/issue"
 import { issue } from "@/error"
 import type { Block, Declarations } from "./decl"
 import {
-  VarArray,
   ArrayEmpty,
   FixedArray as NyaArray,
   Scalar,
   Struct,
+  VarArray,
   type FnType,
   type Type,
   type UserFnType,
@@ -317,7 +317,7 @@ type SupertypeResultOk =
 export type SupertypeResult = SupertypeResultOk | { type: "impossible" }
 
 export function getCommonSupertype(
-  vals: Value[],
+  vals: Type[],
   decl: Declarations,
 ): SupertypeResult {
   const { coercions } = decl
@@ -326,8 +326,8 @@ export function getCommonSupertype(
     return { type: "no-items" }
   }
 
-  const el0 = vals[0]!.type
-  if (vals.every((x) => x.type == el0)) {
+  const el0 = vals[0]!
+  if (vals.every((x) => x == el0)) {
     return { type: "identical", as: el0 }
   }
 
@@ -339,7 +339,7 @@ export function getCommonSupertype(
   possible.add(el0)
 
   for (let i = 1; i < vals.length; i++) {
-    const { type: el } = vals[i]!
+    const el = vals[i]!
     if (!isEligibleForCoercion(el)) {
       return { type: "impossible" }
     }
@@ -400,7 +400,10 @@ export function createTypedArray(vals: Value[], block: Block, itemType: Type) {
 }
 
 export function createArray(vals: Value[], block: Block, pos: Pos) {
-  const supertype = getCommonSupertype(vals, block.decl)
+  const supertype = getCommonSupertype(
+    vals.map((x) => x.type),
+    block.decl,
+  )
   if (supertype.type == "impossible") {
     issue(`All elements of an array must be the same type.`, pos)
   }
