@@ -2,15 +2,15 @@ before nyalang version can be released:
 ❌ proper docs
 ❌ `2 < 3 < 4` works as expected
 ❌ exact fractions
-❌ list distribution
 ❌ trig angle
-❌ shaders
 ❌ geometric object plotting
 ❌ geometric object selection
 ❌ geometric object dragging
 ❌ sliders
 ❌ tokens
 ❌ derivatives
+😐 shaders
+✅ list distribution
 ✅ `min(1, 2, 7, 9)` still works
 ✅ mutating functions like `stroke` and `path` shouldn't really exist
 ✅ `UtilityFnCache` works as expected with coercions
