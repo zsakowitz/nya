@@ -6,6 +6,55 @@ import { list, matrixMultiply } from "./emit"
 import { ident, type IdGlobal } from "./id"
 import { Value } from "./value"
 
+/**
+ * Desmos has three types of functions involving arrays. In nyalang, these are
+ * classified as "single", "spread", and "mixed".
+ *
+ * (For convenience, we will refer to non-array values as scalars, even though
+ * the rest of project nya's has a different definition for scalar).
+ *
+ * **single**: `fn single(x: scalar, y: scalar, ...) -> scalar`. A `single` fn
+ * has only non-array arguments, and a non-array return type. It can be called
+ * in these ways:
+ *
+ * - If all arguments are scalar, the result is scalar.
+ * - If any argument is an array, let `L` be the length of the shortest array.
+ *   Then the function is invoked `L` times, with one value from each array and
+ *   a copy of any provided scalars, and is returned as an array. Argument
+ *   arrays longer than `L` items are effectively clipped.
+ *
+ * Examples from Desmos:
+ *
+ * - `2+3 = 5`, `real(2+3i) = 2`
+ * - `[2,3]+4 = [6,7]`, `[2,3]+[4,7,6] = [6,10]`
+ *
+ * **spread**: `fn spread(x: array) -> scalar`. A `spread` fn has a single array
+ * argument and a non-array return type. It can be called in these ways:
+ *
+ * - If a single array argument is provided, it is passed to the function as
+ *   normal.
+ * - If no arguments are provided, the function is not considered as a valid
+ *   overload.
+ * - If only scalar arguments are provided, they are passed to the function as an
+ *   array.
+ * - If at least two arguments are provided, and not all of them are scalars,
+ *   single-style list broadcasting is invoked, but instead of passing
+ *   `f(a,b,c)` with three arguments, it is passed `[a,b,c]` (i.e. one element
+ *   from each array or scalar).
+ *
+ * Examples from Desmos:
+ *
+ * - `mean([3,7]) = 5`, `mean([]) = nan`
+ * - `mean()` errors
+ * - `mean(3,7) = 5`
+ * - `mean(3,[5,7]) = [mean(3,5),mean(3,7)] = [4,5]`
+ *
+ * `mixed` fns are any fns which do not fit the above categories. Those can only
+ * be called as their declared signature.
+ */
+// @ts-ignore
+let _explanation
+
 const ID_MATMUL = ident("@#")
 
 type CallResult = { ok: true; value: Value } | { ok: false; error: Error }
@@ -56,6 +105,10 @@ export function performCallRaw(
     if (fn.kind.type == "spread") {
       const expected = fn.kind.arg
 
+      const items = args.map((x) => {
+        // const ty = x.type instanceof NyaArray?x.type
+      })
+
       if (
         args.every(
           (x) =>
@@ -71,9 +124,13 @@ export function performCallRaw(
         const array = createTypedArray(coerced, block, expected)
         return { ok: true, value: fn.run([array], block, namePos, fullPos) }
       }
+
+      continue nextOverload
     }
 
-    if (fn.args.length != count) continue
+    if (fn.args.length != count) {
+      continue
+    }
 
     const coercions: Coercion[] = []
 
