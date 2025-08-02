@@ -15,7 +15,7 @@ const rl = readline.createInterface({
 
 for await (const line of rl) {
   try {
-    if (/^(struct|enum|fn|let)\b/.test(line)) {
+    if (/^(struct|enum|fn|let|use)\b/.test(line)) {
       env._load("repl", line)
     } else {
       const { block, value } = env.process(line)

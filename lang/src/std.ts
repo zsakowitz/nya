@@ -11,6 +11,7 @@ import type { EmitProps } from "./emit/props"
 import { Tag } from "./emit/tag"
 import {
   Any,
+  AnyArray,
   FixedSizeArray,
   Fn,
   invalidType,
@@ -570,6 +571,51 @@ export interface CanvasJs {
   wy: number
 }
 
+function libArray(api: NyaApi) {
+  const lib = api.lib
+  const num = lib.tyNum
+
+  api.fmanual("count", { x: FixedSizeArray }, num, (args, _, _1, fullPos) => {
+    if (args[0]!.type instanceof NyaArray) {
+      return new Value(args[0]!.type.count, num, true)
+    }
+    invalidType(FixedSizeArray, args[0]!.type, fullPos)
+  })
+
+  const numArray = new AnyArray(lib.props, num)
+  const { lang } = api.lib.props
+
+  api.fmanual("sort", { x: numArray }, numArray, (args, _, _1, fullPos) => {
+    const arg = args[0]!
+    if (!(arg.type instanceof NyaArray)) {
+      invalidType(numArray, arg.type, fullPos)
+    }
+    if (arg.type.count <= 1) {
+      return arg
+    }
+    if (arg.const()) {
+      return new Value(
+        (arg.value as number[]).slice().sort(
+          (a, b) =>
+            a < b ? -1
+            : a > b ? 1
+            : +(a != a) - +(b != b), // nan is stupid and so are ±0
+        ),
+        arg.type,
+        true,
+      )
+    }
+    if (lang == "glsl") {
+      todo(`Cannot sort arrays with more than 1 entry in shaders.`)
+    }
+    return new Value(
+      `(${arg}).slice().sort((a,b)=>a<b?-1:a>b?1:(a!=a)-(b!=b))`,
+      arg.type,
+      false,
+    )
+  })
+}
+
 export function createStdlib(props: EmitProps): Declarations {
   const createLiteral = (literal: ExprLit) => {
     switch (literal.value.kind) {
@@ -615,18 +661,7 @@ export function createStdlib(props: EmitProps): Declarations {
   libCanvas(api)
   libPlotStyle(api)
   libLatex(api)
-
-  api.fmanual(
-    "count",
-    { x: FixedSizeArray },
-    lib.tyNum,
-    (args, _, _1, fullPos) => {
-      if (args[0]!.type instanceof NyaArray) {
-        return new Value(args[0]!.type.count, lib.tyNum, true)
-      }
-      invalidType(FixedSizeArray, args[0]!.type, fullPos)
-    },
-  )
+  libArray(api)
 
   return lib
 }

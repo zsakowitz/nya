@@ -530,6 +530,7 @@ function exprLabeled(stream: Stream): [NodeExpr, needsSemi: boolean] | null {
 
   switch (stream.peek()) {
     case KFor:
+    case KMap:
       return [exprFor(stream, label)!, false]
 
     case OLBrace:
@@ -697,6 +698,7 @@ function exprAtom(stream: Stream, ctx: ExprContext): NodeExpr {
       return exprIf(stream)!
 
     case KFor:
+    case KMap:
       return exprFor(stream, null)!
 
     case KSource:

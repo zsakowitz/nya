@@ -11,6 +11,7 @@ import {
 import { ExposePackage, type NodeExpose } from "../ast/node/expose"
 import {
   ExprArray,
+  ExprArrayByRepetition,
   ExprBinary,
   ExprBinaryAssign,
   ExprBlock,
@@ -19,6 +20,7 @@ import {
   ExprExit,
   ExprFor,
   ExprIf,
+  ExprIndex,
   ExprLit,
   ExprParen,
   ExprProp,
@@ -246,6 +248,7 @@ function emitTypeGeneric(node: NodeType, decl: Declarations): UserFnType {
           new Block(new BlockGlobals(decl), new Exits(null)),
         ),
       ),
+      node.sizes,
     )
     return new Array(decl.props, item, count)
   } else if (node instanceof TypeArrayUnsized) {
@@ -267,10 +270,11 @@ function emitType(node: NodeType, decl: Declarations): Type {
   issue(`Expected concrete type, but found ${ty} instead.`, node)
 }
 
-function arraySize(size: number | null): number {
+function arraySize(size: number | null, pos: Pos): number {
   if (size == null) {
     issue(
       `Array sizes must be constant integers; an array's size cannot depend on local variables.`,
+      pos,
     )
   }
 
@@ -403,6 +407,28 @@ export function emitExpr(node: NodeExpr, block: Block): Value {
     if (cond.value == null) {
       issue(`The condition of an 'if' statement must not be void.`)
     }
+    if (cond.const()) {
+      if (cond.value) {
+        const child = block.child(block.exits)
+        if (!node.block) {
+          issue(`Missing block on 'if' statement.`)
+        }
+        const retval = emitBlock(node.block, child)
+        block.source += child.source
+        return retval
+      } else {
+        if (!node.rest) {
+          return block.decl.void()
+        }
+        const child = block.child(block.exits)
+        if (!node.rest.block) {
+          issue(`Missing block on 'else' statement.`)
+        }
+        const retval = emitExpr(node.rest.block, child)
+        block.source += child.source
+        return retval
+      }
+    }
 
     const child1 = block.child(block.exits)
     if (!node.block) {
@@ -493,6 +519,34 @@ export function emitExpr(node: NodeExpr, block: Block): Value {
     } else {
       return new Value(`[${strings.join(",")}]`, type, false)
     }
+  } else if (node instanceof ExprArrayByRepetition) {
+    const item = emitExpr(node.of, block)
+    if (!item.const()) {
+      todo(
+        `Cannot form arrays of a repeated element unless the element is a constant.`,
+        node.of,
+      )
+    }
+
+    if (node.sizes.items.length != 1) {
+      todo(
+        `Arrays by repetition can currently only be 1-dimensional.`,
+        node.sizes,
+      )
+    }
+    const count = arraySize(
+      block.decl.toArraySize(emitExpr(node.sizes.items[0]!, block)),
+      node.sizes,
+    )
+
+    const type = new Array(block.props, item.type, count)
+    return new Value(
+      type.repr.type == "void" ?
+        0
+      : globalThis.Array.from({ length: count }, () => item.value),
+      type,
+      true,
+    )
   } else if (node instanceof ExprFor) {
     // TODO: some for loops can be evaluated at const time
 
@@ -525,7 +579,7 @@ export function emitExpr(node: NodeExpr, block: Block): Value {
       const x = header?.bound.items[i]!
 
       const gid = ident(x.val)
-      if (child.locals.has(gid)) {
+      if (!child.locals.canDefine(gid)) {
         issue(`Variable '${gid}' was declared twice in a 'for' loop.`)
       }
 
@@ -653,6 +707,34 @@ export function emitExpr(node: NodeExpr, block: Block): Value {
       false,
     )
     // TODO: NYALANG: this outputs horrible code in `for` loops, and should be optimized to a plain `for (let i = 0; i < 20; i++)` loop
+  } else if (node instanceof ExprIndex) {
+    const on = emitExpr(node.on, block)
+    if (on.type == ArrayEmpty) {
+      issue(`Empty arrays cannot be indexed.`, node.on)
+    }
+    if (!(on.type instanceof Array)) {
+      issue(`Only arrays can be indexed.`, node.on)
+    }
+    const idxValue = emitExpr(node.index.value, block)
+    if (!idxValue.const()) {
+      todo(`Arrays can only be indexed by constants for now.`, node.index.value)
+    }
+    const idx =
+      block.decl.toArraySize(idxValue) ??
+      issue(
+        `${on.type} was indexed by non-integer '${idxValue}'.`,
+        node.index.value,
+      )
+    if (!(0 <= idx && idx < on.type.count)) {
+      todo(
+        `${on.type} was indexed by '${idx}', which is out of bounds.`,
+        node.index.value,
+      )
+    }
+    if (on.const()) {
+      return new Value((on.value as any[])[idx]!, on.type.item, true)
+    }
+    return new Value(`(${on})[${idx}]`, on.type.item, false)
   } else {
     todo(`Cannot emit '${node.constructor.name}' as an expression yet.`)
   }

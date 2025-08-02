@@ -88,11 +88,100 @@ fn corr(a: [num], b: [num]) -> num {
   covp(a, b) / (stdevp(a) * stdevp(b))
 }
 
-// median
-// quartile
+fn _midpoint(a: [num]) -> num {
+  if a.count == 0 {
+    nan
+  } else if a.count % 2 == 0 {
+    (a[a.count / 2 - 1] + a[a.count / 2]) / 2.0
+  } else {
+    a[(a.count - 1) / 2]
+  }
+}
+
+fn median(a: [num]) -> num {
+  _midpoint(sort(a))
+}
+
+fn _quartile1(a: [num]) -> num {
+  if a.count == 0 {
+    nan
+  } else if a.count == 1 {
+    a[0]
+  } else {
+    let hi = if a.count % 2 == 0 { a.count / 2 } else { (a.count - 1) / 2 };
+    if hi % 2 == 0 {
+      (a[hi / 2 - 1] + a[hi / 2]) / 2.0
+    } else {
+      a[(hi - 1) / 2]
+    }
+  }
+}
+
+fn _quartile3(a: [num]) -> num {
+  if a.count == 0 {
+    nan
+  } else if a.count == 1 {
+    a[0]
+  } else {
+    let lo = if a.count % 2 == 0 { a.count / 2 } else { (a.count + 1) / 2 };
+    if (a.count - lo) % 2 == 0 {
+      (a[lo + (a.count - lo) / 2 - 1] + a[lo + (a.count - lo) / 2]) / 2.0
+    } else {
+      a[lo + (a.count - lo - 1) / 2]
+    }
+  }
+}
+
+fn quartile(a: [num], q: num) -> num {
+  if a.count == 0 {
+    nan
+  } else if a.count == 1 {
+    a[0]
+  } else if 0 <= q && q <= 4 {
+    let q = round(q);
+    if q == 0 {
+      min(a)
+    } else if q == 4 {
+      max(a)
+    } else if q == 2 {
+      median(a)
+    } else if q == 1 {
+      _quartile1(sort(a))
+    } else if q == 3 {
+      _quartile3(sort(a))
+    } else {
+      nan
+    }
+  } else {
+    nan
+  }
+}
+
+struct FiveStatSummary {
+  min: num,
+  q1: num,
+  median: num,
+  q3: num,
+  max: num,
+}
+
+fn stats(a: [num]) -> FiveStatSummary {
+  if a.count == 0 {
+    FiveStatSummary { min: nan, q1: nan, median: nan, q3: nan, max: nan }
+  } else {
+    let x = sort(a);
+    FiveStatSummary {
+      min: x[0],
+      q1: _quartile1(x),
+      median: _midpoint(x),
+      q3: _quartile3(x),
+      max: x[x.count - 1],
+    }
+  }
+}
+
 // quantile
 // mad
-// stats
 // ranks
 // spearman
 
