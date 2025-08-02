@@ -52,7 +52,12 @@ import {
 } from "../ast/node/type"
 import { fromScalars, scalars } from "./broadcast"
 import { performCall, tryPerformCall } from "./call"
-import { Coercion, isEligibleForCoercion, type CoercionTarget } from "./coerce"
+import {
+  Coercion,
+  createArray,
+  isEligibleForCoercion,
+  type CoercionTarget,
+} from "./coerce"
 import { Block, BlockGlobals, Exits, IdMap, type Declarations } from "./decl"
 import { bug, issue, todo } from "./error"
 import { Id, ident, type IdGlobal } from "./id"
@@ -374,42 +379,11 @@ export function emitExpr(node: NodeExpr, block: Block): Value {
     block.source += `if(${cond}){${child1.source}${ret.ident()}=${main};}else{${child2.source}${ret.ident()}=${alt};}`
     return new Value(ret.ident(), main.type, false)
   } else if (node instanceof ExprArray) {
-    const items = node.of.items.map((item) => emitExpr(item, block))
-    if (items.length == 0) {
-      return new Value(0, ArrayEmpty, true)
-    }
-
-    const ty = items[0]!.type
-    if (!items.every((x) => x.type == ty)) {
-      issue(
-        `All elements in an array must be the same type; found ${list(
-          items
-            .map((x) => x.type.toString())
-            .filter((x, i, a) => a.indexOf(x) == i),
-          null,
-        )}.`, // TODO: automatic casting of array elements
-      )
-    }
-
-    const type = new Array(block.props, ty, items.length)
-    if (type.repr.type == "void") {
-      return new Value(0, type, true)
-    }
-
-    if (items.every((x) => x.const())) {
-      return new Value(
-        items.map((x) => x.value),
-        type,
-        true,
-      )
-    }
-
-    const strings = items.map((x) => x.toString())
-    if (block.props.lang == "glsl") {
-      return new Value(`${type.emit}(${strings.join(",")})`, type, false)
-    } else {
-      return new Value(`[${strings.join(",")}]`, type, false)
-    }
+    return createArray(
+      node.of.items.map((item) => emitExpr(item, block)),
+      block,
+      node,
+    )
   } else if (node instanceof ExprArrayByRepetition) {
     const item = emitExpr(node.of, block)
     if (!item.const()) {

@@ -1,8 +1,16 @@
 import type { Pos } from "!/ast/issue"
 import { issue } from "@/error"
-import type { Block } from "./decl"
-import { Scalar, Struct, type FnType, type Type, type UserFnType } from "./type"
-import type { Value } from "./value"
+import type { Block, Declarations } from "./decl"
+import {
+  ArrayEmpty,
+  Array as NyaArray,
+  Scalar,
+  Struct,
+  type FnType,
+  type Type,
+  type UserFnType,
+} from "./type"
+import { Value } from "./value"
 
 export type CoercionTarget = Scalar | Struct
 
@@ -257,4 +265,120 @@ export function suppressesOverload(
     earlier.length == later.length &&
     earlier.every((x, i) => suppressesType(coercions, x, later[i]!))
   )
+}
+
+type SupertypeResultOk =
+  | { type: "no-items" }
+  | { type: "identical"; as: Type }
+  | { type: "coercion"; into: CoercionTarget }
+
+type SupertypeResult = SupertypeResultOk | { type: "impossible" }
+
+export function getCommonSupertype(
+  vals: Value[],
+  decl: Declarations,
+): SupertypeResult {
+  const { coercions } = decl
+
+  if (vals.length == 0) {
+    return { type: "no-items" }
+  }
+
+  const el0 = vals[0]!.type
+  if (vals.every((x) => x.type == el0)) {
+    return { type: "identical", as: el0 }
+  }
+
+  if (!isEligibleForCoercion(el0)) {
+    return { type: "impossible" }
+  }
+
+  const possible = new Set(coercions.from(el0).map((x) => x.into))
+  possible.add(el0)
+
+  for (let i = 1; i < vals.length; i++) {
+    const { type: el } = vals[i]!
+    if (!isEligibleForCoercion(el)) {
+      return { type: "impossible" }
+    }
+    const coercable = coercions.from(el).map((x) => x.into)
+    coercable.push(el)
+    for (const current of possible) {
+      if (!coercable.includes(current)) {
+        possible.delete(current)
+      }
+    }
+  }
+
+  const common = possible.values().next().value
+  if (common) {
+    return { type: "coercion", into: common }
+  }
+  return { type: "impossible" }
+}
+
+export function coerceIntoCommonSupertype(
+  vals: Value[],
+  block: Block,
+  pos: Pos,
+  type: SupertypeResultOk,
+) {
+  switch (type.type) {
+    case "no-items":
+      return []
+    case "identical":
+      return vals
+    case "coercion":
+      const into = type.into
+      const cx = block.decl.coercions
+      return vals.map((val) =>
+        val.type == into ? val : cx.for(val.type, into)!.exec(val, block, pos),
+      )
+  }
+}
+
+function createArrayAssumingSameType(
+  vals: Value[],
+  block: Block,
+  itemType: Type,
+) {
+  const type = new NyaArray(block.decl.props, itemType, vals.length)
+
+  if (vals.every((x) => x.const())) {
+    return new Value(
+      vals.map((x) => x.value),
+      type,
+      true,
+    )
+  }
+
+  const text =
+    block.lang == "glsl" ?
+      `${type.emit}(${vals.map((x) => x.toString()).join(",")})`
+    : `[${vals.map((x) => x.toString()).join(",")}]`
+
+  return new Value(text, type, false)
+}
+
+export function createArray(vals: Value[], block: Block, pos: Pos) {
+  const supertype = getCommonSupertype(vals, block.decl)
+  if (supertype.type == "impossible") {
+    issue(`All elements of an array must be the same type.`, pos)
+  }
+  switch (supertype.type) {
+    case "no-items":
+      return new Value(0, ArrayEmpty, true)
+    case "identical":
+      return createArrayAssumingSameType(
+        coerceIntoCommonSupertype(vals, block, pos, supertype),
+        block,
+        supertype.as,
+      )
+    case "coercion":
+      return createArrayAssumingSameType(
+        coerceIntoCommonSupertype(vals, block, pos, supertype),
+        block,
+        supertype.into,
+      )
+  }
 }

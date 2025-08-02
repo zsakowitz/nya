@@ -17,7 +17,7 @@ export function performCallRaw(
   namePos: Pos,
   fullPos: Pos,
 ): CallResult {
-  // Matrix multiplication is special, so no coercion is performed
+  // Matrix multiplication is special; exit early and do not perform coercion
   if (id == ID_MATMUL) {
     if (args.length == 2) {
       return { ok: true, value: matrixMultiply(block, args[0]!, args[1]!) }
@@ -26,7 +26,7 @@ export function performCallRaw(
 
   const local = block.locals.get(id)
 
-  // Locals do not receive coercion since there are no arguments
+  // Locals have no arguments; exit early and do not perform coercion
   if (local) {
     if (args.length == 0) {
       return { ok: true, value: local }
@@ -35,6 +35,7 @@ export function performCallRaw(
 
   const fns = block.decl.fns.get(id)
 
+  // No overloads exist; exit early
   if (!fns) {
     return {
       ok: false,
@@ -48,7 +49,8 @@ export function performCallRaw(
     }
   }
 
-  const count = args.length
+  const count = args.length // quick filter for proper overloads
+
   nextOverload: for (const x of fns) {
     if (x.args.length != count) continue
 
@@ -75,6 +77,7 @@ export function performCallRaw(
     return { ok: true, value }
   }
 
+  // No overloads found; return an error
   return {
     ok: false,
     error: issueError(
