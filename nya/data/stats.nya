@@ -27,12 +27,8 @@ fn total(x: [num]) -> num {
 }
 
 fn mean(x: [num]) -> num {
-  total(x) / count(x)
+  total(x) / x.count
 }
-
-// median
-// quartile
-// quantile
 
 fn var(x: [num]) -> num {
   let mut ret = 0.0;
@@ -40,7 +36,7 @@ fn var(x: [num]) -> num {
   for el in x {
     ret += (el - m) * (el - m);
   }
-  ret / count(x)
+  ret / x.count
 }
 
 fn varp(x: [num]) -> num {
@@ -49,7 +45,7 @@ fn varp(x: [num]) -> num {
   for el in x {
     ret += (el - m) * (el - m);
   }
-  ret / (count(x) - 1.0)
+  ret / (x.count - 1.0)
 }
 
 fn stdev(x: [num]) -> num {
@@ -68,10 +64,34 @@ fn stddevp(x: [num]) -> num {
   stdevp(x)
 }
 
+fn cov(a: [num], b: [num]) -> num {
+  let ma = mean(a);
+  let mb = mean(b);
+  let mut ret = 0.0;
+  for el1, el2 in a, b {
+    ret += (el1 - ma) * (el2 - mb);
+  }
+  ret / a.count
+}
+
+fn covp(a: [num], b: [num]) -> num {
+  let ma = mean(a);
+  let mb = mean(b);
+  let mut ret = 0.0;
+  for el1, el2 in a, b {
+    ret += (el1 - ma) * (el2 - mb);
+  }
+  ret / (a.count - 1)
+}
+
+fn corr(a: [num], b: [num]) -> num {
+  covp(a, b) / (stdevp(a) * stdevp(b))
+}
+
+// median
+// quartile
+// quantile
 // mad
-// cov
-// covp
-// corr
 // stats
 // ranks
 // spearman
