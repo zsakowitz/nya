@@ -180,6 +180,10 @@ fn stats(a: [num]) -> FiveStatSummary {
   }
 }
 
+fn %display(x: FiveStatSummary) -> latex {
+  display"2"
+}
+
 // quantile
 // mad
 // ranks
