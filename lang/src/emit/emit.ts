@@ -451,13 +451,10 @@ export function emitExpr(node: NodeExpr, block: Block): Value {
       const source = emitExpr(header?.sources.items[i]!, block)
 
       if (source.type == ArrayEmpty) {
-        todo(`'for' loop sources may not be empty arrays.`)
+        return block.decl.void()
       }
       if (!(source.type instanceof Array)) {
         issue(`'for' loop sources must be arrays.`)
-      }
-      if (source.type.item instanceof Array) {
-        todo(`'for' loop sources cannot be multidimensional arrays.`)
       }
       if (source.value == null) {
         todo(`'for' loop sources must not be void.`)

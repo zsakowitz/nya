@@ -5,7 +5,14 @@ import { bug, issue, todo } from "./error"
 import { Id, ident, type IdGlobal } from "./id"
 import type { EmitProps } from "./props"
 import type { Tag } from "./tag"
-import { invalidType, Scalar, type Fn, type FnType, type Type } from "./type"
+import {
+  invalidType,
+  NyaArray,
+  Scalar,
+  type Fn,
+  type FnType,
+  type Type,
+} from "./type"
 import { Value } from "./value"
 
 export class IdMap<T> {
@@ -249,6 +256,43 @@ export class Block {
 
   addGlobalsFrom(sources: BlockGlobals) {
     this.globals.addAll(sources.get())
+  }
+
+  map(count: number, item: (index: Value, block: Block) => Value): Value {
+    const child = this.child(this.exits)
+    const idxId = new Id("loop index").ident()
+    const index = new Value(idxId, this.decl.tyNum, false)
+    const inner = item(index, child)
+    const type = new NyaArray(this.decl.props, inner.type, count)
+
+    const loopHead = `for(${this.lang == "glsl" ? "int" : "var"} ${idxId}=0;${idxId}<${count};${idxId}++){`
+    const loopTail = `}`
+
+    if (type.repr.type == "void") {
+      if (child.source != "") {
+        this.source += `${loopHead}${child.source}${loopTail}`
+      }
+      return new Value(0, type, true)
+    }
+
+    if (inner.const()) {
+      if (child.source != "") {
+        this.source += `${loopHead}${child.source}${loopTail}`
+      }
+      return new Value(
+        Array.from({ length: count }, () => inner.value),
+        type,
+        true,
+      )
+    }
+
+    const retId = new Id("loop return array").ident()
+    const ret = new Value(retId, type, false)
+    const retDecl =
+      this.lang == "glsl" ? `${type} ${retId};` : `let ${retId}=[];`
+    const innerRuntime = inner.toString()
+    this.source += `${retDecl}${loopHead}${child.source}${retId}[${idxId}]=${innerRuntime};${loopTail}`
+    return ret
   }
 }
 

@@ -405,7 +405,7 @@ function libPlotStyle(api: NyaApi) {
 
 // TODO: this should get shorter the deeper it is; 2.349834+3.3498734i takes up too much space in a displayed list
 export const numToLatex = (x: number): string => {
-  if (x != x) return "\\wordvar{undefined}"
+  if (x != x) return "\\wordvar{nan}"
   if (x == 1 / 0) return "\\infty "
   if (x == -1 / 0) return "-\\infty "
   let str = x.toPrecision(8)

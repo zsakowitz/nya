@@ -845,9 +845,7 @@ export const FixedSizeArray: FnType = {
 }
 
 export function isVarSizeArray(type: FnType): type is FnType & ArrayType {
-  return (
-    type instanceof AnyArray || type instanceof Array // || type == FixedSizeArray
-  )
+  return type instanceof AnyArray || type instanceof Array
 }
 
 export function isAnyArray(type: FnType) {
@@ -858,3 +856,9 @@ export function isAnyArray(type: FnType) {
     type == FixedSizeArray
   )
 }
+
+export function isArrayValue(type: Type) {
+  return type instanceof Array || type == ArrayEmpty
+}
+
+export { Array as NyaArray }

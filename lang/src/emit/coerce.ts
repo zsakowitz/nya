@@ -54,6 +54,18 @@ export class Coercions {
     return !!this.single.get(from)?.has(into)
   }
 
+  can(from: Type, into: FnType) {
+    return from == into || this.has(from, into)
+  }
+
+  /** Assumes `.can()` returned true. */
+  coerce(from: Value, into: FnType, block: Block, pos: Pos) {
+    if (from.type == into) {
+      return from
+    }
+    return this.for(from.type, into)!.exec(from, block, pos)
+  }
+
   private add(coercion: Coercion, pos: Pos | undefined) {
     if (coercion.from == coercion.into) {
       cycle(coercion.from, coercion.into, pos)

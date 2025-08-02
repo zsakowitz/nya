@@ -139,6 +139,7 @@ fn quartile(a: [num], q: num) -> num {
     a[0]
   } else if 0 <= q && q <= 4 {
     let q = round(q);
+    // TODO: use match
     if q == 0 {
       min(a)
     } else if q == 4 {
