@@ -97,6 +97,7 @@ export type FnKind =
   | { type: "spread"; arg: Type }
   | { type: "single" }
   | { type: "mixed" }
+  | { type: "const" }
 
 export class Fn {
   readonly kind: FnKind
@@ -109,8 +110,13 @@ export class Fn {
     readonly pos?: Pos,
     readonly source?: string,
   ) {
-    // fn() -> [num]
-    if (isAnyArray(ret)) {
+    // fn() -> any
+    if (args.length == 0) {
+      this.kind = { type: "const" }
+    }
+
+    // fn(num) -> [num]
+    else if (isAnyArray(ret)) {
       this.kind = { type: "mixed" }
     }
 

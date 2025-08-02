@@ -1,6 +1,6 @@
 import type { Pos } from "!/ast/issue"
 import { issueError } from "@/error"
-import { createTypedArray, type Coercion } from "./coerce"
+import { createTypedArray } from "./coerce"
 import { Block } from "./decl"
 import { list, matrixMultiply } from "./emit"
 import { ident, type IdGlobal } from "./id"
@@ -54,11 +54,21 @@ export function performCallRaw(
   const cx = block.decl.coercions
 
   overloads: for (const fn of fns) {
+    // fast path for constants
+    if (fn.kind.type == "const") {
+      if (count != 0) {
+        continue
+      }
+
+      return { ok: true, value: fn.run([], block, namePos, fullPos) }
+    } else if (count == 0) continue
+
     // If a function takes a single array, it works if a spread parameter is passed to it
+    // TODO: make this work with coercion
     if (fn.kind.type == "spread") {
       // If no arguments, skip overload
       if (args.length == 0) {
-        continue overloads
+        continue
       }
 
       const into = fn.kind.arg
@@ -74,7 +84,7 @@ export function performCallRaw(
           return { ok: true, value: fn.run([array], block, namePos, fullPos) }
         }
 
-        continue overloads
+        continue
       }
 
       // If a single array, use it
@@ -90,7 +100,7 @@ export function performCallRaw(
           return { ok: true, value: fn.run([a0], block, namePos, fullPos) }
         }
 
-        continue overloads
+        continue
       }
 
       // We have a mixture of arrays and scalars; perform broadcasting and clipping
@@ -149,27 +159,92 @@ export function performCallRaw(
       continue
     }
 
-    const coercions: Coercion[] = []
+    // If a function only accepts scalars, do list broadcasting on it
+    if (fn.kind.type == "single") {
+      // Path 1: No arrays involved
+      if (!args.some((x) => isArrayValue(x.type))) {
+        if (!args.every((arg, i) => cx.can(arg.type, fn.args[i]!.type))) {
+          continue overloads
+        }
 
-    for (let i = 0; i < count; i++) {
-      const expected = fn.args[i]!.type
-      const actual = args[i]!.type
-      if (expected.canConvertFrom(actual)) continue
+        const args2 = args.map((arg, i) =>
+          cx.coerce(arg, fn.args[i]!.type, block, fullPos),
+        )
 
-      const coercion = block.decl.coercions.for(actual, expected)
-      if (!coercion) continue overloads
-      coercions[i] = coercion
+        return {
+          ok: true,
+          value: fn.run(args2, block, namePos, fullPos),
+        }
+      }
+
+      // Path 2: Arrays involved
+      if (
+        !args.every(
+          (arg, i) =>
+            arg.type == ArrayEmpty ||
+            (arg.type instanceof NyaArray ?
+              cx.can(arg.type.item, fn.args[i]!.type)
+            : cx.can(arg.type, fn.args[i]!.type)),
+        )
+      ) {
+        continue overloads
+      }
+
+      let len = Infinity
+      const cached: Value[] = []
+      for (const arg of args) {
+        if (arg.type == ArrayEmpty) {
+          len = 0
+        } else if (arg.type instanceof NyaArray) {
+          if (arg.type.count < len) {
+            len = arg.type.count
+          }
+          if (len != 0) {
+            cached.push(block.cache(arg, true))
+          }
+        } else {
+          if (len != 0) {
+            cached.push(block.cache(arg, true))
+          }
+        }
+      }
+      if (len == 0) {
+        return { ok: true, value: new Value(0, ArrayEmpty, true) }
+      }
+
+      return {
+        ok: true,
+        value: block.map(len, (index, block) => {
+          const args = cached.map((arg, i) =>
+            cx.coerce(
+              arg.type instanceof NyaArray ?
+                new Value(`(${arg})[${index}]`, arg.type.item, false)
+              : arg,
+              fn.args[i]!.type,
+              block,
+              fullPos,
+            ),
+          )
+          return fn.run(args, block, namePos, fullPos)
+        }),
+      }
+
+      continue overloads
     }
 
-    const args2 = args.map((arg, i) =>
-      coercions[i] ?
-        coercions[i].exec(arg, block, fullPos)
-      : fn.args[i]!.type.convertFrom(arg, fullPos),
-    )
+    if (!args.every((arg, i) => cx.can(arg.type, fn.args[i]!.type))) {
+      continue
+    }
 
-    const value = fn.run(args2, block, namePos, fullPos)
-
-    return { ok: true, value }
+    return {
+      ok: true,
+      value: fn.run(
+        args.map((arg, i) => cx.coerce(arg, fn.args[i]!.type, block, fullPos)),
+        block,
+        namePos,
+        fullPos,
+      ),
+    }
   }
 
   // No overloads found; return an error

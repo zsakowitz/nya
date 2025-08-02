@@ -55,13 +55,16 @@ export class Coercions {
   }
 
   can(from: Type, into: FnType) {
-    return from == into || this.has(from, into)
+    return from == into || into.canConvertFrom(from) || this.has(from, into)
   }
 
   /** Assumes `.can()` returned true. */
   coerce(from: Value, into: FnType, block: Block, pos: Pos) {
     if (from.type == into) {
       return from
+    }
+    if (into.canConvertFrom(from.type)) {
+      return into.convertFrom(from, pos)
     }
     return this.for(from.type, into)!.exec(from, block, pos)
   }
