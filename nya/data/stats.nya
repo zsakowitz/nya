@@ -158,6 +158,27 @@ fn quartile(a: [num], q: num) -> num {
   }
 }
 
+fn quantile(a: [num], q: num) -> num {
+  if a.count == 0 {
+    // TODO: use || once it's verified to return a const value
+    nan
+  } else if !(0.0 <= q && q <= 1.0) {
+    nan
+  } else if a.count == 1 {
+    a[0]
+  } else {
+    let a = sort(a);
+    let len = a.count - 1.0;
+    let lo = floor(q * len);
+    let hi = ceil(q * len);
+    if lo == hi {
+      a[lo]
+    } else {
+      @mix(a[lo], a[hi], q * len - lo)
+    }
+  }
+}
+
 struct FiveStatSummary {
   min: num,
   q1: num,
@@ -181,7 +202,6 @@ fn stats(a: [num]) -> FiveStatSummary {
   }
 }
 
-// quantile
 // mad
 // ranks
 // spearman

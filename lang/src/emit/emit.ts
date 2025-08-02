@@ -580,25 +580,33 @@ export function emitExpr(node: NodeExpr, block: Block): Value {
       issue(`Only arrays can be indexed.`, node.on)
     }
     const idxValue = emitExpr(node.index.value, block)
-    if (!idxValue.const()) {
-      todo(`Arrays can only be indexed by constants for now.`, node.index.value)
+    if (idxValue.type != block.decl.tyNum) {
+      issue(`Array indices must have type 'num'.`)
     }
-    const idx =
-      block.decl.toArraySize(idxValue) ??
-      issue(
-        `${on.type} was indexed by non-integer '${idxValue}'.`,
-        node.index.value,
-      )
-    if (!(0 <= idx && idx < on.type.count)) {
-      todo(
-        `${on.type} was indexed by '${idx}', which is out of bounds.`,
-        node.index.value,
-      )
+    if (idxValue.const()) {
+      const idx =
+        block.decl.toArraySize(idxValue) ??
+        issue(
+          `${on.type} was indexed by non-integer constant '${idxValue}'.`,
+          node.index.value,
+        )
+      if (!(0 <= idx && idx < on.type.count)) {
+        todo(
+          `${on.type} was indexed by constant '${idx}', which is out of bounds.`,
+          node.index.value,
+        )
+      }
+      if (on.const()) {
+        return new Value((on.value as any[])[idx]!, on.type.item, true)
+      }
     }
-    if (on.const()) {
-      return new Value((on.value as any[])[idx]!, on.type.item, true)
-    }
-    return new Value(`(${on})[${idx}]`, on.type.item, false)
+    return new Value(
+      block.lang == "glsl" ?
+        `(${on})[int(${idxValue})]`
+      : `(${on})[${idxValue}]`,
+      on.type.item,
+      false,
+    )
   } else if (node instanceof ExprCast) {
     const val = emitExpr(node.lhs, block)
     const ty = emitTypeGeneric(node.rhs, block.decl)
