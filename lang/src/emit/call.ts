@@ -4,7 +4,7 @@ import { createTypedArray } from "./coerce"
 import { Block } from "./decl"
 import { list, matrixMultiply } from "./emit"
 import { ident, type IdGlobal } from "./id"
-import { ArrayEmpty, isArrayValue, NyaArray } from "./type"
+import { AnyArray, ArrayEmpty, isArrayValue, NyaArray } from "./type"
 import { Value } from "./value"
 
 const ID_MATMUL = ident("@#")
@@ -94,13 +94,19 @@ export function performCallRaw(
           return { ok: true, value: fn.run([a0], block, namePos, fullPos) }
         }
 
-        const ty = a0.type as NyaArray
-
-        if (ty.item == into) {
-          return { ok: true, value: fn.run([a0], block, namePos, fullPos) }
+        if (!cx.can(a0.type, fn.args[0]!.type)) {
+          continue
         }
 
-        continue
+        return {
+          ok: true,
+          value: fn.run(
+            [cx.coerce(a0, fn.args[0]!.type, block, fullPos)],
+            block,
+            namePos,
+            fullPos,
+          ),
+        }
       }
 
       // We have a mixture of arrays and scalars; perform broadcasting and clipping

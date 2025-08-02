@@ -15,6 +15,7 @@ import {
   ExprBinary,
   ExprBinaryAssign,
   ExprBlock,
+  ExprCast,
   ExprDirectCall,
   ExprEmpty,
   ExprExit,
@@ -67,6 +68,7 @@ import {
   Array,
   ArrayEmpty,
   Fn,
+  invalidType,
   isType,
   Struct,
   type Type,
@@ -597,6 +599,13 @@ export function emitExpr(node: NodeExpr, block: Block): Value {
       return new Value((on.value as any[])[idx]!, on.type.item, true)
     }
     return new Value(`(${on})[${idx}]`, on.type.item, false)
+  } else if (node instanceof ExprCast) {
+    const val = emitExpr(node.lhs, block)
+    const ty = emitTypeGeneric(node.rhs, block.decl)
+    if (block.decl.coercions.can(val.type, ty)) {
+      return block.decl.coercions.coerce(val, ty, block, node.rhs)
+    }
+    invalidType(ty, val.type, node.lhs)
   } else {
     todo(`Cannot emit '${node.constructor.name}' as an expression yet.`)
   }

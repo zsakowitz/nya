@@ -2,6 +2,7 @@ import type { Pos } from "!/ast/issue"
 import { issue } from "@/error"
 import type { Block, Declarations } from "./decl"
 import {
+  AnyArray,
   ArrayEmpty,
   Array as NyaArray,
   Scalar,
@@ -54,19 +55,45 @@ export class Coercions {
     return !!this.single.get(from)?.has(into)
   }
 
-  can(from: Type, into: FnType) {
-    return from == into || into.canConvertFrom(from) || this.has(from, into)
+  can(from: Type, into: FnType): boolean {
+    return (
+      from == into ||
+      into.canConvertFrom(from) ||
+      ((
+        from instanceof NyaArray &&
+        ((into instanceof NyaArray && from.count == into.count) ||
+          into instanceof AnyArray)
+      ) ?
+        this.can(from.item, into.item)
+      : this.has(from, into))
+    )
   }
 
   /** Assumes `.can()` returned true. */
-  coerce(from: Value, into: FnType, block: Block, pos: Pos) {
+  coerce(from: Value, into: FnType, block: Block, pos: Pos): Value {
     if (from.type == into) {
       return from
     }
     if (into.canConvertFrom(from.type)) {
       return into.convertFrom(from, pos)
     }
-    return this.for(from.type, into)!.exec(from, block, pos)
+    if (
+      from.type instanceof NyaArray &&
+      ((into instanceof NyaArray && into.count == from.type.count) ||
+        into instanceof AnyArray)
+    ) {
+      const cached = block.cache(from, true)
+      return block.map(from.type.count, (index, block) =>
+        this.coerce(
+          new Value(`${cached}[${index}]`, (from.type as NyaArray).item, false),
+          into.item,
+          block,
+          pos,
+        ),
+      )
+    } else {
+      return this.for(from.type, into)!.exec(from, block, pos)
+    }
   }
 
   private add(coercion: Coercion, pos: Pos | undefined) {
