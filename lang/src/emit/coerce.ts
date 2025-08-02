@@ -272,7 +272,7 @@ type SupertypeResultOk =
   | { type: "identical"; as: Type }
   | { type: "coercion"; into: CoercionTarget }
 
-type SupertypeResult = SupertypeResultOk | { type: "impossible" }
+export type SupertypeResult = SupertypeResultOk | { type: "impossible" }
 
 export function getCommonSupertype(
   vals: Value[],
@@ -337,11 +337,8 @@ export function coerceIntoCommonSupertype(
   }
 }
 
-function createArrayAssumingSameType(
-  vals: Value[],
-  block: Block,
-  itemType: Type,
-) {
+/** Assumes all values have the given type. */
+export function createTypedArray(vals: Value[], block: Block, itemType: Type) {
   const type = new NyaArray(block.decl.props, itemType, vals.length)
 
   if (vals.every((x) => x.const())) {
@@ -369,13 +366,13 @@ export function createArray(vals: Value[], block: Block, pos: Pos) {
     case "no-items":
       return new Value(0, ArrayEmpty, true)
     case "identical":
-      return createArrayAssumingSameType(
+      return createTypedArray(
         coerceIntoCommonSupertype(vals, block, pos, supertype),
         block,
         supertype.as,
       )
     case "coercion":
-      return createArrayAssumingSameType(
+      return createTypedArray(
         coerceIntoCommonSupertype(vals, block, pos, supertype),
         block,
         supertype.into,

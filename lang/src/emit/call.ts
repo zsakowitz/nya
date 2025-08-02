@@ -1,10 +1,10 @@
 import type { Pos } from "!/ast/issue"
 import { issueError } from "@/error"
-import type { Coercion } from "./coerce"
+import { createTypedArray, type Coercion } from "./coerce"
 import type { Block } from "./decl"
 import { list, matrixMultiply } from "./emit"
 import { ident, type IdGlobal } from "./id"
-import type { Value } from "./value"
+import { Value } from "./value"
 
 const ID_MATMUL = ident("@#")
 
@@ -51,13 +51,34 @@ export function performCallRaw(
 
   const count = args.length // quick filter for proper overloads
 
-  nextOverload: for (const x of fns) {
-    if (x.args.length != count) continue
+  nextOverload: for (const fn of fns) {
+    // If a function takes a single array, it works if a spread parameter is passed to it
+    if (fn.kind.type == "spread") {
+      const expected = fn.kind.arg
+
+      if (
+        args.every(
+          (x) =>
+            x.type == expected || block.decl.coercions.has(x.type, expected),
+        )
+      ) {
+        const coerced = args.map((x) =>
+          x.type == expected ?
+            x
+          : block.decl.coercions.for(x.type, expected)!.exec(x, block, fullPos),
+        )
+
+        const array = createTypedArray(coerced, block, expected)
+        return { ok: true, value: fn.run([array], block, namePos, fullPos) }
+      }
+    }
+
+    if (fn.args.length != count) continue
 
     const coercions: Coercion[] = []
 
     for (let i = 0; i < count; i++) {
-      const expected = x.args[i]!.type
+      const expected = fn.args[i]!.type
       const actual = args[i]!.type
       if (expected.canConvertFrom(actual)) continue
 
@@ -69,10 +90,10 @@ export function performCallRaw(
     const args2 = args.map((arg, i) =>
       coercions[i] ?
         coercions[i].exec(arg, block, fullPos)
-      : x.args[i]!.type.convertFrom(arg, fullPos),
+      : fn.args[i]!.type.convertFrom(arg, fullPos),
     )
 
-    const value = x.run(args2, block, namePos, fullPos)
+    const value = fn.run(args2, block, namePos, fullPos)
 
     return { ok: true, value }
   }

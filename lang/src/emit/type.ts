@@ -47,7 +47,14 @@ export type FnExec = (
   fullPos: Pos,
 ) => Value
 
+export type FnKind =
+  | { type: "plain" } // regular function
+  | { type: "spread"; arg: Type } // function of a single array
+  | { type: "broadcast" } // function of no arrays
+
 export class Fn {
+  readonly kind: FnKind
+
   constructor(
     readonly id: Id,
     readonly args: FnParam[],
@@ -55,7 +62,25 @@ export class Fn {
     readonly run: FnExec,
     readonly pos?: Pos,
     readonly source?: string,
-  ) {}
+  ) {
+    if (args.length == 1 && args[0]!.type instanceof AnyArray) {
+      this.kind = { type: "spread", arg: args[0]!.type.item }
+    } else if (
+      args.length >= 1 &&
+      args.every(
+        (x) =>
+          !(
+            x.type instanceof Array ||
+            x.type instanceof AnyArray ||
+            x.type == ArrayEmpty
+          ),
+      )
+    ) {
+      this.kind = { type: "broadcast" }
+    } else {
+      this.kind = { type: "plain" }
+    }
+  }
 
   toString() {
     return `${this.id.label}(${this.args
