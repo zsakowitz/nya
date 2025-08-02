@@ -47,10 +47,56 @@ export type FnExec = (
   fullPos: Pos,
 ) => Value
 
+/**
+ * Desmos has three types of functions involving arrays. In nyalang, these are
+ * classified as "single", "spread", and "mixed".
+ *
+ * (For convenience, we will refer to non-array values as scalars, even though
+ * the rest of project nya's has a different definition for scalar).
+ *
+ * **single**: `fn single(x: scalar, y: scalar, ...) -> scalar`. A `single` fn
+ * has only non-array arguments, and a non-array return type. It can be called
+ * in these ways:
+ *
+ * - If all arguments are scalar, the result is scalar.
+ * - If any argument is an array, let `L` be the length of the shortest array.
+ *   Then the function is invoked `L` times, with one value from each array and
+ *   a copy of any provided scalars, and is returned as an array. Argument
+ *   arrays longer than `L` items are effectively clipped.
+ *
+ * Examples from Desmos:
+ *
+ * - `2+3 = 5`, `real(2+3i) = 2`
+ * - `[2,3]+4 = [6,7]`, `[2,3]+[4,7,6] = [6,10]`
+ *
+ * **spread**: `fn spread(x: array) -> scalar`. A `spread` fn has a single array
+ * argument and a non-array return type. It can be called in these ways:
+ *
+ * - If a single array argument is provided, it is passed to the function as
+ *   normal.
+ * - If no arguments are provided, the function is not considered as a valid
+ *   overload.
+ * - If only scalar arguments are provided, they are passed to the function as an
+ *   array.
+ * - If at least two arguments are provided, and not all of them are scalars,
+ *   single-style list broadcasting is invoked, but instead of passing
+ *   `f(a,b,c)` with three arguments, it is passed `[a,b,c]` (i.e. one element
+ *   from each array or scalar).
+ *
+ * Examples from Desmos:
+ *
+ * - `mean([3,7]) = 5`, `mean([]) = nan`
+ * - `mean()` errors
+ * - `mean(3,7) = 5`
+ * - `mean(3,[5,7]) = [mean(3,5),mean(3,7)] = [4,5]`
+ *
+ * `mixed` fns are any fns which do not fit the above categories. Those can only
+ * be called as their declared signature.
+ */
 export type FnKind =
-  | { type: "plain" } // regular function
-  | { type: "spread"; arg: Type } // function of a single array
-  | { type: "broadcast" } // function of no arrays
+  | { type: "spread"; arg: Type }
+  | { type: "single" }
+  | { type: "mixed" }
 
 export class Fn {
   readonly kind: FnKind
@@ -63,22 +109,24 @@ export class Fn {
     readonly pos?: Pos,
     readonly source?: string,
   ) {
-    if (args.length == 1 && args[0]!.type instanceof AnyArray) {
+    // fn() -> [num]
+    if (isAnyArray(ret)) {
+      this.kind = { type: "mixed" }
+    }
+
+    // fn([num]) -> num
+    else if (args.length == 1 && isVarSizeArray(args[0]!.type)) {
       this.kind = { type: "spread", arg: args[0]!.type.item }
-    } else if (
-      args.length >= 1 &&
-      args.every(
-        (x) =>
-          !(
-            x.type instanceof Array ||
-            x.type instanceof AnyArray ||
-            x.type == ArrayEmpty
-          ),
-      )
-    ) {
-      this.kind = { type: "broadcast" }
-    } else {
-      this.kind = { type: "plain" }
+    }
+
+    // fn(num, num, num) -> num
+    else if (args.length >= 1 && args.every((x) => !isAnyArray(x.type))) {
+      this.kind = { type: "single" }
+    }
+
+    // fn(num, [num]) -> num
+    else {
+      this.kind = { type: "mixed" }
     }
   }
 
@@ -556,6 +604,10 @@ function ${lident}(${nvFields
   }
 }
 
+export interface ArrayType {
+  item: Type
+}
+
 export const ArrayEmpty: Type = {
   repr: { type: "void" },
   emit: "void",
@@ -583,7 +635,7 @@ export const ArrayEmpty: Type = {
   },
 }
 
-export class Array implements Type {
+export class Array implements Type, ArrayType {
   readonly repr: Repr
   readonly emit: string
 
@@ -655,7 +707,7 @@ export class Array implements Type {
   }
 }
 
-export class AnyArray {
+export class AnyArray implements ArrayType {
   constructor(
     readonly props: EmitProps,
     readonly item: Type,
@@ -790,4 +842,19 @@ export const FixedSizeArray: FnType = {
   toString() {
     return "[any]"
   },
+}
+
+export function isVarSizeArray(type: FnType): type is FnType & ArrayType {
+  return (
+    type instanceof AnyArray || type instanceof Array // || type == FixedSizeArray
+  )
+}
+
+export function isAnyArray(type: FnType) {
+  return (
+    isVarSizeArray(type) ||
+    type == ArrayEmpty ||
+    type == Any ||
+    type == FixedSizeArray
+  )
 }
