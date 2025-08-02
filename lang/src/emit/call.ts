@@ -377,7 +377,3 @@ export function performCall(
     throw result.error
   }
 }
-
-Set.prototype.toString = () => {
-  throw new Error("nuh uh")
-}
