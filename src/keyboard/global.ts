@@ -2,6 +2,7 @@ import type { FieldInert } from "@/field/field-inert"
 import { KeyboardController } from "./controller"
 
 const GLOBAL_KEYBOARD = new KeyboardController()
+GLOBAL_KEYBOARD.setVisible(false)
 document.body.appendChild(GLOBAL_KEYBOARD.el)
 
 function detectMobile() {

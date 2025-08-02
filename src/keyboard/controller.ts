@@ -219,7 +219,7 @@ export class KeyboardController {
 
     document.documentElement.style.setProperty("--nya-kbd-visible-height", "0")
     this.el = h(
-      "fixed right-0 w-full p-2 bg-(--nya-kbd-bg) [line-height:1] whitespace-nowrap z-10 select-none text-lg [&.nya-kbd-open]:bottom-0 -bottom-(--nya-kbd-height) transition-[bottom]",
+      "fixed right-0 w-full p-2 bg-(--nya-kbd-bg) [line-height:1] whitespace-nowrap z-10 select-none text-lg [&.nya-kbd-open]:bottom-0 -bottom-(--nya-kbd-height) transition-[bottom] starting:-bottom-[11.75rem]",
       (elToggle = hx(
         "button",
         {
