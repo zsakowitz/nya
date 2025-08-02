@@ -2,9 +2,9 @@ import type { Pos } from "!/ast/issue"
 import { issue } from "@/error"
 import type { Block, Declarations } from "./decl"
 import {
-  AnyArray,
+  VarArray,
   ArrayEmpty,
-  Array as NyaArray,
+  FixedArray as NyaArray,
   Scalar,
   Struct,
   type FnType,
@@ -62,7 +62,7 @@ export class Coercions {
       ((
         from instanceof NyaArray &&
         ((into instanceof NyaArray && from.count == into.count) ||
-          into instanceof AnyArray)
+          into instanceof VarArray)
       ) ?
         this.can(from.item, into.item)
       : this.has(from, into))
@@ -80,7 +80,7 @@ export class Coercions {
     if (
       from.type instanceof NyaArray &&
       ((into instanceof NyaArray && into.count == from.type.count) ||
-        into instanceof AnyArray)
+        into instanceof VarArray)
     ) {
       const cached = block.cache(from, true)
       return block.map(from.type.count, (index, block) =>

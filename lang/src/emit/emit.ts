@@ -64,8 +64,8 @@ import { bug, issue, todo } from "./error"
 import { Id, ident, type IdGlobal } from "./id"
 import {
   Alt,
-  AnyArray,
-  Array,
+  VarArray,
+  FixedArray,
   ArrayEmpty,
   Fn,
   invalidType,
@@ -136,7 +136,7 @@ function emitTypeGeneric(node: NodeType, decl: Declarations): UserFnType {
     if (!isType(item)) {
       issue(`The element type of an array must be a concrete type.`)
     }
-    if (item instanceof Array || node.sizes.items.length != 1) {
+    if (item instanceof FixedArray || node.sizes.items.length != 1) {
       todo(`Multidimensional arrays are not supported yet.`)
     }
     const count = arraySize(
@@ -148,13 +148,13 @@ function emitTypeGeneric(node: NodeType, decl: Declarations): UserFnType {
       ),
       node.sizes,
     )
-    return new Array(decl.props, item, count)
+    return new FixedArray(decl.props, item, count)
   } else if (node instanceof TypeArrayUnsized) {
     const item = emitTypeGeneric(node.of.value, decl)
     if (!isType(item)) {
       issue(`The element type of an array must be a concrete type.`)
     }
-    return new AnyArray(decl.props, item)
+    return new VarArray(decl.props, item)
   } else {
     todo(`Cannot emit '${node.constructor.name}' as a type yet.`)
   }
@@ -406,7 +406,7 @@ export function emitExpr(node: NodeExpr, block: Block): Value {
       node.sizes,
     )
 
-    const type = new Array(block.props, item.type, count)
+    const type = new FixedArray(block.props, item.type, count)
     return new Value(
       type.repr.type == "void" ?
         0
@@ -455,7 +455,7 @@ export function emitExpr(node: NodeExpr, block: Block): Value {
       if (source.type == ArrayEmpty) {
         return block.decl.void()
       }
-      if (!(source.type instanceof Array)) {
+      if (!(source.type instanceof FixedArray)) {
         issue(`'for' loop sources must be arrays.`)
       }
       if (source.value == null) {
@@ -567,7 +567,7 @@ export function emitExpr(node: NodeExpr, block: Block): Value {
     }
     return new Value(
       `[${globalThis.Array.from({ length: count }, (_, i) => i + (lv.value as number)).join(",")}]`,
-      new Array(block.props, block.decl.tyNum, count),
+      new FixedArray(block.props, block.decl.tyNum, count),
       false,
     )
     // TODO: NYALANG: this outputs horrible code in `for` loops, and should be optimized to a plain `for (let i = 0; i < 20; i++)` loop
@@ -576,7 +576,7 @@ export function emitExpr(node: NodeExpr, block: Block): Value {
     if (on.type == ArrayEmpty) {
       issue(`Empty arrays cannot be indexed.`, node.on)
     }
-    if (!(on.type instanceof Array)) {
+    if (!(on.type instanceof FixedArray)) {
       issue(`Only arrays can be indexed.`, node.on)
     }
     const idxValue = emitExpr(node.index.value, block)

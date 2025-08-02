@@ -1,5 +1,5 @@
 import { Impl, jsFn, v, type NyaApi, type Plugin } from "!/emit/api"
-import { AnyArray, Array, type Scalar } from "!/emit/type"
+import { VarArray, FixedArray, type Scalar } from "!/emit/type"
 import { numToLatex } from "!/std"
 
 export default {
@@ -10,10 +10,10 @@ export default {
   load(api) {
     const S = api.opaque("Surreal", { glsl: null, js: "" }, true)
 
-    const SN = (n: number) => new Array(api.lib.props, S, n)
+    const SN = (n: number) => new FixedArray(api.lib.props, S, n)
     const S0 = SN(0)
     const S1 = SN(1)
-    const SX = new AnyArray(api.lib.props, S)
+    const SX = new VarArray(api.lib.props, S)
 
     api.fn("%surreal_join", {}, S0, {
       glsl: v`[]`,

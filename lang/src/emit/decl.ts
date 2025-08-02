@@ -7,7 +7,7 @@ import type { EmitProps } from "./props"
 import type { Tag } from "./tag"
 import {
   invalidType,
-  NyaArray,
+  FixedArray,
   Scalar,
   type Fn,
   type FnType,
@@ -263,7 +263,7 @@ export class Block {
     const idxId = new Id("loop index").ident()
     const index = new Value(idxId, this.decl.tyNum, false)
     const inner = item(index, child)
-    const type = new NyaArray(this.decl.props, inner.type, count)
+    const type = new FixedArray(this.decl.props, inner.type, count)
 
     const loopHead = `for(${this.lang == "glsl" ? "int" : "var"} ${idxId}=0;${idxId}<${count};${idxId}++){`
     const loopTail = `}`

@@ -1,5 +1,5 @@
 import { EmitProps, type Lang } from "!/emit/props"
-import { Array, ArrayEmpty, type Type } from "!/emit/type"
+import { FixedArray, ArrayEmpty, type Type } from "!/emit/type"
 import { createStdlib } from "!/std"
 import { SCRIPTS, type ScriptName } from "#/script-index"
 import { getScriptPath } from "#/scripts"
@@ -155,7 +155,7 @@ ${block.source}
       return "[]"
     }
 
-    if (type instanceof Array) {
+    if (type instanceof FixedArray) {
       if (type.count == 0) {
         return "[]"
       }

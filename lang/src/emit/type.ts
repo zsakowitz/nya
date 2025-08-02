@@ -641,7 +641,7 @@ export const ArrayEmpty: Type = {
   },
 }
 
-export class Array implements Type, ArrayType {
+export class FixedArray implements Type, ArrayType {
   readonly repr: Repr
   readonly emit: string
 
@@ -670,7 +670,7 @@ export class Array implements Type, ArrayType {
   canConvertFrom(type: Type): boolean {
     return (
       (type == ArrayEmpty && this.count == 0) ||
-      (type instanceof Array &&
+      (type instanceof FixedArray &&
         type.item == this.item &&
         type.count == this.count)
     )
@@ -713,7 +713,7 @@ export class Array implements Type, ArrayType {
   }
 }
 
-export class AnyArray implements ArrayType {
+export class VarArray implements ArrayType {
   constructor(
     readonly props: EmitProps,
     readonly item: Type,
@@ -727,7 +727,8 @@ export class AnyArray implements ArrayType {
 
   canConvertFrom(type: Type): boolean {
     return (
-      type == ArrayEmpty || (type instanceof Array && type.item == this.item)
+      type == ArrayEmpty ||
+      (type instanceof FixedArray && type.item == this.item)
     )
   }
 
@@ -748,7 +749,7 @@ export class AnyArray implements ArrayType {
   }
 
   concreteInstance(): Type {
-    return new Array(this.props, this.item, 1)
+    return new FixedArray(this.props, this.item, 1)
   }
 }
 
@@ -838,10 +839,10 @@ export const Any: FnType = {
 
 export const FixedSizeArray: FnType = {
   canConvertFrom(x) {
-    return x instanceof Array
+    return x instanceof FixedArray
   },
   convertFrom(value, pos) {
-    return value.type instanceof Array ?
+    return value.type instanceof FixedArray ?
         value
       : invalidType(FixedSizeArray, value.type, pos)
   },
@@ -851,7 +852,7 @@ export const FixedSizeArray: FnType = {
 }
 
 export function isVarSizeArray(type: FnType): type is FnType & ArrayType {
-  return type instanceof AnyArray || type instanceof Array
+  return type instanceof VarArray || type instanceof FixedArray
 }
 
 export function isAnyArray(type: FnType) {
@@ -864,7 +865,5 @@ export function isAnyArray(type: FnType) {
 }
 
 export function isArrayValue(type: Type) {
-  return type instanceof Array || type == ArrayEmpty
+  return type instanceof FixedArray || type == ArrayEmpty
 }
-
-export { Array as NyaArray }

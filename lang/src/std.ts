@@ -11,11 +11,11 @@ import type { EmitProps } from "./emit/props"
 import { Tag } from "./emit/tag"
 import {
   Any,
-  AnyArray,
+  VarArray,
   FixedSizeArray,
   Fn,
   invalidType,
-  NyaArray,
+  FixedArray,
 } from "./emit/type"
 import { Value } from "./emit/value"
 
@@ -576,18 +576,18 @@ function libArray(api: NyaApi) {
   const num = lib.tyNum
 
   api.fmanual("count", { x: FixedSizeArray }, num, (args, _, _1, fullPos) => {
-    if (args[0]!.type instanceof NyaArray) {
+    if (args[0]!.type instanceof FixedArray) {
       return new Value(args[0]!.type.count, num, true)
     }
     invalidType(FixedSizeArray, args[0]!.type, fullPos)
   })
 
-  const numArray = new AnyArray(lib.props, num)
+  const numArray = new VarArray(lib.props, num)
   const { lang } = api.lib.props
 
   api.fmanual("sort", { x: numArray }, numArray, (args, _, _1, fullPos) => {
     const arg = args[0]!
-    if (!(arg.type instanceof NyaArray)) {
+    if (!(arg.type instanceof FixedArray)) {
       invalidType(numArray, arg.type, fullPos)
     }
     if (arg.type.count <= 1) {

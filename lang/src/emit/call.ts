@@ -4,7 +4,7 @@ import { createTypedArray } from "./coerce"
 import { Block } from "./decl"
 import { list, matrixMultiply } from "./emit"
 import { ident, type IdGlobal } from "./id"
-import { AnyArray, ArrayEmpty, isArrayValue, NyaArray } from "./type"
+import { ArrayEmpty, FixedArray, isArrayValue } from "./type"
 import { Value } from "./value"
 
 const ID_MATMUL = ident("@#")
@@ -116,7 +116,7 @@ export function performCallRaw(
         if (arg.type == ArrayEmpty) {
           count = 0
           // no need to cache it since we won't used the cached values
-        } else if (arg.type instanceof NyaArray) {
+        } else if (arg.type instanceof FixedArray) {
           if (!cx.can(arg.type.item, into)) {
             continue overloads
           }
@@ -145,7 +145,7 @@ export function performCallRaw(
           const args = createTypedArray(
             cached.map((arg) =>
               cx.coerce(
-                arg.type instanceof NyaArray ?
+                arg.type instanceof FixedArray ?
                   new Value(`(${arg})[${index}]`, arg.type.item, false)
                 : arg,
                 into,
@@ -188,7 +188,7 @@ export function performCallRaw(
         !args.every(
           (arg, i) =>
             arg.type == ArrayEmpty ||
-            (arg.type instanceof NyaArray ?
+            (arg.type instanceof FixedArray ?
               cx.can(arg.type.item, fn.args[i]!.type)
             : cx.can(arg.type, fn.args[i]!.type)),
         )
@@ -201,7 +201,7 @@ export function performCallRaw(
       for (const arg of args) {
         if (arg.type == ArrayEmpty) {
           len = 0
-        } else if (arg.type instanceof NyaArray) {
+        } else if (arg.type instanceof FixedArray) {
           if (arg.type.count < len) {
             len = arg.type.count
           }
@@ -223,7 +223,7 @@ export function performCallRaw(
         value: block.map(len, (index, block) => {
           const args = cached.map((arg, i) =>
             cx.coerce(
-              arg.type instanceof NyaArray ?
+              arg.type instanceof FixedArray ?
                 new Value(`(${arg})[${index}]`, arg.type.item, false)
               : arg,
               fn.args[i]!.type,
