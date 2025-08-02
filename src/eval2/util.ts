@@ -1,6 +1,6 @@
 import { PosVirtual } from "!/ast/issue"
+import { tryPerformCall } from "!/emit/call"
 import { Block, BlockGlobals, Exits } from "!/emit/decl"
-import { tryPerformCall } from "!/emit/emit"
 import { Id, ident } from "!/emit/id"
 import { type Type } from "!/emit/type"
 import { Value } from "!/emit/value"

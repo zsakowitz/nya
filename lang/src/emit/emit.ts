@@ -51,9 +51,10 @@ import {
   type NodeType,
 } from "../ast/node/type"
 import { fromScalars, scalars } from "./broadcast"
+import { performCall, tryPerformCall } from "./call"
 import { Coercion, isEligibleForCoercion, type CoercionTarget } from "./coerce"
 import { Block, BlockGlobals, Exits, IdMap, type Declarations } from "./decl"
-import { bug, issue, issueError, todo } from "./error"
+import { bug, issue, todo } from "./error"
 import { Id, ident, type IdGlobal } from "./id"
 import {
   Alt,
@@ -68,7 +69,10 @@ import {
 } from "./type"
 import { Value } from "./value"
 
-function list(a: { toString(): string }[], empty: "no arguments" | null) {
+export function list(
+  a: { toString(): string }[],
+  empty: "no arguments" | null,
+) {
   if (a.length == 0) {
     return empty ?? "<null>"
   }
@@ -86,119 +90,6 @@ function list(a: { toString(): string }[], empty: "no arguments" | null) {
     ", and " +
     `'${a[a.length - 1]}'`
   )
-}
-
-const ID_MATMUL = ident("@#")
-
-type CallResult = { ok: true; value: Value } | { ok: false; error: Error }
-
-export function performCallRaw(
-  id: IdGlobal,
-  block: Block,
-  args: Value[],
-  namePos: Pos,
-  fullPos: Pos,
-): CallResult {
-  // Matrix multiplication is special, so no coercion is performed
-  if (id == ID_MATMUL) {
-    if (args.length == 2) {
-      return { ok: true, value: matrixMultiply(block, args[0]!, args[1]!) }
-    }
-  }
-
-  const local = block.locals.get(id)
-
-  // Locals do not receive coercion since there are no arguments
-  if (local) {
-    if (args.length == 0) {
-      return { ok: true, value: local }
-    }
-  }
-
-  const fns = block.decl.fns.get(id)
-
-  if (!fns) {
-    return {
-      ok: false,
-      error:
-        local ?
-          issueError(
-            `Locally defined variable '${id}' is not a function.`,
-            namePos,
-          )
-        : issueError(`'${id}' is not defined.`, namePos),
-    }
-  }
-
-  const count = args.length
-  nextOverload: for (const x of fns) {
-    if (x.args.length != count) continue
-
-    const coercions: Coercion[] = []
-
-    for (let i = 0; i < count; i++) {
-      const expected = x.args[i]!.type
-      const actual = args[i]!.type
-      if (expected.canConvertFrom(actual)) continue
-
-      const coercion = block.decl.coercions.for(actual, expected)
-      if (!coercion) continue nextOverload
-      coercions[i] = coercion
-    }
-
-    const args2 = args.map((arg, i) =>
-      coercions[i] ?
-        coercions[i].exec(arg, block, fullPos)
-      : x.args[i]!.type.convertFrom(arg, fullPos),
-    )
-
-    const value = x.run(args2, block, namePos, fullPos)
-
-    return { ok: true, value }
-  }
-
-  return {
-    ok: false,
-    error: issueError(
-      `No overload of '${id}' accepts ${list(
-        args.map((x) => x.type),
-        "no arguments",
-      )}. Try:` + fns.map((x) => "\n" + x.toString()).join(""),
-      fullPos,
-    ),
-  }
-}
-
-export function tryPerformCall(
-  id: IdGlobal,
-  block: Block,
-  args: Value[],
-  namePos: Pos,
-  fullPos: Pos,
-): Value | null {
-  const result: CallResult = performCallRaw(id, block, args, namePos, fullPos)
-
-  if (result.ok) {
-    return result.value
-  } else {
-    return null
-  }
-}
-
-export function performCall(
-  id: IdGlobal,
-  block: Block,
-  args: Value[],
-  namePos: Pos,
-  fullPos: Pos,
-): Value {
-  const result: CallResult = performCallRaw(id, block, args, namePos, fullPos)
-
-  if (result.ok) {
-    return result.value
-  } else {
-    throw result.error
-  }
 }
 
 function emitTypeGeneric(node: NodeType, decl: Declarations): UserFnType {
@@ -780,7 +671,7 @@ function emitLvalue(
   }
 }
 
-function matrixMultiply(block: Block, arg1: Value, arg2: Value): Value {
+export function matrixMultiply(block: Block, arg1: Value, arg2: Value): Value {
   if (arg1.type.repr.type == "void" || arg2.type.repr.type == "void") {
     issue(`Cannot matrix multiply a void value.`)
   }
