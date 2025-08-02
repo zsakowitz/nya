@@ -64,13 +64,13 @@ import { bug, issue, todo } from "./error"
 import { Id, ident, type IdGlobal } from "./id"
 import {
   Alt,
-  VarArray,
-  FixedArray,
   ArrayEmpty,
+  FixedArray,
   Fn,
   invalidType,
   isType,
   Struct,
+  VarArray,
   type Type,
   type UserFnType,
 } from "./type"
@@ -410,7 +410,7 @@ export function emitExpr(node: NodeExpr, block: Block): Value {
     return new Value(
       type.repr.type == "void" ?
         0
-      : globalThis.Array.from({ length: count }, () => item.value),
+      : Array.from({ length: count }, () => item.value),
       type,
       true,
     )
@@ -566,7 +566,7 @@ export function emitExpr(node: NodeExpr, block: Block): Value {
       )
     }
     return new Value(
-      `[${globalThis.Array.from({ length: count }, (_, i) => i + (lv.value as number)).join(",")}]`,
+      `[${Array.from({ length: count }, (_, i) => i + (lv.value as number)).join(",")}]`,
       new FixedArray(block.props, block.decl.tyNum, count),
       false,
     )
