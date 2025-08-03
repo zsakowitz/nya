@@ -25,7 +25,7 @@ export class Cv3D implements Canvas3D {
   readonly controls = new OrbitControls(this.camera, this.renderer.domElement)
   readonly dispose
   readonly beforeRender: (() => void)[] = []
-  readonly clippingPlanes
+  readonly clippingPlanes = createBoxClippingPlanes(this)
 
   constructor() {
     const { scene, camera, renderer, controls } = this
@@ -50,7 +50,6 @@ export class Cv3D implements Canvas3D {
 
     scene.background = new T.Color(0xffffff)
     addAxes(this)
-    this.clippingPlanes = createBoxClippingPlanes(this)
     addLighting(this)
     addXYPlane(this)
 
@@ -63,18 +62,16 @@ export class Cv3D implements Canvas3D {
     return this.renderer.domElement
   }
 
+  private readonly sphereMat = new T.MeshPhysicalMaterial({
+    color: 0xc74440,
+    side: T.DoubleSide,
+    clippingPlanes: this.clippingPlanes,
+  })
+
   sphere(x: number, y: number, z: number, r: number) {
     const sphereGeo = new T.SphereGeometry(r, 64, 32)
-    const mat = new T.MeshPhysicalMaterial({
-      color: 0xc74440,
-      side: T.DoubleSide,
-      clippingPlanes: this.clippingPlanes,
-    })
-    const mesh = new T.Mesh(sphereGeo, mat)
+    const mesh = new T.Mesh(sphereGeo, this.sphereMat)
     mesh.position.set(x, y, z)
-    mesh.onBeforeRender = () => {
-      console.log("before render")
-    }
     return mesh
   }
 

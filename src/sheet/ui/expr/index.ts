@@ -13,7 +13,7 @@ import { fa, h } from "@/lib/jsx"
 import { PLOT_3D } from "@/sheet/plot/3d"
 import type { Shader } from "@/sheet/plot/shader"
 import { faWarning } from "@fortawesome/free-solid-svg-icons/faWarning"
-import type { Object3D } from "three"
+import { Mesh, type BufferGeometry, type Object3D } from "three"
 import { Store, type AnyExt } from "../../ext"
 import { FACTORY_EXPR } from "../../factory-expr"
 import type { ItemRef } from "../../items"
@@ -153,7 +153,12 @@ export class Expr {
 
   unrender3D() {
     if (this.lastObjs) {
-      this.lastObjs.forEach((x) => x.removeFromParent())
+      this.lastObjs.forEach((x) => {
+        x.removeFromParent()
+        if (x instanceof Mesh) {
+          ;(x.geometry as BufferGeometry).dispose()
+        }
+      })
       this.lastObjs = undefined
       this.sheet.cv3D!.queue()
     }
@@ -256,9 +261,8 @@ function plotJs3D(self: Expr, value: unknown, type: Type) {
   let changed = false
 
   if (self.lastObjs) {
+    self.unrender3D()
     changed = true
-    self.lastObjs.forEach((x) => x.removeFromParent())
-    self.lastObjs = undefined
   }
 
   const plot3d = self.sheet.factory.env.utils.getArray("plot-3d", type)
