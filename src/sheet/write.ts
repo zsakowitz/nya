@@ -1,5 +1,4 @@
 import { TBD } from "@/error"
-import { safe } from "@/eval/lib/util"
 import type { Cursor } from "@/field/model"
 import { int, type SReal } from "@/lib/real"
 
@@ -13,7 +12,7 @@ export function write(
 ) {
   const base = baseRaw.num()
 
-  if (!(safe(base) && 2 <= base && base <= 36)) {
+  if (!(base == Math.floor(base) && 2 <= base && base <= 36)) {
     // new Display(cursor, baseRaw || int(10)).value(value.num(), signed)
     return
   }

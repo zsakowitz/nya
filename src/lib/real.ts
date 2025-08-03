@@ -1,4 +1,4 @@
-import { safe } from "@/eval/lib/util"
+const safe = Number.isSafeInteger
 
 const { floor, ceil, round, sqrt, sign } = Math
 

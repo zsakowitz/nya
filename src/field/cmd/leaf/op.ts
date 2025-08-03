@@ -1,4 +1,3 @@
-import type { PuncInfix, PuncPm } from "@/eval/ast/token"
 import { infx, pifx, type IR } from "@/eval2/node"
 import { Precedence as P } from "@/eval2/prec"
 import { L, R } from "@/field/dir"
@@ -93,7 +92,7 @@ function op(
 }
 
 export function opp(
-  latex: Exclude<PuncInfix, ".">,
+  latex: string,
   pl: P,
   pr: P,
   mathspeak: string,
@@ -112,7 +111,7 @@ export function opp(
 }
 
 function opm(
-  latex: PuncPm,
+  latex: string,
   mathspeak: string,
   html: string = latex,
   ascii = html,

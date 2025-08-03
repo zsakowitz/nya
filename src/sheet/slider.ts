@@ -1,4 +1,3 @@
-import { safe } from "@/eval/lib/util"
 import type { Cursor } from "@/field/model"
 import { h, hx } from "@/jsx"
 import { frac, int, type SReal } from "@/lib/real"
@@ -217,7 +216,7 @@ export class Slider {
 
   set base(v: SReal) {
     const n = v.num()
-    if (safe(n) && n >= 2) {
+    if (n == Math.floor(n) && 2 <= n && n <= 36) {
       this._base = n
     } else {
       this._base = 10

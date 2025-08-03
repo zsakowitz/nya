@@ -1,4 +1,3 @@
-import type { PuncCmp } from "@/eval/ast/token"
 import { Precedence } from "@/eval2/prec"
 import { L, R, type Dir } from "@/field/dir"
 import type { LatexParser } from "../../latex"
@@ -46,7 +45,7 @@ type Data = readonly [
   reader: string,
   html: string,
   ascii: string,
-  kind: PuncCmp,
+  kind: string,
 ]
 
 function ceq(eq: Data, ne: Data, endsImplicitGroup = true) {
