@@ -1,1 +1,1 @@
-export * from "@/error"
+export * from "@/lib/error"

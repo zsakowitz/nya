@@ -1,4 +1,4 @@
-import { errorText } from "@/error"
+import { errorText } from "@/lib/error"
 import { nameIdent, ScriptDeps, type NameIdent } from "@/eval/tx"
 import { Field } from "@/field/field"
 import type { Options } from "@/field/options"

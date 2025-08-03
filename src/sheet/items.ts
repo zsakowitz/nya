@@ -1,4 +1,4 @@
-import { errorText } from "@/error"
+import { errorText } from "@/lib/error"
 import { D, L, U, type Dir, type VDir } from "@/field/dir"
 import { h, t } from "@/jsx"
 import type { ItemFactory } from "./item"

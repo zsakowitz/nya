@@ -1,5 +1,5 @@
 import { ScriptEnvironment } from "!/exec/loader"
-import { errorText } from "@/error"
+import { errorText } from "@/lib/error"
 import readline from "readline"
 import { ANSI } from "./nya/ansi"
 import repl from "./repl.nya"

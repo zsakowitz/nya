@@ -1,5 +1,5 @@
 import type { Pos } from "!/ast/issue"
-import { issue, issueError } from "@/error"
+import { issue, issueError } from "@/lib/error"
 import { createTypedArray, getCommonSupertype } from "./coerce"
 import { Block } from "./decl"
 import { list, matrixMultiply } from "./emit"

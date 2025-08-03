@@ -1,5 +1,5 @@
 import type { Pos } from "!/ast/issue"
-import { issue } from "@/error"
+import { issue } from "@/lib/error"
 import type { Block, Declarations } from "./decl"
 import {
   ArrayEmpty,

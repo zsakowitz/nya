@@ -1,5 +1,5 @@
-import "./page/index.dist.css"
-import "./polyfills"
+import "./lib/polyfills"
+import "./assets/page/index.dist.css"
 
 Error.isError ??= (x) => x instanceof Error
 

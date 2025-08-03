@@ -1,4 +1,4 @@
-import { TBD } from "@/error"
+import { TBD } from "@/lib/error"
 import type { Cursor } from "@/field/model"
 import { int, type SReal } from "@/lib/real"
 

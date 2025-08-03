@@ -3,7 +3,7 @@ import type { Fn } from "!/emit/type"
 import { ScriptEnvironment } from "!/exec/loader"
 import { SCRIPTS, type ScriptName } from "@/pkg/script-index"
 import { SCRIPT_NAMES } from "@/pkg/scripts"
-import { errorText } from "@/error"
+import { errorText } from "@/lib/error"
 import { ANSI } from "./ansi"
 
 checkEach() && checkAll(10) && checkOverloads()
