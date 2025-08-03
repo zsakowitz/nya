@@ -237,7 +237,7 @@ function compileForGlsl(self: Expr, exe: Executable) {
   self.sheet.queueGlsl()
 }
 
-function printJs(self: Expr, latex: string | null, value: unknown, type: Type) {
+function printJs(self: Expr, latex: string | null) {
   self.clearEls()
 
   if (latex) {
@@ -245,17 +245,8 @@ function printJs(self: Expr, latex: string | null, value: unknown, type: Type) {
     field.block.clear()
     field.typeLatex(latex.replace(/\+-/g, "-"))
     self.elOutput.appendChild(el)
-  } else if (!self.plot) {
-    const json = JSON.stringify(value, undefined, 2)
-    self.elOutput.appendChild(
-      h(
-        "-mt-2 mb-1 text-xs font-mono px-2 ml-auto whitespace-pre",
-        `= ${type} ${json.replace(/\n/g, "\n  ")}`,
-      ),
-    )
+    self.elOutput.classList.remove("hidden")
   }
-
-  self.elOutput.classList.remove("hidden")
 }
 
 function plotJs3D(self: Expr, value: unknown, type: Type) {
@@ -347,7 +338,7 @@ function compileForJs(self: Expr, exe: Executable) {
   const { block, value } = env.process(exe.expr, "<expression>")
   const result = env.compute(block, value)
 
-  printJs(self, env.display(value.type, result), result, value.type)
+  printJs(self, env.display(value.type, result))
 
   if (PLOT_3D) {
     plotJs3D(self, result, value.type)
