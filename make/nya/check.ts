@@ -1,9 +1,9 @@
 import { suppressesOverload } from "!/emit/coerce"
 import type { Fn } from "!/emit/type"
 import { ScriptEnvironment } from "!/exec/loader"
+import { errorText } from "@/lib/error"
 import { SCRIPTS, type ScriptName } from "@/pkg/script-index"
 import { SCRIPT_NAMES } from "@/pkg/scripts"
-import { errorText } from "@/lib/error"
 import { ANSI } from "./ansi"
 
 checkEach() && checkAll(10) && checkOverloads()
