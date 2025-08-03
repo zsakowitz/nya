@@ -41,11 +41,6 @@ export class Cv3D implements Canvas3D {
       renderer.dispose()
     }
 
-    // {
-    //   const light = new T.AmbientLight(0xffffff, AMBIENT_LIGHT_INTENSITY)
-    //   scene.add(light)
-    // }
-
     scene.background = new T.Color(0xffffff)
 
     {
