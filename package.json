@@ -43,7 +43,7 @@
       "prettier-plugin-glsl",
       "prettier-plugin-jsdoc",
       "prettier-plugin-tailwindcss",
-      "./lang/src/prettier/plugin.js"
+      "./src/lang/prettier/plugin.js"
     ],
     "experimentalTernaries": true,
     "proseWrap": "always",
