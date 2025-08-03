@@ -12,7 +12,7 @@ export class Plot3D {
   readonly dispose
 
   constructor() {
-    const { scene, camera, renderer } = this
+    const { scene, camera, renderer, controls } = this
 
     const el = this.renderer.domElement
     el.className = "absolute inset-0 !size-full [image-rendering:pixelated]"
@@ -23,6 +23,7 @@ export class Plot3D {
       camera.aspect = w / h
       camera.updateProjectionMatrix()
       renderer.setSize(scale * w, scale * h, false)
+      animate()
     }
     const observer = new ResizeObserver(update)
     observer.observe(el)
@@ -73,7 +74,7 @@ export class Plot3D {
       )
       const sphereMat = new T.MeshPhongMaterial({ color: "#CA8" })
       const mesh = new T.Mesh(sphereGeo, sphereMat)
-      mesh.position.set(-sphereRadius - 1, sphereRadius + 2, 0)
+      mesh.position.set(-sphereRadius - 1, sphereRadius - 2, 0)
       scene.add(mesh)
     }
 
@@ -91,7 +92,7 @@ export class Plot3D {
     function animate() {
       renderer.render(scene, camera)
     }
-    renderer.setAnimationLoop(animate)
+    controls.addEventListener("change", animate)
   }
 
   get el() {
