@@ -1,4 +1,4 @@
-use "point";
+use "2d/point";
 use "color";
 use "color/dcg";
 use "complex";

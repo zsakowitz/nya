@@ -1,5 +1,5 @@
 // ensure the 2d point overloads appear before the 4d ones
-use "point";
+use "2d/point";
 use "complex";
 
 struct PointComplex4D {
