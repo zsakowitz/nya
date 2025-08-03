@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "dev": "bun run build:tw && bun run manifest && bun run esb",
+    "dev": "bun run build:tw && bun run esb",
     "esb": "mkdir -p dist; cp src/page/index.dev.html dist/index.html && cp -R src/icon dist/icon && cp src/icon/favicon.ico dist/favicon.ico && esbuild --watch=forever --loader:.woff=file --loader:.ttf=file --loader:.nya=text --loader:.glsl=text --loader:.woff2=file --loader:.svg=file --loader:.eot=file --servedir=dist --format=esm --bundle --outdir=dist --splitting src/index.ts",
     "tw": "tailwindcss -i ./src/page/index.css -o ./src/page/index.dist.css --watch",
     "build": "bun run build:tw && bun run build:esb && cp src/page/index.prod.html dist/index.html && cp -R src/icon dist/icon && cp src/icon/favicon.ico dist/favicon.ico",
@@ -10,7 +10,6 @@
     "lint:cycles": "madge --ts-config tsconfig.json --circular src/index.ts",
     "lint:cycles-lang": "madge --ts-config tsconfig.json --circular src/lang/preview.ts",
     "graph:pkg": "madge --image graph.svg --ts-config tsconfig.json --exclude 'src|util[-/]' pkg/list/{*.ts,**/*.ts,**/**/*.ts,**/**/**/*.ts}",
-    "manifest": "bun pkg/manifest/generate.ts > pkg/manifest/data.json",
     "build:prettier": "esbuild src/lang/prettier/plugin.ts --bundle --minify --platform=node --format=cjs --external:prettier --outfile=src/lang/prettier/plugin.js"
   },
   "dependencies": {
