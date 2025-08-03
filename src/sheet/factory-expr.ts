@@ -35,7 +35,7 @@ export const FACTORY_EXPR: ItemFactory<Expr, { geo?: boolean }> = {
       return Order.Graph
     },
     items(data) {
-      return data.plot || data.lastObj ? [1] : []
+      return data.plot || data.lastObjs ? [1] : []
     },
     draw(data) {
       data.drawSelf()

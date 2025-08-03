@@ -8,8 +8,7 @@ export const PLOT_3D = new URL(location.href).searchParams.has("plot3d")
  * The intensity to use for an ambient light so that phong materials are colored
  * exactly according to their actual colors. Checked by hand.
  */
-// @ts-expect-error unused
-const AMBIENT_LIGHT_INTENSITY = 3.15
+const LIGHT_INTENSITY = 3.15
 
 export class Cv3D implements Canvas3D {
   readonly scene = new T.Scene()
@@ -17,6 +16,7 @@ export class Cv3D implements Canvas3D {
   readonly renderer = new T.WebGLRenderer()
   readonly controls = new OrbitControls(this.camera, this.renderer.domElement)
   readonly dispose
+  readonly beforeRender: (() => void)[] = []
   readonly clippingPlanes
 
   constructor() {
@@ -41,20 +41,21 @@ export class Cv3D implements Canvas3D {
       renderer.dispose()
     }
 
-    {
-      // 3.15 seems to be perfect for coloring phong material
-      const light = new T.AmbientLight(0xffffff, 3.15)
-      scene.add(light)
-    }
+    // {
+    //   const light = new T.AmbientLight(0xffffff, AMBIENT_LIGHT_INTENSITY)
+    //   scene.add(light)
+    // }
 
     scene.background = new T.Color(0xffffff)
 
     {
       const color = 0xffffff
-      const intensity = 1
+      const intensity = LIGHT_INTENSITY
       const light = new T.DirectionalLight(color, intensity)
-      light.position.set(0, 10, 0)
       scene.add(light)
+      this.beforeRender.push(() => {
+        light.position.copy(camera.position)
+      })
     }
 
     {
@@ -78,7 +79,9 @@ export class Cv3D implements Canvas3D {
     }
 
     camera.position.z = 15
+    const { beforeRender } = this
     function animate() {
+      beforeRender.forEach((x) => x())
       renderer.render(scene, camera)
     }
     controls.addEventListener("change", animate)
@@ -89,7 +92,7 @@ export class Cv3D implements Canvas3D {
   }
 
   sphere(x: number, y: number, z: number, r: number) {
-    const sphereGeo = new T.SphereGeometry(r)
+    const sphereGeo = new T.SphereGeometry(r, 64, 32)
     const mat = new T.MeshPhongMaterial({
       color: 0xc74440,
       side: T.DoubleSide,
@@ -108,6 +111,7 @@ export class Cv3D implements Canvas3D {
       queueMicrotask(() => {
         if (!this.queued) return
         this.queued = false
+        this.beforeRender.forEach((x) => x())
         this.renderer.render(this.scene, this.camera)
         console.log("rendering")
       })

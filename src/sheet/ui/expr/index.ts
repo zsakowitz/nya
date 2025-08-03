@@ -6,6 +6,7 @@ import { Entry } from "!/exec/item"
 import type { Executable } from "!/exec/state"
 import type { CanvasJs } from "!/std/2d"
 import "@/eval/txs"
+import { each } from "@/eval/util"
 import { FieldInert } from "@/field/field-inert"
 import { errorText } from "@/lib/error"
 import { fa, h } from "@/lib/jsx"
@@ -59,7 +60,7 @@ export class Expr {
   readonly aside
   readonly main
   readonly entry
-  lastObj: Object3D | undefined
+  lastObjs: Object3D[] | undefined
 
   state: ExprState = { ok: false, reason: "Not computed yet." }
 
@@ -117,27 +118,22 @@ export class Expr {
   }
 
   drawSelf() {
-    if (PLOT_3D) {
-      if (this.lastObj) {
-        this.sheet.cv3D!.scene.add(this.lastObj)
-        this.sheet.cv3D!.queue()
-      }
-    } else {
-      if (!this.plot) {
-        return
-      }
+    if (PLOT_3D) return
 
-      const { ctx, scale } = this.sheet.cv
+    if (!this.plot) {
+      return
+    }
 
+    const { ctx, scale } = this.sheet.cv
+
+    ctx.resetTransform()
+    ctx.scale(scale, scale)
+    ctx.lineCap = "round"
+    ctx.lineJoin = "round"
+    try {
+      this.plot(ctx, this.sheet.cv.nya())
+    } finally {
       ctx.resetTransform()
-      ctx.scale(scale, scale)
-      ctx.lineCap = "round"
-      ctx.lineJoin = "round"
-      try {
-        this.plot(ctx, this.sheet.cv.nya())
-      } finally {
-        ctx.resetTransform()
-      }
     }
   }
 
@@ -197,6 +193,12 @@ export class Expr {
   }
 
   unlink() {
+    if (this.lastObjs) {
+      this.lastObjs.forEach((x) => x.removeFromParent())
+      this.lastObjs = undefined
+      this.sheet.cv3D!.queue()
+    }
+
     if (this.state.ok) {
       try {
         this.state.ext?.destroy?.(this.state.data)
@@ -259,21 +261,22 @@ function printJs(self: Expr, latex: string | null, value: unknown, type: Type) {
 function plotJs3D(self: Expr, value: unknown, type: Type) {
   let changed = false
 
-  if (self.lastObj) {
+  if (self.lastObjs) {
     changed = true
-    self.lastObj.removeFromParent()
-    self.lastObj = undefined
+    self.lastObjs.forEach((x) => x.removeFromParent())
+    self.lastObjs = undefined
   }
 
-  const plot3d = self.sheet.factory.env.utils.get("plot-3d", type)
+  const plot3d = self.sheet.factory.env.utils.getArray("plot-3d", type)
 
   if (plot3d) {
     changed = true
-    const object = plot3d.exec(self.sheet.cv3D!, value)
-
-    self.lastObj = object
-    self.sheet.cv3D!.scene.add(self.lastObj)
-    console.log("3d plotting", object)
+    self.lastObjs = []
+    each(type, value, (value) => {
+      const object = plot3d.exec(self.sheet.cv3D!, value)
+      self.sheet.cv3D!.scene.add(object)
+      self.lastObjs!.push(object)
+    })
   }
 
   if (changed) {
@@ -286,7 +289,7 @@ function plotJs2D(self: Expr, value: unknown, type: Type) {
   self.plot = undefined
 
   const utils = self.sheet.factory.env.utils
-  const plot2d = utils.get("plot-2d", type)
+  const plot2d = utils.getArray("plot-2d", type)
 
   if (plot2d) {
     changed = true
@@ -294,35 +297,41 @@ function plotJs2D(self: Expr, value: unknown, type: Type) {
     switch (plot2d.output) {
       case "pt":
         self.plot = (ctx, cv) => {
-          const { x, y } = plot2d.exec(cv, value)
           ctx.beginPath()
-          ctx.ellipse(x, y, Size.Point, Size.Point, 0, 0, 2 * Math.PI)
           ctx.fillStyle = Color.Purple
           ctx.globalAlpha = 1
+          each(type, value, (value) => {
+            const { x, y } = plot2d.exec(cv, value)
+            ctx.ellipse(x, y, Size.Point, Size.Point, 0, 0, 2 * Math.PI)
+          })
           ctx.fill()
         }
         break
 
       case "path1":
         self.plot = (ctx, cv) => {
-          const path = plot2d.exec(cv, value)
           ctx.strokeStyle = Color.Blue
           ctx.lineWidth = Size.Line
           ctx.globalAlpha = 1
-          ctx.stroke(path)
+          each(type, value, (value) => {
+            const path = plot2d.exec(cv, value)
+            ctx.stroke(path)
+          })
         }
         break
 
       case "path1*":
         self.plot = (ctx, cv) => {
-          const path = plot2d.exec(cv, value)
-          ctx.strokeStyle =
-            ctx.fillStyle = `rgb(${255 * path.y[0]},${255 * path.y[1]},${255 * path.y[2]})`
-          ctx.lineWidth = path.a
-          ctx.globalAlpha = path.w
-          ctx.fill(path.x)
-          ctx.globalAlpha = path.z
-          ctx.stroke(path.x)
+          each(type, value, (value) => {
+            const path = plot2d.exec(cv, value)
+            ctx.strokeStyle =
+              ctx.fillStyle = `rgb(${255 * path.y[0]},${255 * path.y[1]},${255 * path.y[2]})`
+            ctx.lineWidth = path.a
+            ctx.globalAlpha = path.w
+            ctx.fill(path.x)
+            ctx.globalAlpha = path.z
+            ctx.stroke(path.x)
+          })
         }
         break
     }

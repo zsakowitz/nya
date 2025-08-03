@@ -2,7 +2,7 @@ import { PosVirtual } from "!/ast/issue"
 import { tryPerformCall } from "!/emit/call"
 import { Block, BlockGlobals, Exits } from "!/emit/decl"
 import { Id, ident } from "!/emit/id"
-import { type Type } from "!/emit/type"
+import { ArrayEmpty, FixedArray, type Type } from "!/emit/type"
 import { Value } from "!/emit/value"
 import type { ScriptEnvironment } from "!/exec/loader"
 import type { CanvasJs, PathStyled } from "!/std/2d"
@@ -53,6 +53,16 @@ export class UtilityFnCache {
       return list.get(ty)!
     }
     return null
+  }
+
+  getArray<K extends keyof UtilityFn>(kind: K, ty: Type) {
+    if (ty instanceof FixedArray) {
+      return this.get(kind, ty.item)
+    } else if (ty == ArrayEmpty) {
+      return null
+    } else {
+      return this.get(kind, ty)
+    }
   }
 
   recollect() {
@@ -140,5 +150,15 @@ return ${ret.toRuntime() ?? ""}
     }
 
     this.utilities = utilities
+  }
+}
+
+export function each(type: Type, value: unknown, fn: (value: unknown) => void) {
+  if (type instanceof FixedArray) {
+    if (Array.isArray(value)) {
+      value.forEach(fn)
+    }
+  } else if (type != ArrayEmpty) {
+    fn(value)
   }
 }
