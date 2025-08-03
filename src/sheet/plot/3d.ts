@@ -10,13 +10,13 @@ export const PLOT_3D = new URL(location.href).searchParams.has("plot3d")
  * The intensity to use for an ambient light so that phong materials are colored
  * exactly according to their actual colors. Checked by hand.
  */
-const LIGHT_INTENSITY = 3.15 / 1.5
+const LIGHT_INTENSITY = 3.15
 
 /**
  * Dividing by `1.5` means that having two directed lights doesn't oversaturate
  * the image.
  */
-const DIRECTED_LIGHT_INTENSITY = LIGHT_INTENSITY / 1.5
+const DIRECTED_LIGHT_INTENSITY = LIGHT_INTENSITY / 1.3
 
 export class Cv3D implements Canvas3D {
   readonly scene = new T.Scene()
