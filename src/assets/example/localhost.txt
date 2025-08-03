@@ -1,4 +1,4 @@
-sphere((2,3,4),5)
+\operatorname{sphere}\left(\left(0,0,0\right),5\right)
 stats([7,8,4,3])
 vector((2,3),(4,1))
 circle((2,3),2)

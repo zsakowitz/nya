@@ -1,7 +1,6 @@
 import type { Canvas3D } from "@/lang/std/3d"
 import * as T from "three"
 import { OrbitControls } from "three/examples/jsm/Addons.js"
-import GUI from "three/examples/jsm/libs/lil-gui.module.min.js"
 
 T.Object3D.DEFAULT_UP = new T.Vector3(0, 0, 1)
 
@@ -11,7 +10,13 @@ export const PLOT_3D = new URL(location.href).searchParams.has("plot3d")
  * The intensity to use for an ambient light so that phong materials are colored
  * exactly according to their actual colors. Checked by hand.
  */
-const LIGHT_INTENSITY = 3.15
+const LIGHT_INTENSITY = 3.15 / 1.5
+
+/**
+ * Dividing by `1.5` means that having two directed lights doesn't oversaturate
+ * the image.
+ */
+const DIRECTED_LIGHT_INTENSITY = LIGHT_INTENSITY / 1.5
 
 export class Cv3D implements Canvas3D {
   readonly scene = new T.Scene()
@@ -25,10 +30,9 @@ export class Cv3D implements Canvas3D {
   constructor() {
     const { scene, camera, renderer, controls } = this
 
-    const gui = new GUI()
     const el = this.renderer.domElement
     el.className = "absolute inset-0 !size-full [image-rendering:pixelated]"
-    const update = () => {
+    const observer = new ResizeObserver(() => {
       const scale = globalThis.devicePixelRatio ?? 1
       const w = el.clientWidth
       const h = el.clientHeight
@@ -36,8 +40,7 @@ export class Cv3D implements Canvas3D {
       camera.updateProjectionMatrix()
       renderer.setSize(scale * w, scale * h, false)
       this.queue()
-    }
-    const observer = new ResizeObserver(update)
+    })
     observer.observe(el)
 
     this.dispose = () => {
@@ -46,68 +49,10 @@ export class Cv3D implements Canvas3D {
     }
 
     scene.background = new T.Color(0xffffff)
-
-    // axes
-    {
-      const axesHelper = new T.AxesHelper(10)
-      axesHelper.renderOrder = 1
-      scene.add(axesHelper)
-    }
-
-    // sphere for lightpos
-    {
-      const sphere = new T.SphereGeometry()
-      const pos = new T.Mesh(
-        sphere,
-        new T.MeshPhongMaterial({ color: "#f00", side: T.DoubleSide }),
-      )
-      scene.add(pos)
-      // const obj = new T.Vector3()
-      // gui.add(obj, "x", -10, 10)
-      // gui.add(obj, "y", -10, 10)
-      // gui.add(obj, "z", -10, 10)
-      this.beforeRender.push(() => {
-        const v1 = camera.position.clone()
-        const v2 = new T.Vector3(5, 5, 10).applyEuler(camera.rotation)
-        pos.position.copy(v2)
-      })
-    }
-
-    // light from fixed position relative to camera
-    {
-      const color = 0xffffff
-      const intensity = LIGHT_INTENSITY
-      const light = new T.DirectionalLight(color, intensity)
-      scene.add(light)
-      this.beforeRender.push(() => {
-        const v2 = new T.Vector3(5, 5, 10).applyEuler(camera.rotation)
-        light.position.copy(v2)
-        light.rotation.copy(camera.rotation)
-      })
-    }
-
-    // XY plane
-    {
-      const plane = new T.GridHelper(20, 20)
-      plane.rotation.set(Math.PI / 2, 0, 0, "XYZ")
-      scene.add(plane)
-    }
-
-    // clip-to-box planes
-    {
-      const size = 10
-      const min = new T.Vector3(-size, -size, -size)
-      const max = new T.Vector3(size, size, size)
-      renderer.localClippingEnabled = true
-      this.clippingPlanes = [
-        new T.Plane(new T.Vector3(1, 0, 0), -min.x), // Right plane
-        new T.Plane(new T.Vector3(-1, 0, 0), max.x), // Left plane
-        new T.Plane(new T.Vector3(0, 1, 0), -min.y), // Top plane
-        new T.Plane(new T.Vector3(0, -1, 0), max.y), // Bottom plane
-        new T.Plane(new T.Vector3(0, 0, 1), -min.z), // Front plane
-        new T.Plane(new T.Vector3(0, 0, -1), max.z), // Back plane
-      ]
-    }
+    addAxes(this)
+    this.clippingPlanes = createBoxClippingPlanes(this)
+    addLighting(this)
+    addXYPlane(this)
 
     camera.position.set(5, 10, 20)
     camera.lookAt(0, 0, 0)
@@ -120,7 +65,7 @@ export class Cv3D implements Canvas3D {
 
   sphere(x: number, y: number, z: number, r: number) {
     const sphereGeo = new T.SphereGeometry(r, 64, 32)
-    const mat = new T.MeshPhongMaterial({
+    const mat = new T.MeshPhysicalMaterial({
       color: 0xc74440,
       side: T.DoubleSide,
       clippingPlanes: this.clippingPlanes,
@@ -145,4 +90,45 @@ export class Cv3D implements Canvas3D {
       })
     }
   }
+}
+
+function addAxes({ scene }: Cv3D) {
+  const axesHelper = new T.AxesHelper(10)
+  axesHelper.renderOrder = 1
+  scene.add(axesHelper)
+}
+
+function addXYPlane({ scene }: Cv3D) {
+  const plane = new T.GridHelper(20, 20)
+  plane.rotation.set(Math.PI / 2, 0, 0, "XYZ")
+  scene.add(plane)
+}
+
+function addLighting({ scene, beforeRender, camera }: Cv3D) {
+  for (const source of [new T.Vector3(5, 5, 10), new T.Vector3(-5, 2, 10)]) {
+    const color = 0xffffff
+    const intensity = DIRECTED_LIGHT_INTENSITY
+    const light = new T.DirectionalLight(color, intensity)
+    scene.add(light)
+    beforeRender.push(() => {
+      const v2 = source.clone().applyEuler(camera.rotation)
+      light.position.copy(v2)
+      light.rotation.copy(camera.rotation)
+    })
+  }
+}
+
+function createBoxClippingPlanes(cv: Cv3D) {
+  const size = 10
+  const min = new T.Vector3(-size, -size, -size)
+  const max = new T.Vector3(size, size, size)
+  cv.renderer.localClippingEnabled = true
+  return [
+    new T.Plane(new T.Vector3(1, 0, 0), -min.x),
+    new T.Plane(new T.Vector3(-1, 0, 0), max.x),
+    new T.Plane(new T.Vector3(0, 1, 0), -min.y),
+    new T.Plane(new T.Vector3(0, -1, 0), max.y),
+    new T.Plane(new T.Vector3(0, 0, 1), -min.z),
+    new T.Plane(new T.Vector3(0, 0, -1), max.z),
+  ]
 }
