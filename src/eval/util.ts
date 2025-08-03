@@ -5,7 +5,7 @@ import { Id, ident } from "!/emit/id"
 import { type Type } from "!/emit/type"
 import { Value } from "!/emit/value"
 import type { ScriptEnvironment } from "!/exec/loader"
-import type { CanvasJs, PathStyled } from "!/std"
+import type { CanvasJs, PathStyled } from "!/std/2d"
 
 type ExecKey = number & ((...args: any[]) => any)
 

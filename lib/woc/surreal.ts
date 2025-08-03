@@ -1,6 +1,6 @@
 import { Impl, jsFn, v, type NyaApi, type Plugin } from "!/emit/api"
-import { VarArray, FixedArray, type Scalar } from "!/emit/type"
-import { numToLatex } from "!/std"
+import { FixedArray, VarArray, type Scalar } from "!/emit/type"
+import { numToLatex } from "!/std/latex"
 
 export default {
   meta: {

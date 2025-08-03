@@ -1,4 +1,4 @@
-import type { CanvasJs } from "!/std"
+import type { CanvasJs } from "!/std/2d"
 import { hx } from "@/lib/jsx"
 import { px, type Point } from "@/lib/point"
 import { onTheme } from "../../theme"
