@@ -4,6 +4,13 @@ import { OrbitControls } from "three/examples/jsm/Addons.js"
 
 export const PLOT_3D = new URL(location.href).searchParams.has("plot3d")
 
+/**
+ * The intensity to use for an ambient light so that phong materials are colored
+ * exactly according to their actual colors. Checked by hand.
+ */
+// @ts-expect-error unused
+const AMBIENT_LIGHT_INTENSITY = 3.15
+
 export class Plot3D {
   readonly scene = new T.Scene()
   readonly camera = new T.PerspectiveCamera(75, 1, 0.1, 1000)
@@ -45,7 +52,7 @@ export class Plot3D {
     {
       const planeSize = 40
       const loader = new T.TextureLoader()
-      const texture = loader.load(checker)
+      const texture = loader.load(checker, update)
       texture.wrapS = T.RepeatWrapping
       texture.wrapT = T.RepeatWrapping
       texture.magFilter = T.NearestFilter
@@ -64,28 +71,29 @@ export class Plot3D {
     }
 
     {
-      const sphereRadius = 3
-      const sphereWidthDivisions = 32
-      const sphereHeightDivisions = 16
-      const sphereGeo = new T.SphereGeometry(
-        sphereRadius,
-        sphereWidthDivisions,
-        sphereHeightDivisions,
-      )
-      const sphereMat = new T.MeshPhongMaterial({ color: "#CA8" })
-      const mesh = new T.Mesh(sphereGeo, sphereMat)
+      const sphereRadius = 2
+      const sphereGeo = new T.SphereGeometry(sphereRadius, 64, 32)
+      const mat = new T.MeshPhongMaterial({ color: 0xc74440 })
+      const mesh = new T.Mesh(sphereGeo, mat)
       mesh.position.set(-sphereRadius - 1, sphereRadius - 2, 0)
       scene.add(mesh)
     }
+
+    {
+      // 3.15 seems to be perfect for coloring phong material
+      const light = new T.AmbientLight(0xffffff, 3.15)
+      scene.add(light)
+    }
+
+    scene.background = new T.Color(0xffffff)
 
     {
       const color = 0xffffff
       const intensity = 1
       const light = new T.DirectionalLight(color, intensity)
       light.position.set(0, 10, 0)
-      light.target.position.set(-5, 0, 0)
       scene.add(light)
-      scene.add(light.target)
+      // light.target = camera
     }
 
     camera.position.z = 5
@@ -93,6 +101,7 @@ export class Plot3D {
       renderer.render(scene, camera)
     }
     controls.addEventListener("change", animate)
+    controls
   }
 
   get el() {
