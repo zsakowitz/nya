@@ -9,6 +9,10 @@ fn sphere(center: Point3D, radius: num) -> Sphere {
   Sphere { center, radius }
 }
 
+fn %plot_3d(cv: Canvas3D, obj: Sphere) -> Object3D {
+  cv.sphere(obj.center.x, obj.center.y, obj.center.z, obj.radius)
+}
+
 expose package {
   default: true,
   name: "3D geometry",

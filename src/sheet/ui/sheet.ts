@@ -35,6 +35,7 @@ export type RequireRadiansContext = `call '${string}' ${RequireRadiansReason}`
 
 export class Sheet {
   readonly cv = new Cv("absolute inset-0 size-full touch-none")
+  readonly cv3D = PLOT_3D ? new Plot3D() : null
   readonly scope: Scope
   readonly list = new ItemListGlobal(this)
   readonly set = new EntrySet()
@@ -296,7 +297,7 @@ ${fns.join("\n\n")}`,
       "",
       canvas,
       this.cv.el,
-      PLOT_3D ? new Plot3D().el : null,
+      PLOT_3D ? this.cv3D!.el : null,
       toolbarDependentCvGradient,
       h(
         "absolute block sm:top-0 bottom-0 left-0 sm:w-1 w-full h-1 sm:h-full from-(--nya-sidebar-shadow) to-transparent bg-linear-to-t sm:bg-linear-to-r",

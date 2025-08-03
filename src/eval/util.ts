@@ -6,18 +6,19 @@ import { type Type } from "!/emit/type"
 import { Value } from "!/emit/value"
 import type { ScriptEnvironment } from "!/exec/loader"
 import type { CanvasJs, PathStyled } from "!/std/2d"
+import type { Canvas3D } from "@/lang/std/3d"
+import type { Object3D } from "three"
 
 type ExecKey = number & ((...args: any[]) => any)
+type Pt = { x: number; y: number }
 
 export interface UtilityFn {
   display: { exec(value: unknown): string }
   "plot-2d":
-    | {
-        output: "pt"
-        exec(cv: CanvasJs, value: unknown): { x: number; y: number }
-      }
+    | { output: "pt"; exec(cv: CanvasJs, value: unknown): Pt }
     | { output: "path1"; exec(cv: CanvasJs, value: unknown): Path2D }
     | { output: "path1*"; exec(cv: CanvasJs, value: unknown): PathStyled }
+  "plot-3d": { exec(cv: Canvas3D, value: unknown): Object3D }
 }
 
 type Utilities = { [K in keyof UtilityFn]: Map<Type, UtilityFn[K]> }
@@ -26,6 +27,7 @@ function newUtilities(): Utilities {
   return {
     display: new Map(),
     "plot-2d": new Map(),
+    "plot-3d": new Map(),
   }
 }
 
@@ -59,6 +61,8 @@ export class UtilityFnCache {
     const lib = this.lib.libJs
     const tyLatex = lib.tyLatex
     const tyCanvas = lib.ty("Canvas")!
+    const tyCanvas3D = lib.ty("Canvas3D")!
+    const tyObject3D = lib.ty("Object3D")!
     const tyCanvasPoint = lib.ty("CanvasPoint")!
     const tyPath = lib.ty("Path")!
     const tyPathStyled = lib.ty("PathStyled")!
@@ -101,6 +105,17 @@ export class UtilityFnCache {
               exec: (ret.push([[v1, arg], b1, val]) - 1) as ExecKey,
             })
           }
+        }
+      }
+
+      {
+        const b1 = new Block(globals, new Exits(null))
+        const v1 = new Value("canvas", tyCanvas3D, false)
+        const val = tryPerformCall(ident("%plot_3d"), b1, [v1, arg], pos1, pos1)
+        if (val && val.type == tyObject3D) {
+          utilities["plot-3d"].set(ty, {
+            exec: (ret.push([[v1, arg], b1, val]) - 1) as ExecKey,
+          })
         }
       }
     }

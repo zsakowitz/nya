@@ -11,7 +11,7 @@ interface ItemCreateProps<U> {
   from?: NoInfer<U>
 }
 
-abstract class ItemList {
+export abstract class ItemList {
   abstract readonly root: ItemListGlobal
   abstract readonly sheet: Sheet
   abstract readonly parent: ItemRef<unknown> | undefined

@@ -9,8 +9,10 @@ import "@/eval/txs"
 import { FieldInert } from "@/field/field-inert"
 import { errorText } from "@/lib/error"
 import { fa, h } from "@/lib/jsx"
+import { PLOT_3D } from "@/sheet/plot/3d"
 import type { Shader } from "@/sheet/plot/shader"
 import { faWarning } from "@fortawesome/free-solid-svg-icons/faWarning"
+import type { Object3D } from "three"
 import { Store, type AnyExt } from "../../ext"
 import { FACTORY_EXPR } from "../../factory-expr"
 import type { ItemRef } from "../../items"
@@ -57,6 +59,7 @@ export class Expr {
   readonly aside
   readonly main
   readonly entry
+  lastObj: Object3D | undefined
 
   state: ExprState = { ok: false, reason: "Not computed yet." }
 
@@ -114,20 +117,27 @@ export class Expr {
   }
 
   drawSelf() {
-    if (!this.plot) {
-      return
-    }
+    if (PLOT_3D) {
+      if (this.lastObj) {
+        this.sheet.cv3D!.scene.add(this.lastObj)
+        this.sheet.cv3D!.queue()
+      }
+    } else {
+      if (!this.plot) {
+        return
+      }
 
-    const { ctx, scale } = this.sheet.cv
+      const { ctx, scale } = this.sheet.cv
 
-    ctx.resetTransform()
-    ctx.scale(scale, scale)
-    ctx.lineCap = "round"
-    ctx.lineJoin = "round"
-    try {
-      this.plot(ctx, this.sheet.cv.nya())
-    } finally {
       ctx.resetTransform()
+      ctx.scale(scale, scale)
+      ctx.lineCap = "round"
+      ctx.lineJoin = "round"
+      try {
+        this.plot(ctx, this.sheet.cv.nya())
+      } finally {
+        ctx.resetTransform()
+      }
     }
   }
 
@@ -246,7 +256,32 @@ function printJs(self: Expr, latex: string | null, value: unknown, type: Type) {
   self.elOutput.classList.remove("hidden")
 }
 
-function plotJs(self: Expr, value: unknown, type: Type) {
+function plotJs3D(self: Expr, value: unknown, type: Type) {
+  let changed = false
+
+  if (self.lastObj) {
+    changed = true
+    self.lastObj.removeFromParent()
+    self.lastObj = undefined
+  }
+
+  const plot3d = self.sheet.factory.env.utils.get("plot-3d", type)
+
+  if (plot3d) {
+    changed = true
+    const object = plot3d.exec(self.sheet.cv3D!, value)
+
+    self.lastObj = object
+    self.sheet.cv3D!.scene.add(self.lastObj)
+    console.log("3d plotting", object)
+  }
+
+  if (changed) {
+    self.sheet.cv3D!.queue()
+  }
+}
+
+function plotJs2D(self: Expr, value: unknown, type: Type) {
   let changed = !!self.plot
   self.plot = undefined
 
@@ -303,6 +338,11 @@ function compileForJs(self: Expr, exe: Executable) {
   const { block, value } = env.process(exe.expr, "<expression>")
   const result = env.compute(block, value)
 
-  plotJs(self, result, value.type)
   printJs(self, env.display(value.type, result), result, value.type)
+
+  if (PLOT_3D) {
+    plotJs3D(self, result, value.type)
+  } else {
+    plotJs2D(self, result, value.type)
+  }
 }
