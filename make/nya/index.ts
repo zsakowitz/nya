@@ -1,4 +1,4 @@
-import "../../nya/woc/surreal" // so `bun --watch` works on it
+import "../../lib/woc/surreal" // so `bun --watch` works on it
 
 try {
   await import("./scan")

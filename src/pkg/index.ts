@@ -1,4 +1,4 @@
-import PKG_SURREAL from "../../nya/woc/surreal"
+import PKG_SURREAL from "../../lib/woc/surreal"
 import { NYALANG_PACKAGES_BUILTIN } from "./index-nyalang"
 import type { Addon, Package } from "./types"
 
