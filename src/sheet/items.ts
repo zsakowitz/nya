@@ -1,11 +1,8 @@
 import { errorText } from "@/error"
-import type { GlslResult } from "@/eval/lib/fn"
 import { D, L, U, type Dir, type VDir } from "@/field/dir"
 import { h, t } from "@/jsx"
-import type { Point } from "@/lib/point"
 import type { ItemFactory } from "./item"
-import type { Hint } from "./ui/cv/item"
-import type { ItemWithTarget } from "./ui/cv/move"
+import type { Shader } from "./plot/shader"
 import type { Sheet } from "./ui/sheet"
 
 interface ItemCreateProps<U> {
@@ -237,7 +234,7 @@ abstract class ItemList {
     }
   }
 
-  glslWith(list: GlslResult[]) {
+  glslWith(list: Shader[]) {
     for (const ref of this.items) {
       const result = ref.factory.glsl?.(ref.data)
 
@@ -261,44 +258,6 @@ abstract class ItemList {
       }
     } else {
       return this.fromStringDefault(source)
-    }
-  }
-
-  find(items: Record<number, ItemWithTarget[]>, at: Point, hint: Hint) {
-    // Reverse order is used here since later items come later in draw order and
-    // therefore earlier in interaction order.
-
-    for (let i = this.items.length - 1; i >= 0; i--) {
-      // Exit early if we've found enough solutions; caller is responsible for
-      // providing better hints if they don't like our results.
-      if ((items[hint.maxOrder]?.length ?? 0) >= hint.limit) {
-        return
-      }
-
-      const {
-        factory: { plot },
-        data,
-        sublist,
-      } = this.items[i]!
-
-      const order = plot?.order(data)
-
-      sublist?.find(items, at, hint)
-
-      if (order != null && plot?.target) {
-        const plotItems = plot.items(data)
-        for (let i = plotItems.length - 1; i >= 0; i--) {
-          const item = plotItems[i]!
-          if (plot.target.hits({ data, index: i, item }, at, hint)) {
-            ;(items[order] ??= []).push({
-              target: plot.target,
-              data,
-              item,
-              index: i,
-            })
-          }
-        }
-      }
     }
   }
 }
@@ -348,17 +307,14 @@ export class ItemListGlobal extends ItemList {
     max: number,
   ): void {
     super.createDrawList(list, addons, suppressed, min, max)
-    this.sheet.pick.draw(addons)
   }
 
   draw(min: number, max: number) {
-    this.sheet.pick.checkSuppressed()
-    const s = this.sheet.pick.suppressed
-    this.drawWith(s, min, max)
+    this.drawWith(undefined, min, max)
   }
 
   glsl() {
-    const list: GlslResult[] = []
+    const list: Shader[] = []
     this.glslWith(list)
     return list
   }

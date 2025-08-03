@@ -1,5 +1,5 @@
-import type { GlslHelpers, GlslResult } from "@/eval/lib/fn"
-import type { Plottable } from "../ui/cv/item"
+import type { Plottable } from "../plot/plottable"
+import type { Shader } from "../plot/shader"
 import type { Expr } from "../ui/expr"
 
 // SHAPE: maybe use consistent shapes
@@ -19,7 +19,7 @@ export interface Ext<T extends {}, U> {
   el?(data: NoInfer<T>): HTMLElement | undefined
   plot?: Plottable<T, U>
   // TODO: glsl should be moved to shader plugin
-  glsl?(data: NoInfer<T>, helpers: GlslHelpers): GlslResult | undefined
+  glsl?(data: NoInfer<T>): Shader | undefined
 }
 
 export type AnyExt = Ext<{}, unknown>

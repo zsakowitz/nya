@@ -40,3 +40,23 @@ export function errorText(e: unknown) {
     : String(e)
   )
 }
+
+function tbd(): never {
+  throw new Error("This feature is being rebuilt.")
+}
+
+export const TBD: any = new Proxy(function () {}, {
+  apply: tbd,
+  construct: tbd,
+  defineProperty: tbd,
+  deleteProperty: tbd,
+  get: tbd,
+  getOwnPropertyDescriptor: tbd,
+  getPrototypeOf: tbd,
+  has: tbd,
+  isExtensible: tbd,
+  ownKeys: tbd,
+  preventExtensions: tbd,
+  set: tbd,
+  setPrototypeOf: tbd,
+})

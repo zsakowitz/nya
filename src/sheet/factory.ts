@@ -3,9 +3,7 @@ import { EntrySet } from "!/exec/item"
 import { ScriptEnvironment } from "!/exec/loader"
 import { index, type PackageId } from "#/index"
 import type { Package, ToolbarItem } from "#/types"
-import type { ParenLhs, ParenRhs } from "@/field/cmd/math/brack"
 import {
-  despace,
   Inits,
   WordMap,
   WordMapWithoutSpaces,
@@ -36,8 +34,6 @@ export class SheetFactory {
   }
 
   readonly loaded: Partial<Record<PackageId, Package>> = Object.create(null)
-  private queuedCoercions: Record<string, Record<string, TyCoerce<any, any>>> =
-    Object.create(null)
   async load(id: PackageId) {
     if (id in this.loaded) return
     const pkg = (await index[id]()).default
@@ -74,212 +70,9 @@ export class SheetFactory {
             x[1] ? "prefix" : "var",
           ),
       )
-
-    for (const prec in pkg.sheet?.exts) {
-      const exts = (this.exts[prec as any] ??= new Exts())
-      for (const ext of pkg.sheet.exts[prec as any]!) {
-        exts.add(ext)
-      }
-    }
-
-    for (const prec in pkg.sheet?.toolbar) {
-      const toolbar = (this.toolbar[prec as any] ??= [])
-      for (const ext of pkg.sheet.toolbar[prec as any]!) {
-        toolbar.push(ext)
-      }
-    }
-
-    for (const key in pkg.sheet?.keys) {
-      this.keys[key] = pkg.sheet.keys[key]!
-    }
-
-    for (const key in pkg.field?.inits) {
-      this.options.inits.set(key, pkg.field.inits[key]!)
-    }
-
-    for (const key in pkg.field?.latex) {
-      this.options.latex.set(key, pkg.field.latex[key]!)
-    }
-
-    for (const keyRaw in pkg.eval?.op?.unary) {
-      const key = keyRaw as PuncUnary
-      if (/^[A-Za-z]+$/.test(key)) {
-        this.options.words.init(key, "prefix")
-      }
-      OP_UNARY[key] = pkg.eval.op.unary[key]!
-    }
-
-    for (const key in pkg.eval?.tx?.magic) {
-      const txr = pkg.eval.tx.magic[key]!
-      if (
-        TXR_MAGICVAR[key] &&
-        (TXR_MAGICVAR[key].layer ?? 0) >= (txr.layer ?? 0)
-      ) {
-        continue
-      }
-      if (/^[A-Za-z ]+$/.test(key)) {
-        this.options.words.init(
-          key,
-          txr.takesWord ? "magicprefixword" : "magicprefix",
-        )
-      }
-      for (const helper of txr.helpers || []) {
-        this.options.words.init(helper, "infix")
-        PRECEDENCE_MAP[helper] = Precedence.WordInfixList
-        if (!(helper in OP_BINARY)) {
-          OP_BINARY[helper] = {
-            glsl() {
-              throw new Error(
-                `The operator '${helper}' can only be used as part of an '${key}' expression.`,
-              )
-            },
-            js() {
-              throw new Error(
-                `The operator '${helper}' can only be used as part of an '${key}' expression.`,
-              )
-            },
-          }
-        }
-      }
-
-      TXR_MAGICVAR[despace(key)] = txr
-      FNLIKE_MAGICVAR[despace(key)] = !!txr.fnlike
-    }
-
-    for (const keyRaw in pkg.eval?.tx?.group) {
-      const key = keyRaw as `${ParenLhs} ${ParenRhs}`
-      const txr = pkg.eval.tx.group[key]!
-      if (TXR_GROUP[key] && (TXR_GROUP[key].layer ?? 0) >= (txr.layer ?? 0)) {
-        continue
-      }
-      TXR_GROUP[key] = txr
-    }
-
-    for (const keyRaw in pkg.eval?.tx?.unary) {
-      const key = keyRaw as PuncUnary
-      const txr = pkg.eval.tx.unary[key]!
-      if (
-        TXR_OP_UNARY[key] &&
-        (TXR_OP_UNARY[key].layer ?? 0) >= (txr.layer ?? 0)
-      ) {
-        continue
-      }
-      if (/^[A-Za-z]+$/.test(key)) {
-        this.options.words.init(key, "prefix")
-      }
-      TXR_OP_UNARY[key] = txr
-    }
-
-    for (const keyRaw in pkg.eval?.tx?.binary) {
-      const key = keyRaw as OpBinary
-      const txr = pkg.eval.tx.binary[key]!
-      if (
-        TXR_OP_BINARY[key] &&
-        (TXR_OP_BINARY[key].layer ?? 0) >= (txr.layer ?? 0)
-      ) {
-        continue
-      }
-      if (!(key in PRECEDENCE_MAP)) {
-        PRECEDENCE_MAP[key] = Precedence.WordInfix
-      }
-      if (/^[A-Za-z]+$/.test(key)) {
-        this.options.words.init(key, "infix")
-      }
-      TXR_OP_BINARY[key] = txr
-    }
-
-    for (const item of pkg.sheet?.items ?? []) {
-      if (
-        !this.items[item.id] ||
-        (this.items[item.id]?.layer ?? 0) < (item.layer ?? 0)
-      ) {
-        this.items[item.id] = item
-      }
-    }
-
-    for (const keyRaw in pkg.eval?.tx?.suffix) {
-      const key = keyRaw as SuffixName
-      const txr = pkg.eval.tx.suffix[key]!
-      if (TXR_SUFFIX[key] && (TXR_SUFFIX[key].layer ?? 0) >= (txr.layer ?? 0)) {
-        continue
-      }
-      TXR_SUFFIX[key] = txr as TxrSuffix<unknown>
-    }
-
-    for (const keyRaw in pkg.eval?.sym) {
-      const key = keyRaw as SymName
-      const txr = pkg.eval.sym[key]!
-      if (TXR_SYM[key] && (TXR_SYM[key].layer ?? 0) >= (txr.layer ?? 0)) {
-        continue
-      }
-      TXR_SYM[key] = txr as TxrSym<unknown>
-    }
-
-    for (const key in pkg.eval?.tx?.wordPrefix) {
-      const txr = pkg.eval.tx.wordPrefix[key]!
-      if (
-        TXR_MAGICVAR[key] &&
-        (TXR_MAGICVAR[key].layer ?? 0) >= (txr.layer ?? 0)
-      ) {
-        continue
-      }
-
-      function contents(node: MagicVar) {
-        if (node.sub) {
-          throw new Error(`Cannot apply subscripts to '${key}'.`)
-        }
-        if (node.sup) {
-          throw new Error(`Cannot apply superscripts to '${key}'.`)
-        }
-        if (node.prop) {
-          throw new Error(`Cannot access a specific property of '${key}'.`)
-        }
-        const c = node.contents
-        if (c.type == "var" && c.kind == "var" && !c.sup) {
-          return { value: c.value, sub: c.sub }
-        }
-        throw new Error(
-          `'${key}' should be followed by a letter, word, or name.`,
-        )
-      }
-
-      const txr2: TxrMagicVar = {
-        label: txr.label,
-        deps() {},
-        glsl(node, props) {
-          return txr.glsl(contents(node), props)
-        },
-        js(node, props) {
-          return txr.js(contents(node), props)
-        },
-        sym(node, props) {
-          return txr.sym(contents(node), props)
-        },
-        fnlike: true,
-        takesWord: true,
-        layer: txr.layer,
-      }
-      if (/^[A-Za-z]+$/.test(key)) {
-        this.options.words.init(key, "magicprefixword")
-      }
-      TXR_MAGICVAR[key] = txr2
-      FNLIKE_MAGICVAR[key] = true
-    }
-
-    if (pkg.sheet?.defaultItem) {
-      const item = pkg.sheet.defaultItem
-
-      if (
-        !this.defaultItem ||
-        (this.defaultItem?.layer ?? 0) < (item.layer ?? 0)
-      ) {
-        this.defaultItem = item
-      }
-    }
   }
 
   create() {
-    tidyCoercions()
     const sheet = new Sheet(
       this.options,
       new Exts(

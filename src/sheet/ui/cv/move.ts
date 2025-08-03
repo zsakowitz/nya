@@ -55,29 +55,14 @@ export function registerWheelHandler(cv: Cv) {
 export function registerPointerHandler(cv: Cv) {
   let initial: Point | undefined
   let ptrs = 0
-  let moved = false
-  let dragOffset: Point | undefined
-  let last: Point | undefined
-  let picking: Hint | undefined
-  let oc: (() => void) | undefined
 
   function onPointerMove(event: { offsetX: number; offsetY: number }) {
-    const pt: Point = px(event.offsetX, event.offsetY)
-    last = pt
-
-    if (current) {
-      initial = cv.toPaper(pt)
-    }
-
     if (!initial) {
       return
     }
 
-    moved = true
     ;(document.activeElement as HTMLElement).blur?.()
-
     const self = cv.eventToPaper(event)
-
     cv.move(px(initial.x - self.x, initial.y - self.y))
   }
 
@@ -92,50 +77,16 @@ export function registerPointerHandler(cv: Cv) {
       ptrs++
       cv.el.setPointerCapture(event.pointerId)
       if (ptrs != 1) {
-        last = undefined
         return
       }
 
-      const pt: Point = (last = px(event.offsetX, event.offsetY))
-      moved = false
-
-      if (picking) {
-        if (current) {
-          current.target.toggle(current, false, "pick")
-        }
-        current = handler.find(pt, picking)
-        if (current) {
-          current.target.toggle(current, true, "pick")
-        }
-        oc?.()
-        return
-      }
-
+      const pt: Point = px(event.offsetX, event.offsetY)
       initial = cv.toPaper(pt)
-
-      if (current) {
-        current.target.toggle(current, false, "hover")
-        current = undefined
-        dragOffset = undefined
-      }
-
-      const next = handler.find(pt, Hint.one())
-      if (next) {
-        next.target.toggle(next, true, "hover")
-        const origin = next.target.dragOrigin?.(next)
-        if (origin) {
-          dragOffset = px(event.offsetX - origin.x, event.offsetY - origin.y)
-          next.target.toggle(next, true, "drag")
-        } else {
-          dragOffset = undefined
-        }
-      }
-      current = next
     },
     { passive: false },
   )
 
-  function onPointerUp(event?: PointerEvent) {
+  function onPointerUp(_event?: PointerEvent) {
     ptrs--
 
     if (ptrs < 0) {
@@ -144,141 +95,13 @@ export function registerPointerHandler(cv: Cv) {
 
     initial = undefined
 
-    const pt: Point | undefined = event && px(event.offsetX, event.offsetY)
-
-    if (picking) {
-      let ret: ItemWithTarget | null = null
-      if (current) {
-        ;(ret = current).target.toggle(current, false, "pick")
-        current = undefined
-      }
-      if (ptrs == 0) {
-        handler.take(ret)
-      }
-      // Recheck `picking` since `handler.pick` may have changed it
-      if (picking && pt) {
-        current = handler.find(pt, picking)
-        if (current) {
-          current.target.toggle(current, true, "pick")
-        }
-      }
-      oc?.()
-      if (picking) {
-        return
-      }
-    }
-
     if (ptrs != 0) {
       return
     }
-
-    if (current) {
-      if (dragOffset) {
-        if (pt && moved) {
-          current.target.drag!(
-            current,
-            cv.toPaperBounded(px(pt.x - dragOffset.x, pt.y - dragOffset.y)),
-          )
-        }
-
-        current.target.toggle(current, false, "drag")
-      } else {
-        current.target.toggle(current, false, "click")
-      }
-
-      current.target.toggle(current, false, "hover")
-    }
-    current = undefined
-    dragOffset = undefined
-
-    if (!pt) return
-
-    const next = handler.find(pt, Hint.one())
-    if (next) {
-      next.target.toggle(next, true, "hover")
-    }
-    current = next
-    dragOffset = undefined
-  }
-
-  function onPointerLeave() {
-    if (picking && current) {
-      current.target.toggle(current, false, "pick")
-      current = undefined
-      oc?.()
-    }
-    last = undefined
   }
 
   addEventListener("pointerup", onPointerUp)
-  cv.el.addEventListener("pointerleave", onPointerLeave)
-  addEventListener("pointerleave", () => (last = undefined))
   addEventListener("contextmenu", () => onPointerUp())
-
-  return {
-    get picking() {
-      return picking
-    },
-    set picking(v) {
-      if (!v && !picking) {
-        return
-      }
-
-      if (current) {
-        if (picking) {
-          current.target.toggle(current, false, "pick")
-        } else {
-          if (dragOffset) {
-            current.target.toggle(current, false, "drag")
-            dragOffset = undefined
-          }
-          current.target.toggle(current, false, "hover")
-        }
-
-        current = undefined
-        moved = false
-      }
-
-      picking = v
-
-      if (v) {
-        if (last) {
-          current = handler.find(last, v)
-          if (current) {
-            current.target.toggle(current, true, "pick")
-          }
-        }
-      } else {
-        if (last) {
-          const next = handler.find(last, Hint.one())
-          if (next) {
-            next.target.toggle(next, true, "hover")
-            if (ptrs) {
-              const origin = next.target.dragOrigin?.(next)
-              if (origin) {
-                dragOffset = px(last.x - origin.x, last.y - origin.y)
-                next.target.toggle(next, true, "drag")
-              } else {
-                dragOffset = undefined
-              }
-            }
-          }
-          current = next
-        }
-      }
-
-      oc?.()
-    },
-    get oc(): undefined {
-      return
-    },
-    set oc(v: () => void) {
-      oc = v
-    },
-    get picked() {
-      return picking && current
-    },
-  }
 }
 
 export type PointerHandlerRet = ReturnType<typeof registerPointerHandler>

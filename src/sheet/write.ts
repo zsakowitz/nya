@@ -1,7 +1,9 @@
+import { TBD } from "@/error"
 import { safe } from "@/eval/lib/util"
 import type { Cursor } from "@/field/model"
 import { int, type SReal } from "@/lib/real"
 
+const Display = TBD
 export function write(
   cursor: Cursor,
   value: SReal,
@@ -12,7 +14,7 @@ export function write(
   const base = baseRaw.num()
 
   if (!(safe(base) && 2 <= base && base <= 36)) {
-    new Display(cursor, baseRaw || int(10)).value(value.num(), signed)
+    // new Display(cursor, baseRaw || int(10)).value(value.num(), signed)
     return
   }
 

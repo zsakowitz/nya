@@ -9,17 +9,11 @@ import { Value } from "./value"
 
 const ID_MATMUL = ident("@#")
 const ID_JOIN = ident("join")
-const ID_COUNT = ident("count")
 
 type CallResult = { ok: true; value: Value } | { ok: false; error: Error }
 
 // special-cased since it's polymorphic to the core
-function fnJoin(
-  args: Value[],
-  block: Block,
-  namePos: Pos,
-  fullPos: Pos,
-): Value {
+function fnJoin(args: Value[], block: Block, pos: Pos): Value {
   args = args.filter((x) => x.type != ArrayEmpty)
   if (args.length == 0) {
     return new Value(0, ArrayEmpty, true)
@@ -38,7 +32,7 @@ function fnJoin(
         args.map((x) => x.type),
         null,
       )}.`,
-      fullPos,
+      pos,
     )
   }
 
@@ -54,7 +48,7 @@ function fnJoin(
             new FixedArray(block.props, into, x.type.count)
           : into,
           block,
-          fullPos,
+          pos,
         ),
       )
 
@@ -104,8 +98,9 @@ export function performCallRaw(
       return { ok: true, value: matrixMultiply(block, args[0]!, args[1]!) }
     }
   } else if (id == ID_JOIN) {
-    return { ok: true, value: fnJoin(args, block, namePos, fullPos) }
+    return { ok: true, value: fnJoin(args, block, fullPos) }
   }
+  // TODO: special-case count
 
   const local = block.locals.get(id)
 

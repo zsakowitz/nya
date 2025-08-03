@@ -1,5 +1,4 @@
 import { todo } from "!/emit/error"
-import type { Node } from "@/eval/ast/token"
 import {
   infx,
   JUXTAPOSE_TOKEN,
@@ -151,11 +150,6 @@ export class Block {
     }
 
     return new Parser(ir, JUXTAPOSE_TOKEN).parse()
-  }
-
-  // FIXME: NYALANG: remove .expr()
-  expr(_maybeBinding = true): Node {
-    return { type: "num", value: "3948394", span: null }
   }
 
   /** Creates a cursor focused at the given position in this {@linkcode Block}. */

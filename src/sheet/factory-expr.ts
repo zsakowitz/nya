@@ -35,46 +35,11 @@ export const FACTORY_EXPR: ItemFactory<Expr, { geo?: boolean }> = {
       return Order.Graph
     },
     items(data) {
-      return data.plot ? [1] : [] // data.state.ext?.plot?.items(data.state.data) ?? []
+      return data.plot ? [1] : []
     },
     draw(data) {
       data.drawSelf()
     },
-    // target: {
-    //   hits(data, at, hint) {
-    //     const state = data.data.state as ExprStateOk
-    //     return !!state.ext!.plot!.target?.hits(local(data), at, hint)
-    //   },
-    //   focus(data) {
-    //     const state = data.state as ExprStateOk
-    //     state.ext?.plot?.target?.focus(state.data!)
-    //   },
-    //   toggle(item, on, reason) {
-    //     const state = item.data.state as ExprStateOk
-    //     state.ext?.plot?.target!.toggle(local(item), on, reason)
-    //   },
-    //   ref(item) {
-    //     const state = item.data.state as ExprStateOk
-    //     return state.ext?.plot?.target!.ref(local(item)) ?? new Block(null)
-    //   },
-    //   val(item) {
-    //     const state = item.data.state as ExprStateOk
-    //     return (
-    //       state.ext?.plot?.target!.val(local(item)) ?? {
-    //         type: "never",
-    //         value: "__never",
-    //       }
-    //     )
-    //   },
-    //   dragOrigin(item) {
-    //     const state = item.data.state as ExprStateOk
-    //     return state.ext?.plot?.target!.dragOrigin?.(local(item)) ?? null
-    //   },
-    //   drag(item, at) {
-    //     const state = item.data.state as ExprStateOk
-    //     return state.ext?.plot?.target!.drag!(local(item), at)
-    //   },
-    // },
   },
   glsl(data) {
     return data.glsl

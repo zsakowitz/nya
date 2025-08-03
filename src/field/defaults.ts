@@ -39,7 +39,6 @@ import {
 } from "./cmd/leaf/sym"
 import { CmdTextInert } from "./cmd/leaf/text-inert"
 import { CmdToken } from "./cmd/leaf/token"
-import { CmdTyName } from "./cmd/leaf/tyname"
 import { CmdVar, type WordKind } from "./cmd/leaf/var"
 import { CmdWord } from "./cmd/leaf/word"
 import { CmdList } from "./cmd/logic/list"
@@ -284,8 +283,6 @@ const latex = new WordMap<LatexInit>([
   ],
   ["\\ux", CmuSym],
   ["\\uxv", CmuSym],
-  ["\\tyname", CmdTyName],
-  ["\\ty", CmdTyName],
   ["\\token", CmdToken],
   ["\\wordvar", CmdWord],
   ["\\wordprefix", CmdWord],

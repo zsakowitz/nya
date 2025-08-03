@@ -1,5 +1,10 @@
 import type { NameRaw } from "@/eval2/node"
-import { P, PRECEDENCE_WORD_BINARY, PRECEDENCE_WORD_UNARY } from "@/eval2/prec"
+import {
+  P,
+  Precedence,
+  PRECEDENCE_WORD_BINARY,
+  PRECEDENCE_WORD_UNARY,
+} from "@/eval2/prec"
 import { L, R, type Dir } from "@/field/dir"
 import type { Options, WordMapWithoutSpaces } from "@/field/options"
 import { h } from "@/jsx"
@@ -572,12 +577,6 @@ export class CmdVar extends Leaf {
   }
 
   endsImplicitGroup(): boolean {
-    if (this.kind == "magicprefix") {
-      return true
-    }
-    if (this.kind != "infix") {
-      return false
-    }
     let el: CmdVar = this
     let text = this.text
     while (el.part != L && el[L] instanceof CmdVar) {
@@ -585,8 +584,11 @@ export class CmdVar extends Leaf {
       el = el[L]
     }
     return (
-      {}.hasOwnProperty.call(PRECEDENCE_MAP, text) &&
-      PRECEDENCE_MAP[text as PuncBinaryStr]! <= Precedence.Sum
+      text in PRECEDENCE_WORD_BINARY ?
+        PRECEDENCE_WORD_BINARY[text]![1] < Precedence.ImplicitFnR
+      : text in PRECEDENCE_WORD_UNARY ?
+        PRECEDENCE_WORD_UNARY[text]! < Precedence.ImplicitFnR
+      : false
     )
   }
 

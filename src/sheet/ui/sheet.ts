@@ -3,7 +3,7 @@ import { EntrySet } from "!/exec/item"
 import type { PackageId } from "#/index"
 import type { ToolbarItem } from "#/types"
 import type { Options } from "@/field/options"
-import { h, hx, px, t } from "@/jsx"
+import { h, hx, t } from "@/jsx"
 import { int } from "@/lib/real"
 import { faBook } from "@fortawesome/free-solid-svg-icons/faBook"
 import { faCopy } from "@fortawesome/free-solid-svg-icons/faCopy"
@@ -25,20 +25,12 @@ import {
   registerPinchHandler,
   registerPointerHandler,
   registerWheelHandler,
-  type VirtualPoint,
 } from "./cv/move"
 import { Expr } from "./expr"
 import { createDrawAxes } from "./gridlines"
 
 export type RequireRadiansReason = "with a complex number"
 export type RequireRadiansContext = `call '${string}' ${RequireRadiansReason}`
-
-function renderDigits(n: number) {
-  return h(
-    "h-5 text-xl/[1] flex text-center items-center justify-center font-['Symbola']",
-    n.toString(),
-  )
-}
 
 export class Sheet {
   readonly cv = new Cv("absolute inset-0 size-full touch-none")
@@ -113,10 +105,6 @@ export class Sheet {
 
     this.cv.fn(OrderMajor.Canvas, () => {
       this.list.draw(Order.Grid, Infinity) // canvas items + pick preview
-      pick.picked?.target.draw?.(
-        pick.picked,
-        !!pick.picking?.virtuals.includes(pick.picked as VirtualPoint),
-      ) // currently active virtual point
     })
 
     // prepare glsl context
@@ -359,11 +347,6 @@ ${fns.join("\n\n")}`,
       ),
     )
 
-    const closeAddons = h(
-      "mb-2 px-[calc(0.75rem+1px)] text-(--nya-text-prose) flex flex-col gap-2",
-      px`Addons extend project nya with extra functionality. They can add new functions, data types, and other constructs. Clicking the "Docs" icon will show additional guides after you've selected addons.`,
-    )
-
     const toolbarDependentAddonGradient = h(
       "absolute block top-0 left-0 right-0 h-1 from-(--nya-sidebar-shadow) to-transparent bg-linear-to-b",
     )
@@ -407,17 +390,6 @@ ${fns.join("\n\n")}`,
     }).observe(this.elExpressions)
 
     this.startGlslLoop()
-
-    window.addEventListener("keydown", (event) => {
-      if (
-        this.pick.isActive() &&
-        event.key == "Escape" &&
-        !(event.metaKey || event.shiftKey || event.altKey || event.ctrlKey)
-      ) {
-        event.preventDefault()
-        this.pick.cancel()
-      }
-    })
 
     this.checkToolbar = checkToolbar
 
