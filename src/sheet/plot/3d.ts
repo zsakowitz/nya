@@ -1,6 +1,5 @@
 import type { Canvas3D } from "@/lang/std/3d"
 import * as T from "three"
-import GUI from "three/examples/jsm/libs/lil-gui.module.min.js"
 
 T.Object3D.DEFAULT_UP = new T.Vector3(0, 0, 1)
 
@@ -62,12 +61,6 @@ export class Cv3D implements Canvas3D {
     addLighting(this)
     addXYPlane(this)
 
-    const gui = new GUI()
-    gui.add(this.rotation, "x", -5, 5)
-    gui.add(this.rotation, "y", -5, 5)
-    gui.add(this.rotation, "z", -5, 5)
-    gui.onChange(() => this.queue())
-
     this.rotateZ(2)
     this.rotateX(1)
   }
@@ -97,30 +90,30 @@ export class Cv3D implements Canvas3D {
   })
 
   sphere(x: number, y: number, z: number, r: number) {
-    r = 4
     const sphereGeo = new T.SphereGeometry(r, 64, 32)
     const mesh = new T.Mesh(sphereGeo, this.sphereMat)
     mesh.position.set(x, y, z)
     return mesh
   }
 
-  queued = false
+  getCamera() {
+    const camera = new T.PerspectiveCamera(50, this.el.width / this.el.height)
+    camera.position.z = 2 * this.widths.length()
+    camera.position.applyQuaternion(this.quaternion)
+    camera.position.add(this.position)
+    camera.quaternion.copy(this.quaternion)
+    return camera
+  }
+
+  private queued = false
   queue() {
     if (!this.queued) {
       this.queued = true
       queueMicrotask(() => {
         if (!this.queued) return
         this.queued = false
-        const camera = new T.PerspectiveCamera(
-          50,
-          this.el.width / this.el.height,
-        )
-        camera.position.z = 2 * this.widths.length()
-        camera.position.applyQuaternion(this.quaternion)
-        camera.position.add(this.position)
-        camera.quaternion.copy(this.quaternion)
         this.beforeRender.forEach((x) => x())
-        this.renderer.render(this.scene, camera)
+        this.renderer.render(this.scene, this.getCamera())
       })
     }
   }
@@ -131,7 +124,6 @@ export class Cv3D implements Canvas3D {
   }
 
   move(x: number, y: number) {
-    console.log("moving")
     const vec = new T.Vector3(x, 0, y)
     vec.divide(this.widths)
     vec.applyQuaternion(this.quaternion.clone())
@@ -147,14 +139,16 @@ function addAxes({ scene }: Cv3D) {
   scene.add(axesHelper)
 }
 
-function addXYPlane({ scene, position }: Cv3D) {
-  const plane = new T.GridHelper(20, 20, 0x0, 0xcccccc)
-  plane.rotation.set(Math.PI / 2, 0, 0, "XYZ")
-  // plane.onBeforeRender = () => {
-  //   const v = position.clone()
-  //   plane.position.copy(v)
-  // }
-  scene.add(plane)
+function addXYPlane({ scene, beforeRender, position }: Cv3D) {
+  const grid = new T.GridHelper(200, 200, 0xcccccc, 0xcccccc)
+  grid.rotation.set(Math.PI / 2, 0, 0)
+  beforeRender.push(() => {
+    const cx = Math.round(position.x)
+    const cy = Math.round(position.y)
+    grid.position.x = cx
+    grid.position.y = cy
+  })
+  scene.add(grid)
 }
 
 function addLighting({ scene, beforeRender, quaternion: rotation }: Cv3D) {
