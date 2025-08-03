@@ -1,7 +1,7 @@
-import { errorText } from "@/lib/error"
 import { nameIdent, ScriptDeps, type NameIdent } from "@/eval/tx"
 import { Field } from "@/field/field"
 import type { Options } from "@/field/options"
+import { errorText } from "@/lib/error"
 
 export class Scope {
   constructor(readonly options: Options) {}
@@ -92,7 +92,7 @@ export class Scope {
       } catch (e) {
         const msg = errorText(e)
         console.warn("[deps]", msg)
-        field.error = toError(e)
+        field.error = msg
         field.recompute?.()
         continue
       }
@@ -271,12 +271,4 @@ export class FieldComputed extends Field {
   }
 
   recompute?(): void
-}
-
-function toError(err: unknown) {
-  if (err instanceof Error) {
-    return err.message
-  } else {
-    return String(err)
-  }
 }
