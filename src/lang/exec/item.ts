@@ -8,7 +8,7 @@ import {
   type ReadonlyScriptDeps,
 } from "@/eval/tx"
 import { IdMap } from "../emit/decl"
-import { bug, issue, issueError } from "../emit/error"
+import { bug, errorText, issue, issueError } from "../emit/error"
 import { err, Kind, ok, SKIP, type Executable, type State } from "./state"
 
 export class EntrySet {
@@ -166,7 +166,7 @@ export class Entry {
 
   get errorMessage() {
     const err = this.error
-    return err instanceof Error ? err.message : String(err)
+    return errorText(err)
   }
 
   private _unsetDef() {

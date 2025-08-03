@@ -1,3 +1,4 @@
+import { errorText } from "@/lib/error"
 import "../../lib/woc/surreal" // so `bun --watch` works on it
 
 try {
@@ -5,5 +6,5 @@ try {
   await import("./predefined-packages")
   await import("./check")
 } catch (e) {
-  console.error(e instanceof Error ? e.message : e)
+  console.error(errorText(e))
 }
