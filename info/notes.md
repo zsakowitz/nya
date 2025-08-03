@@ -12,6 +12,7 @@ configure sheet:
 - `?cvsize=<n>`
 - `?shaderpixelsize=<1..=16>`
 - `?logfrag`
+- `?plot3d`
 
 show other pieces of content:
 

@@ -1,10 +1,10 @@
 {
   "scripts": {
     "dev": "bun make/nya && bun run build:tw && bun run esb",
-    "esb": "mkdir -p dist; cp src/assets/page/index.dev.html dist/index.html && cp -R src/assets/icon dist/icon && cp src/assets/icon/favicon.ico dist/favicon.ico && esbuild --watch=forever --loader:.woff=file --loader:.ttf=file --loader:.nya=text --loader:.glsl=text --loader:.woff2=file --loader:.svg=file --loader:.eot=file --servedir=dist --format=esm --bundle --outdir=dist --splitting src/index.ts",
+    "esb": "mkdir -p dist; cp src/assets/page/index.dev.html dist/index.html && cp -R src/assets/icon dist/icon && cp src/assets/icon/favicon.ico dist/favicon.ico && esbuild --watch=forever --loader:.woff=file --loader:.ttf=file --loader:.nya=text --loader:.glsl=text --loader:.woff2=file --loader:.svg=file --loader:.eot=file --loader:.png=file --servedir=dist --format=esm --bundle --outdir=dist --splitting src/index.ts",
     "tw": "tailwindcss -i ./src/assets/page/index.css -o ./src/assets/page/index.dist.css --watch",
     "build": "bun make/nya && bun run build:tw && bun run build:esb && cp src/assets/page/index.prod.html dist/index.html && cp -R src/assets/icon dist/icon && cp src/assets/icon/favicon.ico dist/favicon.ico",
-    "build:esb": "esbuild --bundle --minify --format=esm --outdir=dist --splitting --loader:.woff=file --loader:.ttf=file --loader:.nya=text --loader:.glsl=text --loader:.woff2=file --loader:.svg=file --loader:.eot=file src/index.ts --metafile=meta.json --legal-comments=linked",
+    "build:esb": "esbuild --bundle --minify --format=esm --outdir=dist --splitting --loader:.woff=file --loader:.ttf=file --loader:.nya=text --loader:.glsl=text --loader:.woff2=file --loader:.svg=file --loader:.eot=file --loader:.png=file src/index.ts --metafile=meta.json --legal-comments=linked",
     "build:tw": "tailwindcss -i ./src/assets/page/index.css -o ./src/assets/page/index.dist.css --minify",
     "lint": "tsc && madge src/index.ts --ts-config tsconfig.json -c",
     "lint:cycles": "madge --ts-config tsconfig.json --circular src/index.ts",
@@ -18,13 +18,15 @@
     "@zsnout/ithkuil": "^0.1.121",
     "caniuse-lite": "^1.0.30001727",
     "regl": "^2.1.1",
-    "tailwind-merge": "^2.6.0"
+    "tailwind-merge": "^2.6.0",
+    "three": "^0.179.1"
   },
   "devDependencies": {
     "@tailwindcss/cli": "^4.1.11",
     "@types/bun": "^1.2.17",
     "@types/fuzzy-search": "^2.1.5",
     "@types/node": "^22.15.32",
+    "@types/three": "^0.178.1",
     "esbuild": "^0.24.2",
     "esbuild-visualizer": "^0.7.0",
     "madge": "^8.0.0",

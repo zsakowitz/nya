@@ -14,6 +14,7 @@ import { Scope } from "../deps"
 import type { Exts } from "../ext"
 import type { SheetFactory } from "../factory"
 import { ItemListGlobal, type ItemRef } from "../items"
+import { Plot3D, PLOT_3D } from "../plot/3d"
 import { doMatchReglSize } from "../regl"
 import { REMARK } from "../remark"
 import { Slider } from "../slider"
@@ -122,43 +123,7 @@ export class Sheet {
     this.glPixelRatio.onInput = () =>
       this.setPixelRatio(this.glPixelRatio.value.num())
 
-    // FIXME: put back trig stuff
-    // const radioName = "_nya_radio_" + Math.random().toString().slice(2)
-    // const trigLabel = (name: Sheet["trigKind"]) => {
-    //   const input = hx("input", {
-    //     type: "radio",
-    //     name: radioName,
-    //     value: "deg",
-    //     class: "sr-only",
-    //   })
-    //   input.defaultChecked = this.trigKind == name
-    //   input.addEventListener("input", () => {
-    //     this.trigKind = name
-    //     this.scope.queueGlobalRecompute()
-    //   })
-    //   const label = hx(
-    //     "label",
-    //     { class: "contents cursor-pointer" },
-    //     input,
-    //     h(
-    //       "opacity-30 hover:opacity-100 [:checked+&]:opacity-100 inline-block [:checked+&]:bg-(--nya-bg-sidebar) px-2 text-center rounded-xs [:first-child>&]:rounded-l-full [:last-child>&]:rounded-r-full",
-    //       name,
-    //     ),
-    //   )
-    //   label.addEventListener("pointerdown", () => {
-    //     input.value = name
-    //     input.checked = true
-    //     this.trigKind = name
-    //     this.scope.queueGlobalRecompute()
-    //   })
-    //   return label
-    // }
-    // const trigKindEl = h(
-    //   "w-48 bg-(--nya-bg) outline-solid outline-1 outline-(--nya-pixel-ratio) rounded-full p-0.5 text-(--nya-text-prose) font-['Symbola'] grid grid-cols-3",
-    //   trigLabel("rad"),
-    //   trigLabel("deg"),
-    //   trigLabel("rot"),
-    // )
+    // FIXME: put back trig angle type options
 
     const index = btn(faBook, "index", () => {
       const structs = this.factory.env.libGl.types
@@ -331,6 +296,7 @@ ${fns.join("\n\n")}`,
       "",
       canvas,
       this.cv.el,
+      PLOT_3D ? new Plot3D().el : null,
       toolbarDependentCvGradient,
       h(
         "absolute block sm:top-0 bottom-0 left-0 sm:w-1 w-full h-1 sm:h-full from-(--nya-sidebar-shadow) to-transparent bg-linear-to-t sm:bg-linear-to-r",
