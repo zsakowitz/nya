@@ -26,7 +26,7 @@ for await (const file of glob.scan(scripts.pathname)) {
     )
   }
   entries.add(rawAlias)
-  imports += `import s${idx} from ${JSON.stringify("../nya/" + file)}\n`
+  imports += `import s${idx} from ${JSON.stringify("../../nya/" + file)}\n`
   items += `\n  [${alias}, s${idx}],`
   name += `\n  | ${alias}`
 }
@@ -34,4 +34,7 @@ for await (const file of glob.scan(scripts.pathname)) {
 const source =
   imports +
   `\nexport const SCRIPTS = new Map([${items}\n])\n\nexport const SCRIPT_INDICES = new Set([${indexFiles}])\n\nexport type ScriptName =${name}\n`
-await Bun.write(new URL("../../pkg/script-index.ts", import.meta.url), source)
+await Bun.write(
+  new URL("../../src/pkg/script-index.ts", import.meta.url),
+  source,
+)

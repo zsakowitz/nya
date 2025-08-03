@@ -1,4 +1,4 @@
-import { index, type PackageId } from "#/index"
+import { index, type PackageId } from "@/pkg"
 import { options } from "./field/defaults"
 import { SheetFactory } from "./sheet/factory"
 

@@ -1,4 +1,4 @@
-import { builtin, type PackageId } from "#/index"
+import { builtin, type PackageId } from "@/pkg"
 import { options } from "@/field/defaults"
 import {
   default as SRC_LOCALHOST,

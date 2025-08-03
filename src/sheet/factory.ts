@@ -1,8 +1,8 @@
 import { NyaApi } from "!/emit/api"
 import { EntrySet } from "!/exec/item"
 import { ScriptEnvironment } from "!/exec/loader"
-import { index, type PackageId } from "#/index"
-import type { Package, ToolbarItem } from "#/types"
+import { index, type PackageId } from "@/pkg"
+import type { Package, ToolbarItem } from "@/pkg/types"
 import {
   Inits,
   WordMap,

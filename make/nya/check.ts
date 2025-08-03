@@ -1,8 +1,8 @@
 import { suppressesOverload } from "!/emit/coerce"
 import type { Fn } from "!/emit/type"
 import { ScriptEnvironment } from "!/exec/loader"
-import { SCRIPTS, type ScriptName } from "#/script-index"
-import { SCRIPT_NAMES } from "#/scripts"
+import { SCRIPTS, type ScriptName } from "@/pkg/script-index"
+import { SCRIPT_NAMES } from "@/pkg/scripts"
 import { errorText } from "@/error"
 import { ANSI } from "./ansi"
 

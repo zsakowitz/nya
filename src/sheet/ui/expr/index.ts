@@ -5,18 +5,35 @@ import { Value } from "!/emit/value"
 import { Entry } from "!/exec/item"
 import type { Executable } from "!/exec/state"
 import type { CanvasJs } from "!/std"
-import { STORE_EVAL } from "#/list/eval"
 import { errorText } from "@/error"
 import "@/eval/txs"
+import { FieldInert } from "@/field/field-inert"
 import { fa, h } from "@/jsx"
 import type { Shader } from "@/sheet/plot/shader"
 import { faWarning } from "@fortawesome/free-solid-svg-icons/faWarning"
-import type { AnyExt } from "../../ext"
+import { Store, type AnyExt } from "../../ext"
 import { FACTORY_EXPR } from "../../factory-expr"
 import type { ItemRef } from "../../items"
 import { Color, Size } from "../cv/consts"
 import type { Sheet } from "../sheet"
 import { Field } from "./field"
+
+const STORE_EVAL = new Store((e) => {
+  const field = new FieldInert(
+    e.field.options,
+    e.sheet.scope,
+    "bg-(--nya-bg-sidebar) border border-(--nya-border) px-2 pt-[.35rem] pb-[.25rem] rounded-sm inline-block",
+  )
+  const el = h(
+    "flex px-2 pb-2 -mt-2 w-[calc(var(--nya-sidebar)-2.5rem-1px)] overflow-x-auto [&::-webkit-scrollbar]:hidden items-baseline",
+    h(
+      "ml-auto inline-block relative top-[-.1rem] text-[1.1rem] pr-1.5 text-slate-400",
+      "=",
+    ),
+    field.el,
+  )
+  return { field, el }
+})
 
 type RenderingContext2D =
   | CanvasRenderingContext2D

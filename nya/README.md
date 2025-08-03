@@ -18,9 +18,7 @@ move a `.nya` file.
 
 - chem/elements
 - `sort`, `unique`
-- `join`
 - statistics/complex
-- statistics
 - geo/image
 - item/docs-fn
 - item/folder

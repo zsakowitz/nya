@@ -1,8 +1,5 @@
-import PKG_SURREAL from "../nya/woc/surreal"
-import {
-  NYALANG_PACKAGES_ADDONS,
-  NYALANG_PACKAGES_BUILTIN,
-} from "./index-nyalang"
+import PKG_SURREAL from "../../nya/woc/surreal"
+import { NYALANG_PACKAGES_BUILTIN } from "./index-nyalang"
 import type { Addon, Package } from "./types"
 
 type IndexOf<T> = Record<PackageId, () => Promise<{ default: T }>>
@@ -25,7 +22,7 @@ rawBuiltin["nya:surreal"] = () =>
     } satisfies Package,
   })
 
-const rawAddons = NYALANG_PACKAGES_ADDONS
+const rawAddons: {} = Object.create(null)
 
 const rawIndex = {
   // @ts-expect-error TS thinks we're spreading __proto__, but that's not how __proto__ works
