@@ -26,9 +26,9 @@ if (logeval != null) {
 }
 
 if (location.href.includes("showkeyboards")) {
-  await import("./keyboard/dev/all")
+  await import("./field/kbd/dev/all")
 } else if (location.href.includes("showmobilekeyboard")) {
-  await import("./keyboard/dev/mobile")
+  await import("./field/kbd/dev/mobile")
 } else {
   await import("./sheet/dev")
 }

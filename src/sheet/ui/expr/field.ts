@@ -1,5 +1,5 @@
 import { U, type Dir, type VDir } from "@/field/dir"
-import { hideKeyboard, showKeyboard } from "@/keyboard/global"
+import { hideKeyboard, showKeyboard } from "@/field/kbd/global"
 import type { Expr } from "."
 import { FieldComputed } from "../../deps"
 

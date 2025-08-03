@@ -1,12 +1,10 @@
-import { builtin, type PackageId } from "@/pkg"
+import SRC_LOCALHOST from "@/assets/example/localhost.txt"
+import SRC_STANDARD from "@/assets/example/standard.txt"
 import { options } from "@/field/defaults"
-import {
-  default as SRC_LOCALHOST,
-  default as SRC_STANDARD,
-} from "./example/localhost.txt"
+import { builtin, type PackageId } from "@/pkg"
 import { SheetFactory } from "./factory"
 
-import { showKeyboard } from "@/keyboard/global"
+import { showKeyboard } from "@/field/kbd/global"
 
 const factory = new SheetFactory(options)
 
