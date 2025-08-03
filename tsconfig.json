@@ -19,7 +19,7 @@
     "paths": {
       "@/*": ["./src/*"],
       "#/*": ["./pkg/*"],
-      "!/*": ["./lang/src/*"]
+      "!/*": ["./src/lang/*"]
     }
   },
   "exclude": ["src/pkg-beta", "pkg/list"]
