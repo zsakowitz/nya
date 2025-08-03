@@ -1,7 +1,7 @@
-import s0 from "../../lib/point.nya"
-import s1 from "../../lib/special.nya"
-import s2 from "../../lib/components.nya"
-import s3 from "../../lib/geometry.nya"
+import s0 from "../../lib/special.nya"
+import s1 from "../../lib/components.nya"
+import s2 from "../../lib/2d/point.nya"
+import s3 from "../../lib/2d/geo.nya"
 import s4 from "../../lib/data/distributions.nya"
 import s5 from "../../lib/data/stats.nya"
 import s6 from "../../lib/@DEV/std.nya"
@@ -30,18 +30,19 @@ import s28 from "../../lib/complex/number-theory.nya"
 import s29 from "../../lib/core/cmp.nya"
 import s30 from "../../lib/core/ops.nya"
 import s31 from "../../lib/3d/point.nya"
-import s32 from "../../lib/gamma/lngamma.nya"
-import s33 from "../../lib/gamma/trigamma.nya"
-import s34 from "../../lib/gamma/digamma.nya"
-import s35 from "../../lib/gamma/factorial.nya"
-import s36 from "../../lib/gamma/polygamma.nya"
-import s37 from "../../lib/gamma/gamma.nya"
+import s32 from "../../lib/3d/geo.nya"
+import s33 from "../../lib/gamma/lngamma.nya"
+import s34 from "../../lib/gamma/trigamma.nya"
+import s35 from "../../lib/gamma/digamma.nya"
+import s36 from "../../lib/gamma/factorial.nya"
+import s37 from "../../lib/gamma/polygamma.nya"
+import s38 from "../../lib/gamma/gamma.nya"
 
 export const SCRIPTS = new Map([
-  ["point", s0],
-  ["special", s1],
-  ["components", s2],
-  ["geometry", s3],
+  ["special", s0],
+  ["components", s1],
+  ["2d/point", s2],
+  ["2d/geo", s3],
   ["data/distributions", s4],
   ["data/stats", s5],
   ["@DEV/std", s6],
@@ -70,21 +71,22 @@ export const SCRIPTS = new Map([
   ["core/cmp", s29],
   ["core/ops", s30],
   ["3d/point", s31],
-  ["gamma/lngamma", s32],
-  ["gamma/trigamma", s33],
-  ["gamma/digamma", s34],
-  ["gamma/factorial", s35],
-  ["gamma/polygamma", s36],
-  ["gamma/gamma", s37],
+  ["3d/geo", s32],
+  ["gamma/lngamma", s33],
+  ["gamma/trigamma", s34],
+  ["gamma/digamma", s35],
+  ["gamma/factorial", s36],
+  ["gamma/polygamma", s37],
+  ["gamma/gamma", s38],
 ])
 
 export const SCRIPT_INDICES = new Set(["color","real","complex",])
 
 export type ScriptName =
-  | "point"
   | "special"
   | "components"
-  | "geometry"
+  | "2d/point"
+  | "2d/geo"
   | "data/distributions"
   | "data/stats"
   | "@DEV/std"
@@ -113,6 +115,7 @@ export type ScriptName =
   | "core/cmp"
   | "core/ops"
   | "3d/point"
+  | "3d/geo"
   | "gamma/lngamma"
   | "gamma/trigamma"
   | "gamma/digamma"
