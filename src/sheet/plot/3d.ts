@@ -13,8 +13,8 @@ export const PLOT_3D = new URL(location.href).searchParams.has("plot3d")
 const LIGHT_INTENSITY = 3.15
 
 /**
- * Dividing by `1.5` means that having two directed lights doesn't oversaturate
- * the image.
+ * We divide a bit here so that having two lights doesn't oversaturate the
+ * image.
  */
 const DIRECTED_LIGHT_INTENSITY = LIGHT_INTENSITY / 1.3
 
