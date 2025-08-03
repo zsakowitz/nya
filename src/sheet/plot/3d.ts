@@ -1,6 +1,5 @@
 import type { Canvas3D } from "@/lang/std/3d"
 import * as T from "three"
-import { OrbitControls } from "three/examples/jsm/Addons.js"
 
 T.Object3D.DEFAULT_UP = new T.Vector3(0, 0, 1)
 
@@ -19,19 +18,23 @@ const LIGHT_INTENSITY = 3.15
 const DIRECTED_LIGHT_INTENSITY = LIGHT_INTENSITY / 1.3
 
 export class Cv3D implements Canvas3D {
+  readonly position = new T.Vector3()
+  readonly widths = new T.Vector3(10, 10, 10)
+  readonly rotation = new T.Euler()
+
   readonly scene = new T.Scene()
   readonly camera = new T.PerspectiveCamera(75, 1, 0.1, 1000)
   readonly renderer = new T.WebGLRenderer()
-  readonly controls = new OrbitControls(this.camera, this.renderer.domElement)
   readonly dispose
   readonly beforeRender: (() => void)[] = []
   readonly clippingPlanes = createBoxClippingPlanes(this)
 
   constructor() {
-    const { scene, camera, renderer, controls } = this
+    const { scene, camera, renderer } = this
 
     const el = this.renderer.domElement
     el.className = "absolute inset-0 !size-full [image-rendering:pixelated]"
+    addControls(this)
     const observer = new ResizeObserver(() => {
       const scale = globalThis.devicePixelRatio ?? 1
       const w = el.clientWidth
@@ -55,7 +58,6 @@ export class Cv3D implements Canvas3D {
 
     camera.position.set(5, 10, 20)
     camera.lookAt(0, 0, 0)
-    controls.addEventListener("change", () => this.queue())
   }
 
   get el() {
@@ -69,9 +71,17 @@ export class Cv3D implements Canvas3D {
   })
 
   sphere(x: number, y: number, z: number, r: number) {
+    r = 4
     const sphereGeo = new T.SphereGeometry(r, 64, 32)
     const mesh = new T.Mesh(sphereGeo, this.sphereMat)
     mesh.position.set(x, y, z)
+    mesh.onBeforeRender = () => {
+      mesh.scale.normalize()
+      mesh.scale.multiplyScalar(
+        this.camera.position.length() / this.camera.getFilmWidth(),
+      )
+      mesh.updateMatrix()
+    }
     return mesh
   }
 
@@ -87,6 +97,22 @@ export class Cv3D implements Canvas3D {
       })
     }
   }
+
+  zoom(scale: number) {
+    this.camera.zoom *= scale
+    this.camera.updateProjectionMatrix()
+    this.queue()
+  }
+
+  move(x: number, y: number) {
+    const vec = new T.Vector3(x, -y, 0)
+    vec.divideScalar(20)
+    vec.applyEuler(this.camera.rotation)
+    vec.projectOnPlane(new T.Vector3(0, 0, 1))
+    this.camera.position.add(vec)
+    this.camera.updateProjectionMatrix()
+    this.queue()
+  }
 }
 
 function addAxes({ scene }: Cv3D) {
@@ -95,9 +121,13 @@ function addAxes({ scene }: Cv3D) {
   scene.add(axesHelper)
 }
 
-function addXYPlane({ scene }: Cv3D) {
+function addXYPlane({ scene, camera }: Cv3D) {
   const plane = new T.GridHelper(20, 20)
   plane.rotation.set(Math.PI / 2, 0, 0, "XYZ")
+  plane.onBeforeRender = () => {
+    const v = camera.position.clone().add(camera.rotation.clone())
+    plane.position.copy(v)
+  }
   scene.add(plane)
 }
 
@@ -128,4 +158,32 @@ function createBoxClippingPlanes(cv: Cv3D) {
     new T.Plane(new T.Vector3(0, 0, 1), -min.z),
     new T.Plane(new T.Vector3(0, 0, -1), max.z),
   ]
+}
+
+function addControls(cv: Cv3D) {
+  cv.el.addEventListener(
+    "wheel",
+    (event) => {
+      event.preventDefault()
+      if (event.metaKey || event.ctrlKey) {
+        const scale =
+          1 + Math.sign(event.deltaY) * Math.sqrt(Math.abs(event.deltaY)) * 0.03
+        // let { x, y } = cv.eventToPaper(event)
+        // if (scale < 1) {
+        //   const origin = cv.toOffset(px(0, 0))
+        //   if (Math.abs(event.offsetX - origin.x) < Size.ZoomSnap) {
+        //     x = 0
+        //   }
+        //   if (Math.abs(event.offsetY - origin.y) < Size.ZoomSnap) {
+        //     y = 0
+        //   }
+        // }
+        cv.zoom(scale)
+      } else {
+        cv.move(event.deltaX, event.deltaY)
+        // cv.move(cv.toPaperDelta(px(event.deltaX, event.deltaY)))
+      }
+    },
+    { passive: false },
+  )
 }
