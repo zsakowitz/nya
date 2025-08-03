@@ -92,10 +92,9 @@ export class Cv3D implements Canvas3D {
       color: 0xc74440,
       side: T.DoubleSide,
       clippingPlanes: this.clippingPlanes,
-      // clipIntersection: true,
     })
     const mesh = new T.Mesh(sphereGeo, mat)
-    mesh.position.set(x, y, z)
+    mesh.position.set(x, z, y)
     return mesh
   }
 
