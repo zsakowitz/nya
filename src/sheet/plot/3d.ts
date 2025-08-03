@@ -11,7 +11,7 @@ export const PLOT_3D = new URL(location.href).searchParams.has("plot3d")
 // @ts-expect-error unused
 const AMBIENT_LIGHT_INTENSITY = 3.15
 
-export class Plot3D implements Canvas3D {
+export class Cv3D implements Canvas3D {
   readonly scene = new T.Scene()
   readonly camera = new T.PerspectiveCamera(75, 1, 0.1, 1000)
   readonly renderer = new T.WebGLRenderer()

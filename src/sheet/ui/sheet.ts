@@ -14,7 +14,7 @@ import { Scope } from "../deps"
 import type { Exts } from "../ext"
 import type { SheetFactory } from "../factory"
 import { ItemListGlobal, type ItemRef } from "../items"
-import { Plot3D, PLOT_3D } from "../plot/3d"
+import { Cv3D, PLOT_3D } from "../plot/3d"
 import { doMatchReglSize } from "../regl"
 import { REMARK } from "../remark"
 import { Slider } from "../slider"
@@ -35,7 +35,7 @@ export type RequireRadiansContext = `call '${string}' ${RequireRadiansReason}`
 
 export class Sheet {
   readonly cv = new Cv("absolute inset-0 size-full touch-none")
-  readonly cv3D = PLOT_3D ? new Plot3D() : null
+  readonly cv3D = PLOT_3D ? new Cv3D() : null
   readonly scope: Scope
   readonly list = new ItemListGlobal(this)
   readonly set = new EntrySet()
