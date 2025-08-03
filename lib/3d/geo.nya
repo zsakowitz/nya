@@ -1,0 +1,15 @@
+use "3d/point";
+
+struct Sphere {
+  center: Point3D,
+  radius: num,
+}
+
+fn sphere(center: Point3D, radius: num) -> Sphere {
+  Sphere { center, radius }
+}
+
+expose package {
+  default: true,
+  name: "3D geometry",
+}
