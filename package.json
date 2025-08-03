@@ -8,10 +8,10 @@
     "build:tw": "tailwindcss -i ./src/page/index.css -o ./src/page/index.dist.css --minify",
     "lint": "tsc && madge src/index.ts --ts-config tsconfig.json -c",
     "lint:cycles": "madge --ts-config tsconfig.json --circular src/index.ts",
-    "lint:cycles-lang": "madge --ts-config tsconfig.json --circular lang/src/preview.ts",
+    "lint:cycles-lang": "madge --ts-config tsconfig.json --circular src/lang/preview.ts",
     "graph:pkg": "madge --image graph.svg --ts-config tsconfig.json --exclude 'src|util[-/]' pkg/list/{*.ts,**/*.ts,**/**/*.ts,**/**/**/*.ts}",
     "manifest": "bun pkg/manifest/generate.ts > pkg/manifest/data.json",
-    "build:prettier": "esbuild lang/src/prettier/plugin.ts --bundle --minify --platform=node --format=cjs --external:prettier --outfile=lang/src/prettier/plugin.js"
+    "build:prettier": "esbuild src/lang/prettier/plugin.ts --bundle --minify --platform=node --format=cjs --external:prettier --outfile=src/lang/prettier/plugin.js"
   },
   "dependencies": {
     "@fortawesome/free-regular-svg-icons": "^6.7.2",
@@ -50,7 +50,7 @@
     "jsdocCapitalizeDescription": false,
     "overrides": [
       {
-        "files": "lang/src/std/**/*",
+        "files": "src/lang/std/**/*",
         "options": {
           "printWidth": 160
         }
