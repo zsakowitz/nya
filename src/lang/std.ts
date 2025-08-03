@@ -9,14 +9,7 @@ import { issue, todo } from "./emit/error"
 import { Id, ident, type IdGlobal } from "./emit/id"
 import type { EmitProps } from "./emit/props"
 import { Tag } from "./emit/tag"
-import {
-  Any,
-  VarArray,
-  FixedSizeArray,
-  Fn,
-  invalidType,
-  FixedArray,
-} from "./emit/type"
+import { Any, FixedArray, Fn, invalidType, VarArray } from "./emit/type"
 import { Value } from "./emit/value"
 
 function libNumBool(api: NyaApi) {
@@ -574,14 +567,6 @@ export interface CanvasJs {
 function libArray(api: NyaApi) {
   const lib = api.lib
   const num = lib.tyNum
-
-  api.fmanual("count", { x: FixedSizeArray }, num, (args, _, _1, fullPos) => {
-    if (args[0]!.type instanceof FixedArray) {
-      return new Value(args[0]!.type.count, num, true)
-    }
-    invalidType(FixedSizeArray, args[0]!.type, fullPos)
-  })
-
   const numArray = new VarArray(lib.props, num)
   const { lang } = api.lib.props
 
@@ -662,8 +647,20 @@ export function createStdlib(props: EmitProps): Declarations {
   libPlotStyle(api)
   libLatex(api)
   libArray(api)
+  libPlot3D(api)
 
   return lib
+}
+
+function libPlot3D(api: NyaApi) {
+  const Canvas3D = api.opaque("Canvas3D", { glsl: null, js: "" }, false)
+  const Object3D = api.opaque("Canvas3DObject", { glsl: null, js: "" }, false)
+  const num = api.lib.tyNum
+
+  api.fn("sphere", { cv: Canvas3D, x: num, y: num, z: num, r: num }, Object3D, {
+    glsl: null,
+    js: v`${0}.sphere(${1},${2},${3},${4})`,
+  })
 }
 
 /*

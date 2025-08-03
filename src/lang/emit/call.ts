@@ -1,5 +1,5 @@
 import type { Pos } from "!/ast/issue"
-import { issue, issueError } from "@/lib/error"
+import { bug, issue, issueError } from "@/lib/error"
 import { createTypedArray, getCommonSupertype } from "./coerce"
 import { Block } from "./decl"
 import { list, matrixMultiply } from "./emit"
@@ -9,10 +9,11 @@ import { Value } from "./value"
 
 const ID_MATMUL = ident("@#")
 const ID_JOIN = ident("join")
+const ID_COUNT = ident("count")
 
 type CallResult = { ok: true; value: Value } | { ok: false; error: Error }
 
-// special-cased since it's polymorphic to the core
+// special-cased since it's heavily polymorphic
 function fnJoin(args: Value[], block: Block, pos: Pos): Value {
   args = args.filter((x) => x.type != ArrayEmpty)
   if (args.length == 0) {
@@ -85,6 +86,51 @@ function fnJoin(args: Value[], block: Block, pos: Pos): Value {
   return ret
 }
 
+// special-cased since it's heavily polymorphic
+function fnCount(args: Value[], block: Block, pos: Pos): Value {
+  if (args.length == 0) {
+    issue(`Function 'count' requires at least one argument.`, pos)
+  }
+
+  if (!args.some((x) => isArrayValue(x.type))) {
+    return new Value(args.length, block.decl.tyNum, true)
+  }
+
+  if (args.length == 1) {
+    const ty = args[0]!.type
+    if (ty == ArrayEmpty) {
+      return new Value(0, block.decl.tyNum, true)
+    }
+    if (ty instanceof FixedArray) {
+      return new Value(ty.count, block.decl.tyNum, true)
+    }
+    bug(
+      `'count' received a single array argument, but it was neither an empty array nor a non-empty array.`,
+    )
+  }
+
+  let len = Infinity
+  for (const arg of args) {
+    if (arg.type == ArrayEmpty) {
+      len = 0
+      break
+    }
+    if (arg.type instanceof FixedArray) {
+      len = Math.min(len, arg.type.count)
+    }
+  }
+
+  if (args.length == 1) {
+    return new Value(len, block.decl.tyNum, true)
+  }
+
+  return new Value(
+    Array.from({ length: len }, () => args.length),
+    new FixedArray(block.props, block.decl.tyNum, len),
+    true,
+  )
+}
+
 export function performCallRaw(
   id: IdGlobal,
   block: Block,
@@ -99,7 +145,10 @@ export function performCallRaw(
     }
   } else if (id == ID_JOIN) {
     return { ok: true, value: fnJoin(args, block, fullPos) }
+  } else if (id == ID_COUNT) {
+    return { ok: true, value: fnCount(args, block, fullPos) }
   }
+
   // TODO: special-case count
 
   const local = block.locals.get(id)
