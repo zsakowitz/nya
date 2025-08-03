@@ -51,7 +51,7 @@ const REMARKS = [
   "now with quaternions!",
   "angle bisector ≠ triangle median",
   "use @ to type tokens",
-  "'mom can we get a desmos?' 'no, we have a desmos at home'",
+  "'mom can we get desmos?' 'no honey, we have desmos at home'",
   "intuitive images 🙁 images on line segments 🤩",
   "slowly making an operating system",
   "WE HAVE KEYBOARD SHORTCUTS :spair:",
@@ -70,6 +70,19 @@ const REMARKS = [
   "listenbourg",
   "it's not a bug, it's a learning opportunity. for the customer",
   "may ur days be filled with cats",
+  "we got 3D before sliders",
+  "over 22,000 lines of code deleted at once",
+  "it can play eight games! (two are boring)",
+  "(me when i forget the other parenthesis",
+  "i love constant integer",
+  "try adding ?plot3d to the url",
+  "use 'shader' to write shaders",
+  "now with two custom programming languages!",
+  "lock out :silly:",
+  "arcs are the devil",
+  "we love circle arcs",
+  "not the matrices :despair:",
+  "fun fact: good 3d lighting is actually impossible",
 ]
 
 export const REMARK = REMARKS[Math.floor(REMARKS.length * Math.random())]!

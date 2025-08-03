@@ -140,25 +140,7 @@ export class Expr {
   plot: ((ctx: RenderingContext2D, canvas: CanvasJs) => void) | undefined
   glsl: Shader | undefined
 
-  display() {
-    this.elOutput.classList.add("hidden")
-    this.elError.classList.add("hidden")
-
-    // If errored:
-    if (this.entry.hasError()) {
-      this.elError.classList.remove("hidden")
-      this.elError.textContent = this.entry.errorMessage
-      if (this.glsl) {
-        this.glsl = undefined
-        this.sheet.queueGlsl()
-      }
-      if (this.plot) {
-        this.plot = undefined
-        this.sheet.cv.queue()
-      }
-      return
-    }
-
+  unrender2D() {
     if (this.glsl) {
       this.glsl = undefined
       this.sheet.queueGlsl()
@@ -167,6 +149,30 @@ export class Expr {
       this.plot = undefined
       this.sheet.cv.queue()
     }
+  }
+
+  unrender3D() {
+    if (this.lastObjs) {
+      this.lastObjs.forEach((x) => x.removeFromParent())
+      this.lastObjs = undefined
+      this.sheet.cv3D!.queue()
+    }
+  }
+
+  display() {
+    this.unrender2D()
+    this.unrender3D()
+
+    this.elOutput.classList.add("hidden")
+
+    // If errored:
+    if (this.entry.hasError()) {
+      this.elError.classList.remove("hidden")
+      this.elError.textContent = this.entry.errorMessage
+      return
+    }
+
+    this.elError.classList.add("hidden")
 
     try {
       this.entry.checkExe()
@@ -193,11 +199,8 @@ export class Expr {
   }
 
   unlink() {
-    if (this.lastObjs) {
-      this.lastObjs.forEach((x) => x.removeFromParent())
-      this.lastObjs = undefined
-      this.sheet.cv3D!.queue()
-    }
+    this.unrender2D()
+    this.unrender3D()
 
     if (this.state.ok) {
       try {
