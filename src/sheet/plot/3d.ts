@@ -1,5 +1,6 @@
 import type { Canvas3D } from "@/lang/std/3d"
 import * as T from "three"
+import GUI from "three/examples/jsm/libs/lil-gui.module.min.js"
 
 T.Object3D.DEFAULT_UP = new T.Vector3(0, 0, 1)
 
@@ -20,17 +21,24 @@ const DIRECTED_LIGHT_INTENSITY = LIGHT_INTENSITY / 1.3
 export class Cv3D implements Canvas3D {
   readonly position = new T.Vector3()
   readonly widths = new T.Vector3(10, 10, 10)
-  readonly rotation = new T.Euler()
+  readonly rotation = new T.Euler(0, 0, 0, "ZXY")
+  readonly quaternion = new T.Quaternion()
 
   readonly scene = new T.Scene()
-  readonly camera = new T.PerspectiveCamera(75, 1, 0.1, 1000)
   readonly renderer = new T.WebGLRenderer()
   readonly dispose
   readonly beforeRender: (() => void)[] = []
   readonly clippingPlanes = createBoxClippingPlanes(this)
 
   constructor() {
-    const { scene, camera, renderer } = this
+    this.rotation._onChangeCallback = () => {
+      this.quaternion.setFromEuler(this.rotation, false)
+    }
+    this.quaternion._onChangeCallback = () => {
+      this.rotation.setFromQuaternion(this.quaternion, undefined, false)
+    }
+
+    const { scene, renderer } = this
 
     const el = this.renderer.domElement
     el.className = "absolute inset-0 !size-full [image-rendering:pixelated]"
@@ -39,8 +47,6 @@ export class Cv3D implements Canvas3D {
       const scale = globalThis.devicePixelRatio ?? 1
       const w = el.clientWidth
       const h = el.clientHeight
-      camera.aspect = w / h
-      camera.updateProjectionMatrix()
       renderer.setSize(scale * w, scale * h, false)
       this.queue()
     })
@@ -56,8 +62,28 @@ export class Cv3D implements Canvas3D {
     addLighting(this)
     addXYPlane(this)
 
-    camera.position.set(5, 10, 20)
-    camera.lookAt(0, 0, 0)
+    const gui = new GUI()
+    gui.add(this.rotation, "x", -5, 5)
+    gui.add(this.rotation, "y", -5, 5)
+    gui.add(this.rotation, "z", -5, 5)
+    gui.onChange(() => this.queue())
+
+    this.rotateZ(2)
+    this.rotateX(1)
+  }
+
+  rotateX(amount: number) {
+    const q = new T.Quaternion()
+    q.setFromAxisAngle(new T.Vector3(1, 0, 0), amount)
+    this.quaternion.multiply(q)
+    this.queue()
+  }
+
+  rotateZ(amount: number) {
+    const q = new T.Quaternion()
+    q.setFromAxisAngle(new T.Vector3(0, 0, 1), amount)
+    this.quaternion.premultiply(q)
+    this.queue()
   }
 
   get el() {
@@ -75,13 +101,6 @@ export class Cv3D implements Canvas3D {
     const sphereGeo = new T.SphereGeometry(r, 64, 32)
     const mesh = new T.Mesh(sphereGeo, this.sphereMat)
     mesh.position.set(x, y, z)
-    mesh.onBeforeRender = () => {
-      mesh.scale.normalize()
-      mesh.scale.multiplyScalar(
-        this.camera.position.length() / this.camera.getFilmWidth(),
-      )
-      mesh.updateMatrix()
-    }
     return mesh
   }
 
@@ -92,25 +111,32 @@ export class Cv3D implements Canvas3D {
       queueMicrotask(() => {
         if (!this.queued) return
         this.queued = false
+        const camera = new T.PerspectiveCamera(
+          50,
+          this.el.width / this.el.height,
+        )
+        camera.position.z = 2 * this.widths.length()
+        camera.position.applyQuaternion(this.quaternion)
+        camera.position.add(this.position)
+        camera.quaternion.copy(this.quaternion)
         this.beforeRender.forEach((x) => x())
-        this.renderer.render(this.scene, this.camera)
+        this.renderer.render(this.scene, camera)
       })
     }
   }
 
   zoom(scale: number) {
-    this.camera.zoom *= scale
-    this.camera.updateProjectionMatrix()
+    this.widths.multiplyScalar(scale)
     this.queue()
   }
 
   move(x: number, y: number) {
-    const vec = new T.Vector3(x, -y, 0)
-    vec.divideScalar(20)
-    vec.applyEuler(this.camera.rotation)
+    console.log("moving")
+    const vec = new T.Vector3(x, 0, y)
+    vec.divide(this.widths)
+    vec.applyQuaternion(this.quaternion.clone())
     vec.projectOnPlane(new T.Vector3(0, 0, 1))
-    this.camera.position.add(vec)
-    this.camera.updateProjectionMatrix()
+    this.position.add(vec)
     this.queue()
   }
 }
@@ -121,26 +147,26 @@ function addAxes({ scene }: Cv3D) {
   scene.add(axesHelper)
 }
 
-function addXYPlane({ scene, camera }: Cv3D) {
-  const plane = new T.GridHelper(20, 20)
+function addXYPlane({ scene, position }: Cv3D) {
+  const plane = new T.GridHelper(20, 20, 0x0, 0xcccccc)
   plane.rotation.set(Math.PI / 2, 0, 0, "XYZ")
-  plane.onBeforeRender = () => {
-    const v = camera.position.clone().add(camera.rotation.clone())
-    plane.position.copy(v)
-  }
+  // plane.onBeforeRender = () => {
+  //   const v = position.clone()
+  //   plane.position.copy(v)
+  // }
   scene.add(plane)
 }
 
-function addLighting({ scene, beforeRender, camera }: Cv3D) {
+function addLighting({ scene, beforeRender, quaternion: rotation }: Cv3D) {
   for (const source of [new T.Vector3(5, 5, 10), new T.Vector3(-5, 2, 10)]) {
     const color = 0xffffff
     const intensity = DIRECTED_LIGHT_INTENSITY
     const light = new T.DirectionalLight(color, intensity)
     scene.add(light)
     beforeRender.push(() => {
-      const v2 = source.clone().applyEuler(camera.rotation)
+      const v2 = source.clone().applyQuaternion(rotation)
       light.position.copy(v2)
-      light.rotation.copy(camera.rotation)
+      light.rotation.setFromQuaternion(rotation)
     })
   }
 }
@@ -150,7 +176,7 @@ function createBoxClippingPlanes(cv: Cv3D) {
   const min = new T.Vector3(-size, -size, -size)
   const max = new T.Vector3(size, size, size)
   cv.renderer.localClippingEnabled = true
-  return [
+  const planes = [
     new T.Plane(new T.Vector3(1, 0, 0), -min.x),
     new T.Plane(new T.Vector3(-1, 0, 0), max.x),
     new T.Plane(new T.Vector3(0, 1, 0), -min.y),
@@ -158,6 +184,10 @@ function createBoxClippingPlanes(cv: Cv3D) {
     new T.Plane(new T.Vector3(0, 0, 1), -min.z),
     new T.Plane(new T.Vector3(0, 0, -1), max.z),
   ]
+  function update() {
+    // planes[0]!.constant =
+  }
+  return planes
 }
 
 function addControls(cv: Cv3D) {
