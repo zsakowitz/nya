@@ -1,6 +1,5 @@
 import { safe } from "@/eval/lib/util"
-import { Display } from "@/eval/ty/display"
-import type { Cursor, Span } from "@/field/model"
+import type { Cursor } from "@/field/model"
 import { int, type SReal } from "@/lib/real"
 
 export function write(
@@ -49,24 +48,4 @@ export function write(
  */
 export function virtualStepExp(ratio: number, base: number) {
   return Math.ceil(Math.log(ratio) / Math.log(base))
-}
-
-export class Writer {
-  constructor(readonly span: Span) {}
-
-  /** @param precision Total options the user can choose from. */
-  setExact(value: SReal, precision: number, signed = false) {
-    write(
-      this.span.remove(),
-      value,
-      int(10),
-      virtualStepExp(precision, 10),
-      signed,
-    )
-  }
-
-  /** @param precision Total options the user can choose from. */
-  set(value: number, precision: number, signed = false) {
-    this.setExact(int(value), precision, signed)
-  }
 }

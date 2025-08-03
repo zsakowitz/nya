@@ -3,33 +3,6 @@ import { EntrySet } from "!/exec/item"
 import { ScriptEnvironment } from "!/exec/loader"
 import { index, type PackageId } from "#/index"
 import type { Package, ToolbarItem } from "#/types"
-import { FNLIKE_MAGICVAR } from "@/eval/ast/fnlike"
-import {
-  Precedence,
-  PRECEDENCE_MAP,
-  type MagicVar,
-  type NodeName,
-  type OpBinary,
-  type PuncInfix,
-  type PuncUnary,
-  type SuffixName,
-} from "@/eval/ast/token"
-import {
-  TXR_AST,
-  TXR_GROUP,
-  TXR_MAGICVAR,
-  TXR_OP_BINARY,
-  TXR_OP_UNARY,
-  TXR_SUFFIX,
-  type TxrAst,
-  type TxrMagicVar,
-  type TxrSuffix,
-} from "@/eval/ast/tx"
-import { FNS, OP_BINARY, OP_UNARY } from "@/eval/ops"
-import { VARS } from "@/eval/ops/vars"
-import { TXR_SYM, type SymName, type TxrSym } from "@/eval/sym"
-import type { TyName } from "@/eval/ty"
-import { tidyCoercions, TY_INFO, type TyCoerce } from "@/eval/ty/info"
 import type { ParenLhs, ParenRhs } from "@/field/cmd/math/brack"
 import {
   despace,
@@ -102,52 +75,6 @@ export class SheetFactory {
           ),
       )
 
-    for (const k in pkg.ty?.info) {
-      const key = k as TyName
-      TY_INFO[key] = pkg.ty.info[key]! as any
-      if (key in this.queuedCoercions) {
-        Object.assign(TY_INFO[key].coerce, this.queuedCoercions[key])
-        delete this.queuedCoercions[key]
-      }
-    }
-
-    for (const a in pkg.ty?.coerce) {
-      const src = a as TyName
-      const map = pkg.ty.coerce[src]!
-
-      for (const b in map) {
-        const dst = b as TyName
-        if (src in TY_INFO) {
-          ;(TY_INFO[src].coerce[dst] as any) = map[dst]!
-        } else {
-          ;(this.queuedCoercions[src] ??= Object.create(null))[dst] = map[dst]!
-        }
-      }
-    }
-
-    for (const key in pkg.eval?.fn) {
-      if (/^[A-Za-z ]+$/.test(key)) {
-        this.options.words.init(key, "prefix")
-      }
-      FNS[despace(key)] = pkg.eval.fn[key]!
-    }
-
-    for (const key in pkg.eval?.var) {
-      if (key.length > 1 || pkg.eval.var[key]!.word) {
-        this.options.words.init(key, "var")
-      }
-      VARS[despace(key)] = pkg.eval.var[key]!
-    }
-
-    for (const keyRaw in pkg.eval?.tx?.ast) {
-      const key = keyRaw as NodeName
-      const txr = pkg.eval.tx.ast[key]! as TxrAst<any>
-      if (TXR_AST[key] && (TXR_AST[key].layer ?? 0) >= (txr.layer ?? 0)) {
-        continue
-      }
-      TXR_AST[key] = pkg.eval.tx.ast[key]! as any
-    }
-
     for (const prec in pkg.sheet?.exts) {
       const exts = (this.exts[prec as any] ??= new Exts())
       for (const ext of pkg.sheet.exts[prec as any]!) {
@@ -172,15 +99,6 @@ export class SheetFactory {
 
     for (const key in pkg.field?.latex) {
       this.options.latex.set(key, pkg.field.latex[key]!)
-    }
-
-    for (const keyRaw in pkg.eval?.op?.binary) {
-      const key = keyRaw as PuncInfix
-      if (/^[A-Za-z]+$/.test(key)) {
-        this.options.words.init(key, "infix")
-      }
-      OP_BINARY[key] = pkg.eval.op.binary[key]!.fn
-      PRECEDENCE_MAP[key] = pkg.eval.op.binary[key]!.precedence
     }
 
     for (const keyRaw in pkg.eval?.op?.unary) {

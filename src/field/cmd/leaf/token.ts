@@ -1,7 +1,4 @@
 import { errorText } from "@/error"
-import { BindingFn, BindingGlslValue, id } from "@/eval/lib/binding"
-import type { JsVal, TyName } from "@/eval/ty"
-import { TY_INFO } from "@/eval/ty/info"
 import { L } from "@/field/dir"
 import { fa, h, sx } from "@/jsx"
 import type { Scope } from "@/sheet/deps"

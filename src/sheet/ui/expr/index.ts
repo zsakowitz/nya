@@ -1,22 +1,3 @@
-import type { PlainVar } from "@/eval/ast/token"
-import { type GlslResult } from "@/eval/lib/fn"
-import type { JsValue } from "@/eval/ty"
-import { OpEq } from "@/field/cmd/leaf/cmp"
-import { CmdToken } from "@/field/cmd/leaf/token"
-import { CmdVar } from "@/field/cmd/leaf/var"
-import { CmdBrack } from "@/field/cmd/math/brack"
-import { L, R } from "@/field/dir"
-import { Block, Span } from "@/field/model"
-import { fa, h } from "@/jsx"
-import type { SReal } from "@/lib/real"
-import { faWarning } from "@fortawesome/free-solid-svg-icons/faWarning"
-import type { AnyExt } from "../../ext"
-import { FACTORY_EXPR } from "../../factory-expr"
-import type { ItemRef } from "../../items"
-import { PICK_CURSOR } from "../../pick-cursor"
-import type { Sheet } from "../sheet"
-import { Field } from "./field"
-
 import { IdMap } from "!/emit/decl"
 import { ident } from "!/emit/id"
 import type { Type } from "!/emit/type"
@@ -27,7 +8,15 @@ import type { CanvasJs } from "!/std"
 import { STORE_EVAL } from "#/list/eval"
 import { errorText } from "@/error"
 import "@/eval2/txs"
+import { fa, h } from "@/jsx"
+import type { Shader } from "@/sheet/plot/shader"
+import { faWarning } from "@fortawesome/free-solid-svg-icons/faWarning"
+import type { AnyExt } from "../../ext"
+import { FACTORY_EXPR } from "../../factory-expr"
+import type { ItemRef } from "../../items"
 import { Color, Size } from "../cv/consts"
+import type { Sheet } from "../sheet"
+import { Field } from "./field"
 
 type RenderingContext2D =
   | CanvasRenderingContext2D
@@ -89,14 +78,8 @@ export class Expr {
           focus: true,
         })
       }
-
-      if (event.key == "Shift") {
-        sheet.pick.set(PICK_CURSOR, { expr: this, ref: this.ref })
-      }
     })
   }
-
-  js: { value: JsValue; base: SReal } | undefined
 
   clearEls() {
     while (this.elOutput.firstChild) {
@@ -132,7 +115,7 @@ export class Expr {
   }
 
   plot: ((ctx: RenderingContext2D, canvas: CanvasJs) => void) | undefined
-  glsl: GlslResult | undefined
+  glsl: Shader | undefined
 
   display() {
     this.elOutput.classList.add("hidden")
@@ -179,9 +162,7 @@ export class Expr {
       this.elError.textContent = errorText(e)
     }
 
-    // TODO: display result as glsl
-    // TODO: plot result via %plot
-    // TODO: use extensions (aside, output, plot, glsl)
+    // TODO: use extensions (aside, output)
   }
 
   delete() {
@@ -203,56 +184,6 @@ export class Expr {
 
   focus() {
     this.ref.focusAside()
-  }
-
-  /**
-   * Gets this expression's binding identifier. If no binding identifier exists,
-   * a token is created, inserted properly, and returned.
-   */
-  name(): PlainVar {
-    if (this.field.ast.type == "binding") {
-      return this.field.ast.name
-    }
-
-    const token = CmdToken.new(this.field.scope)
-    const cursor = this.field.block.cursor(L)
-    token.insertAt(cursor, L)
-    new OpEq(false).insertAt(cursor, L)
-    const name: PlainVar = {
-      type: "var",
-      kind: "var",
-      span: new Span(this.field.block, token[L], token[R]),
-      value: "$" + token.id,
-    }
-    this.field.ast = {
-      type: "binding",
-      name,
-      params: null,
-      value: this.field.ast,
-    }
-    this.field.queueAstUpdate()
-
-    return {
-      type: "var",
-      kind: "var",
-      span: new Span(this.field.block, token[L], token[R]),
-      value: "$" + token.id,
-    }
-  }
-
-  /**
-   * Creates a reference to the item with the given index. If this item's value
-   * is not a list, no index is appended.
-   */
-  createRef(index: number): Block {
-    const block = new Block(null)
-    const cursor = block.cursor(R)
-    CmdVar.leftOf(cursor, this.name(), this.field.options, this.field.scope)
-    if (this.js?.value.list !== false) {
-      CmdBrack.index(index + 1).insertAt(cursor, L)
-    }
-
-    return block
   }
 }
 

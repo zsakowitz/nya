@@ -638,8 +638,7 @@ export function jsFn<T>(api: NyaApi, f: () => T): ImplByFunction<T> {
 type ScriptingInterfaceFnImpl = ReturnType<typeof f>
 
 export interface Plugin {
-  meta:
-    | { name: string; default: true }
-    | { name: string; default: false; label: string }
+  meta: { name: string; default: true }
+  // | { name: string; default: false; label: string }
   load(api: NyaApi): void
 }

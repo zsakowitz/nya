@@ -1,10 +1,8 @@
 import { Point, px } from "@/lib/point"
 import type { Cv } from "."
 import { Size } from "./consts"
-import { Hint, type Target } from "./item"
 
 export interface Handler {
-  find(at: Point, hint: Hint): ItemWithDrawTarget | undefined
   take(item: ItemWithTarget | null): void
 }
 
@@ -15,9 +13,7 @@ export interface ItemData<T = unknown, U = unknown> {
 }
 
 export interface ItemWithTarget<T = unknown, U = unknown>
-  extends ItemData<T, U> {
-  target: Target<T, U>
-}
+  extends ItemData<T, U> {}
 
 export type ItemWithDrawTarget<T = unknown, U = unknown> = ItemWithTarget<
   T,
@@ -56,11 +52,10 @@ export function registerWheelHandler(cv: Cv) {
   )
 }
 
-export function registerPointerHandler(cv: Cv, handler: Handler) {
+export function registerPointerHandler(cv: Cv) {
   let initial: Point | undefined
   let ptrs = 0
   let moved = false
-  let current: ItemWithDrawTarget | undefined
   let dragOffset: Point | undefined
   let last: Point | undefined
   let picking: Hint | undefined
@@ -70,48 +65,7 @@ export function registerPointerHandler(cv: Cv, handler: Handler) {
     const pt: Point = px(event.offsetX, event.offsetY)
     last = pt
 
-    if (picking && (ptrs == 0 || ptrs == 1)) {
-      if (current) {
-        current.target.toggle(current, false, "pick")
-      }
-      current = handler.find(pt, picking)
-      if (current) {
-        current.target.toggle(current, true, "pick")
-      }
-      oc?.()
-      return
-    }
-
-    if (ptrs == 0) {
-      const next = handler.find(pt, Hint.one())
-      // TODO: optimize out the case where current and next are identical, although it doesn't unduly harm anyone
-      if (current) {
-        current.target.toggle(current, false, "hover")
-      }
-      if (next) {
-        next.target.toggle(next, true, "hover")
-      }
-      current = next
-      return
-    }
-
-    if (ptrs != 1) {
-      return
-    }
-
     if (current) {
-      if (dragOffset) {
-        moved = true
-        current.target.drag!(
-          current,
-          cv.toPaperBounded(px(pt.x - dragOffset.x, pt.y - dragOffset.y)),
-        )
-        return
-      }
-
-      current.target.toggle(current, false, "drag")
-      current.target.toggle(current, false, "hover")
-      current = undefined
       initial = cv.toPaper(pt)
     }
 

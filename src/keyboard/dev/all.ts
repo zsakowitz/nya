@@ -1,4 +1,3 @@
-import { JsContext } from "@/eval/lib/jsctx"
 import { options } from "@/field/defaults"
 import { Field } from "@/field/field"
 import { h } from "@/jsx"
@@ -8,7 +7,7 @@ import { LAYOUTS } from "../layout"
 
 const field = new Field(
   options,
-  new Scope(options, new JsContext(null)),
+  new Scope(options),
   "block overflow-x-auto [&::-webkit-scrollbar]:hidden min-h-[3.265rem] p-4 focus:outline-none max-w-full bg-(--nya-bg0 rounded mt-8 mx-auto w-96 [&.\\!bg-transparent]:!bg-(--nya-bg)",
 )
 field.typeLatex(String.raw`\left(23\right]`)

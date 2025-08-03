@@ -1,9 +1,11 @@
 export const NYALANG_PACKAGES_BUILTIN = {
   __proto__: null,
   "nya:point": ()=>Promise.resolve({default:{"name":"2D points","label":"<TODO: no label>","category":"auto-generated (nyalang)","deps":[],"scripts":["point"]} as const}),
+  "nya:special": ()=>Promise.resolve({default:{"name":"special functions","label":"<TODO: no label>","category":"auto-generated (nyalang)","deps":[],"scripts":["special"]} as const}),
   "nya:geometry": ()=>Promise.resolve({default:{"name":"2D geometry","label":"<TODO: no label>","category":"auto-generated (nyalang)","deps":[],"scripts":["geometry"]} as const}),
   "nya:data/distributions": ()=>Promise.resolve({default:{"name":"distributions","label":"<TODO: no label>","category":"auto-generated (nyalang)","deps":[],"scripts":["data/distributions"]} as const}),
   "nya:data/stats": ()=>Promise.resolve({default:{"name":"rudimentary statistics functions","label":"<TODO: no label>","category":"auto-generated (nyalang)","deps":[],"scripts":["data/stats"]} as const}),
+  "nya:4d/two-complex": ()=>Promise.resolve({default:{"name":"4D points (bicomplex)","label":"<TODO: no label>","category":"auto-generated (nyalang)","deps":[],"scripts":["4d/two-complex"]} as const}),
   "nya:4d/point": ()=>Promise.resolve({default:{"name":"4D points","label":"<TODO: no label>","category":"auto-generated (nyalang)","deps":[],"scripts":["4d/point"]} as const}),
   "nya:4d/quaternion": ()=>Promise.resolve({default:{"name":"quaternions","label":"<TODO: no label>","category":"auto-generated (nyalang)","deps":[],"scripts":["4d/quaternion"]} as const}),
   "nya:color/extras": ()=>Promise.resolve({default:{"name":"oklch() and oklab()","label":"<TODO: no label>","category":"auto-generated (nyalang)","deps":[],"scripts":["color/extras"]} as const}),
@@ -24,6 +26,4 @@ export const NYALANG_PACKAGES_BUILTIN = {
 
 export const NYALANG_PACKAGES_ADDONS = {
   __proto__: null,
-  "nya:special": ()=>Promise.resolve({default:{"name":"special functions","label":"beta, gamma, and zeta","category":"auto-generated (nyalang)","deps":[],"scripts":["special"]} as const}),
-  "nya:4d/two-complex": ()=>Promise.resolve({default:{"name":"4D points (bicomplex)","label":"points with two complex coordinates","category":"auto-generated (nyalang)","deps":[],"scripts":["4d/two-complex"]} as const}),
 } as const

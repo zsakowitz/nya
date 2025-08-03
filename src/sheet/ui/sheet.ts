@@ -2,19 +2,9 @@ import { Struct } from "!/emit/type"
 import { EntrySet } from "!/exec/item"
 import type { PackageId } from "#/index"
 import type { ToolbarItem } from "#/types"
-import { btn, btnSkin, btnSkin2 } from "@/docs/core"
-import { JsContext } from "@/eval/lib/jsctx"
-import { declareAddR64, declareMulR64 } from "@/eval/ops/r64"
-import { SYM_180, SYM_PI, SYM_TAU, type Sym } from "@/eval/sym"
-import type { JsVal, TyName } from "@/eval/ty"
-import { tidyCoercions } from "@/eval/ty/info"
-import { splitRaw } from "@/eval/ty/split"
-import type { Block } from "@/field/model"
 import type { Options } from "@/field/options"
 import { h, hx, px, t } from "@/jsx"
-import type { Point } from "@/lib/point"
 import { int } from "@/lib/real"
-import { createAddons, getAll } from "@/sheet/ui/addons"
 import { faBook } from "@fortawesome/free-solid-svg-icons/faBook"
 import { faCopy } from "@fortawesome/free-solid-svg-icons/faCopy"
 import { faTrash } from "@fortawesome/free-solid-svg-icons/faTrash"
@@ -28,18 +18,15 @@ import { doMatchReglSize } from "../regl"
 import { REMARK } from "../remark"
 import { Slider } from "../slider"
 import { isDark } from "../theme"
+import { btn, btnSkin } from "./btn"
 import { Cv } from "./cv"
 import { Order, OrderMajor } from "./cv/consts"
-import { Hint } from "./cv/item"
 import {
   registerPinchHandler,
   registerPointerHandler,
   registerWheelHandler,
-  type Handler,
-  type ItemWithTarget,
   type VirtualPoint,
 } from "./cv/move"
-import { PickHandler2 } from "./cv/pick"
 import { Expr } from "./expr"
 import { createDrawAxes } from "./gridlines"
 
@@ -81,26 +68,6 @@ export class Sheet {
     )
   }
 
-  toRadiansR32(): string {
-    return (
-      this.trigKind == "deg" ? `${(Math.PI / 180).toExponential()}`
-      : this.trigKind == "rot" ? `${(2 * Math.PI).toExponential()}`
-      : "1.0"
-    )
-  }
-
-  toRadiansSym(): [num: Sym | null, denom: Sym | null] {
-    switch (this.trigKind) {
-      case "deg":
-        return [SYM_PI, SYM_180]
-      case "rad":
-        return [null, null]
-      case "rot":
-        return [SYM_TAU, null]
-    }
-  }
-
-  readonly pick
   private readonly regl: Regl
 
   readonly el
@@ -133,13 +100,11 @@ export class Sheet {
       }
     })
 
-    this.scope = new Scope(options, new JsContext(this))
+    this.scope = new Scope(options)
 
     // prepare js context
     registerWheelHandler(this.cv)
-    const handler = new SheetHandler(this)
-    const pick = registerPointerHandler(this.cv, handler)
-    this.pick = new PickHandler2(this, pick, handler)
+    registerPointerHandler(this.cv)
     registerPinchHandler(this.cv)
 
     this.cv.fn(OrderMajor.Backdrop, () => {
@@ -247,19 +212,6 @@ ${fns.join("\n\n")}`,
       (location.search ? "&" + location.search.slice(1) : "")
     switchToDocs.target = "_blank"
 
-    const addonsIcon = h("contents")
-    const showAddons = btnSkin2("button", addonsIcon, "Addons")
-    showAddons.addEventListener("click", () =>
-      addons.classList.toggle("hidden"),
-    )
-    function checkIcon() {
-      while (addonsIcon.firstChild) {
-        addonsIcon.firstChild.remove()
-      }
-      addonsIcon.appendChild(renderDigits(getAll().length))
-    }
-    checkIcon()
-
     const clearAll = btn(faTrash, "Clear", () => {
       while (this.list.items[0]) {
         this.list.items[0].delete()
@@ -335,9 +287,7 @@ ${fns.join("\n\n")}`,
           "m-auto text-2xl hidden [@container(min-width:300px)]:inline",
           "project nya",
         ),
-        showAddons,
-        index,
-        // switchToDocs, TODO: proper docs
+        index, // TODO: actual docs
       ),
     )
 
@@ -418,29 +368,11 @@ ${fns.join("\n\n")}`,
       "absolute block top-0 left-0 right-0 h-1 from-(--nya-sidebar-shadow) to-transparent bg-linear-to-b",
     )
 
-    const addons = h(
-      "relative [grid-area:cv] backdrop-blur-sm flex h-full max-h-full",
-      h("absolute top-0 left-0 h-full w-full bg-(--nya-bg-sidebar) opacity-80"),
-      toolbarDependentAddonGradient,
-      h(
-        "absolute block sm:top-0 bottom-0 left-0 sm:w-1 w-full h-1 sm:h-full from-(--nya-sidebar-shadow) to-transparent bg-linear-to-t sm:bg-linear-to-r",
-      ),
-      h(
-        "absolute top-0 left-0 w-full h-full overflow-y-auto p-4",
-        h(
-          "w-full flex flex-col gap-2 max-w-2xl mx-auto",
-          closeAddons,
-          ...createAddons(factory, this, checkIcon),
-        ),
-      ),
-    )
-    addons.classList.toggle("hidden", !location.search.includes("showaddons"))
-
     // dom
     this.glPixelRatio.el.className =
       "block w-48 bg-(--nya-bg) outline-solid outline-1 outline-(--nya-pixel-ratio) rounded-full p-1"
     const toolbarEl = h("contents")
-    this.el = h("", titlebar, sidebar, toolbarEl, cv, addons)
+    this.el = h("", titlebar, sidebar, toolbarEl, cv)
 
     const checkToolbar = (items?: ToolbarItem[]) => {
       if (items) {
@@ -496,7 +428,6 @@ ${fns.join("\n\n")}`,
   async load(id: PackageId) {
     await this.factory.load(id)
     this.factory.loaded[id]?.init?.fn(this) // package is never null by now, but extra checks don't hurt
-    tidyCoercions()
     this.checkToolbar(
       Object.entries(this.factory.toolbar)
         .sort((a, b) => +a[0] - +b[0])
@@ -549,21 +480,11 @@ ${fns.join("\n\n")}`,
       const program = this.program
       if (!program) return
 
-      const { xmin, w, ymin, h } = this.cv.bounds()
+      const { xmin, w, ymin } = this.cv.bounds()
       global(
         {
-          // TODO: check that all of these work on canvases where buffer width is smaller than canvas width
-          u_scale: splitRaw(w / this.regl._gl.drawingBufferWidth),
-          u_cx: splitRaw(xmin),
-          u_cy: splitRaw(ymin),
-          u_px_per_unit: [
-            ...splitRaw(this.cv.width / w),
-            ...splitRaw(this.cv.height / h),
-          ],
-          u_unit_per_hpx: [
-            ...splitRaw(1 / this.cv.xPrecision),
-            ...splitRaw(1 / this.cv.yPrecision),
-          ],
+          u_offset: [xmin, ymin],
+          u_scale: w / this.regl._gl.drawingBufferWidth,
           u_darkmul: isDark() ? [-1, -1, -1, 1] : [1, 1, 1, 1],
           u_darkoffset: isDark() ? [1, 1, 1, 0] : [0, 0, 0, 0],
           u_is_dark: isDark(),
@@ -584,9 +505,6 @@ ${fns.join("\n\n")}`,
       return
     }
 
-    const ctx = this.scope.propsGlsl().ctx
-    declareAddR64(ctx)
-    declareMulR64(ctx)
     const frag = `#version 300 es
 precision highp float;
 out vec4 color;
@@ -595,11 +513,8 @@ vec2 vl_coords;
 uniform vec4 u_darkmul;
 uniform vec4 u_darkoffset;
 uniform bool u_is_dark;
-uniform vec2 u_scale;
-uniform vec2 u_cx;
-uniform vec2 u_cy;
-uniform vec4 u_px_per_unit;
-uniform vec4 u_unit_per_hpx;
+uniform float u_scale;
+uniform vec2 u_offset;
 vec4 _nya_helper_compose(vec4 base, vec4 added) {
   if (base.w == 0.) return added;
   if (added.w == 0.) return base;
@@ -612,12 +527,7 @@ vec4 _nya_helper_compose(vec4 base, vec4 added) {
 ${this.factory.env.libGl.getTypeDeclarations()}
 ${Array.from(new Set(compiled.flatMap((x) => Array.from(x.globals)))).join("\n")}
 void main() {
-vec2 e_tx = vec2(gl_FragCoord.x, 0);
-vec2 e_ty = vec2(gl_FragCoord.y, 0);
-vl_coords = vec2(
-  (u_cx.x + (e_tx.x * u_scale.x)),
-  (u_cy.x + (e_ty.x * u_scale.x))
-);
+vl_coords = u_offset + gl_FragCoord.xy * u_scale;
 ${compiled.map((x) => x.block).join("")}
 color = ${compiled.map((x) => x.value).reduce((a, b) => `_nya_helper_compose(${a},${b})`)};
       }
@@ -661,24 +571,4 @@ void main() {
   private _createExprWithRef(ref: ItemRef<Expr>) {
     return new Expr(this, ref)
   }
-}
-
-class SheetHandler implements Handler {
-  constructor(readonly sheet: Sheet) {}
-
-  find(at: Point, hint: Hint) {
-    const record: Record<number, ItemWithTarget[]> = Object.create(null)
-    this.sheet.list.find(record, this.sheet.cv.toPaper(at), hint)
-    const items = Object.entries(record)
-      .sort(([a], [b]) => +b - +a)
-      .flatMap((x) => x[1])
-    return hint.pick(this.sheet, at, items)
-  }
-
-  take(_item: ItemWithTarget | null): void {}
-}
-
-export interface Selected<K extends TyName = TyName> {
-  val: JsVal<K>
-  ref(): Block
 }

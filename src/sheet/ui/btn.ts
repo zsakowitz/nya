@@ -1,9 +1,5 @@
-import type { WithDocs } from "@/eval/ops/docs"
-import { CmdNum } from "@/field/cmd/leaf/num"
-import { CmdWord } from "@/field/cmd/leaf/word"
 import { fa, h, hx } from "@/jsx"
 import type { IconDefinition } from "@fortawesome/free-solid-svg-icons"
-import { docFromSignature } from "./signature"
 
 export function btnSkin2<K extends keyof HTMLElementTagNameMap>(
   kind: K,
@@ -37,32 +33,6 @@ export function btn(
   const el = btnSkin("button", icon, label)
   el.addEventListener("click", action)
   return el
-}
-
-function makeDocName(name: string) {
-  return h(
-    "font-['Symbola'] text-[1.265rem]/[1.15]",
-    /^(?:\p{L}+|\p{L}[\p{L}\s]+\p{L}|\.\p{L})$/u.test(name) ?
-      new CmdWord(name, undefined, /^[a-z]$/.test(name)).el
-    : new CmdNum(name).el,
-  )
-}
-
-export function makeDoc(
-  fn: WithDocs,
-  props?: {
-    title?: boolean
-  },
-) {
-  const nodes = fn.docs()
-  if (nodes.length == 0) return null
-
-  return h(
-    "flex flex-col",
-    props?.title === false ? null : makeDocName(fn.name),
-    h("text-sm leading-tight text-slate-500", fn.label),
-    h("flex flex-col pl-4 mt-1", ...nodes.map(docFromSignature)),
-  )
 }
 
 export function example(input: string, value: string | null) {

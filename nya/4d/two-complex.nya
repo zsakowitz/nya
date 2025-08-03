@@ -57,6 +57,5 @@ fn point(a: PointComplex4D) -> PointComplex4D {
 
 expose package {
   name: "4D points (bicomplex)",
-  default: false,
-  label: "points with two complex coordinates",
+  default: true,
 }

@@ -1,5 +1,3 @@
-import type { TyName } from "@/eval/ty"
-import { TY_INFO } from "@/eval/ty/info"
 import { Leaf } from "."
 import type { LatexParser } from "../../latex"
 import type { Command } from "../../model"

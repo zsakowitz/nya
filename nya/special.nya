@@ -7,6 +7,5 @@ use "gamma/trigamma";
 
 expose package {
   name: "special functions",
-  default: false,
-  label: "beta, gamma, and zeta",
+  default: true,
 }
