@@ -1,0 +1,80 @@
+// ensures we load overloads in the proper order
+use "data/stats/real";
+use "complex";
+
+fn total(x: [Complex]) -> Complex {
+  let mut ret = _complex_zero;
+  for el in x {
+    ret += el;
+  }
+  ret
+}
+
+fn mean(x: [Complex]) -> Complex {
+  total(x) / x.count
+}
+
+fn var(x: [Complex]) -> num {
+  let mut ret = 0.0;
+  let m = mean(x);
+  for el in x {
+    ret += abs(el - m) * abs(el - m);
+  }
+  ret / x.count
+}
+
+fn varp(x: [Complex]) -> num {
+  let mut ret = 0.0;
+  let m = mean(x);
+  for el in x {
+    ret += abs(el - m) * abs(el - m);
+  }
+  ret / (x.count - 1.0)
+}
+
+fn stdev(x: [Complex]) -> num {
+  sqrt(var(x))
+}
+
+fn stdevp(x: [Complex]) -> num {
+  sqrt(varp(x))
+}
+
+fn stddev(x: [Complex]) -> num {
+  stdev(x)
+}
+
+fn stddevp(x: [Complex]) -> num {
+  stdevp(x)
+}
+
+fn cov(a: [Complex], b: [Complex]) -> Complex {
+  let ma = mean(a);
+  let mb = mean(b);
+  let mut ret = _complex_zero;
+  for el1, el2 in a, b {
+    ret += (el1 - ma) * (el2 - mb);
+  }
+  ret / a.count
+}
+
+fn covp(a: [Complex], b: [Complex]) -> Complex {
+  let ma = mean(a);
+  let mb = mean(b);
+  let mut ret = _complex_zero;
+  for el1, el2 in a, b {
+    ret += (el1 - ma) * (el2 - mb);
+  }
+  ret / (a.count - 1)
+}
+
+fn corr(a: [Complex], b: [Complex]) -> Complex {
+  covp(a, b) / (stdevp(a) * stdevp(b))
+}
+
+// mad
+
+expose package {
+  default: true,
+  name: "rudimentary complex statistics functions",
+}
