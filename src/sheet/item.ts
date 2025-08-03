@@ -1,8 +1,8 @@
-import type { GlslResult } from "@/eval/lib/fn"
 import type { VDir } from "@/field/dir"
 import type { IconDefinition } from "@fortawesome/free-solid-svg-icons"
 import type { ItemRef } from "./items"
-import type { Plottable } from "./ui/cv/item"
+import type { Plottable } from "./plot/plottable"
+import type { Shader } from "./plot/shader"
 
 export interface ItemFactory<T, U = unknown, V = unknown> {
   id: string
@@ -15,7 +15,7 @@ export interface ItemFactory<T, U = unknown, V = unknown> {
   aside?(data: T): Node
   main(data: T): Node
   plot?: Plottable<T, V>
-  glsl?(data: T): GlslResult | undefined
+  glsl?(data: T): Shader | undefined
   unlink(data: T): void
   /** `from` is only `null` immediately after creation. */
   focus(data: T, from: VDir | null): void

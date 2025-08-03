@@ -1,4 +1,4 @@
-import { builtin, type PackageId } from "#/index"
+import { builtin, type PackageId } from "@/pkg"
 import { options } from "@/field/defaults"
 import {
   default as SRC_LOCALHOST,
@@ -6,7 +6,6 @@ import {
 } from "./example/localhost.txt"
 import { SheetFactory } from "./factory"
 
-import { createDocs2 } from "@/docs"
 import { showKeyboard } from "@/keyboard/global"
 
 const factory = new SheetFactory(options)
@@ -35,21 +34,14 @@ if (globalThis.location?.search.includes("addons")) {
 }
 
 const IS_DEV = "NYA_DEV" in globalThis
-if (IS_DEV) {
-  setTimeout(async () => (await import("@/test")).runTests())
-}
 
 const sheet = factory.create()
 Object.assign(globalThis, { sheet })
-if (globalThis.location?.href.includes("docs")) {
-  document.body.appendChild(createDocs2(sheet))
-} else {
-  document.body.appendChild(sheet.el)
-  if (globalThis.location?.href.includes("keyboard")) {
-    setTimeout(() => {
-      showKeyboard(document.querySelector(".nya-kbd-field")!.nyaField!)
-    }, 100)
-  }
+document.body.appendChild(sheet.el)
+if (globalThis.location?.href.includes("showkeyboard")) {
+  setTimeout(() => {
+    showKeyboard(document.querySelector(".nya-kbd-field")!.nyaField!)
+  }, 100)
 }
 
 const src = IS_DEV ? SRC_LOCALHOST : SRC_STANDARD

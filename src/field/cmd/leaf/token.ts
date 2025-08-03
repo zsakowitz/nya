@@ -1,7 +1,3 @@
-import { errorText } from "@/error"
-import { BindingFn, BindingGlslValue, id } from "@/eval/lib/binding"
-import type { JsVal, TyName } from "@/eval/ty"
-import { TY_INFO } from "@/eval/ty/info"
 import { L } from "@/field/dir"
 import { fa, h, sx } from "@/jsx"
 import type { Scope } from "@/sheet/deps"
@@ -26,19 +22,6 @@ function iconError() {
       fa(
         faWarning,
         "fill-current absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[16px]",
-      ),
-    ),
-  )
-}
-
-function iconFunction() {
-  return h(
-    "",
-    h(
-      "text-slate-500 size-[26px] mb-[2px] mx-[2.5px] align-middle text-[16px] bg-(--nya-bg) inline-block relative border-current rounded-[4px] border-2",
-      h("opacity-25 block bg-current absolute inset-0"),
-      h(
-        "size-[7px] bg-current absolute rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
       ),
     ),
   )
@@ -120,48 +103,6 @@ export class TokenCtx {
     this.tokens.clear()
     for (const [key, tokens] of this.tracking) {
       if (tokens.length == 0) continue
-
-      let type: TyName | "__function" | undefined
-      let val: JsVal | undefined
-      try {
-        const value = this.scope.bindingsJs.get(id({ value: "$" + key }))
-        if (value instanceof BindingFn) {
-          type = "__function"
-        } else if (value) {
-          if (value.list === false) {
-            val = value
-          }
-          type = value.type
-        }
-      } catch (e) {
-        try {
-          const value = this.scope.bindingsGlsl.get(id({ value: "$" + key }))
-          if (value instanceof BindingFn) {
-            type = "__function"
-          } else if (value instanceof BindingGlslValue) {
-            type = "__function"
-          } else if (value) {
-            type = value.type
-          }
-        } catch {
-          console.warn("[tokenctx.update]", errorText(e))
-        }
-      }
-
-      let token
-      if (val && (token = TY_INFO[val.type].token?.(val.value as never))) {
-        this.tokens.set(key, token)
-      } else if (type) {
-        if (type.endsWith("64")) {
-          type = (type.slice(0, -2) + "32") as TyName
-        }
-        this.tokens.set(
-          key,
-          type == "__function" ? iconFunction() : (
-            (TY_INFO[type]?.icon() ?? iconError())
-          ),
-        )
-      }
 
       let el = this.tokens.get(key) ?? iconError()
       for (const token of tokens) {

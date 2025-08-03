@@ -1,5 +1,4 @@
 import { todo } from "!/emit/error"
-import type { Node } from "@/eval/ast/token"
 import {
   infx,
   JUXTAPOSE_TOKEN,
@@ -11,10 +10,10 @@ import {
   type NameCooked,
   type OpKind,
   type Suffix,
-} from "@/eval2/node"
-import { ParseNode, Parser } from "@/eval2/parse"
-import { Precedence } from "@/eval2/prec"
-import { listItems } from "@/eval2/tx"
+} from "@/eval/node"
+import { ParseNode, Parser } from "@/eval/parse"
+import { Precedence } from "@/eval/prec"
+import { listItems } from "@/eval/tx"
 import { h } from "@/jsx"
 import type { Scope } from "@/sheet/deps"
 import type { CmdFrac } from "./cmd/math/frac"
@@ -151,11 +150,6 @@ export class Block {
     }
 
     return new Parser(ir, JUXTAPOSE_TOKEN).parse()
-  }
-
-  // FIXME: NYALANG: remove .expr()
-  expr(_maybeBinding = true): Node {
-    return { type: "num", value: "3948394", span: null }
   }
 
   /** Creates a cursor focused at the given position in this {@linkcode Block}. */

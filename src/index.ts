@@ -1,4 +1,5 @@
 import "./page/index.dist.css"
+import "./polyfills"
 
 Error.isError ??= (x) => x instanceof Error
 
@@ -24,9 +25,7 @@ if (logeval != null) {
   }
 }
 
-if (location.href.includes("showmanifest")) {
-  await import("./manifest")
-} else if (location.href.includes("showkeyboards")) {
+if (location.href.includes("showkeyboards")) {
   await import("./keyboard/dev/all")
 } else if (location.href.includes("showmobilekeyboard")) {
   await import("./keyboard/dev/mobile")

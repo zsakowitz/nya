@@ -1,6 +1,6 @@
 import { errorText, issue } from "!/emit/error"
 import { ScriptEnvironment } from "!/exec/loader"
-import { isScriptName } from "#/scripts"
+import { isScriptName } from "@/pkg/scripts"
 
 const lang = process.argv[2]
 const name = process.argv[3]

@@ -1,5 +1,5 @@
-import { IR, leaf } from "@/eval2/node"
-import { ParseNode } from "@/eval2/parse"
+import { IR, leaf } from "@/eval/node"
+import { ParseNode } from "@/eval/parse"
 import { L } from "@/field/dir"
 import { h } from "@/jsx"
 import { Leaf } from "."

@@ -1,16 +1,13 @@
+import type { NameRaw } from "@/eval/node"
 import {
+  P,
   Precedence,
-  PRECEDENCE_MAP,
-  type PuncBinaryStr,
-  type Var,
-} from "@/eval/ast/token"
-import { subscript } from "@/eval/lib/text"
-import type { NameRaw } from "@/eval2/node"
-import { P, PRECEDENCE_WORD_BINARY, PRECEDENCE_WORD_UNARY } from "@/eval2/prec"
+  PRECEDENCE_WORD_BINARY,
+  PRECEDENCE_WORD_UNARY,
+} from "@/eval/prec"
 import { L, R, type Dir } from "@/field/dir"
 import type { Options, WordMapWithoutSpaces } from "@/field/options"
 import { h } from "@/jsx"
-import type { Scope } from "@/sheet/deps"
 import { Leaf } from "."
 import type { LatexInit, LatexParser } from "../../latex"
 import {
@@ -23,8 +20,6 @@ import {
 } from "../../model"
 import { CmdBrack } from "../math/brack" // TODO: this is a cyclic import
 import { CmdSupSub } from "../math/supsub"
-import { CmdToken, TokenCtx } from "./token"
-import { CmdWord } from "./word"
 
 // DEBT: figure out a name for this file
 
@@ -278,38 +273,6 @@ export class CmdVar extends Leaf {
         text.shift()
         leftmost = leftmost[R]!
       }
-    }
-  }
-
-  static leftOf(
-    cursor: Cursor,
-    token: Var & { sup?: undefined },
-    options: Options,
-    scope: Scope,
-  ) {
-    if (/^\$\d+$/.test(token.value)) {
-      new CmdToken(BigInt(token.value.slice(1)), new TokenCtx(scope)).insertAt(
-        cursor,
-        L,
-      )
-    } else {
-      ;(token.value.length == 1 ?
-        new CmdVar(token.value, options)
-      : new CmdWord(token.value, "var")
-      ).insertAt(cursor, L)
-    }
-
-    if (token.sub) {
-      const sub = new Block(null)
-      const supsub = new CmdSupSub(sub, null)
-      const subc = sub.cursor(R)
-      for (const char of subscript(token.sub)) {
-        ;(/\d/.test(char) ?
-          new CmdNum(char)
-        : new CmdVar(char, options)
-        ).insertAt(subc, L)
-      }
-      supsub.insertAt(cursor, L)
     }
   }
 
@@ -614,12 +577,6 @@ export class CmdVar extends Leaf {
   }
 
   endsImplicitGroup(): boolean {
-    if (this.kind == "magicprefix") {
-      return true
-    }
-    if (this.kind != "infix") {
-      return false
-    }
     let el: CmdVar = this
     let text = this.text
     while (el.part != L && el[L] instanceof CmdVar) {
@@ -627,8 +584,11 @@ export class CmdVar extends Leaf {
       el = el[L]
     }
     return (
-      {}.hasOwnProperty.call(PRECEDENCE_MAP, text) &&
-      PRECEDENCE_MAP[text as PuncBinaryStr]! <= Precedence.Sum
+      text in PRECEDENCE_WORD_BINARY ?
+        PRECEDENCE_WORD_BINARY[text]![1] < Precedence.ImplicitFnR
+      : text in PRECEDENCE_WORD_UNARY ?
+        PRECEDENCE_WORD_UNARY[text]! < Precedence.ImplicitFnR
+      : false
     )
   }
 

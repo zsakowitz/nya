@@ -3,9 +3,7 @@ dist/
 tsconfig.tsbuildinfo
 **/.DS_Store
 meta.json
-pkg/manifest/data.json
-pkg/graphsource
 graph.svg
 lang/lib
-pkg/script-index.ts
-pkg/index-nyalang.ts
+src/pkg/script-index.ts
+src/pkg/index-nyalang.ts

@@ -1,4 +1,4 @@
-import { ParseNode } from "@/eval2/parse"
+import { ParseNode } from "@/eval/parse"
 import { D, L, R, U, type Dir, type VDir } from "@/field/dir"
 import { h } from "@/jsx"
 import type { LatexParser } from "../../latex"

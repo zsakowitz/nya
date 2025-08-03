@@ -1,4 +1,4 @@
-import { Precedence } from "@/eval2/prec"
+import { Precedence } from "@/eval/prec"
 import { D, L, R, U, type Dir, type VDir } from "@/field/dir"
 import { h } from "@/jsx"
 import type { LatexParser } from "../../latex"

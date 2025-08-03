@@ -2,7 +2,7 @@ import {
   Precedence,
   PRECEDENCE_WORD_BINARY,
   PRECEDENCE_WORD_UNARY,
-} from "@/eval2/prec"
+} from "@/eval/prec"
 import type { LatexParser } from "@/field/latex"
 import { h } from "@/jsx"
 import { Leaf } from "."

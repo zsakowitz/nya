@@ -5,8 +5,8 @@ import { parse } from "!/ast/parse"
 import { createStream } from "!/ast/stream"
 import { issue } from "!/emit/error"
 import { parseExposePackage } from "!/emit/pkg"
-import { SCRIPTS, type ScriptName } from "#/script-index"
-import type { Package } from "#/types"
+import { SCRIPTS, type ScriptName } from "@/pkg/script-index"
+import type { Package } from "@/pkg/types"
 
 await createPredefinedPackages()
 
@@ -29,7 +29,7 @@ export const NYALANG_PACKAGES_ADDONS = {\n  __proto__: null,\n${packages
 `
 
   await Bun.write(
-    new URL(`../../pkg/index-nyalang.ts`, import.meta.url).pathname,
+    new URL(`../../src/pkg/index-nyalang.ts`, import.meta.url).pathname,
     generated,
   )
 

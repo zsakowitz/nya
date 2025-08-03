@@ -18,19 +18,15 @@ which needs to be included.
 The top-level folders of this repo are:
 
 - [info/](info/): informative files, notes, and the backlog
-- [lang/](lang/): the nyalang checker, compiler, minimal standard library, and
-  Prettier plugin
+- [lib/](lib/): extended standard library loaded into the calculator
 - [make/](make/): builder of .nya files
-- [nya/](nya/): extended standard library loaded into the calculator
-- [pkg/](pkg/): old versions of packages which are no longer in use, except for
-  a few files which are used
 - [src/](src/): the main renderer, field editor, and command handler
 
 Yes, there are two standard libraries for nyalang:
 
-1. The one in [lang/src/std.ts](lang/src/std.ts), which defines builtins which
+1. The one in [src/lang/std.ts](src/lang/std.ts), which defines builtins which
    are implemented directly in JS and GLSL.
-2. The ones in [nya/](nya/), which define functions and types available in the
+2. The ones in [lib/](lib/), which define functions and types available in the
    calculator.
 
 ## the `.nya` language

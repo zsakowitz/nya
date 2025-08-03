@@ -6,6 +6,6 @@ src/page/index.dist.css
 meta.json
 pkg/graphsource
 graph.svg
-lang/src/prettier/plugin.js
-lang/src/play/compiled.*
+src/lang/prettier/plugin.js
+src/lang/play/compiled.*
 text

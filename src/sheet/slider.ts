@@ -1,4 +1,3 @@
-import { safe } from "@/eval/lib/util"
 import type { Cursor } from "@/field/model"
 import { h, hx } from "@/jsx"
 import { frac, int, type SReal } from "@/lib/real"
@@ -48,7 +47,7 @@ export class Slider {
         h(
           "absolute top-0 left-0 right-6 h-6 touch-none",
           (this.elScroller = h(
-            "absolute block size-6 rounded-full bg-blue-500/40 top-0 left-0 flex group/nya-scroller group-focus-within/nya-slider:ring-2 ring-offset-2 ring-blue-500/40 ring-offset-(--nya-bg)",
+            "absolute size-6 rounded-full bg-blue-500/40 top-0 left-0 flex group/nya-scroller group-focus-within/nya-slider:ring-2 ring-offset-2 ring-blue-500/40 ring-offset-(--nya-bg)",
             h(
               "block size-1.5 rounded-full bg-blue-500 group-hover/nya-scroller:size-6 in-[.nya-scrolleractive]:size-6 m-auto transition-[width,height]",
             ),
@@ -217,7 +216,7 @@ export class Slider {
 
   set base(v: SReal) {
     const n = v.num()
-    if (safe(n) && n >= 2) {
+    if (n == Math.floor(n) && 2 <= n && n <= 36) {
       this._base = n
     } else {
       this._base = 10
