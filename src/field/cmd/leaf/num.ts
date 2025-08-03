@@ -1,10 +1,10 @@
-import type { NameRaw } from "@/eval2/node"
+import type { NameRaw } from "@/eval/node"
 import {
   P,
   Precedence,
   PRECEDENCE_WORD_BINARY,
   PRECEDENCE_WORD_UNARY,
-} from "@/eval2/prec"
+} from "@/eval/prec"
 import { L, R, type Dir } from "@/field/dir"
 import type { Options, WordMapWithoutSpaces } from "@/field/options"
 import { h } from "@/jsx"

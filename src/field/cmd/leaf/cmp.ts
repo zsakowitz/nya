@@ -1,4 +1,4 @@
-import { Precedence } from "@/eval2/prec"
+import { Precedence } from "@/eval/prec"
 import { L, R, type Dir } from "@/field/dir"
 import type { LatexParser } from "../../latex"
 import type { Command, Cursor, InitProps, IRBuilder } from "../../model"

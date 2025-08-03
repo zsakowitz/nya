@@ -10,10 +10,10 @@ import {
   type NameCooked,
   type OpKind,
   type Suffix,
-} from "@/eval2/node"
-import { ParseNode, Parser } from "@/eval2/parse"
-import { Precedence } from "@/eval2/prec"
-import { listItems } from "@/eval2/tx"
+} from "@/eval/node"
+import { ParseNode, Parser } from "@/eval/parse"
+import { Precedence } from "@/eval/prec"
+import { listItems } from "@/eval/tx"
 import { h } from "@/jsx"
 import type { Scope } from "@/sheet/deps"
 import type { CmdFrac } from "./cmd/math/frac"

@@ -1,4 +1,4 @@
-import type { NameCooked, Node } from "@/eval2/node"
+import type { NameCooked, Node } from "@/eval/node"
 import {
   nameIdent,
   printVar,
@@ -6,7 +6,7 @@ import {
   ScriptDeps,
   type NameIdent,
   type ReadonlyScriptDeps,
-} from "@/eval2/tx"
+} from "@/eval/tx"
 import { IdMap } from "../emit/decl"
 import { bug, issue, issueError } from "../emit/error"
 import { err, Kind, ok, SKIP, type Executable, type State } from "./state"

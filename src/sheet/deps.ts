@@ -1,5 +1,5 @@
 import { errorText } from "@/error"
-import { nameIdent, ScriptDeps, type NameIdent } from "@/eval2/tx"
+import { nameIdent, ScriptDeps, type NameIdent } from "@/eval/tx"
 import { Field } from "@/field/field"
 import type { Options } from "@/field/options"
 

@@ -1,4 +1,4 @@
-import { Precedence } from "@/eval2/prec"
+import { Precedence } from "@/eval/prec"
 import { L } from "@/field/dir"
 import { h, usvg } from "@/jsx"
 import { CmuLeaf } from "."

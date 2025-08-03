@@ -1,5 +1,5 @@
-import type { Node } from "@/eval2/node"
-import type { NameIdent } from "@/eval2/tx"
+import type { Node } from "@/eval/node"
+import type { NameIdent } from "@/eval/tx"
 
 export const enum Kind {
   Skip,

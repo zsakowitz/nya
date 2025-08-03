@@ -1,5 +1,5 @@
-import { infx, pifx, type IR } from "@/eval2/node"
-import { Precedence as P } from "@/eval2/prec"
+import { infx, pifx, type IR } from "@/eval/node"
+import { Precedence as P } from "@/eval/prec"
 import { L, R } from "@/field/dir"
 import { h } from "@/jsx"
 import { Leaf } from "."

@@ -1,7 +1,6 @@
 import { escapeIdentName } from "!/ast/kind"
 import { issue, todo } from "!/emit/error"
 import { Id, ident } from "!/emit/id"
-import type { PuncCmp } from "@/eval/ast/token"
 import { type NameCooked, type Node, type OpKind, type Suffix } from "./node"
 import { P, PRECEDENCE_WORD_BINARY, PRECEDENCE_WORD_UNARY } from "./prec"
 import {
@@ -385,7 +384,7 @@ function alias(name: string, nya: string) {
   }
 }
 
-function cmp(name: PuncCmp, nameneg: PuncCmp, nya: string) {
+function cmp(name: string, nameneg: string, nya: string) {
   TX_OPS_OPS[name] = {
     eval(_, [a, b], block) {
       // TODO: chain comparisons

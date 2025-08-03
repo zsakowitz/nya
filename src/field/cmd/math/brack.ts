@@ -1,4 +1,4 @@
-import { P } from "@/eval2/prec"
+import { P } from "@/eval/prec"
 import { L, R, type Dir } from "@/field/dir"
 import { h, path, svg, svgx } from "@/jsx"
 import type { LatexParser } from "../../latex"
