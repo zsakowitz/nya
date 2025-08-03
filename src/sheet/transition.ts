@@ -1,4 +1,4 @@
-import { h } from "@/jsx"
+import { h } from "@/lib/jsx"
 import { Store } from "./ext"
 import type { Expr } from "./ui/expr"
 

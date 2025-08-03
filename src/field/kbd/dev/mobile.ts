@@ -1,6 +1,6 @@
 import { options } from "@/field/defaults"
 import { Field } from "@/field/field"
-import { h } from "@/jsx"
+import { h } from "@/lib/jsx"
 import { Scope } from "@/sheet/deps"
 import { KeyboardController } from "../controller"
 import { LAYOUTS } from "../layout"

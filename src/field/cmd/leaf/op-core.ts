@@ -1,6 +1,6 @@
 import { type Cursor, type InitProps } from "@/field/model"
 import { L, R } from "@/field/dir"
-import { h } from "@/jsx"
+import { h } from "@/lib/jsx"
 import { Leaf } from "."
 import { CmdSupSub } from "../math/supsub"
 

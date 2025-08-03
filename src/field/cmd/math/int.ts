@@ -1,5 +1,5 @@
 import { D, L, R, U, type Dir, type VDir } from "@/field/dir"
-import { h, U_ZERO_WIDTH_SPACE } from "@/jsx"
+import { h, U_ZERO_WIDTH_SPACE } from "@/lib/jsx"
 import type { LatexParser } from "../../latex"
 import {
   Block,

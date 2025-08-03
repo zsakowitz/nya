@@ -1,5 +1,5 @@
 import type { Cursor } from "@/field/model"
-import { h, hx } from "@/jsx"
+import { h, hx } from "@/lib/jsx"
 import { frac, int, type SReal } from "@/lib/real"
 import { twMerge } from "tailwind-merge"
 import { virtualStepExp, write } from "./write"

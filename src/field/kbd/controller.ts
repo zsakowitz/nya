@@ -1,7 +1,7 @@
 import { L } from "@/field/dir"
 import type { FieldInert } from "@/field/field-inert"
 import { Block, Command } from "@/field/model"
-import { fa, h, hx } from "@/jsx"
+import { fa, h, hx } from "@/lib/jsx"
 import { faKeyboard } from "@fortawesome/free-regular-svg-icons"
 import { faCaretUp } from "@fortawesome/free-solid-svg-icons/faCaretUp"
 import {

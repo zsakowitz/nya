@@ -1,5 +1,5 @@
 import { L, R } from "@/field/dir"
-import { h, hx } from "@/jsx"
+import { h, hx } from "@/lib/jsx"
 import type { FieldInert } from "../../field-inert"
 import {
   Selection,

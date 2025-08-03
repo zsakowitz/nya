@@ -1,5 +1,5 @@
 import type { IRBuilder } from "@/field/model"
-import { h } from "@/jsx"
+import { h } from "@/lib/jsx"
 import { Leaf } from "."
 
 /**

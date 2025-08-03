@@ -1,6 +1,6 @@
 import { Precedence } from "@/eval/prec"
 import { D, L, R, U, type Dir, type VDir } from "@/field/dir"
-import { h } from "@/jsx"
+import { h } from "@/lib/jsx"
 import type { LatexParser } from "../../latex"
 import {
   Block,

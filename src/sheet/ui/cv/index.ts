@@ -1,5 +1,5 @@
 import type { CanvasJs } from "!/std"
-import { hx } from "@/jsx"
+import { hx } from "@/lib/jsx"
 import { px, type Point } from "@/lib/point"
 import { onTheme } from "../../theme"
 import { Size } from "./consts"

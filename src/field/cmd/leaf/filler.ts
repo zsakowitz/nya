@@ -1,5 +1,5 @@
 import type { Command } from "@/field/model"
-import { h } from "@/jsx"
+import { h } from "@/lib/jsx"
 import { Leaf } from "."
 
 export class CmdFiller extends Leaf {

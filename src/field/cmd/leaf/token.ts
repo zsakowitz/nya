@@ -1,5 +1,5 @@
 import { L } from "@/field/dir"
-import { fa, h, sx } from "@/jsx"
+import { fa, h, sx } from "@/lib/jsx"
 import type { Scope } from "@/sheet/deps"
 import { faWarning } from "@fortawesome/free-solid-svg-icons/faWarning"
 import { Leaf } from "."

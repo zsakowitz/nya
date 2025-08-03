@@ -4,7 +4,7 @@ import {
   PRECEDENCE_WORD_UNARY,
 } from "@/eval/prec"
 import type { LatexParser } from "@/field/latex"
-import { h } from "@/jsx"
+import { h } from "@/lib/jsx"
 import { Leaf } from "."
 import { type Command, type IRBuilder } from "../../model"
 import { CmdUnknown } from "./unknown"

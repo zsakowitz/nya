@@ -1,6 +1,6 @@
 import { Precedence } from "@/eval/prec"
 import { L } from "@/field/dir"
-import { h, usvg } from "@/jsx"
+import { h, usvg } from "@/lib/jsx"
 import { CmuLeaf } from "."
 import type { LatexParser } from "../../../latex"
 import {

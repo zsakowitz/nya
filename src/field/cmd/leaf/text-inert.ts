@@ -1,6 +1,6 @@
 import { type LatexParser, toText } from "@/field/latex"
 import type { Command, IRBuilder } from "@/field/model"
-import { h } from "@/jsx"
+import { h } from "@/lib/jsx"
 import { Leaf } from "."
 
 export class CmdTextInert extends Leaf {

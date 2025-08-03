@@ -1,6 +1,6 @@
 import { errorText } from "@/lib/error"
 import { D, L, U, type Dir, type VDir } from "@/field/dir"
-import { h, t } from "@/jsx"
+import { h, t } from "@/lib/jsx"
 import type { ItemFactory } from "./item"
 import type { Shader } from "./plot/shader"
 import type { Sheet } from "./ui/sheet"

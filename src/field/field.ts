@@ -1,4 +1,4 @@
-import { h } from "@/jsx"
+import { h } from "@/lib/jsx"
 import type { Scope } from "@/sheet/deps"
 import { FieldInert } from "./field-inert"
 import { Selection } from "./model"

@@ -1,7 +1,7 @@
 import { Struct } from "!/emit/type"
 import { EntrySet } from "!/exec/item"
 import type { Options } from "@/field/options"
-import { h, hx, t } from "@/jsx"
+import { h, hx, t } from "@/lib/jsx"
 import { int } from "@/lib/real"
 import type { PackageId } from "@/pkg"
 import type { ToolbarItem } from "@/pkg/types"

@@ -2,7 +2,7 @@ import { options } from "@/field/defaults"
 import type { FieldInert } from "@/field/field-inert"
 import { LatexParser } from "@/field/latex"
 import type { Block, Command } from "@/field/model"
-import { fa, h, hx } from "@/jsx"
+import { fa, h, hx } from "@/lib/jsx"
 import type { IconDefinition } from "@fortawesome/free-solid-svg-icons"
 import { faLock } from "@fortawesome/free-solid-svg-icons/faLock"
 

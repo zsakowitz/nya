@@ -1,7 +1,7 @@
 import { infx } from "@/eval/node"
 import { Precedence } from "@/eval/prec"
 import { L } from "@/field/dir"
-import { h } from "@/jsx"
+import { h } from "@/lib/jsx"
 import { Leaf } from "."
 import type { LatexParser } from "../../latex"
 import type { Command, Cursor, IRBuilder } from "../../model"

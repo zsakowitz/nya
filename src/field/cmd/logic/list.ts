@@ -1,6 +1,6 @@
 import { ParseNode } from "@/eval/parse"
 import { D, L, R, U, type Dir, type VDir } from "@/field/dir"
-import { h } from "@/jsx"
+import { h } from "@/lib/jsx"
 import type { LatexParser } from "../../latex"
 import { Block, Command, type Cursor, type IRBuilder } from "../../model"
 import { focusEdge, Leaf } from "../leaf"

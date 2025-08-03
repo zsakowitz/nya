@@ -1,4 +1,4 @@
-import { fa, h, hx } from "@/jsx"
+import { fa, h, hx } from "@/lib/jsx"
 import type { IconDefinition } from "@fortawesome/free-solid-svg-icons"
 
 export function btnSkin2<K extends keyof HTMLElementTagNameMap>(

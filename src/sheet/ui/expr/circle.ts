@@ -1,4 +1,4 @@
-import { fa, h, path, svgx } from "@/jsx"
+import { fa, h, path, svgx } from "@/lib/jsx"
 import { faQuoteLeft } from "@fortawesome/free-solid-svg-icons/faQuoteLeft"
 
 export function circle(

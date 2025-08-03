@@ -1,6 +1,6 @@
 import { P } from "@/eval/prec"
 import { L, R, type Dir } from "@/field/dir"
-import { h, path, svg, svgx } from "@/jsx"
+import { h, path, svg, svgx } from "@/lib/jsx"
 import type { LatexParser } from "../../latex"
 import {
   Block,

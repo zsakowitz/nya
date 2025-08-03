@@ -1,6 +1,6 @@
 import { L } from "@/field/dir"
 import type { LatexParser } from "@/field/latex"
-import { h } from "@/jsx"
+import { h } from "@/lib/jsx"
 import { Leaf } from "."
 import type { Command, Cursor, InitProps } from "../../model"
 

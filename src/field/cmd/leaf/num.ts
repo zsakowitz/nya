@@ -7,7 +7,7 @@ import {
 } from "@/eval/prec"
 import { L, R, type Dir } from "@/field/dir"
 import type { Options, WordMapWithoutSpaces } from "@/field/options"
-import { h } from "@/jsx"
+import { h } from "@/lib/jsx"
 import { Leaf } from "."
 import type { LatexInit, LatexParser } from "../../latex"
 import {

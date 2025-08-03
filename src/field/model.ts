@@ -14,7 +14,7 @@ import {
 import { ParseNode, Parser } from "@/eval/parse"
 import { Precedence } from "@/eval/prec"
 import { listItems } from "@/eval/tx"
-import { h } from "@/jsx"
+import { h } from "@/lib/jsx"
 import type { Scope } from "@/sheet/deps"
 import type { CmdFrac } from "./cmd/math/frac"
 import { D, L, R, U, type Dir, type VDir } from "./dir"

@@ -1,5 +1,5 @@
 import { L, R, type Dir, type VDir } from "@/field/dir"
-import { h, path, svg } from "@/jsx"
+import { h, path, svg } from "@/lib/jsx"
 import type { LatexParser } from "../../latex"
 import {
   Block,
