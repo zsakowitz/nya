@@ -1,17 +1,17 @@
-import { KFalse, KTrue, TFloat, TInt, TString, TSym } from "./ast/kind"
-import type { ExprLit } from "./ast/node/expr"
-import { NyaApi } from "./emit/api"
-import { Declarations } from "./emit/decl"
-import { todo } from "./emit/error"
-import { ident } from "./emit/id"
-import type { EmitProps } from "./emit/props"
-import { Value } from "./emit/value"
-import { libCanvas } from "./std/2d"
-import { libPlot3D } from "./std/3d"
-import { libBroadcasting } from "./std/broadcasting"
-import { libLatex } from "./std/latex"
-import { libNumBool } from "./std/numbool"
-import { libArray } from "./std/sort"
+import { KFalse, KTrue, TFloat, TInt, TString, TSym } from "@/lang/ast/kind"
+import type { ExprLit } from "@/lang/ast/node/expr"
+import { NyaApi } from "@/lang/emit/api"
+import { Declarations } from "@/lang/emit/decl"
+import { ident } from "@/lang/emit/id"
+import type { EmitProps } from "@/lang/emit/props"
+import { Value } from "@/lang/emit/value"
+import { todo } from "@/lib/error"
+import { libCanvas } from "./2d"
+import { libPlot3D } from "./3d"
+import { libBroadcasting } from "./broadcasting"
+import { libLatex } from "./latex"
+import { libNumBool } from "./numbool"
+import { libArray } from "./sort"
 
 export function createStdlib(props: EmitProps): Declarations {
   const createLiteral = (literal: ExprLit) => {
@@ -33,24 +33,14 @@ export function createStdlib(props: EmitProps): Declarations {
   }
 
   const toArraySize = (value: Value) => {
-    if (
-      value.type == lib.tyNum &&
-      value.const() &&
-      typeof value.value == "number" &&
-      Number.isSafeInteger(value.value)
-    ) {
+    if (value.type == lib.tyNum && value.const() && typeof value.value == "number" && Number.isSafeInteger(value.value)) {
       return value.value
     }
 
     return null
   }
 
-  const lib: Declarations = new Declarations(
-    props,
-    null,
-    createLiteral,
-    toArraySize,
-  )
+  const lib: Declarations = new Declarations(props, null, createLiteral, toArraySize)
   const api = new NyaApi(lib)
 
   libNumBool(api)
