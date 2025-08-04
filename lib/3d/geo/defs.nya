@@ -55,16 +55,14 @@ fn %plot_3d(cv: Canvas3D, p: Segment3D) -> Object3D {
   cv.segment(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z)
 }
 
-// TODO: this is temporary and should be replaced with a good impl sometime
-fn %plot_3d(cv: Canvas3D, p: Line3D) -> Object3D {
-  let p1 = @mix(p.p1, p.p2, -9);
-  let p2 = @mix(p.p1, p.p2, 10);
-  cv.segment(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z)
-}
-
-// TODO: this is temporary and should be replaced with a good impl sometime
 fn %plot_3d(cv: Canvas3D, p: Ray3D) -> Object3D {
   let p1 = p.p1;
-  let p2 = @mix(p.p1, p.p2, 10);
-  cv.segment(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z)
+  let p2 = p.p2;
+  cv.ray(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z)
+}
+
+fn %plot_3d(cv: Canvas3D, p: Line3D) -> Object3D {
+  let p1 = p.p1;
+  let p2 = p.p2;
+  cv.line(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z)
 }

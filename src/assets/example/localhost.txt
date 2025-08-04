@@ -1,3 +1,1 @@
-p=plane((2,3,4),(7,5,1),(8,9,3))
-c=p.\operatorname{circle}\left(\left(0,0,0\right),2\right)
-c.\operatorname{glider}\left([0,0.2,0.5]\right)
+line((0,0,0),(1,2,3))

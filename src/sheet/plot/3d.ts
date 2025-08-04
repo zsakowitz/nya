@@ -621,15 +621,60 @@ export class Cv3D implements Canvas3D {
 
   segment(
     x1: number,
-    x2: number,
-    x3: number,
     y1: number,
+    z1: number,
+    x2: number,
     y2: number,
-    y3: number,
+    z2: number,
   ) {
     const geo = new LineGeometry()
-    geo.setPositions([x1, x2, x3, y1, y2, y3])
+    geo.setPositions([x1, y1, z1, x2, y2, z2])
     const mesh = new Line2(geo, this.lineMat)
+    return mesh
+  }
+
+  ray(x1: number, y1: number, z1: number, x2: number, y2: number, z2: number) {
+    const geo = new LineGeometry()
+    const h = Math.hypot(x2 - x1, y2 - y1, z2 - z1)
+    geo.setPositions([0, 0, 0, (x2 - x1) / h, (y2 - y1) / h, (z2 - z1) / h])
+    const mesh = new Line2(geo, this.lineMat)
+    mesh.position.set(x1, y1, z1)
+    const self = this
+    const prev = mesh.onBeforeRender.bind(mesh)
+    mesh.onBeforeRender = function (renderer) {
+      const b = self.bounds()
+      const xs = Math.max(Math.abs(b.xmax + x1), Math.abs(b.xmin + x1))
+      const ys = Math.max(Math.abs(b.ymin + y1), Math.abs(b.ymax + y1))
+      const zs = Math.max(Math.abs(b.zmin + z1), Math.abs(b.zmax + z1))
+      const sz = Math.hypot(xs, ys, zs)
+      mesh.scale.setScalar(sz)
+      mesh.updateMatrixWorld()
+      prev(renderer)
+    }
+    return mesh
+  }
+
+  line(x1: number, y1: number, z1: number, x2: number, y2: number, z2: number) {
+    const geo = new LineGeometry()
+    const h = Math.hypot(x2 - x1, y2 - y1, z2 - z1)
+    const xo = (x2 - x1) / h
+    const yo = (y2 - y1) / h
+    const zo = (z2 - z1) / h
+    geo.setPositions([-xo, -yo, -zo, xo, yo, zo])
+    const mesh = new Line2(geo, this.lineMat)
+    mesh.position.set(x1, y1, z1)
+    const self = this
+    const prev = mesh.onBeforeRender.bind(mesh)
+    mesh.onBeforeRender = function (renderer) {
+      const b = self.bounds()
+      const xs = Math.max(Math.abs(b.xmax + x1), Math.abs(b.xmin + x1))
+      const ys = Math.max(Math.abs(b.ymin + y1), Math.abs(b.ymax + y1))
+      const zs = Math.max(Math.abs(b.zmin + z1), Math.abs(b.zmax + z1))
+      const sz = Math.hypot(xs, ys, zs)
+      mesh.scale.setScalar(sz)
+      mesh.updateMatrixWorld()
+      prev(renderer)
+    }
     return mesh
   }
 }

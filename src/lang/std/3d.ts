@@ -6,8 +6,10 @@ export declare abstract class Canvas3D {
   point(x: number, y: number, z: number, r: number): Object3D
   circle(cx: number, cy: number, cz: number, rx: number, ry: number, rz: number, radius: number): Object3D
   plane(nx: number, ny: number, nz: number, o: number): Object3D
-  triangle(x1: number, x2: number, x3: number, y1: number, y2: number, y3: number, z1: number, z2: number, z3: number): Object3D
-  segment(x1: number, x2: number, x3: number, y1: number, y2: number, y3: number): Object3D
+  triangle(x1: number, y1: number, z1: number, x2: number, y2: number, z2: number, x3: number, y3: number, z3: number): Object3D
+  segment(x1: number, y1: number, z1: number, x2: number, y2: number, z2: number): Object3D
+  ray(x1: number, y1: number, z1: number, x2: number, y2: number, z2: number): Object3D
+  line(x1: number, y1: number, z1: number, x2: number, y2: number, z2: number): Object3D
 }
 
 export function libPlot3D(api: NyaApi) {
@@ -35,13 +37,23 @@ export function libPlot3D(api: NyaApi) {
     js: v`${0}.plane(${1},${2},${3},${4},${5},${6},${7},${8})`,
   })
 
-  api.fn("triangle", { cv: Canvas3D, x1: num, x2: num, x3: num, y1: num, y2: num, y3: num, z1: num, z2: num, z3: num }, Object3D, {
+  api.fn("triangle", { cv: Canvas3D, x1: num, y1: num, z1: num, x2: num, y2: num, z2: num, x3: num, y3: num, z3: num }, Object3D, {
     glsl: null,
     js: v`${0}.triangle(${1},${2},${3},${4},${5},${6},${7},${8},${9})`,
   })
 
-  api.fn("segment", { cv: Canvas3D, x1: num, x2: num, x3: num, y1: num, y2: num, y3: num }, Object3D, {
+  api.fn("segment", { cv: Canvas3D, x1: num, y1: num, z1: num, x2: num, y2: num, z2: num }, Object3D, {
     glsl: null,
     js: v`${0}.segment(${1},${2},${3},${4},${5},${6})`,
+  })
+
+  api.fn("ray", { cv: Canvas3D, x1: num, y1: num, z1: num, x2: num, y2: num, z2: num }, Object3D, {
+    glsl: null,
+    js: v`${0}.ray(${1},${2},${3},${4},${5},${6})`,
+  })
+
+  api.fn("line", { cv: Canvas3D, x1: num, y1: num, z1: num, x2: num, y2: num, z2: num }, Object3D, {
+    glsl: null,
+    js: v`${0}.line(${1},${2},${3},${4},${5},${6})`,
   })
 }
