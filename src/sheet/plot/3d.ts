@@ -1,5 +1,6 @@
 import type { Canvas3D } from "@/lang/std/3d"
 import * as T from "three"
+import { Line2, LineGeometry, LineMaterial } from "three/examples/jsm/Addons.js"
 import {
   getGridlineSize,
   MAX_GRIDLINES_MAJOR,
@@ -38,217 +39,6 @@ function getClipSize() {
 
 /** Things will be rendered this many times past `widths`. */
 const CLIP_MULTIPLIER = getClipSize()
-
-export class Cv3D implements Canvas3D {
-  readonly position = new T.Vector3()
-  readonly widths = new T.Vector3(5, 5, 5)
-  readonly rotation = new T.Euler(0, 0, 0, "ZXY")
-  readonly quaternion = new T.Quaternion()
-
-  readonly scene = new T.Scene()
-  readonly renderer = new T.WebGLRenderer({ antialias: true })
-  readonly dispose
-  readonly beforeRender: (() => void)[] = []
-  readonly clippingPlanes = createBoxClipping(this)
-
-  constructor() {
-    this.rotation._onChangeCallback = () => {
-      this.quaternion.setFromEuler(this.rotation, false)
-    }
-    this.quaternion._onChangeCallback = () => {
-      this.rotation.setFromQuaternion(this.quaternion, undefined, false)
-    }
-
-    const { scene, renderer } = this
-
-    const el = this.renderer.domElement
-    el.className = "absolute inset-0 !size-full [image-rendering:pixelated]"
-    registerControls(this)
-    const observer = new ResizeObserver(() => {
-      const scale = globalThis.devicePixelRatio ?? 1
-      const w = el.clientWidth
-      const h = el.clientHeight
-      renderer.setSize(scale * w, scale * h, false)
-      this.queue()
-    })
-    observer.observe(el)
-
-    this.dispose = () => {
-      observer.disconnect()
-      renderer.dispose()
-    }
-
-    scene.background = new T.Color(0xffffff)
-    addAxes(this)
-    addLighting(this)
-    addXYPlane(this)
-    if (!NO_BOUNDING_BOX) addBox(this)
-    addPlaneContainer(this)
-
-    this.rotateZ(2)
-    this.rotateX(1)
-  }
-
-  get scale() {
-    return globalThis.devicePixelRatio ?? 1
-  }
-
-  rotateX(amount: number) {
-    const q = new T.Quaternion()
-    q.setFromAxisAngle(new T.Vector3(1, 0, 0), amount)
-    this.quaternion.multiply(q)
-    this.queue()
-  }
-
-  rotateZ(amount: number) {
-    const q = new T.Quaternion()
-    q.setFromAxisAngle(new T.Vector3(0, 0, 1), amount)
-    this.quaternion.premultiply(q)
-    this.queue()
-  }
-
-  get el() {
-    return this.renderer.domElement
-  }
-
-  private mat(color: number) {
-    return new T.MeshPhysicalMaterial({
-      color,
-      side: T.DoubleSide,
-      clippingPlanes: NO_CLIP ? null : this.clippingPlanes,
-    })
-  }
-
-  private matPlain(color: number) {
-    return new T.MeshBasicMaterial({
-      color,
-      side: T.DoubleSide,
-      clippingPlanes: NO_CLIP ? null : this.clippingPlanes,
-    })
-  }
-
-  private readonly sphereMat = this.mat(0xc74440)
-  sphere(x: number, y: number, z: number, r: number) {
-    const sphereGeo = new T.SphereGeometry(r, 64, 32)
-    const mesh = new T.Mesh(sphereGeo, this.sphereMat)
-    mesh.position.set(x, y, z)
-    return mesh
-  }
-
-  private readonly pointMat = this.mat(0x6042a6)
-  point(x: number, y: number, z: number, r: number) {
-    const sphereGeo = new T.SphereGeometry(r, 64, 32)
-    const mesh = new T.Mesh(sphereGeo, this.pointMat)
-    mesh.position.set(x, y, z)
-    mesh.onBeforeRender = () => {
-      mesh.scale.setScalar((r * this.widths.length()) / this.el.clientWidth)
-      mesh.updateMatrixWorld()
-    }
-    return mesh
-  }
-
-  private readonly circleMat = this.mat(0x388c46)
-  circle(
-    cx: number,
-    cy: number,
-    cz: number,
-    rx: number,
-    ry: number,
-    rz: number,
-    radius: number,
-    lineWidth: number,
-  ) {
-    const lw = (lineWidth * this.widths.length()) / this.el.clientWidth
-    let geo = new T.TorusGeometry(radius, lw)
-    const mesh = new T.Mesh(geo, this.circleMat)
-    mesh.position.set(cx, cy, cz)
-    mesh.lookAt(cx + rx, cy + ry, cz + rz)
-    mesh.onBeforeRender = () => {
-      const prev = geo
-      const lw = (lineWidth * this.widths.length()) / this.el.clientWidth
-      geo = new T.TorusGeometry(radius, lw)
-      mesh.geometry = geo
-      queueMicrotask(() => prev.dispose())
-    }
-    return mesh
-  }
-
-  private readonly planeMat = this.matPlain(0x888888)
-  plane(nx: number, ny: number, nz: number, o: number) {
-    this.planeMat.opacity = 0.5
-    this.planeMat.transparent = true
-    const geo = new T.PlaneGeometry()
-    const mesh = new T.Mesh(geo, this.planeMat)
-    const plane = new T.Plane(new T.Vector3(nx, ny, nz), o)
-    mesh.position.set(0, 0, 0)
-    mesh.lookAt(nx, ny, nz) // sets proper rotation
-    mesh.onBeforeRender = () => {
-      const d = plane.distanceToPoint(this.position)
-      mesh.position.copy(this.position)
-      mesh.position.add(new T.Vector3(0, 0, -d).applyEuler(mesh.rotation))
-      const mx = 2 * this.widths.length()
-      mesh.scale.set(1, 1, 1)
-      mesh.scale.multiplyScalar(mx)
-      mesh.updateMatrixWorld()
-    }
-    return mesh
-  }
-
-  getCamera() {
-    const camera = new T.PerspectiveCamera(
-      50,
-      this.el.width / this.el.height,
-      this.widths.length() * 0.01,
-      this.widths.length() * 2000,
-    )
-    camera.position.z = 2 * this.widths.length()
-    camera.position.applyQuaternion(this.quaternion)
-    camera.position.add(this.position)
-    camera.quaternion.copy(this.quaternion)
-    return camera
-  }
-
-  private queued = false
-  queue() {
-    if (!this.queued) {
-      this.queued = true
-      queueMicrotask(() => {
-        if (!this.queued) return
-        this.queued = false
-        this.beforeRender.forEach((x) => x())
-        this.renderer.render(this.scene, this.getCamera())
-      })
-    }
-  }
-
-  zoom(scale: number) {
-    this.widths.multiplyScalar(scale)
-    // this.position.add(center.multiplyScalar(1 - scale))
-    this.queue()
-  }
-
-  move(vec: T.Vector3, normal: T.Vector3) {
-    vec.multiplyScalar(this.widths.length())
-    vec.divideScalar(this.el.clientWidth / 2)
-    vec.applyQuaternion(this.quaternion.clone())
-    vec.projectOnPlane(normal)
-    this.position.add(vec)
-    this.queue()
-  }
-
-  bounds() {
-    const { position, widths } = this
-
-    return {
-      xmin: position.x - CLIP_MULTIPLIER * widths.x,
-      xmax: position.x + CLIP_MULTIPLIER * widths.x,
-      ymin: position.y - CLIP_MULTIPLIER * widths.y,
-      ymax: position.y + CLIP_MULTIPLIER * widths.y,
-      zmin: position.z - CLIP_MULTIPLIER * widths.z,
-      zmax: position.z + CLIP_MULTIPLIER * widths.z,
-    }
-  }
-}
 
 function addAxes({ scene }: Cv3D) {
   const axesHelper = new T.AxesHelper(10)
@@ -360,7 +150,7 @@ function addXYPlane(cv: Cv3D) {
 }
 
 function addLighting({ scene, beforeRender, quaternion: rotation }: Cv3D) {
-  for (const source of [new T.Vector3(5, 5, 10), new T.Vector3(-5, 2, 10)]) {
+  for (const source of [new T.Vector3(-1, 1, 1), new T.Vector3(1, -0.3, 1)]) {
     const color = 0xffffff
     const intensity = DIRECTED_LIGHT_INTENSITY
     const light = new T.DirectionalLight(color, intensity)
@@ -557,4 +347,288 @@ function registerRotationControls(cv: Cv3D) {
     down--
     if (down < 0) down = 0
   })
+}
+
+export class Cv3D implements Canvas3D {
+  readonly position = new T.Vector3()
+  readonly widths = new T.Vector3(5, 5, 5)
+  readonly rotation = new T.Euler(0, 0, 0, "ZXY")
+  readonly quaternion = new T.Quaternion()
+
+  readonly scene = new T.Scene()
+  readonly renderer = new T.WebGLRenderer({ antialias: true })
+  readonly dispose
+  readonly beforeRender: (() => void)[] = []
+  private readonly clippingPlanes = createBoxClipping(this)
+
+  constructor() {
+    this.rotation._onChangeCallback = () => {
+      this.quaternion.setFromEuler(this.rotation, false)
+    }
+    this.quaternion._onChangeCallback = () => {
+      this.rotation.setFromQuaternion(this.quaternion, undefined, false)
+    }
+
+    const { scene, renderer } = this
+
+    const el = this.renderer.domElement
+    el.className = "absolute inset-0 !size-full [image-rendering:pixelated]"
+    registerControls(this)
+    const observer = new ResizeObserver(() => {
+      const scale = globalThis.devicePixelRatio ?? 1
+      const w = el.clientWidth
+      const h = el.clientHeight
+      renderer.setSize(scale * w, scale * h, false)
+      this.queue()
+    })
+    observer.observe(el)
+
+    this.dispose = () => {
+      observer.disconnect()
+      renderer.dispose()
+    }
+
+    scene.background = new T.Color(0xffffff)
+    addAxes(this)
+    addLighting(this)
+    addXYPlane(this)
+    if (!NO_BOUNDING_BOX) addBox(this)
+    addPlaneContainer(this)
+    this.fixMaterials()
+
+    this.rotateZ(2)
+    this.rotateX(1)
+  }
+
+  get scale() {
+    return globalThis.devicePixelRatio ?? 1
+  }
+
+  rotateX(amount: number) {
+    const q = new T.Quaternion()
+    q.setFromAxisAngle(new T.Vector3(1, 0, 0), amount)
+    this.quaternion.multiply(q)
+    this.queue()
+  }
+
+  rotateZ(amount: number) {
+    const q = new T.Quaternion()
+    q.setFromAxisAngle(new T.Vector3(0, 0, 1), amount)
+    this.quaternion.premultiply(q)
+    this.queue()
+  }
+
+  get el() {
+    return this.renderer.domElement
+  }
+
+  private _perspective = 1
+  get perspective() {
+    return this._perspective
+  }
+  set perspective(v) {
+    if (Number.isFinite(v)) {
+      if (v < 0.1) this._perspective = 0.1
+      else if (v > 10) this._perspective = 10
+      else this._perspective = v
+      this.queue()
+    }
+  }
+
+  getCamera() {
+    const perspective = this._perspective
+    const camera = new T.PerspectiveCamera(
+      50,
+      this.el.width / this.el.height,
+      this.widths.length() * 0.01,
+      this.widths.length() * 2000,
+    )
+    camera.zoom = perspective
+    camera.updateProjectionMatrix()
+    camera.position.z = 2 * perspective * this.widths.length()
+    camera.position.applyQuaternion(this.quaternion)
+    camera.position.add(this.position)
+    camera.quaternion.copy(this.quaternion)
+    return camera
+  }
+
+  private queued = false
+  queue() {
+    if (!this.queued) {
+      this.queued = true
+      queueMicrotask(() => {
+        if (!this.queued) return
+        this.queued = false
+        this.beforeRender.forEach((x) => x())
+        this.renderer.render(this.scene, this.getCamera())
+      })
+    }
+  }
+
+  zoom(scale: number) {
+    this.widths.multiplyScalar(scale)
+    // this.position.add(center.multiplyScalar(1 - scale))
+    this.queue()
+  }
+
+  move(vec: T.Vector3, normal: T.Vector3) {
+    vec.multiplyScalar(this.widths.length())
+    vec.divideScalar(this.el.clientWidth / 2)
+    vec.applyQuaternion(this.quaternion.clone())
+    vec.projectOnPlane(normal)
+    this.position.add(vec)
+    this.queue()
+  }
+
+  bounds() {
+    const { position, widths } = this
+
+    return {
+      xmin: position.x - CLIP_MULTIPLIER * widths.x,
+      xmax: position.x + CLIP_MULTIPLIER * widths.x,
+      ymin: position.y - CLIP_MULTIPLIER * widths.y,
+      ymax: position.y + CLIP_MULTIPLIER * widths.y,
+      zmin: position.z - CLIP_MULTIPLIER * widths.z,
+      zmax: position.z + CLIP_MULTIPLIER * widths.z,
+    }
+  }
+
+  private mat(color: number) {
+    return new T.MeshPhysicalMaterial({
+      color,
+      side: T.DoubleSide,
+      clippingPlanes: NO_CLIP ? null : this.clippingPlanes,
+      clearcoat: 0.5,
+      clearcoatRoughness: 0.4,
+    })
+  }
+
+  private matPlain(color: number) {
+    return new T.MeshBasicMaterial({
+      color,
+      side: T.DoubleSide,
+      clippingPlanes: NO_CLIP ? null : this.clippingPlanes,
+    })
+  }
+
+  private readonly sphereMat = this.mat(0xc74440)
+  private readonly pointMat = this.mat(0x6042a6)
+  private readonly circleMat = this.mat(0x388c46)
+  private readonly planeMat = this.matPlain(0x888888)
+  private readonly triangleMat = this.matPlain(0x2d70b3)
+  private readonly lineMat = new LineMaterial({ color: 0x2d70b3, linewidth: 6 })
+
+  private fixMaterials() {
+    // TODO: make triangles transparent
+    this.planeMat.opacity = 0.5
+    this.planeMat.transparent = true
+  }
+
+  sphere(x: number, y: number, z: number, r: number) {
+    const sphereGeo = new T.SphereGeometry(r, 64, 32)
+    const mesh = new T.Mesh(sphereGeo, this.sphereMat)
+    mesh.position.set(x, y, z)
+    return mesh
+  }
+
+  point(x: number, y: number, z: number, r: number) {
+    const sphereGeo = new T.SphereGeometry(r, 64, 32)
+    const mesh = new T.Mesh(sphereGeo, this.pointMat)
+    mesh.position.set(x, y, z)
+    mesh.onBeforeRender = () => {
+      mesh.scale.setScalar((r * this.widths.length()) / this.el.clientWidth)
+      mesh.updateMatrixWorld()
+    }
+    return mesh
+  }
+
+  plane(nx: number, ny: number, nz: number, o: number) {
+    const geo = new T.PlaneGeometry()
+    const mesh = new T.Mesh(geo, this.planeMat)
+    const plane = new T.Plane(new T.Vector3(nx, ny, nz), o)
+    mesh.position.set(0, 0, 0)
+    mesh.lookAt(nx, ny, nz) // sets proper rotation
+    mesh.onBeforeRender = () => {
+      const d = plane.distanceToPoint(this.position)
+      mesh.position.copy(this.position)
+      mesh.position.add(new T.Vector3(0, 0, -d).applyEuler(mesh.rotation))
+      const mx = 2 * this.widths.length()
+      mesh.scale.set(1, 1, 1)
+      mesh.scale.multiplyScalar(mx)
+      mesh.updateMatrixWorld()
+    }
+    return mesh
+  }
+
+  triangle(
+    x1: number,
+    x2: number,
+    x3: number,
+    y1: number,
+    y2: number,
+    y3: number,
+    z1: number,
+    z2: number,
+    z3: number,
+  ) {
+    const vertices = new Float32Array([x1, y1, z1, x2, y2, z2, x3, y3, z3])
+    const geometry = new T.BufferGeometry()
+    geometry.setAttribute("position", new T.BufferAttribute(vertices, 3))
+    const mesh = new T.Mesh(geometry, this.triangleMat)
+    return mesh
+  }
+
+  circle(
+    cx: number,
+    cy: number,
+    cz: number,
+    rx: number,
+    ry: number,
+    rz: number,
+    radius: number,
+  ) {
+    const lineWidth = 6
+    const lw = (lineWidth * this.widths.length()) / this.el.clientWidth
+    let geo = new T.TorusGeometry(radius, lw)
+    const mesh = new T.Mesh(geo, this.circleMat)
+    mesh.position.set(cx, cy, cz)
+    mesh.lookAt(cx + rx, cy + ry, cz + rz)
+    mesh.onBeforeRender = () => {
+      const prev = geo
+      const lw = (lineWidth * this.widths.length()) / this.el.clientWidth
+      geo = new T.TorusGeometry(radius, lw)
+      mesh.geometry = geo
+      queueMicrotask(() => prev.dispose())
+    }
+    return mesh
+  }
+
+  // circle(
+  //   cx: number,
+  //   cy: number,
+  //   cz: number,
+  //   rx: number,
+  //   ry: number,
+  //   rz: number,
+  //   radius: number,
+  // ) {
+  //   const center = new T.Vector3(cx, cy, cz)
+  //   const offset = new T.Vector3(rx, ry, rz)
+  //   const geo = new LineGeometry().setPositions([x1, x2, x3, y1, y2, y3])
+  //   const mesh = new Line2(geo, this.lineMat)
+  //   return mesh
+  // }
+
+  segment(
+    x1: number,
+    x2: number,
+    x3: number,
+    y1: number,
+    y2: number,
+    y3: number,
+  ) {
+    const geo = new LineGeometry().setPositions([x1, x2, x3, y1, y2, y3])
+    const mesh = new Line2(geo, this.lineMat)
+    return mesh
+  }
 }

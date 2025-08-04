@@ -499,6 +499,7 @@ export type FnInterp =
   | 6
   | 7
   | 8
+  | 9
 
 function f(
   sideEffects: boolean,
