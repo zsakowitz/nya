@@ -529,7 +529,7 @@ export class Cv3D implements Canvas3D {
 
   private fixMaterials() {
     // TODO: make triangles transparent
-    this.planeMat.opacity = 0.9
+    this.planeMat.opacity = 0.5
     this.planeMat.transparent = true
   }
 
