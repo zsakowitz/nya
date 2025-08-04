@@ -10,6 +10,18 @@ fn normal(t: Triangle3D) -> Offset3D {
   normal(t.p1, t.p2, t.p3)
 }
 
+fn segment(p1: Point3D, p2: Point3D) -> Segment3D {
+  Segment3D { p1, p2 }
+}
+
+fn line(p1: Point3D, p2: Point3D) -> Line3D {
+  Line3D { p1, p2 }
+}
+
+fn ray(p1: Point3D, p2: Point3D) -> Ray3D {
+  Ray3D { p1, p2 }
+}
+
 fn vector(start: Point3D, end: Point3D) -> Vector3D {
   Vector3D { start, end }
 }
@@ -49,14 +61,6 @@ fn plane(p1: Point3D, p2: Point3D, p3: Point3D) -> Plane {
 
 fn plane(t: Triangle3D) -> Plane {
   plane(t.p1, t.p2, t.p3)
-}
-
-fn segment(p1: Point3D, p2: Point3D) -> Segment3D {
-  Segment3D { p1, p2 }
-}
-
-fn line(p1: Point3D, p2: Point3D) -> Line3D {
-  Line3D { p1, p2 }
 }
 
 fn circle(plane: Plane, center: Point3D, radius: num) -> Circle3D {

@@ -31,10 +31,10 @@ import s29 from "../../lib/complex/number-theory.nya"
 import s30 from "../../lib/core/cmp.nya"
 import s31 from "../../lib/core/ops.nya"
 import s32 from "../../lib/3d/point.nya"
-import s33 from "../../lib/3d/geo/plane.nya"
-import s34 from "../../lib/3d/geo/index.nya"
-import s35 from "../../lib/3d/geo/glider.nya"
-import s36 from "../../lib/3d/geo/cons.nya"
+import s33 from "../../lib/3d/geo/cons1.nya"
+import s34 from "../../lib/3d/geo/cons2.nya"
+import s35 from "../../lib/3d/geo/plane.nya"
+import s36 from "../../lib/3d/geo/index.nya"
 import s37 from "../../lib/3d/geo/defs.nya"
 import s38 from "../../lib/gamma/lngamma.nya"
 import s39 from "../../lib/gamma/trigamma.nya"
@@ -77,10 +77,10 @@ export const SCRIPTS = new Map([
   ["core/cmp", s30],
   ["core/ops", s31],
   ["3d/point", s32],
-  ["3d/geo/plane", s33],
-  ["3d/geo", s34],
-  ["3d/geo/glider", s35],
-  ["3d/geo/cons", s36],
+  ["3d/geo/cons1", s33],
+  ["3d/geo/cons2", s34],
+  ["3d/geo/plane", s35],
+  ["3d/geo", s36],
   ["3d/geo/defs", s37],
   ["gamma/lngamma", s38],
   ["gamma/trigamma", s39],
@@ -126,10 +126,10 @@ export type ScriptName =
   | "core/cmp"
   | "core/ops"
   | "3d/point"
+  | "3d/geo/cons1"
+  | "3d/geo/cons2"
   | "3d/geo/plane"
   | "3d/geo"
-  | "3d/geo/glider"
-  | "3d/geo/cons"
   | "3d/geo/defs"
   | "gamma/lngamma"
   | "gamma/trigamma"

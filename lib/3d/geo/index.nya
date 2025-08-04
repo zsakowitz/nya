@@ -1,5 +1,8 @@
-use "3d/geo/cons";
-use "3d/geo/glider";
+// core constructors
+use "3d/geo/cons1";
+
+// derived constructors
+use "3d/geo/cons2";
 
 expose package {
   default: true,

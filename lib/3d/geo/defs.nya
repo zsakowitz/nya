@@ -18,7 +18,7 @@ struct Triangle3D {
   p3: Point3D,
 }
 
-struct Segment3D, Line3D {
+struct Segment3D, Line3D, Ray3D {
   p1: Point3D,
   p2: Point3D,
 }
@@ -51,4 +51,4 @@ fn %plot_3d(cv: Canvas3D, p: Segment3D) -> Object3D {
   cv.segment(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z)
 }
 
-// TODO: %plot_3d for Line3D
+// TODO: %plot_3d for Line3D, Ray3D
