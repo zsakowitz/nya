@@ -1,32 +1,121 @@
 use "3d/point";
 
+struct Direction3D {
+  _dir: Point3D,
+}
+
+struct Vector3D {
+  start: Point3D,
+  end: Point3D,
+}
+
 struct Sphere {
   center: Point3D,
   radius: num,
 }
 
-fn sphere(center: Point3D, radius: num) -> Sphere {
-  Sphere { center, radius }
+struct Plane {
+  normal: Direction3D,
+  offset: num,
+}
+
+struct Circle3D {
+  center: Point3D,
+  direction: Direction3D,
+  radius: num,
 }
 
 fn %plot_3d(cv: Canvas3D, obj: Sphere) -> Object3D {
   cv.sphere(obj.center.x, obj.center.y, obj.center.z, obj.radius)
 }
 
-struct Plane {
-  normal: Point3D,
-  offset: num,
+fn %plot_3d(cv: Canvas3D, p: Plane) -> Object3D {
+  let c = p.normal._dir;
+  cv.plane(c.x, c.y, c.z, p.offset)
 }
 
-fn plane(normal: Point3D, offset: num) -> Plane {
+fn %plot_3d(cv: Canvas3D, p: Circle3D) -> Object3D {
+  let c = p.center;
+  let d = p.direction._dir;
+  cv.circle(c.x, c.y, c.z, d.x, d.y, d.z, p.radius, 4.0)
+}
+
+fn ->(a: Vector3D) -> Direction3D {
+  Direction3D { _dir: a.end @- a.start }
+}
+
+fn vector(_dir: Point3D) -> Direction3D {
+  Direction3D { _dir }
+}
+
+fn vector(start: Point3D, end: Point3D) -> Vector3D {
+  Vector3D { start, end }
+}
+
+fn sphere(center: Point3D, radius: num) -> Sphere {
+  Sphere { center, radius }
+}
+
+fn plane(normal: Direction3D, offset: num) -> Plane {
   Plane { normal, offset }
 }
 
-struct Circle3D {
-  center: Point3D,
-  direction: Point3D,
-  radius: num,
+fn plane(normal: Direction3D, point: Point3D) -> Plane {
+  Plane {
+    normal,
+    offset: -@dot(point, normal._dir),
+  }
 }
+
+fn plane(p1: Point3D, p2: Point3D, p3: Point3D) -> Plane {
+  let normal = Direction3D { _dir: @norm(%cross(p3 @- p2, p1 @- p2)) };
+  plane(normal, p1)
+}
+
+let xyplane = Plane {
+  normal: (
+    Direction3D {
+      _dir: (
+        Point3D {
+          x: 0,
+          y: 0,
+          z: 1,
+        }
+      ),
+    }
+  ),
+  offset: 0,
+};
+
+let xzplane = Plane {
+  normal: (
+    Direction3D {
+      _dir: (
+        Point3D {
+          x: 0,
+          y: 1,
+          z: 0,
+        }
+      ),
+    }
+  ),
+  offset: 0,
+};
+
+let zyplane = Plane {
+  normal: (
+    Direction3D {
+      _dir: (
+        Point3D {
+          x: 1,
+          y: 0,
+          z: 0,
+        }
+      ),
+    }
+  ),
+  offset: 0,
+};
 
 fn circle(plane: Plane, center: Point3D, radius: num) -> Circle3D {
   Circle3D {
@@ -34,12 +123,6 @@ fn circle(plane: Plane, center: Point3D, radius: num) -> Circle3D {
     direction: plane.normal,
     radius: abs(radius),
   }
-}
-
-fn %plot_3d(cv: Canvas3D, p: Circle3D) -> Object3D {
-  let c = p.center;
-  let d = p.direction;
-  cv.circle(c.x, c.y, c.z, d.x, d.y, d.z, p.radius, 4.0)
 }
 
 expose package {

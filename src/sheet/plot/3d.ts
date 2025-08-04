@@ -46,7 +46,7 @@ export class Cv3D implements Canvas3D {
   readonly quaternion = new T.Quaternion()
 
   readonly scene = new T.Scene()
-  readonly renderer = new T.WebGLRenderer()
+  readonly renderer = new T.WebGLRenderer({ antialias: true })
   readonly dispose
   readonly beforeRender: (() => void)[] = []
   readonly clippingPlanes = createBoxClipping(this)
@@ -139,7 +139,7 @@ export class Cv3D implements Canvas3D {
     return mesh
   }
 
-  private readonly torusMat = this.mat(0x388c46)
+  private readonly circleMat = this.mat(0x388c46)
   circle(
     cx: number,
     cy: number,
@@ -152,7 +152,7 @@ export class Cv3D implements Canvas3D {
   ) {
     const lw = (lineWidth * this.widths.length()) / this.el.clientWidth
     let geo = new T.TorusGeometry(radius, lw)
-    const mesh = new T.Mesh(geo, this.torusMat)
+    const mesh = new T.Mesh(geo, this.circleMat)
     mesh.position.set(cx, cy, cz)
     mesh.lookAt(cx + rx, cy + ry, cz + rz)
     mesh.onBeforeRender = () => {
@@ -161,6 +161,27 @@ export class Cv3D implements Canvas3D {
       geo = new T.TorusGeometry(radius, lw)
       mesh.geometry = geo
       queueMicrotask(() => prev.dispose())
+    }
+    return mesh
+  }
+
+  private readonly planeMat = this.mat(0x888888)
+  plane(nx: number, ny: number, nz: number, o: number) {
+    this.planeMat.opacity = 0.5
+    this.planeMat.transparent = true
+    const geo = new T.PlaneGeometry()
+    const mesh = new T.Mesh(geo, this.planeMat)
+    const plane = new T.Plane(new T.Vector3(nx, ny, nz), o)
+    mesh.position.set(0, 0, 0)
+    mesh.lookAt(nx, ny, nz) // sets proper rotation
+    mesh.onBeforeRender = () => {
+      const d = plane.distanceToPoint(this.position)
+      mesh.position.copy(this.position)
+      mesh.position.add(new T.Vector3(0, 0, -d).applyEuler(mesh.rotation))
+      const mx = 2 * this.widths.length()
+      mesh.scale.set(1, 1, 1)
+      mesh.scale.multiplyScalar(mx)
+      mesh.updateMatrixWorld()
     }
     return mesh
   }
