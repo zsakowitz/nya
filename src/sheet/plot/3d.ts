@@ -361,7 +361,7 @@ export class Cv3D implements Canvas3D {
   readonly quaternion = new T.Quaternion()
 
   readonly scene = new T.Scene()
-  readonly renderer = new T.WebGLRenderer({ antialias: true })
+  readonly renderer = new T.WebGLRenderer({ antialias: true, alpha: true })
   readonly dispose
   readonly beforeRender: (() => void)[] = []
   private readonly clippingPlanes = createBoxClipping(this)
@@ -399,7 +399,6 @@ export class Cv3D implements Canvas3D {
     addXYPlane(this)
     if (!NO_BOUNDING_BOX) addBox(this)
     addPlaneContainer(this)
-    this.fixMaterials()
 
     this.rotateZ(0.5)
     this.rotateX(1)
@@ -519,19 +518,22 @@ export class Cv3D implements Canvas3D {
   private readonly sphereMat = this.mat(0xc74440)
   private readonly pointMat = this.mat(0x6042a6)
   private readonly circleMat = this.mat(0x388c46)
-  private readonly planeMat = this.matPlain(0x888888)
   private readonly triangleMat = this.matPlain(0x2d70b3)
+  private readonly planeMat = new T.MeshBasicMaterial({
+    color: 0x888888,
+    side: T.DoubleSide,
+    clippingPlanes: NO_CLIP ? null : this.clippingPlanes,
+    opacity: 0.5,
+    transparent: true,
+    depthWrite: false,
+  })
   private readonly lineMat = new LineMaterial({
     color: 0x2d70b3,
     linewidth: 6,
-    clippingPlanes: this.clippingPlanes,
+    clippingPlanes: NO_CLIP ? null : this.clippingPlanes,
+    side: T.DoubleSide,
+    depthWrite: false,
   })
-
-  private fixMaterials() {
-    // TODO: make triangles transparent
-    this.planeMat.opacity = 0.5
-    this.planeMat.transparent = true
-  }
 
   sphere(x: number, y: number, z: number, r: number) {
     const sphereGeo = new T.SphereGeometry(r, 64, 32)
