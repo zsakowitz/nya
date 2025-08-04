@@ -296,13 +296,12 @@ function registerWheelControls(cv: Cv3D) {
         cv.zoom(scale)
       } else {
         if (event.shiftKey) {
-          const vec = new T.Vector3(0, -event.deltaY, 0)
-          const rz = (cv.rotation.reorder("ZXY"), cv.rotation.z)
-          cv.move(vec, new T.Vector3(Math.sin(rz), -Math.cos(rz), 0))
-        } else if (event.altKey) {
           const vec = new T.Vector3(event.deltaX, -event.deltaY, 0)
           const rz = (cv.rotation.reorder("ZXY"), cv.rotation.z)
           cv.move(vec, new T.Vector3(Math.sin(rz), -Math.cos(rz), 0))
+        } else if (event.altKey) {
+          cv.rotateZ((8 * event.deltaX) / cv.el.clientWidth)
+          cv.rotateX((8 * event.deltaY) / cv.el.clientWidth)
         } else {
           const vec = new T.Vector3(event.deltaX, 0, event.deltaY)
           cv.move(vec, new T.Vector3(0, 0, 1))
@@ -514,7 +513,11 @@ export class Cv3D implements Canvas3D {
   private readonly circleMat = this.mat(0x388c46)
   private readonly planeMat = this.matPlain(0x888888)
   private readonly triangleMat = this.matPlain(0x2d70b3)
-  private readonly lineMat = new LineMaterial({ color: 0x2d70b3, linewidth: 6 })
+  private readonly lineMat = new LineMaterial({
+    color: 0x2d70b3,
+    linewidth: 6,
+    clippingPlanes: this.clippingPlanes,
+  })
 
   private fixMaterials() {
     // TODO: make triangles transparent
