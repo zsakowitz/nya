@@ -53,7 +53,7 @@ fn vector(start: Point3D, end: Point3D) -> Vector3D {
 }
 
 fn sphere(center: Point3D, radius: num) -> Sphere {
-  Sphere { center, radius }
+  Sphere { center, radius: abs(radius) }
 }
 
 fn plane(normal: Direction3D, offset: num) -> Plane {
