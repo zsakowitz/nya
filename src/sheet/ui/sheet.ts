@@ -396,13 +396,7 @@ ${fns.join("\n\n")}`,
         // @ts-expect-error regl requires generics in weird places
         u_scale: this.regl.prop("u_scale"),
         // @ts-expect-error
-        u_cx: this.regl.prop("u_cx"),
-        // @ts-expect-error
-        u_cy: this.regl.prop("u_cy"),
-        // @ts-expect-error
-        u_px_per_unit: this.regl.prop("u_px_per_unit"),
-        // @ts-expect-error
-        u_unit_per_hpx: this.regl.prop("u_unit_per_hpx"),
+        u_offset: this.regl.prop("u_offset"),
         // @ts-expect-error
         u_darkmul: this.regl.prop("u_darkmul"),
         // @ts-expect-error

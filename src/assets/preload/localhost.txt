@@ -1,9 +1,1 @@
-A=\left(2,3,4\right)
-B=\left(-3,-1,4\right)
-C=\left(1,0,0\right)
-D=\left(0,0,0\right)
-p_{1}=\operatorname{perpendicularbisector}\left(A,B\right)
-p_{2}=\operatorname{perpendicularbisector}\left(B,C\right)
-p_{3}=\operatorname{perpendicularbisector}\left(C,D\right)
-c=\operatorname{intersection}\left(p_{1},p_{2},p_{3}\right)
-\operatorname{sphere}\left(c,\left|c-A\right|\right)
+shader x
