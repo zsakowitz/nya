@@ -531,10 +531,10 @@ export class Cv3D implements Canvas3D {
 
   private readonly sphereMat = this.mat(0xc74440)
   private readonly pointMat = this.mat(0x6042a6)
-  private readonly circleMat = this.mat(0x388c46)
+  private readonly circleMat = this.matLine(0x388c46, 8)
   private readonly triangleMat = this.matPlain(0xfa7e1a, 0.8)
   private readonly planeMat = this.matPlain(0x888888, 0.5)
-  private readonly lineMat = this.matLine(0x2d70b3, 6)
+  private readonly lineMat = this.matLine(0x2d70b3, 8)
 
   sphere(x: number, y: number, z: number, r: number) {
     const sphereGeo = new T.SphereGeometry(r, 64, 32)
@@ -599,41 +599,25 @@ export class Cv3D implements Canvas3D {
     rz: number,
     radius: number,
   ) {
-    const lineWidth = 6
-    const lw = (lineWidth * this.widths.length()) / this.el.clientWidth
-    let geo = new T.TorusGeometry(radius, lw)
-    const mesh = new T.Mesh(geo, this.circleMat)
-    mesh.position.set(cx, cy, cz)
-    mesh.lookAt(cx + rx, cy + ry, cz + rz)
-    mesh.onBeforeRender = () => {
-      const prev = geo
-      const lw = (lineWidth * this.widths.length()) / this.el.clientWidth
-      geo = new T.TorusGeometry(radius, lw)
-      mesh.geometry = geo
-      queueMicrotask(() => prev.dispose())
+    const CIRCLE_POINTS = 64
+    const TAU = 2 * Math.PI
+    const positions: number[] = []
+    for (let i = 0; i < CIRCLE_POINTS; i++) {
+      positions.push(
+        Math.cos((TAU * i) / CIRCLE_POINTS),
+        Math.sin((TAU * i) / CIRCLE_POINTS),
+        0,
+      )
     }
+    positions.push(1, 0, 0)
+    const geo = new LineGeometry()
+    geo.setPositions(positions)
+    const mesh = new Line2(geo, this.circleMat)
+    mesh.lookAt(rx, ry, rz)
+    mesh.position.set(cx, cy, cz)
+    mesh.scale.setScalar(radius)
     return mesh
   }
-
-  // circle2(
-  //   cx: number,
-  //   cy: number,
-  //   cz: number,
-  //   rx: number,
-  //   ry: number,
-  //   rz: number,
-  //   radius: number,
-  // ) {
-  //   const alt = new T.Vector3(-ry,-rz,-rx)
-  //
-  // // theoretically @norm isn't needed here
-  // c.center + c.radius * %cross(c.normal.end, alt)
-  //   const center = new T.Vector3(cx, cy, cz)
-  //   const offset = new T.Vector3(rx, ry, rz)
-  //   const geo = new LineGeometry().setPositions([x1, x2, x3, y1, y2, y3])
-  //   const mesh = new Line2(geo, this.lineMat)
-  //   return mesh
-  // }
 
   segment(
     x1: number,
@@ -643,7 +627,8 @@ export class Cv3D implements Canvas3D {
     y2: number,
     y3: number,
   ) {
-    const geo = new LineGeometry().setPositions([x1, x2, x3, y1, y2, y3])
+    const geo = new LineGeometry()
+    geo.setPositions([x1, x2, x3, y1, y2, y3])
     const mesh = new Line2(geo, this.lineMat)
     return mesh
   }

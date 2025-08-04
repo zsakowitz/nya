@@ -2,8 +2,9 @@ use "3d/point";
 use "3d/geo/defs";
 
 fn glider(c: Circle3D, p: num) -> Point3D {
+  let p = @clamp(p, 0.0, 1.0);
+  let pt = %point(cos(p), sin(p), 0.0);
   let alt = %point(-c.normal.y, -c.normal.z, -c.normal.x);
-  // theoretically @norm isn't needed here
   c.center + c.radius * %cross(c.normal.end, alt)
 }
 
