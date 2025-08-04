@@ -111,12 +111,15 @@ export class Cv3D implements Canvas3D {
     return this.renderer.domElement
   }
 
-  private readonly sphereMat = new T.MeshPhysicalMaterial({
-    color: 0xc74440,
-    side: T.DoubleSide,
-    clippingPlanes: NO_CLIP ? null : this.clippingPlanes,
-  })
+  private mat(color: number) {
+    return new T.MeshPhysicalMaterial({
+      color,
+      side: T.DoubleSide,
+      clippingPlanes: NO_CLIP ? null : this.clippingPlanes,
+    })
+  }
 
+  private readonly sphereMat = this.mat(0xc74440)
   sphere(x: number, y: number, z: number, r: number) {
     const sphereGeo = new T.SphereGeometry(r, 64, 32)
     const mesh = new T.Mesh(sphereGeo, this.sphereMat)
@@ -124,13 +127,40 @@ export class Cv3D implements Canvas3D {
     return mesh
   }
 
+  private readonly pointMat = this.mat(0x6042a6)
   point(x: number, y: number, z: number, r: number) {
     const sphereGeo = new T.SphereGeometry(r, 64, 32)
-    const mesh = new T.Mesh(sphereGeo, this.sphereMat)
+    const mesh = new T.Mesh(sphereGeo, this.pointMat)
     mesh.position.set(x, y, z)
     mesh.onBeforeRender = () => {
       mesh.scale.setScalar((r * this.widths.length()) / this.el.clientWidth)
       mesh.updateMatrixWorld()
+    }
+    return mesh
+  }
+
+  private readonly torusMat = this.mat(0x388c46)
+  torus(
+    cx: number,
+    cy: number,
+    cz: number,
+    rx: number,
+    ry: number,
+    rz: number,
+    radius: number,
+    lineWidth: number,
+  ) {
+    const lw = (lineWidth * this.widths.length()) / this.el.clientWidth
+    let geo = new T.TorusGeometry(radius, lw)
+    const mesh = new T.Mesh(geo, this.torusMat)
+    mesh.position.set(cx, cy, cz)
+    mesh.lookAt(cx + rx, cy + ry, cz + rz)
+    mesh.onBeforeRender = () => {
+      const prev = geo
+      const lw = (lineWidth * this.widths.length()) / this.el.clientWidth
+      geo = new T.TorusGeometry(radius, lw)
+      mesh.geometry = geo
+      queueMicrotask(() => prev.dispose())
     }
     return mesh
   }

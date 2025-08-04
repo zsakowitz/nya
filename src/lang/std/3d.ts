@@ -20,4 +20,9 @@ export function libPlot3D(api: NyaApi) {
     glsl: null,
     js: v`${0}.point(${1},${2},${3},${4})`,
   })
+
+  api.fn("torus", { cv: Canvas3D, cx: num, cy: num, cz: num, rx: num, ry: num, rz: num, radius: num, lineWidth: num }, Object3D, {
+    glsl: null,
+    js: v`${0}.torus(${1},${2},${3},${4},${5},${6},${7},${8})`,
+  })
 }

@@ -1,3 +1,5 @@
+
+\operatorname{torus}\left(1,2,3,1,4,5,4,4\right)
 \operatorname{sphere}\left(\left(\left[20,40,60,80,120,160,200,240,280\right],-20,0\right),5\right)
 stats([7,8,4,3])
 vector((2,3),(4,1))
