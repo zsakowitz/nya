@@ -1,0 +1,31 @@
+use "2d/geo";
+use "3d/point";
+use "3d/geo/cons";
+
+fn _3d(p: Point) -> Point3D {
+  Point3D { x: p.x, y: p.y, z: 0 }
+}
+
+fn %plot_3d(cv: Canvas3D, pt: Point) -> Object3D {
+  %plot_3d(cv, pt._3d)
+}
+
+fn %plot_3d(cv: Canvas3D, c: Circle) -> Object3D {
+  %plot_3d(cv, circle(xyplane, c.center._3d, c.radius))
+}
+
+fn %plot_3d(cv: Canvas3D, l: Segment) -> Object3D {
+  %plot_3d(cv, segment(l.p1._3d, l.p2._3d))
+}
+
+fn %plot_3d(cv: Canvas3D, l: Line) -> Object3D {
+  %plot_3d(cv, line(l.p1._3d, l.p2._3d))
+}
+
+fn %plot_3d(cv: Canvas3D, l: Ray) -> Object3D {
+  %plot_3d(cv, ray(l.p1._3d, l.p2._3d))
+}
+
+fn %plot_3d(cv: Canvas3D, l: Vector) -> Object3D {
+  %plot_3d(cv, vector(l.p1._3d, l.p2._3d))
+}

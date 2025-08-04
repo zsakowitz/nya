@@ -33,13 +33,14 @@ import s31 from "../../lib/core/ops.nya"
 import s32 from "../../lib/3d/point.nya"
 import s33 from "../../lib/3d/geo/index.nya"
 import s34 from "../../lib/3d/geo/cons.nya"
-import s35 from "../../lib/3d/geo/defs.nya"
-import s36 from "../../lib/gamma/lngamma.nya"
-import s37 from "../../lib/gamma/trigamma.nya"
-import s38 from "../../lib/gamma/digamma.nya"
-import s39 from "../../lib/gamma/factorial.nya"
-import s40 from "../../lib/gamma/polygamma.nya"
-import s41 from "../../lib/gamma/gamma.nya"
+import s35 from "../../lib/3d/geo/2d.nya"
+import s36 from "../../lib/3d/geo/defs.nya"
+import s37 from "../../lib/gamma/lngamma.nya"
+import s38 from "../../lib/gamma/trigamma.nya"
+import s39 from "../../lib/gamma/digamma.nya"
+import s40 from "../../lib/gamma/factorial.nya"
+import s41 from "../../lib/gamma/polygamma.nya"
+import s42 from "../../lib/gamma/gamma.nya"
 
 export const SCRIPTS = new Map([
   ["special", s0],
@@ -77,13 +78,14 @@ export const SCRIPTS = new Map([
   ["3d/point", s32],
   ["3d/geo", s33],
   ["3d/geo/cons", s34],
-  ["3d/geo/defs", s35],
-  ["gamma/lngamma", s36],
-  ["gamma/trigamma", s37],
-  ["gamma/digamma", s38],
-  ["gamma/factorial", s39],
-  ["gamma/polygamma", s40],
-  ["gamma/gamma", s41],
+  ["3d/geo/2d", s35],
+  ["3d/geo/defs", s36],
+  ["gamma/lngamma", s37],
+  ["gamma/trigamma", s38],
+  ["gamma/digamma", s39],
+  ["gamma/factorial", s40],
+  ["gamma/polygamma", s41],
+  ["gamma/gamma", s42],
 ])
 
 export const SCRIPT_INDICES = new Set(["color","real","complex","3d/geo",])
@@ -124,6 +126,7 @@ export type ScriptName =
   | "3d/point"
   | "3d/geo"
   | "3d/geo/cons"
+  | "3d/geo/2d"
   | "3d/geo/defs"
   | "gamma/lngamma"
   | "gamma/trigamma"
