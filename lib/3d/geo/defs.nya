@@ -1,5 +1,4 @@
 use "3d/point";
-use "3d/geo/plane";
 
 struct Sphere {
   center: Point3D,
@@ -21,6 +20,11 @@ struct Triangle3D {
 struct Segment3D, Line3D, Ray3D {
   p1: Point3D,
   p2: Point3D,
+}
+
+struct Plane {
+  normal: Offset3D,
+  offset: num,
 }
 
 fn %plot_3d(cv: Canvas3D, obj: Sphere) -> Object3D {
