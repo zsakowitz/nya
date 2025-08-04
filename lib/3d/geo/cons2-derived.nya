@@ -1,0 +1,27 @@
+use "3d/point";
+use "3d/geo/defs";
+use "3d/geo/cons1-basic";
+
+fn glider(c: Circle3D, p: num) -> Point3D {
+  let p = 2.0 * pi * @clamp(p, 0.0, 1.0);
+  let alt = %point(-c.normal.y, -c.normal.z, -c.normal.x);
+  let n1 = %cross(c.normal.end, alt);
+  let n2 = %cross(c.normal.end, n1);
+  c.center + c.radius * (cos(p) * n1 + sin(p) * n2)
+}
+
+fn glider(l: Segment3D, p: num) -> Point3D {
+  @mix(l.p1, l.p2, @clamp(p, 0.0, 1.0))
+}
+
+fn glider(l: Ray3D, p: num) -> Point3D {
+  @mix(l.p1, l.p2, max(0, p))
+}
+
+fn glider(l: Line3D, p: num) -> Point3D {
+  @mix(l.p1, l.p2, p)
+}
+
+fn perpendicular(l: Segment3D | Ray3D | Line3D, p: Point3D) -> Plane {
+  perpendicular(vector(l.p1, l.p2), p)
+}
