@@ -352,20 +352,7 @@ fn sphere(c: Circle3D) -> Sphere {
 }
 
 fn intersection(p: Plane, s: Sphere) -> Circle3D {
-  let center = {
-    let line = line(p.normal.end @+ s.center, s.center);
-    let n = p.normal.end;
-    let p0 = -n * p.offset;
-    let l0 = line.p1;
-    let l = @norm(line.p2 - l0);
-    let denom = @dot(l, n);
-    if denom == 0 {
-      _point_nan
-    } else {
-      l0 + l * (@dot(p0 - l0, n) / denom)
-    }
-  };
-
+  let center = intersection(line(p.normal.end @+ s.center, s.center), p);
   Circle3D {
     normal: p.normal,
     center,
