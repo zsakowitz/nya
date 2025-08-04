@@ -6,3 +6,15 @@ fn glider(c: Circle3D, p: num) -> Point3D {
   // theoretically @norm isn't needed here
   c.center + c.radius * %cross(c.normal.end, alt)
 }
+
+fn glider(c: Segment3D, p: num) -> Point3D {
+  @mix(c.p1, c.p2, @clamp(p, 0.0, 1.0))
+}
+
+fn glider(c: Ray3D, p: num) -> Point3D {
+  @mix(c.p1, c.p2, max(0, p))
+}
+
+fn glider(c: Line3D, p: num) -> Point3D {
+  @mix(c.p1, c.p2, p)
+}

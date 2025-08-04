@@ -1,3 +1,5 @@
 c=xyplane.circle((0,0,0),2)
 c.glider(0)
 circle((0,0),2).glider(0)
+s=ray((3,4,5),(2,7,1))
+s.glider([0,0.1,0.2,0.4])
