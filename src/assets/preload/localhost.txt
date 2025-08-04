@@ -1,1 +1,3 @@
-shader x
+s=\operatorname{sphere}\left(\left(0,3,2\right),3\right)
+p=\operatorname{plane}\left(\left(3,5,7\right),\left(8,-1,9\right),\left(0,02\right)\right)
+\operatorname{intersection}\left(p,s\right)

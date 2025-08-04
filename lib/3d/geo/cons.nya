@@ -213,8 +213,7 @@ fn perpendicular_bisector(a: Segment3D) -> Plane {
   perpendicular(a, midpoint(a))
 }
 
-//! https://stackoverflow.com/a/2316934
-// gives the point closest to two lines
+//! https://stackoverflow.com/a/2316934 — point closest to two lines
 fn ishtersection(l1: AnyLine3D, l2: AnyLine3D) -> Point3D {
   let p1 = l1.p1;
   let p2 = l1.p2;
@@ -352,6 +351,28 @@ fn sphere(c: Circle3D) -> Sphere {
   }
 }
 
+fn intersection(p: Plane, s: Sphere) -> Circle3D {
+  let center = {
+    let line = line(p.normal.end @+ s.center, s.center);
+    let n = p.normal.end;
+    let p0 = -n * p.offset;
+    let l0 = line.p1;
+    let l = @norm(line.p2 - l0);
+    let denom = @dot(l, n);
+    if denom == 0 {
+      _point_nan
+    } else {
+      l0 + l * (@dot(p0 - l0, n) / denom)
+    }
+  };
+
+  Circle3D {
+    normal: p.normal,
+    center,
+    radius: sqrt(s.radius * s.radius - distance(center, s.center) ^ 2),
+  }
+}
+
 // intersections we still need (l=line, c=circle, P=plane, S=sphere)
 // . = don't have it
 // ~ = ishtersection only
@@ -362,8 +383,3 @@ fn sphere(c: Circle3D) -> Sphere {
 // c     .  .  .
 // P        X  .
 // S           .
-
-// TODO: things like perpendicular(Line, Point3D) don't work due to how
-// coercions are implemented wrt Alt
-//
-// perhaps coercions should be used instead of Alt

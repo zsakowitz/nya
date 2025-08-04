@@ -24,6 +24,9 @@ struct Triangle3D {
   p3: Point3D,
 }
 
+// TODO: figure out a neater thing for perpendicular+parallel+length than having
+// all of the above coerce into a new thing
+// or just use coercions and ditch Alt
 struct Segment3D, Line3D, Ray3D, Vector3D, AnyLine3D, AnySlope3D {
   p1: Point3D,
   p2: Point3D,
