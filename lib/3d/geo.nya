@@ -37,7 +37,7 @@ fn %plot_3d(cv: Canvas3D, p: Plane) -> Object3D {
 fn %plot_3d(cv: Canvas3D, p: Circle3D) -> Object3D {
   let c = p.center;
   let d = p.direction._dir;
-  cv.circle(c.x, c.y, c.z, d.x, d.y, d.z, p.radius, 4.0)
+  cv.circle(c.x, c.y, c.z, d.x, d.y, d.z, p.radius, 6.0)
 }
 
 fn ->(a: Vector3D) -> Direction3D {

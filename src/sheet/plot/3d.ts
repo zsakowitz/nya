@@ -119,6 +119,14 @@ export class Cv3D implements Canvas3D {
     })
   }
 
+  private matPlain(color: number) {
+    return new T.MeshBasicMaterial({
+      color,
+      side: T.DoubleSide,
+      clippingPlanes: NO_CLIP ? null : this.clippingPlanes,
+    })
+  }
+
   private readonly sphereMat = this.mat(0xc74440)
   sphere(x: number, y: number, z: number, r: number) {
     const sphereGeo = new T.SphereGeometry(r, 64, 32)
@@ -165,7 +173,7 @@ export class Cv3D implements Canvas3D {
     return mesh
   }
 
-  private readonly planeMat = this.mat(0x888888)
+  private readonly planeMat = this.matPlain(0x888888)
   plane(nx: number, ny: number, nz: number, o: number) {
     this.planeMat.opacity = 0.5
     this.planeMat.transparent = true
