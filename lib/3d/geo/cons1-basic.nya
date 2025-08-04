@@ -43,9 +43,10 @@ fn plane(normal: Offset3D, offset: num) -> Plane {
 
 // should this be called 'plane' instead?
 fn perpendicular(normal: Offset3D, point: Point3D) -> Plane {
+  let normal = @norm(normal);
   Plane {
-    normal: @norm(normal),
-    offset: -@dot(vector(point), normal),
+    normal,
+    offset: -@dot(point, normal.end),
   }
 }
 

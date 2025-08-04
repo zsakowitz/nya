@@ -35,8 +35,8 @@ import s33 from "../../lib/3d/geo/index.nya"
 import s34 from "../../lib/3d/geo/cons0-constant.nya"
 import s35 from "../../lib/3d/geo/cons3-intersection.nya"
 import s36 from "../../lib/3d/geo/cons1-basic.nya"
-import s37 from "../../lib/3d/geo/defs.nya"
-import s38 from "../../lib/3d/geo/cons2-glider.nya"
+import s37 from "../../lib/3d/geo/cons2-derived.nya"
+import s38 from "../../lib/3d/geo/defs.nya"
 import s39 from "../../lib/gamma/lngamma.nya"
 import s40 from "../../lib/gamma/trigamma.nya"
 import s41 from "../../lib/gamma/digamma.nya"
@@ -82,8 +82,8 @@ export const SCRIPTS = new Map([
   ["3d/geo/cons0-constant", s34],
   ["3d/geo/cons3-intersection", s35],
   ["3d/geo/cons1-basic", s36],
-  ["3d/geo/defs", s37],
-  ["3d/geo/cons2-glider", s38],
+  ["3d/geo/cons2-derived", s37],
+  ["3d/geo/defs", s38],
   ["gamma/lngamma", s39],
   ["gamma/trigamma", s40],
   ["gamma/digamma", s41],
@@ -132,8 +132,8 @@ export type ScriptName =
   | "3d/geo/cons0-constant"
   | "3d/geo/cons3-intersection"
   | "3d/geo/cons1-basic"
+  | "3d/geo/cons2-derived"
   | "3d/geo/defs"
-  | "3d/geo/cons2-glider"
   | "gamma/lngamma"
   | "gamma/trigamma"
   | "gamma/digamma"
