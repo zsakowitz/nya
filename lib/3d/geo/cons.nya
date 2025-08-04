@@ -438,6 +438,17 @@ fn intersection(c: Circle3D, s: Sphere) -> Point3D {
   _intersection(s, c, -1)
 }
 
+// fn ishtersection(c: Circle3D, l: Line3D) -> Point3D {
+//   let p0 = l.p1;
+//   let d = @norm(l.p2 - l.p1);
+//   let t = @dot(c.center - p0, d) / @dot(d, d);
+//   let pl = p0 + t * d;
+//   let v = pl - c.center;
+//   let n = c.normal.end;
+//   let vp = v - @dot(v, n) * n;
+//   c.center + c.radius * @norm(vp)
+// }
+
 // intersections we still need (l=line, c=circle, P=plane, S=sphere)
 // . = don't have it
 // ~ = ishtersection only
