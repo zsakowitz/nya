@@ -3,17 +3,17 @@ import { ident } from "!/emit/id"
 import type { Type } from "!/emit/type"
 import { Value } from "!/emit/value"
 import { Entry } from "!/exec/item"
-import type { Executable } from "!/exec/state"
 import type { CanvasJs } from "!/std/2d"
 import "@/eval/txs"
 import { each } from "@/eval/util"
 import { FieldInert } from "@/field/field-inert"
-import { errorText } from "@/lib/error"
+import { bug, errorText, todo } from "@/lib/error"
 import { fa, h } from "@/lib/jsx"
 import { PLOT_3D } from "@/sheet/plot/3d"
 import type { Shader } from "@/sheet/plot/shader"
 import { faWarning } from "@fortawesome/free-solid-svg-icons/faWarning"
-import { Mesh, type BufferGeometry, type Object3D } from "three"
+import { Mesh, ShaderMaterial, type BufferGeometry, type Object3D } from "three"
+import { LineMaterial } from "three/examples/jsm/Addons.js"
 import { Store, type AnyExt } from "../../ext"
 import { FACTORY_EXPR } from "../../factory-expr"
 import type { ItemRef } from "../../items"
@@ -61,6 +61,7 @@ export class Expr {
   readonly main
   readonly entry
   lastObjs: Object3D[] | undefined
+  lastMat: ShaderMaterial | undefined
 
   state: ExprState = { ok: false, reason: "Not computed yet." }
 
@@ -162,6 +163,10 @@ export class Expr {
       this.lastObjs = undefined
       this.sheet.cv3D!.queue()
     }
+    if (this.lastMat) {
+      this.lastMat.dispose()
+      this.lastMat = undefined
+    }
   }
 
   display() {
@@ -185,10 +190,27 @@ export class Expr {
       const exe = this.entry.exe
       if (!exe || exe.args) return
 
-      if (exe.expr.includes("\/\/NYALANG_SHADER\n")) {
-        compileForGlsl(this, exe)
+      const expr = exe.expr
+      if (expr.includes("//NYALANG_SHADER\n")) {
+        if (PLOT_3D) {
+          todo(`The 'shader' keyword is only available in 2D mode for now.`)
+        }
+
+        compileForGlsl(this, expr)
+      } else if (expr.startsWith("{//NYALANG_SHADED")) {
+        if (!PLOT_3D) {
+          todo(
+            `The 'shaded' keyword is only available in 3D mode. Maybe you meant 'shader'?`,
+          )
+        }
+
+        const shader = extractShaded(expr)
+        if (shader == null) {
+          bug(`Nonexistent shader found.`)
+        }
+        compileForJs(this, removeShaded(expr), shader)
       } else {
-        compileForJs(this, exe)
+        compileForJs(this, removeShaded(expr), null)
       }
     } catch (e) {
       this.elOutput.classList.add("hidden")
@@ -224,11 +246,35 @@ export class Expr {
   }
 }
 
-function compileForGlsl(self: Expr, exe: Executable) {
+function extractShaded(expr: string) {
+  const marker = "//NYALANG_SHADED("
+  const idx = expr.indexOf(marker)
+  if (idx == -1) return null
+  const num = expr.slice(idx + marker.length).match(/^\d+/)![0]
+  const end = `;//NYALANG_SHADED_END(${num})`
+  const endIdx = expr.indexOf(end, idx + marker.length)
+  if (endIdx == -1) return null
+  return removeShaded(expr.slice(idx + marker.length + num.length + 1, endIdx))
+}
+
+function removeShaded(expr: string) {
+  const marker = "//NYALANG_SHADED("
+  let idx
+  while ((idx = expr.indexOf(marker)) != -1) {
+    const num = expr.slice(idx + marker.length).match(/^\d+/)![0]
+    const end = `;//NYALANG_SHADED_END(${num})`
+    const endIdx = expr.indexOf(end, idx + marker.length)
+    if (endIdx == -1) break
+    expr = expr.slice(0, idx) + expr.slice(endIdx + end.length)
+  }
+  return expr
+}
+
+function compileForGlsl(self: Expr, expr: string) {
   const env = self.sheet.factory.env
 
   const { block, value } = env.process(
-    `{let x: Color = %plot_shader(${exe.expr});x}`,
+    `{let x: Color = %plot_shader(${expr});x}`,
     "<expression>",
     new IdMap<Value>(null)
       .set(ident("x"), new Value("vl_coords.x", env.libGl.tyNum, false))
@@ -257,7 +303,12 @@ function printJs(self: Expr, latex: string | null) {
   }
 }
 
-function plotJs3D(self: Expr, value: unknown, type: Type) {
+function plotJs3D(
+  self: Expr,
+  value: unknown,
+  type: Type,
+  shader: string | null,
+) {
   let changed = false
 
   if (self.lastObjs) {
@@ -269,9 +320,21 @@ function plotJs3D(self: Expr, value: unknown, type: Type) {
 
   if (plot3d) {
     changed = true
+    if (shader) {
+      const env = self.sheet.factory.env
+      self.lastMat = self.sheet.cv3D!.createShaderMaterialFromText(env, shader)
+    }
     self.lastObjs = []
     each(type, value, (value) => {
-      const object = plot3d.exec(self.sheet.cv3D!, value)
+      let object = plot3d.exec(self.sheet.cv3D!, value)
+      if (self.lastMat) {
+        if (
+          object instanceof Mesh &&
+          !(object.material instanceof LineMaterial)
+        ) {
+          object.material = self.lastMat
+        }
+      }
       self.sheet.cv3D!.scene.add(object)
       self.lastObjs!.push(object)
     })
@@ -340,15 +403,15 @@ function plotJs2D(self: Expr, value: unknown, type: Type) {
   }
 }
 
-function compileForJs(self: Expr, exe: Executable) {
+function compileForJs(self: Expr, expr: string, shader: string | null) {
   const env = self.sheet.factory.env
-  const { block, value } = env.process(exe.expr, "<expression>")
+  const { block, value } = env.process(expr, "<expression>")
   const result = env.compute(block, value)
 
   printJs(self, env.display(value.type, result))
 
   if (PLOT_3D) {
-    plotJs3D(self, result, value.type)
+    plotJs3D(self, result, value.type, shader)
   } else {
     plotJs2D(self, result, value.type)
   }

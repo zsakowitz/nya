@@ -9,7 +9,7 @@ export class NyalangError extends Error {}
 export function todo(x: string, pos?: Pos): never {
   throw new NyalangError(
     x +
-      " This may be changed in a future version of nyalang." +
+      " This may be changed in a future version of project nya." +
       (pos ? ` @ ${pos}` : ""),
   )
 }

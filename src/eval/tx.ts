@@ -51,9 +51,13 @@ export class ScriptBlock {
   }
 
   evalInSeparateScope(node: Node): string {
-    return new ScriptBlock(this.set, new IdMap(null), this.leakyLocals).eval(
-      node,
-    )
+    const block = new ScriptBlock(this.set, new IdMap(null), this.leakyLocals)
+    return block.eval(node)
+  }
+
+  evalTotallySeparately(node: Node): string {
+    const block = new ScriptBlock(this.set, new IdMap(null), new IdMap(null))
+    return block.eval(node)
   }
 
   eval(node: Node): string {

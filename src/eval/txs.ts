@@ -550,6 +550,22 @@ ${value!}}`
   },
 }
 
+let shadedId = 0
+TX_OPS_OPS["shaded"] = {
+  eval(_, children, block) {
+    const id = shadedId++
+    const item = block.eval(children[0]!)
+    const color = block.evalTotallySeparately(children[1]!)
+    return `{//NYALANG_SHADED(${id})
+{${color}};//NYALANG_SHADED_END(${id})
+${item}
+}`
+  },
+  deps(_, [value], deps) {
+    deps.check(value!)
+  },
+}
+
 TX_OPS.surreal = {
   eval({ lhs, rhs }, _, block) {
     return `%surreal(%surreal_join(${block.evalList(lhs)}),%surreal_join(${block.evalList(rhs)}))`
@@ -560,6 +576,7 @@ TX_OPS.surreal = {
   },
 }
 
-PRECEDENCE_WORD_UNARY.shader = P.Shader
+PRECEDENCE_WORD_UNARY.shader = P.ShaderR
+PRECEDENCE_WORD_BINARY.shaded = [P.ShaderL, P.ShaderR]
 PRECEDENCE_WORD_BINARY.with = [P.WithL, P.WithR]
 PRECEDENCE_WORD_BINARY.for = [P.WithL, P.WithR]

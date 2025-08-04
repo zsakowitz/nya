@@ -204,6 +204,7 @@ const words = new WordMapWithoutSpaces<WordKind>([
   ["debugAstType", "prefix"],
   ["debugScript", "prefix"],
   ["shader", "prefix"],
+  ["shaded", "infix"],
   ["join", "prefix"],
   ["count", "prefix"],
   ["with", "infix"],

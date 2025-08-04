@@ -1,3 +1,7 @@
+import { IdMap, type Block, type Declarations } from "@/lang/emit/decl"
+import { ident } from "@/lang/emit/id"
+import { Value } from "@/lang/emit/value"
+import type { ScriptEnvironment } from "@/lang/exec/loader"
 import type { Canvas3D } from "@/lang/std/3d"
 import * as T from "three"
 import { Line2, LineGeometry, LineMaterial } from "three/examples/jsm/Addons.js"
@@ -361,7 +365,20 @@ export class Cv3D implements Canvas3D {
   readonly quaternion = new T.Quaternion()
 
   readonly scene = new T.Scene()
-  readonly renderer = new T.WebGLRenderer({ antialias: true, alpha: true })
+  readonly cv = document.createElement("canvas")
+  readonly ctx = this.cv.getContext("webgl2", {
+    antialias: true,
+    alpha: true,
+    premultipliedAlpha: false,
+  })!
+  readonly renderer = new T.WebGLRenderer({
+    canvas: this.cv,
+    context: this.ctx,
+    alpha: true,
+    antialias: true,
+    premultipliedAlpha: false,
+    powerPreference: "low-power",
+  })
   readonly dispose
   readonly beforeRender: (() => void)[] = []
   private readonly clippingPlanes = createBoxClipping(this)
@@ -533,10 +550,7 @@ export class Cv3D implements Canvas3D {
   }
 
   private matLine(color: number, linewidth: number) {
-    return new LineMaterial({
-      ...this.matProps(color),
-      linewidth,
-    })
+    return new LineMaterial({ ...this.matProps(color), linewidth })
   }
 
   private readonly sphereMat = this.mat(0xc74440)
@@ -725,5 +739,52 @@ export class Cv3D implements Canvas3D {
     mesh.position.set(x2, y2, z2)
     mesh.renderOrder = 1
     return mesh
+  }
+
+  createShaderMaterialFromText(env: ScriptEnvironment, text: string) {
+    const { block, value } = env.process(
+      `{let x: Color=%plot_shader(${text});x}`,
+      undefined,
+      new IdMap<Value>(null)
+        .set(ident("x"), new Value("nya_position.x", env.libGl.tyNum, false))
+        .set(ident("y"), new Value("nya_position.y", env.libGl.tyNum, false))
+        .set(ident("z"), new Value("nya_position.z", env.libGl.tyNum, false)),
+      env.libGl,
+    )
+    return this.createShaderMaterial(env.libGl, block, value)
+  }
+
+  private createShaderMaterial(lib: Declarations, block: Block, value: Value) {
+    const runtime = value.toString()
+    T.ShaderChunk.lights_fragment_begin
+    const mat = new T.ShaderMaterial({
+      vertexShader: `
+#include <clipping_planes_pars_vertex>
+out vec4 nya_position;
+void main() {
+vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
+gl_Position = projectionMatrix * mvPosition;
+#include <clipping_planes_vertex>
+nya_position = vec4(position, 1.0);
+}
+`,
+      fragmentShader: `
+#include <clipping_planes_pars_fragment>
+in vec4 nya_position;
+${lib.getTypeDeclarations()}
+${block.globals.getText()}
+out vec4 color;
+void main() {
+#include <clipping_planes_fragment>
+${block.source}
+color = ${runtime};
+}
+`,
+      clippingPlanes: NO_CLIP ? null : this.clippingPlanes,
+      clipping: true,
+      glslVersion: T.GLSL3,
+      side: T.DoubleSide,
+    })
+    return mat
   }
 }
