@@ -497,43 +497,44 @@ export class Cv3D implements Canvas3D {
     }
   }
 
-  private mat(color: number) {
-    return new T.MeshPhysicalMaterial({
+  private matProps(color: number) {
+    return {
       color,
       side: T.DoubleSide,
       clippingPlanes: NO_CLIP ? null : this.clippingPlanes,
+    }
+  }
+
+  private mat(color: number) {
+    return new T.MeshPhysicalMaterial({
+      ...this.matProps(color),
       clearcoat: 0.5,
       clearcoatRoughness: 0.4,
     })
   }
 
-  private matPlain(color: number) {
+  private matPlain(color: number, opacity: number) {
     return new T.MeshBasicMaterial({
-      color,
-      side: T.DoubleSide,
-      clippingPlanes: NO_CLIP ? null : this.clippingPlanes,
+      ...this.matProps(color),
+      opacity,
+      transparent: true,
+      depthWrite: false,
+    })
+  }
+
+  private matLine(color: number, linewidth: number) {
+    return new LineMaterial({
+      ...this.matProps(color),
+      linewidth,
     })
   }
 
   private readonly sphereMat = this.mat(0xc74440)
   private readonly pointMat = this.mat(0x6042a6)
   private readonly circleMat = this.mat(0x388c46)
-  private readonly triangleMat = this.matPlain(0x2d70b3)
-  private readonly planeMat = new T.MeshBasicMaterial({
-    color: 0x888888,
-    side: T.DoubleSide,
-    clippingPlanes: NO_CLIP ? null : this.clippingPlanes,
-    opacity: 0.5,
-    transparent: true,
-    depthWrite: false,
-  })
-  private readonly lineMat = new LineMaterial({
-    color: 0x2d70b3,
-    linewidth: 6,
-    clippingPlanes: NO_CLIP ? null : this.clippingPlanes,
-    side: T.DoubleSide,
-    depthWrite: false,
-  })
+  private readonly triangleMat = this.matPlain(0xfa7e1a, 0.8)
+  private readonly planeMat = this.matPlain(0x888888, 0.5)
+  private readonly lineMat = this.matLine(0x2d70b3, 6)
 
   sphere(x: number, y: number, z: number, r: number) {
     const sphereGeo = new T.SphereGeometry(r, 64, 32)
@@ -614,7 +615,7 @@ export class Cv3D implements Canvas3D {
     return mesh
   }
 
-  // circle(
+  // circle2(
   //   cx: number,
   //   cy: number,
   //   cz: number,
@@ -623,6 +624,10 @@ export class Cv3D implements Canvas3D {
   //   rz: number,
   //   radius: number,
   // ) {
+  //   const alt = new T.Vector3(-ry,-rz,-rx)
+  //
+  // // theoretically @norm isn't needed here
+  // c.center + c.radius * %cross(c.normal.end, alt)
   //   const center = new T.Vector3(cx, cy, cz)
   //   const offset = new T.Vector3(rx, ry, rz)
   //   const geo = new LineGeometry().setPositions([x1, x2, x3, y1, y2, y3])
