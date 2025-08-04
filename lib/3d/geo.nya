@@ -13,6 +13,15 @@ fn %plot_3d(cv: Canvas3D, obj: Sphere) -> Object3D {
   cv.sphere(obj.center.x, obj.center.y, obj.center.z, obj.radius)
 }
 
+struct Plane {
+  normal: Point3D,
+  offset: num,
+}
+
+fn plane(normal: Point3D, offset: num) -> Plane {
+  Plane { normal, offset }
+}
+
 expose package {
   default: true,
   name: "3D geometry",
