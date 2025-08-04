@@ -2,6 +2,7 @@ import { px } from "@/lib/point"
 import { theme } from "@/sheet/theme"
 import type { Cv } from "@/sheet/ui/cv"
 import { OrderMajor } from "@/sheet/ui/cv/consts"
+import type { Cv3D } from "../plot/3d"
 
 const THEME_MAIN_AXIS_WIDTH = 1.5
 const THEME_MAJOR_LINE_ALPHA = 0.3
@@ -37,16 +38,13 @@ function getGridlineSize(scale: number, graphSize: number, canvasSize: number) {
   }
 }
 
-export function gridlineCoords(
-  cv: Cv,
-  axis: "x" | "y",
+export function gridlineCoordsRaw(
+  min: number,
+  delta: number,
+  canvasSize: number,
   kind: "major" | "minor",
   scale = 1,
 ) {
-  const bounds = cv.bounds()
-  const min = axis == "x" ? bounds.xmin : bounds.ymin
-  const delta = axis == "x" ? bounds.w : bounds.h
-  const canvasSize = axis == "x" ? cv.width : cv.height
   const size = getGridlineSize(scale, delta, canvasSize)[kind]
 
   const majorStart = Math.floor(min / size) * size
@@ -61,6 +59,41 @@ export function gridlineCoords(
     values.push(line)
   }
   return values
+}
+
+export function gridlineCoords(
+  cv: Cv,
+  axis: "x" | "y",
+  kind: "major" | "minor",
+  scale = 1,
+) {
+  const bounds = cv.bounds()
+
+  return gridlineCoordsRaw(
+    axis == "x" ? bounds.xmin : bounds.ymin,
+    axis == "x" ? bounds.w : bounds.h,
+    axis == "x" ? cv.width : cv.height,
+    kind,
+    scale,
+  )
+}
+
+export function gridlineCoords3D(
+  cv: Cv3D,
+  axis: "x" | "y",
+  kind: "major" | "minor",
+  scale = 1,
+) {
+  const bounds = cv.bounds()
+
+  return gridlineCoordsRaw(
+    axis == "x" ? bounds.xmin : bounds.ymin,
+    axis == "x" ? 2 * cv.widths.x : 2 * cv.widths.y,
+    200, // TODO: unhardcode this once we find a suitable value
+    // axis == "x" ? cv.width : cv.height,
+    kind,
+    scale,
+  )
 }
 
 export function createDrawAxes(paper: Cv) {
