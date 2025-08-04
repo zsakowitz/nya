@@ -64,6 +64,10 @@ fn %cross(a: Point3D, b: Point3D) -> Point3D {
   }
 }
 
+fn %plot_3d(cv: Canvas3D, p: Point3D) -> Object3D {
+  cv.point(p.x, p.y, p.z, 4.0)
+}
+
 expose package {
   name: "3d points",
   default: true,

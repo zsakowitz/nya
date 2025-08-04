@@ -12,7 +12,11 @@ configure sheet:
 - `?cvsize=<n>`
 - `?shaderpixelsize=<1..=16>`
 - `?logfrag`
-- `?plot3d`
+
+configure 3d plots:
+
+- `?plot3d` enables 3D plotting
+- `?clipsize=<0.1..=100>`
 
 show other pieces of content:
 

@@ -1,9 +1,16 @@
 import type { Canvas3D } from "@/lang/std/3d"
 import * as T from "three"
+import {
+  getGridlineSize,
+  MAX_GRIDLINES_MAJOR,
+  MAX_GRIDLINES_MINOR,
+} from "../ui/gridlines"
 
 T.Object3D.DEFAULT_UP = new T.Vector3(0, 0, 1)
 
-export const PLOT_3D = new URL(location.href).searchParams.has("plot3d")
+const params = new URL(location.href).searchParams
+
+export const PLOT_3D = params.has("plot3d")
 
 /**
  * The intensity to use for an ambient light so that phong materials are colored
@@ -17,12 +24,22 @@ const LIGHT_INTENSITY = 3.15
  */
 const DIRECTED_LIGHT_INTENSITY = LIGHT_INTENSITY / 1.3
 
+function getClipSize() {
+  const clipSize = params.get("clipsize")
+  if (clipSize == null) return 1
+  const size = +clipSize
+  if (size >= 0.1 && size <= 100) {
+    return size
+  }
+  return 1
+}
+
 /** Things will be rendered this many times past `widths`. */
-const CLIP_MULTIPLIER = 1
+const CLIP_MULTIPLIER = getClipSize()
 
 export class Cv3D implements Canvas3D {
   readonly position = new T.Vector3()
-  readonly widths = new T.Vector3(10, 10, 10)
+  readonly widths = new T.Vector3(5, 5, 5)
   readonly rotation = new T.Euler(0, 0, 0, "ZXY")
   readonly quaternion = new T.Quaternion()
 
@@ -69,6 +86,10 @@ export class Cv3D implements Canvas3D {
     this.rotateX(1)
   }
 
+  get scale() {
+    return globalThis.devicePixelRatio ?? 1
+  }
+
   rotateX(amount: number) {
     const q = new T.Quaternion()
     q.setFromAxisAngle(new T.Vector3(1, 0, 0), amount)
@@ -90,11 +111,17 @@ export class Cv3D implements Canvas3D {
   private readonly sphereMat = new T.MeshPhysicalMaterial({
     color: 0xc74440,
     side: T.DoubleSide,
-    // clippingPlanes: this.clippingPlanes,
+    clippingPlanes: this.clippingPlanes,
   })
 
   sphere(x: number, y: number, z: number, r: number) {
-    r = 4
+    const sphereGeo = new T.SphereGeometry(r, 64, 32)
+    const mesh = new T.Mesh(sphereGeo, this.sphereMat)
+    mesh.position.set(x, y, z)
+    return mesh
+  }
+
+  point(x: number, y: number, z: number, r: number) {
     const sphereGeo = new T.SphereGeometry(r, 64, 32)
     const mesh = new T.Mesh(sphereGeo, this.sphereMat)
     mesh.position.set(x, y, z)
@@ -166,43 +193,107 @@ function addAxes({ scene }: Cv3D) {
   scene.add(axesHelper)
 }
 
-function addXYPlane({
-  scene,
-  beforeRender,
-  position,
-  widths,
-  clippingPlanes,
-}: Cv3D) {
-  const sizes = [1, 5, 10, 50, 100, 500]
-  const count = 20 * CLIP_MULTIPLIER + 2
-  const grids = sizes.map((size) => {
-    const grid = new T.GridHelper(count * size, count, 0xcccccc, 0xcccccc)
-    grid.material.clippingPlanes = clippingPlanes
-    grid.rotation.set(Math.PI / 2, 0, 0)
-    grid.visible = false
-    scene.add(grid)
-    return { grid, size }
-  })
+function addXYPlane(cv: Cv3D) {
+  let geo1 = new T.BufferGeometry()
+  let geo2 = new T.BufferGeometry()
 
-  let prevActiveGrid = grids[0]!.grid
-  prevActiveGrid.visible = true
-  beforeRender.push(() => {
-    const wl = widths.length() / Math.hypot(1, 1, 1)
-    const { grid, size } = (
-      wl > Infinity ? grids[5]
-      : wl > Infinity ? grids[4]
-      : wl > Infinity ? grids[3]
-      : wl > Infinity ? grids[2]
-      : wl > 30 ? grids[1]
-      : grids[0])!
-    const cx = size * Math.round(position.x / size)
-    const cy = size * Math.round(position.y / size)
-    grid.position.x = cx
-    grid.position.y = cy
-    prevActiveGrid.visible = false
-    grid.visible = true
-    prevActiveGrid = grid
-  })
+  const CV_WIDTH = 600 * CLIP_MULTIPLIER
+  function drawGridlinesX() {
+    const { xmin, xmax, ymin, ymax } = cv.bounds()
+    const w = xmax - xmin
+    const { minor, major } = getGridlineSize(cv.scale, w, CV_WIDTH)
+
+    const majorStart = Math.ceil(xmin / major) * major
+    const majorEnd = xmin + w
+    const majorPts: T.Vector3[] = []
+    const m = []
+    for (
+      let line = majorStart, i = 0;
+      line < majorEnd && i < MAX_GRIDLINES_MAJOR;
+      line += major, i++
+    ) {
+      m.push(line)
+      majorPts.push(new T.Vector3(line, ymin, 0), new T.Vector3(line, ymax, 0))
+    }
+
+    const minorStart = Math.ceil(xmin / minor) * minor
+    const minorEnd = xmin + w
+    const minorPts: T.Vector3[] = []
+    for (
+      let line = minorStart, i = 0;
+      line < minorEnd && i < MAX_GRIDLINES_MINOR;
+      line += minor, i++
+    ) {
+      if (!m.includes(line)) {
+        minorPts.push(
+          new T.Vector3(line, ymin, 0),
+          new T.Vector3(line, ymax, 0),
+        )
+      }
+    }
+
+    return { major: majorPts, minor: minorPts }
+  }
+
+  const CV_HEIGHT = 600 * CLIP_MULTIPLIER
+  function drawGridlinesY() {
+    const { ymin, ymax, xmin, xmax } = cv.bounds()
+    const h = ymax - ymin
+    const { minor, major } = getGridlineSize(cv.scale, h, CV_HEIGHT)
+
+    const majorStart = Math.ceil(ymin / major) * major
+    const majorEnd = ymin + h
+    const majorPts: T.Vector3[] = []
+    const m = []
+    for (
+      let line = majorStart, i = 0;
+      line < majorEnd && i < MAX_GRIDLINES_MAJOR;
+      line += major, i++
+    ) {
+      m.push(line)
+      majorPts.push(new T.Vector3(xmin, line, 0), new T.Vector3(xmax, line, 0))
+    }
+
+    const minorStart = Math.ceil(ymin / minor) * minor
+    const minorEnd = ymin + h
+    const minorPts: T.Vector3[] = []
+    for (
+      let line = minorStart, i = 0;
+      line < minorEnd && i < MAX_GRIDLINES_MINOR;
+      line += minor, i++
+    ) {
+      if (!m.includes(line)) {
+        minorPts.push(
+          new T.Vector3(xmin, line, 0),
+          new T.Vector3(xmax, line, 0),
+        )
+      }
+    }
+
+    return { major: majorPts, minor: minorPts }
+  }
+
+  function update() {
+    geo1.dispose()
+    geo2.dispose()
+    geo1 = new T.BufferGeometry()
+    geo2 = new T.BufferGeometry()
+    lines1.geometry = geo1
+    lines2.geometry = geo2
+
+    const { major: majorX, minor: minorX } = drawGridlinesX()
+    const { major: majorY, minor: minorY } = drawGridlinesY()
+    geo1.setFromPoints(majorX.concat(majorY))
+    geo2.setFromPoints(minorX.concat(minorY))
+  }
+
+  const mat1 = new T.LineBasicMaterial({ color: 0x444444 })
+  const mat2 = new T.LineBasicMaterial({ color: 0xcccccc })
+  const lines1 = new T.LineSegments(geo1, mat1)
+  const lines2 = new T.LineSegments(geo2, mat2)
+  lines1.frustumCulled = lines2.frustumCulled = false
+  cv.beforeRender.push(update)
+  cv.scene.add(lines1, lines2)
 }
 
 function addLighting({ scene, beforeRender, quaternion: rotation }: Cv3D) {
@@ -288,6 +379,7 @@ function addBox(cv: Cv3D) {
     geometry,
     new T.LineBasicMaterial({ color: 0xcccccc }),
   )
+  box.frustumCulled = false
   beforeRender.push(update)
   scene.add(box)
 

@@ -3,6 +3,7 @@ import { v, type NyaApi } from "../emit/api"
 
 export interface Canvas3D {
   sphere(x: number, y: number, z: number, r: number): Object3D
+  point(x: number, y: number, z: number, r: number): Object3D
 }
 
 export function libPlot3D(api: NyaApi) {
@@ -13,5 +14,10 @@ export function libPlot3D(api: NyaApi) {
   api.fn("sphere", { cv: Canvas3D, x: num, y: num, z: num, r: num }, Object3D, {
     glsl: null,
     js: v`${0}.sphere(${1},${2},${3},${4})`,
+  })
+
+  api.fn("point", { cv: Canvas3D, x: num, y: num, z: num, r: num }, Object3D, {
+    glsl: null,
+    js: v`${0}.point(${1},${2},${3},${4})`,
   })
 }
