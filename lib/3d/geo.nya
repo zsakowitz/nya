@@ -22,32 +22,24 @@ fn plane(normal: Point3D, offset: num) -> Plane {
   Plane { normal, offset }
 }
 
-struct Torus {
-  cx: num,
-  cy: num,
-  cz: num,
-  rx: num,
-  ry: num,
-  rz: num,
+struct Circle3D {
+  center: Point3D,
+  direction: Point3D,
   radius: num,
-  lineWidth: num,
 }
 
-fn torus(
-  cx: num,
-  cy: num,
-  cz: num,
-  rx: num,
-  ry: num,
-  rz: num,
-  radius: num,
-  lineWidth: num,
-) -> Torus {
-  Torus { cx, cy, cz, rx, ry, rz, radius, lineWidth }
+fn circle(plane: Plane, center: Point3D, radius: num) -> Circle3D {
+  Circle3D {
+    center,
+    direction: plane.normal,
+    radius: abs(radius),
+  }
 }
 
-fn %plot_3d(cv: Canvas3D, p: Torus) -> Object3D {
-  cv.torus(p.cx, p.cy, p.cz, p.rx, p.ry, p.rz, p.radius, p.lineWidth)
+fn %plot_3d(cv: Canvas3D, p: Circle3D) -> Object3D {
+  let c = p.center;
+  let d = p.direction;
+  cv.circle(c.x, c.y, c.z, d.x, d.y, d.z, p.radius, 4.0)
 }
 
 expose package {

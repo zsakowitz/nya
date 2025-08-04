@@ -140,7 +140,7 @@ export class Cv3D implements Canvas3D {
   }
 
   private readonly torusMat = this.mat(0x388c46)
-  torus(
+  circle(
     cx: number,
     cy: number,
     cz: number,
