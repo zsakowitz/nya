@@ -351,12 +351,19 @@ fn sphere(c: Circle3D) -> Sphere {
   }
 }
 
+//! https://math.stackexchange.com/a/1218805
 fn intersection(p: Plane, s: Sphere) -> Circle3D {
-  let center = intersection(line(p.normal.end @+ s.center, s.center), p);
+  let n = p.normal.end;
+  let p0 = -n * p.offset;
+  let c0 = s.center;
+  let R = s.radius;
+  let p = @dot(c0 - p0, n);
+  let r = sqrt(R * R - p * p);
+  let c = c0 - p * n;
   Circle3D {
-    normal: p.normal,
-    center,
-    radius: sqrt(s.radius * s.radius - distance(center, s.center) ^ 2),
+    center: c,
+    radius: r,
+    normal: vector(n),
   }
 }
 
@@ -368,5 +375,5 @@ fn intersection(p: Plane, s: Sphere) -> Circle3D {
 //    l  c  P  S
 // l  ~  .  X  X
 // c     .  .  .
-// P        X  .
+// P        X  X
 // S           .
