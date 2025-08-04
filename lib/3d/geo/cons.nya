@@ -1,3 +1,4 @@
+use "2d/geo";
 use "3d/point";
 use "3d/geo/defs";
 
@@ -171,7 +172,11 @@ fn glider(l: Line3D, p: num) -> Point3D {
   @mix(l.p1, l.p2, p)
 }
 
-fn perpendicular(l: Segment3D | Ray3D | Line3D, p: Point3D) -> Plane {
+type AnyLine3D = Segment3D | Ray3D | Line3D;
+type AnySlope3D = Segment3D | Ray3D | Line3D | Vector3D;
+type AnyAngle3D = Angle3D | DirectedAngle3D;
+
+fn perpendicular(l: AnySlope3D, p: Point3D) -> Plane {
   perpendicular(vector(l.p1, l.p2), p)
 }
 
@@ -193,7 +198,7 @@ fn midpoint(a: Segment3D) -> Point3D {
   midpoint(a.p1, a.p2)
 }
 
-fn parallel(a: Segment3D | Ray3D | Line3D | Vector3D, p: Point3D) -> Line3D {
+fn parallel(a: AnySlope3D, p: Point3D) -> Line3D {
   Line3D {
     p1: p,
     p2: p + (a.p2 - a.p1),
@@ -318,10 +323,8 @@ fn facing(c: Circle3D, p: Offset3D) -> Circle3D {
   }
 }
 
-type LineIntersectable = Segment3D | Ray3D | Line3D;
-
 //! https://en.wikipedia.org/wiki/Line%E2%80%93sphere_intersection
-fn _intersection(l: LineIntersectable, s: Sphere, which: num) -> Point3D {
+fn _intersection(l: AnyLine3D, s: Sphere, which: num) -> Point3D {
   let c = s.center;
   let r = s.radius;
   let o = l.p1;
@@ -337,12 +340,19 @@ fn _intersection(l: LineIntersectable, s: Sphere, which: num) -> Point3D {
   o + d * u
 }
 
-fn intersection(s: Sphere, l: LineIntersectable) -> Point3D {
+fn intersection(s: Sphere, l: AnyLine3D) -> Point3D {
   _intersection(l, s, 1)
 }
 
-fn intersection(l: LineIntersectable, s: Sphere) -> Point3D {
+fn intersection(l: AnyLine3D, s: Sphere) -> Point3D {
   _intersection(l, s, -1)
+}
+
+fn sphere(c: Circle3D) -> Sphere {
+  Sphere {
+    center: c.center,
+    radius: c.radius,
+  }
 }
 
 // intersections we still need (l=line, c=circle, P=plane, S=sphere)
@@ -355,3 +365,8 @@ fn intersection(l: LineIntersectable, s: Sphere) -> Point3D {
 // c     .  .  .
 // P        X  .
 // S           .
+
+// TODO: things like perpendicular(Line, Point3D) don't work due to how
+// coercions are implemented wrt Alt
+//
+// perhaps coercions should be used instead of Alt

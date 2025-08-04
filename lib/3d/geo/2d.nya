@@ -2,30 +2,58 @@ use "2d/geo";
 use "3d/point";
 use "3d/geo/cons";
 
-fn _3d(p: Point) -> Point3D {
+fn ->(p: Point) -> Point3D {
   Point3D { x: p.x, y: p.y, z: 0 }
 }
 
-fn %plot_3d(cv: Canvas3D, pt: Point) -> Object3D {
-  %plot_3d(cv, pt._3d)
+fn ->(l: Line) -> Line3D {
+  Line3D {
+    p1: l.p1 -> Point3D,
+    p2: l.p2 -> Point3D,
+  }
 }
 
-fn %plot_3d(cv: Canvas3D, c: Circle) -> Object3D {
-  %plot_3d(cv, circle(xyplane, c.center._3d, c.radius))
+fn ->(l: Ray) -> Ray3D {
+  Ray3D {
+    p1: l.p1 -> Point3D,
+    p2: l.p2 -> Point3D,
+  }
 }
 
-fn %plot_3d(cv: Canvas3D, l: Segment) -> Object3D {
-  %plot_3d(cv, segment(l.p1._3d, l.p2._3d))
+fn ->(l: Vector) -> Vector3D {
+  Vector3D {
+    p1: l.p1 -> Point3D,
+    p2: l.p2 -> Point3D,
+  }
 }
 
-fn %plot_3d(cv: Canvas3D, l: Line) -> Object3D {
-  %plot_3d(cv, line(l.p1._3d, l.p2._3d))
+fn ->(l: Segment) -> Segment3D {
+  Segment3D {
+    p1: l.p1 -> Point3D,
+    p2: l.p2 -> Point3D,
+  }
 }
 
-fn %plot_3d(cv: Canvas3D, l: Ray) -> Object3D {
-  %plot_3d(cv, ray(l.p1._3d, l.p2._3d))
+fn ->(l: Circle) -> Circle3D {
+  Circle3D {
+    normal: xyplane.normal,
+    center: l.center -> Point3D,
+    radius: l.radius,
+  }
 }
 
-fn %plot_3d(cv: Canvas3D, l: Vector) -> Object3D {
-  %plot_3d(cv, vector(l.p1._3d, l.p2._3d))
+fn ->(l: Angle) -> Angle3D {
+  Angle3D {
+    p1: l.p1 -> Point3D,
+    p2: l.p2 -> Point3D,
+    p3: l.p3 -> Point3D,
+  }
+}
+
+fn ->(l: DirectedAngle) -> DirectedAngle3D {
+  DirectedAngle3D {
+    p1: l.p1 -> Point3D,
+    p2: l.p2 -> Point3D,
+    p3: l.p3 -> Point3D,
+  }
 }

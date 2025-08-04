@@ -1,3 +1,5 @@
+use "2d/point";
+
 struct Point3D {
   x: num,
   y: num,

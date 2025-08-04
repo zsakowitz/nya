@@ -1,3 +1,4 @@
+use "2d/geo";
 use "3d/point";
 
 struct Sphere {
