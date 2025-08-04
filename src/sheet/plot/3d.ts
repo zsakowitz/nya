@@ -17,6 +17,9 @@ const LIGHT_INTENSITY = 3.15
  */
 const DIRECTED_LIGHT_INTENSITY = LIGHT_INTENSITY / 1.3
 
+/** Things will be rendered this many times past `widths`. */
+const CLIP_MULTIPLIER = 1
+
 export class Cv3D implements Canvas3D {
   readonly position = new T.Vector3()
   readonly widths = new T.Vector3(10, 10, 10)
@@ -27,7 +30,7 @@ export class Cv3D implements Canvas3D {
   readonly renderer = new T.WebGLRenderer()
   readonly dispose
   readonly beforeRender: (() => void)[] = []
-  readonly clippingPlanes = createBoxClippingPlanes(this)
+  readonly clippingPlanes = createBoxClipping(this)
 
   constructor() {
     this.rotation._onChangeCallback = () => {
@@ -41,7 +44,7 @@ export class Cv3D implements Canvas3D {
 
     const el = this.renderer.domElement
     el.className = "absolute inset-0 !size-full [image-rendering:pixelated]"
-    addControls(this)
+    registerControls(this)
     const observer = new ResizeObserver(() => {
       const scale = globalThis.devicePixelRatio ?? 1
       const w = el.clientWidth
@@ -60,6 +63,7 @@ export class Cv3D implements Canvas3D {
     addAxes(this)
     addLighting(this)
     addXYPlane(this)
+    addBox(this)
 
     this.rotateZ(2)
     this.rotateX(1)
@@ -86,18 +90,28 @@ export class Cv3D implements Canvas3D {
   private readonly sphereMat = new T.MeshPhysicalMaterial({
     color: 0xc74440,
     side: T.DoubleSide,
-    clippingPlanes: this.clippingPlanes,
+    // clippingPlanes: this.clippingPlanes,
   })
 
   sphere(x: number, y: number, z: number, r: number) {
+    r = 4
     const sphereGeo = new T.SphereGeometry(r, 64, 32)
     const mesh = new T.Mesh(sphereGeo, this.sphereMat)
     mesh.position.set(x, y, z)
+    mesh.onBeforeRender = () => {
+      mesh.scale.setScalar((r * this.widths.length()) / this.el.clientWidth)
+      mesh.updateMatrixWorld()
+    }
     return mesh
   }
 
   getCamera() {
-    const camera = new T.PerspectiveCamera(50, this.el.width / this.el.height)
+    const camera = new T.PerspectiveCamera(
+      50,
+      this.el.width / this.el.height,
+      this.widths.length() * 0.01,
+      this.widths.length() * 2000,
+    )
     camera.position.z = 2 * this.widths.length()
     camera.position.applyQuaternion(this.quaternion)
     camera.position.add(this.position)
@@ -123,13 +137,26 @@ export class Cv3D implements Canvas3D {
     this.queue()
   }
 
-  move(x: number, y: number) {
-    const vec = new T.Vector3(x, 0, y)
-    vec.divide(this.widths)
+  move(vec: T.Vector3, normal: T.Vector3) {
+    vec.multiplyScalar(this.widths.length())
+    vec.divideScalar(this.el.clientWidth / 2)
     vec.applyQuaternion(this.quaternion.clone())
-    vec.projectOnPlane(new T.Vector3(0, 0, 1))
+    vec.projectOnPlane(normal)
     this.position.add(vec)
     this.queue()
+  }
+
+  bounds() {
+    const { position, widths } = this
+
+    return {
+      xmin: position.x - CLIP_MULTIPLIER * widths.x,
+      xmax: position.x + CLIP_MULTIPLIER * widths.x,
+      ymin: position.y - CLIP_MULTIPLIER * widths.y,
+      ymax: position.y + CLIP_MULTIPLIER * widths.y,
+      zmin: position.z - CLIP_MULTIPLIER * widths.z,
+      zmax: position.z + CLIP_MULTIPLIER * widths.z,
+    }
   }
 }
 
@@ -139,16 +166,43 @@ function addAxes({ scene }: Cv3D) {
   scene.add(axesHelper)
 }
 
-function addXYPlane({ scene, beforeRender, position }: Cv3D) {
-  const grid = new T.GridHelper(200, 200, 0xcccccc, 0xcccccc)
-  grid.rotation.set(Math.PI / 2, 0, 0)
+function addXYPlane({
+  scene,
+  beforeRender,
+  position,
+  widths,
+  clippingPlanes,
+}: Cv3D) {
+  const sizes = [1, 5, 10, 50, 100, 500]
+  const count = 20 * CLIP_MULTIPLIER + 2
+  const grids = sizes.map((size) => {
+    const grid = new T.GridHelper(count * size, count, 0xcccccc, 0xcccccc)
+    grid.material.clippingPlanes = clippingPlanes
+    grid.rotation.set(Math.PI / 2, 0, 0)
+    grid.visible = false
+    scene.add(grid)
+    return { grid, size }
+  })
+
+  let prevActiveGrid = grids[0]!.grid
+  prevActiveGrid.visible = true
   beforeRender.push(() => {
-    const cx = Math.round(position.x)
-    const cy = Math.round(position.y)
+    const wl = widths.length() / Math.hypot(1, 1, 1)
+    const { grid, size } = (
+      wl > Infinity ? grids[5]
+      : wl > Infinity ? grids[4]
+      : wl > Infinity ? grids[3]
+      : wl > Infinity ? grids[2]
+      : wl > 30 ? grids[1]
+      : grids[0])!
+    const cx = size * Math.round(position.x / size)
+    const cy = size * Math.round(position.y / size)
     grid.position.x = cx
     grid.position.y = cy
+    prevActiveGrid.visible = false
+    grid.visible = true
+    prevActiveGrid = grid
   })
-  scene.add(grid)
 }
 
 function addLighting({ scene, beforeRender, quaternion: rotation }: Cv3D) {
@@ -165,26 +219,104 @@ function addLighting({ scene, beforeRender, quaternion: rotation }: Cv3D) {
   }
 }
 
-function createBoxClippingPlanes(cv: Cv3D) {
-  const size = 10
-  const min = new T.Vector3(-size, -size, -size)
-  const max = new T.Vector3(size, size, size)
-  cv.renderer.localClippingEnabled = true
+function createBoxClipping(cv: Cv3D) {
+  const { renderer, beforeRender } = cv
+  renderer.localClippingEnabled = true
   const planes = [
-    new T.Plane(new T.Vector3(1, 0, 0), -min.x),
-    new T.Plane(new T.Vector3(-1, 0, 0), max.x),
-    new T.Plane(new T.Vector3(0, 1, 0), -min.y),
-    new T.Plane(new T.Vector3(0, -1, 0), max.y),
-    new T.Plane(new T.Vector3(0, 0, 1), -min.z),
-    new T.Plane(new T.Vector3(0, 0, -1), max.z),
+    new T.Plane(new T.Vector3(1, 0, 0), 0),
+    new T.Plane(new T.Vector3(-1, 0, 0), 0),
+    new T.Plane(new T.Vector3(0, 1, 0), 0),
+    new T.Plane(new T.Vector3(0, -1, 0), 0),
+    new T.Plane(new T.Vector3(0, 0, 1), 0),
+    new T.Plane(new T.Vector3(0, 0, -1), 0),
   ]
-  function update() {
-    // planes[0]!.constant =
-  }
+  beforeRender.push(update)
+
   return planes
+
+  function update() {
+    const { xmin, xmax, ymin, ymax, zmin, zmax } = cv.bounds()
+
+    planes[0]!.constant = -xmin
+    planes[1]!.constant = xmax
+    planes[2]!.constant = -ymin
+    planes[3]!.constant = ymax
+    planes[4]!.constant = -zmin
+    planes[5]!.constant = zmax
+  }
 }
 
-function addControls(cv: Cv3D) {
+function addBox(cv: Cv3D) {
+  const { scene, beforeRender } = cv
+
+  const p000 = new T.Vector3()
+  const p001 = new T.Vector3()
+  const p010 = new T.Vector3()
+  const p011 = new T.Vector3()
+  const p100 = new T.Vector3()
+  const p101 = new T.Vector3()
+  const p110 = new T.Vector3()
+  const p111 = new T.Vector3()
+  const p00z = new T.Vector3()
+  const p01z = new T.Vector3()
+  const p10z = new T.Vector3()
+  const p11z = new T.Vector3()
+  const points = [
+    p000,
+    p001,
+    p010,
+    p011,
+    p100,
+    p101,
+    p110,
+    p111,
+    p00z,
+    p01z,
+    p11z,
+    p10z,
+  ]
+  const geometry = new T.BufferGeometry()
+  const INDEX_WITH_PLANE = [
+    0, 1, 0, 2, 2, 3, 1, 3, 4, 5, 4, 6, 6, 7, 5, 7, 0, 4, 1, 5, 2, 6, 3, 7, 8,
+    9, 9, 10, 10, 11, 11, 8,
+  ]
+  const INDEX_WTHO_PLANE = [
+    0, 1, 0, 2, 2, 3, 1, 3, 4, 5, 4, 6, 6, 7, 5, 7, 0, 4, 1, 5, 2, 6, 3, 7,
+  ]
+  geometry.setIndex(INDEX_WITH_PLANE)
+  const box = new T.LineSegments(
+    geometry,
+    new T.LineBasicMaterial({ color: 0xcccccc }),
+  )
+  beforeRender.push(update)
+  scene.add(box)
+
+  function update() {
+    const { xmin, xmax, ymin, ymax, zmin, zmax } = cv.bounds()
+
+    p000.set(xmin, ymin, zmin)
+    p001.set(xmin, ymin, zmax)
+    p010.set(xmin, ymax, zmin)
+    p011.set(xmin, ymax, zmax)
+    p100.set(xmax, ymin, zmin)
+    p101.set(xmax, ymin, zmax)
+    p110.set(xmax, ymax, zmin)
+    p111.set(xmax, ymax, zmax)
+    p00z.set(xmin, ymin, 0)
+    p01z.set(xmin, ymax, 0)
+    p10z.set(xmax, ymin, 0)
+    p11z.set(xmax, ymax, 0)
+
+    geometry.setFromPoints(points)
+    if (zmin <= 0 && 0 <= zmax) {
+      geometry.setIndex(INDEX_WITH_PLANE)
+    } else {
+      geometry.setIndex(INDEX_WTHO_PLANE)
+    }
+  }
+}
+
+function registerControls(cv: Cv3D) {
   cv.el.addEventListener(
     "wheel",
     (event) => {
@@ -204,8 +336,18 @@ function addControls(cv: Cv3D) {
         // }
         cv.zoom(scale)
       } else {
-        cv.move(event.deltaX, event.deltaY)
-        // cv.move(cv.toPaperDelta(px(event.deltaX, event.deltaY)))
+        if (event.shiftKey) {
+          const vec = new T.Vector3(0, -event.deltaY, 0)
+          const rz = (cv.rotation.reorder("ZXY"), cv.rotation.z)
+          cv.move(vec, new T.Vector3(Math.sin(rz), -Math.cos(rz), 0))
+        } else if (event.altKey) {
+          const vec = new T.Vector3(event.deltaX, -event.deltaY, 0)
+          const rz = (cv.rotation.reorder("ZXY"), cv.rotation.z)
+          cv.move(vec, new T.Vector3(Math.sin(rz), -Math.cos(rz), 0))
+        } else {
+          const vec = new T.Vector3(event.deltaX, 0, event.deltaY)
+          cv.move(vec, new T.Vector3(0, 0, 1))
+        }
       }
     },
     { passive: false },
