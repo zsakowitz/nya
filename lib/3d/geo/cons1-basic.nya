@@ -70,3 +70,11 @@ fn circle(plane: Plane, center: Point3D, radius: num) -> Circle3D {
     radius: abs(radius),
   }
 }
+
+fn angle(p1: Point3D, p2: Point3D, p3: Point3D) -> Angle3D {
+  Angle3D { p1, p2, p3 }
+}
+
+fn directed_angle(p1: Point3D, p2: Point3D, p3: Point3D) -> DirectedAngle3D {
+  DirectedAngle3D { p1, p2, p3 }
+}

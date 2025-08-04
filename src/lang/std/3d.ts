@@ -37,23 +37,17 @@ export function libPlot3D(api: NyaApi) {
     js: v`${0}.plane(${1},${2},${3},${4},${5},${6},${7},${8})`,
   })
 
-  api.fn("triangle", { cv: Canvas3D, x1: num, y1: num, z1: num, x2: num, y2: num, z2: num, x3: num, y3: num, z3: num }, Object3D, {
-    glsl: null,
-    js: v`${0}.triangle(${1},${2},${3},${4},${5},${6},${7},${8},${9})`,
-  })
+  for (const x of ["triangle", "angle"]) {
+    api.fn(x, { cv: Canvas3D, x1: num, y1: num, z1: num, x2: num, y2: num, z2: num, x3: num, y3: num, z3: num }, Object3D, {
+      glsl: null,
+      js: v`${0}.${x}(${1},${2},${3},${4},${5},${6},${7},${8},${9})`,
+    })
+  }
 
-  api.fn("segment", { cv: Canvas3D, x1: num, y1: num, z1: num, x2: num, y2: num, z2: num }, Object3D, {
-    glsl: null,
-    js: v`${0}.segment(${1},${2},${3},${4},${5},${6})`,
-  })
-
-  api.fn("ray", { cv: Canvas3D, x1: num, y1: num, z1: num, x2: num, y2: num, z2: num }, Object3D, {
-    glsl: null,
-    js: v`${0}.ray(${1},${2},${3},${4},${5},${6})`,
-  })
-
-  api.fn("line", { cv: Canvas3D, x1: num, y1: num, z1: num, x2: num, y2: num, z2: num }, Object3D, {
-    glsl: null,
-    js: v`${0}.line(${1},${2},${3},${4},${5},${6})`,
-  })
+  for (const x of ["segment", "ray", "line"]) {
+    api.fn(x, { cv: Canvas3D, x1: num, y1: num, z1: num, x2: num, y2: num, z2: num }, Object3D, {
+      glsl: null,
+      js: v`${0}.${x}(${1},${2},${3},${4},${5},${6})`,
+    })
+  }
 }

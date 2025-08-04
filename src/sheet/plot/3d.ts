@@ -513,7 +513,11 @@ export class Cv3D implements Canvas3D {
     })
   }
 
-  private matPlain(color: number, opacity: number) {
+  private matPlain(color: number, opacity = 1) {
+    if (opacity == 1) {
+      return new T.MeshBasicMaterial(this.matProps(color))
+    }
+
     return new T.MeshBasicMaterial({
       ...this.matProps(color),
       opacity,
@@ -532,7 +536,8 @@ export class Cv3D implements Canvas3D {
   private readonly sphereMat = this.mat(0xc74440)
   private readonly pointMat = this.mat(0x6042a6)
   private readonly circleMat = this.matLine(0x388c46, 8)
-  private readonly triangleMat = this.matPlain(0xfa7e1a, 0.8)
+  private readonly triangleMat = this.matPlain(0xba0568, 0.8)
+  private readonly angleMat = this.matPlain(0xfa7e1a, 0.5)
   private readonly planeMat = this.matPlain(0x888888, 0.5)
   private readonly lineMat = this.matLine(0x2d70b3, 8)
 
@@ -574,13 +579,13 @@ export class Cv3D implements Canvas3D {
 
   triangle(
     x1: number,
-    x2: number,
-    x3: number,
     y1: number,
-    y2: number,
-    y3: number,
     z1: number,
+    x2: number,
+    y2: number,
     z2: number,
+    x3: number,
+    y3: number,
     z3: number,
   ) {
     const vertices = new Float32Array([x1, y1, z1, x2, y2, z2, x3, y3, z3])
@@ -675,6 +680,44 @@ export class Cv3D implements Canvas3D {
       mesh.updateMatrixWorld()
       prev(renderer)
     }
+    return mesh
+  }
+
+  angle(
+    x1: number,
+    y1: number,
+    z1: number,
+    x2: number,
+    y2: number,
+    z2: number,
+    x3: number,
+    y3: number,
+    z3: number,
+  ) {
+    x1 -= x2
+    y1 -= y2
+    z1 -= z2
+    x3 -= x2
+    y3 -= y2
+    z3 -= z2
+    const s1 = Math.hypot(x1, y1, z1)
+    const s3 = Math.hypot(x3, y3, z3)
+    const vertices = new Float32Array([
+      x1 / s1,
+      y1 / s1,
+      z1 / s1,
+      0,
+      0,
+      0,
+      x3 / s3,
+      y3 / s3,
+      z3 / s3,
+    ])
+    const geometry = new T.BufferGeometry()
+    geometry.setAttribute("position", new T.BufferAttribute(vertices, 3))
+    const mesh = new T.Mesh(geometry, this.angleMat)
+    mesh.position.set(x2, y2, z2)
+    mesh.renderOrder = 1
     return mesh
   }
 }
