@@ -1,0 +1,68 @@
+use "3d/point";
+use "3d/geo/plane";
+use "3d/geo/defs";
+
+fn normal(p1: Point3D, p2: Point3D, p3: Point3D) -> Offset3D {
+  vector(@norm(%cross(p3 @- p2, p1 @- p2)))
+}
+
+fn normal(t: Triangle3D) -> Offset3D {
+  normal(t.p1, t.p2, t.p3)
+}
+
+fn vector(start: Point3D, end: Point3D) -> Vector3D {
+  Vector3D { start, end }
+}
+
+fn sphere(center: Point3D, radius: num) -> Sphere {
+  Sphere { center, radius: abs(radius) }
+}
+
+fn sphere(center: Point3D, outer: Point3D) -> Sphere {
+  Sphere { center, radius: @length(outer @- center) }
+}
+
+fn triangle(p1: Point3D, p2: Point3D, p3: Point3D) -> Triangle3D {
+  Triangle3D { p1, p2, p3 }
+}
+
+fn plane(normal: Offset3D, offset: num) -> Plane {
+  Plane { normal: @norm(normal), offset }
+}
+
+// should this be called 'plane' instead?
+fn perpendicular(normal: Offset3D, point: Point3D) -> Plane {
+  Plane {
+    normal: @norm(normal),
+    offset: -@dot(vector(point), normal),
+  }
+}
+
+// should this be called 'plane' instead?
+fn perpendicular(vector: Vector3D) -> Plane {
+  perpendicular(vector, vector.start)
+}
+
+fn plane(p1: Point3D, p2: Point3D, p3: Point3D) -> Plane {
+  perpendicular(normal(p1, p2, p3), p1)
+}
+
+fn plane(t: Triangle3D) -> Plane {
+  plane(t.p1, t.p2, t.p3)
+}
+
+fn segment(p1: Point3D, p2: Point3D) -> Segment3D {
+  Segment3D { p1, p2 }
+}
+
+fn line(p1: Point3D, p2: Point3D) -> Line3D {
+  Line3D { p1, p2 }
+}
+
+fn circle(plane: Plane, center: Point3D, radius: num) -> Circle3D {
+  Circle3D {
+    center,
+    normal: plane.normal,
+    radius: abs(radius),
+  }
+}

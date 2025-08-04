@@ -7,8 +7,6 @@ import {
   MAX_GRIDLINES_MINOR,
 } from "../ui/gridlines"
 
-T.Object3D.DEFAULT_UP = new T.Vector3(0, 0, 1)
-
 const params = new URL(location.href).searchParams
 
 export const PLOT_3D = params.has("plot3d")
@@ -396,7 +394,7 @@ export class Cv3D implements Canvas3D {
     addPlaneContainer(this)
     this.fixMaterials()
 
-    this.rotateZ(2)
+    this.rotateZ(0.5)
     this.rotateX(1)
   }
 

@@ -1,0 +1,7 @@
+use "3d/geo/cons";
+use "3d/geo/glider";
+
+expose package {
+  default: true,
+  name: "3D geometry",
+}

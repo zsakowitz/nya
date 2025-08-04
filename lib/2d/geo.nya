@@ -244,8 +244,11 @@ fn intersection(a: Circle, b: Circle) -> Point {
 }
 
 fn glider(a: Circle, at: num) -> Point {
-  let at = clamp(at, 0.0, 1.0);
-  Point { x: a.center.x + cos(2 * pi * at), y: a.center.y + sin(2 * pi * at) }
+  let at = 2 * pi * clamp(at, 0.0, 1.0);
+  Point {
+    x: a.center.x + a.radius * cos(at),
+    y: a.center.y + a.radius * sin(at),
+  }
 }
 
 fn glider(l: Line, at: num) -> Point {

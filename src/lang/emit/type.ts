@@ -435,11 +435,12 @@ function ${lident}(${nvFields
   verifyAndOrderFields(
     fields: Map<string, Value>,
     pos: Map<string, Pos>,
+    fullPos: Pos,
   ): Value[] {
     const self = this.#fieldNames
     const name = this.name
     if (fields.size != self.length) {
-      issue(`Invalid number of fields passed to struct '${name}'.`)
+      issue(`Invalid number of fields passed to struct '${name}'.`, fullPos)
     }
 
     return this.#fields.map(({ name: fieldName, type }) => {
@@ -447,6 +448,7 @@ function ${lident}(${nvFields
       if (!v) {
         issue(
           `Missing field '${fieldName}' when constructing struct '${this.name}'.`,
+          fullPos,
         )
       }
 

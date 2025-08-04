@@ -1,0 +1,72 @@
+use "3d/point";
+
+struct Plane {
+  normal: Offset3D,
+  offset: num,
+}
+
+let xyplane = Plane {
+  normal: (
+    Offset3D {
+      x: 0,
+      y: 0,
+      z: 1,
+    }
+  ),
+  offset: 0,
+};
+
+let yzplane = Plane {
+  normal: (
+    Offset3D {
+      x: 1,
+      y: 0,
+      z: 0,
+    }
+  ),
+  offset: 0,
+};
+
+let zxplane = Plane {
+  normal: (
+    Offset3D {
+      x: 0,
+      y: 1,
+      z: 0,
+    }
+  ),
+  offset: 0,
+};
+
+let yxplane = Plane {
+  normal: (
+    Offset3D {
+      x: 0,
+      y: 0,
+      z: -1,
+    }
+  ),
+  offset: 0,
+};
+
+let zyplane = Plane {
+  normal: (
+    Offset3D {
+      x: -1,
+      y: 0,
+      z: 0,
+    }
+  ),
+  offset: 0,
+};
+
+let xzplane = Plane {
+  normal: (
+    Offset3D {
+      x: 0,
+      y: -1,
+      z: 0,
+    }
+  ),
+  offset: 0,
+};

@@ -31,13 +31,17 @@ import s29 from "../../lib/complex/number-theory.nya"
 import s30 from "../../lib/core/cmp.nya"
 import s31 from "../../lib/core/ops.nya"
 import s32 from "../../lib/3d/point.nya"
-import s33 from "../../lib/3d/geo.nya"
-import s34 from "../../lib/gamma/lngamma.nya"
-import s35 from "../../lib/gamma/trigamma.nya"
-import s36 from "../../lib/gamma/digamma.nya"
-import s37 from "../../lib/gamma/factorial.nya"
-import s38 from "../../lib/gamma/polygamma.nya"
-import s39 from "../../lib/gamma/gamma.nya"
+import s33 from "../../lib/3d/geo/plane.nya"
+import s34 from "../../lib/3d/geo/index.nya"
+import s35 from "../../lib/3d/geo/glider.nya"
+import s36 from "../../lib/3d/geo/cons.nya"
+import s37 from "../../lib/3d/geo/defs.nya"
+import s38 from "../../lib/gamma/lngamma.nya"
+import s39 from "../../lib/gamma/trigamma.nya"
+import s40 from "../../lib/gamma/digamma.nya"
+import s41 from "../../lib/gamma/factorial.nya"
+import s42 from "../../lib/gamma/polygamma.nya"
+import s43 from "../../lib/gamma/gamma.nya"
 
 export const SCRIPTS = new Map([
   ["special", s0],
@@ -73,16 +77,20 @@ export const SCRIPTS = new Map([
   ["core/cmp", s30],
   ["core/ops", s31],
   ["3d/point", s32],
-  ["3d/geo", s33],
-  ["gamma/lngamma", s34],
-  ["gamma/trigamma", s35],
-  ["gamma/digamma", s36],
-  ["gamma/factorial", s37],
-  ["gamma/polygamma", s38],
-  ["gamma/gamma", s39],
+  ["3d/geo/plane", s33],
+  ["3d/geo", s34],
+  ["3d/geo/glider", s35],
+  ["3d/geo/cons", s36],
+  ["3d/geo/defs", s37],
+  ["gamma/lngamma", s38],
+  ["gamma/trigamma", s39],
+  ["gamma/digamma", s40],
+  ["gamma/factorial", s41],
+  ["gamma/polygamma", s42],
+  ["gamma/gamma", s43],
 ])
 
-export const SCRIPT_INDICES = new Set(["color","real","complex",])
+export const SCRIPT_INDICES = new Set(["color","real","complex","3d/geo",])
 
 export type ScriptName =
   | "special"
@@ -118,7 +126,11 @@ export type ScriptName =
   | "core/cmp"
   | "core/ops"
   | "3d/point"
+  | "3d/geo/plane"
   | "3d/geo"
+  | "3d/geo/glider"
+  | "3d/geo/cons"
+  | "3d/geo/defs"
   | "gamma/lngamma"
   | "gamma/trigamma"
   | "gamma/digamma"

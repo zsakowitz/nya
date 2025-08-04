@@ -1,0 +1,54 @@
+use "3d/point";
+use "3d/geo/plane";
+
+struct Sphere {
+  center: Point3D,
+  radius: num,
+}
+
+struct Circle3D {
+  center: Point3D,
+  normal: Offset3D,
+  radius: num,
+}
+
+struct Triangle3D {
+  p1: Point3D,
+  p2: Point3D,
+  p3: Point3D,
+}
+
+struct Segment3D, Line3D {
+  p1: Point3D,
+  p2: Point3D,
+}
+
+fn %plot_3d(cv: Canvas3D, obj: Sphere) -> Object3D {
+  cv.sphere(obj.center.x, obj.center.y, obj.center.z, obj.radius)
+}
+
+fn %plot_3d(cv: Canvas3D, p: Plane) -> Object3D {
+  let c = p.normal;
+  cv.plane(c.x, c.y, c.z, p.offset)
+}
+
+fn %plot_3d(cv: Canvas3D, p: Circle3D) -> Object3D {
+  let c = p.center;
+  let d = p.normal;
+  cv.circle(c.x, c.y, c.z, d.x, d.y, d.z, p.radius)
+}
+
+fn %plot_3d(cv: Canvas3D, p: Triangle3D) -> Object3D {
+  let p1 = p.p1;
+  let p2 = p.p2;
+  let p3 = p.p3;
+  cv.triangle(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z, p3.x, p3.y, p3.z)
+}
+
+fn %plot_3d(cv: Canvas3D, p: Segment3D) -> Object3D {
+  let p1 = p.p1;
+  let p2 = p.p2;
+  cv.segment(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z)
+}
+
+// TODO: %plot_3d for Line3D

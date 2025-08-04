@@ -278,7 +278,7 @@ export function emitExpr(node: NodeExpr, block: Block): Value {
       mapPos.set(arg.name.val, arg)
     }
 
-    return ty.with(ty.verifyAndOrderFields(map, mapPos), block)
+    return ty.with(ty.verifyAndOrderFields(map, mapPos, node), block)
   } else if (node instanceof ExprProp) {
     if (node.targs) {
       todo("Type arguments are not supported yet.")
