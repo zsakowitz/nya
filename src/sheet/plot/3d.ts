@@ -431,6 +431,11 @@ function registerControls(cv: Cv3D) {
     return target
   }
 
+  registerRotationControls(cv)
+  registerWheelControls(cv)
+}
+
+function registerWheelControls(cv: Cv3D) {
   cv.el.addEventListener(
     "wheel",
     (event) => {
@@ -456,4 +461,38 @@ function registerControls(cv: Cv3D) {
     },
     { passive: false },
   )
+}
+
+function registerRotationControls(cv: Cv3D) {
+  let down = 0
+  let lastX: number | null = null
+  let lastY: number | null = null
+  cv.el.addEventListener("pointerdown", (ev) => {
+    cv.el.setPointerCapture(ev.pointerId)
+    down++
+    lastX = ev.clientX
+    lastY = ev.clientY
+  })
+
+  cv.el.addEventListener("pointermove", (ev) => {
+    if (!down) {
+      return
+    }
+
+    if (lastX == null || lastY == null) {
+      lastX = ev.clientX
+      lastY = ev.clientY
+      return
+    }
+
+    const dx = lastX - (lastX = ev.clientX)
+    const dy = lastY - (lastY = ev.clientY)
+    cv.rotateZ((8 * dx) / cv.el.clientWidth)
+    cv.rotateX((8 * dy) / cv.el.clientWidth)
+  })
+
+  addEventListener("pointerup", () => {
+    down--
+    if (down < 0) down = 0
+  })
 }
