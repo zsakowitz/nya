@@ -318,13 +318,40 @@ fn facing(c: Circle3D, p: Offset3D) -> Circle3D {
   }
 }
 
+type LineIntersectable = Segment3D | Ray3D | Line3D;
+
+//! https://en.wikipedia.org/wiki/Line%E2%80%93sphere_intersection
+fn _intersection(l: LineIntersectable, s: Sphere, which: num) -> Point3D {
+  let c = s.center;
+  let r = s.radius;
+  let o = l.p1;
+  let u = @norm(l.p2 - l.p1);
+
+  let dot = @dot(u, o - c);
+  let det = dot * dot - (@length(o - c) ^ 2 - r ^ 2);
+  if det < 0.0 {
+    return _point_nan;
+  }
+
+  let d = -dot + which * sqrt(det);
+  o + d * u
+}
+
+fn intersection(s: Sphere, l: LineIntersectable) -> Point3D {
+  _intersection(l, s, 1)
+}
+
+fn intersection(l: LineIntersectable, s: Sphere) -> Point3D {
+  _intersection(l, s, -1)
+}
+
 // intersections we still need (l=line, c=circle, P=plane, S=sphere)
 // . = don't have it
 // ~ = ishtersection only
 // X = have it
 //
 //    l  c  P  S
-// l  ~  .  X  .
+// l  ~  .  X  X
 // c     .  .  .
 // P        X  .
 // S           .
