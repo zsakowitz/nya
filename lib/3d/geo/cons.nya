@@ -213,6 +213,62 @@ fn perpendicular_bisector(a: Segment3D) -> Plane {
   perpendicular(a, midpoint(a))
 }
 
+fn distance(p1: Point3D, p2: Point3D) -> num {
+  @length(p1 - p2)
+}
+
+// https://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
+fn distance(l: Line3D, p: Point3D) -> num {
+  @length(%cross(p - l.p1, p - l.p2)) / distance(l.p1, l.p2)
+}
+
+fn distance(p: Point3D, l: Line3D) -> num {
+  distance(l, p)
+}
+
+fn length(s: Segment3D) -> num {
+  @length(s.p1 - s.p2)
+}
+
+fn length(s: Vector3D) -> num {
+  @length(s.p1 - s.p2)
+}
+
+fn facing(c: Circle3D, p: Point3D) -> Circle3D {
+  Circle3D {
+    center: c.center,
+    radius: c.radius,
+    normal: vector(@norm(p - c.center)),
+  }
+}
+
+fn facing(c: Circle3D, p: Offset3D) -> Circle3D {
+  Circle3D {
+    center: c.center,
+    radius: c.radius,
+    normal: @norm(p),
+  }
+}
+
+fn sphere(c: Circle3D) -> Sphere {
+  Sphere {
+    center: c.center,
+    radius: c.radius,
+  }
+}
+
+fn circle(s: Sphere, normal: Offset3D) -> Circle3D {
+  Circle3D {
+    normal: @norm(normal),
+    center: s.center,
+    radius: s.radius,
+  }
+}
+
+fn plane(c: Circle3D) -> Plane {
+  perpendicular(c.normal, c.center)
+}
+
 //! https://stackoverflow.com/a/2316934 — point closest to two lines
 fn ishtersection(l1: AnyLine3D, l2: AnyLine3D) -> Point3D {
   let p1 = l1.p1;
@@ -282,43 +338,6 @@ fn intersection(p1: Plane, p2: Plane, p3: Plane) -> Point3D {
   ishtersection(intersection(p1, p2), intersection(p2, p3))
 }
 
-fn distance(p1: Point3D, p2: Point3D) -> num {
-  @length(p1 - p2)
-}
-
-// https://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
-fn distance(l: Line3D, p: Point3D) -> num {
-  @length(%cross(p - l.p1, p - l.p2)) / distance(l.p1, l.p2)
-}
-
-fn distance(p: Point3D, l: Line3D) -> num {
-  distance(l, p)
-}
-
-fn length(s: Segment3D) -> num {
-  @length(s.p1 - s.p2)
-}
-
-fn length(s: Vector3D) -> num {
-  @length(s.p1 - s.p2)
-}
-
-fn facing(c: Circle3D, p: Point3D) -> Circle3D {
-  Circle3D {
-    center: c.center,
-    radius: c.radius,
-    normal: vector(@norm(p - c.center)),
-  }
-}
-
-fn facing(c: Circle3D, p: Offset3D) -> Circle3D {
-  Circle3D {
-    center: c.center,
-    radius: c.radius,
-    normal: @norm(p),
-  }
-}
-
 //! https://en.wikipedia.org/wiki/Line%E2%80%93sphere_intersection
 fn _intersection(l: AnyLine3D, s: Sphere, which: num) -> Point3D {
   let c = s.center;
@@ -342,13 +361,6 @@ fn intersection(s: Sphere, l: AnyLine3D) -> Point3D {
 
 fn intersection(l: AnyLine3D, s: Sphere) -> Point3D {
   _intersection(l, s, -1)
-}
-
-fn sphere(c: Circle3D) -> Sphere {
-  Sphere {
-    center: c.center,
-    radius: c.radius,
-  }
 }
 
 //! https://math.stackexchange.com/a/1218805
@@ -396,21 +408,9 @@ fn _intersection(s1: Sphere, s2: Sphere) -> Sphere {
   }
 }
 
-fn circle(s: Sphere, normal: Offset3D) -> Circle3D {
-  Circle3D {
-    normal: @norm(normal),
-    center: s.center,
-    radius: s.radius,
-  }
-}
-
 // https://gamedev.stackexchange.com/a/75775
 fn intersection(s1: Sphere, s2: Sphere) -> Circle3D {
   _intersection(s1, s2).circle(vector(s2.center @- s1.center))
-}
-
-fn plane(c: Circle3D) -> Plane {
-  perpendicular(c.normal, c.center)
 }
 
 fn _intersection(s: Sphere, c: Circle3D, which: num) -> Point3D {
