@@ -416,25 +416,19 @@ function registerControls(cv: Cv3D) {
   cv.el.addEventListener("mousemove", (event) => {
     const camera = cv.getCamera()
     const pos = new T.Vector3()
-    pos.x = (event.offsetX / cv.el.clientWidth) * 2 - 1
-    pos.y = -(event.offsetY / cv.el.clientHeight) * 2 + 1
-    pos.x *= -1
-    pos.y *= -1
-    pos.z = 1
+    pos.x = -((event.offsetX / cv.el.clientWidth) * 2 - 1)
+    pos.y = -(-(event.offsetY / cv.el.clientHeight) * 2 + 1)
+    pos.z = 2
     camera.updateMatrix()
     pos.applyMatrix4(camera.matrix)
 
     const ray = new T.Ray(pos)
     ray.lookAt(camera.position)
     const plane = new T.Plane(new T.Vector3(0, 0, 1), 0)
-    const denominator = plane.normal.dot(ray.direction)
-    const t = -(ray.origin.dot(plane.normal) + plane.constant) / denominator
     const target = new T.Vector3()
-    ray.at(t, target)
-    pos.copy(target)
-    pos.divideScalar(2)
+    ray.intersectPlane(plane, target)
 
-    s.position.copy(pos)
+    s.position.copy(target)
     cv.queue()
   })
 
