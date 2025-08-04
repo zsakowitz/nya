@@ -172,10 +172,6 @@ fn glider(l: Line3D, p: num) -> Point3D {
   @mix(l.p1, l.p2, p)
 }
 
-type AnyLine3D = Segment3D | Ray3D | Line3D;
-type AnySlope3D = Segment3D | Ray3D | Line3D | Vector3D;
-type AnyAngle3D = Angle3D | DirectedAngle3D;
-
 fn perpendicular(l: AnySlope3D, p: Point3D) -> Plane {
   perpendicular(vector(l.p1, l.p2), p)
 }
@@ -219,10 +215,7 @@ fn perpendicular_bisector(a: Segment3D) -> Plane {
 
 //! https://stackoverflow.com/a/2316934
 // gives the point closest to two lines
-fn ishtersection(
-  l1: Segment3D | Ray3D | Line3D,
-  l2: Segment3D | Ray3D | Line3D,
-) -> Point3D {
+fn ishtersection(l1: AnyLine3D, l2: AnyLine3D) -> Point3D {
   let p1 = l1.p1;
   let p2 = l1.p2;
   let p3 = l2.p1;
@@ -247,7 +240,7 @@ fn ishtersection(
 }
 
 // https://en.wikipedia.org/wiki/Line%E2%80%93plane_intersection
-fn intersection(p: Plane, line: Segment3D | Ray3D | Line3D) -> Point3D {
+fn intersection(p: Plane, line: AnyLine3D) -> Point3D {
   let n = p.normal.end;
   let p0 = -n * p.offset;
   let l0 = line.p1;
@@ -260,7 +253,7 @@ fn intersection(p: Plane, line: Segment3D | Ray3D | Line3D) -> Point3D {
   }
 }
 
-fn intersection(line: Segment3D | Ray3D | Line3D, p: Plane) -> Point3D {
+fn intersection(line: AnyLine3D, p: Plane) -> Point3D {
   intersection(p, line)
 }
 
@@ -303,7 +296,11 @@ fn distance(p: Point3D, l: Line3D) -> num {
   distance(l, p)
 }
 
-fn length(s: Segment3D | Vector3D) -> num {
+fn length(s: Segment3D) -> num {
+  @length(s.p1 - s.p2)
+}
+
+fn length(s: Vector3D) -> num {
   @length(s.p1 - s.p2)
 }
 

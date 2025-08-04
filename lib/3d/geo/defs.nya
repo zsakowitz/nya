@@ -24,7 +24,7 @@ struct Triangle3D {
   p3: Point3D,
 }
 
-struct Segment3D, Line3D, Ray3D, Vector3D {
+struct Segment3D, Line3D, Ray3D, Vector3D, AnyLine3D, AnySlope3D {
   p1: Point3D,
   p2: Point3D,
 }
@@ -34,7 +34,7 @@ struct Plane {
   offset: num,
 }
 
-struct Angle3D, DirectedAngle3D {
+struct Angle3D, DirectedAngle3D, AnyAngle3D {
   p1: Point3D,
   p2: Point3D,
   p3: Point3D,
@@ -114,4 +114,55 @@ fn ->(x: Angle3D) -> num {
   let v1 = @norm(x.p1 @- x.p2);
   let v2 = @norm(x.p3 @- x.p2);
   acos(@dot(v1, v2))
+}
+
+fn ->(x: Segment3D) -> AnyLine3D {
+  AnyLine3D {
+    p1: x.p1,
+    p2: x.p2,
+  }
+}
+
+fn ->(x: Line3D) -> AnyLine3D {
+  AnyLine3D {
+    p1: x.p1,
+    p2: x.p2,
+  }
+}
+
+fn ->(x: Ray3D) -> AnyLine3D {
+  AnyLine3D {
+    p1: x.p1,
+    p2: x.p2,
+  }
+}
+
+fn ->(x: AnyLine3D) -> AnySlope3D {
+  AnySlope3D {
+    p1: x.p1,
+    p2: x.p2,
+  }
+}
+
+fn ->(x: Vector3D) -> AnySlope3D {
+  AnySlope3D {
+    p1: x.p1,
+    p2: x.p2,
+  }
+}
+
+fn ->(x: Angle3D) -> AnyAngle3D {
+  AnyAngle3D {
+    p1: x.p1,
+    p2: x.p2,
+    p3: x.p3,
+  }
+}
+
+fn ->(x: DirectedAngle3D) -> AnyAngle3D {
+  AnyAngle3D {
+    p1: x.p1,
+    p2: x.p2,
+    p3: x.p3,
+  }
 }
