@@ -17,6 +17,8 @@ configure 3d plots:
 
 - `?plot3d` enables 3D plotting
 - `?clipsize=<0.1..=100>`
+- `?noclip`
+- `?noboundingbox`
 
 show other pieces of content:
 

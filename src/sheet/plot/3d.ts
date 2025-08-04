@@ -11,6 +11,8 @@ T.Object3D.DEFAULT_UP = new T.Vector3(0, 0, 1)
 const params = new URL(location.href).searchParams
 
 export const PLOT_3D = params.has("plot3d")
+const NO_CLIP = params.has("noclip")
+const NO_BOUNDING_BOX = params.has("noboundingbox")
 
 /**
  * The intensity to use for an ambient light so that phong materials are colored
@@ -80,7 +82,8 @@ export class Cv3D implements Canvas3D {
     addAxes(this)
     addLighting(this)
     addXYPlane(this)
-    addBox(this)
+    if (!NO_BOUNDING_BOX) addBox(this)
+    addPlaneContainer(this)
 
     this.rotateZ(2)
     this.rotateX(1)
@@ -111,7 +114,7 @@ export class Cv3D implements Canvas3D {
   private readonly sphereMat = new T.MeshPhysicalMaterial({
     color: 0xc74440,
     side: T.DoubleSide,
-    clippingPlanes: this.clippingPlanes,
+    clippingPlanes: NO_CLIP ? null : this.clippingPlanes,
   })
 
   sphere(x: number, y: number, z: number, r: number) {
@@ -349,33 +352,11 @@ function addBox(cv: Cv3D) {
   const p101 = new T.Vector3()
   const p110 = new T.Vector3()
   const p111 = new T.Vector3()
-  const p00z = new T.Vector3()
-  const p01z = new T.Vector3()
-  const p10z = new T.Vector3()
-  const p11z = new T.Vector3()
-  const points = [
-    p000,
-    p001,
-    p010,
-    p011,
-    p100,
-    p101,
-    p110,
-    p111,
-    p00z,
-    p01z,
-    p11z,
-    p10z,
-  ]
+  const points = [p000, p001, p010, p011, p100, p101, p110, p111]
   const geometry = new T.BufferGeometry()
-  const INDEX_WITH_PLANE = [
-    0, 1, 0, 2, 2, 3, 1, 3, 4, 5, 4, 6, 6, 7, 5, 7, 0, 4, 1, 5, 2, 6, 3, 7, 8,
-    9, 9, 10, 10, 11, 11, 8,
-  ]
-  const INDEX_WTHO_PLANE = [
+  geometry.setIndex([
     0, 1, 0, 2, 2, 3, 1, 3, 4, 5, 4, 6, 6, 7, 5, 7, 0, 4, 1, 5, 2, 6, 3, 7,
-  ]
-  geometry.setIndex(INDEX_WITH_PLANE)
+  ])
   const box = new T.LineSegments(
     geometry,
     new T.LineBasicMaterial({ color: 0xcccccc }),
@@ -395,17 +376,39 @@ function addBox(cv: Cv3D) {
     p101.set(xmax, ymin, zmax)
     p110.set(xmax, ymax, zmin)
     p111.set(xmax, ymax, zmax)
+
+    geometry.setFromPoints(points)
+  }
+}
+
+function addPlaneContainer(cv: Cv3D) {
+  const { scene, beforeRender } = cv
+
+  const p00z = new T.Vector3()
+  const p01z = new T.Vector3()
+  const p10z = new T.Vector3()
+  const p11z = new T.Vector3()
+  const points = [p00z, p01z, p11z, p10z]
+  const geometry = new T.BufferGeometry()
+  geometry.setIndex([0, 1, 1, 2, 2, 3, 3, 0])
+  const box = new T.LineSegments(
+    geometry,
+    new T.LineBasicMaterial({ color: 0xcccccc }),
+  )
+  box.frustumCulled = false
+  beforeRender.push(update)
+  scene.add(box)
+
+  function update() {
+    const { xmin, xmax, ymin, ymax, zmin, zmax } = cv.bounds()
+
     p00z.set(xmin, ymin, 0)
     p01z.set(xmin, ymax, 0)
     p10z.set(xmax, ymin, 0)
     p11z.set(xmax, ymax, 0)
 
     geometry.setFromPoints(points)
-    if (zmin <= 0 && 0 <= zmax) {
-      geometry.setIndex(INDEX_WITH_PLANE)
-    } else {
-      geometry.setIndex(INDEX_WTHO_PLANE)
-    }
+    box.visible = zmin <= 0 && 0 <= zmax
   }
 }
 
