@@ -68,8 +68,8 @@ let xzplane = Plane {
   offset: 0,
 };
 
-fn vector(_dir: Point3D) -> Offset3D {
-  Offset3D { x: _dir.x, y: _dir.y, z: _dir.z }
+fn vector(dir: Point3D) -> Offset3D {
+  Offset3D { x: dir.x, y: dir.y, z: dir.z }
 }
 
 fn ->(a: Vector3D) -> Offset3D {
@@ -367,6 +367,38 @@ fn intersection(p: Plane, s: Sphere) -> Circle3D {
   }
 }
 
+fn intersection(s: Sphere, p: Plane) -> Circle3D {
+  intersection(p, s)
+}
+
+// https://gamedev.stackexchange.com/a/75775
+fn intersection(s1: Sphere, s2: Sphere) -> Circle3D {
+  let d = @length(s2.center - s1.center);
+  let r1 = s1.radius;
+  let r2 = s2.radius;
+  let c1 = s1.center;
+  let c2 = s2.center;
+  if r1 + r2 < d || d + min(r1, r2) < max(r1, r2) {
+    return (
+      Circle3D {
+        radius: nan,
+        center: _point_nan,
+        normal: vector(_point_nan),
+      }
+    );
+  }
+
+  let h = 0.5 + (r1 * r1 - r2 * r2) / (2 * d * d);
+  let ci = c1 + h * (c2 - c1);
+  let ri = sqrt(r1 * r1 - h * h * d * d);
+
+  Circle3D {
+    normal: @norm(vector(s2.center @- s1.center)),
+    center: ci,
+    radius: ri,
+  }
+}
+
 // intersections we still need (l=line, c=circle, P=plane, S=sphere)
 // . = don't have it
 // ~ = ishtersection only
@@ -376,4 +408,4 @@ fn intersection(p: Plane, s: Sphere) -> Circle3D {
 // l  ~  .  X  X
 // c     .  .  .
 // P        X  X
-// S           .
+// S           X
