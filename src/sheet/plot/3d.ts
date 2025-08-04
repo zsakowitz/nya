@@ -161,6 +161,7 @@ export class Cv3D implements Canvas3D {
 
   zoom(scale: number) {
     this.widths.multiplyScalar(scale)
+    // this.position.add(center.multiplyScalar(1 - scale))
     this.queue()
   }
 
@@ -409,11 +410,10 @@ function addBox(cv: Cv3D) {
 }
 
 function registerControls(cv: Cv3D) {
-  const s = cv.point(0, 0, 0, 3)
-  s.material.clippingPlanes = null
-  cv.scene.add(s)
-
-  cv.el.addEventListener("mousemove", (event) => {
+  function getMousePosition(
+    z: number,
+    event: { offsetX: number; offsetY: number },
+  ) {
     const camera = cv.getCamera()
     const pos = new T.Vector3()
     pos.x = -((event.offsetX / cv.el.clientWidth) * 2 - 1)
@@ -424,13 +424,12 @@ function registerControls(cv: Cv3D) {
 
     const ray = new T.Ray(pos)
     ray.lookAt(camera.position)
-    const plane = new T.Plane(new T.Vector3(0, 0, 1), 0)
+    const plane = new T.Plane(new T.Vector3(0, 0, 1), z)
     const target = new T.Vector3()
     ray.intersectPlane(plane, target)
 
-    s.position.copy(target)
-    cv.queue()
-  })
+    return target
+  }
 
   cv.el.addEventListener(
     "wheel",
