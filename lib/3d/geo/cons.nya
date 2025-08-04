@@ -1,0 +1,330 @@
+use "3d/point";
+use "3d/geo/defs";
+
+let xyplane = Plane {
+  normal: (
+    Offset3D {
+      x: 0,
+      y: 0,
+      z: 1,
+    }
+  ),
+  offset: 0,
+};
+
+let yzplane = Plane {
+  normal: (
+    Offset3D {
+      x: 1,
+      y: 0,
+      z: 0,
+    }
+  ),
+  offset: 0,
+};
+
+let zxplane = Plane {
+  normal: (
+    Offset3D {
+      x: 0,
+      y: 1,
+      z: 0,
+    }
+  ),
+  offset: 0,
+};
+
+let yxplane = Plane {
+  normal: (
+    Offset3D {
+      x: 0,
+      y: 0,
+      z: -1,
+    }
+  ),
+  offset: 0,
+};
+
+let zyplane = Plane {
+  normal: (
+    Offset3D {
+      x: -1,
+      y: 0,
+      z: 0,
+    }
+  ),
+  offset: 0,
+};
+
+let xzplane = Plane {
+  normal: (
+    Offset3D {
+      x: 0,
+      y: -1,
+      z: 0,
+    }
+  ),
+  offset: 0,
+};
+
+fn vector(_dir: Point3D) -> Offset3D {
+  Offset3D { x: _dir.x, y: _dir.y, z: _dir.z }
+}
+
+fn ->(a: Vector3D) -> Offset3D {
+  vector(a.end - a.start)
+}
+
+fn normal(p1: Point3D, p2: Point3D, p3: Point3D) -> Offset3D {
+  vector(@norm(%cross(p3 @- p2, p1 @- p2)))
+}
+
+fn normal(t: Triangle3D) -> Offset3D {
+  normal(t.p1, t.p2, t.p3)
+}
+
+fn segment(p1: Point3D, p2: Point3D) -> Segment3D {
+  Segment3D { p1, p2 }
+}
+
+fn line(p1: Point3D, p2: Point3D) -> Line3D {
+  Line3D { p1, p2 }
+}
+
+fn ray(p1: Point3D, p2: Point3D) -> Ray3D {
+  Ray3D { p1, p2 }
+}
+
+fn vector(start: Point3D, end: Point3D) -> Vector3D {
+  Vector3D { p1: start, p2: end }
+}
+
+fn sphere(center: Point3D, radius: num) -> Sphere {
+  Sphere { center, radius: abs(radius) }
+}
+
+fn sphere(center: Point3D, outer: Point3D) -> Sphere {
+  Sphere { center, radius: @length(outer @- center) }
+}
+
+fn triangle(p1: Point3D, p2: Point3D, p3: Point3D) -> Triangle3D {
+  Triangle3D { p1, p2, p3 }
+}
+
+fn plane(normal: Offset3D, offset: num) -> Plane {
+  Plane { normal: @norm(normal), offset }
+}
+
+fn perpendicular(normal: Offset3D, point: Point3D) -> Plane {
+  let normal = @norm(normal);
+  Plane {
+    normal,
+    offset: -@dot(point, normal.end),
+  }
+}
+
+fn perpendicular(vector: Vector3D) -> Plane {
+  perpendicular(vector, vector.start)
+}
+
+fn plane(p1: Point3D, p2: Point3D, p3: Point3D) -> Plane {
+  perpendicular(normal(p1, p2, p3), p1)
+}
+
+fn plane(t: Triangle3D) -> Plane {
+  plane(t.p1, t.p2, t.p3)
+}
+
+fn circle(plane: Plane, center: Point3D, radius: num) -> Circle3D {
+  Circle3D {
+    center,
+    normal: plane.normal,
+    radius: abs(radius),
+  }
+}
+
+fn angle(p1: Point3D, p2: Point3D, p3: Point3D) -> Angle3D {
+  Angle3D { p1, p2, p3 }
+}
+
+fn directed_angle(p1: Point3D, p2: Point3D, p3: Point3D) -> DirectedAngle3D {
+  DirectedAngle3D { p1, p2, p3 }
+}
+
+fn glider(c: Circle3D, p: num) -> Point3D {
+  let p = 2.0 * pi * @clamp(p, 0.0, 1.0);
+  let alt = %point(-c.normal.y, -c.normal.z, -c.normal.x);
+  let n1 = %cross(c.normal.end, alt);
+  let n2 = %cross(c.normal.end, n1);
+  c.center + c.radius * (cos(p) * n1 + sin(p) * n2)
+}
+
+fn glider(l: Segment3D, p: num) -> Point3D {
+  @mix(l.p1, l.p2, @clamp(p, 0.0, 1.0))
+}
+
+fn glider(l: Ray3D, p: num) -> Point3D {
+  @mix(l.p1, l.p2, max(0, p))
+}
+
+fn glider(l: Line3D, p: num) -> Point3D {
+  @mix(l.p1, l.p2, p)
+}
+
+fn perpendicular(l: Segment3D | Ray3D | Line3D, p: Point3D) -> Plane {
+  perpendicular(vector(l.p1, l.p2), p)
+}
+
+fn angle_bisector(a: Angle3D) -> Ray3D {
+  let n1 = @norm(a.p1 - a.p2);
+  let n3 = @norm(a.p3 - a.p2);
+  let dir = @norm(n1 + n3);
+  Ray3D {
+    p1: a.p2,
+    p2: a.p2 + dir,
+  }
+}
+
+fn midpoint(a: Point3D, b: Point3D) -> Point3D {
+  (a @+ b) @/ 2
+}
+
+fn midpoint(a: Segment3D) -> Point3D {
+  midpoint(a.p1, a.p2)
+}
+
+fn parallel(a: Segment3D | Ray3D | Line3D | Vector3D, p: Point3D) -> Line3D {
+  Line3D {
+    p1: p,
+    p2: p + (a.p2 - a.p1),
+  }
+}
+
+fn parallel(p: Plane, pt: Point3D) -> Plane {
+  perpendicular(p.normal, pt)
+}
+
+fn perpendicular_bisector(a: Point3D, b: Point3D) -> Plane {
+  perpendicular(line(a, b), midpoint(a, b))
+}
+
+fn perpendicular_bisector(a: Segment3D) -> Plane {
+  perpendicular(a, midpoint(a))
+}
+
+//! https://stackoverflow.com/a/2316934
+// gives the point closest to two lines
+fn ishtersection(
+  l1: Segment3D | Ray3D | Line3D,
+  l2: Segment3D | Ray3D | Line3D,
+) -> Point3D {
+  let p1 = l1.p1;
+  let p2 = l1.p2;
+  let p3 = l2.p1;
+  let p4 = l2.p2;
+
+  let d13 = p1 - p3;
+  let d21 = p2 - p1;
+  let d43 = p4 - p3;
+
+  let d1321 = @dot(d13, d21);
+  let d1343 = @dot(d13, d43);
+  let d2121 = @dot(d21, d21);
+  let d4321 = @dot(d43, d21);
+  let d4343 = @dot(d43, d43);
+
+  let denom = d2121 * d4343 - d4321 * d4321;
+  if denom == 0 {
+    _point_nan
+  } else {
+    p1 + (d1343 * d4321 - d1321 * d4343) / denom * d21
+  }
+}
+
+// https://en.wikipedia.org/wiki/Line%E2%80%93plane_intersection
+fn intersection(p: Plane, line: Segment3D | Ray3D | Line3D) -> Point3D {
+  let n = p.normal.end;
+  let p0 = -n * p.offset;
+  let l0 = line.p1;
+  let l = @norm(line.p2 - l0);
+  let denom = @dot(l, n);
+  if denom == 0 {
+    _point_nan
+  } else {
+    l0 + l * (@dot(p0 - l0, n) / denom)
+  }
+}
+
+fn intersection(line: Segment3D | Ray3D | Line3D, p: Plane) -> Point3D {
+  intersection(p, line)
+}
+
+fn intersection(p1: Plane, p2: Plane) -> Line3D {
+  let n1 = p1.normal.end;
+  let h1 = -p1.offset;
+  let n2 = p2.normal.end;
+  let h2 = -p2.offset;
+
+  let dot = @dot(n1, n2);
+  let denom = 1.0 - dot * dot;
+  if denom == 0.0 {
+    return Line3D { p1: _point_nan, p2: _point_nan };
+  }
+
+  let c1 = (h1 - h2 * dot) / denom;
+  let c2 = (h2 - h1 * dot) / denom;
+  let p1 = c1 * n1 + c2 * n2;
+
+  Line3D {
+    p1,
+    p2: p1 + %cross(n1, n2),
+  }
+}
+
+fn intersection(p1: Plane, p2: Plane, p3: Plane) -> Point3D {
+  ishtersection(intersection(p1, p2), intersection(p2, p3))
+}
+
+fn distance(p1: Point3D, p2: Point3D) -> num {
+  @length(p1 - p2)
+}
+
+// https://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
+fn distance(l: Line3D, p: Point3D) -> num {
+  @length(%cross(p - l.p1, p - l.p2)) / distance(l.p1, l.p2)
+}
+
+fn distance(p: Point3D, l: Line3D) -> num {
+  distance(l, p)
+}
+
+fn length(s: Segment3D | Vector3D) -> num {
+  @length(s.p1 - s.p2)
+}
+
+fn facing(c: Circle3D, p: Point3D) -> Circle3D {
+  Circle3D {
+    center: c.center,
+    radius: c.radius,
+    normal: vector(@norm(p - c.center)),
+  }
+}
+
+fn facing(c: Circle3D, p: Offset3D) -> Circle3D {
+  Circle3D {
+    center: c.center,
+    radius: c.radius,
+    normal: @norm(p),
+  }
+}
+
+// intersections we still need (l=line, c=circle, P=plane, S=sphere)
+// . = don't have it
+// ~ = ishtersection only
+// X = have it
+//
+//    l  c  P  S
+// l  ~  .  X  .
+// c     .  .  .
+// P        X  .
+// S           .

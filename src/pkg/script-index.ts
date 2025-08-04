@@ -32,17 +32,14 @@ import s30 from "../../lib/core/cmp.nya"
 import s31 from "../../lib/core/ops.nya"
 import s32 from "../../lib/3d/point.nya"
 import s33 from "../../lib/3d/geo/index.nya"
-import s34 from "../../lib/3d/geo/cons0-constant.nya"
-import s35 from "../../lib/3d/geo/cons3-intersection.nya"
-import s36 from "../../lib/3d/geo/cons1-basic.nya"
-import s37 from "../../lib/3d/geo/cons2-derived.nya"
-import s38 from "../../lib/3d/geo/defs.nya"
-import s39 from "../../lib/gamma/lngamma.nya"
-import s40 from "../../lib/gamma/trigamma.nya"
-import s41 from "../../lib/gamma/digamma.nya"
-import s42 from "../../lib/gamma/factorial.nya"
-import s43 from "../../lib/gamma/polygamma.nya"
-import s44 from "../../lib/gamma/gamma.nya"
+import s34 from "../../lib/3d/geo/cons.nya"
+import s35 from "../../lib/3d/geo/defs.nya"
+import s36 from "../../lib/gamma/lngamma.nya"
+import s37 from "../../lib/gamma/trigamma.nya"
+import s38 from "../../lib/gamma/digamma.nya"
+import s39 from "../../lib/gamma/factorial.nya"
+import s40 from "../../lib/gamma/polygamma.nya"
+import s41 from "../../lib/gamma/gamma.nya"
 
 export const SCRIPTS = new Map([
   ["special", s0],
@@ -79,17 +76,14 @@ export const SCRIPTS = new Map([
   ["core/ops", s31],
   ["3d/point", s32],
   ["3d/geo", s33],
-  ["3d/geo/cons0-constant", s34],
-  ["3d/geo/cons3-intersection", s35],
-  ["3d/geo/cons1-basic", s36],
-  ["3d/geo/cons2-derived", s37],
-  ["3d/geo/defs", s38],
-  ["gamma/lngamma", s39],
-  ["gamma/trigamma", s40],
-  ["gamma/digamma", s41],
-  ["gamma/factorial", s42],
-  ["gamma/polygamma", s43],
-  ["gamma/gamma", s44],
+  ["3d/geo/cons", s34],
+  ["3d/geo/defs", s35],
+  ["gamma/lngamma", s36],
+  ["gamma/trigamma", s37],
+  ["gamma/digamma", s38],
+  ["gamma/factorial", s39],
+  ["gamma/polygamma", s40],
+  ["gamma/gamma", s41],
 ])
 
 export const SCRIPT_INDICES = new Set(["color","real","complex","3d/geo",])
@@ -129,10 +123,7 @@ export type ScriptName =
   | "core/ops"
   | "3d/point"
   | "3d/geo"
-  | "3d/geo/cons0-constant"
-  | "3d/geo/cons3-intersection"
-  | "3d/geo/cons1-basic"
-  | "3d/geo/cons2-derived"
+  | "3d/geo/cons"
   | "3d/geo/defs"
   | "gamma/lngamma"
   | "gamma/trigamma"

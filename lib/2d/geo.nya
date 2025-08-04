@@ -90,7 +90,7 @@ fn end(v: Vector) -> Point {
   v.p2
 }
 
-fn anglebisector(v: AnyAngle) -> Ray {
+fn angle_bisector(v: AnyAngle) -> Ray {
   Ray {
     p1: v.p2,
     p2: @norm(@norm(v.p1 @- v.p2) @+ @norm(v.p3 @- v.p2)) @+ v.p2,

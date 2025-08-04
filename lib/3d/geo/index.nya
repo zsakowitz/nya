@@ -1,7 +1,4 @@
-use "3d/geo/cons0-constant";
-use "3d/geo/cons1-basic";
-use "3d/geo/cons2-derived";
-use "3d/geo/cons3-intersection";
+use "3d/geo/cons";
 
 expose package {
   default: true,
