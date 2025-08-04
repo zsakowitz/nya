@@ -371,8 +371,7 @@ fn intersection(s: Sphere, p: Plane) -> Circle3D {
   intersection(p, s)
 }
 
-// https://gamedev.stackexchange.com/a/75775
-fn intersection(s1: Sphere, s2: Sphere) -> Circle3D {
+fn _intersection(s1: Sphere, s2: Sphere) -> Sphere {
   let d = @length(s2.center - s1.center);
   let r1 = s1.radius;
   let r2 = s2.radius;
@@ -380,10 +379,9 @@ fn intersection(s1: Sphere, s2: Sphere) -> Circle3D {
   let c2 = s2.center;
   if r1 + r2 < d || d + min(r1, r2) < max(r1, r2) {
     return (
-      Circle3D {
+      Sphere {
         radius: nan,
         center: _point_nan,
-        normal: vector(_point_nan),
       }
     );
   }
@@ -392,11 +390,52 @@ fn intersection(s1: Sphere, s2: Sphere) -> Circle3D {
   let ci = c1 + h * (c2 - c1);
   let ri = sqrt(r1 * r1 - h * h * d * d);
 
-  Circle3D {
-    normal: @norm(vector(s2.center @- s1.center)),
+  Sphere {
     center: ci,
     radius: ri,
   }
+}
+
+fn circle(s: Sphere, normal: Offset3D) -> Circle3D {
+  Circle3D {
+    normal: @norm(normal),
+    center: s.center,
+    radius: s.radius,
+  }
+}
+
+// https://gamedev.stackexchange.com/a/75775
+fn intersection(s1: Sphere, s2: Sphere) -> Circle3D {
+  _intersection(s1, s2).circle(vector(s2.center @- s1.center))
+}
+
+fn plane(c: Circle3D) -> Plane {
+  perpendicular(c.normal, c.center)
+}
+
+fn _intersection(s: Sphere, c: Circle3D, which: num) -> Point3D {
+  let cc = c.center;
+  let rc = c.radius;
+  let n = c.normal.end;
+  let cs = s.center;
+  let rs = s.radius;
+  let d = @dot(n, cc - cs);
+  if abs(d) > rs {
+    return _point_nan;
+  }
+  let cp = cs + d * n;
+  let rp = sqrt(rs * rs - d * d);
+  let isec = _intersection(c.sphere, sphere(cp, rp));
+  let t = @norm(%cross(cp - cc, n));
+  isec.center + which * t * isec.radius
+}
+
+fn intersection(s: Sphere, c: Circle3D) -> Point3D {
+  _intersection(s, c, 1)
+}
+
+fn intersection(c: Circle3D, s: Sphere) -> Point3D {
+  _intersection(s, c, -1)
 }
 
 // intersections we still need (l=line, c=circle, P=plane, S=sphere)
@@ -406,6 +445,6 @@ fn intersection(s1: Sphere, s2: Sphere) -> Circle3D {
 //
 //    l  c  P  S
 // l  ~  .  X  X
-// c     .  .  .
+// c     .  .  X
 // P        X  X
 // S           X

@@ -1,3 +1,4 @@
-s_{1}=\operatorname{sphere}\left(\left(0,3,2\right),3\right)
-s_{2}=\operatorname{sphere}\left(\left(4,5,0\right),3\right)
+s_{1}=\operatorname{sphere}\left(\left(0.5,3,2\right),3\right)
+s_{2}=\operatorname{circle}\left(\operatorname{xyplane},\left(2,3,4\right),3\right)
 \operatorname{intersection}\left(s_{1},s_{2}\right)
+\operatorname{intersection}\left(s_{2},s_{1}\right)
