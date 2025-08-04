@@ -1,4 +1,4 @@
-struct Point3D, Offset3D {
+struct Point3D {
   x: num,
   y: num,
   z: num,
@@ -10,10 +10,6 @@ fn %point(x: num, y: num, z: num) -> Point3D {
 
 fn %display(a: Point3D) -> latex {
   display"(${a.x},${a.y},${a.z})"
-}
-
-fn %display(a: Offset3D) -> latex {
-  display"vector((${a.x},${a.y},${a.z}))"
 }
 
 fn +(a: Point3D) -> Point3D {
@@ -74,29 +70,6 @@ fn %dot(a: Point3D, b: Point3D) -> num {
 
 fn %plot_3d(cv: Canvas3D, p: Point3D) -> Object3D {
   cv.point(p.x, p.y, p.z, 4.0)
-}
-
-fn %plot_3d(cv: Canvas3D, p: Offset3D) -> Object3D {
-  cv.segment(0, 0, 0, p.x, p.y, p.z)
-}
-
-fn vector(_dir: Point3D) -> Offset3D {
-  Offset3D { x: _dir.x, y: _dir.y, z: _dir.z }
-}
-
-// need to define Vector3D here first since it coerces to Offset3D, but we don't
-// want its '.end' property to be shadowed by Offset3D.end, which is different
-struct Vector3D {
-  start: Point3D,
-  end: Point3D,
-}
-
-fn end(x: Offset3D) -> Point3D {
-  Point3D { x: x.x, y: x.y, z: x.z }
-}
-
-fn ->(a: Vector3D) -> Offset3D {
-  vector(a.end @- a.start)
 }
 
 let _point_nan = Point3D { x: nan, y: nan, z: nan };

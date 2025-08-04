@@ -1,6 +1,14 @@
 use "3d/point";
 use "3d/geo/defs";
 
+fn vector(_dir: Point3D) -> Offset3D {
+  Offset3D { x: _dir.x, y: _dir.y, z: _dir.z }
+}
+
+fn ->(a: Vector3D) -> Offset3D {
+  vector(a.end - a.start)
+}
+
 fn normal(p1: Point3D, p2: Point3D, p3: Point3D) -> Offset3D {
   vector(@norm(%cross(p3 @- p2, p1 @- p2)))
 }
@@ -22,7 +30,7 @@ fn ray(p1: Point3D, p2: Point3D) -> Ray3D {
 }
 
 fn vector(start: Point3D, end: Point3D) -> Vector3D {
-  Vector3D { start, end }
+  Vector3D { p1: start, p2: end }
 }
 
 fn sphere(center: Point3D, radius: num) -> Sphere {

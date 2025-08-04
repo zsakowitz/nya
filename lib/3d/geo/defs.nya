@@ -5,6 +5,12 @@ struct Sphere {
   radius: num,
 }
 
+struct Offset3D {
+  x: num,
+  y: num,
+  z: num,
+}
+
 struct Circle3D {
   center: Point3D,
   normal: Offset3D,
@@ -17,7 +23,7 @@ struct Triangle3D {
   p3: Point3D,
 }
 
-struct Segment3D, Line3D, Ray3D {
+struct Segment3D, Line3D, Ray3D, Vector3D {
   p1: Point3D,
   p2: Point3D,
 }
@@ -31,6 +37,26 @@ struct Angle3D, DirectedAngle3D {
   p1: Point3D,
   p2: Point3D,
   p3: Point3D,
+}
+
+fn start(v: Vector3D) -> Point3D {
+  v.p1
+}
+
+fn end(v: Vector3D) -> Point3D {
+  v.p2
+}
+
+fn end(x: Offset3D) -> Point3D {
+  Point3D { x: x.x, y: x.y, z: x.z }
+}
+
+fn %display(a: Offset3D) -> latex {
+  display"vector((${a.x},${a.y},${a.z}))"
+}
+
+fn %plot_3d(cv: Canvas3D, p: Offset3D) -> Object3D {
+  cv.segment(0, 0, 0, p.x, p.y, p.z)
 }
 
 fn %plot_3d(cv: Canvas3D, obj: Sphere) -> Object3D {

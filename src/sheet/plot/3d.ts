@@ -505,12 +505,18 @@ export class Cv3D implements Canvas3D {
     }
   }
 
-  private mat(color: number) {
-    return new T.MeshPhysicalMaterial({
+  private mat(color: number, opacity = 1) {
+    const mat = new T.MeshPhysicalMaterial({
       ...this.matProps(color),
       clearcoat: 0.5,
       clearcoatRoughness: 0.4,
     })
+    if (opacity != 1) {
+      mat.opacity = opacity
+      mat.transparent = true
+      mat.depthWrite = false
+    }
+    return mat
   }
 
   private matPlain(color: number, opacity = 1) {
