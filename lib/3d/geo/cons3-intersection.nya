@@ -3,7 +3,7 @@ use "3d/geo/defs";
 // https://en.wikipedia.org/wiki/Line%E2%80%93plane_intersection
 fn intersection(p: Plane, line: Segment3D | Ray3D | Line3D) -> Point3D {
   let n = p.normal.end;
-  let p0 = n * p.offset;
+  let p0 = -n * p.offset;
   let l0 = line.p1;
   let l = @norm(line.p2 - l0);
   let denom = @dot(l, n);
