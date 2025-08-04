@@ -259,6 +259,14 @@ function addPlaneContainer(cv: Cv3D) {
   }
 }
 
+// Current controls are:
+//
+// - wheel    moves along XY plane
+//   + shift  moves along Z and actual viewing angle
+//   + alt    spins bounding box
+//   + ctrl   zooms
+//
+// - drag     spins bounding box
 function registerControls(cv: Cv3D) {
   function getMousePosition(
     z: number,
@@ -521,7 +529,7 @@ export class Cv3D implements Canvas3D {
 
   private fixMaterials() {
     // TODO: make triangles transparent
-    this.planeMat.opacity = 0.5
+    this.planeMat.opacity = 0.9
     this.planeMat.transparent = true
   }
 

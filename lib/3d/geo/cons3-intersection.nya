@@ -1,0 +1,41 @@
+use "3d/geo/defs";
+
+// https://en.wikipedia.org/wiki/Line%E2%80%93plane_intersection
+fn intersection(p: Plane, line: Segment3D | Ray3D | Line3D) -> Point3D {
+  let n = p.normal.end;
+  let p0 = n * p.offset;
+  let l0 = line.p1;
+  let l = @norm(line.p2 - l0);
+  let denom = @dot(l, n);
+  if denom == 0 {
+    _point_nan
+  } else {
+    l0 + l * (@dot(p0 - l0, n) / denom)
+  }
+}
+
+fn intersection(line: Segment3D | Ray3D | Line3D, p: Plane) -> Point3D {
+  intersection(p, line)
+}
+
+fn intersection(p1: Plane, p2: Plane) -> Line3D {
+  let n1 = p1.normal.end;
+  let h1 = -p1.offset;
+  let n2 = p2.normal.end;
+  let h2 = -p2.offset;
+
+  let dot = @dot(n1, n2);
+  let denom = 1.0 - dot * dot;
+  if denom == 0.0 {
+    return Line3D { p1: _point_nan, p2: _point_nan };
+  }
+
+  let c1 = (h1 - h2 * dot) / denom;
+  let c2 = (h2 - h1 * dot) / denom;
+  let p1 = c1 * n1 + c2 * n2;
+
+  Line3D {
+    p1,
+    p2: p1 + %cross(n1, n2),
+  }
+}

@@ -1,5 +1,5 @@
 use "3d/point";
-use "3d/defs";
+use "3d/geo/defs";
 
 let xyplane = Plane {
   normal: (
