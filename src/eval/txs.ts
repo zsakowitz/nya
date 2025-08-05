@@ -1,7 +1,7 @@
 import { escapeIdentName } from "!/ast/kind"
 import { issue, todo } from "!/emit/error"
 import { Id, ident } from "!/emit/id"
-import { type NameCooked, type Node, type OpKind, type Suffix } from "./node"
+import type { NameCooked, Node, OpKind, Suffix } from "./node"
 import { P, PRECEDENCE_WORD_BINARY, PRECEDENCE_WORD_UNARY } from "./prec"
 import {
   listItems,
@@ -321,6 +321,15 @@ TX_SUFFIXES.bcall = {
     deps.check(op.sup)
     deps.check(op.arg)
   },
+}
+
+// Similar to 'sop' and 'bvar'; make sure to match changes between the two.
+TX_SUFFIXES.uprop = {
+  eval(op, on) {
+    const name = op.name + (op.sub ? "_" + op.sub : "")
+    return `call ${escapeIdentName(name in ALIASES ? ALIASES[name]! : name, true)}(${on})`
+  },
+  deps() {},
 }
 
 setGroupTxr("(", ")", {

@@ -5,6 +5,7 @@ import {
   PRECEDENCE_WORD_BINARY,
   PRECEDENCE_WORD_UNARY,
 } from "@/eval/prec"
+import { subscript } from "@/eval/tx"
 import { L, R, type Dir } from "@/field/dir"
 import type { Options, WordMapWithoutSpaces } from "@/field/options"
 import { h } from "@/lib/jsx"
@@ -193,6 +194,16 @@ export class CmdDot extends Leaf {
           ret.suffixed({ type: "bcall", data: { name, sup, arg: null } })
         }
 
+        ret.next = next
+        return
+      }
+      if (v.kind == null) {
+        let next = v[R]
+        const sub = next instanceof CmdSupSub && next.sub?.parse()
+        ret.suffixed({
+          type: "uprop",
+          data: { name: v.text, sub: sub ? subscript(sub) : null },
+        })
         ret.next = next
         return
       }
