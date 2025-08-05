@@ -1,1 +1,1 @@
-xyplane shaded x
+sphere((0,0,0),5)shaded x+yi

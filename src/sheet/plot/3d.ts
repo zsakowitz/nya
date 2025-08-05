@@ -789,6 +789,10 @@ export class Cv3D implements Canvas3D {
       env.libGl,
     )
     const shader = this.createShader(env.libGl, block, value)
-    return (mat: T.Material) => this.applyShader(mat, shader)
+    const k = crypto.randomUUID()
+    return (mat: T.Material) => {
+      this.applyShader(mat, shader)
+      mat.customProgramCacheKey = () => k
+    }
   }
 }
