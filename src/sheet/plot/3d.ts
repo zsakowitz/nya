@@ -312,8 +312,8 @@ function registerWheelControls(cv: Cv3D) {
           const rz = (cv.rotation.reorder("ZXY"), cv.rotation.z)
           cv.move(vec, new T.Vector3(Math.sin(rz), -Math.cos(rz), 0))
         } else if (event.altKey) {
-          cv.rotateZ((8 * event.deltaX) / cv.el.clientWidth)
-          cv.rotateX((8 * event.deltaY) / cv.el.clientWidth)
+          cv.rotateZ(0.01 * event.deltaX)
+          cv.rotateX(0.01 * event.deltaY)
         } else {
           const vec = new T.Vector3(event.deltaX, 0, event.deltaY)
           cv.move(vec, new T.Vector3(0, 0, 1))
@@ -348,8 +348,8 @@ function registerRotationControls(cv: Cv3D) {
 
     const dx = lastX - (lastX = ev.clientX)
     const dy = lastY - (lastY = ev.clientY)
-    cv.rotateZ((8 * dx) / cv.el.clientWidth)
-    cv.rotateX((8 * dy) / cv.el.clientWidth)
+    cv.rotateZ(0.005 * dx)
+    cv.rotateX(0.005 * dy)
   })
 
   addEventListener("pointerup", () => {
@@ -493,8 +493,7 @@ export class Cv3D implements Canvas3D {
   }
 
   move(vec: T.Vector3, normal: T.Vector3) {
-    vec.multiplyScalar(this.widths.length())
-    vec.divideScalar(this.el.clientWidth / 2)
+    vec.multiplyScalar(0.003 * this.widths.length())
     vec.applyQuaternion(this.quaternion.clone())
     vec.projectOnPlane(normal)
     this.position.add(vec)
