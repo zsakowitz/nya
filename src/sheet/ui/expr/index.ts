@@ -444,6 +444,7 @@ function compileJs(self: Expr, expr: string, shader: string | null) {
       setTimeout(() => prev.dispose())
     }
     cv.scene.add(mesh)
+    cv.queue()
     return
   }
 

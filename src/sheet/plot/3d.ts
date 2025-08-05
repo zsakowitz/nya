@@ -312,6 +312,9 @@ function registerRotationControls(cv: Cv3D) {
   let down = 0
   let lastX: number | null = null
   let lastY: number | null = null
+  cv.el.addEventListener("contextmenu", (ev) => {
+    ev.preventDefault()
+  })
   cv.el.addEventListener("pointerdown", (ev) => {
     cv.el.setPointerCapture(ev.pointerId)
     down++
