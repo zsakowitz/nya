@@ -12,7 +12,7 @@ import { fa, h } from "@/lib/jsx"
 import { PLOT_3D } from "@/sheet/plot/3d"
 import type { Shader } from "@/sheet/plot/shader"
 import { faWarning } from "@fortawesome/free-solid-svg-icons/faWarning"
-import { Mesh, ShaderMaterial, type BufferGeometry, type Object3D } from "three"
+import { Material, Mesh, ShaderMaterial, type BufferGeometry } from "three"
 import { Store, type AnyExt } from "../../ext"
 import { FACTORY_EXPR } from "../../factory-expr"
 import type { ItemRef } from "../../items"
@@ -59,7 +59,7 @@ export class Expr {
   readonly aside
   readonly main
   readonly entry
-  lastObjs: Object3D[] | undefined
+  lastObjs: { removeFromParent(): void }[] | undefined
   lastMat: ShaderMaterial | undefined
 
   state: ExprState = { ok: false, reason: "Not computed yet." }
@@ -273,7 +273,7 @@ function compileForGlsl(self: Expr, expr: string) {
   const env = self.sheet.factory.env
 
   const { block, value } = env.process(
-    `{let x: Color = %plot_shader(${expr});x}`,
+    `{let x = %plot_shader(${expr}) -> Color;x}`,
     "<expression>",
     new IdMap<Value>(null)
       .set(ident("x"), new Value("vl_coords.x", env.libGl.tyNum, false))
@@ -319,20 +319,19 @@ function plotJs3D(
 
   if (plot3d) {
     changed = true
+    let shade: ((mat: Material) => void) | undefined
     if (shader) {
       const env = self.sheet.factory.env
-      self.lastMat = self.sheet.cv3D!.createShaderMaterialFromText(env, shader)
+      shade = self.sheet.cv3D!.createShaderFromText(env, shader)
+      self.sheet.cv3D!.shade = shade
+    } else {
+      self.sheet.cv3D!.shade = undefined
     }
     self.lastObjs = []
     each(type, value, (value) => {
-      let object = plot3d.exec(self.sheet.cv3D!, value)
-      if (self.lastMat) {
-        if (object instanceof Mesh) {
-          object.material = self.lastMat
-        }
-      }
-      self.sheet.cv3D!.scene.add(object)
-      self.lastObjs!.push(object)
+      const raw = plot3d.exec(self.sheet.cv3D!, value)
+      self.sheet.cv3D!.scene.add(raw)
+      self.lastObjs!.push(raw)
     })
   }
 

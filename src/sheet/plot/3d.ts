@@ -272,27 +272,6 @@ function addPlaneContainer(cv: Cv3D) {
 //
 // - drag     spins bounding box
 function registerControls(cv: Cv3D) {
-  function getMousePosition(
-    z: number,
-    event: { offsetX: number; offsetY: number },
-  ) {
-    const camera = cv.getCamera()
-    const pos = new T.Vector3()
-    pos.x = -((event.offsetX / cv.el.clientWidth) * 2 - 1)
-    pos.y = -(-(event.offsetY / cv.el.clientHeight) * 2 + 1)
-    pos.z = 2
-    camera.updateMatrix()
-    pos.applyMatrix4(camera.matrix)
-
-    const ray = new T.Ray(pos)
-    ray.lookAt(camera.position)
-    const plane = new T.Plane(new T.Vector3(0, 0, 1), z)
-    const target = new T.Vector3()
-    ray.intersectPlane(plane, target)
-
-    return target
-  }
-
   registerRotationControls(cv)
   registerWheelControls(cv)
 }
@@ -395,7 +374,7 @@ export class Cv3D implements Canvas3D {
     el.className = "absolute inset-0 !size-full [image-rendering:pixelated]"
     registerControls(this)
     const observer = new ResizeObserver(() => {
-      const scale = globalThis.devicePixelRatio ?? 1
+      const scale = this.scale
       const w = el.clientWidth
       const h = el.clientHeight
       renderer.setSize(scale * w, scale * h, false)
@@ -441,7 +420,7 @@ export class Cv3D implements Canvas3D {
     return this.renderer.domElement
   }
 
-  private _perspective = 1
+  private _perspective = 3
   get perspective() {
     return this._perspective
   }
@@ -558,16 +537,36 @@ export class Cv3D implements Canvas3D {
   private readonly planeMat = this.matPlain(0x888888, 0.5)
   private readonly lineMat = this.matLine(0x2d70b3, 8)
 
+  makeMat(mat: LineMaterial): LineMaterial
+  makeMat(mat: T.Material): T.Material
+  makeMat(mat: T.Material | LineMaterial): T.Material | LineMaterial {
+    if (this.shade) {
+      const mat2 =
+        mat == this.sphereMat ? this.mat(0xc74440)
+        : mat == this.pointMat ? this.mat(0x6042a6)
+        : mat == this.circleMat ? this.matLine(0x388c46, 8)
+        : mat == this.triangleMat ? this.matPlain(0xba0568, 0.8)
+        : mat == this.angleMat ? this.matPlain(0xfa7e1a, 0.5)
+        : mat == this.planeMat ? this.matPlain(0x888888, 0.5)
+        : mat == this.lineMat ? this.matLine(0x2d70b3, 8)
+        : null
+      if (!mat2) return mat
+      this.shade(mat2)
+      return mat2
+    }
+    return mat
+  }
+
   sphere(x: number, y: number, z: number, r: number) {
     const sphereGeo = new T.SphereGeometry(r, 64, 32)
-    const mesh = new T.Mesh(sphereGeo, this.sphereMat)
+    const mesh = new T.Mesh(sphereGeo, this.makeMat(this.sphereMat))
     mesh.position.set(x, y, z)
     return mesh
   }
 
   point(x: number, y: number, z: number, r: number) {
     const sphereGeo = new T.SphereGeometry(r, 64, 32)
-    const mesh = new T.Mesh(sphereGeo, this.pointMat)
+    const mesh = new T.Mesh(sphereGeo, this.makeMat(this.pointMat))
     mesh.position.set(x, y, z)
     mesh.onBeforeRender = () => {
       mesh.scale.setScalar((r * this.widths.length()) / this.el.clientWidth)
@@ -578,7 +577,7 @@ export class Cv3D implements Canvas3D {
 
   plane(nx: number, ny: number, nz: number, o: number) {
     const geo = new T.PlaneGeometry()
-    const mesh = new T.Mesh(geo, this.planeMat)
+    const mesh = new T.Mesh(geo, this.makeMat(this.planeMat))
     const plane = new T.Plane(new T.Vector3(nx, ny, nz), o)
     mesh.position.set(0, 0, 0)
     mesh.lookAt(nx, ny, nz) // sets proper rotation
@@ -608,7 +607,7 @@ export class Cv3D implements Canvas3D {
     const vertices = new Float32Array([x1, y1, z1, x2, y2, z2, x3, y3, z3])
     const geometry = new T.BufferGeometry()
     geometry.setAttribute("position", new T.BufferAttribute(vertices, 3))
-    const mesh = new T.Mesh(geometry, this.triangleMat)
+    const mesh = new T.Mesh(geometry, this.makeMat(this.triangleMat))
     return mesh
   }
 
@@ -634,7 +633,7 @@ export class Cv3D implements Canvas3D {
     positions.push(1, 0, 0)
     const geo = new LineGeometry()
     geo.setPositions(positions)
-    const mesh = new Line2(geo, this.circleMat)
+    const mesh = new Line2(geo, this.makeMat(this.circleMat))
     mesh.lookAt(rx, ry, rz)
     mesh.position.set(cx, cy, cz)
     mesh.scale.setScalar(radius)
@@ -651,7 +650,7 @@ export class Cv3D implements Canvas3D {
   ) {
     const geo = new LineGeometry()
     geo.setPositions([x1, y1, z1, x2, y2, z2])
-    const mesh = new Line2(geo, this.lineMat)
+    const mesh = new Line2(geo, this.makeMat(this.lineMat))
     return mesh
   }
 
@@ -659,15 +658,15 @@ export class Cv3D implements Canvas3D {
     const geo = new LineGeometry()
     const h = Math.hypot(x2 - x1, y2 - y1, z2 - z1)
     geo.setPositions([0, 0, 0, (x2 - x1) / h, (y2 - y1) / h, (z2 - z1) / h])
-    const mesh = new Line2(geo, this.lineMat)
+    const mesh = new Line2(geo, this.makeMat(this.lineMat))
     mesh.position.set(x1, y1, z1)
     const self = this
     const prev = mesh.onBeforeRender.bind(mesh)
     mesh.onBeforeRender = function (renderer) {
       const b = self.bounds()
-      const xs = Math.max(Math.abs(b.xmax + x1), Math.abs(b.xmin + x1))
-      const ys = Math.max(Math.abs(b.ymin + y1), Math.abs(b.ymax + y1))
-      const zs = Math.max(Math.abs(b.zmin + z1), Math.abs(b.zmax + z1))
+      const xs = Math.max(Math.abs(b.xmin), Math.abs(b.xmax)) + Math.abs(x1)
+      const ys = Math.max(Math.abs(b.ymin), Math.abs(b.ymax)) + Math.abs(y1)
+      const zs = Math.max(Math.abs(b.zmin), Math.abs(b.zmax)) + Math.abs(z1)
       const sz = Math.hypot(xs, ys, zs)
       mesh.scale.setScalar(sz)
       mesh.updateMatrixWorld()
@@ -683,15 +682,15 @@ export class Cv3D implements Canvas3D {
     const yo = (y2 - y1) / h
     const zo = (z2 - z1) / h
     geo.setPositions([-xo, -yo, -zo, xo, yo, zo])
-    const mesh = new Line2(geo, this.lineMat)
+    const mesh = new Line2(geo, this.makeMat(this.lineMat))
     mesh.position.set(x1, y1, z1)
     const self = this
     const prev = mesh.onBeforeRender.bind(mesh)
     mesh.onBeforeRender = function (renderer) {
       const b = self.bounds()
-      const xs = Math.max(Math.abs(b.xmax + x1), Math.abs(b.xmin + x1))
-      const ys = Math.max(Math.abs(b.ymin + y1), Math.abs(b.ymax + y1))
-      const zs = Math.max(Math.abs(b.zmin + z1), Math.abs(b.zmax + z1))
+      const xs = Math.max(Math.abs(b.xmin), Math.abs(b.xmax)) + Math.abs(x1)
+      const ys = Math.max(Math.abs(b.ymin), Math.abs(b.ymax)) + Math.abs(y1)
+      const zs = Math.max(Math.abs(b.zmin), Math.abs(b.zmax)) + Math.abs(z1)
       const sz = Math.hypot(xs, ys, zs)
       mesh.scale.setScalar(sz)
       mesh.updateMatrixWorld()
@@ -732,15 +731,56 @@ export class Cv3D implements Canvas3D {
     ])
     const geometry = new T.BufferGeometry()
     geometry.setAttribute("position", new T.BufferAttribute(vertices, 3))
-    const mesh = new T.Mesh(geometry, this.angleMat)
+    const mesh = new T.Mesh(geometry, this.makeMat(this.angleMat))
     mesh.position.set(x2, y2, z2)
     mesh.renderOrder = 1
     return mesh
   }
 
-  createShaderMaterialFromText(env: ScriptEnvironment, text: string) {
+  private applyShader(
+    mat: T.Material,
+    props: {
+      vert: string
+      vertMain: string
+      frag: string
+      fragMain: string
+    },
+  ) {
+    const onBeforeCompile = mat.onBeforeCompile
+
+    mat.onBeforeCompile = function (params, renderer) {
+      onBeforeCompile.call(this, params, renderer)
+
+      params.vertexShader = params.vertexShader
+        .replace("void main() {", props.vert + "\nvoid main() {")
+        .replace(/}$/, props.vertMain + "}")
+
+      params.fragmentShader = params.fragmentShader
+        .replace("void main() {", props.frag + "\nvoid main() {")
+        .replace(/}$/, props.fragMain + "}")
+    }
+  }
+
+  private createShader(lib: Declarations, block: Block, value: Value) {
+    const runtime = value.toString()
+    return {
+      vert: "out vec4 nya_position;",
+      vertMain: "nya_position = modelMatrix * vec4(position, 1.0);",
+      frag:
+        "in vec4 nya_position;" +
+        lib.getTypeDeclarations() +
+        "\n" +
+        block.globals.getText() +
+        "\n",
+      fragMain: `${block.source}gl_FragColor=vec4(${runtime}.xyz,1);`,
+    }
+  }
+
+  shade?(mat: T.Material): void
+
+  createShaderFromText(env: ScriptEnvironment, text: string) {
     const { block, value } = env.process(
-      `{let x: Color=%plot_shader(${text});x}`,
+      `{let x = call %plot_shader %plot_shader_3d(${text}) -> Color;x}`,
       undefined,
       new IdMap<Value>(null)
         .set(ident("x"), new Value("nya_position.x", env.libGl.tyNum, false))
@@ -748,41 +788,7 @@ export class Cv3D implements Canvas3D {
         .set(ident("z"), new Value("nya_position.z", env.libGl.tyNum, false)),
       env.libGl,
     )
-    return this.createShaderMaterial(env.libGl, block, value)
-  }
-
-  private createShaderMaterial(lib: Declarations, block: Block, value: Value) {
-    const runtime = value.toString()
-    T.ShaderChunk.lights_fragment_begin
-    const mat = new T.ShaderMaterial({
-      vertexShader: `
-      #include <clipping_planes_pars_vertex>
-      out vec4 nya_position;
-      void main() {
-      vec4 mvPosition = viewMatrix * modelMatrix * vec4( position, 1.0 );
-      #include <clipping_planes_vertex>
-      vec4 modelPosition = modelMatrix * vec4(position, 1.0);
-      nya_position = modelPosition; // Store world position in the varying
-      gl_Position = projectionMatrix * viewMatrix * modelPosition;
-      }
-      `,
-      fragmentShader: `
-      #include <clipping_planes_pars_fragment>
-      in vec4 nya_position;
-      ${lib.getTypeDeclarations()}
-      ${block.globals.getText()}
-      out vec4 color;
-      void main() {
-      #include <clipping_planes_fragment>
-      ${block.source}
-      color = vec4(${runtime}.xyz,1);
-      }
-      `,
-      clippingPlanes: NO_CLIP ? null : this.clippingPlanes,
-      clipping: true,
-      glslVersion: T.GLSL3,
-      side: T.DoubleSide,
-    })
-    return mat
+    const shader = this.createShader(env.libGl, block, value)
+    return (mat: T.Material) => this.applyShader(mat, shader)
   }
 }

@@ -8,12 +8,12 @@ fn %plot_shader(x: bool) -> Color {
   }
 }
 
-fn %plot_shader(x: Color) -> Color {
+fn %plot_shader(x: Color3) -> Color3 {
   x
 }
 
-fn %plot_shader(x: Color3) -> Color {
-  Color { r: x.r, g: x.g, b: x.b, a: 1.0 }
+fn %plot_shader(x: Color) -> Color {
+  x
 }
 
 fn hsv(h: num, s: num, v: num) -> Color3 {
