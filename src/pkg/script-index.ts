@@ -1,102 +1,108 @@
 import s0 from "../../lib/special.nya"
 import s1 from "../../lib/components.nya"
 import s2 from "../../lib/2d/point.nya"
-import s3 from "../../lib/2d/geo.nya"
-import s4 from "../../lib/data/distributions.nya"
-import s5 from "../../lib/data/stats/real.nya"
-import s6 from "../../lib/data/stats/complex.nya"
-import s7 from "../../lib/@DEV/std.nya"
-import s8 from "../../lib/@DEV/mean.nya"
-import s9 from "../../lib/4d/two-complex.nya"
-import s10 from "../../lib/4d/point.nya"
-import s11 from "../../lib/4d/quaternion.nya"
-import s12 from "../../lib/color/dcg.nya"
-import s13 from "../../lib/color/index.nya"
-import s14 from "../../lib/color/extras.nya"
-import s15 from "../../lib/color/oklab.nya"
-import s16 from "../../lib/color/core.nya"
-import s17 from "../../lib/real/parity.nya"
-import s18 from "../../lib/real/index.nya"
-import s19 from "../../lib/real/trig-hyperbolic.nya"
-import s20 from "../../lib/real/trig.nya"
-import s21 from "../../lib/real/erf.nya"
-import s22 from "../../lib/real/number-theory.nya"
-import s23 from "../../lib/complex/index.nya"
-import s24 from "../../lib/complex/trig-hyperbolic.nya"
-import s25 from "../../lib/complex/trig.nya"
-import s26 from "../../lib/complex/erf.nya"
-import s27 from "../../lib/complex/beta.nya"
-import s28 from "../../lib/complex/zeta.nya"
-import s29 from "../../lib/complex/number-theory.nya"
-import s30 from "../../lib/core/bool.nya"
-import s31 from "../../lib/core/cmp.nya"
-import s32 from "../../lib/core/ops.nya"
-import s33 from "../../lib/3d/point.nya"
-import s34 from "../../lib/3d/geo/index.nya"
-import s35 from "../../lib/3d/geo/cons.nya"
-import s36 from "../../lib/3d/geo/2d.nya"
-import s37 from "../../lib/3d/geo/defs.nya"
-import s38 from "../../lib/gamma/lngamma.nya"
-import s39 from "../../lib/gamma/trigamma.nya"
-import s40 from "../../lib/gamma/digamma.nya"
-import s41 from "../../lib/gamma/factorial.nya"
-import s42 from "../../lib/gamma/polygamma.nya"
-import s43 from "../../lib/gamma/gamma.nya"
+import s3 from "../../lib/2d/geo/index.nya"
+import s4 from "../../lib/2d/geo/complex.nya"
+import s5 from "../../lib/2d/geo/complex-algebra.nya"
+import s6 from "../../lib/data/distributions.nya"
+import s7 from "../../lib/data/stats/real.nya"
+import s8 from "../../lib/data/stats/complex.nya"
+import s9 from "../../lib/@DEV/std.nya"
+import s10 from "../../lib/@DEV/mean.nya"
+import s11 from "../../lib/4d/two-complex.nya"
+import s12 from "../../lib/4d/point.nya"
+import s13 from "../../lib/4d/quaternion.nya"
+import s14 from "../../lib/color/dcg.nya"
+import s15 from "../../lib/color/index.nya"
+import s16 from "../../lib/color/extras.nya"
+import s17 from "../../lib/color/oklab.nya"
+import s18 from "../../lib/color/core.nya"
+import s19 from "../../lib/real/parity.nya"
+import s20 from "../../lib/real/index.nya"
+import s21 from "../../lib/real/trig-hyperbolic.nya"
+import s22 from "../../lib/real/trig.nya"
+import s23 from "../../lib/real/erf.nya"
+import s24 from "../../lib/real/number-theory.nya"
+import s25 from "../../lib/complex/index.nya"
+import s26 from "../../lib/complex/trig-hyperbolic.nya"
+import s27 from "../../lib/complex/trig.nya"
+import s28 from "../../lib/complex/erf.nya"
+import s29 from "../../lib/complex/beta.nya"
+import s30 from "../../lib/complex/zeta.nya"
+import s31 from "../../lib/complex/number-theory.nya"
+import s32 from "../../lib/core/bool.nya"
+import s33 from "../../lib/core/cmp.nya"
+import s34 from "../../lib/core/ops.nya"
+import s35 from "../../lib/3d/point.nya"
+import s36 from "../../lib/3d/geo/index.nya"
+import s37 from "../../lib/3d/geo/cons.nya"
+import s38 from "../../lib/3d/geo/2d.nya"
+import s39 from "../../lib/3d/geo/defs.nya"
+import s40 from "../../lib/gamma/lngamma.nya"
+import s41 from "../../lib/gamma/trigamma.nya"
+import s42 from "../../lib/gamma/digamma.nya"
+import s43 from "../../lib/gamma/factorial.nya"
+import s44 from "../../lib/gamma/polygamma.nya"
+import s45 from "../../lib/gamma/gamma.nya"
 
 export const SCRIPTS = new Map([
   ["special", s0],
   ["components", s1],
   ["2d/point", s2],
   ["2d/geo", s3],
-  ["data/distributions", s4],
-  ["data/stats/real", s5],
-  ["data/stats/complex", s6],
-  ["@DEV/std", s7],
-  ["@DEV/mean", s8],
-  ["4d/two-complex", s9],
-  ["4d/point", s10],
-  ["4d/quaternion", s11],
-  ["color/dcg", s12],
-  ["color", s13],
-  ["color/extras", s14],
-  ["color/oklab", s15],
-  ["color/core", s16],
-  ["real/parity", s17],
-  ["real", s18],
-  ["real/trig-hyperbolic", s19],
-  ["real/trig", s20],
-  ["real/erf", s21],
-  ["real/number-theory", s22],
-  ["complex", s23],
-  ["complex/trig-hyperbolic", s24],
-  ["complex/trig", s25],
-  ["complex/erf", s26],
-  ["complex/beta", s27],
-  ["complex/zeta", s28],
-  ["complex/number-theory", s29],
-  ["core/bool", s30],
-  ["core/cmp", s31],
-  ["core/ops", s32],
-  ["3d/point", s33],
-  ["3d/geo", s34],
-  ["3d/geo/cons", s35],
-  ["3d/geo/2d", s36],
-  ["3d/geo/defs", s37],
-  ["gamma/lngamma", s38],
-  ["gamma/trigamma", s39],
-  ["gamma/digamma", s40],
-  ["gamma/factorial", s41],
-  ["gamma/polygamma", s42],
-  ["gamma/gamma", s43],
+  ["2d/geo/complex", s4],
+  ["2d/geo/complex-algebra", s5],
+  ["data/distributions", s6],
+  ["data/stats/real", s7],
+  ["data/stats/complex", s8],
+  ["@DEV/std", s9],
+  ["@DEV/mean", s10],
+  ["4d/two-complex", s11],
+  ["4d/point", s12],
+  ["4d/quaternion", s13],
+  ["color/dcg", s14],
+  ["color", s15],
+  ["color/extras", s16],
+  ["color/oklab", s17],
+  ["color/core", s18],
+  ["real/parity", s19],
+  ["real", s20],
+  ["real/trig-hyperbolic", s21],
+  ["real/trig", s22],
+  ["real/erf", s23],
+  ["real/number-theory", s24],
+  ["complex", s25],
+  ["complex/trig-hyperbolic", s26],
+  ["complex/trig", s27],
+  ["complex/erf", s28],
+  ["complex/beta", s29],
+  ["complex/zeta", s30],
+  ["complex/number-theory", s31],
+  ["core/bool", s32],
+  ["core/cmp", s33],
+  ["core/ops", s34],
+  ["3d/point", s35],
+  ["3d/geo", s36],
+  ["3d/geo/cons", s37],
+  ["3d/geo/2d", s38],
+  ["3d/geo/defs", s39],
+  ["gamma/lngamma", s40],
+  ["gamma/trigamma", s41],
+  ["gamma/digamma", s42],
+  ["gamma/factorial", s43],
+  ["gamma/polygamma", s44],
+  ["gamma/gamma", s45],
 ])
 
-export const SCRIPT_INDICES = new Set(["color","real","complex","3d/geo",])
+export const SCRIPT_INDICES = new Set(["2d/geo","color","real","complex","3d/geo",])
 
 export type ScriptName =
   | "special"
   | "components"
   | "2d/point"
   | "2d/geo"
+  | "2d/geo/complex"
+  | "2d/geo/complex-algebra"
   | "data/distributions"
   | "data/stats/real"
   | "data/stats/complex"

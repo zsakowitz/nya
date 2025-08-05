@@ -424,6 +424,9 @@ export function print(node: Node | Token<number>, sb: Subprint): Doc {
       if (self.usage?.usages) {
         self.usage.usages.spaceAfter = !self.semi
       }
+      // if (self.block) {
+      //   self.block.of.block = false
+      // }
       return [
         sb("kw"),
         " ",
