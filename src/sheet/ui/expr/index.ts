@@ -13,7 +13,6 @@ import { PLOT_3D } from "@/sheet/plot/3d"
 import type { Shader } from "@/sheet/plot/shader"
 import { faWarning } from "@fortawesome/free-solid-svg-icons/faWarning"
 import { Mesh, ShaderMaterial, type BufferGeometry, type Object3D } from "three"
-import { LineMaterial } from "three/examples/jsm/Addons.js"
 import { Store, type AnyExt } from "../../ext"
 import { FACTORY_EXPR } from "../../factory-expr"
 import type { ItemRef } from "../../items"
@@ -328,10 +327,7 @@ function plotJs3D(
     each(type, value, (value) => {
       let object = plot3d.exec(self.sheet.cv3D!, value)
       if (self.lastMat) {
-        if (
-          object instanceof Mesh &&
-          !(object.material instanceof LineMaterial)
-        ) {
+        if (object instanceof Mesh) {
           object.material = self.lastMat
         }
       }

@@ -368,13 +368,11 @@ export class Cv3D implements Canvas3D {
   readonly cv = document.createElement("canvas")
   readonly ctx = this.cv.getContext("webgl2", {
     antialias: true,
-    alpha: true,
     premultipliedAlpha: false,
   })!
   readonly renderer = new T.WebGLRenderer({
     canvas: this.cv,
     context: this.ctx,
-    alpha: true,
     antialias: true,
     premultipliedAlpha: false,
     powerPreference: "low-power",
@@ -758,27 +756,28 @@ export class Cv3D implements Canvas3D {
     T.ShaderChunk.lights_fragment_begin
     const mat = new T.ShaderMaterial({
       vertexShader: `
-#include <clipping_planes_pars_vertex>
-out vec4 nya_position;
-void main() {
-vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
-gl_Position = projectionMatrix * mvPosition;
-#include <clipping_planes_vertex>
-nya_position = vec4(position, 1.0);
-}
-`,
+      #include <clipping_planes_pars_vertex>
+      out vec4 nya_position;
+      void main() {
+      vec4 mvPosition = viewMatrix * modelMatrix * vec4( position, 1.0 );
+      #include <clipping_planes_vertex>
+      vec4 modelPosition = modelMatrix * vec4(position, 1.0);
+      nya_position = modelPosition; // Store world position in the varying
+      gl_Position = projectionMatrix * viewMatrix * modelPosition;
+      }
+      `,
       fragmentShader: `
-#include <clipping_planes_pars_fragment>
-in vec4 nya_position;
-${lib.getTypeDeclarations()}
-${block.globals.getText()}
-out vec4 color;
-void main() {
-#include <clipping_planes_fragment>
-${block.source}
-color = ${runtime};
-}
-`,
+      #include <clipping_planes_pars_fragment>
+      in vec4 nya_position;
+      ${lib.getTypeDeclarations()}
+      ${block.globals.getText()}
+      out vec4 color;
+      void main() {
+      #include <clipping_planes_fragment>
+      ${block.source}
+      color = vec4(${runtime}.xyz,1);
+      }
+      `,
       clippingPlanes: NO_CLIP ? null : this.clippingPlanes,
       clipping: true,
       glslVersion: T.GLSL3,

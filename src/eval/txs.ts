@@ -130,7 +130,7 @@ TX_OPS.suffix = {
   },
 }
 
-TX_OPS.combination = {
+TX_OPS.choose = {
   eval([a, b], _, block) {
     return block.of`%choose(${a},${b})`
   },
@@ -349,6 +349,39 @@ setGroupTxr("[", "]", {
 setGroupTxr("|", "|", {
   eval({ contents }, _, block) {
     return block.of`call abs %abs(${contents})`
+  },
+  deps({ contents }, _, deps) {
+    deps.check(contents)
+  },
+})
+
+setGroupTxr("{", "}", {
+  eval({ contents }, _, block) {
+    const items = listItems(contents)
+    if (items.length == 0) {
+      return block.of`true`
+    }
+    const last = items[items.length - 1]!
+    let otherwise: Node | undefined
+    if (!(last.data.type == "op" && last.data.data == ":")) {
+      items.pop()
+      otherwise = last
+    }
+    if (otherwise && items.length == 0) {
+      return block.of`${otherwise}`
+    }
+    return (
+      items
+        .map((x) => {
+          if (x.data.type == "op" && x.data.data == ":") {
+            return block.of`if(${x.args![0]!}){${x.args![1]!}}`
+          }
+          issue(
+            `Every element in a piecewise expression must have a condition except the last.`,
+          )
+        })
+        .join("else ") + `else{${otherwise ? block.eval(otherwise) : "false"}}`
+    )
   },
   deps({ contents }, _, deps) {
     deps.check(contents)

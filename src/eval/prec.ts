@@ -10,6 +10,9 @@ export const enum Precedence {
   CommaL,
   CommaR,
 
+  ColonL,
+  ColonR,
+
   MapsToL,
   MapsToR,
 

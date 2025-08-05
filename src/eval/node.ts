@@ -29,7 +29,7 @@ export interface OpKind {
   nthroot: { root: Node; contents: Node }
   surreal: { lhs: Node; rhs: Node }
   mixed: { int: string; num: string; denom: string }
-  combination: [Node, Node]
+  choose: [Node, Node]
   piecewise: { condition: Node | null; value: Node }[]
   text: string
   op: string // plain operator
