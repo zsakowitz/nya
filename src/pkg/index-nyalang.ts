@@ -21,6 +21,7 @@ export const NYALANG_PACKAGES_BUILTIN = {
   "nya:complex/trig": ()=>Promise.resolve({default:{"name":"complex trigonometry","label":"<TODO: no label>","category":"auto-generated (nyalang)","deps":[],"scripts":["complex/trig"]} as const}),
   "nya:complex/erf": ()=>Promise.resolve({default:{"name":"complex erf() and faddeeva()","label":"<TODO: no label>","category":"auto-generated (nyalang)","deps":[],"scripts":["complex/erf"]} as const}),
   "nya:complex/number-theory": ()=>Promise.resolve({default:{"name":"complex number theory","label":"<TODO: no label>","category":"auto-generated (nyalang)","deps":[],"scripts":["complex/number-theory"]} as const}),
+  "nya:core/bool": ()=>Promise.resolve({default:{"name":"boolean coercions","label":"<TODO: no label>","category":"auto-generated (nyalang)","deps":[],"scripts":["core/bool"]} as const}),
   "nya:3d/point": ()=>Promise.resolve({default:{"name":"3d points","label":"<TODO: no label>","category":"auto-generated (nyalang)","deps":[],"scripts":["3d/point"]} as const}),
   "nya:3d/geo": ()=>Promise.resolve({default:{"name":"3D geometry","label":"<TODO: no label>","category":"auto-generated (nyalang)","deps":[],"scripts":["3d/geo"]} as const}),
   "nya:gamma/factorial": ()=>Promise.resolve({default:{"name":"complex factorial","label":"<TODO: no label>","category":"auto-generated (nyalang)","deps":[],"scripts":["gamma/factorial"]} as const}),

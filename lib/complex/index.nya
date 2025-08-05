@@ -1,5 +1,6 @@
 use "real";
 use "color";
+use "color/core";
 use "color/dcg";
 use "color/oklab";
 use "components";

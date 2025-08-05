@@ -28,19 +28,20 @@ import s26 from "../../lib/complex/erf.nya"
 import s27 from "../../lib/complex/beta.nya"
 import s28 from "../../lib/complex/zeta.nya"
 import s29 from "../../lib/complex/number-theory.nya"
-import s30 from "../../lib/core/cmp.nya"
-import s31 from "../../lib/core/ops.nya"
-import s32 from "../../lib/3d/point.nya"
-import s33 from "../../lib/3d/geo/index.nya"
-import s34 from "../../lib/3d/geo/cons.nya"
-import s35 from "../../lib/3d/geo/2d.nya"
-import s36 from "../../lib/3d/geo/defs.nya"
-import s37 from "../../lib/gamma/lngamma.nya"
-import s38 from "../../lib/gamma/trigamma.nya"
-import s39 from "../../lib/gamma/digamma.nya"
-import s40 from "../../lib/gamma/factorial.nya"
-import s41 from "../../lib/gamma/polygamma.nya"
-import s42 from "../../lib/gamma/gamma.nya"
+import s30 from "../../lib/core/bool.nya"
+import s31 from "../../lib/core/cmp.nya"
+import s32 from "../../lib/core/ops.nya"
+import s33 from "../../lib/3d/point.nya"
+import s34 from "../../lib/3d/geo/index.nya"
+import s35 from "../../lib/3d/geo/cons.nya"
+import s36 from "../../lib/3d/geo/2d.nya"
+import s37 from "../../lib/3d/geo/defs.nya"
+import s38 from "../../lib/gamma/lngamma.nya"
+import s39 from "../../lib/gamma/trigamma.nya"
+import s40 from "../../lib/gamma/digamma.nya"
+import s41 from "../../lib/gamma/factorial.nya"
+import s42 from "../../lib/gamma/polygamma.nya"
+import s43 from "../../lib/gamma/gamma.nya"
 
 export const SCRIPTS = new Map([
   ["special", s0],
@@ -73,19 +74,20 @@ export const SCRIPTS = new Map([
   ["complex/beta", s27],
   ["complex/zeta", s28],
   ["complex/number-theory", s29],
-  ["core/cmp", s30],
-  ["core/ops", s31],
-  ["3d/point", s32],
-  ["3d/geo", s33],
-  ["3d/geo/cons", s34],
-  ["3d/geo/2d", s35],
-  ["3d/geo/defs", s36],
-  ["gamma/lngamma", s37],
-  ["gamma/trigamma", s38],
-  ["gamma/digamma", s39],
-  ["gamma/factorial", s40],
-  ["gamma/polygamma", s41],
-  ["gamma/gamma", s42],
+  ["core/bool", s30],
+  ["core/cmp", s31],
+  ["core/ops", s32],
+  ["3d/point", s33],
+  ["3d/geo", s34],
+  ["3d/geo/cons", s35],
+  ["3d/geo/2d", s36],
+  ["3d/geo/defs", s37],
+  ["gamma/lngamma", s38],
+  ["gamma/trigamma", s39],
+  ["gamma/digamma", s40],
+  ["gamma/factorial", s41],
+  ["gamma/polygamma", s42],
+  ["gamma/gamma", s43],
 ])
 
 export const SCRIPT_INDICES = new Set(["color","real","complex","3d/geo",])
@@ -121,6 +123,7 @@ export type ScriptName =
   | "complex/beta"
   | "complex/zeta"
   | "complex/number-theory"
+  | "core/bool"
   | "core/cmp"
   | "core/ops"
   | "3d/point"

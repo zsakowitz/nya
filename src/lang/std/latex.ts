@@ -38,6 +38,26 @@ export function libLatex(api: NyaApi) {
 
   const idDisplay = ident("%display")
 
+  // `bool` %display
+  {
+    const idLatexHelper = new Id("%display(x: bool) -> latex").ident()
+    const fnLatexHelper = `function ${idLatexHelper}(v){return '\\\\wordvar{'+v+'}'}`
+    // prettier-ignore
+    function fLatexHelper(v: boolean)                  {return   '\\wordvar{'+v+'}'}
+
+    const f =
+      lang == "glsl" ?
+        () => new Value(0, latex, true)
+      : ([v]: Value[], caller: Block) =>
+          new Value(
+            v!.const() ? fLatexHelper(v.value as boolean) : (caller.addGlobal(fnLatexHelper), `${idLatexHelper}(${v!.toRuntime()})`),
+            latex,
+            // @ts-expect-error
+            v!.const(),
+          )
+    fns.push(idDisplay, new Fn(idDisplay, [{ name: "value", type: bool }], latex, f))
+  }
+
   // `num` %display
   {
     const idLatexHelper = new Id("%display(x: num) -> latex").ident()
@@ -60,26 +80,6 @@ export function libLatex(api: NyaApi) {
             ),
       ),
     )
-  }
-
-  // `bool` %display
-  {
-    const idLatexHelper = new Id("%display(x: bool) -> latex").ident()
-    const fnLatexHelper = `function ${idLatexHelper}(v){return '\\\\wordvar{'+v+'}'}`
-    // prettier-ignore
-    function fLatexHelper(v: boolean)                  {return   '\\wordvar{'+v+'}'}
-
-    const f =
-      lang == "glsl" ?
-        () => new Value(0, latex, true)
-      : ([v]: Value[], caller: Block) =>
-          new Value(
-            v!.const() ? fLatexHelper(v.value as boolean) : (caller.addGlobal(fnLatexHelper), `${idLatexHelper}(${v!.toRuntime()})`),
-            latex,
-            // @ts-expect-error
-            v!.const(),
-          )
-    fns.push(idDisplay, new Fn(idDisplay, [{ name: "value", type: bool }], latex, f))
   }
 
   // `latex` %display

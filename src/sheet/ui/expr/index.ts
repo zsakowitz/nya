@@ -436,11 +436,12 @@ function compileJs(self: Expr, expr: string, shader: string | null) {
     let geo = new ParametricGeometry(func, 64, 64)
     const mesh = new Mesh(geo, cv.makeMat())
     self.lastObjs = [mesh]
-    mesh.onBeforeRender = () => {
-      const next = cv.regenParametric(geo)
+    mesh.onAfterRender = () => {
+      const prev = geo
+      const next = cv.regenParametric(prev)
       mesh.geometry = next
       geo = next
-      geo.dispose()
+      setTimeout(() => prev.dispose())
     }
     cv.scene.add(mesh)
     return

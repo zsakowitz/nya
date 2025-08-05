@@ -1,1 +1,2 @@
-xy
+f\left(z\right)=\left(\left(\left(\left(\left(\left(z^{2}+z\right)^{2}+z\right)^{2}+z\right)^{2}+z\right)^{2}+z\right)^{2}+z\right)
+\left|f\left(x+yi\right)\right|\operatorname{shaded}f\left(x+yi\right)

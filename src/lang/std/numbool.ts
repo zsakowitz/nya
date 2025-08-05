@@ -6,6 +6,13 @@ export function libNumBool(api: NyaApi) {
   api.scalar("sym", "symint", true)
   api.opaque("void", { glsl: null, js: null })
 
+  // Boolean operators
+  api.f1("&&", { v1: bool, v2: bool }, bool, v`${0}&&${1}`) // TODO: formalize short circuiting
+  api.f1("||", { v1: bool, v2: bool }, bool, v`${0}||${1}`) // TODO: formalize short circuiting
+  api.f1("==", { v1: bool, v2: bool }, bool, v`${0}==${1}`)
+  api.f1("!=", { v1: bool, v2: bool }, bool, v`${0}!=${1}`)
+  api.f1("!", { arg: bool }, bool, v`!${0}`)
+
   api.f1("+", { value: num }, num, v`${0}`)
   api.f1("-", { value: num }, num, v`-${0}`)
   // Basic numeric operators
@@ -109,13 +116,6 @@ export function libNumBool(api: NyaApi) {
     glsl: v`${`bool %%(float x){return !(isinf(x)||isnan(x));}`}(${0})`,
     js: v`${`const %%=isFinite`}(${0})`,
   })
-
-  // Boolean operators
-  api.f1("&&", { v1: bool, v2: bool }, bool, v`${0}&&${1}`) // TODO: formalize short circuiting
-  api.f1("||", { v1: bool, v2: bool }, bool, v`${0}||${1}`) // TODO: formalize short circuiting
-  api.f1("==", { v1: bool, v2: bool }, bool, v`${0}==${1}`)
-  api.f1("!=", { v1: bool, v2: bool }, bool, v`${0}!=${1}`)
-  api.f1("!", { arg: bool }, bool, v`!${0}`)
 
   // @mix(vec<num>, vec<num>, num)
   // @clamp(vec<num>, vec<num>, vec<num>)

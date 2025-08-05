@@ -1,0 +1,12 @@
+fn ->(x: bool) -> num {
+  if x {
+    1.0
+  } else {
+    nan
+  }
+}
+
+expose package {
+  default: true,
+  name: "boolean coercions",
+}
