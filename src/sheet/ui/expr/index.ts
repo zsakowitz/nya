@@ -215,9 +215,9 @@ export class Expr {
         if (shader == null) {
           bug(`Nonexistent shader found.`)
         }
-        compileForJs(this, removeShaded(expr), shader)
+        compileJs(this, removeShaded(expr), shader)
       } else {
-        compileForJs(this, removeShaded(expr), null)
+        compileJs(this, removeShaded(expr), null)
       }
     } catch (e) {
       this.elOutput.classList.add("hidden")
@@ -406,7 +406,7 @@ function plotJs2D(self: Expr, value: unknown, type: Type) {
   }
 }
 
-function compileForJs(self: Expr, expr: string, shader: string | null) {
+function compileJs(self: Expr, expr: string, shader: string | null) {
   const deps = new ScriptDeps()
   deps.check(self.field.block.parseTopLevel())
 
@@ -433,7 +433,7 @@ function compileForJs(self: Expr, expr: string, shader: string | null) {
       const z = f(x, y) as number
       target.set(x, y, z)
     }
-    let geo = new ParametricGeometry(func, 128, 128)
+    let geo = new ParametricGeometry(func, 64, 64)
     const mesh = new Mesh(geo, cv.makeMat())
     self.lastObjs = [mesh]
     mesh.onBeforeRender = () => {
