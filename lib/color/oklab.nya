@@ -41,5 +41,5 @@ fn oklab(l: num, a: num, b: num) -> Color3 {
 }
 
 fn oklab(l: num, a: num, b: num, alpha: num) -> Color {
-  rgba(oklab(l, a, b), alpha)
+  rgb(oklab(l, a, b), alpha)
 }

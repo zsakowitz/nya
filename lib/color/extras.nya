@@ -7,7 +7,7 @@ fn oklch(l: num, c: num, h: num) -> Color3 {
 }
 
 fn oklch(l: num, c: num, h: num, alpha: num) -> Color {
-  rgba(oklch(l, c, h), alpha)
+  rgb(oklch(l, c, h), alpha)
 }
 
 expose package {

@@ -31,7 +31,7 @@ fn hsv(h: num, s: num, v: num) -> Color3 {
 }
 
 fn hsv(h: num, s: num, v: num, a: num) -> Color {
-  rgba(hsv(h, s, v), a)
+  rgb(hsv(h, s, v), a)
 }
 
 fn %juxtapose(a: Color3, b: bool) -> Color3 {
