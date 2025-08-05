@@ -4,6 +4,7 @@ import type { Type } from "!/emit/type"
 import { Value } from "!/emit/value"
 import { Entry } from "!/exec/item"
 import type { CanvasJs } from "!/std/2d"
+import { ScriptDeps } from "@/eval/tx"
 import "@/eval/txs"
 import { each } from "@/eval/util"
 import { FieldInert } from "@/field/field-inert"
@@ -12,7 +13,14 @@ import { fa, h } from "@/lib/jsx"
 import { PLOT_3D } from "@/sheet/plot/3d"
 import type { Shader } from "@/sheet/plot/shader"
 import { faWarning } from "@fortawesome/free-solid-svg-icons/faWarning"
-import { Material, Mesh, ShaderMaterial, type BufferGeometry } from "three"
+import {
+  Material,
+  Mesh,
+  ShaderMaterial,
+  type BufferGeometry,
+  type Vector3,
+} from "three"
+import { ParametricGeometry } from "three/examples/jsm/Addons.js"
 import { Store, type AnyExt } from "../../ext"
 import { FACTORY_EXPR } from "../../factory-expr"
 import type { ItemRef } from "../../items"
@@ -399,6 +407,45 @@ function plotJs2D(self: Expr, value: unknown, type: Type) {
 }
 
 function compileForJs(self: Expr, expr: string, shader: string | null) {
+  const deps = new ScriptDeps()
+  deps.check(self.field.block.parseTopLevel())
+
+  if (PLOT_3D && (deps.has("x") || deps.has("y"))) {
+    self.unrender3D()
+    const env = self.sheet.factory.env
+    const cv = self.sheet.cv3D!
+    const { block, value } = env.process(
+      expr,
+      "<expression>",
+      new IdMap<Value>(null)
+        .set(ident("x"), new Value("pos_x", env.libJs.tyNum, false))
+        .set(ident("y"), new Value("pos_y", env.libJs.tyNum, false)),
+    )
+    if (value.type != env.libJs.tyNum) {
+      todo("I don't know how to plot this.")
+    }
+    const f = env.compile(block, value, "pos_x,pos_y")
+    cv.setShader(env, shader)
+    function func(u: number, v: number, target: Vector3) {
+      const { xmin, xmax, ymin, ymax } = cv.bounds()
+      const x = (xmax - xmin) * u + xmin
+      const y = (ymax - ymin) * v + ymin
+      const z = f(x, y) as number
+      target.set(x, y, z)
+    }
+    let geo = new ParametricGeometry(func, 128, 128)
+    const mesh = new Mesh(geo, cv.makeMat())
+    self.lastObjs = [mesh]
+    mesh.onBeforeRender = () => {
+      const next = cv.regenParametric(geo)
+      mesh.geometry = next
+      geo = next
+      geo.dispose()
+    }
+    cv.scene.add(mesh)
+    return
+  }
+
   const env = self.sheet.factory.env
   const { block, value } = env.process(expr, "<expression>")
   const result = env.compute(block, value)

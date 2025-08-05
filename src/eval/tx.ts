@@ -181,8 +181,8 @@ export class ScriptDeps {
     }
   }
 
-  nore(name: NameCooked) {
-    this.ignoring.add(nameIdent(name))
+  has(name: string, sub: string | null = null) {
+    return this.deps.has(nameIdent({ name, sub }))
   }
 
   check(node: Node | null) {
@@ -204,6 +204,43 @@ export class ScriptDeps {
         if (op) {
           return op.deps(node.data.data, node.args ?? [], this)
         }
+        break
+
+      case "sop": {
+        if (!(node.data.data.sub || node.data.data.sup)) {
+          const op = TX_OPS_OPS[node.data.data.name]
+          if (op) {
+            return op.deps(node.data.data.name, node.args ?? [], this)
+          }
+        }
+        const op = TX_OPS_SOPS[node.data.data.name]
+        if (op) {
+          return op.deps(node.data.data, node.args ?? [], this)
+        }
+        break
+      }
+
+      case "bcall": {
+        if (!(node.data.data.name.sub || node.data.data.sup)) {
+          const op = TX_OPS_OPS[node.data.data.name.name]
+          if (op) {
+            return op.deps(node.data.data.name.name, [node.data.data.arg], this)
+          }
+        }
+        const op = TX_OPS_SOPS[node.data.data.name.name]
+        if (op) {
+          return op.deps(
+            {
+              name: node.data.data.name.name,
+              sub: node.data.data.name.sub,
+              sup: node.data.data.sup,
+            },
+            [node.data.data.arg],
+            this,
+          )
+        }
+        break
+      }
     }
 
     const txr =

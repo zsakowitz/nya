@@ -4,7 +4,12 @@ import { Value } from "@/lang/emit/value"
 import type { ScriptEnvironment } from "@/lang/exec/loader"
 import type { Canvas3D } from "@/lang/std/3d"
 import * as T from "three"
-import { Line2, LineGeometry, LineMaterial } from "three/examples/jsm/Addons.js"
+import {
+  Line2,
+  LineGeometry,
+  LineMaterial,
+  ParametricGeometry,
+} from "three/examples/jsm/Addons.js"
 import {
   getGridlineSize,
   MAX_GRIDLINES_MAJOR,
@@ -536,10 +541,14 @@ export class Cv3D implements Canvas3D {
   private readonly angleMat = this.matPlain(0xfa7e1a, 0.5)
   private readonly planeMat = this.matPlain(0x888888, 0.5)
   private readonly lineMat = this.matLine(0x2d70b3, 8)
+  private readonly surfaceMat = this.mat(0x6042a6)
 
+  makeMat(): LineMaterial
   makeMat(mat: LineMaterial): LineMaterial
   makeMat(mat: T.Material): T.Material
-  makeMat(mat: T.Material | LineMaterial): T.Material | LineMaterial {
+  makeMat(
+    mat: T.Material | LineMaterial = this.surfaceMat,
+  ): T.Material | LineMaterial {
     if (this.shade) {
       const mat2 =
         mat == this.sphereMat ? this.mat(0xc74440)
@@ -549,6 +558,7 @@ export class Cv3D implements Canvas3D {
         : mat == this.angleMat ? this.matPlain(0xfa7e1a, 0.5)
         : mat == this.planeMat ? this.matPlain(0x888888, 0.5)
         : mat == this.lineMat ? this.matLine(0x2d70b3, 8)
+        : mat == this.surfaceMat ? this.mat(0x6042a6)
         : null
       if (!mat2) return mat
       this.shade(mat2)
@@ -794,5 +804,21 @@ export class Cv3D implements Canvas3D {
       this.applyShader(mat, shader)
       mat.customProgramCacheKey = () => k
     }
+  }
+
+  setShader(env: ScriptEnvironment, text: string | null) {
+    if (text) {
+      this.shade = this.createShaderFromText(env, text)
+    } else {
+      this.shade = undefined
+    }
+  }
+
+  regenParametric(geo: ParametricGeometry) {
+    return new ParametricGeometry(
+      geo.parameters.func,
+      geo.parameters.slices,
+      geo.parameters.stacks,
+    )
   }
 }
