@@ -55,10 +55,6 @@ fn end(x: Offset3D) -> Point3D {
   Point3D { x: x.x, y: x.y, z: x.z }
 }
 
-fn %display(a: Offset3D) -> latex {
-  display"vector((${a.x},${a.y},${a.z}))"
-}
-
 fn %plot_3d(cv: Canvas3D, p: Offset3D) -> Object3D {
   cv.segment(0, 0, 0, p.x, p.y, p.z)
 }
