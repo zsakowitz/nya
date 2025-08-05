@@ -1,7 +1,4 @@
 use "2d/point";
-use "color";
-use "color/dcg";
-use "complex";
 
 // Special syntax to declare multiple structs with the exact same layout.
 // Especially useful for geometry functions, which are polymorphic over the

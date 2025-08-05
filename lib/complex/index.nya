@@ -177,6 +177,11 @@ fn %plot_2d(cv: Canvas, p: Complex) -> CanvasPoint {
   cv.point_at(p.real, p.imag)
 }
 
+let _complex_nan = Complex {
+  real: nan,
+  imag: nan,
+};
+
 expose package {
   name: "complex numbers",
   default: true,
