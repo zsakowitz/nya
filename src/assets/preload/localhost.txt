@@ -1,2 +1,14 @@
-f\left(z\right)=\left(\left(\left(\left(\left(\left(z^{2}+z\right)^{2}+z\right)^{2}+z\right)^{2}+z\right)^{2}+z\right)^{2}+z\right)
-\left|f\left(x+yi\right)\right|\operatorname{shaded}f\left(x+yi\right)
+A=\left(2,3,4\right)
+B=\left(-3,-1,4\right)
+C=\left(1,0,0\right)
+q_{1}=\operatorname{angle}\left(A,B,C\right)
+q_{2}=\operatorname{angle}\left(B,A,C\right)
+r_{1}=q_{1}.\operatorname{anglebisector}
+r_{2}=q_{2}.\operatorname{anglebisector}
+I=\operatorname{ishtersection}\left(r_{1},r_{2}\right)
+l=\operatorname{line}\left(A,B\right)
+p=\operatorname{perpendicular}\left(l,I\right)
+Q=\operatorname{intersection}\left(l,p\right)
+\operatorname{plane}\left(A,B,C\right).\operatorname{circle}\left(I,\left|I-Q\right|\right)
+\operatorname{segment}\left(\left[B,C\right],\left[C,A\right]\right)
+\left(\operatorname{sin}x\operatorname{cos}y-2\right)\operatorname{shaded}\operatorname{rgb}\left(255\left(x\operatorname{mod}0.5\right),255\left(y\operatorname{mod}0.5\right),128\left(z+3\right)\right)
