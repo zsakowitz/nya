@@ -82,8 +82,10 @@ fn /(x: Complex, p: LinCx) -> CirCx { x * inv(p) }
 fn /(x: Complex, p: ArcCx) -> ArcCx { x * inv(p) }
 fn /(x: Complex, p: LrcCx) -> LrcCx { x * inv(p) }
 
-//   1 / (p1 + t (p2 - p1))
-// =
-
-// fn /(x: Complex, p: CirCx) -> CirCx {
-// }
+fn conj(p: SegCx) -> SegCx { SegCx { p1: p.p1.conj, p2: p.p2.conj } }
+fn conj(p: RayCx) -> RayCx { RayCx { p1: p.p1.conj, p2: p.p2.conj } }
+fn conj(p: VecCx) -> VecCx { VecCx { p1: p.p1.conj, p2: p.p2.conj } }
+fn conj(p: LinCx) -> LinCx { LinCx { p1: p.p1.conj, p2: p.p2.conj } }
+fn conj(p: CirCx) -> CirCx { CirCx { center: p.center.conj, radius: p.radius } }
+fn conj(p: ArcCx) -> ArcCx { ArcCx { p1: p.p1.conj, p2: p.p2.conj, p3: p.p3.conj } }
+fn conj(p: LrcCx) -> LrcCx { LrcCx { p1: p.p1.conj, p2: p.p2.conj, p3: p.p3.conj } }
