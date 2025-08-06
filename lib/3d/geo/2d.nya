@@ -1,59 +1,34 @@
 use "2d/geo";
 use "3d/point";
 use "3d/geo/cons";
+use "2d/geo/complex";
 
-fn ->(p: Point) -> Point3D {
-  Point3D { x: p.x, y: p.y, z: 0 }
-}
+fn ->(p: Point) -> Point3D { Point3D { x: p.x, y: p.y, z: 0 } }
+fn ->(l: Segment) -> Segment3D { Segment3D { p1: l.p1 -> Point3D, p2: l.p2 -> Point3D } }
+fn ->(l: Ray) -> Ray3D { Ray3D { p1: l.p1 -> Point3D, p2: l.p2 -> Point3D } }
+fn ->(l: Line) -> Line3D { Line3D { p1: l.p1 -> Point3D, p2: l.p2 -> Point3D } }
+fn ->(l: Vector) -> Vector3D { Vector3D { p1: l.p1 -> Point3D, p2: l.p2 -> Point3D } }
+fn ->(l: Circle) -> Circle3D { Circle3D { normal: xyplane.normal, center: l.center -> Point3D, radius: l.radius } }
+fn ->(l: Angle) -> Angle3D { Angle3D { p1: l.p1 -> Point3D, p2: l.p2 -> Point3D, p3: l.p3 -> Point3D } }
+fn ->(l: DirectedAngle) -> DirectedAngle3D { DirectedAngle3D { p1: l.p1 -> Point3D, p2: l.p2 -> Point3D, p3: l.p3 -> Point3D } }
 
-fn ->(l: Line) -> Line3D {
-  Line3D {
-    p1: l.p1 -> Point3D,
-    p2: l.p2 -> Point3D,
-  }
-}
+fn %plot_3d(cv: Canvas3D, l: SegCx) -> Object3D { %plot_3d(cv, Segment { p1: l.p1.point, p2: l.p2.point }) }
+fn %plot_3d(cv: Canvas3D, l: RayCx) -> Object3D { %plot_3d(cv, Ray { p1: l.p1.point, p2: l.p2.point }) }
+fn %plot_3d(cv: Canvas3D, l: LinCx) -> Object3D { %plot_3d(cv, Line { p1: l.p1.point, p2: l.p2.point }) }
+fn %plot_3d(cv: Canvas3D, l: VecCx) -> Object3D { %plot_3d(cv, Vector { p1: l.p1.point, p2: l.p2.point }) }
+fn %plot_3d(cv: Canvas3D, l: CirCx) -> Object3D { %plot_3d(cv, Circle { center: l.center.point, radius: l.radius }) }
+fn %plot_3d(cv: Canvas3D, l: AngleCx) -> Object3D { %plot_3d(cv, Angle { p1: l.p1.point, p2: l.p2.point, p3: l.p3.point }) }
+fn %plot_3d(cv: Canvas3D, l: Complex) -> Object3D { %plot_3d(cv, l.point) }
+// TODO: DirectedAngleCx
+fn %plot_3d(cv: Canvas3D, l: LrcCx) -> Object3D {
+  let arc = Arc { p1: l.p1.point, p2: l.p2.point, p3: l.p3.point };
+  let c = arc._compute;
 
-fn ->(l: Ray) -> Ray3D {
-  Ray3D {
-    p1: l.p1 -> Point3D,
-    p2: l.p2 -> Point3D,
-  }
-}
-
-fn ->(l: Vector) -> Vector3D {
-  Vector3D {
-    p1: l.p1 -> Point3D,
-    p2: l.p2 -> Point3D,
-  }
-}
-
-fn ->(l: Segment) -> Segment3D {
-  Segment3D {
-    p1: l.p1 -> Point3D,
-    p2: l.p2 -> Point3D,
-  }
-}
-
-fn ->(l: Circle) -> Circle3D {
-  Circle3D {
-    normal: xyplane.normal,
-    center: l.center -> Point3D,
-    radius: l.radius,
-  }
-}
-
-fn ->(l: Angle) -> Angle3D {
-  Angle3D {
-    p1: l.p1 -> Point3D,
-    p2: l.p2 -> Point3D,
-    p3: l.p3 -> Point3D,
-  }
-}
-
-fn ->(l: DirectedAngle) -> DirectedAngle3D {
-  DirectedAngle3D {
-    p1: l.p1 -> Point3D,
-    p2: l.p2 -> Point3D,
-    p3: l.p3 -> Point3D,
+  if c.kind == :segment || c.kind == :tworay {
+    %plot_3d(cv, Line { p1: c.p1, p2: c.p3 })
+  } else if c.kind == :circle {
+    %plot_3d(cv, Circle { center: c.c, radius: distance(c.p1, c.c) })
+  } else {
+    %plot_3d(cv, _point_nan)
   }
 }

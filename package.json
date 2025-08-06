@@ -51,13 +51,11 @@
     "jsdocCapitalizeDescription": false,
     "overrides": [
       {
-        "files": "src/lang/std/**/*",
-        "options": {
-          "printWidth": 160
-        }
-      },
-      {
-        "files": "lib/2d/geo/complex/algebra.nya",
+        "files": [
+          "src/lang/std/**/*",
+          "lib/2d/geo/complex/algebra.nya",
+          "lib/3d/geo/2d.nya"
+        ],
         "options": {
           "printWidth": 160
         }
