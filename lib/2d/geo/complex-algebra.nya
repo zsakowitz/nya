@@ -1,6 +1,0 @@
-use "2d/geo/complex";
-
-expose package {
-  name: "algebra on 2D geometry",
-  default: true,
-}

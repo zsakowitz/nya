@@ -74,7 +74,7 @@ fn %plot_3d(cv: Canvas3D, p: Point3D) -> Object3D {
   cv.point(p.x, p.y, p.z, 4.0)
 }
 
-let _point_nan = Point3D { x: nan, y: nan, z: nan };
+let _point_nan_3d = Point3D { x: nan, y: nan, z: nan };
 
 expose package {
   name: "3d points",

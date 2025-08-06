@@ -1,0 +1,28 @@
+use "2d/geo/complex/core";
+use "2d/geo/arc";
+
+struct LrcCx {
+  p1: Complex,
+  p2: Complex,
+  p3: Complex,
+}
+
+fn ->(x: LinCx) -> LrcCx {
+  LrcCx {
+    p1: x.p1,
+    p2: midpoint(x.p1, x.p2),
+    p3: x.p2,
+  }
+}
+
+fn ->(x: CirCx) -> LrcCx {
+  LrcCx {
+    p1: x.center + x.radius,
+    p2: x.center + i * x.radius,
+    p3: x.center - x.radius,
+  }
+}
+
+fn %plot_2d(cv: Canvas, p: LrcCx) -> PathStyled {
+  %plot_2d(cv, ArcFull { p1: p.p1.point, p2: p.p2.point, p3: p.p3.point })
+}

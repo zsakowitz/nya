@@ -1,4 +1,5 @@
 use "real";
+use "2d/point";
 use "color";
 use "color/core";
 use "color/dcg";
@@ -181,6 +182,25 @@ let _complex_nan = Complex {
   real: nan,
   imag: nan,
 };
+
+fn midpoint(p1: Complex, p2: Complex) -> Complex {
+  (p1 + p2) / 2.0
+}
+
+fn distance(p1: Complex, p2: Complex) -> num {
+  @length(p1 - p2)
+}
+
+fn is_finite(p: Complex) -> bool {
+  is_finite(p.real) && is_finite(p.imag)
+}
+
+fn point(x: Complex) -> Point {
+  Point {
+    x: x.real,
+    y: x.imag,
+  }
+}
 
 expose package {
   name: "complex numbers",

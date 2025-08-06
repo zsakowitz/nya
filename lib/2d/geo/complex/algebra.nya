@@ -1,0 +1,89 @@
+use "2d/geo/complex/core";
+use "2d/geo/complex/lircle";
+
+fn +(p: SegCx) -> SegCx { p }
+fn +(p: RayCx) -> RayCx { p }
+fn +(p: LinCx) -> LinCx { p }
+fn +(p: VecCx) -> VecCx { p }
+fn +(p: CirCx) -> CirCx { p }
+fn +(p: ArcCx) -> ArcCx { p }
+fn +(p: LrcCx) -> LrcCx { p }
+
+fn -(p: SegCx) -> SegCx { @-p }
+fn -(p: RayCx) -> RayCx { @-p }
+fn -(p: LinCx) -> LinCx { @-p }
+fn -(p: VecCx) -> VecCx { @-p }
+fn -(p: CirCx) -> CirCx { CirCx { center: -p.center, radius: p.radius } }
+fn -(p: ArcCx) -> ArcCx { ArcCx { p1: -p.p1, p2: -p.p2, p3: -p.p3 } }
+fn -(p: LrcCx) -> LrcCx { LrcCx { p1: -p.p1, p2: -p.p2, p3: -p.p3 } }
+
+fn +(x: Complex, p: SegCx) -> SegCx { SegCx { p1: x + p.p1, p2: x + p.p2 } }
+fn +(p: SegCx, x: Complex) -> SegCx { SegCx { p1: p.p1 + x, p2: p.p2 + x } }
+fn +(x: Complex, p: RayCx) -> RayCx { RayCx { p1: x + p.p1, p2: x + p.p2 } }
+fn +(p: RayCx, x: Complex) -> RayCx { RayCx { p1: p.p1 + x, p2: p.p2 + x } }
+fn +(x: Complex, p: LinCx) -> LinCx { LinCx { p1: x + p.p1, p2: x + p.p2 } }
+fn +(p: LinCx, x: Complex) -> LinCx { LinCx { p1: p.p1 + x, p2: p.p2 + x } }
+fn +(x: Complex, p: VecCx) -> VecCx { VecCx { p1: x + p.p1, p2: x + p.p2 } }
+fn +(p: VecCx, x: Complex) -> VecCx { VecCx { p1: p.p1 + x, p2: p.p2 + x } }
+fn +(x: Complex, p: CirCx) -> CirCx { CirCx { center: x + p.center, radius: p.radius } }
+fn +(p: CirCx, x: Complex) -> CirCx { CirCx { center: p.center + x, radius: p.radius } }
+fn +(x: Complex, p: ArcCx) -> ArcCx { ArcCx { p1: x + p.p1, p2: x + p.p2, p3: x + p.p3 } }
+fn +(p: ArcCx, x: Complex) -> ArcCx { ArcCx { p1: p.p1 + x, p2: p.p2 + x, p3: p.p3 + x } }
+fn +(x: Complex, p: LrcCx) -> LrcCx { LrcCx { p1: x + p.p1, p2: x + p.p2, p3: x + p.p3 } }
+fn +(p: LrcCx, x: Complex) -> LrcCx { LrcCx { p1: p.p1 + x, p2: p.p2 + x, p3: p.p3 + x } }
+
+fn -(x: Complex, p: SegCx) -> SegCx { SegCx { p1: x - p.p1, p2: x - p.p2 } }
+fn -(p: SegCx, x: Complex) -> SegCx { SegCx { p1: p.p1 - x, p2: p.p2 - x } }
+fn -(x: Complex, p: RayCx) -> RayCx { RayCx { p1: x - p.p1, p2: x - p.p2 } }
+fn -(p: RayCx, x: Complex) -> RayCx { RayCx { p1: p.p1 - x, p2: p.p2 - x } }
+fn -(x: Complex, p: LinCx) -> LinCx { LinCx { p1: x - p.p1, p2: x - p.p2 } }
+fn -(p: LinCx, x: Complex) -> LinCx { LinCx { p1: p.p1 - x, p2: p.p2 - x } }
+fn -(x: Complex, p: VecCx) -> VecCx { VecCx { p1: x - p.p1, p2: x - p.p2 } }
+fn -(p: VecCx, x: Complex) -> VecCx { VecCx { p1: p.p1 - x, p2: p.p2 - x } }
+fn -(x: Complex, p: CirCx) -> CirCx { CirCx { center: x - p.center, radius: p.radius } }
+fn -(p: CirCx, x: Complex) -> CirCx { CirCx { center: p.center - x, radius: p.radius } }
+fn -(x: Complex, p: ArcCx) -> ArcCx { ArcCx { p1: x - p.p1, p2: x - p.p2, p3: x - p.p3 } }
+fn -(p: ArcCx, x: Complex) -> ArcCx { ArcCx { p1: p.p1 - x, p2: p.p2 - x, p3: p.p3 - x } }
+fn -(x: Complex, p: LrcCx) -> LrcCx { LrcCx { p1: x - p.p1, p2: x - p.p2, p3: x - p.p3 } }
+fn -(p: LrcCx, x: Complex) -> LrcCx { LrcCx { p1: p.p1 - x, p2: p.p2 - x, p3: p.p3 - x } }
+
+fn *(x: Complex, p: SegCx) -> SegCx { SegCx { p1: x * p.p1, p2: x * p.p2 } }
+fn *(p: SegCx, x: Complex) -> SegCx { SegCx { p1: p.p1 * x, p2: p.p2 * x } }
+fn *(x: Complex, p: RayCx) -> RayCx { RayCx { p1: x * p.p1, p2: x * p.p2 } }
+fn *(p: RayCx, x: Complex) -> RayCx { RayCx { p1: p.p1 * x, p2: p.p2 * x } }
+fn *(x: Complex, p: LinCx) -> LinCx { LinCx { p1: x * p.p1, p2: x * p.p2 } }
+fn *(p: LinCx, x: Complex) -> LinCx { LinCx { p1: p.p1 * x, p2: p.p2 * x } }
+fn *(x: Complex, p: VecCx) -> VecCx { VecCx { p1: x * p.p1, p2: x * p.p2 } }
+fn *(p: VecCx, x: Complex) -> VecCx { VecCx { p1: p.p1 * x, p2: p.p2 * x } }
+fn *(x: Complex, p: CirCx) -> CirCx { CirCx { center: x * p.center, radius: abs(x) * p.radius } }
+fn *(p: CirCx, x: Complex) -> CirCx { CirCx { center: p.center * x, radius: p.radius * abs(x) } }
+fn *(x: Complex, p: ArcCx) -> ArcCx { ArcCx { p1: x * p.p1, p2: x * p.p2, p3: x * p.p3 } }
+fn *(p: ArcCx, x: Complex) -> ArcCx { ArcCx { p1: p.p1 * x, p2: p.p2 * x, p3: p.p3 * x } }
+fn *(x: Complex, p: LrcCx) -> LrcCx { LrcCx { p1: x * p.p1, p2: x * p.p2, p3: x * p.p3 } }
+fn *(p: LrcCx, x: Complex) -> LrcCx { LrcCx { p1: p.p1 * x, p2: p.p2 * x, p3: p.p3 * x } }
+
+fn /(p: SegCx, x: Complex) -> SegCx { SegCx { p1: p.p1 / x, p2: p.p2 / x } }
+fn /(p: RayCx, x: Complex) -> RayCx { RayCx { p1: p.p1 / x, p2: p.p2 / x } }
+fn /(p: LinCx, x: Complex) -> LinCx { LinCx { p1: p.p1 / x, p2: p.p2 / x } }
+fn /(p: VecCx, x: Complex) -> VecCx { VecCx { p1: p.p1 / x, p2: p.p2 / x } }
+fn /(p: CirCx, x: Complex) -> CirCx { CirCx { center: p.center / x, radius: p.radius / abs(x) } }
+fn /(p: ArcCx, x: Complex) -> ArcCx { ArcCx { p1: p.p1 / x, p2: p.p2 / x, p3: p.p3 / x } }
+fn /(p: LrcCx, x: Complex) -> LrcCx { LrcCx { p1: p.p1 / x, p2: p.p2 / x, p3: p.p3 / x } }
+
+fn inv(p: SegCx) -> ArcCx { ArcCx { p1: p.p1.inv, p2: p.glider(0.5).inv, p3: p.p2.inv } }
+fn inv(p: RayCx) -> ArcCx { ArcCx { p1: p.p1.inv, p2: p.glider(0.5).inv, p3: 0.0 * i } }
+fn inv(p: LinCx) -> CirCx { ArcCx { p1: p.p1.inv, p2: p.glider(0.5).inv, p3: 0.0 * i }.circle }
+fn inv(p: ArcCx) -> ArcCx { ArcCx { p1: p.p1.inv, p2: p.p2.inv, p3: p.p3.inv } }
+fn inv(p: LrcCx) -> LrcCx { LrcCx { p1: p.p1.inv, p2: p.p2.inv, p3: p.p3.inv } }
+
+fn /(x: Complex, p: SegCx) -> ArcCx { x * inv(p) }
+fn /(x: Complex, p: RayCx) -> ArcCx { x * inv(p) }
+fn /(x: Complex, p: LinCx) -> CirCx { x * inv(p) }
+fn /(x: Complex, p: ArcCx) -> ArcCx { x * inv(p) }
+fn /(x: Complex, p: LrcCx) -> LrcCx { x * inv(p) }
+
+//   1 / (p1 + t (p2 - p1))
+// =
+
+// fn /(x: Complex, p: CirCx) -> CirCx {
+// }

@@ -13,6 +13,11 @@ export function libNumBool(api: NyaApi) {
   api.f1("!=", { v1: bool, v2: bool }, bool, v`${0}!=${1}`)
   api.f1("!", { arg: bool }, bool, v`!${0}`)
 
+  // 'sym' operators
+  const sym = api.lib.tySym
+  api.f1("==", { v1: sym, v2: sym }, bool, v`${0}==${1}`)
+  api.f1("!=", { v1: sym, v2: sym }, bool, v`${0}!=${1}`)
+
   api.f1("+", { value: num }, num, v`${0}`)
   api.f1("-", { value: num }, num, v`-${0}`)
   // Basic numeric operators

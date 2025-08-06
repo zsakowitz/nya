@@ -1,6 +1,1 @@
-f_{raw}\left(a,b\right)=\left(0,0,1\right)+\frac{\left(a,b,-1\right)}{a^{2}+b^{2}+1}
-f\left(z\right)=f_{raw}\left(\operatorname{real}\left(z\right),\operatorname{imag}\left(z\right)\right)
-g_{raw}\left(x,y,z\right)=Z\left(x+yi\right)\operatorname{with}Z=\frac{1}{1-z}
-g\left(p\right)=g_{raw}\left(p.x,p.y,p.z\right)
-\operatorname{sphere}\left(\left(0,0,0.5\right),0.5\right)\operatorname{shaded}g\left(\left(x,y,z\right)\right)
-\operatorname{xyplane}\operatorname{shaded}x+yi
+arcray((0,1),(1,1),(2,1))

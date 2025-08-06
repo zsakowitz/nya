@@ -11,7 +11,7 @@ import {
   type OpKind,
   type Suffix,
 } from "@/eval/node"
-import { ParseNode, Parser } from "@/eval/parse"
+import { ParseNode, Parser, type ParseIR } from "@/eval/parse"
 import { Precedence } from "@/eval/prec"
 import { listItems } from "@/eval/tx"
 import { h } from "@/lib/jsx"
@@ -1267,6 +1267,15 @@ export class IRBuilder {
       suffix.data.push(data)
     } else {
       this.push(sufx({ type: "suffix", data: [data] }, Precedence.Suffixed))
+    }
+  }
+
+  suffixedOr(data: Suffix, f: (sufx: ParseIR<Data>) => IR) {
+    const suffix = this.lastOf("suffix")
+    if (suffix) {
+      suffix.data.push(data)
+    } else {
+      this.push(f(sufx({ type: "suffix", data: [data] }, Precedence.Suffixed)))
     }
   }
 }

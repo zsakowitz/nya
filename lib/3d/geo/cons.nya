@@ -288,7 +288,7 @@ fn ishtersection(l1: AnyLine3D, l2: AnyLine3D) -> Point3D {
 
   let denom = d2121 * d4343 - d4321 * d4321;
   if denom == 0 {
-    _point_nan
+    _point_nan_3d
   } else {
     p1 + (d1343 * d4321 - d1321 * d4343) / denom * d21
   }
@@ -302,7 +302,7 @@ fn intersection(p: Plane, line: AnyLine3D) -> Point3D {
   let l = @norm(line.p2 - l0);
   let denom = @dot(l, n);
   if denom == 0 {
-    _point_nan
+    _point_nan_3d
   } else {
     l0 + l * (@dot(p0 - l0, n) / denom)
   }
@@ -321,7 +321,7 @@ fn intersection(p1: Plane, p2: Plane) -> Line3D {
   let dot = @dot(n1, n2);
   let denom = 1.0 - dot * dot;
   if denom == 0.0 {
-    return Line3D { p1: _point_nan, p2: _point_nan };
+    return Line3D { p1: _point_nan_3d, p2: _point_nan_3d };
   }
 
   let c1 = (h1 - h2 * dot) / denom;
@@ -348,7 +348,7 @@ fn _intersection(l: AnyLine3D, s: Sphere, which: num) -> Point3D {
   let dot = @dot(u, o - c);
   let det = dot * dot - (@length(o - c) ^ 2 - r ^ 2);
   if det < 0.0 {
-    return _point_nan;
+    return _point_nan_3d;
   }
 
   let d = -dot + which * sqrt(det);
@@ -393,7 +393,7 @@ fn _intersection(s1: Sphere, s2: Sphere) -> Sphere {
     return (
       Sphere {
         radius: nan,
-        center: _point_nan,
+        center: _point_nan_3d,
       }
     );
   }
@@ -421,7 +421,7 @@ fn _intersection(s: Sphere, c: Circle3D, which: num) -> Point3D {
   let rs = s.radius;
   let d = @dot(n, cc - cs);
   if abs(d) > rs {
-    return _point_nan;
+    return _point_nan_3d;
   }
   let cp = cs + d * n;
   let rp = sqrt(rs * rs - d * d);

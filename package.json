@@ -55,6 +55,12 @@
         "options": {
           "printWidth": 160
         }
+      },
+      {
+        "files": "lib/2d/geo/complex/algebra.nya",
+        "options": {
+          "printWidth": 160
+        }
       }
     ]
   },

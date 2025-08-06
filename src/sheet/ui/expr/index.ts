@@ -361,14 +361,14 @@ function plotJs2D(self: Expr, value: unknown, type: Type) {
     switch (plot2d.output) {
       case "pt":
         self.plot = (ctx, cv) => {
-          ctx.beginPath()
           ctx.fillStyle = Color.Purple
           ctx.globalAlpha = 1
           each(type, value, (value) => {
             const { x, y } = plot2d.exec(cv, value)
+            ctx.beginPath()
             ctx.ellipse(x, y, Size.Point, Size.Point, 0, 0, 2 * Math.PI)
+            ctx.fill()
           })
-          ctx.fill()
         }
         break
 

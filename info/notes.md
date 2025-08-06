@@ -4,6 +4,7 @@ general configuration:
 
 - `?onlypkg=<comma-separated package ids>`
 - `?addons=<comma-separated package ids>`
+- `?list1` enabled 1-indexed lists
 
 configure sheet:
 

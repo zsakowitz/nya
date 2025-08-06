@@ -45,6 +45,10 @@ fn %xprody(a: num, b: num) -> num {
   }
 }
 
+fn midpoint(p1: num, p2: num) -> num {
+  (p1 + p2) / 2.0
+}
+
 expose package {
   name: "core real operations",
   default: true,

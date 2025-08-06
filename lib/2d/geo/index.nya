@@ -1,4 +1,6 @@
 use "2d/point";
+use "2d/geo/arc";
+use "2d/geo/ray";
 
 // Special syntax to declare multiple structs with the exact same layout.
 // Especially useful for geometry functions, which are polymorphic over the
@@ -27,16 +29,6 @@ fn ray(p1: Point, p2: Point) -> Ray {
   Ray { p1, p2 }
 }
 
-struct Arc {
-  p1: Point,
-  p2: Point,
-  p3: Point,
-}
-
-fn arc(p1: Point, p2: Point, p3: Point) -> Arc {
-  Arc { p1, p2, p3 }
-}
-
 struct Angle, DirectedAngle {
   p1: Point,
   p2: Point,
@@ -51,10 +43,6 @@ fn angle(p1: Point, p2: Point, p3: Point) -> Angle {
 
 fn directed_angle(p1: Point, p2: Point, p3: Point) -> DirectedAngle {
   DirectedAngle { p1, p2, p3 }
-}
-
-fn distance(p1: Point, p2: Point) -> num {
-  @length(p1 @- p2)
 }
 
 //! https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
@@ -98,10 +86,6 @@ fn midpoint(s: Segment) -> Point {
   @mix(s.p1, s.p2, 0.5)
 }
 
-fn midpoint(p1: Point, p2: Point) -> Point {
-  @mix(p1, p2, 0.5)
-}
-
 struct Circle {
   center: Point,
   radius: num,
@@ -127,30 +111,7 @@ fn perpendicular(l: AnySlope, p: Point) -> Line {
 }
 
 fn intersection(l1: AnyLine, l2: AnyLine) -> Point {
-  let x1 = l1.p1.x;
-  let y1 = l1.p1.y;
-  let x2 = l1.p2.x;
-  let y2 = l1.p2.y;
-
-  let x3 = l2.p1.x;
-  let y3 = l2.p1.y;
-  let x4 = l2.p2.x;
-  let y4 = l2.p2.y;
-
-  let d = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
-
-  let x1y2 = x1 * y2;
-  let x2y1 = y1 * x2;
-  let x3y4 = x3 * y4;
-  let x4y3 = y3 * x4;
-
-  let base = Point {
-    x: (x1y2 - x2y1) * (x3 - x4) - (x1 - x2) * (x3y4 - x4y3),
-    y: (x1y2 - x2y1) * (y3 - y4) - (y1 - y2) * (x3y4 - x4y3),
-  };
-
-  // TODO: optimize this as a determinant call
-  base @/ d
+  _isec_line(l1.p1, l1.p2, l2.p1, l2.p2)
 }
 
 //! https://stackoverflow.com/a/37225895
@@ -260,14 +221,6 @@ fn glider(l: Segment, at: num) -> Point {
   @mix(l.p1, l.p2, clamp(at, 0.0, 1.0))
 }
 
-fn start(a: Arc) -> Point {
-  a.p1
-}
-
-fn end(a: Arc) -> Point {
-  a.p3
-}
-
 // "glider"
 // "intersection"
 // "polygon"
@@ -297,75 +250,11 @@ fn %plot_2d(cv: Canvas, l: Segment) -> Path {
 }
 
 fn %plot_2d(cv: Canvas, l: Line) -> Path {
-  let x1 = l.p1.x;
-  let y1 = l.p1.y;
-  let x2 = l.p2.x;
-  let y2 = l.p2.y;
-
-  if x1 == x2 && y1 == y2 {
-    return path;
-  }
-
-  let ymin = 2 * cv.ymin - cv.ymax;
-  let ymax = 2 * cv.ymax - cv.ymin;
-  let xmin = 2 * cv.xmin - cv.xmax;
-  let xmax = 2 * cv.xmax - cv.xmin;
-
-  if x1 == x2 {
-    path
-      .move_to(cv.point_at(x1, ymin))
-      .line_to(cv.point_at(x1, ymax))
-  } else {
-    let m = (y2 - y1) / (x2 - x1);
-    path
-      .move_to(cv.point_at(xmin, m * (xmin - x1) + y1))
-      .line_to(cv.point_at(xmax, m * (xmax - x1) + y1))
-  }
+  _plot_2d_line(cv, l.p1, l.p2)
 }
 
 fn %plot_2d(cv: Canvas, l: Ray) -> Path {
-  let x1 = l.p1.x;
-  let y1 = l.p1.y;
-  let x2 = l.p2.x;
-  let y2 = l.p2.y;
-
-  if x1 == x2 && y1 == y2 {
-    return path;
-  }
-
-  let ymin = 2 * cv.ymin - cv.ymax;
-  let ymax = 2 * cv.ymax - cv.ymin;
-  let xmin = 2 * cv.xmin - cv.xmax;
-  let xmax = 2 * cv.xmax - cv.xmin;
-
-  let p = path.move_to(cv.point_at(l.p1.x, l.p1.y));
-
-  if x1 == x2 {
-    if y1 < y2 {
-      if !(y1 > ymax) {
-        p.line_to(cv.point_at(x1, ymax))
-      } else {
-        p
-      }
-    } else if !(y1 < ymin) {
-      p.line_to(cv.point_at(x1, ymin))
-    } else {
-      p
-    }
-  } else {
-    let m = (y2 - y1) / (x2 - x1);
-    if x1 < x2 {
-      if !(x2 > xmax) {
-        p.line_to(cv.point_at(xmax, m * (xmax - x1) + y1))
-      } else {
-        p
-      }
-    } else if !(x1 < xmin) {
-      p.line_to(cv.point_at(xmin, m * (xmin - x1) + y1))
-    } else {
-      p
-    }
-  }
+  _plot_2d_ray(cv, l.p1, l.p2)
 }
 
 fn %plot_2d(cv: Canvas, l: Vector) -> PathStyled {

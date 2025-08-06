@@ -1,0 +1,233 @@
+use "2d/point";
+use "2d/geo/ray";
+use "color/dcg";
+
+fn _isec_line(p1: Point, p2: Point, p3: Point, p4: Point) -> Point {
+  let d = (p1.x - p2.x) * (p3.y - p4.y) - (p1.y - p2.y) * (p3.x - p4.x);
+
+  let x1y2 = p1.x * p2.y;
+  let x2y1 = p1.y * p2.x;
+  let x3y4 = p3.x * p4.y;
+  let x4y3 = p3.y * p4.x;
+
+  let base = Point {
+    x: (x1y2 - x2y1) * (p3.x - p4.x) - (p1.x - p2.x) * (x3y4 - x4y3),
+    y: (x1y2 - x2y1) * (p3.y - p4.y) - (p1.y - p2.y) * (x3y4 - x4y3),
+  };
+
+  // TODO: optimize this as a determinant call
+  base @/ d
+}
+
+struct Arc, ArcRay, ArcFull {
+  p1: Point,
+  p2: Point,
+  p3: Point,
+}
+
+fn arc(p1: Point, p2: Point, p3: Point) -> Arc {
+  Arc { p1, p2, p3 }
+}
+
+fn center(arc: Arc | ArcRay | ArcFull) -> Point {
+  let p1 = arc.p1;
+  let p2 = arc.p2;
+  let p3 = arc.p3;
+
+  let l1a = (p1 + p2) / 2.0;
+  let l1b = %point(l1a.x + (p2.y - p1.y), l1a.y - (p2.x - p1.x));
+
+  let l2a = (p3 + p2) / 2.0;
+  let l2b = %point(l2a.x + (p2.y - p3.y), l2a.y - (p2.x - p3.x));
+
+  _isec_line(l1a, l1b, l2a, l2b)
+}
+
+fn radius(arc: Arc | ArcRay | ArcFull) -> num {
+  @length(arc.p1 - arc.center)
+}
+
+// kind = :invalid, :segment, :tworay, :circle
+// p1 = c + r * sincos(a1)
+// p3 = c + r * sincos(a3)
+// this should be an enum but whatever
+struct ComputedArc {
+  kind: sym,
+  p1: Point,
+  p3: Point,
+  c: Point,
+  a1: num,
+  a3: num,
+  large: bool,
+}
+
+fn _max(a: num, b: num, c: num, d: num, e: num, f: num) -> num {
+  let mut ret = a;
+  for el in [b, c, d, e, f] {
+    if !(el <= ret) {
+      ret = el;
+    }
+  }
+  ret
+}
+
+fn is_invalid(arc: Arc | ArcRay | ArcFull) -> bool {
+  (!
+      (
+        is_finite(arc.p1) && is_finite(arc.p2) && is_finite(arc.p3)
+          && arc.p1 != arc.p2
+          && arc.p2 != arc.p3
+          && arc.p3 != arc.p1
+      )
+  )
+}
+
+fn _compute(a: Arc | ArcRay | ArcFull) -> ComputedArc {
+  if a.is_invalid {
+    return (
+      ComputedArc {
+        kind: :invalid,
+        p1: _point_nan,
+        p3: _point_nan,
+        c: _point_nan,
+        a1: nan,
+        a3: nan,
+        large: false,
+      }
+    );
+  }
+
+  let center = a.center;
+  let r = distance(center, a.p2);
+  let range = _max(
+    abs(a.p1.x - a.p2.x),
+    abs(a.p2.x - a.p3.x),
+    abs(a.p3.x - a.p1.x),
+    abs(a.p1.y - a.p2.y),
+    abs(a.p2.y - a.p3.y),
+    abs(a.p3.y - a.p1.y),
+  );
+
+  if !(is_finite(center) && is_finite(r) && abs(r) < 1e10 * range) {
+    let xmin = min(a.p1.x, a.p3.x);
+    let ymin = min(a.p1.y, a.p3.y);
+    let xmax = max(a.p1.x, a.p3.x);
+    let ymax = max(a.p1.y, a.p3.y);
+    return (
+      ComputedArc {
+        kind: (
+          if (
+            xmin <= a.p2.x && a.p2.x <= xmax && ymin <= a.p2.y && a.p2.y <= ymax
+          ) {
+            :segment
+          } else {
+            :tworay
+          }
+        ),
+        p1: a.p1,
+        p3: a.p3,
+        c: a.p2,
+        a1: nan,
+        a3: nan,
+        large: false,
+      }
+    )
+  }
+
+  let m = midpoint(a.p1, a.p3);
+
+  let large = @length(a.p2 - m) >= @length(a.p1 - a.p2) / 2;
+
+  let mut a1 = atan(a.p1.y - center.y, a.p1.x - center.x);
+  let a2 = atan(a.p2.y - center.y, a.p2.x - center.x);
+  let mut a3 = atan(a.p3.y - center.y, a.p3.x - center.x);
+
+  if !(min(a1, a3) <= a2 && a2 <= max(a1, a3)) {
+    if a3 > a1 {
+      a3 -= 2 * pi;
+    } else {
+      a1 -= 2 * pi;
+    }
+  }
+
+  ComputedArc {
+    kind: :circle,
+    p1: a.p1,
+    p3: a.p3,
+    c: center,
+    a1,
+    a3,
+    large,
+  }
+}
+
+fn _plot_2d_arc(cv: Canvas, c: ComputedArc) -> Path {
+  let swap = c.a1 > c.a3;
+  let r = distance(c.p1, c.c);
+  path
+    .arc_to(
+      cv.point_at(c.p1.x, c.p1.y),
+      cv.delta_by(r),
+      c.large,
+      swap,
+      cv.point_at(c.p3.x, c.p3.y),
+    )
+}
+
+fn _plot_2d_cir(cv: Canvas, c: ComputedArc) -> Path {
+  path.ellipse(cv.point_at(c.c.x, c.c.y), cv.delta_by(@length(c.p1 - c.c)))
+}
+
+fn %plot_2d(cv: Canvas, arc: Arc) -> PathStyled {
+  let c = arc._compute;
+
+  let p = if c.kind == :segment {
+    path
+      .move_to(cv.point_at(c.p1.x, c.p1.y))
+      .line_to(cv.point_at(c.p3.x, c.p3.y))
+  } else if c.kind == :tworay {
+    add_path(
+      _plot_2d_ray(cv, arc.p3, arc.p3 + arc.p3 - arc.p1),
+      _plot_2d_ray(cv, arc.p1, arc.p1 + arc.p1 - arc.p3),
+    )
+  } else if c.kind == :circle {
+    _plot_2d_arc(cv, c)
+  } else {
+    path
+  };
+
+  p.color(dcg_green.r, dcg_green.g, dcg_green.b)
+}
+
+fn %plot_2d(cv: Canvas, arc: ArcRay) -> PathStyled {
+  let c = arc._compute;
+
+  let p = if c.kind == :segment {
+    _plot_2d_ray(cv, c.p1, c.p3)
+  } else if c.kind == :tworay {
+    add_path(
+      _plot_2d_ray(cv, arc.p3, arc.p3 + arc.p3 - arc.p1),
+      _plot_2d_ray(cv, arc.p1, arc.p1 + arc.p1 - arc.p3),
+    )
+  } else if c.kind == :circle {
+    _plot_2d_arc(cv, c)
+  } else {
+    path
+  };
+
+  p.color(dcg_green.r, dcg_green.g, dcg_green.b)
+}
+
+fn %plot_2d(cv: Canvas, arc: ArcFull) -> PathStyled {
+  let c = arc._compute;
+
+  let p = if c.kind == :segment || c.kind == :tworay {
+    _plot_2d_line(cv, c.p1, c.p3)
+  } else if c.kind == :circle {
+    _plot_2d_cir(cv, c)
+  } else {
+    path
+  };
+
+  p.color(dcg_green.r, dcg_green.g, dcg_green.b)
+}

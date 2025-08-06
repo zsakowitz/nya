@@ -1,3 +1,4 @@
+import { IR } from "@/eval/node"
 import { P } from "@/eval/prec"
 import { L, R, type Dir } from "@/field/dir"
 import { h, path, svg, svgx } from "@/lib/jsx"
@@ -567,6 +568,20 @@ export class CmdBrack extends Command<[Block]> {
 
   ir2(ret: IRBuilder): void {
     const last = ret.last()
+    if (this.lhs == "[" && this.rhs == "]") {
+      const arg = this.blocks[0].parse()
+      ret.suffixedOr(
+        { type: "index", data: arg },
+        (sufx) =>
+          new IR(
+            { type: "group", data: { lhs: "[", rhs: "]", contents: arg } },
+            null,
+            sufx.sufx,
+            null,
+          ),
+      )
+      return
+    }
     if (this.lhs == "(" && this.rhs == ")") {
       if (
         last?.leaf?.type == "uvar" &&

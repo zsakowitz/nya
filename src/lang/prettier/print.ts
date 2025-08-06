@@ -424,9 +424,6 @@ export function print(node: Node | Token<number>, sb: Subprint): Doc {
       if (self.usage?.usages) {
         self.usage.usages.spaceAfter = !self.semi
       }
-      // if (self.block) {
-      //   self.block.of.block = false
-      // }
       return [
         sb("kw"),
         " ",
@@ -454,6 +451,23 @@ export function print(node: Node | Token<number>, sb: Subprint): Doc {
       ]
     case Script:
       return (node as Script).items.map((x, i, a) => {
+        if (x instanceof ItemFn) {
+          const prev = i > 0 && a[i - 1]
+          const next = i > 0 && a[i + 1]
+          if (
+            ((prev &&
+              prev instanceof ItemFn &&
+              !/\n[^\n]*\n/.test(sb.source.slice(prev.end, x.start))) ||
+              (next &&
+                next instanceof ItemFn &&
+                !/\n[^\n]*\n/.test(sb.source.slice(x.end, next.start)))) &&
+            x.block &&
+            x.block.of.items.length <= 1
+          ) {
+            x.block.of.block = false
+          }
+        }
+
         const next = a[i + 1]
         const tilNext = sb.source.slice(x.end, next?.start)
         const n1 = tilNext.indexOf("\n")

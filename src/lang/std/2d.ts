@@ -77,6 +77,15 @@ function libCanvas1(api: NyaApi) {
     glsl: null,
     js: v`${`function %%(path,c,r){path.ellipse(c.x,c.y,Math.abs(r.x),Math.abs(r.y),0,0,${2 * Math.PI});return path}`}(new Path2D(${0}),${1},${2})`,
   })
+  const bool = api.lib.tyBool
+  api.fn("arc_to", { path: Path, init: CanvasPoint, radii: CanvasDelta, laf: bool, saf: bool, end: CanvasPoint }, Path, {
+    glsl: null,
+    js: v`${"function %%(path,p,r,laf,saf,end){path.addPath(new Path2D(`M ${p.x} ${p.y} A ${r.x} ${r.y} 0 ${+laf} ${+saf} ${end.x} ${end.y}`));console.log(globalThis.p=path);return path}"}(new Path2D(${0}),${1},${2},${3},${4},${5})`,
+  })
+  api.fn("add_path", { path1: Path, path2: Path }, Path, {
+    glsl: null,
+    js: v`${"function %%(p1,p2){p1.addPath(p2);return p1}"}(new Path2D(${0}),${1})`,
+  })
 }
 
 function libPlotStyle(api: NyaApi) {

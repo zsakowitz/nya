@@ -74,6 +74,20 @@ fn %plot_2d(cv: Canvas, p: Point) -> CanvasPoint {
   cv.point_at(p.x, p.y)
 }
 
+fn is_finite(p: Point) -> bool {
+  is_finite(p.x) && is_finite(p.y)
+}
+
+fn midpoint(p1: Point, p2: Point) -> Point {
+  (p1 + p2) / 2.0
+}
+
+fn distance(p1: Point, p2: Point) -> num {
+  @length(p1 - p2)
+}
+
+let _point_nan = Point { x: nan, y: nan };
+
 // TODO: debugpoint, screendistance, point
 
 expose package {

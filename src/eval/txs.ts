@@ -413,6 +413,15 @@ TX_SUFFIXES.factorial = {
   deps() {},
 }
 
+const INDEX_1 = new URL(location.href).searchParams.has("list1")
+TX_SUFFIXES.index = {
+  eval(index, on, block) {
+    // TODO: this is not robust at all against js's `undefined`
+    return `(${on})[${INDEX_1 ? "1+" : ""}(${block.eval(index)})]`
+  },
+  deps() {},
+}
+
 function alias(name: string, nya: string) {
   TX_OPS_OPS[name] = {
     eval(_, x, block) {

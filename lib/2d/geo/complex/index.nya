@@ -1,0 +1,9 @@
+use "complex";
+use "2d/geo/complex/algebra";
+use "2d/geo/complex/core";
+use "2d/geo/complex/lircle";
+
+expose package {
+  name: "complex 2D geometry",
+  default: true,
+}
