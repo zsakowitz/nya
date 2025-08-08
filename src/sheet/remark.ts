@@ -83,6 +83,8 @@ const REMARKS = [
   "we love circle arcs",
   "not the matrices :despair:",
   "fun fact: good 3d lighting is actually impossible",
+  "take the reciprocal of a line!",
+  "me when lircle",
 ]
 
 export const REMARK = REMARKS[Math.floor(REMARKS.length * Math.random())]!

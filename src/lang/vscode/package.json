@@ -21,6 +21,9 @@
           ".nya"
         ],
         "configuration": "./language-configuration.json"
+      },
+      {
+        "id": "nya-markdown-injection"
       }
     ],
     "grammars": [
@@ -31,6 +34,17 @@
         "embeddedLanguages": {
           "meta.embedded.block.javascript": "javascript",
           "meta.embedded.block.glsl": "glsl"
+        }
+      },
+      {
+        "language": "nya-markdown-injection",
+        "scopeName": "markdown.nya.codeblock",
+        "path": "./syntaxes/nya-markdown-injection.json",
+        "injectTo": [
+          "text.html.markdown"
+        ],
+        "embeddedLanguages": {
+          "meta.embedded.block.nya": "nya"
         }
       }
     ]
