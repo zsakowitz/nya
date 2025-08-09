@@ -22,13 +22,18 @@ api.coercion(
     v!.unsafeWithType(Num),
   ),
 )
-api.fmanual("+", { a: Int, b: Int }, Int, ([a, b]) => {
-  if (a!.const() && b!.const()) {
-    return new Value(((a.value as number) + (b.value as number)) | 0, Int, true)
-  } else {
-    return new Value(`(${a!.toRuntime()})+(${b!.toRuntime()})|0`, Int, false)
-  }
-})
+for (let i = 0; i < 20; i++)
+  api.fmanual("+", { a: Int, b: Int }, Int, ([a, b]) => {
+    if (a!.const() && b!.const()) {
+      return new Value(
+        ((a.value as number) + (b.value as number)) | 0,
+        Int,
+        true,
+      )
+    } else {
+      return new Value(`(${a!.toRuntime()})+(${b!.toRuntime()})|0`, Int, false)
+    }
+  })
 api.fmanual("+", { a: Num, b: Num }, Num, ([a, b]) => {
   if (a!.const() && b!.const()) {
     return new Value((a.value as number) + (b.value as number), Num, true)
@@ -37,18 +42,21 @@ api.fmanual("+", { a: Num, b: Num }, Num, ([a, b]) => {
   }
 })
 
-const a = new Value(23, Int, true)
-const b = new Value(5.7, Num, true)
-
-const bl = new Block(new BlockGlobals(lib), new Exits(null))
-const pos = new PosVirtual("hi")
-const r = []
-console.time()
-for (let i = 0; i < 1e6; i++) {
-  r.push(performCall(ident("+"), bl, [a, b], pos, pos))
+const t = []
+for (let i = 0; i < 10; i++) {
+  const a = new Value(23, Int, true)
+  const b = new Value(5.7, Num, true)
+  const bl = new Block(new BlockGlobals(lib), new Exits(null))
+  const pos = new PosVirtual("hi")
+  const r = []
+  const start = Date.now()
+  for (let i = 0; i < 1e6; i++) {
+    r.push(performCall(ident("+"), bl, [a, b], pos, pos))
+  }
+  t.push(Date.now() - start)
+  console.log(r)
 }
-console.timeEnd()
-console.log(r)
+console.error(t.reduce((a, b) => a + b, 0) / t.length)
 
 // basic benchmark to compare to new nyalang implementation to make sure we
 // don't accidentally ruin performance
