@@ -42,11 +42,13 @@ const b = new Value(5.7, Num, true)
 
 const bl = new Block(new BlockGlobals(lib), new Exits(null))
 const pos = new PosVirtual("hi")
+const r = []
 console.time()
 for (let i = 0; i < 1e6; i++) {
-  performCall(ident("+"), bl, [a, b], pos, pos)
+  r.push(performCall(ident("+"), bl, [a, b], pos, pos))
 }
 console.timeEnd()
+console.log(r)
 
 // basic benchmark to compare to new nyalang implementation to make sure we
 // don't accidentally ruin performance
