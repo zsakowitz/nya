@@ -274,6 +274,22 @@ export class Coercions {
       `\n}`
     )
   }
+
+  index(): string {
+    this.order(undefined)
+    return Array.from(this.byFrom)
+      .map(([from, allInto]) => {
+        const x = allInto.filter(
+          (final) =>
+            !allInto.some(
+              (mid) =>
+                this.has(from, mid.into) && this.has(mid.into, final.into),
+            ),
+        )
+        return from + " -> " + x.map((x) => x.into).join(", ")
+      })
+      .join("\n")
+  }
 }
 
 export function suppressesType(

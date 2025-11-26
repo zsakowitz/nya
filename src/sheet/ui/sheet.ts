@@ -127,10 +127,11 @@ export class Sheet {
     // FIXME: put back trig angle type options
 
     const index = btn(faBook, "index", () => {
-      const structs = this.factory.env.libGl.types
+      const structs = this.factory.env.libJs.types
         .all()
         .filter((x) => x[1] instanceof Struct && x[0][0] != "_")
         .map((x) => (x[1] as Struct).declaration(true))
+
       let fnCount = 0
       const fns = this.factory.env.libJs.fns
         .map((x) =>
@@ -139,6 +140,9 @@ export class Sheet {
           : `${x[0]!.id.label}${x.map((x) => (fnCount++, "\n  " + x.toString().slice(x.id.label.length))).join("")}`,
         )
         .filter((x) => x != null)
+
+      const coercions = this.factory.env.libJs.coercions.index()
+
       const href = URL.createObjectURL(
         new Blob(
           [
@@ -148,7 +152,11 @@ ${structs.join("\n\n")}
 
 // ${fns.length} functions with ${fnCount} overloads
 
-${fns.join("\n\n")}`,
+${fns.join("\n\n")}
+
+// coercions
+
+${coercions}`,
           ],
           { type: "text/plain" },
         ),
