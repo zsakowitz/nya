@@ -9,6 +9,7 @@ type IndexAddons = Partial<IndexOf<Addon>>
 type Index = IndexOf<Package>
 
 const rawBuiltin = NYALANG_PACKAGES_BUILTIN
+// @ts-ignore nya:surreal does not exist
 rawBuiltin["nya:surreal"] = () =>
   Promise.resolve({
     default: {
